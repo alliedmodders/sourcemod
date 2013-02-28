@@ -35,12 +35,6 @@
 void TQueryOp::RunThinkPart()
 {
 	//handler for threaded sql queries
-
-	if (m_type == Query_Connect)
-	{
-		return;
-	}
-
 	switch (m_type)
 	{
 		case Query_InsertCookie:
@@ -61,6 +55,11 @@ void TQueryOp::RunThinkPart()
 			break;
 		}
 
+		case Query_Connect:
+		{
+			return;
+		}
+		
 		default:
 		{
 			break;
@@ -73,31 +72,26 @@ void TQueryOp::RunThreadPart()
 	if (m_type == Query_Connect)
 	{
 		g_ClientPrefs.DatabaseConnect();
+		return;
 	}
-	else
-	{
-		assert(m_database != NULL);
-
-		/* I don't think this is needed anymore... keeping for now. */
-		m_database->LockForFullAtomicOperation();
-
+	
+	assert(m_database != NULL);
+	/* I don't think this is needed anymore... keeping for now. */
+	m_database->LockForFullAtomicOperation();
 		if (!BindParamsAndRun())
-		{
-			g_pSM->LogError(myself, 
-							"Failed SQL Query, Error: \"%s\" (Query id %i - serial %i)", 
-							m_database->GetError(),
-							m_type, 
-							m_serial);
-		}
-
-		m_database->UnlockFromFullAtomicOperation();
+	{
+		g_pSM->LogError(myself, 
+						"Failed SQL Query, Error: \"%s\" (Query id %i - serial %i)", 
+						m_database->GetError(),
+						m_type, 
+						m_serial);
 	}
+
+	m_database->UnlockFromFullAtomicOperation();
 }
 
 IDBDriver *TQueryOp::GetDriver()
 {
-	assert(m_database != NULL);
-
 	return m_database->GetDriver();
 }
 
@@ -131,6 +125,7 @@ TQueryOp::TQueryOp(enum querytype type, Cookie *cookie)
 	m_database = NULL;
 	m_insertId = -1;
 	m_pResult = NULL;
+	m_serial = 0;
 }
 
 void TQueryOp::SetDatabase(IDatabase *db)
@@ -162,7 +157,7 @@ bool TQueryOp::BindParamsAndRun()
 
 			if (g_DriverType == Driver_MySQL)
 			{
-				UTIL_Format(query,
+				g_pSM->Format(query,
 					sizeof(query),
 					"INSERT IGNORE INTO sm_cookies (name, description, access) \
 					 VALUES (\"%s\", \"%s\", %d)",
@@ -172,7 +167,7 @@ bool TQueryOp::BindParamsAndRun()
 			}
 			else if (g_DriverType == Driver_SQLite)
 			{
-				UTIL_Format(query,
+				g_pSM->Format(query,
 					sizeof(query),
 					"INSERT OR IGNORE INTO sm_cookies (name, description, access) \
 					 VALUES ('%s', '%s', %d)",
@@ -197,7 +192,7 @@ bool TQueryOp::BindParamsAndRun()
 
 			m_database->QuoteString(m_params.steamId, safe_str, sizeof(safe_str), &ignore);
 
-			UTIL_Format(query,
+			g_pSM->Format(query,
 				sizeof(query),
 				"SELECT sm_cookies.name, sm_cookie_cache.value, sm_cookies.description, \
 						sm_cookies.access, sm_cookie_cache.timestamp 	\
@@ -228,7 +223,7 @@ bool TQueryOp::BindParamsAndRun()
 
 			if (g_DriverType == Driver_MySQL)
 			{
-				UTIL_Format(query, 
+				g_pSM->Format(query, 
 					sizeof(query),
 					"INSERT INTO sm_cookie_cache (player, cookie_id, value, timestamp) 	\
 					 VALUES (\"%s\", %d, \"%s\", %d)									\
@@ -243,7 +238,7 @@ bool TQueryOp::BindParamsAndRun()
 			}
 			else if (g_DriverType == Driver_SQLite)
 			{
-				UTIL_Format(query,
+				g_pSM->Format(query,
 					sizeof(query),
 					"INSERT OR REPLACE INTO sm_cookie_cache						\
 					 (player, cookie_id, value, timestamp)						\
@@ -274,7 +269,7 @@ bool TQueryOp::BindParamsAndRun()
 				sizeof(safe_name),
 				&ignore);
 
-			UTIL_Format(query, 
+			g_pSM->Format(query, 
 				sizeof(query),
 				"SELECT id FROM sm_cookies WHERE name = '%s'",
 				safe_name);
@@ -296,6 +291,16 @@ bool TQueryOp::BindParamsAndRun()
 	return false;
 }
 
+querytype TQueryOp::PullQueryType()
+{
+	return m_type;
+}
+
+int TQueryOp::PullQuerySerial()
+{
+	return m_serial;
+}
+
 ParamData::~ParamData()
 {
 	if (cookie)
@@ -309,8 +314,10 @@ ParamData::~ParamData()
 			delete cookie;
 			cookie = NULL;
 		}
-
-		g_ClientPrefs.cookieMutex->Unlock();	
+		else
+		{
+			g_ClientPrefs.cookieMutex->Unlock();
+		}
 	}
 
 	if (data)

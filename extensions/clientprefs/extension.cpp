@@ -47,7 +47,6 @@ CookieTypeHandler g_CookieTypeHandler;
 HandleType_t g_CookieIterator = 0;
 CookieIteratorHandler g_CookieIteratorHandler;
 DbDriver g_DriverType;
-static const DatabaseInfo *storage_local = NULL;
 
 bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -60,28 +59,19 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	{
 		DBInfo = dbi->FindDatabaseConf("default");
 
-		if (DBInfo == NULL ||
-			(strcmp(DBInfo->host, "localhost") == 0 &&
-			 strcmp(DBInfo->database, "sourcemod") == 0 && 
-			 strcmp(DBInfo->user, "root") == 0 &&
-			 strcmp(DBInfo->pass, "") == 0 &&
-			 strcmp(DBInfo->driver, "") == 0))
-		{
-			storage_local = dbi->FindDatabaseConf("storage-local");
-			if (DBInfo == NULL)
-			{
-				DBInfo = storage_local;
-			}
-		}
-
 		if (DBInfo == NULL)
 		{
-			snprintf(error, maxlength, "Could not find \"clientprefs\" or \"default\" database configs");
-			return false;
+			DBInfo = dbi->FindDatabaseConf("storage-local");
 		}
 	}
+	
+	if (DBInfo == NULL)
+	{
+		snprintf(error, maxlength, "Could not find any suitable database configs");
+		return false;
+	}
 
-	if (DBInfo->driver[0] != '\0')
+	if (DBInfo->driver && DBInfo->driver[0] != '\0')
 	{
 		Driver = dbi->FindOrLoadDriver(DBInfo->driver);
 	}
@@ -96,7 +86,6 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
-	Database = NULL;
 	databaseLoading = true;
 	TQueryOp *op = new TQueryOp(Query_Connect, 0);
 	dbi->AddToThreadQueue(op, PrioQueue_High);
@@ -136,19 +125,7 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	if (late)
 	{
-		int maxclients = playerhelpers->GetMaxClients();
-
-		for (int i = 1; i <= maxclients; i++)
-		{
-			IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(i);
-
-			if (!pPlayer || !pPlayer->IsAuthorized())
-			{
-				continue;
-			}
-
-			g_CookieManager.OnClientAuthorized(i, pPlayer->GetAuthString());
-		}
+		this->CatchLateLoadClients();
 	}
 
 	return true;
@@ -188,20 +165,37 @@ void ClientPrefs::SDK_OnUnload()
 	if (Database != NULL)
 	{
 		Database->Close();
+		Database = NULL;
 	}
 
-	forwards->ReleaseForward(g_CookieManager.cookieDataLoadedForward);
-
-	HandleSecurity sec = HandleSecurity(identity, identity);
-	HandleError err = handlesys->FreeHandle(g_CookieManager.clientMenu->GetHandle(), &sec);
-	if (HandleError_None != err)
+	if (g_CookieManager.cookieDataLoadedForward != NULL)
 	{
-		g_pSM->LogError(myself, "Error %d when attempting to free client menu handle", err);
+		forwards->ReleaseForward(g_CookieManager.cookieDataLoadedForward);
+		g_CookieManager.cookieDataLoadedForward = NULL;
 	}
 
-	phrases->Destroy();
+	if (g_CookieManager.clientMenu != NULL)
+	{
+		Handle_t menuHandle = g_CookieManager.clientMenu->GetHandle();
+		
+		if (menuHandle != BAD_HANDLE)
+		{
+			HandleSecurity sec = HandleSecurity(identity, identity);
+			HandleError err = handlesys->FreeHandle(menuHandle, &sec);
+			if (HandleError_None != err)
+			{
+				g_pSM->LogError(myself, "Error %d when attempting to free client menu handle", err);
+			}
+		}
+		
+		g_CookieManager.clientMenu = NULL;
+	}
 
-	sharesys->DestroyIdentity( identity );
+	if (phrases != NULL)
+	{
+		phrases->Destroy();
+		phrases = NULL;
+	}
 
 	plsys->RemovePluginsListener(&g_CookieManager);
 	playerhelpers->RemoveClientListener(&g_CookieManager);
@@ -212,15 +206,23 @@ void ClientPrefs::SDK_OnUnload()
 
 void ClientPrefs::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
 {
-	if (Database == NULL && !databaseLoading)
+	this->AttemptReconnection();
+}
+
+void ClientPrefs::AttemptReconnection()
+{
+	if (Database || databaseLoading)
 	{
-		g_pSM->LogMessage(myself, "Attempting to reconnect to database...");
-		
-		databaseLoading = true;
-		
-		TQueryOp *op = new TQueryOp(Query_Connect, 0);
-		dbi->AddToThreadQueue(op, PrioQueue_High);
+		return; /* We're already loading, or have loaded. */
 	}
+	
+	g_pSM->LogMessage(myself, "Attempting to reconnect to database...");
+	databaseLoading = true;
+	
+	TQueryOp *op = new TQueryOp(Query_Connect, 0);
+	dbi->AddToThreadQueue(op, PrioQueue_High);
+	
+	this->CatchLateLoadClients(); /* DB reconnection, we should check if we missed anyone... */
 }
 
 void ClientPrefs::DatabaseConnect()
@@ -230,19 +232,10 @@ void ClientPrefs::DatabaseConnect()
 
 	Database = Driver->Connect(DBInfo, true, error, sizeof(error));
 
-	if (Database == NULL &&
-		DBInfo != storage_local &&
-		storage_local != NULL)
-	{
-		DBInfo = storage_local;
-		Database = Driver->Connect(DBInfo, true, error, sizeof(error));
-	}
-
 	if (Database == NULL)
 	{
 		g_pSM->LogError(myself, error);
 		databaseLoading = false;
-		ProcessQueryCache();
 		return;
 	}
 
@@ -319,87 +312,76 @@ void ClientPrefs::DatabaseConnect()
 
 	databaseLoading = false;
 
-	ProcessQueryCache();
-
+	this->ProcessQueryCache();	
 	return;
 
 fatal_fail:
 	Database->Close();
 	Database = NULL;
 	databaseLoading = false;
-	ProcessQueryCache();
 }
 
 bool ClientPrefs::AddQueryToQueue( TQueryOp *query )
 {
 	queryMutex->Lock();
-
-	if (Database == NULL && databaseLoading)
+	if (Database == NULL)
 	{
 		cachedQueries.push_back(query);
 		queryMutex->Unlock();
-		return true;
+		return false;
 	}
-
-	queryMutex->Unlock();
-
-	if (Database)
+	
+	if (!cachedQueries.empty())
 	{
-		query->SetDatabase(Database);
-		dbi->AddToThreadQueue(query, PrioQueue_Normal);
-		return true;
+		queryMutex->Unlock();
+		this->ProcessQueryCache();
+	}
+	else
+	{
+		queryMutex->Unlock();
 	}
 
-	query->Destroy();
-
-	/* If Database is NULL and we're not in the loading phase it must have failed - Can't do much */
-	return false;
+	query->SetDatabase(Database);
+	dbi->AddToThreadQueue(query, PrioQueue_Normal);
+	return true;
 }
 
 void ClientPrefs::ProcessQueryCache()
 {
-	SourceHook::List<TQueryOp *>::iterator iter;
+	if (Database == NULL)
+	{
+		return;
+	}
 
 	queryMutex->Lock();
-
-	iter = cachedQueries.begin();
-	
-	while (iter != cachedQueries.end())
+	TQueryOp *op;
+	for (SourceHook::List<TQueryOp *>::iterator iter = cachedQueries.begin(); iter != cachedQueries.end(); iter++)
 	{
-		TQueryOp *op = *iter;
-
-		if (Database != NULL)
-		{
-			op->SetDatabase(Database);
-			dbi->AddToThreadQueue(op, PrioQueue_Normal);
-		}
-		else
-		{
-			op->Destroy();
-		}
-
-		iter++;
+		op = *iter;
+		op->SetDatabase(Database);
+		dbi->AddToThreadQueue(op, PrioQueue_Normal);
 	}
 
 	cachedQueries.clear();
-
 	queryMutex->Unlock();
 }
 
 size_t IsAuthIdConnected(char *authID)
 {
 	IGamePlayer *player;
-	int maxPlayers = playerhelpers->GetMaxClients();
-
-	for (int playerIndex = 1; playerIndex <= maxPlayers; playerIndex++)
+	const char *authString;
+	
+	for (int playerIndex = playerhelpers->GetMaxClients()+1; --playerIndex > 0;)
 	{
 		player = playerhelpers->GetGamePlayer(playerIndex);
-		if (!player || !player->IsConnected())
+		if (player == NULL || !player->IsConnected())
 		{
 			continue;
 		}
-		const char *authString = player->GetAuthString();
-		if (!authString || authString[0] == '\0')
+		
+		authString = player->GetAuthString();
+		
+		if (authString == NULL || authString[0] == '\0')
 		{
 			continue;
 		}
@@ -412,22 +394,45 @@ size_t IsAuthIdConnected(char *authID)
 	return 0;
 }
 
-size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
+void ClientPrefs::CatchLateLoadClients()
 {
-	va_list ap;
-	va_start(ap, fmt);
-	size_t len = vsnprintf(buffer, maxlength, fmt, ap);
-	va_end(ap);
+	IGamePlayer *pPlayer;
+	for (int i = playerhelpers->GetMaxClients()+1; --i > 0;)
+	{
+		if (g_CookieManager.AreClientCookiesPening(i) || g_CookieManager.AreClientCookiesCached(i))
+		{
+			continue;
+		}
+	
+		pPlayer = playerhelpers->GetGamePlayer(i);
 
-	if (len >= maxlength)
-	{
-		buffer[maxlength - 1] = '\0';
-		return (maxlength - 1);
+		if (!pPlayer || !pPlayer->IsAuthorized())
+		{
+			continue;
+		}
+
+		g_CookieManager.OnClientAuthorized(i, pPlayer->GetAuthString());
 	}
-	else
+}
+
+void ClientPrefs::ClearQueryCache(int serial)
+{
+	queryMutex->Lock();
+
+	for (SourceHook::List<TQueryOp *>::iterator iter = cachedQueries.begin(); iter != cachedQueries.end();)
 	{
-		return len;
-	}
+		TQueryOp *op = *iter;
+		if (op && op->PullQueryType() == Query_SelectData && op->PullQuerySerial() == serial)
+ 		{
+			op->Destroy();
+			iter = cachedQueries.erase(iter);
+ 		}
+ 		else
+ 		{
+			iter++;
+ 		}
+ 	}
+	queryMutex->Unlock();
 }
 
 bool Translate(char *buffer, 
@@ -478,6 +483,30 @@ bool Translate(char *buffer,
 	return true;
 }
 
+char * UTIL_strncpy(char * destination, const char * source, size_t num)
+{
+	if (source == NULL)
+	{
+		destination[0] = '\0';
+		return destination;
+	}
+	
+	size_t req = strlen(source);
+	if (!req)
+	{
+		destination[0] = '\0';
+		return destination;
+	}
+	else if (req >= num)
+	{
+		req = num-1;
+	}
+	
+	strncpy(destination, source, req);
+	destination[req] = '\0';
+	return destination;
+}
+
 IdentityToken_t *ClientPrefs::GetIdentity() const
 {
 	return identity;
@@ -493,3 +522,15 @@ const char *ClientPrefs::GetExtensionDateString()
 	return SM_BUILD_TIMESTAMP;
 }
 
+ClientPrefs::ClientPrefs()
+{
+	Driver = NULL;
+	Database = NULL;
+	databaseLoading = false;
+	phrases = NULL;
+	DBInfo = NULL;
+
+	cookieMutex = NULL;
+	queryMutex = NULL;
+	identity = NULL;
+}

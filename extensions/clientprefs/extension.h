@@ -38,6 +38,9 @@
 #include <stdarg.h>
 #include "smsdk_ext.h"
 #include "sh_list.h"
+
+char * UTIL_strncpy(char * destination, const char * source, size_t num);
+
 #include "cookie.h"
 #include "menus.h"
 #include "query.h"
@@ -58,6 +61,8 @@ class TQueryOp;
  */
 class ClientPrefs : public SDKExtension
 {
+public:
+	ClientPrefs();
 public:
 	/**
 	 * @brief This is called after the initial loading sequence has been processed.
@@ -93,6 +98,10 @@ public:
 
 	bool AddQueryToQueue(TQueryOp *query);
 	void ProcessQueryCache();
+	
+	void AttemptReconnection();
+	void CatchLateLoadClients();
+	void ClearQueryCache(int serial);
 
 	/**
 	 * @brief Called when the pause state is changed.
@@ -145,11 +154,11 @@ public:
 public:
 	IDBDriver *Driver;
 	IDatabase *Database;
-	bool databaseLoading;
 	IPhraseCollection *phrases;
 	const DatabaseInfo *DBInfo;
 
 	IMutex *cookieMutex;
+	bool databaseLoading;
 
 private:
 	SourceHook::List<TQueryOp *> cachedQueries;
@@ -176,8 +185,6 @@ public:
 };
 
 size_t IsAuthIdConnected(char *authID);
-
-size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 
 extern sp_nativeinfo_t g_ClientPrefNatives[];
 

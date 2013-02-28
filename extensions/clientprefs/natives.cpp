@@ -35,10 +35,7 @@
 
 cell_t RegClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
-	{
-		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
-	}
+	g_ClientPrefs.AttemptReconnection();
 
 	char *name;
 	pContext->LocalToString(params[1], &name);
@@ -67,10 +64,7 @@ cell_t RegClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 
 cell_t FindClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
-	{
-		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
-	}
+	g_ClientPrefs.AttemptReconnection();
 
 	char *name;
 	pContext->LocalToString(params[1], &name);
@@ -91,10 +85,7 @@ cell_t FindClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 
 cell_t SetAuthIdCookie(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
-	{
-		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
-	}
+	g_ClientPrefs.AttemptReconnection();
 
 	char *steamID;
 	pContext->LocalToString(params[1], &steamID);
@@ -136,8 +127,7 @@ cell_t SetAuthIdCookie(IPluginContext *pContext, const cell_t *params)
 	// edit database table
 	TQueryOp *op = new TQueryOp(Query_InsertData, pCookie);
 	// limit player auth length which doubles for cookie name length
-	strncpy(op->m_params.steamId, steamID, MAX_NAME_LENGTH);
-	op->m_params.steamId[MAX_NAME_LENGTH-1] = '\0';
+	UTIL_strncpy(op->m_params.steamId, steamID, MAX_NAME_LENGTH);
 	op->m_params.cookieId = i_dbId;
 	op->m_params.data = payload;
 
@@ -148,10 +138,7 @@ cell_t SetAuthIdCookie(IPluginContext *pContext, const cell_t *params)
 
 cell_t SetClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
-	{
-		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
-	}
+	g_ClientPrefs.AttemptReconnection();
 
 	int client = params[1];
 
@@ -183,10 +170,7 @@ cell_t SetClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 
 cell_t GetClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
-	{
-		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
-	}
+	g_ClientPrefs.AttemptReconnection();
 
 	int client = params[1];
 
@@ -221,10 +205,7 @@ cell_t GetClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 
 cell_t AreClientCookiesCached(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
-	{
-		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
-	}
+	g_ClientPrefs.AttemptReconnection();
 
 	int client = params[1];
 
@@ -238,10 +219,7 @@ cell_t AreClientCookiesCached(IPluginContext *pContext, const cell_t *params)
 
 cell_t GetCookieAccess(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
-	{
-		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
-	}
+	g_ClientPrefs.AttemptReconnection();
 
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError err;
@@ -263,10 +241,7 @@ cell_t GetCookieAccess(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetCookieIterator(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
-	{
-		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
-	}
+	g_ClientPrefs.AttemptReconnection();
 
 	SourceHook::List<Cookie *>::iterator *iter = new SourceHook::List<Cookie *>::iterator;
 	*iter = g_CookieManager.cookieList.begin();
@@ -282,10 +257,7 @@ static cell_t GetCookieIterator(IPluginContext *pContext, const cell_t *params)
 
 static cell_t ReadCookieIterator(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
-	{
-		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
-	}
+	g_ClientPrefs.AttemptReconnection();
 
 	SourceHook::List<Cookie *>::iterator *iter;
 
@@ -323,10 +295,7 @@ static cell_t ReadCookieIterator(IPluginContext *pContext, const cell_t *params)
 
 cell_t ShowSettingsMenu(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
-	{
-		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
-	}
+	g_ClientPrefs.AttemptReconnection();
 
 	char message[256];
 	Translate(message, sizeof(message), "%T:", 2, NULL, "Client Settings", &params[1]);
@@ -339,10 +308,7 @@ cell_t ShowSettingsMenu(IPluginContext *pContext, const cell_t *params)
 
 cell_t AddSettingsMenuItem(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
-	{
-		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
-	}
+	g_ClientPrefs.AttemptReconnection();
 
 	char *display;
 	pContext->LocalToString(params[3], &display);
@@ -358,7 +324,7 @@ cell_t AddSettingsMenuItem(IPluginContext *pContext, const cell_t *params)
 	AutoMenuData *data = new AutoMenuData;
 	data->datavalue = params[2];
 	data->handler = pItem;
-	UTIL_Format(info, sizeof(info), "%x", data);
+	g_pSM->Format(info, sizeof(info), "%x", data);
 
 	ItemDrawInfo draw(display, 0);
 
@@ -376,7 +342,7 @@ cell_t AddSettingsMenuItem(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char *copyarray = new char[strlen(display)+1];
-	UTIL_Format(copyarray, strlen(display)+1, "%s", display);
+	g_pSM->Format(copyarray, strlen(display)+1, "%s", display);
 
 	pList->push_back(copyarray);
 
@@ -385,10 +351,7 @@ cell_t AddSettingsMenuItem(IPluginContext *pContext, const cell_t *params)
 
 cell_t AddSettingsPrefabMenuItem(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
-	{
-		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
-	}
+	g_ClientPrefs.AttemptReconnection();
 
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError err;
@@ -433,7 +396,7 @@ cell_t AddSettingsPrefabMenuItem(IPluginContext *pContext, const cell_t *params)
 	data->pCookie = pCookie;
 	data->type = (CookieMenu)params[2];
 	data->handler = pItem;
-	UTIL_Format(info, sizeof(info), "%x", data);
+	g_pSM->Format(info, sizeof(info), "%x", data);
 
 	g_CookieManager.clientMenu->AppendItem(info, draw);
 
@@ -449,7 +412,7 @@ cell_t AddSettingsPrefabMenuItem(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char *copyarray = new char[strlen(display)+1];
-	UTIL_Format(copyarray, strlen(display)+1, "%s", display);
+	g_pSM->Format(copyarray, strlen(display)+1, "%s", display);
 
 	pList->push_back(copyarray);
 
@@ -458,10 +421,7 @@ cell_t AddSettingsPrefabMenuItem(IPluginContext *pContext, const cell_t *params)
 
 cell_t GetClientCookieTime(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
-	{
-		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
-	}
+	g_ClientPrefs.AttemptReconnection();
 
 	Handle_t hndl = static_cast<Handle_t>(params[2]);
 	HandleError err;

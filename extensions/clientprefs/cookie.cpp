@@ -41,6 +41,7 @@ CookieManager::CookieManager()
 	{
 		connected[i] = false;
 		statsLoaded[i] = false;
+		statsPending[i] = false;
 	}
 
 	cookieDataLoadedForward = NULL;
@@ -51,10 +52,7 @@ CookieManager::~CookieManager(){}
 void CookieManager::Unload()
 {
 	/* If clients are connected we should try save their data */
-
-	int maxclients = playerhelpers->GetMaxClients();
-
-	for (int i=1; i<=maxclients; i++)
+	for (int i = playerhelpers->GetMaxClients()+1; --i > 0;)
 	{
 		if (connected[i])
 		{
@@ -63,20 +61,14 @@ void CookieManager::Unload()
 	}
 
 	/* Find all cookies and delete them */
-	
-	SourceHook::List<Cookie *>::iterator _iter;
-
 	Cookie *current;
 
-	_iter = cookieList.begin();
-
-	while (_iter != cookieList.end())
+	for (SourceHook::List<Cookie *>::iterator _iter = cookieList.begin(); _iter != cookieList.end(); _iter++)
 	{
 		current = (Cookie *)*_iter;
 
 		if (current == NULL)
 		{
-			_iter++;
 			continue;
 		}
 
@@ -91,9 +83,9 @@ void CookieManager::Unload()
 			g_ClientPrefs.cookieMutex->Unlock();
 			delete current;
 		}
-
-		_iter = cookieList.erase(_iter);
 	}
+	
+	cookieList.clear();
 }
 
 Cookie *CookieManager::FindCookie(const char *name)
@@ -116,9 +108,7 @@ Cookie *CookieManager::CreateCookie(const char *name, const char *description, C
 	if (pCookie != NULL)
 	{
 		/* Update data fields to the provided values */
-		strncpy(pCookie->description, description, MAX_DESC_LENGTH);
-		pCookie->description[MAX_DESC_LENGTH-1] = '\0';
-
+		UTIL_strncpy(pCookie->description, description, MAX_DESC_LENGTH);
 		pCookie->access = access;
 
 		return pCookie;
@@ -126,17 +116,14 @@ Cookie *CookieManager::CreateCookie(const char *name, const char *description, C
 
 	/* First time cookie - Create from scratch */
 	pCookie = new Cookie(name, description, access);
+	pCookie->usedInQuery++;
+	
+	/* Attempt to insert cookie into the db and get its ID num */
+	TQueryOp *op = new TQueryOp(Query_InsertCookie, pCookie);
+	op->m_params.cookie = pCookie;
+	
 	cookieTrie.insert(name, pCookie);
 	cookieList.push_back(pCookie);
-
-	/* Attempt to insert cookie into the db and get its ID num */
-
-	TQueryOp *op = new TQueryOp(Query_InsertCookie, pCookie);
-
-	g_ClientPrefs.cookieMutex->Lock();
-	op->m_params.cookie = pCookie;
-	pCookie->usedInQuery++;
-	g_ClientPrefs.cookieMutex->Unlock();
 
 	g_ClientPrefs.AddQueryToQueue(op);
 
@@ -145,8 +132,6 @@ Cookie *CookieManager::CreateCookie(const char *name, const char *description, C
 
 bool CookieManager::GetCookieValue(Cookie *pCookie, int client, char **value)
 {
-	assert(pCookie);
-
 	CookieData *data = pCookie->data[client];
 
 	/* Check if a value has been set before */
@@ -156,8 +141,8 @@ bool CookieManager::GetCookieValue(Cookie *pCookie, int client, char **value)
 		data->parent = pCookie;
 		clientData[client].push_back(data);
 		pCookie->data[client] = data;
-		data->changed = true;
-		data->timestamp = time(NULL);
+		data->changed = false;
+		data->timestamp = 0;
 	}
 
 	*value = &data->value[0];
@@ -167,8 +152,6 @@ bool CookieManager::GetCookieValue(Cookie *pCookie, int client, char **value)
 
 bool CookieManager::SetCookieValue(Cookie *pCookie, int client, const char *value)
 {
-	assert(pCookie);
-
 	CookieData *data = pCookie->data[client];
 
 	if (data == NULL)
@@ -180,8 +163,7 @@ bool CookieManager::SetCookieValue(Cookie *pCookie, int client, const char *valu
 	}
 	else
 	{
-		strncpy(data->value, value, MAX_VALUE_LENGTH);
-		data->value[MAX_VALUE_LENGTH-1] = '\0';
+		UTIL_strncpy(data->value, value, MAX_VALUE_LENGTH);
 	}
 
 	data->changed = true;
@@ -200,9 +182,12 @@ void CookieManager::OnClientAuthorized(int client, const char *authstring)
 	}
 
 	connected[client] = true;
+	statsPending[client] = true;
 
+	g_ClientPrefs.AttemptReconnection();
+	
 	TQueryOp *op = new TQueryOp(Query_SelectData, player->GetSerial());
-	strcpy(op->m_params.steamId, authstring);
+	UTIL_strncpy(op->m_params.steamId, authstring, MAX_NAME_LENGTH);
 
 	g_ClientPrefs.AddQueryToQueue(op);
 }
@@ -211,105 +196,103 @@ void CookieManager::OnClientDisconnecting(int client)
 {
 	connected[client] = false;
 	statsLoaded[client] = false;
-
-	SourceHook::List<CookieData *>::iterator _iter;
+	statsPending[client] = false;
 
 	CookieData *current;
 
-	_iter = clientData[client].begin();
-
-	while (_iter != clientData[client].end())
+	g_ClientPrefs.AttemptReconnection();
+	
+	/* Save this cookie to the database */
+	IGamePlayer *player = playerhelpers->GetGamePlayer(client);
+	const char *pAuth = NULL;
+	int dbId;
+	
+	if (player)
 	{
+		pAuth = player->GetAuthString();
+	}
+	
+	g_ClientPrefs.ClearQueryCache(player->GetSerial());
+	
+	for (SourceHook::List<CookieData *>::iterator _iter = clientData[client].begin();\
+	_iter != clientData[client].end(); _iter++)
+	{
+		if (player == NULL || pAuth == NULL)
+		{
+			/* panic! */
+			current->parent->data[client] = NULL;
+			delete current;
+			continue;
+		}
+	
 		current = (CookieData *)*_iter;
-
-		if (!current->changed)
+		dbId = current->parent->dbid;
+		
+		if (!current->changed || dbId == -1)
 		{
 			current->parent->data[client] = NULL;
 			delete current;
-			_iter = clientData[client].erase(_iter);
 			continue;
-		}
-
-		/* Save this cookie to the database */
-		IGamePlayer *player = playerhelpers->GetGamePlayer(client);
-
-		if (player == NULL)
-		{
-			/* panic! */
-			return;
-		}
-
-		int dbId = current->parent->dbid;
-
-		if (dbId == -1)
-		{
-			/* Insert/Find Query must be still running or failed. */
-			return;
 		}
 
 		TQueryOp *op = new TQueryOp(Query_InsertData, client);
 
-		strcpy(op->m_params.steamId, player->GetAuthString());
+		UTIL_strncpy(op->m_params.steamId, pAuth, MAX_NAME_LENGTH);
 		op->m_params.cookieId = dbId;
 		op->m_params.data = current;
 
 		g_ClientPrefs.AddQueryToQueue(op);
 
 		current->parent->data[client] = NULL;
-		
-
-		/* We don't delete here, it will be removed when the query is completed */
-
-		_iter = clientData[client].erase(_iter);
 	}
+	
+	clientData[client].clear();
 }
 
 void CookieManager::ClientConnectCallback(int serial, IQuery *data)
 {
 	int client;
-	IResultSet *results;
 
 	/* Check validity of client */
 	if ((client = playerhelpers->GetClientFromSerial(serial)) == 0)
 	{
 		return;
 	}
-
+	statsPending[client] = false;
+	
+	IResultSet *results;
 	/* Check validity of results */
 	if (data == NULL || (results = data->GetResultSet()) == NULL)
 	{
 		return;
 	}
 
+	CookieData *pData;
 	IResultRow *row;
-	do
+	unsigned int timestamp;
+	CookieAccess access;
+	
+	while (results->MoreRows() && ((row = results->FetchRow()) != NULL))
 	{
-		if ((row = results->FetchRow()) == NULL)
-		{
-			break;
-		}
-
-		const char *name;
+		const char *name = "";
 		row->GetString(0, &name, NULL);
-
-		const char *value;
+		
+		const char *value = "";
 		row->GetString(1, &value, NULL);
 
-		CookieData *pData = new CookieData(value);
+		pData = new CookieData(value);
 		pData->changed = false;
 
-		unsigned int timestamp = 0;
-		row->GetInt(4, (int *)&timestamp);
-		pData->timestamp = timestamp;
+		pData->timestamp = (row->GetInt(4, (int *)&timestamp) == DBVal_Data) ? timestamp : 0;
 
 		Cookie *parent = FindCookie(name);
 
 		if (parent == NULL)
 		{
-			const char *desc;
+			const char *desc = "";
 			row->GetString(2, &desc, NULL);
 
-			CookieAccess access = CookieAccess_Public;
+			access = CookieAccess_Public;
 			row->GetInt(3, (int *)&access);
 
 			parent = CreateCookie(name, desc, access);
@@ -317,10 +300,8 @@ void CookieManager::ClientConnectCallback(int serial, IQuery *data)
 
 		pData->parent = parent;
 		parent->data[client] = pData;
-
 		clientData[client].push_back(pData);
-
-	} while (results->MoreRows());
+	}
 
 	statsLoaded[client] = true;
 
@@ -338,7 +319,7 @@ void CookieManager::InsertCookieCallback(Cookie *pCookie, int dbId)
 
 	TQueryOp *op = new TQueryOp(Query_SelectId, pCookie);
 	/* Put the cookie name into the steamId field to save space - Make sure we remember that it's there */
-	strcpy(op->m_params.steamId, pCookie->name);
+	UTIL_strncpy(op->m_params.steamId, pCookie->name, MAX_NAME_LENGTH);
 	g_ClientPrefs.AddQueryToQueue(op);
 }
 
@@ -366,26 +347,31 @@ bool CookieManager::AreClientCookiesCached(int client)
 	return statsLoaded[client];
 }
 
+bool CookieManager::AreClientCookiesPening(int client)
+{
+	return statsPending[client];
+}
+
 void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 {
 	SourceHook::List<char *> *pList;
 
 	if (plugin->GetProperty("SettingsMenuItems", (void **)&pList, true))
 	{
-		SourceHook::List<char *>::iterator p_iter = pList->begin();
 		char *name;
-
-		while (p_iter != pList->end())
+		ItemDrawInfo draw;
+		const char *info;
+		AutoMenuData * data;
+		unsigned itemcount;
+		
+		for (SourceHook::List<char *>::iterator p_iter = pList->begin(); p_iter != pList->end(); p_iter++)
 		{
 			name = (char *)*p_iter;
-		
-			p_iter = pList->erase(p_iter); //remove from this plugins list
-
-			ItemDrawInfo draw;
-			
-			for (unsigned int i=0; i<clientMenu->GetItemCount(); i++)
+			itemcount = clientMenu->GetItemCount();
+			//remove from this plugins list
+			for (unsigned int i=0; i < itemcount; i++)
 			{
-				const char *info = clientMenu->GetItemInfo(i, &draw);
+				info = clientMenu->GetItemInfo(i, &draw);
 
 				if (info == NULL)
 				{
@@ -394,9 +380,7 @@ void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 
 				if (strcmp(draw.display, name) == 0)
 				{
-					ItemDrawInfo draw;
-					const char *info = clientMenu->GetItemInfo(i, &draw);
-					AutoMenuData *data = (AutoMenuData *)strtoul(info, NULL, 16);
+					data = (AutoMenuData *)strtoul(info, NULL, 16);
 
 					if (data->handler->forward != NULL)
 					{
@@ -410,15 +394,15 @@ void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 				}
 			}
 
-			delete name;
-		}		
+			delete [] name;
+		}
+		
+		pList->clear();
 	}
 }
 
 bool CookieManager::GetCookieTime(Cookie *pCookie, int client, time_t *value)
 {
-	assert(pCookie);
-
 	CookieData *data = pCookie->data[client];
 
 	/* Check if a value has been set before */

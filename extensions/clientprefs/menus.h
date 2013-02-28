@@ -59,13 +59,14 @@ enum CookieMenu
 	CookieMenu_YesNo_Int,		/**< Yes/No menu with 1/0 saved into the cookie */
 	CookieMenu_OnOff,			/**< On/Off menu with "on"/"off" results saved into the cookie */
 	CookieMenu_OnOff_Int,		/**< On/Off menu with 1/0 saved into the cookie */
+	CookieMenu_Elements
 };
 
 struct ItemHandler
 {
-	bool isAutoMenu;
 	IChangeableForward *forward;
 	CookieMenu autoMenuType;
+	bool isAutoMenu;
 };
 
 class ClientMenuHandler : public IMenuHandler
@@ -96,8 +97,8 @@ struct AutoMenuData
 {
 	ItemHandler *handler;
 	Cookie *pCookie;
-	CookieMenu type;
 	cell_t datavalue;
+	CookieMenu type;
 };
 
 #endif // _INCLUDE_SOURCEMOD_CLIENTPREFS_MENUS_H_

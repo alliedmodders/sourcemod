@@ -93,6 +93,10 @@ public:
 	{
 		return m_database;
 	}
+	
+public:
+	querytype PullQueryType();
+	int PullQuerySerial();
 
 private:
 	IDatabase *m_database;

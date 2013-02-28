@@ -99,7 +99,7 @@ unsigned int ClientMenuHandler::OnMenuDisplayItem(IBaseMenu *menu,
 	if (data->handler->forward != NULL)
 	{
 		char buffer[100];
-		UTIL_Format(buffer, sizeof(buffer), "%s", dr.display);
+		g_pSM->Format(buffer, sizeof(buffer), "%s", dr.display);
 
 		data->handler->forward->PushCell(client);
 		data->handler->forward->PushCell(CookieMenuAction_DisplayOption);
@@ -118,53 +118,15 @@ unsigned int ClientMenuHandler::OnMenuDisplayItem(IBaseMenu *menu,
 
 void AutoMenuHandler::OnMenuSelect(SourceMod::IBaseMenu *menu, int client, unsigned int item)
 {
+	static const char settings[CookieMenu_Elements][2][4] = { {"yes", "no"}, {"1", "0"}, {"on", "off"}, {"1", "0"} };
 	ItemDrawInfo draw;
 
 	const char *info = menu->GetItemInfo(item, &draw);
 
 	AutoMenuData *data = (AutoMenuData *)strtoul(info, NULL, 16);
 
-	switch (data->type)
-	{
-	case CookieMenu_YesNo:
-		{
-			if (item == 0)
-			{
-				g_CookieManager.SetCookieValue(data->pCookie, client, "yes");
-			}
-			else
-			{
-				g_CookieManager.SetCookieValue(data->pCookie, client, "no");
-			}
-			break;
-		}
-	case CookieMenu_YesNo_Int:
-	case CookieMenu_OnOff_Int:
-		{
-			if (item == 0)
-			{
-				g_CookieManager.SetCookieValue(data->pCookie, client, "1");
-			}
-			else
-			{
-				g_CookieManager.SetCookieValue(data->pCookie, client, "0");
-			}
-			break;
-		}
-	case CookieMenu_OnOff:
-		{
-			if (item == 0)
-			{
-				g_CookieManager.SetCookieValue(data->pCookie, client, "on");
-			}
-			else
-			{
-				g_CookieManager.SetCookieValue(data->pCookie, client, "off");
-			}
-			break;
-		}
-	}
-
+	g_CookieManager.SetCookieValue(data->pCookie, client, settings[data->type][item]);
+	
 	char message[255];
 	char *value;
 	g_CookieManager.GetCookieValue(data->pCookie, client, &value);

@@ -54,11 +54,10 @@ struct CookieData
 {
 	CookieData(const char *value)
 	{
-		strncpy(this->value, value, MAX_VALUE_LENGTH);
-		this->value[MAX_VALUE_LENGTH-1] = '\0';
+		UTIL_strncpy(this->value, value, MAX_VALUE_LENGTH);
 	}
 
-	char value[MAX_VALUE_LENGTH];
+	char value[MAX_VALUE_LENGTH+1];
 	bool changed;
 	time_t timestamp;
 	Cookie *parent;
@@ -68,10 +67,8 @@ struct Cookie
 {
 	Cookie(const char *name, const char *description, CookieAccess access)
 	{
-		strncpy(this->name, name, MAX_NAME_LENGTH);
-		this->name[MAX_NAME_LENGTH-1] = '\0';
-		strncpy(this->description, description, MAX_DESC_LENGTH);
-		this->description[MAX_DESC_LENGTH-1] = '\0';
+		UTIL_strncpy(this->name, name, MAX_NAME_LENGTH);
+		UTIL_strncpy(this->description, description, MAX_DESC_LENGTH);
 
 		this->access = access;
 
@@ -97,8 +94,8 @@ struct Cookie
 		}
 	}
 
-	char name[MAX_NAME_LENGTH];
-	char description[MAX_DESC_LENGTH];
+	char name[MAX_NAME_LENGTH+1];
+	char description[MAX_DESC_LENGTH+1];
 	int dbid;
 	CookieData *data[MAXCLIENTS+1];
 	CookieAccess access;
@@ -133,6 +130,8 @@ public:
 	bool AreClientCookiesCached(int client);
 
 	void OnPluginDestroyed(IPlugin *plugin);
+	
+	bool AreClientCookiesPening(int client);
 
 public:
 	IForward *cookieDataLoadedForward;
@@ -145,6 +144,7 @@ private:
 
 	bool connected[MAXCLIENTS+1];
 	bool statsLoaded[MAXCLIENTS+1];
+	bool statsPending[MAXCLIENTS+1];
 };
 
 extern CookieManager g_CookieManager;
