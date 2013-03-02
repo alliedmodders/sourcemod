@@ -948,6 +948,7 @@ int SDKHooks::Hook_GetMaxHealth()
 			continue;
 
 		callback = g_HookList[i].callback;
+		callback->PushCell(entity);
 		callback->PushCellByRef(&new_max);
 		callback->Execute(&res);
 	}
