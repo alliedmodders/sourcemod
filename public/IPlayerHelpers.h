@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	15
+#define SMINTERFACE_PLAYERMANAGER_VERSION	16
 
 struct edict_t;
 class IPlayerInfo;
@@ -76,10 +76,11 @@ namespace SourceMod
 		/**
 		 * @brief Returns the player's authentication string.
 		 *
+		 * @param		validated	Check backend validation status.
 		 * @return		String containing the player's auth string.
 		 *				May be NULL if unavailable.
 		 */
-		virtual const char *GetAuthString() =0;
+		virtual const char *GetAuthString(bool validated = true) =0;
 
 		/**
 		 * @brief Returns the player's edict_t structure.

@@ -261,10 +261,13 @@ native bool:GetClientIP(client, String:ip[], maxlen, bool:remport=true);
  * @param client		Player index.
  * @param auth			Buffer to store the client's auth string.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
+ * @param validate		Check backend validation status.
+ * 				DO NOT PASS FALSE UNLESS YOU UNDERSTAND THE CONSEQUENCES,
+ *			        You WILL KNOW if you need to use this, MOST WILL NOT.
  * @return				True on success, false otherwise.
  * @error				If the client is not connected or the index is invalid.
  */
-native bool:GetClientAuthString(client, String:auth[], maxlen);
+native bool:GetClientAuthString(client, String:auth[], maxlen, bool:validate=true);
 
 /**
  * Retrieves a client's user id, which is an index incremented for every client

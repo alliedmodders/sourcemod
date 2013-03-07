@@ -534,8 +534,8 @@ public ParamCheck(client)
 						}
 						case SteamId:
 						{
-							GetClientAuthString(i, infoBuffer, sizeof(infoBuffer));
-							AddMenuItem(itemMenu, infoBuffer, nameBuffer);							
+							if (GetClientAuthString(i, infoBuffer, sizeof(infoBuffer)))
+								AddMenuItem(itemMenu, infoBuffer, nameBuffer);
 						}	
 						case IpAddress:
 						{

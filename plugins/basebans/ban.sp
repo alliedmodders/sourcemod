@@ -49,8 +49,7 @@ PrepareBan(client, target, time, const String:reason[])
 		return;
 	}
 
-	decl String:authid[64], String:name[32];
-	GetClientAuthString(target, authid, sizeof(authid));
+	new String:name[32];
 	GetClientName(target, name, sizeof(name));
 
 	if (!time)

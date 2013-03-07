@@ -116,7 +116,7 @@ PlayerManager::PlayerManager()
 	m_SourceTVUserId = -1;
 	m_ReplayUserId = -1;
 
-	m_bUseSteamAdminAuth = true; // use steam auth by default
+	m_bAuthstringValidation = true; // use steam auth by default
 
 	m_UserIdLookUp = new int[USHRT_MAX+1];
 	memset(m_UserIdLookUp, 0, sizeof(int) * (USHRT_MAX+1));
@@ -234,9 +234,9 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 	} else if (strcmp( key, "SteamAuthstringValidation" ) == 0) {
 		if (strcasecmp(value, "yes") == 0)
 		{
-			m_bUseSteamAdminAuth = true;
+			m_bAuthstringValidation = true;
 		} else if ( strcasecmp(value, "no") == 0) {
-			m_bUseSteamAdminAuth = false;
+			m_bAuthstringValidation = false;
 		} else {
 			UTIL_Format(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
 			return ConfigResult_Reject;
@@ -367,23 +367,18 @@ void PlayerManager::RunAuthChecks()
 	{
 		pPlayer = &m_Players[m_AuthQueue[i]];
 		authstr = engine->GetPlayerNetworkIDString(pPlayer->m_pEdict);
+		pPlayer->SetAuthString(authstr);
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-		// we can only easily check if the client is fully authed if we're on a recent engine
-		if (m_bUseSteamAdminAuth && !g_HL2.IsLANServer())
+		if (!pPlayer->IsAuthStringValidated())
 		{
-			if (!pPlayer->IsAuthedBySteam())
-			{
-				continue; // we're using steam auth, and steam doesn't know about this player yet so we can't do anything about them for now
-			}
+			continue; // we're using steam auth, and steam doesn't know about this player yet so we can't do anything about them for now
 		}
-#endif
 
 		if (authstr && authstr[0] != '\0'
 			&& (strcmp(authstr, "STEAM_ID_PENDING") != 0))
 		{
 			/* Set authorization */
-			pPlayer->Authorize(authstr);
+			pPlayer->Authorize();
 
 			/* Mark as removed from queue */
 			unsigned int client = m_AuthQueue[i];
@@ -558,7 +553,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		/* Run manual connection routines */
 		char error[255];
 		const char *authid = engine->GetPlayerNetworkIDString(pEntity);
-		pPlayer->Authorize(authid);
+		pPlayer->SetAuthString(authid);
+		pPlayer->Authorize();
 		pPlayer->m_bFakeClient = true;
 
 		/*
@@ -1272,11 +1268,12 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				{
 					continue;
 				}
-				if (!pTarget->IsConnected() || !pTarget->IsAuthorized())
+				if (!pTarget->IsConnected())
 				{
 					continue;
 				}
-				if (strcmp(pTarget->GetAuthString(), new_pattern) == 0)
+				const char *authstr = pTarget->GetAuthString(false); // We want to make it easy for people to be kicked/banned, so don't require validation for command targets.
+				if (authstr && strcmp(authstr, new_pattern) == 0)
 				{
 					if ((info->reason = FilterCommandTarget(pAdmin, pTarget, info->flags))
 						== COMMAND_TARGET_VALID)
@@ -1634,15 +1631,20 @@ void CPlayer::Connect()
 	}
 }
 
-void CPlayer::Authorize(const char *steamid)
+void CPlayer::SetAuthString(const char *steamid)
 {
 	if (m_IsAuthorized)
 	{
 		return;
 	}
 
-	m_IsAuthorized = true;
 	m_AuthID.assign(steamid);
+}
+
+// Ensure a valid AuthString is set before calling.
+void CPlayer::Authorize()
+{
+	m_IsAuthorized = true;
 }
 
 void CPlayer::Disconnect()
@@ -1685,8 +1687,13 @@ const char *CPlayer::GetIPAddress()
 	return m_Ip.c_str();
 }
 
-const char *CPlayer::GetAuthString()
+const char *CPlayer::GetAuthString(bool validated)
 {
+	if (validated && !IsAuthStringValidated())
+	{
+		return NULL;
+	}
+
 	return m_AuthID.c_str();
 }
 
@@ -1715,12 +1722,17 @@ bool CPlayer::IsAuthorized()
 	return m_IsAuthorized;
 }
 
+bool CPlayer::IsAuthStringValidated()
+{     
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-bool CPlayer::IsAuthedBySteam()
-{
-	return engine->IsClientFullyAuthenticated( m_pEdict );
-}
+	if (g_Players.m_bAuthstringValidation && !g_HL2.IsLANServer())
+	{
+		return engine->IsClientFullyAuthenticated(m_pEdict);
+	}
 #endif
+
+	return true;
+}
 
 IPlayerInfo *CPlayer::GetPlayerInfo()
 {

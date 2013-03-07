@@ -69,15 +69,12 @@ public:
 public:
 	const char *GetName();
 	const char *GetIPAddress();
-	const char *GetAuthString();
+	const char *GetAuthString(bool validated = true);
 	edict_t *GetEdict();
 	bool IsInGame();
 	bool WasCountedAsInGame();
 	bool IsConnected();
 	bool IsAuthorized();
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-	bool IsAuthedBySteam();
-#endif
 	bool IsFakeClient();
 	bool IsSourceTV() const;
 	bool IsReplay() const;
@@ -102,9 +99,11 @@ private:
 	void Disconnect();
 	void SetName(const char *name);
 	void DumpAdmin(bool deleting);
-	void Authorize(const char *auth);
+	void SetAuthString(const char *auth);
+	void Authorize();
 	void Authorize_Post();
 	void DoPostConnectAuthorization();
+	bool IsAuthStringValidated();
 private:
 	bool m_IsConnected;
 	bool m_IsInGame;
@@ -220,7 +219,7 @@ private:
 	unsigned int *m_AuthQueue;
 	String m_PassInfoVar;
 	bool m_QueryLang;
-	bool m_bUseSteamAdminAuth; // are we validating admins with steam before authorizing?
+	bool m_bAuthstringValidation; // are we validating admins with steam before authorizing?
 	bool m_bIsListenServer;
 	int m_ListenClient;
 	bool m_bIsSourceTVActive;
