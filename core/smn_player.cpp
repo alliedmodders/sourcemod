@@ -156,12 +156,20 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Client %d is not connected", index);
 	}
 
-	if (!pPlayer->IsAuthorized())
+	bool validate = true;
+	if (params[0] > 3)
+	{
+		validate = !!params[4];
+	}
+
+	const char *authstr = pPlayer->GetAuthString(validate);
+
+	if (!authstr || authstr[0] == '\0')
 	{
 		return 0;
 	}
 
-	pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), pPlayer->GetAuthString());
+	pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), authstr);
 
 	return 1;
 }

@@ -37,7 +37,6 @@ DisplayVoteBanMenu(client, target)
 	g_voteClient[VOTE_USERID] = GetClientUserId(target);
 
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
-	GetClientAuthString(target, g_voteInfo[VOTE_AUTHID], sizeof(g_voteInfo[]));
 	GetClientIP(target, g_voteInfo[VOTE_IP], sizeof(g_voteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a ban vote against \"%L\"", client, target);
