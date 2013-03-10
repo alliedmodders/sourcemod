@@ -1383,7 +1383,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 			if ((info->flags & COMMAND_FILTER_NO_BOTS) == COMMAND_FILTER_NO_BOTS)
 			{
 				info->num_targets = 0;
-				info->reason = COMMAND_FILTER_NO_BOTS;
+				info->reason = COMMAND_TARGET_NOT_HUMAN;
 				return;
 			}
 			strncopy(info->target_name, "all bots", info->target_name_maxlength);
