@@ -10,29 +10,41 @@ class SM:
 		#Build SDK info
 		self.possibleSdks = { }
 		self.possibleSdks['ep1'] =   {'sdk': 'HL2SDK',          'ext': '1.ep1',   'def': '1',
-		                         'name': 'EPISODEONE',     'platform': ['windows', 'linux']}
+		                         'name': 'EPISODEONE',     'platform': ['windows', 'linux'],
+		                         'dir': 'hl2sdk'}
 		self.possibleSdks['ep2'] =   {'sdk': 'HL2SDKOB',        'ext': '2.ep2',   'def': '3',
-		                         'name': 'ORANGEBOX',      'platform': ['windows', 'linux']}
+		                         'name': 'ORANGEBOX',      'platform': ['windows', 'linux'],
+		                         'dir': 'hl2sdk-ob'}
 		self.possibleSdks['css'] =  {'sdk': 'HL2SDKCSS',   'ext': '2.css',  'def': '6',
-		                         'name': 'CSS', 'platform': ['windows', 'linux', 'darwin']}
+		                         'name': 'CSS',            'platform': ['windows', 'linux', 'darwin'],
+		                         'dir': 'hl2sdk-css'}
 		self.possibleSdks['ep2v'] =  {'sdk': 'HL2SDKOBVALVE',   'ext': '2.ep2v',  'def': '7',
-		                         'name': 'ORANGEBOXVALVE', 'platform': ['windows', 'linux', 'darwin']}
+		                         'name': 'ORANGEBOXVALVE', 'platform': ['windows', 'linux', 'darwin'],
+		                        'dir': 'hl2sdk-ob-valve'}
 		self.possibleSdks['l4d'] =   {'sdk': 'HL2SDKL4D',       'ext': '2.l4d',   'def': '8',
-		                         'name': 'LEFT4DEAD',      'platform': ['windows', 'linux', 'darwin']}
+		                         'name': 'LEFT4DEAD',      'platform': ['windows', 'linux', 'darwin'],
+		                         'dir': 'hl2sdk-l4d'}
 		self.possibleSdks['l4d2'] =  {'sdk': 'HL2SDKL4D2',      'ext': '2.l4d2',  'def': '9',
-		                         'name': 'LEFT4DEAD2',     'platform': ['windows', 'linux', 'darwin']}
+		                         'name': 'LEFT4DEAD2',     'platform': ['windows', 'linux', 'darwin'],
+		                         'dir': 'hl2sdk-l4d2'}
 		self.possibleSdks['darkm'] = {'sdk': 'HL2SDK-DARKM',    'ext': '2.darkm', 'def': '2',
-		                         'name': 'DARKMESSIAH',    'platform': ['windows']}
+		                         'name': 'DARKMESSIAH',    'platform': ['windows'],
+		                          'dir': 'hl2sdk-darkm'}
 		self.possibleSdks['swarm'] = {'sdk': 'HL2SDK-SWARM',    'ext': '2.swarm', 'def': '10',
-		                         'name': 'ALIENSWARM',     'platform': ['windows']}
+		                         'name': 'ALIENSWARM',     'platform': ['windows'],
+		                         'dir': 'hl2sdk-swarm'}
 		self.possibleSdks['bgt'] =   {'sdk': 'HL2SDK-BGT',      'ext': '2.bgt', 'def': '4',
-		                         'name': 'BLOODYGOODTIME', 'platform': ['windows']}
+		                         'name': 'BLOODYGOODTIME', 'platform': ['windows'],
+		                         'dir': 'hl2sdk-bgt'}
 		self.possibleSdks['eye'] =   {'sdk': 'HL2SDK-EYE',      'ext': '2.eye', 'def': '5',
-		                         'name': 'EYE', 'platform': ['windows']}
+		                         'name': 'EYE',             'platform': ['windows'],
+		                         'dir': 'hl2sdk-eye'}
 		self.possibleSdks['csgo'] =  {'sdk': 'HL2SDKCSGO',     'ext': '2.csgo',  'def': '12',
-		                         'name': 'CSGO',           'platform': ['windows', 'linux', 'darwin']}
+		                         'name': 'CSGO',           'platform': ['windows', 'linux', 'darwin'],
+		                         'dir': 'hl2sdk-csgo'}
 		# self.possibleSdks['portal2'] =  {'sdk': 'HL2SDK-PORTAL2',     'ext': '2.portal2',  'def': '11',
-		#                          'name': 'PORTAL2',           'platform': ['windows']}
+		#                        'name': 'PORTAL2',           'platform': ['windows'],
+		#                        'dir': 'hl2sdk-portal2'}
 		
 		self.sdkInfo = { }
 
@@ -40,59 +52,38 @@ class SM:
 			#Detect compilers
 			self.compiler.DetectAll(AMBuild)
 
-			#Detect variables
-			envvars = { 'MMSOURCE19':    'mmsource-1.9',
-									'HL2SDKCSS':     'hl2sdk-css',
-									'HL2SDKOBVALVE': 'hl2sdk-ob-valve',
-									'HL2SDKL4D':     'hl2sdk-l4d',
-									'HL2SDKL4D2':    'hl2sdk-l4d2',
-									'HL2SDKCSGO':    'hl2sdk-csgo',
-									'MYSQL5':        'mysql-5.0'
-			}
+			#Required paths
+			envvars = { 'MMSOURCE19': 'mmsource-1.9', 'MYSQL5': 'mysql-5.0' }
+			
+			#Look for Metamod:Source and MySQL directories
+			for env in envvars:
+				path = self.ResolveEnvPath(env, envvars[env])
+				if path == None:
+					raise Exception('Could not find a valid path for {0}'.format(env))
+				AMBuild.cache.CacheVariable(env, path)
+			
+			#Look for SDK directories
+			for sdk in self.possibleSdks:
+				#Get list of SDKs to build against or 'all' or 'present'
+				sdkList = AMBuild.options.sdks.split(',')
+				#Build against all supported SDKs?
+				useAll = sdkList[0] == 'all'
+				#Build against supported SDKs that exist?
+				usePresent = sdkList[0] == 'present'
 
-			if AMBuild.target['platform'] != 'darwin':
-				envvars['HL2SDK'] = 'hl2sdk'
-				envvars['HL2SDKOB'] = 'hl2sdk-ob'
-
-			#Dark Messiah is Windows-only
-			if AMBuild.target['platform'] == 'windows':
-				envvars['HL2SDK-DARKM'] = 'hl2sdk-darkm'
-				envvars['HL2SDK-SWARM'] = 'hl2sdk-swarm'
-				envvars['HL2SDK-BGT']   = 'hl2sdk-bgt'
-				envvars['HL2SDK-EYE']   = 'hl2sdk-eye'
-
-			# Finds if a dict with `key` set to `value` is present on the dict of dicts `dictionary`
-			def findDictByKey(dictionary, key, value):
-				for index in dictionary:
-					elem = dictionary[index]
-					if elem[key] == value:
-						return (elem, index)
-				return None
-
-			for i in envvars:
-				if i in os.environ:
-					path = os.environ[i]
-					if not os.path.isdir(path):
-						raise Exception('Path for {0} was not found: {1}'.format(i, path))
-					elif i.startswith('HL2SDK'):
-						(info, sdk) = findDictByKey(self.possibleSdks, 'sdk', i)
+				info = self.possibleSdks[sdk]
+				if AMBuild.target['platform'] in info['platform']:
+					env = info['sdk']
+					dir = info['dir']
+					sdkPath = self.ResolveEnvPath(env, dir)
+					if sdkPath == None:
+						if useAll or sdk in sdkList:
+							raise Exception('Could not find a valid path for {0}'.format(env))
+						else:
+							continue
+					if useAll or usePresent or sdk in sdkList:
 						self.sdkInfo[sdk] = info
-				else:
-					head = os.getcwd()
-					oldhead = None
-					while head != None and head != oldhead:
-						path = os.path.join(head, envvars[i])
-						if os.path.isdir(path):
-							break
-						oldhead = head
-						head, tail = os.path.split(head)
-					if i.startswith('HL2SDK'):
-						if head != None and head != oldhead:
-							(info, sdk) = findDictByKey(self.possibleSdks, 'sdk', i)
-							self.sdkInfo[sdk] = info
-					elif head == None or head == oldhead:
-						raise Exception('Could not find a valid path for {0}'.format(i))
-				AMBuild.cache.CacheVariable(i, path)
+						AMBuild.cache.CacheVariable(env, sdkPath)
 
 			if len(self.sdkInfo) < 1:
 				raise Exception('At least one SDK must be available.')
@@ -402,6 +393,22 @@ class SM:
 				compiler['POSTLINKFLAGS'][0:0] = ['libvstdlib.dylib']
 
 		return compiler
+		
+	def ResolveEnvPath(self, env, defaultDir):
+		if env in os.environ:
+			path = os.environ[env]
+			if os.path.isdir(path):
+				return path
+		else:
+			head = os.getcwd()
+			oldhead = None
+			while head != None and head != oldhead:
+				path = os.path.join(head, defaultDir)
+				if os.path.isdir(path):
+					return path
+				oldhead = head
+				head, tail = os.path.split(head)
+		return None
 
 sm = SM()
 globals = {
