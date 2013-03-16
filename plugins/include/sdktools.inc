@@ -194,6 +194,13 @@ native Handle:EndPrepSDKCall();
  */
 native any:SDKCall(Handle:call, any:...);
 
+/*
+ * Returns the entity index of the player resource/manager entity.
+ *
+ * @return				Index of resource entity or -1 if not found.
+ */
+native GetPlayerResourceEntity();
+
 #include <sdktools_stocks>
 
 /**

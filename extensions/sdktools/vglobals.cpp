@@ -30,9 +30,11 @@
  */
 
 #include "extension.h"
+#include "vhelpers.h"
 
 void **g_pGameRules = NULL;
 void *g_EntList = NULL;
+CBaseHandle g_ResourceEntity;
 
 
 void InitializeValveGlobals()
@@ -182,6 +184,54 @@ void GetIServer()
 	iserver = reinterpret_cast<IServer *>(addr);
 }
 #endif
+
+void GetResourceEntity()
+{
+	g_ResourceEntity.Term();
+	
+	const char *classname = g_pGameConf->GetKeyValue("ResourceEntityClassname");
+	if (classname != NULL)
+	{
+		for (void *pEntity = servertools->FirstEntity(); pEntity; pEntity = servertools->NextEntity(pEntity))
+		{
+			if (!strcmp(gamehelpers->GetEntityClassname((CBaseEntity *)pEntity), classname))
+			{
+				g_ResourceEntity = ((IHandleEntity *)pEntity)->GetRefEHandle();
+				break;
+			}
+		}
+	}
+	else
+	{
+		int edictCount = gpGlobals->maxEntities;
+
+		for (int i=0; i<edictCount; i++)
+		{
+			edict_t *pEdict = PEntityOfEntIndex(i);
+			if (!pEdict || pEdict->IsFree())
+			{
+				continue;
+			}
+			if (!pEdict->GetNetworkable())
+			{
+				continue;
+			}
+
+			IHandleEntity *pHandleEnt = pEdict->GetNetworkable()->GetEntityHandle();
+			if (!pHandleEnt)
+			{
+				continue;
+			}
+
+			ServerClass *pClass = pEdict->GetNetworkable()->GetServerClass();
+			if (FindNestedDataTable(pClass->m_pTable, "DT_PlayerResource"))
+			{
+				g_ResourceEntity = pHandleEnt->GetRefEHandle();
+				break;
+			}
+		}
+	}
+}
 
 const char *GetDTTypeName(int type)
 {

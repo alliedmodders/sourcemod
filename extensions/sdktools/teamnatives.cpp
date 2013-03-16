@@ -30,6 +30,7 @@
  */
 
 #include "extension.h"
+#include "vhelpers.h"
 #include <sh_vector.h>
 
 struct TeamInfo
@@ -42,35 +43,12 @@ const char *m_iScore;
 
 SourceHook::CVector<TeamInfo> g_Teams;
 
-bool FindTeamEntities(SendTable *pTable, const char *name)
-{
-	if (strcmp(pTable->GetName(), name) == 0)
-	{
-		return true;
-	}
-
-	int props = pTable->GetNumProps();
-	SendProp *prop;
-
-	for (int i=0; i<props; i++)
-	{
-		prop = pTable->GetProp(i);
-		if (prop->GetDataTable())
-		{
-			if (FindTeamEntities(prop->GetDataTable(), name))
-			{
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-void SDKTools::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
+void InitTeamNatives()
 {
 	g_Teams.clear();
 	g_Teams.resize(1);
+
+	int edictCount = gpGlobals->maxEntities;
 
 	for (int i=0; i<edictCount; i++)
 	{
@@ -85,7 +63,7 @@ void SDKTools::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax
 		}
 
 		ServerClass *pClass = pEdict->GetNetworkable()->GetServerClass();
-		if (FindTeamEntities(pClass->m_pTable, "DT_Team"))
+		if (FindNestedDataTable(pClass->m_pTable, "DT_Team"))
 		{
 			SendProp *pTeamNumProp = g_pGameHelpers->FindInSendTable(pClass->GetName(), "m_iTeamNum");
 

@@ -279,6 +279,31 @@ void ShutdownHelpers()
 	s_EyeAngles.Shutdown();
 }
 
+bool FindNestedDataTable(SendTable *pTable, const char *name)
+{
+	if (strcmp(pTable->GetName(), name) == 0)
+	{
+		return true;
+	}
+
+	int props = pTable->GetNumProps();
+	SendProp *prop;
+
+	for (int i=0; i<props; i++)
+	{
+		prop = pTable->GetProp(i);
+		if (prop->GetDataTable())
+		{
+			if (FindNestedDataTable(prop->GetDataTable(), name))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 void UTIL_DrawSendTable_XML(FILE *fp, SendTable *pTable, int space_count)
 {
 	char spaces[255];

@@ -29,19 +29,11 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SDKTOOLS_VGLOBALS_H_
-#define _INCLUDE_SDKTOOLS_VGLOBALS_H_
+#ifndef _INCLUDE_SOURCEMOD_TEAMNATIVES_H_
+#define _INCLUDE_SOURCEMOD_TEAMNATIVES_H_
 
-extern void **g_pGameRules;
-extern void *g_EntList;
+void InitTeamNatives();
 
-extern CBaseHandle g_ResourceEntity;
+extern const char *tools_GetTeamName(int team);
 
-void InitializeValveGlobals();
-void GetIServer();
-
-void GetResourceEntity();
-
-const char *GetDTTypeName(int type);
-
-#endif // _INCLUDE_SDKTOOLS_VGLOBALS_H_
+#endif //_INCLUDE_SOURCEMOD_TEAMNATIVES_H_
