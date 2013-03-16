@@ -130,6 +130,15 @@ enum TFCond
 	TFCond_UberchargedCanteen,
 	TFCond_HalloweenBombHead,
 	TFCond_HalloweenThriller,
+	TFCond_RadiusHealOnDamage,
+	TFCond_CritOnDamage,
+	TFCond_UberchargedOnTakeDamage,
+	TFCond_UberBulletResist,
+	TFCond_UberBlastResist,
+	TFCond_UberFireResist,
+	TFCond_SmallBulletResist,
+	TFCond_SmallBlastResist,
+	TFCond_SmallFireResist,
 };
 
 enum TFHoliday
