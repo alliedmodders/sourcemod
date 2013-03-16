@@ -236,7 +236,7 @@ cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
 
-	// CTFPlayerShared::AddCond(int, float)
+	// CTFPlayerShared::AddCond(int, float, CBaseEntity *)
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("AddCondition", 
@@ -259,6 +259,13 @@ cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
+	CBaseEntity *pInflictor = NULL;
+	// Compatibility fix for the new inflictor parameter; TF2 seems to only use player entities in it
+	if (params[0] >= 4 && params[4] > 0 && !(pInflictor = UTIL_GetCBaseEntity(params[4], true)))
+	{
+		return pContext->ThrowNativeError("Inflictor index %d is not valid", params[4]);
+	}
+
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
 	unsigned char vstk[sizeof(void *) + sizeof(int) + sizeof(float) + sizeof(CBaseEntity *)];
@@ -270,7 +277,7 @@ cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
 	vptr += sizeof(int);
 	*(float *)vptr = *(float *)&params[3];
 	vptr += sizeof(float);
-	*(CBaseEntity **)vptr = NULL;
+	*(CBaseEntity **)vptr = pInflictor;
 
 	pWrapper->Execute(vstk, NULL);
 

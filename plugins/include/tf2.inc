@@ -202,10 +202,11 @@ native TF2_RegeneratePlayer(client);
  * @param client		Player's index.
  * @param condition		Integer identifier of condition to apply.
  * @param duration		Duration of condition (does not apply to all conditions).
+ * @param inflictor		Condition inflictor's index (0 for no inflictor).
  * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
-native TF2_AddCondition(client, TFCond:condition, Float:duration);
+native TF2_AddCondition(client, TFCond:condition, Float:duration, inflictor=0);
 
 /**
  * Removes a condition from a player
