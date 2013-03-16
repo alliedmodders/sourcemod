@@ -2951,7 +2951,7 @@ void CompData::Abort()
 	{
 		engine->BaseFree(rebase);
 	}
-	delete [] thunks;
+	free(thunks);
 	delete [] jit_float_table;
 	delete this;
 }
