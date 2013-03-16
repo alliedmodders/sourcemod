@@ -139,6 +139,17 @@ public:
 		return true;
 	}
 
+	inline bool SetRepeatedInt32(const char *pszFieldName, int index, int32 value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE(INT32);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+		
+		msg->GetReflection()->SetRepeatedInt32(msg, field, index, value);
+		return true;
+	}
+
 	inline bool AddInt32(const char *pszFieldName, int32 value)
 	{
 		GETCHECK_FIELD();
@@ -177,6 +188,17 @@ public:
 		CHECK_REPEATED_ELEMENT(index);
 		
 		*out = msg->GetReflection()->GetRepeatedInt64(*msg, field, index);
+		return true;
+	}
+
+	inline bool SetRepeatedInt64(const char *pszFieldName, int index, int64 value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE(INT64);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+		
+		msg->GetReflection()->SetRepeatedInt64(msg, field, index, value);
 		return true;
 	}
 
@@ -221,6 +243,17 @@ public:
 		return true;
 	}
 
+	inline bool SetRepeatedUInt32(const char *pszFieldName, int index, uint32 value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE(UINT32);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+		
+		msg->GetReflection()->SetRepeatedUInt32(msg, field, index, value);
+		return true;
+	}
+
 	inline bool AddUInt32(const char *pszFieldName, uint32 value)
 	{
 		GETCHECK_FIELD();
@@ -259,6 +292,17 @@ public:
 		CHECK_REPEATED_ELEMENT(index);
 		
 		*out = msg->GetReflection()->GetRepeatedUInt64(*msg, field, index);
+		return true;
+	}
+
+	inline bool SetRepeatedUInt64(const char *pszFieldName, int index, uint64 value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE(UINT64);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+		
+		msg->GetReflection()->SetRepeatedUInt64(msg, field, index, value);
 		return true;
 	}
 
@@ -315,6 +359,21 @@ public:
 		return true;
 	}
 
+	inline bool SetRepeatedInt32OrUnsigned(const char *pszFieldName, int index, int32 value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE2(INT32, UINT32);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+		
+		if (fieldType == protobuf::FieldDescriptor::CPPTYPE_UINT32)
+			msg->GetReflection()->SetRepeatedUInt32(msg, field, index, (uint32)value);
+		else
+			msg->GetReflection()->SetRepeatedInt32(msg, field, index, value);
+
+		return true;
+	}
+
 	inline bool AddInt32OrUnsigned(const char *pszFieldName, int32 value)
 	{
 		GETCHECK_FIELD();
@@ -360,6 +419,17 @@ public:
 		return true;
 	}
 
+	inline bool SetRepeatedBool(const char *pszFieldName, int index, bool value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE(BOOL);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+		
+		msg->GetReflection()->SetRepeatedBool(msg, field, index, value);
+		return true;
+	}
+
 	inline bool AddBool(const char *pszFieldName, bool value)
 	{
 		GETCHECK_FIELD();
@@ -401,6 +471,17 @@ public:
 		return true;
 	}
 
+	inline bool SetRepeatedFloat(const char *pszFieldName, int index, float value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE(FLOAT);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+		
+		msg->GetReflection()->SetRepeatedFloat(msg, field, index, value);
+		return true;
+	}
+
 	inline bool AddFloat(const char *pszFieldName, float value)
 	{
 		GETCHECK_FIELD();
@@ -439,6 +520,17 @@ public:
 		CHECK_REPEATED_ELEMENT(index);
 		
 		*out = msg->GetReflection()->GetRepeatedDouble(*msg, field, index);
+		return true;
+	}
+
+	inline bool SetRepeatedDouble(const char *pszFieldName, int index, double value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE(DOUBLE);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+		
+		msg->GetReflection()->SetRepeatedDouble(msg, field, index, value);
 		return true;
 	}
 
@@ -495,6 +587,21 @@ public:
 		return true;
 	}
 
+	inline bool SetRepeatedFloatOrDouble(const char *pszFieldName, int index, float value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE2(FLOAT, DOUBLE);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+		
+		if (fieldType == protobuf::FieldDescriptor::CPPTYPE_DOUBLE)
+			msg->GetReflection()->SetRepeatedDouble(msg, field, index, (double)value);
+		else
+			msg->GetReflection()->SetRepeatedFloat(msg, field, index, value);
+
+		return true;
+	}
+
 	inline bool AddFloatOrDouble(const char *pszFieldName, float value)
 	{
 		GETCHECK_FIELD();
@@ -540,6 +647,18 @@ public:
 		
 		std::string scratch;
 		strncopy(out, msg->GetReflection()->GetRepeatedStringReference(*msg, field, index, &scratch).c_str(), size);
+
+		return true;
+	}
+
+	inline bool SetRepeatedString(const char *pszFieldName, int index, const char *value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE(STRING);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+		
+		msg->GetReflection()->SetRepeatedString(msg, field, index, value);
 
 		return true;
 	}
@@ -604,6 +723,22 @@ public:
 		return true;
 	}
 
+	inline bool SetRepeatedColor(const char *pszFieldName, int index, const Color &value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE(MESSAGE);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+
+		CMsgRGBA *msgRGBA = (CMsgRGBA *)msg->GetReflection()->MutableRepeatedMessage(msg, field, index);
+		msgRGBA->set_r(value.r());
+		msgRGBA->set_g(value.g());
+		msgRGBA->set_b(value.b());
+		msgRGBA->set_a(value.a());
+
+		return true;
+	}
+
 	inline bool AddColor(const char *pszFieldName, const Color &value)
 	{
 		GETCHECK_FIELD();
@@ -659,6 +794,20 @@ public:
 			msgVec2d.x(),
 			msgVec2d.y()
 			);
+
+		return true;
+	}
+
+	inline bool SetRepeatedVector2D(const char *pszFieldName, int index, Vector2D &vec)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE(MESSAGE);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+
+		CMsgVector2D *msgVec2d = (CMsgVector2D *)msg->GetReflection()->MutableRepeatedMessage(msg, field, index);
+		msgVec2d->set_x(vec.x);
+		msgVec2d->set_y(vec.y);
 
 		return true;
 	}
@@ -723,6 +872,21 @@ public:
 		return true;
 	}
 
+	inline bool SetRepeatedVector(const char *pszFieldName, int index, Vector &vec)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE(MESSAGE);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+
+		CMsgVector *msgVec = (CMsgVector *)msg->GetReflection()->MutableRepeatedMessage(msg, field, index);
+		msgVec->set_x(vec.x);
+		msgVec->set_y(vec.y);
+		msgVec->set_z(vec.z);
+
+		return true;
+	}
+
 	inline bool AddVector(const char *pszFieldName, Vector &vec)
 	{
 		GETCHECK_FIELD();
@@ -780,6 +944,21 @@ public:
 			msgAng.y(),
 			msgAng.z()
 			);
+
+		return true;
+	}
+
+	inline bool SetRepeatedQAngle(const char *pszFieldName, int index, QAngle &vec)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE(MESSAGE);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+
+		CMsgQAngle *msgAng = (CMsgQAngle *)msg->GetReflection()->MutableRepeatedMessage(msg, field, index);
+		msgAng->set_x(vec.x);
+		msgAng->set_y(vec.y);
+		msgAng->set_z(vec.z);
 
 		return true;
 	}
