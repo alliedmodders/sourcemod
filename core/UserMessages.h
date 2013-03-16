@@ -130,9 +130,9 @@ private:
 	List<ListenerInfo *> m_msgHooks[255];
 	List<ListenerInfo *> m_msgIntercepts[255];
 	CStack<ListenerInfo *> m_FreeListeners;
-	unsigned char m_pBase[2500];
 	IRecipientFilter *m_CurRecFilter;
 #ifndef USE_PROTOBUF_USERMESSAGES
+	unsigned char m_pBase[2500];
 	bf_write m_InterceptBuffer;
 	bf_write *m_OrigBuffer;
 	bf_read m_ReadBuffer;
