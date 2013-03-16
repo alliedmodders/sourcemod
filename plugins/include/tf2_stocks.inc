@@ -350,6 +350,7 @@ stock TF2_SetPlayerClass(client, TFClassType:class, bool:weapons=true, bool:pers
  * @return				Value or -1 on failure.
  * @error				Invalid client index, client not in game or failed to find resource entity.
  */
+#pragma deprecated Use GetPlayerResourceEntity and GetEntProp instead
 stock TF2_GetPlayerResourceData(client, TFResourceType:type)
 {
 	if (!IsClientConnected(client))
@@ -385,6 +386,7 @@ stock TF2_GetPlayerResourceData(client, TFResourceType:type)
  * @return				Value or -1 on failure.
  * @error				Invalid client index, client not in game or failed to find resource entity.
  */
+#pragma deprecated Use GetPlayerResourceEntity and SetEntProp instead
 stock bool:TF2_SetPlayerResourceData(client, TFResourceType:type, any:value)
 {
 	if (!IsClientConnected(client))

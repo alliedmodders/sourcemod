@@ -1208,6 +1208,16 @@ static cell_t SetClientInfo(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t GetPlayerResourceEntity(IPluginContext *pContext, const cell_t *params)
+{
+	if (gamehelpers->GetHandleEntity(g_ResourceEntity) != NULL)
+	{
+		return g_ResourceEntity.GetEntryIndex();
+	}
+
+	return -1;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishEntity",		ExtinguishEntity},
@@ -1235,5 +1245,6 @@ sp_nativeinfo_t g_Natives[] =
 	{"EquipPlayerWeapon",		WeaponEquip},
 	{"ActivateEntity",			ActivateEntity},
 	{"SetClientInfo",			SetClientInfo},
+	{"GetPlayerResourceEntity", GetPlayerResourceEntity},
 	{NULL,						NULL},
 };

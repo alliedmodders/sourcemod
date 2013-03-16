@@ -72,4 +72,6 @@ bool GetPlayerInfo(int client, player_info_t *info);
 
 void ShutdownHelpers();
 
+bool FindNestedDataTable(SendTable *pTable, const char *name);
+
 #endif //_INCLUDE_SDKTOOLS_VHELPERS_H_

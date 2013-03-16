@@ -135,8 +135,6 @@ extern ICallWrapper *g_pAcceptInput;
 extern SourceHook::CallClass<IVEngineServer> *enginePatch;
 extern SourceHook::CallClass<IEngineSound> *enginesoundPatch;
 
-extern const char *tools_GetTeamName(int team);
-
 #include <compat_wrappers.h>
 
 #define ENGINE_CALL(func)		SH_CALL(enginePatch, &IVEngineServer::func)

@@ -1325,6 +1325,7 @@
     <ClInclude Include="..\hooks.h" />
     <ClInclude Include="..\..\..\public\extensions\ISDKTools.h" />
     <ClInclude Include="..\output.h" />
+    <ClInclude Include="..\teamnatives.h" />
     <ClInclude Include="..\tempents.h" />
     <ClInclude Include="..\vcallbuilder.h" />
     <ClInclude Include="..\vdecoder.h" />

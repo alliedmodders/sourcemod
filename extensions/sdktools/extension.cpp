@@ -43,6 +43,7 @@
 #include "gamerulesnatives.h"
 #include <ISDKTools.h>
 #include "clientnatives.h"
+#include "teamnatives.h"
 /**
  * @file extension.cpp
  * @brief Implements SDK Tools extension code.
@@ -277,6 +278,12 @@ void SDKTools::SDK_OnAllLoaded()
 	s_SoundHooks.Initialize();
 	g_Hooks.Initialize();
 	InitializeValveGlobals();
+}
+
+void SDKTools::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
+{
+	InitTeamNatives();
+	GetResourceEntity();
 }
 
 bool SDKTools::QueryRunning(char *error, size_t maxlength)

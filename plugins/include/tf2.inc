@@ -278,6 +278,7 @@ native TF2_MakeBleed(client, attacker, Float:duration);
  *
  * @return				The current resource entity index.
  */
+#pragma deprecated Use GetPlayerResourceEntity instead
 native TF2_GetResourceEntity();
 
 /**
