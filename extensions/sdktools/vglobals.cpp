@@ -189,12 +189,13 @@ void GetResourceEntity()
 {
 	g_ResourceEntity.Term();
 	
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	const char *classname = g_pGameConf->GetKeyValue("ResourceEntityClassname");
 	if (classname != NULL)
 	{
-		for (void *pEntity = servertools->FirstEntity(); pEntity; pEntity = servertools->NextEntity(pEntity))
+		for (CBaseEntity *pEntity = (CBaseEntity *)servertools->FirstEntity(); pEntity; pEntity = (CBaseEntity *)servertools->NextEntity(pEntity))
 		{
-			if (!strcmp(gamehelpers->GetEntityClassname((CBaseEntity *)pEntity), classname))
+			if (!strcmp(gamehelpers->GetEntityClassname(pEntity), classname))
 			{
 				g_ResourceEntity = ((IHandleEntity *)pEntity)->GetRefEHandle();
 				break;
@@ -202,6 +203,7 @@ void GetResourceEntity()
 		}
 	}
 	else
+#endif
 	{
 		int edictCount = gpGlobals->maxEntities;
 
