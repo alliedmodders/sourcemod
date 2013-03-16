@@ -458,9 +458,20 @@ static cell_t smn_PbSetInt(IPluginContext *pCtx, const cell_t *params)
 	GET_MSG_FROM_HANDLE_OR_ERR();
 	GET_FIELD_NAME_OR_ERR();
 
-	if (!msg->SetInt32OrUnsigned(strField, params[3]))
+	int index = params[0] >= 4 ? params[4] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->SetInt32OrUnsigned(strField, params[3]))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->SetRepeatedInt32OrUnsigned(strField, index, params[3]))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	return 1;
@@ -471,9 +482,20 @@ static cell_t smn_PbSetFloat(IPluginContext *pCtx, const cell_t *params)
 	GET_MSG_FROM_HANDLE_OR_ERR();
 	GET_FIELD_NAME_OR_ERR();
 
-	if (!msg->SetFloatOrDouble(strField, sp_ctof(params[3])))
+	int index = params[0] >= 4 ? params[4] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->SetFloatOrDouble(strField, sp_ctof(params[3])))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->SetRepeatedFloatOrDouble(strField, index, sp_ctof(params[3])))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	return 1;
@@ -485,9 +507,20 @@ static cell_t smn_PbSetBool(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	bool value = (params[3] == 0 ? false : true);
-	if (!msg->SetBool(strField, value))
+	int index = params[0] >= 4 ? params[4] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->SetBool(strField, value))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->SetRepeatedBool(strField, index, value))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	return 1;
@@ -505,9 +538,20 @@ static cell_t smn_PbSetString(IPluginContext *pCtx, const cell_t *params)
 		return 0;
 	}
 
-	if (!msg->SetString(strField, strValue))
+	int index = params[0] >= 4 ? params[4] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->SetString(strField, strValue))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->SetRepeatedString(strField, index, strValue))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	return 1;
@@ -531,9 +575,20 @@ static cell_t smn_PbSetColor(IPluginContext *pCtx, const cell_t *params)
 		clrParams[2],
 		clrParams[3]);
 
-	if (!msg->SetColor(strField, clr))
+	int index = params[0] >= 4 ? params[4] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->SetColor(strField, clr))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->SetRepeatedColor(strField, index, clr))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	return 1;
@@ -556,9 +611,20 @@ static cell_t smn_PbSetAngle(IPluginContext *pCtx, const cell_t *params)
 		sp_ctof(angParams[1]),
 		sp_ctof(angParams[2]));
 
-	if (!msg->SetQAngle(strField, ang))
+	int index = params[0] >= 4 ? params[4] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->SetQAngle(strField, ang))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->SetRepeatedQAngle(strField, index, ang))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	return 1;
@@ -581,9 +647,20 @@ static cell_t smn_PbSetVector(IPluginContext *pCtx, const cell_t *params)
 		sp_ctof(vecParams[1]),
 		sp_ctof(vecParams[2]));
 
-	if (!msg->SetVector(strField, vec))
+	int index = params[0] >= 4 ? params[4] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->SetVector(strField, vec))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->SetRepeatedVector(strField, index, vec))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	return 1;
@@ -605,9 +682,20 @@ static cell_t smn_PbSetVector2D(IPluginContext *pCtx, const cell_t *params)
 		sp_ctof(vecParams[0]),
 		sp_ctof(vecParams[1]));
 
-	if (!msg->SetVector2D(strField, vec))
+	int index = params[0] >= 4 ? params[4] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->SetVector2D(strField, vec))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->SetRepeatedVector2D(strField, index, vec))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	return 1;

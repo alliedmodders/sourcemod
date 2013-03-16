@@ -249,10 +249,11 @@ native PbReadRepeatedVector2D(Handle:pb, const String:field[], index, Float:buff
  * @param pb			protobuf handle.
  * @param field			Field name.
  * @param value			Integer value to set.
+ * @param index			Index into repeated field.
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbSetInt(Handle:pb, const String:field[], value);
+native PbSetInt(Handle:pb, const String:field[], value, index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Sets a float or double on a protobuf message.
@@ -260,10 +261,11 @@ native PbSetInt(Handle:pb, const String:field[], value);
  * @param pb			protobuf handle.
  * @param field			Field name.
  * @param value			Float value to set.
+ * @param index			Index into repeated field.
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbSetFloat(Handle:pb, const String:field[], Float:value);
+native PbSetFloat(Handle:pb, const String:field[], Float:value, index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Sets a bool on a protobuf message.
@@ -271,10 +273,11 @@ native PbSetFloat(Handle:pb, const String:field[], Float:value);
  * @param pb			protobuf handle.
  * @param field			Field name.
  * @param value			Boolean value to set.
+ * @param index			Index into repeated field.
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbSetBool(Handle:pb, const String:field[], bool:value);
+native PbSetBool(Handle:pb, const String:field[], bool:value, index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Sets a string on a protobuf message.
@@ -282,10 +285,11 @@ native PbSetBool(Handle:pb, const String:field[], bool:value);
  * @param pb			protobuf handle.
  * @param field			Field name.
  * @param value			String value to set.
+ * @param index			Index into repeated field.
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbSetString(Handle:pb, const String:field[], const String:value[]);
+native PbSetString(Handle:pb, const String:field[], const String:value[], index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Sets an RGBA color on a protobuf message.
@@ -293,10 +297,11 @@ native PbSetString(Handle:pb, const String:field[], const String:value[]);
  * @param pb			protobuf handle.
  * @param field			Field name.
  * @param value			Color value to set.
+ * @param index			Index into repeated field.
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbSetColor(Handle:pb, const String:field[], const color[4]);
+native PbSetColor(Handle:pb, const String:field[], const color[4], index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Sets an XYZ angle on a protobuf message.
@@ -304,10 +309,11 @@ native PbSetColor(Handle:pb, const String:field[], const color[4]);
  * @param pb			protobuf handle.
  * @param field			Field name.
  * @param value			Angle value to set.
+ * @param index			Index into repeated field.
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbSetAngle(Handle:pb, const String:field[], const Float:angle[3]);
+native PbSetAngle(Handle:pb, const String:field[], const Float:angle[3], index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Sets an XYZ vector on a protobuf message.
@@ -315,10 +321,11 @@ native PbSetAngle(Handle:pb, const String:field[], const Float:angle[3]);
  * @param pb			protobuf handle.
  * @param field			Field name.
  * @param value			Vector value to set.
+ * @param index			Index into repeated field.
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbSetVector(Handle:pb, const String:field[], const Float:vec[3]);
+native PbSetVector(Handle:pb, const String:field[], const Float:vec[3], index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Sets an XY vector on a protobuf message.
@@ -326,10 +333,11 @@ native PbSetVector(Handle:pb, const String:field[], const Float:vec[3]);
  * @param pb			protobuf handle.
  * @param field			Field name.
  * @param value			Vector value to set.
+ * @param index			Index into repeated field.
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbSetVector2D(Handle:pb, const String:field[], const Float:vec[2]);
+native PbSetVector2D(Handle:pb, const String:field[], const Float:vec[2], index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Add an int32, uint32, sint32, fixed32, or sfixed32 to a protobuf message repeated field.
