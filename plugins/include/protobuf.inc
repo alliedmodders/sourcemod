@@ -35,35 +35,40 @@
 #endif
 #define _protobuf_included
 
+#define PB_FIELD_NOT_REPEATED -1
+
 /**
  * Reads an int32, uint32, sint32, fixed32, or sfixed32 from a protobuf message.
  *
  * @param pb			protobuf handle.
  * @param field			Field name.
+ * @param index			Index into repeated field.
  * @return				Integer value read.
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbReadInt(Handle:pb, const String:field[]);
+native PbReadInt(Handle:pb, const String:field[], index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Reads a float or downcasted double from a protobuf message.
  *
  * @param pb			protobuf handle.
  * @param field			Field name.
+ * @param index			Index into repeated field.
  * @return				Float value read.
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native Float:PbReadFloat(Handle:pb, const String:field[]);
+native Float:PbReadFloat(Handle:pb, const String:field[], index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Reads a bool from a protobuf message.
  *
  * @param pb			protobuf handle.
  * @param field			Field name.
+ * @param index			Index into repeated field.
  * @return				Boolean value read.
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native bool:PbReadBool(Handle:pb, const String:field[]);
+native bool:PbReadBool(Handle:pb, const String:field[], index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Reads a string from a protobuf message.
@@ -72,10 +77,11 @@ native bool:PbReadBool(Handle:pb, const String:field[]);
  * @param field			Field name.
  * @param buffer		Destination string buffer.
  * @param maxlength		Maximum length of output string buffer.
+ * @param index			Index into repeated field.
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbReadString(Handle:pb, const String:field[], String:buffer[], maxlength);
+native PbReadString(Handle:pb, const String:field[], String:buffer[], maxlength, index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Reads an RGBA color value from a protobuf message.
@@ -83,10 +89,11 @@ native PbReadString(Handle:pb, const String:field[], String:buffer[], maxlength)
  * @param pb			protobuf handle.
  * @param field			Field name.
  * @param buffer		Destination color buffer.
+ * @param index			Index into repeated field.
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbReadColor(Handle:pb, const String:field[], buffer[4]);
+native PbReadColor(Handle:pb, const String:field[], buffer[4], index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Reads an XYZ angle value from a protobuf message.
@@ -94,10 +101,11 @@ native PbReadColor(Handle:pb, const String:field[], buffer[4]);
  * @param pb			protobuf handle.
  * @param field			Field name.
  * @param buffer		Destination angle buffer.
+ * @param index			Index into repeated field.
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbReadAngle(Handle:pb, const String:field[], Float:buffer[3]);
+native PbReadAngle(Handle:pb, const String:field[], Float:buffer[3], index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Reads an XYZ vector value from a protobuf message.
@@ -105,10 +113,11 @@ native PbReadAngle(Handle:pb, const String:field[], Float:buffer[3]);
  * @param pb			protobuf handle.
  * @param field			Field name.
  * @param buffer		Destination vector buffer.
+ * @param index			Index into repeated field.
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbReadVector(Handle:pb, const String:field[], Float:buffer[3]);
+native PbReadVector(Handle:pb, const String:field[], Float:buffer[3], index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Reads an XY vector value from a protobuf message.
@@ -116,10 +125,11 @@ native PbReadVector(Handle:pb, const String:field[], Float:buffer[3]);
  * @param pb			protobuf handle.
  * @param field			Field name.
  * @param buffer		Destination vector buffer.
+ * @param index			Index into repeated field.
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
-native PbReadVector2D(Handle:pb, const String:field[], Float:buffer[2]);
+native PbReadVector2D(Handle:pb, const String:field[], Float:buffer[2], index=PB_FIELD_NOT_REPEATED);
 
 /**
  * Gets the number of elements in a repeated field of a protobuf message.
@@ -140,6 +150,7 @@ native PbGetRepeatedFieldCount(Handle:pb, const String:field[]);
  * @return				Integer value read.
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
+#pragma deprecated use PbReadInt with index param
 native PbReadRepeatedInt(Handle:pb, const String:field[], index);
 
 /**
@@ -151,6 +162,7 @@ native PbReadRepeatedInt(Handle:pb, const String:field[], index);
  * @return				Float value read.
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
+#pragma deprecated use PbReadFloat with index param
 native Float:PbReadRepeatedFloat(Handle:pb, const String:field[], index);
 
 /**
@@ -162,6 +174,7 @@ native Float:PbReadRepeatedFloat(Handle:pb, const String:field[], index);
  * @return				Boolean value read.
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
+#pragma deprecated use PbReadBool with index param
 native bool:PbReadRepeatedBool(Handle:pb, const String:field[], index);
 
 /**
@@ -175,6 +188,7 @@ native bool:PbReadRepeatedBool(Handle:pb, const String:field[], index);
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
+#pragma deprecated use PbReadString with index param
 native PbReadRepeatedString(Handle:pb, const String:field[], index, String:buffer[], size);
 
 /**
@@ -187,6 +201,7 @@ native PbReadRepeatedString(Handle:pb, const String:field[], index, String:buffe
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
+#pragma deprecated use PbReadColor with index param
 native PbReadRepeatedColor(Handle:pb, const String:field[], index, buffer[4]);
 
 /**
@@ -199,6 +214,7 @@ native PbReadRepeatedColor(Handle:pb, const String:field[], index, buffer[4]);
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
+#pragma deprecated use PbReadAngle with index param
 native PbReadRepeatedAngle(Handle:pb, const String:field[], index, Float:buffer[3]);
 
 /**
@@ -211,6 +227,7 @@ native PbReadRepeatedAngle(Handle:pb, const String:field[], index, Float:buffer[
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
+#pragma deprecated use PbReadVector with index param
 native PbReadRepeatedVector(Handle:pb, const String:field[], index, Float:buffer[3]);
 
 /**
@@ -223,6 +240,7 @@ native PbReadRepeatedVector(Handle:pb, const String:field[], index, Float:buffer
  * @noreturn
  * @error				Invalid or incorrect Handle, non-existant field, or incorrect field type.
  */
+#pragma deprecated use PbReadVector2D with index param
 native PbReadRepeatedVector2D(Handle:pb, const String:field[], index, Float:buffer[2]);
 
 /**
