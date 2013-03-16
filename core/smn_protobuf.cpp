@@ -69,9 +69,21 @@ static cell_t smn_PbReadInt(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	int ret;
-	if (!msg->GetInt32OrUnsigned(strField, &ret))
+
+	int index = params[0] >= 3 ? params[3] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->GetInt32OrUnsigned(strField, &ret))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->GetRepeatedInt32OrUnsigned(strField, index, &ret))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	return ret;
@@ -83,9 +95,21 @@ static cell_t smn_PbReadFloat(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	float ret;
-	if (!msg->GetFloatOrDouble(strField, &ret))
+
+	int index = params[0] >= 3 ? params[3] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->GetFloatOrDouble(strField, &ret))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->GetRepeatedFloatOrDouble(strField, index, &ret))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	return sp_ftoc(ret);
@@ -97,9 +121,21 @@ static cell_t smn_PbReadBool(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	bool ret;
-	if (!msg->GetBool(strField, &ret))
+
+	int index = params[0] >= 3 ? params[3] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->GetBool(strField, &ret))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->GetRepeatedBool(strField, index, &ret))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		} 
 	}
 
 	return ret ? 1 : 0;
@@ -113,9 +149,21 @@ static cell_t smn_PbReadString(IPluginContext *pCtx, const cell_t *params)
 	char *buf;
 	pCtx->LocalToPhysAddr(params[3], (cell_t **)&buf);
 
-	if (!msg->GetString(strField, buf, params[4]))
+	int index = params[0] >= 5 ? params[5] : -1;
+
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->GetString(strField, buf, params[4]))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->GetRepeatedString(strField, index, buf, params[4]))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	return 1;
@@ -130,9 +178,20 @@ static cell_t smn_PbReadColor(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToPhysAddr(params[3], &out);
 
 	Color clr;
-	if (!msg->GetColor(strField, &clr))
+	int index = params[0] >= 4 ? params[4] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->GetColor(strField, &clr))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->GetRepeatedColor(strField, index, &clr))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	out[0] = clr.r();
@@ -152,9 +211,20 @@ static cell_t smn_PbReadAngle(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToPhysAddr(params[3], &out);
 
 	QAngle ang;
-	if (!msg->GetQAngle(strField, &ang))
+	int index = params[0] >= 4 ? params[4] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->GetQAngle(strField, &ang))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->GetRepeatedQAngle(strField, index, &ang))
+		{
+		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	out[0] = sp_ftoc(ang.x);
@@ -173,9 +243,20 @@ static cell_t smn_PbReadVector(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToPhysAddr(params[3], &out);
 
 	Vector vec;
-	if (!msg->GetVector(strField, &vec))
+	int index = params[0] >= 4 ? params[4] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->GetVector(strField, &vec))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->GetRepeatedVector(strField, index, &vec))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	out[0] = sp_ftoc(vec.x);
@@ -194,9 +275,20 @@ static cell_t smn_PbReadVector2D(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToPhysAddr(params[3], &out);
 
 	Vector2D vec;
-	if (!msg->GetVector2D(strField, &vec))
+	int index = params[0] >= 4 ? params[4] : -1;
+	if (index < 0)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		if (!msg->GetVector2D(strField, &vec))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->GetRepeatedVector2D(strField, index, &vec))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
 	}
 
 	out[0] = sp_ftoc(vec.x);
