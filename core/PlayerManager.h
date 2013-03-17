@@ -70,6 +70,7 @@ public:
 	const char *GetName();
 	const char *GetIPAddress();
 	const char *GetAuthString(bool validated = true);
+	unsigned int GetSteamAccountID(bool validated = true);
 	edict_t *GetEdict();
 	bool IsInGame();
 	bool WasCountedAsInGame();
@@ -126,6 +127,7 @@ private:
 	bool m_bIsSourceTV;
 	bool m_bIsReplay;
 	serial_t m_Serial;
+	unsigned int m_SteamAccountID;
 };
 
 class PlayerManager : 

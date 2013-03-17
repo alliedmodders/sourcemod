@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	16
+#define SMINTERFACE_PLAYERMANAGER_VERSION	17
 
 struct edict_t;
 class IPlayerInfo;
@@ -237,6 +237,15 @@ namespace SourceMod
 		 * @return		True if the Replay bot, false otherwise.
 		 */
 		virtual bool IsReplay() const =0;
+		
+		/**
+		 * @brief Returns the client's Steam account ID.
+		 *
+		 * @param validated		Check backend validation status.
+		 * 
+		 * @return			Steam account ID or 0 if not available.
+		 */
+		virtual unsigned int GetSteamAccountID(bool validated = true) =0;
 	};
 
 	/**
