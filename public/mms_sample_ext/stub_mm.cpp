@@ -50,7 +50,7 @@ bool StubPlugin::Unload(char *error, size_t maxlen)
 {
 	SM_UnloadExtension();
 
-	SH_REMOVE_HOOK_STATIC(IServerGameDLL, ServerActivate, server, SH_STATIC(Hook_ServerActivate), true);
+	SH_REMOVE_HOOK(IServerGameDLL, ServerActivate, server, SH_STATIC(Hook_ServerActivate), true);
 
 	return true;
 }
