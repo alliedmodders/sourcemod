@@ -39,14 +39,12 @@
 
 ConVarManager g_ConVarManager;
 
-#if SOURCE_ENGINE <= SE_DARKMESSIAH
-#define CallGlobalChangeCallbacks	CallGlobalChangeCallback
-#endif
-
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *, float);
-#else
+#elif SOURCE_ENGINE >= SE_DARKMESSIAH
 SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *);
+#else
+SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallback, SH_NOATTRIB, false, ConVar *, const char *);
 #endif
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
@@ -126,7 +124,11 @@ void ConVarManager::OnSourceModAllInitialized()
 	}
 #endif
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_ADD_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
+#else
+	SH_ADD_HOOK(ICvar, CallGlobalChangeCallback, icvar, SH_STATIC(OnConVarChanged), false);
+#endif
 
 	g_PluginSys.AddPluginsListener(this);
 
@@ -191,7 +193,11 @@ void ConVarManager::OnSourceModShutdown()
 	}
 #endif
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_REMOVE_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
+#else
+	SH_REMOVE_HOOK(ICvar, CallGlobalChangeCallback, icvar, SH_STATIC(OnConVarChanged), false);
+#endif
 
 	/* Remove the 'convars' option from the 'sm' console command */
 	g_RootMenu.RemoveRootConsoleCommand("cvars", this);
