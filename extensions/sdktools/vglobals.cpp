@@ -263,6 +263,12 @@ const char *GetDTTypeName(int type)
 		{
 			return "datatable";
 		}
+#if SOURCE_ENGINE >= SE_ALIENSWARM
+	case DPT_Int64:
+		{
+			return "int64";
+		}
+#endif
 	default:
 		{
 			return NULL;
