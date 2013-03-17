@@ -43,9 +43,13 @@
 #define PCRE_MULTILINE          0x00000002 /* Multilines (affects ^ and $ so that they match the start/end of a line rather than matching the start/end of the string). */
 #define PCRE_DOTALL             0x00000004 /* Single line (affects . so that it matches any character, even new line characters). */
 #define PCRE_EXTENDED           0x00000008 /* Pattern extension (ignore whitespace and # comments). */
+#define PCRE_ANCHORED           0x00000010 /* Force pattern anchoring. */
+#define PCRE_DOLLAR_ENDONLY		0x00000020 /* $ not to match newline at end. */
 #define PCRE_UNGREEDY           0x00000200 /* Invert greediness of quantifiers */
+#define PCRE_NOTEMPTY			0x00000400 /* An empty string is not a valid match. */
 #define PCRE_UTF8               0x00000800 /* Use UTF-8 Chars */
 #define PCRE_NO_UTF8_CHECK      0x00002000 /* Do not check the pattern for UTF-8 validity (only relevant if PCRE_UTF8 is set) */
+#define PCRE_UCP				0x20000000 /* Use Unicode properties for \ed, \ew, etc. */
 
 
 /**
@@ -76,7 +80,16 @@ enum RegexError
 	REGEX_ERROR_DFA_RECURSE = -20,
 	REGEX_ERROR_RECURSIONLIMIT = -21,
 	REGEX_ERROR_NULLWSLIMIT = -22,  	/* No longer actually used */
-	REGEX_ERROR_BADNEWLINE = -23
+	REGEX_ERROR_BADNEWLINE = -23,
+	REGEX_ERROR_BADOFFSET = -24,
+	REGEX_ERROR_SHORTUTF8 = -25,
+	REGEX_ERROR_RECURSELOOP = -26,
+	REGEX_ERROR_JIT_STACKLIMIT = -27,
+	REGEX_ERROR_BADMODE = -28,
+	REGEX_ERROR_BADENDIANNESS = -29,
+	REGEX_ERROR_DFA_BADRESTART = -30,
+	REGEX_ERROR_JIT_BADOPTION = -31,
+	REGEX_ERROR_BADLENGTH = -32,
 };
 
 /**
