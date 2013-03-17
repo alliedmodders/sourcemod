@@ -261,7 +261,7 @@ if AMBuild.target['platform'] == 'linux':
 elif AMBuild.target['platform'] == 'darwin':
 	debug_info.append('spcomp' + '/' + 'spcomp' + '.dSYM')
 elif AMBuild.target['platform'] == 'windows':
-	debug_info.append('spcomp' + '\\' + 'spcomp' + '.pdb'
+	debug_info.append('spcomp' + '\\' + 'spcomp' + '.pdb')
 
 job.AddCommandGroup(bincopies)
 
