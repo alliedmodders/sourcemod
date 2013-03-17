@@ -230,7 +230,8 @@ AddHL2Library('sourcemod', 'bin')
 AddNormalLibrary('sourcemod.logic', 'bin')
 AddNormalLibrary('sourcepawn.jit.x86', 'bin')
 AddNormalLibrary('geoip.ext', 'extensions')
-AddNormalLibrary('dbi.mysql.ext', 'extensions')
+if SM.hasMySql:
+	AddNormalLibrary('dbi.mysql.ext', 'extensions')
 AddNormalLibrary('dbi.sqlite.ext', 'extensions')
 
 if 'css' in SM.sdkInfo:

@@ -51,12 +51,17 @@ class SM:
 		if AMBuild.mode == 'config':
 			#Detect compilers
 			self.compiler.DetectAll(AMBuild)
-
-			#Required paths
+			
+			self.hasMySql = AMBuild.options.hasMySql
+			AMBuild.cache.CacheVariable('hasMySql', self.hasMySql)
+			
+			#Environment variable paths to external headers
 			envvars = { 'MMSOURCE19': 'mmsource-1.9', 'MYSQL5': 'mysql-5.0' }
 			
-			#Look for Metamod:Source and MySQL directories
+			#Look for Metamod:Source and MySQL if not disabled
 			for env in envvars:
+				if not self.hasMySql and env == 'MYSQL5':
+					continue
 				path = self.ResolveEnvPath(env, envvars[env])
 				if path == None:
 					raise Exception('Could not find a valid path for {0}'.format(env))
@@ -220,6 +225,7 @@ class SM:
 			self.sdkInfo = AMBuild.cache['sdkInfo']
 			self.compiler.FromConfig(AMBuild, 'compiler')
 			self.targetMap = AMBuild.cache['targetMap']
+			self.hasMySql = AMBuild.cache['hasMySql']
 
 		if AMBuild.target['platform'] == 'windows':
 			self.compiler.AddToListVar('RCINCLUDES', os.path.join(AMBuild.sourceFolder, 'public'))
@@ -440,6 +446,9 @@ FileList = [
 		['tools', 'buildbot', 'PackageScript'],
 		['tools', 'buildbot', 'BreakpadSymbols']
 	]
+
+if not sm.hasMySql:
+	FileList.remove(['extensions', 'mysql', 'AMBuilder'])
 
 for parts in FileList:
 	AMBuild.Include(os.path.join(*parts), globals)
