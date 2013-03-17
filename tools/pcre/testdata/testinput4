@@ -1,7 +1,7 @@
-/-- Do not use the \x{} construct except with patterns that have the --/
-/-- /8 option set, because PCRE doesn't recognize them as UTF-8 unless --/
-/-- that option is set. However, the latest Perls recognize them always. --/
-
+/-- This set of tests is for UTF support, excluding Unicode properties. It is
+    compatible with all versions of Perl >= 5.10 and both the 8-bit and 16-bit
+    PCRE libraries. --/
+   
 /a.b/8
     acb
     a\x7fb
@@ -126,31 +126,6 @@
     \x{256}XYZ 
     *** Failers
     XYZ 
-
-/X(\C{3})/8
-    X\x{1234}
-
-/X(\C{4})/8
-    X\x{1234}YZ
-    
-/X\C*/8
-    XYZabcdce
-    
-/X\C*?/8
-    XYZabcde
-    
-/X\C{3,5}/8
-    Xabcdefg   
-    X\x{1234} 
-    X\x{1234}YZ
-    X\x{1234}\x{512}  
-    X\x{1234}\x{512}YZ
-
-/X\C{3,5}?/8
-    Xabcdefg   
-    X\x{1234} 
-    X\x{1234}YZ
-    X\x{1234}\x{512}  
 
 /[^a]+/8g
     bcd
@@ -457,16 +432,6 @@
     \x{150}X
     \x{200}X   
 
-/a\Cb/
-    aXb
-    a\nb
-  
-/a\Cb/8
-    aXb
-    a\nb
-    *** Failers 
-    a\x{100}b 
-
 /[z-\x{100}]/8i
     z
     Z 
@@ -623,4 +588,37 @@
 
 /(?i)[\xc3\xa9\xc3\xbd]|[\xc3\xa9\xc3\xbdA]/8
 
-/ End of testinput4 /
+/^[a\x{c0}]b/8
+    \x{c0}b
+    
+/^([a\x{c0}]*?)aa/8
+    a\x{c0}aaaa/ 
+
+/^([a\x{c0}]*?)aa/8
+    a\x{c0}aaaa/ 
+    a\x{c0}a\x{c0}aaa/ 
+
+/^([a\x{c0}]*)aa/8
+    a\x{c0}aaaa/ 
+    a\x{c0}a\x{c0}aaa/ 
+
+/^([a\x{c0}]*)a\x{c0}/8
+    a\x{c0}aaaa/ 
+    a\x{c0}a\x{c0}aaa/ 
+
+/A*/g8
+    AAB\x{123}BAA
+
+/(abc)\1/8i
+   abc
+
+/(abc)\1/8
+   abc
+
+/a(*:a\x{1234}b)/8K
+    abc
+
+/a(*:a£b)/8K 
+    abc
+
+/-- End of testinput4 --/

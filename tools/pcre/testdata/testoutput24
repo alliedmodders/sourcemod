@@ -1,0 +1,145 @@
+/-- Tests for the 16-bit library with UTF-16 support only */
+
+/noncharacter/8
+    \x{fffe}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{ffff}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{1fffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{1ffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{2fffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{2ffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{3fffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{3ffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{4fffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{4ffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{5fffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{5ffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{6fffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{6ffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{7fffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{7ffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{8fffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{8ffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{9fffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{9ffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{afffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{affff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{bfffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{bffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{cfffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{cffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{dfffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{dffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{efffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{effff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{ffffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{fffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{10fffe}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{10ffff}
+Error -10 (bad UTF-16 string) offset=1 reason=4
+    \x{fdd0}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdd1}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdd2}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdd3}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdd4}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdd5}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdd6}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdd7}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdd8}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdd9}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdda}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fddb}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fddc}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fddd}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdde}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fddf}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fde0}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fde1}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fde2}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fde3}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fde4}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fde5}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fde6}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fde7}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fde8}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fde9}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdea}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdeb}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdec}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fded}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdee}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+    \x{fdef}
+Error -10 (bad UTF-16 string) offset=0 reason=4
+
+/bad/8
+    \x{d800}
+Error -10 (bad UTF-16 string) offset=0 reason=1
+
+/short/8
+    \P\P\x{d800}
+Error -25 (short UTF-16 string) offset=0 reason=1
+
+/-- End of testinput24 --/

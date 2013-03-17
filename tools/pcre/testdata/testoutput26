@@ -1,0 +1,148 @@
+/-- Tests for the 32-bit library with UTF-32 support only */
+
+/-- Non-UTF characters --/
+
+/\x{110000}/8
+Failed: character value in \x{...} sequence is too large at offset 9
+
+/\C/8
+    \x{110000}
+Error -10 (bad UTF-32 string) offset=0 reason=3
+
+/-- Invalid UTF-32 --/
+
+/noncharacter/8
+    \x{fffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{ffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{1fffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{1ffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{2fffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{2ffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{3fffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{3ffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{4fffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{4ffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{5fffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{5ffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{6fffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{6ffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{7fffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{7ffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{8fffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{8ffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{9fffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{9ffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{afffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{affff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{bfffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{bffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{cfffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{cffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{dfffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{dffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{efffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{effff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{ffffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{10fffe}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{10ffff}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdd0}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdd1}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdd2}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdd3}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdd4}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdd5}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdd6}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdd7}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdd8}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdd9}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdda}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fddb}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fddc}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fddd}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdde}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fddf}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fde0}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fde1}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fde2}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fde3}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fde4}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fde5}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fde6}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fde7}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fde8}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fde9}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdea}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdeb}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdec}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fded}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdee}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+    \x{fdef}
+Error -10 (bad UTF-32 string) offset=0 reason=2
+
+/-- End of testinput26 --/

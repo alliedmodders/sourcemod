@@ -1,3 +1,13 @@
+/-- This set of tests is not Perl-compatible. It checks on special features
+    of PCRE's API, error diagnostics, and the compiled code of some patterns.
+    It also checks the non-Perl syntax the PCRE supports (Python, .NET, 
+    Oniguruma). Finally, there are some tests where PCRE and Perl differ, 
+    either because PCRE can't be compatible, or there is a possible Perl 
+    bug.
+    
+    NOTE: This is a non-UTF set of tests. When UTF support is needed, use
+    test 5, and if Unicode Property Support is needed, use test 7. --/
+  
 /(a)b|/I
 
 /abc/I
@@ -39,6 +49,16 @@
 /[abcd/
 
 /(?X)[\B]/
+
+/(?X)[\R]/
+
+/(?X)[\X]/
+
+/[\B]/BZ
+
+/[\R]/BZ
+
+/[\X]/BZ
 
 /[z-a]/
 
@@ -122,40 +142,6 @@
 /.*((abc)$|(def))/I
     defabc
     \Zdefabc
-
-/abc/IP
-    abc
-    *** Failers
-
-/^abc|def/IP
-    abcdef
-    abcdef\B
-
-/.*((abc)$|(def))/IP
-    defabc
-    \Zdefabc
-
-/the quick brown fox/IP
-    the quick brown fox
-    *** Failers
-    The Quick Brown Fox
-
-/the quick brown fox/IPi
-    the quick brown fox
-    The Quick Brown Fox
-
-/abc.def/IP
-    *** Failers
-    abc\ndef
-
-/abc$/IP
-    abc
-    abc\n
-
-/(abc)\2/IP
-
-/(abc\1)/IP
-    abc
 
 /)/
 
@@ -333,10 +319,25 @@
     *** Failers
     a
 
-/This one is here because I think Perl 5.005_02 gets the setting of $1 wrong/I
+/This one is here because Perl behaves differently; see also the following/I
 
 /^(a\1?){4}$/I
+    aaaa
     aaaaaa
+    
+/Perl does not fail these two for the final subjects. Neither did PCRE until/
+/release 8.01. The problem is in backtracking into a subpattern that contains/
+/a recursive reference to itself. PCRE has now made these into atomic patterns./
+
+/^(xa|=?\1a){2}$/
+    xa=xaa
+    ** Failers
+    xa=xaaa
+
+/^(xa|=?\1a)+$/
+    xa=xaa
+    ** Failers
+    xa=xaaa
 
 /These are syntax tests from Perl 5.005/I
 
@@ -406,8 +407,6 @@
 
 /abc/\
 
-/abc/\P
-
 /abc/\i
 
 /(a)bc(d)/I
@@ -453,9 +452,6 @@
 /(?s:.*X|^B)/IDZ
 
 /\Biss\B/I+
-    Mississippi
-
-/\Biss\B/I+P
     Mississippi
 
 /iss/IG+
@@ -592,15 +588,6 @@
     \Nab-c
     *** Failers
     \Nabc
-
-/a*(b+)(z)(z)/IP
-    aaaabbbbzzzz
-    aaaabbbbzzzz\O0
-    aaaabbbbzzzz\O1
-    aaaabbbbzzzz\O2
-    aaaabbbbzzzz\O3
-    aaaabbbbzzzz\O4
-    aaaabbbbzzzz\O5
 
 /^.?abcd/IS
 
@@ -1025,7 +1012,12 @@
 /abc(?C)de(?C1)f/I
     123abcdef
 
-/(?C1)\dabc(?C2)def/I
+/(?C1)\dabc(?C2)def/IS
+    1234abcdef
+    *** Failers
+    abcdef
+
+/(?C1)\dabc(?C2)def/ISS
     1234abcdef
     *** Failers
     abcdef
@@ -1121,14 +1113,6 @@
 /(a(?1)b)/DZ
 
 /(a(?1)+b)/DZ
-
-/^\W*(?:((.)\W*(?1)\W*\2|)|((.)\W*(?3)\W*\4|\W*.\W*))\W*$/Ii
-    1221
-    Satan, oscillate my metallic sonatas!
-    A man, a plan, a canal: Panama!
-    Able was I ere I saw Elba.
-    *** Failers
-    The quick brown fox
 
 /^(\d+|\((?1)([+*-])(?1)\)|-(?1))$/I
     12
@@ -1282,7 +1266,12 @@
   abcde
   abcdfe
 
-/a*b/ICDZ
+/a*b/ICDZS
+  ab
+  aaaab
+  aaaacb
+
+/a*b/ICDZSS
   ab
   aaaab
   aaaacb
@@ -1292,9 +1281,16 @@
   aaaab
   aaaacb
 
-/(abc|def)x/ICDZ
+/(abc|def)x/ICDZS
   abcx
   defx
+  ** Failers 
+  abcdefzx
+
+/(abc|def)x/ICDZSS
+  abcx
+  defx
+  ** Failers 
   abcdefzx
 
 /(ab|cd){3,4}/IC
@@ -1302,7 +1298,10 @@
   abcdabcd
   abcdcdcdcdcd
 
-/([ab]{,4}c|xy)/ICDZ
+/([ab]{,4}c|xy)/ICDZS
+    Note: that { does NOT introduce a quantifier
+
+/([ab]{,4}c|xy)/ICDZSS
     Note: that { does NOT introduce a quantifier
 
 /([ab]{1,4}c|xy){4,5}?123/ICDZ
@@ -1376,13 +1375,25 @@
     1X
     123456\P
 
-/abc/I>testsavedregex
+/abc/IS>testsavedregex
 <testsavedregex
     abc
     ** Failers
     bca
 
-/abc/IF>testsavedregex
+/abc/ISS>testsavedregex
+<testsavedregex
+    abc
+    ** Failers
+    bca
+
+/abc/IFS>testsavedregex
+<testsavedregex
+    abc
+    ** Failers
+    bca
+
+/abc/IFSS>testsavedregex
 <testsavedregex
     abc
     ** Failers
@@ -1394,14 +1405,26 @@
     ** Failers
     def
 
+/(a|b)/ISS>testsavedregex
+<testsavedregex
+    abc
+    ** Failers
+    def
+
 /(a|b)/ISF>testsavedregex
 <testsavedregex
     abc
     ** Failers
     def
 
+/(a|b)/ISSF>testsavedregex
+<testsavedregex
+    abc
+    ** Failers
+    def
+
 ~<(\w+)/?>(.)*</(\1)>~smgI
-    <!DOCTYPE seite SYSTEM "http://www.lco.lineas.de/xmlCms.dtd">\n<seite>\n<dokumenteninformation>\n<seitentitel>Partner der LCO</seitentitel>\n<sprache>de</sprache>\n<seitenbeschreibung>Partner der LINEAS Consulting\nGmbH</seitenbeschreibung>\n<schluesselworte>LINEAS Consulting GmbH Hamburg\nPartnerfirmen</schluesselworte>\n<revisit>30 days</revisit>\n<robots>index,follow</robots>\n<menueinformation>\n<aktiv>ja</aktiv>\n<menueposition>3</menueposition>\n<menuetext>Partner</menuetext>\n</menueinformation>\n<lastedited>\n<autor>LCO</autor>\n<firma>LINEAS Consulting</firma>\n<datum>15.10.2003</datum>\n</lastedited>\n</dokumenteninformation>\n<inhalt>\n\n<absatzueberschrift>Die Partnerfirmen der LINEAS Consulting\nGmbH</absatzueberschrift>\n\n<absatz><link ziel="http://www.ca.com/" zielfenster="_blank">\n<bild name="logo_ca.gif" rahmen="no"/></link> <link\nziel="http://www.ey.com/" zielfenster="_blank"><bild\nname="logo_euy.gif" rahmen="no"/></link>\n</absatz>\n\n<absatz><link ziel="http://www.cisco.de/" zielfenster="_blank">\n<bild name="logo_cisco.gif" rahmen="ja"/></link></absatz>\n\n<absatz><link ziel="http://www.atelion.de/"\nzielfenster="_blank"><bild\nname="logo_atelion.gif" rahmen="no"/></link>\n</absatz>\n\n<absatz><link ziel="http://www.line-information.de/"\nzielfenster="_blank">\n<bild name="logo_line_information.gif" rahmen="no"/></link>\n</absatz>\n\n<absatz><bild name="logo_aw.gif" rahmen="no"/></absatz>\n\n<absatz><link ziel="http://www.incognis.de/"\nzielfenster="_blank"><bild\nname="logo_incognis.gif" rahmen="no"/></link></absatz>\n\n<absatz><link ziel="http://www.addcraft.com/"\nzielfenster="_blank"><bild\nname="logo_addcraft.gif" rahmen="no"/></link></absatz>\n\n<absatz><link ziel="http://www.comendo.com/"\nzielfenster="_blank"><bild\nname="logo_comendo.gif" rahmen="no"/></link></absatz>\n\n</inhalt>\n</seite>
+    \J1024<!DOCTYPE seite SYSTEM "http://www.lco.lineas.de/xmlCms.dtd">\n<seite>\n<dokumenteninformation>\n<seitentitel>Partner der LCO</seitentitel>\n<sprache>de</sprache>\n<seitenbeschreibung>Partner der LINEAS Consulting\nGmbH</seitenbeschreibung>\n<schluesselworte>LINEAS Consulting GmbH Hamburg\nPartnerfirmen</schluesselworte>\n<revisit>30 days</revisit>\n<robots>index,follow</robots>\n<menueinformation>\n<aktiv>ja</aktiv>\n<menueposition>3</menueposition>\n<menuetext>Partner</menuetext>\n</menueinformation>\n<lastedited>\n<autor>LCO</autor>\n<firma>LINEAS Consulting</firma>\n<datum>15.10.2003</datum>\n</lastedited>\n</dokumenteninformation>\n<inhalt>\n\n<absatzueberschrift>Die Partnerfirmen der LINEAS Consulting\nGmbH</absatzueberschrift>\n\n<absatz><link ziel="http://www.ca.com/" zielfenster="_blank">\n<bild name="logo_ca.gif" rahmen="no"/></link> <link\nziel="http://www.ey.com/" zielfenster="_blank"><bild\nname="logo_euy.gif" rahmen="no"/></link>\n</absatz>\n\n<absatz><link ziel="http://www.cisco.de/" zielfenster="_blank">\n<bild name="logo_cisco.gif" rahmen="ja"/></link></absatz>\n\n<absatz><link ziel="http://www.atelion.de/"\nzielfenster="_blank"><bild\nname="logo_atelion.gif" rahmen="no"/></link>\n</absatz>\n\n<absatz><link ziel="http://www.line-information.de/"\nzielfenster="_blank">\n<bild name="logo_line_information.gif" rahmen="no"/></link>\n</absatz>\n\n<absatz><bild name="logo_aw.gif" rahmen="no"/></absatz>\n\n<absatz><link ziel="http://www.incognis.de/"\nzielfenster="_blank"><bild\nname="logo_incognis.gif" rahmen="no"/></link></absatz>\n\n<absatz><link ziel="http://www.addcraft.com/"\nzielfenster="_blank"><bild\nname="logo_addcraft.gif" rahmen="no"/></link></absatz>\n\n<absatz><link ziel="http://www.comendo.com/"\nzielfenster="_blank"><bild\nname="logo_comendo.gif" rahmen="no"/></link></absatz>\n\n</inhalt>\n</seite>
 
 /^a/IF
 
@@ -1418,17 +1441,6 @@
     this is a line\nbreak
     ** Failers
     line one\nthis is a line\nbreak in the second line
-
-/ab.cd/IP
-    ab-cd
-    ab=cd
-    ** Failers
-    ab\ncd
-
-/ab.cd/IPs
-    ab-cd
-    ab=cd
-    ab\ncd
 
 /(?i)(?-i)AbCd/I
     AbCd
@@ -1479,14 +1491,6 @@
     (this(and)that)
     (this)
     ((this))
-
-/a(b)c/IPN
-    abc
-
-/a(?P<name>b)c/IPN
-    abc
-
-/\x{100}/I
 
 /\x{0000ff}/I
 
@@ -1564,8 +1568,6 @@ a random value. /Ix
 
 /()()()()()()()()()(?:(?(A)(?P=A)a|b)(?P<A>X|Y))+/I
     bXXaYYaY
-
-/\777/I
 
 /\s*,\s*/IS
     \x0b,\x0b
@@ -1915,13 +1917,6 @@ a random value. /Ix
 /(?=(?'abc'\w+))\k<abc>:/I
     abcd:
 
-/(?'abc'\w+):\k<abc>{2}/
-    a:aaxyz
-    ab:ababxyz
-    ** Failers
-    a:axyz
-    ab:abxyz
-
 /(?'abc'a|b)(?<abc>d|e)\k<abc>{2}/J
     adaa
     ** Failers
@@ -1933,10 +1928,6 @@ a random value. /Ix
     bdab
     ** Failers
     bddd
-
-/^(?<ab>a)? (?(<ab>)b|c) (?('ab')d|e)/x
-    abd
-    ce
 
 /(?(<bc))/
 
@@ -1955,21 +1946,9 @@ a random value. /Ix
 /(?<1> (?'B' abc (?(R) (?(R&1)1) (?(R&B)2) X  |  (?1)  (?2)   (?R) ))) /x
     abcabc1Xabc2XabcXabcabc
 
-/^(?(DEFINE) (?<A> a) (?<B> b) )  (?&A) (?&B) /x
-    abcd
-
-/(?<NAME>(?&NAME_PAT))\s+(?<ADDR>(?&ADDRESS_PAT))
-  (?(DEFINE)
-  (?<NAME_PAT>[a-z]+)
-  (?<ADDRESS_PAT>\d+)
-  )/x
-    metcalfe 33
-
 /^(?(DEFINE) abc | xyz ) /x
 
 /(?(DEFINE) abc) xyz/xI
-
-/(?(DEFINE) abc){3} xyz/x
 
 /(a|)*\d/
   \O0aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
@@ -2053,22 +2032,6 @@ a random value. /Ix
 /(?1)X(?<abc>P)/I
     abcPXP123
 
-/(?(DEFINE)(?<byte>2[0-4]\d|25[0-5]|1\d\d|[1-9]?\d))\b(?&byte)(\.(?&byte)){3}/
-    1.2.3.4
-    131.111.10.206
-    10.0.0.0
-    ** Failers
-    10.6
-    455.3.4.5
-
-/\b(?&byte)(\.(?&byte)){3}(?(DEFINE)(?<byte>2[0-4]\d|25[0-5]|1\d\d|[1-9]?\d))/
-    1.2.3.4
-    131.111.10.206
-    10.0.0.0
-    ** Failers
-    10.6
-    455.3.4.5
-
 /(?:a(?&abc)b)*(?<abc>x)/
     123axbaxbaxbx456
     123axbaxbaxb456
@@ -2089,9 +2052,6 @@ a random value. /Ix
 /(abc)(?:(?i)(?1))/
    defabcabcxyz
    DEFabcABCXYZ
-
-/^(a(b))\1\g1\g{1}\g-1\g{-1}\g{-02}Z/
-    ababababbbabZXXXX
 
 /^(a)\g-2/
 
@@ -2191,26 +2151,12 @@ a random value. /Ix
 /^(?(+1)X|Y)(.)/BZ
     Y!
 
-/(foo)\Kbar/
-    foobar
-   
-/(foo)(\Kbar|baz)/
-    foobar
-    foobaz 
-
-/(foo\Kbar)baz/
-    foobarbaz
-
 /(?<A>tom|bon)-\k{A}/
     tom-tom
     bon-bon 
     ** Failers
     tom-bon  
 
-/(?<A>tom|bon)-\g{A}/
-    tom-tom
-    bon-bon 
-    
 /\g{A/ 
 
 /(?|(abc)|(xyz))/BZ
@@ -2224,66 +2170,6 @@ a random value. /Ix
 /(x)(?|(abc)(pqr)|(xyz))(x)/BZ
     xabcpqrx
     xxyzx 
-
-/(?|(abc)|(xyz))\1/
-    abcabc
-    xyzxyz 
-    ** Failers
-    abcxyz
-    xyzabc   
-    
-/(?|(abc)|(xyz))(?1)/
-    abcabc
-    xyzabc 
-    ** Failers 
-    xyzxyz 
- 
-/\H\h\V\v/
-    X X\x0a
-    X\x09X\x0b
-    ** Failers
-    \xa0 X\x0a   
-    
-/\H*\h+\V?\v{3,4}/ 
-    \x09\x20\xa0X\x0a\x0b\x0c\x0d\x0a
-    \x09\x20\xa0\x0a\x0b\x0c\x0d\x0a
-    \x09\x20\xa0\x0a\x0b\x0c
-    ** Failers 
-    \x09\x20\xa0\x0a\x0b
-     
-/\H{3,4}/
-    XY  ABCDE
-    XY  PQR ST 
-    
-/.\h{3,4}./
-    XY  AB    PQRS
-
-/\h*X\h?\H+Y\H?Z/
-    >XNNNYZ
-    >  X NYQZ
-    ** Failers
-    >XYZ   
-    >  X NY Z
-
-/\v*X\v?Y\v+Z\V*\x0a\V+\x0b\V{2,3}\x0c/
-    >XY\x0aZ\x0aA\x0bNN\x0c
-    >\x0a\x0dX\x0aY\x0a\x0bZZZ\x0aAAA\x0bNNN\x0c
-
-/[\h]/BZ
-    >\x09<
-
-/[\h]+/BZ
-    >\x09\x20\xa0<
-
-/[\v]/BZ
-
-/[\H]/BZ
-
-/[^\h]/BZ
-
-/[\V]/BZ
-
-/[\x0a\V]/BZ
 
 /\H++X/BZ
     ** Failers
@@ -2325,7 +2211,7 @@ a random value. /Ix
 /\V+\v\V+\w/BZ
 
 /\( (?: [^()]* | (?R) )* \)/x
-(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(00)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)
+\J1024(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(0(00)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)0)
 
 /[\E]AAA/
 
@@ -2341,49 +2227,6 @@ a random value. /Ix
 
 /A(*PRUNE)B(*SKIP)C(*THEN)D(*COMMIT)E(*F)F(*FAIL)G(?!)H(*ACCEPT)I/BZ
 
-/^a+(*FAIL)/
-    aaaaaa
-    
-/a+b?c+(*FAIL)/
-    aaabccc
-
-/a+b?(*PRUNE)c+(*FAIL)/
-    aaabccc
-
-/a+b?(*COMMIT)c+(*FAIL)/
-    aaabccc
-    
-/a+b?(*SKIP)c+(*FAIL)/
-    aaabcccaaabccc
-
-/^(?:aaa(*THEN)\w{6}|bbb(*THEN)\w{5}|ccc(*THEN)\w{4}|\w{3})/
-    aaaxxxxxx
-    aaa++++++ 
-    bbbxxxxx
-    bbb+++++ 
-    cccxxxx
-    ccc++++ 
-    dddddddd   
-
-/^(aaa(*THEN)\w{6}|bbb(*THEN)\w{5}|ccc(*THEN)\w{4}|\w{3})/
-    aaaxxxxxx
-    aaa++++++ 
-    bbbxxxxx
-    bbb+++++ 
-    cccxxxx
-    ccc++++ 
-    dddddddd   
-
-/a+b?(*THEN)c+(*FAIL)/
-    aaabccc
-
-/(A (A|B(*ACCEPT)|C) D)(E)/x
-    ABX
-    AADE
-    ACDE
-    ** Failers
-    AD 
-        
 /^a+(*FAIL)/C
     aaaaaa
     
@@ -2402,15 +2245,13 @@ a random value. /Ix
 /a+b?(*THEN)c+(*FAIL)/C
     aaabccc
     
-/a(*PRUNE:XXX)b/
-
 /a(*MARK)b/ 
 
 /(?i:A{1,}\6666666666)/
 
 /\g6666666666/
 
-/[\g6666666666]/
+/[\g6666666666]/BZ
 
 /(?1)\c[/
 
@@ -2461,6 +2302,15 @@ a random value. /Ix
     a\nb  
     a\r\nb  
     a\x85b 
+    
+/(*ANY).*/g
+    abc\r\ndef
+
+/(*ANYCRLF).*/g
+    abc\r\ndef
+
+/(*CRLF).*/g
+    abc\r\ndef
 
 /a\Rb/I<bsr_anycrlf>
     a\rb
@@ -2559,6 +2409,10 @@ a random value. /Ix
 
 /\k{}/
 
+/\k/
+
+/\kabc/
+
 /(?P=)/
 
 /(?P>)/
@@ -2589,65 +2443,7 @@ a random value. /Ix
 
 /[[:a\dz:]]/
 
-/^(?<name>a|b\g<name>c)/
-    aaaa
-    bacxxx
-    bbaccxxx 
-    bbbacccxx
-
-/^(?<name>a|b\g'name'c)/
-    aaaa
-    bacxxx
-    bbaccxxx 
-    bbbacccxx
-
-/^(a|b\g<1>c)/
-    aaaa
-    bacxxx
-    bbaccxxx 
-    bbbacccxx
-
-/^(a|b\g'1'c)/
-    aaaa
-    bacxxx
-    bbaccxxx 
-    bbbacccxx
-
-/^(a|b\g'-1'c)/
-    aaaa
-    bacxxx
-    bbaccxxx 
-    bbbacccxx
-
-/(^(a|b\g<-1>c))/
-    aaaa
-    bacxxx
-    bbaccxxx 
-    bbbacccxx
-
 /(^(a|b\g<-1'c))/
-
-/(^(a|b\g{-1}))/
-    bacxxx
-
-/(?-i:\g<name>)(?i:(?<name>a))/
-    XaaX
-    XAAX 
-
-/(?i:\g<name>)(?-i:(?<name>a))/
-    XaaX
-    ** Failers 
-    XAAX 
-
-/(?-i:\g<+1>)(?i:(a))/
-    XaaX
-    XAAX 
-
-/(?=(?<regex>(?#simplesyntax)\$(?<name>[a-zA-Z_\x{7f}-\x{ff}][a-zA-Z0-9_\x{7f}-\x{ff}]*)(?:\[(?<index>[a-zA-Z0-9_\x{7f}-\x{ff}]+|\$\g<name>)\]|->\g<name>(\(.*?\))?)?|(?#simple syntax withbraces)\$\{(?:\g<name>(?<indices>\[(?:\g<index>|'(?:\\.|[^'\\])*'|"(?:\g<regex>|\\.|[^"\\])*")\])?|\g<complex>|\$\{\g<complex>\})\}|(?#complexsyntax)\{(?<complex>\$(?<segment>\g<name>(\g<indices>*|\(.*?\))?)(?:->\g<segment>)*|\$\g<complex>|\$\{\g<complex>\})\}))\{/
-
-/(?<n>a|b|c)\g<n>*/
-   abc
-   accccbbb 
 
 /^(?+1)(?<a>x|y){0}z/
     xzxx
@@ -2734,11 +2530,6 @@ a random value. /Ix
 
 /(?(?=.*b).*b|^d)/I
 
-/a?|b?/P
-    abc
-    ** Failers
-    ddd\N   
-
 /xyz/C
   xyz 
   abcxyz 
@@ -2748,6 +2539,12 @@ a random value. /Ix
   abc\Y
   abcxypqr  
   abcxypqr\Y  
+  
+/(*NO_START_OPT)xyz/C
+  abcxyz 
+
+/xyz/CY
+  abcxyz 
 
 /^"((?(?=[a])[^"])|b)*"$/C
     "ab"
@@ -2755,22 +2552,1262 @@ a random value. /Ix
 /^"((?(?=[a])[^"])|b)*"$/
     "ab"
 
-/^X(?5)(a)(?|(b)|(q))(c)(d)(Y)/
-    XYabcdY
-
 /^X(?5)(a)(?|(b)|(q))(c)(d)Y/
     XYabcdY
 
 /^X(?&N)(a)(?|(b)|(q))(c)(d)(?<N>Y)/
     XYabcdY
  
+/Xa{2,4}b/
+    X\P
+    Xa\P
+    Xaa\P 
+    Xaaa\P
+    Xaaaa\P 
+    
+/Xa{2,4}?b/
+    X\P
+    Xa\P
+    Xaa\P 
+    Xaaa\P
+    Xaaaa\P 
+    
+/Xa{2,4}+b/
+    X\P
+    Xa\P
+    Xaa\P 
+    Xaaa\P
+    Xaaaa\P 
+    
+/X\d{2,4}b/
+    X\P
+    X3\P
+    X33\P 
+    X333\P
+    X3333\P 
+    
+/X\d{2,4}?b/
+    X\P
+    X3\P
+    X33\P 
+    X333\P
+    X3333\P 
+    
+/X\d{2,4}+b/
+    X\P
+    X3\P
+    X33\P 
+    X333\P
+    X3333\P 
+    
+/X\D{2,4}b/
+    X\P
+    Xa\P
+    Xaa\P 
+    Xaaa\P
+    Xaaaa\P 
+    
+/X\D{2,4}?b/
+    X\P
+    Xa\P
+    Xaa\P 
+    Xaaa\P
+    Xaaaa\P 
+    
+/X\D{2,4}+b/
+    X\P
+    Xa\P
+    Xaa\P 
+    Xaaa\P
+    Xaaaa\P 
+    
+/X[abc]{2,4}b/
+    X\P
+    Xa\P
+    Xaa\P 
+    Xaaa\P
+    Xaaaa\P 
+    
+/X[abc]{2,4}?b/
+    X\P
+    Xa\P
+    Xaa\P 
+    Xaaa\P
+    Xaaaa\P 
+    
+/X[abc]{2,4}+b/
+    X\P
+    Xa\P
+    Xaa\P 
+    Xaaa\P
+    Xaaaa\P 
+    
+/X[^a]{2,4}b/
+    X\P
+    Xz\P
+    Xzz\P 
+    Xzzz\P
+    Xzzzz\P 
+    
+/X[^a]{2,4}?b/
+    X\P
+    Xz\P
+    Xzz\P 
+    Xzzz\P
+    Xzzzz\P 
+    
+/X[^a]{2,4}+b/
+    X\P
+    Xz\P
+    Xzz\P 
+    Xzzz\P
+    Xzzzz\P 
+    
+/(Y)X\1{2,4}b/
+    YX\P
+    YXY\P
+    YXYY\P 
+    YXYYY\P
+    YXYYYY\P 
+    
+/(Y)X\1{2,4}?b/
+    YX\P
+    YXY\P
+    YXYY\P 
+    YXYYY\P
+    YXYYYY\P 
+    
+/(Y)X\1{2,4}+b/
+    YX\P
+    YXY\P
+    YXYY\P 
+    YXYYY\P
+    YXYYYY\P 
+    
+/\++\KZ|\d+X|9+Y/
+    ++++123999\P
+    ++++123999Y\P
+    ++++Z1234\P 
+
+/Z(*F)/
+    Z\P
+    ZA\P 
+    
+/Z(?!)/
+    Z\P 
+    ZA\P 
+
+/dog(sbody)?/
+    dogs\P
+    dogs\P\P 
+    
+/dog(sbody)??/
+    dogs\P
+    dogs\P\P 
+
+/dog|dogsbody/
+    dogs\P
+    dogs\P\P 
+ 
+/dogsbody|dog/
+    dogs\P
+    dogs\P\P 
+
+/\bthe cat\b/
+    the cat\P
+    the cat\P\P
+
+/abc/
+   abc\P
+   abc\P\P
+   
+/abc\K123/
+    xyzabc123pqr
+    xyzabc12\P
+    xyzabc12\P\P
+    
+/(?<=abc)123/
+    xyzabc123pqr 
+    xyzabc12\P
+    xyzabc12\P\P
+
+/\babc\b/
+    +++abc+++
+    +++ab\P
+    +++ab\P\P  
+
+/(?&word)(?&element)(?(DEFINE)(?<element><[^m][^>]>[^<])(?<word>\w*+))/BZ
+
+/(?&word)(?&element)(?(DEFINE)(?<element><[^\d][^>]>[^<])(?<word>\w*+))/BZ
+
+/(ab)(x(y)z(cd(*ACCEPT)))pq/BZ
+
+/abc\K/+
+    abcdef
+    abcdef\N\N
+    xyzabcdef\N\N
+    ** Failers
+    abcdef\N 
+    xyzabcdef\N
+    
+/^(?:(?=abc)|abc\K)/+
+    abcdef
+    abcdef\N\N 
+    ** Failers 
+    abcdef\N 
+
+/a?b?/+
+    xyz
+    xyzabc
+    xyzabc\N
+    xyzabc\N\N
+    xyz\N\N    
+    ** Failers 
+    xyz\N 
+
+/^a?b?/+
+    xyz
+    xyzabc
+    ** Failers 
+    xyzabc\N
+    xyzabc\N\N
+    xyz\N\N    
+    xyz\N 
+    
+/^(?<name>a|b\g<name>c)/
+    aaaa
+    bacxxx
+    bbaccxxx 
+    bbbacccxx
+
+/^(?<name>a|b\g'name'c)/
+    aaaa
+    bacxxx
+    bbaccxxx 
+    bbbacccxx
+
+/^(a|b\g<1>c)/
+    aaaa
+    bacxxx
+    bbaccxxx 
+    bbbacccxx
+
+/^(a|b\g'1'c)/
+    aaaa
+    bacxxx
+    bbaccxxx 
+    bbbacccxx
+
+/^(a|b\g'-1'c)/
+    aaaa
+    bacxxx
+    bbaccxxx 
+    bbbacccxx
+
+/(^(a|b\g<-1>c))/
+    aaaa
+    bacxxx
+    bbaccxxx 
+    bbbacccxx
+
+/(?-i:\g<name>)(?i:(?<name>a))/
+    XaaX
+    XAAX 
+
+/(?i:\g<name>)(?-i:(?<name>a))/
+    XaaX
+    ** Failers 
+    XAAX 
+
+/(?-i:\g<+1>)(?i:(a))/
+    XaaX
+    XAAX 
+
+/(?=(?<regex>(?#simplesyntax)\$(?<name>[a-zA-Z_\x{7f}-\x{ff}][a-zA-Z0-9_\x{7f}-\x{ff}]*)(?:\[(?<index>[a-zA-Z0-9_\x{7f}-\x{ff}]+|\$\g<name>)\]|->\g<name>(\(.*?\))?)?|(?#simple syntax withbraces)\$\{(?:\g<name>(?<indices>\[(?:\g<index>|'(?:\\.|[^'\\])*'|"(?:\g<regex>|\\.|[^"\\])*")\])?|\g<complex>|\$\{\g<complex>\})\}|(?#complexsyntax)\{(?<complex>\$(?<segment>\g<name>(\g<indices>*|\(.*?\))?)(?:->\g<segment>)*|\$\g<complex>|\$\{\g<complex>\})\}))\{/
+
+/(?<n>a|b|c)\g<n>*/
+   abc
+   accccbbb 
+
 /^X(?7)(a)(?|(b)|(q)(r)(s))(c)(d)(Y)/
     XYabcdY
 
-/^X(?7)(a)(?|(b|(r)(s))|(q))(c)(d)(Y)/
-    XYabcdY
+/(?<=b(?1)|zzz)(a)/
+    xbaax
+    xzzzax 
 
-/^X(?7)(a)(?|(b|(?|(r)|(t))(s))|(q))(c)(d)(Y)/
-    XYabcdY
+/(a)(?<=b\1)/
 
-/ End of testinput2 /
+/(a)(?<=b+(?1))/
+
+/(a+)(?<=b(?1))/
+
+/(a(?<=b(?1)))/
+
+/(?<=b(?1))xyz/
+
+/(?<=b(?1))xyz(b+)pqrstuvew/
+
+/(a|bc)\1/SI
+
+/(a|bc)\1{2,3}/SI
+
+/(a|bc)(?1)/SI
+
+/(a|b\1)(a|b\1)/SI
+
+/(a|b\1){2}/SI
+
+/(a|bbbb\1)(a|bbbb\1)/SI
+
+/(a|bbbb\1){2}/SI
+
+/^From +([^ ]+) +[a-zA-Z][a-zA-Z][a-zA-Z] +[a-zA-Z][a-zA-Z][a-zA-Z] +[0-9]?[0-9] +[0-9][0-9]:[0-9][0-9]/SI
+
+/<tr([\w\W\s\d][^<>]{0,})><TD([\w\W\s\d][^<>]{0,})>([\d]{0,}\.)(.*)((<BR>([\w\W\s\d][^<>]{0,})|[\s]{0,}))<\/a><\/TD><TD([\w\W\s\d][^<>]{0,})>([\w\W\s\d][^<>]{0,})<\/TD><TD([\w\W\s\d][^<>]{0,})>([\w\W\s\d][^<>]{0,})<\/TD><\/TR>/isIS
+
+"(?>.*/)foo"SI
+
+/(?(?=[^a-z]+[a-z])  \d{2}-[a-z]{3}-\d{2}  |  \d{2}-\d{2}-\d{2} ) /xSI
+
+/(?:(?:(?:(?:(?:(?:(?:(?:(?:(a|b|c))))))))))/iSI
+
+/(?:c|d)(?:)(?:aaaaaaaa(?:)(?:bbbbbbbb)(?:bbbbbbbb(?:))(?:bbbbbbbb(?:)(?:bbbbbbbb)))/SI
+
+/<a[\s]+href[\s]*=[\s]*          # find <a href=
+ ([\"\'])?                       # find single or double quote
+ (?(1) (.*?)\1 | ([^\s]+))       # if quote found, match up to next matching
+                                 # quote, otherwise match up to next space
+/isxSI
+
+/^(?!:)                       # colon disallowed at start
+  (?:                         # start of item
+    (?: [0-9a-f]{1,4} |       # 1-4 hex digits or
+    (?(1)0 | () ) )           # if null previously matched, fail; else null
+    :                         # followed by colon
+  ){1,7}                      # end item; 1-7 of them required               
+  [0-9a-f]{1,4} $             # final hex number at end of string
+  (?(1)|.)                    # check that there was an empty component
+  /xiIS
+
+/(?|(?<a>A)|(?<a>B))/I
+    AB\Ca
+    BA\Ca
+
+/(?|(?<a>A)|(?<b>B))/ 
+
+/(?:a(?<quote> (?<apostrophe>')|(?<realquote>")) |
+    b(?<quote> (?<apostrophe>')|(?<realquote>")) ) 
+    (?('quote')[a-z]+|[0-9]+)/JIx
+    a"aaaaa
+    b"aaaaa 
+    ** Failers 
+    b"11111
+    a"11111 
+    
+/^(?|(a)(b)(c)(?<D>d)|(?<D>e)) (?('D')X|Y)/JDZx
+    abcdX
+    eX
+    ** Failers
+    abcdY
+    ey     
+    
+/(?<A>a) (b)(c)  (?<A>d  (?(R&A)$ | (?4)) )/JDZx
+    abcdd
+    ** Failers
+    abcdde  
+
+/abcd*/
+    xxxxabcd\P
+    xxxxabcd\P\P
+
+/abcd*/i
+    xxxxabcd\P
+    xxxxabcd\P\P
+    XXXXABCD\P
+    XXXXABCD\P\P
+
+/abc\d*/
+    xxxxabc1\P
+    xxxxabc1\P\P
+
+/(a)bc\1*/
+    xxxxabca\P
+    xxxxabca\P\P
+
+/abc[de]*/
+    xxxxabcde\P
+    xxxxabcde\P\P
+
+/-- This is not in the Perl >= 5.10 test because Perl seems currently to be
+    broken and not behaving as specified in that it *does* bumpalong after
+    hitting (*COMMIT). --/
+
+/(?1)(A(*COMMIT)|B)D/
+    ABD
+    XABD
+    BAD
+    ABXABD  
+    ** Failers 
+    ABX 
+    BAXBAD  
+
+/(\3)(\1)(a)/<JS>
+    cat
+
+/(\3)(\1)(a)/SI<JS>
+    cat
+
+/(\3)(\1)(a)/SI
+    cat
+
+/i(?(DEFINE)(?<s>a))/SI
+    i
+    
+/()i(?(1)a)/SI 
+    ia
+
+/(?i)a(?-i)b|c/BZ
+    XabX
+    XAbX
+    CcC 
+    ** Failers
+    XABX   
+
+/(?i)a(?s)b|c/BZ
+
+/(?i)a(?s-i)b|c/BZ
+
+/^(ab(c\1)d|x){2}$/BZ
+    xabcxd
+    
+/^(?&t)*+(?(DEFINE)(?<t>.))$/BZ
+
+/^(?&t)*(?(DEFINE)(?<t>.))$/BZ
+
+/ -- The first four of these are not in the Perl >= 5.10 test because Perl 
+     documents that the use of \K in assertions is "not well defined". The
+     last is here because Perl gives the match as "b" rather than "ab". I
+     believe this to be a Perl bug. --/  
+      
+/(?=a\Kb)ab/
+    ab 
+
+/(?!a\Kb)ac/
+    ac 
+    
+/^abc(?<=b\Kc)d/
+    abcd
+
+/^abc(?<!b\Kq)d/
+    abcd
+
+/(?>a\Kb)z|(ab)/
+    ab 
+
+/----------------------/
+
+/(?P<L1>(?P<L2>0|)|(?P>L2)(?P>L1))/
+
+/abc(*MARK:)pqr/
+
+/abc(*:)pqr/
+
+/abc(*FAIL:123)xyz/
+
+/--- This should, and does, fail. In Perl, it does not, which I think is a 
+     bug because replacing the B in the pattern by (B|D) does make it fail. ---/
+
+/A(*COMMIT)B/+K
+    ACABX
+
+/--- These should be different, but in Perl 5.11 are not, which I think
+     is a bug in Perl. ---/
+
+/A(*THEN)B|A(*THEN)C/K
+    AC
+
+/A(*PRUNE)B|A(*PRUNE)C/K
+    AC
+    
+/--- This should fail; the SKIP advances by one, but when we get to AC, the
+     PRUNE kills it. Perl behaves differently. ---/ 
+    
+/A(*PRUNE:A)A+(*SKIP:A)(B|Z) | AC/xK
+    AAAC
+
+/--- Mark names can be duplicated. Perl doesn't give a mark for this one,
+though PCRE does. ---/
+
+/^A(*:A)B|^X(*:A)Y/K
+    ** Failers
+    XAQQ
+    
+/--- COMMIT at the start of a pattern should be the same as an anchor. Perl 
+optimizations defeat this. So does the PCRE optimization unless we disable it 
+with \Y. ---/
+
+/(*COMMIT)ABC/
+    ABCDEFG
+    ** Failers
+    DEFGABC\Y  
+    
+/^(ab (c+(*THEN)cd) | xyz)/x
+    abcccd  
+
+/^(ab (c+(*PRUNE)cd) | xyz)/x
+    abcccd  
+
+/^(ab (c+(*FAIL)cd) | xyz)/x
+    abcccd  
+    
+/--- Perl 5.11 gets some of these wrong ---/ 
+
+/(?>.(*ACCEPT))*?5/
+    abcde
+
+/(.(*ACCEPT))*?5/
+    abcde
+
+/(.(*ACCEPT))5/
+    abcde
+
+/(.(*ACCEPT))*5/
+    abcde
+
+/A\NB./BZ
+    ACBD
+    *** Failers
+    A\nB
+    ACB\n   
+
+/A\NB./sBZ
+    ACBD
+    ACB\n 
+    *** Failers
+    A\nB  
+  
+/A\NB/<crlf>
+    A\nB
+    A\rB
+    ** Failers
+    A\r\nB    
+
+/\R+b/BZ
+
+/\R+\n/BZ
+
+/\R+\d/BZ
+
+/\d*\R/BZ
+
+/\s*\R/BZ
+    \x20\x0a
+    \x20\x0d
+    \x20\x0d\x0a
+
+/\S*\R/BZ
+    a\x0a
+
+/X\h*\R/BZ
+    X\x20\x0a
+
+/X\H*\R/BZ
+    X\x0d\x0a
+
+/X\H+\R/BZ
+    X\x0d\x0a
+
+/X\H++\R/BZ
+    X\x0d\x0a
+
+/-- Perl treats this one differently, not failing the second string. I believe
+    that is a bug in Perl. --/
+
+/^((abc|abcx)(*THEN)y|abcd)/
+    abcd
+    *** Failers 
+    abcxy 
+
+/(?<=abc)def/
+    abc\P\P
+
+/abc$/
+    abc
+    abc\P
+    abc\P\P
+
+/abc$/m
+    abc
+    abc\n
+    abc\P\P
+    abc\n\P\P 
+    abc\P
+    abc\n\P
+
+/abc\z/
+    abc
+    abc\P
+    abc\P\P
+
+/abc\Z/
+    abc
+    abc\P
+    abc\P\P
+
+/abc\b/
+    abc
+    abc\P
+    abc\P\P
+
+/abc\B/
+    abc
+    abc\P
+    abc\P\P
+
+/.+/
+    abc\>0
+    abc\>1
+    abc\>2
+    abc\>3
+    abc\>4
+    abc\>-4 
+
+/^\cģ/
+
+/(?P<abn>(?P=abn)xxx)/BZ
+
+/(a\1z)/BZ
+
+/(?P<abn>(?P=abn)(?<badstufxxx)/BZ
+
+/(?P<abn>(?P=axn)xxx)/BZ
+
+/(?P<abn>(?P=axn)xxx)(?<axn>yy)/BZ
+
+/-- These tests are here because Perl gets the first one wrong. --/
+
+/(\R*)(.)/s
+    \r\n
+    \r\r\n\n\r 
+    \r\r\n\n\r\n 
+
+/(\R)*(.)/s
+    \r\n
+    \r\r\n\n\r 
+    \r\r\n\n\r\n 
+
+/((?>\r\n|\n|\x0b|\f|\r|\x85)*)(.)/s
+    \r\n
+    \r\r\n\n\r 
+    \r\r\n\n\r\n 
+
+/-- --/
+
+/^abc$/BZ
+
+/^abc$/BZm
+
+/^(a)*+(\w)/S
+    aaaaX
+    ** Failers 
+    aaaa
+
+/^(?:a)*+(\w)/S
+    aaaaX
+    ** Failers 
+    aaaa
+
+/(a)++1234/SDZ
+
+/([abc])++1234/SI
+
+/(?<=(abc)+)X/
+
+/(^ab)/I
+
+/(^ab)++/I
+
+/(^ab|^)+/I
+
+/(^ab|^)++/I
+
+/(?:^ab)/I
+
+/(?:^ab)++/I
+
+/(?:^ab|^)+/I
+
+/(?:^ab|^)++/I
+
+/(.*ab)/I
+
+/(.*ab)++/I
+
+/(.*ab|.*)+/I
+
+/(.*ab|.*)++/I
+
+/(?:.*ab)/I
+
+/(?:.*ab)++/I
+
+/(?:.*ab|.*)+/I
+
+/(?:.*ab|.*)++/I
+
+/(?=a)[bcd]/I
+
+/((?=a))[bcd]/I
+
+/((?=a))+[bcd]/I
+
+/((?=a))++[bcd]/I
+
+/(?=a+)[bcd]/iI
+
+/(?=a+?)[bcd]/iI
+
+/(?=a++)[bcd]/iI
+
+/(?=a{3})[bcd]/iI
+
+/(abc)\1+/S
+
+/-- Perl doesn't get these right IMO (the 3rd is PCRE-specific) --/
+
+/(?1)(?:(b(*ACCEPT))){0}/
+    b
+
+/(?1)(?:(b(*ACCEPT))){0}c/
+    bc
+    ** Failers 
+    b 
+
+/(?1)(?:((*ACCEPT))){0}c/
+    c
+    c\N 
+
+/^.*?(?(?=a)a|b(*THEN)c)/
+    ba
+
+/^.*?(?(?=a)a|bc)/
+    ba
+
+/^.*?(?(?=a)a(*THEN)b|c)/
+    ac
+
+/^.*?(?(?=a)a(*THEN)b)c/
+    ac
+
+/^.*?(a(*THEN)b)c/
+    aabc
+    
+/^.*? (?1) c (?(DEFINE)(a(*THEN)b))/x
+    aabc
+
+/^.*?(a(*THEN)b|z)c/
+    aabc
+
+/^.*?(z|a(*THEN)b)c/
+    aabc
+
+/-- --/
+
+/-- These studied versions are here because they are not Perl-compatible; the
+    studying means the mark is not seen. --/
+
+/(*MARK:A)(*SKIP:B)(C|X)/KS
+    C
+    D
+     
+/(*:A)A+(*SKIP:A)(B|Z)/KS
+    AAAC
+
+/-- --/
+
+"(?=a*(*ACCEPT)b)c"
+    c
+    c\N 
+    
+/(?1)c(?(DEFINE)((*ACCEPT)b))/
+    c
+    c\N  
+    
+/(?>(*ACCEPT)b)c/
+    c
+    c\N  
+
+/(?:(?>(a)))+a%/++
+    %aa%
+
+/(a)b|ac/++SS
+    ac\O3
+    
+/(a)(b)x|abc/++
+     abc\O6
+
+/(a)bc|(a)(b)\2/
+    \O3abc
+    \O4abc 
+
+/(?(DEFINE)(a(?2)|b)(b(?1)|a))(?:(?1)|(?2))/SI
+
+/(a(?2)|b)(b(?1)|a)(?:(?1)|(?2))/SI
+
+/(a(?2)|b)(b(?1)|a)(?1)(?2)/SI
+
+/(abc)(?1)/SI
+
+/^(?>a)++/
+    aa\M
+    aaaaaaaaa\M 
+    
+/(a)(?1)++/
+    aa\M
+    aaaaaaaaa\M  
+
+/(?:(foo)|(bar)|(baz))X/SS=
+    bazfooX
+    foobazbarX
+    barfooX
+    bazX
+    foobarbazX    
+    bazfooX\O0
+    bazfooX\O2
+    bazfooX\O4
+    bazfooX\O6
+    bazfooX\O8
+    bazfooX\O10
+
+/(?=abc){3}abc/BZ
+
+/(?=abc)+abc/BZ
+
+/(?=abc)++abc/BZ
+
+/(?=abc){0}xyz/BZ
+
+/(?=(a))?./BZ
+
+/(?=(a))??./BZ
+
+/^(?=(a)){0}b(?1)/BZ
+
+/(?(DEFINE)(a))?b(?1)/BZ
+
+/^(?=(?1))?[az]([abc])d/BZ
+
+/^(?!a){0}\w+/BZ
+
+/(?<=(abc))?xyz/BZ
+
+/[:a[:abc]b:]/BZ
+
+/((?2))((?1))/SS
+    abc
+
+/((?(R2)a+|(?1)b))/SS
+    aaaabcde
+
+/(?(R)a*(?1)|((?R))b)/SS
+    aaaabcde
+
+/(a+|(?R)b)/
+
+/^(a(*:A)(d|e(*:B))z|aeq)/C
+    adz
+    aez
+    aeqwerty
+
+/.(*F)/
+    \P\Pabc
+
+/\btype\b\W*?\btext\b\W*?\bjavascript\b/IS
+
+/\btype\b\W*?\btext\b\W*?\bjavascript\b|\burl\b\W*?\bshell:|<input\b.*?\btype\b\W*?\bimage\b|\bonkeyup\b\W*?\=/IS
+
+/a(*SKIP)c|b(*ACCEPT)|/+SI
+    a
+
+/a(*SKIP)c|b(*ACCEPT)cd(*ACCEPT)|x/SI
+    ax
+
+'a*(*ACCEPT)b'+
+    \N\N
+    abc\N\N
+    bbb\N\N 
+
+/(*ACCEPT)a/+I
+    bax
+
+/z(*ACCEPT)a/+I
+    baxzbx
+
+/a(?:.)*?a/ims                                                                  
+    \Mabbbbbbbbbbbbbbbbbbbbba
+    
+/a(?:.(*THEN))*?a/ims
+    \Mabbbbbbbbbbbbbbbbbbbbba
+
+/a(?:.(*THEN:ABC))*?a/ims
+    \Mabbbbbbbbbbbbbbbbbbbbba
+
+/-- These tests are in agreement with development Perl 5.015, which has fixed
+    some things, but they don't all work with 5.012, so they aren't in the
+    Perl-compatible tests. Those after the first come from Perl's own test
+    files. --/
+    
+/^((yes|no)(*THEN)(*F))?/
+  yes
+
+/(A (.*)   C? (*THEN)  | A D) (*FAIL)/x
+AbcdCBefgBhiBqz
+
+/(A (.*)   C? (*THEN)  | A D) z/x
+AbcdCBefgBhiBqz
+
+/(A (.*)   C? (*THEN)  | A D) \s* (*FAIL)/x
+AbcdCBefgBhiBqz
+
+/(A (.*)   C? (*THEN)  | A D) \s* z/x
+AbcdCBefgBhiBqz
+
+/(A (.*)   (?:C|) (*THEN)  | A D) (*FAIL)/x
+AbcdCBefgBhiBqz
+
+/(A (.*)   (?:C|) (*THEN)  | A D) z/x
+AbcdCBefgBhiBqz
+
+/(A (.*)   C{0,6} (*THEN)  | A D) (*FAIL)/x
+AbcdCBefgBhiBqz
+
+/(A (.*)   C{0,6} (*THEN)  | A D) z/x
+AbcdCBefgBhiBqz
+
+/(A (.*)   (CE){0,6} (*THEN)  | A D) (*FAIL)/x
+AbcdCEBefgBhiBqz
+
+/(A (.*)   (CE){0,6} (*THEN)  | A D) z/x
+AbcdCEBefgBhiBqz
+
+/(A (.*)   (CE*){0,6} (*THEN)  | A D) (*FAIL)/x
+AbcdCBefgBhiBqz
+
+/(A (.*)   (CE*){0,6} (*THEN)  | A D) z/x
+AbcdCBefgBhiBqz
+
+/-----------------------------------------------/  
+
+/^(?>a+)(?>(z+))\w/BZ
+    aaaazzzzb
+    ** Failers
+    aazz  
+
+/(.)(\1|a(?2))/
+    bab
+    
+/\1|(.)(?R)\1/
+    cbbbc
+    
+/(.)((?(1)c|a)|a(?2))/
+    baa  
+
+/(?P<abn>(?P=abn)xxx)/BZ
+
+/(a\1z)/BZ
+
+/^(?>a+)(?>b+)(?>c+)(?>d+)(?>e+)/
+     \Maabbccddee
+
+/^(?>(a+))(?>(b+))(?>(c+))(?>(d+))(?>(e+))/
+     \Maabbccddee
+
+/^(?>(a+))(?>b+)(?>(c+))(?>d+)(?>(e+))/
+     \Maabbccddee
+
+/^a\x41z/<JS>
+    aAz
+    *** Failers
+    ax41z
+
+/^a[m\x41]z/<JS>
+    aAz
+
+/^a\x1z/<JS>
+    ax1z
+
+/^a\u0041z/<JS>
+    aAz
+    *** Failers
+    au0041z
+
+/^a[m\u0041]z/<JS>
+    aAz
+
+/^a\u041z/<JS>
+    au041z
+    *** Failers
+    aAz
+
+/^a\U0041z/<JS>
+    aU0041z
+    *** Failers
+    aAz
+
+/(?(?=c)c|d)++Y/BZ
+
+/(?(?=c)c|d)*+Y/BZ
+
+/a[\NB]c/
+    aNc
+    
+/a[B-\Nc]/ 
+
+/(a)(?2){0,1999}?(b)/
+
+/(a)(?(DEFINE)(b))(?2){0,1999}?(?2)/
+
+/--- This test, with something more complicated than individual letters, causes
+different behaviour in Perl. Perhaps it disables some optimization; no tag is
+passed back for the failures, whereas in PCRE there is a tag. ---/
+    
+/(A|P)(*:A)(B|P) | (X|P)(X|P)(*:B)(Y|P)/xK
+    AABC
+    XXYZ 
+    ** Failers
+    XAQQ  
+    XAQQXZZ  
+    AXQQQ 
+    AXXQQQ 
+
+/-- Perl doesn't give marks for these, though it does if the alternatives are
+replaced by single letters. --/
+    
+/(b|q)(*:m)f|a(*:n)w/K
+    aw 
+    ** Failers 
+    abc
+
+/(q|b)(*:m)f|a(*:n)w/K
+    aw 
+    ** Failers 
+    abc
+
+/-- After a partial match, the behaviour is as for a failure. --/
+
+/^a(*:X)bcde/K
+   abc\P
+   
+/-- These are here because Perl doesn't return a mark, except for the first --/
+
+/(?=(*:x))(q|)/K+
+    abc
+
+/(?=(*:x))((*:y)q|)/K+
+    abc
+
+/(?=(*:x))(?:(*:y)q|)/K+
+    abc
+
+/(?=(*:x))(?>(*:y)q|)/K+
+    abc
+
+/(?=a(*:x))(?!a(*:y)c)/K+
+    ab
+
+/(?=a(*:x))(?=a(*:y)c|)/K+
+    ab
+
+/(..)\1/
+    ab\P
+    aba\P
+    abab\P
+
+/(..)\1/i
+    ab\P
+    abA\P
+    aBAb\P
+
+/(..)\1{2,}/
+    ab\P
+    aba\P
+    abab\P
+    ababa\P
+    ababab\P
+    ababab\P\P
+    abababa\P
+    abababa\P\P
+
+/(..)\1{2,}/i
+    ab\P
+    aBa\P
+    aBAb\P
+    AbaBA\P
+    abABAb\P
+    aBAbaB\P\P
+    abABabA\P
+    abaBABa\P\P
+
+/(..)\1{2,}?x/i
+    ab\P
+    abA\P
+    aBAb\P
+    abaBA\P
+    abAbaB\P
+    abaBabA\P
+    abAbABaBx\P
+
+/^(..)\1/
+    aba\P
+
+/^(..)\1{2,3}x/
+    aba\P
+    ababa\P
+    ababa\P\P
+    abababx
+    ababababx  
+
+/^(..)\1{2,3}?x/
+    aba\P
+    ababa\P
+    ababa\P\P
+    abababx
+    ababababx  
+    
+/^(..)(\1{2,3})ab/
+    abababab
+
+/^\R/
+    \r\P
+    \r\P\P
+    
+/^\R{2,3}x/
+    \r\P
+    \r\P\P
+    \r\r\P 
+    \r\r\P\P
+    \r\r\r\P  
+    \r\r\r\P\P
+    \r\rx
+    \r\r\rx    
+
+/^\R{2,3}?x/
+    \r\P
+    \r\P\P
+    \r\r\P 
+    \r\r\P\P
+    \r\r\r\P  
+    \r\r\r\P\P
+    \r\rx
+    \r\r\rx    
+    
+/^\R?x/
+    \r\P
+    \r\P\P 
+    x
+    \rx  
+
+/^\R+x/
+    \r\P
+    \r\P\P 
+    \r\n\P
+    \r\n\P\P  
+    \rx  
+
+/^a$/<CRLF>
+    a\r\P
+    a\r\P\P 
+
+/^a$/m<CRLF>
+    a\r\P
+    a\r\P\P 
+
+/^(a$|a\r)/<CRLF>
+    a\r\P
+    a\r\P\P 
+
+/^(a$|a\r)/m<CRLF>
+    a\r\P
+    a\r\P\P 
+
+/./<CRLF>
+    \r\P
+    \r\P\P 
+  
+/.{2,3}/<CRLF>
+    \r\P 
+    \r\P\P
+    \r\r\P
+    \r\r\P\P
+    \r\r\r\P
+    \r\r\r\P\P     
+
+/.{2,3}?/<CRLF>
+    \r\P 
+    \r\P\P
+    \r\r\P
+    \r\r\P\P
+    \r\r\r\P
+    \r\r\r\P\P     
+
+/-- These two are here because Perl does not match: it seems to allow the
+COMMIT to escape from the assertion. --/
+
+/(?=a(*COMMIT)b|ac)ac|ac/
+    ac
+
+/(?=a(*COMMIT)b|(ac)) ac | (a)c/x
+    ac
+
+"AB(C(D))(E(F))?(?(?=\2)(?=\4))"
+    ABCDGHI\O03
+    
+/-- This one is here because Perl does not confine the *COMMIT to the 
+assertion, and therefore fails the entire subroutine call. --/ 
+    
+/((?=a(*COMMIT)b)ab|ac){0}(?:(?1)|a(c))/
+    ac 
+    
+/-- These are all run as real matches in test 1; here we are just checking the
+settings of the anchored and startline bits. --/ 
+
+/(?>.*?a)(?<=ba)/I
+
+/(?:.*?a)(?<=ba)/I
+
+/.*?a(*PRUNE)b/I
+
+/.*?a(*PRUNE)b/sI
+
+/^a(*PRUNE)b/sI
+
+/.*?a(*SKIP)b/I
+
+/(?>.*?a)b/sI
+
+/(?>.*?a)b/I
+
+/(?>^a)b/sI
+
+/(?>.*?)(?<=(abcd)|(wxyz))/I
+
+/(?>.*)(?<=(abcd)|(wxyz))/I
+
+"(?>.*)foo"I
+
+"(?>.*?)foo"I
+
+/(?>^abc)/mI
+
+/(?>.*abc)/mI
+
+/(?:.*abc)/mI
+
+/-- Check PCRE_STUDY_EXTRA_NEEDED --/
+
+/.?/S-I
+
+/.?/S!I
+
+/-- End of testinput2 --/

@@ -1,3 +1,4 @@
++pcre_byte_order.obj        &
 +pcre_chartables.obj        &
 +pcre_compile.obj           &
 +pcre_config.obj	    &
@@ -13,7 +14,6 @@
 +pcre_refcount.obj          &
 +pcre_study.obj		    &
 +pcre_tables.obj	    &
-+pcre_try_flipped.obj       &
 +pcre_ucd.obj               &
 +pcre_valid_utf8.obj        &
 +pcre_version.obj           &
