@@ -29,6 +29,8 @@
  * Version: $Id$
  */
 
+#define PCRE_STATIC
+
 #include "pcre.h"
 #include "CRegEx.h"
 #include <sh_string.h>
