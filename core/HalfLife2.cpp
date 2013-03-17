@@ -1145,7 +1145,8 @@ const char *CHalfLife2::GetEntityClassname(CBaseEntity *pEntity)
 	static int offset = -1;
 	if (offset == -1)
 	{
-		datamap_t *pMap = GetDataMap(pEntity);
+		CBaseEntity *pGetterEnt = ReferenceToEntity(0);
+		datamap_t *pMap = GetDataMap(pGetterEnt);
 		typedescription_t *pDesc = FindInDataMap(pMap, "m_iClassname");
 		offset = GetTypeDescOffs(pDesc);
 	}
