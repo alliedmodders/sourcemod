@@ -67,3 +67,4 @@ s
 m/w/f
 3x5
 push 0xB1D
+Time remaining for Windows build: 2 hours.
