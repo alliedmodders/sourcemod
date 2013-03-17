@@ -15,5 +15,6 @@ binary.AddSourceFiles('extensions/topmenus', [
 	'sdk/sm_memtable.cpp'
 	])
 SM.AutoVersion('extensions/topmenus', binary)
+SM.ExtractDebugInfo(extension, binary)
 binary.SendToJob()
 

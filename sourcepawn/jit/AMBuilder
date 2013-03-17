@@ -40,5 +40,6 @@ binary.AddSourceFiles('sourcepawn/jit', [
 	'../../knight/shared/KeCodeAllocator.cpp'
 	])
 SM.AutoVersion('sourcepawn/jit', binary)
+SM.ExtractDebugInfo(extension, binary)
 binary.SendToJob()
 

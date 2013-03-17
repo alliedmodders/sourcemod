@@ -11,5 +11,6 @@ binary.AddSourceFiles('extensions/geoip', [
 if AMBuild.target['platform'] == 'windows':
 	binary['POSTLINKFLAGS'].append('wsock32.lib')
 SM.AutoVersion('extensions/geoip', binary)
+SM.ExtractDebugInfo(extension, binary)
 binary.SendToJob()
 

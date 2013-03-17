@@ -1,7 +1,27 @@
 # vim: set ts=2 sw=2 tw=99 noet ft=python:
 import os
 import sys
+from ambuild.command import Command
+from ambuild.command import ShellCommand
 from ambuild.command import SymlinkCommand
+
+class ExtractDebugInfoCommand(Command):
+	def __init__(self, binary, outfile):
+		Command.__init__(self)
+		self.binary = binary
+		self.outfile = outfile
+
+	def run(self, runner, job):
+		if not self.binary.NeedsRelink(self.outfile):
+			return
+
+		if AMBuild.target['platform'] == 'linux':
+			job.AddCommand(ShellCommand('objcopy --only-keep-debug ' + self.outfile + ' ' + self.outfile + '.dbg'))
+			job.AddCommand(ShellCommand('objcopy --strip-debug ' + self.outfile))
+			job.AddCommand(ShellCommand('objcopy --add-gnu-debuglink=' + os.path.basename(self.outfile) + '.dbg ' + self.outfile))
+		elif AMBuild.target['platform'] == 'darwin':
+			job.AddCommand(ShellCommand('dsymutil ' + self.outfile))
+			job.AddCommand(ShellCommand('strip -S ' + self.outfile))
 
 class SM:
 	def __init__(self):
@@ -117,6 +137,7 @@ class SM:
 				self.compiler.AddToListVar('CFLAGS', '-Wno-unused')
 				self.compiler.AddToListVar('CFLAGS', '-Wno-switch')
 				self.compiler.AddToListVar('CFLAGS', '-msse')
+				self.compiler.AddToListVar('CFLAGS', '-g3')
 				self.compiler.AddToListVar('CFLAGS', '-m32')
 				self.compiler.AddToListVar('POSTLINKFLAGS', '-m32')
 				self.compiler.AddToListVar('CXXFLAGS', '-fno-exceptions')
@@ -176,9 +197,7 @@ class SM:
 			if AMBuild.options.debug == '1':
 				self.compiler.AddToListVar('CDEFINES', 'DEBUG')
 				self.compiler.AddToListVar('CDEFINES', '_DEBUG')
-				if self.vendor == 'gcc' or self.vendor == 'clang':
-					self.compiler.AddToListVar('CFLAGS', '-g3')
-				elif self.vendor == 'msvc':
+				if self.vendor == 'msvc':
 					self.compiler.AddToListVar('CFLAGS', '/Od')
 					self.compiler.AddToListVar('CFLAGS', '/RTC1')
 
@@ -264,6 +283,10 @@ class SM:
 			binary.compiler['POSTLINKFLAGS'].extend(['-current_version', AMBuild.cache['version']])
 		else:
 			return
+
+	def ExtractDebugInfo(self, job, binary):
+		src = os.path.join('..', AMBuild.outputFolder, job.workFolder, binary.binaryFile)
+		job.AddCommand(ExtractDebugInfoCommand(binary, src))
 
 	def PreSetupHL2Job(self, job, builder, sdk):
 		info = self.sdkInfo[sdk]
