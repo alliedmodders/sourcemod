@@ -579,6 +579,7 @@ HandleError HandleSystem::CloneHandle(QHandle *pHandle, unsigned int index, Hand
 	}
 
 	pNewHandle->clone = index;
+	pNewHandle->object = NULL;
 	pHandle->refcount++;
 
 	*newhandle = new_handle;
@@ -659,6 +660,14 @@ void HandleSystem::GetHandleUnchecked(Handle_t hndl, QHandle *& pHandle, unsigne
 
 HandleError HandleSystem::FreeHandle(QHandle *pHandle, unsigned int index)
 {
+	if (pHandle->is_destroying)
+	{
+		/* Someone tried to free this recursively.  
+		 * We'll just ignore this safely.
+		 */
+		return HandleError_None;
+	}
+
 	QHandleType *pType = &m_Types[pHandle->type];
 
 	if (pHandle->clone)
@@ -673,6 +682,7 @@ HandleError HandleSystem::FreeHandle(QHandle *pHandle, unsigned int index)
 		pMaster = &m_Handles[master];
 
 		/* Release the clone now */
+		pHandle->is_destroying = true;
 		ReleasePrimHandle(index);
 
 		/* Decrement the master's reference count */
@@ -681,20 +691,27 @@ HandleError HandleSystem::FreeHandle(QHandle *pHandle, unsigned int index)
 			/* Type should be the same but do this anyway... */
 			pType = &m_Types[pMaster->type];
 			pMaster->is_destroying = true;
-			pType->dispatch->OnHandleDestroy(pMaster->type, pMaster->object);
+			if (pMaster->object)
+			{
+				pType->dispatch->OnHandleDestroy(pMaster->type, pMaster->object);
+			}
 			ReleasePrimHandle(master);
 		}
 	} else if (pHandle->set == HandleSet_Identity) {
 		/* If we're an identity, skip all this stuff!
 		 * NOTE: SHARESYS DOES NOT CARE ABOUT THE DESTRUCTOR
 		 */
+		pHandle->is_destroying = true;
 		ReleasePrimHandle(index);
 	} else {
 		/* Decrement, free if necessary */
 		if (--pHandle->refcount == 0)
 		{
 			pHandle->is_destroying = true;
-			pType->dispatch->OnHandleDestroy(pHandle->type, pHandle->object);
+			if (pHandle->object)
+			{
+				pType->dispatch->OnHandleDestroy(pHandle->type, pHandle->object);
+			}
 			ReleasePrimHandle(index);
 		} else {
 			/* We must be cloned, so mark ourselves as freed */
@@ -725,14 +742,6 @@ HandleError HandleSystem::FreeHandle(Handle_t handle, const HandleSecurity *pSec
 	if (!CheckAccess(pHandle, HandleAccess_Delete, pSecurity))
 	{
 		return HandleError_Access;
-	}
-
-	if (pHandle->is_destroying)
-	{
-		/* Someone tried to free this recursively.  
-		 * We'll just ignore this safely.
-		 */
-		return HandleError_None;
 	}
 
 	return FreeHandle(pHandle, index);
@@ -793,6 +802,9 @@ void HandleSystem::UnlinkHandleFromOwner(QHandle *pHandle, unsigned int index)
 		assert(pHandle->owner == 0);
 		return;
 	}
+
+	pHandle->owner = NULL;
+
 	/* Note that since 0 is an invalid handle, if any of these links are 0,
 	* the data can still be set.
 	*/
@@ -917,29 +929,9 @@ bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t *ident)
 			{
 				continue;
 			}
-			if (pHandle->clone)
-			{
-				/* Get parent */
-				QHandle *pOther = &m_Handles[pHandle->clone];
-				if (--pOther->refcount == 0)
-				{
-					/* Free! */
-					dispatch->OnHandleDestroy(type, pOther->object);
-					ReleasePrimHandle(pHandle->clone);
-				}
-				/* Unlink ourselves since we don't have a reference count */
-				ReleasePrimHandle(i);
-			} else {
-				/* If it's not a clone, we still have to check the reference count.
-				 * Either way, we'll be destroyed eventually because the handle types do not change.
-				 */
-				if (--pHandle->refcount == 0)
-				{
-					/* Free! */
-					dispatch->OnHandleDestroy(type, pHandle->object);
-					ReleasePrimHandle(i);
-				}
-			}
+
+			FreeHandle(pHandle, i);
+
 			if (pType->opened == 0)
 			{
 				break;
