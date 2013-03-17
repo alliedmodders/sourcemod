@@ -1,13 +1,25 @@
-/*****************************************************************************
+/***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * $Id: 10-at-a-time.c,v 1.9 2008-09-22 17:27:24 danf Exp $
+ * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
- * Example application source code using the multi interface to download many
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at http://curl.haxx.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ***************************************************************************/
+/* Example application source code using the multi interface to download many
  * files, but with a capped maximum amount of simultaneous transfers.
  *
  * Written by Michael Wallner
@@ -120,7 +132,7 @@ int main(void)
   }
 
   while (U) {
-    while (CURLM_CALL_MULTI_PERFORM == curl_multi_perform(cm, &U));
+    curl_multi_perform(cm, &U);
 
     if (U) {
       FD_ZERO(&R);

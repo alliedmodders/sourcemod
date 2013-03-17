@@ -1,8 +1,29 @@
-#ifndef __LIBCONFIGTPF_H
-#define __LIBCONFIGTPF_H
+#ifndef HEADER_CURL_CONFIG_TPF_H
+#define HEADER_CURL_CONFIG_TPF_H
+/***************************************************************************
+ *                                  _   _ ____  _
+ *  Project                     ___| | | |  _ \| |
+ *                             / __| | | | |_) | |
+ *                            | (__| |_| |  _ <| |___
+ *                             \___|\___/|_| \_\_____|
+ *
+ * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at http://curl.haxx.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ***************************************************************************/
 
 /* ================================================================ */
-/*    lib/config-tpf.h - Hand crafted config file for TPF           */
+/*                 Hand crafted config file for TPF                 */
 /* ================================================================ */
 
 /* ---------------------------------------------------------------- */
@@ -10,9 +31,6 @@
 /* ---------------------------------------------------------------- */
 
 /* NOTE: Refer also to the .mak file for some of the flags below */
-
-/* when building libcurl itself */
-/* #undef BUILDING_LIBCURL */
 
 /* to disable cookies support */
 /* #undef CURL_DISABLE_COOKIES */
@@ -44,12 +62,6 @@
 /* to disable verbose strings */
 /* #undef CURL_DISABLE_VERBOSE_STRINGS */
 
-/* when not building a shared library */
-/* #undef CURL_STATICLIB */
-
-/* Set to explicitly specify we don't want to use thread-safe functions */
-/* #undef DISABLED_THREADSAFE */
-
 /* lber dynamic library file */
 /* #undef DL_LBER_FILE */
 
@@ -61,6 +73,9 @@
 
 /* Define if you want to enable IPv6 support */
 /* #undef ENABLE_IPV6 */
+
+/* Define if struct sockaddr_in6 has the sin6_scope_id member */
+/* #undef HAVE_SOCKADDR_IN6_SIN6_SCOPE_ID */
 
 /* Define to the type of arg 1 for getnameinfo. */
 /* #undef GETNAMEINFO_TYPE_ARG1 */
@@ -104,9 +119,6 @@
 /* #undef HAVE_DES_H */
 #define HAVE_DES_H 1
 
-/* disabled non-blocking sockets */
-/* #undef HAVE_DISABLED_NONBLOCKING */
-
 /* Define to 1 if you have the `ENGINE_load_builtin_engines' function. */
 /* #undef HAVE_ENGINE_LOAD_BUILTIN_ENGINES */
 #define HAVE_ENGINE_LOAD_BUILTIN_ENGINES 1
@@ -121,9 +133,11 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #define HAVE_FCNTL_H 1
 
-/* use FIONBIO for non-blocking sockets */
-/* #undef HAVE_FIONBIO */
-#define HAVE_FIONBIO 1
+/* Define to 1 if you have the fcntl function. */
+#define HAVE_FCNTL 1
+
+/* Define to 1 if you have a working fcntl O_NONBLOCK function. */
+#define HAVE_FCNTL_O_NONBLOCK 1
 
 /* Define to 1 if you have the `fork' function. */
 /* #undef HAVE_FORK */
@@ -217,11 +231,23 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
-/* use ioctlsocket() for non-blocking sockets */
+/* Define to 1 if you have the ioctl function. */
+#define HAVE_IOCTL 1
+
+/* Define to 1 if you have a working ioctl FIONBIO function. */
+#define HAVE_IOCTL_FIONBIO 1
+
+/* Define to 1 if you have the ioctlsocket function. */
 /* #undef HAVE_IOCTLSOCKET */
 
-/* use Ioctlsocket() for non-blocking sockets */
-/* #undef HAVE_IOCTLSOCKET_CASE */
+/* Define to 1 if you have a working ioctlsocket FIONBIO function. */
+/* #undef HAVE_IOCTLSOCKET_FIONBIO */
+
+/* Define to 1 if you have the IoctlSocket camel case function. */
+/* #undef HAVE_IOCTLSOCKET_CAMEL */
+
+/* Define to 1 if you have a working IoctlSocket camel case FIONBIO function. */
+/* #undef HAVE_IOCTLSOCKET_CAMEL_FIONBIO */
 
 /* Define to 1 if you have the <io.h> header file. */
 /* #undef HAVE_IO_H */
@@ -328,9 +354,6 @@
 /* #undef HAVE_OPENSSL_X509_H */
 #define HAVE_OPENSSL_X509_H 1
 
-/* use O_NONBLOCK for non-blocking sockets */
-/* #undef HAVE_O_NONBLOCK 1 */
-
 /* Define to 1 if you have the <pem.h> header file. */
 /* #undef HAVE_PEM_H */
 #define HAVE_PEM_H 1
@@ -380,6 +403,12 @@
 /* Define to 1 if you have the `setrlimit' function. */
 #define HAVE_SETRLIMIT 1
 
+/* Define to 1 if you have the setsockopt function. */
+/* #undef HAVE_SETSOCKOPT */
+
+/* Define to 1 if you have a working setsockopt SO_NONBLOCK function. */
+/* #undef HAVE_SETSOCKOPT_SO_NONBLOCK */
+
 /* Define to 1 if you have the <sgtty.h> header file. */
 /* #undef HAVE_SGTTY_H 1 */
 
@@ -406,9 +435,6 @@
 
 /* Define to 1 if you have the `socket' function. */
 #define HAVE_SOCKET 1
-
-/* use SO_NONBLOCK for non-blocking sockets */
-/* #undef HAVE_SO_NONBLOCK */
 
 /* Define this if you have the SPNEGO library fbopenssl */
 /* #undef HAVE_SPNEGO */
@@ -545,11 +571,11 @@
 /* if you have the zlib.h header file */
 /* #undef HAVE_ZLIB_H */
 
-/* If you lack a fine basename() prototype */
-/* #undef NEED_BASENAME_PROTO */
-
-/* need REENTRANT defined */
+/* Define to 1 if _REENTRANT preprocessor symbol must be defined. */
 /* #undef NEED_REENTRANT */
+
+/* Define to 1 if _THREAD_SAFE preprocessor symbol must be defined. */
+/* #undef NEED_THREAD_SAFE */
 
 /* cpu-machine-OS */
 #define OS "s390x-ibm-tpf"
@@ -587,10 +613,19 @@
 /* Define to the type of arg 5 for `select'. */
 #define SELECT_TYPE_ARG5 (struct timeval *)
 
-/* The size of a `size_t', as computed by sizeof. */
+/* The size of `int', as computed by sizeof. */
+#define SIZEOF_INT 4
+
+/* The size of `off_t', as computed by sizeof. */
+#define SIZEOF_OFF_T 8
+
+/* The size of `short', as computed by sizeof. */
+#define SIZEOF_SHORT 2
+
+/* The size of `size_t', as computed by sizeof. */
 #define SIZEOF_SIZE_T 8
 
-/* The size of a `time_t', as computed by sizeof. */
+/* The size of `time_t', as computed by sizeof. */
 #define SIZEOF_TIME_T 8
 
 /* Define to 1 if you have the ANSI C header files. */
@@ -601,6 +636,9 @@
 
 /* Define if you want to enable ares support */
 /* #undef USE_ARES */
+
+/* Define to disable non-blocking sockets */
+/* #undef USE_BLOCKING_SOCKETS */
 
 /* if GnuTLS is enabled */
 /* #undef USE_GNUTLS */
@@ -636,9 +674,6 @@
 /* Define for large files, on AIX-style hosts. */
 /* #undef _LARGE_FILES */
 
-/* define this if you need it to compile thread-safe code */
-/* #undef _THREAD_SAFE */
-
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */
 
@@ -647,9 +682,6 @@
 
 /* Define to `unsigned' if <sys/types.h> does not define. */
 /* #undef size_t */
-
-/* Type to use in place of socklen_t when system does not provide it. */
-/* #undef socklen_t */
 
 /* the signed version of size_t */
 /* #undef ssize_t */
@@ -741,4 +773,4 @@
 #endif
 
 
-#endif /* __LIBCONFIGTPF_H */
+#endif /* HEADER_CURL_CONFIG_TPF_H */

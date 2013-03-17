@@ -32,7 +32,7 @@ C
 C++
 
   Written by Jean-Philippe Barrette-LaPierre
-  http://rrette.com/textpattern/index.php?s=cURLpp
+  http://curlpp.org/
 
 Ch
 
@@ -54,10 +54,18 @@ Dylan
   Written by Chris Double
   http://dylanlibs.sourceforge.net/
 
+Eiffel
+  Written by Eiffel Software
+  http://curl.haxx.se/libcurl/eiffel/
+
 Euphoria
 
   Written by Ray Smith
   http://rays-web.com/eulibcurl.htm
+
+Falcon
+
+  http://www.falconpl.org/index.ftd?page_id=prjs&prj_id=curl
 
 Ferite
 

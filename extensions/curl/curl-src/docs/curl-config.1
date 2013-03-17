@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2007, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,7 +18,6 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
-.\" * $Id: curl-config.1,v 1.16 2007-10-26 07:46:02 bagder Exp $
 .\" **************************************************************************
 .\"
 .TH curl-config 1 "25 Oct 2007" "Curl 7.17.1" "curl-config manual"
@@ -28,7 +27,7 @@ curl-config \- Get information about a libcurl installation
 .B curl-config [options]
 .SH DESCRIPTION
 .B curl-config
-displays information about a previous curl and libcurl installation.
+displays information about the curl and libcurl installation.
 .SH OPTIONS
 .IP "--ca"
 Displays the built-in path to the CA cert bundle this libcurl uses.
@@ -36,17 +35,19 @@ Displays the built-in path to the CA cert bundle this libcurl uses.
 Displays the compiler used to build libcurl.
 .IP "--cflags"
 Set of compiler options (CFLAGS) to use when compiling files that use
-libcurl. Currently that is only thw include path to the curl include files.
+libcurl. Currently that is only the include path to the curl include files.
 .IP "--checkfor [version]"
-Specify the oldest possible libcurl version string you want, and this 
-script will return 0 if the current installation is new enough or it 
-returns 1 and outputs a text saying that the current version is not new 
+Specify the oldest possible libcurl version string you want, and this
+script will return 0 if the current installation is new enough or it
+returns 1 and outputs a text saying that the current version is not new
 enough. (Added in 7.15.4)
+.IP "--configure"
+Displays the arguments given to configure when building curl.
 .IP "--feature"
 Lists what particular main features the installed libcurl was built with. At
 the time of writing, this list may include SSL, KRB4 or IPv6. Do not assume
 any particular order. The keywords will be separated by newlines. There may be
-none, one or several keywords in the list.
+none, one, or several keywords in the list.
 .IP "--help"
 Displays the available options.
 .IP "--libs"
@@ -61,7 +62,7 @@ Lists what particular protocols the installed libcurl was built to support. At
 the time of writing, this list may include HTTP, HTTPS, FTP, FTPS, FILE,
 TELNET, LDAP, DICT. Do not assume any particular order. The protocols will
 be listed using uppercase and are separated by newlines. There may be none,
-one or several protocols in the list. (Added in 7.13.0)
+one, or several protocols in the list. (Added in 7.13.0)
 .IP "--static-libs"
 Shows the complete set of libs and other linker options you will need in order
 to link your application with libcurl statically. (Added in 7.17.1)
@@ -92,7 +93,6 @@ What's the installed libcurl version?
 
 How do I build a single file with a one-line command?
 
-  $ `curl-config --cc --cflags --libs` -o example example.c
-
+  $ `curl-config --cc --cflags` -o example example.c `curl-config --libs`
 .SH "SEE ALSO"
 .BR curl (1)

@@ -1,5 +1,5 @@
-#ifndef __SERVER_UTIL_H
-#define __SERVER_UTIL_H
+#ifndef HEADER_CURL_SERVER_UTIL_H
+#define HEADER_CURL_SERVER_UTIL_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -20,9 +20,10 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
- * $Id: util.h,v 1.20 2008-09-18 16:21:09 yangtse Exp $
  ***************************************************************************/
+#include "server_setup.h"
 
+char *data_to_hex(char *data, size_t len);
 void logmsg(const char *msg, ...);
 
 #define TEST_DATA_PATH "%s/data/test%ld"
@@ -62,4 +63,4 @@ void set_advisor_read_lock(const char *filename);
 
 void clear_advisor_read_lock(const char *filename);
 
-#endif  /* __SERVER_UTIL_H */
+#endif  /* HEADER_CURL_SERVER_UTIL_H */

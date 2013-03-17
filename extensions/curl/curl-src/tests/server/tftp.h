@@ -1,5 +1,5 @@
-#ifndef __SERVER_TFTP_H
-#define __SERVER_TFTP_H
+#ifndef HEADER_CURL_SERVER_TFTP_H
+#define HEADER_CURL_SERVER_TFTP_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -20,16 +20,19 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
- * $Id: tftp.h,v 1.5 2008-10-23 14:34:08 yangtse Exp $
  ***************************************************************************/
+#include "server_setup.h"
 
 /* This file is a rewrite/clone of the arpa/tftp.h file for systems without
    it. */
 
 #define SEGSIZE 512 /* data segment size */
 
-#ifndef __GNUC__
-#define __attribute__(x)
+#if defined(__GNUC__) && ((__GNUC__ >= 3) || \
+  ((__GNUC__ == 2) && defined(__GNUC_MINOR__) && (__GNUC_MINOR__ >= 7)))
+#  define PACKED_STRUCT __attribute__((__packed__))
+#else
+#  define PACKED_STRUCT /*NOTHING*/
 #endif
 
 /* Using a packed struct as binary in a program is begging for problems, but
@@ -40,7 +43,7 @@ struct tftphdr {
   short th_opcode;         /* packet type */
   unsigned short th_block; /* all sorts of things */
   char th_data[1];         /* data or error string */
-} __attribute__ ((__packed__));
+} PACKED_STRUCT;
 
 #define th_stuff th_block
 #define th_code  th_block
@@ -55,4 +58,4 @@ struct tftphdr {
 #define EEXISTS   6
 #define ENOUSER   7
 
-#endif /* __SERVER_TFTP_H */
+#endif /* HEADER_CURL_SERVER_TFTP_H */

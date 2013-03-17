@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2005, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2010, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,17 +18,16 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
-.\" * $Id: testcurl.1,v 1.4 2005/05/20 11:24:55 bagder Exp $
 .\" **************************************************************************
 .\"
-.TH testcurl.pl 1 "20 May 2005" "Curl 7.14.1" "testcurl"
+.TH testcurl.pl 1 "24 Mar 2010" "Curl 7.20.1" "testcurl"
 .SH NAME
 testcurl.pl \- (automatically) test curl
 .SH SYNOPSIS
 .B testcurl.pl [options] [dir] > output
 .SH DESCRIPTION
 \fItestcurl.pl\fP is the master script to use for automatic testing of curl
-off CVS or daily snapshots. It is written for the purpose of being run from a
+off git or daily snapshots. It is written for the purpose of being run from a
 crontab job or similar at a regular interval. The output is suitable to be
 mailed to curl-autocompile@haxx.se to be dealt with automatically (make sure
 the subject includes the word "autobuild" as the mail gets silently discarded
@@ -63,8 +62,8 @@ Don't run buildconf. Useful when many builds use the same source tree, as then
 only one need to do this. Also, if multiple processes run tests simultaneously
 on the same source tree (like several hosts on a NFS mounted dir),
 simultaneous buildconf invokes may cause problems. (Added in 7.14.1)
-.IP "--nocvsup"
-Don't update from CVS even though it is a CVS tree. Useful to still be able to
+.IP "--nogitpull"
+Don't update from git even though it is a git tree. Useful to still be able to
 test even though your network is down, or similar.
 .IP "--runtestopts=[options]"
 Options that is passed to the runtests.pl script. Useful for disabling valgrind
@@ -73,21 +72,19 @@ by force, and similar.
 File name to read setup from (deprecated). The old style of providing info.
 If info is missing when testcurl.pl is started, it will prompt you and then
 store the info in a 'setup' file, which it will look for on each invoke. Use
-\fI--name\fP, \fI--emacs\fP, \fI--configure\fP and \fI--desc\fP instead.
+\fI--name\fP, \fI--email\fP, \fI--configure\fP and \fI--desc\fP instead.
 .IP "--target=[your os]"
 Specify your target environment. Recognized strings include 'vc', 'mingw32',
 \&'borland' and 'netware'.
 .SH "INITIAL SETUP"
-First you make a checkout from CVS (or you write a script that downloads daily
+First you make a checkout from git (or you write a script that downloads daily
 snapshots automatically, find inspiration at
 http://curl.haxx.se/auto/autocurl.txt):
 
 .nf
   $ mkdir daily-curl
   $ cd daily-curl
-  $ cvs -d :pserver:anonymous@cool.haxx.se:/cvsroot/curl login
-    [enter return when prompted for password ]
-  $ cvs -d :pserver:anonymous@cool.haxx.se:/cvsroot/curl checkout curl
+  $ git clone git://github.com/bagder/curl.git
 .fi
 
 With the curl sources checked out, or downloaded, you can start testing right
@@ -120,7 +117,7 @@ testprog="perl ./curl/tests/testcurl.pl $name $email $desc"
 opts1="--configure=--enable-debug"
 opts2="--configure=--enable-ipv6"
 
-# run first test 
+# run first test
 $testprog $opts1 | $mail
 
 # run second test

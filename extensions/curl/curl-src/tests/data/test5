@@ -29,7 +29,7 @@ http
 HTTP over proxy
  </name>
  <command>
-http://%HOSTIP:%HTTPPORT/we/want/that/page/5 -x %HOSTIP:%HTTPPORT
+http://%HOSTIP:%HTTPPORT/we/want/that/page/5#5 -x %HOSTIP:%HTTPPORT
 </command>
 </client>
 
@@ -42,7 +42,6 @@ http://%HOSTIP:%HTTPPORT/we/want/that/page/5 -x %HOSTIP:%HTTPPORT
 <protocol>
 GET http://%HOSTIP:%HTTPPORT/we/want/that/page/5 HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
-Pragma: no-cache
 Accept: */*
 Proxy-Connection: Keep-Alive
 

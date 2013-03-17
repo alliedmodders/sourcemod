@@ -1,4 +1,3 @@
-;; $Id: sample.emacs,v 1.2 2004/06/04 07:21:12 bagder Exp $ -*- emacs-lisp -*-
 
 ;; This file was contributed by Mats Lidell
 

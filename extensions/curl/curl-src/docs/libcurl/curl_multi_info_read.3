@@ -1,5 +1,24 @@
-.\" $Id: curl_multi_info_read.3,v 1.9 2007-05-26 20:47:33 bagder Exp $
-.\"
+.\" **************************************************************************
+.\" *                                  _   _ ____  _
+.\" *  Project                     ___| | | |  _ \| |
+.\" *                             / __| | | | |_) | |
+.\" *                            | (__| |_| |  _ <| |___
+.\" *                             \___|\___/|_| \_\_____|
+.\" *
+.\" * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" *
+.\" * This software is licensed as described in the file COPYING, which
+.\" * you should have received as part of this distribution. The terms
+.\" * are also available at http://curl.haxx.se/docs/copyright.html.
+.\" *
+.\" * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+.\" * copies of the Software, and permit persons to whom the Software is
+.\" * furnished to do so, under the terms of the COPYING file.
+.\" *
+.\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+.\" * KIND, either express or implied.
+.\" *
+.\" **************************************************************************
 .TH curl_multi_info_read 3 "18 Dec 2004" "libcurl 7.10.3" "libcurl Manual"
 .SH NAME
 curl_multi_info_read - read multi stack informationals
@@ -29,12 +48,12 @@ is emptied.
 calling \fIcurl_multi_cleanup(3)\fP, \fIcurl_multi_remove_handle(3)\fP or
 \fIcurl_easy_cleanup(3)\fP.
 
-The 'CURLMsg' struct is very simple and only contain very basic information.
+The 'CURLMsg' struct is very simple and only contains very basic information.
 If more involved information is wanted, the particular "easy handle" in
 present in that struct and can thus be used in subsequent regular
 \fIcurl_easy_getinfo(3)\fP calls (or similar):
 
-.NF
+.nf
  struct CURLMsg {
    CURLMSG msg;       /* what this message means */
    CURL *easy_handle; /* the handle it concerns */
@@ -43,12 +62,12 @@ present in that struct and can thus be used in subsequent regular
      CURLcode result;   /* return code for transfer */
    } data;
  };
-
+.fi
 When \fBmsg\fP is \fICURLMSG_DONE\fP, the message identifies a transfer that
 is done, and then \fBresult\fP contains the return code for the easy handle
 that just completed.
 
-At this point, there is no other \fBmsg\fP types defined.
+At this point, there are no other \fBmsg\fP types defined.
 .SH "RETURN VALUE"
 A pointer to a filled-in struct, or NULL if it failed or ran out of
 structs. It also writes the number of messages left in the queue (after this

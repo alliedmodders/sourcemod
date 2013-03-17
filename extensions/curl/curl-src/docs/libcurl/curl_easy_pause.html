@@ -1,6 +1,8 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
 <html><head>
 <title>curl_easy_pause man page</title>
-<meta name="generator" content="roffit 0.7">
+<meta name="generator" content="roffit">
 <STYLE type="text/css">
 P.level0 {
  padding-left: 2em;
@@ -55,7 +57,7 @@ p.roffit {
 <p class="level0">The <span Class="bold">handle</span> argument is of course identifying the handle that operates on the connection you want to pause or unpause. 
 <p class="level0">The <span Class="bold">bitmask</span> argument is a set of bits that sets the new state of the connection. The following bits can be used: 
 <p class="level0"><a name="CURLPAUSERECV"></a><span class="nroffip">CURLPAUSE_RECV</span> 
-<p class="level1">Pause receiving data. There will be no data received on this conneciton until this function is called again without this bit set. Thus, the write callback (<span Class="emphasis">CURLOPT_WRITEFUNCTION</span>) won't be called. 
+<p class="level1">Pause receiving data. There will be no data received on this connection until this function is called again without this bit set. Thus, the write callback (<span Class="emphasis">CURLOPT_WRITEFUNCTION</span>) won't be called. 
 <p class="level0"><a name="CURLPAUSESEND"></a><span class="nroffip">CURLPAUSE_SEND</span> 
 <p class="level1">Pause sending data. There will be no data sent on this connection until this function is called again without this bit set. Thus, the read callback (<span Class="emphasis">CURLOPT_READFUNCTION</span>) won't be called. 
 <p class="level0"><a name="CURLPAUSEALL"></a><span class="nroffip">CURLPAUSE_ALL</span> 

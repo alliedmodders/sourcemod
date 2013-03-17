@@ -1,5 +1,24 @@
-.\" $Id: curl_share_init.3,v 1.4 2004/03/24 21:40:45 bagder Exp $
-.\"
+.\" **************************************************************************
+.\" *                                  _   _ ____  _
+.\" *  Project                     ___| | | |  _ \| |
+.\" *                             / __| | | | |_) | |
+.\" *                            | (__| |_| |  _ <| |___
+.\" *                             \___|\___/|_| \_\_____|
+.\" *
+.\" * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" *
+.\" * This software is licensed as described in the file COPYING, which
+.\" * you should have received as part of this distribution. The terms
+.\" * are also available at http://curl.haxx.se/docs/copyright.html.
+.\" *
+.\" * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+.\" * copies of the Software, and permit persons to whom the Software is
+.\" * furnished to do so, under the terms of the COPYING file.
+.\" *
+.\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+.\" * KIND, either express or implied.
+.\" *
+.\" **************************************************************************
 .TH curl_share_init 3 "8 Aug 2003" "libcurl 7.10.7" "libcurl Manual"
 .SH NAME
 curl_share_init - Create a shared object
@@ -10,7 +29,7 @@ curl_share_init - Create a shared object
 .ad
 .SH DESCRIPTION
 This function returns a CURLSH handle to be used as input to all the other
-share-functions, sometimes referred to as a share handle on some places in the
+share-functions, sometimes referred to as a share handle in some places in the
 documentation. This init call MUST have a corresponding call to
 \fIcurl_share_cleanup\fP when all operations using the share are complete.
 

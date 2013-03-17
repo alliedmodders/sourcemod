@@ -1,3 +1,24 @@
+#***************************************************************************
+#                                  _   _ ____  _
+#  Project                     ___| | | |  _ \| |
+#                             / __| | | | |_) | |
+#                            | (__| |_| |  _ <| |___
+#                             \___|\___/|_| \_\_____|
+#
+# Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
+#
+# This software is licensed as described in the file COPYING, which
+# you should have received as part of this distribution. The terms
+# are also available at http://curl.haxx.se/docs/copyright.html.
+#
+# You may opt to use, copy, modify, merge, publish, distribute and/or sell
+# copies of the Software, and permit persons to whom the Software is
+# furnished to do so, under the terms of the COPYING file.
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+# KIND, either express or implied.
+#
+###########################################################################
 
 #use strict;
 
@@ -35,11 +56,15 @@ sub getpartattr {
             $inside++;
             my $attr=$1;
 
-            while($attr =~ s/ *([^=]*)= *(\"([^\"]*)\"|([^\"> ]*))//) {
+            while($attr =~ s/ *([^=]*)= *(\"([^\"]*)\"|([^\> ]*))//) {
                 my ($var, $cont)=($1, $2);
                 $cont =~ s/^\"(.*)\"$/$1/;
                 $hash{$var}=$cont;
             }
+            last;
+        }
+        # detect end of section when part wasn't found
+        elsif((1 ==$inside) && ($_ =~ /^ *\<\/$section\>/)) {
             last;
         }
         elsif((2 ==$inside) && ($_ =~ /^ *\<\/$part/)) {
@@ -63,21 +88,27 @@ sub getpart {
         if(!$inside && ($_ =~ /^ *\<$section/)) {
             $inside++;
         }
-        elsif((1 ==$inside) && ($_ =~ /^ *\<$part[ \>]/)) {
-            if($_ =~ /$part [^>]*base64=/) {
-                # attempt to detect base64 encoded parts
+        elsif(($inside >= 1) && ($_ =~ /^ *\<$part[ \>]/)) {
+            if($inside > 1) {
+                push @this, $_;
+            }
+            elsif($_ =~ /$part [^>]*base64=/) {
+                # attempt to detect our base64 encoded part
                 $base64=1;
             }
             $inside++;
         }
-        elsif((2 ==$inside) && ($_ =~ /^ *\<\/$part/)) {
+        elsif(($inside >= 2) && ($_ =~ /^ *\<\/$part[ \>]/)) {
+            if($inside > 2) {
+                push @this, $_;
+            }
             $inside--;
         }
-        elsif((1==$inside) && ($_ =~ /^ *\<\/$section/)) {
-            if($trace) {
+        elsif(($inside >= 1) && ($_ =~ /^ *\<\/$section/)) {
+            if($trace && @this) {
                 print STDERR "*** getpart.pm: $section/$part returned data!\n";
             }
-            if(!@this && $warning) {
+            if($warning && !@this) {
                 print STDERR "*** getpart.pm: $section/$part returned empty!\n";
             }
             if($base64) {
@@ -89,14 +120,45 @@ sub getpart {
             }
             return @this;
         }
-        elsif(2==$inside) {
+        elsif($inside >= 2) {
             push @this, $_;
         }
     }
-    if($warning) {
+    if($trace && @this) {
+        # section/part has data but end of section not detected,
+        # end of file implies end of section.
+        print STDERR "*** getpart.pm: $section/$part returned data!\n";
+    }
+    if($warning && !@this) {
+        # section/part does not exist or has no data without an end of
+        # section; end of file implies end of section.
         print STDERR "*** getpart.pm: $section/$part returned empty!\n";
     }
-    return @this; #empty!
+    return @this;
+}
+
+sub partexists {
+    my ($section, $part)=@_;
+
+    my $inside = 0;
+
+    for(@xml) {
+        if(!$inside && ($_ =~ /^ *\<$section/)) {
+            $inside++;
+        }
+        elsif((1 == $inside) && ($_ =~ /^ *\<$part[ \>]/)) {
+            return 1; # exists
+        }
+        elsif((1 == $inside) && ($_ =~ /^ *\<\/$section/)) {
+            return 0; # does not exist
+        }
+    }
+    return 0; # does not exist
+}
+
+# Return entire document as list of lines
+sub getall {
+    return @xml;
 }
 
 sub loadtest {
@@ -199,7 +261,7 @@ sub showdiff {
 
     my $file1="$logdir/check-generated";
     my $file2="$logdir/check-expected";
-    
+
     open(TEMP, ">$file1");
     for(@$firstref) {
         print TEMP $_;
@@ -214,7 +276,7 @@ sub showdiff {
     my @out = `diff -u $file2 $file1 2>/dev/null`;
 
     if(!$out[0]) {
-	@out = `diff -c $file2 $file1 2>/dev/null`;
+        @out = `diff -c $file2 $file1 2>/dev/null`;
     }
 
     return @out;

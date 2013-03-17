@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2013, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -18,17 +18,30 @@
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
 #
-# $Id: Makefile.am,v 1.47 2008-01-03 20:48:22 yangtse Exp $
 ###########################################################################
 
 HTMLPAGES = testcurl.html runtests.html
 PDFPAGES = testcurl.pdf runtests.pdf
 
-EXTRA_DIST = ftpserver.pl httpserver.pl httpsserver.pl runtests.pl getpart.pm \
+EXTRA_DIST = ftpserver.pl httpserver.pl secureserver.pl runtests.pl getpart.pm \
  FILEFORMAT README stunnel.pem memanalyze.pl testcurl.pl valgrind.pm ftp.pm   \
- sshserver.pl sshhelp.pm testcurl.1 runtests.1 $(HTMLPAGES) $(PDFPAGES)
+ sshserver.pl sshhelp.pm testcurl.1 runtests.1 $(HTMLPAGES) $(PDFPAGES) \
+ serverhelp.pm tftpserver.pl rtspserver.pl directories.pm symbol-scan.pl \
+ CMakeLists.txt mem-include-scan.pl valgrind.supp
 
-SUBDIRS = data server libtest
+# we have two variables here to make sure DIST_SUBDIRS won't get 'unit'
+# added twice as then targets such as 'distclean' misbehave and try to
+# do things twice in that subdir at times (and thus fails).
+if BUILD_UNITTESTS
+BUILD_UNIT = unit
+DIST_UNIT =
+else
+BUILD_UNIT =
+DIST_UNIT = unit
+endif
+
+SUBDIRS = certs data server libtest $(BUILD_UNIT)
+DIST_SUBDIRS = $(SUBDIRS) $(DIST_UNIT)
 
 PERLFLAGS = -I$(srcdir)
 
@@ -41,26 +54,31 @@ curl:
 
 if CROSSCOMPILING
 TEST = @echo "NOTICE: we can't run the tests when cross-compiling!"
-TEST_Q =
-TEST_F =
-TEST_T =
 else # if not cross-compiling:
 TEST = srcdir=$(srcdir) $(PERL) $(PERLFLAGS) $(srcdir)/runtests.pl
 TEST_Q = -a -s
-TEST_F = -a -p
+TEST_AM = -a -am
+TEST_F = -a -p -r
 TEST_T = -a -t
 endif
 
-test: all
+# make sure that PERL is pointing to an executable
+perlcheck:
+	@if ! test -x "$(PERL)"; then echo "No perl!"; exit 2; fi
+
+test: perhcheck all
 	$(TEST)
 
-quiet-test: all
+quiet-test: perlcheck all
 	$(TEST) $(TEST_Q)
 
-full-test: all
+am-test: perlcheck all
+	$(TEST) $(TEST_AM)
+
+full-test: perlcheck all
 	$(TEST) $(TEST_F)
 
-torture-test: all
+torture-test: perlcheck all
 	$(TEST) $(TEST_T)
 
 .1.html:

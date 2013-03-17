@@ -1,7 +1,30 @@
-/* config-symbian.h.  Manually generated.  */
+#ifndef HEADER_CURL_CONFIG_SYMBIAN_H
+#define HEADER_CURL_CONFIG_SYMBIAN_H
+/***************************************************************************
+ *                                  _   _ ____  _
+ *  Project                     ___| | | |  _ \| |
+ *                             / __| | | | |_) | |
+ *                            | (__| |_| |  _ <| |___
+ *                             \___|\___/|_| \_\_____|
+ *
+ * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at http://curl.haxx.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ***************************************************************************/
 
-/* when building libcurl itself */
-/* #undef BUILDING_LIBCURL */
+/* ================================================================ */
+/*               Hand crafted config file for Symbian               */
+/* ================================================================ */
 
 /* Location of default ca bundle */
 /* #define CURL_CA_BUNDLE "/etc/pki/tls/certs/ca-bundle.crt"*/
@@ -42,29 +65,20 @@
 /* to disable verbose strings */
 /* #define CURL_DISABLE_VERBOSE_STRINGS 1*/
 
-/* to make a symbol visible */
-/*#define CURL_EXTERN_SYMBOL  __declspec(dllexport)*/
+/* Definition to make a library symbol externally visible. */
+/* #undef CURL_EXTERN_SYMBOL */
 
-/* to enable hidden symbols */
-/*#define CURL_HIDDEN_SYMBOLS 1*/
-
-/* W$ LDAP with non-W$ compiler */
-/* #undef CURL_LDAP_HYBRID */
-
-/* Use W$ LDAP implementation */
+/* Use Windows LDAP implementation */
 /* #undef CURL_LDAP_WIN */
-
-/* when not building a shared library */
-/* #undef CURL_STATICLIB */
-
-/* Set to explicitly specify we don't want to use thread-safe functions */
-/* #undef DISABLED_THREADSAFE */
 
 /* your Entropy Gathering Daemon socket pathname */
 /* #undef EGD_SOCKET */
 
 /* Define if you want to enable IPv6 support */
 #define ENABLE_IPV6 1
+
+/* Define if struct sockaddr_in6 has the sin6_scope_id member */
+#define HAVE_SOCKADDR_IN6_SIN6_SCOPE_ID 1
 
 /* Define to the type qualifier of arg 1 for getnameinfo. */
 #define GETNAMEINFO_QUAL_ARG1 const
@@ -111,9 +125,6 @@
 /* Define to 1 if you have the <des.h> header file. */
 /* #undef HAVE_DES_H */
 
-/* disabled non-blocking sockets */
-/* #undef HAVE_DISABLED_NONBLOCKING */
-
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
 
@@ -129,8 +140,11 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #define HAVE_FCNTL_H 1
 
-/* use FIONBIO for non-blocking sockets */
-#define HAVE_FIONBIO 1
+/* Define to 1 if you have the fcntl function. */
+#define HAVE_FCNTL 1
+
+/* Define to 1 if you have a working fcntl O_NONBLOCK function. */
+#define HAVE_FCNTL_O_NONBLOCK 1
 
 /* Define to 1 if you have the `fork' function. */
 /*#define HAVE_FORK 1*/
@@ -231,11 +245,23 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
-/* use ioctlsocket() for non-blocking sockets */
+/* Define to 1 if you have the ioctl function. */
+#define HAVE_IOCTL 1
+
+/* Define to 1 if you have a working ioctl FIONBIO function. */
+#define HAVE_IOCTL_FIONBIO 1
+
+/* Define to 1 if you have the ioctlsocket function. */
 /* #undef HAVE_IOCTLSOCKET */
 
-/* use Ioctlsocket() for non-blocking sockets */
-/* #undef HAVE_IOCTLSOCKET_CASE */
+/* Define to 1 if you have a working ioctlsocket FIONBIO function. */
+/* #undef HAVE_IOCTLSOCKET_FIONBIO */
+
+/* Define to 1 if you have the IoctlSocket camel case function. */
+/* #undef HAVE_IOCTLSOCKET_CAMEL */
+
+/* Define to 1 if you have a working IoctlSocket camel case FIONBIO function. */
+/* #undef HAVE_IOCTLSOCKET_CAMEL_FIONBIO */
 
 /* Define to 1 if you have the <io.h> header file. */
 /* #undef HAVE_IO_H */
@@ -361,9 +387,6 @@
 /* Define to 1 if you have the <openssl/x509.h> header file. */
 /*#define HAVE_OPENSSL_X509_H 1*/
 
-/* use O_NONBLOCK for non-blocking sockets */
-#define HAVE_O_NONBLOCK 1
-
 /* Define to 1 if you have the <pem.h> header file. */
 /* #undef HAVE_PEM_H */
 
@@ -372,9 +395,6 @@
 
 /* Define to 1 if you have the `pipe' function. */
 #define HAVE_PIPE 1
-
-/* if you have the function PK11_CreateGenericObject */
-/* #undef HAVE_PK11_CREATEGENERICOBJECT */
 
 /* Define to 1 if you have the `poll' function. */
 /*#define HAVE_POLL 1*/
@@ -427,6 +447,12 @@
 /* Define to 1 if you have the `setrlimit' function. */
 /*#define HAVE_SETRLIMIT 1*/
 
+/* Define to 1 if you have the setsockopt function. */
+/* #undef HAVE_SETSOCKOPT */
+
+/* Define to 1 if you have a working setsockopt SO_NONBLOCK function. */
+/* #undef HAVE_SETSOCKOPT_SO_NONBLOCK */
+
 /* Define to 1 if you have the <sgtty.h> header file. */
 /*#define HAVE_SGTTY_H 1*/
 
@@ -453,9 +479,6 @@
 
 /* Define to 1 if you have the `socket' function. */
 #define HAVE_SOCKET 1
-
-/* use SO_NONBLOCK for non-blocking sockets */
-/* #undef HAVE_SO_NONBLOCK */
 
 /* Define this if you have the SPNEGO library fbopenssl */
 /* #undef HAVE_SPNEGO */
@@ -616,20 +639,17 @@
 /* Define to 1 if you have the <x509.h> header file. */
 /* #undef HAVE_X509_H */
 
-/* Define to 1 if you are building a native Windows target. */
-/* #undef NATIVE_WINDOWS */
-
-/* If you lack a fine basename() prototype */
-/* #undef NEED_BASENAME_PROTO */
-
 /* Define to 1 if you need the lber.h header file even with ldap.h */
 /* #undef NEED_LBER_H */
 
 /* Define to 1 if you need the malloc.h header file even with stdlib.h */
 /* #undef NEED_MALLOC_H */
 
-/* need REENTRANT defined */
+/* Define to 1 if _REENTRANT preprocessor symbol must be defined. */
 /* #undef NEED_REENTRANT */
+
+/* Define to 1 if _THREAD_SAFE preprocessor symbol must be defined. */
+/* #undef NEED_THREAD_SAFE */
 
 /* cpu-machine-OS */
 #ifdef __WINS__
@@ -697,8 +717,14 @@
 /* Define to the type of arg 5 for `select'. */
 #define SELECT_TYPE_ARG5 (struct timeval *)
 
+/* The size of `int', as computed by sizeof. */
+#define SIZEOF_INT 4
+
 /* The size of `off_t', as computed by sizeof. */
 #define SIZEOF_OFF_T 8
+
+/* The size of `short', as computed by sizeof. */
+#define SIZEOF_SHORT 2
 
 /* The size of `size_t', as computed by sizeof. */
 #define SIZEOF_SIZE_T 4
@@ -715,6 +741,9 @@
 /* Define if you want to enable c-ares support */
 /* #undef USE_ARES */
 
+/* Define to disable non-blocking sockets */
+/* #undef USE_BLOCKING_SOCKETS */
+
 /* if GnuTLS is enabled */
 /* #undef USE_GNUTLS */
 
@@ -726,12 +755,6 @@
 
 /* if NSS is enabled */
 /* #undef USE_NSS */
-
-/* if OpenSSL is in use */
-/*#define USE_OPENSSL 1*/
-
-/* if SSL is enabled */
-/*#define USE_SSLEAY 1*/
 
 /* to enable SSPI support */
 /* #undef USE_WINDOWS_SSPI */
@@ -758,9 +781,6 @@
 /* Define for large files, on AIX-style hosts. */
 /* #undef _LARGE_FILES */
 
-/* define this if you need it to compile thread-safe code */
-/* #undef _THREAD_SAFE */
-
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */
 
@@ -775,9 +795,6 @@
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
-
-/* Type to use in place of socklen_t when system does not provide it. */
-/* #undef socklen_t */
 
 /* the signed version of size_t */
 /* #undef ssize_t */
@@ -799,7 +816,9 @@
 #endif
 
 /* Enable appropriate definitions only when OpenSSL support is enabled */
-#ifdef USE_SSL
-#define USE_OPENSSL 1
-#define USE_SSLEAY 1
+#ifdef USE_SSLEAY
+/* if OpenSSL is in use */
+#define USE_OPENSSL
 #endif
+
+#endif /* HEADER_CURL_CONFIG_SYMBIAN_H */

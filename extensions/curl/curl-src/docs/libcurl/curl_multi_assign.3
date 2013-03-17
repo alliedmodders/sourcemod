@@ -1,8 +1,27 @@
-.\" $Id: curl_multi_assign.3,v 1.1 2006-07-26 22:19:42 bagder Exp $
-.\"
+.\" **************************************************************************
+.\" *                                  _   _ ____  _
+.\" *  Project                     ___| | | |  _ \| |
+.\" *                             / __| | | | |_) | |
+.\" *                            | (__| |_| |  _ <| |___
+.\" *                             \___|\___/|_| \_\_____|
+.\" *
+.\" * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" *
+.\" * This software is licensed as described in the file COPYING, which
+.\" * you should have received as part of this distribution. The terms
+.\" * are also available at http://curl.haxx.se/docs/copyright.html.
+.\" *
+.\" * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+.\" * copies of the Software, and permit persons to whom the Software is
+.\" * furnished to do so, under the terms of the COPYING file.
+.\" *
+.\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+.\" * KIND, either express or implied.
+.\" *
+.\" **************************************************************************
 .TH curl_multi_assign 3 "9 Jul 2006" "libcurl 7.16.0" "libcurl Manual"
 .SH NAME
-curl_multi_assign \- set data to associated with an internal socket
+curl_multi_assign \- set data to association with an internal socket
 .SH SYNOPSIS
 #include <curl/curl.h>
 
@@ -34,7 +53,7 @@ In a typical application you allocate a struct or at least use some kind of
 semi-dynamic data for each socket that we must wait for action on when using
 the \fIcurl_multi_socket(3)\fP approach.
 
-When our socket-callback get called by libcurl and we get to know about yet
+When our socket-callback gets called by libcurl and we get to know about yet
 another socket to wait for, we can use \fIcurl_multi_assign(3)\fP to point out
 the particular data so that when we get updates about this same socket again,
 we don't have to find the struct associated with this socket by ourselves.

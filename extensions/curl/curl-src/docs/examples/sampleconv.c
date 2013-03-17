@@ -1,15 +1,27 @@
-/*****************************************************************************
+/***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * $Id: sampleconv.c,v 1.1 2006-04-09 08:39:08 bagder Exp $
- */
+ * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at http://curl.haxx.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ***************************************************************************/
 /*
    This is a simple example showing how a program on a non-ASCII platform
-   would invoke callbacks to do its own codeset conversions instead of 
+   would invoke callbacks to do its own codeset conversions instead of
    using the built-in iconv functions in libcurl.
 
    The IBM-1047 EBCDIC codeset is used for this example but the code
@@ -76,7 +88,7 @@ int main(void)
 
   curl = curl_easy_init();
   if(curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, "curl.haxx.se");
+    curl_easy_setopt(curl, CURLOPT_URL, "http://example.com");
 
     /* use platform-specific functions for codeset conversions */
     curl_easy_setopt(curl, CURLOPT_CONV_FROM_NETWORK_FUNCTION,

@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
 # Determine if curl-config --version matches the curl --version
-if ( $#ARGV != 2 ) 
+if ( $#ARGV != 2 )
 {
-	print "Usage: $0 curl-config-script curl-version-output-file version|vernum\n";
-	exit 3;
+    print "Usage: $0 curl-config-script curl-version-output-file version|vernum\n";
+    exit 3;
 }
 
 my $what=$ARGV[2];
@@ -12,7 +12,7 @@ my $what=$ARGV[2];
 open(CURL, "$ARGV[1]") || die "Can't open curl --version list in $ARGV[1]\n";
 $_ = <CURL>;
 chomp;
-/libcurl\/([\.\d]+(-CVS)?)/;
+/libcurl\/([\.\d]+((-DEV)|(-\d+))?)/;
 my $version = $1;
 close CURL;
 
@@ -22,24 +22,33 @@ my $curlconfigversion;
 open(CURLCONFIG, "sh $ARGV[0] --$what|") || die "Can't get curl-config --$what list\n";
 $_ = <CURLCONFIG>;
 chomp;
+my $filever=$_;
 if ( $what eq "version" ) {
-	/^libcurl ([\.\d]+(-CVS)?)$/ ;
-	$curlconfigversion = $1;
+    if($filever =~ /^libcurl ([\.\d]+((-DEV)|(-\d+))?)$/) {
+        $curlconfigversion = $1;
+    }
+    else {
+        $curlconfigversion = "illegal value";
+    }
 }
-else {
-	# Convert hex version to decimal for comparison's sake
-	/^(..)(..)(..)$/ ;
-	$curlconfigversion = hex($1) . "." . hex($2) . "." . hex($3);
+else { # "vernum" case
+    # Convert hex version to decimal for comparison's sake
+    if($filever =~ /^(..)(..)(..)$/) {
+        $curlconfigversion = hex($1) . "." . hex($2) . "." . hex($3);
+    }
+    else {
+        $curlconfigversion = "illegal value";
+    }
 
-	# Strip off the -CVS from the curl version if it's there
-	$version =~ s/-CVS$//;
+    # Strip off the -DEV from the curl version if it's there
+    $version =~ s/-\w*$//;
 }
 close CURLCONFIG;
 
 my $different = $version ne $curlconfigversion;
 if ($different || !$version) {
-	print "Mismatch in --version:\n";
-	print "curl:        $version\n";
-	print "curl-config: $curlconfigversion\n";
-	exit 1;
+    print "Mismatch in --version:\n";
+    print "curl:        $version\n";
+    print "curl-config: $curlconfigversion\n";
+    exit 1;
 }

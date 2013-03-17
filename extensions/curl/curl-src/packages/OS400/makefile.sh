@@ -2,7 +2,6 @@
 #
 #       curl compilation script for the OS/400.
 #
-# $Id: makefile.sh,v 1.2 2007-08-24 15:56:59 patrickm Exp $
 #
 #       This is a shell script since make is not a standard component of OS/400.
 

@@ -1,16 +1,26 @@
-/*****************************************************************************
+/***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * $Id: lib543.c,v 1.2 2008-09-20 04:26:57 yangtse Exp $
+ * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
- * Based on Alex Fishman's bug report on September 30, 2007
- */
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at http://curl.haxx.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ***************************************************************************/
+/* Based on Alex Fishman's bug report on September 30, 2007 */
 
-#include "setup.h"
 #include "test.h"
 
 #include "memdebug.h"
@@ -21,13 +31,26 @@ int test(char *URL)
                        0xe0, 0xd8, 0x7c,  0x20, 0xb7, 0xef, 0x53, 0x29, 0xfa,
                        0x1d, 0x57, 0xe1};
 
-  CURL* easy  = curl_easy_init();
-  char* s = curl_easy_escape(easy, (char*)a, sizeof(a));
+  CURL *easy;
+  int asize;
+  char *s;
   (void)URL;
 
-  printf("%s\n", s);
+  if ((easy = curl_easy_init()) == NULL) {
+    fprintf(stderr, "curl_easy_init() failed\n");
+    return TEST_ERR_MAJOR_BAD;
+  }
 
-  curl_free(s);
+  asize = (int)sizeof(a);
+
+  s = curl_easy_escape(easy, (char*)a, asize);
+
+  if(s)
+    printf("%s\n", s);
+
+  if(s)
+    curl_free(s);
+
   curl_easy_cleanup(easy);
 
   return 0;

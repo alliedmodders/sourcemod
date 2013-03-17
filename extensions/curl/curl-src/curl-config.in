@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 2001 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 2001 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -19,15 +19,12 @@
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
 #
-# $Id: curl-config.in,v 1.35 2008-09-03 19:10:48 danf Exp $
 ###########################################################################
-#
-# The idea to this kind of setup info script was stolen from numerous
-# other packages, such as neon, libxml and gnome.
-#
+
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 includedir=@includedir@
+cppflag_curl_staticlib=@CPPFLAG_CURL_STATICLIB@
 
 usage()
 {
@@ -36,10 +33,12 @@ Usage: curl-config [OPTION]
 
 Available values for OPTION include:
 
+  --built-shared says 'yes' if libcurl was built shared
   --ca        ca bundle install path
   --cc        compiler
   --cflags    pre-processor and compiler flags
   --checkfor [version] check for (lib)curl of the specified version
+  --configure the arguments given to configure when building curl
   --features  newline separated list of enabled features
   --help      display this help and exit
   --libs      library linking information
@@ -67,6 +66,10 @@ while test $# -gt 0; do
     esac
 
     case "$1" in
+    --built-shared)
+        echo @ENABLE_SHARED@
+        ;;
+
     --ca)
 	echo "@CURL_CA_BUNDLE@"
 	;;
@@ -90,8 +93,9 @@ while test $# -gt 0; do
             echo "$protocol"
         done
 	;;
+
     --version)
-	echo libcurl @VERSION@
+	echo libcurl @CURLVERSION@
 	exit 0
 	;;
 
@@ -110,7 +114,7 @@ while test $# -gt 0; do
 	  # silent success
 	  exit 0
 	else
-	  echo "requested version $checkfor is newer than existing @VERSION@"
+	  echo "requested version $checkfor is newer than existing @CURLVERSION@"
 	  exit 1
 	fi
 	;;
@@ -125,10 +129,15 @@ while test $# -gt 0; do
 	;;
 
     --cflags)
-       	if test "X@includedir@" = "X/usr/include"; then
-          echo ""
+        if test "X$cppflag_curl_staticlib" = "X-DCURL_STATICLIB"; then
+          CPPFLAG_CURL_STATICLIB="-DCURL_STATICLIB "
         else
-          echo "-I@includedir@"
+          CPPFLAG_CURL_STATICLIB=""
+        fi
+       	if test "X@includedir@" = "X/usr/include"; then
+          echo "$CPPFLAG_CURL_STATICLIB"
+        else
+          echo "${CPPFLAG_CURL_STATICLIB}-I@includedir@"
         fi
        	;;
 
@@ -139,15 +148,19 @@ while test $# -gt 0; do
 	   CURLLIBDIR=""
 	fi
 	if test "X@REQUIRE_LIB_DEPS@" = "Xyes"; then
-	  echo ${CURLLIBDIR}-lcurl @LDFLAGS@ @LIBCURL_LIBS@ @LIBS@
+	  echo ${CURLLIBDIR}-lcurl @LIBCURL_LIBS@
 	else
-	  echo ${CURLLIBDIR}-lcurl @LDFLAGS@ @LIBS@
+	  echo ${CURLLIBDIR}-lcurl
 	fi
 	;;
 
     --static-libs)
-	echo @libdir@/libcurl.@libext@ @LDFLAGS@ @LIBCURL_LIBS@ @LIBS@
+	echo @libdir@/libcurl.@libext@ @LDFLAGS@ @LIBCURL_LIBS@
 	;;
+
+    --configure)
+      echo @CONFIGURE_OPTIONS@
+    ;;
 
     *)
         echo "unknown option: $1"

@@ -1,6 +1,8 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
 <html><head>
 <title>curl_easy_recv man page</title>
-<meta name="generator" content="roffit 0.7">
+<meta name="generator" content="roffit">
 <STYLE type="text/css">
 P.level0 {
  padding-left: 2em;
@@ -55,7 +57,9 @@ p.roffit {
 <p class="level0">Added in 7.18.2. <a name="RETURN"></a><h2 class="nroffsh">RETURN VALUE</h2>
 <p class="level0">On success, returns <span Class="bold">CURLE_OK</span>, stores the received data into <span Class="bold">buffer</span>, and the number of bytes it actually read into <span Class="bold">*n</span>. 
 <p class="level0">On failure, returns the appropriate error code. 
-<p class="level0">If there is no data to read, the function returns <span Class="bold">CURLE_AGAIN</span>. Use your operating system facilities to wait until the data is ready, and retry. <a name="EXAMPLE"></a><h2 class="nroffsh">EXAMPLE</h2>
+<p class="level0">If there is no data to read, the function returns <span Class="bold">CURLE_AGAIN</span>. Use your operating system facilities to wait until the data is ready, and retry. 
+<p class="level0">Reading exactly 0 bytes would indicate a closed connection. 
+<p class="level0">If there's no socket available to use from the previous transfer, this function returns CURLE_UNSUPPORTED_PROTOCOL. <a name="EXAMPLE"></a><h2 class="nroffsh">EXAMPLE</h2>
 <p class="level0">See <span Class="bold">sendrecv.c</span> in <span Class="bold">docs/examples</span> directory for usage example. <a name="SEE"></a><h2 class="nroffsh">SEE ALSO</h2>
 <p class="level0"><a class="manpage" href="./curl_easy_setopt.html">curl_easy_setopt (3)</a> <a class="manpage" href="./curl_easy_perform.html">  curl_easy_perform (3)</a> <span Class="manpage"> </span> <a class="manpage" href="./curl_easy_getinfo.html">curl_easy_getinfo (3)</a> <span Class="manpage"> </span> <a class="manpage" href="./curl_easy_send.html">curl_easy_send (3) </a> <p class="roffit">
  This HTML page was made with <a href="http://daniel.haxx.se/projects/roffit/">roffit</a>.

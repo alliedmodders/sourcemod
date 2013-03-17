@@ -1,13 +1,24 @@
-/*****************************************************************************
+/***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * $Id: ftpupload.c,v 1.15 2008-05-22 21:20:09 danf Exp $
- */
-
+ * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at http://curl.haxx.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ***************************************************************************/
 #include <stdio.h>
 #include <string.h>
 
@@ -31,7 +42,7 @@
 
 #define LOCAL_FILE      "/tmp/uploadthis.txt"
 #define UPLOAD_FILE_AS  "while-uploading.txt"
-#define REMOTE_URL      "ftp://localhost/"  UPLOAD_FILE_AS
+#define REMOTE_URL      "ftp://example.com/"  UPLOAD_FILE_AS
 #define RENAME_FILE_TO  "renamed-and-fine.txt"
 
 /* NOTE: if you want this example to work on Windows with libcurl as a
@@ -40,21 +51,26 @@
    variable's memory when passed in to it from an app like this. */
 static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *stream)
 {
+  curl_off_t nread;
   /* in real-world cases, this would probably get this data differently
      as this fread() stuff is exactly what the library already would do
      by default internally */
   size_t retcode = fread(ptr, size, nmemb, stream);
 
-  fprintf(stderr, "*** We read %d bytes from file\n", retcode);
+  nread = (curl_off_t)retcode;
+
+  fprintf(stderr, "*** We read %" CURL_FORMAT_CURL_OFF_T
+          " bytes from file\n", nread);
   return retcode;
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   CURL *curl;
   CURLcode res;
   FILE *hd_src;
   struct stat file_info;
+  curl_off_t fsize;
 
   struct curl_slist *headerlist=NULL;
   static const char buf_1 [] = "RNFR " UPLOAD_FILE_AS;
@@ -65,7 +81,9 @@ int main(int argc, char **argv)
     printf("Couldnt open '%s': %s\n", LOCAL_FILE, strerror(errno));
     return 1;
   }
-  printf("Local file size: %ld bytes.\n", file_info.st_size);
+  fsize = (curl_off_t)file_info.st_size;
+
+  printf("Local file size: %" CURL_FORMAT_CURL_OFF_T " bytes.\n", fsize);
 
   /* get a FILE * of the same file */
   hd_src = fopen(LOCAL_FILE, "rb");
@@ -100,10 +118,14 @@ int main(int argc, char **argv)
        curl_off_t. If you use CURLOPT_INFILESIZE (without _LARGE) you must
        make sure that to pass in a type 'long' argument. */
     curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE,
-                     (curl_off_t)file_info.st_size);
+                     (curl_off_t)fsize);
 
     /* Now run off and do what you've been told! */
     res = curl_easy_perform(curl);
+    /* Check for errors */
+    if(res != CURLE_OK)
+      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
 
     /* clean up the FTP commands list */
     curl_slist_free_all (headerlist);

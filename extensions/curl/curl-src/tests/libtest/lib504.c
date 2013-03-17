@@ -1,22 +1,31 @@
-/*****************************************************************************
+/***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * $Id: lib504.c,v 1.28 2008-09-20 04:26:57 yangtse Exp $
- */
-
+ * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at http://curl.haxx.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ***************************************************************************/
 #include "test.h"
 
-#include <sys/types.h>
-
 #include "testutil.h"
+#include "warnless.h"
 #include "memdebug.h"
 
-#define MAIN_LOOP_HANG_TIMEOUT     90 * 1000
-#define MULTI_PERFORM_HANG_TIMEOUT 60 * 1000
+#define TEST_HANG_TIMEOUT 60 * 1000
 
 /*
  * Source code in here hugely as reported in bug report 651464 by
@@ -27,84 +36,41 @@
  */
 int test(char *URL)
 {
-  CURL *c;
-  int ret=0;
-  CURLM *m;
+  CURL *c = NULL;
+  int res = 0;
+  CURLM *m = NULL;
   fd_set rd, wr, exc;
-  CURLMcode res;
-  char done = FALSE;
   int running;
-  int max_fd;
-  int rc;
-  struct timeval ml_start;
-  struct timeval mp_start;
-  char ml_timedout = FALSE;
-  char mp_timedout = FALSE;
 
-  if (curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
-    fprintf(stderr, "curl_global_init() failed\n");
-    return TEST_ERR_MAJOR_BAD;
-  }
+  start_test_timing();
 
-  if ((c = curl_easy_init()) == NULL) {
-    fprintf(stderr, "curl_easy_init() failed\n");
-    curl_global_cleanup();
-    return TEST_ERR_MAJOR_BAD;
-  }
+  global_init(CURL_GLOBAL_ALL);
 
-  /* the point here being that there must not run anything on the given
+  easy_init(c);
+
+  /* The point here is that there must not be anything running on the given
      proxy port */
-  curl_easy_setopt(c, CURLOPT_PROXY, libtest_arg2);
-  curl_easy_setopt(c, CURLOPT_URL, URL);
-  curl_easy_setopt(c, CURLOPT_VERBOSE, 1L);
+  if (libtest_arg2)
+    easy_setopt(c, CURLOPT_PROXY, libtest_arg2);
+  easy_setopt(c, CURLOPT_URL, URL);
+  easy_setopt(c, CURLOPT_VERBOSE, 1L);
 
-  if ((m = curl_multi_init()) == NULL) {
-    fprintf(stderr, "curl_multi_init() failed\n");
-    curl_easy_cleanup(c);
-    curl_global_cleanup();
-    return TEST_ERR_MAJOR_BAD;
-  }
+  multi_init(m);
 
-  if ((res = curl_multi_add_handle(m, c)) != CURLM_OK) {
-    fprintf(stderr, "curl_multi_add_handle() failed, "
-            "with code %d\n", res);
-    curl_multi_cleanup(m);
-    curl_easy_cleanup(c);
-    curl_global_cleanup();
-    return TEST_ERR_MAJOR_BAD;
-  }
+  multi_add_handle(m, c);
 
-  ml_timedout = FALSE;
-  ml_start = tutil_tvnow();
-
-  while (!done) {
+  for(;;) {
     struct timeval interval;
+    int maxfd = -99;
 
     interval.tv_sec = 1;
     interval.tv_usec = 0;
 
-    if (tutil_tvdiff(tutil_tvnow(), ml_start) >
-        MAIN_LOOP_HANG_TIMEOUT) {
-      ml_timedout = TRUE;
-      break;
-    }
-    mp_timedout = FALSE;
-    mp_start = tutil_tvnow();
-
     fprintf(stderr, "curl_multi_perform()\n");
 
-    res = CURLM_CALL_MULTI_PERFORM;
+    multi_perform(m, &running);
 
-    while (res == CURLM_CALL_MULTI_PERFORM) {
-      res = curl_multi_perform(m, &running);
-      if (tutil_tvdiff(tutil_tvnow(), mp_start) >
-          MULTI_PERFORM_HANG_TIMEOUT) {
-        mp_timedout = TRUE;
-        break;
-      }
-    }
-    if (mp_timedout)
-      break;
+    abort_on_test_timeout();
 
     if(!running) {
       /* This is where this code is expected to reach */
@@ -112,46 +78,37 @@ int test(char *URL)
       CURLMsg *msg = curl_multi_info_read(m, &numleft);
       fprintf(stderr, "Expected: not running\n");
       if(msg && !numleft)
-        ret = 100; /* this is where we should be */
+        res = TEST_ERR_SUCCESS; /* this is where we should be */
       else
-        ret = 99; /* not correct */
-      break;
+        res = TEST_ERR_FAILURE; /* not correct */
+      break; /* done */
     }
-    fprintf(stderr, "running == %d, res == %d\n", running, res);
-
-    if (res != CURLM_OK) {
-      ret = 2;
-      break;
-    }
+    fprintf(stderr, "running == %d\n", running);
 
     FD_ZERO(&rd);
     FD_ZERO(&wr);
     FD_ZERO(&exc);
-    max_fd = 0;
 
     fprintf(stderr, "curl_multi_fdset()\n");
-    if (curl_multi_fdset(m, &rd, &wr, &exc, &max_fd) != CURLM_OK) {
-      fprintf(stderr, "unexpected failured of fdset.\n");
-      ret = 3;
-      break;
-    }
-    rc = select_test(max_fd+1, &rd, &wr, &exc, &interval);
-    fprintf(stderr, "select returned %d\n", rc);
+
+    multi_fdset(m, &rd, &wr, &exc, &maxfd);
+
+    /* At this point, maxfd is guaranteed to be greater or equal than -1. */
+
+    select_test(maxfd+1, &rd, &wr, &exc, &interval);
+
+    abort_on_test_timeout();
   }
 
-  if (ml_timedout || mp_timedout) {
-    if (ml_timedout) fprintf(stderr, "ml_timedout\n");
-    if (mp_timedout) fprintf(stderr, "mp_timedout\n");
-    fprintf(stderr, "ABORTING TEST, since it seems "
-            "that it would have run forever.\n");
-    ret = TEST_ERR_RUNS_FOREVER;
-  }
+test_cleanup:
+
+  /* proper cleanup sequence - type PA */
 
   curl_multi_remove_handle(m, c);
-  curl_easy_cleanup(c);
   curl_multi_cleanup(m);
+  curl_easy_cleanup(c);
   curl_global_cleanup();
 
-  return ret;
+  return res;
 }
 

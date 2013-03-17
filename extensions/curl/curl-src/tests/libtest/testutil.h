@@ -1,5 +1,5 @@
-#ifndef __LIBTEST_TESTUTIL_H
-#define __LIBTEST_TESTUTIL_H
+#ifndef HEADER_CURL_LIBTEST_TESTUTIL_H
+#define HEADER_CURL_LIBTEST_TESTUTIL_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2007, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -20,11 +20,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
- * $Id: testutil.h,v 1.4 2007-02-20 12:12:27 yangtse Exp $
  ***************************************************************************/
-
-#include "setup.h"
-
+#include "curl_setup.h"
 
 struct timeval tutil_tvnow(void);
 
@@ -46,5 +43,5 @@ double tutil_tvdiff_secs(struct timeval t1, struct timeval t2);
 long tutil_tvlong(struct timeval t1);
 
 
-#endif  /* __LIBTEST_TESTUTIL_H */
+#endif  /* HEADER_CURL_LIBTEST_TESTUTIL_H */
 

@@ -28,21 +28,21 @@ def BuildCURL():
 	else:
 		args = ''
 		projpath = os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'lib',
-		                    'build_libcurl.vcproj')
+		                    'libcurl.vcproj')
 		try:
 			subprocess.Popen('vcbuild')
 		except:
 			xprojpath = os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'lib',
-		                    'build_libcurl.vcxproj')
+		                    'libcurl.vcxproj')
 			if not os.path.isfile(xprojpath):
 				curl.AddCommand(command.DirectCommand(['vcupgrade', projpath]))
-			args = ['msbuild', xprojpath, '/p:Configuration=LIB Release']
+			args = ['msbuild', xprojpath, '/p:Configuration=Release']
 			
 		if not args:
-			args = ['vcbuild', projpath, 'LIB Release']
+			args = ['vcbuild', projpath, 'Release']
 		
 		curl.AddCommand(command.DirectCommand(args))
-		#die "Unable to find libcurl.lib!\n" unless (-f "LIB-Release\\libcurl.lib");
+		#die "Unable to find libcurl.lib!\n" unless (-f "Release\\libcurl.lib");
 
 BuildCURL()
 
@@ -75,7 +75,7 @@ elif AMBuild.target['platform'] == 'windows':
 	                    'curl',
 	                    'curl-src',
 	                    'lib',
-	                    'LIB-Release',
+	                    'Release',
 	                    'libcurl.lib')
 	if os.path.isfile(path):
 		binary.RelinkIfNewer(path)

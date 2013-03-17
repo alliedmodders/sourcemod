@@ -1,19 +1,37 @@
-/*****************************************************************************
+/***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * $Id: lib544.c,v 1.3 2008-09-20 04:26:57 yangtse Exp $
- */
-
+ * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at http://curl.haxx.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ***************************************************************************/
 #include "test.h"
 
 #include "memdebug.h"
 
 static char teststring[] =
+#ifdef CURL_DOES_CONVERSIONS
+  /* ASCII representation with escape sequences for non-ASCII platforms */
+  "\x54\x68\x69\x73\x00\x20\x69\x73\x20\x74\x65\x73\x74\x20\x62\x69\x6e\x61"
+  "\x72\x79\x20\x64\x61\x74\x61\x20\x77\x69\x74\x68\x20\x61\x6e\x20\x65\x6d"
+  "\x62\x65\x64\x64\x65\x64\x20\x4e\x55\x4c\x20\x62\x79\x74\x65\x0a";
+#else
   "This\0 is test binary data with an embedded NUL byte\n";
+#endif
 
 
 int test(char *URL)
@@ -33,22 +51,24 @@ int test(char *URL)
   }
 
   /* First set the URL that is about to receive our POST. */
-  curl_easy_setopt(curl, CURLOPT_URL, URL);
+  test_setopt(curl, CURLOPT_URL, URL);
 
 #ifdef LIB545
-  curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long) sizeof teststring - 1);
+  test_setopt(curl, CURLOPT_POSTFIELDSIZE, (long) sizeof teststring - 1);
 #endif
 
-  curl_easy_setopt(curl, CURLOPT_COPYPOSTFIELDS, teststring);
+  test_setopt(curl, CURLOPT_COPYPOSTFIELDS, teststring);
 
-  curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L); /* show verbose for debug */
-  curl_easy_setopt(curl, CURLOPT_HEADER, 1L); /* include header */
+  test_setopt(curl, CURLOPT_VERBOSE, 1L); /* show verbose for debug */
+  test_setopt(curl, CURLOPT_HEADER, 1L); /* include header */
 
   /* Update the original data to detect non-copy. */
   strcpy(teststring, "FAIL");
 
   /* Now, this is a POST request with binary 0 embedded in POST data. */
   res = curl_easy_perform(curl);
+
+test_cleanup:
 
   /* always cleanup */
   curl_easy_cleanup(curl);

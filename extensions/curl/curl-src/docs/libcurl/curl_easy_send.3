@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2013, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,12 +18,11 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
-.\" * $Id: curl_easy_send.3,v 1.1 2008-05-12 21:43:28 bagder Exp $
 .\" **************************************************************************
 .\"
 .TH curl_easy_send 3 "29 April 2008" "libcurl 7.18.2" "libcurl Manual"
 .SH NAME
-curl_easy_send - sends raw data over an "easy" connection 
+curl_easy_send - sends raw data over an "easy" connection
 .SH SYNOPSIS
 .B #include <curl/easy.h>
 .sp
@@ -58,6 +57,9 @@ sent into \fB*n\fP. Note that this may very well be less than the amount you
 wanted to send.
 
 On failure, returns the appropriate error code.
+
+If there's no socket available to use from the previous transfer, this function
+returns CURLE_UNSUPPORTED_PROTOCOL.
 .SH EXAMPLE
 See \fBsendrecv.c\fP in \fBdocs/examples\fP directory for usage example.
 .SH "SEE ALSO"

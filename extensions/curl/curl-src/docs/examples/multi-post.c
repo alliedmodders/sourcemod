@@ -1,22 +1,33 @@
-/*****************************************************************************
+/***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * $Id: multi-post.c,v 1.6 2008-05-22 21:20:09 danf Exp $
+ * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
- * This is an example application source code using the multi interface
- * to do a multipart formpost without "blocking".
- */
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at http://curl.haxx.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ***************************************************************************/
+/* This is an example application source code using the multi interface
+ * to do a multipart formpost without "blocking". */
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
 
 #include <curl/curl.h>
 
-int main(int argc, char *argv[])
+int main(void)
 {
   CURL *curl;
 
@@ -28,7 +39,7 @@ int main(int argc, char *argv[])
   struct curl_slist *headerlist=NULL;
   static const char buf[] = "Expect:";
 
-  /* Fill in the file upload field. This makes libcurl load data from  
+  /* Fill in the file upload field. This makes libcurl load data from
      the given file name when curl_easy_perform() is called. */
   curl_formadd(&formpost,
                &lastptr,
@@ -59,8 +70,7 @@ int main(int argc, char *argv[])
   if(curl && multi_handle) {
 
     /* what URL that receives this POST */
-    curl_easy_setopt(curl, CURLOPT_URL,
-                     "http://www.fillinyoururl.com/upload.cgi");
+    curl_easy_setopt(curl, CURLOPT_URL, "http://www.example.com/upload.cgi");
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
@@ -68,17 +78,18 @@ int main(int argc, char *argv[])
 
     curl_multi_add_handle(multi_handle, curl);
 
-    while(CURLM_CALL_MULTI_PERFORM ==
-          curl_multi_perform(multi_handle, &still_running));
+    curl_multi_perform(multi_handle, &still_running);
 
-    while(still_running) {
+    do {
       struct timeval timeout;
       int rc; /* select() return code */
 
       fd_set fdread;
       fd_set fdwrite;
       fd_set fdexcep;
-      int maxfd;
+      int maxfd = -1;
+
+      long curl_timeo = -1;
 
       FD_ZERO(&fdread);
       FD_ZERO(&fdwrite);
@@ -88,12 +99,23 @@ int main(int argc, char *argv[])
       timeout.tv_sec = 1;
       timeout.tv_usec = 0;
 
+      curl_multi_timeout(multi_handle, &curl_timeo);
+      if(curl_timeo >= 0) {
+        timeout.tv_sec = curl_timeo / 1000;
+        if(timeout.tv_sec > 1)
+          timeout.tv_sec = 1;
+        else
+          timeout.tv_usec = (curl_timeo % 1000) * 1000;
+      }
+
       /* get file descriptors from the transfers */
       curl_multi_fdset(multi_handle, &fdread, &fdwrite, &fdexcep, &maxfd);
 
       /* In a real-world program you OF COURSE check the return code of the
-         function calls, *and* you make sure that maxfd is bigger than -1
-         so that the call to select() below makes sense! */
+         function calls.  On success, the value of maxfd is guaranteed to be
+         greater or equal than -1.  We call select(maxfd + 1, ...), specially in
+         case of (maxfd == -1), we call select(0, ...), which is basically equal
+         to sleep. */
 
       rc = select(maxfd+1, &fdread, &fdwrite, &fdexcep, &timeout);
 
@@ -102,16 +124,14 @@ int main(int argc, char *argv[])
         /* select error */
         break;
       case 0:
-        printf("timeout!\n");
       default:
         /* timeout or readable/writable sockets */
         printf("perform!\n");
-        while(CURLM_CALL_MULTI_PERFORM ==
-              curl_multi_perform(multi_handle, &still_running));
+        curl_multi_perform(multi_handle, &still_running);
         printf("running: %d!\n", still_running);
         break;
       }
-    }
+    } while(still_running);
 
     curl_multi_cleanup(multi_handle);
 

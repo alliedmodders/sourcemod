@@ -5,7 +5,6 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * $Id: curlgtk.c,v 1.7 2008-05-22 21:20:08 danf Exp $
  */
 /* Copyright (c) 2000 David Odin (aka DindinX) for MandrakeSoft */
 /* an attempt to use the curl library in concert with a gtk-threaded application */
@@ -14,8 +13,6 @@
 #include <gtk/gtk.h>
 
 #include <curl/curl.h>
-#include <curl/types.h> /* new for v7 */
-#include <curl/easy.h> /* new for v7 */
 
 GtkWidget *Bar;
 

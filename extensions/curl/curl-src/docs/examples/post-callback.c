@@ -1,15 +1,26 @@
-/*****************************************************************************
+/***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * $Id: post-callback.c,v 1.10 2008-05-22 21:20:09 danf Exp $
+ * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
- * An example source code that issues a HTTP POST and we provide the actual
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at http://curl.haxx.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ***************************************************************************/
+/* An example source code that issues a HTTP POST and we provide the actual
  * data through a read callback.
- *
  */
 #include <stdio.h>
 #include <string.h>
@@ -19,7 +30,7 @@ const char data[]="this is what we post to the silly web server";
 
 struct WriteThis {
   const char *readptr;
-  int sizeleft;
+  long sizeleft;
 };
 
 static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *userp)
@@ -47,13 +58,23 @@ int main(void)
   struct WriteThis pooh;
 
   pooh.readptr = data;
-  pooh.sizeleft = strlen(data);
+  pooh.sizeleft = (long)strlen(data);
 
+  /* In windows, this will init the winsock stuff */
+  res = curl_global_init(CURL_GLOBAL_DEFAULT);
+  /* Check for errors */
+  if(res != CURLE_OK) {
+    fprintf(stderr, "curl_global_init() failed: %s\n",
+            curl_easy_strerror(res));
+    return 1;
+  }
+
+  /* get a curl handle */
   curl = curl_easy_init();
   if(curl) {
     /* First set the URL that is about to receive our POST. */
-    curl_easy_setopt(curl, CURLOPT_URL,
-                     "http://receivingsite.com.pooh/index.cgi");
+    curl_easy_setopt(curl, CURLOPT_URL, "http://example.com/index.cgi");
+
     /* Now specify we want to POST data */
     curl_easy_setopt(curl, CURLOPT_POST, 1L);
 
@@ -85,7 +106,7 @@ int main(void)
 #else
     /* Set the expected POST size. If you want to POST large amounts of data,
        consider CURLOPT_POSTFIELDSIZE_LARGE */
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (curl_off_t)pooh.sizeleft);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, pooh.sizeleft);
 #endif
 
 #ifdef DISABLE_EXPECT
@@ -109,9 +130,14 @@ int main(void)
 
     /* Perform the request, res will get the return code */
     res = curl_easy_perform(curl);
+    /* Check for errors */
+    if(res != CURLE_OK)
+      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
 
     /* always cleanup */
     curl_easy_cleanup(curl);
   }
+  curl_global_cleanup();
   return 0;
 }

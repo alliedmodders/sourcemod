@@ -18,16 +18,15 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
- * $Id: ccsidcurl.h,v 1.2 2008-01-16 16:04:47 patrickm Exp $
  *
  ***************************************************************************/
 
 #ifndef __CURL_CCSIDCURL_H
 #define __CURL_CCSIDCURL_H
 
-#include <curl.h>
-#include <easy.h>
-#include <multi.h>
+#include "curl.h"
+#include "easy.h"
+#include "multi.h"
 
 
 CURL_EXTERN char * curl_version_ccsid(unsigned int ccsid);
