@@ -79,8 +79,8 @@ EventManager::~EventManager()
 void EventManager::OnSourceModAllInitialized()
 {
 	/* Add a hook for IGameEventManager2::FireEvent() */
-	SH_ADD_HOOK_MEMFUNC(IGameEventManager2, FireEvent, gameevents, this, &EventManager::OnFireEvent, false);
-	SH_ADD_HOOK_MEMFUNC(IGameEventManager2, FireEvent, gameevents, this, &EventManager::OnFireEvent_Post, true);
+	SH_ADD_HOOK(IGameEventManager2, FireEvent, gameevents, SH_MEMBER(this, &EventManager::OnFireEvent), false);
+	SH_ADD_HOOK(IGameEventManager2, FireEvent, gameevents, SH_MEMBER(this, &EventManager::OnFireEvent_Post), true);
 
 	HandleAccess sec;
 
@@ -96,8 +96,8 @@ void EventManager::OnSourceModAllInitialized()
 void EventManager::OnSourceModShutdown()
 {
 	/* Remove hook for IGameEventManager2::FireEvent() */
-	SH_REMOVE_HOOK_MEMFUNC(IGameEventManager2, FireEvent, gameevents, this, &EventManager::OnFireEvent, false);
-	SH_REMOVE_HOOK_MEMFUNC(IGameEventManager2, FireEvent, gameevents, this, &EventManager::OnFireEvent_Post, true);
+	SH_REMOVE_HOOK(IGameEventManager2, FireEvent, gameevents, SH_MEMBER(this, &EventManager::OnFireEvent), false);
+	SH_REMOVE_HOOK(IGameEventManager2, FireEvent, gameevents, SH_MEMBER(this, &EventManager::OnFireEvent_Post), true);
 
 	/* Remove the 'GameEvent' handle type */
 	g_HandleSys.RemoveType(m_EventType, g_pCoreIdent);

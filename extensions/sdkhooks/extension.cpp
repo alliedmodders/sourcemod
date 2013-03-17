@@ -255,16 +255,16 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 inline void HookLevelInit()
 {
 	assert(g_hookOnLevelInit == 0);
-	g_hookOnLevelInit = SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, &g_Interface, &SDKHooks::Hook_LevelInit, false);
+	g_hookOnLevelInit = SH_ADD_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(&g_Interface, &SDKHooks::Hook_LevelInit), false);
 	assert(g_hookOnGetMapEntitiesString == 0);
-	g_hookOnGetMapEntitiesString = SH_ADD_HOOK_MEMFUNC(IVEngineServer, GetMapEntitiesString, engine, &g_Interface, &SDKHooks::Hook_GetMapEntitiesString, false);
+	g_hookOnGetMapEntitiesString = SH_ADD_HOOK(IVEngineServer, GetMapEntitiesString, engine, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GetMapEntitiesString), false);
 }
 
 #ifdef GAMEDESC_CAN_CHANGE
 inline void HookGetGameDescription()
 {
 	assert(g_hookOnGetGameDescription == 0);
-	g_hookOnGetGameDescription = SH_ADD_HOOK_MEMFUNC(IServerGameDLL, GetGameDescription, gamedll, &g_Interface, &SDKHooks::Hook_GetGameDescription, false);
+	g_hookOnGetGameDescription = SH_ADD_HOOK(IServerGameDLL, GetGameDescription, gamedll, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GetGameDescription), false);
 }
 #endif
 
@@ -528,123 +528,123 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 		switch(type)
 		{
 			case SDKHook_EndTouch:
-				SH_ADD_MANUALHOOK_MEMFUNC(EndTouch, pEnt, &g_Interface, &SDKHooks::Hook_EndTouch, false);
+				SH_ADD_MANUALHOOK(EndTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_EndTouch), false);
 				break;
 			case SDKHook_EndTouchPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(EndTouch, pEnt, &g_Interface, &SDKHooks::Hook_EndTouchPost, true);
+				SH_ADD_MANUALHOOK(EndTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_EndTouchPost), true);
 				break;
 			case SDKHook_FireBulletsPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(FireBullets, pEnt, &g_Interface, &SDKHooks::Hook_FireBulletsPost, true);
+				SH_ADD_MANUALHOOK(FireBullets, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_FireBulletsPost), true);
 				break;
 #ifdef GETMAXHEALTH_IS_VIRTUAL
 			case SDKHook_GetMaxHealth:
-				SH_ADD_MANUALHOOK_MEMFUNC(GetMaxHealth, pEnt, &g_Interface, &SDKHooks::Hook_GetMaxHealth, false);
+				SH_ADD_MANUALHOOK(GetMaxHealth, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GetMaxHealth), false);
 				break;
 #endif
 			case SDKHook_GroundEntChangedPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(GroundEntChanged, pEnt, &g_Interface, &SDKHooks::Hook_GroundEntChangedPost, true);
+				SH_ADD_MANUALHOOK(GroundEntChanged, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GroundEntChangedPost), true);
 				break;
 			case SDKHook_OnTakeDamage:
-				SH_ADD_MANUALHOOK_MEMFUNC(OnTakeDamage, pEnt, &g_Interface, &SDKHooks::Hook_OnTakeDamage, false);
+				SH_ADD_MANUALHOOK(OnTakeDamage, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamage), false);
 				break;
 			case SDKHook_OnTakeDamagePost:
-				SH_ADD_MANUALHOOK_MEMFUNC(OnTakeDamage, pEnt, &g_Interface, &SDKHooks::Hook_OnTakeDamagePost, true);
+				SH_ADD_MANUALHOOK(OnTakeDamage, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamagePost), true);
 				break;
 			case SDKHook_PreThink:
-				SH_ADD_MANUALHOOK_MEMFUNC(PreThink, pEnt, &g_Interface, &SDKHooks::Hook_PreThink, false);
+				SH_ADD_MANUALHOOK(PreThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PreThink), false);
 				break;
 			case SDKHook_PreThinkPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(PreThink, pEnt, &g_Interface, &SDKHooks::Hook_PreThinkPost, true);
+				SH_ADD_MANUALHOOK(PreThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PreThinkPost), true);
 				break;
 			case SDKHook_PostThink:
-				SH_ADD_MANUALHOOK_MEMFUNC(PostThink, pEnt, &g_Interface, &SDKHooks::Hook_PostThink, false);
+				SH_ADD_MANUALHOOK(PostThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PostThink), false);
 				break;
 			case SDKHook_PostThinkPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(PostThink, pEnt, &g_Interface, &SDKHooks::Hook_PostThinkPost, true);
+				SH_ADD_MANUALHOOK(PostThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PostThinkPost), true);
 				break;
 			case SDKHook_Reload:
-				SH_ADD_MANUALHOOK_MEMFUNC(Reload, pEnt, &g_Interface, &SDKHooks::Hook_Reload, false);
+				SH_ADD_MANUALHOOK(Reload, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Reload), false);
 				break;
 			case SDKHook_ReloadPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(Reload, pEnt, &g_Interface, &SDKHooks::Hook_ReloadPost, true);
+				SH_ADD_MANUALHOOK(Reload, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ReloadPost), true);
 				break;
 			case SDKHook_SetTransmit:
-				SH_ADD_MANUALHOOK_MEMFUNC(SetTransmit, pEnt, &g_Interface, &SDKHooks::Hook_SetTransmit, false);
+				SH_ADD_MANUALHOOK(SetTransmit, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_SetTransmit), false);
 				break;
 			case SDKHook_Spawn:
-				SH_ADD_MANUALHOOK_MEMFUNC(Spawn, pEnt, &g_Interface, &SDKHooks::Hook_Spawn, false);
+				SH_ADD_MANUALHOOK(Spawn, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Spawn), false);
 				break;
 			case SDKHook_SpawnPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(Spawn, pEnt, &g_Interface, &SDKHooks::Hook_SpawnPost, true);
+				SH_ADD_MANUALHOOK(Spawn, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_SpawnPost), true);
 				break;
 			case SDKHook_StartTouch:
-				SH_ADD_MANUALHOOK_MEMFUNC(StartTouch, pEnt, &g_Interface, &SDKHooks::Hook_StartTouch, false);
+				SH_ADD_MANUALHOOK(StartTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_StartTouch), false);
 				break;
 			case SDKHook_StartTouchPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(StartTouch, pEnt, &g_Interface, &SDKHooks::Hook_StartTouchPost, true);
+				SH_ADD_MANUALHOOK(StartTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_StartTouchPost), true);
 				break;
 			case SDKHook_Think:
-				SH_ADD_MANUALHOOK_MEMFUNC(Think, pEnt, &g_Interface, &SDKHooks::Hook_Think, false);
+				SH_ADD_MANUALHOOK(Think, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Think), false);
 				break;
 			case SDKHook_ThinkPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(Think, pEnt, &g_Interface, &SDKHooks::Hook_ThinkPost, true);
+				SH_ADD_MANUALHOOK(Think, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ThinkPost), true);
 				break;
 			case SDKHook_Touch:
-				SH_ADD_MANUALHOOK_MEMFUNC(Touch, pEnt, &g_Interface, &SDKHooks::Hook_Touch, false);
+				SH_ADD_MANUALHOOK(Touch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Touch), false);
 				break;
 			case SDKHook_TouchPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(Touch, pEnt, &g_Interface, &SDKHooks::Hook_TouchPost, true);
+				SH_ADD_MANUALHOOK(Touch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TouchPost), true);
 				break;
 			case SDKHook_TraceAttack:
-				SH_ADD_MANUALHOOK_MEMFUNC(TraceAttack, pEnt, &g_Interface, &SDKHooks::Hook_TraceAttack, false);
+				SH_ADD_MANUALHOOK(TraceAttack, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TraceAttack), false);
 				break;
 			case SDKHook_TraceAttackPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(TraceAttack, pEnt, &g_Interface, &SDKHooks::Hook_TraceAttackPost, true);
+				SH_ADD_MANUALHOOK(TraceAttack, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TraceAttackPost), true);
 				break;
 			case SDKHook_Use:
-				SH_ADD_MANUALHOOK_MEMFUNC(Use, pEnt, &g_Interface, &SDKHooks::Hook_Use, false);
+				SH_ADD_MANUALHOOK(Use, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Use), false);
 				break;
 			case SDKHook_UsePost:
-				SH_ADD_MANUALHOOK_MEMFUNC(Use, pEnt, &g_Interface, &SDKHooks::Hook_UsePost, true);
+				SH_ADD_MANUALHOOK(Use, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_UsePost), true);
 				break;
 			case SDKHook_VPhysicsUpdate:
-				SH_ADD_MANUALHOOK_MEMFUNC(VPhysicsUpdate, pEnt, &g_Interface, &SDKHooks::Hook_VPhysicsUpdate, false);
+				SH_ADD_MANUALHOOK(VPhysicsUpdate, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_VPhysicsUpdate), false);
 				break;
 			case SDKHook_VPhysicsUpdatePost:
-				SH_ADD_MANUALHOOK_MEMFUNC(VPhysicsUpdate, pEnt, &g_Interface, &SDKHooks::Hook_VPhysicsUpdatePost, true);
+				SH_ADD_MANUALHOOK(VPhysicsUpdate, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_VPhysicsUpdatePost), true);
 				break;
 			case SDKHook_WeaponCanSwitchTo:
-				SH_ADD_MANUALHOOK_MEMFUNC(Weapon_CanSwitchTo, pEnt, &g_Interface, &SDKHooks::Hook_WeaponCanSwitchTo, false);
+				SH_ADD_MANUALHOOK(Weapon_CanSwitchTo, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanSwitchTo), false);
 				break;
 			case SDKHook_WeaponCanSwitchToPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(Weapon_CanSwitchTo, pEnt, &g_Interface, &SDKHooks::Hook_WeaponCanSwitchToPost, true);
+				SH_ADD_MANUALHOOK(Weapon_CanSwitchTo, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanSwitchToPost), true);
 				break;
 			case SDKHook_WeaponCanUse:
-				SH_ADD_MANUALHOOK_MEMFUNC(Weapon_CanUse, pEnt, &g_Interface, &SDKHooks::Hook_WeaponCanUse, false);
+				SH_ADD_MANUALHOOK(Weapon_CanUse, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanUse), false);
 				break;
 			case SDKHook_WeaponCanUsePost:
-				SH_ADD_MANUALHOOK_MEMFUNC(Weapon_CanUse, pEnt, &g_Interface, &SDKHooks::Hook_WeaponCanUsePost, true);
+				SH_ADD_MANUALHOOK(Weapon_CanUse, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanUsePost), true);
 				break;
 			case SDKHook_WeaponDrop:
-				SH_ADD_MANUALHOOK_MEMFUNC(Weapon_Drop, pEnt, &g_Interface, &SDKHooks::Hook_WeaponDrop, false);
+				SH_ADD_MANUALHOOK(Weapon_Drop, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponDrop), false);
 				break;
 			case SDKHook_WeaponDropPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(Weapon_Drop, pEnt, &g_Interface, &SDKHooks::Hook_WeaponDropPost, true);
+				SH_ADD_MANUALHOOK(Weapon_Drop, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponDropPost), true);
 				break;
 			case SDKHook_WeaponEquip:
-				SH_ADD_MANUALHOOK_MEMFUNC(Weapon_Equip, pEnt, &g_Interface, &SDKHooks::Hook_WeaponEquip, false);
+				SH_ADD_MANUALHOOK(Weapon_Equip, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponEquip), false);
 				break;
 			case SDKHook_WeaponEquipPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(Weapon_Equip, pEnt, &g_Interface, &SDKHooks::Hook_WeaponEquipPost, true);
+				SH_ADD_MANUALHOOK(Weapon_Equip, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponEquipPost), true);
 				break;
 			case SDKHook_WeaponSwitch:
-				SH_ADD_MANUALHOOK_MEMFUNC(Weapon_Switch, pEnt, &g_Interface, &SDKHooks::Hook_WeaponSwitch, false);
+				SH_ADD_MANUALHOOK(Weapon_Switch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponSwitch), false);
 				break;
 			case SDKHook_WeaponSwitchPost:
-				SH_ADD_MANUALHOOK_MEMFUNC(Weapon_Switch, pEnt, &g_Interface, &SDKHooks::Hook_WeaponSwitchPost, true);
+				SH_ADD_MANUALHOOK(Weapon_Switch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponSwitchPost), true);
 				break;
 			case SDKHook_ShouldCollide:
-				SH_ADD_MANUALHOOK_MEMFUNC(ShouldCollide, pEnt, &g_Interface, &SDKHooks::Hook_ShouldCollide, false);
+				SH_ADD_MANUALHOOK(ShouldCollide, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ShouldCollide), false);
 				break;
 		}
 	}
@@ -686,123 +686,123 @@ void SDKHooks::Unhook(int index)
 		switch(g_HookList[index].type)
 		{
 			case SDKHook_EndTouch:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(EndTouch, pEnt, &g_Interface, &SDKHooks::Hook_EndTouch, false);
+				SH_REMOVE_MANUALHOOK(EndTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_EndTouch), false);
 				break;
 			case SDKHook_EndTouchPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(EndTouch, pEnt, &g_Interface, &SDKHooks::Hook_EndTouchPost, true);
+				SH_REMOVE_MANUALHOOK(EndTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_EndTouchPost), true);
 				break;
 			case SDKHook_FireBulletsPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(FireBullets, pEnt, &g_Interface, &SDKHooks::Hook_FireBulletsPost, true);
+				SH_REMOVE_MANUALHOOK(FireBullets, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_FireBulletsPost), true);
 				break;
 #ifdef GETMAXHEALTH_IS_VIRTUAL
 			case SDKHook_GetMaxHealth:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(GetMaxHealth, pEnt, &g_Interface, &SDKHooks::Hook_GetMaxHealth, false);
+				SH_REMOVE_MANUALHOOK(GetMaxHealth, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GetMaxHealth), false);
 				break;
 #endif
 			case SDKHook_GroundEntChangedPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(GroundEntChanged, pEnt, &g_Interface, &SDKHooks::Hook_GroundEntChangedPost, true);
+				SH_REMOVE_MANUALHOOK(GroundEntChanged, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GroundEntChangedPost), true);
 				break;
 			case SDKHook_OnTakeDamage:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(OnTakeDamage, pEnt, &g_Interface, &SDKHooks::Hook_OnTakeDamage, false);
+				SH_REMOVE_MANUALHOOK(OnTakeDamage, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamage), false);
 				break;
 			case SDKHook_OnTakeDamagePost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(OnTakeDamage, pEnt, &g_Interface, &SDKHooks::Hook_OnTakeDamagePost, true);
+				SH_REMOVE_MANUALHOOK(OnTakeDamage, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamagePost), true);
 				break;
 			case SDKHook_PreThink:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(PreThink, pEnt, &g_Interface, &SDKHooks::Hook_PreThink, false);
+				SH_REMOVE_MANUALHOOK(PreThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PreThink), false);
 				break;
 			case SDKHook_PreThinkPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(PreThink, pEnt, &g_Interface, &SDKHooks::Hook_PreThinkPost, true);
+				SH_REMOVE_MANUALHOOK(PreThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PreThinkPost), true);
 				break;
 			case SDKHook_PostThink:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(PostThink, pEnt, &g_Interface, &SDKHooks::Hook_PostThink, false);
+				SH_REMOVE_MANUALHOOK(PostThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PostThink), false);
 				break;
 			case SDKHook_PostThinkPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(PostThink, pEnt, &g_Interface, &SDKHooks::Hook_PostThinkPost, true);
+				SH_REMOVE_MANUALHOOK(PostThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PostThinkPost), true);
 				break;
 			case SDKHook_Reload:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Reload, pEnt, &g_Interface, &SDKHooks::Hook_Reload, false);
+				SH_REMOVE_MANUALHOOK(Reload, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Reload), false);
 				break;
 			case SDKHook_ReloadPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Reload, pEnt, &g_Interface, &SDKHooks::Hook_ReloadPost, true);
+				SH_REMOVE_MANUALHOOK(Reload, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ReloadPost), true);
 				break;
 			case SDKHook_SetTransmit:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(SetTransmit, pEnt, &g_Interface, &SDKHooks::Hook_SetTransmit, false);
+				SH_REMOVE_MANUALHOOK(SetTransmit, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_SetTransmit), false);
 				break;
 			case SDKHook_Spawn:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Spawn, pEnt, &g_Interface, &SDKHooks::Hook_Spawn, false);
+				SH_REMOVE_MANUALHOOK(Spawn, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Spawn), false);
 				break;
 			case SDKHook_SpawnPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Spawn, pEnt, &g_Interface, &SDKHooks::Hook_SpawnPost, true);
+				SH_REMOVE_MANUALHOOK(Spawn, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_SpawnPost), true);
 				break;
 			case SDKHook_StartTouch:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(StartTouch, pEnt, &g_Interface, &SDKHooks::Hook_StartTouch, false);
+				SH_REMOVE_MANUALHOOK(StartTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_StartTouch), false);
 				break;
 			case SDKHook_StartTouchPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(StartTouch, pEnt, &g_Interface, &SDKHooks::Hook_StartTouchPost, true);
+				SH_REMOVE_MANUALHOOK(StartTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_StartTouchPost), true);
 				break;
 			case SDKHook_Think:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Think, pEnt, &g_Interface, &SDKHooks::Hook_Think, false);
+				SH_REMOVE_MANUALHOOK(Think, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Think), false);
 				break;
 			case SDKHook_ThinkPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Think, pEnt, &g_Interface, &SDKHooks::Hook_ThinkPost, true);
+				SH_REMOVE_MANUALHOOK(Think, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ThinkPost), true);
 				break;
 			case SDKHook_Touch:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Touch, pEnt, &g_Interface, &SDKHooks::Hook_Touch, false);
+				SH_REMOVE_MANUALHOOK(Touch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Touch), false);
 				break;
 			case SDKHook_TouchPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Touch, pEnt, &g_Interface, &SDKHooks::Hook_TouchPost, true);
+				SH_REMOVE_MANUALHOOK(Touch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TouchPost), true);
 				break;
 			case SDKHook_TraceAttack:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(TraceAttack, pEnt, &g_Interface, &SDKHooks::Hook_TraceAttack, false);
+				SH_REMOVE_MANUALHOOK(TraceAttack, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TraceAttack), false);
 				break;
 			case SDKHook_TraceAttackPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(TraceAttack, pEnt, &g_Interface, &SDKHooks::Hook_TraceAttackPost, true);
+				SH_REMOVE_MANUALHOOK(TraceAttack, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TraceAttackPost), true);
 				break;
 			case SDKHook_Use:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Use, pEnt, &g_Interface, &SDKHooks::Hook_Use, false);
+				SH_REMOVE_MANUALHOOK(Use, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Use), false);
 				break;
 			case SDKHook_UsePost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Use, pEnt, &g_Interface, &SDKHooks::Hook_UsePost, true);
+				SH_REMOVE_MANUALHOOK(Use, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_UsePost), true);
 				break;
 			case SDKHook_VPhysicsUpdate:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(VPhysicsUpdate, pEnt, &g_Interface, &SDKHooks::Hook_VPhysicsUpdate, false);
+				SH_REMOVE_MANUALHOOK(VPhysicsUpdate, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_VPhysicsUpdate), false);
 				break;
 			case SDKHook_VPhysicsUpdatePost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(VPhysicsUpdate, pEnt, &g_Interface, &SDKHooks::Hook_VPhysicsUpdatePost, true);
+				SH_REMOVE_MANUALHOOK(VPhysicsUpdate, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_VPhysicsUpdatePost), true);
 				break;
 			case SDKHook_WeaponCanSwitchTo:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Weapon_CanSwitchTo, pEnt, &g_Interface, &SDKHooks::Hook_WeaponCanSwitchTo, false);
+				SH_REMOVE_MANUALHOOK(Weapon_CanSwitchTo, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanSwitchTo), false);
 				break;
 			case SDKHook_WeaponCanSwitchToPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Weapon_CanSwitchTo, pEnt, &g_Interface, &SDKHooks::Hook_WeaponCanSwitchToPost, true);
+				SH_REMOVE_MANUALHOOK(Weapon_CanSwitchTo, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanSwitchToPost), true);
 				break;
 			case SDKHook_WeaponCanUse:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Weapon_CanUse, pEnt, &g_Interface, &SDKHooks::Hook_WeaponCanUse, false);
+				SH_REMOVE_MANUALHOOK(Weapon_CanUse, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanUse), false);
 				break;
 			case SDKHook_WeaponCanUsePost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Weapon_CanUse, pEnt, &g_Interface, &SDKHooks::Hook_WeaponCanUsePost, true);
+				SH_REMOVE_MANUALHOOK(Weapon_CanUse, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanUsePost), true);
 				break;
 			case SDKHook_WeaponDrop:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Weapon_Drop, pEnt, &g_Interface, &SDKHooks::Hook_WeaponDrop, false);
+				SH_REMOVE_MANUALHOOK(Weapon_Drop, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponDrop), false);
 				break;
 			case SDKHook_WeaponDropPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Weapon_Drop, pEnt, &g_Interface, &SDKHooks::Hook_WeaponDropPost, true);
+				SH_REMOVE_MANUALHOOK(Weapon_Drop, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponDropPost), true);
 				break;
 			case SDKHook_WeaponEquip:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Weapon_Equip, pEnt, &g_Interface, &SDKHooks::Hook_WeaponEquip, false);
+				SH_REMOVE_MANUALHOOK(Weapon_Equip, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponEquip), false);
 				break;
 			case SDKHook_WeaponEquipPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Weapon_Equip, pEnt, &g_Interface, &SDKHooks::Hook_WeaponEquipPost, true);
+				SH_REMOVE_MANUALHOOK(Weapon_Equip, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponEquipPost), true);
 				break;
 			case SDKHook_WeaponSwitch:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Weapon_Switch, pEnt, &g_Interface, &SDKHooks::Hook_WeaponSwitch, false);
+				SH_REMOVE_MANUALHOOK(Weapon_Switch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponSwitch), false);
 				break;
 			case SDKHook_WeaponSwitchPost:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(Weapon_Switch, pEnt, &g_Interface, &SDKHooks::Hook_WeaponSwitchPost, true);
+				SH_REMOVE_MANUALHOOK(Weapon_Switch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponSwitchPost), true);
 				break;
 			case SDKHook_ShouldCollide:
-				SH_REMOVE_MANUALHOOK_MEMFUNC(ShouldCollide, pEnt, &g_Interface, &SDKHooks::Hook_ShouldCollide, false);
+				SH_REMOVE_MANUALHOOK(ShouldCollide, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ShouldCollide), false);
 				break;
 			default:
 				return;

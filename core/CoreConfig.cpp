@@ -136,8 +136,8 @@ void CoreConfig::OnSourceModShutdown()
 
 	if (g_pExecPtr != NULL)
 	{
-		SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatchPre, false);
-		SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatchPost, true);
+		SH_REMOVE_HOOK(ConCommand, Dispatch, g_pExecPtr, SH_STATIC(Hook_ExecDispatchPre), false);
+		SH_REMOVE_HOOK(ConCommand, Dispatch, g_pExecPtr, SH_STATIC(Hook_ExecDispatchPost), true);
 		g_pExecPtr = NULL;
 	}
 }
@@ -162,8 +162,8 @@ void CoreConfig::OnSourceModLevelChange(const char *mapName)
 			g_pExecPtr = FindCommand("exec");
 			if (g_pExecPtr != NULL)
 			{
-				SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatchPre, false);
-				SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatchPost, true);
+				SH_ADD_HOOK(ConCommand, Dispatch, g_pExecPtr, SH_STATIC(Hook_ExecDispatchPre), false);
+				SH_ADD_HOOK(ConCommand, Dispatch, g_pExecPtr, SH_STATIC(Hook_ExecDispatchPost), true);
 			}
 			else
 			{

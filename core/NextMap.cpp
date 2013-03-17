@@ -69,13 +69,13 @@ void NextMapManager::OnSourceModAllInitialized_Post()
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_ADD_HOOK(IVEngineServer, ChangeLevel, engine, SH_MEMBER(this, &NextMapManager::HookChangeLevel), false);
 #else
-	SH_ADD_HOOK_MEMFUNC(IVEngineServer, ChangeLevel, engine, this, &NextMapManager::HookChangeLevel, false);
+	SH_ADD_HOOK(IVEngineServer, ChangeLevel, engine, SH_MEMBER(this, &NextMapManager::HookChangeLevel), false);
 #endif
 
 	ConCommand *pCmd = FindCommand("changelevel");
 	if (pCmd != NULL)
 	{
-		SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, pCmd, CmdChangeLevelCallback, false);
+		SH_ADD_HOOK(ConCommand, Dispatch, pCmd, SH_STATIC(CmdChangeLevelCallback), false);
 		changeLevelCmd = pCmd;
 	}
 }
@@ -85,12 +85,12 @@ void NextMapManager::OnSourceModShutdown()
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_REMOVE_HOOK(IVEngineServer, ChangeLevel, engine, SH_MEMBER(this, &NextMapManager::HookChangeLevel), false);
 #else
-	SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, ChangeLevel, engine, this, &NextMapManager::HookChangeLevel, false);
+	SH_REMOVE_HOOK(IVEngineServer, ChangeLevel, engine, SH_MEMBER(this, &NextMapManager::HookChangeLevel), false);
 #endif
 
 	if (changeLevelCmd != NULL)
 	{
-		SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, changeLevelCmd, CmdChangeLevelCallback, false);
+		SH_REMOVE_HOOK(ConCommand, Dispatch, changeLevelCmd, SH_STATIC(CmdChangeLevelCallback), false);
 	}
 
 	SourceHook::List<MapChangeData *>::iterator iter;

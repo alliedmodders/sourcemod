@@ -64,20 +64,20 @@ public:
 	void OnSourceModAllInitialized()
 	{
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-		SH_ADD_HOOK_MEMFUNC(ICvar, UnregisterConCommand, icvar, this, &ConCommandCleaner::UnlinkConCommandBase, false);
-		SH_ADD_HOOK_MEMFUNC(ICvar, RegisterConCommand, icvar, this, &ConCommandCleaner::LinkConCommandBase, false);
+		SH_ADD_HOOK(ICvar, UnregisterConCommand, icvar, SH_MEMBER(this, &ConCommandCleaner::UnlinkConCommandBase), false);
+		SH_ADD_HOOK(ICvar, RegisterConCommand, icvar, SH_MEMBER(this, &ConCommandCleaner::LinkConCommandBase), false);
 #else
-		SH_ADD_HOOK_MEMFUNC(ICvar, RegisterConCommandBase, icvar, this, &ConCommandCleaner::LinkConCommandBase, false);
+		SH_ADD_HOOK(ICvar, RegisterConCommandBase, icvar, SH_MEMBER(this, &ConCommandCleaner::LinkConCommandBase), false);
 #endif
 	}
 
 	void OnSourceModShutdown()
 	{
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-		SH_REMOVE_HOOK_MEMFUNC(ICvar, UnregisterConCommand, icvar, this, &ConCommandCleaner::UnlinkConCommandBase, false);
-		SH_REMOVE_HOOK_MEMFUNC(ICvar, RegisterConCommand, icvar, this, &ConCommandCleaner::LinkConCommandBase, false);
+		SH_REMOVE_HOOK(ICvar, UnregisterConCommand, icvar, SH_MEMBER(this, &ConCommandCleaner::UnlinkConCommandBase), false);
+		SH_REMOVE_HOOK(ICvar, RegisterConCommand, icvar, SH_MEMBER(this, &ConCommandCleaner::LinkConCommandBase), false);
 #else
-		SH_REMOVE_HOOK_MEMFUNC(ICvar, RegisterConCommandBase, icvar, this, &ConCommandCleaner::LinkConCommandBase, false);
+		SH_REMOVE_HOOK(ICvar, RegisterConCommandBase, icvar, SH_MEMBER(this, &ConCommandCleaner::LinkConCommandBase), false);
 #endif
 	}
 

@@ -75,13 +75,13 @@ void ConCmdManager::OnSourceModAllInitialized()
 {
 	g_PluginSys.AddPluginsListener(this);
 	g_RootMenu.AddRootConsoleCommand("cmds", "List console commands", this);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, serverClients, this, &ConCmdManager::SetCommandClient, false);
+	SH_ADD_HOOK(IServerGameClients, SetCommandClient, serverClients, SH_MEMBER(this, &ConCmdManager::SetCommandClient), false);
 }
 
 void ConCmdManager::OnSourceModShutdown()
 {
 	/* All commands should already be removed by the time we're done */
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, serverClients, this, &ConCmdManager::SetCommandClient, false);
+	SH_REMOVE_HOOK(IServerGameClients, SetCommandClient, serverClients, SH_MEMBER(this, &ConCmdManager::SetCommandClient), false);
 	g_RootMenu.RemoveRootConsoleCommand("cmds", this);
 }
 
@@ -826,7 +826,7 @@ void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool is_rea
 			if (is_read_safe)
 			{
 				/* Remove the external hook */
-				SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, info->pCmd, CommandCallback, false);
+				SH_REMOVE_HOOK(ConCommand, Dispatch, info->pCmd, SH_STATIC(CommandCallback), false);
 			}
 			if (untrack)
 			{
@@ -897,7 +897,7 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 		else
 		{
 			TrackConCommandBase(pCmd, this);
-			SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, pCmd, CommandCallback, false);
+			SH_ADD_HOOK(ConCommand, Dispatch, pCmd, SH_STATIC(CommandCallback), false);
 		}
 
 		pInfo->pCmd = pCmd;

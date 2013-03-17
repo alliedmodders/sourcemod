@@ -132,14 +132,14 @@ PlayerManager::~PlayerManager()
 
 void PlayerManager::OnSourceModAllInitialized()
 {
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &PlayerManager::OnClientConnect, false);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &PlayerManager::OnClientConnect_Post, true);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, serverClients, this, &PlayerManager::OnClientPutInServer, true);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &PlayerManager::OnClientDisconnect, false);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &PlayerManager::OnClientDisconnect_Post, true);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &PlayerManager::OnClientCommand, false);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, serverClients, this, &PlayerManager::OnClientSettingsChanged, true);
-	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &PlayerManager::OnServerActivate, true);
+	SH_ADD_HOOK(IServerGameClients, ClientConnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientConnect), false);
+	SH_ADD_HOOK(IServerGameClients, ClientConnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientConnect_Post), true);
+	SH_ADD_HOOK(IServerGameClients, ClientPutInServer, serverClients, SH_MEMBER(this, &PlayerManager::OnClientPutInServer), true);
+	SH_ADD_HOOK(IServerGameClients, ClientDisconnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientDisconnect), false);
+	SH_ADD_HOOK(IServerGameClients, ClientDisconnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientDisconnect_Post), true);
+	SH_ADD_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommand), false);
+	SH_ADD_HOOK(IServerGameClients, ClientSettingsChanged, serverClients, SH_MEMBER(this, &PlayerManager::OnClientSettingsChanged), true);
+	SH_ADD_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
 
 	g_ShareSys.AddInterface(NULL, this);
 
@@ -167,21 +167,21 @@ void PlayerManager::OnSourceModAllInitialized()
 	ConCommand *pCmd = FindCommand("maxplayers");
 	if (pCmd != NULL)
 	{
-		SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, pCmd, CmdMaxplayersCallback, true);
+		SH_ADD_HOOK(ConCommand, Dispatch, pCmd, SH_STATIC(CmdMaxplayersCallback), true);
 		maxplayersCmd = pCmd;
 	}
 }
 
 void PlayerManager::OnSourceModShutdown()
 {
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &PlayerManager::OnClientConnect, false);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &PlayerManager::OnClientConnect_Post, true);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, serverClients, this, &PlayerManager::OnClientPutInServer, true);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &PlayerManager::OnClientDisconnect, false);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &PlayerManager::OnClientDisconnect_Post, true);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &PlayerManager::OnClientCommand, false);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, serverClients, this, &PlayerManager::OnClientSettingsChanged, true);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &PlayerManager::OnServerActivate, true);
+	SH_REMOVE_HOOK(IServerGameClients, ClientConnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientConnect), false);
+	SH_REMOVE_HOOK(IServerGameClients, ClientConnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientConnect_Post), true);
+	SH_REMOVE_HOOK(IServerGameClients, ClientPutInServer, serverClients, SH_MEMBER(this, &PlayerManager::OnClientPutInServer), true);
+	SH_REMOVE_HOOK(IServerGameClients, ClientDisconnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientDisconnect), false);
+	SH_REMOVE_HOOK(IServerGameClients, ClientDisconnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientDisconnect_Post), true);
+	SH_REMOVE_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommand), false);
+	SH_REMOVE_HOOK(IServerGameClients, ClientSettingsChanged, serverClients, SH_MEMBER(this, &PlayerManager::OnClientSettingsChanged), true);
+	SH_REMOVE_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
 
 	/* Release forwards */
 	g_Forwards.ReleaseForward(m_clconnect);
@@ -203,7 +203,7 @@ void PlayerManager::OnSourceModShutdown()
 
 	if (maxplayersCmd != NULL)
 	{
-		SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, maxplayersCmd, CmdMaxplayersCallback, true);
+		SH_REMOVE_HOOK(ConCommand, Dispatch, maxplayersCmd, SH_STATIC(CmdMaxplayersCallback), true);
 	}
 }
 

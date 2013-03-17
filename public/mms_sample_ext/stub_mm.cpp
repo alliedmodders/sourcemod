@@ -39,7 +39,7 @@ bool StubPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bo
 	GET_V_IFACE_ANY(engineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
 #endif
 
-	SH_ADD_HOOK_STATICFUNC(IServerGameDLL, ServerActivate, server, Hook_ServerActivate, true);
+	SH_ADD_HOOK(IServerGameDLL, ServerActivate, server, SH_STATIC(Hook_ServerActivate), true);
 
 	ismm->AddListener(this, this);
 
@@ -50,7 +50,7 @@ bool StubPlugin::Unload(char *error, size_t maxlen)
 {
 	SM_UnloadExtension();
 
-	SH_REMOVE_HOOK_STATICFUNC(IServerGameDLL, ServerActivate, server, Hook_ServerActivate, true);
+	SH_REMOVE_HOOK_STATIC(IServerGameDLL, ServerActivate, server, SH_STATIC(Hook_ServerActivate), true);
 
 	return true;
 }

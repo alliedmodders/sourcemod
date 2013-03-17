@@ -68,7 +68,7 @@ bool DecHookCount()
 {
 	if (g_VoiceHookCount == 0)
 	{
-		SH_REMOVE_HOOK_MEMFUNC(IVoiceServer, SetClientListening, voiceserver, &g_SdkTools, &SDKTools::OnSetClientListening, false);
+		SH_REMOVE_HOOK(IVoiceServer, SetClientListening, voiceserver, SH_MEMBER(&g_SdkTools, &SDKTools::OnSetClientListening), false);
 		return true;
 	}
 
@@ -79,7 +79,7 @@ void IncHookCount()
 {
 	if (!g_VoiceHookCount++)
 	{
-		SH_ADD_HOOK_MEMFUNC(IVoiceServer, SetClientListening, voiceserver, &g_SdkTools, &SDKTools::OnSetClientListening, false);
+		SH_ADD_HOOK(IVoiceServer, SetClientListening, voiceserver, SH_MEMBER(&g_SdkTools, &SDKTools::OnSetClientListening), false);
 	}
 }
 
@@ -88,7 +88,7 @@ void SDKTools::VoiceInit()
 	memset(g_VoiceMap, 0, sizeof(g_VoiceMap));
 	memset(g_ClientMutes, 0, sizeof(g_ClientMutes));
 
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &SDKTools::OnClientCommand, true);
+	SH_ADD_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &SDKTools::OnClientCommand), true);
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX

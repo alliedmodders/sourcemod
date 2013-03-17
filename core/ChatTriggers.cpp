@@ -123,13 +123,13 @@ void ChatTriggers::OnSourceModGameInitialized()
 
 	if (m_pSayCmd)
 	{
-		SH_ADD_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayCmd, this, &ChatTriggers::OnSayCommand_Pre, false);
-		SH_ADD_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayCmd, this, &ChatTriggers::OnSayCommand_Post, true);
+		SH_ADD_HOOK(ConCommand, Dispatch, m_pSayCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Pre), false);
+		SH_ADD_HOOK(ConCommand, Dispatch, m_pSayCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Post), true);
 	}
 	if (m_pSayTeamCmd)
 	{
-		SH_ADD_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayTeamCmd, this, &ChatTriggers::OnSayCommand_Pre, false);
-		SH_ADD_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayTeamCmd, this, &ChatTriggers::OnSayCommand_Post, true);
+		SH_ADD_HOOK(ConCommand, Dispatch, m_pSayTeamCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Pre), false);
+		SH_ADD_HOOK(ConCommand, Dispatch, m_pSayTeamCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Post), true);
 	}
 }
 
@@ -137,13 +137,13 @@ void ChatTriggers::OnSourceModShutdown()
 {
 	if (m_pSayTeamCmd)
 	{
-		SH_REMOVE_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayTeamCmd, this, &ChatTriggers::OnSayCommand_Post, true);
-		SH_REMOVE_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayTeamCmd, this, &ChatTriggers::OnSayCommand_Pre, false);
+		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSayTeamCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Post), true);
+		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSayTeamCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Pre), false);
 	}
 	if (m_pSayCmd)
 	{
-		SH_REMOVE_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayCmd, this, &ChatTriggers::OnSayCommand_Post, true);
-		SH_REMOVE_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayCmd, this, &ChatTriggers::OnSayCommand_Pre, false);
+		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSayCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Post), true);
+		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSayCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Pre), false);
 	}
 
 	g_Forwards.ReleaseForward(m_pShouldFloodBlock);

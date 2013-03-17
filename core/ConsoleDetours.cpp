@@ -731,10 +731,10 @@ cell_t ConsoleDetours::Dispatch(ConCommand *pBase)
 		/* See bug 4020 - we can't optimize this because looking at the vtable
 		 * is probably more expensive, since there's no SH_GET_ORIG_VFNPTR_ENTRY.
 		 */
-		SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, pBase, DummyHook, false);
+		SH_ADD_HOOK(ConCommand, Dispatch, pBase, SH_STATIC(DummyHook), false);
 		dummy_hook_set = true;
 		pBase->Dispatch();
-		SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, pBase, DummyHook, false);
+		SH_REMOVE_HOOK(ConCommand, Dispatch, pBase, SH_STATIC(DummyHook), false);
 	}
 	else
 	{

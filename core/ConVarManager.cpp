@@ -121,12 +121,12 @@ void ConVarManager::OnSourceModAllInitialized()
 #if SOURCE_ENGINE == SE_EPISODEONE
 	if (g_SMAPI->GetGameDLLVersion() >= 6)
 	{
-		SH_ADD_HOOK_MEMFUNC(IServerGameDLL, OnQueryCvarValueFinished, gamedll, this, &ConVarManager::OnQueryCvarValueFinished, false);
+		SH_ADD_HOOK(IServerGameDLL, OnQueryCvarValueFinished, gamedll, SH_MEMBER(this, &ConVarManager::OnQueryCvarValueFinished), false);
 		m_bIsDLLQueryHooked = true;
 	}
 #endif
 
-	SH_ADD_HOOK_STATICFUNC(ICvar, CallGlobalChangeCallbacks, icvar, OnConVarChanged, false);
+	SH_ADD_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
 
 	g_PluginSys.AddPluginsListener(this);
 
@@ -181,17 +181,17 @@ void ConVarManager::OnSourceModShutdown()
 	/* Unhook things */
 	if (m_bIsDLLQueryHooked)
 	{
-		SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, OnQueryCvarValueFinished, gamedll, this, &ConVarManager::OnQueryCvarValueFinished, false);
+		SH_REMOVE_HOOK(IServerGameDLL, OnQueryCvarValueFinished, gamedll, SH_MEMBER(this, &ConVarManager::OnQueryCvarValueFinished), false);
 		m_bIsDLLQueryHooked = false;
 	}
 	else if (m_bIsVSPQueryHooked)
 	{
-		SH_REMOVE_HOOK_MEMFUNC(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, this, &ConVarManager::OnQueryCvarValueFinished, false);
+		SH_REMOVE_HOOK(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, SH_MEMBER(this, &ConVarManager::OnQueryCvarValueFinished), false);
 		m_bIsVSPQueryHooked = false;
 	}
 #endif
 
-	SH_REMOVE_HOOK_STATICFUNC(ICvar, CallGlobalChangeCallbacks, icvar, OnConVarChanged, false);
+	SH_REMOVE_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
 
 	/* Remove the 'convars' option from the 'sm' console command */
 	g_RootMenu.RemoveRootConsoleCommand("cvars", this);
@@ -230,7 +230,7 @@ void ConVarManager::OnSourceModVSPReceived()
 #endif
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
-	SH_ADD_HOOK_MEMFUNC(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, this, &ConVarManager::OnQueryCvarValueFinished, false);
+	SH_ADD_HOOK(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, SH_MEMBER(this, &ConVarManager::OnQueryCvarValueFinished), false);
 	m_bIsVSPQueryHooked = true;
 #endif
 }

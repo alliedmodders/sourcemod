@@ -108,13 +108,13 @@ void Logger::OnSourceModStartup(bool late)
 {
 	InitLogger(m_Mode);
 
-	SH_ADD_HOOK_STATICFUNC(IVEngineServer, LogPrint, engine, HookLogPrint, false);
+	SH_ADD_HOOK(IVEngineServer, LogPrint, engine, SH_STATIC(HookLogPrint), false);
 }
 
 void Logger::OnSourceModAllShutdown()
 {
 	CloseLogger();
-	SH_REMOVE_HOOK_STATICFUNC(IVEngineServer, LogPrint, engine, HookLogPrint, false);
+	SH_REMOVE_HOOK(IVEngineServer, LogPrint, engine, SH_STATIC(HookLogPrint), false);
 }
 
 void Logger::OnSourceModLevelChange(const char *mapName)

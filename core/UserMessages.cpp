@@ -97,13 +97,13 @@ void UserMessages::OnSourceModAllShutdown()
 	if (m_HookCount)
 	{
 #if SOURCE_ENGINE == SE_CSGO
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, SendUserMessage, engine, this, &UserMessages::OnSendUserMessage_Pre, false);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, SendUserMessage, engine, this, &UserMessages::OnSendUserMessage_Post, true);
+		SH_REMOVE_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Pre), false);
+		SH_REMOVE_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Post), true);
 #else
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Post, true);
+		SH_REMOVE_HOOK(IVEngineServer, UserMessageBegin, engine, SH_MEMBER(this, &UserMessages::OnStartMessage_Pre), false);
+		SH_REMOVE_HOOK(IVEngineServer, UserMessageBegin, engine, SH_MEMBER(this, &UserMessages::OnStartMessage_Post), true);
+		SH_REMOVE_HOOK(IVEngineServer, MessageEnd, engine, SH_MEMBER(this, &UserMessages::OnMessageEnd_Pre), false);
+		SH_REMOVE_HOOK(IVEngineServer, MessageEnd, engine, SH_MEMBER(this, &UserMessages::OnMessageEnd_Post), true);
 #endif
 	}
 	m_HookCount = 0;
@@ -416,13 +416,13 @@ bool UserMessages::InternalHook(int msg_id, IBitBufUserMessageListener *pListene
 	if (!m_HookCount++)
 	{
 #if SOURCE_ENGINE == SE_CSGO
-		SH_ADD_HOOK_MEMFUNC(IVEngineServer, SendUserMessage, engine, this, &UserMessages::OnSendUserMessage_Pre, false);
-		SH_ADD_HOOK_MEMFUNC(IVEngineServer, SendUserMessage, engine, this, &UserMessages::OnSendUserMessage_Post, true);
+		SH_ADD_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Pre), false);
+		SH_ADD_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Post), true);
 #else
-		SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
-		SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
-		SH_ADD_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
-		SH_ADD_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Post, true);
+		SH_ADD_HOOK(IVEngineServer, UserMessageBegin, engine, SH_MEMBER(this, &UserMessages::OnStartMessage_Pre), false);
+		SH_ADD_HOOK(IVEngineServer, UserMessageBegin, engine, SH_MEMBER(this, &UserMessages::OnStartMessage_Post), true);
+		SH_ADD_HOOK(IVEngineServer, MessageEnd, engine, SH_MEMBER(this, &UserMessages::OnMessageEnd_Pre), false);
+		SH_ADD_HOOK(IVEngineServer, MessageEnd, engine, SH_MEMBER(this, &UserMessages::OnMessageEnd_Post), true);
 #endif
 	}
 
@@ -482,13 +482,13 @@ void UserMessages::_DecRefCounter()
 	if (--m_HookCount == 0)
 	{
 #if SOURCE_ENGINE == SE_CSGO
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, SendUserMessage, engine, this, &UserMessages::OnSendUserMessage_Pre, false);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, SendUserMessage, engine, this, &UserMessages::OnSendUserMessage_Post, true);
+		SH_REMOVE_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Pre), false);
+		SH_REMOVE_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Post), true);
 #else
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Post, true);
+		SH_REMOVE_HOOK(IVEngineServer, UserMessageBegin, engine, SH_MEMBER(this, &UserMessages::OnStartMessage_Pre), false);
+		SH_REMOVE_HOOK(IVEngineServer, UserMessageBegin, engine, SH_MEMBER(this, &UserMessages::OnStartMessage_Post), true);
+		SH_REMOVE_HOOK(IVEngineServer, MessageEnd, engine, SH_MEMBER(this, &UserMessages::OnMessageEnd_Pre), false);
+		SH_REMOVE_HOOK(IVEngineServer, MessageEnd, engine, SH_MEMBER(this, &UserMessages::OnMessageEnd_Post), true);
 #endif
 	}
 }

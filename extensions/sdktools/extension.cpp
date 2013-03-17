@@ -143,7 +143,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 #endif
 	CONVAR_REGISTER(this);
 
-	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
+	SH_ADD_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SDKTools::LevelInit), true);
 
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
@@ -210,7 +210,7 @@ void SDKTools::SDK_OnUnload()
 	playerhelpers->UnregisterCommandTargetProcessor(this);
 	plsys->RemovePluginsListener(&g_OutputManager);
 
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
+	SH_REMOVE_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SDKTools::LevelInit), true);
 
 	if (enginePatch)
 	{

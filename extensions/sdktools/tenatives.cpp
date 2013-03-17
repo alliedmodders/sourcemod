@@ -120,7 +120,7 @@ void TempEntHooks::_IncRefCounter()
 {
 	if (m_HookCount++ == 0)
 	{
-		SH_ADD_HOOK_MEMFUNC(IVEngineServer, PlaybackTempEntity, engine, this, &TempEntHooks::OnPlaybackTempEntity, false);
+		SH_ADD_HOOK(IVEngineServer, PlaybackTempEntity, engine, SH_MEMBER(this, &TempEntHooks::OnPlaybackTempEntity), false);
 	}
 }
 
@@ -128,7 +128,7 @@ void TempEntHooks::_DecRefCounter()
 {
 	if (--m_HookCount == 0)
 	{
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, PlaybackTempEntity, engine, this, &TempEntHooks::OnPlaybackTempEntity, false);
+		SH_REMOVE_HOOK(IVEngineServer, PlaybackTempEntity, engine, SH_MEMBER(this, &TempEntHooks::OnPlaybackTempEntity), false);
 	}
 }
 

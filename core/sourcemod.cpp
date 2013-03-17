@@ -244,7 +244,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	g_pSourcePawn2->SetDebugListener(logicore.debugger);
 
 	/* Hook this now so we can detect startup without calling StartSourceMod() */
-	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
+	SH_ADD_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SourceModBase::LevelInit), false);
 
 	/* Only load if we're not late */
 	if (!late)
@@ -257,8 +257,8 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 
 void SourceModBase::StartSourceMod(bool late)
 {
-	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, gamedll, this, &SourceModBase::LevelShutdown, false);
-	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, GameFrame, gamedll, &g_Timers, &TimerSystem::GameFrame, false);
+	SH_ADD_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &SourceModBase::LevelShutdown), false);
+	SH_ADD_HOOK(IServerGameDLL, GameFrame, gamedll, SH_MEMBER(&g_Timers, &TimerSystem::GameFrame), false);
 
 	enginePatch = SH_GET_CALLCLASS(engine);
 	gamedllPatch = SH_GET_CALLCLASS(gamedll);
@@ -489,7 +489,7 @@ void SourceModBase::CloseSourceMod()
 	/* Unload extensions */
 	g_Extensions.Shutdown();
 
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
+	SH_REMOVE_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SourceModBase::LevelInit), false);
 
 	if (g_Loaded)
 	{
@@ -536,8 +536,8 @@ void SourceModBase::CloseSourceMod()
 			gamedllPatch = NULL;
 		}
 
-		SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, gamedll, this, &SourceModBase::LevelShutdown, false);
-		SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, GameFrame, gamedll, &g_Timers, &TimerSystem::GameFrame, false);
+		SH_REMOVE_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &SourceModBase::LevelShutdown), false);
+		SH_REMOVE_HOOK(IServerGameDLL, GameFrame, gamedll, SH_MEMBER(&g_Timers, &TimerSystem::GameFrame), false);
 	}
 
 	/* Rest In Peace */

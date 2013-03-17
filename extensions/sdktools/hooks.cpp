@@ -105,7 +105,7 @@ void CHookManager::OnClientPutInServer(int client)
 		return;
 	}
 
-	SH_ADD_MANUALHOOK_MEMFUNC(PlayerRunCmdHook, pEntity, this, &CHookManager::PlayerRunCmd, false);
+	SH_ADD_MANUALHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmd), false);
 }
 
 void CHookManager::OnClientDisconnecting(int client)
@@ -134,7 +134,7 @@ void CHookManager::OnClientDisconnecting(int client)
 		return;
 	}
 
-	SH_REMOVE_MANUALHOOK_MEMFUNC(PlayerRunCmdHook, pEntity, this, &CHookManager::PlayerRunCmd, false);
+	SH_REMOVE_MANUALHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmd), false);
 }
 
 void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)

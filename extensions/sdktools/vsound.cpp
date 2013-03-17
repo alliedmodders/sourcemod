@@ -80,15 +80,15 @@ void SoundHooks::_IncRefCounter(int type)
 	{
 		if (m_NormalCount++ == 0)
 		{
-			SH_ADD_HOOK_MEMFUNC(IEngineSound, EmitSound, engsound, this, &SoundHooks::OnEmitSound, false);
-			SH_ADD_HOOK_MEMFUNC(IEngineSound, EmitSound, engsound, this, &SoundHooks::OnEmitSound2, false);
+			SH_ADD_HOOK(IEngineSound, EmitSound, engsound, SH_MEMBER(this, &SoundHooks::OnEmitSound), false);
+			SH_ADD_HOOK(IEngineSound, EmitSound, engsound, SH_MEMBER(this, &SoundHooks::OnEmitSound2), false);
 		}
 	}
 	else if (type == AMBIENT_SOUND_HOOK)
 	{
 		if (m_AmbientCount++ == 0)
 		{
-			SH_ADD_HOOK_MEMFUNC(IVEngineServer, EmitAmbientSound, engine, this, &SoundHooks::OnEmitAmbientSound, false);
+			SH_ADD_HOOK(IVEngineServer, EmitAmbientSound, engine, SH_MEMBER(this, &SoundHooks::OnEmitAmbientSound), false);
 		}
 	}
 }
@@ -99,15 +99,15 @@ void SoundHooks::_DecRefCounter(int type)
 	{
 		if (--m_NormalCount == 0)
 		{
-			SH_REMOVE_HOOK_MEMFUNC(IEngineSound, EmitSound, engsound, this, &SoundHooks::OnEmitSound, false);
-			SH_REMOVE_HOOK_MEMFUNC(IEngineSound, EmitSound, engsound, this, &SoundHooks::OnEmitSound2, false);
+			SH_REMOVE_HOOK(IEngineSound, EmitSound, engsound, SH_MEMBER(this, &SoundHooks::OnEmitSound), false);
+			SH_REMOVE_HOOK(IEngineSound, EmitSound, engsound, SH_MEMBER(this, &SoundHooks::OnEmitSound2), false);
 		}
 	}
 	else if (type == AMBIENT_SOUND_HOOK)
 	{
 		if (--m_AmbientCount == 0)
 		{
-			SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, EmitAmbientSound, engine, this, &SoundHooks::OnEmitAmbientSound, false);
+			SH_REMOVE_HOOK(IVEngineServer, EmitAmbientSound, engine, SH_MEMBER(this, &SoundHooks::OnEmitAmbientSound), false);
 		}
 	}
 }
@@ -122,12 +122,12 @@ void SoundHooks::Shutdown()
 	plsys->RemovePluginsListener(this);
 	if (m_NormalCount)
 	{
-		SH_REMOVE_HOOK_MEMFUNC(IEngineSound, EmitSound, engsound, this, &SoundHooks::OnEmitSound, false);
-		SH_REMOVE_HOOK_MEMFUNC(IEngineSound, EmitSound, engsound, this, &SoundHooks::OnEmitSound2, false);
+		SH_REMOVE_HOOK(IEngineSound, EmitSound, engsound, SH_MEMBER(this, &SoundHooks::OnEmitSound), false);
+		SH_REMOVE_HOOK(IEngineSound, EmitSound, engsound, SH_MEMBER(this, &SoundHooks::OnEmitSound2), false);
 	}
 	if (m_AmbientCount)
 	{
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, EmitAmbientSound, engine, this, &SoundHooks::OnEmitAmbientSound, false);
+		SH_REMOVE_HOOK(IVEngineServer, EmitAmbientSound, engine, SH_MEMBER(this, &SoundHooks::OnEmitAmbientSound), false);
 	}
 }
 

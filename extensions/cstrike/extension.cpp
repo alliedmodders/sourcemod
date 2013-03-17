@@ -113,7 +113,7 @@ void CStrike::SDK_OnUnload()
 	if (hooked_everything)
 	{
 		gameevents->RemoveListener(&g_TimeLeftEvents);
-		SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, &g_TimeLeftEvents, &TimeLeftEvents::LevelInit, true);
+		SH_REMOVE_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(&g_TimeLeftEvents, &TimeLeftEvents::LevelInit), true);
 		hooked_everything = false;
 	}
 	g_RegNatives.UnregisterAll();
@@ -140,7 +140,7 @@ void CStrike::SDK_OnAllLoaded()
 	}
 	gameevents->AddListener(&g_TimeLeftEvents, "round_start", true);
 	gameevents->AddListener(&g_TimeLeftEvents, "round_end", true);
-	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, &g_TimeLeftEvents, &TimeLeftEvents::LevelInit, true);
+	SH_ADD_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(&g_TimeLeftEvents, &TimeLeftEvents::LevelInit), true);
 	hooked_everything = true;
 
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);

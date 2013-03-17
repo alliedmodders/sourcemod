@@ -66,14 +66,14 @@ bool ValveMenuStyle::OnClientCommand(int client, const char *cmdname, const CCom
 void ValveMenuStyle::OnSourceModAllInitialized()
 {
 	g_Players.AddClientListener(this);
-	SH_ADD_HOOK_MEMFUNC(IServerPluginHelpers, CreateMessage, serverpluginhelpers, this, &ValveMenuStyle::HookCreateMessage, false);
+	SH_ADD_HOOK(IServerPluginHelpers, CreateMessage, serverpluginhelpers, SH_MEMBER(this, &ValveMenuStyle::HookCreateMessage), false);
 	g_pSPHCC = SH_GET_CALLCLASS(serverpluginhelpers);
 }
 
 void ValveMenuStyle::OnSourceModShutdown()
 {
 	SH_RELEASE_CALLCLASS(g_pSPHCC);
-	SH_REMOVE_HOOK_MEMFUNC(IServerPluginHelpers, CreateMessage, serverpluginhelpers, this, &ValveMenuStyle::HookCreateMessage, false);
+	SH_REMOVE_HOOK(IServerPluginHelpers, CreateMessage, serverpluginhelpers, SH_MEMBER(this, &ValveMenuStyle::HookCreateMessage), false);
 	g_Players.RemoveClientListener(this);
 }
 
