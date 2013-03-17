@@ -1095,12 +1095,32 @@ void HandleSystem::Dump(HANDLE_REPORTER rep)
 		const char *type = "ANON";
 		QHandleType *pType = &m_Types[m_Handles[i].type];
 		unsigned int size = 0;
+		unsigned int parentIdx;
+		bool bresult;
 		if (pType->nameIdx != -1)
 		{
 			type = m_strtab->GetString(pType->nameIdx);
 		}
+
+		if ((parentIdx = m_Handles[i].clone) != 0)
+		{
+			if (m_Handles[parentIdx].refcount > 0)
+			{
+				size = 0;
+				bresult = true;
+			}
+			else
+			{
+				bresult = pType->dispatch->GetHandleApproxSize(m_Handles[parentIdx].type, m_Handles[parentIdx].object, &size);
+			}
+		}
+		else
+		{
+			bresult = pType->dispatch->GetHandleApproxSize(m_Handles[i].type, m_Handles[i].object, &size);
+		}
+
 		if (pType->dispatch->GetDispatchVersion() < HANDLESYS_MEMUSAGE_MIN_VERSION
-			|| !pType->dispatch->GetHandleApproxSize(m_Handles[i].type, m_Handles[i].object, &size))
+			|| !bresult)
 		{
 			rep("0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, "-1");
 		}
