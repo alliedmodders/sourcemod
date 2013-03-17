@@ -198,7 +198,7 @@ void CookieManager::OnClientDisconnecting(int client)
 	statsLoaded[client] = false;
 	statsPending[client] = false;
 
-	CookieData *current;
+	CookieData *current = NULL;
 
 	g_ClientPrefs.AttemptReconnection();
 	
@@ -210,25 +210,16 @@ void CookieManager::OnClientDisconnecting(int client)
 	if (player)
 	{
 		pAuth = player->GetAuthString();
+		g_ClientPrefs.ClearQueryCache(player->GetSerial());
 	}
-	
-	g_ClientPrefs.ClearQueryCache(player->GetSerial());
-	
+		
 	for (SourceHook::List<CookieData *>::iterator _iter = clientData[client].begin();\
 	_iter != clientData[client].end(); _iter++)
 	{
-		if (player == NULL || pAuth == NULL)
-		{
-			/* panic! */
-			current->parent->data[client] = NULL;
-			delete current;
-			continue;
-		}
-	
 		current = (CookieData *)*_iter;
 		dbId = current->parent->dbid;
 		
-		if (!current->changed || dbId == -1)
+		if (player == NULL || pAuth == NULL || !current->changed || dbId == -1)
 		{
 			current->parent->data[client] = NULL;
 			delete current;
