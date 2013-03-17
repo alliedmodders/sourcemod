@@ -120,5 +120,6 @@ for i in SM.sdkInfo:
 			binary.AddObjectFiles(['libprotobuf.a'])
 	
 	SM.AutoVersion('core', binary)
+	SM.ExtractDebugInfo(extension, binary)
 	binary.SendToJob()
 

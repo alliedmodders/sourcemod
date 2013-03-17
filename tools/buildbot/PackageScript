@@ -255,6 +255,14 @@ AddHL2Library('sdktools.ext', 'extensions')
 bincopies.append(CopyFile(os.path.join('..', 'spcomp', 'spcomp' + osutil.ExecutableSuffix()),
                           os.path.join('addons', 'sourcemod', 'scripting')))
 
+# Each platform's version of dump_syms needs the path in a different format.
+if AMBuild.target['platform'] == 'linux':
+	debug_info.append('spcomp' + '/' + 'spcomp')
+elif AMBuild.target['platform'] == 'darwin':
+	debug_info.append('spcomp' + '/' + 'spcomp' + '.dSYM')
+elif AMBuild.target['platform'] == 'windows':
+	debug_info.append('spcomp' + '\\' + 'spcomp' + '.pdb'
+
 job.AddCommandGroup(bincopies)
 
 if AMBuild.target['platform'] == 'windows':

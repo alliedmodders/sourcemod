@@ -34,5 +34,6 @@ binary.AddSourceFiles('extensions/mysql', [
 	'extension.cpp'
 	])
 SM.AutoVersion('extensions/mysql', binary)
+SM.ExtractDebugInfo(extension, binary)
 binary.SendToJob()
 

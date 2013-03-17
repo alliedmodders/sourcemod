@@ -14,5 +14,6 @@ binary.AddSourceFiles('extensions/updater', [
 	'sdk/smsdk_ext.cpp'
 	])
 SM.AutoVersion('extensions/updater', binary)
+SM.ExtractDebugInfo(extension, binary)
 binary.SendToJob()
 

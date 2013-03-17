@@ -67,5 +67,6 @@ elif AMBuild.target['platform'] == 'darwin' and isinstance(binary, Cpp.LibraryBu
 	binary.compiler['POSTLINKFLAGS'].extend(['-compatibility_version', '1.0.0'])
 	binary.compiler['POSTLINKFLAGS'].extend(['-current_version', AMBuild.cache['version']])
 
+SM.ExtractDebugInfo(extension, binary)
 binary.SendToJob()
 

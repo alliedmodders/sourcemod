@@ -19,6 +19,7 @@ binary.AddSourceFiles('extensions/bintools', [
 	'sdk/smsdk_ext.cpp'
 	])
 SM.AutoVersion('extensions/bintools', binary)
+SM.ExtractDebugInfo(extension, binary)
 binary.SendToJob()
 
 

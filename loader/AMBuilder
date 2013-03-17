@@ -17,5 +17,6 @@ binary.AddSourceFiles('loader', [
 	'loader.cpp'
 	])
 SM.AutoVersion('loader', binary)
+SM.ExtractDebugInfo(loader, binary)
 binary.SendToJob()
 

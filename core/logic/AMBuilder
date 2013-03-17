@@ -58,5 +58,6 @@ else:
 	files.append('thread/PosixThreads.cpp')
 binary.AddSourceFiles('core/logic', files)
 SM.AutoVersion('core/logic', binary)
+SM.ExtractDebugInfo(extension, binary)
 binary.SendToJob()
 
