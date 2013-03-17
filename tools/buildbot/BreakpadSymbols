@@ -1,6 +1,9 @@
 # vim: set ts=2 sw=2 tw=99 noet ft=python: 
 import os
-import urllib.request
+try:
+	import urllib.request as urllib
+except ImportError:
+	import urllib2 as urllib
 from ambuild.command import Command
 from ambuild.command import ShellCommand
 
@@ -26,9 +29,9 @@ class SymbolCommand(ShellCommand):
 	def run(self, master, job):
 		ShellCommand.run(self, master, job)
 		if self.stdout != None and len(self.stdout) > 0:
-			request = urllib.request.Request(symbolServer, self.stdout.encode('utf-8'))
+			request = urllib.Request(symbolServer, self.stdout.encode('utf-8'))
 			request.add_header("Content-Type", "text/plain")
-			self.serverResponse = urllib.request.urlopen(request).read().decode('utf-8')
+			self.serverResponse = urllib.urlopen(request).read().decode('utf-8')
 	def spew(self, runner):
 		if self.stderr != None and len(self.stderr) > 0:
 			runner.PrintOut(self.stderr)
