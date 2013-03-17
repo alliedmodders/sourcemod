@@ -174,6 +174,23 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_GetSteamAccountID(IPluginContext *pCtx, const cell_t *params)
+{
+	int index = params[1];
+	if ((index < 1) || (index > g_Players.GetMaxClients()))
+	{
+		return pCtx->ThrowNativeError("Client index %d is invalid", index);
+	}
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
+	if (!pPlayer->IsConnected())
+	{
+		return pCtx->ThrowNativeError("Client %d is not connected", index);
+	}
+
+	return pPlayer->GetSteamAccountID(!!params[2]);
+}
+
 static cell_t sm_IsClientConnected(IPluginContext *pCtx, const cell_t *params)
 {
 	int index = params[1];
@@ -1651,6 +1668,7 @@ REGISTER_NATIVES(playernatives)
 	{"CanUserTarget",			CanUserTarget},
 	{"ChangeClientTeam",		ChangeClientTeam},
 	{"GetClientAuthString",		sm_GetClientAuthStr},
+	{"GetSteamAccountID",		sm_GetSteamAccountID},
 	{"GetClientCount",			sm_GetClientCount},
 	{"GetClientInfo",			sm_GetClientInfo},
 	{"GetClientIP",				sm_GetClientIP},

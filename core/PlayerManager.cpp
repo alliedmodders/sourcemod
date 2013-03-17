@@ -923,8 +923,7 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 	const char *networkid_force;
 	if ((networkid_force = engine->GetClientConVarValue(client, "networkid_force")) && networkid_force[0] != '\0')
 	{
-		unsigned long long *steamId = (unsigned long long *)engine->GetClientSteamID(pEntity);
-		unsigned int accountId = steamId ? (*steamId & 0xFFFFFFFF) : 0;
+		unsigned int accountId = pPlayer->GetSteamAccountID();
 		g_Logger.LogMessage("\"%s<%d><STEAM_1:%d:%d><>\" has bad networkid (id \"%s\") (ip \"%s\")",
 			new_name, pPlayer->GetUserId(), accountId & 1, accountId >> 1, networkid_force, pPlayer->GetIPAddress());
 
@@ -1586,6 +1585,7 @@ CPlayer::CPlayer()
 	m_bIsSourceTV = false;
 	m_bIsReplay = false;
 	m_Serial.value = -1;
+	m_SteamAccountID = 0;
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
@@ -1665,6 +1665,7 @@ void CPlayer::Disconnect()
 	m_bIsSourceTV = false;
 	m_bIsReplay = false;
 	m_Serial.value = -1;
+	m_SteamAccountID = 0;
 }
 
 void CPlayer::SetName(const char *name)
@@ -1695,6 +1696,35 @@ const char *CPlayer::GetAuthString(bool validated)
 	}
 
 	return m_AuthID.c_str();
+}
+
+unsigned int CPlayer::GetSteamAccountID(bool validated)
+{
+	if (IsFakeClient() || (validated && !IsAuthStringValidated()))
+	{
+		return 0;
+	}
+
+	if (m_SteamAccountID != 0)
+	{
+		return m_SteamAccountID;
+	}
+
+#if SOURCE_ENGINE < SE_ORANGEBOX
+	const char * pAuth = GetAuthString();
+	/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
+	if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
+	{
+		m_SteamAccountID = (atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1));
+	}
+#else
+	unsigned long long *steamId = (unsigned long long *)engine->GetClientSteamID(m_pEdict);
+	if (steamId)
+	{
+		m_SteamAccountID = (*steamId & 0xFFFFFFFF);
+	}
+#endif
+	return m_SteamAccountID;
 }
 
 edict_t *CPlayer::GetEdict()
