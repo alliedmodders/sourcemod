@@ -22,7 +22,7 @@ def BuildCURL():
 			if AMBuild.target['platform'] == 'darwin':
 				env['LDFLAGS'] = '-mmacosx-version-min=10.5'
 			else:
-				env['CFLAGS'] += ' -D_GNU_SOURCE'
+				env['CPPFLAGS'] += ' -D_GNU_SOURCE'
 			curl.AddCommand(command.DirectCommand(argv = args, env = env))
 			curl.AddCommand(command.ShellCommand('cd lib && make'))
 	else:
