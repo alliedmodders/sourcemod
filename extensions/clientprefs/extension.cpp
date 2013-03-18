@@ -201,8 +201,6 @@ void ClientPrefs::SDK_OnUnload()
 
 	phrases->Destroy();
 
-	sharesys->DestroyIdentity( identity );
-
 	plsys->RemovePluginsListener(&g_CookieManager);
 	playerhelpers->RemoveClientListener(&g_CookieManager);
 
