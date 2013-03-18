@@ -53,7 +53,12 @@ void CHookManager::Initialize()
 		SH_MANUALHOOK_RECONFIGURE(PlayerRunCmdHook, offset, 0, 0);
 		PRCH_enabled = true;
 	}
-
+	else
+	{
+		g_pSM->LogError(myself, "Failed to find PlayerRunCmd offset - OnPlayerRunCmd forward disabled.");
+		PRCH_enabled = false;
+	}
+	
 	plsys->AddPluginsListener(this);
 	sharesys->AddCapabilityProvider(myself, this, FEATURECAP_PLAYERRUNCMD_11PARAMS);
 
