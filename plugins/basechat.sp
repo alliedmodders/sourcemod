@@ -323,7 +323,7 @@ public Action:Command_SmPsay(client, args)
 	{
 		PrintToServer("(Private: %N) %s: %s", target, name, message);
 	}
-	else
+	else if (target != client)
 	{
 		PrintToChat(client, "\x04(Private: %N) %s: \x01%s", target, name, message);
 	}
