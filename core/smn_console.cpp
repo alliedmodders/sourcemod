@@ -1437,10 +1437,13 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 
 	cvar->set_name(pConVar->GetName());
 	cvar->set_value(value);
+
+	int msgsize = msg.ByteSize();
    
 	buffer.WriteVarInt32(net_SetConVar);
-	buffer.WriteVarInt32(msg.ByteSize());
+	buffer.WriteVarInt32(msgsize);
 	msg.SerializeWithCachedSizesToArray( (uint8 *)( buffer.GetBasePointer() + buffer.GetNumBytesWritten() ) );
+	buffer.SeekToBit( ( buffer.GetNumBytesWritten() + msgsize ) * 8 );
 #else
 	buffer.WriteUBitLong(NET_SETCONVAR, NETMSG_BITS);
 	buffer.WriteByte(1);
