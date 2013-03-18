@@ -1,25 +1,13 @@
-/***************************************************************************
+/*****************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * $Id: ghiper.c,v 1.5 2008-05-22 21:20:09 danf Exp $
  *
- * This software is licensed as described in the file COPYING, which
- * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
- *
- * You may opt to use, copy, modify, merge, publish, distribute and/or sell
- * copies of the Software, and permit persons to whom the Software is
- * furnished to do so, under the terms of the COPYING file.
- *
- * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
- * KIND, either express or implied.
- *
- ***************************************************************************/
-/* Example application source code using the multi socket interface to
+ * Example application source code using the multi socket interface to
  * download many files at once.
  *
  * Written by Jeff Pohlmeyer
@@ -71,7 +59,10 @@ callback.
 typedef struct _GlobalInfo {
   CURLM *multi;
   guint timer_event;
+  int prev_running;
   int still_running;
+  int requested; /* count: curl_easy_init() */
+  int completed; /* count: curl_easy_cleanup() */
 } GlobalInfo;
 
 
@@ -105,6 +96,7 @@ static void mcode_or_die(const char *where, CURLMcode code) {
     const char *s;
     switch (code) {
       case     CURLM_CALL_MULTI_PERFORM: s="CURLM_CALL_MULTI_PERFORM"; break;
+      case     CURLM_OK:                 s="CURLM_OK";                 break;
       case     CURLM_BAD_HANDLE:         s="CURLM_BAD_HANDLE";         break;
       case     CURLM_BAD_EASY_HANDLE:    s="CURLM_BAD_EASY_HANDLE";    break;
       case     CURLM_OUT_OF_MEMORY:      s="CURLM_OUT_OF_MEMORY";      break;
@@ -122,30 +114,48 @@ static void mcode_or_die(const char *where, CURLMcode code) {
 
 
 /* Check for completed transfers, and remove their easy handles */
-static void check_multi_info(GlobalInfo *g)
+static void check_run_count(GlobalInfo *g)
 {
-  char *eff_url;
-  CURLMsg *msg;
-  int msgs_left;
-  ConnInfo *conn;
-  CURL *easy;
-  CURLcode res;
+  if (g->prev_running > g->still_running) {
+    char *eff_url=NULL;
+    CURLMsg *msg;
+    int msgs_left;
+    ConnInfo *conn=NULL;
+    CURL*easy;
+    CURLcode res;
 
-  MSG_OUT("REMAINING: %d\n", g->still_running);
-  while ((msg = curl_multi_info_read(g->multi, &msgs_left))) {
-    if (msg->msg == CURLMSG_DONE) {
-      easy = msg->easy_handle;
-      res = msg->data.result;
-      curl_easy_getinfo(easy, CURLINFO_PRIVATE, &conn);
-      curl_easy_getinfo(easy, CURLINFO_EFFECTIVE_URL, &eff_url);
-      MSG_OUT("DONE: %s => (%d) %s\n", eff_url, res, conn->error);
-      curl_multi_remove_handle(g->multi, easy);
-      free(conn->url);
-      curl_easy_cleanup(easy);
-      free(conn);
-    }
+    MSG_OUT("REMAINING: %d\n", g->still_running);
+    /*
+      I am still uncertain whether it is safe to remove an easy handle
+      from inside the curl_multi_info_read loop, so here I will search
+      for completed transfers in the inner "while" loop, and then remove
+      them in the outer "do-while" loop...
+   */
+    do {
+      easy=NULL;
+      while ((msg = curl_multi_info_read(g->multi, &msgs_left))) {
+        if (msg->msg == CURLMSG_DONE) {
+          easy=msg->easy_handle;
+          res=msg->data.result;
+          break;
+        }
+      }
+      if (easy) {
+          curl_easy_getinfo(easy, CURLINFO_PRIVATE, &conn);
+          curl_easy_getinfo(easy, CURLINFO_EFFECTIVE_URL, &eff_url);
+          MSG_OUT("DONE: %s => (%d) %s\n", eff_url, res, conn->error);
+          curl_multi_remove_handle(g->multi, easy);
+          g_free(conn->url);
+          curl_easy_cleanup(easy);
+          g_free(conn);
+          g->completed++;
+      }
+    } while ( easy );
+    MSG_OUT("Requested: %d Completed:%d\n", g->requested, g->completed);
   }
+  g->prev_running = g->still_running;
 }
+
 
 
 
@@ -155,10 +165,11 @@ static gboolean timer_cb(gpointer data)
   GlobalInfo *g = (GlobalInfo *)data;
   CURLMcode rc;
 
-  rc = curl_multi_socket_action(g->multi,
-                                  CURL_SOCKET_TIMEOUT, 0, &g->still_running);
-  mcode_or_die("timer_cb: curl_multi_socket_action", rc);
-  check_multi_info(g);
+  do {
+    rc = curl_multi_socket(g->multi, CURL_SOCKET_TIMEOUT, &g->still_running);
+  } while (rc == CURLM_CALL_MULTI_PERFORM);
+  mcode_or_die("timer_cb: curl_multi_socket", rc);
+  check_run_count(g);
   return FALSE;
 }
 
@@ -188,15 +199,11 @@ static gboolean event_cb(GIOChannel *ch, GIOCondition condition, gpointer data)
   GlobalInfo *g = (GlobalInfo*) data;
   CURLMcode rc;
   int fd=g_io_channel_unix_get_fd(ch);
-
-  int action =
-    (condition & G_IO_IN ? CURL_CSELECT_IN : 0) |
-    (condition & G_IO_OUT ? CURL_CSELECT_OUT : 0);
-
-  rc = curl_multi_socket_action(g->multi, fd, action, &g->still_running);
-  mcode_or_die("event_cb: curl_multi_socket_action", rc);
-
-  check_multi_info(g);
+  do {
+    rc = curl_multi_socket(g->multi, fd, &g->still_running);
+  } while (rc == CURLM_CALL_MULTI_PERFORM);
+  mcode_or_die("event_cb: curl_multi_socket", rc);
+  check_run_count(g);
   if(g->still_running) {
     return TRUE;
   } else {
@@ -332,9 +339,12 @@ static void new_conn(char *url, GlobalInfo *g )
   MSG_OUT("Adding easy %p to multi %p (%s)\n", conn->easy, g->multi, url);
   rc =curl_multi_add_handle(g->multi, conn->easy);
   mcode_or_die("new_conn: curl_multi_add_handle", rc);
-
-  /* note that the add_handle() will set a time-out to trigger very soon so
-     that the necessary socket_action() call will be called by this app */
+  g->requested++;
+  do {
+    rc = curl_multi_socket_all(g->multi, &g->still_running);
+  } while (CURLM_CALL_MULTI_PERFORM == rc);
+  mcode_or_die("new_conn: curl_multi_socket_all", rc);
+  check_run_count(g);
 }
 
 
@@ -442,10 +452,9 @@ int main(int argc, char **argv)
   curl_multi_setopt(g->multi, CURLMOPT_SOCKETDATA, g);
   curl_multi_setopt(g->multi, CURLMOPT_TIMERFUNCTION, update_timeout_cb);
   curl_multi_setopt(g->multi, CURLMOPT_TIMERDATA, g);
-
-  /* we don't call any curl_multi_socket*() function yet as we have no handles
-     added! */
-
+  do {
+    rc = curl_multi_socket_all(g->multi, &g->still_running);
+  } while (CURLM_CALL_MULTI_PERFORM == rc);
   g_main_loop_run(gmain);
   curl_multi_cleanup(g->multi);
   return 0;

@@ -1,12 +1,10 @@
 <testcase>
 <info>
 <keywords>
-HTTP
+non-existing host name
 FAILURE
-non-existing host
 </keywords>
 </info>
-
 # Server-side
 <reply>
 <data>

@@ -1,24 +1,7 @@
-.\" **************************************************************************
-.\" *                                  _   _ ____  _
-.\" *  Project                     ___| | | |  _ \| |
-.\" *                             / __| | | | |_) | |
-.\" *                            | (__| |_| |  _ <| |___
-.\" *                             \___|\___/|_| \_\_____|
-.\" *
-.\" * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
-.\" *
-.\" * This software is licensed as described in the file COPYING, which
-.\" * you should have received as part of this distribution. The terms
-.\" * are also available at http://curl.haxx.se/docs/copyright.html.
-.\" *
-.\" * You may opt to use, copy, modify, merge, publish, distribute and/or sell
-.\" * copies of the Software, and permit persons to whom the Software is
-.\" * furnished to do so, under the terms of the COPYING file.
-.\" *
-.\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
-.\" * KIND, either express or implied.
-.\" *
-.\" **************************************************************************
+.\" You can view this file with:
+.\" nroff -man [file]
+.\" $Id: curl_global_init.3,v 1.6 2006-07-26 22:19:42 bagder Exp $
+.\"
 .TH curl_global_init 3 "11 May 2004" "libcurl 7.12" "libcurl Manual"
 .SH NAME
 curl_global_init - Global libcurl initialisation
@@ -40,7 +23,7 @@ effect as one call.
 The flags option is a bit pattern that tells libcurl exactly what features to
 init, as described below. Set the desired bits by ORing the values together.
 In normal operation, you must specify CURL_GLOBAL_ALL.  Don't use any other
-value unless you are familiar with it and mean to control internal operations of
+value unless you are familiar with and mean to control internal operations of
 libcurl.
 
 \fBThis function is not thread safe.\fP You must not call it when any other
@@ -66,10 +49,6 @@ Initialize the Win32 socket libraries.
 .TP
 .B CURL_GLOBAL_NOTHING
 Initialise nothing extra. This sets no bit.
-.TP
-.B CURL_GLOBAL_DEFAULT
-A sensible default. It will init both SSL and Win32. Right now, this equals
-the functionality of the \fBCURL_GLOBAL_ALL\fP mask.
 .SH RETURN VALUE
 If this function returns non-zero, something went wrong and you cannot use the
 other curl functions.

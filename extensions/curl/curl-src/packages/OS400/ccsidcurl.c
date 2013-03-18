@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2010, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,6 +18,7 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * $Id: ccsidcurl.c,v 1.12 2008-10-17 13:17:41 patrickm Exp $
  *
  ***************************************************************************/
 
@@ -31,8 +32,8 @@
 
 #pragma enum(int)
 
-#include "curl.h"
-#include "mprintf.h"
+#include <curl/curl.h>
+#include <curl/mprintf.h>
 #include "urldata.h"
 #include "url.h"
 #include "getinfo.h"
@@ -1029,11 +1030,7 @@ curl_easy_setopt_ccsid(CURL * curl, CURLoption tag, ...)
   if (testwarn) {
     testwarn = 0;
 
-#ifdef USE_TLS_SRP
-    if ((int) STRING_LAST != (int) STRING_TLSAUTH_PASSWORD + 1)
-#else
-    if ((int) STRING_LAST != (int) STRING_MAIL_AUTH + 1)
-#endif
+    if ((int) STRING_LAST != (int) STRING_PROXYPASSWORD + 1)
       curl_mfprintf(stderr,
        "*** WARNING: curl_easy_setopt_ccsid() should be reworked ***\n");
     }
@@ -1049,51 +1046,39 @@ curl_easy_setopt_ccsid(CURL * curl, CURLoption tag, ...)
   case CURLOPT_COOKIEFILE:
   case CURLOPT_COOKIEJAR:
   case CURLOPT_COOKIELIST:
-  case CURLOPT_CRLFILE:
   case CURLOPT_CUSTOMREQUEST:
-  case CURLOPT_DNS_SERVERS:
   case CURLOPT_EGDSOCKET:
   case CURLOPT_ENCODING:
+  case CURLOPT_FTPPORT:
   case CURLOPT_FTP_ACCOUNT:
   case CURLOPT_FTP_ALTERNATIVE_TO_USER:
-  case CURLOPT_FTPPORT:
   case CURLOPT_INTERFACE:
-  case CURLOPT_ISSUERCERT:
   case CURLOPT_KEYPASSWD:
   case CURLOPT_KRBLEVEL:
-  case CURLOPT_MAIL_FROM:
-  case CURLOPT_MAIL_AUTH:
   case CURLOPT_NETRC_FILE:
-  case CURLOPT_NOPROXY:
-  case CURLOPT_PASSWORD:
   case CURLOPT_PROXY:
-  case CURLOPT_PROXYPASSWORD:
-  case CURLOPT_PROXYUSERNAME:
   case CURLOPT_PROXYUSERPWD:
   case CURLOPT_RANDOM_FILE:
   case CURLOPT_RANGE:
   case CURLOPT_REFERER:
-  case CURLOPT_RTSP_SESSION_ID:
-  case CURLOPT_RTSP_STREAM_URI:
-  case CURLOPT_RTSP_TRANSPORT:
-  case CURLOPT_SOCKS5_GSSAPI_SERVICE:
-  case CURLOPT_SSH_HOST_PUBLIC_KEY_MD5:
-  case CURLOPT_SSH_KNOWNHOSTS:
   case CURLOPT_SSH_PRIVATE_KEYFILE:
   case CURLOPT_SSH_PUBLIC_KEYFILE:
   case CURLOPT_SSLCERT:
   case CURLOPT_SSLCERTTYPE:
-  case CURLOPT_SSL_CIPHER_LIST:
   case CURLOPT_SSLENGINE:
   case CURLOPT_SSLKEY:
   case CURLOPT_SSLKEYTYPE:
-  case CURLOPT_TLSAUTH_PASSWORD:
-  case CURLOPT_TLSAUTH_TYPE:
-  case CURLOPT_TLSAUTH_USERNAME:
+  case CURLOPT_SSL_CIPHER_LIST:
   case CURLOPT_URL:
   case CURLOPT_USERAGENT:
-  case CURLOPT_USERNAME:
   case CURLOPT_USERPWD:
+  case CURLOPT_SSH_HOST_PUBLIC_KEY_MD5:
+  case CURLOPT_CRLFILE:
+  case CURLOPT_ISSUERCERT:
+  case CURLOPT_USERNAME:
+  case CURLOPT_PASSWORD:
+  case CURLOPT_PROXYUSERNAME:
+  case CURLOPT_PROXYPASSWORD:
     s = va_arg(arg, char *);
     ccsid = va_arg(arg, unsigned int);
 

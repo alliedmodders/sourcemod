@@ -47,7 +47,6 @@ TYPE I
 SIZE 135
 REST 4
 RETR 135
-ABOR
 QUIT
 </protocol>
 </verify>

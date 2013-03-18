@@ -22,27 +22,27 @@ def BuildCURL():
 			if AMBuild.target['platform'] == 'darwin':
 				env['LDFLAGS'] = '-mmacosx-version-min=10.5'
 			else:
-				env['CPPFLAGS'] += ' -D_GNU_SOURCE'
+				env['CFLAGS'] += ' -D_GNU_SOURCE'
 			curl.AddCommand(command.DirectCommand(argv = args, env = env))
 			curl.AddCommand(command.ShellCommand('cd lib && make'))
 	else:
 		args = ''
 		projpath = os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'lib',
-		                    'libcurl.vcproj')
+		                    'build_libcurl.vcproj')
 		try:
 			subprocess.Popen('vcbuild')
 		except:
 			xprojpath = os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'lib',
-		                    'libcurl.vcxproj')
+		                    'build_libcurl.vcxproj')
 			if not os.path.isfile(xprojpath):
 				curl.AddCommand(command.DirectCommand(['vcupgrade', projpath]))
-			args = ['msbuild', xprojpath, '/p:Configuration=Release']
+			args = ['msbuild', xprojpath, '/p:Configuration=LIB Release']
 			
 		if not args:
-			args = ['vcbuild', projpath, 'Release']
+			args = ['vcbuild', projpath, 'LIB Release']
 		
 		curl.AddCommand(command.DirectCommand(args))
-		#die "Unable to find libcurl.lib!\n" unless (-f "Release\\libcurl.lib");
+		#die "Unable to find libcurl.lib!\n" unless (-f "LIB-Release\\libcurl.lib");
 
 BuildCURL()
 
@@ -75,7 +75,7 @@ elif AMBuild.target['platform'] == 'windows':
 	                    'curl',
 	                    'curl-src',
 	                    'lib',
-	                    'Release',
+	                    'LIB-Release',
 	                    'libcurl.lib')
 	if os.path.isfile(path):
 		binary.RelinkIfNewer(path)

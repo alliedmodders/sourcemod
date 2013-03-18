@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2010, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2005, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -18,6 +18,7 @@
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
 #
+# $Id: valgrind.pm,v 1.2 2007-10-31 18:32:06 danf Exp $
 ###########################################################################
 
 use File::Basename;
@@ -36,7 +37,6 @@ sub valgrindparse {
     my @o;
 
     my $bt=0;
-    my $nssinit=0;
 
     open(VAL, "<$file");
     while(<VAL>) {
@@ -54,14 +54,9 @@ sub valgrindparse {
                         $us++;
                     } #else {print "Not our source: $func, $source, $line\n";}
                 }
-
-                # the memory leakage within NSS_InitContext is not a bug of curl
-                if($w =~ /NSS_InitContext/) {
-                    $nssinit++;
-                }
             }
             else {
-                if($us and not $nssinit) {
+                if($us) {
                     # the stack trace included source details about us
 
                     $error++;
@@ -77,7 +72,6 @@ sub valgrindparse {
                 }
                 $bt = 0; # no more backtrace
                 $us = 0;
-                $nssinit = 0;
             }
         }
         else {
@@ -98,7 +92,7 @@ sub valgrindparse {
                 # us use OpenSSL. OpenSSL produces numerous valgrind
                 # errors of this kind, rendering it impossible for us to
                 # detect (valid) reports on actual curl or libcurl code.
-
+                
                 if(!$sslenabled) {
                     $uninitedvar = 1;
                     $error++;

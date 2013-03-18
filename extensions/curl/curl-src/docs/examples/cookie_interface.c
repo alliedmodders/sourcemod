@@ -1,25 +1,12 @@
-/***************************************************************************
+/*****************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
- *
- * This software is licensed as described in the file COPYING, which
- * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
- *
- * You may opt to use, copy, modify, merge, publish, distribute and/or sell
- * copies of the Software, and permit persons to whom the Software is
- * furnished to do so, under the terms of the COPYING file.
- *
- * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
- * KIND, either express or implied.
- *
- ***************************************************************************/
-/* This example shows usage of simple cookie interface. */
+ *  This example shows usage of simple cookie interface. 
+ */
 
 #include <stdio.h>
 #include <string.h>
@@ -66,7 +53,7 @@ main(void)
   if (curl) {
     char nline[256];
 
-    curl_easy_setopt(curl, CURLOPT_URL, "http://www.example.com/");
+    curl_easy_setopt(curl, CURLOPT_URL, "http://www.google.com/"); /* google.com sets "PREF" cookie */
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
     curl_easy_setopt(curl, CURLOPT_COOKIEFILE, ""); /* just to start the cookie engine */
     res = curl_easy_perform(curl);
@@ -89,11 +76,11 @@ main(void)
 #endif
     /* Netscape format cookie */
     snprintf(nline, sizeof(nline), "%s\t%s\t%s\t%s\t%lu\t%s\t%s",
-      ".google.com", "TRUE", "/", "FALSE", (unsigned long)time(NULL) + 31337UL, "PREF", "hello google, i like you very much!");
+      ".google.com", "TRUE", "/", "FALSE", time(NULL) + 31337, "PREF", "hello google, i like you very much!");
     res = curl_easy_setopt(curl, CURLOPT_COOKIELIST, nline);
     if (res != CURLE_OK) {
       fprintf(stderr, "Curl curl_easy_setopt failed: %s\n", curl_easy_strerror(res));
-      return 1;
+      return 1;            
     }
 
     /* HTTP-header style cookie */
@@ -103,7 +90,7 @@ main(void)
     res = curl_easy_setopt(curl, CURLOPT_COOKIELIST, nline);
     if (res != CURLE_OK) {
       fprintf(stderr, "Curl curl_easy_setopt failed: %s\n", curl_easy_strerror(res));
-      return 1;
+      return 1;            
     }
 
     print_cookies(curl);

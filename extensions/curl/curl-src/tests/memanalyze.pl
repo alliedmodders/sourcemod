@@ -1,25 +1,4 @@
 #!/usr/bin/env perl
-#***************************************************************************
-#                                  _   _ ____  _
-#  Project                     ___| | | |  _ \| |
-#                             / __| | | | |_) | |
-#                            | (__| |_| |  _ <| |___
-#                             \___|\___/|_| \_\_____|
-#
-# Copyright (C) 1998 - 2013, Daniel Stenberg, <daniel@haxx.se>, et al.
-#
-# This software is licensed as described in the file COPYING, which
-# you should have received as part of this distribution. The terms
-# are also available at http://curl.haxx.se/docs/copyright.html.
-#
-# You may opt to use, copy, modify, merge, publish, distribute and/or sell
-# copies of the Software, and permit persons to whom the Software is
-# furnished to do so, under the terms of the COPYING file.
-#
-# This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
-# KIND, either express or implied.
-#
-###########################################################################
 #
 # Example input:
 #
@@ -138,7 +117,7 @@ while(<FILE>) {
             if($sizeataddr{$addr}>0) {
                 # this means weeeeeirdo
                 print "Mixed debug compile ($source:$linenum at line $lnum), rebuild curl now\n";
-                print "We think $sizeataddr{$addr} bytes are already allocated at that memory address: $addr!\n";
+		print "We think $sizeataddr{$addr} bytes are already allocated at that memory address: $addr!\n";
             }
 
             $sizeataddr{$addr}=$size;
@@ -197,7 +176,7 @@ while(<FILE>) {
 
             newtotal($totalmem);
             $reallocs++;
-
+            
             $getmem{$oldaddr}="";
             $getmem{$newaddr}="$source:$linenum";
         }
@@ -213,7 +192,7 @@ while(<FILE>) {
             $totalmem += $size;
 
             if($trace) {
-                printf("STRDUP: $size bytes at %s, makes totally: %d bytes\n",
+                printf("STRDUP: $size bytes at %s, makes totally: %d bytes\n", 
                        $getmem{$addr}, $totalmem);
             }
 
@@ -222,7 +201,7 @@ while(<FILE>) {
         }
         else {
             print "Not recognized input line: $function\n";
-        }
+        }        
     }
     # FD url.c:1282 socket() = 5
     elsif($_ =~ /^FD ([^ ]*):(\d*) (.*)/) {
@@ -234,14 +213,6 @@ while(<FILE>) {
         if($function =~ /socket\(\) = (\d*)/) {
             $filedes{$1}=1;
             $getfile{$1}="$source:$linenum";
-            $openfile++;
-        }
-        elsif($function =~ /socketpair\(\) = (\d*) (\d*)/) {
-            $filedes{$1}=1;
-            $getfile{$1}="$source:$linenum";
-            $openfile++;
-            $filedes{$2}=1;
-            $getfile{$2}="$source:$linenum";
             $openfile++;
         }
         elsif($function =~ /accept\(\) = (\d*)/) {
@@ -266,7 +237,7 @@ while(<FILE>) {
         $linenum = $2;
         $function = $3;
 
-        if($function =~ /f[d]*open\(\"(.*)\",\"([^\"]*)\"\) = (\(nil\)|0x([0-9a-f]*))/) {
+        if($function =~ /f[d]*open\(\"([^\"]*)\",\"([^\"]*)\"\) = (\(nil\)|0x([0-9a-f]*))/) {
             if($3 eq "(nil)") {
                 ;
             }
@@ -326,7 +297,7 @@ while(<FILE>) {
                 printf("FREEADDRINFO ($source:$linenum)\n");
             }
         }
-
+       
     }
     else {
         print "Not recognized prefix line: $line\n";

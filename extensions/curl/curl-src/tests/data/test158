@@ -1,11 +1,4 @@
 <testcase>
-<info>
-<keywords>
-HTTP
-HTTP POST
-</keywords>
-</info>
-
 # Server-side
 <reply>
 <data>

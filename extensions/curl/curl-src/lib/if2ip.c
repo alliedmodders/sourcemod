@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,96 +18,80 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * $Id: if2ip.c,v 1.58 2008-11-07 18:33:20 danf Exp $
  ***************************************************************************/
 
-#include "curl_setup.h"
+#include "setup.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#include "if2ip.h"
+
+/*
+ * This test can probably be simplified to #if defined(SIOCGIFADDR) and
+ * moved after the following includes.
+ */
+#if !defined(WIN32) && !defined(__BEOS__) && !defined(__CYGWIN__) && \
+    !defined(__riscos__) && !defined(__INTERIX) && !defined(NETWARE) && \
+    !defined(__AMIGA__) && !defined(__minix) && !defined(__SYMBIAN32__) && \
+    !defined(__WATCOMC__)
+
+#if defined(HAVE_GETIFADDRS)
+
+/*
+ * glibc provides getifaddrs() to provide a list of all interfaces and their
+ * addresses.
+ */
+
+#include <ifaddrs.h>
+
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
 #ifdef HAVE_NETINET_IN_H
-#  include <netinet/in.h>
+#include <netinet/in.h>
 #endif
 #ifdef HAVE_ARPA_INET_H
-#  include <arpa/inet.h>
-#endif
-#ifdef HAVE_NET_IF_H
-#  include <net/if.h>
-#endif
-#ifdef HAVE_SYS_IOCTL_H
-#  include <sys/ioctl.h>
-#endif
-#ifdef HAVE_NETDB_H
-#  include <netdb.h>
-#endif
-#ifdef HAVE_SYS_SOCKIO_H
-#  include <sys/sockio.h>
-#endif
-#ifdef HAVE_IFADDRS_H
-#  include <ifaddrs.h>
-#endif
-#ifdef HAVE_STROPTS_H
-#  include <stropts.h>
-#endif
-#ifdef __VMS
-#  include <inet.h>
+#include <arpa/inet.h>
 #endif
 
 #include "inet_ntop.h"
 #include "strequal.h"
-#include "if2ip.h"
 
 #define _MPRINTF_REPLACE /* use our functions only */
 #include <curl/mprintf.h>
 
-#include "curl_memory.h"
+#include "memory.h"
 /* The last #include file should be: */
 #include "memdebug.h"
 
-/* ------------------------------------------------------------------ */
-
-#if defined(HAVE_GETIFADDRS)
-
-bool Curl_if_is_interface_name(const char *interf)
-{
-  bool result = FALSE;
-
-  struct ifaddrs *iface, *head;
-
-  if(getifaddrs(&head) >= 0) {
-    for(iface=head; iface != NULL; iface=iface->ifa_next) {
-      if(curl_strequal(iface->ifa_name, interf)) {
-        result = TRUE;
-        break;
-      }
-    }
-    freeifaddrs(head);
-  }
-  return result;
-}
-
-char *Curl_if2ip(int af, const char *interf, char *buf, int buf_size)
+char *Curl_if2ip(int af, const char *interface, char *buf, int buf_size)
 {
   struct ifaddrs *iface, *head;
-  char *ip = NULL;
+  char *ip=NULL;
 
-  if(getifaddrs(&head) >= 0) {
-    for(iface=head; iface != NULL; iface=iface->ifa_next) {
-      if((iface->ifa_addr != NULL) &&
-         (iface->ifa_addr->sa_family == af) &&
-         curl_strequal(iface->ifa_name, interf)) {
+  if (getifaddrs(&head) >= 0) {
+    for (iface=head; iface != NULL; iface=iface->ifa_next) {
+      if ((iface->ifa_addr != NULL) &&
+          (iface->ifa_addr->sa_family == af) &&
+          curl_strequal(iface->ifa_name, interface)) {
         void *addr;
         char scope[12]="";
-#ifdef ENABLE_IPV6
-        if(af == AF_INET6) {
-          unsigned int scopeid = 0;
+        if (af == AF_INET6) {
+          unsigned int scopeid;
           addr = &((struct sockaddr_in6 *)iface->ifa_addr)->sin6_addr;
-#ifdef HAVE_SOCKADDR_IN6_SIN6_SCOPE_ID
           /* Include the scope of this interface as part of the address */
           scopeid = ((struct sockaddr_in6 *)iface->ifa_addr)->sin6_scope_id;
-#endif
-          if(scopeid)
+          if (scopeid)
             snprintf(scope, sizeof(scope), "%%%u", scopeid);
         }
         else
-#endif
           addr = &((struct sockaddr_in *)iface->ifa_addr)->sin_addr;
         ip = (char *) Curl_inet_ntop(af, addr, buf, buf_size);
         strlcat(buf, scope, buf_size);
@@ -119,64 +103,97 @@ char *Curl_if2ip(int af, const char *interf, char *buf, int buf_size)
   return ip;
 }
 
-#elif defined(HAVE_IOCTL_SIOCGIFADDR)
+#else
 
-bool Curl_if_is_interface_name(const char *interf)
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+
+#ifdef HAVE_SYS_TIME_H
+/* This must be before net/if.h for AIX 3.2 to enjoy life */
+#include <sys/time.h>
+#endif
+#ifdef HAVE_NET_IF_H
+#include <net/if.h>
+#endif
+#ifdef HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif
+
+#ifdef HAVE_NETDB_H
+#include <netdb.h>
+#endif
+
+#ifdef HAVE_SYS_SOCKIO_H
+#include <sys/sockio.h>
+#endif
+
+#ifdef VMS
+#include <inet.h>
+#endif
+
+#include "inet_ntop.h"
+
+#define _MPRINTF_REPLACE /* use our functions only */
+#include <curl/mprintf.h>
+
+#include "memory.h"
+/* The last #include file should be: */
+#include "memdebug.h"
+
+#define SYS_ERROR -1
+
+char *Curl_if2ip(int af, const char *interface, char *buf, int buf_size)
 {
-  /* This is here just to support the old interfaces */
-  char buf[256];
+  int dummy;
+  char *ip=NULL;
 
-  char *ip = Curl_if2ip(AF_INET, interf, buf, sizeof(buf));
-
-  return (ip != NULL) ? TRUE : FALSE;
-}
-
-char *Curl_if2ip(int af, const char *interf, char *buf, int buf_size)
-{
-  struct ifreq req;
-  struct in_addr in;
-  struct sockaddr_in *s;
-  curl_socket_t dummy;
-  size_t len;
-  char *ip;
-
-  if(!interf || (af != AF_INET))
-    return NULL;
-
-  len = strlen(interf);
-  if(len >= sizeof(req.ifr_name))
+  if(!interface || (af != AF_INET))
     return NULL;
 
   dummy = socket(AF_INET, SOCK_STREAM, 0);
-  if(CURL_SOCKET_BAD == dummy)
-    return NULL;
-
-  memset(&req, 0, sizeof(req));
-  memcpy(req.ifr_name, interf, len+1);
-  req.ifr_addr.sa_family = AF_INET;
-
-  if(ioctl(dummy, SIOCGIFADDR, &req) < 0) {
-    sclose(dummy);
+  if(SYS_ERROR == dummy) {
     return NULL;
   }
+  else {
+    struct ifreq req;
+    size_t len = strlen(interface);
+    memset(&req, 0, sizeof(req));
+    if(len >= sizeof(req.ifr_name)) {
+      sclose(dummy);
+      return NULL; /* this can't be a fine interface name */
+    }
+    memcpy(req.ifr_name, interface, len+1);
+    req.ifr_addr.sa_family = AF_INET;
+#ifdef IOCTL_3_ARGS
+    if(SYS_ERROR == ioctl(dummy, SIOCGIFADDR, &req)) {
+#else
+    if(SYS_ERROR == ioctl(dummy, SIOCGIFADDR, &req, sizeof(req))) {
+#endif
+      sclose(dummy);
+      return NULL;
+    }
+    else {
+      struct in_addr in;
 
-  s = (struct sockaddr_in *)&req.ifr_addr;
-  memcpy(&in, &s->sin_addr, sizeof(in));
-  ip = (char *) Curl_inet_ntop(s->sin_family, &in, buf, buf_size);
-
-  sclose(dummy);
+      struct sockaddr_in *s = (struct sockaddr_in *)&req.ifr_dstaddr;
+      memcpy(&in, &s->sin_addr, sizeof(in));
+      ip = (char *) Curl_inet_ntop(s->sin_family, &in, buf, buf_size);
+    }
+    sclose(dummy);
+  }
   return ip;
 }
+#endif
 
+/* -- end of if2ip() -- */
 #else
-
-bool Curl_if_is_interface_name(const char *interf)
-{
-  (void) interf;
-
-  return FALSE;
-}
-
 char *Curl_if2ip(int af, const char *interf, char *buf, int buf_size)
 {
     (void) af;
@@ -185,5 +202,4 @@ char *Curl_if2ip(int af, const char *interf, char *buf, int buf_size)
     (void) buf_size;
     return NULL;
 }
-
 #endif

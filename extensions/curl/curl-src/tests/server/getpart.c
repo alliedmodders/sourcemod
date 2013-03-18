@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,35 +18,35 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * $Id: getpart.c,v 1.28 2008-10-23 14:07:28 yangtse Exp $
  ***************************************************************************/
-#include "server_setup.h"
+
+#include "setup.h"
 
 #include "getpart.h"
 
-#define ENABLE_CURLX_PRINTF
-/* make the curlx header define all printf() functions to use the curlx_*
-   versions instead */
-#include "curlx.h" /* from the private lib dir */
+#define _MPRINTF_REPLACE /* use our functions only */
+#include <curl/mprintf.h>
 
-/* just to please curl_base64.h we create a fake struct */
+/* just to please base64.h we create a fake struct */
 struct SessionHandle {
   int fake;
 };
 
 #include "curl_base64.h"
-#include "curl_memory.h"
+#include "memory.h"
 
 /* include memdebug.h last */
 #include "memdebug.h"
 
-#define EAT_SPACE(p) while(*(p) && ISSPACE(*(p))) (p)++
+#define EAT_SPACE(ptr) while( ptr && *ptr && ISSPACE(*ptr) ) ptr++
+#define EAT_WORD(ptr) while( ptr && *ptr && !ISSPACE(*ptr) && \
+                            ('>' != *ptr)) ptr++
 
-#define EAT_WORD(p)  while(*(p) && !ISSPACE(*(p)) && ('>' != *(p))) (p)++
-
-#ifdef DEBUG_GETPART
+#ifdef DEBUG
 #define show(x) printf x
 #else
-#define show(x) Curl_nop_stmt
+#define show(x)
 #endif
 
 #if defined(_MSC_VER) && defined(_DLL)
@@ -63,359 +63,191 @@ curl_calloc_callback Curl_ccalloc = (curl_calloc_callback)calloc;
 #  pragma warning(default:4232) /* MSVC extension, dllimport identity */
 #endif
 
-/*
- * readline()
- *
- * Reads a complete line from a file into a dynamically allocated buffer.
- *
- * Calling function may call this multiple times with same 'buffer'
- * and 'bufsize' pointers to avoid multiple buffer allocations. Buffer
- * will be reallocated and 'bufsize' increased until whole line fits in
- * buffer before returning it.
- *
- * Calling function is responsible to free allocated buffer.
- *
- * This function may return:
- *   GPE_OUT_OF_MEMORY
- *   GPE_END_OF_FILE
- *   GPE_OK
- */
-
-static int readline(char **buffer, size_t *bufsize, FILE *stream)
+static
+char *appendstring(char *string, /* original string */
+                   char *buffer, /* to append */
+                   size_t *stringlen, /* length of string */
+                   size_t *stralloc,  /* allocated size */
+                   char base64) /* 1 if base64 encoded */
 {
-  size_t offset = 0;
-  size_t length;
-  char *newptr;
-
-  if(!*buffer) {
-    *buffer = malloc(128);
-    if(!*buffer)
-      return GPE_OUT_OF_MEMORY;
-    *bufsize = 128;
-  }
-
-  for(;;) {
-    int bytestoread = curlx_uztosi(*bufsize - offset);
-
-    if(!fgets(*buffer + offset, bytestoread, stream))
-      return (offset != 0) ? GPE_OK : GPE_END_OF_FILE ;
-
-    length = offset + strlen(*buffer + offset);
-    if(*(*buffer + length - 1) == '\n')
-      break;
-    offset = length;
-    if(length < *bufsize - 1)
-      continue;
-
-    newptr = realloc(*buffer, *bufsize * 2);
-    if(!newptr)
-      return GPE_OUT_OF_MEMORY;
-    *buffer = newptr;
-    *bufsize *= 2;
-  }
-
-  return GPE_OK;
-}
-
-/*
- * appenddata()
- *
- * This appends data from a given source buffer to the end of the used part of
- * a destination buffer. Arguments relative to the destination buffer are, the
- * address of a pointer to the destination buffer 'dst_buf', the length of data
- * in destination buffer excluding potential null string termination 'dst_len',
- * the allocated size of destination buffer 'dst_alloc'. All three destination
- * buffer arguments may be modified by this function. Arguments relative to the
- * source buffer are, a pointer to the source buffer 'src_buf' and indication
- * whether the source buffer is base64 encoded or not 'src_b64'.
- *
- * If the source buffer is indicated to be base64 encoded, this appends the
- * decoded data, binary or whatever, to the destination. The source buffer
- * may not hold binary data, only a null terminated string is valid content.
- *
- * Destination buffer will be enlarged and relocated as needed.
- *
- * Calling function is responsible to provide preallocated destination
- * buffer and also to deallocate it when no longer needed.
- *
- * This function may return:
- *   GPE_OUT_OF_MEMORY
- *   GPE_OK
- */
-
-static int appenddata(char  **dst_buf,   /* dest buffer */
-                      size_t *dst_len,   /* dest buffer data length */
-                      size_t *dst_alloc, /* dest buffer allocated size */
-                      char   *src_buf,   /* source buffer */
-                      int     src_b64)   /* != 0 if source is base64 encoded */
-{
-  size_t need_alloc, src_len;
   union {
-    unsigned char *as_uchar;
-             char *as_char;
+    unsigned char * as_uchar;
+             char * as_char;
   } buf64;
 
-  src_len = strlen(src_buf);
-  if(!src_len)
-    return GPE_OK;
+  size_t len = strlen(buffer);
+  size_t needed_len = len + *stringlen + 1;
 
   buf64.as_char = NULL;
 
-  if(src_b64) {
-    /* base64 decode the given buffer */
-    int error = (int) Curl_base64_decode(src_buf, &buf64.as_uchar, &src_len);
-    if(error)
-      return GPE_OUT_OF_MEMORY;
-    src_buf = buf64.as_char;
-    if(!src_len || !src_buf) {
-      /*
-      ** currently there is no way to tell apart an OOM condition in
-      ** Curl_base64_decode() from zero length decoded data. For now,
-      ** let's just assume it is an OOM condition, currently we have
-      ** no input for this function that decodes to zero length data.
-      */
-      if(buf64.as_char)
-        free(buf64.as_char);
-      return GPE_OUT_OF_MEMORY;
-    }
+  if(base64) {
+    /* decode the given buffer first */
+    len = Curl_base64_decode(buffer, &buf64.as_uchar); /* updated len */
+    buffer = buf64.as_char;
+    needed_len = len + *stringlen + 1; /* recalculate */
   }
 
-  need_alloc = src_len + *dst_len + 1;
+  if(needed_len >= *stralloc) {
+    char *newptr;
+    size_t newsize = needed_len*2; /* get twice the needed size */
 
-  /* enlarge destination buffer if required */
-  if(need_alloc > *dst_alloc) {
-    size_t newsize = need_alloc * 2;
-    char *newptr = realloc(*dst_buf, newsize);
-    if(!newptr) {
+    newptr = realloc(string, newsize);
+    if(newptr) {
+      string = newptr;
+      *stralloc = newsize;
+    }
+    else {
       if(buf64.as_char)
         free(buf64.as_char);
-      return GPE_OUT_OF_MEMORY;
+      return NULL;
     }
-    *dst_alloc = newsize;
-    *dst_buf = newptr;
   }
-
   /* memcpy to support binary blobs */
-  memcpy(*dst_buf + *dst_len, src_buf, src_len);
-  *dst_len += src_len;
-  *(*dst_buf + *dst_len) = '\0';
+  memcpy(&string[*stringlen], buffer, len);
+  *stringlen += len;
+  string[*stringlen]=0;
 
   if(buf64.as_char)
     free(buf64.as_char);
 
-  return GPE_OK;
+  return string;
 }
 
-/*
- * getpart()
- *
- * This returns whole contents of specified XML-like section and subsection
- * from the given file. This is mostly used to retrieve a specific part from
- * a test definition file for consumption by test suite servers.
- *
- * Data is returned in a dynamically allocated buffer, a pointer to this data
- * and the size of the data is stored at the addresses that caller specifies.
- *
- * If the returned data is a string the returned size will be the length of
- * the string excluding null termination. Otherwise it will just be the size
- * of the returned binary data.
- *
- * Calling function is responsible to free returned buffer.
- *
- * This function may return:
- *   GPE_NO_BUFFER_SPACE
- *   GPE_OUT_OF_MEMORY
- *   GPE_OK
- */
-
-int getpart(char **outbuf, size_t *outlen,
-            const char *main, const char *sub, FILE *stream)
+const char *spitout(FILE *stream,
+                    const char *main,
+                    const char *sub, size_t *size)
 {
-# define MAX_TAG_LEN 79
-  char couter[MAX_TAG_LEN+1]; /* current outermost section */
-  char cmain[MAX_TAG_LEN+1];  /* current main section */
-  char csub[MAX_TAG_LEN+1];   /* current sub section */
-  char ptag[MAX_TAG_LEN+1];   /* potential tag */
-  char patt[MAX_TAG_LEN+1];   /* potential attributes */
-  char *buffer = NULL;
+  char buffer[8192]; /* big enough for anything */
+  char cmain[128]=""; /* current main section */
+  char csub[128]="";  /* current sub section */
   char *ptr;
   char *end;
-  union {
-    ssize_t sig;
-     size_t uns;
-  } len;
-  size_t bufsize = 0;
-  size_t outalloc = 256;
-  int in_wanted_part = 0;
-  int base64 = 0;
-  int error;
+  char display = 0;
+
+  char *string;
+  size_t stringlen=0;
+  size_t stralloc=256;
+  char base64 = 0; /* set to 1 if true */
 
   enum {
-    STATE_OUTSIDE = 0,
-    STATE_OUTER   = 1,
-    STATE_INMAIN  = 2,
-    STATE_INSUB   = 3,
-    STATE_ILLEGAL = 4
+    STATE_OUTSIDE,
+    STATE_OUTER,
+    STATE_INMAIN,
+    STATE_INSUB,
+    STATE_ILLEGAL
   } state = STATE_OUTSIDE;
 
-  *outlen = 0;
-  *outbuf = malloc(outalloc);
-  if(!*outbuf)
-    return GPE_OUT_OF_MEMORY;
-  *(*outbuf) = '\0';
+  string = malloc(stralloc);
+  if(!string)
+    return NULL;
 
-  couter[0] = cmain[0] = csub[0] = ptag[0] = patt[0] = '\0';
+  string[0] = 0; /* zero first byte in case of no data */
 
-  while((error = readline(&buffer, &bufsize, stream)) == GPE_OK) {
+  while(fgets(buffer, sizeof(buffer), stream)) {
 
     ptr = buffer;
+
+    /* pass white spaces */
     EAT_SPACE(ptr);
 
     if('<' != *ptr) {
-      if(in_wanted_part) {
+      if(display) {
         show(("=> %s", buffer));
-        error = appenddata(outbuf, outlen, &outalloc, buffer, base64);
-        if(error)
-          break;
+        string = appendstring(string, buffer, &stringlen, &stralloc, base64);
+        show(("* %s\n", buffer));
       }
       continue;
     }
 
     ptr++;
+    EAT_SPACE(ptr);
 
     if('/' == *ptr) {
-      /*
-      ** closing section tag
-      */
-
+      /* end of a section */
       ptr++;
-      end = ptr;
-      EAT_WORD(end);
-      if((len.sig = end - ptr) > MAX_TAG_LEN) {
-        error = GPE_NO_BUFFER_SPACE;
-        break;
-      }
-      memcpy(ptag, ptr, len.uns);
-      ptag[len.uns] = '\0';
-
-      if((STATE_INSUB == state) && !strcmp(csub, ptag)) {
-        /* end of current sub section */
-        state = STATE_INMAIN;
-        csub[0] = '\0';
-        if(in_wanted_part) {
-          /* end of wanted part */
-          in_wanted_part = 0;
-          break;
-        }
-      }
-      else if((STATE_INMAIN == state) && !strcmp(cmain, ptag)) {
-        /* end of current main section */
-        state = STATE_OUTER;
-        cmain[0] = '\0';
-        if(in_wanted_part) {
-          /* end of wanted part */
-          in_wanted_part = 0;
-          break;
-        }
-      }
-      else if((STATE_OUTER == state) && !strcmp(couter, ptag)) {
-        /* end of outermost file section */
-        state = STATE_OUTSIDE;
-        couter[0] = '\0';
-        if(in_wanted_part) {
-          /* end of wanted part */
-          in_wanted_part = 0;
-          break;
-        }
-      }
-
-    }
-    else if(!in_wanted_part) {
-      /*
-      ** opening section tag
-      */
-
-      /* get potential tag */
-      end = ptr;
-      EAT_WORD(end);
-      if((len.sig = end - ptr) > MAX_TAG_LEN) {
-        error = GPE_NO_BUFFER_SPACE;
-        break;
-      }
-      memcpy(ptag, ptr, len.uns);
-      ptag[len.uns] = '\0';
-
-      /* ignore comments, doctypes and xml declarations */
-      if(('!' == ptag[0]) || ('?' == ptag[0])) {
-        show(("* ignoring (%s)", buffer));
-        continue;
-      }
-
-      /* get all potential attributes */
-      ptr = end;
       EAT_SPACE(ptr);
+
       end = ptr;
-      while(*end && ('>' != *end))
-        end++;
-      if((len.sig = end - ptr) > MAX_TAG_LEN) {
-        error = GPE_NO_BUFFER_SPACE;
-        break;
-      }
-      memcpy(patt, ptr, len.uns);
-      patt[len.uns] = '\0';
+      EAT_WORD(end);
+      *end = 0;
 
-      if(STATE_OUTSIDE == state) {
-        /* outermost element (<testcase>) */
-        strcpy(couter, ptag);
+      if((state == STATE_INSUB) &&
+         !strcmp(csub, ptr)) {
+        /* this is the end of the currently read sub section */
+        state--;
+        csub[0]=0; /* no sub anymore */
+        display=0;
+      }
+      else if((state == STATE_INMAIN) &&
+              !strcmp(cmain, ptr)) {
+        /* this is the end of the currently read main section */
+        state--;
+        cmain[0]=0; /* no main anymore */
+        display=0;
+      }
+      else if(state == STATE_OUTER) {
+        /* this is the end of the outermost file section */
+        state--;
+      }
+    }
+    else if(!display) {
+      /* this is the beginning of a section */
+      end = ptr;
+      EAT_WORD(end);
+
+      *end = 0;
+      switch(state) {
+      case STATE_OUTSIDE:
+        /* Skip over the outermost element (<testcase>), but if it turns out
+           to be a comment, completely ignore it below */
+        strcpy(cmain, ptr);
         state = STATE_OUTER;
-        continue;
-      }
-      else if(STATE_OUTER == state) {
-        /* start of a main section */
-        strcpy(cmain, ptag);
-        state = STATE_INMAIN;
-        continue;
-      }
-      else if(STATE_INMAIN == state) {
-        /* start of a sub section */
-        strcpy(csub, ptag);
-        state = STATE_INSUB;
-        if(!strcmp(cmain, main) && !strcmp(csub, sub)) {
-          /* start of wanted part */
-          in_wanted_part = 1;
-          if(strstr(patt, "base64="))
-              /* bit rough test, but "mostly" functional, */
-              /* treat wanted part data as base64 encoded */
-              base64 = 1;
-        }
-        continue;
-      }
-
-    }
-
-    if(in_wanted_part) {
-      show(("=> %s", buffer));
-      error = appenddata(outbuf, outlen, &outalloc, buffer, base64);
-      if(error)
         break;
+      case STATE_OUTER:
+        strcpy(cmain, ptr);
+        state = STATE_INMAIN;
+        break;
+      case STATE_INMAIN:
+        strcpy(csub, ptr);
+        state = STATE_INSUB;
+        break;
+      default:
+        break;
+      }
+
+      if(!end[1] != '>') {
+        /* There might be attributes here. Check for those we know of and care
+           about. */
+        if(strstr(&end[1], "base64=")) {
+          /* rough and dirty, but "mostly" functional */
+          /* Treat all data as base64 encoded */
+          base64 = 1;
+        }
+      }
+    }
+    if(display) {
+      string = appendstring(string, buffer, &stringlen, &stralloc, base64);
+      show(("* %s\n", buffer));
     }
 
-  } /* while */
-
-  if(buffer)
-    free(buffer);
-
-  if(error != GPE_OK) {
-    if(error == GPE_END_OF_FILE)
-      error = GPE_OK;
+    if((STATE_INSUB == state) &&
+       !strcmp(cmain, main) &&
+       !strcmp(csub, sub)) {
+      show(("* (%d bytes) %s\n", stringlen, buffer));
+      display = 1; /* start displaying */
+    }
+    else if ((*cmain == '?') || (*cmain == '!') || (*csub == '!')) {
+        /* Ignore comments, DOCTYPEs and XML declarations */
+        show(("%d ignoring (%s/%s)\n", state, cmain, csub));
+        state--;
+    }
     else {
-      if(*outbuf)
-        free(*outbuf);
-      *outbuf = NULL;
-      *outlen = 0;
+      show(("%d (%s/%s): %s\n", state, cmain, csub, buffer));
+      display = 0; /* no display */
     }
   }
 
-  return error;
+  *size = stringlen;
+  return string;
 }
 

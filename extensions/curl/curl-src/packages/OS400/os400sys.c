@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,13 +18,13 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * $Id: os400sys.c,v 1.6 2008-09-24 12:22:17 yangtse Exp $
  *
  ***************************************************************************/
 
 /* OS/400 additional support. */
 
-#include "curlbuild.h"
-#include "config-os400.h"  /* Not curl_setup.h: we only need some defines. */
+#include "config-os400.h"       /* Not setup.h: we only need some defines. */
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -237,9 +237,9 @@ buffer_undef(localkey_t key, long size)
 
 
 int
-Curl_getnameinfo_a(const struct sockaddr * sa, curl_socklen_t salen,
-              char * nodename, curl_socklen_t nodenamelen,
-              char * servname, curl_socklen_t servnamelen,
+Curl_getnameinfo_a(const struct sockaddr * sa, socklen_t salen,
+              char * nodename, socklen_t nodenamelen,
+              char * servname, socklen_t servnamelen,
               int flags)
 
 {
@@ -863,7 +863,6 @@ Curl_ldap_get_dn_a(void * ld, LDAPMessage * entry)
     return cp2;
 
   QadrtConvertE2A(cp2, cp, i, i);
-  cp2[i] = '\0';
 
   /* No way to allocate a buffer here, because it will be released by
      ldap_memfree() and ldap_memalloc() does not exist. The solution is to
@@ -895,7 +894,6 @@ Curl_ldap_first_attribute_a(void * ld,
     return cp2;
 
   QadrtConvertE2A(cp2, cp, i, i);
-  cp2[i] = '\0';
 
   /* No way to allocate a buffer here, because it will be released by
      ldap_memfree() and ldap_memalloc() does not exist. The solution is to
@@ -927,7 +925,6 @@ Curl_ldap_next_attribute_a(void * ld,
     return cp2;
 
   QadrtConvertE2A(cp2, cp, i, i);
-  cp2[i] = '\0';
 
   /* No way to allocate a buffer here, because it will be released by
      ldap_memfree() and ldap_memalloc() does not exist. The solution is to

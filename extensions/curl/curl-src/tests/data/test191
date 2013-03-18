@@ -1,10 +1,4 @@
 <testcase>
-<info>
-<keywords>
-FTP
-</keywords>
-</info>
-
 # Server-side
 <reply>
 <data>
@@ -21,7 +15,7 @@ ftp
 FTP URL with ?-letters in username and password 
  </name>
  <command>
-"ftp://use%3fr:pass%3fword@%HOSTIP:%FTPPORT/191"
+"ftp://use?r:pass?word@%HOSTIP:%FTPPORT/191"
 </command>
 </client>
 

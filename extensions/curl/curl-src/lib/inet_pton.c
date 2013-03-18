@@ -16,12 +16,15 @@
  * SOFTWARE.
  */
 
-#include "curl_setup.h"
+#include "setup.h"
 
 #ifndef HAVE_INET_PTON
 
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
 #endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
@@ -29,6 +32,8 @@
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif
+#include <string.h>
+#include <errno.h>
 
 #include "inet_pton.h"
 
@@ -56,9 +61,9 @@ static int      inet_pton6(const char *src, unsigned char *dst);
  *      -1 if some other error occurred (`dst' is untouched in this case, too)
  * notice:
  *      On Windows we store the error in the thread errno, not
- *      in the winsock error code. This is to avoid losing the
+ *      in the winsock error code. This is to avoid loosing the
  *      actual last winsock error. So use macro ERRNO to fetch the
- *      errno this function sets when returning (-1), not SOCKERRNO.
+ *      errno this funtion sets when returning (-1), not SOCKERRNO.
  * author:
  *      Paul Vixie, 1996.
  */
@@ -69,6 +74,9 @@ Curl_inet_pton(int af, const char *src, void *dst)
   case AF_INET:
     return (inet_pton4(src, (unsigned char *)dst));
 #ifdef ENABLE_IPV6
+#ifndef AF_INET6
+#define AF_INET6        (AF_MAX+1)        /* just to let this compile */
+#endif
   case AF_INET6:
     return (inet_pton6(src, (unsigned char *)dst));
 #endif
@@ -106,8 +114,6 @@ inet_pton4(const char *src, unsigned char *dst)
     if((pch = strchr(digits, ch)) != NULL) {
       unsigned int val = *tp * 10 + (unsigned int)(pch - digits);
 
-      if(saw_digit && *tp == 0)
-        return (0);
       if(val > 255)
         return (0);
       *tp = (unsigned char)val;
@@ -128,6 +134,7 @@ inet_pton4(const char *src, unsigned char *dst)
   }
   if(octets < 4)
     return (0);
+  /* bcopy(tmp, dst, INADDRSZ); */
   memcpy(dst, tmp, INADDRSZ);
   return (1);
 }
@@ -154,7 +161,7 @@ inet_pton6(const char *src, unsigned char *dst)
   unsigned char tmp[IN6ADDRSZ], *tp, *endp, *colonp;
   const char *xdigits, *curtok;
   int ch, saw_xdigit;
-  size_t val;
+  unsigned int val;
 
   memset((tp = tmp), 0, IN6ADDRSZ);
   endp = tp + IN6ADDRSZ;
@@ -174,8 +181,9 @@ inet_pton6(const char *src, unsigned char *dst)
     if(pch != NULL) {
       val <<= 4;
       val |= (pch - xdigits);
-      if(++saw_xdigit > 4)
+      if(val > 0xffff)
         return (0);
+      saw_xdigit = 1;
       continue;
     }
     if(ch == ':') {
@@ -213,19 +221,18 @@ inet_pton6(const char *src, unsigned char *dst)
      * Since some memmove()'s erroneously fail to handle
      * overlapping regions, we'll do the shift by hand.
      */
-    const ssize_t n = tp - colonp;
-    ssize_t i;
+    const long n = tp - colonp;
+    long i;
 
-    if(tp == endp)
-      return (0);
-    for(i = 1; i <= n; i++) {
-      *(endp - i) = *(colonp + n - i);
-      *(colonp + n - i) = 0;
+    for (i = 1; i <= n; i++) {
+      endp[- i] = colonp[n - i];
+      colonp[n - i] = 0;
     }
     tp = endp;
   }
   if(tp != endp)
     return (0);
+  /* bcopy(tmp, dst, IN6ADDRSZ); */
   memcpy(dst, tmp, IN6ADDRSZ);
   return (1);
 }

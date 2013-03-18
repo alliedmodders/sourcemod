@@ -5,7 +5,6 @@ FTP
 PASV
 RETR
 multi
-non-existing host
 </keywords>
 </info>
 
@@ -46,7 +45,6 @@ CWD path
 EPSV
 TYPE I
 SIZE 534
-RETR 534
 QUIT
 </protocol>
 </verify>

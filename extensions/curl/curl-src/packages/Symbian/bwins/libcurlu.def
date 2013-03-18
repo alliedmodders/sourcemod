@@ -57,5 +57,4 @@ EXPORTS
 	curl_version_info @ 56 NONAME
 	curl_easy_recv @ 57 NONAME
 	curl_easy_send @ 58 NONAME
-	curl_multi_wait @ 59 NONAME
 

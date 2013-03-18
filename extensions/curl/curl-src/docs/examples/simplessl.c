@@ -1,27 +1,19 @@
-/***************************************************************************
+/*****************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
- *
- * This software is licensed as described in the file COPYING, which
- * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
- *
- * You may opt to use, copy, modify, merge, publish, distribute and/or sell
- * copies of the Software, and permit persons to whom the Software is
- * furnished to do so, under the terms of the COPYING file.
- *
- * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
- * KIND, either express or implied.
- *
- ***************************************************************************/
+ * $Id: simplessl.c,v 1.9 2008-05-22 21:20:09 danf Exp $
+ */
+
 #include <stdio.h>
 
 #include <curl/curl.h>
+#include <curl/types.h>
+#include <curl/easy.h>
+
 
 /* some requirements for this to work:
    1.   set pCertFile to the file with the client certificate
@@ -41,9 +33,8 @@
 
 */
 
-int main(void)
+int main(int argc, char **argv)
 {
-  int i;
   CURL *curl;
   CURLcode res;
   FILE *headerfile;
@@ -57,7 +48,7 @@ int main(void)
 
   const char *pEngine;
 
-#ifdef USE_ENGINE
+#if USE_ENGINE
   pKeyName  = "rsa_test";
   pKeyType  = "ENG";
   pEngine   = "chil";            /* for nChiper HSM... */
@@ -77,7 +68,7 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_URL, "HTTPS://your.favourite.ssl.site");
     curl_easy_setopt(curl, CURLOPT_WRITEHEADER, headerfile);
 
-    for(i = 0; i < 1; i++) /* single-iteration loop, just to break out from */
+    while(1)                    /* do some ugly short cut... */
     {
       if (pEngine)             /* use crypto engine */
       {
@@ -119,14 +110,8 @@ int main(void)
       /* disconnect if we can't validate server's cert */
       curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,1L);
 
-      /* Perform the request, res will get the return code */
       res = curl_easy_perform(curl);
-      /* Check for errors */
-      if(res != CURLE_OK)
-        fprintf(stderr, "curl_easy_perform() failed: %s\n",
-                curl_easy_strerror(res));
-
-      /* we are done... */
+      break;                   /* we are done... */
     }
     /* always cleanup */
     curl_easy_cleanup(curl);

@@ -1,10 +1,4 @@
 <testcase>
-<info>
-<keywords>
-FTP
-</keywords>
-</info>
-
 # Server-side
 <reply>
 </reply>
@@ -18,9 +12,9 @@ ftp
 FTP with multiple uploads
  </name>
  <command>
--T log/upload149 ftp://%HOSTIP:%FTPPORT/dir1/149 -T log/upload149 ftp://%HOSTIP:%FTPPORT/dir2/149
+-T log/upload148 ftp://%HOSTIP:%FTPPORT/dir1/148 -T log/upload148 ftp://%HOSTIP:%FTPPORT/dir2/148
 </command>
-<file name="log/upload149">
+<file name="log/upload148">
 send away this contents
 </file>
 </client>
@@ -39,14 +33,14 @@ PWD
 CWD dir1
 EPSV
 TYPE I
-STOR 149
-CWD /
+STOR 148
+CWD /nowhere/anywhere
 CWD dir2
 EPSV
-STOR 149
+STOR 148
 QUIT
 </protocol>
-<file name="log/upload149">
+<file name="log/upload148">
 send away this contents
 </file>
 </verify>

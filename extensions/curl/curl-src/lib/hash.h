@@ -1,5 +1,5 @@
-#ifndef HEADER_CURL_HASH_H
-#define HEADER_CURL_HASH_H
+#ifndef __HASH_H
+#define __HASH_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -20,9 +20,10 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * $Id: hash.h,v 1.18 2007-06-26 21:09:28 bagder Exp $
  ***************************************************************************/
 
-#include "curl_setup.h"
+#include "setup.h"
 
 #include <stddef.h>
 
@@ -62,11 +63,6 @@ struct curl_hash_element {
   size_t key_len;
 };
 
-struct curl_hash_iterator {
-  struct curl_hash *hash;
-  int slot_index;
-  struct curl_llist_element *current_element;
-};
 
 int Curl_hash_init(struct curl_hash *h,
                    int slots,
@@ -94,14 +90,4 @@ size_t Curl_hash_str(void* key, size_t key_length, size_t slots_num);
 size_t Curl_str_key_compare(void*k1, size_t key1_len, void*k2,
                             size_t key2_len);
 
-void Curl_hash_start_iterate(struct curl_hash *hash,
-                             struct curl_hash_iterator *iter);
-struct curl_hash_element *
-Curl_hash_next_element(struct curl_hash_iterator *iter);
-
-void Curl_hash_print(struct curl_hash *h,
-                     void (*func)(void *));
-
-
-#endif /* HEADER_CURL_HASH_H */
-
+#endif

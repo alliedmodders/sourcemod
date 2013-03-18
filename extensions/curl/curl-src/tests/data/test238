@@ -1,14 +1,9 @@
 <testcase>
-<info>
-<keywords>
-FTP
-</keywords>
-</info>
-
 # Server-side
 <reply>
 <servercmd>
 REPLY EPSV 229 Entering Passiv Mode (|||1000000|)
+REPLY PASV 227 Entering Passiv Mode (1216,256,2,127,127,127)
 </servercmd>
 </reply>
 
@@ -18,7 +13,7 @@ REPLY EPSV 229 Entering Passiv Mode (|||1000000|)
 ftp
 </server>
  <name>
-FTP getting bad port in response to EPSV
+FTP getting bad port in response to EPSV and in response to PASV
  </name>
  <command>
 ftp://%HOSTIP:%FTPPORT/238
@@ -27,16 +22,20 @@ ftp://%HOSTIP:%FTPPORT/238
 
 # Verify data after the test has been "shot"
 <verify>
-# 13 = CURLE_FTP_WEIRD_PASV_REPLY
+# curl: (15) Can't resolve new host 1216.256.2.127:32639
+# 15 => CURLE_FTP_CANT_GET_HOST
+# some systems just don't fail on the illegal host name/address but instead
+# moves on and attempt to connect to... yes, to what?
+# 7= CURLE_COULDNT_CONNECT
 <errorcode>
-13
+7, 15
 </errorcode>
 <protocol>
 USER anonymous
 PASS ftp@example.com
 PWD
 EPSV
-QUIT
+PASV
 </protocol>
 </verify>
 </testcase>

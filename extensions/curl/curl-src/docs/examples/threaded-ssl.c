@@ -1,25 +1,13 @@
-/***************************************************************************
+/*****************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * $Id: threaded-ssl.c,v 1.4 2008-05-22 21:20:09 danf Exp $
  *
- * This software is licensed as described in the file COPYING, which
- * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
- *
- * You may opt to use, copy, modify, merge, publish, distribute and/or sell
- * copies of the Software, and permit persons to whom the Software is
- * furnished to do so, under the terms of the COPYING file.
- *
- * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
- * KIND, either express or implied.
- *
- ***************************************************************************/
-/* A multi-threaded example that uses pthreads and fetches 4 remote files at
+ * A multi-threaded example that uses pthreads and fetches 4 remote files at
  * once over HTTPS. The lock callbacks and stuff assume OpenSSL or GnuTLS
  * (libgcrypt) so far.
  *
@@ -104,10 +92,10 @@ void init_locks(void)
 
 /* List of URLs to fetch.*/
 const char * const urls[]= {
-  "https://www.example.com/",
-  "https://www2.example.com/",
-  "https://www3.example.com/",
-  "https://www4.example.com/",
+  "https://www.sf.net/",
+  "https://www.openssl.org/",
+  "https://www.sf.net/",
+  "https://www.openssl.org/",
 };
 
 static void *pull_one_url(void *url)

@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -18,6 +18,7 @@
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
 #
+# $Id: Makefile.am,v 1.78 2008-11-11 21:59:25 bagder Exp $
 ###########################################################################
 AUTOMAKE_OPTIONS = foreign nostdinc
 
@@ -26,83 +27,146 @@ AUTOMAKE_OPTIONS = foreign nostdinc
 # being currently built and tested are searched before the library which
 # might possibly already be installed in the system.
 #
-# $(top_builddir)/include/curl for generated curlbuild.h included from curl.h
-# $(top_builddir)/include for generated curlbuild.h inc. from lib/curl_setup.h
+# $(top_builddir)/include is for libcurl's generated curl/curlbuild.h file
 # $(top_srcdir)/include is for libcurl's external include files
-# $(top_builddir)/lib is for libcurl's generated lib/curl_config.h file
-# $(top_srcdir)/lib for libcurl's lib/curl_setup.h and other "borrowed" files
-# $(top_builddir)/ares is for in-tree c-ares's generated ares_build.h file
-# $(top_srcdir)/ares is for in-tree c-ares's external include files
+# $(top_builddir)/lib is for libcurl's generated lib/config.h file
+# $(top_srcdir)/lib is for libcurl's lib/setup.h and other "borrowed" files
 
-if USE_EMBEDDED_ARES
-AM_CPPFLAGS = -I$(top_builddir)/include/curl \
-              -I$(top_builddir)/include      \
-              -I$(top_srcdir)/include        \
-              -I$(top_builddir)/lib          \
-              -I$(top_srcdir)/lib            \
-              -I$(top_builddir)/ares         \
-              -I$(top_srcdir)/ares
-else
-AM_CPPFLAGS = -I$(top_builddir)/include/curl \
-              -I$(top_builddir)/include      \
-              -I$(top_srcdir)/include        \
-              -I$(top_builddir)/lib          \
-              -I$(top_srcdir)/lib
-endif
+INCLUDES = -I$(top_builddir)/include \
+           -I$(top_srcdir)/include   \
+           -I$(top_builddir)/lib     \
+           -I$(top_srcdir)/lib 
 
-EXTRA_DIST = test75.pl test307.pl test610.pl test613.pl test1013.pl	\
-test1022.pl Makefile.inc notexists.pl
+LIBDIR = $(top_builddir)/lib
 
-CFLAG_CURL_SYMBOL_HIDING = @CFLAG_CURL_SYMBOL_HIDING@
+EXTRA_DIST = test75.pl test307.pl test610.pl test613.pl test1013.pl test1022.pl
 
-# Prevent LIBS from being used for all link targets
-LIBS = $(BLANK_AT_MAKETIME)
+# files used only in some libcurl test programs
+TESTUTIL = testutil.c testutil.h
 
-if USE_EXPLICIT_LIB_DEPS
-SUPPORTFILES_LIBS = $(top_builddir)/lib/libcurl.la @LIBCURL_LIBS@
-TESTUTIL_LIBS = $(top_builddir)/lib/libcurl.la @LIBCURL_LIBS@
-else
-SUPPORTFILES_LIBS = $(top_builddir)/lib/libcurl.la @CURL_NETWORK_LIBS@
-TESTUTIL_LIBS = $(top_builddir)/lib/libcurl.la @CURL_NETWORK_AND_TIME_LIBS@
-endif
+# these files are used in every single test program below
+SUPPORTFILES = first.c test.h
+
+# These are all libcurl test programs
+noinst_PROGRAMS = lib500 lib501 lib502 lib503 lib504 lib505 lib506	\
+  lib507 lib508 lib510 lib511 lib512 lib513 lib514 lib515 lib516	\
+  lib517 lib518 lib519 lib520 lib521 lib523 lib524 lib525 lib526 lib527	\
+  lib529 lib530 lib532 lib533 lib536 lib537 lib540 lib541 lib542 lib543 \
+  lib544 lib545 lib547 lib548 lib549 lib552 lib553 lib554 lib555 lib556 \
+  lib539 lib557 lib558 lib559 lib560
 
 # Dependencies (may need to be overriden)
-LDADD = $(SUPPORTFILES_LIBS)
-DEPENDENCIES = $(top_builddir)/lib/libcurl.la
+LDADD = $(LIBDIR)/libcurl.la
+DEPENDENCIES = $(LIBDIR)/libcurl.la
 
-# Mostly for Windows build targets, when using static libcurl
-if USE_CPPFLAG_CURL_STATICLIB
-AM_CPPFLAGS += -DCURL_STATICLIB
-endif
 
-# Makefile.inc provides the source defines (TESTUTIL, SUPPORTFILES,
-# noinst_PROGRAMS, lib*_SOURCES, and lib*_CFLAGS)
-include Makefile.inc
+lib500_SOURCES = lib500.c $(SUPPORTFILES)
 
-# Preloading of libhostname allows host name overriding,
-# this is used to make some tests machine independent.
+lib501_SOURCES = lib501.c $(SUPPORTFILES)
 
-if BUILD_LIBHOSTNAME
-noinst_LTLIBRARIES = libhostname.la
-else
-noinst_LTLIBRARIES =
-endif
+lib502_SOURCES = lib502.c $(SUPPORTFILES) $(TESTUTIL)
 
-if NO_UNDEFINED
-# The -no-undefined flag is crucial to build fine on some platforms
-UNDEF = -no-undefined
-endif
+lib503_SOURCES = lib503.c $(SUPPORTFILES) $(TESTUTIL)
 
-libhostname_la_SOURCES = sethostname.c sethostname.h
+lib504_SOURCES = lib504.c $(SUPPORTFILES) $(TESTUTIL)
 
-libhostname_la_LIBADD =
-libhostname_la_DEPENDENCIES =
-libhostname_la_LDFLAGS = -module -avoid-version $(UNDEF) -rpath /nowhere
+lib505_SOURCES = lib505.c $(SUPPORTFILES)
 
-if DOING_CURL_SYMBOL_HIDING
-libhostname_la_CPPFLAGS = $(AM_CPPFLAGS) -DCURL_HIDDEN_SYMBOLS
-libhostname_la_CFLAGS = $(AM_CFLAGS) $(CFLAG_CURL_SYMBOL_HIDING)
-else
-libhostname_la_CPPFLAGS = $(AM_CPPFLAGS)
-libhostname_la_CFLAGS = $(AM_CFLAGS)
-endif
+lib506_SOURCES = lib506.c $(SUPPORTFILES)
+
+lib507_SOURCES = lib507.c $(SUPPORTFILES) $(TESTUTIL)
+
+lib508_SOURCES = lib508.c $(SUPPORTFILES)
+
+lib510_SOURCES = lib510.c $(SUPPORTFILES)
+
+lib511_SOURCES = lib511.c $(SUPPORTFILES)
+
+lib512_SOURCES = lib512.c $(SUPPORTFILES)
+
+lib513_SOURCES = lib513.c $(SUPPORTFILES)
+
+lib514_SOURCES = lib514.c $(SUPPORTFILES)
+
+lib515_SOURCES = lib515.c $(SUPPORTFILES)
+
+lib516_SOURCES = lib516.c $(SUPPORTFILES)
+
+lib517_SOURCES = lib517.c $(SUPPORTFILES)
+
+lib518_SOURCES = lib518.c $(SUPPORTFILES)
+
+lib519_SOURCES = lib519.c $(SUPPORTFILES)
+
+lib520_SOURCES = lib520.c $(SUPPORTFILES)
+
+lib521_SOURCES = lib521.c $(SUPPORTFILES)
+
+lib523_SOURCES = lib523.c $(SUPPORTFILES)
+
+lib524_SOURCES = lib524.c $(SUPPORTFILES)
+
+lib525_SOURCES = lib525.c $(SUPPORTFILES) $(TESTUTIL)
+
+lib526_SOURCES = lib526.c $(SUPPORTFILES) $(TESTUTIL)
+lib526_CFLAGS = -DLIB526
+
+lib527_SOURCES = lib526.c $(SUPPORTFILES) $(TESTUTIL)
+lib527_CFLAGS = -DLIB527
+
+lib529_SOURCES = lib525.c $(SUPPORTFILES) $(TESTUTIL)
+lib529_CFLAGS = -DLIB529
+
+lib530_SOURCES = lib530.c $(SUPPORTFILES) $(TESTUTIL)
+lib530_CFLAGS = -DLIB530
+
+lib532_SOURCES = lib526.c $(SUPPORTFILES) $(TESTUTIL)
+lib532_CFLAGS = -DLIB532
+
+lib533_SOURCES = lib533.c $(SUPPORTFILES) $(TESTUTIL)
+
+lib536_SOURCES = lib536.c $(SUPPORTFILES) $(TESTUTIL)
+
+lib537_SOURCES = lib537.c $(SUPPORTFILES)
+
+lib539_SOURCES = lib539.c $(SUPPORTFILES)
+
+lib540_SOURCES = lib540.c $(SUPPORTFILES)
+
+lib541_SOURCES = lib541.c $(SUPPORTFILES)
+
+lib542_SOURCES = lib542.c $(SUPPORTFILES)
+
+lib543_SOURCES = lib543.c $(SUPPORTFILES)
+
+lib544_SOURCES = lib544.c $(SUPPORTFILES)
+
+lib545_SOURCES = lib544.c $(SUPPORTFILES)
+lib545_CFLAGS = -DLIB545
+
+lib547_SOURCES = lib547.c $(SUPPORTFILES)
+
+lib548_SOURCES = lib547.c $(SUPPORTFILES)
+lib548_CFLAGS = -DLIB548
+
+lib549_SOURCES = lib549.c $(SUPPORTFILES)
+
+lib555_SOURCES = lib555.c $(SUPPORTFILES) $(TESTUTIL)
+
+lib552_SOURCES = lib552.c $(SUPPORTFILES)
+
+lib553_SOURCES = lib553.c $(SUPPORTFILES)
+
+lib554_SOURCES = lib554.c $(SUPPORTFILES)
+
+lib556_SOURCES = lib556.c $(SUPPORTFILES)
+
+lib557_SOURCES = lib557.c $(SUPPORTFILES)
+
+lib558_SOURCES = lib558.c $(SUPPORTFILES)
+lib558_CFLAGS = -DLIB558
+
+lib559_SOURCES = lib558.c $(SUPPORTFILES)
+lib559_CFLAGS = -DLIB559
+
+lib560_SOURCES = lib560.c $(SUPPORTFILES)

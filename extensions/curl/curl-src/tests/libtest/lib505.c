@@ -1,28 +1,31 @@
-/***************************************************************************
+/*****************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
- *
- * This software is licensed as described in the file COPYING, which
- * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
- *
- * You may opt to use, copy, modify, merge, publish, distribute and/or sell
- * copies of the Software, and permit persons to whom the Software is
- * furnished to do so, under the terms of the COPYING file.
- *
- * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
- * KIND, either express or implied.
- *
- ***************************************************************************/
+ * $Id: lib505.c,v 1.15 2008-09-20 04:26:57 yangtse Exp $
+ */
+
+#include "setup.h" /* struct_stat etc. */
 #include "test.h"
 
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
 #endif
 
 #include "memdebug.h"
@@ -53,6 +56,25 @@ int test(char *URL)
     return -1;
   }
 
+  /* get the file size of the local file */
+  hd = stat(libtest_arg2, &file_info);
+  if(hd == -1) {
+    /* can't open file, bail out */
+    error = ERRNO;
+    fprintf(stderr, "stat() failed with error: %d %s\n",
+            error, strerror(error));
+    fprintf(stderr, "WARNING: cannot open file %s\n", libtest_arg2);
+    return -1;
+  }
+
+  if(! file_info.st_size) {
+    fprintf(stderr, "WARNING: file %s has no size!\n", libtest_arg2);
+    return -4;
+  }
+
+  /* get a FILE * of the same file, could also be made with
+     fdopen() from the previous descriptor, but hey this is just
+     an example! */
   hd_src = fopen(libtest_arg2, "rb");
   if(NULL == hd_src) {
     error = ERRNO;
@@ -60,24 +82,6 @@ int test(char *URL)
             error, strerror(error));
     fprintf(stderr, "Error opening file: %s\n", libtest_arg2);
     return -2; /* if this happens things are major weird */
-  }
-
-  /* get the file size of the local file */
-  hd = fstat(fileno(hd_src), &file_info);
-  if(hd == -1) {
-    /* can't open file, bail out */
-    error = ERRNO;
-    fprintf(stderr, "fstat() failed with error: %d %s\n",
-            error, strerror(error));
-    fprintf(stderr, "ERROR: cannot open file %s\n", libtest_arg2);
-    fclose(hd_src);
-    return -1;
-  }
-
-  if(! file_info.st_size) {
-    fprintf(stderr, "ERROR: file %s has zero size!\n", libtest_arg2);
-    fclose(hd_src);
-    return -4;
   }
 
   if (curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
@@ -114,28 +118,26 @@ int test(char *URL)
   headerlist = hl;
 
   /* enable uploading */
-  test_setopt(curl, CURLOPT_UPLOAD, 1L);
+  curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 
   /* enable verbose */
-  test_setopt(curl, CURLOPT_VERBOSE, 1L);
+  curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
   /* specify target */
-  test_setopt(curl,CURLOPT_URL, URL);
+  curl_easy_setopt(curl,CURLOPT_URL, URL);
 
   /* pass in that last of FTP commands to run after the transfer */
-  test_setopt(curl, CURLOPT_POSTQUOTE, headerlist);
+  curl_easy_setopt(curl, CURLOPT_POSTQUOTE, headerlist);
 
   /* now specify which file to upload */
-  test_setopt(curl, CURLOPT_INFILE, hd_src);
+  curl_easy_setopt(curl, CURLOPT_INFILE, hd_src);
 
   /* and give the size of the upload (optional) */
-  test_setopt(curl, CURLOPT_INFILESIZE_LARGE,
+  curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE,
                    (curl_off_t)file_info.st_size);
 
   /* Now run off and do what you've been told! */
   res = curl_easy_perform(curl);
-
-test_cleanup:
 
   /* clean up the FTP commands list */
   curl_slist_free_all(headerlist);

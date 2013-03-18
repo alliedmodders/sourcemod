@@ -45,32 +45,6 @@ Long chunk of data that couldn't possibly be sent in the time allotted.
 Long chunk of data that couldn't possibly be sent in the time allotted.
 Long chunk of data that couldn't possibly be sent in the time allotted.
 Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
-Long chunk of data that couldn't possibly be sent in the time allotted.
 </data>
 </reply>
 
@@ -86,7 +60,7 @@ ftp
 FTP download with strict timeout and slow data transfer
  </name>
  <command timeout="1">
-ftp://%HOSTIP:%FTPPORT/1086 -m 7
+ftp://%HOSTIP:%FTPPORT/1086 -m 6
 </command>
 </client>
 

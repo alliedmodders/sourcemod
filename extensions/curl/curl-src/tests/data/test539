@@ -53,7 +53,7 @@ TYPE I
 SIZE 539
 RETR 539
 SYST
-CWD /
+CWD /nowhere/anywhere
 EPSV
 TYPE A
 LIST path/to/the/file/539./

@@ -1,5 +1,5 @@
-#ifndef HEADER_CURL_IF2IP_H
-#define HEADER_CURL_IF2IP_H
+#ifndef __IF2IP_H
+#define __IF2IP_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2005, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -20,13 +20,14 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * $Id: if2ip.h,v 1.21 2008-10-09 19:23:50 danf Exp $
  ***************************************************************************/
-#include "curl_setup.h"
+#include "setup.h"
 
-bool Curl_if_is_interface_name(const char *interf);
-char *Curl_if2ip(int af, const char *interf, char *buf, int buf_size);
+extern char *Curl_if2ip(int af, const char *interf, char *buf, int buf_size);
 
 #ifdef __INTERIX
+#include <sys/socket.h>
 
 /* Nedelcho Stanev's work-around for SFU 3.0 */
 struct ifreq {
@@ -49,6 +50,7 @@ struct ifreq {
 
 /* This define was added by Daniel to avoid an extra #ifdef INTERIX in the
    C code. */
+#define ifr_dstaddr ifr_addr
 
 #define ifr_name ifr_ifrn.ifrn_name /* interface name */
 #define ifr_addr ifr_ifru.ifru_addr /* address */
@@ -60,7 +62,6 @@ struct ifreq {
 #define ifr_mtu ifr_ifru.ifru_mtu /* mtu */
 
 #define SIOCGIFADDR _IOW('s', 102, struct ifreq) /* Get if addr */
+#endif /* interix */
 
-#endif /* __INTERIX */
-
-#endif /* HEADER_CURL_IF2IP_H */
+#endif

@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -18,12 +18,13 @@
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
 #
+# $Id: sshhelp.pm,v 1.4 2008-02-08 13:54:02 yangtse Exp $
 #***************************************************************************
 
 package sshhelp;
 
 use strict;
-use warnings;
+#use warnings;
 use Exporter;
 use File::Spec;
 
@@ -39,7 +40,6 @@ use vars qw(
     $sftpsrvexe
     $sftpexe
     $sshkeygenexe
-    $httptlssrvexe
     $sshdconfig
     $sshconfig
     $sftpconfig
@@ -53,7 +53,6 @@ use vars qw(
     $cliprvkeyf
     $clipubkeyf
     @sftppath
-    @httptlssrvpath
     );
 
 
@@ -91,13 +90,11 @@ use vars qw(
     display_sshlog
     display_sftplog
     dump_array
-    exe_ext
     find_sshd
     find_ssh
     find_sftpsrv
     find_sftp
     find_sshkeygen
-    find_httptlssrv
     logmsg
     sshversioninfo
     );
@@ -106,28 +103,27 @@ use vars qw(
 #***************************************************************************
 # Global variables initialization
 #
-$sshdexe         = 'sshd'        .exe_ext(); # base name and ext of ssh daemon
-$sshexe          = 'ssh'         .exe_ext(); # base name and ext of ssh client
-$sftpsrvexe      = 'sftp-server' .exe_ext(); # base name and ext of sftp-server
-$sftpexe         = 'sftp'        .exe_ext(); # base name and ext of sftp client
-$sshkeygenexe    = 'ssh-keygen'  .exe_ext(); # base name and ext of ssh-keygen
-$httptlssrvexe   = 'gnutls-serv' .exe_ext(); # base name and ext of gnutls-serv
-$sshdconfig      = 'curl_sshd_config';       # ssh daemon config file
-$sshconfig       = 'curl_ssh_config';        # ssh client config file
-$sftpconfig      = 'curl_sftp_config';       # sftp client config file
-$sshdlog         = undef;                    # ssh daemon log file
-$sshlog          = undef;                    # ssh client log file
-$sftplog         = undef;                    # sftp client log file
-$sftpcmds        = 'curl_sftp_cmds';         # sftp client commands batch file
-$knownhosts      = 'curl_client_knownhosts'; # ssh knownhosts file
-$hstprvkeyf      = 'curl_host_dsa_key';      # host private key file
-$hstpubkeyf      = 'curl_host_dsa_key.pub';  # host public key file
-$cliprvkeyf      = 'curl_client_key';        # client private key file
-$clipubkeyf      = 'curl_client_key.pub';    # client public key file
+$sshdexe      = 'sshd'        .exe_ext(); # base name and ext of ssh daemon
+$sshexe       = 'ssh'         .exe_ext(); # base name and ext of ssh client
+$sftpsrvexe   = 'sftp-server' .exe_ext(); # base name and ext of sftp-server
+$sftpexe      = 'sftp'        .exe_ext(); # base name and ext of sftp client
+$sshkeygenexe = 'ssh-keygen'  .exe_ext(); # base name and ext of ssh-keygen
+$sshdconfig   = 'curl_sshd_config';       # ssh daemon config file
+$sshconfig    = 'curl_ssh_config';        # ssh client config file
+$sftpconfig   = 'curl_sftp_config';       # sftp client config file
+$sshdlog      = 'log/sshd.log';           # ssh daemon log file
+$sshlog       = 'log/ssh.log';            # ssh client log file
+$sftplog      = 'log/sftp.log';           # sftp client log file
+$sftpcmds     = 'curl_sftp_cmds';         # sftp client commands batch file
+$knownhosts   = 'curl_client_knownhosts'; # ssh knownhosts file
+$hstprvkeyf   = 'curl_host_dsa_key';      # host private key file
+$hstpubkeyf   = 'curl_host_dsa_key.pub';  # host public key file
+$cliprvkeyf   = 'curl_client_key';        # client private key file
+$clipubkeyf   = 'curl_client_key.pub';    # client public key file
 
 
 #***************************************************************************
-# Absolute paths where to look for sftp-server plugin, when not in PATH
+# Absolute paths where to look for sftp-server plugin
 #
 @sftppath = qw(
     /usr/lib/openssh
@@ -149,30 +145,6 @@ $clipubkeyf      = 'curl_client_key.pub';    # client public key file
     /usr/freeware/libexec
     /opt/ssh/sbin
     /opt/ssh/libexec
-    );
-
-
-#***************************************************************************
-# Absolute paths where to look for httptlssrv (gnutls-serv), when not in PATH
-#
-@httptlssrvpath = qw(
-    /usr/sbin
-    /usr/libexec
-    /usr/lib
-    /usr/lib/misc
-    /usr/lib64/misc
-    /usr/local/bin
-    /usr/local/sbin
-    /usr/local/libexec
-    /opt/local/bin
-    /opt/local/sbin
-    /opt/local/libexec
-    /usr/freeware/bin
-    /usr/freeware/sbin
-    /usr/freeware/libexec
-    /opt/gnutls/bin
-    /opt/gnutls/sbin
-    /opt/gnutls/libexec
     );
 
 
@@ -268,7 +240,6 @@ sub display_sftpconfig {
 # Display contents of the ssh daemon log file
 #
 sub display_sshdlog {
-    die "error: \$sshdlog uninitialized" if(not defined $sshdlog);
     display_file($sshdlog);
 }
 
@@ -277,7 +248,6 @@ sub display_sshdlog {
 # Display contents of the ssh client log file
 #
 sub display_sshlog {
-    die "error: \$sshlog uninitialized" if(not defined $sshlog);
     display_file($sshlog);
 }
 
@@ -286,7 +256,6 @@ sub display_sshlog {
 # Display contents of the sftp client log file
 #
 sub display_sftplog {
-    die "error: \$sftplog uninitialized" if(not defined $sftplog);
     display_file($sftplog);
 }
 
@@ -300,26 +269,8 @@ sub find_file {
     my @path = @_;
     foreach (@path) {
         my $file = File::Spec->catfile($_, $fn);
-        if(-e $file && ! -d $file) {
+        if(-e $file) {
             return $file;
-        }
-    }
-}
-
-
-#***************************************************************************
-# Find an executable file somewhere in the given path
-#
-sub find_exe_file {
-    my $fn = $_[0];
-    shift;
-    my @path = @_;
-    my $xext = exe_ext();
-    foreach (@path) {
-        my $file = File::Spec->catfile($_, $fn);
-        if(-e $file && ! -d $file) {
-            return $file if(-x $file);
-            return $file if(($xext) && (lc($file) =~ /\Q$xext\E$/));
         }
     }
 }
@@ -328,7 +279,7 @@ sub find_exe_file {
 #***************************************************************************
 # Find a file in environment path or in our sftppath
 #
-sub find_file_spath {
+sub find_sfile {
     my $filename = $_[0];
     my @spath;
     push(@spath, File::Spec->path());
@@ -338,22 +289,10 @@ sub find_file_spath {
 
 
 #***************************************************************************
-# Find an executable file in environment path or in our httptlssrvpath
-#
-sub find_exe_file_hpath {
-    my $filename = $_[0];
-    my @hpath;
-    push(@hpath, File::Spec->path());
-    push(@hpath, @httptlssrvpath);
-    return find_exe_file($filename, @hpath);
-}
-
-
-#***************************************************************************
 # Find ssh daemon and return canonical filename
 #
 sub find_sshd {
-    return find_file_spath($sshdexe);
+    return find_sfile($sshdexe);
 }
 
 
@@ -361,7 +300,7 @@ sub find_sshd {
 # Find ssh client and return canonical filename
 #
 sub find_ssh {
-    return find_file_spath($sshexe);
+    return find_sfile($sshexe);
 }
 
 
@@ -369,7 +308,7 @@ sub find_ssh {
 # Find sftp-server plugin and return canonical filename
 #
 sub find_sftpsrv {
-    return find_file_spath($sftpsrvexe);
+    return find_sfile($sftpsrvexe);
 }
 
 
@@ -377,7 +316,7 @@ sub find_sftpsrv {
 # Find sftp client and return canonical filename
 #
 sub find_sftp {
-    return find_file_spath($sftpexe);
+    return find_sfile($sftpexe);
 }
 
 
@@ -385,15 +324,7 @@ sub find_sftp {
 # Find ssh-keygen and return canonical filename
 #
 sub find_sshkeygen {
-    return find_file_spath($sshkeygenexe);
-}
-
-
-#***************************************************************************
-# Find httptlssrv (gnutls-serv) and return canonical filename
-#
-sub find_httptlssrv {
-    return find_exe_file_hpath($httptlssrvexe);
+    return find_sfile($sshkeygenexe);
 }
 
 

@@ -1,4 +1,5 @@
 #
+# $Id: Makefile.am,v 1.1 2001/05/30 04:31:33 crisb Exp $
 #
 
 PKGADD_PKG="@PKGADD_PKG@"

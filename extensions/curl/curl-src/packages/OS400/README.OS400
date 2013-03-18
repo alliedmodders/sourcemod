@@ -1,3 +1,4 @@
+$Id: README.OS400,v 1.10 2008-10-17 13:17:41 patrickm Exp $
 
 Implementation notes:
 
@@ -70,52 +71,40 @@ options:
         CURLOPT_COOKIEFILE
         CURLOPT_COOKIEJAR
         CURLOPT_COOKIELIST
-        CURLOPT_COPYPOSTFIELDS
-        CURLOPT_CRLFILE
         CURLOPT_CUSTOMREQUEST
-        CURLOPT_DNS_SERVERS
         CURLOPT_EGDSOCKET
         CURLOPT_ENCODING
+        CURLOPT_FTPPORT
         CURLOPT_FTP_ACCOUNT
         CURLOPT_FTP_ALTERNATIVE_TO_USER
-        CURLOPT_FTPPORT
         CURLOPT_INTERFACE
-        CURLOPT_ISSUERCERT
         CURLOPT_KEYPASSWD
         CURLOPT_KRBLEVEL
-        CURLOPT_MAIL_FROM
-        CURLOPT_MAIL_AUTH
         CURLOPT_NETRC_FILE
-        CURLOPT_NOPROXY
-        CURLOPT_PASSWORD
+        CURLOPT_COPYPOSTFIELDS
         CURLOPT_PROXY
-        CURLOPT_PROXYPASSWORD
-        CURLOPT_PROXYUSERNAME
         CURLOPT_PROXYUSERPWD
         CURLOPT_RANDOM_FILE
         CURLOPT_RANGE
         CURLOPT_REFERER
-        CURLOPT_RTSP_SESSION_UID
-        CURLOPT_RTSP_STREAM_URI
-        CURLOPT_RTSP_TRANSPORT
-        CURLOPT_SOCKS5_GSSAPI_SERVICE
-        CURLOPT_SSH_HOST_PUBLIC_KEY_MD5 Note: SSH not available on OS400.
-        CURLOPT_SSH_KNOWNHOSTS          Note: SSH not available on OS400.
-        CURLOPT_SSH_PRIVATE_KEYFILE     Note: SSH not available on OS400.
-        CURLOPT_SSH_PUBLIC_KEYFILE      Note: SSH not available on OS400.
+        CURLOPT_SSH_PRIVATE_KEYFILE
+        CURLOPT_SSH_PUBLIC_KEYFILE
         CURLOPT_SSLCERT
         CURLOPT_SSLCERTTYPE
-        CURLOPT_SSL_CIPHER_LIST
         CURLOPT_SSLENGINE
         CURLOPT_SSLKEY
         CURLOPT_SSLKEYTYPE
-        CURLOPT_TLSAUTH_PASSWORD
-        CURLOPT_TLSAUTH_TYPE
-        CURLOPT_TLSAUTH_USERNAME
+        CURLOPT_SSL_CIPHER_LIST
         CURLOPT_URL
         CURLOPT_USERAGENT
-        CURLOPT_USERNAME
         CURLOPT_USERPWD
+        CURLOPT_SSH_HOST_PUBLIC_KEY_MD5
+        CURLOPT_CRLFILE
+        CURLOPT_ISSUERCERT
+        CURLOPT_USERNAME
+        CURLOPT_PASSWORD
+        CURLOPT_PROXYUSERNAME
+        CURLOPT_PROXYPASSWORD
   Else it is the same as for curl_easy_setopt().
   Note that CURLOPT_ERRORBUFFER is not in the list above, since it gives the
 address of an (empty) character buffer, not the address of a string.
@@ -150,10 +139,6 @@ use:
         CURLINFO_EFFECTIVE_URL
         CURLINFO_CONTENT_TYPE
         CURLINFO_FTP_ENTRY_PATH
-        CURLINFO_REDIRECT_URL
-        CURLINFO_PRIMARY_IP
-        CURLINFO_RTSP_SESSION_ID
-        CURLINFO_LOCAL_IP
   Other options are processed like in curl_easy_getinfo().
 
   Standard compilation environment does support neither autotools nor make;
@@ -166,27 +151,14 @@ OS/400.
 
 
 Protocols currently implemented on OS/400:
-_ DICT
-_ FILE
-_ FTP
-_ FTPS
-_ FTP with secure transmission
-_ GOPHER
 _ HTTP
 _ HTTPS
-_ IMAP
-_ IMAPS
-_ IMAP with secure transmission
+_ FTP
+_ FTPS
+_ FTP with secure transmission.
 _ LDAP
-_ POP3
-_ POP3S
-_ POP3 with secure transmission
-_ RTSP
-_ SMTP
-_ SMTPS
-_ SMTP with secure transmission
+_ DICT
 _ TELNET
-_ TFTP
 
 
 

@@ -28,13 +28,10 @@
  2.10 Document
  2.11 Test Cases
 
- 3. Pushing Out Your Changes
- 3.1 Write Access to git Repository
- 3.2 How To Make a Patch with git
- 3.3 How To Make a Patch without git
- 3.4 How to get your changes into the main sources
- 3.5 Write good commit messages
- 3.6 Please don't send pull requests
+ 3. Pushing Out Your Changes 
+ 3.1 Write Access to CVS Repository
+ 3.2 How To Make a Patch
+ 3.3 How to get your changes into the main sources
 
 ==============================================================================
 
@@ -117,7 +114,7 @@
 
 2.4 Line Lengths
 
- We write source lines shorter than 80 columns.
+ We try to keep source lines shorter than 80 columns.
 
 2.5 General Style
 
@@ -155,7 +152,7 @@
 
  Please try to get the latest available sources to make your patches
  against. It makes the life of the developers so much easier. The very best is
- if you get the most up-to-date sources from the git repository, but the
+ if you get the most up-to-date sources from the CVS repository, but the
  latest release archive is quite OK as well!
 
 2.10 Document
@@ -178,43 +175,18 @@
  test case that verifies that it works as documented. If every submitter also
  posts a few test cases, it won't end up as a heavy burden on a single person!
 
-3. Pushing Out Your Changes
+3. Pushing Out Your Changes 
 
-3.1 Write Access to git Repository
+3.1 Write Access to CVS Repository
 
  If you are a frequent contributor, or have another good reason, you can of
- course get write access to the git repository and then you'll be able to push
- your changes straight into the git repo instead of sending changes by mail as
- patches. Just ask if this is what you'd want. You will be required to have
- posted a few quality patches first, before you can be granted push access.
+ course get write access to the CVS repository and then you'll be able to
+ check-in all your changes straight into the CVS tree instead of sending all
+ changes by mail as patches. Just ask if this is what you'd want. You will be
+ required to have posted a few quality patches first, before you can be
+ granted write access.
 
-3.2 How To Make a Patch with git
-
- You need to first checkout the repository:
-
-     git clone git://github.com/bagder/curl.git
-
- You then proceed and edit all the files you like and you commit them to your
- local repository:
-
-     git commit [file]
-
- As usual, group your commits so that you commit all changes that at once that
- constitutes a logical change. See also section "3.5 Write good commit
- messages".
-
- Once you have done all your commits and you're happy with what you see, you
- can make patches out of your changes that are suitable for mailing:
-
-     git format-patch remotes/origin/master
-
- This creates files in your local directory named NNNN-[name].patch for each
- commit.
-
- Now send those patches off to the curl-library list. You can of course opt to
- do that with the 'get send-email' command.
-
-3.3 How To Make a Patch without git
+3.2 How To Make a Patch
 
  Keep a copy of the unmodified curl sources. Make your changes in a separate
  source tree. When you think you have something that you want to offer the
@@ -234,70 +206,28 @@
 
  For unix-like operating systems:
 
-     http://www.gnu.org/software/patch/patch.html
-     http://www.gnu.org/directory/diffutils.html
+   http://www.gnu.org/software/patch/patch.html
+   http://www.gnu.org/directory/diffutils.html
 
  For Windows:
 
-     http://gnuwin32.sourceforge.net/packages/patch.htm
-     http://gnuwin32.sourceforge.net/packages/diffutils.htm
+   http://gnuwin32.sourceforge.net/packages/patch.htm
+   http://gnuwin32.sourceforge.net/packages/diffutils.htm
 
-3.4 How to get your changes into the main sources
+3.3 How to get your changes into the main sources
 
- Submit your patch to the curl-library mailing list.
+ 1. Submit your patch to the curl-library mailing list
 
- Make the patch against as recent sources as possible.
+ 2. Make the patch against as recent sources as possible.
 
- Make sure your patch adheres to the source indent and coding style of already
- existing source code. Failing to do so just adds more work for me.
+ 3. Make sure your patch adheres to the source indent and coding style of
+    already existing source code. Failing to do so just adds more work for me.
 
- Respond to replies on the list about the patch and answer questions and/or
- fix nits/flaws. This is very important. I will take lack of replies as a sign
- that you're not very anxious to get your patch accepted and I tend to simply
- drop such patches from my TODO list.
+ 4. Respond to replies on the list about the patch and answer questions and/or
+    fix nits/flaws. This is very important. I will take lack of replies as a
+    sign that you're not very anxious to get your patch accepted and I tend to
+    simply drop such patches from my TODO list.
 
- If you've followed the above paragraphs and your patch still hasn't been
- incorporated after some weeks, consider resubmitting it to the list.
-
-3.5 Write good commit messages
-
- A short guide to how to do fine commit messages in the curl project.
-
-      ---- start ----
-      [area]: [short line describing the main effect]
-
-      [separate the above single line from the rest with an empty line]
-
-      [full description, no wider than 72 columns that describe as much as
-      possible as to why this change is made, and possibly what things
-      it fixes and everything else that is related]
-      ---- stop ----
-
- Don't forget to use commit --author="" if you commit someone else's work,
- and make sure that you have your own user and email setup correctly in git
- before you commit
-
-3.6 Please don't send pull requests
-
- With git (and especially github) it is easy and tempting to send a pull
- request to one or more people in the curl project to have changes merged this
- way instead of mailing patches to the curl-library mailing list.
-
- We don't like that. We want them mailed for these reasons:
-
- - Peer review. Anyone and everyone on the list can review, comment and
-   improve on the patch. Pull requests limit this ability.
-
- - Anyone can merge the patch into their own trees for testing and those who
-   have push rights can push it to the main repo. It doesn't have to be anyone
-   the patch author knows beforehand.
-
- - Commit messages can be tweaked and changed if merged locally instead of
-   using github. Merges directly on github requires the changes to be perfect
-   already, which they seldom are.
-
- - Merges on github prevents rebases and even enforces --no-ff which is a git
-   style we don't otherwise use in the project
-
- However: once patches have been reviewed and deemed fine on list they are
- perfectly OK to be pulled from a published git tree.
+ 5. If you've followed the above mentioned paragraphs and your patch still
+    hasn't been incorporated after some weeks, consider resubmitting it to the
+    list.

@@ -5,6 +5,7 @@ FTP
 post-quote
 pre-quote
 quote
+compressed
 </keywords>
 </info>
 # Server-side
@@ -19,7 +20,6 @@ works
 </data>
 <servercmd>
 REPLY EPSV 500 no such command
-REPLY FAIL 500 this might not be a failure!
 </servercmd>
 </reply>
 
@@ -32,7 +32,7 @@ ftp
 FTP with quote ops
  </name>
  <command>
-ftp://%HOSTIP:%FTPPORT/227 -Q "NOOP 1" -Q "+NOOP 2" -Q "-NOOP 3" -Q "*FAIL" -Q "+*FAIL HARD"
+ftp://%HOSTIP:%FTPPORT/227 -Q "NOOP 1" -Q "+NOOP 2" -Q "-NOOP 3"
 </command>
 </client>
 
@@ -43,12 +43,10 @@ USER anonymous
 PASS ftp@example.com
 PWD
 NOOP 1
-FAIL
 EPSV
 PASV
 TYPE I
 NOOP 2
-FAIL HARD
 SIZE 227
 RETR 227
 NOOP 3

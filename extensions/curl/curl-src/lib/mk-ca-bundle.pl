@@ -6,7 +6,7 @@
 # *                            | (__| |_| |  _ <| |___
 # *                             \___|\___/|_| \_\_____|
 # *
-# * Copyright (C) 1998 - 2013, Daniel Stenberg, <daniel@haxx.se>, et al.
+# * Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
 # *
 # * This software is licensed as described in the file COPYING, which
 # * you should have received as part of this distribution. The terms
@@ -19,8 +19,9 @@
 # * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # * KIND, either express or implied.
 # *
+# * $Id: mk-ca-bundle.pl,v 1.14 2008-08-23 21:31:09 gknauf Exp $
 # ***************************************************************************
-# This Perl script creates a fresh ca-bundle.crt file for use with libcurl.
+# This Perl script creates a fresh ca-bundle.crt file for use with libcurl. 
 # It downloads certdata.txt from Mozilla's source tree (see URL below),
 # then parses certdata.txt and extracts CA Root Certificates into PEM format.
 # These are then processed with the OpenSSL commandline tool to produce the
@@ -34,15 +35,15 @@ use Getopt::Std;
 use MIME::Base64;
 use LWP::UserAgent;
 use strict;
-use vars qw($opt_b $opt_f $opt_h $opt_i $opt_l $opt_n $opt_q $opt_t $opt_u $opt_v);
+use vars qw($opt_b $opt_h $opt_i $opt_l $opt_n $opt_q $opt_t $opt_u $opt_v);  
 
-my $url = 'http://mxr.mozilla.org/mozilla/source/security/nss/lib/ckfw/builtins/certdata.txt?raw=1';
+my $url = 'http://mxr.mozilla.org/seamonkey/source/security/nss/lib/ckfw/builtins/certdata.txt?raw=1';
 # If the OpenSSL commandline is not in search path you can configure it here!
 my $openssl = 'openssl';
 
-my $version = '1.17';
+my $version = $1 if ('$Revision: 1.14 $' =~ /\s(\d+\.\d+)\s/);
 
-getopts('bfhilnqtuv');
+getopts('bhilnqtuv');
 
 if ($opt_i) {
   print ("=" x 78 . "\n");
@@ -56,11 +57,11 @@ if ($opt_i) {
   print ("=" x 78 . "\n");
 }
 
-$0 =~ s@.*(/|\\)@@;
+$0 =~ s/\\/\//g;
+$0 = substr($0, rindex($0, '/') + 1);
 if ($opt_h) {
-  printf("Usage:\t%s [-b] [-f] [-i] [-l] [-n] [-q] [-t] [-u] [-v] [<outputfile>]\n", $0);
+  printf("Usage:\t%s [-b] [-i] [-l] [-n] [-q] [-t] [-u] [-v] [<outputfile>]\n", $0);
   print "\t-b\tbackup an existing version of ca-bundle.crt\n";
-  print "\t-f\tforce rebuild even if certdata.txt is current\n";
   print "\t-i\tprint version info about used modules\n";
   print "\t-l\tprint license info about certdata.txt\n";
   print "\t-n\tno download of certdata.txt (to use existing)\n";
@@ -72,49 +73,44 @@ if ($opt_h) {
 }
 
 my $crt = $ARGV[0] || 'ca-bundle.crt';
-(my $txt = $url) =~ s@(.*/|\?.*)@@g;
+my $txt = substr($url, rindex($url, '/') + 1);
+$txt =~ s/\?.*//;
 
-my $stdout = $crt eq '-';
-my $resp;
-my $fetched;
-
-unless ($opt_n and -e $txt) {
-  print STDERR "Downloading '$txt' ...\n" if (!$opt_q);
+if (!$opt_n || !-e $txt) {
+  print "Downloading '$txt' ...\n" if (!$opt_q);
   my $ua  = new LWP::UserAgent(agent => "$0/$version");
-  $ua->env_proxy();
-  $resp = $ua->mirror($url, $txt);
-  if ($resp && $resp->code eq '304') {
-    print STDERR "Not modified\n" unless $opt_q;
-    exit 0 if -e $crt && !$opt_f;
+  my $req = new HTTP::Request('GET', $url);
+  my $res = $ua->request($req);
+  if ($res->is_success) {
+    open(TXT,">$txt") or die "Couldn't open $txt: $!";
+    print TXT $res->content . "\n";
+    close(TXT) or die "Couldn't close $txt: $!";
   } else {
-      $fetched = 1;
-  }
-  if( !$resp || $resp->code !~ /^(?:200|304)$/ ) {
-      print STDERR "Unable to download latest data: "
-        . ($resp? $resp->code . ' - ' . $resp->message : "LWP failed") . "\n"
-        unless $opt_q;
-      exit 1 if -e $crt || ! -r $txt;
+    die $res->status_line;
   }
 }
 
-my $currentdate = scalar gmtime($fetched ? $resp->last_modified : (stat($txt))[9]);
+if ($opt_b && -e $crt) {
+  my $bk = 1;
+  while (-e "$crt.~${bk}~") {
+    $bk++;
+  }
+  rename $crt, "$crt.~${bk}~";
+}
 
 my $format = $opt_t ? "plain text and " : "";
-if( $stdout ) {
-    open(CRT, '> -') or die "Couldn't open STDOUT: $!\n";
-} else {
-    open(CRT,">$crt.~") or die "Couldn't open $crt.~: $!\n";
-}
+my $currentdate = scalar gmtime() . " UTC";
+open(CRT,">$crt") or die "Couldn't open $crt: $!";
 print CRT <<EOT;
 ##
 ## $crt -- Bundle of CA Root Certificates
 ##
-## Certificate data from Mozilla as of: ${currentdate}
+## Converted at: ${currentdate}
 ##
 ## This is a bundle of X.509 certificates of public Certificate Authorities
 ## (CA). These were automatically extracted from Mozilla's root certificates
 ## file (certdata.txt).  This file can be found in the mozilla source tree:
-## $url
+## '/mozilla/security/nss/lib/ckfw/builtins/certdata.txt'
 ##
 ## It contains the certificates in ${format}PEM format and therefore
 ## can be directly used with curl / libcurl / php_curl, or with
@@ -124,15 +120,15 @@ print CRT <<EOT;
 
 EOT
 
-print STDERR "Processing  '$txt' ...\n" if (!$opt_q);
+close(CRT) or die "Couldn't close $crt: $!";
+
+print "Processing  '$txt' ...\n" if (!$opt_q);
 my $caname;
 my $certnum = 0;
-my $skipnum = 0;
-my $start_of_cert = 0;
-
-open(TXT,"$txt") or die "Couldn't open $txt: $!\n";
+open(TXT,"$txt") or die "Couldn't open $txt: $!";
 while (<TXT>) {
   if (/\*\*\*\*\* BEGIN LICENSE BLOCK \*\*\*\*\*/) {
+    open(CRT, ">>$crt") or die "Couldn't open $crt: $!";
     print CRT;
     print if ($opt_l);
     while (<TXT>) {
@@ -140,22 +136,19 @@ while (<TXT>) {
       print if ($opt_l);
       last if (/\*\*\*\*\* END LICENSE BLOCK \*\*\*\*\*/);
     }
+    close(CRT) or die "Couldn't close $crt: $!";
   }
   next if /^#|^\s*$/;
   chomp;
   if (/^CVS_ID\s+\"(.*)\"/) {
+    open(CRT, ">>$crt") or die "Couldn't open $crt: $!";
     print CRT "# $1\n";
+    close(CRT) or die "Couldn't close $crt: $!";
   }
-
-  # this is a match for the start of a certificate
-  if (/^CKA_CLASS CK_OBJECT_CLASS CKO_CERTIFICATE/) {
-    $start_of_cert = 1
-  }
-  if ($start_of_cert && /^CKA_LABEL UTF8 \"(.*)\"/) {
+  if (/^CKA_LABEL\s+[A-Z0-9]+\s+\"(.*)\"/) {
     $caname = $1;
   }
-  my $untrusted = 0;
-  if ($start_of_cert && /^CKA_VALUE MULTILINE_OCTAL/) {
+  if (/^CKA_VALUE MULTILINE_OCTAL/) {
     my $data;
     while (<TXT>) {
       last if (/^END/);
@@ -166,57 +159,28 @@ while (<TXT>) {
         $data .= chr(oct);
       }
     }
-    # scan forwards until the trust part
-    while (<TXT>) {
-      last if (/^CKA_CLASS CK_OBJECT_CLASS CKO_NSS_TRUST/);
-      chomp;
+    my $pem = "-----BEGIN CERTIFICATE-----\n"
+            . MIME::Base64::encode($data)
+            . "-----END CERTIFICATE-----\n";
+    open(CRT, ">>$crt") or die "Couldn't open $crt: $!";
+    print CRT "\n$caname\n";
+    print CRT ("=" x length($caname) . "\n");
+    if (!$opt_t) {
+      print CRT $pem;
     }
-    # now scan the trust part for untrusted certs
-    while (<TXT>) {
-      last if (/^#/);
-      if (/^CKA_TRUST_SERVER_AUTH\s+CK_TRUST\s+CKT_NSS_NOT_TRUSTED$/
-          or /^CKA_TRUST_SERVER_AUTH\s+CK_TRUST\s+CKT_NSS_TRUST_UNKNOWN$/) {
-          $untrusted = 1;
-      }
+    close(CRT) or die "Couldn't close $crt: $!";
+    if ($opt_t) {
+      open(TMP, "|$openssl x509 -md5 -fingerprint -text -inform PEM >> $crt") or die "Couldn't open openssl pipe: $!";
+      print TMP $pem;
+      close(TMP) or die "Couldn't close openssl pipe: $!";
     }
-    if ($untrusted) {
-      $skipnum ++;
-    } else {
-      my $pem = "-----BEGIN CERTIFICATE-----\n"
-              . MIME::Base64::encode($data)
-              . "-----END CERTIFICATE-----\n";
-      print CRT "\n$caname\n";
-      print CRT ("=" x length($caname) . "\n");
-      if (!$opt_t) {
-        print CRT $pem;
-      }
-      if ($opt_t) {
-        open(TMP, "|$openssl x509 -md5 -fingerprint -text -inform PEM >> $crt") or die "Couldn't open openssl pipe: $!\n";
-        print TMP $pem;
-        close(TMP) or die "Couldn't close openssl pipe: $!\n";
-      }
-      print STDERR "Parsing: $caname\n" if ($opt_v);
-      $certnum ++;
-      $start_of_cert = 0;
-    }
+    print "Parsing: $caname\n" if ($opt_v);
+    $certnum ++;
   }
 }
-close(TXT) or die "Couldn't close $txt: $!\n";
-close(CRT) or die "Couldn't close $crt.~: $!\n";
-unless( $stdout ) {
-    if ($opt_b && -e $crt) {
-        my $bk = 1;
-        while (-e "$crt.~${bk}~") {
-            $bk++;
-        }
-        rename $crt, "$crt.~${bk}~" or die "Failed to create backup $crt.~$bk}~: $!\n";
-    } elsif( -e $crt ) {
-        unlink( $crt ) or die "Failed to remove $crt: $!\n";
-    }
-    rename "$crt.~", $crt or die "Failed to rename $crt.~ to $crt: $!\n";
-}
+close(TXT) or die "Couldn't close $txt: $!";
 unlink $txt if ($opt_u);
-print STDERR "Done ($certnum CA certs processed, $skipnum untrusted skipped).\n" if (!$opt_q);
+print "Done ($certnum CA certs processed).\n" if (!$opt_q);
 
 exit;
 

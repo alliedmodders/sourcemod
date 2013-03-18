@@ -2,6 +2,7 @@
 #
 #       libcurl compilation script for the OS/400.
 #
+# $Id: make-lib.sh,v 1.4 2008-03-31 12:09:43 mmarek Exp $
 
 SCRIPTDIR=`dirname "${0}"`
 . "${SCRIPTDIR}/initscript.sh"
@@ -11,9 +12,8 @@ cd "${TOPDIR}/lib"
 #      Create and compile the identification source file.
 
 echo '#pragma comment(user, "libcurl version '"${LIBCURL_VERSION}"'")' > os400.c
-echo '#pragma comment(user, __DATE__)' >> os400.c
-echo '#pragma comment(user, __TIME__)' >> os400.c
-echo '#pragma comment(copyright, "Copyright (C) 1998-2012 Daniel Stenberg et al. OS/400 version by P. Monnerat")' >> os400.c
+echo '#pragma comment(date)' >> os400.c
+echo '#pragma comment(copyright, "Copyright (C) 1998-2008 Daniel Stenberg et al. OS/400 version by P. Monnerat")' >> os400.c
 make_module     OS400           os400.c
 LINK=                           # No need to rebuild service program yet.
 MODULES=
@@ -46,7 +46,9 @@ make_module     OS400SYS        "${SCRIPTDIR}/os400sys.c"
 make_module     CCSIDCURL       "${SCRIPTDIR}/ccsidcurl.c"
 
 for SRC in ${CSOURCES}
-do      MODULE=`db2_name "${SRC}"`
+do      MODULE=`basename "${SRC}" .c |
+                tr '[a-z]' '[A-Z]'   |
+                sed -e 's/^\(..........\).*/\1/'`
         make_module "${MODULE}" "${SRC}"
 done
 

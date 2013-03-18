@@ -11,7 +11,7 @@ multiprotocol
 #
 # Server-side
 <reply>
-<data nocheck="yes">
+<data nocheck="1">
 data
     to
       see

@@ -1,25 +1,13 @@
-/***************************************************************************
+/*****************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * $Id: lib547.c,v 1.6 2008-09-20 04:26:57 yangtse Exp $
  *
- * This software is licensed as described in the file COPYING, which
- * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
- *
- * You may opt to use, copy, modify, merge, publish, distribute and/or sell
- * copies of the Software, and permit persons to whom the Software is
- * furnished to do so, under the terms of the COPYING file.
- *
- * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
- * KIND, either express or implied.
- *
- ***************************************************************************/
-/* argv1 = URL
+ * argv1 = URL
  * argv2 = proxy
  * argv3 = proxyuser:password
  */
@@ -28,14 +16,7 @@
 
 #include "memdebug.h"
 
-#ifdef CURL_DOES_CONVERSIONS
-   /* ASCII representation with escape sequences for non-ASCII platforms */
-#  define UPLOADTHIS "\x74\x68\x69\x73\x20\x69\x73\x20\x74\x68\x65\x20\x62" \
-                     "\x6c\x75\x72\x62\x20\x77\x65\x20\x77\x61\x6e\x74\x20" \
-                     "\x74\x6f\x20\x75\x70\x6c\x6f\x61\x64\x0a"
-#else
-#  define UPLOADTHIS "this is the blurb we want to upload\n"
-#endif
+#define UPLOADTHIS "this is the blurb we want to upload\n"
 
 #ifndef LIB548
 static size_t readcallback(void  *ptr,
@@ -96,30 +77,28 @@ int test(char *URL)
     return TEST_ERR_MAJOR_BAD;
   }
 
-  test_setopt(curl, CURLOPT_URL, URL);
-  test_setopt(curl, CURLOPT_VERBOSE, 1L);
-  test_setopt(curl, CURLOPT_HEADER, 1L);
+  curl_easy_setopt(curl, CURLOPT_URL, URL);
+  curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+  curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
 #ifdef LIB548
   /* set the data to POST with a mere pointer to a zero-terminated string */
-  test_setopt(curl, CURLOPT_POSTFIELDS, UPLOADTHIS);
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, UPLOADTHIS);
 #else
   /* 547 style, which means reading the POST data from a callback */
-  test_setopt(curl, CURLOPT_IOCTLFUNCTION, ioctlcallback);
-  test_setopt(curl, CURLOPT_IOCTLDATA, &counter);
-  test_setopt(curl, CURLOPT_READFUNCTION, readcallback);
-  test_setopt(curl, CURLOPT_READDATA, &counter);
+  curl_easy_setopt(curl, CURLOPT_IOCTLFUNCTION, ioctlcallback);
+  curl_easy_setopt(curl, CURLOPT_IOCTLDATA, &counter);
+  curl_easy_setopt(curl, CURLOPT_READFUNCTION, readcallback);
+  curl_easy_setopt(curl, CURLOPT_READDATA, &counter);
   /* We CANNOT do the POST fine without setting the size (or choose chunked)! */
-  test_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(UPLOADTHIS));
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(UPLOADTHIS));
 #endif
-  test_setopt(curl, CURLOPT_POST, 1L);
-  test_setopt(curl, CURLOPT_PROXY, libtest_arg2);
-  test_setopt(curl, CURLOPT_PROXYUSERPWD, libtest_arg3);
-  test_setopt(curl, CURLOPT_PROXYAUTH,
+  curl_easy_setopt(curl, CURLOPT_POST, 1L);
+  curl_easy_setopt(curl, CURLOPT_PROXY, libtest_arg2);
+  curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, libtest_arg3);
+  curl_easy_setopt(curl, CURLOPT_PROXYAUTH,
                    (long) (CURLAUTH_NTLM | CURLAUTH_DIGEST | CURLAUTH_BASIC) );
 
   res = curl_easy_perform(curl);
-
-test_cleanup:
 
   curl_easy_cleanup(curl);
   curl_global_cleanup();

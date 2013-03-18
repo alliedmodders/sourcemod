@@ -1,10 +1,4 @@
 <testcase>
-<info>
-<keywords>
-FTP
-</keywords>
-</info>
-
 # Server-side
 <reply>
 # When doing LIST, we get the default list output hard-coded in the test
@@ -36,7 +30,7 @@ ftp
 FTP dir list, PORT with specified IP and slow response
  </name>
  <command>
-ftp://%HOSTIP:%FTPPORT/ -P %CLIENTIP
+ftp://%HOSTIP:%FTPPORT/ -P %HOSTIP
 </command>
 </client>
 
