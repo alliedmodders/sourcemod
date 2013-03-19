@@ -138,7 +138,11 @@ void CRadioStyle::OnSourceModShutdown()
 
 bool CRadioStyle::IsSupported()
 {
+#if SOURCE_ENGINE == SE_DOTA
+	return false;
+#else
 	return (g_ShowMenuId != -1);
+#endif
 }
 
 bool CRadioStyle::OnClientCommand(int client, const char *cmdname, const CCommand &cmd)
@@ -169,6 +173,7 @@ void CRadioStyle::OnUserMessage(int msg_id, protobuf::Message &msg, IRecipientFi
 void CRadioStyle::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
 #endif
 {
+#if SOURCE_ENGINE != SE_DOTA
 	int count = pFilter->GetRecipientCount();
 
 #ifdef USE_PROTOBUF_USERMESSAGES
@@ -186,6 +191,7 @@ void CRadioStyle::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFil
 	{
 		g_last_clients[g_last_client_count++] = pFilter->GetRecipientIndex(i);
 	}
+#endif
 }
 
 void CRadioStyle::OnUserMessageSent(int msg_id)
@@ -473,6 +479,7 @@ void CRadioMenuPlayer::Radio_Init(int keys, const char *title, const char *text)
 
 void CRadioMenuPlayer::Radio_Refresh()
 {
+#if SOURCE_ENGINE != SE_DOTA
 	cell_t players[1] = {m_index};
 	char *ptr = display_pkt;
 	char save = 0;
@@ -526,6 +533,7 @@ void CRadioMenuPlayer::Radio_Refresh()
 #endif
 
 	display_last_refresh = gpGlobals->curtime;
+#endif // !DOTA
 }
 
 int CRadioDisplay::GetAmountRemaining()

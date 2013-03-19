@@ -675,6 +675,9 @@ public:
 
 	inline bool GetColor(const char *pszFieldName, Color *out)
 	{
+#if SOURCE_ENGINE != SE_CSGO
+		return false;
+#else
 		GETCHECK_FIELD();
 		CHECK_FIELD_TYPE(MESSAGE);
 		CHECK_FIELD_NOT_REPEATED();
@@ -688,10 +691,14 @@ public:
 			);
 
 		return true;
+#endif
 	}
 
 	inline bool SetColor(const char *pszFieldName, const Color &value)
 	{
+#if SOURCE_ENGINE != SE_CSGO
+		return false;
+#else
 		GETCHECK_FIELD();
 		CHECK_FIELD_TYPE(MESSAGE);
 		CHECK_FIELD_NOT_REPEATED();
@@ -703,10 +710,14 @@ public:
 		msgRGBA->set_a(value.a());
 
 		return true;
+#endif
 	}
 
 	inline bool GetRepeatedColor(const char *pszFieldName, int index, Color *out)
 	{
+#if SOURCE_ENGINE != SE_CSGO
+		return false;
+#else
 		GETCHECK_FIELD();
 		CHECK_FIELD_TYPE(MESSAGE);
 		CHECK_FIELD_REPEATED();
@@ -721,10 +732,14 @@ public:
 			);
 
 		return true;
+#endif
 	}
 
 	inline bool SetRepeatedColor(const char *pszFieldName, int index, const Color &value)
 	{
+#if SOURCE_ENGINE != SE_CSGO
+		return false;
+#else
 		GETCHECK_FIELD();
 		CHECK_FIELD_TYPE(MESSAGE);
 		CHECK_FIELD_REPEATED();
@@ -737,10 +752,14 @@ public:
 		msgRGBA->set_a(value.a());
 
 		return true;
+#endif
 	}
 
 	inline bool AddColor(const char *pszFieldName, const Color &value)
 	{
+#if SOURCE_ENGINE != SE_CSGO
+		return false;
+#else
 		GETCHECK_FIELD();
 		CHECK_FIELD_TYPE(MESSAGE);
 		CHECK_FIELD_REPEATED();
@@ -752,6 +771,7 @@ public:
 		msgRGBA->set_a(value.a());
 
 		return true;
+#endif
 	}
 
 	inline bool GetVector2D(const char *pszFieldName, Vector2D *out)

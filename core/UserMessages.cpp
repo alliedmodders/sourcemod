@@ -32,13 +32,15 @@
 #include "UserMessages.h"
 #include "sm_stringutil.h"
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_DOTA
+#include <dota_usermessage_helpers.h>
+#elif SOURCE_ENGINE == SE_CSGO
 #include <cstrike15_usermessage_helpers.h>
 #endif
 
 UserMessages g_UserMsgs;
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 SH_DECL_HOOK3_void(IVEngineServer, SendUserMessage, SH_NOATTRIB, 0, IRecipientFilter &, int, const protobuf::Message &);
 #else
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
@@ -96,7 +98,7 @@ void UserMessages::OnSourceModAllShutdown()
 {
 	if (m_HookCount)
 	{
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 		SH_REMOVE_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Pre), false);
 		SH_REMOVE_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Post), true);
 #else
@@ -111,7 +113,10 @@ void UserMessages::OnSourceModAllShutdown()
 
 int UserMessages::GetMessageIndex(const char *msg)
 {
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_DOTA
+	// Can split this per engine and/or game later
+	return g_DotaUsermessageHelpers.GetIndex(msg);
+#elif SOURCE_ENGINE == SE_CSGO
 	// Can split this per engine and/or game later
 	return g_Cstrike15UsermessageHelpers.GetIndex(msg);
 #else
@@ -150,8 +155,12 @@ int UserMessages::GetMessageIndex(const char *msg)
 
 bool UserMessages::GetMessageName(int msgid, char *buffer, size_t maxlength) const
 {
-#if SOURCE_ENGINE == SE_CSGO
+#ifdef USE_PROTOBUF_USERMESSAGES
+#if SOURCE_ENGINE == SE_DOTA
+	const char *pszName = g_DotaUsermessageHelpers.GetName(msgid);
+#elif SOURCE_ENGINE == SE_CSGO
 	const char *pszName = g_Cstrike15UsermessageHelpers.GetName(msgid);
+#endif
 	if (!pszName)
 		return false;
 
@@ -259,7 +268,7 @@ google::protobuf::Message *UserMessages::StartProtobufMessage(int msg_id, const 
 	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
 		// direct message creation, return buffer "from engine". keep track
-		m_FakeEngineBuffer = g_Cstrike15UsermessageHelpers.GetPrototype(msg_id)->New();
+		m_FakeEngineBuffer = GetMessagePrototype(msg_id)->New();
 		buffer = m_FakeEngineBuffer;
 	} else {
 		char messageName[32];
@@ -274,12 +283,12 @@ google::protobuf::Message *UserMessages::StartProtobufMessage(int msg_id, const 
 		{
 		case MRES_IGNORED:
 		case MRES_HANDLED:
-			m_FakeEngineBuffer = g_Cstrike15UsermessageHelpers.GetPrototype(msg_id)->New();
+			m_FakeEngineBuffer = GetMessagePrototype(msg_id)->New();
 			buffer = m_FakeEngineBuffer;
 			break;		
 
 		case MRES_OVERRIDE:
-			m_FakeEngineBuffer = g_Cstrike15UsermessageHelpers.GetPrototype(msg_id)->New();
+			m_FakeEngineBuffer = GetMessagePrototype(msg_id)->New();
 		// fallthrough
 		case MRES_SUPERCEDE:
 			buffer = msg;
@@ -300,7 +309,7 @@ bool UserMessages::EndMessage()
 		return false;
 	}
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
 		ENGINE_CALL(SendUserMessage)(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId, *m_FakeEngineBuffer);
@@ -330,7 +339,7 @@ bool UserMessages::EndMessage()
 	} else {
 		engine->MessageEnd();
 	}
-#endif // SE_CSGO
+#endif // SE_CSGO || SE_DOTA
 
 	m_InExec = false;
 	m_CurFlags = 0;
@@ -415,7 +424,7 @@ bool UserMessages::InternalHook(int msg_id, IBitBufUserMessageListener *pListene
 
 	if (!m_HookCount++)
 	{
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 		SH_ADD_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Pre), false);
 		SH_ADD_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Post), true);
 #else
@@ -435,6 +444,17 @@ bool UserMessages::InternalHook(int msg_id, IBitBufUserMessageListener *pListene
 
 	return true;
 }
+
+#ifdef USE_PROTOBUF_USERMESSAGES
+const protobuf::Message *GetMessagePrototype(int msg_type)
+{
+#if SOURCE_ENGINE == SE_DOTA
+	return g_DotaUsermessageHelpers.GetPrototype(msg_type);
+#elif SOURCE_ENGINE == SE_CSGO
+	return g_Cstrike15UsermessageHelpers.GetPrototype(msg_type);
+#endif
+}
+#endif
 
 #ifdef USE_PROTOBUF_USERMESSAGES
 bool UserMessages::InternalUnhook(int msg_id, IProtobufUserMessageListener *pListener, bool intercept, bool isNew)
@@ -481,7 +501,7 @@ void UserMessages::_DecRefCounter()
 {
 	if (--m_HookCount == 0)
 	{
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 		SH_REMOVE_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Pre), false);
 		SH_REMOVE_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Post), true);
 #else
@@ -493,10 +513,14 @@ void UserMessages::_DecRefCounter()
 	}
 }
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 void UserMessages::OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg)
 {
+#if SOURCE_ENGINE == SE_DOTA
+	OnStartMessage_Pre(&filter, msg_type, g_DotaUsermessageHelpers.GetName(msg_type));
+#elif SOURCE_ENGINE == SE_CSGO
 	OnStartMessage_Pre(&filter, msg_type, g_Cstrike15UsermessageHelpers.GetName(msg_type));
+#endif
 	if (m_FakeMetaRes == MRES_SUPERCEDE)
 	{
 		int size = msg.ByteSize();
@@ -509,7 +533,11 @@ void UserMessages::OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type,
 		m_FakeEngineBuffer = &const_cast<protobuf::Message &>(msg);
 	}
 
+#if SOURCE_ENGINE == SE_DOTA
+	OnStartMessage_Post(&filter, msg_type, g_DotaUsermessageHelpers.GetName(msg_type));
+#elif SOURCE_ENGINE == SE_CSGO
 	OnStartMessage_Post(&filter, msg_type, g_Cstrike15UsermessageHelpers.GetName(msg_type));
+#endif
 
 	OnMessageEnd_Pre();
 	if (m_FakeMetaRes == MRES_SUPERCEDE)
@@ -541,7 +569,7 @@ void UserMessages::OnSendUserMessage_Post(IRecipientFilter &filter, int msg_type
 	RETURN_META(res)
 #endif
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 protobuf::Message *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name)
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD
 bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name)
@@ -569,7 +597,8 @@ bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_typ
 #ifdef USE_PROTOBUF_USERMESSAGES
 		if (m_InterceptBuffer)
 			delete m_InterceptBuffer;
-		m_InterceptBuffer = g_Cstrike15UsermessageHelpers.GetPrototype(msg_type)->New();
+		m_InterceptBuffer = GetMessagePrototype(msg_type)->New();
+
 		UM_RETURN_META_VALUE(MRES_SUPERCEDE, m_InterceptBuffer);
 #else
 		m_InterceptBuffer.Reset();
@@ -580,7 +609,7 @@ bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_typ
 	UM_RETURN_META_VALUE(MRES_IGNORED, NULL);
 }
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 protobuf::Message *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name)
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD
 bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name)
@@ -745,7 +774,7 @@ void UserMessages::OnMessageEnd_Pre()
 
 	if (!handled && intercepted)
 	{
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 		ENGINE_CALL(SendUserMessage)(static_cast<IRecipientFilter &>(*m_CurRecFilter), m_CurId, *m_InterceptBuffer);
 #else
 		bf_write *engine_bfw;
@@ -757,15 +786,16 @@ void UserMessages::OnMessageEnd_Pre()
 		m_ReadBuffer.StartReading(m_InterceptBuffer.GetBasePointer(), m_InterceptBuffer.GetNumBytesWritten());
 		engine_bfw->WriteBitsFromBuffer(&m_ReadBuffer, m_InterceptBuffer.GetNumBitsWritten());
 		ENGINE_CALL(MessageEnd)();
-#endif // SE_CSGO
+#endif // SE_CSGO || SE_DOTA
 	}
 
 	{
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 		int size = m_OrigBuffer->ByteSize();
 		uint8 *data = (uint8 *)stackalloc(size);
 		m_OrigBuffer->SerializePartialToArray(data, size);
-		protobuf::Message *pTempMsg = g_Cstrike15UsermessageHelpers.GetPrototype(m_CurId)->New();
+
+		protobuf::Message *pTempMsg = GetMessagePrototype(m_CurId)->New();
 		pTempMsg->ParsePartialFromArray(data, size);
 #else
 		bf_write *pTempMsg = m_OrigBuffer;
@@ -790,7 +820,7 @@ void UserMessages::OnMessageEnd_Pre()
 			iter++;
 		}
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 		delete pTempMsg;
 #endif
 	}
