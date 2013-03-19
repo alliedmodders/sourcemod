@@ -733,7 +733,11 @@ void CHalfLife2::ProcessFakeCliCmdQueue()
 		if (g_Players.GetClientOfUserId(pFake->userid) == pFake->client)
 		{
 			CPlayer *pPlayer = g_Players.GetPlayerByIndex(pFake->client);
+#if SOURCE_ENGINE == SE_DOTA
+			engine->ClientCommand(pPlayer->GetEdict(), "%s", pFake->cmd.c_str());
+#else
 			serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), pFake->cmd.c_str());
+#endif
 		}
 
 		m_CmdQueue.pop();

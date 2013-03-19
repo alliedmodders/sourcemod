@@ -254,6 +254,9 @@ static cell_t IsSoundPrecached(IPluginContext *pContext, const cell_t *params)
 
 static cell_t smn_CreateDialog(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_DOTA
+	return pContext->ThrowNativeError("CreateDialog is not supported on this game");
+#else
 	KeyValues *pKV;
 	HandleError herr;
 	Handle_t hndl = static_cast<Handle_t>(params[2]);
@@ -281,6 +284,7 @@ static cell_t smn_CreateDialog(IPluginContext *pContext, const cell_t *params)
 		vsp_interface);
 
 	return 1;
+#endif // DOTA
 }
 
 static cell_t PrintToChat(IPluginContext *pContext, const cell_t *params)

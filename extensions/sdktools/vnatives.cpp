@@ -565,7 +565,11 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 	/* Force suicide */
 	if (should_slay)
 	{
+#if SOURCE_ENGINE == SE_DOTA
+		engine->ClientCommand(pEdict, "kill\n");
+#else
 		pluginhelpers->ClientCommand(pEdict, "kill\n");
+#endif
 	}
 
 	if (s_frag_offs > 0)

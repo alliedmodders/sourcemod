@@ -65,16 +65,20 @@ bool ValveMenuStyle::OnClientCommand(int client, const char *cmdname, const CCom
 
 void ValveMenuStyle::OnSourceModAllInitialized()
 {
+#if SOURCE_ENGINE != SE_DOTA
 	g_Players.AddClientListener(this);
 	SH_ADD_HOOK(IServerPluginHelpers, CreateMessage, serverpluginhelpers, SH_MEMBER(this, &ValveMenuStyle::HookCreateMessage), false);
 	g_pSPHCC = SH_GET_CALLCLASS(serverpluginhelpers);
+#endif
 }
 
 void ValveMenuStyle::OnSourceModShutdown()
 {
+#if SOURCE_ENGINE != SE_DOTA
 	SH_RELEASE_CALLCLASS(g_pSPHCC);
 	SH_REMOVE_HOOK(IServerPluginHelpers, CreateMessage, serverpluginhelpers, SH_MEMBER(this, &ValveMenuStyle::HookCreateMessage), false);
 	g_Players.RemoveClientListener(this);
+#endif
 }
 
 void ValveMenuStyle::HookCreateMessage(edict_t *pEdict,

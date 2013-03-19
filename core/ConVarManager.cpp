@@ -614,10 +614,12 @@ QueryCvarCookie_t ConVarManager::QueryClientConVar(edict_t *pPlayer, const char 
 	{
 		cookie = engine->StartQueryCvarValue(pPlayer, name);	
 	}
+#if SOURCE_ENGINE != SE_DOTA
 	else if (m_bIsVSPQueryHooked)
 	{
 		cookie = serverpluginhelpers->StartQueryCvarValue(pPlayer, name);
 	}
+#endif
 	else
 	{
 		return InvalidQueryCvarCookie;

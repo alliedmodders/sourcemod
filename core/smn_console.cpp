@@ -1105,7 +1105,11 @@ static cell_t FakeClientCommand(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
+#if SOURCE_ENGINE == SE_DOTA
+	engine->ClientCommand(pPlayer->GetEdict(), "%s", buffer);
+#else
 	serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), buffer);
+#endif
 
 	return 1;
 }

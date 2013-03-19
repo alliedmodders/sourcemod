@@ -283,7 +283,11 @@ void ChatTriggers::OnSayCommand_Post()
 		/* Execute the cached command */
 		int client = g_ConCmds.GetCommandClient();
 		unsigned int old = SetReplyTo(SM_REPLY_CHAT);
+#if SOURCE_ENGINE == SE_DOTA
+		engine->ClientCommand(PEntityOfEntIndex(client), "%s", m_ToExecute);
+#else
 		serverpluginhelpers->ClientCommand(PEntityOfEntIndex(client), m_ToExecute);
+#endif
 		SetReplyTo(old);
 	}
 }
