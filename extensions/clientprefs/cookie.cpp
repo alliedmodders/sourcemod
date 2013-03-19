@@ -215,53 +215,35 @@ void CookieManager::OnClientDisconnecting(int client)
 	SourceHook::List<CookieData *>::iterator _iter;
 
 	CookieData *current;
+	
+	IGamePlayer *player = playerhelpers->GetGamePlayer(client);
+	const char *pAuth = player ? player->GetAuthString() : NULL;
+	int dbId;
 
-	_iter = clientData[client].begin();
-
-	while (_iter != clientData[client].end())
+	for (SourceHook::List<CookieData *>::iterator _iter = clientData[client].begin(); _iter != clientData[client].end(); _iter++)
 	{
 		current = (CookieData *)*_iter;
+		dbId = current->parent->dbid;
 
-		if (!current->changed)
+		if (player == NULL || pAuth == NULL || !current->changed || dbId == -1)
 		{
 			current->parent->data[client] = NULL;
 			delete current;
-			_iter = clientData[client].erase(_iter);
 			continue;
-		}
-
-		/* Save this cookie to the database */
-		IGamePlayer *player = playerhelpers->GetGamePlayer(client);
-
-		if (player == NULL)
-		{
-			/* panic! */
-			return;
-		}
-
-		int dbId = current->parent->dbid;
-
-		if (dbId == -1)
-		{
-			/* Insert/Find Query must be still running or failed. */
-			return;
 		}
 
 		TQueryOp *op = new TQueryOp(Query_InsertData, client);
 
-		strcpy(op->m_params.steamId, player->GetAuthString());
+		strcpy(op->m_params.steamId, pAuth);
 		op->m_params.cookieId = dbId;
 		op->m_params.data = current;
 
 		g_ClientPrefs.AddQueryToQueue(op);
 
 		current->parent->data[client] = NULL;
-		
-
-		/* We don't delete here, it will be removed when the query is completed */
-
-		_iter = clientData[client].erase(_iter);
 	}
+	
+	clientData[client].clear();
 }
 
 void CookieManager::ClientConnectCallback(int serial, IQuery *data)
