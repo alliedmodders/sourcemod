@@ -786,6 +786,7 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 
 	fprintf(fp, "//\n\n");
 
+	static int offsEFlags = -1;
 	for ( int i = dict->m_Factories.First(); i != dict->m_Factories.InvalidIndex(); i = dict->m_Factories.Next( i ) )
 	{
 		IServerNetworkable *entity = dict->Create(dict->m_Factories.GetElementName(i));
@@ -796,14 +797,19 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 
 		UTIL_DrawDataTable(fp, pMap, 0);
 
-		typedescription_t *datamap = gamehelpers->FindInDataMap(pMap, "m_iEFlags");
-		
-		if (!datamap)
+		if (offsEFlags == -1)
 		{
-			continue;
+			typedescription_t *datamap = gamehelpers->FindInDataMap(pMap, "m_iEFlags");
+		
+			if (!datamap)
+			{
+				continue;
+			}
+
+			offsEFlags = GetTypeDescOffs(datamap);
 		}
 		
-		int *eflags = (int *)((char *)entity->GetBaseEntity() + GetTypeDescOffs(datamap));
+		int *eflags = (int *)((char *)entity->GetBaseEntity() + offsEFlags);
 		*eflags |= (1<<0); // EFL_KILLME
 	}
 
