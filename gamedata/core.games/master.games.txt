@@ -69,6 +69,11 @@
 	{
 		"engine"	"csgo"
 	}
+	
+	"engine.dota.txt"
+	{
+		"engine"	"dota"
+	}
 
 	"blacklist.plugins.txt"
 	{

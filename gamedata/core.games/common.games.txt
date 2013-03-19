@@ -95,6 +95,7 @@
 			"engine"			"left4dead2"
 			"engine"			"alienswarm"
 			"engine"			"csgo"
+			"engine"			"dota"
 		}
 		
 		"Offsets"
