@@ -390,7 +390,7 @@ class SM:
 
 		compiler['CDEFINES'].append('SOURCE_ENGINE=' + info['def'])
 
-		if sdk in ['swarm','csgo']:
+		if sdk in ['swarm','csgo','dota']:
 			if AMBuild.target['platform'] == 'windows':
 				compiler['CDEFINES'].extend(['COMPILER_MSVC', 'COMPILER_MSVC32'])
 			else:
