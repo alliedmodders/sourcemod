@@ -201,6 +201,9 @@ public Action:Command_Timeleft(client, args)
 
 public Action:Command_Nextmap(client, args)
 {
+	if (client && !IsClientInGame(client))
+		return Plugin_Handled;
+	
 	decl String:map[64];
 	
 	GetNextMap(map, sizeof(map));
@@ -225,6 +228,9 @@ public Action:Command_Motd(client, args)
 		return Plugin_Handled;
 	}
 
+	if (!IsClientInGame(client))
+		return Plugin_Handled;
+	
 	ShowMOTDPanel(client, "Message Of The Day", "motd", MOTDPANEL_TYPE_INDEX);
 
 	return Plugin_Handled;
@@ -509,7 +515,7 @@ ShowTimeLeft(client, who)
 	{
 		PrintToChatAll("[SM] %s", finalOutput);
 	}
-	else if (client != 0)
+	else if (client != 0 && IsClientInGame(client))
 	{
 		PrintToChat(client, "[SM] %s", finalOutput);
 	}
