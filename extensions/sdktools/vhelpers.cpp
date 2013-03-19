@@ -708,41 +708,56 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 		return;
 	}
 
-	ICallWrapper *pWrapper = NULL;
-
-	if (!pWrapper)
+	static CEntityFactoryDictionary *dict = NULL;
+	if (dict == NULL)
 	{
+		void *addr;
+		if (g_pGameConf->GetMemSig("EntityFactoryFinder", (void **)&addr) && addr)
+		{
+			int offset;
+			if (!g_pGameConf->GetOffset("EntityFactoryOffset", &offset) || !offset)
+			{
+				return;
+			}
+			dict = *reinterpret_cast<CEntityFactoryDictionary **>((intptr_t)addr + offset);
+		}
+	}
+
+	if (dict == NULL)
+	{
+		ICallWrapper *pWrapper = NULL;
+
 		PassInfo retData;
 		retData.flags = PASSFLAG_BYVAL;
 		retData.size = sizeof(void *);
 		retData.type = PassType_Basic;
 
 		void *addr;
-		if (!g_pGameConf->GetMemSig("EntityFactory", &addr) || addr == NULL)
+		if (g_pGameConf->GetMemSig("EntityFactory", &addr) && addr != NULL)
 		{
-			META_CONPRINT("Failed to locate function\n");
-			return;
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retData, NULL, 0);
 		}
 
-		pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retData, NULL, 0);
+		if (pWrapper)
+		{
+			void *returnData = NULL;
+
+			pWrapper->Execute(NULL, &returnData);
+
+			pWrapper->Destroy();
+
+			if (returnData == NULL)
+			{
+				return;
+			}
+
+			dict = ( CEntityFactoryDictionary * )returnData;
+		}
 	}
 
-
-	void *returnData = NULL;
-
-	pWrapper->Execute(NULL, &returnData);
-
-	pWrapper->Destroy();
-
-	if (returnData == NULL)
+	if ( dict == NULL )
 	{
-		return;
-	}
-
-	CEntityFactoryDictionary *dict = ( CEntityFactoryDictionary * )returnData;
-
-	if ( !dict )
-	{
+		META_CONPRINT("Failed to locate function\n");
 		return;
 	}
 
