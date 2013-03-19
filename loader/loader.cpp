@@ -79,6 +79,7 @@
 #define FILENAME_1_6_PORTAL2		"sourcemod.2.portal2" PLATFORM_EXT
 #define FILENAME_1_6_CSGO			"sourcemod.2.csgo" PLATFORM_EXT
 #define FILENAME_1_6_CSS			"sourcemod.2.css" PLATFORM_EXT
+#define FILENAME_1_6_DOTA			"sourcemod.2.dota" PLATFORM_EXT
 
 HINSTANCE g_hCore = NULL;
 bool load_attempted = false;
@@ -273,6 +274,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_CSS:
 		{
 			filename = FILENAME_1_6_CSS;
+			break;
+		}
+	case SOURCE_ENGINE_DOTA:
+		{
+			filename = FILENAME_1_6_DOTA;
 			break;
 		}
 	default:

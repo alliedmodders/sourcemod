@@ -189,12 +189,14 @@ static const char *get_source_engine_name()
 	return "portal2";
 #elif SOURCE_ENGINE == SE_CSGO
 	return "csgo";
+#elif SOURCE_ENGINE == SE_DOTA
+	return "dota";
 #endif
 }
 
 static bool symbols_are_hidden()
 {
-#if (SOURCE_ENGINE == SE_CSS) || (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2) || (SOURCE_ENGINE == SE_CSGO)
+#if (SOURCE_ENGINE == SE_CSS) || (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2) || (SOURCE_ENGINE == SE_CSGO) || (SOURCE_ENGINE == SE_DOTA)
 	return true;
 #else
 	return false;

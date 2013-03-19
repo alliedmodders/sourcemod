@@ -99,7 +99,7 @@ public:
 	int				m_SerialNumber;
 	CEntInfo		*m_pPrev;
 	CEntInfo		*m_pNext;
-#if SOURCE_ENGINE >= SE_PORTAL2
+#if (SOURCE_ENGINE >= SE_PORTAL2) && (SOURCE_ENGINE != SE_DOTA)
 	string_t		m_iName;
 	string_t		m_iClassName;
 #endif

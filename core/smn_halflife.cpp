@@ -487,6 +487,8 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 		return 70;
 	case SOURCE_ENGINE_CSGO:
 		return 80;
+	case SOURCE_ENGINE_DOTA:
+		return 90;
 # endif
 	}
 #else

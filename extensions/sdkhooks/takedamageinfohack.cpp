@@ -72,7 +72,7 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_flRadius = 0.0f;
 #endif
 
-#if SOURCE_ENGINE >= SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 	m_iDamagedOtherPlayers = 0;
 	m_iObjectsPenetrated = 0;
 	m_uiBulletID = 0;
