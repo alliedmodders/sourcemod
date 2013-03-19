@@ -446,7 +446,7 @@ bool UserMessages::InternalHook(int msg_id, IBitBufUserMessageListener *pListene
 }
 
 #ifdef USE_PROTOBUF_USERMESSAGES
-const protobuf::Message *GetMessagePrototype(int msg_type)
+const protobuf::Message *UserMessages::GetMessagePrototype(int msg_type)
 {
 #if SOURCE_ENGINE == SE_DOTA
 	return g_DotaUsermessageHelpers.GetPrototype(msg_type);
