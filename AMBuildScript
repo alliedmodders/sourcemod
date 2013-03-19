@@ -62,6 +62,9 @@ class SM:
 		self.possibleSdks['csgo'] =  {'sdk': 'HL2SDKCSGO',     'ext': '2.csgo',  'def': '12',
 		                         'name': 'CSGO',           'platform': ['windows', 'linux', 'darwin'],
 		                         'dir': 'hl2sdk-csgo'}
+		self.possibleSdks['dota'] =  {'sdk': 'HL2SDKDOTA',     'ext': '2.dota',  'def': '13',
+		                         'name': 'DOTA',           'platform': ['windows'],
+		                         'dir': 'hl2sdk-dota'}
 		# self.possibleSdks['portal2'] =  {'sdk': 'HL2SDK-PORTAL2',     'ext': '2.portal2',  'def': '11',
 		#                        'name': 'PORTAL2',           'platform': ['windows'],
 		#                        'dir': 'hl2sdk-portal2'}
@@ -341,7 +344,7 @@ class SM:
 					job.AddCommand(SymlinkCommand(link, target))
 		elif AMBuild.target['platform'] == 'windows':
 			libs = ['tier0', 'tier1', 'vstdlib', 'mathlib']
-			if sdk in ['swarm', 'csgo']:
+			if sdk in ['swarm', 'csgo', 'dota']:
 				libs.append('interfaces')
 			for lib in libs:
 				libPath = os.path.join(sdkPath, 'lib', 'public', lib) + '.lib'

@@ -18,12 +18,17 @@ for i in SM.sdkInfo:
 		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'common', 'protobuf-2.3.0', 'src'))
 		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'engine', 'protobuf'))
 		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'game', 'shared', 'csgo', 'protobuf'))
+	elif i == 'dota':
+		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'common', 'protobuf-2.4.1', 'src'))
+		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'engine', 'protobuf'))
+		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'game', 'shared', 'protobuf'))
+		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'game', 'shared', 'dota', 'protobuf'))
 
 	extension = AMBuild.AddJob(name)
 	binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
 	SM.PreSetupHL2Job(extension, binary, i)
 
-	if i == 'csgo':
+	if i in ['csgo', 'dota']:
 		if AMBuild.target['platform'] == 'linux':
 			link = os.path.join(os.path.join(AMBuild.outputFolder, extension.workFolder), 'libprotobuf.a')
 			target = os.path.join(os.path.join(AMBuild.cache[sdk['sdk']], 'lib', 'linux32', 'release'), 'libprotobuf.a')
@@ -98,7 +103,7 @@ for i in SM.sdkInfo:
 		'ConsoleDetours.cpp'
 		]
 	
-	if i == 'csgo':
+	if i in ['csgo', 'dota']:
 		files.append('smn_protobuf.cpp')
 	else:
 		files.append('smn_bitbuffer.cpp')
@@ -112,10 +117,20 @@ for i in SM.sdkInfo:
 			os.path.join('public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessage_helpers.cpp'),
 			]
 		binary.AddSourceFiles(AMBuild.cache[sdk['sdk']], files)
+	elif i == 'dota':
+		files = [
+			os.path.join('public', 'engine', 'protobuf', 'netmessages.pb.cc'),
+			os.path.join('public', 'game', 'shared', 'protobuf', 'ai_activity.pb.cc'),
+			os.path.join('public', 'game', 'shared', 'protobuf', 'usermessages.pb.cc'),
+			os.path.join('public', 'game', 'shared', 'dota', 'protobuf', 'dota_commonmessages.pb.cc'),
+			os.path.join('public', 'game', 'shared', 'dota', 'protobuf', 'dota_usermessages.pb.cc'),
+			os.path.join('public', 'game', 'shared', 'dota', 'protobuf', 'dota_usermessage_helpers.cpp'),
+			]
+		binary.AddSourceFiles(AMBuild.cache[sdk['sdk']], files)
 
 	SM.PostSetupHL2Job(extension, binary, i)
 	
-	if i == 'csgo':
+	if i in ['csgo', 'dota']:
 		if AMBuild.target['platform'] in ['linux', 'darwin']:
 			binary.AddObjectFiles(['libprotobuf.a'])
 	
