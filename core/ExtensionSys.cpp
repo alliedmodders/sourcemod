@@ -123,10 +123,10 @@ CLocalExtension::CLocalExtension(const char *filename)
 		"extensions/auto." GAMEFIX "/%s." PLATFORM_LIB_EXT,
 		filename);
 
-normal:
 	/* Try the "normal" version */
 	if (!g_LibSys.IsPathFile(path))
 	{
+		normal:
 		g_SourceMod.BuildPath(Path_SM,
 			path,
 			PLATFORM_MAX_PATH,
