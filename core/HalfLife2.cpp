@@ -1243,6 +1243,9 @@ static bool ResolveFuzzyMapName(const char *fuzzyName, char *outFullname, int si
 
 bool CHalfLife2::IsMapValid(const char *map)
 {
+	if (!map || !map[0])
+		return false;
+
 	bool ret = engine->IsMapValid(map);
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 	if (!ret)
