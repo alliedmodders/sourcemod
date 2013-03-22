@@ -61,20 +61,6 @@
 		}
 	}
 
-	/* CGlobalEntityList */
-	"#default"
-	{
-		"Signatures"
-		{
-			/* Functions in CGlobalEntityList */
-			"FindEntityByClassname"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x8B\x5D\x2A\x56\x57\x85\xC9\x74\x2A\x8B"
-			}
-		}
-	}
-
 	/* General GameRules */
 	"#default"
 	{
@@ -159,7 +145,7 @@
 			{
 				// EntityFactoryDictionary gets inlined on Windows in Dota 2. The pointer to the static factory becomes a global.
 				"library"	"server"
-				"windows"	"\xA1\x2A\x2A\x2A\x2A\x8B\x50\x04\x57\xB9\x2A\x2A\x2A\x2A\xFF\xD2\x33\xF6"
+				"windows"	"\x8B\x15\x2A\x2A\x2A\x2A\x8B\x2A\x2A\x57\xB9\x2A\x2A\x2A\x2A\xFF\xD0\xC7"
 				//"linux"		"@_Z23EntityFactoryDictionaryv"
 				//"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
@@ -169,7 +155,7 @@
 		{
 			"EntityFactoryOffset"
 			{
-				"windows" 	"1"
+				"windows" 	"2"
 			}
 		}
 	}
@@ -182,7 +168,7 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\x2A\x2A\x81\x2A\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x2A\x2A\x2A\x2A\x2A\x2A\x8B\x45\x2A\x53\x8B\x59\x2A\x56\x8B"
+				"windows"	"\x55\x8B\xEC\x83\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x8B\x45\x2A\x53\x8B\x58\x2A\x56\x57\xC7"
 			}
 		}
 	}
