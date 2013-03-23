@@ -1,0 +1,103 @@
+"Games"
+{
+	"#default"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"105"
+			}
+			"FireBullets"
+			{
+				"windows"	"118"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"122"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"70"
+			}
+			"PreThink"
+			{
+				"windows"	"363"
+			}
+			"PostThink"
+			{
+				"windows"	"364"
+			}
+			"SetTransmit"
+			{
+				"windows"	"22"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"17"
+			}
+			"Spawn"
+			{
+				"windows"	"24"
+			}
+			"StartTouch"
+			{
+				"windows"	"103"
+			}
+			"Think"
+			{
+				"windows"	"52"
+			}
+			"Touch"
+			{
+				"windows"	"104"
+			}
+			"TraceAttack"
+			{
+				"windows"	"68"
+			}
+			"Use"
+			{
+				"windows"	"102"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"163"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"297"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"291"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"294"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"292"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"295"
+			}
+		}
+	}
+	
+	"#default"
+	{
+		// CGlobalEntityList vtable, first function (OnAddEntity [+0]), near end, getting multiplied by 4
+		// mov     eax, [edi+20024h]
+		// mov     ecx, [eax+esi*4]
+		"Offsets"
+		{
+			"EntityListeners"
+			{
+				"windows"	"131108"
+			}
+		}
+	}
+}

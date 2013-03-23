@@ -36,6 +36,11 @@
 		"engine"	"csgo"
 	}
 	
+	"engine.dota.txt"
+	{
+		"engine"	"dota"
+	}
+	
 	"engine.ep2v.txt"
 	{
 		"engine"	"orangebox_valve"
