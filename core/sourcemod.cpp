@@ -34,11 +34,8 @@
 #include "sourcemm_api.h"
 #include "LibrarySys.h"
 #include <sh_string.h>
-#include "PluginSys.h"
-#include "ShareSys.h"
 #include "CoreConfig.h"
 #include "Logger.h"
-#include "ExtensionSys.h"
 #include "AdminCache.h"
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
@@ -263,11 +260,6 @@ void SourceModBase::StartSourceMod(bool late)
 	enginePatch = SH_GET_CALLCLASS(engine);
 	gamedllPatch = SH_GET_CALLCLASS(gamedll);
 
-	g_ShareSys.Initialize();
-
-	/* Make the global core identity */
-	g_pCoreIdent = g_ShareSys.CreateCoreIdentity();
-
 	InitLogicBridge();
 
 	/* Notify! */
@@ -296,7 +288,7 @@ void SourceModBase::StartSourceMod(bool late)
 	}
 
 	/* Add us now... */
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 
 	/* We're loaded! */
 	g_Loaded = true;
@@ -311,7 +303,7 @@ void SourceModBase::StartSourceMod(bool late)
 	const char *disabled = GetCoreConfigValue("DisableAutoUpdate");
 	if (disabled == NULL || strcasecmp(disabled, "yes") != 0)
 	{
-		g_Extensions.LoadAutoExtension("updater.ext." PLATFORM_LIB_EXT);
+		extsys->LoadAutoExtension("updater.ext." PLATFORM_LIB_EXT);
 	}
 }
 
@@ -383,7 +375,7 @@ void SourceModBase::LevelShutdown()
 
 	if (m_ExecPluginReload)
 	{
-		g_PluginSys.ReloadOrUnloadPlugins();
+		scripts->RefreshAll();
 		m_ExecPluginReload = false;
 	}
 }
@@ -406,7 +398,7 @@ void SourceModBase::DoGlobalPluginLoads()
 		"plugins");
 
 	/* Load any auto extensions */
-	g_Extensions.TryAutoload();
+	extsys->TryAutoload();
 
 	/* Fire the extensions ready message */
 	g_SMAPI->MetaFactory(SOURCEMOD_NOTICE_EXTENSIONS, NULL, NULL);
@@ -417,23 +409,10 @@ void SourceModBase::DoGlobalPluginLoads()
 	{
 		char path[PLATFORM_MAX_PATH];
 		UTIL_Format(path, sizeof(path), "%s.ext." PLATFORM_LIB_EXT, game_ext);
-		g_Extensions.LoadAutoExtension(path);
+		extsys->LoadAutoExtension(path);
 	}
 
-	/* Run the first pass */
-	g_PluginSys.LoadAll_FirstPass(config_path, plugins_path);
-
-	/* Mark any extensions as loaded */
-	g_Extensions.MarkAllLoaded();
-
-	/* No modules yet, it's safe to call this from here */
-	g_PluginSys.LoadAll_SecondPass();
-
-	/* Re-mark any extensions as loaded */
-	g_Extensions.MarkAllLoaded();
-
-	/* Call OnAllPluginsLoaded */
-	g_PluginSys.AllPluginsLoaded();
+	scripts->LoadAll(config_path, plugins_path);
 }
 
 size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, const char *format, ...)
@@ -484,10 +463,10 @@ void SourceModBase::CloseSourceMod()
 	LevelShutdown();
 
 	/* Unload plugins */
-	g_PluginSys.Shutdown();
+	scripts->Shutdown();
 
 	/* Unload extensions */
-	g_Extensions.Shutdown();
+	extsys->Shutdown();
 
 	SH_REMOVE_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SourceModBase::LevelInit), false);
 

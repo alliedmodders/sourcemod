@@ -32,10 +32,10 @@
 #include "sourcemod.h"
 #include "sourcemm_api.h"
 #include "sm_stringutil.h"
-#include "HandleSys.h"
 #include "HalfLife2.h"
 #include <KeyValues.h>
 #include "utlbuffer.h"
+#include "logic_bridge.h"
 
 HandleType_t g_KeyValueType;
 
@@ -52,11 +52,11 @@ class KeyValueNatives :
 public:
 	void OnSourceModAllInitialized()
 	{
-		g_KeyValueType = g_HandleSys.CreateType("KeyValues", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		g_KeyValueType = handlesys->CreateType("KeyValues", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 	}
 	void OnSourceModShutdown()
 	{
-		g_HandleSys.RemoveType(g_KeyValueType, g_pCoreIdent);
+		handlesys->RemoveType(g_KeyValueType, g_pCoreIdent);
 		g_KeyValueType = 0;
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
@@ -100,7 +100,7 @@ KeyValues *SourceModBase::ReadKeyValuesHandle(Handle_t hndl, HandleError *err, b
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		if (err)
@@ -128,7 +128,7 @@ static cell_t smn_KvSetString(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -153,7 +153,7 @@ static cell_t smn_KvSetNum(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -177,7 +177,7 @@ static cell_t smn_KvSetUInt64(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -205,7 +205,7 @@ static cell_t smn_KvSetFloat(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -229,7 +229,7 @@ static cell_t smn_KvSetColor(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -254,7 +254,7 @@ static cell_t smn_KvSetVector(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -283,7 +283,7 @@ static cell_t smn_KvGetString(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -310,7 +310,7 @@ static cell_t smn_KvGetNum(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -335,7 +335,7 @@ static cell_t smn_KvGetFloat(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -360,7 +360,7 @@ static cell_t smn_KvGetColor(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -394,7 +394,7 @@ static cell_t smn_KvGetUInt64(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -423,7 +423,7 @@ static cell_t smn_KvGetVector(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -501,7 +501,7 @@ static cell_t smn_CreateKeyValues(IPluginContext *pCtx, const cell_t *params)
 	pStk->pBase = new KeyValues(name, is_empty ? NULL : firstkey, (is_empty||(firstvalue[0]=='\0')) ? NULL : firstvalue);
 	pStk->pCurRoot.push(pStk->pBase);
 
-	return g_HandleSys.CreateHandle(g_KeyValueType, pStk, pCtx->GetIdentity(), g_pCoreIdent, NULL);
+	return handlesys->CreateHandle(g_KeyValueType, pStk, pCtx->GetIdentity(), g_pCoreIdent, NULL);
 }
 
 static cell_t smn_KvJumpToKey(IPluginContext *pCtx, const cell_t *params)
@@ -515,7 +515,7 @@ static cell_t smn_KvJumpToKey(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -544,7 +544,7 @@ static cell_t smn_KvJumpToKeySymbol(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -571,7 +571,7 @@ static cell_t smn_KvGotoFirstSubKey(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -605,7 +605,7 @@ static cell_t smn_KvGotoNextKey(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -638,7 +638,7 @@ static cell_t smn_KvGoBack(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -663,7 +663,7 @@ static cell_t smn_KvRewind(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -687,7 +687,7 @@ static cell_t smn_KvGetSectionName(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -715,7 +715,7 @@ static cell_t smn_KvSetSectionName(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -740,7 +740,7 @@ static cell_t smn_KvGetDataType(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -762,7 +762,7 @@ static cell_t smn_KeyValuesToFile(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -785,7 +785,7 @@ static cell_t smn_FileToKeyValues(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -807,7 +807,7 @@ static cell_t smn_KvSetEscapeSequences(IPluginContext *pCtx, const cell_t *param
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -828,7 +828,7 @@ static cell_t smn_KvNodesInStack(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -847,7 +847,7 @@ static cell_t smn_KvDeleteThis(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -901,7 +901,7 @@ static cell_t smn_KvDeleteKey(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -938,7 +938,7 @@ static cell_t smn_KvSavePosition(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -966,12 +966,12 @@ static cell_t smn_CopySubkeys(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl_copied, g_KeyValueType, &sec, (void **)&pStk_copied))
+	if ((herr=handlesys->ReadHandle(hndl_copied, g_KeyValueType, &sec, (void **)&pStk_copied))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl_copied, herr);
 	}
-	if ((herr=g_HandleSys.ReadHandle(hndl_parent, g_KeyValueType, &sec, (void **)&pStk_parent))
+	if ((herr=handlesys->ReadHandle(hndl_parent, g_KeyValueType, &sec, (void **)&pStk_parent))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl_parent, herr);
@@ -994,7 +994,7 @@ static cell_t smn_GetNameSymbol(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -1028,7 +1028,7 @@ static cell_t smn_FindKeyById(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -1056,7 +1056,7 @@ static cell_t smn_KvGetSectionSymbol(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);

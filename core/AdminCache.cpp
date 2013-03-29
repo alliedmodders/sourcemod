@@ -33,7 +33,6 @@
 #include <assert.h>
 #include <ITextParsers.h>
 #include "AdminCache.h"
-#include "ShareSys.h"
 #include "ForwardSys.h"
 #include "PlayerManager.h"
 #include "ConCmdManager.h"
@@ -42,6 +41,7 @@
 #include "sm_stringutil.h"
 #include "sourcemm_api.h"
 #include "sm_srvcmds.h"
+#include "logic_bridge.h"
 
 #define LEVEL_STATE_NONE		0
 #define LEVEL_STATE_LEVELS		1
@@ -294,7 +294,7 @@ void AdminCache::OnSourceModStartup(bool late)
 void AdminCache::OnSourceModAllInitialized()
 {
 	m_pCacheFwd = g_Forwards.CreateForward("OnRebuildAdminCache", ET_Ignore, 1, NULL, Param_Cell);
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 }
 
 void AdminCache::OnSourceModLevelChange(const char *mapName)

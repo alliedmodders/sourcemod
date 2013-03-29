@@ -29,20 +29,27 @@
  * Version: $Id$
  */
 
-#include <sp_vm_api.h>
-#include <IHandleSys.h>
-#include <IShareSys.h>
-
 #ifndef _INCLUDE_SOURCEMOD_INTERCOM_H_
 #define _INCLUDE_SOURCEMOD_INTERCOM_H_
 
+#include <sp_vm_api.h>
+#include <IHandleSys.h>
+#include <IShareSys.h>
+#include <IPluginSys.h>
+#include <sh_string.h>
+#include <sp_vm_api.h>
+#include <sh_vector.h>
+#include <IExtensionSys.h>
+
 using namespace SourceMod;
+using namespace SourcePawn;
+using namespace SourceHook;
 
 /**
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 18)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 19)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -75,6 +82,12 @@ namespace SourceMod
 
 class IVEngineServer;
 class ConVar;
+class SMGlobalClass;
+
+namespace SourceMod
+{
+	class IChangeableForward;
+}
 
 struct ServerGlobals
 {
@@ -83,17 +96,79 @@ struct ServerGlobals
 	float *frametime;
 };
 
+struct AutoConfig
+{
+	SourceHook::String autocfg;
+	SourceHook::String folder;
+	bool create;
+};
+
+enum LibraryAction
+{
+	LibraryAction_Removed,
+	LibraryAction_Added
+};
+
+class CNativeOwner;
+
+class SMPlugin : public IPlugin
+{
+public:
+	virtual size_t GetConfigCount() = 0;
+	virtual AutoConfig *GetConfig(size_t i) = 0;
+	virtual void AddLibrary(const char *name) = 0;
+	virtual void AddConfig(bool create, const char *cfg, const char *folder) = 0;
+	virtual void SetErrorState(PluginStatus status, const char *fmt, ...) = 0;
+};
+
+class IScriptManager
+{
+public:
+	virtual void LoadAll(const char *config_path, const char *plugins_path) = 0;
+	virtual void RefreshAll() = 0;
+	virtual void Shutdown() = 0;
+	virtual IdentityToken_t *GetIdentity() = 0;
+	virtual void SyncMaxClients(int maxClients) = 0;
+	virtual void AddPluginsListener(IPluginsListener *listener) = 0;
+	virtual void RemovePluginsListener(IPluginsListener *listener) = 0;
+	virtual IPluginIterator *GetPluginIterator() = 0;
+	virtual void OnLibraryAction(const char *name, LibraryAction action) = 0;
+	virtual bool LibraryExists(const char *name) = 0;
+	virtual SMPlugin *FindPluginByOrder(unsigned num) = 0;
+	virtual SMPlugin *FindPluginByIdentity(IdentityToken_t *ident) = 0;
+	virtual SMPlugin *FindPluginByContext(IPluginContext *ctx) = 0;
+	virtual SMPlugin *FindPluginByContext(sp_context_t *ctx) = 0;
+	virtual SMPlugin *FindPluginByConsoleArg(const char *text) = 0;
+	virtual SMPlugin *FindPluginByHandle(Handle_t hndl, HandleError *errp) = 0;
+	virtual bool UnloadPlugin(IPlugin *plugin) = 0;
+	virtual void ListPlugins(CVector<SMPlugin *> *plugins) = 0;
+	virtual void AddFunctionsToForward(const char *name, IChangeableForward *fwd) = 0;
+};
+
+class IExtensionSys : public IExtensionManager
+{
+public:
+	virtual IExtension *LoadAutoExtension(const char *name) = 0;
+	virtual void TryAutoload() = 0;
+	virtual void Shutdown() = 0;
+	virtual IExtension *FindExtensionByFile(const char *name) = 0;
+	virtual bool LibraryExists(const char *name) = 0;
+	virtual void CallOnCoreMapStart(edict_t *edictList, int edictCount, int maxClients) = 0;
+	virtual IExtension *GetExtensionFromIdent(IdentityToken_t *token) = 0;
+	virtual void BindChildPlugin(IExtension *ext, SMPlugin *plugin) = 0;
+	virtual void AddRawDependency(IExtension *myself, IdentityToken_t *token, void *iface) = 0;
+	virtual void ListExtensions(CVector<IExtension *> *list) = 0;
+};
+
+class CCommand;
+
 struct sm_core_t
 {
 	/* Objects */
-	IHandleSys 		*handlesys;
-	IdentityToken_t *core_ident;
 	ISourceMod		*sm;
 	ILibrarySys		*libsys;
 	IVEngineServer	*engine;
-	IShareSys		*sharesys;
 	IRootConsole	*rootmenu;
-	IPluginManager	*pluginsys;
 	IForwardManager	*forwardsys;
 	ITimerSystem    *timersys;
 	IPlayerManager  *playerhelpers;
@@ -102,11 +177,11 @@ struct sm_core_t
 	ISourcePawnEngine **spe1;
 	ISourcePawnEngine2 **spe2;
 	/* Functions */
-	void			(*AddNatives)(sp_nativeinfo_t* nlist);
 	ConVar *		(*FindConVar)(const char*);
 	unsigned int	(*strncopy)(char*, const char*, size_t);
 	char *			(*TrimWhitespace)(char *, size_t &);
 	void			(*LogError)(const char*, ...);
+	void			(*LogFatal)(const char*, ...);
 	void			(*Log)(const char*, ...);
 	void			(*LogToFile)(FILE *fp, const char*, ...);
 	void			(*LogToGame)(const char *message);
@@ -122,6 +197,15 @@ struct sm_core_t
 	const char *    (*GetSourceEngineName)();
 	bool            (*SymbolsAreHidden)();
 	const char *	(*GetCoreConfigValue)(const char*);
+	bool			(*IsMapLoading)();
+	bool			(*IsMapRunning)();
+	int				(*Argc)(const CCommand &args);
+	const char *	(*Arg)(const CCommand &args, int arg);
+	int				(*LoadMMSPlugin)(const char *file, bool *ok, char *error, size_t maxlength);
+	void			(*UnloadMMSPlugin)(int id);
+	void			(*DoGlobalPluginLoads)();
+	bool			(*AreConfigsExecuted)();
+	void			(*ExecuteConfigs)(IPluginContext *ctx);
 	/* Data */
 	ServerGlobals   *serverGlobals;
 	void *          serverFactory;
@@ -145,6 +229,14 @@ struct sm_logic_t
 	bool			(*OnLogPrint)(const char *msg);	// true to supercede
 	IDebugListener   *debugger;
 	void			(*GenerateError)(IPluginContext *, cell_t, int, const char *, ...);
+	void			(*AddNatives)(sp_nativeinfo_t *natives);
+	void			(*DumpHandles)(void (*dumpfn)(const char *fmt, ...));
+	IScriptManager	*scripts;
+	IShareSys		*sharesys;
+	IExtensionSys	*extsys;
+	IHandleSys		*handlesys;
+	IdentityToken_t *core_ident;
+	float			sentinel;
 };
 
 typedef void (*LogicInitFunction)(const sm_core_t *core, sm_logic_t *logic);
@@ -152,4 +244,3 @@ typedef LogicInitFunction (*LogicLoadFunction)(uint32_t magic);
 typedef ITextParsers *(*GetITextParsers)();
 
 #endif /* _INCLUDE_SOURCEMOD_INTERCOM_H_ */
-

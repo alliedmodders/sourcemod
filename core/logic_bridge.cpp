@@ -33,14 +33,11 @@
 #include "sourcemod.h"
 #include "sourcemm_api.h"
 #include "sm_globals.h"
-#include "NativeOwner.h"
 #include "sm_autonatives.h"
 #include "logic/intercom.h"
 #include "LibrarySys.h"
-#include "HandleSys.h"
 #include "sm_stringutil.h"
 #include "Logger.h"
-#include "ShareSys.h"
 #include "sm_srvcmds.h"
 #include "ForwardSys.h"
 #include "TimerSys.h"
@@ -49,6 +46,15 @@
 #include "AdminCache.h"
 #include "HalfLife2.h"
 #include "CoreConfig.h"
+#if SOURCE_ENGINE >= SE_ALIENSWARM
+#include "convar_sm_swarm.h"
+#elif SOURCE_ENGINE >= SE_LEFT4DEAD
+#include "convar_sm_l4d.h"
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#include "convar_sm_ob.h"
+#else
+#include "convar_sm.h"
+#endif
 
 #if defined _WIN32
 	#define MATCHMAKINGDS_SUFFIX	""
@@ -72,13 +78,17 @@ IThreader *g_pThreader;
 ITextParsers *textparsers;
 sm_logic_t logicore;
 ITranslator *translator;
+IScriptManager *scripts;
+IShareSys *sharesys;
+IExtensionSys *extsys;
+IHandleSys *handlesys;
 
 class VEngineServer_Logic : public IVEngineServer_Logic
 {
 public:
 	virtual bool IsMapValid(const char *map)
 	{
-		return engine->IsMapValid(map);
+		return !!engine->IsMapValid(map);
 	}
 
 	virtual void ServerCommand(const char *cmd)
@@ -88,11 +98,6 @@ public:
 };
 
 static VEngineServer_Logic logic_engine;
-
-static void add_natives(sp_nativeinfo_t *natives)
-{
-	g_pCoreNatives->AddNatives(natives);
-}
 
 static ConVar *find_convar(const char *name)
 {
@@ -105,6 +110,15 @@ static void log_error(const char *fmt, ...)
 
 	va_start(ap, fmt);
 	g_Logger.LogErrorEx(fmt, ap);
+	va_end(ap);
+}
+
+static void log_fatal(const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	g_Logger.LogFatalEx(fmt, ap);
 	va_end(ap);
 }
 
@@ -206,21 +220,78 @@ static bool symbols_are_hidden()
 static const char* get_core_config_value(const char* key)
 {
 	return g_CoreConfig.GetCoreConfigValue(key);
-}	
+}
+
+static bool is_map_loading()
+{
+	return g_SourceMod.IsMapLoading();
+}
+
+static bool is_map_running()
+{
+	return g_SourceMod.IsMapRunning();
+}
+
+int read_cmd_argc(const CCommand &args)
+{
+	return args.ArgC();
+}
+
+static const char *read_cmd_arg(const CCommand &args, int arg)
+{
+	return args.Arg(arg);
+}
+
+static int load_mms_plugin(const char *file, bool *ok, char *error, size_t maxlength)
+{
+	bool ignore_already;
+	PluginId id = g_pMMPlugins->Load(file, g_PLID, ignore_already, error, maxlength);
+
+	Pl_Status status;
+
+#ifndef METAMOD_PLAPI_VERSION
+	const char *file;
+	PluginId source;
+#endif
+
+	if (!id || (
+#ifndef METAMOD_PLAPI_VERSION
+		g_pMMPlugins->Query(id, file, status, source)
+#else
+		g_pMMPlugins->Query(id, NULL, &status, NULL)
+#endif
+		&& status < Pl_Paused))
+	{
+		*ok = false;
+	}
+	else
+	{
+		*ok = true;
+	}
+
+	return id;
+}
+
+static void unload_mms_plugin(int id)
+{
+	char ignore[255];
+	g_pMMPlugins->Unload(id, true, ignore, sizeof(ignore));
+}
+
+void do_global_plugin_loads()
+{
+	g_SourceMod.DoGlobalPluginLoads();
+}
 
 static ServerGlobals serverGlobals;
 
 static sm_core_t core_bridge =
 {
 	/* Objects */
-	&g_HandleSys,
-	NULL,
 	&g_SourceMod,
 	&g_LibSys,
 	reinterpret_cast<IVEngineServer*>(&logic_engine),
-	&g_ShareSys,
 	&g_RootMenu,
-	&g_PluginSys,
 	&g_Forwards,
 	&g_Timers,
 	&g_Players,
@@ -229,11 +300,11 @@ static sm_core_t core_bridge =
 	&g_pSourcePawn,
 	&g_pSourcePawn2,
 	/* Functions */
-	add_natives,
 	find_convar,
 	strncopy,
 	UTIL_TrimWhitespace,
 	log_error,
+	log_fatal,
 	log_message,
 	log_to_file,
 	log_to_game,
@@ -248,6 +319,15 @@ static sm_core_t core_bridge =
 	get_source_engine_name,
 	symbols_are_hidden,
 	get_core_config_value,
+	is_map_loading,
+	is_map_running,
+	read_cmd_argc,
+	read_cmd_arg,
+	load_mms_plugin,
+	unload_mms_plugin,
+	do_global_plugin_loads,
+	SM_AreConfigsExecuted,
+	SM_ExecuteForPlugin,
 	&serverGlobals
 };
 
@@ -257,7 +337,6 @@ void InitLogicBridge()
 	serverGlobals.frametime = &gpGlobals->frametime;
 	serverGlobals.interval_per_tick = &gpGlobals->interval_per_tick;
 
-	core_bridge.core_ident = g_pCoreIdent;
 	core_bridge.engineFactory = (void *)g_SMAPI->GetEngineFactory(false);
 	core_bridge.serverFactory = (void *)g_SMAPI->GetServerFactory(false);
 
@@ -286,6 +365,11 @@ void InitLogicBridge()
 	g_pThreader = logicore.threader;
 	g_pSourcePawn2->SetProfiler(logicore.profiler);
 	translator = logicore.translator;
+	scripts = logicore.scripts;
+	sharesys = logicore.sharesys;
+	extsys = logicore.extsys;
+	g_pCoreIdent = logicore.core_ident;
+	handlesys = logicore.handlesys;
 }
 
 bool StartLogicBridge(char *error, size_t maxlength)

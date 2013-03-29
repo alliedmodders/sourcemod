@@ -32,7 +32,6 @@
 #include "sm_globals.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include "HandleSys.h"
 #include "PlayerManager.h"
 #include "HalfLife2.h"
 

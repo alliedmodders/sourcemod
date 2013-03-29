@@ -54,7 +54,7 @@ unsigned int NativeInterface::GetInterfaceVersion()
 
 void NativeInterface::OnSourceModAllInitialized()
 {
-	g_ShareSys.AddInterface(NULL, &g_NInvoke);
+	sharesys->AddInterface(NULL, &g_NInvoke);
 }
 
 IPluginRuntime *NativeInterface::CreateRuntime(const char *name, size_t bytes)

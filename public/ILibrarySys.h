@@ -43,7 +43,7 @@
 namespace SourceMod
 {
 	#define SMINTERFACE_LIBRARYSYS_NAME		"ILibrarySys"
-	#define SMINTERFACE_LIBRARYSYS_VERSION	4
+	#define SMINTERFACE_LIBRARYSYS_VERSION	5
 
 	enum FileTimeType
 	{
@@ -223,6 +223,16 @@ namespace SourceMod
 		 * @return			True on success, false on failure.
 		 */
 		virtual bool FileTime(const char *path, FileTimeType type, time_t *pTime) =0;
+
+		/**
+		 * @brief Retrieve the file component of the given path.
+		 *
+		 * @param buffer	Output buffer.
+		 * @param maxlength	Length of the output buffer.
+		 * @param path		Path to search for a filename.
+		 * @return			Number of bytes written to buffer, not including the null terminator.
+		 */
+		virtual size_t GetFileFromPath(char *buffer, size_t maxlength, const char *path) =0;
 	};
 }
 

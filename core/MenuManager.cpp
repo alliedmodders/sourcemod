@@ -38,8 +38,6 @@
 #include "sourcemm_api.h"
 #include "PlayerManager.h"
 #include "MenuStyle_Valve.h"
-#include "ShareSys.h"
-#include "HandleSys.h"
 #include "sourcemm_api.h"
 #include "logic_bridge.h"
 
@@ -56,24 +54,24 @@ MenuManager::MenuManager()
 
 void MenuManager::OnSourceModAllInitialized()
 {
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 
 	HandleAccess access;
-	g_HandleSys.InitAccessDefaults(NULL, &access);
+	handlesys->InitAccessDefaults(NULL, &access);
 
 	/* Deny cloning to menus */
 	access.access[HandleAccess_Clone] = HANDLE_RESTRICT_OWNER|HANDLE_RESTRICT_IDENTITY;
-	m_MenuType = g_HandleSys.CreateType("IBaseMenu", this, 0, NULL, &access, g_pCoreIdent, NULL);
+	m_MenuType = handlesys->CreateType("IBaseMenu", this, 0, NULL, &access, g_pCoreIdent, NULL);
 
 	/* Also deny deletion to styles */
 	access.access[HandleAccess_Delete] = HANDLE_RESTRICT_OWNER|HANDLE_RESTRICT_IDENTITY;
-	m_StyleType = g_HandleSys.CreateType("IMenuStyle", this, 0, NULL, &access, g_pCoreIdent, NULL);
+	m_StyleType = handlesys->CreateType("IMenuStyle", this, 0, NULL, &access, g_pCoreIdent, NULL);
 }
 
 void MenuManager::OnSourceModAllShutdown()
 {
-	g_HandleSys.RemoveType(m_MenuType, g_pCoreIdent);
-	g_HandleSys.RemoveType(m_StyleType, g_pCoreIdent);
+	handlesys->RemoveType(m_MenuType, g_pCoreIdent);
+	handlesys->RemoveType(m_StyleType, g_pCoreIdent);
 }
 
 void MenuManager::OnHandleDestroy(HandleType_t type, void *object)
@@ -112,7 +110,7 @@ Handle_t MenuManager::CreateMenuHandle(IBaseMenu *menu, IdentityToken_t *pOwner)
 		return BAD_HANDLE;
 	}
 
-	return g_HandleSys.CreateHandle(m_MenuType, menu, pOwner, g_pCoreIdent, NULL);
+	return handlesys->CreateHandle(m_MenuType, menu, pOwner, g_pCoreIdent, NULL);
 }
 
 Handle_t MenuManager::CreateStyleHandle(IMenuStyle *style)
@@ -122,7 +120,7 @@ Handle_t MenuManager::CreateStyleHandle(IMenuStyle *style)
 		return BAD_HANDLE;
 	}
 
-	return g_HandleSys.CreateHandle(m_StyleType, style, g_pCoreIdent, g_pCoreIdent, NULL);
+	return handlesys->CreateHandle(m_StyleType, style, g_pCoreIdent, g_pCoreIdent, NULL);
 }
 
 HandleError MenuManager::ReadMenuHandle(Handle_t handle, IBaseMenu **menu)
@@ -132,7 +130,7 @@ HandleError MenuManager::ReadMenuHandle(Handle_t handle, IBaseMenu **menu)
 	sec.pIdentity = g_pCoreIdent;
 	sec.pOwner = NULL;
 
-	return g_HandleSys.ReadHandle(handle, m_MenuType, &sec, (void **)menu);
+	return handlesys->ReadHandle(handle, m_MenuType, &sec, (void **)menu);
 }
 
 HandleError MenuManager::ReadStyleHandle(Handle_t handle, IMenuStyle **style)
@@ -142,7 +140,7 @@ HandleError MenuManager::ReadStyleHandle(Handle_t handle, IMenuStyle **style)
 	sec.pIdentity = g_pCoreIdent;
 	sec.pOwner = g_pCoreIdent;
 
-	return g_HandleSys.ReadHandle(handle, m_StyleType, &sec, (void **)style);
+	return handlesys->ReadHandle(handle, m_StyleType, &sec, (void **)style);
 }
 
 bool MenuManager::SetDefaultStyle(IMenuStyle *style)

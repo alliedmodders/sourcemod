@@ -30,13 +30,11 @@
  */
 
 #include "HandleSys.h"
-#include "ShareSys.h"
-#include "PluginSys.h"
-#include "ExtensionSys.h"
-#include "Logger.h"
 #include <assert.h>
 #include <string.h>
-#include "sm_stringutil.h"
+#include "common_logic.h"
+#include "ShareSys.h"
+#include "ExtensionSys.h"
 
 HandleSystem g_HandleSys;
 
@@ -60,7 +58,6 @@ HandleSystem::HandleSystem()
 	m_Types = new QHandleType[HANDLESYS_TYPEARRAY_SIZE];
 	memset(m_Types, 0, sizeof(QHandleType) * HANDLESYS_TYPEARRAY_SIZE);
 
-	m_TypeLookup = sm_trie_create();
 	m_strtab = new BaseStringTable(512);
 
 	m_TypeTail = 0;
@@ -70,7 +67,6 @@ HandleSystem::~HandleSystem()
 {
 	delete [] m_Handles;
 	delete [] m_Types;
-	sm_trie_destroy(m_TypeLookup);
 	delete m_strtab;
 }
 
@@ -145,7 +141,7 @@ HandleType_t HandleSystem::CreateType(const char *name,
 
 	if (name && name[0] != '\0')
 	{
-		if (sm_trie_retrieve(m_TypeLookup, name, NULL))
+		if (m_TypeLookup.retrieve(name))
 		{
 			if (err)
 			{
@@ -213,7 +209,7 @@ HandleType_t HandleSystem::CreateType(const char *name,
 	if (name && name[0] != '\0')
 	{
 		pType->nameIdx = m_strtab->AddString(name);
-		sm_trie_insert(m_TypeLookup, name, (void *)pType);
+		m_TypeLookup.insert(name, pType);
 	} else {
 		pType->nameIdx = -1;
 	}
@@ -245,14 +241,14 @@ HandleType_t HandleSystem::CreateType(const char *name,
 
 bool HandleSystem::FindHandleType(const char *name, HandleType_t *type)
 {
-	QHandleType *_type;
+	QHandleType **typepp = m_TypeLookup.retrieve(name);
 
-	if (!sm_trie_retrieve(m_TypeLookup, name, (void **)&_type))
+	if (!typepp)
 	{
 		return false;
 	}
 
-	unsigned int offset = _type - m_Types;
+	unsigned int offset = *typepp - m_Types;
 
 	if (type)
 	{
@@ -945,7 +941,7 @@ bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t *ident)
 		const char *typeName;
 
 		typeName = m_strtab->GetString(pType->nameIdx);
-		sm_trie_delete(m_TypeLookup, typeName);
+		m_TypeLookup.remove(typeName);
 	}
 
 	return true;
@@ -980,12 +976,12 @@ bool HandleSystem::InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHa
 }
 
 #define HANDLE_LOG_VERY_BAD(message, ...) \
-	g_Logger.LogFatal(message, ##__VA_ARGS__); \
-	g_Logger.LogError(message, ##__VA_ARGS__);
+	smcore.LogFatal(message, ##__VA_ARGS__); \
+	smcore.LogError(message, ##__VA_ARGS__);
 
 bool HandleSystem::TryAndFreeSomeHandles()
 {
-	IPluginIterator *pl_iter = g_PluginSys.GetPluginIterator();
+	IPluginIterator *pl_iter = scripts->GetPluginIterator();
 	IPlugin *highest_owner = NULL;
 	unsigned int highest_handle_count = 0;
 
@@ -1034,7 +1030,7 @@ bool HandleSystem::TryAndFreeSomeHandles()
 
 	highest_owner->GetBaseContext()->ThrowNativeErrorEx(SP_ERROR_MEMACCESS, "Memory leak");
 
-	return g_PluginSys.UnloadPlugin(highest_owner);
+	return scripts->UnloadPlugin(highest_owner);
 }
 
 void HandleSystem::Dump(HANDLE_REPORTER rep)
@@ -1059,20 +1055,20 @@ void HandleSystem::Dump(HANDLE_REPORTER rep)
 			{
 				owner = "CORE";
 			}
-			else if (pOwner == g_PluginSys.GetIdentity())
+			else if (pOwner == scripts->GetIdentity())
 			{
 				owner = "PLUGINSYS";
 			}
 			else
 			{
-				CExtension *ext = g_Extensions.GetExtensionFromIdent(pOwner);
+				IExtension *ext = g_Extensions.GetExtensionFromIdent(pOwner);
 				if (ext)
 				{
 					owner = ext->GetFilename();
 				}
 				else
 				{
-					CPlugin *pPlugin = g_PluginSys.GetPluginFromIdentity(pOwner);
+					SMPlugin *pPlugin = scripts->FindPluginByIdentity(pOwner);
 					if (pPlugin)
 					{
 						owner = pPlugin->GetFilename();
@@ -1119,7 +1115,7 @@ void HandleSystem::Dump(HANDLE_REPORTER rep)
 		else
 		{
 			char buffer[32];
-			UTIL_Format(buffer, sizeof(buffer), "%d", size);
+			smcore.Format(buffer, sizeof(buffer), "%d", size);
 			rep("0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, buffer);
 			total_size += size;
 		}

@@ -35,6 +35,7 @@
 #include "sourcemm_api.h"
 #include "frame_hooks.h"
 #include "ConVarManager.h"
+#include "logic_bridge.h"
 
 #define TIMER_MIN_ACCURACY		0.1
 
@@ -180,7 +181,7 @@ TimerSystem::~TimerSystem()
 
 void TimerSystem::OnSourceModAllInitialized()
 {
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 	m_pOnGameFrame = g_Forwards.CreateForward("OnGameFrame", ET_Ignore, 0, NULL);
 	m_pOnMapTimeLeftChanged = g_Forwards.CreateForward("OnMapTimeLeftChanged", ET_Ignore, 0, NULL);
 }

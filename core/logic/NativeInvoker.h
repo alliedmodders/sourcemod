@@ -32,8 +32,12 @@
 #ifndef _INCLUDE_SOURCEMOD_NATIVE_INVOKER_H_
 #define _INCLUDE_SOURCEMOD_NATIVE_INVOKER_H_
 
-#include "sm_globals.h"
+#include <sp_vm_api.h>
 #include <INativeInvoker.h>
+#include "common_logic.h"
+
+using namespace SourceMod;
+using namespace SourcePawn;
 
 struct ParamInfo
 {

@@ -49,7 +49,7 @@
 #include "ConCmdManager.h"
 #include "HalfLife2.h"
 #include "ConCommandBaseIterator.h"
-#include "ShareSys.h"
+#include "logic_bridge.h"
 
 #if defined PLATFORM_POSIX
 # include <dlfcn.h>
@@ -576,7 +576,7 @@ void ConsoleDetours::OnSourceModAllInitialized()
 {
 	m_pForward = g_Forwards.CreateForwardEx("OnAnyCommand", ET_Hook, 3, NULL, Param_Cell,
 	                                        Param_String, Param_Cell);
-	g_ShareSys.AddCapabilityProvider(NULL, this, FEATURECAP_COMMANDLISTENER);
+	sharesys->AddCapabilityProvider(NULL, this, FEATURECAP_COMMANDLISTENER);
 }
 
 void ConsoleDetours::OnSourceModShutdown()

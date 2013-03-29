@@ -32,12 +32,14 @@
 #ifndef _INCLUDE_SOURCEMOD_CUSERMESSAGES_H_
 #define _INCLUDE_SOURCEMOD_CUSERMESSAGES_H_
 
-#include "ShareSys.h"
 #include <IUserMessages.h>
 #include "sourcemm_api.h"
 #include "sm_trie.h"
 #include "sm_stringutil.h"
 #include "CellRecipientFilter.h"
+#include "sm_globals.h"
+#include <sh_list.h>
+#include <sh_stack.h>
 
 using namespace SourceHook;
 using namespace SourceMod;

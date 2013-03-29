@@ -31,8 +31,8 @@
 
 #include "sm_globals.h"
 #include "sourcemm_api.h"
-#include "HandleSys.h"
 #include "EventManager.h"
+#include "logic_bridge.h"
 
 static cell_t sm_HookEvent(IPluginContext *pContext, const cell_t *params)
 {
@@ -113,7 +113,7 @@ static cell_t sm_CreateEvent(IPluginContext *pContext, const cell_t *params)
 
 	if (pInfo)
 	{
-		return g_HandleSys.CreateHandle(g_EventManager.GetHandleType(), pInfo, pContext->GetIdentity(), g_pCoreIdent, NULL);
+		return handlesys->CreateHandle(g_EventManager.GetHandleType(), pInfo, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	}
 
 	return BAD_HANDLE;
@@ -125,7 +125,7 @@ static cell_t sm_FireEvent(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	EventInfo *pInfo;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
@@ -141,7 +141,7 @@ static cell_t sm_FireEvent(IPluginContext *pContext, const cell_t *params)
 
 	/* Free handle on game event */
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
-	g_HandleSys.FreeHandle(hndl, &sec);
+	handlesys->FreeHandle(hndl, &sec);
 
 	return 1;
 }
@@ -152,7 +152,7 @@ static cell_t sm_CancelCreatedEvent(IPluginContext *pContext, const cell_t *para
 	HandleError err;
 	EventInfo *pInfo;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
@@ -168,7 +168,7 @@ static cell_t sm_CancelCreatedEvent(IPluginContext *pContext, const cell_t *para
 
 	/* Free handle on game event */
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
-	g_HandleSys.FreeHandle(hndl, &sec);
+	handlesys->FreeHandle(hndl, &sec);
 
 	return 1;
 }
@@ -179,7 +179,7 @@ static cell_t sm_GetEventName(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	EventInfo *pInfo;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
@@ -196,7 +196,7 @@ static cell_t sm_GetEventBool(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	EventInfo *pInfo;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
@@ -214,7 +214,7 @@ static cell_t sm_GetEventInt(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	EventInfo *pInfo;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
@@ -232,7 +232,7 @@ static cell_t sm_GetEventFloat(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	EventInfo *pInfo;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
@@ -252,7 +252,7 @@ static cell_t sm_GetEventString(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	EventInfo *pInfo;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
@@ -272,7 +272,7 @@ static cell_t sm_SetEventBool(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	EventInfo *pInfo;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
@@ -292,7 +292,7 @@ static cell_t sm_SetEventInt(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	EventInfo *pInfo;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
@@ -312,7 +312,7 @@ static cell_t sm_SetEventFloat(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	EventInfo *pInfo;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
@@ -333,7 +333,7 @@ static cell_t sm_SetEventString(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	EventInfo *pInfo;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
@@ -354,7 +354,7 @@ static cell_t sm_SetEventBroadcast(IPluginContext *pContext, const cell_t *param
 	HandleError err;
 	EventInfo *pInfo;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);

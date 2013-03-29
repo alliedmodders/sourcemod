@@ -32,10 +32,9 @@
 #include "sm_srvcmds.h"
 #include <sourcemod_version.h>
 #include "sm_stringutil.h"
-#include "HandleSys.h"
 #include "CoreConfig.h"
 #include "ConVarManager.h"
-#include "ShareSys.h"
+#include "logic_bridge.h"
 
 RootConsoleMenu g_RootMenu;
 
@@ -71,7 +70,7 @@ void RootConsoleMenu::OnSourceModStartup(bool late)
 
 void RootConsoleMenu::OnSourceModAllInitialized()
 {
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 }
 
 void RootConsoleMenu::OnSourceModShutdown()
@@ -406,14 +405,14 @@ CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle le
 		}
 
 		g_pHndlLog = fp;
-		g_HandleSys.Dump(write_handles_to_log);
+		logicore.DumpHandles(write_handles_to_log);
 		g_pHndlLog = NULL;
 
 		fclose(fp);
 	}
 	else
 	{
-		g_HandleSys.Dump(write_handles_to_game);
+		logicore.DumpHandles(write_handles_to_game);
 	}
 }
 

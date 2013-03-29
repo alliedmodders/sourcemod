@@ -73,13 +73,14 @@ ConCmdManager::~ConCmdManager()
 
 void ConCmdManager::OnSourceModAllInitialized()
 {
-	g_PluginSys.AddPluginsListener(this);
+	scripts->AddPluginsListener(this);
 	g_RootMenu.AddRootConsoleCommand("cmds", "List console commands", this);
 	SH_ADD_HOOK(IServerGameClients, SetCommandClient, serverClients, SH_MEMBER(this, &ConCmdManager::SetCommandClient), false);
 }
 
 void ConCmdManager::OnSourceModShutdown()
 {
+	scripts->RemovePluginsListener(this);
 	/* All commands should already be removed by the time we're done */
 	SH_REMOVE_HOOK(IServerGameClients, SetCommandClient, serverClients, SH_MEMBER(this, &ConCmdManager::SetCommandClient), false);
 	g_RootMenu.RemoveRootConsoleCommand("cmds", this);
@@ -109,7 +110,7 @@ void ConCmdManager::RemoveConCmds(List<CmdHook *> &cmdlist)
 	{
 		CmdHook *pHook = (*iter);
 		IPluginContext *pContext = pHook->pf->GetParentContext();
-		IPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+		IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 		CmdList *pList = NULL;
 		
 		//gaben
@@ -623,7 +624,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 
 	/* Now add to the plugin */
 	CmdList *pList;
-	IPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pFunction->GetParentContext()->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pFunction->GetParentContext()->GetContext());
 	if (!pPlugin->GetProperty("CommandList", (void **)&pList))
 	{
 		pList = new CmdList();
@@ -663,7 +664,7 @@ bool ConCmdManager::AddServerCommand(IPluginFunction *pFunction,
 
 	/* Add to the plugin */
 	CmdList *pList;
-	IPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pFunction->GetParentContext()->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pFunction->GetParentContext()->GetContext());
 	if (!pPlugin->GetProperty("CommandList", (void **)&pList))
 	{
 		pList = new CmdList();
@@ -915,7 +916,7 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 	{
 		const char *text = command.Arg(2);
 
-		CPlugin *pPlugin = g_PluginSys.FindPluginByConsoleArg(text);
+		IPlugin *pPlugin = scripts->FindPluginByConsoleArg(text);
 
 		if (!pPlugin)
 		{

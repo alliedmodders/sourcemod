@@ -30,14 +30,12 @@
  */
 
 #include "Database.h"
-#include "HandleSys.h"
-#include "ShareSys.h"
 #include "sourcemod.h"
 #include "sm_stringutil.h"
 #include "Logger.h"
-#include "ExtensionSys.h"
 #include <stdlib.h>
 #include <IThreader.h>
+#include "logic_bridge.h"
 
 #define DBPARSE_LEVEL_NONE		0
 #define DBPARSE_LEVEL_MAIN		1
@@ -55,14 +53,14 @@ void DBManager::OnSourceModAllInitialized()
 {
 	HandleAccess sec;
 
-	g_HandleSys.InitAccessDefaults(NULL, &sec);
+	handlesys->InitAccessDefaults(NULL, &sec);
 	sec.access[HandleAccess_Delete] |= HANDLE_RESTRICT_IDENTITY;
 	sec.access[HandleAccess_Clone] |= HANDLE_RESTRICT_IDENTITY;
 	
-	m_DriverType = g_HandleSys.CreateType("IDriver", this, 0, NULL, &sec, g_pCoreIdent, NULL);
-	m_DatabaseType = g_HandleSys.CreateType("IDatabase", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+	m_DriverType = handlesys->CreateType("IDriver", this, 0, NULL, &sec, g_pCoreIdent, NULL);
+	m_DatabaseType = handlesys->CreateType("IDatabase", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 
 	g_SourceMod.BuildPath(Path_SM, m_Filename, sizeof(m_Filename), "configs/databases.cfg");
 
@@ -70,7 +68,7 @@ void DBManager::OnSourceModAllInitialized()
 	m_pThinkLock = g_pThreader->MakeMutex();
 	m_pQueueLock = g_pThreader->MakeMutex();
 
-	g_PluginSys.AddPluginsListener(this);
+	scripts->AddPluginsListener(this);
 }
 
 void DBManager::OnSourceModLevelChange(const char *mapName)
@@ -98,12 +96,12 @@ void DBManager::OnSourceModLevelChange(const char *mapName)
 void DBManager::OnSourceModShutdown()
 {
 	KillWorkerThread();
-	g_PluginSys.RemovePluginsListener(this);
+	scripts->RemovePluginsListener(this);
 	m_pConfigLock->DestroyThis();
 	m_pThinkLock->DestroyThis();
 	m_pQueueLock->DestroyThis();
-	g_HandleSys.RemoveType(m_DatabaseType, g_pCoreIdent);
-	g_HandleSys.RemoveType(m_DriverType, g_pCoreIdent);
+	handlesys->RemoveType(m_DatabaseType, g_pCoreIdent);
+	handlesys->RemoveType(m_DriverType, g_pCoreIdent);
 	ClearConfigs();
 }
 
@@ -125,7 +123,7 @@ void DBManager::OnHandleDestroy(HandleType_t type, void *object)
 		return;
 	}
 
-	if (g_HandleSys.TypeCheck(type, m_DatabaseType))
+	if (handlesys->TypeCheck(type, m_DatabaseType))
 	{
 		IDatabase *pdb = (IDatabase *)object;
 		pdb->Close();
@@ -402,7 +400,7 @@ Handle_t DBManager::CreateHandle(DBHandleType dtype, void *ptr, IdentityToken_t 
 		return BAD_HANDLE;
 	}
 
-	return g_HandleSys.CreateHandle(type, ptr, pToken, g_pCoreIdent, NULL);
+	return handlesys->CreateHandle(type, ptr, pToken, g_pCoreIdent, NULL);
 }
 
 HandleError DBManager::ReadHandle(Handle_t hndl, DBHandleType dtype, void **ptr)
@@ -420,13 +418,13 @@ HandleError DBManager::ReadHandle(Handle_t hndl, DBHandleType dtype, void **ptr)
 
 	HandleSecurity sec(NULL, g_pCoreIdent);
 
-	return g_HandleSys.ReadHandle(hndl, type, &sec, ptr);
+	return handlesys->ReadHandle(hndl, type, &sec, ptr);
 }
 
 HandleError DBManager::ReleaseHandle(Handle_t hndl, DBHandleType type, IdentityToken_t *token)
 {
 	HandleSecurity sec(token, g_pCoreIdent);
-	return g_HandleSys.FreeHandle(hndl, &sec);
+	return handlesys->FreeHandle(hndl, &sec);
 }
 
 unsigned int DBManager::GetDriverCount()
@@ -485,7 +483,7 @@ IDBDriver *DBManager::FindOrLoadDriver(const char *name)
 	char filename[PLATFORM_MAX_PATH];
 	UTIL_Format(filename, sizeof(filename), "dbi.%s.ext", name);
 
-	IExtension *pExt = g_Extensions.LoadAutoExtension(filename);
+	IExtension *pExt = extsys->LoadAutoExtension(filename);
 	if (!pExt || !pExt->IsLoaded() || m_drivers.size() <= last_size)
 	{
 		return NULL;
@@ -729,6 +727,6 @@ const char *DBManager::GetDefaultDriverName()
 
 void DBManager::AddDependency(IExtension *myself, IDBDriver *driver)
 {
-	g_Extensions.AddRawDependency(myself, driver->GetIdentity(), driver);
+	extsys->AddRawDependency(myself, driver->GetIdentity(), driver);
 }
 

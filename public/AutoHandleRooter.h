@@ -32,7 +32,6 @@
 #ifndef _INCLUDE_SOURCEMOD_AUTO_HANDLE_ROOTER_H_
 #define _INCLUDE_SOURCEMOD_AUTO_HANDLE_ROOTER_H_
 
-#include "common_logic.h"
 #include <IHandleSys.h>
 
 class AutoHandleRooter

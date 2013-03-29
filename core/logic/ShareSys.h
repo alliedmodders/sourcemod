@@ -36,8 +36,7 @@
 #include <IHandleSys.h>
 #include <sh_list.h>
 #include <sm_trie_tpl.h>
-#include "sm_globals.h"
-#include "sourcemod.h"
+#include "common_logic.h"
 
 using namespace SourceHook;
 
@@ -62,8 +61,8 @@ struct IfaceInfo
 };
 
 class CNativeOwner;
-class CPlugin;
 struct NativeEntry;
+class CPlugin;
 
 struct ReplaceNative
 {

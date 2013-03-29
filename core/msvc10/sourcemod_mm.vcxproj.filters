@@ -69,9 +69,6 @@
     <ClCompile Include="..\EventManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\ExtensionSys.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ForwardSys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -79,9 +76,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\HalfLife2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\HandleSys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\LibrarySys.cpp">
@@ -108,22 +102,10 @@
     <ClCompile Include="..\MenuVoting.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\NativeInvoker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\NativeOwner.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\NextMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\PlayerManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\PluginSys.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShareSys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sm_autonatives.cpp">
@@ -166,9 +148,6 @@
       <Filter>Natives</Filter>
     </ClCompile>
     <ClCompile Include="..\smn_events.cpp">
-      <Filter>Natives</Filter>
-    </ClCompile>
-    <ClCompile Include="..\smn_fakenatives.cpp">
       <Filter>Natives</Filter>
     </ClCompile>
     <ClCompile Include="..\smn_halflife.cpp">
@@ -251,9 +230,6 @@
     <ClInclude Include="..\EventManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\ExtensionSys.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\ForwardSys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -261,9 +237,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\HalfLife2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\HandleSys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\LibrarySys.h">
@@ -290,22 +263,10 @@
     <ClInclude Include="..\MenuVoting.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\NativeInvoker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\NativeOwner.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\NextMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\PlayerManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\PluginSys.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShareSys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sm_autonatives.h">

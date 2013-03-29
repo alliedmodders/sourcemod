@@ -38,7 +38,7 @@
  */
 
 #include <sp_vm_types.h>
-
+#include <sp_vm_api.h>
 
 namespace SourceMod
 {
@@ -278,6 +278,19 @@ namespace SourceMod
 		virtual void DropCapabilityProvider(IExtension *myself,
 		                                    IFeatureProvider *provider,
 		                                    const char *name) =0;
+
+		/**
+		 * Tests for a feature.
+		 *
+		 * @param rt			Plugin to test.
+		 * @param type			Feature type.
+		 * @param name			Feature name.
+		 * @return				Feature status.
+		 */
+		virtual FeatureStatus TestFeature(SourcePawn::IPluginRuntime *rt,
+										  FeatureType type,
+										  const char *name) =0;
+
 	};
 }
 

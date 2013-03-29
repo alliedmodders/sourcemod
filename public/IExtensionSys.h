@@ -132,8 +132,10 @@ namespace SourceMod
 	 *
 	 * Note: This is bumped when IShareSys is changed, because IShareSys 
 	 * itself is not versioned.
+	 *
+	 * V6 - added TestFeature() to IShareSys.
 	 */
-	#define SMINTERFACE_EXTENSIONAPI_VERSION	5
+	#define SMINTERFACE_EXTENSIONAPI_VERSION	6
 
 	/**
 	 * @brief The interface an extension must expose.

@@ -31,6 +31,7 @@
 
 #include "UserMessages.h"
 #include "sm_stringutil.h"
+#include "logic_bridge.h"
 
 #if SOURCE_ENGINE == SE_DOTA
 #include <dota_usermessage_helpers.h>
@@ -91,7 +92,7 @@ void UserMessages::OnSourceModStartup(bool late)
 
 void UserMessages::OnSourceModAllInitialized()
 {
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 }
 
 void UserMessages::OnSourceModAllShutdown()

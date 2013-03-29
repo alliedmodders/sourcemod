@@ -30,11 +30,11 @@
  */
 
 #include "sm_globals.h"
-#include "HandleSys.h"
 #include "Database.h"
-#include "ExtensionSys.h"
-#include "PluginSys.h"
 #include "sm_stringutil.h"
+#include "logic_bridge.h"
+#include "KeyValues.h"
+#include "sourcemod.h"
 
 HandleType_t hStmtType;
 
@@ -55,22 +55,22 @@ public:
 		HandleAccess acc;
 
 		/* Disable cloning */
-		g_HandleSys.InitAccessDefaults(NULL, &acc);
+		handlesys->InitAccessDefaults(NULL, &acc);
 		acc.access[HandleAccess_Clone] = HANDLE_RESTRICT_OWNER|HANDLE_RESTRICT_IDENTITY;
 
 		TypeAccess tacc;
 
-		g_HandleSys.InitAccessDefaults(&tacc, NULL);
+		handlesys->InitAccessDefaults(&tacc, NULL);
 		tacc.ident = g_pCoreIdent;
 
-		hCombinedQueryType = g_HandleSys.CreateType("IQuery", this, 0, &tacc, &acc, g_pCoreIdent, NULL);
-		hStmtType = g_HandleSys.CreateType("IPreparedQuery", this, 0, &tacc, &acc, g_pCoreIdent, NULL);
+		hCombinedQueryType = handlesys->CreateType("IQuery", this, 0, &tacc, &acc, g_pCoreIdent, NULL);
+		hStmtType = handlesys->CreateType("IPreparedQuery", this, 0, &tacc, &acc, g_pCoreIdent, NULL);
 	}
 
 	virtual void OnSourceModShutdown()
 	{
-		g_HandleSys.RemoveType(hStmtType, g_pCoreIdent);
-		g_HandleSys.RemoveType(hCombinedQueryType, g_pCoreIdent);
+		handlesys->RemoveType(hStmtType, g_pCoreIdent);
+		handlesys->RemoveType(hCombinedQueryType, g_pCoreIdent);
 	}
 
 	virtual void OnHandleDestroy(HandleType_t type, void *object)
@@ -97,9 +97,9 @@ inline HandleError ReadQueryHndl(Handle_t hndl, IPluginContext *pContext, IQuery
 
 	HandleError ret;
 	
-	if ((ret = g_HandleSys.ReadHandle(hndl, hStmtType, &sec, (void **)query)) != HandleError_None)
+	if ((ret = handlesys->ReadHandle(hndl, hStmtType, &sec, (void **)query)) != HandleError_None)
 	{
-		ret = g_HandleSys.ReadHandle(hndl, hCombinedQueryType, &sec, (void **)&c);
+		ret = handlesys->ReadHandle(hndl, hCombinedQueryType, &sec, (void **)&c);
 		if (ret == HandleError_None)
 		{
 			*query = c->query;
@@ -115,7 +115,7 @@ inline HandleError ReadQueryAndDbHndl(Handle_t hndl, IPluginContext *pContext, I
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	HandleError ret = g_HandleSys.ReadHandle(hndl, hCombinedQueryType, &sec, (void **)&c);
+	HandleError ret = handlesys->ReadHandle(hndl, hCombinedQueryType, &sec, (void **)&c);
 	if (ret == HandleError_None)
 	{
 		*query = c->query;
@@ -130,7 +130,7 @@ inline HandleError ReadStmtHndl(Handle_t hndl, IPluginContext *pContext, IPrepar
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	return g_HandleSys.ReadHandle(hndl, hStmtType, &sec, (void **)query);
+	return handlesys->ReadHandle(hndl, hStmtType, &sec, (void **)query);
 }
 
 inline HandleError ReadDbOrStmtHndl(Handle_t hndl, IPluginContext *pContext, IDatabase **db, IPreparedQuery **query)
@@ -149,7 +149,7 @@ class TQueryOp : public IDBThreadOperation
 public:
 	TQueryOp(IDatabase *db, IPluginFunction *pf, const char *query, cell_t data) : 
 	  m_pDatabase(db), m_pFunction(pf), m_Query(query), m_Data(data),
-	  me(g_PluginSys.GetPluginByCtx(pf->GetParentContext()->GetContext())),
+	  me(scripts->FindPluginByContext(pf->GetParentContext()->GetContext())),
 	  m_pQuery(NULL)
 	{
 		/* We always increase the reference count because this is potentially
@@ -163,9 +163,9 @@ public:
 		 */
 		HandleSecurity sec(me->GetIdentity(), g_pCoreIdent);
 		HandleAccess access;
-		g_HandleSys.InitAccessDefaults(NULL, &access);
+		handlesys->InitAccessDefaults(NULL, &access);
 		access.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
-		m_MyHandle = g_HandleSys.CreateHandleEx(g_DBMan.GetDatabaseType(),
+		m_MyHandle = handlesys->CreateHandleEx(g_DBMan.GetDatabaseType(),
 			db,
 			&sec,
 			&access,
@@ -182,7 +182,7 @@ public:
 		if (m_MyHandle != BAD_HANDLE)
 		{
 			HandleSecurity sec(me->GetIdentity(), g_pCoreIdent);
-			g_HandleSys.FreeHandle(m_MyHandle, &sec);
+			handlesys->FreeHandle(m_MyHandle, &sec);
 		} else {
 			/* Otherwise, there is an open ref to the db */
 			m_pDatabase->Close();
@@ -219,7 +219,7 @@ public:
 		/* Create a Handle for our query */
 		HandleSecurity sec(me->GetIdentity(), g_pCoreIdent);
 		HandleAccess access;
-		g_HandleSys.InitAccessDefaults(NULL, &access);
+		handlesys->InitAccessDefaults(NULL, &access);
 		access.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
 
 		Handle_t qh = BAD_HANDLE;
@@ -230,7 +230,7 @@ public:
 			c->query = m_pQuery;
 			c->db = m_pDatabase;
 			
-			qh = g_HandleSys.CreateHandle(hCombinedQueryType, c, me->GetIdentity(), g_pCoreIdent, NULL);
+			qh = handlesys->CreateHandle(hCombinedQueryType, c, me->GetIdentity(), g_pCoreIdent, NULL);
 			if (qh != BAD_HANDLE)
 			{
 				m_pQuery = NULL;
@@ -248,7 +248,7 @@ public:
 
 		if (qh != BAD_HANDLE)
 		{
-			g_HandleSys.FreeHandle(qh, &sec);
+			handlesys->FreeHandle(qh, &sec);
 		}
 	}
 	void Destroy()
@@ -260,7 +260,7 @@ private:
 	IPluginFunction *m_pFunction;
 	String m_Query;
 	cell_t m_Data;
-	CPlugin *me;
+	IPlugin *me;
 	IQuery *m_pQuery;
 	char error[255];
 	Handle_t m_MyHandle;
@@ -277,7 +277,7 @@ public:
 		m_Data = data;
 		error[0] = '\0';
 		strncopy(dbname, _dbname, sizeof(dbname));
-		me = g_PluginSys.GetPluginByCtx(m_pFunction->GetParentContext()->GetContext());
+		me = scripts->FindPluginByContext(m_pFunction->GetParentContext()->GetContext());
 	}
 	IdentityToken_t *GetOwner()
 	{
@@ -336,7 +336,7 @@ public:
 		delete this;
 	}
 private:
-	CPlugin *me;
+	IPlugin *me;
 	IPluginFunction *m_pFunction;
 	IDBDriver *m_pDriver;
 	IDatabase *m_pDatabase;
@@ -369,10 +369,10 @@ static cell_t SQL_Connect(IPluginContext *pContext, const cell_t *params)
 	}
 
 	/* HACK! Add us to the dependency list */
-	CExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
+	IExtension *pExt = extsys->GetExtensionFromIdent(driver->GetIdentity());
 	if (pExt)
 	{
-		g_Extensions.BindChildPlugin(pExt, g_PluginSys.GetPluginByCtx(pContext->GetContext()));
+		extsys->BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
 	}
 
 	return hndl;
@@ -427,15 +427,15 @@ static cell_t SQL_TConnect(IPluginContext *pContext, const cell_t *params)
 	}
 
 	/* HACK! Add us to the dependency list */
-	CExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
+	IExtension *pExt = extsys->GetExtensionFromIdent(driver->GetIdentity());
 	if (pExt)
 	{
-		g_Extensions.BindChildPlugin(pExt, g_PluginSys.GetPluginByCtx(pContext->GetContext()));
+		extsys->BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
 	}
 
 	/* Finally, add to the thread if we can */
 	TConnectOp *op = new TConnectOp(pf, driver, conf, params[3]);
-	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 	if (pPlugin->GetProperty("DisallowDBThreads", NULL)
 		|| !g_DBMan.AddToThreadQueue(op, PrioQueue_High))
 	{
@@ -498,10 +498,10 @@ static cell_t SQL_ConnectEx(IPluginContext *pContext, const cell_t *params)
 		}
 
 		/* HACK! Add us to the dependency list */
-		CExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
+		IExtension *pExt = extsys->GetExtensionFromIdent(driver->GetIdentity());
 		if (pExt)
 		{
-			g_Extensions.BindChildPlugin(pExt, g_PluginSys.GetPluginByCtx(pContext->GetContext()));
+			extsys->BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
 		}
 
 		return hndl;
@@ -741,7 +741,7 @@ static cell_t SQL_Query(IPluginContext *pContext, const cell_t *params)
 	CombinedQuery *c = new CombinedQuery;
 	c->query = qr;
 	c->db = db;
-	Handle_t hndl = g_HandleSys.CreateHandle(hCombinedQueryType, c, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	Handle_t hndl = handlesys->CreateHandle(hCombinedQueryType, c, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	if (hndl == BAD_HANDLE)
 	{
 		qr->Destroy();
@@ -786,7 +786,7 @@ static cell_t SQL_TQuery(IPluginContext *pContext, const cell_t *params)
 		level = PrioQueue_Low;
 	}
 
-	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 
 	TQueryOp *op = new TQueryOp(db, pf, query, data);
 	if (pPlugin->GetProperty("DisallowDBThreads", NULL)
@@ -856,7 +856,7 @@ static cell_t SQL_PrepareQuery(IPluginContext *pContext, const cell_t *params)
 		return BAD_HANDLE;
 	}
 
-	Handle_t hndl = g_HandleSys.CreateHandle(hStmtType, qr, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	Handle_t hndl = handlesys->CreateHandle(hStmtType, qr, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	if (hndl == BAD_HANDLE)
 	{
 		qr->Destroy();
@@ -1398,10 +1398,10 @@ static cell_t SQL_ConnectCustom(IPluginContext *pContext, const cell_t *params)
 	}
 
 	/* HACK! Add us to the dependency list */
-	CExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
+	IExtension *pExt = extsys->GetExtensionFromIdent(driver->GetIdentity());
 	if (pExt)
 	{
-		g_Extensions.BindChildPlugin(pExt, g_PluginSys.GetPluginByCtx(pContext->GetContext()));
+		extsys->BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
 	}
 
 	return hndl;

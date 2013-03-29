@@ -42,6 +42,9 @@ struct sm_logic_t;
 extern sm_logic_t logicore;
 extern ITranslator *translator;
 extern IGameConfig *g_pGameConf;
+extern IScriptManager *scripts;
+extern IShareSys *sharesys;
+extern IExtensionSys *extsys;
+extern IHandleSys *handlesys;
 
 #endif /* _INCLUDE_SOURCEMOD_LOGIC_BRIDGE_H_ */
-

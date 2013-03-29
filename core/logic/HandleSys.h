@@ -34,10 +34,9 @@
 
 #include <IHandleSys.h>
 #include <stdio.h>
-#include "sm_globals.h"
-#include "sm_trie.h"
-#include "sourcemod.h"
+#include <sm_trie_tpl.h>
 #include "sm_memtable.h"
+#include "common_logic.h"
 
 #define HANDLESYS_MAX_HANDLES		(1<<14)
 #define HANDLESYS_MAX_TYPES			(1<<9)
@@ -217,7 +216,7 @@ protected:
 private:
 	QHandle *m_Handles;
 	QHandleType *m_Types;
-	Trie *m_TypeLookup;
+	KTrie<QHandleType *> m_TypeLookup;
 	unsigned int m_TypeTail;
 	unsigned int m_FreeTypes;
 	unsigned int m_HandleTail;

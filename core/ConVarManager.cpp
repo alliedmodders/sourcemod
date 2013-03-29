@@ -29,13 +29,12 @@
 
 #include "ConVarManager.h"
 #include "HalfLife2.h"
-#include "PluginSys.h"
 #include "ForwardSys.h"
-#include "HandleSys.h"
 #include "sm_srvcmds.h"
 #include "sm_stringutil.h"
 #include <sh_vector.h>
 #include <sm_trie_tpl.h>
+#include "logic_bridge.h"
 
 ConVarManager g_ConVarManager;
 
@@ -106,7 +105,7 @@ void ConVarManager::OnSourceModStartup(bool late)
 	sec.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY | HANDLE_RESTRICT_OWNER;
 
 	/* Create the 'ConVar' handle type */
-	m_ConVarType = g_HandleSys.CreateType("ConVar", this, 0, NULL, &sec, g_pCoreIdent, NULL);
+	m_ConVarType = handlesys->CreateType("ConVar", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 }
 
 void ConVarManager::OnSourceModAllInitialized()
@@ -128,7 +127,7 @@ void ConVarManager::OnSourceModAllInitialized()
 	SH_ADD_HOOK(ICvar, CallGlobalChangeCallback, icvar, SH_STATIC(OnConVarChanged), false);
 #endif
 
-	g_PluginSys.AddPluginsListener(this);
+	scripts->AddPluginsListener(this);
 
 	/* Add the 'convars' option to the 'sm' console command */
 	g_RootMenu.AddRootConsoleCommand("cvars", "View convars created by a plugin", this);
@@ -146,7 +145,7 @@ void ConVarManager::OnSourceModShutdown()
 
 		iter = m_ConVars.erase(iter);
 
-		g_HandleSys.FreeHandle(pInfo->handle, &sec);
+		handlesys->FreeHandle(pInfo->handle, &sec);
 		if (pInfo->pChangeForward != NULL)
 		{
 			g_Forwards.ReleaseForward(pInfo->pChangeForward);
@@ -200,10 +199,10 @@ void ConVarManager::OnSourceModShutdown()
 	/* Remove the 'convars' option from the 'sm' console command */
 	g_RootMenu.RemoveRootConsoleCommand("cvars", this);
 
-	g_PluginSys.RemovePluginsListener(this);
+	scripts->RemovePluginsListener(this);
 
 	/* Remove the 'ConVar' handle type */
-	g_HandleSys.RemoveType(m_ConVarType, g_pCoreIdent);
+	handlesys->RemoveType(m_ConVarType, g_pCoreIdent);
 }
 
 /**
@@ -269,7 +268,7 @@ void ConVarManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *na
 	convar_cache.remove(name);
 
 	/* Now make sure no plugins are referring to this pointer */
-	IPluginIterator *pl_iter = g_PluginSys.GetPluginIterator();
+	IPluginIterator *pl_iter = scripts->GetPluginIterator();
 	while (pl_iter->MorePlugins())
 	{
 		IPlugin *pl = pl_iter->GetPlugin();
@@ -285,7 +284,7 @@ void ConVarManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *na
 	}
 
 	/* Free resources */
-	g_HandleSys.FreeHandle(pInfo->handle, &sec);
+	handlesys->FreeHandle(pInfo->handle, &sec);
 	delete pInfo;
 }
 
@@ -337,7 +336,7 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 		}
 		
 		/* Get plugin object */
-		CPlugin *plugin = g_PluginSys.FindPluginByConsoleArg(arg);
+		IPlugin *plugin = scripts->FindPluginByConsoleArg(arg);
 
 		if (!plugin)
 		{
@@ -418,7 +417,7 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 			pInfo->pVar = pConVar;
 
 			/* If we don't, then create a new handle from the convar */
-			hndl = g_HandleSys.CreateHandle(m_ConVarType, pInfo, NULL, g_pCoreIdent, NULL);
+			hndl = handlesys->CreateHandle(m_ConVarType, pInfo, NULL, g_pCoreIdent, NULL);
 			if (hndl == BAD_HANDLE)
 			{
 				delete pInfo;
@@ -449,7 +448,7 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 	pInfo->pChangeForward = NULL;
 
 	/* Create a handle from the new convar */
-	hndl = g_HandleSys.CreateHandle(m_ConVarType, pInfo, NULL, g_pCoreIdent, NULL);
+	hndl = handlesys->CreateHandle(m_ConVarType, pInfo, NULL, g_pCoreIdent, NULL);
 	if (hndl == BAD_HANDLE)
 	{
 		delete pInfo;
@@ -500,7 +499,7 @@ Handle_t ConVarManager::FindConVar(const char *name)
 	pInfo->pVar = pConVar;
 
 	/* If we don't have a handle, then create a new one */
-	hndl = g_HandleSys.CreateHandle(m_ConVarType, pInfo, NULL, g_pCoreIdent, NULL);
+	hndl = handlesys->CreateHandle(m_ConVarType, pInfo, NULL, g_pCoreIdent, NULL);
 	if (hndl == BAD_HANDLE)
 	{
 		delete pInfo;
@@ -639,7 +638,7 @@ void ConVarManager::AddConVarToPluginList(IPluginContext *pContext, const ConVar
 	bool inserted = false;
 	const char *orig = pConVar->GetName();
 
-	IPlugin *plugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
+	IPlugin *plugin = scripts->FindPluginByContext(pContext->GetContext());
 
 	/* Check plugin for an existing convar list */
 	if (!plugin->GetProperty("ConVarList", (void **)&pConVarList))
@@ -772,7 +771,7 @@ HandleError ConVarManager::ReadConVarHandle(Handle_t hndl, ConVar **pVar)
 	ConVarInfo *pInfo;
 	HandleError error;
 	
-	if ((error = g_HandleSys.ReadHandle(hndl, m_ConVarType, NULL, (void **)&pInfo)) != HandleError_None)
+	if ((error = handlesys->ReadHandle(hndl, m_ConVarType, NULL, (void **)&pInfo)) != HandleError_None)
 	{
 		return error;
 	}

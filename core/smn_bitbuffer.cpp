@@ -34,11 +34,12 @@
 #ifndef USE_PROTOBUF_USERMESSAGES
 
 #include "sourcemod.h"
-#include "HandleSys.h"
 #include <bitbuf.h>
 #include <vector.h>
 #include <HalfLife2.h>
 #include "smn_usermsgs.h"
+#include "sourcemod.h"
+#include "logic_bridge.h"
 
 static cell_t smn_BfWriteBool(IPluginContext *pCtx, const cell_t *params)
 {
@@ -50,7 +51,7 @@ static cell_t smn_BfWriteBool(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -71,7 +72,7 @@ static cell_t smn_BfWriteByte(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -92,7 +93,7 @@ static cell_t smn_BfWriteChar(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -113,7 +114,7 @@ static cell_t smn_BfWriteShort(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -134,7 +135,7 @@ static cell_t smn_BfWriteWord(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -155,7 +156,7 @@ static cell_t smn_BfWriteNum(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -176,7 +177,7 @@ static cell_t smn_BfWriteFloat(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -198,7 +199,7 @@ static cell_t smn_BfWriteString(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -226,7 +227,7 @@ static cell_t smn_BfWriteEntity(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -254,7 +255,7 @@ static cell_t smn_BfWriteAngle(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -275,7 +276,7 @@ static cell_t smn_BfWriteCoord(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -296,7 +297,7 @@ static cell_t smn_BfWriteVecCoord(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -320,7 +321,7 @@ static cell_t smn_BfWriteVecNormal(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -344,7 +345,7 @@ static cell_t smn_BfWriteAngles(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_WrBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -368,7 +369,7 @@ static cell_t smn_BfReadBool(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -387,7 +388,7 @@ static cell_t smn_BfReadByte(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -406,7 +407,7 @@ static cell_t smn_BfReadChar(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -425,7 +426,7 @@ static cell_t smn_BfReadShort(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -444,7 +445,7 @@ static cell_t smn_BfReadWord(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -463,7 +464,7 @@ static cell_t smn_BfReadNum(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -482,7 +483,7 @@ static cell_t smn_BfReadFloat(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -503,7 +504,7 @@ static cell_t smn_BfReadString(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -530,7 +531,7 @@ static cell_t smn_BfReadEntity(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -551,7 +552,7 @@ static cell_t smn_BfReadAngle(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -570,7 +571,7 @@ static cell_t smn_BfReadCoord(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -589,7 +590,7 @@ static cell_t smn_BfReadVecCoord(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -618,7 +619,7 @@ static cell_t smn_BfReadVecNormal(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -647,7 +648,7 @@ static cell_t smn_BfReadAngles(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
@@ -676,7 +677,7 @@ static cell_t smn_BfGetNumBytesLeft(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+	if ((herr=handlesys->ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);

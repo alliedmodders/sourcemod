@@ -30,11 +30,11 @@
  */
 
 #include "ShareSys.h"
-#include "HandleSys.h"
 #include "ExtensionSys.h"
-#include "LibrarySys.h"
+#include <ILibrarySys.h>
+#include "common_logic.h"
 #include "PluginSys.h"
-#include "sm_stringutil.h"
+#include "HandleSys.h"
 
 ShareSystem g_ShareSys;
 static unsigned int g_mark_serial = 0;
@@ -61,36 +61,36 @@ void ShareSystem::Initialize()
 {
 	TypeAccess sec;
 
-	g_HandleSys.InitAccessDefaults(&sec, NULL);
+	handlesys->InitAccessDefaults(&sec, NULL);
 	sec.ident = GetIdentRoot();
 
-	m_TypeRoot = g_HandleSys.CreateType("Identity", this, 0, &sec, NULL, NULL, NULL);
-	m_IfaceType = g_HandleSys.CreateType("Interface", this, 0, NULL, NULL, GetIdentRoot(), NULL);
+	m_TypeRoot = handlesys->CreateType("Identity", this, 0, &sec, NULL, NULL, NULL);
+	m_IfaceType = handlesys->CreateType("Interface", this, 0, NULL, NULL, GetIdentRoot(), NULL);
 
 	/* Initialize our static identity handle */
-	m_IdentRoot.ident = g_HandleSys.CreateHandle(m_TypeRoot, NULL, NULL, GetIdentRoot(), NULL);
+	m_IdentRoot.ident = handlesys->CreateHandle(m_TypeRoot, NULL, NULL, GetIdentRoot(), NULL);
 
 	/* Add the Handle System and others... they are too innocent and pure to do it themselves */
-	AddInterface(NULL, &g_HandleSys);
-	AddInterface(NULL, &g_LibSys);
+	AddInterface(NULL, handlesys);
+	AddInterface(NULL, libsys);
 }
 
 void ShareSystem::OnSourceModShutdown()
 {
 	if (m_CoreType)
 	{
-		g_HandleSys.RemoveType(m_CoreType, GetIdentRoot());
+		handlesys->RemoveType(m_CoreType, GetIdentRoot());
 	}
 
-	g_HandleSys.RemoveType(m_IfaceType, GetIdentRoot());
-	g_HandleSys.RemoveType(m_TypeRoot, GetIdentRoot());
+	handlesys->RemoveType(m_IfaceType, GetIdentRoot());
+	handlesys->RemoveType(m_TypeRoot, GetIdentRoot());
 }
 
 IdentityType_t ShareSystem::FindIdentType(const char *name)
 {
 	HandleType_t type;
 
-	if (g_HandleSys.FindHandleType(name, &type))
+	if (handlesys->FindHandleType(name, &type))
 	{
 		if (g_HandleSys.TypeCheck(type, m_TypeRoot))
 		{
@@ -108,7 +108,7 @@ IdentityType_t ShareSystem::CreateIdentType(const char *name)
 		return 0;
 	}
 
-	return g_HandleSys.CreateType(name, this, m_TypeRoot, NULL, NULL, GetIdentRoot(), NULL);
+	return handlesys->CreateType(name, this, m_TypeRoot, NULL, NULL, GetIdentRoot(), NULL);
 }
 
 void ShareSystem::OnHandleDestroy(HandleType_t type, void *object)
@@ -217,13 +217,13 @@ void ShareSystem::DestroyIdentity(IdentityToken_t *identity)
 	sec.pOwner = GetIdentRoot();
 	sec.pIdentity = GetIdentRoot();
 
-	g_HandleSys.FreeHandle(identity->ident, &sec);
+	handlesys->FreeHandle(identity->ident, &sec);
 	delete identity;
 }
 
 void ShareSystem::DestroyIdentType(IdentityType_t type)
 {
-	g_HandleSys.RemoveType(type, GetIdentRoot());
+	handlesys->RemoveType(type, GetIdentRoot());
 }
 
 void ShareSystem::RemoveInterfaces(IExtension *pExtension)
@@ -268,7 +268,7 @@ void ShareSystem::OverrideNatives(IExtension *myself, const sp_nativeinfo_t *nat
 			continue;
 		}
 
-		if (pEntry->owner != g_pCoreNatives)
+		if (pEntry->owner != &g_CoreNatives)
 		{
 			continue;
 		}
@@ -308,7 +308,7 @@ void ShareSystem::BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly)
 
 	/* Generate a new serial ID, mark our dependencies with it. */
 	g_mark_serial++;
-	pPlugin->PropogateMarkSerial(g_mark_serial);
+	pPlugin->PropagateMarkSerial(g_mark_serial);
 
 	native_count = pContext->GetNativesNum();
 	for (i = 0; i < native_count; i++)
@@ -338,7 +338,7 @@ void ShareSystem::BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly)
 			continue;
 		}
 
-		if (bCoreOnly && pEntry->owner != g_pCoreNatives)
+		if (bCoreOnly && pEntry->owner != &g_CoreNatives)
 		{
 			continue;
 		}
@@ -394,7 +394,7 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin,
 		native->pfn = pEntry->func;
 
 		/* We don't bother with dependency crap if the owner is Core. */
-		if (pEntry->owner != g_pCoreNatives)
+		if (pEntry->owner != &g_CoreNatives)
 		{
 			/* The native is optional, this is a special case */
 			if ((native->flags & SP_NTVFLAG_OPTIONAL) == SP_NTVFLAG_OPTIONAL)
@@ -416,7 +416,7 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin,
 				 * If it has, it means this relationship has already occurred, 
 				 * and there is no reason to do it again.
 				 */
-				if (pEntry->owner != pPlugin 
+				if (pEntry->owner != pPlugin->ToNativeOwner() 
 					&& pEntry->owner->GetMarkSerial() != g_mark_serial)
 				{
 					/* This has not been marked as a dependency yet */
@@ -516,7 +516,7 @@ NativeEntry *ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name
 
 	pFake->call = pFunc;
 	pFake->ctx = pFunc->GetParentContext();
-	strncopy(pFake->name, name, sizeof(pFake->name));
+	smcore.strncopy(pFake->name, name, sizeof(pFake->name));
 	
 	pEntry->fake = pFake;
 	pEntry->func = gate;

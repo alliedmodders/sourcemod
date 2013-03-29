@@ -34,11 +34,12 @@
 #include "MenuStyle_Base.h"
 #include "PlayerManager.h"
 #include "MenuManager.h"
-#include "HandleSys.h"
 #include "CellRecipientFilter.h"
 #if defined MENU_DEBUG
 #include "Logger.h"
 #endif
+#include "logic_bridge.h"
+#include "AutoHandleRooter.h"
 
 BaseMenuStyle::BaseMenuStyle() : m_WatchList(256), m_hHandle(BAD_HANDLE)
 {
@@ -818,7 +819,7 @@ void CBaseMenu::InternalDelete()
 
 		m_hHandle = BAD_HANDLE;
 		m_bDeleting = true;
-		g_HandleSys.FreeHandle(hndl, &sec);
+		handlesys->FreeHandle(hndl, &sec);
 	}
 
 	m_pHandler->OnMenuDestroy(this);

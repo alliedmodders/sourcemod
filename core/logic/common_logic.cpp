@@ -43,18 +43,23 @@
 #include "Translator.h"
 #include "GameConfigs.h"
 #include "DebugReporter.h"
+#include "PluginSys.h"
+#include "ShareSys.h"
+#include "NativeOwner.h"
+#include "HandleSys.h"
+#include "ExtensionSys.h"
 
 sm_core_t smcore;
-IHandleSys *handlesys;
+IHandleSys *handlesys = &g_HandleSys;
 IdentityToken_t *g_pCoreIdent;
 SMGlobalClass *SMGlobalClass::head = NULL;
 ISourceMod *g_pSM;
 ILibrarySys *libsys;
 ITextParsers *textparser = &g_TextParser;
 IVEngineServer *engine;
-IShareSys *sharesys;
+IShareSys *sharesys = &g_ShareSys;
 IRootConsole *rootmenu;
-IPluginManager *pluginsys;
+IPluginManager *pluginsys = g_PluginSys.GetOldAPI();
 IForwardManager *forwardsys;
 ITimerSystem *timersys;
 ServerGlobals serverGlobals;
@@ -63,6 +68,8 @@ IAdminSystem *adminsys;
 IGameHelpers *gamehelpers;
 ISourcePawnEngine *g_pSourcePawn;
 ISourcePawnEngine2 *g_pSourcePawn2;
+CNativeOwner g_CoreNatives;
+IScriptManager *scripts = &g_PluginSys;
 
 static void AddCorePhraseFile(const char *filename)
 {
@@ -85,6 +92,16 @@ static void GenerateError(IPluginContext *ctx, cell_t idx, int err, const char *
 	va_end(ap);
 }
 
+static void AddNatives(sp_nativeinfo_t *natives)
+{
+	g_CoreNatives.AddNatives(natives);
+}
+
+static void DumpHandles(void (*dumpfn)(const char *fmt, ...))
+{
+	g_HandleSys.Dump(dumpfn);
+}
+
 static sm_logic_t logic =
 {
 	NULL,
@@ -100,7 +117,15 @@ static sm_logic_t logic =
 	GetCoreGameConfig,
 	OnLogPrint,
 	&g_DbgReporter,
-	GenerateError
+	GenerateError,
+	AddNatives,
+	DumpHandles,
+	&g_PluginSys,
+	&g_ShareSys,
+	&g_Extensions,
+	&g_HandleSys,
+	NULL,
+	-1.0f
 };
 
 static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
@@ -111,14 +136,10 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 	memcpy(_logic, &logic, sizeof(sm_logic_t));
 	memcpy(&serverGlobals, core->serverGlobals, sizeof(ServerGlobals));
 
-	handlesys = core->handlesys;
 	libsys = core->libsys;
 	engine = core->engine;
-	g_pCoreIdent = core->core_ident;
 	g_pSM = core->sm;
-	sharesys = core->sharesys;
 	rootmenu = core->rootmenu;
-	pluginsys = core->pluginsys;
 	forwardsys = core->forwardsys;
 	timersys = core->timersys;
 	playerhelpers = core->playerhelpers;
@@ -126,6 +147,11 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 	gamehelpers = core->gamehelpers;
 	g_pSourcePawn = *core->spe1;
 	g_pSourcePawn2 = *core->spe2;
+
+	g_ShareSys.Initialize();
+	g_pCoreIdent = g_ShareSys.CreateCoreIdentity();
+	
+	_logic->core_ident = g_pCoreIdent;
 }
 
 PLATFORM_EXTERN_C ITextParsers *get_textparsers()
@@ -145,7 +171,7 @@ PLATFORM_EXTERN_C LogicInitFunction logic_load(uint32_t magic)
 
 void CoreNativesToAdd::OnSourceModAllInitialized()
 {
-	smcore.AddNatives(m_NativeList);
+	g_CoreNatives.AddNatives(m_NativeList);
 }
 
 /* Overload a few things to prevent libstdc++ linking */

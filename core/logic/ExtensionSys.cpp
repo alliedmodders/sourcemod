@@ -31,13 +31,10 @@
 
 #include <stdlib.h>
 #include "ExtensionSys.h"
-#include "LibrarySys.h"
-#include "ShareSys.h"
-#include "Logger.h"
-#include "sourcemm_api.h"
-#include "sm_srvcmds.h"
-#include "sm_stringutil.h"
-#include "PlayerManager.h"
+#include <ILibrarySys.h>
+#include <ISourceMod.h>
+#include "common_logic.h"
+#include "PluginSys.h"
 
 CExtensionManager g_Extensions;
 IdentityType_t g_ExtType;
@@ -51,7 +48,7 @@ void CExtension::Initialize(const char *filename, const char *path)
 	m_File.assign(filename);
 	m_Path.assign(path);
 	char real_name[PLATFORM_MAX_PATH];
-	g_LibSys.GetFileFromPath(real_name, sizeof(real_name), m_Path.c_str());
+	libsys->GetFileFromPath(real_name, sizeof(real_name), m_Path.c_str());
 	m_RealFile.assign(real_name);
 }
 
@@ -107,29 +104,29 @@ CLocalExtension::CLocalExtension(const char *filename)
 	}
 
 	/* Zeroth, see if there is an engine specific build in the new place. */
-	g_SourceMod.BuildPath(Path_SM,
+	g_pSM->BuildPath(Path_SM,
 		path,
 		PLATFORM_MAX_PATH,
 		"extensions/%s." GAMEFIX "." PLATFORM_LIB_EXT,
 		filename);
 
-	if (g_LibSys.IsPathFile(path))
+	if (libsys->IsPathFile(path))
 	{
 		goto found;
 	}
 
 	/* First see if there is an engine specific build! */
-	g_SourceMod.BuildPath(Path_SM, 
+	g_pSM->BuildPath(Path_SM, 
 		path, 
 		PLATFORM_MAX_PATH,
 		"extensions/auto." GAMEFIX "/%s." PLATFORM_LIB_EXT,
 		filename);
 
 	/* Try the "normal" version */
-	if (!g_LibSys.IsPathFile(path))
+	if (!libsys->IsPathFile(path))
 	{
 		normal:
-		g_SourceMod.BuildPath(Path_SM,
+		g_pSM->BuildPath(Path_SM,
 			path,
 			PLATFORM_MAX_PATH,
 			"extensions/%s." PLATFORM_LIB_EXT,
@@ -159,7 +156,7 @@ bool CRemoteExtension::Load(char *error, size_t maxlength)
 
 bool CLocalExtension::Load(char *error, size_t maxlength)
 {
-	m_pLib = g_LibSys.OpenLibrary(m_Path.c_str(), error, maxlength);
+	m_pLib = libsys->OpenLibrary(m_Path.c_str(), error, maxlength);
 
 	if (m_pLib == NULL)
 	{
@@ -191,24 +188,10 @@ bool CLocalExtension::Load(char *error, size_t maxlength)
 	/* Load as MM:S */
 	if (m_pAPI->IsMetamodExtension())
 	{
-		bool already;
-		m_PlId = g_pMMPlugins->Load(m_Path.c_str(), g_PLID, already, error, maxlength);
+		bool ok;
+		m_PlId = smcore.LoadMMSPlugin(m_Path.c_str(), &ok, error, maxlength);
 
-		// Check the plugin didn't refuse load
-		Pl_Status status;
-		
-#ifndef METAMOD_PLAPI_VERSION
-		const char *file;
-		PluginId source;
-#endif
-		
-		if (!m_PlId || (
-#ifndef METAMOD_PLAPI_VERSION
-			g_pMMPlugins->Query(m_PlId, file, status, source)
-#else
-			g_pMMPlugins->Query(m_PlId, NULL, &status, NULL)
-#endif			
-			&& status < Pl_Paused))
+		if (!m_PlId || !ok)
 		{
 			m_pLib->CloseLibrary();
 			m_pLib = NULL;
@@ -223,8 +206,7 @@ bool CLocalExtension::Load(char *error, size_t maxlength)
 		{
 			if (m_PlId)
 			{
-				char dummy[255];
-				g_pMMPlugins->Unload(m_PlId, true, dummy, sizeof(dummy));
+				smcore.UnloadMMSPlugin(m_PlId);
 				m_PlId = 0;
 			}
 		}
@@ -245,8 +227,7 @@ void CLocalExtension::Unload()
 {
 	if (m_pAPI != NULL && m_PlId)
 	{
-		char temp_buffer[255];
-		g_pMMPlugins->Unload(m_PlId, true, temp_buffer, sizeof(temp_buffer));
+		smcore.UnloadMMSPlugin(m_PlId);
 		m_PlId = 0;
 	}
 
@@ -309,7 +290,7 @@ bool CExtension::PerformAPICheck(char *error, size_t maxlength)
 bool CExtension::Load(char *error, size_t maxlength)
 {
 	CreateIdentity();
-	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, maxlength, !g_SourceMod.IsMapLoading()))
+	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, maxlength, !smcore.IsMapLoading()))
 	{
 		DestroyIdentity();
 		return false;
@@ -317,7 +298,7 @@ bool CExtension::Load(char *error, size_t maxlength)
 	else
 	{
 		/* Check if we're past load time */
-		if (!g_SourceMod.IsMapLoading())
+		if (!smcore.IsMapLoading())
 		{
 			m_pAPI->OnExtensionsAllLoaded();
 		}
@@ -527,14 +508,13 @@ void CExtension::AddLibrary(const char *library)
 void CExtensionManager::OnSourceModAllInitialized()
 {
 	g_ExtType = g_ShareSys.CreateIdentType("EXTENSION");
-	g_PluginSys.AddPluginsListener(this);
-	g_RootMenu.AddRootConsoleCommand("exts", "Manage extensions", this);
+	pluginsys->AddPluginsListener(this);
 	g_ShareSys.AddInterface(NULL, this);
 }
 
 void CExtensionManager::OnSourceModShutdown()
 {
-	g_RootMenu.RemoveRootConsoleCommand("exts", this);
+	pluginsys->RemovePluginsListener(this);
 	g_ShareSys.DestroyIdentType(g_ExtType);
 }
 
@@ -552,9 +532,9 @@ void CExtensionManager::TryAutoload()
 {
 	char path[PLATFORM_MAX_PATH];
 
-	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "extensions");
+	g_pSM->BuildPath(Path_SM, path, sizeof(path), "extensions");
 
-	IDirectory *pDir = g_LibSys.OpenDirectory(path);
+	IDirectory *pDir = libsys->OpenDirectory(path);
 	if (!pDir)
 	{
 		return;
@@ -585,7 +565,7 @@ void CExtensionManager::TryAutoload()
 		}
 
 		char file[PLATFORM_MAX_PATH];
-		len = UTIL_Format(file, sizeof(file), "%s", lfile);
+		len = smcore.Format(file, sizeof(file), "%s", lfile);
 		strcpy(&file[len - 9], ".ext");
 
 		LoadAutoExtension(file);
@@ -594,16 +574,16 @@ void CExtensionManager::TryAutoload()
 	}
 }
 
-IExtension *CExtensionManager::LoadAutoExtension(const char *path, bool bErrorOnMissing)
+IExtension *CExtensionManager::LoadAutoExtension(const char *path)
 {
 	/* Remove platform extension if it's there. Compat hack. */
-	const char *ext = g_LibSys.GetFileExtension(path);
+	const char *ext = libsys->GetFileExtension(path);
 	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
 		char path2[PLATFORM_MAX_PATH];
-		UTIL_Format(path2, sizeof(path2), "%s", path);
+		smcore.Format(path2, sizeof(path2), "%s", path);
 		path2[strlen(path) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
-		return LoadAutoExtension(path2, bErrorOnMissing);
+		return LoadAutoExtension(path);
 	}
 
 	IExtension *pAlready;
@@ -622,11 +602,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path, bool bErrorOn
 
 	if (!p->Load(error, sizeof(error)) || !p->IsLoaded())
 	{
-		if (bErrorOnMissing || g_LibSys.IsPathFile(p->GetPath()))
-		{
-			g_Logger.LogError("[SM] Unable to load extension \"%s\": %s", path, error);
-		}
-
+		smcore.LogError("[SM] Unable to load extension \"%s\": %s", path, error);
 		p->SetError(error);
 	}
 
@@ -640,7 +616,7 @@ IExtension *CExtensionManager::FindExtensionByFile(const char *file)
 
 	/* Chomp off the path */
 	char lookup[PLATFORM_MAX_PATH];
-	g_LibSys.GetFileFromPath(lookup, sizeof(lookup), file);
+	libsys->GetFileFromPath(lookup, sizeof(lookup), file);
 
 	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
 	{
@@ -689,11 +665,11 @@ IExtension *CExtensionManager::FindExtensionByName(const char *ext)
 IExtension *CExtensionManager::LoadExtension(const char *file, char *error, size_t maxlength)
 {
 	/* Remove platform extension if it's there. Compat hack. */
-	const char *ext = g_LibSys.GetFileExtension(file);
+	const char *ext = libsys->GetFileExtension(file);
 	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
 		char path2[PLATFORM_MAX_PATH];
-		UTIL_Format(path2, sizeof(path2), "%s", file);
+		smcore.Format(path2, sizeof(path2), "%s", file);
 		path2[strlen(file) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
 		return LoadExtension(path2, error, maxlength);
 	}
@@ -755,11 +731,11 @@ void CExtensionManager::AddInterface(IExtension *pOwner, SMInterface *pInterface
 	pExt->AddInterface(pInterface);
 }
 
-void CExtensionManager::BindChildPlugin( IExtension *pParent, CPlugin *pPlugin )
+void CExtensionManager::BindChildPlugin(IExtension *pParent, SMPlugin *pPlugin)
 {
 	CExtension *pExt = (CExtension *)pParent;
 
-	pExt->AddPlugin(pPlugin);
+	pExt->AddPlugin(static_cast<CPlugin *>(pPlugin));
 }
 
 void CExtensionManager::OnPluginDestroyed(IPlugin *plugin)
@@ -768,7 +744,7 @@ void CExtensionManager::OnPluginDestroyed(IPlugin *plugin)
 
 	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
 	{
-		(*iter)->DropRefsTo((CPlugin *)plugin);
+		(*iter)->DropRefsTo(static_cast<CPlugin *>(plugin));
 	}
 }
 
@@ -828,7 +804,7 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 		while (p_iter != pExt->m_Dependents.end())
 		{
 			/* We have to manually unlink ourselves here, since we're no longer being managed */
-			g_PluginSys.UnloadPlugin((*p_iter));
+			scripts->UnloadPlugin((*p_iter));
 			p_iter = pExt->m_Dependents.erase(p_iter);
 		}
 
@@ -837,7 +813,7 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			 s_iter != pExt->m_Libraries.end();
 			 s_iter++)
 		{
-			g_PluginSys.OnLibraryAction((*s_iter).c_str(), LibraryAction_Removed);
+			scripts->OnLibraryAction((*s_iter).c_str(), LibraryAction_Removed);
 		}
 
 		/* Notify and/or unload all dependencies */
@@ -955,10 +931,10 @@ void CExtensionManager::AddDependency(IExtension *pSource, const char *file, boo
 
 void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
 {
-	int argcount = command.ArgC();
+	int argcount = smcore.Argc(command);
 	if (argcount >= 3)
 	{
-		const char *cmd = command.Arg(2);
+		const char *cmd = smcore.Arg(command, 2);
 		if (strcmp(cmd, "list") == 0)
 		{
 			List<CExtension *>::iterator iter;
@@ -968,17 +944,17 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 			{
 			case 1:
 				{
-					g_RootMenu.ConsolePrint("[SM] Displaying 1 extension:");
+					rootmenu->ConsolePrint("[SM] Displaying 1 extension:");
 					break;
 				}
 			case 0:
 				{
-					g_RootMenu.ConsolePrint("[SM] No extensions are loaded.");
+					rootmenu->ConsolePrint("[SM] No extensions are loaded.");
 					break;
 				}
 			default:
 				{
-					g_RootMenu.ConsolePrint("[SM] Displaying %d extensions:", m_Libs.size());
+					rootmenu->ConsolePrint("[SM] Displaying %d extensions:", m_Libs.size());
 					break;
 				}
 			}
@@ -990,7 +966,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 					char error[255];
 					if (!pExt->IsRunning(error, sizeof(error)))
 					{
-						g_RootMenu.ConsolePrint("[%02d] <FAILED> file \"%s\": %s", num, pExt->GetFilename(), error);
+						rootmenu->ConsolePrint("[%02d] <FAILED> file \"%s\": %s", num, pExt->GetFilename(), error);
 					}
 					else
 					{
@@ -998,10 +974,10 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 						const char *name = pAPI->GetExtensionName();
 						const char *version = pAPI->GetExtensionVerString();
 						const char *descr = pAPI->GetExtensionDescription();
-						g_RootMenu.ConsolePrint("[%02d] %s (%s): %s", num, name, version, descr);
+						rootmenu->ConsolePrint("[%02d] %s (%s): %s", num, name, version, descr);
 					}
 				} else {
-					g_RootMenu.ConsolePrint("[%02d] <FAILED> file \"%s\": %s", num, pExt->GetFilename(), pExt->m_Error.c_str());
+					rootmenu->ConsolePrint("[%02d] <FAILED> file \"%s\": %s", num, pExt->GetFilename(), pExt->m_Error.c_str());
 				}
 			}
 			return;
@@ -1010,29 +986,29 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 		{
 			if (argcount < 4)
 			{
-				g_RootMenu.ConsolePrint("[SM] Usage: sm exts load <file>");
+				rootmenu->ConsolePrint("[SM] Usage: sm exts load <file>");
 				return;
 			}
 
-			const char *filename = command.Arg(3);
+			const char *filename = smcore.Arg(command, 3);
 			char path[PLATFORM_MAX_PATH];
 			char error[256];
 
-			UTIL_Format(path, sizeof(path), "%s%s%s", filename, !strstr(filename, ".ext") ? ".ext" : "",
+			smcore.Format(path, sizeof(path), "%s%s%s", filename, !strstr(filename, ".ext") ? ".ext" : "",
 				!strstr(filename, "." PLATFORM_LIB_EXT) ? "." PLATFORM_LIB_EXT : "");
 			
 			if (FindExtensionByFile(path) != NULL)
 			{
-				g_RootMenu.ConsolePrint("[SM] Extension %s is already loaded.", path);
+				rootmenu->ConsolePrint("[SM] Extension %s is already loaded.", path);
 				return;
 			}
 			
 			if (LoadExtension(path, error, sizeof(error)))
 			{
-				g_RootMenu.ConsolePrint("[SM] Loaded extension %s successfully.", path);
+				rootmenu->ConsolePrint("[SM] Loaded extension %s successfully.", path);
 			} else
 			{
-				g_RootMenu.ConsolePrint("[SM] Extension %s failed to load: %s", path, error);
+				rootmenu->ConsolePrint("[SM] Extension %s failed to load: %s", path, error);
 			}
 			
 			return;
@@ -1041,27 +1017,27 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 		{
 			if (argcount < 4)
 			{
-				g_RootMenu.ConsolePrint("[SM] Usage: sm exts info <#>");
+				rootmenu->ConsolePrint("[SM] Usage: sm exts info <#>");
 				return;
 			}
 
-			const char *sId = command.Arg(3);
+			const char *sId = smcore.Arg(command, 3);
 			unsigned int id = atoi(sId);
 			if (id <= 0)
 			{
-				g_RootMenu.ConsolePrint("[SM] Usage: sm exts info <#>");
+				rootmenu->ConsolePrint("[SM] Usage: sm exts info <#>");
 				return;
 			}
 
 			if (m_Libs.size() == 0)
 			{
-				g_RootMenu.ConsolePrint("[SM] No extensions are loaded.");
+				rootmenu->ConsolePrint("[SM] No extensions are loaded.");
 				return;
 			}
 
 			if (id > m_Libs.size())
 			{
-				g_RootMenu.ConsolePrint("[SM] No extension was found with id %d.", id);
+				rootmenu->ConsolePrint("[SM] No extension was found with id %d.", id);
 				return;
 			}
 
@@ -1079,44 +1055,44 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 			/* This should never happen */
 			if (!pExt)
 			{
-				g_RootMenu.ConsolePrint("[SM] No extension was found with id %d.", id);
+				rootmenu->ConsolePrint("[SM] No extension was found with id %d.", id);
 				return;
 			}
 
 			if (!pExt->IsLoaded())
 			{
-				g_RootMenu.ConsolePrint(" File: %s", pExt->GetFilename());
-				g_RootMenu.ConsolePrint(" Loaded: No (%s)", pExt->m_Error.c_str());
+				rootmenu->ConsolePrint(" File: %s", pExt->GetFilename());
+				rootmenu->ConsolePrint(" Loaded: No (%s)", pExt->m_Error.c_str());
 			}
 			else
 			{
 				char error[255];
 				if (!pExt->IsRunning(error, sizeof(error)))
 				{
-					g_RootMenu.ConsolePrint(" File: %s", pExt->GetFilename());
-					g_RootMenu.ConsolePrint(" Loaded: Yes");
-					g_RootMenu.ConsolePrint(" Running: No (%s)", error);
+					rootmenu->ConsolePrint(" File: %s", pExt->GetFilename());
+					rootmenu->ConsolePrint(" Loaded: Yes");
+					rootmenu->ConsolePrint(" Running: No (%s)", error);
 				}
 				else
 				{
 					IExtensionInterface *pAPI = pExt->GetAPI();
-					g_RootMenu.ConsolePrint(" File: %s", pExt->GetFilename());
-					g_RootMenu.ConsolePrint(" Loaded: Yes (version %s)", pAPI->GetExtensionVerString());
-					g_RootMenu.ConsolePrint(" Name: %s (%s)", pAPI->GetExtensionName(), pAPI->GetExtensionDescription());
-					g_RootMenu.ConsolePrint(" Author: %s (%s)", pAPI->GetExtensionAuthor(), pAPI->GetExtensionURL());
-					g_RootMenu.ConsolePrint(" Binary info: API version %d (compiled %s)", pAPI->GetExtensionVersion(), pAPI->GetExtensionDateString());
+					rootmenu->ConsolePrint(" File: %s", pExt->GetFilename());
+					rootmenu->ConsolePrint(" Loaded: Yes (version %s)", pAPI->GetExtensionVerString());
+					rootmenu->ConsolePrint(" Name: %s (%s)", pAPI->GetExtensionName(), pAPI->GetExtensionDescription());
+					rootmenu->ConsolePrint(" Author: %s (%s)", pAPI->GetExtensionAuthor(), pAPI->GetExtensionURL());
+					rootmenu->ConsolePrint(" Binary info: API version %d (compiled %s)", pAPI->GetExtensionVersion(), pAPI->GetExtensionDateString());
 
 					if (pExt->IsExternal())
 					{
-						g_RootMenu.ConsolePrint(" Method: Loaded by Metamod:Source, attached to SourceMod");
+						rootmenu->ConsolePrint(" Method: Loaded by Metamod:Source, attached to SourceMod");
 					}
 					else if (pAPI->IsMetamodExtension())
 					{
-						g_RootMenu.ConsolePrint(" Method: Loaded by SourceMod, attached to Metamod:Source");
+						rootmenu->ConsolePrint(" Method: Loaded by SourceMod, attached to Metamod:Source");
 					}
 					else
 					{
-						g_RootMenu.ConsolePrint(" Method: Loaded by SourceMod");
+						rootmenu->ConsolePrint(" Method: Loaded by SourceMod");
 					}
 				}
 			}
@@ -1126,33 +1102,33 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 		{
 			if (argcount < 4)
 			{
-				g_RootMenu.ConsolePrint("[SM] Usage: sm exts unload <#> [code]");
+				rootmenu->ConsolePrint("[SM] Usage: sm exts unload <#> [code]");
 				return;
 			}
 
-			const char *arg = command.Arg(3);
+			const char *arg = smcore.Arg(command, 3);
 			unsigned int num = atoi(arg);
 			CExtension *pExt = FindByOrder(num);
 
 			if (!pExt)
 			{
-				g_RootMenu.ConsolePrint("[SM] Extension number %d was not found.", num);
+				rootmenu->ConsolePrint("[SM] Extension number %d was not found.", num);
 				return;
 			}
 
 			if (argcount > 4 && pExt->unload_code)
 			{
-				const char *unload = command.Arg(4);
+				const char *unload = smcore.Arg(command, 4);
 				if (pExt->unload_code == (unsigned)atoi(unload))
 				{
 					char filename[PLATFORM_MAX_PATH];
 					snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
 					UnloadExtension(pExt);
-					g_RootMenu.ConsolePrint("[SM] Extension %s is now unloaded.", filename);
+					rootmenu->ConsolePrint("[SM] Extension %s is now unloaded.", filename);
 				}
 				else
 				{
-					g_RootMenu.ConsolePrint("[SM] Please try again, the correct unload code is \"%d\"", pExt->unload_code);
+					rootmenu->ConsolePrint("[SM] Please try again, the correct unload code is \"%d\"", pExt->unload_code);
 				}
 				return;
 			}
@@ -1163,7 +1139,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				char filename[PLATFORM_MAX_PATH];
 				snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
 				UnloadExtension(pExt);
-				g_RootMenu.ConsolePrint("[SM] Extension %s is now unloaded.", filename);
+				rootmenu->ConsolePrint("[SM] Extension %s is now unloaded.", filename);
 				return;
 			}
 			else
@@ -1171,7 +1147,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				List<CPlugin *> plugins;
 				if (pExt->m_ChildDeps.size())
 				{
-					g_RootMenu.ConsolePrint("[SM] Unloading %s will unload the following extensions: ", pExt->GetFilename());
+					rootmenu->ConsolePrint("[SM] Unloading %s will unload the following extensions: ", pExt->GetFilename());
 					List<CExtension *>::iterator iter;
 					CExtension *pOther;
 					/* Get list of all extensions */
@@ -1196,7 +1172,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 							/* Will our dependent care? */
 							if (!pExt->GetAPI()->QueryInterfaceDrop((*i_iter).iface))
 							{
-								g_RootMenu.ConsolePrint(" -> %s", pExt->GetFilename());
+								rootmenu->ConsolePrint(" -> %s", pExt->GetFilename());
 								/* Add to plugin unload list */
 								List<CPlugin *>::iterator p_iter;
 								for (p_iter=pOther->m_Dependents.begin();
@@ -1214,7 +1190,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				}
 				if (pExt->m_Dependents.size())
 				{
-					g_RootMenu.ConsolePrint("[SM] Unloading %s will unload the following plugins: ", pExt->GetFilename());
+					rootmenu->ConsolePrint("[SM] Unloading %s will unload the following plugins: ", pExt->GetFilename());
 					List<CPlugin *>::iterator iter;
 					CPlugin *pPlugin;
 					for (iter = pExt->m_Dependents.begin(); iter != pExt->m_Dependents.end(); iter++)
@@ -1228,13 +1204,13 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 					for (iter = plugins.begin(); iter != plugins.end(); iter++)
 					{
 						pPlugin = (*iter);
-						g_RootMenu.ConsolePrint(" -> %s", pPlugin->GetFilename());
+						rootmenu->ConsolePrint(" -> %s", pPlugin->GetFilename());
 					}
 				}
 				srand(static_cast<int>(time(NULL)));
 				pExt->unload_code = (rand() % 877) + 123;	//123 to 999
-				g_RootMenu.ConsolePrint("[SM] To verify unloading %s, please use the following: ", pExt->GetFilename());
-				g_RootMenu.ConsolePrint("[SM] sm exts unload %d %d", num, pExt->unload_code);
+				rootmenu->ConsolePrint("[SM] To verify unloading %s, please use the following: ", pExt->GetFilename());
+				rootmenu->ConsolePrint("[SM] sm exts unload %d %d", num, pExt->unload_code);
 
 				return;
 			}
@@ -1243,17 +1219,17 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 		{
 			if (argcount < 4)
 			{
-				g_RootMenu.ConsolePrint("[SM] Usage: sm exts reload <#>");
+				rootmenu->ConsolePrint("[SM] Usage: sm exts reload <#>");
 				return;
 			}
 			
-			const char *arg = command.Arg(3);
+			const char *arg = smcore.Arg(command, 3);
 			unsigned int num = atoi(arg);
 			CExtension *pExt = FindByOrder(num);
 
 			if (!pExt)
 			{
-				g_RootMenu.ConsolePrint("[SM] Extension number %d was not found.", num);
+				rootmenu->ConsolePrint("[SM] Extension number %d was not found.", num);
 				return;
 			}
 			
@@ -1266,18 +1242,18 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				
 				if (pExt->Reload(error, sizeof(error)))
 				{
-					g_RootMenu.ConsolePrint("[SM] Extension %s is now reloaded.", filename);
+					rootmenu->ConsolePrint("[SM] Extension %s is now reloaded.", filename);
 				}
 				else
 				{
-					g_RootMenu.ConsolePrint("[SM] Extension %s failed to reload: %s", filename, error);
+					rootmenu->ConsolePrint("[SM] Extension %s failed to reload: %s", filename, error);
 				}
 					
 				return;
 			} 
 			else
 			{
-				g_RootMenu.ConsolePrint("[SM] Extension %s is not loaded.", pExt->GetFilename());
+				rootmenu->ConsolePrint("[SM] Extension %s is not loaded.", pExt->GetFilename());
 				
 				return;
 			}
@@ -1285,100 +1261,12 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 		}
 	}
 
-	g_RootMenu.ConsolePrint("SourceMod Extensions Menu:");
-	g_RootMenu.DrawGenericOption("info", "Extra extension information");
-	g_RootMenu.DrawGenericOption("list", "List extensions");
-	g_RootMenu.DrawGenericOption("load", "Load an extension");
-	g_RootMenu.DrawGenericOption("reload", "Reload an extension");
-	g_RootMenu.DrawGenericOption("unload", "Unload an extension");
-}
-
-void CExtensionManager::ListExtensionsToClient(CPlayer *player, const CCommand &args)
-{
-	char buffer[256];
-	int numExtensions = m_Libs.size();
-	edict_t *edict = player->GetEdict();
-	unsigned int id = 0;
-	unsigned int start = 0;
-
-	if (!numExtensions)
-	{
-		ClientConsolePrint(edict, "[SM] No extensions found.");
-		return;
-	}
-
-	if (args.ArgC() > 2)
-	{
-		start = atoi(args.Arg(2));
-	}
-
-	CExtension *ext;
-	SourceHook::List<CExtension *>::iterator iter;
-
-	for (iter = m_Libs.begin();
-		 iter != m_Libs.end();
-		 iter++)
-	{
-		ext = (*iter);
-
-		char error[255];
-		if (!ext->IsRunning(error, sizeof(error)))
-		{
-			continue;
-		}
-
-		id++;
-		if (id < start)
-		{
-			continue;
-		}
-
-		if (id - start > 10)
-		{
-			break;
-		}
-
-		IExtensionInterface *api = ext->GetAPI();
-
-		const char *name = api->GetExtensionName();
-		const char *version = api->GetExtensionVerString();
-		const char *author = api->GetExtensionAuthor();
-		const char *description = api->GetExtensionDescription();
-
-		size_t len = UTIL_Format(buffer, sizeof(buffer), " \"%s\"", name);
-
-		if (version != NULL && IS_STR_FILLED(version))
-		{
-			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", version);
-		}
-
-		if (author != NULL && IS_STR_FILLED(author))
-		{
-			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", author);
-		}
-
-		if (description != NULL && IS_STR_FILLED(description))
-		{
-			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, ": %s", description);
-		}
-
-
-		ClientConsolePrint(edict, "%s", buffer);
-	}
-
-	while (iter != m_Libs.end())
-	{
-		char error[255];
-		if ((*iter)->IsRunning(error, sizeof(error)))
-		{
-			break;
-		}
-	}
-
-	if (iter != m_Libs.end())
-	{
-		ClientConsolePrint(edict, "To see more, type \"sm exts %d\"", id);
-	}
+	rootmenu->ConsolePrint("SourceMod Extensions Menu:");
+	rootmenu->DrawGenericOption("info", "Extra extension information");
+	rootmenu->DrawGenericOption("list", "List extensions");
+	rootmenu->DrawGenericOption("load", "Load an extension");
+	rootmenu->DrawGenericOption("reload", "Reload an extension");
+	rootmenu->DrawGenericOption("unload", "Unload an extension");
 }
 
 CExtension *CExtensionManager::GetExtensionFromIdent(IdentityToken_t *ptr)
@@ -1403,7 +1291,7 @@ void CExtensionManager::AddLibrary(IExtension *pSource, const char *library)
 {
 	CExtension *pExt = (CExtension *)pSource;
 	pExt->AddLibrary(library);
-	g_PluginSys.OnLibraryAction(library, LibraryAction_Added);
+	scripts->OnLibraryAction(library, LibraryAction_Added);
 }
 
 bool CExtensionManager::LibraryExists(const char *library)
@@ -1470,6 +1358,14 @@ void CExtensionManager::CallOnCoreMapStart(edict_t *pEdictList, int edictCount, 
 		{
 			pAPI->OnCoreMapStart(pEdictList, edictCount, clientMax);
 		}
+	}
+}
+
+void CExtensionManager::ListExtensions(CVector<IExtension *> *list)
+{
+	for (List<CExtension *>::iterator iter = m_Libs.begin(); iter != m_Libs.end(); iter++)
+	{
+		list->push_back(*iter);
 	}
 }
 

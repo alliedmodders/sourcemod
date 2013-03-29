@@ -545,12 +545,19 @@ void Logger::DisableLogging()
 
 void Logger::LogFatal(const char *msg, ...)
 {
+	va_list ap;
+	va_start(ap, msg);
+	LogFatalEx(msg, ap);
+	va_end(ap);
+}
+
+void Logger::LogFatalEx(const char *msg, va_list ap)
+{
 	/* :TODO: make this print all pretty-like
 	 * In fact, the pretty log printing function should be abstracted. 
 	 * It's already implemented twice which is bad.
 	 */
 
-	va_list ap;
 	char path[PLATFORM_MAX_PATH];
 
 	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "sourcemod_fatal.log");
@@ -559,9 +566,7 @@ void Logger::LogFatal(const char *msg, ...)
 	if (fp)
 	{
 		m_Active = true;
-		va_start(ap, msg);
 		LogToOpenFileEx(fp, msg, ap);
-		va_end(ap);
 		m_Active = false;
 		fclose(fp);
 	}

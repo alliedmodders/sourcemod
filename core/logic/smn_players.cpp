@@ -34,8 +34,8 @@
 #include <IPlayerHelpers.h>
 #include <sh_string.h>
 #include <sh_list.h>
-#include "AutoHandleRooter.h"
 #include "CellArray.h"
+#include "AutoHandleRooter.h"
 
 using namespace SourceHook;
 using namespace SourceMod;

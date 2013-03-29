@@ -123,6 +123,27 @@
     <ClCompile Include="..\smn_filesystem.cpp">
       <Filter>Natives</Filter>
     </ClCompile>
+    <ClCompile Include="..\smn_fakenatives.cpp">
+      <Filter>Natives</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ExtensionSys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ShareSys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PluginSys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\NativeInvoker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\NativeOwner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HandleSys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CellArray.h">
@@ -191,10 +212,20 @@
     <ClInclude Include="..\..\..\public\sm_platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\version.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <ClInclude Include="..\ExtensionSys.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\NativeInvoker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\NativeOwner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PluginSys.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ShareSys.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

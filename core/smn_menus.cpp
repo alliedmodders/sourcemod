@@ -34,8 +34,6 @@
 #include "MenuManager.h"
 #include "MenuStyle_Valve.h"
 #include "MenuStyle_Radio.h"
-#include "HandleSys.h"
-#include "PluginSys.h"
 #include "PlayerManager.h"
 #include "sm_stringutil.h"
 #include "sourcemm_api.h"
@@ -44,6 +42,7 @@
 #endif
 #include "ChatTriggers.h"
 #include "logic_bridge.h"
+#include "sourcemod.h"
 
 #if defined CreateMenu
 #undef CreateMenu
@@ -126,15 +125,16 @@ class MenuNativeHelpers :
 public:
 	virtual void OnSourceModAllInitialized()
 	{
-		m_PanelType = g_HandleSys.CreateType("IMenuPanel", this, 0, NULL, NULL, g_pCoreIdent, NULL);
-		m_TempPanelType = g_HandleSys.CreateType("TempIMenuPanel", this, m_PanelType, NULL, NULL, g_pCoreIdent, NULL);
-		g_PluginSys.AddPluginsListener(this);
+		m_PanelType = handlesys->CreateType("IMenuPanel", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		m_TempPanelType = handlesys->CreateType("TempIMenuPanel", this, m_PanelType, NULL, NULL, g_pCoreIdent, NULL);
+		scripts->AddPluginsListener(this);
 	}
 
 	virtual void OnSourceModShutdown()
 	{
-		g_HandleSys.RemoveType(m_TempPanelType, g_pCoreIdent);
-		g_HandleSys.RemoveType(m_PanelType, g_pCoreIdent);
+		scripts->RemovePluginsListener(this);
+		handlesys->RemoveType(m_TempPanelType, g_pCoreIdent);
+		handlesys->RemoveType(m_PanelType, g_pCoreIdent);
 
 		while (!m_FreePanelHandlers.empty())
 		{
@@ -208,7 +208,7 @@ public:
 			m_FreePanelHandlers.pop();
 		}
 		handler->m_pFunc = pFunction;
-		handler->m_pPlugin = g_PluginSys.GetPluginByCtx(pFunction->GetParentContext()->GetContext());
+		handler->m_pPlugin = scripts->FindPluginByContext(pFunction->GetParentContext()->GetContext());
 		return handler;
 	}
 
@@ -311,14 +311,14 @@ void CMenuHandler::OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *panel)
 		sec.pOwner = m_pBasic->GetParentContext()->GetIdentity();
 	
 		HandleAccess access;
-		g_HandleSys.InitAccessDefaults(NULL, &access);
+		handlesys->InitAccessDefaults(NULL, &access);
 		access.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
 
-		Handle_t hndl = g_HandleSys.CreateHandleEx(g_MenuHelpers.GetTempPanelType(), panel, &sec, &access, NULL);
+		Handle_t hndl = handlesys->CreateHandleEx(g_MenuHelpers.GetTempPanelType(), panel, &sec, &access, NULL);
 
 		DoAction(menu, MenuAction_Display, client, hndl);
 
-		g_HandleSys.FreeHandle(hndl, &sec);
+		handlesys->FreeHandle(hndl, &sec);
 	}
 }
 
@@ -570,7 +570,7 @@ bool CMenuHandler::OnSetHandlerOption(const char *option, const void *data)
 
 inline Handle_t MakePanelHandle(IMenuPanel *panel, IPluginContext *pContext)
 {
-	return g_HandleSys.CreateHandle(g_MenuHelpers.GetPanelType(), panel, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	return handlesys->CreateHandle(g_MenuHelpers.GetPanelType(), panel, pContext->GetIdentity(), g_pCoreIdent, NULL);
 }
 
 inline HandleError ReadPanelHandle(Handle_t hndl, IMenuPanel **panel)
@@ -578,7 +578,7 @@ inline HandleError ReadPanelHandle(Handle_t hndl, IMenuPanel **panel)
 	HandleSecurity sec;
 	sec.pIdentity = g_pCoreIdent;
 	sec.pOwner = NULL;
-	return g_HandleSys.ReadHandle(hndl, g_MenuHelpers.GetPanelType(), &sec, (void **)panel);
+	return handlesys->ReadHandle(hndl, g_MenuHelpers.GetPanelType(), &sec, (void **)panel);
 }
 
 inline IMenuStyle *GetStyleFromCell(cell_t cell)

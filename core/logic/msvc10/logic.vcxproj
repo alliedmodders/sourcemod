@@ -113,10 +113,17 @@
   <ItemGroup>
     <ClCompile Include="..\common_logic.cpp" />
     <ClCompile Include="..\DebugReporter.cpp" />
+    <ClCompile Include="..\ExtensionSys.cpp" />
     <ClCompile Include="..\GameConfigs.cpp" />
+    <ClCompile Include="..\HandleSys.cpp" />
     <ClCompile Include="..\MemoryUtils.cpp" />
+    <ClCompile Include="..\NativeInvoker.cpp" />
+    <ClCompile Include="..\NativeOwner.cpp" />
     <ClCompile Include="..\PhraseCollection.cpp" />
+    <ClCompile Include="..\PluginSys.cpp" />
     <ClCompile Include="..\Profiler.cpp" />
+    <ClCompile Include="..\ShareSys.cpp" />
+    <ClCompile Include="..\smn_fakenatives.cpp" />
     <ClCompile Include="..\smn_filesystem.cpp" />
     <ClCompile Include="..\sm_crc32.cpp" />
     <ClCompile Include="..\smn_admin.cpp" />
@@ -151,12 +158,17 @@
     <ClInclude Include="..\AutoHandleRooter.h" />
     <ClInclude Include="..\CellArray.h" />
     <ClInclude Include="..\common_logic.h" />
+    <ClInclude Include="..\ExtensionSys.h" />
     <ClInclude Include="..\GameConfigs.h" />
     <ClInclude Include="..\intercom.h" />
     <ClInclude Include="..\MemoryUtils.h" />
     <ClInclude Include="..\MersenneTwister.h" />
+    <ClInclude Include="..\NativeInvoker.h" />
+    <ClInclude Include="..\NativeOwner.h" />
     <ClInclude Include="..\PhraseCollection.h" />
+    <ClInclude Include="..\PluginSys.h" />
     <ClInclude Include="..\Profiler.h" />
+    <ClInclude Include="..\ShareSys.h" />
     <ClInclude Include="..\sm_crc32.h" />
     <ClInclude Include="..\sm_memtable.h" />
     <ClInclude Include="..\sm_symtable.h" />
@@ -167,9 +179,6 @@
     <ClInclude Include="..\thread\ThreadWorker.h" />
     <ClInclude Include="..\thread\WinThreads.h" />
     <ClInclude Include="..\Translator.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\version.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

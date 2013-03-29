@@ -47,9 +47,16 @@ files = [
 	'smn_handles.cpp',
 	'smn_datapacks.cpp',
 	'smn_gameconfigs.cpp',
+	'smn_fakenatives.cpp',
 	'GameConfigs.cpp',
 	'sm_crc32.cpp',
 	'smn_profiler.cpp',
+	'ShareSys.cpp',
+	'PluginSys.cpp',
+	'HandleSys.cpp',
+	'NativeOwner.cpp',
+	'NativeInvoker.cpp',
+	'ExtensionSys.cpp',
 	'DebugReporter.cpp'
 	]
 if AMBuild.target['platform'] == 'windows':

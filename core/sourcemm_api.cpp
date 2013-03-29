@@ -33,9 +33,9 @@
 #include "sourcemm_api.h"
 #include <sourcemod_version.h>
 #include "Logger.h"
-#include "ExtensionSys.h"
 #include "concmd_cleaner.h"
 #include "compat_wrappers.h"
+#include "logic_bridge.h"
 
 SourceMod_Core g_SourceMod_Core;
 IVEngineServer *engine = NULL;
@@ -231,7 +231,7 @@ void *SourceMod_Core::OnMetamodQuery(const char *iface, int *ret)
 
 	if (strcmp(iface, SOURCEMOD_INTERFACE_EXTENSIONS) == 0)
 	{
-		ptr = (IExtensionManager *)&g_Extensions;
+		ptr = extsys;
 	}
 
 	if (ret != NULL)

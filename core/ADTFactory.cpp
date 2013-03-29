@@ -31,7 +31,7 @@
 
 #include "ADTFactory.h"
 #include "sm_globals.h"
-#include "ShareSys.h"
+#include "logic_bridge.h"
 
 ADTFactory g_AdtFactory;
 
@@ -47,7 +47,7 @@ unsigned int ADTFactory::GetInterfaceVersion()
 
 void ADTFactory::OnSourceModAllInitialized()
 {
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 }
 
 IBasicTrie *ADTFactory::CreateBasicTrie()

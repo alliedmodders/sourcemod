@@ -47,7 +47,7 @@
 	sec.pOwner = NULL;                                \
 	sec.pIdentity = g_pCoreIdent;                     \
 	                                                  \
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_ProtobufType, &sec, (void **)&msg)) \
+	if ((herr=handlesys->ReadHandle(hndl, g_ProtobufType, &sec, (void **)&msg)) \
 		!= HandleError_None)                          \
 	{                                                 \
 		return pCtx->ThrowNativeError("Invalid protobuf message handle %x (error %d)", hndl, herr); \
@@ -872,7 +872,7 @@ static cell_t smn_PbReadMessage(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
-	Handle_t outHndl = g_HandleSys.CreateHandle(g_ProtobufType, new SMProtobufMessage(innerMsg), NULL, g_pCoreIdent, NULL);
+	Handle_t outHndl = handlesys->CreateHandle(g_ProtobufType, new SMProtobufMessage(innerMsg), NULL, g_pCoreIdent, NULL);
 	msg->AddChildHandle(outHndl);
 
 	return outHndl;
@@ -889,7 +889,7 @@ static cell_t smn_PbReadRepeatedMessage(IPluginContext *pCtx, const cell_t *para
 		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
-	Handle_t outHndl = g_HandleSys.CreateHandle(g_ProtobufType, new SMProtobufMessage(const_cast<protobuf::Message *>(innerMsg)), NULL, g_pCoreIdent, NULL);
+	Handle_t outHndl = handlesys->CreateHandle(g_ProtobufType, new SMProtobufMessage(const_cast<protobuf::Message *>(innerMsg)), NULL, g_pCoreIdent, NULL);
 	msg->AddChildHandle(outHndl);
 
 	return outHndl;
@@ -906,7 +906,7 @@ static cell_t smn_PbAddMessage(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
-	Handle_t outHndl = g_HandleSys.CreateHandle(g_ProtobufType, new SMProtobufMessage(innerMsg), NULL, g_pCoreIdent, NULL);
+	Handle_t outHndl = handlesys->CreateHandle(g_ProtobufType, new SMProtobufMessage(innerMsg), NULL, g_pCoreIdent, NULL);
 	msg->AddChildHandle(outHndl);
 
 	return outHndl;

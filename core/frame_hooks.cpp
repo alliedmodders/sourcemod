@@ -38,6 +38,7 @@
 #include "CoreConfig.h"
 #include <sm_queue.h>
 #include <IThreader.h>
+#include "sourcemod.h"
 
 static IMutex *frame_mutex;
 static Queue<FrameAction> *frame_queue;

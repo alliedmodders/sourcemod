@@ -35,15 +35,13 @@
 #include "sm_stringutil.h"
 #include "sm_globals.h"
 #include "sourcemod.h"
-#include "PluginSys.h"
-#include "HandleSys.h"
 #include "LibrarySys.h"
 #include "TimerSys.h"
 #include "ForwardSys.h"
 #include "Logger.h"
-#include "ExtensionSys.h"
 #include <sm_trie_tpl.h>
 #include <sh_memory.h>
+#include "logic_bridge.h"
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
@@ -65,10 +63,10 @@ public:
 	void OnSourceModAllInitialized()
 	{
 		HandleAccess hacc;
-		g_HandleSys.InitAccessDefaults(NULL,  &hacc);
+		handlesys->InitAccessDefaults(NULL,  &hacc);
 		hacc.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
 
-		g_PlIter = g_HandleSys.CreateType("PluginIterator", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		g_PlIter = handlesys->CreateType("PluginIterator", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 
 		g_OnLogAction = g_Forwards.CreateForward("OnLogAction", 
 			ET_Hook, 
@@ -88,7 +86,7 @@ public:
 	void OnSourceModShutdown()
 	{
 		g_Forwards.ReleaseForward(g_OnLogAction);
-		g_HandleSys.RemoveType(g_PlIter, g_pCoreIdent);
+		handlesys->RemoveType(g_PlIter, g_pCoreIdent);
 	}
 } g_CoreNativeHelpers;
 
@@ -114,7 +112,7 @@ void LogAction(Handle_t hndl, int type, int client, int target, const char *mess
 	if (type == 2)
 	{
 		HandleError err;
-		IPlugin *pPlugin = g_PluginSys.PluginFromHandle(hndl, &err);
+		IPlugin *pPlugin = scripts->FindPluginByHandle(hndl, &err);
 		if (pPlugin)
 		{
 			logtag = pPlugin->GetFilename();
@@ -197,9 +195,9 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetPluginIterator(IPluginContext *pContext, const cell_t *params)
 {
-	IPluginIterator *iter = g_PluginSys.GetPluginIterator();
+	IPluginIterator *iter = scripts->GetPluginIterator();
 
-	Handle_t hndl = g_HandleSys.CreateHandle(g_PlIter, iter, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	Handle_t hndl = handlesys->CreateHandle(g_PlIter, iter, pContext->GetIdentity(), g_pCoreIdent, NULL);
 
 	if (hndl == BAD_HANDLE)
 	{
@@ -219,7 +217,7 @@ static cell_t MorePlugins(IPluginContext *pContext, const cell_t *params)
 	sec.pIdentity = g_pCoreIdent;
 	sec.pOwner = pContext->GetIdentity();
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_PlIter, &sec, (void **)&pIter)) != HandleError_None)
+	if ((err=handlesys->ReadHandle(hndl, g_PlIter, &sec, (void **)&pIter)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
 	}
@@ -237,12 +235,12 @@ static cell_t ReadPlugin(IPluginContext *pContext, const cell_t *params)
 	sec.pIdentity = g_pCoreIdent;
 	sec.pOwner = pContext->GetIdentity();
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_PlIter, &sec, (void **)&pIter)) != HandleError_None)
+	if ((err=handlesys->ReadHandle(hndl, g_PlIter, &sec, (void **)&pIter)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
 	}
 
-	CPlugin *pPlugin = (CPlugin *)pIter->GetPlugin();
+	IPlugin *pPlugin = pIter->GetPlugin();
 	if (!pPlugin)
 	{
 		return BAD_HANDLE;
@@ -253,14 +251,14 @@ static cell_t ReadPlugin(IPluginContext *pContext, const cell_t *params)
 	return pPlugin->GetMyHandle();
 }
 
-CPlugin *GetPluginFromHandle(IPluginContext *pContext, Handle_t hndl)
+IPlugin *GetPluginFromHandle(IPluginContext *pContext, Handle_t hndl)
 {
 	if (hndl == BAD_HANDLE)
 	{
-		return g_PluginSys.GetPluginByCtx(pContext->GetContext());
+		return scripts->FindPluginByContext(pContext->GetContext());
 	} else {
 		HandleError err;
-		CPlugin *pPlugin = (CPlugin *)g_PluginSys.PluginFromHandle(hndl, &err);
+		IPlugin *pPlugin = scripts->FindPluginByHandle(hndl, &err);
 		if (!pPlugin)
 		{
 			pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
@@ -271,7 +269,7 @@ CPlugin *GetPluginFromHandle(IPluginContext *pContext, Handle_t hndl)
 
 static cell_t GetPluginStatus(IPluginContext *pContext, const cell_t *params)
 {
-	CPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
+	IPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
 	if (!pPlugin)
 	{
 		return 0;
@@ -282,7 +280,7 @@ static cell_t GetPluginStatus(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetPluginFilename(IPluginContext *pContext, const cell_t *params)
 {
-	CPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
+	IPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
 	if (!pPlugin)
 	{
 		return 0;
@@ -295,7 +293,7 @@ static cell_t GetPluginFilename(IPluginContext *pContext, const cell_t *params)
 
 static cell_t IsPluginDebugging(IPluginContext *pContext, const cell_t *params)
 {
-	CPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
+	IPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
 	if (!pPlugin)
 	{
 		return 0;
@@ -316,7 +314,7 @@ enum PluginInfo
 
 static cell_t GetPluginInfo(IPluginContext *pContext, const cell_t *params)
 {
-	CPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
+	IPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
 	if (!pPlugin)
 	{
 		return 0;
@@ -373,10 +371,10 @@ static cell_t GetPluginInfo(IPluginContext *pContext, const cell_t *params)
 static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
 {
 	char *str;
-	CPlugin *pPlugin;
+	SMPlugin *pPlugin;
 
 	pContext->LocalToString(params[1], &str);
-	pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 
 	if (params[0] == 1)
 	{
@@ -425,7 +423,7 @@ static cell_t GetSysTickCount(IPluginContext *pContext, const cell_t *params)
 
 static cell_t AutoExecConfig(IPluginContext *pContext, const cell_t *params)
 {
-	CPlugin *plugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	SMPlugin *plugin = scripts->FindPluginByContext(pContext->GetContext());
 
 	char *cfg, *folder;
 	pContext->LocalToString(params[2], &cfg);
@@ -476,12 +474,11 @@ static cell_t MarkNativeAsOptional(IPluginContext *pContext, const cell_t *param
 static cell_t RegPluginLibrary(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
-	CPlugin *pl = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	SMPlugin *pl = scripts->FindPluginByContext(pContext->GetContext());
 
 	pContext->LocalToString(params[1], &name);
 
 	pl->AddLibrary(name);
-
 	return 1;
 }
 
@@ -495,12 +492,12 @@ static cell_t LibraryExists(IPluginContext *pContext, const cell_t *params)
 		return 1;
 	}
 
-	if (g_PluginSys.LibraryExists(str))
+	if (scripts->LibraryExists(str))
 	{
 		return 1;
 	}
 
-	if (g_Extensions.LibraryExists(str))
+	if (extsys->LibraryExists(str))
 	{
 		return 1;
 	}
@@ -519,7 +516,7 @@ static cell_t sm_LogAction(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 
 	LogAction(pPlugin->GetMyHandle(), 2, params[1], params[2], buffer);
 
@@ -550,7 +547,7 @@ static cell_t LogToFile(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 
 	g_Logger.LogToOpenFile(fp, "[%s] %s", pPlugin->GetFilename(), buffer);
 
@@ -595,7 +592,7 @@ static cell_t GetExtensionFileStatus(IPluginContext *pContext, const cell_t *par
 	char *str;
 	pContext->LocalToString(params[1], &str);
 
-	IExtension *pExtension = g_Extensions.FindExtensionByFile(str);
+	IExtension *pExtension = extsys->FindExtensionByFile(str);
 	
 	if (!pExtension)
 	{
@@ -619,7 +616,7 @@ static cell_t GetExtensionFileStatus(IPluginContext *pContext, const cell_t *par
 
 static cell_t FindPluginByNumber(IPluginContext *pContext, const cell_t *params)
 {
-	CPlugin *pPlugin = g_PluginSys.GetPluginByOrder(params[1]);
+	IPlugin *pPlugin = scripts->FindPluginByOrder(params[1]);
 	
 	if (pPlugin == NULL)
 	{
@@ -641,7 +638,7 @@ static cell_t GetFeatureStatus(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[2], &name);
 
-	return g_ShareSys.TestFeature(pContext->GetRuntime(),type, name);
+	return sharesys->TestFeature(pContext->GetRuntime(), type, name);
 }
 
 static cell_t RequireFeature(IPluginContext *pContext, const cell_t *params)
@@ -651,12 +648,12 @@ static cell_t RequireFeature(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[2], &name);
 
-	if (g_ShareSys.TestFeature(pContext->GetRuntime(),type, name) != FeatureStatus_Available)
+	if (sharesys->TestFeature(pContext->GetRuntime(), type, name) != FeatureStatus_Available)
 	{
 		char buffer[255];
 		char *msg = buffer;
 		char default_message[255];
-		CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+		SMPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 
 		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 3);
 		if (pContext->GetLastNativeError() != SP_ERROR_NONE || buffer[0] == '\0')

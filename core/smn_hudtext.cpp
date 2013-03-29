@@ -34,8 +34,8 @@
 #include "UserMessages.h"
 #include "TimerSys.h"
 #include "PlayerManager.h"
-#include "HandleSys.h"
 #include "logic_bridge.h"
+#include "sourcemod.h"
 
 #if SOURCE_ENGINE == SE_DOTA
 #include <game/shared/protobuf/usermessages.pb.h>
@@ -101,7 +101,7 @@ public:
 		}
 
 		m_PlayerHuds = new player_chaninfo_t[256+1];
-		m_hHudSyncObj = g_HandleSys.CreateType("HudSyncObj", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		m_hHudSyncObj = handlesys->CreateType("HudSyncObj", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 
 		g_Players.AddClientListener(this);
 	}
@@ -114,7 +114,7 @@ public:
 		}
 
 		delete [] m_PlayerHuds;
-		g_HandleSys.RemoveType(m_hHudSyncObj, g_pCoreIdent);
+		handlesys->RemoveType(m_hHudSyncObj, g_pCoreIdent);
 
 		g_Players.RemoveClientListener(this);
 	}
@@ -154,7 +154,7 @@ public:
 
 		sec = HandleSecurity(pIdent, g_pCoreIdent);
 		
-		if ((hndl = g_HandleSys.CreateHandleEx(m_hHudSyncObj, obj, &sec, NULL, &err))
+		if ((hndl = handlesys->CreateHandleEx(m_hHudSyncObj, obj, &sec, NULL, &err))
 			== BAD_HANDLE)
 		{
 			delete obj;
@@ -168,7 +168,7 @@ public:
 		hud_syncobj_t **pObj)
 	{
 		HandleSecurity sec(pOwner, g_pCoreIdent);
-		return g_HandleSys.ReadHandle(hndl, m_hHudSyncObj, &sec, (void **)pObj);
+		return handlesys->ReadHandle(hndl, m_hHudSyncObj, &sec, (void **)pObj);
 	}
 
 	unsigned int AutoSelectChannel(unsigned int client)

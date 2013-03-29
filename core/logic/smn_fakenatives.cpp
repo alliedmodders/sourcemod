@@ -31,11 +31,11 @@
 
 #include <sh_list.h>
 #include <sh_string.h>
-#include "sm_trie.h"
-#include "sm_globals.h"
+#include <sm_trie_tpl.h>
+#include <ISourceMod.h>
+#include "common_logic.h"
+#include "ShareSys.h"
 #include "PluginSys.h"
-#include "sourcemod.h"
-#include "sm_stringutil.h"
 
 using namespace SourceHook;
 
@@ -139,11 +139,10 @@ static cell_t ThrowNativeError(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Not called from inside a native function");
 	}
 
-	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
+	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[512];
-
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
 	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
@@ -427,7 +426,7 @@ static cell_t FormatNativeString(IPluginContext *pContext, const cell_t *params)
 	size_t maxlen = (size_t)params[4];
 
 	/* Do the format */
-	size_t written = atcprintf(output_buffer, maxlen, format_buffer, s_curcaller, s_curparams, &var_param);
+	size_t written = smcore.atcprintf(output_buffer, maxlen, format_buffer, s_curcaller, s_curparams, &var_param);
 
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[5], &addr);

@@ -32,11 +32,11 @@
 #ifndef _INCLUDE_SOURCEMOD_CTIMERSYS_H_
 #define _INCLUDE_SOURCEMOD_CTIMERSYS_H_
 
-#include "ShareSys.h"
 #include <ITimerSystem.h>
 #include <sh_stack.h>
 #include <sh_list.h>
 #include "sourcemm_api.h"
+#include "sm_globals.h"
 
 using namespace SourceHook;
 using namespace SourceMod;

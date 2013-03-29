@@ -157,7 +157,7 @@ void CHalfLife2::OnSourceModAllInitialized()
 	m_HinTextMsg = g_UserMsgs.GetMessageIndex("HintText");
 	m_SayTextMsg = g_UserMsgs.GetMessageIndex("SayText");
 	m_VGUIMenu = g_UserMsgs.GetMessageIndex("VGUIMenu");
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 }
 
 void CHalfLife2::OnSourceModAllInitialized_Post()

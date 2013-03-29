@@ -37,13 +37,11 @@
 #include <sh_list.h>
 #include <sh_string.h>
 #include <sm_trie_tpl.h>
-#include "sm_globals.h"
-#include "ShareSys.h"
-#include <ISmmAPI.h>
+#include "common_logic.h"
 #include <IPluginSys.h>
 #include <IRootConsoleMenu.h>
-#include "PluginSys.h"
 #include "NativeOwner.h"
+#include "ShareSys.h"
 
 class CPlayer;
 
@@ -120,7 +118,7 @@ public:
 	bool IsExternal();
 	bool IsSameFile(const char *file);
 private:
-	PluginId m_PlId;
+	int m_PlId;
 	ILibrary *m_pLib;
 };
 
@@ -138,10 +136,9 @@ public:
 };
 
 class CExtensionManager : 
-	public IExtensionManager,
+	public IExtensionSys,
 	public SMGlobalClass,
-	public IPluginsListener,
-	public IRootConsoleCommand
+	public IPluginsListener
 {
 public:
 	CExtensionManager();
@@ -166,10 +163,10 @@ public: //IPluginsListener
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
 public:
-	IExtension *LoadAutoExtension(const char *path, bool bErrorOnMissing=true);
+	IExtension *LoadAutoExtension(const char *path);
 	void BindDependency(IExtension *pOwner, IfaceInfo *pInfo);
 	void AddInterface(IExtension *pOwner, SMInterface *pInterface);
-	void BindChildPlugin(IExtension *pParent, CPlugin *pPlugin);
+	void BindChildPlugin(IExtension *pParent, SMPlugin *pPlugin);
 	void MarkAllLoaded();
 	void AddDependency(IExtension *pSource, const char *file, bool required, bool autoload);
 	void TryAutoload();
@@ -177,8 +174,7 @@ public:
 	bool LibraryExists(const char *library);
 	void CallOnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
 	void AddRawDependency(IExtension *ext, IdentityToken_t *other, void *iface);
-public:
-	void ListExtensionsToClient(CPlayer *player, const CCommand &args);
+	void ListExtensions(CVector<IExtension *> *list);
 public:
 	CExtension *GetExtensionFromIdent(IdentityToken_t *ptr);
 	void Shutdown();

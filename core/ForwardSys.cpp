@@ -33,8 +33,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include "ForwardSys.h"
-#include "PluginSys.h"
-#include "ShareSys.h"
 #include "logic_bridge.h"
 
 CForwardManager g_Forwards;
@@ -63,8 +61,8 @@ CForwardManager::~CForwardManager()
 
 void CForwardManager::OnSourceModAllInitialized()
 {
-	g_PluginSys.AddPluginsListener(this);
-	g_ShareSys.AddInterface(NULL, this);
+	scripts->AddPluginsListener(this);
+	sharesys->AddInterface(NULL, this);
 }
 
 IForward *CForwardManager::CreateForward(const char *name, ExecType et, unsigned int num_params, const ParamType *types, ...)
@@ -79,7 +77,7 @@ IForward *CForwardManager::CreateForward(const char *name, ExecType et, unsigned
 
 	if (fwd)
 	{
-		g_PluginSys.AddFunctionsToForward(name, fwd);
+		scripts->AddFunctionsToForward(name, fwd);
 
 		m_managed.push_back(fwd);
 	}

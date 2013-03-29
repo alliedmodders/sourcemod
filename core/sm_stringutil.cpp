@@ -32,11 +32,12 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <ITextParsers.h>
 #include "sm_stringutil.h"
 #include "Logger.h"
-#include "PluginSys.h"
 #include "PlayerManager.h"
 #include "logic_bridge.h"
+#include "sourcemod.h"
 
 #define LADJUST			0x00000004		/* left adjustment */
 #define ZEROPAD			0x00000080		/* zero (as opposed to blank) pad */
@@ -72,7 +73,7 @@ size_t Translate(char *buffer,
 	unsigned int langid;
 	*error = false;
 	Translation pTrans;
-	CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByContext(pCtx->GetContext());
+	IPlugin *pl = scripts->FindPluginByContext(pCtx->GetContext());
 	unsigned int max_params = 0;
 	IPhraseCollection *pPhrases;
 

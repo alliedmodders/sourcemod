@@ -40,8 +40,8 @@
 #include <ITextParsers.h>
 #include "sm_memtable.h"
 #include <IThreader.h>
+#include <IPluginSys.h>
 #include "sm_simple_prioqueue.h"
-#include "PluginSys.h"
 
 using namespace SourceHook;
 

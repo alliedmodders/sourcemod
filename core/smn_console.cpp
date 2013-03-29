@@ -32,10 +32,8 @@
 #include "sm_globals.h"
 #include "HalfLife2.h"
 #include "sourcemm_api.h"
-#include "HandleSys.h"
 #include "ConVarManager.h"
 #include "ConCmdManager.h"
-#include "PluginSys.h"
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
 #include "ChatTriggers.h"
@@ -47,6 +45,7 @@
 #include "Logger.h"
 #include "ConsoleDetours.h"
 #include "ConCommandBaseIterator.h"
+#include "logic_bridge.h"
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 #include <netmessages.pb.h>
@@ -88,13 +87,13 @@ public:
 	{
 		HandleAccess access;
 
-		g_HandleSys.InitAccessDefaults(NULL, &access);
+		handlesys->InitAccessDefaults(NULL, &access);
 
-		htConCmdIter = g_HandleSys.CreateType("ConCmdIter", this, 0, NULL, &access, g_pCoreIdent, NULL);
+		htConCmdIter = handlesys->CreateType("ConCmdIter", this, 0, NULL, &access, g_pCoreIdent, NULL);
 
 		access.access[HandleAccess_Clone] = HANDLE_RESTRICT_OWNER | HANDLE_RESTRICT_IDENTITY;
 
-		hCmdIterType = g_HandleSys.CreateType("CmdIter", this, 0, NULL, &access, g_pCoreIdent, NULL);
+		hCmdIterType = handlesys->CreateType("CmdIter", this, 0, NULL, &access, g_pCoreIdent, NULL);
 	}
 	virtual void OnHandleDestroy(HandleType_t type, void *object)
 	{
@@ -726,7 +725,7 @@ static cell_t sm_RegConsoleCmd(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 
-	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 	const char *group = pPlugin->GetFilename();
 	if (!g_ConCmds.AddAdminCommand(pFunction, name, group, 0, help, params[4]))
 	{
@@ -757,7 +756,7 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 
 	if (group[0] == '\0')
 	{
-		CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+		IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 		group = pPlugin->GetFilename();
 	}
 
@@ -1211,7 +1210,7 @@ static cell_t GetCommandIterator(IPluginContext *pContext, const cell_t *params)
 	GlobCmdIter *iter = new GlobCmdIter;
 	iter->started = false;
 
-	Handle_t hndl = g_HandleSys.CreateHandle(hCmdIterType, iter, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	Handle_t hndl = handlesys->CreateHandle(hCmdIterType, iter, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	if (hndl == BAD_HANDLE)
 	{
 		delete iter;
@@ -1226,7 +1225,7 @@ static cell_t ReadCommandIterator(IPluginContext *pContext, const cell_t *params
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = g_HandleSys.ReadHandle(params[1], hCmdIterType, &sec, (void **)&iter))
+	if ((err = handlesys->ReadHandle(params[1], hCmdIterType, &sec, (void **)&iter))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid GlobCmdIter Handle %x", params[1]);
@@ -1365,7 +1364,7 @@ static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params
 		pContext->StringToLocalUTF8(params[5], params[6], (desc && desc[0]) ? desc : "", NULL);
 	}
 
-	if ((hndl = g_HandleSys.CreateHandle(htConCmdIter, pIter, pContext->GetIdentity(), g_pCoreIdent, NULL))
+	if ((hndl = handlesys->CreateHandle(htConCmdIter, pIter, pContext->GetIdentity(), g_pCoreIdent, NULL))
 		== BAD_HANDLE)
 	{
 		delete pIter;
@@ -1384,7 +1383,7 @@ static cell_t FindNextConCommand(IPluginContext *pContext, const cell_t *params)
 	const ConCommandBase *pConCmd;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = g_HandleSys.ReadHandle(params[1], htConCmdIter, &sec, (void **)&pIter)) != HandleError_None)
+	if ((err = handlesys->ReadHandle(params[1], htConCmdIter, &sec, (void **)&pIter)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
 	}

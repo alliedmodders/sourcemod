@@ -30,14 +30,9 @@
  */
 
 #include "sm_autonatives.h"
-#include "PluginSys.h"
-#include "NativeOwner.h"
-
-CNativeOwner g_CoreNatives;
-
-CNativeOwner *g_pCoreNatives = &g_CoreNatives;
+#include "logic_bridge.h"
 
 void CoreNativesToAdd::OnSourceModAllInitialized()
 {
-	g_CoreNatives.AddNatives(m_NativeList);
+	logicore.AddNatives(m_NativeList);
 }

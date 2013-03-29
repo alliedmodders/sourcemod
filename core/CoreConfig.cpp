@@ -38,9 +38,9 @@
 #include "sm_stringutil.h"
 #include "LibrarySys.h"
 #include "Logger.h"
-#include "PluginSys.h"
 #include "ForwardSys.h"
 #include "frame_hooks.h"
+#include "logic_bridge.h"
 
 #ifdef PLATFORM_WINDOWS
 ConVar sm_corecfgfile("sm_corecfgfile", "addons\\sourcemod\\configs\\core.cfg", 0, "SourceMod core configuration file");
@@ -321,7 +321,7 @@ inline bool IsPathSepChar(char c)
 #endif
 }
 
-bool SM_ExecuteConfig(CPlugin *pl, AutoConfig *cfg, bool can_create)
+bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 {
 	bool will_create = false;
 	
@@ -500,10 +500,10 @@ void SM_DoSingleExecFwds(IPluginContext *ctx)
 
 void SM_ConfigsExecuted_Plugin(unsigned int serial)
 {
-	IPluginIterator *iter = g_PluginSys.GetPluginIterator();
+	IPluginIterator *iter = scripts->GetPluginIterator();
 	while (iter->MorePlugins())
 	{
-		CPlugin *plugin = (CPlugin *)(iter->GetPlugin());
+		IPlugin *plugin = iter->GetPlugin();
 		if (plugin->GetSerial() == serial)
 		{
 			SM_DoSingleExecFwds(plugin->GetBaseContext());
@@ -516,7 +516,7 @@ void SM_ConfigsExecuted_Plugin(unsigned int serial)
 
 void SM_ExecuteForPlugin(IPluginContext *ctx)
 {
-	CPlugin *plugin = (CPlugin *)g_PluginSys.GetPluginByCtx(ctx->GetContext());
+	SMPlugin *plugin = scripts->FindPluginByContext(ctx->GetContext());
 
 	unsigned int num = plugin->GetConfigCount();
 	if (!num)
@@ -545,19 +545,18 @@ void SM_ExecuteAllConfigs()
 
 	engine->ServerCommand("exec sourcemod/sourcemod.cfg\n");
 
-	IPluginIterator *iter = g_PluginSys.GetPluginIterator();
-	while (iter->MorePlugins())
+	CVector<SMPlugin *> plugins;
+	scripts->ListPlugins(&plugins);
+	for (size_t i = 0; i < plugins.size(); i++)
 	{
-		CPlugin *plugin = (CPlugin *)(iter->GetPlugin());
+		SMPlugin *plugin = plugins[i];
 		unsigned int num = plugin->GetConfigCount();
 		bool can_create = true;
 		for (unsigned int i=0; i<num; i++)
 		{
 			can_create = SM_ExecuteConfig(plugin, plugin->GetConfig(i), can_create);
 		}
-		iter->NextPlugin();
 	}
-	iter->Release();
 
 	g_bGotServerStart = true;
 	CheckAndFinalizeConfigs();

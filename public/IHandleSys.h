@@ -52,7 +52,7 @@
 #include <sp_vm_types.h>
 
 #define SMINTERFACE_HANDLESYSTEM_NAME			"IHandleSys"
-#define SMINTERFACE_HANDLESYSTEM_VERSION		4
+#define SMINTERFACE_HANDLESYSTEM_VERSION		5
 
 /** Specifies no Identity */
 #define DEFAULT_IDENTITY			NULL
@@ -364,6 +364,15 @@ namespace SourceMod
 		 * @return          A new Handle_t, or 0 on failure.
 		 */
 		virtual Handle_t FastCloneHandle(Handle_t hndl) =0;
+
+		/**
+		 * @brief Type checks two handles.
+		 *
+		 * @param given		Type to test.
+		 * @param actual	Type to check for.
+		 * @return			True if "given" is a subtype of "actual", false otherwise.
+		 */
+		virtual bool TypeCheck(HandleType_t given, HandleType_t actual) = 0;
 	};
 }
 

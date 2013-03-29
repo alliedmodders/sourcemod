@@ -42,19 +42,9 @@
 #include <sh_stack.h>
 #include <sh_vector.h>
 #include <sh_string.h>
-#include "sm_globals.h"
-#include "sm_trie.h"
-#include "sourcemod.h"
+#include "common_logic.h"
+#include <sm_trie_tpl.h>
 #include <IRootConsoleMenu.h>
-#if SOURCE_ENGINE >= SE_ALIENSWARM
-#include "convar_sm_swarm.h"
-#elif SOURCE_ENGINE >= SE_LEFT4DEAD
-#include "convar_sm_l4d.h"
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
-#include "convar_sm_ob.h"
-#else
-#include "convar_sm.h"
-#endif
 #include "ITranslator.h"
 #include "IGameConfigs.h"
 #include "NativeOwner.h"
@@ -130,23 +120,8 @@ enum APLRes
 	APLRes_SilentFailure
 };
 
-enum LibraryAction
-{
-	LibraryAction_Removed,
-	LibraryAction_Added
-};
-
-struct AutoConfig
-{
-	String autocfg;
-	String folder;
-	bool create;
-};
-
-class CPlugin;
-
 class CPlugin : 
-	public IPlugin,
+	public SMPlugin,
 	public CNativeOwner
 {
 	friend class CPluginManager;
@@ -173,6 +148,9 @@ public:
 	bool GetProperty(const char *prop, void **ptr, bool remove=false);
 	void DropEverything();
 	SourcePawn::IPluginRuntime *GetRuntime();
+	CNativeOwner *ToNativeOwner() {
+		return this;
+	}
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -276,7 +254,7 @@ private:
 	IPhraseCollection *m_pPhrases;
 	List<String> m_RequiredLibs;
 	List<String> m_Libraries;
-	Trie *m_pProps;
+	KTrie<void *> m_pProps;
 	bool m_FakeNativesMissing;
 	bool m_LibraryMissing;
 	CVector<AutoConfig *> m_configs;
@@ -289,7 +267,7 @@ private:
 };
 
 class CPluginManager : 
-	public IPluginManager,
+	public IScriptManager,
 	public SMGlobalClass,
 	public IHandleTypeDispatch,
 	public IRootConsoleCommand
@@ -316,7 +294,7 @@ public:
 		List<CPlugin *>::iterator current;
 	};
 	friend class CPluginManager::CPluginIterator;
-public: //IPluginManager
+public: //IScriptManager
 	IPlugin *LoadPlugin(const char *path, 
 								bool debug,
 								PluginType type,
@@ -329,6 +307,25 @@ public: //IPluginManager
 	IPluginIterator *GetPluginIterator();
 	void AddPluginsListener(IPluginsListener *listener);
 	void RemovePluginsListener(IPluginsListener *listener);
+	void LoadAll(const char *config_path, const char *plugins_path);
+	void RefreshAll();
+	SMPlugin *FindPluginByOrder(unsigned num) {
+		return GetPluginByOrder(num);
+	}
+	SMPlugin *FindPluginByIdentity(IdentityToken_t *ident) {
+		return GetPluginFromIdentity(ident);
+	}
+	SMPlugin *FindPluginByContext(IPluginContext *ctx) {
+		return GetPluginByCtx(ctx->GetContext());
+	}
+	SMPlugin *FindPluginByContext(sp_context_t *ctx) {
+		return GetPluginByCtx(ctx);
+	}
+	SMPlugin *FindPluginByConsoleArg(const char *text);
+	SMPlugin *FindPluginByHandle(Handle_t hndl, HandleError *errp) {
+		return static_cast<SMPlugin *>(PluginFromHandle(hndl, errp));
+	}
+	void ListPlugins(CVector<SMPlugin *> *plugins);
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
@@ -389,11 +386,6 @@ public:
 	const char *GetStatusText(PluginStatus status);
 
 	/**
-	* Reload or update plugins on level shutdown.
-	*/
-	void ReloadOrUnloadPlugins();
-
-	/**
 	 * Add public functions from all running or paused
 	 * plugins to the specified forward if the names match.
 	 */
@@ -415,8 +407,6 @@ public:
 	bool ReloadPlugin(CPlugin *pl);
 
 	void UnloadAll();
-
-	CPlugin *FindPluginByConsoleArg(const char *arg);
 
 	void SyncMaxClients(int max_clients);
 
@@ -462,13 +452,14 @@ public:
 	{
 		return m_MyIdent;
 	}
+	IPluginManager *GetOldAPI();
 private:
 	void TryRefreshDependencies(CPlugin *pOther);
 private:
 	List<IPluginsListener *> m_listeners;
 	List<CPlugin *> m_plugins;
 	CStack<CPluginManager::CPluginIterator *> m_iters;
-	Trie *m_LoadLookup;
+	KTrie<CPlugin *> m_LoadLookup;
 	bool m_AllPluginsLoaded;
 	IdentityToken_t *m_MyIdent;
 

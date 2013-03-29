@@ -78,6 +78,7 @@ public:
 	void LogError(const char *msg, ...);
 	void LogErrorEx(const char *msg, va_list ap); 
 	void LogFatal(const char *msg, ...);
+	void LogFatalEx(const char *msg, va_list ap);
 	void LogToOpenFile(FILE *fp, const char *msg, ...);
 	void LogToOpenFileEx(FILE *fp, const char *msg, va_list ap);
 	/* This version does not print to console, and is thus thread-safe */

@@ -31,7 +31,6 @@
 
 #include "PlayerManager.h"
 #include "ForwardSys.h"
-#include "ShareSys.h"
 #include "AdminCache.h"
 #include "ConCmdManager.h"
 #include "MenuStyle_Valve.h"
@@ -45,7 +44,6 @@
 #include <inetchannel.h>
 #include <iclient.h>
 #include <IGameConfigs.h>
-#include "ExtensionSys.h"
 #include <sourcemod_version.h>
 #include "ConsoleDetours.h"
 #include "logic_bridge.h"
@@ -141,7 +139,7 @@ void PlayerManager::OnSourceModAllInitialized()
 	SH_ADD_HOOK(IServerGameClients, ClientSettingsChanged, serverClients, SH_MEMBER(this, &PlayerManager::OnClientSettingsChanged), true);
 	SH_ADD_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
 
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 
 	ParamType p1[] = {Param_Cell, Param_String, Param_Cell};
 	ParamType p2[] = {Param_Cell};
@@ -278,11 +276,11 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 		g_NumPlayersToAuth = &m_AuthQueue[0];
 	}
 
-	g_PluginSys.SyncMaxClients(m_maxClients);
+	scripts->SyncMaxClients(m_maxClients);
 
 	g_OnMapStarted = true;
 
-	g_Extensions.CallOnCoreMapStart(pEdictList, edictCount, m_maxClients);
+	extsys->CallOnCoreMapStart(pEdictList, edictCount, m_maxClients);
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
 
@@ -779,6 +777,173 @@ void ClientConsolePrint(edict_t *e, const char *fmt, ...)
 	engine->ClientPrintf(e, buffer);
 }
 
+void ListExtensionsToClient(CPlayer *player, const CCommand &args)
+{
+	char buffer[256];
+	unsigned int id = 0;
+	unsigned int start = 0;
+
+	CVector<IExtension *> extensions;
+	extsys->ListExtensions(&extensions);
+
+	if (!extensions.size())
+	{
+		ClientConsolePrint(player->GetEdict(), "[SM] No extensions found.");
+		return;
+	}
+
+	if (args.ArgC() > 2)
+	{
+		start = atoi(args.Arg(2));
+	}
+
+	SourceHook::CVector<IExtension *>::iterator iter;
+
+	for (iter = extensions.begin();
+		 iter != extensions.end();
+		 iter++)
+	{
+		IExtension *ext = (*iter);
+
+		char error[255];
+		if (!ext->IsRunning(error, sizeof(error)))
+		{
+			continue;
+		}
+
+		id++;
+		if (id < start)
+		{
+			continue;
+		}
+
+		if (id - start > 10)
+		{
+			break;
+		}
+
+		IExtensionInterface *api = ext->GetAPI();
+
+		const char *name = api->GetExtensionName();
+		const char *version = api->GetExtensionVerString();
+		const char *author = api->GetExtensionAuthor();
+		const char *description = api->GetExtensionDescription();
+
+		size_t len = UTIL_Format(buffer, sizeof(buffer), " \"%s\"", name);
+
+		if (version != NULL && version[0])
+		{
+			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", version);
+		}
+
+		if (author != NULL && author[0])
+		{
+			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", author);
+		}
+
+		if (description != NULL && description[0])
+		{
+			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, ": %s", description);
+		}
+
+
+		ClientConsolePrint(player->GetEdict(), "%s", buffer);
+	}
+
+	for (; iter != extensions.end(); iter++)
+	{
+		char error[255];
+		if ((*iter)->IsRunning(error, sizeof(error)))
+		{
+			break;
+		}
+	}
+
+	if (iter != extensions.end())
+	{
+		ClientConsolePrint(player->GetEdict(), "To see more, type \"sm exts %d\"", id);
+	}
+}
+
+void ListPluginsToClient(CPlayer *player, const CCommand &args)
+{
+	char buffer[256];
+	unsigned int id = 0;
+	edict_t *e = player->GetEdict();
+	unsigned int start = 0;
+
+	CVector<SMPlugin *> plugins;
+	scripts->ListPlugins(&plugins);
+
+	if (!plugins.size())
+	{
+		ClientConsolePrint(e, "[SM] No plugins found.");
+		return;
+	}
+
+	if (args.ArgC() > 2)
+	{
+		start = atoi(args.Arg(2));
+	}
+
+	SourceHook::List<SMPlugin *> m_FailList;
+
+	CVector<SMPlugin *>::iterator iter = plugins.begin();
+	for (; iter != plugins.end(); iter++)
+	{
+		SMPlugin *pl = *iter;
+
+		if (pl->GetStatus() != Plugin_Running)
+		{
+			continue;
+		}
+
+		/* Count valid plugins */
+		id++;
+		if (id < start)
+		{
+			continue;
+		}
+
+		if (id - start > 10)
+		{
+			break;
+		}
+
+		size_t len;
+		const sm_plugininfo_t *info = pl->GetPublicInfo();
+		len = UTIL_Format(buffer, sizeof(buffer), " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+		if (IS_STR_FILLED(info->version))
+		{
+			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
+		}
+		if (IS_STR_FILLED(info->author))
+		{
+			UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
+		}
+		else
+		{
+			UTIL_Format(&buffer[len], sizeof(buffer)-len, " %s", pl->GetFilename());
+		}
+		ClientConsolePrint(e, "%s", buffer);
+	}
+
+	/* See if we can get more plugins */
+	for (; iter != plugins.end(); iter++)
+	{
+		if ((*iter)->GetStatus() == Plugin_Running)
+		{
+			break;
+		}
+	}
+
+	/* Do we actually have more plugins? */
+	if (iter != plugins.end())
+	{
+		ClientConsolePrint(e, "To see more, type \"sm plugins %d\"", id);
+	}
+}
+
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 void PlayerManager::OnClientCommand(edict_t *pEntity, const CCommand &args)
 {
@@ -800,12 +965,12 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 	{
 		if (args.ArgC() > 1 && strcmp(args.Arg(1), "plugins") == 0)
 		{
-			g_PluginSys.ListPluginsToClient(pPlayer, args);
+			ListPluginsToClient(pPlayer, args);
 			RETURN_META(MRES_SUPERCEDE);
 		}
 		else if (args.ArgC() > 1 && strcmp(args.Arg(1), "exts") == 0)
 		{
-			g_Extensions.ListExtensionsToClient(pPlayer, args);
+			ListExtensionsToClient(pPlayer, args);
 			RETURN_META(MRES_SUPERCEDE);
 		}
 		else if (args.ArgC() > 1 && strcmp(args.Arg(1), "credits") == 0)

@@ -3,25 +3,28 @@
 
 #include <sp_vm_types.h>
 #include <sh_list.h>
+#include "common_logic.h"
 
-class CPlugin;
 struct NativeEntry;
+class CPlugin;
+
+using namespace SourceMod;
 
 struct WeakNative
 {
-	WeakNative(CPlugin *plugin, uint32_t index) : 
+	WeakNative(IPlugin *plugin, uint32_t index) : 
 		pl(plugin), idx(index), entry(NULL)
 	{
 		pl = plugin;
 		idx = index;
 	}
-	WeakNative(CPlugin *plugin, uint32_t index, NativeEntry *pEntry) : 
+	WeakNative(IPlugin *plugin, uint32_t index, NativeEntry *pEntry) : 
 		pl(plugin), idx(index), entry(pEntry)
 	{
 		pl = plugin;
 		idx = index;
 	}
-	CPlugin *pl;
+	IPlugin *pl;
 	uint32_t idx;
 	NativeEntry *entry;
 };
@@ -39,7 +42,7 @@ public:
 public:
 	void SetMarkSerial(unsigned int serial);
 	unsigned int GetMarkSerial();
-	void PropogateMarkSerial(unsigned int serial);
+	void PropagateMarkSerial(unsigned int serial);
 public:
 	void AddDependent(CPlugin *pPlugin);
 	void AddWeakRef(const WeakNative & ref);
@@ -55,5 +58,7 @@ protected:
 	List<NativeEntry *> m_Natives;
 	List<NativeEntry *> m_ReplacedNatives;
 };
+
+extern CNativeOwner g_CoreNatives;
 
 #endif //_INCLUDE_SOURCEMOD_NATIVE_OWNER_H_

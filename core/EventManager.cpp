@@ -31,9 +31,8 @@
 
 #include "EventManager.h"
 #include "ForwardSys.h"
-#include "HandleSys.h"
-#include "PluginSys.h"
 #include "sm_stringutil.h"
+#include "logic_bridge.h"
 
 EventManager g_EventManager;
 
@@ -90,7 +89,7 @@ void EventManager::OnSourceModAllInitialized()
 	sec.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY | HANDLE_RESTRICT_OWNER;
 
 	/* Create the 'GameEvent' handle type */
-	m_EventType = g_HandleSys.CreateType("GameEvent", this, 0, NULL, &sec, g_pCoreIdent, NULL);
+	m_EventType = handlesys->CreateType("GameEvent", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 }
 
 void EventManager::OnSourceModShutdown()
@@ -100,7 +99,7 @@ void EventManager::OnSourceModShutdown()
 	SH_REMOVE_HOOK(IGameEventManager2, FireEvent, gameevents, SH_MEMBER(this, &EventManager::OnFireEvent_Post), true);
 
 	/* Remove the 'GameEvent' handle type */
-	g_HandleSys.RemoveType(m_EventType, g_pCoreIdent);
+	handlesys->RemoveType(m_EventType, g_pCoreIdent);
 
 	/* Remove ourselves as listener for events */
 	gameevents->RemoveListener(this);
@@ -187,7 +186,7 @@ EventHookError EventManager::HookEvent(const char *name, IPluginFunction *pFunct
 	if (!sm_trie_retrieve(m_EventHooks, name, (void **)&pHook))
 	{
 		EventHookList *pHookList;
-		IPlugin *plugin = g_PluginSys.GetPluginByCtx(pFunction->GetParentContext()->GetContext());
+		IPlugin *plugin = scripts->FindPluginByContext(pFunction->GetParentContext()->GetContext());
 
 		/* Check plugin for an existing EventHook list */
 		if (!plugin->GetProperty("EventHooks", (void **)&pHookList))
@@ -300,7 +299,7 @@ EventHookError EventManager::UnhookEvent(const char *name, IPluginFunction *pFun
 		/* If reference count is now 0, free hook structure */
 
 		EventHookList *pHookList;
-		IPlugin *plugin = g_PluginSys.GetPluginByCtx(pFunction->GetParentContext()->GetContext());
+		IPlugin *plugin = scripts->FindPluginByContext(pFunction->GetParentContext()->GetContext());
 
 		/* Get plugin's event hook list */
 		if (!plugin->GetProperty("EventHooks", (void**)&pHookList))
@@ -411,7 +410,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 		{
 			EventInfo info(pEvent, NULL);
 			HandleSecurity sec(NULL, g_pCoreIdent);
-			Handle_t hndl = g_HandleSys.CreateHandle(m_EventType, &info, NULL, g_pCoreIdent, NULL);
+			Handle_t hndl = handlesys->CreateHandle(m_EventType, &info, NULL, g_pCoreIdent, NULL);
 
 			info.bDontBroadcast = bDontBroadcast;
 
@@ -424,7 +423,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 
 			broadcast = info.bDontBroadcast;
 
-			g_HandleSys.FreeHandle(hndl, &sec);
+			handlesys->FreeHandle(hndl, &sec);
 		}
 
 		if (pHook->postCopy)
@@ -476,7 +475,7 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 				info.bDontBroadcast = bDontBroadcast;
 				info.pEvent = m_EventCopies.front();
 				info.pOwner = NULL;
-				hndl = g_HandleSys.CreateHandle(m_EventType, &info, NULL, g_pCoreIdent, NULL);
+				hndl = handlesys->CreateHandle(m_EventType, &info, NULL, g_pCoreIdent, NULL);
 
 				pForward->PushCell(hndl);
 			} else {
@@ -491,7 +490,7 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 			{
 				/* Free handle */
 				HandleSecurity sec(NULL, g_pCoreIdent);
-				g_HandleSys.FreeHandle(hndl, &sec);
+				handlesys->FreeHandle(hndl, &sec);
 
 				/* Free event structure */
 				gameevents->FreeEvent(info.pEvent);
