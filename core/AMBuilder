@@ -62,7 +62,6 @@ for i in SM.sdkInfo:
 		'sm_trie.cpp',
 		'CDataPack.cpp',
 		'frame_hooks.cpp',
-		'smn_fakenatives.cpp',
 		'smn_nextmap.cpp',
 		'sourcemm_api.cpp',
 		'ChatTriggers.cpp',
