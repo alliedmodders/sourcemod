@@ -250,13 +250,13 @@ static int load_mms_plugin(const char *file, bool *ok, char *error, size_t maxle
 	Pl_Status status;
 
 #ifndef METAMOD_PLAPI_VERSION
-	const char *file;
+	const char *filep;
 	PluginId source;
 #endif
 
 	if (!id || (
 #ifndef METAMOD_PLAPI_VERSION
-		g_pMMPlugins->Query(id, file, status, source)
+		g_pMMPlugins->Query(id, filep, status, source)
 #else
 		g_pMMPlugins->Query(id, NULL, &status, NULL)
 #endif
