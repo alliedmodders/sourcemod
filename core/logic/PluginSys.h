@@ -227,8 +227,8 @@ public:
 
 	bool AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func);
 	void AddConfig(bool autoCreate, const char *cfg, const char *folder);
-	unsigned int GetConfigCount();
-	AutoConfig *GetConfig(unsigned int i);
+	size_t GetConfigCount();
+	AutoConfig *GetConfig(size_t i);
 	inline void AddLibrary(const char *name)
 	{
 		m_Libraries.push_back(name);

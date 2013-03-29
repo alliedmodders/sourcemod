@@ -648,12 +648,12 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 	}
 }
 
-unsigned int CPlugin::GetConfigCount()
+size_t CPlugin::GetConfigCount()
 {
 	return (unsigned int)m_configs.size();
 }
 
-AutoConfig *CPlugin::GetConfig(unsigned int i)
+AutoConfig *CPlugin::GetConfig(size_t i)
 {
 	if (i >= GetConfigCount())
 	{
