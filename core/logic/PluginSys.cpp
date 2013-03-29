@@ -30,6 +30,7 @@
  */
 
 #include <stdio.h>
+#include <stdarg.h>
 #include "PluginSys.h"
 #include "ShareSys.h"
 #include <ILibrarySys.h>
