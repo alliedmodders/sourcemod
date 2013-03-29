@@ -29,11 +29,9 @@
  * Version: $Id$
  */
 
-#include "UserMessages.h"
-
 #ifdef USE_PROTOBUF_USERMESSAGES
 
-#include "HandleSys.h"
+#include "logic_bridge.h"
 #include "UserMessagePBHelpers.h"
 #include "smn_usermsgs.h"
 

@@ -93,7 +93,7 @@ public:
 			Handle_t &hndl = (*iter);
 			HandleSecurity sec;
 			sec.pIdentity = g_pCoreIdent;
-			g_HandleSys.FreeHandle(hndl, &sec);
+			handlesys->FreeHandle(hndl, &sec);
 			iter = childHandles.erase(iter);
 		}
 	}
