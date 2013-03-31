@@ -583,7 +583,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path)
 		char path2[PLATFORM_MAX_PATH];
 		smcore.Format(path2, sizeof(path2), "%s", path);
 		path2[strlen(path) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
-		return LoadAutoExtension(path);
+		return LoadAutoExtension(path2);
 	}
 
 	IExtension *pAlready;
