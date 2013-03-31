@@ -174,7 +174,8 @@ public:
 	bool LibraryExists(const char *library);
 	void CallOnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
 	void AddRawDependency(IExtension *ext, IdentityToken_t *other, void *iface);
-	void ListExtensions(CVector<IExtension *> *list);
+	const CVector<IExtension *> *ListExtensions();
+	void FreeExtensionList(const CVector<IExtension *> *list);
 public:
 	CExtension *GetExtensionFromIdent(IdentityToken_t *ptr);
 	void Shutdown();

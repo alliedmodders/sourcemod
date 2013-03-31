@@ -545,11 +545,10 @@ void SM_ExecuteAllConfigs()
 
 	engine->ServerCommand("exec sourcemod/sourcemod.cfg\n");
 
-	CVector<SMPlugin *> plugins;
-	scripts->ListPlugins(&plugins);
-	for (size_t i = 0; i < plugins.size(); i++)
+	AutoPluginList plugins(scripts);
+	for (size_t i = 0; i < plugins->size(); i++)
 	{
-		SMPlugin *plugin = plugins[i];
+		SMPlugin *plugin = plugins->at(i);
 		unsigned int num = plugin->GetConfigCount();
 		bool can_create = true;
 		for (unsigned int i=0; i<num; i++)

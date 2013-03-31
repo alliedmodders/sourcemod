@@ -1361,12 +1361,17 @@ void CExtensionManager::CallOnCoreMapStart(edict_t *pEdictList, int edictCount, 
 	}
 }
 
-void CExtensionManager::ListExtensions(CVector<IExtension *> *list)
+const CVector<IExtension *> *CExtensionManager::ListExtensions()
 {
+	CVector<IExtension *> *list = new CVector<IExtension *>();
 	for (List<CExtension *>::iterator iter = m_Libs.begin(); iter != m_Libs.end(); iter++)
-	{
 		list->push_back(*iter);
-	}
+	return list;
+}
+
+void CExtensionManager::FreeExtensionList(const CVector<IExtension *> *list)
+{
+	delete const_cast<CVector<IExtension *> *>(list);
 }
 
 bool CLocalExtension::IsSameFile(const char *file)

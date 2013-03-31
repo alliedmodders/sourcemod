@@ -325,7 +325,8 @@ public: //IScriptManager
 	SMPlugin *FindPluginByHandle(Handle_t hndl, HandleError *errp) {
 		return static_cast<SMPlugin *>(PluginFromHandle(hndl, errp));
 	}
-	void ListPlugins(CVector<SMPlugin *> *plugins);
+	const CVector<SMPlugin *> *ListPlugins();
+	void FreePluginList(const CVector<SMPlugin *> *plugins);
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();

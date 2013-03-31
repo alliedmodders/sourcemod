@@ -2627,14 +2627,19 @@ void CPluginManager::SyncMaxClients(int max_clients)
 	}
 }
 
-void CPluginManager::ListPlugins(CVector<SMPlugin *> *list)
+const CVector<SMPlugin *> *CPluginManager::ListPlugins()
 {
-	List<CPlugin *>::iterator iter;
+	CVector<SMPlugin *> *list = new CVector<SMPlugin *>();
 
-	for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
-	{
+	for (List<CPlugin *>::iterator iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
 		list->push_back((*iter));
-	}
+
+	return list;
+}
+
+void CPluginManager::FreePluginList(const CVector<SMPlugin *> *list)
+{
+	delete const_cast<CVector<SMPlugin *> *>(list);
 }
 
 class OldPluginAPI : public IPluginManager

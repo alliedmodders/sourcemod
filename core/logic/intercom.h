@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
@@ -49,7 +49,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 19)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 20)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -141,7 +141,8 @@ public:
 	virtual SMPlugin *FindPluginByConsoleArg(const char *text) = 0;
 	virtual SMPlugin *FindPluginByHandle(Handle_t hndl, HandleError *errp) = 0;
 	virtual bool UnloadPlugin(IPlugin *plugin) = 0;
-	virtual void ListPlugins(CVector<SMPlugin *> *plugins) = 0;
+	virtual const CVector<SMPlugin *> *ListPlugins() = 0;
+	virtual void FreePluginList(const CVector<SMPlugin *> *list) = 0;
 	virtual void AddFunctionsToForward(const char *name, IChangeableForward *fwd) = 0;
 };
 
@@ -157,7 +158,48 @@ public:
 	virtual IExtension *GetExtensionFromIdent(IdentityToken_t *token) = 0;
 	virtual void BindChildPlugin(IExtension *ext, SMPlugin *plugin) = 0;
 	virtual void AddRawDependency(IExtension *myself, IdentityToken_t *token, void *iface) = 0;
-	virtual void ListExtensions(CVector<IExtension *> *list) = 0;
+	virtual const CVector<IExtension *> *ListExtensions() = 0;
+	virtual void FreeExtensionList(const CVector<IExtension *> *list) = 0;
+};
+
+class AutoPluginList
+{
+public:
+	AutoPluginList(IScriptManager *scripts)
+		: scripts_(scripts), list_(scripts->ListPlugins())
+	{
+	}
+	~AutoPluginList()
+	{
+		scripts_->FreePluginList(list_);
+	}
+	const CVector<SMPlugin *> *operator ->()
+	{
+		return list_;
+	}
+private:
+	IScriptManager *scripts_;
+	const CVector<SMPlugin *> *list_;
+};
+
+class AutoExtensionList
+{
+public:
+	AutoExtensionList(IExtensionSys *extensions)
+		: extensions_(extensions), list_(extensions_->ListExtensions())
+	{
+	}
+	~AutoExtensionList()
+	{
+		extensions_->FreeExtensionList(list_);
+	}
+	const CVector<IExtension *> *operator ->()
+	{
+		return list_;
+	}
+private:
+	IExtensionSys *extensions_;
+	const CVector<IExtension *> *list_;
 };
 
 class CCommand;

@@ -783,10 +783,8 @@ void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 	unsigned int id = 0;
 	unsigned int start = 0;
 
-	CVector<IExtension *> extensions;
-	extsys->ListExtensions(&extensions);
-
-	if (!extensions.size())
+	AutoExtensionList extensions(extsys);
+	if (!extensions->size())
 	{
 		ClientConsolePrint(player->GetEdict(), "[SM] No extensions found.");
 		return;
@@ -797,13 +795,10 @@ void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 		start = atoi(args.Arg(2));
 	}
 
-	SourceHook::CVector<IExtension *>::iterator iter;
-
-	for (iter = extensions.begin();
-		 iter != extensions.end();
-		 iter++)
+	size_t i = 0;
+	for (; i < extensions->size(); i++)
 	{
-		IExtension *ext = (*iter);
+		IExtension *ext = extensions->at(i);
 
 		char error[255];
 		if (!ext->IsRunning(error, sizeof(error)))
@@ -850,16 +845,16 @@ void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 		ClientConsolePrint(player->GetEdict(), "%s", buffer);
 	}
 
-	for (; iter != extensions.end(); iter++)
+	for (; i < extensions->size(); i++)
 	{
 		char error[255];
-		if ((*iter)->IsRunning(error, sizeof(error)))
+		if (extensions->at(i)->IsRunning(error, sizeof(error)))
 		{
 			break;
 		}
 	}
 
-	if (iter != extensions.end())
+	if (i < extensions->size())
 	{
 		ClientConsolePrint(player->GetEdict(), "To see more, type \"sm exts %d\"", id);
 	}
@@ -872,10 +867,8 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 	edict_t *e = player->GetEdict();
 	unsigned int start = 0;
 
-	CVector<SMPlugin *> plugins;
-	scripts->ListPlugins(&plugins);
-
-	if (!plugins.size())
+	AutoPluginList plugins(scripts);
+	if (!plugins->size())
 	{
 		ClientConsolePrint(e, "[SM] No plugins found.");
 		return;
@@ -888,10 +881,10 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 
 	SourceHook::List<SMPlugin *> m_FailList;
 
-	CVector<SMPlugin *>::iterator iter = plugins.begin();
-	for (; iter != plugins.end(); iter++)
+	size_t i = 0;
+	for (; i < plugins->size(); i++)
 	{
-		SMPlugin *pl = *iter;
+		SMPlugin *pl = plugins->at(i);
 
 		if (pl->GetStatus() != Plugin_Running)
 		{
@@ -929,16 +922,16 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 	}
 
 	/* See if we can get more plugins */
-	for (; iter != plugins.end(); iter++)
+	for (; i < plugins->size(); i++)
 	{
-		if ((*iter)->GetStatus() == Plugin_Running)
+		if (plugins->at(i)->GetStatus() == Plugin_Running)
 		{
 			break;
 		}
 	}
 
 	/* Do we actually have more plugins? */
-	if (iter != plugins.end())
+	if (i < plugins->size())
 	{
 		ClientConsolePrint(e, "To see more, type \"sm plugins %d\"", id);
 	}
