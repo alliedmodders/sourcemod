@@ -283,6 +283,38 @@ void do_global_plugin_loads()
 	g_SourceMod.DoGlobalPluginLoads();
 }
 
+#if defined METAMOD_PLAPI_VERSION
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+#define GAMEFIX "2.l4d"
+#elif SOURCE_ENGINE == SE_LEFT4DEAD2
+#define GAMEFIX "2.l4d2"
+#elif SOURCE_ENGINE == SE_ALIENSWARM
+#define GAMEFIX "2.swarm"
+#elif SOURCE_ENGINE == SE_ORANGEBOX
+#define GAMEFIX "2.ep2"
+#elif SOURCE_ENGINE == SE_BLOODYGOODTIME
+#define GAMEFIX "2.bgt"
+#elif SOURCE_ENGINE == SE_EYE
+#define GAMEFIX "2.eye"
+#elif SOURCE_ENGINE == SE_CSS
+#define GAMEFIX "2.css"
+#elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
+#define GAMEFIX "2.ep2v"
+#elif SOURCE_ENGINE == SE_DARKMESSIAH
+#define GAMEFIX "2.darkm"
+#elif SOURCE_ENGINE == SE_PORTAL2
+#define GAMEFIX "2.portal2"
+#elif SOURCE_ENGINE == SE_CSGO
+#define GAMEFIX "2.csgo"
+#elif SOURCE_ENGINE == SE_DOTA
+#define GAMEFIX "2.dota"
+#else
+#define GAMEFIX "2.ep1"
+#endif //(SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
+#else  //METAMOD_PLAPI_VERSION
+#define GAMEFIX "1.ep1"
+#endif //METAMOD_PLAPI_VERSION
+
 static ServerGlobals serverGlobals;
 
 static sm_core_t core_bridge =
@@ -328,6 +360,7 @@ static sm_core_t core_bridge =
 	do_global_plugin_loads,
 	SM_AreConfigsExecuted,
 	SM_ExecuteForPlugin,
+	GAMEFIX,
 	&serverGlobals
 };
 

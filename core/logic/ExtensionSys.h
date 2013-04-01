@@ -138,7 +138,8 @@ public:
 class CExtensionManager : 
 	public IExtensionSys,
 	public SMGlobalClass,
-	public IPluginsListener
+	public IPluginsListener,
+	public IRootConsoleCommand
 {
 public:
 	CExtensionManager();

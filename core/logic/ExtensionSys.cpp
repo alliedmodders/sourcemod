@@ -58,38 +58,6 @@ CRemoteExtension::CRemoteExtension(IExtensionInterface *pAPI, const char *filena
 	m_pAPI = pAPI;
 }
 
-#if defined METAMOD_PLAPI_VERSION
-#if SOURCE_ENGINE == SE_LEFT4DEAD
-#define GAMEFIX "2.l4d"
-#elif SOURCE_ENGINE == SE_LEFT4DEAD2
-#define GAMEFIX "2.l4d2"
-#elif SOURCE_ENGINE == SE_ALIENSWARM
-#define GAMEFIX "2.swarm"
-#elif SOURCE_ENGINE == SE_ORANGEBOX
-#define GAMEFIX "2.ep2"
-#elif SOURCE_ENGINE == SE_BLOODYGOODTIME
-#define GAMEFIX "2.bgt"
-#elif SOURCE_ENGINE == SE_EYE
-#define GAMEFIX "2.eye"
-#elif SOURCE_ENGINE == SE_CSS
-#define GAMEFIX "2.css"
-#elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
-#define GAMEFIX "2.ep2v"
-#elif SOURCE_ENGINE == SE_DARKMESSIAH
-#define GAMEFIX "2.darkm"
-#elif SOURCE_ENGINE == SE_PORTAL2
-#define GAMEFIX "2.portal2"
-#elif SOURCE_ENGINE == SE_CSGO
-#define GAMEFIX "2.csgo"
-#elif SOURCE_ENGINE == SE_DOTA
-#define GAMEFIX "2.dota"
-#else
-#define GAMEFIX "2.ep1"
-#endif //(SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-#else  //METAMOD_PLAPI_VERSION
-#define GAMEFIX "1.ep1"
-#endif //METAMOD_PLAPI_VERSION
-
 CLocalExtension::CLocalExtension(const char *filename)
 {
 	m_PlId = 0;
@@ -107,8 +75,9 @@ CLocalExtension::CLocalExtension(const char *filename)
 	g_pSM->BuildPath(Path_SM,
 		path,
 		PLATFORM_MAX_PATH,
-		"extensions/%s." GAMEFIX "." PLATFORM_LIB_EXT,
-		filename);
+		"extensions/%s.%s." PLATFORM_LIB_EXT,
+		filename,
+		smcore.gamesuffix);
 
 	if (libsys->IsPathFile(path))
 	{
@@ -119,8 +88,9 @@ CLocalExtension::CLocalExtension(const char *filename)
 	g_pSM->BuildPath(Path_SM, 
 		path, 
 		PLATFORM_MAX_PATH,
-		"extensions/auto." GAMEFIX "/%s." PLATFORM_LIB_EXT,
-		filename);
+		"extensions/auto.%s/%s." PLATFORM_LIB_EXT,
+		filename,
+		smcore.gamesuffix);
 
 	/* Try the "normal" version */
 	if (!libsys->IsPathFile(path))
@@ -509,11 +479,13 @@ void CExtensionManager::OnSourceModAllInitialized()
 {
 	g_ExtType = g_ShareSys.CreateIdentType("EXTENSION");
 	pluginsys->AddPluginsListener(this);
+	rootmenu->AddRootConsoleCommand("exts", "Manage extensions", this);
 	g_ShareSys.AddInterface(NULL, this);
 }
 
 void CExtensionManager::OnSourceModShutdown()
 {
+	rootmenu->RemoveRootConsoleCommand("exts", this);
 	pluginsys->RemovePluginsListener(this);
 	g_ShareSys.DestroyIdentType(g_ExtType);
 }
