@@ -299,6 +299,12 @@ void SourceModBase::StartSourceMod(bool late)
 		g_SourceMod_Core.OnVSPListening(vsp_interface);
 	}
 
+	if (late)
+	{
+		/* We missed doing anythin gin this if we late-loaded. Sneak it in now. */
+		AllPluginsLoaded();
+	}
+
 	/* If we want to autoload, do that now */
 	const char *disabled = GetCoreConfigValue("DisableAutoUpdate");
 	if (disabled == NULL || strcasecmp(disabled, "yes") != 0)
@@ -637,6 +643,11 @@ IVirtualMachine *SourceModBase::GetScriptingVM()
 
 void SourceModBase::AllPluginsLoaded()
 {
+	if (!g_Loaded)
+	{
+		return;
+	}
+
 	SMGlobalClass *base = SMGlobalClass::head;
 	while (base)
 	{
