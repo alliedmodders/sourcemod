@@ -16,8 +16,6 @@
  */
 #include "getch.h"
 
-#define	strnicmp(a,b,c) strncasecmp(a,b,c)
-
 /*
  * WinWorld wants '\'. Unices do not.
  */
@@ -30,7 +28,11 @@
  * For Linux, we must overrule these settings with those defined in glibc.
  */
 #if !defined __BYTE_ORDER
-# include <stdlib.h>
+# if defined EMSCRIPTEN
+#  include <endian.h>
+# else
+#  include <stdlib.h>
+# endif
 #endif
 
 #if defined __OpenBSD__ || defined __FreeBSD__ || defined __APPLE__

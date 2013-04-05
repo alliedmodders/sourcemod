@@ -613,8 +613,14 @@ static void inst_datetime_defines(void)
 
   time(&td);
   curtime = localtime(&td);
+
+#if defined EMSCRIPTEN
+  snprintf(date, sizeof(date), "\"%02d/%02d/%04d\"", curtime->tm_mon + 1, curtime->tm_mday, curtime->tm_year + 1900);
+  snprintf(ltime, sizeof(ltime), "\"%02d:%02d:%02d\"", curtime->tm_hour, curtime->tm_min, curtime->tm_sec);
+#else
   strftime(date, 31, "\"%m/%d/%Y\"", curtime);
   strftime(ltime, 31, "\"%H:%M:%S\"", curtime);
+#endif
 
   insert_subst("__DATE__", date, 8);
   insert_subst("__TIME__", ltime, 8);
