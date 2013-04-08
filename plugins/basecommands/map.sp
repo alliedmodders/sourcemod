@@ -53,7 +53,12 @@ public MenuHandler_ChangeMap(Handle:menu, MenuAction:action, param1, param2)
 		new Handle:dp;
 		CreateDataTimer(3.0, Timer_ChangeMap, dp);
 		WritePackString(dp, map);
-
+	}
+	else if (action == MenuAction_Display)
+	{
+		decl String:title[128];
+		Format(title, sizeof(title), "%T", "Please select a map", param1);
+		SetPanelTitle(Handle:param2, title);
 	}
 }
 

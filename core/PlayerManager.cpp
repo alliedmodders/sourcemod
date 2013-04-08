@@ -1097,7 +1097,9 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 		{
 			if (!CheckSetAdminName(client, pPlayer, id))
 			{
-				pPlayer->Kick("Your name is reserved by SourceMod; set your password to use it.");
+				char kickMsg[128];
+				logicore.CoreTranslate(kickMsg, sizeof(kickMsg), "%T", 2, NULL, "Name Reserved", &client);
+				pPlayer->Kick(kickMsg);
 				RETURN_META(MRES_IGNORED);
 			}
 		} else if ((id = g_Admins.FindAdminByIdentity("name", old_name)) != INVALID_ADMIN_ID) {

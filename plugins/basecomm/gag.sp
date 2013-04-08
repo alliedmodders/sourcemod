@@ -54,32 +54,39 @@ DisplayGagTypesMenu(client)
 	
 	if (!g_Muted[target])
 	{
-		AddMenuItem(menu, "0", "Mute Player");
+		AddTranslatedMenuItem(menu, "0", "Mute Player", client);
 	}
 	else
 	{
-		AddMenuItem(menu, "1", "UnMute Player");
+		AddTranslatedMenuItem(menu, "1", "UnMute Player", client);
 	}
 	
 	if (!g_Gagged[target])
 	{
-		AddMenuItem(menu, "2", "Gag Player");
+		AddTranslatedMenuItem(menu, "2", "Gag Player", client);
 	}
 	else
 	{
-		AddMenuItem(menu, "3", "UnGag Player");
+		AddTranslatedMenuItem(menu, "3", "UnGag Player", client);
 	}
 	
 	if (!g_Muted[target] || !g_Gagged[target])
 	{
-		AddMenuItem(menu, "4", "Silence Player");
+		AddTranslatedMenuItem(menu, "4", "Silence Player", client);
 	}
 	else
 	{
-		AddMenuItem(menu, "5", "UnSilence Player");
+		AddTranslatedMenuItem(menu, "5", "UnSilence Player", client);
 	}
 		
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+}
+
+AddTranslatedMenuItem(Handle:menu, const String:opt[], const String:phrase[], client)
+{
+	decl String:buffer[128];
+	Format(buffer, sizeof(buffer), "%T", phrase, client);
+	AddMenuItem(menu, opt, buffer);
 }
 
 DisplayGagPlayerMenu(client)
