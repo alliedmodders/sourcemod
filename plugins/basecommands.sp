@@ -81,8 +81,8 @@ public OnPluginStart()
 		OnAdminMenuReady(topmenu);
 	}
 	
-	g_MapList = CreateMenu(MenuHandler_ChangeMap);
-	SetMenuTitle(g_MapList, "Please select a map");
+	g_MapList = CreateMenu(MenuHandler_ChangeMap, MenuAction_Display);
+	SetMenuTitle(g_MapList, "%T", "Please select a map", LANG_SERVER);
 	SetMenuExitBackButton(g_MapList, true);
 	
 	decl String:mapListPath[PLATFORM_MAX_PATH];

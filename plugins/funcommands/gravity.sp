@@ -83,11 +83,11 @@ DisplayGravityAmountMenu(client)
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
-	AddMenuItem(menu, "4.0", "Gravity Very High");
-	AddMenuItem(menu, "2.0", "Gravity High");
-	AddMenuItem(menu, "1.0", "Gravity Normal");
-	AddMenuItem(menu, "0.5", "Gravity Low");
-	AddMenuItem(menu, "0.1", "Gravity Very Low");
+	AddTranslatedMenuItem(menu, "4.0", "Gravity Very High", client);
+	AddTranslatedMenuItem(menu, "2.0", "Gravity High", client);
+	AddTranslatedMenuItem(menu, "1.0", "Gravity Normal", client);
+	AddTranslatedMenuItem(menu, "0.5", "Gravity Low", client);
+	AddTranslatedMenuItem(menu, "0.1", "Gravity Very Low", client);
 	
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }

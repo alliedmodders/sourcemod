@@ -118,8 +118,8 @@ public OnPluginStart()
 	
 	g_SelectedMaps = CreateArray(33);
 	
-	g_MapList = CreateMenu(MenuHandler_Map, MenuAction_DrawItem);
-	SetMenuTitle(g_MapList, "Please select a map");
+	g_MapList = CreateMenu(MenuHandler_Map, MenuAction_DrawItem|MenuAction_Display);
+	SetMenuTitle(g_MapList, "%T", "Please select a map", LANG_SERVER);
 	SetMenuExitBackButton(g_MapList, true);
 	
 	decl String:mapListPath[PLATFORM_MAX_PATH];

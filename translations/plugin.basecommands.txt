@@ -141,4 +141,14 @@
 		"#format"		"{1:s}"
 		"en"			"Cvar {1} is now protected."
 	}
+	
+	"Please select a map"
+	{
+		"en"			"Please select a map"
+	}
+	
+	"Choose Config"
+	{
+		"en"			"Choose Config"
+	}
 }
