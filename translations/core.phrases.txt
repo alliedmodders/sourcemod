@@ -78,6 +78,11 @@
 		"en"			"No Vote"
 	}
 	
+	"Name Reserved"
+	{
+		"en"			"Your name is reserved by SourceMod; set your password to use it."
+	}
+	
 	/* This is a special "pass-thru" translation */
 	"_s"
 	{
