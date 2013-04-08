@@ -335,3 +335,10 @@ public OnAdminMenuReady(Handle:topmenu)
 	}
 }
 
+AddTranslatedMenuItem(Handle:menu, const String:opt[], const String:phrase[], client)
+{
+	decl String:buffer[128];
+	Format(buffer, sizeof(buffer), "%T", phrase, client);
+	AddMenuItem(menu, opt, buffer);
+}
+

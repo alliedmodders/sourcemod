@@ -82,6 +82,12 @@ public MenuHandler_ExecCFG(Handle:menu, MenuAction:action, param1, param2)
 	
 		PerformExec(param1, path);
 	}
+	else if (action == MenuAction_Display)
+	{
+		decl String:title[128];
+		Format(title, sizeof(title), "%T", "Choose Config", param1);
+		SetPanelTitle(Handle:param2, title);
+	}
 }
 
 public Action:Command_ExecCfg(client, args)
@@ -115,8 +121,8 @@ ParseConfigs()
 		CloseHandle(g_ConfigMenu);
 	}
 	
-	g_ConfigMenu = CreateMenu(MenuHandler_ExecCFG);
-	SetMenuTitle(g_ConfigMenu, "Choose Config");
+	g_ConfigMenu = CreateMenu(MenuHandler_ExecCFG, MenuAction_Display);
+	SetMenuTitle(g_ConfigMenu, "%T", "Choose Config", LANG_SERVER);
 	SetMenuExitBackButton(g_ConfigMenu, true);
 	
 	decl String:configPath[256];

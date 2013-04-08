@@ -122,9 +122,9 @@ DisplayAmountMenu(client)
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
-	AddMenuItem(menu, "255", "Fully blind");
-	AddMenuItem(menu, "240", "Half blind");
-	AddMenuItem(menu, "0", "No blind");
+	AddTranslatedMenuItem(menu, "255", "Fully blind", client);
+	AddTranslatedMenuItem(menu, "240", "Half blind", client);
+	AddTranslatedMenuItem(menu, "0", "No blind", client);
 	
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }

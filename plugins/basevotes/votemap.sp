@@ -84,7 +84,9 @@ ConfirmVote(client)
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
-	AddMenuItem(menu, "Confirm", "Start the Vote");
+	decl String:itemtext[256];
+	Format(itemtext, sizeof(itemtext), "%T", "Start the Vote", client);
+	AddMenuItem(menu, "Confirm", itemtext);
 	
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);	
 }
@@ -167,6 +169,12 @@ public MenuHandler_Map(Handle:menu, MenuAction:action, param1, param2)
 		{
 			ConfirmVote(param1);
 		}
+	}
+	else if (action == MenuAction_Display)
+	{
+		decl String:title[128];
+		Format(title, sizeof(title), "%T", "Please select a map", param1);
+		SetPanelTitle(Handle:param2, title);
 	}
 	
 	return 0;

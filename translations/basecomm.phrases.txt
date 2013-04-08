@@ -45,4 +45,34 @@
 		"#format"		"{1:t}"
 		"en"			"Unsilenced {1}."
 	}
+	
+	"Mute Player"
+	{
+		"en"			"Mute Player"
+	}
+	
+	"UnMute Player"
+	{
+		"en"			"UnMute Player"
+	}
+	
+	"Gag Player"
+	{
+		"en"			"Gag Player"
+	}
+	
+	"UnGag Player"
+	{
+		"en"			"UnGag Player"
+	}
+	
+	"Silence Player"
+	{
+		"en"			"Silence Player"
+	}
+	
+	"UnSilence Player"
+	{
+		"en"			"UnSilence Player"
+	}
 }
