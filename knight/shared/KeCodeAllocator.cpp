@@ -267,13 +267,8 @@ KeCodeRegion *ke_AddRegionForSize(KeCodeCache *cache, size_t size)
 #if defined KE_PLATFORM_WINDOWS
 	region->block_start = (unsigned char *)VirtualAlloc(NULL, size, MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 #elif defined KE_PLATFORM_POSIX
-	region->block_start = (unsigned char *)valloc(size);
-	if (mprotect(region->block_start, size, PROT_READ|PROT_WRITE|PROT_EXEC) == -1)
-	{
-		free(region->block_start);
-		delete region;
-		return NULL;
-	}
+	region->block_start = (unsigned char *)mmap(NULL, size, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANON, -1, 0);
+	region->block_start = (region->block_start == MAP_FAILED) ? NULL : region->block_start;
 #else
 #error "TODO"
 #endif
@@ -389,7 +384,7 @@ KeCodeRegion *ke_DestroyRegion(KeCodeRegion *region)
 #if defined KE_PLATFORM_WINDOWS
 	VirtualFree(region->block_start, 0, MEM_RELEASE);
 #else
-	free(region->block_start);
+	munmap(region->block_start, region->total_size);
 #endif
 
 	delete region;
