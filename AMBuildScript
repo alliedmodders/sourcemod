@@ -12,6 +12,9 @@ class ExtractDebugInfoCommand(Command):
 		self.outfile = outfile
 
 	def run(self, runner, job):
+		if AMBuild.cache['debug']:
+			return
+
 		if not self.binary.NeedsRelink(self.outfile):
 			return
 
@@ -77,6 +80,8 @@ class SM:
 			
 			self.hasMySql = AMBuild.options.hasMySql
 			AMBuild.cache.CacheVariable('hasMySql', self.hasMySql)
+
+			AMBuild.cache.CacheVariable('debug', AMBuild.options.debug)
 			
 			#Environment variable paths to external headers
 			envvars = { 'MMSOURCE19': 'mmsource-1.9', 'MYSQL5': 'mysql-5.0' }
