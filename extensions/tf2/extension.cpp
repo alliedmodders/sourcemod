@@ -441,6 +441,8 @@ TFClassType ClassnameToType(const char *classname)
 		trie.insert("demo", TFClass_DemoMan);
 		trie.insert("medic", TFClass_Medic);
 		trie.insert("heavy", TFClass_Heavy);
+		trie.insert("heavyweap", TFClass_Heavy);
+		trie.insert("heavyweapons", TFClass_Heavy);
 		trie.insert("hwg", TFClass_Heavy);
 		trie.insert("pyro", TFClass_Pyro);
 		trie.insert("spy", TFClass_Spy);
