@@ -35,10 +35,6 @@ new g_GravityTarget[MAXPLAYERS+1];
 
 PerformGravity(client, target, Float:amount)
 {
-	new offset = FindDataMapOffs(client, "m_flGravity");
-	new Float:temp = GetEntDataFloat(client, offset);
-	PrintToChatAll("Gravity check %f", temp);
-	
 	SetEntityGravity(target, amount);
 	LogAction(client, target, "\"%L\" set gravity on \"%L\" to %d.", client, target, amount);
 }
