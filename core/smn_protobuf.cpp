@@ -30,6 +30,7 @@
  */
 
 #include "logic_bridge.h"
+#include "UserMessages.h"
 #include "UserMessagePBHelpers.h"
 #include "smn_usermsgs.h"
 
