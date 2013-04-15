@@ -29,8 +29,6 @@
  * Version: $Id$
  */
 
-#ifdef USE_PROTOBUF_USERMESSAGES
-
 #include "logic_bridge.h"
 #include "UserMessagePBHelpers.h"
 #include "smn_usermsgs.h"
@@ -998,4 +996,3 @@ REGISTER_NATIVES(protobufnatives)
                              ///////////////////////////////////////////////////////////////////////////////////////// 
                                              //////////////////////////////////////////////////////////
 */
-#endif // USE_PROTOBUF_USERMESSAGES
