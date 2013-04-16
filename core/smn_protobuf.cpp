@@ -70,14 +70,14 @@ static cell_t smn_PbReadInt(IPluginContext *pCtx, const cell_t *params)
 	int index = params[0] >= 3 ? params[3] : -1;
 	if (index < 0)
 	{
-		if (!msg->GetInt32OrUnsigned(strField, &ret))
+		if (!msg->GetInt32OrUnsignedOrEnum(strField, &ret))
 		{
 			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 		}
 	}
 	else
 	{
-		if (!msg->GetRepeatedInt32OrUnsigned(strField, index, &ret))
+		if (!msg->GetRepeatedInt32OrUnsignedOrEnum(strField, index, &ret))
 		{
 			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
 		}
@@ -314,7 +314,7 @@ static cell_t smn_PbReadRepeatedInt(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	int ret;
-	if (!msg->GetRepeatedInt32OrUnsigned(strField, params[3], &ret))
+	if (!msg->GetRepeatedInt32OrUnsignedOrEnum(strField, params[3], &ret))
 	{
 		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
@@ -458,14 +458,14 @@ static cell_t smn_PbSetInt(IPluginContext *pCtx, const cell_t *params)
 	int index = params[0] >= 4 ? params[4] : -1;
 	if (index < 0)
 	{
-		if (!msg->SetInt32OrUnsigned(strField, params[3]))
+		if (!msg->SetInt32OrUnsignedOrEnum(strField, params[3]))
 		{
 			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 		}
 	}
 	else
 	{
-		if (!msg->SetRepeatedInt32OrUnsigned(strField, index, params[3]))
+		if (!msg->SetRepeatedInt32OrUnsignedOrEnum(strField, index, params[3]))
 		{
 			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, index, msg->GetProtobufMessage()->GetTypeName().c_str());
 		}
@@ -703,7 +703,7 @@ static cell_t smn_PbAddInt(IPluginContext *pCtx, const cell_t *params)
 	GET_MSG_FROM_HANDLE_OR_ERR();
 	GET_FIELD_NAME_OR_ERR();
 
-	if (!msg->AddInt32OrUnsigned(strField, params[3]))
+	if (!msg->AddInt32OrUnsignedOrEnum(strField, params[3]))
 	{
 		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}

@@ -56,6 +56,15 @@
 		return false; \
 	}
 
+#define CHECK_FIELD_TYPE3(type1, type2, type3) \
+	protobuf::FieldDescriptor::CppType fieldType = field->cpp_type(); \
+	if (fieldType != protobuf::FieldDescriptor::CPPTYPE_##type1       \
+		&& fieldType != protobuf::FieldDescriptor::CPPTYPE_##type2 \
+		&& fieldType != protobuf::FieldDescriptor::CPPTYPE_##type3) \
+	{                 \
+		return false; \
+	}
+
 #define CHECK_FIELD_REPEATED() \
 	if (field->label() != protobuf::FieldDescriptor::LABEL_REPEATED) \
 	{                 \
@@ -316,74 +325,114 @@ public:
 		return true;
 	}
 
-	inline bool GetInt32OrUnsigned(const char *pszFieldName, int32 *out)
+	inline bool GetInt32OrUnsignedOrEnum(const char *pszFieldName, int32 *out)
 	{
 		GETCHECK_FIELD();
-		CHECK_FIELD_TYPE2(INT32, UINT32);
+		CHECK_FIELD_TYPE3(INT32, UINT32, ENUM);
 		CHECK_FIELD_NOT_REPEATED();
 
 		if (fieldType == protobuf::FieldDescriptor::CPPTYPE_UINT32)
 			*out = (int32)msg->GetReflection()->GetUInt32(*msg, field);
-		else
+		else if (fieldType == protobuf::FieldDescriptor::CPPTYPE_INT32)
 			*out = msg->GetReflection()->GetInt32(*msg, field);
+		else // CPPTYPE_ENUM
+			*out = msg->GetReflection()->GetEnum(*msg, field)->number();
 
 		return true;	
 	}
 
-	inline bool SetInt32OrUnsigned(const char *pszFieldName, int32 value)
+	inline bool SetInt32OrUnsignedOrEnum(const char *pszFieldName, int32 value)
 	{
 		GETCHECK_FIELD();
-		CHECK_FIELD_TYPE2(INT32, UINT32);
+		CHECK_FIELD_TYPE3(INT32, UINT32, ENUM);
 		CHECK_FIELD_NOT_REPEATED();
 
 		if (fieldType == protobuf::FieldDescriptor::CPPTYPE_UINT32)
+		{
 			msg->GetReflection()->SetUInt32(msg, field, (uint32)value);
-		else
+		}
+		else if (fieldType == protobuf::FieldDescriptor::CPPTYPE_INT32)
+		{
 			msg->GetReflection()->SetInt32(msg, field, value);
+		}
+		else // CPPTYPE_ENUM
+		{
+			const protobuf::EnumValueDescriptor *pEnumValue = field->enum_type()->FindValueByNumber(value);
+			if (!pEnumValue)
+				return false;
+
+			msg->GetReflection()->SetEnum(msg, field, pEnumValue);
+		}
 
 		return true;
 	}
 
-	inline bool GetRepeatedInt32OrUnsigned(const char *pszFieldName, int index, int32 *out)
+	inline bool GetRepeatedInt32OrUnsignedOrEnum(const char *pszFieldName, int index, int32 *out)
 	{
 		GETCHECK_FIELD();
-		CHECK_FIELD_TYPE2(INT32, UINT32);
+		CHECK_FIELD_TYPE3(INT32, UINT32, ENUM);
 		CHECK_FIELD_REPEATED();
 		CHECK_REPEATED_ELEMENT(index);
 		
 		if (fieldType == protobuf::FieldDescriptor::CPPTYPE_UINT32)
 			*out = (int32)msg->GetReflection()->GetRepeatedUInt32(*msg, field, index);
-		else
+		else if (fieldType == protobuf::FieldDescriptor::CPPTYPE_INT32)
 			*out = msg->GetReflection()->GetRepeatedInt32(*msg, field, index);
+		else // CPPTYPE_ENUM
+			*out = msg->GetReflection()->GetRepeatedEnum(*msg, field, index)->number();
 
 		return true;
 	}
 
-	inline bool SetRepeatedInt32OrUnsigned(const char *pszFieldName, int index, int32 value)
+	inline bool SetRepeatedInt32OrUnsignedOrEnum(const char *pszFieldName, int index, int32 value)
 	{
 		GETCHECK_FIELD();
-		CHECK_FIELD_TYPE2(INT32, UINT32);
+		CHECK_FIELD_TYPE3(INT32, UINT32, ENUM);
 		CHECK_FIELD_REPEATED();
 		CHECK_REPEATED_ELEMENT(index);
 		
 		if (fieldType == protobuf::FieldDescriptor::CPPTYPE_UINT32)
+		{
 			msg->GetReflection()->SetRepeatedUInt32(msg, field, index, (uint32)value);
-		else
+		}
+		else if (fieldType == protobuf::FieldDescriptor::CPPTYPE_INT32)
+		{
 			msg->GetReflection()->SetRepeatedInt32(msg, field, index, value);
+		}
+		else // CPPTYPE_ENUM
+		{
+			const protobuf::EnumValueDescriptor *pEnumValue = field->enum_type()->FindValueByNumber(value);
+			if (!pEnumValue)
+				return false;
+
+			msg->GetReflection()->SetRepeatedEnum(msg, field, index, pEnumValue);
+		}
 
 		return true;
 	}
 
-	inline bool AddInt32OrUnsigned(const char *pszFieldName, int32 value)
+	inline bool AddInt32OrUnsignedOrEnum(const char *pszFieldName, int32 value)
 	{
 		GETCHECK_FIELD();
-		CHECK_FIELD_TYPE2(INT32, UINT32);
+		CHECK_FIELD_TYPE3(INT32, UINT32, ENUM);
 		CHECK_FIELD_REPEATED();
 
 		if (fieldType == protobuf::FieldDescriptor::CPPTYPE_UINT32)
+		{
 			msg->GetReflection()->AddUInt32(msg, field, (uint32)value);
-		else
+		}
+		else if (fieldType == protobuf::FieldDescriptor::CPPTYPE_INT32)
+		{
 			msg->GetReflection()->AddInt32(msg, field, value);
+		}
+		else // CPPTYPE_ENUM
+		{
+			const protobuf::EnumValueDescriptor *pEnumValue = field->enum_type()->FindValueByNumber(value);
+			if (!pEnumValue)
+				return false;
+
+			msg->GetReflection()->AddEnum(msg, field, pEnumValue);
+		}
 
 		return true;
 	}

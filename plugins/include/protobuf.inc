@@ -38,7 +38,7 @@
 #define PB_FIELD_NOT_REPEATED -1
 
 /**
- * Reads an int32, uint32, sint32, fixed32, or sfixed32 from a protobuf message.
+ * Reads an int32, uint32, sint32, fixed32, sfixed32, or enum value from a protobuf message.
  *
  * @param pb			protobuf handle.
  * @param field			Field name.
@@ -244,7 +244,7 @@ native PbReadRepeatedVector(Handle:pb, const String:field[], index, Float:buffer
 native PbReadRepeatedVector2D(Handle:pb, const String:field[], index, Float:buffer[2]);
 
 /**
- * Sets an int32, uint32, sint32, fixed32, or sfixed32  on a protobuf message.
+ * Sets an int32, uint32, sint32, fixed32, sfixed32, or enum value on a protobuf message.
  *
  * @param pb			protobuf handle.
  * @param field			Field name.
@@ -340,7 +340,7 @@ native PbSetVector(Handle:pb, const String:field[], const Float:vec[3], index=PB
 native PbSetVector2D(Handle:pb, const String:field[], const Float:vec[2], index=PB_FIELD_NOT_REPEATED);
 
 /**
- * Add an int32, uint32, sint32, fixed32, or sfixed32 to a protobuf message repeated field.
+ * Add an int32, uint32, sint32, fixed32, sfixed32, or enum value to a protobuf message repeated field.
  *
  * @param pb			protobuf handle.
  * @param field			Field name.
