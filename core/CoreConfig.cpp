@@ -61,7 +61,10 @@ ConVar *g_ServerCfgFile = NULL;
 
 void CheckAndFinalizeConfigs();
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_DOTA
+SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, void *, const CCommand &);
+void Hook_ExecDispatchPre(void *pUnknown, const CCommand &cmd)
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 void Hook_ExecDispatchPre(const CCommand &cmd)
 #elif SOURCE_ENGINE == SE_DARKMESSIAH
@@ -89,7 +92,9 @@ void Hook_ExecDispatchPre()
 	}
 }
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_DOTA
+void Hook_ExecDispatchPost(void *pUnknown, const CCommand &cmd)
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 void Hook_ExecDispatchPost(const CCommand &cmd)
 #else
 void Hook_ExecDispatchPost()

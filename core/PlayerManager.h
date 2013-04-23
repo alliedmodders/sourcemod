@@ -230,7 +230,9 @@ private:
 	int m_ReplayUserId;
 };
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_DOTA
+void CmdMaxplayersCallback(void *, const CCommand &command);
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdMaxplayersCallback(const CCommand &command);
 #else
 void CmdMaxplayersCallback();

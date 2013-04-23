@@ -37,23 +37,20 @@
 #include "HalfLife2.h"
 #include "logic_bridge.h"
 
-/* :HACKHACK: We can't SH_DECL here because ConCmdManager.cpp does.
- * While the OB build only runs on MM:S 1.6.0+ (SH 5+), the older one 
- * can technically be compiled against any MM:S version after 1.4.2.
- */
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-extern bool __SourceHook_FHRemoveConCommandDispatch(void *, bool, class fastdelegate::FastDelegate1<const CCommand &, void>);
-extern int __SourceHook_FHAddConCommandDispatch(void *, ISourceHook::AddHookMode, bool, class fastdelegate::FastDelegate1<const CCommand &, void>);
+#if SOURCE_ENGINE == SE_DOTA
+SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, void *, const CCommand &);
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
+SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
+#elif SOURCE_ENGINE == SE_DARKMESSIAH
+SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 #else
-extern bool __SourceHook_FHRemoveConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
-#if SH_IMPL_VERSION >= 5
-extern int __SourceHook_FHAddConCommandDispatch(void *, ISourceHook::AddHookMode, bool, class fastdelegate::FastDelegate0<void>);
-#elif SH_IMPL_VERSION == 4
-extern int __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
-#elif SH_IMPL_VERSION == 3
-extern bool __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
-#endif //SH_IMPL_VERSION
-#endif //SE_ORANGEBOX
+# if SH_IMPL_VERSION >= 4
+ extern int __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
+# else
+ extern bool __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
+# endif
+extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
+#endif
 
 ChatTriggers g_ChatTriggers;
 bool g_bSupressSilentFails = false;
@@ -150,7 +147,10 @@ void ChatTriggers::OnSourceModShutdown()
 	g_Forwards.ReleaseForward(m_pDidFloodBlock);
 }
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_DOTA
+void ChatTriggers::OnSayCommand_Pre(void *pUnknown, const CCommand &command)
+{
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 void ChatTriggers::OnSayCommand_Pre(const CCommand &command)
 {
 #else
@@ -267,7 +267,9 @@ void ChatTriggers::OnSayCommand_Pre()
 	RETURN_META(MRES_IGNORED);
 }
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_DOTA
+void ChatTriggers::OnSayCommand_Post(void *pUnknown, const CCommand &command)
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 void ChatTriggers::OnSayCommand_Post(const CCommand &command)
 #else
 void ChatTriggers::OnSayCommand_Post()

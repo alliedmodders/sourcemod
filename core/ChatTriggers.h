@@ -54,7 +54,10 @@ public: //SMGlobalClass
 		char *error, 
 		size_t maxlength);
 private: //ConCommand
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_DOTA
+	void OnSayCommand_Pre(void *pUnknown, const CCommand &command);
+	void OnSayCommand_Post(void *pUnknown, const CCommand &command);
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 	void OnSayCommand_Pre(const CCommand &command);
 	void OnSayCommand_Post(const CCommand &command);
 #else

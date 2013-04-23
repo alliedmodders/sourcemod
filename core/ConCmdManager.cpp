@@ -40,7 +40,9 @@
 
 ConCmdManager g_ConCmds;
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_DOTA
+	SH_DECL_HOOK2_void(ConCommand, Dispatch, SH_NOATTRIB, false, void *, const CCommand &);
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_DECL_HOOK1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 #else
 	SH_DECL_HOOK0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
@@ -206,7 +208,10 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 		delete pList;
 	}
 }
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_DOTA
+void CommandCallback(void *pUnknown, const CCommand &command)
+{
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 void CommandCallback(const CCommand &command)
 {
 #else

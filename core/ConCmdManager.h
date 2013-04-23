@@ -98,7 +98,9 @@ class ConCmdManager :
 	public IPluginsListener,
 	public IConCommandTracker
 {
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_DOTA
+	friend void CommandCallback(void *pUnknown, const CCommand &command);
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 	friend void CommandCallback(const CCommand &command);
 #else
 	friend void CommandCallback();
