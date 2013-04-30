@@ -4,24 +4,31 @@
 DD_PATH=/home/gdc/dd
 
 # Path for DepotDownloader to download to, relative to DD_PATH
-DD_DIR=source
+DD_DIR=css
 
-# Game to use for DepotDownloader for Steam2 content (hldsupdatetool -game param)
-DD_GAME="Counter-Strike Source"
+# App ID
+DD_APP=232330
 
-# Absolute path to game's engine directory
-ENGINE_PATH=${DD_PATH}/${DD_DIR}/css
+# Beta name
+DD_BETA=prerelease
 
+# Beta passowrd, if applicable
+#DD_BETA_PASSWORD=passwordhere
+
+# Relative path to game's engine directory from DD
+ENGINE_PATH_FROM_DD=${DD_DIR}
 # Game's directory name
 GAME_DIR=cstrike
 
+BIN_EXT="_srv"
+
 # SM gamedata engine name
-ENGINE_NAME=orangebox_valve
+ENGINE_NAME=css
 
 # List of gamedata files to run checks on
 gamedata_files=(
 	"sdktools.games/game.cstrike.txt"
-	"sdktools.games/engine.ep2valve.txt"
+	"sdktools.games/engine.css.txt"
 	"sm-cstrike.games/game.css.txt"
 )
 

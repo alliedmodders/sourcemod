@@ -1,8 +1,17 @@
 #!/bin/bash
 
-# Do not run this file directly. It is meant to be called by other scripts
+SCRIPT_PATH=/users/psychonic/gdc
 
-SM_PATH=/home/gdc/sourcemod-central
+# with trailing slash or undefined for system default
+MONO_BIN_PATH=/apps/mono-2.10.9/bin/
+
+DD_PATH=${SCRIPT_PATH}/dd
+ENGINE_PATH=${DD_PATH}/${ENGINE_PATH_FROM_DD}
+
+SM_PATH=${SCRIPT_PATH}/sourcemod-central
+SMRCON_PATH=${SCRIPT_PATH}/SMRCon
+
+# Do not run this file directly. It is meant to be called by other scripts
 
 ENGINE_BIN=${ENGINE_PATH}/bin/engine
 GAME_BIN=${ENGINE_PATH}/${GAME_DIR}/bin/server
@@ -31,7 +40,7 @@ if [ $MOD == 0 ] && [ "$1" == "auto" ] ; then
 fi
 
 export RDTSC_FREQUENCY="disabled"
-export LD_LIBRARY_PATH=".:${ENGINE_PATH}/bin:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="${ENGINE_PATH}:${ENGINE_PATH}/bin:$LD_LIBRARY_PATH"
 
 UPDATE=0
 if [ "$1" == "update" ] ; then
@@ -43,19 +52,28 @@ fi
 if [ ${UPDATE} -eq 1 ] ; then
 	cd ${DD_PATH}
 
-	if [ "${DD_GAME}" != "" ] ; then
-		DD_OPT_AUTH=`tr '\r\n' ' ' < dd-login-info.txt`
-	elif [ "${DD_APP}" != "" ] ; then
-		DD_OPT_AUTH=`tr '\r\n' ' ' < dd-login-info.txt`
-	else
-		echo "Error: neither DD_GAME nor DD_APP are set!"
-		exit 1
+	if [ "${DD_NEEDS_AUTH}" != "" ] ; then
+		if [ "${DD_GAME}" != "" ] ; then
+			DD_OPT_AUTH=`tr '\r\n' ' ' < dd-login-info.txt`
+		elif [ "${DD_APP}" != "" ] ; then
+			DD_OPT_AUTH=`tr '\r\n' ' ' < dd-login-info.txt`
+		else
+			echo "Error: neither DD_GAME nor DD_APP are set!"
+			exit 1
+		fi
+	fi
+
+	if [ "${DD_BETA}" != "" ] ; then
+		DD_OPT_BETA="-beta ${DD_BETA}"
+		if [ "${DD_BETA_PASSWORD}" != "" ] ; then
+			DD_OPT_BETA_PASSWORD="-betapassword ${DD_BETA_PASSWORD}"
+		fi
 	fi
 
 	for i in 1 2 3 4 5
 	do
 		if [ "${DD_GAME}" != "" ] ; then
-			mono DepotDownloader.exe     \
+			${MONO_BIN_PATH}mono DepotDownloader.exe     \
 				-game "${DD_GAME}"   \
 				-dir ${DD_DIR}       \
 				-filelist server.txt \
@@ -64,16 +82,18 @@ if [ ${UPDATE} -eq 1 ] ; then
 				${DD_OPT_CELL}       \
 				${DD_OPT_AUTH}
 		else
-			mono DepotDownloader.exe     \
+			${MONO_BIN_PATH}mono DepotDownloader.exe     \
 				-app "${DD_APP}"     \
 				-dir ${DD_DIR}       \
 				-filelist server.txt \
 				-all-platforms       \
 				-no-exclude          \
 				${DD_OPT_CELL}       \
-				${DD_OPT_AUTH}
+				${DD_OPT_AUTH}       \
+				${DD_OPT_BETA}       \
+				${DD_OPT_BETA_PASSWORD}
 		fi
-		
+
 		echo
 
 		if [ $? == 0 ] ; then
@@ -106,7 +126,8 @@ if [ -e ${GAME_SCRIPT_NAME}_repos.sh ] ; then
 fi
 
 # update sourcemod
-cd ${SM_PATH}/tools/gdc-psyfork
+echo Updating SourceMod repo
+cd ${SM_PATH}
 hg pull -u
 
 echo -e "\n"

@@ -34,7 +34,7 @@ do
 	filename=$(date +%Y-%m-%d-%H%M%S)-${lcgame}.log
 	fullfilename=log/$filename
 
-	./gdc_${lcgame}.sh auto | tee -a ${fullfilename}
+	./gdc_${lcgame}.sh auto 2>&1 | tee -a ${fullfilename}
 
 	if [ ${PIPESTATUS[0]} -ne 0 ] ; then
 	       	echo -e "No change. Removing useless log.\n"

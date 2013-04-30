@@ -1,17 +1,13 @@
 #!/bin/bash
 
-# Path to DepotDownloader
-DD_PATH=/home/gdc/dd
-
 # Path for DepotDownloader to download to, relative to DD_PATH
 DD_DIR=csgo
 
 # AppId to use for DepotDownloader for Steam3 content (steamcmd app_update number)
 DD_APP=740
 
-# Absolute path to game's engine directory
-ENGINE_PATH=${DD_PATH}/${DD_DIR}/
-
+# Relative path to game's engine directory from DD
+ENGINE_PATH_FROM_DD=${DD_DIR}/
 # Game's directory name
 GAME_DIR=csgo
 
