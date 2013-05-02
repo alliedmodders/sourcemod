@@ -6,27 +6,27 @@
 		{
 			"EndTouch"
 			{
-				"windows"	"100"
-				"linux"		"101"
-				"mac"		"101"
+				"windows"	"99"
+				"linux"		"100"
+				"mac"		"100"
 			}
 			"FireBullets"
 			{
-				"windows"	"112"
-				"linux"		"113"
-				"mac"		"113"
+				"windows"	"111"
+				"linux"		"112"
+				"mac"		"112"
 			}
 			"GetMaxHealth"
 			{
-				"windows"	"117"
-				"linux"		"118"
-				"mac"		"118"				
+				"windows"	"116"
+				"linux"		"117"
+				"mac"		"117"				
 			}
 			"GroundEntChanged"
 			{
-				"windows"	"177"
-				"linux"		"178"
-				"mac"		"178"
+				"windows"	"176"
+				"linux"		"177"
+				"mac"		"177"
 			}
 			"OnTakeDamage"
 			{
@@ -36,21 +36,21 @@
 			}
 			"PreThink"
 			{
+				"windows"	"330"
+				"linux"		"331"
+				"mac"		"331"
+			}
+			"PostThink"
+			{
 				"windows"	"331"
 				"linux"		"332"
 				"mac"		"332"
 			}
-			"PostThink"
-			{
-				"windows"	"332"
-				"linux"		"333"
-				"mac"		"333"
-			}
 			"Reload"
 			{
-				"windows"	"268"
-				"linux"		"269"
-				"mac"		"269"
+				"windows"	"270"
+				"linux"		"276"
+				"mac"		"276"
 			}
 			"SetTransmit"
 			{
@@ -72,9 +72,9 @@
 			}
 			"StartTouch"
 			{
-				"windows"	"98"
-				"linux"		"99"
-				"mac"		"99"
+				"windows"	"97"
+				"linux"		"98"
+				"mac"		"98"
 			}
 			"Think"
 			{
@@ -84,9 +84,9 @@
 			}
 			"Touch"
 			{
-				"windows"	"99"
-				"linux"		"100"
-				"mac"		"100"
+				"windows"	"98"
+				"linux"		"99"
+				"mac"		"99"
 			}
 			"TraceAttack"
 			{
@@ -96,46 +96,69 @@
 			}
 			"Use"
 			{
-				"windows"	"97"
-				"linux"		"98"
-				"mac"		"98"
+				"windows"	"96"
+				"linux"		"97"
+				"mac"		"97"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"157"
-				"linux"		"158"
-				"mac"		"158"
+				"windows"	"156"
+				"linux"		"157"
+				"mac"		"157"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"265"
-				"linux"		"266"
-				"mac"		"266"
+				"windows"	"264"
+				"linux"		"265"
+				"mac"		"265"
 			}
 			"Weapon_CanUse"
+			{
+				"windows"	"258"
+				"linux"		"259"
+				"mac"		"259"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"261"
+				"linux"		"262"
+				"mac"		"262"
+			}
+			"Weapon_Equip"
 			{
 				"windows"	"259"
 				"linux"		"260"
 				"mac"		"260"
 			}
-			"Weapon_Drop"
+			"Weapon_Switch"
 			{
 				"windows"	"262"
 				"linux"		"263"
 				"mac"		"263"
 			}
-			"Weapon_Equip"
+			
+			
+			// no longer used
+			"UpdateOnRemove"
 			{
-				"windows"	"260"
-				"linux"		"261"
-				"mac"		"261"
+				"windows"	"104"
+				"linux"		"105"
+				"mac"		"105"
 			}
-			"Weapon_Switch"
+			//
+		}
+		
+		"Signatures"
+		{
+			// no longer used
+			"IEntityFactoryDictionary"
 			{
-				"windows"	"263"
-				"linux"		"264"
-				"mac"		"264"
+				"library"	"server"
+				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+				"linux"		"@_Z23EntityFactoryDictionaryv"
+				"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
+			//
 		}
 	}
 }
