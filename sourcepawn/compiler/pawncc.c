@@ -428,7 +428,7 @@ int main(int argc, char *argv[])
 					/* get entry info */
 					sym = (AMX_DBG_SYMBOL *)dbgptr;
 					/* store */
-					dbgsym.addr = *(int32_t *)&sym->address;
+					dbgsym.addr = (int32_t)sym->address;
 					dbgsym.tagid = sym->tag;
 					dbgsym.codestart = (uint32_t)sym->codestart;
 					dbgsym.codeend = (uint32_t)sym->codeend;
