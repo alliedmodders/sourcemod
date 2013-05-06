@@ -174,7 +174,9 @@ bool CPlugin::GetProperty(const char *prop, void **ptr, bool remove/* =false */)
 
 	if (exists)
 	{
-		*ptr = *ptrpp;
+		if (ptr)
+			*ptr = *ptrpp;
+			
 		if (remove)
 			m_pProps.remove(prop);
 	}
