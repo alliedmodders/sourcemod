@@ -67,7 +67,12 @@ SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *,
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
 SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
+
+#if SOURCE_ENGINE == SE_DOTA
+SH_DECL_HOOK0_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0);
+#else
 SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
+#endif
 
 #if SOURCE_ENGINE == SE_DOTA
 SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, void *, const CCommand &);
@@ -246,7 +251,11 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 	return ConfigResult_Ignore;
 }
 
+#if SOURCE_ENGINE == SE_DOTA
+void PlayerManager::OnServerActivate()
+#else
 void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
+#endif
 {
 	static ConVar *tv_enable = icvar->FindVar("tv_enable");
 #if SOURCE_ENGINE == SE_ORANGEBOXVALVE
@@ -282,7 +291,12 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 
 	g_OnMapStarted = true;
 
+#if SOURCE_ENGINE == SE_DOTA
+	extsys->CallOnCoreMapStart(gpGlobals->pEdicts, gpGlobals->maxEntities, gpGlobals->maxClients);
+#else
 	extsys->CallOnCoreMapStart(pEdictList, edictCount, m_maxClients);
+#endif
+
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
 

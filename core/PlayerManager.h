@@ -198,7 +198,11 @@ public:
 	unsigned int SetReplyTo(unsigned int reply);
 	void MaxPlayersChanged(int newvalue = -1);
 private:
+#if SOURCE_ENGINE == SE_DOTA
+	void OnServerActivate();
+#else
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
+#endif
 	void InvalidatePlayer(CPlayer *pPlayer);
 private:
 	List<IClientListener *> m_hooks;
