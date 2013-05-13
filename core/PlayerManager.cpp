@@ -678,7 +678,11 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 			m_SourceTVUserId = userId;
 		}
 
+#if SOURCE_ENGINE == SE_DOTA
+		if (!OnClientConnect(client, playername, "127.0.0.1", error, sizeof(error)))
+#else
 		if (!OnClientConnect(pEntity, playername, "127.0.0.1", error, sizeof(error)))
+#endif
 		{
 			/* :TODO: kick the bot if it's rejected */
 			return;
@@ -748,7 +752,11 @@ void PlayerManager::OnSourceModLevelEnd()
 	{
 		if (m_Players[i].IsConnected())
 		{
+#if SOURCE_ENGINE == SE_DOTA
+			OnClientDisconnect(m_Players[i].GetIndex());
+#else
 			OnClientDisconnect(m_Players[i].GetEdict());
+#endif
 		}
 	}
 	m_PlayerCount = 0;
