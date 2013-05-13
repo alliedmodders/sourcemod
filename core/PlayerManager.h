@@ -90,6 +90,7 @@ public:
 	bool RunAdminCacheChecks();
 	void NotifyPostAdminChecks();
 	unsigned int GetSerial();
+	int GetIndex() const;
 public:
 	void DoBasicAdminChecks();
 	void MarkAsBeingKicked();
@@ -150,6 +151,16 @@ public:
 	void ClearAdminId(AdminId id);
 	void ClearAllAdmins();
 public:
+#if SOURCE_ENGINE == SE_DOTA
+	bool OnClientConnect(int client, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
+	bool OnClientConnect_Post(int client, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
+	void OnClientPutInServer(int client, char const *playername);
+	void OnClientDisconnect(int client);
+	void OnClientDisconnect_Post(int client);
+	void OnClientCommand(int client, const CCommand &args);
+	void OnClientSettingsChanged(int client);
+	//void OnClientSettingsChanged_Pre(int client);
+#else
 	bool OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
 	bool OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
 	void OnClientPutInServer(edict_t *pEntity, char const *playername);
@@ -162,6 +173,7 @@ public:
 #endif
 	void OnClientSettingsChanged(edict_t *pEntity);
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
+#endif
 public: //IPlayerManager
 	void AddClientListener(IClientListener *listener);
 	void RemoveClientListener(IClientListener *listener);

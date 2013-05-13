@@ -300,7 +300,11 @@ bool CHalfLife2::IsOriginalEngine()
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
 {
+#if SOURCE_ENGINE == SE_DOTA
+	return engine->GetChangeAccessor( IndexOfEdict((const edict_t *)this) );
+#else
 	return engine->GetChangeAccessor( (const edict_t *)this );
+#endif
 }
 #endif
 
@@ -792,7 +796,7 @@ void CHalfLife2::ProcessFakeCliCmdQueue()
 		{
 			CPlayer *pPlayer = g_Players.GetPlayerByIndex(pFake->client);
 #if SOURCE_ENGINE == SE_DOTA
-			engine->ClientCommand(pPlayer->GetEdict(), "%s", pFake->cmd.c_str());
+			engine->ClientCommand(pPlayer->GetIndex(), "%s", pFake->cmd.c_str());
 #else
 			serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), pFake->cmd.c_str());
 #endif

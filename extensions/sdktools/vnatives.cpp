@@ -373,7 +373,11 @@ static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Entity %d is not valid", params[2]);
 	}
 
+#if SOURCE_ENGINE == SE_DOTA
+	engine->SetView(params[1], params[2]);
+#else
 	engine->SetView(player->GetEdict(), pEdict);
+#endif
 
 	return 1;
 }
@@ -566,7 +570,7 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 	if (should_slay)
 	{
 #if SOURCE_ENGINE == SE_DOTA
-		engine->ClientCommand(pEdict, "kill\n");
+		engine->ClientCommand(params[1], "kill\n");
 #else
 		pluginhelpers->ClientCommand(pEdict, "kill\n");
 #endif
@@ -593,7 +597,11 @@ static cell_t GetClientEyePosition(IPluginContext *pContext, const cell_t *param
 	}
 
 	Vector pos;
+#if SOURCE_ENGINE == SE_DOTA
+	serverClients->ClientEarPosition(params[1], &pos);
+#else
 	serverClients->ClientEarPosition(player->GetEdict(), &pos);
+#endif
 
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[2], &addr);

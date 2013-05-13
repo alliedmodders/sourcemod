@@ -93,7 +93,9 @@ public: //IClientListner
 public: // IVoiceServer
 	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
 	void VoiceInit();
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_DOTA
+	void OnClientCommand(int client, const CCommand &args);
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 	void OnClientCommand(edict_t *pEntity, const CCommand &args);
 #else
 	void OnClientCommand(edict_t *pEntity);

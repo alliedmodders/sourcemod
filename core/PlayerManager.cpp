@@ -58,6 +58,13 @@ const unsigned int *g_NumPlayersToAuth = NULL;
 int lifestate_offset = -1;
 List<ICommandTargetProcessor *> target_processors;
 
+#if SOURCE_ENGINE == SE_DOTA
+SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, int, const char *, const char *, char *, int);
+SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, int, const char *);
+SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, int);
+SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, int, const CCommand &);
+SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, int);
+#else
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
 SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, edict_t *);
@@ -67,6 +74,7 @@ SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *,
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
 SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
+#endif // SE_DOTA
 
 #if SOURCE_ENGINE == SE_DOTA
 SH_DECL_HOOK0_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0);
@@ -380,7 +388,11 @@ void PlayerManager::RunAuthChecks()
 	for (unsigned int i=1; i<=m_AuthQueue[0]; i++)
 	{
 		pPlayer = &m_Players[m_AuthQueue[i]];
+#if SOURCE_ENGINE == SE_DOTA
+		authstr = engine->GetPlayerNetworkIDString(pPlayer->m_iIndex - 1);
+#else
 		authstr = engine->GetPlayerNetworkIDString(pPlayer->m_pEdict);
+#endif
 		pPlayer->SetAuthString(authstr);
 
 		if (!pPlayer->IsAuthStringValidated())
@@ -457,9 +469,15 @@ void PlayerManager::RunAuthChecks()
 	}
 }
 
+#if SOURCE_ENGINE == SE_DOTA
+bool PlayerManager::OnClientConnect(int client, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
+{
+	edict_t *pEntity = PEntityOfEntIndex(client);
+#else
 bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
 	int client = IndexOfEdict(pEntity);
+#endif
 	CPlayer *pPlayer = &m_Players[client];
 	++m_PlayersSinceActive;
 
@@ -503,7 +521,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 			m_AuthQueue[++m_AuthQueue[0]] = client;
 		}
 
-		m_UserIdLookUp[engine->GetPlayerUserId(pEntity)] = client;
+		m_UserIdLookUp[GetPlayerUserId(pEntity)] = client;
 	}
 	else
 	{
@@ -516,9 +534,16 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 	return true;
 }
 
+#if SOURCE_ENGINE == SE_DOTA
+bool PlayerManager::OnClientConnect_Post(int client, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
+{
+	edict_t *pEntity = PEntityOfEntIndex(client);
+#else
 bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
 	int client = IndexOfEdict(pEntity);
+#endif
+
 	bool orig_value = META_RESULT_ORIG_RET(bool);
 	CPlayer *pPlayer = &m_Players[client];
 
@@ -555,10 +580,17 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 	return true;
 }
 
+#if SOURCE_ENGINE == SE_DOTA
+void PlayerManager::OnClientPutInServer(int client, const char *playername)
+{
+	edict_t *pEntity = PEntityOfEntIndex(client);
+#else
 void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername)
 {
-	cell_t res;
 	int client = IndexOfEdict(pEntity);
+#endif
+
+	cell_t res;
 	CPlayer *pPlayer = &m_Players[client];
 
 	/* If they're not connected, they're a bot */
@@ -566,7 +598,12 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 	{
 		/* Run manual connection routines */
 		char error[255];
-		const char *authid = engine->GetPlayerNetworkIDString(pEntity);
+		const char *authid;
+#if SOURCE_ENGINE == SE_DOTA
+		authid = engine->GetPlayerNetworkIDString(client - 1);
+#else
+		authid = engine->GetPlayerNetworkIDString(pEntity);
+#endif
 		pPlayer->SetAuthString(authid);
 		pPlayer->Authorize();
 		pPlayer->m_bFakeClient = true;
@@ -593,7 +630,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		// This doesn't actually get incremented until OnClientConnect. Fake it to check.
 		int newCount = m_PlayersSinceActive + 1;
 
-		int userId = engine->GetPlayerUserId(pEntity);
+		int userId = GetPlayerUserId(pEntity);
 #if (SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_LEFT4DEAD2)
 		static ConVar *tv_name = icvar->FindVar("tv_name");
 #endif
@@ -717,10 +754,17 @@ void PlayerManager::OnSourceModLevelEnd()
 	m_PlayerCount = 0;
 }
 
+#if SOURCE_ENGINE == SE_DOTA
+void PlayerManager::OnClientDisconnect(int client)
+{
+	edict_t *pEntity = PEntityOfEntIndex(client);
+#else
 void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 {
-	cell_t res;
 	int client = IndexOfEdict(pEntity);
+#endif
+
+	cell_t res;
 	CPlayer *pPlayer = &m_Players[client];
 
 	if (pPlayer->IsConnected())
@@ -755,10 +799,17 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 	}
 }
 
+#if SOURCE_ENGINE == SE_DOTA
+void PlayerManager::OnClientDisconnect_Post(int client)
+{
+	edict_t *pEntity = PEntityOfEntIndex(client);
+#else
 void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 {
-	cell_t res;
 	int client = IndexOfEdict(pEntity);
+#endif
+
+	cell_t res;
 
 	m_cldisconnect_post->PushCell(client);
 	m_cldisconnect_post->Execute(&res, NULL);
@@ -790,7 +841,11 @@ void ClientConsolePrint(edict_t *e, const char *fmt, ...)
 		buffer[len] = '\0';
 	}
 
+#if SOURCE_ENGINE == SE_DOTA
+	engine->ClientPrintf(IndexOfEdict(e), buffer);
+#else
 	engine->ClientPrintf(e, buffer);
+#endif
 }
 
 void ListExtensionsToClient(CPlayer *player, const CCommand &args)
@@ -953,15 +1008,22 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 	}
 }
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_DOTA
+void PlayerManager::OnClientCommand(int client, const CCommand &args)
+{
+	edict_t *pEntity = PEntityOfEntIndex(client);
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 void PlayerManager::OnClientCommand(edict_t *pEntity, const CCommand &args)
 {
+	int client = IndexOfEdict(pEntity);
 #else
 void PlayerManager::OnClientCommand(edict_t *pEntity)
 {
 	CCommand args;
-#endif
+
 	int client = IndexOfEdict(pEntity);
+#endif
+	
 	cell_t res = Pl_Continue;
 	CPlayer *pPlayer = &m_Players[client];
 
@@ -1070,10 +1132,17 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 	}
 }
 
+#if SOURCE_ENGINE == SE_DOTA
+void PlayerManager::OnClientSettingsChanged(int client)
+{
+	edict_t *pEntity = PEntityOfEntIndex(client);
+#else
 void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 {
-	cell_t res;
 	int client = IndexOfEdict(pEntity);
+#endif
+
+	cell_t res;
 	CPlayer *pPlayer = &m_Players[client];
 
 	if (!pPlayer->IsConnected())
@@ -1193,7 +1262,7 @@ int PlayerManager::GetClientOfUserId(int userid)
 		CPlayer *player = GetPlayerByIndex(client);
 		if (player && player->IsConnected())
 		{
-			int realUserId = engine->GetPlayerUserId(player->GetEdict());
+			int realUserId = GetPlayerUserId(player->GetEdict());
 			if (realUserId == userid)
 			{
 				return client;
@@ -1210,7 +1279,7 @@ int PlayerManager::GetClientOfUserId(int userid)
 		{
 			continue;
 		}
-		if (engine->GetPlayerUserId(player->GetEdict()) == userid)
+		if (GetPlayerUserId(player->GetEdict()) == userid)
 		{
 			m_UserIdLookUp[userid] = i;
 			return i;
@@ -1324,7 +1393,7 @@ void PlayerManager::InvalidatePlayer(CPlayer *pPlayer)
 		}
 	}
 	
-	m_UserIdLookUp[engine->GetPlayerUserId(pPlayer->m_pEdict)] = 0;
+	m_UserIdLookUp[GetPlayerUserId(pPlayer->m_pEdict)] = 0;
 	pPlayer->Disconnect();
 }
 
@@ -1897,7 +1966,13 @@ unsigned int CPlayer::GetSteamAccountID(bool validated)
 		m_SteamAccountID = (atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1));
 	}
 #else
-	unsigned long long *steamId = (unsigned long long *)engine->GetClientSteamID(m_pEdict);
+	unsigned long long *steamId;
+#if SOURCE_ENGINE == SE_DOTA
+	steamId = (unsigned long long *)engine->GetClientSteamID(m_iIndex);
+#else
+	steamId = (unsigned long long *)engine->GetClientSteamID(m_pEdict);
+#endif
+
 	if (steamId)
 	{
 		m_SteamAccountID = (*steamId & 0xFFFFFFFF);
@@ -1909,6 +1984,11 @@ unsigned int CPlayer::GetSteamAccountID(bool validated)
 edict_t *CPlayer::GetEdict()
 {
 	return m_pEdict;
+}
+
+int CPlayer::GetIndex() const
+{
+	return m_iIndex;
 }
 
 bool CPlayer::IsInGame()
@@ -1936,7 +2016,11 @@ bool CPlayer::IsAuthStringValidated()
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	if (g_Players.m_bAuthstringValidation && !g_HL2.IsLANServer())
 	{
+#if SOURCE_ENGINE == SE_DOTA
+		return engine->IsClientFullyAuthenticated(m_iIndex);
+#else
 		return engine->IsClientFullyAuthenticated(m_pEdict);
+#endif
 	}
 #endif
 
@@ -2130,7 +2214,7 @@ void CPlayer::DoBasicAdminChecks()
 	{
 		if (!g_Players.CheckSetAdminName(client, this, id))
 		{
-			int userid = engine->GetPlayerUserId(m_pEdict);
+			int userid = GetPlayerUserId(m_pEdict);
 			g_Timers.CreateTimer(&s_KickPlayerTimer, 0.1f, (void *)userid, 0);
 		}
 		return;
@@ -2169,7 +2253,7 @@ int CPlayer::GetUserId()
 {
 	if (m_UserId == -1)
 	{
-		m_UserId = engine->GetPlayerUserId(GetEdict());
+		m_UserId = GetPlayerUserId(GetEdict());
 	}
 
 	return m_UserId;

@@ -539,7 +539,9 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 		return true;
 	}
 
+#if SOURCE_ENGINE != SE_DOTA
 	edict_t *pEdict = PEntityOfEntIndex(client);
+#endif
 	
 	/* If we got here, the command failed... */
 	char buffer[128];
@@ -553,7 +555,11 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 	{
 		char fullbuffer[192];
 		UTIL_Format(fullbuffer, sizeof(fullbuffer), "[SM] %s.\n", buffer);
+#if SOURCE_ENGINE == SE_DOTA
+		engine->ClientPrintf(client, fullbuffer);
+#else
 		engine->ClientPrintf(pEdict, fullbuffer);
+#endif
 	}
 	else if (replyto == SM_REPLY_CHAT)
 	{

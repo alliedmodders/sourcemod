@@ -521,7 +521,12 @@ static cell_t FadeClientVolume(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not in game", client);
 	}
 
-	engine->FadeClientVolume(player->GetEdict(),
+	engine->FadeClientVolume(
+#if SOURCE_ENGINE == SE_DOTA
+		player->GetIndex(),
+#else
+		player->GetEdict(),
+#endif
 		sp_ctof(params[2]),
 		sp_ctof(params[3]),
 		sp_ctof(params[4]),

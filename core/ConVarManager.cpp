@@ -611,7 +611,11 @@ QueryCvarCookie_t ConVarManager::QueryClientConVar(edict_t *pPlayer, const char 
 	/* Call StartQueryCvarValue() in either the IVEngineServer or IServerPluginHelpers depending on situation */
 	if (m_bIsDLLQueryHooked)
 	{
+#if SOURCE_ENGINE == SE_DOTA
+		cookie = engine->StartQueryCvarValue(IndexOfEdict(pPlayer), name);
+#else
 		cookie = engine->StartQueryCvarValue(pPlayer, name);	
+#endif
 	}
 #if SOURCE_ENGINE != SE_DOTA
 	else if (m_bIsVSPQueryHooked)

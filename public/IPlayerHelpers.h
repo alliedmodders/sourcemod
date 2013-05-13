@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	17
+#define SMINTERFACE_PLAYERMANAGER_VERSION	18
 
 struct edict_t;
 class IPlayerInfo;
@@ -246,6 +246,13 @@ namespace SourceMod
 		 * @return			Steam account ID or 0 if not available.
 		 */
 		virtual unsigned int GetSteamAccountID(bool validated = true) =0;
+
+		/**
+		 * @brief Returns the client's edict/entity index.
+		 *
+		 * @return			Client's index.
+		 */
+		virtual int GetIndex() const =0;
 	};
 
 	/**

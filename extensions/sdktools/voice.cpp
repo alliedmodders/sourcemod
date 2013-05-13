@@ -58,7 +58,9 @@ bool g_ClientMutes[65][65];
 
 SH_DECL_HOOK3(IVoiceServer, SetClientListening, SH_NOATTRIB, 0, bool, int, int, bool);
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_DOTA
+SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, int, const CCommand &);
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *, const CCommand &);
 #else
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
@@ -91,15 +93,19 @@ void SDKTools::VoiceInit()
 	SH_ADD_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &SDKTools::OnClientCommand), true);
 }
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_DOTA
+void SDKTools::OnClientCommand(int client, const CCommand &args)
+{
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 void SDKTools::OnClientCommand(edict_t *pEntity, const CCommand &args)
 {
+	int client = IndexOfEdict(pEntity);
 #else
 void SDKTools::OnClientCommand(edict_t *pEntity)
 {
 	CCommand args;
-#endif
 	int client = IndexOfEdict(pEntity);
+#endif
 
 	if ((args.ArgC() > 1) && (stricmp(args.Arg(0), "vban") == 0))
 	{

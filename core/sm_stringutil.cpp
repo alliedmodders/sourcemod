@@ -1130,7 +1130,7 @@ reswitch:
 					{
 						auth = "STEAM_ID_PENDING";
 					}
-					int userid = engine->GetPlayerUserId(player->GetEdict());
+					int userid = GetPlayerUserId(player->GetEdict());
 					UTIL_Format(buffer, 
 						sizeof(buffer), 
 						"%s<%d><%s><>", 

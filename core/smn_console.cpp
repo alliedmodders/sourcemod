@@ -878,7 +878,11 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 
 	if (index != 0)
 	{
+#if SOURCE_ENGINE == SE_DOTA
+		engine->ClientPrintf(pPlayer->GetIndex(), buffer);
+#else
 		engine->ClientPrintf(pPlayer->GetEdict(), buffer);
+#endif
 	} else {
 		META_CONPRINT(buffer);
 	}
@@ -1077,7 +1081,13 @@ static cell_t sm_ClientCommand(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	engine->ClientCommand(pPlayer->GetEdict(), "%s", buffer);
+	engine->ClientCommand(
+#if SOURCE_ENGINE == SE_DOTA
+		pPlayer->GetIndex(),
+#else
+		pPlayer->GetEdict(),
+#endif
+		"%s", buffer);
 
 	return 1;
 }
@@ -1105,7 +1115,7 @@ static cell_t FakeClientCommand(IPluginContext *pContext, const cell_t *params)
 	}
 
 #if SOURCE_ENGINE == SE_DOTA
-	engine->ClientCommand(pPlayer->GetEdict(), "%s", buffer);
+	engine->ClientCommand(pPlayer->GetIndex(), "%s", buffer);
 #else
 	serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), buffer);
 #endif
@@ -1135,7 +1145,7 @@ static cell_t FakeClientCommandEx(IPluginContext *pContext, const cell_t *params
 		return 0;
 	}
 
-	g_HL2.AddToFakeCliCmdQueue(params[1], engine->GetPlayerUserId(pPlayer->GetEdict()), buffer);
+	g_HL2.AddToFakeCliCmdQueue(params[1], GetPlayerUserId(pPlayer->GetEdict()), buffer);
 
 	return 1;
 }
@@ -1182,7 +1192,11 @@ static cell_t ReplyToCommand(IPluginContext *pContext, const cell_t *params)
 	{
 		buffer[len++] = '\n';
 		buffer[len] = '\0';
+#if SOURCE_ENGINE == SE_DOTA
+		engine->ClientPrintf(pPlayer->GetIndex(), buffer);
+#else
 		engine->ClientPrintf(pPlayer->GetEdict(), buffer);
+#endif
 	} else if (replyto == SM_REPLY_CHAT) {
 		if (len >= 191)
 		{

@@ -479,7 +479,7 @@ static cell_t GetClientUserId(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client %d is not connected", client);
 	}
 
-	return engine->GetPlayerUserId(pPlayer->GetEdict());
+	return GetPlayerUserId(pPlayer->GetEdict());
 }
 
 static cell_t CanUserTarget(IPluginContext *pContext, const cell_t *params)
@@ -1118,7 +1118,11 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 			}
 
 			UTIL_Format(message, sizeof(message), "%s%s\n", tag, buffer);
+#if SOURCE_ENGINE == SE_DOTA
+			engine->ClientPrintf(pPlayer->GetIndex(), message);
+#else
 			engine->ClientPrintf(pPlayer->GetEdict(), message);
+#endif
 			display_in_chat = true;
 		}
 	}

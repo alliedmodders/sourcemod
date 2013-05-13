@@ -102,6 +102,17 @@ static cell_t CreateFakeClient(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[1], &netname);
 
+#if SOURCE_ENGINE == SE_DOTA
+	int index;
+	engine->CreateFakeClient(&index, netname);
+	
+	if (index == -1)
+	{
+		return 0;
+	}
+
+	return index;
+#else
 	edict_t *pEdict = engine->CreateFakeClient(netname);
 
 	/* :TODO: does the engine fire forwards for us and whatnot? no idea... */
@@ -112,6 +123,7 @@ static cell_t CreateFakeClient(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return IndexOfEdict(pEdict);
+#endif
 }
 
 static cell_t SetFakeClientConVar(IPluginContext *pContext, const cell_t *params)
@@ -138,7 +150,11 @@ static cell_t SetFakeClientConVar(IPluginContext *pContext, const cell_t *params
 	pContext->LocalToString(params[2], &cvar);
 	pContext->LocalToString(params[3], &value);
 
+#if SOURCE_ENGINE == SE_DOTA
+	engine->SetFakeClientConVarValue(pPlayer->GetIndex(), cvar, value);
+#else
 	engine->SetFakeClientConVarValue(pPlayer->GetEdict(), cvar, value);
+#endif
 
 	return 1;
 }
