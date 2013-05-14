@@ -44,7 +44,11 @@ public: //IRecipientFilter
 	bool IsReliable() const;
 	bool IsInitMessage() const;
 	int GetRecipientCount() const;
+#if SOURCE_ENGINE == SE_DOTA
+	void GetRecipientIndex(int*&clientIndex, int slot) const;
+#else
 	int GetRecipientIndex(int slot) const;
+#endif
 public:
 	void Initialize(cell_t *ptr, size_t count);
 	void SetToReliable(bool isreliable);
@@ -79,13 +83,24 @@ inline int CellRecipientFilter::GetRecipientCount() const
 	return m_Size;
 }
 
+#if SOURCE_ENGINE == SE_DOTA
+inline void CellRecipientFilter::GetRecipientIndex(int *clientIndex, int slot) const
+#else
 inline int CellRecipientFilter::GetRecipientIndex(int slot) const
+#endif
 {
+	int ret;
 	if ((slot < 0) || (slot >= GetRecipientCount()))
 	{
-		return -1;
+		ret = -1;
 	}
-	return static_cast<int>(m_Players[slot]);
+	ret = static_cast<int>(m_Players[slot]);
+
+#if SOURCE_ENGINE == SE_DOTA
+	*clientIndex = ret;
+#else
+	return ret;
+#endif
 }
 
 inline void CellRecipientFilter::SetToInit(bool isinitmsg)

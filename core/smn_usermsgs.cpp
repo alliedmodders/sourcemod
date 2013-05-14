@@ -268,7 +268,13 @@ size_t MsgListenerWrapper::_FillInPlayers(int *pl_array, IRecipientFilter *pFilt
 
 	for (size_t i=0; i<size; i++)
 	{
-		pl_array[i] = pFilter->GetRecipientIndex(i);
+		int index;
+#if SOURCE_ENGINE == SE_DOTA
+		pFilter->GetRecipientIndex(&index, i);
+#else
+		index = pFilter->GetRecipientIndex(i);
+#endif
+		pl_array[i] = index;
 	}
 
 	return size;
