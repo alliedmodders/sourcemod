@@ -45,7 +45,7 @@ public: //IRecipientFilter
 	bool IsInitMessage() const;
 	int GetRecipientCount() const;
 #if SOURCE_ENGINE == SE_DOTA
-	void GetRecipientIndex(int*&clientIndex, int slot) const;
+	void GetRecipientIndex(int *clientIndex, int slot) const;
 #else
 	int GetRecipientIndex(int slot) const;
 #endif
