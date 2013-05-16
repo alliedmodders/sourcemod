@@ -44,6 +44,7 @@ public:
 	~WebForm();
 public:
 	bool AddString(const char *name, const char *data);
+	bool AddFile(const char *name, const char *path);
 public:
 	curl_httppost *GetFormData();
 private:

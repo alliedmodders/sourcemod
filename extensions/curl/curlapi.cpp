@@ -18,6 +18,18 @@ bool WebForm::AddString(const char *name, const char *data)
 	return lastError == CURL_FORMADD_OK;
 }
 
+bool WebForm::AddFile(const char *name, const char *path)
+{
+	lastError = curl_formadd(&first,
+		&last,
+		CURLFORM_COPYNAME,
+		name,
+		CURLFORM_FILE,
+		data,
+		CURLFORM_END);
+	return lastError == CURL_FORMADD_OK;
+}
+
 curl_httppost *WebForm::GetFormData()
 {
 	return first;

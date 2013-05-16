@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_WEBTERNET_NAME		"IWebternet"
-#define SMINTERFACE_WEBTERNET_VERSION	2
+#define SMINTERFACE_WEBTERNET_VERSION	3
 
 namespace SourceMod
 {
@@ -79,6 +79,17 @@ namespace SourceMod
 		 * @return					True on success, false on failure.
 		 */
 		virtual bool AddString(const char *name, const char *data) = 0;
+
+		/**
+		 * @brief Adds a file to the form.
+		 *
+		 * All data is copied locally and may go out of scope.
+		 *
+		 * @param name				Field name (null terminated).
+		 * @param path				Local file path (null terminated).
+		 * @return					True on success, false on failure.
+		 */
+		virtual bool AddFile(const char *name, const char *path) = 0;
 	};
 
 	/**
