@@ -25,7 +25,7 @@ bool WebForm::AddFile(const char *name, const char *path)
 		CURLFORM_COPYNAME,
 		name,
 		CURLFORM_FILE,
-		data,
+		path,
 		CURLFORM_END);
 	return lastError == CURL_FORMADD_OK;
 }
