@@ -68,3 +68,4 @@ m/w/f
 3x5
 push 0xB1D
 glibc is bestc
+Buffer overflow if packet size is in a certain range, leading to server crash.
