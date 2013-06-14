@@ -48,7 +48,7 @@
 				"library"	"server"
 				"linux"		"@_ZN18CTFWeaponBaseMelee26CalcIsAttackCriticalHelperEv"
 				"mac"		"@_ZN18CTFWeaponBaseMelee26CalcIsAttackCriticalHelperEv"
-				"windows"	"\x55\x8B\xEC\x51\x53\x56\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x8B\xD8\x85\xDB\x74\x2A\x8B\x03"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x56\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x8B\xD8\x85\xDB\x74\x10"
 			}
 			"CalcCriticalBow"
 			{
