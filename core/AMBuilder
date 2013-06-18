@@ -112,6 +112,7 @@ for i in SM.sdkInfo:
 		binary.AddSourceFiles(AMBuild.cache[sdk['sdk']], files)
 	elif i == 'dota':
 		files = [
+			os.path.join('public', 'engine', 'protobuf', 'networkbasetypes.pb.cc'),
 			os.path.join('public', 'engine', 'protobuf', 'netmessages.pb.cc'),
 			os.path.join('public', 'game', 'shared', 'protobuf', 'ai_activity.pb.cc'),
 			os.path.join('public', 'game', 'shared', 'protobuf', 'usermessages.pb.cc'),
