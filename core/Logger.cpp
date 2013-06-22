@@ -212,7 +212,8 @@ void Logger::InitLogger(LoggingMode mode)
 	time_t t;
 	GetAdjustedTime(&t);
 	tm *curtime = localtime(&t);
-	m_CurDay = curtime->tm_mday;
+	m_NrmCurDay = curtime->tm_mday;
+	m_ErrCurDay = curtime->tm_mday;
 
 	char _filename[256];
 	g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/errors_%04d%02d%02d.log", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
@@ -365,12 +366,12 @@ void Logger::LogMessageEx(const char *vafmt, va_list ap)
 			}
 		}
 	} else {
-		if (m_CurDay != curtime->tm_mday)
+		if (m_NrmCurDay != curtime->tm_mday)
 		{
 			char _filename[256];
 			g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/L%04d%02d%02d.log", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
 			m_NrmFileName.assign(_filename);
-			m_CurDay = curtime->tm_mday;
+			m_NrmCurDay = curtime->tm_mday;
 			m_DailyPrintHdr = true;
 		}
 		fp = fopen(m_NrmFileName.c_str(), "a+");
@@ -420,12 +421,12 @@ void Logger::LogErrorEx(const char *vafmt, va_list ap)
 	GetAdjustedTime(&t);
 	tm *curtime = localtime(&t);
 
-	if (curtime->tm_mday != m_CurDay)
+	if (curtime->tm_mday != m_ErrCurDay)
 	{
 		char _filename[256];
 		g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/errors_%04d%02d%02d.log", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
 		m_ErrFileName.assign(_filename);
-		m_CurDay = curtime->tm_mday;
+		m_ErrCurDay = curtime->tm_mday;
 		m_ErrMapStart = false;
 	}
 

@@ -96,7 +96,8 @@ private:
 	String m_ErrFileName;
 	String m_CurMapName;
 	LoggingMode m_Mode;
-	int m_CurDay;
+	int m_NrmCurDay;
+	int m_ErrCurDay;
 	bool m_ErrMapStart;
 	bool m_Active;
 	bool m_DelayedStart;
