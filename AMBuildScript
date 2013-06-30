@@ -310,7 +310,7 @@ class SM:
 			else:
 				staticLibs = os.path.join(sdkPath, 'lib', 'linux')
 			workFolder = os.path.join(AMBuild.outputFolder, job.workFolder)
-			if sdk in ['ep2v', 'css']:
+			if sdk in ['ep2v', 'css', 'l4d2']:
 				libs = ['tier1_i486.a', 'mathlib_i486.a', 'libvstdlib_srv.so', 'libtier0_srv.so']
 				for lib in libs:
 					link = os.path.join(workFolder, lib)
@@ -319,7 +319,7 @@ class SM:
 						os.lstat(link)
 					except:
 						job.AddCommand(SymlinkCommand(link, target))
-			elif sdk in ['l4d', 'l4d2', 'csgo']:
+			elif sdk in ['l4d', 'csgo']:
 				libs = ['tier1_i486.a', 'mathlib_i486.a', 'libvstdlib.so', 'libtier0.so']
 				if sdk == 'csgo':
 					libs.append('interfaces_i486.a')
@@ -421,10 +421,10 @@ class SM:
 		if not noLink:
 			if AMBuild.target['platform'] == 'linux':
 				compiler['POSTLINKFLAGS'][0:0] = ['-lm']
-				if sdk in ['ep2v', 'css']:
+				if sdk in ['ep2v', 'css', 'l4d2']:
 					compiler['POSTLINKFLAGS'][0:0] = ['libtier0_srv.so']
 					compiler['POSTLINKFLAGS'][0:0] = ['libvstdlib_srv.so']
-				elif sdk in ['l4d', 'l4d2', 'csgo']:
+				elif sdk in ['l4d', 'csgo']:
 					compiler['POSTLINKFLAGS'][0:0] = ['libtier0.so']
 					compiler['POSTLINKFLAGS'][0:0] = ['libvstdlib.so']
 				else:
