@@ -319,7 +319,7 @@ void UTIL_StripExtension(const char *in, char *out, int outSize)
 
 	if (end > 0 && !PATHSEPARATOR(in[end]) && end < outSize)
 	{
-		int nChars = min(end, outSize-1);
+		int nChars = MIN(end, outSize-1);
 		if (out != in)
 		{
 			memcpy(out, in, nChars);
