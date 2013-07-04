@@ -42,7 +42,7 @@ using namespace SourceMod;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 17)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 18)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -53,6 +53,20 @@ class IVEngineServer_Logic
 public:
 	virtual bool IsMapValid(const char *map) = 0;
 	virtual void ServerCommand(const char *cmd) = 0;
+};
+
+typedef int FileFindHandle_t; 
+
+#if defined SM_LOGIC
+class IFileSystem
+#else
+class IFileSystem_Logic
+#endif
+{
+public:
+	virtual const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle) = 0;
+	virtual const char *FindNext(FileFindHandle_t handle) = 0;
+	virtual void FindClose(FileFindHandle_t handle) = 0;
 };
 
 namespace SourceMod
@@ -74,6 +88,7 @@ namespace SourceMod
 }
 
 class IVEngineServer;
+class IFileSystem;
 class ConVar;
 
 struct ServerGlobals
@@ -91,6 +106,7 @@ struct sm_core_t
 	ISourceMod		*sm;
 	ILibrarySys		*libsys;
 	IVEngineServer	*engine;
+	IFileSystem		*filesystem;
 	IShareSys		*sharesys;
 	IRootConsole	*rootmenu;
 	IPluginManager	*pluginsys;

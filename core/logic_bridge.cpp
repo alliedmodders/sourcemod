@@ -90,6 +90,25 @@ public:
 
 static VEngineServer_Logic logic_engine;
 
+class VFileSystem_Logic : public IFileSystem_Logic
+{
+public:
+	const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle)
+	{
+		return filesystem->FindFirstEx(pWildCard, pPathID, pHandle);
+	}
+	const char *FindNext(FileFindHandle_t handle)
+	{
+		return filesystem->FindNext(handle);
+	}
+	void FindClose(FileFindHandle_t handle)
+	{
+		filesystem->FindClose(handle);
+	}
+};
+
+static VFileSystem_Logic logic_filesystem;
+
 static void add_natives(sp_nativeinfo_t *natives)
 {
 	g_pCoreNatives->AddNatives(natives);
@@ -200,6 +219,7 @@ static sm_core_t core_bridge =
 	&g_SourceMod,
 	&g_LibSys,
 	reinterpret_cast<IVEngineServer*>(&logic_engine),
+	reinterpret_cast<IFileSystem*>(&logic_filesystem),
 	&g_ShareSys,
 	&g_RootMenu,
 	&g_PluginSys,

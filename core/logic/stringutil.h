@@ -40,5 +40,7 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
                      const char *replace, size_t replaceLen, bool caseSensitive = true);
 size_t UTIL_DecodeHexString(unsigned char *buffer, size_t maxlength, const char *hexstr);
 
+void UTIL_StripExtension(const char *in, char *out, int outSize);
+
 #endif /* _INCLUDE_SOURCEMOD_COMMON_STRINGUTIL_H_ */
 

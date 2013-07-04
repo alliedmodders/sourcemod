@@ -37,6 +37,7 @@
 #include <ILibrarySys.h>
 #include <ITextParsers.h>
 #include <ISourceMod.h>
+#include "stringutil.h"
 
 using namespace SourceHook;
 
@@ -349,50 +350,38 @@ public:
 		if ((success && pNewArray == NULL)
 			|| (!success && ((flags & MAPLIST_FLAG_MAPSFOLDER) == MAPLIST_FLAG_MAPSFOLDER)))
 		{
-			char path[255];
-			IDirectory *pDir;
-
 			pNewArray = new CellArray(64);
 			free_new_array = true;
-			g_pSM->BuildPath(Path_Game, path, sizeof(path), "maps");
 
-			if ((pDir = libsys->OpenDirectory(path)) != NULL)
+			cell_t *blk;
+
+			FileFindHandle_t findHandle;
+			const char *fileName = smcore.filesystem->FindFirstEx("maps/*.bsp", "GAME", &findHandle);
+
+			while (fileName)
 			{
-				char *ptr;
-				cell_t *blk;
 				char buffer[PLATFORM_MAX_PATH];
 
-				while (pDir->MoreFiles())
+				UTIL_StripExtension(fileName, buffer, sizeof(buffer));
+
+				if (!engine->IsMapValid(buffer))
 				{
-					if (!pDir->IsEntryFile()
-						|| strcmp(pDir->GetEntryName(), ".") == 0
-						|| strcmp(pDir->GetEntryName(), "..") == 0)
-					{
-						pDir->NextEntry();
-						continue;
-					}
-					smcore.strncopy(buffer, pDir->GetEntryName(), sizeof(buffer));
-					if ((ptr = strstr(buffer, ".bsp")) == NULL || ptr[4] != '\0')
-					{
-						pDir->NextEntry();
-						continue;
-					}
-					*ptr = '\0';
-					if (!engine->IsMapValid(buffer))
-					{
-						pDir->NextEntry();
-						continue;
-					}
-					if ((blk = pNewArray->push()) == NULL)
-					{
-						pDir->NextEntry();
-						continue;
-					}
-					smcore.strncopy((char *)blk, buffer, 255);
-					pDir->NextEntry();
+					fileName = smcore.filesystem->FindNext(findHandle);
+					continue;
 				}
-				libsys->CloseDirectory(pDir);
+
+				if ((blk = pNewArray->push()) == NULL)
+				{
+					fileName = smcore.filesystem->FindNext(findHandle);
+					continue;
+				}
+
+				smcore.strncopy((char *)blk, buffer, 255);
+
+				fileName = smcore.filesystem->FindNext(findHandle);
 			}
+
+			smcore.filesystem->FindClose(findHandle);
 
 			/* Remove the array if there were no items. */
 			if (pNewArray->size() == 0)
