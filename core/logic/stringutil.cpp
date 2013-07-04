@@ -35,6 +35,11 @@
 #include <sm_platform.h>
 #include "stringutil.h"
 
+// We're in logic so we don't have this from the SDK.
+#ifndef MIN
+#define MIN( a, b ) ( ( ( a ) < ( b ) ) ? ( a ) : ( b ) )
+#endif
+
 const char *stristr(const char *str, const char *substr)
 {
 	if (!*substr)
