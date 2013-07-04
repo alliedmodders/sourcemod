@@ -101,6 +101,7 @@ extern SourceHook::CallClass<IServerGameDLL> *gamedllPatch;
 extern IUniformRandomStream *engrandom;
 extern IPlayerInfoManager *playerinfo;
 extern IBaseFileSystem *basefilesystem;
+extern IFileSystem *filesystem;
 extern IEngineSound *enginesound;
 extern IServerPluginHelpers *serverpluginhelpers;
 extern IServerPluginCallbacks *vsp_interface;

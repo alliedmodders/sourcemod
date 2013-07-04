@@ -303,3 +303,35 @@ size_t UTIL_DecodeHexString(unsigned char *buffer, size_t maxlength, const char 
 	return written;
 }
 
+#define PATHSEPARATOR(c) ((c) == '\\' || (c) == '/')
+
+void UTIL_StripExtension(const char *in, char *out, int outSize)
+{
+	// Find the last dot. If it's followed by a dot or a slash, then it's part of a 
+	// directory specifier like ../../somedir/./blah.
+
+	// scan backward for '.'
+	int end = strlen(in) - 1;
+	while (end > 0 && in[end] != '.' && !PATHSEPARATOR(in[end]))
+	{
+		--end;
+	}
+
+	if (end > 0 && !PATHSEPARATOR(in[end]) && end < outSize)
+	{
+		int nChars = min(end, outSize-1);
+		if (out != in)
+		{
+			memcpy(out, in, nChars);
+		}
+		out[nChars] = 0;
+	}
+	else
+	{
+		// nothing found
+		if (out != in)
+		{
+			strncopy(out, in, outSize);
+		}
+	}
+}
