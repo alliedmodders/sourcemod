@@ -35,6 +35,11 @@
 #include <sm_platform.h>
 #include "stringutil.h"
 
+// We're in logic so we don't have this from the SDK.
+#ifndef MIN
+#define MIN( a, b ) ( ( ( a ) < ( b ) ) ? ( a ) : ( b ) )
+#endif
+
 const char *stristr(const char *str, const char *substr)
 {
 	if (!*substr)
@@ -319,7 +324,7 @@ void UTIL_StripExtension(const char *in, char *out, int outSize)
 
 	if (end > 0 && !PATHSEPARATOR(in[end]) && end < outSize)
 	{
-		int nChars = min(end, outSize-1);
+		int nChars = MIN(end, outSize-1);
 		if (out != in)
 		{
 			memcpy(out, in, nChars);
