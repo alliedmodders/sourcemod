@@ -1,6 +1,84 @@
 "Games"
 {
 	/* Left 4 Dead 2 */
+	
+	/* General Temp Entities */
+	"#default"
+	{
+		"Offsets"
+		{
+			/* Offset into CBaseTempEntity constructor */
+			"s_pTempEntities"
+			{
+				"windows"	"19"
+			}
+			"GetTEName"
+			{
+				"windows"	"4"
+				"linux"		"4"
+				"mac"		"4"
+			}
+			"GetTENext"
+			{
+				"windows"	"8"
+				"linux"		"8"
+				"mac"		"8"
+			}
+			"TE_GetServerClass"
+			{
+				"windows"	"0"
+				"linux"		"0"
+				"mac"		"0"
+			}
+		}
+
+		"Signatures"
+		{
+			"CBaseTempEntity"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x8B\xC1\x8B\x4D\x08\xC7\x00\x2A\x2A\x2A\x2A\x89"
+			}
+			"s_pTempEntities"
+			{
+				"library"	"server"
+				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
+				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
+			}
+		}
+	}
+	
+	/* CGlobalEntityList */
+	"#default"
+	{
+		"Signatures"
+		{
+			/* Functions in CGlobalEntityList */
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x08\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x40\x03\xC0\x8B\x3C\xC6\xEB\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5D\x0C\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x2A\x2A\x2A\x2A\x83\xC4\x04\xEB\x2A\x39"
+				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+			}
+		}
+	}
+	
+	/* CBaseEntityOutput::FireOutput */
+	"#default"
+	{
+		"Signatures"
+		{
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x2A\x2A\x8B\x2A\x2A\x53\x56\x8B\x2A\x2A\x57\x8B\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\xC7"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+		}
+	}
+	
 	"left4dead2"
 	{		
 		"Offsets"
