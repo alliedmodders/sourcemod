@@ -217,6 +217,7 @@ class SM:
 			#Platform-specifics
 			if AMBuild.target['platform'] == 'linux':
 				self.compiler.AddToListVar('CDEFINES', '_LINUX')
+				self.compiler.AddToListVar('CDEFINES', 'POSIX')
 				if self.vendor == 'gcc':
 					self.compiler.AddToListVar('POSTLINKFLAGS', '-static-libgcc')
 				if self.vendor == 'clang':
@@ -224,6 +225,7 @@ class SM:
 			elif AMBuild.target['platform'] == 'darwin':
 				self.compiler.AddToListVar('CDEFINES', 'OSX')
 				self.compiler.AddToListVar('CDEFINES', '_OSX')
+				self.compiler.AddToListVar('CDEFINES', 'POSIX')
 				self.compiler.AddToListVar('POSTLINKFLAGS', '-mmacosx-version-min=10.5')
 				self.compiler.AddToListVar('POSTLINKFLAGS', ['-arch', 'i386'])
 				self.compiler.AddToListVar('POSTLINKFLAGS', '-lstdc++')
@@ -404,7 +406,7 @@ class SM:
 			if AMBuild.target['platform'] == 'windows':
 				compiler['CDEFINES'].extend(['COMPILER_MSVC', 'COMPILER_MSVC32'])
 			else:
-				compiler['CDEFINES'].extend(['COMPILER_GCC', 'POSIX'])
+				compiler['CDEFINES'].extend(['COMPILER_GCC'])
 
 		if sdk == 'ep1':
 			if AMBuild.target['platform'] == 'linux':
