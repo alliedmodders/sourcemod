@@ -25,7 +25,7 @@
 			"RemoveDisguise"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x56\x8B\xF1\xF7\x86"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\xF7\x86"
 				"linux"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 				"mac"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 			}
@@ -67,7 +67,7 @@
 			"AddCondition"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x53\x56\x57\x8B\x7D\x2A\x8B\xF1\x83\xFF\x2A\x7C\x2A\x8D\x2A\x2A\x8D\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\xEB\x2A\x83\xFF\x2A\x7C"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x56\x8B\x75\x08\x57\x8B\xD9"
 				"linux"		"@_ZN15CTFPlayerShared7AddCondE7ETFCondfP11CBaseEntity"
 				"mac"		"@_ZN15CTFPlayerShared7AddCondE7ETFCondfP11CBaseEntity"
 			}
