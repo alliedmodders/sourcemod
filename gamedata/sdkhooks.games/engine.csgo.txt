@@ -24,9 +24,9 @@
 			}
 			"GroundEntChanged"
 			{
-				"windows"	"174"
-				"linux"		"175"
-				"mac"		"175"
+				"windows"	"175"
+				"linux"		"176"
+				"mac"		"176"
 			}
 			"OnTakeDamage"
 			{
