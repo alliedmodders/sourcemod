@@ -59,7 +59,7 @@ struct MapChangeData
 };
 
 #if SOURCE_ENGINE == SE_DOTA
-void CmdChangeLevelCallback(void *pUnknown, const CCommand &command);
+void CmdChangeLevelCallback(const CCommandContext &context, const CCommand &command);
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdChangeLevelCallback(const CCommand &command);
 #else
@@ -72,7 +72,7 @@ public:
 	NextMapManager();
 
 #if SOURCE_ENGINE == SE_DOTA
-	friend void CmdChangeLevelCallback(void *pUnknown, const CCommand &command);
+	friend void CmdChangeLevelCallback(const CCommandContext &context, const CCommand &command);
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 	friend void CmdChangeLevelCallback(const CCommand &command);
 #else

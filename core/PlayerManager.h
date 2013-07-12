@@ -152,14 +152,14 @@ public:
 	void ClearAllAdmins();
 public:
 #if SOURCE_ENGINE == SE_DOTA
-	bool OnClientConnect(int client, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
-	bool OnClientConnect_Post(int client, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
-	void OnClientPutInServer(int client, char const *playername);
-	void OnClientDisconnect(int client);
-	void OnClientDisconnect_Post(int client);
-	void OnClientCommand(int client, const CCommand &args);
-	void OnClientSettingsChanged(int client);
-	//void OnClientSettingsChanged_Pre(int client);
+	bool OnClientConnect(CEntityIndex index, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
+	bool OnClientConnect_Post(CEntityIndex index, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
+	void OnClientPutInServer(CEntityIndex index, char const *playername);
+	void OnClientDisconnect(CEntityIndex index);
+	void OnClientDisconnect_Post(CEntityIndex index);
+	void OnClientCommand(CEntityIndex index, const CCommand &args);
+	void OnClientSettingsChanged(CEntityIndex index);
+	//void OnClientSettingsChanged_Pre(CEntityIndex client);
 #else
 	bool OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
 	bool OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
@@ -247,7 +247,7 @@ private:
 };
 
 #if SOURCE_ENGINE == SE_DOTA
-void CmdMaxplayersCallback(void *, const CCommand &command);
+void CmdMaxplayersCallback(const CCommandContext &context, const CCommand &command);
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdMaxplayersCallback(const CCommand &command);
 #else

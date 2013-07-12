@@ -50,8 +50,14 @@ public:
 	void Shutdown();
 	void AddHook(int type, IPluginFunction *pFunc);
 	bool RemoveHook(int type, IPluginFunction *pFunc);
-#if SOURCE_ENGINE >= SE_PORTAL2
+
+#if SOURCE_ENGINE == SE_DOTA
+	void OnEmitAmbientSound(CEntityIndex index, const Vector &pos, const char *samp, float vol, soundlevel_t soundlevel, int fFlags, int pitch, float delay);
+#else
 	void OnEmitAmbientSound(int entindex, const Vector &pos, const char *samp, float vol, soundlevel_t soundlevel, int fFlags, int pitch, float delay);
+#endif
+
+#if SOURCE_ENGINE >= SE_PORTAL2
 	int OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *, unsigned int, const char *pSample, float flVolume, 
 		soundlevel_t iSoundlevel, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
@@ -61,8 +67,6 @@ public:
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity);
 #else
-	void OnEmitAmbientSound(int entindex, const Vector &pos, const char *samp, float vol, 
-		soundlevel_t soundlevel, int fFlags, int pitch, float delay);
 #if SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS
 	
 	void OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 

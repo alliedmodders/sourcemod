@@ -44,7 +44,10 @@ SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar 
 SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallback, SH_NOATTRIB, false, ConVar *, const char *);
 #endif
 
-#if SOURCE_ENGINE != SE_DARKMESSIAH
+#if SOURCE_ENGINE == SE_DOTA
+SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, CEntityIndex, EQueryCvarValueStatus, const char *, const char *);
+SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, CEntityIndex, EQueryCvarValueStatus, const char *, const char *);
+#elif SOURCE_ENGINE != SE_DARKMESSIAH
 SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
 SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
 #endif
@@ -185,7 +188,9 @@ void ConVarManager::OnSourceModShutdown()
 	}
 	else if (m_bIsVSPQueryHooked)
 	{
+#if SOURCE_ENGINE != SE_DOTA
 		SH_REMOVE_HOOK(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, SH_MEMBER(this, &ConVarManager::OnQueryCvarValueFinished), false);
+#endif
 		m_bIsVSPQueryHooked = false;
 	}
 #endif
@@ -232,7 +237,7 @@ void ConVarManager::OnSourceModVSPReceived()
 	}
 #endif
 
-#if SOURCE_ENGINE != SE_DARKMESSIAH
+#if SOURCE_ENGINE != SE_DARKMESSIAH && SOURCE_ENGINE != SE_DOTA
 	SH_ADD_HOOK(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, SH_MEMBER(this, &ConVarManager::OnQueryCvarValueFinished), false);
 	m_bIsVSPQueryHooked = true;
 #endif
@@ -612,7 +617,7 @@ QueryCvarCookie_t ConVarManager::QueryClientConVar(edict_t *pPlayer, const char 
 	if (m_bIsDLLQueryHooked)
 	{
 #if SOURCE_ENGINE == SE_DOTA
-		cookie = engine->StartQueryCvarValue(IndexOfEdict(pPlayer), name);
+		cookie = engine->StartQueryCvarValue(CEntityIndex(IndexOfEdict(pPlayer)), name);
 #else
 		cookie = engine->StartQueryCvarValue(pPlayer, name);	
 #endif
@@ -727,7 +732,11 @@ bool ConVarManager::IsQueryingSupported()
 }
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
+#if SOURCE_ENGINE == SE_DOTA
+void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, CEntityIndex player, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
+#else
 void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
+#endif // SE_DOTA
 {
 	IPluginFunction *pCallback = NULL;
 	cell_t value = 0;
@@ -749,7 +758,11 @@ void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *
 		cell_t ret;
 
 		pCallback->PushCell(cookie);
+#if SOURCE_ENGINE == SE_DOTA
+		pCallback->PushCell(player.Get());
+#else
 		pCallback->PushCell(IndexOfEdict(pPlayer));
+#endif
 		pCallback->PushCell(result);
 		pCallback->PushString(cvarName);
 

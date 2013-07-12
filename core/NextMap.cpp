@@ -46,7 +46,7 @@ SH_DECL_HOOK4_void(IVEngineServer, ChangeLevel, SH_NOATTRIB, 0, const char *, co
 #endif
 
 #if SOURCE_ENGINE == SE_DOTA
-SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, void *, const CCommand &);
+SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 #elif SOURCE_ENGINE == SE_DARKMESSIAH
@@ -208,7 +208,7 @@ NextMapManager::NextMapManager()
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-void CmdChangeLevelCallback(void *pUnknown, const CCommand &command)
+void CmdChangeLevelCallback(const CCommandContext &context, const CCommand &command)
 {
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdChangeLevelCallback(const CCommand &command)

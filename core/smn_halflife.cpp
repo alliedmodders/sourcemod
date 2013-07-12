@@ -103,8 +103,7 @@ static cell_t CreateFakeClient(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[1], &netname);
 
 #if SOURCE_ENGINE == SE_DOTA
-	int index;
-	engine->CreateFakeClient(&index, netname);
+	int index = engine->CreateFakeClient(netname).Get();
 	
 	if (index == -1)
 	{

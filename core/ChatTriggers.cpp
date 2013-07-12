@@ -38,7 +38,7 @@
 #include "logic_bridge.h"
 
 #if SOURCE_ENGINE == SE_DOTA
-SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, void *, const CCommand &);
+SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 #elif SOURCE_ENGINE == SE_DARKMESSIAH
@@ -148,7 +148,7 @@ void ChatTriggers::OnSourceModShutdown()
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-void ChatTriggers::OnSayCommand_Pre(void *pUnknown, const CCommand &command)
+void ChatTriggers::OnSayCommand_Pre(const CCommandContext &context, const CCommand &command)
 {
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 void ChatTriggers::OnSayCommand_Pre(const CCommand &command)
@@ -268,7 +268,7 @@ void ChatTriggers::OnSayCommand_Pre()
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-void ChatTriggers::OnSayCommand_Post(void *pUnknown, const CCommand &command)
+void ChatTriggers::OnSayCommand_Post(const CCommandContext &context, const CCommand &command)
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 void ChatTriggers::OnSayCommand_Post(const CCommand &command)
 #else

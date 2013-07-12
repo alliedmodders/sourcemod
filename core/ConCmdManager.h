@@ -99,7 +99,7 @@ class ConCmdManager :
 	public IConCommandTracker
 {
 #if SOURCE_ENGINE == SE_DOTA
-	friend void CommandCallback(void *pUnknown, const CCommand &command);
+	friend void CommandCallback(const CCommandContext &context, const CCommand &command);
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 	friend void CommandCallback(const CCommand &command);
 #else

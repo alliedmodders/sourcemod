@@ -41,7 +41,7 @@
 ConCmdManager g_ConCmds;
 
 #if SOURCE_ENGINE == SE_DOTA
-	SH_DECL_HOOK2_void(ConCommand, Dispatch, SH_NOATTRIB, false, void *, const CCommand &);
+	SH_DECL_HOOK2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_DECL_HOOK1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 #else
@@ -209,7 +209,7 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 	}
 }
 #if SOURCE_ENGINE == SE_DOTA
-void CommandCallback(void *pUnknown, const CCommand &command)
+void CommandCallback(const CCommandContext &context, const CCommand &command)
 {
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 void CommandCallback(const CCommand &command)

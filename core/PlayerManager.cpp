@@ -59,11 +59,11 @@ int lifestate_offset = -1;
 List<ICommandTargetProcessor *> target_processors;
 
 #if SOURCE_ENGINE == SE_DOTA
-SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, int, const char *, const char *, char *, int);
-SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, int, const char *);
-SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, int);
-SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, int, const CCommand &);
-SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, int);
+SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, CEntityIndex, const char *, const char *, char *, int);
+SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, CEntityIndex, const char *);
+SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, CEntityIndex);
+SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, CEntityIndex, const CCommand &);
+SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, CEntityIndex);
 #else
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
@@ -83,7 +83,7 @@ SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, in
 #endif
 
 #if SOURCE_ENGINE == SE_DOTA
-SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, void *, const CCommand &);
+SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 #elif SOURCE_ENGINE == SE_DARKMESSIAH
@@ -470,8 +470,9 @@ void PlayerManager::RunAuthChecks()
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-bool PlayerManager::OnClientConnect(int client, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
+bool PlayerManager::OnClientConnect(CEntityIndex index, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
+	int client = index.Get();
 	edict_t *pEntity = PEntityOfEntIndex(client);
 #else
 bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
@@ -535,8 +536,9 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-bool PlayerManager::OnClientConnect_Post(int client, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
+bool PlayerManager::OnClientConnect_Post(CEntityIndex index, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
+	int client = index.Get();
 	edict_t *pEntity = PEntityOfEntIndex(client);
 #else
 bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
@@ -581,8 +583,9 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-void PlayerManager::OnClientPutInServer(int client, const char *playername)
+void PlayerManager::OnClientPutInServer(CEntityIndex index, const char *playername)
 {
+	int client = index.Get();
 	edict_t *pEntity = PEntityOfEntIndex(client);
 #else
 void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername)
@@ -763,8 +766,9 @@ void PlayerManager::OnSourceModLevelEnd()
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-void PlayerManager::OnClientDisconnect(int client)
+void PlayerManager::OnClientDisconnect(CEntityIndex index)
 {
+	int client = index.Get();
 	edict_t *pEntity = PEntityOfEntIndex(client);
 #else
 void PlayerManager::OnClientDisconnect(edict_t *pEntity)
@@ -808,8 +812,9 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-void PlayerManager::OnClientDisconnect_Post(int client)
+void PlayerManager::OnClientDisconnect_Post(CEntityIndex index)
 {
+	int client = index.Get();
 	edict_t *pEntity = PEntityOfEntIndex(client);
 #else
 void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
@@ -850,7 +855,7 @@ void ClientConsolePrint(edict_t *e, const char *fmt, ...)
 	}
 
 #if SOURCE_ENGINE == SE_DOTA
-	engine->ClientPrintf(IndexOfEdict(e), buffer);
+	engine->ClientPrintf(CEntityIndex(IndexOfEdict(e)), buffer);
 #else
 	engine->ClientPrintf(e, buffer);
 #endif
@@ -1017,8 +1022,9 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-void PlayerManager::OnClientCommand(int client, const CCommand &args)
+void PlayerManager::OnClientCommand(CEntityIndex index, const CCommand &args)
 {
+	int client = index.Get();
 	edict_t *pEntity = PEntityOfEntIndex(client);
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 void PlayerManager::OnClientCommand(edict_t *pEntity, const CCommand &args)
@@ -1141,8 +1147,9 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-void PlayerManager::OnClientSettingsChanged(int client)
+void PlayerManager::OnClientSettingsChanged(CEntityIndex index)
 {
+	int client = index.Get();
 	edict_t *pEntity = PEntityOfEntIndex(client);
 #else
 void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
@@ -1805,7 +1812,7 @@ int PlayerManager::GetClientFromSerial(unsigned int serial)
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-void CmdMaxplayersCallback(void *pUnknown, const CCommand &command)
+void CmdMaxplayersCallback(const CCommandContext &context, const CCommand &command)
 {
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdMaxplayersCallback(const CCommand &command)

@@ -45,7 +45,7 @@ public: //IRecipientFilter
 	bool IsInitMessage() const;
 	int GetRecipientCount() const;
 #if SOURCE_ENGINE == SE_DOTA
-	void GetRecipientIndex(int *clientIndex, int slot) const;
+	CEntityIndex GetRecipientIndex(int slot) const;
 #else
 	int GetRecipientIndex(int slot) const;
 #endif
@@ -84,7 +84,7 @@ inline int CellRecipientFilter::GetRecipientCount() const
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-inline void CellRecipientFilter::GetRecipientIndex(int *clientIndex, int slot) const
+inline CEntityIndex CellRecipientFilter::GetRecipientIndex(int slot) const
 #else
 inline int CellRecipientFilter::GetRecipientIndex(int slot) const
 #endif
@@ -97,7 +97,7 @@ inline int CellRecipientFilter::GetRecipientIndex(int slot) const
 	ret = static_cast<int>(m_Players[slot]);
 
 #if SOURCE_ENGINE == SE_DOTA
-	*clientIndex = ret;
+	return CEntityIndex(ret);
 #else
 	return ret;
 #endif

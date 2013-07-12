@@ -60,7 +60,7 @@
 
 #if SH_IMPL_VERSION >= 5
 # if SOURCE_ENGINE == SE_DOTA
-	SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, void *, const CCommand &);
+	SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
 # elif SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 # else
@@ -134,7 +134,7 @@ class GenericCommandHooker : public IConCommandLinkListener
 	}
 
 # if SOURCE_ENGINE == SE_DOTA
-	void Dispatch(void *pUnknown, const CCommand& args)
+	void Dispatch(const CCommandContext &context, const CCommand& args)
 # elif SOURCE_ENGINE >= SE_ORANGEBOX
 	void Dispatch(const CCommand& args)
 # else
