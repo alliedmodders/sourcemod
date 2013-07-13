@@ -2116,7 +2116,11 @@ void CPlayer::Kick(const char *str)
 	else
 	{
 		IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
+#if SOURCE_ENGINE == SE_DOTA
+		pClient->Disconnect(str);
+#else
 		pClient->Disconnect("%s", str);
+#endif
 	}
 }
 
