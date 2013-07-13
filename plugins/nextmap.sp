@@ -62,7 +62,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 			|| StrEqual(game, "synergy", false)
 			|| StrEqual(game, "left4dead2", false)
 			|| StrEqual(game, "garrysmod", false)
-			|| StrEqual(game, "swarm", false))
+			|| StrEqual(game, "swarm", false)
+			|| StrEqual(game, "dota", false))
 	{
 		strcopy(error, err_max, "Nextmap is incompatible with this game");
 		return APLRes_SilentFailure;
