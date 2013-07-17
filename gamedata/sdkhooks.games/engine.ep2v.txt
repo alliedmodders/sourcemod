@@ -6,7 +6,6 @@
 		"#supported"
 		{
 			"game"		"hl2mp"
-			"game"		"dod"
 		}
 		
 		"Offsets"
@@ -174,6 +173,7 @@
 		"#supported"
 		{
 			"game"		"tf"
+			"game"		"dod"
 		}
 		
 		"Offsets"
