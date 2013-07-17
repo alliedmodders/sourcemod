@@ -50,7 +50,7 @@ cell_t FakeNativeRouter(IPluginContext *pContext, const cell_t *params, void *pD
 	/* Check if too many parameters were passed */
 	if (params[0] > SP_MAX_EXEC_PARAMS)
 	{
-		return pContext->ThrowNativeError("Called native with too many parameters (%d>%d)", params[9], SP_MAX_EXEC_PARAMS);
+		return pContext->ThrowNativeError("Called native with too many parameters (%d>%d)", params[0], SP_MAX_EXEC_PARAMS);
 	}
 
 	/* Check if the native is paused */
