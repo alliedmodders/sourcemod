@@ -1407,6 +1407,23 @@ static cell_t SQL_ConnectCustom(IPluginContext *pContext, const cell_t *params)
 	return hndl;
 }
 
+static cell_t SQL_SetCharset(IPluginContext *pContext, const cell_t *params)
+{
+	IDatabase *db = NULL;
+	HandleError err;
+
+	if ((err = g_DBMan.ReadHandle(params[1], DBHandle_Database, (void **)&db))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid database Handle %x (error: %d)", params[1], err);
+	}
+
+	char *characterset;
+	pContext->LocalToString(params[2], &characterset);
+
+	return db->SetCharacterSet(characterset);
+}
+
 REGISTER_NATIVES(dbNatives)
 {
 	{"SQL_BindParamInt",		SQL_BindParamInt},
@@ -1448,6 +1465,7 @@ REGISTER_NATIVES(dbNatives)
 	{"SQL_TQuery",				SQL_TQuery},
 	{"SQL_UnlockDatabase",		SQL_UnlockDatabase},
 	{"SQL_ConnectCustom",		SQL_ConnectCustom},
+	{"SQL_SetCharset",		SQL_SetCharset},
 	{NULL,						NULL},
 };
 

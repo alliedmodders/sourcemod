@@ -42,7 +42,7 @@
  */
 
 #define SMINTERFACE_DBI_NAME		"IDBI"
-#define SMINTERFACE_DBI_VERSION		8
+#define SMINTERFACE_DBI_VERSION		9
 
 namespace SourceMod
 {
@@ -600,6 +600,13 @@ namespace SourceMod
 		 *						if applicable.
 		 */
 		virtual unsigned int GetInsertIDForQuery(IQuery *query) =0;
+
+		/**
+		 * @brief Sets the character set of the current connection
+		 *
+		 * @param characterset  The characterset to switch to. e.g. "utf8".
+		 */
+		virtual bool SetCharacterSet(const char *characterset) =0;
 	};
 
 	/** 
