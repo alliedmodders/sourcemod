@@ -1404,7 +1404,6 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 		return 1;
 	}
 
-	pPlayer->MarkAsBeingKicked();
 	g_HL2.AddDelayedKick(client, pPlayer->GetUserId(), buffer);
 
 	return 1;

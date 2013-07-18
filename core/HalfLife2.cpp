@@ -897,6 +897,14 @@ const char *CHalfLife2::CurrentCommandName()
 
 void CHalfLife2::AddDelayedKick(int client, int userid, const char *msg)
 {
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer || !pPlayer->IsConnected() || pPlayer->IsInKickQueue())
+	{
+		return;
+	}
+	
+	pPlayer->MarkAsBeingKicked();
+
 	DelayedKickInfo kick;
 
 	kick.client = client;
