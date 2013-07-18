@@ -62,6 +62,7 @@ public: //IDatabase
 	IQuery *DoQueryEx(const char *query, size_t len);
 	unsigned int GetAffectedRowsForQuery(IQuery *query);
 	unsigned int GetInsertIDForQuery(IQuery *query);
+	bool SetCharacterSet(const char *characterset);
 public:
 	const DatabaseInfo &GetInfo();
 private:

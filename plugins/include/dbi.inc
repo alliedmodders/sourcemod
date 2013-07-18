@@ -250,6 +250,18 @@ native SQL_GetDriverIdent(Handle:driver, String:ident[], maxlength);
 native SQL_GetDriverProduct(Handle:driver, String:product[], maxlength);
 
 /**
+ * Sets the character set of the current connection. 
+ * Like SET NAMES .. in mysql, but stays after connection problems.
+ * 
+ * Example: "utf8", "latin1"
+ *
+ * @param database      Database Handle.
+ * @param characterset  The character set string to change to.
+ * @return              True, if character set was changed, false otherwise.
+ */
+native bool:SQL_SetCharset(Handle:database, const String:charset[]);
+
+/**
  * Returns the number of affected rows from the last query.
  *
  * @param hndl			A database OR statement Handle.
