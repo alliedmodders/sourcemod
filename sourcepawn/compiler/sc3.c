@@ -1331,13 +1331,15 @@ static int hier13(value *lval)
       ldconst(lval2.constval,sPRI);
     array1= (lval->ident==iARRAY || lval->ident==iREFARRAY);
     array2= (lval2.ident==iARRAY || lval2.ident==iREFARRAY);
-    if (array1 && !array2) {
+    if (!array1 && array2) {
       const char *ptr = "-unknown-";
-	  if (lval->sym != NULL && lval->sym->name != NULL)
+      if (lval->sym != NULL && lval->sym->name != NULL)
         ptr = lval->sym->name;
       error(33,ptr);            /* array must be indexed */
-    } else if (!array1 && array2) {
-      char *ptr=(lval2.sym->name!=NULL) ? lval2.sym->name : "-unknown-";
+    } else if (array1 && !array2) {
+      const char *ptr = "-unknown-";
+      if (lval2.sym != NULL && lval2.sym->name != NULL)
+        ptr = lval2.sym->name;
       error(33,ptr);            /* array must be indexed */
     } /* if */
     /* ??? if both are arrays, should check dimensions */
