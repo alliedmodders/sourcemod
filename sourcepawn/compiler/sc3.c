@@ -363,7 +363,7 @@ SC_FUNC int matchtag(int formaltag,int actualtag,int allowcoerce)
 				if (v->name[5] == '@')
 				{
 					usage = uPUBLIC;
-				} else if (v->name[5] = '!') {
+				} else if (v->name[5] == '!') {
 					usage = uSTOCK;
 				}
 
