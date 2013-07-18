@@ -164,6 +164,11 @@ static cell_t GetTeamScore(IPluginContext *pContext, const cell_t *params)
 
 static cell_t SetTeamScore(IPluginContext *pContext, const cell_t *params)
 {
+	if (!g_pSM->IsMapRunning())
+	{
+		return pContext->ThrowNativeError("Cannot set team score when no map is running");
+	}
+	
 	int teamindex = params[1];
 	if (teamindex >= (int)g_Teams.size() || !g_Teams[teamindex].ClassName)
 	{
