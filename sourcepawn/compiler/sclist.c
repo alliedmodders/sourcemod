@@ -267,7 +267,7 @@ static stringpair *substindex['z'-PUBLIC_CHAR+1]; /* quick index to first charac
 static void adjustindex(char c)
 {
   stringpair *cur;
-  assert(c>='A' && c<='Z' || c>='a' && c<='z' || c=='_' || c==PUBLIC_CHAR);
+  assert((c>='A' && c<='Z') || (c>='a' && c<='z') || c=='_' || c==PUBLIC_CHAR);
   assert(PUBLIC_CHAR<'A' && 'A'<'_' && '_'<'z');
 
   for (cur=substpair.next; cur!=NULL && cur->first[0]!=c; cur=cur->next)
@@ -311,7 +311,7 @@ SC_FUNC stringpair *find_subst(char *name,int length)
   stringpair *item;
   assert(name!=NULL);
   assert(length>0);
-  assert(*name>='A' && *name<='Z' || *name>='a' && *name<='z' || *name=='_' || *name==PUBLIC_CHAR);
+  assert((*name>='A' && *name<='Z') || (*name>='a' && *name<='z') || *name=='_' || *name==PUBLIC_CHAR);
   item=substindex[(int)*name-PUBLIC_CHAR];
   if (item!=NULL)
     item=find_stringpair(item,name,length);
@@ -340,7 +340,7 @@ SC_FUNC int delete_subst(char *name,int length)
   stringpair *item;
   assert(name!=NULL);
   assert(length>0);
-  assert(*name>='A' && *name<='Z' || *name>='a' && *name<='z' || *name=='_' || *name==PUBLIC_CHAR);
+  assert((*name>='A' && *name<='Z') || (*name>='a' && *name<='z') || *name=='_' || *name==PUBLIC_CHAR);
   item=substindex[(int)*name-PUBLIC_CHAR];
   if (item!=NULL)
     item=find_stringpair(item,name,length);

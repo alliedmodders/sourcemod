@@ -479,7 +479,7 @@ cleanup:
       } /* if */
       if (pc_amxram>0 && (glb_declared+pc_stksize)*sizeof(cell)>=(unsigned long)pc_amxram)
         flag_exceed=1;
-      if (!norun && (sc_debug & sSYMBOLIC)!=0 || verbosity>=2 || flag_exceed) {
+      if ((!norun && (sc_debug & sSYMBOLIC)!=0) || verbosity>=2 || flag_exceed) {
         pc_printf("Header size:       %8ld bytes\n", (long)hdrsize);
         pc_printf("Code size:         %8ld bytes\n", (long)code_idx);
         pc_printf("Data size:         %8ld bytes\n", (long)glb_declared*sizeof(cell));
@@ -1871,8 +1871,8 @@ static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct)
 			{
 				error(23);
 			} else {
-				if (arg->tag == pc_addtag("Float") && tok == tNUMBER ||
-					arg->tag == 0 && tok == tRATIONAL)
+				if ((arg->tag == pc_addtag("Float") && tok == tNUMBER) ||
+					(arg->tag == 0 && tok == tRATIONAL))
 				{
 					error(213);
 				}
@@ -2069,8 +2069,8 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
      * c) found a state variable in the automaton that we were looking for
      */
     assert(sym==NULL
-           || sym->states==NULL && sc_curstates==0
-           || sym->states!=NULL && sym->next!=NULL && sym->states->next->index==sc_curstates);
+           || (sym->states==NULL && sc_curstates==0)
+           || (sym->states!=NULL && sym->next!=NULL && sym->states->next->index==sc_curstates));
     /* a state variable may only have a single id in its list (so either this
      * variable has no states, or it has a single list)
      */
@@ -2212,8 +2212,8 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
       if (sc_curstates>0)
         attachstatelist(sym,sc_curstates);
     } else {            /* if declared but not yet defined, adjust the variable's address */
-      assert(sym->states==NULL && sc_curstates==0
-             || sym->states->next!=NULL && sym->states->next->index==sc_curstates && sym->states->next->next==NULL);
+      assert((sym->states==NULL && sc_curstates==0)
+             || (sym->states->next!=NULL && sym->states->next->index==sc_curstates && sym->states->next->next==NULL));
       sym->addr=address;
       sym->codeaddr=code_idx;
       sym->usage|=uDEFINE;
@@ -2290,7 +2290,7 @@ static int declloc(int fstatic)
      * of a global variable or to that of a local variable at a lower
      * level might indicate a bug.
      */
-    if ((sym=findloc(name))!=NULL && sym->compound!=nestlevel || findglb(name,sGLOBAL)!=NULL)
+    if (((sym=findloc(name))!=NULL && sym->compound!=nestlevel) || findglb(name,sGLOBAL)!=NULL)
       error(219,name);                  /* variable shadows another symbol */
 	if (matchtoken('[')) {
       int _index;
@@ -3407,7 +3407,7 @@ static void dofuncenum(int listmode)
 			} else {
 				error(10);
 			}
-		} while (l == '&' || l == tLABEL || l == tCONST || l != tELLIPS && matchtoken(','));
+		} while (l == '&' || l == tLABEL || l == tCONST || (l != tELLIPS && matchtoken(',')));
 		needtoken(')');
 		for (i=0; i<func.argcount; i++)
 		{
@@ -3847,7 +3847,7 @@ static int operatoradjust(int opertok,symbol *sym,char *opername,int resulttag)
       error(62);      /* number or placement of the operands does not fit the operator */
   } /* switch */
 
-  if (tags[0]==0 && (opertok!='=' && tags[1]==0 || opertok=='=' && resulttag==0))
+  if (tags[0]==0 && ((opertok!='=' && tags[1]==0) || (opertok=='=' && resulttag==0)))
     error(64);        /* cannot change predefined operators */
 
   /* change the operator name */
@@ -4035,7 +4035,7 @@ static void funcstub(int fnative)
   tok=lex(&val,&str);
   fpublic=(tok==tPUBLIC) || (tok==tSYMBOL && str[0]==PUBLIC_CHAR);
   if (fnative) {
-    if (fpublic || tok==tSTOCK || tok==tSTATIC || tok==tSYMBOL && *str==PUBLIC_CHAR)
+    if (fpublic || tok==tSTOCK || tok==tSTATIC || (tok==tSYMBOL && *str==PUBLIC_CHAR))
       error(42);                /* invalid combination of class specifiers */
   } else {
     if (tok==tPUBLIC || tok==tSTOCK || tok==tSTATIC)
@@ -4159,7 +4159,7 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
     tag= (firsttag>=0) ? firsttag : pc_addtag(NULL);
     tok=lex(&val,&str);
     assert(!fpublic);
-    if (tok==tNATIVE || tok==tPUBLIC && stock)
+    if (tok==tNATIVE || (tok==tPUBLIC && stock))
       error(42);                /* invalid combination of class specifiers */
     if (tok==tOPERATOR) {
       opertok=operatorname(symbolname);
@@ -4489,8 +4489,8 @@ static int declargs(symbol *sym,int chkshadow)
           /* may need to free default array argument and the tag list */
           if (arg.ident==iREFARRAY && arg.hasdefault)
             free(arg.defvalue.array.data);
-          else if (arg.ident==iVARIABLE
-                   && ((arg.hasdefault & uSIZEOF)!=0 || (arg.hasdefault & uTAGOF)!=0) || (arg.hasdefault & uCOUNTOF)!=0)
+          else if ((arg.ident==iVARIABLE
+                   && ((arg.hasdefault & uSIZEOF)!=0 || (arg.hasdefault & uTAGOF)!=0)) || (arg.hasdefault & uCOUNTOF)!=0)
             free(arg.defvalue.size.symname);
           free(arg.tags);
         } /* if */
@@ -4529,7 +4529,7 @@ static int declargs(symbol *sym,int chkshadow)
         error(10);                      /* illegal function or declaration */
       } /* switch */
     } while (tok=='&' || tok==tLABEL || tok==tCONST
-             || tok!=tELLIPS && matchtoken(',')); /* more? */
+             || (tok!=tELLIPS && matchtoken(','))); /* more? */
     /* if the next token is not ",", it should be ")" */
     needtoken(')');
   } /* if */
@@ -4770,7 +4770,7 @@ static int find_xmltag(char *source,char *xmltag,char *xmlparam,char *xmlvalue,
   assert(inner_length!=NULL);
 
   /* both NULL or both non-NULL */
-  assert(xmlvalue!=NULL && xmlparam!=NULL || xmlvalue==NULL && xmlparam==NULL);
+  assert((xmlvalue!=NULL && xmlparam!=NULL) || (xmlvalue==NULL && xmlparam==NULL));
 
   xmltag_len=strlen(xmltag);
   xmlparam_len= (xmlparam!=NULL) ? strlen(xmlparam) : 0;
@@ -6419,7 +6419,7 @@ static void doreturn(void)
     if ((rettype & uRETVALUE)!=0) {
       int retarray=(ident==iARRAY || ident==iREFARRAY);
       /* there was an earlier "return" statement in this function */
-      if (sub==NULL && retarray || sub!=NULL && !retarray)
+      if ((sub==NULL && retarray) || (sub!=NULL && !retarray))
         error(79);                      /* mixing "return array;" and "return value;" */
       if (retarray && (curfunc->usage & uPUBLIC)!=0)
         error(90,curfunc->name);        /* public function may not return array */
@@ -6632,7 +6632,7 @@ static void dostate(void)
   assert(state!=NULL);
   ldconst(state->value,sPRI);
   assert(automaton!=NULL);
-  assert(automaton->index==0 && automaton->name[0]=='\0' || automaton->index>0);
+  assert((automaton->index==0 && automaton->name[0]=='\0') || automaton->index>0);
   storereg(automaton->value,sPRI);
 
   /* find the optional entry() function for the state */

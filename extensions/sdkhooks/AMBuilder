@@ -10,7 +10,6 @@ for i in SM.sdkInfo:
 	compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'game', 'shared'))
 
 	if compiler.cc.name == 'gcc' or compiler.cc.name == 'clang':
-		compiler['CFLAGS'].append('-Wno-parentheses')
 		compiler['CXXFLAGS'].append('-Wno-invalid-offsetof')
 
 	name = 'sdkhooks.ext.' + sdk['ext']

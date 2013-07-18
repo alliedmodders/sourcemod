@@ -998,7 +998,7 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
       instr=skipwhitespace(line);
       /* ignore empty lines and labels (labels have a special syntax, so these
        * must be parsed separately) */
-      if (*instr=='\0' || tolower(*instr)=='l' && *(instr+1)=='.')
+      if (*instr=='\0' || (tolower(*instr)=='l' && *(instr+1)=='.'))
         continue;
       /* get to the end of the instruction (make use of the '\n' that fgets()
        * added at the end of the line; this way we will *always* drop on a
@@ -1149,7 +1149,7 @@ static void append_dbginfo(FILE *fout)
 
   /* automaton table */
   for (constptr=sc_automaton_tab.next; constptr!=NULL; constptr=constptr->next) {
-    assert(constptr->index==0 && strlen(constptr->name)==0 || strlen(constptr->name)>0);
+    assert((constptr->index==0 && strlen(constptr->name)==0) || strlen(constptr->name)>0);
     dbghdr.automatons++;
     dbghdr.size+=sizeof(AMX_DBG_MACHINE)+strlen(constptr->name);
   } /* for */
@@ -1288,7 +1288,7 @@ static void append_dbginfo(FILE *fout)
 
   /* automaton table */
   for (constptr=sc_automaton_tab.next; constptr!=NULL; constptr=constptr->next) {
-    assert(constptr->index==0 && strlen(constptr->name)==0 || strlen(constptr->name)>0);
+    assert((constptr->index==0 && strlen(constptr->name)==0) || strlen(constptr->name)>0);
     id1=(int16_t)constptr->index;
     address=(ucell)constptr->value;
     #if BYTE_ORDER==BIG_ENDIAN

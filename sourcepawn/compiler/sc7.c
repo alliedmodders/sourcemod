@@ -532,7 +532,7 @@ static int matchsequence(char *start,char *end,char *pattern,
       assert(*(start+1)=='\0');
       start+=2;                 /* skip '\n' and '\0' */
       if (*(pattern+1)!='\0')
-        while (start<end && *start=='\t' || *start==' ')
+        while ((start<end && *start=='\t') || *start==' ')
           start++;              /* skip leading white space of next instruction */
       break;
     default:
@@ -690,7 +690,7 @@ static void stgopt(char *start,char *end,int (*outputfunc)(char *str))
             seq++;
           } /* if */
         } /* while */
-        assert(sequences[seq].find==NULL || *sequences[seq].find=='\0' && pc_optimize==sOPTIMIZE_NOMACRO);
+        assert(sequences[seq].find==NULL || (*sequences[seq].find=='\0' && pc_optimize==sOPTIMIZE_NOMACRO));
         start += strlen(start) + 1;       /* to next string */
       } /* while (start<end) */
     } while (matches>0);

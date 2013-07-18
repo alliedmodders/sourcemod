@@ -8,7 +8,7 @@ compiler['CINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'sourcepawn', 'c
 compiler['CINCLUDES'].append(os.path.join(AMBuild.outputFolder, 'includes'))
 
 if compiler.cc.name == 'gcc' or compiler.cc.name == 'clang':
-	compiler['CFLAGS'].extend(['-Wno-parentheses', '-Wno-format'])
+	compiler['CFLAGS'].append('-Wno-format')
 	if AMBuild.target['platform'] == 'linux':
 		compiler['POSTLINKFLAGS'].extend(['-lgcc', '-lm'])
 elif compiler.cc.name == 'msvc':
