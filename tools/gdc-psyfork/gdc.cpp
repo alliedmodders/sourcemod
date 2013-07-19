@@ -495,7 +495,7 @@ void CheckLinuxSigOffset(char* name, const char* symbol, void * handle)
 	}
 	else
 	{
-		sigOffset = GetOffset(sigOffsetKey, true);
+		sigOffset = GetOffset(sigOffsetKey, false);
 		sigOffsetByte = symbols.GetKeyValue((const char *)sigByteName);
 			
 		if(sigOffset != -1 && sigOffsetByte != NULL)//Got the offset in the function
