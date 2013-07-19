@@ -37,7 +37,7 @@
 			// SDKHooks
 			"EndTouch"			"_ZN11CBaseEntity8EndTouchEPS_"
 			"FireBullets"		"_ZN11CBaseEntity11FireBulletsERK17FireBulletsInfo_t"
-			"GroundEntChanged"	"_ZN11CBaseEntity35NetworkStateChanged_m_hGroundEntityEv"
+			"GroundEntChanged"	"_ZN11CBaseEntity35NetworkStateChanged_m_hGroundEntityEPv"
 			"OnTakeDamage"		"_ZN11CBaseEntity12OnTakeDamageERK15CTakeDamageInfo"
 			"PreThink"			"_ZN11CBasePlayer8PreThinkEv"
 			"PostConstructor"	"_ZN11CBaseEntity15PostConstructorEPKc"
@@ -230,12 +230,24 @@
 		"#supported"
 		{
 			"engine"	"left4dead"
-			"engine"	"left4dead2"
 		}
 
 		"Keys"
 		{
 			"GiveNamedItem"		"_ZN9CCSPlayer13GiveNamedItemEPKci"
+		}
+	}
+
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"	"left4dead2"
+		}
+		
+		"Keys"
+		{
+			"GiveNamedItem"		"_ZN9CCSPlayer13GiveNamedItemEPKciP11CBaseEntity"
 		}
 	}
 
@@ -289,6 +301,52 @@
 		{
 			"CommitSuicide"	"_ZN11CBasePlayer13CommitSuicideEv"
 			"DispatchKeyValueVector"	"_ZN11CBaseEntity8KeyValueEPKc6Vector"
+		}
+	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"	"csgo"
+		}
+		"Keys"
+		{
+			"OnTakeDamage_Offset1"					"TakeDmgPatch1"
+			"OnTakeDamage_Offset2"					"TakeDmgPatch2"
+			"OnTakeDamage_Byte_Win1"				"74"
+			"OnTakeDamage_Byte_Win2"				"75"
+			"OnTakeDamage_Byte_Lin1"				"0F"
+			"OnTakeDamage_Byte_Lin2"				"0F"
+			"WantsLagComp_Offset"					"LagCompPatch"
+			"WantsLagComp_Byte_Win"					"75"
+			"WantsLagComp_Byte_Lin"					"0F"
+			"CalcDominationAndRevenge_Offset"		"CalcDomRevPatch"
+			"CalcDominationAndRevenge_Byte_Win"		"0F"
+			"CalcDominationAndRevenge_Byte_Lin"		"74"
+		}
+	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"	"css"
+		}
+		"Keys"
+		{
+			"OnTakeDamage_Offset1"					"TakeDmgPatch1"
+			"OnTakeDamage_Offset2"					"TakeDmgPatch2"
+			"OnTakeDamage_Byte_Win1"				"75"
+			"OnTakeDamage_Byte_Win2"				"75"
+			"OnTakeDamage_Byte_Lin1"				"0F"
+			"OnTakeDamage_Byte_Lin2"				"0F"
+			"WantsLagComp_Offset"					"LagCompPatch"
+			"WantsLagComp_Byte_Win"					"75"
+			"WantsLagComp_Byte_Lin"					"0F"
+			"CalcDominationAndRevenge_Offset"		"CalcDomRevPatch"
+			"CalcDominationAndRevenge_Byte_Win"		"0F"
+			"CalcDominationAndRevenge_Byte_Lin"		"74"
 		}
 	}
 }
