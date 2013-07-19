@@ -19,6 +19,8 @@ char *wengine_binary = NULL;
 char *symbols_file = NULL;
 
 bool use_symtab = true;
+CGameConfig symbols;
+CGameConfig gc;
 
 inline bool IsDigit( char c )
 {
@@ -138,7 +140,6 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	CGameConfig gc;
 	char err[512];
 	if (!gc.EnterFile(gamedata, err, sizeof(err)))
 	{
@@ -146,7 +147,6 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	CGameConfig symbols;
 	if (!symbols.EnterFile(symbols_file ? symbols_file : "symbols.txt", err, sizeof(err)))
 	{
 		printf("symbols.txt: %s\n", err);
@@ -238,7 +238,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	printf("\nWindows offsets are (semi-)wild guesses!\n\n");
+	printf("\nWindows offsets are (semi-)wild guesses!\n\nSignature offsets are wild guesses!\n\n");
 
 	for (list<Sig>::iterator it = gc.m_Sigs.begin(); it != gc.m_Sigs.end(); it++)
 	{
@@ -296,6 +296,11 @@ int main(int argc, char **argv)
 				it->name,
 				(it->lib == Server) ? "server" : "engine"
 				);
+
+			//Check if they signature has a matching offset
+			CheckWindowsSigOffset(it->name, winSymbol, winFile);
+			CheckLinuxSigOffset(it->name, linSymbol, linHandle);
+
 		}
 		else
 		{
@@ -367,7 +372,206 @@ int main(int argc, char **argv)
 
 	return 0;
 }
+void CheckWindowsSigOffset(char* name, const char* symbol, int file)
+{
+	void *ptr = GetWindowsSigPtr(file, symbol);
+	if(!ptr)
+	{
+		return;
+	}
+	const char* sigOffsetKey = NULL;
+	const char* sigOffsetByte = NULL;
+	int sigOffset = -1;
+	char sigOffsetName[128];
+	char sigByteName[128];
 
+	snprintf(sigOffsetName, sizeof(sigOffsetName), "%s_Offset", name);
+	snprintf(sigByteName, sizeof(sigByteName), "%s_Byte_Win", name);
+
+	sigOffsetKey = symbols.GetKeyValue((const char *)sigOffsetName);
+	if(sigOffsetKey == NULL)
+	{
+
+		//Maybe it has multiple?
+		for(unsigned int i = 1; i <= 4; i++)
+		{
+			snprintf(sigOffsetName, sizeof(sigOffsetName), "%s_Offset%i", name, i);
+			snprintf(sigByteName, sizeof(sigByteName), "%s_Byte_Win%i", name, i);
+			sigOffsetKey = symbols.GetKeyValue((const char *)sigOffsetName);
+
+			if(sigOffsetKey == NULL)
+			{
+				break;
+			}
+			
+			sigOffset = GetOffset(sigOffsetKey, true);
+			sigOffsetByte = symbols.GetKeyValue((const char *)sigByteName);
+			
+			if(sigOffset != -1 && sigOffsetByte != NULL)//Got the offset in the function
+			{
+				uint8_t iByte = strtoul(sigOffsetByte, NULL, 16);
+
+				if(iByte == *(uint8_t *)((intptr_t)ptr + sigOffset))
+				{
+					printf("     w: %s -> %s (%4d) == \\x%s GOOD\n", name, sigOffsetKey, sigOffset, sigOffsetByte);
+				}
+				else
+				{
+					printf("!    w: %s -> %s (%4d) != \\x%s BAD\n", name, sigOffsetKey, sigOffset, sigOffsetByte);
+				}
+			}
+		}
+	}
+	else
+	{
+		sigOffset = GetOffset(sigOffsetKey, true);
+		sigOffsetByte = symbols.GetKeyValue((const char *)sigByteName);
+			
+		if(sigOffset != -1 && sigOffsetByte != NULL)//Got the offset in the function
+		{
+			uint8_t iByte = strtoul(sigOffsetByte, NULL, 16);
+
+			if(iByte == *(uint8_t *)((intptr_t)ptr + sigOffset))
+			{
+				printf("     w: %s -> %s (%4d) == \\x%s GOOD\n", name, sigOffsetKey, sigOffset, sigOffsetByte);
+			}
+			else
+			{
+				printf("!    w: %s -> %s (%4d) != \\x%s BAD\n", name, sigOffsetKey, sigOffset, sigOffsetByte);
+			}
+		}
+	}
+}
+void CheckLinuxSigOffset(char* name, const char* symbol, void * handle)
+{
+	void *ptr = GetLinuxSigPtr(handle, symbol);
+	if(!ptr)
+	{
+		return;
+	}
+	const char* sigOffsetKey = NULL;
+	const char* sigOffsetByte = NULL;
+	int sigOffset = -1;
+	char sigOffsetName[128];
+	char sigByteName[128];
+
+	snprintf(sigOffsetName, sizeof(sigOffsetName), "%s_Offset", name);
+	snprintf(sigByteName, sizeof(sigByteName), "%s_Byte_Lin", name);
+
+	sigOffsetKey = symbols.GetKeyValue((const char *)sigOffsetName);
+
+	if(sigOffsetKey == NULL)
+	{
+
+		//Maybe it has multiple?
+		for(unsigned int i = 1; i <= 4; i++)
+		{
+			snprintf(sigOffsetName, sizeof(sigOffsetName), "%s_Offset%i", name, i);
+			snprintf(sigByteName, sizeof(sigByteName), "%s_Byte_Lin%i", name, i);
+			sigOffsetKey = symbols.GetKeyValue((const char *)sigOffsetName);
+
+			if(sigOffsetKey == NULL)
+			{
+				break;
+			}
+			
+			sigOffset = GetOffset(sigOffsetKey, false);
+			sigOffsetByte = symbols.GetKeyValue((const char *)sigByteName);
+			
+			if(sigOffset != -1 && sigOffsetByte != NULL)//Got the offset in the function
+			{
+				uint8_t iByte = strtoul(sigOffsetByte, NULL, 16);
+
+				if(iByte == *(uint8_t *)((intptr_t)ptr + sigOffset))
+				{
+					printf("     l: %s -> %s (%4d) == \\x%s GOOD\n", name, sigOffsetKey, sigOffset, sigOffsetByte);
+				}
+				else
+				{
+					printf("!    l: %s -> %s (%4d) != \\x%s BAD\n", name, sigOffsetKey, sigOffset, sigOffsetByte);
+				}
+			}
+		}
+	}
+	else
+	{
+		sigOffset = GetOffset(sigOffsetKey, true);
+		sigOffsetByte = symbols.GetKeyValue((const char *)sigByteName);
+			
+		if(sigOffset != -1 && sigOffsetByte != NULL)//Got the offset in the function
+		{
+			uint8_t iByte = strtoul(sigOffsetByte, NULL, 16);
+
+			if(iByte == *(uint8_t *)((intptr_t)ptr + sigOffset))
+			{
+				printf("     l: %s -> %s (%4d) == \\x%s GOOD\n", name, sigOffsetKey, sigOffset, sigOffsetByte);
+			}
+			else
+			{
+				printf("!    l: %s -> %s (%4d) != \\x%s BAD\n", name, sigOffsetKey, sigOffset, sigOffsetByte);
+			}
+		}
+	}
+}
+int GetOffset(const char* key, bool windows)
+{
+	for (list<Offset>::iterator it = gc.m_Offsets.begin(); it != gc.m_Offsets.end(); it++)
+	{
+		if (strcmp(it->name, key) == 0)
+		{
+			if(windows)
+				return it->win;
+			else
+				return it->lin;
+		}
+	}
+	return -1;
+}
+void *GetWindowsSigPtr(int file, const char* symbol)
+{
+	int matches = 0;
+	bool atFuncStart = true;
+	bool isAt = (symbol[0] == '@');
+	// we can't support this on windows from here
+	if (isAt)
+		return NULL;
+	
+	unsigned char real_sig[511];
+	size_t real_bytes = UTIL_DecodeHexString(real_sig, sizeof(real_sig), symbol);
+
+	if (real_bytes >= 1)
+	{
+		return mu.FindPatternInFile(file, (char*)real_sig, real_bytes, matches, atFuncStart);
+	}
+	return NULL;
+
+}
+void *GetLinuxSigPtr(void *handle, const char* symbol)
+{
+	bool isAt = (symbol[0] == '@' && symbol[1] != '\0');
+	int matches = 0;
+	bool dummy;
+	
+	if (isAt)
+	{
+		if( use_symtab && mu.ResolveSymbol(handle, &symbol[1]) )
+			return mu.ResolveSymbol(handle, &symbol[1]);
+		else if( !use_symtab && dlsym(handle, &symbol[1]) )
+			return dlsym(handle, &symbol[1]);
+	}
+	else
+	{
+		unsigned char real_sig[511];
+		size_t real_bytes = UTIL_DecodeHexString(real_sig, sizeof(real_sig), symbol);
+
+		if (real_bytes >= 1)
+		{
+			return mu.FindPattern(handle, (char*)real_sig, real_bytes, matches, dummy);
+		}
+	}
+
+	return NULL;
+}
 int checkSigStringW(int file, const char* symbol)
 {
 	int matches = 0;
