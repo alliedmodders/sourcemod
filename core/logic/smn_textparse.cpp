@@ -202,8 +202,9 @@ static cell_t SMC_SetParseStart(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = (Handle_t)params[1];
 	HandleError err;
 	ParseInfo *parse;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
+	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, &sec, (void **)&parse))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
@@ -219,8 +220,9 @@ static cell_t SMC_SetParseEnd(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = (Handle_t)params[1];
 	HandleError err;
 	ParseInfo *parse;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
+	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, &sec, (void **)&parse))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
@@ -236,8 +238,9 @@ static cell_t SMC_SetReaders(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = (Handle_t)params[1];
 	HandleError err;
 	ParseInfo *parse;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
+	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, &sec, (void **)&parse))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
@@ -255,8 +258,9 @@ static cell_t SMC_SetRawLine(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = (Handle_t)params[1];
 	HandleError err;
 	ParseInfo *parse;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
+	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, &sec, (void **)&parse))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
@@ -272,8 +276,9 @@ static cell_t SMC_ParseFile(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = (Handle_t)params[1];
 	HandleError err;
 	ParseInfo *parse;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
+	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, &sec, (void **)&parse))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
