@@ -37,7 +37,7 @@ public Action:set_mvps( client, argc )
 
 public Action:get_score( client, argc )
 {
-	if( GuessSDKVersion() != SOURCE_SDK_CSGO )
+	if( GetEngineVersion() != Engine_CSGO )
 	{
 		ReplyToCommand( client, "This command is only intended for CS:GO" );
 		return Plugin_Handled;
@@ -50,7 +50,7 @@ public Action:get_score( client, argc )
 
 public Action:set_score( client, argc )
 {
-	if( GuessSDKVersion() != SOURCE_SDK_CSGO )
+	if( GetEngineVersion() != Engine_CSGO )
 	{
 		ReplyToCommand( client, "This command is only intended for CS:GO" );
 		return Plugin_Handled;
@@ -66,7 +66,7 @@ public Action:set_score( client, argc )
 
 public Action:get_assists( client, argc )
 {
-	if( GuessSDKVersion() != SOURCE_SDK_CSGO )
+	if( GetEngineVersion() != Engine_CSGO )
 	{
 		ReplyToCommand( client, "This command is only intended for CS:GO" );
 		return Plugin_Handled;
@@ -79,7 +79,7 @@ public Action:get_assists( client, argc )
 
 public Action:set_assists( client, argc )
 {
-	if( GuessSDKVersion() != SOURCE_SDK_CSGO )
+	if( GetEngineVersion() != Engine_CSGO )
 	{
 		ReplyToCommand( client, "This command is only intended for CS:GO" );
 		return Plugin_Handled;

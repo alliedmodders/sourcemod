@@ -78,7 +78,7 @@ new UserMsg:g_FadeUserMsgId;
 // Serial Generator for Timer Safety
 new g_Serial_Gen = 0;
 
-new g_GameEngine = SOURCE_SDK_UNKNOWN;
+new EngineVersion:g_GameEngine = Engine_Unknown;
 
 // Flags used in various timers
 #define DEFAULT_TIMER_FLAGS TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE
@@ -102,7 +102,7 @@ public OnPluginStart()
 	
 	LoadTranslations("common.phrases");
 	LoadTranslations("funcommands.phrases");
-	g_GameEngine = GuessSDKVersion();
+	g_GameEngine = GetEngineVersion();
 	g_FadeUserMsgId = GetUserMessageId("Fade");
 
 	RegisterCvars( );
@@ -185,25 +185,26 @@ public OnMapStart()
 	PrecacheSound(SOUND_BOOM, true);
 	PrecacheSound(SOUND_FREEZE, true);
 
-	new sdkversion = GuessSDKVersion();
-	if (sdkversion >= SOURCE_SDK_LEFT4DEAD)
+	new EngineVersion:sdkversion = GetEngineVersion();
+	if (sdkversion == Engine_Left4Dead || sdkversion == Engine_Left4Dead2
+		 || sdkversion == Engine_AlienSwarm || sdkversion == Engine_CSGO)
 	{
 		g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
 		g_HaloSprite = PrecacheModel("materials/sprites/glow01.vmt");
 		
 		// l4d, l4d2, and csgo have this. swarm does not.
-		if (sdkversion != SOURCE_SDK_ALIENSWARM)
+		if (sdkversion != Engine_AlienSwarm)
 		{
 			g_BeamSprite2 = PrecacheModel("materials/sprites/physbeam.vmt");
 		}
 		
 		g_GlowSprite = PrecacheModel("materials/sprites/blueflare1.vmt");
 		
-		if (sdkversion == SOURCE_SDK_LEFT4DEAD || sdkversion == SOURCE_SDK_LEFT4DEAD2)
+		if (sdkversion == Engine_Left4Dead || sdkversion == Engine_Left4Dead2)
 		{
 			g_ExplosionSprite = PrecacheModel("sprites/floorfire4_.vmt");
 		}
-		else if (sdkversion == SOURCE_SDK_ALIENSWARM)
+		else if (sdkversion == Engine_AlienSwarm)
 		{
 			g_ExplosionSprite = PrecacheModel("sprites/flamelet1.vmt");
 		}

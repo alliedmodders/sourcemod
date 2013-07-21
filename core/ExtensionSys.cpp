@@ -76,8 +76,12 @@ CRemoteExtension::CRemoteExtension(IExtensionInterface *pAPI, const char *filena
 #define GAMEFIX "2.eye"
 #elif SOURCE_ENGINE == SE_CSS
 #define GAMEFIX "2.css"
-#elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
-#define GAMEFIX "2.ep2v"
+#elif SOURCE_ENGINE == SE_HL2DM
+#define GAMEFIX "2.hl2dm"
+#elif SOURCE_ENGINE == SE_DODS
+#define GAMEFIX "2.dods"
+#elif SOURCE_ENGINE == SE_TF2
+#define GAMEFIX "2.tf2"
 #elif SOURCE_ENGINE == SE_DARKMESSIAH
 #define GAMEFIX "2.darkm"
 #elif SOURCE_ENGINE == SE_PORTAL2

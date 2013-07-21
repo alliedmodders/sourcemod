@@ -174,7 +174,7 @@ static cell_t GameRules_GetProp(IPluginContext *pContext, const cell_t *params)
 	is_unsigned = ((pProp->GetFlags() & SPROP_UNSIGNED) == SPROP_UNSIGNED);
 
 	// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_ORANGEBOXVALVE
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2
 	if (pProp->GetFlags() & SPROP_VARINT)
 	{
 		bit_count = sizeof(int) * 8;
@@ -243,8 +243,7 @@ static cell_t GameRules_SetProp(IPluginContext *pContext, const cell_t *params)
 
 	FIND_PROP_SEND(DPT_Int, "integer");
 
-	// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_ORANGEBOXVALVE
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2
 	if (pProp->GetFlags() & SPROP_VARINT)
 	{
 		bit_count = sizeof(int) * 8;

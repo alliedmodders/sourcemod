@@ -55,7 +55,7 @@ new Handle:sm_reserve_type;
 new Handle:sm_reserve_maxadmins;
 new Handle:sm_reserve_kicktype;
 
-new g_SDKVersion;
+new bool:g_BotsSubtractFromMax;
 new g_SourceTV = -1;
 new g_Replay = -1;
 
@@ -80,9 +80,10 @@ public OnPluginStart()
 	HookConVarChange(sm_reserved_slots, SlotCountChanged);
 	HookConVarChange(sm_hide_slots, SlotHideChanged);
 	
-	g_SDKVersion = GuessSDKVersion();
+	new EngineVersion:engineVersion = GetEngineVersion();
+	g_BotsSubtractFromMax = engineVersion == Engine_TF2 || engineVersion == Engine_CSS || engineVersion == Engine_DODS || engineVersion == Engine_HL2DM;
 	
-	if (g_SDKVersion == SOURCE_SDK_EPISODE2VALVE)
+	if (g_BotsSubtractFromMax)
 	{
 		for (new i = 1; i <= MaxClients; i++)
 		{
@@ -142,7 +143,7 @@ public Action:OnTimedKick(Handle:timer, any:client)
 
 public OnClientPostAdminCheck(client)
 {
-	if (g_SDKVersion == SOURCE_SDK_EPISODE2VALVE)
+	if (g_BotsSubtractFromMax)
 	{
 		if (IsClientSourceTV(client))
 		{
@@ -234,7 +235,7 @@ public OnClientPostAdminCheck(client)
 
 public OnClientDisconnect_Post(client)
 {
-	if (g_SDKVersion == SOURCE_SDK_EPISODE2VALVE)
+	if (g_BotsSubtractFromMax)
 	{
 		if (client == g_SourceTV)
 		{
@@ -296,7 +297,7 @@ SetVisibleMaxSlots(clients, limit)
 		num = limit;
 	}
 	
-	if (g_SDKVersion == SOURCE_SDK_EPISODE2VALVE)
+	if (g_BotsSubtractFromMax)
 	{
 		if (g_SourceTV > -1)
 		{

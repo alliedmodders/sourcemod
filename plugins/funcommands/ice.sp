@@ -157,7 +157,7 @@ public Action:Timer_Freeze(Handle:timer, any:value)
 		UnfreezeClient(client);
 		
 		/* HintText doesn't work on Dark Messiah */
-		if (g_GameEngine != SOURCE_SDK_DARKMESSIAH)
+		if (g_GameEngine != Engine_DarkMessiah)
 		{
 			PrintHintText(client, "%t", "Unfrozen");
 		}
@@ -169,7 +169,7 @@ public Action:Timer_Freeze(Handle:timer, any:value)
 		return Plugin_Stop;
 	}
 
-	if (g_GameEngine != SOURCE_SDK_DARKMESSIAH)
+	if (g_GameEngine != Engine_DarkMessiah)
 	{
 		PrintHintText(client, "%t", "You will be unfrozen", g_FreezeTime[client]);
 	}

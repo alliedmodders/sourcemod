@@ -240,8 +240,8 @@ if 'css' in SM.sdkInfo:
 if 'csgo' in SM.sdkInfo:
 	AddNormalLibrary('game.cstrike.ext.2.csgo', 'extensions')
 
-if 'ep2v' in SM.sdkInfo:
-	AddNormalLibrary('game.tf2.ext.2.ep2v', 'extensions')
+if 'tf2' in SM.sdkInfo:
+	AddNormalLibrary('game.tf2.ext.2.tf2', 'extensions')
 
 AddNormalLibrary('topmenus.ext', 'extensions')
 AddNormalLibrary('regex.ext', 'extensions')

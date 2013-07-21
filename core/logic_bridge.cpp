@@ -180,10 +180,16 @@ static const char *get_source_engine_name()
 	return "eye";
 #elif SOURCE_ENGINE == SE_CSS
 	return "css";
-#elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
-	return "orangebox_valve";
+#elif SOURCE_ENGINE == SE_HL2DM
+	return "hl2dm";
+#elif SOURCE_ENGINE == SE_DODS
+	return "dods";
+#elif SOURCE_ENGINE == SE_TF2
+	return "tf2";
 #elif SOURCE_ENGINE == SE_LEFT4DEAD
 	return "left4dead";
+#elif SOURCE_ENGINE == SE_NUCLEARDAWN
+	return "nucleardawn";
 #elif SOURCE_ENGINE == SE_LEFT4DEAD2
 	return "left4dead2";
 #elif SOURCE_ENGINE == SE_ALIENSWARM
@@ -197,7 +203,7 @@ static const char *get_source_engine_name()
 
 static bool symbols_are_hidden()
 {
-#if (SOURCE_ENGINE == SE_CSS) || (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2) || (SOURCE_ENGINE == SE_CSGO)
+#if (SOURCE_ENGINE == SE_CSS) || (SOURCE_ENGINE == SE_HL2DM) || (SOURCE_ENGINE == SE_DODS) || (SOURCE_ENGINE == SE_TF2) || (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_NUCLEARDAWN) || (SOURCE_ENGINE == SE_LEFT4DEAD2) || (SOURCE_ENGINE == SE_CSGO)
 	return true;
 #else
 	return false;

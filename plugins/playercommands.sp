@@ -51,7 +51,7 @@ new Handle:hTopMenu = INVALID_HANDLE;
 
 /* Used to get the SDK / Engine version. */
 /* This is used in sm_rename and sm_changeteam */
-new g_ModVersion = 0;
+new EngineVersion:g_ModVersion = Engine_Unknown;
 
 #include "playercommands/slay.sp"
 #include "playercommands/slap.sp"
@@ -66,7 +66,7 @@ public OnPluginStart()
 	RegAdminCmd("sm_slay", Command_Slay, ADMFLAG_SLAY, "sm_slay <#userid|name>");
 	RegAdminCmd("sm_rename", Command_Rename, ADMFLAG_SLAY, "sm_rename <#userid|name>");
 
-	g_ModVersion = GuessSDKVersion();
+	g_ModVersion = GetEngineVersion();
 	
 	/* Account for late loading */
 	new Handle:topmenu;
