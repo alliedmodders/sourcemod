@@ -38,7 +38,7 @@ PerformRename(client, target)
 	LogAction(client, target, "\"%L\" renamed \"%L\" to \"%s\")", client, target, g_NewName[target]);
 
 	/* Used on OB / L4D engine */
-	if (g_ModVersion > SOURCE_SDK_EPISODE1)
+	if (g_ModVersion != Engine_SourceSDK2006)
 	{
 		SetClientInfo(target, "name", g_NewName[target]);
 	}

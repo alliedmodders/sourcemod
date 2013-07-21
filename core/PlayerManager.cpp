@@ -266,7 +266,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 #endif
 {
 	static ConVar *tv_enable = icvar->FindVar("tv_enable");
-#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+#if SOURCE_ENGINE == SE_TF2
 	static ConVar *replay_enable = icvar->FindVar("replay_enable");
 #endif
 
@@ -276,7 +276,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	ICommandLine *commandLine = g_HL2.GetValveCommandLine();
 	m_bIsSourceTVActive = (tv_enable && tv_enable->GetBool() && (!commandLine || commandLine->FindParm("-nohltv") == 0));
 	m_bIsReplayActive = false;
-#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+#if SOURCE_ENGINE == SE_TF2
 	m_bIsReplayActive = (replay_enable && replay_enable->GetBool());
 #endif
 	m_PlayersSinceActive = 0;
@@ -634,17 +634,14 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		int newCount = m_PlayersSinceActive + 1;
 
 		int userId = GetPlayerUserId(pEntity);
-#if (SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_LEFT4DEAD2)
+#if (SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_NUCLEARDAWN || SOURCE_ENGINE == SE_LEFT4DEAD2)
 		static ConVar *tv_name = icvar->FindVar("tv_name");
 #endif
-#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+#if SOURCE_ENGINE == SE_TF2
 		static ConVar *replay_name = icvar->FindVar("replay_name");
 #endif
-#if SOURCE_ENGINE == SE_LEFT4DEAD2
-		static bool bIsNuclearDawn = (strcmp(g_SourceMod.GetGameFolderName(), "nucleardawn") == 0);
-#endif
 
-#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+#if SOURCE_ENGINE == SE_TF2
 		if (m_bIsReplayActive && newCount == 1
 			&& (m_ReplayUserId == userId
 				|| (replay_name && strcmp(playername, replay_name->GetString()) == 0) || (replay_name && replay_name->GetString()[0] == 0 && strcmp(playername, "unnamed") == 0)
@@ -662,15 +659,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 			&& (m_SourceTVUserId == userId
 #if SOURCE_ENGINE == SE_CSGO
 				|| strcmp(playername, "GOTV") == 0
-#elif (SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_LEFT4DEAD2)
-#if SOURCE_ENGINE == SE_LEFT4DEAD2
-				|| (bIsNuclearDawn && ( true
-#endif // SE_LEFT4DEAD2
+#elif (SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_NUCLEARDAWN)
 				|| (tv_name && strcmp(playername, tv_name->GetString()) == 0) || (tv_name && tv_name->GetString()[0] == 0 && strcmp(playername, "unnamed") == 0)
-#if SOURCE_ENGINE == SE_LEFT4DEAD2
-					))
-				|| (!bIsNuclearDawn && strcmp(playername, "SourceTV") == 0)
-#endif // SE_LEFT4DEAD2
 #else
 				|| strcmp(playername, "SourceTV") == 0
 #endif

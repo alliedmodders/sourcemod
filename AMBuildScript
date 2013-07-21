@@ -38,37 +38,46 @@ class SM:
 		self.possibleSdks['ep2'] =   {'sdk': 'HL2SDKOB',        'ext': '2.ep2',   'def': '3',
 		                         'name': 'ORANGEBOX',      'platform': ['windows', 'linux'],
 		                         'dir': 'hl2sdk-ob'}
-		self.possibleSdks['css'] =  {'sdk': 'HL2SDKCSS',   'ext': '2.css',  'def': '6',
+		self.possibleSdks['css'] =   {'sdk': 'HL2SDKCSS',       'ext': '2.css',   'def': '6',
 		                         'name': 'CSS',            'platform': ['windows', 'linux', 'darwin'],
 		                         'dir': 'hl2sdk-css'}
-		self.possibleSdks['ep2v'] =  {'sdk': 'HL2SDKOBVALVE',   'ext': '2.ep2v',  'def': '7',
-		                         'name': 'ORANGEBOXVALVE', 'platform': ['windows', 'linux', 'darwin'],
-		                        'dir': 'hl2sdk-ob-valve'}
-		self.possibleSdks['l4d'] =   {'sdk': 'HL2SDKL4D',       'ext': '2.l4d',   'def': '8',
+		self.possibleSdks['hl2dm'] = {'sdk': 'HL2SDKHL2DM',     'ext': '2.hl2dm', 'def': '7',
+		                         'name': 'HL2DM',          'platform': ['windows', 'linux', 'darwin'],
+		                        'dir': 'hl2sdk-hl2dm'}
+		self.possibleSdks['dods'] =  {'sdk': 'HL2SDKDODS',      'ext': '2.dods',  'def': '8',
+		                         'name': 'DODS',           'platform': ['windows', 'linux', 'darwin'],
+		                        'dir': 'hl2sdk-dods'}
+		self.possibleSdks['tf2'] =   {'sdk': 'HL2SDKTF2',       'ext': '2.tf2',   'def': '9',
+		                         'name': 'TF2',            'platform': ['windows', 'linux', 'darwin'],
+		                        'dir': 'hl2sdk-tf2'}
+		self.possibleSdks['l4d'] =   {'sdk': 'HL2SDKL4D',       'ext': '2.l4d',   'def': '10',
 		                         'name': 'LEFT4DEAD',      'platform': ['windows', 'linux', 'darwin'],
 		                         'dir': 'hl2sdk-l4d'}
-		self.possibleSdks['l4d2'] =  {'sdk': 'HL2SDKL4D2',      'ext': '2.l4d2',  'def': '9',
+		self.possibleSdks['nd'] =    {'sdk': 'HL2SDKND',        'ext': '2.nd',    'def': '11',
+		                         'name': 'NUCLEARDAWN',    'platform': ['windows', 'linux', 'darwin'],
+		                         'dir': 'hl2sdk-nd'}
+		self.possibleSdks['l4d2'] =  {'sdk': 'HL2SDKL4D2',      'ext': '2.l4d2',  'def': '12',
 		                         'name': 'LEFT4DEAD2',     'platform': ['windows', 'linux', 'darwin'],
 		                         'dir': 'hl2sdk-l4d2'}
 		self.possibleSdks['darkm'] = {'sdk': 'HL2SDK-DARKM',    'ext': '2.darkm', 'def': '2',
 		                         'name': 'DARKMESSIAH',    'platform': ['windows'],
 		                          'dir': 'hl2sdk-darkm'}
-		self.possibleSdks['swarm'] = {'sdk': 'HL2SDK-SWARM',    'ext': '2.swarm', 'def': '10',
+		self.possibleSdks['swarm'] = {'sdk': 'HL2SDK-SWARM',    'ext': '2.swarm', 'def': '13',
 		                         'name': 'ALIENSWARM',     'platform': ['windows'],
 		                         'dir': 'hl2sdk-swarm'}
-		self.possibleSdks['bgt'] =   {'sdk': 'HL2SDK-BGT',      'ext': '2.bgt', 'def': '4',
+		self.possibleSdks['bgt'] =   {'sdk': 'HL2SDK-BGT',      'ext': '2.bgt',   'def': '4',
 		                         'name': 'BLOODYGOODTIME', 'platform': ['windows'],
 		                         'dir': 'hl2sdk-bgt'}
-		self.possibleSdks['eye'] =   {'sdk': 'HL2SDK-EYE',      'ext': '2.eye', 'def': '5',
-		                         'name': 'EYE',             'platform': ['windows'],
+		self.possibleSdks['eye'] =   {'sdk': 'HL2SDK-EYE',      'ext': '2.eye',   'def': '5',
+		                         'name': 'EYE',            'platform': ['windows'],
 		                         'dir': 'hl2sdk-eye'}
-		self.possibleSdks['csgo'] =  {'sdk': 'HL2SDKCSGO',     'ext': '2.csgo',  'def': '12',
+		self.possibleSdks['csgo'] =  {'sdk': 'HL2SDKCSGO',     'ext': '2.csgo',   'def': '15',
 		                         'name': 'CSGO',           'platform': ['windows', 'linux', 'darwin'],
 		                         'dir': 'hl2sdk-csgo'}
-		self.possibleSdks['dota'] =  {'sdk': 'HL2SDKDOTA',     'ext': '2.dota',  'def': '13',
+		self.possibleSdks['dota'] =  {'sdk': 'HL2SDKDOTA',     'ext': '2.dota',   'def': '16',
 		                         'name': 'DOTA',           'platform': ['windows'],
 		                         'dir': 'hl2sdk-dota'}
-		# self.possibleSdks['portal2'] =  {'sdk': 'HL2SDK-PORTAL2',     'ext': '2.portal2',  'def': '11',
+		# self.possibleSdks['portal2'] =  {'sdk': 'HL2SDK-PORTAL2',     'ext': '2.portal2',  'def': '14',
 		#                        'name': 'PORTAL2',           'platform': ['windows'],
 		#                        'dir': 'hl2sdk-portal2'}
 		
@@ -312,7 +321,7 @@ class SM:
 			else:
 				staticLibs = os.path.join(sdkPath, 'lib', 'linux')
 			workFolder = os.path.join(AMBuild.outputFolder, job.workFolder)
-			if sdk in ['ep2v', 'css', 'l4d2']:
+			if sdk in ['css', 'hl2dm', 'dods', 'tf2', 'l4d2']:
 				libs = ['tier1_i486.a', 'mathlib_i486.a', 'libvstdlib_srv.so', 'libtier0_srv.so']
 				for lib in libs:
 					link = os.path.join(workFolder, lib)
@@ -321,7 +330,7 @@ class SM:
 						os.lstat(link)
 					except:
 						job.AddCommand(SymlinkCommand(link, target))
-			elif sdk in ['l4d', 'csgo']:
+			elif sdk in ['l4d', 'nd', 'csgo']:
 				libs = ['tier1_i486.a', 'mathlib_i486.a', 'libvstdlib.so', 'libtier0.so']
 				if sdk == 'csgo':
 					libs.append('interfaces_i486.a')
@@ -384,7 +393,7 @@ class SM:
 				
 		# We don't build for Portal 2 (yet?, ever?), but using this define in code as 
 		# it saves trouble if we ever need to
-		compiler['CDEFINES'].append('SE_PORTAL2=11')
+		compiler['CDEFINES'].append('SE_PORTAL2=14')
 
 		paths = [['public'], ['public', 'engine'], ['public', 'mathlib'], ['public', 'vstdlib'],
 						 ['public', 'tier0'], ['public', 'tier1']]
@@ -423,10 +432,10 @@ class SM:
 		if not noLink:
 			if AMBuild.target['platform'] == 'linux':
 				compiler['POSTLINKFLAGS'][0:0] = ['-lm']
-				if sdk in ['ep2v', 'css', 'l4d2']:
+				if sdk in ['css', 'hl2dm', 'dods', 'tf2', 'l4d2']:
 					compiler['POSTLINKFLAGS'][0:0] = ['libtier0_srv.so']
 					compiler['POSTLINKFLAGS'][0:0] = ['libvstdlib_srv.so']
-				elif sdk in ['l4d', 'csgo']:
+				elif sdk in ['l4d', 'nd', 'csgo']:
 					compiler['POSTLINKFLAGS'][0:0] = ['libtier0.so']
 					compiler['POSTLINKFLAGS'][0:0] = ['libvstdlib.so']
 				else:

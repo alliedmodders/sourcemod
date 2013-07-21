@@ -50,11 +50,13 @@ class CGameConfig :
 {
 	friend class GameConfigManager;
 public:
-	CGameConfig(const char *file);
+	CGameConfig(const char *file, const char *engine = NULL);
 	~CGameConfig();
 public:
 	bool Reparse(char *error, size_t maxlength);
 	bool EnterFile(const char *file, char *error, size_t maxlength);
+	void SetBaseEngine(const char *engine);
+	void SetParseEngine(const char *engine);
 public: //ITextListener_SMC
 	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
 	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
@@ -111,6 +113,8 @@ private:
 	int m_AddressReadCount;
 	int m_AddressRead[8];
 	KTrie<AddressConf> *m_pAddresses;
+	const char *m_pEngine;
+	const char *m_pBaseEngine;
 };
 
 class GameConfigManager : 

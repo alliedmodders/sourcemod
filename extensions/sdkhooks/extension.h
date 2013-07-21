@@ -19,7 +19,7 @@
 #if SOURCE_ENGINE >= SE_CSS && SOURCE_ENGINE != SE_LEFT4DEAD
 #define GETMAXHEALTH_IS_VIRTUAL
 #endif
-#if SOURCE_ENGINE != SE_ORANGEBOXVALVE && SOURCE_ENGINE != SE_CSS && SOURCE_ENGINE != SE_LEFT4DEAD2 && SOURCE_ENGINE != SE_CSGO
+#if SOURCE_ENGINE != SE_HL2DM && SOURCE_ENGINE != SE_DODS && SOURCE_ENGINE != SE_CSS && SOURCE_ENGINE != SE_TF2 && SOURCE_ENGINE != SE_LEFT4DEAD2 && SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_NUCLEARDAWN
 #define GAMEDESC_CAN_CHANGE
 #endif
 
@@ -264,7 +264,7 @@ public:
 	void Hook_ThinkPost();
 	void Hook_Touch(CBaseEntity *pOther);
 	void Hook_TouchPost(CBaseEntity *pOther);
-#if SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS
+#if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2
 	void Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, void *pUnknownJK);
 	void Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, void *pUnknownJK);
 #else

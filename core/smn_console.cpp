@@ -916,7 +916,7 @@ cell_t g_ServerCommandBufferLength;
 
 bool g_ShouldCatchSpew = false;
 
-#if SOURCE_ENGINE < SE_LEFT4DEAD2
+#if SOURCE_ENGINE < SE_NUCLEARDAWN
 SpewOutputFunc_t g_OriginalSpewOutputFunc = NULL;
 
 SpewRetval_t SourcemodSpewOutputFunc(SpewType_t spewType, tchar const *pMsg)
@@ -955,7 +955,7 @@ CON_COMMAND(sm_conhook_start, "")
 		return;
 	}
 
-#if SOURCE_ENGINE < SE_LEFT4DEAD2
+#if SOURCE_ENGINE < SE_NUCLEARDAWN
 	g_OriginalSpewOutputFunc = GetSpewOutputFunc();
 	SpewOutputFunc(SourcemodSpewOutputFunc);
 #else
@@ -976,7 +976,7 @@ CON_COMMAND(sm_conhook_stop, "")
 		return;
 	}
 
-#if SOURCE_ENGINE < SE_LEFT4DEAD2
+#if SOURCE_ENGINE < SE_NUCLEARDAWN
 	SpewOutputFunc(g_OriginalSpewOutputFunc);
 #else
 	LoggingSystem_PopLoggingState(false);

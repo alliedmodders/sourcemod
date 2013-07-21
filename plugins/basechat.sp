@@ -51,13 +51,13 @@ new g_Colors[13][3] = {{255,255,255},{255,0,0},{0,255,0},{0,0,255},{255,255,0},{
 
 new Handle:g_Cvar_Chatmode = INVALID_HANDLE;
 
-new g_GameEngine = SOURCE_SDK_UNKNOWN;
+new EngineVersion:g_GameEngine = Engine_Unknown;
 
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	
-	g_GameEngine = GuessSDKVersion();
+	g_GameEngine = GetEngineVersion();
 
 	g_Cvar_Chatmode = CreateConVar("sm_chat_mode", "1", "Allows player's to send messages to admin chat.", 0, true, 0.0, true, 1.0);
 
@@ -67,7 +67,7 @@ public OnPluginStart()
 	RegAdminCmd("sm_csay", Command_SmCsay, ADMFLAG_CHAT, "sm_csay <message> - sends centered message to all players");
 	
 	/* HintText does not work on Dark Messiah */
-	if (g_GameEngine != SOURCE_SDK_DARKMESSIAH)
+	if (g_GameEngine != Engine_DarkMessiah)
 	{
 		RegAdminCmd("sm_hsay", Command_SmHsay, ADMFLAG_CHAT, "sm_hsay <message> - sends hint message to all players");	
 	}

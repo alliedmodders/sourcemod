@@ -91,5 +91,9 @@
 #define SOURCEMOD_BUILD
 #endif
 
+#if !defined SM_ARRAYSIZE
+#define SM_ARRAYSIZE(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+#endif
+
 #endif //_INCLUDE_SOURCEMOD_PLATFORM_H_
 

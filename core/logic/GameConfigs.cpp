@@ -54,6 +54,7 @@ IGameConfig *g_pGameConf = NULL;
 static char g_Game[256];
 static char g_GameDesc[256] = {'!', '\0'};
 static char g_GameName[256] = {'$', '\0'};
+static const char *g_pParseEngine = NULL;
 
 #define PSTATE_NONE						0
 #define PSTATE_GAMES					1
@@ -112,10 +113,10 @@ static bool DoesGameMatch(const char *value)
 
 static bool DoesEngineMatch(const char *value)
 {
-	return strcmp(value, smcore.GetSourceEngineName()) == 0;
+	return strcmp(value, g_pParseEngine) == 0;
 }
 
-CGameConfig::CGameConfig(const char *file)
+CGameConfig::CGameConfig(const char *file, const char *engine)
 {
 	strncopy(m_File, file, sizeof(m_File));
 	m_pAddresses = new KTrie<AddressConf>();
@@ -124,6 +125,16 @@ CGameConfig::CGameConfig(const char *file)
 
 	m_CustomLevel = 0;
 	m_CustomHandler = NULL;
+
+	if (!engine)
+		m_pEngine = smcore.GetSourceEngineName();
+	else
+		m_pEngine = engine;
+
+	if (strcmp(m_pEngine, "css") == 0 || strcmp(m_pEngine, "dods") == 0 || strcmp(m_pEngine, "hl2dm") == 0 || strcmp(m_pEngine, "tf2") == 0)
+		this->SetBaseEngine("orangebox_valve");
+	else
+		this->SetBaseEngine(NULL);
 }
 
 CGameConfig::~CGameConfig()
@@ -772,19 +783,29 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	SMCStates state = {0, 0};
 	List<String> fileList;
 	master_reader.fileList = &fileList;
+	const char *pEngine[2] = { m_pBaseEngine, m_pEngine  };
 
-	err = textparsers->ParseSMCFile(path, &master_reader, &state, error, maxlength);
-	if (err != SMCError_Okay)
+	for (unsigned char iter = 0; iter < SM_ARRAYSIZE(pEngine); ++iter)
 	{
-		const char *msg = textparsers->GetSMCErrorString(err);
+		if (pEngine[iter] == NULL)
+		{
+			continue;
+		}
 
-		smcore.LogError("[SM] Error parsing master gameconf file \"%s\":", path);
-		smcore.LogError("[SM] Error %d on line %d, col %d: %s", 
-			err,
-			state.line,
-			state.col,
-			msg ? msg : "Unknown error");
-		return false;
+		this->SetParseEngine(pEngine[iter]);
+		err = textparsers->ParseSMCFile(path, &master_reader, &state, error, maxlength);
+		if (err != SMCError_Okay)
+		{
+			const char *msg = textparsers->GetSMCErrorString(err);
+
+			smcore.LogError("[SM] Error parsing master gameconf file \"%s\":", path);
+			smcore.LogError("[SM] Error %d on line %d, col %d: %s", 
+				err,
+				state.line,
+				state.col,
+				msg ? msg : "Unknown error");
+			return false;
+		}
 	}
 
 	/* Go through each file we found and parse it. */
@@ -850,33 +871,51 @@ bool CGameConfig::EnterFile(const char *file, char *error, size_t maxlength)
 	m_IgnoreLevel = 0;
 	bShouldBeReadingDefault = true;
 	m_ParseState = PSTATE_NONE;
+	const char *pEngine[2] = { m_pBaseEngine, m_pEngine };
 
-	if ((err=textparsers->ParseSMCFile(m_CurFile, this, &state, error, maxlength))
-		!= SMCError_Okay)
+	for (unsigned char iter = 0; iter < SM_ARRAYSIZE(pEngine); ++iter)
 	{
-		const char *msg;
-
-		msg = textparsers->GetSMCErrorString(err);
-
-		smcore.LogError("[SM] Error parsing gameconfig file \"%s\":", m_CurFile);
-		smcore.LogError("[SM] Error %d on line %d, col %d: %s", 
-			err,
-			state.line,
-			state.col,
-			msg ? msg : "Unknown error");
-
-		if (m_ParseState == PSTATE_GAMEDEFS_CUSTOM)
+		if (pEngine[iter] == NULL)
 		{
-			//error occurred while parsing a custom section
-			m_CustomHandler->ReadSMC_ParseEnd(true, true);
-			m_CustomHandler = NULL;
-			m_CustomLevel = 0;
+			continue;
 		}
 
-		return false;
+		this->SetParseEngine(pEngine[iter]);
+		if ((err=textparsers->ParseSMCFile(m_CurFile, this, &state, error, maxlength))
+			!= SMCError_Okay)
+		{
+			const char *msg = textparsers->GetSMCErrorString(err);
+
+			smcore.LogError("[SM] Error parsing gameconfig file \"%s\":", m_CurFile);
+			smcore.LogError("[SM] Error %d on line %d, col %d: %s", 
+				err,
+				state.line,
+				state.col,
+				msg ? msg : "Unknown error");
+
+			if (m_ParseState == PSTATE_GAMEDEFS_CUSTOM)
+			{
+				//error occurred while parsing a custom section
+				m_CustomHandler->ReadSMC_ParseEnd(true, true);
+				m_CustomHandler = NULL;
+				m_CustomLevel = 0;
+			}
+
+			return false;
+		}
 	}
 
 	return true;
+}
+
+void CGameConfig::SetBaseEngine(const char *engine)
+{
+	m_pBaseEngine = engine;
+}
+
+void CGameConfig::SetParseEngine(const char *engine)
+{
+	g_pParseEngine = engine;
 }
 
 bool CGameConfig::GetOffset(const char *key, int *value)

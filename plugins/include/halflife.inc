@@ -64,6 +64,28 @@ enum DialogType
 	DialogType_AskConnect	/**< ask the client to connect to a specified IP */
 };
 
+enum EngineVersion
+{
+	Engine_Unknown,				/**< Could not determine the engine version */
+	Engine_Original,				/**< Original Source Engine (used by The Ship) */
+	Engine_SourceSDK2006,		/**< Episode 1 Source Engine (second major SDK) */
+	Engine_SourceSDK2007,		/**< Orange Box Source Engine (third major SDK) */
+	Engine_Left4Dead,			/**< Left 4 Dead */
+	Engine_DarkMessiah,			/**< Dark Messiah Multiplayer (based on original engine) */
+	Engine_Left4Dead2 = 7,		/**< Left 4 Dead 2 */
+	Engine_AlienSwarm,			/**< Alien Swarm (and Alien Swarm SDK) */
+	Engine_BloodyGoodTime,		/**< Bloody Good Time */
+	Engine_EYE,					/**< E.Y.E Divine Cybermancy */
+	Engine_Portal2,				/**< Portal 2 */
+	Engine_CSGO,				/**< Counter-Strike: Global Offensive */
+	Engine_CSS,					/**< Counter-Strike: Source */
+	Engine_DOTA,				/**< Dota 2 */
+	Engine_HL2DM,				/**< Half-Life 2 Deathmatch */
+	Engine_DODS,				/**< Day of Defeat: Source */
+	Engine_TF2,					/**< Team Fortress 2 */
+	Engine_NuclearDawn			/**< Nuclear Dawn */
+};
+
 #define INVALID_ENT_REFERENCE 0xFFFFFFFF
 
 /**
@@ -264,7 +286,18 @@ native CreateDialog(client, Handle:kv, DialogType:type);
  *
  * @return				SOURCE_SDK version code.
  */
+#pragma deprecated See GetEngineVersion()
 native GuessSDKVersion();
+
+/**
+ * Gets the engine version that the currently-loaded SM core was compiled against.
+ *
+ * The engine version values are not guaranteed to be in any particular order,
+ * and should only be compared by (in)equality.
+ *
+ * @return				An EngineVersion value.
+ */
+native EngineVersion:GetEngineVersion();
 
 /**
  * Prints a message to a specific client in the chat area.

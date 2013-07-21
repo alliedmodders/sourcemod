@@ -72,7 +72,7 @@ static cell_t IsDedicatedServer(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetEngineTime(IPluginContext *pContext, const cell_t *params)
 {
-#if SOURCE_ENGINE >= SE_LEFT4DEAD2
+#if SOURCE_ENGINE >= SE_NUCLEARDAWN
 	float fTime = Plat_FloatTime();
 #else
 	float fTime = engine->Time();
@@ -493,10 +493,13 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 		return 33;
 	case SOURCE_ENGINE_CSS:
 		return 34;
-	case SOURCE_ENGINE_ORANGEBOXVALVE:
+	case SOURCE_ENGINE_HL2DM:
+	case SOURCE_ENGINE_DODS:
+	case SOURCE_ENGINE_TF2:
 		return 35;
 	case SOURCE_ENGINE_LEFT4DEAD:
 		return 40;
+	case SOURCE_ENGINE_NUCLEARDAWN:
 	case SOURCE_ENGINE_LEFT4DEAD2:
 		return 50;
 	case SOURCE_ENGINE_ALIENSWARM:
@@ -521,6 +524,11 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 #endif
 
 	return 0;
+}
+
+static cell_t GetEngineVersion(IPluginContext *pContext, const cell_t *params)
+{
+	return g_SMAPI->GetSourceEngineBuild();
 }
 
 static cell_t IndexToReference(IPluginContext *pContext, const cell_t *params)
@@ -574,6 +582,7 @@ REGISTER_NATIVES(halflifeNatives)
 	{"ShowVGUIPanel",			ShowVGUIPanel},
 	{"IsPlayerAlive",			smn_IsPlayerAlive},
 	{"GuessSDKVersion",			GuessSDKVersion},
+	{"GetEngineVersion",		GetEngineVersion},
 	{"EntIndexToEntRef",		IndexToReference},
 	{"EntRefToEntIndex",		ReferenceToIndex},
 	{"MakeCompatEntRef",		ReferenceToBCompatRef},
