@@ -130,7 +130,11 @@ static cell_t ReadStringTable(IPluginContext *pContext, const cell_t *params)
 	}
 	
 	stringidx = params[2];
+#if SOURCE_ENGINE == SE_DOTA
+	value = pTable->GetString(stringidx, false);
+#else
 	value = pTable->GetString(stringidx);
+#endif
 
 	if (!value)
 	{
