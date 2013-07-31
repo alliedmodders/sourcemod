@@ -93,7 +93,7 @@ class SM:
 			AMBuild.cache.CacheVariable('debug', AMBuild.options.debug)
 			
 			#Environment variable paths to external headers
-			envvars = { 'MMSOURCE19': 'mmsource-1.9', 'MYSQL5': 'mysql-5.0' }
+			envvars = { 'MMSOURCE110': 'mmsource-1.10', 'MYSQL5': 'mysql-5.0' }
 			
 			#Look for Metamod:Source and MySQL if not disabled
 			for env in envvars:
@@ -274,7 +274,7 @@ class SM:
 			self.compiler.AddToListVar('RCINCLUDES', os.path.join(AMBuild.sourceFolder, 'public'))
 			self.compiler.AddToListVar('RCINCLUDES',
 			                           os.path.join(AMBuild.outputFolder, 'includes'))
-		self.mmsPath = AMBuild.cache['MMSOURCE19']
+		self.mmsPath = AMBuild.cache['MMSOURCE110']
 
 	def DefaultCompiler(self):
 		return self.compiler.Clone()
