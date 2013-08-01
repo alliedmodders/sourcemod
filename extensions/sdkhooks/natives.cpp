@@ -57,10 +57,19 @@ cell_t Native_Hook(IPluginContext *pContext, const cell_t *params)
 			pContext->ThrowNativeError("Hook type not supported on this game");
 			break;
 		case HookRet_BadEntForHookType:
-			pContext->ThrowNativeError("Hook type not valid for this type of entity (%s)",
-				PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[1]))->GetClassName()
-				);
+		{
+			const char * pClassname = gamehelpers->GetEntityClassname(PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[1])));
+			if (!pClassname)
+			{
+				pContext->ThrowNativeError("Hook type not valid for this type of entity (%i).", entity);
+			}
+			else
+			{
+				pContext->ThrowNativeError("Hook type not valid for this type of entity (%s)", pClassname);
+			}
+			
 			break;
+		}
 	}
 
 	return 0;
