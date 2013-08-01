@@ -116,7 +116,7 @@ PlayerManager::PlayerManager()
 	m_SourceTVUserId = -1;
 	m_ReplayUserId = -1;
 
-	m_bAuthstringValidation = true; // use steam auth by default
+	m_bAuthstringValidation = false; // don't use steam auth by default... yet
 
 	m_UserIdLookUp = new int[USHRT_MAX+1];
 	memset(m_UserIdLookUp, 0, sizeof(int) * (USHRT_MAX+1));
