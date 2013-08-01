@@ -47,26 +47,26 @@
 
 enum CSRoundEndReason
 {
-	CSRoundEnd_TargetBombed = 0,           // Target Successfully Bombed!
-	CSRoundEnd_VIPEscaped,                 // The VIP has escaped!
-	CSRoundEnd_VIPKilled,                  // VIP has been assassinated!
-	CSRoundEnd_TerroristsEscaped,          // The terrorists have escaped!
-	CSRoundEnd_CTStoppedEscape,            // The CTs have prevented most of the terrorists from escaping!
-	CSRoundEnd_TerroristsStopped,          // Escaping terrorists have all been neutralized!
-	CSRoundEnd_BombDefused,                // The bomb has been defused!
-	CSRoundEnd_CTWin,                      // Counter-Terrorists Win!
-	CSRoundEnd_TerroristWin,               // Terrorists Win!
-	CSRoundEnd_Draw,                       // Round Draw!
-	CSRoundEnd_HostagesRescued,            // All Hostages have been rescued!
-	CSRoundEnd_TargetSaved,                // Target has been saved!
-	CSRoundEnd_HostagesNotRescued,         // Hostages have not been rescued!
-	CSRoundEnd_TerroristsNotEscaped,       // Terrorists have not escaped!
-	CSRoundEnd_VIPNotEscaped,              // VIP has not escaped!
-	CSRoundEnd_GameStart,                  // Game Commencing!
+	CSRoundEnd_TargetBombed = 0,           /**< Target Successfully Bombed! */
+	CSRoundEnd_VIPEscaped,                 /**< The VIP has escaped! */
+	CSRoundEnd_VIPKilled,                  /**< VIP has been assassinated! */
+	CSRoundEnd_TerroristsEscaped,          /**< The terrorists have escaped! */
+	CSRoundEnd_CTStoppedEscape,            /**< The CTs have prevented most of the terrorists from escaping! */
+	CSRoundEnd_TerroristsStopped,          /**< Escaping terrorists have all been neutralized! */
+	CSRoundEnd_BombDefused,                /**< The bomb has been defused! */
+	CSRoundEnd_CTWin,                      /**< Counter-Terrorists Win! */
+	CSRoundEnd_TerroristWin,               /**< Terrorists Win! */
+	CSRoundEnd_Draw,                       /**< Round Draw! */
+	CSRoundEnd_HostagesRescued,            /**< All Hostages have been rescued! */
+	CSRoundEnd_TargetSaved,                /**< Target has been saved! */
+	CSRoundEnd_HostagesNotRescued,         /**< Hostages have not been rescued! */
+	CSRoundEnd_TerroristsNotEscaped,       /**< Terrorists have not escaped! */
+	CSRoundEnd_VIPNotEscaped,              /**< VIP has not escaped! */
+	CSRoundEnd_GameStart,                  /**< Game Commencing! */
 	
 	// The below only exist on CS:GO
-	CSRoundEnd_TerroristsSurrender,        // Terrorists Surrender
-	CSRoundEnd_CTSurrender,                // CTs Surrender
+	CSRoundEnd_TerroristsSurrender,        /**< Terrorists Surrender */
+	CSRoundEnd_CTSurrender,                /**< CTs Surrender */
 };
 
 enum CSWeaponID
@@ -144,7 +144,7 @@ forward Action:CS_OnBuyCommand(client, const String:weapon[]);
  * higher action to deny.
  *
  * @param client	Client index
- * @param weapon	Weapon index
+ * @param weaponIndex	Weapon index
  */
 forward Action:CS_OnCSWeaponDrop(client, weaponIndex);
 

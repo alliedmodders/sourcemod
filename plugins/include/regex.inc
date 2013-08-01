@@ -127,7 +127,7 @@ native MatchRegex(Handle:regex, const String:str[], &RegexError:ret = REGEX_ERRO
  * @param regex			The regex handle to extract data from.
  * @param str_id		The index of the expression to get - starts at 0, and ends at substrings - 1.
  * @param buffer		The buffer to set to the matching substring.
- * @param maxLen		The maximum string length of the buffer.
+ * @param maxlen		The maximum string length of the buffer.
  * @return				True if a substring was found, False on fail/error
  */
 native bool:GetRegexSubString(Handle:regex, str_id, String:buffer[], maxlen);

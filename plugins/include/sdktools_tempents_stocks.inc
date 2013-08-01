@@ -100,7 +100,7 @@ stock TE_SetupSparks(const Float:pos[3], const Float:dir[3], Magnitude, TrailLen
  * @param pos			Position of the smoke.
  * @param Model			Precached model index.
  * @param Scale			Scale of the smoke.
- * @param Framerate		Frame rate of the smoke.
+ * @param FrameRate		Frame rate of the smoke.
  * @noreturn
  */
 stock TE_SetupSmoke(const Float:pos[3], Model, Float:Scale, FrameRate)
@@ -278,7 +278,7 @@ stock TE_SetupBloodSprite(const Float:pos[3], const Float:dir[3], const color[4]
  * @param Life			Time duration of the ring.
  * @param Width			Beam width.
  * @param Amplitude		Beam amplitude.
- * @param color			Color array (r, g, b, a).
+ * @param Color			Color array (r, g, b, a).
  * @param Speed			Speed of the beam.
  * @param Flags			Beam flags.
  * @noreturn
@@ -321,7 +321,7 @@ stock TE_SetupBeamRingPoint(const Float:center[3], Float:Start_Radius, Float:End
  * @param EndWidth		Final beam width.
  * @param FadeLength		Beam fade time duration.
  * @param Amplitude		Beam amplitude.
- * @param color			Color array (r, g, b, a).
+ * @param Color			Color array (r, g, b, a).
  * @param Speed			Speed of the beam.
  * @noreturn
  */
@@ -361,7 +361,7 @@ stock TE_SetupBeamPoints(const Float:start[3], const Float:end[3], ModelIndex, H
  * @param EndWidth		Final beam width.
  * @param FadeLength		Beam fade time duration.
  * @param Amplitude		Beam amplitude.
- * @param color			Color array (r, g, b, a).
+ * @param Color			Color array (r, g, b, a).
  * @param Speed			Speed of the beam.
  * @noreturn
  */
@@ -399,7 +399,7 @@ stock TE_SetupBeamLaser(StartEntity, EndEntity, ModelIndex, HaloIndex, StartFram
  * @param Life			Time duration of the ring.
  * @param Width			Beam width.
  * @param Amplitude		Beam amplitude.
- * @param color			Color array (r, g, b, a).
+ * @param Color			Color array (r, g, b, a).
  * @param Speed			Speed of the beam.
  * @param Flags			Beam flags.
  * @noreturn
@@ -436,7 +436,7 @@ stock TE_SetupBeamRing(StartEntity, EndEntity, ModelIndex, HaloIndex, StartFrame
  * @param Width			Initial beam width.
  * @param EndWidth		Final beam width.
  * @param FadeLength		Beam fade time duration.
- * @param color			Color array (r, g, b, a).
+ * @param Color			Color array (r, g, b, a).
  * @noreturn
  */
 stock TE_SetupBeamFollow(EntIndex, ModelIndex, HaloIndex, Float:Life, Float:Width, Float:EndWidth, FadeLength, const Color[4])

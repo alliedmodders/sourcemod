@@ -137,6 +137,8 @@ stock Handle:SQL_DefConnect(String:error[], maxlength, bool:persistent=true)
  * @param keyvalues		Key/value pairs from a KeyValues handle, describing the connection.
  * @param error			Error buffer.
  * @param maxlength		Maximum length of the error buffer.
+ * @param persistent	True to re-use a previous persistent connection if
+ *						possible, false otherwise.
  * @return				A database connection Handle, or INVALID_HANDLE on failure.
  * 						On failure the error buffer will be filled with a message.
  * @error				Invalid KeyValues handle.
@@ -304,7 +306,7 @@ native bool:SQL_GetError(Handle:hndl, String:error[], maxlength);
  * encloses the string in ''. While drivers tend to allow " instead, the string
  * may be not be escaped (for example, on SQLite)!
  *
- * @param hndl			A database Handle.
+ * @param database			A database Handle.
  * @param string		String to quote.
  * @param buffer		Buffer to store quoted string in.
  * @param maxlength		Maximum length of the buffer.
@@ -569,7 +571,7 @@ native SQL_BindParamInt(Handle:statement, param, number, bool:signed=true);
  * 
  * @param statement		A statement (prepared query) Handle.
  * @param param			The parameter index (starting from 0).
- * @param float			The float number to bind.
+ * @param value			The float number to bind.
  * @noreturn
  * @error				Invalid statement Handle or parameter index, or
  *						SQL error.
@@ -633,7 +635,7 @@ native SQL_UnlockDatabase(Handle:database);
 /**
  * General callback for threaded SQL stuff.
  *
- * @param db			Parent object of the Handle (or INVALID_HANDLE if none).
+ * @param owner			Parent object of the Handle (or INVALID_HANDLE if none).
  * @param hndl			Handle to the child object (or INVALID_HANDLE if none).
  * @param error			Error string if there was an error.  The error could be 
  *						empty even if an error condition exists, so it is important 
@@ -666,6 +668,7 @@ native bool:SQL_IsSameConnection(Handle:hndl1, Handle:hndl2);
  * @param callback		Callback; new Handle will be in hndl, owner is the driver.
  *						If no driver was found, the owner is INVALID_HANDLE.
  * @param name			Database name.
+ * @param data			Extra data value to pass to the callback.
  * @noreturn
  */
 native SQL_TConnect(SQLTCallback:callback, const String:name[]="default", any:data=0);

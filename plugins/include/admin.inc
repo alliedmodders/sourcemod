@@ -138,7 +138,7 @@ enum ImmunityType
  */
 enum GroupId
 {
-	INVALID_GROUP_ID = -1,	/**< An invalid/nonexistant group */
+	INVALID_GROUP_ID = -1,	/**< An invalid/non-existent group */
 };
 
 /** 
@@ -146,7 +146,7 @@ enum GroupId
  */
 enum AdminId
 {
-	INVALID_ADMIN_ID = -1,	/**< An invalid/nonexistant admin */
+	INVALID_ADMIN_ID = -1,	/**< An invalid/non-existent admin */
 };
 
 /**
@@ -169,7 +169,7 @@ enum AdminCachePart
 };
 
 /**
- * Called when part of the cache which needs to be rebuilt.
+ * Called when part of the cache needs to be rebuilt.
  *
  * @param part			Part of the admin cache to rebuild.
  */
@@ -324,7 +324,7 @@ native bool:GetAdmGroupCmdOverride(GroupId:id, const String:name[], OverrideType
  * Registers an authentication identity type.  You normally never need to call this except for 
  * very specific systems.
  *
- * @param codename		Codename to use for your authentication type.
+ * @param name		Codename to use for your authentication type.
  * @noreturn
  */
 native RegisterAuthIdentType(const String:name[]);
@@ -425,7 +425,7 @@ native GroupId:GetAdminGroup(AdminId:id, index, const String:name[], maxlength);
  * Sets a password on an admin.
  *
  * @param id			AdminId index of the admin.
- * @param passwd		String containing the password.
+ * @param password		String containing the password.
  * @noreturn
  */
 native SetAdminPassword(AdminId:id, const String:password[]);
@@ -434,12 +434,12 @@ native SetAdminPassword(AdminId:id, const String:password[]);
  * Gets an admin's password.
  *
  * @param id			AdminId index of the admin.
- * @param name			Optional buffer to store the admin's password.
+ * @param buffer			Optional buffer to store the admin's password.
  * @param maxlength		Maximum size of the output name buffer.
  *						Note: This will safely chop UTF-8 strings.
  * @return				True if there was a password set, false otherwise.
  */
-native bool:GetAdminPassword(AdminId:id, const String:buffer[]="", maxlength=0);
+native bool:GetAdminPassword(AdminId:id, String:buffer[]="", maxlength=0);
 
 /**
  * Attempts to find an admin by an auth method and an identity.
@@ -537,7 +537,7 @@ native ReadFlagString(const String:flags[], &numchars=0);
 /**
  * Tests whether one admin can target another.
  *
- * The hueristics for this check are as follows:
+ * The heuristics for this check are as follows:
  * 0. If the targeting AdminId is INVALID_ADMIN_ID, targeting fails.
  * 1. If the targeted AdminId is INVALID_ADMIN_ID, targeting succeeds.
  * 2. If the targeted AdminId is the same as the targeting AdminId,

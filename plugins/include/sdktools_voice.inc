@@ -78,6 +78,7 @@ native GetClientListeningFlags(client);
  *
  * @param iReceiver		The listener index.
  * @param iSender		The sender index.
+ * @param bListen		True if the receiver can listen to the sender, false otherwise.
  * @return			True if successful otherwise false.
  */
 #pragma deprecated Use SetListenOverride() instead
@@ -98,7 +99,7 @@ native bool:GetClientListening(iReceiver, iSender);
  *
  * @param iReceiver		The listener index.
  * @param iSender		The sender index.
- * @param override		
+ * @param override		The override of the receiver's ability to listen to the sender.
  * @return			True if successful otherwise false.
  */
 native bool:SetListenOverride(iReceiver, iSender, ListenOverride:override);

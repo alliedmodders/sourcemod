@@ -235,7 +235,7 @@ native SetEventString(Handle:event, const String:key[], const String:value[]);
  * Retrieves the name of a game event.
  *
  * @param event			Handle to the event.
- * @param value			Buffer to store the name of the event.
+ * @param name			Buffer to store the name of the event.
  * @param maxlength		Maximum length of string buffer.
  * @noreturn
  * @error				Invalid or corrupt Handle.     

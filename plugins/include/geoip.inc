@@ -63,8 +63,8 @@ native bool:GeoipCode3(const String:ip[], String:ccode[4]);
  * Gets the full country name. (max length of output string is 45)
  *
  * @param ip			Ip to determine the country code.
- * @param ccode			Destination string buffer to store the country name.
- * @param len			Maximum length of output string buffer.
+ * @param name			Destination string buffer to store the country name.
+ * @param maxlength			Maximum length of output string buffer.
  * @return				True on success, false if no country found.
  */
 native bool:GeoipCountry(const String:ip[], String:name[], maxlength);

@@ -41,7 +41,7 @@
  * Loads a translation file for the plugin calling this native.
  * If no extension is specified, .txt is assumed.
  *
- * @param path		Translation file.
+ * @param file		Translation file.
  * @noreturn
  */
 native LoadTranslations(const String:file[]);

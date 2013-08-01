@@ -92,6 +92,7 @@ native Handle:CreateTimer(Float:interval, Timer:func, any:data=INVALID_HANDLE, f
 /**
  * Kills a timer.  Use this instead of CloseHandle() if you need more options.
  *
+ * @param timer				Timer Handle to kill.
  * @param autoClose			If autoClose is true, the data that was passed to CreateTimer() will
  *							be closed as a handle if TIMER_DATA_HNDL_CLOSE was not specified.
  * @noreturn

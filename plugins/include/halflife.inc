@@ -126,7 +126,7 @@ native GetRandomInt(nmin, nmax);
 /**
  * Returns whether a map is valid or not.
  * 
- * @param 				Map name, excluding .bsp extension.
+ * @param map 			Map name, excluding .bsp extension.
  * @return				True if valid, false otherwise.
  */
 native bool:IsMapValid(const String:map[]);
@@ -244,7 +244,7 @@ native bool:IsDecalPrecached(const String:decal[]);
 /**
  * Returns if a given generic file is precached.
  *
- * @param decal			Name of the generic file to check.
+ * @param generic		Name of the generic file to check.
  * @return				True if precached, false otherwise.
  */
 native bool:IsGenericPrecached(const String:generic[]);

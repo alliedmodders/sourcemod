@@ -158,7 +158,7 @@ functag public MsgPostHook(UserMsg:msg_id, bool:sent);
  * @param intercept		If intercept is true, message will be fully intercepted,
  * 						allowing the user to block the message.  Otherwise,
  *						the hook is normal and ignores the return value.
- * @param notify		Notification function.
+ * @param post		Notification function.
  * @noreturn
  * @error				Invalid message index.
  */

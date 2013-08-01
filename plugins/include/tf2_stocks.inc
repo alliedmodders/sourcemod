@@ -461,6 +461,7 @@ stock TF2_GetPlayerConditionFlags(client)
  * Check whether or not a condition is set on a player
  *
  * @param client		Player's index.
+ * @param cond			TFCond constant
  * @return				True if set, false otherwise
  */
 stock bool:TF2_IsPlayerInCondition(client, TFCond:cond)
