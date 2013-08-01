@@ -406,3 +406,18 @@ int GetFakeWeaponID(int weaponId)
 		return weaponId;
 #endif
 }
+bool IsValidWeaponID(int id)
+{
+	if (id == (int)SMCSWeapon_NONE || id > (int)SMCSWeapon_DEFUSER)
+		return false;
+	//Why are these even HERE!?! They dont exist in CS:GO but have valid ID's still
+#if SOURCE_ENGINE == SE_CSGO
+	else if (id == (int)SMCSWeapon_P228 || id == (int)SMCSWeapon_SCOUT || id == (int)SMCSWeapon_SG550 || id == (int)SMCSWeapon_GALIL || id == (int)SMCSWeapon_SCAR17 ||
+			id == (int)SMCSWeapon_USP || id == (int)SMCSWeapon_M3 || id == (int)SMCSWeapon_MP5NAVY || id == (int)SMCSWeapon_TMP || id == (int)SMCSWeapon_SG552)
+			return false;
+#else
+	else if (id > (int)SMCSWeapon_NIGHTVISION || id < (int)SMCSWeapon_NONE)
+		return false;
+#endif
+	return true;
+}

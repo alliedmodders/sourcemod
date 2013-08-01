@@ -296,6 +296,9 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 
 static cell_t CS_WeaponIDToAlias(IPluginContext *pContext, const cell_t *params)
 {
+	if (!IsValidWeaponID(params[1]))
+		return pContext->ThrowNativeError("Invalid WeaponID passed for this game");
+
 	char *dest;
 
 	pContext->LocalToString(params[2], &dest);
@@ -326,8 +329,8 @@ static cell_t CS_GetTranslatedWeaponAlias(IPluginContext *pContext, const cell_t
 
 static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 {
-	if (params[2] == (int)SMCSWeapon_NONE)
-		return pContext->ThrowNativeError("Invalid Weapon ID passed");
+	if (!IsValidWeaponID(params[2]))
+		return pContext->ThrowNativeError("Invalid WeaponID passed for this game");
 
 	int id = GetRealWeaponID(params[2]);
 
@@ -466,7 +469,12 @@ static cell_t CS_AliasToWeaponID(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[1], &weapon);
 
-	return GetFakeWeaponID(AliasToWeaponID(weapon));
+	int id = GetFakeWeaponID(AliasToWeaponID(weapon));
+
+	if (!IsValidWeaponID(id))
+		return SMCSWeapon_NONE;
+
+	return id;
 }
 
 static cell_t CS_SetTeamScore(IPluginContext *pContext, const cell_t *params)
@@ -601,6 +609,11 @@ static cell_t CS_GetTeamScore(IPluginContext *pContext, const cell_t *params)
 		return *(int16_t *)((intptr_t)gamerules+tTeamOffset);
 	}
 	return pContext->ThrowNativeError("Invalid team index passed (%i).", params[1]);
+}
+
+static cell_t CS_IsValidWeaponID(IPluginContext *pContext, const cell_t *params)
+{
+	return IsValidWeaponID(params[1]) ? 1 : 0;
 }
 
 template <typename T>
@@ -755,6 +768,7 @@ sp_nativeinfo_t g_CSNatives[] =
 	{"CS_SetClientContributionScore",	CS_SetClientContributionScore},
 	{"CS_GetClientAssists",			CS_GetClientAssists},
 	{"CS_SetClientAssists",			CS_SetClientAssists},
+	{"CS_IsValidWeaponID",			CS_IsValidWeaponID},
 	{NULL,							NULL}
 };
 

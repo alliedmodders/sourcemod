@@ -90,6 +90,7 @@ enum CSGOWeapon
 	CSGOWeapon_NVG,
 	CSGOWeapon_DEFUSER
 };
+#endif
 enum SMCSWeapon
 {
 	SMCSWeapon_NONE = 0,
@@ -148,7 +149,6 @@ enum SMCSWeapon
 	SMCSWeapon_INCGRENADE,
 	SMCSWeapon_DEFUSER
 };
-#endif
 void *GetWeaponInfo(int weaponID);
 
 const char *GetTranslatedWeaponAlias(const char *weapon);
@@ -160,5 +160,7 @@ const char *WeaponIDToAlias(int weaponID);
 int GetRealWeaponID(int weaponId);
 
 int GetFakeWeaponID(int weaponId);
+
+bool IsValidWeaponID(int weaponId);
 
 #endif
