@@ -326,26 +326,29 @@ static cell_t CS_GetTranslatedWeaponAlias(IPluginContext *pContext, const cell_t
 
 static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 {
-	//Hard code return values for weapons that dont call GetWeaponPrice and always use default value.
+	if (params[2] == (int)SMCSWeapon_NONE)
+		return pContext->ThrowNativeError("Invalid Weapon ID passed");
+
 	int id = GetRealWeaponID(params[2]);
+
+	//Hard code return values for weapons that dont call GetWeaponPrice and always use default value.
 #if SOURCE_ENGINE == SE_CSGO
 	if (id == WEAPON_C4 || id == WEAPON_KNIFE || id == WEAPON_KNIFE_GG)
+		return 0;
 #else
  	if (id == WEAPON_C4 || id == WEAPON_KNIFE || id == WEAPON_SHIELD)
-#endif
 		return 0;
-	if (id == WEAPON_KEVLAR)
+	else if (id == WEAPON_KEVLAR)
 		return 650;
-	if (id == WEAPON_ASSAULTSUIT)
+	else if (id == WEAPON_ASSAULTSUIT)
 		return 1000;
-	if (id == WEAPON_NIGHTVISION)
+#endif
+	else if (id == WEAPON_NIGHTVISION)
 		return 1250;
 #if SOURCE_ENGINE == SE_CSGO
-	if (id == WEAPON_DEFUSER)
-		return 200;
+	else if (id == WEAPON_DEFUSER)
+		return 400;
 #endif
-	if (id == 0)
-		return 0;
 
 	if (g_iPriceOffset == -1)
 	{
