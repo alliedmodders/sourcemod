@@ -359,6 +359,15 @@ native CSWeaponID:CS_AliasToWeaponID(const String:alias[]);
 native CS_WeaponIDToAlias(CSWeaponID:weaponID, String:destination[], len);
 
 /**
+ * Returns weather a WeaponID is valid on the current mod (css or csgo)
+ * @param weaponID		WeaponID to check
+ * @return				Returns true if its a valid WeaponID false otherwise.
+ *
+ * @note This will return false always for CSWeapon_NONE
+ */
+native bool:CS_IsValidWeaponID(CSWeaponID:id);
+
+/**
  * Do not edit below this line!
  */
 public Extension:__ext_cstrike = 
