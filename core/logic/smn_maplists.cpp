@@ -127,6 +127,8 @@ public:
 		SMCError error;
 		time_t fileTime;
 		SMCStates states = {0, 0};
+		const char *pMapCycleFileName;
+		const char *pEngineName;
 		
 		fileFound = libsys->FileTime(m_ConfigFile, FileTime_LastChange, &fileTime);
 
@@ -156,11 +158,47 @@ public:
 
 		pDefList->bIsPath = true;
 		smcore.strncopy(pDefList->name, "mapcyclefile", sizeof(pDefList->name));
-		g_pSM->BuildPath(Path_Game,
-			pDefList->path, 
-			sizeof(pDefList->path),
-			"%s",
-			m_pMapCycleFile ? smcore.GetCvarString(m_pMapCycleFile) : "mapcycle.txt");
+
+		pMapCycleFileName = m_pMapCycleFile ? smcore.GetCvarString(m_pMapCycleFile) : "mapcycle.txt";
+
+		pEngineName = smcore.GetSourceEngineName();
+
+		if (strcmp(pEngineName, "tf2") == 0 || strcmp(pEngineName, "css") == 0
+			|| strcmp(pEngineName, "dods") == 0 || strcmp(pEngineName, "hl2dm") == 0)
+		{
+			// These four games and Source SDK 2013 do a lookup in this order; so shall we.
+			g_pSM->BuildPath(Path_Game,
+				pDefList->path, 
+				sizeof(pDefList->path),
+				"cfg/%s",
+				pMapCycleFileName);
+			
+			if (!libsys->PathExists(pDefList->path))
+			{
+				g_pSM->BuildPath(Path_Game,
+					pDefList->path, 
+					sizeof(pDefList->path),
+					"%s",
+					pMapCycleFileName);
+
+				if (!libsys->PathExists(pDefList->path))
+				{
+					g_pSM->BuildPath(Path_Game,
+						pDefList->path, 
+						sizeof(pDefList->path),
+						"cfg/mapcycle_default.txt");
+				}
+			}
+		}
+		else
+		{
+			g_pSM->BuildPath(Path_Game,
+				pDefList->path, 
+				sizeof(pDefList->path),
+				"%s",
+				pMapCycleFileName);
+		}
+		
 		pDefList->last_modified_time = 0;
 		pDefList->pArray = NULL;
 		pDefList->serial = 0;
