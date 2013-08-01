@@ -226,6 +226,7 @@ native GetEntData(entity, offset, size=4);
  *
  * @param entity		Edict index.
  * @param offset		Offset to use.
+ * @param value			Value to set.
  * @param size			Number of bytes to write (valid values are 1, 2, or 4).
  * @param changeState	If true, change will be sent over the network.
  * @return				Value at the given memory location.
@@ -251,6 +252,7 @@ native Float:GetEntDataFloat(entity, offset);
  *
  * @param entity		Edict index.
  * @param offset		Offset to use.
+ * @param value			Value to set.
  * @param changeState	If true, change will be sent over the network.
  * @return				Value at the given memory location.
  * @error				Invalid entity or offset out of reasonable bounds.
@@ -281,7 +283,7 @@ native GetEntDataEnt(entity, offset);
  * reasons explained in the notes.
  *
  * Note: This function uses 0 as an indicator to unset data, but 
- * 0 is also the world entity index.  Thus, the a property cannot 
+ * 0 is also the world entity index.  Thus, a property cannot 
  * be set to the world entity using this native.
  * 
  * @param entity		Edict index.
@@ -705,7 +707,7 @@ native Address:GetEntityAddress(entity);
  * This is like GetEdictClassname(), except it works for ALL
  * entities, not just edicts.
  *
- * @param edict			Index of the entity.
+ * @param entity			Index of the entity.
  * @param clsname		Buffer to store the classname.
  * @param maxlength		Maximum length of the buffer.
  * @return				True on success, false if there is no classname set.

@@ -210,14 +210,14 @@ native SetArrayCell(Handle:array, index, any:value, block=0, bool:asChar=false);
  * @return				Number of characters copied.
  * @error				Invalid Handle or invalid index.
  */
-native SetArrayString(Handle:array, index, const String:buffer[]);
+native SetArrayString(Handle:array, index, const String:value[]);
 
 /**
  * Sets an array of cells in an array.
  *
  * @param array			Array Handle.
  * @param index			Index in the array.
- * @param buffer		Array to copy.
+ * @param values		Array to copy.
  * @param size			If not set, assumes the buffer size is equal to the
  *						blocksize.  Otherwise, the size passed is used.
  * @return				Number of cells copied.

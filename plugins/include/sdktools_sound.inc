@@ -127,7 +127,7 @@ enum
  * @param name		Sound file name relative to the "sounds" folder.
  * @noreturn
  */
-native PrefetchSound(const String:nane[]);
+native PrefetchSound(const String:name[]);
 
 /**
  * This function is not known to work, and may crash.  You should 

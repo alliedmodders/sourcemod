@@ -91,7 +91,7 @@ native bool:SetTrieString(Handle:trie, const String:key[], const String:value[],
  *
  * @param trie		Trie Handle.
  * @param key		Key string.
- * @param val		Variable to store value.
+ * @param value		Variable to store value.
  * @return			True on success.  False if the key is not set, or the key is set 
  *					as an array or string (not a value).
  * @error			Invalid Handle.

@@ -278,7 +278,7 @@ native GetPluginFilename(Handle:plugin, String:buffer[], maxlength);
  * @return				True if being debugged, false otherwise.
  * @error				Invalid Handle.
  */
-native bool:IsPluginDebugging(Handle:hndl);
+native bool:IsPluginDebugging(Handle:plugin);
 
 /**
  * Retrieves a plugin's public info.
@@ -328,7 +328,7 @@ native SetFailState(const String:string[], any:...);
  * Aborts the current callback and throws an error.  This function
  * does not return in that no code is executed following it.
  *
- * @param format		String format.
+ * @param fmt		String format.
  * @param ...			Format arguments.
  * @noreturn
  * @error				Always!

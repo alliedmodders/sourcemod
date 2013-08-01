@@ -201,7 +201,7 @@ native TopMenuObject:AddToTopMenu(Handle:topmenu,
  * Retrieves the info string of a top menu item.
  *
  * @param topmenu			TopMenu Handle.
- * @param object			TopMenuObject ID.
+ * @param parent			TopMenuObject ID.
  * @param buffer			Buffer to store info string.
  * @param maxlength			Maximum size of info string.
  * @return					Number of bytes written, not including the 

@@ -86,7 +86,7 @@ native GetStringTableName(tableidx, String:name[], maxlength);
  * Searches for the index of a given string in a string table.
  *
  * @param tableidx		A string table index.
- * @param string		String to find.
+ * @param str		String to find.
  * @return				String index if found, INVALID_STRING_INDEX otherwise.
  * @error				Invalid string table index.
  */
@@ -97,12 +97,12 @@ native FindStringIndex(tableidx, const String:str[]);
  *
  * @param tableidx		A string table index.
  * @param stringidx		A string index.
- * @param name			Buffer to store the string value.
+ * @param str			Buffer to store the string value.
  * @param maxlength		Maximum length of string buffer.
  * @return				Number of bytes written to the buffer (UTF-8 safe).
  * @error				Invalid string table index or string index.
  */
-native ReadStringTable(tableidx, stringIdx, String:str[], maxlength);
+native ReadStringTable(tableidx, stringidx, String:str[], maxlength);
 
 /**
  * Returns the length of the user data associated with a given string index.
@@ -124,7 +124,7 @@ native GetStringTableDataLength(tableidx, stringidx);
  * @return				Number of bytes written to the buffer (UTF-8 safe).
  * @error				Invalid string table index or string index.
  */
-native GetStringTableData(tableidx, stringIdx, String:userdata[], maxlength);
+native GetStringTableData(tableidx, stringidx, String:userdata[], maxlength);
 
 /**
  * Sets the user data associated with a given string index.
@@ -136,13 +136,13 @@ native GetStringTableData(tableidx, stringIdx, String:userdata[], maxlength);
  * @return				Number of bytes written to the buffer (UTF-8 safe).
  * @error				Invalid string table index or string index.
  */
-native SetStringTableData(tableidx, stringIdx, const String:userdata[], length);
+native SetStringTableData(tableidx, stringidx, const String:userdata[], length);
 
 /**
  * Adds a string to a given string table.
  *
  * @param tableidx		A string table index.
- * @param string		String to add.
+ * @param str		String to add.
  * @param userdata		An optional user data string.
  * @param length		Length of user data string. This should include the null terminator.
  *						If set to -1, then user data will be not be altered if the specified string

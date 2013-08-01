@@ -81,13 +81,13 @@ native GetPlayerWeaponSlot(client, slot);
 native IgniteEntity(entity, Float:time, bool:npc=false, Float:size=0.0, bool:level=false);
 
 /**
- * Extinguishes a player that is on fire.
+ * Extinguishes an entity that is on fire.
  *
  * @param entity		Entity index.
  * @noreturn
  * @error				Invalid entity or client not in game, or lack of mod support.
  */
-native ExtinguishEntity(client);
+native ExtinguishEntity(entity);
 
 /**
  * Teleports an entity.
@@ -194,7 +194,7 @@ native bool:DispatchKeyValueFloat(entity, const String:keyName[], Float:value);
  * @return				True on success, false otherwise.
  * @error				Invalid entity index, or no mod support.
  */
-native bool:DispatchKeyValueVector(entity, const String:keyName[], const Float:vector[3]);
+native bool:DispatchKeyValueVector(entity, const String:keyName[], const Float:vec[3]);
 
 /**
  * Returns the entity a client is aiming at.
@@ -293,7 +293,7 @@ native GetServerNetStats(&Float:in, &Float:out);
  * Equip's a player's weapon.
  *
  * @param client		Client index.
- * @param item			CBaseCombatWeapon entity index.
+ * @param weapon			CBaseCombatWeapon entity index.
  * @noreturn
  * @error				Invalid client or entity, lack of mod support, or client not in 
  *						game.

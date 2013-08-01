@@ -109,7 +109,7 @@ native SetVariantColor(const color[4]);
 /**
  * Sets an entity in the global variant object.
  *
- * @param		Entity index.
+ * @param entity	Entity index.
  * @noreturn
  * @error		Invalid entity index.
  */

@@ -162,8 +162,8 @@ forward OnClientCookiesCached(client);
  * Cookie Menu Callback prototype
  *
  * @param client		Client index.
- * @param action		CookeMenuAction being performed.
- * @param data			Info data passed.
+ * @param action		CookieMenuAction being performed.
+ * @param info			Info data passed.
  * @param buffer		Outbut buffer.
  * @param maxlen		Max length of the output buffer.			
  */
@@ -221,7 +221,6 @@ native Handle:GetCookieIterator();
  * @param access		Access level of the cookie.
  * @param desc			Cookie description buffer.
  * @param descLen		Cookie description buffer size.
- * @param 
  * @return				True on success, false if there are no more commands.
  */
 native bool:ReadCookieIterator(Handle:iter, 

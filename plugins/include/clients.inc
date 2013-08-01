@@ -247,7 +247,7 @@ native bool:GetClientName(client, String:name[], maxlen);
  * Retrieves a client's IP address.
  *
  * @param client		Player index.
- * @param name			Buffer to store the client's ip address.
+ * @param ip			Buffer to store the client's ip address.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
  * @param remport		Remove client's port from the ip string (true by default).
  * @return				True on success, false otherwise.
@@ -763,6 +763,7 @@ native ChangeClientTeam(client, team);
 /**
  * Returns the clients unique serial identifier.
  *
+ * @param client		Client index.
  * @return	Serial number.
  */
 native GetClientSerial(client);
@@ -770,6 +771,7 @@ native GetClientSerial(client);
 /**
  * Returns the client index by its serial number.
  *
+ * @param serial		Serial number.
  * @return				Client index, or 0 for invalid serial.
  */
 native GetClientFromSerial(serial);
