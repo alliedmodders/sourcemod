@@ -94,7 +94,10 @@ inline int CellRecipientFilter::GetRecipientIndex(int slot) const
 	{
 		ret = -1;
 	}
-	ret = static_cast<int>(m_Players[slot]);
+	else
+	{
+		ret = static_cast<int>(m_Players[slot]);
+	}
 
 #if SOURCE_ENGINE == SE_DOTA
 	return CEntityIndex(ret);
