@@ -108,6 +108,24 @@ CLocalExtension::CLocalExtension(const char *filename)
 		goto normal;
 	}
 
+	/* COMPAT HACK: One-halfth, if ep2v, see if there is an engine specific build in the new place with old naming */
+	if (strcmp(smcore.gamesuffix, "2.tf2") == 0
+		|| strcmp(smcore.gamesuffix, "2.dods") == 0
+		|| strcmp(smcore.gamesuffix, "2.hl2dm") == 0
+		)
+	{
+		g_pSM->BuildPath(Path_SM,
+			path,
+			PLATFORM_MAX_PATH,
+			"extensions/%s.2.ep2v." PLATFORM_LIB_EXT,
+			filename);
+
+		if (libsys->IsPathFile(path))
+		{
+			goto found;
+		}
+	}
+
 	/* Zeroth, see if there is an engine specific build in the new place. */
 	g_SourceMod.BuildPath(Path_SM,
 		path,
