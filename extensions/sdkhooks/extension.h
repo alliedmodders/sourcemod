@@ -2,8 +2,10 @@
 #define _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
 
 #include "smsdk_ext.h"
+#include <ISDKHooks.h>
 #include <IBinTools.h>
 #include <convar.h>
+#include <sh_list.h>
 
 #include <iplayerinfo.h>
 #include <shareddefs.h>
@@ -120,7 +122,8 @@ class SDKHooks :
 	public IPluginsListener,
 	public IFeatureProvider,
 	public IEntityListener,
-	public IClientListener
+	public IClientListener,
+	public ISDKHooks
 {
 public:
 	/**
@@ -214,6 +217,13 @@ public:  // IEntityListener
 
 public:  // IClientListener
 	virtual void OnClientPutInServer(int client);
+
+public:  // ISDKHooks
+	virtual void AddEntityListener(ISMEntityListener *listener);
+	virtual void RemoveEntityListener(ISMEntityListener *listener);
+
+private:
+	SourceHook::List<ISMEntityListener *> m_EntListeners;
 
 public:
 	/**

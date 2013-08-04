@@ -1300,6 +1300,7 @@
     <ClCompile Include="..\sdk\smsdk_ext.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\public\extensions\ISDKHooks.h" />
     <ClInclude Include="..\extension.h" />
     <ClInclude Include="..\macros.h" />
     <ClInclude Include="..\natives.h" />

@@ -56,6 +56,9 @@
     <ClInclude Include="..\sdk\smsdk_ext.h">
       <Filter>SourceMod SDK</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\public\extensions\ISDKHooks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\version.rc">
