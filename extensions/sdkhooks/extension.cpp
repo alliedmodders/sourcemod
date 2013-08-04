@@ -185,6 +185,7 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 	sharesys->AddNatives(myself, g_Natives);
 	sharesys->RegisterLibrary(myself, "sdkhooks");
+	sharesys->AddInterface(myself, &g_Interface);
 	sharesys->AddCapabilityProvider(myself, this, "SDKHook_DmgCustomInOTD");
 	sharesys->AddCapabilityProvider(myself, this, "SDKHook_LogicalEntSupport");
 
@@ -391,16 +392,34 @@ void SDKHooks::OnPluginUnloaded(IPlugin *plugin)
 
 void SDKHooks::OnClientPutInServer(int client)
 {
-	g_pOnEntityCreated->PushCell(client);
-
 	CBaseEntity *pPlayer = gamehelpers->ReferenceToEntity(client);
+	const char *pName = gamehelpers->GetEntityClassname(pPlayer);
 
-	const char * pName = gamehelpers->GetEntityClassname(pPlayer);
+	// Send OnEntityCreated to SM listeners
+	SourceHook::List<ISMEntityListener *>::iterator iter;
+	ISMEntityListener *pListener = NULL;
+	for (iter=m_EntListeners.begin(); iter!=m_EntListeners.end(); iter++)
+	{
+		pListener = (*iter);
+		pListener->OnEntityCreated(pPlayer, pName ? pName : "");
+	}
 
+	// Call OnEntityCreated forward
+	g_pOnEntityCreated->PushCell(client);
 	g_pOnEntityCreated->PushString(pName ? pName : "");
 	g_pOnEntityCreated->Execute(NULL);
 
 	m_EntityExists.Set(client);
+}
+
+void SDKHooks::AddEntityListener(ISMEntityListener *listener)
+{
+	m_EntListeners.push_back(listener);
+}
+
+void SDKHooks::RemoveEntityListener(ISMEntityListener *listener)
+{
+	m_EntListeners.remove(listener);
 }
 
 bool SDKHooks::RegisterConCommandBase(ConCommandBase *pVar)
@@ -824,11 +843,19 @@ void SDKHooks::OnEntityCreated(CBaseEntity *pEntity)
 		return;
 	}
 
+	const char *pName = gamehelpers->GetEntityClassname(pEntity);
+
+	// Send OnEntityCreated to SM listeners
+	SourceHook::List<ISMEntityListener *>::iterator iter;
+	ISMEntityListener *pListener = NULL;
+	for (iter=m_EntListeners.begin(); iter!=m_EntListeners.end(); iter++)
+	{
+		pListener = (*iter);
+		pListener->OnEntityCreated(pEntity, pName ? pName : "");
+	}
+
 	g_pOnEntityCreated->PushCell(gamehelpers->EntityToBCompatRef(pEntity));
-
-	const char * pName = gamehelpers->GetEntityClassname(pEntity);
 	g_pOnEntityCreated->PushString(pName ? pName : "");
-
 	g_pOnEntityCreated->Execute(NULL);
 
 	m_EntityExists.Set(entity);
@@ -1394,6 +1421,15 @@ void SDKHooks::Hook_UsePost(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 
 void SDKHooks::OnEntityDeleted(CBaseEntity *pEntity)
 {
+	// Send OnEntityDestroyed to SM listeners
+	SourceHook::List<ISMEntityListener *>::iterator iter;
+	ISMEntityListener *pListener = NULL;
+	for (iter=m_EntListeners.begin(); iter!=m_EntListeners.end(); iter++)
+	{
+		pListener = (*iter);
+		pListener->OnEntityDestroyed(pEntity);
+	}
+
 	int entity = gamehelpers->EntityToBCompatRef(pEntity);
 
 	// Call OnEntityDestroyed forward
