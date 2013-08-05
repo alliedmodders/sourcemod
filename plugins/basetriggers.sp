@@ -75,10 +75,6 @@ public OnPluginStart()
 	g_Cvar_TimeleftInterval = CreateConVar("sm_timeleft_interval", "0.0", "Display timeleft every x seconds. Default 0.", 0, true, 0.0, true, 1800.0);
 	g_Cvar_FriendlyFire = FindConVar("mp_friendlyfire");
 	
-	AddCommandListener(Command_Say, "say");
-	AddCommandListener(Command_Say, "say2");
-	AddCommandListener(Command_Say, "say_team");
-	
 	RegConsoleCmd("timeleft", Command_Timeleft);
 	RegConsoleCmd("nextmap", Command_Nextmap);
 	RegConsoleCmd("motd", Command_Motd);
@@ -236,22 +232,22 @@ public Action:Command_Motd(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_Say(client, const String:command[], argc)
+public OnClientSayCommand_Post(client, const String:command[], const String:sArgs[])
 {
 	decl String:text[192];
 	new startidx = 0;
-	if (GetCmdArgString(text, sizeof(text)) < 1)
+	
+	if (strcopy(text, sizeof(text), sArgs) < 1)
 	{
-		return Plugin_Continue;
+		return;
 	}
 	
-	if (text[strlen(text)-1] == '"')
+	if (text[0] == '"')
 	{
-		text[strlen(text)-1] = '\0';
 		startidx = 1;
 	}
 
-	if (strcmp(command, "say2", false) == 0)
+	if ((strcmp(command, "say2", false) == 0) && strlen(sArgs) >= 4)
 		startidx += 4;
 
 	if (strcmp(text[startidx], "timeleft", false) == 0)
@@ -342,8 +338,6 @@ public Action:Command_Say(client, const String:command[], argc)
 	{
 		ShowMOTDPanel(client, "Message Of The Day", "motd", MOTDPANEL_TYPE_INDEX);
 	}
-	
-	return Plugin_Continue;
 }
 
 ShowTimeLeft(client, who)
