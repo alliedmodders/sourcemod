@@ -75,6 +75,11 @@ private:
 private:
 	ConCommand *m_pSayCmd;
 	ConCommand *m_pSayTeamCmd;
+#if SOURCE_ENGINE == SE_EPISODEONE
+	ConCommand *m_pSay2Cmd;
+#elif SOURCE_ENGINE == SE_NUCLEARDAWN
+	ConCommand *m_pSaySquadCmd;
+#endif
 	char *m_PubTrigger;
 	size_t m_PubTriggerSize;
 	char *m_PrivTrigger;
@@ -83,10 +88,16 @@ private:
 	bool m_bTriggerWasSilent;
 	bool m_bIsChatTrigger;
 	bool m_bWasFloodedMessage;
+	bool m_bPluginIgnored;
 	unsigned int m_ReplyTo;
 	char m_ToExecute[300];
 	IForward *m_pShouldFloodBlock;
 	IForward *m_pDidFloodBlock;
+	IForward *m_pOnClientSayCmd;
+	IForward *m_pOnClientSayCmd_Post;
+#if SOURCE_ENGINE == SE_EPISODEONE
+	bool m_bIsINS;
+#endif
 };
 
 extern ChatTriggers g_ChatTriggers;

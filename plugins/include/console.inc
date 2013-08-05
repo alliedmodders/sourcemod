@@ -938,3 +938,24 @@ native bool:AddCommandListener(CommandListener:callback, const String:command[]=
  */
 native RemoveCommandListener(CommandListener:callback, const String:command[]="");
 
+/**
+ * Global listener for the chat commands.
+ *
+ * @param client		Client index.
+ * @param command		Command name.
+ * @param sArgs			Chat argument string.
+ * 
+ * @return				An Action value. Returning Plugin_Handled bypasses the game function call.
+							Returning Plugin_Stop bypasses the post hook as well as the game function.
+ */
+forward Action:OnClientSayCommand(client, const String:command[], const String:sArgs[]);
+
+/**
+ * Global post listener for the chat commands.
+ *
+ * @param client		Client index.
+ * @param command		Command name.
+ * @param sArgs			Chat argument string.
+ * 
+ */
+forward OnClientSayCommand_Post(client, const String:command[], const String:sArgs[]);

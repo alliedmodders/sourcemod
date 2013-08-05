@@ -63,6 +63,10 @@ ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false),
 	m_PubTriggerSize = 1;
 	m_PrivTriggerSize = 1;
 	m_bIsChatTrigger = false;
+	m_bPluginIgnored = false;
+#if SOURCE_ENGINE == SE_EPISODEONE
+	m_bIsINS = false;
+#endif
 }
 
 ChatTriggers::~ChatTriggers()
@@ -106,6 +110,8 @@ void ChatTriggers::OnSourceModAllInitialized()
 {
 	m_pShouldFloodBlock = g_Forwards.CreateForward("OnClientFloodCheck", ET_Event, 1, NULL, Param_Cell);
 	m_pDidFloodBlock = g_Forwards.CreateForward("OnClientFloodResult", ET_Event, 2, NULL, Param_Cell, Param_Cell);
+	m_pOnClientSayCmd = g_Forwards.CreateForward("OnClientSayCommand", ET_Event, 3, NULL, Param_Cell, Param_String, Param_String);
+	m_pOnClientSayCmd_Post = g_Forwards.CreateForward("OnClientSayCommand_Post", ET_Ignore, 3, NULL, Param_Cell, Param_String, Param_String);
 }
 
 void ChatTriggers::OnSourceModAllInitialized_Post()
@@ -128,23 +134,62 @@ void ChatTriggers::OnSourceModGameInitialized()
 		SH_ADD_HOOK(ConCommand, Dispatch, m_pSayTeamCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Pre), false);
 		SH_ADD_HOOK(ConCommand, Dispatch, m_pSayTeamCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Post), true);
 	}
+
+#if SOURCE_ENGINE == SE_EPISODEONE
+	m_bIsINS = (strncmp(g_SourceMod.GetGameFolderName(), "insurgency") == 0);
+
+	if (m_bIsINS)
+	{
+		m_pSay2Cmd = FindCommand("say2");
+		if (m_pSay2Cmd)
+		{
+			SH_ADD_HOOK(ConCommand, Dispatch, m_pSay2Cmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Pre), false);
+			SH_ADD_HOOK(ConCommand, Dispatch, m_pSay2Cmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Post), true);
+		}
+	}
+#elif SOURCE_ENGINE == SE_NUCLEARDAWN
+	m_pSaySquadCmd = FindCommand("say_squad");
+
+	if (m_pSaySquadCmd)
+	{
+		SH_ADD_HOOK(ConCommand, Dispatch, m_pSaySquadCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Pre), false);
+		SH_ADD_HOOK(ConCommand, Dispatch, m_pSaySquadCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Post), true);
+	}
+#endif
 }
 
 void ChatTriggers::OnSourceModShutdown()
 {
-	if (m_pSayTeamCmd)
-	{
-		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSayTeamCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Post), true);
-		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSayTeamCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Pre), false);
-	}
 	if (m_pSayCmd)
 	{
 		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSayCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Post), true);
 		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSayCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Pre), false);
 	}
 
+	if (m_pSayTeamCmd)
+	{
+		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSayTeamCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Post), true);
+		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSayTeamCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Pre), false);
+	}
+
+#if SOURCE_ENGINE == SE_EPISODEONE
+	if (m_bIsINS && m_pSay2Cmd)
+	{
+		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSay2Cmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Pre), false);
+		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSay2Cmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Post), true);
+	}
+#elif SOURCE_ENGINE == SE_NUCLEARDAWN
+	if (m_pSaySquadCmd)
+	{
+		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSaySquadCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Pre), false);
+		SH_REMOVE_HOOK(ConCommand, Dispatch, m_pSaySquadCmd, SH_MEMBER(this, &ChatTriggers::OnSayCommand_Post), true);
+	}
+#endif
+
 	g_Forwards.ReleaseForward(m_pShouldFloodBlock);
 	g_Forwards.ReleaseForward(m_pDidFloodBlock);
+	g_Forwards.ReleaseForward(m_pOnClientSayCmd);
+	g_Forwards.ReleaseForward(m_pOnClientSayCmd_Post);
 }
 
 #if SOURCE_ENGINE == SE_DOTA
@@ -158,21 +203,21 @@ void ChatTriggers::OnSayCommand_Pre()
 {
 	CCommand command;
 #endif
-	int client;
-	CPlayer *pPlayer;
-	
-	client = g_ConCmds.GetCommandClient();
+	int client = g_ConCmds.GetCommandClient();
 	m_bIsChatTrigger = false;
 	m_bWasFloodedMessage = false;
+	m_bPluginIgnored = false;
 
 	/* The server console cannot do this */
-	if (client == 0 || (pPlayer = g_Players.GetPlayerByIndex(client)) == NULL)
+	if (client == 0)
 	{
 		RETURN_META(MRES_IGNORED);
 	}
 
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+
 	/* We guarantee the client is connected */
-	if (!pPlayer->IsConnected())
+	if (!pPlayer || !pPlayer->IsConnected())
 	{
 		RETURN_META(MRES_IGNORED);
 	}
@@ -211,6 +256,14 @@ void ChatTriggers::OnSayCommand_Pre()
 		is_quoted = true;
 	}
 
+	const char * pCommandName = command.Arg(0);
+#if SOURCE_ENGINE == SE_EPISODEONE
+	if (m_bIsINS && strncmp(pCommandName, "say2") && strlen(args) >= 4)
+	{
+		args += 4;
+	}
+#endif
+
 	bool is_trigger = false;
 	bool is_silent = false;
 
@@ -227,38 +280,37 @@ void ChatTriggers::OnSayCommand_Pre()
 		args = &args[m_PrivTriggerSize];
 	}
 
-	if (!is_trigger)
-	{
-		RETURN_META(MRES_IGNORED);
-	}
-
 	/**
 	 * Test if this is actually a command!
 	 */
-	if (!PreProcessTrigger(PEntityOfEntIndex(client), args, is_quoted))
+	if (is_trigger && PreProcessTrigger(PEntityOfEntIndex(client), args, is_quoted))
 	{
-		CPlayer *pPlayer;
-		if (is_silent 
-			&& g_bSupressSilentFails 
-			&& client != 0
-			&& (pPlayer = g_Players.GetPlayerByIndex(client)) != NULL
-			&& pPlayer->GetAdminId() != INVALID_ADMIN_ID)
-		{
-			RETURN_META(MRES_SUPERCEDE);
-		}
-		RETURN_META(MRES_IGNORED);
+		m_bIsChatTrigger = true;
+
+		/**
+		 * We'll execute it in post.
+		 */
+		m_bWillProcessInPost = true;
+		m_bTriggerWasSilent = is_silent;
 	}
 
-	m_bIsChatTrigger = true;
+	if (m_pOnClientSayCmd->GetFunctionCount() != 0)
+	{
+		cell_t res = Pl_Continue;
+		m_pOnClientSayCmd->PushCell(client);
+		m_pOnClientSayCmd->PushString(pCommandName);
+		m_pOnClientSayCmd->PushString(command.ArgS());
+		m_pOnClientSayCmd->Execute(&res);
 
-	/**
-	 * We'll execute it in post.
-	 */
-	m_bWillProcessInPost = true;
-	m_bTriggerWasSilent = is_silent;
+		if (res >= Pl_Handled)
+		{
+			m_bPluginIgnored = (res >= Pl_Stop);
+			RETURN_META(MRES_SUPERCEDE);
+		}
+	}
 
-	/* If we're silent, block */
-	if (is_silent)
+	if (m_bWillProcessInPost || \
+		(is_silent && g_bSupressSilentFails && pPlayer->GetAdminId() != INVALID_ADMIN_ID))
 	{
 		RETURN_META(MRES_SUPERCEDE);
 	}
@@ -275,15 +327,14 @@ void ChatTriggers::OnSayCommand_Post(const CCommand &command)
 void ChatTriggers::OnSayCommand_Post()
 #endif
 {
-	m_bIsChatTrigger = false;
-	m_bWasFloodedMessage = false;
+	int client = g_ConCmds.GetCommandClient();
+
 	if (m_bWillProcessInPost)
 	{
 		/* Reset this for re-entrancy */
 		m_bWillProcessInPost = false;
 		
 		/* Execute the cached command */
-		int client = g_ConCmds.GetCommandClient();
 		unsigned int old = SetReplyTo(SM_REPLY_CHAT);
 #if SOURCE_ENGINE == SE_DOTA
 		engine->ClientCommand(client, "%s", m_ToExecute);
@@ -292,6 +343,21 @@ void ChatTriggers::OnSayCommand_Post()
 #endif
 		SetReplyTo(old);
 	}
+
+	if (m_bPluginIgnored)
+	{
+		m_bPluginIgnored = false;
+	}
+	else if (!m_bWasFloodedMessage && m_pOnClientSayCmd_Post->GetFunctionCount() != 0)
+	{	
+		m_pOnClientSayCmd_Post->PushCell(client);
+		m_pOnClientSayCmd_Post->PushString(command.Arg(0));
+		m_pOnClientSayCmd_Post->PushString(command.ArgS());
+		m_pOnClientSayCmd_Post->Execute(NULL);
+	}
+
+	m_bIsChatTrigger = false;
+	m_bWasFloodedMessage = false;
 }
 
 bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_quoted)
