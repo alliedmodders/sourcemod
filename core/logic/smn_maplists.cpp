@@ -80,6 +80,47 @@ public:
 	{
 		DumpCache(NULL);
 	}
+	void GetMapCycleFilePath(char *pBuffer, int maxlen)
+	{
+		const char *pEngineName = smcore.GetSourceEngineName();
+		const char *pMapCycleFileName = m_pMapCycleFile ? smcore.GetCvarString(m_pMapCycleFile) : "mapcycle.txt";
+
+		if (strcmp(pEngineName, "tf2") == 0 || strcmp(pEngineName, "css") == 0
+			|| strcmp(pEngineName, "dods") == 0 || strcmp(pEngineName, "hl2dm") == 0)
+		{
+			// These four games and Source SDK 2013 do a lookup in this order; so shall we.
+			g_pSM->BuildPath(Path_Game,
+				pBuffer,
+				maxlen,
+				"cfg/%s",
+				pMapCycleFileName);
+
+			if (!libsys->PathExists(pBuffer))
+			{
+				g_pSM->BuildPath(Path_Game,
+					pBuffer,
+					maxlen,
+					"%s",
+					pMapCycleFileName);
+
+				if (!libsys->PathExists(pBuffer))
+				{
+					g_pSM->BuildPath(Path_Game,
+						pBuffer,
+						maxlen,
+						"cfg/mapcycle_default.txt");
+				}
+			}
+		}
+		else
+		{
+			g_pSM->BuildPath(Path_Game,
+				pBuffer,
+				maxlen,
+				"%s",
+				pMapCycleFileName);
+		}
+	}
 	void AddOrUpdateDefault(const char *name, const char *file)
 	{
 		char path[PLATFORM_MAX_PATH];
@@ -127,8 +168,6 @@ public:
 		SMCError error;
 		time_t fileTime;
 		SMCStates states = {0, 0};
-		const char *pMapCycleFileName;
-		const char *pEngineName;
 		
 		fileFound = libsys->FileTime(m_ConfigFile, FileTime_LastChange, &fileTime);
 
@@ -159,45 +198,7 @@ public:
 		pDefList->bIsPath = true;
 		smcore.strncopy(pDefList->name, "mapcyclefile", sizeof(pDefList->name));
 
-		pMapCycleFileName = m_pMapCycleFile ? smcore.GetCvarString(m_pMapCycleFile) : "mapcycle.txt";
-
-		pEngineName = smcore.GetSourceEngineName();
-
-		if (strcmp(pEngineName, "tf2") == 0 || strcmp(pEngineName, "css") == 0
-			|| strcmp(pEngineName, "dods") == 0 || strcmp(pEngineName, "hl2dm") == 0)
-		{
-			// These four games and Source SDK 2013 do a lookup in this order; so shall we.
-			g_pSM->BuildPath(Path_Game,
-				pDefList->path, 
-				sizeof(pDefList->path),
-				"cfg/%s",
-				pMapCycleFileName);
-			
-			if (!libsys->PathExists(pDefList->path))
-			{
-				g_pSM->BuildPath(Path_Game,
-					pDefList->path, 
-					sizeof(pDefList->path),
-					"%s",
-					pMapCycleFileName);
-
-				if (!libsys->PathExists(pDefList->path))
-				{
-					g_pSM->BuildPath(Path_Game,
-						pDefList->path, 
-						sizeof(pDefList->path),
-						"cfg/mapcycle_default.txt");
-				}
-			}
-		}
-		else
-		{
-			g_pSM->BuildPath(Path_Game,
-				pDefList->path, 
-				sizeof(pDefList->path),
-				"%s",
-				pMapCycleFileName);
-		}
+		GetMapCycleFilePath(pDefList->path, sizeof(pDefList->path));
 		
 		pDefList->last_modified_time = 0;
 		pDefList->pArray = NULL;
@@ -513,11 +514,7 @@ private:
 		if (m_pMapCycleFile != NULL && strcmp(name, "mapcyclefile") == 0)
 		{
 			char path[PLATFORM_MAX_PATH];
-			g_pSM->BuildPath(Path_Game,
-				path, 
-				sizeof(path),
-				"%s",
-				m_pMapCycleFile ? smcore.GetCvarString(m_pMapCycleFile) : "mapcycle.txt");
+			GetMapCycleFilePath(path, sizeof(path));
 
 			if (strcmp(path, pMapList->path) != 0)
 			{
