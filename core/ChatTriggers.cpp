@@ -136,7 +136,7 @@ void ChatTriggers::OnSourceModGameInitialized()
 	}
 
 #if SOURCE_ENGINE == SE_EPISODEONE
-	m_bIsINS = (strncmp(g_SourceMod.GetGameFolderName(), "insurgency") == 0);
+	m_bIsINS = (strcmp(g_SourceMod.GetGameFolderName(), "insurgency") == 0);
 
 	if (m_bIsINS)
 	{
@@ -258,7 +258,7 @@ void ChatTriggers::OnSayCommand_Pre()
 
 	const char * pCommandName = command.Arg(0);
 #if SOURCE_ENGINE == SE_EPISODEONE
-	if (m_bIsINS && strncmp(pCommandName, "say2") && strlen(args) >= 4)
+	if (m_bIsINS && strcmp(pCommandName, "say2") == 0 && strlen(args) >= 4)
 	{
 		args += 4;
 	}
@@ -321,12 +321,15 @@ void ChatTriggers::OnSayCommand_Pre()
 
 #if SOURCE_ENGINE == SE_DOTA
 void ChatTriggers::OnSayCommand_Post(const CCommandContext &context, const CCommand &command)
+{
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 void ChatTriggers::OnSayCommand_Post(const CCommand &command)
+{
 #else
 void ChatTriggers::OnSayCommand_Post()
-#endif
 {
+	CCommand command;
+#endif
 	int client = g_ConCmds.GetCommandClient();
 
 	if (m_bWillProcessInPost)
