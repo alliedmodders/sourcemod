@@ -1,3 +1,4 @@
+// vim: set ts=8 sts=2 sw=2 tw=99 et:
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,573 +13,571 @@
 
 using namespace SourcePawn;
 
-BaseRuntime::BaseRuntime() : m_Debug(&m_plugin), m_pPlugin(&m_plugin), m_pCtx(NULL), 
-m_PubFuncs(NULL), m_PubJitFuncs(NULL), m_pCo(NULL), m_CompSerial(0)
+static inline bool
+IsPointerCellAligned(void *p)
 {
-	memset(&m_plugin, 0, sizeof(m_plugin));
+  return uintptr_t(p) % 4 == 0;
+}
 
-	m_FuncCache = NULL;
-	m_MaxFuncs = 0;
-	m_NumFuncs = 0;
-	
-	memset(m_CodeHash, 0, sizeof(m_CodeHash));
-	memset(m_DataHash, 0, sizeof(m_DataHash));
+BaseRuntime::BaseRuntime()
+  : m_Debug(&m_plugin),
+    m_pCtx(NULL), 
+    m_PubFuncs(NULL),
+    m_PubJitFuncs(NULL),
+    co_(NULL),
+    m_CompSerial(0)
+{
+  memset(&m_plugin, 0, sizeof(m_plugin));
+
+  m_MaxFuncs = 0;
+  m_NumFuncs = 0;
+  float_table_ = NULL;
+  function_map_ = NULL;
+  alt_pcode_ = NULL;
+  
+  memset(m_CodeHash, 0, sizeof(m_CodeHash));
+  memset(m_DataHash, 0, sizeof(m_DataHash));
 }
 
 BaseRuntime::~BaseRuntime()
 {
-	for (uint32_t i = 0; i < m_pPlugin->num_publics; i++)
-	{
-		delete m_PubFuncs[i];
-		m_PubFuncs[i] = NULL;
-	}
-	delete [] m_PubFuncs;
-	delete [] m_PubJitFuncs;
+  for (uint32_t i = 0; i < m_plugin.num_publics; i++)
+    delete m_PubFuncs[i];
+  delete [] m_PubFuncs;
+  delete [] m_PubJitFuncs;
+  delete [] float_table_;
+  delete [] function_map_;
+  delete [] alt_pcode_;
 
-	for (unsigned int i = 0; i < m_NumFuncs; i++)
-	{
-		delete m_FuncCache[i];
-	}
-	free(m_FuncCache);
+  for (size_t i = 0; i < m_JitFunctions.length(); i++)
+    delete m_JitFunctions[i];
 
-	delete m_pCtx;
-	if (m_pCo != NULL)
-	{
-		m_pCo->Abort();
-	}
+  delete m_pCtx;
+  if (co_)
+    co_->Abort();
 
-	free(m_pPlugin->base);
-	delete [] m_pPlugin->memory;
-	delete [] m_pPlugin->publics;
-	delete [] m_pPlugin->pubvars;
-	delete [] m_pPlugin->natives;
-	free(m_pPlugin->name);
+  free(m_plugin.base);
+  delete [] m_plugin.memory;
+  delete [] m_plugin.publics;
+  delete [] m_plugin.pubvars;
+  delete [] m_plugin.natives;
+  free(m_plugin.name);
+}
+
+void
+BaseRuntime::SetupFloatNativeRemapping()
+{
+  float_table_ = new floattbl_t[m_plugin.num_natives];
+  for (size_t i = 0; i < m_plugin.num_natives; i++) {
+    const char *name = m_plugin.natives[i].name;
+    if (!strcmp(name, "FloatAbs")) {
+      float_table_[i].found = true;
+      float_table_[i].index = OP_FABS;
+    } else if (!strcmp(name, "FloatAdd")) {
+      float_table_[i].found = true;
+      float_table_[i].index = OP_FLOATADD;
+    } else if (!strcmp(name, "FloatSub")) {
+      float_table_[i].found = true;
+      float_table_[i].index = OP_FLOATSUB;
+    } else if (!strcmp(name, "FloatMul")) {
+      float_table_[i].found = true;
+      float_table_[i].index = OP_FLOATMUL;
+    } else if (!strcmp(name, "FloatDiv")) {
+      float_table_[i].found = true;
+      float_table_[i].index = OP_FLOATDIV;
+    } else if (!strcmp(name, "float")) {
+      float_table_[i].found = true;
+      float_table_[i].index = OP_FLOAT;
+    } else if (!strcmp(name, "FloatCompare")) {
+      float_table_[i].found = true;
+      float_table_[i].index = OP_FLOATCMP;
+    } else if (!strcmp(name, "RoundToZero")) {
+      float_table_[i].found = true;
+      float_table_[i].index = OP_RND_TO_ZERO;
+    } else if (!strcmp(name, "RoundToCeil")) {
+      float_table_[i].found = true;
+      float_table_[i].index = OP_RND_TO_CEIL;
+    } else if (!strcmp(name, "RoundToFloor")) {
+      float_table_[i].found = true;
+      float_table_[i].index = OP_RND_TO_FLOOR;
+    } else if (!strcmp(name, "RoundToNearest")) {
+      float_table_[i].found = true;
+      float_table_[i].index = OP_RND_TO_NEAREST;
+    }
+  }
+}
+
+unsigned
+BaseRuntime::GetNativeReplacement(size_t index)
+{
+  if (!float_table_[index].found)
+    return OP_NOP;
+  return float_table_[index].index;
+}
+
+void
+BaseRuntime::SetName(const char *name)
+{
+  m_plugin.name = strdup(name);
 }
 
 static cell_t InvalidNative(IPluginContext *pCtx, const cell_t *params)
 {
-	return pCtx->ThrowNativeErrorEx(SP_ERROR_INVALID_NATIVE, "Invalid native");
+  return pCtx->ThrowNativeErrorEx(SP_ERROR_INVALID_NATIVE, "Invalid native");
 }
 
 int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
 {
-	int set_err;
-	char *nameptr;
-	uint8_t sectnum = 0;
-	sp_plugin_t *plugin = m_pPlugin;
-	sp_file_section_t *secptr = (sp_file_section_t *)(base + sizeof(sp_file_hdr_t));
+  char *nameptr;
+  uint8_t sectnum = 0;
+  sp_file_section_t *secptr = (sp_file_section_t *)(base + sizeof(sp_file_hdr_t));
 
-	memset(plugin, 0, sizeof(sp_plugin_t));
+  memset(&m_plugin, 0, sizeof(m_plugin));
 
-	plugin->base = base;
-	plugin->base_size = hdr->imagesize;
-	set_err = SP_ERROR_NONE;
+  m_plugin.base = base;
+  m_plugin.base_size = hdr->imagesize;
 
-	if (hdr->version == 0x0101)
-	{
-		plugin->debug.unpacked = true;
-	}
+  if (hdr->version == 0x0101)
+    m_plugin.debug.unpacked = true;
 
-	/* We have to read the name section first */
-	for (sectnum = 0; sectnum < hdr->sections; sectnum++)
-	{
-		nameptr = (char *)(base + hdr->stringtab + secptr[sectnum].nameoffs);
-		if (strcmp(nameptr, ".names") == 0)
-		{
-			plugin->stringbase = (const char *)(base + secptr[sectnum].dataoffs);
-			break;
-		}
-	}
+  /* We have to read the name section first */
+  for (sectnum = 0; sectnum < hdr->sections; sectnum++) {
+    nameptr = (char *)(base + hdr->stringtab + secptr[sectnum].nameoffs);
+    if (strcmp(nameptr, ".names") == 0) {
+      m_plugin.stringbase = (const char *)(base + secptr[sectnum].dataoffs);
+      break;
+    }
+  }
 
-	sectnum = 0;
+  sectnum = 0;
 
-	/* Now read the rest of the sections */
-	while (sectnum < hdr->sections)
-	{
-		nameptr = (char *)(base + hdr->stringtab + secptr->nameoffs);
+  /* Now read the rest of the sections */
+  while (sectnum < hdr->sections) {
+    nameptr = (char *)(base + hdr->stringtab + secptr->nameoffs);
 
-		if (!(plugin->pcode) && !strcmp(nameptr, ".code"))
-		{
-			sp_file_code_t *cod = (sp_file_code_t *)(base + secptr->dataoffs);
+    if (!(m_plugin.pcode) && !strcmp(nameptr, ".code")) {
+      sp_file_code_t *cod = (sp_file_code_t *)(base + secptr->dataoffs);
 
-			if (cod->codeversion < SP_CODEVERS_JIT1)
-			{
-				return SP_ERROR_CODE_TOO_OLD;
-			}
-			else if (cod->codeversion > SP_CODEVERS_JIT2)
-			{
-				return SP_ERROR_CODE_TOO_NEW;
-			}
+      if (cod->codeversion < SP_CODEVERS_JIT1)
+        return SP_ERROR_CODE_TOO_OLD;
+      if (cod->codeversion > SP_CODEVERS_JIT2)
+        return SP_ERROR_CODE_TOO_NEW;
 
-			plugin->pcode = base + secptr->dataoffs + cod->code;
-			plugin->pcode_size = cod->codesize;
-			plugin->flags = cod->flags;
-			plugin->pcode_version = cod->codeversion;
-		}
-		else if (!(plugin->data) && !strcmp(nameptr, ".data"))
-		{
-			sp_file_data_t *dat = (sp_file_data_t *)(base + secptr->dataoffs);
-			plugin->data = base + secptr->dataoffs + dat->data;
-			plugin->data_size = dat->datasize;
-			plugin->mem_size = dat->memsize;
-			plugin->memory = new uint8_t[plugin->mem_size];
-			memcpy(plugin->memory, plugin->data, plugin->data_size);
-		}
-		else if ((plugin->publics == NULL) && !strcmp(nameptr, ".publics"))
-		{
-			sp_file_publics_t *publics;
+      m_plugin.pcode = base + secptr->dataoffs + cod->code;
+      m_plugin.pcode_size = cod->codesize;
+      m_plugin.flags = cod->flags;
+      m_plugin.pcode_version = cod->codeversion;
+      if (!IsPointerCellAligned(m_plugin.pcode)) {
+        // The JIT requires that pcode is cell-aligned, so if it's not, we
+        // remap the code segment to a new address.
+        alt_pcode_ = new uint8_t[m_plugin.pcode_size];
+        memcpy(alt_pcode_, m_plugin.pcode, m_plugin.pcode_size);
+        assert(IsPointerCellAligned(alt_pcode_));
 
-			publics = (sp_file_publics_t *)(base + secptr->dataoffs);
-			plugin->num_publics = secptr->size / sizeof(sp_file_publics_t);
+        m_plugin.pcode = alt_pcode_;
+      }
+    } else if (!(m_plugin.data) && !strcmp(nameptr, ".data")) {
+      sp_file_data_t *dat = (sp_file_data_t *)(base + secptr->dataoffs);
+      m_plugin.data = base + secptr->dataoffs + dat->data;
+      m_plugin.data_size = dat->datasize;
+      m_plugin.mem_size = dat->memsize;
+      m_plugin.memory = new uint8_t[m_plugin.mem_size];
+      memcpy(m_plugin.memory, m_plugin.data, m_plugin.data_size);
+    } else if ((m_plugin.publics == NULL) && !strcmp(nameptr, ".publics")) {
+      sp_file_publics_t *publics;
 
-			if (plugin->num_publics > 0)
-			{
-				plugin->publics = new sp_public_t[plugin->num_publics];
+      publics = (sp_file_publics_t *)(base + secptr->dataoffs);
+      m_plugin.num_publics = secptr->size / sizeof(sp_file_publics_t);
 
-				for (uint32_t i = 0; i < plugin->num_publics; i++)
-				{
-					plugin->publics[i].code_offs = publics[i].address;
-					plugin->publics[i].funcid = (i << 1) | 1;
-					plugin->publics[i].name = plugin->stringbase + publics[i].name;
-				}
-			}
-		}
-		else if ((plugin->pubvars == NULL) && !strcmp(nameptr, ".pubvars"))
-		{
-			sp_file_pubvars_t *pubvars;
+      if (m_plugin.num_publics > 0) {
+        m_plugin.publics = new sp_public_t[m_plugin.num_publics];
 
-			pubvars = (sp_file_pubvars_t *)(base + secptr->dataoffs);
-			plugin->num_pubvars = secptr->size / sizeof(sp_file_pubvars_t);
+        for (uint32_t i = 0; i < m_plugin.num_publics; i++) {
+          m_plugin.publics[i].code_offs = publics[i].address;
+          m_plugin.publics[i].funcid = (i << 1) | 1;
+          m_plugin.publics[i].name = m_plugin.stringbase + publics[i].name;
+        }
+      }
+    } else if ((m_plugin.pubvars == NULL) && !strcmp(nameptr, ".pubvars")) {
+      sp_file_pubvars_t *pubvars;
 
-			if (plugin->num_pubvars > 0)
-			{
-				plugin->pubvars = new sp_pubvar_t[plugin->num_pubvars];
+      pubvars = (sp_file_pubvars_t *)(base + secptr->dataoffs);
+      m_plugin.num_pubvars = secptr->size / sizeof(sp_file_pubvars_t);
 
-				for (uint32_t i = 0; i < plugin->num_pubvars; i++)
-				{
-					plugin->pubvars[i].name = plugin->stringbase + pubvars[i].name;
-					plugin->pubvars[i].offs = (cell_t *)(plugin->memory + pubvars[i].address);
-				}
-			}
-		}
-		else if ((plugin->natives == NULL) && !strcmp(nameptr, ".natives"))
-		{
-			sp_file_natives_t *natives;
+      if (m_plugin.num_pubvars > 0) {
+        m_plugin.pubvars = new sp_pubvar_t[m_plugin.num_pubvars];
 
-			natives = (sp_file_natives_t *)(base + secptr->dataoffs);
-			plugin->num_natives = secptr->size / sizeof(sp_file_natives_t);
+        for (uint32_t i = 0; i < m_plugin.num_pubvars; i++) {
+          m_plugin.pubvars[i].name = m_plugin.stringbase + pubvars[i].name;
+          m_plugin.pubvars[i].offs = (cell_t *)(m_plugin.memory + pubvars[i].address);
+        }
+      }
+    } else if ((m_plugin.natives == NULL) && !strcmp(nameptr, ".natives")) {
+      sp_file_natives_t *natives;
 
-			if (plugin->num_natives > 0)
-			{
-				plugin->natives = new sp_native_t[plugin->num_natives];
+      natives = (sp_file_natives_t *)(base + secptr->dataoffs);
+      m_plugin.num_natives = secptr->size / sizeof(sp_file_natives_t);
 
-				for (uint32_t i = 0; i < plugin->num_natives; i++)
-				{
-					plugin->natives[i].flags = 0;
-					plugin->natives[i].pfn = InvalidNative;
-					plugin->natives[i].status = SP_NATIVE_UNBOUND;
-					plugin->natives[i].user = NULL;
-					plugin->natives[i].name = plugin->stringbase + natives[i].name;
-				}
-			}
-		}
-		else if (!(plugin->debug.files) && !strcmp(nameptr, ".dbg.files"))
-		{
-			plugin->debug.files = (sp_fdbg_file_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->debug.lines) && !strcmp(nameptr, ".dbg.lines"))
-		{
-			plugin->debug.lines = (sp_fdbg_line_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->debug.symbols) && !strcmp(nameptr, ".dbg.symbols"))
-		{
-			plugin->debug.symbols = (sp_fdbg_symbol_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->debug.lines_num) && !strcmp(nameptr, ".dbg.info"))
-		{
-			sp_fdbg_info_t *inf = (sp_fdbg_info_t *)(base + secptr->dataoffs);
-			plugin->debug.files_num = inf->num_files;
-			plugin->debug.lines_num = inf->num_lines;
-			plugin->debug.syms_num = inf->num_syms;
-		}
-		else if (!(plugin->debug.stringbase) && !strcmp(nameptr, ".dbg.strings"))
-		{
-			plugin->debug.stringbase = (const char *)(base + secptr->dataoffs);
-		}
-		else if (strcmp(nameptr, ".dbg.natives") == 0)
-		{
-			plugin->debug.unpacked = false;
-		}
+      if (m_plugin.num_natives > 0) {
+        m_plugin.natives = new sp_native_t[m_plugin.num_natives];
 
-		secptr++;
-		sectnum++;
-	}
+        for (uint32_t i = 0; i < m_plugin.num_natives; i++) {
+          m_plugin.natives[i].flags = 0;
+          m_plugin.natives[i].pfn = InvalidNative;
+          m_plugin.natives[i].status = SP_NATIVE_UNBOUND;
+          m_plugin.natives[i].user = NULL;
+          m_plugin.natives[i].name = m_plugin.stringbase + natives[i].name;
+        }
+      }
+    } else if (!(m_plugin.debug.files) && !strcmp(nameptr, ".dbg.files")) {
+      m_plugin.debug.files = (sp_fdbg_file_t *)(base + secptr->dataoffs);
+    } else if (!(m_plugin.debug.lines) && !strcmp(nameptr, ".dbg.lines")) {
+      m_plugin.debug.lines = (sp_fdbg_line_t *)(base + secptr->dataoffs);
+    } else if (!(m_plugin.debug.symbols) && !strcmp(nameptr, ".dbg.symbols")) {
+      m_plugin.debug.symbols = (sp_fdbg_symbol_t *)(base + secptr->dataoffs);
+    } else if (!(m_plugin.debug.lines_num) && !strcmp(nameptr, ".dbg.info")) {
+      sp_fdbg_info_t *inf = (sp_fdbg_info_t *)(base + secptr->dataoffs);
+      m_plugin.debug.files_num = inf->num_files;
+      m_plugin.debug.lines_num = inf->num_lines;
+      m_plugin.debug.syms_num = inf->num_syms;
+    } else if (!(m_plugin.debug.stringbase) && !strcmp(nameptr, ".dbg.strings")) {
+      m_plugin.debug.stringbase = (const char *)(base + secptr->dataoffs);
+    } else if (strcmp(nameptr, ".dbg.natives") == 0) {
+      m_plugin.debug.unpacked = false;
+    }
 
-	if (plugin->pcode == NULL || plugin->data == NULL)
-	{
-		return SP_ERROR_FILE_FORMAT;
-	}
+    secptr++;
+    sectnum++;
+  }
 
-	if ((plugin->flags & SP_FLAG_DEBUG) && (
-		!(plugin->debug.files) || 
-		!(plugin->debug.lines) || 
-		!(plugin->debug.symbols) || 
-		!(plugin->debug.stringbase) ))
-	{
-		return SP_ERROR_FILE_FORMAT;
-	}
+  if (m_plugin.pcode == NULL || m_plugin.data == NULL)
+    return SP_ERROR_FILE_FORMAT;
 
-	if (m_pPlugin->num_publics > 0)
-	{
-		m_PubFuncs = new CFunction *[m_pPlugin->num_publics];
-		memset(m_PubFuncs, 0, sizeof(CFunction *) * m_pPlugin->num_publics);
-		m_PubJitFuncs = new JitFunction *[m_pPlugin->num_publics];
-		memset(m_PubJitFuncs, 0, sizeof(JitFunction *) * m_pPlugin->num_publics);
-	}
+  if ((m_plugin.flags & SP_FLAG_DEBUG) && (
+    !(m_plugin.debug.files) || 
+    !(m_plugin.debug.lines) || 
+    !(m_plugin.debug.symbols) || 
+    !(m_plugin.debug.stringbase) ))
+  {
+    return SP_ERROR_FILE_FORMAT;
+  }
 
-	MD5 md5_pcode;
-	md5_pcode.update(plugin->pcode, plugin->pcode_size);
-	md5_pcode.finalize();
-	md5_pcode.raw_digest(m_CodeHash);
-	
-	MD5 md5_data;
-	md5_data.update(plugin->data, plugin->data_size);
-	md5_data.finalize();
-	md5_data.raw_digest(m_DataHash);
+  if (m_plugin.num_publics > 0) {
+    m_PubFuncs = new CFunction *[m_plugin.num_publics];
+    memset(m_PubFuncs, 0, sizeof(CFunction *) * m_plugin.num_publics);
+    m_PubJitFuncs = new JitFunction *[m_plugin.num_publics];
+    memset(m_PubJitFuncs, 0, sizeof(JitFunction *) * m_plugin.num_publics);
+  }
 
-	m_pPlugin->profiler = g_engine2.GetProfiler();
-	m_pCtx = new BaseContext(this);
-	m_pCo = g_Jit.StartCompilation(this);
+  MD5 md5_pcode;
+  md5_pcode.update(m_plugin.pcode, m_plugin.pcode_size);
+  md5_pcode.finalize();
+  md5_pcode.raw_digest(m_CodeHash);
+  
+  MD5 md5_data;
+  md5_data.update(m_plugin.data, m_plugin.data_size);
+  md5_data.finalize();
+  md5_data.raw_digest(m_DataHash);
 
-	return SP_ERROR_NONE;
+  m_plugin.profiler = g_engine2.GetProfiler();
+  m_pCtx = new BaseContext(this);
+  co_ = g_Jit.StartCompilation(this);
+
+  SetupFloatNativeRemapping();
+  function_map_size_ = m_plugin.pcode_size / sizeof(cell_t) + 1;
+  function_map_ = new JitFunction *[function_map_size_];
+  memset(function_map_, 0, function_map_size_ * sizeof(JitFunction *));
+
+  return SP_ERROR_NONE;
 }
 
-int BaseRuntime::FindNativeByName(const char *name, uint32_t *index)
+void
+BaseRuntime::AddJittedFunction(JitFunction *fn)
 {
-	int high;
+  m_JitFunctions.append(fn);
 
-	high = m_pPlugin->num_natives - 1;
+  cell_t pcode_offset = fn->GetPCodeAddress();
+  assert(pcode_offset % 4 == 0);
 
-	for (uint32_t i=0; i<m_pPlugin->num_natives; i++)
-	{
-		if (strcmp(m_pPlugin->natives[i].name, name) == 0)
-		{
-			if (index)
-			{
-				*index = i;
-			}
-			return SP_ERROR_NONE;
-		}
-	}
+  uint32_t pcode_index = pcode_offset / 4;
+  assert(pcode_index < function_map_size_);
 
-	return SP_ERROR_NOT_FOUND;
+  function_map_[pcode_index] = fn;
 }
 
-int BaseRuntime::GetNativeByIndex(uint32_t index, sp_native_t **native)
+JitFunction *
+BaseRuntime::GetJittedFunctionByOffset(cell_t pcode_offset)
 {
-	if (index >= m_pPlugin->num_natives)
-	{
-		return SP_ERROR_INDEX;
-	}
+  assert(pcode_offset % 4 == 0);
 
-	if (native)
-	{
-		*native = &(m_pPlugin->natives[index]);
-	}
+  uint32_t pcode_index = pcode_offset / 4;
+  assert(pcode_index < function_map_size_);
 
-	return SP_ERROR_NONE;
+  return function_map_[pcode_index];
+}
+
+int
+BaseRuntime::FindNativeByName(const char *name, uint32_t *index)
+{
+  for (uint32_t i=0; i<m_plugin.num_natives; i++) {
+    if (strcmp(m_plugin.natives[i].name, name) == 0) {
+      if (index)
+        *index = i;
+      return SP_ERROR_NONE;
+    }
+  }
+
+  return SP_ERROR_NOT_FOUND;
+}
+
+int
+BaseRuntime::GetNativeByIndex(uint32_t index, sp_native_t **native)
+{
+  if (index >= m_plugin.num_natives)
+    return SP_ERROR_INDEX;
+
+  if (native)
+    *native = &(m_plugin.natives[index]);
+
+  return SP_ERROR_NONE;
 }
 
 
-uint32_t BaseRuntime::GetNativesNum()
+uint32_t
+BaseRuntime::GetNativesNum()
 {
-	return m_pPlugin->num_natives;
+  return m_plugin.num_natives;
 }
 
-int BaseRuntime::FindPublicByName(const char *name, uint32_t *index)
+int
+BaseRuntime::FindPublicByName(const char *name, uint32_t *index)
 {
-	int diff, high, low;
-	uint32_t mid;
+  int diff, high, low;
+  uint32_t mid;
 
-	high = m_pPlugin->num_publics - 1;
-	low = 0;
+  high = m_plugin.num_publics - 1;
+  low = 0;
 
-	while (low <= high)
-	{
-		mid = (low + high) / 2;
-		diff = strcmp(m_pPlugin->publics[mid].name, name);
-		if (diff == 0)
-		{
-			if (index)
-			{
-				*index = mid;
-			}
-			return SP_ERROR_NONE;
-		} else if (diff < 0) {
-			low = mid + 1;
-		} else {
-			high = mid - 1;
-		}
-	}
+  while (low <= high) {
+    mid = (low + high) / 2;
+    diff = strcmp(m_plugin.publics[mid].name, name);
+    if (diff == 0) {
+      if (index)
+        *index = mid;
+      return SP_ERROR_NONE;
+    } else if (diff < 0) {
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
 
-	return SP_ERROR_NOT_FOUND;
+  return SP_ERROR_NOT_FOUND;
 }
 
-int BaseRuntime::GetPublicByIndex(uint32_t index, sp_public_t **pblic)
+int
+BaseRuntime::GetPublicByIndex(uint32_t index, sp_public_t **pblic)
 {
-	if (index >= m_pPlugin->num_publics)
-	{
-		return SP_ERROR_INDEX;
-	}
+  if (index >= m_plugin.num_publics)
+    return SP_ERROR_INDEX;
 
-	if (pblic)
-	{
-		*pblic = &(m_pPlugin->publics[index]);
-	}
+  if (pblic)
+    *pblic = &(m_plugin.publics[index]);
 
-	return SP_ERROR_NONE;
+  return SP_ERROR_NONE;
 }
 
-uint32_t BaseRuntime::GetPublicsNum()
+uint32_t
+BaseRuntime::GetPublicsNum()
 {
-	return m_pPlugin->num_publics;
+  return m_plugin.num_publics;
 }
 
-int BaseRuntime::GetPubvarByIndex(uint32_t index, sp_pubvar_t **pubvar)
+int
+BaseRuntime::GetPubvarByIndex(uint32_t index, sp_pubvar_t **pubvar)
 {
-	if (index >= m_pPlugin->num_pubvars)
-	{
-		return SP_ERROR_INDEX;
-	}
+  if (index >= m_plugin.num_pubvars)
+    return SP_ERROR_INDEX;
 
-	if (pubvar)
-	{
-		*pubvar = &(m_pPlugin->pubvars[index]);
-	}
+  if (pubvar)
+    *pubvar = &(m_plugin.pubvars[index]);
 
-	return SP_ERROR_NONE;
+  return SP_ERROR_NONE;
 }
 
-int BaseRuntime::FindPubvarByName(const char *name, uint32_t *index)
+int
+BaseRuntime::FindPubvarByName(const char *name, uint32_t *index)
 {
-	int diff, high, low;
-	uint32_t mid;
+  int diff, high, low;
+  uint32_t mid;
 
-	high = m_pPlugin->num_pubvars - 1;
-	low = 0;
+  high = m_plugin.num_pubvars - 1;
+  low = 0;
 
-	while (low <= high)
-	{
-		mid = (low + high) / 2;
-		diff = strcmp(m_pPlugin->pubvars[mid].name, name);
-		if (diff == 0)
-		{
-			if (index)
-			{
-				*index = mid;
-			}
-			return SP_ERROR_NONE;
-		}
-		else if (diff < 0)
-		{
-			low = mid + 1;
-		}
-		else
-		{
-			high = mid - 1;
-		}
-	}
+  while (low <= high) {
+    mid = (low + high) / 2;
+    diff = strcmp(m_plugin.pubvars[mid].name, name);
+    if (diff == 0) {
+      if (index)
+        *index = mid;
+      return SP_ERROR_NONE;
+    } else if (diff < 0) {
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
 
-	return SP_ERROR_NOT_FOUND;
+  return SP_ERROR_NOT_FOUND;
 }
 
-int BaseRuntime::GetPubvarAddrs(uint32_t index, cell_t *local_addr, cell_t **phys_addr)
+int
+BaseRuntime::GetPubvarAddrs(uint32_t index, cell_t *local_addr, cell_t **phys_addr)
 {
-	if (index >= m_pPlugin->num_pubvars)
-	{
-		return SP_ERROR_INDEX;
-	}
+  if (index >= m_plugin.num_pubvars)
+    return SP_ERROR_INDEX;
 
-	*local_addr = (uint8_t *)m_pPlugin->pubvars[index].offs - m_pPlugin->memory;
-	*phys_addr = m_pPlugin->pubvars[index].offs;
+  *local_addr = (uint8_t *)m_plugin.pubvars[index].offs - m_plugin.memory;
+  *phys_addr = m_plugin.pubvars[index].offs;
 
-	return SP_ERROR_NONE;
+  return SP_ERROR_NONE;
 }
 
-uint32_t BaseRuntime::GetPubVarsNum()
+uint32_t
+BaseRuntime::GetPubVarsNum()
 {
-	return m_pPlugin->num_pubvars;
+  return m_plugin.num_pubvars;
 }
 
-IPluginContext *BaseRuntime::GetDefaultContext()
+IPluginContext *
+BaseRuntime::GetDefaultContext()
 {
-	return m_pCtx;
+  return m_pCtx;
 }
 
-IPluginDebugInfo *BaseRuntime::GetDebugInfo()
+IPluginDebugInfo *
+BaseRuntime::GetDebugInfo()
 {
-	return &m_Debug;
+  return &m_Debug;
 }
 
-IPluginFunction *BaseRuntime::GetFunctionById(funcid_t func_id)
+IPluginFunction *
+BaseRuntime::GetFunctionById(funcid_t func_id)
 {
-	CFunction *pFunc = NULL;
+  CFunction *pFunc = NULL;
 
-	if (func_id & 1)
-	{
-		func_id >>= 1;
-		if (func_id >= m_pPlugin->num_publics)
-		{
-			return NULL;
-		}
-		pFunc = m_PubFuncs[func_id];
-		if (!pFunc)
-		{
-			m_PubFuncs[func_id] = new CFunction(this, 
-				(func_id << 1) | 1,
-				func_id);
-			pFunc = m_PubFuncs[func_id];
-		}
-	}
+  if (func_id & 1) {
+    func_id >>= 1;
+    if (func_id >= m_plugin.num_publics)
+      return NULL;
+    pFunc = m_PubFuncs[func_id];
+    if (!pFunc) {
+      m_PubFuncs[func_id] = new CFunction(this, 
+        (func_id << 1) | 1,
+        func_id);
+      pFunc = m_PubFuncs[func_id];
+    }
+  }
 
-	return pFunc;
+  return pFunc;
 }
 
-IPluginFunction *BaseRuntime::GetFunctionByName(const char *public_name)
+IPluginFunction *
+BaseRuntime::GetFunctionByName(const char *public_name)
 {
-	uint32_t index;
+  uint32_t index;
 
-	if (FindPublicByName(public_name, &index) != SP_ERROR_NONE)
-	{
-		return NULL;
-	}
+  if (FindPublicByName(public_name, &index) != SP_ERROR_NONE)
+    return NULL;
 
-	CFunction *pFunc = m_PubFuncs[index];
-	if (!pFunc)
-	{
-		sp_public_t *pub = NULL;
-		GetPublicByIndex(index, &pub);
-		if (pub)
-		{
-			m_PubFuncs[index] = new CFunction(this, (index << 1) | 1, index);
-		}
-		pFunc = m_PubFuncs[index];
-	}
+  CFunction *pFunc = m_PubFuncs[index];
+  if (!pFunc) {
+    sp_public_t *pub = NULL;
+    GetPublicByIndex(index, &pub);
+    if (pub)
+      m_PubFuncs[index] = new CFunction(this, (index << 1) | 1, index);
+    pFunc = m_PubFuncs[index];
+  }
 
-	return pFunc;
+  return pFunc;
 }
 
 bool BaseRuntime::IsDebugging()
 {
-	return true;
+  return true;
 }
 
 void BaseRuntime::SetPauseState(bool paused)
 {
-	if (paused)
-	{
-		m_pPlugin->run_flags |= SPFLAG_PLUGIN_PAUSED;
-	}
-	else
-	{
-		m_pPlugin->run_flags &= ~SPFLAG_PLUGIN_PAUSED;
-	}
+  if (paused)
+  {
+    m_plugin.run_flags |= SPFLAG_PLUGIN_PAUSED;
+  }
+  else
+  {
+    m_plugin.run_flags &= ~SPFLAG_PLUGIN_PAUSED;
+  }
 }
 
 bool BaseRuntime::IsPaused()
 {
-	return ((m_pPlugin->run_flags & SPFLAG_PLUGIN_PAUSED) == SPFLAG_PLUGIN_PAUSED);
+  return ((m_plugin.run_flags & SPFLAG_PLUGIN_PAUSED) == SPFLAG_PLUGIN_PAUSED);
 }
 
 size_t BaseRuntime::GetMemUsage()
 {
-	size_t mem = 0;
+  size_t mem = 0;
 
-	mem += sizeof(this);
-	mem += sizeof(sp_plugin_t);
-	mem += sizeof(BaseContext);
-	mem += m_pPlugin->base_size;
+  mem += sizeof(this);
+  mem += sizeof(sp_plugin_t);
+  mem += sizeof(BaseContext);
+  mem += m_plugin.base_size;
 
-	return mem;
+  return mem;
 }
 
 unsigned char *BaseRuntime::GetCodeHash()
 {
-	return m_CodeHash;
+  return m_CodeHash;
 }
 
 unsigned char *BaseRuntime::GetDataHash()
 {
-	return m_DataHash;
+  return m_DataHash;
 }
 
 BaseContext *BaseRuntime::GetBaseContext()
 {
-	return m_pCtx;
+  return m_pCtx;
 }
 
-int BaseRuntime::ApplyCompilationOptions(ICompilation *co)
+int
+BaseRuntime::ApplyCompilationOptions(ICompilation *co)
 {
-	if (co == NULL)
-	{
-		return SP_ERROR_NONE;
-	}
+  if (co == NULL)
+    return SP_ERROR_NONE;
 
-	m_pCo = g_Jit.ApplyOptions(m_pCo, co);
-	m_pPlugin->prof_flags = ((CompData *)m_pCo)->profile;
+  co_ = g_Jit.ApplyOptions(co_, co);
+  m_plugin.prof_flags = ((CompData *)co_)->profile;
 
-	return SP_ERROR_NONE;
+  return SP_ERROR_NONE;
 }
 
-JitFunction *BaseRuntime::GetJittedFunction(uint32_t idx)
+int
+BaseRuntime::CreateBlank(uint32_t heastk)
 {
-	assert(idx <= m_NumFuncs);
+  memset(&m_plugin, 0, sizeof(m_plugin));
 
-	if (idx == 0 || idx > m_NumFuncs)
-	{
-		return NULL;
-	}
+  /* Align to cell_t bytes */
+  heastk += sizeof(cell_t);
+  heastk -= heastk % sizeof(cell_t);
 
-	return m_FuncCache[idx - 1];
-}
+  m_plugin.mem_size = heastk;
+  m_plugin.memory = new uint8_t[heastk];
 
-uint32_t BaseRuntime::AddJittedFunction(JitFunction *fn)
-{
-	if (m_NumFuncs + 1 > m_MaxFuncs)
-	{
-		if (m_MaxFuncs == 0)
-		{
-			m_MaxFuncs = 8;
-		}
-		else
-		{
-			m_MaxFuncs *= 2;
-		}
+  m_plugin.profiler = g_engine2.GetProfiler();
+  m_pCtx = new BaseContext(this);
+  co_ = g_Jit.StartCompilation(this);
 
-		m_FuncCache = (JitFunction **)realloc(
-			m_FuncCache,
-			sizeof(JitFunction *) * m_MaxFuncs);
-	}
-
-	m_FuncCache[m_NumFuncs++] = fn;
-
-	return m_NumFuncs;
-}
-
-int BaseRuntime::CreateBlank(uint32_t heastk)
-{
-	memset(m_pPlugin, 0, sizeof(sp_plugin_t));
-
-	/* Align to cell_t bytes */
-	heastk += sizeof(cell_t);
-	heastk -= heastk % sizeof(cell_t);
-
-	m_pPlugin->mem_size = heastk;
-	m_pPlugin->memory = new uint8_t[heastk];
-
-	m_pPlugin->profiler = g_engine2.GetProfiler();
-	m_pCtx = new BaseContext(this);
-	m_pCo = g_Jit.StartCompilation(this);
-
-	return SP_ERROR_NONE;
+  return SP_ERROR_NONE;
 }

@@ -58,7 +58,7 @@ SourcePawnEngine g_engine1;
 
 using namespace SourcePawn;
 
-#define ERROR_MESSAGE_MAX		25
+#define ERROR_MESSAGE_MAX		29
 static const char *g_ErrorMsgTable[] = 
 {
 	NULL,
@@ -89,6 +89,8 @@ static const char *g_ErrorMsgTable[] =
 	"Call was aborted",
 	"Plugin format is too old",
 	"Plugin format is too new",
+    "Out of memory",
+    "Integer overflow"
 };
 
 const char *SourcePawnEngine::GetErrorString(int error)

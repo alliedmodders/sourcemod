@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 et:
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -35,164 +35,180 @@
 #include <sp_vm_types.h>
 #include <sp_vm_api.h>
 #include <KeCodeAllocator.h>
-#include "jit_helpers.h"
+#include <assembler-x86.h>
+#include <ke_vector.h>
 #include "jit_shared.h"
 #include "BaseRuntime.h"
 #include "jit_function.h"
+#include "opcodes.h"
 
 using namespace SourcePawn;
 
-#define JIT_INLINE_ERRORCHECKS		(1<<0)
-#define JIT_INLINE_NATIVES			(1<<1)
-#define STACK_MARGIN				64			//8 parameters of safety, I guess
-#define JIT_FUNCMAGIC				0x214D4148	//magic function offset
+#define JIT_INLINE_ERRORCHECKS  (1<<0)
+#define JIT_INLINE_NATIVES      (1<<1)
+#define STACK_MARGIN            64      //8 parameters of safety, I guess
+#define JIT_FUNCMAGIC           0x214D4148  //magic function offset
 
-#define JITVARS_TRACKER				0		//important: don't change this to avoid trouble
-#define JITVARS_BASECTX				1		//important: don't change this aWOAWOGJQG I LIKE HAM
-#define JITVARS_PROFILER			2		//profiler
-#define JITVARS_PLUGIN				3		//sp_plugin_t
+#define JITVARS_TRACKER         0    //important: don't change this to avoid trouble
+#define JITVARS_BASECTX         1    //important: don't change this aWOAWOGJQG I LIKE HAM
+#define JITVARS_PROFILER        2    //profiler
+#define JITVARS_PLUGIN          3    //sp_plugin_t
 
-#define sDIMEN_MAX					5		//this must mirror what the compiler has.
+#define sDIMEN_MAX              5    //this must mirror what the compiler has.
 
 #define GET_CONTEXT(c)  ((IPluginContext *)c->vm[JITVARS_BASECTX])
 
 typedef struct tracker_s
 {
-	size_t size; 
-	ucell_t *pBase; 
-	ucell_t *pCur;
+  size_t size; 
+  ucell_t *pBase; 
+  ucell_t *pCur;
 } tracker_t;
 
 typedef struct funcinfo_s
 {
-	unsigned int magic;
-	unsigned int index;
+  unsigned int magic;
+  unsigned int index;
 } funcinfo_t;
 
 typedef struct functracker_s
 {
-	unsigned int num_functions;
-	unsigned int code_size;
+  unsigned int num_functions;
+  unsigned int code_size;
 } functracker_t;
 
-struct floattbl_t
+struct CallThunk
 {
-	floattbl_t()
-	{
-		found = false;
-		index = 0;
-	}
-	bool found;
-	unsigned int index;
-};
+  Label call;
+  cell_t pcode_offset;
 
-struct call_thunk_t
-{
-	jitoffs_t patch_addr;
-	cell_t pcode_offs;
-	jitoffs_t thunk_addr;
+  CallThunk(cell_t pcode_offset)
+    : pcode_offset(pcode_offset)
+  {
+  }
 };
 
 class CompData : public ICompilation
 {
 public:
-	CompData() 
-	:	runtime(NULL),
-		plugin(NULL),
-		rebase(NULL),
-		jit_float_table(NULL),
-		profile(0),
-		inline_level(0),
-		error_set(SP_ERROR_NONE),
-		num_thunks(0),
-		max_thunks(0),
-		thunks(NULL)
-	{
-	};
-	bool SetOption(const char *key, const char *val);
-	void SetRuntime(BaseRuntime *runtime);
-	void Abort();
+  CompData() 
+  : profile(0),
+    inline_level(0)
+  {
+  };
+  bool SetOption(const char *key, const char *val);
+  void Abort();
 public:
-	BaseRuntime *runtime;			/* runtime handle */
-	sp_plugin_t *plugin;			/* plugin handle */
-	uint8_t *rebase;				/* relocation map */
-	floattbl_t *jit_float_table;
-	cell_t cur_func;				/* current func pcode offset */
-	/* Options */
-	int profile;					/* profiling flags */
-	int inline_level;				/* inline optimization level */
-	/* Per-compilation properties */
-	int error_set;					/* error code to halt process */
-	unsigned int func_idx;			/* current function index */
-	jitoffs_t jit_error_bounds;
-	jitoffs_t jit_error_divzero;
-	jitoffs_t jit_error_stacklow;
-	jitoffs_t jit_error_stackmin;
-	jitoffs_t jit_error_memaccess;
-	jitoffs_t jit_error_heaplow;
-	jitoffs_t jit_error_heapmin;
-	jitoffs_t jit_extern_error;		/* returning generic error */
-	jitoffs_t jit_sysreq_c;			/* old version! */
-	uint32_t num_thunks;			/* number of thunks needed */
-	uint32_t max_thunks;			/* maximum number of thunks */
-	call_thunk_t *thunks;			/* thunk array */
+  cell_t cur_func;            /* current func pcode offset */
+  /* Options */
+  int profile;                /* profiling flags */
+  int inline_level;           /* inline optimization level */
+  /* Per-compilation properties */
+  unsigned int func_idx;      /* current function index */
+};
+
+class Compiler
+{
+ public:
+  Compiler(BaseRuntime *rt, cell_t pcode_offs);
+  ~Compiler();
+
+  JitFunction *emit(int *errp);
+
+ private:
+  bool setup(cell_t pcode_offs);
+  bool emitOp(OPCODE op);
+  cell_t readCell();
+
+ private:
+  Label *labelAt(size_t offset);
+  bool emitCall();
+  bool emitNativeCall(OPCODE op);
+  bool emitSwitch();
+  void emitGenArray(bool autozero);
+  void emitCallThunks();
+  void emitCheckAddress(Register reg);
+  void emitErrorPath(Label *dest, int code);
+  void emitErrorPaths();
+
+ private:
+  AssemblerX86 masm;
+  BaseRuntime *rt_;
+  const sp_plugin_t *plugin_;
+  int error_;
+  uint32_t pcode_start_;
+  cell_t *code_start_;
+  cell_t *cip_;
+  cell_t *code_end_;
+  Label *jump_map_;
+
+  // Errors
+  Label error_bounds_;
+  Label error_heap_low_;
+  Label error_heap_min_;
+  Label error_stack_low_;
+  Label error_stack_min_;
+  Label error_divide_by_zero_;
+  Label error_memaccess_;
+  Label error_integer_overflow_;
+  Label extern_error_;
+
+  ke::Vector<CallThunk *> thunks_; //:TODO: free
 };
 
 class JITX86
 {
-public:
-	JITX86();
-public:
-	bool InitializeJIT();
-	void ShutdownJIT();
-	ICompilation *StartCompilation(BaseRuntime *runtime);
-	ICompilation *StartCompilation();
-	void SetupContextVars(BaseRuntime *runtime, BaseContext *pCtx, sp_context_t *ctx);
-	void FreeContextVars(sp_context_t *ctx);
-	SPVM_NATIVE_FUNC CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData);
-	void DestroyFakeNative(SPVM_NATIVE_FUNC func);
-	JitFunction *CompileFunction(BaseRuntime *runtime, cell_t pcode_offs, int *err);
-	ICompilation *ApplyOptions(ICompilation *_IN, ICompilation *_OUT);
-	int InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result);
-public:
-	void *GetGenArrayIntrinsic();
-	void *GetReturnPoint();
-	void *GetRoundingTable();
-	void *AllocCode(size_t size);
-	void FreeCode(void *code);
-private:
-	void *m_pJitEntry;				/* Entry function */
-	void *m_pJitReturn;				/* Return point for errors */
-	int m_RoundTable[3];			/* [-1, 0, 1] rounding table */
-	void *m_pJitGenArray;			/* Generates an array */
+ public:
+  JITX86();
+
+ public:
+  bool InitializeJIT();
+  void ShutdownJIT();
+  ICompilation *StartCompilation(BaseRuntime *runtime);
+  ICompilation *StartCompilation();
+  void SetupContextVars(BaseRuntime *runtime, BaseContext *pCtx, sp_context_t *ctx);
+  void FreeContextVars(sp_context_t *ctx);
+  SPVM_NATIVE_FUNC CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData);
+  void DestroyFakeNative(SPVM_NATIVE_FUNC func);
+  JitFunction *CompileFunction(BaseRuntime *runtime, cell_t pcode_offs, int *err);
+  ICompilation *ApplyOptions(ICompilation *_IN, ICompilation *_OUT);
+  int InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result);
+
+ public:
+  ExternalAddress GetGenArrayIntrinsic() {
+      return ExternalAddress(m_pJitGenArray);
+  }
+  ExternalAddress GetUniversalReturn() {
+      return ExternalAddress(m_pJitReturn);
+  }
+  void *AllocCode(size_t size);
+  void FreeCode(void *code);
+
+ private:
+  void *m_pJitEntry;         /* Entry function */
+  void *m_pJitReturn;        /* Universal return address */
+  void *m_pJitGenArray;      /* Generates an array */
 };
 
-cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params);
-cell_t NativeCallback_Profile(sp_context_t *ctx, ucell_t native_idx, cell_t *params);
-uint32_t FuncLookup(CompData *data, cell_t pcode_offs);
-jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative=false);
-void *CompileThunk(BaseRuntime *runtime, cell_t pcode_ffs, void *jmploc_addr);
+const Register pri = eax;
+const Register alt = edx;
+const Register stk = edi;
+const Register dat = ebp;
+const Register tmp = ecx;
+const Register info = esi;
+const Register frm = ebx;
 
-#define AMX_REG_PRI		REG_EAX
-#define AMX_REG_ALT		REG_EDX
-#define AMX_REG_STK		REG_EDI
-#define AMX_REG_DAT		REG_EBP
-#define AMX_REG_TMP		REG_ECX
-#define AMX_REG_INFO	REG_ESI
-#define AMX_REG_FRM		REG_EBX
+#define AMX_NUM_INFO_VARS  9
 
-#define AMX_NUM_INFO_VARS	9
-
-#define AMX_INFO_FRM		AMX_REG_INFO	//not relocated
-#define AMX_INFO_FRAME		0				//(same thing as above) 
-#define AMX_INFO_HEAP		4				//not relocated
-#define AMX_INFO_RETVAL		8				//physical
-#define AMX_INFO_CONTEXT	12				//physical
-#define AMX_INFO_STACKTOP	16				//relocated
-#define AMX_INFO_CIP		20				//pcode CIP
-#define AMX_INFO_DATASIZE	24				//plugin->data_size
-#define AMX_INFO_MEMORY		28				//plugin->memory
-#define AMX_INFO_NSTACK		32				//native stack
+#define AMX_INFO_FRAME       0        //(same thing as above) 
+#define AMX_INFO_HEAP        4        //not relocated
+#define AMX_INFO_RETVAL      8        //physical
+#define AMX_INFO_CONTEXT    12        //physical
+#define AMX_INFO_STACKTOP   16        //relocated
+#define AMX_INFO_CIP        20        //pcode CIP
+#define AMX_INFO_DATASIZE   24        //plugin->data_size
+#define AMX_INFO_MEMORY     28        //plugin->memory
+#define AMX_INFO_NSTACK     32        //native stack
 
 extern Knight::KeCodeCache *g_pCodeCache;
 extern JITX86 g_Jit;

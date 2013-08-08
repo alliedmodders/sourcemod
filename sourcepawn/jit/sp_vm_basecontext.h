@@ -100,7 +100,6 @@ private:
 	void SetErrorMessage(const char *msg, va_list ap);
 	void _SetErrorMessage(const char *msg, ...);
 private:
-	sp_plugin_t *m_pPlugin;
 	cell_t *m_pNullVec;
 	cell_t *m_pNullString;
 	char m_MsgCache[1024];

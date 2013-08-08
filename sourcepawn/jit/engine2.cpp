@@ -106,19 +106,19 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 		#endif
 		)
 		{
-			pRuntime->m_pPlugin->name = strdup(&file[i+1]);
+			pRuntime->SetName(&file[i+1]);
 			break;
 		}
 	}
 
-	if (pRuntime->m_pPlugin->name == NULL)
+	if (!pRuntime->plugin()->name)
 	{
-		pRuntime->m_pPlugin->name = strdup(file);
+		pRuntime->SetName(file);
 	}
 
 	pRuntime->ApplyCompilationOptions(co);
 
-    fclose(fp);
+	fclose(fp);
 
 	return pRuntime;
 
@@ -204,7 +204,7 @@ IPluginRuntime *SourcePawnEngine2::CreateEmptyRuntime(const char *name, uint32_t
 		return NULL;
 	}
 
-	rt->m_pPlugin->name = strdup(name != NULL ? name : "<anonymous>");
+	rt->SetName(name != NULL ? name : "<anonymous>");
 
 	rt->ApplyCompilationOptions(NULL);
 	

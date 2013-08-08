@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourcePawn
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -85,6 +85,8 @@ typedef uint32_t	funcid_t;			/**< Function index code */
 #define SP_ERROR_ABORTED				25	/**< Function call was aborted */
 #define SP_ERROR_CODE_TOO_OLD			26	/**< Code is too old for this VM */
 #define SP_ERROR_CODE_TOO_NEW			27	/**< Code is too new for this VM */
+#define SP_ERROR_OUT_OF_MEMORY			28  /**< Out of memory */
+#define SP_ERROR_INTEGER_OVERFLOW		29	/**< Integer overflow (-INT_MIN / -1) */
 //Hey you! Update the string table if you add to the end of me! */
 
 /**********************************************
