@@ -150,6 +150,7 @@ class SM:
 					self.compiler.AddToListVar('CXXFLAGS', '-fvisibility-inlines-hidden')
 				self.compiler.AddToListVar('CFLAGS', '-Wall')
 				self.compiler.AddToListVar('CFLAGS', '-Werror')
+				self.compiler.AddToListVar('CFLAGS', '-Wno-narrowing')
 				self.compiler.AddToListVar('CFLAGS', '-Wno-uninitialized')
 				self.compiler.AddToListVar('CFLAGS', '-Wno-unused')
 				self.compiler.AddToListVar('CFLAGS', '-Wno-switch')
