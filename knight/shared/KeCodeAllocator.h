@@ -2,7 +2,8 @@
 #define _INCLUDE_KNIGHT_KE_CODE_ALLOCATOR_H_
 
 #include <KeLinking.h>
-#include <KeStdTypes.h>
+#include <stddef.h>
+#include <stdint.h>
 
 namespace Knight
 {

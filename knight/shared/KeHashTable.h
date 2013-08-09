@@ -1,7 +1,8 @@
 #ifndef _INCLUDE_KNIGHT_KE_HASHTABLE_H_
 #define _INCLUDE_KNIGHT_KE_HASHTABLE_H_
 
-#include <KeStdTypes.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <KnightAllocator.h>
 
 namespace Knight

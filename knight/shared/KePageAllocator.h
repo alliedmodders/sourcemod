@@ -1,7 +1,8 @@
 #ifndef _INCLUDE_KNIGHT_KE_PAGE_ALLOCATOR_H_
 #define _INCLUDE_KNIGHT_KE_PAGE_ALLOCATOR_H_
 
-#include <KeStdTypes.h>
+#include <stddef.h>
+#include <stdint.h>
 
 namespace Knight
 {
