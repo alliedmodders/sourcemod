@@ -40,21 +40,7 @@
  */
 
 #include <stddef.h>
-#if defined __GNUC__ || defined HAVE_STDINT_
 #include <stdint.h>
-#else
- #if !defined HAVE_STDINT_H
-	typedef unsigned __int64	uint64_t;		/**< 64bit unsigned integer */
-	typedef __int64				int64_t;		/**< 64bit signed integer */
-	typedef unsigned __int32	uint32_t;		/**< 32bit unsigned integer */
-	typedef __int32				int32_t;		/**< 32bit signed integer */
-	typedef unsigned __int16	uint16_t;		/**< 16bit unsigned integer */
-	typedef __int16				int16_t;		/**< 16bit signed integer */
-	typedef unsigned __int8		uint8_t;		/**< 8bit unsigned integer */
-	typedef __int8				int8_t;			/**< 8bit signed integer */
- #define HAVE_STDINT_H
- #endif
-#endif
 
 #define SPFILE_MAGIC	0x53504646		/**< Source Pawn File Format (SPFF) */
 #define SPFILE_VERSION	0x0102			/**< File format version */
