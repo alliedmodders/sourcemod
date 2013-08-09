@@ -34,6 +34,7 @@ OBJECTS = dll_exports.cpp 	\
 	zlib/zutil.c		\
 
 OBJECTS += ../../knight/shared/KeCodeAllocator.cpp
+OBJECTS += ../../public/jit/x86/assembler-x86.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -75,6 +76,7 @@ ifeq "$(GCC_VERSION)" "4"
 endif
 
 OBJ_LINUX := $(OBJECTS:../../knight/shared/%.cpp=$(BIN_DIR)/knight/%.o)
+OBJ_LINUX := $(OBJ_LINUX:../../public/jit/x86/%.cpp=$(BIN_DIR)/%.o)
 OBJ_LINUX := $(OBJ_LINUX:%.cpp=$(BIN_DIR)/%.o)
 OBJ_LINUX := $(OBJ_LINUX:%.c=$(BIN_DIR)/%.o)
 
@@ -87,6 +89,9 @@ $(BIN_DIR)/%.o: %.cpp
 	$(CXX) $(INCLUDE) $(CFLAGS) $(CXXFLAGS) -o $@ -c $<
 
 $(BIN_DIR)/knight/%.o: ../../knight/shared/%.cpp
+	$(CXX) $(INCLUDE) $(CFLAGS) $(CXXFLAGS) -o $@ -c $<
+
+$(BIN_DIR)/assembler-x86.o: ../../public/jit/x86/assembler-x86.cpp
 	$(CXX) $(INCLUDE) $(CFLAGS) $(CXXFLAGS) -o $@ -c $<
 
 all:

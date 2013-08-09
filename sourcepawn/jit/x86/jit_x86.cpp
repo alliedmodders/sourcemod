@@ -983,10 +983,15 @@ Compiler::emitOp(OPCODE op)
       break;
 
     case OP_FLOAT:
-      __ fild32(Operand(edi, 0));
-      __ subl(esp, 4);
-      __ fstp32(Operand(esp, 0));
-      __ pop(pri);
+      if (MacroAssemblerX86::Features().sse2) {
+        __ cvtsi2ss(xmm0, Operand(edi, 0));
+        __ movd(pri, xmm0);
+      } else {
+        __ fild32(Operand(edi, 0));
+        __ subl(esp, 4);
+        __ fstp32(Operand(esp, 0));
+        __ pop(pri);
+      }
       __ addl(stk, 4);
       break;
 
@@ -994,34 +999,52 @@ Compiler::emitOp(OPCODE op)
     case OP_FLOATSUB:
     case OP_FLOATMUL:
     case OP_FLOATDIV:
-      __ subl(esp, 4);
-      __ fld32(Operand(edi, 0));
+      if (MacroAssemblerX86::Features().sse2) {
+        __ movss(xmm0, Operand(stk, 0));
+        if (op == OP_FLOATADD)
+          __ addss(xmm0, Operand(stk, 4));
+        else if (op == OP_FLOATSUB)
+          __ subss(xmm0, Operand(stk, 4));
+        else if (op == OP_FLOATMUL)
+          __ mulss(xmm0, Operand(stk, 4));
+        else if (op == OP_FLOATDIV)
+          __ divss(xmm0, Operand(stk, 4));
+        __ movd(pri, xmm0);
+      } else {
+        __ subl(esp, 4);
+        __ fld32(Operand(stk, 0));
 
-      if (op == OP_FLOATADD)
-        __ fadd32(Operand(edi, 4));
-      else if (op == OP_FLOATSUB)
-        __ fsub32(Operand(edi, 4));
-      else if (op == OP_FLOATMUL)
-        __ fmul32(Operand(edi, 4));
-      else if (op == OP_FLOATDIV)
-        __ fdiv32(Operand(edi, 4));
+        if (op == OP_FLOATADD)
+          __ fadd32(Operand(stk, 4));
+        else if (op == OP_FLOATSUB)
+          __ fsub32(Operand(stk, 4));
+        else if (op == OP_FLOATMUL)
+          __ fmul32(Operand(stk, 4));
+        else if (op == OP_FLOATDIV)
+          __ fdiv32(Operand(stk, 4));
 
-      __ fstp32(Operand(esp, 0));
-      __ pop(pri);
+        __ fstp32(Operand(esp, 0));
+        __ pop(pri);
+      }
       __ addl(stk, 8);
       break;
 
     case OP_RND_TO_NEAREST:
     {
-      static float kRoundToNearest = 0.5f;
-      // From http://wurstcaptures.untergrund.net/assembler_tricks.html#fastfloorf
-      __ fld32(Operand(edi, 0));
-      __ fadd32(st0, st0);
-      __ fadd32(Operand(ExternalAddress(&kRoundToNearest)));
-      __ subl(esp, 4);
-      __ fistp32(Operand(esp, 0));
-      __ pop(pri);
-      __ sarl(pri, 1);
+      if (MacroAssemblerX86::Features().sse) {
+        // Assume no one is touching MXCSR.
+        __ cvtss2si(pri, Operand(stk, 0));
+      } else {
+        static float kRoundToNearest = 0.5f;
+        // From http://wurstcaptures.untergrund.net/assembler_tricks.html#fastfloorf
+        __ fld32(Operand(stk, 0));
+        __ fadd32(st0, st0);
+        __ fadd32(Operand(ExternalAddress(&kRoundToNearest)));
+        __ subl(esp, 4);
+        __ fistp32(Operand(esp, 0));
+        __ pop(pri);
+        __ sarl(pri, 1);
+      }
       __ addl(stk, 4);
       break;
     }
@@ -1030,7 +1053,7 @@ Compiler::emitOp(OPCODE op)
     {
       static float kRoundToCeil = -0.5f;
       // From http://wurstcaptures.untergrund.net/assembler_tricks.html#fastfloorf
-      __ fld32(Operand(edi, 0));
+      __ fld32(Operand(stk, 0));
       __ fadd32(st0, st0);
       __ fsubr32(Operand(ExternalAddress(&kRoundToCeil)));
       __ subl(esp, 4);
@@ -1043,15 +1066,19 @@ Compiler::emitOp(OPCODE op)
     }
 
     case OP_RND_TO_ZERO:
-      __ fld32(Operand(edi, 0));
-      __ subl(esp, 8);
-      __ fstcw(Operand(esp, 4));
-      __ movl(Operand(esp, 0), 0xfff);
-      __ fldcw(Operand(esp, 0));
-      __ fistp32(Operand(esp, 0));
-      __ pop(pri);
-      __ fldcw(Operand(esp, 0));
-      __ addl(esp, 4);
+      if (MacroAssemblerX86::Features().sse) {
+        __ cvttss2si(pri, Operand(stk, 0));
+      } else {
+        __ fld32(Operand(stk, 0));
+        __ subl(esp, 8);
+        __ fstcw(Operand(esp, 4));
+        __ movl(Operand(esp, 0), 0xfff);
+        __ fldcw(Operand(esp, 0));
+        __ fistp32(Operand(esp, 0));
+        __ pop(pri);
+        __ fldcw(Operand(esp, 0));
+        __ addl(esp, 4);
+      }
       __ addl(stk, 4);
       break;
 
@@ -1071,10 +1098,15 @@ Compiler::emitOp(OPCODE op)
     case OP_FLOATCMP:
     {
       Label bl, ab, done;
-      __ fld32(Operand(edi, 0));
-      __ fld32(Operand(edi, 4));
-      __ fucomip(st1);
-      __ fstp(st0);
+      if (MacroAssemblerX86::Features().sse) {
+        __ movss(xmm0, Operand(stk, 4));
+        __ ucomiss(xmm0, Operand(stk, 0));
+      } else {
+        __ fld32(Operand(stk, 0));
+        __ fld32(Operand(stk, 4));
+        __ fucomip(st1);
+        __ fstp(st0);
+      }
       __ j(above, &ab);
       __ j(below, &bl);
       __ xorl(pri, pri);
@@ -1868,6 +1900,14 @@ bool JITX86::InitializeJIT()
   m_pJitGenArray = GenerateGenArrayIntrinsic(m_pJitReturn);
   if (!m_pJitGenArray)
     return false;
+
+  MacroAssemblerX86 masm;
+  MacroAssemblerX86::GenerateFeatureDetection(masm);
+  void *code = LinkCode(masm);
+  if (!code)
+    return false;
+  MacroAssemblerX86::RunFeatureDetection(code);
+  KE_FreeCode(g_pCodeCache, code);
 
   return true;
 }

@@ -94,6 +94,25 @@ struct FloatRegister
   }
 };
 
+struct CPUFeatures
+{
+  CPUFeatures()
+  {
+    memset(this, 0, sizeof(*this));
+  }
+
+  bool fpu;
+  bool mmx;
+  bool sse;
+  bool sse2;
+  bool sse3;
+  bool ssse3;
+  bool sse4_1;
+  bool sse4_2;
+  bool avx;
+  bool avx2;
+};
+
 const Register eax = { 0 };
 const Register ecx = { 1 };
 const Register edx = { 2 };
@@ -299,7 +318,19 @@ struct Operand
 
 class AssemblerX86 : public Assembler
 {
+ private:
+  // List of processor features; to be used, this must be filled in at
+  // startup.
+  static CPUFeatures X86Features; 
+
  public:
+  static void SetFeatures(const CPUFeatures &features) {
+    X86Features = features;
+  }
+  static const CPUFeatures &Features() {
+    return X86Features;
+  }
+
   void movl(Register dest, Register src) {
     emit1(0x89, src.code, dest.code);
   }
@@ -712,6 +743,74 @@ class AssemblerX86 : public Assembler
       outOfMemory_ = true;
   }
 
+  void cpuid() {
+    emit2(0x0f, 0xa2);
+  }
+
+
+  // SSE operations can only be used if the feature detection function has
+  // been run *and* detected the appropriate level of functionality.
+  void movss(FloatRegister dest, const Operand &src) {
+    assert(Features().sse);
+    emit3(0xf3, 0x0f, 0x10, dest.code, src);
+  }
+  void cvttss2si(Register dest, Register src) {
+    assert(Features().sse);
+    emit3(0xf3, 0x0f, 0x2c, dest.code, src.code);
+  }
+  void cvttss2si(Register dest, const Operand &src) {
+    assert(Features().sse);
+    emit3(0xf3, 0x0f, 0x2c, dest.code, src);
+  }
+  void cvtss2si(Register dest, Register src) {
+    assert(Features().sse);
+    emit3(0xf3, 0x0f, 0x2d, dest.code, src.code);
+  }
+  void cvtss2si(Register dest, const Operand &src) {
+    assert(Features().sse);
+    emit3(0xf3, 0x0f, 0x2d, dest.code, src);
+  }
+  void cvtsi2ss(FloatRegister dest, Register src) {
+    assert(Features().sse);
+    emit3(0xf3, 0x0f, 0x2a, dest.code, src.code);
+  }
+  void cvtsi2ss(FloatRegister dest, const Operand &src) {
+    assert(Features().sse);
+    emit3(0xf3, 0x0f, 0x2a, dest.code, src);
+  }
+  void addss(FloatRegister dest, const Operand &src) {
+    assert(Features().sse);
+    emit3(0xf3, 0x0f, 0x58, dest.code, src);
+  }
+  void subss(FloatRegister dest, const Operand &src) {
+    assert(Features().sse);
+    emit3(0xf3, 0x0f, 0x5c, dest.code, src);
+  }
+  void mulss(FloatRegister dest, const Operand &src) {
+    assert(Features().sse);
+    emit3(0xf3, 0x0f, 0x59, dest.code, src);
+  }
+  void divss(FloatRegister dest, const Operand &src) {
+    assert(Features().sse);
+    emit3(0xf3, 0x0f, 0x5e, dest.code, src);
+  }
+  void ucomiss(FloatRegister left, Register right) {
+    emit2(0x0f, 0x2e, left.code, right.code);
+  }
+  void ucomiss(FloatRegister left, const Operand &right) {
+    emit2(0x0f, 0x2e, left.code, right);
+  }
+
+  // SSE2-only instructions.
+  void movd(Register dest, FloatRegister src) {
+    assert(Features().sse2);
+    emit3(0x66, 0x0f, 0x7e, dest.code, src.code);
+  }
+  void movd(Register dest, const Operand &src) {
+    assert(Features().sse2);
+    emit3(0x66, 0x0f, 0x7e, dest.code, src);
+  }
+
   static void PatchRel32Absolute(uint8_t *ip, void *ptr) {
     int32_t delta = uint32_t(ptr) - uint32_t(ip);
     *reinterpret_cast<int32_t *>(ip - 4) = delta;
@@ -803,6 +902,22 @@ class AssemblerX86 : public Assembler
   }
   void emit2(uint8_t prefix, uint8_t opcode, uint8_t reg, const Operand &operand) {
     emit2(prefix, opcode);
+    emit(reg, operand);
+  }
+
+  void emit3(uint8_t prefix1, uint8_t prefix2, uint8_t opcode) {
+    ensureSpace();
+    *pos_++ = prefix1;
+    *pos_++ = prefix2;
+    *pos_++ = opcode;
+  }
+  void emit3(uint8_t prefix1, uint8_t prefix2, uint8_t opcode, uint8_t reg, uint8_t opreg) {
+    emit3(prefix1, prefix2, opcode);
+    assert(reg <= 7);
+    *pos_++ = (kModeReg << 6) | (reg << 3) | opreg;
+  }
+  void emit3(uint8_t prefix1, uint8_t prefix2, uint8_t opcode, uint8_t reg, const Operand &operand) {
+    emit3(prefix1, prefix2, opcode);
     emit(reg, operand);
   }
 

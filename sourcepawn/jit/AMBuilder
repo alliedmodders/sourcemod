@@ -37,7 +37,8 @@ binary.AddSourceFiles('sourcepawn/jit', [
 	'zlib/uncompr.c',
 	'zlib/zutil.c',
 	'md5/md5.cpp',
-	'../../knight/shared/KeCodeAllocator.cpp'
+	'../../knight/shared/KeCodeAllocator.cpp',
+	'../../public/jit/x86/assembler-x86.cpp'
 	])
 SM.AutoVersion('sourcepawn/jit', binary)
 SM.ExtractDebugInfo(extension, binary)

@@ -35,7 +35,7 @@
 #include <sp_vm_types.h>
 #include <sp_vm_api.h>
 #include <KeCodeAllocator.h>
-#include <assembler-x86.h>
+#include <macro-assembler-x86.h>
 #include <ke_vector.h>
 #include "jit_shared.h"
 #include "BaseRuntime.h"
