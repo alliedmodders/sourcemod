@@ -44,7 +44,10 @@ for i in SM.sdkInfo:
 			except:
 				extension.AddCommand(SymlinkCommand(link, target))
 		elif AMBuild.target['platform'] == 'windows':
-			libPath = os.path.join(AMBuild.cache[sdk['sdk']], 'lib', 'win32', 'release', 'vs2010', 'libprotobuf.lib')
+			if 'DEBUG' in compiler['CDEFINES']:
+				libPath = os.path.join(AMBuild.cache[sdk['sdk']], 'lib', 'win32', 'debug', 'vs2010', 'libprotobuf.lib')
+			else:
+				libPath = os.path.join(AMBuild.cache[sdk['sdk']], 'lib', 'win32', 'release', 'vs2010', 'libprotobuf.lib')
 			binary.RebuildIfNewer(libPath)
 			binary['POSTLINKFLAGS'].append(libPath)
 

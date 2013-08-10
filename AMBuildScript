@@ -179,6 +179,7 @@ class SM:
 				self.compiler.AddToListVar('CDEFINES', '_CRT_SECURE_NO_DEPRECATE')
 				self.compiler.AddToListVar('CDEFINES', '_CRT_SECURE_NO_WARNINGS')
 				self.compiler.AddToListVar('CDEFINES', '_CRT_NONSTDC_NO_DEPRECATE')
+				self.compiler.AddToListVar('CDEFINES', '_ITERATOR_DEBUG_LEVEL=0')
 				self.compiler.AddToListVar('CXXFLAGS', '/EHsc')
 				self.compiler.AddToListVar('CXXFLAGS', '/GR-')
 				self.compiler.AddToListVar('CFLAGS', '/W3')
