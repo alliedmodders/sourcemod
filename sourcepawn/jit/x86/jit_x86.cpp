@@ -1304,8 +1304,8 @@ Compiler::emitOp(OPCODE op)
 
     case OP_HALT:
       __ align(16);
-      __ movl(tmp, Operand(info, AMX_INFO_RETVAL));
-      __ movl(Operand(ecx, 0), pri);
+      __ movl(tmp, intptr_t(rt_->GetBaseContext()->GetCtx()));
+      __ movl(Operand(tmp, offsetof(sp_context_t, rval)), pri);
       __ movl(pri, readCell());
       __ jmp(&extern_error_);
       break;
@@ -1755,13 +1755,15 @@ Compiler::emitErrorPaths()
   }
 }
 
+typedef int (*JIT_EXECUTE)(InfoVars *vars, void *addr, uint8_t *memory, sp_context_t *ctx);
+
 static void *
 GenerateEntry(void **retp)
 {
   AssemblerX86 masm;
 
   // Variables we're passed in:
-  //  InfoVars *vars, void *entry, uint8_t *memory
+  //  InfoVars *vars, void *entry, uint8_t *memory, sp_context_t *
 
   __ push(ebp);
   __ movl(ebp, esp);
@@ -1787,22 +1789,35 @@ GenerateEntry(void **retp)
   // Call into plugin (align the stack first).
   __ call(ecx);
 
-  __ movl(ecx, Operand(info, AMX_INFO_RETVAL));
-  __ movl(Operand(ecx, 0), pri);
+  // Restore stack.
+  __ movl(esp, Operand(info, AMX_INFO_NSTACK));
+
+  // Get input context.
+  __ movl(ecx, Operand(esp, 32));
+  __ movl(Operand(ecx, offsetof(sp_context_t, rval)), pri);
+
+  // Set no error.
   __ movl(eax, SP_ERROR_NONE);
 
-  // If stuff goes wrong, it'll jump directly to here.
-  Label error;
-  __ bind(&error);
-  __ movl(esp, Operand(info, AMX_INFO_NSTACK));
+  // Store latest stk. If we have an error code, we'll jump directly to here,
+  // so eax will already be set.
+  Label ret;
+  __ bind(&ret);
   __ subl(stk, dat);
   __ movl(Operand(esi, AMX_INFO_FRAME), stk);
 
+  // Restore registers and gtfo.
   __ pop(ebx);
   __ pop(edi);
   __ pop(esi);
   __ pop(ebp);
   __ ret();
+
+  // The universal emergency return will jump to here.
+  Label error;
+  __ bind(&error);
+  __ movl(esp, Operand(info, AMX_INFO_NSTACK));
+  __ jmp(&ret);
 
   void *code = LinkCode(masm);
   if (!code)
@@ -1953,29 +1968,24 @@ bool CompData::SetOption(const char *key, const char *val)
   return false;
 }
 
-typedef int (*JIT_EXECUTE)(InfoVars *vars, void *addr, uint8_t *memory);
 int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result)
 {
-  int err;
-  JIT_EXECUTE pfn;
-  sp_context_t *ctx;
+  sp_context_t *ctx = runtime->GetBaseContext()->GetCtx();
+
   InfoVars vars;
-
-  ctx = runtime->GetBaseContext()->GetCtx();
-
   vars.frm = ctx->sp;
   vars.hp = ctx->hp;
-  vars.rval = result;
   vars.cip = fn->GetPCodeAddress();
   /* vars.esp will be set in the entry code */
 
-  pfn = (JIT_EXECUTE)m_pJitEntry;
-  err = pfn(&vars, fn->GetEntryAddress(), runtime->plugin()->memory);
+  JIT_EXECUTE pfn = (JIT_EXECUTE)m_pJitEntry;
+  int err = pfn(&vars, fn->GetEntryAddress(), runtime->plugin()->memory, ctx);
 
   ctx->sp = vars.frm;
   ctx->hp = vars.hp;
   ctx->err_cip = vars.cip;
 
+  *result = ctx->rval;
   return err;
 }
 

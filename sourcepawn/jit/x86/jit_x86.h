@@ -197,14 +197,12 @@ const Register frm = ebx;
 struct InfoVars {
     ucell_t frm;
     ucell_t hp;
-    cell_t *rval;
     ucell_t cip;
     void *esp;
 };
 
 #define AMX_INFO_FRAME          offsetof(InfoVars, frm)
 #define AMX_INFO_HEAP           offsetof(InfoVars, hp)
-#define AMX_INFO_RETVAL         offsetof(InfoVars, rval)
 #define AMX_INFO_CIP            offsetof(InfoVars, cip)
 #define AMX_INFO_NSTACK         offsetof(InfoVars, esp)
 

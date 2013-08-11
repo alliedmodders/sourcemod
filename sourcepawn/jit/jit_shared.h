@@ -1,3 +1,4 @@
+// vim: set ts=4 sw=4 tw=99 noet: 
 #ifndef _INCLUDE_SOURCEPAWN_JIT_SHARED_H_
 #define _INCLUDE_SOURCEPAWN_JIT_SHARED_H_
 
@@ -71,6 +72,7 @@ typedef struct sp_context_s
 	cell_t			hp;				/**< Heap pointer */
 	cell_t			sp;				/**< Stack pointer */
 	cell_t			frm;			/**< Frame pointer */
+	cell_t			rval;			/**< Return value from InvokeFunction() */
 	int32_t			err_cip;		/**< Code pointer last error occurred in */
 	int32_t			n_err;			/**< Error code set by a native */
 	uint32_t		n_idx;			/**< Current native index being executed */

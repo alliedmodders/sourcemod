@@ -70,6 +70,8 @@ SourcePawn::SpewOpcode(const sp_plugin_t *plugin, cell_t *start, cell_t *cip)
     case OP_HEAP:
     case OP_GENARRAY:
     case OP_GENARRAY_Z:
+    case OP_CONST_PRI:
+    case OP_CONST_ALT:
       fprintf(stdout, "%d", cip[1]);
       break;
 
