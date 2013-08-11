@@ -277,7 +277,7 @@ bool CContextTrace::GetTraceInfo(CallStackInfo *trace)
 
 	if (m_Level == 0)
 	{
-		cip = m_ctx->err_cip;
+		cip = m_ctx->cip;
 	}
 	else if (m_ctx->rp > 0)
 	{

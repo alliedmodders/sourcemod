@@ -1298,7 +1298,7 @@ Compiler::emitOp(OPCODE op)
     case OP_BREAK:
     {
       cell_t cip = uintptr_t(cip_ - 1) - uintptr_t(plugin_->pcode);
-      __ movl(Operand(info, AMX_INFO_CIP), cip);
+      __ movl(Operand(cipAddr()), cip);
       break;
     }
 
@@ -1486,7 +1486,7 @@ Compiler::emitCall()
   __ addl(Operand(eax, offsetof(sp_context_t, rp)), 1);
 
   // Store the CIP of the function we're about to call.
-  __ movl(Operand(info, AMX_INFO_CIP), offset);
+  __ movl(Operand(cipAddr()), offset);
 
   JitFunction *fun = rt_->GetJittedFunctionByOffset(offset);
   if (!fun) {
@@ -1501,7 +1501,7 @@ Compiler::emitCall()
   }
 
   // Restore the last cip.
-  __ movl(Operand(info, AMX_INFO_CIP), cip);
+  __ movl(Operand(cipAddr()), cip);
 
   // Mark us as leaving the last frame.
   __ movl(tmp, intptr_t(rt_->GetBaseContext()->GetCtx()));
@@ -1544,7 +1544,7 @@ Compiler::emitCallThunks()
     __ ret();
 
     __ bind(&error);
-    __ movl(Operand(info, AMX_INFO_CIP), thunk->pcode_offset);
+    __ movl(Operand(cipAddr()), thunk->pcode_offset);
     __ jmp(g_Jit.GetUniversalReturn());
   }
 }
@@ -1972,10 +1972,11 @@ int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result
 {
   sp_context_t *ctx = runtime->GetBaseContext()->GetCtx();
 
+  ctx->cip = fn->GetPCodeAddress();
+
   InfoVars vars;
   vars.frm = ctx->sp;
   vars.hp = ctx->hp;
-  vars.cip = fn->GetPCodeAddress();
   /* vars.esp will be set in the entry code */
 
   JIT_EXECUTE pfn = (JIT_EXECUTE)m_pJitEntry;
@@ -1983,7 +1984,6 @@ int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result
 
   ctx->sp = vars.frm;
   ctx->hp = vars.hp;
-  ctx->err_cip = vars.cip;
 
   *result = ctx->rval;
   return err;

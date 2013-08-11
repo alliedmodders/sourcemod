@@ -39,6 +39,7 @@
 #include <ke_vector.h>
 #include "jit_shared.h"
 #include "BaseRuntime.h"
+#include "sp_vm_basecontext.h"
 #include "jit_function.h"
 #include "opcodes.h"
 
@@ -131,6 +132,11 @@ class Compiler
   void emitErrorPath(Label *dest, int code);
   void emitErrorPaths();
 
+  ExternalAddress cipAddr() {
+    sp_context_t *ctx = rt_->GetBaseContext()->GetCtx();
+    return ExternalAddress(&ctx->cip);
+  }
+
  private:
   AssemblerX86 masm;
   BaseRuntime *rt_;
@@ -197,13 +203,11 @@ const Register frm = ebx;
 struct InfoVars {
     ucell_t frm;
     ucell_t hp;
-    ucell_t cip;
     void *esp;
 };
 
 #define AMX_INFO_FRAME          offsetof(InfoVars, frm)
 #define AMX_INFO_HEAP           offsetof(InfoVars, hp)
-#define AMX_INFO_CIP            offsetof(InfoVars, cip)
 #define AMX_INFO_NSTACK         offsetof(InfoVars, esp)
 
 extern Knight::KeCodeCache *g_pCodeCache;

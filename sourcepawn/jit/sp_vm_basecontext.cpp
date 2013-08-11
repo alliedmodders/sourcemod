@@ -620,7 +620,7 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 	save_exec = m_InExec;
 	save_n_idx = m_ctx.n_idx;
 	save_rp = m_ctx.rp;
-	save_cip = m_ctx.err_cip;
+	save_cip = m_ctx.cip;
 
 	/* Push parameters */
 
@@ -688,7 +688,7 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 		m_pRuntime->plugin()->profiler->OnCallbackEnd(serial);
 	}
 
-	m_ctx.err_cip = save_cip;
+	m_ctx.cip = save_cip;
 	m_ctx.n_idx = save_n_idx;
 	m_ctx.n_err = SP_ERROR_NONE;
 	m_MsgCache[0] = '\0';

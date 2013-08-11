@@ -73,7 +73,7 @@ typedef struct sp_context_s
 	cell_t			sp;				/**< Stack pointer */
 	cell_t			frm;			/**< Frame pointer */
 	cell_t			rval;			/**< Return value from InvokeFunction() */
-	int32_t			err_cip;		/**< Code pointer last error occurred in */
+	int32_t			cip;			/**< Code pointer last error occurred in */
 	int32_t			n_err;			/**< Error code set by a native */
 	uint32_t		n_idx;			/**< Current native index being executed */
 	void *			vm[8];			/**< VM-specific pointers */
