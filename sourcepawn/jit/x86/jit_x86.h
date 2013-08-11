@@ -203,16 +203,9 @@ class JITX86
 const Register pri = eax;
 const Register alt = edx;
 const Register stk = edi;
-const Register dat = ebp;
+const Register dat = esi;
 const Register tmp = ecx;
-const Register info = esi;
 const Register frm = ebx;
-
-struct InfoVars {
-    void *esp;
-};
-
-#define AMX_INFO_NSTACK         offsetof(InfoVars, esp)
 
 extern Knight::KeCodeCache *g_pCodeCache;
 extern JITX86 g_Jit;

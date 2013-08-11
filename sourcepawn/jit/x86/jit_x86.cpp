@@ -208,7 +208,7 @@ PushTracker(sp_context_t *ctx, size_t amount)
 }
 
 static int
-GenerateArray(BaseRuntime *rt, InfoVars &vars, uint32_t argc, cell_t *argv, int autozero)
+GenerateArray(BaseRuntime *rt, uint32_t argc, cell_t *argv, int autozero)
 {
   sp_context_t *ctx = rt->GetBaseContext()->GetCtx();
 
@@ -1442,10 +1442,9 @@ Compiler::emitGenArray(bool autozero)
     __ push(autozero ? 1 : 0);
     __ push(stk);
     __ push(val);
-    __ push(info);
     __ push(intptr_t(rt_));
     __ call(ExternalAddress((void *)GenerateArray));
-    __ addl(esp, 5 * sizeof(void *));
+    __ addl(esp, 4 * sizeof(void *));
 
     // restore pri to tmp
     __ pop(tmp);
@@ -1753,34 +1752,30 @@ Compiler::emitErrorPaths()
   }
 }
 
-typedef int (*JIT_EXECUTE)(InfoVars *vars, void *addr, uint8_t *memory, sp_context_t *ctx);
+typedef int (*JIT_EXECUTE)(sp_context_t *ctx, uint8_t *memory, void *code);
 
 static void *
 GenerateEntry(void **retp)
 {
   AssemblerX86 masm;
 
-  // Variables we're passed in:
-  //  InfoVars *vars, void *entry, uint8_t *memory, sp_context_t *
-
   __ push(ebp);
   __ movl(ebp, esp);
 
-  __ push(esi);
-  __ push(edi);
-  __ push(ebx);
+  __ push(esi);   // ebp - 4
+  __ push(edi);   // ebp - 8
+  __ push(ebx);   // ebp - 12
+  __ push(esp);   // ebp - 16
 
-  __ movl(esi, Operand(ebp, 8 + 4 * 0));
-  __ movl(ecx, Operand(ebp, 8 + 4 * 1));
-  __ movl(eax, Operand(ebp, 8 + 4 * 2));
+  __ movl(ebx, Operand(ebp, 8 + 4 * 0));
+  __ movl(eax, Operand(ebp, 8 + 4 * 1));
+  __ movl(ecx, Operand(ebp, 8 + 4 * 2));
 
   // Set up run-time registers.
-  __ movl(ebx, Operand(ebp, 8 + 4 * 3));
   __ movl(edi, Operand(ebx, offsetof(sp_context_t, sp)));
   __ addl(edi, eax);
-  __ movl(ebp, eax);
+  __ movl(esi, eax);
   __ movl(ebx, edi);
-  __ movl(Operand(esi, AMX_INFO_NSTACK), esp);
 
   // Align the stack.
   __ andl(esp, 0xfffffff0);
@@ -1788,11 +1783,8 @@ GenerateEntry(void **retp)
   // Call into plugin (align the stack first).
   __ call(ecx);
 
-  // Restore stack.
-  __ movl(esp, Operand(info, AMX_INFO_NSTACK));
-
   // Get input context, store rval.
-  __ movl(ecx, Operand(esp, 32));
+  __ movl(ecx, Operand(ebp, 8 + 4 * 0));
   __ movl(Operand(ecx, offsetof(sp_context_t, rval)), pri);
 
   // Set no error.
@@ -1805,6 +1797,9 @@ GenerateEntry(void **retp)
   __ subl(stk, dat);
   __ movl(Operand(ecx, offsetof(sp_context_t, sp)), stk);
 
+  // Restore stack.
+  __ movl(esp, Operand(ebp, -16));
+
   // Restore registers and gtfo.
   __ pop(ebx);
   __ pop(edi);
@@ -1815,8 +1810,7 @@ GenerateEntry(void **retp)
   // The universal emergency return will jump to here.
   Label error;
   __ bind(&error);
-  __ movl(esp, Operand(info, AMX_INFO_NSTACK));
-  __ movl(ecx, Operand(esp, 32)); // ret-path expects ecx = ctx
+  __ movl(ecx, Operand(ebp, 8 + 4 * 0)); // ret-path expects ecx = ctx
   __ jmp(&ret);
 
   void *code = LinkCode(masm);
@@ -1975,11 +1969,8 @@ int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result
   // Note that cip, hp, sp are saved and restored by Execute2().
   ctx->cip = fn->GetPCodeAddress();
 
-  InfoVars vars;
-  /* vars.esp will be set in the entry code */
-
   JIT_EXECUTE pfn = (JIT_EXECUTE)m_pJitEntry;
-  int err = pfn(&vars, fn->GetEntryAddress(), runtime->plugin()->memory, ctx);
+  int err = pfn(ctx, runtime->plugin()->memory, fn->GetEntryAddress());
 
   *result = ctx->rval;
   return err;
