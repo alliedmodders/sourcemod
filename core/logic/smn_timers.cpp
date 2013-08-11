@@ -208,6 +208,12 @@ static cell_t smn_CreateTimer(IPluginContext *pCtx, const cell_t *params)
 		return 0;
 	}
 
+	pInfo->UserData = params[3];
+	pInfo->Flags = flags;
+	pInfo->Hook = pFunc;
+	pInfo->Timer = pTimer;
+	pInfo->pContext = pCtx;
+
 	hndl = handlesys->CreateHandle(g_TimerType, pInfo, pCtx->GetIdentity(), g_pCoreIdent, NULL);
 
 	/* If we can't get a handle, the timer isn't refcounted against the plugin and 
@@ -215,25 +221,13 @@ static cell_t smn_CreateTimer(IPluginContext *pCtx, const cell_t *params)
 	 */
 	if (hndl == BAD_HANDLE)
 	{
-		/* Free this for completeness. */
-		if (flags & TIMER_DATA_HNDL_CLOSE)
-		{
-			HandleSecurity sec(pCtx->GetIdentity(), g_pCoreIdent);
-			handlesys->FreeHandle(params[3], &sec);
-		}
-		/* Zero everything so there's no conflicts */
-		memset(pInfo, 0, sizeof(TimerInfo));
+		pInfo->TimerHandle = BAD_HANDLE;
 		timersys->KillTimer(pTimer);
 
 		return pCtx->ThrowNativeError("Could not create timer, no more handles");
 	}
 
-	pInfo->UserData = params[3];
-	pInfo->Flags = flags;
 	pInfo->TimerHandle = hndl;
-	pInfo->Hook = pFunc;
-	pInfo->Timer = pTimer;
-	pInfo->pContext = pCtx;
 
 	return hndl;
 }
