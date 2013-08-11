@@ -199,7 +199,6 @@ struct InfoVars {
     ucell_t hp;
     cell_t *rval;
     sp_context_t *ctx;
-    uint8_t *stp;
     ucell_t cip;
     uint8_t *memory;
     void *esp;
@@ -209,7 +208,6 @@ struct InfoVars {
 #define AMX_INFO_HEAP           offsetof(InfoVars, hp)
 #define AMX_INFO_RETVAL         offsetof(InfoVars, rval)
 #define AMX_INFO_CONTEXT        offsetof(InfoVars, ctx)
-#define AMX_INFO_STACKTOP       offsetof(InfoVars, stp)
 #define AMX_INFO_CIP            offsetof(InfoVars, cip)
 #define AMX_INFO_MEMORY         offsetof(InfoVars, memory)
 #define AMX_INFO_NSTACK         offsetof(InfoVars, esp)

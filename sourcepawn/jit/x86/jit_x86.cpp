@@ -1190,7 +1190,7 @@ Compiler::emitOp(OPCODE op)
 
      if (amount > 0) {
        // Check if the stack went beyond the stack top - usually a compiler error.
-       __ cmpl(stk, Operand(info, AMX_INFO_STACKTOP));
+       __ cmpl(stk, intptr_t(plugin_->memory + plugin_->mem_size));
        __ j(not_below, &error_stack_min_);
      } else {
        // Check if the stack is going to collide with the heap.
@@ -1970,7 +1970,6 @@ int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result
   vars.hp = ctx->hp;
   vars.rval = result;
   vars.ctx = ctx;
-  vars.stp = runtime->plugin()->memory + runtime->plugin()->mem_size;
   vars.cip = fn->GetPCodeAddress();
   vars.memory = runtime->plugin()->memory;
   /* vars.esp will be set in the entry code */
