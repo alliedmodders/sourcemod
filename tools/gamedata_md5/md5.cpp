@@ -171,14 +171,13 @@ MD5::MD5(FILE *file){
 
 unsigned char *MD5::raw_digest(){
 
-  uint1 *s = new uint1[16];
-
   if (!finalized){
 /*    cerr << "MD5::raw_digest:  Can't get digest if you haven't "<<
       "finalized the digest!" <<endl;*/
     return ( (unsigned char*) "");
   }
 
+  uint1 *s = new uint1[16];
   memcpy(s, digest, 16);
   return s;
 }
@@ -198,14 +197,14 @@ unsigned char *MD5::raw_digest(unsigned char buffer[16])
 
 char *MD5::hex_digest(){
 
-  int i;
-  char *s= new char[33];
-
   if (!finalized){
 /*    cerr << "MD5::hex_digest:  Can't get digest if you haven't "<<
       "finalized the digest!" <<endl;*/
     return "";
   }
+
+  int i;
+  char *s= new char[33];
 
   for (i=0; i<16; i++)
     sprintf(s+i*2, "%02x", digest[i]);

@@ -2605,10 +2605,12 @@ SMPlugin *CPluginManager::FindPluginByConsoleArg(const char *arg)
 		smcore.Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
 		CPlugin **pluginpp = m_LoadLookup.retrieve(pluginfile);
-		if (!pluginpp || !*pluginpp)
+		if (!pluginpp)
 		{
 			return NULL;
 		}
+		
+		pl = *pluginpp;
 	}
 
 	return pl;

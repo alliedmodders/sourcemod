@@ -304,14 +304,19 @@ void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
 		delete pConVarList;
 	}
 
+	const IPluginRuntime * pRuntime = plugin->GetRuntime();
+
 	/* Remove convar queries for this plugin that haven't returned results yet */
-	for (iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end(); iter++)
+	for (iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end();)
 	{
 		ConVarQuery &query = (*iter);
-		if (query.pCallback->GetParentRuntime() == plugin->GetRuntime())
+		if (query.pCallback->GetParentRuntime() == pRuntime)
 		{
-			m_ConVarQueries.erase(iter);
+			iter = m_ConVarQueries.erase(iter);
+			continue;
 		}
+
+		++iter;
 	}
 }
 

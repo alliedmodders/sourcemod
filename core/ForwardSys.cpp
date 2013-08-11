@@ -681,7 +681,7 @@ bool CForward::RemoveFunction(IPluginFunction *func)
 		lst = &m_paused;
 	}
 
-	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
+	for (iter=lst->begin(); iter!=lst->end(); iter++)
 	{
 		if ((*iter) == func)
 		{
