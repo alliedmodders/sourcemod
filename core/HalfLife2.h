@@ -66,7 +66,7 @@ struct DataTableInfo
 struct DataMapTrie
 {
 	DataMapTrie() : trie(NULL) {}
-	Trie *trie;
+	KTrie<sm_datatable_info_t> *trie;
 };
 
 struct DelayedFakeCliCmd
@@ -123,7 +123,7 @@ public: //IGameHelpers
 	datamap_t *GetDataMap(CBaseEntity *pEntity);
 	ServerClass *FindServerClass(const char *classname);
 	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset);
-	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset, bool *isNested);
+	bool FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatable_info_t *pDataTable);
 	void SetEdictStateChanged(edict_t *pEdict, unsigned short offset);
 	bool TextMsg(int client, int dest, const char *msg);
 	bool HintTextMsg(int client, const char *msg);

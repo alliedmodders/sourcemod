@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		9
+#define SMINTERFACE_GAMEHELPERS_VERSION		10
 
 class CBaseEntity;
 class CBaseHandle;
@@ -64,6 +64,12 @@ namespace SourceMod
 	struct sm_sendprop_info_t
 	{
 		SendProp *prop;					/**< Property instance. */
+		unsigned int actual_offset;		/**< Actual computed offset. */
+	};
+	
+	struct sm_datatable_info_t
+	{
+		typedescription_t *prop;			/**< Property instance. */
 		unsigned int actual_offset;		/**< Actual computed offset. */
 	};
 
@@ -318,6 +324,17 @@ namespace SourceMod
 		 * @return				True if valid, otherwise false.
 		 */
 		virtual bool IsMapValid(const char *map) =0;
+		
+		/**
+		 * @brief Finds a datamap_t definition.
+		 *
+		 * @param pMap			datamap_t pointer.
+		 * @param offset			Property name.
+		 * @param pDataTable	Buffer to store sm_datatable_info_t data.
+		 * @return				typedescription_t pointer on success, NULL 
+		 *						on failure.
+		 */
+		virtual bool FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatable_info_t *pDataTable) =0;
 	};
 }
 

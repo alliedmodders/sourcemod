@@ -585,14 +585,17 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 
 	fprintf(fp, "// Dump of all classes for \"%s\" as at %s\n//\n\n", g_pSM->GetGameFolderName(), buffer);
 
+	sm_datatable_info_t info;
 	for ( int i = dict->m_Factories.First(); i != dict->m_Factories.InvalidIndex(); i = dict->m_Factories.Next( i ) )
 	{
 		IServerNetworkable *entity = dict->Create(dict->m_Factories.GetElementName(i));
 		ServerClass *sclass = entity->GetServerClass();
 		fprintf(fp,"%s - %s\n",sclass->GetName(), dict->m_Factories.GetElementName(i));
-
-		typedescription_t *datamap = gamehelpers->FindInDataMap(gamehelpers->GetDataMap(entity->GetBaseEntity()), "m_iEFlags");
-		int *eflags = (int *)((char *)entity->GetBaseEntity() + GetTypeDescOffs(datamap));
+		
+		if (!gamehelpers->FindDataMapInfo(gamehelpers->GetDataMap(entity->GetBaseEntity()), "m_iEFlags", &info))
+			continue;
+		
+		int *eflags = (int *)((char *)entity->GetBaseEntity() + info.actual_offset);
 		*eflags |= (1<<0); // EFL_KILLME
 	}
 
@@ -819,14 +822,13 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 
 		if (offsEFlags == -1)
 		{
-			typedescription_t *datamap = gamehelpers->FindInDataMap(pMap, "m_iEFlags");
-		
-			if (!datamap)
+			sm_datatable_info_t info;
+			if (!gamehelpers->FindDataMapInfo(pMap, "m_iEFlags", &info))
 			{
 				continue;
 			}
 
-			offsEFlags = GetTypeDescOffs(datamap);
+			offsEFlags = info.actual_offset;
 		}
 		
 		int *eflags = (int *)((char *)entity->GetBaseEntity() + offsEFlags);

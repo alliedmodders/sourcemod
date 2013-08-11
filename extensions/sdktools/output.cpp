@@ -356,8 +356,13 @@ const char *EntityOutputManager::GetEntityClassname(CBaseEntity *pEntity)
 	if (offset == -1)
 	{
 		datamap_t *pMap = gamehelpers->GetDataMap(pEntity);
-		typedescription_t *pDesc = gamehelpers->FindInDataMap(pMap, "m_iClassname");
-		offset = GetTypeDescOffs(pDesc);
+		sm_datatable_info_t info;
+		if (!gamehelpers->FindDataMapInfo(pMap, "m_iClassname", &info))
+		{
+			return NULL;
+		}
+		
+		offset = info.actual_offset;
 	}
 
 	return *(const char **)(((unsigned char *)pEntity) + offset);

@@ -796,6 +796,82 @@ static cell_t FindSendPropInfo(IPluginContext *pContext, const cell_t *params)
 	return info.actual_offset;
 }
 
+static void GuessDataPropTypes(typedescription_t *td, cell_t * pSize, cell_t * pType)
+{
+	switch (td->fieldType)
+	{
+	case FIELD_TICK:
+	case FIELD_MODELINDEX:
+	case FIELD_MATERIALINDEX:
+	case FIELD_INTEGER:
+	case FIELD_COLOR32:
+		{
+			*pType = PropField_Integer;
+			*pSize = 32;
+			break;
+		}
+	case FIELD_VECTOR:
+	case FIELD_POSITION_VECTOR:
+		{
+			*pType = PropField_Vector;
+			*pSize = 12;
+			break;
+		}
+	case FIELD_SHORT:
+		{
+			*pType = PropField_Integer;
+			*pSize = 16;
+			break;
+		}
+	case FIELD_BOOLEAN:
+		{
+			*pType = PropField_Integer;
+			*pSize = 1;
+			break;
+		}
+	case FIELD_CHARACTER:
+		{
+			if (td->fieldSize == 1)
+			{
+				*pType = PropField_Integer;
+				*pSize = 8;
+			}
+			else
+			{
+				*pType = PropField_String;
+				*pSize = 8 * td->fieldSize;
+			}
+			break;
+		}
+	case FIELD_MODELNAME:
+	case FIELD_SOUNDNAME:
+	case FIELD_STRING:
+		{
+			*pSize = sizeof(string_t);
+			*pType = PropField_String_T;
+			break;
+		}
+	case FIELD_FLOAT:
+	case FIELD_TIME:
+		{
+			*pType = PropField_Float;
+			*pSize = 32;
+			break;
+		}
+	case FIELD_EHANDLE:
+		{
+			*pType = PropField_Entity;
+			*pSize = 32;
+			break;
+		}
+	default:
+		{
+			*pType = PropField_Unsupported;
+			*pSize = 0;
+		}
+	}
+}
+
 static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
@@ -815,14 +891,13 @@ static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 	}
 
 	pContext->LocalToString(params[2], &offset);
-	bool isNested = false;
-	if ((td=g_HL2.FindInDataMap(pMap, offset, &isNested)) == NULL)
+	sm_datatable_info_t info;
+	if (!g_HL2.FindDataMapInfo(pMap, offset, &info))
 	{
-		if (isNested)
-			return pContext->ThrowNativeError("Property \"%s\" is not safe to access for entity %d", offset, params[1]);
-		else
-			return -1;
+		return -1;
 	}
+	
+	td = info.prop;
 
 	if (params[0] == 4)
 	{
@@ -830,82 +905,60 @@ static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 
 		pContext->LocalToPhysAddr(params[3], &pType);
 		pContext->LocalToPhysAddr(params[4], &pSize);
-
-		switch (td->fieldType)
-		{
-		case FIELD_TICK:
-		case FIELD_MODELINDEX:
-		case FIELD_MATERIALINDEX:
-		case FIELD_INTEGER:
-		case FIELD_COLOR32:
-			{
-				*pType = PropField_Integer;
-				*pSize = 32;
-				break;
-			}
-		case FIELD_VECTOR:
-		case FIELD_POSITION_VECTOR:
-			{
-				*pType = PropField_Vector;
-				*pSize = 12;
-				break;
-			}
-		case FIELD_SHORT:
-			{
-				*pType = PropField_Integer;
-				*pSize = 16;
-				break;
-			}
-		case FIELD_BOOLEAN:
-			{
-				*pType = PropField_Integer;
-				*pSize = 1;
-				break;
-			}
-		case FIELD_CHARACTER:
-			{
-				if (td->fieldSize == 1)
-				{
-					*pType = PropField_Integer;
-					*pSize = 8;
-				}
-				else
-				{
-					*pType = PropField_String;
-					*pSize = 8 * td->fieldSize;
-				}
-				break;
-			}
-		case FIELD_MODELNAME:
-		case FIELD_SOUNDNAME:
-		case FIELD_STRING:
-			{
-				*pSize = sizeof(string_t);
-				*pType = PropField_String_T;
-				break;
-			}
-		case FIELD_FLOAT:
-		case FIELD_TIME:
-			{
-				*pType = PropField_Float;
-				*pSize = 32;
-				break;
-			}
-		case FIELD_EHANDLE:
-			{
-				*pType = PropField_Entity;
-				*pSize = 32;
-				break;
-			}
-		default:
-			{
-				*pType = PropField_Unsupported;
-				*pSize = 0;
-			}
-		}
+		
+		GuessDataPropTypes(td, pSize, pType);
 	}
 
 	return GetTypeDescOffs(td);
+}
+
+static cell_t FindDataMapInfo(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	datamap_t *pMap;
+	typedescription_t *td;
+	char *offset;
+	pEntity = GetEntity(params[1]);
+
+	if (!pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
+	}
+
+	if ((pMap=CBaseEntity_GetDataDescMap(pEntity)) == NULL)
+	{
+		return pContext->ThrowNativeError("Unable to retrieve GetDataDescMap offset");
+	}
+
+	pContext->LocalToString(params[2], &offset);
+	sm_datatable_info_t info;
+	if (!g_HL2.FindDataMapInfo(pMap, offset, &info))
+	{
+		return -1;
+	}
+	
+	td = info.prop;
+
+	if (params[0] >= 4)
+	{
+		cell_t *pType, *pSize;
+
+		pContext->LocalToPhysAddr(params[3], &pType);
+		pContext->LocalToPhysAddr(params[4], &pSize);
+		
+		GuessDataPropTypes(td, pSize, pType);
+		
+		if (params[0] == 5)
+		{
+			cell_t *pLocalOffs;
+			
+			pContext->LocalToPhysAddr(params[5], &pLocalOffs);
+			
+			*pLocalOffs = GetTypeDescOffs(info.prop);
+		}
+	}
+
+	return info.actual_offset;
 }
 
 static cell_t GetEntDataString(IPluginContext *pContext, const cell_t *params)
@@ -966,23 +1019,16 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	{ \
 		return pContext->ThrowNativeError("Could not retrieve datamap"); \
 	} \
-	bool isNested = false; \
-	if ((td = g_HL2.FindInDataMap(pMap, prop, &isNested)) == NULL) \
+	sm_datatable_info_t info; \
+	if (!g_HL2.FindDataMapInfo(pMap, prop, &info)) \
 	{ \
 		const char *class_name = g_HL2.GetEntityClassname(pEntity); \
-		if (isNested) \
-		{ \
-			return pContext->ThrowNativeError("Property \"%s\" not safe to access (entity %d/%s)", \
-				prop, \
-				params[1], \
-				((class_name) ? class_name : "")); \
-		} else { \
-			return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)", \
-				prop, \
-				params[1], \
-				((class_name) ? class_name : "")); \
-		} \
-	}
+		return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)", \
+			prop, \
+			params[1], \
+			((class_name) ? class_name : "")); \
+	} \
+	td = info.prop;
 
 #define CHECK_SET_PROP_DATA_OFFSET() \
 	if (element < 0 || element >= td->fieldSize) \
@@ -993,7 +1039,7 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 			td->fieldSize); \
 	} \
 	\
-	offset = GetTypeDescOffs(td) + (element * (td->fieldSizeInBytes / td->fieldSize));
+	offset = info.actual_offset + (element * (td->fieldSizeInBytes / td->fieldSize));
 
 #define FIND_PROP_SEND(type, type_name) \
 	sm_sendprop_info_t info;\
@@ -1808,7 +1854,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 					element);
 			}
 
-			offset = GetTypeDescOffs(td);
+			offset = info.actual_offset;
 			if (bIsStringIndex)
 			{
 				offset += (element * (td->fieldSizeInBytes / td->fieldSize));
@@ -1896,25 +1942,23 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 	case Prop_Data:
 		{
 			datamap_t *pMap;
-			typedescription_t *td;
 			if ((pMap=CBaseEntity_GetDataDescMap(pEntity)) == NULL)
 			{
 				return pContext->ThrowNativeError("Unable to retrieve GetDataDescMap offset");
 			}
 			pContext->LocalToString(params[3], &prop);
-			bool isNested = false;
-			if ((td=g_HL2.FindInDataMap(pMap, prop, &isNested)) == NULL)
+			sm_datatable_info_t info;
+			if (!g_HL2.FindDataMapInfo(pMap, prop, &info))
 			{
-				if (isNested)
-					return pContext->ThrowNativeError("Property \"%s\" is not safe to access for entity %d", prop, params[1]);
-				else
-					return pContext->ThrowNativeError("Property \"%s\" not found for entity %d", prop, params[1]);
+				return pContext->ThrowNativeError("Property \"%s\" not found for entity %d", prop, params[1]);
 			}
+			
+			typedescription_t *td = info.prop;
 			if (td->fieldType != FIELD_CHARACTER)
 			{
 				return pContext->ThrowNativeError("Property \"%s\" is not a valid string", prop);
 			}
-			offset = GetTypeDescOffs(td);
+			offset = info.actual_offset;
 			maxlen = td->fieldSize;
 			break;
 		}
@@ -2138,14 +2182,16 @@ static cell_t GetEntityFlags(IPluginContext *pContext, const cell_t *params)
 	{
 		return pContext->ThrowNativeError("Could not retrieve datamap");
 	}
-	if ((td = g_HL2.FindInDataMap(pMap, prop)) == NULL)
+	
+	sm_datatable_info_t info;
+	if (!g_HL2.FindDataMapInfo(pMap, prop, &info))
 	{
 		return pContext->ThrowNativeError("Property \"%s\" not found (entity %d)",
 			prop,
 			params[1]);
 	}
 
-	int offset = GetTypeDescOffs(td);
+	int offset = info.actual_offset;
 
 	int32_t actual_flags = *(int32_t *)((uint8_t *)pEntity + offset);
 	int32_t sm_flags = 0;
@@ -2176,21 +2222,22 @@ static cell_t SetEntityFlags(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Could not find m_fFlags prop in gamedata");
 	}
 
-	typedescription_t *td;
 	datamap_t *pMap;
 
 	if ((pMap = CBaseEntity_GetDataDescMap(pEntity)) == NULL)
 	{
 		return pContext->ThrowNativeError("Could not retrieve datamap");
 	}
-	if ((td = g_HL2.FindInDataMap(pMap, prop)) == NULL)
+	
+	sm_datatable_info_t info;
+	if (!g_HL2.FindDataMapInfo(pMap, prop, &info))
 	{
 		return pContext->ThrowNativeError("Property \"%s\" not found (entity %d)",
 			prop,
 			params[1]);
 	}
 
-	int offset = GetTypeDescOffs(td);
+	int offset = info.actual_offset;
 
 	int32_t sm_flags = params[2];
 	int32_t actual_flags = 0;
@@ -2262,5 +2309,6 @@ REGISTER_NATIVES(entityNatives)
 	{"SetEntPropString",		SetEntPropString},
 	{"SetEntPropVector",		SetEntPropVector},
 	{"GetEntityAddress",		GetEntityAddress},
+	{"FindDataMapInfo",		FindDataMapInfo},
 	{NULL,						NULL}
 };

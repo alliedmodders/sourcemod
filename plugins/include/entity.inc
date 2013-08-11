@@ -449,6 +449,26 @@ native FindDataMapOffs(entity,
 					   const String:prop[],
 					   &PropFieldType:type=PropFieldType:0,
 					   &num_bits=0);
+					   
+/**
+ * Given an entity, finds a nested datamap property offset.
+ * This information is cached for future calls.
+ *
+ * @param entity		Entity index.
+ * @param prop			Property name.
+ * @param type			Optional parameter to store the type.
+ * @param num_bits		Optional parameter to store the number of bits the field 
+ *						uses.  The bit count will either be 1 (for boolean) or 
+ *						divisible by 8 (including 0 if unknown).
+ * @param local_offset	Optional parameter to store the local offset, as 
+ *						FindDataMapOffs() would return.
+ * @return				An offset, or -1 on failure.
+ */
+native FindDataMapInfo(entity, 
+					   const String:prop[],
+					   &PropFieldType:type=PropFieldType:0,
+					   &num_bits=0,
+					   &local_offset=0);
 
 /**
  * Wrapper function for finding a send property for a particular entity.

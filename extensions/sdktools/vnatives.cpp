@@ -548,10 +548,10 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 		if (frag_prop)
 		{
 			datamap_t *pMap = gamehelpers->GetDataMap(pEntity);
-			typedescription_t *pType = gamehelpers->FindInDataMap(pMap, frag_prop);
-			if (pType != NULL)
+			sm_datatable_info_t info;
+			if (gamehelpers->FindDataMapInfo(pMap, frag_prop, &info))
 			{
-				s_frag_offs = GetTypeDescOffs(pType);
+				s_frag_offs = info.actual_offset;
 			}
 		}
 		if (!s_frag_offs)
@@ -684,10 +684,13 @@ static cell_t NativeFindEntityByClassname(IPluginContext *pContext, const cell_t
 	static int offset = -1;
 	if (offset == -1)
 	{
-		offset = GetTypeDescOffs(
-			gamehelpers->FindInDataMap(gamehelpers->GetDataMap(pEntity),
-			"m_iClassname")
-			);
+		sm_datatable_info_t info;
+		if (!gamehelpers->FindDataMapInfo(gamehelpers->GetDataMap(pEntity), "m_iClassname", &info))
+		{
+			return -1;
+		}
+		
+		offset = info.actual_offset;
 	}
 
 	string_t s;

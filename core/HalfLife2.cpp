@@ -115,7 +115,7 @@ CHalfLife2::~CHalfLife2()
 	{
 		if (h_iter->val.trie)
 		{
-			sm_trie_destroy(h_iter->val.trie);
+			delete h_iter->val.trie;
 			h_iter->val.trie = NULL;
 		}
 	}
@@ -343,16 +343,11 @@ bool UTIL_FindInSendTable(SendTable *pTable,
 	return false;
 }
 
-typedescription_t *UTIL_FindInDataMap(datamap_t *pMap, const char *name, bool *isNested)
+bool UTIL_FindDataMapInfo(datamap_t *pMap, const char *name, sm_datatable_info_t *pDataTable)
 {
-	if (isNested)
-	{
-		*isNested = false;
-	}
-	
 	while (pMap)
 	{
-		for (int i=0; i<pMap->dataNumFields; i++)
+		for (int i = 0; i < pMap->dataNumFields; ++i)
 		{
 			if (pMap->dataDesc[i].fieldName == NULL)
 			{
@@ -360,32 +355,23 @@ typedescription_t *UTIL_FindInDataMap(datamap_t *pMap, const char *name, bool *i
 			}
 			if (strcmp(name, pMap->dataDesc[i].fieldName) == 0)
 			{
-				return &(pMap->dataDesc[i]);
+				pDataTable->prop = &(pMap->dataDesc[i]);
+				pDataTable->actual_offset = GetTypeDescOffs(pDataTable->prop);
+				return true;
 			}
-			if (pMap->dataDesc[i].td)
+			if (pMap->dataDesc[i].td == NULL || !UTIL_FindDataMapInfo(pMap->dataDesc[i].td, name, pDataTable))
 			{
-				if (isNested)
-				{
-					*isNested = (UTIL_FindInDataMap(pMap->dataDesc[i].td, name, NULL) != NULL);
-					if (*isNested)
-					{
-						return NULL;
-					} else {
-						continue;
-					}
-				} else { // Use the old behaviour, we dont want to spring this on extensions - even if they're doing bad things.
-					typedescription_t *_td;
-					if ((_td=UTIL_FindInDataMap(pMap->dataDesc[i].td, name, NULL)) != NULL)
-					{
-						return _td;
-					}
-				}
+				continue;
 			}
+			
+			pDataTable->actual_offset += GetTypeDescOffs(&(pMap->dataDesc[i]));
+			return true;
 		}
+		
 		pMap = pMap->baseMap;
 	}
 
-	return NULL; 
+	return false; 
 }
 
 ServerClass *CHalfLife2::FindServerClass(const char *classname)
@@ -472,27 +458,44 @@ SendProp *CHalfLife2::FindInSendTable(const char *classname, const char *offset)
 
 typedescription_t *CHalfLife2::FindInDataMap(datamap_t *pMap, const char *offset)
 {
-	return this->FindInDataMap(pMap, offset, NULL);
+	sm_datatable_info_t dt_info;
+	
+	if (!(this->FindDataMapInfo(pMap, offset, &dt_info)))
+	{
+		return NULL;
+	}
+	
+	return dt_info.prop;
 }
 
-typedescription_t *CHalfLife2::FindInDataMap(datamap_t *pMap, const char *offset, bool *isNested)
+bool CHalfLife2::FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatable_info_t *pDataTable)
 {
-	typedescription_t *td = NULL;
 	DataMapTrie &val = m_Maps[pMap];
 
 	if (!val.trie)
 	{
-		val.trie = sm_trie_create();
+		val.trie = new KTrie<sm_datatable_info_t>;
 	}
-	if (!sm_trie_retrieve(val.trie, offset, (void **)&td))
+	
+	sm_datatable_info_t * pNewTable = val.trie->retrieve(offset);
+	
+	if (!pNewTable)
 	{
-		if ((td = UTIL_FindInDataMap(pMap, offset, isNested)) != NULL)
+		if (UTIL_FindDataMapInfo(pMap, offset, pDataTable))
 		{
-			sm_trie_insert(val.trie, offset, td);
+			val.trie->insert(offset, *pDataTable);
+		}
+		else
+		{
+			pDataTable->prop = NULL;
 		}
 	}
+	else
+	{
+		*pDataTable = *pNewTable;
+	}
 
-	return td;
+	return (pDataTable->prop != NULL);
 }
 
 void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
@@ -1221,8 +1224,14 @@ const char *CHalfLife2::GetEntityClassname(CBaseEntity *pEntity)
 	{
 		CBaseEntity *pGetterEnt = ReferenceToEntity(0);
 		datamap_t *pMap = GetDataMap(pGetterEnt);
-		typedescription_t *pDesc = FindInDataMap(pMap, "m_iClassname");
-		offset = GetTypeDescOffs(pDesc);
+		
+		sm_datatable_info_t info;
+		if (!FindDataMapInfo(pMap, "m_iClassname", &info))
+		{
+			return NULL;
+		}
+		
+		offset = info.actual_offset;
 	}
 
 	return *(const char **)(((unsigned char *)pEntity) + offset);
