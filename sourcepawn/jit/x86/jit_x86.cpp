@@ -1956,31 +1956,31 @@ bool CompData::SetOption(const char *key, const char *val)
   return false;
 }
 
-typedef int (*JIT_EXECUTE)(cell_t *vars, void *addr);
+typedef int (*JIT_EXECUTE)(InfoVars *vars, void *addr);
 int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result)
 {
   int err;
   JIT_EXECUTE pfn;
   sp_context_t *ctx;
-  cell_t vars[AMX_NUM_INFO_VARS];
+  InfoVars vars;
 
   ctx = runtime->GetBaseContext()->GetCtx();
 
-  vars[0] = ctx->sp;
-  vars[1] = ctx->hp;
-  vars[2] = (cell_t)result;
-  vars[3] = (cell_t)ctx;
-  vars[4] = (cell_t)(runtime->plugin()->memory + runtime->plugin()->mem_size);
-  vars[5] = fn->GetPCodeAddress();
-  vars[6] = runtime->plugin()->data_size;
-  vars[7] = (cell_t)(runtime->plugin()->memory);
-  /* vars[8] will be set to ESP */
+  vars.frm = ctx->sp;
+  vars.hp = ctx->hp;
+  vars.rval = result;
+  vars.ctx = ctx;
+  vars.stp = runtime->plugin()->memory + runtime->plugin()->mem_size;
+  vars.cip = fn->GetPCodeAddress();
+  vars.data_size = runtime->plugin()->data_size;
+  vars.memory = runtime->plugin()->memory;
+  /* vars.esp will be set in the entry code */
 
   pfn = (JIT_EXECUTE)m_pJitEntry;
-  err = pfn(vars, fn->GetEntryAddress());
+  err = pfn(&vars, fn->GetEntryAddress());
 
-  ctx->hp = vars[1];
-  ctx->err_cip = vars[5];
+  ctx->hp = vars.hp;
+  ctx->err_cip = vars.cip;
 
   return err;
 }

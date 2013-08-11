@@ -206,17 +206,15 @@ struct InfoVars {
     void *esp;
 };
 
-#define AMX_NUM_INFO_VARS  9
-
-#define AMX_INFO_FRAME       0        //(same thing as above) 
-#define AMX_INFO_HEAP        4        //not relocated
-#define AMX_INFO_RETVAL      8        //physical
-#define AMX_INFO_CONTEXT    12        //physical
-#define AMX_INFO_STACKTOP   16        //relocated
-#define AMX_INFO_CIP        20        //pcode CIP
-#define AMX_INFO_DATASIZE   24        //plugin->data_size
-#define AMX_INFO_MEMORY     28        //plugin->memory
-#define AMX_INFO_NSTACK     32        //native stack
+#define AMX_INFO_FRAME          offsetof(InfoVars, frm)
+#define AMX_INFO_HEAP           offsetof(InfoVars, hp)
+#define AMX_INFO_RETVAL         offsetof(InfoVars, rval)
+#define AMX_INFO_CONTEXT        offsetof(InfoVars, ctx)
+#define AMX_INFO_STACKTOP       offsetof(InfoVars, stp)
+#define AMX_INFO_CIP            offsetof(InfoVars, cip)
+#define AMX_INFO_DATASIZE       offsetof(InfoVars, data_size)
+#define AMX_INFO_MEMORY         offsetof(InfoVars, memory)
+#define AMX_INFO_NSTACK         offsetof(InfoVars, esp)
 
 extern Knight::KeCodeCache *g_pCodeCache;
 extern JITX86 g_Jit;
