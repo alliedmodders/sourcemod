@@ -146,6 +146,11 @@ static cell_t PrintNums(IPluginContext *cx, const cell_t *params)
 	return 1;
 }
 
+static cell_t DoNothing(IPluginContext *cx, const cell_t *params)
+{
+	return 1;
+}
+
 static void BindNative(IPluginRuntime *rt, const char *name, SPVM_NATIVE_FUNC fn)
 {
 	int err;
@@ -185,6 +190,7 @@ static int Execute(const char *file)
 	BindNative(rt, "printnum", PrintNum);
 	BindNative(rt, "printnums", PrintNums);
 	BindNative(rt, "printfloat", PrintFloat);
+	BindNative(rt, "donothing", DoNothing);
 
 	IPluginFunction *fun = rt->GetFunctionByName("main");
 	if (!fun)

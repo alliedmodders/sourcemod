@@ -614,6 +614,9 @@ Compiler::emitOp(OPCODE op)
       __ movl(frm, stk);
       __ subl(tmp, dat);
       __ movl(Operand(info, AMX_INFO_FRAME), tmp);
+
+      // Align the stack to 16-bytes (each call adds 4 bytes).
+      __ subl(esp, 12);
       break;
 
     case OP_IDXADDR_B:
@@ -988,6 +991,7 @@ Compiler::emitOp(OPCODE op)
       // Remove parameters.
       __ movl(tmp, Operand(stk, 0));
       __ lea(stk, Operand(stk, tmp, ScaleFour, 4));
+      __ addl(esp, 12);
       __ ret();
       break;
     }
@@ -1585,12 +1589,6 @@ Compiler::emitNativeCall(OPCODE op)
   // Save registers.
   __ push(edx);
 
-  // Align the stack to 16 bytes.
-  __ push(ebx);
-  __ movl(ebx, esp);
-  __ andl(esp, 0xfffffff0);
-  __ subl(esp, 4);
-
   // Push the parameters for the C++ function.
   __ push(stk);
   __ push(native_index);
@@ -1616,9 +1614,8 @@ Compiler::emitNativeCall(OPCODE op)
   __ j(not_zero, &extern_error_);
   
   // Restore local state.
-  __ movl(esp, ebx);
-  __ pop(ebx);
   __ addl(stk, dat);
+  __ addl(esp, 12);
   __ pop(edx);
 
   if (op == OP_SYSREQ_N) {
@@ -1786,7 +1783,10 @@ GenerateEntry(void **retp)
   __ movl(ebx, edi);
   __ movl(Operand(esi, AMX_INFO_NSTACK), esp);
 
-  // Call into plugin.
+  // Align the stack.
+  __ andl(esp, 0xfffffff0);
+
+  // Call into plugin (align the stack first).
   __ call(ecx);
 
   __ movl(ecx, Operand(info, AMX_INFO_RETVAL));
