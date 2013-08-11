@@ -166,9 +166,10 @@ GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], cell_t _dimcou
 }
 
 static int
-PopTrackerAndSetHeap(BaseRuntime *rt, InfoVars &vars)
+PopTrackerAndSetHeap(BaseRuntime *rt)
 {
-  tracker_t *trk = (tracker_t *)(rt->GetBaseContext()->GetCtx()->vm[JITVARS_TRACKER]);
+  sp_context_t *ctx = rt->GetBaseContext()->GetCtx();
+  tracker_t *trk = (tracker_t *)(ctx->vm[JITVARS_TRACKER]);
   assert(trk->pCur > trk->pBase);
 
   trk->pCur--;
@@ -176,10 +177,10 @@ PopTrackerAndSetHeap(BaseRuntime *rt, InfoVars &vars)
     return SP_ERROR_TRACKER_BOUNDS;
 
   ucell_t amt = *trk->pCur;
-  if (amt > (vars.hp - rt->plugin()->data_size))
+  if (amt > (ctx->hp - rt->plugin()->data_size))
     return SP_ERROR_HEAPMIN;
 
-  vars.hp -= amt;
+  ctx->hp -= amt;
   return SP_ERROR_NONE;
 }
 
@@ -209,6 +210,8 @@ PushTracker(sp_context_t *ctx, size_t amount)
 static int
 GenerateArray(BaseRuntime *rt, InfoVars &vars, uint32_t argc, cell_t *argv, int autozero)
 {
+  sp_context_t *ctx = rt->GetBaseContext()->GetCtx();
+
   // Calculate how many cells are needed.
   if (argv[0] <= 0)
     return SP_ERROR_ARRAY_TOO_BIG;
@@ -232,10 +235,10 @@ GenerateArray(BaseRuntime *rt, InfoVars &vars, uint32_t argc, cell_t *argv, int 
     return SP_ERROR_ARRAY_TOO_BIG;
 
   uint32_t bytes = cells * 4;
-  if (!ke::IsUint32AddSafe(vars.hp, bytes))
+  if (!ke::IsUint32AddSafe(ctx->hp, bytes))
     return SP_ERROR_ARRAY_TOO_BIG;
 
-  uint32_t new_hp = vars.hp + bytes;
+  uint32_t new_hp = ctx->hp + bytes;
   cell_t *dat_hp = reinterpret_cast<cell_t *>(rt->plugin()->memory + new_hp);
 
   // argv, coincidentally, is STK.
@@ -245,12 +248,12 @@ GenerateArray(BaseRuntime *rt, InfoVars &vars, uint32_t argc, cell_t *argv, int 
   if (int err = PushTracker(rt->GetBaseContext()->GetCtx(), bytes))
     return err;
 
-  cell_t *base = reinterpret_cast<cell_t *>(rt->plugin()->memory + vars.hp);
+  cell_t *base = reinterpret_cast<cell_t *>(rt->plugin()->memory + ctx->hp);
   cell_t offs = GenerateArrayIndirectionVectors(base, argv, argc, autozero);
   assert(size_t(offs) == cells);
 
-  argv[argc - 1] = vars.hp;
-  vars.hp = new_hp;
+  argv[argc - 1] = ctx->hp;
+  ctx->hp = new_hp;
   return SP_ERROR_NONE;
 }
 
@@ -1194,7 +1197,7 @@ Compiler::emitOp(OPCODE op)
        __ j(not_below, &error_stack_min_);
      } else {
        // Check if the stack is going to collide with the heap.
-       __ movl(tmp, Operand(info, AMX_INFO_HEAP));
+       __ movl(tmp, Operand(hpAddr()));
        __ lea(tmp, Operand(dat, ecx, NoScale, STACK_MARGIN));
        __ cmpl(stk, tmp);
        __ j(below, &error_stack_low_);
@@ -1205,14 +1208,14 @@ Compiler::emitOp(OPCODE op)
     case OP_HEAP:
     {
       cell_t amount = readCell();
-      __ movl(alt, Operand(info, AMX_INFO_HEAP));
-      __ addl(Operand(info, AMX_INFO_HEAP), amount);
+      __ movl(alt, Operand(hpAddr()));
+      __ addl(Operand(hpAddr()), amount);
 
       if (amount > 0) {
-        __ cmpl(Operand(info, AMX_INFO_HEAP), plugin_->data_size);
+        __ cmpl(Operand(hpAddr()), plugin_->data_size);
         __ j(below, &error_heap_min_);
       } else {
-        __ movl(tmp, Operand(info, AMX_INFO_HEAP));
+        __ movl(tmp, Operand(hpAddr()));
         __ lea(tmp, Operand(dat, ecx, NoScale, STACK_MARGIN));
         __ cmpl(tmp, stk);
         __ j(above, &error_heap_low_);
@@ -1283,10 +1286,9 @@ Compiler::emitOp(OPCODE op)
       __ push(alt);
 
       // Get the context pointer and call the sanity checker.
-      __ push(info);
       __ push(intptr_t(rt_));
       __ call(ExternalAddress((void *)PopTrackerAndSetHeap));
-      __ addl(esp, 8);
+      __ addl(esp, 4);
       __ testl(eax, eax);
       __ j(not_zero, &extern_error_);
 
@@ -1386,7 +1388,7 @@ Compiler::emitCheckAddress(Register reg)
 
   // Check if we're in the invalid region between hp and sp.
   Label done;
-  __ cmpl(reg, Operand(info, AMX_INFO_HEAP));
+  __ cmpl(reg, Operand(hpAddr()));
   __ j(below, &done);
   __ lea(tmp, Operand(dat, reg, NoScale));
   __ cmpl(tmp, stk);
@@ -1402,11 +1404,11 @@ Compiler::emitGenArray(bool autozero)
   {
     // flat array; we can generate this without indirection tables.
     // Note that we can overwrite ALT because technically STACK should be destroying ALT
-    __ movl(alt, Operand(info, AMX_INFO_HEAP));
+    __ movl(alt, Operand(hpAddr()));
     __ movl(tmp, Operand(stk, 0));
     __ movl(Operand(stk, 0), alt);    // store base of the array into the stack.
     __ lea(alt, Operand(alt, tmp, ScaleFour));
-    __ movl(Operand(info, AMX_INFO_HEAP), alt);
+    __ movl(Operand(hpAddr()), alt);
     __ addl(alt, dat);
     __ cmpl(alt, stk);
     __ j(not_below, &error_heap_low_);
@@ -1595,8 +1597,6 @@ Compiler::emitNativeCall(OPCODE op)
   // Relocate all our absolute junk to be dat-relative, and store it all back
   // into the context.
   __ movl(eax, intptr_t(rt_->GetBaseContext()->GetCtx()));
-  __ movl(ecx, Operand(info, AMX_INFO_HEAP));
-  __ movl(Operand(eax, offsetof(sp_context_t, hp)), ecx);
   __ subl(stk, dat);
   __ movl(Operand(eax, offsetof(sp_context_t, sp)), stk);
   __ movl(ecx, Operand(info, AMX_INFO_FRAME));
@@ -1972,18 +1972,17 @@ int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result
 {
   sp_context_t *ctx = runtime->GetBaseContext()->GetCtx();
 
+  // Note that cip, hp, sp are saved and restored by Execute2().
   ctx->cip = fn->GetPCodeAddress();
 
   InfoVars vars;
   vars.frm = ctx->sp;
-  vars.hp = ctx->hp;
   /* vars.esp will be set in the entry code */
 
   JIT_EXECUTE pfn = (JIT_EXECUTE)m_pJitEntry;
   int err = pfn(&vars, fn->GetEntryAddress(), runtime->plugin()->memory, ctx);
 
   ctx->sp = vars.frm;
-  ctx->hp = vars.hp;
 
   *result = ctx->rval;
   return err;
