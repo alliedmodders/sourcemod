@@ -939,6 +939,16 @@ native bool:AddCommandListener(CommandListener:callback, const String:command[]=
 native RemoveCommandListener(CommandListener:callback, const String:command[]="");
 
 /**
+ * Returns true if the supplied command exists.
+ *
+ * @param command	Command to find.
+ * @return			True if command is found, false otherwise.
+ */
+stock bool:CommandExists(const String:command[])
+{
+	return (GetCommandFlags(command) != INVALID_FCVAR_FLAGS);
+}
+/**
  * Global listener for the chat commands.
  *
  * @param client		Client index.
