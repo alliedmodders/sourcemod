@@ -1762,7 +1762,7 @@ GenerateEntry(void **retp)
   AssemblerX86 masm;
 
   // Variables we're passed in:
-  //  void *vars[], void *entry
+  //  InfoVars *vars, void *entry, uint8_t *memory
 
   __ push(ebp);
   __ movl(ebp, esp);
@@ -1773,7 +1773,7 @@ GenerateEntry(void **retp)
 
   __ movl(esi, Operand(ebp, 8 + 4 * 0));
   __ movl(ecx, Operand(ebp, 8 + 4 * 1));
-  __ movl(eax, Operand(esi, AMX_INFO_MEMORY));
+  __ movl(eax, Operand(ebp, 8 + 4 * 2));
   __ movl(edx, Operand(esi, AMX_INFO_CONTEXT));
 
   // Set up run-time registers.
@@ -1956,7 +1956,7 @@ bool CompData::SetOption(const char *key, const char *val)
   return false;
 }
 
-typedef int (*JIT_EXECUTE)(InfoVars *vars, void *addr);
+typedef int (*JIT_EXECUTE)(InfoVars *vars, void *addr, uint8_t *memory);
 int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result)
 {
   int err;
@@ -1971,11 +1971,10 @@ int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result
   vars.rval = result;
   vars.ctx = ctx;
   vars.cip = fn->GetPCodeAddress();
-  vars.memory = runtime->plugin()->memory;
   /* vars.esp will be set in the entry code */
 
   pfn = (JIT_EXECUTE)m_pJitEntry;
-  err = pfn(&vars, fn->GetEntryAddress());
+  err = pfn(&vars, fn->GetEntryAddress(), runtime->plugin()->memory);
 
   ctx->hp = vars.hp;
   ctx->err_cip = vars.cip;
