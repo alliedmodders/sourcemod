@@ -143,7 +143,7 @@ calc_indirection(const array_creation_t *ar, cell_t dim)
   return size;
 }
 
-static void
+static cell_t
 GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], cell_t _dimcount, bool autozero)
 {
   array_creation_t ar;
@@ -161,28 +161,37 @@ GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], cell_t _dimcou
   ar.data_offs = &data_offs;
 
   data_offs = calc_indirection(&ar, 0);
-
   GenerateInnerArrayIndirectionVectors(&ar, 0, 0);
+  return data_offs;
 }
 
 static int
-JIT_VerifyLowBoundTracker(sp_context_t *ctx)
+PopTrackerAndSetHeap(sp_plugin_t *plugin, InfoVars &vars)
 {
-	tracker_t *trk = (tracker_t *)(ctx->vm[JITVARS_TRACKER]);
-	if (trk->pCur <= trk->pBase)
-		return SP_ERROR_TRACKER_BOUNDS;
-	return SP_ERROR_NONE;
+	tracker_t *trk = (tracker_t *)(vars.ctx->vm[JITVARS_TRACKER]);
+  assert(trk->pCur > trk->pBase);
+
+  trk->pCur--;
+  if (trk->pCur < trk->pBase)
+    return SP_ERROR_TRACKER_BOUNDS;
+
+  ucell_t amt = *trk->pCur;
+  if (amt > (vars.hp - plugin->data_size))
+    return SP_ERROR_HEAPMIN;
+
+  vars.hp -= amt;
+  return SP_ERROR_NONE;
 }
 
 static int
-JIT_VerifyOrAllocateTracker(sp_context_t *ctx)
+PushTracker(sp_context_t *ctx, size_t amount)
 {
   tracker_t *trk = (tracker_t *)(ctx->vm[JITVARS_TRACKER]);
 
   if ((size_t)(trk->pCur - trk->pBase) >= trk->size)
     return SP_ERROR_TRACKER_BOUNDS;
 
-  if (trk->pCur+1 - (trk->pBase + trk->size) == 0) {
+  if (trk->pCur + 1 - (trk->pBase + trk->size) == 0) {
     size_t disp = trk->size - 1;
     trk->size *= 2;
     trk->pBase = (ucell_t *)realloc(trk->pBase, trk->size * sizeof(cell_t));
@@ -193,6 +202,55 @@ JIT_VerifyOrAllocateTracker(sp_context_t *ctx)
     trk->pCur = trk->pBase + disp;
   }
 
+  *trk->pCur++ = amount;
+  return SP_ERROR_NONE;
+}
+
+static int
+GenerateArray(sp_plugin_t *plugin, InfoVars &vars, uint32_t argc, cell_t *argv, int autozero)
+{
+  // Calculate how many cells are needed.
+  if (argv[0] <= 0)
+    return SP_ERROR_ARRAY_TOO_BIG;
+
+  uint32_t dim = 1;         // second to last dimension
+  uint32_t cells = argv[0];
+
+  for (uint32_t dim = 1; dim < argc; dim++) {
+    cell_t dimsize = argv[dim];
+    if (dimsize <= 0)
+      return SP_ERROR_ARRAY_TOO_BIG;
+    if (!ke::IsUint32MultiplySafe(cells, dimsize))
+      return SP_ERROR_ARRAY_TOO_BIG;
+    cells *= uint32_t(dimsize);
+    if (!ke::IsUint32AddSafe(cells, dimsize))
+      return SP_ERROR_ARRAY_TOO_BIG;
+    cells += uint32_t(dimsize);
+  }
+
+  if (!ke::IsUint32MultiplySafe(cells, 4))
+    return SP_ERROR_ARRAY_TOO_BIG;
+
+  uint32_t bytes = cells * 4;
+  if (!ke::IsUint32AddSafe(vars.hp, bytes))
+    return SP_ERROR_ARRAY_TOO_BIG;
+
+  uint32_t new_hp = vars.hp + bytes;
+  cell_t *dat_hp = reinterpret_cast<cell_t *>(plugin->memory + new_hp);
+
+  // argv, coincidentally, is STK.
+  if (dat_hp >= argv - STACK_MARGIN)
+    return SP_ERROR_HEAPLOW;
+
+  if (int err = PushTracker(vars.ctx, bytes))
+    return err;
+
+  cell_t *base = reinterpret_cast<cell_t *>(plugin->memory + vars.hp);
+  cell_t offs = GenerateArrayIndirectionVectors(base, argv, argc, autozero);
+  assert(size_t(offs) == cells);
+
+  argv[argc - 1] = vars.hp;
+  vars.hp = new_hp;
   return SP_ERROR_NONE;
 }
 
@@ -1199,23 +1257,16 @@ Compiler::emitOp(OPCODE op)
     {
       cell_t amount = readCell();
 
-      // Save registers.
       __ push(pri);
       __ push(alt);
 
-      // call JIT_VerifyorAllocateTracker
       __ movl(eax, Operand(info, AMX_INFO_CONTEXT));
+      __ push(amount * 4);
       __ push(eax);
-      __ call(ExternalAddress((void *)JIT_VerifyOrAllocateTracker));
+      __ call(ExternalAddress((void *)PushTracker));
+      __ addl(esp, 8);
       __ testl(eax, eax);
       __ j(not_zero, &extern_error_);
-      __ pop(eax);
-
-      // Push the value onto the stack and increment pCur.
-      __ movl(edx, Operand(eax, offsetof(sp_context_t, vm[JITVARS_TRACKER])));
-      __ movl(ecx, Operand(edx, offsetof(tracker_t, pCur)));
-      __ addl(Operand(edx, offsetof(tracker_t, pCur)), 4);
-      __ movl(Operand(ecx, 0), amount * 4);
 
       __ pop(alt);
       __ pop(pri);
@@ -1229,24 +1280,12 @@ Compiler::emitOp(OPCODE op)
       __ push(alt);
 
       // Get the context pointer and call the sanity checker.
-      __ movl(eax, Operand(info, AMX_INFO_CONTEXT));
-      __ push(eax);
-      __ call(ExternalAddress((void *)JIT_VerifyLowBoundTracker));
+      __ push(info);
+      __ push(intptr_t(plugin_));
+      __ call(ExternalAddress((void *)PopTrackerAndSetHeap));
+      __ addl(esp, 8);
       __ testl(eax, eax);
       __ j(not_zero, &extern_error_);
-      __ pop(eax);
-
-      // Pop the value from the tracker stack and decrease the heap by it.
-      __ movl(edx, Operand(eax, offsetof(sp_context_t, vm[JITVARS_TRACKER])));
-      __ movl(ecx, Operand(edx, offsetof(tracker_t, pCur)));
-      __ subl(ecx, 4);
-      __ movl(Operand(edx, offsetof(tracker_t, pCur)), eax);
-      __ movl(ecx, Operand(ecx, 0));
-      __ subl(Operand(info, AMX_INFO_HEAP), ecx);
-
-      // Check that we didn't underflow the heap.
-      __ cmpl(Operand(info, AMX_INFO_HEAP), plugin_->data_size);
-      __ j(below, &error_heap_min_);
 
       __ pop(alt);
       __ pop(pri);
@@ -1335,40 +1374,6 @@ Compiler::labelAt(size_t offset)
   return &jump_map_[offset / sizeof(cell_t)];
 }
 
-static void
-EmitTrackerPushReg(AssemblerX86 &masm, Register reg, Label *error)
-{
-  __ push(eax);
-  if (reg == ecx)
-    __ push(ecx);
-  __ push(edi);
-  __ movl(edi, reg);
-  __ shll(edi, 2);    // Count in bytes, not cells.
-
-  // Get the context pointer, push it and call the check.
-  __ movl(eax, Operand(info, AMX_INFO_CONTEXT));
-  __ push(eax);
-  __ call(ExternalAddress((void *)JIT_VerifyOrAllocateTracker));
-
-  // Check for errors.
-  __ testl(eax, eax);
-  __ j(not_zero, error);
-
-  __ pop(eax);
-
-  // Push the register into the stack and increment pCur.
-  __ movl(edx, Operand(eax, offsetof(sp_context_t, vm[JITVARS_TRACKER])));
-  __ movl(eax, Operand(edx, offsetof(tracker_t, pCur)));
-  __ addl(Operand(edx, offsetof(tracker_t, pCur)), 4);
-  __ movl(Operand(eax, 0), edi);
-
-  // Restore pri, alt, stk.
-  __ pop(edi);
-  if (reg == ecx)
-    __ pop(ecx);
-  __ pop(eax);
-}
-
 void
 Compiler::emitCheckAddress(Register reg)
 {
@@ -1403,9 +1408,18 @@ Compiler::emitGenArray(bool autozero)
     __ cmpl(alt, stk);
     __ j(not_below, &error_heap_low_);
 
-    EmitTrackerPushReg(masm, ecx, &extern_error_);
+    __ shll(tmp, 2);
+    __ push(tmp);
+    __ push(Operand(info, AMX_INFO_CONTEXT));
+    __ call(ExternalAddress((void *)PushTracker));
+    __ addl(esp, 4);
+    __ pop(tmp);
+    __ shrl(tmp, 2);
+    __ testl(eax, eax);
+    __ j(not_zero, &extern_error_);
 
     if (autozero) {
+      // Note - tmp is ecx and still intact.
       __ push(eax);
       __ push(edi);
       __ xorl(eax, eax);
@@ -1417,9 +1431,26 @@ Compiler::emitGenArray(bool autozero)
       __ pop(eax);
     }
   } else {
-    __ movl(tmp, val);
-    __ movl(edx, autozero ? 1 : 0);
-    __ call(g_Jit.GetGenArrayIntrinsic());
+    __ push(pri);
+
+    // int GenerateArray(sp_plugin_t, vars[], uint32_t, cell_t *, int, unsigned *);
+    __ push(autozero ? 1 : 0);
+    __ push(stk);
+    __ push(val);
+    __ push(info);
+    __ push(intptr_t(plugin_));
+    __ call(ExternalAddress((void *)GenerateArray));
+    __ addl(esp, 5 * sizeof(void *));
+
+    // restore pri to tmp
+    __ pop(tmp);
+
+    __ testl(eax, eax);
+    __ j(not_zero, &extern_error_);
+
+    // Move tmp back to pri, remove pushed args.
+    __ movl(pri, tmp);
+    __ addl(stk, (val - 1) * 4);
   }
 }
 
@@ -1728,90 +1759,6 @@ Compiler::emitErrorPaths()
   }
 }
 
-// Input dimension count is in ecx.
-static void *
-GenerateGenArrayIntrinsic(void *ret)
-{
-  AssemblerX86 masm;
-
-  __ push(ebx);
-  __ push(eax);
-  __ push(edx);
-  __ push(ecx); // We reference this in the body of this routine.
-
-  Label toobig;
-
-  // Calculate how many cells will be needed.
-  __ movl(edx, Operand(stk, 0));              // Dimension's last count.
-  __ cmpl(edx, 0);
-  __ j(less, &toobig);
-  __ movl(eax, 1);                            // Position at second to last dimension.
-
-  Label loop, done;
-  __ bind(&loop);
-  __ cmpl(eax, Operand(esp, 0));              // Compare to # of dimensions.
-  __ j(not_below, &done);                     // End loop if done.
-  __ movl(ecx, Operand(stk, eax, ScaleFour)); // Get dimension size.
-  __ cmpl(ecx, 0);
-  __ j(less, &toobig);
-  __ imull(edx, ecx);                         // Multiply by size.
-  __ j(overflow, &toobig);
-  __ addl(eax, 1);                            // Increment dimension cursor.
-  __ addl(edx, ecx);                          // Add indirection vector size.
-  __ j(overflow, &toobig);
-  __ jmp(&loop);
-  __ bind(&done);
-
-  // Test if we have space for the size in edx.
-  __ movl(eax, Operand(info, AMX_INFO_HEAP));
-  __ imull(edx, edx, 4);
-  __ j(overflow, &toobig);
-  __ addl(eax, edx);
-  __ j(overflow, &toobig);
-  __ cmpl(eax, Operand(info, AMX_INFO_DATASIZE));
-  __ j(not_above, &toobig);
-  __ addl(eax, dat);
-  __ cmpl(eax, stk);
-  __ j(not_below, &toobig);
-  __ shrl(edx, 2);                            // Undo the imull.
-
-  // Allocate on the plugin heap.
-  __ movl(eax, Operand(info, AMX_INFO_HEAP));   // Get heap pointer.
-  __ lea(ebx, Operand(eax, edx, ScaleFour));    // New heap pointer.
-  __ movl(Operand(info, AMX_INFO_HEAP), ebx);   // Store back.
-  __ push(eax);                                 // Save on the stack.
-
-  Label extern_error;
-  EmitTrackerPushReg(masm, edx, &extern_error);
-
-  // Call to C++ to generate indirection vectors.
-  __ lea(ebx, Operand(dat, eax, NoScale));      // relocate eax
-  __ push(Operand(esp, 8));                     // push autozero
-  __ push(Operand(esp, 8));                     // push dimension count
-  __ push(stk);                                 // push dimension array
-  __ push(ebx);
-  __ call(ExternalAddress((void *)GenerateArrayIndirectionVectors));
-  __ addl(esp, 4 * sizeof(void *));
-
-  __ pop(eax);                                    // Restore array pointer.
-  __ pop(ecx);                                    // Restore dimension count.
-  __ lea(stk, Operand(stk, ecx, ScaleFour, -4));  // Pop params off the stack. 
-  __ movl(Operand(stk, 0), eax);                  // Store back array pointer.
-  __ pop(edx);
-  __ pop(eax);
-  __ pop(ebx);
-  __ ret();
-
-  __ bind(&toobig);
-  __ movl(eax, SP_ERROR_ARRAY_TOO_BIG);
-  __ jmp(ExternalAddress(ret));
-
-  __ bind(&extern_error);
-  __ jmp(ExternalAddress(ret));
-
-  return LinkCode(masm);
-}
-
 static void *
 GenerateEntry(void **retp)
 {
@@ -1886,7 +1833,6 @@ ICompilation *JITX86::ApplyOptions(ICompilation *_IN, ICompilation *_OUT)
 JITX86::JITX86()
 {
   m_pJitEntry = NULL;
-  m_pJitGenArray = NULL;
 }
 
 bool JITX86::InitializeJIT()
@@ -1895,10 +1841,6 @@ bool JITX86::InitializeJIT()
 
   m_pJitEntry = GenerateEntry(&m_pJitReturn);
   if (!m_pJitEntry)
-    return false;
-
-  m_pJitGenArray = GenerateGenArrayIntrinsic(m_pJitReturn);
-  if (!m_pJitGenArray)
     return false;
 
   MacroAssemblerX86 masm;

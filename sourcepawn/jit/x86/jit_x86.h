@@ -175,9 +175,6 @@ class JITX86
   int InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result);
 
  public:
-  ExternalAddress GetGenArrayIntrinsic() {
-      return ExternalAddress(m_pJitGenArray);
-  }
   ExternalAddress GetUniversalReturn() {
       return ExternalAddress(m_pJitReturn);
   }
@@ -187,7 +184,6 @@ class JITX86
  private:
   void *m_pJitEntry;         /* Entry function */
   void *m_pJitReturn;        /* Universal return address */
-  void *m_pJitGenArray;      /* Generates an array */
 };
 
 const Register pri = eax;
@@ -197,6 +193,18 @@ const Register dat = ebp;
 const Register tmp = ecx;
 const Register info = esi;
 const Register frm = ebx;
+
+struct InfoVars {
+    ucell_t frm;
+    ucell_t hp;
+    cell_t *rval;
+    sp_context_t *ctx;
+    uint8_t *stp;
+    ucell_t cip;
+    size_t data_size;
+    uint8_t *memory;
+    void *esp;
+};
 
 #define AMX_NUM_INFO_VARS  9
 
