@@ -1972,7 +1972,6 @@ int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result
   vars.ctx = ctx;
   vars.stp = runtime->plugin()->memory + runtime->plugin()->mem_size;
   vars.cip = fn->GetPCodeAddress();
-  vars.data_size = runtime->plugin()->data_size;
   vars.memory = runtime->plugin()->memory;
   /* vars.esp will be set in the entry code */
 

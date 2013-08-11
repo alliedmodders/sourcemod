@@ -201,7 +201,6 @@ struct InfoVars {
     sp_context_t *ctx;
     uint8_t *stp;
     ucell_t cip;
-    size_t data_size;
     uint8_t *memory;
     void *esp;
 };
@@ -212,7 +211,6 @@ struct InfoVars {
 #define AMX_INFO_CONTEXT        offsetof(InfoVars, ctx)
 #define AMX_INFO_STACKTOP       offsetof(InfoVars, stp)
 #define AMX_INFO_CIP            offsetof(InfoVars, cip)
-#define AMX_INFO_DATASIZE       offsetof(InfoVars, data_size)
 #define AMX_INFO_MEMORY         offsetof(InfoVars, memory)
 #define AMX_INFO_NSTACK         offsetof(InfoVars, esp)
 
