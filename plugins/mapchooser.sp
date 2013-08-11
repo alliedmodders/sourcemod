@@ -879,7 +879,8 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 					GetMenuItem(menu, item, map, sizeof(map));
 				}
 				
-				SetNextMap(map);			
+				SetNextMap(map);
+				g_MapVoteCompleted = true;
 			}
 			else
 			{
@@ -887,7 +888,6 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 			}
 			
 			g_HasVoteStarted = false;
-			g_MapVoteCompleted = true;
 		}
 	}
 	
