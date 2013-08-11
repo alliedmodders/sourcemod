@@ -166,9 +166,9 @@ GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], cell_t _dimcou
 }
 
 static int
-PopTrackerAndSetHeap(sp_plugin_t *plugin, InfoVars &vars)
+PopTrackerAndSetHeap(BaseRuntime *rt, InfoVars &vars)
 {
-	tracker_t *trk = (tracker_t *)(vars.ctx->vm[JITVARS_TRACKER]);
+  tracker_t *trk = (tracker_t *)(rt->GetBaseContext()->GetCtx()->vm[JITVARS_TRACKER]);
   assert(trk->pCur > trk->pBase);
 
   trk->pCur--;
@@ -176,7 +176,7 @@ PopTrackerAndSetHeap(sp_plugin_t *plugin, InfoVars &vars)
     return SP_ERROR_TRACKER_BOUNDS;
 
   ucell_t amt = *trk->pCur;
-  if (amt > (vars.hp - plugin->data_size))
+  if (amt > (vars.hp - rt->plugin()->data_size))
     return SP_ERROR_HEAPMIN;
 
   vars.hp -= amt;
@@ -207,7 +207,7 @@ PushTracker(sp_context_t *ctx, size_t amount)
 }
 
 static int
-GenerateArray(sp_plugin_t *plugin, InfoVars &vars, uint32_t argc, cell_t *argv, int autozero)
+GenerateArray(BaseRuntime *rt, InfoVars &vars, uint32_t argc, cell_t *argv, int autozero)
 {
   // Calculate how many cells are needed.
   if (argv[0] <= 0)
@@ -236,16 +236,16 @@ GenerateArray(sp_plugin_t *plugin, InfoVars &vars, uint32_t argc, cell_t *argv, 
     return SP_ERROR_ARRAY_TOO_BIG;
 
   uint32_t new_hp = vars.hp + bytes;
-  cell_t *dat_hp = reinterpret_cast<cell_t *>(plugin->memory + new_hp);
+  cell_t *dat_hp = reinterpret_cast<cell_t *>(rt->plugin()->memory + new_hp);
 
   // argv, coincidentally, is STK.
   if (dat_hp >= argv - STACK_MARGIN)
     return SP_ERROR_HEAPLOW;
 
-  if (int err = PushTracker(vars.ctx, bytes))
+  if (int err = PushTracker(rt->GetBaseContext()->GetCtx(), bytes))
     return err;
 
-  cell_t *base = reinterpret_cast<cell_t *>(plugin->memory + vars.hp);
+  cell_t *base = reinterpret_cast<cell_t *>(rt->plugin()->memory + vars.hp);
   cell_t offs = GenerateArrayIndirectionVectors(base, argv, argc, autozero);
   assert(size_t(offs) == cells);
 
@@ -1264,9 +1264,8 @@ Compiler::emitOp(OPCODE op)
       __ push(pri);
       __ push(alt);
 
-      __ movl(eax, Operand(info, AMX_INFO_CONTEXT));
       __ push(amount * 4);
-      __ push(eax);
+      __ push(intptr_t(rt_->GetBaseContext()->GetCtx()));
       __ call(ExternalAddress((void *)PushTracker));
       __ addl(esp, 8);
       __ testl(eax, eax);
@@ -1285,7 +1284,7 @@ Compiler::emitOp(OPCODE op)
 
       // Get the context pointer and call the sanity checker.
       __ push(info);
-      __ push(intptr_t(plugin_));
+      __ push(intptr_t(rt_));
       __ call(ExternalAddress((void *)PopTrackerAndSetHeap));
       __ addl(esp, 8);
       __ testl(eax, eax);
@@ -1414,7 +1413,7 @@ Compiler::emitGenArray(bool autozero)
 
     __ shll(tmp, 2);
     __ push(tmp);
-    __ push(Operand(info, AMX_INFO_CONTEXT));
+    __ push(intptr_t(rt_->GetBaseContext()->GetCtx()));
     __ call(ExternalAddress((void *)PushTracker));
     __ addl(esp, 4);
     __ pop(tmp);
@@ -1442,7 +1441,7 @@ Compiler::emitGenArray(bool autozero)
     __ push(stk);
     __ push(val);
     __ push(info);
-    __ push(intptr_t(plugin_));
+    __ push(intptr_t(rt_));
     __ call(ExternalAddress((void *)GenerateArray));
     __ addl(esp, 5 * sizeof(void *));
 
@@ -1472,7 +1471,7 @@ Compiler::emitCall()
 
   // eax = context
   // ecx = rp
-  __ movl(eax, Operand(info, AMX_INFO_CONTEXT));
+  __ movl(eax, intptr_t(rt_->GetBaseContext()->GetCtx()));
   __ movl(ecx, Operand(eax, offsetof(sp_context_t, rp)));
 
   // Check if the return stack is used up.
@@ -1505,7 +1504,7 @@ Compiler::emitCall()
   __ movl(Operand(info, AMX_INFO_CIP), cip);
 
   // Mark us as leaving the last frame.
-  __ movl(tmp, Operand(info, AMX_INFO_CONTEXT));
+  __ movl(tmp, intptr_t(rt_->GetBaseContext()->GetCtx()));
   __ subl(Operand(tmp, offsetof(sp_context_t, rp)), 1);
   return true;
 }
@@ -1595,7 +1594,7 @@ Compiler::emitNativeCall(OPCODE op)
 
   // Relocate all our absolute junk to be dat-relative, and store it all back
   // into the context.
-  __ movl(eax, Operand(info, AMX_INFO_CONTEXT));
+  __ movl(eax, intptr_t(rt_->GetBaseContext()->GetCtx()));
   __ movl(ecx, Operand(info, AMX_INFO_HEAP));
   __ movl(Operand(eax, offsetof(sp_context_t, hp)), ecx);
   __ subl(stk, dat);
@@ -1608,7 +1607,7 @@ Compiler::emitNativeCall(OPCODE op)
   __ call(ExternalAddress((void *)NativeCallback));
 
   // Check for errors.
-  __ movl(ecx, Operand(info, AMX_INFO_CONTEXT));
+  __ movl(ecx, intptr_t(rt_->GetBaseContext()->GetCtx()));
   __ movl(ecx, Operand(ecx, offsetof(sp_context_t, n_err)));
   __ testl(ecx, ecx);
   __ j(not_zero, &extern_error_);
@@ -1750,7 +1749,7 @@ Compiler::emitErrorPaths()
 
   if (extern_error_.used()) {
     __ bind(&extern_error_);
-    __ movl(eax, Operand(info, AMX_INFO_CONTEXT));
+    __ movl(eax, intptr_t(rt_->GetBaseContext()->GetCtx()));
     __ movl(eax, Operand(eax, offsetof(sp_context_t, n_err)));
     __ jmp(g_Jit.GetUniversalReturn());
   }
@@ -1774,10 +1773,9 @@ GenerateEntry(void **retp)
   __ movl(esi, Operand(ebp, 8 + 4 * 0));
   __ movl(ecx, Operand(ebp, 8 + 4 * 1));
   __ movl(eax, Operand(ebp, 8 + 4 * 2));
-  __ movl(edx, Operand(esi, AMX_INFO_CONTEXT));
 
   // Set up run-time registers.
-  __ movl(edi, Operand(edx, offsetof(sp_context_t, sp)));
+  __ movl(edi, Operand(esi, AMX_INFO_FRAME));
   __ addl(edi, eax);
   __ movl(ebp, eax);
   __ movl(ebx, edi);
@@ -1797,9 +1795,8 @@ GenerateEntry(void **retp)
   Label error;
   __ bind(&error);
   __ movl(esp, Operand(info, AMX_INFO_NSTACK));
-  __ movl(ecx, Operand(info, AMX_INFO_CONTEXT));
   __ subl(stk, dat);
-  __ movl(Operand(ecx, offsetof(sp_context_t, sp)), stk);
+  __ movl(Operand(esi, AMX_INFO_FRAME), stk);
 
   __ pop(ebx);
   __ pop(edi);
@@ -1969,13 +1966,13 @@ int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result
   vars.frm = ctx->sp;
   vars.hp = ctx->hp;
   vars.rval = result;
-  vars.ctx = ctx;
   vars.cip = fn->GetPCodeAddress();
   /* vars.esp will be set in the entry code */
 
   pfn = (JIT_EXECUTE)m_pJitEntry;
   err = pfn(&vars, fn->GetEntryAddress(), runtime->plugin()->memory);
 
+  ctx->sp = vars.frm;
   ctx->hp = vars.hp;
   ctx->err_cip = vars.cip;
 
