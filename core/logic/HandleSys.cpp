@@ -1027,6 +1027,63 @@ bool HandleSystem::TryAndFreeSomeHandles()
 	HANDLE_LOG_VERY_BAD("[SM] MEMORY LEAK DETECTED IN PLUGIN (file \"%s\")", highest_owner->GetFilename());
 	HANDLE_LOG_VERY_BAD("[SM] Unloading plugin to free %d handles.", highest_handle_count);
 	HANDLE_LOG_VERY_BAD("[SM] Contact the author(s) of this plugin to correct this error.", highest_handle_count);
+	HANDLE_LOG_VERY_BAD("--------------------------------------------------------------------------");
+
+	const IdentityToken_t *pIdentity = highest_owner->GetIdentity();
+	unsigned int total = 0, highest_index = 0, total_size = 0, size;
+	unsigned int * pCount = new unsigned int[HANDLESYS_TYPEARRAY_SIZE+1];
+	memset(pCount, 0, ((HANDLESYS_TYPEARRAY_SIZE + 1) * sizeof(unsigned int)));
+
+	for (unsigned int i = 1; i <= m_HandleTail; ++i)
+	{
+		const QHandle &Handle = m_Handles[i];
+		if (Handle.set != HandleSet_Used || Handle.owner != pIdentity)
+		{
+			continue;
+		}
+
+		++pCount[Handle.type];
+		++total;
+
+		if (Handle.type >= highest_index)
+		{
+			highest_index = ((Handle.type) + 1);
+		}
+
+		if (Handle.clone != 0)
+		{
+			continue;
+		}
+
+		if (m_Types[Handle.type].dispatch->GetHandleApproxSize(Handle.type, Handle.object, &size))
+		{
+			total_size += size;
+		}
+	}
+
+	const char * pTypeName = NULL;
+
+	for (unsigned int i = 0; i < highest_index; ++i)
+	{
+		if (pCount[i] == 0)
+		{
+			continue; /* We may have gaps, it's fine. */
+		}
+
+		if (m_Types[i].nameIdx != -1)
+		{
+			pTypeName = m_strtab->GetString(m_Types[i].nameIdx);
+		}
+		else
+		{
+			pTypeName = "ANON";
+		}
+
+		HANDLE_LOG_VERY_BAD("Type\t%-20.20s|\tCount\t%u", pTypeName, pCount[i]);
+	}
+
+	HANDLE_LOG_VERY_BAD("-- Approximately %d bytes of memory are in use by (%u) Handles.\n", total_size, total);
+	delete [] pCount;
 
 	highest_owner->GetBaseContext()->ThrowNativeErrorEx(SP_ERROR_MEMACCESS, "Memory leak");
 
