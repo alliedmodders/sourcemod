@@ -140,6 +140,10 @@ class Compiler
     sp_context_t *ctx = rt_->GetBaseContext()->GetCtx();
     return ExternalAddress(&ctx->hp);
   }
+  ExternalAddress frmAddr() {
+    sp_context_t *ctx = rt_->GetBaseContext()->GetCtx();
+    return ExternalAddress(&ctx->frm);
+  }
 
  private:
   AssemblerX86 masm;
@@ -205,11 +209,9 @@ const Register info = esi;
 const Register frm = ebx;
 
 struct InfoVars {
-    ucell_t frm;
     void *esp;
 };
 
-#define AMX_INFO_FRAME          offsetof(InfoVars, frm)
 #define AMX_INFO_NSTACK         offsetof(InfoVars, esp)
 
 extern Knight::KeCodeCache *g_pCodeCache;

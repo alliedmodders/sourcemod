@@ -608,7 +608,7 @@ Compiler::emitOp(OPCODE op)
 
     case OP_PROC:
       // Push the old frame onto the stack.
-      __ movl(tmp, Operand(info, AMX_INFO_FRAME));
+      __ movl(tmp, Operand(frmAddr()));
       __ movl(Operand(stk, -4), tmp);
       __ subl(stk, 8);    // extra unused slot for non-existant CIP
 
@@ -616,7 +616,7 @@ Compiler::emitOp(OPCODE op)
       __ movl(tmp, stk);
       __ movl(frm, stk);
       __ subl(tmp, dat);
-      __ movl(Operand(info, AMX_INFO_FRAME), tmp);
+      __ movl(Operand(frmAddr()), tmp);
 
       // Align the stack to 16-bytes (each call adds 4 bytes).
       __ subl(esp, 12);
@@ -834,7 +834,7 @@ Compiler::emitOp(OPCODE op)
     {
       Register reg = (op == OP_ADDR_PRI) ? pri : alt;
       cell_t offset = readCell();
-      __ movl(reg, Operand(info, AMX_INFO_FRAME));
+      __ movl(reg, Operand(frmAddr()));
       __ addl(reg, offset);
       break;
     }
@@ -988,7 +988,7 @@ Compiler::emitOp(OPCODE op)
       // Restore the old frame pointer.
       __ movl(frm, Operand(stk, 4));              // get the old frm
       __ addl(stk, 8);                            // pop stack
-      __ movl(Operand(info, AMX_INFO_FRAME), frm);  // store back old frm
+      __ movl(Operand(frmAddr()), frm);           // store back old frm
       __ addl(frm, dat);                          // relocate
 
       // Remove parameters.
@@ -1594,13 +1594,11 @@ Compiler::emitNativeCall(OPCODE op)
   __ push(stk);
   __ push(native_index);
 
-  // Relocate all our absolute junk to be dat-relative, and store it all back
-  // into the context.
+  // Relocate our absolute stk to be dat-relative, and update the context's
+  // view.
   __ movl(eax, intptr_t(rt_->GetBaseContext()->GetCtx()));
   __ subl(stk, dat);
   __ movl(Operand(eax, offsetof(sp_context_t, sp)), stk);
-  __ movl(ecx, Operand(info, AMX_INFO_FRAME));
-  __ movl(Operand(eax, offsetof(sp_context_t, frm)), ecx);
 
   // Push context and make the call.
   __ push(eax);
@@ -1777,7 +1775,8 @@ GenerateEntry(void **retp)
   __ movl(eax, Operand(ebp, 8 + 4 * 2));
 
   // Set up run-time registers.
-  __ movl(edi, Operand(esi, AMX_INFO_FRAME));
+  __ movl(ebx, Operand(ebp, 8 + 4 * 3));
+  __ movl(edi, Operand(ebx, offsetof(sp_context_t, sp)));
   __ addl(edi, eax);
   __ movl(ebp, eax);
   __ movl(ebx, edi);
@@ -1792,7 +1791,7 @@ GenerateEntry(void **retp)
   // Restore stack.
   __ movl(esp, Operand(info, AMX_INFO_NSTACK));
 
-  // Get input context.
+  // Get input context, store rval.
   __ movl(ecx, Operand(esp, 32));
   __ movl(Operand(ecx, offsetof(sp_context_t, rval)), pri);
 
@@ -1804,7 +1803,7 @@ GenerateEntry(void **retp)
   Label ret;
   __ bind(&ret);
   __ subl(stk, dat);
-  __ movl(Operand(esi, AMX_INFO_FRAME), stk);
+  __ movl(Operand(ecx, offsetof(sp_context_t, sp)), stk);
 
   // Restore registers and gtfo.
   __ pop(ebx);
@@ -1817,6 +1816,7 @@ GenerateEntry(void **retp)
   Label error;
   __ bind(&error);
   __ movl(esp, Operand(info, AMX_INFO_NSTACK));
+  __ movl(ecx, Operand(esp, 32)); // ret-path expects ecx = ctx
   __ jmp(&ret);
 
   void *code = LinkCode(masm);
@@ -1976,13 +1976,10 @@ int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result
   ctx->cip = fn->GetPCodeAddress();
 
   InfoVars vars;
-  vars.frm = ctx->sp;
   /* vars.esp will be set in the entry code */
 
   JIT_EXECUTE pfn = (JIT_EXECUTE)m_pJitEntry;
   int err = pfn(&vars, fn->GetEntryAddress(), runtime->plugin()->memory, ctx);
-
-  ctx->sp = vars.frm;
 
   *result = ctx->rval;
   return err;
