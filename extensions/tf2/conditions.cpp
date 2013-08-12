@@ -35,7 +35,11 @@
 
 #include <iplayerinfo.h>
 
-typedef uint64_t condflags_t;
+typedef struct condflags_s {
+	uint64_t upper;
+	uint64_t lower;
+} condflags_t;
+condflags_t condflags_empty = { 0, 0 };
 
 condflags_t g_PlayerConds[MAXPLAYERS+1];
 
@@ -44,6 +48,7 @@ IForward *g_removeCondForward = NULL;
 
 int playerCondOffset = -1;
 int playerCondExOffset = -1;
+int playerCondEx2Offset = -1;
 int conditionBitsOffset = -1;
 
 bool g_bIgnoreRemove;
@@ -52,14 +57,18 @@ bool g_bIgnoreRemove;
 
 inline condflags_t GetPlayerConds(CBaseEntity *pPlayer)
 {
-	uint32_t playerCond   =  *(uint32_t *)((intptr_t)pPlayer + playerCondOffset);
-	uint32_t condBits     =  *(uint32_t *)((intptr_t)pPlayer + conditionBitsOffset);
-	uint32_t playerCondEx =  *(uint32_t *)((intptr_t)pPlayer + playerCondExOffset);
+	condflags_t result;
+	uint32_t playerCond    =  *(uint32_t *)((intptr_t)pPlayer + playerCondOffset);
+	uint32_t condBits      =  *(uint32_t *)((intptr_t)pPlayer + conditionBitsOffset);
+	uint32_t playerCondEx  =  *(uint32_t *)((intptr_t)pPlayer + playerCondExOffset);
+	uint32_t playerCondEx2 =  *(uint32_t *)((intptr_t)pPlayer + playerCondEx2Offset);
 
 	uint64_t playerCondExAdj = playerCondEx;
 	playerCondExAdj <<= 32;
 
-	return playerCond|condBits|playerCondExAdj;
+	result.lower = playerCond|condBits|playerCondExAdj;
+	result.upper = playerCondEx2;
+	return result;
 }
 
 void Conditions_OnGameFrame(bool simulating)
@@ -88,31 +97,47 @@ void Conditions_OnGameFrame(bool simulating)
 		oldconds = g_PlayerConds[i];
 		newconds = GetPlayerConds(pEntity);
 
-		if (oldconds == newconds)
+		if (oldconds.lower == newconds.lower && oldconds.upper == newconds.upper)
 			continue;
 
-		addedconds = newconds &~ oldconds;
-		removedconds = oldconds &~ newconds;
+		addedconds.lower = newconds.lower &~ oldconds.lower;
+		removedconds.lower = oldconds.lower &~ newconds.lower;
+		addedconds.upper = newconds.upper &~ oldconds.upper;
+		removedconds.upper = oldconds.upper &~ newconds.upper;
 
 		uint64_t j;
-		condflags_t bit;
+		uint64_t bit;
 
-		for (j = 0; j < MAX_CONDS && (bit = ((condflags_t)1 << j)) <= addedconds; j++)
+		uint64_t maxbit = max(addedconds.lower, addedconds.upper);
+		for (j = 0; j < MAX_CONDS && (bit = ((uint64_t)1 << j)) <= maxbit; j++)
 		{
-			if ((addedconds & bit) == bit)
+			if ((addedconds.lower & bit) == bit)
 			{
 				g_addCondForward->PushCell(i);
 				g_addCondForward->PushCell(j & 0xFFFFFFFF);
 				g_addCondForward->Execute(NULL, NULL);
 			}
+			if ((addedconds.upper & bit) == bit)
+			{
+				g_addCondForward->PushCell(i);
+				g_addCondForward->PushCell((j+64) & 0xFFFFFFFF);
+				g_addCondForward->Execute(NULL, NULL);
+			}
 		}
 
-		for (j = 0; j < MAX_CONDS && (bit = ((condflags_t)1 << j)) <= removedconds; j++)
+		maxbit = max(removedconds.lower, removedconds.upper);
+		for (j = 0; j < MAX_CONDS && (bit = ((uint64_t)1 << j)) <= maxbit; j++)
 		{
-			if ((removedconds & bit) == bit)
+			if ((removedconds.lower & bit) == bit)
 			{
 				g_removeCondForward->PushCell(i);
 				g_removeCondForward->PushCell(j & 0xFFFFFFFF);
+				g_removeCondForward->Execute(NULL, NULL);
+			}
+			if ((removedconds.upper & bit) == bit)
+			{
+				g_removeCondForward->PushCell(i);
+				g_removeCondForward->PushCell((j+64) & 0xFFFFFFFF);
 				g_removeCondForward->Execute(NULL, NULL);
 			}
 		}
@@ -148,7 +173,15 @@ bool InitialiseConditionChecks()
 	
 	playerCondExOffset = prop.actual_offset;
 
-	if (playerCondOffset == -1 || playerCondExOffset == -1 || conditionBitsOffset == -1)
+	if (!gamehelpers->FindSendPropInfo("CTFPlayer", "m_nPlayerCondEx2", &prop))
+	{
+		g_pSM->LogError(myself, "Failed to find m_nPlayerCondEx2 prop offset");
+		return false;
+	}
+	
+	playerCondEx2Offset = prop.actual_offset;
+
+	if (playerCondOffset == -1 || playerCondExOffset == -1 || conditionBitsOffset == -1 || playerCondEx2Offset == -1)
 		return false;
 	
 	int maxClients = gpGlobals->maxClients;
@@ -168,7 +201,7 @@ bool InitialiseConditionChecks()
 
 void Conditions_OnClientPutInServer(int client)
 {
-	g_PlayerConds[client] = 0;
+	g_PlayerConds[client] = condflags_empty;
 }
 
 void RemoveConditionChecks()
