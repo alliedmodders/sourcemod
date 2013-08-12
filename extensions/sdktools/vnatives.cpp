@@ -1073,6 +1073,32 @@ static cell_t GetPlayerDecalFile(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t GetPlayerJingleFile(IPluginContext *pContext, const cell_t *params)
+{
+	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
+	if (player == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
+	}
+	if (!player->IsInGame())
+	{
+		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
+	}
+
+	player_info_t info;
+	char *buffer;
+
+	if (!GetPlayerInfo(params[1], &info) || !info.customFiles[1])
+	{
+		return 0;
+	}
+
+	pContext->LocalToString(params[2], &buffer);
+	Q_binarytohex((byte *)&info.customFiles[1], sizeof(info.customFiles[1]), buffer, params[3]);
+
+	return 1;
+}
+
 static cell_t GetServerNetStats(IPluginContext *pContext, const cell_t *params)
 {
 	if (iserver == NULL)
@@ -1256,6 +1282,7 @@ sp_nativeinfo_t g_Natives[] =
 	{"GetClientAimTarget",		sm_GetClientAimTarget},
 	{"SetEntityModel",			sm_SetEntityModel},
 	{"GetPlayerDecalFile",		GetPlayerDecalFile},
+	{"GetPlayerJingleFile",		GetPlayerJingleFile},
 	{"GetServerNetStats",		GetServerNetStats},
 	{"EquipPlayerWeapon",		WeaponEquip},
 	{"ActivateEntity",			ActivateEntity},
