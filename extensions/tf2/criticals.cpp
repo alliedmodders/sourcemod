@@ -30,12 +30,18 @@
  */
 
 #include "criticals.h"
+#include "util.h"
 
 IServerGameEnts *gameents = NULL;
 
 CDetour *calcIsAttackCriticalDetour = NULL;
 CDetour *calcIsAttackCriticalMeleeDetour = NULL;
 CDetour *calcIsAttackCriticalBowDetour = NULL;
+CDetour *calcIsAttackCriticalKnifeDetour = NULL;
+CDetour *calcIsAttackCriticalNoCritsDetour = NULL;
+CDetour *calcIsAttackCriticalNoCritsMeleeDetour = NULL;
+
+int nextMeleeCritOffset = -1;
 
 IForward *g_critForward = NULL;
 
@@ -79,7 +85,7 @@ int CheckBaseHandle(CBaseHandle &hndl)
 	return index;
 }
 
-DetourResult DetourCallback(CBaseEntity *pEnt)
+DetourResult DetourCallback(CBaseEntity *pEnt, bool bMeleeNoCrits)
 {
 	edict_t *pEdict = gameents->BaseEntityToEdict((CBaseEntity *)pEnt);
 
@@ -107,6 +113,14 @@ DetourResult DetourCallback(CBaseEntity *pEnt)
 
 	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEnt + info.actual_offset);
 	int index = CheckBaseHandle(hndl);
+
+	//Skip CTFWeaponBaseMelee::CalcIsAttackCriticalHelperNoCrits if m_iNextMeleeCrit is not 2
+	if (bMeleeNoCrits)
+	{
+		CBaseEntity *pPlayer = UTIL_GetCBaseEntity(index, true);
+		if (pPlayer && *(uint32_t *)((intptr_t)pPlayer + nextMeleeCritOffset) != 2)
+			return Result_Ignore;
+	}
 
 	g_critForward->PushCell(index); //Client index
 	g_critForward->PushCell(engine->IndexOfEdict(pEdict)); // Weapon index
@@ -136,7 +150,7 @@ DetourResult DetourCallback(CBaseEntity *pEnt)
 
 DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperMelee, bool)
 {
-	DetourResult result = DetourCallback((CBaseEntity *)this);
+	DetourResult result = DetourCallback((CBaseEntity *)this, false);
 
 	if (result == Result_Ignore)
 	{
@@ -154,7 +168,7 @@ DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperMelee, bool)
 
 DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelper, bool)
 {
-	DetourResult result = DetourCallback((CBaseEntity *)this);
+	DetourResult result = DetourCallback((CBaseEntity *)this, false);
 
 	if (result == Result_Ignore)
 	{
@@ -172,7 +186,7 @@ DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelper, bool)
 
 DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperBow, bool)
 {
-	DetourResult result = DetourCallback((CBaseEntity *)this);
+	DetourResult result = DetourCallback((CBaseEntity *)this, false);
 
 	if (result == Result_Ignore)
 	{
@@ -188,11 +202,70 @@ DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperBow, bool)
 	}
 }
 
+DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperKnife, bool)
+{
+	DetourResult result = DetourCallback((CBaseEntity *)this, false);
+
+	if (result == Result_Ignore)
+	{
+		return DETOUR_MEMBER_CALL(CalcIsAttackCriticalHelperKnife)();
+	}
+	else if (result == Result_NoCrit)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperNoCrits, bool)
+{
+	DetourResult result = DetourCallback((CBaseEntity *)this, false);
+
+	if (result == Result_Ignore)
+	{
+		return DETOUR_MEMBER_CALL(CalcIsAttackCriticalHelperNoCrits)();
+	}
+	else if (result == Result_NoCrit)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperNoCritsMelee, bool)
+{
+	DetourResult result = DetourCallback((CBaseEntity *)this, true);
+
+	if (result == Result_Ignore)
+	{
+		return DETOUR_MEMBER_CALL(CalcIsAttackCriticalHelperNoCritsMelee)();
+	}
+	else if (result == Result_NoCrit)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
 bool InitialiseCritDetours()
 {
+	sm_sendprop_info_t prop;
+
 	calcIsAttackCriticalDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelper, "CalcCritical");
 	calcIsAttackCriticalMeleeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelperMelee, "CalcCriticalMelee");
 	calcIsAttackCriticalBowDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelperBow, "CalcCriticalBow");
+	calcIsAttackCriticalKnifeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelperKnife, "CalcCriticalKnife");
+	calcIsAttackCriticalNoCritsDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelperNoCrits, "CalcCriticalNoCrits");
+	calcIsAttackCriticalNoCritsMeleeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelperNoCritsMelee, "CalcCriticalNoCritsMelee");
 
 	bool HookCreated = false;
 
@@ -211,6 +284,30 @@ bool InitialiseCritDetours()
 	if (calcIsAttackCriticalBowDetour != NULL)
 	{
 		calcIsAttackCriticalBowDetour->EnableDetour();
+		HookCreated = true;
+	}
+
+	if (calcIsAttackCriticalKnifeDetour != NULL)
+	{
+		calcIsAttackCriticalKnifeDetour->EnableDetour();
+		HookCreated = true;
+	}
+
+	if (calcIsAttackCriticalNoCritsDetour != NULL)
+	{
+		calcIsAttackCriticalNoCritsDetour->EnableDetour();
+		HookCreated = true;
+	}
+
+	if (calcIsAttackCriticalNoCritsMeleeDetour != NULL)
+	{
+		calcIsAttackCriticalNoCritsMeleeDetour->EnableDetour();
+		if (!gamehelpers->FindSendPropInfo("CTFPlayer", "m_iNextMeleeCrit", &prop))
+		{
+			g_pSM->LogError(myself, "Failed to find m_iNextMeleeCrit prop offset");
+			return false;
+		}
+		nextMeleeCritOffset = prop.actual_offset;
 		HookCreated = true;
 	}
 
@@ -242,5 +339,23 @@ void RemoveCritDetours()
 	{
 		calcIsAttackCriticalBowDetour->Destroy();
 		calcIsAttackCriticalBowDetour = NULL;
+	}
+	
+	if (calcIsAttackCriticalKnifeDetour != NULL)
+	{
+		calcIsAttackCriticalKnifeDetour->Destroy();
+		calcIsAttackCriticalKnifeDetour = NULL;
+	}
+
+	if (calcIsAttackCriticalNoCritsDetour != NULL)
+	{
+		calcIsAttackCriticalNoCritsDetour->Destroy();
+		calcIsAttackCriticalNoCritsDetour = NULL;
+	}
+
+	if (calcIsAttackCriticalNoCritsMeleeDetour != NULL)
+	{
+		calcIsAttackCriticalNoCritsMeleeDetour->Destroy();
+		calcIsAttackCriticalNoCritsMeleeDetour = NULL;
 	}
 }
