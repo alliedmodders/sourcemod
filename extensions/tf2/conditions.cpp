@@ -108,7 +108,7 @@ void Conditions_OnGameFrame(bool simulating)
 		uint64_t j;
 		uint64_t bit;
 
-		uint64_t maxbit = max(addedconds.lower, addedconds.upper);
+		uint64_t maxbit = MAX(addedconds.lower, addedconds.upper);
 		for (j = 0; j < MAX_CONDS && (bit = ((uint64_t)1 << j)) <= maxbit; j++)
 		{
 			if ((addedconds.lower & bit) == bit)
@@ -125,7 +125,7 @@ void Conditions_OnGameFrame(bool simulating)
 			}
 		}
 
-		maxbit = max(removedconds.lower, removedconds.upper);
+		maxbit = MAX(removedconds.lower, removedconds.upper);
 		for (j = 0; j < MAX_CONDS && (bit = ((uint64_t)1 << j)) <= maxbit; j++)
 		{
 			if ((removedconds.lower & bit) == bit)
