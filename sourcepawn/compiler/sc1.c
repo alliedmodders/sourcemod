@@ -3699,8 +3699,7 @@ SC_FUNC symbol *fetchfunc(char *name,int tag)
     sym=addsym(name,code_idx,iFUNCTN,sGLOBAL,tag,0);
     assert(sym!=NULL);          /* fatal error 103 must be given on error */
     /* assume no arguments */
-    sym->dim.arglist=(arginfo*)malloc(1*sizeof(arginfo));
-    sym->dim.arglist[0].ident=0;
+    sym->dim.arglist=(arginfo*)calloc(1, sizeof(arginfo));
     /* set library ID to NULL (only for native functions) */
     sym->x.lib=NULL;
     /* set the required stack size to zero (only for non-native functions) */
