@@ -22,24 +22,25 @@
 				"linux"			"6"
 				"mac"			"6"
 			}
+			//Econ update doesnt check this now but for what we use it hopefully its fine.
 			"WeaponPrice"
 			{
-				"windows"		"2700"
-				"linux"			"2700"
-				"mac"			"2700"
+				"windows"		"2528"
+				"linux"			"2528"
+				"mac"			"2528"
 			}
 			//Offset into CheckRestartRound
 			"CTTeamScoreOffset"
 			{
 				"windows"	"97"
-				"linux"		"124"
+				"linux"		"125"
 				"mac"		"150"
 			}
 			//Offset into CheckRestartRound
 			"TTeamScoreOffset"
 			{
 				"windows"	"122"
-				"linux"		"159"
+				"linux"		"160"
 				"mac"		"185"
 			}
 			"ClanTagOffset"
@@ -69,8 +70,8 @@
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x81\x2A\x2A\x2A\x2A\x2A\x53\x56\x57\x6A\x00\x8B\xF1\xE8"
-				"linux"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcb"
-				"mac"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcb"
+				"linux"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcib"
+				"mac"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcib"
 			}
 			"CSWeaponDrop"//Wildcard first 6 bytes for CS:S DM
 			{
@@ -111,14 +112,14 @@
 			"AliasToWeaponID"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x56\x57\x8B\x2A\x2A\x85\xFF\x74\x2A\x33\xF6\x8B\xFF"
+				"windows"	"\x55\x8B\xEC\x57\x8B\x2A\x2A\x85\xFF\x75\x2A\x33\xC0\x5F\x5D\xC3\x56\x33\xF6\x8B\x04\xF5"
 				"linux"		"@_Z15AliasToWeaponIDPKc"
 				"mac"		"@_Z15AliasToWeaponIDPKc"
 			}
 			"WeaponIDToAlias"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x4D\x08\x33\xC0\xEB\x2A\x8D\x9B\x00\x00\x00\x00\x39\x0C\xC5\x2A\x2A\x2A\x2A\x74\x2A\x40\x83\xF8\x38\x72\x2A\x33\xC0\x5D"
+				"windows"	"\x55\x8B\xEC\x8B\x4D\x08\x33\xC0\xEB\x2A\x8D\x9B\x00\x00\x00\x00\x39\x0C\xC5\x2A\x2A\x2A\x2A\x74\x2A\x40\x83\xF8\x38\x72\x2A\x33\xC0\x5D\xC3\x8B\x04\xC5\x2A\x2A\x2A\x2A\x6A\x5F"
 				"linux"		"@_Z15WeaponIDToAliasi"
 				"mac"		"@_Z15WeaponIDToAliasi"
 			}
