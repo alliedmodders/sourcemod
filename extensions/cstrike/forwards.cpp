@@ -22,7 +22,7 @@ CDetour *DCSWeaponDrop = NULL;
 int weaponNameOffset = -1;
 
 #if SOURCE_ENGINE == SE_CSGO
-DETOUR_DECL_MEMBER2(DetourHandleBuy, int, const char *, weapon, bool, bRebuy)
+DETOUR_DECL_MEMBER3(DetourHandleBuy, int, const char *, weapon, int, iUnknown, bool, bRebuy)
 #else
 DETOUR_DECL_MEMBER1(DetourHandleBuy, int, const char *, weapon)
 #endif
@@ -50,7 +50,7 @@ DETOUR_DECL_MEMBER1(DetourHandleBuy, int, const char *, weapon)
 		defaultprice = CallPriceForwardCSGO(client, weapon);
 	}
 
-	int val = DETOUR_MEMBER_CALL(DetourHandleBuy)(weapon, bRebuy);
+	int val = DETOUR_MEMBER_CALL(DetourHandleBuy)(weapon, iUnknown, bRebuy);
 #else
 	int val = DETOUR_MEMBER_CALL(DetourHandleBuy)(weapon);
 #endif
