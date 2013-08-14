@@ -101,6 +101,19 @@ CLocalExtension::CLocalExtension(const char *filename)
 			goto found;
 		}
 	}
+	else if (strcmp(smcore.gamesuffix, "2.nd") == 0)
+	{
+		g_pSM->BuildPath(Path_SM,
+			path,
+			PLATFORM_MAX_PATH,
+			"extensions/%s.2.l4d2." PLATFORM_LIB_EXT,
+			filename);
+
+		if (libsys->IsPathFile(path))
+		{
+			goto found;
+		}
+	}
 
 	/* First see if there is an engine specific build! */
 	g_pSM->BuildPath(Path_SM, 
