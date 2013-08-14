@@ -134,6 +134,17 @@ CLocalExtension::CLocalExtension(const char *filename)
 	{
 		goto found;
 	}
+#elif SOURCE_ENGINE == SE_NUCLEARDAWN
+	g_SourceMod.BuildPath(Path_SM,
+		path,
+		PLATFORM_MAX_PATH,
+		"extensions/%s.2.l4d2." PLATFORM_LIB_EXT,
+		filename);
+
+	if (g_LibSys.IsPathFile(path))
+	{
+		goto found;
+	}
 #endif
 
 	/* First see if there is an engine specific build! */
