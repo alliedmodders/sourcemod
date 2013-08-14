@@ -133,7 +133,7 @@ CGameConfig::CGameConfig(const char *file, const char *engine)
 
 	if (strcmp(m_pEngine, "css") == 0 || strcmp(m_pEngine, "dods") == 0 || strcmp(m_pEngine, "hl2dm") == 0 || strcmp(m_pEngine, "tf2") == 0)
 		this->SetBaseEngine("orangebox_valve");
-	else if (strcmp(m_pEngine, "nucleardawn"))
+	else if (strcmp(m_pEngine, "nucleardawn") == 0)
 		this->SetBaseEngine("left4dead2");
 	else
 		this->SetBaseEngine(NULL);
