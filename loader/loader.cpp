@@ -241,7 +241,15 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 		}
 	case SOURCE_ENGINE_LEFT4DEAD2:
 		{
-			filename = FILENAME_1_6_L4D2;
+			const char *gamedir = mvi->GetGameDir();
+			if (strcmp(gamedir, "nucleardawn") == 0)
+			{
+				filename = FILENAME_1_6_ND;
+			}
+			else
+			{
+				filename = FILENAME_1_6_L4D2;
+			}
 			break;
 		}
 	case SOURCE_ENGINE_NUCLEARDAWN:
