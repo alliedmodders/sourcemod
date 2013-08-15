@@ -353,6 +353,45 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 		return 400;
 #endif
 
+	void *info = GetWeaponInfo(id);
+		
+	if (!info)
+	{
+		return pContext->ThrowNativeError("Failed to get weaponinfo");
+	}
+
+#if SOURCE_ENGINE == SE_CSGO
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("GetAttributeInt",
+		PassInfo pass[2]; \
+		PassInfo ret; \
+		pass[0].flags = PASSFLAG_BYVAL; \
+		pass[0].type = PassType_Basic; \
+		pass[0].size = sizeof(char *); \
+		pass[1].flags = PASSFLAG_BYVAL; \
+		pass[1].type = PassType_Basic; \
+		pass[1].size = sizeof(CEconItemView *); \
+		ret.flags = PASSFLAG_BYVAL; \
+		ret.type = PassType_Basic; \
+		ret.size = sizeof(int); \
+		pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &ret, pass, 2))
+	}
+
+	unsigned char vstk[sizeof(void *) * 2 + sizeof(char *)];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = info;
+	vptr += sizeof(void *);
+	*(char **)vptr = "in_game_price";
+	vptr += sizeof(char **);
+	*(CEconItemView **)vptr = NULL;
+
+	int price = 0;
+ 	pWrapper->Execute(vstk, &price);
+#else
 	if (g_iPriceOffset == -1)
 	{
 		if (!g_pGameConf->GetOffset("WeaponPrice", &g_iPriceOffset))
@@ -362,28 +401,21 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
+	int price = *(int *)((intptr_t)info + g_iPriceOffset);
+#endif
+
 	CBaseEntity *pEntity;
 	if (!(pEntity = GetCBaseEntity(params[1], true)))
 	{
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	void *info = GetWeaponInfo(id);
-	if (!info)
-		return pContext->ThrowNativeError("Failed to get weaponinfo");
-
-	int price = *(int *)((intptr_t)info + g_iPriceOffset);
-
 	if (params[3] || weaponNameOffset == -1)
 		return price;
 
 	const char *weapon_name = (const char *)((intptr_t)info + weaponNameOffset);
 
-#if SOURCE_ENGINE == SE_CSGO
-	return CallPriceForwardCSGO(params[1], weapon_name, price);
-#else
 	return CallPriceForward(params[1], weapon_name, price);
-#endif
 }
 
 static cell_t CS_GetClientClanTag(IPluginContext *pContext, const cell_t *params)
@@ -468,6 +500,13 @@ static cell_t CS_AliasToWeaponID(IPluginContext *pContext, const cell_t *params)
 	char *weapon;
 
 	pContext->LocalToString(params[1], &weapon);
+
+#if SOURCE_ENGINE == SE_CSGO
+	if (strstr(weapon, "usp_silencer") != NULL)
+	{
+		return SMCSWeapon_HKP2000;
+	}
+#endif
 
 	int id = GetFakeWeaponID(AliasToWeaponID(weapon));
 
