@@ -217,7 +217,6 @@ GenerateArray(BaseRuntime *rt, uint32_t argc, cell_t *argv, int autozero)
   if (argv[0] <= 0)
     return SP_ERROR_ARRAY_TOO_BIG;
 
-  uint32_t dim = 1;         // second to last dimension
   uint32_t cells = argv[0];
 
   for (uint32_t dim = 1; dim < argc; dim++) {

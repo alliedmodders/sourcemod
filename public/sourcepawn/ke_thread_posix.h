@@ -24,6 +24,9 @@
 #if defined(__linux__)
 # include <sys/prctl.h>
 #endif
+#if defined(__APPLE__)
+# include <dlfcn.h>
+#endif
 
 namespace ke {
 
@@ -94,9 +97,18 @@ class ConditionVariable : public Lockable
   WaitResult Wait(size_t timeout_ms) {
     AssertCurrentThreadOwns();
 
+#if defined(__linux__)
     struct timespec ts;
     if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
       return Wait_Error;
+#else
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+    struct timespec ts;
+    ts.tv_sec = tv.tv_sec;
+    ts.tv_nsec = tv.tv_usec * 1000;
+#endif
 
     ts.tv_sec += timeout_ms / 1000;
     ts.tv_nsec += (timeout_ms % 1000) * 1000000;

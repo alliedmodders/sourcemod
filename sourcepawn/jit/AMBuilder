@@ -15,6 +15,9 @@ compiler['CXXINCLUDES'].append(os.path.join(base, 'knight', 'shared'))
 if AMBuild.target['platform'] == 'linux':
 	compiler['POSTLINKFLAGS'].append('-lpthread')
 	compiler['POSTLINKFLAGS'].append('-lrt')
+if AMBuild.target['platform'] == 'darwin':
+	compiler['POSTLINKFLAGS'].append('-lpthread')
+	compiler['POSTLINKFLAGS'].append('-ldl')
 
 extension = AMBuild.AddJob('sourcepawn.jit.x86')
 binary = Cpp.LibraryBuilder('sourcepawn.jit.x86', AMBuild, extension, compiler)
