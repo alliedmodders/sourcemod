@@ -385,8 +385,8 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 
 	*(void **)vptr = info;
 	vptr += sizeof(void *);
-	*(char **)vptr = "in_game_price";
-	vptr += sizeof(char **);
+	*(const char **)vptr = "in_game_price";
+	vptr += sizeof(const char **);
 	*(CEconItemView **)vptr = NULL;
 
 	int price = 0;
