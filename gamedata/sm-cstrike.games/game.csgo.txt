@@ -163,17 +163,16 @@
 	{
 		"Keys"
 		{
-			"CScoreBase"		"m_iWeaponPurchasesThisRound"
+			"CScoreBase"		"m_bIsLookingAtWeapon"
 		}
 		
 		"Offsets"
 		{
-			/* factors in 256 (size of m_iWeaponPurchasesThisRound array (int size * 64 maxplayers)) */
 			"CScore"
 			{
-				"windows"	"276"
-				"linux"		"276"
-				"mac"		"276"
+				"windows"	"36"
+				"linux"		"36"
+				"mac"		"36"
 			}
 		}
 	}
@@ -182,18 +181,18 @@
 	{
 		"Keys"
 		{
-			"MVPsBase"		"m_iWeaponPurchasesThisRound"
+			"MVPsBase"		"m_bIsLookingAtWeapon"
 		}
 		
 		"Offsets"
 		{
 			"MVPs"
 			{
-				/* factors in 256 (size of m_iWeaponPurchasesThisRound array (int size * 64 maxplayers)) */
-				"windows"	"256"
-				"linux"		"256"
-				"mac"		"256"
+				"windows"	"16"
+				"linux"		"16"
+				"mac"		"16"
 			}
 		}
 	}
 }
+
