@@ -148,7 +148,7 @@ class SM:
 				if (self.vendor == 'gcc' and cxx.majorVersion >= 4) or self.vendor == 'clang':
 					self.compiler.AddToListVar('CFLAGS', '-fvisibility=hidden')
 					self.compiler.AddToListVar('CXXFLAGS', '-fvisibility-inlines-hidden')
-				if (self.vendor == 'gcc' and cxx.majorVersion >= 4 and cxx.minorVersoin >= 6) or self.vendor == 'clang':
+				if (self.vendor == 'gcc' and cxx.majorVersion >= 4 and cxx.minorVersion >= 6) or self.vendor == 'clang':
 					self.compiler.AddToListVar('CFLAGS', '-Wno-narrowing')
 				self.compiler.AddToListVar('CFLAGS', '-Wall')
 				self.compiler.AddToListVar('CFLAGS', '-Werror')
