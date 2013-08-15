@@ -33,6 +33,8 @@
 #define _INCLUDE_CSTRIKE_UTIL_H_
 
 #if SOURCE_ENGINE == SE_CSGO
+class CEconItemView;
+
 enum CSGOWeapon
 {
 	CSGOWeapon_NONE,
