@@ -256,9 +256,13 @@ void ChatTriggers::OnSayCommand_Pre()
 		is_quoted = true;
 	}
 
-	const char * pCommandName = command.Arg(0);
+	/* Save these off for post hook as the command data returned from the engine in older engine versions 
+	 * can be NULL, despite the data still being there and valid. */
+	m_Arg0Backup = command.Arg(0);
+	m_ArgSBackup = command.ArgS();
+
 #if SOURCE_ENGINE == SE_EPISODEONE
-	if (m_bIsINS && strcmp(pCommandName, "say2") == 0 && strlen(args) >= 4)
+	if (m_bIsINS && strcmp(m_Arg0Backup, "say2") == 0 && strlen(args) >= 4)
 	{
 		args += 4;
 	}
@@ -298,8 +302,8 @@ void ChatTriggers::OnSayCommand_Pre()
 	{
 		cell_t res = Pl_Continue;
 		m_pOnClientSayCmd->PushCell(client);
-		m_pOnClientSayCmd->PushString(pCommandName);
-		m_pOnClientSayCmd->PushString(command.ArgS());
+		m_pOnClientSayCmd->PushString(m_Arg0Backup);
+		m_pOnClientSayCmd->PushString(m_ArgSBackup);
 		m_pOnClientSayCmd->Execute(&res);
 
 		if (res >= Pl_Handled)
@@ -321,15 +325,12 @@ void ChatTriggers::OnSayCommand_Pre()
 
 #if SOURCE_ENGINE == SE_DOTA
 void ChatTriggers::OnSayCommand_Post(const CCommandContext &context, const CCommand &command)
-{
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
 void ChatTriggers::OnSayCommand_Post(const CCommand &command)
-{
 #else
 void ChatTriggers::OnSayCommand_Post()
-{
-	CCommand command;
 #endif
+{
 	int client = g_ConCmds.GetCommandClient();
 
 	if (m_bWillProcessInPost)
@@ -354,8 +355,8 @@ void ChatTriggers::OnSayCommand_Post()
 	else if (!m_bWasFloodedMessage && m_pOnClientSayCmd_Post->GetFunctionCount() != 0)
 	{	
 		m_pOnClientSayCmd_Post->PushCell(client);
-		m_pOnClientSayCmd_Post->PushString(command.Arg(0));
-		m_pOnClientSayCmd_Post->PushString(command.ArgS());
+		m_pOnClientSayCmd_Post->PushString(m_Arg0Backup);
+		m_pOnClientSayCmd_Post->PushString(m_ArgSBackup);
 		m_pOnClientSayCmd_Post->Execute(NULL);
 	}
 

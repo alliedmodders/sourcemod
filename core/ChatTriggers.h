@@ -91,6 +91,8 @@ private:
 	bool m_bPluginIgnored;
 	unsigned int m_ReplyTo;
 	char m_ToExecute[300];
+	const char *m_Arg0Backup;
+	const char *m_ArgSBackup;
 	IForward *m_pShouldFloodBlock;
 	IForward *m_pDidFloodBlock;
 	IForward *m_pOnClientSayCmd;
