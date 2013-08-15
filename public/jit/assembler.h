@@ -64,6 +64,11 @@ class Assembler
     return pos_ - buffer_;
   }
 
+  // Current offset into the code stream.
+  uint32_t pc() const {
+    return uint32_t(pos_ - buffer_);
+  }
+
  protected:
   void writeByte(uint8_t byte) {
     write<uint8_t>(byte);
@@ -123,11 +128,6 @@ class Assembler
   // for relative address calculation.
   int32_t position() const {
     return int32_t(pos_ - buffer_);
-  }
-
-  // pc is the unsigned version of position().
-  uint32_t pc() const {
-    return uint32_t(pos_ - buffer_);
   }
 
  protected:

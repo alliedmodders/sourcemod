@@ -19,6 +19,7 @@ OBJECTS = dll_exports.cpp 	\
 	BaseRuntime.cpp		\
 	jit_function.cpp	\
 	opcodes.cpp		\
+	watchdog_timer.cpp \
 	md5/md5.cpp			\
 	zlib/adler32.c		\
 	zlib/compress.c		\
@@ -47,7 +48,7 @@ CXX_GCC4_FLAGS = -fvisibility-inlines-hidden
 CXX = c++
 CC = cc
 
-LINK = -m32 -lm
+LINK = -m32 -lm -lpthread -lrt
 
 INCLUDE = -I. -I.. -I$(SMSDK)/public -I$(SMSDK)/public/jit -I$(SMSDK)/public/jit/x86 \
 	-I$(SMSDK)/public/sourcepawn -I$(MMSOURCE17)/core/sourcehook -I$(SMSDK)/knight/shared -Ix86

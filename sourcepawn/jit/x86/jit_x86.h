@@ -1,34 +1,19 @@
-/**
- * vim: set ts=4 sw=4 tw=99 et:
- * =============================================================================
- * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
- * =============================================================================
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, version 3.0, as published by the
- * Free Software Foundation.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * As a special exception, AlliedModders LLC gives you permission to link the
- * code of this program (as well as its derivative works) to "Half-Life 2," the
- * "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
- * by the Valve Corporation.  You must obey the GNU General Public License in
- * all respects for all other code used.  Additionally, AlliedModders LLC grants
- * this exception to all derivative works.  AlliedModders LLC defines further
- * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
- * or <http://www.sourcemod.net/license.php>.
- *
- * Version: $Id$
- */
-
+// vim: set ts=8 sts=2 sw=2 tw=99 et:
+//
+// This file is part of SourcePawn.
+// 
+// SourcePawn is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// SourcePawn is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with SourcePawn.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef _INCLUDE_SOURCEPAWN_JIT_X86_H_
 #define _INCLUDE_SOURCEPAWN_JIT_X86_H_
 
@@ -42,6 +27,7 @@
 #include "sp_vm_basecontext.h"
 #include "jit_function.h"
 #include "opcodes.h"
+#include <ke_thread_utils.h>
 
 using namespace SourcePawn;
 
@@ -155,6 +141,7 @@ class Compiler
   cell_t *cip_;
   cell_t *code_end_;
   Label *jump_map_;
+  ke::Vector<size_t> backward_jumps_;
 
   // Errors
   Label error_bounds_;
@@ -188,16 +175,36 @@ class JITX86
   ICompilation *ApplyOptions(ICompilation *_IN, ICompilation *_OUT);
   int InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result);
 
+  void RegisterRuntime(BaseRuntime *rt);
+  void DeregisterRuntime(BaseRuntime *rt);
+  void PatchAllJumpsForTimeout();
+  void UnpatchAllJumpsFromTimeout();
+  
  public:
   ExternalAddress GetUniversalReturn() {
-      return ExternalAddress(m_pJitReturn);
+    return ExternalAddress(m_pJitReturn);
   }
   void *AllocCode(size_t size);
   void FreeCode(void *code);
 
+  uintptr_t FrameId() const {
+    return frame_id_;
+  }
+  bool RunningCode() const {
+    return level_ != 0;
+  }
+  ke::Mutex *Mutex() {
+    return &mutex_;
+  }
+
  private:
   void *m_pJitEntry;         /* Entry function */
   void *m_pJitReturn;        /* Universal return address */
+  void *m_pJitTimeout;       /* Universal timeout address */
+  InlineList<BaseRuntime> runtimes_;
+  uintptr_t frame_id_;
+  uintptr_t level_;
+  ke::Mutex mutex_;
 };
 
 const Register pri = eax;
@@ -211,3 +218,4 @@ extern Knight::KeCodeCache *g_pCodeCache;
 extern JITX86 g_Jit;
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_H_
+

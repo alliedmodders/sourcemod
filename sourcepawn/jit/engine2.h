@@ -26,6 +26,7 @@ namespace SourcePawn
 		bool Initialize();
 		void Shutdown();
 		IPluginRuntime *CreateEmptyRuntime(const char *name, uint32_t memory);
+		bool InstallWatchdogTimer(size_t timeout_ms);
 	public:
 		IProfiler *GetProfiler();
 	private:

@@ -48,34 +48,45 @@ static const size_t kKB = 1024;
 static const size_t kMB = 1024 * kKB;
 static const size_t kGB = 1024 * kMB;
 
+template <typename T> T
+ReturnAndVoid(T &t)
+{
+    T saved = t;
+    t = T();
+    return saved;
+}
+
 template <typename T>
-class AutoFree
+class AutoPtr
 {
     T *t_;
 
   public:
-    AutoFree()
+    AutoPtr()
       : t_(NULL)
     {
     }
-    AutoFree(T *t)
+    explicit AutoPtr(T *t)
       : t_(t)
     {
     }
-    ~AutoFree() {
-        free(t_);
+    ~AutoPtr() {
+        delete t_;
     }
     T *take() {
-        T *t = t_;
-        t_ = NULL;
-        return t;
+        return ReturnAndVoid(t_);
     }
     T *operator *() const {
         return t_;
     }
+    T *operator ->() const {
+        return t_;
+    }
+    operator T *() const {
+        return t_;
+    }
     void operator =(T *t) {
-        if (t_)
-            free(t_);
+        delete t_;
         t_ = t;
     }
 };
@@ -287,14 +298,6 @@ template <typename T> static inline T
 Max(const T &t1, const T &t2)
 {
     return t1 > t2 ? t1 : t2;
-}
-
-template <typename T> T
-ReturnAndVoid(T &t)
-{
-    T saved = t;
-    t = T();
-    return saved;
 }
 
 #define OFFSETOF(Class, Member) reinterpret_cast<size_t>(&((Class *)NULL)->Member)

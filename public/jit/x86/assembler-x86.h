@@ -640,6 +640,10 @@ class AssemblerX86 : public Assembler
       emit2(0xdc, 0xc0 + src.code);
   }
 
+  void jmp32(Label *dest) {
+    emit1(0xe9);
+    emitJumpTarget(dest);
+  }
   void jmp(Label *dest) {
     int8_t d8;
     if (canEmitSmallJump(dest, &d8)) {
@@ -654,6 +658,10 @@ class AssemblerX86 : public Assembler
   }
   void jmp(const Operand &target) {
     emit1(0xff, 4, target);
+  }
+  void j32(ConditionCode cc, Label *dest) {
+    emit2(0x0f, 0x80 + uint8_t(cc));
+    emitJumpTarget(dest);
   }
   void j(ConditionCode cc, Label *dest) {
     int8_t d8;

@@ -36,6 +36,7 @@
 #include "sp_vm_api.h"
 #include "sp_vm_basecontext.h"
 #include "sp_vm_engine.h"
+#include "watchdog_timer.h"
 #include "x86/jit_x86.h"
 
 using namespace SourcePawn;
@@ -554,6 +555,9 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 
 	fnid = function->GetFunctionID();
 
+	if (!g_WatchdogTimer.HandleInterrupt())
+		return SP_ERROR_TIMEOUT;
+
 	if (fnid & 1)
 	{	
 		public_id = fnid >> 1;
@@ -673,6 +677,9 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 				save_rp);
 		}
 	}
+
+	if (ir == SP_ERROR_TIMEOUT)
+		g_WatchdogTimer.NotifyTimeoutReceived();
 
 	if (ir != SP_ERROR_NONE)
 	{

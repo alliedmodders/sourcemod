@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 sw=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
@@ -310,6 +310,16 @@ void SourceModBase::StartSourceMod(bool late)
 	if (disabled == NULL || strcasecmp(disabled, "yes") != 0)
 	{
 		extsys->LoadAutoExtension("updater.ext." PLATFORM_LIB_EXT);
+	}
+
+	const char *timeout = GetCoreConfigValue("SlowScriptTimeout");
+	if (timeout == NULL)
+	{
+		timeout = "8";
+	}
+	if (atoi(timeout) != 0)
+	{
+		g_pSourcePawn2->InstallWatchdogTimer(atoi(timeout) * 1000);
 	}
 }
 

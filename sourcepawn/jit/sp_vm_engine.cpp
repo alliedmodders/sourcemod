@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 et:
  * =============================================================================
  * SourcePawn
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -58,7 +58,7 @@ SourcePawnEngine g_engine1;
 
 using namespace SourcePawn;
 
-#define ERROR_MESSAGE_MAX		29
+#define ERROR_MESSAGE_MAX		30
 static const char *g_ErrorMsgTable[] = 
 {
 	NULL,
@@ -90,7 +90,8 @@ static const char *g_ErrorMsgTable[] =
 	"Plugin format is too old",
 	"Plugin format is too new",
     "Out of memory",
-    "Integer overflow"
+    "Integer overflow",
+    "Script execution timed out"
 };
 
 const char *SourcePawnEngine::GetErrorString(int error)

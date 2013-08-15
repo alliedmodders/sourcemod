@@ -12,6 +12,10 @@ compiler['CXXINCLUDES'].append(os.path.join(base, 'public', 'jit'))
 compiler['CXXINCLUDES'].append(os.path.join(base, 'public', 'jit', 'x86'))
 compiler['CXXINCLUDES'].append(os.path.join(base, 'knight', 'shared'))
 
+if AMBuild.target['platform'] == 'linux':
+	compiler['POSTLINKFLAGS'].append('-lpthread')
+	compiler['POSTLINKFLAGS'].append('-lrt')
+
 extension = AMBuild.AddJob('sourcepawn.jit.x86')
 binary = Cpp.LibraryBuilder('sourcepawn.jit.x86', AMBuild, extension, compiler)
 binary.AddSourceFiles('sourcepawn/jit', [
@@ -23,6 +27,7 @@ binary.AddSourceFiles('sourcepawn/jit', [
 	'sp_vm_engine.cpp',
 	'sp_vm_function.cpp',
 	'opcodes.cpp',
+	'watchdog_timer.cpp',
 	'x86/jit_x86.cpp',
 	'zlib/adler32.c',
 	'zlib/compress.c',

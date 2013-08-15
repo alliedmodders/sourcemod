@@ -40,7 +40,7 @@
 
 /** SourcePawn Engine API Version */
 #define SOURCEPAWN_ENGINE_API_VERSION	4
-#define SOURCEPAWN_ENGINE2_API_VERSION	4
+#define SOURCEPAWN_ENGINE2_API_VERSION	5
 
 #if !defined SOURCEMOD_BUILD
 #define SOURCEMOD_BUILD
@@ -1286,6 +1286,15 @@ namespace SourcePawn
 		 * @return			New runtime, or NULL if not enough memory.
 		 */
 		virtual IPluginRuntime *CreateEmptyRuntime(const char *name, uint32_t memory) =0;
+
+		/**
+		 * @brief Initiates the watchdog timer with the specified timeout
+		 * length. This cannot be called more than once.
+		 *
+		 * @param timeout	Timeout, in ms.
+		 * @return			True on success, false on failure.
+		 */
+		virtual bool InstallWatchdogTimer(size_t timeout_ms) =0;
 	};
 };
 

@@ -100,7 +100,7 @@ public:
 		while (error->GetTraceInfo(&stk_info))
 		{
 			fprintf(stderr,
-			    "   [%d]  Line %d, %s::%s()",
+			    "   [%d]  Line %d, %s::%s()\n",
 				i++,
 				stk_info.line,
 				stk_info.filename,
@@ -221,6 +221,7 @@ int main(int argc, char **argv)
 
 	ShellDebugListener debug;
 	g_engine1.SetDebugListener(&debug);
+	g_engine2.InstallWatchdogTimer(5000);
 
 	int errcode = Execute(argv[1]);
 

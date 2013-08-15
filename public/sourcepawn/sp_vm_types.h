@@ -87,6 +87,7 @@ typedef uint32_t	funcid_t;			/**< Function index code */
 #define SP_ERROR_CODE_TOO_NEW			27	/**< Code is too new for this VM */
 #define SP_ERROR_OUT_OF_MEMORY			28  /**< Out of memory */
 #define SP_ERROR_INTEGER_OVERFLOW		29	/**< Integer overflow (-INT_MIN / -1) */
+#define SP_ERROR_TIMEOUT				30  /**< Timeout */
 //Hey you! Update the string table if you add to the end of me! */
 
 /**********************************************

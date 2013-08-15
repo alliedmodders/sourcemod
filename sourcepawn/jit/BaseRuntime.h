@@ -4,6 +4,7 @@
 
 #include <sp_vm_api.h>
 #include <ke_vector.h>
+#include <ke_inline_list.h>
 #include "jit_shared.h"
 #include "sp_vm_function.h"
 
@@ -33,7 +34,9 @@ struct floattbl_t
 };
 
 /* Jit wants fast access to this so we expose things as public */
-class BaseRuntime : public SourcePawn::IPluginRuntime
+class BaseRuntime
+  : public SourcePawn::IPluginRuntime,
+    public InlineListNode<BaseRuntime>
 {
  public:
   BaseRuntime();
@@ -73,6 +76,13 @@ class BaseRuntime : public SourcePawn::IPluginRuntime
     return &m_plugin;
   }
 
+  size_t NumJitFunctions() const {
+    return m_JitFunctions.length();
+  }
+  JitFunction *GetJitFunction(size_t i) const {
+    return m_JitFunctions[i];
+  }
+
  private:
   void SetupFloatNativeRemapping();
 
@@ -103,3 +113,4 @@ class BaseRuntime : public SourcePawn::IPluginRuntime
 };
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_RUNTIME_H_
+

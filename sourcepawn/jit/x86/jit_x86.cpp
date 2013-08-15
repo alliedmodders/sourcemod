@@ -37,6 +37,7 @@
 #include "../engine2.h"
 #include "../BaseRuntime.h"
 #include "../sp_vm_basecontext.h"
+#include "watchdog_timer.h"
 
 using namespace Knight;
 
@@ -50,7 +51,7 @@ JITX86 g_Jit;
 KeCodeCache *g_pCodeCache = NULL;
 ISourcePawnEngine *engine = &g_engine1;
 
-static inline void *
+static inline uint8_t *
 LinkCode(AssemblerX86 &masm)
 {
   if (masm.outOfMemory())
@@ -61,7 +62,7 @@ LinkCode(AssemblerX86 &masm)
     return NULL;
 
   masm.emitToExecutableMemory(code);
-  return code;
+  return reinterpret_cast<uint8_t *>(code);
 }
 
 static inline ConditionCode
@@ -249,7 +250,7 @@ GenerateArray(BaseRuntime *rt, uint32_t argc, cell_t *argv, int autozero)
     return err;
 
   cell_t *base = reinterpret_cast<cell_t *>(rt->plugin()->memory + ctx->hp);
-  cell_t offs = GenerateArrayIndirectionVectors(base, argv, argc, autozero);
+  cell_t offs = GenerateArrayIndirectionVectors(base, argv, argc, !!autozero);
   assert(size_t(offs) == cells);
 
   argv[argc - 1] = ctx->hp;
@@ -314,6 +315,12 @@ GetFunctionName(const sp_plugin_t *plugin, uint32_t offs)
 static int
 CompileFromThunk(BaseRuntime *runtime, cell_t pcode_offs, void **addrp, char *pc)
 {
+  // If the watchdog timer has declared a timeout, we must process it now,
+  // and possibly refuse to compile, since otherwise we will compile a
+  // function that is not patched for timeouts.
+  if (!g_WatchdogTimer.HandleInterrupt())
+    return SP_ERROR_TIMEOUT;
+
   JitFunction *fn = runtime->GetJittedFunctionByOffset(pcode_offs);
   if (!fn) {
     int err;
@@ -452,13 +459,19 @@ Compiler::emit(int *errp)
   emitCallThunks();
   emitErrorPaths();
 
-  void *code = LinkCode(masm);
+  uint8_t *code = LinkCode(masm);
   if (!code) {
     *errp = SP_ERROR_OUT_OF_MEMORY;
     return NULL;
   }
 
-  return new JitFunction(code, pcode_start_);
+  LoopEdge *edges = new LoopEdge[backward_jumps_.length()];
+  for (size_t i = 0; i < backward_jumps_.length(); i++) {
+    edges[i].offset = backward_jumps_[i];
+    edges[i].disp32 = *reinterpret_cast<int32_t *>(code + edges[i].offset - 4);
+  }
+
+  return new JitFunction(code, pcode_start_, edges, backward_jumps_.length());
 }
 
 bool
@@ -1228,7 +1241,12 @@ Compiler::emitOp(OPCODE op)
       Label *target = labelAt(readCell());
       if (!target)
         return false;
-      __ jmp(target);
+      if (target->bound()) {
+        __ jmp32(target);
+        backward_jumps_.append(masm.pc());
+      } else {
+        __ jmp(target);
+      }
       break;
     }
 
@@ -1240,7 +1258,12 @@ Compiler::emitOp(OPCODE op)
       if (!target)
         return false;
       __ testl(pri, pri);
-      __ j(cc, target);
+      if (target->bound()) {
+        __ j32(cc, target);
+        backward_jumps_.append(masm.pc());
+      } else {
+        __ j(cc, target);
+      }
       break;
     }
 
@@ -1256,7 +1279,12 @@ Compiler::emitOp(OPCODE op)
         return false;
       ConditionCode cc = OpToCondition(op);
       __ cmpl(pri, alt);
-      __ j(cc, target);
+      if (target->bound()) {
+        __ j32(cc, target);
+        backward_jumps_.append(masm.pc());
+      } else {
+        __ j(cc, target);
+      }
       break;
     }
 
@@ -1755,7 +1783,7 @@ Compiler::emitErrorPaths()
 typedef int (*JIT_EXECUTE)(sp_context_t *ctx, uint8_t *memory, void *code);
 
 static void *
-GenerateEntry(void **retp)
+GenerateEntry(void **retp, void **timeoutp)
 {
   AssemblerX86 masm;
 
@@ -1813,11 +1841,17 @@ GenerateEntry(void **retp)
   __ movl(ecx, Operand(ebp, 8 + 4 * 0)); // ret-path expects ecx = ctx
   __ jmp(&ret);
 
+  Label timeout;
+  __ bind(&timeout);
+  __ movl(eax, SP_ERROR_TIMEOUT);
+  __ jmp(&error);
+
   void *code = LinkCode(masm);
   if (!code)
     return NULL;
 
   *retp = reinterpret_cast<uint8_t *>(code) + error.offset();
+  *timeoutp = reinterpret_cast<uint8_t *>(code) + timeout.offset();
   return code;
 }
 
@@ -1841,11 +1875,12 @@ JITX86::JITX86()
   m_pJitEntry = NULL;
 }
 
-bool JITX86::InitializeJIT()
+bool
+JITX86::InitializeJIT()
 {
   g_pCodeCache = KE_CreateCodeCache();
 
-  m_pJitEntry = GenerateEntry(&m_pJitReturn);
+  m_pJitEntry = GenerateEntry(&m_pJitReturn, &m_pJitTimeout);
   if (!m_pJitEntry)
     return false;
 
@@ -1873,6 +1908,11 @@ JITX86::CompileFunction(BaseRuntime *prt, cell_t pcode_offs, int *err)
   JitFunction *fun = cc.emit(err);
   if (!fun)
     return NULL;
+
+  // Grab the lock before linking code in, since the watchdog timer will look
+  // at this list on another thread.
+  ke::AutoLock lock(g_Jit.Mutex());
+
   prt->AddJittedFunction(fun);
   return fun;
 }
@@ -1919,33 +1959,39 @@ JITX86::CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData)
   return (SPVM_NATIVE_FUNC)LinkCode(masm);
 }
 
-void JITX86::DestroyFakeNative(SPVM_NATIVE_FUNC func)
+void
+JITX86::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 {
   KE_FreeCode(g_pCodeCache, (void *)func);
 }
 
-ICompilation *JITX86::StartCompilation()
+ICompilation *
+JITX86::StartCompilation()
 {
   return new CompData;
 }
 
-ICompilation *JITX86::StartCompilation(BaseRuntime *runtime)
+ICompilation *
+JITX86::StartCompilation(BaseRuntime *runtime)
 {
   return new CompData;
 }
 
-void CompData::Abort()
+void
+CompData::Abort()
 {
   delete this;
 }
 
-void JITX86::FreeContextVars(sp_context_t *ctx)
+void
+JITX86::FreeContextVars(sp_context_t *ctx)
 {
   free(((tracker_t *)(ctx->vm[JITVARS_TRACKER]))->pBase);
   delete (tracker_t *)ctx->vm[JITVARS_TRACKER];
 }
 
-bool CompData::SetOption(const char *key, const char *val)
+bool
+CompData::SetOption(const char *key, const char *val)
 {
   if (strcmp(key, SP_JITCONF_DEBUG) == 0)
     return true;
@@ -1962,7 +2008,8 @@ bool CompData::SetOption(const char *key, const char *val)
   return false;
 }
 
-int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result)
+int
+JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result)
 {
   sp_context_t *ctx = runtime->GetBaseContext()->GetCtx();
 
@@ -1970,18 +2017,75 @@ int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result
   ctx->cip = fn->GetPCodeAddress();
 
   JIT_EXECUTE pfn = (JIT_EXECUTE)m_pJitEntry;
+
+  if (level_++ == 0)
+    frame_id_++;
   int err = pfn(ctx, runtime->plugin()->memory, fn->GetEntryAddress());
+  level_--;
 
   *result = ctx->rval;
   return err;
 }
 
-void *JITX86::AllocCode(size_t size)
+void *
+JITX86::AllocCode(size_t size)
 {
   return Knight::KE_AllocCode(g_pCodeCache, size);
 }
 
-void JITX86::FreeCode(void *code)
+void
+JITX86::FreeCode(void *code)
 {
   KE_FreeCode(g_pCodeCache, code);
+}
+
+void
+JITX86::RegisterRuntime(BaseRuntime *rt)
+{
+  mutex_.AssertCurrentThreadOwns();
+  runtimes_.insert(rt);
+}
+
+void
+JITX86::DeregisterRuntime(BaseRuntime *rt)
+{
+  mutex_.AssertCurrentThreadOwns();
+  runtimes_.erase(rt);
+}
+
+void
+JITX86::PatchAllJumpsForTimeout()
+{
+  mutex_.AssertCurrentThreadOwns();
+  for (InlineList<BaseRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
+    BaseRuntime *rt = *iter;
+    for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
+      JitFunction *fun = rt->GetJitFunction(i);
+      uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());
+
+      for (size_t j = 0; j < fun->NumLoopEdges(); j++) {
+        const LoopEdge &e = fun->GetLoopEdge(j);
+        int32_t diff = intptr_t(m_pJitTimeout) - intptr_t(base + e.offset);
+        *reinterpret_cast<int32_t *>(base + e.offset - 4) = diff;
+      }
+    }
+  }
+}
+
+void
+JITX86::UnpatchAllJumpsFromTimeout()
+{
+  mutex_.AssertCurrentThreadOwns();
+  for (InlineList<BaseRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
+    BaseRuntime *rt = *iter;
+    for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
+      JitFunction *fun = rt->GetJitFunction(i);
+      uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());
+
+      for (size_t j = 0; j < fun->NumLoopEdges(); j++) {
+        const LoopEdge &e = fun->GetLoopEdge(j);
+        *reinterpret_cast<int32_t *>(base + e.offset - 4) = e.disp32;
+      }
+    }
+  }
 }

@@ -37,10 +37,21 @@ BaseRuntime::BaseRuntime()
   
   memset(m_CodeHash, 0, sizeof(m_CodeHash));
   memset(m_DataHash, 0, sizeof(m_DataHash));
+
+  ke::AutoLock lock(g_Jit.Mutex());
+  g_Jit.RegisterRuntime(this);
 }
 
 BaseRuntime::~BaseRuntime()
 {
+  // The watchdog thread takes the global JIT lock while it patches all
+  // runtimes. It is not enough to ensure that the unlinking of the runtime is
+  // protected; we cannot delete functions or code while the watchdog might be
+  // executing. Therefore, the entire destructor is guarded.
+  ke::AutoLock lock(g_Jit.Mutex());
+
+  g_Jit.DeregisterRuntime(this);
+
   for (uint32_t i = 0; i < m_plugin.num_publics; i++)
     delete m_PubFuncs[i];
   delete [] m_PubFuncs;

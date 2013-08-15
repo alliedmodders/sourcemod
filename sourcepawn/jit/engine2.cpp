@@ -1,3 +1,4 @@
+// vim: set ts=4 sw=4 tw=99 noet:
 #include <sourcemod_version.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +8,7 @@
 #include "zlib/zlib.h"
 #include "BaseRuntime.h"
 #include "sp_vm_engine.h"
+#include "watchdog_timer.h"
 
 using namespace SourcePawn;
 
@@ -210,3 +212,9 @@ IPluginRuntime *SourcePawnEngine2::CreateEmptyRuntime(const char *name, uint32_t
 	
 	return rt;
 }
+
+bool SourcePawnEngine2::InstallWatchdogTimer(size_t timeout_ms)
+{
+	return g_WatchdogTimer.Initialize(timeout_ms);
+}
+
