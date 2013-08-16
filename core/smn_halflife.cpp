@@ -493,6 +493,7 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 		return 33;
 	case SOURCE_ENGINE_CSS:
 		return 34;
+	case SOURCE_ENGINE_ORANGEBOXVALVE_DEPRECATED:
 	case SOURCE_ENGINE_HL2DM:
 	case SOURCE_ENGINE_DODS:
 	case SOURCE_ENGINE_TF2:
