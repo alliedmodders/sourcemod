@@ -1020,8 +1020,9 @@ Compiler::emitOp(OPCODE op)
       __ cld();
       __ push(esi);
       __ push(edi);
-      __ lea(esi, Operand(dat, pri, NoScale));
+      // Note: set edi first, since we need esi.
       __ lea(edi, Operand(dat, alt, NoScale));
+      __ lea(esi, Operand(dat, pri, NoScale));
       if (dwords) {
         __ movl(ecx, dwords);
         __ rep_movsd();
