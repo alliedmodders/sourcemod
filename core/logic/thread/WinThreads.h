@@ -32,22 +32,22 @@
 #ifndef _INCLUDE_WINTHREADS_H_
 #define _INCLUDE_WINTHREADS_H_
 
+#include <ke_thread_utils.h>
+#include <ke_utility.h>
 #include <windows.h>
 #include "IThreader.h"
 
 using namespace SourceMod;
 
-DWORD WINAPI Win32_ThreadGate(LPVOID param);
-
 class WinThreader : public IThreader
 {
 public:
-	class ThreadHandle : public IThreadHandle
+	class ThreadHandle : public IThreadHandle, public ke::IRunnable
 	{
 		friend class WinThreader;
 		friend DWORD WINAPI Win32_ThreadGate(LPVOID param);
 	public:
-		ThreadHandle(IThreader *parent, HANDLE hthread, IThread *run, const ThreadParams *params);
+		ThreadHandle(IThreader *parent, IThread *run, const ThreadParams *params);
 		virtual ~ThreadHandle();
 	public:
 		virtual bool WaitForThread();
@@ -58,41 +58,16 @@ public:
 		virtual bool SetPriority(ThreadPriority prio);
 		virtual ThreadState GetState();
 		virtual bool Unpause();
+		virtual void Run();
 	protected:
 		IThreader *m_parent;		//Parent handle
-		HANDLE m_thread;			//Windows HANDLE	
+		ke::AutoPtr<ke::Thread> m_thread;
 		ThreadParams m_params;		//Current Parameters
-		IThread *m_run;	//Runnable context
+		IThread *m_run;				//Runnable context
 		ThreadState m_state;		//internal state
-		CRITICAL_SECTION m_crit;
+		ke::ConditionVariable suspend_;
 	};
-	class WinMutex : public IMutex
-	{
-	public:
-		WinMutex();
-		virtual ~WinMutex();
-	public:
-		virtual bool TryLock();
-		virtual void Lock();
-		virtual void Unlock();
-		virtual void DestroyThis();
-	protected:
-		CRITICAL_SECTION m_crit;
-	};
-	class WinEvent : public IEventSignal
-	{
-	public:
-		WinEvent(HANDLE event) : m_event(event)
-		{
-		};
-		virtual ~WinEvent();
-	public:
-		virtual void Wait();
-		virtual void Signal();
-		virtual void DestroyThis();
-	public:
-		HANDLE m_event;
-	};
+
 public:
 	IMutex *MakeMutex();
 	void MakeThread(IThread *pThread);

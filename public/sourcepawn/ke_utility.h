@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdint.h>
 #if defined(_MSC_VER)
 # include <intrin.h>
 #endif
@@ -56,6 +57,8 @@ ReturnAndVoid(T &t)
     return saved;
 }
 
+// Wrapper that automatically deletes its contents. The pointer can be taken
+// to avoid destruction.
 template <typename T>
 class AutoPtr
 {
@@ -88,6 +91,9 @@ class AutoPtr
     void operator =(T *t) {
         delete t_;
         t_ = t;
+    }
+    bool operator !() const {
+        return !t_;
     }
 };
 

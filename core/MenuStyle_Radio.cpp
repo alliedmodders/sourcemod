@@ -480,7 +480,7 @@ void CRadioMenuPlayer::Radio_Init(int keys, const char *title, const char *text)
 void CRadioMenuPlayer::Radio_Refresh()
 {
 #if SOURCE_ENGINE != SE_DOTA
-	cell_t players[1] = {m_index};
+	cell_t players[1] = { (cell_t)m_index };
 	char *ptr = display_pkt;
 	char save = 0;
 	size_t len = display_len;

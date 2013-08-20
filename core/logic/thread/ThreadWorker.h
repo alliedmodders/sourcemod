@@ -60,14 +60,10 @@ public:	//BaseWorker
 	virtual SWThreadHandle *PopThreadFromQueue();
 protected:
 	IThreader *m_Threader;
-	IMutex *m_QueueLock;
-	IMutex *m_StateLock;
-	IEventSignal *m_PauseSignal;
-	IEventSignal *m_AddSignal;
 	IThreadHandle *me;
 	unsigned int m_think_time;
-	volatile bool m_Waiting;
-	volatile bool m_FlushType;
+	bool m_FlushType;
+	ke::ConditionVariable monitor_;
 };
 
 #endif //_INCLUDE_SOURCEMOD_THREADWORKER_H

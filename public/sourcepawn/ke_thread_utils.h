@@ -20,6 +20,7 @@
 #include <assert.h>
 #if defined(_MSC_VER)
 # include <windows.h>
+# include <WinBase.h>
 #else
 # include <pthread.h>
 #endif
@@ -56,8 +57,13 @@
 // When Wait() returns, the lock is automatically re-acquired. This operation
 // is NOT atomic. In between waking up and re-acquiring the lock, another
 // thread may steal the lock and issue another event. Applications must
-// account for this. For example, a message pump should check that there are no
-// messages left to process before blocking again.
+// account for this. For example, a message pump should check that there are
+// no messages left to process before blocking again.
+//
+// Likewise, it is also not defined whether a Signal() will have any effect
+// while a thread is not waiting on the monitor. This is yet another reason
+// the above paragraph is so important - applications should, under a lock of
+// the condition variable - check for state changes before waiting.
 //
 // -- Threads --
 //
@@ -72,13 +78,13 @@
 
 namespace ke {
 
-// Abstraction for accessing the current thread.
+// Abstraction for getting a unique thread identifier. Debug-only.
 #if defined(_MSC_VER)
-typedef HANDLE ThreadId;
+typedef DWORD ThreadId;
 
 static inline ThreadId GetCurrentThreadId()
 {
-  return GetCurrentThread();
+  return ::GetCurrentThreadId();
 }
 #else
 typedef pthread_t ThreadId;
@@ -238,4 +244,3 @@ class IRunnable
 #endif
 
 #endif // _include_sourcepawn_threads_
-

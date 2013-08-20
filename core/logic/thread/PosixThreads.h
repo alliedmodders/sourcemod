@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -33,19 +33,17 @@
 #define _INCLUDE_POSIXTHREADS_H_
 
 #include <pthread.h>
+#include <ke_thread_utils.h>
 #include "IThreader.h"
 
 using namespace SourceMod;
 
-void *Posix_ThreadGate(void *param);
-
 class PosixThreader : public IThreader
 {
 public:
-	class ThreadHandle : public IThreadHandle
+	class ThreadHandle : public IThreadHandle, public ke::IRunnable
 	{
 		friend class PosixThreader;
-		friend void *Posix_ThreadGate(void *param);
 	public:
 		ThreadHandle(IThreader *parent, IThread *run, const ThreadParams *params);
 		virtual ~ThreadHandle();
@@ -58,42 +56,15 @@ public:
 		virtual bool SetPriority(ThreadPriority prio);
 		virtual ThreadState GetState();
 		virtual bool Unpause();
+	public:
+		void Run();
 	protected:
 		IThreader *m_parent;		//Parent handle
-		pthread_t m_thread;			//Windows HANDLE	
 		ThreadParams m_params;		//Current Parameters
-		IThread *m_run;	//Runnable context
-		pthread_mutex_t m_statelock;
-		pthread_mutex_t m_runlock;
+		IThread *m_run;				//Runnable context
+		ke::AutoPtr<ke::Thread> m_thread;
+		ke::ConditionVariable m_runlock;
 		ThreadState m_state;		//internal state
-	};
-	class PosixMutex : public IMutex
-	{
-	public:
-		PosixMutex(pthread_mutex_t m) : m_mutex(m)
-		{
-		};
-		virtual ~PosixMutex();
-	public:
-		virtual bool TryLock();
-		virtual void Lock();
-		virtual void Unlock();
-		virtual void DestroyThis();
-	protected:
-		pthread_mutex_t m_mutex;
-	};
-	class PosixEventSignal : public IEventSignal
-	{
-	public:
-		PosixEventSignal();
-		virtual ~PosixEventSignal();
-	public:
-		virtual void Wait();
-		virtual void Signal();
-		virtual void DestroyThis();
-	protected:
-		pthread_cond_t m_cond;
-		pthread_mutex_t m_mutex;
 	};
 public:
 	IMutex *MakeMutex();

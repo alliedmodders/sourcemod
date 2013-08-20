@@ -12,6 +12,7 @@ compiler['CDEFINES'].append('SM_LOGIC')
 
 if AMBuild.target['platform'] == 'linux':
 	compiler['POSTLINKFLAGS'].append('-lpthread')
+	compiler['POSTLINKFLAGS'].append('-lrt')
 if AMBuild.target['platform'] == 'darwin':
 	compiler['CFLAGS'].extend(['-Wno-deprecated-declarations'])
 	compiler['POSTLINKFLAGS'].extend(['-framework', 'CoreServices'])

@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -61,16 +61,8 @@ void PosixThreader::GetPriorityBounds(ThreadPriority &max, ThreadPriority &min)
 
 IMutex *PosixThreader::MakeMutex()
 {
-	pthread_mutex_t mutex;
-
-	if (pthread_mutex_init(&mutex, NULL) != 0)
-		return NULL;
-
-	PosixMutex *pMutex = new PosixMutex(mutex);
-
-	return pMutex;
+	return new CompatMutex();
 }
-
 
 void PosixThreader::MakeThread(IThread *pThread)
 {
@@ -92,30 +84,21 @@ IThreadHandle *PosixThreader::MakeThread(IThread *pThread, ThreadFlags flags)
 	return MakeThread(pThread, &defparams);
 }
 
-void *Posix_ThreadGate(void *param)
+void PosixThreader::ThreadHandle::Run()
 {
-	PosixThreader::ThreadHandle *pHandle = 
-		reinterpret_cast<PosixThreader::ThreadHandle *>(param);
+	// Wait for an unpause if necessary.
+	{
+		ke::AutoLock lock(&m_runlock);
+		if (m_state == Thread_Paused)
+			m_runlock.Wait();
+	}
 
-	//Block this thread from being started initially.
-	pthread_mutex_lock(&pHandle->m_runlock);
-	//if we get here, we've obtained the lock and are allowed to run.
-	//unlock and continue.
-	pthread_mutex_unlock(&pHandle->m_runlock);
+	m_run->RunThread(this);
+	m_state = Thread_Done;
+	m_run->OnTerminate(this, false);
 
-	pHandle->m_run->RunThread(pHandle);
-
-	ThreadParams params;
-	pthread_mutex_lock(&pHandle->m_statelock);
-	pHandle->m_state = Thread_Done;
-	pHandle->GetParams(&params);
-	pthread_mutex_unlock(&pHandle->m_statelock);
-
-	pHandle->m_run->OnTerminate(pHandle, false);
-	if (params.flags & Thread_AutoRelease)
-		delete pHandle;
-
-	return 0;
+	if (m_params.flags & Thread_AutoRelease)
+		delete this;
 }
 
 ThreadParams g_defparams;
@@ -124,68 +107,21 @@ IThreadHandle *PosixThreader::MakeThread(IThread *pThread, const ThreadParams *p
 	if (params == NULL)
 		params = &g_defparams;
 
-	PosixThreader::ThreadHandle *pHandle = 
-		new PosixThreader::ThreadHandle(this, pThread, params);
+	ke::AutoPtr<ThreadHandle> pHandle(new ThreadHandle(this, pThread, params));
 
-	pthread_mutex_lock(&pHandle->m_runlock);
-
-	int err;
-	err = pthread_create(&pHandle->m_thread, NULL, Posix_ThreadGate, (void *)pHandle);	
-
-	if (err != 0)
-	{
-		pthread_mutex_unlock(&pHandle->m_runlock);
-		delete pHandle;
+	pHandle->m_thread = new ke::Thread(pHandle, "SourceMod");
+	if (!pHandle->m_thread->Succeeded())
 		return NULL;
-	}
 
-	//Don't bother setting priority...
+	if (!(params->flags & Thread_CreateSuspended))
+		pHandle->Unpause();
 
-	if (!(pHandle->m_params.flags & Thread_CreateSuspended))
-	{
-		pHandle->m_state = Thread_Running;
-		err = pthread_mutex_unlock(&pHandle->m_runlock);
-		if (err != 0)
-			pHandle->m_state = Thread_Paused;
-	}
-
-	return pHandle;
+	return pHandle.take();
 }
 
 IEventSignal *PosixThreader::MakeEventSignal()
 {
-	return new PosixEventSignal();
-}
-
-/*****************
-**** Mutexes ****
-*****************/
-
-PosixThreader::PosixMutex::~PosixMutex()
-{
-	pthread_mutex_destroy(&m_mutex);
-}
-
-bool PosixThreader::PosixMutex::TryLock()
-{
-	int err = pthread_mutex_trylock(&m_mutex);
-
-	return (err == 0);
-}
-
-void PosixThreader::PosixMutex::Lock()
-{
-	pthread_mutex_lock(&m_mutex);
-}
-
-void PosixThreader::PosixMutex::Unlock()
-{
-	pthread_mutex_unlock(&m_mutex);
-}
-
-void PosixThreader::PosixMutex::DestroyThis()
-{
-	delete this;
+	return new CompatCondVar();
 }
 
 /******************
@@ -195,35 +131,24 @@ void PosixThreader::PosixMutex::DestroyThis()
 PosixThreader::ThreadHandle::ThreadHandle(IThreader *parent, IThread *run, const ThreadParams *params) : 
 	m_parent(parent), m_params(*params), m_run(run), m_state(Thread_Paused)
 {
-	pthread_mutex_init(&m_runlock, NULL);
-	pthread_mutex_init(&m_statelock, NULL);
 }
 
 PosixThreader::ThreadHandle::~ThreadHandle()
 {
-	pthread_mutex_destroy(&m_runlock);
-	pthread_mutex_destroy(&m_statelock);
 }
 
 bool PosixThreader::ThreadHandle::WaitForThread()
 {
-	void *arg;
-	
-	if (pthread_join(m_thread, &arg) != 0)
+	if (!m_thread)
 		return false;
 
+	m_thread->Join();
 	return true;
 }
 
 ThreadState PosixThreader::ThreadHandle::GetState()
 {
-	ThreadState state;
-
-	pthread_mutex_lock(&m_statelock);
-	state = m_state;
-	pthread_mutex_unlock(&m_statelock);
-
-	return state;
+	return m_state;
 }
 
 IThreadCreator *PosixThreader::ThreadHandle::Parent()
@@ -262,48 +187,9 @@ bool PosixThreader::ThreadHandle::Unpause()
 	if (m_state != Thread_Paused)
 		return false;
 
+	ke::AutoLock lock(&m_runlock);
 	m_state = Thread_Running;
-
-	if (pthread_mutex_unlock(&m_runlock) != 0)
-	{
-		m_state = Thread_Paused;
-		return false;
-	}
-
+	m_runlock.Notify();
 	return true;
 }
 
-/*****************
- * EVENT SIGNALS *
- *****************/
-
-PosixThreader::PosixEventSignal::PosixEventSignal()
-{
-	pthread_cond_init(&m_cond, NULL);
-	pthread_mutex_init(&m_mutex, NULL);
-}
-
-PosixThreader::PosixEventSignal::~PosixEventSignal()
-{
-	pthread_cond_destroy(&m_cond);
-	pthread_mutex_destroy(&m_mutex);
-}
-
-void PosixThreader::PosixEventSignal::Wait()
-{
-	pthread_mutex_lock(&m_mutex);
-	pthread_cond_wait(&m_cond, &m_mutex);
-	pthread_mutex_unlock(&m_mutex);
-}
-
-void PosixThreader::PosixEventSignal::Signal()
-{
-	pthread_mutex_lock(&m_mutex);
-	pthread_cond_broadcast(&m_cond);
-	pthread_mutex_unlock(&m_mutex);
-}
-
-void PosixThreader::PosixEventSignal::DestroyThis()
-{
-        delete this;
-}

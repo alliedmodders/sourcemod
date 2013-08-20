@@ -38,6 +38,7 @@
  */
 
 #include <IShareSys.h>
+#include <ke_thread_utils.h>
 
 #define SMINTERFACE_THREADER_NAME		"IThreader"
 #define SMINTERFACE_THREADER_VERSION	3

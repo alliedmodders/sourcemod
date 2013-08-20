@@ -638,7 +638,7 @@ QueryCvarCookie_t ConVarManager::QueryClientConVar(edict_t *pPlayer, const char 
 		return InvalidQueryCvarCookie;
 	}
 
-	ConVarQuery query = {cookie, pCallback, hndl};
+	ConVarQuery query = {cookie, pCallback, (cell_t)hndl};
 	m_ConVarQueries.push_back(query);
 #endif
 

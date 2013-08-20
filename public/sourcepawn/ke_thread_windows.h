@@ -120,6 +120,10 @@ class Thread
     WaitForSingleObject(thread_, INFINITE);
   }
 
+  HANDLE handle() const {
+	  return thread_;
+  }
+
  private:
   static DWORD WINAPI Main(LPVOID arg) {
     ((IRunnable *)arg)->Run();

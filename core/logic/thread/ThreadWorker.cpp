@@ -33,10 +33,6 @@
 
 ThreadWorker::ThreadWorker(IThreadWorkerCallbacks *hooks) : BaseWorker(hooks),
 	m_Threader(NULL),
-	m_QueueLock(NULL),
-	m_StateLock(NULL),
-	m_PauseSignal(NULL),
-	m_AddSignal(NULL),
 	me(NULL),
 	m_think_time(DEFAULT_THINK_TIME_MS)
 {
@@ -46,32 +42,19 @@ ThreadWorker::ThreadWorker(IThreadWorkerCallbacks *hooks) : BaseWorker(hooks),
 ThreadWorker::ThreadWorker(IThreadWorkerCallbacks *hooks, IThreader *pThreader, unsigned int thinktime) : 
 	BaseWorker(hooks),
 	m_Threader(pThreader),
-	m_QueueLock(NULL),
-	m_StateLock(NULL),
-	m_PauseSignal(NULL),
-	m_AddSignal(NULL),
 	me(NULL),
 	m_think_time(thinktime)
 {
-	if (m_Threader)
-	{
-		m_state = Worker_Stopped;
-	} else {
-		m_state = Worker_Invalid;
-	}
+	m_state = m_Threader ? Worker_Stopped : Worker_Invalid;
 }
 
 ThreadWorker::~ThreadWorker()
 {
 	if (m_state != Worker_Stopped || m_state != Worker_Invalid)
-	{
 		Stop(true);
-	}
-
+	
 	if (m_ThreadQueue.size())
-	{
 		Flush(true);
-	}
 }
 
 void ThreadWorker::OnTerminate(IThreadHandle *pHandle, bool cancel)
@@ -82,131 +65,88 @@ void ThreadWorker::OnTerminate(IThreadHandle *pHandle, bool cancel)
 
 void ThreadWorker::RunThread(IThreadHandle *pHandle)
 {
-	WorkerState this_state = Worker_Running;
-	size_t num;
-
 	if (m_pHooks)
-	{
 		m_pHooks->OnWorkerStart(this);
-	}
-    
+
+	ke::AutoLock lock(&monitor_);
+
 	while (true)
 	{
-		/**
-		 * Check number of items in the queue
-		 */
-		m_StateLock->Lock();
-		this_state = m_state;
-		m_StateLock->Unlock();
-		if (this_state != Worker_Stopped)
+		if (m_state == Worker_Paused)
 		{
-			m_QueueLock->Lock();
-			num = m_ThreadQueue.size();
-			if (!num)
-			{
-				/** 
-				 * if none, wait for an item
-				 */
-				m_Waiting = true;
-				m_QueueLock->Unlock();
-				/* first check if we should end again */
-				if (this_state == Worker_Stopped)
-				{
-					break;
-				}
-				m_AddSignal->Wait();
-				m_Waiting = false;
-			} else {
-				m_QueueLock->Unlock();
-			}
+			// Wait until we're told to wake up.
+			monitor_.Wait();
+			continue;
 		}
-		m_StateLock->Lock();
-		this_state = m_state;
-		m_StateLock->Unlock();
-		if (this_state != Worker_Running)
-		{
-			if (this_state == Worker_Paused || this_state == Worker_Stopped)
-			{
-				//wait until the lock is cleared.
-				if (this_state == Worker_Paused)
-				{
-					m_PauseSignal->Wait();
-				}
-				if (this_state == Worker_Stopped)
-				{
-					//if we're supposed to flush cleanrly, 
-					// run all of the remaining frames first.
-					if (!m_FlushType)
-					{
-						while (m_ThreadQueue.size())
-						{
-							RunFrame();
-						}
-					}
-					break;
-				}
-			}
-		}
-		/**
-		 * Run the frame.
-		 */
-		RunFrame();
 
-		/**
-		 * wait in between threads if specified
-		 */
-		if (m_think_time)
+		if (m_state == Worker_Stopped)
 		{
-			m_Threader->ThreadSleep(m_think_time);
+			// We've been told to stop entirely. If we've also been told to
+			// flush the queue, do that now.
+			while (!m_ThreadQueue.empty())
+			{
+				// Release the lock since PopThreadFromQueue() will re-acquire it. The
+				// main thread is blocking anyway.
+				ke::AutoUnlock unlock(&monitor_);
+				RunFrame();
+			}
+			assert(m_state == Worker_Stopped);
+			return;
 		}
+
+		assert(m_state == Worker_Running);
+
+		// Process one frame.
+		WorkerState oldstate = m_state;
+		{
+			ke::AutoUnlock unlock(&monitor_);
+			RunFrame();
+		}
+
+		// If the state changed, loop back and process the new state.
+		if (m_state != oldstate)
+			continue;
+		
+		// If the thread queue is now empty, wait for a signal. Otherwise, if
+		// we're on a delay, wait for either a notification or a timeout to
+		// process the next item. If the queue has items and we don't have a
+		// delay, then we just loop around and keep processing.
+		if (m_ThreadQueue.empty())
+			monitor_.Wait();
+		else if (m_think_time)
+			monitor_.Wait(m_think_time);
 	}
 
-	if (m_pHooks)
 	{
-		m_pHooks->OnWorkerStop(this);
+		ke::AutoUnlock unlock(&monitor_);
+		if (m_pHooks)
+			m_pHooks->OnWorkerStop(this);
 	}
 }
 
 SWThreadHandle *ThreadWorker::PopThreadFromQueue()
 {
-	if (m_state <= Worker_Stopped && !m_QueueLock)
-	{
+	ke::AutoLock lock(&monitor_);
+	if (m_state <= Worker_Stopped)
 		return NULL;
-	}
 
-	SWThreadHandle *swt;
-	m_QueueLock->Lock();
-	swt = BaseWorker::PopThreadFromQueue();
-	m_QueueLock->Unlock();
-
-	return swt;
+	return BaseWorker::PopThreadFromQueue();
 }
 
 void ThreadWorker::AddThreadToQueue(SWThreadHandle *pHandle)
 {
+	ke::AutoLock lock(&monitor_);
 	if (m_state <= Worker_Stopped)
-	{
 		return;
-	}
 
-	m_QueueLock->Lock();
 	BaseWorker::AddThreadToQueue(pHandle);
-	if (m_Waiting)
-	{
-		m_AddSignal->Signal();
-	}
-	m_QueueLock->Unlock();
+	monitor_.Notify();
 }
 
 WorkerState ThreadWorker::GetStatus(unsigned int *threads)
 {
-	WorkerState state;
-
-	m_StateLock->Lock();
-	state = BaseWorker::GetStatus(threads);
-	m_StateLock->Unlock();
-
-	return state;
+	ke::AutoLock lock(&monitor_);
+	return BaseWorker::GetStatus(threads);
 }
 
 void ThreadWorker::SetThinkTimePerFrame(unsigned int thinktime)
@@ -216,56 +156,32 @@ void ThreadWorker::SetThinkTimePerFrame(unsigned int thinktime)
 
 bool ThreadWorker::Start()
 {
-	if (m_state == Worker_Invalid)
-	{
-		if (m_Threader == NULL)
-		{
-			return false;
-		}
-	} else if (m_state != Worker_Stopped) {
+	if (m_state == Worker_Invalid && m_Threader == NULL)
 		return false;
-	}
 
-	m_Waiting = false;
-	m_QueueLock = m_Threader->MakeMutex();
-	m_StateLock = m_Threader->MakeMutex();
-	m_PauseSignal = m_Threader->MakeEventSignal();
-	m_AddSignal = m_Threader->MakeEventSignal();
+	if (m_state != Worker_Stopped)
+		return false;
+
 	m_state = Worker_Running;
+
 	ThreadParams pt;
 	pt.flags = Thread_Default;
 	pt.prio = ThreadPrio_Normal;
 	me = m_Threader->MakeThread(this, &pt);
-
 	return true;
 }
 
 bool ThreadWorker::Stop(bool flush_cancel)
 {
-	if (m_state == Worker_Invalid || m_state == Worker_Stopped)
+	// Change the state to signal a stop, and then trigger a notify.
 	{
-		return false;
-	}
+		ke::AutoLock lock(&monitor_);
+		if (m_state == Worker_Invalid || m_state == Worker_Stopped)
+			return false;
 
-	WorkerState oldstate;
-
-	//set new state
-	m_StateLock->Lock();
-	oldstate = m_state;
-	m_state = Worker_Stopped;
-	m_FlushType = flush_cancel;
-	m_StateLock->Unlock();
-
-	if (oldstate == Worker_Paused)
-	{
-		Unpause();
-	} else {
-		m_QueueLock->Lock();
-		if (m_Waiting)
-		{
-			m_AddSignal->Signal();
-		}
-		m_QueueLock->Unlock();
+		m_state = Worker_Stopped;
+		m_FlushType = flush_cancel;
+		monitor_.Notify();
 	}
 
 	me->WaitForThread();
@@ -274,33 +190,18 @@ bool ThreadWorker::Stop(bool flush_cancel)
 	//flush all remaining events
 	Flush(true);
 
-	//free mutex locks
-	m_QueueLock->DestroyThis();
-	m_StateLock->DestroyThis();
-	m_PauseSignal->DestroyThis();
-	m_AddSignal->DestroyThis();
-
-	//invalidizzle
-	m_QueueLock = NULL;
-	m_StateLock = NULL;
-	m_PauseSignal = NULL;
-	m_AddSignal = NULL;
 	me = NULL;
-
 	return true;
 }
 
 bool ThreadWorker::Pause()
 {
 	if (m_state != Worker_Running)
-	{
 		return false;
-	}
 
-	m_StateLock->Lock();
+	ke::AutoLock lock(&monitor_);
 	m_state = Worker_Paused;
-	m_StateLock->Unlock();
-
+	monitor_.Notify();
 	return true;
 }
 
@@ -308,18 +209,10 @@ bool ThreadWorker::Pause()
 bool ThreadWorker::Unpause()
 {
 	if (m_state != Worker_Paused)
-	{
 		return false;
-	}
 
-	m_StateLock->Lock();
+	ke::AutoLock lock(&monitor_);
 	m_state = Worker_Running;
-	m_StateLock->Unlock();
-	m_PauseSignal->Signal();
-	if (m_Waiting)
-	{
-		m_AddSignal->Signal();
-	}
-
+	monitor_.Notify();
 	return true;
 }

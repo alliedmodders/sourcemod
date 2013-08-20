@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -55,9 +55,7 @@ void WinThreader::ThreadSleep(unsigned int ms)
 
 IMutex *WinThreader::MakeMutex()
 {
-	WinMutex *pMutex = new WinMutex();
-
-	return pMutex;
+	return new CompatMutex();
 }
 
 IThreadHandle *WinThreader::MakeThread(IThread *pThread, ThreadFlags flags)
@@ -80,24 +78,20 @@ void WinThreader::MakeThread(IThread *pThread)
 	MakeThread(pThread, &defparams);
 }
 
-DWORD WINAPI Win32_ThreadGate(LPVOID param)
+void WinThreader::ThreadHandle::Run()
 {
-	WinThreader::ThreadHandle *pHandle = 
-		reinterpret_cast<WinThreader::ThreadHandle *>(param);
-
-	pHandle->m_run->RunThread(pHandle);
-
-	ThreadParams params;
-	EnterCriticalSection(&pHandle->m_crit);
-	pHandle->m_state = Thread_Done;
-	pHandle->GetParams(&params);
-	LeaveCriticalSection(&pHandle->m_crit);
-
-	pHandle->m_run->OnTerminate(pHandle, false);
-	if (params.flags & Thread_AutoRelease)
-		delete pHandle;
-
-	return 0;
+	// Wait for an unpause if necessary.
+	{
+		ke::AutoLock lock(&suspend_);
+		if (m_state == Thread_Paused)
+			suspend_.Wait();
+	}
+	
+	m_run->RunThread(this);
+	m_state = Thread_Done;
+	m_run->OnTerminate(this, false);
+	if (m_params.flags & Thread_AutoRelease)
+		delete this;
 }
 
 void WinThreader::GetPriorityBounds(ThreadPriority &max, ThreadPriority &min)
@@ -112,119 +106,52 @@ IThreadHandle *WinThreader::MakeThread(IThread *pThread, const ThreadParams *par
 	if (params == NULL)
 		params = &g_defparams;
 
-	WinThreader::ThreadHandle *pHandle = 
-		new WinThreader::ThreadHandle(this, NULL, pThread, params);
+	ke::AutoPtr<ThreadHandle> pHandle(new ThreadHandle(this, pThread, params));
 
-	DWORD tid;
-	pHandle->m_thread = 
-		CreateThread(NULL, 0, &Win32_ThreadGate, (LPVOID)pHandle, CREATE_SUSPENDED, &tid);
-
-	if (!pHandle->m_thread)
-	{
-		delete pHandle;
+	pHandle->m_thread = new ke::Thread(pHandle, "SourceMod");
+	if (!pHandle->m_thread->Succeeded())
 		return NULL;
-	}
 
 	if (pHandle->m_params.prio != ThreadPrio_Normal)
-	{
 		pHandle->SetPriority(pHandle->m_params.prio);
-	}
 
-	if (!(pHandle->m_params.flags & Thread_CreateSuspended))
-	{
+	if (!(params->flags & Thread_CreateSuspended))
 		pHandle->Unpause();
-	}
 
-	return pHandle;
+	return pHandle.take();
 }
 
 IEventSignal *WinThreader::MakeEventSignal()
 {
-	HANDLE event = CreateEventA(NULL, FALSE, FALSE, NULL);
-
-	if (!event)
-		return NULL;
-
-	WinEvent *pEvent = new WinEvent(event);
-
-	return pEvent;
-}
-
-/*****************
- **** Mutexes ****
- *****************/
-
-WinThreader::WinMutex::WinMutex()
-{
-	InitializeCriticalSection(&m_crit);
-}
-
-WinThreader::WinMutex::~WinMutex()
-{
-	DeleteCriticalSection(&m_crit);
-}
-
-bool WinThreader::WinMutex::TryLock()
-{
-	return (TryEnterCriticalSection(&m_crit) != FALSE);
-}
-
-void WinThreader::WinMutex::Lock()
-{
-	EnterCriticalSection(&m_crit);
-}
-
-void WinThreader::WinMutex::Unlock()
-{
-	LeaveCriticalSection(&m_crit);
-}
-
-void WinThreader::WinMutex::DestroyThis()
-{
-	delete this;
+	return new CompatCondVar();
 }
 
 /******************
  * Thread Handles *
  ******************/
 
-WinThreader::ThreadHandle::ThreadHandle(IThreader *parent, HANDLE hthread, IThread *run, const ThreadParams *params) : 
-	m_parent(parent), m_thread(hthread), m_run(run), m_params(*params),
+WinThreader::ThreadHandle::ThreadHandle(IThreader *parent, IThread *run, const ThreadParams *params) : 
+	m_parent(parent), m_run(run), m_params(*params),
 	m_state(Thread_Paused)
 {
-	InitializeCriticalSection(&m_crit);
 }
 
 WinThreader::ThreadHandle::~ThreadHandle()
 {
-	if (m_thread)
-	{
-		CloseHandle(m_thread);
-		m_thread = NULL;
-	}
-	DeleteCriticalSection(&m_crit);
 }
 
 bool WinThreader::ThreadHandle::WaitForThread()
 {
-	if (m_thread == NULL)
+	if (!m_thread)
 		return false;
 
-	if (WaitForSingleObject(m_thread, INFINITE) != 0)
-		return false;
-
+	m_thread->Join();
 	return true;
 }
 
 ThreadState WinThreader::ThreadHandle::GetState()
 {
-	ThreadState state;
-
-	EnterCriticalSection(&m_crit);
-	state = m_state;
-	LeaveCriticalSection(&m_crit);
-
-	return state;
+	return m_state;
 }
 
 IThreadCreator *WinThreader::ThreadHandle::Parent()
@@ -255,21 +182,18 @@ ThreadPriority WinThreader::ThreadHandle::GetPriority()
 
 bool WinThreader::ThreadHandle::SetPriority(ThreadPriority prio)
 {
-	if (!m_thread)
-		return false;
-
 	BOOL res = FALSE;
 
 	if (prio >= ThreadPrio_Maximum)
-		res = SetThreadPriority(m_thread, THREAD_PRIORITY_HIGHEST);
+		res = SetThreadPriority(m_thread->handle(), THREAD_PRIORITY_HIGHEST);
 	else if (prio <= ThreadPrio_Minimum)
-		res = SetThreadPriority(m_thread, THREAD_PRIORITY_LOWEST);
+		res = SetThreadPriority(m_thread->handle(), THREAD_PRIORITY_LOWEST);
 	else if (prio == ThreadPrio_Normal)
-		res = SetThreadPriority(m_thread, THREAD_PRIORITY_NORMAL);
+		res = SetThreadPriority(m_thread->handle(), THREAD_PRIORITY_NORMAL);
 	else if (prio == ThreadPrio_High)
-		res = SetThreadPriority(m_thread, THREAD_PRIORITY_ABOVE_NORMAL);
+		res = SetThreadPriority(m_thread->handle(), THREAD_PRIORITY_ABOVE_NORMAL);
 	else if (prio == ThreadPrio_Low)
-		res = SetThreadPriority(m_thread, THREAD_PRIORITY_BELOW_NORMAL);
+		res = SetThreadPriority(m_thread->handle(), THREAD_PRIORITY_BELOW_NORMAL);
 
 	m_params.prio = prio;
 
@@ -278,43 +202,11 @@ bool WinThreader::ThreadHandle::SetPriority(ThreadPriority prio)
 
 bool WinThreader::ThreadHandle::Unpause()
 {
-	if (!m_thread)
-		return false;
-
 	if (m_state != Thread_Paused)
 		return false;
 
+	ke::AutoLock lock(&suspend_);
 	m_state = Thread_Running;
-
-	if (ResumeThread(m_thread) == -1)
-	{
-		m_state = Thread_Paused;
-		return false;
-	}
-
+	suspend_.Notify();
 	return true;
-}
-
-/*****************
- * EVENT SIGNALS *
- *****************/
-
-WinThreader::WinEvent::~WinEvent()
-{
-	CloseHandle(m_event);
-}
-
-void WinThreader::WinEvent::Wait()
-{
-	WaitForSingleObject(m_event, INFINITE);
-}
-
-void WinThreader::WinEvent::Signal()
-{
-	SetEvent(m_event);
-}
-
-void WinThreader::WinEvent::DestroyThis()
-{
-	delete this;
 }
