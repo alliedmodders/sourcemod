@@ -1550,27 +1550,26 @@ Compiler::emitCallThunks()
     // need to patch.
     __ movl(eax, Operand(esp, 0));
 
-    // Align the stack. Unfortunately this is a pretty careful dance based
-    // on the number of words we push (4 args, 1 saved esp), and someday
-    // we should look into automating this.
-    __ movl(edx, esp);
-    __ andl(esp, 0xfffffff0);
-    __ subl(esp, 12);
-    __ push(edx);
+    // We need to push 4 arguments, and one of them will need an extra word
+    // on the stack. Allocate a big block so we're aligned, subtracting
+    // 4 because we got here via a call.
+    static const size_t kStackNeeded = 5 * sizeof(void *);
+    static const size_t kStackReserve = ke::Align(kStackNeeded, 16) - sizeof(void *);
+    __ subl(esp, kStackReserve);
 
-    // Push arguments.
-    __ push(eax);
-    __ subl(esp, 4);
-    __ movl(Operand(esp, 0), esp);
-    __ push(thunk->pcode_offset);
-    __ push(intptr_t(rt_));
+    // Set arguments.
+    __ movl(Operand(esp, 3 * sizeof(void *)), eax);
+    __ lea(edx, Operand(esp, 4 * sizeof(void *)));
+    __ movl(Operand(esp, 2 * sizeof(void *)), edx);
+    __ movl(Operand(esp, 1 * sizeof(void *)), intptr_t(thunk->pcode_offset));
+    __ movl(Operand(esp, 0 * sizeof(void *)), intptr_t(rt_));
+
     __ call(ExternalAddress((void *)CompileFromThunk));
-    __ movl(edx, Operand(esp, 8));
-    __ movl(esp, Operand(esp, 16));
+    __ movl(edx, Operand(esp, 4 * sizeof(void *)));
+    __ addl(esp, kStackReserve);
     __ testl(eax, eax);
     __ j(not_zero, &error);
-    __ call(edx);
-    __ ret();
+    __ jmp(edx);
 
     __ bind(&error);
     __ movl(Operand(cipAddr()), thunk->pcode_offset);
