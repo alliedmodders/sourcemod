@@ -28,6 +28,10 @@ for i in SM.sdkInfo:
 	binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
 	SM.PreSetupHL2Job(extension, binary, i)
 
+	if AMBuild.target['platform'] == 'linux':
+		compiler['POSTLINKFLAGS'].append('-lpthread')
+		compiler['POSTLINKFLAGS'].append('-lrt')
+
 	if i in ['csgo', 'dota']:
 		if AMBuild.target['platform'] == 'linux':
 			link = os.path.join(os.path.join(AMBuild.outputFolder, extension.workFolder), 'libprotobuf.a')

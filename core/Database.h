@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -41,6 +41,7 @@
 #include "sm_memtable.h"
 #include <IThreader.h>
 #include <IPluginSys.h>
+#include <ke_thread_utils.h>
 #include "sm_simple_prioqueue.h"
 
 using namespace SourceHook;
@@ -65,9 +66,8 @@ class DBManager :
 	public SMGlobalClass,
 	public IHandleTypeDispatch,
 	public ITextListener_SMC,
-	public IThread,
-	public IThreadWorkerCallbacks,
-	public IPluginsListener
+	public IPluginsListener,
+	public ke::IRunnable
 {
 public:
 	DBManager();
@@ -98,12 +98,9 @@ public: //ITextListener_SMC
 	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
 	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
 	void ReadSMC_ParseEnd(bool halted, bool failed);
-public: //IThread
-	void RunThread(IThreadHandle *pThread);
-	void OnTerminate(IThreadHandle *pThread, bool cancel);
-public: //IThreadWorkerCallbacks
-	void OnWorkerStart(IThreadWorker *pWorker);
-	void OnWorkerStop(IThreadWorker *pWorker);
+public: //ke::IRunnable
+	void Run();
+	void ThreadMain();
 public: //IPluginsListener
 	void OnPluginUnloaded(IPlugin *plugin);
 public:
@@ -129,10 +126,11 @@ private:
 	PrioQueue<IDBThreadOperation *> m_OpQueue;
 	Queue<IDBThreadOperation *> m_ThinkQueue;
 	CVector<bool> m_drSafety;			/* which drivers are safe? */
-	IThreadWorker *m_pWorker;			/* Worker thread object */
-	IMutex *m_pConfigLock;				/* Configuration lock */
-	IMutex *m_pQueueLock;				/* Queue safety lock */
-	IMutex *m_pThinkLock;				/* Think-queue lock */
+	ke::AutoPtr<ke::Thread> m_Worker;
+	ke::ConditionVariable m_QueueEvent;
+	ke::Mutex m_ConfigLock;
+	ke::Mutex m_ThinkLock;
+	bool m_Terminate;
 
 	List<ConfDbInfo *> m_confs;
 	HandleType_t m_DriverType;
