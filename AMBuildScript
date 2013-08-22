@@ -300,6 +300,7 @@ class SM:
 		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public'))
 		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public', 'extensions'))
 		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public', 'sourcepawn'))
+		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public', 'amtl'))
 		return compiler
 
 	def AutoVersion(self, folder, binary):

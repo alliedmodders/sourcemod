@@ -156,7 +156,6 @@ public:
 	IPhraseCollection *phrases;
 	const DatabaseInfo *DBInfo;
 
-	IMutex *cookieMutex;
 	bool databaseLoading;
 
 private:

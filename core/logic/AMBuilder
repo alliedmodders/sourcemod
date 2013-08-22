@@ -7,6 +7,7 @@ compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core', 'sourcehook'))
 compiler['CXXINCLUDES'].append(os.path.join(base, 'core', 'logic'))
 compiler['CXXINCLUDES'].append(os.path.join(base, 'public'))
 compiler['CXXINCLUDES'].append(os.path.join(base, 'public', 'sourcepawn'))
+compiler['CXXINCLUDES'].append(os.path.join(base, 'public', 'amtl'))
 compiler['CDEFINES'].append('SM_DEFAULT_THREADER')
 compiler['CDEFINES'].append('SM_LOGIC')
 
