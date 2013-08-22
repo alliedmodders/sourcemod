@@ -75,12 +75,7 @@ struct Cookie
 		dbid = -1;
 
 		for (int i=0; i<=MAXCLIENTS; i++)
-		{
 			data[i] = NULL;
-		}
-
-		shouldDelete = false;
-		usedInQuery = 0;
 	}
 
 	~Cookie()
@@ -88,9 +83,7 @@ struct Cookie
 		for (int i=0; i<=MAXCLIENTS; i++)
 		{
 			if (data[i] != NULL)
-			{
 				delete data[i];
-			}
 		}
 	}
 
@@ -99,10 +92,6 @@ struct Cookie
 	int dbid;
 	CookieData *data[MAXCLIENTS+1];
 	CookieAccess access;
-
-	/* Reference counting stuff */
-	bool shouldDelete;
-	int usedInQuery;
 };
 
 class CookieManager : public IClientListener, public IPluginsListener

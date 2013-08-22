@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod Base Extension Code
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -239,6 +239,11 @@ void SDKExtension::OnExtensionUnload()
 	SDK_OnUnload();
 }
 
+void SDKExtension::OnDependenciesDropped()
+{
+	SDK_OnDependenciesDropped();
+}
+
 const char *SDKExtension::GetExtensionAuthor()
 {
 	return SMEXT_CONF_AUTHOR;
@@ -288,6 +293,10 @@ void SDKExtension::SDK_OnPauseChange(bool paused)
 }
 
 void SDKExtension::SDK_OnAllLoaded()
+{
+}
+
+void SDKExtension::SDK_OnDependenciesDropped()
 {
 }
 

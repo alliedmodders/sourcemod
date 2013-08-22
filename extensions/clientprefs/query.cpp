@@ -303,23 +303,6 @@ int TQueryOp::PullQuerySerial()
 
 ParamData::~ParamData()
 {
-	if (cookie)
-	{
-		g_ClientPrefs.cookieMutex->Lock();
-		cookie->usedInQuery--;
-
-		if (cookie->shouldDelete && cookie->usedInQuery <= 0)
-		{
-			g_ClientPrefs.cookieMutex->Unlock();
-			delete cookie;
-			cookie = NULL;
-		}
-		else
-		{
-			g_ClientPrefs.cookieMutex->Unlock();
-		}
-	}
-
 	if (data)
 	{
 		/* Data is only ever passed in a client disconnect query and always needs to be deleted */

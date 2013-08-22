@@ -775,25 +775,21 @@ CExtension *CExtensionManager::FindByOrder(unsigned int num)
 bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 {
 	if (!_pExt)
-	{
 		return false;
-	}
 
 	CExtension *pExt = (CExtension *)_pExt;
 
 	if (m_Libs.find(pExt) == m_Libs.end())
-	{
 		return false;
-	}
 
 	/* Tell it to unload */
 	if (pExt->IsLoaded())
-	{
-		IExtensionInterface *pAPI = pExt->GetAPI();
-		pAPI->OnExtensionUnload();
-	}
+		pExt->GetAPI()->OnExtensionUnload();
 
-	/* First remove us from internal lists */
+	// Remove us from internal lists. Note that because we do this, it's
+	// possible that our extension could be added back if another plugin
+	// tries to load during this process. If we ever find this to happen,
+	// we can just block plugin loading.
 	g_ShareSys.RemoveInterfaces(_pExt);
 	m_Libs.remove(pExt);
 
@@ -827,13 +823,9 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 		{
 			pDep = (*c_iter);
 			if ((pAPI=pDep->GetAPI()) == NULL)
-			{
 				continue;
-			}
 			if (pDep == pExt)
-			{
 				continue;
-			}
 			/* Now, get its dependency list */
 			bool dropped = false;
 			List<IfaceInfo>::iterator i_iter = pDep->m_Deps.begin();
@@ -862,13 +854,9 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			while (i_iter != pDep->m_ChildDeps.end())
 			{
 				if ((*i_iter).owner == pExt)
-				{
 					i_iter = pDep->m_ChildDeps.erase(i_iter);
-				}
 				else
-				{
 					i_iter++;
-				}
 			}
 		}
 
@@ -886,6 +874,11 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			glob = glob->m_pGlobalClassNext;
 		}
 	}
+
+	// Everything has been informed that we're unloading, so give the
+	// extension one last notification.
+	if (pExt->IsLoaded() && pExt->GetAPI()->GetExtensionVersion() >= 7)
+		pExt->GetAPI()->OnDependenciesDropped();
 
 	pExt->Unload();
 	delete pExt;

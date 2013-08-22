@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 sw=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -147,6 +147,7 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 	gamehelpers = core->gamehelpers;
 	g_pSourcePawn = *core->spe1;
 	g_pSourcePawn2 = *core->spe2;
+	SMGlobalClass::head = core->listeners;
 
 	g_ShareSys.Initialize();
 	g_pCoreIdent = g_ShareSys.CreateCoreIdentity();

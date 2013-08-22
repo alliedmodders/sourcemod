@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod Base Extension Code
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -97,6 +97,12 @@ IUserMessages *usermsgs = NULL;
 #if defined SMEXT_ENABLE_TRANSLATOR
 ITranslator *translator = NULL;
 #endif
+#if defined SMEXT_ENABLE_NINVOKE
+INativeInterface *ninvoke = NULL;
+#endif
+#if defined SMEXT_ENABLE_ROOTCONSOLEMENU
+IRootConsole *rootconsole = NULL;
+#endif
 
 /** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
@@ -185,6 +191,12 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #if defined SMEXT_ENABLE_TRANSLATOR
 	SM_GET_IFACE(TRANSLATOR, translator);
 #endif
+#if defined SMEXT_ENABLE_NINVOKE
+	SM_GET_IFACE(NINVOKE, ninvoke);
+#endif
+#if defined SMEXT_ENABLE_ROOTCONSOLEMENU
+	SM_GET_IFACE(ROOTCONSOLE, rootconsole);
+#endif
 
 	if (SDK_OnLoad(error, maxlength, late))
 	{
@@ -225,6 +237,11 @@ void SDKExtension::OnExtensionUnload()
 	m_WeAreUnloaded = true;
 #endif
 	SDK_OnUnload();
+}
+
+void SDKExtension::OnDependenciesDropped()
+{
+	SDK_OnDependenciesDropped();
 }
 
 const char *SDKExtension::GetExtensionAuthor()
@@ -276,6 +293,10 @@ void SDKExtension::SDK_OnPauseChange(bool paused)
 }
 
 void SDKExtension::SDK_OnAllLoaded()
+{
+}
+
+void SDKExtension::SDK_OnDependenciesDropped()
 {
 }
 

@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
@@ -136,6 +136,8 @@ public: // ISourceMod
 	int GetPluginId();
 	int GetShApiVersion();
 	bool IsMapRunning();
+private:
+	void ShutdownServices();
 private:
 	CStack<CDataPack *> m_freepacks;
 	char m_SMBaseDir[PLATFORM_MAX_PATH];

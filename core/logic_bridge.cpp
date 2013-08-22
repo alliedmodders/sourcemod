@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 sw=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
@@ -406,6 +406,7 @@ void InitLogicBridge()
 
 	core_bridge.engineFactory = (void *)g_SMAPI->GetEngineFactory(false);
 	core_bridge.serverFactory = (void *)g_SMAPI->GetServerFactory(false);
+	core_bridge.listeners = SMGlobalClass::head;
 
 	ILibrary *mmlib;
 	char path[PLATFORM_MAX_PATH];

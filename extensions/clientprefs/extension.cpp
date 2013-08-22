@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod Client Preferences Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -50,9 +50,6 @@ DbDriver g_DriverType;
 
 bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
-	queryMutex = threader->MakeMutex();
-	cookieMutex = threader->MakeMutex();
-
 	DBInfo = dbi->FindDatabaseConf("clientprefs");
 
 	if (DBInfo == NULL)
@@ -155,12 +152,14 @@ void ClientPrefs::NotifyInterfaceDrop(SMInterface *pInterface)
 	}
 }
 
-void ClientPrefs::SDK_OnUnload()
+void ClientPrefs::SDK_OnDependenciesDropped()
 {
+	// At this point, we're guaranteed that DBI has flushed the worker thread
+	// for us, so no cookies should have outstanding queries.
+	g_CookieManager.Unload();
+
 	handlesys->RemoveType(g_CookieType, myself->GetIdentity());
 	handlesys->RemoveType(g_CookieIterator, myself->GetIdentity());
-
-	g_CookieManager.Unload();
 
 	if (Database != NULL)
 	{
@@ -199,9 +198,6 @@ void ClientPrefs::SDK_OnUnload()
 
 	plsys->RemovePluginsListener(&g_CookieManager);
 	playerhelpers->RemoveClientListener(&g_CookieManager);
-
-	queryMutex->DestroyThis();
-	cookieMutex->DestroyThis();
 }
 
 void ClientPrefs::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
@@ -312,7 +308,11 @@ void ClientPrefs::DatabaseConnect()
 
 	databaseLoading = false;
 
-	this->ProcessQueryCache();	
+	// Need a new scope because of the goto above.
+	{
+		ke::AutoLock lock(&queryLock);
+		this->ProcessQueryCache();	
+	}
 	return;
 
 fatal_fail:
@@ -321,24 +321,18 @@ fatal_fail:
 	databaseLoading = false;
 }
 
-bool ClientPrefs::AddQueryToQueue( TQueryOp *query )
+bool ClientPrefs::AddQueryToQueue(TQueryOp *query)
 {
-	queryMutex->Lock();
-	if (Database == NULL)
 	{
-		cachedQueries.push_back(query);
-		queryMutex->Unlock();
-		return false;
-	}
-	
-	if (!cachedQueries.empty())
-	{
-		queryMutex->Unlock();
-		this->ProcessQueryCache();
-	}
-	else
-	{
-		queryMutex->Unlock();
+		ke::AutoLock lock(&queryLock);
+		if (Database == NULL)
+		{
+			cachedQueries.push_back(query);
+			return false;
+		}
+		
+		if (!cachedQueries.empty())
+			this->ProcessQueryCache();
 	}
 
 	query->SetDatabase(Database);
@@ -348,12 +342,11 @@ bool ClientPrefs::AddQueryToQueue( TQueryOp *query )
 
 void ClientPrefs::ProcessQueryCache()
 {
-	if (Database == NULL)
-	{
-		return;
-	}
+	queryLock.AssertCurrentThreadOwns();
 
-	queryMutex->Lock();
+	if (Database == NULL)
+		return;
+
 	TQueryOp *op;
 	for (SourceHook::List<TQueryOp *>::iterator iter = cachedQueries.begin(); iter != cachedQueries.end(); iter++)
 	{
@@ -363,7 +356,6 @@ void ClientPrefs::ProcessQueryCache()
 	}
 
 	cachedQueries.clear();
-	queryMutex->Unlock();
 }
 
 size_t IsAuthIdConnected(char *authID)
@@ -417,8 +409,7 @@ void ClientPrefs::CatchLateLoadClients()
 
 void ClientPrefs::ClearQueryCache(int serial)
 {
-	queryMutex->Lock();
-
+	ke::AutoLock lock(&queryLock);
 	for (SourceHook::List<TQueryOp *>::iterator iter = cachedQueries.begin(); iter != cachedQueries.end();)
 	{
 		TQueryOp *op = *iter;
@@ -432,7 +423,6 @@ void ClientPrefs::ClearQueryCache(int serial)
 			iter++;
  		}
  	}
-	queryMutex->Unlock();
 }
 
 bool Translate(char *buffer, 
@@ -530,7 +520,5 @@ ClientPrefs::ClientPrefs()
 	phrases = NULL;
 	DBInfo = NULL;
 
-	cookieMutex = NULL;
-	queryMutex = NULL;
 	identity = NULL;
 }

@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -134,8 +134,9 @@ namespace SourceMod
 	 * itself is not versioned.
 	 *
 	 * V6 - added TestFeature() to IShareSys.
+	 * V7 - added OnDependenciesDropped() to IExtensionInterface.
 	 */
-	#define SMINTERFACE_EXTENSIONAPI_VERSION	6
+	#define SMINTERFACE_EXTENSIONAPI_VERSION	7
 
 	/**
 	 * @brief The interface an extension must expose.
@@ -311,6 +312,17 @@ namespace SourceMod
 		 * @param clientMax			Maximum number of clients allowed in the server.
 		 */
 		virtual void OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
+		{
+		}
+
+		/**
+		 * @brief Called once all dependencies have been unloaded. This is
+		 * called AFTER OnExtensionUnload(), but before the extension library
+		 * has been unloaded. It can be used as an alternate unload hook for
+		 * cases where having no dependent plugins would make shutdown much
+		 * simplier.
+		 */
+		virtual void OnDependenciesDropped()
 		{
 		}
 	};
