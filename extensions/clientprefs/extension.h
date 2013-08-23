@@ -40,6 +40,7 @@
 #include "sh_list.h"
 
 #include <am-thread-utils.h>
+#include <am-refcounting.h>
 
 char * UTIL_strncpy(char * destination, const char * source, size_t num);
 
@@ -152,7 +153,7 @@ public:
 	IdentityToken_t *GetIdentity() const;
 public:
 	IDBDriver *Driver;
-	IDatabase *Database;
+	ke::Ref<IDatabase> Database;
 	IPhraseCollection *phrases;
 	const DatabaseInfo *DBInfo;
 

@@ -44,19 +44,17 @@ template <typename T>
 class Newborn
 {
   public:
-    Newborn(const T &t)
+    Newborn(T *t)
       : thing_(t)
     {
     }
 
-    T release() const {
-        T temp = thing_;
-        thing_ = T();
-        return temp;
+    T *release() const {
+        return ReturnAndVoid(thing_);
     }
 
   private:
-    mutable T thing_;
+    mutable T *thing_;
 };
 
 // When returning a value, we'd rather not be needlessly changing the refcount,
@@ -109,9 +107,6 @@ class PassRef
     }
     T *operator *() const {
         return thing_;
-    }
-    operator bool () const {
-        return !!thing_;
     }
     bool operator !() const {
         return !thing_;
@@ -209,7 +204,7 @@ class Ref
       : thing_(other.release())
     {
     }
-    Ref(const Newborn<T *> &other)
+    Ref(const Newborn<T> &other)
       : thing_(other.release())
     {
     }
@@ -226,9 +221,6 @@ class Ref
     }
     operator T *() {
         return thing_;
-    }
-    operator bool () const {
-        return !!thing_;
     }
     bool operator !() const {
         return !thing_;

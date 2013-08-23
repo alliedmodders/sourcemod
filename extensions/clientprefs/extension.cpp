@@ -32,6 +32,8 @@
 #include <sourcemod_version.h>
 #include "extension.h"
 
+using namespace ke;
+
 /**
  * @file extension.cpp
  * @brief Implement extension code here.
@@ -145,11 +147,8 @@ bool ClientPrefs::QueryInterfaceDrop(SMInterface *pInterface)
 
 void ClientPrefs::NotifyInterfaceDrop(SMInterface *pInterface)
 {
-	if (Database != NULL && (void *)pInterface == (void *)(Database->GetDriver()))
-	{
-		Database->Close();
+	if (Database && (void *)pInterface == (void *)(Database->GetDriver()))
 		Database = NULL;
-	}
 }
 
 void ClientPrefs::SDK_OnDependenciesDropped()
@@ -161,11 +160,7 @@ void ClientPrefs::SDK_OnDependenciesDropped()
 	handlesys->RemoveType(g_CookieType, myself->GetIdentity());
 	handlesys->RemoveType(g_CookieIterator, myself->GetIdentity());
 
-	if (Database != NULL)
-	{
-		Database->Close();
-		Database = NULL;
-	}
+	Database = NULL;
 
 	if (g_CookieManager.cookieDataLoadedForward != NULL)
 	{
@@ -208,9 +203,7 @@ void ClientPrefs::OnCoreMapStart(edict_t *pEdictList, int edictCount, int client
 void ClientPrefs::AttemptReconnection()
 {
 	if (Database || databaseLoading)
-	{
 		return; /* We're already loading, or have loaded. */
-	}
 	
 	g_pSM->LogMessage(myself, "Attempting to reconnect to database...");
 	databaseLoading = true;
@@ -226,9 +219,9 @@ void ClientPrefs::DatabaseConnect()
 	char error[256];
 	int errCode = 0;
 
-	Database = Driver->Connect(DBInfo, true, error, sizeof(error));
+	Database = Newborn<IDatabase>(Driver->Connect(DBInfo, true, error, sizeof(error)));
 
-	if (Database == NULL)
+	if (!Database)
 	{
 		g_pSM->LogError(myself, error);
 		databaseLoading = false;
@@ -310,13 +303,12 @@ void ClientPrefs::DatabaseConnect()
 
 	// Need a new scope because of the goto above.
 	{
-		ke::AutoLock lock(&queryLock);
+		AutoLock lock(&queryLock);
 		this->ProcessQueryCache();	
 	}
 	return;
 
 fatal_fail:
-	Database->Close();
 	Database = NULL;
 	databaseLoading = false;
 }
@@ -324,8 +316,8 @@ fatal_fail:
 bool ClientPrefs::AddQueryToQueue(TQueryOp *query)
 {
 	{
-		ke::AutoLock lock(&queryLock);
-		if (Database == NULL)
+		AutoLock lock(&queryLock);
+		if (!Database)
 		{
 			cachedQueries.push_back(query);
 			return false;
@@ -344,7 +336,7 @@ void ClientPrefs::ProcessQueryCache()
 {
 	queryLock.AssertCurrentThreadOwns();
 
-	if (Database == NULL)
+	if (!Database)
 		return;
 
 	TQueryOp *op;
@@ -409,7 +401,7 @@ void ClientPrefs::CatchLateLoadClients()
 
 void ClientPrefs::ClearQueryCache(int serial)
 {
-	ke::AutoLock lock(&queryLock);
+	AutoLock lock(&queryLock);
 	for (SourceHook::List<TQueryOp *>::iterator iter = cachedQueries.begin(); iter != cachedQueries.end();)
 	{
 		TQueryOp *op = *iter;
@@ -515,7 +507,6 @@ const char *ClientPrefs::GetExtensionDateString()
 ClientPrefs::ClientPrefs()
 {
 	Driver = NULL;
-	Database = NULL;
 	databaseLoading = false;
 	phrases = NULL;
 	DBInfo = NULL;

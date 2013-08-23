@@ -131,7 +131,6 @@ TQueryOp::TQueryOp(enum querytype type, Cookie *cookie)
 void TQueryOp::SetDatabase(IDatabase *db)
 {
 	m_database = db;
-	m_database->IncReferenceCount();
 }
 
 bool TQueryOp::BindParamsAndRun()
