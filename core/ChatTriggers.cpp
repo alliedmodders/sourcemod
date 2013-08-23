@@ -333,8 +333,11 @@ void ChatTriggers::OnSayCommand_Post()
 {
 	int client = g_ConCmds.GetCommandClient();
 
-	if (m_bWillProcessInPost && client > 0)
+	if (m_bWillProcessInPost)
 	{
+		/* Reset this for re-entrancy */
+		m_bWillProcessInPost = false;
+		
 		/* Execute the cached command */
 		unsigned int old = SetReplyTo(SM_REPLY_CHAT);
 #if SOURCE_ENGINE == SE_DOTA
@@ -344,9 +347,6 @@ void ChatTriggers::OnSayCommand_Post()
 #endif
 		SetReplyTo(old);
 	}
-
-	/* Reset this for re-entrancy */
-	m_bWillProcessInPost = false;
 
 	if (m_bPluginIgnored)
 	{
