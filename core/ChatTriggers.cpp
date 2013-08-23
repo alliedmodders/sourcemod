@@ -304,15 +304,12 @@ void ChatTriggers::OnSayCommand_Pre()
 		m_bTriggerWasSilent = is_silent;
 	}
 
-	if (m_pOnClientSayCmd->GetFunctionCount() != 0)
-	{
-		cell_t res = CallOnClientSayCommand(client);
+	cell_t res = CallOnClientSayCommand(client);
 
-		if (res >= Pl_Handled)
-		{
-			m_bPluginIgnored = (res >= Pl_Stop);
-			RETURN_META(MRES_SUPERCEDE);
-		}
+	if (res >= Pl_Handled)
+	{
+		m_bPluginIgnored = (res >= Pl_Stop);
+		RETURN_META(MRES_SUPERCEDE);
 	}
 
 	if (m_bWillProcessInPost || \
@@ -443,10 +440,13 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_
 cell_t ChatTriggers::CallOnClientSayCommand(int client)
 {
 	cell_t res = Pl_Continue;
-	m_pOnClientSayCmd->PushCell(client);
-	m_pOnClientSayCmd->PushString(m_Arg0Backup);
-	m_pOnClientSayCmd->PushString(m_ArgSBackup);
-	m_pOnClientSayCmd->Execute(&res);
+	if (m_pOnClientSayCmd->GetFunctionCount() != 0)
+	{
+		m_pOnClientSayCmd->PushCell(client);
+		m_pOnClientSayCmd->PushString(m_Arg0Backup);
+		m_pOnClientSayCmd->PushString(m_ArgSBackup);
+		m_pOnClientSayCmd->Execute(&res);
+	}
 	return res;
 }
 
