@@ -331,16 +331,16 @@ void ChatTriggers::OnSayCommand_Post()
 {
 	int client = g_ConCmds.GetCommandClient();
 
-	if (m_bWillProcessInPost)
-	{
-		/* Reset this for re-entrancy */
-		m_bWillProcessInPost = false;
-		
+	if (m_bWillProcessInPost && client > 0)
+	{		
 		/* Execute the cached command */
 		unsigned int old = SetReplyTo(SM_REPLY_CHAT);
 		serverpluginhelpers->ClientCommand(PEntityOfEntIndex(client), m_ToExecute);
 		SetReplyTo(old);
 	}
+
+	/* Reset this for re-entrancy */
+	m_bWillProcessInPost = false;
 
 	if (m_bPluginIgnored)
 	{
