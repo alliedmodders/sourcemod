@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod SQLite Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -32,10 +32,13 @@
 #ifndef _INCLUDE_SQLITE_SOURCEMOD_DATABASE_H_
 #define _INCLUDE_SQLITE_SOURCEMOD_DATABASE_H_
 
-#include <IThreader.h>
+#include <am-refcounting-threadsafe.h>
+#include <am-thread-utils.h>
 #include "SqDriver.h"
 
-class SqDatabase : public IDatabase
+class SqDatabase
+	: public IDatabase,
+	  public ke::RefcountedThreadsafe<SqDatabase>
 {
 public:
 	SqDatabase(sqlite3 *sq3, bool persistent);
@@ -63,9 +66,7 @@ public:
 	sqlite3 *GetDb();
 private:
 	sqlite3 *m_sq3;
-	unsigned int m_refcount;
-	IMutex *m_pFullLock;
-	IMutex *m_pRefLock;
+	ke::AutoPtr<ke::Mutex> m_FullLock;
 	bool m_Persistent;
 	String m_LastError;
 	int m_LastErrorCode;

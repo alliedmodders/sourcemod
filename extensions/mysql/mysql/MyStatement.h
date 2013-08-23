@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod MySQL Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -69,7 +69,7 @@ private:
 	void *CopyBlob(unsigned int param, const void *blobptr, size_t length);
 private:
 	MYSQL *m_mysql;
-	MyDatabase *m_pParent;
+	ke::Ref<MyDatabase> m_pParent;
 	MYSQL_STMT *m_stmt;
 	MYSQL_BIND *m_bind;
 	MYSQL_RES *m_pRes;

@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod SQLite Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -34,47 +34,25 @@
 #include "SqQuery.h"
 
 SqDatabase::SqDatabase(sqlite3 *sq3, bool persistent) : 
-	m_sq3(sq3), m_refcount(1), m_pFullLock(NULL), m_Persistent(persistent)
+	m_sq3(sq3), m_Persistent(persistent)
 {
-	m_pRefLock = threader->MakeMutex();
 }
 
 SqDatabase::~SqDatabase()
 {
-	m_pRefLock->DestroyThis();
-	if (m_pFullLock)
-	{
-		m_pFullLock->DestroyThis();
-	}
+	if (m_Persistent)
+		g_SqDriver.RemovePersistent(this);
 	sqlite3_close(m_sq3);
 }
 
 void SqDatabase::IncReferenceCount()
 {
-	m_pRefLock->Lock();
-	m_refcount++;
-	m_pRefLock->Unlock();
+	AddRef();
 }
 
 bool SqDatabase::Close()
 {
-	m_pRefLock->Lock();
-	if (m_refcount > 1)
-	{
-		m_refcount--;
-		m_pRefLock->Unlock();
-		return false;
-	}
-	m_pRefLock->Unlock();
-
-	if (m_Persistent)
-	{
-		g_SqDriver.RemovePersistent(this);
-	}
-
-	delete this;
-
-	return true;
+	return !Release();
 }
 
 const char *SqDatabase::GetError(int *errorCode/* =NULL */)
@@ -84,26 +62,17 @@ const char *SqDatabase::GetError(int *errorCode/* =NULL */)
 
 bool SqDatabase::LockForFullAtomicOperation()
 {
-	if (!m_pFullLock)
-	{
-		m_pFullLock = threader->MakeMutex();
-		if (!m_pFullLock)
-		{
-			return false;
-		}
-	}
+	if (!m_FullLock)
+		m_FullLock = new ke::Mutex();
 
-	m_pFullLock->Lock();
-
+	m_FullLock->Lock();
 	return true;
 }
 
 void SqDatabase::UnlockFromFullAtomicOperation()
 {
-	if (m_pFullLock)
-	{
-		m_pFullLock->Unlock();
-	}
+	if (m_FullLock)
+		m_FullLock->Unlock();
 }
 
 IDBDriver *SqDatabase::GetDriver()

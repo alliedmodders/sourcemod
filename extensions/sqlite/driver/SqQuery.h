@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod SQLite Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -32,6 +32,7 @@
 #ifndef _INCLUDE_SQLITE_SOURCEMOD_QUERY_H_
 #define _INCLUDE_SQLITE_SOURCEMOD_QUERY_H_
 
+#include <am-refcounting.h>
 #include "SqDatabase.h"
 #include "SqResults.h"
 
@@ -81,7 +82,7 @@ public: //IResultRow
 public:
 	sqlite3_stmt *GetStmt();
 private:
-	SqDatabase *m_pParent;
+	ke::Ref<SqDatabase> m_pParent;
 	sqlite3_stmt *m_pStmt;
 	SqResults *m_pResults;
 	unsigned int m_ParamCount;

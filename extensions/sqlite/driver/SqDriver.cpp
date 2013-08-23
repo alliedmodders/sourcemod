@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod SQLite Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -66,24 +66,16 @@ int busy_handler(void *unused1, int unused2)
 SqDriver::SqDriver()
 {
 	m_Handle = BAD_HANDLE;
-	m_pOpenLock = NULL;
 	m_bThreadSafe = false;
 }
 
 void SqDriver::Initialize()
 {
-	m_pOpenLock = threader->MakeMutex();
-
 	InitializeThreadSafety();
 }
 
 void SqDriver::Shutdown()
 {
-	if (m_pOpenLock)
-	{
-		m_pOpenLock->DestroyThis();
-	}
-
 	if (m_bThreadSafe)
 	{
 		sqlite3_enable_shared_cache(0);
@@ -158,8 +150,7 @@ inline bool IsPathSepChar(char c)
 
 IDatabase *SqDriver::Connect(const DatabaseInfo *info, bool persistent, char *error, size_t maxlength)
 {
-	/* We wrap most of the open process in a mutex just to be safe */
-	m_pOpenLock->Lock();
+	ke::AutoLock lock(&m_OpenLock);
 
 	/* Format our path */
 	char path[PLATFORM_MAX_PATH];
@@ -189,7 +180,6 @@ IDatabase *SqDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 			if (!libsys->CreateFolder(fullpath))
 			{
 				strncopy(error, "Could not create or open \"data\" folder\"", maxlength);
-				m_pOpenLock->Unlock();
 				return NULL;
 			}
 		}
@@ -237,7 +227,6 @@ IDatabase *SqDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 			if ((*iter).path.compare(fullpath) == 0)
 			{
 				(*iter).db->IncReferenceCount();
-				m_pOpenLock->Unlock();
 				return (*iter).db;
 			}
 		}
@@ -250,7 +239,6 @@ IDatabase *SqDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 	{
 		strncopy(error, sqlite3_errmsg(sql), maxlength);
 		sqlite3_close(sql);
-		m_pOpenLock->Unlock();
 		return NULL;
 	}
 
@@ -266,13 +254,13 @@ IDatabase *SqDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 		m_Cache.push_back(pinfo);
 	}
 
-	m_pOpenLock->Unlock();
-
 	return pdb;
 }
 
 void SqDriver::RemovePersistent(IDatabase *pdb)
 {
+	ke::AutoLock lock(&m_OpenLock);
+
 	List<SqDbInfo>::iterator iter;
 	for (iter = m_Cache.begin(); iter != m_Cache.end(); iter++)
 	{

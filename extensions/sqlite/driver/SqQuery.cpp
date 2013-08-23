@@ -36,14 +36,12 @@ SqQuery::SqQuery(SqDatabase *parent, sqlite3_stmt *stmt) :
 {
 	m_ParamCount = sqlite3_bind_parameter_count(m_pStmt);
 	m_ColCount = sqlite3_column_count(m_pStmt);
-	m_pParent->IncReferenceCount();
 }
 
 SqQuery::~SqQuery()
 {
 	delete m_pResults;
 	sqlite3_finalize(m_pStmt);
-	m_pParent->Close();
 }
 
 IResultSet *SqQuery::GetResultSet()

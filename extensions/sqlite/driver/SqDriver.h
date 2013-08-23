@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod SQLite Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -32,10 +32,11 @@
 #ifndef _INCLUDE_SQLITE_SOURCEMOD_DRIVER_H_
 #define _INCLUDE_SQLITE_SOURCEMOD_DRIVER_H_
 
+#define SOURCEMOD_SQL_DRIVER_CODE
 #include <IDBDriver.h>
-#include <IThreader.h>
 #include <sh_list.h>
 #include <sh_string.h>
+#include <am-thread-utils.h>
 #include "sqlite-source/sqlite3.h"
 
 using namespace SourceMod;
@@ -70,7 +71,7 @@ public:
 	void RemovePersistent(IDatabase *pdb);
 private:
 	Handle_t m_Handle;
-	IMutex *m_pOpenLock;
+	ke::Mutex m_OpenLock;
 	List<SqDbInfo> m_Cache;
 	bool m_bThreadSafe;
 };

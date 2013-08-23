@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod MySQL Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -87,7 +87,7 @@ DBType GetOurType(enum_field_types type)
 }
 
 MyDatabase::MyDatabase(MYSQL *mysql, const DatabaseInfo *info, bool persistent)
-: m_mysql(mysql), m_refcount(1), m_pFullLock(NULL), m_bPersistent(persistent)
+: m_mysql(mysql), m_bPersistent(persistent)
 {
 	m_Host.assign(info->host);
 	m_Database.assign(info->database);
@@ -101,50 +101,24 @@ MyDatabase::MyDatabase(MYSQL *mysql, const DatabaseInfo *info, bool persistent)
 	m_Info.driver = NULL;
 	m_Info.maxTimeout = info->maxTimeout;
 	m_Info.port = info->port;
-
-	m_pRefLock = threader->MakeMutex();
 }
 
 MyDatabase::~MyDatabase()
 {
+	/* Remove us from the search list */
+	if (m_bPersistent)
+		g_MyDriver.RemoveFromList(this, true);
 	mysql_close(m_mysql);
-	m_mysql = NULL;
-
-	m_pRefLock->DestroyThis();
-	if (m_pFullLock)
-	{
-		m_pFullLock->DestroyThis();
-	}
 }
 
 void MyDatabase::IncReferenceCount()
 {
-	m_pRefLock->Lock();
-	m_refcount++;
-	m_pRefLock->Unlock();
+	AddRef();
 }
 
 bool MyDatabase::Close()
 {
-	m_pRefLock->Lock();
-	if (m_refcount > 1)
-	{
-		m_refcount--;
-		m_pRefLock->Unlock();
-		return false;
-	}
-	m_pRefLock->Unlock();
-
-	/* Remove us from the search list */
-	if (m_bPersistent)
-	{
-		g_MyDriver.RemoveFromList(this, true);
-	}
-
-	/* Finally, free our resource(s) */
-	delete this;
-
-	return true;
+	return !Release();
 }
 
 const DatabaseInfo &MyDatabase::GetInfo()
@@ -300,26 +274,17 @@ IPreparedQuery *MyDatabase::PrepareQuery(const char *query, char *error, size_t 
 
 bool MyDatabase::LockForFullAtomicOperation()
 {
-	if (!m_pFullLock)
-	{
-		m_pFullLock = threader->MakeMutex();
-		if (!m_pFullLock)
-		{
-			return false;
-		}
-	}
+	if (!m_FullLock)
+		m_FullLock = new ke::Mutex();
 
-	m_pFullLock->Lock();
-
+	m_FullLock->Lock();
 	return true;
 }
 
 void MyDatabase::UnlockFromFullAtomicOperation()
 {
-	if (m_pFullLock)
-	{
-		m_pFullLock->Unlock();
-	}
+	if (m_FullLock)
+		m_FullLock->Unlock();
 }
 
 IDBDriver *MyDatabase::GetDriver()

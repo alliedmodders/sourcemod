@@ -608,6 +608,7 @@ namespace SourceMod
 		 */
 		virtual bool SetCharacterSet(const char *characterset) =0;
 
+#if !defined(SOURCEMOD_SQL_DRIVER_CODE)
 		/**
 		 * @brief Wrapper around IncReferenceCount(), for ke::Ref.
 		 */
@@ -621,6 +622,7 @@ namespace SourceMod
 		void Release() {
 			Close();
 		}
+#endif
 	};
 
 	/** 

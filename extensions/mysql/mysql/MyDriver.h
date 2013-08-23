@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod MySQL Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -32,6 +32,7 @@
 #ifndef _INCLUDE_SM_MYSQL_DRIVER_H_
 #define _INCLUDE_SM_MYSQL_DRIVER_H_
 
+#define SOURCEMOD_SQL_DRIVER_CODE
 #include <IDBDriver.h>
 #include <sm_platform.h>
 #if defined PLATFORM_WINDOWS
@@ -46,6 +47,7 @@
 
 #include <sh_string.h>
 #include <sh_list.h>
+#include <am-thread-utils.h>
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -71,6 +73,7 @@ public:
 	void Shutdown();
 	void RemoveFromList(MyDatabase *pdb, bool persistent);
 private:
+	ke::Mutex m_Lock;
 	Handle_t m_MyHandle;
 	List<MyDatabase *> m_TempDbs;
 	List<MyDatabase *> m_PermDbs;

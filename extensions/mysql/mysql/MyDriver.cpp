@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod MySQL Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -154,6 +154,8 @@ bool CompareField(const char *str1, const char *str2)
 
 IDatabase *MyDriver::Connect(const DatabaseInfo *info, bool persistent, char *error, size_t maxlength)
 {
+	ke::AutoLock lock(&m_Lock);
+
 	if (persistent)
 	{
 		/* Try to find a matching persistent connection */
@@ -194,6 +196,7 @@ IDatabase *MyDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 
 void MyDriver::RemoveFromList(MyDatabase *pdb, bool persistent)
 {
+	ke::AutoLock lock(&m_Lock);
 	if (persistent)
 	{
 		m_PermDbs.remove(pdb);

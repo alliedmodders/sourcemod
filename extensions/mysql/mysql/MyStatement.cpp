@@ -48,8 +48,6 @@ MyStatement::MyStatement(MyDatabase *db, MYSQL_STMT *stmt)
 		m_bind = NULL;
 	}
 
-	m_pParent->IncReferenceCount();
-
 	m_pRes = mysql_stmt_result_metadata(stmt);
 	m_Results = false;
 }
@@ -75,9 +73,6 @@ MyStatement::~MyStatement()
 		mysql_free_result(m_pRes);
 	}
 	mysql_stmt_close(m_stmt);
-
-	/* Tell the parent database that we're done referencing it */
-	m_pParent->Close();
 }
 
 void MyStatement::Destroy()

@@ -37,6 +37,7 @@
  * @brief Sample extension code header.
  */
 
+#define SOURCEMOD_SQL_DRIVER_CODE
 #include "smsdk_ext.h"
 
 

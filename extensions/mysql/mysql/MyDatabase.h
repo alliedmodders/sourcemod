@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod MySQL Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -32,13 +32,16 @@
 #ifndef _INCLUDE_SM_MYSQL_DATABASE_H_
 #define _INCLUDE_SM_MYSQL_DATABASE_H_
 
+#include <am-thread-utils.h>
+#include <am-refcounting-threadsafe.h>
 #include "MyDriver.h"
-#include <IThreader.h>
 
 class MyQuery;
 class MyStatement;
 
-class MyDatabase : public IDatabase
+class MyDatabase
+	: public IDatabase,
+	  public ke::RefcountedThreadsafe<MyDatabase>
 {
 	friend class MyQuery;
 	friend class MyStatement;
@@ -67,9 +70,7 @@ public:
 	const DatabaseInfo &GetInfo();
 private:
 	MYSQL *m_mysql;
-	unsigned int m_refcount;
-	IMutex *m_pFullLock;
-	IMutex *m_pRefLock;
+	ke::AutoPtr<ke::Mutex> m_FullLock;
 
 	/* ---------- */
 	DatabaseInfo m_Info;

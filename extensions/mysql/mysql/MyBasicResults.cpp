@@ -306,7 +306,6 @@ DBResult MyBasicResults::CopyBlob(unsigned int columnId, void *buffer, size_t ma
 MyQuery::MyQuery(MyDatabase *db, MYSQL_RES *res)
 : m_pParent(db), m_rs(res)
 {
-	m_pParent->IncReferenceCount();
 	m_InsertID = m_pParent->GetInsertID();
 	m_AffectedRows = m_pParent->GetAffectedRows();
 }
@@ -370,9 +369,6 @@ void MyQuery::Destroy()
 	{
 		mysql_free_result(m_rs.m_pRes);
 	}
-
-	/* Tell our parent we're done */
-	m_pParent->Close();
 
 	/* Self destruct */
 	delete this;
