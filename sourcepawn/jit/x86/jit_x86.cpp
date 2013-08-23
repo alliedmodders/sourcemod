@@ -2056,7 +2056,7 @@ void
 JITX86::PatchAllJumpsForTimeout()
 {
   mutex_.AssertCurrentThreadOwns();
-  for (InlineList<BaseRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
+  for (ke::InlineList<BaseRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
     BaseRuntime *rt = *iter;
     for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
       JitFunction *fun = rt->GetJitFunction(i);
@@ -2075,7 +2075,7 @@ void
 JITX86::UnpatchAllJumpsFromTimeout()
 {
   mutex_.AssertCurrentThreadOwns();
-  for (InlineList<BaseRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
+  for (ke::InlineList<BaseRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
     BaseRuntime *rt = *iter;
     for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
       JitFunction *fun = rt->GetJitFunction(i);

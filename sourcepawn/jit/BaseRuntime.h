@@ -36,7 +36,7 @@ struct floattbl_t
 /* Jit wants fast access to this so we expose things as public */
 class BaseRuntime
   : public SourcePawn::IPluginRuntime,
-    public InlineListNode<BaseRuntime>
+    public ke::InlineListNode<BaseRuntime>
 {
  public:
   BaseRuntime();

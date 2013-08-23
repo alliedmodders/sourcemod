@@ -1,21 +1,32 @@
-/* vim: set ts=2 sw=2 tw=99 et:
- *
- * Copyright (C) 2012 David Anderson
- *
- * This file is part of SourcePawn.
- *
- * SourcePawn is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
- * 
- * SourcePawn is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * SourcePawn. If not, see http://www.gnu.org/licenses/.
- */
+// vim: set sts=8 ts=2 sw=2 tw=99 et:
+//
+// Copyright (C) 2013, David Anderson and AlliedModders LLC
+// All rights reserved.
+// 
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+// 
+//  * Redistributions of source code must retain the above copyright notice, this
+//    list of conditions and the following disclaimer.
+//  * Redistributions in binary form must reproduce the above copyright notice,
+//    this list of conditions and the following disclaimer in the documentation
+//    and/or other materials provided with the distribution.
+//  * Neither the name of AlliedModders LLC nor the names of its contributors
+//    may be used to endorse or promote products derived from this software
+//    without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
 #ifndef _INCLUDE_KEIMA_TPL_CPP_VECTOR_H_
 #define _INCLUDE_KEIMA_TPL_CPP_VECTOR_H_
 
@@ -31,9 +42,9 @@ class Vector : public AllocPolicy
 {
  public:
   Vector(AllocPolicy = AllocPolicy())
-  : data(NULL),
-    nitems(0),
-    maxsize(0)
+  : data_(NULL),
+    nitems_(0),
+    maxsize_(0)
   {
   }
 
@@ -44,23 +55,23 @@ class Vector : public AllocPolicy
 
   void steal(Vector &other) {
     zap();
-    data = other.data;
-    nitems = other.nitems;
-    maxsize = other.maxsize;
+    data_ = other.data_;
+    nitems_ = other.nitems_;
+    maxsize_ = other.maxsize_;
     other.reset();
   }
 
   bool append(const T& item) {
     if (!growIfNeeded(1))
       return false;
-    new (&data[nitems]) T(item);
-    nitems++;
+    new (&data_[nitems_]) T(item);
+    nitems_++;
     return true;
   }
   void infallibleAppend(const T &item) {
     assert(growIfNeeded(1));
-    new (&data[nitems]) T(item);
-    nitems++;
+    new (&data_[nitems_]) T(item);
+    nitems_++;
   }
   T popCopy() {
     T t = at(length() - 1);
@@ -68,23 +79,23 @@ class Vector : public AllocPolicy
     return t;
   }
   void pop() {
-    assert(nitems);
-    data[nitems - 1].~T();
-    nitems--;
+    assert(nitems_);
+    data_[nitems_ - 1].~T();
+    nitems_--;
   }
   bool empty() const {
     return length() == 0;
   }
   size_t length() const {
-    return nitems;
+    return nitems_;
   }
   T& at(size_t i) {
     assert(i < length());
-    return data[i];
+    return data_[i];
   }
   const T& at(size_t i) const {
     assert(i < length());
-    return data[i];
+    return data_[i];
   }
   T& operator [](size_t i) {
     return at(i);
@@ -93,7 +104,7 @@ class Vector : public AllocPolicy
     return at(i);
   }
   void clear() {
-    nitems = 0;
+    nitems_ = 0;
   }
   const T &back() const {
     return at(length() - 1);
@@ -103,7 +114,7 @@ class Vector : public AllocPolicy
   }
 
   T *buffer() const {
-    return data;
+    return data_;
   }
 
   bool ensure(size_t desired) {
@@ -115,49 +126,49 @@ class Vector : public AllocPolicy
 
  private:
   void zap() {
-    for (size_t i = 0; i < nitems; i++)
-      data[i].~T();
-    this->free(data);
+    for (size_t i = 0; i < nitems_; i++)
+      data_[i].~T();
+    this->free(data_);
   }
   void reset() {
-    data = NULL;
-    nitems = 0;
-    maxsize = 0;
+    data_ = NULL;
+    nitems_ = 0;
+    maxsize_ = 0;
   }
 
   bool growIfNeeded(size_t needed)
   {
-    if (!IsUintPtrAddSafe(nitems, needed)) {
+    if (!IsUintPtrAddSafe(nitems_, needed)) {
       this->reportAllocationOverflow();
       return false;
     }
-    if (nitems + needed < maxsize)
+    if (nitems_ + needed < maxsize_)
       return true;
-    if (maxsize == 0)
-      maxsize = 8;
-    while (nitems + needed > maxsize) {
-      if (!IsUintPtrMultiplySafe(maxsize, 2)) {
+    if (maxsize_ == 0)
+      maxsize_ = 8;
+    while (nitems_ + needed > maxsize_) {
+      if (!IsUintPtrMultiplySafe(maxsize_, 2)) {
         this->reportAllocationOverflow();
         return false;
       }
-      maxsize *= 2;
+      maxsize_ *= 2;
     }
-    T* newdata = (T*)this->malloc(sizeof(T) * maxsize);
+    T* newdata = (T*)this->malloc(sizeof(T) * maxsize_);
     if (newdata == NULL)
       return false;
-    for (size_t i = 0; i < nitems; i++) {
-      new (&newdata[i]) T(data[i]);
-      data[i].~T();
+    for (size_t i = 0; i < nitems_; i++) {
+      new (&newdata[i]) T(data_[i]);
+      data_[i].~T();
     }
-    this->free(data);
-    data = newdata;
+    this->free(data_);
+    data_ = newdata;
     return true;
   }
 
  private:
-  T* data;
-  size_t nitems;
-  size_t maxsize;
+  T* data_;
+  size_t nitems_;
+  size_t maxsize_;
 };
 
 }

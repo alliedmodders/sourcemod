@@ -201,7 +201,7 @@ class JITX86
   void *m_pJitEntry;         /* Entry function */
   void *m_pJitReturn;        /* Universal return address */
   void *m_pJitTimeout;       /* Universal timeout address */
-  InlineList<BaseRuntime> runtimes_;
+  ke::InlineList<BaseRuntime> runtimes_;
   uintptr_t frame_id_;
   uintptr_t level_;
   ke::Mutex mutex_;
