@@ -163,7 +163,6 @@ class SM:
 				self.compiler.AddToListVar('CXXFLAGS', '-fno-threadsafe-statics')
 				self.compiler.AddToListVar('CXXFLAGS', '-Wno-non-virtual-dtor')
 				self.compiler.AddToListVar('CXXFLAGS', '-Wno-overloaded-virtual')
-				self.compiler.AddToListVar('CXXFLAGS', '-Wno-narrowing')
 				if (self.vendor == 'gcc' and cxx.majorVersion >= 4 and cxx.minorVersion >= 7) or \
 						(self.vendor == 'clang' and cxx.majorVersion >= 3):
 					self.compiler.AddToListVar('CXXFLAGS', '-Wno-delete-non-virtual-dtor')
