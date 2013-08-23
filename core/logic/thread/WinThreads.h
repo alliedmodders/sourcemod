@@ -32,8 +32,8 @@
 #ifndef _INCLUDE_WINTHREADS_H_
 #define _INCLUDE_WINTHREADS_H_
 
-#include <ke_thread_utils.h>
-#include <ke_utility.h>
+#include <am-thread-utils.h>
+#include <am-utility.h>
 #include <windows.h>
 #include "IThreader.h"
 
