@@ -208,9 +208,27 @@ void ChatTriggers::OnSayCommand_Pre()
 	m_bWasFloodedMessage = false;
 	m_bPluginIgnored = false;
 
+	const char *args = command.ArgS();
+	
+	if (!args)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
+	/* Save these off for post hook as the command data returned from the engine in older engine versions 
+	 * can be NULL, despite the data still being there and valid. */
+	m_Arg0Backup = command.Arg(0);
+	m_ArgSBackup = command.ArgS();
+
 	/* The server console cannot do this */
 	if (client == 0)
 	{
+		cell_t res = CallOnClientSayCommand(client);
+		if (res >= Pl_Handled)
+		{
+			m_bPluginIgnored = (res >= Pl_Stop);
+			RETURN_META(MRES_SUPERCEDE);
+		}
 		RETURN_META(MRES_IGNORED);
 	}
 
@@ -218,13 +236,6 @@ void ChatTriggers::OnSayCommand_Pre()
 
 	/* We guarantee the client is connected */
 	if (!pPlayer || !pPlayer->IsConnected())
-	{
-		RETURN_META(MRES_IGNORED);
-	}
-
-	const char *args = command.ArgS();
-	
-	if (!args)
 	{
 		RETURN_META(MRES_IGNORED);
 	}
@@ -255,11 +266,6 @@ void ChatTriggers::OnSayCommand_Pre()
 		args++;
 		is_quoted = true;
 	}
-
-	/* Save these off for post hook as the command data returned from the engine in older engine versions 
-	 * can be NULL, despite the data still being there and valid. */
-	m_Arg0Backup = command.Arg(0);
-	m_ArgSBackup = command.ArgS();
 
 #if SOURCE_ENGINE == SE_EPISODEONE
 	if (m_bIsINS && strcmp(m_Arg0Backup, "say2") == 0 && strlen(args) >= 4)
@@ -300,11 +306,7 @@ void ChatTriggers::OnSayCommand_Pre()
 
 	if (m_pOnClientSayCmd->GetFunctionCount() != 0)
 	{
-		cell_t res = Pl_Continue;
-		m_pOnClientSayCmd->PushCell(client);
-		m_pOnClientSayCmd->PushString(m_Arg0Backup);
-		m_pOnClientSayCmd->PushString(m_ArgSBackup);
-		m_pOnClientSayCmd->Execute(&res);
+		cell_t res = CallOnClientSayCommand(client);
 
 		if (res >= Pl_Handled)
 		{
@@ -436,6 +438,16 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_
 	}
 
 	return true;
+}
+
+cell_t ChatTriggers::CallOnClientSayCommand(int client)
+{
+	cell_t res = Pl_Continue;
+	m_pOnClientSayCmd->PushCell(client);
+	m_pOnClientSayCmd->PushString(m_Arg0Backup);
+	m_pOnClientSayCmd->PushString(m_ArgSBackup);
+	m_pOnClientSayCmd->Execute(&res);
+	return res;
 }
 
 unsigned int ChatTriggers::SetReplyTo(unsigned int reply)
