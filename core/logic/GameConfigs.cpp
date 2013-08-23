@@ -121,7 +121,6 @@ CGameConfig::CGameConfig(const char *file, const char *engine)
 	strncopy(m_File, file, sizeof(m_File));
 	m_pAddresses = new KTrie<AddressConf>();
 	m_pStrings = new BaseStringTable(512);
-	m_RefCount = 0;
 
 	m_CustomLevel = 0;
 	m_CustomHandler = NULL;
@@ -141,8 +140,7 @@ CGameConfig::CGameConfig(const char *file, const char *engine)
 
 CGameConfig::~CGameConfig()
 {
-	delete m_pAddresses;
-	delete m_pStrings;
+	g_GameConfigs.RemoveCachedConfig(this);
 }
 
 SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *name)
@@ -1009,17 +1007,6 @@ bool CGameConfig::GetMemSig(const char *key, void **addr)
 	return true;
 }
 
-void CGameConfig::IncRefCount()
-{
-	m_RefCount++;
-}
-
-unsigned int CGameConfig::DecRefCount()
-{
-	m_RefCount--;
-	return m_RefCount;
-}
-
 GameConfigManager::GameConfigManager()
 {
 }
@@ -1073,7 +1060,7 @@ bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pCon
 	if ((ppConfig = m_Lookup.retrieve(file)) != NULL)
 	{
 		pConfig = *ppConfig;
-		pConfig->IncRefCount();
+		pConfig->AddRef();
 		*_pConfig = pConfig;
 		return true;
 	}
@@ -1090,22 +1077,14 @@ bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pCon
 	m_cfgs.push_back(pConfig);
 	m_Lookup.insert(file, pConfig);
 
-	pConfig->IncRefCount();
-
 	*_pConfig = pConfig;
-
 	return retval;
 }
 
 void GameConfigManager::CloseGameConfigFile(IGameConfig *cfg)
 {
 	CGameConfig *pConfig = (CGameConfig *)cfg;
-
-	if (pConfig->DecRefCount() == 0)
-	{
-		m_Lookup.remove(pConfig->m_File);
-		delete pConfig;
-	}
+	pConfig->Release();
 }
 
 extern Handle_t g_GameConfigsType;
@@ -1154,4 +1133,9 @@ void GameConfigManager::AcquireLock()
 
 void GameConfigManager::ReleaseLock()
 {
+}
+
+void GameConfigManager::RemoveCachedConfig(CGameConfig *config)
+{
+	m_Lookup.remove(config->m_File);
 }

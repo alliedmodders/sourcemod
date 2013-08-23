@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -38,6 +38,7 @@
 #include <sh_list.h>
 #include "sm_memtable.h"
 #include <sm_trie_tpl.h>
+#include <am-refcounting.h>
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -46,7 +47,8 @@ class SendProp;
 
 class CGameConfig : 
 	public ITextListener_SMC,
-	public IGameConfig
+	public IGameConfig,
+	public ke::Refcounted<CGameConfig>
 {
 	friend class GameConfigManager;
 public:
@@ -67,18 +69,14 @@ public: //IGameConfig
 	SendProp *GetSendProp(const char *key);
 	bool GetMemSig(const char *key, void **addr);
 	bool GetAddress(const char *key, void **addr);
-public:
-	void IncRefCount();
-	unsigned int DecRefCount();
 private:
-	BaseStringTable *m_pStrings;
+	ke::AutoPtr<BaseStringTable> m_pStrings;
 	char m_File[PLATFORM_MAX_PATH];
 	char m_CurFile[PLATFORM_MAX_PATH];
 	KTrie<int> m_Offsets;
 	KTrie<SendProp *> m_Props;
 	KTrie<int> m_Keys;
 	KTrie<void *> m_Sigs;
-	unsigned int m_RefCount;
 	/* Parse states */
 	int m_ParseState;
 	unsigned int m_IgnoreLevel;
@@ -112,7 +110,7 @@ private:
 	char m_AddressSignature[64];
 	int m_AddressReadCount;
 	int m_AddressRead[8];
-	KTrie<AddressConf> *m_pAddresses;
+	ke::AutoPtr<KTrie<AddressConf> > m_pAddresses;
 	const char *m_pEngine;
 	const char *m_pBaseEngine;
 };
@@ -138,6 +136,8 @@ public: //SMGlobalClass
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
 	void OnSourceModAllShutdown();
+public:
+	void RemoveCachedConfig(CGameConfig *config);
 private:
 	List<CGameConfig *> m_cfgs;
 	KTrie<CGameConfig *> m_Lookup;
