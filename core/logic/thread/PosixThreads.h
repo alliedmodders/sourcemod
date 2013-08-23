@@ -33,7 +33,7 @@
 #define _INCLUDE_POSIXTHREADS_H_
 
 #include <pthread.h>
-#include <ke_thread_utils.h>
+#include <am-thread-utils.h>
 #include "IThreader.h"
 
 using namespace SourceMod;

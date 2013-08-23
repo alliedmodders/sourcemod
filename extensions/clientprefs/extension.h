@@ -39,7 +39,7 @@
 #include "smsdk_ext.h"
 #include "sh_list.h"
 
-#include <ke_thread_utils.h>
+#include <am-thread-utils.h>
 
 char * UTIL_strncpy(char * destination, const char * source, size_t num);
 

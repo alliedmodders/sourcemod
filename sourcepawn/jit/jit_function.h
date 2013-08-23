@@ -3,7 +3,7 @@
 #define _INCLUDE_SOURCEPAWN_JIT2_FUNCTION_H_
 
 #include <sp_vm_types.h>
-#include <ke_vector.h>
+#include <am-vector.h>
 
 struct LoopEdge
 {

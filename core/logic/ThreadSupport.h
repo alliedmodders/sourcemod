@@ -33,8 +33,8 @@
 #define _INCLUDE_SOURCEMOD_THREAD_SUPPORT_H
 
 #include <IThreader.h>
-#include <ke_thread_utils.h>
-#include <ke_utility.h>
+#include <am-thread-utils.h>
+#include <am-utility.h>
 
 using namespace SourceMod;
 

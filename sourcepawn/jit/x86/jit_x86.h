@@ -21,13 +21,13 @@
 #include <sp_vm_api.h>
 #include <KeCodeAllocator.h>
 #include <macro-assembler-x86.h>
-#include <ke_vector.h>
+#include <am-vector.h>
 #include "jit_shared.h"
 #include "BaseRuntime.h"
 #include "sp_vm_basecontext.h"
 #include "jit_function.h"
 #include "opcodes.h"
-#include <ke_thread_utils.h>
+#include <am-thread-utils.h>
 
 using namespace SourcePawn;
 

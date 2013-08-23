@@ -19,7 +19,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <ke_thread_utils.h>
+#include <am-thread-utils.h>
 
 typedef bool (*WatchdogCallback)();
 

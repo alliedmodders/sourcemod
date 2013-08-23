@@ -24,9 +24,15 @@
 #else
 # include <pthread.h>
 #endif
-#include <ke_utility.h>
+#include <am-utility.h>
 
 // Thread primitives for SourcePawn.
+//
+// Linking Requirements:
+// 
+// OS X: None (-lpthread and -ldl are optional)
+// Windows: None
+// Linux: -lpthread -lrt required
 //
 // -- Mutexes --
 //
@@ -238,9 +244,9 @@ class IRunnable
 
 // Include the actual thread implementations.
 #if defined(_MSC_VER)
-# include "ke_thread_windows.h"
+# include "am-thread-windows.h"
 #else
-# include "ke_thread_posix.h"
+# include "am-thread-posix.h"
 #endif
 
 #endif // _include_sourcepawn_threads_

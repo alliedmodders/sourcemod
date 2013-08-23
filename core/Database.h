@@ -41,7 +41,7 @@
 #include "sm_memtable.h"
 #include <IThreader.h>
 #include <IPluginSys.h>
-#include <ke_thread_utils.h>
+#include <am-thread-utils.h>
 #include "sm_simple_prioqueue.h"
 
 using namespace SourceHook;

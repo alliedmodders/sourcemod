@@ -21,8 +21,8 @@
 
 #include <new>
 #include <stdlib.h>
-#include <ke_allocator_policies.h>
-#include <ke_utility.h>
+#include <am-allocator-policies.h>
+#include <am-utility.h>
 
 namespace ke {
 

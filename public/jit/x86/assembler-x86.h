@@ -32,7 +32,7 @@
 #define _include_sourcepawn_assembler_x86_h__
 
 #include <assembler.h>
-#include <ke_vector.h>
+#include <am-vector.h>
 #include <string.h>
 
 struct Register

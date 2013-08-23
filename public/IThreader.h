@@ -34,11 +34,12 @@
 
 /**
  * @file IThreader.h
- * @brief Contains platform independent routines for threading.
+ *
+ * @brief Contains platform independent routines for threading. These tools
+ * should be considered deprecated. Use public/amtl/am-thread-utils.h.
  */
 
 #include <IShareSys.h>
-#include <ke_thread_utils.h>
 
 #define SMINTERFACE_THREADER_NAME		"IThreader"
 #define SMINTERFACE_THREADER_VERSION	3

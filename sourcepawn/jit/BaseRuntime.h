@@ -3,8 +3,8 @@
 #define _INCLUDE_SOURCEPAWN_JIT_RUNTIME_H_
 
 #include <sp_vm_api.h>
-#include <ke_vector.h>
-#include <ke_inline_list.h>
+#include <am-vector.h>
+#include <am-inline-list.h>
 #include "jit_shared.h"
 #include "sp_vm_function.h"
 
