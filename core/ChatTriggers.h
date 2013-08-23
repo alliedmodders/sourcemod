@@ -69,6 +69,7 @@ public:
 private:
 	bool PreProcessTrigger(edict_t *pEdict, const char *args, bool is_quoted);
 	bool ClientIsFlooding(int client);
+	cell_t CallOnClientSayCommand(int client);
 private:
 	ConCommand *m_pSayCmd;
 	ConCommand *m_pSayTeamCmd;
