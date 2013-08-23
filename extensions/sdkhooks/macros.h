@@ -39,17 +39,21 @@
 	offset = 0; \
 	g_pGameConf->GetOffset(#gamedataname, &offset); \
 	if (offset > 0) \
+	{ \
 		SH_MANUALHOOK_RECONFIGURE(gamedataname, offset, 0, 0); \
 		SET_PRE_##supportsPre(gamedataname) \
-		SET_POST_##supportsPost(gamedataname)
+		SET_POST_##supportsPost(gamedataname) \
+	}
 
 #define CHECKOFFSET_W(gamedataname, supportsPre, supportsPost) \
 	offset = 0; \
 	g_pGameConf->GetOffset("Weapon_"#gamedataname, &offset); \
 	if (offset > 0) \
+	{ \
 		SH_MANUALHOOK_RECONFIGURE(Weapon_##gamedataname, offset, 0, 0); \
 		SET_PRE_##supportsPre(Weapon##gamedataname) \
-		SET_POST_##supportsPost(Weapon##gamedataname)
+		SET_POST_##supportsPost(Weapon##gamedataname) \
+	}
 
 #define HOOKLOOP \
 	for(int i = g_HookList.Count() - 1; i >= 0; i--)
