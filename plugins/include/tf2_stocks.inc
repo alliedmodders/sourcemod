@@ -427,7 +427,7 @@ stock TF2_RemoveWeaponSlot(client, slot)
 	while ((weaponIndex = GetPlayerWeaponSlot(client, slot)) != -1)
 	{
 		RemovePlayerItem(client, weaponIndex);
-		RemoveEdict(weaponIndex);
+		AcceptEntityInput(weaponIndex, "Kill");
 	}
 }
 
