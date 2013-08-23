@@ -39,8 +39,8 @@ extern "C" {
   long __cdecl _InterlockedIncrement(long volatile *dest);
   long __cdecl _InterlockedDecrement(long volatile *dest);
 }
-# pragma intrinsic(_InterlockedIncrement);
-# pragma intrinsic(_InterlockedDecrement);
+# pragma intrinsic(_InterlockedIncrement)
+# pragma intrinsic(_InterlockedDecrement)
 #endif
 
 template <size_t Width>
@@ -49,23 +49,25 @@ struct AtomicOps;
 template <>
 struct AtomicOps<4>
 {
-  typedef int Type;
-
 #if defined(_MSC_VER)
-  static int Increment(int *ptr) {
+  typedef long Type;
+
+  static Type Increment(Type *ptr) {
     return _InterlockedIncrement(ptr);
   }
-  static int Decrement(int *ptr) {
+  static Type Decrement(Type *ptr) {
     return _InterlockedDecrement(ptr);
   };
 #elif defined(__GNUC__)
+  typedef int Type;
+
   // x86/x64 notes: When using GCC < 4.8, this will compile to a spinlock.
   // On 4.8+, or when using Clang, we'll get the more optimal "lock addl"
   // variant.
-  static int Increment(int *ptr) {
+  static Type Increment(Type *ptr) {
     return __sync_add_and_fetch(ptr, 1);
   }
-  static int Decrement(int *ptr) {
+  static Type Decrement(Type *ptr) {
     return __sync_sub_and_fetch(ptr, 1);
   }
 #endif
