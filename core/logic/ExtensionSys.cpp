@@ -577,7 +577,7 @@ void CExtensionManager::TryAutoload()
 	}
 }
 
-IExtension *CExtensionManager::LoadAutoExtension(const char *path)
+IExtension *CExtensionManager::LoadAutoExtension(const char *path, bool bErrorOnMissing)
 {
 	/* Remove platform extension if it's there. Compat hack. */
 	const char *ext = libsys->GetFileExtension(path);
@@ -586,7 +586,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path)
 		char path2[PLATFORM_MAX_PATH];
 		smcore.Format(path2, sizeof(path2), "%s", path);
 		path2[strlen(path) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
-		return LoadAutoExtension(path2);
+		return LoadAutoExtension(path2, bErrorOnMissing);
 	}
 
 	IExtension *pAlready;
@@ -605,7 +605,11 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path)
 
 	if (!p->Load(error, sizeof(error)) || !p->IsLoaded())
 	{
-		smcore.LogError("[SM] Unable to load extension \"%s\": %s", path, error);
+		if (bErrorOnMissing || libsys->IsPathFile(p->GetPath()))
+		{
+			smcore.LogError("[SM] Unable to load extension \"%s\": %s", path, error);
+		}
+		
 		p->SetError(error);
 	}
 

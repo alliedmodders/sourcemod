@@ -1286,7 +1286,7 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 				{
 					libsys->PathFormat(path, PLATFORM_MAX_PATH, "%s", file);
 					bool bErrorOnMissing = ext->required ? true : false;
-					g_Extensions.LoadAutoExtension(path);
+					g_Extensions.LoadAutoExtension(path, bErrorOnMissing);
 				}
 			}
 			else if (pass == 2)

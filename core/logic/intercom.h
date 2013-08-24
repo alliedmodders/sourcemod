@@ -49,7 +49,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 23)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 24)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -164,7 +164,7 @@ public:
 class IExtensionSys : public IExtensionManager
 {
 public:
-	virtual IExtension *LoadAutoExtension(const char *name) = 0;
+	virtual IExtension *LoadAutoExtension(const char *name, bool bErrorOnMissing=true) = 0;
 	virtual void TryAutoload() = 0;
 	virtual void Shutdown() = 0;
 	virtual IExtension *FindExtensionByFile(const char *name) = 0;

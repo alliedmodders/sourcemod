@@ -164,7 +164,7 @@ public: //IPluginsListener
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
 public:
-	IExtension *LoadAutoExtension(const char *path);
+	IExtension *LoadAutoExtension(const char *path, bool bErrorOnMissing=true);
 	void BindDependency(IExtension *pOwner, IfaceInfo *pInfo);
 	void AddInterface(IExtension *pOwner, SMInterface *pInterface);
 	void BindChildPlugin(IExtension *pParent, SMPlugin *pPlugin);
