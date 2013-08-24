@@ -57,6 +57,10 @@ class HashMap : public AllocPolicy
     K key;
     V value;
 
+    Entry()
+    {
+    }
+
     Entry(const K &aKey, const V &aValue)
      : key(aKey),
        value(aValue)
@@ -118,6 +122,13 @@ class HashMap : public AllocPolicy
   // The Insert object is still valid after add() returns, however.
   bool add(Insert &i, const K &key, const V &value) {
     return table_.add(i, Entry(key, value));
+  }
+
+  // This can be used to avoid compiler constructed temporaries, since AMTL
+  // does not yet support move semantics. If you use this, the key and value
+  // must be set after.
+  bool add(Insert &i) {
+    return table_.add(i);
   }
 
   size_t estimateMemoryUse() const {
