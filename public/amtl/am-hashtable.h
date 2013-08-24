@@ -353,7 +353,7 @@ class HashTable : public AllocPolicy
   }
 
  public:
-  HashTable(AllocPolicy ap)
+  HashTable(AllocPolicy ap = AllocPolicy())
   : AllocPolicy(ap),
     capacity_(0),
     nelements_(0),
@@ -419,6 +419,9 @@ class HashTable : public AllocPolicy
   // The Insert object is still valid after add() returns, however.
   bool add(Insert &i, const Payload &payload) {
     return internalAdd(i, payload);
+  }
+  bool add(Insert &i) {
+    return internalAdd(i, Payload());
   }
 
   bool checkDensity() {
