@@ -51,18 +51,32 @@ class AString
     set(str, length);
   }
   AString(const AString &other) {
-    set(other.chars_, other.length_);
+    if (other.length_)
+      set(other.chars_, other.length_);
   }
 
   AString &operator =(const char *str) {
-    set(str, strlen(str));
+    if (str && str[0]) {
+      set(str, strlen(str));
+    } else {
+      chars_ = NULL;
+      length_ = 0;
+    }
     return *this;
   }
   AString &operator =(const AString &other) {
-    set(other.chars_, other.length_);
+    if (other.length_) {
+      set(other.chars_, other.length_);
+    } else {
+      chars_ = NULL;
+      length_ = 0;
+    }
     return *this;
   }
 
+  int compare(const AString &other) const {
+    return strcmp(chars(), other.chars());
+  }
   bool operator ==(const AString &other) const {
     return other.length() == length() &&
            memcmp(other.chars(), chars(), length()) == 0;
