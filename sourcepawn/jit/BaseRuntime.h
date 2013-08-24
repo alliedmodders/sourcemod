@@ -4,7 +4,7 @@
 
 #include <sp_vm_api.h>
 #include <am-vector.h>
-#include <am-inline-list.h>
+#include <am-inlinelist.h>
 #include "jit_shared.h"
 #include "sp_vm_function.h"
 

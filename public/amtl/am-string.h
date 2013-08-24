@@ -27,39 +27,75 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef _include_amtl_allocatorpolicies_h_
-#define _include_amtl_allocatorpolicies_h_
+#ifndef _include_amtl_string_h_
+#define _include_amtl_string_h_
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <am-utility.h>
 
 namespace ke {
 
-// The default system allocator policy will crash on out-of-memory.
-class SystemAllocatorPolicy
+// ASCII string.
+class AString
 {
-  public:
-    void reportOutOfMemory() {
-      fprintf(stderr, "OUT OF MEMORY\n");
-      abort();
-    }
-    void reportAllocationOverflow() {
-      fprintf(stderr, "OUT OF MEMORY\n");
-      abort();
-    }
+ public:
+  AString()
+   : length_(0)
+  {
+  }
+  explicit AString(const char *str) {
+    set(str, strlen(str));
+  }
+  AString(const char *str, size_t length) {
+    set(str, length);
+  }
+  AString(const AString &other) {
+    set(other.chars_, other.length_);
+  }
 
-  public:
-    void free(void *memory) {
-      ::free(memory);
-    }
-    void *malloc(size_t bytes) {
-      void *ptr = ::malloc(bytes);
-      if (!ptr)
-        reportOutOfMemory();
-      return ptr;
-    }
+  AString &operator =(const char *str) {
+    set(str, strlen(str));
+    return *this;
+  }
+  AString &operator =(const AString &other) {
+    set(other.chars_, other.length_);
+    return *this;
+  }
+
+  bool operator ==(const AString &other) const {
+    return other.length() == length() &&
+           memcmp(other.chars(), chars(), length()) == 0;
+  }
+
+  char operator [](size_t index) const {
+    assert(index < length());
+    return chars()[index];
+  }
+
+  size_t length() const {
+    return length_;
+  }
+
+  const char *chars() const {
+    if (!chars_)
+      return "";
+    return chars_;
+  }
+
+ private:
+  void set(const char *str, size_t length) {
+    chars_ = new char[length + 1];
+    length_ = length;
+    memcpy(chars_, str, length);
+    chars_[length] = '\0';
+  }
+
+ private:
+  AutoArray<char> chars_;
+  size_t length_;
 };
 
 }
 
-#endif // _include_amtl_allocatorpolicies_h_
+#endif // _include_amtl_string_h_

@@ -108,79 +108,48 @@ class AutoPtr
     }
 };
 
-// Bob Jenkin's one-at-a-time hash function[1].
-//
-// [1] http://burtleburtle.net/bob/hash/doobs.html
-class CharacterStreamHasher
+// Wrapper that automatically deletes its contents. The pointer can be taken
+// to avoid destruction.
+template <typename T>
+class AutoArray
 {
-    uint32 hash;
+    T *t_;
 
   public:
-    CharacterStreamHasher()
-      : hash(0)
-    { }
-
-    void add(char c) {
-        hash += c;
-        hash += (hash << 10);
-        hash ^= (hash >> 6);
+    AutoArray()
+      : t_(NULL)
+    {
     }
-
-    void add(const char *s, size_t length) {
-        for (size_t i = 0; i < length; i++)
-            add(s[i]);
+    explicit AutoArray(T *t)
+      : t_(t)
+    {
     }
-
-    uint32 result() {
-        hash += (hash << 3);
-        hash ^= (hash >> 11);
-        hash += (hash << 15);
-        return hash;
+    ~AutoArray() {
+        delete [] t_;
+    }
+    T *take() {
+        return ReturnAndVoid(t_);
+    }
+    T *operator *() const {
+        return t_;
+    }
+    T &operator [](size_t index) {
+      return t_[index];
+    }
+    const T &operator [](size_t index) const {
+      return t_[index];
+    }
+    operator T *() const {
+        return t_;
+    }
+    void operator =(T *t) {
+        delete [] t_;
+        t_ = t;
+    }
+    bool operator !() const {
+        return !t_;
     }
 };
-
-static inline uint32
-HashCharSequence(const char *s, size_t length)
-{
-    CharacterStreamHasher hasher;
-    hasher.add(s, length);
-    return hasher.result();
-}
-
-// From http://burtleburtle.net/bob/hash/integer.html
-static inline uint32
-HashInt32(int32 a)
-{
-    a = (a ^ 61) ^ (a >> 16);
-    a = a + (a << 3);
-    a = a ^ (a >> 4);
-    a = a * 0x27d4eb2d;
-    a = a ^ (a >> 15);
-    return a;
-}
-
-// From http://www.cris.com/~Ttwang/tech/inthash.htm
-static inline uint32
-HashInt64(int64 key)
-{
-  key = (~key) + (key << 18); // key = (key << 18) - key - 1;
-  key = key ^ (uint64(key) >> 31);
-  key = key * 21; // key = (key + (key << 2)) + (key << 4);
-  key = key ^ (uint64(key) >> 11);
-  key = key + (key << 6);
-  key = key ^ (uint64(key) >> 22);
-  return uint32(key);
-}
-
-static inline uint32
-HashPointer(void *p)
-{
-#if defined(KE_32BIT)
-    return HashInt32(reinterpret_cast<int32>(p));
-#elif defined(KE_64BIT)
-    return HashInt64(reinterpret_cast<int64>(p));
-#endif
-}
 
 static inline size_t
 Log2(size_t number)
@@ -316,6 +285,36 @@ Max(const T &t1, const T &t2)
 {
     return t1 > t2 ? t1 : t2;
 }
+
+template <typename T>
+class StorageBuffer
+{
+ public:
+  T *address() {
+    return reinterpret_cast<T *>(buffer_);
+  }
+  const T *address() const {
+    return reinterpret_cast<const T *>(buffer_);
+  }
+
+ private:
+  union {
+    char buffer_[sizeof(T)];
+    uint64_t aligned_;
+  };
+};
+
+#if __cplusplus >= 201103L
+# define KE_CXX11
+#endif
+
+#if defined(KE_CXX11)
+# define KE_DELETE delete
+# define KE_OVERRIDE override
+#else
+# define KE_DELETE
+# define KE_OVERRIDE
+#endif
 
 #if defined(_MSC_VER)
 # define KE_SIZET_FMT           "%Iu"

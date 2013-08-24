@@ -48,8 +48,7 @@ class Vector : public AllocPolicy
   {
   }
 
-  ~Vector()
-  {
+  ~Vector() {
     zap();
   }
 
@@ -61,7 +60,7 @@ class Vector : public AllocPolicy
     other.reset();
   }
 
-  bool append(const T& item) {
+  bool append(const T &item) {
     if (!growIfNeeded(1))
       return false;
     new (&data_[nitems_]) T(item);
@@ -125,6 +124,12 @@ class Vector : public AllocPolicy
   }
 
  private:
+  // These are disallowed because they basically violate the failure handling
+  // model for AllocPolicies and are also likely to have abysmal performance.
+  Vector(const Vector<T> &other) KE_DELETE;
+  Vector &operator =(const Vector<T> &other) KE_DELETE;
+
+ private:
   void zap() {
     for (size_t i = 0; i < nitems_; i++)
       data_[i].~T();
@@ -144,16 +149,17 @@ class Vector : public AllocPolicy
     }
     if (nitems_ + needed < maxsize_)
       return true;
-    if (maxsize_ == 0)
-      maxsize_ = 8;
-    while (nitems_ + needed > maxsize_) {
-      if (!IsUintPtrMultiplySafe(maxsize_, 2)) {
+
+    size_t new_maxsize = maxsize_ ? maxsize_ : 8;
+    while (nitems_ + needed > new_maxsize) {
+      if (!IsUintPtrMultiplySafe(new_maxsize, 2)) {
         this->reportAllocationOverflow();
         return false;
       }
-      maxsize_ *= 2;
+      new_maxsize *= 2;
     }
-    T* newdata = (T*)this->malloc(sizeof(T) * maxsize_);
+
+    T* newdata = (T*)this->malloc(sizeof(T) * new_maxsize);
     if (newdata == NULL)
       return false;
     for (size_t i = 0; i < nitems_; i++) {
@@ -161,7 +167,9 @@ class Vector : public AllocPolicy
       data_[i].~T();
     }
     this->free(data_);
+
     data_ = newdata;
+    maxsize_ = new_maxsize;
     return true;
   }
 
