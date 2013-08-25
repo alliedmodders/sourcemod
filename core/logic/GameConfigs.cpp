@@ -981,12 +981,10 @@ CGameConfig::AddressConf::AddressConf(char *sigName, unsigned sigLength, unsigne
 
 SendProp *CGameConfig::GetSendProp(const char *key)
 {
-	SendProp **pProp;
-
-	if ((pProp = m_Props.retrieve(key)) == NULL)
+	SendProp *prop;
+	if (!m_Props.retrieve(key, &prop))
 		return NULL;
-
-	return *pProp;
+	return prop;
 }
 
 bool CGameConfig::GetMemSig(const char *key, void **addr)
@@ -1042,11 +1040,9 @@ bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pCon
 #endif
 
 	CGameConfig *pConfig;
-	CGameConfig **ppConfig;
 
-	if ((ppConfig = m_Lookup.retrieve(file)) != NULL)
+	if (m_Lookup.retrieve(file, &pConfig))
 	{
-		pConfig = *ppConfig;
 		pConfig->AddRef();
 		*_pConfig = pConfig;
 		return true;

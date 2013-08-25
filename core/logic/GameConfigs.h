@@ -39,6 +39,7 @@
 #include <sm_trie_tpl.h>
 #include <am-refcounting.h>
 #include <sm_stringhashmap.h>
+#include <sm_namehashset.h>
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -69,12 +70,17 @@ public: //IGameConfig
 	SendProp *GetSendProp(const char *key);
 	bool GetMemSig(const char *key, void **addr);
 	bool GetAddress(const char *key, void **addr);
+public: //NameHashSet
+	static inline bool matches(const char *key, const CGameConfig *value)
+	{
+		return strcmp(key, value->m_File) == 0;
+	}
 private:
 	ke::AutoPtr<BaseStringTable> m_pStrings;
 	char m_File[PLATFORM_MAX_PATH];
 	char m_CurFile[PLATFORM_MAX_PATH];
 	StringHashMap<int> m_Offsets;
-	KTrie<SendProp *> m_Props;
+	StringHashMap<SendProp *> m_Props;
 	StringHashMap<int> m_Keys;
 	StringHashMap<void *> m_Sigs;
 	/* Parse states */
@@ -139,7 +145,7 @@ public: //SMGlobalClass
 public:
 	void RemoveCachedConfig(CGameConfig *config);
 private:
-	KTrie<CGameConfig *> m_Lookup;
+	NameHashSet<CGameConfig *> m_Lookup;
 public:
 	StringHashMap<ITextListener_SMC *> m_customHandlers;
 };
