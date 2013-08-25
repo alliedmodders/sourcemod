@@ -48,17 +48,11 @@ namespace ke {
 
 static const size_t kMallocAlignment = sizeof(void *) * 2;
 
-typedef uint8_t uint8;
-typedef int32_t int32;
-typedef uint32_t uint32;
-typedef int64_t int64;
-typedef uint64_t uint64;
-
-typedef uint8 * Address;
-
 static const size_t kKB = 1024;
 static const size_t kMB = 1024 * kKB;
 static const size_t kGB = 1024 * kMB;
+
+typedef uint8_t * Address;
 
 template <typename T> T
 ReturnAndVoid(T &t)

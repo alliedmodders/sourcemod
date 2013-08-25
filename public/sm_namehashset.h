@@ -55,7 +55,7 @@ namespace SourceMod
 // default. It is okay to use |T *|, the functions will still be looked up
 // on |T|.
 template <typename T, typename KeyPolicy = T>
-class NameHashSet : public SystemAllocatorPolicy
+class NameHashSet : public ke::SystemAllocatorPolicy
 {
 	typedef detail::CharsAndLength CharsAndLength;
 
@@ -94,7 +94,7 @@ class NameHashSet : public SystemAllocatorPolicy
 		}
 	};
 
-	typedef HashTable<Policy<T, KeyPolicy>, SystemAllocatorPolicy> Internal;
+	typedef ke::HashTable<Policy<T, KeyPolicy>, ke::SystemAllocatorPolicy> Internal;
 
 public:
 	NameHashSet()

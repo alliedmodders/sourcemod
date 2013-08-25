@@ -568,12 +568,12 @@ static inline uint32_t
 HashInt64(int64_t key)
 {
   key = (~key) + (key << 18); // key = (key << 18) - key - 1;
-  key = key ^ (uint64(key) >> 31);
+  key = key ^ (uint64_t(key) >> 31);
   key = key * 21; // key = (key + (key << 2)) + (key << 4);
-  key = key ^ (uint64(key) >> 11);
+  key = key ^ (uint64_t(key) >> 11);
   key = key + (key << 6);
-  key = key ^ (uint64(key) >> 22);
-  return uint32(key);
+  key = key ^ (uint64_t(key) >> 22);
+  return uint32_t(key);
 }
 
 template <size_t Size>

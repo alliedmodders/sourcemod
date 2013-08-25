@@ -52,8 +52,6 @@
 namespace SourceMod
 {
 
-using namespace ke;
-
 namespace detail
 {
 	class CharsAndLength
@@ -89,7 +87,7 @@ namespace detail
 
 	struct StringHashMapPolicy
 	{
-		static inline bool matches(const CharsAndLength &lookup, const AString &key) {
+		static inline bool matches(const CharsAndLength &lookup, const ke::AString &key) {
 			return lookup.length() == key.length() &&
 				   memcmp(lookup.chars(), key.chars(), key.length()) == 0;
 		}
@@ -103,11 +101,11 @@ template <typename T>
 class StringHashMap
 {
 	typedef detail::CharsAndLength CharsAndLength;
-	typedef HashMap<AString, T, detail::StringHashMapPolicy> Internal;
+	typedef ke::HashMap<ke::AString, T, detail::StringHashMapPolicy> Internal;
 
 public:
 	StringHashMap()
-		: internal_(SystemAllocatorPolicy()),
+		: internal_(ke::SystemAllocatorPolicy()),
 		  memory_used_(0)
 	{
 		if (!internal_.init())
