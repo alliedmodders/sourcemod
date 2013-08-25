@@ -1,5 +1,87 @@
 SourceMod Changelog
 
+SourceMod 1.5.0 [2013-08-25]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.5.0_Release_Notes
+
+User Changes:
+
+ - Added support for Counter-Strike: Global Offensive (bug 5299, bug 5579).
+ - Split CS:S, TF2, DoD:S, HL2:DM, and ND to separate binaries (bug 5370, bug 5813).
+ - Added support for runoff voting in mapchooser (bug 4218).
+ - Added option to require Steam validation before granting admin access (bug 4837) (VoiDeD).
+ - Added localization support for many more core and base plugin messages (bug 5120, bug 5146).
+ - Added the ability to override RegConsoleCommand-created commands (bug 5199).
+ - Added support for "fuzzy" (partial) map names in map-related natives and cmds for L4D and later (bug 5599).
+ - Updated Reserved Slots to use max humans as max count (bug 5444).
+ - Added support for custom maxitems on radio menus (bug 5371).
+ - Improved console config editing (bug 5470).
+ - Increased map name buffer sizes in mapchooser to better account for nested maps (bug 5609) (Peace-Maker).
+ - Fixed JIT conflicts with SELinux (bug 5581).
+ - Added logged error when PlayerRunCommand offset lookup fails (bug 5535) (GoD-Tony).
+ - Fixed double print when sending psay to self (bug 5649) (Peace-Maker).
+ - Fixed check against uninitialized string in extension loader (bug 5546) (KyleS).
+ - Fixed possible runtime errors in basetriggers for not-ingame clients (bug 5191) (Peace-Maker).
+ - Check all possible mapcycle paths on newer orangebox games (bug 5719).
+ - Fixed ReadMapList not seeing maps in all valve search paths (bug 5715) (VoiDeD).
+ - Fixed typo in too-many-params native error message (Peace-Maker).
+ - Fixed various issues in clientprefs (bug 5538) (KyleS).
+ - Removed debug printout from PerformGravity (bug 5679) (KyleS).
+ - Fixed broken translating in some plugins and natives (bug 5612) (KyleS).
+ - Fixed issues with COMMAND_FILTER_NO_BOTS and @bots multi-target.
+ - Fixed crash in SDKHooks when throwing bad ent type error on logical ent (KyleS).
+
+Developer Changes:
+
+ - Added support for CS:GO to the CStrike extension (bug 5299) (Drifter).
+ - Added support for new protobuf usermessages used in newer games (bug 5579, bug 5588, bug 5590, bug 5633).
+ - Added latest SDKHooks version as first-party extension.
+ - Updated SQLite to version 3.7.15.1 (bug 5235).
+ - Added natives for changing team score and mvp stars on CSS/CSGO (bug 5295) (Drifter).
+ - Added global pre and post forwards for client chat (bug 5394) (KyleS).
+ - Added TF2_CanPlayerTeleport forward to the TF2 game extension (bug 5283) (VoiDeD).
+ - Added GetEntityAddress native (bug 5269) (ProdigySim).
+ - Added more parameters to PlayerRunCommand forward (bug 5346) (GoD-Tony).
+ - Added forwards to basecomm plugin (bug 5466) (Drifter).
+ - Added symbol lookup support to gamedata on Windows (bug 5511) (GoD-Tony).
+ - Exposed GetLanguageInfo in ITranslator interface (bug 5249) (VoiDeD).
+ - Increase maximum .sp line length to 4095 characters. (bug 5347) (theY4Kman).
+ - Improved netprop dump output (bug 5471).
+ - Added int64 typename to netprop dumps (bug 5655).
+ - Added GetMaxHumanPlayers native exposing IServerGameClients func (bug 5551).
+ - Added WeaponIDToAlias native to CStrike extension (bug 5460) (KyleS).
+ - Fixed OnLibraryAdded/Removed not being called in all plugins (bug 5431).
+ - Made thread worker processing limits configurable at runtime (bug 5326).
+ - Added support in TF2 ext for detection of player conds >= 64 (bug 5565).
+ - Updated button defines in entity_prop_stocks (bug 5564).
+ - Added GetPlayerResourceEntity to SDKTools to replace old, semi-broken TF2-only version (bug 5491).
+ - Exposed third parameter of TF2's AddCond in TF2_AddCondition (bug 5641) (FlaminSarge).
+ - Added GetSteamAccountID function to IPlayerHelpers and native for sp (bug 5548) (KyleS).
+ - Added ISDKHooks interface with entity listeners (bug 5602) (GoD-Tony).
+ - Added file upload support to webternet extension.
+ - Added more alternative names for TFClass_Heavy (bug 5338) (Afronanny).
+ - Throw error instead of crash when calling SetTeamScore between maps (bug 5718) (KyleS).
+ - Fixed clients not being marked as in kick queue in some cases (bug 5746) (SystematicMania).
+ - Made compile.sh set working dir to own dir (bug 5710) (KyleS).
+ - Added CS_IsValidWeaponID native and validity checks to other natives (bug 5566) (Drifter).
+ - Numerous code documentation fixups (bug 5720) (Tsunami).
+ - Fixed cmd listener callback return behavior to match func doc (bug 5882).
+
+Internal Changes:
+
+ - Fixed handle misuse in clientprefs plugin (bug 5805) (KyleS).
+ - Removed call to getchar() in debug build of compiler (bug 5626) (KyleS).
+ - Fixed instability issues with cloned handles (bug 5245, bug 5240) (KyleS).
+ - Changed extension unload order to avoid exposing finalization window (bug 5556) (KyleS).
+ - Call OnPluginEnd before finalizer hooks have run (bug 4519).
+ - Fixed potential for reading out of library bounds in MemoryUtils::FindPattern.
+ - Fixed typo in TF2 ext asm.c causing accidental assignment instead of compare.
+ - Overhauled versioning information (bug 5453).
+ - Changed from RemoveEdict to using the Kill input for TF2_RemoveWeapon.
+ - Fixed accidental assignment in each of SDKTools and sp compiler (bug 5745) (KyleS).
+ - Fixed potential deadlock in HandleSystem::TryAndFreeSomeHandles (bug 5665) (KyleS).
+
+----------------------------------------------------------
 SourceMod 1.4.7 [2013-02-06]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.4.7_Release_Notes
