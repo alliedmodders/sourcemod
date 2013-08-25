@@ -36,7 +36,6 @@
 #include <IGameConfigs.h>
 #include <ITextParsers.h>
 #include "sm_memtable.h"
-#include <sm_trie_tpl.h>
 #include <am-refcounting.h>
 #include <sm_stringhashmap.h>
 #include <sm_namehashset.h>

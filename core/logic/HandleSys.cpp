@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -240,21 +240,14 @@ HandleType_t HandleSystem::CreateType(const char *name,
 	return index;
 }
 
-bool HandleSystem::FindHandleType(const char *name, HandleType_t *type)
+bool HandleSystem::FindHandleType(const char *name, HandleType_t *aResult)
 {
-	QHandleType **typepp = m_TypeLookup.retrieve(name);
-
-	if (!typepp)
-	{
+	QHandleType *type;
+	if (!m_TypeLookup.retrieve(name, &type))
 		return false;
-	}
 
-	unsigned int offset = *typepp - m_Types;
-
-	if (type)
-	{
-		*type = offset;
-	}
+	if (aResult)
+		*aResult = type - m_Types;
 
 	return true;
 }

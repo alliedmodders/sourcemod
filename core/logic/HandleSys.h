@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -34,7 +34,7 @@
 
 #include <IHandleSys.h>
 #include <stdio.h>
-#include <sm_trie_tpl.h>
+#include <sm_stringhashmap.h>
 #include "sm_memtable.h"
 #include "common_logic.h"
 
@@ -216,7 +216,7 @@ protected:
 private:
 	QHandle *m_Handles;
 	QHandleType *m_Types;
-	KTrie<QHandleType *> m_TypeLookup;
+	StringHashMap<QHandleType *> m_TypeLookup;
 	unsigned int m_TypeTail;
 	unsigned int m_FreeTypes;
 	unsigned int m_HandleTail;
