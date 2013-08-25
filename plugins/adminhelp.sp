@@ -82,7 +82,7 @@ public Action:HelpCmd(client, args)
 	new Flags;
 	new Handle:CmdIter = GetCommandIterator();
 
-	FormatEx(NoDesc, sizeof(NoDesc), "%t", "No description available");
+	FormatEx(NoDesc, sizeof(NoDesc), "%T", "No description available", client);
 
 	if (DoSearch)
 	{

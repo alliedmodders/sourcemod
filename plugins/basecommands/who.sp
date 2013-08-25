@@ -175,9 +175,9 @@ public Action:Command_Who(client, args)
 	{
 		/* Display header */
 		decl String:t_access[16], String:t_name[16], String:t_username[16];
-		Format(t_access, sizeof(t_access), "%t", "Admin access", client);
-		Format(t_name, sizeof(t_name), "%t", "Name", client);
-		Format(t_username, sizeof(t_username), "%t", "Username", client);
+		Format(t_access, sizeof(t_access), "%T", "Admin access", client);
+		Format(t_name, sizeof(t_name), "%T", "Name", client);
+		Format(t_username, sizeof(t_username), "%T", "Username", client);
 
 		if (is_admin)
 		{

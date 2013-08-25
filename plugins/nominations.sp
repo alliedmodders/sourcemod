@@ -260,7 +260,7 @@ public Action:Command_Nominate(client, args)
 
 AttemptNominate(client)
 {
-	SetMenuTitle(g_MapMenu, "%t", "Nominate Title", client);
+	SetMenuTitle(g_MapMenu, "%T", "Nominate Title", client);
 	DisplayMenu(g_MapMenu, client, MENU_TIME_FOREVER);
 	
 	return;

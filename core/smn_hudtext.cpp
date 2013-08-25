@@ -414,6 +414,7 @@ static cell_t ShowSyncHudText(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client %d is not in-game", client);
 	}
 
+	g_SourceMod.SetGlobalTarget(client);
 	g_SourceMod.FormatString(message_buffer, sizeof(message_buffer), pContext, params, 3);
 	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
@@ -486,6 +487,7 @@ static cell_t ShowHudText(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client %d is not in-game", client);
 	}
 
+	g_SourceMod.SetGlobalTarget(client);
 	g_SourceMod.FormatString(message_buffer, sizeof(message_buffer), pContext, params, 3);
 	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{

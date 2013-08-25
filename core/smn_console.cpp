@@ -1106,6 +1106,8 @@ static cell_t FakeClientCommand(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
 	}
 
+	g_SourceMod.SetGlobalTarget(params[1]);
+
 	char buffer[256];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
@@ -1136,6 +1138,8 @@ static cell_t FakeClientCommandEx(IPluginContext *pContext, const cell_t *params
 	{
 		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
 	}
+
+	g_SourceMod.SetGlobalTarget(params[1]);
 
 	char buffer[256];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
@@ -1184,8 +1188,6 @@ static cell_t ReplyToCommand(IPluginContext *pContext, const cell_t *params)
 	{
 		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
 	}
-
-	g_SourceMod.SetGlobalTarget(params[1]);
 
 	unsigned int replyto = g_ChatTriggers.GetReplyTo();
 	if (replyto == SM_REPLY_CONSOLE)
