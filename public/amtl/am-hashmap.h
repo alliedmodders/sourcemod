@@ -131,6 +131,10 @@ class HashMap : public AllocPolicy
     return table_.add(i);
   }
 
+  void clear() {
+    table_.clear();
+  }
+
   size_t estimateMemoryUse() const {
     return table_.estimateMemoryUse();
   }

@@ -60,6 +60,10 @@ namespace detail {
       destruct();
       hash_ = kRemovedHash;
     }
+    void setFree() {
+      destruct();
+      hash_ = kFreeHash;
+    }
     void initialize() {
       hash_ = kFreeHash;
     }
@@ -430,6 +434,14 @@ class HashTable : public AllocPolicy
     if (overloaded())
       return grow();
     return true;
+  }
+
+  void clear() {
+    for (size_t i = 0; i < capacity_; i++) {
+      table_[i].setFree();
+    }
+    ndeleted_ = 0;
+    nelements_ = 0;
   }
 
   size_t estimateMemoryUse() const {
