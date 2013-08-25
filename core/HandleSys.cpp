@@ -985,12 +985,11 @@ bool HandleSystem::InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHa
 
 bool HandleSystem::TryAndFreeSomeHandles()
 {
-	IPluginIterator *pl_iter = g_PluginSys.GetPluginIterator();
 	IPlugin *highest_owner = NULL;
 	unsigned int highest_handle_count = 0;
 
 	/* Search all plugins */
-	while (pl_iter->MorePlugins())
+	for (IPluginIterator *pl_iter = g_PluginSys.GetPluginIterator(); pl_iter->MorePlugins(); pl_iter->NextPlugin())
 	{
 		IPlugin *plugin = pl_iter->GetPlugin();
 		IdentityToken_t *identity = plugin->GetIdentity();
@@ -1019,8 +1018,6 @@ bool HandleSystem::TryAndFreeSomeHandles()
 			highest_owner = plugin;
 			highest_handle_count = handle_count;
 		}
-
-		pl_iter->NextPlugin();
 	}
 
 	if (highest_owner == NULL || highest_handle_count == 0)
