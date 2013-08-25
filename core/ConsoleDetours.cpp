@@ -692,7 +692,7 @@ cell_t ConsoleDetours::InternalDispatch(int client, const CCommand& args)
 	if (strcmp(name, "sm") == 0)
 		result = Pl_Continue;
 
-	if (result >= Pl_Stop)
+	if (result >= Pl_Handled)
 		return result;
 	
 	Listener **plistener = m_CmdLookup.retrieve(name);
