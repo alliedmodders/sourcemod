@@ -34,7 +34,7 @@
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include "ForwardSys.h"
-#include <sm_trie_tpl.h>
+#include <sm_stringhashmap.h>
 
 class ConsoleDetours :
 	public SMGlobalClass,
@@ -43,10 +43,6 @@ class ConsoleDetours :
 	friend class PlayerManager;
 	friend class GenericCommandHooker;
 
-	struct Listener
-	{
-		IChangeableForward *forward;
-	};
 public:
 	ConsoleDetours();
 public: //SMGlobalClass
@@ -73,8 +69,7 @@ public:
 private:
 	FeatureStatus status;
 	IChangeableForward *m_pForward;
-	KTrie<Listener*> m_CmdLookup;
-	List<Listener*> m_Listeners;
+	StringHashMap<IChangeableForward *> m_Listeners;
 };
 
 extern ConsoleDetours g_ConsoleDetours;

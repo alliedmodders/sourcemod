@@ -115,6 +115,7 @@ public:
 	}
 
 	typedef typename Internal::Result Result;
+	typedef typename Internal::iterator iterator;
 
 	// Some KTrie-like helper functions.
 	bool retrieve(const char *aKey, T *aResult = NULL)
@@ -189,6 +190,10 @@ public:
 	void clear()
 	{
 		internal_.clear();
+	}
+
+	iterator iter() {
+		return internal_.iter();
 	}
 
 	size_t mem_usage() const {
