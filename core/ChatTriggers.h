@@ -86,7 +86,6 @@ private:
 	char *m_PrivTrigger;
 	size_t m_PrivTriggerSize;
 	bool m_bWillProcessInPost;
-	bool m_bTriggerWasSilent;
 	bool m_bIsChatTrigger;
 	bool m_bWasFloodedMessage;
 	bool m_bPluginIgnored;

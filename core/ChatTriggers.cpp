@@ -56,7 +56,7 @@ ChatTriggers g_ChatTriggers;
 bool g_bSupressSilentFails = false;
 
 ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false), 
-	m_bTriggerWasSilent(false), m_ReplyTo(SM_REPLY_CONSOLE)
+	m_ReplyTo(SM_REPLY_CONSOLE)
 {
 	m_PubTrigger = sm_strdup("!");
 	m_PrivTrigger = sm_strdup("/");
@@ -301,7 +301,6 @@ void ChatTriggers::OnSayCommand_Pre()
 		 * We'll execute it in post.
 		 */
 		m_bWillProcessInPost = true;
-		m_bTriggerWasSilent = is_silent;
 	}
 
 	cell_t res = CallOnClientSayCommand(client);
