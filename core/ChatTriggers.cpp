@@ -349,7 +349,7 @@ void ChatTriggers::OnSayCommand_Post()
 	{
 		m_bPluginIgnored = false;
 	}
-	else if (!m_bWasFloodedMessage && m_pOnClientSayCmd_Post->GetFunctionCount() != 0)
+	else if (!m_bWasFloodedMessage && !m_bIsChatTrigger && m_pOnClientSayCmd_Post->GetFunctionCount() != 0)
 	{	
 		m_pOnClientSayCmd_Post->PushCell(client);
 		m_pOnClientSayCmd_Post->PushString(m_Arg0Backup);
@@ -438,7 +438,7 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_
 cell_t ChatTriggers::CallOnClientSayCommand(int client)
 {
 	cell_t res = Pl_Continue;
-	if (m_pOnClientSayCmd->GetFunctionCount() != 0)
+	if (!m_bIsChatTrigger && m_pOnClientSayCmd->GetFunctionCount() != 0)
 	{
 		m_pOnClientSayCmd->PushCell(client);
 		m_pOnClientSayCmd->PushString(m_Arg0Backup);
