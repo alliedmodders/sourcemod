@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -57,32 +57,30 @@ IBasicTrie *ADTFactory::CreateBasicTrie()
 
 BaseTrie::BaseTrie()
 {
-	m_pTrie = sm_trie_create();
 }
 
 BaseTrie::~BaseTrie()
 {
-	sm_trie_destroy(m_pTrie);
 }
 
 bool BaseTrie::Insert(const char *key, void *value)
 {
-	return sm_trie_insert(m_pTrie, key, value);
+	return map_.insert(key, value);
 }
 
 bool BaseTrie::Retrieve(const char *key, void **value)
 {
-	return sm_trie_retrieve(m_pTrie, key, value);
+	return map_.retrieve(key, value);
 }
 
 bool BaseTrie::Delete(const char *key)
 {
-	return sm_trie_delete(m_pTrie, key);
+	return map_.remove(key);
 }
 
 void BaseTrie::Clear()
 {
-	sm_trie_clear(m_pTrie);
+	map_.clear();
 }
 
 void BaseTrie::Destroy()
@@ -92,5 +90,5 @@ void BaseTrie::Destroy()
 
 bool BaseTrie::Replace(const char *key, void *value)
 {
-	return sm_trie_replace(m_pTrie, key, value);
+	return map_.replace(key, value);
 }

@@ -45,7 +45,7 @@
 namespace SourceMod
 {
 	/**
-	 * @brief A "Trie" data type.
+	 * @brief A hash table data type.
 	 */
 	class IBasicTrie
 	{

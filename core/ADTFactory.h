@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -34,7 +34,7 @@
 
 #include <IADTFactory.h>
 #include "sm_globals.h"
-#include "sm_trie.h"
+#include <sm_stringhashmap.h>
 
 using namespace SourceMod;
 
@@ -50,7 +50,7 @@ public:
 	virtual void Clear();
 	virtual void Destroy();
 private:
-	Trie *m_pTrie;
+	StringHashMap<void *> map_;
 };
 
 class ADTFactory : 
