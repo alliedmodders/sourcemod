@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -287,14 +287,10 @@ void ShareSystem::OverrideNatives(IExtension *myself, const sp_nativeinfo_t *nat
 
 NativeEntry *ShareSystem::FindNative(const char *name)
 {
-	NativeEntry **ppEntry;
-
-	if ((ppEntry = m_NtvCache.retrieve(name)) == NULL)
-	{
+	NativeEntry *entry;
+	if (!m_NtvCache.retrieve(name, &entry))
 		return NULL;
-	}
-
-	return *ppEntry;
+	return entry;
 }
 
 void ShareSystem::BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly)
@@ -531,7 +527,7 @@ NativeEntry *ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name
 void ShareSystem::AddCapabilityProvider(IExtension *myself, IFeatureProvider *provider,
 		                                const char *name)
 {
-	if (m_caps.retrieve(name) != NULL)
+	if (m_caps.contains(name))
 		return;
 
 	Capability cap;
@@ -544,14 +540,13 @@ void ShareSystem::AddCapabilityProvider(IExtension *myself, IFeatureProvider *pr
 void ShareSystem::DropCapabilityProvider(IExtension *myself, IFeatureProvider *provider,
 		                                 const char *name)
 {
-	Capability *pCap = m_caps.retrieve(name);
-	if (pCap == NULL)
+	StringHashMap<Capability>::Result r = m_caps.find(name);
+	if (!r.found())
+		return;
+	if (r->value.ext != myself || r->value.provider != provider)
 		return;
 
-	if (pCap->ext != myself || pCap->provider != provider)
-		return;
-
-	m_caps.remove(name);
+	m_caps.remove(r);
 }
 
 FeatureStatus ShareSystem::TestFeature(IPluginRuntime *pRuntime, FeatureType feature, 
@@ -603,9 +598,9 @@ FeatureStatus ShareSystem::TestNative(IPluginRuntime *pRuntime, const char *name
 
 FeatureStatus ShareSystem::TestCap(const char *name)
 {
-	Capability *cap = m_caps.retrieve(name);
-	if (cap == NULL)
+	StringHashMap<Capability>::Result r = m_caps.find(name);
+	if (!r.found())
 		return FeatureStatus_Unknown;
 
-	return cap->provider->GetFeatureStatus(FeatureType_Capability, name);
+	return r->value.provider->GetFeatureStatus(FeatureType_Capability, name);
 }

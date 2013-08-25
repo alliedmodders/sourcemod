@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -35,7 +35,8 @@
 #include <IShareSys.h>
 #include <IHandleSys.h>
 #include <sh_list.h>
-#include <sm_trie_tpl.h>
+#include <sm_stringhashmap.h>
+#include <sm_namehashset.h>
 #include "common_logic.h"
 
 using namespace SourceHook;
@@ -84,6 +85,11 @@ struct NativeEntry
 	const char *name;
 	ReplaceNative replacement;
 	FakeNative *fake;
+
+	static inline bool matches(const char *name, const NativeEntry *entry)
+	{
+		return strcmp(name, entry->name) == 0;
+	}
 };
 
 struct Capability
@@ -154,8 +160,8 @@ private:
 	IdentityToken_t m_IdentRoot;
 	HandleType_t m_IfaceType;
 	IdentityType_t m_CoreType;
-	KTrie<NativeEntry *> m_NtvCache;
-	KTrie<Capability> m_caps;
+	NameHashSet<NativeEntry *> m_NtvCache;
+	StringHashMap<Capability> m_caps;
 };
 
 extern ShareSystem g_ShareSys;
