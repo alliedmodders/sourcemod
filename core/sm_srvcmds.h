@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 sw=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
@@ -38,7 +38,7 @@
 #include <sh_list.h>
 #include <sh_string.h>
 #include <compat_wrappers.h>
-#include "sm_trie.h"
+#include <sm_namehashset.h>
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -49,6 +49,11 @@ struct ConsoleEntry
 	String description;
 	bool   version2;
 	IRootConsoleCommand *cmd;
+
+	static inline bool matches(const char *name, const ConsoleEntry *entry)
+	{
+		return strcmp(name, entry->command.c_str()) == 0;
+	}
 };
 
 class RootConsoleMenu : 
@@ -87,7 +92,7 @@ public:
 	void GotRootCmd(const CCommand &cmd);
 private:
 	bool m_CfgExecDone;
-	Trie *m_pCommands;
+	NameHashSet<ConsoleEntry *> m_Commands;
 	List<ConsoleEntry *> m_Menu;
 };
 

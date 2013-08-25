@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 sw=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
@@ -42,14 +42,11 @@ ConVar sourcemod_version("sourcemod_version", SM_VERSION_STRING, FCVAR_SPONLY|FC
 
 RootConsoleMenu::RootConsoleMenu()
 {
-	m_pCommands = sm_trie_create();
 	m_CfgExecDone = false;
 }
 
 RootConsoleMenu::~RootConsoleMenu()
 {
-	sm_trie_destroy(m_pCommands);
-
 	List<ConsoleEntry *>::iterator iter;
 	for (iter=m_Menu.begin(); iter!=m_Menu.end(); iter++)
 	{
@@ -129,10 +126,8 @@ bool RootConsoleMenu::_AddRootConsoleCommand(const char *cmd,
 											 IRootConsoleCommand *pHandler,
 											 bool version2)
 {
-	if (sm_trie_retrieve(m_pCommands, cmd, NULL))
-	{
+	if (m_Commands.contains(cmd))
 		return false;
-	}
 
 	/* Sort this into the menu */
 	List<ConsoleEntry *>::iterator iter = m_Menu.begin();
@@ -148,7 +143,7 @@ bool RootConsoleMenu::_AddRootConsoleCommand(const char *cmd,
 			pNew->description.assign(text);
 			pNew->version2 = version2;
 			pNew->cmd = pHandler;
-			sm_trie_insert(m_pCommands, cmd, pNew);
+			m_Commands.insert(cmd, pNew);
 			m_Menu.insert(iter, pNew);
 			inserted = true;
 			break;
@@ -163,7 +158,7 @@ bool RootConsoleMenu::_AddRootConsoleCommand(const char *cmd,
 		pNew->description.assign(text);
 		pNew->version2 = version2;
 		pNew->cmd = pHandler;
-		sm_trie_insert(m_pCommands, cmd, pNew);
+		m_Commands.insert(cmd, pNew);
 		m_Menu.push_back(pNew);
 	}
 
@@ -172,7 +167,7 @@ bool RootConsoleMenu::_AddRootConsoleCommand(const char *cmd,
 
 bool RootConsoleMenu::RemoveRootConsoleCommand(const char *cmd, IRootConsoleCommand *pHandler)
 {
-	sm_trie_delete(m_pCommands, cmd);
+	m_Commands.remove(cmd);
 
 	List<ConsoleEntry *>::iterator iter;
 	ConsoleEntry *pEntry;
@@ -291,7 +286,7 @@ void RootConsoleMenu::GotRootCmd(const CCommand &cmd)
 		CCommandArgs ocmd(cmd);
 
 		ConsoleEntry *entry;
-		if (sm_trie_retrieve(m_pCommands, cmdname, (void **)&entry))
+		if (m_Commands.retrieve(cmdname, &entry))
 		{
 			if (entry->version2)
 			{
