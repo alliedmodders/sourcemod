@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -65,6 +65,11 @@ struct ConVarInfo
 	IChangeableForward *pChangeForward;	/**< Forward associated with convar */
 	ConVar *pVar;						/**< The actual convar */
 	List<IConVarChangeListener *> changeListeners;
+
+	static inline bool matches(const char *name, const ConVarInfo *info)
+	{
+		return strcmp(name, info->pVar->GetName()) == 0;
+	}
 };
 
 /**

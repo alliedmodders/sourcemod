@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -304,12 +304,10 @@ ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, 
 
 const char *CoreConfig::GetCoreConfigValue(const char *key)
 {
-	int *pKey = m_KeyValues.retrieve(key);
-	if (pKey == NULL)
-	{
+	int address;
+	if (!m_KeyValues.retrieve(key, &address))
 		return NULL;
-	}
-	return m_Strings.GetString(*pKey);
+	return m_Strings.GetString(address);
 }
 
 bool SM_AreConfigsExecuted()

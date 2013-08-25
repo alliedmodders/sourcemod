@@ -33,7 +33,7 @@
 #include "sm_srvcmds.h"
 #include "sm_stringutil.h"
 #include <sh_vector.h>
-#include <sm_trie_tpl.h>
+#include <sm_namehashset.h>
 #include "logic_bridge.h"
 
 ConVarManager g_ConVarManager;
@@ -54,7 +54,7 @@ SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB
 
 const ParamType CONVARCHANGE_PARAMS[] = {Param_Cell, Param_String, Param_String};
 typedef List<const ConVar *> ConVarList;
-KTrie<ConVarInfo *> convar_cache;
+NameHashSet<ConVarInfo *> convar_cache;
 
 class ConVarReentrancyGuard
 {
@@ -245,16 +245,7 @@ void ConVarManager::OnSourceModVSPReceived()
 
 bool convar_cache_lookup(const char *name, ConVarInfo **pVar)
 {
-	ConVarInfo **pLookup = convar_cache.retrieve(name);
-	if (pLookup != NULL)
-	{
-		*pVar = *pLookup;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return convar_cache.retrieve(name, pVar);
 }
 
 void ConVarManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe)

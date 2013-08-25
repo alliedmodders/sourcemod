@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -35,7 +35,7 @@
 #include "sm_globals.h"
 #include <ITextParsers.h>
 #include <IRootConsoleMenu.h>
-#include <sm_trie_tpl.h>
+#include <sm_stringhashmap.h>
 #include "sm_memtable.h"
 
 using namespace SourceMod;
@@ -69,7 +69,7 @@ private:
 	ConfigResult SetConfigOption(const char *option, const char *value, ConfigSource, char *Error, size_t maxlength);
 private:
 	BaseStringTable m_Strings;
-	KTrie<int> m_KeyValues;
+	StringHashMap<int> m_KeyValues;
 };
 
 extern bool SM_AreConfigsExecuted();
