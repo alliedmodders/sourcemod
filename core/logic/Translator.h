@@ -33,7 +33,7 @@
 #define _INCLUDE_SOURCEMOD_TRANSLATOR_H_
 
 #include "common_logic.h"
-#include <sm_trie_tpl.h>
+#include <sm_stringhashmap.h>
 #include <sh_string.h>
 #include <sh_vector.h>
 #include "sm_memtable.h"
@@ -79,7 +79,7 @@ private:
 	void ParseError(const char *message, ...);
 	void ParseWarning(const char *message, ...);
 private:
-	KTrie<int> m_PhraseLookup;
+	StringHashMap<int> m_PhraseLookup;
 	String m_File;
 	Translator *m_pTranslator;
 	PhraseParseState m_ParseState;
@@ -152,8 +152,8 @@ private:
 	CVector<Language *> m_Languages;
 	CVector<CPhraseFile *> m_Files;
 	BaseStringTable *m_pStringTab;
-	KTrie<unsigned int> m_LCodeLookup;
-	KTrie<unsigned int> m_LAliases;
+	StringHashMap<unsigned int> m_LCodeLookup;
+	StringHashMap<unsigned int> m_LAliases;
 	bool m_InLanguageSection;
 	String m_CustomError;
 	unsigned int m_ServerLang;
