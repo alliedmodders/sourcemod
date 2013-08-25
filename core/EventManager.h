@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
@@ -34,7 +34,7 @@
 
 #include "sm_globals.h"
 #include "sourcemm_api.h"
-#include "sm_trie.h"
+#include <sm_namehashset.h>
 #include <sh_list.h>
 #include <sh_stack.h>
 #include <IHandleSys.h>
@@ -70,6 +70,11 @@ struct EventHook
 	bool postCopy;
 	unsigned int refCount;
 	char *name;
+
+	static inline bool matches(const char *name, const EventHook *hook)
+	{
+		return strcmp(name, hook->name) == 0;
+	}
 };
 
 enum EventHookMode
@@ -127,7 +132,7 @@ private: // IGameEventManager2 hooks
 	bool OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast);
 private:
 	HandleType_t m_EventType;
-	Trie *m_EventHooks;
+	NameHashSet<EventHook *> m_EventHooks;
 	CStack<EventInfo *> m_FreeEvents;
 	CStack<EventHook *> m_EventStack;
 	CStack<IGameEvent *> m_EventCopies;

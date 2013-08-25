@@ -57,14 +57,10 @@ public:
 
 EventManager::EventManager() : m_EventType(0)
 {
-	/* Create an event lookup trie */
-	m_EventHooks = sm_trie_create();
 }
 
 EventManager::~EventManager()
 {
-	sm_trie_destroy(m_EventHooks);
-
 	/* Free memory used by EventInfo structs if any */
 	CStack<EventInfo *>::iterator iter;
 	for (iter = m_FreeEvents.begin(); iter != m_FreeEvents.end(); iter++)
@@ -183,7 +179,7 @@ EventHookError EventManager::HookEvent(const char *name, IPluginFunction *pFunct
 	}
 
 	/* If a hook structure does not exist... */
-	if (!sm_trie_retrieve(m_EventHooks, name, (void **)&pHook))
+	if (!m_EventHooks.retrieve(name, &pHook))
 	{
 		EventHookList *pHookList;
 		IPlugin *plugin = scripts->FindPluginByContext(pFunction->GetParentContext()->GetContext());
@@ -221,7 +217,7 @@ EventHookError EventManager::HookEvent(const char *name, IPluginFunction *pFunct
 
 		/* Add hook structure to hook lists */
 		pHookList->push_back(pHook);
-		sm_trie_insert(m_EventHooks, name, pHook);
+		m_EventHooks.insert(name, pHook);
 
 		return EventHookErr_Okay;
 	}
@@ -267,7 +263,7 @@ EventHookError EventManager::UnhookEvent(const char *name, IPluginFunction *pFun
 	IChangeableForward **pEventForward;
 
 	/* If hook does not exist at all */
-	if (!sm_trie_retrieve(m_EventHooks, name, (void **)&pHook))
+	if (!m_EventHooks.retrieve(name, &pHook))
 	{
 		return EventHookErr_NotActive;
 	}
@@ -317,7 +313,7 @@ EventHookError EventManager::UnhookEvent(const char *name, IPluginFunction *pFun
 		pHookList->remove(pHook);
 
 		/* Delete entry in trie */
-		sm_trie_delete(m_EventHooks, name);
+		m_EventHooks.remove(name);
 
 		/* Free the cached name */
 		delete pHook->name;
@@ -396,7 +392,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 
 	name = pEvent->GetName();
 	
-	if (sm_trie_retrieve(m_EventHooks, name, reinterpret_cast<void **>(&pHook)))
+	if (m_EventHooks.retrieve(name, &pHook))
 	{
 		/* Push the event onto the event stack.  The reference count is increased to make sure 
 		 * the structure is not garbage collected in between now and the post hook.
@@ -503,7 +499,7 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 		{
 			assert(pHook->pPostHook == NULL);
 			assert(pHook->pPreHook == NULL);
-			sm_trie_delete(m_EventHooks, pHook->name);
+			m_EventHooks.remove(pHook->name);
 			delete pHook->name;
 			delete pHook;
 		}
