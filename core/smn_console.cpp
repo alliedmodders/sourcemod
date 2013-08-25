@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
@@ -46,6 +46,7 @@
 #include "ConsoleDetours.h"
 #include "ConCommandBaseIterator.h"
 #include "logic_bridge.h"
+#include <sm_namehashset.h>
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 #include <netmessages.pb.h>
@@ -133,12 +134,11 @@ public:
 	}
 	bool GetFlags(const char *name, int *flags)
 	{
-		ConCommandBase **ppCmd;
 		ConCommandBase *pCmd;
-		if ((ppCmd=m_CmdFlags.retrieve(name)))
+		if (m_CmdFlags.retrieve(name, &pCmd))
 		{
-			TrackConCommandBase((*ppCmd), this);
-			*flags = (*ppCmd)->GetFlags();
+			TrackConCommandBase(pCmd, this);
+			*flags = pCmd->GetFlags();
 			return true;
 		}
 		else if ((pCmd=FindCommandBase(name)))
@@ -155,12 +155,11 @@ public:
 	}
 	bool SetFlags(const char *name, int flags)
 	{
-		ConCommandBase **ppCmd;
 		ConCommandBase *pCmd;
-		if ((ppCmd=m_CmdFlags.retrieve(name)))
+		if (m_CmdFlags.retrieve(name, &pCmd))
 		{
-			(*ppCmd)->SetFlags(flags);
-			TrackConCommandBase((*ppCmd), this);
+			pCmd->SetFlags(flags);
+			TrackConCommandBase(pCmd, this);
 			return true;
 		}
 		else if ((pCmd=FindCommandBase(name)))
@@ -176,7 +175,14 @@ public:
 		}
 	}
 private:
-	KTrie<ConCommandBase *> m_CmdFlags;
+	struct ConCommandPolicy
+	{
+		static inline bool matches(const char *name, ConCommandBase *base)
+		{
+			return strcmp(name, base->GetName()) == 0;
+		}
+	};
+	NameHashSet<ConCommandBase *, ConCommandPolicy> m_CmdFlags;
 } s_CommandFlagsHelper;
 
 #if SOURCE_ENGINE < SE_ORANGEBOX
