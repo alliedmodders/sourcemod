@@ -311,8 +311,7 @@ void ChatTriggers::OnSayCommand_Pre()
 		RETURN_META(MRES_SUPERCEDE);
 	}
 
-	if (m_bWillProcessInPost || \
-		(is_silent && g_bSupressSilentFails && pPlayer->GetAdminId() != INVALID_ADMIN_ID))
+	if (is_silent && (m_bIsChatTrigger || (g_bSupressSilentFails && pPlayer->GetAdminId() != INVALID_ADMIN_ID)))
 	{
 		RETURN_META(MRES_SUPERCEDE);
 	}
