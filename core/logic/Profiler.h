@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -34,9 +34,9 @@
 
 #include <sp_vm_api.h>
 #include <sm_platform.h>
-#include <sm_trie_tpl.h>
 #include <sh_vector.h>
 #include <sh_stack.h>
+#include <sm_namehashset.h>
 #include <stdio.h>
 #include "common_logic.h"
 #include <IRootConsoleMenu.h>
@@ -72,6 +72,11 @@ struct prof_atom_report_t
 	unsigned int num_calls;	/* Number of invocations */
 	double min_time;		/* Min time spent in one call, in s */
 	double max_time;		/* Max time spent in one call, in s */
+
+	static inline bool matches(const char *name, const prof_atom_report_t *report)
+	{
+		return strcmp(report->atom_name, name) == 0;
+	}
 };
 
 class ProfileReport
@@ -84,7 +89,7 @@ public:
 	prof_atom_report_t *GetReport(size_t i);
 	void Clear();
 private:
-	KTrie<prof_atom_report_t *> m_ReportLookup;
+	NameHashSet<prof_atom_report_t *> m_ReportLookup;
 	CVector<prof_atom_report_t *> m_Reports;
 };
 

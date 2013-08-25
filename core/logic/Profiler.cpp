@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -465,7 +465,7 @@ void ProfileReport::SaveAtom(const prof_atom_t &atom)
 {
 	double atom_time;
 	char full_name[256];
-	prof_atom_report_t **pReport, *report;
+	prof_atom_report_t *report;
 
 	if (atom.atom_type == SP_PROF_NATIVES)
 	{
@@ -487,7 +487,7 @@ void ProfileReport::SaveAtom(const prof_atom_t &atom)
 
 	atom_time = CalcAtomTime(atom);
 
-	if ((pReport = m_ReportLookup.retrieve(full_name)) == NULL)
+	if (!m_ReportLookup.retrieve(full_name, &report))
 	{
 		report = new prof_atom_report_t;
 
@@ -502,8 +502,6 @@ void ProfileReport::SaveAtom(const prof_atom_t &atom)
 	}
 	else
 	{
-		report = *pReport;
-
 		if (atom_time > report->max_time)
 		{
 			report->max_time = atom_time;
