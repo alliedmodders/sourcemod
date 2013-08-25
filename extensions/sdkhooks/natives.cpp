@@ -190,13 +190,13 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	if (!pWeapon)
 		return pContext->ThrowNativeError("Invalid entity index %d for weapon", params[2]);
 
-	sm_sendprop_info_t spi;
 	IServerUnknown *pUnk = (IServerUnknown *)pWeapon;
 	IServerNetworkable *pNet = pUnk->GetNetworkable();
 
-	if (!UTIL_FindDataTable(pNet->GetServerClass()->m_pTable, "DT_BaseCombatWeapon", &spi, 0))
+	if (!UTIL_ContainsDataTable(pNet->GetServerClass()->m_pTable, "DT_BaseCombatWeapon"))
 		return pContext->ThrowNativeError("Entity index %d is not a weapon", params[2]);
 
+	sm_sendprop_info_t spi;
 	if (!gamehelpers->FindSendPropInfo("CBaseCombatWeapon", "m_hOwnerEntity", &spi))
 		return pContext->ThrowNativeError("Invalid entity index %d for weapon", params[2]);
 

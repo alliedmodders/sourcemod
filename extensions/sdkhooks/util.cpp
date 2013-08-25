@@ -64,15 +64,15 @@ CBaseEntity *UTIL_GetCBaseEntity(int num, bool onlyPlayers)
 	return pUnk->GetBaseEntity();
 }
 
-bool UTIL_FindDataTable(SendTable *pTable, 
-						  const char *name,
-						  sm_sendprop_info_t *info,
-						  unsigned int offset)
+bool UTIL_ContainsDataTable(SendTable *pTable, const char *name)
 {
-	const char *pname;
+	const char *pname = pTable->GetName();
 	int props = pTable->GetNumProps();
 	SendProp *prop;
 	SendTable *table;
+
+	if (pname && strcmp(name, pname) == 0)
+		return true;
 
 	for (int i=0; i<props; i++)
 	{
@@ -83,16 +83,10 @@ bool UTIL_FindDataTable(SendTable *pTable,
 			pname = table->GetName();
 			if (pname && strcmp(name, pname) == 0)
 			{
-				info->prop = prop;
-				info->actual_offset = offset + info->prop->GetOffset();
 				return true;
 			}
 
-			if (UTIL_FindDataTable(table, 
-				name,
-				info,
-				offset + prop->GetOffset())
-				)
+			if (UTIL_ContainsDataTable(table, name))
 			{
 				return true;
 			}

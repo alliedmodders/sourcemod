@@ -35,6 +35,6 @@
 #include <compat_wrappers.h>
 
 CBaseEntity *UTIL_GetCBaseEntity(int num, bool onlyPlayers=false);
-bool UTIL_FindDataTable(SendTable *pTable, const char *name, sm_sendprop_info_t *info, unsigned int offset);
+bool UTIL_ContainsDataTable(SendTable *pTable, const char *name);
 
 #endif  //_INCLUDE_TF2TOOLS_UTIL_H_

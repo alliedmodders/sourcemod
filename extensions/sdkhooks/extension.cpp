@@ -525,11 +525,10 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 
 	if (!!strcmp(g_HookTypes[type].dtReq, ""))
 	{
-		sm_sendprop_info_t spi;
 		IServerUnknown *pUnk = (IServerUnknown *)pEnt;
 
 		IServerNetworkable *pNet = pUnk->GetNetworkable();
-		if (pNet && !UTIL_FindDataTable(pNet->GetServerClass()->m_pTable, g_HookTypes[type].dtReq, &spi, 0))
+		if (pNet && !UTIL_ContainsDataTable(pNet->GetServerClass()->m_pTable, g_HookTypes[type].dtReq))
 			return HookRet_BadEntForHookType;
 	}
 
