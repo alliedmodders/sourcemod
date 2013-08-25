@@ -125,6 +125,13 @@ public:
 		return table_.add(i, value);
 	}
 
+	bool contains(const char *aKey)
+	{
+		CharsAndLength key(aKey);
+		Result r = table_.find(aKey);
+		return r.found();
+	}
+
 	bool remove(const char *aKey)
 	{
 		CharsAndLength key(aKey);
@@ -133,6 +140,11 @@ public:
 			return false;
 		table_.remove(r);
 		return true;
+	}
+
+	void clear()
+	{
+		table_.clear();
 	}
 
 private:

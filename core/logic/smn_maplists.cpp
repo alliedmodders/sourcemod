@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -30,7 +30,7 @@
  */
 
 #include <sh_list.h>
-#include <sm_trie_tpl.h>
+#include <sm_namehashset.h>
 #include "common_logic.h"
 #include "CellArray.h"
 #include <IGameHelpers.h>
@@ -50,6 +50,11 @@ struct maplist_info_t
 	time_t last_modified_time;
 	CellArray *pArray;
 	int serial;
+
+	static inline bool matches(const char *key, const maplist_info_t *value)
+	{
+		return strcmp(value->name, key) == 0;
+	}
 };
 
 #define MAPLIST_FLAG_MAPSFOLDER		(1<<0)		/**< On failure, use all maps in the maps folder. */
@@ -124,9 +129,9 @@ public:
 	void AddOrUpdateDefault(const char *name, const char *file)
 	{
 		char path[PLATFORM_MAX_PATH];
-		maplist_info_t *pMapList, **ppMapList;
+		maplist_info_t *pMapList;
 
-		if ((ppMapList = m_ListLookup.retrieve(name)) == NULL)
+		if (!m_ListLookup.retrieve(name, &pMapList))
 		{
 			pMapList = new maplist_info_t;
 			pMapList->bIsCompat = true;
@@ -141,21 +146,15 @@ public:
 			return;
 		}
 
-		pMapList = *ppMapList;
-
 		/* Don't modify if it's from the config file */
 		if (!pMapList->bIsCompat)
-		{
 			return;
-		}
 
 		g_pSM->BuildPath(Path_Game, path, sizeof(path), "%s", file);
 
 		/* If the path matches, don't reset the serial/time */
 		if (strcmp(path, pMapList->path) == 0)
-		{
 			return;
-		}
 
 		smcore.strncopy(pMapList->path, path, sizeof(pMapList->path));
 		pMapList->bIsPath = true;
@@ -230,7 +229,7 @@ public:
 		List<maplist_info_t *>::iterator iter = compat.begin();
 		while (iter != compat.end())
 		{
-			if (m_ListLookup.retrieve((*iter)->name) != NULL)
+			if (m_ListLookup.contains((*iter)->name))
 			{
 				/* The compatibility shim is no longer needed. */
 				delete (*iter)->pArray;
@@ -321,7 +320,7 @@ public:
 		{
 			if (m_pCurMapList != NULL
 				&& m_pCurMapList->path[0] != '\0'
-				&& m_ListLookup.retrieve(m_pCurMapList->name) == NULL)
+				&& !m_ListLookup.contains(m_pCurMapList->name))
 			{
 				m_ListLookup.insert(m_pCurMapList->name, m_pCurMapList);
 				m_MapLists.push_back(m_pCurMapList);
@@ -490,19 +489,13 @@ private:
 	bool GetMapList(CellArray **ppArray, const char *name, int *pSerial)
 	{
 		time_t last_time;
-		maplist_info_t *pMapList, **ppMapList;
+		maplist_info_t *pMapList;
 
-		if ((ppMapList = m_ListLookup.retrieve(name)) == NULL)
-		{
+		if (!m_ListLookup.retrieve(name, &pMapList))
 			return false;
-		}
-
-		pMapList = *ppMapList;
 
 		if (!pMapList->bIsPath)
-		{
 			return GetMapList(ppArray, pMapList->path, pSerial);
-		}
 
 		/* If it is a path, and the path is "*", assume all files must be used. */
 		if (strcmp(pMapList->path, "*") == 0)
@@ -598,7 +591,7 @@ private:
 	char m_ConfigFile[PLATFORM_MAX_PATH];
 	time_t m_ConfigLastChanged;
 	ConVar *m_pMapCycleFile;
-	KTrie<maplist_info_t *> m_ListLookup;
+	NameHashSet<maplist_info_t *> m_ListLookup;
 	List<maplist_info_t *> m_MapLists;
 	MapListState m_CurState;
 	unsigned int m_IgnoreLevel;
