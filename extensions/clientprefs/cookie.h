@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod Client Preferences Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -34,8 +34,7 @@
 
 #include "extension.h"
 #include "sh_list.h"
-#include "sm_trie_tpl.h"
-
+#include <sm_namehashset.h>
 
 #define MAX_NAME_LENGTH 30
 #define MAX_DESC_LENGTH 255
@@ -92,6 +91,11 @@ struct Cookie
 	int dbid;
 	CookieData *data[MAXCLIENTS+1];
 	CookieAccess access;
+
+	static inline bool matches(const char *name, const Cookie *cookie)
+	{
+		return strcmp(name, cookie->name) == 0;
+	}
 };
 
 class CookieManager : public IClientListener, public IPluginsListener
@@ -128,7 +132,7 @@ public:
 	IBaseMenu *clientMenu;
 
 private:
-	KTrie<Cookie *> cookieTrie;
+	NameHashSet<Cookie *> cookieFinder;
 	SourceHook::List<CookieData *> clientData[MAXCLIENTS+1];
 
 	bool connected[MAXCLIENTS+1];

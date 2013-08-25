@@ -67,12 +67,10 @@ void CookieManager::Unload()
 
 Cookie *CookieManager::FindCookie(const char *name)
 {
-	Cookie **pCookie = cookieTrie.retrieve(name);
-
-	if (pCookie == NULL)
+	Cookie *cookie;
+	if (!cookieFinder.retrieve(name, &cookie))
 		return NULL;
-
-	return *pCookie;
+	return cookie;
 }
 
 Cookie *CookieManager::CreateCookie(const char *name, const char *description, CookieAccess access)
@@ -96,7 +94,7 @@ Cookie *CookieManager::CreateCookie(const char *name, const char *description, C
 	TQueryOp *op = new TQueryOp(Query_InsertCookie, pCookie);
 	op->m_params.cookie = pCookie;
 	
-	cookieTrie.insert(name, pCookie);
+	cookieFinder.insert(name, pCookie);
 	cookieList.push_back(pCookie);
 
 	g_ClientPrefs.AddQueryToQueue(op);
