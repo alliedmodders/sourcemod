@@ -148,7 +148,7 @@ public:
 		if (!i.found())
 		{
 			memory_used_ += key.length() + 1;
-			if (!internal_.add(i, value))
+			if (!internal_.add(i))
 				return false;
 			i->key = aKey;
 		}
