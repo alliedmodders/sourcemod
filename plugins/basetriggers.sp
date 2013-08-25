@@ -78,6 +78,7 @@ public OnPluginStart()
 	RegConsoleCmd("timeleft", Command_Timeleft);
 	RegConsoleCmd("nextmap", Command_Nextmap);
 	RegConsoleCmd("motd", Command_Motd);
+	RegConsoleCmd("ff", Command_FriendlyFire);
 	
 	HookConVarChange(g_Cvar_TimeleftInterval, ConVarChange_TimeleftInterval);
 
@@ -232,6 +233,22 @@ public Action:Command_Motd(client, args)
 	return Plugin_Handled;
 }
 
+public Action:Command_FriendlyFire(client, args)
+{
+	if (client == 0)
+	{
+		ReplyToCommand(client, "[SM] %t", "Command is in-game only");
+		return Plugin_Handled;
+	}
+
+	if (!IsClientInGame(client))
+		return Plugin_Handled;
+	
+	ShowFriendlyFire(client);
+
+	return Plugin_Handled;
+}
+
 public OnClientSayCommand_Post(client, const String:command[], const String:sArgs[])
 {
 	decl String:text[192];
@@ -268,29 +285,9 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 			PrintToChat(client,"[SM] %t", "Thetime", ctime);
 		}
 	}
-	else if (strcmp(text[startidx], "ff", false) == 0 || strcmp(text[startidx], "/ff", false) == 0)
+	else if (strcmp(text[startidx], "ff", false) == 0)
 	{
-		if (g_Cvar_FriendlyFire != INVALID_HANDLE)
-		{
-			decl String:phrase[24];
-			if (GetConVarBool(g_Cvar_FriendlyFire))
-			{
-				strcopy(phrase, sizeof(phrase), "Friendly Fire On");
-			}
-			else
-			{
-				strcopy(phrase, sizeof(phrase), "Friendly Fire Off");
-			}
-		
-			if(GetConVarInt(g_Cvar_TriggerShow))
-			{
-				PrintToChatAll("[SM] %t", phrase);
-			}
-			else
-			{
-				PrintToChat(client,"[SM] %t", phrase);
-			}
-		}
+		ShowFriendlyFire(client);
 	}
 	else if (strcmp(text[startidx], "currentmap", false) == 0)
 	{
@@ -517,5 +514,30 @@ ShowTimeLeft(client, who)
 	if (client == 0)
 	{
 		PrintToServer("[SM] %s", finalOutput);
+	}
+}
+
+ShowFriendlyFire(client)
+{
+	if (g_Cvar_FriendlyFire != INVALID_HANDLE)
+	{
+		decl String:phrase[24];
+		if (GetConVarBool(g_Cvar_FriendlyFire))
+		{
+			strcopy(phrase, sizeof(phrase), "Friendly Fire On");
+		}
+		else
+		{
+			strcopy(phrase, sizeof(phrase), "Friendly Fire Off");
+		}
+	
+		if(GetConVarInt(g_Cvar_TriggerShow))
+		{
+			PrintToChatAll("[SM] %t", phrase);
+		}
+		else
+		{
+			PrintToChat(client,"[SM] %t", phrase);
+		}
 	}
 }
