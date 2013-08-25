@@ -109,6 +109,22 @@ public:
 	}
 
 	/**
+	 * @brief Wrapper around retrieve(key) for a cleaner API.
+	 *
+	 * @param key		Key to retrieve.
+	 * @param result	Pointer to store the result, must be non-NULL.
+	 * @return			True if found, false otherwise.
+	 */
+	bool retrieve(const char *key, K *result)
+	{
+		KTrieNode *node = internal_retrieve(key);
+		if (!node || !node->valset)
+			return false;
+		*result = node->value;
+		return true;
+	}
+
+	/**
 	 * @brief Inserts or updates the object stored at a key.
 	 *
 	 * @param key		Key to update or insert.

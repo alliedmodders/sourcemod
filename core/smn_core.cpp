@@ -39,7 +39,6 @@
 #include "TimerSys.h"
 #include "ForwardSys.h"
 #include "Logger.h"
-#include <sm_trie_tpl.h>
 #include <sh_memory.h>
 #include "logic_bridge.h"
 

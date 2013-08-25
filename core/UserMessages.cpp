@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
@@ -56,7 +56,6 @@ UserMessages::UserMessages()
 #ifndef USE_PROTOBUF_USERMESSAGES
 	: m_InterceptBuffer(m_pBase, 2500)
 {
-	m_Names = sm_trie_create();
 #else
 	: m_InterceptBuffer(NULL)
 {
@@ -70,10 +69,6 @@ UserMessages::UserMessages()
 
 UserMessages::~UserMessages()
 {
-#ifndef USE_PROTOBUF_USERMESSAGES
-	sm_trie_destroy(m_Names);
-#endif
-
 	CStack<ListenerInfo *>::iterator iter;
 	for (iter=m_FreeListeners.begin(); iter!=m_FreeListeners.end(); iter++)
 	{
@@ -121,9 +116,9 @@ int UserMessages::GetMessageIndex(const char *msg)
 	// Can split this per engine and/or game later
 	return g_Cstrike15UsermessageHelpers.GetIndex(msg);
 #else
-	int msgid;
 
-	if (!sm_trie_retrieve(m_Names, msg, reinterpret_cast<void **>(&msgid)))
+	int msgid;
+	if (!m_Names.retrieve(msg, &msgid))
 	{
 		if (m_FallbackSearch)
 		{
@@ -135,7 +130,7 @@ int UserMessages::GetMessageIndex(const char *msg)
 			{
 				if (strcmp(msgbuf, msg) == 0)
 				{
-					sm_trie_insert(m_Names, msg, reinterpret_cast<void *>(msgid));
+					m_Names.insert(msg, msgid);
 					return msgid;
 				}
 				msgid++;
@@ -145,9 +140,7 @@ int UserMessages::GetMessageIndex(const char *msg)
 		msgid = g_SMAPI->FindUserMessage(msg);
 
 		if (msgid != INVALID_MESSAGE_ID)
-		{
-			sm_trie_insert(m_Names, msg, reinterpret_cast<void *>(msgid));
-		}
+			m_Names.insert(msg, msgid);
 	}
 
 	return msgid;

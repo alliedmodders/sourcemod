@@ -40,7 +40,6 @@
 #include "AdminCache.h"
 #include <inetchannel.h>
 #include <bitbuf.h>
-#include <sm_trie_tpl.h>
 #include <tier0/dbg.h>
 #include "Logger.h"
 #include "ConsoleDetours.h"

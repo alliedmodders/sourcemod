@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
@@ -34,7 +34,7 @@
 
 #include <IUserMessages.h>
 #include "sourcemm_api.h"
-#include "sm_trie.h"
+#include <sm_stringhashmap.h>
 #include "sm_stringutil.h"
 #include "CellRecipientFilter.h"
 #include "sm_globals.h"
@@ -153,7 +153,7 @@ private:
 #ifndef USE_PROTOBUF_USERMESSAGES
 	bool m_FallbackSearch;
 
-	Trie *m_Names;
+	StringHashMap<int> m_Names;
 #endif
 	CellRecipientFilter m_CellRecFilter;
 	bool m_InExec;
