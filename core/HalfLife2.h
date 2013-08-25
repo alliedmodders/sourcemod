@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -35,8 +35,10 @@
 #include <sh_list.h>
 #include <sh_string.h>
 #include <sh_tinyhash.h>
-#include <sm_trie_tpl.h>
-#include "sm_trie.h"
+#include <am-utility.h>
+#include <am-hashmap.h>
+#include <sm_stringhashmap.h>
+#include <sm_namehashset.h>
 #include "sm_globals.h"
 #include "sm_queue.h"
 #include <IGameHelpers.h>
@@ -59,15 +61,37 @@ using namespace SourceMod;
 
 struct DataTableInfo
 {
+	struct SendPropPolicy
+	{
+		static inline bool matches(const char *name, const sm_sendprop_info_t &info)
+		{
+			return strcmp(name, info.prop->GetName()) == 0;
+		}
+	};
+
+	static inline bool matches(const char *name, const DataTableInfo *info)
+	{
+		return strcmp(name, info->sc->GetName()) == 0;
+	}
+
+	DataTableInfo(ServerClass *sc)
+		: sc(sc)
+	{
+	}
+
 	ServerClass *sc;
-	KTrie<sm_sendprop_info_t> lookup;
+	NameHashSet<sm_sendprop_info_t, SendPropPolicy> lookup;
 };
 
-struct DataMapTrie
+struct DataMapCachePolicy
 {
-	DataMapTrie() : trie(NULL) {}
-	KTrie<sm_datatable_info_t> *trie;
+	static inline bool matches(const char *name, const sm_datatable_info_t &info)
+	{
+		return strcmp(name, info.prop->fieldName) == 0;
+	}
 };
+
+typedef NameHashSet<sm_datatable_info_t, DataMapCachePolicy> DataMapCache;
 
 struct DelayedFakeCliCmd
 {
@@ -169,9 +193,10 @@ private:
 	void InitLogicalEntData();
 	void InitCommandLine();
 private:
-	Trie *m_pClasses;
-	List<DataTableInfo *> m_Tables;
-	THash<datamap_t *, DataMapTrie> m_Maps;
+	typedef ke::HashMap<datamap_t *, DataMapCache *, ke::PointerPolicy<datamap_t> > DataTableMap;
+
+	NameHashSet<DataTableInfo *> m_Classes;
+	DataTableMap m_Maps;
 	int m_MsgTextMsg;
 	int m_HinTextMsg;
 	int m_SayTextMsg;

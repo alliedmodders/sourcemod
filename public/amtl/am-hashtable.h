@@ -472,7 +472,10 @@ class HashTable : public AllocPolicy
       table_->removeEntry(*i_);
     }
 
-    const Payload &operator *() const {
+    Payload *operator ->() const {
+      return &i_->payload();
+    }
+    Payload &operator *() const {
       return i_->payload();
     }
 

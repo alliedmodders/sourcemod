@@ -36,7 +36,6 @@
 #include <ILibrarySys.h>
 #include <sh_list.h>
 #include <sh_string.h>
-#include <sm_trie_tpl.h>
 #include "common_logic.h"
 #include <IPluginSys.h>
 #include <IRootConsoleMenu.h>

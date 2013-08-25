@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -76,51 +76,17 @@ ConVar *sv_lan = NULL;
 static void *g_EntList = NULL;
 static int entInfoOffset = -1;
 
-namespace SourceHook
-{
-	template<>
-	int HashFunction<datamap_t *>(datamap_t * const &k)
-	{
-		return reinterpret_cast<int>(k);
-	}
-
-	template<>
-	int Compare<datamap_t *>(datamap_t * const &k1, datamap_t * const &k2)
-	{
-		return (k1-k2);
-	}
-}
-
 CHalfLife2::CHalfLife2()
 {
-	m_pClasses = sm_trie_create();
 }
 
 CHalfLife2::~CHalfLife2()
 {
-	sm_trie_destroy(m_pClasses);
+	for (NameHashSet<DataTableInfo *>::iterator iter = m_Classes.iter(); !iter.empty(); iter.next())
+		delete *iter;
 
-	List<DataTableInfo *>::iterator iter;
-	DataTableInfo *pInfo;
-	for (iter=m_Tables.begin(); iter!=m_Tables.end(); iter++)
-	{
-		pInfo = (*iter);
-		delete pInfo;
-	}
-
-	m_Tables.clear();
-
-	THash<datamap_t *, DataMapTrie>::iterator h_iter;
-	for (h_iter=m_Maps.begin(); h_iter!=m_Maps.end(); h_iter++)
-	{
-		if (h_iter->val.trie)
-		{
-			delete h_iter->val.trie;
-			h_iter->val.trie = NULL;
-		}
-	}
-
-	m_Maps.clear();
+	for (DataTableMap::iterator iter = m_Maps.iter(); !iter.empty(); iter.next())
+		delete iter->value;
 }
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
@@ -379,36 +345,29 @@ ServerClass *CHalfLife2::FindServerClass(const char *classname)
 	DataTableInfo *pInfo = _FindServerClass(classname);
 
 	if (!pInfo)
-	{
 		return NULL;
-	}
 
 	return pInfo->sc;
 }
 
 DataTableInfo *CHalfLife2::_FindServerClass(const char *classname)
 {
-	DataTableInfo *pInfo = NULL;
-
-	if (!sm_trie_retrieve(m_pClasses, classname, (void **)&pInfo))
+	DataTableInfo *pInfo;
+	if (!m_Classes.retrieve(classname, &pInfo))
 	{
 		ServerClass *sc = gamedll->GetAllServerClasses();
 		while (sc)
 		{
 			if (strcmp(classname, sc->GetName()) == 0)
 			{
-				pInfo = new DataTableInfo;
-				pInfo->sc = sc;
-				sm_trie_insert(m_pClasses, classname, pInfo);
-				m_Tables.push_back(pInfo);
+				pInfo = new DataTableInfo(sc);
+				m_Classes.insert(classname, pInfo);
 				break;
 			}
 			sc = sc->m_pNext;
 		}
 		if (!pInfo)
-		{
 			return NULL;
-		}
 	}
 
 	return pInfo;
@@ -424,7 +383,7 @@ bool CHalfLife2::FindSendPropInfo(const char *classname, const char *offset, sm_
 		return false;
 	}
 
-	if ((prop = pInfo->lookup.retrieve(offset)) == NULL)
+	if (!pInfo->lookup.retrieve(offset, info))
 	{
 		sm_sendprop_info_t temp_info;
 
@@ -435,10 +394,6 @@ bool CHalfLife2::FindSendPropInfo(const char *classname, const char *offset, sm_
 
 		pInfo->lookup.insert(offset, temp_info);
 		*info = temp_info;
-	}
-	else
-	{
-		*info = *prop;
 	}
 	
 	return true;
@@ -470,32 +425,21 @@ typedescription_t *CHalfLife2::FindInDataMap(datamap_t *pMap, const char *offset
 
 bool CHalfLife2::FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatable_info_t *pDataTable)
 {
-	DataMapTrie &val = m_Maps[pMap];
+	DataTableMap::Insert i = m_Maps.findForAdd(pMap);
+	if (!i.found())
+		m_Maps.add(i, pMap, new DataMapCache());
 
-	if (!val.trie)
+	DataMapCache *cache = i->value;
+
+	sm_datatable_info_t *pNewTable;
+	if (!cache->retrieve(offset, pDataTable))
 	{
-		val.trie = new KTrie<sm_datatable_info_t>;
-	}
-	
-	sm_datatable_info_t * pNewTable = val.trie->retrieve(offset);
-	
-	if (!pNewTable)
-	{
-		if (UTIL_FindDataMapInfo(pMap, offset, pDataTable))
-		{
-			val.trie->insert(offset, *pDataTable);
-		}
-		else
-		{
-			pDataTable->prop = NULL;
-		}
-	}
-	else
-	{
-		*pDataTable = *pNewTable;
+		if (!UTIL_FindDataMapInfo(pMap, offset, pDataTable))
+			return false;
+		cache->insert(offset, *pDataTable);
 	}
 
-	return (pDataTable->prop != NULL);
+	return true;
 }
 
 void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)

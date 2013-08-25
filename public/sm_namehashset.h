@@ -105,6 +105,7 @@ public:
 
 	typedef typename Internal::Result Result;
 	typedef typename Internal::Insert Insert;
+	typedef typename Internal::iterator iterator;
 
 	bool retrieve(const char *aKey, T *value)
 	{
@@ -145,6 +146,11 @@ public:
 	void clear()
 	{
 		table_.clear();
+	}
+
+	iterator iter()
+	{
+		return iterator(&table_);
 	}
 
 private:

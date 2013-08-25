@@ -98,6 +98,7 @@ class HashMap : public AllocPolicy
 
   typedef typename Internal::Result Result;
   typedef typename Internal::Insert Insert;
+  typedef typename Internal::iterator iterator;
 
   template <typename Lookup>
   Result find(const Lookup &key) {
@@ -131,6 +132,10 @@ class HashMap : public AllocPolicy
     return table_.add(i);
   }
 
+  iterator iter() {
+    return iterator(&table_);
+  }
+
   void clear() {
     table_.clear();
   }
@@ -141,6 +146,17 @@ class HashMap : public AllocPolicy
 
  private:
   Internal table_;
+};
+
+template <typename T>
+struct PointerPolicy
+{
+  static inline uint32_t hash(T *p) {
+    return HashPointer(p);
+  }
+  static inline bool matches(T *p1, T *p2) {
+    return p1 == p2;
+  }
 };
 
 }
