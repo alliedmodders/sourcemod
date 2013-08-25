@@ -61,7 +61,8 @@ class NameHashSet : public SystemAllocatorPolicy
 
 	// Default policy type: the two types are different. Use them directly.
 	template <typename KeyType, typename KeyPolicyType>
-	struct Policy {
+	struct Policy
+	{
 		typedef KeyType Payload;
 
 		static uint32_t hash(const CharsAndLength &key)

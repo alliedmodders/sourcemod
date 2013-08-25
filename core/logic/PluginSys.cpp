@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -114,7 +114,7 @@ unsigned int CPlugin::CalcMemUsage()
 		sizeof(CPlugin) 
 		+ sizeof(IdentityToken_t)
 		+ (m_configs.size() * (sizeof(AutoConfig *) + sizeof(AutoConfig)))
-		+ m_pProps.mem_usage();
+		+ m_Props.mem_usage();
 
 	for (unsigned int i = 0; i < m_configs.size(); i++)
 	{
@@ -169,24 +169,22 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 
 bool CPlugin::GetProperty(const char *prop, void **ptr, bool remove/* =false */)
 {
-	void **ptrpp = m_pProps.retrieve(prop);
-	bool exists = !!ptrpp;
+	StringHashMap<void *>::Result r = m_Props.find(prop);
+	if (!r.found())
+		return false;
 
-	if (exists)
-	{
-		if (ptr)
-			*ptr = *ptrpp;
-			
-		if (remove)
-			m_pProps.remove(prop);
-	}
+	if (ptr)
+		*ptr = r->value;
 
-	return exists;
+	if (remove)
+		m_Props.remove(r);
+
+	return true;
 }
 
 bool CPlugin::SetProperty(const char *prop, void *ptr)
 {
-	 return m_pProps.insert(prop, ptr);
+	 return m_Props.insert(prop, ptr);
 }
 
 IPluginRuntime *CPlugin::GetRuntime()
@@ -886,22 +884,19 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 	libsys->CloseDirectory(dir);
 }
 
-LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength)
+LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool debug, PluginType type, char error[], size_t maxlength)
 {
 	if (m_LoadingLocked)
-	{
 		return LoadRes_NeverLoad;
-	}
 
 	int err;
 
 	/**
 	 * Does this plugin already exist?
 	 */
-	CPlugin **pluginpp = m_LoadLookup.retrieve(path);
-	if (pluginpp && *pluginpp)
+	CPlugin *pPlugin;
+	if (m_LoadLookup.retrieve(path, &pPlugin))
 	{
-		CPlugin *pPlugin = *pluginpp;
 		/* Check to see if we should try reloading it */
 		if (pPlugin->GetStatus() == Plugin_BadLoad
 			|| pPlugin->GetStatus() == Plugin_Error
@@ -911,16 +906,13 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 		}
 		else
 		{
-			if (_plugin)
-			{
-				*_plugin = pPlugin;
-			}
+			if (aResult)
+				*aResult = pPlugin;
 			return LoadRes_AlreadyLoaded;
 		}
 	}
 
-	CPlugin *pPlugin = CPlugin::CreatePlugin(path, error, maxlength);
-
+	pPlugin = CPlugin::CreatePlugin(path, error, maxlength);
 	assert(pPlugin != NULL);
 
 	pPlugin->m_type = PluginType_MapUpdated;
@@ -1034,10 +1026,8 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 	time_t t = pPlugin->GetFileTimeStamp();
 	pPlugin->SetTimeStamp(t);
 
-	if (_plugin)
-	{
-		*_plugin = pPlugin;
-	}
+	if (aResult)
+		*aResult = pPlugin;
 
 	return (pPlugin->GetStatus() == Plugin_Loaded) ? LoadRes_Successful : loadFailure;
 }
@@ -2114,13 +2104,11 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				const char *ext = libsys->GetFileExtension(arg) ? "" : ".smx";
 				g_pSM->BuildPath(Path_None, pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
-				CPlugin **pluginpp = m_LoadLookup.retrieve(pluginfile);
-				if (!pluginpp || !*pluginpp)
+				if (!m_LoadLookup.retrieve(pluginfile, &pl))
 				{
 					rootmenu->ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
 					return;
 				}
-				pl = *pluginpp;
 			}
 
 			char name[PLATFORM_MAX_PATH];
@@ -2206,13 +2194,11 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				const char *ext = libsys->GetFileExtension(arg) ? "" : ".smx";
 				g_pSM->BuildPath(Path_None, pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
-				CPlugin **pluginpp = m_LoadLookup.retrieve(pluginfile);
-				if (!pluginpp || !*pluginpp)
+				if (!m_LoadLookup.retrieve(pluginfile, &pl))
 				{
 					rootmenu->ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
 					return;
 				}
-				pl = *pluginpp;
 			}
 
 			const sm_plugininfo_t *info = pl->GetPublicInfo();
@@ -2338,13 +2324,11 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				const char *ext = libsys->GetFileExtension(arg) ? "" : ".smx";
 				g_pSM->BuildPath(Path_None, pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
-				CPlugin **pluginpp = m_LoadLookup.retrieve(pluginfile);
-				if (!pluginpp || !*pluginpp)
+				if (!m_LoadLookup.retrieve(pluginfile, &pl))
 				{
 					rootmenu->ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
 					return;
 				}
-				pl = *pluginpp;
 			}
 
 			char name[PLATFORM_MAX_PATH];
@@ -2604,13 +2588,8 @@ SMPlugin *CPluginManager::FindPluginByConsoleArg(const char *arg)
 		const char *ext = libsys->GetFileExtension(arg) ? "" : ".smx";
 		smcore.Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
-		CPlugin **pluginpp = m_LoadLookup.retrieve(pluginfile);
-		if (!pluginpp)
-		{
+		if (!m_LoadLookup.retrieve(pluginfile, &pl))
 			return NULL;
-		}
-		
-		pl = *pluginpp;
 	}
 
 	return pl;

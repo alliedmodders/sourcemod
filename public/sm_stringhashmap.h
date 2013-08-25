@@ -120,7 +120,7 @@ public:
 	bool retrieve(const char *aKey, T *aResult = NULL)
 	{
 		CharsAndLength key(aKey);
-		typename Internal::Result r = internal_.find(key);
+		Result r = internal_.find(key);
 		if (!r.found())
 			return false;
 		if (aResult)
@@ -137,7 +137,7 @@ public:
 	bool contains(const char *aKey)
 	{
 		CharsAndLength key(aKey);
-		typename Internal::Result r = internal_.find(key);
+		Result r = internal_.find(key);
 		return r.found();
 	}
 
@@ -173,12 +173,17 @@ public:
 	bool remove(const char *aKey)
 	{
 		CharsAndLength key(aKey);
-		typename Internal::Result r = internal_.find(key);
+		Result r = internal_.find(key);
 		if (!r.found())
 			return false;
 		memory_used_ -= key.length() + 1;
 		internal_.remove(r);
 		return true;
+	}
+
+	void remove(Result &r)
+	{
+		internal_.remove(r);
 	}
 
 	void clear()

@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
@@ -43,8 +43,9 @@
 #include <sh_vector.h>
 #include <sh_string.h>
 #include "common_logic.h"
-#include <sm_trie_tpl.h>
 #include <IRootConsoleMenu.h>
+#include <sm_stringhashmap.h>
+#include <sm_namehashset.h>
 #include "ITranslator.h"
 #include "IGameConfigs.h"
 #include "NativeOwner.h"
@@ -160,6 +161,11 @@ public:
 	 * a valid (but error-stated) CPlugin will be returned.
 	 */
 	static CPlugin *CreatePlugin(const char *file, char *error, size_t maxlength);
+
+	static inline bool matches(const char *file, const CPlugin *plugin)
+	{
+		return strcmp(plugin->m_filename, file) == 0;
+	}
 public:
 
 	/**
@@ -254,7 +260,7 @@ private:
 	IPhraseCollection *m_pPhrases;
 	List<String> m_RequiredLibs;
 	List<String> m_Libraries;
-	KTrie<void *> m_pProps;
+	StringHashMap<void *> m_Props;
 	bool m_FakeNativesMissing;
 	bool m_LibraryMissing;
 	CVector<AutoConfig *> m_configs;
@@ -460,7 +466,7 @@ private:
 	List<IPluginsListener *> m_listeners;
 	List<CPlugin *> m_plugins;
 	CStack<CPluginManager::CPluginIterator *> m_iters;
-	KTrie<CPlugin *> m_LoadLookup;
+	NameHashSet<CPlugin *> m_LoadLookup;
 	bool m_AllPluginsLoaded;
 	IdentityToken_t *m_MyIdent;
 
