@@ -119,7 +119,6 @@ static bool DoesEngineMatch(const char *value)
 CGameConfig::CGameConfig(const char *file, const char *engine)
 {
 	strncopy(m_File, file, sizeof(m_File));
-	m_pAddresses = new KTrie<AddressConf>();
 	m_pStrings = new BaseStringTable(512);
 
 	m_CustomLevel = 0;
@@ -212,13 +211,10 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			}
 			else
 			{
-				ITextListener_SMC **pListen = g_GameConfigs.m_customHandlers.retrieve(name);
-
-				if (pListen != NULL)
+				if (g_GameConfigs.m_customHandlers.retrieve(name, &m_CustomHandler))
 				{
 					m_CustomLevel = 0;
 					m_ParseState = PSTATE_GAMEDEFS_CUSTOM;
-					m_CustomHandler = *pListen;
 					m_CustomHandler->ReadSMC_ParseStart();
 					break;
 				}
@@ -617,7 +613,7 @@ skip_find:
 			}
 
 			AddressConf addrConf(m_AddressSignature, sizeof(m_AddressSignature), m_AddressReadCount, m_AddressRead);
-			m_pAddresses->replace(m_Address, addrConf);
+			m_Addresses.replace(m_Address, addrConf);
 
 			break;
 		}
@@ -765,7 +761,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	m_Offsets.clear();
 	m_Props.clear();
 	m_Keys.clear();
-	m_pAddresses->clear();
+	m_Addresses.clear();
 
 	char path[PLATFORM_MAX_PATH];
 
@@ -920,20 +916,15 @@ void CGameConfig::SetParseEngine(const char *engine)
 
 bool CGameConfig::GetOffset(const char *key, int *value)
 {
-	int *pvalue;
-	if ((pvalue = m_Offsets.retrieve(key)) == NULL)
-		return false;
-
-	*value = *pvalue;
-	return true;
+	return m_Offsets.retrieve(key, value);
 }
 
 const char *CGameConfig::GetKeyValue(const char *key)
 {
-	int *pkey;
-	if ((pkey = m_Keys.retrieve(key)) == NULL)
+	int address;
+	if (!m_Keys.retrieve(key, &address))
 		return NULL;
-	return m_pStrings->GetString(*pkey);
+	return m_pStrings->GetString(address);
 }
 
 //memory addresses below 0x10000 are automatically considered invalid for dereferencing
@@ -941,25 +932,25 @@ const char *CGameConfig::GetKeyValue(const char *key)
 
 bool CGameConfig::GetAddress(const char *key, void **retaddr)
 {
-	AddressConf *addrConf;
-
-	addrConf = m_pAddresses->retrieve(key);
-	if (!addrConf)
+	StringHashMap<AddressConf>::Result r = m_Addresses.find(key);
+	if (!r.found())
 	{
 		*retaddr = NULL;
 		return false;
 	}
+
+	AddressConf &addrConf = r->value;
 
 	void *addr;
-	if (!GetMemSig(addrConf->signatureName, &addr))
+	if (!GetMemSig(addrConf.signatureName, &addr))
 	{
 		*retaddr = NULL;
 		return false;
 	}
 
-	for (int i = 0; i < addrConf->readCount; ++i)
+	for (int i = 0; i < addrConf.readCount; ++i)
 	{
-		int offset = addrConf->read[i];
+		int offset = addrConf.read[i];
 
 		//NULLs in the middle of an indirection chain are bad, end NULL is ok
 		if (addr ==  NULL || reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
@@ -1000,11 +991,7 @@ SendProp *CGameConfig::GetSendProp(const char *key)
 
 bool CGameConfig::GetMemSig(const char *key, void **addr)
 {
-	void **paddr;
-	if ((paddr = m_Sigs.retrieve(key)) == NULL)
-		return false;
-	*addr = *paddr;
-	return true;
+	return m_Sigs.retrieve(key, addr);
 }
 
 GameConfigManager::GameConfigManager()
@@ -1074,7 +1061,6 @@ bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pCon
 		retval = pConfig->Reparse(error, maxlength);
 	}
 
-	m_cfgs.push_back(pConfig);
 	m_Lookup.insert(file, pConfig);
 
 	*_pConfig = pConfig;
@@ -1108,22 +1094,16 @@ void GameConfigManager::AddUserConfigHook(const char *sectionname, ITextListener
 	m_customHandlers.insert(sectionname, listener);
 }
 
-void GameConfigManager::RemoveUserConfigHook(const char *sectionname, ITextListener_SMC *listener)
+void GameConfigManager::RemoveUserConfigHook(const char *sectionname, ITextListener_SMC *aListener)
 {
-	ITextListener_SMC **pListener = m_customHandlers.retrieve(sectionname);
-
-	if (pListener == NULL)
-	{
+	ITextListener_SMC *listener;
+	if (!m_customHandlers.retrieve(sectionname, &listener))
 		return;
-	}
 
-	if (*pListener != listener)
-	{
+	if (listener != aListener)
 		return;
-	}
 
 	m_customHandlers.remove(sectionname);
-	
 	return;
 }
 

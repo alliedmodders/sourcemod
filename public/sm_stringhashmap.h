@@ -32,6 +32,18 @@
 #ifndef _include_sourcemod_hashtable_h_
 #define _include_sourcemod_hashtable_h_
 
+/**
+ * @file sm_stringhashmap.h
+ *
+ * @brief Generic Key -> Value map class, based on a hash table. The Key, in
+ * this case, is always an ASCII string, and the value type is a template
+ * parameter. This class is intended as a drop-in replacement for KTrie
+ * (though the retrieve() signature has been improved).
+ *
+ * If your Value type already contains the key string, consider using
+ * NameHashSet instead.
+ */
+
 #include <am-allocator-policies.h>
 #include <am-hashmap.h>
 #include <am-string.h>
@@ -102,6 +114,8 @@ public:
 			internal_.reportOutOfMemory();
 	}
 
+	typedef typename Internal::Result Result;
+
 	// Some KTrie-like helper functions.
 	bool retrieve(const char *aKey, T *aResult = NULL)
 	{
@@ -112,6 +126,12 @@ public:
 		if (aResult)
 			*aResult = r->value;
 		return true;
+	}
+
+	Result find(const char *aKey)
+	{
+		CharsAndLength key(aKey);
+		return internal_.find(key);
 	}
 
 	bool contains(const char *aKey)
@@ -128,7 +148,9 @@ public:
 		if (!i.found())
 		{
 			memory_used_ += key.length() + 1;
-			return internal_.add(i, value);
+			if (!internal_.add(i, value))
+				return false;
+			i->key = aKey;
 		}
 		i->value = value;
 		return true;

@@ -35,10 +35,10 @@
 #include "common_logic.h"
 #include <IGameConfigs.h>
 #include <ITextParsers.h>
-#include <sh_list.h>
 #include "sm_memtable.h"
 #include <sm_trie_tpl.h>
 #include <am-refcounting.h>
+#include <sm_stringhashmap.h>
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -73,10 +73,10 @@ private:
 	ke::AutoPtr<BaseStringTable> m_pStrings;
 	char m_File[PLATFORM_MAX_PATH];
 	char m_CurFile[PLATFORM_MAX_PATH];
-	KTrie<int> m_Offsets;
+	StringHashMap<int> m_Offsets;
 	KTrie<SendProp *> m_Props;
-	KTrie<int> m_Keys;
-	KTrie<void *> m_Sigs;
+	StringHashMap<int> m_Keys;
+	StringHashMap<void *> m_Sigs;
 	/* Parse states */
 	int m_ParseState;
 	unsigned int m_IgnoreLevel;
@@ -110,7 +110,7 @@ private:
 	char m_AddressSignature[64];
 	int m_AddressReadCount;
 	int m_AddressRead[8];
-	ke::AutoPtr<KTrie<AddressConf> > m_pAddresses;
+	StringHashMap<AddressConf> m_Addresses;
 	const char *m_pEngine;
 	const char *m_pBaseEngine;
 };
@@ -139,10 +139,9 @@ public: //SMGlobalClass
 public:
 	void RemoveCachedConfig(CGameConfig *config);
 private:
-	List<CGameConfig *> m_cfgs;
 	KTrie<CGameConfig *> m_Lookup;
 public:
-	KTrie<ITextListener_SMC *> m_customHandlers;
+	StringHashMap<ITextListener_SMC *> m_customHandlers;
 };
 
 extern GameConfigManager g_GameConfigs;

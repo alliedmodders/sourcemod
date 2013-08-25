@@ -33,6 +33,7 @@
 #include <new>
 #include <limits.h>
 #include <stdlib.h>
+#include "am-allocator-policies.h"
 #include "am-utility.h"
 
 namespace ke {
