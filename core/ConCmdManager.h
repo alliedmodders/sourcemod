@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -35,13 +35,14 @@
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include "ForwardSys.h"
-#include "sm_trie.h"
 #include "sm_memtable.h"
 #include <sh_list.h>
 #include <sh_string.h>
 #include <IRootConsoleMenu.h>
 #include <IAdminSystem.h>
 #include "concmd_cleaner.h"
+#include <sm_stringhashmap.h>
+#include <am-utility.h>
 
 using namespace SourceHook;
 
@@ -157,8 +158,8 @@ public:
 		return m_CmdList;
 	}
 private:
-	Trie *m_pCmds;					/* command lookup */
-	Trie *m_pCmdGrps;				/* command group lookup */
+	StringHashMap<ConCmdInfo *> m_Cmds; /* command lookup */
+	StringHashMap<int> m_CmdGrps;	/* command group lookup */
 	ConCmdList m_CmdList;			/* command list */
 	int m_CmdClient;				/* current client */
 	BaseStringTable m_Strings;		/* string table */

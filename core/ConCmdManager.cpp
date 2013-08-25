@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -62,15 +62,11 @@ void AddToPlCmdList(CmdList *pList, const PlCmdInfo &info);
 
 ConCmdManager::ConCmdManager() : m_Strings(1024)
 {
-	m_pCmds = sm_trie_create();
-	m_pCmdGrps = sm_trie_create();
 	m_CmdClient = 0;
 }
 
 ConCmdManager::~ConCmdManager()
 {
-	sm_trie_destroy(m_pCmds);
-	sm_trie_destroy(m_pCmdGrps);
 }
 
 void ConCmdManager::OnSourceModAllInitialized()
@@ -93,10 +89,8 @@ void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *na
 	/* Whoa, first get its information struct */
 	ConCmdInfo *pInfo;
 
-	if (!sm_trie_retrieve(m_pCmds, name, (void **)&pInfo))
-	{
+	if (!m_Cmds.retrieve(name, &pInfo))
 		return;
-	}
 
 	RemoveConCmds(pInfo->srvhooks);
 	RemoveConCmds(pInfo->conhooks);
@@ -235,7 +229,7 @@ void ConCmdManager::SetCommandClient(int client)
 ConCmdInfo *ConCmdManager::FindInTrie(const char *name)
 {
 	ConCmdInfo *pInfo;
-	if (!sm_trie_retrieve(m_pCmds, name, (void **)&pInfo))
+	if (!m_Cmds.retrieve(name, &pInfo))
 		return NULL;
 	return pInfo;
 }
@@ -595,16 +589,11 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	}
 	pHook->pAdmin = pAdmin;
 
-	void *object;
 	int grpid;
-	if (!sm_trie_retrieve(m_pCmdGrps, group, (void **)&object))
+	if (!m_CmdGrps.retrieve(group, &grpid))
 	{
 		grpid = m_Strings.AddString(group);
-		sm_trie_insert(m_pCmdGrps, group, (void *)grpid);
-	}
-	else
-	{
-		grpid = (int)object;
+		m_CmdGrps.insert(group, grpid);
 	}
 
 	pAdmin->cmdGrpId = grpid;
@@ -754,10 +743,8 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 
 	if (type == Override_Command)
 	{
-		if (!sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
-		{
+		if (!m_Cmds.retrieve(cmd, &pInfo))
 			return;
-		}
 
 		List<CmdHook *>::iterator iter;
 		CmdHook *pHook;
@@ -779,12 +766,9 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 	}
 	else if (type == Override_CommandGroup)
 	{
-		void *object;
-		if (!sm_trie_retrieve(m_pCmdGrps, cmd, &object))
-		{
+		int grpid;
+		if (!m_CmdGrps.retrieve(cmd, &grpid))
 			return;
-		}
-		int grpid = (int)object;
 
 		/* This is bad :( loop through all commands */
 		List<ConCmdInfo *>::iterator iter;
@@ -815,7 +799,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool is_read_safe, bool untrack)
 {
 	/* Remove from the trie */
-	sm_trie_delete(m_pCmds, name);
+	m_Cmds.remove(name);
 
 	/* Remove console-specific information
 	 * This should always be true as of right now
@@ -856,11 +840,8 @@ void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool is_rea
 bool ConCmdManager::LookForSourceModCommand(const char *cmd)
 {
 	ConCmdInfo *pInfo;
-
-	if (!sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
-	{
+	if (!m_Cmds.retrieve(cmd, &pInfo))
 		return false;
-	}
 
 	return pInfo->sourceMod && (pInfo->conhooks.size() > 0);
 }
@@ -868,21 +849,17 @@ bool ConCmdManager::LookForSourceModCommand(const char *cmd)
 bool ConCmdManager::LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags)
 {
 	ConCmdInfo *pInfo;
-
-	if (!sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
-	{
+	if (!m_Cmds.retrieve(cmd, &pInfo))
 		return false;
-	}
 
 	*pFlags = pInfo->admin.eflags;
-
 	return true;
 }
 
 ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *description, int flags)
 {
 	ConCmdInfo *pInfo;
-	if (!sm_trie_retrieve(m_pCmds, name, (void **)&pInfo))
+	if (!m_Cmds.retrieve(name, &pInfo))
 	{
 		ConCmdList::iterator item = FindInList(name);
 		if (item != m_CmdList.end())
@@ -914,7 +891,7 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 
 		pInfo->pCmd = pCmd;
 
-		sm_trie_insert(m_pCmds, name, pInfo);
+		m_Cmds.insert(name, pInfo);
 		AddToCmdList(pInfo);
 	}
 
