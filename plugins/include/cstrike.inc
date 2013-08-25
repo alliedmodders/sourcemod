@@ -402,6 +402,8 @@ public __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_GetClientAssists");
 	MarkNativeAsOptional("CS_SetClientAssists");
 	MarkNativeAsOptional("CS_AliasToWeaponID");
+	MarkNativeAsOptional("CS_WeaponIDToAlias");
+	MarkNativeAsOptional("CS_IsValidWeaponID");
 }
 #endif
 
