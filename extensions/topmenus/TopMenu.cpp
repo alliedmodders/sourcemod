@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod TopMenus Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -169,7 +169,7 @@ unsigned int TopMenu::AddToMenu2(const char *name,
 	{
 		return 0;
 	}
-	else if (m_ObjLookup.retrieve(name) != NULL)
+	else if (m_ObjLookup.contains(name))
 	{
 		return 0;
 	}
@@ -483,13 +483,8 @@ void TopMenu::OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item, unsi
 
 	topmenu_object_t *obj;
 	topmenu_player_t *pClient = &m_clients[client];
-	topmenu_object_t **pObject = m_ObjLookup.retrieve(item_name);
-	if (pObject == NULL)
-	{
+	if (!m_ObjLookup.retrieve(item_name, &obj))
 		return;
-	}
-
-	obj = *pObject;
 
 	/* We now have the object... what do we do with it? */
 	if (obj->type == TopMenuObject_Category)
@@ -532,13 +527,8 @@ void TopMenu::OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, uns
 	}
 
 	topmenu_object_t *obj;
-	topmenu_object_t **pObject = m_ObjLookup.retrieve(item_name);
-	if (pObject == NULL)
-	{
+	if (!m_ObjLookup.retrieve(item_name, &obj))
 		return;
-	}
-
-	obj = *pObject;
 
 	/* If the category has nothing to display, disable it. */
 	if (obj->type == TopMenuObject_Category)
@@ -583,13 +573,8 @@ unsigned int TopMenu::OnMenuDisplayItem(IBaseMenu *menu,
 	}
 
 	topmenu_object_t *obj;
-	topmenu_object_t **pObject = m_ObjLookup.retrieve(item_name);
-	if (pObject == NULL)
-	{
+	if (!m_ObjLookup.retrieve(item_name, &obj))
 		return 0;
-	}
-
-	obj = *pObject;
 
 	/* Ask the object to render the text for this client */
 	char renderbuf[64];
@@ -1134,17 +1119,12 @@ SMCResult TopMenu::ReadSMC_LeavingSection(const SMCStates *states)
 
 unsigned int TopMenu::FindCategory(const char *name)
 {
-	topmenu_object_t **p_obj = m_ObjLookup.retrieve(name);
-	if (!p_obj)
-	{
+	topmenu_object_t *obj;
+	if (!m_ObjLookup.retrieve(name, &obj))
 		return 0;
-	}
 
-	topmenu_object_t *obj = *p_obj;
 	if (obj->type != TopMenuObject_Category)
-	{
 		return 0;
-	}
 
 	return obj->object_id;
 }

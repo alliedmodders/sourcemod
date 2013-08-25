@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod TopMenus Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -34,10 +34,10 @@
 
 #include <sh_list.h>
 #include <sh_vector.h>
-#include <sm_trie_tpl.h>
 #include <ITopMenus.h>
 #include "smsdk_ext.h"
 #include "sm_memtable.h"
+#include <sm_namehashset.h>
 
 using namespace SourceHook;
 using namespace SourceMod;
@@ -72,6 +72,11 @@ struct topmenu_object_t
 	bool is_free;						/** Free or not? */
 	char info[255];						/** Info string */
 	unsigned int cat_id;				/** Set if a category */
+
+	static inline bool matches(const char *name, const topmenu_object_t *topmenu)
+	{
+		return strcmp(name, topmenu->name) == 0;
+	}
 };
 
 struct topmenu_category_t
@@ -173,7 +178,7 @@ private:
 	CVector<unsigned int> m_UnsortedCats;	/* Un-sorted categories */
 	CVector<topmenu_category_t *> m_Categories; /* Category array */
 	CVector<topmenu_object_t *> m_Objects;	/* Object array */
-	KTrie<topmenu_object_t *> m_ObjLookup;	/* Object lookup trie */
+	NameHashSet<topmenu_object_t *> m_ObjLookup; /* Object lookup trie */
 	unsigned int m_SerialNo;				/* Serial number for updating */
 	ITopMenuObjectCallbacks *m_pTitle;		/* Title callbacks */
 	int m_max_clients;						/* Maximum number of clients */

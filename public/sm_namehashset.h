@@ -148,6 +148,11 @@ public:
 		table_.clear();
 	}
 
+	size_t mem_usage() const
+	{
+		return table_.estimateMemoryUse();
+	}
+
 	iterator iter()
 	{
 		return iterator(&table_);
