@@ -24,6 +24,7 @@
 			"plugin_24602c74f183cfcd157b3d50dee96c52"	""	/* UCP Server (Endi) - Version 7.8.3 */
 			"plugin_78140f1a0f26cd3297767d0598eac4b1"	""	/* [Any] PReplay (DarthNinja) - Version 1.0.0 */
 			"plugin_55923ba6bfe41569a3e4fbd7ca4606e5"	""	/* VIP Plugin (World-Source.Ru) - Version 2.0 */
+			"plugin_4bf983e1d5b61ba0b1ab9a7e53bfda27"	""	/* WarMod CS:GO (Twelve-60)  */
 		}
 	}
 }
