@@ -39,6 +39,8 @@
 #include <IAdminSystem.h>
 #include "sm_globals.h"
 #include <IForwardSys.h>
+#include <sm_stringhashmap.h>
+#include <sm_namehashset.h>
 
 using namespace SourceHook;
 
@@ -46,6 +48,8 @@ using namespace SourceHook;
 #define GRP_MAGIC_UNSET		0xFACEFACE
 #define USR_MAGIC_SET		0xDEADFACE
 #define USR_MAGIC_UNSET		0xFADEDEAD
+
+typedef StringHashMap<OverrideRule> OverrideMap;
 
 struct AdminGroup
 {
@@ -56,8 +60,8 @@ struct AdminGroup
 	 * [1...N] = immune targets
 	 */
 	int immune_table;			
-	Trie *pCmdTable;				/* Command override table (can be NULL) */
-	Trie *pCmdGrpTable;				/* Command group override table (can be NULL) */
+	OverrideMap *pCmdTable;			/* Command override table (can be NULL) */
+	OverrideMap *pCmdGrpTable;		/* Command group override table (can be NULL) */
 	int next_grp;					/* Next group in the chain */
 	int prev_grp;					/* Previous group in the chain */
 	int nameidx;					/* Name */
@@ -67,7 +71,17 @@ struct AdminGroup
 struct AuthMethod
 {
 	String name;
-	Trie *table;
+	StringHashMap<AdminId> identities;
+
+	AuthMethod(const char *name)
+		: name(name)
+	{
+	}
+
+	static inline bool matches(const char *name, const AuthMethod *method)
+	{
+		return strcmp(name, method->name.c_str()) == 0;
+	}
 };
 
 struct UserAuth
@@ -178,29 +192,31 @@ private:
 	void InvalidateGroupCache();
 	void InvalidateAdminCache(bool unlink_admins);
 	void DumpCommandOverrideCache(OverrideType type);
-	Trie *GetMethodByIndex(unsigned int index);
+	AuthMethod *GetMethodByIndex(unsigned int index);
 	bool GetMethodIndex(const char *name, unsigned int *_index);
 	const char *GetMethodName(unsigned int index);
 	void NameFlag(const char *str, AdminFlag flag);
 public:
+	typedef StringHashMap<FlagBits> FlagMap;
+
 	BaseStringTable *m_pStrings;
 	BaseMemTable *m_pMemory;
-	Trie *m_pCmdOverrides;
-	Trie *m_pCmdGrpOverrides;
+	FlagMap m_CmdOverrides;
+	FlagMap m_CmdGrpOverrides;
 	int m_FirstGroup;
 	int m_LastGroup;
 	int m_FreeGroupList;
-	Trie *m_pGroups;
+	StringHashMap<GroupId> m_Groups;
 	List<IAdminListener *> m_hooks;
-	List<AuthMethod> m_AuthMethods;
-	Trie *m_pAuthTables;
+	List<AuthMethod *> m_AuthMethods;
+	NameHashSet<AuthMethod *> m_AuthTables;
 	IForward *m_pCacheFwd;
 	int m_FirstUser;
 	int m_LastUser;
 	int m_FreeUserList;
 	bool m_InvalidatingAdmins;
 	bool m_destroying;
-	Trie *m_pLevelNames;
+	StringHashMap<AdminFlag> m_LevelNames;
 };
 
 extern AdminCache g_Admins;

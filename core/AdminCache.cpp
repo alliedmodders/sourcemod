@@ -218,19 +218,14 @@ private:
 
 AdminCache::AdminCache()
 {
-	m_pCmdOverrides = sm_trie_create();
-	m_pCmdGrpOverrides = sm_trie_create();
 	m_pStrings = new BaseStringTable(1024);
 	m_pMemory = m_pStrings->GetMemTable();
 	m_FreeGroupList = m_FirstGroup = m_LastGroup = INVALID_GROUP_ID;
 	m_FreeUserList = m_FirstUser = m_LastUser = INVALID_ADMIN_ID;
-	m_pGroups = sm_trie_create();
 	m_pCacheFwd = NULL;
 	m_FirstGroup = -1;
-	m_pAuthTables = sm_trie_create();
 	m_InvalidatingAdmins = false;
 	m_destroying = false;
-	m_pLevelNames = sm_trie_create();
 }
 
 AdminCache::~AdminCache()
@@ -239,27 +234,15 @@ AdminCache::~AdminCache()
 	DumpAdminCache(AdminCache_Overrides, false);
 	DumpAdminCache(AdminCache_Groups, false);
 
-	sm_trie_destroy(m_pCmdGrpOverrides);
-	sm_trie_destroy(m_pCmdOverrides);
-
-	if (m_pGroups)
-	{
-		sm_trie_destroy(m_pGroups);
-	}
-
-	List<AuthMethod>::iterator iter;
+	List<AuthMethod *>::iterator iter;
 	for (iter=m_AuthMethods.begin();
 		 iter!=m_AuthMethods.end();
 		 iter++)
 	{
-		sm_trie_destroy((*iter).table);
+		delete *iter;
 	}
 
-	sm_trie_destroy(m_pAuthTables);
-
 	delete m_pStrings;
-
-	sm_trie_destroy(m_pLevelNames);
 }
 
 void AdminCache::OnSourceModStartup(bool late)
@@ -332,66 +315,39 @@ void AdminCache::OnSourceModPluginsLoaded()
 
 void AdminCache::NameFlag(const char *str, AdminFlag flag)
 {
-	sm_trie_insert(m_pLevelNames, str, (void *)flag);
+	m_LevelNames.insert(str, flag);
 }
 
 bool AdminCache::FindFlag(const char *str, AdminFlag *pFlag)
 {
-	void *obj;
-	if (!sm_trie_retrieve(m_pLevelNames, str, &obj))
-	{
-		return false;
-	}
-
-	if (pFlag)
-	{
-		*pFlag = (AdminFlag)(int)obj;
-	}
-
-	return true;
+	return m_LevelNames.retrieve(str, pFlag);
 }
 
 void AdminCache::AddCommandOverride(const char *cmd, OverrideType type, FlagBits flags)
 {
-	Trie *pTrie = NULL;
+	FlagMap *map;
 	if (type == Override_Command)
-	{
-		pTrie = m_pCmdOverrides;
-	} else if (type == Override_CommandGroup) {
-		pTrie = m_pCmdGrpOverrides;
-	} else {
+		map = &m_CmdOverrides;
+	else if (type == Override_CommandGroup)
+		map = &m_CmdGrpOverrides;
+	else
 		return;
-	}
 
-	sm_trie_insert(pTrie, cmd, (void *)(unsigned int)flags);
-
+	map->insert(cmd, flags);
 	g_ConCmds.UpdateAdminCmdFlags(cmd, type, flags, false);
 }
 
 bool AdminCache::GetCommandOverride(const char *cmd, OverrideType type, FlagBits *pFlags)
 {
-	Trie *pTrie = NULL;
-
+	FlagMap *map;
 	if (type == Override_Command)
-	{
-		pTrie = m_pCmdOverrides;
-	} else if (type == Override_CommandGroup) {
-		pTrie = m_pCmdGrpOverrides;
-	} else {
+		map = &m_CmdOverrides;
+	else if (type == Override_CommandGroup)
+		map = &m_CmdGrpOverrides;
+	else
 		return false;
-	}
 
-	void *object;
-	if (sm_trie_retrieve(pTrie, cmd, &object))
-	{
-		if (pFlags)
-		{
-			*pFlags = (FlagBits)object;
-		}
-		return true;
-	}
-
-	return false;
+	return map->retrieve(cmd, pFlags);
 }
 
 void AdminCache::UnsetCommandOverride(const char *cmd, OverrideType type)
@@ -406,36 +362,22 @@ void AdminCache::UnsetCommandOverride(const char *cmd, OverrideType type)
 
 void AdminCache::_UnsetCommandGroupOverride(const char *group)
 {
-	if (!m_pCmdGrpOverrides)
-	{
-		return;
-	}
-
-	sm_trie_delete(m_pCmdGrpOverrides, group);
-
+	m_CmdGrpOverrides.remove(group);
 	g_ConCmds.UpdateAdminCmdFlags(group, Override_CommandGroup, 0, true);
 }
 
 void AdminCache::_UnsetCommandOverride(const char *cmd)
 {
-	if (!m_pCmdOverrides)
-	{
-		return;
-	}
-
-	sm_trie_delete(m_pCmdOverrides, cmd);
-
+	m_CmdOverrides.remove(cmd);
 	g_ConCmds.UpdateAdminCmdFlags(cmd, Override_Command, 0, true);
 }
 
 void AdminCache::DumpCommandOverrideCache(OverrideType type)
 {
-	if (type == Override_Command && m_pCmdOverrides)
-	{
-		sm_trie_clear(m_pCmdOverrides);
-	} else if (type == Override_CommandGroup && m_pCmdGrpOverrides) {
-		sm_trie_clear(m_pCmdGrpOverrides);
-	}
+	if (type == Override_Command)
+		m_CmdOverrides.clear();
+	else if (type == Override_CommandGroup)
+		m_CmdGrpOverrides.clear();
 }
 
 AdminId AdminCache::CreateAdmin(const char *name)
@@ -499,10 +441,8 @@ AdminId AdminCache::CreateAdmin(const char *name)
 
 GroupId AdminCache::AddGroup(const char *group_name)
 {
-	if (sm_trie_retrieve(m_pGroups, group_name, NULL))
-	{
+	if (m_Groups.contains(group_name))
 		return INVALID_GROUP_ID;
-	}
 
 	GroupId id;
 	AdminGroup *pGroup;
@@ -541,27 +481,19 @@ GroupId AdminCache::AddGroup(const char *group_name)
 	pGroup = (AdminGroup *)m_pMemory->GetAddress(id);
 	pGroup->nameidx = nameidx;
 
-	sm_trie_insert(m_pGroups, group_name, (void *)id);
-
+	m_Groups.insert(group_name, id);
 	return id;
 }
 
 GroupId AdminCache::FindGroupByName(const char *group_name)
 {
-	void *object;
-
-	if (!sm_trie_retrieve(m_pGroups, group_name, &object))
-	{
+	GroupId id;
+	if (!m_Groups.retrieve(group_name, &id))
 		return INVALID_GROUP_ID;
-	}
 
-	GroupId id = (GroupId)object;
 	AdminGroup *pGroup = (AdminGroup *)m_pMemory->GetAddress(id);
-
 	if (!pGroup || pGroup->magic != GRP_MAGIC_SET)
-	{
 		return INVALID_GROUP_ID;
-	}
 
 	return id;
 }
@@ -771,25 +703,21 @@ void AdminCache::AddGroupCommandOverride(GroupId id, const char *name, OverrideT
 		return;
 	}
 
-	Trie *pTrie = NULL;
+	OverrideMap *map;
 	if (type == Override_Command)
 	{
 		if (pGroup->pCmdTable == NULL)
-		{
-			pGroup->pCmdTable = sm_trie_create();
-		}
-		pTrie = pGroup->pCmdTable;
+			pGroup->pCmdTable = new OverrideMap();
+		map = pGroup->pCmdTable;
 	} else if (type == Override_CommandGroup) {
 		if (pGroup->pCmdGrpTable == NULL)
-		{
-			pGroup->pCmdGrpTable = sm_trie_create();
-		}
-		pTrie = pGroup->pCmdGrpTable;
+			pGroup->pCmdGrpTable = new OverrideMap();
+		map = pGroup->pCmdGrpTable;
 	} else {
 		return;
 	}
 
-	sm_trie_insert(pTrie, name, (void *)(int)rule);
+	map->insert(name, rule);
 }
 
 bool AdminCache::GetGroupCommandOverride(GroupId id, const char *name, OverrideType type, OverrideRule *pRule)
@@ -800,48 +728,33 @@ bool AdminCache::GetGroupCommandOverride(GroupId id, const char *name, OverrideT
 		return false;
 	}
 
-	Trie *pTrie = NULL;
+	OverrideMap *map;
 	if (type == Override_Command)
 	{
 		if (pGroup->pCmdTable == NULL)
-		{
 			return false;
-		}
-		pTrie = pGroup->pCmdTable;
+		map = pGroup->pCmdTable;
 	} else if (type == Override_CommandGroup) {
 		if (pGroup->pCmdGrpTable == NULL)
-		{
 			return false;
-		}
-		pTrie = pGroup->pCmdGrpTable;
+		map = pGroup->pCmdGrpTable;
 	} else {
 		return false;
 	}
 
-	void *object;
-	if (!sm_trie_retrieve(pTrie, name, &object))
-	{
-		return false;
-	}
-
-	if (pRule)
-	{
-		*pRule = (OverrideRule)(int)object;
-	}
-	
-	return true;
+	return map->retrieve(name, pRule);
 }
 
-Trie *AdminCache::GetMethodByIndex(unsigned int index)
+AuthMethod *AdminCache::GetMethodByIndex(unsigned int index)
 {
-	List<AuthMethod>::iterator iter;
+	List<AuthMethod *>::iterator iter;
 	for (iter=m_AuthMethods.begin();
 		 iter!=m_AuthMethods.end();
 		 iter++)
 	{
 		if (index-- == 0)
 		{
-			return (*iter).table;
+			return *iter;
 		}
 	}
 
@@ -885,11 +798,9 @@ bool AdminCache::InvalidateAdmin(AdminId id)
 	/* Unlink from auth tables */
 	if (pUser->auth.identidx != -1)
 	{
-		Trie *pTrie = GetMethodByIndex(pUser->auth.index);
-		if (pTrie)
-		{
-			sm_trie_delete(pTrie, m_pStrings->GetString(pUser->auth.identidx));
-		}
+		AuthMethod *method = GetMethodByIndex(pUser->auth.index);
+		if (method)
+			method->identities.remove(m_pStrings->GetString(pUser->auth.identidx));
 	}
 
 	/* Clear table counts */
@@ -918,7 +829,7 @@ void AdminCache::InvalidateGroup(GroupId id)
 	}
 
 	const char *str = m_pStrings->GetString(pGroup->nameidx);
-	sm_trie_delete(m_pGroups, str);
+	m_Groups.remove(str);
 
 	/* Unlink from the live dbllink list */
 	if (id == m_FirstGroup && id == m_LastGroup)
@@ -940,17 +851,11 @@ void AdminCache::InvalidateGroup(GroupId id)
 		pOther->prev_grp = pGroup->prev_grp;
 	}
 
-	/* Free any used memory to be safe */
-	if (pGroup->pCmdGrpTable)
-	{
-		sm_trie_destroy(pGroup->pCmdGrpTable);
-		pGroup->pCmdGrpTable = NULL;
-	}
-	if (pGroup->pCmdTable)
-	{
-		sm_trie_destroy(pGroup->pCmdTable);
-		pGroup->pCmdTable = NULL;
-	}
+	/* Free any used memory */
+	delete pGroup->pCmdGrpTable;
+	pGroup->pCmdGrpTable = NULL;
+	delete pGroup->pCmdTable;
+	pGroup->pCmdTable = NULL;
 
 	/* Link into the free list */
 	pGroup->magic = GRP_MAGIC_UNSET;
@@ -1002,7 +907,7 @@ void AdminCache::InvalidateGroupCache()
 	m_FreeGroupList = -1;
 
 	/* Nuke reverse lookups */
-	sm_trie_clear(m_pGroups);
+	m_Groups.clear();
 
 	/* Free memory on groups */
 	GroupId cur = m_FirstGroup;
@@ -1011,14 +916,8 @@ void AdminCache::InvalidateGroupCache()
 	{
 		pGroup = (AdminGroup *)m_pMemory->GetAddress(cur);
 		assert(pGroup->magic == GRP_MAGIC_SET);
-		if (pGroup->pCmdGrpTable)
-		{
-			sm_trie_destroy(pGroup->pCmdGrpTable);
-		}
-		if (pGroup->pCmdTable)
-		{
-			sm_trie_destroy(pGroup->pCmdTable);
-		}
+		delete pGroup->pCmdGrpTable;
+		delete pGroup->pCmdTable;
 		cur = pGroup->next_grp;
 	}
 
@@ -1043,20 +942,12 @@ void AdminCache::RemoveAdminListener(IAdminListener *pListener)
 
 void AdminCache::RegisterAuthIdentType(const char *name)
 {
-	if (sm_trie_retrieve(m_pAuthTables, name, NULL))
-	{
+	if (m_AuthTables.contains(name))
 		return;
-	}
 
-	Trie *pAuth = sm_trie_create();
-
-	AuthMethod method;
-	method.name.assign(name);
-	method.table = pAuth;
-
+	AuthMethod *method = new AuthMethod(name);
 	m_AuthMethods.push_back(method);
-
-	sm_trie_insert(m_pAuthTables, name, pAuth);
+	m_AuthTables.insert(name, method);
 }
 
 void AdminCache::InvalidateAdminCache(bool unlink_admins)
@@ -1067,12 +958,12 @@ void AdminCache::InvalidateAdminCache(bool unlink_admins)
 		g_Players.ClearAllAdmins();
 	}
 	/* Wipe the identity cache first */
-	List<AuthMethod>::iterator iter;
+	List<AuthMethod *>::iterator iter;
 	for (iter=m_AuthMethods.begin();
 		 iter!=m_AuthMethods.end();
 		 iter++)
 	{
-		sm_trie_clear((*iter).table);
+		(*iter)->identities.clear();
 	}
 	
 	if (unlink_admins)
@@ -1152,13 +1043,13 @@ const char *AdminCache::GetAdminName(AdminId id)
 
 bool AdminCache::GetMethodIndex(const char *name, unsigned int *_index)
 {
-	List<AuthMethod>::iterator iter;
+	List<AuthMethod *>::iterator iter;
 	unsigned int index = 0;
 	for (iter=m_AuthMethods.begin();
 		 iter!=m_AuthMethods.end();
 		 iter++,index++)
 	{
-		if ((*iter).name.compare(name) == 0)
+		if ((*iter)->name.compare(name) == 0)
 		{
 			*_index = index;
 			return true;
@@ -1181,11 +1072,9 @@ bool AdminCache::BindAdminIdentity(AdminId id, const char *auth, const char *ide
 		return false;
 	}
 
-	Trie *pTable;
-	if (!sm_trie_retrieve(m_pAuthTables, auth, (void **)&pTable))
-	{
+	AuthMethod *method;
+	if (!m_AuthTables.retrieve(auth, &method))
 		return false;
-	}
 
 	/* If the id was a steam id strip off the STEAM_*: part */
 	if (strcmp(auth, "steam") == 0 && strncmp(ident, "STEAM_", 6) == 0)
@@ -1193,10 +1082,8 @@ bool AdminCache::BindAdminIdentity(AdminId id, const char *auth, const char *ide
 		ident += 8;
 	}
 
-	if (sm_trie_retrieve(pTable, ident, NULL))
-	{
+	if (method->identities.contains(ident))
 		return false;
-	}
 
 	int i_ident = m_pStrings->AddString(ident);
 
@@ -1204,16 +1091,14 @@ bool AdminCache::BindAdminIdentity(AdminId id, const char *auth, const char *ide
 	pUser->auth.identidx = i_ident;
 	GetMethodIndex(auth, &pUser->auth.index);
 
-	return sm_trie_insert(pTable, ident, (void **)id);
+	return method->identities.insert(ident, id);
 }
 
 AdminId AdminCache::FindAdminByIdentity(const char *auth, const char *identity)
 {
-	Trie *pTable;
-	if (!sm_trie_retrieve(m_pAuthTables, auth, (void **)&pTable))
-	{
+	AuthMethod *method;
+	if (!m_AuthTables.retrieve(auth, &method))
 		return INVALID_ADMIN_ID;
-	}
 
 	/* If the id was a steam id strip off the STEAM_*: part */
 	if (strcmp(auth, "steam") == 0 && strncmp(identity, "STEAM_", 6) == 0)
@@ -1221,13 +1106,10 @@ AdminId AdminCache::FindAdminByIdentity(const char *auth, const char *identity)
 		identity += 8;
 	}
 
-	void *object;
-	if (!sm_trie_retrieve(pTable, identity, &object))
-	{
+	AdminId id;
+	if (!method->identities.retrieve(identity, &id))
 		return INVALID_ADMIN_ID;
-	}
-
-	return (AdminId)object;
+	return id;
 }
 
 void AdminCache::SetAdminFlag(AdminId id, AdminFlag flag, bool enabled)
@@ -1797,56 +1679,30 @@ bool AdminCache::CheckAccess(int client, const char *cmd, FlagBits flags, bool o
 	return g_ConCmds.CheckClientCommandAccess(client, cmd, bits) ? 1 : 0;
 }
 
-void iterator_glob_basic_override(Trie *pTrie, const char *key, void **value, void *data)
+void iterator_glob_basic_override(FILE *fp, const char *key, FlagBits flags)
 {
-	FILE *fp;
-	int flags;
 	char flagstr[64];
-
-	fp = (FILE *)data;
-	flags = (int)*value;
 	g_Admins.FillFlagString(flags, flagstr, sizeof(flagstr));
-
 	fprintf(fp, "\t\"%s\"\t\t\"%s\"\n", key, flagstr);
 }
 
-void iterator_glob_grp_override(Trie *pTrie, const char *key, void **value, void *data)
+void iterator_glob_grp_override(FILE *fp, const char *key, FlagBits flags)
 {
-	FILE *fp;
-	int flags;
 	char flagstr[64];
-
-	fp = (FILE *)data;
-	flags = (int)*value;
 	g_Admins.FillFlagString(flags, flagstr, sizeof(flagstr));
-
 	fprintf(fp, "\t\"@%s\"\t\t\"%s\"\n", key, flagstr);
 }
 
-void iterator_group_basic_override(Trie *pTrie, const char *key, void **value, void *data)
+void iterator_group_basic_override(FILE *fp, const char *key, OverrideRule rule)
 {
-	FILE *fp;
-	int flags;
-	char flagstr[64];
-
-	fp = (FILE *)data;
-	flags = (int)*value;
-	g_Admins.FillFlagString(flags, flagstr, sizeof(flagstr));
-
-	fprintf(fp, "\t\t\t\"%s\"\t\t\"%s\"\n", key, flagstr);
+	const char *str = (rule == Command_Allow) ? "allow" : "deny";
+	fprintf(fp, "\t\t\t\"%s\"\t\t\"%s\"\n", key, str);
 }
 
-void iterator_group_grp_override(Trie *pTrie, const char *key, void **value, void *data)
+void iterator_group_grp_override(FILE *fp, const char *key, OverrideRule rule)
 {
-	FILE *fp;
-	int flags;
-	char flagstr[64];
-
-	fp = (FILE *)data;
-	flags = (int)*value;
-	g_Admins.FillFlagString(flags, flagstr, sizeof(flagstr));
-
-	fprintf(fp, "\t\t\t\"@%s\"\t\t\"%s\"\n", key, flagstr);
+	const char *str = (rule == Command_Allow) ? "allow" : "deny";
+	fprintf(fp, "\t\t\t\"@%s\"\t\t\"%s\"\n", key, str);
 }
 
 void AdminCache::DumpCache(FILE *fp)
@@ -1904,19 +1760,13 @@ void AdminCache::DumpCache(FILE *fp)
 		fprintf(fp, "\n\t\t\"Overrides\"\n\t\t{\n");
 		if (pGroup->pCmdGrpTable != NULL)
 		{
-			sm_trie_bad_iterator(pGroup->pCmdGrpTable, 
-				name_buffer,
-				sizeof(name_buffer),
-				iterator_group_grp_override,
-				fp);
+			for (OverrideMap::iterator iter = pGroup->pCmdTable->iter(); !iter.empty(); iter.next())
+				iterator_group_grp_override(fp, iter->key.chars(), iter->value);
 		}
 		if (pGroup->pCmdTable != NULL)
 		{
-			sm_trie_bad_iterator(pGroup->pCmdTable, 
-				name_buffer,
-				sizeof(name_buffer),
-				iterator_group_basic_override,
-				fp);
+			for (OverrideMap::iterator iter = pGroup->pCmdTable->iter(); !iter.empty(); iter.next())
+				iterator_group_basic_override(fp, iter->key.chars(), iter->value);
 		}
 		fprintf(fp, "\t\t}\n");
 
@@ -1990,22 +1840,10 @@ void AdminCache::DumpCache(FILE *fp)
 	fprintf(fp, "}\n\n");
 
 	fprintf(fp, "\"Overrides\"\n{\n");
-	if (m_pCmdGrpOverrides != NULL)
-	{
-		sm_trie_bad_iterator(m_pCmdGrpOverrides,
-			name_buffer,
-			sizeof(name_buffer),
-			iterator_glob_grp_override,
-			fp);
-	}
-	if (m_pCmdOverrides != NULL)
-	{
-		sm_trie_bad_iterator(m_pCmdOverrides,
-			name_buffer, 
-			sizeof(name_buffer), 
-			iterator_glob_basic_override, 
-			fp);
-	}
+	for (FlagMap::iterator iter = m_CmdGrpOverrides.iter(); !iter.empty(); iter.next())
+		iterator_glob_grp_override(fp, iter->key.chars(), iter->value);
+	for (FlagMap::iterator iter = m_CmdOverrides.iter(); !iter.empty(); iter.next())
+		iterator_glob_basic_override(fp, iter->key.chars(), iter->value);
 	fprintf(fp, "}\n");
 }
 
@@ -2037,14 +1875,14 @@ AdminUser *AdminCache::GetUser(AdminId aid)
 
 const char *AdminCache::GetMethodName(unsigned int index)
 {
-	List<AuthMethod>::iterator iter;
+	List<AuthMethod *>::iterator iter;
 	for (iter=m_AuthMethods.begin();
 		iter!=m_AuthMethods.end();
 		iter++)
 	{
 		if (index-- == 0)
 		{
-			return (*iter).name.c_str();
+			return (*iter)->name.c_str();
 		}
 	}
 
