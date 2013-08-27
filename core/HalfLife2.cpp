@@ -78,6 +78,7 @@ static int entInfoOffset = -1;
 
 CHalfLife2::CHalfLife2()
 {
+	m_Maps.init();
 }
 
 CHalfLife2::~CHalfLife2()
