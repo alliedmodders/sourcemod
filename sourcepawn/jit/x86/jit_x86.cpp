@@ -423,6 +423,8 @@ Compiler::emit(int *errp)
       plugin_->name,
       GetFunctionName(plugin_, pcode_start_));
 
+#endif
+#if defined DEBUG
   SpewOpcode(plugin_, code_start_, cip_);
 #endif
 
@@ -440,7 +442,7 @@ Compiler::emit(int *errp)
     if (*cip_ == OP_PROC || *cip_ == OP_ENDPROC)
       break;
 
-#if !defined NDEBUG
+#if defined DEBUG
     SpewOpcode(plugin_, code_start_, cip_);
 #endif
 
