@@ -208,7 +208,23 @@ CForward *CForwardManager::ForwardMake()
 
 void CForwardManager::OnPluginPauseChange(IPlugin *plugin, bool paused)
 {
-	/* No longer used */
+	if(paused)
+		return;
+
+	/* Attach any globally managed forwards */
+	List<CForward *>::iterator iter;
+	CForward *fwd;
+
+	for (iter=m_managed.begin(); iter!=m_managed.end(); iter++)
+	{
+		fwd = (*iter);
+		IPluginFunction *pFunc = plugin->GetBaseContext()->GetFunctionByName(fwd->GetForwardName());
+		// Only add functions, if they aren't registered yet!
+		if (pFunc && !fwd->IsFunctionRegistered(pFunc))
+		{
+			fwd->AddFunction(pFunc);
+		}
+	}
 }
 
 /*************************************
@@ -737,6 +753,28 @@ bool CForward::AddFunction(IPluginFunction *func)
 	}
 
 	return true;
+}
+
+bool CForward::IsFunctionRegistered(IPluginFunction *func)
+{
+	FuncIter iter;
+	List<IPluginFunction *> *lst;
+
+	if (func->IsRunnable())
+	{
+		lst = &m_functions;
+	} else {
+		lst = &m_paused;
+	}
+
+	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
+	{
+		if ((*iter) == func)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 const char *CForward::GetForwardName()

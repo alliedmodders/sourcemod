@@ -141,6 +141,7 @@ public:
 								   unsigned int num_params, 
 								   const ParamType *types, 
 								   va_list ap);
+	bool IsFunctionRegistered(IPluginFunction *func);
 private:
 	void _Int_PushArray(cell_t *inarray, unsigned int cells, int flags);
 	void _Int_PushString(cell_t *inarray, unsigned int cells, int sz_flags, int cp_flags);
