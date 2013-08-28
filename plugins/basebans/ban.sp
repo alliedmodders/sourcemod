@@ -123,22 +123,28 @@ DisplayBanReasonMenu(client)
 	Format(title, sizeof(title), "%T: %N", "Ban reason", client, g_BanTarget[client]);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
-
-	/* :TODO: we should either remove this or make it configurable */
-
-	AddMenuItem(menu, "Abusive", "Abusive");
-	AddMenuItem(menu, "Racism", "Racism");
-	AddMenuItem(menu, "General cheating/exploits", "General cheating/exploits");
-	AddMenuItem(menu, "Wallhack", "Wallhack");
-	AddMenuItem(menu, "Aimbot", "Aimbot");
-	AddMenuItem(menu, "Speedhacking", "Speedhacking");
-	AddMenuItem(menu, "Mic spamming", "Mic spamming");
-	AddMenuItem(menu, "Admin disrespect", "Admin disrespect");
-	AddMenuItem(menu, "Camping", "Camping");
-	AddMenuItem(menu, "Team killing", "Team killing");
-	AddMenuItem(menu, "Unacceptable Spray", "Unacceptable Spray");
-	AddMenuItem(menu, "Breaking Server Rules", "Breaking Server Rules");
-	AddMenuItem(menu, "Other", "Other");
+	
+	//Add custom chat reason entry first
+	AddMenuItem(menu, "", "Custom reason (type in chat)");
+	
+	//Loading configurable entries from the kv-file
+	decl String:reasonName[100];
+	decl String:reasonFull[255];
+	
+	//Iterate through the kv-file
+	KvGotoFirstSubKey(g_hKvBanReasons, false);
+	do
+	{
+		KvGetSectionName(g_hKvBanReasons, reasonName, sizeof(reasonName));
+		KvGetString(g_hKvBanReasons, NULL_STRING, reasonFull, sizeof(reasonFull));
+		
+		//Add entry
+		AddMenuItem(menu, reasonFull, reasonName);
+		
+	} while (KvGotoNextKey(g_hKvBanReasons, false));
+	
+	//Reset kvHandle
+	KvRewind(g_hKvBanReasons);
 
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
@@ -150,6 +156,9 @@ public AdminMenu_Ban(Handle:topmenu,
 							  String:buffer[],
 							  maxlength)
 {
+	//Reset chat reason first
+	g_IsWaitingForChatReason[param] = false;
+	
 	if (action == TopMenuAction_DisplayOption)
 	{
 		Format(buffer, maxlength, "%T", "Ban player", param);
@@ -175,11 +184,20 @@ public MenuHandler_BanReasonList(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[64];
-
-		GetMenuItem(menu, param2, info, sizeof(info));
-
-		PrepareBan(param1, g_BanTarget[param1], g_BanTime[param1], info);
+		if(param2 == 0)
+		{
+			//Chat reason
+			g_IsWaitingForChatReason[param1] = true;
+			PrintToChat(param1, "[SM] %t", "Custom ban reason explanation", "sm_abortban");
+		}
+		else
+		{
+			decl String:info[64];
+			
+			GetMenuItem(menu, param2, info, sizeof(info));
+			
+			PrepareBan(param1, g_BanTarget[param1], g_BanTime[param1], info);
+		}
 	}
 }
 

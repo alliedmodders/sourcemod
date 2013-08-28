@@ -52,23 +52,101 @@ new g_BanTarget[MAXPLAYERS+1];
 new g_BanTargetUserId[MAXPLAYERS+1];
 new g_BanTime[MAXPLAYERS+1];
 
+new g_IsWaitingForChatReason[MAXPLAYERS+1];
+new Handle:g_hKvBanReasons;
+new String:g_BanReasonsPath[PLATFORM_MAX_PATH];
+
 #include "basebans/ban.sp"
+
+public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
+{
+	BuildPath(Path_SM, g_BanReasonsPath, sizeof(g_BanReasonsPath), "configs/banreasons.txt");
+	if(LoadBanReasons())
+	{
+		return APLRes_Success;
+	}
+	else
+	{
+		Format(error, err_max, "Couldn't load file %s: See log for details.", g_BanReasonsPath);
+		return APLRes_Failure;
+	}
+}
 
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("basebans.phrases");
+	LoadTranslations("core.phrases");
 
 	RegAdminCmd("sm_ban", Command_Ban, ADMFLAG_BAN, "sm_ban <#userid|name> <minutes|0> [reason]");
 	RegAdminCmd("sm_unban", Command_Unban, ADMFLAG_UNBAN, "sm_unban <steamid|ip>");
 	RegAdminCmd("sm_addban", Command_AddBan, ADMFLAG_RCON, "sm_addban <time> <steamid> [reason]");
 	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_BAN, "sm_banip <ip|#userid|name> <time> [reason]");
 	
+	//This to manage custom ban reason messages
+	RegConsoleCmd("sm_abortban", Command_AbortBan, "sm_abortban");
+	
 	/* Account for late loading */
 	new Handle:topmenu;
 	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
 	{
 		OnAdminMenuReady(topmenu);
+	}
+}
+
+public OnPluginEnd()
+{
+	//Close kv-handle
+	if(g_hKvBanReasons != INVALID_HANDLE)
+	{
+		CloseHandle(g_hKvBanReasons);
+	}
+}
+
+public OnMapStart()
+{
+	//(Re-)Load BanReasons
+	if(g_hKvBanReasons != INVALID_HANDLE)
+	{
+		CloseHandle(g_hKvBanReasons);
+	}
+	if(!LoadBanReasons())
+	{
+		SetFailState("Error trying to load or parse %s: See logfile for details", g_BanReasonsPath);
+	}
+}
+
+public OnClientDisconnect(client)
+{
+	g_IsWaitingForChatReason[client] = false;
+}
+
+public bool:LoadBanReasons()
+{
+	g_hKvBanReasons = CreateKeyValues("banreasons");
+	if(FileToKeyValues(g_hKvBanReasons, g_BanReasonsPath))
+	{
+		decl String:sectionName[255];
+		if(!KvGetSectionName(g_hKvBanReasons, sectionName, sizeof(sectionName)))
+		{
+			LogMessage("Error in %s: File corrupt or in the wrong format", g_BanReasonsPath);
+			return false;
+		}
+		if(strcmp(sectionName, "banreasons") != 0)
+		{
+			LogMessage("Error in %s: Couldn't find 'banreasons'", g_BanReasonsPath);
+			return false;
+		}
+		
+		//Reset kvHandle
+		KvRewind(g_hKvBanReasons);
+		
+		return true;
+	}
+	else
+	{
+		LogMessage("Error in %s: File not found, corrupt or in the wrong format", g_BanReasonsPath);
+		return false;
 	}
 }
 
@@ -295,3 +373,39 @@ public Action:Command_Unban(client, args)
 	return Plugin_Handled;
 }
 
+public Action:Command_AbortBan(client, args)
+{
+	if(!CheckCommandAccess(client, "sm_ban", ADMFLAG_BAN))
+	{
+		ReplyToCommand(client, "[SM] %t", "No Access");
+		return Plugin_Handled;
+	}
+	if(g_IsWaitingForChatReason[client])
+	{
+		g_IsWaitingForChatReason[client] = false;
+		ReplyToCommand(client, "[SM] %t", "AbortBan applied successfully");
+	}
+	else
+	{
+		ReplyToCommand(client, "[SM] %t", "AbortBan not waiting for custom reason");
+	}
+	
+	return Plugin_Handled;
+}
+
+public Action:OnClientSayCommand(client, const String:command[], const String:sArgs[])
+{
+	if(g_IsWaitingForChatReason[client])
+	{
+		g_IsWaitingForChatReason[client] = false;
+		
+		decl String:message[192];		
+		GetCmdArgString(message, sizeof(message));
+		StripQuotes(message);
+		
+		PrepareBan(client, g_BanTarget[client], g_BanTime[client], message);
+		
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
+}

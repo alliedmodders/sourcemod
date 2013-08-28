@@ -49,4 +49,20 @@
 	{
 		"en"			"You cannot ban that IP address."
 	}
+	
+	"Custom ban reason explanation"
+	{
+		"#format"		"{1:s}"
+		"en"			"Enter the reason as a chat message. Use {1} to abort this."
+	}
+	
+	"AbortBan applied successfully"
+	{
+		"en"			"Ban aborted."
+	}
+	
+	"AbortBan not waiting for custom reason"
+	{
+		"en"			"Not waiting for a ban reason to be typed in, no ban to abort."
+	}
 }
