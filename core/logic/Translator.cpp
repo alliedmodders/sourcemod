@@ -474,13 +474,6 @@ SMCResult CPhraseFile::ReadSMC_KeyValue(const SMCStates *states, const char *key
 	} 
 	else 
 	{
-		size_t len = strlen(key);
-		if (len < 2 || len > 3)
-		{
-			ParseWarning("Ignoring translation to invalid language \"%s\" on line %d.", key, states->line);
-			return SMCResult_Continue;
-		}
-
 		unsigned int lang;
 		if (!m_pTranslator->GetLanguageByCode(key, &lang))
 		{
@@ -493,7 +486,7 @@ SMCResult CPhraseFile::ReadSMC_KeyValue(const SMCStates *states, const char *key
 		/* See how many bytes we need for this string, then allocate.
 		 * NOTE: THIS SHOULD GUARANTEE THAT WE DO NOT NEED TO NEED TO SIZE CHECK 
 		 */
-		len = strlen(value) + pPhrase->fmt_bytes + 1;
+		size_t len = strlen(value) + pPhrase->fmt_bytes + 1;
 		char *out_buf;
 		int out_idx;
 
@@ -894,14 +887,6 @@ SMCResult Translator::ReadSMC_LeavingSection(const SMCStates *states)
 
 SMCResult Translator::ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
 {
-	size_t len = strlen(key);
-
-	if (len < 2 || len > 3)
-	{
-		smcore.LogError("[SM] Warning encountered parsing languages.cfg file.");
-		smcore.LogError("[SM] Invalid language code \"%s\" is being ignored.", key);
-	}
-
 	AddLanguage(key, value);
 
 	return SMCResult_Continue;
