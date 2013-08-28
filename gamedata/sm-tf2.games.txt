@@ -88,7 +88,7 @@
 			"AddCondition"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x56\x8B\x75\x08\x57\x8B\xD9"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x8B\xD9\x83\xBB\x2A\x2A\x2A\x2A\x00\x0F"
 				"linux"		"@_ZN15CTFPlayerShared7AddCondE7ETFCondfP11CBaseEntity"
 				"mac"		"@_ZN15CTFPlayerShared7AddCondE7ETFCondfP11CBaseEntity"
 			}
