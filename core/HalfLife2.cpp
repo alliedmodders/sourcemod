@@ -353,7 +353,7 @@ ServerClass *CHalfLife2::FindServerClass(const char *classname)
 
 DataTableInfo *CHalfLife2::_FindServerClass(const char *classname)
 {
-	DataTableInfo *pInfo;
+	DataTableInfo *pInfo = NULL;
 	if (!m_Classes.retrieve(classname, &pInfo))
 	{
 		ServerClass *sc = gamedll->GetAllServerClasses();
