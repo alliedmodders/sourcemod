@@ -123,7 +123,7 @@ class InlineList
     return iterator(&head_);
   }
 
-  void erase(Node *t) {
+  void remove(Node *t) {
     t->prev_->next_ = t->next_;
     t->next_->prev_ = t->prev_;
   }
