@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -120,13 +120,20 @@ public:
 	 */
 	int AddString(const char *string)
 	{
-		size_t len = strlen(string) + 1;
+		return AddString(string, strlen(string));
+	}
+
+	/** 
+	 * Adds a string to the string table and returns its index.
+	 */
+	int AddString(const char *string, size_t length)
+	{
+		size_t len = length + 1;
 		int idx;
 		char *addr;
 
 		idx = m_table.CreateMem(len, (void **)&addr);
-		strcpy(addr, string);
-
+		memcpy(addr, string, length + 1);
 		return idx;
 	}
 
@@ -139,7 +146,7 @@ public:
 	}
 
 	/**
-	 * Scraps the string table.  For caching purposes, the memory
+	 * Scraps the string table. For caching purposes, the memory
 	 * is not freed, however subsequent calls to AddString() will 
 	 * begin at the first index again.
 	 */

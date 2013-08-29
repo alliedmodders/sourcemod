@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <am-allocator-policies.h>
 #include <am-utility.h>
+#include <am-moveable.h>
 
 namespace ke {
 
@@ -163,7 +164,7 @@ class Vector : public AllocPolicy
     if (newdata == NULL)
       return false;
     for (size_t i = 0; i < nitems_; i++) {
-      new (&newdata[i]) T(data_[i]);
+      new (&newdata[i]) T(Moveable<T>(data_[i]));
       data_[i].~T();
     }
     this->free(data_);

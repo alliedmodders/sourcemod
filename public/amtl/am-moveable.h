@@ -27,96 +27,40 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef _include_amtl_string_h_
-#define _include_amtl_string_h_
-
-#include <stdlib.h>
-#include <string.h>
-#include <am-utility.h>
-#include <am-moveable.h>
+#ifndef _include_amtl_moveable_h_
+#define _include_amtl_moveable_h_
 
 namespace ke {
 
-// ASCII string.
-class AString
+// This is a feature in C++11, but since AM projects do not have access to
+// C++11 yet, we provide templates to implement move semantics. A class can
+// provide a constructor for (ke::Moveable<T> t) which containers will try
+// to use.
+//
+// When implementing a constructor that takes a Moveable, the object being
+// moved should be left in a state that is safe, since its destructor will
+// be called even though it has been moved.
+
+template <typename T>
+struct Moveable
 {
  public:
-  AString()
-   : length_(0)
+  explicit Moveable(T &t)
+   : t_(t)
   {
   }
-  explicit AString(const char *str) {
-    set(str, strlen(str));
-  }
-  AString(const char *str, size_t length) {
-    set(str, length);
-  }
-  AString(const AString &other) {
-    if (other.length_)
-      set(other.chars_, other.length_);
-  }
-  AString(Moveable<AString> other)
-    : chars_(other->chars_.take()),
-      length_(other->length_)
-  {
-    other->length_ = 0;
-  }
 
-  AString &operator =(const char *str) {
-    if (str && str[0]) {
-      set(str, strlen(str));
-    } else {
-      chars_ = NULL;
-      length_ = 0;
-    }
-    return *this;
+  T *operator ->() {
+    return &t_;
   }
-  AString &operator =(const AString &other) {
-    if (other.length_) {
-      set(other.chars_, other.length_);
-    } else {
-      chars_ = NULL;
-      length_ = 0;
-    }
-    return *this;
-  }
-
-  int compare(const AString &other) const {
-    return strcmp(chars(), other.chars());
-  }
-  bool operator ==(const AString &other) const {
-    return other.length() == length() &&
-           memcmp(other.chars(), chars(), length()) == 0;
-  }
-
-  char operator [](size_t index) const {
-    assert(index < length());
-    return chars()[index];
-  }
-
-  size_t length() const {
-    return length_;
-  }
-
-  const char *chars() const {
-    if (!chars_)
-      return "";
-    return chars_;
+  operator T &() {
+    return t_;
   }
 
  private:
-  void set(const char *str, size_t length) {
-    chars_ = new char[length + 1];
-    length_ = length;
-    memcpy(chars_, str, length);
-    chars_[length] = '\0';
-  }
-
- private:
-  AutoArray<char> chars_;
-  size_t length_;
+  T &t_;
 };
 
-}
+} // namespace ke
 
-#endif // _include_amtl_string_h_
+#endif // _include_amtl_moveable_h_

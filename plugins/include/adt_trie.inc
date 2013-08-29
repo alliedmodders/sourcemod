@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
@@ -36,35 +36,37 @@
 #define _adt_trie_included
 
 /**
- * Creates a Trie structure.  A trie is a data storage object that maps any value to a 
- * string of text.  It features very fast lookup and deletion, but grows very slow for 
- * insertion once tens of thousands of items are added.
+ * Creates a hash map. A hash map is a container that can map strings (called
+ * "keys") to arbitrary values (cells, arrays, or strings). Keys in a hash map
+ * are unique. That is, there is at most one entry in the map for a given key.
  *
- * Keys in Tries are unique.  That is, each key may only have one value.  Unlike arrays, 
- * Tries cannot be iterated right now.  Since the contents are known to be unique, to 
- * work around this, you can use ADT Arrays to store a list of keys known to be in a 
- * Trie.
+ * Insertion, deletion, and lookup in a hash map are all considered to be fast
+ * operations, amortized to O(1), or constant time.
  *
- * @return 			New Trie Handle, which must be freed via CloseHandle().
+ * The word "Trie" in this API is historical. As of SourceMod 1.6, tries have
+ * been internally replaced with hash tables, which have O(1) insertion time
+ * instead of O(n).
+ *
+ * @return 			New Map Handle, which must be freed via CloseHandle().
  */
 native Handle:CreateTrie();
 
 /**
- * Sets a value in a Trie, either inserting a new entry or replacing an old one.
+ * Sets a value in a hash map, either inserting a new entry or replacing an old one.
  *
- * @param trie		Trie Handle.
+ * @param map		Map Handle.
  * @param key		Key string.
  * @param value		Value to store at this key.
  * @param replace	If false, operation will fail if the key is already set.
  * @return			True on success, false on failure.
  * @error			Invalid Handle.
  */
-native bool:SetTrieValue(Handle:trie, const String:key[], any:value, bool:replace=true);
+native bool:SetTrieValue(Handle:map, const String:key[], any:value, bool:replace=true);
 
 /**
- * Sets an array value in a Trie, either inserting a new entry or replacing an old one.
+ * Sets an array value in a Map, either inserting a new entry or replacing an old one.
  *
- * @param trie		Trie Handle.
+ * @param map		Map Handle.
  * @param key		Key string.
  * @param array		Array to store.
  * @param num_items	Number of items in the array.
@@ -72,36 +74,36 @@ native bool:SetTrieValue(Handle:trie, const String:key[], any:value, bool:replac
  * @return			True on success, false on failure.
  * @error			Invalid Handle.
  */
-native bool:SetTrieArray(Handle:trie, const String:key[], const any:array[], num_items, bool:replace=true);
+native bool:SetTrieArray(Handle:map, const String:key[], const any:array[], num_items, bool:replace=true);
 
 /**
- * Sets a string value in a Trie, either inserting a new entry or replacing an old one.
+ * Sets a string value in a Map, either inserting a new entry or replacing an old one.
  *
- * @param trie		Trie Handle.
+ * @param map		Map Handle.
  * @param key		Key string.
  * @param value		String to store.
  * @param replace	If false, operation will fail if the key is already set.
  * @return			True on success, false on failure.
  * @error			Invalid Handle.
  */
-native bool:SetTrieString(Handle:trie, const String:key[], const String:value[], bool:replace=true);
+native bool:SetTrieString(Handle:map, const String:key[], const String:value[], bool:replace=true);
 
 /**
- * Retrieves a value in a Trie.
+ * Retrieves a value in a Map.
  *
- * @param trie		Trie Handle.
+ * @param map		Map Handle.
  * @param key		Key string.
  * @param value		Variable to store value.
  * @return			True on success.  False if the key is not set, or the key is set 
  *					as an array or string (not a value).
  * @error			Invalid Handle.
  */
-native bool:GetTrieValue(Handle:trie, const String:key[], &any:value);
+native bool:GetTrieValue(Handle:map, const String:key[], &any:value);
 
 /**
- * Retrieves an array in a Trie.
+ * Retrieves an array in a Map.
  *
- * @param trie		Trie Handle.
+ * @param map		Map Handle.
  * @param key		Key string.
  * @param array		Buffer to store array.
  * @param max_size	Maximum size of array buffer.
@@ -110,12 +112,12 @@ native bool:GetTrieValue(Handle:trie, const String:key[], &any:value);
  *					as a value or string (not an array).
  * @error			Invalid Handle.
  */
-native bool:GetTrieArray(Handle:trie, const String:key[], any:array[], max_size, &size=0);
+native bool:GetTrieArray(Handle:map, const String:key[], any:array[], max_size, &size=0);
 
 /**
- * Retrieves a string in a Trie.
+ * Retrieves a string in a Map.
  *
- * @param trie		Trie Handle.
+ * @param map		Map Handle.
  * @param key		Key string.
  * @param value		Buffer to store value.
  * @param max_size	Maximum size of string buffer.
@@ -124,34 +126,75 @@ native bool:GetTrieArray(Handle:trie, const String:key[], any:array[], max_size,
  *					as a value or array (not a string).
  * @error			Invalid Handle.
  */
-native bool:GetTrieString(Handle:trie, const String:key[], String:value[], max_size, &size=0);
+native bool:GetTrieString(Handle:map, const String:key[], String:value[], max_size, &size=0);
 
 /**
- * Removes a key entry from a Trie.
+ * Removes a key entry from a Map.
  *
- * @param trie		Trie Handle.
+ * @param map		Map Handle.
  * @param key		Key string.
  * @return			True on success, false if the value was never set.
  * @error			Invalid Handle.
  */
-native RemoveFromTrie(Handle:trie, const String:key[]);
+native RemoveFromTrie(Handle:map, const String:key[]);
 
 /**
- * Clears all entries from a Trie.
+ * Clears all entries from a Map.
  *
- * @param trie		Trie Handle.
+ * @param map		Map Handle.
  * @error			Invalid Handle.
  */
-native ClearTrie(Handle:trie);
+native ClearTrie(Handle:map);
 
 /**
- * Retrieves the number of elements in a trie.
+ * Retrieves the number of elements in a map.
  *
- * Note that trie items are not enumerable/iteratable.  If you need to 
- * retrieve the elements in a trie, store its keys in an ADT Array. 
- *
- * @param trie		Trie Handle.
+ * @param map		Map Handle.
  * @return			Number of elements in the trie.
  * @error			Invalid Handle.
  */
-native GetTrieSize(Handle:trie);
+native GetTrieSize(Handle:map);
+
+/**
+ * Creates a snapshot of all keys in the map. If the map is changed after this
+ * call, the changes are not reflected in the snapshot. Keys are not sorted.
+ *
+ * @param map       Map Handle.
+ * @return			New Map Snapshot Handle, which must be closed via CloseHandle().
+ * @error			Invalid Handle.
+ */
+native Handle:CreateTrieSnapshot(Handle:map);
+
+/**
+ * Returns the number of keys in a map snapshot. Note that this may be
+ * different from the size of the map, since the map can change after the
+ * snapshot of its keys was taken.
+ *
+ * @param snapshot	Map snapshot.
+ * @return			Number of keys.
+ * @error			Invalid Handle.
+ */
+native TrieSnapshotLength(Handle:snapshot);
+
+/**
+ * Returns the buffer size required to store a given key. That is, it returns
+ * the length of the key plus one.
+ *
+ * @param snapshot	Map snapshot.
+ * @param index		Key index (starting from 0).
+ * @return 			Buffer size required to store the key string.
+ * @error			Invalid Handle or index out of range.
+ */
+native TrieSnapshotKeyBufferSize(Handle:snapshot, index);
+
+/**
+ * Retrieves the key string of a given key in a map snapshot.
+ *
+ * @param snapshot	Map snapshot.
+ * @param index		Key index (starting from 0).
+ * @param buffer	String buffer.
+ * @param maxlength	Maximum buffer length.
+ * @return			Number of bytes written to the buffer.
+ * @error			Invalid Handle or index out of range.
+ */
+native GetTrieSnapshotKey(Handle:snapshot, index, String:buffer[], maxlength);

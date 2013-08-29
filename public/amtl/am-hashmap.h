@@ -60,12 +60,28 @@ class HashMap : public AllocPolicy
     Entry()
     {
     }
+    Entry(Moveable<Entry> other)
+      : key(Moveable<K>(other->key)),
+        value(Moveable<V>(other->value))
+    {
+    }
 
     Entry(const K &aKey, const V &aValue)
      : key(aKey),
        value(aValue)
-    {
-    }
+    { }
+    Entry(const K &aKey, Moveable<V> aValue)
+     : key(aKey),
+       value(aValue)
+    { }
+    Entry(Moveable<K> aKey, const V &aValue)
+     : key(aKey),
+       value(aValue)
+    { }
+    Entry(Moveable<K> aKey, Moveable<V> aValue)
+     : key(aKey),
+       value(aValue)
+    { }
   };
 
   struct Policy
@@ -124,6 +140,18 @@ class HashMap : public AllocPolicy
   bool add(Insert &i, const K &key, const V &value) {
     return table_.add(i, Entry(key, value));
   }
+  bool add(Insert &i, Moveable<K> key, const V &value) {
+    return table_.add(i, Entry(key, value));
+  }
+  bool add(Insert &i, const K &key, Moveable<V> value) {
+    return table_.add(i, Entry(key, value));
+  }
+  bool add(Insert &i, Moveable<K> key, Moveable<V> value) {
+    return table_.add(i, Entry(key, value));
+  }
+  bool add(Insert &i, Moveable<K> key) {
+    return table_.add(i, Entry(key, V()));
+  }
 
   // This can be used to avoid compiler constructed temporaries, since AMTL
   // does not yet support move semantics. If you use this, the key and value
@@ -138,6 +166,10 @@ class HashMap : public AllocPolicy
 
   void clear() {
     table_.clear();
+  }
+
+  size_t elements() const {
+    return table_.elements();
   }
 
   size_t estimateMemoryUse() const {

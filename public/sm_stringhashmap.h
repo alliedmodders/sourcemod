@@ -47,6 +47,7 @@
 #include <am-allocator-policies.h>
 #include <am-hashmap.h>
 #include <am-string.h>
+#include <am-moveable.h>
 #include <string.h>
 
 namespace SourceMod
@@ -113,6 +114,7 @@ public:
 	}
 
 	typedef typename Internal::Result Result;
+	typedef typename Internal::Insert Insert;
 	typedef typename Internal::iterator iterator;
 
 	// Some KTrie-like helper functions.
@@ -143,7 +145,7 @@ public:
 	bool replace(const char *aKey, const T &value)
 	{
 		CharsAndLength key(aKey);
-		typename Internal::Insert i = internal_.findForAdd(key);
+		Insert i = internal_.findForAdd(key);
 		if (!i.found())
 		{
 			memory_used_ += key.length() + 1;
@@ -158,7 +160,7 @@ public:
 	bool insert(const char *aKey, const T &value)
 	{
 		CharsAndLength key(aKey);
-		typename Internal::Insert i = internal_.findForAdd(key);
+		Insert i = internal_.findForAdd(key);
 		if (i.found())
 			return false;
 		if (!internal_.add(i))
@@ -190,12 +192,43 @@ public:
 		internal_.clear();
 	}
 
-	iterator iter() {
+	iterator iter()
+	{
 		return internal_.iter();
 	}
 
-	size_t mem_usage() const {
+	size_t mem_usage() const
+	{
 		return internal_.estimateMemoryUse() + memory_used_;
+	}
+
+	size_t elements() const
+	{
+		return internal_.elements();
+	}
+
+
+	Insert findForAdd(const char *aKey)
+	{
+		CharsAndLength key(aKey);
+		return internal_.findForAdd(key);
+	}
+
+	// Note that |i->key| must be set after calling this, and the key must
+	// be the same as used with findForAdd(). It is best to avoid these two
+	// functions as the combined variants above are safer.
+	bool add(Insert &i)
+	{
+		return internal_.add(i);
+	}
+
+	// Only value needs to be set after.
+	bool add(Insert &i, const char *aKey)
+	{
+		if (!internal_.add(i))
+			return false;
+		i->key = aKey;
+		return true;
 	}
 
 private:
