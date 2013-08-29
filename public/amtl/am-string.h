@@ -81,6 +81,9 @@ class AString
     return *this;
   }
 
+  int compare(const char *str) const {
+    return strcmp(chars(), str);
+  }
   int compare(const AString &other) const {
     return strcmp(chars(), other.chars());
   }

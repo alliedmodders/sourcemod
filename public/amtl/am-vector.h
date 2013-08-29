@@ -43,25 +43,31 @@ class Vector : public AllocPolicy
 {
  public:
   Vector(AllocPolicy = AllocPolicy())
-  : data_(NULL),
-    nitems_(0),
-    maxsize_(0)
+   : data_(NULL),
+     nitems_(0),
+     maxsize_(0)
   {
+  }
+
+  Vector(Moveable<Vector<T, AllocPolicy> > other) {
+    data_ = other->data_;
+    nitems_ = other->nitems_;
+    maxsize_ = other->maxsize_;
+    other->reset();
   }
 
   ~Vector() {
     zap();
   }
 
-  void steal(Vector &other) {
-    zap();
-    data_ = other.data_;
-    nitems_ = other.nitems_;
-    maxsize_ = other.maxsize_;
-    other.reset();
-  }
-
   bool append(const T &item) {
+    if (!growIfNeeded(1))
+      return false;
+    new (&data_[nitems_]) T(item);
+    nitems_++;
+    return true;
+  }
+  bool append(Moveable<T> item) {
     if (!growIfNeeded(1))
       return false;
     new (&data_[nitems_]) T(item);
@@ -73,6 +79,12 @@ class Vector : public AllocPolicy
     new (&data_[nitems_]) T(item);
     nitems_++;
   }
+  void infallibleAppend(Moveable<T> item) {
+    assert(growIfNeeded(1));
+    new (&data_[nitems_]) T(item);
+    nitems_++;
+  }
+
   T popCopy() {
     T t = at(length() - 1);
     pop();

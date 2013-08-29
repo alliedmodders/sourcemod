@@ -31,11 +31,14 @@
 #define _include_amtl_inline_list_h_
 
 #include <stddef.h>
+#include <assert.h>
 
 namespace ke {
 
 template <typename T> class InlineList;
 
+// Objects can recursively inherit from InlineListNode in order to have
+// membership in an InlineList<T>.
 template <typename T>
 class InlineListNode
 {
@@ -43,14 +46,14 @@ class InlineListNode
 
   public:
   InlineListNode()
-    : next_(NULL),
-    prev_(NULL)
+   : next_(NULL),
+     prev_(NULL)
   {
   }
 
   InlineListNode(InlineListNode *next, InlineListNode *prev)
-    : next_(next),
-    prev_(prev)
+   : next_(next),
+     prev_(prev)
   {
   }
 
@@ -59,6 +62,14 @@ class InlineListNode
   InlineListNode *prev_;
 };
 
+// An InlineList is a linked list that threads link pointers through objects,
+// rather than allocating node memory. A node can be in at most one list at
+// any time.
+//
+// Since InlineLists are designed to be very cheap, there is no requirement
+// that elements be removed from a list once the list is destructed. However,
+// for as long as the list is alive, all of its contained nodes must also
+// be alive.
 template <typename T>
 class InlineList
 {
@@ -66,10 +77,24 @@ class InlineList
 
   Node head_;
 
+  // Work around a clang bug where we can't initialize with &head_ in the ctor.
+  inline Node *head() {
+    return &head_;
+  }
+
  public:
   InlineList()
-    : head_(&head_, &head_)
+    : head_(head(), head())
   {
+  }
+
+  ~InlineList()
+  {
+#if !defined(NDEBUG)
+    // Remove all items to clear their next/prev fields.
+    while (begin() != end())
+      remove(*begin());
+#endif
   }
 
  public:
@@ -86,7 +111,7 @@ class InlineList
 
     iterator & operator ++() {
       iter_ = iter_->next;
-      return *iter_;
+      return *this;
     }
     iterator operator ++(int) {
       iterator old(*this);
@@ -105,14 +130,6 @@ class InlineList
     bool operator ==(const iterator &where) const {
       return iter_ == where.iter_;
     }
-    iterator prev() const {
-      iterator p(iter_->prev_);
-      return p;
-    }
-    iterator next() const {
-      iterator p(iter_->next_);
-      return p;
-    }
   };
 
   iterator begin() {
@@ -126,9 +143,17 @@ class InlineList
   void remove(Node *t) {
     t->prev_->next_ = t->next_;
     t->next_->prev_ = t->prev_;
+
+#if !defined(NDEBUG)
+    t->next_ = NULL;
+    t->prev_ = NULL;
+#endif
   }
 
-  void insert(Node *t) {
+  void append(Node *t) {
+    assert(!t->next_);
+    assert(!t->prev_);
+
     t->prev_ = head_.prev_;
     t->next_ = &head_;
     head_.prev_->next_ = t;

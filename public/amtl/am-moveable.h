@@ -61,6 +61,13 @@ struct Moveable
   T &t_;
 };
 
+template <typename T>
+static inline Moveable<T>
+Move(T &t)
+{
+  return Moveable<T>(t);
+}
+
 } // namespace ke
 
 #endif // _include_amtl_moveable_h_

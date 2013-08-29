@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <am-allocator-policies.h>
 #include <am-utility.h>
+#include <am-moveable.h>
 
 namespace ke {
 
@@ -58,6 +59,10 @@ class LinkedList : public AllocPolicy
      : obj(o)
     {
     }
+    Node(Moveable<T> o)
+     : obj(o)
+    {
+    }
 
     T obj;
     Node *next;
@@ -68,29 +73,28 @@ public:
   LinkedList(AllocPolicy = AllocPolicy())
    : length_(0)
   {
+    head()->prev = head();
+    head()->next = head();
   }
   ~LinkedList() {
     clear();
   }
 
   bool append(const T &obj) {
-    Node *node = allocNode(obj);
-    if (!node)
-      return false;
-
-    node->prev = head()->prev;
-    node->next = head();
-    head()->prev->next = node;
-    head()->prev = node;
-
-    length_++;
+    return insertBefore(end(), obj) != end();
+  }
+  bool append(Moveable<T> obj) {
+    return insertBefore(end(), obj) != end();
   }
 
   bool prepend(const T &obj) {
-    return insert(begin(), obj);
+    return insertBefore(begin(), obj) != begin();
+  }
+  bool prepend(Moveable<T> obj) {
+    return insertBefore(begin(), obj) != begin();
   }
 
-  size_t size() const {
+  size_t length() const {
     return length_;
   }
 
@@ -131,6 +135,13 @@ public:
   }
 
   Node *allocNode(const T &obj) {
+    Node *node = (Node *)this->malloc(sizeof(Node));
+    if (!node)
+      return NULL;
+    new (node) Node(obj);
+    return node;
+  }
+  Node *allocNode(Moveable<T> obj) {
     Node *node = (Node *)this->malloc(sizeof(Node));
     if (!node)
       return NULL;
@@ -221,29 +232,9 @@ public:
     Node *this_;
   };
 
- public:
-  iterator begin() const {
-    return iterator(head()->next);
-  }
-  iterator end() const {
-    return iterator(head());
-  }
-  iterator erase(iterator &where) {
-    Node *pNode = where.this_;
-    iterator iter(where);
-    iter++;
-
-    pNode->prev->next = pNode->next;
-    pNode->next->prev = pNode->prev;
-
-    freeNode(pNode);
-    length_--;
-
-    return iter;
-  }
-  iterator insert(iterator where, const T &obj) {
-    // Insert obj right before where
-    Node *node = allocNode(obj);
+ private:
+  // Insert obj right before where.
+  iterator insert(iterator where, Node *node) {
     if (!node)
       return where;
 
@@ -259,6 +250,34 @@ public:
   }
 
  public:
+  iterator begin() {
+    return iterator(head()->next);
+  }
+  iterator end() {
+    return iterator(head());
+  }
+  iterator erase(iterator where) {
+    Node *pNode = where.this_;
+    iterator iter(where);
+    iter++;
+
+    pNode->prev->next = pNode->next;
+    pNode->next->prev = pNode->prev;
+
+    freeNode(pNode);
+    length_--;
+
+    return iter;
+  }
+  iterator insertBefore(iterator where, const T &obj) {
+    return insert(where, allocNode(obj));
+  }
+  iterator insertBefore(iterator where, Moveable<T> obj) {
+    return insert(where, allocNode(obj));
+  }
+
+ public:
+  // Removes one instance of |obj| from the list, if found.
   void remove(const T &obj) {
     for (iterator b = begin(); b != end(); b++) {
       if (*b == obj) {
@@ -269,7 +288,7 @@ public:
   }
 
   template <typename U>
-  iterator find(const U &equ) const {
+  iterator find(const U &equ) {
     for (iterator iter = begin(); iter != end(); iter++) {
       if (*iter == equ)
         return iter;
