@@ -34,7 +34,7 @@
 
 CritManager g_CritManager;
 
-IForward *g_critForward = nullptr;
+IForward *g_critForward = NULL;
 
 SH_DECL_MANUALHOOK0(CalcIsAttackCriticalHelper, 0, 0, 0, bool);
 SH_DECL_MANUALHOOK0(CalcIsAttackCriticalHelperNoCrits, 0, 0, 0, bool);
@@ -76,7 +76,7 @@ bool CritManager::TryEnable()
 	for (size_t i = playerhelpers->GetMaxClients() + 1; i < MAX_EDICTS; ++i)
 	{
 		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
-		if (pEntity == nullptr)
+		if (pEntity == NULL)
 			continue;
 
 		IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
@@ -177,7 +177,7 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers()
 	CBaseHandle &hndl = *(CBaseHandle *) ((intptr_t)pWeapon + info.actual_offset);
 	CBaseEntity *pHandleEntity = gamehelpers->ReferenceToEntity(hndl.GetEntryIndex());
 
-	if (pHandleEntity != nullptr && hndl == reinterpret_cast<IHandleEntity *>(pHandleEntity)->GetRefEHandle())
+	if (pHandleEntity != NULL && hndl == reinterpret_cast<IHandleEntity *>(pHandleEntity)->GetRefEHandle())
 	{
 		ownerIndex = hndl.GetEntryIndex();
 	}
