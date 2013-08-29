@@ -41,6 +41,7 @@
 #include "gameplayrules.h"
 #include "teleporter.h"
 #include "CDetour/detours.h"
+#include "ISDKHooks.h"
 
 /**
  * @file extension.cpp
@@ -52,6 +53,7 @@ TF2Tools g_TF2Tools;
 IGameConfig *g_pGameConf = NULL;
 
 IBinTools *g_pBinTools = NULL;
+ISDKHooks *g_pSDKHooks = NULL;
 
 SMEXT_LINK(&g_TF2Tools);
 
@@ -91,6 +93,7 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	}
 
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
+	sharesys->AddDependency(myself, "sdkhooks.ext", true, true);
 
 	char conf_error[255] = "";
 	if (!gameconfs->LoadGameConfigFile("sm-tf2.games", &g_pGameConf, conf_error, sizeof(conf_error)))
@@ -151,8 +154,6 @@ bool TF2Tools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 
 	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
 
-	GET_V_IFACE_CURRENT(GetServerFactory, gameents, IServerGameEnts, INTERFACEVERSION_SERVERGAMEENTS);
-
 	GET_V_IFACE_CURRENT(GetEngineFactory, m_GameEventManager, IGameEventManager2, INTERFACEVERSION_GAMEEVENTSMANAGER2);
 	m_GameEventManager->AddListener(this, "teamplay_restart_round", true);
 
@@ -177,11 +178,22 @@ void TF2Tools::SDK_OnUnload()
 	forwards->ReleaseForward(g_waitingPlayersStartForward);
 	forwards->ReleaseForward(g_waitingPlayersEndForward);
 	forwards->ReleaseForward(g_teleportForward);
+
+	if (g_pSDKHooks != nullptr)
+	{
+		g_pSDKHooks->RemoveEntityListener(&g_CritManager);
+	}
 }
 
 void TF2Tools::SDK_OnAllLoaded()
 {
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
+	SM_GET_LATE_IFACE(SDKHOOKS, g_pSDKHooks);
+
+	if (g_pSDKHooks != nullptr)
+	{
+		g_pSDKHooks->AddEntityListener(&g_CritManager);
+	}
 }
 
 bool TF2Tools::RegisterConCommandBase(ConCommandBase *pVar)
@@ -198,6 +210,7 @@ void TF2Tools::FireGameEvent( IGameEvent *event )
 bool TF2Tools::QueryRunning(char *error, size_t maxlength)
 {
 	SM_CHECK_IFACE(BINTOOLS, g_pBinTools);
+	SM_GET_LATE_IFACE(SDKHOOKS, g_pSDKHooks);
 
 	return true;
 }
@@ -205,6 +218,11 @@ bool TF2Tools::QueryRunning(char *error, size_t maxlength)
 bool TF2Tools::QueryInterfaceDrop(SMInterface *pInterface)
 {
 	if (pInterface == g_pBinTools)
+	{
+		return false;
+	}
+
+	if (pInterface == g_pSDKHooks)
 	{
 		return false;
 	}
@@ -321,7 +339,7 @@ void TF2Tools::OnPluginLoaded(IPlugin *plugin)
 {
 	if (!m_CritDetoursEnabled && g_critForward->GetFunctionCount())
 	{
-		m_CritDetoursEnabled = InitialiseCritDetours();
+		m_CritDetoursEnabled = g_CritManager.TryEnable();
 	}
 
 	if (!m_IsHolidayDetourEnabled && g_isHolidayForward->GetFunctionCount())
@@ -353,7 +371,7 @@ void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
 {
 	if (m_CritDetoursEnabled && !g_critForward->GetFunctionCount())
 	{
-		RemoveCritDetours();
+		g_CritManager.Disable();
 		m_CritDetoursEnabled = false;
 	}
 	if (m_IsHolidayDetourEnabled && !g_isHolidayForward->GetFunctionCount())

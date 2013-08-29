@@ -49,6 +49,8 @@ bool UTIL_FindDataTable(SendTable *pTable,
 						  sm_sendprop_info_t *info,
 						  unsigned int offset);
 
+bool UTIL_ContainsDataTable(SendTable *pTable, const char *name);
+
 ServerClass *UTIL_FindServerClass(const char *classname);
 
 CBaseEntity *UTIL_GetCBaseEntity(int num, bool onlyPlayers);

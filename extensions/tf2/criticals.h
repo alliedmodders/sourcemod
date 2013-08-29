@@ -36,12 +36,38 @@
 #include <jit/jit_helpers.h>
 #include <jit/x86/x86_macros.h>
 #include "CDetour/detours.h"
+#include "ISDKHooks.h"
 
-bool InitialiseCritDetours();
-void RemoveCritDetours();
+class CritManager : public ISMEntityListener
+{
+public:
+	CritManager();
+
+public:
+	bool TryEnable();
+	void Disable();
+
+	// ISMEntityListener
+public:
+	virtual void OnEntityCreated(CBaseEntity *pEntity, const char *classname);
+	virtual void OnEntityDestroyed(CBaseEntity *pEntity);
+
+private:
+	void HookEntityIfWeapon(CBaseEntity *pEntity);
+	void UnhookEntityIfHooked(CBaseEntity *pEntity);
+
+public:
+	// CritHook
+	bool Hook_CalcIsAttackCriticalHelpers();
+
+private:
+	bool m_enabled;
+	bool m_hooksSetup;
+	CBitVec<MAX_EDICTS> m_entsHooked;	
+};
+
+extern CritManager g_CritManager;
 
 extern IForward *g_critForward;
-
-extern IServerGameEnts *gameents;
 
 #endif //_INCLUDE_SOURCEMOD_CRITICALS_H_

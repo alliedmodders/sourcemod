@@ -36,48 +36,6 @@
 				"linux"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
 				"mac"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
 			}
-			"CalcCritical"
-			{
-				"library"	"server"
-				"linux"		"@_ZN13CTFWeaponBase26CalcIsAttackCriticalHelperEv"
-				"mac"		"@_ZN13CTFWeaponBase26CalcIsAttackCriticalHelperEv"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x56\x57\x6A\x00\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x6A\x00\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x50\xE8\x2A\x2A\x2A\x2A\x8B\xF8\x83\xC4\x2A\x85\xFF\x74\x2A\x8B"
-			}
-			"CalcCriticalMelee"
-			{
-				"library"	"server"
-				"linux"		"@_ZN18CTFWeaponBaseMelee26CalcIsAttackCriticalHelperEv"
-				"mac"		"@_ZN18CTFWeaponBaseMelee26CalcIsAttackCriticalHelperEv"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x56\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x8B\xD8\x85\xDB\x74\x10"
-			}
-			"CalcCriticalBow"
-			{
-				"library"	"server"
-				"linux"		"@_ZN14CTFCompoundBow26CalcIsAttackCriticalHelperEv"
-				"mac"		"@_ZN14CTFCompoundBow26CalcIsAttackCriticalHelperEv"
-				"windows"	"\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8D\x88\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x84\xC0\x74\x2A\xB0"
-			}
-			"CalcCriticalKnife"
-			{
-				"library"	"server"
-				"linux"		"@_ZN8CTFKnife26CalcIsAttackCriticalHelperEv"
-				"mac"		"@_ZN8CTFKnife26CalcIsAttackCriticalHelperEv"
-				"windows"	"\x8B\x81\x54\x07\x00\x00\x83\xF8\xFF\x74\x2A\x8B\x15\x2A\x2A\x2A\x2A\x8B\xC8\x81\xE1\xFF\x0F\x00\x00\x03\xC9\x8D\x4C\xCA\x04\xC1\xE8\x0C\x39\x41\x04\x75\x2A\x8B\x01"
-			}
-			"CalcCriticalNoCrits"
-			{
-				"library"	"server"
-				"linux"		"@_ZN13CTFWeaponBase33CalcIsAttackCriticalHelperNoCritsEv"
-				"mac"		"@_ZN13CTFWeaponBase33CalcIsAttackCriticalHelperNoCritsEv"
-				"windows"	"\x56\x6A\x00\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x6A\x00\xE8\x2A\x2A\x2A\x2A\x50\xE8\x2A\x2A\x2A\x2A\x8B\xF0\x83\xC4\x14\x85\xF6\x74\x2A"
-			}
-			"CalcCriticalNoCritsMelee"
-			{
-				"library"	"server"
-				"linux"		"@_ZN18CTFWeaponBaseMelee33CalcIsAttackCriticalHelperNoCritsEv"
-				"mac"		"@_ZN18CTFWeaponBaseMelee33CalcIsAttackCriticalHelperNoCritsEv"
-				"windows"	"\x56\x57\x8B\xF9\xE8\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x74\x2A\x8B\x06\x8B\x90\x40\x01\x00\x00\x8B\xCE\xFF\xD2\x84\xC0\x75\x2A\x5F\x32\xC0\x5E\xC3\x83\xBE\x80\x1D\x00\x00\x02"
-			}
 			"Regenerate"
 			{
 				"library"	"server"
@@ -156,6 +114,18 @@
 				"windows"	"324"
 				"linux"		"325"
 				"mac"		"325"
+			}
+			"CalcIsAttackCriticalHelper"
+			{
+				"windows"	"381"
+				"linux"		"388"
+				"mac"		"388"
+			}
+			"CalcIsAttackCriticalHelperNoCrits"
+			{
+				"windows"	"382"
+				"linux"		"389"
+				"mac"		"389"
 			}
 		}
 	}
