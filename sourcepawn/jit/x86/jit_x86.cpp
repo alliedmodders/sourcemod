@@ -2051,7 +2051,7 @@ void
 JITX86::DeregisterRuntime(BaseRuntime *rt)
 {
   mutex_.AssertCurrentThreadOwns();
-  runtimes_.erase(rt);
+  runtimes_.remove(rt);
 }
 
 void
