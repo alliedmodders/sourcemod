@@ -2044,7 +2044,7 @@ void
 JITX86::RegisterRuntime(BaseRuntime *rt)
 {
   mutex_.AssertCurrentThreadOwns();
-  runtimes_.insert(rt);
+  runtimes_.append(rt);
 }
 
 void
