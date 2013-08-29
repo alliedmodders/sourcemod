@@ -179,7 +179,7 @@ void TF2Tools::SDK_OnUnload()
 	forwards->ReleaseForward(g_waitingPlayersEndForward);
 	forwards->ReleaseForward(g_teleportForward);
 
-	if (g_pSDKHooks != nullptr)
+	if (g_pSDKHooks != NULL)
 	{
 		g_pSDKHooks->RemoveEntityListener(&g_CritManager);
 	}
@@ -190,7 +190,7 @@ void TF2Tools::SDK_OnAllLoaded()
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
 	SM_GET_LATE_IFACE(SDKHOOKS, g_pSDKHooks);
 
-	if (g_pSDKHooks != nullptr)
+	if (g_pSDKHooks != NULL)
 	{
 		g_pSDKHooks->AddEntityListener(&g_CritManager);
 	}
