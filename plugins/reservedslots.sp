@@ -55,10 +55,6 @@ new Handle:sm_reserve_type;
 new Handle:sm_reserve_maxadmins;
 new Handle:sm_reserve_kicktype;
 
-new bool:g_BotsSubtractFromMax;
-new g_SourceTV = -1;
-new g_Replay = -1;
-
 enum KickType
 {
 	Kick_HighestPing,
@@ -79,27 +75,6 @@ public OnPluginStart()
 	
 	HookConVarChange(sm_reserved_slots, SlotCountChanged);
 	HookConVarChange(sm_hide_slots, SlotHideChanged);
-	
-	new EngineVersion:engineVersion = GetEngineVersion();
-	g_BotsSubtractFromMax = engineVersion == Engine_TF2 || engineVersion == Engine_CSS || engineVersion == Engine_DODS || engineVersion == Engine_HL2DM;
-	
-	if (g_BotsSubtractFromMax)
-	{
-		for (new i = 1; i <= MaxClients; i++)
-		{
-			if (!IsClientConnected(i))
-				continue;
-			
-			if (IsClientSourceTV(i))
-			{
-				g_SourceTV = i;
-			}
-			else if (IsClientReplay(i))
-			{
-				g_Replay = i;
-			}
-		}
-	}
 }
 
 public OnPluginEnd()
@@ -143,18 +118,6 @@ public Action:OnTimedKick(Handle:timer, any:client)
 
 public OnClientPostAdminCheck(client)
 {
-	if (g_BotsSubtractFromMax)
-	{
-		if (IsClientSourceTV(client))
-		{
-			g_SourceTV = client;
-		}
-		else if (IsClientReplay(client))
-		{
-			g_Replay = client;
-		}
-	}
-	
 	new reserved = GetConVarInt(sm_reserved_slots);
 
 	if (reserved > 0)
@@ -235,18 +198,6 @@ public OnClientPostAdminCheck(client)
 
 public OnClientDisconnect_Post(client)
 {
-	if (g_BotsSubtractFromMax)
-	{
-		if (client == g_SourceTV)
-		{
-			g_SourceTV = -1;
-		}
-		else if (client == g_Replay)
-		{
-			g_Replay = -1;
-		}
-	}
-	
 	if (GetConVarBool(sm_hide_slots))
 	{		
 		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - GetConVarInt(sm_reserved_slots));
@@ -295,19 +246,6 @@ SetVisibleMaxSlots(clients, limit)
 		num = GetMaxHumanPlayers();
 	} else if (clients < limit) {
 		num = limit;
-	}
-	
-	if (g_BotsSubtractFromMax)
-	{
-		if (g_SourceTV > -1)
-		{
-			--num;
-		}
-		
-		if (g_Replay > -1)
-		{
-			--num;
-		}
 	}
 	
 	SetConVarInt(sv_visiblemaxplayers, num);
