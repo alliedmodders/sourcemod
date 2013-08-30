@@ -65,12 +65,6 @@ class CNativeOwner;
 struct NativeEntry;
 class CPlugin;
 
-struct ReplaceNative
-{
-	CNativeOwner *owner;
-	SPVM_NATIVE_FUNC func;
-};
-
 struct FakeNative
 {
 	char name[64];
@@ -83,7 +77,6 @@ struct NativeEntry
 	CNativeOwner *owner;
 	SPVM_NATIVE_FUNC func;
 	const char *name;
-	ReplaceNative replacement;
 	FakeNative *fake;
 
 	static inline bool matches(const char *name, const NativeEntry *entry)

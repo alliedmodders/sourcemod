@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -234,23 +234,10 @@ namespace SourceMod
 		virtual void RegisterLibrary(IExtension *myself, const char *name) =0;
 
 		/**
-		 * @brief Adds natives that will override Core natives when called.
+		 * @brief Deprecated. Does nothing.
 		 *
-		 * A Core version of each native must exist.  If one does not, then 
-		 * Core will simply ignore that entry.  No more than one override 
-		 * can exist on a given native.
-		 *
-		 * Override natives represent a weak coupling.  If the extension is 
-		 * unloaded, the native will be re-bound to the Core version.  If 
-		 * the extension is loaded after plugins are loaded, the override 
-		 * will not take effect until those plugins are reloaded.
-		 * 
-		 * @param myself		Identity token of parent object.
-		 * @param natives		Array of natives to add.  The last entry in 
-		 *						the array must be filled with NULLs to 
-		 *						terminate the array.  The array must be static 
-		 *						as Core will cache the pointer for the 
-		 *						lifetime of the extension.
+		 * @param myself        Ignored.
+		 * @param natives       Ignored.
 		 */
 		virtual void OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives) =0;
 

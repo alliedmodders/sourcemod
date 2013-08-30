@@ -75,8 +75,8 @@ private:
 	int _PushString(const char *string, int sz_flags, int cp_flags, size_t len);
 	int SetError(int err);
 private:
-	IPluginContext *pContext;
-	SPVM_NATIVE_FUNC native;
+	IPluginContext *context_;
+	SPVM_NATIVE_FUNC native_;
 	cell_t m_params[SP_MAX_EXEC_PARAMS];
 	ParamInfo m_info[SP_MAX_EXEC_PARAMS];
 	unsigned int m_curparam;

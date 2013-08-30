@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourcePawn
  * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
@@ -69,30 +69,15 @@ INativeInvoker *NativeInterface::CreateInvoker()
 
 bool NativeInvoker::Start(IPluginContext *pContext, const char *name)
 {
-	NativeEntry *entry;
-	
-	entry = g_ShareSys.FindNative(name);
-	if (entry == NULL)
-	{
+	NativeEntry *entry = g_ShareSys.FindNative(name);
+	if (!entry)
 		return false;
-	}
 
-	native = NULL;
-	if (entry->replacement.owner != NULL)
-	{
-		native = entry->replacement.func;
-	}
-	else if (entry->owner != NULL)
-	{
-		native = entry->func;
-	}
-
-	if (native == NULL)
-	{
+	if (!entry->owner || !entry->func)
 		return false;
-	}
 
-	this->pContext = pContext;
+	native_ = entry->func;
+	context_ = pContext;
 
 	m_curparam = 0;
 	m_errorstate = SP_ERROR_NONE;
@@ -184,15 +169,13 @@ int NativeInvoker::_PushString(const char *string, int sz_flags, int cp_flags, s
 
 void NativeInvoker::Cancel()
 {
-	if (pContext == NULL)
-	{
+	if (context_ == NULL)
 		return;
-	}
 
 	m_errorstate = SP_ERROR_NONE;
 	m_curparam = 0;
-	pContext = NULL;
-	native = NULL;
+	context_ = NULL;
+	native_ = NULL;
 }
 
 int NativeInvoker::SetError(int err)
@@ -205,10 +188,8 @@ int NativeInvoker::Invoke(cell_t *result)
 {
 	int err = SP_ERROR_NONE;
 
-	if (pContext == NULL)
-	{
+	if (context_ == NULL)
 		return SP_ERROR_INVALID_NATIVE;
-	}
 
 	if (m_errorstate != SP_ERROR_NONE)
 	{
@@ -225,7 +206,7 @@ int NativeInvoker::Invoke(cell_t *result)
 	}
 
 	//This is for re-entrancy!
-	IPluginContext *ctx = pContext;
+	IPluginContext *ctx = context_;
 	cell_t _temp_params[SP_MAX_EXEC_PARAMS + 1];
 	cell_t *temp_params = &_temp_params[1];
 	ParamInfo temp_info[SP_MAX_EXEC_PARAMS];
@@ -239,7 +220,7 @@ int NativeInvoker::Invoke(cell_t *result)
 		memcpy(temp_info, m_info, numparams * sizeof(ParamInfo));
 	}
 	m_curparam = 0;
-	pContext = NULL;
+	context_ = NULL;
 
 	/* Initialize 0th parameter */
 	_temp_params[0] = numparams;
@@ -324,7 +305,7 @@ int NativeInvoker::Invoke(cell_t *result)
 	/* Make the call if we can */
 	if (err == SP_ERROR_NONE)
 	{
-		*result = native(ctx, _temp_params);
+		*result = native_(ctx, _temp_params);
 		if (ctx->GetLastNativeError() != SP_ERROR_NONE)
 		{
 			docopies = false;

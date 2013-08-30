@@ -47,7 +47,6 @@ public:
 	void AddDependent(CPlugin *pPlugin);
 	void AddWeakRef(const WeakNative & ref);
 	void DropRefsTo(CPlugin *pPlugin);
-	void AddReplacedNative(NativeEntry *pEntry);
 private:
 	void DropWeakRefsTo(CPlugin *pPlugin);
 	void UnbindWeakRef(const WeakNative & ref);
@@ -56,7 +55,6 @@ protected:
 	unsigned int m_nMarkSerial;
 	List<WeakNative> m_WeakRefs;
 	List<NativeEntry *> m_Natives;
-	List<NativeEntry *> m_ReplacedNatives;
 };
 
 extern CNativeOwner g_CoreNatives;

@@ -123,16 +123,6 @@ void CNativeOwner::DropEverything()
 		iter = m_WeakRefs.erase(iter);
 	}
 
-	/* Unmark our replacement natives */
-	ntv_iter = m_ReplacedNatives.begin();
-	while (ntv_iter != m_ReplacedNatives.end())
-	{
-		pEntry = (*ntv_iter);
-		pEntry->replacement.func = NULL;
-		pEntry->replacement.owner = NULL;
-		ntv_iter = m_ReplacedNatives.erase(ntv_iter);
-	}
-
 	/* Strip all of our natives from the cache */
 	ntv_iter = m_Natives.begin();
 	while (ntv_iter != m_Natives.end())
@@ -166,9 +156,4 @@ void CNativeOwner::DropRefsTo(CPlugin *pPlugin)
 {
 	m_Dependents.remove(pPlugin);
 	DropWeakRefsTo(pPlugin);
-}
-
-void CNativeOwner::AddReplacedNative(NativeEntry *pEntry)
-{
-	m_ReplacedNatives.push_back(pEntry);
 }
