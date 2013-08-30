@@ -625,7 +625,7 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 	{
 		pNative = (*iter);
 		/* Find this native! */
-		if (m_pRuntime->FindNativeByName(pNative->name, &idx) != SP_ERROR_NONE)
+		if (m_pRuntime->FindNativeByName(pNative->name(), &idx) != SP_ERROR_NONE)
 		{
 			continue;
 		}

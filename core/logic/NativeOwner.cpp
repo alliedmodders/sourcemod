@@ -97,7 +97,7 @@ void CNativeOwner::UnbindWeakRef(const WeakNative & ref)
 		 */
 		else
 		{
-			native->pfn = ref.entry->func;
+			native->pfn = ref.entry->func();
 		}
 	}
 }
@@ -125,7 +125,7 @@ void CNativeOwner::DropEverything()
 	List<NativeEntry *>::iterator ntv_iter = m_Natives.begin();
 	while (ntv_iter != m_Natives.end())
 	{
-		g_ShareSys.ClearNativeFromCache(this, (*ntv_iter)->name);
+		g_ShareSys.ClearNativeFromCache(this, (*ntv_iter)->name());
 		ntv_iter = m_Natives.erase(ntv_iter);
 	}
 }

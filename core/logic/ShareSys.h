@@ -34,6 +34,8 @@
 
 #include <IShareSys.h>
 #include <IHandleSys.h>
+#include <am-string.h>
+#include <am-utility.h>
 #include <sh_list.h>
 #include <sm_stringhashmap.h>
 #include <sm_namehashset.h>
@@ -67,21 +69,60 @@ class CPlugin;
 
 struct FakeNative
 {
-	char name[64];
+	FakeNative(const char *name, IPluginFunction *fun)
+		: name(name),
+		  ctx(fun->GetParentContext()),
+		  call(fun),
+		  gate(NULL)
+	{
+	}
+	~FakeNative();
+
+	ke::AString name;
 	IPluginContext *ctx;
 	IPluginFunction *call;
+	SPVM_NATIVE_FUNC gate;
 };
 
 struct NativeEntry
 {
+	NativeEntry(CNativeOwner *owner, const sp_nativeinfo_t *native)
+		: owner(owner),
+		  native(native),
+		  fake(NULL)
+	{
+	}
+	NativeEntry(CNativeOwner *owner, FakeNative *fake)
+		: owner(owner),
+		  native(NULL),
+		  fake(fake)
+	{
+	}
+
 	CNativeOwner *owner;
-	SPVM_NATIVE_FUNC func;
-	const char *name;
-	FakeNative *fake;
+	const sp_nativeinfo_t *native;
+	ke::AutoPtr<FakeNative> fake;
+
+	SPVM_NATIVE_FUNC func() const
+	{
+		if (native)
+			return native->func;
+		if (fake)
+			return fake->gate;
+		return NULL;
+	}
+	const char *name() const
+	{
+		if (native)
+			return native->name;
+		if (fake)
+			return fake->name.chars();
+		return NULL;
+	}
 
 	static inline bool matches(const char *name, const NativeEntry *entry)
 	{
-		return strcmp(name, entry->name) == 0;
+		return strcmp(name, entry->name()) == 0;
 	}
 };
 

@@ -73,10 +73,10 @@ bool NativeInvoker::Start(IPluginContext *pContext, const char *name)
 	if (!entry)
 		return false;
 
-	if (!entry->owner || !entry->func)
+	if (!entry->owner || !entry->func())
 		return false;
 
-	native_ = entry->func;
+	native_ = entry->func();
 	context_ = pContext;
 
 	m_curparam = 0;

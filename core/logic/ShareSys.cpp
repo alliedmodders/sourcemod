@@ -309,7 +309,7 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, NativeEntry *pEntry)
 
 	pContext = pPlugin->GetBaseContext();
 
-	if (pContext->FindNativeByName(pEntry->name, &i) != SP_ERROR_NONE)
+	if (pContext->FindNativeByName(pEntry->name(), &i) != SP_ERROR_NONE)
 	{
 		return;
 	}
@@ -336,7 +336,7 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin,
 	native->user = pEntry;
 
 	/* Perform a bind. */
-	native->pfn = pEntry->func;
+	native->pfn = pEntry->func();
 
 	/* We don't bother with dependency crap if the owner is Core. */
 	if (pEntry->owner != &g_CoreNatives)
@@ -379,28 +379,22 @@ NativeEntry *ShareSystem::AddNativeToCache(CNativeOwner *pOwner, const sp_native
 
 	if ((pEntry = FindNative(ntv->name)) == NULL)
 	{
-		pEntry = new NativeEntry;
-
-		pEntry->owner = pOwner;
-		pEntry->name = ntv->name;
-		pEntry->func = ntv->func;
-		pEntry->fake = NULL;
-
+		pEntry = new NativeEntry(pOwner, ntv);
 		m_NtvCache.insert(ntv->name, pEntry);
-
 		return pEntry;
 	}
 
 	if (pEntry->owner != NULL)
-	{
 		return NULL;
-	}
 
 	pEntry->owner = pOwner;
-	pEntry->func = ntv->func;
-	pEntry->name = ntv->name;
-
+	pEntry->native = NULL;
 	return pEntry;
+}
+
+FakeNative::~FakeNative()
+{
+	g_pSourcePawn2->DestroyFakeNative(gate);
 }
 
 void ShareSystem::ClearNativeFromCache(CNativeOwner *pOwner, const char *name)
@@ -408,60 +402,39 @@ void ShareSystem::ClearNativeFromCache(CNativeOwner *pOwner, const char *name)
 	NativeEntry *pEntry;
 
 	if ((pEntry = FindNative(name)) == NULL)
-	{
 		return;
-	}
 
 	if (pEntry->owner != pOwner)
-	{
 		return;
-	}
 
-	if (pEntry->fake != NULL)
-	{
-		g_pSourcePawn2->DestroyFakeNative(pEntry->func);
-		delete pEntry->fake;
-		pEntry->fake = NULL;
-	}
-
-	pEntry->func = NULL;
-	pEntry->name = NULL;
+	pEntry->fake = NULL;
+	pEntry->native = NULL;
 	pEntry->owner = NULL;
 }
 
 NativeEntry *ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
 {
-	FakeNative *pFake;
 	NativeEntry *pEntry;
-	SPVM_NATIVE_FUNC gate;
 
 	if ((pEntry = FindNative(name)) != NULL && pEntry->owner != NULL)
-	{
 		return NULL;
-	}
 
-	pFake = new FakeNative;
+	ke::AutoPtr<FakeNative> fake(new FakeNative(name, pFunc));
 
-	if ((gate = g_pSourcePawn2->CreateFakeNative(func, pFake)) == NULL)
-	{
-		delete pFake;
+	fake->gate = g_pSourcePawn2->CreateFakeNative(func, fake);
+	if (!fake->gate)
 		return NULL;
-	}
 
-	if (pEntry == NULL)
+	CNativeOwner *owner = g_PluginSys.GetPluginByCtx(fake->ctx->GetContext());
+
+	if (!pEntry)
 	{
-		pEntry = new NativeEntry;
+		pEntry = new NativeEntry(owner, fake.take());
 		m_NtvCache.insert(name, pEntry);
+	} else {
+		pEntry->owner = owner;
+		pEntry->fake = fake.take();
 	}
-
-	pFake->call = pFunc;
-	pFake->ctx = pFunc->GetParentContext();
-	smcore.strncopy(pFake->name, name, sizeof(pFake->name));
-	
-	pEntry->fake = pFake;
-	pEntry->func = gate;
-	pEntry->name = pFake->name;
-	pEntry->owner = g_PluginSys.GetPluginByCtx(pFake->ctx->GetContext());
 
 	return pEntry;
 }
@@ -527,7 +500,7 @@ FeatureStatus ShareSystem::TestNative(IPluginRuntime *pRuntime, const char *name
 	if (!entry)
 		return FeatureStatus_Unknown;
 
-	if (entry->owner && entry->func)
+	if (entry->owner)
 		return FeatureStatus_Available;
 
 	return FeatureStatus_Unavailable;
