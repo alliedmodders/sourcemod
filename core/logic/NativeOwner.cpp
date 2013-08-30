@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourcePawn
  * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
@@ -58,17 +58,10 @@ void CNativeOwner::AddWeakRef(const WeakNative & ref)
 
 void CNativeOwner::AddNatives(const sp_nativeinfo_t *natives)
 {
-	NativeEntry *pEntry;
+	for (const sp_nativeinfo_t *native = natives; native->func && native->name; native++)
+		g_ShareSys.AddNativeToCache(this, native);
 
-	for (unsigned int i = 0; natives[i].func != NULL && natives[i].name != NULL; i++)
-	{
-		if ((pEntry = g_ShareSys.AddNativeToCache(this, &natives[i])) == NULL)
-		{
-			continue;
-		}
-
-		m_Natives.push_back(pEntry);
-	}
+	m_natives.append(natives);
 }
 
 void CNativeOwner::PropagateMarkSerial(unsigned int serial)
@@ -113,7 +106,6 @@ void CNativeOwner::DropEverything()
 {
 	NativeEntry *pEntry;
 	List<WeakNative>::iterator iter;
-	List<NativeEntry *>::iterator ntv_iter;
 
 	/* Unbind and remove all weak references to us */
 	iter = m_WeakRefs.begin();
@@ -124,7 +116,13 @@ void CNativeOwner::DropEverything()
 	}
 
 	/* Strip all of our natives from the cache */
-	ntv_iter = m_Natives.begin();
+	for (size_t i = 0; i < m_natives.length(); i++) {
+		const sp_nativeinfo_t *natives = m_natives[i];
+		for (const sp_nativeinfo_t *native = natives; native->func && native->name; native++)
+			g_ShareSys.ClearNativeFromCache(this, native->name);
+	}
+
+	List<NativeEntry *>::iterator ntv_iter = m_Natives.begin();
 	while (ntv_iter != m_Natives.end())
 	{
 		g_ShareSys.ClearNativeFromCache(this, (*ntv_iter)->name);
