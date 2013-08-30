@@ -78,7 +78,7 @@ void CNativeOwner::PropagateMarkSerial(unsigned int serial)
 	}
 }
 
-void CNativeOwner::UnbindWeakRef(const WeakNative & ref)
+void CNativeOwner::UnbindWeakRef(const WeakNative &ref)
 {
 	sp_native_t *native;
 	IPluginContext *pContext;
@@ -86,25 +86,13 @@ void CNativeOwner::UnbindWeakRef(const WeakNative & ref)
 	pContext = ref.pl->GetBaseContext();
 	if ((pContext->GetNativeByIndex(ref.idx, &native)) == SP_ERROR_NONE)
 	{
-		/* If there is no reference, the native must be unbound */
-		if (ref.entry == NULL)
-		{
-			native->status = SP_NATIVE_UNBOUND;
-			native->pfn = NULL;
-		}
-		/* If we've cached a reference, it's a core native we can 
-		 * rebind back to its original (this was a replacement).
-		 */
-		else
-		{
-			native->pfn = ref.entry->func();
-		}
+		native->status = SP_NATIVE_UNBOUND;
+		native->pfn = NULL;
 	}
 }
 
 void CNativeOwner::DropEverything()
 {
-	NativeEntry *pEntry;
 	List<WeakNative>::iterator iter;
 
 	/* Unbind and remove all weak references to us */
@@ -121,13 +109,11 @@ void CNativeOwner::DropEverything()
 		for (const sp_nativeinfo_t *native = natives; native->func && native->name; native++)
 			g_ShareSys.ClearNativeFromCache(this, native->name);
 	}
+	m_natives.clear();
 
-	List<NativeEntry *>::iterator ntv_iter = m_Natives.begin();
-	while (ntv_iter != m_Natives.end())
-	{
-		g_ShareSys.ClearNativeFromCache(this, (*ntv_iter)->name());
-		ntv_iter = m_Natives.erase(ntv_iter);
-	}
+	for (size_t i = 0; i < m_fakes.length(); i++)
+		g_ShareSys.ClearNativeFromCache(this, m_fakes[i]->name());
+	m_fakes.clear();
 }
 
 void CNativeOwner::DropWeakRefsTo(CPlugin *pPlugin)

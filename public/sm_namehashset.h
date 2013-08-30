@@ -107,6 +107,26 @@ public:
 	typedef typename Internal::Insert Insert;
 	typedef typename Internal::iterator iterator;
 
+	Result find(const char *aKey)
+	{
+		return table_.find(aKey);
+	}
+
+	Insert findForAdd(const char *aKey)
+	{
+		return table_.findForAdd(aKey);
+	}
+
+	void add(Insert &i, const T &value)
+	{
+		return table_.add(i, value);
+	}
+
+	void add(Insert &i, ke::Moveable<T> value)
+	{
+		return table_.add(i, value);
+	}
+
 	bool retrieve(const char *aKey, T *value)
 	{
 		CharsAndLength key(aKey);
@@ -118,6 +138,15 @@ public:
 	}
 
 	bool insert(const char *aKey, const T &value)
+	{
+		CharsAndLength key(aKey);
+		Insert i = table_.findForAdd(key);
+		if (i.found())
+			return false;
+		return table_.add(i, value);
+	}
+
+	bool insert(const char *aKey, ke::Moveable<T> value)
 	{
 		CharsAndLength key(aKey);
 		Insert i = table_.findForAdd(key);
@@ -141,6 +170,11 @@ public:
 			return false;
 		table_.remove(r);
 		return true;
+	}
+
+	void remove(Result &r)
+	{
+		table_.remove(r);
 	}
 
 	void clear()

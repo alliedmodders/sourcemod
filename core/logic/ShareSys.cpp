@@ -37,6 +37,8 @@
 #include "HandleSys.h"
 #include <assert.h>
 
+using namespace ke;
+
 ShareSystem g_ShareSys;
 static unsigned int g_mark_serial = 0;
 
@@ -259,12 +261,12 @@ void ShareSystem::OverrideNatives(IExtension *myself, const sp_nativeinfo_t *nat
 	assert(false);
 }
 
-NativeEntry *ShareSystem::FindNative(const char *name)
+PassRef<Native> ShareSystem::FindNative(const char *name)
 {
-	NativeEntry *entry;
-	if (!m_NtvCache.retrieve(name, &entry))
+	NativeCache::Result r = m_NtvCache.find(name);
+	if (!r.found())
 		return NULL;
-	return entry;
+	return *r;
 }
 
 void ShareSystem::BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly)
@@ -290,7 +292,7 @@ void ShareSystem::BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly)
 			continue;
 
 		/* Otherwise, the native must be in our cache. */
-		NativeEntry *pEntry = FindNative(native->name);
+		Ref<Native> pEntry = FindNative(native->name);
 		if (!pEntry)
 			continue;
 
@@ -301,41 +303,32 @@ void ShareSystem::BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly)
 	}
 }
 
-void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, NativeEntry *pEntry)
+void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, const Ref<Native> &entry)
 {
+	if (!entry->owner)
+		return;
+
+	IPluginContext *pContext = pPlugin->GetBaseContext();
+
 	uint32_t i;
+	if (pContext->FindNativeByName(entry->name(), &i) != SP_ERROR_NONE)
+		return;
+
 	sp_native_t *native;
-	IPluginContext *pContext;
-
-	pContext = pPlugin->GetBaseContext();
-
-	if (pContext->FindNativeByName(pEntry->name(), &i) != SP_ERROR_NONE)
-	{
-		return;
-	}
 	if (pContext->GetNativeByIndex(i, &native) != SP_ERROR_NONE)
-	{
 		return;
-	}
 
 	if (native->status == SP_NATIVE_BOUND)
-	{
 		return;
-	}
 
-	BindNativeToPlugin(pPlugin, native, i, pEntry);
+	BindNativeToPlugin(pPlugin, native, i, entry);
 }
 
-void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, 
-									 sp_native_t *native,
-									 uint32_t index,
-									 NativeEntry *pEntry)
+void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, sp_native_t *native, uint32_t index,
+                                     const Ref<Native> &pEntry)
 {
 	/* Mark as bound... we do the rest next. */
 	native->status = SP_NATIVE_BOUND;
-	native->user = pEntry;
-
-	/* Perform a bind. */
 	native->pfn = pEntry->func();
 
 	/* We don't bother with dependency crap if the owner is Core. */
@@ -345,14 +338,10 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin,
 		if ((native->flags & SP_NTVFLAG_OPTIONAL) == SP_NTVFLAG_OPTIONAL)
 		{
 			/* Only add if there is a valid owner. */
-			if (pEntry->owner != NULL)
-			{
+			if (pEntry->owner)
 				pEntry->owner->AddWeakRef(WeakNative(pPlugin, index));
-			}
 			else
-			{
 				native->status = SP_NATIVE_UNBOUND;
-			}
 		}
 		/* Otherwise, we're a strong dependent and not a weak one */
 		else
@@ -373,23 +362,15 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin,
 	}
 }
 
-NativeEntry *ShareSystem::AddNativeToCache(CNativeOwner *pOwner, const sp_nativeinfo_t *ntv)
+PassRef<Native> ShareSystem::AddNativeToCache(CNativeOwner *pOwner, const sp_nativeinfo_t *ntv)
 {
-	NativeEntry *pEntry;
-
-	if ((pEntry = FindNative(ntv->name)) == NULL)
-	{
-		pEntry = new NativeEntry(pOwner, ntv);
-		m_NtvCache.insert(ntv->name, pEntry);
-		return pEntry;
-	}
-
-	if (pEntry->owner != NULL)
+	NativeCache::Insert i = m_NtvCache.findForAdd(ntv->name);
+	if (i.found())
 		return NULL;
 
-	pEntry->owner = pOwner;
-	pEntry->native = NULL;
-	return pEntry;
+	Ref<Native> entry = Newborn<Native>(new Native(pOwner, ntv));
+	m_NtvCache.insert(ntv->name, entry);
+	return entry;
 }
 
 FakeNative::~FakeNative()
@@ -399,27 +380,27 @@ FakeNative::~FakeNative()
 
 void ShareSystem::ClearNativeFromCache(CNativeOwner *pOwner, const char *name)
 {
-	NativeEntry *pEntry;
-
-	if ((pEntry = FindNative(name)) == NULL)
+	NativeCache::Result r = m_NtvCache.find(name);
+	if (!r.found())
 		return;
 
-	if (pEntry->owner != pOwner)
+	Ref<Native> entry(*r);
+	if (entry->owner != pOwner)
 		return;
 
-	pEntry->fake = NULL;
-	pEntry->native = NULL;
-	pEntry->owner = NULL;
+	// Clear out the owner bit as a sanity measure.
+	entry->owner = NULL;
+
+	m_NtvCache.remove(r);
 }
 
-NativeEntry *ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
+PassRef<Native> ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
 {
-	NativeEntry *pEntry;
-
-	if ((pEntry = FindNative(name)) != NULL && pEntry->owner != NULL)
+	Ref<Native> entry(FindNative(name));
+	if (entry)
 		return NULL;
 
-	ke::AutoPtr<FakeNative> fake(new FakeNative(name, pFunc));
+	AutoPtr<FakeNative> fake(new FakeNative(name, pFunc));
 
 	fake->gate = g_pSourcePawn2->CreateFakeNative(func, fake);
 	if (!fake->gate)
@@ -427,16 +408,10 @@ NativeEntry *ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name
 
 	CNativeOwner *owner = g_PluginSys.GetPluginByCtx(fake->ctx->GetContext());
 
-	if (!pEntry)
-	{
-		pEntry = new NativeEntry(owner, fake.take());
-		m_NtvCache.insert(name, pEntry);
-	} else {
-		pEntry->owner = owner;
-		pEntry->fake = fake.take();
-	}
+	entry = Newborn<Native>(new Native(owner, fake.take()));
+	m_NtvCache.insert(name, entry);
 
-	return pEntry;
+	return entry;
 }
 
 void ShareSystem::AddCapabilityProvider(IExtension *myself, IFeatureProvider *provider,
@@ -496,12 +471,9 @@ FeatureStatus ShareSystem::TestNative(IPluginRuntime *pRuntime, const char *name
 		}
 	}
 
-	NativeEntry *entry = FindNative(name);
+	Ref<Native> entry = FindNative(name);
 	if (!entry)
 		return FeatureStatus_Unknown;
-
-	if (entry->owner)
-		return FeatureStatus_Available;
 
 	return FeatureStatus_Unavailable;
 }

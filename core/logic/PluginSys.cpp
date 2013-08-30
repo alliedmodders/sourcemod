@@ -596,9 +596,7 @@ IPhraseCollection *CPlugin::GetPhrases()
 void CPlugin::DependencyDropped(CPlugin *pOwner)
 {
 	if (!m_pRuntime)
-	{
 		return;
-	}
 
 	List<String>::iterator reqlib_iter;
 	List<String>::iterator lib_iter;
@@ -607,30 +605,22 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 		for (reqlib_iter=m_RequiredLibs.begin(); reqlib_iter!=m_RequiredLibs.end(); reqlib_iter++)
 		{
 			if ((*reqlib_iter) == (*lib_iter))
-			{
 				m_LibraryMissing = true;
-			}
 		}	
 	}
 
-	List<NativeEntry *>::iterator iter;
-	NativeEntry *pNative;
-	sp_native_t *native;
-	uint32_t idx;
 	unsigned int unbound = 0;
-
-	for (iter = pOwner->m_Natives.begin();
-		 iter != pOwner->m_Natives.end();
-		 iter++)
+	for (size_t i = 0; i < pOwner->m_fakes.length(); i++)
 	{
-		pNative = (*iter);
-		/* Find this native! */
-		if (m_pRuntime->FindNativeByName(pNative->name(), &idx) != SP_ERROR_NONE)
-		{
+		ke::Ref<Native> entry(pOwner->m_fakes[i]);
+
+		uint32_t idx;
+		if (m_pRuntime->FindNativeByName(entry->name(), &idx) != SP_ERROR_NONE)
 			continue;
-		}
-		/* Unbind it */
+
+		sp_native_t *native;
 		m_pRuntime->GetNativeByIndex(idx, &native);
+
 		native->pfn = NULL;
 		native->status = SP_NATIVE_UNBOUND;
 		unbound++;
@@ -722,15 +712,11 @@ void CPlugin::DropEverything()
 
 bool CPlugin::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
 {
-	NativeEntry *pEntry;
-
-	if ((pEntry = g_ShareSys.AddFakeNative(pFunc, name, func)) == NULL)
-	{
+	ke::Ref<Native> entry = g_ShareSys.AddFakeNative(pFunc, name, func);
+	if (!entry)
 		return false;
-	}
 
-	m_Natives.push_back(pEntry);
-
+	m_fakes.append(entry);
 	return true;
 }
 
@@ -1383,15 +1369,14 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	pPlugin->Call_OnPluginStart();
 
 	/* Now, if we have fake natives, go through all plugins that might need rebinding */
-	if (pPlugin->GetStatus() <= Plugin_Paused && pPlugin->m_Natives.size())
+	if (pPlugin->GetStatus() <= Plugin_Paused && pPlugin->m_fakes.length())
 	{
 		List<CPlugin *>::iterator pl_iter;
-		CPlugin *pOther;
 		for (pl_iter = m_plugins.begin();
 			 pl_iter != m_plugins.end();
 			 pl_iter++)
 		{
-			pOther = (*pl_iter);
+			CPlugin *pOther = (*pl_iter);
 			if ((pOther->GetStatus() == Plugin_Error
 				&& (pOther->m_FakeNativesMissing || pOther->m_LibraryMissing))
 				|| pOther->m_FakeNativesMissing)
@@ -1402,13 +1387,8 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 					  || pOther->GetStatus() == Plugin_Paused)
 					 && pOther != pPlugin)
 			{
-				List<NativeEntry *>::iterator nv_iter;
-				for (nv_iter = pPlugin->m_Natives.begin();
-					 nv_iter != pPlugin->m_Natives.end();
-					 nv_iter++)
-				{
-					g_ShareSys.BindNativeToPlugin(pOther, (*nv_iter));
-				}
+				for (size_t i = 0; i < pPlugin->m_fakes.length(); i++)
+					g_ShareSys.BindNativeToPlugin(pOther, pPlugin->m_fakes[i]);
 			}
 		}
 	}

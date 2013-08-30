@@ -36,10 +36,12 @@
 #include <IHandleSys.h>
 #include <am-string.h>
 #include <am-utility.h>
+#include <am-refcounting.h>
 #include <sh_list.h>
 #include <sm_stringhashmap.h>
 #include <sm_namehashset.h>
 #include "common_logic.h"
+#include "Native.h"
 
 using namespace SourceHook;
 
@@ -64,67 +66,7 @@ struct IfaceInfo
 };
 
 class CNativeOwner;
-struct NativeEntry;
 class CPlugin;
-
-struct FakeNative
-{
-	FakeNative(const char *name, IPluginFunction *fun)
-		: name(name),
-		  ctx(fun->GetParentContext()),
-		  call(fun),
-		  gate(NULL)
-	{
-	}
-	~FakeNative();
-
-	ke::AString name;
-	IPluginContext *ctx;
-	IPluginFunction *call;
-	SPVM_NATIVE_FUNC gate;
-};
-
-struct NativeEntry
-{
-	NativeEntry(CNativeOwner *owner, const sp_nativeinfo_t *native)
-		: owner(owner),
-		  native(native),
-		  fake(NULL)
-	{
-	}
-	NativeEntry(CNativeOwner *owner, FakeNative *fake)
-		: owner(owner),
-		  native(NULL),
-		  fake(fake)
-	{
-	}
-
-	CNativeOwner *owner;
-	const sp_nativeinfo_t *native;
-	ke::AutoPtr<FakeNative> fake;
-
-	SPVM_NATIVE_FUNC func() const
-	{
-		if (native)
-			return native->func;
-		if (fake)
-			return fake->gate;
-		return NULL;
-	}
-	const char *name() const
-	{
-		if (native)
-			return native->name;
-		if (fake)
-			return fake->name.chars();
-		return NULL;
-	}
-
-	static inline bool matches(const char *name, const NativeEntry *entry)
-	{
-		return strcmp(name, entry->name()) == 0;
-	}
-};
 
 struct Capability
 {
@@ -178,23 +120,22 @@ public:
 	}
 public:
 	void BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly);
-	void BindNativeToPlugin(CPlugin *pPlugin, NativeEntry *pEntry);
-	NativeEntry *AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func);
-	NativeEntry *FindNative(const char *name);
+	void BindNativeToPlugin(CPlugin *pPlugin, const ke::Ref<Native> &pEntry);
+	ke::PassRef<Native> AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func);
+	ke::PassRef<Native> FindNative(const char *name);
 private:
-	NativeEntry *AddNativeToCache(CNativeOwner *pOwner, const sp_nativeinfo_t *ntv);
+	ke::PassRef<Native> AddNativeToCache(CNativeOwner *pOwner, const sp_nativeinfo_t *ntv);
 	void ClearNativeFromCache(CNativeOwner *pOwner, const char *name);
-	void BindNativeToPlugin(CPlugin *pPlugin, 
-		sp_native_t *ntv, 
-		uint32_t index, 
-		NativeEntry *pEntry);
+	void BindNativeToPlugin(CPlugin *pPlugin, sp_native_t *ntv,  uint32_t index, const ke::Ref<Native> &pEntry);
 private:
+	typedef NameHashSet<ke::Ref<Native>, Native> NativeCache;
+
 	List<IfaceInfo> m_Interfaces;
 	HandleType_t m_TypeRoot;
 	IdentityToken_t m_IdentRoot;
 	HandleType_t m_IfaceType;
 	IdentityType_t m_CoreType;
-	NameHashSet<NativeEntry *> m_NtvCache;
+	NativeCache m_NtvCache;
 	StringHashMap<Capability> m_caps;
 };
 

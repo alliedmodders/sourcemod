@@ -33,10 +33,12 @@
 
 #include <sp_vm_types.h>
 #include <sh_list.h>
+#include <am-linkedlist.h>
 #include <am-vector.h>
 #include "common_logic.h"
+#include "Native.h"
 
-struct NativeEntry;
+struct Native;
 class CPlugin;
 
 using namespace SourceMod;
@@ -44,20 +46,13 @@ using namespace SourceMod;
 struct WeakNative
 {
 	WeakNative(IPlugin *plugin, uint32_t index) : 
-		pl(plugin), idx(index), entry(NULL)
-	{
-		pl = plugin;
-		idx = index;
-	}
-	WeakNative(IPlugin *plugin, uint32_t index, NativeEntry *pEntry) : 
-		pl(plugin), idx(index), entry(pEntry)
+		pl(plugin), idx(index)
 	{
 		pl = plugin;
 		idx = index;
 	}
 	IPlugin *pl;
 	uint32_t idx;
-	NativeEntry *entry;
 };
 
 using namespace SourceHook;
@@ -86,7 +81,7 @@ protected:
 	unsigned int m_nMarkSerial;
 	List<WeakNative> m_WeakRefs;
 	ke::Vector<const sp_nativeinfo_t *> m_natives;
-	List<NativeEntry *> m_Natives;
+	ke::Vector<ke::Ref<Native> > m_fakes;
 };
 
 extern CNativeOwner g_CoreNatives;

@@ -69,11 +69,11 @@ INativeInvoker *NativeInterface::CreateInvoker()
 
 bool NativeInvoker::Start(IPluginContext *pContext, const char *name)
 {
-	NativeEntry *entry = g_ShareSys.FindNative(name);
+	ke::Ref<Native> entry = g_ShareSys.FindNative(name);
 	if (!entry)
 		return false;
 
-	if (!entry->owner || !entry->func())
+	if (!entry->owner)
 		return false;
 
 	native_ = entry->func();
