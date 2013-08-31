@@ -1278,7 +1278,7 @@ static cell_t ReadCommandIterator(IPluginContext *pContext, const cell_t *params
 	
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[4], &addr);
-	*addr = pInfo->admin.eflags;
+	*addr = pInfo->eflags;
 
 	iter->iter++;
 

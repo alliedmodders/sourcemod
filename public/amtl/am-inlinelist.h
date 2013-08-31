@@ -140,6 +140,22 @@ class InlineList
     return iterator(&head_);
   }
 
+  iterator erase(iterator &at) {
+    iterator next = at;
+    next++;
+
+    remove(at.iter_);
+
+    // Iterator is no longer valid.
+    at.iter_ = NULL;
+
+    return next;
+  }
+
+  bool empty() const {
+    return head_.next_ == &head_;
+  }
+
   void remove(Node *t) {
     t->prev_->next_ = t->next_;
     t->next_->prev_ = t->prev_;
