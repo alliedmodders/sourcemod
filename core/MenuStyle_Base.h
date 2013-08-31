@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -34,27 +34,32 @@
 
 #include <IMenuManager.h>
 #include <IPlayerHelpers.h>
-#include <sh_string.h>
-#include <sh_vector.h>
-#include "sm_memtable.h"
+#include <am-string.h>
+#include <am-vector.h>
 #include "sm_fastlink.h"
 
 using namespace SourceMod;
-using namespace SourceHook;
 
 class CItem
 {
 public:
 	CItem()
 	{
-		infoString = -1;
-		displayString = -1;
+		info.setVoid();
+		display.setVoid();
 		style = 0;
 		access = 0;
 	}
+	CItem(ke::Moveable<CItem> other)
+	: info(ke::Move(other->info)),
+	  display(ke::Move(other->display))
+	{
+		style = other->style;
+		access = other->access;
+	}
 public:
-	int infoString;
-	int displayString;
+	ke::AString info;
+	ke::AString display;
 	unsigned int style;
 	unsigned int access;
 };
@@ -139,11 +144,10 @@ public:
 private:
 	void InternalDelete();
 protected:
-	String m_Title;
+	ke::AString m_Title;
 	IMenuStyle *m_pStyle;
-	BaseStringTable m_Strings;
 	unsigned int m_Pagination;
-	CVector<CItem> m_items;
+	ke::Vector<CItem> m_items;
 	bool m_bShouldDelete;
 	bool m_bCancelling;
 	IdentityToken_t *m_pOwner;

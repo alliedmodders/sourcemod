@@ -85,6 +85,29 @@ class Vector : public AllocPolicy
     nitems_++;
   }
 
+  // Shift all elements including |at| up by one, and insert |item| at the
+  // given position. This is a linear-time operation.
+  bool insert(size_t at, const T &item) {
+    if (!moveUp(at))
+      return false;
+    new (&data_[at]) T(item);
+    return true;
+  }
+  bool insert(size_t at, Moveable<T> item) {
+    if (!moveUp(at))
+      return false;
+    new (&data_[at]) T(item);
+    return true;
+  }
+
+  // Shift all elements at the given position down, removing the given
+  // element. This is a linear-time operation.
+  void remove(size_t at) {
+    for (size_t i = at; i < length() - 1; i++)
+      data_[i] = T(Moveable<T>(data_[i + 1]));
+    pop();
+  }
+
   T popCopy() {
     T t = at(length() - 1);
     pop();
@@ -152,6 +175,15 @@ class Vector : public AllocPolicy
     data_ = NULL;
     nitems_ = 0;
     maxsize_ = 0;
+  }
+
+  bool moveUp(size_t at) {
+    if (!growIfNeeded(1))
+      return false;
+    nitems_++;
+    for (size_t i = nitems_ - 1; i > at; i--)
+      data_[i] = T(Moveable<T>(data_[i - 1]));
+    return true;
   }
 
   bool growIfNeeded(size_t needed)

@@ -37,7 +37,6 @@
 #include <sh_stack.h>
 #include <sh_list.h>
 #include <sh_string.h>
-#include "sm_memtable.h"
 #include "sm_globals.h"
 
 using namespace SourceMod;

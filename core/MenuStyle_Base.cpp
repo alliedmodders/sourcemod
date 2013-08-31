@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -604,7 +604,7 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 }
 
 CBaseMenu::CBaseMenu(IMenuHandler *pHandler, IMenuStyle *pStyle, IdentityToken_t *pOwner) : 
-m_pStyle(pStyle), m_Strings(512), m_Pagination(7), m_bShouldDelete(false), m_bCancelling(false), 
+m_pStyle(pStyle), m_Pagination(7), m_bShouldDelete(false), m_bCancelling(false), 
 m_pOwner(pOwner ? pOwner : g_pCoreIdent), m_bDeleting(false), m_bWillFreeHandle(false), 
 m_hHandle(BAD_HANDLE), m_pHandler(pHandler), m_nFlags(MENUFLAG_BUTTON_EXIT)
 {
@@ -627,94 +627,74 @@ Handle_t CBaseMenu::GetHandle()
 bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 {
 	if (m_Pagination == (unsigned)MENU_NO_PAGINATION
-		&& m_items.size() >= m_pStyle->GetMaxPageItems())
+		&& m_items.length() >= m_pStyle->GetMaxPageItems())
 	{
 		return false;
 	}
 
 	CItem item;
 
-	item.infoString = m_Strings.AddString(info);
+	item.info = info;
 	if (draw.display)
-	{
-		item.displayString = m_Strings.AddString(draw.display);
-	}
+		item.display = draw.display;
 	item.style = draw.style;
 
-	m_items.push_back(item);
-
+	m_items.append(item);
 	return true;
 }
 
 bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDrawInfo &draw)
 {
-	if (m_Pagination == (unsigned)MENU_NO_PAGINATION
-		&& m_items.size() >= m_pStyle->GetMaxPageItems())
+	if (m_Pagination == (unsigned)MENU_NO_PAGINATION &&
+	    m_items.length() >= m_pStyle->GetMaxPageItems())
 	{
 		return false;
 	}
 
-	if (position >= m_items.size())
-	{
+	if (position >= m_items.length())
 		return false;
-	}
 
 	CItem item;
-	item.infoString = m_Strings.AddString(info);
+	item.info = info;
 	if (draw.display)
-	{
-		item.displayString = m_Strings.AddString(draw.display);
-	}
+		item.display = draw.display;
 	item.style = draw.style;
 
-	CVector<CItem>::iterator iter = m_items.iterAt(position);
-	m_items.insert(iter, item);
-
+	m_items.insert(position, item);
 	return true;
 }
 
 bool CBaseMenu::RemoveItem(unsigned int position)
 {
-	if (position >= m_items.size())
-	{
+	if (position >= m_items.length())
 		return false;
-	}
 
-	m_items.erase(m_items.iterAt(position));
-
-	if (m_items.size() == 0)
-	{
-		m_Strings.Reset();
-	}
-
+	m_items.remove(position);
 	return true;
 }
 
 void CBaseMenu::RemoveAllItems()
 {
 	m_items.clear();
-	m_Strings.Reset();
 }
 
 const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =NULL */)
 {
-	if (position >= m_items.size())
-	{
+	if (position >= m_items.length())
 		return NULL;
-	}
 
 	if (draw)
 	{
-		draw->display = m_Strings.GetString(m_items[position].displayString);
+		draw->display = m_items[position].display.chars();
 		draw->style = m_items[position].style;
 	}
 
-	return m_Strings.GetString(m_items[position].infoString);
+	return m_items[position].info.chars();
 }
 
 unsigned int CBaseMenu::GetItemCount()
 {
-	return m_items.size();
+	return m_items.length();
 }
 
 bool CBaseMenu::SetPagination(unsigned int itemsPerPage)
@@ -747,12 +727,12 @@ IMenuStyle *CBaseMenu::GetDrawStyle()
 
 void CBaseMenu::SetDefaultTitle(const char *message)
 {
-	m_Title.assign(message);
+	m_Title = message;
 }
 
 const char *CBaseMenu::GetDefaultTitle()
 {
-	return m_Title.c_str();
+	return m_Title.chars();
 }
 
 void CBaseMenu::Cancel()
@@ -844,7 +824,5 @@ IMenuHandler *CBaseMenu::GetHandler()
 
 unsigned int CBaseMenu::GetBaseMemUsage()
 {
-	return m_Title.size() 
-		+ m_Strings.GetMemTable()->GetMemUsage()
-		+ (m_items.size() * sizeof(CItem));
+	return m_Title.length() + (m_items.length() * sizeof(CItem));
 }

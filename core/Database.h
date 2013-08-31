@@ -38,7 +38,6 @@
 #include <sh_string.h>
 #include <sh_list.h>
 #include <ITextParsers.h>
-#include "sm_memtable.h"
 #include <IThreader.h>
 #include <IPluginSys.h>
 #include <am-thread-utils.h>
