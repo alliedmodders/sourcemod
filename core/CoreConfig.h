@@ -35,8 +35,8 @@
 #include "sm_globals.h"
 #include <ITextParsers.h>
 #include <IRootConsoleMenu.h>
+#include <am-string.h>
 #include <sm_stringhashmap.h>
-#include "sm_memtable.h"
 
 using namespace SourceMod;
 
@@ -68,8 +68,7 @@ private:
 	 */
 	ConfigResult SetConfigOption(const char *option, const char *value, ConfigSource, char *Error, size_t maxlength);
 private:
-	BaseStringTable m_Strings;
-	StringHashMap<int> m_KeyValues;
+	StringHashMap<ke::AString> m_KeyValues;
 };
 
 extern bool SM_AreConfigsExecuted();

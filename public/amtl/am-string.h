@@ -45,6 +45,7 @@ class AString
    : length_(0)
   {
   }
+
   explicit AString(const char *str) {
     set(str, strlen(str));
   }
@@ -78,6 +79,12 @@ class AString
       chars_ = NULL;
       length_ = 0;
     }
+    return *this;
+  }
+  AString &operator =(Moveable<AString> other) {
+    chars_ = other->chars_.take();
+    length_ = other->length_;
+    other->length_ = 0;
     return *this;
   }
 
