@@ -59,8 +59,6 @@ HandleSystem::HandleSystem()
 	m_Types = new QHandleType[HANDLESYS_TYPEARRAY_SIZE];
 	memset(m_Types, 0, sizeof(QHandleType) * HANDLESYS_TYPEARRAY_SIZE);
 
-	m_strtab = new BaseStringTable(512);
-
 	m_TypeTail = 0;
 }
 
@@ -68,7 +66,6 @@ HandleSystem::~HandleSystem()
 {
 	delete [] m_Handles;
 	delete [] m_Types;
-	delete m_strtab;
 }
 
 
@@ -142,12 +139,10 @@ HandleType_t HandleSystem::CreateType(const char *name,
 
 	if (name && name[0] != '\0')
 	{
-		if (m_TypeLookup.retrieve(name))
+		if (m_TypeLookup.contains(name))
 		{
 			if (err)
-			{
 				*err = HandleError_Parameter;
-			}
 			return 0;
 		}
 	}
@@ -209,10 +204,10 @@ HandleType_t HandleSystem::CreateType(const char *name,
 	pType->dispatch = dispatch;
 	if (name && name[0] != '\0')
 	{
-		pType->nameIdx = m_strtab->AddString(name);
+		pType->name = name;
 		m_TypeLookup.insert(name, pType);
 	} else {
-		pType->nameIdx = -1;
+		pType->name.setVoid();
 	}
 
 	pType->opened = 0;
@@ -930,13 +925,8 @@ bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t *ident)
 	}
 
 	/* Remove it from the type cache. */
-	if (pType->nameIdx != -1)
-	{
-		const char *typeName;
-
-		typeName = m_strtab->GetString(pType->nameIdx);
-		m_TypeLookup.remove(typeName);
-	}
+	if (!pType->name.isVoid())
+		m_TypeLookup.remove(pType->name.chars());
 
 	return true;
 }
@@ -1061,14 +1051,10 @@ bool HandleSystem::TryAndFreeSomeHandles()
 			continue; /* We may have gaps, it's fine. */
 		}
 
-		if (m_Types[i].nameIdx != -1)
-		{
-			pTypeName = m_strtab->GetString(m_Types[i].nameIdx);
-		}
+		if (!m_Types[i].name.isVoid())
+			pTypeName = m_Types[i].name.chars();
 		else
-		{
 			pTypeName = "ANON";
-		}
 
 		HANDLE_LOG_VERY_BAD("Type\t%-20.20s|\tCount\t%u", pTypeName, pCount[i]);
 	}
@@ -1133,10 +1119,8 @@ void HandleSystem::Dump(HANDLE_REPORTER rep)
 		unsigned int size = 0;
 		unsigned int parentIdx;
 		bool bresult;
-		if (pType->nameIdx != -1)
-		{
-			type = m_strtab->GetString(pType->nameIdx);
-		}
+		if (!pType->name.isVoid())
+			type = pType->name.chars();
 
 		if ((parentIdx = m_Handles[i].clone) != 0)
 		{

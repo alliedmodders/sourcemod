@@ -34,8 +34,8 @@
 
 #include <IHandleSys.h>
 #include <stdio.h>
-#include <sm_stringhashmap.h>
-#include "sm_memtable.h"
+#include <sm_namehashset.h>
+#include <am-string.h>
 #include "common_logic.h"
 
 #define HANDLESYS_MAX_HANDLES		(1<<14)
@@ -103,7 +103,12 @@ struct QHandleType
 	TypeAccess typeSec;
 	HandleAccess hndlSec;
 	unsigned int opened;
-	int nameIdx;
+	ke::AString name;
+
+	static inline bool matches(const char *key, const QHandleType *type)
+	{
+		return type->name.compare(key) == 0;
+	}
 };
 
 typedef void (HANDLE_REPORTER)(const char *str, ...);
@@ -216,13 +221,12 @@ protected:
 private:
 	QHandle *m_Handles;
 	QHandleType *m_Types;
-	StringHashMap<QHandleType *> m_TypeLookup;
+	NameHashSet<QHandleType *> m_TypeLookup;
 	unsigned int m_TypeTail;
 	unsigned int m_FreeTypes;
 	unsigned int m_HandleTail;
 	unsigned int m_FreeHandles;
 	unsigned int m_HSerial;
-	BaseStringTable *m_strtab;
 };
 
 extern HandleSystem g_HandleSys;
