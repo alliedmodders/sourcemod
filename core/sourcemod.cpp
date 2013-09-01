@@ -61,6 +61,7 @@ IForward *g_pOnMapEnd = NULL;
 IGameConfig *g_pGameConf = NULL;
 bool g_Loaded = false;
 bool sm_show_debug_spew = false;
+bool sm_disable_jit = false;
 
 typedef ISourcePawnEngine *(*GET_SP_V1)();
 typedef ISourcePawnEngine2 *(*GET_SP_V2)();
@@ -122,6 +123,14 @@ ConfigResult SourceModBase::OnSourceModConfigChanged(const char *key,
 	else if (strcasecmp(key, "DebugSpew") == 0)
 	{
 		sm_show_debug_spew = (strcasecmp(value, "yes") == 0) ? true : false;
+
+		return ConfigResult_Accept;
+	}
+	else if (strcasecmp(key, "DisableJIT") == 0)
+	{
+		sm_disable_jit = (strcasecmp(value, "yes") == 0) ? true : false;
+		if (g_pSourcePawn2)
+			g_pSourcePawn2->SetJitEnabled(!sm_disable_jit);
 
 		return ConfigResult_Accept;
 	}
@@ -241,6 +250,9 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	}
 
 	g_pSourcePawn2->SetDebugListener(logicore.debugger);
+
+	if (sm_disable_jit)
+		g_pSourcePawn2->SetJitEnabled(!sm_disable_jit);
 
 	sSourceModInitialized = true;
 

@@ -20,6 +20,7 @@ OBJECTS = dll_exports.cpp 	\
 	jit_function.cpp	\
 	opcodes.cpp		\
 	watchdog_timer.cpp \
+	interpreter.cpp \
 	md5/md5.cpp			\
 	zlib/adler32.c		\
 	zlib/compress.c		\
@@ -51,7 +52,8 @@ CC = cc
 LINK = -m32 -lm -lpthread -lrt
 
 INCLUDE = -I. -I.. -I$(SMSDK)/public -I$(SMSDK)/public/jit -I$(SMSDK)/public/jit/x86 \
-	-I$(SMSDK)/public/sourcepawn -I$(MMSOURCE17)/core/sourcehook -I$(SMSDK)/knight/shared -Ix86
+	-I$(SMSDK)/public/sourcepawn -I$(MMSOURCE17)/core/sourcehook -I$(SMSDK)/knight/shared -Ix86 \
+	-I$(SMSDK)/public/amtl
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -DHAVE_STDINT_H \

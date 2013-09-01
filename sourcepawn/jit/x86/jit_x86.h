@@ -36,21 +36,9 @@ using namespace SourcePawn;
 #define STACK_MARGIN            64      //8 parameters of safety, I guess
 #define JIT_FUNCMAGIC           0x214D4148  //magic function offset
 
-#define JITVARS_TRACKER         0    //important: don't change this to avoid trouble
-#define JITVARS_BASECTX         1    //important: don't change this aWOAWOGJQG I LIKE HAM
 #define JITVARS_PROFILER        2    //profiler
-#define JITVARS_PLUGIN          3    //sp_plugin_t
 
 #define sDIMEN_MAX              5    //this must mirror what the compiler has.
-
-#define GET_CONTEXT(c)  ((IPluginContext *)c->vm[JITVARS_BASECTX])
-
-typedef struct tracker_s
-{
-  size_t size; 
-  ucell_t *pBase; 
-  ucell_t *pCur;
-} tracker_t;
 
 typedef struct funcinfo_s
 {

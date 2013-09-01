@@ -38,6 +38,8 @@
 #include "sp_vm_engine.h"
 #include "watchdog_timer.h"
 #include "x86/jit_x86.h"
+#include "engine2.h"
+#include "interpreter.h"
 
 using namespace SourcePawn;
 
@@ -595,7 +597,7 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 	}
 
 	/* See if we have to compile the callee. */
-	if ((fn = m_pRuntime->m_PubJitFuncs[public_id]) == NULL)
+	if (g_engine2.IsJitEnabled() && (fn = m_pRuntime->m_PubJitFuncs[public_id]) == NULL)
 	{
 		/* We might not have to - check pcode offset. */
 		fn = m_pRuntime->GetJittedFunctionByOffset(pubfunc->code_offs);
@@ -646,7 +648,10 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 
 	/* Start the frame tracer */
 
-	ir = g_Jit.InvokeFunction(m_pRuntime, fn, result);
+	if (g_engine2.IsJitEnabled())
+		ir = g_Jit.InvokeFunction(m_pRuntime, fn, result);
+	else
+		ir = Interpret(m_pRuntime, pubfunc->code_offs, result);
 
 	/* Restore some states, stop the frame tracer */
 

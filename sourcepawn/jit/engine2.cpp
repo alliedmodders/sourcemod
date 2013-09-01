@@ -15,6 +15,7 @@ using namespace SourcePawn;
 SourcePawnEngine2::SourcePawnEngine2()
 {
 	m_Profiler = NULL;
+	jit_enabled_ = true;
 }
 
 IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file, int *err)
@@ -146,7 +147,7 @@ void SourcePawnEngine2::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 
 const char *SourcePawnEngine2::GetEngineName()
 {
-	return "SourcePawn 1.1, jit-x86";
+	return "SourcePawn 1.2, jit-x86";
 }
 
 const char *SourcePawnEngine2::GetVersionString()

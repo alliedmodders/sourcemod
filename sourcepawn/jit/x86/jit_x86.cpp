@@ -38,6 +38,7 @@
 #include "../BaseRuntime.h"
 #include "../sp_vm_basecontext.h"
 #include "watchdog_timer.h"
+#include "interpreter.h"
 
 using namespace Knight;
 
@@ -166,50 +167,8 @@ GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], cell_t _dimcou
   return data_offs;
 }
 
-static int
-PopTrackerAndSetHeap(BaseRuntime *rt)
-{
-  sp_context_t *ctx = rt->GetBaseContext()->GetCtx();
-  tracker_t *trk = (tracker_t *)(ctx->vm[JITVARS_TRACKER]);
-  assert(trk->pCur > trk->pBase);
-
-  trk->pCur--;
-  if (trk->pCur < trk->pBase)
-    return SP_ERROR_TRACKER_BOUNDS;
-
-  ucell_t amt = *trk->pCur;
-  if (amt > (ctx->hp - rt->plugin()->data_size))
-    return SP_ERROR_HEAPMIN;
-
-  ctx->hp -= amt;
-  return SP_ERROR_NONE;
-}
-
-static int
-PushTracker(sp_context_t *ctx, size_t amount)
-{
-  tracker_t *trk = (tracker_t *)(ctx->vm[JITVARS_TRACKER]);
-
-  if ((size_t)(trk->pCur - trk->pBase) >= trk->size)
-    return SP_ERROR_TRACKER_BOUNDS;
-
-  if (trk->pCur + 1 - (trk->pBase + trk->size) == 0) {
-    size_t disp = trk->size - 1;
-    trk->size *= 2;
-    trk->pBase = (ucell_t *)realloc(trk->pBase, trk->size * sizeof(cell_t));
-
-    if (!trk->pBase)
-      return SP_ERROR_TRACKER_BOUNDS;
-
-    trk->pCur = trk->pBase + disp;
-  }
-
-  *trk->pCur++ = amount;
-  return SP_ERROR_NONE;
-}
-
-static int
-GenerateArray(BaseRuntime *rt, uint32_t argc, cell_t *argv, int autozero)
+int
+GenerateFullArray(BaseRuntime *rt, uint32_t argc, cell_t *argv, int autozero)
 {
   sp_context_t *ctx = rt->GetBaseContext()->GetCtx();
 
@@ -340,55 +299,6 @@ CompileFromThunk(BaseRuntime *runtime, cell_t pcode_offs, void **addrp, char *pc
   /* Right now, we always keep the code RWE */
   *(intptr_t *)(pc - 4) = intptr_t(fn->GetEntryAddress()) - intptr_t(pc);
   return SP_ERROR_NONE;
-}
-
-static cell_t
-NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
-{
-  sp_native_t *native;
-  cell_t save_sp = ctx->sp;
-  cell_t save_hp = ctx->hp;
-  sp_plugin_t *pl = (sp_plugin_t *)(ctx->vm[JITVARS_PLUGIN]);
-
-  ctx->n_idx = native_idx;
-
-  if (ctx->hp < (cell_t)pl->data_size) {
-    ctx->n_err = SP_ERROR_HEAPMIN;
-    return 0;
-  }
-
-  if (ctx->hp + STACK_MARGIN > ctx->sp) {
-    ctx->n_err = SP_ERROR_STACKLOW;
-    return 0;
-  }
-
-  if ((uint32_t)ctx->sp >= pl->mem_size) {
-    ctx->n_err = SP_ERROR_STACKMIN;
-    return 0;
-  }
-
-  native = &pl->natives[native_idx];
-
-  if (native->status == SP_NATIVE_UNBOUND) {
-    ctx->n_err = SP_ERROR_INVALID_NATIVE;
-    return 0;
-  }
-
-  cell_t result = native->pfn(GET_CONTEXT(ctx), params);
-
-  if (ctx->n_err != SP_ERROR_NONE)
-    return result;
-
-  if (save_sp != ctx->sp) {
-    ctx->n_err = SP_ERROR_STACKLEAK;
-    return result;
-  }
-  if (save_hp != ctx->hp) {
-    ctx->n_err = SP_ERROR_HEAPLEAK;
-    return result;
-  }
-
-  return result;
 }
 
 Compiler::Compiler(BaseRuntime *rt, cell_t pcode_offs)
@@ -1226,7 +1136,7 @@ Compiler::emitOp(OPCODE op)
       __ movl(alt, Operand(hpAddr()));
       __ addl(Operand(hpAddr()), amount);
 
-      if (amount > 0) {
+      if (amount < 0) {
         __ cmpl(Operand(hpAddr()), plugin_->data_size);
         __ j(below, &error_heap_min_);
       } else {
@@ -1473,7 +1383,7 @@ Compiler::emitGenArray(bool autozero)
     __ push(stk);
     __ push(val);
     __ push(intptr_t(rt_));
-    __ call(ExternalAddress((void *)GenerateArray));
+    __ call(ExternalAddress((void *)GenerateFullArray));
     __ addl(esp, 4 * sizeof(void *));
 
     // restore pri to tmp
@@ -1921,16 +1831,13 @@ JITX86::CompileFunction(BaseRuntime *prt, cell_t pcode_offs, int *err)
 void
 JITX86::SetupContextVars(BaseRuntime *runtime, BaseContext *pCtx, sp_context_t *ctx)
 {
-  tracker_t *trk = new tracker_t;
-
-  ctx->vm[JITVARS_TRACKER] = trk;
-  ctx->vm[JITVARS_BASECTX] = pCtx; /* GetDefaultContext() is not constructed yet */
+  ctx->tracker = new tracker_t;
+  ctx->tracker->pBase = (ucell_t *)malloc(1024);
+  ctx->tracker->pCur = ctx->tracker->pBase;
+  ctx->tracker->size = 1024 / sizeof(cell_t);
+  ctx->basecx = pCtx;
   ctx->vm[JITVARS_PROFILER] = g_engine2.GetProfiler();
-  ctx->vm[JITVARS_PLUGIN] = const_cast<sp_plugin_t *>(runtime->plugin());
-
-  trk->pBase = (ucell_t *)malloc(1024);
-  trk->pCur = trk->pBase;
-  trk->size = 1024 / sizeof(cell_t);
+  ctx->plugin = const_cast<sp_plugin_t *>(runtime->plugin());
 }
 
 SPVM_NATIVE_FUNC
@@ -1987,8 +1894,8 @@ CompData::Abort()
 void
 JITX86::FreeContextVars(sp_context_t *ctx)
 {
-  free(((tracker_t *)(ctx->vm[JITVARS_TRACKER]))->pBase);
-  delete (tracker_t *)ctx->vm[JITVARS_TRACKER];
+  free(ctx->tracker->pBase);
+  delete ctx->tracker;
 }
 
 bool

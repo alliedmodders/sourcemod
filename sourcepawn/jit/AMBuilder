@@ -31,6 +31,7 @@ binary.AddSourceFiles('sourcepawn/jit', [
 	'sp_vm_engine.cpp',
 	'sp_vm_function.cpp',
 	'opcodes.cpp',
+	'interpreter.cpp',
 	'watchdog_timer.cpp',
 	'x86/jit_x86.cpp',
 	'zlib/adler32.c',

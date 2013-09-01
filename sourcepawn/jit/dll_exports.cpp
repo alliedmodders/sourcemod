@@ -219,6 +219,9 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	if (getenv("DISABLE_JIT"))
+		g_engine2.SetJitEnabled(false);
+
 	ShellDebugListener debug;
 	g_engine1.SetDebugListener(&debug);
 	g_engine2.InstallWatchdogTimer(5000);

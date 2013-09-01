@@ -334,7 +334,10 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &
 	{
 		ConsolePrint(" SourceMod Version Information:");
 		ConsolePrint("    SourceMod Version: %s", SM_VERSION_STRING);
-		ConsolePrint("    SourcePawn Engine: %s (build %s)", g_pSourcePawn2->GetEngineName(), g_pSourcePawn2->GetVersionString());
+		if (g_pSourcePawn2->IsJitEnabled())
+			ConsolePrint("    SourcePawn Engine: %s (build %s)", g_pSourcePawn2->GetEngineName(), g_pSourcePawn2->GetVersionString());
+		else
+			ConsolePrint("    SourcePawn Engine: %s (build %s NO JIT)", g_pSourcePawn2->GetEngineName(), g_pSourcePawn2->GetVersionString());
 		ConsolePrint("    SourcePawn API: v1 = %d, v2 = %d", g_pSourcePawn->GetEngineAPIVersion(), g_pSourcePawn2->GetAPIVersion());
 		ConsolePrint("    Compiled on: %s %s", __DATE__, __TIME__);
 		ConsolePrint("    Build ID: %s", SM_BUILD_UNIQUEID);
