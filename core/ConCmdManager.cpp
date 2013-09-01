@@ -38,6 +38,8 @@
 #include "ChatTriggers.h"
 #include "logic_bridge.h"
 
+using namespace ke;
+
 ConCmdManager g_ConCmds;
 
 #if SOURCE_ENGINE == SE_DOTA
@@ -53,7 +55,7 @@ SH_DECL_HOOK1_void(IServerGameClients, SetCommandClient, SH_NOATTRIB, false, int
 typedef ke::LinkedList<CmdHook *> PluginHookList;
 void RegisterInPlugin(CmdHook *hook);
 
-ConCmdManager::ConCmdManager() : m_Strings(1024)
+ConCmdManager::ConCmdManager()
 {
 	m_CmdClient = 0;
 }
@@ -105,6 +107,9 @@ void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *na
 			}
 		}
 
+		if (hook->admin)
+			hook->admin->group->hooks.remove(hook);
+
 		iter = pInfo->hooks.erase(iter);
 		delete hook;
 	}
@@ -124,6 +129,8 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 		CmdHook *hook = *iter;
 
 		hook->info->hooks.remove(hook);
+		if (hook->admin)
+			hook->admin->group->hooks.remove(hook);
 
 		if (hook->info->hooks.empty())
 			RemoveConCmd(hook->info, hook->info->pCmd->GetName(), true, true);
@@ -450,19 +457,17 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	if (!pInfo)
 		return false;
 
-	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description);
-
-	pHook->admin = new AdminCmdInfo();
-
-	int grpid;
-	if (!m_CmdGrps.retrieve(group, &grpid))
+	GroupMap::Insert i = m_CmdGrps.findForAdd(group);
+	if (!i.found())
 	{
-		grpid = m_Strings.AddString(group);
-		m_CmdGrps.insert(group, grpid);
+		if (!m_CmdGrps.add(i, group))
+			return false;
+		i->value = NoAddRef(new CommandGroup());
 	}
+	Ref<CommandGroup> cmdgroup = i->value;
 
-	pHook->admin->cmdGrpId = grpid;
-	pHook->admin->flags = adminflags;
+	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description);
+	pHook->admin = new AdminCmdInfo(cmdgroup, adminflags);
 
 	/* First get the command group override, if any */
 	bool override = g_Admins.GetCommandOverride(group, 
@@ -482,6 +487,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 		pHook->admin->eflags = pHook->admin->flags;
 	pInfo->eflags = pHook->admin->eflags;
 
+	cmdgroup->hooks.append(pHook);
 	pInfo->hooks.append(pHook);
 	RegisterInPlugin(pHook);
 	return true;
@@ -586,27 +592,20 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 	}
 	else if (type == Override_CommandGroup)
 	{
-		int grpid;
-		if (!m_CmdGrps.retrieve(cmd, &grpid))
+		GroupMap::Result r = m_CmdGrps.find(cmd);
+		if (!r.found())
 			return;
 
-		/* This is bad :( loop through all commands */
-		List<ConCmdInfo *>::iterator iter;
-		for (iter=m_CmdList.begin(); iter!=m_CmdList.end(); iter++)
-		{
-			ConCmdInfo *pInfo = *iter;
-			for (CmdHookList::iterator citer = pInfo->hooks.begin(); citer != pInfo->hooks.end(); citer++)
-			{
-				CmdHook *hook = (*citer);
-				if (!hook->admin || hook->admin->cmdGrpId != grpid)
-					continue;
+		Ref<CommandGroup> group(r->value);
 
-				if (remove)
-					hook->admin->eflags = bits;
-				else
-					hook->admin->eflags = hook->admin->flags;
-				pInfo->eflags = hook->admin->eflags;
-			}
+		for (PluginHookList::iterator iter = group->hooks.begin(); iter != group->hooks.end(); iter++)
+		{
+			CmdHook *hook = *iter;
+			if (remove)
+				hook->admin->eflags = bits;
+			else
+				hook->admin->eflags = hook->admin->flags;
+			hook->info->eflags = hook->admin->eflags;
 		}
 	}
 }

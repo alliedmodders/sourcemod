@@ -35,7 +35,6 @@
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include "ForwardSys.h"
-#include "sm_memtable.h"
 #include <sh_list.h>
 #include <sh_string.h>
 #include <IRootConsoleMenu.h>
@@ -45,23 +44,30 @@
 #include <am-utility.h>
 #include <am-inlinelist.h>
 #include <am-linkedlist.h>
+#include <am-refcounting.h>
 
 using namespace SourceHook;
 
+struct CmdHook;
+struct ConCmdInfo;
+
+struct CommandGroup : public ke::Refcounted<CommandGroup>
+{
+	ke::LinkedList<CmdHook *> hooks;
+};
+
 struct AdminCmdInfo
 {
-	AdminCmdInfo()
+	AdminCmdInfo(const ke::Ref<CommandGroup> &group, FlagBits flags)
+		: group(group),
+		  flags(flags),
+		  eflags(0)
 	{
-		cmdGrpId = -1;
-		flags = 0;
-		eflags = 0;
 	}
-	int cmdGrpId;			/* index into cmdgroup string table */
+	ke::Ref<CommandGroup> group;
 	FlagBits flags;			/* default flags */
 	FlagBits eflags;		/* effective flags */
 };
-
-struct ConCmdInfo;
 
 struct CmdHook : public ke::InlineListNode<CmdHook>
 {
@@ -166,11 +172,12 @@ public:
 		return m_CmdList;
 	}
 private:
+	typedef StringHashMap<ke::Ref<CommandGroup> > GroupMap;
+
 	StringHashMap<ConCmdInfo *> m_Cmds; /* command lookup */
-	StringHashMap<int> m_CmdGrps;	/* command group lookup */
+	GroupMap m_CmdGrps;				/* command group map */
 	ConCmdList m_CmdList;			/* command list */
 	int m_CmdClient;				/* current client */
-	BaseStringTable m_Strings;		/* string table */
 };
 
 extern ConCmdManager g_ConCmds;

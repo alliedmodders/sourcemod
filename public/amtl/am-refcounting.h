@@ -58,6 +58,13 @@ class Newborn
     mutable T *thing_;
 };
 
+template <typename T>
+static inline Newborn<T>
+NoAddRef(T *t)
+{
+    return Newborn<T>(t);
+}
+
 // When returning a value, we'd rather not be needlessly changing the refcount,
 // so we have a special type to use for returns.
 template <typename T>
