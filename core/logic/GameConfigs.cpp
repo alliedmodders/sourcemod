@@ -119,7 +119,6 @@ static bool DoesEngineMatch(const char *value)
 CGameConfig::CGameConfig(const char *file, const char *engine)
 {
 	strncopy(m_File, file, sizeof(m_File));
-	m_pStrings = new BaseStringTable(512);
 
 	m_CustomLevel = 0;
 	m_CustomHandler = NULL;
@@ -352,7 +351,8 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			m_Offsets.replace(m_offset, atoi(value));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
-		m_Keys.replace(key, m_pStrings->AddString(value));
+		ke::AString vstr(value);
+		m_Keys.replace(key, ke::Move(vstr));
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
 		if (strcmp(key, "game") == 0)
 		{
@@ -757,7 +757,6 @@ static MasterReader master_reader;
 bool CGameConfig::Reparse(char *error, size_t maxlength)
 {
 	/* Reset cached data */
-	m_pStrings->Reset();
 	m_Offsets.clear();
 	m_Props.clear();
 	m_Keys.clear();
@@ -921,10 +920,10 @@ bool CGameConfig::GetOffset(const char *key, int *value)
 
 const char *CGameConfig::GetKeyValue(const char *key)
 {
-	int address;
-	if (!m_Keys.retrieve(key, &address))
+	StringHashMap<ke::AString>::Result r = m_Keys.find(key);
+	if (!r.found())
 		return NULL;
-	return m_pStrings->GetString(address);
+	return r->value.chars();
 }
 
 //memory addresses below 0x10000 are automatically considered invalid for dereferencing

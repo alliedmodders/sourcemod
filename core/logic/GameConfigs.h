@@ -35,7 +35,6 @@
 #include "common_logic.h"
 #include <IGameConfigs.h>
 #include <ITextParsers.h>
-#include "sm_memtable.h"
 #include <am-refcounting.h>
 #include <sm_stringhashmap.h>
 #include <sm_namehashset.h>
@@ -75,12 +74,11 @@ public: //NameHashSet
 		return strcmp(key, value->m_File) == 0;
 	}
 private:
-	ke::AutoPtr<BaseStringTable> m_pStrings;
 	char m_File[PLATFORM_MAX_PATH];
 	char m_CurFile[PLATFORM_MAX_PATH];
 	StringHashMap<int> m_Offsets;
 	StringHashMap<SendProp *> m_Props;
-	StringHashMap<int> m_Keys;
+	StringHashMap<ke::AString> m_Keys;
 	StringHashMap<void *> m_Sigs;
 	/* Parse states */
 	int m_ParseState;
