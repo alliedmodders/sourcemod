@@ -116,7 +116,7 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 	if (!pInflictor)
 		return pContext->ThrowNativeError("Invalid entity index %d for inflictor", params[2]);
 
-	CBaseEntity *pAttacker = NULL;
+	CBaseEntity *pAttacker;
 	if (params[3] != -1)
 	{
 		pAttacker = UTIL_GetCBaseEntity(params[3]);
@@ -125,21 +125,28 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 			return pContext->ThrowNativeError("Invalid entity index %d for attackerr", params[3]);
 		}
 	}
+	else
+	{
+		pAttacker = NULL;
+	}
 
 	float flDamage = sp_ctof(params[4]);
 	int iDamageType = params[5];
 
-	CBaseEntity *pWeapon = NULL;
+	CBaseEntity *pWeapon;
 	if (params[6] != -1)
 	{
-		pAttacker = UTIL_GetCBaseEntity(params[6]);
-		if (!pAttacker)
+		pWeapon = UTIL_GetCBaseEntity(params[6]);
+		if (!pWeapon)
 		{
 			return pContext->ThrowNativeError("Invalid entity index %d for weapon", params[6]);
 		}
 	}
+	else
+	{
+		pWeapon = NULL;
+	}
 
-	Vector vecDamageForce = Vector(0.0f, 0.0f, 0.0f);
 	cell_t *addr;
 	int err;
 	if ((err = pContext->LocalToPhysAddr(params[7], &addr)) != SP_ERROR_NONE)
@@ -147,26 +154,29 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Could not read damageForce vector");
 	}
 
+	Vector vecDamageForce;
 	if (addr != pContext->GetNullRef(SP_NULL_VECTOR))
 	{
-		vecDamageForce = Vector(
-			sp_ctof(addr[0]),
-			sp_ctof(addr[1]),
-			sp_ctof(addr[2]));
+		vecDamageForce.Init(sp_ctof(addr[0]), sp_ctof(addr[1]), sp_ctof(addr[2]));
+	}
+	else
+	{
+		vecDamageForce.Init();
 	}
 
-	Vector vecDamagePosition = vec3_origin;
 	if ((err = pContext->LocalToPhysAddr(params[8], &addr)) != SP_ERROR_NONE)
 	{
 		return pContext->ThrowNativeError("Could not read damagePosition vector");
 	}
 
+	Vector vecDamagePosition;
 	if (addr != pContext->GetNullRef(SP_NULL_VECTOR))
 	{
-		vecDamagePosition = Vector(
-			sp_ctof(addr[0]),
-			sp_ctof(addr[1]),
-			sp_ctof(addr[2]));
+		vecDamagePosition.Init(sp_ctof(addr[0]), sp_ctof(addr[1]), sp_ctof(addr[2]));
+	}
+	else
+	{
+		 vecDamagePosition = vec3_origin;
 	}
 
 	CTakeDamageInfoHack info(pInflictor, pAttacker, flDamage, iDamageType, pWeapon, vecDamageForce, vecDamagePosition);
