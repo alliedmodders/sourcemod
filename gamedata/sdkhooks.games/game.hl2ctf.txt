@@ -1,0 +1,115 @@
+"Games"
+{			
+	/* HL2:CTF 2.1 */
+	"hl2ctf"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"83"
+				"linux"		"84"
+			}
+			"FireBullets"
+			{
+				"windows"	"93"
+				"Linux"		"94"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"146"
+				"linux"		"147"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"54"
+				"linux"		"55"
+			}
+			"PreThink"
+			{
+				"windows"	"247"
+				"linux"		"248"
+			}
+			"PostThink"
+			{
+				"windows"	"248"
+				"linux"		"249"
+			}
+			"SetTransmit"
+			{
+				"windows"	"21"
+				"linux"		"22"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"17"
+				"linux"		"18"
+			}
+			"Spawn"
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
+			"StartTouch"
+			{
+				"windows"	"81"
+				"linux"		"82"
+			}
+			"Think"
+			{
+				"windows"	"45"
+				"linux"		"46"
+			}
+			"Touch"
+			{
+				"windows"	"82"
+				"linux"		"83"
+			}
+			"TraceAttack"
+			{
+				"windows"	"53"
+				"linux"		"54"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"130"
+				"linux"		"131"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"205"
+				"linux"		"206"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"199"
+				"linux"		"200"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"202"
+				"linux"		"203"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"200"
+				"linux"		"201"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"203"
+				"linux"		"204"
+			}
+			"Reload"
+			{
+				"windows"	"213"
+				"linux"		"214"
+			}
+			"Use"
+			{
+				"windows"	"80"
+				"linux"		"81"
+			}
+		}
+	}
+}

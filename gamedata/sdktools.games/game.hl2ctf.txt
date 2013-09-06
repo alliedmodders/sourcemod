@@ -11,7 +11,7 @@
 
 "Games"
 {
-	/* HL2:CTF 2.0 RC1 */
+	/* HL2:CTF 2.1 */
 	"hl2ctf"
 	{
 
@@ -86,6 +86,21 @@
 			{
 				"windows"	"0"
 				"linux"		"0"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"30"
+				"linux"		"29"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"29"
+				"linux"		"30"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"28"
+				"linux"		"31"
 			}
 		}
 		"Signatures"
