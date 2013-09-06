@@ -159,4 +159,9 @@
 	{
 		"game"		"synergy"
 	}
+	
+	"game.hl2ctf.txt"
+	{
+		"game"		"hl2ctf"
+	}
 }
