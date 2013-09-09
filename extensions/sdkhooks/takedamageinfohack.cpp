@@ -62,6 +62,12 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_vecReportedPosition = vec3_origin;
 	m_iAmmoType = -1;
 
+#if SOURCE_ENGINE < SE_ORANGEBOX
+	m_iCustomKillType = 0;
+#else
+	m_iDamageCustom = 0;
+#endif
+
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2
 	m_iDamagedOtherPlayers = 0;
 	m_iPlayerPenetrateCount = 0;
