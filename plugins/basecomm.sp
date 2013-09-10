@@ -98,6 +98,22 @@ public OnPluginStart()
 	{
 		OnAdminMenuReady(topmenu);
 	}
+	
+	// Normally, OnClientSayCommand would be aqequate and more appropirate here, but it does
+	// not catch attempted chat triggers, which we also want to be blocked if a player is gagged.
+	AddCommandListener(Command_Say, "say");
+	AddCommandListener(Command_Say, "say_team");
+	
+	new String:gameDir[64];
+	GetGameFolderName(gameDir, sizeof(gameDir));
+	if (StrEqual(gameDir, "insurgency", false))
+	{
+		AddCommandListener(Command_Say, "say2");
+	}
+	else if (StrEqual(gameDir, "nucleardawn", false))
+	{
+		AddCommandListener(Command_Say, "say_squad");
+	}
 }
 
 public OnAdminMenuReady(Handle:topmenu)
@@ -151,7 +167,7 @@ public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 	return true;
 }
 
-public Action:OnClientSayCommand(client, const String:command[], const String:sArgs[])
+public Action:Command_Say(client, const String:command[], argc)
 {
 	if (client)
 	{
