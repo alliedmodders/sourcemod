@@ -1,5 +1,25 @@
 SourceMod Changelog
 
+SourceMod 1.5.1 [2013-09-10]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.5.1_Release_Notes
+
+User Changes:
+ - Updated gamedata support for TF2.
+ - Added missing DispatchKeyValue gamedata for HL2 CTF (bug 5114) (peace-maker).
+ - Fixed translations not being loaded if identifier was not two or three characters (fixes Portuguese) (bug 5888).
+ - Fixed runoff voting occurring when receiving the exact number of required votes (bug 5890).
+ - Fixed reserve slot plugin hiding too many slots on Orangebox gamesif SourceTV and/or Replay are present (bug 5499).
+ - Fixed some crashes in TF2 and unexpected behavior in all games with SDKHook_TakeDamage due to uninitialized var.
+ - Fixed attempted triggers from gagged users displaying in chat (bug 5918, r=asherkin).
+ - Fixed errors in Italian translation (Oktober).
+ - Added Norwegian translation (checkster).
+
+Developer Changes:
+ - Added CS_UpdateClientModel native to CStrike extension for CS:S and CS:GO (bug 5905) (Drifter).
+ - Fixed setting weapon param in SDKHook_TakeDamage overwriting attacker instead of setting weapon (bug 5911) (KyleS)
+
+----------------------------------------------------------
 SourceMod 1.5.0 [2013-08-25]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.5.0_Release_Notes
