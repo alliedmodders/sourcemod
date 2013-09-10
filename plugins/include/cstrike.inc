@@ -368,6 +368,15 @@ native CS_WeaponIDToAlias(CSWeaponID:weaponID, String:destination[], len);
 native bool:CS_IsValidWeaponID(CSWeaponID:id);
 
 /**
+ * Sets a player's model based on their current class
+ *
+ * @param client		Player's index.
+ * @noreturn
+ * @error			Invalid client index, client not in game.
+ */
+native CS_UpdateClientModel(client);
+
+/**
  * Do not edit below this line!
  */
 public Extension:__ext_cstrike = 
@@ -404,6 +413,7 @@ public __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_AliasToWeaponID");
 	MarkNativeAsOptional("CS_WeaponIDToAlias");
 	MarkNativeAsOptional("CS_IsValidWeaponID");
+	MarkNativeAsOptional("CS_UpdateClientModel");
 }
 #endif
 

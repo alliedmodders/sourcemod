@@ -787,6 +787,25 @@ static cell_t CS_GetClientAssists(IPluginContext *pContext, const cell_t *params
 #endif
 }
 
+static cell_t CS_UpdateClientModel(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pWrapper = NULL;
+	if (!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("SetModelFromClass", 
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, NULL, 0));
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity=GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	pWrapper->Execute(&pEntity, NULL);
+
+	return 1;
+}
 sp_nativeinfo_t g_CSNatives[] = 
 {
 	{"CS_RespawnPlayer",			CS_RespawnPlayer}, 
@@ -807,6 +826,7 @@ sp_nativeinfo_t g_CSNatives[] =
 	{"CS_SetClientContributionScore",	CS_SetClientContributionScore},
 	{"CS_GetClientAssists",			CS_GetClientAssists},
 	{"CS_SetClientAssists",			CS_SetClientAssists},
+	{"CS_UpdateClientModel",		CS_UpdateClientModel},
 	{"CS_IsValidWeaponID",			CS_IsValidWeaponID},
 	{NULL,							NULL}
 };

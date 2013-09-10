@@ -138,6 +138,13 @@
 				"linux"		"@_ZNK16FileWeaponInfo_t15GetAttributeIntEPKcPK13CEconItemView"
 				"mac"		"@_ZNK16FileWeaponInfo_t15GetAttributeIntEPKcPK13CEconItemView"
 			}
+			"SetModelFromClass"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x51\x53\x56\x8B\xF1\x57\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\xD8"
+				"linux"		"@_ZN9CCSPlayer17SetModelFromClassEv"
+				"mac"		"@_ZN9CCSPlayer17SetModelFromClassEv"
+			}
 		}
 	}
 	
