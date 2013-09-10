@@ -138,6 +138,13 @@
 				"linux"		"@_ZN12CCSGameRules13CheckWinLimitEv"
 				"mac"		"@_ZN12CCSGameRules5ThinkEv"
 			}
+			"SetModelFromClass"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x2C\x89\x4D\xD4\x8B\x4D\xD4\xE8\x2A\x2A\x2A\x2A\x83\xF8\x02\x0F\x85\x2A\x2A\x2A\x2A\x8B"
+				"linux"		"@_ZN9CCSPlayer17SetModelFromClassEv"
+				"mac"		"@_ZN9CCSPlayer17SetModelFromClassEv"
+			}
 		}
 	}
 	
