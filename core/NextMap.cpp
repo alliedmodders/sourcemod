@@ -186,14 +186,14 @@ void NextMapManager::OnSourceModLevelChange( const char *mapName )
 	m_tempChangeInfo.m_mapName[0] ='\0';
 	m_tempChangeInfo.m_changeReason[0] = '\0';
 	m_tempChangeInfo.startTime = time(NULL);
-	UTIL_Format(lastMap, sizeof(lastMap), mapName);
+	UTIL_Format(lastMap, sizeof(lastMap), "%s", mapName);
 }
 
 void NextMapManager::ForceChangeLevel( const char *mapName, const char* changeReason )
 {
 	/* Store the mapname and reason */
-	UTIL_Format(m_tempChangeInfo.m_mapName, sizeof(m_tempChangeInfo.m_mapName), mapName);
-	UTIL_Format(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), changeReason);
+	UTIL_Format(m_tempChangeInfo.m_mapName, sizeof(m_tempChangeInfo.m_mapName), "%s", mapName);
+	UTIL_Format(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), "%s", changeReason);
 
 	/* Change level and skip our hook */
 	g_forcedChange = true;
