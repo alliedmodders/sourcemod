@@ -53,7 +53,7 @@ struct MapChangeData
 		startTime = 0;
 	}
 
-	char m_mapName[32];
+	char m_mapName[PLATFORM_MAX_PATH];
 	char m_changeReason[100];
 	time_t startTime;
 };
