@@ -899,10 +899,6 @@ bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t *ident)
 		m_Types[++m_FreeTypes].freeID = type;
 	}
 
-	/* Invalidate the type now */
-	IHandleTypeDispatch *dispatch = pType->dispatch;
-	pType->dispatch = NULL;
-
 	/* Make sure nothing is using this type. */
 	if (pType->opened)
 	{
@@ -923,6 +919,9 @@ bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t *ident)
 			}
 		}
 	}
+
+	/* Invalidate the type now */
+	pType->dispatch = NULL;
 
 	/* Remove it from the type cache. */
 	if (!pType->name.isVoid())
