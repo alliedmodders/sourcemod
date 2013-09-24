@@ -31,7 +31,7 @@ WatchdogTimer::WatchdogTimer()
 
 WatchdogTimer::~WatchdogTimer()
 {
-  Shutdown();
+  assert(!thread_);
 }
 
 bool

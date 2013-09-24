@@ -192,6 +192,7 @@ bool SourcePawnEngine2::Initialize()
 
 void SourcePawnEngine2::Shutdown()
 {
+	g_WatchdogTimer.Shutdown();
 	g_Jit.ShutdownJIT();
 }
 
