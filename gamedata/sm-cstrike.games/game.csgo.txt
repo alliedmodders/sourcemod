@@ -33,14 +33,14 @@
 			"CTTeamScoreOffset"
 			{
 				"windows"	"97"
-				"linux"		"125"
+				"linux"		"124"
 				"mac"		"150"
 			}
 			//Offset into CheckRestartRound
 			"TTeamScoreOffset"
 			{
 				"windows"	"122"
-				"linux"		"160"
+				"linux"		"159"
 				"mac"		"185"
 			}
 			"ClanTagOffset"
