@@ -342,7 +342,7 @@ void CExtension::MarkAllLoaded()
 void CExtension::AddPlugin(CPlugin *pPlugin)
 {
 	/* Unfortunately we have to do this :( */
-	if (m_Dependents.find(pPlugin) != m_Dependents.end())
+	if (m_Dependents.find(pPlugin) == m_Dependents.end())
 	{
 		m_Dependents.push_back(pPlugin);
 	}
