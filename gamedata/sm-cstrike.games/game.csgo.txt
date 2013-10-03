@@ -170,16 +170,16 @@
 	{
 		"Keys"
 		{
-			"CScoreBase"		"m_bIsLookingAtWeapon"
+			"CScoreBase"		"m_bIsHoldingLookAtWeapon"
 		}
 		
 		"Offsets"
 		{
 			"CScore"
 			{
-				"windows"	"36"
-				"linux"		"36"
-				"mac"		"36"
+				"windows"	"55"
+				"linux"		"55"
+				"mac"		"55"
 			}
 		}
 	}
