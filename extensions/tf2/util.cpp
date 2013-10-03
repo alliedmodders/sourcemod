@@ -88,6 +88,38 @@ bool UTIL_FindDataTable(SendTable *pTable,
 	return false;
 }
 
+bool UTIL_ContainsDataTable(SendTable *pTable, const char *name)
+{
+	const char *pname = pTable->GetName();
+	int props = pTable->GetNumProps();
+	SendProp *prop;
+	SendTable *table;
+
+	if (pname && strcmp(name, pname) == 0)
+		return true;
+
+	for (int i = 0; i < props; i++)
+	{
+		prop = pTable->GetProp(i);
+
+		if ((table = prop->GetDataTable()) != NULL)
+		{
+			pname = table->GetName();
+			if (pname && strcmp(name, pname) == 0)
+			{
+				return true;
+			}
+
+			if (UTIL_ContainsDataTable(table, name))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 ServerClass *UTIL_FindServerClass(const char *classname)
 {
 	ServerClass *sc = gamedll->GetAllServerClasses();
