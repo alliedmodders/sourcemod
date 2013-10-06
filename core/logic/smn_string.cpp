@@ -122,7 +122,7 @@ static cell_t sm_strconvint(IPluginContext *pCtx, const cell_t *params)
 	char *str, *dummy;
 	pCtx->LocalToString(params[1], &str);
 
-	return static_cast<cell_t>(strtol(str, &dummy, params[2]));
+	return static_cast<cell_t>(strtoul(str, &dummy, params[2]));
 }
 
 static cell_t StringToIntEx(IPluginContext *pCtx, const cell_t *params)
@@ -132,7 +132,7 @@ static cell_t StringToIntEx(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[1], &str);
 	pCtx->LocalToPhysAddr(params[2], &addr);
 
-	*addr = static_cast<cell_t>(strtol(str, &dummy, params[3]));
+	*addr = static_cast<cell_t>(strtoul(str, &dummy, params[3]));
 
 	return dummy - str;
 }
