@@ -68,10 +68,10 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_iDamageCustom = 0;
 #endif
 
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2
 	m_iDamagedOtherPlayers = 0;
-	m_iPlayerPenetrateCount = 0;
-	m_flUnknown = 0.0f;
+	m_iPlayerPenetrationCount = 0;
+	m_flDamageBonus = 0.0f;
 #endif
 
 #if SOURCE_ENGINE >= SE_ALIENSWARM
