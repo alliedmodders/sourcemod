@@ -2019,7 +2019,7 @@ bool CPlayer::IsAuthorized()
 bool CPlayer::IsAuthStringValidated()
 {     
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-	if (g_Players.m_bAuthstringValidation && !g_HL2.IsLANServer())
+	if (!IsFakeClient() && g_Players.m_bAuthstringValidation && !g_HL2.IsLANServer())
 	{
 #if SOURCE_ENGINE == SE_DOTA
 		return engine->IsClientFullyAuthenticated(m_iIndex);
