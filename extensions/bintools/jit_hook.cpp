@@ -44,15 +44,15 @@ inline void Write_Function_Prologue(JitWriter *jit, bool RetInMemory)
 	//push ebp
 	//push ebx
 	//mov ebp, esp
-	IA32_Push_Reg(jit, REG_EBP);
-	IA32_Push_Reg(jit, REG_EBX);
-	IA32_Mov_Reg_Rm(jit, REG_EBP, REG_ESP, MOD_REG);
+	IA32_Push_Reg(jit, kREG_EBP);
+	IA32_Push_Reg(jit, kREG_EBX);
+	IA32_Mov_Reg_Rm(jit, kREG_EBP, kREG_ESP, MOD_REG);
 #if defined PLATFORM_WINDOWS
 	//mov ebx, ecx
-	IA32_Mov_Reg_Rm(jit, REG_EBX, REG_ECX, MOD_REG);
+	IA32_Mov_Reg_Rm(jit, kREG_EBX, kREG_ECX, MOD_REG);
 #elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
 	//mov ebx, [ebp+12+(RetInMemory)?4:0]
-	IA32_Mov_Reg_Rm_Disp8(jit, REG_EBX, REG_EBP, 12+((RetInMemory)?4:0));
+	IA32_Mov_Reg_Rm_Disp8(jit, kREG_EBX, kREG_EBP, 12+((RetInMemory)?4:0));
 #endif
 }
 
@@ -62,9 +62,9 @@ inline void Write_Function_Epilogue(JitWriter *jit, unsigned short size)
 	//pop ebx
 	//pop ebp
 	//ret <value>
-	IA32_Mov_Reg_Rm(jit, REG_ESP, REG_EBP, MOD_REG);
-	IA32_Pop_Reg(jit, REG_EBX);
-	IA32_Pop_Reg(jit, REG_EBP);
+	IA32_Mov_Reg_Rm(jit, kREG_ESP, kREG_EBP, MOD_REG);
+	IA32_Pop_Reg(jit, kREG_EBX);
+	IA32_Pop_Reg(jit, kREG_EBP);
 	if (size == 0)
 	{
 		IA32_Return(jit);
@@ -80,11 +80,11 @@ inline void Write_Stack_Alloc(JitWriter *jit, jit_uint32_t size)
 	//sub esp, <value>
 	if (size <= SCHAR_MAX)
 	{
-		IA32_Sub_Rm_Imm8(jit, REG_ESP, (jit_int8_t)size, MOD_REG);
+		IA32_Sub_Rm_Imm8(jit, kREG_ESP, (jit_int8_t)size, MOD_REG);
 	}
 	else
 	{
-		IA32_Sub_Rm_Imm32(jit, REG_ESP, size, MOD_REG);
+		IA32_Sub_Rm_Imm32(jit, kREG_ESP, size, MOD_REG);
 	}
 }
 
@@ -111,17 +111,17 @@ inline void Write_Copy_Params(JitWriter *jit, bool RetInMemory, jit_uint32_t ret
 	jit_uint32_t bytes = paramsize & 0x3;
 
 	IA32_Cld(jit);
-	IA32_Push_Reg(jit, REG_EDI);
-	IA32_Push_Reg(jit, REG_ESI);
+	IA32_Push_Reg(jit, kREG_EDI);
+	IA32_Push_Reg(jit, kREG_ESI);
 	offs = -(jit_int32_t)retsize - paramsize;
 
 	if (offs > SCHAR_MIN)
 	{
-		IA32_Lea_DispRegImm8(jit, REG_EDI, REG_EBP, (jit_int8_t)offs);
+		IA32_Lea_DispRegImm8(jit, kREG_EDI, kREG_EBP, (jit_int8_t)offs);
 	}
 	else
 	{
-		IA32_Lea_DispRegImm32(jit, REG_EDI, REG_EBP, offs);
+		IA32_Lea_DispRegImm32(jit, kREG_EDI, kREG_EBP, offs);
 	}
 	offs = 12 + ((RetInMemory) ? sizeof(void *) : 0);
 
@@ -131,26 +131,26 @@ inline void Write_Copy_Params(JitWriter *jit, bool RetInMemory, jit_uint32_t ret
 
 	if (offs < SCHAR_MAX)
 	{
-		IA32_Lea_DispRegImm8(jit, REG_ESI, REG_EBP, (jit_int8_t)offs);
+		IA32_Lea_DispRegImm8(jit, kREG_ESI, kREG_EBP, (jit_int8_t)offs);
 	}
 	else
 	{
-		IA32_Lea_DispRegImm32(jit, REG_ESI, REG_EBP, offs);
+		IA32_Lea_DispRegImm32(jit, kREG_ESI, kREG_EBP, offs);
 	}
 	if (dwords)
 	{
-		IA32_Mov_Reg_Imm32(jit, REG_ECX, dwords);
+		IA32_Mov_Reg_Imm32(jit, kREG_ECX, dwords);
 		IA32_Rep(jit);
 		IA32_Movsd(jit);
 	}
 	if (bytes)
 	{
-		IA32_Mov_Reg_Imm32(jit, REG_ECX, bytes);
+		IA32_Mov_Reg_Imm32(jit, kREG_ECX, bytes);
 		IA32_Rep(jit);
 		IA32_Movsb(jit);
 	}
-	IA32_Pop_Reg(jit, REG_ESI);
-	IA32_Pop_Reg(jit, REG_EDI);
+	IA32_Pop_Reg(jit, kREG_ESI);
+	IA32_Pop_Reg(jit, kREG_EDI);
 }
 
 inline void Write_Push_Params(JitWriter *jit, 
@@ -161,7 +161,7 @@ inline void Write_Push_Params(JitWriter *jit,
 							  HookWrapper *pWrapper)
 {
 	//and esp, 0xFFFFFFF0
-	IA32_And_Rm_Imm8(jit, REG_ESP, MOD_REG, -16);
+	IA32_And_Rm_Imm8(jit, kREG_ESP, MOD_REG, -16);
 
 	//if retvoid
 	// push 0
@@ -177,13 +177,13 @@ inline void Write_Push_Params(JitWriter *jit,
 		jit_int32_t offs = -(jit_int32_t)retsize;
 		if (offs >= SCHAR_MIN)
 		{
-			IA32_Lea_DispRegImm8(jit, REG_EAX, REG_EBP, (jit_int8_t)offs);
+			IA32_Lea_DispRegImm8(jit, kREG_EAX, kREG_EBP, (jit_int8_t)offs);
 		}
 		else
 		{
-			IA32_Lea_DispRegImm32(jit, REG_EAX, REG_EBP, offs);
+			IA32_Lea_DispRegImm32(jit, kREG_EAX, kREG_EBP, offs);
 		}
-		IA32_Push_Reg(jit, REG_EAX);
+		IA32_Push_Reg(jit, kREG_EAX);
 	}
 
 	//if void
@@ -200,18 +200,18 @@ inline void Write_Push_Params(JitWriter *jit,
 		jit_int32_t offs = -(jit_int32_t)retsize - paramsize;
 		if (offs > SCHAR_MIN)
 		{
-			IA32_Lea_DispRegImm8(jit, REG_EDX, REG_EBP, (jit_int8_t)offs);
+			IA32_Lea_DispRegImm8(jit, kREG_EDX, kREG_EBP, (jit_int8_t)offs);
 		} else {
-			IA32_Lea_DispRegImm32(jit, REG_EDX, REG_EBP, offs);
+			IA32_Lea_DispRegImm32(jit, kREG_EDX, kREG_EBP, offs);
 		}
-		IA32_Push_Reg(jit, REG_EDX);
+		IA32_Push_Reg(jit, kREG_EDX);
 	}
 
 	//push eax (thisptr)
-	//IA32_Push_Reg(jit, REG_ECX);
+	//IA32_Push_Reg(jit, kREG_ECX);
 
 	//push ebx
-	IA32_Push_Reg(jit, REG_EBX);
+	IA32_Push_Reg(jit, kREG_EBX);
 
 	//push <pWrapper>
 	IA32_Push_Imm32(jit, (jit_int32_t)pWrapper);
@@ -243,13 +243,13 @@ inline void Write_Copy_RetVal(JitWriter *jit, SourceHook::PassInfo *pRetInfo)
 		case 4:
 			{
 				//fld DWORD PTR [ebp-4]
-				IA32_Fld_Mem32_Disp8(jit, REG_EBP, -4);
+				IA32_Fld_Mem32_Disp8(jit, kREG_EBP, -4);
 				break;
 			}
 		case 8:
 			{
 				//fld QWORD PTR [ebp-8]
-				IA32_Fld_Mem64_Disp8(jit, REG_EBP, -8);
+				IA32_Fld_Mem64_Disp8(jit, kREG_EBP, -8);
 				break;
 			}
 		}
@@ -276,36 +276,36 @@ inline void Write_Copy_RetVal(JitWriter *jit, SourceHook::PassInfo *pRetInfo)
 		jit_uint32_t bytes = size & 0x3;
 
 		IA32_Cld(jit);
-		IA32_Push_Reg(jit, REG_EDI);
-		IA32_Push_Reg(jit, REG_ESI);
+		IA32_Push_Reg(jit, kREG_EDI);
+		IA32_Push_Reg(jit, kREG_ESI);
 
-		IA32_Mov_Reg_Rm_Disp8(jit, REG_EDI, REG_EBP, 12);
+		IA32_Mov_Reg_Rm_Disp8(jit, kREG_EDI, kREG_EBP, 12);
 
 		offs = -(jit_int32_t)pRetInfo->size;
 		if (offs >= SCHAR_MIN)
 		{
-			IA32_Lea_DispRegImm8(jit, REG_ESI, REG_EBP, (jit_int8_t)offs);
+			IA32_Lea_DispRegImm8(jit, kREG_ESI, kREG_EBP, (jit_int8_t)offs);
 		}
 		else
 		{
-			IA32_Lea_DispRegImm32(jit, REG_ESI, REG_EBP, offs);
+			IA32_Lea_DispRegImm32(jit, kREG_ESI, kREG_EBP, offs);
 		}
-		IA32_Mov_Reg_Rm(jit, REG_EAX, REG_EDI, MOD_REG);
+		IA32_Mov_Reg_Rm(jit, kREG_EAX, kREG_EDI, MOD_REG);
 
 		if (dwords)
 		{
-			IA32_Mov_Reg_Imm32(jit, REG_ECX, dwords);
+			IA32_Mov_Reg_Imm32(jit, kREG_ECX, dwords);
 			IA32_Rep(jit);
 			IA32_Movsd(jit);
 		}
 		if (bytes)
 		{
-			IA32_Mov_Reg_Imm32(jit, REG_ECX, bytes);
+			IA32_Mov_Reg_Imm32(jit, kREG_ECX, bytes);
 			IA32_Rep(jit);
 			IA32_Movsb(jit);
 		}
-		IA32_Pop_Reg(jit, REG_ESI);
-		IA32_Pop_Reg(jit, REG_EDI);
+		IA32_Pop_Reg(jit, kREG_ESI);
+		IA32_Pop_Reg(jit, kREG_EDI);
 	}
 	else
 	{
@@ -314,20 +314,20 @@ inline void Write_Copy_RetVal(JitWriter *jit, SourceHook::PassInfo *pRetInfo)
 		case 1:
 			{
 				//mov al, BYTE PTR [ebp-4]
-				IA32_Mov_Reg8_Rm8_Disp8(jit, REG_EAX, REG_EBP, -4);
+				IA32_Mov_Reg8_Rm8_Disp8(jit, kREG_EAX, kREG_EBP, -4);
 				break;
 			}
 		case 2:
 			{
 				//mov ax, WORD PTR [ebp-4]
 				jit->write_ubyte(IA32_16BIT_PREFIX);
-				IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EBP, -4);
+				IA32_Mov_Reg_Rm_Disp8(jit, kREG_EAX, kREG_EBP, -4);
 				break;
 			}
 		case 4:
 			{
 				//mov eax, DWORD PTR [ebp-4]
-				IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EBP, -4);
+				IA32_Mov_Reg_Rm_Disp8(jit, kREG_EAX, kREG_EBP, -4);
 				break;
 			}
 		case 8:
@@ -335,8 +335,8 @@ inline void Write_Copy_RetVal(JitWriter *jit, SourceHook::PassInfo *pRetInfo)
 				//mov eax, DWORD PTR [ebp-8]
 				//mov edx, DWORD PTR [ebp-4]
 				//:TODO: this is broken due to SH
-				IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EBP, -8);
-				IA32_Mov_Reg_Rm_Disp8(jit, REG_EDX, REG_EBP, -4);
+				IA32_Mov_Reg_Rm_Disp8(jit, kREG_EAX, kREG_EBP, -8);
+				IA32_Mov_Reg_Rm_Disp8(jit, kREG_EDX, kREG_EBP, -4);
 				break;
 			}
 		}

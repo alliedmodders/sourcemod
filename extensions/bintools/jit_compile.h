@@ -53,15 +53,15 @@ inline jit_uint8_t _DecodeRegister3(jit_uint32_t val)
 	{
 	case 0:
 		{
-			return REG_EAX;
+			return kREG_EAX;
 		}
 	case 1:
 		{
-			return REG_EDX;
+			return kREG_EDX;
 		}
 	case 2:
 		{
-			return REG_ECX;
+			return kREG_ECX;
 		}
 	}
 

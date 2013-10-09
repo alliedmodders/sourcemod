@@ -51,17 +51,17 @@
 #define SCALE8		3
 
 //Register codes
-#define REG_EAX			0
-#define REG_ECX			1
-#define REG_EDX			2
-#define REG_EBX			3
-#define	REG_ESP			4
-#define	REG_SIB			4
-#define REG_NOIDX		4
-#define REG_IMM_BASE	5
-#define REG_EBP			5
-#define REG_ESI			6
-#define REG_EDI			7
+const jit_uint8_t kREG_EAX      = 0;
+const jit_uint8_t kREG_ECX      = 1;
+const jit_uint8_t kREG_EDX      = 2;
+const jit_uint8_t kREG_EBX      = 3;
+const jit_uint8_t kREG_ESP      = 4;
+const jit_uint8_t kREG_SIB      = 4;
+const jit_uint8_t kREG_NOIDX    = 4;
+const jit_uint8_t kREG_IMM_BASE = 5;
+const jit_uint8_t kREG_EBP      = 5;
+const jit_uint8_t kREG_ESI      = 6;
+const jit_uint8_t kREG_EDI      = 7;
 
 #define IA32_16BIT_PREFIX	0x66
 
@@ -372,7 +372,7 @@ inline void IA32_Lea_Reg_DispRegMultImm8(JitWriter *jit,
 							  jit_int8_t val)
 {
 	jit->write_ubyte(IA32_LEA_REG_MEM);
-	jit->write_ubyte(ia32_modrm(MOD_DISP8, dest, REG_SIB));
+	jit->write_ubyte(ia32_modrm(MOD_DISP8, dest, kREG_SIB));
 	jit->write_ubyte(ia32_sib(scale, src_index, src_base));
 	jit->write_byte(val);
 }
@@ -420,15 +420,15 @@ inline void IA32_Fld_Mem64_Disp32(JitWriter *jit, jit_uint8_t src, jit_int32_t v
 inline void IA32_Fstp_Mem32_ESP(JitWriter *jit)
 {
 	jit->write_ubyte(IA32_FSTP_MEM32);
-	jit->write_ubyte(ia32_modrm(MOD_MEM_REG, 3, REG_SIB));
-	jit->write_ubyte(ia32_sib(NOSCALE, REG_NOIDX, REG_ESP));
+	jit->write_ubyte(ia32_modrm(MOD_MEM_REG, 3, kREG_SIB));
+	jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, kREG_ESP));
 }
 
 inline void IA32_Fstp_Mem64_ESP(JitWriter *jit)
 {
 	jit->write_ubyte(IA32_FSTP_MEM64);
-	jit->write_ubyte(ia32_modrm(MOD_MEM_REG, 3, REG_SIB));
-	jit->write_ubyte(ia32_sib(NOSCALE, REG_NOIDX, REG_ESP));
+	jit->write_ubyte(ia32_modrm(MOD_MEM_REG, 3, kREG_SIB));
+	jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, kREG_ESP));
 }
 
 inline void IA32_Return_Popstack(JitWriter *jit, unsigned short bytes)
