@@ -36,6 +36,7 @@
 #include "PlayerManager.h"
 #include "HalfLife2.h"
 #include "logic_bridge.h"
+#include "sourcemod.h"
 
 #if SOURCE_ENGINE == SE_DOTA
 SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
