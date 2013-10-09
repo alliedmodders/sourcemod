@@ -46,6 +46,7 @@
 #include "AdminCache.h"
 #include "HalfLife2.h"
 #include "CoreConfig.h"
+#include "IDBDriver.h"
 #if SOURCE_ENGINE == SE_DOTA
 #include "convar_sm_dota.h"
 #elif SOURCE_ENGINE >= SE_ALIENSWARM
@@ -261,6 +262,19 @@ static bool is_map_running()
 	return g_SourceMod.IsMapRunning();
 }
 
+static DatabaseInfo keyvalues_to_dbinfo(KeyValues *kv)
+{
+	DatabaseInfo info;
+	info.database = kv->GetString("database", "");
+	info.driver = kv->GetString("driver", "default");
+	info.host = kv->GetString("host", "");
+	info.maxTimeout = kv->GetInt("timeout", 0);
+	info.pass = kv->GetString("pass", "");
+	info.port = kv->GetInt("port", 0);
+	info.user = kv->GetString("user", "");
+	return info;
+}
+
 int read_cmd_argc(const CCommand &args)
 {
 	return args.ArgC();
@@ -394,6 +408,7 @@ static sm_core_t core_bridge =
 	do_global_plugin_loads,
 	SM_AreConfigsExecuted,
 	SM_ExecuteForPlugin,
+	keyvalues_to_dbinfo,
 	GAMEFIX,
 	&serverGlobals
 };

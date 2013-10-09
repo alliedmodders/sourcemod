@@ -36,6 +36,7 @@
 #include <IHandleSys.h>
 #include <IShareSys.h>
 #include <IPluginSys.h>
+#include <IDBDriver.h>
 #include <sh_string.h>
 #include <sp_vm_api.h>
 #include <sh_vector.h>
@@ -97,6 +98,7 @@ namespace SourceMod
 class IVEngineServer;
 class IFileSystem;
 class ConVar;
+class KeyValues;
 class SMGlobalClass;
 
 namespace SourceMod
@@ -264,6 +266,7 @@ struct sm_core_t
 	void			(*DoGlobalPluginLoads)();
 	bool			(*AreConfigsExecuted)();
 	void			(*ExecuteConfigs)(IPluginContext *ctx);
+	DatabaseInfo	(*GetDBInfoFromKeyValues)(KeyValues *);
 	const char		*gamesuffix;
 	/* Data */
 	ServerGlobals   *serverGlobals;

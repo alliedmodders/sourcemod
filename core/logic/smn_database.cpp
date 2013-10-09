@@ -29,12 +29,11 @@
  * Version: $Id$
  */
 
-#include "sm_globals.h"
+#include "common_logic.h"
 #include "Database.h"
-#include "sm_stringutil.h"
-#include "logic_bridge.h"
-#include "KeyValues.h"
-#include "sourcemod.h"
+#include "ExtensionSys.h"
+#include "stringutil.h"
+#include "ISourceMod.h"
 
 HandleType_t hStmtType;
 
@@ -202,7 +201,7 @@ public:
 		m_pQuery = m_pDatabase->DoQuery(m_Query.c_str());
 		if (!m_pQuery)
 		{
-			UTIL_Format(error, sizeof(error), "%s", m_pDatabase->GetError());
+			g_pSM->Format(error, sizeof(error), "%s", m_pDatabase->GetError());
 		}
 		m_pDatabase->UnlockFromFullAtomicOperation();
 	}
@@ -235,7 +234,7 @@ public:
 			{
 				m_pQuery = NULL;
 			} else {
-				UTIL_Format(error, sizeof(error), "Could not alloc handle");
+				g_pSM->Format(error, sizeof(error), "Could not alloc handle");
 				delete c;
 			}
 		}
@@ -293,7 +292,7 @@ public:
 		const DatabaseInfo *pInfo = g_DBMan.FindDatabaseConf(dbname);
 		if (!pInfo)
 		{
-			UTIL_Format(error, sizeof(error), "Could not find database config \"%s\"", dbname);
+			g_pSM->Format(error, sizeof(error), "Could not find database config \"%s\"", dbname);
 		} else {
 			m_pDatabase = m_pDriver->Connect(pInfo, false, error, sizeof(error));
 		}
@@ -321,7 +320,7 @@ public:
 				== BAD_HANDLE)
 			{
 				m_pDatabase->Close();
-				UTIL_Format(error, sizeof(error), "Unable to allocate Handle");
+				g_pSM->Format(error, sizeof(error), "Unable to allocate Handle");
 			}
 		}
 
@@ -369,10 +368,10 @@ static cell_t SQL_Connect(IPluginContext *pContext, const cell_t *params)
 	}
 
 	/* HACK! Add us to the dependency list */
-	IExtension *pExt = extsys->GetExtensionFromIdent(driver->GetIdentity());
+	IExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
 	if (pExt)
 	{
-		extsys->BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
+		g_Extensions.BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
 	}
 
 	return hndl;
@@ -402,18 +401,18 @@ static cell_t SQL_TConnect(IPluginContext *pContext, const cell_t *params)
 		}
 		if (!driver)
 		{
-			UTIL_Format(error, 
+			g_pSM->Format(error, 
 				sizeof(error), 
 				"Could not find driver \"%s\"", 
 				pInfo->driver[0] == '\0' ? g_DBMan.GetDefaultDriverName() : pInfo->driver);
 		} else if (!driver->IsThreadSafe()) {
-			UTIL_Format(error,
+			g_pSM->Format(error,
 				sizeof(error),
 				"Driver \"%s\" is not thread safe!",
 				driver->GetIdentifier());
 		}
 	} else {
-		UTIL_Format(error, sizeof(error), "Could not find database conf \"%s\"", conf);
+		g_pSM->Format(error, sizeof(error), "Could not find database conf \"%s\"", conf);
 	}
 
 	if (!pInfo || !driver)
@@ -427,10 +426,10 @@ static cell_t SQL_TConnect(IPluginContext *pContext, const cell_t *params)
 	}
 
 	/* HACK! Add us to the dependency list */
-	IExtension *pExt = extsys->GetExtensionFromIdent(driver->GetIdentity());
+	IExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
 	if (pExt)
 	{
-		extsys->BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
+		g_Extensions.BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
 	}
 
 	/* Finally, add to the thread if we can */
@@ -498,10 +497,10 @@ static cell_t SQL_ConnectEx(IPluginContext *pContext, const cell_t *params)
 		}
 
 		/* HACK! Add us to the dependency list */
-		IExtension *pExt = extsys->GetExtensionFromIdent(driver->GetIdentity());
+		IExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
 		if (pExt)
 		{
-			extsys->BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
+			g_Extensions.BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
 		}
 
 		return hndl;
@@ -1342,7 +1341,7 @@ static cell_t SQL_ConnectCustom(IPluginContext *pContext, const cell_t *params)
 	KeyValues *kv;
 	HandleError err;
 
-	kv = g_SourceMod.ReadKeyValuesHandle(params[1], &err, false);
+	kv = g_pSM->ReadKeyValuesHandle(params[1], &err, false);
 	if (kv == NULL)
 	{
 		return pContext->ThrowNativeError("Invalid KeyValues handle %x (error: %d)",
@@ -1350,14 +1349,7 @@ static cell_t SQL_ConnectCustom(IPluginContext *pContext, const cell_t *params)
 										  err);
 	}
 
-	DatabaseInfo info;
-	info.database = kv->GetString("database", "");
-	info.driver = kv->GetString("driver", "default");
-	info.host = kv->GetString("host", "");
-	info.maxTimeout = kv->GetInt("timeout", 0);
-	info.pass = kv->GetString("pass", "");
-	info.port = kv->GetInt("port", 0);
-	info.user = kv->GetString("user", "");
+	DatabaseInfo info = smcore.GetDBInfoFromKeyValues(kv);
 
 	IDBDriver *driver;
 	if (info.driver[0] == '\0' || strcmp(info.driver, "default") == 0)
@@ -1373,7 +1365,7 @@ static cell_t SQL_ConnectCustom(IPluginContext *pContext, const cell_t *params)
 	{
 		char buffer[255];
 
-		UTIL_Format(buffer, sizeof(buffer), "Could not find driver \"%s\"", info.driver);
+		g_pSM->Format(buffer, sizeof(buffer), "Could not find driver \"%s\"", info.driver);
 		pContext->StringToLocalUTF8(params[2], params[3], buffer, NULL);
 
 		return BAD_HANDLE;
@@ -1398,10 +1390,10 @@ static cell_t SQL_ConnectCustom(IPluginContext *pContext, const cell_t *params)
 	}
 
 	/* HACK! Add us to the dependency list */
-	IExtension *pExt = extsys->GetExtensionFromIdent(driver->GetIdentity());
+	IExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
 	if (pExt)
 	{
-		extsys->BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
+		g_Extensions.BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
 	}
 
 	return hndl;

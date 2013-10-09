@@ -33,7 +33,7 @@
 #define _INCLUDE_DATABASE_MANAGER_H_
 
 #include <IDBDriver.h>
-#include "sm_globals.h"
+#include "common_logic.h"
 #include <sh_vector.h>
 #include <sh_string.h>
 #include <sh_list.h>

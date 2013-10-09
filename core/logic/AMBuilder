@@ -60,7 +60,9 @@ files = [
 	'NativeOwner.cpp',
 	'NativeInvoker.cpp',
 	'ExtensionSys.cpp',
-	'DebugReporter.cpp'
+	'DebugReporter.cpp',
+	'Database.cpp',
+	'smn_database.cpp',
 	]
 if AMBuild.target['platform'] == 'windows':
 	files.append('thread/WinThreads.cpp')

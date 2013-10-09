@@ -30,7 +30,6 @@
  */
 #include "frame_hooks.h"
 #include "TimerSys.h"
-#include "Database.h"
 #include "HalfLife2.h"
 #include "MenuStyle_Valve.h"
 #include "MenuStyle_Radio.h"
@@ -96,7 +95,6 @@ void RunFrameHooks(bool simulating)
 	}
 
 	/* Frame based hooks */
-	g_DBMan.RunFrame();
 	g_HL2.ProcessFakeCliCmdQueue();
 	g_HL2.ProcessDelayedKicks();
 

@@ -30,12 +30,12 @@
  */
 
 #include "Database.h"
-#include "sourcemod.h"
-#include "sm_stringutil.h"
-#include "Logger.h"
+#include "ISourceMod.h"
+#include "HandleSys.h"
+#include "ExtensionSys.h"
+#include "PluginSys.h"
 #include <stdlib.h>
 #include <IThreader.h>
-#include "logic_bridge.h"
 
 #define DBPARSE_LEVEL_NONE		0
 #define DBPARSE_LEVEL_MAIN		1
@@ -52,22 +52,29 @@ DBManager::DBManager()
 {
 }
 
+static void FrameHook(bool simulating)
+{
+	g_DBMan.RunFrame();
+}
+
 void DBManager::OnSourceModAllInitialized()
 {
 	HandleAccess sec;
 
-	handlesys->InitAccessDefaults(NULL, &sec);
+	g_HandleSys.InitAccessDefaults(NULL, &sec);
 	sec.access[HandleAccess_Delete] |= HANDLE_RESTRICT_IDENTITY;
 	sec.access[HandleAccess_Clone] |= HANDLE_RESTRICT_IDENTITY;
 	
-	m_DriverType = handlesys->CreateType("IDriver", this, 0, NULL, &sec, g_pCoreIdent, NULL);
-	m_DatabaseType = handlesys->CreateType("IDatabase", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+	m_DriverType = g_HandleSys.CreateType("IDriver", this, 0, NULL, &sec, g_pCoreIdent, NULL);
+	m_DatabaseType = g_HandleSys.CreateType("IDatabase", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 
-	sharesys->AddInterface(NULL, this);
+	g_ShareSys.AddInterface(NULL, this);
 
-	g_SourceMod.BuildPath(Path_SM, m_Filename, sizeof(m_Filename), "configs/databases.cfg");
+	g_pSM->BuildPath(Path_SM, m_Filename, sizeof(m_Filename), "configs/databases.cfg");
 
-	scripts->AddPluginsListener(this);
+	g_PluginSys.AddPluginsListener(this);
+	
+	g_pSM->AddGameFrameHook(&FrameHook);
 }
 
 void DBManager::OnSourceModLevelChange(const char *mapName)
@@ -82,21 +89,22 @@ void DBManager::OnSourceModLevelChange(const char *mapName)
 	ke::AutoLock lock(&m_ConfigLock);
 	if ((err = textparsers->ParseFile_SMC(m_Filename, this, &states)) != SMCError_Okay)
 	{
-		g_Logger.LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename);
+		smcore.LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename);
 		if (err != SMCError_Custom)
 		{
 			const char *txt = textparsers->GetSMCErrorString(err);
-			g_Logger.LogError("[SM] Line %d: %s", states.line, txt);
+			smcore.LogError("[SM] Line %d: %s", states.line, txt);
 		}
 	}
 }
 
 void DBManager::OnSourceModShutdown()
 {
+	g_pSM->RemoveGameFrameHook(&FrameHook);
 	KillWorkerThread();
-	scripts->RemovePluginsListener(this);
-	handlesys->RemoveType(m_DatabaseType, g_pCoreIdent);
-	handlesys->RemoveType(m_DriverType, g_pCoreIdent);
+	g_PluginSys.RemovePluginsListener(this);
+	g_HandleSys.RemoveType(m_DatabaseType, g_pCoreIdent);
+	g_HandleSys.RemoveType(m_DriverType, g_pCoreIdent);
 	ClearConfigs();
 }
 
@@ -118,7 +126,7 @@ void DBManager::OnHandleDestroy(HandleType_t type, void *object)
 		return;
 	}
 
-	if (handlesys->TypeCheck(type, m_DatabaseType))
+	if (g_HandleSys.TypeCheck(type, m_DatabaseType))
 	{
 		IDatabase *pdb = (IDatabase *)object;
 		pdb->Close();
@@ -263,7 +271,7 @@ bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool
 			*pdr = NULL;
 		}
 		*pdb = NULL;
-		UTIL_Format(error, maxlength, "Configuration \"%s\" not found", name);
+		g_pSM->Format(error, maxlength, "Configuration \"%s\" not found", name);
 		return false;
 	}
 
@@ -300,7 +308,7 @@ bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool
 	}
 	*pdb = NULL;
 
-	UTIL_Format(error, maxlength, "Driver \"%s\" not found", dname);
+	g_pSM->Format(error, maxlength, "Driver \"%s\" not found", dname);
 
 	return false;
 }
@@ -395,7 +403,7 @@ Handle_t DBManager::CreateHandle(DBHandleType dtype, void *ptr, IdentityToken_t 
 		return BAD_HANDLE;
 	}
 
-	return handlesys->CreateHandle(type, ptr, pToken, g_pCoreIdent, NULL);
+	return g_HandleSys.CreateHandle(type, ptr, pToken, g_pCoreIdent, NULL);
 }
 
 HandleError DBManager::ReadHandle(Handle_t hndl, DBHandleType dtype, void **ptr)
@@ -413,13 +421,13 @@ HandleError DBManager::ReadHandle(Handle_t hndl, DBHandleType dtype, void **ptr)
 
 	HandleSecurity sec(NULL, g_pCoreIdent);
 
-	return handlesys->ReadHandle(hndl, type, &sec, ptr);
+	return g_HandleSys.ReadHandle(hndl, type, &sec, ptr);
 }
 
 HandleError DBManager::ReleaseHandle(Handle_t hndl, DBHandleType type, IdentityToken_t *token)
 {
 	HandleSecurity sec(token, g_pCoreIdent);
-	return handlesys->FreeHandle(hndl, &sec);
+	return g_HandleSys.FreeHandle(hndl, &sec);
 }
 
 unsigned int DBManager::GetDriverCount()
@@ -476,9 +484,9 @@ IDBDriver *DBManager::FindOrLoadDriver(const char *name)
 	}
 
 	char filename[PLATFORM_MAX_PATH];
-	UTIL_Format(filename, sizeof(filename), "dbi.%s.ext", name);
+	g_pSM->Format(filename, sizeof(filename), "dbi.%s.ext", name);
 
-	IExtension *pExt = extsys->LoadAutoExtension(filename);
+	IExtension *pExt = g_Extensions.LoadAutoExtension(filename);
 	if (!pExt || !pExt->IsLoaded() || m_drivers.size() <= last_size)
 	{
 		return NULL;
@@ -527,7 +535,7 @@ bool DBManager::AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio)
 		{
 			if (!s_OneTimeThreaderErrorMsg)
 			{
-				g_Logger.LogError("[SM] Unable to create db threader (error unknown)");
+				smcore.LogError("[SM] Unable to create db threader (error unknown)");
 				s_OneTimeThreaderErrorMsg = true;
 			}
 			m_Worker = NULL;
@@ -720,6 +728,6 @@ const char *DBManager::GetDefaultDriverName()
 
 void DBManager::AddDependency(IExtension *myself, IDBDriver *driver)
 {
-	extsys->AddRawDependency(myself, driver->GetIdentity(), driver);
+	g_Extensions.AddRawDependency(myself, driver->GetIdentity(), driver);
 }
 
