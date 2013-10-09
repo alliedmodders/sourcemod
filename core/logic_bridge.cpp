@@ -39,7 +39,6 @@
 #include "sm_stringutil.h"
 #include "Logger.h"
 #include "sm_srvcmds.h"
-#include "ForwardSys.h"
 #include "TimerSys.h"
 #include "logic_bridge.h"
 #include "PlayerManager.h"
@@ -85,6 +84,7 @@ IScriptManager *scripts;
 IShareSys *sharesys;
 IExtensionSys *extsys;
 IHandleSys *handlesys;
+IForwardManager *forwardsys;
 
 class VEngineServer_Logic : public IVEngineServer_Logic
 {
@@ -372,7 +372,6 @@ static sm_core_t core_bridge =
 	reinterpret_cast<IVEngineServer*>(&logic_engine),
 	reinterpret_cast<IFileSystem*>(&logic_filesystem),
 	&g_RootMenu,
-	&g_Forwards,
 	&g_Timers,
 	&g_Players,
 	&g_Admins,
@@ -453,6 +452,7 @@ void InitLogicBridge()
 	extsys = logicore.extsys;
 	g_pCoreIdent = logicore.core_ident;
 	handlesys = logicore.handlesys;
+	forwardsys = logicore.forwardsys;
 }
 
 bool StartLogicBridge(char *error, size_t maxlength)

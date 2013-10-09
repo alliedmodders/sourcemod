@@ -34,10 +34,10 @@
 
 #include <IForwardSys.h>
 #include <IPluginSys.h>
-#include "sm_globals.h"
+#include "common_logic.h"
 #include <sh_list.h>
 #include <sh_stack.h>
-#include "sourcemod.h"
+#include "ISourceMod.h"
 
 using namespace SourceHook;
 
@@ -45,29 +45,6 @@ typedef List<IPluginFunction *>::iterator FuncIter;
 
 /* :TODO: a global name max define for sourcepawn, should mirror compiler's sNAMEMAX */
 #define FORWARDS_NAME_MAX		64
-
-struct ByrefInfo
-{
-	unsigned int cells;
-	cell_t *orig_addr;
-	int flags;
-	int sz_flags;
-};
-
-struct FwdParamInfo
-{
-	cell_t val;
-	ByrefInfo byref;
-	ParamType pushedas;
-};
-
-class SourceMod::IForwardFilter
-{
-public:
-	virtual void Preprocess(IPluginFunction *fun, FwdParamInfo *params)
-	{
-	}
-};
 
 class FuncIteratorGuard
 {

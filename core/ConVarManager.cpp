@@ -29,7 +29,6 @@
 
 #include "ConVarManager.h"
 #include "HalfLife2.h"
-#include "ForwardSys.h"
 #include "sm_srvcmds.h"
 #include "sm_stringutil.h"
 #include <sh_vector.h>
@@ -151,7 +150,7 @@ void ConVarManager::OnSourceModShutdown()
 		handlesys->FreeHandle(pInfo->handle, &sec);
 		if (pInfo->pChangeForward != NULL)
 		{
-			g_Forwards.ReleaseForward(pInfo->pChangeForward);
+			forwardsys->ReleaseForward(pInfo->pChangeForward);
 		}
 		if (pInfo->sourceMod)
 		{
@@ -558,7 +557,7 @@ void ConVarManager::HookConVarChange(ConVar *pConVar, IPluginFunction *pFunction
 		/* If forward does not exist, create it */
 		if (!pForward)
 		{
-			pForward = g_Forwards.CreateForwardEx(NULL, ET_Ignore, 3, CONVARCHANGE_PARAMS);
+			pForward = forwardsys->CreateForwardEx(NULL, ET_Ignore, 3, CONVARCHANGE_PARAMS);
 			pInfo->pChangeForward = pForward;
 		}
 
@@ -598,7 +597,7 @@ void ConVarManager::UnhookConVarChange(ConVar *pConVar, IPluginFunction *pFuncti
 			!ConVarReentrancyGuard::IsCvarInChain(pConVar))
 		{
 			/* Free this forward */
-			g_Forwards.ReleaseForward(pForward);
+			forwardsys->ReleaseForward(pForward);
 			pInfo->pChangeForward = NULL;
 		}
 	}

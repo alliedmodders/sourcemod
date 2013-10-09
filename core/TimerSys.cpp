@@ -31,7 +31,6 @@
 
 #include <time.h>
 #include "TimerSys.h"
-#include "ForwardSys.h"
 #include "sourcemm_api.h"
 #include "frame_hooks.h"
 #include "ConVarManager.h"
@@ -182,8 +181,8 @@ TimerSystem::~TimerSystem()
 void TimerSystem::OnSourceModAllInitialized()
 {
 	sharesys->AddInterface(NULL, this);
-	m_pOnGameFrame = g_Forwards.CreateForward("OnGameFrame", ET_Ignore, 0, NULL);
-	m_pOnMapTimeLeftChanged = g_Forwards.CreateForward("OnMapTimeLeftChanged", ET_Ignore, 0, NULL);
+	m_pOnGameFrame = forwardsys->CreateForward("OnGameFrame", ET_Ignore, 0, NULL);
+	m_pOnMapTimeLeftChanged = forwardsys->CreateForward("OnMapTimeLeftChanged", ET_Ignore, 0, NULL);
 }
 
 void TimerSystem::OnSourceModGameInitialized()
@@ -199,8 +198,8 @@ void TimerSystem::OnSourceModGameInitialized()
 void TimerSystem::OnSourceModShutdown()
 {
 	SetMapTimer(NULL);
-	g_Forwards.ReleaseForward(m_pOnGameFrame);
-	g_Forwards.ReleaseForward(m_pOnMapTimeLeftChanged);
+	forwardsys->ReleaseForward(m_pOnGameFrame);
+	forwardsys->ReleaseForward(m_pOnMapTimeLeftChanged);
 }
 
 void TimerSystem::OnSourceModLevelEnd()

@@ -41,6 +41,7 @@
 #include <sp_vm_api.h>
 #include <sh_vector.h>
 #include <IExtensionSys.h>
+#include <IForwardSys.h>
 
 using namespace SourceMod;
 using namespace SourcePawn;
@@ -50,7 +51,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 24)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 25)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -229,7 +230,6 @@ struct sm_core_t
 	IVEngineServer	*engine;
 	IFileSystem		*filesystem;
 	IRootConsole	*rootmenu;
-	IForwardManager	*forwardsys;
 	ITimerSystem    *timersys;
 	IPlayerManager  *playerhelpers;
 	IAdminSystem	*adminsys;
@@ -298,6 +298,7 @@ struct sm_logic_t
 	IShareSys		*sharesys;
 	IExtensionSys	*extsys;
 	IHandleSys		*handlesys;
+	IForwardManager	*forwardsys;
 	IdentityToken_t *core_ident;
 	float			sentinel;
 };

@@ -81,9 +81,52 @@ namespace SourceMod
 		ET_Hook = 3,		/**< Acts as a hook with the ResultTypes above, mid-Stops allowed, returns highest */
 		ET_LowEvent = 4,	/**< Same as ET_Event except that it returns the lowest value */
 	};
+	
+	#define SP_PARAMTYPE_ANY	0
+	#define SP_PARAMFLAG_BYREF	(1<<0)
+	#define SP_PARAMTYPE_CELL	(1<<1)
+	#define SP_PARAMTYPE_FLOAT	(2<<1)
+	#define SP_PARAMTYPE_STRING	(3<<1)|SP_PARAMFLAG_BYREF
+	#define SP_PARAMTYPE_ARRAY	(4<<1)|SP_PARAMFLAG_BYREF
+	#define SP_PARAMTYPE_VARARG	(5<<1)
 
-	class IForward;
-	class IForwardFilter;
+	/**
+	 * @brief Describes the various ways to pass parameters to plugins.
+	 */
+	enum ParamType
+	{
+		Param_Any = SP_PARAMTYPE_ANY,				/**< Any data type can be pushed */
+		Param_Cell = SP_PARAMTYPE_CELL,				/**< Only basic cells can be pushed */
+		Param_Float = SP_PARAMTYPE_FLOAT,			/**< Only floats can be pushed */
+		Param_String = SP_PARAMTYPE_STRING,			/**< Only strings can be pushed */
+		Param_Array = SP_PARAMTYPE_ARRAY,			/**< Only arrays can be pushed */
+		Param_VarArgs = SP_PARAMTYPE_VARARG,		/**< Same as "..." in plugins, anything can be pushed, but it will always be byref */
+		Param_CellByRef = SP_PARAMTYPE_CELL|SP_PARAMFLAG_BYREF,		/**< Only a cell by reference can be pushed */
+		Param_FloatByRef = SP_PARAMTYPE_FLOAT|SP_PARAMFLAG_BYREF,	/**< Only a float by reference can be pushed */
+	};
+	
+	struct ByrefInfo
+	{
+		unsigned int cells;
+		cell_t *orig_addr;
+		int flags;
+		int sz_flags;
+	};
+
+	struct FwdParamInfo
+	{
+		cell_t val;
+		ByrefInfo byref;
+		ParamType pushedas;
+	};
+	
+	class IForwardFilter
+	{
+	public:
+		virtual void Preprocess(IPluginFunction *fun, FwdParamInfo *params)
+		{
+		}
+	};
 
 	/**
 	 * @brief Unmanaged Forward, abstracts calling multiple functions as "forwards," or collections of functions.
@@ -196,29 +239,6 @@ namespace SourceMod
 		 * @return			Whether or not the function was removed.
 		 */
 		virtual bool RemoveFunction(IPluginContext *ctx, funcid_t index) =0;
-	};
-
-	#define SP_PARAMTYPE_ANY	0
-	#define SP_PARAMFLAG_BYREF	(1<<0)
-	#define SP_PARAMTYPE_CELL	(1<<1)
-	#define SP_PARAMTYPE_FLOAT	(2<<1)
-	#define SP_PARAMTYPE_STRING	(3<<1)|SP_PARAMFLAG_BYREF
-	#define SP_PARAMTYPE_ARRAY	(4<<1)|SP_PARAMFLAG_BYREF
-	#define SP_PARAMTYPE_VARARG	(5<<1)
-
-	/**
-	 * @brief Describes the various ways to pass parameters to plugins.
-	 */
-	enum ParamType
-	{
-		Param_Any = SP_PARAMTYPE_ANY,				/**< Any data type can be pushed */
-		Param_Cell = SP_PARAMTYPE_CELL,				/**< Only basic cells can be pushed */
-		Param_Float = SP_PARAMTYPE_FLOAT,			/**< Only floats can be pushed */
-		Param_String = SP_PARAMTYPE_STRING,			/**< Only strings can be pushed */
-		Param_Array = SP_PARAMTYPE_ARRAY,			/**< Only arrays can be pushed */
-		Param_VarArgs = SP_PARAMTYPE_VARARG,		/**< Same as "..." in plugins, anything can be pushed, but it will always be byref */
-		Param_CellByRef = SP_PARAMTYPE_CELL|SP_PARAMFLAG_BYREF,		/**< Only a cell by reference can be pushed */
-		Param_FloatByRef = SP_PARAMTYPE_FLOAT|SP_PARAMFLAG_BYREF,	/**< Only a float by reference can be pushed */
 	};
 	
 	/**

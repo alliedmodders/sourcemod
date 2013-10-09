@@ -46,5 +46,6 @@ extern IScriptManager *scripts;
 extern IShareSys *sharesys;
 extern IExtensionSys *extsys;
 extern IHandleSys *handlesys;
+extern IForwardManager *forwardsys;
 
 #endif /* _INCLUDE_SOURCEMOD_LOGIC_BRIDGE_H_ */

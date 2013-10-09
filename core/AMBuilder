@@ -61,7 +61,6 @@ for i in SM.sdkInfo:
 		'logic_bridge.cpp',
 		'smn_entities.cpp',
 		'sm_stringutil.cpp',
-		'ForwardSys.cpp',
 		'MenuVoting.cpp',
 		'smn_events.cpp',
 		'smn_menus.cpp',

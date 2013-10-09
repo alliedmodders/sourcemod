@@ -30,6 +30,7 @@
  */
 
 #include "sm_globals.h"
+#include "sourcemod.h"
 #include "HalfLife2.h"
 #include "sourcemm_api.h"
 #include "ConVarManager.h"

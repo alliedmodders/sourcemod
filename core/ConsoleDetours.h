@@ -33,7 +33,7 @@
 
 #include "sm_globals.h"
 #include "sourcemm_api.h"
-#include "ForwardSys.h"
+#include <IForwardSys.h>
 #include <sm_stringhashmap.h>
 
 class ConsoleDetours :

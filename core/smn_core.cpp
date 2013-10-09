@@ -37,7 +37,6 @@
 #include "sourcemod.h"
 #include "LibrarySys.h"
 #include "TimerSys.h"
-#include "ForwardSys.h"
 #include "Logger.h"
 #include <sh_memory.h>
 #include "logic_bridge.h"
@@ -67,7 +66,7 @@ public:
 
 		g_PlIter = handlesys->CreateType("PluginIterator", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 
-		g_OnLogAction = g_Forwards.CreateForward("OnLogAction", 
+		g_OnLogAction = forwardsys->CreateForward("OnLogAction", 
 			ET_Hook, 
 			5, 
 			NULL,
@@ -84,7 +83,7 @@ public:
 	}
 	void OnSourceModShutdown()
 	{
-		g_Forwards.ReleaseForward(g_OnLogAction);
+		forwardsys->ReleaseForward(g_OnLogAction);
 		handlesys->RemoveType(g_PlIter, g_pCoreIdent);
 	}
 } g_CoreNativeHelpers;

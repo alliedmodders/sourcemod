@@ -108,10 +108,10 @@ ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key,
 
 void ChatTriggers::OnSourceModAllInitialized()
 {
-	m_pShouldFloodBlock = g_Forwards.CreateForward("OnClientFloodCheck", ET_Event, 1, NULL, Param_Cell);
-	m_pDidFloodBlock = g_Forwards.CreateForward("OnClientFloodResult", ET_Event, 2, NULL, Param_Cell, Param_Cell);
-	m_pOnClientSayCmd = g_Forwards.CreateForward("OnClientSayCommand", ET_Event, 3, NULL, Param_Cell, Param_String, Param_String);
-	m_pOnClientSayCmd_Post = g_Forwards.CreateForward("OnClientSayCommand_Post", ET_Ignore, 3, NULL, Param_Cell, Param_String, Param_String);
+	m_pShouldFloodBlock = forwardsys->CreateForward("OnClientFloodCheck", ET_Event, 1, NULL, Param_Cell);
+	m_pDidFloodBlock = forwardsys->CreateForward("OnClientFloodResult", ET_Event, 2, NULL, Param_Cell, Param_Cell);
+	m_pOnClientSayCmd = forwardsys->CreateForward("OnClientSayCommand", ET_Event, 3, NULL, Param_Cell, Param_String, Param_String);
+	m_pOnClientSayCmd_Post = forwardsys->CreateForward("OnClientSayCommand_Post", ET_Ignore, 3, NULL, Param_Cell, Param_String, Param_String);
 }
 
 void ChatTriggers::OnSourceModAllInitialized_Post()
@@ -186,10 +186,10 @@ void ChatTriggers::OnSourceModShutdown()
 	}
 #endif
 
-	g_Forwards.ReleaseForward(m_pShouldFloodBlock);
-	g_Forwards.ReleaseForward(m_pDidFloodBlock);
-	g_Forwards.ReleaseForward(m_pOnClientSayCmd);
-	g_Forwards.ReleaseForward(m_pOnClientSayCmd_Post);
+	forwardsys->ReleaseForward(m_pShouldFloodBlock);
+	forwardsys->ReleaseForward(m_pDidFloodBlock);
+	forwardsys->ReleaseForward(m_pOnClientSayCmd);
+	forwardsys->ReleaseForward(m_pOnClientSayCmd_Post);
 }
 
 #if SOURCE_ENGINE == SE_DOTA

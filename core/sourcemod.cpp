@@ -39,7 +39,6 @@
 #include "AdminCache.h"
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
-#include "ForwardSys.h"
 #include "TimerSys.h"
 #include <IGameConfigs.h>
 #include "frame_hooks.h"
@@ -374,7 +373,7 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 
 	if (!g_pOnMapEnd)
 	{
-		g_pOnMapEnd = g_Forwards.CreateForward("OnMapEnd", ET_Ignore, 0, NULL);
+		g_pOnMapEnd = forwardsys->CreateForward("OnMapEnd", ET_Ignore, 0, NULL);
 	}
 
 	g_LevelEndBarrier = true;
@@ -517,7 +516,7 @@ void SourceModBase::ShutdownServices()
 	extsys->Shutdown();
 
 	if (g_pOnMapEnd)
-		g_Forwards.ReleaseForward(g_pOnMapEnd);
+		forwardsys->ReleaseForward(g_pOnMapEnd);
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;

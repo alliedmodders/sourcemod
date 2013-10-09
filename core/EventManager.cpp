@@ -30,7 +30,6 @@
  */
 
 #include "EventManager.h"
-#include "ForwardSys.h"
 #include "sm_stringutil.h"
 #include "logic_bridge.h"
 
@@ -133,12 +132,12 @@ void EventManager::OnPluginUnloaded(IPlugin *plugin)
 			{
 				if (pHook->pPreHook)
 				{
-					g_Forwards.ReleaseForward(pHook->pPreHook);
+					forwardsys->ReleaseForward(pHook->pPreHook);
 				}
 
 				if (pHook->pPostHook)
 				{
-					g_Forwards.ReleaseForward(pHook->pPostHook);
+					forwardsys->ReleaseForward(pHook->pPostHook);
 				}
 
 				delete pHook;
@@ -197,12 +196,12 @@ EventHookError EventManager::HookEvent(const char *name, IPluginFunction *pFunct
 		if (mode == EventHookMode_Pre)
 		{
 			/* Create forward for a pre hook */
-			pHook->pPreHook = g_Forwards.CreateForwardEx(NULL, ET_Hook, 3, GAMEEVENT_PARAMS);
+			pHook->pPreHook = forwardsys->CreateForwardEx(NULL, ET_Hook, 3, GAMEEVENT_PARAMS);
 			/* Add to forward list */
 			pHook->pPreHook->AddFunction(pFunction);
 		} else {
 			/* Create forward for a post hook */
-			pHook->pPostHook = g_Forwards.CreateForwardEx(NULL, ET_Ignore, 3, GAMEEVENT_PARAMS);
+			pHook->pPostHook = forwardsys->CreateForwardEx(NULL, ET_Ignore, 3, GAMEEVENT_PARAMS);
 			/* Should we copy data from a pre hook to the post hook? */
 			pHook->postCopy = (mode == EventHookMode_Post);
 			/* Add to forward list */
@@ -229,7 +228,7 @@ EventHookError EventManager::HookEvent(const char *name, IPluginFunction *pFunct
 		/* Create pre hook forward if necessary */
 		if (!pHook->pPreHook)
 		{
-			pHook->pPreHook = g_Forwards.CreateForwardEx(NULL, ET_Event, 3, GAMEEVENT_PARAMS);
+			pHook->pPreHook = forwardsys->CreateForwardEx(NULL, ET_Event, 3, GAMEEVENT_PARAMS);
 		}
 
 		/* Add plugin function to forward list */
@@ -238,7 +237,7 @@ EventHookError EventManager::HookEvent(const char *name, IPluginFunction *pFunct
 		/* Create post hook forward if necessary */
 		if (!pHook->pPostHook)
 		{
-			pHook->pPostHook = g_Forwards.CreateForwardEx(NULL, ET_Ignore, 3, GAMEEVENT_PARAMS);
+			pHook->pPostHook = forwardsys->CreateForwardEx(NULL, ET_Ignore, 3, GAMEEVENT_PARAMS);
 		}
 
 		/* If postCopy is false, then we may want to set it to true */
@@ -285,7 +284,7 @@ EventHookError EventManager::UnhookEvent(const char *name, IPluginFunction *pFun
 	/* If forward's list contains 0 functions now, free it */
 	if ((*pEventForward)->GetFunctionCount() == 0)
 	{
-		g_Forwards.ReleaseForward(*pEventForward);
+		forwardsys->ReleaseForward(*pEventForward);
 		*pEventForward = NULL;
 	}
 

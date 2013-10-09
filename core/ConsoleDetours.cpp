@@ -579,7 +579,7 @@ ConsoleDetours::ConsoleDetours() : status(FeatureStatus_Unknown)
 
 void ConsoleDetours::OnSourceModAllInitialized()
 {
-	m_pForward = g_Forwards.CreateForwardEx("OnAnyCommand", ET_Hook, 3, NULL, Param_Cell,
+	m_pForward = forwardsys->CreateForwardEx("OnAnyCommand", ET_Hook, 3, NULL, Param_Cell,
 	                                        Param_String, Param_Cell);
 	sharesys->AddCapabilityProvider(NULL, this, FEATURECAP_COMMANDLISTENER);
 }
@@ -590,10 +590,10 @@ void ConsoleDetours::OnSourceModShutdown()
 		 !iter.empty();
 		 iter.next())
 	{
-		g_Forwards.ReleaseForward(iter->value);
+		forwardsys->ReleaseForward(iter->value);
 	}
 
-	g_Forwards.ReleaseForward(m_pForward);
+	forwardsys->ReleaseForward(m_pForward);
 	s_GenericHooker.Disable();
 }
 
@@ -626,7 +626,7 @@ bool ConsoleDetours::AddListener(IPluginFunction *fun, const char *command)
 		IChangeableForward *forward;
 		if (!m_Listeners.retrieve(str, &forward))
 		{
-			forward = g_Forwards.CreateForwardEx(NULL, ET_Hook, 3, NULL, Param_Cell,
+			forward = forwardsys->CreateForwardEx(NULL, ET_Hook, 3, NULL, Param_Cell,
 			                                     Param_String, Param_Cell);
 			m_Listeners.insert(str, forward);
 		}

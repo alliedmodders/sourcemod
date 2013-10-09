@@ -63,6 +63,7 @@ files = [
 	'DebugReporter.cpp',
 	'Database.cpp',
 	'smn_database.cpp',
+	'ForwardSys.cpp',
 	]
 if AMBuild.target['platform'] == 'windows':
 	files.append('thread/WinThreads.cpp')

@@ -38,7 +38,6 @@
 #include "sm_stringutil.h"
 #include "LibrarySys.h"
 #include "Logger.h"
-#include "ForwardSys.h"
 #include "frame_hooks.h"
 #include "logic_bridge.h"
 
@@ -119,9 +118,9 @@ void CheckAndFinalizeConfigs()
 void CoreConfig::OnSourceModAllInitialized()
 {
 	g_RootMenu.AddRootConsoleCommand("config", "Set core configuration options", this);
-	g_pOnServerCfg = g_Forwards.CreateForward("OnServerCfg", ET_Ignore, 0, NULL);
-	g_pOnConfigsExecuted = g_Forwards.CreateForward("OnConfigsExecuted", ET_Ignore, 0, NULL);
-	g_pOnAutoConfigsBuffered = g_Forwards.CreateForward("OnAutoConfigsBuffered", ET_Ignore, 0, NULL);
+	g_pOnServerCfg = forwardsys->CreateForward("OnServerCfg", ET_Ignore, 0, NULL);
+	g_pOnConfigsExecuted = forwardsys->CreateForward("OnConfigsExecuted", ET_Ignore, 0, NULL);
+	g_pOnAutoConfigsBuffered = forwardsys->CreateForward("OnAutoConfigsBuffered", ET_Ignore, 0, NULL);
 }
 
 CoreConfig::CoreConfig()
@@ -135,9 +134,9 @@ CoreConfig::~CoreConfig()
 void CoreConfig::OnSourceModShutdown()
 {
 	g_RootMenu.RemoveRootConsoleCommand("config", this);
-	g_Forwards.ReleaseForward(g_pOnServerCfg);
-	g_Forwards.ReleaseForward(g_pOnConfigsExecuted);
-	g_Forwards.ReleaseForward(g_pOnAutoConfigsBuffered);
+	forwardsys->ReleaseForward(g_pOnServerCfg);
+	forwardsys->ReleaseForward(g_pOnConfigsExecuted);
+	forwardsys->ReleaseForward(g_pOnAutoConfigsBuffered);
 
 	if (g_pExecPtr != NULL)
 	{

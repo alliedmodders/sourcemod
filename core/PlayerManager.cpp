@@ -30,7 +30,6 @@
  */
 
 #include "PlayerManager.h"
-#include "ForwardSys.h"
 #include "AdminCache.h"
 #include "ConCmdManager.h"
 #include "MenuStyle_Valve.h"
@@ -159,20 +158,20 @@ void PlayerManager::OnSourceModAllInitialized()
 	ParamType p1[] = {Param_Cell, Param_String, Param_Cell};
 	ParamType p2[] = {Param_Cell};
 
-	m_clconnect = g_Forwards.CreateForward("OnClientConnect", ET_LowEvent, 3, p1);
-	m_clconnect_post = g_Forwards.CreateForward("OnClientConnected", ET_Ignore, 1, p2);
-	m_clputinserver = g_Forwards.CreateForward("OnClientPutInServer", ET_Ignore, 1, p2);
-	m_cldisconnect = g_Forwards.CreateForward("OnClientDisconnect", ET_Ignore, 1, p2);
-	m_cldisconnect_post = g_Forwards.CreateForward("OnClientDisconnect_Post", ET_Ignore, 1, p2);
-	m_clcommand = g_Forwards.CreateForward("OnClientCommand", ET_Hook, 2, NULL, Param_Cell, Param_Cell);
-	m_clinfochanged = g_Forwards.CreateForward("OnClientSettingsChanged", ET_Ignore, 1, p2);
-	m_clauth = g_Forwards.CreateForward("OnClientAuthorized", ET_Ignore, 2, NULL, Param_Cell, Param_String);
-	m_onActivate = g_Forwards.CreateForward("OnServerLoad", ET_Ignore, 0, NULL);
-	m_onActivate2 = g_Forwards.CreateForward("OnMapStart", ET_Ignore, 0, NULL);
+	m_clconnect = forwardsys->CreateForward("OnClientConnect", ET_LowEvent, 3, p1);
+	m_clconnect_post = forwardsys->CreateForward("OnClientConnected", ET_Ignore, 1, p2);
+	m_clputinserver = forwardsys->CreateForward("OnClientPutInServer", ET_Ignore, 1, p2);
+	m_cldisconnect = forwardsys->CreateForward("OnClientDisconnect", ET_Ignore, 1, p2);
+	m_cldisconnect_post = forwardsys->CreateForward("OnClientDisconnect_Post", ET_Ignore, 1, p2);
+	m_clcommand = forwardsys->CreateForward("OnClientCommand", ET_Hook, 2, NULL, Param_Cell, Param_Cell);
+	m_clinfochanged = forwardsys->CreateForward("OnClientSettingsChanged", ET_Ignore, 1, p2);
+	m_clauth = forwardsys->CreateForward("OnClientAuthorized", ET_Ignore, 2, NULL, Param_Cell, Param_String);
+	m_onActivate = forwardsys->CreateForward("OnServerLoad", ET_Ignore, 0, NULL);
+	m_onActivate2 = forwardsys->CreateForward("OnMapStart", ET_Ignore, 0, NULL);
 
-	PreAdminCheck = g_Forwards.CreateForward("OnClientPreAdminCheck", ET_Event, 1, p1);
-	PostAdminCheck = g_Forwards.CreateForward("OnClientPostAdminCheck", ET_Ignore, 1, p1);
-	PostAdminFilter = g_Forwards.CreateForward("OnClientPostAdminFilter", ET_Ignore, 1, p1);
+	PreAdminCheck = forwardsys->CreateForward("OnClientPreAdminCheck", ET_Event, 1, p1);
+	PostAdminCheck = forwardsys->CreateForward("OnClientPostAdminCheck", ET_Ignore, 1, p1);
+	PostAdminFilter = forwardsys->CreateForward("OnClientPostAdminFilter", ET_Ignore, 1, p1);
 
 	m_bIsListenServer = !engine->IsDedicatedServer();
 	m_ListenClient = 0;
@@ -197,20 +196,20 @@ void PlayerManager::OnSourceModShutdown()
 	SH_REMOVE_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
 
 	/* Release forwards */
-	g_Forwards.ReleaseForward(m_clconnect);
-	g_Forwards.ReleaseForward(m_clconnect_post);
-	g_Forwards.ReleaseForward(m_clputinserver);
-	g_Forwards.ReleaseForward(m_cldisconnect);
-	g_Forwards.ReleaseForward(m_cldisconnect_post);
-	g_Forwards.ReleaseForward(m_clcommand);
-	g_Forwards.ReleaseForward(m_clinfochanged);
-	g_Forwards.ReleaseForward(m_clauth);
-	g_Forwards.ReleaseForward(m_onActivate);
-	g_Forwards.ReleaseForward(m_onActivate2);
+	forwardsys->ReleaseForward(m_clconnect);
+	forwardsys->ReleaseForward(m_clconnect_post);
+	forwardsys->ReleaseForward(m_clputinserver);
+	forwardsys->ReleaseForward(m_cldisconnect);
+	forwardsys->ReleaseForward(m_cldisconnect_post);
+	forwardsys->ReleaseForward(m_clcommand);
+	forwardsys->ReleaseForward(m_clinfochanged);
+	forwardsys->ReleaseForward(m_clauth);
+	forwardsys->ReleaseForward(m_onActivate);
+	forwardsys->ReleaseForward(m_onActivate2);
 
-	g_Forwards.ReleaseForward(PreAdminCheck);
-	g_Forwards.ReleaseForward(PostAdminCheck);
-	g_Forwards.ReleaseForward(PostAdminFilter);
+	forwardsys->ReleaseForward(PreAdminCheck);
+	forwardsys->ReleaseForward(PostAdminCheck);
+	forwardsys->ReleaseForward(PostAdminFilter);
 
 	delete [] m_Players;
 
