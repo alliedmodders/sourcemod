@@ -33,7 +33,7 @@
 #define _INCLUDE_SOURCEMOD_ADTFACTORY_H_
 
 #include <IADTFactory.h>
-#include "sm_globals.h"
+#include "common_logic.h"
 #include <sm_stringhashmap.h>
 
 using namespace SourceMod;

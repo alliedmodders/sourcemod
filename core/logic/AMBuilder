@@ -25,6 +25,7 @@ files = [
 	'smn_adt_array.cpp',
 	'smn_sorting.cpp',
 	'smn_maplists.cpp',
+	'ADTFactory.cpp',
 	'smn_adt_stack.cpp',
 	'thread/ThreadWorker.cpp',
 	'thread/BaseWorker.cpp',
