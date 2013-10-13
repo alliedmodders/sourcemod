@@ -83,7 +83,8 @@ enum EngineVersion
 	Engine_HL2DM,				/**< Half-Life 2 Deathmatch */
 	Engine_DODS,				/**< Day of Defeat: Source */
 	Engine_TF2,					/**< Team Fortress 2 */
-	Engine_NuclearDawn			/**< Nuclear Dawn */
+	Engine_NuclearDawn,			/**< Nuclear Dawn */
+	Engine_SDK2013,				/**< Source SDK 2013 */
 };
 
 #define INVALID_ENT_REFERENCE 0xFFFFFFFF

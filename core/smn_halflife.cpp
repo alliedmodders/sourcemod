@@ -497,6 +497,7 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 	case SOURCE_ENGINE_HL2DM:
 	case SOURCE_ENGINE_DODS:
 	case SOURCE_ENGINE_TF2:
+	case SOURCE_ENGINE_SDK2013:
 		return 35;
 	case SOURCE_ENGINE_LEFT4DEAD:
 		return 40;

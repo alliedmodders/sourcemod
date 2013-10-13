@@ -219,6 +219,8 @@ static const char *get_source_engine_name()
 	return "hl2dm";
 #elif SOURCE_ENGINE == SE_DODS
 	return "dods";
+#elif SOURCE_ENGINE == SE_SDK2013
+	return "sdk2013";
 #elif SOURCE_ENGINE == SE_TF2
 	return "tf2";
 #elif SOURCE_ENGINE == SE_LEFT4DEAD
@@ -240,7 +242,16 @@ static const char *get_source_engine_name()
 
 static bool symbols_are_hidden()
 {
-#if (SOURCE_ENGINE == SE_CSS) || (SOURCE_ENGINE == SE_HL2DM) || (SOURCE_ENGINE == SE_DODS) || (SOURCE_ENGINE == SE_TF2) || (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_NUCLEARDAWN) || (SOURCE_ENGINE == SE_LEFT4DEAD2) || (SOURCE_ENGINE == SE_CSGO) || (SOURCE_ENGINE == SE_DOTA)
+#if (SOURCE_ENGINE == SE_CSS)            \
+	|| (SOURCE_ENGINE == SE_HL2DM)       \
+	|| (SOURCE_ENGINE == SE_DODS)        \
+	|| (SOURCE_ENGINE == SE_SDK2013)     \
+	|| (SOURCE_ENGINE == SE_TF2)         \
+	|| (SOURCE_ENGINE == SE_LEFT4DEAD)   \
+	|| (SOURCE_ENGINE == SE_NUCLEARDAWN) \
+	|| (SOURCE_ENGINE == SE_LEFT4DEAD2)  \
+	|| (SOURCE_ENGINE == SE_CSGO)        \
+	|| (SOURCE_ENGINE == SE_DOTA)
 	return true;
 #else
 	return false;
@@ -345,6 +356,8 @@ void do_global_plugin_loads()
 #define GAMEFIX "2.hl2dm"
 #elif SOURCE_ENGINE == SE_DODS
 #define GAMEFIX "2.dods"
+#elif SOURCE_ENGINE == SE_SDK2013
+#define GAMEFIX "2.sdk2013"
 #elif SOURCE_ENGINE == SE_TF2
 #define GAMEFIX "2.tf2"
 #elif SOURCE_ENGINE == SE_DARKMESSIAH

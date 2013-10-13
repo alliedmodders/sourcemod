@@ -80,6 +80,7 @@
 #define FILENAME_1_6_CSS			"sourcemod.2.css" PLATFORM_EXT
 #define FILENAME_1_6_HL2DM			"sourcemod.2.hl2dm" PLATFORM_EXT
 #define FILENAME_1_6_DODS			"sourcemod.2.dods" PLATFORM_EXT
+#define FILENAME_1_6_SDK2013		"sourcemod.2.sdk2013" PLATFORM_EXT
 #define FILENAME_1_6_TF2			"sourcemod.2.tf2" PLATFORM_EXT
 #define FILENAME_1_6_ND				"sourcemod.2.nd" PLATFORM_EXT
 #define FILENAME_1_6_DOTA			"sourcemod.2.dota" PLATFORM_EXT
@@ -295,6 +296,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_DODS:
 		{
 			filename = FILENAME_1_6_DODS;
+			break;
+		}
+	case SOURCE_ENGINE_SDK2013:
+		{
+			filename = FILENAME_1_6_SDK2013;
 			break;
 		}
 	case SOURCE_ENGINE_TF2:

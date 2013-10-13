@@ -32,12 +32,8 @@
 #ifndef _INCLUDE_HOOKS_H_
 #define _INCLUDE_HOOKS_H_
 
-#include "basehandle.h"
-#undef ARRAYSIZE
-#include "vector.h"
-#include "utlvector.h"
-#include <shareddefs.h>
-#include "usercmd.h"
+class CUserCmd;
+
 #include "extension.h"
 
 class CHookManager : IPluginsListener, IFeatureProvider

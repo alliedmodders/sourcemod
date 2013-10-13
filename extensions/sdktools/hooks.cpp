@@ -32,6 +32,12 @@
 #include "hooks.h"
 #include "extension.h"
 
+#include "basehandle.h"
+#include "vector.h"
+#include "utlvector.h"
+#include <shareddefs.h>
+#include "usercmd.h"
+
 #define FEATURECAP_PLAYERRUNCMD_11PARAMS	"SDKTools PlayerRunCmd 11Params"
 
 CHookManager g_Hooks;

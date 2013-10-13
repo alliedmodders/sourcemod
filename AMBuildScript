@@ -38,48 +38,51 @@ class SM:
 		self.possibleSdks['ep2'] =   {'sdk': 'HL2SDKOB',        'ext': '2.ep2',   'def': '3',
 		                         'name': 'ORANGEBOX',      'platform': ['windows', 'linux'],
 		                         'dir': 'hl2sdk-ob'}
-		self.possibleSdks['css'] =   {'sdk': 'HL2SDKCSS',       'ext': '2.css',   'def': '6',
+		self.possibleSdks['css'] =   {'sdk': 'HL2SDKCSS',       'ext': '2.css',     'def': '6',
 		                         'name': 'CSS',            'platform': ['windows', 'linux', 'darwin'],
 		                         'dir': 'hl2sdk-css'}
-		self.possibleSdks['hl2dm'] = {'sdk': 'HL2SDKHL2DM',     'ext': '2.hl2dm', 'def': '7',
+		self.possibleSdks['hl2dm'] = {'sdk': 'HL2SDKHL2DM',     'ext': '2.hl2dm',   'def': '7',
 		                         'name': 'HL2DM',          'platform': ['windows', 'linux', 'darwin'],
 		                        'dir': 'hl2sdk-hl2dm'}
-		self.possibleSdks['dods'] =  {'sdk': 'HL2SDKDODS',      'ext': '2.dods',  'def': '8',
+		self.possibleSdks['dods'] =  {'sdk': 'HL2SDKDODS',      'ext': '2.dods',    'def': '8',
 		                         'name': 'DODS',           'platform': ['windows', 'linux', 'darwin'],
 		                        'dir': 'hl2sdk-dods'}
-		self.possibleSdks['tf2'] =   {'sdk': 'HL2SDKTF2',       'ext': '2.tf2',   'def': '9',
+		self.possibleSdks['sdk2013'] =   {'sdk': 'HL2SDK2013',  'ext': '2.sdk2013', 'def': '9',
+		                         'name': 'SDK2013',        'platform': ['windows', 'linux', 'darwin'],
+		                        'dir': 'hl2sdk-2013'}
+		self.possibleSdks['tf2'] =   {'sdk': 'HL2SDKTF2',       'ext': '2.tf2',     'def': '10',
 		                         'name': 'TF2',            'platform': ['windows', 'linux', 'darwin'],
 		                        'dir': 'hl2sdk-tf2'}
-		self.possibleSdks['l4d'] =   {'sdk': 'HL2SDKL4D',       'ext': '2.l4d',   'def': '10',
+		self.possibleSdks['l4d'] =   {'sdk': 'HL2SDKL4D',       'ext': '2.l4d',     'def': '11',
 		                         'name': 'LEFT4DEAD',      'platform': ['windows', 'linux', 'darwin'],
 		                         'dir': 'hl2sdk-l4d'}
-		self.possibleSdks['nd'] =    {'sdk': 'HL2SDKND',        'ext': '2.nd',    'def': '11',
+		self.possibleSdks['nd'] =    {'sdk': 'HL2SDKND',        'ext': '2.nd',      'def': '12',
 		                         'name': 'NUCLEARDAWN',    'platform': ['windows', 'linux', 'darwin'],
 		                         'dir': 'hl2sdk-nd'}
-		self.possibleSdks['l4d2'] =  {'sdk': 'HL2SDKL4D2',      'ext': '2.l4d2',  'def': '12',
+		self.possibleSdks['l4d2'] =  {'sdk': 'HL2SDKL4D2',      'ext': '2.l4d2',    'def': '13',
 		                         'name': 'LEFT4DEAD2',     'platform': ['windows', 'linux', 'darwin'],
 		                         'dir': 'hl2sdk-l4d2'}
-		self.possibleSdks['darkm'] = {'sdk': 'HL2SDK-DARKM',    'ext': '2.darkm', 'def': '2',
+		self.possibleSdks['darkm'] = {'sdk': 'HL2SDK-DARKM',    'ext': '2.darkm',   'def': '2',
 		                         'name': 'DARKMESSIAH',    'platform': ['windows'],
 		                          'dir': 'hl2sdk-darkm'}
-		self.possibleSdks['swarm'] = {'sdk': 'HL2SDK-SWARM',    'ext': '2.swarm', 'def': '13',
+		self.possibleSdks['swarm'] = {'sdk': 'HL2SDK-SWARM',    'ext': '2.swarm',   'def': '14',
 		                         'name': 'ALIENSWARM',     'platform': ['windows'],
 		                         'dir': 'hl2sdk-swarm'}
-		self.possibleSdks['bgt'] =   {'sdk': 'HL2SDK-BGT',      'ext': '2.bgt',   'def': '4',
+		self.possibleSdks['bgt'] =   {'sdk': 'HL2SDK-BGT',      'ext': '2.bgt',     'def': '4',
 		                         'name': 'BLOODYGOODTIME', 'platform': ['windows'],
 		                         'dir': 'hl2sdk-bgt'}
-		self.possibleSdks['eye'] =   {'sdk': 'HL2SDK-EYE',      'ext': '2.eye',   'def': '5',
+		self.possibleSdks['eye'] =   {'sdk': 'HL2SDK-EYE',      'ext': '2.eye',     'def': '5',
 		                         'name': 'EYE',            'platform': ['windows'],
 		                         'dir': 'hl2sdk-eye'}
-		self.possibleSdks['csgo'] =  {'sdk': 'HL2SDKCSGO',     'ext': '2.csgo',   'def': '15',
+		self.possibleSdks['csgo'] =  {'sdk': 'HL2SDKCSGO',     'ext': '2.csgo',     'def': '16',
 		                         'name': 'CSGO',           'platform': ['windows', 'linux', 'darwin'],
 		                         'dir': 'hl2sdk-csgo'}
-		self.possibleSdks['dota'] =  {'sdk': 'HL2SDKDOTA',     'ext': '2.dota',   'def': '16',
+		self.possibleSdks['dota'] =  {'sdk': 'HL2SDKDOTA',     'ext': '2.dota',     'def': '17',
 		                         'name': 'DOTA',           'platform': ['windows'],
 		                         'dir': 'hl2sdk-dota'}
-		# self.possibleSdks['portal2'] =  {'sdk': 'HL2SDK-PORTAL2',     'ext': '2.portal2',  'def': '14',
-		#                        'name': 'PORTAL2',           'platform': ['windows'],
-		#                        'dir': 'hl2sdk-portal2'}
+		self.possibleSdks['portal2'] = {'sdk': 'HL2SDKPORTAL2','ext': '2.portal2',  'def': '15',
+		                         'name': 'PORTAL2',           'platform': [],
+		                         'dir': 'hl2sdk-portal2'}
 		
 		self.sdkInfo = { }
 
@@ -322,42 +325,38 @@ class SM:
 		if AMBuild.target['platform'] == 'linux':
 			if sdk == 'ep1':
 				staticLibs = os.path.join(sdkPath, 'linux_sdk')
+			elif sdk == 'sdk2013':
+				staticLibs = os.path.join(sdkPath, 'lib', 'public', 'linux32')
 			else:
 				staticLibs = os.path.join(sdkPath, 'lib', 'linux')
 			workFolder = os.path.join(AMBuild.outputFolder, job.workFolder)
+			libs = []
 			if sdk in ['css', 'hl2dm', 'dods', 'tf2', 'l4d2']:
 				libs = ['tier1_i486.a', 'mathlib_i486.a', 'libvstdlib_srv.so', 'libtier0_srv.so']
-				for lib in libs:
-					link = os.path.join(workFolder, lib)
-					target = os.path.join(staticLibs, lib)
-					try:
-						os.lstat(link)
-					except:
-						job.AddCommand(SymlinkCommand(link, target))
 			elif sdk in ['l4d', 'nd', 'csgo']:
 				libs = ['tier1_i486.a', 'mathlib_i486.a', 'libvstdlib.so', 'libtier0.so']
 				if sdk == 'csgo':
 					libs.append('interfaces_i486.a')
-				for lib in libs:
-					link = os.path.join(workFolder, lib)
-					target = os.path.join(staticLibs, lib)
-					try:
-						os.lstat(link)
-					except:
-						job.AddCommand(SymlinkCommand(link, target))
+			elif sdk == 'sdk2013':
+				libs = ['tier1.a', 'mathlib.a', 'libvstdlib_srv.so', 'libtier0_srv.so']
 			else:
 				libs = ['tier1_i486.a', 'mathlib_i486.a', 'vstdlib_i486.so', 'tier0_i486.so']
-				for lib in libs:
-					link = os.path.join(workFolder, lib)
-					target = os.path.join(staticLibs, lib)
-					try:
-						os.lstat(link)
-					except:
-						job.AddCommand(SymlinkCommand(link, target))
+			
+			for lib in libs:
+				link = os.path.join(workFolder, lib)
+				target = os.path.join(staticLibs, lib)
+				try:
+					os.lstat(link)
+				except:
+					job.AddCommand(SymlinkCommand(link, target))
 		elif AMBuild.target['platform'] == 'darwin':
-			staticLibs = os.path.join(sdkPath, 'lib', 'mac')
+			if sdk == 'sdk2013':
+				staticLibs = os.path.join(sdkPath, 'lib', 'public', 'osx32')
+				libs = ['tier1.a', 'mathlib.a', 'libvstdlib.dylib', 'libtier0.dylib']
+			else:
+				staticLibs = os.path.join(sdkPath, 'lib', 'mac')
+				libs = ['tier1_i486.a', 'mathlib_i486.a', 'libvstdlib.dylib', 'libtier0.dylib']
 			workFolder = os.path.join(AMBuild.outputFolder, job.workFolder)
-			libs = ['tier1_i486.a', 'mathlib_i486.a', 'libvstdlib.dylib', 'libtier0.dylib']
 			if sdk == 'csgo':
 				libs.append('interfaces_i486.a')
 			for lib in libs:
@@ -378,7 +377,11 @@ class SM:
 
 	def PostSetupHL2Job(self, job, builder, sdk):
 		if AMBuild.target['platform'] in ['linux', 'darwin']:
-			builder.AddObjectFiles(['tier1_i486.a', 'mathlib_i486.a'])
+			if sdk == 'sdk2013':
+				builder.AddObjectFiles(['tier1.a', 'mathlib.a'])
+			else:
+				builder.AddObjectFiles(['tier1_i486.a', 'mathlib_i486.a'])
+			
 			if sdk == 'csgo':
 				builder.AddObjectFiles(['interfaces_i486.a'])
 	
@@ -394,10 +397,6 @@ class SM:
 
 		info = self.possibleSdks
 		compiler['CDEFINES'].extend(['SE_' + info[i]['name'] + '=' + info[i]['def'] for i in info])
-				
-		# We don't build for Portal 2 (yet?, ever?), but using this define in code as 
-		# it saves trouble if we ever need to
-		compiler['CDEFINES'].append('SE_PORTAL2=14')
 
 		paths = [['public'], ['public', 'engine'], ['public', 'mathlib'], ['public', 'vstdlib'],
 						 ['public', 'tier0'], ['public', 'tier1']]
@@ -414,6 +413,13 @@ class SM:
 		sdkPath = AMBuild.cache[info['sdk']]
 
 		compiler['CDEFINES'].append('SOURCE_ENGINE=' + info['def'])
+		
+		if sdk == 'sdk2013' and isinstance(compiler.cxx, Cpp.CompatGCC):
+			# The 2013 SDK already has these in public/tier0/basetypes.h
+			compiler['CDEFINES'].remove('stricmp=strcasecmp')
+			compiler['CDEFINES'].remove('_stricmp=strcasecmp')
+			compiler['CDEFINES'].remove('_snprintf=snprintf')
+			compiler['CDEFINES'].remove('_vsnprintf=vsnprintf')
 
 		if sdk in ['swarm','csgo','dota']:
 			if AMBuild.target['platform'] == 'windows':
@@ -421,13 +427,24 @@ class SM:
 			else:
 				compiler['CDEFINES'].extend(['COMPILER_GCC'])
 
-		if sdk == 'ep1':
-			if AMBuild.target['platform'] == 'linux':
+		if sdk == 'sdk2013' and AMBuild.target['platform'] == 'darwin':
+			compiler['POSTLINKFLAGS'].append('-liconv')
+		
+		if sdk in ['css','hl2dm','dods','sdk2013','tf2','l4d2']:
+			if AMBuild.target['platform'] == 'linux' or AMBuild.target['platform'] == 'darwin':
+				compiler['CDEFINES'].append('NO_MALLOC_OVERRIDE')
+
+		if AMBuild.target['platform'] == 'linux':
+			if sdk == 'ep1':
 				staticLibs = os.path.join(sdkPath, 'linux_sdk')
-		else:
-			if AMBuild.target['platform'] == 'linux':
+			elif sdk == 'sdk2013':
+				staticLibs = os.path.join(sdkPath, 'lib', 'public', 'linux32')
+			else:
 				staticLibs = os.path.join(sdkPath, 'lib', 'linux')
-			elif AMBuild.target['platform'] == 'darwin':
+		elif AMBuild.target['platform'] == 'darwin':
+			if sdk == 'sdk2013':
+				staticLibs = os.path.join(sdkPath, 'lib', 'public', 'osx32')
+			else:
 				staticLibs = os.path.join(sdkPath, 'lib', 'mac')
 
 		for i in paths:
@@ -436,7 +453,7 @@ class SM:
 		if not noLink:
 			if AMBuild.target['platform'] == 'linux':
 				compiler['POSTLINKFLAGS'][0:0] = ['-lm']
-				if sdk in ['css', 'hl2dm', 'dods', 'tf2', 'l4d2']:
+				if sdk in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'l4d2']:
 					compiler['POSTLINKFLAGS'][0:0] = ['libtier0_srv.so']
 					compiler['POSTLINKFLAGS'][0:0] = ['libvstdlib_srv.so']
 				elif sdk in ['l4d', 'nd', 'csgo']:

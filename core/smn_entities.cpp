@@ -1254,7 +1254,7 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 			is_unsigned = ((pProp->GetFlags() & SPROP_UNSIGNED) == SPROP_UNSIGNED);
 
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -1352,7 +1352,7 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 			FIND_PROP_SEND(DPT_Int, "integer");
 
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -2074,7 +2074,7 @@ static int32_t SDKEntFlagToSMEntFlag(int flag)
 #if SOURCE_ENGINE == SE_ALIENSWARM
 		case FL_FREEZING:
 			return ENTFLAG_FREEZING;
-#elif SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2
+#elif SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2
 		case FL_EP2V_UNKNOWN:
 			return ENTFLAG_EP2V_UNKNOWN1;
 #endif
@@ -2152,7 +2152,7 @@ static int32_t SMEntFlagToSDKEntFlag(int32_t flag)
 #if SOURCE_ENGINE == SE_ALIENSWARM
 		case ENTFLAG_FREEZING:
 			return FL_FREEZING;
-#elif SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2
+#elif SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2
 		case ENTFLAG_EP2V_UNKNOWN1:
 			return FL_EP2V_UNKNOWN;
 #endif
