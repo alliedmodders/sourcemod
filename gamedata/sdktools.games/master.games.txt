@@ -75,6 +75,11 @@
 		"engine"	"dota"
 	}
 	
+	"engine.blade.txt"
+	{
+		"engine"	"blade"
+	}
+	
 	"game.tf.txt"
 	{
 		"game"		"tf"

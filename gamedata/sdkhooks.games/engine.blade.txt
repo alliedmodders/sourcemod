@@ -1,0 +1,154 @@
+"Games"
+{
+	"#default"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"104"
+				"linux"		"105"
+				"mac"		"105"
+			}
+			"FireBullets"
+			{
+				"windows"	"117"
+				"linux"		"118"
+				"mac"		"118"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"121"
+				"linux"		"122"
+				"mac"		"122"				
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"175"
+				"linux"		"175"
+				"mac"		"175"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"68"
+				"linux"		"69"
+				"mac"		"69"
+			}
+			"PreThink"
+			{
+				"windows"	"351"
+				"linux"		"352"
+				"mac"		"352"
+			}
+			"PostThink"
+			{
+				"windows"	"352"
+				"linux"		"353"
+				"mac"		"353"
+			}
+			"Reload"
+			{
+				"windows"	"280"
+				"linux"		"281"
+				"mac"		"281"
+			}
+			"SetTransmit"
+			{
+				"windows"	"22"
+				"linux"		"23"
+				"mac"		"23"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"17"
+				"linux"		"18"
+				"mac"		"18"
+			}
+			"Spawn"
+			{
+				"windows"	"24"
+				"linux"		"25"
+				"mac"		"25"
+			}
+			"StartTouch"
+			{
+				"windows"	"102"
+				"linux"		"103"
+				"mac"		"103"
+			}
+			"Think"
+			{
+				"windows"	"52"
+				"linux"		"53"
+				"mac"		"53"
+			}
+			"Touch"
+			{
+				"windows"	"103"
+				"linux"		"104"
+				"mac"		"104"
+			}
+			"TraceAttack"
+			{
+				"windows"	"66"
+				"linux"		"67"
+				"mac"		"67"
+			}
+			"Use"
+			{
+				"windows"	"101"
+				"linux"		"102"
+				"mac"		"102"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"154"
+				"linux"		"155"
+				"mac"		"155"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"285"
+				"linux"		"286"
+				"mac"		"286"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"279"
+				"linux"		"280"
+				"mac"		"280"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"282"
+				"linux"		"283"
+				"mac"		"283"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"280"
+				"linux"		"281"
+				"mac"		"281"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"283"
+				"linux"		"284"
+				"mac"		"284"
+			}
+		}
+	}
+	
+	"#default"
+	{
+		"Offsets"
+		{
+			"EntityListeners"
+			{
+				"windows"	"196644"
+				"linux"		"196644"
+				"mac"		"196644"
+			}
+		}
+	}
+}

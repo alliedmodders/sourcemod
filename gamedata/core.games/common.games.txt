@@ -94,6 +94,7 @@
 			"engine"			"left4dead"
 			"engine"			"left4dead2"
 			"engine"			"alienswarm"
+			"engine"			"blade"
 			"engine"			"csgo"
 			"engine"			"dota"
 		}
@@ -153,6 +154,7 @@
 			"game"					"esmod"
 			"game"					"nucleardawn"
 			"game"					"csgo"
+			"game"					"berimbau"
 		}
 
 		"Keys"
@@ -184,6 +186,7 @@
 			"game"					"dinodday"
 			"game"					"nucleardawn"
 			"game"					"csgo"
+			"game"					"berimbau"
 		}
 		
 		"Keys"
@@ -223,6 +226,7 @@
 			"game"					"hl2ctf"
 			"game"					"ag2"
 			"game"					"nmrih"
+			"game"					"berimbau"
 		}
 		
 		"Keys"
@@ -260,8 +264,14 @@
 		}
 	}
 	
-	"csgo"
+	"#default"
 	{
+		"#supported"
+		{
+			"engine"	"csgo"
+			"engine"	"blade"
+		}
+		
 		"Keys"
 		{
 			"RadioMenuMaxPageItems"	"9"

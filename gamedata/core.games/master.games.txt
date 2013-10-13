@@ -74,6 +74,11 @@
 	{
 		"engine"	"dota"
 	}
+	
+	"engine.blade.txt"
+	{
+		"engine"	"blade"
+	}
 
 	"blacklist.plugins.txt"
 	{
