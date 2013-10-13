@@ -85,6 +85,7 @@
 #define FILENAME_1_6_ND				"sourcemod.2.nd" PLATFORM_EXT
 #define FILENAME_1_6_DOTA			"sourcemod.2.dota" PLATFORM_EXT
 #define FILENAME_1_6_BLADE			"sourcemod.2.blade" PLATFORM_EXT
+#define FILENAME_1_6_INSURGENCY		"sourcemod.2.insurgency" PLATFORM_EXT
 
 HINSTANCE g_hCore = NULL;
 bool load_attempted = false;
@@ -338,6 +339,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_BLADE:
 		{
 			filename = FILENAME_1_6_BLADE;
+			break;
+		}
+	case SOURCE_ENGINE_INSURGENCY:
+		{
+			filename = FILENAME_1_6_INSURGENCY;
 			break;
 		}
 	default:

@@ -86,6 +86,7 @@ enum EngineVersion
 	Engine_NuclearDawn,			/**< Nuclear Dawn */
 	Engine_SDK2013,				/**< Source SDK 2013 */
 	Engine_Blade,				/**< Blade Symphony */
+	Engine_Insurgency,			/**< Insurgency (2013 Retail version)*/
 };
 
 #define INVALID_ENT_REFERENCE 0xFFFFFFFF

@@ -381,7 +381,7 @@ public:
 	FnChangeCallback_t GetChangeCallback( int slot ) const { return m_pParent->m_fnChangeCallbacks[ slot ]; }
 
 	// Retrieve value
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE >= SE_INSURGENCY
 	virtual float					GetFloat( void ) const;
 	virtual int						GetInt( void ) const;
 #else

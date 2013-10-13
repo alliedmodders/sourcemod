@@ -74,10 +74,10 @@ class SM:
 		self.possibleSdks['eye'] =   {'sdk': 'HL2SDK-EYE',      'ext': '2.eye',     'def': '5',
 		                         'name': 'EYE',            'platform': ['windows'],
 		                         'dir': 'hl2sdk-eye'}
-		self.possibleSdks['csgo'] =  {'sdk': 'HL2SDKCSGO',     'ext': '2.csgo',     'def': '17',
+		self.possibleSdks['csgo'] =  {'sdk': 'HL2SDKCSGO',     'ext': '2.csgo',     'def': '18',
 		                         'name': 'CSGO',           'platform': ['windows', 'linux', 'darwin'],
 		                         'dir': 'hl2sdk-csgo'}
-		self.possibleSdks['dota'] =  {'sdk': 'HL2SDKDOTA',     'ext': '2.dota',     'def': '18',
+		self.possibleSdks['dota'] =  {'sdk': 'HL2SDKDOTA',     'ext': '2.dota',     'def': '19',
 		                         'name': 'DOTA',           'platform': ['windows'],
 		                         'dir': 'hl2sdk-dota'}
 		self.possibleSdks['portal2'] = {'sdk': 'HL2SDKPORTAL2','ext': '2.portal2',  'def': '15',
@@ -86,6 +86,9 @@ class SM:
 		self.possibleSdks['blade'] = {'sdk': 'HL2SDKBLADE',    'ext': '2.blade',    'def': '16',
 		                         'name': 'BLADE',             'platform': ['windows', 'linux'],
 		                         'dir': 'hl2sdk-blade'}
+		self.possibleSdks['insurgency'] = {'sdk': 'HL2SDKINSURGENCY', 'ext': '2.insurgency', 'def': '17',
+		                         'name': 'INSURGENCY',        'platform': ['windows', 'linux', 'darwin'],
+		                         'dir': 'hl2sdk-insurgency'}
 		
 		self.sdkInfo = { }
 
@@ -336,9 +339,9 @@ class SM:
 			libs = []
 			if sdk in ['css', 'hl2dm', 'dods', 'tf2', 'l4d2']:
 				libs = ['tier1_i486.a', 'mathlib_i486.a', 'libvstdlib_srv.so', 'libtier0_srv.so']
-			elif sdk in ['l4d', 'nd', 'blade', 'csgo']:
+			elif sdk in ['l4d', 'nd', 'blade', 'insurgency', 'csgo']:
 				libs = ['tier1_i486.a', 'mathlib_i486.a', 'libvstdlib.so', 'libtier0.so']
-				if sdk in ['blade', 'csgo']:
+				if sdk in ['blade', 'insurgency', 'csgo']:
 					libs.append('interfaces_i486.a')
 			elif sdk == 'sdk2013':
 				libs = ['tier1.a', 'mathlib.a', 'libvstdlib_srv.so', 'libtier0_srv.so']
@@ -360,7 +363,7 @@ class SM:
 				staticLibs = os.path.join(sdkPath, 'lib', 'mac')
 				libs = ['tier1_i486.a', 'mathlib_i486.a', 'libvstdlib.dylib', 'libtier0.dylib']
 			workFolder = os.path.join(AMBuild.outputFolder, job.workFolder)
-			if sdk == 'csgo':
+			if sdk in ['insurgency', 'csgo']:
 				libs.append('interfaces_i486.a')
 			for lib in libs:
 				link = os.path.join(workFolder, lib)
@@ -371,7 +374,7 @@ class SM:
 					job.AddCommand(SymlinkCommand(link, target))
 		elif AMBuild.target['platform'] == 'windows':
 			libs = ['tier0', 'tier1', 'vstdlib', 'mathlib']
-			if sdk in ['swarm', 'blade', 'csgo', 'dota']:
+			if sdk in ['swarm', 'blade', 'insurgency', 'csgo', 'dota']:
 				libs.append('interfaces')
 			for lib in libs:
 				libPath = os.path.join(sdkPath, 'lib', 'public', lib) + '.lib'
@@ -385,7 +388,7 @@ class SM:
 			else:
 				builder.AddObjectFiles(['tier1_i486.a', 'mathlib_i486.a'])
 			
-			if sdk in ['blade', 'csgo']:
+			if sdk in ['blade', 'insurgency', 'csgo']:
 				builder.AddObjectFiles(['interfaces_i486.a'])
 	
 	def DefaultHL2Compiler(self, path, sdk, noLink = False, oldMms = '-legacy'):
@@ -424,7 +427,7 @@ class SM:
 			compiler['CDEFINES'].remove('_snprintf=snprintf')
 			compiler['CDEFINES'].remove('_vsnprintf=vsnprintf')
 
-		if sdk in ['swarm', 'blade', 'csgo', 'dota']:
+		if sdk in ['swarm', 'blade', 'insurgency', 'csgo', 'dota']:
 			if AMBuild.target['platform'] == 'windows':
 				compiler['CDEFINES'].extend(['COMPILER_MSVC', 'COMPILER_MSVC32'])
 			else:
@@ -459,7 +462,7 @@ class SM:
 				if sdk in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'l4d2']:
 					compiler['POSTLINKFLAGS'][0:0] = ['libtier0_srv.so']
 					compiler['POSTLINKFLAGS'][0:0] = ['libvstdlib_srv.so']
-				elif sdk in ['l4d', 'nd', 'blade', 'csgo']:
+				elif sdk in ['l4d', 'nd', 'blade', 'insurgency', 'csgo']:
 					compiler['POSTLINKFLAGS'][0:0] = ['libtier0.so']
 					compiler['POSTLINKFLAGS'][0:0] = ['libvstdlib.so']
 				else:
