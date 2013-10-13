@@ -56,6 +56,11 @@
 		"engine"	"blade"
 	}
 	
+	"engine.insurgency.txt"
+	{
+		"engine"	"insurgency"
+	}
+	
 /*
 	Not Yet
 	
@@ -67,7 +72,7 @@
 	
 	"game.insurgency.txt"
 	{
-		"game"		"insurgency"
+		"game"		"$Insurgency"
 	}
 	
 	"game.pvkii.txt"

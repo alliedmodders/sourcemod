@@ -79,6 +79,11 @@
 	{
 		"engine"	"blade"
 	}
+	
+	"engine.insurgency.txt"
+	{
+		"engine"	"insurgency"
+	}
 
 	"blacklist.plugins.txt"
 	{

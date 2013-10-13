@@ -80,6 +80,11 @@
 		"engine"	"blade"
 	}
 	
+	"engine.insurgency.txt"
+	{
+		"engine"	"insurgency"
+	}
+	
 	"game.tf.txt"
 	{
 		"game"		"tf"
@@ -112,7 +117,7 @@
 	
 	"game.insurgency.txt"
 	{
-		"game"		"insurgency"
+		"game"		"$Insurgency"
 	}
 	
 	"game.pvkii.txt"
