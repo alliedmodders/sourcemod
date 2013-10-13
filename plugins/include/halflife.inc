@@ -85,6 +85,7 @@ enum EngineVersion
 	Engine_TF2,					/**< Team Fortress 2 */
 	Engine_NuclearDawn,			/**< Nuclear Dawn */
 	Engine_SDK2013,				/**< Source SDK 2013 */
+	Engine_Blade,				/**< Blade Symphony */
 };
 
 #define INVALID_ENT_REFERENCE 0xFFFFFFFF

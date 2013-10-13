@@ -233,6 +233,8 @@ static const char *get_source_engine_name()
 	return "alienswarm";
 #elif SOURCE_ENGINE == SE_PORTAL2
 	return "portal2";
+#elif SOURCE_ENGINE == SE_BLADE
+	return "blade";
 #elif SOURCE_ENGINE == SE_CSGO
 	return "csgo";
 #elif SOURCE_ENGINE == SE_DOTA
@@ -250,6 +252,7 @@ static bool symbols_are_hidden()
 	|| (SOURCE_ENGINE == SE_LEFT4DEAD)   \
 	|| (SOURCE_ENGINE == SE_NUCLEARDAWN) \
 	|| (SOURCE_ENGINE == SE_LEFT4DEAD2)  \
+	|| (SOURCE_ENGINE == SE_BLADE)       \
 	|| (SOURCE_ENGINE == SE_CSGO)        \
 	|| (SOURCE_ENGINE == SE_DOTA)
 	return true;
@@ -364,6 +367,8 @@ void do_global_plugin_loads()
 #define GAMEFIX "2.darkm"
 #elif SOURCE_ENGINE == SE_PORTAL2
 #define GAMEFIX "2.portal2"
+#elif SOURCE_ENGINE == SE_BLADE
+#define GAMEFIX "2.blade"
 #elif SOURCE_ENGINE == SE_CSGO
 #define GAMEFIX "2.csgo"
 #elif SOURCE_ENGINE == SE_DOTA
