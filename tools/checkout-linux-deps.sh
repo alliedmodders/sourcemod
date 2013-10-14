@@ -29,7 +29,7 @@ name=mmsource-1.10
 path=releases
 checkout
 
-sdks=( csgo hl2dm nd l4d2 ob dods l4d css tf2 )
+sdks=( csgo hl2dm nd l4d2 ob dods l4d css tf2 blade insurgency 2013 )
 
 for sdk in "${sdks[@]}"
 do
