@@ -1,0 +1,5 @@
+{
+	"project_id" : "sourcemod",
+	"conduit_uri" : "https://phabricator.alliedmods.net/",
+	"history.immutable" : false
+}
