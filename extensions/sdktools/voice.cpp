@@ -68,7 +68,7 @@ SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *)
 
 bool DecHookCount()
 {
-	if (g_VoiceHookCount == 0)
+	if (--g_VoiceHookCount == 0)
 	{
 		SH_REMOVE_HOOK(IVoiceServer, SetClientListening, voiceserver, SH_MEMBER(&g_SdkTools, &SDKTools::OnSetClientListening), false);
 		return true;
