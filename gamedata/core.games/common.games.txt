@@ -133,6 +133,7 @@
 			"game"					"dod"
 			"game"					"sourceforts"
 			"game"					"$Insurgency" // mod
+			"game"					"$INSURGENCY" // retail game
 			"game"					"tf"
 			"game"					"pvkii"
 			"game"					"diprip"
@@ -188,6 +189,7 @@
 			"game"					"nucleardawn"
 			"game"					"csgo"
 			"game"					"berimbau"
+			"game"					"$INSURGENCY" // retail game
 		}
 		
 		"Keys"
@@ -272,6 +274,7 @@
 		{
 			"engine"	"csgo"
 			"engine"	"blade"
+			"engine"	"insurgency"
 		}
 		
 		"Keys"
