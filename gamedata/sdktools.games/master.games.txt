@@ -40,6 +40,11 @@
 		"engine"	"orangebox_valve"
 	}
 	
+	"engine.sdk2013.txt"
+	{
+		"engine"	"sdk2013"
+	}
+	
 	"engine.css.txt"
 	{
 		"engine"	"css"

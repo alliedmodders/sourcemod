@@ -14,35 +14,20 @@
 	/* CGlobalEntityList */
 	"#default"
 	{
-		"#supported"
-		{
-			"game"		"ageofchivalry"
-			"game"		"zps"
-			"game"		"bg2"
-			"game"		"pvkii"
-			"game"		"gesource"
-			"game"		"empires"
-			"game"		"RnLBeta"
-			"game"		"obsidian"
-			"game"		"fas"
-			"game"		"fistful_of_frags"
-			"game"		"cspromod"
-			"game"		"ag2"
-			"game"		"nmrih"
-		}
-		
 		"Offsets"
 		{
 			/* Offset into LevelShutdown */
 			"gEntList"
 			{
 				"windows"	"11"
+				"linux"		"13"
 			}
 
 			"EntInfo"
 			{
 				"windows"	"4"	
 				"linux"		"4"
+				"mac"		"4"
 			}
 		}
 		
@@ -52,11 +37,12 @@
 			{
 				"library"	"server"
 				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
+				"linux"		"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xC7\x2A\x2A\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
 			}
 			"gEntList"
 			{
 				"library"	"server"
-				"linux"		"@gEntList"
+				"mac"		"@gEntList"
 			}
 		}
 	}

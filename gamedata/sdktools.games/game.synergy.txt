@@ -11,7 +11,6 @@
 
 "Games"
 {
-	/* Synergy Release 14 */
 	"synergy"
 	{
 		"Offsets"
@@ -19,93 +18,93 @@
 			/* CBasePlayer */
 			"GiveNamedItem"
 			{
-				"windows"	"356"
-				"linux"		"357"
+				"windows"	"406"
+				"linux"		"407"
+				"mac"		"407"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"238"
-				"linux"		"239"
+				"windows"	"269"
+				"linux"		"270"
+				"mac"		"270"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"236"
-				"linux"		"237"
+				"windows"	"267"
+				"linux"		"268"
+				"mac"		"268"
 			}
 			"Ignite"
 			{
-				"windows"	"193"
-				"linux"		"194"
+				"windows"	"208"
+				"linux"		"209"
+				"mac"		"209"
 			}
 			"Extinguish"
 			{
-				"windows"	"197"
-				"linux"		"198"
+				"windows"	"212"
+				"linux"		"213"
+				"mac"		"213"
 			}
 			"Teleport"
 			{
-				"windows"	"100"
-				"linux"		"101"
+				"windows"	"108"
+				"linux"		"109"
+				"mac"		"109"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"397"
-				"linux"		"397"
+				"windows"	"445"
+				"linux"		"445"
+				"mac"		"445"
 			}
 			"GetVelocity"
 			{
-				"windows"	"130"
-				"linux"		"131"
+				"windows"	"140"
+				"linux"		"141"
+				"mac"		"141"
 			}
 			"EyeAngles"
 			{
-				"windows"	"122"
-				"linux"		"123"
+				"windows"	"131"
+				"linux"		"132"
+				"mac"		"132"
 			}
 			"AcceptInput"
 			{
-				"windows"	"34"
-				"linux"		"35"
+				"windows"	"36"
+				"linux"		"37"
+				"mac"		"37"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"23"
-				"linux"		"24"
+				"windows"	"24"
+				"linux"		"25"
+				"mac"		"25"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"229"
-				"linux"		"230"
+				"windows"	"260"
+				"linux"		"261"
+				"mac"		"261"
 			}
 			"Activate"
 			{
-				"windows"	"31"
-				"linux"		"32"
+				"windows"	"33"
+				"linux"		"34"
+				"mac"		"34"
 			}
 			"RemoveAllItems"
 			{
-				"windows"	"304"
-				"linux"		"305"
+				"windows"	"348"
+				"linux"		"349"
+				"mac"		"349"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"376"
-				"linux"		"377"
-			}
-		}
-		"Signatures"
-		{
-			"FindEntityByClassname"
-			{
-				"library"	"server"
-				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x40\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\x8D\xA4\x24\x00\x00\x00\x00\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x83\xC4\x04\xEB\x2A\x39\x2A\x2A\x74\x2A\x53"
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-			}
-			"FireOutput"
-			{
-				"library"	"server"
-				"windows"	"\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x8B\x71\x2A\x57\x89"
-				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"windows"	"424"
+				"linux"		"425"
+				"mac"		"425"
 			}
 		}
 	}

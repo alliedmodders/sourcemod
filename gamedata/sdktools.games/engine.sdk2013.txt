@@ -16,15 +16,7 @@
 	{
 		"#supported"
 		{
-			"game"		"ageofchivalry"
-			"game"		"empires"
-			"game"		"bg2"
-			"game"		"pvkii"
-			"game"		"gesource"
-			"game"		"fas"
-			"game"		"fistful_of_frags"
-			"game"		"cspromod"
-			"game"		"ag2"
+			"game"		"synergy"
 		}
 
 		"Offsets"
@@ -32,22 +24,26 @@
 			/* Offset into CBaseTempEntity constructor */
 			"s_pTempEntities"
 			{
-				"windows"	"17"
+				"windows"	"19"
+				"linux"		"20"
 			}
 			"GetTEName"
 			{
 				"windows"	"4"
 				"linux"		"4"
+				"mac"		"4"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
 				"linux"		"8"
+				"mac"		"8"
 			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
 				"linux"		"0"
+				"mac"		"0"
 			}
 		}
 
@@ -56,26 +52,23 @@
 			"CBaseTempEntity"
 			{
 				"library"	"server"
-				"windows"	"\x8B\xC1\x8B\x4C\x24\x04\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x04\x8B\x15\x2A\x2A\x2A\x2A\x89\x50\x08\xA3\x2A\x2A\x2A\x2A\xC2\x04\x00"
+				"windows"	"\x55\x8B\xEC\x8B\xC1\x8B\x4D\x2A\xC7\x00\x2A\x2A\x2A\x2A\x89\x48"
+				"linux"		"\x55\x89\xE5\x8B\x45\x08\x8B\x55\x0C\xC7\x2A\x2A\x2A\x2A\x2A\x89\x50\x04\x8B\x15\x2A\x2A\x2A\x2A\xA3"
 			}
 			"s_pTempEntities"
 			{
 				"library"	"server"
-				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
+				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
 			}
 		}
 	}
-
+	
 	/* CGlobalEntityList */
 	"#default"
 	{
 		"#supported"
 		{
-			"game"		"ageofchivalry"
-			"game"		"pvkii"
-			"game"		"fistful_of_frags"
-			"game"		"cspromod"
-			"game"		"ag2"
+			"game"		"synergy"
 		}
 		
 		"Signatures"
@@ -84,8 +77,9 @@
 			"FindEntityByClassname"
 			{
 				"library"	"server"
-				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x85\xC9\x57\x74\x19\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x83\xC0\x01\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x39\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\xEB\x03"
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x2A\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x40\x03\xC0\x8B\x3C\xC6\xEB\x2A\x8B"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x83\x2A\x2A\x8B\x2A\x2A\x8B\x2A\x2A\x85\xC0\x74\x2A\x8B\x10\x89\x04\x24\xFF\x52\x0C\x8B\x55\x08\x8B\x00\x25\xFF\x0F\x00\x00\xC1\xE0\x04\x8B\x2A\x2A\x2A\xEB\x15\x66"
+				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
 		}
 	}
@@ -95,19 +89,7 @@
 	{
 		"#supported"
 		{
-			"game"		"ageofchivalry"
-			"game"		"zps"
-			"game"		"empires"
-			"game"		"bg2"
-			"game"		"pvkii"
-			"game"		"gesource"
-			"game"		"RnLBeta"
-			"game"		"obsidian"
-			"game"		"fas"
-			"game"		"fistful_of_frags"
-			"game"		"cspromod"
-			"game"		"ag2"
-			"game"		"nmrih"
+			"game"		"synergy"
 		}
 		
 		"Offsets"
@@ -116,6 +98,7 @@
 			"g_pGameRules"
 			{
 				"windows"	"2"
+				"linux"		"1"
 			}
 		}
 		
@@ -133,11 +116,12 @@
 			{
 				"library"	"server"
 				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\x6A\x01\xFF\xD2"
+				"linux"		"\xA1\x2A\x2A\x2A\x2A\x8B\x5D\x08\x85\xC0\x74\x08\x8B\x10\x89"
 			}
 			"g_pGameRules"
 			{
 				"library"	"server"
-				"linux"		"@g_pGameRules"
+				"mac"		"@g_pGameRules"
 			}
 		}
 	}
@@ -147,7 +131,7 @@
 	{
 		"Keys"
 		{
-			/* Signature for the beginning of IVEngineServer::CreateFakeClient.
+			/* Signature for the beginning of IVEngineServer::CreateFakeClientEx.
 			 *
 			 * The engine binary is not actually scanned in order to look for
 			 * this. SourceHook is used to used to determine the address of the
@@ -155,7 +139,7 @@
 			 * the expected code. A pointer to sv (IServer interface) is used
 			 * here.
 			 */
-			"CreateFakeClient_Windows"	"\x8B\x44\x24\x2A\x50\xB9\x2A\x2A\x2A\x2A\xE8"
+			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x50\xB9\x2A\x2A\x2A\x2A\xE8"
 		}
 		
 		"Offsets"
@@ -163,7 +147,7 @@
 			/* Offset into IVEngineServer::CreateFakeClient */
 			"sv"
 			{
-				"windows"	"6"
+				"windows"	"8"
 			}
 		}
 
@@ -174,40 +158,26 @@
 			{
 				"library"	"engine"
 				"linux"		"@sv"
+				"mac"		"@sv"
 			}
 		}
 	}
 	
-	/* EntityFactoryDictionary function */
-	"#default"
-	{
-		"Signatures"
-		{
-			"EntityFactory"
-			{
-				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
-			}
-		}
-	}
-
 	/* CBaseEntityOutput::FireOutput */
 	"#default"
 	{
 		"#supported"
 		{
-			"game"		"ageofchivalry"
-			"game"		"cspromod"
-			"game"		"ag2"
+			"game"		"synergy"
 		}
 		"Signatures"
 		{
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x81\xEC\x1C\x01\x00\x00\x53\x55\x56\x8B\x71\x14\x85\xF6"
-				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"windows"	"\x55\x8B\xEC\x81\x2A\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\x2A\x8B\x45\x2A\x53\x56\x8B\x2A\x2A\x57\x8B\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\xC7"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x2A\x2A\x2A\x2A\x8B\x2A\x2A\x65\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x31\xC0\x8B\x2A\x2A\x8B\x2A\x2A\x8B\x2A\x2A\x8B\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89"
+				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
@@ -225,8 +195,9 @@
 			 */
 			"SetUserCvar"
 			{
-				"windows"	"17"
-				"linux"		"55"
+				"windows"	"18"
+				"linux"		"58"
+				"mac"		"58"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
@@ -238,6 +209,7 @@
 			{
 				"windows"	"140"
 				"linux"		"140"
+				"mac"		"140"
 			}
 		}
 	}
