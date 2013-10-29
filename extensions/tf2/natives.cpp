@@ -100,14 +100,17 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("Burn", 
-			PassInfo pass[2]; \
+			PassInfo pass[3]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
 			pass[0].size = sizeof(CBaseEntity *); \
 			pass[0].type = PassType_Basic; \
 			pass[1].flags = PASSFLAG_BYVAL; \
 			pass[1].size = sizeof(CBaseEntity *); \
 			pass[1].type = PassType_Basic; \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2))
+			pass[2].flags = PASSFLAG_BYVAL; \
+			pass[2].size = sizeof(float); \
+			pass[2].type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3))
 	}
 
 	CBaseEntity *pEntity;
@@ -132,6 +135,8 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 	*(CBaseEntity **)vptr = pTarget;
 	vptr += sizeof(CBaseEntity *);
 	*(CBaseEntity **)vptr = NULL;
+	vptr += sizeof(CBaseEntity *);
+	*(float *)vptr = -1.0f;
 
 	pWrapper->Execute(vstk, NULL);
 
