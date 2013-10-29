@@ -521,6 +521,12 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 		return;
 	}
 
+	CEntityFactoryDictionary *dict = NULL;
+
+#if SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_SDK2013
+	dict = (CEntityFactoryDictionary *)servertools->GetEntityFactoryDictionary();
+#else
+
 	ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -540,21 +546,13 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 		pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retData, NULL, 0);
 	}
 
-
-	void *returnData = NULL;
-
-	pWrapper->Execute(NULL, &returnData);
+	pWrapper->Execute(NULL, &dict);
 
 	pWrapper->Destroy();
 
-	if (returnData == NULL)
-	{
-		return;
-	}
+#endif
 
-	CEntityFactoryDictionary *dict = ( CEntityFactoryDictionary * )returnData;
-
-	if ( !dict )
+	if (dict == NULL)
 	{
 		return;
 	}
