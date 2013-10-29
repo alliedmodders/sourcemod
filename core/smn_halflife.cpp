@@ -530,7 +530,23 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetEngineVersion(IPluginContext *pContext, const cell_t *params)
 {
-	return g_SMAPI->GetSourceEngineBuild();
+	int engineVer = g_SMAPI->GetSourceEngineBuild();
+#if defined METAMOD_PLAPI_VERSION
+	if (engineVer == SOURCE_ENGINE_ORANGEBOXVALVE_DEPRECATED)
+	{
+		const char *gamedir = g_SourceMod.GetGameFolderName();
+		if (strcmp(gamedir, "tf") == 0)
+			return SOURCE_ENGINE_TF2;
+		else if (strcmp(gamedir, "cstrike") == 0)
+			return SOURCE_ENGINE_CSS;
+		else if (strcmp(gamedir, "dod") == 0)
+			return SOURCE_ENGINE_DODS;
+		else if (strcmp(gamedir, "hl2mp") == 0)
+			return SOURCE_ENGINE_HL2DM;
+	}
+#endif
+
+	return engineVer;
 }
 
 static cell_t IndexToReference(IPluginContext *pContext, const cell_t *params)
