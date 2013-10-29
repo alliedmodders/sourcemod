@@ -186,6 +186,7 @@ static bool get_game_name(char *buffer, size_t maxlength)
 		if ((str = pGameInfo->GetString("game", NULL)) != NULL)
 		{
 			strncopy(buffer, str, maxlength);
+			pGameInfo->deleteThis();
 			return true;
 		}
 	}

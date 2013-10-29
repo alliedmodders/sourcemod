@@ -212,7 +212,7 @@ void CHalfLife2::InitCommandLine()
 		return;
 	}
 
-	ILibrary *lib = g_LibSys.OpenLibrary(path, error, sizeof(error));
+	ke::AutoPtr<ILibrary> lib(g_LibSys.OpenLibrary(path, error, sizeof(error)));
 	m_pGetCommandLine = lib->GetSymbolAddress("CommandLine_Tier0");
 
 	/* '_Tier0' dropped on Alien Swarm version */
@@ -224,7 +224,6 @@ void CHalfLife2::InitCommandLine()
 	if (m_pGetCommandLine == NULL)
 	{
 		/* We probably have a Ship engine. */
-		lib->CloseLibrary();
 		g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "../bin/" VSTDLIB_NAME);
 		if (!g_LibSys.IsPathFile(path))
 		{
@@ -244,8 +243,6 @@ void CHalfLife2::InitCommandLine()
 		{
 			g_Logger.LogError("Could not locate any command line functionality");
 		}
-
-		lib->CloseLibrary();
 	}
 }
 

@@ -35,6 +35,7 @@
 #include <ISourceMod.h>
 #include "common_logic.h"
 #include "PluginSys.h"
+#include <am-utility.h>
 
 CExtensionManager g_Extensions;
 IdentityType_t g_ExtType;
@@ -537,11 +538,9 @@ void CExtensionManager::TryAutoload()
 
 	g_pSM->BuildPath(Path_SM, path, sizeof(path), "extensions");
 
-	IDirectory *pDir = libsys->OpenDirectory(path);
+	ke::AutoPtr<IDirectory> pDir(libsys->OpenDirectory(path));
 	if (!pDir)
-	{
 		return;
-	}
 
 	const char *lfile;
 	size_t len;

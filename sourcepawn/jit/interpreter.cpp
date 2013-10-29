@@ -256,7 +256,7 @@ Interpret(BaseRuntime *rt, uint32_t aCodeStart, cell_t *rval)
         break;
 
       case OP_ZERO_S:
-        Write(plugin, *cip++, 0);
+        Write(plugin, ctx->frm + *cip++, 0);
         break;
 
       case OP_PUSH_PRI:

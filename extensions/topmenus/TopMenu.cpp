@@ -84,7 +84,7 @@ TopMenu::~TopMenu()
 	{
 		TearDownClient(&m_clients[i]);
 	}
-	delete [] m_clients;
+	free(m_clients);
 }
 
 unsigned int TopMenu::CalcMemUsage()
