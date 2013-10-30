@@ -139,6 +139,17 @@ enum TFCond
 	TFCond_SmallBulletResist,
 	TFCond_SmallBlastResist,
 	TFCond_SmallFireResist,
+	TFCond_Stealthed, // 64
+
+	TFCond_StealthedUserBuffFade = 66,
+
+	TFCond_MVMBotRadiowave = 71,
+	TFCond_HalloweenSpeedBoost,
+	TFCond_HalloweenQuickHeal,
+	TFCond_HalloweenGiant,
+	TFCond_HalloweenTiny, // 75
+
+	TFCond_HalloweenGhostMode = 77,
 };
 
 enum TFHoliday
