@@ -11,126 +11,104 @@
 
 "Games"
 {
-	/* No More Room in Hell 1.05 */
+	/* No More Room in Hell */
 	"nmrih"
 	{
 		"Offsets"
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"362"
-				"linux"		"363"
+				"windows"	"411"
+				"linux"		"412"
+				"mac"		"412"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"241"
-				"linux"		"242"
+				"windows"	"271"
+				"linux"		"272"
+				"mac"		"272"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"239"
-				"linux"		"240"
+				"windows"	"269"
+				"linux"		"270"
+				"mac"		"270"
 			}
 			"Ignite"
 			{
-				"windows"	"195"
-				"linux"		"196"
+				"windows"	"209"
+				"linux"		"210"
+				"mac"		"210"
 			}
 			"Extinguish"
 			{
-				"windows"	"199"
-				"linux"		"200"
+				"windows"	"213"
+				"linux"		"214"
+				"mac"		"214"
 			}
 			"Teleport"
 			{
-				"windows"	"102"
-				"linux"		"103"
+				"windows"	"109"
+				"linux"		"110"
+				"mac"		"110"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"403"
-				"linux"		"403"
+				"windows"	"450"
+				"linux"		"450"
+				"mac"		"450"
 			}
 			"GetVelocity"
 			{
-				"windows"	"132"
-				"linux"		"133"
+				"windows"	"141"
+				"linux"		"142"
+				"mac"		"142"
 			}
 			"EyeAngles"
 			{
-				"windows"	"124"
-				"linux"		"125"
+				"windows"	"132"
+				"linux"		"133"
+				"mac"		"133"
 			}
 			"AcceptInput"
 			{
-				"windows"	"34"
-				"linux"		"35"
+				"windows"	"36"
+				"linux"		"37"
+				"mac"		"37"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"23"
-				"linux"		"24"
+				"windows"	"24"
+				"linux"		"25"
+				"mac"		"25"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"232"
-				"linux"		"233"
+				"windows"	"262"
+				"linux"		"263"
+				"mac"		"263"
 			}
 			"Activate"
 			{
-				"windows"	"31"
-				"linux"		"32"
+				"windows"	"33"
+				"linux"		"34"
+				"mac"		"34"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"382"
-				"linux"		"383"
-			}
-			
-			/* Offset into CBaseTempEntity constructor (vs2010 moved it!) */
-			"s_pTempEntities"
-			{
-				"windows"	"19"
-			}
-			"GetTEName"
-			{
-				"windows"	"4"
-				"linux"		"4"
-			}
-			"GetTENext"
-			{
-				"windows"	"8"
-				"linux"		"8"
-			}
-			"TE_GetServerClass"
-			{
-				"windows"	"0"
-				"linux"		"0"
+				"windows"	"429"
+				"linux"		"430"
+				"mac"		"430"
 			}
 		}
 		"Signatures"
 		{
-			"CBaseTempEntity"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\xC1\x8B\x2A\x2A\xC7\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x8B\x15\x2A\x2A\x2A\x2A\x89"
-			}
-			"s_pTempEntities"
-			{
-				"library"	"server"
-				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-			}
-			"FindEntityByClassname"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x2A\x2A\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\xFF\xD2\x8B\x00\x25\x2A\x2A\x2A\x2A\x40\x03\xC0\x8B\x3C\xC6\xEB\x2A\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74"
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-			}
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\x53\x56\x8B\x2A\x2A\x57\x89"
-				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"windows"	"\x55\x8B\xEC\x81\x2A\x2A\x2A\x2A\x2A\x53\x56\x8B\x71\x2A\x57\x89"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x2A\x2A\x2A\x2A\x8B\x2A\x2A\x65\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x31\xC0\x8B\x2A\x2A\x8B\x2A\x2A\x8B\x2A\x2A\x8B\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89"
+				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
