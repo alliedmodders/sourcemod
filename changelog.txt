@@ -1,5 +1,22 @@
 SourceMod Changelog
 
+SourceMod 1.5.2 [2013-10-29]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.5.2_Release_Notes
+
+User Changes:
+ - Updated gamedata support for TF2, CS:S, CS:GO, and HL2:DM.
+ - Fixed crash from regression in SDKTools SetClientListening hook refcounting (bug 5956) (KyleS).
+ - Fixed potential crash when having maps with format characters in name.
+ - Fixed some nextmap issues with long map names.
+ - SDKTools no longer requires gamedata for sm_dump_datamaps on TF2, CS:S, HL2:DM, and DoD:S (bug 5968). 
+
+Developer Changes:
+ - Updated TFCond and TF custom dmg enums.
+ - Updated TF2 critical hit detection logic in TF2_OnCalcIsAttackCritical to handle more cases, including when criticals are disabled (bug 5894).
+ - Fixed GetEngineVersion native returning a bad value when running on MM:S 1.9.x or earlier (bug 5697). 
+
+----------------------------------------------------------
 SourceMod 1.5.1 [2013-09-10]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.5.1_Release_Notes
@@ -11,7 +28,7 @@ User Changes:
  - Fixed runoff voting occurring when receiving the exact number of required votes (bug 5890).
  - Fixed reserve slot plugin hiding too many slots on Orangebox gamesif SourceTV and/or Replay are present (bug 5499).
  - Fixed some crashes in TF2 and unexpected behavior in all games with SDKHook_TakeDamage due to uninitialized var.
- - Fixed attempted triggers from gagged users displaying in chat (bug 5918, r=asherkin).
+ - Fixed attempted triggers from gagged users displaying in chat (bug 5918).
  - Fixed errors in Italian translation (Oktober).
  - Added Norwegian translation (checkster).
 
