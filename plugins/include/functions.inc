@@ -492,3 +492,20 @@ native FormatNativeString(out_param,
 						  &written=0,
 						  String:out_string[]="",
 						  const String:fmt_string[]="");
+
+/**
+ * Defines a RequestFrame Callback.
+ *
+ * @param data			Data passed to the RequestFrame native.
+ * @noreturn
+ */
+functag public RequestFrameCallback(any:data);
+
+/**
+ * Creates a single use Next Frame hook.
+ *
+ * @param Function	Function to call on the next frame.
+ * @param data			Value to be passed on the invocation of the Function.
+ * @noreturn
+ */
+native RequestFrame(RequestFrameCallback:Function, any:data=0);
