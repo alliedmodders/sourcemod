@@ -125,7 +125,7 @@ void Conditions_OnGameFrame(bool simulating)
 			}
 		}
 
-		maxbit = max(removedconds.lower, removedconds.upper);
+		maxbit = MAX(removedconds.lower, removedconds.upper);
 		for (j = 0; j < MAX_CONDS && (bit = ((uint64_t)1 << j)) <= maxbit; j++)
 		{
 			if ((removedconds.lower & bit) == bit)
