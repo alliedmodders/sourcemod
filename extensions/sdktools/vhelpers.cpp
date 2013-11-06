@@ -502,6 +502,63 @@ void _ignore_invalid_parameter(
 }
 #endif
 
+CEntityFactoryDictionary *GetEntityFactoryDictionary()
+{
+	static CEntityFactoryDictionary *dict = NULL;
+
+#if SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_SDK2013
+	dict = (CEntityFactoryDictionary *) servertools->GetEntityFactoryDictionary();
+#else
+	if (dict == NULL)
+	{
+		void *addr;
+		if (g_pGameConf->GetMemSig("EntityFactoryFinder", (void **) &addr) && addr)
+		{
+			int offset;
+			if (!g_pGameConf->GetOffset("EntityFactoryOffset", &offset) || !offset)
+			{
+				return NULL;
+			}
+			dict = *reinterpret_cast<CEntityFactoryDictionary **>((intptr_t) addr + offset);
+		}
+	}
+
+	if (dict == NULL)
+	{
+		ICallWrapper *pWrapper = NULL;
+
+		PassInfo retData;
+		retData.flags = PASSFLAG_BYVAL;
+		retData.size = sizeof(void *);
+		retData.type = PassType_Basic;
+
+		void *addr;
+		if (g_pGameConf->GetMemSig("EntityFactory", &addr) && addr != NULL)
+		{
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retData, NULL, 0);
+		}
+
+		if (pWrapper)
+		{
+			void *returnData = NULL;
+
+			pWrapper->Execute(NULL, &returnData);
+
+			pWrapper->Destroy();
+
+			if (returnData == NULL)
+			{
+				return NULL;
+			}
+
+			dict = (CEntityFactoryDictionary *) returnData;
+		}
+	}
+#endif
+
+	return dict;
+}
+
 CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 {
 #if SOURCE_ENGINE <= SE_DARKMESSIAH
@@ -521,39 +578,10 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 		return;
 	}
 
-	CEntityFactoryDictionary *dict = NULL;
-
-#if SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_SDK2013
-	dict = (CEntityFactoryDictionary *)servertools->GetEntityFactoryDictionary();
-#else
-
-	ICallWrapper *pWrapper = NULL;
-
-	if (!pWrapper)
-	{
-		PassInfo retData;
-		retData.flags = PASSFLAG_BYVAL;
-		retData.size = sizeof(void *);
-		retData.type = PassType_Basic;
-
-		void *addr;
-		if (!g_pGameConf->GetMemSig("EntityFactory", &addr) || addr == NULL)
-		{
-			META_CONPRINT("Failed to locate function\n");
-			return;
-		}
-
-		pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retData, NULL, 0);
-	}
-
-	pWrapper->Execute(NULL, &dict);
-
-	pWrapper->Destroy();
-
-#endif
-
+	CEntityFactoryDictionary *dict = GetEntityFactoryDictionary();
 	if (dict == NULL)
 	{
+		META_CONPRINT("Failed to locate function\n");
 		return;
 	}
 
@@ -714,53 +742,7 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 		return;
 	}
 
-	static CEntityFactoryDictionary *dict = NULL;
-	if (dict == NULL)
-	{
-		void *addr;
-		if (g_pGameConf->GetMemSig("EntityFactoryFinder", (void **)&addr) && addr)
-		{
-			int offset;
-			if (!g_pGameConf->GetOffset("EntityFactoryOffset", &offset) || !offset)
-			{
-				return;
-			}
-			dict = *reinterpret_cast<CEntityFactoryDictionary **>((intptr_t)addr + offset);
-		}
-	}
-
-	if (dict == NULL)
-	{
-		ICallWrapper *pWrapper = NULL;
-
-		PassInfo retData;
-		retData.flags = PASSFLAG_BYVAL;
-		retData.size = sizeof(void *);
-		retData.type = PassType_Basic;
-
-		void *addr;
-		if (g_pGameConf->GetMemSig("EntityFactory", &addr) && addr != NULL)
-		{
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retData, NULL, 0);
-		}
-
-		if (pWrapper)
-		{
-			void *returnData = NULL;
-
-			pWrapper->Execute(NULL, &returnData);
-
-			pWrapper->Destroy();
-
-			if (returnData == NULL)
-			{
-				return;
-			}
-
-			dict = ( CEntityFactoryDictionary * )returnData;
-		}
-	}
-
+	CEntityFactoryDictionary *dict = GetEntityFactoryDictionary();
 	if ( dict == NULL )
 	{
 		META_CONPRINT("Failed to locate function\n");
