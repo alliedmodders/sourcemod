@@ -36,15 +36,15 @@
 			}
 			"PreThink"
 			{
-				"windows"	"362"
-				"linux"		"363"
-				"mac"		"363"
-			}
-			"PostThink"
-			{
 				"windows"	"363"
 				"linux"		"364"
 				"mac"		"364"
+			}
+			"PostThink"
+			{
+				"windows"	"364"
+				"linux"		"365"
+				"mac"		"365"
 			}
 			"Reload"
 			{
