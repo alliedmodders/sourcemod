@@ -18,9 +18,9 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"411"
-				"linux"		"412"
-				"mac"		"412"
+				"windows"	"412"
+				"linux"		"413"
+				"mac"		"413"
 			}
 			"RemovePlayerItem"
 			{
@@ -54,9 +54,9 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"450"
-				"linux"		"450"
-				"mac"		"450"
+				"windows"	"451"
+				"linux"		"451"
+				"mac"		"451"
 			}
 			"GetVelocity"
 			{
@@ -96,9 +96,9 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"429"
-				"linux"		"430"
-				"mac"		"430"
+				"windows"	"430"
+				"linux"		"431"
+				"mac"		"431"
 			}
 		}
 		"Signatures"
