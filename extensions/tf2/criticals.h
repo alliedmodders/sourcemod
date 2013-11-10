@@ -58,7 +58,10 @@ private:
 
 public:
 	// CritHook
-	bool Hook_CalcIsAttackCriticalHelpers();
+	bool Hook_CalcIsAttackCriticalHelper();
+	bool Hook_CalcIsAttackCriticalHelperNoCrits();
+private:
+	bool Hook_CalcIsAttackCriticalHelpers(bool noCrits);
 
 private:
 	bool m_enabled;
