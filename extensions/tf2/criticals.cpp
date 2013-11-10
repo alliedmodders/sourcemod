@@ -87,8 +87,8 @@ bool CritManager::TryEnable()
 		if (!UTIL_ContainsDataTable(pNetworkable->GetServerClass()->m_pTable, TF_WEAPON_DATATABLE))
 			continue;
 
-		SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelpers), false);
-		SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelpers), false);
+		SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelper), false);
+		SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelperNoCrits), false);
 
 		m_entsHooked.Set(i);
 	}
@@ -104,8 +104,8 @@ void CritManager::Disable()
 	for (i; i != -1; i = m_entsHooked.FindNextSetBit(i))
 	{
 		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
-		SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelpers), false);
-		SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelpers), false);
+		SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelper), false);
+		SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelperNoCrits), false);
 
 		m_entsHooked.Set(i, false);
 	}
@@ -126,8 +126,8 @@ void CritManager::OnEntityCreated(CBaseEntity *pEntity, const char *classname)
 	if (!UTIL_ContainsDataTable(pNetworkable->GetServerClass()->m_pTable, TF_WEAPON_DATATABLE))
 		return;
 
-	SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelpers), false);
-	SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelpers), false);
+	SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelper), false);
+	SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelperNoCrits), false);
 
 	m_entsHooked.Set(gamehelpers->EntityToBCompatRef(pEntity));
 }
@@ -144,13 +144,23 @@ void CritManager::OnEntityDestroyed(CBaseEntity *pEntity)
 	if (!m_entsHooked.IsBitSet(index))
 		return;
 
-	SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelpers), false);
-	SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelpers), false);
+	SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelper), false);
+	SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelperNoCrits), false);
 
 	m_entsHooked.Set(index, false);
 }
 
-bool CritManager::Hook_CalcIsAttackCriticalHelpers()
+bool CritManager::Hook_CalcIsAttackCriticalHelper()
+{
+	return Hook_CalcIsAttackCriticalHelpers(false);
+}
+
+bool CritManager::Hook_CalcIsAttackCriticalHelperNoCrits()
+{
+	return Hook_CalcIsAttackCriticalHelpers(true);
+}
+
+bool CritManager::Hook_CalcIsAttackCriticalHelpers(bool noCrits)
 {
 	CBaseEntity *pWeapon = META_IFACEPTR(CBaseEntity);
 	
@@ -171,7 +181,15 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers()
 		RETURN_META_VALUE(MRES_IGNORED, false);
 	}
 
-	int returnValue = 0;
+	int returnValue;
+	if (noCrits)
+	{
+		returnValue = SH_MCALL(pWeapon, CalcIsAttackCriticalHelperNoCrits)() ? 1 : 0;
+	}
+	else
+	{
+		returnValue = SH_MCALL(pWeapon, CalcIsAttackCriticalHelper)() ? 1 : 0;
+	}
 
 	int ownerIndex = -1;
 	CBaseHandle &hndl = *(CBaseHandle *) ((intptr_t)pWeapon + info.actual_offset);
@@ -191,9 +209,9 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers()
 
 	g_critForward->Execute(&result);
 
-	if (result && returnValue)
+	if (result > Pl_Continue)
 	{
-		RETURN_META_VALUE(MRES_SUPERCEDE, true);
+		RETURN_META_VALUE(MRES_SUPERCEDE, returnValue);
 	}
 	
 	RETURN_META_VALUE(MRES_IGNORED, false);
