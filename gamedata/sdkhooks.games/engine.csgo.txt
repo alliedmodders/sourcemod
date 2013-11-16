@@ -48,9 +48,9 @@
 			}
 			"Reload"
 			{
-				"windows"	"309"
-				"linux"		"310"
-				"mac"		"310"
+				"windows"	"305"
+				"linux"		"311"
+				"mac"		"311"
 			}
 			"SetTransmit"
 			{
