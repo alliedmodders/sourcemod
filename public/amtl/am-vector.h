@@ -187,10 +187,10 @@ class Vector : public AllocPolicy
 
   bool moveUp(size_t at) {
     assert(at < nitems_);
-    if (!growIfNeeded(1))
+    if (!append(Moveable<T>(data_[nitems_ - 1])))
       return false;
-    nitems_++;
-    for (size_t i = nitems_ - 1; i > at; i--)
+
+    for (size_t i = nitems_ - 2; i > at; i--)
       data_[i] = Moveable<T>(data_[i - 1]);
     return true;
   }

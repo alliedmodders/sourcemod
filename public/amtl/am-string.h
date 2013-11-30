@@ -55,6 +55,8 @@ class AString
   AString(const AString &other) {
     if (other.length_)
       set(other.chars_, other.length_);
+    else
+     length_ = 0;
   }
   AString(Moveable<AString> other)
     : chars_(other->chars_.take()),
