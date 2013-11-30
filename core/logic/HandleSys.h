@@ -103,11 +103,11 @@ struct QHandleType
 	TypeAccess typeSec;
 	HandleAccess hndlSec;
 	unsigned int opened;
-	ke::AString name;
+	ke::AutoPtr<ke::AString> name;
 
 	static inline bool matches(const char *key, const QHandleType *type)
 	{
-		return type->name.compare(key) == 0;
+		return type->name && type->name->compare(key) == 0;
 	}
 };
 

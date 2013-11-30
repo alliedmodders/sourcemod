@@ -45,8 +45,6 @@ class CItem
 public:
 	CItem()
 	{
-		info.setVoid();
-		display.setVoid();
 		style = 0;
 		access = 0;
 	}
@@ -57,11 +55,24 @@ public:
 		style = other->style;
 		access = other->access;
 	}
+	CItem & operator =(ke::Moveable<CItem> other)
+	{
+		info = ke::Move(other->info);
+		display = ke::Move(other->display);
+		style = other->style;
+		access = other->access;
+		return *this;
+	}
+
 public:
 	ke::AString info;
-	ke::AString display;
+	ke::AutoPtr<ke::AString> display;
 	unsigned int style;
 	unsigned int access;
+
+private:
+	CItem(const CItem &other) KE_DELETE;
+	CItem &operator =(const CItem &other) KE_DELETE;
 };
 
 class CBaseMenuPlayer

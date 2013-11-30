@@ -91,7 +91,7 @@ class AutoPtr
       : t_(t)
     {
     }
-    AutoPtr(Moveable<AutoPtr<T> > &other)
+    AutoPtr(Moveable<AutoPtr<T> > other)
     {
         t_ = other->t_;
         other->t_ = NULL;
@@ -116,7 +116,7 @@ class AutoPtr
         t_ = t;
         return t_;
     }
-    T *operator =(Moveable<AutoPtr<T> > &other) {
+    T *operator =(Moveable<AutoPtr<T> > other) {
         delete t_;
         t_ = other->t_;
         other->t_ = NULL;

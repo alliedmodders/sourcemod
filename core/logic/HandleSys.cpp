@@ -204,10 +204,8 @@ HandleType_t HandleSystem::CreateType(const char *name,
 	pType->dispatch = dispatch;
 	if (name && name[0] != '\0')
 	{
-		pType->name = name;
+		pType->name = new ke::AString(name);
 		m_TypeLookup.insert(name, pType);
-	} else {
-		pType->name.setVoid();
 	}
 
 	pType->opened = 0;
@@ -924,8 +922,8 @@ bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t *ident)
 	pType->dispatch = NULL;
 
 	/* Remove it from the type cache. */
-	if (!pType->name.isVoid())
-		m_TypeLookup.remove(pType->name.chars());
+	if (pType->name)
+		m_TypeLookup.remove(pType->name->chars());
 
 	return true;
 }
@@ -1050,8 +1048,8 @@ bool HandleSystem::TryAndFreeSomeHandles()
 			continue; /* We may have gaps, it's fine. */
 		}
 
-		if (!m_Types[i].name.isVoid())
-			pTypeName = m_Types[i].name.chars();
+		if (m_Types[i].name)
+			pTypeName = m_Types[i].name->chars();
 		else
 			pTypeName = "ANON";
 
@@ -1118,8 +1116,8 @@ void HandleSystem::Dump(HANDLE_REPORTER rep)
 		unsigned int size = 0;
 		unsigned int parentIdx;
 		bool bresult;
-		if (!pType->name.isVoid())
-			type = pType->name.chars();
+		if (pType->name)
+			type = pType->name->chars();
 
 		if ((parentIdx = m_Handles[i].clone) != 0)
 		{

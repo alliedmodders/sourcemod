@@ -636,10 +636,10 @@ bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 
 	item.info = info;
 	if (draw.display)
-		item.display = draw.display;
+		item.display = new ke::AString(draw.display);
 	item.style = draw.style;
 
-	m_items.append(item);
+	m_items.append(ke::Move(item));
 	return true;
 }
 
@@ -657,10 +657,10 @@ bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDr
 	CItem item;
 	item.info = info;
 	if (draw.display)
-		item.display = draw.display;
+		item.display = new ke::AString(draw.display);
 	item.style = draw.style;
 
-	m_items.insert(position, item);
+	m_items.insert(position, ke::Move(item));
 	return true;
 }
 
@@ -685,7 +685,7 @@ const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =
 
 	if (draw)
 	{
-		draw->display = m_items[position].display.chars();
+		draw->display = m_items[position].display->chars();
 		draw->style = m_items[position].style;
 	}
 
