@@ -267,7 +267,9 @@ int pc_compile(int argc, char *argv[])
       tname=NULL;
       sname=NULL;
     #else
-      tname=tempnam(NULL,"pawn");
+      char buffer[] = P_tmpdir "/pawn.XXXXXX";
+      close(mkstemp(buffer));
+      tname=buffer;
     #endif
     ftmp=(FILE*)pc_createsrc(tname);
     for (fidx=0; (sname=get_sourcefile(fidx))!=NULL; fidx++) {
