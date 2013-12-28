@@ -5730,10 +5730,6 @@ static void statement(int *lastindent,int allow_decl)
     dosleep();
     lastst=tSLEEP;
     break;
-  case tSTATE:
-    dostate();
-    lastst=tSTATE;
-    break;
   case tCONST:
     decl_const(sLOCAL);
     break;

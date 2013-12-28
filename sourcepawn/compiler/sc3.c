@@ -1703,22 +1703,6 @@ static int hier2(value *lval)
     while (paranthese--)
       needtoken(')');
     return FALSE;
-  case tSTATE: {
-    constvalue *automaton;
-    constvalue *state;
-    if (sc_getstateid(&automaton,&state)) {
-      assert(automaton!=NULL);
-      assert((automaton->index==0 && automaton->name[0]=='\0') || automaton->index>0);
-      loadreg(automaton->value,sALT);
-      assert(state!=NULL);
-      ldconst(state->value,sPRI);
-      ob_eq();
-      clear_value(lval);
-      lval->ident=iEXPRESSION;
-      lval->tag=pc_addtag("bool");
-    } /* if */
-    return FALSE;
-  } /* case */
   default:
     lexpush();
     lvalue=hier1(lval);

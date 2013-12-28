@@ -293,7 +293,7 @@ typedef struct s_stringpair {
  */
 #define tFIRST   256    /* value of first multi-character operator */
 #define tMIDDLE  280    /* value of last multi-character operator */
-#define tLAST    333    /* value of last multi-character match-able token */
+#define tLAST    332    /* value of last multi-character match-able token */
 /* multi-character operators */
 #define taMULT   256    /* *= */
 #define taDIV    257    /* /= */
@@ -350,40 +350,39 @@ typedef struct s_stringpair {
 #define tRETURN  307
 #define tSIZEOF  308
 #define tSLEEP   309
-#define tSTATE   310
-#define tSTATIC  311
-#define tSTOCK   312
-#define tSTRUCT  313
-#define tSWITCH  314
-#define tTAGOF   315
-#define tTHEN    316
-#define tWHILE   317
+#define tSTATIC  310
+#define tSTOCK   311
+#define tSTRUCT  312
+#define tSWITCH  313
+#define tTAGOF   314
+#define tTHEN    315
+#define tWHILE   316
 /* compiler directives */
-#define tpASSERT 318    /* #assert */
-#define tpDEFINE 319
-#define tpELSE   320    /* #else */
-#define tpELSEIF 321    /* #elseif */
-#define tpEMIT   322
-#define tpENDIF  323
-#define tpENDINPUT 324
-#define tpENDSCRPT 325
-#define tpERROR  326
-#define tpFILE   327
-#define tpIF     328    /* #if */
-#define tINCLUDE 329
-#define tpLINE   330
-#define tpPRAGMA 331
-#define tpTRYINCLUDE 332
-#define tpUNDEF  333
+#define tpASSERT 317    /* #assert */
+#define tpDEFINE 318
+#define tpELSE   319    /* #else */
+#define tpELSEIF 320    /* #elseif */
+#define tpEMIT   321
+#define tpENDIF  322
+#define tpENDINPUT 323
+#define tpENDSCRPT 324
+#define tpERROR  325
+#define tpFILE   326
+#define tpIF     327    /* #if */
+#define tINCLUDE 328
+#define tpLINE   329
+#define tpPRAGMA 330
+#define tpTRYINCLUDE 331
+#define tpUNDEF  332
 /* semicolon is a special case, because it can be optional */
-#define tTERM    334    /* semicolon or newline */
-#define tENDEXPR 335    /* forced end of expression */
+#define tTERM    333    /* semicolon or newline */
+#define tENDEXPR 334    /* forced end of expression */
 /* other recognized tokens */
-#define tNUMBER  336    /* integer number */
-#define tRATIONAL 337   /* rational number */
-#define tSYMBOL  338
-#define tLABEL   339
-#define tSTRING  340
+#define tNUMBER  335    /* integer number */
+#define tRATIONAL 336   /* rational number */
+#define tSYMBOL  337
+#define tLABEL   338
+#define tSTRING  339
 #define tEXPR    341 /* for assigment to "lastst" only (see SC1.C) */
 #define tENDLESS 342 /* endless loop, for assigment to "lastst" only */
 #define tEMPTYBLOCK 343 /* empty blocks for AM bug 4825 */
