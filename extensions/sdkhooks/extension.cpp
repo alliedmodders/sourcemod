@@ -144,7 +144,11 @@ SH_DECL_MANUALHOOK0_void(PostThink, 0, 0, 0);
 SH_DECL_MANUALHOOK0(Reload, 0, 0, 0, bool);
 SH_DECL_MANUALHOOK2_void(SetTransmit, 0, 0, 0, CCheckTransmitInfo *, bool);
 SH_DECL_MANUALHOOK2(ShouldCollide, 0, 0, 0, bool, int, int);
+#if SOURCE_ENGINE == SE_DOTA
+SH_DECL_MANUALHOOK1_void(Spawn, 0, 0, 0, CEntityKeyValues *);
+#else
 SH_DECL_MANUALHOOK0_void(Spawn, 0, 0, 0);
+#endif
 SH_DECL_MANUALHOOK1_void(StartTouch, 0, 0, 0, CBaseEntity *);
 SH_DECL_MANUALHOOK0_void(Think, 0, 0, 0);
 SH_DECL_MANUALHOOK1_void(Touch, 0, 0, 0, CBaseEntity *);
@@ -1202,7 +1206,11 @@ bool SDKHooks::Hook_ShouldCollide(int collisionGroup, int contentsMask)
 	RETURN_META_VALUE(MRES_SUPERCEDE, ret);
 }
 
+#if SOURCE_ENGINE == SE_DOTA
+void SDKHooks::Hook_Spawn(CEntityKeyValues *kv)
+#else
 void SDKHooks::Hook_Spawn()
+#endif
 {
 	int entity = gamehelpers->EntityToBCompatRef(META_IFACEPTR(CBaseEntity));
 	IPluginFunction *callback = NULL;
@@ -1224,7 +1232,11 @@ void SDKHooks::Hook_Spawn()
 	RETURN_META(MRES_IGNORED);
 }
 
+#if SOURCE_ENGINE == SE_DOTA
+void SDKHooks::Hook_SpawnPost(CEntityKeyValues *kv)
+#else
 void SDKHooks::Hook_SpawnPost()
+#endif
 {
 	Call(META_IFACEPTR(CBaseEntity), SDKHook_SpawnPost);
 }

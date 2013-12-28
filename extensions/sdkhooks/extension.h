@@ -25,6 +25,10 @@
 #define GAMEDESC_CAN_CHANGE
 #endif
 
+#if SOURCE_ENGINE == SE_DOTA
+class CEntityKeyValues;
+#endif
+
 
 /**
  * Globals
@@ -266,8 +270,13 @@ public:
 	bool Hook_ReloadPost();
 	void Hook_SetTransmit(CCheckTransmitInfo *pInfo, bool bAlways);
 	bool Hook_ShouldCollide(int collisonGroup, int contentsMask);
+#if SOURCE_ENGINE == SE_DOTA
+	void Hook_Spawn(CEntityKeyValues *kv);
+	void Hook_SpawnPost(CEntityKeyValues *kv);
+#else
 	void Hook_Spawn();
 	void Hook_SpawnPost();
+#endif
 	void Hook_StartTouch(CBaseEntity *pOther);
 	void Hook_StartTouchPost(CBaseEntity *pOther);
 	void Hook_Think();
