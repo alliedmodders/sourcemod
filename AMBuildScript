@@ -64,6 +64,8 @@ class SMConfig(object):
     self.binaries = []
     self.mms_root = None
     self.mysql_root = None
+    self.spcomp = None
+    self.smx_files = {}
 
   def detectSDKs(self):
     sdk_list = builder.options.sdks.split(',')
@@ -409,6 +411,7 @@ builder.RunBuildScripts(
     'extensions/updater/AMBuilder',
     'sourcepawn/compiler/AMBuilder',
     'sourcepawn/jit/AMBuilder',
+    'plugins/AMBuilder',
   ],
   {
     'SM': SM

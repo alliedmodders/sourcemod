@@ -72,4 +72,4 @@ binary.sources += [
 if builder.target_platform is 'linux':
   binary.sources.append('binreloc.c')
  
-SM.binaries += [builder.Add(binary)]
+SM.spcomp = builder.Add(binary)
