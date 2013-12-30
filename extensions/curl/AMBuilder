@@ -1,87 +1,24 @@
-# vim: set ts=2 sw=2 tw=99 noet ft=python : 
-import os.path
-import subprocess
-import ambuild.command as command
-import ambuild.osutil as osutil
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python : 
+import os
 
-def BuildCURL():
-	curl = AMBuild.AddJob('curl')
-	if AMBuild.target['platform'] in ['linux', 'darwin']:
-		if not osutil.FileExists(os.path.join(AMBuild.outputFolder, 'curl', 'Makefile')):
-			args = ['/bin/bash',
-							os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'configure'),
-							'--enable-static',
-							'--disable-shared',
-							'--disable-ldap',
-							'--without-ssl',
-							'--without-libidn',
-							'--without-libssh2',
-							'--without-zlib']
-			env = os.environ.copy()
-			env['CFLAGS'] = '-m32'
-			if AMBuild.target['platform'] == 'darwin':
-				env['LDFLAGS'] = '-mmacosx-version-min=10.5'
-			else:
-				env['CFLAGS'] += ' -D_GNU_SOURCE'
-			curl.AddCommand(command.DirectCommand(argv = args, env = env))
-			curl.AddCommand(command.ShellCommand('cd lib && make'))
-	else:
-		args = ''
-		projpath = os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'lib',
-		                    'build_libcurl.vcproj')
-		try:
-			subprocess.Popen('vcbuild')
-		except:
-			xprojpath = os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'lib',
-		                    'build_libcurl.vcxproj')
-			if not os.path.isfile(xprojpath):
-				curl.AddCommand(command.DirectCommand(['vcupgrade', projpath]))
-			args = ['msbuild', xprojpath, '/p:Configuration=LIB Release']
-			
-		if not args:
-			args = ['vcbuild', projpath, 'LIB Release']
-		
-		curl.AddCommand(command.DirectCommand(args))
-		#die "Unable to find libcurl.lib!\n" unless (-f "LIB-Release\\libcurl.lib");
+libcurl = builder.RunScript('curl-src/lib/AMBuilder')
 
-BuildCURL()
+binary = SM.ExtLibrary(builder, 'webternet.ext')
+binary.compiler.includes += [
+  os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl-src', 'include')
+]
+binary.compiler.defines += ['CURL_STATICLIB']
+binary.compiler.postlink += [libcurl.binary]
+if builder.target_platform is 'linux':
+  binary.compiler.postlink += ['-lrt']
+elif builder.target_platform is 'windows':
+  binary.compiler.postlink += ['ws2_32.lib']
 
-compiler = SM.DefaultExtCompiler('extensions/curl')
-extension = AMBuild.AddJob('webternet.ext')
-binary = Cpp.LibraryBuilder('webternet.ext', AMBuild, extension, compiler)
+binary.sources += [
+  'extension.cpp',
+  'curlapi.cpp',
+  'sdk/smsdk_ext.cpp',
+]
 
-curlPath = [AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'include']
-compiler['CXXINCLUDES'].append(os.path.join(*curlPath))
-compiler['CDEFINES'].append('CURL_STATICLIB')
-                                          
-binary.AddSourceFiles('extensions/curl', [
-	'extension.cpp',
-	'curlapi.cpp',
-	'sdk/smsdk_ext.cpp',
-	])
-
-if AMBuild.target['platform'] == 'linux' or AMBuild.target['platform'] == 'darwin':
-	path = os.path.join(AMBuild.outputFolder,
-                      'curl',
-                      'lib',
-                      '.libs',
-                      'libcurl.a')
-	if AMBuild.target['platform'] == 'linux':
-		binary['POSTLINKFLAGS'].append('-lrt')
-	binary.AddObjectFiles([path])
-elif AMBuild.target['platform'] == 'windows':
-	path = os.path.join(AMBuild.sourceFolder,
-	                    'extensions',
-	                    'curl',
-	                    'curl-src',
-	                    'lib',
-	                    'LIB-Release',
-	                    'libcurl.lib')
-	if os.path.isfile(path):
-		binary.RelinkIfNewer(path)
-	binary['POSTLINKFLAGS'].extend([path, 'ws2_32.lib'])
-
-SM.AutoVersion('extensions/curl', binary)
-SM.ExtractDebugInfo(extension, binary)
-binary.SendToJob()
+SM.binaries += [builder.Add(binary)]
 

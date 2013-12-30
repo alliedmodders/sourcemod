@@ -396,6 +396,7 @@ builder.RunBuildScripts(
     'core/logic/AMBuilder',
     'extensions/bintools/AMBuilder',
     'extensions/clientprefs/AMBuilder',
+    'extensions/curl/AMBuilder',
     'extensions/cstrike/AMBuilder',
     'extensions/geoip/AMBuilder',
     'extensions/mysql/AMBuilder',
