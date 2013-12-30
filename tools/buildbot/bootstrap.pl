@@ -19,27 +19,7 @@ our ($root) = getcwd();
 
 my $reconf = 0;
 
-#Create output folder if it doesn't exist.
-if (!(-d 'OUTPUT')) {
-	$reconf = 1;
-} else {
-	if (-f 'OUTPUT/sentinel') {
-		my @s = stat('OUTPUT/sentinel');
-		my $mtime = $s[9];
-		my @files = ('build/pushbuild.txt', 'build/AMBuildScript', 'build/product.version');
-		my ($i);
-		for ($i = 0; $i <= $#files; $i++) {
-			if (IsNewer($files[$i], $mtime)) {
-				$reconf = 1;
-				last;
-			}
-		}
-	} else {
-		$reconf = 1;
-	}
-}
-
-if ($reconf) {
+if (!(-f 'OUTPUT/.ambuild2/graph') || !(-f 'OUTPUT/.ambuild2/vars')) {
 	rmtree('OUTPUT');
 	mkdir('OUTPUT') or die("Failed to create output folder: $!\n");
 	chdir('OUTPUT');
@@ -47,21 +27,18 @@ if ($reconf) {
 	$argn = $#ARGV + 1;
 	print "Attempting to reconfigure...\n";
 	if ($argn > 0 && $^O !~ /MSWin/) {
-		$result = `CC=$ARGV[0] CXX=$ARGV[0] python3 ../build/configure.py --enable-optimize`;
+		$result = `CC=$ARGV[0] CXX=$ARGV[0] python ../build/configure.py --enable-optimize`;
 	} else {
 		if ($^O =~ /MSWin/) {
-			$result = `C:\\Python32\\Python.exe ..\\build\\configure.py --enable-optimize`;
+			$result = `C:\\Python27\\Python.exe ..\\build\\configure.py --enable-optimize`;
 		} else {
-			$result = `CC=clang CXX=clang python3 ../build/configure.py --enable-optimize`;
+			$result = `CC=clang CXX=clang python ../build/configure.py --enable-optimize`;
 		}
 	}
 	print "$result\n";
 	if ($? != 0) {
 		die("Could not configure: $!\n");
 	}
-	open(FILE, '>sentinel');
-	print FILE "this is nothing.\n";
-	close(FILE);
 }
 
 sub IsNewer
