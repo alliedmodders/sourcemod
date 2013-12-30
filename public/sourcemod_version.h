@@ -39,6 +39,9 @@
  */
 
 #if defined SM_GENERATED_BUILD
+# if defined RC_COMPILE
+#  undef SM_USE_VERSIONLIB
+# endif
 # if defined SM_USE_VERSIONLIB
 #  include <versionlib.h>
 # else 

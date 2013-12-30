@@ -14,6 +14,12 @@ if builder.target_platform is 'mac':
   mac_tuple = mac_version.split('.')
   if int(mac_tuple[0]) >= 10 and int(mac_tuple[1]) >= 9:
     binary.compiler.defines += ['BUILTIN_STRLCAT']
+elif builder.target_platform is 'windows':
+  binary.compiler.defines += [
+    'BUILDING_LIBCURL',
+    'CURL_STATICLIB',
+    'CURL_DISABLE_LDAP',
+  ]
 
 binary.sources += [
   'base64.c',
@@ -52,7 +58,6 @@ binary.sources += [
   'llist.c',
   'md5.c',
   'memdebug.c',
-  'mprintf.c',
   'multi.c',
   'netrc.c',
   'nss.c',
@@ -82,5 +87,7 @@ binary.sources += [
   'url.c',
   'version.c'
 ]
+if builder.target_platform != 'windows':
+  builder.sources += ['mprintf.c']
 rvalue = builder.Add(binary)
 
