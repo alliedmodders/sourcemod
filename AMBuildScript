@@ -468,3 +468,6 @@ builder.RunBuildScripts(
     'SM': SM
   }
 )
+
+if builder.options.breakpad_dump:
+  builder.RunScript('tools/buildbot/BreakpadSymbols', { 'SM': SM })

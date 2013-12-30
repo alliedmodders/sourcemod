@@ -1,31 +1,35 @@
 # vim: set ts=2 sw=2 tw=99 noet ft=python: 
-import os
-try:
-	import urllib.request as urllib
-except ImportError:
-	import urllib2 as urllib
-from ambuild.command import Command
-from ambuild.command import ShellCommand
+import os, sys
 
-class IterateDebugInfoCommand(Command):
-	def run(self, master, job):
-		pdblog = open(os.path.join(AMBuild.outputFolder, 'pdblog.txt'), 'rt')
-		for debug_info in pdblog:
-			debug_info = os.path.join(AMBuild.outputFolder, debug_info.strip())
-			job.AddCommand(SymbolCommand(debug_info, symbolServer))
-		pdblog.close()
+builder.SetBuildFolder('symbols')
 
-class SymbolCommand(ShellCommand):
-	def __init__(self, debugFile, symbolServer):
-		self.serverResponse = None
-		self.symbolServer = symbolServer
-		if AMBuild.target['platform'] == 'linux':
-			cmdstring = "dump_syms {0} {1}".format(debugFile, os.path.dirname(debugFile))
-		elif AMBuild.target['platform'] == 'darwin':
-			cmdstring = "dump_syms {0}".format(debugFile)
-		elif AMBuild.target['platform'] == 'windows':
-			cmdstring = "dump_syms.exe {0}".format(debugFile)
-		ShellCommand.__init__(self, cmdstring)
+UPLOAD_SCRIPT = os.path.join(builder.sourcePath, 'tools', 'buildbot', 'upload_symbols.py')
+
+cxx_tasks = SM.binaries + SM.extensions + [SM.spcomp]
+for cxx_task in cxx_tasks:
+	if builder.target_platform in ['windows']:
+		debug_entry = cxx_task.debug
+	else:
+		debug_entry = cxx_task.binary
+
+	debug_file = os.path.join(builder.buildPath, debug_entry.path)
+	if builder.target_platform is 'linux':
+		argv = ['dump_syms', debug_file, os.path.dirname(debug_file)]
+	elif builder.target_platform is 'mac':
+		argv = ['dump_syms', debug_file]
+	elif builder.target_platform is 'windows':
+		argv = ['dump_syms.exe', debug_file]
+
+	base_file = os.path.splitext(os.path.basename(debug_file))[0]
+	symbol_file = base_file + '.breakpad'
+
+	argv = [sys.executable, UPLOAD_SCRIPT, symbol_file] + argv
+	builder.AddCommand(
+		inputs = [UPLOAD_SCRIPT, debug_file],
+		argv = argv,
+		outputs = [symbol_file]
+	)
+
 	def run(self, master, job):
 		ShellCommand.run(self, master, job)
 		if self.stdout != None and len(self.stdout) > 0:
@@ -37,8 +41,3 @@ class SymbolCommand(ShellCommand):
 			runner.PrintOut(self.stderr)
 		if self.serverResponse != None and len(self.serverResponse) > 0:
 			runner.PrintOut(self.serverResponse)
-
-if 'BREAKPAD_SYMBOL_SERVER' in os.environ:
-	symbolServer = os.environ['BREAKPAD_SYMBOL_SERVER']
-	job = AMBuild.AddJob('breakpad-symbols')
-	job.AddCommand(IterateDebugInfoCommand())

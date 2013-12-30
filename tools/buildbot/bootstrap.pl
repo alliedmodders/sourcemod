@@ -26,13 +26,14 @@ if (!(-f 'OUTPUT/.ambuild2/graph') || !(-f 'OUTPUT/.ambuild2/vars')) {
 	my ($result, $argn);
 	$argn = $#ARGV + 1;
 	print "Attempting to reconfigure...\n";
+	my $conf_args = '--enable-optimize --breakpad-dump';
 	if ($argn > 0 && $^O !~ /MSWin/) {
-		$result = `CC=$ARGV[0] CXX=$ARGV[0] python ../build/configure.py --enable-optimize`;
+		$result = `CC=$ARGV[0] CXX=$ARGV[0] python ../build/configure.py $conf_args`;
 	} else {
 		if ($^O =~ /MSWin/) {
-			$result = `C:\\Python27\\Python.exe ..\\build\\configure.py --enable-optimize`;
+			$result = `C:\\Python27\\Python.exe ..\\build\\configure.py $conf_args`;
 		} else {
-			$result = `CC=clang CXX=clang python ../build/configure.py --enable-optimize`;
+			$result = `CC=clang CXX=clang python ../build/configure.py $conf_args`;
 		}
 	}
 	print "$result\n";

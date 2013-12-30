@@ -23,4 +23,6 @@ run.options.add_option('--no-mysql', action='store_false', default=True, dest='h
 run.options.add_option('-s', '--sdks', default='all', dest='sdks',
                        help='Build against specified SDKs; valid args are "all", "present", or '
                             'comma-delimited list of engine names (default: %default)')
+run.options.add_option('--breakpad-dump', action='store_true', dest='breakpad_dump',
+											 default=False, help='Dump and upload breakpad symbols')
 run.Configure()
