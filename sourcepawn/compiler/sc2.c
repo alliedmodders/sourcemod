@@ -153,6 +153,9 @@ static char *extensions[] = { ".inc", ".p", ".pawn" };
     *ext='\0';                  /* restore filename */
     return FALSE;
   } /* if */
+  if (sc_showincludes && sc_status==statFIRST) {
+    fprintf(stdout, "Note: including file: %s\n", name);
+  }
   PUSHSTK_P(inpf);
   PUSHSTK_P(inpfname);          /* pointer to current file name */
   PUSHSTK_P(curlibrary);

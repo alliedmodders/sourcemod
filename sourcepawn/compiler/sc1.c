@@ -859,11 +859,11 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
   int arg,i,isoption;
 
   for (arg=1; arg<argc; arg++) {
-    #if DIRSEP_CHAR=='/'
-      isoption= argv[arg][0]=='-';
-    #else
-      isoption= argv[arg][0]=='/' || argv[arg][0]=='-';
-    #endif
+#if DIRSEP_CHAR=='/'
+    isoption= argv[arg][0]=='-';
+#else
+    isoption= argv[arg][0]=='/' || argv[arg][0]=='-';
+#endif
     if (isoption) {
       ptr=&argv[arg][1];
       switch (*ptr) {
@@ -933,6 +933,9 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
           hwndFinish=(HWND)0;
         break;
 #endif
+      case 'h':
+        sc_showincludes = 1;
+        break;
       case 'i':
         strlcpy(str,option_value(ptr),sizeof str);  /* set name of include directory */
         i=strlen(str);
@@ -1271,6 +1274,7 @@ static void about(void)
 #if defined	__WIN32__ || defined _WIN32 || defined _Windows
     pc_printf("         -H<hwnd> window handle to send a notification message on finish\n");
 #endif
+    pc_printf("         -h       show included file paths\n");
     pc_printf("         -i<name> path for include files\n");
     pc_printf("         -l       create list file (preprocess only)\n");
     pc_printf("         -o<name> set base name of (P-code) output file\n");
