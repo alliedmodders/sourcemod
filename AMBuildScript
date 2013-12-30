@@ -141,7 +141,6 @@ class SMConfig(object):
         '-Wno-switch',
         '-msse',
         '-m32',
-        '-g3',
       ]
 
       have_gcc = cxx.name is 'gcc'
@@ -178,7 +177,6 @@ class SMConfig(object):
       ]
       cfg.cflags += [
         '/W3',
-        '/Zi',
       ]
       cfg.cxxflags += [
         '/EHsc',
@@ -186,7 +184,6 @@ class SMConfig(object):
         '/TP',
       ]
       cfg.linkflags += [
-        '/DEBUG',
         '/MACHINE:X86',
         '/SUBSYSTEM:WINDOWS',
         'kernel32.lib',
@@ -215,9 +212,7 @@ class SMConfig(object):
     # Debugging
     if builder.options.debug == '1':
       cfg.defines += ['DEBUG', '_DEBUG']
-      if cxx.behavior == 'gcc':
-        cfg.cflags += ['-g3']
-      elif cxx.behavior == 'msvc':
+      if cxx.behavior == 'msvc':
         cfg.cflags += ['/Od', '/RTC1']
 
     # This needs to be after our optimization flags which could otherwise disable it.

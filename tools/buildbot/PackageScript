@@ -51,6 +51,14 @@ for cxx_task in SM.extensions:
   builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])
 builder.AddCopy(SM.spcomp.binary, folder_map['addons/sourcemod/scripting'])
 
+# Export PDB files. We write to a file in the build folder which is pretty
+# verboten, but it's okay if it's in the root since AMBuild will never try
+# to rmdir the root.
+full_binary_list = SM.binaries + SM.extensions + [SM.spcomp]
+with open(os.path.join(builder.buildPath, 'pdblog.txt'), 'w') as fp:
+  for task in full_binary_list:
+    fp.write(task.debug.path + '\n')
+
 # Copy plugins.
 disabled_plugins = set([
   'admin-sql-prefetch.smx',
