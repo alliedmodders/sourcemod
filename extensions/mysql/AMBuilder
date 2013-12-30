@@ -8,7 +8,7 @@ if SM.mysql_root:
     os.path.join(SM.mms_root, 'core', 'sourcehook')
   ]
 
-  if builder.target_platform is 'linux' or builder.target_platform is 'darwin':
+  if builder.target_platform is 'linux' or builder.target_platform is 'mac':
     binary.compiler.postlink += [
       os.path.join(SM.mysql_root, 'lib', 'libmysqlclient_r.a'),
       '-lz',

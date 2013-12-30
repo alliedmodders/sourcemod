@@ -51,6 +51,11 @@ for cxx_task in SM.extensions:
   builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])
 builder.AddCopy(SM.spcomp.binary, folder_map['addons/sourcemod/scripting'])
 
+# Copy version_auto.inc.
+for header in SM.generated_headers:
+  if 'version_auto.inc' in header.path:
+    builder.AddCopy(header, folder_map['addons/sourcemod/scripting/include'])
+
 # Export PDB files. We write to a file in the build folder which is pretty
 # verboten, but it's okay if it's in the root since AMBuild will never try
 # to rmdir the root.

@@ -58,6 +58,7 @@ binary.sources += [
   'llist.c',
   'md5.c',
   'memdebug.c',
+  'mprintf.c',
   'multi.c',
   'netrc.c',
   'nss.c',
@@ -87,7 +88,5 @@ binary.sources += [
   'url.c',
   'version.c'
 ]
-if builder.target_platform != 'windows':
-  builder.sources += ['mprintf.c']
 rvalue = builder.Add(binary)
 

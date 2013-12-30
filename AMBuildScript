@@ -233,7 +233,9 @@ class SMConfig(object):
         '-mmacosx-version-min=10.5',
         '-arch', 'i386',
         '-lstdc++',
+        '-stdlib=libstdc++',
       ]
+      cfg.cxxflags += ['-stdlib=libstdc++']
     elif builder.target_platform == 'windows':
       cfg.defines += ['WIN32', '_WINDOWS']
 

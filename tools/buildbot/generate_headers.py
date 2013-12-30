@@ -33,7 +33,7 @@ def get_hg_version():
   return m.groups()
 
 def output_version_headers():
-  cset, rev = get_hg_version()
+  rev, cset = get_hg_version()
 
   with open(os.path.join(SourceFolder, 'product.version')) as fp:
     contents = fp.read()
