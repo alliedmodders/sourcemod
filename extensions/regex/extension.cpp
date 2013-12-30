@@ -65,12 +65,12 @@ void RegexExtension::SDK_OnUnload()
 
 const char *RegexExtension::GetExtensionVerString()
 {
-	return SM_VERSION_STRING;
+	return SOURCEMOD_VERSION;
 }
 
 const char *RegexExtension::GetExtensionDateString()
 {
-	return SM_BUILD_TIMESTAMP;
+	return SOURCEMOD_BUILD_TIME;
 }
 
 static cell_t CompileRegex(IPluginContext *pCtx, const cell_t *params)

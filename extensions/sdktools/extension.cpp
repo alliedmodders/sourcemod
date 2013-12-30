@@ -437,12 +437,12 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 
 const char *SDKTools::GetExtensionVerString()
 {
-	return SM_VERSION_STRING;
+	return SOURCEMOD_VERSION;
 }
 
 const char *SDKTools::GetExtensionDateString()
 {
-	return SM_BUILD_TIMESTAMP;
+	return SOURCEMOD_BUILD_TIME;
 }
 
 void SDKTools::OnClientPutInServer(int client)

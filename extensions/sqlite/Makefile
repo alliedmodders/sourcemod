@@ -89,10 +89,11 @@ else
 endif
 
 LINK += -lpthread -m32 -ldl -lm
+INCLUDE += -I$(SMSDK)/public/amtl
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror \
-	-Wno-uninitialized -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -DSQLITE_THREADSAFE \
+	-Wno-uninitialized -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -DSQLITE_THREADSAFE \
 	-DSQLITE_OMIT_LOAD_EXTENSION -m32
 CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 

@@ -68,6 +68,7 @@ class SMConfig(object):
     self.mysql_root = None
     self.spcomp = None
     self.smx_files = {}
+    self.versionlib = None
 
   def detectProductVersion(self):
     builder.AddConfigureFile('product.version')
@@ -245,8 +246,10 @@ class SMConfig(object):
     cfg.defines += [
       'SOURCEMOD_BUILD',
       'SM_GENERATED_BUILD',
+      'SM_USE_VERSIONLIB',
     ]
     cfg.includes += [os.path.join(builder.buildPath, 'includes')]
+    cfg.includes += [os.path.join(builder.sourcePath, 'versionlib')]
 
   def LibraryBuilder(self, compiler, name):
     binary = compiler.Library(name)
@@ -261,6 +264,7 @@ class SMConfig(object):
         '-compatibility_version', '1.0.0',
         '-current_version', self.productVersion
       ]
+    binary.compiler.linkflags += [self.versionlib]
     binary.compiler.sourcedeps += SM.generated_headers
     return binary
 
@@ -272,6 +276,7 @@ class SMConfig(object):
         'BINARY_NAME="{0}"'.format(binary.outputFile),
         'SM_GENERATED_BUILD'
       ]
+    binary.compiler.linkflags += [self.versionlib]
     binary.compiler.sourcedeps += SM.generated_headers
     return binary
 
@@ -430,6 +435,10 @@ SM.configure()
 
 SM.generated_headers = builder.RunScript(
   'tools/buildbot/Versioning',
+  { 'SM': SM }
+)
+SM.versionlib = builder.RunScript(
+  'versionlib/AMBuilder',
   { 'SM': SM }
 )
 

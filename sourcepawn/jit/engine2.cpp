@@ -1,5 +1,4 @@
 // vim: set ts=4 sw=4 tw=99 noet:
-#include <sourcemod_version.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +8,7 @@
 #include "BaseRuntime.h"
 #include "sp_vm_engine.h"
 #include "watchdog_timer.h"
+#include <sourcemod_version.h>
 
 using namespace SourcePawn;
 
@@ -152,7 +152,7 @@ const char *SourcePawnEngine2::GetEngineName()
 
 const char *SourcePawnEngine2::GetVersionString()
 {
-	return SM_VERSION_STRING;
+	return SOURCEMOD_VERSION;
 }
 
 IProfiler *SourcePawnEngine2::GetProfiler()

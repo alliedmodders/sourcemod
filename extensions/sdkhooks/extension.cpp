@@ -354,12 +354,12 @@ bool SDKHooks::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 
 const char *SDKHooks::GetExtensionVerString()
 {
-	return SM_VERSION_STRING;
+	return SOURCEMOD_VERSION;
 }
 
 const char *SDKHooks::GetExtensionDateString()
 {
-	return SM_BUILD_TIMESTAMP;
+	return SOURCEMOD_BUILD_TIME;
 }
 
 void SDKHooks::OnPluginLoaded(IPlugin *plugin)

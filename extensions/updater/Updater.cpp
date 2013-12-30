@@ -29,11 +29,11 @@
  * Version: $Id$
  */
 
-#include <sourcemod_version.h>
 #include <stdlib.h>
 #include "extension.h"
 #include "Updater.h"
 #include "md5.h"
+#include <sourcemod_version.h>
 
 #define USTATE_NONE			0
 #define USTATE_FOLDERS		1
@@ -356,7 +356,7 @@ void UpdateReader::PerformUpdate(const char *url)
 	xfer = webternet->CreateSession();
 	xfer->SetFailOnHTTPError(true);
 
-	form->AddString("version", SM_VERSION_STRING);
+	form->AddString("version", SOURCEMOD_VERSION);
 
 	unsigned int num_files = 0;
 	add_folders(form, "gamedata", num_files);

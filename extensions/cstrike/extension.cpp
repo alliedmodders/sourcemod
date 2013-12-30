@@ -283,12 +283,12 @@ bool CStrike::ProcessCommandTarget(cmd_target_info_t *info)
 
 const char *CStrike::GetExtensionVerString()
 {
-	return SM_VERSION_STRING;
+	return SOURCEMOD_VERSION;
 }
 
 const char *CStrike::GetExtensionDateString()
 {
-	return SM_BUILD_TIMESTAMP;
+	return SOURCEMOD_BUILD_TIME;
 }
 
 void CStrike::OnPluginLoaded(IPlugin *plugin)

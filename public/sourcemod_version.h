@@ -39,7 +39,11 @@
  */
 
 #if defined SM_GENERATED_BUILD
-#include <sourcemod_version_auto.h>
+# if defined SM_USE_VERSIONLIB
+#  include <versionlib.h>
+# else 
+#  include <sourcemod_version_auto.h>
+# endif
 #else
 #define SM_BUILD_TAG		"manual"
 #define SM_BUILD_REV		"0"
@@ -54,6 +58,12 @@
 #define SM_VERSION_FILE		1,6,0,0
 #endif
 #define SM_BUILD_TIMESTAMP	__DATE__ " " __TIME__
+
+#if !defined(SM_GENERATED_BUILD) || !defined(SM_USE_VERSIONLIB)
+# define SOURCEMOD_VERSION 		SM_VERSION_STRING
+# define SOURCEMOD_BUILD_ID		SM_BUILD_UNIQUEID
+# define SOURCEMOD_BUILD_TIME 	SM_BUILD_TIMESTAMP
+#endif
 
 #endif /* _INCLUDE_SOURCEMOD_VERSION_INFORMATION_H_ */
 

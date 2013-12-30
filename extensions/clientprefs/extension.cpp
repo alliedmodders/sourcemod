@@ -496,12 +496,12 @@ IdentityToken_t *ClientPrefs::GetIdentity() const
 
 const char *ClientPrefs::GetExtensionVerString()
 {
-	return SM_VERSION_STRING;
+	return SOURCEMOD_VERSION;
 }
 
 const char *ClientPrefs::GetExtensionDateString()
 {
-	return SM_BUILD_TIMESTAMP;
+	return SOURCEMOD_BUILD_TIME;
 }
 
 ClientPrefs::ClientPrefs()

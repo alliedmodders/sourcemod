@@ -31,11 +31,11 @@
 
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include <sourcemod_version.h>
 #include "Logger.h"
 #include "concmd_cleaner.h"
 #include "compat_wrappers.h"
 #include "logic_bridge.h"
+#include <sourcemod_version.h>
 
 SourceMod_Core g_SourceMod_Core;
 IVEngineServer *engine = NULL;
@@ -149,7 +149,7 @@ const char *SourceMod_Core::GetLicense()
 
 const char *SourceMod_Core::GetVersion()
 {
-	return SM_VERSION_STRING;
+	return SOURCEMOD_VERSION;
 }
 
 const char *SourceMod_Core::GetDate()
