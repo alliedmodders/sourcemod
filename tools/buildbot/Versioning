@@ -1,89 +1,34 @@
-# vim: set ts=2 sw=2 tw=99 noet ft=python: 
-import os
-import re
-import subprocess
-from ambuild.cache import Cache
-import ambuild.command as command
+# vim: set ts=8 sts=2 sw=2 tw=99 et ft=python: 
+import os, sys
 
-#Quickly try to ascertain the current repository revision
-def GetVersion():
-	args = ['hg', 'parent', '-R', AMBuild.sourceFolder]
-	p = command.RunDirectCommand(AMBuild, args)
-	m = re.match('changeset:\s+(\d+):(.+)', p.stdoutText)
-	if m == None:
-		raise Exception('Could not determine repository version')
-	return m.groups()
+builder.SetBuildFolder('/')
 
-def PerformReversioning():
-	rev, cset = GetVersion()
-	cacheFile = os.path.join(AMBuild.outputFolder, '.ambuild', 'hgcache')
-	cache = Cache(cacheFile)
-	if os.path.isfile(cacheFile):
-		cache.LoadCache()
-		if cache.HasVariable('cset') and cache['cset'] == cset:
-			return False
-	cache.CacheVariable('cset', cset)
+includes = builder.AddFolder('includes')
 
-	productFile = open(os.path.join(AMBuild.sourceFolder, 'product.version'), 'r')
-	productContents = productFile.read()
-	productFile.close()
-	m = re.match('(\d+)\.(\d+)\.(\d+)-?(.*)', productContents)
-	if m == None:
-		raise Exception('Could not detremine product version')
-	major, minor, release, tag = m.groups()
-	
-	fullstring = "{0}.{1}.{2}".format(major, minor, release)
-	if tag != "":
-		fullstring += "-{0}".format(tag)
-		if tag == "dev":
-			fullstring += "+{0}".format(rev)
-	
-	incFolder = os.path.join(AMBuild.outputFolder, 'includes')
-	if not os.path.isdir(incFolder):
-		os.makedirs(incFolder)
-	incFile = open(os.path.join(incFolder, 'sourcemod_version_auto.h'), 'w')
-	incFile.write("""
-#ifndef _SOURCEMOD_AUTO_VERSION_INFORMATION_H_
-#define _SOURCEMOD_AUTO_VERSION_INFORMATION_H_
+argv = [
+  sys.executable,
+  os.path.join(builder.sourcePath, 'tools', 'buildbot', 'generate_headers.py'),
+  os.path.join(builder.sourcePath),
+  os.path.join(builder.buildPath, 'includes'),
+]
+outputs = [
+  os.path.join(builder.buildFolder, 'includes', 'sourcemod_version_auto.h'),
+  os.path.join(builder.buildFolder, 'includes', 'version_auto.inc'),
+]
 
-#define SM_BUILD_TAG		\"{0}\"
-#define SM_BUILD_REV		\"{1}\"
-#define SM_BUILD_CSET		\"{2}\"
-#define SM_BUILD_MAJOR		\"{3}\"
-#define SM_BUILD_MINOR		\"{4}\"
-#define SM_BUILD_RELEASE	\"{5}\"
+sources = [
+  os.path.join(builder.sourcePath, 'product.version'),
 
-#define SM_BUILD_UNIQUEID SM_BUILD_REV \":\" SM_BUILD_CSET
+  # This is a hack, but we need some way to only run this script when HG changes.
+  os.path.join(builder.sourcePath, '.hg', 'dirstate'),
 
-#define SM_VERSION_STRING	\"{6}\"
-#define SM_VERSION_FILE		{7},{8},{9},0
+  # The script source is a dependency, of course...
+  argv[1]
+]
+cmd_node, output_nodes = builder.AddCommand(
+  inputs=sources,
+  argv=argv,
+  outputs=outputs
+)
 
-#endif /* _SOURCEMOD_AUTO_VERSION_INFORMATION_H_ */
-
-""".format(tag, rev, cset, major, minor, release, fullstring, major, minor, release))
-	incFile.close()
-	
-	incFile = open(os.path.join(incFolder, 'version_auto.inc'), 'w')
-	incFile.write("""
-#if defined _auto_version_included
- #endinput
-#endif
-#define _auto_version_included
-
-#define SOURCEMOD_V_TAG		\"{0}\"
-#define SOURCEMOD_V_REV		{1}
-#define SOURCEMOD_V_CSET	\"{2}\"
-#define SOURCEMOD_V_MAJOR	{3}
-#define SOURCEMOD_V_MINOR	{4}
-#define SOURCEMOD_V_RELEASE	{5}
-
-#define SOURCEMOD_VERSION	\"{6}\"
-
-""".format(tag, rev, cset, major, minor, release, fullstring))
-	incFile.close()
-
-	cache.WriteCache()
-
-PerformReversioning()
-
-
+rvalue = output_nodes

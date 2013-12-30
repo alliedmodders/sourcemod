@@ -30,6 +30,8 @@ files = [
 spcomp_argv = [
   os.path.join(builder.buildPath, SM.spcomp.binary.path),
   'SM_GENERATED_BUILD=',
+  '-i' + os.path.relpath(os.path.join(builder.buildPath, 'includes'),
+                         os.path.join(builder.buildPath, builder.buildFolder)),
   '-i' + os.path.relpath(os.path.join(builder.sourcePath, 'plugins', 'include'),
                          os.path.join(builder.buildPath, builder.buildFolder)),
   '-h',
@@ -48,7 +50,8 @@ def build_plugin(script_path, smx_file):
     inputs = inputs,
     argv = argv,
     outputs = outputs,
-    dep_type = 'msvc'
+    dep_type = 'msvc',
+    weak_inputs = SM.generated_headers
   )
   SM.smx_files[smx_file] = smx_entry
 

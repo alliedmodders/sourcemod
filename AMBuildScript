@@ -63,10 +63,25 @@ class SMConfig(object):
     self.sdks = {}
     self.binaries = []
     self.extensions = []
+    self.generated_headers = None
     self.mms_root = None
     self.mysql_root = None
     self.spcomp = None
     self.smx_files = {}
+
+  def detectProductVersion(self):
+    builder.AddConfigureFile('product.version')
+
+    # For OS X dylib versioning
+    import re
+    with open(os.path.join(builder.sourcePath, 'product.version'), 'r') as fp:
+      productContents = fp.read()
+    m = re.match('(\d+)\.(\d+)\.(\d+).*', productContents)
+    if m == None:
+      self.productVersion = '1.0.0'
+    else:
+      major, minor, release = m.groups()
+      self.productVersion = '{0}.{1}.{2}'.format(major, minor, release)
 
   def detectSDKs(self):
     sdk_list = builder.options.sdks.split(',')
@@ -229,15 +244,35 @@ class SMConfig(object):
     # Finish up.
     cfg.defines += [
       'SOURCEMOD_BUILD',
+      'SM_GENERATED_BUILD',
     ]
     cfg.includes += [os.path.join(builder.buildPath, 'includes')]
 
   def LibraryBuilder(self, compiler, name):
     binary = compiler.Library(name)
+    if builder.target_platform == 'windows':
+      binary.sources += ['version.rc']
+      binary.compiler.rcdefines += [
+        'BINARY_NAME="{0}"'.format(binary.outputFile),
+        'SM_GENERATED_BUILD'
+      ]
+    elif builder.target_platform == 'mac':
+      binary.compiler.postlink += [
+        '-compatibility_version', '1.0.0',
+        '-current_version', self.productVersion
+      ]
+    binary.compiler.sourcedeps += SM.generated_headers
     return binary
 
   def ProgramBuilder(self, compiler, name):
     binary = compiler.Program(name)
+    if builder.target_platform == 'windows':
+      binary.sources += ['version.rc']
+      binary.compiler.rcdefines += [
+        'BINARY_NAME="{0}"'.format(binary.outputFile),
+        'SM_GENERATED_BUILD'
+      ]
+    binary.compiler.sourcedeps += SM.generated_headers
     return binary
 
   def Library(self, context, name):
@@ -389,8 +424,14 @@ class SMConfig(object):
     return binary
 
 SM = SMConfig()
+SM.detectProductVersion()
 SM.detectSDKs()
 SM.configure()
+
+SM.generated_headers = builder.RunScript(
+  'tools/buildbot/Versioning',
+  { 'SM': SM }
+)
 
 builder.RunBuildScripts(
   [
