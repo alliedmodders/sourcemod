@@ -1,28 +1,24 @@
-# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-compiler = SM.DefaultExtCompiler('extensions/regex')
-compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core', 'sourcehook'))
+binary = SM.ExtLibrary(builder, 'regex.ext')
+binary.compiler.cxxincludes += [
+  os.path.join(SM.mms_root, 'core', 'sourcehook'),
+]
 
-extension = AMBuild.AddJob('regex.ext')
-binary = Cpp.LibraryBuilder('regex.ext', AMBuild, extension, compiler)
+if builder.target_platform is 'linux':
+  path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux', 'libpcre.a')
+elif builder.target_platform is 'windows':
+  path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_win', 'pcre.lib')
+elif builder.target_platform is 'mac':
+  path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin', 'libpcre.a')
+binary.compiler.postlink += [binary.Dep(path)]
 
-if AMBuild.target['platform'] == 'linux':
-	path = os.path.join(AMBuild.sourceFolder, 'extensions', 'regex', 'lib_linux', 'libpcre.a')
-elif AMBuild.target['platform'] == 'windows':
-	path = os.path.join(AMBuild.sourceFolder, 'extensions', 'regex', 'lib_win', 'pcre.lib')
-elif AMBuild.target['platform'] == 'darwin':
-	path = os.path.join(AMBuild.sourceFolder, 'extensions', 'regex', 'lib_darwin', 'libpcre.a')
+binary.sources += [
+  'extension.cpp',
+  'CRegEx.cpp',
+  'sdk/smsdk_ext.cpp',
+]
 
-binary.RelinkIfNewer(path)
-binary['POSTLINKFLAGS'].append(path)
-
-binary.AddSourceFiles('extensions/regex', [
-	'extension.cpp',
-	'CRegEx.cpp',
-	'sdk/smsdk_ext.cpp',
-	])
-SM.AutoVersion('extensions/regex', binary)
-SM.ExtractDebugInfo(extension, binary)
-binary.SendToJob()
+SM.binaries += [builder.Add(binary)]
 

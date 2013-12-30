@@ -1,14 +1,11 @@
-# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
-if 'tf2' in SM.sdkInfo:
-	sdk = SM.sdkInfo['tf2']
-	compiler = SM.DefaultHL2Compiler('extensions/tf2', 'tf2')
 
-	name = 'game.tf2.ext.' + sdk['ext']
-	extension = AMBuild.AddJob(name)
-	binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
-	SM.PreSetupHL2Job(extension, binary, 'tf2')
-	binary.AddSourceFiles('extensions/tf2', [
+if 'tf2' in SM.sdks:
+  sdk = SM.sdks['tf2']
+  
+  binary = SM.HL2Library(builder, 'game.tf2.ext.' + sdk.ext, sdk)
+  binary.sources += [
 		'extension.cpp',
 		'natives.cpp',
 		'RegNatives.cpp',
@@ -21,9 +18,5 @@ if 'tf2' in SM.sdkInfo:
 		'CDetour/detours.cpp',
 		'sdk/smsdk_ext.cpp',
 		'asm/asm.c'
-		])
-	SM.PostSetupHL2Job(extension, binary, 'tf2')
-	SM.AutoVersion('extensions/tf2', binary)
-	SM.ExtractDebugInfo(extension, binary)
-	binary.SendToJob()
-
+  ]
+  SM.binaries += [builder.Add(binary)]

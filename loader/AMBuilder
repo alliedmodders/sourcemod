@@ -1,22 +1,22 @@
-# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os.path
 
-compiler = SM.DefaultCompiler()
-compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core'))
-compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core', 'sourcehook'))
+if builder.target_platform in ['windows', 'mac']:
+  name = 'sourcemod_mm'
+  extra_ldflags = []
+elif builder.target_platform is 'linux':
+  name = 'sourcemod_mm_i486'
+  extra_ldflags = ['-ldl']
 
-if AMBuild.target['platform'] == 'windows' or AMBuild.target['platform'] == 'darwin':
-	name = 'sourcemod_mm'
-elif AMBuild.target['platform'] == 'linux':
-	name = 'sourcemod_mm_i486'
-	compiler['POSTLINKFLAGS'].extend(['-ldl'])
+binary = SM.Library(builder, name)
+binary.compiler.cxxincludes += [
+  os.path.join(SM.mms_root, 'core'),
+  os.path.join(SM.mms_root, 'sourcehook')
+]
+binary.compiler.linkflags += extra_ldflags
+binary.sources = [
+  'loader.cpp'
+]
 
-loader = AMBuild.AddJob('loader')
-binary = Cpp.LibraryBuilder(name, AMBuild, loader, compiler)
-binary.AddSourceFiles('loader', [
-	'loader.cpp'
-	])
-SM.AutoVersion('loader', binary)
-SM.ExtractDebugInfo(loader, binary)
-binary.SendToJob()
-
+nodes = builder.Add(binary)
+SM.binaries += [nodes]

@@ -1,22 +1,28 @@
-# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-compiler = SM.DefaultExtCompiler('extensions/sqlite')
-compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core', 'sourcehook'))
+binary = SM.ExtLibrary(builder, 'dbi.sqlite.ext')
+binary.compiler.cxxincludes += [
+  os.path.join(SM.mms_root, 'core', 'sourcehook'),
+]
 
-compiler['CDEFINES'].extend(['SQLITE_OMIT_LOAD_EXTENSION', 'SQLITE_THREADSAFE'])
-if AMBuild.target['platform'] == 'linux':
-	compiler['POSTLINKFLAGS'].extend(['-ldl', '-lpthread'])
+binary.compiler.defines += [
+  'SQLITE_OMIT_LOAD_EXTENSION',
+  'SQLITE_THREADSAFE'
+]
+if builder.target_platform is 'linux':
+  binary.compiler.postlink += ['-ldl', '-lpthread']
 
-extension = AMBuild.AddJob('dbi.sqlite.ext')
-binary = Cpp.LibraryBuilder('dbi.sqlite.ext', AMBuild, extension, compiler)
-files = [
-	'sdk/smsdk_ext.cpp', 'sdk/sm_memtable.cpp', 'extension.cpp',
-	'driver/SqDatabase.cpp', 'driver/SqDriver.cpp', 'driver/SqQuery.cpp',
-	'driver/SqResults.cpp', 'sqlite-source/sqlite3.c'
-	]
-binary.AddSourceFiles('extensions/sqlite', files)
-SM.AutoVersion('extensions/sqlite', binary)
-SM.ExtractDebugInfo(extension, binary)
-binary.SendToJob()
+binary.sources += [
+  'sdk/smsdk_ext.cpp',
+  'sdk/sm_memtable.cpp',
+  'extension.cpp',
+  'driver/SqDatabase.cpp',
+  'driver/SqDriver.cpp',
+  'driver/SqQuery.cpp',
+  'driver/SqResults.cpp',
+  'sqlite-source/sqlite3.c'
+]
+
+SM.binaries += [builder.Add(binary)]
 

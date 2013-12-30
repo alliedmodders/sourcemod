@@ -1,137 +1,110 @@
-# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python: 
 import os
-from ambuild.command import SymlinkCommand
 
-for i in SM.sdkInfo:
-	sdk = SM.sdkInfo[i]
-	if AMBuild.target['platform'] not in sdk['platform']:
-		continue
+for sdk_name in SM.sdks:
+  sdk = SM.sdks[sdk_name]
+  binary_name = 'sourcemod.' + sdk.ext
 
-	name = 'sourcemod.' + sdk['ext']
+  binary = SM.HL2Library(builder, binary_name, sdk)
+  compiler = binary.compiler
 
-	compiler = SM.DefaultHL2Compiler('core', i)
+  if sdk.name is 'csgo':
+    # Protobuf 2.3 headers have some signed/unsigned compares. I believe that it's fixed in later versions, but Valve.
+    if compiler.cxx.behavior is 'gcc':
+      compiler.cflags += ['-Wno-sign-compare']
+    compiler.cxxincludes += [
+      os.path.join(sdk.path, 'common', 'protobuf-2.3.0', 'src'),
+      os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
+      os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf')
+    ]
+  elif sdk.name is 'dota':
+    compiler.cxxincludes += [
+      os.path.join(sdk.path, 'common', 'protobuf-2.4.1', 'src'),
+      os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
+      os.path.join(sdk.path, 'public', 'game', 'shared', 'protobuf'),
+      os.path.join(sdk.path, 'public', 'game', 'shared', 'dota', 'protobuf')
+    ]
 
-	if i == 'csgo':
-		# Protobuf 2.3 headers have some signed/unsigned compares. I believe that it's fixed in later versions, but Valve.
-		if isinstance(compiler.cxx, Cpp.CompatGCC):
-			compiler.AddToListVar('CFLAGS', '-Wno-sign-compare')
-		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'common', 'protobuf-2.3.0', 'src'))
-		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'engine', 'protobuf'))
-		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'game', 'shared', 'csgo', 'protobuf'))
-	elif i == 'dota':
-		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'common', 'protobuf-2.4.1', 'src'))
-		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'engine', 'protobuf'))
-		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'game', 'shared', 'protobuf'))
-		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'game', 'shared', 'dota', 'protobuf'))
+  if builder.target_platform is 'linux':
+    compiler.postlink += ['-lpthread', '-lrt']
 
-	extension = AMBuild.AddJob(name)
-	binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
-	SM.PreSetupHL2Job(extension, binary, i)
+  if sdk.name is 'csgo' or sdk.name is 'dota':
+    if builder.target_platform is 'linux':
+      lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
+    elif builder.target_platform is 'mac':
+      lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
+    elif builder.target_platform is 'windows':
+      if 'DEBUG' in compiler.defines:
+        lib_path = os.path.join(sdk.path, 'lib', 'win32', 'debug', 'vs2010', 'libprotobuf.lib')
+      else:
+        lib_path = os.path.join(sdk.path, 'lib', 'win32', 'release', 'vs2010', 'libprotobuf.lib')
+    compiler.linkflags.insert(0, binary.Dep(lib_path))
 
-	if AMBuild.target['platform'] == 'linux':
-		compiler['POSTLINKFLAGS'].append('-lpthread')
-		compiler['POSTLINKFLAGS'].append('-lrt')
+  binary.sources += [
+    'AdminCache.cpp',
+    'MenuStyle_Valve.cpp',
+    'logic_bridge.cpp',
+    'smn_entities.cpp',
+    'sm_stringutil.cpp',
+    'MenuVoting.cpp',
+    'smn_events.cpp',
+    'smn_menus.cpp',
+    'sm_trie.cpp',
+    'CDataPack.cpp',
+    'frame_hooks.cpp',
+    'smn_nextmap.cpp',
+    'sourcemm_api.cpp',
+    'ChatTriggers.cpp',
+    'smn_player.cpp',
+    'sourcemod.cpp',
+    'concmd_cleaner.cpp',
+    'HalfLife2.cpp',
+    'NextMap.cpp',
+    'ConCmdManager.cpp',
+    'ConVarManager.cpp',
+    'LibrarySys.cpp',
+    'PlayerManager.cpp',
+    'TimerSys.cpp',
+    'CoreConfig.cpp',
+    'Logger.cpp',
+    'smn_halflife.cpp',
+    'smn_console.cpp',
+    'UserMessages.cpp',
+    'MenuManager.cpp',
+    'smn_core.cpp',
+    'smn_hudtext.cpp',
+    'smn_usermsgs.cpp',
+    'MenuStyle_Base.cpp',
+    'smn_keyvalues.cpp',
+    'smn_vector.cpp',
+    'EventManager.cpp',
+    'MenuStyle_Radio.cpp',
+    'sm_autonatives.cpp',
+    'sm_srvcmds.cpp',
+    'ConsoleDetours.cpp'
+  ]
+  
+  if sdk.name in ['csgo', 'dota']:
+    binary.sources += ['smn_protobuf.cpp']
+  else:
+    binary.sources += ['smn_bitbuffer.cpp']
 
-	if i in ['csgo', 'dota']:
-		if AMBuild.target['platform'] == 'linux':
-			link = os.path.join(os.path.join(AMBuild.outputFolder, extension.workFolder), 'libprotobuf.a')
-			target = os.path.join(os.path.join(AMBuild.cache[sdk['sdk']], 'lib', 'linux32', 'release'), 'libprotobuf.a')
-			try:
-				os.lstat(link)
-			except:
-				extension.AddCommand(SymlinkCommand(link, target))
-		elif AMBuild.target['platform'] == 'darwin':
-			link = os.path.join(os.path.join(AMBuild.outputFolder, extension.workFolder), 'libprotobuf.a')
-			target = os.path.join(os.path.join(AMBuild.cache[sdk['sdk']], 'lib', 'osx32', 'release'), 'libprotobuf.a')
-			try:
-				os.lstat(link)
-			except:
-				extension.AddCommand(SymlinkCommand(link, target))
-		elif AMBuild.target['platform'] == 'windows':
-			if 'DEBUG' in compiler['CDEFINES']:
-				libPath = os.path.join(AMBuild.cache[sdk['sdk']], 'lib', 'win32', 'debug', 'vs2010', 'libprotobuf.lib')
-			else:
-				libPath = os.path.join(AMBuild.cache[sdk['sdk']], 'lib', 'win32', 'release', 'vs2010', 'libprotobuf.lib')
-			binary.RebuildIfNewer(libPath)
-			binary['POSTLINKFLAGS'].append(libPath)
+  if sdk.name is 'csgo':
+    binary.sources += [
+      os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
+      os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessages.pb.cc'),
+      os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessage_helpers.cpp'),
+    ]
+  elif sdk.name is 'dota':
+    binary.sources += [
+      os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'networkbasetypes.pb.cc'),
+      os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
+      os.path.join(sdk.path, 'public', 'game', 'shared', 'protobuf', 'ai_activity.pb.cc'),
+      os.path.join(sdk.path, 'public', 'game', 'shared', 'protobuf', 'usermessages.pb.cc'),
+      os.path.join(sdk.path, 'public', 'game', 'shared', 'dota', 'protobuf', 'dota_commonmessages.pb.cc'),
+      os.path.join(sdk.path, 'public', 'game', 'shared', 'dota', 'protobuf', 'dota_usermessages.pb.cc'),
+      os.path.join(sdk.path, 'public', 'game', 'shared', 'dota', 'protobuf', 'dota_usermessage_helpers.cpp'),
+    ]
 
-	files = [
-		'AdminCache.cpp',
-		'MenuStyle_Valve.cpp',
-		'logic_bridge.cpp',
-		'smn_entities.cpp',
-		'sm_stringutil.cpp',
-		'MenuVoting.cpp',
-		'smn_events.cpp',
-		'smn_menus.cpp',
-		'sm_trie.cpp',
-		'CDataPack.cpp',
-		'frame_hooks.cpp',
-		'smn_nextmap.cpp',
-		'sourcemm_api.cpp',
-		'ChatTriggers.cpp',
-		'smn_player.cpp',
-		'sourcemod.cpp',
-		'concmd_cleaner.cpp',
-		'HalfLife2.cpp',
-		'NextMap.cpp',
-		'ConCmdManager.cpp',
-		'ConVarManager.cpp',
-		'LibrarySys.cpp',
-		'PlayerManager.cpp',
-		'TimerSys.cpp',
-		'CoreConfig.cpp',
-		'Logger.cpp',
-		'smn_halflife.cpp',
-		'smn_console.cpp',
-		'UserMessages.cpp',
-		'MenuManager.cpp',
-		'smn_core.cpp',
-		'smn_hudtext.cpp',
-		'smn_usermsgs.cpp',
-		'MenuStyle_Base.cpp',
-		'smn_keyvalues.cpp',
-		'smn_vector.cpp',
-		'EventManager.cpp',
-		'MenuStyle_Radio.cpp',
-		'sm_autonatives.cpp',
-		'sm_srvcmds.cpp',
-		'ConsoleDetours.cpp'
-		]
-	
-	if i in ['csgo', 'dota']:
-		files.append('smn_protobuf.cpp')
-	else:
-		files.append('smn_bitbuffer.cpp')
-
-	binary.AddSourceFiles('core', files)
-
-	if i == 'csgo':
-		files = [
-			os.path.join('public', 'engine', 'protobuf', 'netmessages.pb.cc'),
-			os.path.join('public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessages.pb.cc'),
-			os.path.join('public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessage_helpers.cpp'),
-			]
-		binary.AddSourceFiles(AMBuild.cache[sdk['sdk']], files)
-	elif i == 'dota':
-		files = [
-			os.path.join('public', 'engine', 'protobuf', 'networkbasetypes.pb.cc'),
-			os.path.join('public', 'engine', 'protobuf', 'netmessages.pb.cc'),
-			os.path.join('public', 'game', 'shared', 'protobuf', 'ai_activity.pb.cc'),
-			os.path.join('public', 'game', 'shared', 'protobuf', 'usermessages.pb.cc'),
-			os.path.join('public', 'game', 'shared', 'dota', 'protobuf', 'dota_commonmessages.pb.cc'),
-			os.path.join('public', 'game', 'shared', 'dota', 'protobuf', 'dota_usermessages.pb.cc'),
-			os.path.join('public', 'game', 'shared', 'dota', 'protobuf', 'dota_usermessage_helpers.cpp'),
-			]
-		binary.AddSourceFiles(AMBuild.cache[sdk['sdk']], files)
-
-	SM.PostSetupHL2Job(extension, binary, i)
-	
-	if i in ['csgo', 'dota']:
-		if AMBuild.target['platform'] in ['linux', 'darwin']:
-			binary.AddObjectFiles(['libprotobuf.a'])
-	
-	SM.AutoVersion('core', binary)
-	SM.ExtractDebugInfo(extension, binary)
-	binary.SendToJob()
+  SM.binaries += [builder.Add(binary)]
 

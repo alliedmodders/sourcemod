@@ -1,20 +1,19 @@
-# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-compiler = SM.DefaultExtCompiler('extensions/topmenus')
-compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core', 'sourcehook'))
+binary = SM.ExtLibrary(builder, 'topmenus.ext')
+binary.compiler.cxxincludes += [
+  os.path.join(SM.mms_root, 'core', 'sourcehook'),
+]
 
-extension = AMBuild.AddJob('topmenus.ext')
-binary = Cpp.LibraryBuilder('topmenus.ext', AMBuild, extension, compiler)
-binary.AddSourceFiles('extensions/topmenus', [
-	'extension.cpp',
-	'smn_topmenus.cpp',
-	'TopMenu.cpp',
-	'TopMenuManager.cpp',
-	'sdk/smsdk_ext.cpp',
-	'sdk/sm_memtable.cpp'
-	])
-SM.AutoVersion('extensions/topmenus', binary)
-SM.ExtractDebugInfo(extension, binary)
-binary.SendToJob()
+binary.sources += [
+  'extension.cpp',
+  'smn_topmenus.cpp',
+  'TopMenu.cpp',
+  'TopMenuManager.cpp',
+  'sdk/smsdk_ext.cpp',
+  'sdk/sm_memtable.cpp'
+]
+
+SM.binaries += [builder.Add(binary)]
 

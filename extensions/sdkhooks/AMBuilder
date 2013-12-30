@@ -1,30 +1,21 @@
-# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-for i in SM.sdkInfo:
-	sdk = SM.sdkInfo[i]
-	if AMBuild.target['platform'] not in sdk['platform']:
-		continue
+for sdk_name in SM.sdks:
+  sdk = SM.sdks[sdk_name]
+  
+  binary = SM.HL2Library(builder, 'sdkhooks.ext.' + sdk.ext, sdk)
+  binary.compiler.cxxincludes += [
+    os.path.join(sdk.path, 'game', 'shared')
+  ]
+  if binary.compiler.cxx.behavior is 'gcc':
+    binary.compiler.cxxflags += ['-Wno-invalid-offsetof']
 
-	compiler = SM.DefaultHL2Compiler('extensions/sdkhooks', i)
-	compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'game', 'shared'))
-
-	if compiler.cc.name == 'gcc' or compiler.cc.name == 'clang':
-		compiler['CXXFLAGS'].append('-Wno-invalid-offsetof')
-
-	name = 'sdkhooks.ext.' + sdk['ext']
-	extension = AMBuild.AddJob(name)
-	binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
-	SM.PreSetupHL2Job(extension, binary, i)
-	binary.AddSourceFiles('extensions/sdkhooks', [
-		'extension.cpp',
-		'natives.cpp',
-		'takedamageinfohack.cpp',
-		'util.cpp',
-		'sdk/smsdk_ext.cpp',
-		])
-	SM.PostSetupHL2Job(extension, binary, i)
-	SM.AutoVersion('extensions/sdkhooks', binary)
-	SM.ExtractDebugInfo(extension, binary)
-	binary.SendToJob()
-
+  binary.sources += [
+    'extension.cpp',
+    'natives.cpp',
+    'takedamageinfohack.cpp',
+    'util.cpp',
+    'sdk/smsdk_ext.cpp',
+  ]
+  SM.binaries += [builder.Add(binary)]

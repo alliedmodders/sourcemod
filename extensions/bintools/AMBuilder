@@ -1,25 +1,23 @@
-# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-compiler = SM.DefaultExtCompiler('extensions/bintools')
-compiler['CDEFINES'].append('HOOKING_ENABLED')
-compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core', 'sourcehook'))
-compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public', 'jit'))
-compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public', 'jit', 'x86'))
+binary = SM.ExtLibrary(builder, 'bintools.ext')
+binary.compiler.defines += ['HOOKING_ENABLED']
+binary.compiler.cxxincludes += [
+  os.path.join(SM.mms_root, 'core', 'sourcehook'),
+  os.path.join(builder.sourcePath, 'public', 'jit'),
+  os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
+]
 
-extension = AMBuild.AddJob('bintools.ext')
-binary = Cpp.LibraryBuilder('bintools.ext', AMBuild, extension, compiler)
-binary.AddSourceFiles('extensions/bintools', [
-	'extension.cpp',
-	'CallMaker.cpp',
-	'CallWrapper.cpp',
-	'HookWrapper.cpp',
-	'jit_call.cpp',
-	'jit_hook.cpp',
-	'sdk/smsdk_ext.cpp'
-	])
-SM.AutoVersion('extensions/bintools', binary)
-SM.ExtractDebugInfo(extension, binary)
-binary.SendToJob()
+binary.sources += [
+  'extension.cpp',
+  'CallMaker.cpp',
+  'CallWrapper.cpp',
+  'HookWrapper.cpp',
+  'jit_call.cpp',
+  'jit_hook.cpp',
+  'sdk/smsdk_ext.cpp'
+]
 
+SM.binaries += [builder.Add(binary)]
 

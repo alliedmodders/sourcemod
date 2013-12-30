@@ -1,72 +1,75 @@
 # vim: set ts=2 sw=2 tw=99 noet ft=python: 
 import os
 
-compiler = SM.DefaultCompiler()
-compiler['CINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public'))
-compiler['CINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public', 'sourcepawn'))
-compiler['CINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'sourcepawn', 'compiler'))
-compiler['CINCLUDES'].append(os.path.join(AMBuild.outputFolder, 'includes'))
-
-if compiler.cc.name == 'gcc' or compiler.cc.name == 'clang':
-	compiler['CFLAGS'].append('-Wno-format')
-	if AMBuild.target['platform'] == 'linux':
-		compiler['POSTLINKFLAGS'].extend(['-lgcc', '-lm'])
-elif compiler.cc.name == 'msvc':
-	compiler['POSTLINKFLAGS'].remove('/SUBSYSTEM:WINDOWS')
-	compiler['POSTLINKFLAGS'].append('/SUBSYSTEM:CONSOLE')
-
-if AMBuild.target['platform'] == 'linux':
-	compiler['CDEFINES'].extend(['LINUX', 'HAVE_STDINT_H', 'AMX_ANSIONLY', 'ENABLE_BINRELOC', '_GNU_SOURCE'])
-elif AMBuild.target['platform'] == 'darwin':
-	compiler['CDEFINES'].extend(['DARWIN', 'HAVE_STDINT_H', 'AMX_ANSIONLY', 'ENABLE_BINRELOC', 'HAVE_SAFESTR'])
-
-extension = AMBuild.AddJob('spcomp')
-binary = Cpp.ExecutableBuilder('spcomp', AMBuild, extension, compiler)
-files = [
-	'libpawnc.c',
-	'lstring.c',
-	'memfile.c',
-	'pawncc.c',
-	'sc1.c',
-	'sc2.c',
-	'sc3.c',
-	'sc4.c',
-	'sc5.c',
-	'sc6.c',
-	'sc7.c',
-	'scexpand.c',
-	'sci18n.c',
-	'sclist.c',
-	'scmemfil.c',
-	'scstate.c',
-	'sctracker.c',
-	'scvars.c',
-	'sp_file.c',
-	'zlib/adler32.c',
-	'zlib/compress.c',
-	'zlib/crc32.c',
-	'zlib/deflate.c',
-	'zlib/gzio.c',
-	'zlib/infback.c',
-	'zlib/inffast.c',
-	'zlib/inflate.c',
-	'zlib/inftrees.c',
-	'zlib/trees.c',
-	'zlib/uncompr.c',
-	'zlib/zutil.c',
-	'sp_symhash.c'
-	]
-if AMBuild.target['platform'] == 'linux':
-	files.append('binreloc.c')
-binary.AddSourceFiles('sourcepawn/compiler', files)
-
-if AMBuild.target['platform'] == 'windows':
-	env = {'RCDEFINES': ['BINARY_NAME="' + binary.binaryFile + '"', 'SM_GENERATED_BUILD']}
-	binary.AddResourceFile('sourcepawn/compiler/libpawnc.rc', env)
-elif AMBuild.target['platform'] == 'darwin' and isinstance(binary, Cpp.LibraryBuilder):
-	binary.compiler['POSTLINKFLAGS'].extend(['-compatibility_version', '1.0.0'])
-	binary.compiler['POSTLINKFLAGS'].extend(['-current_version', AMBuild.cache['version']])
-
-SM.ExtractDebugInfo(extension, binary)
-binary.SendToJob()
-
+binary = SM.Program(builder, 'spcomp')
+compiler = binary.compiler
+compiler.includes += [
+  os.path.join(builder.sourcePath, 'public'),
+  os.path.join(builder.sourcePath, 'public', 'sourcepawn'),
+  os.path.join(builder.sourcePath, 'sourcepawn', 'compiler'),
+  os.path.join(builder.buildPath, 'includes'),
+]
+ 
+if compiler.cc.behavior is 'gcc':
+  compiler.cflags += ['-Wno-format']
+  if builder.target_platform is 'linux':
+    compiler.postlink += ['-lgcc', '-lm']
+elif compiler.cc.behavior is 'msvc':
+  compiler.linkflags.remove('/SUBSYSTEM:WINDOWS')
+  compiler.linkflags.append('/SUBSYSTEM:CONSOLE')
+ 
+if builder.target_platform is 'linux':
+  compiler.defines += [
+    'LINUX',
+    'HAVE_STDINT_H',
+    'AMX_ANSIONLY',
+    'ENABLE_BINRELOC',
+    '_GNU_SOURCE'
+  ]
+elif builder.target_platform is 'mac':
+  compiler.defines += [
+    'DARWIN',
+    'HAVE_STDINT_H',
+    'AMX_ANSIONLY',
+    'ENABLE_BINRELOC',
+    'HAVE_SAFESTR'
+  ]
+ 
+binary.sources += [
+  'libpawnc.c',
+  'lstring.c',
+  'memfile.c',
+  'pawncc.c',
+  'sc1.c',
+  'sc2.c',
+  'sc3.c',
+  'sc4.c',
+  'sc5.c',
+  'sc6.c',
+  'sc7.c',
+  'scexpand.c',
+  'sci18n.c',
+  'sclist.c',
+  'scmemfil.c',
+  'scstate.c',
+  'sctracker.c',
+  'scvars.c',
+  'sp_file.c',
+  'zlib/adler32.c',
+  'zlib/compress.c',
+  'zlib/crc32.c',
+  'zlib/deflate.c',
+  'zlib/gzio.c',
+  'zlib/infback.c',
+  'zlib/inffast.c',
+  'zlib/inflate.c',
+  'zlib/inftrees.c',
+  'zlib/trees.c',
+  'zlib/uncompr.c',
+  'zlib/zutil.c',
+  'sp_symhash.c'
+]
+if builder.target_platform is 'linux':
+  binary.sources.append('binreloc.c')
+ 
+SM.binaries += [builder.Add(binary)]
