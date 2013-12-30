@@ -20,5 +20,5 @@ binary.sources += [
   'sdk/smsdk_ext.cpp',
 ]
 
-SM.binaries += [builder.Add(binary)]
+SM.extensions += [builder.Add(binary)]
 

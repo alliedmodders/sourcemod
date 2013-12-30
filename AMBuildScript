@@ -62,6 +62,7 @@ class SMConfig(object):
   def __init__(self):
     self.sdks = {}
     self.binaries = []
+    self.extensions = []
     self.mms_root = None
     self.mysql_root = None
     self.spcomp = None
@@ -412,6 +413,7 @@ builder.RunBuildScripts(
     'sourcepawn/compiler/AMBuilder',
     'sourcepawn/jit/AMBuilder',
     'plugins/AMBuilder',
+    'tools/buildbot/PackageScript',
   ],
   {
     'SM': SM

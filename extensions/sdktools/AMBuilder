@@ -42,4 +42,4 @@ for sdk_name in SM.sdks:
     'sdk/smsdk_ext.cpp',
     'asm/asm.c'
   ]
-  SM.binaries += [builder.Add(binary)]
+  SM.extensions += [builder.Add(binary)]

@@ -15,5 +15,4 @@ binary.sources += [
   'sdk/sm_memtable.cpp'
 ]
 
-SM.binaries += [builder.Add(binary)]
-
+SM.extensions += [builder.Add(binary)]

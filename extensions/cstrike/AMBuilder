@@ -18,4 +18,4 @@ for sdk_name in ['css', 'csgo']:
     'CDetour/detours.cpp',
     'asm/asm.c'
   ]
-  SM.binaries += [builder.Add(binary)]
+  SM.extensions += [builder.Add(binary)]

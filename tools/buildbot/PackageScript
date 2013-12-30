@@ -1,277 +1,442 @@
-# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+# vim: set ts=8 sts=2 sw=2 tw=99 et ft=python: 
 import os
-import shutil
-import ambuild.osutil as osutil
-from ambuild.command import Command
 
-job = AMBuild.AddJob('package')
+builder.SetBuildFolder('package')
 
-class DestroyPath(Command):
-	def __init__(self, folder):
-		Command.__init__(self)
-		self.folder = folder
-
-	def destroy(self, path):
-		entries = os.listdir(path)
-		for entry in entries:
-			newpath = os.path.join(path, entry)
-			if os.path.isdir(newpath):
-				self.destroy(newpath)
-				os.rmdir(newpath)
-			elif os.path.isfile(newpath):
-				os.remove(newpath)
-
-	def run(self, runner, job):
-		runner.PrintOut('rm -rf {0}/*'.format(self.folder))
-		self.destroy(self.folder)
-
-class CreateFolders(Command):
-	def __init__(self, folders):
-		Command.__init__(self)
-		self.folders = folders
-	
-	def run(self, runner, job):
-		for folder in self.folders:
-			path = os.path.join(*folder)
-			runner.PrintOut('mkdir {0}'.format(path))
-			os.makedirs(path)
-
-#Shallow folder copy
-class CopyFolder(Command):
-	def __init__(self, fromList, toList, excludes = []):
-		Command.__init__(self)
-		self.fromPath = os.path.join(AMBuild.sourceFolder, *fromList)
-		self.toPath = os.path.join(*toList) 
-		self.excludes = excludes
-	
-	def run(self, runner, job):
-		entries = os.listdir(self.fromPath)
-		for entry in entries:
-			if entry in self.excludes:
-				continue
-			path = os.path.join(self.fromPath, entry)
-			if not os.path.isfile(path):
-				continue
-			runner.PrintOut('copy {0} to {1}'.format(path, self.toPath))
-			shutil.copy(path, self.toPath)
-
-#Single file copy
-class CopyFile(Command):
-	def __init__(self, fromFile, toPath):
-		Command.__init__(self)
-		self.fromFile = fromFile
-		self.toPath = toPath
-
-	def run(self, runner, job):
-		runner.PrintOut('copy {0} to {1}'.format(self.fromFile, self.toPath))
-		shutil.copy(self.fromFile, self.toPath)
-
-
-folders = [['addons', 'sourcemod', 'bin'],
-           ['addons', 'sourcemod', 'plugins', 'disabled'],
-           ['addons', 'sourcemod', 'gamedata'],
-           ['addons', 'sourcemod', 'gamedata', 'core.games'],
-		   ['addons', 'sourcemod', 'gamedata', 'sdkhooks.games'],
-           ['addons', 'sourcemod', 'gamedata', 'sdktools.games'],
-		   ['addons', 'sourcemod', 'gamedata', 'sm-cstrike.games'],
-           ['addons', 'sourcemod', 'configs', 'geoip'],
-           ['addons', 'sourcemod', 'translations'],
-           ['addons', 'sourcemod', 'logs'],
-           ['addons', 'sourcemod', 'extensions'],
-           ['addons', 'sourcemod', 'data'],
-           ['addons', 'sourcemod', 'scripting', 'include'],
-           ['addons', 'sourcemod', 'scripting', 'admin-flatfile'],
-           ['addons', 'sourcemod', 'scripting', 'adminmenu'],
-           ['addons', 'sourcemod', 'scripting', 'testsuite'],
-           ['cfg', 'sourcemod'],
-           ['addons', 'sourcemod', 'configs', 'sql-init-scripts'],
-           ['addons', 'sourcemod', 'configs', 'sql-init-scripts', 'mysql'],
-           ['addons', 'sourcemod', 'configs', 'sql-init-scripts', 'sqlite'],
-           ['addons', 'sourcemod', 'scripting', 'basecommands'],
-           ['addons', 'sourcemod', 'scripting', 'basecomm'],
-           ['addons', 'sourcemod', 'scripting', 'funvotes'],
-           ['addons', 'sourcemod', 'scripting', 'basevotes'],
-           ['addons', 'sourcemod', 'scripting', 'basebans'],
-           ['addons', 'sourcemod', 'scripting', 'funcommands'],
-           ['addons', 'sourcemod', 'scripting', 'playercommands'],
-           ['addons', 'metamod'],
-          ]
-
-#Setup
-job.AddCommand(DestroyPath(os.path.join(AMBuild.outputFolder, 'package')))
-job.AddCommand(CreateFolders(folders))
-
-#Copy Folders
-job.AddCommand(CopyFolder(['configs'], ['addons', 'sourcemod', 'configs']))
-job.AddCommand(CopyFolder(['configs', 'geoip'], ['addons', 'sourcemod', 'configs', 'geoip']))
-job.AddCommand(CopyFolder(['configs', 'cfg'], ['cfg', 'sourcemod']))
-job.AddCommand(CopyFolder(['configs', 'metamod'], ['addons', 'metamod']))
-job.AddCommand(CopyFolder(['configs', 'sql-init-scripts'],
-	['addons', 'sourcemod', 'configs', 'sql-init-scripts']))
-job.AddCommand(CopyFolder(['configs', 'sql-init-scripts', 'mysql'],
-	['addons', 'sourcemod', 'configs', 'sql-init-scripts', 'mysql']))
-job.AddCommand(CopyFolder(['configs', 'sql-init-scripts', 'sqlite'],
-	['addons', 'sourcemod', 'configs', 'sql-init-scripts', 'sqlite']))
-job.AddCommand(CopyFolder(['gamedata'], ['addons', 'sourcemod', 'gamedata']))
-job.AddCommand(CopyFolder(['gamedata', 'sdkhooks.games'],
-	['addons', 'sourcemod', 'gamedata', 'sdkhooks.games']))
-job.AddCommand(CopyFolder(['gamedata', 'sdktools.games'],
-	['addons', 'sourcemod', 'gamedata', 'sdktools.games']))
-job.AddCommand(CopyFolder(['gamedata', 'core.games'],
-	['addons', 'sourcemod', 'gamedata', 'core.games']))
-job.AddCommand(CopyFolder(['gamedata', 'sm-cstrike.games'],
-	['addons', 'sourcemod', 'gamedata', 'sm-cstrike.games']))
-job.AddCommand(CopyFolder(['plugins'], ['addons', 'sourcemod', 'scripting'], ['AMBuilder']))
-job.AddCommand(CopyFolder(['plugins', 'include'],
-	['addons', 'sourcemod', 'scripting', 'include']))
-job.AddCommand(CopyFolder(['translations'], ['addons', 'sourcemod', 'translations']))
-job.AddCommand(CopyFolder(['public', 'licenses'], ['addons', 'sourcemod']))
-job.AddCommand(CopyFolder(['plugins', 'admin-flatfile'],
-	['addons', 'sourcemod', 'scripting', 'admin-flatfile']))
-job.AddCommand(CopyFolder(['plugins', 'adminmenu'],
-	['addons', 'sourcemod', 'scripting', 'adminmenu']))
-job.AddCommand(CopyFolder(['plugins', 'testsuite'],
-	['addons', 'sourcemod', 'scripting', 'testsuite']))
-job.AddCommand(CopyFolder(['plugins', 'basecommands'],
-	['addons', 'sourcemod', 'scripting', 'basecommands']))
-job.AddCommand(CopyFolder(['plugins', 'basecomm'],
-	['addons', 'sourcemod', 'scripting', 'basecomm']))
-job.AddCommand(CopyFolder(['plugins', 'funvotes'],
-	['addons', 'sourcemod', 'scripting', 'funvotes']))
-job.AddCommand(CopyFolder(['plugins', 'basevotes'],
-	['addons', 'sourcemod', 'scripting', 'basevotes']))
-job.AddCommand(CopyFolder(['plugins', 'basebans'],
-	['addons', 'sourcemod', 'scripting', 'basebans']))
-job.AddCommand(CopyFolder(['plugins', 'funcommands'],
-	['addons', 'sourcemod', 'scripting', 'funcommands']))
-job.AddCommand(CopyFolder(['plugins', 'playercommands'],
-	['addons', 'sourcemod', 'scripting', 'playercommands']))
-
-defPlugins = [
-	'admin-flatfile',
-	'adminhelp',
-	'antiflood',
-	'basecommands',
-	'reservedslots',
-	'basetriggers',
-	'nextmap',
-	'basechat',
-	'funcommands',
-	'basevotes',
-	'funvotes',
-	'basebans',
-	'basecomm',
-	'adminmenu',
-	'playercommands',
-	'clientprefs',
-	'sounds'
+folder_list = [
+  'addons/sourcemod',
+  'addons/sourcemod/bin',
+  'addons/sourcemod/plugins',
+  'addons/sourcemod/plugins/disabled',
+  'addons/sourcemod/gamedata',
+  'addons/sourcemod/gamedata/core.games',
+  'addons/sourcemod/gamedata/sdkhooks.games',
+  'addons/sourcemod/gamedata/sdktools.games',
+  'addons/sourcemod/gamedata/sm-cstrike.games',
+  'addons/sourcemod/configs',
+  'addons/sourcemod/configs/geoip',
+  'addons/sourcemod/translations',
+  'addons/sourcemod/logs',
+  'addons/sourcemod/extensions',
+  'addons/sourcemod/data',
+  'addons/sourcemod/configs/sql-init-scripts',
+  'addons/sourcemod/configs/sql-init-scripts/mysql',
+  'addons/sourcemod/configs/sql-init-scripts/sqlite',
+  'addons/sourcemod/scripting',
+  'addons/sourcemod/scripting/include',
+  'addons/sourcemod/scripting/admin-flatfile',
+  'addons/sourcemod/scripting/adminmenu',
+  'addons/sourcemod/scripting/testsuite',
+  'addons/sourcemod/scripting/basecommands',
+  'addons/sourcemod/scripting/basecomm',
+  'addons/sourcemod/scripting/funvotes',
+  'addons/sourcemod/scripting/basevotes',
+  'addons/sourcemod/scripting/basebans',
+  'addons/sourcemod/scripting/funcommands',
+  'addons/sourcemod/scripting/playercommands',
+  'addons/metamod',
+  'cfg/sourcemod',
 ]
 
-disPlugins = [
-	'admin-sql-prefetch',
-	'admin-sql-threaded',
-	'sql-admin-manager',
-	'mapchooser',
-	'randomcycle',
-	'rockthevote',
-	'nominations'
-]
+# Create the distribution folder hierarchy.
+folder_map = {}
+for folder in folder_list:
+  norm_folder = os.path.normpath(folder)
+  folder_map[folder] = builder.AddFolder(norm_folder)
 
-commands = []
-for plugin in defPlugins:
-	commands.append(CopyFile(os.path.join('..', 'plugins', plugin + '.smx'),
-	                         os.path.join('addons', 'sourcemod', 'plugins')))
+# Copy binaries.
+for cxx_task in SM.binaries:
+  builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/bin'])
+for cxx_task in SM.extensions:
+  builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])
+builder.AddCopy(SM.spcomp.binary, folder_map['addons/sourcemod/scripting'])
 
-for plugin in disPlugins:
-	commands.append(CopyFile(os.path.join('..', 'plugins', plugin + '.smx'),
-	                         os.path.join('addons', 'sourcemod', 'plugins', 'disabled')))
-job.AddCommandGroup(commands)
+# Copy plugins.
+disabled_plugins = set([
+  'admin-sql-prefetch.smx',
+  'admin-sql-threaded.smx',
+  'sql-admin-manager.smx',
+  'mapchooser.smx',
+  'randomcycle.smx',
+  'rockthevote.smx',
+  'nominations.smx',
+])
 
-job.AddCommand(CopyFile(os.path.join('..', 'includes', 'version_auto.inc'),
-	os.path.join('addons', 'sourcemod', 'scripting', 'include')))
+for smx_file in SM.smx_files:
+  smx_entry = SM.smx_files[smx_file]
+  if smx_file in disabled_plugins:
+    builder.AddCopy(smx_entry, folder_map['addons/sourcemod/plugins/disabled'])
+  else:
+    builder.AddCopy(smx_entry, folder_map['addons/sourcemod/plugins'])
 
-bincopies = []
+# Do all straight-up file copies from the source tree.
+def CopyFiles(src, dest, files):
+  if not dest:
+    dest = src
+  dest_entry = folder_map[dest]
+  for source_file in files:
+    source_path = os.path.join(builder.sourcePath, src, source_file)
+    builder.AddCopy(source_path, dest_entry)
 
-def AddNormalLibrary(name, dest):
-	dest = os.path.join('addons', 'sourcemod', dest)
-	bincopies.append(CopyFile(os.path.join('..', name, name + osutil.SharedLibSuffix()), dest))
-	
-	# Each platform's version of dump_syms needs the path in a different format.
-	if AMBuild.target['platform'] == 'linux':
-		debug_info.append(name + '/' + name + '.so')
-	elif AMBuild.target['platform'] == 'darwin':
-		debug_info.append(name + '/' + name + '.dylib.dSYM')
-	elif AMBuild.target['platform'] == 'windows':
-		debug_info.append(name + '\\' + name + '.pdb')
-
-def AddHL2Library(name, dest):
-	for i in SM.sdkInfo:
-		sdk = SM.sdkInfo[i]
-		if AMBuild.target['platform'] not in sdk['platform']:
-			continue
-		AddNormalLibrary(name + '.' + sdk['ext'], dest)
-
-debug_info = []
-
-if AMBuild.target['platform'] == 'linux':
-	bincopies.append(CopyFile(os.path.join('..', 'loader', 'sourcemod_mm_i486.so'),
-	                 os.path.join('addons', 'sourcemod', 'bin')))
-	debug_info.append('loader/sourcemod_mm_i486.so')
-elif AMBuild.target['platform'] == 'darwin':
-	bincopies.append(CopyFile(os.path.join('..', 'loader', 'sourcemod_mm.dylib'),
-	                 os.path.join('addons', 'sourcemod', 'bin')))
-	debug_info.append('loader/sourcemod_mm.dylib.dSYM')
-elif AMBuild.target['platform'] == 'windows':
-	bincopies.append(CopyFile(os.path.join('..', 'loader', 'sourcemod_mm.dll'),
-	                 os.path.join('addons', 'sourcemod', 'bin')))
-	debug_info.append('loader\\sourcemod_mm.pdb')
-
-AddHL2Library('sourcemod', 'bin')
-AddNormalLibrary('sourcemod.logic', 'bin')
-AddNormalLibrary('sourcepawn.jit.x86', 'bin')
-AddNormalLibrary('geoip.ext', 'extensions')
-if SM.hasMySql:
-	AddNormalLibrary('dbi.mysql.ext', 'extensions')
-AddNormalLibrary('dbi.sqlite.ext', 'extensions')
-
-if 'css' in SM.sdkInfo:
-	AddNormalLibrary('game.cstrike.ext.2.css', 'extensions')
-
-if 'csgo' in SM.sdkInfo:
-	AddNormalLibrary('game.cstrike.ext.2.csgo', 'extensions')
-
-if 'tf2' in SM.sdkInfo:
-	AddNormalLibrary('game.tf2.ext.2.tf2', 'extensions')
-
-AddNormalLibrary('topmenus.ext', 'extensions')
-AddNormalLibrary('regex.ext', 'extensions')
-AddNormalLibrary('webternet.ext', 'extensions')
-AddNormalLibrary('clientprefs.ext', 'extensions')
-AddNormalLibrary('updater.ext', 'extensions')
-AddNormalLibrary('bintools.ext', 'extensions')
-AddHL2Library('sdkhooks.ext', 'extensions')
-AddHL2Library('sdktools.ext', 'extensions')
-
-bincopies.append(CopyFile(os.path.join('..', 'spcomp', 'spcomp' + osutil.ExecutableSuffix()),
-                          os.path.join('addons', 'sourcemod', 'scripting')))
-
-# Each platform's version of dump_syms needs the path in a different format.
-if AMBuild.target['platform'] == 'linux':
-	debug_info.append('spcomp' + '/' + 'spcomp')
-elif AMBuild.target['platform'] == 'darwin':
-	debug_info.append('spcomp' + '/' + 'spcomp' + '.dSYM')
-elif AMBuild.target['platform'] == 'windows':
-	debug_info.append('spcomp' + '\\' + 'spcomp' + '.pdb')
-
-job.AddCommandGroup(bincopies)
-
-if AMBuild.target['platform'] == 'windows':
-	job.AddCommand(CopyFile(
-		os.path.join(AMBuild.sourceFolder, 'sourcepawn', 'batchtool', 'compile.exe'),
-		os.path.join('addons', 'sourcemod', 'scripting')))
-	
-pdblog = open(os.path.join(AMBuild.outputFolder, 'pdblog.txt'), 'wt')
-for pdb in debug_info:
-	pdblog.write(pdb + '\n')
-pdblog.close()
-
+CopyFiles('configs', 'addons/sourcemod/configs',
+  [ 'admin_groups.cfg',
+    'admin_levels.cfg',
+    'admin_overrides.cfg',
+    'adminmenu_cfgs.txt',
+    'adminmenu_custom.txt',
+    'adminmenu_grouping.txt',
+    'adminmenu_sorting.txt',
+    'admins.cfg',
+    'admins_simple.ini',
+    'banreasons.txt',
+    'core.cfg',
+    'databases.cfg',
+    'languages.cfg',
+    'maplists.cfg',
+  ]
+)
+CopyFiles('configs/geoip', 'addons/sourcemod/configs/geoip', ['GeoIP.dat'])
+CopyFiles('configs/cfg', 'cfg/sourcemod',
+  [ 'sm_warmode_off.cfg',
+    'sm_warmode_on.cfg',
+    'sourcemod.cfg',
+  ]
+)
+CopyFiles('configs/metamod', 'addons/metamod', ['sourcemod.vdf'])
+CopyFiles('configs/sql-init-scripts/mysql', 'addons/sourcemod/configs/sql-init-scripts/mysql',
+  [ 'clientprefs-mysql.sql',
+    'create_admins.sql',
+    'update_admins_r1409.sql',
+  ]
+)
+CopyFiles('configs/sql-init-scripts/sqlite', 'addons/sourcemod/configs/sql-init-scripts/sqlite',
+  [ 'admins-sqlite.sq3',
+    'clientprefs-sqlite.sq3',
+    'clientprefs-sqlite.sql',
+    'create_admins.sql',
+    'update_admins-r1409.sql',
+  ]
+)
+CopyFiles('gamedata', 'addons/sourcemod/gamedata', ['sm-tf2.games.txt'])
+CopyFiles('gamedata/sdkhooks.games', 'addons/sourcemod/gamedata/sdkhooks.games',
+  [ 'common.games.txt',
+    'engine.blade.txt',
+    'engine.csgo.txt',
+    'engine.darkm.txt',
+    'engine.dota.txt',
+    'engine.ep2v.txt',
+    'engine.insurgency.txt',
+    'engine.l4d.txt',
+    'game.ag2.txt',
+    'game.alienswarm.txt',
+    'game.aoc.txt',
+    'game.cspromod.txt',
+    'game.cstrike.txt',
+    'game.dinodday.txt',
+    'game.empires.txt',
+    'game.ff.txt',
+    'game.fof.txt',
+    'game.garrysmod.txt',
+    'game.gesource.txt',
+    'game.hidden.txt',
+    'game.hl2ctf.txt',
+    'game.insurgency.txt',
+    'game.l4d2.txt',
+    'game.neotokyo.txt',
+    'game.nmrih.txt',
+    'game.nucleardawn.txt',
+    'game.pvkii.txt',
+    'game.sgtls.txt',
+    'game.sourceforts.txt',
+    'game.synergy.txt',
+    'game.zm.txt',
+    'game.zpanic.txt',
+    'master.games.txt',
+  ]
+)
+CopyFiles('gamedata/sdktools.games', 'addons/sourcemod/gamedata/sdktools.games',
+  [ 'common.games.txt',
+    'engine.bgt.txt',
+    'engine.blade.txt',
+    'engine.csgo.txt',
+    'engine.css.txt',
+    'engine.darkm.txt',
+    'engine.dota.txt',
+    'engine.ep1.txt',
+    'engine.ep2.txt',
+    'engine.ep2valve.txt',
+    'engine.eye.txt',
+    'engine.insurgency.txt',
+    'engine.l4d.txt',
+    'engine.l4d2.txt',
+    'engine.sdk2013.txt',
+    'engine.swarm.txt',
+    'game.ag2.txt',
+    'game.alienswarm.txt',
+    'game.aoc.txt',
+    'game.bg2.txt',
+    'game.cspromod.txt',
+    'game.cstrike.txt',
+    'game.dinodday.txt',
+    'game.dod.txt',
+    'game.dystopia.txt',
+    'game.empires.txt',
+    'game.esmod.txt',
+    'game.fas.txt',
+    'game.ff.txt',
+    'game.fof.txt',
+    'game.garrysmod.txt',
+    'game.gesource.txt',
+    'game.hidden.txt',
+    'game.hl2ctf.txt',
+    'game.hl2mp.txt',
+    'game.insurgency.txt',
+    'game.ios.txt',
+    'game.left4dead2.txt',
+    'game.neotokyo.txt',
+    'game.nmrih.txt',
+    'game.nucleardawn.txt',
+    'game.obsidian.txt',
+    'game.pvkii.txt',
+    'game.rnlbeta.txt',
+    'game.ship.txt',
+    'game.sourceforts.txt',
+    'game.synergy.txt',
+    'game.tf.txt',
+    'game.zm.txt',
+    'game.zpanic.txt',
+    'master.games.txt',
+  ]
+)
+CopyFiles('gamedata/core.games', 'addons/sourcemod/gamedata/core.games',
+  [ 'blacklist.plugins.txt',
+    'common.games.txt',
+    'engine.bgt.txt',
+    'engine.blade.txt',
+    'engine.csgo.txt',
+    'engine.css.txt',
+    'engine.darkm.txt',
+    'engine.dota.txt',
+    'engine.ep1.txt',
+    'engine.ep2.txt',
+    'engine.ep2valve.txt',
+    'engine.eye.txt',
+    'engine.insurgency.txt',
+    'engine.l4d.txt',
+    'engine.l4d2.txt',
+    'engine.sdk2013.txt',
+    'engine.swarm.txt',
+    'master.games.txt',
+  ]
+)
+CopyFiles('gamedata/sm-cstrike.games', 'addons/sourcemod/gamedata/sm-cstrike.games',
+  [ 'game.csgo.txt',
+    'game.css.txt',
+    'master.games.txt',
+  ]
+)
+CopyFiles('plugins', 'addons/sourcemod/scripting',
+  [ 'admin-sql-prefetch.sp',
+    'admin-sql-threaded.sp',
+    'adminhelp.sp',
+    'adminmenu.sp',
+    'antiflood.sp',
+    'basebans.sp',
+    'basechat.sp',
+    'basecomm.sp',
+    'basecommands.sp',
+    'basetriggers.sp',
+    'basevotes.sp',
+    'clientprefs.sp',
+    'compile.sh',
+    'funcommands.sp',
+    'funvotes.sp',
+    'mapchooser.sp',
+    'nextmap.sp',
+    'nominations.sp',
+    'playercommands.sp',
+    'randomcycle.sp',
+    'reservedslots.sp',
+    'rockthevote.sp',
+    'sounds.sp',
+    'sql-admin-manager.sp',
+  ]
+)
+CopyFiles('plugins/include', 'addons/sourcemod/scripting/include',
+  [ 'admin.inc',
+    'adminmenu.inc',
+    'adt.inc',
+    'adt_array.inc',
+    'adt_stack.inc',
+    'adt_trie.inc',
+    'banning.inc',
+    'basecomm.inc',
+    'bitbuffer.inc',
+    'clientprefs.inc',
+    'clients.inc',
+    'commandfilters.inc',
+    'console.inc',
+    'core.inc',
+    'cstrike.inc',
+    'datapack.inc',
+    'dbi.inc',
+    'entity.inc',
+    'entity_prop_stocks.inc',
+    'events.inc',
+    'files.inc',
+    'float.inc',
+    'functions.inc',
+    'geoip.inc',
+    'halflife.inc',
+    'handles.inc',
+    'helpers.inc',
+    'keyvalues.inc',
+    'lang.inc',
+    'logging.inc',
+    'mapchooser.inc',
+    'menus.inc',
+    'nextmap.inc',
+    'profiler.inc',
+    'protobuf.inc',
+    'regex.inc',
+    'sdkhooks.inc',
+    'sdktools.inc',
+    'sdktools_client.inc',
+    'sdktools_engine.inc',
+    'sdktools_entinput.inc',
+    'sdktools_entoutput.inc',
+    'sdktools_functions.inc',
+    'sdktools_gamerules.inc',
+    'sdktools_hooks.inc',
+    'sdktools_sound.inc',
+    'sdktools_stocks.inc',
+    'sdktools_stringtables.inc',
+    'sdktools_tempents.inc',
+    'sdktools_tempents_stocks.inc',
+    'sdktools_trace.inc',
+    'sdktools_voice.inc',
+    'sorting.inc',
+    'sourcemod.inc',
+    'string.inc',
+    'textparse.inc',
+    'tf2.inc',
+    'tf2_stocks.inc',
+    'timers.inc',
+    'topmenus.inc',
+    'usermessages.inc',
+    'vector.inc',
+    'version.inc',
+  ]
+)
+CopyFiles('translations', 'addons/sourcemod/translations',
+  [ 'adminhelp.phrases.txt',
+    'adminmenu.phrases.txt',
+    'antiflood.phrases.txt',
+    'basebans.phrases.txt',
+    'basecomm.phrases.txt',
+    'basetriggers.phrases.txt',
+    'basevotes.phrases.txt',
+    'clientprefs.phrases.txt',
+    'common.phrases.txt',
+    'core.phrases.txt',
+    'funcommands.phrases.txt',
+    'funvotes.phrases.txt',
+    'mapchooser.phrases.txt',
+    'nextmap.phrases.txt',
+    'nominations.phrases.txt',
+    'playercommands.phrases.txt',
+    'plugin.basecommands.txt',
+    'reservedslots.phrases.txt',
+    'rockthevote.phrases.txt',
+    'sounds.phrases.txt',
+    'sqladmins.phrases.txt',
+  ]
+)
+CopyFiles('public/licenses', 'addons/sourcemod',
+  [ 'GPLv2.txt',
+    'GPLv3.txt',
+    'LICENSE.txt'
+  ]
+)
+CopyFiles('plugins/admin-flatfile', 'addons/sourcemod/scripting/admin-flatfile',
+  [ 'admin-flatfile.sp',
+    'admin-groups.sp',
+    'admin-overrides.sp',
+    'admin-simple.sp',
+    'admin-users.sp',
+  ]
+)
+CopyFiles('plugins/adminmenu', 'addons/sourcemod/scripting/adminmenu', ['dynamicmenu.sp'])
+CopyFiles('plugins/testsuite', 'addons/sourcemod/scripting/testsuite',
+  [ 'benchmark.sp',
+    'bug4059.sp',
+    'callfunctest.sp',
+    'capstest.sp',
+    'clientprefstest.sp',
+    'cstrike-test.sp',
+    'entpropelements.sp',
+    'fakenative1.sp',
+    'fakenative2.sp',
+    'filetest.sp',
+    'fwdtest1.sp',
+    'fwdtest2.sp',
+    'gamerules-props.sp',
+    'goto_test.sp',
+    'outputtest.sp',
+    'ptstest.sp',
+    'sorttest.sp',
+    'sqltest.sp',
+    'sqltest.sql',
+    'stacktest.sp',
+    'structtest.sp',
+    'tf2-test.sp',
+    'tries.sp',
+  ]
+)
+CopyFiles('plugins/basecommands', 'addons/sourcemod/scripting/basecommands',
+  [ 'cancelvote.sp',
+    'execcfg.sp',
+    'kick.sp',
+    'map.sp',
+    'reloadadmins.sp',
+    'who.sp',
+  ]
+)
+CopyFiles('plugins/basecomm', 'addons/sourcemod/scripting/basecomm',
+  [ 'forwards.sp',
+    'gag.sp',
+    'natives.sp',
+  ]
+)
+CopyFiles('plugins/funvotes', 'addons/sourcemod/scripting/funvotes',
+  [ 'votealltalk.sp',
+    'voteburn.sp',
+    'voteff.sp',
+    'votegravity.sp',
+    'voteslay.sp',
+  ]
+)
+CopyFiles('plugins/basevotes', 'addons/sourcemod/scripting/basevotes',
+  [ 'voteban.sp',
+    'votekick.sp',
+    'votemap.sp',
+  ]
+)
+CopyFiles('plugins/basebans', 'addons/sourcemod/scripting/basebans', ['ban.sp'])
+CopyFiles('plugins/funcommands', 'addons/sourcemod/scripting/funcommands',
+  [ 'beacon.sp',
+    'blind.sp',
+    'drug.sp',
+    'fire.sp',
+    'gravity.sp',
+    'ice.sp',
+    'noclip.sp',
+    'timebomb.sp',
+  ]
+)
+CopyFiles('plugins/playercommands', 'addons/sourcemod/scripting/playercommands',
+  [ 'rename.sp',
+    'slap.sp',
+    'slay.sp',
+  ]
+)

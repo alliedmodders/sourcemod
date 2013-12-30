@@ -31,5 +31,5 @@ if SM.mysql_root:
     'mysql/MyStatement.cpp',
     'extension.cpp'
   ]
-  SM.binaries += [builder.Add(binary)]
+  SM.extensions += [builder.Add(binary)]
 

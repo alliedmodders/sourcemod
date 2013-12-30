@@ -44,7 +44,7 @@ def build_plugin(script_path, smx_file):
     smx_file
   ]
   argv = spcomp_argv + [script_path]
-  cmd_entry, smx_entry = builder.AddCommand(
+  cmd_entry, (smx_entry,) = builder.AddCommand(
     inputs = inputs,
     argv = argv,
     outputs = outputs,
