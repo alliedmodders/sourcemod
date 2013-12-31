@@ -25,7 +25,7 @@ for cxx_task in cxx_tasks:
 
 	argv = [sys.executable, UPLOAD_SCRIPT, symbol_file] + argv
 	builder.AddCommand(
-		inputs = [UPLOAD_SCRIPT, debug_file],
+		inputs = [UPLOAD_SCRIPT, debug_entry],
 		argv = argv,
 		outputs = [symbol_file]
 	)
