@@ -201,48 +201,40 @@ void CHalfLife2::InitLogicalEntData()
 
 void CHalfLife2::InitCommandLine()
 {
-	char path[PLATFORM_MAX_PATH];
 	char error[256];
-	
-	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "../bin/" TIER0_NAME);
 
-	if (!g_LibSys.IsPathFile(path))
+	if (!is_original_engine)
 	{
-		g_Logger.LogError("Could not find path for: " TIER0_NAME);
-		return;
-	}
-
-	ke::AutoPtr<ILibrary> lib(g_LibSys.OpenLibrary(path, error, sizeof(error)));
-	m_pGetCommandLine = lib->GetSymbolAddress("CommandLine_Tier0");
-
-	/* '_Tier0' dropped on Alien Swarm version */
-	if (m_pGetCommandLine == NULL)
-	{
-		m_pGetCommandLine = lib->GetSymbolAddress("CommandLine");
-	}
-
-	if (m_pGetCommandLine == NULL)
-	{
-		/* We probably have a Ship engine. */
-		g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "../bin/" VSTDLIB_NAME);
-		if (!g_LibSys.IsPathFile(path))
+		ke::AutoPtr<ILibrary> lib(g_LibSys.OpenLibrary(TIER0_NAME, error, sizeof(error)));
+		if (lib == NULL)
 		{
-			g_Logger.LogError("Could not find path for: " VSTDLIB_NAME);
+			g_Logger.LogError("Could not load %s: %s", TIER0_NAME, error);
 			return;
 		}
+		
+		m_pGetCommandLine = lib->GetSymbolAddress("CommandLine_Tier0");
 
-		if ((lib = g_LibSys.OpenLibrary(path, error, sizeof(error))) == NULL)
-		{
-			g_Logger.LogError("Could not load %s: %s", path, error);
-			return;
-		}
-
-		m_pGetCommandLine = lib->GetSymbolAddress("CommandLine");
-
+		/* '_Tier0' dropped on Alien Swarm version */
 		if (m_pGetCommandLine == NULL)
 		{
-			g_Logger.LogError("Could not locate any command line functionality");
+			m_pGetCommandLine = lib->GetSymbolAddress("CommandLine");
 		}
+	}
+	else
+	{
+		ke::AutoPtr<ILibrary> lib(g_LibSys.OpenLibrary(VSTDLIB_NAME, error, sizeof(error)));
+		if (lib == NULL)
+		{
+			g_Logger.LogError("Could not load %s: %s", VSTDLIB_NAME, error);
+			return;
+		}
+
+		m_pGetCommandLine = lib->GetSymbolAddress("CommandLine");
+	}
+	
+	if (m_pGetCommandLine == NULL)
+	{
+		g_Logger.LogError("Could not locate any command line functionality");
 	}
 }
 
