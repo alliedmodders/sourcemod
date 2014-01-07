@@ -322,7 +322,7 @@ static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] >= 2 && params[2] == 1)
 	{
-		return smcore.FileExists(name) ? 1 : 0;
+		return smcore.filesystem->FileExists(name) ? 1 : 0;
 	}
 
 	char realpath[PLATFORM_MAX_PATH];

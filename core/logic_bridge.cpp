@@ -187,11 +187,6 @@ static void log_to_game(const char *message)
 	Engine_LogPrintWrapper(message);
 }
 
-static bool file_exists(const char *path)
-{
-	return basefilesystem->FileExists(path);
-}
-
 static const char *get_cvar_string(ConVar* cvar)
 {
 	return cvar->GetString();
@@ -431,7 +426,6 @@ static sm_core_t core_bridge =
 	log_message,
 	log_to_file,
 	log_to_game,
-	file_exists,
 	get_cvar_string,
 	UTIL_Format,
 	UTIL_FormatArgs,

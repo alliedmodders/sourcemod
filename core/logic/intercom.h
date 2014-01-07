@@ -251,7 +251,6 @@ struct sm_core_t
 	void			(*Log)(const char*, ...);
 	void			(*LogToFile)(FILE *fp, const char*, ...);
 	void			(*LogToGame)(const char *message);
-	bool			(*FileExists)(const char *path);
 	const char *	(*GetCvarString)(ConVar*);
 	size_t			(*Format)(char*, size_t, const char*, ...);
 	size_t			(*FormatArgs)(char*, size_t, const char*,va_list ap);
