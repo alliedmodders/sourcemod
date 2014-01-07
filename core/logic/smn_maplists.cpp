@@ -94,36 +94,21 @@ public:
 			|| strcmp(pEngineName, "dods") == 0 || strcmp(pEngineName, "hl2dm") == 0)
 		{
 			// These four games and Source SDK 2013 do a lookup in this order; so shall we.
-			g_pSM->BuildPath(Path_Game,
-				pBuffer,
-				maxlen,
-				"cfg/%s",
-				pMapCycleFileName);
+			g_pSM->Format(pBuffer, maxlen, "cfg/%s", pMapCycleFileName);
 
-			if (!libsys->PathExists(pBuffer))
+			if (!smcore.filesystem->FileExists(pBuffer, "GAME"))
 			{
-				g_pSM->BuildPath(Path_Game,
-					pBuffer,
-					maxlen,
-					"%s",
-					pMapCycleFileName);
+				g_pSM->Format(pBuffer, maxlen, "%s", pMapCycleFileName);
 
-				if (!libsys->PathExists(pBuffer))
+				if (!smcore.filesystem->FileExists(pBuffer, "GAME"))
 				{
-					g_pSM->BuildPath(Path_Game,
-						pBuffer,
-						maxlen,
-						"cfg/mapcycle_default.txt");
+					g_pSM->Format(pBuffer, maxlen, "cfg/mapcycle_default.txt");
 				}
 			}
 		}
 		else
 		{
-			g_pSM->BuildPath(Path_Game,
-				pBuffer,
-				maxlen,
-				"%s",
-				pMapCycleFileName);
+			g_pSM->Format(pBuffer, maxlen, "%s", pMapCycleFileName);
 		}
 	}
 	void AddOrUpdateDefault(const char *name, const char *file)
@@ -139,7 +124,7 @@ public:
 			pMapList->last_modified_time = 0;
 			smcore.strncopy(pMapList->name, name, sizeof(pMapList->name));
 			pMapList->pArray = NULL;
-			g_pSM->BuildPath(Path_Game, pMapList->path, sizeof(pMapList->path), "%s", file);
+			smcore.strncopy(pMapList->path, file, sizeof(pMapList->path));
 			pMapList->serial = 0;
 			m_ListLookup.insert(name, pMapList);
 			m_MapLists.push_back(pMapList);
@@ -150,7 +135,7 @@ public:
 		if (!pMapList->bIsCompat)
 			return;
 
-		g_pSM->BuildPath(Path_Game, path, sizeof(path), "%s", file);
+		smcore.strncopy(path, file, sizeof(path));
 
 		/* If the path matches, don't reset the serial/time */
 		if (strcmp(path, pMapList->path) == 0)
@@ -293,11 +278,7 @@ public:
 
 		if (strcmp(key, "file") == 0)
 		{
-			g_pSM->BuildPath(Path_Game, 
-				m_pCurMapList->path,
-				sizeof(m_pCurMapList->path),
-				"%s",
-				value);
+			smcore.strncopy(m_pCurMapList->path, value, sizeof(m_pCurMapList->path));
 			m_pCurMapList->bIsPath = true;
 		}
 		else if (strcmp(key, "target") == 0)
@@ -520,11 +501,11 @@ private:
 			|| last_time > pMapList->last_modified_time)
 		{
 			/* Reparse */
-			FILE *fp;
+			FileHandle_t fp;
 			cell_t *blk;
 			char buffer[255];
 
-			if ((fp = fopen(pMapList->path, "rt")) == NULL)
+			if ((fp = smcore.filesystem->Open(pMapList->path, "rt", "GAME")) == NULL)
 			{
 				return false;
 			}
@@ -532,7 +513,7 @@ private:
 			delete pMapList->pArray;
 			pMapList->pArray = new CellArray(64);
 
-			while (!feof(fp) && fgets(buffer, sizeof(buffer), fp) != NULL)
+			while (!smcore.filesystem->EndOfFile(fp) && smcore.filesystem->ReadLine(buffer, sizeof(buffer), fp) != NULL)
 			{
 				size_t len = strlen(buffer);
 				char *ptr = smcore.TrimWhitespace(buffer, len);
@@ -552,7 +533,7 @@ private:
 				}
 			}
 
-			fclose(fp);
+			smcore.filesystem->Close(fp);
 
 			pMapList->last_modified_time = last_time;
 			pMapList->serial = ++m_nSerialChange;

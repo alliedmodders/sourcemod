@@ -118,6 +118,26 @@ public:
 	{
 		filesystem->FindClose(handle);
 	}
+	FileHandle_t Open(const char *pFileName, const char *pOptions, const char *pathID = 0)
+	{
+		return filesystem->Open(pFileName, pOptions, pathID);
+	}
+	void Close(FileHandle_t file)
+	{
+		filesystem->Close(file);
+	}
+	char *ReadLine(char *pOutput, int maxChars, FileHandle_t file)
+	{
+		return filesystem->ReadLine(pOutput, maxChars, file);
+	}
+	bool EndOfFile(FileHandle_t file)
+	{
+		return filesystem->EndOfFile(file);
+	}
+	bool FileExists(const char *pFileName, const char *pPathID = 0)
+	{
+		return filesystem->FileExists(pFileName, pPathID);
+	}
 };
 
 static VFileSystem_Logic logic_filesystem;

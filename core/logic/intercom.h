@@ -51,7 +51,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 25)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 26)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -64,6 +64,7 @@ public:
 	virtual void ServerCommand(const char *cmd) = 0;
 };
 
+typedef void * FileHandle_t;
 typedef int FileFindHandle_t; 
 
 #if defined SM_LOGIC
@@ -76,6 +77,11 @@ public:
 	virtual const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle) = 0;
 	virtual const char *FindNext(FileFindHandle_t handle) = 0;
 	virtual void FindClose(FileFindHandle_t handle) = 0;
+	virtual FileHandle_t Open(const char *pFileName, const char *pOptions, const char *pathID = 0) = 0;
+	virtual void Close(FileHandle_t file) = 0;
+	virtual char *ReadLine(char *pOutput, int maxChars, FileHandle_t file) = 0;
+	virtual bool EndOfFile(FileHandle_t file) = 0;
+	virtual bool FileExists(const char *pFileName, const char *pPathID = 0) = 0;
 };
 
 namespace SourceMod
