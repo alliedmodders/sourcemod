@@ -303,9 +303,9 @@ native FilePosition(Handle:file);
  *
  * @param path			Path to the file.
  * @param use_valve_fs	If true, the Valve file system will be used instead.
- *						This can be used to check for the existance of files 
- *						inside GCFs or the game cache, rather than solely files 
- *						that are on disk.
+ *						This can be used to find files existing in any of
+ *						the GAME search paths, rather than solely files 
+ *						existing directly in the gamedir.
  * @return				True if the file exists, false otherwise.
  */
 native bool:FileExists(const String:path[], bool:use_valve_fs=false);
@@ -331,9 +331,13 @@ native bool:DirExists(const String:path[]);
  * Get the file size in bytes.
  *
  * @param path			Path to the file.
+ * @param use_valve_fs	If true, the Valve file system will be used instead.
+ *						This can be used to find files existing in any of
+ *						the GAME search paths, rather than solely files 
+ *						existing directly in the gamedir.
  * @return				File size in bytes, -1 if file not found.
  */
-native FileSize(const String:path[]);
+native FileSize(const String:path[], bool:use_valve_fs=false);
 
 /**
  * Flushes a file's buffered output; any buffered output

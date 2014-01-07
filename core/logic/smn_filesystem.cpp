@@ -426,6 +426,18 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 		return -1;
 	}
 
+	if (params[0] >= 2 && params[2] == 1)
+	{
+		if (smcore.filesystem->FileExists(name))
+		{
+			return smcore.filesystem->Size(name);
+		}
+		else
+		{
+			return -1;
+		}
+	}
+
 	char realpath[PLATFORM_MAX_PATH];
 	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 #ifdef PLATFORM_WINDOWS

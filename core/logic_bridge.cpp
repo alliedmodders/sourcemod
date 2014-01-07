@@ -138,6 +138,10 @@ public:
 	{
 		return filesystem->FileExists(pFileName, pPathID);
 	}
+	unsigned int Size(const char *pFileName, const char *pPathID = 0)
+	{
+		return filesystem->Size(pFileName, pPathID);
+	}
 };
 
 static VFileSystem_Logic logic_filesystem;
