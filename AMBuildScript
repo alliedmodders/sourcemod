@@ -119,6 +119,8 @@ class SMConfig(object):
         raise Exception('Could not find a path to MySQL!')
 
   def configure(self):
+    builder.AddConfigureFile('pushbuild.txt')
+
     cfg = builder.DetectCompilers()
     cxx = cfg.cxx
 
