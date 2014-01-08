@@ -63,7 +63,6 @@ It's so watery... and yet there's a smakc of ham to it!
 You gonna squeal before we cook ya?
 \n
 NOT TODAY; MAYBE TOMORROW.
-s
 m/w/f
 push 0xB1D
 glibc is bestc
