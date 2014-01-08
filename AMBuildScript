@@ -152,7 +152,7 @@ class SMConfig(object):
         cfg.cxxflags += ['-fvisibility-inlines-hidden']
         if have_clang or (have_gcc and cxx.minorVersion >= 6):
           cfg.cflags += ['-Wno-narrowing']
-        if (have_gcc and cxx.minorVersion >= 7) or (have_clang and cxx.majorVersion >= 4):
+        if (have_gcc and cxx.minorVersion >= 7) or (have_clang and cxx.majorVersion >= 3):
           cfg.cxxflags += ['-Wno-delete-non-virtual-dtor']
 
       cfg.linkflags += ['-m32']
