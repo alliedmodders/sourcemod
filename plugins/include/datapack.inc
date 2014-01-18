@@ -50,7 +50,7 @@ native Handle:CreateDataPack();
  * @noreturn
  * @error			Invalid handle.
  */
-native WritePackCell(Handle:pack, cell);
+native WritePackCell(Handle:pack, any:cell);
 
 /**
  * Packs a float into a data pack.
@@ -79,7 +79,7 @@ native WritePackString(Handle:pack, const String:str[]);
  * @return			Cell value.
  * @error			Invalid handle, or bounds error.
  */
-native ReadPackCell(Handle:pack);
+native any:ReadPackCell(Handle:pack);
 
 /**
  * Reads a float from a data pack.
