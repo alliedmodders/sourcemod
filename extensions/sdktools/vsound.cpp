@@ -338,6 +338,28 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 			}
 		case Pl_Changed:
 			{
+				/* Client validation */
+				for (int i = 0; i < size; i++)
+				{
+					int client = players[i];
+					IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
+
+					if (!pPlayer)
+					{
+						pFunc->GetParentContext()->ThrowNativeError("Client index %d is invalid", client);
+					} else if (!pPlayer->IsInGame()) {
+						pFunc->GetParentContext()->ThrowNativeError("Client %d is not connected", client);
+					} else {
+						continue;
+					}
+
+#if SOURCE_ENGINE >= SE_PORTAL2
+					RETURN_META_VALUE(MRES_IGNORED, -1 );
+#else
+					return;
+#endif
+				}
+
 				CellRecipientFilter crf;
 				crf.Initialize(players, size);
 #if SOURCE_ENGINE >= SE_PORTAL2
@@ -431,6 +453,28 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 			}
 		case Pl_Changed:
 			{
+				/* Client validation */
+				for (int i = 0; i < size; i++)
+				{
+					int client = players[i];
+					IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
+
+					if (!pPlayer)
+					{
+						pFunc->GetParentContext()->ThrowNativeError("Client index %d is invalid", client);
+					} else if (!pPlayer->IsInGame()) {
+						pFunc->GetParentContext()->ThrowNativeError("Client %d is not connected", client);
+					} else {
+						continue;
+					}
+
+#if SOURCE_ENGINE >= SE_PORTAL2
+					RETURN_META_VALUE(MRES_IGNORED, -1 );
+#else
+					return;
+#endif
+				}
+
 				CellRecipientFilter crf;
 				crf.Initialize(players, size);
 #if SOURCE_ENGINE >= SE_PORTAL2
