@@ -10,11 +10,13 @@ require 'helpers.pm';
 
 chdir('../../../OUTPUT');
 
-if ($^O eq "linux" || $^O eq "darwin") {
-	system("python3 build.py 2>&1");
-} else {
-	system("C:\\Python31\\python.exe build.py 2>&1");
+my $argn = $#ARGV + 1;
+if ($argn > 0) {
+	$ENV{CC} = $ARGV[0];
+	$ENV{CXX} = $ARGV[0];
 }
+
+system("ambuild --no-color 2>&1");
 
 if ($? != 0)
 {

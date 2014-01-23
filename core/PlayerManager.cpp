@@ -816,7 +816,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		}
 
 		ClientConsolePrint(pEntity,
-			"SourceMod %s, by AlliedModders LLC", SM_VERSION_STRING);
+			"SourceMod %s, by AlliedModders LLC", SOURCEMOD_VERSION);
 		ClientConsolePrint(pEntity,
 			"To see running plugins, type \"sm plugins\"");
 		ClientConsolePrint(pEntity,

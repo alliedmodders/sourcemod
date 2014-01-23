@@ -48,6 +48,12 @@
 #endif
 #endif
 
+#ifdef __linux__
+# include "config-sm-linux.h"
+#elif defined(__APPLE__)
+# include "config-sm-mac.h"
+#endif
+
 #if defined(macintosh) && defined(__MRC__)
 #  include "config-mac.h"
 #endif

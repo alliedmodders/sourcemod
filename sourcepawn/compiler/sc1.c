@@ -267,7 +267,9 @@ int pc_compile(int argc, char *argv[])
       tname=NULL;
       sname=NULL;
     #else
-      tname=tempnam(NULL,"pawn");
+      char buffer[] = P_tmpdir "/pawn.XXXXXX";
+      close(mkstemp(buffer));
+      tname=buffer;
     #endif
     ftmp=(FILE*)pc_createsrc(tname);
     for (fidx=0; (sname=get_sourcefile(fidx))!=NULL; fidx++) {
@@ -851,11 +853,11 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
   int arg,i,isoption;
 
   for (arg=1; arg<argc; arg++) {
-    #if DIRSEP_CHAR=='/'
-      isoption= argv[arg][0]=='-';
-    #else
-      isoption= argv[arg][0]=='/' || argv[arg][0]=='-';
-    #endif
+#if DIRSEP_CHAR=='/'
+    isoption= argv[arg][0]=='-';
+#else
+    isoption= argv[arg][0]=='/' || argv[arg][0]=='-';
+#endif
     if (isoption) {
       ptr=&argv[arg][1];
       switch (*ptr) {
@@ -925,6 +927,9 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
           hwndFinish=(HWND)0;
         break;
 #endif
+      case 'h':
+        sc_showincludes = 1;
+        break;
       case 'i':
         strlcpy(str,option_value(ptr),sizeof str);  /* set name of include directory */
         i=strlen(str);
@@ -1233,7 +1238,7 @@ static void setconfig(char *root)
 
 static void setcaption(void)
 {
-  pc_printf("SourcePawn Compiler " SM_VERSION_STRING "\n");
+  pc_printf("SourcePawn Compiler %s\n", SOURCEMOD_VERSION);
   pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2008 AlliedModders, LLC\n\n");
 }
 
@@ -1263,6 +1268,7 @@ static void about(void)
 #if defined	__WIN32__ || defined _WIN32 || defined _Windows
     pc_printf("         -H<hwnd> window handle to send a notification message on finish\n");
 #endif
+    pc_printf("         -h       show included file paths\n");
     pc_printf("         -i<name> path for include files\n");
     pc_printf("         -l       create list file (preprocess only)\n");
     pc_printf("         -o<name> set base name of (P-code) output file\n");

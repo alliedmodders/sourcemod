@@ -1,53 +1,65 @@
-# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+# vim: set ts=8 sts=2 sw=2 tw=99 et ft=python: 
 import os
-import os.path
-import ambuild.osutil as osutil
-import ambuild.command as command
 
 files = [
-	'adminhelp.sp',
-	'antiflood.sp',
-	'basecomm.sp',
-	'clientprefs.sp',
-	'nextmap.sp',
-	'reservedslots.sp',
-	'adminmenu.sp',
-	'basebans.sp',
-	'basetriggers.sp',
-	'funcommands.sp',
-	'nominations.sp',
-	'rockthevote.sp',
-	'admin-sql-prefetch.sp',
-	'basechat.sp',
-	'basevotes.sp',
-	'funvotes.sp',
-	'playercommands.sp',
-	'sounds.sp',
-	'admin-sql-threaded.sp',
-	'basecommands.sp',
-	'mapchooser.sp',
-	'randomcycle.sp',
-	'sql-admin-manager.sp'
-	]
+  'adminhelp.sp',
+  'antiflood.sp',
+  'basecomm.sp',
+  'clientprefs.sp',
+  'nextmap.sp',
+  'reservedslots.sp',
+  'adminmenu.sp',
+  'basebans.sp',
+  'basetriggers.sp',
+  'funcommands.sp',
+  'nominations.sp',
+  'rockthevote.sp',
+  'admin-sql-prefetch.sp',
+  'basechat.sp',
+  'basevotes.sp',
+  'funvotes.sp',
+  'playercommands.sp',
+  'sounds.sp',
+  'admin-sql-threaded.sp',
+  'basecommands.sp',
+  'mapchooser.sp',
+  'randomcycle.sp',
+  'sql-admin-manager.sp'
+]
 
-plugins = AMBuild.AddJob('plugins')
+spcomp_argv = [
+  os.path.join(builder.buildPath, SM.spcomp.binary.path),
+  'SM_GENERATED_BUILD=',
+  '-i' + os.path.relpath(os.path.join(builder.buildPath, 'includes'),
+                         os.path.join(builder.buildPath, builder.buildFolder)),
+  '-i' + os.path.relpath(os.path.join(builder.sourcePath, 'plugins', 'include'),
+                         os.path.join(builder.buildPath, builder.buildFolder)),
+  '-h',
+]
 
-spcomp = os.path.join(AMBuild.outputFolder, 'spcomp', 'spcomp')
-includes = os.path.relpath(os.path.join(AMBuild.sourceFolder, 'plugins', 'include'),
-                           os.path.join(AMBuild.outputFolder, 'plugins'))
+def build_plugin(script_path, smx_file):
+  inputs = [
+    SM.spcomp.binary,
+    script_path,
+  ]
+  outputs = [
+    smx_file
+  ]
+  argv = spcomp_argv + [script_path]
+  cmd_entry, (smx_entry,) = builder.AddCommand(
+    inputs = inputs,
+    argv = argv,
+    outputs = outputs,
+    dep_type = 'msvc',
+    weak_inputs = SM.generated_headers
+  )
+  SM.smx_files[smx_file] = smx_entry
 
-versioninc = os.path.relpath(os.path.join(AMBuild.outputFolder, 'includes'),
-                             os.path.join(AMBuild.outputFolder, 'plugins'))
+for script_file in files:
+  script_path = os.path.join(builder.currentSourcePath, script_file)
+  smx_file = os.path.splitext(script_file)[0] + '.smx'
+  build_plugin(script_path, smx_file)
 
-#This one has to be special
-sp = os.path.join(AMBuild.sourceFolder, 'plugins', 'admin-flatfile', 'admin-flatfile.sp')
-args = [spcomp, 'SM_GENERATED_BUILD=', '-i' + versioninc, '-i' + includes, sp]
-plugins.AddCommand(command.DirectCommand(args))
-
-#Do the normal ones
-for file in files:
-	sp = os.path.join(AMBuild.sourceFolder, 'plugins', file)
-	args = [spcomp, 'SM_GENERATED_BUILD=', '-i' + versioninc, '-i' + includes, sp]
-	plugins.AddCommand(command.DirectCommand(args))
-
-
+# This one has to be special.
+build_plugin(os.path.join(builder.currentSourcePath, 'admin-flatfile', 'admin-flatfile.sp'),
+             'admin-flatfile.smx')

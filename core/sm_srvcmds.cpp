@@ -39,7 +39,7 @@
 
 RootConsoleMenu g_RootMenu;
 
-ConVar sourcemod_version("sourcemod_version", SM_VERSION_STRING, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY, "SourceMod Version");
+ConVar sourcemod_version("sourcemod_version", SOURCEMOD_VERSION, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY, "SourceMod Version");
 
 RootConsoleMenu::RootConsoleMenu()
 {
@@ -339,11 +339,11 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &
 	else if (strcmp(cmdname, "version") == 0)
 	{
 		ConsolePrint(" SourceMod Version Information:");
-		ConsolePrint("    SourceMod Version: %s", SM_VERSION_STRING);
+		ConsolePrint("    SourceMod Version: %s", SOURCEMOD_VERSION);
 		ConsolePrint("    SourcePawn Engine: %s (build %s)", g_pSourcePawn2->GetEngineName(), g_pSourcePawn2->GetVersionString());
 		ConsolePrint("    SourcePawn API: v1 = %d, v2 = %d", g_pSourcePawn->GetEngineAPIVersion(), g_pSourcePawn2->GetAPIVersion());
 		ConsolePrint("    Compiled on: %s %s", __DATE__, __TIME__);
-		ConsolePrint("    Build ID: %s", SM_BUILD_UNIQUEID);
+		ConsolePrint("    Build ID: %s", SOURCEMOD_BUILD_ID);
 		ConsolePrint("    http://www.sourcemod.net/");
 	}
 }
