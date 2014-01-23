@@ -125,8 +125,8 @@ native SortCustom1D(array[], array_size, SortFunc1D:sortfunc, Handle:hndl=INVALI
  */
 funcenum SortFunc2D
 {
-	public(array[], array[], const array[][], Handle:hndl),
-	public(String:array[], String:array[], const String:array[][], Handle:hndl),
+	public(elem1[], elem2[], const array[][], Handle:hndl),
+	public(String:elem1[], String:elem2[], const String:array[][], Handle:hndl),
 };
 
 /** 
