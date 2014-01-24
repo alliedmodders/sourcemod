@@ -26,7 +26,6 @@ PossibleSDKs = {
   'css':  SDK('HL2SDKCSS', '2.css', '6', 'CSS', WinLinuxMac, 'css'),
   'hl2dm':  SDK('HL2SDKHL2DM', '2.hl2dm', '7', 'HL2DM', WinLinuxMac, 'hl2dm'),
   'dods': SDK('HL2SDKDODS', '2.dods', '8', 'DODS', WinLinuxMac, 'dods'),
-#  'sdk2013': SDK('HL2SDK2013', '2.sdk2013', '9', 'SDK2013', WinLinuxMac, '2013'),
   'tf2':  SDK('HL2SDKTF2', '2.tf2', '10', 'TF2', WinLinuxMac, 'tf2'),
   'l4d':  SDK('HL2SDKL4D', '2.l4d', '11', 'LEFT4DEAD', WinLinuxMac, 'l4d'),
   'nd': SDK('HL2SDKND', '2.nd', '12', 'NUCLEARDAWN', WinLinuxMac, 'nd'),
@@ -36,10 +35,13 @@ PossibleSDKs = {
   'bgt':  SDK('HL2SDK-BGT', '2.bgt', '4', 'BLOODYGOODTIME', WinOnly, 'bgt'),
   'eye':  SDK('HL2SDK-EYE', '2.eye', '5', 'EYE', WinOnly, 'eye'),
   'csgo': SDK('HL2SDKCSGO', '2.csgo', '18', 'CSGO', WinLinuxMac, 'csgo'),
-  'dota': SDK('HL2SDKDOTA', '2.dota', '19', 'DOTA', WinOnly, 'dota'),
   'portal2':  SDK('HL2SDKPORTAL2', '2.portal2', '15', 'PORTAL2', [], 'portal2'),
   'blade':  SDK('HL2SDKBLADE', '2.blade', '16', 'BLADE', WinLinux, 'blade'),
+
+#  These engines are only supported on SourceMod 1.6.
+#  'dota': SDK('HL2SDKDOTA', '2.dota', '19', 'DOTA', WinOnly, 'dota'),
 #  'insurgency':  SDK('HL2SDKINSURGENCY', '2.insurgency', '17', 'INSURGENCY', WinLinuxMac, 'insurgency'),
+#  'sdk2013': SDK('HL2SDK2013', '2.sdk2013', '9', 'SDK2013', WinLinuxMac, '2013'),
 }
 
 def ResolveEnvPath(env, folder):
