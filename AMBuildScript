@@ -36,9 +36,9 @@ PossibleSDKs = {
   'eye':  SDK('HL2SDK-EYE', '2.eye', '5', 'EYE', WinOnly, 'eye'),
   'csgo': SDK('HL2SDKCSGO', '2.csgo', '18', 'CSGO', WinLinuxMac, 'csgo'),
   'portal2':  SDK('HL2SDKPORTAL2', '2.portal2', '15', 'PORTAL2', [], 'portal2'),
-  'blade':  SDK('HL2SDKBLADE', '2.blade', '16', 'BLADE', WinLinux, 'blade'),
 
 #  These engines are only supported on SourceMod 1.6.
+#  'blade':  SDK('HL2SDKBLADE', '2.blade', '16', 'BLADE', WinLinux, 'blade'),
 #  'dota': SDK('HL2SDKDOTA', '2.dota', '19', 'DOTA', WinOnly, 'dota'),
 #  'insurgency':  SDK('HL2SDKINSURGENCY', '2.insurgency', '17', 'INSURGENCY', WinLinuxMac, 'insurgency'),
 #  'sdk2013': SDK('HL2SDK2013', '2.sdk2013', '9', 'SDK2013', WinLinuxMac, '2013'),
