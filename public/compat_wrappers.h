@@ -162,7 +162,7 @@
 
 	inline int GetPlayerUserId(int client)
 	{
-		engine->GetPlayerUserId(client - 1);
+		return engine->GetPlayerUserId(client - 1);
 	}
 #else
 	inline int GetPlayerUserId(edict_t *pEdict)
