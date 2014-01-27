@@ -1160,7 +1160,7 @@ bool SDKHooks::Hook_ReloadPost()
 
 		callback = g_HookList[i].callback;
 		callback->PushCell(entity);
-		callback->PushCell(META_RESULT_OVERRIDE_RET(bool) ? 1 : 0);
+		callback->PushCell(META_RESULT_ORIG_RET(bool) ? 1 : 0);
 		callback->Execute(NULL);
 	}
 
