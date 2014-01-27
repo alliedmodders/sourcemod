@@ -1109,6 +1109,7 @@ int SDKHooks::Hook_OnTakeDamagePost(CTakeDamageInfoHack &info)
 void SDKHooks::Hook_PreThink()
 {
 	Call(META_IFACEPTR(CBaseEntity), SDKHook_PreThink);
+	RETURN_META(MRES_IGNORED);
 }
 
 void SDKHooks::Hook_PreThinkPost()
@@ -1119,6 +1120,7 @@ void SDKHooks::Hook_PreThinkPost()
 void SDKHooks::Hook_PostThink()
 {
 	Call(META_IFACEPTR(CBaseEntity), SDKHook_PostThink);
+	RETURN_META(MRES_IGNORED);
 }
 
 void SDKHooks::Hook_PostThinkPost()
@@ -1259,6 +1261,7 @@ void SDKHooks::Hook_StartTouchPost(CBaseEntity *pOther)
 void SDKHooks::Hook_Think()
 {
 	Call(META_IFACEPTR(CBaseEntity), SDKHook_Think);
+	RETURN_META(MRES_IGNORED);
 }
 
 void SDKHooks::Hook_ThinkPost()
@@ -1455,6 +1458,7 @@ void SDKHooks::OnEntityDeleted(CBaseEntity *pEntity)
 void SDKHooks::Hook_VPhysicsUpdate(IPhysicsObject *pPhysics)
 {
 	Call(META_IFACEPTR(CBaseEntity), SDKHook_VPhysicsUpdate);
+	RETURN_META(MRES_IGNORED);
 }
 
 void SDKHooks::Hook_VPhysicsUpdatePost(IPhysicsObject *pPhysics)
