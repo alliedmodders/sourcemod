@@ -143,6 +143,7 @@ enum {
 	TF_CUSTOM_MERASMUS_ZAP,
 	TF_CUSTOM_MERASMUS_DECAPITATION,
 	TF_CUSTOM_CANNONBALL_PUSH,
+	TF_CUSTOM_TAUNT_ALLCLASS_GUITAR_RIFF,
 };
 
 // Weapon codes as used in some events, such as player_death

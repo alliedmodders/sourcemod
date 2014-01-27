@@ -107,18 +107,18 @@ enum TFCond
 	TFCond_RegenBuffed,
 	TFCond_MarkedForDeath,
 	TFCond_NoHealingDamageBuff,
-	TFCond_SpeedBuffAlly,
+	TFCond_SpeedBuffAlly,		//32
 	TFCond_HalloweenCritCandy,
 	TFCond_CritCanteen,
-	
-	TFCond_CritHype = 36,
+	TFCond_CritDemoCharge,
+	TFCond_CritHype,
 	TFCond_CritOnFirstBlood,
 	TFCond_CritOnWin,
 	TFCond_CritOnFlagCapture,
 	TFCond_CritOnKill,
 	TFCond_RestrictToMelee,
-	
-	TFCond_Reprogrammed = 43,
+	TFCond_DefenseBuffNoCritBlock,
+	TFCond_Reprogrammed,
 	TFCond_CritMmmph,
 	TFCond_DefenseBuffMmmph,
 	TFCond_FocusBuff,
@@ -140,16 +140,19 @@ enum TFCond
 	TFCond_SmallBlastResist,
 	TFCond_SmallFireResist,
 	TFCond_Stealthed, // 64
-
-	TFCond_StealthedUserBuffFade = 66,
-
-	TFCond_MVMBotRadiowave = 71,
+	TFCond_MedigunDebuff,
+	TFCond_StealthedUserBuffFade,
+	TFCond_BulletImmune,
+	TFCond_BlastImmune,
+	TFCond_FireImmune,
+	TFCond_PreventDeath,
+	TFCond_MVMBotRadiowave,
 	TFCond_HalloweenSpeedBoost,
 	TFCond_HalloweenQuickHeal,
 	TFCond_HalloweenGiant,
-	TFCond_HalloweenTiny, // 75
-
-	TFCond_HalloweenGhostMode = 77,
+	TFCond_HalloweenTiny,
+	TFCond_HalloweenInHell,
+	TFCond_HalloweenGhostMode,
 };
 
 enum TFHoliday
