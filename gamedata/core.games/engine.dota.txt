@@ -24,12 +24,12 @@
 			/* Offset into LevelShutdown */
 			"gEntList"
 			{
-				"windows"	"8"
+				"windows"	"21"
 			}
 
 			"EntInfo"
 			{
-				"windows"	"4"
+				"windows"	"0"
 				"linux"		"4"
 				"mac"		"4"
 			}
@@ -41,7 +41,7 @@
 			"LevelShutdown"
 			{
 				"library"	"server"
-				"windows"	"\x8B\x3D\x2A\x2A\x2A\x2A\xC7\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89"
+				"windows"	"\x83\x2A\xFF\x74\x03\x0F\x2A\x2A\xC1\x2A\x04\x8B\x2A\x2A\x2A\x2A\x2A\xEB\x06\x8B"
 			}
 			
 			"gEntList"

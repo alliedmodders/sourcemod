@@ -35,7 +35,7 @@
 			//Offset into CBaseTempEntity constructor
 			"s_pTempEntities"
 			{
-				"windows"	"1"
+				"windows"	"7"
 			}
 			"GetTEName"
 			{
@@ -56,7 +56,7 @@
 			"CBaseTempEntity"
 			{
 				"library"	"server"
-				"windows"	"\xA1\x2A\x2A\x2A\x2A\xF3\x0F\x10\x15\x2A\x2A\x2A\x2A\xF3"
+				"windows"	"\xFF\x2A\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8D"
 			}
 		}
 	}
@@ -91,7 +91,7 @@
 			"CreateGameRulesObject"
 			{
 				"library"	"server"
-				"windows"	"\x51\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x08\x8B\x01\x8B\x10\x6A\x01\xFF\xD2\xC7\x05\x2A\x2A\x2A\x2A\x00\x00\x00\x00\xE8"
+				"windows"	"\x51\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x06\x8B\x01\x6A\x01\xFF\x10\xC7\x05\x2A\x2A\x2A\x2A\x00\x00\x00\x00\xE8"
 			}
 			"g_pGameRules"
 			{
@@ -113,7 +113,7 @@
 			 * the expected code. A pointer to sv (IServer interface) is used
 			 * here.
 			 */
-			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x56\x50\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x75"
+			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x56\xFF\x75\x0C\xB9\x2A\x2A\x2A\x2A\xE8"
 		}
 		
 		"Offsets"
@@ -121,7 +121,7 @@
 			/* Offset into IVEngineServer::CreateFakeClient */
 			"sv"
 			{
-				"windows"	"9"
+				"windows"	"8"
 			}
 		}
 	}
@@ -145,7 +145,7 @@
 			{
 				// EntityFactoryDictionary gets inlined on Windows in Dota 2. The pointer to the static factory becomes a global.
 				"library"	"server"
-				"windows"	"\x8B\x15\x2A\x2A\x2A\x2A\x8B\x2A\x2A\x57\xB9\x2A\x2A\x2A\x2A\xFF\xD0\xC7"
+				"windows"	"\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\xC8\xC7"
 				//"linux"		"@_Z23EntityFactoryDictionaryv"
 				//"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
@@ -155,7 +155,7 @@
 		{
 			"EntityFactoryOffset"
 			{
-				"windows" 	"2"
+				"windows" 	"4"
 			}
 		}
 	}
@@ -168,7 +168,7 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x8B\x45\x2A\x53\x8B\x58\x2A\x56\x57\xC7"
+				"windows"	"\x55\x8B\xEC\x83\xE4\xC0\x81\xEC\x2A\x2A\x2A\x2A\x8B\xC1\x53"
 			}
 		}
 	}
