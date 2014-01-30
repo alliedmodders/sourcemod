@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	18
+#define SMINTERFACE_PLAYERMANAGER_VERSION	19
 
 struct edict_t;
 class IPlayerInfo;
@@ -253,6 +253,13 @@ namespace SourceMod
 		 * @return			Client's index.
 		 */
 		virtual int GetIndex() const =0;
+		
+		/**
+		 * @brief Prints a string to the client console.
+		 *
+		 * @param pMsg		String to print.
+		 */
+		virtual void PrintToConsole(const char *pMsg) =0;
 	};
 
 	/**

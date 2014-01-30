@@ -884,11 +884,7 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 
 	if (index != 0)
 	{
-#if SOURCE_ENGINE == SE_DOTA
-		engine->ClientPrintf(pPlayer->GetIndex(), buffer);
-#else
-		engine->ClientPrintf(pPlayer->GetEdict(), buffer);
-#endif
+		pPlayer->PrintToConsole(buffer);
 	} else {
 		META_CONPRINT(buffer);
 	}
@@ -1200,11 +1196,7 @@ static cell_t ReplyToCommand(IPluginContext *pContext, const cell_t *params)
 	{
 		buffer[len++] = '\n';
 		buffer[len] = '\0';
-#if SOURCE_ENGINE == SE_DOTA
-		engine->ClientPrintf(pPlayer->GetIndex(), buffer);
-#else
-		engine->ClientPrintf(pPlayer->GetEdict(), buffer);
-#endif
+		pPlayer->PrintToConsole(buffer);
 	} else if (replyto == SM_REPLY_CHAT) {
 		if (len >= 191)
 		{

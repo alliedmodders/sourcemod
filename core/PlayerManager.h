@@ -91,6 +91,7 @@ public:
 	void NotifyPostAdminChecks();
 	unsigned int GetSerial();
 	int GetIndex() const;
+	void PrintToConsole(const char *pMsg);
 public:
 	void DoBasicAdminChecks();
 	void MarkAsBeingKicked();

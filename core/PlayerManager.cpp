@@ -843,11 +843,13 @@ void ClientConsolePrint(edict_t *e, const char *fmt, ...)
 		buffer[len] = '\0';
 	}
 
-#if SOURCE_ENGINE == SE_DOTA
-	engine->ClientPrintf(CEntityIndex(IndexOfEdict(e)), buffer);
-#else
-	engine->ClientPrintf(e, buffer);
-#endif
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(IndexOfEdict(e));
+	if (!pPlayer)
+	{
+		return;
+	}
+	
+	pPlayer->PrintToConsole(buffer);
 }
 
 void ListExtensionsToClient(CPlayer *player, const CCommand &args)
@@ -2322,4 +2324,24 @@ int CPlayer::GetLifeState()
 unsigned int CPlayer::GetSerial()
 {
 	return m_Serial.value;
+}
+
+void CPlayer::PrintToConsole(const char *pMsg)
+{
+	if (m_IsConnected == false || m_bFakeClient == true)
+	{
+		return;
+	}
+
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
+	if (pNetChan == NULL)
+	{
+		return;
+	}
+
+#if SOURCE_ENGINE == SE_DOTA
+	engine->ClientPrintf(m_iIndex, pMsg);
+#else
+	engine->ClientPrintf(m_pEdict, pMsg);
+#endif
 }

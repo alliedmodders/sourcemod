@@ -413,10 +413,12 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 		return true;
 	}
 
-#if SOURCE_ENGINE != SE_DOTA
-	edict_t *pEdict = PEntityOfEntIndex(client);
-#endif
-	
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return false;
+	}
+
 	/* If we got here, the command failed... */
 	char buffer[128];
 	if (!logicore.CoreTranslate(buffer, sizeof(buffer), "%T", 2, NULL, "No Access", &client))
@@ -429,11 +431,7 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 	{
 		char fullbuffer[192];
 		UTIL_Format(fullbuffer, sizeof(fullbuffer), "[SM] %s.\n", buffer);
-#if SOURCE_ENGINE == SE_DOTA
-		engine->ClientPrintf(client, fullbuffer);
-#else
-		engine->ClientPrintf(pEdict, fullbuffer);
-#endif
+		pPlayer->PrintToConsole(fullbuffer);
 	}
 	else if (replyto == SM_REPLY_CHAT)
 	{

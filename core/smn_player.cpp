@@ -1118,11 +1118,7 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 			}
 
 			UTIL_Format(message, sizeof(message), "%s%s\n", tag, buffer);
-#if SOURCE_ENGINE == SE_DOTA
-			engine->ClientPrintf(pPlayer->GetIndex(), message);
-#else
-			engine->ClientPrintf(pPlayer->GetEdict(), message);
-#endif
+			pPlayer->PrintToConsole(message);
 			display_in_chat = true;
 		}
 	}
@@ -1248,20 +1244,8 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 		 * simply gets added to the console, so we don't want it to print 
 		 * twice.
 		 */
-		if (replyto == SM_REPLY_CONSOLE)
-		{
-#if 0
-			UTIL_Format(message, sizeof(message), "%s%s\n", tag, buffer);
-			engine->ClientPrintf(pPlayer->GetEdict(), message);
-#endif
-			UTIL_Format(message, sizeof(message), "%s%s", tag, buffer);
-			g_HL2.TextMsg(client, HUD_PRINTTALK, message);
-		}
-		else
-		{
-			UTIL_Format(message, sizeof(message), "%s%s", tag, buffer);
-			g_HL2.TextMsg(client, HUD_PRINTTALK, message);
-		}
+		UTIL_Format(message, sizeof(message), "%s%s", tag, buffer);
+		g_HL2.TextMsg(client, HUD_PRINTTALK, message);
 	}
 	else
 	{
