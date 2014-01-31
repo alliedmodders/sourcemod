@@ -99,7 +99,6 @@ new bool:g_ChangeMapAtRoundEnd;
 new bool:g_ChangeMapInProgress;
 new g_mapFileSerial = -1;
 
-new g_NominateCount = 0;
 new MapChange:g_ChangeTime;
 
 new Handle:g_NominationsResetForward = INVALID_HANDLE;
@@ -229,7 +228,6 @@ public OnConfigsExecuted()
 	
 	g_MapVoteCompleted = false;
 	
-	g_NominateCount = 0;
 	ClearArray(g_NominateList);
 	ClearArray(g_NominateOwners);
 	
@@ -287,7 +285,6 @@ public OnClientDisconnect(client)
 	
 	RemoveFromArray(g_NominateOwners, index);
 	RemoveFromArray(g_NominateList, index);
-	g_NominateCount--;
 }
 
 public Action:Command_SetNextmap(client, args)
@@ -1003,14 +1000,13 @@ NominateResult:InternalNominateMap(String:map[], bool:force, owner)
 	}
 	
 	/* Too many nominated maps. */
-	if (g_NominateCount >= GetConVarInt(g_Cvar_IncludeMaps) && !force)
+	if (GetArraySize(g_NominateList) >= GetConVarInt(g_Cvar_IncludeMaps) && !force)
 	{
 		return Nominate_VoteFull;
 	}
 	
 	PushArrayString(g_NominateList, map);
 	PushArrayCell(g_NominateOwners, owner);
-	g_NominateCount++;
 	
 	while (GetArraySize(g_NominateList) > GetConVarInt(g_Cvar_IncludeMaps))
 	{
@@ -1063,7 +1059,6 @@ bool:InternalRemoveNominationByMap(String:map[])
 
 			RemoveFromArray(g_NominateList, i);
 			RemoveFromArray(g_NominateOwners, i);
-			g_NominateCount--;
 
 			return true;
 		}
@@ -1105,7 +1100,6 @@ bool:InternalRemoveNominationByOwner(owner)
 
 		RemoveFromArray(g_NominateList, index);
 		RemoveFromArray(g_NominateOwners, index);
-		g_NominateCount--;
 
 		return true;
 	}
