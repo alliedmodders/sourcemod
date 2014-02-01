@@ -142,7 +142,6 @@ class SMConfig(object):
         '-Werror',
         '-Wno-uninitialized',
         '-Wno-unused',
-        '-Wno-logical-op-parentheses',
         '-Wno-switch',
         '-msse',
         '-m32',
@@ -157,6 +156,11 @@ class SMConfig(object):
           cfg.cflags += ['-Wno-narrowing']
         if (have_gcc and cxx.minorVersion >= 7) or (have_clang and cxx.majorVersion >= 3):
           cfg.cxxflags += ['-Wno-delete-non-virtual-dtor']
+
+      if have_gcc:
+        cfg.cflags += ['-Wno-parentheses']
+      elif have_clang:
+        cfg.cflags += ['-Wno-logical-op-parentheses']
 
       cfg.linkflags += ['-m32']
       cfg.cxxflags += [
