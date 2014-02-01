@@ -267,7 +267,7 @@ int pc_compile(int argc, char *argv[])
       tname=NULL;
       sname=NULL;
     #else
-      char buffer[] = P_tmpdir "/pawn.XXXXXX";
+      char *buffer = strdup(P_tmpdir "/pawn.XXXXXX");
       close(mkstemp(buffer));
       tname=buffer;
     #endif
