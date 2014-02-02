@@ -51,6 +51,13 @@ for cxx_task in SM.extensions:
   builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])
 builder.AddCopy(SM.spcomp.binary, folder_map['addons/sourcemod/scripting'])
 
+# Copy debugging files.
+if builder.options.packdebug and builder.target_platform is not 'mac':
+  for cxx_task in SM.binaries:
+    builder.AddCopy(cxx_task.debug, folder_map['addons/sourcemod/bin'])
+  for cxx_task in SM.extensions:
+    builder.AddCopy(cxx_task.debug, folder_map['addons/sourcemod/extensions'])
+
 # Copy version_auto.inc.
 for header in SM.generated_headers:
   if 'version_auto.inc' in header.path:
