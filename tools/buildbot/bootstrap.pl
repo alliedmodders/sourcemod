@@ -26,7 +26,7 @@ if (!(-f 'OUTPUT/.ambuild2/graph') || !(-f 'OUTPUT/.ambuild2/vars')) {
 	my ($result, $argn);
 	$argn = $#ARGV + 1;
 	print "Attempting to reconfigure...\n";
-	my $conf_args = '--enable-optimize --breakpad-dump';
+	my $conf_args = '--enable-optimize --breakpad-dump --no-color';
 	if ($argn > 0 && $^O !~ /MSWin/) {
 		$result = `CC=$ARGV[0] CXX=$ARGV[0] python ../build/configure.py $conf_args`;
 	} else {
