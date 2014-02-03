@@ -237,57 +237,57 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"435"
-				"linux"		"436"
-				"mac"		"436"
+				"windows"	"436"
+				"linux"		"437"
+				"mac"		"437"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"285"
-				"linux"		"286"
-				"mac"		"286"
+				"windows"	"286"
+				"linux"		"287"
+				"mac"		"287"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"283"
-				"linux"		"284"
-				"mac"		"284"
+				"windows"	"284"
+				"linux"		"285"
+				"mac"		"285"
 			}
 			"Ignite"
 			{
-				"windows"	"219"
-				"linux"		"220"
-				"mac"		"220"
+				"windows"	"220"
+				"linux"		"221"
+				"mac"		"221"
 			}
 			"Extinguish"
 			{
-				"windows"	"222"
-				"linux"		"223"
-				"mac"		"223"
+				"windows"	"223"
+				"linux"		"224"
+				"mac"		"224"
 			}
 			"Teleport"
 			{
-				"windows"	"112"
-				"linux"		"113"
-				"mac"		"113"
+				"windows"	"113"
+				"linux"		"114"
+				"mac"		"114"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"483"
-				"linux"		"483"
-				"mac"		"483"
+				"windows"	"484"
+				"linux"		"484"
+				"mac"		"484"
 			}
 			"GetVelocity"
 			{
-				"windows"	"137"
-				"linux"		"138"
-				"mac"		"138"
+				"windows"	"138"
+				"linux"		"139"
+				"mac"		"139"
 			}
 			"EyeAngles"
 			{
-				"windows"	"128"
-				"linux"		"129"
-				"mac"		"129"
+				"windows"	"129"
+				"linux"		"130"
+				"mac"		"130"
 			}
 			"AcceptInput"
 			{
@@ -303,9 +303,9 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"276"
-				"linux"		"277"
-				"mac"		"277"
+				"windows"	"277"
+				"linux"		"278"
+				"mac"		"278"
 			}
 			"Activate"
 			{
@@ -315,9 +315,9 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"454"
-				"linux"		"455"
-				"mac"		"455"
+				"windows"	"455"
+				"linux"		"456"
+				"mac"		"456"
 			}
 		}
 	}
