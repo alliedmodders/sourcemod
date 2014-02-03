@@ -22,24 +22,24 @@ my $reconf = 0;
 if (!(-f 'OUTPUT/.ambuild2/graph') || !(-f 'OUTPUT/.ambuild2/vars')) {
 	rmtree('OUTPUT');
 	mkdir('OUTPUT') or die("Failed to create output folder: $!\n");
-	chdir('OUTPUT');
-	my ($result, $argn);
-	$argn = $#ARGV + 1;
-	print "Attempting to reconfigure...\n";
-	my $conf_args = '--enable-optimize --breakpad-dump --no-color';
-	if ($argn > 0 && $^O !~ /MSWin/) {
-		$result = `CC=$ARGV[0] CXX=$ARGV[0] python ../build/configure.py $conf_args`;
+}
+chdir('OUTPUT');
+my ($result, $argn);
+$argn = $#ARGV + 1;
+print "Attempting to reconfigure...\n";
+my $conf_args = '--enable-optimize --breakpad-dump --no-color';
+if ($argn > 0 && $^O !~ /MSWin/) {
+	$result = `CC=$ARGV[0] CXX=$ARGV[0] python ../build/configure.py $conf_args`;
+} else {
+	if ($^O =~ /MSWin/) {
+		$result = `C:\\Python27\\Python.exe ..\\build\\configure.py $conf_args`;
 	} else {
-		if ($^O =~ /MSWin/) {
-			$result = `C:\\Python27\\Python.exe ..\\build\\configure.py $conf_args`;
-		} else {
-			$result = `CC=clang CXX=clang python ../build/configure.py $conf_args`;
-		}
+		$result = `CC=clang CXX=clang python ../build/configure.py $conf_args`;
 	}
-	print "$result\n";
-	if ($? != 0) {
-		die("Could not configure: $!\n");
-	}
+}
+print "$result\n";
+if ($? != 0) {
+	die("Could not configure: $!\n");
 }
 
 sub IsNewer
