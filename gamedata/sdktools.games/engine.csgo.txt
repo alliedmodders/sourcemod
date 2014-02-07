@@ -28,10 +28,10 @@
 	{
 		"Offsets"
 		{
-			/* Offset into CBaseTempEntity constructor */
+			/* Offset into CBaseTempEntity signature address */
 			"s_pTempEntities"
 			{
-				"windows"	"19"
+				"windows"	"4"
 			}
 			"GetTEName"
 			{
@@ -58,7 +58,7 @@
 			"CBaseTempEntity"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\xC1\x8B\x4D\x08\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x2A\x8B"
+				"windows"	"\x89\x41\x04\xA1\x2A\x2A\x2A\x2A\x89\x41\x08\x89\x0D\x2A\x2A\x2A\x2A\xC7"
 			}
 			"s_pTempEntities"
 			{
@@ -78,7 +78,7 @@
 			"FindEntityByClassname"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x08\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x83\xF8\xFF\x75\x2A\xB8\xFF\x1F\x00\x00\x8D\x04\x40\x8B\x74\xC6\x2A\xEB"
+				// Fallback to IServerTools method instead on Windows, lest we add custom logic since it's no longer a thiscall on Windows in CS:GO
 				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
@@ -115,7 +115,7 @@
 			"CreateGameRulesObject"
 			{
 				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\x6A\x01\xFF\xD2"
+				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x6A\x01\xFF\x50"
 			}
 			"g_pGameRules"
 			{
@@ -139,7 +139,7 @@
 			 * the expected code. A pointer to sv (IServer interface) is used
 			 * here.
 			 */
-			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x50\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x75"
+			"CreateFakeClient_Windows"	"\x55\x8B\xEC\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x85"
 		}
 		
 		"Offsets"
@@ -147,7 +147,7 @@
 			/* Offset into IVEngineServer::CreateFakeClient */
 			"sv"
 			{
-				"windows"	"8"
+				"windows"	"7"
 			}
 		}
 		
@@ -171,9 +171,22 @@
 			"EntityFactory"
 			{
 				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
 				"linux"		"@_Z23EntityFactoryDictionaryv"
 				"mac"		"@_Z23EntityFactoryDictionaryv"
+			}
+			
+			"EntityFactoryFinder"
+			{
+				"library"	"server"
+				"windows"	"\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\xC8\xC7"
+			}
+		}
+		
+		"Offsets"
+		{
+			"EntityFactoryOffset"
+			{
+				"windows" 	"4"
 			}
 		}
 	}
@@ -186,7 +199,7 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\x2A\x2A\x2A\x2A\x2A\x53\x56\x8B\x71\x2A\x57"
+				"windows"	"\x55\x8B\xEC\x83\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x8B\xC1\x53\x56\x57\x8B\x2A\x2A\x89\x2A\x2A\x2A\x33"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
@@ -207,7 +220,7 @@
 			"SetUserCvar"
 			{
 				/* Not 100% sure on this, why would windows change and not linux - TEST ME */
-				"windows"	"17"
+				"windows"	"27"
 				"linux"		"64"
 				"mac"		"64"
 			}
@@ -221,9 +234,9 @@
 			 */
 			"InfoChanged"
 			{
-				"windows"	"168"
-				"linux"		"168"
-				"mac"		"168"
+				"windows"	"412"
+				"linux"		"412"
+				"mac"		"412"
 			}
 		}
 	}
