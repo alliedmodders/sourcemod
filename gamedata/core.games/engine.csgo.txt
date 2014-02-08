@@ -19,17 +19,22 @@
 			"game"		"csgo"
 		}
 		
+		"Addresses"
+		{
+			"EntInfosPtr"
+			{
+				"windows"
+				{
+					"signature"	"EntInfosFinder"
+					"read"	"36"
+				}
+			}
+		}
+		
 		"Offsets"
 		{
-			/* Offset into LevelShutdown */
-			"gEntList"
-			{
-				"windows"	"11"
-			}
-
 			"EntInfo"
 			{
-				"windows"	"4"
 				"linux"		"4"
 				"mac"		"4"
 			}
@@ -37,10 +42,10 @@
 		
 		"Signatures"
 		{
-			"LevelShutdown"
+			"EntInfosFinder"
 			{
 				"library"	"server"
-				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
+				"windows"	"\x55\x8B\xEC\x8B\x4D\x08\x53\x56\x57\x85\xC9\x74\x2A\x8B\x01\xFF\x2A\x2A\x8B\x00\x83\xF8\xFF\x75\x11\xB8\x2A\x2A\x2A\x2A\x8D\x34\x40\x8B"
 			}
 			
 			"gEntList"

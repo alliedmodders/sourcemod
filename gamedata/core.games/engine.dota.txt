@@ -19,36 +19,24 @@
 			"game"		"dota"
 		}
 		
-		"Offsets"
+		"Addresses"
 		{
-			/* Offset into LevelShutdown */
-			"gEntList"
+			"EntInfosPtr"
 			{
-				"windows"	"21"
-			}
-
-			"EntInfo"
-			{
-				"windows"	"0"
-				"linux"		"4"
-				"mac"		"4"
+				"windows"
+				{
+					"signature"	"EntInfosFinder"
+					"read"	"21"
+				}
 			}
 		}
 		
 		"Signatures"
 		{
-			// This isn't LevelShutdown, but there aren't a lot of places to get this from due to crazy insane inlining errwhere
-			"LevelShutdown"
+			"EntInfosFinder"
 			{
 				"library"	"server"
 				"windows"	"\x83\x2A\xFF\x74\x03\x0F\x2A\x2A\xC1\x2A\x04\x8B\x2A\x2A\x2A\x2A\x2A\xEB\x06\x8B"
-			}
-			
-			"gEntList"
-			{
-				"library"	"server"
-				"linux"		"@gEntList"
-				"mac"		"@gEntList"
 			}
 		}
 	}

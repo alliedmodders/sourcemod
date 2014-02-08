@@ -74,7 +74,22 @@ CHalfLife2 g_HL2;
 ConVar *sv_lan = NULL;
 
 static void *g_EntList = NULL;
+static void **g_pEntInfoList = NULL;
 static int entInfoOffset = -1;
+
+static CEntInfo *EntInfoArray()
+{
+	if (g_EntList != NULL)
+	{
+		return (CEntInfo *)((intp)g_EntList + entInfoOffset);
+	}
+	else if (g_pEntInfoList)
+	{
+		return *(CEntInfo **)g_pEntInfoList;
+	}
+	
+	return NULL;
+}
 
 CHalfLife2::CHalfLife2()
 {
@@ -161,40 +176,39 @@ void CHalfLife2::InitLogicalEntData()
 #endif
 	}
 
-
 	if (!g_EntList)
 	{
-		if (!g_pGameConf->GetMemSig("LevelShutdown", (void **)&addr))
+		if (g_pGameConf->GetMemSig("LevelShutdown", (void **) &addr) && addr)
 		{
-			g_Logger.LogError("Logical Entities not supported by this mod (LevelShutdown) - Reverting to networkable entities only");
-			return;
-		}
+			int offset;
+			if (!g_pGameConf->GetOffset("gEntList", &offset))
+			{
+				g_Logger.LogError("Logical Entities not supported by this mod (gEntList) - Reverting to networkable entities only");
+				return;
+			}
 
-		if (!addr)
-		{
-			g_Logger.LogError("Failed lookup of LevelShutdown - Reverting to networkable entities only");
-			return;
-		}
+			g_EntList = *reinterpret_cast<void **>(addr + offset);
 
-		int offset;
-		if (!g_pGameConf->GetOffset("gEntList", &offset))
-		{
-			g_Logger.LogError("Logical Entities not supported by this mod (gEntList) - Reverting to networkable entities only");
-			return;
 		}
-
-		g_EntList = *reinterpret_cast<void **>(addr + offset);
 	}
-	
-	if (!g_EntList)
+
+	// If we have g_EntList from either of the above methods, make sure we can get the offset from it to EntInfo as well
+	if (g_EntList && !g_pGameConf->GetOffset("EntInfo", &entInfoOffset))
 	{
-		g_Logger.LogError("Failed lookup of gEntList - Reverting to networkable entities only");
+		g_Logger.LogError("Logical Entities not supported by this mod (EntInfo) - Reverting to networkable entities only");
+		g_EntList = NULL;
 		return;
 	}
 
-	if (!g_pGameConf->GetOffset("EntInfo", &entInfoOffset))
+	// If we don't have g_EntList or have it but don't know where EntInfo is on it, use fallback.
+	if (!g_EntList || entInfoOffset == -1)
 	{
-		g_Logger.LogError("Logical Entities not supported by this mod (EntInfo) - Reverting to networkable entities only");
+		g_pGameConf->GetAddress("EntInfosPtr", (void **)&g_pEntInfoList);
+	}
+	
+	if (!g_EntList && !g_pEntInfoList)
+	{
+		g_Logger.LogError("Failed lookup of gEntList - Reverting to networkable entities only");
 		return;
 	}
 }
@@ -996,7 +1010,9 @@ CEntInfo *CHalfLife2::LookupEntity(int entIndex)
 		return NULL;
 	}
 
-	if (!g_EntList || entInfoOffset == -1)
+	CEntInfo *entInfos = EntInfoArray();
+
+	if (!entInfos)
 	{
 		/* Attempt to use engine interface instead */
 		static CEntInfo tempInfo;
@@ -1023,8 +1039,7 @@ CEntInfo *CHalfLife2::LookupEntity(int entIndex)
 		return &tempInfo;
 	}
 
-	CEntInfo *pArray = (CEntInfo *)(((unsigned char *)g_EntList) + entInfoOffset);
-	return &pArray[entIndex];
+	return &entInfos[entIndex];
 }
 
 /**
