@@ -637,7 +637,7 @@ static cell_t sm_AddFrameAction(IPluginContext *pContext, const cell_t *params)
 	Handle_t Handle = handlesys->CreateHandle(g_PrivateFwdType, pForward, pIdentity, g_pCoreIdent, NULL);
 	if (Handle == BAD_HANDLE)
 	{
-		delete pForward;
+		forwardsys->ReleaseForward(pForward);
 		return 0;
 	}
 
