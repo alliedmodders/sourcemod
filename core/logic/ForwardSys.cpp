@@ -192,6 +192,7 @@ void CForwardManager::ForwardFree(CForward *fwd)
 
 	m_FreeForwards.push(fwd);
 	m_managed.remove(fwd);
+	m_unmanaged.remove(fwd);
 }
 
 CForward *CForwardManager::ForwardMake()
