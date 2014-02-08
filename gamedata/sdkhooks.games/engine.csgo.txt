@@ -136,29 +136,6 @@
 				"linux"		"283"
 				"mac"		"283"
 			}
-			
-			
-			// no longer used
-			"UpdateOnRemove"
-			{
-				"windows"	"109"
-				"linux"		"110"
-				"mac"		"110"
-			}
-			//
-		}
-		
-		"Signatures"
-		{
-			// no longer used
-			"IEntityFactoryDictionary"
-			{
-				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
-				"mac"		"@_Z23EntityFactoryDictionaryv"
-			}
-			//
 		}
 	}
 	
@@ -168,9 +145,30 @@
 		{
 			"EntityListeners"
 			{
-				"windows"	"196644"
 				"linux"		"196644"
 				"mac"		"196644"
+			}
+		}
+		
+		"Addresses"
+		{
+			"EntityListenersPtr"
+			{
+				"windows"
+				{
+					"signature"	"EntityListenersFinder"
+					"read"		"18"
+				}
+			}
+		}
+		
+		"Signatures"
+		{
+			// Find call to AddListenerEntity in CPhysSaveRestoreBlockHandler::PreRestore (virtual)
+			"EntityListenersFinder"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x33\xC0\x56\x85\xC9\x7E\x32\x8B"
 			}
 		}
 	}
