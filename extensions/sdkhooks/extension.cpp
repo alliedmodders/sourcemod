@@ -118,6 +118,29 @@ IGameConfig *g_pGameConf = NULL;
 
 char g_szMapEntities[2097152];
 
+CUtlVector<IEntityListener *> *EntListeners()
+{
+	void *gEntList = gamehelpers->GetGlobalEntityList();
+	if (gEntList)
+	{
+		int offset = -1; /* 65572 */
+		if (g_pGameConf->GetOffset("EntityListeners", &offset))
+		{
+			return (CUtlVector<IEntityListener *> *)((intptr_t) gEntList + offset);
+		}
+	}
+	else
+	{
+		void *entListeners;
+		if (g_pGameConf->GetAddress("EntityListenersPtr", &entListeners))
+		{
+			return (CUtlVector<IEntityListener *> *)entListeners;
+		}
+	}
+
+	return NULL;
+}
+
 
 /**
  * IServerGameDLL & IVEngineServer Hooks
@@ -215,22 +238,14 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
-	void *gEntList = gamehelpers->GetGlobalEntityList();
-	if (!gEntList)
+	CUtlVector<IEntityListener *> *entListeners = EntListeners();
+	if (!entListeners)
 	{
-		g_pSM->Format(error, maxlength, "Cannot find gEntList pointer");
+		g_pSM->Format(error, maxlength, "Failed to setup entity listeners");
 		return false;
 	}
 
-	int offset = -1; /* 65572 */
-	if (!g_pGameConf->GetOffset("EntityListeners", &offset))
-	{
-		g_pSM->Format(error, maxlength, "Cannot find EntityListeners offset");
-		return false;
-	}
-
-	CUtlVector<IEntityListener *> *pListeners = (CUtlVector<IEntityListener *> *)((intptr_t)gEntList + offset);
-	pListeners->AddToTail(this);
+	entListeners->AddToTail(this);
 
 	SetupHooks();
 
@@ -324,16 +339,8 @@ void SDKHooks::SDK_OnUnload()
 	sharesys->DropCapabilityProvider(myself, this, "SDKHook_DmgCustomInOTD");
 	sharesys->DropCapabilityProvider(myself, this, "SDKHook_LogicalEntSupport");
 
-	void *gEntList = gamehelpers->GetGlobalEntityList();
-	if (gEntList)
-	{
-		int offset = -1; /* 65572 */
-		if (g_pGameConf->GetOffset("EntityListeners", &offset))
-		{
-			CUtlVector<IEntityListener *> *pListeners = (CUtlVector<IEntityListener *> *)((intptr_t)gEntList + offset);
-			pListeners->FindAndRemove(this);
-		}
-	}
+	CUtlVector<IEntityListener *> *entListeners = EntListeners();
+	entListeners->FindAndRemove(this);
 
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 }

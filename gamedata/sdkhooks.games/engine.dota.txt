@@ -89,14 +89,25 @@
 	
 	"#default"
 	{
-		// CGlobalEntityList vtable, first function (OnAddEntity [+0]), near end, getting multiplied by 4
-		// mov     eax, [edi+20024h]
-		// mov     ecx, [eax+esi*4]
-		"Offsets"
+		"Addresses"
 		{
-			"EntityListeners"
+			"EntityListenersPtr"
 			{
-				"windows"	"131108"
+				"windows"
+				{
+					"signature"	"EntityListenersFinder"
+					"read"		"20"
+				}
+			}
+		}
+		
+		"Signatures"
+		{
+			// Find AddListenerEntity inlined in CPhysSaveRestoreBlockHandler::PreRestore (virtual)
+			"EntityListenersFinder"
+			{
+				"library"	"server"
+				"windows"	"\x33\xC9\x8B\x2A\x2A\x2A\x2A\x2A\x33\xC0\x89\x4D\xFC\x56\x85\xD2\x7E\x2A\x8B"
 			}
 		}
 	}
