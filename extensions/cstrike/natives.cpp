@@ -46,6 +46,12 @@ int g_iPriceOffset = -1;
 	code; \
 	g_RegNatives.Register(pWrapper);
 
+#define GET_MEMSIG(name) \
+	if (!g_pGameConf->GetMemSig(name, &addr) || !addr) \
+	{ \
+		return pContext->ThrowNativeError("Failed to locate function"); \
+	}
+
 inline CBaseEntity *GetCBaseEntity(int num, bool isplayer)
 {
 	edict_t *pEdict = gamehelpers->EdictOfIndex(num);
@@ -150,6 +156,7 @@ static cell_t CS_RespawnPlayer(IPluginContext *pContext, const cell_t *params)
 
 static cell_t CS_SwitchTeam(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 	static ICallWrapper *pWrapper = NULL;
 	if (!pWrapper)
 	{
@@ -174,6 +181,41 @@ static cell_t CS_SwitchTeam(IPluginContext *pContext, const cell_t *params)
 	vptr += sizeof(CBaseEntity *);
 	*(int *)vptr = params[2];
 	pWrapper->Execute(vstk, NULL);
+#else
+	if (g_pSDKTools == NULL)
+	{
+		return pContext->ThrowNativeError("SDKTools interface not found. TerminateRound native disabled.");
+	}
+
+	static void *addr = NULL;
+	if(!addr)
+	{
+		GET_MEMSIG("SwitchTeam");
+	}
+
+	void *gamerules = g_pSDKTools->GetGameRules();
+	if (gamerules == NULL)
+	{
+		return pContext->ThrowNativeError("GameRules not available. SwitchTeam native disabled.");
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity=GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	int team = params[2];
+
+	__asm
+	{
+		push team
+		mov ecx, pEntity
+		mov ebx, gamerules
+ 
+		call addr
+	}
+#endif
 
 	return 1;
 }
@@ -248,7 +290,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 {
 	if (g_pSDKTools == NULL)
 	{
-		smutils->LogError(myself, "SDKTools interface not found. TerminateRound native disabled.");
+		return pContext->ThrowNativeError("SDKTools interface not found. TerminateRound native disabled.");
 	}
 	else if (g_pSDKTools->GetInterfaceVersion() < 2)
 	{
@@ -256,6 +298,13 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("SDKTools interface is outdated. TerminateRound native disabled.");
 	}
 
+	void *gamerules = g_pSDKTools->GetGameRules();
+	if (gamerules == NULL)
+	{
+		return pContext->ThrowNativeError("GameRules not available. TerminateRound native disabled.");
+	}
+
+#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -271,12 +320,6 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2))
 	}
 
-	void *gamerules = g_pSDKTools->GetGameRules();
-	if (gamerules == NULL)
-	{
-		return pContext->ThrowNativeError("GameRules not available. TerminateRound native disabled.");
-	}
-
 	if (params[3] == 1 && g_pTerminateRoundDetoured)
 		g_pIgnoreTerminateDetour = true;
 
@@ -290,7 +333,30 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	*(int*)vptr = params[2];
 
 	pWrapper->Execute(vstk, NULL);
+#else
+	static void *addr = NULL;
 
+	if(!addr)
+	{
+		GET_MEMSIG("TerminateRound");
+	}
+
+	if (params[3] == 1 && g_pTerminateRoundDetoured)
+		g_pIgnoreTerminateDetour = true;
+
+	float delay = sp_ctof(params[1]);
+	int reason = params[2];
+	signed int unknown = 1;//We might want to find what this is?
+	__asm
+	{
+		push reason
+		movss xmm1, delay
+		mov edi, unknown
+		mov ecx, gamerules
+		call addr
+	}
+
+#endif
 	return 1;
 }
 
@@ -385,7 +451,7 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 
 	*(void **)vptr = info;
 	vptr += sizeof(void *);
-	*(const char **)vptr = "in_game_price";
+	*(const char **)vptr = "in game price";
 	vptr += sizeof(const char **);
 	*(CEconItemView **)vptr = NULL;
 
