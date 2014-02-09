@@ -44,8 +44,17 @@
 	code; \
 	g_RegNatives.Register(pWrapper);
 
+#define GET_MEMSIG(name, defaultret) \
+	if (!g_pGameConf->GetMemSig(name, &addr) || !addr) \
+	{ \
+		g_pSM->LogError(myself, "Failed to locate function."); \
+		return defaultret;\
+	}
+
 void *GetWeaponInfo(int weaponID)
 {
+	void *info;
+#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 	static ICallWrapper *pWrapper = NULL;
 	if (!pWrapper)
 	{
@@ -61,8 +70,6 @@ void *GetWeaponInfo(int weaponID)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
 
-	void *info;
-
 	unsigned char vstk[sizeof(int)];
 	unsigned char *vptr = vstk;
 
@@ -70,11 +77,30 @@ void *GetWeaponInfo(int weaponID)
 
 	pWrapper->Execute(vstk, &info);
 
+	
+#else
+	static void *addr = NULL;
+
+	if(!addr)
+	{
+		GET_MEMSIG("GetWeaponInfo", 0);
+	}
+
+	__asm
+	{
+		mov ecx, weaponID
+		call addr
+		mov info, eax
+	}
+#endif
 	return info;
 }
 
 const char *GetTranslatedWeaponAlias(const char *weapon)
 {
+	const char *alias = NULL;
+
+#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -90,20 +116,35 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 			retpass.size = sizeof(const char *); \
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
-	const char *ret = NULL;
 
 	unsigned char vstk[sizeof(const char *)];
 	unsigned char *vptr = vstk;
 
 	*(const char **)vptr = weapon;
 
-	pWrapper->Execute(vstk, &ret);
+	pWrapper->Execute(vstk, &alias);
+#else
+	static void *addr = NULL;
 
-	return ret;
+	if(!addr)
+	{
+		GET_MEMSIG("GetTranslatedWeaponAlias", weapon);
+	}
+
+	__asm
+	{
+		mov ecx, weapon
+		call addr
+		mov alias, eax
+	}
+#endif
+	return alias;
 }
 
 int AliasToWeaponID(const char *weapon)
 {
+	int weaponID = 0;
+#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -119,7 +160,6 @@ int AliasToWeaponID(const char *weapon)
 			retpass.size = sizeof(int); \
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
-	int weaponID = 0;
 
 	unsigned char vstk[sizeof(const char *)];
 	unsigned char *vptr = vstk;
@@ -127,12 +167,28 @@ int AliasToWeaponID(const char *weapon)
 	*(const char **)vptr = weapon;
 
 	pWrapper->Execute(vstk, &weaponID);
+#else
+	static void *addr = NULL;
 
+	if(!addr)
+	{
+		GET_MEMSIG("AliasToWeaponID", 0);
+	}
+
+	__asm
+	{
+		mov ecx, weapon
+		call addr
+		mov weaponID, eax
+	}
+#endif
 	return weaponID;
 }
 
 const char *WeaponIDToAlias(int weaponID)
 {
+	const char *alias = NULL;
+#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -148,16 +204,30 @@ const char *WeaponIDToAlias(int weaponID)
 			retpass.size = sizeof(const char *); \
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
-	const char *ret = NULL;
 	
 	unsigned char vstk[sizeof(int)];
 	unsigned char *vptr = vstk;
 
 	*(int *)vptr = GetRealWeaponID(weaponID);
 
-	pWrapper->Execute(vstk, &ret);
+	pWrapper->Execute(vstk, &alias);
+#else
+	static void *addr = NULL;
 
-	return ret;
+	if(!addr)
+	{
+		GET_MEMSIG("WeaponIDToAlias", 0);
+	}
+
+	int realWeaponID = GetRealWeaponID(weaponID);
+	__asm
+	{
+		mov ecx, realWeaponID
+		call addr
+		mov alias, eax
+	}
+#endif
+	return alias;
 }
 int GetRealWeaponID(int weaponId)
 {

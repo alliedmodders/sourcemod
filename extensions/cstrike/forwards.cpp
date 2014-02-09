@@ -21,6 +21,13 @@ CDetour *DCSWeaponDrop = NULL;
 
 int weaponNameOffset = -1;
 
+//Windows CS:GO
+// int __userpurge HandleCommand_Buy_Internal<eax>(int a1<ecx>, float a2<xmm0>, int a3, int a4, char a5)
+// a1 - this
+// a2 - CCSGameRules::GetWarmupPeriodEndTime(g_pGameRules)
+// a3 - weapon
+// a4 - unknown
+// a5 - bRebuy
 #if SOURCE_ENGINE == SE_CSGO
 DETOUR_DECL_MEMBER3(DetourHandleBuy, int, const char *, weapon, int, iUnknown, bool, bRebuy)
 #else
@@ -69,7 +76,7 @@ DETOUR_DECL_MEMBER2(DetourWeaponPrice, int, const char *, szAttribute, CEconItem
 {
 	int price = DETOUR_MEMBER_CALL(DetourWeaponPrice)(szAttribute, pEconItem);
 
-	if(lastclient == -1 || strcmp(szAttribute, "in_game_price") != 0)
+	if(lastclient == -1 || strcmp(szAttribute, "in game price") != 0)
 		return price;
 
 	const char *weapon_name = reinterpret_cast<char *>(this+weaponNameOffset);
@@ -78,6 +85,7 @@ DETOUR_DECL_MEMBER2(DetourWeaponPrice, int, const char *, szAttribute, CEconItem
 }
 #endif
 
+#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 DETOUR_DECL_MEMBER2(DetourTerminateRound, void, float, delay, int, reason)
 {
 	if (g_pIgnoreTerminateDetour)
@@ -86,6 +94,30 @@ DETOUR_DECL_MEMBER2(DetourTerminateRound, void, float, delay, int, reason)
 		DETOUR_MEMBER_CALL(DetourTerminateRound)(delay, reason);
 		return;
 	}
+#else
+//Windows CSGO
+//char __userpurge TerminateRound<al>(unsigned int a1<ecx>, signed int a2<edi>, unsigned int a3<xmm1>, int a4)
+// a1 - this
+// a2 - unknown
+// a3 - delay
+// a4 - reason
+DETOUR_DECL_MEMBER1(DetourTerminateRound, void, int, reason)
+{
+	float delay;
+
+	if (g_pIgnoreTerminateDetour)
+	{
+		g_pIgnoreTerminateDetour = false;
+		return DETOUR_MEMBER_CALL(DetourTerminateRound)(reason);
+	}
+
+	//Save the delay
+	__asm
+	{
+		movss delay, xmm1
+	}
+#endif
+
 	float orgdelay = delay;
 	int orgreason = reason;
 
@@ -98,10 +130,26 @@ DETOUR_DECL_MEMBER2(DetourTerminateRound, void, float, delay, int, reason)
 	if (result >= Pl_Handled)
 		return;
 
+#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 	if (result == Pl_Changed)
 		return DETOUR_MEMBER_CALL(DetourTerminateRound)(delay, reason);
 
 	return DETOUR_MEMBER_CALL(DetourTerminateRound)(orgdelay, orgreason);
+#else
+	if (result == Pl_Changed)
+	{
+		__asm
+		{
+			movss xmm1, delay
+		}
+		return DETOUR_MEMBER_CALL(DetourTerminateRound)(reason);
+	}
+	__asm
+	{
+		movss xmm1, orgdelay
+	}
+	return DETOUR_MEMBER_CALL(DetourTerminateRound)(orgreason);
+#endif
 }
 
 DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, something, bool, toss)
