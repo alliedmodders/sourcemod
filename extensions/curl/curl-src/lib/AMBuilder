@@ -20,6 +20,8 @@ elif builder.target_platform is 'windows':
     'CURL_STATICLIB',
     'CURL_DISABLE_LDAP',
   ]
+elif builder.target_platform is 'linux':
+  binary.compiler.defines += ['_GNU_SOURCE']
 
 binary.sources += [
   'base64.c',
