@@ -184,7 +184,7 @@ static cell_t CS_SwitchTeam(IPluginContext *pContext, const cell_t *params)
 #else
 	if (g_pSDKTools == NULL)
 	{
-		return pContext->ThrowNativeError("SDKTools interface not found. TerminateRound native disabled.");
+		return pContext->ThrowNativeError("SDKTools interface not found. SwitchTeam native disabled.");
 	}
 
 	static void *addr = NULL;
