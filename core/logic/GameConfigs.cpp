@@ -90,7 +90,7 @@ struct TempSigInfo
 		library[0] = '\0';
 		sig[0] = '\0';
 	}
-	char sig[512];
+	char sig[1024];
 	char library[64];
 } s_TempSig;
 unsigned int s_ServerBinCRC;
