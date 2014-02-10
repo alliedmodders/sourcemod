@@ -8,7 +8,7 @@ for sdk_name in SM.sdks:
   binary.compiler.cxxincludes += [
     os.path.join(sdk.path, 'game', 'shared')
   ]
-  if binary.compiler.cxx.behavior is 'gcc':
+  if binary.compiler.cxx.behavior == 'gcc':
     binary.compiler.cxxflags += ['-Wno-invalid-offsetof']
 
   binary.sources += [

@@ -52,7 +52,7 @@ for cxx_task in SM.extensions:
 builder.AddCopy(SM.spcomp.binary, folder_map['addons/sourcemod/scripting'])
 
 # Copy debugging files.
-if builder.options.packdebug and builder.target_platform is not 'mac':
+if builder.options.packdebug and builder.target_platform != 'mac':
   for cxx_task in SM.binaries:
     builder.AddCopy(cxx_task.debug, folder_map['addons/sourcemod/bin'])
   for cxx_task in SM.extensions:

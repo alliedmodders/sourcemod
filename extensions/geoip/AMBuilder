@@ -2,7 +2,7 @@
 import os
 
 binary = SM.ExtLibrary(builder, 'geoip.ext')
-if builder.target_platform is 'windows':
+if builder.target_platform == 'windows':
   binary.compiler.postlink += ['wsock32.lib']
 
 binary.sources += [

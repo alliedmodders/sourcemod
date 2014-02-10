@@ -10,7 +10,7 @@ binary.compiler.defines += [
   'SQLITE_OMIT_LOAD_EXTENSION',
   'SQLITE_THREADSAFE'
 ]
-if builder.target_platform is 'linux':
+if builder.target_platform == 'linux':
   binary.compiler.postlink += ['-ldl', '-lpthread']
 
 binary.sources += [

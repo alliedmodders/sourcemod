@@ -9,18 +9,18 @@ binary.compiler.includes += [
   os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl-src', 'include')
 ]
 
-if builder.target_platform is 'mac':
+if builder.target_platform == 'mac':
   mac_version, ignore, ignore = platform.mac_ver()
   mac_tuple = mac_version.split('.')
   if int(mac_tuple[0]) >= 10 and int(mac_tuple[1]) >= 9:
     binary.compiler.defines += ['BUILTIN_STRLCAT']
-elif builder.target_platform is 'windows':
+elif builder.target_platform == 'windows':
   binary.compiler.defines += [
     'BUILDING_LIBCURL',
     'CURL_STATICLIB',
     'CURL_DISABLE_LDAP',
   ]
-elif builder.target_platform is 'linux':
+elif builder.target_platform == 'linux':
   binary.compiler.defines += ['_GNU_SOURCE']
 
 binary.sources += [

@@ -4,7 +4,7 @@ import os.path
 if builder.target_platform in ['windows', 'mac']:
   name = 'sourcemod_mm'
   extra_ldflags = []
-elif builder.target_platform is 'linux':
+elif builder.target_platform == 'linux':
   name = 'sourcemod_mm_i486'
   extra_ldflags = ['-ldl']
 

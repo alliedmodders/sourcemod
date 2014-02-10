@@ -124,7 +124,7 @@ class SMConfig(object):
     cfg = builder.DetectCompilers()
     cxx = cfg.cxx
 
-    if cxx.behavior is 'gcc':
+    if cxx.behavior == 'gcc':
       cfg.defines += [
         'stricmp=strcasecmp',
         '_stricmp=strcasecmp',
@@ -145,8 +145,8 @@ class SMConfig(object):
         '-m32',
       ]
 
-      have_gcc = cxx.name is 'gcc'
-      have_clang = cxx.name is 'clang'
+      have_gcc = cxx.name == 'gcc'
+      have_clang = cxx.name == 'clang'
       if have_clang or (have_gcc and cxx.majorVersion >= 4):
         cfg.cflags += ['-fvisibility=hidden']
         cfg.cxxflags += ['-fvisibility-inlines-hidden']
@@ -364,21 +364,21 @@ class SMConfig(object):
   def HL2Library(self, context, name, sdk):
     compiler = self.HL2Compiler(context, sdk)
 
-    if builder.target_platform is 'linux':
-      if sdk.name is 'ep1':
+    if builder.target_platform == 'linux':
+      if sdk.name == 'ep1':
         lib_folder = os.path.join(sdk.path, 'linux_sdk')
-      elif sdk.name is '2013':
+      elif sdk.name == '2013':
         lib_folder = os.path.join(sdk.path, 'lib', 'public', 'linux32')
       else:
         lib_folder = os.path.join(sdk.path, 'lib', 'linux')
     elif builder.target_platform == 'mac':
-      if sdk.name is '2013':
+      if sdk.name == '2013':
         lib_folder = os.path.join(sdk.path, 'lib', 'public', 'osx32')
       else:
         lib_folder = os.path.join(sdk.path, 'lib', 'mac')
 
     if builder.target_platform in ['linux', 'mac']:
-      if sdk.name is '2013':
+      if sdk.name == '2013':
         compiler.postlink += [
           compiler.Dep(os.path.join(lib_folder, 'tier1.a')),
           compiler.Dep(os.path.join(lib_folder, 'mathlib.a'))

@@ -8,14 +8,14 @@ if SM.mysql_root:
     os.path.join(SM.mms_root, 'core', 'sourcehook')
   ]
 
-  if builder.target_platform is 'linux' or builder.target_platform is 'mac':
+  if builder.target_platform == 'linux' or builder.target_platform == 'mac':
     binary.compiler.postlink += [
       os.path.join(SM.mysql_root, 'lib', 'libmysqlclient_r.a'),
       '-lz',
       '-lpthread',
       '-lm'
     ]
-  elif builder.target_platform is 'windows':
+  elif builder.target_platform == 'windows':
     binary.compiler.postlink += [
       os.path.join(SM.mysql_root, 'lib', 'opt', 'mysqlclient.lib'),
       os.path.join(SM.mysql_root, 'lib', 'opt', 'zlib.lib'),

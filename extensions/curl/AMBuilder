@@ -9,9 +9,9 @@ binary.compiler.includes += [
 ]
 binary.compiler.defines += ['CURL_STATICLIB']
 binary.compiler.postlink += [libcurl.binary]
-if builder.target_platform is 'linux':
+if builder.target_platform == 'linux':
   binary.compiler.postlink += ['-lrt']
-elif builder.target_platform is 'windows':
+elif builder.target_platform == 'windows':
   binary.compiler.postlink += ['ws2_32.lib']
 
 binary.sources += [

@@ -14,10 +14,8 @@ binary.compiler.includes += [
   os.path.join(builder.sourcePath, 'knight', 'shared'),
 ]
 
-if builder.target_platform is 'linux':
+if builder.target_platform == 'linux':
   binary.compiler.postlink += ['-lpthread', '-lrt']
-elif builder.target_platform is 'darwin':
-  binary.compiler.postlink += ['-lpthread', '-ldl']
 
 binary.sources += [
   'BaseRuntime.cpp',

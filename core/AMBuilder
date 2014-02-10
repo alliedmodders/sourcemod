@@ -8,16 +8,16 @@ for sdk_name in SM.sdks:
   binary = SM.HL2Library(builder, binary_name, sdk)
   compiler = binary.compiler
 
-  if sdk.name is 'csgo':
+  if sdk.name == 'csgo':
     # Protobuf 2.3 headers have some signed/unsigned compares. I believe that it's fixed in later versions, but Valve.
-    if compiler.cxx.behavior is 'gcc':
+    if compiler.cxx.behavior == 'gcc':
       compiler.cflags += ['-Wno-sign-compare']
     compiler.cxxincludes += [
       os.path.join(sdk.path, 'common', 'protobuf-2.3.0', 'src'),
       os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
       os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf')
     ]
-  elif sdk.name is 'dota':
+  elif sdk.name == 'dota':
     compiler.cxxincludes += [
       os.path.join(sdk.path, 'common', 'protobuf-2.4.1', 'src'),
       os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
@@ -25,15 +25,15 @@ for sdk_name in SM.sdks:
       os.path.join(sdk.path, 'public', 'game', 'shared', 'dota', 'protobuf')
     ]
 
-  if builder.target_platform is 'linux':
+  if builder.target_platform == 'linux':
     compiler.postlink += ['-lpthread', '-lrt']
 
-  if sdk.name is 'csgo' or sdk.name is 'dota':
-    if builder.target_platform is 'linux':
+  if sdk.name == 'csgo' or sdk.name == 'dota':
+    if builder.target_platform == 'linux':
       lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
-    elif builder.target_platform is 'mac':
+    elif builder.target_platform == 'mac':
       lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
-    elif builder.target_platform is 'windows':
+    elif builder.target_platform == 'windows':
       if 'DEBUG' in compiler.defines:
         lib_path = os.path.join(sdk.path, 'lib', 'win32', 'debug', 'vs2010', 'libprotobuf.lib')
       else:
@@ -89,13 +89,13 @@ for sdk_name in SM.sdks:
   else:
     binary.sources += ['smn_bitbuffer.cpp']
 
-  if sdk.name is 'csgo':
+  if sdk.name == 'csgo':
     binary.sources += [
       os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
       os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessages.pb.cc'),
       os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessage_helpers.cpp'),
     ]
-  elif sdk.name is 'dota':
+  elif sdk.name == 'dota':
     binary.sources += [
       os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'networkbasetypes.pb.cc'),
       os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
