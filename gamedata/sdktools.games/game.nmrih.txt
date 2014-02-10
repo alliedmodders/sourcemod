@@ -100,6 +100,12 @@
 				"linux"		"431"
 				"mac"		"431"
 			}
+			"GiveAmmo"
+			{
+				"windows"	"253"
+				"linux"		"253"
+				"mac"		"253"
+			}
 		}
 		"Signatures"
 		{
