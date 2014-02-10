@@ -1293,6 +1293,34 @@ static cell_t GetPlayerResourceEntity(IPluginContext *pContext, const cell_t *pa
 	return -1;
 }
 
+static cell_t GivePlayerAmmo(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[3];
+		InitPass(pass[0], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("GiveAmmo", ValveCall_Player, &pass[0], pass, 3, &pCall))
+		{
+			return pContext->ThrowNativeError("\"GiveAmmo\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"GiveAmmo\" wrapper failed to initialize");
+		}
+	}
+
+	int ammoGiven;
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	DECODE_VALVE_PARAM(3, vparams, 1);
+	DECODE_VALVE_PARAM(4, vparams, 2);
+	FINISH_CALL_SIMPLE(&ammoGiven);
+
+	return ammoGiven;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishEntity",		ExtinguishEntity},
@@ -1322,5 +1350,6 @@ sp_nativeinfo_t g_Natives[] =
 	{"ActivateEntity",			ActivateEntity},
 	{"SetClientInfo",			SetClientInfo},
 	{"GetPlayerResourceEntity", GetPlayerResourceEntity},
+	{"GivePlayerAmmo",		GivePlayerAmmo},
 	{NULL,						NULL},
 };

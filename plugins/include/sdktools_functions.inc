@@ -331,3 +331,16 @@ native ActivateEntity(entity);
  * @error				Invalid client index, or client not connected.
  */
 native SetClientInfo(client, const String:key[], const String:value[]);
+
+/**
+ * Gives ammo of a certain type to a player.
+ * This natives obeys the maximum amount of ammo a player can carry per ammo type.
+ *
+ * @param client        The client index.
+ * @param amount        Amount of ammo to give. Is capped at ammotype's limit.
+ * @param ammotype      Type of ammo to give to player.
+ * @param suppressSound If true, don't play the ammo pickup sound.
+ *
+ * @return Amount of ammo actually given.
+ */
+native GivePlayerAmmo(client, amount, ammotype, bool:suppressSound=false);

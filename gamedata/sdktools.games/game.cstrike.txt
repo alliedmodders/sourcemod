@@ -110,6 +110,12 @@
 				"linux"		"419"
 				"mac"		"419"
 			}
+			"GiveAmmo"
+			{
+				"windows"	"251"
+				"linux"		"252"
+				"mac"		"252"
+			}
 		}
 	}
 }
