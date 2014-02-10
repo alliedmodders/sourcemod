@@ -601,19 +601,11 @@ skip_find:
 		{
 			m_ParseState = PSTATE_GAMEDEFS_ADDRESSES;
 
-			if (m_Address[0] == '\0')
+			if (m_Address[0] != '\0' && m_AddressSignature[0] != '\0')
 			{
-				smcore.LogError("[SM] Address sections must have names (gameconf \"%s\")", m_CurFile);
-				break;
+				AddressConf addrConf(m_AddressSignature, sizeof(m_AddressSignature), m_AddressReadCount, m_AddressRead);
+				m_Addresses.replace(m_Address, addrConf);
 			}
-			if (m_AddressSignature[0] == '\0')
-			{
-				smcore.LogError("[SM] Address section for \"%s\" did not specify a signature (gameconf \"%s\")", m_Address, m_CurFile);
-				break;
-			}
-
-			AddressConf addrConf(m_AddressSignature, sizeof(m_AddressSignature), m_AddressReadCount, m_AddressRead);
-			m_Addresses.replace(m_Address, addrConf);
 
 			break;
 		}
