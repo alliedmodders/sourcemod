@@ -178,11 +178,11 @@ native bool:LoadTopMenuConfig(Handle:topmenu, const String:file[], String:error[
  * @param name				Object name (MUST be unique).
  * @param type				Object type.
  * @param handler			Handler for object.
- * @param cmdname			Command name (for access overrides).
- * @param flags				Default access flags.
  * @param parent			Parent object ID, or INVALID_TOPMENUOBJECT for none.
  *							Items must have a category parent.
  *							Categories must not have a parent.
+ * @param cmdname			Command name (for access overrides).
+ * @param flags				Default access flags.
  * @param info_string		Arbitrary storage (max 255 bytes).
  * @return					A new TopMenuObject ID, or INVALID_TOPMENUOBJECT on
  *							failure.
