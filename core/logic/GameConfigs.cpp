@@ -610,7 +610,7 @@ skip_find:
 			if (m_Address[0] != '\0' && m_AddressSignature[0] != '\0')
 			{
 				AddressConf addrConf(m_AddressSignature, sizeof(m_AddressSignature), m_AddressReadCount, m_AddressRead);
-				m_Addresses.replace(m_Address, addrConf);
+				m_pAddresses->replace(m_Address, addrConf);
 			}
 
 			break;
