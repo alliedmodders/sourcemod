@@ -86,6 +86,12 @@
 				"windows"	"382"
 				"linux"		"383"
 			}
+			"GiveAmmo"
+			{
+				"windows"	"253"
+				"linux"		"253"
+				"mac"		"253"
+			}
 			
 			/* Offset into CBaseTempEntity constructor (vs2010 moved it!) */
 			"s_pTempEntities"

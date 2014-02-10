@@ -204,6 +204,12 @@
 				"linux"		"454"
 				"mac"		"454"
 			}
+			"GiveAmmo"
+			{
+				"windows"	"273"
+				"linux"		"274"
+				"mac"		"274"
+			}
 		}
 		
 		"Keys"
