@@ -6,11 +6,11 @@ binary.compiler.cxxincludes += [
   os.path.join(SM.mms_root, 'core', 'sourcehook'),
 ]
 
-if builder.target_platform is 'linux':
+if builder.target_platform == 'linux':
   path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux', 'libpcre.a')
-elif builder.target_platform is 'windows':
+elif builder.target_platform == 'windows':
   path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_win', 'pcre.lib')
-elif builder.target_platform is 'mac':
+elif builder.target_platform == 'mac':
   path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin', 'libpcre.a')
 binary.compiler.postlink += [binary.Dep(path)]
 

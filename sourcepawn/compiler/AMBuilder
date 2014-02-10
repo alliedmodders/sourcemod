@@ -10,15 +10,15 @@ compiler.includes += [
   os.path.join(builder.buildPath, 'includes'),
 ]
  
-if compiler.cc.behavior is 'gcc':
+if compiler.cc.behavior == 'gcc':
   compiler.cflags += ['-Wno-format']
-  if builder.target_platform is 'linux':
+  if builder.target_platform == 'linux':
     compiler.postlink += ['-lgcc', '-lm']
-elif compiler.cc.behavior is 'msvc':
+elif compiler.cc.behavior == 'msvc':
   compiler.linkflags.remove('/SUBSYSTEM:WINDOWS')
   compiler.linkflags.append('/SUBSYSTEM:CONSOLE')
  
-if builder.target_platform is 'linux':
+if builder.target_platform == 'linux':
   compiler.defines += [
     'LINUX',
     'HAVE_STDINT_H',
@@ -26,7 +26,7 @@ if builder.target_platform is 'linux':
     'ENABLE_BINRELOC',
     '_GNU_SOURCE'
   ]
-elif builder.target_platform is 'mac':
+elif builder.target_platform == 'mac':
   compiler.defines += [
     'DARWIN',
     'HAVE_STDINT_H',
@@ -69,7 +69,7 @@ binary.sources += [
   'zlib/zutil.c',
   'sp_symhash.c'
 ]
-if builder.target_platform is 'linux':
+if builder.target_platform == 'linux':
   binary.sources.append('binreloc.c')
  
 SM.spcomp = builder.Add(binary)

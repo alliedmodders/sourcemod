@@ -13,11 +13,11 @@ for cxx_task in cxx_tasks:
 		debug_entry = cxx_task.binary
 
 	debug_file = os.path.join(builder.buildPath, debug_entry.path)
-	if builder.target_platform is 'linux':
+	if builder.target_platform == 'linux':
 		argv = ['dump_syms', debug_file, os.path.dirname(debug_file)]
-	elif builder.target_platform is 'mac':
+	elif builder.target_platform == 'mac':
 		argv = ['dump_syms', debug_file]
-	elif builder.target_platform is 'windows':
+	elif builder.target_platform == 'windows':
 		argv = ['dump_syms.exe', debug_file]
 
 	base_file = os.path.splitext(os.path.basename(debug_file))[0]

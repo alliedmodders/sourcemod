@@ -14,7 +14,7 @@ for sdk_name in SM.sdks:
   if sdk.name != 'ep1':
     binary.compiler.defines += ['HOOKING_ENABLED']
 
-  if binary.compiler.cxx.behavior is 'gcc':
+  if binary.compiler.cxx.behavior == 'gcc':
     binary.compiler.cxxflags += ['-Wno-invalid-offsetof']
 
   binary.sources += [
