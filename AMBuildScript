@@ -347,6 +347,11 @@ class SMConfig(object):
         compiler.defines += ['COMPILER_MSVC', 'COMPILER_MSVC32']
       else:
         compiler.defines += ['COMPILER_GCC']
+	
+	# For everything after Swarm, this needs to be defined for entity networking
+	# to work properly with sendprop value changes.
+    if sdk.name in ['blade', 'insurgency', 'csgo', 'dota']:
+      compiler.defines += ['NETWORK_VARS_ENABLED']
 
     if sdk.name in ['css', 'hl2dm', 'dods', '2013', 'tf2', 'l4d2']:
       if builder.target_platform in ['linux', 'mac']:
