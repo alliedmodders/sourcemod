@@ -105,6 +105,7 @@ CopyFiles('configs', 'addons/sourcemod/configs',
     'databases.cfg',
     'languages.cfg',
     'maplists.cfg',
+    'plugin_settings.cfg',
   ]
 )
 CopyFiles('configs/geoip', 'addons/sourcemod/configs/geoip', ['GeoIP.dat'])
