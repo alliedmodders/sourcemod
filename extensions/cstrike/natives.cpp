@@ -649,6 +649,10 @@ static cell_t CS_AliasToWeaponID(IPluginContext *pContext, const cell_t *params)
 	{
 		return SMCSWeapon_HKP2000;
 	}
+	else if(strstr(weapon, "cz75a") != NULL)
+	{
+		return SMCSWeapon_P250;
+	}
 #endif
 
 	int id = GetFakeWeaponID(AliasToWeaponID(weapon));
