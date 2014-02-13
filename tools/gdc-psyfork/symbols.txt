@@ -314,8 +314,8 @@
 		{
 			"OnTakeDamage_Offset1"					"TakeDmgPatch1"
 			"OnTakeDamage_Offset2"					"TakeDmgPatch2"
-			"OnTakeDamage_Byte_Win1"				"74"
-			"OnTakeDamage_Byte_Win2"				"74"
+			"OnTakeDamage_Byte_Win1"				"75"
+			"OnTakeDamage_Byte_Win2"				"75"
 			"OnTakeDamage_Byte_Lin1"				"0F"
 			"OnTakeDamage_Byte_Lin2"				"0F"
 			"WantsLagComp_Offset"					"LagCompPatch"
