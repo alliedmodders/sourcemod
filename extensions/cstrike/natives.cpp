@@ -502,8 +502,8 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 			ret.type = PassType_Basic;
 			ret.size = sizeof(void *);
 
-			g_RegNatives.Register(pGetView);
 			pGetView = g_pBinTools->CreateVCall(offset, 0, 0, &ret, pass, 2);
+			g_RegNatives.Register(pGetView);
 		}
 	}
 
