@@ -49,6 +49,19 @@
 				"linux"		"41"
 				"mac"		"22"
 			}
+			//Offset into HandleCommand_Buy_Internal
+			"CCSPlayerInventoryOffset"
+			{
+				"windows"	"285"
+				"linux"		"87"
+				"mac"		"109"
+			}
+			"GetItemInLoadout"
+			{
+				"windows"	"8"
+				"linux"		"9"
+				"mac"		"9"
+			}
 		}
 		"Signatures"
 		{
@@ -66,10 +79,10 @@
 				"linux"		"@_ZN9CCSPlayer10SwitchTeamEi"
 				"mac"		"@_ZN9CCSPlayer10SwitchTeamEi"
 			}
-			"HandleCommand_Buy_Internal"
+			"HandleCommand_Buy_Internal"//Wildcard first 6 bytes for getting address for weapon price.
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xE4\x2A\x81\xEC\x2A\x2A\x2A\x2A\x83\x3D\x2A\x2A\x2A\x2A\x00\x53\x56\x57\x8B\xF9"
+				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x83\x3D\x2A\x2A\x2A\x2A\x00\x53\x56\x57\x8B\xF9"
 				"linux"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcib"
 				"mac"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcib"
 			}
