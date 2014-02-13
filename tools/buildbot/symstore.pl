@@ -43,7 +43,7 @@ close(PDBLOG);
 
 #Lowercase DLLs.  Sigh.
 my (@files);
-opendir(DIR, "S:\\sourcemod");
+opendir(DIR, "S:\\sourcemod") or die "Could not open sourcemod symbol folder: $!\n";
 @files = readdir(DIR);
 closedir(DIR);
 
@@ -53,7 +53,7 @@ for ($i = 0; $i <= $#files; $i++)
 	$file = $files[$i];
 	next unless ($file =~ /\.dll$/);
 	next unless (-d "S:\\sourcemod\\$file");
-	opendir(DIR, "S:\\sourcemod\\$file");
+	opendir(DIR, "S:\\sourcemod\\$file") or die "Could not open S:\\sourcemod\\$file: $!\n";
 	@subdirs = readdir(DIR);
 	closedir(DIR);
 	for ($j = 0; $j <= $#subdirs; $j++)
