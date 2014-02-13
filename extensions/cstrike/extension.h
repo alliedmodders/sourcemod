@@ -52,6 +52,7 @@ int CallPriceForward(int client, const char *weapon_name, int price);
 #define WEAPON_ASSAULTSUIT 51
 #define WEAPON_NIGHTVISION 52
 #define WEAPON_DEFUSER 53
+#define WEAPON_M4 16
 #else
 #define WEAPON_C4 6
 #define WEAPON_KNIFE 28

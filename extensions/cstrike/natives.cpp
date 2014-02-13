@@ -34,6 +34,7 @@
 #include "forwards.h"
 #include "util_cstrike.h"
 #include <server_class.h>
+#include <iplayerinfo.h>
 
 int g_iPriceOffset = -1;
 
@@ -426,6 +427,11 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Failed to get weaponinfo");
 	}
 
+	CBaseEntity *pEntity;
+	if (!(pEntity = GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
 #if SOURCE_ENGINE == SE_CSGO
 	static ICallWrapper *pWrapper = NULL;
 
@@ -446,14 +452,91 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 		pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &ret, pass, 2))
 	}
 
+	// Get a CEconItemView for the m4
+	// Found in CCSPlayer::HandleCommand_Buy_Internal
+	// Linux a1 - CCSPlayer *pEntity, v5 - Player Team, a3 - ItemLoadoutSlot -1 use default loadoutslot:
+	// v4 = *(int (__cdecl **)(_DWORD, _DWORD, _DWORD))(*(_DWORD *)(a1 + 9492) + 36); // offset 9
+	// v6 = v4(a1 + 9492, v5, a3);
+	// Windows v5 - CCSPlayer *pEntity a4 -  ItemLoadoutSlot -1 use default loadoutslot:
+	// v8 = (*(int (__stdcall **)(_DWORD, int))(*(_DWORD *)(v5 + 9472) + 32))(*(_DWORD *)(v5 + 760), a4); // offset 8
+	// The function is CCSPlayerInventory::GetItemInLoadout(int, int)
+	// We can pass NULL view to the GetAttribute to use default loadoutslot.
+	// We only really care about m4a1/m4a4 as price differs between them
+	// thisPtrOffset = 9472/9492
+
+	static ICallWrapper *pGetView = NULL;
+	static int thisPtrOffset = -1;
+	CEconItemView *view = NULL;
+
+	if(!pGetView)
+	{
+		int offset = -1;
+		int byteOffset = -1;
+		void *pHandleCommandBuy = NULL;
+		if (!g_pGameConf->GetOffset("GetItemInLoadout", &offset) || offset == -1)
+		{
+			smutils->LogError(myself, "Failed to get GetItemInLoadout offset. Reverting to NULL ItemView");
+		}
+		else if (!g_pGameConf->GetOffset("CCSPlayerInventoryOffset", &byteOffset) || byteOffset == -1)
+		{
+			smutils->LogError(myself, "Failed to get CCSPlayerInventoryOffset offset. Reverting to NULL ItemView");
+		}
+		else if (!g_pGameConf->GetMemSig("HandleCommand_Buy_Internal", &pHandleCommandBuy) || !pHandleCommandBuy)
+		{
+			smutils->LogError(myself, "Failed to get HandleCommand_Buy_Internal function. Reverting to NULL ItemView");
+		}
+		else
+		{
+			thisPtrOffset = *(int *)((intptr_t)pHandleCommandBuy + byteOffset);
+
+			PassInfo pass[2];
+			PassInfo ret;
+			pass[0].flags = PASSFLAG_BYVAL;
+			pass[0].type  = PassType_Basic;
+			pass[0].size  = sizeof(int);
+			pass[1].flags = PASSFLAG_BYVAL;
+			pass[1].type  = PassType_Basic;
+			pass[1].size  = sizeof(int);
+
+			ret.flags = PASSFLAG_BYVAL;
+			ret.type = PassType_Basic;
+			ret.size = sizeof(void *);
+
+			g_RegNatives.Register(pGetView);
+			pGetView = g_pBinTools->CreateVCall(offset, 0, 0, &ret, pass, 2);
+		}
+	}
+
+	IPlayerInfo *playerinfo = playerhelpers->GetGamePlayer(params[1])->GetPlayerInfo();
+	if(pGetView && thisPtrOffset != -1 && playerinfo)
+	{
+		//If the gun isnt an M4 we ignore this as M4 is the only one that differs in price based on Loadout item.
+		int iLoadoutSlot = -1;
+		if(id == WEAPON_M4)
+		{
+			iLoadoutSlot = 15;
+		}
+
+		unsigned char vstk_view[sizeof(void *) + sizeof(int) * 2];
+		unsigned char *vptr_view = vstk_view;
+
+		*(void **)vptr_view = (void *)((intptr_t)pEntity + thisPtrOffset);
+		vptr_view += sizeof(void *);
+		*(int *)vptr_view = playerinfo->GetTeamIndex();
+		vptr_view += sizeof(int);
+		*(int *)vptr_view = iLoadoutSlot;
+
+		pGetView->Execute(vstk_view, &view);
+	}
+
 	unsigned char vstk[sizeof(void *) * 2 + sizeof(char *)];
 	unsigned char *vptr = vstk;
 
 	*(void **)vptr = info;
 	vptr += sizeof(void *);
 	*(const char **)vptr = "in game price";
-	vptr += sizeof(const char **);
-	*(CEconItemView **)vptr = NULL;
+	vptr += sizeof(const char *);
+	*(CEconItemView **)vptr = view;
 
 	int price = 0;
  	pWrapper->Execute(vstk, &price);
@@ -469,12 +552,6 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 
 	int price = *(int *)((intptr_t)info + g_iPriceOffset);
 #endif
-
-	CBaseEntity *pEntity;
-	if (!(pEntity = GetCBaseEntity(params[1], true)))
-	{
-		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
-	}
 
 	if (params[3] || weaponNameOffset == -1)
 		return price;
