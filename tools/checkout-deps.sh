@@ -19,8 +19,8 @@ fi
 
 if [ ! -d "sourcemod-central" ]; then
   if [ ! -d "sourcemod-1.5" ]; then
-    mkdir -p sm-dependencies
-    cd sm-dependencies
+    echo "Could not find a SourceMod repository; make sure you aren't running this script inside it."
+    exit 1
   fi
 fi
 
@@ -90,3 +90,18 @@ do
   checkout
 done
 
+`python -c "import ambuild2"`
+if [ $? -eq 1 ]; then
+  name=ambuild
+  path=ambuild
+  checkout
+
+  cd ambuild
+  if [ $iswin -eq 1 ]; then
+    python setup.py install
+  else
+    python setup.py build
+    echo "About to install AMBuild - press Ctrl+C to abort, otherwise enter your password for sudo."
+    sudo python setup.py install
+  fi
+fi
