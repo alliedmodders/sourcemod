@@ -77,10 +77,12 @@ static const char *g_pParseEngine = NULL;
 #define PLATFORM_SERVER_BINARY		"server.dll"
 #elif defined PLATFORM_LINUX
 #define PLATFORM_NAME				"linux"
+#define PLATFORM_COMPAT_ALT			"mac"				/* Alternate platform name if game data is missing for primary one */
 #define PLATFORM_SERVER_BINARY		"server_i486.so"
 #elif defined PLATFORM_APPLE
-#define PLATFORM_NAME               "mac"
-#define PLATFORM_SERVER_BINARY      "server.dylib"
+#define PLATFORM_NAME				"mac"
+#define PLATFORM_COMPAT_ALT			"linux"
+#define PLATFORM_SERVER_BINARY		"server.dylib"
 #endif
 
 struct TempSigInfo
@@ -114,6 +116,30 @@ static bool DoesGameMatch(const char *value)
 static bool DoesEngineMatch(const char *value)
 {
 	return strcmp(value, g_pParseEngine) == 0;
+}
+
+static inline bool DoesPlatformMatch(const char *platform)
+{
+	return strcmp(platform, PLATFORM_NAME) == 0;
+}
+
+static inline bool IsPlatformCompatible(const char *platform, bool *hadPrimaryMatch)
+{
+	if (DoesPlatformMatch(platform))
+	{
+#if defined PLATFORM_COMPAT_ALT
+		*hadPrimaryMatch = true;
+#endif
+		return true;
+	}
+
+#if defined PLATFORM_COMPAT_ALT
+	/* If entry hasn't been found for the primary platform name, check for compatible alternate */
+	if (!*hadPrimaryMatch)
+		return strcmp(platform, PLATFORM_COMPAT_ALT) == 0;
+#endif
+
+	return false;
 }
 
 CGameConfig::CGameConfig(const char *file, const char *engine)
@@ -228,6 +254,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			m_Class[0] = '\0';
 			strncopy(m_offset, name, sizeof(m_offset));
 			m_ParseState = PSTATE_GAMEDEFS_OFFSETS_OFFSET;
+			matched_platform = false;
 			break;
 		}
 	case PSTATE_GAMEDEFS_SIGNATURES:
@@ -235,6 +262,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			strncopy(m_offset, name, sizeof(m_offset));
 			s_TempSig.Reset();
 			m_ParseState = PSTATE_GAMEDEFS_SIGNATURES_SIG;
+			matched_platform = false;
 			break;
 		}
 	case PSTATE_GAMEDEFS_CRC:
@@ -299,7 +327,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 		}
 	case PSTATE_GAMEDEFS_ADDRESSES_ADDRESS:
 		{
-			if (strcmp(name, PLATFORM_NAME) == 0)
+			if (DoesPlatformMatch(name))
 			{
 				m_ParseState = PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ;
 			}
@@ -347,7 +375,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			strncopy(m_Class, value, sizeof(m_Class));
 		} else if (strcmp(key, "prop") == 0) {
 			strncopy(m_Prop, value, sizeof(m_Prop));
-		} else if (strcmp(key, PLATFORM_NAME) == 0) {
+		} else if (IsPlatformCompatible(key, &matched_platform)) {
 			m_Offsets.replace(m_offset, atoi(value));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
@@ -379,14 +407,14 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			}
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SIGNATURES_SIG) {
-		if (strcmp(key, PLATFORM_NAME) == 0)
+		if (IsPlatformCompatible(key, &matched_platform))
 		{
 			strncopy(s_TempSig.sig, value, sizeof(s_TempSig.sig));
 		} else if (strcmp(key, "library") == 0) {
 			strncopy(s_TempSig.library, value, sizeof(s_TempSig.library));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_CRC_BINARY) {
-		if (strcmp(key, PLATFORM_NAME) == 0 
+		if (DoesPlatformMatch(key)
 			&& s_ServerBinCRC_Ok
 			&& !bShouldBeReadingDefault)
 		{

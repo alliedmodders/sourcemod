@@ -92,6 +92,7 @@ private:
 	bool matched_game;
 	bool had_engine;
 	bool matched_engine;
+	bool matched_platform;
 
 	/* Custom Sections */
 	unsigned int m_CustomLevel;
