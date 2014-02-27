@@ -530,10 +530,6 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 
 	pMsg->set_dest(dest);
 	pMsg->add_param(msg);
-	pMsg->add_param("");
-	pMsg->add_param("");
-	pMsg->add_param("");
-	pMsg->add_param("");
 #elif SOURCE_ENGINE == SE_CSGO
 	CCSUsrMsg_TextMsg *pMsg;
 	if ((pMsg = (CCSUsrMsg_TextMsg *)g_UserMsgs.StartProtobufMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
