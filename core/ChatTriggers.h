@@ -70,7 +70,7 @@ public:
 	bool IsChatTrigger();
 	bool WasFloodedMessage();
 private:
-	bool PreProcessTrigger(edict_t *pEdict, const char *args, bool is_quoted);
+	bool PreProcessTrigger(edict_t *pEdict, const char *args);
 	bool ClientIsFlooding(int client);
 	cell_t CallOnClientSayCommand(int client);
 private:
@@ -92,7 +92,7 @@ private:
 	unsigned int m_ReplyTo;
 	char m_ToExecute[300];
 	const char *m_Arg0Backup;
-	const char *m_ArgSBackup;
+	char *m_ArgSBackup;
 	IForward *m_pShouldFloodBlock;
 	IForward *m_pDidFloodBlock;
 	IForward *m_pOnClientSayCmd;

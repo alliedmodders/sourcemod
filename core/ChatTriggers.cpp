@@ -57,7 +57,7 @@ ChatTriggers g_ChatTriggers;
 bool g_bSupressSilentFails = false;
 
 ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false), 
-	m_ReplyTo(SM_REPLY_CONSOLE)
+	m_ReplyTo(SM_REPLY_CONSOLE), m_ArgSBackup(NULL)
 {
 	m_PubTrigger = sm_strdup("!");
 	m_PrivTrigger = sm_strdup("/");
@@ -76,6 +76,8 @@ ChatTriggers::~ChatTriggers()
 	m_PubTrigger = NULL;
 	delete [] m_PrivTrigger;
 	m_PrivTrigger = NULL;
+	delete [] m_ArgSBackup;
+	m_ArgSBackup = NULL;
 }
 
 ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key, 
@@ -219,7 +221,52 @@ void ChatTriggers::OnSayCommand_Pre()
 	/* Save these off for post hook as the command data returned from the engine in older engine versions 
 	 * can be NULL, despite the data still being there and valid. */
 	m_Arg0Backup = command.Arg(0);
-	m_ArgSBackup = command.ArgS();
+
+	/* Handle quoted string sets */
+	bool is_quoted = false;
+	size_t len = strlen(args);
+
+	/* The engine does not display empty say commands.
+	 * So to prevent forwarding it, let's block it. */
+	if (len == 0)
+	{
+		RETURN_META(MRES_SUPERCEDE);
+	}
+
+	/* The first pair of quotes are stripped from client say commands, but not console ones.
+	 * We do not want the forwards to differ from what is displayed.
+	 * So only strip the first pair of quotes from client say commands. */
+	if (client != 0 && args[0] == '"' && args[len-1] == '"')
+	{
+		/* The server normally won't display empty say commands, but in this case it does.
+		 * I don't think it's desired so let's block it. */
+		if (len <= 2)
+		{
+			RETURN_META(MRES_SUPERCEDE);
+		}
+
+		args++;
+		len--;
+		is_quoted = true;
+	}
+	
+	/* Some? engines strip the last quote when printing the string to chat.
+	 * This results in having a double-quoted message passed to the OnClientSayCommand ("message") forward,
+	 * but losing the last quote in the OnClientSayCommand_Post ("message) forward.
+	 * To compensate this, we copy the args into our own buffer where the engine won't mess with
+	 * and strip the quotes. */
+	delete [] m_ArgSBackup;
+	m_ArgSBackup = new char[CCommand::MaxCommandLength()+1];
+	memcpy(m_ArgSBackup, args, len+1);
+
+	/* Strip the quotes from the argument */
+	if (is_quoted)
+	{
+		if (m_ArgSBackup[len-1] == '"')
+		{
+			m_ArgSBackup[--len] = '\0';
+		}
+	}
 
 	/* The server console cannot do this */
 	if (client == 0)
@@ -259,14 +306,6 @@ void ChatTriggers::OnSayCommand_Pre()
 		RETURN_META(MRES_SUPERCEDE);
 	}
 
-	/* Handle quoted string sets */
-	bool is_quoted = false;
-	if (args[0] == '"')
-	{
-		args++;
-		is_quoted = true;
-	}
-
 #if SOURCE_ENGINE == SE_EPISODEONE
 	if (m_bIsINS && strcmp(m_Arg0Backup, "say2") == 0 && strlen(args) >= 4)
 	{
@@ -293,7 +332,7 @@ void ChatTriggers::OnSayCommand_Pre()
 	/**
 	 * Test if this is actually a command!
 	 */
-	if (is_trigger && PreProcessTrigger(PEntityOfEntIndex(client), args, is_quoted))
+	if (is_trigger && PreProcessTrigger(PEntityOfEntIndex(client), args))
 	{
 		m_bIsChatTrigger = true;
 
@@ -354,7 +393,7 @@ void ChatTriggers::OnSayCommand_Post()
 	m_bWasFloodedMessage = false;
 }
 
-bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_quoted)
+bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args)
 {
 	/* Extract a command.  This is kind of sloppy. */
 	char cmd_buf[64];
@@ -401,7 +440,7 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_
 	}
 
 	/* See if we need to do extra string manipulation */
-	if (is_quoted || prepended)
+	if (prepended)
 	{
 		size_t len;
 
@@ -411,15 +450,6 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_
 			len = UTIL_Format(m_ToExecute, sizeof(m_ToExecute), "sm_%s", args);
 		} else {
 			len = strncopy(m_ToExecute, args, sizeof(m_ToExecute));
-		}
-
-		/* Check if we need to strip a quote */
-		if (is_quoted)
-		{
-			if (m_ToExecute[len-1] == '"')
-			{
-				m_ToExecute[--len] = '\0';
-			}
 		}
 	} else {
 		strncopy(m_ToExecute, args, sizeof(m_ToExecute));
