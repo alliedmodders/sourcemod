@@ -123,6 +123,8 @@ void ConVarManager::OnSourceModAllInitialized()
 	}
 #endif
 
+	g_Players.AddClientListener(this);
+
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_ADD_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
 #else
@@ -193,6 +195,8 @@ void ConVarManager::OnSourceModShutdown()
 		m_bIsVSPQueryHooked = false;
 	}
 #endif
+
+	g_Players.RemoveClientListener(this);
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_REMOVE_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
@@ -301,6 +305,22 @@ void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
 	{
 		ConVarQuery &query = (*iter);
 		if (query.pCallback->GetParentRuntime() == pRuntime)
+		{
+			iter = m_ConVarQueries.erase(iter);
+			continue;
+		}
+
+		++iter;
+	}
+}
+
+void ConVarManager::OnClientDisconnected(int client)
+{
+	/* Remove convar queries for this client that haven't returned results yet */
+	for (List<ConVarQuery>::iterator iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end();)
+	{
+		ConVarQuery &query = (*iter);
+		if (query.client == client)
 		{
 			iter = m_ConVarQueries.erase(iter);
 			continue;
@@ -628,7 +648,7 @@ QueryCvarCookie_t ConVarManager::QueryClientConVar(edict_t *pPlayer, const char 
 		return InvalidQueryCvarCookie;
 	}
 
-	ConVarQuery query = {cookie, pCallback, (cell_t)hndl};
+	ConVarQuery query = {cookie, pCallback, (cell_t)hndl, IndexOfEdict(pPlayer)};
 	m_ConVarQueries.push_back(query);
 #endif
 
