@@ -69,6 +69,8 @@
 		{
 			return engine->Cmd_Argv(index);
 		}
+
+		static int MaxCommandLength() { return 512; }
 	};
 
 	inline bool IsFlagSet(ConCommandBase *cmd, int flag)
