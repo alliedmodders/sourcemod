@@ -64,7 +64,7 @@ ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false),
 	m_PubTriggerSize = 1;
 	m_PrivTriggerSize = 1;
 	m_bIsChatTrigger = false;
-	m_bPluginIgnored = false;
+	m_bPluginIgnored = true;
 #if SOURCE_ENGINE == SE_EPISODEONE
 	m_bIsINS = false;
 #endif
@@ -207,10 +207,10 @@ void ChatTriggers::OnSayCommand_Pre()
 	int client = g_ConCmds.GetCommandClient();
 	m_bIsChatTrigger = false;
 	m_bWasFloodedMessage = false;
-	m_bPluginIgnored = false;
+	m_bPluginIgnored = true;
 
 	const char *args = command.ArgS();
-	
+
 	if (!args)
 	{
 		RETURN_META(MRES_IGNORED);
@@ -224,12 +224,11 @@ void ChatTriggers::OnSayCommand_Pre()
 	/* The server console cannot do this */
 	if (client == 0)
 	{
-		cell_t res = CallOnClientSayCommand(client);
-		if (res >= Pl_Handled)
+		if (CallOnClientSayCommand(client) >= Pl_Handled)
 		{
-			m_bPluginIgnored = (res >= Pl_Stop);
 			RETURN_META(MRES_SUPERCEDE);
 		}
+
 		RETURN_META(MRES_IGNORED);
 	}
 
@@ -304,15 +303,12 @@ void ChatTriggers::OnSayCommand_Pre()
 		m_bWillProcessInPost = true;
 	}
 
-	cell_t res = CallOnClientSayCommand(client);
-
-	if (res >= Pl_Handled)
+	if (is_silent && (m_bIsChatTrigger || (g_bSupressSilentFails && pPlayer->GetAdminId() != INVALID_ADMIN_ID)))
 	{
-		m_bPluginIgnored = (res >= Pl_Stop);
 		RETURN_META(MRES_SUPERCEDE);
 	}
 
-	if (is_silent && (m_bIsChatTrigger || (g_bSupressSilentFails && pPlayer->GetAdminId() != INVALID_ADMIN_ID)))
+	if (CallOnClientSayCommand(client) >= Pl_Handled)
 	{
 		RETURN_META(MRES_SUPERCEDE);
 	}
@@ -335,7 +331,7 @@ void ChatTriggers::OnSayCommand_Post()
 	{
 		/* Reset this for re-entrancy */
 		m_bWillProcessInPost = false;
-		
+
 		/* Execute the cached command */
 		unsigned int old = SetReplyTo(SM_REPLY_CHAT);
 #if SOURCE_ENGINE == SE_DOTA
@@ -346,12 +342,8 @@ void ChatTriggers::OnSayCommand_Post()
 		SetReplyTo(old);
 	}
 
-	if (m_bPluginIgnored)
+	if (!m_bPluginIgnored && m_pOnClientSayCmd_Post->GetFunctionCount() != 0)
 	{
-		m_bPluginIgnored = false;
-	}
-	else if (!m_bWasFloodedMessage && !m_bIsChatTrigger && m_pOnClientSayCmd_Post->GetFunctionCount() != 0)
-	{	
 		m_pOnClientSayCmd_Post->PushCell(client);
 		m_pOnClientSayCmd_Post->PushString(m_Arg0Backup);
 		m_pOnClientSayCmd_Post->PushString(m_ArgSBackup);
@@ -404,7 +396,7 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_
 		{
 			return false;
 		}
-		
+
 		prepended = true;
 	}
 
@@ -420,7 +412,7 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_
 		} else {
 			len = strncopy(m_ToExecute, args, sizeof(m_ToExecute));
 		}
-		
+
 		/* Check if we need to strip a quote */
 		if (is_quoted)
 		{
@@ -439,13 +431,16 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_
 cell_t ChatTriggers::CallOnClientSayCommand(int client)
 {
 	cell_t res = Pl_Continue;
-	if (!m_bIsChatTrigger && m_pOnClientSayCmd->GetFunctionCount() != 0)
+	if (m_pOnClientSayCmd->GetFunctionCount() != 0)
 	{
 		m_pOnClientSayCmd->PushCell(client);
 		m_pOnClientSayCmd->PushString(m_Arg0Backup);
 		m_pOnClientSayCmd->PushString(m_ArgSBackup);
 		m_pOnClientSayCmd->Execute(&res);
 	}
+
+	m_bPluginIgnored = (res >= Pl_Stop);
+
 	return res;
 }
 
