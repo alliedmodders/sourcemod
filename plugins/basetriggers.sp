@@ -251,27 +251,11 @@ public Action:Command_FriendlyFire(client, args)
 
 public OnClientSayCommand_Post(client, const String:command[], const String:sArgs[])
 {
-	decl String:text[192];
-	new startidx = 0;
-	
-	if (strcopy(text, sizeof(text), sArgs) < 1)
-	{
-		return;
-	}
-	
-	if (text[0] == '"')
-	{
-		startidx = 1;
-	}
-
-	if ((strcmp(command, "say2", false) == 0) && strlen(sArgs) >= 4)
-		startidx += 4;
-
-	if (strcmp(text[startidx], "timeleft", false) == 0)
+	if (strcmp(sArgs, "timeleft", false) == 0)
 	{
 		ShowTimeLeft(client, TIMELEFT_ALL_MAYBE);
 	}
-	else if (strcmp(text[startidx], "thetime", false) == 0)
+	else if (strcmp(sArgs, "thetime", false) == 0)
 	{
 		decl String:ctime[64];
 		FormatTime(ctime, 64, NULL_STRING);
@@ -285,11 +269,11 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 			PrintToChat(client,"[SM] %t", "Thetime", ctime);
 		}
 	}
-	else if (strcmp(text[startidx], "ff", false) == 0)
+	else if (strcmp(sArgs, "ff", false) == 0)
 	{
 		ShowFriendlyFire(client);
 	}
-	else if (strcmp(text[startidx], "currentmap", false) == 0)
+	else if (strcmp(sArgs, "currentmap", false) == 0)
 	{
 		decl String:map[64];
 		GetCurrentMap(map, sizeof(map));
@@ -303,7 +287,7 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 			PrintToChat(client,"[SM] %t", "Current Map", map);
 		}
 	}
-	else if (strcmp(text[startidx], "nextmap", false) == 0)
+	else if (strcmp(sArgs, "nextmap", false) == 0)
 	{
 		decl String:map[32];
 		GetNextMap(map, sizeof(map));
@@ -331,7 +315,7 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 			}
 		}
 	}
-	else if (strcmp(text[startidx], "motd", false) == 0)
+	else if (strcmp(sArgs, "motd", false) == 0)
 	{
 		ShowMOTDPanel(client, "Message Of The Day", "motd", MOTDPANEL_TYPE_INDEX);
 	}

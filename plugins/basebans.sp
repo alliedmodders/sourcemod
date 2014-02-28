@@ -398,14 +398,9 @@ public Action:OnClientSayCommand(client, const String:command[], const String:sA
 	if(g_IsWaitingForChatReason[client])
 	{
 		g_IsWaitingForChatReason[client] = false;
-		
-		decl String:message[192];		
-		GetCmdArgString(message, sizeof(message));
-		StripQuotes(message);
-		
-		PrepareBan(client, g_BanTarget[client], g_BanTime[client], message);
-		
-		return Plugin_Handled;
+		PrepareBan(client, g_BanTarget[client], g_BanTime[client], sArgs);
+		return Plugin_Stop;
 	}
+
 	return Plugin_Continue;
 }

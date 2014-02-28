@@ -221,22 +221,34 @@ void ChatTriggers::OnSayCommand_Pre()
 	/* Save these off for post hook as the command data returned from the engine in older engine versions 
 	 * can be NULL, despite the data still being there and valid. */
 	m_Arg0Backup = command.Arg(0);
-
-	/* Handle quoted string sets */
-	bool is_quoted = false;
 	size_t len = strlen(args);
 
-	/* The engine does not display empty say commands.
-	 * So to prevent forwarding it, let's block it. */
-	if (len == 0)
+#if SOURCE_ENGINE == SE_EPISODEONE
+	if (m_bIsINS)
 	{
-		RETURN_META(MRES_SUPERCEDE);
+		if (strcmp(m_Arg0Backup, "say2") == 0 && len >= 4)
+		{
+			args += 4;
+			len -= 4;
+		}
+
+		if (len == 0)
+		{
+			RETURN_META(MRES_SUPERCEDE);
+		}
 	}
+#endif
 
 	/* The first pair of quotes are stripped from client say commands, but not console ones.
 	 * We do not want the forwards to differ from what is displayed.
 	 * So only strip the first pair of quotes from client say commands. */
-	if (client != 0 && args[0] == '"' && args[len-1] == '"')
+	bool is_quoted = false;
+
+	if (
+#if SOURCE_ENGINE == SE_EPISODEONE
+		!m_bIsINS && 
+#endif
+		client != 0 && args[0] == '"' && args[len-1] == '"')
 	{
 		/* The server normally won't display empty say commands, but in this case it does.
 		 * I don't think it's desired so let's block it. */
@@ -249,7 +261,7 @@ void ChatTriggers::OnSayCommand_Pre()
 		len--;
 		is_quoted = true;
 	}
-	
+
 	/* Some? engines strip the last quote when printing the string to chat.
 	 * This results in having a double-quoted message passed to the OnClientSayCommand ("message") forward,
 	 * but losing the last quote in the OnClientSayCommand_Post ("message) forward.
@@ -306,27 +318,20 @@ void ChatTriggers::OnSayCommand_Pre()
 		RETURN_META(MRES_SUPERCEDE);
 	}
 
-#if SOURCE_ENGINE == SE_EPISODEONE
-	if (m_bIsINS && strcmp(m_Arg0Backup, "say2") == 0 && strlen(args) >= 4)
-	{
-		args += 4;
-	}
-#endif
-
 	bool is_trigger = false;
 	bool is_silent = false;
 
 	/* Check for either trigger */
-	if (m_PubTriggerSize && strncmp(args, m_PubTrigger, m_PubTriggerSize) == 0)
+	if (m_PubTriggerSize && strncmp(m_ArgSBackup, m_PubTrigger, m_PubTriggerSize) == 0)
 	{
 		is_trigger = true;
-		args = &args[m_PubTriggerSize];
+		args = &m_ArgSBackup[m_PubTriggerSize];
 	} 
-	else if (m_PrivTriggerSize && strncmp(args, m_PrivTrigger, m_PrivTriggerSize) == 0) 
+	else if (m_PrivTriggerSize && strncmp(m_ArgSBackup, m_PrivTrigger, m_PrivTriggerSize) == 0) 
 	{
 		is_trigger = true;
 		is_silent = true;
-		args = &args[m_PrivTriggerSize];
+		args = &m_ArgSBackup[m_PrivTriggerSize];
 	}
 
 	/**
