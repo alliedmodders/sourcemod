@@ -139,7 +139,7 @@
 			"SetClanTag"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x55\x08\x85\xD2\x74\x2A\x8D\x81\xDC\x1F\x00\x00"
+				"windows"	"\x55\x8B\xEC\x8B\x55\x08\x85\xD2\x74\x2A\x8D\x81\x1C\x20\x00\x00"
 				"linux"		"@_ZN9CCSPlayer10SetClanTagEPKc"
 				"mac"		"@_ZN9CCSPlayer10SetClanTagEPKc"
 			}
