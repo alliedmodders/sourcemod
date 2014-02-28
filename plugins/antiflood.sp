@@ -72,7 +72,7 @@ public bool:OnClientFloodCheck(client)
 		return false;
 	}
 	
-	if (g_LastTime[client] > GetGameTime())
+	if (g_LastTime[client] >= GetGameTime())
 	{
 		/* If player has 3 or more flood tokens, block their message */
 		if (g_FloodTokens[client] >= 3)
@@ -95,7 +95,7 @@ public OnClientFloodResult(client, bool:blocked)
 	new Float:curTime = GetGameTime();
 	new Float:newTime = curTime + max_chat;
 	
-	if (g_LastTime[client] > curTime)
+	if (g_LastTime[client] >= curTime)
 	{
 		/* If the last message was blocked, update their time limit */
 		if (blocked)
