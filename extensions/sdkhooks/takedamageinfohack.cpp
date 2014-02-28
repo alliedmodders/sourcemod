@@ -72,6 +72,7 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_iDamagedOtherPlayers = 0;
 	m_iPlayerPenetrationCount = 0;
 	m_flDamageBonus = 0.0f;
+	m_bForceFriendlyFire = false;
 #endif
 
 #if SOURCE_ENGINE >= SE_ALIENSWARM
