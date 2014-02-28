@@ -126,6 +126,8 @@ void ConVarManager::OnSourceModAllInitialized()
 	}
 #endif
 
+	g_Players.AddClientListener(this);
+
 	SH_ADD_HOOK_STATICFUNC(ICvar, CallGlobalChangeCallbacks, icvar, OnConVarChanged, false);
 
 	g_PluginSys.AddPluginsListener(this);
@@ -190,6 +192,8 @@ void ConVarManager::OnSourceModShutdown()
 		m_bIsVSPQueryHooked = false;
 	}
 #endif
+
+	g_Players.RemoveClientListener(this);
 
 	SH_REMOVE_HOOK_STATICFUNC(ICvar, CallGlobalChangeCallbacks, icvar, OnConVarChanged, false);
 
@@ -304,6 +308,22 @@ void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
 		{
 			m_ConVarQueries.erase(iter);
 		}
+	}
+}
+
+void ConVarManager::OnClientDisconnected(int client)
+{
+	/* Remove convar queries for this client that haven't returned results yet */
+	for (List<ConVarQuery>::iterator iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end();)
+	{
+		ConVarQuery &query = (*iter);
+		if (query.client == client)
+		{
+			iter = m_ConVarQueries.erase(iter);
+			continue;
+		}
+
+		++iter;
 	}
 }
 
@@ -619,7 +639,7 @@ QueryCvarCookie_t ConVarManager::QueryClientConVar(edict_t *pPlayer, const char 
 		return InvalidQueryCvarCookie;
 	}
 
-	ConVarQuery query = {cookie, pCallback, hndl};
+	ConVarQuery query = {cookie, pCallback, (cell_t)hndl, IndexOfEdict(pPlayer)};
 	m_ConVarQueries.push_back(query);
 #endif
 
