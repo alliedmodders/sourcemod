@@ -34,10 +34,21 @@ for sdk_name in SM.sdks:
     elif builder.target_platform == 'mac':
       lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
     elif builder.target_platform == 'windows':
-      if 'DEBUG' in compiler.defines:
-        lib_path = os.path.join(sdk.path, 'lib', 'win32', 'debug', 'vs2010', 'libprotobuf.lib')
+      msvc_ver = int(compiler.cxx.version)
+      vs_year = ''
+      if msvc_ver == 1800:
+        vs_year = '2013'
+      elif msvc_ver == 1700:
+        vs_year = '2012'
+      elif msvc_ver == 1600:
+        vs_year = '2010'
       else:
-        lib_path = os.path.join(sdk.path, 'lib', 'win32', 'release', 'vs2010', 'libprotobuf.lib')
+        raise Exception('Cannot find libprotobuf for MSVC version "' + compiler.cxx.version + '"')
+
+      if 'DEBUG' in compiler.defines:
+        lib_path = os.path.join(sdk.path, 'lib', 'win32', 'debug', 'vs' + vs_year, 'libprotobuf.lib')
+      else:
+        lib_path = os.path.join(sdk.path, 'lib', 'win32', 'release', 'vs' + vs_year, 'libprotobuf.lib')
     compiler.linkflags.insert(0, binary.Dep(lib_path))
 
   binary.sources += [
