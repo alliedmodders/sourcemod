@@ -2175,7 +2175,6 @@ static cell_t GetEntityFlags(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Could not find m_fFlags prop in gamedata");
 	}
 
-	typedescription_t *td;
 	datamap_t *pMap;
 
 	if ((pMap = CBaseEntity_GetDataDescMap(pEntity)) == NULL)

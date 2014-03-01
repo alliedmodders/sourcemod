@@ -380,7 +380,6 @@ DataTableInfo *CHalfLife2::_FindServerClass(const char *classname)
 bool CHalfLife2::FindSendPropInfo(const char *classname, const char *offset, sm_sendprop_info_t *info)
 {
 	DataTableInfo *pInfo;
-	sm_sendprop_info_t *prop;
 
 	if ((pInfo = _FindServerClass(classname)) == NULL)
 	{
@@ -435,7 +434,6 @@ bool CHalfLife2::FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatab
 
 	DataMapCache *cache = i->value;
 
-	sm_datatable_info_t *pNewTable;
 	if (!cache->retrieve(offset, pDataTable))
 	{
 		if (!UTIL_FindDataMapInfo(pMap, offset, pDataTable))

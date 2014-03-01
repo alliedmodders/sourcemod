@@ -1713,7 +1713,6 @@ void AdminCache::DumpCache(FILE *fp)
 	unsigned int num;
 	AdminUser *pAdmin;
 	AdminGroup *pGroup;
-	char name_buffer[512];
 
 	fprintf(fp, "\"Groups\"\n{\n");
 	
