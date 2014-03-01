@@ -173,8 +173,6 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 
 void SDKTools::OnClientDisconnecting(int client)
 {
-	g_Hooks.OnClientDisconnecting(client);
-
 	int max_clients = playerhelpers->GetMaxClients();
 
 	if (g_VoiceHookCount == 0)

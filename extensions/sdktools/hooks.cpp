@@ -116,36 +116,18 @@ void CHookManager::OnClientPutInServer(int client)
 		return;
 	}
 
-	SH_ADD_MANUALHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmd), false);
-}
-
-void CHookManager::OnClientDisconnecting(int client)
-{
-	if (!PRCH_enabled)
-		return;
-
-	if (!PRCH_used)
-		return;
-
-	edict_t *pEdict = PEntityOfEntIndex(client);
-	if (!pEdict)
+	CVTableHook hook(pEntity);
+	for (size_t i = 0; i < m_runUserCmdHooks.length(); ++i)
 	{
-		return;
+		if (hook == m_runUserCmdHooks[i])
+		{
+			return;
+		}
 	}
 
-	IServerUnknown *pUnknown = pEdict->GetUnknown();
-	if (!pUnknown)
-	{
-		return;
-	}
-
-	CBaseEntity *pEntity = pUnknown->GetBaseEntity();
-	if (!pEntity)
-	{
-		return;
-	}
-
-	SH_REMOVE_MANUALHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmd), false);
+	int hookid = SH_ADD_MANUALVPHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmd), false);
+	hook.SetHookID(hookid);
+	m_runUserCmdHooks.append(new CVTableHook(hook));
 }
 
 void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
@@ -245,15 +227,12 @@ void CHookManager::OnPluginUnloaded(IPlugin *plugin)
 	if (m_usercmdsFwd->GetFunctionCount())
 		return;
 
-	int MaxClients = playerhelpers->GetMaxClients();
-	for (int i = 1; i <= MaxClients; i++)
+	for (size_t i = 0; i < m_runUserCmdHooks.length(); ++i)
 	{
-		if (playerhelpers->GetGamePlayer(i)->IsInGame())
-		{
-			OnClientDisconnecting(i);
-		}
+		delete m_runUserCmdHooks[i];
 	}
 
+	m_runUserCmdHooks.clear();
 	PRCH_used = false;
 }
 
