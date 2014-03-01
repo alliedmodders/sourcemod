@@ -50,7 +50,7 @@ clobber build because amx.h changed (sigh)
 a dead fish
 ten clams, ten of them
 snail
-rom hom
+rum ham
 scrambled eggs
 EXCEPTION
 asher make me touch this
