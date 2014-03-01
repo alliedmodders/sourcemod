@@ -343,11 +343,10 @@ class SMConfig(object):
       compiler.defines.remove('_snprintf=snprintf')
       compiler.defines.remove('_vsnprintf=vsnprintf')
 
-    if sdk.name in ['swarm', 'blade', 'insurgency', 'csgo', 'dota']:
-      if compiler.cc.behavior == 'msvc':
-        compiler.defines += ['COMPILER_MSVC', 'COMPILER_MSVC32']
-      else:
-        compiler.defines += ['COMPILER_GCC']
+    if compiler.cc.behavior == 'msvc':
+      compiler.defines += ['COMPILER_MSVC', 'COMPILER_MSVC32']
+    else:
+      compiler.defines += ['COMPILER_GCC']
 	
 	# For everything after Swarm, this needs to be defined for entity networking
 	# to work properly with sendprop value changes.
