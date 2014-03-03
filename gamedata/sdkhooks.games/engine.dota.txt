@@ -6,83 +6,123 @@
 		{
 			"EndTouch"
 			{
-				"windows"	"105"
+				"windows"	"107"
+				"linux"		"108"
+				"mac"		"108"
 			}
 			"FireBullets"
 			{
-				"windows"	"118"
+				"windows"	"120"
+				"linux"		"121"
+				"mac"		"121"
 			}
 			"GetMaxHealth"
 			{
-				"windows"	"122"
+				"windows"	"124"
+				"linux"		"125"
+				"mac"		"125"
 			}
 			"OnTakeDamage"
 			{
-				"windows"	"70"
+				"windows"	"73"
+				"linux"		"74"
+				"mac"		"74"
 			}
 			"PreThink"
 			{
 				"windows"	"363"
+				"linux"		"364"
+				"mac"		"364"
 			}
 			"PostThink"
 			{
 				"windows"	"364"
+				"linux"		"365"
+				"mac"		"365"
 			}
 			"SetTransmit"
 			{
 				"windows"	"22"
+				"linux"		"23"
+				"mac"		"23"
 			}
 			"ShouldCollide"
 			{
 				"windows"	"17"
+				"linux"		"18"
+				"mac"		"18"
 			}
 			"Spawn"
 			{
-				"windows"	"24"
+				"windows"	"27"
+				"linux"		"28"
+				"mac"		"28"
 			}
 			"StartTouch"
 			{
-				"windows"	"103"
+				"windows"	"105"
+				"linux"		"106"
+				"mac"		"106"
 			}
 			"Think"
 			{
-				"windows"	"52"
+				"windows"	"54"
+				"linux"		"55"
+				"mac"		"55"
 			}
 			"Touch"
 			{
-				"windows"	"104"
+				"windows"	"106"
+				"linux"		"107"
+				"mac"		"107"
 			}
 			"TraceAttack"
 			{
-				"windows"	"68"
+				"windows"	"71"
+				"linux"		"72"
+				"mac"		"72"
 			}
 			"Use"
 			{
-				"windows"	"102"
+				"windows"	"104"
+				"linux"		"105"
+				"mac"		"105"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"163"
+				"windows"	"165"
+				"linux"		"166"
+				"mac"		"166"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"297"
+				"windows"	"296"
+				"linux"		"297"
+				"mac"		"297"
 			}
 			"Weapon_CanUse"
 			{
-				"windows"	"291"
+				"windows"	"290"
+				"linux"		"291"
+				"mac"		"291"
 			}
 			"Weapon_Drop"
 			{
-				"windows"	"294"
+				"windows"	"293"
+				"linux"		"294"
+				"mac"		"294"
 			}
 			"Weapon_Equip"
 			{
-				"windows"	"292"
+				"windows"	"291"
+				"linux"		"292"
+				"mac"		"292"
 			}
 			"Weapon_Switch"
 			{
-				"windows"	"295"
+				"windows"	"294"
+				"linux"		"295"
+				"mac"		"295"
 			}
 		}
 	}
@@ -108,6 +148,15 @@
 			{
 				"library"	"server"
 				"windows"	"\x33\xC9\x8B\x2A\x2A\x2A\x2A\x2A\x33\xC0\x89\x4D\xFC\x56\x85\xD2\x7E\x2A\x8B"
+			}
+		}
+		
+		"Offsets"
+		{
+			"EntityListeners"
+			{
+				"linux"		"131108"
+				"mac"		"131108"
 			}
 		}
 	}

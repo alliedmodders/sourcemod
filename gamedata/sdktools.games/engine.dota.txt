@@ -36,18 +36,25 @@
 			"s_pTempEntities"
 			{
 				"windows"	"7"
+				"linux"		"9"
 			}
 			"GetTEName"
 			{
 				"windows"	"4"
+				"linux"		"4"
+				"mac"		"4"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
+				"linux"		"8"
+				"mac"		"8"
 			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
+				"linux"		"0"
+				"mac"		"0"
 			}
 		}
 
@@ -57,6 +64,28 @@
 			{
 				"library"	"server"
 				"windows"	"\xFF\x2A\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8D"
+				"linux"		"\x55\x89\xE5\x53\x83\xEC\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x85\xDB\x74\x2A\x8D\xB4\x26\x00\x00\x00\x00\x8B"
+			}
+			"s_pTempEntities"
+			{
+				"library"	"server"
+				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
+			}
+		}
+	}
+	
+	/* CGlobalEntityList */
+	"#default"
+	{
+		"Signatures"
+		{
+			/* Functions in CGlobalEntityList */
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				// Fallback to IServerTools method instead on Windows, lest we add custom logic since it's not a thiscall on Windows in Dota
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x83\xEC\x1C\x8B\x45\x0C\x8B\x5D\x08\x8B\x7D\x10\x85\xC0\x74\x7A\x8B\x10\x89"
+				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
 		}
 	}
@@ -75,6 +104,7 @@
 			"g_pGameRules"
 			{
 				"windows"	"3"
+				"linux"		"9"
 			}
 		}
 		
@@ -92,10 +122,12 @@
 			{
 				"library"	"server"
 				"windows"	"\x51\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x06\x8B\x01\x6A\x01\xFF\x10\xC7\x05\x2A\x2A\x2A\x2A\x00\x00\x00\x00\xE8"
+				"linux"		"\x55\x89\xE5\x56\x53\x83\xEC\x2A\xA1\x2A\x2A\x2A\x2A\x8B\x5D\x08\x85\xC0\x74\x08\x8B"
 			}
 			"g_pGameRules"
 			{
 				"library"	"server"
+				"mac"		"@g_pGameRules"
 			}
 		}
 	}
@@ -124,6 +156,16 @@
 				"windows"	"8"
 			}
 		}
+		
+		"Signatures"
+		{
+			/* CBaseServer object for IServer interface */
+			"sv"
+			{
+				"library"	"engine"
+				"mac"		"@sv"
+			}
+		}
 	}
 	
 	/* Resource Entity override */
@@ -141,13 +183,18 @@
 	{
 		"Signatures"
 		{
+			"EntityFactory"
+			{
+				"library"	"server"
+				// "linux"		"" // TODO
+				"mac"		"@_Z23EntityFactoryDictionaryv"
+			}
+			
 			"EntityFactoryFinder"
 			{
 				// EntityFactoryDictionary gets inlined on Windows in Dota 2. The pointer to the static factory becomes a global.
 				"library"	"server"
 				"windows"	"\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\xC8\xC7"
-				//"linux"		"@_Z23EntityFactoryDictionaryv"
-				//"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
 		}
 		
@@ -169,6 +216,8 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xE4\xC0\x81\xEC\x2A\x2A\x2A\x2A\x8B\xC1\x53"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x2A\x2A\x2A\x2A\x8B\x55\x08\x8B\x75\x14\x8B\x5A\x14\x85\xDB\x0F"
+				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
@@ -187,6 +236,8 @@
 			"SetUserCvar"
 			{
 				"windows"	"26"
+				"linux"		"62"
+				"mac"		"62"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
@@ -199,6 +250,8 @@
 			"InfoChanged"
 			{
 				"windows"	"212"
+				"linux"		"212"
+				"mac"		"212"
 			}
 		}
 	}
@@ -210,58 +263,86 @@
 			"GiveNamedItem"
 			{
 				"windows"	"438"
+				"linux"		"439"
+				"mac"		"439"
 			}
 			"RemovePlayerItem"
 			{
 				"windows"	"300"
+				"linux"		"301"
+				"mac"		"301"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"289"
+				"windows"	"288"
+				"linux"		"289"
+				"mac"		"289"
 			}
 			"Ignite"
 			{
-				"windows"	"231"
+				"windows"	"226"
+				"linux"		"227"
+				"mac"		"227"
 			}
 			"Extinguish"
 			{
-				"windows"	"234"
+				"windows"	"229"
+				"linux"		"230"
+				"mac"		"230"
 			}
 			"Teleport"
 			{
-				"windows"	"114"
+				"windows"	"116"
+				"linux"		"117"
+				"mac"		"117"
 			}
 			"CommitSuicide"
 			{
 				"windows"	"482"
+				"linux"		"482"
+				"mac"		"482"
 			}
 			"GetVelocity"
 			{
-				"windows"	"147"
+				"windows"	"149"
+				"linux"		"150"
+				"mac"		"150"
 			}
 			"EyeAngles"
 			{
-				"windows"	"138"
+				"windows"	"140"
+				"linux"		"141"
+				"mac"		"141"
 			}
 			"AcceptInput"
 			{
-				"windows"	"41"
+				"windows"	"43"
+				"linux"		"44"
+				"mac"		"44"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"26"
+				"windows"	"28"
+				"linux"		"29"
+				"mac"		"29"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"292"
+				"windows"	"291"
+				"linux"		"292"
+				"mac"		"292"
 			}
 			"Activate"
 			{
-				"windows"	"37"
+				"windows"	"39"
+				"linux"		"40"
+				"mac"		"40"
 			}
 			"PlayerRunCmd"
 			{
 				"windows"	"458"
+				"linux"		"459"
+				"mac"		"459"
 			}
 		}
 	}
