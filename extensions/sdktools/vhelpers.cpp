@@ -533,10 +533,25 @@ CEntityFactoryDictionary *GetEntityFactoryDictionary()
 		retData.type = PassType_Basic;
 
 		void *addr;
-		if (g_pGameConf->GetMemSig("EntityFactory", &addr) && addr != NULL)
+		if (!g_pGameConf->GetMemSig("EntityFactory", &addr) || !addr)
 		{
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retData, NULL, 0);
+			int offset;
+
+			if (!g_pGameConf->GetMemSig("EntityFactoryCaller", &addr) || !addr)
+				return NULL;
+
+			if (!g_pGameConf->GetOffset("EntityFactoryCallOffset", &offset))
+				return NULL;
+
+			// Get relative offset to function
+			int32_t funcOffset = *(int32_t *)((intptr_t)addr + offset);
+
+			// Get real address of function
+			// Address of signature + offset of relative offset + sizeof(int32_t) offset + relative offset
+			addr = (void *)((intptr_t)addr + offset + 4 + funcOffset);
 		}
+
+		pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retData, NULL, 0);
 
 		if (pWrapper)
 		{

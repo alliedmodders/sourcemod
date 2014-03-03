@@ -146,6 +146,7 @@
 			 * here.
 			 */
 			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x56\xFF\x75\x0C\xB9\x2A\x2A\x2A\x2A\xE8"
+			"CreateFakeClient_Linux"	"\x55\x89\xE5\x83\xEC\x2A\x8B\x45\x10\x89\x5D\xF8\x89\x75\xFC\x8B\x5D\x08\xC7\x04\x24\x2A\x2A\x2A\x2A\x89"
 		}
 		
 		"Offsets"
@@ -154,6 +155,7 @@
 			"sv"
 			{
 				"windows"	"8"
+				"linux"		"21"
 			}
 		}
 		
@@ -186,7 +188,6 @@
 			"EntityFactory"
 			{
 				"library"	"server"
-				// "linux"		"" // TODO
 				"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
 			
@@ -196,6 +197,13 @@
 				"library"	"server"
 				"windows"	"\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\xC8\xC7"
 			}
+
+			// EntityFactoryDictionary is difficult to find on Linux due to multiple matches. This finds a caller of it instead.
+			"EntityFactoryCaller"
+			{
+				"library"	"server"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x83\xEC\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x89\x45"
+			}
 		}
 		
 		"Offsets"
@@ -203,6 +211,12 @@
 			"EntityFactoryOffset"
 			{
 				"windows" 	"4"
+			}
+
+			// This is the offset into the address found by the EntityFactoryCaller signature.
+			"EntityFactoryCallOffset"
+			{
+				"linux"		"10"
 			}
 		}
 	}

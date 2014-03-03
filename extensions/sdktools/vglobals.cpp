@@ -119,13 +119,30 @@ bool UTIL_VerifySignature(const void *addr, const char *sig, size_t len)
 }
 
 #if defined PLATFORM_WINDOWS
+#define FAKECLIENT_KEY "CreateFakeClient_Windows"
+#elif defined PLATFORM_LINUX
+#define FAKECLIENT_KEY "CreateFakeClient_Linux"
+#elif defined PLATFORM_APPLE
+#define FAKECLIENT_KEY "CreateFakeClient_Mac"
+#else
+#error "Unsupported platform"
+#endif
+
 void GetIServer()
 {
+	void *addr;
 	const char *sigstr;
 	char sig[32];
 	size_t siglen;
 	int offset;
 	void *vfunc = NULL;
+
+	/* Use the symbol if it exists */
+	if (g_pGameConf->GetMemSig("sv", &addr) && addr)
+	{
+		iserver = reinterpret_cast<IServer *>(addr);
+		return;
+	}
 
 #if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	/* Get the CreateFakeClient function pointer */
@@ -147,7 +164,7 @@ void GetIServer()
 #endif
 
 	/* Get signature string for IVEngineServer::CreateFakeClient() */
-	sigstr = g_pGameConf->GetKeyValue("CreateFakeClient_Windows");
+	sigstr = g_pGameConf->GetKeyValue(FAKECLIENT_KEY);
 
 	if (!sigstr)
 	{
@@ -172,18 +189,6 @@ void GetIServer()
 	/* Finally we have the interface we were looking for */
 	iserver = *reinterpret_cast<IServer **>(reinterpret_cast<unsigned char *>(vfunc) + offset);
 }
-#elif defined PLATFORM_POSIX
-void GetIServer()
-{
-	void *addr;
-	if (!g_pGameConf->GetMemSig("sv", &addr) || !addr)
-	{
-		return;
-	}
-
-	iserver = reinterpret_cast<IServer *>(addr);
-}
-#endif
 
 void GetResourceEntity()
 {
