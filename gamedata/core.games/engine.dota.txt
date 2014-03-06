@@ -33,10 +33,15 @@
 		
 		"Offsets"
 		{
+			"gEntList"
+			{
+				"linux"		"18"
+			}
+			
 			"EntInfo"
 			{
-				"linux"
-				"18"
+				"linux"		"4"
+				"mac"		"4"
 			}
 		}
 		
