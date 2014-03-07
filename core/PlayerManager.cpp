@@ -2107,7 +2107,7 @@ void CPlayer::Kick(const char *str)
 	else
 	{
 		IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
-#if SOURCE_ENGINE == SE_DOTA
+#if SOURCE_ENGINE == SE_DOTA || SOURCE_ENGINE == SE_CSGO
 		pClient->Disconnect(str);
 #else
 		pClient->Disconnect("%s", str);
