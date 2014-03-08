@@ -232,16 +232,39 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 	static ValveCall *pCall = NULL;
 	if (!pCall)
 	{
-		ValvePassInfo pass[4];
-		InitPass(pass[0], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
-		InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[2], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
-		InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
-		if (!CreateBaseCall("Ignite", ValveCall_Entity, NULL, pass, 4, &pCall))
+#if SOURCE_ENGINE == SE_SDK2013
+		if (!strcmp(g_pSM->GetGameFolderName(), "nmrih"))
 		{
-			return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
-		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
+			ValvePassInfo pass[6];
+			InitPass(pass[0], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+			InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[2], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+			InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[4], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[5], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+			if (!CreateBaseCall("Ignite", ValveCall_Entity, NULL, pass, 6, &pCall))
+			{
+				return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
+			}
+			else if (!pCall) {
+				return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
+			}
+		}
+		else
+#endif // SDK2013
+		{
+			ValvePassInfo pass[4];
+			InitPass(pass[0], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+			InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[2], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+			InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+			if (!CreateBaseCall("Ignite", ValveCall_Entity, NULL, pass, 4, &pCall))
+			{
+				return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
+			}
+			else if (!pCall) {
+				return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
+			}
 		}
 	}
 
@@ -251,6 +274,15 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(3, vparams, 1);
 	DECODE_VALVE_PARAM(4, vparams, 2);
 	DECODE_VALVE_PARAM(5, vparams, 3);
+
+#if SOURCE_ENGINE == SE_SDK2013
+	if (!strcmp(g_pSM->GetGameFolderName(), "nmrih"))
+	{
+		*(int *) (vptr + 14) = 0;
+		*(int *) (vptr + 18) = 0;
+	}
+#endif // SDK2013
+
 	FINISH_CALL_SIMPLE(NULL);
 
 	return 1;
