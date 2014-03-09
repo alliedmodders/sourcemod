@@ -118,16 +118,16 @@ int TempEntityInfo::_FindOffset(const char *name, int *size)
 {
 	int offset;
 
-	SendProp *prop = g_pGameHelpers->FindInSendTable(m_Sc->GetName(), name);
-	if (!prop)
+	sm_sendprop_info_t info;
+	if (!g_pGameHelpers->FindSendPropInfo(m_Sc->GetName(), name, &info))
 	{
 		return -1;
 	}
 
-	offset = prop->GetOffset();
+	offset = info.actual_offset;
 	if (size)
 	{
-		*size = prop->m_nBits;
+		*size = info.prop->m_nBits;
 	}
 
 	return offset;
