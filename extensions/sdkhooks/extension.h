@@ -101,7 +101,9 @@ typedef void *(*ReticulateSplines)();
 /**
  * Classes
  */
+
 class IPhysicsObject;
+class CDmgAccumulator;
 typedef CBaseEntity CBaseCombatWeapon;
 
 class HookList
@@ -283,9 +285,9 @@ public:
 	void Hook_ThinkPost();
 	void Hook_Touch(CBaseEntity *pOther);
 	void Hook_TouchPost(CBaseEntity *pOther);
-#if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2
-	void Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, void *pUnknownJK);
-	void Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, void *pUnknownJK);
+#if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_SDK2013
+	void Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator);
+	void Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator);
 #else
 	void Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr);
 	void Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr);
