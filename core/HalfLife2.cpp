@@ -748,6 +748,7 @@ void CHalfLife2::ProcessFakeCliCmdQueue()
 		}
 
 		m_CmdQueue.pop();
+		m_FreeCmds.push(pFake);
 	}
 }
 
