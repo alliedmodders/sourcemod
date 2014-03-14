@@ -54,7 +54,7 @@ fi
 checkout ()
 {
   if [ ! -d "$name" ]; then
-    hg clone http://hg.alliedmods.net/$path/$name
+    hg clone https://hg.alliedmods.net/$path/$name
   else
     cd $name
     hg pull -u
