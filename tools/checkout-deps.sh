@@ -66,7 +66,7 @@ name=mmsource-1.10
 path=releases
 checkout
 
-sdks=( csgo hl2dm nd l4d2 dods l4d css tf2 insurgency 2013 )
+sdks=( csgo hl2dm nd l4d2 dods l4d css tf2 insurgency 2013 dota )
 
 if [ $ismac -eq 0 ]; then
   # Checkout original HL2 SDK on Windows or Linux
@@ -79,7 +79,7 @@ if [ $ismac -eq 0 ]; then
 
   # Add more SDKs for Windows only
   if [ $iswin -eq 1 ]; then
-    sdks+=( darkm swarm bgt eye dota )
+    sdks+=( darkm swarm bgt eye )
   fi
 fi
 
