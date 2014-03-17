@@ -12,6 +12,7 @@
 
 "Games"
 {
+	/* GoldenEye: Source 4.2.4 */
 	"gesource"
 	{
 		"Offsets"
@@ -28,7 +29,7 @@
 			}
 			"GroundEntChanged"
 			{
-				"windows"	"167"
+				"windows"	"168"
 				"linux"		"168"
 			}
 			"OnTakeDamage"
@@ -45,6 +46,11 @@
 			{
 				"windows"	"292"
 				"linux"		"293"
+			}
+			"Reload"
+			{
+				"windows"	"251"
+				"linux"		"252"
 			}
 			"SetTransmit"
 			{
@@ -81,11 +87,6 @@
 				"windows"	"58"
 				"linux"		"59"
 			}
-			"UpdateOnRemove"
-			{
-				"windows"	"97"
-				"linux"		"98"
-			}
 			"Use"
 			{
 				"windows"	"89"
@@ -121,16 +122,26 @@
 				"windows"	"235"
 				"linux"		"236"
 			}
+
+			// no longer used
+			"UpdateOnRemove"
+			{
+				"windows"	"97"
+				"linux"		"98"
+			}
+			//
 		}
 
 		"Signatures"
 		{
+			// no longer used
 			"IEntityFactoryDictionary"
 			{
 				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\xA8\x01\x75\x2A\x83\xC8\x01\xB9\x2A\x2A\x2A\x2A\xA3\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
 				"linux"		"@_Z23EntityFactoryDictionaryv"
 			}
+			//
 		}
 	}
 }
