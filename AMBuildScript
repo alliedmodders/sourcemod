@@ -216,8 +216,8 @@ class SMConfig(object):
       cfg.defines += ['DEBUG', '_DEBUG']
       if cxx.behavior == 'msvc':
         cfg.cflags += ['/Od', '/RTC1']
-    elif int(cxx.version) >= 1600:
-        cfg.cflags += ['/d2Zi+']
+        if int(cxx.version) >= 1600:
+          cfg.cflags += ['/d2Zi+']
 
     # This needs to be after our optimization flags which could otherwise disable it.
     if cxx.name == 'msvc':
