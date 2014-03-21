@@ -579,14 +579,17 @@ stock ShowMOTDPanel(client, const String:title[], const String:msg[], type=MOTDP
  *
  * @param client		Client index.
  * @param time			Duration to hold the panel on the client's screen.
- * @param ip			Destionation IP.
+ * @param ip			Destination IP.
+ * @param password		Password to connect to the destination IP. The client will be able to see this.
  * @noreturn
  */
-stock DisplayAskConnectBox(client, Float:time, const String:ip[])
+stock DisplayAskConnectBox(client, Float:time, const String:ip[], const String:password[] = "")
 {
+	decl String:destination[288];
+	FormatEx(destination, "%s/%s", ip, password);
 	new Handle:Kv = CreateKeyValues("data");
 	KvSetFloat(Kv, "time", time);
-	KvSetString(Kv, "title", ip);
+	KvSetString(Kv, "title", destination);
 	CreateDialog(client, Kv, DialogType_AskConnect);
 	CloseHandle(Kv);
 }
