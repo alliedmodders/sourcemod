@@ -268,7 +268,6 @@ CopyFiles('plugins', 'addons/sourcemod/scripting',
     'basetriggers.sp',
     'basevotes.sp',
     'clientprefs.sp',
-    'compile.sh',
     'funcommands.sp',
     'funvotes.sp',
     'mapchooser.sp',
@@ -460,3 +459,8 @@ CopyFiles('plugins/playercommands', 'addons/sourcemod/scripting/playercommands',
     'slay.sp',
   ]
 )
+
+if builder.target_platform == 'windows':
+  CopyFiles('sourcepawn/batchtool', 'addons/sourcemod/scripting', ['compile.exe'])
+else:
+  CopyFiles('plugins', 'addons/sourcemod/scripting', ['compile.sh'])
