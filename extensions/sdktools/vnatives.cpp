@@ -825,7 +825,15 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 			if (!bProbablyNoFEBC)
 			{
 				bProbablyNoFEBC = true;
-				g_pSM->LogError(myself, "%s, falling back to IServerTools method.", error);
+
+				// CreateBaseCall above abstracts all of the gamedata logic, but we need to know if the key was even found.
+				// We don't want to log an error if key isn't present (knowing falling back to native method), only throw
+				// error if signature/symbol was not found.
+				void *dummy;
+				if (g_pGameConf->GetMemSig("FindEntityByClassname", &dummy))
+				{
+					g_pSM->LogError(myself, "%s, falling back to IServerTools method.", error);
+				}
 			}
 			return NativeFindEntityByClassname(pContext, params);
 #else
