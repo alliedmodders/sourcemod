@@ -99,4 +99,15 @@
 			}
 		}
 	}
+	
+	"swarm"
+	{
+		"Offsets"
+		{
+			"EntityListeners"
+			{
+				"windows"		"131108"
+			}
+		}
+	}
 }
