@@ -223,6 +223,7 @@ public __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("PbAddAngle");
 	MarkNativeAsOptional("PbAddVector");
 	MarkNativeAsOptional("PbAddVector2D");
+	MarkNativeAsOptional("PbRemoveRepeatedFieldValue");
 	MarkNativeAsOptional("PbReadMessage");
 	MarkNativeAsOptional("PbReadRepeatedMessage");
 	MarkNativeAsOptional("PbAddMessage");

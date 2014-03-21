@@ -1093,6 +1093,24 @@ public:
 		return msg->GetReflection()->FieldSize(*msg, field);
 	}
 
+	inline bool RemoveRepeatedFieldValue(const char *pszFieldName, int index)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+
+		// Protobuf guarantees that repeated field values will stay in order and so must we.
+		const protobuf::Reflection *pReflection = msg->GetReflection();
+		for (int i = index; i < elemCount - 1; ++i)
+		{
+			pReflection->SwapElements(msg, field, i, i + 1);
+		}
+
+		pReflection->RemoveLast(msg, field);
+
+		return true;
+	}
+
 private:
 	protobuf::Message *msg;
 	PBHandleList childHandles;

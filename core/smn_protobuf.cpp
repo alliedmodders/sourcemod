@@ -716,6 +716,19 @@ static cell_t smn_PbAddVector2D(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t smn_PbRemoveRepeatedFieldValue(IPluginContext *pCtx, const cell_t *params)
+{
+	GET_MSG_FROM_HANDLE_OR_ERR();
+	GET_FIELD_NAME_OR_ERR();
+
+	if (!msg->RemoveRepeatedFieldValue(strField, params[3]))
+	{
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+	}
+
+	return 1;
+}
+
 static cell_t smn_PbReadMessage(IPluginContext *pCtx, const cell_t *params)
 {
 	GET_MSG_FROM_HANDLE_OR_ERR();
@@ -794,6 +807,7 @@ REGISTER_NATIVES(protobufnatives)
 	{"PbAddAngle",					smn_PbAddAngle},
 	{"PbAddVector",					smn_PbAddVector},
 	{"PbAddVector2D",				smn_PbAddVector2D},
+	{"PbRemoveRepeatedFieldValue",	smn_PbRemoveRepeatedFieldValue},
 	{"PbReadMessage",				smn_PbReadMessage},
 	{"PbReadRepeatedMessage",		smn_PbReadRepeatedMessage},
 	{"PbAddMessage",				smn_PbAddMessage},

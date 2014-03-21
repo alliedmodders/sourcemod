@@ -326,6 +326,17 @@ native PbAddVector(Handle:pb, const String:field[], const Float:vec[3]);
 native PbAddVector2D(Handle:pb, const String:field[], const Float:vec[2]);
 
 /**
+ * Removes a value by index from a protobuf message repeated field.
+ *
+ * @param pb			protobuf handle.
+ * @param field			Field name.
+ * @param index			Index into repeated field.
+ * @noreturn
+ * @error				Invalid or incorrect Handle, non-existent field, or incorrect field type.
+ */ 
+native PbRemoveRepeatedFieldValue(Handle:pb, const String:field[], index);
+
+/**
  * Retrieve a handle to an embedded protobuf message in a protobuf message.
  *
  * @param pb			protobuf handle.
