@@ -155,6 +155,8 @@ enum TFCond
 	TFCond_HalloweenGhostMode,
 };
 
+const Float:TFCondDuration_Infinite = -1.0;
+
 enum TFHoliday
 {
 	TFHoliday_Birthday = 1,
@@ -217,11 +219,12 @@ native TF2_RegeneratePlayer(client);
  * @param client		Player's index.
  * @param condition		Integer identifier of condition to apply.
  * @param duration		Duration of condition (does not apply to all conditions).
+ *                      Pass TFCondDuration_Infinite to apply until manually removed.
  * @param inflictor		Condition inflictor's index (0 for no inflictor).
  * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
-native TF2_AddCondition(client, TFCond:condition, Float:duration, inflictor=0);
+native TF2_AddCondition(client, TFCond:condition, Float:duration=TFCondDuration_Infinite, inflictor=0);
 
 /**
  * Removes a condition from a player
