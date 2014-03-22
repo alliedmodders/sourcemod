@@ -528,7 +528,7 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 	if(!g_HookTypes[type].supported)
 		return HookRet_NotSupported;
 
-	CBaseEntity *pEnt = UTIL_GetCBaseEntity(entity);
+	CBaseEntity *pEnt = gamehelpers->ReferenceToEntity(entity);
 	if(!pEnt)
 		return HookRet_InvalidEntity;
 	if(type < 0 || type >= SDKHook_MAXHOOKS)
