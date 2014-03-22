@@ -590,7 +590,7 @@ stock ShowMOTDPanel(client, const String:title[], const String:msg[], type=MOTDP
 stock DisplayAskConnectBox(client, Float:time, const String:ip[], const String:password[] = "")
 {
 	decl String:destination[288];
-	FormatEx(destination, "%s/%s", ip, password);
+	FormatEx(destination, sizeof(destination), "%s/%s", ip, password);
 	new Handle:Kv = CreateKeyValues("data");
 	KvSetFloat(Kv, "time", time);
 	KvSetString(Kv, "title", destination);
