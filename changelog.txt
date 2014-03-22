@@ -1,5 +1,45 @@
 SourceMod Changelog
 
+SourceMod 1.5.3 [2014-03-22]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.5.3_Release_Notes
+
+User Changes:
+ - Updated support for CS:GO after multiple breaking game updates.
+ - Updated gamedata support for GoldenEye: Source (Peace-Maker).
+ - Fixed crash on SDKHooks extension load in Alien Swarm (bug 6059).
+ - Fixed memory leak from unmanaged forwards never being freed (bug 6025).
+ - Fixed possible crash when unloading the CStrike extension.
+ - Fixed crash in SDKHooks Reload post-hook (Peace-Maker).
+ - Fixed FakeClientCommandEx always leaking memory (bug 5678).
+ - Fixed extra entity networking occuring with SetEntProp natives on some games.
+ - Fixed being able to nominate same map multiple times (bug 5109).
+ - Fixed spurious FindEntityByClassname error being logged on some games and platforms.
+ - Fixed an Anti-Flood bypass exploit (bug 5394).
+ - Removed part of Addresses gamedata error handling which could cause false errors to be logged (bug 6044).
+ - Fixed mapchooser not resetting nominations count when clearing nominations list (bug 5359).
+ - Improved performances of client convar query handling (bug 6003).
+
+Developer Changes:
+ - Added GiveAmmo native to SDKTools (bug 6039) (Peace-Maker).
+ - Added SQL_SetCharset native to (re)set charset even after reconnect (bug 5786) (Peace-Maker).
+ - Added support for entity references in SDKHooks natives (bug 6069).
+ - Added support for server passwords to DisplayAskConnectBox stock (bug 5984) (FlaminSarge).
+ - Renamed SortFunc2D parameters to match documentation (bug 6014) (Peace-Maker).
+ - Fixed param order in AddToTopMenu function doc (bug 6035) (Peace-Maker).
+ - Added |any| tag to WritePackCell and ReadPackCell native param/return values (bug 6001).
+ - Updated SDKHook_TakeDamage native for game updates.
+ - Added default infinite value for TF2_AddCondition duration.
+ - Added support for conditions >= 64 in TF2_OnConditionAdded/Removed (bug 5565, bug 5976) (FlaminSarge).
+ - Updated TFCond and TF customkill enum values (bug 6012) (FlaminSarge).
+ - Fixed regression causing incorrect return and inability to block in TF2_OnCalcIsAttackCritical forward.
+ - Fixed TE_* natives operating on incorrect data for some tempents (bug 6072).
+ - Fixed CS_AliasToWeaponID not returning a valid weaponID for cz75a.
+ - Fixed CS_GetWeaponPrice returning incorrect value for M4A1 in CS:GO (bug 6045).
+ - Increased max gamedata byte signature length.
+ - Ported SM build scripts to AMBuild2 (bug 5997).
+
+----------------------------------------------------------
 SourceMod 1.5.2 [2013-10-29]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.5.2_Release_Notes
