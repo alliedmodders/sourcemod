@@ -58,14 +58,15 @@ cell_t Native_Hook(IPluginContext *pContext, const cell_t *params)
 			break;
 		case HookRet_BadEntForHookType:
 		{
-			const char * pClassname = gamehelpers->GetEntityClassname(PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[1])));
+			CBaseEntity *pEnt = gamehelpers->ReferenceToEntity(params[1]);
+			const char *pClassname = pEnt ? gamehelpers->GetEntityClassname(pEnt) : NULL;
 			if (!pClassname)
 			{
 				pContext->ThrowNativeError("Hook type not valid for this type of entity (%i).", entity);
 			}
 			else
 			{
-				pContext->ThrowNativeError("Hook type not valid for this type of entity (%s)", pClassname);
+				pContext->ThrowNativeError("Hook type not valid for this type of entity (%i/%s)", entity, pClassname);
 			}
 			
 			break;
@@ -108,18 +109,18 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 #if !defined SH_DECL_MANUALEXTERN1
 	pContext->ThrowNativeError("SDKHooks_TakeDamage is not supported on this engine.");
 #else
-	CBaseEntity *pVictim = UTIL_GetCBaseEntity(params[1]);
+	CBaseEntity *pVictim = gamehelpers->ReferenceToEntity(params[1]);
 	if (!pVictim)
 		return pContext->ThrowNativeError("Invalid entity index %d for victim", params[1]);
 	
-	CBaseEntity *pInflictor = UTIL_GetCBaseEntity(params[2]);
+	CBaseEntity *pInflictor = gamehelpers->ReferenceToEntity(params[2]);
 	if (!pInflictor)
 		return pContext->ThrowNativeError("Invalid entity index %d for inflictor", params[2]);
 
 	CBaseEntity *pAttacker;
 	if (params[3] != -1)
 	{
-		pAttacker = UTIL_GetCBaseEntity(params[3]);
+		pAttacker = gamehelpers->ReferenceToEntity(params[3]);
 		if (!pAttacker)
 		{
 			return pContext->ThrowNativeError("Invalid entity index %d for attackerr", params[3]);
@@ -136,7 +137,7 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pWeapon;
 	if (params[6] != -1)
 	{
-		pWeapon = UTIL_GetCBaseEntity(params[6]);
+		pWeapon = gamehelpers->ReferenceToEntity(params[6]);
 		if (!pWeapon)
 		{
 			return pContext->ThrowNativeError("Invalid entity index %d for weapon", params[6]);
@@ -192,11 +193,15 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 #if !defined SH_DECL_MANUALEXTERN1
 	pContext->ThrowNativeError("SDKHooks_DropWeapon is not supported on this engine.");
 #else
-	CBaseEntity *pPlayer = UTIL_GetCBaseEntity(params[1], true);
+	CBaseEntity *pPlayer = gamehelpers->ReferenceToEntity(params[1]);
 	if (!pPlayer)
 		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
+
+	IGamePlayer *pGamePlayer = playerhelpers->GetGamePlayer(gamehelpers->ReferenceToIndex(params[1]));
+	if (!pGamePlayer || !pGamePlayer->IsInGame())
+		return pContext->ThrowNativeError("Client index %d not in game", params[1]);
 	
-	CBaseEntity *pWeapon = UTIL_GetCBaseEntity(params[2]);
+	CBaseEntity *pWeapon = gamehelpers->ReferenceToEntity(params[2]);
 	if (!pWeapon)
 		return pContext->ThrowNativeError("Invalid entity index %d for weapon", params[2]);
 
