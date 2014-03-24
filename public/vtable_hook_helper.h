@@ -96,6 +96,16 @@ public:
 	{
 		return (this->GetVTablePtr() == other->GetVTablePtr());
 	}
+
+	bool operator != (CVTableHook &other)
+	{
+		return (this->GetVTablePtr() != other.GetVTablePtr());
+	}
+
+	bool operator != (CVTableHook *other)
+	{
+		return (this->GetVTablePtr() != other->GetVTablePtr());
+	}
 private:
 	void *vtableptr;
 	int hookid;

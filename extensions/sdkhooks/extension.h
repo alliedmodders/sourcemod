@@ -6,6 +6,8 @@
 #include <IBinTools.h>
 #include <convar.h>
 #include <sh_list.h>
+#include <amtl/am-vector.h>
+#include <vtable_hook_helper.h>
 
 #include <iplayerinfo.h>
 #include <shareddefs.h>
@@ -106,12 +108,27 @@ class IPhysicsObject;
 class CDmgAccumulator;
 typedef CBaseEntity CBaseCombatWeapon;
 
-class HookList
+struct HookList
 {
 public:
 	int entity;
-	SDKHookType type;
 	IPluginFunction *callback;
+};
+
+class CVTableList
+{
+public:
+	CVTableList() : vtablehook(NULL)
+	{
+	};
+
+	~CVTableList()
+	{
+		delete vtablehook;
+	};
+public:
+	CVTableHook *vtablehook;
+	ke::Vector<HookList> hooks;
 };
 
 class IEntityListener
@@ -235,13 +252,13 @@ public:
 	/**
 	 * Functions
 	 */
-	cell_t Call(int entity, SDKHookType type, int other=-2);
-	cell_t Call(CBaseEntity *pEnt, SDKHookType type, int other=-2);
+	cell_t Call(int entity, SDKHookType type, int other=INVALID_EHANDLE_INDEX);
+	cell_t Call(CBaseEntity *pEnt, SDKHookType type, int other=INVALID_EHANDLE_INDEX);
 	cell_t Call(CBaseEntity *pEnt, SDKHookType type, CBaseEntity *pOther);
 	void SetupHooks();
 
-	HookReturn Hook(int entity, SDKHookType type, IPluginFunction *callback);
-	void Unhook(int index);
+	HookReturn Hook(int entity, SDKHookType type, IPluginFunction *pCallback);
+	void Unhook(int entity, SDKHookType type, IPluginFunction *pCallback);
 
 	/**
 	 * IServerGameDLL & IVEngineServer Hook Handlers
@@ -309,11 +326,12 @@ public:
 	bool Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelindex);
 	
 private:
-	void RemoveEntityHooks(CBaseEntity *pEnt);
+	void Unhook(CBaseEntity *pEntity);
+	void Unhook(IPluginContext *pContext);
 };
 
 extern CGlobalVars *gpGlobals;
-extern CUtlVector<HookList> g_HookList;
+extern ke::Vector<CVTableList *> g_HookList[SDKHook_MAXHOOKS];
 
 extern ICvar *icvar;
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

@@ -94,7 +94,7 @@ SDKHooks g_Interface;
 SMEXT_LINK(&g_Interface);
 
 CGlobalVars *gpGlobals;
-CUtlVector<HookList> g_HookList;
+ke::Vector<CVTableList *> g_HookList[SDKHook_MAXHOOKS];
 
 CBitVec<NUM_ENT_ENTRIES> m_EntityExists;
 
@@ -255,7 +255,7 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	for (IHandleEntity *pEnt = (IHandleEntity *)servertools->FirstEntity(); pEnt; pEnt = (IHandleEntity *)servertools->NextEntity((CBaseEntity *)pEnt))
 	{
 		hndl = pEnt->GetRefEHandle();
-		if (hndl == INVALID_EHANDLE_INDEX || !hndl.IsValid())
+		if (!hndl.IsValid())
 			continue;
 		
 		index = hndl.GetEntryIndex();
@@ -315,8 +315,7 @@ void SDKHooks::SDK_OnAllLoaded()
 void SDKHooks::SDK_OnUnload()
 {
 	// Remove left over hooks
-	HOOKLOOP
-		Unhook(i);
+	Unhook(reinterpret_cast<SourcePawn::IPluginContext *>(NULL));
 
 	KILL_HOOK_IF_ACTIVE(g_hookOnLevelInit);
 	KILL_HOOK_IF_ACTIVE(g_hookOnGetMapEntitiesString);
@@ -382,12 +381,7 @@ void SDKHooks::OnPluginLoaded(IPlugin *plugin)
 
 void SDKHooks::OnPluginUnloaded(IPlugin *plugin)
 {
-	IPluginContext *plugincontext = plugin->GetBaseContext();
-	HOOKLOOP
-	{
-		if(g_HookList[i].callback->GetParentContext() == plugincontext)
-			Unhook(i);
-	}
+	Unhook(plugin->GetBaseContext());
 
 	if (g_pOnLevelInit->GetFunctionCount() == 0)
 	{
@@ -449,35 +443,53 @@ FeatureStatus SDKHooks::GetFeatureStatus(FeatureType type, const char *name)
  */
 cell_t SDKHooks::Call(int entity, SDKHookType type, int other)
 {
-	IPluginFunction *callback = NULL;
-	cell_t res, ret = Pl_Continue;
-
-	HOOKLOOP
-	{
-		if(g_HookList[i].entity != entity || g_HookList[i].type != type)
-			continue;
-
-		callback = g_HookList[i].callback;
-		callback->PushCell(entity);
-		if(other > -2)
-			callback->PushCell(other);
-
-		callback->Execute(&res);
-		if(res > ret)
-			ret = res;
-	}
-
-	return ret;
+	return Call(gamehelpers->ReferenceToEntity(entity), type, gamehelpers->ReferenceToEntity(other));
 }
 
 cell_t SDKHooks::Call(CBaseEntity *pEnt, SDKHookType type, int other)
 {
-	return Call(gamehelpers->EntityToBCompatRef(pEnt), type, other);
+	return Call(pEnt, type, gamehelpers->ReferenceToEntity(other));
 }
 
-cell_t SDKHooks::Call(CBaseEntity *pEnt, SDKHookType type, CBaseEntity *other)
+cell_t SDKHooks::Call(CBaseEntity *pEnt, SDKHookType type, CBaseEntity *pOther)
 {
-	return Call(gamehelpers->EntityToBCompatRef(pEnt), type, gamehelpers->EntityToBCompatRef(other));
+	cell_t ret = Pl_Continue;
+
+	CVTableHook vhook(pEnt);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[type];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
+	{
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
+			continue;
+		}
+
+		ke::Vector<HookList> &pawnlist = vtablehooklist[entry]->hooks;
+		int entity = gamehelpers->EntityToBCompatRef(pEnt);
+		int other = gamehelpers->EntityToBCompatRef(pOther);
+		for (entry = 0; entry < pawnlist.length(); ++entry)
+		{
+			if (entity != pawnlist[entry].entity)
+			{
+				continue;
+			}
+
+			IPluginFunction *callback = pawnlist[entry].callback;
+			callback->PushCell(entity);
+			callback->PushCell(other);
+
+			cell_t res;
+			callback->Execute(&res);
+			if(res > ret)
+			{
+				ret = res;
+			}
+		}
+
+		break;
+	}
+
+	return ret;
 }
 
 void SDKHooks::SetupHooks()
@@ -543,303 +555,259 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 			return HookRet_BadEntForHookType;
 	}
 
-	bool bHooked = false;
-	HOOKLOOP
+	size_t entry;
+	CVTableHook vhook(pEnt);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[type];
+	for (entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
-		if (g_HookList[i].entity == entity && g_HookList[i].type == type)
+		if (vhook == vtablehooklist[entry]->vtablehook)
 		{
-			bHooked = true;
 			break;
 		}
 	}
-	if (!bHooked)
+
+	if (entry == vtablehooklist.length())
 	{
+		int hookid = 0;
 		switch(type)
 		{
 			case SDKHook_EndTouch:
-				SH_ADD_MANUALHOOK(EndTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_EndTouch), false);
+				hookid = SH_ADD_MANUALVPHOOK(EndTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_EndTouch), false);
 				break;
 			case SDKHook_EndTouchPost:
-				SH_ADD_MANUALHOOK(EndTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_EndTouchPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(EndTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_EndTouchPost), true);
 				break;
 			case SDKHook_FireBulletsPost:
-				SH_ADD_MANUALHOOK(FireBullets, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_FireBulletsPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(FireBullets, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_FireBulletsPost), true);
 				break;
 #ifdef GETMAXHEALTH_IS_VIRTUAL
 			case SDKHook_GetMaxHealth:
-				SH_ADD_MANUALHOOK(GetMaxHealth, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GetMaxHealth), false);
+				hookid = SH_ADD_MANUALVPHOOK(GetMaxHealth, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GetMaxHealth), false);
 				break;
 #endif
 			case SDKHook_GroundEntChangedPost:
-				SH_ADD_MANUALHOOK(GroundEntChanged, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GroundEntChangedPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(GroundEntChanged, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GroundEntChangedPost), true);
 				break;
 			case SDKHook_OnTakeDamage:
-				SH_ADD_MANUALHOOK(OnTakeDamage, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamage), false);
+				hookid = SH_ADD_MANUALVPHOOK(OnTakeDamage, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamage), false);
 				break;
 			case SDKHook_OnTakeDamagePost:
-				SH_ADD_MANUALHOOK(OnTakeDamage, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamagePost), true);
+				hookid = SH_ADD_MANUALVPHOOK(OnTakeDamage, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamagePost), true);
 				break;
 			case SDKHook_PreThink:
-				SH_ADD_MANUALHOOK(PreThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PreThink), false);
+				hookid = SH_ADD_MANUALVPHOOK(PreThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PreThink), false);
 				break;
 			case SDKHook_PreThinkPost:
-				SH_ADD_MANUALHOOK(PreThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PreThinkPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(PreThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PreThinkPost), true);
 				break;
 			case SDKHook_PostThink:
-				SH_ADD_MANUALHOOK(PostThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PostThink), false);
+				hookid = SH_ADD_MANUALVPHOOK(PostThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PostThink), false);
 				break;
 			case SDKHook_PostThinkPost:
-				SH_ADD_MANUALHOOK(PostThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PostThinkPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(PostThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PostThinkPost), true);
 				break;
 			case SDKHook_Reload:
-				SH_ADD_MANUALHOOK(Reload, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Reload), false);
+				hookid = SH_ADD_MANUALVPHOOK(Reload, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Reload), false);
 				break;
 			case SDKHook_ReloadPost:
-				SH_ADD_MANUALHOOK(Reload, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ReloadPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(Reload, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ReloadPost), true);
 				break;
 			case SDKHook_SetTransmit:
-				SH_ADD_MANUALHOOK(SetTransmit, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_SetTransmit), false);
+				hookid = SH_ADD_MANUALVPHOOK(SetTransmit, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_SetTransmit), false);
 				break;
 			case SDKHook_Spawn:
-				SH_ADD_MANUALHOOK(Spawn, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Spawn), false);
+				hookid = SH_ADD_MANUALVPHOOK(Spawn, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Spawn), false);
 				break;
 			case SDKHook_SpawnPost:
-				SH_ADD_MANUALHOOK(Spawn, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_SpawnPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(Spawn, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_SpawnPost), true);
 				break;
 			case SDKHook_StartTouch:
-				SH_ADD_MANUALHOOK(StartTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_StartTouch), false);
+				hookid = SH_ADD_MANUALVPHOOK(StartTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_StartTouch), false);
 				break;
 			case SDKHook_StartTouchPost:
-				SH_ADD_MANUALHOOK(StartTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_StartTouchPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(StartTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_StartTouchPost), true);
 				break;
 			case SDKHook_Think:
-				SH_ADD_MANUALHOOK(Think, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Think), false);
+				hookid = SH_ADD_MANUALVPHOOK(Think, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Think), false);
 				break;
 			case SDKHook_ThinkPost:
-				SH_ADD_MANUALHOOK(Think, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ThinkPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(Think, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ThinkPost), true);
 				break;
 			case SDKHook_Touch:
-				SH_ADD_MANUALHOOK(Touch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Touch), false);
+				hookid = SH_ADD_MANUALVPHOOK(Touch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Touch), false);
 				break;
 			case SDKHook_TouchPost:
-				SH_ADD_MANUALHOOK(Touch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TouchPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(Touch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TouchPost), true);
 				break;
 			case SDKHook_TraceAttack:
-				SH_ADD_MANUALHOOK(TraceAttack, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TraceAttack), false);
+				hookid = SH_ADD_MANUALVPHOOK(TraceAttack, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TraceAttack), false);
 				break;
 			case SDKHook_TraceAttackPost:
-				SH_ADD_MANUALHOOK(TraceAttack, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TraceAttackPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(TraceAttack, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TraceAttackPost), true);
 				break;
 			case SDKHook_Use:
-				SH_ADD_MANUALHOOK(Use, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Use), false);
+				hookid = SH_ADD_MANUALVPHOOK(Use, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Use), false);
 				break;
 			case SDKHook_UsePost:
-				SH_ADD_MANUALHOOK(Use, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_UsePost), true);
+				hookid = SH_ADD_MANUALVPHOOK(Use, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_UsePost), true);
 				break;
 			case SDKHook_VPhysicsUpdate:
-				SH_ADD_MANUALHOOK(VPhysicsUpdate, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_VPhysicsUpdate), false);
+				hookid = SH_ADD_MANUALVPHOOK(VPhysicsUpdate, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_VPhysicsUpdate), false);
 				break;
 			case SDKHook_VPhysicsUpdatePost:
-				SH_ADD_MANUALHOOK(VPhysicsUpdate, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_VPhysicsUpdatePost), true);
+				hookid = SH_ADD_MANUALVPHOOK(VPhysicsUpdate, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_VPhysicsUpdatePost), true);
 				break;
 			case SDKHook_WeaponCanSwitchTo:
-				SH_ADD_MANUALHOOK(Weapon_CanSwitchTo, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanSwitchTo), false);
+				hookid = SH_ADD_MANUALVPHOOK(Weapon_CanSwitchTo, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanSwitchTo), false);
 				break;
 			case SDKHook_WeaponCanSwitchToPost:
-				SH_ADD_MANUALHOOK(Weapon_CanSwitchTo, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanSwitchToPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(Weapon_CanSwitchTo, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanSwitchToPost), true);
 				break;
 			case SDKHook_WeaponCanUse:
-				SH_ADD_MANUALHOOK(Weapon_CanUse, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanUse), false);
+				hookid = SH_ADD_MANUALVPHOOK(Weapon_CanUse, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanUse), false);
 				break;
 			case SDKHook_WeaponCanUsePost:
-				SH_ADD_MANUALHOOK(Weapon_CanUse, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanUsePost), true);
+				hookid = SH_ADD_MANUALVPHOOK(Weapon_CanUse, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanUsePost), true);
 				break;
 			case SDKHook_WeaponDrop:
-				SH_ADD_MANUALHOOK(Weapon_Drop, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponDrop), false);
+				hookid = SH_ADD_MANUALVPHOOK(Weapon_Drop, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponDrop), false);
 				break;
 			case SDKHook_WeaponDropPost:
-				SH_ADD_MANUALHOOK(Weapon_Drop, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponDropPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(Weapon_Drop, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponDropPost), true);
 				break;
 			case SDKHook_WeaponEquip:
-				SH_ADD_MANUALHOOK(Weapon_Equip, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponEquip), false);
+				hookid = SH_ADD_MANUALVPHOOK(Weapon_Equip, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponEquip), false);
 				break;
 			case SDKHook_WeaponEquipPost:
-				SH_ADD_MANUALHOOK(Weapon_Equip, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponEquipPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(Weapon_Equip, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponEquipPost), true);
 				break;
 			case SDKHook_WeaponSwitch:
-				SH_ADD_MANUALHOOK(Weapon_Switch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponSwitch), false);
+				hookid = SH_ADD_MANUALVPHOOK(Weapon_Switch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponSwitch), false);
 				break;
 			case SDKHook_WeaponSwitchPost:
-				SH_ADD_MANUALHOOK(Weapon_Switch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponSwitchPost), true);
+				hookid = SH_ADD_MANUALVPHOOK(Weapon_Switch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponSwitchPost), true);
 				break;
 			case SDKHook_ShouldCollide:
-				SH_ADD_MANUALHOOK(ShouldCollide, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ShouldCollide), false);
+				hookid = SH_ADD_MANUALVPHOOK(ShouldCollide, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ShouldCollide), false);
 				break;
 		}
-	}
 
+		vhook.SetHookID(hookid);
+
+		CVTableList *vtablelist = new CVTableList;
+		vtablelist->vtablehook = new CVTableHook(vhook);
+		vtablehooklist.append(vtablelist);
+	}
+	
 	// Add hook to hook list
 	HookList hook;
-	hook.entity = entity;
-	hook.type = type;
+	hook.entity = gamehelpers->EntityToBCompatRef(pEnt);
 	hook.callback = callback;
-	g_HookList.AddToTail(hook);
-#ifdef SDKHOOKSDEBUG
-	META_CONPRINTF("DEBUG: Adding to hooklist (ent%d, type%s, cb%d). Total hook count %d\n", entity, g_szHookNames[type], callback, g_HookList.Count());
-#endif
+	vtablehooklist[entry]->hooks.append(hook);
+
 	return HookRet_Successful;
 }
 
-void SDKHooks::Unhook(int index)
+void SDKHooks::Unhook(CBaseEntity *pEntity)
 {
-	CBaseEntity *pEnt = gamehelpers->ReferenceToEntity(g_HookList[index].entity);
-	if(!pEnt)
+	if (pEntity == NULL)
+	{
 		return;
+	}
 
-	int iHooks = 0;
-	HOOKLOOP
+	int entity = gamehelpers->EntityToBCompatRef(pEntity);
+	for (size_t type = 0; type < SDKHook_MAXHOOKS; ++type)
 	{
-		if (g_HookList[i].entity == g_HookList[index].entity && g_HookList[i].type == g_HookList[index].type)
+		ke::Vector<CVTableList *> &vtablehooklist = g_HookList[type];
+		for (size_t listentry = 0; listentry < vtablehooklist.length(); ++listentry)
 		{
-			iHooks++;
-#ifdef SDKHOOKSDEBUG
-			META_CONPRINTF("DEBUG: Found hook %d on entity %d\n", i, g_HookList[index].entity);
-#endif
+			ke::Vector<HookList> &pawnhooks = vtablehooklist[listentry]->hooks;
+			for (size_t entry = 0; entry < pawnhooks.length(); ++entry)
+			{
+				if (entity != pawnhooks[entry].entity)
+				{
+					continue;
+				}
+
+				pawnhooks.remove(entry--);
+			}
+
+			if (pawnhooks.length() == 0)
+			{
+				delete vtablehooklist[listentry];
+				vtablehooklist.remove(listentry--);
+			}
 		}
 	}
-	if (iHooks == 1)
-	{
-#ifdef SDKHOOKSDEBUG
-		META_CONPRINTF("DEBUG: Removing hook for hooktype %d\n", g_HookList[index].type);
-#endif
-		switch(g_HookList[index].type)
-		{
-			case SDKHook_EndTouch:
-				SH_REMOVE_MANUALHOOK(EndTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_EndTouch), false);
-				break;
-			case SDKHook_EndTouchPost:
-				SH_REMOVE_MANUALHOOK(EndTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_EndTouchPost), true);
-				break;
-			case SDKHook_FireBulletsPost:
-				SH_REMOVE_MANUALHOOK(FireBullets, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_FireBulletsPost), true);
-				break;
-#ifdef GETMAXHEALTH_IS_VIRTUAL
-			case SDKHook_GetMaxHealth:
-				SH_REMOVE_MANUALHOOK(GetMaxHealth, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GetMaxHealth), false);
-				break;
-#endif
-			case SDKHook_GroundEntChangedPost:
-				SH_REMOVE_MANUALHOOK(GroundEntChanged, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GroundEntChangedPost), true);
-				break;
-			case SDKHook_OnTakeDamage:
-				SH_REMOVE_MANUALHOOK(OnTakeDamage, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamage), false);
-				break;
-			case SDKHook_OnTakeDamagePost:
-				SH_REMOVE_MANUALHOOK(OnTakeDamage, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamagePost), true);
-				break;
-			case SDKHook_PreThink:
-				SH_REMOVE_MANUALHOOK(PreThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PreThink), false);
-				break;
-			case SDKHook_PreThinkPost:
-				SH_REMOVE_MANUALHOOK(PreThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PreThinkPost), true);
-				break;
-			case SDKHook_PostThink:
-				SH_REMOVE_MANUALHOOK(PostThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PostThink), false);
-				break;
-			case SDKHook_PostThinkPost:
-				SH_REMOVE_MANUALHOOK(PostThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PostThinkPost), true);
-				break;
-			case SDKHook_Reload:
-				SH_REMOVE_MANUALHOOK(Reload, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Reload), false);
-				break;
-			case SDKHook_ReloadPost:
-				SH_REMOVE_MANUALHOOK(Reload, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ReloadPost), true);
-				break;
-			case SDKHook_SetTransmit:
-				SH_REMOVE_MANUALHOOK(SetTransmit, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_SetTransmit), false);
-				break;
-			case SDKHook_Spawn:
-				SH_REMOVE_MANUALHOOK(Spawn, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Spawn), false);
-				break;
-			case SDKHook_SpawnPost:
-				SH_REMOVE_MANUALHOOK(Spawn, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_SpawnPost), true);
-				break;
-			case SDKHook_StartTouch:
-				SH_REMOVE_MANUALHOOK(StartTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_StartTouch), false);
-				break;
-			case SDKHook_StartTouchPost:
-				SH_REMOVE_MANUALHOOK(StartTouch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_StartTouchPost), true);
-				break;
-			case SDKHook_Think:
-				SH_REMOVE_MANUALHOOK(Think, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Think), false);
-				break;
-			case SDKHook_ThinkPost:
-				SH_REMOVE_MANUALHOOK(Think, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ThinkPost), true);
-				break;
-			case SDKHook_Touch:
-				SH_REMOVE_MANUALHOOK(Touch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Touch), false);
-				break;
-			case SDKHook_TouchPost:
-				SH_REMOVE_MANUALHOOK(Touch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TouchPost), true);
-				break;
-			case SDKHook_TraceAttack:
-				SH_REMOVE_MANUALHOOK(TraceAttack, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TraceAttack), false);
-				break;
-			case SDKHook_TraceAttackPost:
-				SH_REMOVE_MANUALHOOK(TraceAttack, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_TraceAttackPost), true);
-				break;
-			case SDKHook_Use:
-				SH_REMOVE_MANUALHOOK(Use, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Use), false);
-				break;
-			case SDKHook_UsePost:
-				SH_REMOVE_MANUALHOOK(Use, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_UsePost), true);
-				break;
-			case SDKHook_VPhysicsUpdate:
-				SH_REMOVE_MANUALHOOK(VPhysicsUpdate, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_VPhysicsUpdate), false);
-				break;
-			case SDKHook_VPhysicsUpdatePost:
-				SH_REMOVE_MANUALHOOK(VPhysicsUpdate, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_VPhysicsUpdatePost), true);
-				break;
-			case SDKHook_WeaponCanSwitchTo:
-				SH_REMOVE_MANUALHOOK(Weapon_CanSwitchTo, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanSwitchTo), false);
-				break;
-			case SDKHook_WeaponCanSwitchToPost:
-				SH_REMOVE_MANUALHOOK(Weapon_CanSwitchTo, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanSwitchToPost), true);
-				break;
-			case SDKHook_WeaponCanUse:
-				SH_REMOVE_MANUALHOOK(Weapon_CanUse, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanUse), false);
-				break;
-			case SDKHook_WeaponCanUsePost:
-				SH_REMOVE_MANUALHOOK(Weapon_CanUse, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponCanUsePost), true);
-				break;
-			case SDKHook_WeaponDrop:
-				SH_REMOVE_MANUALHOOK(Weapon_Drop, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponDrop), false);
-				break;
-			case SDKHook_WeaponDropPost:
-				SH_REMOVE_MANUALHOOK(Weapon_Drop, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponDropPost), true);
-				break;
-			case SDKHook_WeaponEquip:
-				SH_REMOVE_MANUALHOOK(Weapon_Equip, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponEquip), false);
-				break;
-			case SDKHook_WeaponEquipPost:
-				SH_REMOVE_MANUALHOOK(Weapon_Equip, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponEquipPost), true);
-				break;
-			case SDKHook_WeaponSwitch:
-				SH_REMOVE_MANUALHOOK(Weapon_Switch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponSwitch), false);
-				break;
-			case SDKHook_WeaponSwitchPost:
-				SH_REMOVE_MANUALHOOK(Weapon_Switch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponSwitchPost), true);
-				break;
-			case SDKHook_ShouldCollide:
-				SH_REMOVE_MANUALHOOK(ShouldCollide, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ShouldCollide), false);
-				break;
-			default:
-				return;
-		}
-	}
-	g_HookList.Remove(index);
 }
 
+void SDKHooks::Unhook(IPluginContext *pContext)
+{
+	for (size_t type = 0; type < SDKHook_MAXHOOKS; ++type)
+	{
+		ke::Vector<CVTableList *> &vtablehooklist = g_HookList[type];
+		for (size_t listentry = 0; listentry < vtablehooklist.length(); ++listentry)
+		{
+			ke::Vector<HookList> &pawnhooks = vtablehooklist[listentry]->hooks;
+			for (size_t entry = 0; entry < pawnhooks.length(); ++entry)
+			{
+				if (pContext != NULL && pContext != pawnhooks[entry].callback->GetParentRuntime()->GetDefaultContext())
+				{
+					continue;
+				}
+
+				pawnhooks.remove(entry--);
+			}
+
+			if (pawnhooks.length() == 0)
+			{
+				delete vtablehooklist[listentry];
+				vtablehooklist.remove(listentry--);
+			}
+		}
+	}
+}
+
+void SDKHooks::Unhook(int entity, SDKHookType type, IPluginFunction *pCallback)
+{
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(entity);
+	if (pEntity == NULL)
+	{
+		return;
+	}
+
+	CVTableHook vhook(pEntity);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[type];
+	for (size_t listentry = 0; listentry < vtablehooklist.length(); ++listentry)
+	{
+		if (vhook != vtablehooklist[listentry]->vtablehook)
+		{
+			continue;
+		}
+
+		entity = gamehelpers->EntityToBCompatRef(pEntity);
+
+		ke::Vector<HookList> &pawnhooks = vtablehooklist[listentry]->hooks;
+		for (size_t entry = 0; entry < pawnhooks.length(); ++entry)
+		{
+			HookList &hookentry = pawnhooks[entry];
+			if (entity != hookentry.entity || pCallback != hookentry.callback)
+			{
+				continue;
+			}
+
+			pawnhooks.remove(entry--);
+		}
+
+		if (pawnhooks.length() == 0)
+		{
+			delete vtablehooklist[listentry];
+			vtablehooklist.remove(listentry);
+		}
+
+		break;
+	}
+}
 
 /**
  * IEntityFactoryDictionary, IServerGameDLL & IVEngineServer Hook Handlers
@@ -939,7 +907,8 @@ void SDKHooks::Hook_EndTouchPost(CBaseEntity *pOther)
 
 void SDKHooks::Hook_FireBulletsPost(const FireBulletsInfo_t &info)
 {
-	int entity = gamehelpers->EntityToBCompatRef(META_IFACEPTR(CBaseEntity));
+	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
+	int entity = gamehelpers->EntityToBCompatRef(pEntity);
 
 	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(entity);
 	if(!pPlayer)
@@ -949,19 +918,33 @@ void SDKHooks::Hook_FireBulletsPost(const FireBulletsInfo_t &info)
 	if(!pInfo)
 		RETURN_META(MRES_IGNORED);
 
-	const char *weapon = pInfo->GetWeaponName();
-	IPluginFunction *callback = NULL;
-
-	HOOKLOOP
+	CVTableHook vhook(pEntity);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_FireBulletsPost];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
-		if(g_HookList[i].entity != entity || g_HookList[i].type != SDKHook_FireBulletsPost)
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
 			continue;
+		}
 
-		callback = g_HookList[i].callback;
-		callback->PushCell(entity);
-		callback->PushCell(info.m_iShots);
-		callback->PushString(weapon?weapon:"");
-		callback->Execute(NULL);
+		const char *weapon = pInfo->GetWeaponName();
+
+		ke::Vector<HookList> &pawnlist = vtablehooklist[entry]->hooks;
+		for (entry = 0; entry < pawnlist.length(); ++entry)
+		{
+			if (entity != pawnlist[entry].entity)
+			{
+				continue;
+			}
+
+			IPluginFunction *callback = pawnlist[entry].callback;
+			callback->PushCell(entity);
+			callback->PushCell(info.m_iShots);
+			callback->PushString(weapon?weapon:"");
+			callback->Execute(NULL);
+		}
+
+		break;
 	}
 
 	RETURN_META(MRES_IGNORED);
@@ -972,26 +955,41 @@ int SDKHooks::Hook_GetMaxHealth()
 {
 	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 	int original_max = SH_MCALL(pEntity, GetMaxHealth)();
-	int entity = gamehelpers->EntityToBCompatRef(pEntity);
 
-	int new_max = original_max;
-
-	cell_t res;
-	IPluginFunction *callback = NULL;
-
-	HOOKLOOP
+	CVTableHook vhook(pEntity);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_GetMaxHealth];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
-		if (g_HookList[i].entity != entity || g_HookList[i].type != SDKHook_GetMaxHealth)
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
 			continue;
+		}
 
-		callback = g_HookList[i].callback;
-		callback->PushCell(entity);
-		callback->PushCellByRef(&new_max);
-		callback->Execute(&res);
+		int entity = gamehelpers->EntityToBCompatRef(pEntity);
+
+		int new_max = original_max;
+
+		cell_t res = Pl_Continue;
+
+		ke::Vector<HookList> &pawnlist = vtablehooklist[entry]->hooks;
+		for (entry = 0; entry < pawnlist.length(); ++entry)
+		{
+			if (entity != pawnlist[entry].entity)
+			{
+				continue;
+			}
+
+			IPluginFunction *callback = pawnlist[entry].callback;
+			callback->PushCell(entity);
+			callback->PushCellByRef(&new_max);
+			callback->Execute(&res);
+		}
+
+		if (res >= Pl_Changed)
+			RETURN_META_VALUE(MRES_SUPERCEDE, new_max);
+
+		break;
 	}
-
-	if (res >= Pl_Changed)
-		RETURN_META_VALUE(MRES_SUPERCEDE, new_max);
 
 	RETURN_META_VALUE(MRES_IGNORED, original_max);
 }
@@ -1004,76 +1002,94 @@ void SDKHooks::Hook_GroundEntChangedPost()
 
 int SDKHooks::Hook_OnTakeDamage(CTakeDamageInfoHack &info)
 {
-	int entity = gamehelpers->EntityToBCompatRef(META_IFACEPTR(CBaseEntity));
-	int attacker = info.GetAttacker();
-	int inflictor = info.GetInflictor();
-	float damage = info.GetDamage();
-	int damagetype = info.GetDamageType();
-	int weapon = info.GetWeapon();
+	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
-	Vector force = info.GetDamageForce();
-	cell_t damageForce[3] = {sp_ftoc(force.x), sp_ftoc(force.y), sp_ftoc(force.z)};
-
-	Vector pos = info.GetDamagePosition();
-	cell_t damagePosition[3] = {sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z)};
-
-	IPluginFunction *callback = NULL;
-	cell_t res, ret = Pl_Continue;
-
-	HOOKLOOP
+	CVTableHook vhook(pEntity);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_OnTakeDamage];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
-		if(g_HookList[i].entity != entity || g_HookList[i].type != SDKHook_OnTakeDamage)
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
 			continue;
-
-		callback = g_HookList[i].callback;
-		callback->PushCell(entity);
-		callback->PushCellByRef(&attacker);
-		callback->PushCellByRef(&inflictor);
-		callback->PushFloatByRef(&damage);
-		callback->PushCellByRef(&damagetype);
-		callback->PushCellByRef(&weapon);
-		callback->PushArray(damageForce, 3, SM_PARAM_COPYBACK);
-		callback->PushArray(damagePosition, 3, SM_PARAM_COPYBACK);	
-		callback->PushCell(info.GetDamageCustom());
-		callback->Execute(&res);
-
-		if(res > ret)
-			ret = res;
-	}
-
-	if(ret >= Pl_Handled)
-		RETURN_META_VALUE(MRES_SUPERCEDE, 1);
-
-	if(ret == Pl_Changed)
-	{
-		CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
-		if(!pEntAttacker)
-		{
-			callback->GetParentContext()->ThrowNativeError("Entity %d for attacker is invalid", attacker);
-			RETURN_META_VALUE(MRES_IGNORED, 0);
-		}
-		CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
-		if(!pEntInflictor)
-		{
-			callback->GetParentContext()->ThrowNativeError("Entity %d for inflictor is invalid", inflictor);
-			RETURN_META_VALUE(MRES_IGNORED, 0);
 		}
 
-		info.SetAttacker(pEntAttacker);
-		info.SetInflictor(pEntInflictor);
-		info.SetDamage(damage);
-		info.SetDamageType(damagetype);
-		info.SetWeapon(gamehelpers->ReferenceToEntity(weapon));
-		info.SetDamageForce(
-			sp_ctof(damageForce[0]),
-			sp_ctof(damageForce[1]),
-			sp_ctof(damageForce[2]));
-		info.SetDamagePosition(
-			sp_ctof(damagePosition[0]),
-			sp_ctof(damagePosition[1]),
-			sp_ctof(damagePosition[2]));
+		int entity = gamehelpers->EntityToBCompatRef(pEntity);
+		int attacker = info.GetAttacker();
+		int inflictor = info.GetInflictor();
+		float damage = info.GetDamage();
+		int damagetype = info.GetDamageType();
+		int weapon = info.GetWeapon();
 
-		RETURN_META_VALUE(MRES_HANDLED, 1); 
+		Vector force = info.GetDamageForce();
+		cell_t damageForce[3] = {sp_ftoc(force.x), sp_ftoc(force.y), sp_ftoc(force.z)};
+
+		Vector pos = info.GetDamagePosition();
+		cell_t damagePosition[3] = {sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z)};
+
+		cell_t res, ret = Pl_Continue;
+
+		ke::Vector<HookList> &pawnlist = vtablehooklist[entry]->hooks;
+		for (entry = 0; entry < pawnlist.length(); ++entry)
+		{
+			if (entity != pawnlist[entry].entity)
+			{
+				continue;
+			}
+
+			IPluginFunction *callback = pawnlist[entry].callback;
+			callback->PushCell(entity);
+			callback->PushCellByRef(&attacker);
+			callback->PushCellByRef(&inflictor);
+			callback->PushFloatByRef(&damage);
+			callback->PushCellByRef(&damagetype);
+			callback->PushCellByRef(&weapon);
+			callback->PushArray(damageForce, 3, SM_PARAM_COPYBACK);
+			callback->PushArray(damagePosition, 3, SM_PARAM_COPYBACK);	
+			callback->PushCell(info.GetDamageCustom());
+			callback->Execute(&res);
+
+			if(res >= ret)
+			{
+				ret = res;
+				if(ret == Pl_Changed)
+				{
+					CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
+					if(!pEntAttacker)
+					{
+						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for attacker is invalid", attacker);
+						RETURN_META_VALUE(MRES_IGNORED, 0);
+					}
+					CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
+					if(!pEntInflictor)
+					{
+						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for inflictor is invalid", inflictor);
+						RETURN_META_VALUE(MRES_IGNORED, 0);
+					}
+
+					info.SetAttacker(pEntAttacker);
+					info.SetInflictor(pEntInflictor);
+					info.SetDamage(damage);
+					info.SetDamageType(damagetype);
+					info.SetWeapon(gamehelpers->ReferenceToEntity(weapon));
+					info.SetDamageForce(
+						sp_ctof(damageForce[0]),
+						sp_ctof(damageForce[1]),
+						sp_ctof(damageForce[2]));
+					info.SetDamagePosition(
+						sp_ctof(damagePosition[0]),
+						sp_ctof(damagePosition[1]),
+						sp_ctof(damagePosition[2]));
+				}
+			}
+		}
+		
+		if(ret >= Pl_Handled)
+			RETURN_META_VALUE(MRES_SUPERCEDE, 1);
+
+		if(ret == Pl_Changed)
+			RETURN_META_VALUE(MRES_HANDLED, 1); 
+
+		break;
 	}
 
 	RETURN_META_VALUE(MRES_IGNORED, 0);
@@ -1081,33 +1097,49 @@ int SDKHooks::Hook_OnTakeDamage(CTakeDamageInfoHack &info)
 
 int SDKHooks::Hook_OnTakeDamagePost(CTakeDamageInfoHack &info)
 {
-	int entity = gamehelpers->EntityToBCompatRef(META_IFACEPTR(CBaseEntity));
-	IPluginFunction *callback = NULL;
+	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
-	HOOKLOOP
+	CVTableHook vhook(pEntity);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_OnTakeDamagePost];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
-		if(g_HookList[i].entity != entity || g_HookList[i].type != SDKHook_OnTakeDamagePost)
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
 			continue;
+		}
 
-		callback = g_HookList[i].callback;
-		callback->PushCell(entity);
-		callback->PushCell(info.GetAttacker());
-		callback->PushCell(info.GetInflictor());
-		callback->PushFloat(info.GetDamage());
-		callback->PushCell(info.GetDamageType());
-		callback->PushCell(info.GetWeapon());
+		int entity = gamehelpers->EntityToBCompatRef(pEntity);
 
-		Vector force = info.GetDamageForce();
-		cell_t damageForce[3] = {sp_ftoc(force.x), sp_ftoc(force.y), sp_ftoc(force.z)};
-		callback->PushArray(damageForce, 3);
+		ke::Vector<HookList> &pawnlist = vtablehooklist[entry]->hooks;
+		for (entry = 0; entry < pawnlist.length(); ++entry)
+		{
+			if (entity != pawnlist[entry].entity)
+			{
+				continue;
+			}
 
-		Vector pos = info.GetDamagePosition();
-		cell_t damagePosition[3] = {sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z)};
-		callback->PushArray(damagePosition, 3);
+			IPluginFunction *callback = pawnlist[entry].callback;
+			callback->PushCell(entity);
+			callback->PushCell(info.GetAttacker());
+			callback->PushCell(info.GetInflictor());
+			callback->PushFloat(info.GetDamage());
+			callback->PushCell(info.GetDamageType());
+			callback->PushCell(info.GetWeapon());
 
-		callback->PushCell(info.GetDamageCustom());
+			Vector force = info.GetDamageForce();
+			cell_t damageForce[3] = {sp_ftoc(force.x), sp_ftoc(force.y), sp_ftoc(force.z)};
+			callback->PushArray(damageForce, 3);
 
-		callback->Execute(NULL);
+			Vector pos = info.GetDamagePosition();
+			cell_t damagePosition[3] = {sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z)};
+			callback->PushArray(damagePosition, 3);
+
+			callback->PushCell(info.GetDamageCustom());
+
+			callback->Execute(NULL);
+		}
+
+		break;
 	}
 
 	RETURN_META_VALUE(MRES_IGNORED, 0);
@@ -1137,40 +1169,73 @@ void SDKHooks::Hook_PostThinkPost()
 
 bool SDKHooks::Hook_Reload()
 {
-	int entity = gamehelpers->EntityToBCompatRef(META_IFACEPTR(CBaseEntity));
-	cell_t res;
-	IPluginFunction *callback = NULL;
+	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
-	HOOKLOOP
+	CVTableHook vhook(pEntity);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_Reload];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
-		if (g_HookList[i].entity != entity || g_HookList[i].type != SDKHook_Reload)
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
 			continue;
+		}
 
-		callback = g_HookList[i].callback;
-		callback->PushCell(entity);
-		callback->Execute(&res);
+		int entity = gamehelpers->EntityToBCompatRef(pEntity);
+		cell_t res = Pl_Continue;
+
+		ke::Vector<HookList> &pawnlist = vtablehooklist[entry]->hooks;
+		for (entry = 0; entry < pawnlist.length(); ++entry)
+		{
+			if (entity != pawnlist[entry].entity)
+			{
+				continue;
+			}
+
+			IPluginFunction *callback = pawnlist[entry].callback;
+			callback->PushCell(entity);
+			callback->Execute(&res);
+		}
+
+		if (res >= Pl_Handled)
+			RETURN_META_VALUE(MRES_SUPERCEDE, false);
+
+		break;
 	}
-
-	if (res >= Pl_Handled)
-		RETURN_META_VALUE(MRES_SUPERCEDE, false);
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
 
 bool SDKHooks::Hook_ReloadPost()
 {
-	int entity = gamehelpers->EntityToBCompatRef(META_IFACEPTR(CBaseEntity));
-	IPluginFunction *callback = NULL;
+	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
-	HOOKLOOP
+	CVTableHook vhook(pEntity);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_Reload];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
-		if (g_HookList[i].entity != entity || g_HookList[i].type != SDKHook_ReloadPost)
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
 			continue;
+		}
 
-		callback = g_HookList[i].callback;
-		callback->PushCell(entity);
-		callback->PushCell(META_RESULT_ORIG_RET(bool) ? 1 : 0);
-		callback->Execute(NULL);
+		int entity = gamehelpers->EntityToBCompatRef(pEntity);
+		cell_t origreturn = META_RESULT_ORIG_RET(bool) ? 1 : 0;
+
+		ke::Vector<HookList> &pawnlist = vtablehooklist[entry]->hooks;
+		for (entry = 0; entry < pawnlist.length(); ++entry)
+		{
+			if (entity != pawnlist[entry].entity)
+			{
+				continue;
+			}
+
+			IPluginFunction *callback = pawnlist[entry].callback;
+			callback->PushCell(entity);
+			callback->PushCell(origreturn);
+			callback->Execute(NULL);
+		}
+
+		break;
 	}
 
 	return true;
@@ -1188,31 +1253,47 @@ void SDKHooks::Hook_SetTransmit(CCheckTransmitInfo *pInfo, bool bAlways)
 
 bool SDKHooks::Hook_ShouldCollide(int collisionGroup, int contentsMask)
 {
-	int entity = gamehelpers->EntityToBCompatRef(META_IFACEPTR(CBaseEntity));
-	IPluginFunction *callback = NULL;
-	bool origRet = ((META_RESULT_STATUS >= MRES_OVERRIDE)?(META_RESULT_OVERRIDE_RET(bool)):(META_RESULT_ORIG_RET(bool)));
-	cell_t res;
+	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
-	HOOKLOOP
+	CVTableHook vhook(pEntity);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_ShouldCollide];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
-		if (g_HookList[i].entity != entity || g_HookList[i].type != SDKHook_ShouldCollide)
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
 			continue;
+		}
 
-		callback = g_HookList[i].callback;
-		callback->PushCell(entity);
-		callback->PushCell(collisionGroup);
-		callback->PushCell(contentsMask);
-		callback->PushCell(origRet ? 1 : 0);
-		callback->Execute(&res);
+		int entity = gamehelpers->EntityToBCompatRef(pEntity);
+		cell_t origRet = ((META_RESULT_STATUS >= MRES_OVERRIDE)?(META_RESULT_OVERRIDE_RET(bool)):(META_RESULT_ORIG_RET(bool))) ? 1 : 0;
+		cell_t res = 0;
+
+		ke::Vector<HookList> &pawnlist = vtablehooklist[entry]->hooks;
+		for (entry = 0; entry < pawnlist.length(); ++entry)
+		{
+			if (entity != pawnlist[entry].entity)
+			{
+				continue;
+			}
+
+			IPluginFunction *callback = pawnlist[entry].callback;
+			callback->PushCell(entity);
+			callback->PushCell(collisionGroup);
+			callback->PushCell(contentsMask);
+			callback->PushCell(origRet);
+			callback->Execute(&res);
+		}
+
+		bool ret = false;
+		if (res != 0)
+		{
+			ret = true;
+		}
+
+		RETURN_META_VALUE(MRES_SUPERCEDE, ret);
 	}
 
-	bool ret = false;
-	if (res != 0)
-	{
-		ret = true;
-	}
-
-	RETURN_META_VALUE(MRES_SUPERCEDE, ret);
+	RETURN_META_VALUE(MRES_IGNORED, true);
 }
 
 #if SOURCE_ENGINE == SE_DOTA
@@ -1221,22 +1302,38 @@ void SDKHooks::Hook_Spawn(CEntityKeyValues *kv)
 void SDKHooks::Hook_Spawn()
 #endif
 {
-	int entity = gamehelpers->EntityToBCompatRef(META_IFACEPTR(CBaseEntity));
-	IPluginFunction *callback = NULL;
-	cell_t res;
+	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
-	HOOKLOOP
+	CVTableHook vhook(pEntity);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_Spawn];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
-		if (g_HookList[i].entity != entity || g_HookList[i].type != SDKHook_Spawn)
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
 			continue;
+		}
 
-		callback = g_HookList[i].callback;
-		callback->PushCell(entity);
-		callback->Execute(&res);
+		int entity = gamehelpers->EntityToBCompatRef(pEntity);
+		cell_t res = Pl_Continue;
+
+		ke::Vector<HookList> &pawnlist = vtablehooklist[entry]->hooks;
+		for (entry = 0; entry < pawnlist.length(); ++entry)
+		{
+			if (entity != pawnlist[entry].entity)
+			{
+				continue;
+			}
+
+			IPluginFunction *callback = pawnlist[entry].callback;
+			callback->PushCell(entity);
+			callback->Execute(&res);
+		}
+
+		if (res >= Pl_Handled)
+			RETURN_META(MRES_SUPERCEDE);
+
+		break;
 	}
-
-	if (res >= Pl_Handled)
-		RETURN_META(MRES_SUPERCEDE);
 
 	RETURN_META(MRES_IGNORED);
 }
@@ -1298,60 +1395,79 @@ void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir,
 void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr)
 #endif
 {
-	int entity = gamehelpers->EntityToBCompatRef(META_IFACEPTR(CBaseEntity));
-	int attacker = info.GetAttacker();
-	int inflictor = info.GetInflictor();
-	float damage = info.GetDamage();
-	int damagetype = info.GetDamageType();
-	int ammotype = info.GetAmmoType();
-	IPluginFunction *callback = NULL;
-	cell_t res, ret = Pl_Continue;
+	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
-	HOOKLOOP
+	CVTableHook vhook(pEntity);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_TraceAttack];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
-		if(g_HookList[i].entity != entity || g_HookList[i].type != SDKHook_TraceAttack)
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
 			continue;
-
-		callback = g_HookList[i].callback;
-		callback->PushCell(entity);
-		callback->PushCellByRef(&attacker);
-		callback->PushCellByRef(&inflictor);
-		callback->PushFloatByRef(&damage);
-		callback->PushCellByRef(&damagetype);
-		callback->PushCellByRef(&ammotype);
-		callback->PushCell(ptr->hitbox);
-		callback->PushCell(ptr->hitgroup);
-		callback->Execute(&res);
-
-		if(res > ret)
-			ret = res;
-	}
-
-	if(ret >= Pl_Handled)
-		RETURN_META(MRES_SUPERCEDE);
-
-	if(ret == Pl_Changed)
-	{
-		CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
-		if(!pEntAttacker)
-		{
-			callback->GetParentContext()->ThrowNativeError("Entity %d for attacker is invalid", attacker);
-			RETURN_META(MRES_IGNORED);
 		}
-		CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
-		if(!pEntInflictor)
-		{
-			callback->GetParentContext()->ThrowNativeError("Entity %d for inflictor is invalid", inflictor);
-			RETURN_META(MRES_IGNORED);
-		}
-		
-		info.SetAttacker(gamehelpers->ReferenceToEntity(attacker));
-		info.SetInflictor(gamehelpers->ReferenceToEntity(inflictor));
-		info.SetDamage(damage);
-		info.SetDamageType(damagetype);
-		info.SetAmmoType(ammotype);
 
-		RETURN_META(MRES_HANDLED); 
+		int entity = gamehelpers->EntityToBCompatRef(pEntity);
+		int attacker = info.GetAttacker();
+		int inflictor = info.GetInflictor();
+		float damage = info.GetDamage();
+		int damagetype = info.GetDamageType();
+		int ammotype = info.GetAmmoType();
+		cell_t res, ret = Pl_Continue;
+
+		ke::Vector<HookList> &pawnlist = vtablehooklist[entry]->hooks;
+		for (entry = 0; entry < pawnlist.length(); ++entry)
+		{
+			if (entity != pawnlist[entry].entity)
+			{
+				continue;
+			}
+
+			IPluginFunction *callback = pawnlist[entry].callback;
+			callback->PushCell(entity);
+			callback->PushCellByRef(&attacker);
+			callback->PushCellByRef(&inflictor);
+			callback->PushFloatByRef(&damage);
+			callback->PushCellByRef(&damagetype);
+			callback->PushCellByRef(&ammotype);
+			callback->PushCell(ptr->hitbox);
+			callback->PushCell(ptr->hitgroup);
+			callback->Execute(&res);
+
+			if(res > ret)
+			{
+				ret = res;
+
+				if(ret == Pl_Changed)
+				{
+					CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
+					if(!pEntAttacker)
+					{
+						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for attacker is invalid", attacker);
+						RETURN_META(MRES_IGNORED);
+					}
+					CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
+					if(!pEntInflictor)
+					{
+						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for inflictor is invalid", inflictor);
+						RETURN_META(MRES_IGNORED);
+					}
+					
+					info.SetAttacker(pEntAttacker);
+					info.SetInflictor(pEntInflictor);
+					info.SetDamage(damage);
+					info.SetDamageType(damagetype);
+					info.SetAmmoType(ammotype);
+				}
+			}
+		}
+
+		if(ret >= Pl_Handled)
+			RETURN_META(MRES_SUPERCEDE);
+
+		if(ret == Pl_Changed)
+			RETURN_META(MRES_HANDLED);
+
+		break;
 	}
 
 	RETURN_META(MRES_IGNORED);
@@ -1363,24 +1479,40 @@ void SDKHooks::Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vec
 void SDKHooks::Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr)
 #endif
 {
-	int entity = gamehelpers->EntityToBCompatRef(META_IFACEPTR(CBaseEntity));
-	IPluginFunction *callback = NULL;
+	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
-	HOOKLOOP
+	CVTableHook vhook(pEntity);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_TraceAttackPost];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
-		if(g_HookList[i].entity != entity || g_HookList[i].type != SDKHook_TraceAttackPost)
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
 			continue;
+		}
 
-		callback = g_HookList[i].callback;
-		callback->PushCell(entity);
-		callback->PushCell(info.GetAttacker());
-		callback->PushCell(info.GetInflictor());
-		callback->PushFloat(info.GetDamage());
-		callback->PushCell(info.GetDamageType());
-		callback->PushCell(info.GetAmmoType());
-		callback->PushCell(ptr->hitbox);
-		callback->PushCell(ptr->hitgroup);
-		callback->Execute(NULL);
+		int entity = gamehelpers->EntityToBCompatRef(pEntity);
+
+		ke::Vector<HookList> &pawnlist = vtablehooklist[entry]->hooks;
+		for (entry = 0; entry < pawnlist.length(); ++entry)
+		{
+			if (entity != pawnlist[entry].entity)
+			{
+				continue;
+			}
+
+			IPluginFunction *callback = pawnlist[entry].callback;
+			callback->PushCell(entity);
+			callback->PushCell(info.GetAttacker());
+			callback->PushCell(info.GetInflictor());
+			callback->PushFloat(info.GetDamage());
+			callback->PushCell(info.GetDamageType());
+			callback->PushCell(info.GetAmmoType());
+			callback->PushCell(ptr->hitbox);
+			callback->PushCell(ptr->hitgroup);
+			callback->Execute(NULL);
+		}
+
+		break;
 	}
 
 	RETURN_META(MRES_IGNORED);
@@ -1388,53 +1520,83 @@ void SDKHooks::Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vec
 
 void SDKHooks::Hook_Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
-	int entity = gamehelpers->EntityToBCompatRef(META_IFACEPTR(CBaseEntity));
-	int activator = gamehelpers->EntityToBCompatRef(pActivator);
-	int caller = gamehelpers->EntityToBCompatRef(pCaller);
+	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
-	cell_t ret;
-	IPluginFunction *callback = NULL;
-
-	HOOKLOOP
+	CVTableHook vhook(pEntity);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_Use];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
-		if(g_HookList[i].entity != entity || g_HookList[i].type != SDKHook_Use)
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
 			continue;
+		}
 
-		callback = g_HookList[i].callback;
-		callback->PushCell(entity);
-		callback->PushCell(activator);
-		callback->PushCell(caller);
-		callback->PushCell(useType);
-		callback->PushFloat(value);
-		callback->Execute(&ret);
+		int entity = gamehelpers->EntityToBCompatRef(pEntity);
+		int activator = gamehelpers->EntityToBCompatRef(pActivator);
+		int caller = gamehelpers->EntityToBCompatRef(pCaller);
+		cell_t ret = Pl_Continue;
+
+		ke::Vector<HookList> &pawnlist = vtablehooklist[entry]->hooks;
+		for (entry = 0; entry < pawnlist.length(); ++entry)
+		{
+			if (entity != pawnlist[entry].entity)
+			{
+				continue;
+			}
+
+			IPluginFunction *callback = pawnlist[entry].callback;
+			callback->PushCell(entity);
+			callback->PushCell(activator);
+			callback->PushCell(caller);
+			callback->PushCell(useType);
+			callback->PushFloat(value);
+			callback->Execute(&ret);
+		}
+
+		if (ret >= Pl_Handled)
+			RETURN_META(MRES_SUPERCEDE);
+
+		break;
 	}
-
-	if (ret >= Pl_Handled)
-		RETURN_META(MRES_SUPERCEDE);
 
 	RETURN_META(MRES_IGNORED);
 }
 
 void SDKHooks::Hook_UsePost(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
-	int entity = gamehelpers->EntityToBCompatRef(META_IFACEPTR(CBaseEntity));
-	int activator = gamehelpers->EntityToBCompatRef(pActivator);
-	int caller = gamehelpers->EntityToBCompatRef(pCaller);
+	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
-	IPluginFunction *callback = NULL;
-
-	HOOKLOOP
+	CVTableHook vhook(pEntity);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_UsePost];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
-		if (g_HookList[i].entity != entity || g_HookList[i].type != SDKHook_UsePost)
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
 			continue;
+		}
 
-		callback = g_HookList[i].callback;
-		callback->PushCell(entity);
-		callback->PushCell(activator);
-		callback->PushCell(caller);
-		callback->PushCell(useType);
-		callback->PushFloat(value);
-		callback->Execute(NULL);
+		int entity = gamehelpers->EntityToBCompatRef(pEntity);
+		int activator = gamehelpers->EntityToBCompatRef(pActivator);
+		int caller = gamehelpers->EntityToBCompatRef(pCaller);
+
+		ke::Vector<HookList> &pawnlist = vtablehooklist[entry]->hooks;
+		for (entry = 0; entry < pawnlist.length(); ++entry)
+		{
+			if (entity != pawnlist[entry].entity)
+			{
+				continue;
+			}
+
+			IPluginFunction *callback = pawnlist[entry].callback;
+			callback->PushCell(entity);
+			callback->PushCell(activator);
+			callback->PushCell(caller);
+			callback->PushCell(useType);
+			callback->PushFloat(value);
+			callback->Execute(NULL);
+		}
+
+		break;
 	}
 
 	RETURN_META(MRES_IGNORED);
@@ -1457,7 +1619,7 @@ void SDKHooks::OnEntityDeleted(CBaseEntity *pEntity)
 	g_pOnEntityDestroyed->PushCell(entity);
 	g_pOnEntityDestroyed->Execute(NULL);
 	
-	SDKHooks::RemoveEntityHooks(pEntity);
+	Unhook(pEntity);
 
 	m_EntityExists.Set(gamehelpers->ReferenceToIndex(entity), false);
 }
@@ -1551,36 +1713,4 @@ bool SDKHooks::Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelin
 {
 	cell_t result = Call(META_IFACEPTR(CBaseEntity), SDKHook_WeaponSwitchPost, pWeapon);
 	RETURN_META_VALUE(MRES_IGNORED, true);
-}
-
-
-void SDKHooks::RemoveEntityHooks(CBaseEntity *pEnt)
-{
-	int entity = gamehelpers->EntityToBCompatRef(pEnt);
-	
-	// Remove hooks
-	HOOKLOOP
-	{
-		if(g_HookList[i].entity == entity)
-		{
-#ifdef SDKHOOKSDEBUG
-			META_CONPRINTF("DEBUG: Removing hook #%d on entity %d (UpdateOnRemove or clientdisconnect)\n", i, entity);
-#endif
-			Unhook(i);
-		}
-	}
-}
-
-CON_COMMAND(sdkhooks_listhooks, "Lists all current hooks")
-{
-	META_CONPRINTF("    %-24.23s %-18.17s %s\n", "Plugin", "Type", "Entity");
-	
-	IPlugin *pPlugin;
-	const sm_plugininfo_t *info;
-	for(int i = g_HookList.Count() - 1; i >= 0; i--)
-	{
-		g_HookList[i].callback->GetParentRuntime()->GetDefaultContext()->GetKey(2, (void **)&pPlugin);
-		info = pPlugin->GetPublicInfo();
-		META_CONPRINTF("%2d. %-24.23s %-18.17s %d\n", i + 1, info->name[0] ? info->name : pPlugin->GetFilename(), g_HookTypes[g_HookList[i].type].name, g_HookList[i].entity);
-	}
 }
