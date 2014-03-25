@@ -71,9 +71,6 @@ public OnPluginStart()
 	g_Cvar_ExcludeOld = CreateConVar("sm_nominate_excludeold", "1", "Specifies if the current map should be excluded from the Nominations list", 0, true, 0.00, true, 1.0);
 	g_Cvar_ExcludeCurrent = CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", 0, true, 0.00, true, 1.0);
 	
-	RegConsoleCmd("say", Command_Say);
-	RegConsoleCmd("say_team", Command_Say);
-	
 	RegConsoleCmd("sm_nominate", Command_Nominate);
 	
 	RegAdminCmd("sm_nominate_addmap", Command_Addmap, ADMFLAG_CHANGEMAP, "sm_nominate_addmap <mapname> - Forces a map to be on the next mapvote.");
@@ -156,36 +153,21 @@ public Action:Command_Addmap(client, args)
 	return Plugin_Handled;		
 }
 
-public Action:Command_Say(client, args)
+public OnClientSayCommand_Post(client, const String:command[], const String:sArgs[])
 {
 	if (!client)
 	{
-		return Plugin_Continue;
-	}
-
-	decl String:text[192];
-	if (!GetCmdArgString(text, sizeof(text)))
-	{
-		return Plugin_Continue;
+		return;
 	}
 	
-	new startidx = 0;
-	if(text[strlen(text)-1] == '"')
+	if (strcmp(sArgs, "nominate", false) == 0)
 	{
-		text[strlen(text)-1] = '\0';
-		startidx = 1;
-	}
-	
-	new ReplySource:old = SetCmdReplySource(SM_REPLY_TO_CHAT);
-	
-	if (strcmp(text[startidx], "nominate", false) == 0)
-	{
+		new ReplySource:old = SetCmdReplySource(SM_REPLY_TO_CHAT);
+		
 		AttemptNominate(client);
+		
+		SetCmdReplySource(old);
 	}
-	
-	SetCmdReplySource(old);
-	
-	return Plugin_Continue;	
 }
 
 public Action:Command_Nominate(client, args)

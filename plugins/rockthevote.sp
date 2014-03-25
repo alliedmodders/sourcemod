@@ -74,9 +74,6 @@ public OnPluginStart()
 	g_Cvar_ChangeTime = CreateConVar("sm_rtv_changetime", "0", "When to change the map after a succesful RTV: 0 - Instant, 1 - RoundEnd, 2 - MapEnd", _, true, 0.0, true, 2.0);
 	g_Cvar_RTVPostVoteAction = CreateConVar("sm_rtv_postvoteaction", "0", "What to do with RTV's after a mapvote has completed. 0 - Allow, success = instant change, 1 - Deny", _, true, 0.0, true, 1.0);
 	
-	RegConsoleCmd("say", Command_Say);
-	RegConsoleCmd("say_team", Command_Say);
-	
 	RegConsoleCmd("sm_rtv", Command_RTV);
 	
 	AutoExecConfig(true, "rtv");
@@ -158,6 +155,23 @@ public OnClientDisconnect(client)
 	}	
 }
 
+public OnClientSayCommand_Post(client, const String:command[], const String:sArgs[])
+{
+	if (!g_CanRTV || !client)
+	{
+		return;
+	}
+	
+	if (strcmp(sArgs, "rtv", false) == 0 || strcmp(sArgs, "rockthevote", false) == 0)
+	{
+		new ReplySource:old = SetCmdReplySource(SM_REPLY_TO_CHAT);
+		
+		AttemptRTV(client);
+		
+		SetCmdReplySource(old);
+	}
+}
+
 public Action:Command_RTV(client, args)
 {
 	if (!g_CanRTV || !client)
@@ -168,38 +182,6 @@ public Action:Command_RTV(client, args)
 	AttemptRTV(client);
 	
 	return Plugin_Handled;
-}
-
-public Action:Command_Say(client, args)
-{
-	if (!g_CanRTV || !client)
-	{
-		return Plugin_Continue;
-	}
-	
-	decl String:text[192];
-	if (!GetCmdArgString(text, sizeof(text)))
-	{
-		return Plugin_Continue;
-	}
-	
-	new startidx = 0;
-	if(text[strlen(text)-1] == '"')
-	{
-		text[strlen(text)-1] = '\0';
-		startidx = 1;
-	}
-	
-	new ReplySource:old = SetCmdReplySource(SM_REPLY_TO_CHAT);
-	
-	if (strcmp(text[startidx], "rtv", false) == 0 || strcmp(text[startidx], "rockthevote", false) == 0)
-	{
-		AttemptRTV(client);
-	}
-	
-	SetCmdReplySource(old);
-	
-	return Plugin_Continue;	
 }
 
 AttemptRTV(client)
