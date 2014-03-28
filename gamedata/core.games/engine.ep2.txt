@@ -21,14 +21,12 @@
 			"game"		"bg2"
 			"game"		"pvkii"
 			"game"		"gesource"
-			"game"		"empires"
 			"game"		"RnLBeta"
 			"game"		"obsidian"
 			"game"		"fas"
 			"game"		"fistful_of_frags"
 			"game"		"cspromod"
 			"game"		"ag2"
-			"game"		"nmrih"
 		}
 		
 		"Offsets"

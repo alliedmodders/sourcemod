@@ -17,7 +17,6 @@
 		"#supported"
 		{
 			"game"		"ageofchivalry"
-			"game"		"empires"
 			"game"		"bg2"
 			"game"		"pvkii"
 			"game"		"gesource"
@@ -97,7 +96,6 @@
 		{
 			"game"		"ageofchivalry"
 			"game"		"zps"
-			"game"		"empires"
 			"game"		"bg2"
 			"game"		"pvkii"
 			"game"		"gesource"
@@ -107,7 +105,6 @@
 			"game"		"fistful_of_frags"
 			"game"		"cspromod"
 			"game"		"ag2"
-			"game"		"nmrih"
 		}
 		
 		"Offsets"
