@@ -559,7 +559,9 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 				smcore.LogError("[SM] Unrecognized library \"%s\" (gameconf \"%s\")", 
 					s_TempSig.library, 
 					m_CurFile);
-			} else {
+			}
+			else if (s_TempSig.sig[0])
+			{
 				if (s_TempSig.sig[0] == '@')
 				{
 #if defined PLATFORM_WINDOWS
@@ -594,28 +596,28 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 					}
 #endif
 				}
-				if (final_addr)
+
+				if (!final_addr)
 				{
-					goto skip_find;
+					/* First, preprocess the signature */
+					unsigned char real_sig[511];
+					size_t real_bytes;
+					size_t length;
+
+					real_bytes = 0;
+					length = strlen(s_TempSig.sig);
+
+					real_bytes = UTIL_DecodeHexString(real_sig, sizeof(real_sig), s_TempSig.sig);
+
+					if (real_bytes >= 1)
+					{
+						final_addr = g_MemUtils.FindPattern(addrInBase, (char*) real_sig, real_bytes);
+					}
 				}
-				/* First, preprocess the signature */
-				unsigned char real_sig[511];
-				size_t real_bytes;
-				size_t length;
 
-				real_bytes = 0;
-				length = strlen(s_TempSig.sig);
-
-				real_bytes = UTIL_DecodeHexString(real_sig, sizeof(real_sig), s_TempSig.sig);
-
-				if (real_bytes >= 1)
-				{
-					final_addr = g_MemUtils.FindPattern(addrInBase, (char*)real_sig, real_bytes);
-				}
+				m_Sigs.replace(m_offset, final_addr);
 			}
 
-skip_find:
-			m_Sigs.replace(m_offset, final_addr);
 			m_ParseState = PSTATE_GAMEDEFS_SIGNATURES;
 
 			break;

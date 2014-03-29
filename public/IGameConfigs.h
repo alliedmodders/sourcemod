@@ -84,9 +84,9 @@ namespace SourceMod
 		 *
 		 * @param key			Name of the signature.
 		 * @param addr			Pointer to store the memory address in.
-		 * @return				True if the key was found, false otherwise.
-		 *						Note that true is a valid return even if the
-		 *						address is NULL.
+		 *						(NULL is copied if signature is not found in binary).
+		 * @return				True if the section exists and key for current
+		 *						platform was found, false otherwise.
 		 */
 		virtual bool GetMemSig(const char *key, void **addr) =0;
 
