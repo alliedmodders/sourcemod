@@ -25,6 +25,11 @@
 		"engine"	"left4dead2"
 	}
 	
+	"engine.contagion.txt"
+	{
+		"engine"	"contagion"
+	}
+	
 	"engine.swarm.txt"
 	{
 		"engine"	"alienswarm"

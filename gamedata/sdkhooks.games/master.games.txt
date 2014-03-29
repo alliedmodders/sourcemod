@@ -21,6 +21,11 @@
 		"engine"	"left4dead"
 	}
 	
+	"engine.contagion.txt"
+	{
+		"engine"	"contagion"
+	}
+	
 	"game.l4d2.txt"
 	{
 		"game"		"left4dead2"

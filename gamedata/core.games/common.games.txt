@@ -99,6 +99,7 @@
 			"engine"			"csgo"
 			"engine"			"dota"
 			"engine"			"sdk2013"
+			"engine"			"contagion"
 		}
 		
 		"Offsets"
