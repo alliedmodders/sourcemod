@@ -502,6 +502,7 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 	case SOURCE_ENGINE_LEFT4DEAD:
 		return 40;
 	case SOURCE_ENGINE_NUCLEARDAWN:
+	case SOURCE_ENGINE_CONTAGION:
 	case SOURCE_ENGINE_LEFT4DEAD2:
 		return 50;
 	case SOURCE_ENGINE_ALIENSWARM:

@@ -247,6 +247,8 @@ static const char *get_source_engine_name()
 	return "left4dead";
 #elif SOURCE_ENGINE == SE_NUCLEARDAWN
 	return "nucleardawn";
+#elif SOURCE_ENGINE == SE_CONTAGION
+	return "contagion";
 #elif SOURCE_ENGINE == SE_LEFT4DEAD2
 	return "left4dead2";
 #elif SOURCE_ENGINE == SE_ALIENSWARM
@@ -398,6 +400,8 @@ void do_global_plugin_loads()
 #define GAMEFIX "2.csgo"
 #elif SOURCE_ENGINE == SE_DOTA
 #define GAMEFIX "2.dota"
+#elif SOURCE_ENGINE == SE_CONTAGION
+#define GAMEFIX "2.contagion"
 #else
 #define GAMEFIX "2.ep1"
 #endif //(SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)

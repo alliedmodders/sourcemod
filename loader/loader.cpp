@@ -86,6 +86,7 @@
 #define FILENAME_1_6_DOTA			"sourcemod.2.dota" PLATFORM_EXT
 #define FILENAME_1_6_BLADE			"sourcemod.2.blade" PLATFORM_EXT
 #define FILENAME_1_6_INSURGENCY		"sourcemod.2.insurgency" PLATFORM_EXT
+#define FILENAME_1_6_CONTAGION		"sourcemod.2.contagion" PLATFORM_EXT
 
 HINSTANCE g_hCore = NULL;
 bool load_attempted = false;
@@ -258,6 +259,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_NUCLEARDAWN:
 		{
 			filename = FILENAME_1_6_ND;
+			break;
+		}
+	case SOURCE_ENGINE_CONTAGION:
+		{
+			filename = FILENAME_1_6_CONTAGION;
 			break;
 		}
 	case SOURCE_ENGINE_ALIENSWARM:
