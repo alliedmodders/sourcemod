@@ -309,6 +309,94 @@ bool FindNestedDataTable(SendTable *pTable, const char *name)
 	return false;
 }
 
+char *UTIL_SendFlagsToString(int flags, int type)
+{
+	static char str[1024];
+	str[0] = 0;
+
+	if (flags & SPROP_UNSIGNED)
+	{
+		strcat(str, "Unsigned|");
+	}
+	if (flags & SPROP_COORD)
+	{
+		strcat(str, "Coord|");
+	}
+	if (flags & SPROP_NOSCALE)
+	{
+		strcat(str, "NoScale|");
+	}
+	if (flags & SPROP_ROUNDDOWN)
+	{
+		strcat(str, "RoundDown|");
+	}
+	if (flags & SPROP_ROUNDUP)
+	{
+		strcat(str, "RoundUp|");
+	}
+	if (flags & SPROP_NORMAL)
+	{
+		if (type == DPT_Int)
+		{
+			strcat(str, "VarInt|");
+		}
+		else
+		{
+			strcat(str, "Normal|");
+		}
+	}
+	if (flags & SPROP_EXCLUDE)
+	{
+		strcat(str, "Exclude|");
+	}
+	if (flags & SPROP_XYZE)
+	{
+		strcat(str, "XYZE|");
+	}
+	if (flags & SPROP_INSIDEARRAY)
+	{
+		strcat(str, "InsideArray|");
+	}
+	if (flags & SPROP_PROXY_ALWAYS_YES)
+	{
+		strcat(str, "AlwaysProxy|");
+	}
+	if (flags & SPROP_CHANGES_OFTEN)
+	{
+		strcat(str, "ChangesOften|");
+	}
+	if (flags & SPROP_IS_A_VECTOR_ELEM)
+	{
+		strcat(str, "VectorElem|");
+	}
+	if (flags & SPROP_COLLAPSIBLE)
+	{
+		strcat(str, "Collapsible|");
+	}
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+	if (flags & SPROP_COORD_MP)
+	{
+		strcat(str, "CoordMP|");
+	}
+	if (flags & SPROP_COORD_MP_LOWPRECISION)
+	{
+		strcat(str, "CoordMPLowPrec|");
+	}
+	if (flags & SPROP_COORD_MP_INTEGRAL)
+	{
+		strcat(str, "CoordMpIntegral|");
+	}
+#endif
+
+	int len = strlen(str) - 1;
+	if (len > 0)
+	{
+		str[len] = 0; // Strip the final '|'
+	}
+
+	return str;
+}
+
 void UTIL_DrawSendTable_XML(FILE *fp, SendTable *pTable, int space_count)
 {
 	char spaces[255];
@@ -341,6 +429,7 @@ void UTIL_DrawSendTable_XML(FILE *fp, SendTable *pTable, int space_count)
 
 		fprintf(fp, "   %s<offset>%d</offset>\n", spaces, pProp->GetOffset());
 		fprintf(fp, "   %s<bits>%d</bits>\n", spaces, pProp->m_nBits);
+		fprintf(fp, "   %s<flags>%s</flags>\n", spaces, UTIL_SendFlagsToString(pProp->GetFlags(), pProp->GetType()));
 
 		if ((pOtherTable = pTable->GetProp(i)->GetDataTable()) != NULL)
 		{
@@ -384,22 +473,24 @@ void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level = 1)
 			if (type != NULL)
 			{
 				fprintf(fp,
-					"%*sMember: %s (offset %d) (type %s) (bits %d)\n", 
+					"%*sMember: %s (offset %d) (type %s) (bits %d) (%s)\n", 
 					level, "", 
 					pProp->GetName(),
 					pProp->GetOffset(),
 					type,
-					pProp->m_nBits);
+					pProp->m_nBits,
+					UTIL_SendFlagsToString(pProp->GetFlags(), pProp->GetType()));
 			}
 			else
 			{
 				fprintf(fp,
-					"%*sMember: %s (offset %d) (type %d) (bits %d)\n", 
+					"%*sMember: %s (offset %d) (type %d) (bits %d) (%s)\n", 
 					level, "", 
 					pProp->GetName(),
 					pProp->GetOffset(),
 					pProp->GetType(),
-					pProp->m_nBits);
+					pProp->m_nBits,
+					UTIL_SendFlagsToString(pProp->GetFlags(), pProp->GetType()));
 			}
 		}
 	}
@@ -644,7 +735,7 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 
 }
 
-char *UTIL_FlagsToString(int flags)
+char *UTIL_DataFlagsToString(int flags)
 {
 	static char str[1024];
 	str[0] = 0;
@@ -722,7 +813,7 @@ void UTIL_DrawDataTable(FILE *fp, datamap_t *pMap, int level)
 			else
 			{
 				externalname  = pMap->dataDesc[i].externalName;
-				flags = UTIL_FlagsToString(pMap->dataDesc[i].flags);
+				flags = UTIL_DataFlagsToString(pMap->dataDesc[i].flags);
 
 				if (externalname == NULL)
 				{
