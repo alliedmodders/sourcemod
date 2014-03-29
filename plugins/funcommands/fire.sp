@@ -109,12 +109,18 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 		if (g_FireBombTime[client] > 1)
 		{
 			color = RoundToFloor(g_FireBombTime[client] * (255.0 / GetConVarFloat(g_Cvar_FireBombTicks)));
-			EmitAmbientSound(SOUND_BEEP, vec, client, SNDLEVEL_RAIDSIREN);	
+			if (g_BeepSound[0])
+			{
+				EmitAmbientSound(g_BeepSound, vec, client, SNDLEVEL_RAIDSIREN);	
+			}
 		}
 		else
 		{
 			color = 0;
-			EmitAmbientSound(SOUND_FINAL, vec, client, SNDLEVEL_RAIDSIREN);
+			if (g_FinalSound[0])
+			{
+				EmitAmbientSound(g_FinalSound, vec, client, SNDLEVEL_RAIDSIREN);
+			}
 		}
 		
 		SetEntityRenderColor(client, 255, color, color, 255);
@@ -123,13 +129,16 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 		GetClientName(client, name, sizeof(name));
 		PrintCenterTextAll("%t", "Till Explodes", name, g_FireBombTime[client]);		
 		
-		GetClientAbsOrigin(client, vec);
-		vec[2] += 10;
+		if (g_BeamSprite > -1 && g_HaloSprite > -1)
+		{
+			GetClientAbsOrigin(client, vec);
+			vec[2] += 10;
 
-		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FireBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
-		TE_SendToAll();
-		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FireBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
-		TE_SendToAll();
+			TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FireBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
+			TE_SendToAll();
+			TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FireBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
+			TE_SendToAll();
+		}
 		return Plugin_Continue;
 	}
 	else
@@ -140,21 +149,27 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 			TE_SendToAll();
 		}
 		
-		GetClientAbsOrigin(client, vec);
-		vec[2] += 10;
-		TE_SetupBeamRingPoint(vec, 50.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.5, 30.0, 1.5, orangeColor, 5, 0);
-		TE_SendToAll();
-		vec[2] += 15;
-		TE_SetupBeamRingPoint(vec, 40.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 30.0, 1.5, orangeColor, 5, 0);
-		TE_SendToAll();	
-		vec[2] += 15;
-		TE_SetupBeamRingPoint(vec, 30.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.7, 30.0, 1.5, orangeColor, 5, 0);
-		TE_SendToAll();
-		vec[2] += 15;
-		TE_SetupBeamRingPoint(vec, 20.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.8, 30.0, 1.5, orangeColor, 5, 0);
-		TE_SendToAll();		
+		if (g_BeamSprite > -1 && g_HaloSprite > -1)
+		{
+			GetClientAbsOrigin(client, vec);
+			vec[2] += 10;
+			TE_SetupBeamRingPoint(vec, 50.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.5, 30.0, 1.5, orangeColor, 5, 0);
+			TE_SendToAll();
+			vec[2] += 15;
+			TE_SetupBeamRingPoint(vec, 40.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 30.0, 1.5, orangeColor, 5, 0);
+			TE_SendToAll();	
+			vec[2] += 15;
+			TE_SetupBeamRingPoint(vec, 30.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.7, 30.0, 1.5, orangeColor, 5, 0);
+			TE_SendToAll();
+			vec[2] += 15;
+			TE_SetupBeamRingPoint(vec, 20.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.8, 30.0, 1.5, orangeColor, 5, 0);
+			TE_SendToAll();		
+		}
 		
-		EmitAmbientSound(SOUND_BOOM, vec, client, SNDLEVEL_RAIDSIREN);
+		if (g_BoomSound[0])
+		{
+			EmitAmbientSound(g_BoomSound, vec, client, SNDLEVEL_RAIDSIREN);
+		}
 
 		IgniteEntity(client, GetConVarFloat(g_Cvar_BurnDuration));
 		KillFireBomb(client);
