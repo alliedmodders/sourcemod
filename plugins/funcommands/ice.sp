@@ -51,9 +51,12 @@ FreezeClient(client, time)
 	SetEntityMoveType(client, MOVETYPE_NONE);
 	SetEntityRenderColor(client, 0, 128, 255, 192);
 
-	new Float:vec[3];
-	GetClientEyePosition(client, vec);
-	EmitAmbientSound(SOUND_FREEZE, vec, client, SNDLEVEL_RAIDSIREN);
+	if (g_FreezeSound[0])
+	{
+		new Float:vec[3];
+		GetClientEyePosition(client, vec);
+		EmitAmbientSound(g_FreezeSound, vec, client, SNDLEVEL_RAIDSIREN);
+	}
 
 	g_FreezeTime[client] = time;
 	g_FreezeSerial[client] = ++ g_Serial_Gen;
@@ -67,12 +70,15 @@ UnfreezeClient(client)
 
 	if (IsClientInGame(client))
 	{
-		new Float:vec[3];
-		GetClientAbsOrigin(client, vec);
-		vec[2] += 10;	
-		
-		GetClientEyePosition(client, vec);
-		EmitAmbientSound(SOUND_FREEZE, vec, client, SNDLEVEL_RAIDSIREN);
+		if (g_FreezeSound[0])
+		{
+			new Float:vec[3];
+			GetClientAbsOrigin(client, vec);
+			vec[2] += 10;	
+			
+			GetClientEyePosition(client, vec);
+			EmitAmbientSound(g_FreezeSound, vec, client, SNDLEVEL_RAIDSIREN);
+		}
 
 		SetEntityMoveType(client, MOVETYPE_WALK);
 		
@@ -189,13 +195,13 @@ public Action:Timer_Freeze(Handle:timer, any:value)
 	if (g_GlowSprite > -1)
 	{
 		TE_SetupGlowSprite(vec, g_GlowSprite, 0.95, 1.5, 50);
+		TE_SendToAll();
 	}
-	else
+	else if (g_HaloSprite > -1)
 	{
 		TE_SetupGlowSprite(vec, g_HaloSprite, 0.95, 1.5, 50);
+		TE_SendToAll();
 	}
-	
-	TE_SendToAll();
 
 	return Plugin_Continue;
 }
@@ -224,12 +230,18 @@ public Action:Timer_FreezeBomb(Handle:timer, any:value)
 		if (g_FreezeBombTime[client] > 1)
 		{
 			color = RoundToFloor(g_FreezeBombTime[client] * (255.0 / GetConVarFloat(g_Cvar_FreezeBombTicks)));
-			EmitAmbientSound(SOUND_BEEP, vec, client, SNDLEVEL_RAIDSIREN);	
+			if (g_BeepSound[0])
+			{
+				EmitAmbientSound(g_BeepSound, vec, client, SNDLEVEL_RAIDSIREN);
+			}
 		}
 		else
 		{
 			color = 0;
-			EmitAmbientSound(SOUND_FINAL, vec, client, SNDLEVEL_RAIDSIREN);
+			if (g_FinalSound[0])
+			{
+				EmitAmbientSound(g_FinalSound, vec, client, SNDLEVEL_RAIDSIREN);
+			}
 		}
 		
 		SetEntityRenderColor(client, color, color, 255, 255);
@@ -238,13 +250,16 @@ public Action:Timer_FreezeBomb(Handle:timer, any:value)
 		GetClientName(client, name, sizeof(name));
 		PrintCenterTextAll("%t", "Till Explodes", name, g_FreezeBombTime[client]);
 
-		GetClientAbsOrigin(client, vec);
-		vec[2] += 10;
+		if (g_BeamSprite > -1 && g_HaloSprite > -1)
+		{
+			GetClientAbsOrigin(client, vec);
+			vec[2] += 10;
 
-		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FreezeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
-		TE_SendToAll();
-		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FreezeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
-		TE_SendToAll();
+			TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FreezeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
+			TE_SendToAll();
+			TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FreezeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
+			TE_SendToAll();
+		}
 		return Plugin_Continue;
 	}
 	else
@@ -255,7 +270,10 @@ public Action:Timer_FreezeBomb(Handle:timer, any:value)
 			TE_SendToAll();
 		}
 
-		EmitAmbientSound(SOUND_BOOM, vec, client, SNDLEVEL_RAIDSIREN);
+		if (g_BoomSound[0])
+		{
+			EmitAmbientSound(g_BoomSound, vec, client, SNDLEVEL_RAIDSIREN);
+		}
 
 		KillFreezeBomb(client);
 		FreezeClient(client, GetConVarInt(g_Cvar_FreezeDuration));
@@ -286,15 +304,19 @@ public Action:Timer_FreezeBomb(Handle:timer, any:value)
 					continue;
 				}
 				
-				if (g_BeamSprite2 > -1)
+				if (g_HaloSprite > -1)
 				{
-					TE_SetupBeamPoints(vec, pos, g_BeamSprite2, g_HaloSprite, 0, 1, 0.7, 20.0, 50.0, 1, 1.5, blueColor, 10);
+					if (g_BeamSprite2 > -1)
+					{
+						TE_SetupBeamPoints(vec, pos, g_BeamSprite2, g_HaloSprite, 0, 1, 0.7, 20.0, 50.0, 1, 1.5, blueColor, 10);
+						TE_SendToAll();
+					}
+					else if (g_BeamSprite > -1)
+					{
+						TE_SetupBeamPoints(vec, pos, g_BeamSprite, g_HaloSprite, 0, 1, 0.7, 20.0, 50.0, 1, 1.5, blueColor, 10);
+						TE_SendToAll();
+					}
 				}
-				else
-				{
-					TE_SetupBeamPoints(vec, pos, g_BeamSprite, g_HaloSprite, 0, 1, 0.7, 20.0, 50.0, 1, 1.5, blueColor, 10);
-				}
-				TE_SendToAll();
 				
 				FreezeClient(i, GetConVarInt(g_Cvar_FreezeDuration));
 			}		

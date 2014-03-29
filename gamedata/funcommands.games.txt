@@ -1,0 +1,74 @@
+"Games"
+{
+	"#default"
+	{
+		"Keys"
+		{
+			"SpriteBeam"		"sprites/laser.vmt"
+			"SpriteBeam2"		"sprites/bluelight1.vmt"
+			"SpriteExplosion"	"sprites/sprite_fire01.vmt"
+			"SpriteGlow"		"sprites/blueglow2.vmt"
+			"SpriteHalo"		"sprites/halo01.vmt"
+			
+			"SoundBlip"		"buttons/blip1.wav"
+			"SoundBeep"		"buttons/button17.wav"
+			"SoundFinal"	"weapons/cguard/charging.wav"
+			"SoundBoom"		"weapons/explode3.wav"
+			"SoundFreeze"	"physics/glass/glass_impact_bullet4.wav"
+		}
+	}
+	
+	"csgo"
+	{
+		"Keys"
+		{
+			"SpriteBeam"		"sprites/laserbeam.vmt"
+			"SpriteBeam2"		"sprites/physbeam.vmt"
+			"SpriteExplosion"	""
+			"SpriteGlow"		"sprites/blueflare1.vmt"
+			"SpriteHalo"		"sprites/glow01.vmt"
+		}
+	}
+	
+	"$INSURGENCY" // Standalone game
+	{
+		"Keys"
+		{
+			"SpriteBeam"		"sprites/laserbeam.vmt"
+			"SpriteBeam2"		""
+			"SpriteExplosion"	"sprites/sprite_fire01.vmt"
+			"SpriteGlow"		""
+			"SpriteHalo"		"sprites/glow01.vmt"
+		}
+	}
+	
+	"swarm"
+	{
+		"Keys"
+		{
+			"SpriteBeam"		"sprites/laserbeam.vmt"
+			"SpriteBeam2"		""
+			"SpriteExplosion"	"sprites/flamelet1.vmt"
+			"SpriteGlow"		"sprites/blueflare1.vmt"
+			"SpriteHalo"		"sprites/glow01.vmt"
+		}
+	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"game"	"left4dead"
+			"game"	"left4dead2"
+		}
+		
+		"Keys"
+		{
+			"SpriteBeam"		"sprites/laserbeam.vmt"
+			"SpriteBeam2"		"sprites/physbeam.vmt"
+			"SpriteExplosion"	"sprites/floorfire4_.vmt"
+			"SpriteGlow"		"sprites/blueflare1.vmt"
+			"SpriteHalo"		"sprites/glow01.vmt"
+		}
+	}
+}
