@@ -35,7 +35,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_TRANSLATOR_NAME		"ITranslator"
-#define SMINTERFACE_TRANSLATOR_VERSION	3
+#define SMINTERFACE_TRANSLATOR_VERSION	4
 
 #define MAX_TRANSLATE_PARAMS		32
 #define CORELANG_ENGLISH			0
@@ -351,6 +351,11 @@ namespace SourceMod
 		 * @return                  True if language number is valid, false otherwise.
 		 */
 		virtual bool GetLanguageInfo(unsigned int number, const char **code, const char **name) =0;
+
+		/**
+		 * @brief Reparses all loaded translations files.
+		 */
+		virtual void RebuildLanguageDatabase() =0;
 	};
 }
 

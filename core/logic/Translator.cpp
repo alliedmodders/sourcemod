@@ -728,10 +728,7 @@ ConfigResult Translator::OnSourceModConfigChanged(const char *key,
 
 void Translator::OnSourceModLevelChange(const char *mapName)
 {
-	/* Refresh language stuff */
-	char path[PLATFORM_MAX_PATH];
-	g_pSM->BuildPath(Path_SM, path, sizeof(path), "configs/languages.cfg");
-	RebuildLanguageDatabase(path);
+	RebuildLanguageDatabase();
 }
 
 void Translator::OnSourceModAllInitialized()
@@ -807,7 +804,7 @@ unsigned int Translator::FindOrAddPhraseFile(const char *phrase_file)
 	return idx;
 }
 
-void Translator::RebuildLanguageDatabase(const char *lang_header_file)
+void Translator::RebuildLanguageDatabase()
 {
 	/* Erase everything we have */
 	m_LCodeLookup.clear();
@@ -821,9 +818,12 @@ void Translator::RebuildLanguageDatabase(const char *lang_header_file)
 	m_Languages.clear();
 
 	/* Start anew */
+	char path[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_SM, path, sizeof(path), "configs/languages.cfg");
+
 	SMCError err;
 	SMCStates states;
-	if ((err=textparsers->ParseFile_SMC(lang_header_file, this, &states)) != SMCError_Okay)
+	if ((err=textparsers->ParseFile_SMC(path, this, &states)) != SMCError_Okay)
 	{
 		const char *str_err = textparsers->GetSMCErrorString(err);
 		if (!str_err)
@@ -831,7 +831,7 @@ void Translator::RebuildLanguageDatabase(const char *lang_header_file)
 			str_err = m_CustomError.c_str();
 		}
 
-		smcore.LogError("[SM] Failed to parse language header file: \"%s\"", lang_header_file);
+		smcore.LogError("[SM] Failed to parse language header file: \"%s\"", path);
 		smcore.LogError("[SM] Parse error (line %d, column %d): %s", states.line, states.col, str_err);
 	}
 

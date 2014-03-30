@@ -414,3 +414,8 @@ CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle le
 	}
 }
 
+CON_COMMAND(sm_reload_translations, "Reparses all loaded translation files")
+{
+	translator->RebuildLanguageDatabase();
+}
+

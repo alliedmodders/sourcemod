@@ -115,7 +115,6 @@ public: // ITextListener_SMC
 	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
 	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
 public:
-	void RebuildLanguageDatabase(const char *lang_header_file);
 	unsigned int FindOrAddPhraseFile(const char *phrase_file);
 	BaseStringTable *GetStringTable();
 	unsigned int GetLanguageCount();
@@ -146,6 +145,7 @@ public: //ITranslator
 		size_t *pOutLength,
 		const char **pFailPhrase);
 	bool GetLanguageInfo(unsigned int number, const char **code, const char **name);
+	void RebuildLanguageDatabase();
 private:
 	bool AddLanguage(const char *langcode, const char *description);
 private:
