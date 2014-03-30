@@ -287,15 +287,13 @@ void AdminCache::OnSourceModLevelChange(const char *mapName)
 	/* For now, we only read these once per level. */
 	s_FlagReader.LoadLevels();
 
+	memset(g_ReverseFlags, '?', sizeof(g_ReverseFlags));
+
 	for (i = 0; i < 26; i++)
 	{
 		if (FindFlag('a' + i, &flag))
 		{
 			g_ReverseFlags[flag] = 'a' + i;
-		}
-		else
-		{
-			g_ReverseFlags[flag] = '?';
 		}
 	}
 }
