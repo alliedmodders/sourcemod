@@ -91,33 +91,27 @@ public Action:Timer_Beacon(Handle:timer, any:value)
 	new Float:vec[3];
 	GetClientAbsOrigin(client, vec);
 	vec[2] += 10;
+
+	TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_BeaconRadius), g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
+	TE_SendToAll();
 	
-	if (g_BeamSprite > -1 && g_HaloSprite > -1)
+	if (team == 2)
 	{
-		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_BeaconRadius), g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
-		TE_SendToAll();
-		
-		if (team == 2)
-		{
-			TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_BeaconRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, redColor, 10, 0);
-		}
-		else if (team == 3)
-		{
-			TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_BeaconRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, blueColor, 10, 0);
-		}
-		else
-		{
-			TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_BeaconRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, greenColor, 10, 0);
-		}
-		
-		TE_SendToAll();
+		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_BeaconRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, redColor, 10, 0);
+	}
+	else if (team == 3)
+	{
+		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_BeaconRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, blueColor, 10, 0);
+	}
+	else
+	{
+		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_BeaconRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, greenColor, 10, 0);
 	}
 	
-	if (g_BlipSound[0])
-	{
-		GetClientEyePosition(client, vec);
-		EmitAmbientSound(g_BlipSound, vec, client, SNDLEVEL_RAIDSIREN);	
-	}
+	TE_SendToAll();
+		
+	GetClientEyePosition(client, vec);
+	EmitAmbientSound(SOUND_BLIP, vec, client, SNDLEVEL_RAIDSIREN);	
 		
 	return Plugin_Continue;
 }

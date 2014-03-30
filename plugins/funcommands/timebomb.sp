@@ -102,18 +102,12 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 		if (g_TimeBombTime[client] > 1)
 		{
 			color = RoundToFloor(g_TimeBombTime[client] * (128.0 / GetConVarFloat(g_Cvar_TimeBombTicks)));
-			if (g_BeepSound[0])
-			{
-				EmitAmbientSound(g_BeepSound, vec, client, SNDLEVEL_RAIDSIREN);	
-			}
+			EmitAmbientSound(SOUND_BEEP, vec, client, SNDLEVEL_RAIDSIREN);	
 		}
 		else
 		{
 			color = 0;
-			if (g_FinalSound[0])
-			{
-				EmitAmbientSound(g_FinalSound, vec, client, SNDLEVEL_RAIDSIREN);
-			}
+			EmitAmbientSound(SOUND_FINAL, vec, client, SNDLEVEL_RAIDSIREN);
 		}
 		
 		SetEntityRenderColor(client, 255, 128, color, 255);
@@ -122,16 +116,13 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 		GetClientName(client, name, sizeof(name));
 		PrintCenterTextAll("%t", "Till Explodes", name, g_TimeBombTime[client]);
 		
-		if (g_BeamSprite > -1 && g_HaloSprite > -1)
-		{
-			GetClientAbsOrigin(client, vec);
-			vec[2] += 10;
+		GetClientAbsOrigin(client, vec);
+		vec[2] += 10;
 
-			TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_TimeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
-			TE_SendToAll();
-			TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_TimeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
-			TE_SendToAll();
-		}
+		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_TimeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
+		TE_SendToAll();
+		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_TimeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
+		TE_SendToAll();
 		return Plugin_Continue;
 	}
 	else
@@ -142,10 +133,7 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 			TE_SendToAll();
 		}
 
-		if (g_BoomSound[0])
-		{
-			EmitAmbientSound(g_BoomSound, vec, client, SNDLEVEL_RAIDSIREN);
-		}
+		EmitAmbientSound(SOUND_BOOM, vec, client, SNDLEVEL_RAIDSIREN);
 
 		ForcePlayerSuicide(client);
 		KillTimeBomb(client);
