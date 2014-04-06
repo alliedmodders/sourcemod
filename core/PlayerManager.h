@@ -156,8 +156,8 @@ public:
 	bool OnClientConnect(CEntityIndex index, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
 	bool OnClientConnect_Post(CEntityIndex index, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
 	void OnClientPutInServer(CEntityIndex index, char const *playername);
-	void OnClientDisconnect(CEntityIndex index);
-	void OnClientDisconnect_Post(CEntityIndex index);
+	void OnClientDisconnect(CEntityIndex index, int reason);
+	void OnClientDisconnect_Post(CEntityIndex index, int reason);
 	void OnClientCommand(CEntityIndex index, const CCommand &args);
 	void OnClientSettingsChanged(CEntityIndex index);
 	//void OnClientSettingsChanged_Pre(CEntityIndex client);

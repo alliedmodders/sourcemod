@@ -60,7 +60,7 @@ List<ICommandTargetProcessor *> target_processors;
 #if SOURCE_ENGINE == SE_DOTA
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, CEntityIndex, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, CEntityIndex, const char *);
-SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, CEntityIndex);
+SH_DECL_HOOK2_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, CEntityIndex, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, CEntityIndex, const CCommand &);
 SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, CEntityIndex);
 #else
@@ -745,7 +745,7 @@ void PlayerManager::OnSourceModLevelEnd()
 		if (m_Players[i].IsConnected())
 		{
 #if SOURCE_ENGINE == SE_DOTA
-			OnClientDisconnect(m_Players[i].GetIndex());
+			OnClientDisconnect(m_Players[i].GetIndex(), 0);
 #else
 			OnClientDisconnect(m_Players[i].GetEdict());
 #endif
@@ -755,7 +755,7 @@ void PlayerManager::OnSourceModLevelEnd()
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-void PlayerManager::OnClientDisconnect(CEntityIndex index)
+void PlayerManager::OnClientDisconnect(CEntityIndex index, int reason)
 {
 	int client = index.Get();
 	edict_t *pEntity = PEntityOfEntIndex(client);
@@ -801,7 +801,7 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 }
 
 #if SOURCE_ENGINE == SE_DOTA
-void PlayerManager::OnClientDisconnect_Post(CEntityIndex index)
+void PlayerManager::OnClientDisconnect_Post(CEntityIndex index, int reason)
 {
 	int client = index.Get();
 	edict_t *pEntity = PEntityOfEntIndex(client);
