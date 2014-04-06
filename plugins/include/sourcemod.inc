@@ -387,7 +387,7 @@ native GameConfGetOffset(Handle:gc, const String:key[]);
  */
 native bool:GameConfGetKeyValue(Handle:gc, const String:key[], String:buffer[], maxlen);
 
-/*
+/**
  * Finds an address calculation in a GameConfig file,
  * performs LoadFromAddress on it as appropriate, then returns the final address.
  *
