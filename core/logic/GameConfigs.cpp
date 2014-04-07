@@ -792,7 +792,19 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	{
 		/* Nope, use the old mechanism. */
 		smcore.Format(path, sizeof(path), "%s.txt", m_File);
-		return EnterFile(path, error, maxlength);
+		if (!EnterFile(path, error, maxlength))
+		{
+			return false;
+		}
+
+		/* Allow customization. */
+		g_pSM->BuildPath(Path_SM, path, sizeof(path), "gamedata/custom/%s.txt", m_File);
+		if (libsys->PathExists(path))
+		{
+			smcore.Format(path, sizeof(path), "custom/%s.txt", m_File);
+			return EnterFile(path, error, maxlength);
+		}
+		return true;
 	}
 
 	/* Otherwise, it's time to parse the master. */
