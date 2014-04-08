@@ -167,6 +167,7 @@ enum TFHoliday
 	TFHoliday_FullMoon,
 	TFHoliday_HalloweenOrFullMoon,
 	TFHoliday_HalloweenOrFullMoonOrValentines,
+	TFHoliday_AprilFools,
 };
 
 enum TFObjectType
