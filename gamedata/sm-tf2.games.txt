@@ -81,9 +81,9 @@
 			"IsHolidayActive"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x80\x3D\x2A\x2A\x2A\x2A\x2A\x75\x2A\xE8"
-				"linux"		"@_Z20UTIL_IsHolidayActivei"
-				"mac"		"@_Z20UTIL_IsHolidayActivei"
+				"windows"	"\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x83\x78\x30\x00\x74\x2A\x32\xC0"
+				"linux"		"@_Z18TF_IsHolidayActivei"
+				"mac"		"@_Z18TF_IsHolidayActivei"
 			}
 			"MakeBleed"
 			{
