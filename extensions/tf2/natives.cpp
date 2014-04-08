@@ -550,6 +550,37 @@ cell_t TF2_IsPlayerInDuel(IPluginContext *pContext, const cell_t *params)
 	return (retValue) ? 1 : 0;
 }
 
+// native bool:TF2_IsHolidayActive(TFHoliday:holiday);
+cell_t TF2_IsHolidayActive(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	// UTIL_IsHolidayActive(int)
+	if (!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("IsHolidayActive", 
+			PassInfo pass[1]; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].size = sizeof(int); \
+			pass[0].type = PassType_Basic; \
+			PassInfo ret; \
+			ret.flags = PASSFLAG_BYVAL; \
+			ret.size = sizeof(bool); \
+			ret.type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &ret, pass, 1))
+	}
+
+	unsigned char vstk[sizeof(int)];
+	unsigned char *vptr = vstk;
+	*(int *)vptr = params[1];
+	
+	bool retValue;
+
+	pWrapper->Execute(vstk, &retValue);
+
+	return (retValue) ? 1 : 0;
+}
+
 sp_nativeinfo_t g_TFNatives[] = 
 {
 	{"TF2_IgnitePlayer",			TF2_Burn},
@@ -566,5 +597,6 @@ sp_nativeinfo_t g_TFNatives[] =
 	{"TF2_StunPlayer",				TF2_StunPlayer},
 	{"TF2_MakeBleed",				TF2_MakeBleed},
 	{"TF2_IsPlayerInDuel",				TF2_IsPlayerInDuel},
+	{"TF2_IsHolidayActive",				TF2_IsHolidayActive},
 	{NULL,							NULL}
 };

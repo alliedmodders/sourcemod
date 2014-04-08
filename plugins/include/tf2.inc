@@ -344,6 +344,14 @@ forward Action:TF2_OnGetHoliday(&TFHoliday:holiday);
 forward Action:TF2_OnIsHolidayActive(TFHoliday:holiday, &bool:result);
 
 /**
+ * Returns whether or not a holiday is active
+ *
+ * @param holiday		Holiday being checked.
+ * @return				Boolean of whether or not the holiday is active.
+ */
+native bool:TF2_IsHolidayActive(TFHoliday:holiday);
+
+/**
  * Returns whether or not a client (Player) is in a duel.
  *
  * @param client    Client Index.
@@ -427,5 +435,6 @@ public __ext_tf2_SetNTVOptional()
 	MarkNativeAsOptional("TF2_GetResourceEntity");
 	MarkNativeAsOptional("TF2_GetClass");
 	MarkNativeAsOptional("TF2_IsPlayerInDuel");
+	MarkNativeAsOptional("TF2_IsHolidayActive");
 }
 #endif
