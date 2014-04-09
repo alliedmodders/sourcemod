@@ -2107,7 +2107,12 @@ void CPlayer::Kick(const char *str)
 	else
 	{
 		IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
-#if SOURCE_ENGINE == SE_DOTA || SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_DOTA
+		// Including network_connection.pb.h (and .cpp) is overkill for just this.  -p
+		// Copied from ENetworkDisconnectionReason enum
+		const int NETWORK_DISCONNECT_KICKED = 39;
+		pClient->Disconnect(NETWORK_DISCONNECT_KICKED);
+#elif SOURCE_ENGINE == SE_CSGO
 		pClient->Disconnect(str);
 #else
 		pClient->Disconnect("%s", str);
