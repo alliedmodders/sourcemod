@@ -90,7 +90,7 @@
 			"TerminateRound"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xEC\x2A\x8B\x45\x2A\x53\x56\x57\x33\xFF"
+				"windows"		"\x55\x8B\xEC\x83\xEC\x24\x53\x8B\x5D\x0C\x56\x57\x33\xFF\x8B"
 				"linux"			"@_ZN12CCSGameRules14TerminateRoundEfi"
 				"mac"			"@_ZN12CCSGameRules14TerminateRoundEfi"
 			}
