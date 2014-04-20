@@ -92,7 +92,7 @@ done
 
 `python -c "import ambuild2"`
 if [ $? -eq 1 ]; then
-  name=ambuild
+  name=
   path=ambuild
   checkout
 
