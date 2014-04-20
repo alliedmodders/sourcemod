@@ -79,7 +79,7 @@ if [ $ismac -eq 0 ]; then
 
   # Add more SDKs for Windows only
   if [ $iswin -eq 1 ]; then
-    sdks+=( darkm swarm bgt eye )
+    sdks+=( darkm swarm bgt eye contagion )
   fi
 fi
 
