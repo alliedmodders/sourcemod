@@ -370,6 +370,8 @@ void do_global_plugin_loads()
 #define GAMEFIX "2.l4d"
 #elif SOURCE_ENGINE == SE_LEFT4DEAD2
 #define GAMEFIX "2.l4d2"
+#elif SOURCE_ENGINE == SE_NUCLEARDAWN
+#define GAMEFIX "2.nd"
 #elif SOURCE_ENGINE == SE_ALIENSWARM
 #define GAMEFIX "2.swarm"
 #elif SOURCE_ENGINE == SE_ORANGEBOX
