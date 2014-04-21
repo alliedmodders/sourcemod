@@ -24,9 +24,9 @@
 			}
 			"GroundEntChanged"
 			{
-				"windows"	"198"
-				"linux"		"199"
-				"mac"		"199"
+				"windows"	"199"
+				"linux"		"200"
+				"mac"		"200"
 			}
 			"OnTakeDamage"
 			{
@@ -36,21 +36,21 @@
 			}
 			"PreThink"
 			{
-				"windows"	"367"
-				"linux"		"368"
-				"mac"		"368"
-			}
-			"PostThink"
-			{
 				"windows"	"368"
 				"linux"		"369"
 				"mac"		"369"
 			}
+			"PostThink"
+			{
+				"windows"	"369"
+				"linux"		"370"
+				"mac"		"370"
+			}
 			"Reload"
 			{
-				"windows"	"291"
-				"linux"		"292"
-				"mac"		"292"
+				"windows"	"292"
+				"linux"		"293"
+				"mac"		"293"
 			}
 			"SetTransmit"
 			{
@@ -114,33 +114,33 @@
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"296"
-				"linux"		"297"
-				"mac"		"297"
+				"windows"	"297"
+				"linux"		"298"
+				"mac"		"298"
 			}
 			"Weapon_CanUse"
-			{
-				"windows"	"290"
-				"linux"		"291"
-				"mac"		"291"
-			}
-			"Weapon_Drop"
-			{
-				"windows"	"293"
-				"linux"		"294"
-				"mac"		"294"
-			}
-			"Weapon_Equip"
 			{
 				"windows"	"291"
 				"linux"		"292"
 				"mac"		"292"
 			}
-			"Weapon_Switch"
+			"Weapon_Drop"
 			{
 				"windows"	"294"
 				"linux"		"295"
 				"mac"		"295"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"292"
+				"linux"		"293"
+				"mac"		"293"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"295"
+				"linux"		"296"
+				"mac"		"296"
 			}
 		}
 		
