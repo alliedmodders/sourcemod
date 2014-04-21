@@ -95,6 +95,8 @@ static CEntInfo *EntInfoArray()
 CHalfLife2::CHalfLife2()
 {
 	m_Maps.init();
+
+	m_pGetCommandLine = NULL;
 }
 
 CHalfLife2::~CHalfLife2()
