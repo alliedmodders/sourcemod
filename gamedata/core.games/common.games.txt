@@ -232,6 +232,7 @@
 			"game"					"ag2"
 			"game"					"nmrih"
 			"game"					"berimbau"
+			"game"					"cstrike"
 		}
 		
 		"Keys"
