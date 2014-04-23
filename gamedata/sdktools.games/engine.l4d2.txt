@@ -82,6 +82,11 @@
 	/* SetUserInfo data */
 	"#default"
 	{
+		"#supported"
+		{
+			"game"		"left4dead2"
+		}
+		
 		"Offsets"
 		{
 			/**
