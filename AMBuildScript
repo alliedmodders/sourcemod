@@ -352,20 +352,19 @@ class SMConfig(object):
       compiler.defines.remove('_snprintf=snprintf')
       compiler.defines.remove('_vsnprintf=vsnprintf')
 
-    if sdk.name in ['swarm', 'blade', 'insurgency', 'csgo', 'dota']:
-      if compiler.cc.behavior == 'msvc':
-        compiler.defines += ['COMPILER_MSVC', 'COMPILER_MSVC32']
-      else:
-        compiler.defines += ['COMPILER_GCC']
+    if compiler.cc.behavior == 'msvc':
+      compiler.defines += ['COMPILER_MSVC', 'COMPILER_MSVC32']
+    else:
+      compiler.defines += ['COMPILER_GCC']
 	
 	# For everything after Swarm, this needs to be defined for entity networking
 	# to work properly with sendprop value changes.
     if sdk.name in ['blade', 'insurgency', 'csgo', 'dota']:
       compiler.defines += ['NETWORK_VARS_ENABLED']
 
-    if sdk.name in ['css', 'hl2dm', 'dods', '2013', 'tf2', 'l4d2']:
+    if sdk.name in ['css', 'hl2dm', 'dods', '2013', 'tf2', 'nd', 'l4d2']:
       if builder.target_platform in ['linux', 'mac']:
-        compiler.defines += ['NO_MALLOC_OVERRIDE']
+        compiler.defines += ['NO_HOOK_MALLOC', 'NO_MALLOC_OVERRIDE']
 
     for path in paths:
       compiler.cxxincludes += [os.path.join(sdk.path, *path)]
@@ -412,9 +411,9 @@ class SMConfig(object):
     dynamic_libs = []
     if builder.target_platform == 'linux':
       compiler.linkflags[0:0] = ['-lm']
-      if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', '2013', 'l4d2']:
+      if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', '2013', 'nd', 'l4d2']:
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
-      elif sdk.name in ['l4d', 'nd', 'blade', 'insurgency', 'csgo']:
+      elif sdk.name in ['l4d', 'blade', 'insurgency', 'csgo']:
         dynamic_libs = ['libtier0.so', 'libvstdlib.so']
       else:
         dynamic_libs = ['tier0_i486.so', 'vstdlib_i486.so']

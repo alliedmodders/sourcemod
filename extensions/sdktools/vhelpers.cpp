@@ -518,7 +518,11 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 
 	CEntityFactoryDictionary *dict = NULL;
 
-#if SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM
+#if SOURCE_ENGINE == SE_TF2 \
+	|| SOURCE_ENGINE == SE_CSS \
+	|| SOURCE_ENGINE == SE_DODS \
+	|| SOURCE_ENGINE == SE_HL2DM \
+	|| SOURCE_ENGINE == SE_NUCLEARDAWN
 	dict = (CEntityFactoryDictionary *)servertools->GetEntityFactoryDictionary();
 #else
 
