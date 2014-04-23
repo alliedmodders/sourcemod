@@ -222,6 +222,7 @@
 			"game"					"hl2ctf"
 			"game"					"ag2"
 			"game"					"nmrih"
+			"game"					"cstrike"
 		}
 		
 		"Keys"
