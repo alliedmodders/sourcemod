@@ -34,6 +34,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <math.h>
+#include <float.h>
 #if defined(_MSC_VER)
 # include <intrin.h>
 #endif
@@ -215,6 +217,16 @@ FindRightmostBit(size_t number)
         : "=r" (bit)
         : "rm" (number));
     return bit;
+#endif
+}
+
+static inline bool
+IsNaN(double v)
+{
+#ifdef _MSC_VER
+  return _isnan(v);
+#else
+  return isnan(v);
 #endif
 }
 

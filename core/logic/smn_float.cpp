@@ -35,6 +35,7 @@
 #include "common_logic.h"
 #include "MersenneTwister.h"
 #include <IPluginSys.h>
+#include <am-utility.h>
 
 /****************************************
 *                                       *
@@ -119,7 +120,7 @@ static cell_t sm_FloatNe(IPluginContext *pCtx, const cell_t *params)
 static cell_t sm_FloatNot(IPluginContext *pCtx, const cell_t *params)
 {
 	float val = sp_ctof(params[1]);
-	if (isnan(val))
+	if (ke::IsNaN(val))
 		return 1;
 	return val ? 0 : 1;
 }
