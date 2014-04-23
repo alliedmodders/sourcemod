@@ -33,6 +33,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <ITextParsers.h>
+#include <float.h>
 #include "sm_stringutil.h"
 #include "Logger.h"
 #include "PlayerManager.h"
