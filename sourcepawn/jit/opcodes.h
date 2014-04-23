@@ -238,15 +238,22 @@
   _(ENDPROC,        "endproc")        \
   _(FABS,           "fabs")           \
   _(FLOAT,          "float")          \
-  _(FLOATADD,       "floatadd")       \
-  _(FLOATSUB,       "floatsub")       \
-  _(FLOATMUL,       "floatmul")       \
-  _(FLOATDIV,       "floatdiv")       \
+  _(FLOATADD,       "float.add")      \
+  _(FLOATSUB,       "float.sub")      \
+  _(FLOATMUL,       "float.mul")      \
+  _(FLOATDIV,       "float.div")      \
   _(RND_TO_NEAREST, "round")          \
   _(RND_TO_FLOOR,   "floor")          \
   _(RND_TO_CEIL,    "ceil")           \
   _(RND_TO_ZERO,    "rndtozero")      \
-  _(FLOATCMP,       "floatcmp")
+  _(FLOATCMP,       "float.cmp")      \
+  _(FLOAT_GT,       "float.gt")       \
+  _(FLOAT_GE,       "float.ge")       \
+  _(FLOAT_LT,       "float.lt")       \
+  _(FLOAT_LE,       "float.le")       \
+  _(FLOAT_NE,       "float.ne")       \
+  _(FLOAT_EQ,       "float.eq")       \
+  _(FLOAT_NOT,      "float.not")
 
 enum OPCODE {
 #define _(op, text) OP_##op,

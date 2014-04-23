@@ -213,6 +213,11 @@ void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, in
 	int significant_digits = 0;	// number of significant digits written
 	const int MAX_SIGNIFICANT_DIGITS = 16;
 
+	if (isnan(fval)) {
+		AddString(buf_p, maxlen, "NaN", width, prec);
+		return;
+	}
+
 	// default precision
 	if (prec < 0)
 	{

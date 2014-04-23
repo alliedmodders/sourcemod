@@ -86,6 +86,44 @@ static cell_t sm_FloatDiv(IPluginContext *pCtx, const cell_t *params)
 	return sp_ftoc(val);
 }
 
+static cell_t sm_FloatGt(IPluginContext *pCtx, const cell_t *params)
+{
+	return !!(sp_ctof(params[1]) > sp_ctof(params[2]));
+}
+
+static cell_t sm_FloatGe(IPluginContext *pCtx, const cell_t *params)
+{
+	return !!(sp_ctof(params[1]) >= sp_ctof(params[2]));
+}
+
+static cell_t sm_FloatLt(IPluginContext *pCtx, const cell_t *params)
+{
+	return !!(sp_ctof(params[1]) < sp_ctof(params[2]));
+}
+
+static cell_t sm_FloatLe(IPluginContext *pCtx, const cell_t *params)
+{
+	return !!(sp_ctof(params[1]) <= sp_ctof(params[2]));
+}
+
+static cell_t sm_FloatEq(IPluginContext *pCtx, const cell_t *params)
+{
+	return !!(sp_ctof(params[1]) == sp_ctof(params[2]));
+}
+
+static cell_t sm_FloatNe(IPluginContext *pCtx, const cell_t *params)
+{
+	return !!(sp_ctof(params[1]) != sp_ctof(params[2]));
+}
+
+static cell_t sm_FloatNot(IPluginContext *pCtx, const cell_t *params)
+{
+	float val = sp_ctof(params[1]);
+	if (isnan(val))
+		return 1;
+	return val ? 0 : 1;
+}
+
 static cell_t sm_FloatCompare(IPluginContext *pCtx, const cell_t *params)
 {
 	float val1 = sp_ctof(params[1]);
@@ -361,6 +399,13 @@ REGISTER_NATIVES(floatnatives)
 	{"RoundToCeil",		sm_RoundToCeil},
 	{"RoundToFloor",	sm_RoundToFloor},
 	{"RoundToNearest",	sm_RoundToNearest},
+	{"__FLOAT_GT__",	sm_FloatGt},
+	{"__FLOAT_GE__",	sm_FloatGe},
+	{"__FLOAT_LT__",	sm_FloatGt},
+	{"__FLOAT_LE__",	sm_FloatLe},
+	{"__FLOAT_EQ__",	sm_FloatEq},
+	{"__FLOAT_NE__",	sm_FloatNe},
+	{"__FLOAT_NOT__",	sm_FloatNot},
 	{"FloatCompare",	sm_FloatCompare},
 	{"SquareRoot",		sm_SquareRoot},
 	{"Pow",				sm_Pow},

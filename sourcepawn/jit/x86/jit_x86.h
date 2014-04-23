@@ -105,6 +105,7 @@ class Compiler
   void emitCheckAddress(Register reg);
   void emitErrorPath(Label *dest, int code);
   void emitErrorPaths();
+  void emitFloatCmp(ConditionCode cc);
 
   ExternalAddress cipAddr() {
     sp_context_t *ctx = rt_->GetBaseContext()->GetCtx();

@@ -1085,12 +1085,16 @@ Compiler::emitOp(OPCODE op)
       __ addl(stk, 4);
       break;
 
+    // This is the old float cmp, which returns ordered results. In newly
+    // compiled code it should not be used or generated.
+    //
+    // Note that the checks here are inverted: the test is |rhs OP lhs|.
     case OP_FLOATCMP:
     {
       Label bl, ab, done;
       if (MacroAssemblerX86::Features().sse) {
         __ movss(xmm0, Operand(stk, 4));
-        __ ucomiss(xmm0, Operand(stk, 0));
+        __ ucomiss(Operand(stk, 0), xmm0);
       } else {
         __ fld32(Operand(stk, 0));
         __ fld32(Operand(stk, 4));
@@ -1108,6 +1112,53 @@ Compiler::emitOp(OPCODE op)
       __ movl(pri, 1);
       __ bind(&done);
       __ addl(stk, 8);
+      break;
+    }
+
+    case OP_FLOAT_GT:
+      emitFloatCmp(above);
+      break;
+
+    case OP_FLOAT_GE:
+      emitFloatCmp(above_equal);
+      break;
+
+    case OP_FLOAT_LE:
+      emitFloatCmp(below_equal);
+      break;
+
+    case OP_FLOAT_LT:
+      emitFloatCmp(below);
+      break;
+
+    case OP_FLOAT_EQ:
+      emitFloatCmp(equal);
+      break;
+
+    case OP_FLOAT_NE:
+      emitFloatCmp(not_equal);
+      break;
+
+    case OP_FLOAT_NOT:
+    {
+      if (MacroAssemblerX86::Features().sse) {
+        __ xorps(xmm0, xmm0);
+        __ ucomiss(Operand(stk, 0), xmm0);
+      } else {
+        __ fld32(Operand(stk, 0));
+        __ fldz();
+        __ fucomip(st1);
+        __ fstp(st0);
+      }
+
+      // See emitFloatCmp() - this is a shorter version.
+      Label done;
+      __ movl(eax, 1);
+      __ j(parity, &done);
+      __ set(zero, r8_al);
+      __ bind(&done);
+
+      __ addl(stk, 4);
       break;
     }
 
@@ -1669,6 +1720,56 @@ Compiler::emitErrorPath(Label *dest, int code)
     __ movl(eax, code);
     __ jmp(g_Jit.GetUniversalReturn());
   }
+}
+
+void
+Compiler::emitFloatCmp(ConditionCode cc)
+{
+  unsigned lhs = 4;
+  unsigned rhs = 0;
+  if (cc == below || cc == below_equal) {
+    // NaN results in ZF=1 PF=1 CF=1
+    //
+    // ja/jae check for ZF,CF=0 and CF=0. If we make all relational compares
+    // look like ja/jae, we'll guarantee all NaN comparisons will fail (which
+    // would not be true for jb/jbe, unless we checked with jp).
+    if (cc == below)
+      cc = above;
+    else
+      cc = above_equal;
+    rhs = 4;
+    lhs = 0;
+  }
+
+  if (MacroAssemblerX86::Features().sse) {
+    __ movss(xmm0, Operand(stk, rhs));
+    __ ucomiss(Operand(stk, lhs), xmm0);
+  } else {
+    __ fld32(Operand(stk, rhs));
+    __ fld32(Operand(stk, lhs));
+    __ fucomip(st1);
+    __ fstp(st0);
+  }
+
+  // An equal or not-equal needs special handling for the parity bit.
+  if (cc == equal || cc == not_equal) {
+    // If NaN, PF=1, ZF=1, and E/Z tests ZF=1.
+    //
+    // If NaN, PF=1, ZF=1 and NE/NZ tests Z=0. But, we want any != with NaNs
+    // to return true, including NaN != NaN.
+    //
+    // To make checks simpler, we set |eax| to the expected value of a NaN
+    // beforehand. This also clears the top bits of |eax| for setcc.
+    Label done;
+    __ movl(eax, (cc == equal) ? 0 : 1);
+    __ j(parity, &done);
+    __ set(cc, r8_al);
+    __ bind(&done);
+  } else {
+    __ movl(eax, 0);
+    __ set(cc, r8_al);
+  }
+  __ addl(stk, 8);
 }
 
 void

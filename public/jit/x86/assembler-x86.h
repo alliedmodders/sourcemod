@@ -178,7 +178,11 @@ enum ConditionCode {
   zero = equal,
   not_zero = not_equal,
   less_equal = not_greater,
-  greater_equal = not_less
+  below_equal = not_above,
+  greater_equal = not_less,
+  above_equal = not_below,
+  parity = even_parity,
+  not_parity = odd_parity
 };
 
 enum Scale {
@@ -625,6 +629,9 @@ class AssemblerX86 : public Assembler
   void fsubr32(const Operand &src) {
     emit1(0xd8, 5, src);
   }
+  void fldz() {
+    emit2(0xd9, 0xee);
+  }
 
   // Compare st0 with stN.
   void fucomip(FpuRegister other) {
@@ -802,11 +809,16 @@ class AssemblerX86 : public Assembler
     assert(Features().sse);
     emit3(0xf3, 0x0f, 0x5e, dest.code, src);
   }
-  void ucomiss(FloatRegister left, Register right) {
-    emit2(0x0f, 0x2e, left.code, right.code);
+  void xorps(FloatRegister dest, FloatRegister src) {
+    assert(Features().sse);
+    emit2(0x0f, 0x57, src.code, dest.code);
   }
-  void ucomiss(FloatRegister left, const Operand &right) {
-    emit2(0x0f, 0x2e, left.code, right);
+
+  void ucomiss(FloatRegister left, FloatRegister right) {
+    emit2(0x0f, 0x2e, right.code, left.code);
+  }
+  void ucomiss(const Operand &left, FloatRegister right) {
+    emit2(0x0f, 0x2e, right.code, left);
   }
 
   // SSE2-only instructions.

@@ -75,45 +75,47 @@ BaseRuntime::~BaseRuntime()
   free(m_plugin.name);
 }
 
+struct NativeMapping {
+  const char *name;
+  unsigned opcode;
+};
+
+static const NativeMapping sNativeMap[] = {
+  { "FloatAbs",       OP_FABS },
+  { "FloatAdd",       OP_FLOATADD },
+  { "FloatSub",       OP_FLOATSUB },
+  { "FloatMul",       OP_FLOATMUL },
+  { "FloatDiv",       OP_FLOATDIV },
+  { "float",          OP_FLOAT },
+  { "FloatCompare",   OP_FLOATCMP },
+  { "RoundToCeil",    OP_RND_TO_CEIL },
+  { "RoundToZero",    OP_RND_TO_ZERO },
+  { "RoundToFloor",   OP_RND_TO_FLOOR },
+  { "RoundToNearest", OP_RND_TO_NEAREST },
+  { "__FLOAT_GT__",   OP_FLOAT_GT },
+  { "__FLOAT_GE__",   OP_FLOAT_GE },
+  { "__FLOAT_LT__",   OP_FLOAT_LT },
+  { "__FLOAT_LE__",   OP_FLOAT_LE },
+  { "__FLOAT_EQ__",   OP_FLOAT_EQ },
+  { "__FLOAT_NE__",   OP_FLOAT_NE },
+  { "__FLOAT_NOT__",  OP_FLOAT_NOT },
+  { NULL,             0 },
+};
+
 void
 BaseRuntime::SetupFloatNativeRemapping()
 {
   float_table_ = new floattbl_t[m_plugin.num_natives];
   for (size_t i = 0; i < m_plugin.num_natives; i++) {
     const char *name = m_plugin.natives[i].name;
-    if (!strcmp(name, "FloatAbs")) {
-      float_table_[i].found = true;
-      float_table_[i].index = OP_FABS;
-    } else if (!strcmp(name, "FloatAdd")) {
-      float_table_[i].found = true;
-      float_table_[i].index = OP_FLOATADD;
-    } else if (!strcmp(name, "FloatSub")) {
-      float_table_[i].found = true;
-      float_table_[i].index = OP_FLOATSUB;
-    } else if (!strcmp(name, "FloatMul")) {
-      float_table_[i].found = true;
-      float_table_[i].index = OP_FLOATMUL;
-    } else if (!strcmp(name, "FloatDiv")) {
-      float_table_[i].found = true;
-      float_table_[i].index = OP_FLOATDIV;
-    } else if (!strcmp(name, "float")) {
-      float_table_[i].found = true;
-      float_table_[i].index = OP_FLOAT;
-    } else if (!strcmp(name, "FloatCompare")) {
-      float_table_[i].found = true;
-      float_table_[i].index = OP_FLOATCMP;
-    } else if (!strcmp(name, "RoundToZero")) {
-      float_table_[i].found = true;
-      float_table_[i].index = OP_RND_TO_ZERO;
-    } else if (!strcmp(name, "RoundToCeil")) {
-      float_table_[i].found = true;
-      float_table_[i].index = OP_RND_TO_CEIL;
-    } else if (!strcmp(name, "RoundToFloor")) {
-      float_table_[i].found = true;
-      float_table_[i].index = OP_RND_TO_FLOOR;
-    } else if (!strcmp(name, "RoundToNearest")) {
-      float_table_[i].found = true;
-      float_table_[i].index = OP_RND_TO_NEAREST;
+    const NativeMapping *iter = sNativeMap;
+    while (iter->name) {
+      if (strcmp(name, iter->name) == 0) {
+        float_table_[i].found = true;
+        float_table_[i].index = iter->opcode;
+        break;
+      }
+      iter++;
     }
   }
 }

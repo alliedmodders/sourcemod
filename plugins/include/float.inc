@@ -246,10 +246,25 @@ stock RoundFloat(Float:value)
  */
 #pragma rational Float
 
+native bool:__FLOAT_GT__(Float:a, Float:b);
+native bool:__FLOAT_GE__(Float:a, Float:b);
+native bool:__FLOAT_LT__(Float:a, Float:b);
+native bool:__FLOAT_LE__(Float:a, Float:b);
+native bool:__FLOAT_EQ__(Float:a, Float:b);
+native bool:__FLOAT_NE__(Float:a, Float:b);
+native bool:__FLOAT_NOT__(Float:a);
+
 native Float:operator*(Float:oper1, Float:oper2) = FloatMul;
 native Float:operator/(Float:oper1, Float:oper2) = FloatDiv;
 native Float:operator+(Float:oper1, Float:oper2) = FloatAdd;
 native Float:operator-(Float:oper1, Float:oper2) = FloatSub;
+native bool:operator!(Float:oper1) = __FLOAT_NOT__;
+native bool:operator>(Float:oper1, Float:oper2) = __FLOAT_GT__;
+native bool:operator>=(Float:oper1, Float:oper2) = __FLOAT_GE__;
+native bool:operator<(Float:oper1, Float:oper2) = __FLOAT_LT__;
+native bool:operator<=(Float:oper1, Float:oper2) = __FLOAT_LE__;
+native bool:operator!=(Float:oper1, Float:oper2) = __FLOAT_NE__;
+native bool:operator==(Float:oper1, Float:oper2) = __FLOAT_EQ__;
 
 stock Float:operator++(Float:oper)
 {
@@ -296,90 +311,54 @@ stock Float:operator-(oper1, Float:oper2)
 	return FloatSub(float(oper1), oper2);
 }
 
-stock bool:operator==(Float:oper1, Float:oper2)
-{
-	return FloatCompare(oper1, oper2) == 0;
-}
-
 stock bool:operator==(Float:oper1, oper2)
 {
-	return FloatCompare(oper1, float(oper2)) == 0; 	/* "==" is commutative */
-}
-
-stock bool:operator!=(Float:oper1, Float:oper2)
-{
-	return FloatCompare(oper1, oper2) != 0;
+	return __FLOAT_EQ__(oper1, float(oper2));
 }
 
 stock bool:operator!=(Float:oper1, oper2)
 {
-	return FloatCompare(oper1, float(oper2)) != 0; 	/* "==" is commutative */
-}
-
-stock bool:operator>(Float:oper1, Float:oper2)
-{
-	return FloatCompare(oper1, oper2) > 0;
+	return __FLOAT_NE__(oper1, float(oper2));
 }
 
 stock bool:operator>(Float:oper1, oper2)
 {
-	return FloatCompare(oper1, float(oper2)) > 0;
+	return __FLOAT_GT__(oper1, float(oper2));
 }
 
 stock bool:operator>(oper1, Float:oper2)
 {
-	return FloatCompare(float(oper1), oper2) > 0;
-}
-
-stock bool:operator>=(Float:oper1, Float:oper2)
-{
-	return FloatCompare(oper1, oper2) >= 0;
+	return __FLOAT_GT__(float(oper1), oper2);
 }
 
 stock bool:operator>=(Float:oper1, oper2)
 {
-	return FloatCompare(oper1, float(oper2)) >= 0;
+	return __FLOAT_GE__(oper1, float(oper2));
 }
 
 stock bool:operator>=(oper1, Float:oper2)
 {
-	return FloatCompare(float(oper1), oper2) >= 0;
-}
-
-stock bool:operator<(Float:oper1, Float:oper2)
-{
-	return FloatCompare(oper1, oper2) < 0;
+	return __FLOAT_GE__(float(oper1), oper2);
 }
 
 stock bool:operator<(Float:oper1, oper2)
 {
-	return FloatCompare(oper1, float(oper2)) < 0;
+	return __FLOAT_LT__(oper1, float(oper2));
 }
 
 stock bool:operator<(oper1, Float:oper2)
 {
-	return FloatCompare(float(oper1), oper2) < 0;
-}
-
-stock bool:operator<=(Float:oper1, Float:oper2)
-{
-	return FloatCompare(oper1, oper2) <= 0;
+	return __FLOAT_LT__(float(oper1), oper2);
 }
 
 stock bool:operator<=(Float:oper1, oper2)
 {
-	return FloatCompare(oper1, float(oper2)) <= 0;
+	return __FLOAT_LE__(oper1, float(oper2));
 }
 
 stock bool:operator<=(oper1, Float:oper2)
 {
-	return FloatCompare(float(oper1), oper2) <= 0;
-}
-
-stock bool:operator!(Float:oper)
-{
-	return (_:oper & ((-1)/2)) == 0;		/* -1 = all bits to 1; /2 = remove most significant bit (sign)
-											works on both 32bit and 64bit systems; no constant required */
+	return __FLOAT_LE__(float(oper1), oper2);
 }
 
 /**

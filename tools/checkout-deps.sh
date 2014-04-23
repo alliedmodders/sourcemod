@@ -57,6 +57,7 @@ checkout ()
     hg clone https://hg.alliedmods.net/$path/$name
   else
     cd $name
+    sed -i 's/http:/https:/g' .hg/hgrc
     hg pull -u
     cd ..
   fi
