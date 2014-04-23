@@ -402,7 +402,7 @@ REGISTER_NATIVES(floatnatives)
 	{"RoundToNearest",	sm_RoundToNearest},
 	{"__FLOAT_GT__",	sm_FloatGt},
 	{"__FLOAT_GE__",	sm_FloatGe},
-	{"__FLOAT_LT__",	sm_FloatGt},
+	{"__FLOAT_LT__",	sm_FloatLt},
 	{"__FLOAT_LE__",	sm_FloatLe},
 	{"__FLOAT_EQ__",	sm_FloatEq},
 	{"__FLOAT_NE__",	sm_FloatNe},
