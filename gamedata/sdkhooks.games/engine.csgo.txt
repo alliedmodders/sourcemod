@@ -12,21 +12,21 @@
 			}
 			"FireBullets"
 			{
-				"windows"	"116"
-				"linux"		"117"
-				"mac"		"117"
+				"windows"	"117"
+				"linux"		"118"
+				"mac"		"118"
 			}
 			"GetMaxHealth"
 			{
-				"windows"	"120"
-				"linux"		"121"
-				"mac"		"121"				
+				"windows"	"121"
+				"linux"		"122"
+				"mac"		"122"				
 			}
 			"GroundEntChanged"
 			{
-				"windows"	"175"
-				"linux"		"176"
-				"mac"		"176"
+				"windows"	"176"
+				"linux"		"177"
+				"mac"		"177"
 			}
 			"OnTakeDamage"
 			{
@@ -36,21 +36,21 @@
 			}
 			"PreThink"
 			{
-				"windows"	"363"
-				"linux"		"364"
-				"mac"		"364"
-			}
-			"PostThink"
-			{
 				"windows"	"364"
 				"linux"		"365"
 				"mac"		"365"
 			}
+			"PostThink"
+			{
+				"windows"	"365"
+				"linux"		"366"
+				"mac"		"366"
+			}
 			"Reload"
 			{
-				"windows"	"307"
-				"linux"		"313"
-				"mac"		"313"
+				"windows"	"308"
+				"linux"		"314"
+				"mac"		"314"
 			}
 			"SetTransmit"
 			{
@@ -102,39 +102,39 @@
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"153"
-				"linux"		"154"
-				"mac"		"154"
+				"windows"	"154"
+				"linux"		"155"
+				"mac"		"155"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"284"
-				"linux"		"285"
-				"mac"		"285"
+				"windows"	"285"
+				"linux"		"286"
+				"mac"		"286"
 			}
 			"Weapon_CanUse"
-			{
-				"windows"	"278"
-				"linux"		"279"
-				"mac"		"279"
-			}
-			"Weapon_Drop"
-			{
-				"windows"	"281"
-				"linux"		"282"
-				"mac"		"282"
-			}
-			"Weapon_Equip"
 			{
 				"windows"	"279"
 				"linux"		"280"
 				"mac"		"280"
 			}
-			"Weapon_Switch"
+			"Weapon_Drop"
 			{
 				"windows"	"282"
 				"linux"		"283"
 				"mac"		"283"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"280"
+				"linux"		"281"
+				"mac"		"281"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"283"
+				"linux"		"284"
+				"mac"		"284"
 			}
 		}
 	}
