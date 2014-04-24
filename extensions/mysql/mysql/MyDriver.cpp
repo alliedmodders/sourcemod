@@ -31,7 +31,7 @@
 
 #include "MyDriver.h"
 #include "MyDatabase.h"
-#include "sdk/smsdk_ext.h"
+#include "smsdk_ext.h"
 
 MyDriver g_MyDriver;
 

@@ -16,6 +16,6 @@ for sdk_name in SM.sdks:
     'natives.cpp',
     'takedamageinfohack.cpp',
     'util.cpp',
-    'sdk/smsdk_ext.cpp',
+    '../../public/smsdk_ext.cpp'
   ]
   SM.extensions += [builder.Add(binary)]

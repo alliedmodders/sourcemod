@@ -12,7 +12,7 @@ binary.sources += [
   'menus.cpp',
   'natives.cpp',
   'query.cpp',
-  'sdk/smsdk_ext.cpp'
+  '../../public/smsdk_ext.cpp'
 ]
 
 SM.extensions += [builder.Add(binary)]

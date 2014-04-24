@@ -23,7 +23,7 @@ if SM.mysql_root:
     ]
 
   binary.sources += [
-    'sdk/smsdk_ext.cpp',
+    '../../public/smsdk_ext.cpp',
     'mysql/MyBasicResults.cpp',
     'mysql/MyBoundResults.cpp',
     'mysql/MyDatabase.cpp',

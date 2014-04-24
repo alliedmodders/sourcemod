@@ -8,7 +8,7 @@ if builder.target_platform == 'windows':
 binary.sources += [
   'extension.cpp',
   'GeoIP.c',
-  'sdk/smsdk_ext.cpp'
+  '../../public/smsdk_ext.cpp'
 ]
 
 SM.extensions += [builder.Add(binary)]

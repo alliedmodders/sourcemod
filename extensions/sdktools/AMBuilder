@@ -38,8 +38,8 @@ for sdk_name in SM.sdks:
     'hooks.cpp',
     'gamerulesnatives.cpp',
     'vstringtable.cpp',
-    'CDetour/detours.cpp',
-    'sdk/smsdk_ext.cpp',
-    'asm/asm.c'
+    '../../public/smsdk_ext.cpp',
+    '../../public/CDetour/detours.cpp',
+    '../../public/asm/asm.c'
   ]
   SM.extensions += [builder.Add(binary)]

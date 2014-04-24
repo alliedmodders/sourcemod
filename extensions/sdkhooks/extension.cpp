@@ -101,6 +101,10 @@ CBitVec<NUM_ENT_ENTRIES> m_EntityExists;
 IBinTools *g_pBinTools = NULL;
 ICvar *icvar = NULL;
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+IServerTools *servertools = NULL;
+#endif
+
 // global hooks and forwards
 IForward *g_pOnEntityCreated = NULL;
 IForward *g_pOnEntityDestroyed = NULL;
@@ -349,6 +353,7 @@ bool SDKHooks::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
+	GET_V_IFACE_ANY(GetServerFactory, servertools, IServerTools, VSERVERTOOLS_INTERFACE_VERSION);
 	g_pCVar = icvar;
 #endif
 	CONVAR_REGISTER(this);

@@ -16,7 +16,7 @@ binary.sources += [
   'HookWrapper.cpp',
   'jit_call.cpp',
   'jit_hook.cpp',
-  'sdk/smsdk_ext.cpp'
+  '../../public/smsdk_ext.cpp'
 ]
 
 SM.extensions += [builder.Add(binary)]

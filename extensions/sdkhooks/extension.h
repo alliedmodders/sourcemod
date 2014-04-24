@@ -12,6 +12,10 @@
 #include <iplayerinfo.h>
 #include <shareddefs.h>
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+#include <itoolentity.h>
+#endif
+
 #include "takedamageinfohack.h"
 
 #ifndef METAMOD_PLAPI_VERSION
@@ -334,4 +338,9 @@ extern CGlobalVars *gpGlobals;
 extern ke::Vector<CVTableList *> g_HookList[SDKHook_MAXHOOKS];
 
 extern ICvar *icvar;
+
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+extern IServerTools *servertools;
+#endif
+
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

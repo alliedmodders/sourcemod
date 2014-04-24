@@ -91,7 +91,7 @@ unsigned int TopMenu::CalcMemUsage()
 {
 	unsigned int size = sizeof(TopMenu);
 
-	size += m_Config.strings.GetMemTable()->MemUsage();
+	size += m_Config.strings.GetMemTable()->GetMemUsage();
 	size += (m_Config.cats.size() * sizeof(int));
 	size += (sizeof(topmenu_player_t) * (ABSOLUTE_PLAYER_LIMIT + 1));
 	size += (m_SortedCats.size() * sizeof(unsigned int));

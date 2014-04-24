@@ -17,7 +17,7 @@ binary.compiler.postlink += [binary.Dep(path)]
 binary.sources += [
   'extension.cpp',
   'CRegEx.cpp',
-  'sdk/smsdk_ext.cpp',
+  '../../public/smsdk_ext.cpp'
 ]
 
 SM.extensions += [builder.Add(binary)]

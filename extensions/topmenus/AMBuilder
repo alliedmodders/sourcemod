@@ -11,8 +11,7 @@ binary.sources += [
   'smn_topmenus.cpp',
   'TopMenu.cpp',
   'TopMenuManager.cpp',
-  'sdk/smsdk_ext.cpp',
-  'sdk/sm_memtable.cpp'
+  '../../public/smsdk_ext.cpp',
 ]
 
 SM.extensions += [builder.Add(binary)]

@@ -11,7 +11,7 @@ binary.sources += [
   'MemoryDownloader.cpp',
   'Updater.cpp',
   'md5.cpp',
-  'sdk/smsdk_ext.cpp'
+  '../../public/smsdk_ext.cpp'
 ]
 
 SM.extensions += [builder.Add(binary)]

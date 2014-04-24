@@ -14,8 +14,8 @@ for sdk_name in ['css', 'csgo']:
     'timeleft.cpp',
     'forwards.cpp',
     'util_cstrike.cpp',
-    'sdk/smsdk_ext.cpp',
-    'CDetour/detours.cpp',
-    'asm/asm.c'
+    '../../public/smsdk_ext.cpp',
+    '../../public/CDetour/detours.cpp',
+    '../../public/asm/asm.c'
   ]
   SM.extensions += [builder.Add(binary)]
