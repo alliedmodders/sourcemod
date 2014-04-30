@@ -136,7 +136,7 @@
 				"windows"
 				{
 					"signature"	"EntityListenersFinder"
-					"read"		"20"
+					"read"		"10"
 				}
 			}
 		}
@@ -147,7 +147,7 @@
 			"EntityListenersFinder"
 			{
 				"library"	"server"
-				"windows"	"\x33\xC9\x8B\x2A\x2A\x2A\x2A\x2A\x33\xC0\x89\x4D\xFC\x56\x85\xD2\x7E\x2A\x8B"
+				"windows"	"\x33\xC0\x50\xE8\x2A\x2A\x2A\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x85\xC9\x74\x13\x8B"
 			}
 		}
 		
