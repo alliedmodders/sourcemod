@@ -12,88 +12,99 @@
 "Games"
 {
 	/* Fistful of Frags */
-	"fistful_of_frags"
+	"#default"
 	{
 		"Offsets"
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"349"
-				"linux"		"350"
+				"windows"	"400"
+				"linux"		"401"
+				"mac"		"401"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"237"
-				"linux"		"238"
+				"windows"	"269"
+				"linux"		"270"
+				"mac"		"270"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"235"
-				"linux"		"236"
+				"windows"	"267"
+				"linux"		"268"
+				"mac"		"268"
+			}
+			"Ignite"
+			{
+				"windows"	"208"
+				"linux"		"209"
+				"mac"		"209"
 			}
 			"Extinguish"
 			{
-				"windows"	"196"
-				"linux"		"197"
+				"windows"	"212"
+				"linux"		"213"
+				"mac"		"213"
 			}
 			"Teleport"
 			{
-				"windows"	"100"
-				"linux"		"101"
+				"windows"	"108"
+				"linux"		"109"
+				"mac"		"109"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"389"
-				"linux"		"389"
+				"windows"	"441"
+				"linux"		"441"
+				"mac"		"441"
 			}
 			"GetVelocity"
 			{
-				"windows"	"129"
-				"linux"		"130"
+				"windows"	"140"
+				"linux"		"141"
+				"mac"		"141"
 			}
 			"EyeAngles"
 			{
-				"windows"	"121"
-				"linux"		"122"
+				"windows"	"131"
+				"linux"		"123"
+				"mac"		"123"
 			}
 			"AcceptInput"
 			{
-				"windows"	"34"
-				"linux"		"35"
+				"windows"	"36"
+				"linux"		"37"
+				"mac"		"37"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"23"
-				"linux"		"24"
+				"windows"	"24"
+				"linux"		"25"
+				"mac"		"25"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"228"
-				"linux"		"229"
+				"windows"	"260"
+				"linux"		"261"
+				"mac"		"261"
 			}
 			"Activate"
 			{
-				"windows"	"31"
-				"linux"		"32"
+				"windows"	"33"
+				"linux"		"34"
+				"mac"		"34"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"368"
-				"linux"		"369"
+				"windows"	"418"
+				"linux"		"419"
+				"mac"		"419"
 			}
-			"FireOutputBackup"
+			"GiveAmmo"
 			{
-				"windows"	"6"
-				"linux"		"10"
-			}
-		}
-		"Signatures"
-		{
-			"FireOutput"
-			{
-				"library"	"server"
-				"windows"	"\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x8B\x71\x2A\x85\xF6\x57"
-				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"windows"	"251"
+				"linux"		"252"
+				"mac"		"252"
 			}
 		}
 	}

@@ -19,6 +19,7 @@
 			"game"		"synergy"
 			"game"		"nmrih"
 			"game"		"empires"
+			"game"		"fof"
 		}
 
 		"Offsets"
@@ -73,6 +74,7 @@
 			"game"		"synergy"
 			"game"		"nmrih"
 			"game"		"empires"
+			"game"		"fof"
 		}
 		
 		"Signatures"
@@ -96,6 +98,7 @@
 			"game"		"synergy"
 			"game"		"nmrih"
 			"game"		"empires"
+			"game"		"fof"
 		}
 		
 		"Offsets"
@@ -191,6 +194,7 @@
 		{
 			"game"		"synergy"
 			"game"		"empires"
+			"game"		"fof"
 		}
 		"Signatures"
 		{

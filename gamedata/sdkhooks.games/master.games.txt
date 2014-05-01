@@ -127,7 +127,7 @@
 	
 	"game.fof.txt"
 	{
-		"game"		"fistful_of_frags"
+		"game"		"fof"
 	}
 	
 	"game.sgtls.txt"
