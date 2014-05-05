@@ -540,10 +540,11 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 			return HookRet_BadEntForHookType;
 	}
 
+	int bcompatRef = gamehelpers->EntityToBCompatRef(pEnt);
 	bool bHooked = false;
 	HOOKLOOP
 	{
-		if (g_HookList[i].entity == entity && g_HookList[i].type == type)
+		if (g_HookList[i].entity == bcompatRef && g_HookList[i].type == type)
 		{
 			bHooked = true;
 			break;
@@ -677,7 +678,7 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 
 	// Add hook to hook list
 	HookList hook;
-	hook.entity = entity;
+	hook.entity = bcompatRef;
 	hook.type = type;
 	hook.callback = callback;
 	g_HookList.AddToTail(hook);

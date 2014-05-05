@@ -90,7 +90,7 @@ cell_t Native_HookEx(IPluginContext *pContext, const cell_t *params)
 
 cell_t Native_Unhook(IPluginContext *pContext, const cell_t *params)
 {
-	int entity = (int)params[1];
+	int entity = gamehelpers->ReferenceToBCompatRef(params[1]);
 	SDKHookType type = (SDKHookType)params[2];
 	IPluginFunction *callback = pContext->GetFunctionById(params[3]);
 
