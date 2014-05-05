@@ -282,7 +282,7 @@ public:
 #ifdef GETMAXHEALTH_IS_VIRTUAL
 	int Hook_GetMaxHealth();
 #endif
-	void Hook_GroundEntChangedPost();
+	void Hook_GroundEntChangedPost(void *pVar);
 	int Hook_OnTakeDamage(CTakeDamageInfoHack &info);
 	int Hook_OnTakeDamagePost(CTakeDamageInfoHack &info);
 	void Hook_PreThink();
