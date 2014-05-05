@@ -160,7 +160,7 @@ SH_DECL_MANUALHOOK1_void(FireBullets, 0, 0, 0, FireBulletsInfo_t const&);
 #ifdef GETMAXHEALTH_IS_VIRTUAL
 SH_DECL_MANUALHOOK0(GetMaxHealth, 0, 0, 0, int);
 #endif
-SH_DECL_MANUALHOOK0_void(GroundEntChanged, 0, 0, 0);
+SH_DECL_MANUALHOOK1_void(GroundEntChanged, 0, 0, 0, void *);
 SH_DECL_MANUALHOOK1(OnTakeDamage, 0, 0, 0, int, CTakeDamageInfoHack &);
 SH_DECL_MANUALHOOK0_void(PreThink, 0, 0, 0);
 SH_DECL_MANUALHOOK0_void(PostThink, 0, 0, 0);
@@ -995,7 +995,7 @@ int SDKHooks::Hook_GetMaxHealth()
 }
 #endif
 
-void SDKHooks::Hook_GroundEntChangedPost()
+void SDKHooks::Hook_GroundEntChangedPost(void *pVar)
 {
 	Call(META_IFACEPTR(CBaseEntity), SDKHook_GroundEntChangedPost);
 }
