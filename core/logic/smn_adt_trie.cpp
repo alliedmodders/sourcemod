@@ -254,7 +254,7 @@ static cell_t SetTrieArray(IPluginContext *pContext, const cell_t *params)
 		return 1;
 	}
 
-	if (!params[4])
+	if (!params[5])
 	{
 		return 0;
 	}
