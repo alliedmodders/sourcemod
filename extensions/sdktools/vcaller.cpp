@@ -155,6 +155,21 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 	return (s_call_addr != NULL) ? 1 : 0;
 }
 
+static cell_t PrepSDKCall_SetAddress(IPluginContext *pContext, const cell_t *params)
+{
+	s_call_addr = reinterpret_cast<void *>(params[1]);
+
+	return (s_call_addr != NULL) ? 1 : 0;
+}
+
+// Must match same enum in sdktools.inc
+enum SDKFuncConfSource
+{
+	SDKConf_Virtual,
+	SDKConf_Signature,
+	SDKConf_Address
+};
+
 static cell_t PrepSDKCall_SetFromConf(IPluginContext *pContext, const cell_t *params)
 {
 	IGameConfig *conf;
@@ -173,12 +188,26 @@ static cell_t PrepSDKCall_SetFromConf(IPluginContext *pContext, const cell_t *pa
 	char *key;
 	pContext->LocalToString(params[3], &key);
 
-	if (params[2] == 0)
+	switch (params[2])
 	{
-		return conf->GetOffset(key, &s_vtbl_index) ? 1 : 0;
-	} else if (params[2] == 1) {
-		bool result = conf->GetMemSig(key, &s_call_addr) ? 1 : 0;
-		return (result && s_call_addr != NULL) ? 1 : 0;
+	case SDKConf_Virtual:
+		if (conf->GetOffset(key, &s_vtbl_index))
+		{
+			return 1;
+		}
+		break;
+	case SDKConf_Signature:
+		if (conf->GetMemSig(key, &s_call_addr) && s_call_addr)
+		{
+			return 1;
+		}
+		break;
+	case SDKConf_Address:
+		if (conf->GetAddress(key, &s_call_addr) && s_call_addr)
+		{
+			return 1;
+		}
+		break;
 	}
 
 	return 0;
@@ -477,6 +506,7 @@ sp_nativeinfo_t g_CallNatives[] =
 	{"StartPrepSDKCall",			StartPrepSDKCall},
 	{"PrepSDKCall_SetVirtual",		PrepSDKCall_SetVirtual},
 	{"PrepSDKCall_SetSignature",	PrepSDKCall_SetSignature},
+	{"PrepSDKCall_SetAddress",		PrepSDKCall_SetAddress},
 	{"PrepSDKCall_SetFromConf",		PrepSDKCall_SetFromConf},
 	{"PrepSDKCall_SetReturnInfo",	PrepSDKCall_SetReturnInfo},
 	{"PrepSDKCall_AddParameter",	PrepSDKCall_AddParameter},

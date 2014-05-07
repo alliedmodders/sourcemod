@@ -72,6 +72,7 @@ enum SDKFuncConfSource
 {
 	SDKConf_Virtual = 0,	/**< Read a virtual index from the Offsets section */
 	SDKConf_Signature = 1,	/**< Read a signature from the Signatures section */
+	SDKConf_Address = 2,	/**< Read an address from the Addresses section */
 };
 
 enum SDKType
@@ -129,6 +130,14 @@ native PrepSDKCall_SetVirtual(vtblidx);
  * @return				True on success, false if nothing was found.
  */
 native bool:PrepSDKCall_SetSignature(SDKLibrary:lib, const String:signature[], bytes);
+
+/**
+ * Uses the given function address for the SDK call.
+ *
+ * @param addr			Address of function to use.
+ * @return				True on success, false on failure.
+ */
+native bool:PrepSDKCall_SetAddress(Address:addr);
 
 /**
  * Finds an address or virtual function index in a GameConfig file and sets it as
