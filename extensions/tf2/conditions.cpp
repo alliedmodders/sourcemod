@@ -41,7 +41,7 @@ typedef struct condflags_s {
 } condflags_t;
 condflags_t condflags_empty = { 0, 0 };
 
-condflags_t g_PlayerConds[MAXPLAYERS+1];
+condflags_t g_PlayerConds[SM_MAXPLAYERS+1];
 
 IForward *g_addCondForward = NULL;
 IForward *g_removeCondForward = NULL;
