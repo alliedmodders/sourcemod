@@ -576,7 +576,7 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 	{
 		char name[48];
 		const char *sound_name;
-		cell_t player_list[256], total_players = 0;
+		cell_t player_list[SM_MAXPLAYERS], total_players = 0;
 		int maxClients = playerhelpers->GetMaxClients();
 
 		int r = (rand() % s_sound_count) + 1;

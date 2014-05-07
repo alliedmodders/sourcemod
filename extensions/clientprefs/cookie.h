@@ -73,13 +73,13 @@ struct Cookie
 
 		dbid = -1;
 
-		for (int i=0; i<=MAXCLIENTS; i++)
+		for (int i=0; i<=SM_MAXPLAYERS; i++)
 			data[i] = NULL;
 	}
 
 	~Cookie()
 	{
-		for (int i=0; i<=MAXCLIENTS; i++)
+		for (int i=0; i<=SM_MAXPLAYERS; i++)
 		{
 			if (data[i] != NULL)
 				delete data[i];
@@ -89,7 +89,7 @@ struct Cookie
 	char name[MAX_NAME_LENGTH+1];
 	char description[MAX_DESC_LENGTH+1];
 	int dbid;
-	CookieData *data[MAXCLIENTS+1];
+	CookieData *data[SM_MAXPLAYERS+1];
 	CookieAccess access;
 
 	static inline bool matches(const char *name, const Cookie *cookie)
@@ -133,11 +133,11 @@ public:
 
 private:
 	NameHashSet<Cookie *> cookieFinder;
-	SourceHook::List<CookieData *> clientData[MAXCLIENTS+1];
+	SourceHook::List<CookieData *> clientData[SM_MAXPLAYERS+1];
 
-	bool connected[MAXCLIENTS+1];
-	bool statsLoaded[MAXCLIENTS+1];
-	bool statsPending[MAXCLIENTS+1];
+	bool connected[SM_MAXPLAYERS+1];
+	bool statsLoaded[SM_MAXPLAYERS+1];
+	bool statsPending[SM_MAXPLAYERS+1];
 };
 
 extern CookieManager g_CookieManager;

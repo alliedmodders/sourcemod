@@ -42,8 +42,6 @@
 #include <server_class.h>
 #include <igameevents.h>
 
-#define MAXPLAYERS 65
-
 /**
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.

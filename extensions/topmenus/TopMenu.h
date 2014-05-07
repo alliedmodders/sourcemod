@@ -42,8 +42,6 @@
 using namespace SourceHook;
 using namespace SourceMod;
 
-#define ABSOLUTE_PLAYER_LIMIT 255  // not 256, so we can send the limit as a byte 
-
 struct config_category_t
 {
 	int name;

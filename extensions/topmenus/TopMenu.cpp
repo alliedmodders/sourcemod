@@ -93,7 +93,7 @@ unsigned int TopMenu::CalcMemUsage()
 
 	size += m_Config.strings.GetMemTable()->GetMemUsage();
 	size += (m_Config.cats.size() * sizeof(int));
-	size += (sizeof(topmenu_player_t) * (ABSOLUTE_PLAYER_LIMIT + 1));
+	size += (sizeof(topmenu_player_t) * (SM_MAXPLAYERS + 1));
 	size += (m_SortedCats.size() * sizeof(unsigned int));
 	size += (m_UnsortedCats.size() * sizeof(unsigned int));
 	size += (m_Categories.size() * (sizeof(topmenu_category_t *) + sizeof(topmenu_category_t)));
@@ -938,8 +938,8 @@ void TopMenu::SortCategoriesIfNeeded()
 void TopMenu::CreatePlayers(int max_clients)
 {
 	m_max_clients = max_clients;
-	m_clients = (topmenu_player_t *)malloc(sizeof(topmenu_player_t) * (ABSOLUTE_PLAYER_LIMIT + 1));
-	memset(m_clients, 0, sizeof(topmenu_player_t) * (ABSOLUTE_PLAYER_LIMIT + 1));
+	m_clients = (topmenu_player_t *)malloc(sizeof(topmenu_player_t) * (SM_MAXPLAYERS + 1));
+	memset(m_clients, 0, sizeof(topmenu_player_t) * (SM_MAXPLAYERS + 1));
 }
 
 void TopMenu::TearDownClient(topmenu_player_t *player)

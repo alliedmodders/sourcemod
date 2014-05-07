@@ -37,7 +37,7 @@ CookieManager g_CookieManager;
 
 CookieManager::CookieManager()
 {
-	for (int i=0; i<=MAXCLIENTS; i++)
+	for (int i=0; i<=SM_MAXPLAYERS; i++)
 	{
 		connected[i] = false;
 		statsLoaded[i] = false;

@@ -308,11 +308,11 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 
 	for (iter=m_NormalFuncs.begin(); iter!=m_NormalFuncs.end(); iter++)
 	{
-		int players[64], size;
+		int players[SM_MAXPLAYERS], size;
 		size = _FillInPlayers(players, &filter);
 		pFunc = (*iter);
 
-		pFunc->PushArray(players, 64, SM_PARAM_COPYBACK);
+		pFunc->PushArray(players, SM_ARRAYSIZE(players), SM_PARAM_COPYBACK);
 		pFunc->PushCellByRef(&size);
 		pFunc->PushStringEx(buffer, sizeof(buffer), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		pFunc->PushCellByRef(&iEntIndex);
@@ -423,11 +423,11 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 
 	for (iter=m_NormalFuncs.begin(); iter!=m_NormalFuncs.end(); iter++)
 	{
-		int players[64], size;
+		int players[SM_MAXPLAYERS], size;
 		size = _FillInPlayers(players, &filter);
 		pFunc = (*iter);
 
-		pFunc->PushArray(players, 64, SM_PARAM_COPYBACK);
+		pFunc->PushArray(players, SM_ARRAYSIZE(players), SM_PARAM_COPYBACK);
 		pFunc->PushCellByRef(&size);
 		pFunc->PushStringEx(buffer, sizeof(buffer), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		pFunc->PushCellByRef(&iEntIndex);

@@ -47,7 +47,7 @@ Handle_t g_ReadBufHandle;
 bf_read g_ReadBitBuf;
 #endif
 
-int g_MsgPlayers[256];
+int g_MsgPlayers[SM_MAXPLAYERS+1];
 bool g_IsMsgInExec = false;
 
 typedef List<MsgListenerWrapper *> MsgWrapperList;

@@ -32,8 +32,6 @@
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
 #define _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
 
-#define MAXCLIENTS 65
-
 #include <stdlib.h>
 #include <stdarg.h>
 #include "smsdk_ext.h"

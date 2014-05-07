@@ -37,7 +37,7 @@ SH_DECL_HOOK5_void(IVEngineServer, PlaybackTempEntity, SH_NOATTRIB, 0, IRecipien
 
 CellRecipientFilter g_TERecFilter;
 TempEntityInfo *g_CurrentTE = NULL;
-int g_TEPlayers[256];
+int g_TEPlayers[SM_MAXPLAYERS+1];
 bool tenatives_initialized = false;
 
 /*************************

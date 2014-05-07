@@ -51,10 +51,10 @@ enum ListenOverride
 	Listen_Yes,			/**< Can hear */
 };
 
-size_t g_VoiceFlags[65];
+size_t g_VoiceFlags[SM_MAXPLAYERS+1];
 size_t g_VoiceHookCount = 0;
-ListenOverride g_VoiceMap[65][65];
-bool g_ClientMutes[65][65];
+ListenOverride g_VoiceMap[SM_MAXPLAYERS+1][SM_MAXPLAYERS+1];
+bool g_ClientMutes[SM_MAXPLAYERS+1][SM_MAXPLAYERS+1];
 
 SH_DECL_HOOK3(IVoiceServer, SetClientListening, SH_NOATTRIB, 0, bool, int, int, bool);
 

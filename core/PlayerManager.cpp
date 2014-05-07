@@ -285,11 +285,11 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 		/* Initialize all players */
 
 		m_PlayerCount = 0;
-		m_Players = new CPlayer[ABSOLUTE_PLAYER_LIMIT + 1];
-		m_AuthQueue = new unsigned int[ABSOLUTE_PLAYER_LIMIT + 1];
+		m_Players = new CPlayer[SM_MAXPLAYERS + 1];
+		m_AuthQueue = new unsigned int[SM_MAXPLAYERS + 1];
 		m_FirstPass = true;
 
-		memset(m_AuthQueue, 0, sizeof(unsigned int) * (ABSOLUTE_PLAYER_LIMIT + 1));
+		memset(m_AuthQueue, 0, sizeof(unsigned int) * (SM_MAXPLAYERS + 1));
 
 		g_NumPlayersToAuth = &m_AuthQueue[0];
 	}
