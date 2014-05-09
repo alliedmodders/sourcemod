@@ -353,6 +353,12 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 		}
 	}
 
+	/* Someone unloaded the default driver? Silly.. */
+	if (pDriver == m_pDefault)
+	{
+		m_pDefault = NULL;
+	}
+
 	/* Now that the driver is gone, we have to test the think queue.
 	 * Whatever happens therein is up to the db op!
 	 */
