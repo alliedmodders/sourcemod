@@ -259,6 +259,17 @@ native bool:DisplayTopMenu(Handle:topmenu, client, TopMenuPosition:position);
 native TopMenuObject:FindTopMenuCategory(Handle:topmenu, const String:name[]);
 
 /**
+ * Change the menu title caching behaviour of the TopMenu. By default the titles are cached to reduce overhead.
+ * If you need dynamic menu titles, which can change everytime the menu is displayed to a user, set this to false.
+ *
+ * @param topmenu       TopMenu Handle.
+ * @param cache_titles  Cache the menu titles and don't call the handler with TopMenuAction_DisplayTitle everytime the menu is drawn?
+ * @noreturn
+ * @error               Invalid TopMenu Handle
+ */
+native SetTopMenuTitleCaching(Handle:topmenu, bool:cache_titles);
+
+/**
  * Do not edit below this line!
  */
 public Extension:__ext_topmenus = 
@@ -286,5 +297,6 @@ public __ext_topmenus_SetNTVOptional()
 	MarkNativeAsOptional("RemoveFromTopMenu");
 	MarkNativeAsOptional("DisplayTopMenu");
 	MarkNativeAsOptional("FindTopMenuCategory");
+	MarkNativeAsOptional("SetTopMenuTitleCaching");
 }
 #endif

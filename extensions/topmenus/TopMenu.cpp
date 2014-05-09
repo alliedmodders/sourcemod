@@ -49,6 +49,7 @@ TopMenu::TopMenu(ITopMenuObjectCallbacks *callbacks)
 	m_SerialNo = 1;
 	m_pTitle = callbacks;
 	m_max_clients = 0;
+	m_bCacheTitles = true;
 
 	if (playerhelpers->IsServerActivated())
 	{
@@ -421,6 +422,13 @@ bool TopMenu::DisplayMenu(int client, unsigned int hold_time, TopMenuPosition po
 		return false;
 	}
 
+	if (!m_bCacheTitles)
+	{
+		char renderbuf[128];
+		m_pTitle->OnTopMenuDisplayTitle(this, client, 0, renderbuf, sizeof(renderbuf));
+		pClient->root->SetDefaultTitle(renderbuf);
+	}
+
 	bool return_value = false;
 
 	if (position == TopMenuPosition_LastCategory && 
@@ -460,6 +468,18 @@ bool TopMenu::DisplayCategory(int client, unsigned int category, unsigned int ho
 
 	topmenu_player_category_t *player_cat = &(pClient->cats[category]);
 
+	// Refresh the title if the topmenu wants that.
+	if (!m_bCacheTitles)
+	{
+		char renderbuf[128];
+		m_Categories[category]->obj->callbacks->OnTopMenuDisplayTitle(this, 
+			client, 
+			m_Categories[category]->obj->object_id, 
+			renderbuf, 
+			sizeof(renderbuf));
+		player_cat->menu->SetDefaultTitle(renderbuf);
+	}
+
 	pClient->last_category = category;
 	if (last_position)
 	{
@@ -471,6 +491,11 @@ bool TopMenu::DisplayCategory(int client, unsigned int category, unsigned int ho
 	}
 
 	return return_value;
+}
+
+void TopMenu::SetTitleCaching(bool cache_titles)
+{
+	m_bCacheTitles = cache_titles;
 }
 
 void TopMenu::OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item, unsigned int item_on_page)
@@ -691,9 +716,12 @@ void TopMenu::UpdateClientRoot(int client, IGamePlayer *pGamePlayer)
 	}
 
 	/* Set the menu's title */
-	char renderbuf[128];
-	m_pTitle->OnTopMenuDisplayTitle(this, client, 0, renderbuf, sizeof(renderbuf));
-	root_menu->SetDefaultTitle(renderbuf);
+	if (m_bCacheTitles)
+	{
+		char renderbuf[128];
+		m_pTitle->OnTopMenuDisplayTitle(this, client, 0, renderbuf, sizeof(renderbuf));
+		root_menu->SetDefaultTitle(renderbuf);
+	}
 
 	/* The client is now fully updated */
 	pClient->root = root_menu;
@@ -810,13 +838,16 @@ void TopMenu::UpdateClientCategory(int client, unsigned int category, bool bSkip
 	}
 
 	/* Set the menu's title */
-	char renderbuf[128];
-	cat->obj->callbacks->OnTopMenuDisplayTitle(this, 
-		client, 
-		cat->obj->object_id, 
-		renderbuf, 
-		sizeof(renderbuf));
-	cat_menu->SetDefaultTitle(renderbuf);
+	if (m_bCacheTitles)
+	{
+		char renderbuf[128];
+		cat->obj->callbacks->OnTopMenuDisplayTitle(this, 
+			client, 
+			cat->obj->object_id, 
+			renderbuf, 
+			sizeof(renderbuf));
+		cat_menu->SetDefaultTitle(renderbuf);
+	}
 
 	/* We're done! */
 	player_cat->menu = cat_menu;

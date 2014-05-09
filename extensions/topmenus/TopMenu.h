@@ -154,6 +154,7 @@ public: //ITextListener_SMC
 	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
 public:
 	unsigned int CalcMemUsage();
+	void SetTitleCaching(bool cache_titles);
 private:
 	void SortCategoriesIfNeeded();
 	void SortCategoryIfNeeded(unsigned int category);
@@ -181,6 +182,7 @@ private:
 	ITopMenuObjectCallbacks *m_pTitle;		/* Title callbacks */
 	int m_max_clients;						/* Maximum number of clients */
 	bool m_bCatsNeedResort;					/* True if categories need a resort */
+	bool m_bCacheTitles;						/* True if the categorie titles should be cached */
 };
 
 unsigned int strncopy(char *dest, const char *src, size_t count);
