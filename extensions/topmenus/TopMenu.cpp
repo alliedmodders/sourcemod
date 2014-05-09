@@ -186,28 +186,14 @@ unsigned int TopMenu::AddToMenu2(const char *name,
 	topmenu_category_t *parent_cat = NULL;
 	if (type == TopMenuObject_Item)
 	{
-		/* Check parent index.  Note it will be >= 1 here. */
-		if (parent > m_Objects.size() || m_Objects[parent - 1]->is_free)
+		size_t category_id;
+		if (!FindCategoryByObject(parent, &category_id))
 		{
 			return 0;
 		}
+
 		parent_obj = m_Objects[parent - 1];
-
-		/* Find an equivalent pointer in the category array. */
-		for (size_t i = 0; i < m_Categories.size(); i++)
-		{
-			if (m_Categories[i]->obj == parent_obj)
-			{
-				parent_cat = m_Categories[i];
-				break;
-			}
-		}
-
-		/* If none was found, leave. */
-		if (parent_cat == NULL)
-		{
-			return 0;
-		}
+		parent_cat = m_Categories[category_id];
 	}
 
 	/* Re-use an old object pointer if we can. */
@@ -452,6 +438,82 @@ bool TopMenu::DisplayMenu(int client, unsigned int hold_time, TopMenuPosition po
 	}
 
 	return return_value;
+}
+
+bool TopMenu::DisplayMenuAtCategory(int client, unsigned int object_id)
+{
+	if (m_clients == NULL)
+	{
+		return false;
+	}
+
+	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
+	if (!pPlayer->IsInGame())
+	{
+		return false;
+	}
+
+	// Get the category this object is in.
+	size_t category_id;
+	if (!FindCategoryByObject(object_id, &category_id))
+	{
+		return false;
+	}
+
+	topmenu_category_t *category = m_Categories[category_id];
+
+	UpdateClientRoot(client, pPlayer);
+
+	topmenu_player_t *pClient = &m_clients[client];
+	if (pClient->root == NULL)
+	{
+		return false;
+	}
+
+	if (!m_bCacheTitles)
+	{
+		char renderbuf[128];
+		m_pTitle->OnTopMenuDisplayTitle(this, client, 0, renderbuf, sizeof(renderbuf));
+		pClient->root->SetDefaultTitle(renderbuf);
+	}
+
+	bool return_value = false;
+
+	return_value = DisplayCategory(client, category_id, 0, true);
+	if (!return_value)
+	{
+		return_value = pClient->root->DisplayAtItem(client, 0, pClient->last_root_pos);
+	}
+
+	return return_value;
+}
+
+bool TopMenu::FindCategoryByObject(unsigned int obj_id, size_t *index)
+{
+	if (obj_id == 0 
+		|| obj_id > m_Objects.size() 
+		|| m_Objects[obj_id - 1]->is_free)
+	{
+		return false;
+	}
+
+	topmenu_object_t *obj = m_Objects[obj_id - 1];
+	if (obj->type != TopMenuObject_Category)
+	{
+		return false;
+	}
+
+	/* Find an equivalent pointer in the category array. */
+	for (size_t i = 0; i < m_Categories.size(); i++)
+	{
+		if (m_Categories[i]->obj == obj)
+		{
+			*index = i;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool TopMenu::DisplayCategory(int client, unsigned int category, unsigned int hold_time, bool last_position)

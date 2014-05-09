@@ -155,6 +155,7 @@ public: //ITextListener_SMC
 public:
 	unsigned int CalcMemUsage();
 	void SetTitleCaching(bool cache_titles);
+	bool DisplayMenuAtCategory(int client, unsigned int object_id);
 private:
 	void SortCategoriesIfNeeded();
 	void SortCategoryIfNeeded(unsigned int category);
@@ -164,6 +165,7 @@ private:
 	void UpdateClientRoot(int client, IGamePlayer *pGamePlayer=NULL);
 	void UpdateClientCategory(int client, unsigned int category, bool bSkipRootCheck=false);
 	void TearDownClient(topmenu_player_t *player);
+	bool FindCategoryByObject(unsigned int obj_id, size_t *index);
 private:
 	void OnClientConnected(int client);
 	void OnClientDisconnected(int client);

@@ -248,6 +248,17 @@ native RemoveFromTopMenu(Handle:topmenu, TopMenuObject:object);
 native bool:DisplayTopMenu(Handle:topmenu, client, TopMenuPosition:position);
 
 /**
+ * Displays a TopMenu category to a client.
+ *
+ * @param topmenu			TopMenu Handle.
+ * @param category		Category object id.
+ * @param client			Client index.
+ * @return					True on success, false on failure.
+ * @error					Invalid TopMenu Handle or client not in game.
+ */
+native bool:DisplayTopMenuCategory(Handle:topmenu, TopMenuObject:category, client);
+
+/**
  * Finds a category's object ID in a TopMenu.
  *
  * @param topmenu			TopMenu Handle.
@@ -296,6 +307,7 @@ public __ext_topmenus_SetNTVOptional()
 	MarkNativeAsOptional("AddToTopMenu");
 	MarkNativeAsOptional("RemoveFromTopMenu");
 	MarkNativeAsOptional("DisplayTopMenu");
+	MarkNativeAsOptional("DisplayTopMenuCategory");
 	MarkNativeAsOptional("FindTopMenuCategory");
 	MarkNativeAsOptional("SetTopMenuTitleCaching");
 }

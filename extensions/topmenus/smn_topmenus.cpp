@@ -326,6 +326,32 @@ static cell_t DisplayTopMenu(IPluginContext *pContext, const cell_t *params)
 	return pMenu->DisplayMenu(client, 0, (TopMenuPosition)params[3]);
 }
 
+static cell_t DisplayTopMenuCategory(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError err;
+	TopMenu *pMenu;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if ((err = handlesys->ReadHandle(params[1], hTopMenuType, &sec, (void **)&pMenu))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	int client = params[3];
+	IGamePlayer *player = playerhelpers->GetGamePlayer(client);
+	if (!player)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", client);
+	}
+	else if (!player->IsInGame())
+	{
+		return pContext->ThrowNativeError("Client %d is not in game", client);
+	}
+
+	return pMenu->DisplayMenuAtCategory(client, params[2]);
+}
+
 static cell_t GetTopMenuInfoString(IPluginContext *pContext, const cell_t *params)
 {
 	HandleError err;
@@ -396,6 +422,7 @@ sp_nativeinfo_t g_TopMenuNatives[] =
 	{"AddToTopMenu",			AddToTopMenu},
 	{"CreateTopMenu",			CreateTopMenu},
 	{"DisplayTopMenu",			DisplayTopMenu},
+	{"DisplayTopMenuCategory",	DisplayTopMenuCategory},
 	{"LoadTopMenuConfig",		LoadTopMenuConfig},
 	{"RemoveFromTopMenu",		RemoveFromTopMenu},
 	{"FindTopMenuCategory",		FindTopMenuCategory},
