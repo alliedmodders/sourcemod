@@ -124,7 +124,7 @@ public:
 
 	void OnPluginDestroyed(IPlugin *plugin);
 	
-	bool AreClientCookiesPening(int client);
+	bool AreClientCookiesPending(int client);
 
 public:
 	IForward *cookieDataLoadedForward;

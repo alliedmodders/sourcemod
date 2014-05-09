@@ -310,7 +310,7 @@ bool CookieManager::AreClientCookiesCached(int client)
 	return statsLoaded[client];
 }
 
-bool CookieManager::AreClientCookiesPening(int client)
+bool CookieManager::AreClientCookiesPending(int client)
 {
 	return statsPending[client];
 }

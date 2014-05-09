@@ -383,7 +383,7 @@ void ClientPrefs::CatchLateLoadClients()
 	IGamePlayer *pPlayer;
 	for (int i = playerhelpers->GetMaxClients()+1; --i > 0;)
 	{
-		if (g_CookieManager.AreClientCookiesPening(i) || g_CookieManager.AreClientCookiesCached(i))
+		if (g_CookieManager.AreClientCookiesPending(i) || g_CookieManager.AreClientCookiesCached(i))
 		{
 			continue;
 		}
