@@ -69,11 +69,11 @@ struct EventHook
 	IChangeableForward *pPostHook;
 	bool postCopy;
 	unsigned int refCount;
-	char *name;
+	ke::AString name;
 
 	static inline bool matches(const char *name, const EventHook *hook)
 	{
-		return strcmp(name, hook->name) == 0;
+		return strcmp(name, hook->name.chars()) == 0;
 	}
 };
 

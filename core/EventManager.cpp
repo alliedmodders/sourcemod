@@ -209,7 +209,7 @@ EventHookError EventManager::HookEvent(const char *name, IPluginFunction *pFunct
 		}
 
 		/* Cache the name for post hooks */
-		pHook->name = sm_strdup(name);
+		pHook->name = name;
 
 		/* Increase reference count */
 		pHook->refCount++;
@@ -313,9 +313,6 @@ EventHookError EventManager::UnhookEvent(const char *name, IPluginFunction *pFun
 
 		/* Delete entry in trie */
 		m_EventHooks.remove(name);
-
-		/* Free the cached name */
-		delete pHook->name;
 
 		/* And finally free structure memory */
 		delete pHook;
@@ -477,7 +474,7 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 				pForward->PushCell(BAD_HANDLE);
 			}
 
-			pForward->PushString(pHook->name);
+			pForward->PushString(pHook->name.chars());
 			pForward->PushCell(bDontBroadcast);
 			pForward->Execute(NULL);
 
@@ -498,8 +495,7 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 		{
 			assert(pHook->pPostHook == NULL);
 			assert(pHook->pPreHook == NULL);
-			m_EventHooks.remove(pHook->name);
-			delete pHook->name;
+			m_EventHooks.remove(pHook->name.chars());
 			delete pHook;
 		}
 	}
