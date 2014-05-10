@@ -538,6 +538,7 @@ SC_FUNC symbol *add_constant(char *name,cell val,int vclass,int tag);
 SC_FUNC void exporttag(int tag);
 SC_FUNC void sc_attachdocumentation(symbol *sym);
 SC_FUNC constvalue *find_tag_byval(int tag);
+SC_FUNC int get_actual_compound(symbol *sym);
 
 /* function prototypes in SC2.C */
 #define PUSHSTK_P(v)  { stkitem s_; s_.pv=(v); pushstk(s_); }

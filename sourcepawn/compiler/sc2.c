@@ -2461,6 +2461,16 @@ SC_FUNC void delete_symbol(symbol *root,symbol *sym)
   free_symbol(sym);
 }
 
+SC_FUNC int get_actual_compound(symbol *sym)
+{
+  if (sym->ident == iARRAY || sym->ident == iREFARRAY) {
+    while (sym->parent)
+      sym = sym->parent;
+  }
+
+  return sym->compound;
+}
+
 SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_functions)
 {
   symbol *origRoot=root;
@@ -2472,7 +2482,7 @@ SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_
    * specified nesting level */
   while (root->next!=NULL) {
     sym=root->next;
-    if (sym->compound<level)
+    if (get_actual_compound(sym)<level)
       break;
     switch (sym->ident) {
     case iLABEL:

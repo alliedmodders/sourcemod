@@ -142,6 +142,8 @@ class SMConfig(object):
         '-Wno-uninitialized',
         '-Wno-unused',
         '-Wno-switch',
+        '-Wno-format',
+        '-Wno-format-security',
         '-msse',
         '-m32',
       ]

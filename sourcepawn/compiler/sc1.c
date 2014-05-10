@@ -5417,7 +5417,7 @@ static void destructsymbols(symbol *root,int level)
   cell offset=0;
   int savepri=FALSE;
   symbol *sym=root->next;
-  while (sym!=NULL && sym->compound>=level) {
+  while (sym!=NULL && get_actual_compound(sym)>=level) {
     if (sym->ident==iVARIABLE || sym->ident==iARRAY) {
       char symbolname[16];
       symbol *opsym;
