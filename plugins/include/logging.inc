@@ -46,17 +46,6 @@
 native LogMessage(const String:format[], any:...);
 
 /**
- * Logs a message to the SourceMod logs without any plugin logtag.  This is 
- * useful for re-routing messages from other plugins, for example, messages 
- * from LogAction().
- *
- * @param format		String format.
- * @param ...			Format arguments.
- * @noreturn
- */
-native LogMessageEx(const String:format[], any:...);
-
-/**
  * Logs a message to any file.  The log message will be in the normal 
  * SourceMod format, with the plugin logtag prepended.
  *
