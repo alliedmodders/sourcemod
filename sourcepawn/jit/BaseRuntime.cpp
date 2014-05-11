@@ -355,6 +355,12 @@ BaseRuntime::GetNativeByIndex(uint32_t index, sp_native_t **native)
   return SP_ERROR_NONE;
 }
 
+sp_native_t *
+BaseRuntime::GetNativeByIndex(uint32_t index)
+{
+  assert(index < m_plugin.num_natives);
+  return &m_plugin.natives[index];
+}
 
 uint32_t
 BaseRuntime::GetNativesNum()

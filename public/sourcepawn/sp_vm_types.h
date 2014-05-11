@@ -148,6 +148,7 @@ typedef struct sp_pubvar_s
 #define SP_NATIVE_BOUND			(1)		/**< Native is bound */
 
 #define SP_NTVFLAG_OPTIONAL		(1<<0)	/**< Native is optional */
+#define SP_NTVFLAG_EPHEMERAL		(1<<1)	/**< Native can be unbound */
 
 /** 
  * @brief Native lookup table, by default names point back to the sp_plugin_infotab_t structure.

@@ -1579,9 +1579,8 @@ Compiler::emitNativeCall(OPCODE op)
   // Save registers.
   __ push(edx);
 
-  // Push the parameters for the C++ function.
+  // Push the last parameter for the C++ function.
   __ push(stk);
-  __ push(native_index);
 
   // Relocate our absolute stk to be dat-relative, and update the context's
   // view.
@@ -1589,9 +1588,23 @@ Compiler::emitNativeCall(OPCODE op)
   __ subl(stk, dat);
   __ movl(Operand(eax, offsetof(sp_context_t, sp)), stk);
 
-  // Push context and make the call.
-  __ push(eax);
-  __ call(ExternalAddress((void *)NativeCallback));
+  __ movl(Operand(eax, offsetof(sp_context_t, n_idx)), native_index);
+
+  sp_native_t *native = rt_->GetNativeByIndex(native_index);
+  if ((native->status != SP_NATIVE_BOUND) ||
+      (native->flags & (SP_NTVFLAG_OPTIONAL | SP_NTVFLAG_EPHEMERAL)))
+  {
+    // The native is either unbound, or it could become unbound in the
+    // future. Invoke the slower native callback.
+    __ push(native_index);
+    __ push(eax);
+    __ call(ExternalAddress((void *)NativeCallback));
+  } else {
+    // The native is bound so we have a few more guarantees.
+    __ push(intptr_t(native->pfn));
+    __ push(eax);
+    __ call(ExternalAddress((void *)BoundNativeCallback));
+  }
 
   // Check for errors.
   __ movl(ecx, intptr_t(rt_->GetBaseContext()->GetCtx()));

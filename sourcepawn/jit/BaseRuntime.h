@@ -49,6 +49,7 @@ class BaseRuntime
   virtual IPluginDebugInfo *GetDebugInfo();
   virtual int FindNativeByName(const char *name, uint32_t *index);
   virtual int GetNativeByIndex(uint32_t index, sp_native_t **native);
+  virtual sp_native_t *GetNativeByIndex(uint32_t index);
   virtual uint32_t GetNativesNum();
   virtual int FindPublicByName(const char *name, uint32_t *index);
   virtual int GetPublicByIndex(uint32_t index, sp_public_t **publicptr);

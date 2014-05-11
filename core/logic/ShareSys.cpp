@@ -331,6 +331,13 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, sp_native_t *native, uint
 	native->status = SP_NATIVE_BOUND;
 	native->pfn = pEntry->func();
 
+	if (pEntry->fake)
+	{
+		/* This native is not necessarily optional, but we don't guarantee
+		 * that its address is long-lived. */
+		native->flags |= SP_NTVFLAG_EPHEMERAL;
+	}
+
 	/* We don't bother with dependency crap if the owner is Core. */
 	if (pEntry->owner != &g_CoreNatives)
 	{

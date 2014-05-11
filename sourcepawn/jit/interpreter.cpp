@@ -167,6 +167,29 @@ NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
   return result;
 }
 
+cell_t
+BoundNativeCallback(sp_context_t *ctx, SPVM_NATIVE_FUNC pfn, cell_t *params)
+{
+  cell_t save_sp = ctx->sp;
+  cell_t save_hp = ctx->hp;
+
+  cell_t result = pfn(ctx->basecx, params);
+
+  if (ctx->n_err != SP_ERROR_NONE)
+    return result;
+
+  if (save_sp != ctx->sp) {
+    ctx->n_err = SP_ERROR_STACKLEAK;
+    return result;
+  }
+  if (save_hp != ctx->hp) {
+    ctx->n_err = SP_ERROR_HEAPLEAK;
+    return result;
+  }
+
+  return result;
+}
+
 static inline bool
 GenerateArray(BaseRuntime *rt, sp_context_t *ctx, cell_t dims, cell_t *stk, bool autozero)
 {
