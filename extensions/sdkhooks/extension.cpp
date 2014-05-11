@@ -814,7 +814,9 @@ void SDKHooks::OnEntityCreated(CBaseEntity *pEntity)
 	// Call OnEntityCreated forward
 	int ref = gamehelpers->EntityToBCompatRef(pEntity);
 	int index = gamehelpers->ReferenceToIndex(ref);
-	if (m_EntityExists.IsBitSet(index) || (index > 0 && index <= playerhelpers->GetMaxClients()))
+
+	// This can be -1 for player ents before any players have connected
+	if (index == INVALID_EHANDLE_INDEX || m_EntityExists.IsBitSet(index) || (index > 0 && index <= playerhelpers->GetMaxClients()))
 	{
 		return;
 	}
@@ -1587,13 +1589,16 @@ void SDKHooks::Hook_UsePost(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 
 void SDKHooks::OnEntityDeleted(CBaseEntity *pEntity)
 {
-	int entity = gamehelpers->EntityToBCompatRef(pEntity);
-	if (entity > 0 && entity <= playerhelpers->GetMaxClients())
+	int ref = gamehelpers->EntityToBCompatRef(pEntity);
+	int index = gamehelpers->ReferenceToIndex(ref);
+
+	// This can be -1 for player ents before any players have connected
+	if (index == INVALID_EHANDLE_INDEX || (index > 0 && index <= playerhelpers->GetMaxClients()))
 	{
 		return;
 	}
 
-	HandleEntityDeleted(pEntity, entity);
+	HandleEntityDeleted(pEntity, ref);
 }
 
 void SDKHooks::Hook_VPhysicsUpdate(IPhysicsObject *pPhysics)
