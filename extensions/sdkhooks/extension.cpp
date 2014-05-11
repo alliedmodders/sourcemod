@@ -422,6 +422,13 @@ void SDKHooks::OnClientPutInServer(int client)
 	m_EntityExists.Set(client);
 }
 
+void SDKHooks::OnClientDisconnecting(int client)
+{
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(client);
+	
+	HandleEntityDeleted(pEntity, client);
+}
+
 void SDKHooks::AddEntityListener(ISMEntityListener *listener)
 {
 	m_EntListeners.push_back(listener);
@@ -1609,24 +1616,13 @@ void SDKHooks::Hook_UsePost(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 
 void SDKHooks::OnEntityDeleted(CBaseEntity *pEntity)
 {
-	// Send OnEntityDestroyed to SM listeners
-	SourceHook::List<ISMEntityListener *>::iterator iter;
-	ISMEntityListener *pListener = NULL;
-	for (iter=m_EntListeners.begin(); iter!=m_EntListeners.end(); iter++)
+	int entity = gamehelpers->EntityToBCompatRef(pEntity);
+	if (entity > 0 && entity <= playerhelpers->GetMaxClients())
 	{
-		pListener = (*iter);
-		pListener->OnEntityDestroyed(pEntity);
+		return;
 	}
 
-	int entity = gamehelpers->EntityToBCompatRef(pEntity);
-
-	// Call OnEntityDestroyed forward
-	g_pOnEntityDestroyed->PushCell(entity);
-	g_pOnEntityDestroyed->Execute(NULL);
-	
-	Unhook(pEntity);
-
-	m_EntityExists.Set(gamehelpers->ReferenceToIndex(entity), false);
+	HandleEntityDeleted(pEntity, entity);
 }
 
 void SDKHooks::Hook_VPhysicsUpdate(IPhysicsObject *pPhysics)
@@ -1718,4 +1714,24 @@ bool SDKHooks::Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelin
 {
 	cell_t result = Call(META_IFACEPTR(CBaseEntity), SDKHook_WeaponSwitchPost, pWeapon);
 	RETURN_META_VALUE(MRES_IGNORED, true);
+}
+
+void SDKHooks::HandleEntityDeleted(CBaseEntity *pEntity, int ref)
+{
+	// Send OnEntityDestroyed to SM listeners
+	SourceHook::List<ISMEntityListener *>::iterator iter;
+	ISMEntityListener *pListener = NULL;
+	for (iter = m_EntListeners.begin(); iter != m_EntListeners.end(); iter++)
+	{
+		pListener = (*iter);
+		pListener->OnEntityDestroyed(pEntity);
+	}
+
+	// Call OnEntityDestroyed forward
+	g_pOnEntityDestroyed->PushCell(ref);
+	g_pOnEntityDestroyed->Execute(NULL);
+
+	Unhook(pEntity);
+
+	m_EntityExists.Set(gamehelpers->ReferenceToIndex(ref), false);
 }

@@ -244,6 +244,7 @@ public:  // IEntityListener
 
 public:  // IClientListener
 	virtual void OnClientPutInServer(int client);
+	virtual void OnClientDisconnecting(int client);
 
 public:  // ISDKHooks
 	virtual void AddEntityListener(ISMEntityListener *listener);
@@ -330,6 +331,7 @@ public:
 	bool Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelindex);
 	
 private:
+	void HandleEntityDeleted(CBaseEntity *pEntity, int ref);
 	void Unhook(CBaseEntity *pEntity);
 	void Unhook(IPluginContext *pContext);
 };
