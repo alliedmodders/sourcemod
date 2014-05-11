@@ -331,6 +331,7 @@ public:
 	bool Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelindex);
 	
 private:
+	void HandleEntityCreated(CBaseEntity *pEntity, int ref);
 	void HandleEntityDeleted(CBaseEntity *pEntity, int ref);
 	void Unhook(CBaseEntity *pEntity);
 	void Unhook(IPluginContext *pContext);

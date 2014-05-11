@@ -403,23 +403,8 @@ void SDKHooks::OnPluginUnloaded(IPlugin *plugin)
 void SDKHooks::OnClientPutInServer(int client)
 {
 	CBaseEntity *pPlayer = gamehelpers->ReferenceToEntity(client);
-	const char *pName = gamehelpers->GetEntityClassname(pPlayer);
 
-	// Send OnEntityCreated to SM listeners
-	SourceHook::List<ISMEntityListener *>::iterator iter;
-	ISMEntityListener *pListener = NULL;
-	for (iter=m_EntListeners.begin(); iter!=m_EntListeners.end(); iter++)
-	{
-		pListener = (*iter);
-		pListener->OnEntityCreated(pPlayer, pName ? pName : "");
-	}
-
-	// Call OnEntityCreated forward
-	g_pOnEntityCreated->PushCell(client);
-	g_pOnEntityCreated->PushString(pName ? pName : "");
-	g_pOnEntityCreated->Execute(NULL);
-
-	m_EntityExists.Set(client);
+	HandleEntityCreated(pPlayer, client);
 }
 
 void SDKHooks::OnClientDisconnecting(int client)
@@ -827,28 +812,14 @@ void SDKHooks::Unhook(int entity, SDKHookType type, IPluginFunction *pCallback)
 void SDKHooks::OnEntityCreated(CBaseEntity *pEntity)
 {
 	// Call OnEntityCreated forward
-	int entity = gamehelpers->ReferenceToIndex(gamehelpers->EntityToBCompatRef(pEntity));
-	if (m_EntityExists.IsBitSet(entity) || (entity > 0 && entity <= playerhelpers->GetMaxClients()))
+	int ref = gamehelpers->EntityToBCompatRef(pEntity);
+	int index = gamehelpers->ReferenceToIndex(ref);
+	if (m_EntityExists.IsBitSet(index) || (index > 0 && index <= playerhelpers->GetMaxClients()))
 	{
 		return;
 	}
 
-	const char *pName = gamehelpers->GetEntityClassname(pEntity);
-
-	// Send OnEntityCreated to SM listeners
-	SourceHook::List<ISMEntityListener *>::iterator iter;
-	ISMEntityListener *pListener = NULL;
-	for (iter=m_EntListeners.begin(); iter!=m_EntListeners.end(); iter++)
-	{
-		pListener = (*iter);
-		pListener->OnEntityCreated(pEntity, pName ? pName : "");
-	}
-
-	g_pOnEntityCreated->PushCell(gamehelpers->EntityToBCompatRef(pEntity));
-	g_pOnEntityCreated->PushString(pName ? pName : "");
-	g_pOnEntityCreated->Execute(NULL);
-
-	m_EntityExists.Set(entity);
+	HandleEntityCreated(pEntity, ref);
 }
 
 #ifdef GAMEDESC_CAN_CHANGE
@@ -1714,6 +1685,27 @@ bool SDKHooks::Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelin
 {
 	cell_t result = Call(META_IFACEPTR(CBaseEntity), SDKHook_WeaponSwitchPost, pWeapon);
 	RETURN_META_VALUE(MRES_IGNORED, true);
+}
+
+void SDKHooks::HandleEntityCreated(CBaseEntity *pEntity, int ref)
+{
+	const char *pName = gamehelpers->GetEntityClassname(pEntity);
+
+	// Send OnEntityCreated to SM listeners
+	SourceHook::List<ISMEntityListener *>::iterator iter;
+	ISMEntityListener *pListener = NULL;
+	for (iter = m_EntListeners.begin(); iter != m_EntListeners.end(); iter++)
+	{
+		pListener = (*iter);
+		pListener->OnEntityCreated(pEntity, pName ? pName : "");
+	}
+
+	// Call OnEntityCreated forward
+	g_pOnEntityCreated->PushCell(ref);
+	g_pOnEntityCreated->PushString(pName ? pName : "");
+	g_pOnEntityCreated->Execute(NULL);
+
+	m_EntityExists.Set(gamehelpers->ReferenceToIndex(ref));
 }
 
 void SDKHooks::HandleEntityDeleted(CBaseEntity *pEntity, int ref)
