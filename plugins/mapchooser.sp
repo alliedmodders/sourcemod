@@ -628,18 +628,18 @@ InitiateVote(MapChange:when, Handle:inputlist=INVALID_HANDLE)
 		
 		while (i < voteSize)
 		{
+			if (count >= availableMaps)
+			{
+				//Run out of maps, this will have to do.
+				break;
+			}
+			
 			GetArrayString(g_NextMapList, count, map, sizeof(map));
 			count++;
 			
 			/* Insert the map and increment our count */
 			AddMenuItem(g_VoteMenu, map, map);
 			i++;
-			
-			if (count >= availableMaps)
-			{
-				//Run out of maps, this will have to do.
-				break;	
-			}
 		}
 		
 		/* Wipe out our nominations list - Nominations have already been informed of this */
@@ -669,6 +669,15 @@ InitiateVote(MapChange:when, Handle:inputlist=INVALID_HANDLE)
 	else if (GetConVarBool(g_Cvar_Extend) && g_Extends < GetConVarInt(g_Cvar_Extend))
 	{
 		AddMenuItem(g_VoteMenu, VOTE_EXTEND, "Extend Map");
+	}
+	
+	/* There are no maps we could vote for. Don't show anything. */
+	if (GetMenuItemCount(g_VoteMenu) == 0)
+	{
+		g_HasVoteStarted = false;
+		CloseHandle(g_VoteMenu);
+		g_VoteMenu = INVALID_HANDLE;
+		return;
 	}
 	
 	new voteDuration = GetConVarInt(g_Cvar_VoteDuration);
@@ -866,18 +875,27 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 			if (param1 == VoteCancel_NoVotes && GetConVarBool(g_Cvar_NoVoteMode))
 			{
 				new count = GetMenuItemCount(menu);
-				new item = GetRandomInt(0, count - 1);
 				decl String:map[PLATFORM_MAX_PATH];
-				GetMenuItem(menu, item, map, sizeof(map));
+				GetMenuItem(menu, 0, map, sizeof(map));
 				
-				while (strcmp(map, VOTE_EXTEND, false) == 0)
+				// Make sure the first map in the menu isn't one of the special items.
+				// This would mean there are no real maps in the menu, because the special items are added after all maps. Don't do anything if that's the case.
+				if (strcmp(map, VOTE_EXTEND, false) != 0 && strcmp(map, VOTE_DONTCHANGE, false) != 0)
 				{
-					item = GetRandomInt(0, count - 1);
+					// Get a random map from the list.
+					new item = GetRandomInt(0, count - 1);
 					GetMenuItem(menu, item, map, sizeof(map));
+					
+					// Make sure it's not one of the special items.
+					while (strcmp(map, VOTE_EXTEND, false) == 0 || strcmp(map, VOTE_DONTCHANGE, false) == 0)
+					{
+						item = GetRandomInt(0, count - 1);
+						GetMenuItem(menu, item, map, sizeof(map));
+					}
+					
+					SetNextMap(map);
+					g_MapVoteCompleted = true;
 				}
-				
-				SetNextMap(map);
-				g_MapVoteCompleted = true;
 			}
 			else
 			{
