@@ -47,7 +47,7 @@ static cell_t smn_InactivateClient(IPluginContext *pContext, const cell_t *param
 
 	if (!iserver)
 	{
-		pContext->ThrowNativeError("IServer is null");
+		return pContext->ThrowNativeError("IServer interface not supported, file a bug report.");
 	}
 
 	IClient* pClient = iserver->GetClient(params[1] - 1);
@@ -74,7 +74,7 @@ static cell_t smn_ReconnectClient(IPluginContext *pContext, const cell_t *params
 
 	if (!iserver)
 	{
-		pContext->ThrowNativeError("IServer is null");
+		return pContext->ThrowNativeError("IServer interface not supported, file a bug report.");
 	}
 
 	IClient* pClient = iserver->GetClient(params[1] - 1);
