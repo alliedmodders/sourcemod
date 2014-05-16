@@ -69,7 +69,7 @@
 			"HandleCommand_Buy_Internal"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xEC\x2A\x89\x4D\x2A\x6A\x00\x8B"
+				"windows"		"\x55\x8B\xEC\x83\xEC\x2A\x89\x4D\x2A\x6A\x00\x8B\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x0F\xB6\xC0\x85\xC0\x74"
 				"linux"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKc"
 				"mac"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKc"
 			}
