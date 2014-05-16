@@ -53,7 +53,7 @@
 			"RemoveCondition"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\xFF\x75\x0C\xFF\x75\x08\xE8\x2A\x2A\x2A\x2A\x33\xC0"
+				"windows"	"\x55\x8B\xEC\x53\x56\x8B\x75\x08\x57\x8B\xF9\x83\xFE\x40"
 				"linux"		"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
 				"mac"		"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
 			}
