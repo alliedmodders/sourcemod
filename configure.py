@@ -25,6 +25,4 @@ run.options.add_option('-s', '--sdks', default='all', dest='sdks',
                             'comma-delimited list of engine names (default: %default)')
 run.options.add_option('--breakpad-dump', action='store_true', dest='breakpad_dump',
 											 default=False, help='Dump and upload breakpad symbols')
-run.options.add_option('--package-debug', action='store_true', default=False, dest='packdebug',
-                       help='Package files useful for debugging.')
 run.Configure()
