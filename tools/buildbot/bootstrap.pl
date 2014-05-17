@@ -27,7 +27,7 @@ chdir('OUTPUT');
 my ($result, $argn);
 $argn = $#ARGV + 1;
 print "Attempting to reconfigure...\n";
-my $conf_args = '--enable-optimize --breakpad-dump --no-color';
+my $conf_args = '--enable-optimize --breakpad-dump --no-color --symbol-files';
 if ($argn > 0 && $^O !~ /MSWin/) {
 	$result = `CC=$ARGV[0] CXX=$ARGV[0] python ../build/configure.py $conf_args`;
 } else {
