@@ -816,7 +816,7 @@ void SDKHooks::OnEntityCreated(CBaseEntity *pEntity)
 	int index = gamehelpers->ReferenceToIndex(ref);
 
 	// This can be -1 for player ents before any players have connected
-	if (index == INVALID_EHANDLE_INDEX || m_EntityExists.IsBitSet(index) || (index > 0 && index <= playerhelpers->GetMaxClients()))
+	if ((unsigned)index == INVALID_EHANDLE_INDEX || m_EntityExists.IsBitSet(index) || (index > 0 && index <= playerhelpers->GetMaxClients()))
 	{
 		return;
 	}
@@ -1593,7 +1593,7 @@ void SDKHooks::OnEntityDeleted(CBaseEntity *pEntity)
 	int index = gamehelpers->ReferenceToIndex(ref);
 
 	// This can be -1 for player ents before any players have connected
-	if (index == INVALID_EHANDLE_INDEX || (index > 0 && index <= playerhelpers->GetMaxClients()))
+	if ((unsigned)index == INVALID_EHANDLE_INDEX || (index > 0 && index <= playerhelpers->GetMaxClients()))
 	{
 		return;
 	}
