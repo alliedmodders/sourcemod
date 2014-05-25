@@ -16,7 +16,7 @@ open(PDBLOG, '../OUTPUT/pdblog.txt') or die "Could not open pdblog.txt: $!\n";
 my ($version);
 $version = Build::ProductVersion(Build::PathFormat('product.version'));
 $version =~ s/-dev//g;
-$version .= '-hg' . Build::HgRevNum('.');
+$version .= '-git' . Build::GitRevNum('.');
 
 my ($build_type);
 $build_type = Build::GetBuildType(Build::PathFormat('tools/buildbot/build_type'));
