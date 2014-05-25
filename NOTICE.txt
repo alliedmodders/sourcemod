@@ -1,5 +1,0 @@
-
-CONFIGURE YOUR IDENTITY FOR MERCURIAL! 
-IF YOU ARE A DEVELOPER WITH PUSH ACCESS, DO IT NOW KPLZTHX.
-
-http://wiki.alliedmods.net/Mercurial_Tutorial#Identity
