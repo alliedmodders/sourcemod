@@ -17,7 +17,7 @@ elif [ `uname` != "Linux" ] && [ -n "${COMSPEC:+1}" ]; then
   decomp=unzip
 fi
 
-if [ ! -d "sourcemod-central" ]; then
+if [ ! -d "sourcemod" ]; then
   if [ ! -d "sourcemod-1.5" ]; then
     echo "Could not find a SourceMod repository; make sure you aren't running this script inside it."
     exit 1
@@ -54,29 +54,32 @@ fi
 checkout ()
 {
   if [ ! -d "$name" ]; then
-    hg clone https://hg.alliedmods.net/$path/$name
+    git clone $repo -b $branch $name
+    if [ -n "$origin" ]; then
+      cd $name
+      git remote rm origin
+      git remote add origin $origin
+      cd ..
+    fi
   else
     cd $name
-    sed -i 's/http:/https:/g' .hg/hgrc
-    hg pull -u
+    git checkout $branch
+    git pull origin $branch
     cd ..
   fi
 }
 
 name=mmsource-1.10
-path=releases
+branch=1.10-dev
+repo="https://github.com/alliedmodders/metamod-source"
+origin=
 checkout
 
-sdks=( csgo hl2dm nd l4d2 dods l4d css tf2 insurgency 2013 dota )
+sdks=( csgo hl2dm nucleardawn l4d2 dods l4d css tf2 insurgency sdk2013 dota )
 
 if [ $ismac -eq 0 ]; then
-  # Checkout original HL2 SDK on Windows or Linux
-  name=hl2sdk
-  path=hl2sdks
-  checkout
-
   # Add these SDKs for Windows or Linux
-  sdks+=( ob blade )
+  sdks+=( orangebox blade episode1 )
 
   # Add more SDKs for Windows only
   if [ $iswin -eq 1 ]; then
@@ -84,17 +87,30 @@ if [ $ismac -eq 0 ]; then
   fi
 fi
 
+# Check out a local copy as a proxy.
+if [ ! -d "hl2sdk-proxy-repo" ]; then
+  git clone --mirror https://github.com/alliedmodders/hl2sdk hl2sdk-proxy-repo
+else
+  cd hl2sdk-proxy-repo
+  git fetch
+  cd ..
+fi
+
 for sdk in "${sdks[@]}"
 do
+  repo=hl2sdk-proxy-repo
+  origin="https://github.com/alliedmodders/hl2sdk"
   name=hl2sdk-$sdk
-  path=hl2sdks
+  branch=$sdk
   checkout
 done
 
 `python -c "import ambuild2"`
 if [ $? -eq 1 ]; then
-  name=
-  path=ambuild
+  repo="https://github.com/alliedmodders/ambuild"
+  origin=
+  branch=master
+  name=ambuild
   checkout
 
   cd ambuild

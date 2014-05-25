@@ -32,7 +32,8 @@
 #if !defined(SM_USE_VERSIONLIB)
 // These get defined in sourcemod_version.h since
 // versionlib does not use versionlib.
-# undef SOURCEMOD_BUILD_ID
+# undef SOURCEMOD_LOCAL_REV
+# undef SOURCEMOD_CSET
 # undef SOURCEMOD_VERSION
 # undef SOURCEMOD_BUILD_TIME
 #endif
@@ -42,7 +43,8 @@
 #else
 # define EXTERN_C extern
 #endif
-EXTERN_C const char *SOURCEMOD_BUILD_ID;
+EXTERN_C const char *SOURCEMOD_LOCAL_REV;
+EXTERN_C const char *SOURCEMOD_SHA;
 EXTERN_C const char *SOURCEMOD_VERSION;
 EXTERN_C const char *SOURCEMOD_BUILD_TIME;
 

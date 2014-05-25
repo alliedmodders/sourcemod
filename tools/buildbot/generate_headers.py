@@ -11,9 +11,19 @@ if len(argv) < 2:
 SourceFolder = os.path.abspath(os.path.normpath(argv[0]))
 OutputFolder = os.path.normpath(argv[1])
 
-def get_hg_version():
-  argv = ['hg', 'parent', '-R', SourceFolder]
+class FolderChanger:
+  def __init__(self, folder):
+    self.old = os.getcwd()
+    self.new = folder
 
+  def __enter__(self):
+    if self.new:
+      os.chdir(self.new)
+
+  def __exit__(self, type, value, traceback):
+    os.chdir(self.old)
+
+def run_and_return(argv):
   # Python 2.6 doesn't have check_output.
   if hasattr(subprocess, 'check_output'):
     text = subprocess.check_output(argv)
@@ -26,14 +36,18 @@ def get_hg_version():
     if rval:
       raise subprocess.CalledProcessError(rval, argv)
     text = output.decode('utf8')
+  return text.strip()
 
-  m = re.match('changeset:\s+(\d+):(.+)', text)
-  if m == None:
-    raise Exception('Could not determine repository version')
-  return m.groups()
+def get_git_version():
+  revision_count = run_and_return(['git', 'rev-list', '--count', 'HEAD'])
+  revision_hash = run_and_return(['git', 'log', '--pretty=format:%h:%H', '-n', '1'])
+  shorthash, longhash = revision_hash.split(':')
+
+  return revision_count, shorthash, longhash
 
 def output_version_headers():
-  rev, cset = get_hg_version()
+  with FolderChanger(SourceFolder):
+    count, shorthash, longhash = get_git_version()
 
   with open(os.path.join(SourceFolder, 'product.version')) as fp:
     contents = fp.read()
@@ -41,11 +55,12 @@ def output_version_headers():
   if m == None:
     raise Exception('Could not detremine product version')
   major, minor, release, tag = m.groups()
-  fullstring = "{0}.{1}.{2}".format(major, minor, release)
+  product = "{0}.{1}.{2}".format(major, minor, release)
+  fullstring = product
   if tag != "":
     fullstring += "-{0}".format(tag)
     if tag == "dev":
-      fullstring += "+{0}".format(rev)
+      fullstring += "+{0}".format(shorthash)
 
   with open(os.path.join(OutputFolder, 'sourcemod_version_auto.h'), 'w') as fp:
     fp.write("""
@@ -53,19 +68,19 @@ def output_version_headers():
 #define _SOURCEMOD_AUTO_VERSION_INFORMATION_H_
 
 #define SM_BUILD_TAG		\"{0}\"
-#define SM_BUILD_REV		\"{1}\"
-#define SM_BUILD_CSET		\"{2}\"
-#define SM_BUILD_MAJOR		\"{3}\"
-#define SM_BUILD_MINOR		\"{4}\"
-#define SM_BUILD_RELEASE	\"{5}\"
+#define SM_BUILD_CSET		\"{1}\"
+#define SM_BUILD_MAJOR		\"{2}\"
+#define SM_BUILD_MINOR		\"{3}\"
+#define SM_BUILD_RELEASE	\"{4}\"
+#define SM_BUILD_LOCAL_REV      \"{6}\"
 
-#define SM_BUILD_UNIQUEID SM_BUILD_REV \":\" SM_BUILD_CSET
+#define SM_BUILD_UNIQUEID       "{6}:" SM_BUILD_CSET
 
-#define SM_VERSION_STRING	\"{6}\"
-#define SM_VERSION_FILE		{7},{8},{9},0
+#define SM_VERSION_STRING	\"{5}\"
+#define SM_VERSION_FILE		{2},{3},{4},0
 
 #endif /* _SOURCEMOD_AUTO_VERSION_INFORMATION_H_ */
-    """.format(tag, rev, cset, major, minor, release, fullstring, major, minor, release))
+    """.format(tag, shorthash, major, minor, release, fullstring, count))
 
   with open(os.path.join(OutputFolder, 'version_auto.inc'), 'w') as fp:
     fp.write("""
@@ -75,13 +90,13 @@ def output_version_headers():
 #define _auto_version_included
 
 #define SOURCEMOD_V_TAG		\"{0}\"
-#define SOURCEMOD_V_REV		{1}
-#define SOURCEMOD_V_CSET	\"{2}\"
-#define SOURCEMOD_V_MAJOR	{3}
-#define SOURCEMOD_V_MINOR	{4}
-#define SOURCEMOD_V_RELEASE	{5}
+#define SOURCEMOD_V_CSET	\"{1}\"
+#define SOURCEMOD_V_MAJOR	{2}
+#define SOURCEMOD_V_MINOR	{3}
+#define SOURCEMOD_V_RELEASE	{4}
+#define SOURCEMOD_V_REV		{6}
 
-#define SOURCEMOD_VERSION	\"{6}\"
-    """.format(tag, rev, cset, major, minor, release, fullstring))
+#define SOURCEMOD_VERSION	\"{5}\"
+    """.format(tag, shorthash, major, minor, release, fullstring, count))
 
 output_version_headers()

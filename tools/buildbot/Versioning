@@ -16,11 +16,18 @@ outputs = [
   os.path.join(builder.buildFolder, 'includes', 'version_auto.inc'),
 ]
 
+with open(os.path.join(builder.sourcePath, '.git', 'HEAD')) as fp:
+ git_state = fp.read().strip().split(':')[1].strip()
+
+git_head_path = os.path.join(builder.sourcePath, '.git', git_state)
+if not os.path.exists(git_head_path):
+  git_head_path = os.path.join(builder.sourcePath, '.git', 'HEAD')
+
 sources = [
   os.path.join(builder.sourcePath, 'product.version'),
 
-  # This is a hack, but we need some way to only run this script when HG changes.
-  os.path.join(builder.sourcePath, '.hg', 'dirstate'),
+  # This is a hack, but we need some way to only run this script when Git changes.
+  git_head_path,
 
   # The script source is a dependency, of course...
   argv[1]

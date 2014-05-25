@@ -340,7 +340,10 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &
 			ConsolePrint("    SourcePawn Engine: %s (build %s NO JIT)", g_pSourcePawn2->GetEngineName(), g_pSourcePawn2->GetVersionString());
 		ConsolePrint("    SourcePawn API: v1 = %d, v2 = %d", g_pSourcePawn->GetEngineAPIVersion(), g_pSourcePawn2->GetAPIVersion());
 		ConsolePrint("    Compiled on: %s %s", __DATE__, __TIME__);
-		ConsolePrint("    Build ID: %s", SOURCEMOD_BUILD_ID);
+#if defined(SM_GENERATED_BUILD)
+		ConsolePrint("    Built from: https://github.com/alliedmodders/sourcemod/commit/%s", SOURCEMOD_SHA);
+#endif
+		ConsolePrint("    Build ID: %s:%s", SOURCEMOD_LOCAL_REV, SOURCEMOD_SHA);
 		ConsolePrint("    http://www.sourcemod.net/");
 	}
 }

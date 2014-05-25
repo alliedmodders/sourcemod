@@ -29,6 +29,7 @@
 #include <sourcemod_version.h>
 #include <versionlib.h>
 
-const char *SOURCEMOD_BUILD_ID = SM_BUILD_UNIQUEID;
+const char *SOURCEMOD_LOCAL_REV = SM_BUILD_LOCAL_REV;
+const char *SOURCEMOD_SHA = SM_BUILD_CSET;
 const char *SOURCEMOD_VERSION = SM_VERSION_STRING;
 const char *SOURCEMOD_BUILD_TIME = __DATE__ " " __TIME__;
