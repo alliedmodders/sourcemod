@@ -17,7 +17,7 @@ WinLinux = ['windows', 'linux']
 WinLinuxMac = ['windows', 'linux', 'mac']
 
 PossibleSDKs = {
-  'ep1':  SDK('HL2SDK', '1.ep1', '1', 'EPISODEONE', WinLinux, 'episode1'),
+  'episode1':  SDK('HL2SDK', '1.ep1', '1', 'EPISODEONE', WinLinux, 'episode1'),
   'ep2':  SDK('HL2SDKOB', '2.ep2', '3', 'ORANGEBOX', WinLinux, 'orangebox'),
   'css':  SDK('HL2SDKCSS', '2.css', '6', 'CSS', WinLinuxMac, 'css'),
   'hl2dm':  SDK('HL2SDKHL2DM', '2.hl2dm', '7', 'HL2DM', WinLinuxMac, 'hl2dm'),
@@ -25,7 +25,7 @@ PossibleSDKs = {
   'sdk2013': SDK('HL2SDK2013', '2.sdk2013', '9', 'SDK2013', WinLinuxMac, 'sdk2013'),
   'tf2':  SDK('HL2SDKTF2', '2.tf2', '10', 'TF2', WinLinuxMac, 'tf2'),
   'l4d':  SDK('HL2SDKL4D', '2.l4d', '11', 'LEFT4DEAD', WinLinuxMac, 'l4d'),
-  'nd': SDK('HL2SDKND', '2.nd', '12', 'NUCLEARDAWN', WinLinuxMac, 'nucleardawn'),
+  'nucleardawn': SDK('HL2SDKND', '2.nd', '12', 'NUCLEARDAWN', WinLinuxMac, 'nucleardawn'),
   'l4d2': SDK('HL2SDKL4D2', '2.l4d2', '14', 'LEFT4DEAD2', WinLinuxMac, 'l4d2'),
   'darkm':  SDK('HL2SDK-DARKM', '2.darkm', '2', 'DARKMESSIAH', WinOnly, 'darkm'),
   'swarm':  SDK('HL2SDK-SWARM', '2.swarm', '15', 'ALIENSWARM', WinOnly, 'swarm'),
