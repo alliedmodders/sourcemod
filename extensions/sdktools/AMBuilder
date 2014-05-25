@@ -11,7 +11,7 @@ for sdk_name in SM.sdks:
     os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
   ]
 
-  if sdk.name != 'ep1':
+  if sdk.name != 'episode1':
     binary.compiler.defines += ['HOOKING_ENABLED']
 
   if binary.compiler.cxx.behavior == 'gcc':
