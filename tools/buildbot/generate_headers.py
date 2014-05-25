@@ -73,13 +73,13 @@ def output_version_headers():
 #define SM_BUILD_MINOR		\"{3}\"
 #define SM_BUILD_RELEASE	\"{4}\"
 
-#define SM_BUILD_UNIQUEID SM_BUILD_CSET
+#define SM_BUILD_UNIQUEID       "{9}:" SM_BUILD_CSET
 
 #define SM_VERSION_STRING	\"{5}\"
 #define SM_VERSION_FILE		{6},{7},{8},0
 
 #endif /* _SOURCEMOD_AUTO_VERSION_INFORMATION_H_ */
-    """.format(tag, shorthash, major, minor, release, fullstring, major, minor, release))
+    """.format(tag, shorthash, major, minor, release, fullstring, major, minor, release, count))
 
   with open(os.path.join(OutputFolder, 'version_auto.inc'), 'w') as fp:
     fp.write("""
