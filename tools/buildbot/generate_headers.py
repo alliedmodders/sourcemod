@@ -72,6 +72,7 @@ def output_version_headers():
 #define SM_BUILD_MAJOR		\"{2}\"
 #define SM_BUILD_MINOR		\"{3}\"
 #define SM_BUILD_RELEASE	\"{4}\"
+#define SM_BUILD_LOCAL_REV      \"{9}\"
 
 #define SM_BUILD_UNIQUEID       "{9}:" SM_BUILD_CSET
 
@@ -93,8 +94,9 @@ def output_version_headers():
 #define SOURCEMOD_V_MAJOR	{2}
 #define SOURCEMOD_V_MINOR	{3}
 #define SOURCEMOD_V_RELEASE	{4}
+#define SOURCEMOD_V_REV		{6}
 
 #define SOURCEMOD_VERSION	\"{5}\"
-    """.format(tag, shorthash, major, minor, release, fullstring))
+    """.format(tag, shorthash, major, minor, release, fullstring, count))
 
 output_version_headers()
