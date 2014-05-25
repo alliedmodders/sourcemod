@@ -9,6 +9,24 @@ our $SVN = "/usr/bin/svn";
 our $SVN_USER = 'dvander';
 our $SVN_ARGS = '';
 
+sub GitRevNum
+{
+	my ($path) = (@_);
+	my ($cd, $text, $rev);
+
+	$cd = Cwd::cwd();
+	chdir($path);
+	$text = `git rev-list --count HEAD`;
+	chdir($cd);
+
+	chomp $text;
+	if ($text =~ /^(\d+)/) {
+		return $1;
+	}
+
+	return 0;
+}
+
 sub HgRevNum
 {
 	my ($path) = (@_);
