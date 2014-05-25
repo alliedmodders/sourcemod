@@ -15,8 +15,8 @@ sub GitRevNum
 	my ($cd, $text, $rev);
 
 	$cd = Cwd::cwd();
-        chdir($path);
-        $text = `git rev-list --count HEAD`;
+	chdir($path);
+	$text = `git rev-list --count HEAD`;
 	chdir($cd);
 
 	chomp $text;
