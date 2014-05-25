@@ -72,15 +72,15 @@ def output_version_headers():
 #define SM_BUILD_MAJOR		\"{2}\"
 #define SM_BUILD_MINOR		\"{3}\"
 #define SM_BUILD_RELEASE	\"{4}\"
-#define SM_BUILD_LOCAL_REV      \"{9}\"
+#define SM_BUILD_LOCAL_REV      \"{6}\"
 
-#define SM_BUILD_UNIQUEID       "{9}:" SM_BUILD_CSET
+#define SM_BUILD_UNIQUEID       "{6}:" SM_BUILD_CSET
 
 #define SM_VERSION_STRING	\"{5}\"
-#define SM_VERSION_FILE		{6},{7},{8},0
+#define SM_VERSION_FILE		{2},{3},{4},0
 
 #endif /* _SOURCEMOD_AUTO_VERSION_INFORMATION_H_ */
-    """.format(tag, shorthash, major, minor, release, fullstring, major, minor, release, count))
+    """.format(tag, shorthash, major, minor, release, fullstring, count))
 
   with open(os.path.join(OutputFolder, 'version_auto.inc'), 'w') as fp:
     fp.write("""
