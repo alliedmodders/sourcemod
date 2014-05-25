@@ -73,7 +73,7 @@ def output_version_headers():
 #define SM_BUILD_MINOR		\"{3}\"
 #define SM_BUILD_RELEASE	\"{4}\"
 
-#define SM_BUILD_UNIQUEID SM_BUILD_REV \":\" SM_BUILD_CSET
+#define SM_BUILD_UNIQUEID SM_BUILD_CSET
 
 #define SM_VERSION_STRING	\"{5}\"
 #define SM_VERSION_FILE		{6},{7},{8},0
