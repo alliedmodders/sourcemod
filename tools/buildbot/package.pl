@@ -34,7 +34,7 @@ my ($version);
 
 $version = Build::ProductVersion(Build::PathFormat('../../build/product.version'));
 $version =~ s/-dev//g;
-$version .= '-hg' . Build::HgRevNum('../../build');
+$version .= '-git' . Build::GitRevNum('../../build');
 
 # Append OS to package version
 if ($^O eq "darwin")

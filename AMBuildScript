@@ -3,16 +3,12 @@ import os, sys
 
 class SDK(object):
   def __init__(self, sdk, ext, aDef, name, platform, dir):
-    if dir == 'ep1':
-      folder = 'hl2sdk'
-    else:
-      folder = 'hl2sdk-' + dir
+    self.folder = 'hl2sdk-' + dir
     self.envvar = sdk
     self.ext = ext
     self.code = aDef
     self.define = name
     self.platform = platform
-    self.folder = folder # Default folder name.
     self.name = dir
     self.path = None # Actual path
 
@@ -21,14 +17,14 @@ WinLinux = ['windows', 'linux']
 WinLinuxMac = ['windows', 'linux', 'mac']
 
 PossibleSDKs = {
-  'ep1':  SDK('HL2SDK', '1.ep1', '1', 'EPISODEONE', WinLinux, 'ep1'),
-  'ep2':  SDK('HL2SDKOB', '2.ep2', '3', 'ORANGEBOX', WinLinux, 'ob'),
+  'episode1':  SDK('HL2SDK', '1.ep1', '1', 'EPISODEONE', WinLinux, 'episode1'),
+  'ep2':  SDK('HL2SDKOB', '2.ep2', '3', 'ORANGEBOX', WinLinux, 'orangebox'),
   'css':  SDK('HL2SDKCSS', '2.css', '6', 'CSS', WinLinuxMac, 'css'),
   'hl2dm':  SDK('HL2SDKHL2DM', '2.hl2dm', '7', 'HL2DM', WinLinuxMac, 'hl2dm'),
   'dods': SDK('HL2SDKDODS', '2.dods', '8', 'DODS', WinLinuxMac, 'dods'),
   'tf2':  SDK('HL2SDKTF2', '2.tf2', '10', 'TF2', WinLinuxMac, 'tf2'),
   'l4d':  SDK('HL2SDKL4D', '2.l4d', '11', 'LEFT4DEAD', WinLinuxMac, 'l4d'),
-  'nd': SDK('HL2SDKND', '2.nd', '12', 'NUCLEARDAWN', WinLinuxMac, 'nd'),
+  'nucleardawn': SDK('HL2SDKND', '2.nd', '12', 'NUCLEARDAWN', WinLinuxMac, 'nucleardawn'),
   'l4d2': SDK('HL2SDKL4D2', '2.l4d2', '13', 'LEFT4DEAD2', WinLinuxMac, 'l4d2'),
   'darkm':  SDK('HL2SDK-DARKM', '2.darkm', '2', 'DARKMESSIAH', WinOnly, 'darkm'),
   'swarm':  SDK('HL2SDK-SWARM', '2.swarm', '14', 'ALIENSWARM', WinOnly, 'swarm'),
@@ -314,7 +310,7 @@ class SMConfig(object):
   def HL2Compiler(self, context, sdk):
     compiler = self.ExtCompiler(context)
 
-    if sdk.name == 'ep1':
+    if sdk.name == 'episode1':
       mms_path = os.path.join(self.mms_root, 'core-legacy')
     else:
       mms_path = os.path.join(self.mms_root, 'core')
@@ -334,7 +330,7 @@ class SMConfig(object):
       ['public', 'tier0'],
       ['public', 'tier1']
     ]
-    if sdk.name == 'ep1' or sdk.name == 'darkm':
+    if sdk.name == 'episode1' or sdk.name == 'darkm':
       paths.append(['public', 'dlls'])
       paths.append(['game_shared'])
     else:
@@ -345,7 +341,7 @@ class SMConfig(object):
 
     compiler.defines += ['SOURCE_ENGINE=' + sdk.code]
 
-    if sdk.name == '2013' and compiler.cxx.behavior == 'gcc':
+    if sdk.name == 'sdk2013' and compiler.cxx.behavior == 'gcc':
       # The 2013 SDK already has these in public/tier0/basetypes.h
       compiler.defines.remove('stricmp=strcasecmp')
       compiler.defines.remove('_stricmp=strcasecmp')
@@ -362,7 +358,7 @@ class SMConfig(object):
     if sdk.name in ['blade', 'insurgency', 'csgo', 'dota']:
       compiler.defines += ['NETWORK_VARS_ENABLED']
 
-    if sdk.name in ['css', 'hl2dm', 'dods', '2013', 'tf2', 'l4d', 'nd', 'l4d2']:
+    if sdk.name in ['css', 'hl2dm', 'dods', 'sdk2013', 'tf2', 'l4d', 'nucleardawn', 'l4d2', 'dota']:
       if builder.target_platform in ['linux', 'mac']:
         compiler.defines += ['NO_HOOK_MALLOC', 'NO_MALLOC_OVERRIDE']
 
@@ -379,20 +375,20 @@ class SMConfig(object):
     compiler = self.HL2Compiler(context, sdk)
 
     if builder.target_platform == 'linux':
-      if sdk.name == 'ep1':
+      if sdk.name == 'episode1':
         lib_folder = os.path.join(sdk.path, 'linux_sdk')
-      elif sdk.name == '2013':
+      elif sdk.name == 'sdk2013':
         lib_folder = os.path.join(sdk.path, 'lib', 'public', 'linux32')
       else:
         lib_folder = os.path.join(sdk.path, 'lib', 'linux')
     elif builder.target_platform == 'mac':
-      if sdk.name == '2013':
+      if sdk.name == 'sdk2013':
         lib_folder = os.path.join(sdk.path, 'lib', 'public', 'osx32')
       else:
         lib_folder = os.path.join(sdk.path, 'lib', 'mac')
 
     if builder.target_platform in ['linux', 'mac']:
-      if sdk.name == '2013':
+      if sdk.name == 'sdk2013':
         compiler.postlink += [
           compiler.Dep(os.path.join(lib_folder, 'tier1.a')),
           compiler.Dep(os.path.join(lib_folder, 'mathlib.a'))
@@ -411,7 +407,7 @@ class SMConfig(object):
     dynamic_libs = []
     if builder.target_platform == 'linux':
       compiler.linkflags[0:0] = ['-lm']
-      if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', '2013', 'nd', 'l4d2']:
+      if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'nucleardawn', 'l4d2']:
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
       elif sdk.name in ['l4d', 'blade', 'insurgency', 'csgo']:
         dynamic_libs = ['libtier0.so', 'libvstdlib.so']
