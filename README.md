@@ -3,7 +3,7 @@ SourceMod
 
 General
 -------
-- [SourceMod website](http://www.sourcemod.net) - Source Engine scripting and server administration
+- [SourceMod website](http://www.sourcemod.net): Source Engine scripting and server administration
 - [Forum](https://forums.alliedmods.net/forumdisplay.php?f=52): Discussion forum including plugin/extension development
 - [General documentation](https://wiki.alliedmods.net/Category:SourceMod_Documentation): Miscellaneous information about SourceMod
 - [Latest release](http://www.sourcemod.net/downloads.php): The latest stable SourceMod release
