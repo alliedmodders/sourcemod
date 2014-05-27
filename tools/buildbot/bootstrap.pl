@@ -34,21 +34,21 @@ my @conf_argv = (
 	'--breakpad-dump',
 	'--no-color',
 	'--symbol-files'
-)
+);
 
 if ($^O =~ /darwin/) {
-	push(@conf_argv, '--hl2sdk-root=/hgshare')
-	push(@conf_argv, '--mms-path=/Users/builds/slaves/common/mmsource-1.10')
-	push(@conf_argv, '--mysql-path=/Users/builds/slaves/common/mysql-5.0')
+	push(@conf_argv, '--hl2sdk-root=/hgshare');
+	push(@conf_argv, '--mms-path=/Users/builds/slaves/common/mmsource-1.10');
+	push(@conf_argv, '--mysql-path=/Users/builds/slaves/common/mysql-5.0');
 } elsif ($^O =~ /linux/) {
-	push(@conf_argv, '--hl2sdk-root=/Volumes/hgshare')
-	push(@conf_argv, '--mms-path=/Users/builds/common/mmsource-1.10')
-	push(@conf_argv, '--mysql-path=/Users/builds/common/mysql-5.0')
+	push(@conf_argv, '--hl2sdk-root=/Volumes/hgshare');
+	push(@conf_argv, '--mms-path=/Users/builds/common/mmsource-1.10');
+	push(@conf_argv, '--mysql-path=/Users/builds/common/mysql-5.0');
 } elsif ($^O =~ /MSWin/) {
-	push(@conf_argv, '--hl2sdk-root=H:\\')
+	push(@conf_argv, '--hl2sdk-root=H:\\');
 }
 
-my $conf_args = join(' ', @conf_argv)
+my $conf_args = join(' ', @conf_argv);
 
 if ($argn > 0 && $^O !~ /MSWin/) {
 	$result = `CC=$ARGV[0] CXX=$ARGV[0] python ../build/configure.py $conf_args`;
