@@ -14,6 +14,12 @@ except:
 
 run = run.PrepareBuild(sourcePath=sys.path[0])
 run.default_build_folder = 'obj-' + run.target_platform
+run.options.add_option('--hl2sdk-root', type=str, dest='hl2sdk_root', default=None,
+		                   help='Root search folder for HL2SDKs')
+run.options.add_option('--mysql-path', type=str, dest='mysql_path', default=None,
+		                   help='Path to MySQL 5')
+run.options.add_option('--mms-path', type=str, dest='mms_path', default=None,
+                       help='Path to Metamod:Source')
 run.options.add_option('--enable-debug', action='store_const', const='1', dest='debug',
                        help='Enable debugging symbols')
 run.options.add_option('--enable-optimize', action='store_const', const='1', dest='opt',
