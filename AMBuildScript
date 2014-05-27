@@ -44,16 +44,21 @@ def ResolveEnvPath(env, folder):
     path = os.environ[env]
     if os.path.isdir(path):
       return path
-  else:
-    head = os.getcwd()
-    oldhead = None
-    while head != None and head != oldhead:
-      path = os.path.join(head, folder)
-      if os.path.isdir(path):
-        return path
-      oldhead = head
-      head, tail = os.path.split(head)
+    return None
+
+  head = os.getcwd()
+  oldhead = None
+  while head != None and head != oldhead:
+    path = os.path.join(head, folder)
+    if os.path.isdir(path):
+      return path
+    oldhead = head
+    head, tail = os.path.split(head)
+
   return None
+
+def Normalize(path):
+  return os.path.abspath(os.path.normpath(path))
 
 class SMConfig(object):
   def __init__(self):
@@ -89,31 +94,44 @@ class SMConfig(object):
     for sdk_name in PossibleSDKs:
       sdk = PossibleSDKs[sdk_name]
       if builder.target_platform in sdk.platform:
-        sdk_path = ResolveEnvPath(sdk.envvar, sdk.folder)
-        if sdk_path is None:
+        if builder.options.hl2sdk_root:
+          sdk_path = os.path.join(builder.options.hl2sdk_root, sdk.folder)
+        else:
+          sdk_path = ResolveEnvPath(sdk.envvar, sdk.folder)
+        if sdk_path is None or not os.path.isdir(sdk_path):
           if use_all or sdk_name in sdk_list:
             raise Exception('Could not find a valid path for {0}'.format(sdk.envvar))
           continue
         if use_all or use_present or sdk_name in sdk_list:
-          sdk.path = sdk_path
+          sdk.path = Normalize(sdk_path)
           self.sdks[sdk_name] = sdk
 
     if len(self.sdks) < 1:
       raise Exception('At least one SDK must be available.')
 
-    self.mms_root = ResolveEnvPath('MMSOURCE110', 'mmsource-1.10')
-    if not self.mms_root:
-      self.mms_root = ResolveEnvPath('MMSOURCE_DEV', 'mmsource-central')
+   
+    if builder.options.mms_path:
+      self.mms_root = builder.options.mms_path
+    else:
+      self.mms_root = ResolveEnvPath('MMSOURCE110', 'mmsource-1.10')
       if not self.mms_root:
-        raise Exception('Could not find a source copy of Metamod:Source')
+        self.mms_root = ResolveEnvPath('MMSOURCE_DEV', 'mmsource-central')
+
+    if not self.mms_root or not os.path.isdir(self.mms_root):
+      raise Exception('Could not find a source copy of Metamod:Source')
+    self.mms_root = Normalize(self.mms_root)
 
     if builder.options.hasMySql:
-      for i in range(7):
-        self.mysql_root = ResolveEnvPath('MYSQL5', 'mysql-5.' + str(i))
-        if self.mysql_root:
-          break
-      if not self.mysql_root:
+      if builder.options.mysql_path:
+        self.mysql_root = builder.options.mysql_path
+      else:
+        for i in range(7):
+          self.mysql_root = ResolveEnvPath('MYSQL5', 'mysql-5.' + str(i))
+          if self.mysql_root:
+            break
+      if not self.mysql_root or not os.path.isdir(self.mysql_root):
         raise Exception('Could not find a path to MySQL!')
+      self.mysql_root = Normalize(self.mysql_root)
 
   def configure(self):
     builder.AddConfigureFile('pushbuild.txt')
@@ -348,9 +366,9 @@ class SMConfig(object):
       compiler.defines += ['COMPILER_MSVC', 'COMPILER_MSVC32']
     else:
       compiler.defines += ['COMPILER_GCC']
-	
-	# For everything after Swarm, this needs to be defined for entity networking
-	# to work properly with sendprop value changes.
+
+    # For everything after Swarm, this needs to be defined for entity networking
+    # to work properly with sendprop value changes.
     if sdk.name in ['blade', 'insurgency', 'csgo', 'dota']:
       compiler.defines += ['NETWORK_VARS_ENABLED']
 
