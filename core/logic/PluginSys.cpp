@@ -1420,6 +1420,9 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		OnLibraryAction((*s_iter).c_str(), LibraryAction_Added);
 	}
 
+	/* :TODO: optimize? does this even matter? */
+	pPlugin->GetPhrases()->AddPhraseFile("core.phrases");
+	
 	/* Go through all other already loaded plugins and tell this plugin, that their libraries are loaded */
 	List<CPlugin *>::iterator pl_iter;
 	CPlugin *pl;
@@ -1427,7 +1430,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	{
 		pl = (*pl_iter);
 		/* Don't call our own libraries again and only care for already loaded plugins */
-		if(pl == pPlugin || pl->GetStatus() != Plugin_Running)
+		if (pl == pPlugin || pl->GetStatus() != Plugin_Running)
 			continue;
 
 		for (s_iter=pl->m_Libraries.begin(); s_iter!=pl->m_Libraries.end(); s_iter++)
@@ -1435,9 +1438,6 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 			pPlugin->Call_OnLibraryAdded((*s_iter).c_str());
 		}
 	}
-
-	/* :TODO: optimize? does this even matter? */
-	pPlugin->GetPhrases()->AddPhraseFile("core.phrases");
 
 	return true;
 }
