@@ -205,11 +205,6 @@ public:
 	void Call_OnAllPluginsLoaded();
 
 	/**
-	 * Calls the OnLibraryAdded function.
-	 */
-	void Call_OnLibraryAdded(const char *lib);
-
-	/**
 	 * Returns true if a plugin is usable.
 	 */
 	bool IsRunnable();
