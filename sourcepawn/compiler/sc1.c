@@ -333,7 +333,7 @@ int pc_compile(int argc, char *argv[])
   } /* if */
   /* do the first pass through the file (or possibly two or more "first passes") */
   sc_parsenum=0;
-  inpfmark=pc_getpossrc(inpf_org,NULL);
+  inpfmark=pc_getpossrc(inpf_org);
   do {
     /* reset "defined" flag of all functions and global variables */
     reduce_referrers(&glbtab);

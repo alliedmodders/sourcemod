@@ -396,12 +396,11 @@ SC_FUNC int scan_utf8(FILE *fp,const char *filename)
   #if defined NO_UTF8
     return 0;
   #else
-    static void *resetpos=NULL;
+    void *resetpos=pc_getpossrc(fp);
     int utf8=TRUE;
     int firstchar=TRUE,bom_found=FALSE;
     const unsigned char *ptr;
 
-    resetpos=pc_getpossrc(fp,resetpos);
     while (utf8 && pc_readsrc(fp,pline,sLINEMAX)!=NULL) {
       ptr=pline;
       if (firstchar) {
