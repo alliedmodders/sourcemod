@@ -427,6 +427,24 @@ APLRes CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 	}
 }
 
+void CPlugin::Call_OnLibraryAdded(const char *lib)
+{
+	if (m_status > Plugin_Paused)
+	{
+		return;
+	}
+
+	cell_t result;
+	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("OnLibraryAdded");
+	if (!pFunction)
+	{
+		return;
+	}
+
+	pFunction->PushString(lib);
+	pFunction->Execute(&result);
+}
+
 void *CPlugin::GetPluginStructure()
 {
 	return NULL;
@@ -1404,6 +1422,20 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 
 	/* :TODO: optimize? does this even matter? */
 	pPlugin->GetPhrases()->AddPhraseFile("core.phrases");
+	
+	/* Go through all other already loaded plugins and tell this plugin, that their libraries are loaded */
+	for (List<CPlugin *>::iterator pl_iter = m_plugins.begin(); pl_iter != m_plugins.end(); pl_iter++)
+	{
+		CPlugin *pl = (*pl_iter);
+		/* Don't call our own libraries again and only care for already loaded plugins */
+		if (pl == pPlugin || pl->GetStatus() != Plugin_Running)
+			continue;
+
+		for (s_iter=pl->m_Libraries.begin(); s_iter!=pl->m_Libraries.end(); s_iter++)
+		{
+			pPlugin->Call_OnLibraryAdded((*s_iter).c_str());
+		}
+	}
 
 	return true;
 }
