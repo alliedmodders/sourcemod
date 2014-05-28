@@ -2052,8 +2052,8 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
       } /* if */
     } /* if */
   } else if (*lptr=='\"'                                 /* unpacked string literal */
-             || (*lptr==sc_ctrlchar && *(lptr+1)=='\"')  /* unpacked raw string */
 #if 0
+             || (*lptr==sc_ctrlchar && *(lptr+1)=='\"')  /* unpacked raw string */
              || (*lptr=='!' && *(lptr+1)=='\"')          /* packed string */
              || (*lptr=='!' && *(lptr+1)==sc_ctrlchar && *(lptr+2)=='\"')  /* packed raw string */
              || (*lptr==sc_ctrlchar && *(lptr+1)=='!' && *(lptr+2)=='\"') /* packed raw string */
@@ -2121,10 +2121,13 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
         } /* if */
       } /* while */
       if (!freading || !(*lptr=='\"'
+#if 0
                          || *lptr==sc_ctrlchar && *(lptr+1)=='\"'
                          || *lptr=='!' && *(lptr+1)=='\"'
                          || *lptr=='!' && *(lptr+1)==sc_ctrlchar && *(lptr+2)=='\"'
-                         || *lptr==sc_ctrlchar && *(lptr+1)=='!' && *(lptr+2)=='\"'))
+                         || *lptr==sc_ctrlchar && *(lptr+1)=='!' && *(lptr+2)=='\"'
+#endif
+                         ))
       {
         error(37);                /* invalid string concatenation */
         break;
