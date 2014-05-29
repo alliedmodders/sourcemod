@@ -62,6 +62,7 @@ class IVEngineServer_Logic
 public:
 	virtual bool IsMapValid(const char *map) = 0;
 	virtual void ServerCommand(const char *cmd) = 0;
+	virtual const char *GetClientConVarValue(int clientIndex, const char *name) = 0;
 };
 
 typedef void * FileHandle_t;
@@ -108,6 +109,25 @@ class IFileSystem;
 class ConVar;
 class KeyValues;
 class SMGlobalClass;
+class IPlayerInfo;
+
+class IPlayerInfo_Logic
+{
+public:
+	virtual bool IsObserver(IPlayerInfo *pInfo) = 0;
+	virtual int GetTeamIndex(IPlayerInfo *pInfo) = 0;
+	virtual int GetFragCount(IPlayerInfo *pInfo) = 0;
+	virtual int GetDeathCount(IPlayerInfo *pInfo) = 0;
+	virtual int GetArmorValue(IPlayerInfo *pInfo) = 0;
+	virtual void GetAbsOrigin(IPlayerInfo *pInfo, float *x, float *y, float *z) = 0;
+	virtual void GetAbsAngles(IPlayerInfo *pInfo, float *x, float *y, float *z) = 0;
+	virtual void GetPlayerMins(IPlayerInfo *pInfo, float *x, float *y, float *z) = 0;
+	virtual void GetPlayerMaxs(IPlayerInfo *pInfo, float *x, float *y, float *z) = 0;
+	virtual const char *GetWeaponName(IPlayerInfo *pInfo) = 0;
+	virtual const char *GetModelName(IPlayerInfo *pInfo) = 0;
+	virtual int GetHealth(IPlayerInfo *pInfo) = 0;
+	virtual void ChangeTeam(IPlayerInfo *pInfo, int iTeamNum) = 0;
+};
 
 namespace SourceMod
 {
@@ -236,6 +256,7 @@ struct sm_core_t
 	ILibrarySys		*libsys;
 	IVEngineServer	*engine;
 	IFileSystem		*filesystem;
+	IPlayerInfo_Logic *playerInfo;
 	IRootConsole	*rootmenu;
 	ITimerSystem    *timersys;
 	IPlayerManager  *playerhelpers;
@@ -252,6 +273,7 @@ struct sm_core_t
 	void			(*Log)(const char*, ...);
 	void			(*LogToFile)(FILE *fp, const char*, ...);
 	void			(*LogToGame)(const char *message);
+	void			(*ConPrint)(const char *message);
 	const char *	(*GetCvarString)(ConVar*);
 	size_t			(*Format)(char*, size_t, const char*, ...);
 	size_t			(*FormatArgs)(char*, size_t, const char*,va_list ap);
@@ -273,6 +295,7 @@ struct sm_core_t
 	bool			(*AreConfigsExecuted)();
 	void			(*ExecuteConfigs)(IPluginContext *ctx);
 	DatabaseInfo	(*GetDBInfoFromKeyValues)(KeyValues *);
+	int				(*GetActivityFlags)();
 	const char		*gamesuffix;
 	/* Data */
 	ServerGlobals   *serverGlobals;
