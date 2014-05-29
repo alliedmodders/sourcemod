@@ -35,7 +35,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_ADMINSYS_NAME		"IAdminSys"
-#define SMINTERFACE_ADMINSYS_VERSION	6
+#define SMINTERFACE_ADMINSYS_VERSION	7
 
 /**
  * @file IAdminSystem.h
@@ -726,6 +726,14 @@ namespace SourceMod
 		 * @return			True on success, false if not found.
 		 */
 		virtual bool FindFlagChar(AdminFlag flag, char *c) =0;
+
+		/**
+		 * brief Returns whether or not an admin id is valid.
+		 *
+		 * @param id		Admin id to check.
+		 * @return			True if valid, otherwise false.
+		 */
+		virtual bool IsValidAdmin(AdminId id) =0;
 	};
 }
 

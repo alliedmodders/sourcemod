@@ -180,8 +180,8 @@ public: //IAdminSystem
 		FlagBits flags, 
 		bool override_only);
 	bool FindFlagChar(AdminFlag flag, char *c);
-public:
 	bool IsValidAdmin(AdminId id);
+public:
 	void DumpCache(FILE *fp);
 	AdminGroup *GetGroup(GroupId gid);
 	AdminUser *GetUser(AdminId id);

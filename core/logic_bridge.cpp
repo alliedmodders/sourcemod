@@ -98,6 +98,11 @@ public:
 	{
 		engine->ServerCommand(cmd);
 	}
+
+	virtual const char *GetClientConVarValue(int clientIndex, const char *name)
+	{
+		return engine->GetClientConVarValue(clientIndex, name);
+	}
 };
 
 static VEngineServer_Logic logic_engine;
@@ -146,6 +151,78 @@ public:
 
 static VFileSystem_Logic logic_filesystem;
 
+class VPlayerInfo_Logic : public IPlayerInfo_Logic
+{
+public:
+	bool IsObserver(IPlayerInfo *pInfo)
+	{
+		return pInfo->IsObserver();
+	}
+	int GetTeamIndex(IPlayerInfo *pInfo)
+	{
+		return pInfo->GetTeamIndex();
+	}
+	int GetFragCount(IPlayerInfo *pInfo)
+	{
+		return pInfo->GetFragCount();
+	}
+	int GetDeathCount(IPlayerInfo *pInfo)
+	{
+		return pInfo->GetDeathCount();
+	}
+	int GetArmorValue(IPlayerInfo *pInfo)
+	{
+		return pInfo->GetArmorValue();
+	}
+	void GetAbsOrigin(IPlayerInfo *pInfo, float *x, float *y, float *z)
+	{
+		Vector vec = pInfo->GetAbsOrigin();
+		*x = vec.x;
+		*y = vec.y;
+		*z = vec.z;
+	}
+	void GetAbsAngles(IPlayerInfo *pInfo, float *x, float *y, float *z)
+	{
+		QAngle ang = pInfo->GetAbsAngles();
+		*x = ang.x;
+		*y = ang.y;
+		*z = ang.z;
+	}
+	void GetPlayerMins(IPlayerInfo *pInfo, float *x, float *y, float *z)
+	{
+		Vector vec = pInfo->GetPlayerMins();
+		*x = vec.x;
+		*y = vec.y;
+		*z = vec.z;
+	}
+	void GetPlayerMaxs(IPlayerInfo *pInfo, float *x, float *y, float *z)
+	{
+		Vector vec = pInfo->GetPlayerMaxs();
+		*x = vec.x;
+		*y = vec.y;
+		*z = vec.z;
+	}
+	const char *GetWeaponName(IPlayerInfo *pInfo)
+	{
+		return pInfo->GetWeaponName();
+	}
+	const char *GetModelName(IPlayerInfo *pInfo)
+	{
+		return pInfo->GetModelName();
+	}
+	int GetHealth(IPlayerInfo *pInfo)
+	{
+		return pInfo->GetHealth();
+	}
+	void ChangeTeam(IPlayerInfo *pInfo, int iTeamNum)
+	{
+		pInfo->ChangeTeam(iTeamNum);
+	}
+};
+
+static VPlayerInfo_Logic logic_playerinfo;
+
+static ConVar sm_show_activity("sm_show_activity", "13", FCVAR_SPONLY, "Activity display setting (see sourcemod.cfg)");
 
 static ConVar *find_convar(const char *name)
 {
@@ -189,6 +266,11 @@ static void log_to_file(FILE *fp, const char *fmt, ...)
 static void log_to_game(const char *message)
 {
 	Engine_LogPrintWrapper(message);
+}
+
+static void conprint(const char *message)
+{
+	META_CONPRINT(message);
 }
 
 static const char *get_cvar_string(ConVar* cvar)
@@ -314,6 +396,11 @@ static DatabaseInfo keyvalues_to_dbinfo(KeyValues *kv)
 	return info;
 }
 
+static int get_activity_flags()
+{
+	return sm_show_activity.GetInt();
+}
+
 int read_cmd_argc(const CCommand &args)
 {
 	return args.ArgC();
@@ -420,6 +507,7 @@ static sm_core_t core_bridge =
 	&g_LibSys,
 	reinterpret_cast<IVEngineServer*>(&logic_engine),
 	reinterpret_cast<IFileSystem*>(&logic_filesystem),
+	&logic_playerinfo,
 	&g_RootMenu,
 	&g_Timers,
 	&g_Players,
@@ -436,6 +524,7 @@ static sm_core_t core_bridge =
 	log_message,
 	log_to_file,
 	log_to_game,
+	conprint,
 	get_cvar_string,
 	UTIL_Format,
 	UTIL_FormatArgs,
@@ -456,8 +545,9 @@ static sm_core_t core_bridge =
 	SM_AreConfigsExecuted,
 	SM_ExecuteForPlugin,
 	keyvalues_to_dbinfo,
+	get_activity_flags,
 	GAMEFIX,
-	&serverGlobals
+	&serverGlobals,
 };
 
 void InitLogicBridge()
