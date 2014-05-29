@@ -224,7 +224,7 @@ static inline bool
 IsNaN(double v)
 {
 #ifdef _MSC_VER
-  return _isnan(v);
+  return !!_isnan(v);
 #else
   return isnan(v);
 #endif
