@@ -52,7 +52,6 @@ for sdk_name in SM.sdks:
     compiler.linkflags.insert(0, binary.Dep(lib_path))
 
   binary.sources += [
-    'AdminCache.cpp',
     'MenuStyle_Valve.cpp',
     'logic_bridge.cpp',
     'smn_entities.cpp',
@@ -60,7 +59,6 @@ for sdk_name in SM.sdks:
     'MenuVoting.cpp',
     'smn_events.cpp',
     'smn_menus.cpp',
-    'sm_trie.cpp',
     'CDataPack.cpp',
     'frame_hooks.cpp',
     'smn_nextmap.cpp',

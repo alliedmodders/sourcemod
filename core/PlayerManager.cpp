@@ -30,7 +30,7 @@
  */
 
 #include "PlayerManager.h"
-#include "AdminCache.h"
+#include "IAdminSystem.h"
 #include "ConCmdManager.h"
 #include "MenuStyle_Valve.h"
 #include "MenuStyle_Radio.h"
@@ -333,7 +333,7 @@ bool PlayerManager::IsServerActivated()
 
 bool PlayerManager::CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id)
 {
-	const char *password = g_Admins.GetAdminPassword(id);
+	const char *password = adminsys->GetAdminPassword(id);
 	if (password != NULL)
 	{
 		if (m_PassInfoVar.size() < 1)
@@ -356,7 +356,7 @@ bool PlayerManager::CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id)
 
 bool PlayerManager::CheckSetAdminName(int index, CPlayer *pPlayer, AdminId id)
 {
-	const char *password = g_Admins.GetAdminPassword(id);
+	const char *password = adminsys->GetAdminPassword(id);
 	if (password == NULL)
 	{
 		return false;
@@ -1183,7 +1183,7 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 
 	if (strcmp(old_name, new_name) != 0)
 	{
-		AdminId id = g_Admins.FindAdminByIdentity("name", new_name);
+		AdminId id = adminsys->FindAdminByIdentity("name", new_name);
 		if (id != INVALID_ADMIN_ID && pPlayer->GetAdminId() != id)
 		{
 			if (!CheckSetAdminName(client, pPlayer, id))
@@ -1193,7 +1193,7 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 				pPlayer->Kick(kickMsg);
 				RETURN_META(MRES_IGNORED);
 			}
-		} else if ((id = g_Admins.FindAdminByIdentity("name", old_name)) != INVALID_ADMIN_ID) {
+		} else if ((id = adminsys->FindAdminByIdentity("name", old_name)) != INVALID_ADMIN_ID) {
 			if (id == pPlayer->GetAdminId())
 			{
 				/* This player is changing their name; force them to drop admin privileges! */
@@ -1327,14 +1327,6 @@ void PlayerManager::ClearAdminId(AdminId id)
 	}
 }
 
-void PlayerManager::ClearAllAdmins()
-{
-	for (int i=1; i<=m_maxClients; i++)
-	{
-		m_Players[i].DumpAdmin(true);
-	}
-}
-
 const char *PlayerManager::GetPassInfoVar()
 {
 	return m_PassInfoVar.c_str();
@@ -1425,7 +1417,7 @@ int PlayerManager::InternalFilterCommandTarget(CPlayer *pAdmin, CPlayer *pTarget
 	if (pAdmin != NULL)
 	{
 		if ((flags & COMMAND_FILTER_NO_IMMUNITY) != COMMAND_FILTER_NO_IMMUNITY
-			&& !g_Admins.CanAdminTarget(pAdmin->GetAdminId(), pTarget->GetAdminId()))
+			&& !adminsys->CanAdminTarget(pAdmin->GetAdminId(), pTarget->GetAdminId()))
 		{
 			return COMMAND_TARGET_IMMUNE;
 		}
@@ -2076,13 +2068,18 @@ AdminId CPlayer::GetAdminId()
 	return m_Admin;
 }
 
+void CPlayer::ClearAdmin()
+{
+	DumpAdmin(true);
+}
+
 void CPlayer::DumpAdmin(bool deleting)
 {
 	if (m_Admin != INVALID_ADMIN_ID)
 	{
 		if (m_TempAdmin && !deleting)
 		{
-			g_Admins.InvalidateAdmin(m_Admin);
+			adminsys->InvalidateAdmin(m_Admin);
 		}
 		m_Admin = INVALID_ADMIN_ID;
 		m_TempAdmin = false;
@@ -2225,7 +2222,7 @@ void CPlayer::DoBasicAdminChecks()
 	AdminId id;
 	int client = IndexOfEdict(m_pEdict);
 
-	if ((id = g_Admins.FindAdminByIdentity("name", GetName())) != INVALID_ADMIN_ID)
+	if ((id = adminsys->FindAdminByIdentity("name", GetName())) != INVALID_ADMIN_ID)
 	{
 		if (!g_Players.CheckSetAdminName(client, this, id))
 		{
@@ -2236,7 +2233,7 @@ void CPlayer::DoBasicAdminChecks()
 	}
 	
 	/* Check IP */
-	if ((id = g_Admins.FindAdminByIdentity("ip", m_IpNoPort.c_str())) != INVALID_ADMIN_ID)
+	if ((id = adminsys->FindAdminByIdentity("ip", m_IpNoPort.c_str())) != INVALID_ADMIN_ID)
 	{
 		if (g_Players.CheckSetAdmin(client, this, id))
 		{
@@ -2245,7 +2242,7 @@ void CPlayer::DoBasicAdminChecks()
 	}
 
 	/* Check steam id */
-	if ((id = g_Admins.FindAdminByIdentity("steam", m_AuthID.c_str())) != INVALID_ADMIN_ID)
+	if ((id = adminsys->FindAdminByIdentity("steam", m_AuthID.c_str())) != INVALID_ADMIN_ID)
 	{
 		if (g_Players.CheckSetAdmin(client, this, id))
 		{

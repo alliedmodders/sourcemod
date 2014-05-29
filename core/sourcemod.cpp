@@ -36,7 +36,6 @@
 #include <sh_string.h>
 #include "CoreConfig.h"
 #include "Logger.h"
-#include "AdminCache.h"
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
 #include "TimerSys.h"

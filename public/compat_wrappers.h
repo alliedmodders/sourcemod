@@ -41,10 +41,6 @@
 	{
 		return cmd->IsFlagSet(flag);
 	}
-	inline void InsertServerCommand(const char *buf)
-	{
-		engine->InsertServerCommand(buf);
-	}
 	inline ConCommandBase *FindCommandBase(const char *name)
 	{
 		return icvar->FindCommandBase(name);
@@ -76,10 +72,6 @@
 	inline bool IsFlagSet(ConCommandBase *cmd, int flag)
 	{
 		return cmd->IsBitSet(flag);
-	}
-	inline void InsertServerCommand(const char *buf)
-	{
-		engine->InsertServerCommand(buf);
 	}
 	inline ConCommandBase *FindCommandBase(const char *name)
 	{
