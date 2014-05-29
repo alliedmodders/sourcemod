@@ -1,6 +1,8 @@
 SourceMod
 =========
 
+[![Build Status](https://travis-ci.org/alliedmodders/sourcemod.svg)](https://travis-ci.org/alliedmodders/sourcemod)
+
 General
 -------
 - [SourceMod website](http://www.sourcemod.net): Source Engine scripting and server administration
