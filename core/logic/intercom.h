@@ -42,6 +42,7 @@
 #include <sh_vector.h>
 #include <IExtensionSys.h>
 #include <IForwardSys.h>
+#include <IAdminSystem.h>
 
 using namespace SourceMod;
 using namespace SourcePawn;
@@ -51,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 27)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 28)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -61,8 +62,13 @@ class IVEngineServer_Logic
 {
 public:
 	virtual bool IsMapValid(const char *map) = 0;
+	virtual bool IsDedicatedServer() = 0;
+	virtual void InsertServerCommand(const char *cmd) = 0;
 	virtual void ServerCommand(const char *cmd) = 0;
+	virtual void ServerExecute() = 0;
 	virtual const char *GetClientConVarValue(int clientIndex, const char *name) = 0;
+	virtual void ClientCommand(edict_t *pEdict, const char *szCommand) = 0;
+	virtual void FakeClientCommand(edict_t *pEdict, const char *szCommand) = 0;
 };
 
 typedef void * FileHandle_t;
@@ -260,7 +266,6 @@ struct sm_core_t
 	IRootConsole	*rootmenu;
 	ITimerSystem    *timersys;
 	IPlayerManager  *playerhelpers;
-	IAdminSystem	*adminsys;
 	IGameHelpers    *gamehelpers;
 	ISourcePawnEngine **spe1;
 	ISourcePawnEngine2 **spe2;
@@ -296,6 +301,9 @@ struct sm_core_t
 	void			(*ExecuteConfigs)(IPluginContext *ctx);
 	DatabaseInfo	(*GetDBInfoFromKeyValues)(KeyValues *);
 	int				(*GetActivityFlags)();
+	int				(*GetImmunityMode)();
+	void			(*UpdateAdminCmdFlags)(const char *cmd, OverrideType type, FlagBits bits, bool remove);
+	bool			(*LookForCommandAdminFlags)(const char *cmd, FlagBits *pFlags);
 	const char		*gamesuffix;
 	/* Data */
 	ServerGlobals   *serverGlobals;
@@ -323,11 +331,13 @@ struct sm_logic_t
 	void			(*GenerateError)(IPluginContext *, cell_t, int, const char *, ...);
 	void			(*AddNatives)(sp_nativeinfo_t *natives);
 	void			(*DumpHandles)(void (*dumpfn)(const char *fmt, ...));
+	void			(*DumpAdminCache)(FILE *);
 	IScriptManager	*scripts;
 	IShareSys		*sharesys;
 	IExtensionSys	*extsys;
 	IHandleSys		*handlesys;
 	IForwardManager	*forwardsys;
+	IAdminSystem	*adminsys;
 	IdentityToken_t *core_ident;
 	float			sentinel;
 };

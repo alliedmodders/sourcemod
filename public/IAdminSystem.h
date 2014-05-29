@@ -35,7 +35,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_ADMINSYS_NAME		"IAdminSys"
-#define SMINTERFACE_ADMINSYS_VERSION	7
+#define SMINTERFACE_ADMINSYS_VERSION	8
 
 /**
  * @file IAdminSystem.h
@@ -728,12 +728,22 @@ namespace SourceMod
 		virtual bool FindFlagChar(AdminFlag flag, char *c) =0;
 
 		/**
-		 * brief Returns whether or not an admin id is valid.
+		 * @brief Returns whether or not an admin id is valid.
 		 *
 		 * @param id		Admin id to check.
 		 * @return			True if valid, otherwise false.
 		 */
 		virtual bool IsValidAdmin(AdminId id) =0;
+
+		/**
+		 * @brief Returns whether or not a client has access to a given command.
+		 *
+		 * @param client	Client index.
+		 * @param cmd		Command name.
+		 * @param flags		Command admin flags.
+		 * @return			True if allowed access, otherwise false;
+		 */
+		virtual bool CheckClientCommandAccess(int client, const char *cmd, FlagBits cmdflags) =0;
 	};
 }
 

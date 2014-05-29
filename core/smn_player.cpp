@@ -30,7 +30,6 @@
  */
 
 #include "PlayerManager.h"
-#include "AdminCache.h"
 #include "sm_stringutil.h"
 #include "HalfLife2.h"
 #include "sourcemod.h"

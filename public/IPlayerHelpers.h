@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	19
+#define SMINTERFACE_PLAYERMANAGER_VERSION	20
 
 struct edict_t;
 class IPlayerInfo;
@@ -262,6 +262,11 @@ namespace SourceMod
 		 * @param pMsg		String to print.
 		 */
 		virtual void PrintToConsole(const char *pMsg) =0;
+
+		/**
+		 * @brief Removes admin access from the client.
+		 */
+		virtual void ClearAdmin() =0;
 	};
 
 	/**
@@ -584,6 +589,18 @@ namespace SourceMod
 		 * @param info			Pointer to the cmd_target_info_t structure to process.
 		 */
 		virtual void ProcessCommandTarget(cmd_target_info_t *info) =0;
+
+		/**
+		 * @brief Removes all access for the given admin id.
+		 *
+		 * @param id			Admin id.
+		 */
+		virtual void ClearAdminId(AdminId id) =0;
+
+		/**
+		 * @brief Reruns admin checks on all players.
+		 */
+		virtual void RecheckAnyAdmins() =0;
 	};
 }
 

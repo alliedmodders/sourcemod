@@ -47,5 +47,6 @@ extern IShareSys *sharesys;
 extern IExtensionSys *extsys;
 extern IHandleSys *handlesys;
 extern IForwardManager *forwardsys;
+extern IAdminSystem *adminsys;
 
 #endif /* _INCLUDE_SOURCEMOD_LOGIC_BRIDGE_H_ */

@@ -38,7 +38,6 @@
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
 #include "ChatTriggers.h"
-#include "AdminCache.h"
 #include <inetchannel.h>
 #include <bitbuf.h>
 #include <tier0/dbg.h>
@@ -831,88 +830,6 @@ static cell_t sm_GetCmdArgString(IPluginContext *pContext, const cell_t *params)
 	return (cell_t)length;
 }
 
-static cell_t sm_PrintToServer(IPluginContext *pCtx, const cell_t *params)
-{
-	char buffer[1024];
-	char *fmt;
-	int arg = 2;
-
-	pCtx->LocalToString(params[1], &fmt);
-	size_t res = atcprintf(buffer, sizeof(buffer)-2, fmt, pCtx, params, &arg);
-
-	buffer[res++] = '\n';
-	buffer[res] = '\0';
-
-	META_CONPRINT(buffer);
-
-	return 1;
-}
-
-static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
-{
-	int index = params[1];
-	if ((index < 0) || (index > g_Players.GetMaxClients()))
-	{
-		return pCtx->ThrowNativeError("Client index %d is invalid", index);
-	}
-
-	CPlayer *pPlayer = NULL;
-	if (index != 0)
-	{
-		pPlayer = g_Players.GetPlayerByIndex(index);
-		if (!pPlayer->IsInGame())
-		{
-			return pCtx->ThrowNativeError("Client %d is not in game", index);
-		}
-		
-		/* Silent fail on bots, engine will crash */
-		if (pPlayer->IsFakeClient())
-		{
-			return 0;
-		}
-	}
-
-	char buffer[1024];
-	char *fmt;
-	int arg = 3;
-
-	pCtx->LocalToString(params[2], &fmt);
-	size_t res = atcprintf(buffer, sizeof(buffer)-2, fmt, pCtx, params, &arg);
-
-	buffer[res++] = '\n';
-	buffer[res] = '\0';
-
-	if (index != 0)
-	{
-		pPlayer->PrintToConsole(buffer);
-	} else {
-		META_CONPRINT(buffer);
-	}
-
-	return 1;
-}
-
-static cell_t sm_ServerCommand(IPluginContext *pContext, const cell_t *params)
-{
-	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-
-	char buffer[1024];
-	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 1);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
-	{
-		return 0;
-	}
-
-	/* One byte for null terminator, one for newline */
-	buffer[len++] = '\n';
-	buffer[len] = '\0';
-
-	engine->ServerCommand(buffer);
-
-	return 1;
-}
-
 char *g_ServerCommandBuffer = NULL;
 cell_t g_ServerCommandBufferLength;
 
@@ -1031,102 +948,6 @@ static cell_t sm_ServerCommandEx(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-static cell_t sm_InsertServerCommand(IPluginContext *pContext, const cell_t *params)
-{
-	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-
-	char buffer[1024];
-	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 1);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
-	{
-		return 0;
-	}
-
-	/* One byte for null terminator, one for newline */
-	buffer[len++] = '\n';
-	buffer[len] = '\0';
-
-	InsertServerCommand(buffer);
-
-	return 1;
-}
-
-static cell_t sm_ServerExecute(IPluginContext *pContext, const cell_t *params)
-{
-	engine->ServerExecute();
-
-	return 1;
-}
-
-static cell_t sm_ClientCommand(IPluginContext *pContext, const cell_t *params)
-{
-	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
-
-	if (!pPlayer)
-	{
-		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
-	}
-
-	if (!pPlayer->IsConnected())
-	{
-		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
-	}
-
-	g_SourceMod.SetGlobalTarget(params[1]);
-
-	char buffer[256];
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
-	{
-		return 0;
-	}
-
-	engine->ClientCommand(
-#if SOURCE_ENGINE == SE_DOTA
-		pPlayer->GetIndex(),
-#else
-		pPlayer->GetEdict(),
-#endif
-		"%s", buffer);
-
-	return 1;
-}
-
-static cell_t FakeClientCommand(IPluginContext *pContext, const cell_t *params)
-{
-	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
-
-	if (!pPlayer)
-	{
-		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
-	}
-
-	if (!pPlayer->IsConnected())
-	{
-		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
-	}
-
-	g_SourceMod.SetGlobalTarget(params[1]);
-
-	char buffer[256];
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
-	{
-		return 0;
-	}
-
-#if SOURCE_ENGINE == SE_DOTA
-	engine->ClientCommand(pPlayer->GetIndex(), "%s", buffer);
-#else
-	serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), buffer);
-#endif
-
-	return 1;
-}
-
 static cell_t FakeClientCommandEx(IPluginContext *pContext, const cell_t *params)
 {
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
@@ -1154,69 +975,6 @@ static cell_t FakeClientCommandEx(IPluginContext *pContext, const cell_t *params
 	g_HL2.AddToFakeCliCmdQueue(params[1], GetPlayerUserId(pPlayer->GetEdict()), buffer);
 
 	return 1;
-}
-
-static cell_t ReplyToCommand(IPluginContext *pContext, const cell_t *params)
-{
-	g_SourceMod.SetGlobalTarget(params[1]);
-
-	/* Build the format string */
-	char buffer[1024];
-	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 2);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
-	{
-		return 0;
-	}
-
-	/* If we're printing to the server, shortcut out */
-	if (params[1] == 0)
-	{
-		/* Print */
-		buffer[len++] = '\n';
-		buffer[len] = '\0';
-		META_CONPRINT(buffer);
-		return 1;
-	}
-
-	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
-
-	if (!pPlayer)
-	{
-		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
-	}
-
-	if (!pPlayer->IsConnected())
-	{
-		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
-	}
-
-	unsigned int replyto = g_ChatTriggers.GetReplyTo();
-	if (replyto == SM_REPLY_CONSOLE)
-	{
-		buffer[len++] = '\n';
-		buffer[len] = '\0';
-		pPlayer->PrintToConsole(buffer);
-	} else if (replyto == SM_REPLY_CHAT) {
-		if (len >= 191)
-		{
-			len = 191;
-		}
-		buffer[len] = '\0';
-		g_HL2.TextMsg(params[1], HUD_PRINTTALK, buffer);
-	}
-
-	return 1;
-}
-
-static cell_t GetCmdReplyTarget(IPluginContext *pContext, const cell_t *params)
-{
-	return g_ChatTriggers.GetReplyTo();
-}
-
-static cell_t SetCmdReplyTarget(IPluginContext *pContext, const cell_t *params)
-{
-	return g_ChatTriggers.SetReplyTo(params[1]);
 }
 
 static cell_t GetCommandIterator(IPluginContext *pContext, const cell_t *params)
@@ -1276,53 +1034,6 @@ static cell_t ReadCommandIterator(IPluginContext *pContext, const cell_t *params
 	iter->iter++;
 
 	return 1;
-}
-
-static cell_t CheckCommandAccess(IPluginContext *pContext, const cell_t *params)
-{
-	if (params[1] == 0)
-	{
-		return 1;
-	}
-
-	char *cmd;
-	pContext->LocalToString(params[2], &cmd);
-
-	/* Match up with an admin command if possible */
-	FlagBits bits = params[3];
-	bool found_command = false;
-	if (params[0] < 4 || !params[4])
-	{
-		found_command = g_ConCmds.LookForCommandAdminFlags(cmd, &bits);
-	}
-	
-	if (!found_command)
-	{
-		g_Admins.GetCommandOverride(cmd, Override_Command, &bits);
-	}
-
-	return g_ConCmds.CheckClientCommandAccess(params[1], cmd, bits) ? 1 : 0;
-}
-
-static cell_t CheckAccess(IPluginContext *pContext, const cell_t *params)
-{
-	char *cmd;
-	pContext->LocalToString(params[2], &cmd);
-
-	/* Match up with an admin command if possible */
-	FlagBits bits = params[3];
-	bool found_command = false;
-	if (params[0] < 4 || !params[4])
-	{
-		found_command = g_ConCmds.LookForCommandAdminFlags(cmd, &bits);
-	}
-	
-	if (!found_command)
-	{
-		g_Admins.GetCommandOverride(cmd, Override_Command, &bits);
-	}
-
-	return g_ConCmds.CheckAdminCommandAccess(params[1], cmd, bits) ? 1 : 0;
 }
 
 static cell_t IsChatTrigger(IPluginContext *pContext, const cell_t *params)
@@ -1496,16 +1207,6 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-static cell_t AddServerTag(IPluginContext *pContext, const cell_t *params)
-{
-	return 0;
-}
-
-static cell_t RemoveServerTag(IPluginContext *pContext, const cell_t *params)
-{
-	return 0;
-}
-
 static cell_t AddCommandListener(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
@@ -1573,22 +1274,10 @@ REGISTER_NATIVES(consoleNatives)
 	{"GetCmdArgString",		sm_GetCmdArgString},
 	{"GetCmdArgs",			sm_GetCmdArgs},
 	{"GetCmdArg",			sm_GetCmdArg},
-	{"PrintToServer",		sm_PrintToServer},
-	{"PrintToConsole",		sm_PrintToConsole},
 	{"RegAdminCmd",			sm_RegAdminCmd},
-	{"ServerCommand",		sm_ServerCommand},
 	{"ServerCommandEx",		sm_ServerCommandEx},
-	{"InsertServerCommand",	sm_InsertServerCommand},
-	{"ServerExecute",		sm_ServerExecute},
-	{"ClientCommand",		sm_ClientCommand},
-	{"FakeClientCommand",	FakeClientCommand},
-	{"ReplyToCommand",		ReplyToCommand},
-	{"GetCmdReplySource",	GetCmdReplyTarget},
-	{"SetCmdReplySource",	SetCmdReplyTarget},
 	{"GetCommandIterator",	GetCommandIterator},
 	{"ReadCommandIterator",	ReadCommandIterator},
-	{"CheckCommandAccess",	CheckCommandAccess},
-	{"CheckAccess",			CheckAccess},
 	{"FakeClientCommandEx",	FakeClientCommandEx},
 	{"IsChatTrigger",		IsChatTrigger},
 	{"SetCommandFlags",		SetCommandFlags},
@@ -1596,8 +1285,6 @@ REGISTER_NATIVES(consoleNatives)
 	{"FindFirstConCommand",	FindFirstConCommand},
 	{"FindNextConCommand",	FindNextConCommand},
 	{"SendConVarValue",		SendConVarValue},
-	{"AddServerTag",		AddServerTag},
-	{"RemoveServerTag",		RemoveServerTag},
 	{"AddCommandListener",	AddCommandListener},
 	{"RemoveCommandListener", RemoveCommandListener},
 	{NULL,					NULL}

@@ -42,9 +42,9 @@
 #include "TimerSys.h"
 #include "logic_bridge.h"
 #include "PlayerManager.h"
-#include "AdminCache.h"
 #include "HalfLife2.h"
 #include "CoreConfig.h"
+#include "ConCmdManager.h"
 #include "IDBDriver.h"
 #if SOURCE_ENGINE == SE_DOTA
 #include "convar_sm_dota.h"
@@ -85,6 +85,7 @@ IShareSys *sharesys;
 IExtensionSys *extsys;
 IHandleSys *handlesys;
 IForwardManager *forwardsys;
+IAdminSystem *adminsys;
 
 class VEngineServer_Logic : public IVEngineServer_Logic
 {
@@ -93,15 +94,41 @@ public:
 	{
 		return !!engine->IsMapValid(map);
 	}
-
+	virtual bool IsDedicatedServer()
+	{
+		return engine->IsDedicatedServer();
+	}
+	virtual void InsertServerCommand(const char *cmd)
+	{
+		engine->InsertServerCommand(cmd);
+	}
 	virtual void ServerCommand(const char *cmd)
 	{
 		engine->ServerCommand(cmd);
 	}
-
+	virtual void ServerExecute()
+	{
+		engine->ServerExecute();
+	}
 	virtual const char *GetClientConVarValue(int clientIndex, const char *name)
 	{
 		return engine->GetClientConVarValue(clientIndex, name);
+	}
+	virtual void ClientCommand(edict_t *pEdict, const char *szCommand)
+	{
+#if SOURCE_ENGINE == SE_DOTA
+		engine->ClientCommand(IndexOfEdict(pEdict), "%s", szCommand);
+#else
+		engine->ClientCommand(pEdict, "%s", szCommand);
+#endif
+	}
+	virtual void FakeClientCommand(edict_t *pEdict, const char *szCommand)
+	{
+#if SOURCE_ENGINE == SE_DOTA
+		engine->ClientCommand(IndexOfEdict(pEdict), "%s", szCommand);
+#else
+		serverpluginhelpers->ClientCommand(pEdict, szCommand);
+#endif
 	}
 };
 
@@ -223,6 +250,7 @@ public:
 static VPlayerInfo_Logic logic_playerinfo;
 
 static ConVar sm_show_activity("sm_show_activity", "13", FCVAR_SPONLY, "Activity display setting (see sourcemod.cfg)");
+static ConVar sm_immunity_mode("sm_immunity_mode", "1", FCVAR_SPONLY, "Mode for deciding immunity protection");
 
 static ConVar *find_convar(const char *name)
 {
@@ -401,6 +429,21 @@ static int get_activity_flags()
 	return sm_show_activity.GetInt();
 }
 
+static int get_immunity_mode()
+{
+	return sm_immunity_mode.GetInt();
+}
+
+static void update_admin_cmd_flags(const char *cmd, OverrideType type, FlagBits bits, bool remove)
+{
+	g_ConCmds.UpdateAdminCmdFlags(cmd, type, bits, remove);
+}
+
+static bool look_for_cmd_admin_flags(const char *cmd, FlagBits *pFlags)
+{
+	return g_ConCmds.LookForCommandAdminFlags(cmd, pFlags);
+}
+
 int read_cmd_argc(const CCommand &args)
 {
 	return args.ArgC();
@@ -511,7 +554,6 @@ static sm_core_t core_bridge =
 	&g_RootMenu,
 	&g_Timers,
 	&g_Players,
-	&g_Admins,
 	&g_HL2,
 	&g_pSourcePawn,
 	&g_pSourcePawn2,
@@ -546,6 +588,9 @@ static sm_core_t core_bridge =
 	SM_ExecuteForPlugin,
 	keyvalues_to_dbinfo,
 	get_activity_flags,
+	get_immunity_mode,
+	update_admin_cmd_flags,
+	look_for_cmd_admin_flags,
 	GAMEFIX,
 	&serverGlobals,
 };
@@ -591,6 +636,7 @@ void InitLogicBridge()
 	g_pCoreIdent = logicore.core_ident;
 	handlesys = logicore.handlesys;
 	forwardsys = logicore.forwardsys;
+	adminsys = logicore.adminsys;
 }
 
 bool StartLogicBridge(char *error, size_t maxlength)

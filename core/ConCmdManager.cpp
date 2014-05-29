@@ -31,7 +31,6 @@
 
 #include "ConCmdManager.h"
 #include "sm_srvcmds.h"
-#include "AdminCache.h"
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
 #include "HalfLife2.h"
@@ -330,85 +329,9 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 	}
 }
 
-bool ConCmdManager::CheckClientCommandAccess(int client, const char *cmd, FlagBits cmdflags)
-{
-	if (cmdflags == 0 || client == 0)
-	{
-		return true;
-	}
-
-	/* If running listen server, then client 1 is the server host and should have 'root' access */
-	if (client == 1 && !engine->IsDedicatedServer())
-	{
-		return true;
-	}
-
-	CPlayer *player = g_Players.GetPlayerByIndex(client);
-	if (!player 
-		|| player->GetEdict() == NULL
-		|| player->IsFakeClient())
-	{
-		return false;
-	}
-
-	return CheckAdminCommandAccess(player->GetAdminId(), cmd, cmdflags);
-}
-
-bool ConCmdManager::CheckAdminCommandAccess(AdminId adm, const char *cmd, FlagBits cmdflags)
-{
-	if (adm != INVALID_ADMIN_ID)
-	{
-		FlagBits bits = g_Admins.GetAdminFlags(adm, Access_Effective);
-
-		/* root knows all, WHOA */
-		if ((bits & ADMFLAG_ROOT) == ADMFLAG_ROOT)
-		{
-			return true;
-		}
-
-		/* Check for overrides
-		 * :TODO: is it worth optimizing this?
-		 */
-		unsigned int groups = g_Admins.GetAdminGroupCount(adm);
-		GroupId gid;
-		OverrideRule rule;
-		bool override = false;
-		for (unsigned int i=0; i<groups; i++)
-		{
-			gid = g_Admins.GetAdminGroup(adm, i, NULL);
-			/* First get group-level override */
-			override = g_Admins.GetGroupCommandOverride(gid, cmd, Override_CommandGroup, &rule);
-			/* Now get the specific command override */
-			if (g_Admins.GetGroupCommandOverride(gid, cmd, Override_Command, &rule))
-			{
-				override = true;
-			}
-			if (override)
-			{
-				if (rule == Command_Allow)
-				{
-					return true;
-				}
-				else if (rule == Command_Deny)
-				{
-					return false;
-				}
-			}
-		}
-
-		/* See if our other flags match */
-		if ((bits & cmdflags) == cmdflags)
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
 bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin)
 {
-	if (CheckClientCommandAccess(client, cmd, pAdmin->eflags))
+	if (adminsys->CheckClientCommandAccess(client, cmd, pAdmin->eflags))
 	{
 		return true;
 	}
@@ -468,12 +391,12 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	pHook->admin = new AdminCmdInfo(cmdgroup, adminflags);
 
 	/* First get the command group override, if any */
-	bool override = g_Admins.GetCommandOverride(group, 
+	bool override = adminsys->GetCommandOverride(group, 
 		Override_CommandGroup,
 		&(pHook->admin->eflags));
 
 	/* Next get the command override, if any */
-	if (g_Admins.GetCommandOverride(name,
+	if (adminsys->GetCommandOverride(name,
 		Override_Command,
 		&(pHook->admin->eflags)))
 	{

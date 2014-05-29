@@ -146,8 +146,6 @@ public:
 	void UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits, bool remove);
 	bool LookForSourceModCommand(const char *cmd);
 	bool LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags);
-	bool CheckClientCommandAccess(int client, const char *cmd, FlagBits flags);
-	bool CheckAdminCommandAccess(AdminId adm, const char *cmd, FlagBits flags);
 private:
 	void InternalDispatch(const CCommand &command);
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);

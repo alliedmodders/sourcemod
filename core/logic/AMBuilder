@@ -63,6 +63,9 @@ binary.sources += [
   'Database.cpp',
   'smn_database.cpp',
   'ForwardSys.cpp',
+  'AdminCache.cpp',
+  'sm_trie.cpp',
+  'smn_console.cpp',
 ]
 if builder.target_platform == 'windows':
   binary.sources += ['thread/WinThreads.cpp']

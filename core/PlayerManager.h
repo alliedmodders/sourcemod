@@ -92,6 +92,7 @@ public:
 	unsigned int GetSerial();
 	int GetIndex() const;
 	void PrintToConsole(const char *pMsg);
+	void ClearAdmin();
 public:
 	void DoBasicAdminChecks();
 	void MarkAsBeingKicked();
@@ -149,8 +150,6 @@ public: //SMGlobalClass
 public:
 	CPlayer *GetPlayerByIndex(int client) const;
 	void RunAuthChecks();
-	void ClearAdminId(AdminId id);
-	void ClearAllAdmins();
 public:
 #if SOURCE_ENGINE == SE_DOTA
 	bool OnClientConnect(CEntityIndex index, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
@@ -190,6 +189,8 @@ public: //IPlayerManager
 	void UnregisterCommandTargetProcessor(ICommandTargetProcessor *pHandler);
 	void ProcessCommandTarget(cmd_target_info_t *info);
 	int GetClientFromSerial(unsigned int serial);
+	void ClearAdminId(AdminId id);
+	void RecheckAnyAdmins();
 public:
 	inline int MaxClients()
 	{
@@ -206,7 +207,6 @@ public:
 	bool CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id);
 	bool CheckSetAdminName(int index, CPlayer *pPlayer, AdminId id);
 	const char *GetPassInfoVar();
-	void RecheckAnyAdmins();
 	unsigned int GetReplyTo();
 	unsigned int SetReplyTo(unsigned int reply);
 	void MaxPlayersChanged(int newvalue = -1);

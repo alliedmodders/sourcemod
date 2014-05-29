@@ -49,6 +49,7 @@
 #include "HandleSys.h"
 #include "ExtensionSys.h"
 #include "ForwardSys.h"
+#include "AdminCache.h"
 
 sm_core_t smcore;
 IHandleSys *handlesys = &g_HandleSys;
@@ -65,7 +66,7 @@ IForwardManager *forwardsys = &g_Forwards;
 ITimerSystem *timersys;
 ServerGlobals serverGlobals;
 IPlayerManager *playerhelpers;
-IAdminSystem *adminsys;
+IAdminSystem *adminsys = &g_Admins;
 IGameHelpers *gamehelpers;
 ISourcePawnEngine *g_pSourcePawn;
 ISourcePawnEngine2 *g_pSourcePawn2;
@@ -103,6 +104,11 @@ static void DumpHandles(void (*dumpfn)(const char *fmt, ...))
 	g_HandleSys.Dump(dumpfn);
 }
 
+static void DumpAdminCache(FILE *f)
+{
+	g_Admins.DumpCache(f);
+}
+
 static sm_logic_t logic =
 {
 	NULL,
@@ -121,11 +127,13 @@ static sm_logic_t logic =
 	GenerateError,
 	AddNatives,
 	DumpHandles,
+	DumpAdminCache,
 	&g_PluginSys,
 	&g_ShareSys,
 	&g_Extensions,
 	&g_HandleSys,
 	&g_Forwards,
+	&g_Admins,
 	NULL,
 	-1.0f
 };
@@ -144,7 +152,6 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 	rootmenu = core->rootmenu;
 	timersys = core->timersys;
 	playerhelpers = core->playerhelpers;
-	adminsys = core->adminsys;
 	gamehelpers = core->gamehelpers;
 	g_pSourcePawn = *core->spe1;
 	g_pSourcePawn2 = *core->spe2;
