@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <stdio.h>
 #include <string.h>
 #include <assert.h>
 #include <ITextParsers.h>
