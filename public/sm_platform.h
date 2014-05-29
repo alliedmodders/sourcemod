@@ -39,7 +39,7 @@
 
 #if defined WIN32 || defined WIN64
 #ifndef PLATFORM_WINDOWS
-#define PLATFORM_WINDOWS
+#define PLATFORM_WINDOWS		1
 #endif
 #if !defined WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -64,14 +64,14 @@
 #endif
 #elif defined __linux__ || defined __APPLE__
 #if defined __linux__
-# define PLATFORM_LINUX
+# define PLATFORM_LINUX			1
 # define PLATFORM_LIB_EXT		"so"
 #elif defined __APPLE__
-# define PLATFORM_APPLE
+# define PLATFORM_APPLE			1
 # define PLATFORM_LIB_EXT		"dylib"
 #endif
 #ifndef PLATFORM_POSIX
-# define PLATFORM_POSIX
+# define PLATFORM_POSIX			1
 #endif
 #include <errno.h>
 #include <unistd.h>
