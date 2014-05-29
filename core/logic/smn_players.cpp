@@ -43,6 +43,13 @@
 using namespace SourceHook;
 using namespace SourceMod;
 
+static const int kActivityNone = 0;
+static const int kActivityNonAdmins = 1;		// Show admin activity to non-admins anonymously.
+static const int kActivityNonAdminsNames = 2;	// If 1 is specified, admin names will be shown.
+static const int kActivityAdmins = 4;			// Show admin activity to admins anonymously.
+static const int kActivityAdminsNames = 8;		// If 4 is specified, admin names will be shown.
+static const int kActivityRootNames = 16;		// Always show admin names to root users.
+
 class PlayerLogicHelpers : 
 	public SMGlobalClass,
 	public IPluginsListener,
@@ -1035,7 +1042,7 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 		smcore.ConPrint(message);
 	}
 
-	if (!value)
+	if (value == kActivityNone)
 	{
 		return 1;
 	}
@@ -1056,10 +1063,10 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 			|| !adminsys->GetAdminFlag(id, Admin_Generic, Access_Effective))
 		{
 			/* Treat this as a normal user */
-			if ((value & 1) || (value & 2))
+			if ((value & kActivityNonAdmins) || (value & kActivityNonAdminsNames))
 			{
 				const char *newsign = sign;
-				if ((value & 2) || (i == client))
+				if ((value & kActivityNonAdminsNames) || (i == client))
 				{
 					newsign = name;
 				}
@@ -1078,12 +1085,12 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 		{
 			/* Treat this as an admin user */
 			bool is_root = adminsys->GetAdminFlag(id, Admin_Root, Access_Effective);
-			if ((value & 4)
-				|| (value & 8)
-				|| ((value & 16) && is_root))
+			if ((value & kActivityAdmins)
+				|| (value & kActivityAdminsNames)
+				|| ((value & kActivityRootNames) && is_root))
 			{
 				const char *newsign = sign;
-				if ((value & 8) || ((value & 16) && is_root) || (i == client))
+				if ((value & kActivityAdminsNames) || ((value & kActivityRootNames) && is_root) || (i == client))
 				{
 					newsign = name;
 				}
@@ -1160,7 +1167,7 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 		smcore.ConPrint(message);
 	}
 
-	if (!value)
+	if (value == kActivityNone)
 	{
 		return 1;
 	}
@@ -1181,10 +1188,10 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 			|| !adminsys->GetAdminFlag(id, Admin_Generic, Access_Effective))
 		{
 			/* Treat this as a normal user */
-			if ((value & 1) || (value & 2))
+			if ((value & kActivityNonAdmins) || (value & kActivityNonAdminsNames))
 			{
 				const char *newsign = sign;
-				if ((value & 2))
+				if ((value & kActivityNonAdminsNames))
 				{
 					newsign = name;
 				}
@@ -1203,12 +1210,12 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 		{
 			/* Treat this as an admin user */
 			bool is_root = adminsys->GetAdminFlag(id, Admin_Root, Access_Effective);
-			if ((value & 4)
-				|| (value & 8)
-				|| ((value & 16) && is_root))
+			if ((value & kActivityAdmins)
+				|| (value & kActivityAdminsNames)
+				|| ((value & kActivityRootNames) && is_root))
 			{
 				const char *newsign = sign;
-				if ((value & 8) || ((value & 16) && is_root))
+				if ((value & kActivityAdminsNames) || ((value & kActivityRootNames) && is_root))
 				{
 					newsign = name;
 				}
@@ -1475,7 +1482,7 @@ static cell_t FormatActivitySource(IPluginContext *pContext, const cell_t *param
 		|| !adminsys->GetAdminFlag(aidTarget, Admin_Generic, Access_Effective))
 	{
 		/* Treat this as a normal user */
-		if ((value & 1) || (value & 2))
+		if ((value & kActivityNonAdmins) || (value & kActivityNonAdminsNames))
 		{
 			if ((value & 2) || (target == client))
 			{
@@ -1488,11 +1495,11 @@ static cell_t FormatActivitySource(IPluginContext *pContext, const cell_t *param
 	{
 		/* Treat this as an admin user */
 		bool is_root = adminsys->GetAdminFlag(aidTarget, Admin_Root, Access_Effective);
-		if ((value & 4)
-			|| (value & 8)
-			|| ((value & 16) && is_root))
+		if ((value & kActivityAdmins)
+			|| (value & kActivityAdminsNames)
+			|| ((value & kActivityRootNames) && is_root))
 		{
-			if ((value & 8) || ((value & 16) && is_root) || (target == client))
+			if ((value & kActivityAdminsNames) || ((value & kActivityRootNames) && is_root) || (target == client))
 			{
 				mode = 0;
 			}
