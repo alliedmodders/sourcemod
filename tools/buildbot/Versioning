@@ -22,7 +22,7 @@ with open(os.path.join(builder.sourcePath, '.git', 'HEAD')) as fp:
   if re.search('^[a-fA-F0-9]{40}$', head_contents):
     git_head_path = os.path.join(builder.sourcePath, '.git', 'HEAD')
   else:
-    git_state = fp.read().strip().split(':')[1].strip()
+    git_state = head_contents.split(':')[1].strip()
     git_head_path = os.path.join(builder.sourcePath, '.git', git_state)
     if not os.path.exists(git_head_path):
       git_head_path = os.path.join(builder.sourcePath, '.git', 'HEAD')
