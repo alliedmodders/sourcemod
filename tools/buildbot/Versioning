@@ -1,5 +1,6 @@
 # vim: set ts=8 sts=2 sw=2 tw=99 et ft=python: 
 import os, sys
+import re
 
 builder.SetBuildFolder('/')
 
@@ -17,11 +18,14 @@ outputs = [
 ]
 
 with open(os.path.join(builder.sourcePath, '.git', 'HEAD')) as fp:
- git_state = fp.read().strip().split(':')[1].strip()
-
-git_head_path = os.path.join(builder.sourcePath, '.git', git_state)
-if not os.path.exists(git_head_path):
-  git_head_path = os.path.join(builder.sourcePath, '.git', 'HEAD')
+  head_contents = fp.read().strip()
+  if re.search('^[a-fA-F0-9]{40}$', head_contents):
+    git_head_path = os.path.join(builder.sourcePath, '.git', 'HEAD')
+  else:
+    git_state = fp.read().strip().split(':')[1].strip()
+    git_head_path = os.path.join(builder.sourcePath, '.git', git_state)
+    if not os.path.exists(git_head_path):
+      git_head_path = os.path.join(builder.sourcePath, '.git', 'HEAD')
 
 sources = [
   os.path.join(builder.sourcePath, 'product.version'),
