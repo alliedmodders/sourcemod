@@ -746,8 +746,10 @@ void PlayerManager::OnSourceModLevelEnd()
 		{
 #if SOURCE_ENGINE == SE_DOTA
 			OnClientDisconnect(m_Players[i].GetIndex(), 0);
+			OnClientDisconnect_Post(m_Players[i].GetIndex(), 0);
 #else
 			OnClientDisconnect(m_Players[i].GetEdict());
+			OnClientDisconnect_Post(m_Players[i].GetEdict());
 #endif
 		}
 	}
@@ -791,13 +793,6 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 		pListener = (*iter);
 		pListener->OnClientDisconnecting(client);
 	}
-
-	InvalidatePlayer(pPlayer);
-
-	if (m_ListenClient == client)
-	{
-		m_ListenClient = 0;
-	}
 }
 
 #if SOURCE_ENGINE == SE_DOTA
@@ -810,6 +805,19 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 {
 	int client = IndexOfEdict(pEntity);
 #endif
+	CPlayer *pPlayer = &m_Players[client];
+	if (!pPlayer->IsConnected())
+	{
+		/* We don't care, prevent a double call */
+		return;
+	}
+
+	InvalidatePlayer(pPlayer);
+
+	if (m_ListenClient == client)
+	{
+		m_ListenClient = 0;
+	}
 
 	cell_t res;
 
