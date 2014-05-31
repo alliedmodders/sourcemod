@@ -72,6 +72,9 @@ class SMConfig(object):
     self.smx_files = {}
     self.versionlib = None
 
+  def use_auto_versioning(self):
+    return builder.backend == 'amb2'
+
   def detectProductVersion(self):
     builder.AddConfigureFile('product.version')
 
@@ -266,11 +269,12 @@ class SMConfig(object):
     # Finish up.
     cfg.defines += [
       'SOURCEMOD_BUILD',
-      'SM_GENERATED_BUILD',
       'SM_USE_VERSIONLIB',
     ]
-    cfg.includes += [os.path.join(builder.buildPath, 'includes')]
-    cfg.includes += [os.path.join(builder.sourcePath, 'versionlib')]
+    if self.use_auto_versioning():
+      cfg.defines += ['SM_GENERATED_BUILD']
+      cfg.includes += [os.path.join(builder.buildPath, 'includes')]
+      cfg.includes += [os.path.join(builder.sourcePath, 'versionlib')]
 
   def LibraryBuilder(self, compiler, name):
     binary = compiler.Library(name)
@@ -278,16 +282,18 @@ class SMConfig(object):
       binary.sources += ['version.rc']
       binary.compiler.rcdefines += [
         'BINARY_NAME="{0}"'.format(binary.outputFile),
-        'SM_GENERATED_BUILD',
         'RC_COMPILE',
       ]
+      if self.use_auto_versioning():
+        binary.compiler.rcdefines += ['SM_GENERATED_BUILD']
     elif builder.target_platform == 'mac':
       binary.compiler.postlink += [
         '-compatibility_version', '1.0.0',
         '-current_version', self.productVersion
       ]
-    binary.compiler.linkflags += [self.versionlib]
-    binary.compiler.sourcedeps += SM.generated_headers
+    if self.use_auto_versioning():
+      binary.compiler.linkflags += [self.versionlib]
+      binary.compiler.sourcedeps += SM.generated_headers
     return binary
 
   def ProgramBuilder(self, compiler, name):
@@ -296,11 +302,13 @@ class SMConfig(object):
       binary.sources += ['version.rc']
       binary.compiler.rcdefines += [
         'BINARY_NAME="{0}"'.format(binary.outputFile),
-        'SM_GENERATED_BUILD',
         'RC_COMPILE',
       ]
-    binary.compiler.linkflags += [self.versionlib]
-    binary.compiler.sourcedeps += SM.generated_headers
+      if self.use_auto_versioning():
+        binary.compiler.rcdefines += ['SM_GENERATED_BUILD']
+    if self.use_auto_versioning():
+      binary.compiler.linkflags += [self.versionlib]
+      binary.compiler.sourcedeps += SM.generated_headers
     return binary
 
   def Library(self, context, name):
@@ -460,42 +468,44 @@ SM.detectProductVersion()
 SM.detectSDKs()
 SM.configure()
 
-SM.generated_headers = builder.RunScript(
-  'tools/buildbot/Versioning',
-  { 'SM': SM }
-)
-SM.versionlib = builder.RunScript(
-  'versionlib/AMBuilder',
-  { 'SM': SM }
-)
+if SM.use_auto_versioning():
+  SM.generated_headers = builder.RunScript(
+    'tools/buildbot/Versioning',
+    { 'SM': SM }
+  )
+  SM.versionlib = builder.RunScript(
+    'versionlib/AMBuilder',
+    { 'SM': SM }
+  )
 
-builder.RunBuildScripts(
-  [
-    'loader/AMBuilder',
-    'core/AMBuilder',
-    'core/logic/AMBuilder',
-    'extensions/bintools/AMBuilder',
-    'extensions/clientprefs/AMBuilder',
-    'extensions/curl/AMBuilder',
-    'extensions/cstrike/AMBuilder',
-    'extensions/geoip/AMBuilder',
-    'extensions/mysql/AMBuilder',
-    'extensions/regex/AMBuilder',
-    'extensions/sdkhooks/AMBuilder',
-    'extensions/sdktools/AMBuilder',
-    'extensions/sqlite/AMBuilder',
-    'extensions/tf2/AMBuilder',
-    'extensions/topmenus/AMBuilder',
-    'extensions/updater/AMBuilder',
-    'sourcepawn/compiler/AMBuilder',
-    'sourcepawn/jit/AMBuilder',
+BuildScripts = [
+  'loader/AMBuilder',
+  'core/AMBuilder',
+  'core/logic/AMBuilder',
+  'extensions/bintools/AMBuilder',
+  'extensions/clientprefs/AMBuilder',
+  'extensions/curl/AMBuilder',
+  'extensions/cstrike/AMBuilder',
+  'extensions/geoip/AMBuilder',
+  'extensions/mysql/AMBuilder',
+  'extensions/regex/AMBuilder',
+  'extensions/sdkhooks/AMBuilder',
+  'extensions/sdktools/AMBuilder',
+  'extensions/sqlite/AMBuilder',
+  'extensions/tf2/AMBuilder',
+  'extensions/topmenus/AMBuilder',
+  'extensions/updater/AMBuilder',
+  'sourcepawn/compiler/AMBuilder',
+  'sourcepawn/jit/AMBuilder',
+]
+
+if builder.backend == 'amb2':
+  BuildScripts += [
     'plugins/AMBuilder',
     'tools/buildbot/PackageScript',
-  ],
-  {
-    'SM': SM
-  }
-)
+  ]
+
+builder.RunBuildScripts(BuildScripts, { 'SM': SM })
 
 if builder.options.breakpad_dump:
   builder.RunScript('tools/buildbot/BreakpadSymbols', { 'SM': SM })

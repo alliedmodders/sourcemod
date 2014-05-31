@@ -30,3 +30,6 @@ LIB-Debug/
 # AMBuild build directories
 build/
 obj-*/
+*~
+*.rej
+*.orig
