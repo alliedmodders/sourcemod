@@ -81,6 +81,12 @@ SH_DECL_HOOK0_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0);
 SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
 #endif
 
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_DOTA
+SH_DECL_HOOK1_void(IServerGameDLL, ServerHibernationUpdate, SH_NOATTRIB, 0, bool);
+#elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox. +dota
+SH_DECL_HOOK1_void(IServerGameDLL, SetServerHibernation, SH_NOATTRIB, 0, bool);
+#endif
+
 #if SOURCE_ENGINE == SE_DOTA
 SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
@@ -152,6 +158,11 @@ void PlayerManager::OnSourceModAllInitialized()
 	SH_ADD_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommand), false);
 	SH_ADD_HOOK(IServerGameClients, ClientSettingsChanged, serverClients, SH_MEMBER(this, &PlayerManager::OnClientSettingsChanged), true);
 	SH_ADD_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_DOTA
+	SH_ADD_HOOK(IServerGameDLL, ServerHibernationUpdate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
+#elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox. +dota
+	SH_ADD_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
+#endif
 
 	sharesys->AddInterface(NULL, this);
 
@@ -194,6 +205,11 @@ void PlayerManager::OnSourceModShutdown()
 	SH_REMOVE_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommand), false);
 	SH_REMOVE_HOOK(IServerGameClients, ClientSettingsChanged, serverClients, SH_MEMBER(this, &PlayerManager::OnClientSettingsChanged), true);
 	SH_REMOVE_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_DOTA
+	SH_REMOVE_HOOK(IServerGameDLL, ServerHibernationUpdate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
+#elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox. +dota
+	SH_REMOVE_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
+#endif
 
 	/* Release forwards */
 	forwardsys->ReleaseForward(m_clconnect);
@@ -754,6 +770,36 @@ void PlayerManager::OnSourceModLevelEnd()
 		}
 	}
 	m_PlayerCount = 0;
+}
+
+void PlayerManager::OnServerHibernationUpdate(bool bHibernating)
+{
+	/* If bots were added at map start, but not fully inited before hibernation, there will
+	 * be no OnClientDisconnect for them, despite them getting booted right before this.
+	 */
+
+	if (bHibernating)
+	{
+		for (int i = 1; i <= m_maxClients; i++)
+		{
+			CPlayer *pPlayer = &m_Players[i];
+			if (pPlayer->IsConnected() && pPlayer->IsFakeClient())
+			{
+#if SOURCE_ENGINE < SE_LEFT4DEAD || SOURCE_ENGINE >= SE_CSGO || SOURCE_ENGINE == SE_NUCLEARDAWN
+				// These games have the bug fixed where hltv/replay was getting kicked on hibernation
+				if (pPlayer->IsSourceTV() || pPlayer->IsReplay())
+					continue;
+#endif
+#if SOURCE_ENGINE == SE_DOTA
+				OnClientDisconnect(m_Players[i].GetIndex(), 0);
+				OnClientDisconnect_Post(m_Players[i].GetIndex(), 0);
+#else
+				OnClientDisconnect(m_Players[i].GetEdict());
+				OnClientDisconnect_Post(m_Players[i].GetEdict());
+#endif
+			}
+		}
+	}
 }
 
 #if SOURCE_ENGINE == SE_DOTA
