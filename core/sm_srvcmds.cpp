@@ -342,8 +342,8 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &
 		ConsolePrint("    Compiled on: %s %s", __DATE__, __TIME__);
 #if defined(SM_GENERATED_BUILD)
 		ConsolePrint("    Built from: https://github.com/alliedmodders/sourcemod/commit/%s", SOURCEMOD_SHA);
-#endif
 		ConsolePrint("    Build ID: %s:%s", SOURCEMOD_LOCAL_REV, SOURCEMOD_SHA);
+#endif
 		ConsolePrint("    http://www.sourcemod.net/");
 	}
 }

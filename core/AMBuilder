@@ -34,7 +34,7 @@ for sdk_name in SM.sdks:
     elif builder.target_platform == 'mac':
       lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
     elif builder.target_platform == 'windows':
-      msvc_ver = int(compiler.cxx.version)
+      msvc_ver = compiler.cxx.version
       vs_year = ''
       if msvc_ver == 1800:
         vs_year = '2013'
