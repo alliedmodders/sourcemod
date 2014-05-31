@@ -60,7 +60,7 @@ def output_version_headers():
   if tag != "":
     fullstring += "-{0}".format(tag)
     if tag == "dev":
-      fullstring += "+{0}".format(shorthash)
+      fullstring += "+{0}".format(count)
 
   with open(os.path.join(OutputFolder, 'sourcemod_version_auto.h'), 'w') as fp:
     fp.write("""
