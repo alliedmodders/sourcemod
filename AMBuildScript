@@ -275,8 +275,7 @@ class SMConfig(object):
       cxx.includes += [os.path.join(builder.buildPath, 'includes')]
       cxx.includes += [os.path.join(builder.sourcePath, 'versionlib')]
 
-  def LibraryBuilder(self, compiler, name):
-    binary = compiler.Library(name)
+  def AddVersioning(self, binary):
     if builder.target_platform == 'windows':
       binary.sources += ['version.rc']
       binary.compiler.rcdefines += [
@@ -285,30 +284,23 @@ class SMConfig(object):
       ]
       if self.use_auto_versioning():
         binary.compiler.rcdefines += ['SM_GENERATED_BUILD']
-    elif builder.target_platform == 'mac':
-      binary.compiler.postlink += [
-        '-compatibility_version', '1.0.0',
-        '-current_version', self.productVersion
-      ]
     if self.use_auto_versioning():
       binary.compiler.linkflags += [self.versionlib]
       binary.compiler.sourcedeps += SM.generated_headers
     return binary
 
+  def LibraryBuilder(self, compiler, name):
+    binary = compiler.Library(name)
+    if builder.target_platform == 'mac':
+      binary.compiler.postlink += [
+        '-compatibility_version', '1.0.0',
+        '-current_version', self.productVersion
+      ]
+    return self.AddVersioning(self, binary)
+
   def ProgramBuilder(self, compiler, name):
     binary = compiler.Program(name)
-    if builder.target_platform == 'windows':
-      binary.sources += ['version.rc']
-      binary.compiler.rcdefines += [
-        'BINARY_NAME="{0}"'.format(binary.outputFile),
-        'RC_COMPILE',
-      ]
-      if self.use_auto_versioning():
-        binary.compiler.rcdefines += ['SM_GENERATED_BUILD']
-    if self.use_auto_versioning():
-      binary.compiler.linkflags += [self.versionlib]
-      binary.compiler.sourcedeps += SM.generated_headers
-    return binary
+    return self.AddVersioning(binary)
 
   def Library(self, context, name):
     compiler = context.compiler.clone()
