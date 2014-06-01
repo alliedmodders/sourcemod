@@ -75,12 +75,11 @@ class SMConfig(object):
   def use_auto_versioning(self):
     return builder.backend == 'amb2'
 
-  def tag(self, name):
+  @property
+  def tag(self):
     if builder.options.debug == '1':
-      tag = 'Debug'
-    else:
-      tag = 'Release'
-    return '{0} - {1}'.format(tag, name)
+      return 'Debug'
+    return 'Release'
 
   def detectProductVersion(self):
     builder.AddConfigureFile('product.version')
@@ -461,7 +460,7 @@ class SMConfig(object):
     return project
 
   def HL2Config(self, project, name, sdk):
-    binary = project.Configure(name, sdk.name)
+    binary = project.Configure(name, '{0} - {1}'.format(self.tag, sdk.name))
     return self.ConfigureForHL2(binary, sdk)
 
 SM = SMConfig()
