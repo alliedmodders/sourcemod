@@ -1,10 +1,37 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
+project = SM.HL2Project(builder, 'sdktools.ext')
+project.sources += [
+  'extension.cpp',
+  'inputnatives.cpp',
+  'output.cpp',
+  'outputnatives.cpp',
+  'tempents.cpp',
+  'tenatives.cpp',
+  'teamnatives.cpp',
+  'trnatives.cpp',
+  'vcaller.cpp',
+  'vcallbuilder.cpp',
+  'vdecoder.cpp',
+  'vglobals.cpp',
+  'vhelpers.cpp',
+  'vnatives.cpp',
+  'voice.cpp',
+  'vsound.cpp',
+  'clientnatives.cpp',
+  'hooks.cpp',
+  'gamerulesnatives.cpp',
+  'vstringtable.cpp',
+  '../../public/smsdk_ext.cpp',
+  '../../public/CDetour/detours.cpp',
+  '../../public/asm/asm.c'
+]
+
 for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
 
-  binary = SM.HL2Library(builder, 'sdktools.ext.' + sdk.ext, sdk)
+  binary = SM.HL2Config(project, 'sdktools.ext.' + sdk.ext, sdk)
   binary.compiler.cxxincludes += [
     os.path.join(sdk.path, 'game', 'shared'),
     os.path.join(builder.sourcePath, 'public', 'jit'),
@@ -17,29 +44,4 @@ for sdk_name in SM.sdks:
   if binary.compiler.cxx.behavior == 'gcc':
     binary.compiler.cxxflags += ['-Wno-invalid-offsetof']
 
-  binary.sources += [
-    'extension.cpp',
-    'inputnatives.cpp',
-    'output.cpp',
-    'outputnatives.cpp',
-    'tempents.cpp',
-    'tenatives.cpp',
-    'teamnatives.cpp',
-    'trnatives.cpp',
-    'vcaller.cpp',
-    'vcallbuilder.cpp',
-    'vdecoder.cpp',
-    'vglobals.cpp',
-    'vhelpers.cpp',
-    'vnatives.cpp',
-    'voice.cpp',
-    'vsound.cpp',
-    'clientnatives.cpp',
-    'hooks.cpp',
-    'gamerulesnatives.cpp',
-    'vstringtable.cpp',
-    '../../public/smsdk_ext.cpp',
-    '../../public/CDetour/detours.cpp',
-    '../../public/asm/asm.c'
-  ]
-  SM.extensions += [builder.Add(binary)]
+SM.extensions += builder.Add(project)

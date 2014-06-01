@@ -75,6 +75,12 @@ class SMConfig(object):
   def use_auto_versioning(self):
     return builder.backend == 'amb2'
 
+  @property
+  def tag(self):
+    if builder.options.debug == '1':
+      return 'Debug'
+    return 'Release'
+
   def detectProductVersion(self):
     builder.AddConfigureFile('product.version')
 
@@ -275,8 +281,7 @@ class SMConfig(object):
       cxx.includes += [os.path.join(builder.buildPath, 'includes')]
       cxx.includes += [os.path.join(builder.sourcePath, 'versionlib')]
 
-  def LibraryBuilder(self, compiler, name):
-    binary = compiler.Library(name)
+  def AddVersioning(self, binary):
     if builder.target_platform == 'windows':
       binary.sources += ['version.rc']
       binary.compiler.rcdefines += [
@@ -286,40 +291,25 @@ class SMConfig(object):
       if self.use_auto_versioning():
         binary.compiler.rcdefines += ['SM_GENERATED_BUILD']
     elif builder.target_platform == 'mac':
-      binary.compiler.postlink += [
-        '-compatibility_version', '1.0.0',
-        '-current_version', self.productVersion
-      ]
-    if self.use_auto_versioning():
-      binary.compiler.linkflags += [self.versionlib]
-      binary.compiler.sourcedeps += SM.generated_headers
-    return binary
-
-  def ProgramBuilder(self, compiler, name):
-    binary = compiler.Program(name)
-    if builder.target_platform == 'windows':
-      binary.sources += ['version.rc']
-      binary.compiler.rcdefines += [
-        'BINARY_NAME="{0}"'.format(binary.outputFile),
-        'RC_COMPILE',
-      ]
-      if self.use_auto_versioning():
-        binary.compiler.rcdefines += ['SM_GENERATED_BUILD']
+      if binary.type == 'library':
+        binary.compiler.postlink += [
+          '-compatibility_version', '1.0.0',
+          '-current_version', self.productVersion
+        ]
     if self.use_auto_versioning():
       binary.compiler.linkflags += [self.versionlib]
       binary.compiler.sourcedeps += SM.generated_headers
     return binary
 
   def Library(self, context, name):
-    compiler = context.compiler.clone()
-    return self.LibraryBuilder(compiler, name)
+    binary = context.compiler.Library(name)
+    return self.AddVersioning(binary)
 
   def Program(self, context, name):
-    compiler = context.compiler.clone()
-    return self.ProgramBuilder(compiler, name)
+    binary = context.compiler.Program(name)
+    return self.AddVersioning(binary)
 
-  def ExtCompiler(self, context):
-    compiler = context.compiler.clone()
+  def ConfigureForExtension(self, context, compiler):
     compiler.cxxincludes += [
       os.path.join(context.currentSourcePath),
       os.path.join(context.currentSourcePath, 'sdk'),
@@ -330,8 +320,13 @@ class SMConfig(object):
     ]
     return compiler
 
-  def HL2Compiler(self, context, sdk):
-    compiler = self.ExtCompiler(context)
+  def ExtLibrary(self, context, name):
+    binary = context.compiler.Library(name)
+    self.ConfigureForExtension(context, binary.compiler)
+    return self.AddVersioning(binary)
+
+  def ConfigureForHL2(self, binary, sdk):
+    compiler = binary.compiler
 
     if sdk.name == 'episode1':
       mms_path = os.path.join(self.mms_root, 'core-legacy')
@@ -345,6 +340,7 @@ class SMConfig(object):
 
     defines = ['SE_' + PossibleSDKs[i].define + '=' + PossibleSDKs[i].code for i in PossibleSDKs]
     compiler.defines += defines
+
     paths = [
       ['public'],
       ['public', 'engine'],
@@ -388,15 +384,6 @@ class SMConfig(object):
     for path in paths:
       compiler.cxxincludes += [os.path.join(sdk.path, *path)]
 
-    return compiler
-
-  def ExtLibrary(self, context, name):
-    compiler = self.ExtCompiler(context)
-    return self.LibraryBuilder(compiler, name)
-
-  def HL2Library(self, context, name, sdk):
-    compiler = self.HL2Compiler(context, sdk)
-
     if builder.target_platform == 'linux':
       if sdk.name == 'episode1':
         lib_folder = os.path.join(sdk.path, 'linux_sdk')
@@ -425,7 +412,7 @@ class SMConfig(object):
       if sdk.name in ['blade', 'insurgency', 'csgo', 'dota']:
         compiler.postlink += [compiler.Dep(os.path.join(lib_folder, 'interfaces_i486.a'))]
 
-    binary = self.LibraryBuilder(compiler, name)
+    self.AddVersioning(binary)
 
     dynamic_libs = []
     if builder.target_platform == 'linux':
@@ -437,7 +424,7 @@ class SMConfig(object):
       else:
         dynamic_libs = ['tier0_i486.so', 'vstdlib_i486.so']
     elif builder.target_platform == 'mac':
-      binary.compiler.linkflags.append('-liconv')
+      compiler.linkflags.append('-liconv')
       dynamic_libs = ['libtier0.dylib', 'libvstdlib.dylib']
     elif builder.target_platform == 'windows':
       libs = ['tier0', 'tier1', 'vstdlib', 'mathlib']
@@ -445,7 +432,7 @@ class SMConfig(object):
         libs.append('interfaces')
       for lib in libs:
         lib_path = os.path.join(sdk.path, 'lib', 'public', lib) + '.lib'
-        binary.compiler.linkflags.append(binary.Dep(lib_path))
+        compiler.linkflags.append(compiler.Dep(lib_path))
 
     for library in dynamic_libs:
       source_path = os.path.join(lib_folder, library)
@@ -458,9 +445,23 @@ class SMConfig(object):
         return link
 
       linker = make_linker(source_path, output_path)
-      binary.compiler.linkflags[0:0] = [binary.Dep(library, linker)]
+      compiler.linkflags[0:0] = [compiler.Dep(library, linker)]
 
     return binary
+
+  def HL2Library(self, context, name, sdk):
+    binary = context.compiler.Library(name)
+    self.ConfigureForExtension(context, binary.compiler)
+    return self.ConfigureForHL2(binary, sdk)
+
+  def HL2Project(self, context, name):
+    project = context.compiler.LibraryProject(name)
+    self.ConfigureForExtension(context, project.compiler)
+    return project
+
+  def HL2Config(self, project, name, sdk):
+    binary = project.Configure(name, '{0} - {1}'.format(self.tag, sdk.name))
+    return self.ConfigureForHL2(binary, sdk)
 
 SM = SMConfig()
 SM.detectProductVersion()
