@@ -1,11 +1,54 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python: 
 import os
 
+project = SM.HL2Project(builder, 'sourcemod')
+project.sources += [
+  'MenuStyle_Valve.cpp',
+  'logic_bridge.cpp',
+  'smn_entities.cpp',
+  'sm_stringutil.cpp',
+  'MenuVoting.cpp',
+  'smn_events.cpp',
+  'smn_menus.cpp',
+  'CDataPack.cpp',
+  'frame_hooks.cpp',
+  'smn_nextmap.cpp',
+  'sourcemm_api.cpp',
+  'ChatTriggers.cpp',
+  'smn_player.cpp',
+  'sourcemod.cpp',
+  'concmd_cleaner.cpp',
+  'HalfLife2.cpp',
+  'NextMap.cpp',
+  'ConCmdManager.cpp',
+  'ConVarManager.cpp',
+  'LibrarySys.cpp',
+  'PlayerManager.cpp',
+  'TimerSys.cpp',
+  'CoreConfig.cpp',
+  'Logger.cpp',
+  'smn_halflife.cpp',
+  'smn_console.cpp',
+  'UserMessages.cpp',
+  'MenuManager.cpp',
+  'smn_core.cpp',
+  'smn_hudtext.cpp',
+  'smn_usermsgs.cpp',
+  'MenuStyle_Base.cpp',
+  'smn_keyvalues.cpp',
+  'smn_vector.cpp',
+  'EventManager.cpp',
+  'MenuStyle_Radio.cpp',
+  'sm_autonatives.cpp',
+  'sm_srvcmds.cpp',
+  'ConsoleDetours.cpp'
+]
+
 for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
   binary_name = 'sourcemod.' + sdk.ext
 
-  binary = SM.HL2Library(builder, binary_name, sdk)
+  binary = SM.HL2Config(project, binary_name, sdk)
   compiler = binary.compiler
 
   if sdk.name == 'csgo':
@@ -50,48 +93,6 @@ for sdk_name in SM.sdks:
       else:
         lib_path = os.path.join(sdk.path, 'lib', 'win32', 'release', 'vs' + vs_year, 'libprotobuf.lib')
     compiler.linkflags.insert(0, binary.Dep(lib_path))
-
-  binary.sources += [
-    'MenuStyle_Valve.cpp',
-    'logic_bridge.cpp',
-    'smn_entities.cpp',
-    'sm_stringutil.cpp',
-    'MenuVoting.cpp',
-    'smn_events.cpp',
-    'smn_menus.cpp',
-    'CDataPack.cpp',
-    'frame_hooks.cpp',
-    'smn_nextmap.cpp',
-    'sourcemm_api.cpp',
-    'ChatTriggers.cpp',
-    'smn_player.cpp',
-    'sourcemod.cpp',
-    'concmd_cleaner.cpp',
-    'HalfLife2.cpp',
-    'NextMap.cpp',
-    'ConCmdManager.cpp',
-    'ConVarManager.cpp',
-    'LibrarySys.cpp',
-    'PlayerManager.cpp',
-    'TimerSys.cpp',
-    'CoreConfig.cpp',
-    'Logger.cpp',
-    'smn_halflife.cpp',
-    'smn_console.cpp',
-    'UserMessages.cpp',
-    'MenuManager.cpp',
-    'smn_core.cpp',
-    'smn_hudtext.cpp',
-    'smn_usermsgs.cpp',
-    'MenuStyle_Base.cpp',
-    'smn_keyvalues.cpp',
-    'smn_vector.cpp',
-    'EventManager.cpp',
-    'MenuStyle_Radio.cpp',
-    'sm_autonatives.cpp',
-    'sm_srvcmds.cpp',
-    'ConsoleDetours.cpp'
-  ]
   
   if sdk.name in ['csgo', 'dota']:
     binary.sources += ['smn_protobuf.cpp']
@@ -115,5 +116,5 @@ for sdk_name in SM.sdks:
       os.path.join(sdk.path, 'public', 'game', 'shared', 'dota', 'protobuf', 'dota_usermessage_helpers.cpp'),
     ]
 
-  SM.binaries += [builder.Add(binary)]
+SM.binaries += builder.Add(project)
 
