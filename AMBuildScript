@@ -296,7 +296,7 @@ class SMConfig(object):
         '-compatibility_version', '1.0.0',
         '-current_version', self.productVersion
       ]
-    return self.AddVersioning(self, binary)
+    return self.AddVersioning(binary)
 
   def ProgramBuilder(self, compiler, name):
     binary = compiler.Program(name)
