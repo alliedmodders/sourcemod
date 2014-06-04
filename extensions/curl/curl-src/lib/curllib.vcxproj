@@ -202,7 +202,7 @@
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>D:\Programme\OpenSSL-Win32\include;.;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OPENSSLWIN32)\include;.;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;BUILDING_LIBCURL;CURL_STATICLIB;DCURL_DISABLE_LDAP;DCURL_DISABLE_TELNET;DCURL_DISABLE_DICT;DCURL_DISABLE_TFTP;USE_SSLEAY;USE_OPENSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\LIB-Release\</AssemblerListingLocation>
       <PrecompiledHeaderOutputFile>.\LIB-Release\curllib.pch</PrecompiledHeaderOutputFile>
@@ -220,7 +220,7 @@
     <Lib>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <OutputFile>LIB-Release/libcurl.lib</OutputFile>
-      <AdditionalLibraryDirectories>D:\Programme\OpenSSL-Win32\lib\VC\static;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OPENSSLWIN32)\lib\VC\static;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
