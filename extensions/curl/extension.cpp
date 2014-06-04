@@ -726,16 +726,16 @@ void HTTPSessionManager::RunFrame()
 	// Try to fire up some new asynchronous requests
 	if (pRequestsLock->TryLock())
 	{
-		if (!this->requests.empty())
+		// NOTE: this is my "burst thread creation" solution
+		// Using a thread pool is slow as it executes the threads
+		// sequentially and not parallel.
+		// Not using a thread pool might cause SRCDS to crash, so
+		// we are spawning just a few threads every frame to not
+		// affect performance too much and still having the advantage
+		// of parallel execution.
+		for (unsigned int i = 0; i < iMaxRequestsPerFrame; i++)
 		{
-			// NOTE: this is my "burst thread creation" solution
-			// Using a thread pool is slow as it executes the threads
-			// sequentially and not parallel.
-			// Not using a thread pool might cause SRCDS to crash, so
-			// we are spawning just a few threads every frame to not
-			// affect performance too much and still having the advantage
-			// of parallel execution.
-			for (unsigned int i = 0; i < iMaxRequestsPerFrame; i++)
+			if (!this->requests.empty())
 			{
 				// Create new thread object
 				HTTPAsyncRequestHandler *async = 
