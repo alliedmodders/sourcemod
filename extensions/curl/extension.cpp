@@ -499,7 +499,7 @@ static cell_t HTTP_GetBodyContent(IPluginContext *pCtx, const cell_t *params)
 
 	if (!dldr)
 	{
-		return pCtx->ThrowNativeError("HTTP Downloader data not found\n");
+		return pCtx->ThrowNativeError("HTTP downloader data not found\n");
 	}
 
 	char *body;
@@ -541,7 +541,7 @@ static cell_t HTTP_SetFailOnHTTPError(IPluginContext *pCtx, const cell_t *params
 
 	if (!xfer)
 	{
-		return pCtx->ThrowNativeError("HTTP Session data not found\n");
+		return pCtx->ThrowNativeError("HTTP session data not found\n");
 	}
 
 	return xfer->SetFailOnHTTPError(static_cast<bool>(params[2]));
