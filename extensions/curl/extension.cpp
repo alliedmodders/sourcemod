@@ -190,6 +190,7 @@ static cell_t HTTP_AddStringToWebForm(IPluginContext *pCtx, const cell_t *params
 {
 	// 1st param: web form handle
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
+
 	HandleError err;
 	HandleSecurity sec;
 	sec.pOwner = pCtx->GetIdentity();
@@ -223,6 +224,7 @@ static cell_t HTTP_AddFileToWebForm(IPluginContext *pCtx, const cell_t *params)
 {
 	// 1st param: web form handle
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
+
 	HandleError err;
 	HandleSecurity sec;
 	sec.pOwner = pCtx->GetIdentity();
@@ -272,6 +274,7 @@ static cell_t HTTP_GetLastError(IPluginContext *pCtx, const cell_t *params)
 {
 	// 1st param: session handle
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
+
 	HandleError err;
 	HandleSecurity sec;
 	sec.pOwner = pCtx->GetIdentity();
@@ -521,6 +524,7 @@ static cell_t HTTP_SetFailOnHTTPError(IPluginContext *pCtx, const cell_t *params
 {
 	// 1st param: session handle
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
+
 	HandleError err;
 	HandleSecurity sec;
 	sec.pOwner = pCtx->GetIdentity();
