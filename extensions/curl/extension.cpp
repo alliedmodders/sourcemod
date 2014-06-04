@@ -54,9 +54,6 @@ FormHandler g_FormHandler;
 HandleType_t g_FormHandle = 0;
 DownloadHandler g_DownloadHandler;
 HandleType_t g_DownloadHandle = 0;
-/************************************************************************/
-/* NEW CODE                                                             */
-/************************************************************************/
 HTTPSessionManager& g_SessionManager = HTTPSessionManager::instance();
 
 bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
@@ -95,9 +92,6 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		&g_DownloadHandler, 0, 0, NULL, myself->GetIdentity(), NULL);
 	plsys->AddPluginsListener(this);
 	smutils->AddGameFrameHook(&OnGameFrame);
-	/************************************************************************/
-	/* NEW CODE                                                             */
-	/************************************************************************/
 	g_SessionManager.Initialize();
 
 	return true;
@@ -126,13 +120,10 @@ const char *CurlExt::GetExtensionDateString()
 
 void OnGameFrame(bool simulating)
 {
-	/************************************************************************/
-	/* NEW CODE                                                             */
-	/************************************************************************/
 	g_SessionManager.RunFrame();
 }
 
-void CurlExt::OnPluginUnloaded( IPlugin *plugin )
+void CurlExt::OnPluginUnloaded(IPlugin *plugin)
 {
 	g_SessionManager.PluginUnloaded(plugin);
 }
@@ -204,17 +195,19 @@ static cell_t HTTP_AddStringToWebForm(IPluginContext *pCtx, const cell_t *params
 	sec.pOwner = pCtx->GetIdentity();
 	sec.pIdentity = myself->GetIdentity();
 
-	IWebForm *form;
+	IWebForm *form = NULL;
 
 	// Validate handle data
-	if ((err = g_pHandleSys->ReadHandle(hndl, g_FormHandle, &sec, (void **)&form)) != HandleError_None)
+	if ((err = g_pHandleSys->ReadHandle(hndl, g_FormHandle, &sec, 
+		(void **)&form)) != HandleError_None)
 	{
-		return pCtx->ThrowNativeError("Invalid web form handle %x (error %d)", hndl, err);
+		return pCtx->ThrowNativeError("Invalid web form handle %x (error %d)", 
+			hndl, err);
 	}
 
 	if (!form)
 	{
-		return pCtx->ThrowNativeError("HTTP Web Form data not found\n");
+		return pCtx->ThrowNativeError("HTTP web form data not found\n");
 	}
 
 	char *name, *data;
@@ -235,17 +228,19 @@ static cell_t HTTP_AddFileToWebForm(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = pCtx->GetIdentity();
 	sec.pIdentity = myself->GetIdentity();
 
-	IWebForm *form;
+	IWebForm *form = NULL;
 
 	// Validate handle data
-	if ((err = g_pHandleSys->ReadHandle(hndl, g_FormHandle, &sec, (void **)&form)) != HandleError_None)
+	if ((err = g_pHandleSys->ReadHandle(hndl, g_FormHandle, &sec, 
+		(void **)&form)) != HandleError_None)
 	{
-		return pCtx->ThrowNativeError("Invalid web form handle %x (error %d)", hndl, err);
+		return pCtx->ThrowNativeError("Invalid web form handle %x (error %d)", 
+			hndl, err);
 	}
 
 	if (!form)
 	{
-		return pCtx->ThrowNativeError("HTTP Web Form data not found\n");
+		return pCtx->ThrowNativeError("HTTP web form data not found\n");
 	}
 
 	char *name, *path;
@@ -282,19 +277,19 @@ static cell_t HTTP_GetLastError(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = pCtx->GetIdentity();
 	sec.pIdentity = myself->GetIdentity();
 
-	IWebTransfer *x;
+	IWebTransfer *x = NULL;
 
 	// Validate handle data
-	if ((err = g_pHandleSys->ReadHandle(hndl, g_SessionHandle, &sec, (void **)&x)) != HandleError_None)
+	if ((err = g_pHandleSys->ReadHandle(hndl, g_SessionHandle, &sec, 
+		(void **)&x)) != HandleError_None)
 	{
-		return pCtx->ThrowNativeError("Invalid session handle %x (error %d)", hndl, err);
+		return pCtx->ThrowNativeError("Invalid session handle %x (error %d)", 
+			hndl, err);
 	}
 
 	if (!x)
 	{
-		pCtx->ThrowNativeError("HTTP Session data not found\n");
-
-		return false;
+		return pCtx->ThrowNativeError("HTTP session data not found\n");
 	}
 
 	// Copy error message in output string
@@ -305,9 +300,6 @@ static cell_t HTTP_GetLastError(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t HTTP_PostAndDownload(IPluginContext *pCtx, const cell_t *params)
 {
-	/************************************************************************/
-	/* NEW CODE                                                             */
-	/************************************************************************/
 	HTTPRequestHandleSet handles;
 	// 1st param: session handle
 	handles.hndlSession = static_cast<Handle_t>(params[1]);
@@ -317,7 +309,7 @@ static cell_t HTTP_PostAndDownload(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = pCtx->GetIdentity();
 	sec.pIdentity = myself->GetIdentity();
 
-	IWebTransfer *x;
+	IWebTransfer *x = NULL;
 
 	if ((err = g_pHandleSys->ReadHandle(handles.hndlSession, 
 		g_SessionHandle, &sec, (void **)&x)) != HandleError_None)
@@ -328,12 +320,12 @@ static cell_t HTTP_PostAndDownload(IPluginContext *pCtx, const cell_t *params)
 
 	if (!x)
 	{
-		return pCtx->ThrowNativeError("HTTP Session data not found\n");
+		return pCtx->ThrowNativeError("HTTP session data not found\n");
 	}
 	
 	// 2nd param: downloader handle
 	handles.hndlDownloader = static_cast<Handle_t>(params[2]);
-	IBaseDownloader *downloader;
+	IBaseDownloader *downloader = NULL;
 
 	if ((err = g_pHandleSys->ReadHandle(handles.hndlDownloader,
 		g_DownloadHandle, &sec, (void **)&downloader)) != HandleError_None)
@@ -344,12 +336,12 @@ static cell_t HTTP_PostAndDownload(IPluginContext *pCtx, const cell_t *params)
 
 	if (!downloader)
 	{
-		return pCtx->ThrowNativeError("HTTP Downloader data not found\n");
+		return pCtx->ThrowNativeError("HTTP downloader data not found\n");
 	}
 
 	// 3rd param: web form handle
 	handles.hndlForm = static_cast<Handle_t>(params[3]);;
-	IWebForm *form;
+	IWebForm *form = NULL;
 	
 	if ((err = g_pHandleSys->ReadHandle(handles.hndlForm,
 		g_FormHandle, &sec, (void **)&form)) != HandleError_None)
@@ -360,19 +352,17 @@ static cell_t HTTP_PostAndDownload(IPluginContext *pCtx, const cell_t *params)
 
 	if (!form)
 	{
-		return pCtx->ThrowNativeError("HTTP Web Form data not found\n");
+		return pCtx->ThrowNativeError("HTTP web form data not found\n");
 	}
 
 	char *url;
 	// 4th param: target URL
 	pCtx->LocalToString(params[4], &url);
 
-	/************************************************************************/
-	/* NEW CODE                                                             */
-	/************************************************************************/
 	HTTPRequestCompletedContextPack contextPack;
 	contextPack.pCallbackFunction = new HTTPRequestCompletedContextFunction;
 
+	// TODO: this might be obsolete
 	contextPack.pCallbackFunction->pContext = pCtx;
 	// 5th param: callback function
 	contextPack.pCallbackFunction->uPluginFunction = params[5];
@@ -392,18 +382,16 @@ static cell_t HTTP_PostAndDownload(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t HTTP_Download(IPluginContext *pCtx, const cell_t *params)
 {
-	/************************************************************************/
-	/* NEW CODE                                                             */
-	/************************************************************************/
 	HTTPRequestHandleSet handles;
 	// 1st param: session handle
 	handles.hndlSession = static_cast<Handle_t>(params[1]);
+
 	HandleError err;
 	HandleSecurity sec;
 	sec.pOwner = pCtx->GetIdentity();
 	sec.pIdentity = myself->GetIdentity();
 
-	IWebTransfer *x;
+	IWebTransfer *x = NULL;
 
 	// Validate handle data
 	if ((err = g_pHandleSys->ReadHandle(handles.hndlSession, 
@@ -415,12 +403,12 @@ static cell_t HTTP_Download(IPluginContext *pCtx, const cell_t *params)
 
 	if (!x)
 	{
-		return pCtx->ThrowNativeError("HTTP Session data not found\n");
+		return pCtx->ThrowNativeError("HTTP session data not found\n");
 	}
 
 	// 2nd param: downloader handle
 	handles.hndlDownloader = static_cast<Handle_t>(params[2]);
-	IBaseDownloader *downloader;
+	IBaseDownloader *downloader = NULL;
 
 	if ((err = g_pHandleSys->ReadHandle(handles.hndlDownloader,
 		g_DownloadHandle, &sec, (void **)&downloader)) != HandleError_None)
@@ -431,19 +419,17 @@ static cell_t HTTP_Download(IPluginContext *pCtx, const cell_t *params)
 
 	if (!downloader)
 	{
-		return pCtx->ThrowNativeError("HTTP Downloader data not found\n");
+		return pCtx->ThrowNativeError("HTTP downloader data not found\n");
 	}
 
 	char *url;
 	// 3rd param: target URL
 	pCtx->LocalToString(params[3], &url);
 
-	/************************************************************************/
-	/* NEW CODE                                                             */
-	/************************************************************************/
 	HTTPRequestCompletedContextPack contextPack;
 	contextPack.pCallbackFunction = new HTTPRequestCompletedContextFunction;
 
+	// TODO: this might be obsolete
 	contextPack.pCallbackFunction->pContext = pCtx;
 	// 4th param: callback function
 	contextPack.pCallbackFunction->uPluginFunction = params[4];
@@ -465,6 +451,7 @@ static cell_t HTTP_GetBodySize(IPluginContext *pCtx, const cell_t *params)
 {
 	// 1st param: session handle
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
+
 	HandleError err;
 	HandleSecurity sec;
 	sec.pOwner = pCtx->GetIdentity();
@@ -476,12 +463,13 @@ static cell_t HTTP_GetBodySize(IPluginContext *pCtx, const cell_t *params)
 	if ((err = g_pHandleSys->ReadHandle(hndl, 
 		g_DownloadHandle, &sec, (void **)&dldr)) != HandleError_None)
 	{
-		return pCtx->ThrowNativeError("Invalid downloader handle %x (error %d)", hndl, err);
+		return pCtx->ThrowNativeError("Invalid downloader handle %x (error %d)", 
+			hndl, err);
 	}
 
 	if (!dldr)
 	{
-		return pCtx->ThrowNativeError("HTTP Downloader data not found\n");
+		return pCtx->ThrowNativeError("HTTP downloader data not found\n");
 	}
 
 	return dldr->GetSize();
@@ -491,6 +479,7 @@ static cell_t HTTP_GetBodyContent(IPluginContext *pCtx, const cell_t *params)
 {
 	// 1st param: session handle
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
+
 	HandleError err;
 	HandleSecurity sec;
 	sec.pOwner = pCtx->GetIdentity();
@@ -537,7 +526,7 @@ static cell_t HTTP_SetFailOnHTTPError(IPluginContext *pCtx, const cell_t *params
 	sec.pOwner = pCtx->GetIdentity();
 	sec.pIdentity = myself->GetIdentity();
 
-	IWebTransfer *xfer;
+	IWebTransfer *xfer = NULL;
 
 	// Validate handle data
 	if ((err = g_pHandleSys->ReadHandle(hndl, 
@@ -571,14 +560,8 @@ const sp_nativeinfo_t curlext_natives[] =
 	{NULL,							NULL},
 };
 
-/************************************************************************/
-/* NEW CODE                                                             */
-/************************************************************************/
-void HTTPSessionManager::PluginUnloaded( IPlugin *plugin )
+void HTTPSessionManager::PluginUnloaded(IPlugin *plugin)
 {
-	/************************************************************************/
-	/* NEW CODE                                                             */
-	/************************************************************************/
 	// Check for pending requests and cancel them
 	{
 		pRequestsLock->Lock();
@@ -639,12 +622,9 @@ void HTTPSessionManager::PluginUnloaded( IPlugin *plugin )
 	}
 }
 
-/************************************************************************/
-/* NEW CODE                                                             */
-/************************************************************************/
-void HTTPSessionManager::PostAndDownload( IPluginContext *pCtx, 
+void HTTPSessionManager::PostAndDownload(IPluginContext *pCtx, 
 	HTTPRequestHandleSet handles, const char *url, 
-	HTTPRequestCompletedContextPack contextPack )
+	HTTPRequestCompletedContextPack contextPack)
 {
 	HTTPRequest request;
 	BurnSessionHandle(pCtx, handles);
@@ -660,12 +640,9 @@ void HTTPSessionManager::PostAndDownload( IPluginContext *pCtx,
 	pRequestsLock->Unlock();
 }
 
-/************************************************************************/
-/* NEW CODE                                                             */
-/************************************************************************/
-void HTTPSessionManager::Download( IPluginContext *pCtx, 
+void HTTPSessionManager::Download(IPluginContext *pCtx, 
 	HTTPRequestHandleSet handles, const char *url, 
-	HTTPRequestCompletedContextPack contextPack )
+	HTTPRequestCompletedContextPack contextPack)
 {
 	HTTPRequest request;
 	BurnSessionHandle(pCtx, handles);
@@ -681,10 +658,8 @@ void HTTPSessionManager::Download( IPluginContext *pCtx,
 	pRequestsLock->Unlock();
 }
 
-/************************************************************************/
-/* NEW CODE                                                             */
-/************************************************************************/
-void HTTPSessionManager::BurnSessionHandle( IPluginContext * pCtx, HTTPRequestHandleSet &handles )
+void HTTPSessionManager::BurnSessionHandle(IPluginContext *pCtx, 
+	HTTPRequestHandleSet &handles)
 {
 	HandleSecurity sec;
 	sec.pOwner = pCtx->GetIdentity();
@@ -703,9 +678,6 @@ void HTTPSessionManager::BurnSessionHandle( IPluginContext * pCtx, HTTPRequestHa
 	handles.hndlSession = hndlNew;
 }
 
-/************************************************************************/
-/* NEW CODE                                                             */
-/************************************************************************/
 void HTTPSessionManager::RunFrame()
 {
 	// Try to execute pending callbacks
@@ -801,18 +773,12 @@ void HTTPSessionManager::RunFrame()
 	}
 }
 
-/************************************************************************/
-/* NEW CODE                                                             */
-/************************************************************************/
 void HTTPSessionManager::Initialize()
 {
 	pRequestsLock = threader->MakeMutex();
 	pCallbacksLock = threader->MakeMutex();
 }
 
-/************************************************************************/
-/* NEW CODE                                                             */
-/************************************************************************/
 void HTTPSessionManager::Cleanup()
 {
 	if (pRequestsLock != NULL)
@@ -826,20 +792,14 @@ void HTTPSessionManager::Cleanup()
 	}
 }
 
-/************************************************************************/
-/* NEW CODE                                                             */
-/************************************************************************/
-void HTTPSessionManager::AddCallback( HTTPRequest request )
+void HTTPSessionManager::AddCallback(HTTPRequest request)
 {
 	this->pCallbacksLock->Lock();
 	this->callbacks.push_front(request);
 	this->pCallbacksLock->Unlock();
 }
 
-/************************************************************************/
-/* NEW CODE                                                             */
-/************************************************************************/
-void HTTPSessionManager::HTTPAsyncRequestHandler::RunThread( IThreadHandle *pHandle )
+void HTTPSessionManager::HTTPAsyncRequestHandler::RunThread(IThreadHandle *pHandle)
 {
 	HandleError err;
 	HandleSecurity sec;
@@ -870,8 +830,5 @@ void HTTPSessionManager::HTTPAsyncRequestHandler::RunThread( IThreadHandle *pHan
 		break;
 	}
 
-	// DEBUG
-	//g_pHandleSys->FreeHandle(this->request.handles.hndlDownloader, &sec);
-	//smutils->AddFrameAction(ExecuteCallback, new HTTPRequest(this->request));
 	g_SessionManager.AddCallback(request);
 }

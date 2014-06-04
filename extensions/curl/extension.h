@@ -88,7 +88,7 @@ public:
 	const char *GetExtensionVerString();
 	const char *GetExtensionDateString();
 
-	virtual void OnPluginUnloaded( IPlugin *plugin );
+	virtual void OnPluginUnloaded(IPlugin *plugin);
 
 public:
 #if defined SMEXT_CONF_METAMOD
@@ -132,7 +132,7 @@ size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list 
 class SessionHandler : public IHandleTypeDispatch
 {
 public:
-	virtual void OnHandleDestroy( HandleType_t type, void *object )
+	virtual void OnHandleDestroy(HandleType_t type, void *object)
 	{
 		delete ((IWebTransfer *)object);
 	}
@@ -143,7 +143,7 @@ extern HandleType_t g_SessionHandle;
 
 class FormHandler : public IHandleTypeDispatch
 {
-	virtual void OnHandleDestroy( HandleType_t type, void *object )
+	virtual void OnHandleDestroy(HandleType_t type, void *object)
 	{
 		delete ((IWebForm *)object);
 	}
@@ -154,7 +154,7 @@ extern HandleType_t g_FormHandle;
 
 class DownloadHandler : public IHandleTypeDispatch
 {
-	virtual void OnHandleDestroy( HandleType_t type, void *object )
+	virtual void OnHandleDestroy(HandleType_t type, void *object)
 	{
 		delete ((IBaseDownloader *)object);
 	}
@@ -178,10 +178,6 @@ union HTTPRequestCompletedContextPack {
 	};
 };
 
-
-/************************************************************************/
-/* NEW CODE                                                             */
-/************************************************************************/
 struct HTTPRequestHandleSet
 {
 	Handle_t hndlSession;
@@ -254,8 +250,8 @@ private:
 	protected:
 	private:
 		HTTPRequest request;
-		virtual void RunThread( IThreadHandle *pHandle );
-		virtual void OnTerminate( IThreadHandle *pHandle, bool cancel )
+		virtual void RunThread(IThreadHandle *pHandle);
+		virtual void OnTerminate(IThreadHandle *pHandle, bool cancel)
 		{
 			delete this;
 		}
