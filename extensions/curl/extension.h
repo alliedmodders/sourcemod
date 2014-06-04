@@ -38,13 +38,17 @@
  */
 
 #include "smsdk_ext.h"
+#include "IWebternet.h"
+#include "IBaseDownloader.h"
+#include <queue>
+#include <list>
 
 
 /**
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
  */
-class CurlExt : public SDKExtension
+class CurlExt : public SDKExtension, IPluginsListener
 {
 public:
 	/**
@@ -83,6 +87,9 @@ public:
 	//virtual bool QueryRunning(char *error, size_t maxlength);
 	const char *GetExtensionVerString();
 	const char *GetExtensionDateString();
+
+	virtual void OnPluginUnloaded( IPlugin *plugin );
+
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**
@@ -120,5 +127,147 @@ public:
 
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
+
+// Handle helper class
+class SessionHandler : public IHandleTypeDispatch
+{
+public:
+	virtual void OnHandleDestroy( HandleType_t type, void *object )
+	{
+		delete ((IWebTransfer *)object);
+	}
+};
+
+extern SessionHandler g_SessionHandler;
+extern HandleType_t g_SessionHandle;
+
+class FormHandler : public IHandleTypeDispatch
+{
+	virtual void OnHandleDestroy( HandleType_t type, void *object )
+	{
+		delete ((IWebForm *)object);
+	}
+};
+
+extern FormHandler g_FormHandler;
+extern HandleType_t g_FormHandle;
+
+class DownloadHandler : public IHandleTypeDispatch
+{
+	virtual void OnHandleDestroy( HandleType_t type, void *object )
+	{
+		delete ((IBaseDownloader *)object);
+	}
+};
+
+extern DownloadHandler g_DownloadHandler;
+extern HandleType_t g_DownloadHandle;
+
+struct HTTPRequestCompletedContextFunction {
+	// NOTE: deprecated!
+	IPluginContext *pContext;
+	funcid_t uPluginFunction;
+	bool bHasContext;
+};
+
+union HTTPRequestCompletedContextPack {
+	uint64_t ulContextValue;
+	struct {
+		HTTPRequestCompletedContextFunction *pCallbackFunction;
+		cell_t iPluginContextValue;
+	};
+};
+
+
+/************************************************************************/
+/* NEW CODE                                                             */
+/************************************************************************/
+struct HTTPRequestHandleSet
+{
+	Handle_t hndlSession;
+	Handle_t hndlDownloader;
+	Handle_t hndlForm;
+};
+
+class HTTPSessionManager
+{
+public:
+	static HTTPSessionManager& instance()
+	{
+		static HTTPSessionManager _instance;
+		return _instance;
+	}
+	~HTTPSessionManager() {}
+
+	void Initialize();
+	void Cleanup();
+	void PluginUnloaded(IPlugin *plugin);
+	void RunFrame();
+	void BurnSessionHandle(IPluginContext * pCtx, HTTPRequestHandleSet &handles);
+	void PostAndDownload(IPluginContext *pCtx, 
+		HTTPRequestHandleSet handles,
+		const char *url,
+		HTTPRequestCompletedContextPack contextPack);
+	void Download(IPluginContext *pCtx, 
+		HTTPRequestHandleSet handles,
+		const char *url,
+		HTTPRequestCompletedContextPack contextPack);
+protected:
+	
+private:
+	HTTPSessionManager() {}
+	HTTPSessionManager(const HTTPSessionManager&);
+	HTTPSessionManager & operator = (const HTTPSessionManager &);
+
+	enum HTTPRequestMethod
+	{
+		HTTP_GET,
+		HTTP_POST
+	};
+
+	struct HTTPRequest 
+	{
+		IPluginContext *pCtx;
+		HTTPRequestMethod method;
+		HTTPRequestHandleSet handles;
+		const char *url;
+		HTTPRequestCompletedContextPack contextPack;
+		cell_t result;
+	};
+
+	static const unsigned int iMaxRequestsPerFrame = 20;
+	IMutex *pRequestsLock;
+	std::deque<HTTPRequest> requests;
+	// NOTE: this needs no lock since it's only accessed from main thread
+	std::list<IThreadHandle*> threads;
+	IMutex *pCallbacksLock;
+	std::deque<HTTPRequest> callbacks;
+
+	class HTTPAsyncRequestHandler : public IThread
+	{
+	public:
+		HTTPAsyncRequestHandler(HTTPRequest request)
+		{
+			this->request = request;
+		}
+		~HTTPAsyncRequestHandler() {}
+	protected:
+	private:
+		HTTPRequest request;
+		virtual void RunThread( IThreadHandle *pHandle );
+		virtual void OnTerminate( IThreadHandle *pHandle, bool cancel )
+		{
+			delete this;
+		}
+		static void ExecuteCallback(void *data);
+	};
+
+	void AddCallback(HTTPRequest request);
+};
+
+void OnGameFrame(bool simulating);
+
+// Natives
+extern const sp_nativeinfo_t curlext_natives[];
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
