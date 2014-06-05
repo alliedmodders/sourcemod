@@ -749,7 +749,7 @@ functag public SQLTxnFailure(Handle:db, any:data, numQueries, const String:error
  * @param onSuccess     An optional callback to receive a successful transaction.
  * @param onError       An optional callback to receive an error message.
  * @param data          An optional value to pass to callbacks.
- * @param prio			Priority queue to use.
+ * @param prio          Priority queue to use.
  * @noreturn
  * @error               An invalid handle.
  */
