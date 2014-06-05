@@ -36,17 +36,15 @@ RegNatives g_RegNatives;
 
 void RegNatives::Register(ICallWrapper *pWrapper)
 {
-	m_List.push_back(pWrapper);
+	m_Natives.append(pWrapper);
 }
 
 void RegNatives::UnregisterAll()
 {
-	SourceHook::List<ICallWrapper *>::iterator iter;
-
-	for (iter=m_List.begin(); iter!=m_List.end(); iter++)
+	for (size_t iter = 0; iter < m_Natives.length(); ++iter)
 	{
-		(*iter)->Destroy();
+		m_Natives[iter]->Destroy();
 	}
 
-	m_List.clear();
+	m_Natives.clear();
 }
