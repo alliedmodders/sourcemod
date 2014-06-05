@@ -733,7 +733,7 @@ functag public SQLTxnSuccess(Handle:db, any:data, numQueries, Handle:results[], 
  * @param data          Data value passed to SQL_ExecuteTransaction().
  * @param numQueries    Number of queries executed in the transaction.
  * @param error         Error message.
-* @param failIndex      Index of the query that failed, or -1 if something else.
+ * @param failIndex      Index of the query that failed, or -1 if something else.
  * @param queryData     An array of each data value passed to SQL_AddQuery().
  * @noreturn
  */
