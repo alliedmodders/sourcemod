@@ -319,7 +319,7 @@ bool ClientPrefs::AddQueryToQueue(TQueryOp *query)
 		AutoLock lock(&queryLock);
 		if (!Database)
 		{
-			cachedQueries.push_back(query);
+			cachedQueries.append(query);
 			return false;
 		}
 		
@@ -339,10 +339,9 @@ void ClientPrefs::ProcessQueryCache()
 	if (!Database)
 		return;
 
-	TQueryOp *op;
-	for (SourceHook::List<TQueryOp *>::iterator iter = cachedQueries.begin(); iter != cachedQueries.end(); iter++)
+	for (size_t iter = 0; iter < cachedQueries.length(); ++iter)
 	{
-		op = *iter;
+		TQueryOp *op = cachedQueries[iter];
 		op->SetDatabase(Database);
 		dbi->AddToThreadQueue(op, PrioQueue_Normal);
 	}
@@ -402,18 +401,14 @@ void ClientPrefs::CatchLateLoadClients()
 void ClientPrefs::ClearQueryCache(int serial)
 {
 	AutoLock lock(&queryLock);
-	for (SourceHook::List<TQueryOp *>::iterator iter = cachedQueries.begin(); iter != cachedQueries.end();)
+	for (size_t iter = 0; iter < cachedQueries.length(); ++iter)
 	{
-		TQueryOp *op = *iter;
+		TQueryOp *op = cachedQueries[iter];
 		if (op && op->PullQueryType() == Query_SelectData && op->PullQuerySerial() == serial)
  		{
 			op->Destroy();
-			iter = cachedQueries.erase(iter);
- 		}
- 		else
- 		{
-			iter++;
- 		}
+			cachedQueries.remove(iter--);
+		}
  	}
 }
 

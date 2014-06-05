@@ -59,8 +59,8 @@ void CookieManager::Unload()
 	}
 
 	/* Find all cookies and delete them */
-	for (SourceHook::List<Cookie *>::iterator _iter = cookieList.begin(); _iter != cookieList.end(); _iter++)
-		delete (*_iter);
+	for (size_t iter = 0; iter < cookieList.length(); ++iter)
+		delete cookieList[iter];
 	
 	cookieList.clear();
 }
@@ -95,7 +95,7 @@ Cookie *CookieManager::CreateCookie(const char *name, const char *description, C
 	op->m_params.cookie = pCookie;
 	
 	cookieFinder.insert(name, pCookie);
-	cookieList.push_back(pCookie);
+	cookieList.append(pCookie);
 
 	g_ClientPrefs.AddQueryToQueue(op);
 
@@ -111,7 +111,7 @@ bool CookieManager::GetCookieValue(Cookie *pCookie, int client, char **value)
 	{
 		data = new CookieData("");
 		data->parent = pCookie;
-		clientData[client].push_back(data);
+		clientData[client].append(data);
 		pCookie->data[client] = data;
 		data->changed = false;
 		data->timestamp = 0;
@@ -130,7 +130,7 @@ bool CookieManager::SetCookieValue(Cookie *pCookie, int client, const char *valu
 	{
 		data = new CookieData(value);
 		data->parent = pCookie;
-		clientData[client].push_back(data);
+		clientData[client].append(data);
 		pCookie->data[client] = data;
 	}
 	else
@@ -184,11 +184,11 @@ void CookieManager::OnClientDisconnecting(int client)
 		pAuth = player->GetAuthString();
 		g_ClientPrefs.ClearQueryCache(player->GetSerial());
 	}
-		
-	for (SourceHook::List<CookieData *>::iterator _iter = clientData[client].begin();\
-	_iter != clientData[client].end(); _iter++)
+
+	ke::Vector<CookieData *> &clientvec = clientData[client];
+	for (size_t iter = 0; iter < clientvec.length(); ++iter)
 	{
-		current = (CookieData *)*_iter;
+		current = clientvec[iter];
 		dbId = current->parent->dbid;
 		
 		if (player == NULL || pAuth == NULL || !current->changed || dbId == -1)
@@ -209,7 +209,7 @@ void CookieManager::OnClientDisconnecting(int client)
 		current->parent->data[client] = NULL;
 	}
 	
-	clientData[client].clear();
+	clientvec.clear();
 }
 
 void CookieManager::ClientConnectCallback(int serial, IQuery *data)
@@ -263,7 +263,7 @@ void CookieManager::ClientConnectCallback(int serial, IQuery *data)
 
 		pData->parent = parent;
 		parent->data[client] = pData;
-		clientData[client].push_back(pData);
+		clientData[client].append(pData);
 	}
 
 	statsLoaded[client] = true;
@@ -317,19 +317,20 @@ bool CookieManager::AreClientCookiesPending(int client)
 
 void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 {
-	SourceHook::List<char *> *pList;
+	ke::Vector<char *> *pList;
 
 	if (plugin->GetProperty("SettingsMenuItems", (void **)&pList, true))
 	{
+		ke::Vector<char *> &menuitems = (*pList);
 		char *name;
 		ItemDrawInfo draw;
 		const char *info;
 		AutoMenuData * data;
 		unsigned itemcount;
 		
-		for (SourceHook::List<char *>::iterator p_iter = pList->begin(); p_iter != pList->end(); p_iter++)
+		for (size_t p_iter = 0; p_iter < menuitems.length(); ++p_iter)
 		{
-			name = (char *)*p_iter;
+			name = menuitems[p_iter];
 			itemcount = clientMenu->GetItemCount();
 			//remove from this plugins list
 			for (unsigned int i=0; i < itemcount; i++)
@@ -360,7 +361,7 @@ void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 			delete [] name;
 		}
 		
-		pList->clear();
+		menuitems.clear();
 	}
 }
 
