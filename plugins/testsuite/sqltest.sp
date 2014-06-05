@@ -251,6 +251,17 @@ public Txn_Test2_OnFailure(Handle:db, any:data, numQueries, const String:error[]
 	AssertEq("failIndex", failIndex, 1);
 }
 
+public Txn_Test3_OnSuccess(Handle:db, any:data, numQueries, Handle:results[], any:queryData[])
+{
+	SetTestContext("Transaction Test 3");
+	AssertEq("data", data, 0);
+	AssertEq("numQueries", numQueries, 1);
+	AssertEq("queryData[0]", queryData[0], 0);
+	AssertTrue("HasResultSet(0)", SQL_HasResultSet(results[0]));
+	AssertTrue("FetchRow(0)", SQL_FetchRow(results[0]));
+	AssertEq("FetchInt(0, 0)", SQL_FetchInt(results[0], 0), 5);
+}
+
 public Action:Command_TestTxn(args)
 {
 	new String:error[256];
@@ -290,6 +301,15 @@ public Action:Command_TestTxn(args)
 		Txn_Test2_OnSuccess,
 		Txn_Test2_OnFailure,
 		1000
+	);
+
+	// Make sure the transaction was rolled back - COUNT should be 5.
+	txn = SQL_CreateTransaction();
+	SQL_AddQuery(txn, "SELECT COUNT(id) FROM egg");
+	SQL_ExecuteTransaction(
+		db,
+		txn,
+		Txn_Test3_OnSuccess
 	);
 
 	CloseHandle(db);
