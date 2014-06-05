@@ -1720,7 +1720,11 @@ static cell_t SQL_ExecuteTransaction(IPluginContext *pContext, const cell_t *par
 
 	TTransactOp *op = new TTransactOp(db, txn, params[2], pContext->GetIdentity(), onSuccess, onError, data);
 
-	// The handle has been cloned in |op|. Close the original.
+	// The handle owns the underlying Transaction object, but we want to close
+	// the plugin's view both to ensure reliable access for us and to prevent
+	// further tamering on the main thread. To do this, TTransactOp clones the
+	// transaction handle and automatically closes it. Therefore, it's safe to
+	// close the plugin's handle here.
 	handlesys->FreeHandle(params[2], &sec);
 
 	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
