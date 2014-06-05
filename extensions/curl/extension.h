@@ -196,7 +196,7 @@ public:
 	~HTTPSessionManager() {}
 
 	void Initialize();
-	void Cleanup();
+	void Shutdown();
 	void PluginUnloaded(IPlugin *plugin);
 	void RunFrame();
 	void BurnSessionHandle(IPluginContext * pCtx, HTTPRequestHandleSet &handles);
@@ -231,6 +231,9 @@ private:
 		cell_t result;
 	};
 
+	void RemoveFinishedThreads();
+	void AddCallback(HTTPRequest request);
+
 	static const unsigned int iMaxRequestsPerFrame = 20;
 	IMutex *pRequestsLock;
 	std::deque<HTTPRequest> requests;
@@ -257,8 +260,6 @@ private:
 		}
 		static void ExecuteCallback(void *data);
 	};
-
-	void AddCallback(HTTPRequest request);
 };
 
 void OnGameFrame(bool simulating);
