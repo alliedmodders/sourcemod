@@ -1,4 +1,5 @@
 #include <sourcemod>
+#include <testing>
 
 public Plugin:myinfo = 
 {
@@ -16,6 +17,12 @@ public OnPluginStart()
 	RegServerCmd("sql_test_thread1", Command_TestSql3)
 	RegServerCmd("sql_test_thread2", Command_TestSql4)
 	RegServerCmd("sql_test_thread3", Command_TestSql5)
+	RegServerCmd("sql_test_txn", Command_TestTxn)
+
+	new Handle:hibernate = FindConVar("sv_hibernate_when_empty");
+	if (hibernate != INVALID_HANDLE) {
+		ServerCommand("sv_hibernate_when_empty 0");
+	}
 }
 
 PrintQueryData(Handle:query)
@@ -198,3 +205,93 @@ public Action:Command_TestSql5(args)
 	return Plugin_Handled;
 }
 
+FastQuery(Handle:db, const String:query[])
+{
+	new String:error[256];
+	if (!SQL_FastQuery(db, query)) {
+		SQL_GetError(db, error, sizeof(error));
+		ThrowError("ERROR: %s", error);
+	}
+}
+
+public Txn_Test1_OnSuccess(Handle:db, any:data, numQueries, Handle:results[], any:queryData[])
+{
+	SetTestContext("Transaction Test 1");
+	AssertEq("data", data, 1000);
+	AssertEq("numQueries", numQueries, 3);
+	AssertEq("queryData[0]", queryData[0], 50);
+	AssertEq("queryData[1]", queryData[1], 60);
+	AssertEq("queryData[2]", queryData[2], 70);
+	AssertFalse("HasResultSet(0)", SQL_HasResultSet(results[0]));
+	AssertFalse("HasResultSet(1)", SQL_HasResultSet(results[1]));
+	AssertTrue("HasResultSet(2)", SQL_HasResultSet(results[2]));
+	AssertTrue("FetchRow(2)", SQL_FetchRow(results[2]));
+	AssertEq("FetchInt(2, 0)", SQL_FetchInt(results[2], 0), 5);
+	AssertFalse("FetchRow(2)", SQL_FetchRow(results[2]));
+}
+
+public Txn_Test1_OnFailure(Handle:db, any:data, numQueries, const String:error[], failIndex, any:queryData[])
+{
+	ThrowError("Transaction test 1 failed: %s (failIndex=%d)", error, failIndex);
+}
+
+public Txn_Test2_OnSuccess(Handle:db, any:data, numQueries, Handle:results[], any:queryData[])
+{
+	ThrowError("Transaction test 2 failed: should have failed");
+}
+
+public Txn_Test2_OnFailure(Handle:db, any:data, numQueries, const String:error[], failIndex, any:queryData[])
+{
+	SetTestContext("Transaction Test 2");
+	AssertEq("data", data, 1000);
+	AssertEq("numQueries", numQueries, 3);
+	AssertEq("queryData[0]", queryData[0], 50);
+	AssertEq("queryData[1]", queryData[1], 60);
+	AssertEq("queryData[2]", queryData[2], 70);
+	AssertEq("failIndex", failIndex, 1);
+}
+
+public Action:Command_TestTxn(args)
+{
+	new String:error[256];
+	new Handle:db = SQL_Connect("storage-local", false, error, sizeof(error));
+	if (db == INVALID_HANDLE) {
+		ThrowError("ERROR: %s", error);
+		return Plugin_Handled;
+	}
+
+	FastQuery(db, "DROP TABLE IF EXISTS egg");
+	FastQuery(db, "CREATE TABLE egg(id int primary key)");
+	FastQuery(db, "INSERT INTO egg (id) VALUES (1)");
+	FastQuery(db, "INSERT INTO egg (id) VALUES (2)");
+	FastQuery(db, "INSERT INTO egg (id) VALUES (3)");
+
+	SetTestContext("CreateTransaction");
+
+	new Handle:txn = SQL_CreateTransaction();
+	AssertEq("AddQuery", SQL_AddQuery(txn, "INSERT INTO egg (id) VALUES (4)", 50), 0);
+	AssertEq("AddQuery", SQL_AddQuery(txn, "INSERT INTO egg (id) VALUES (5)", 60), 1);
+	AssertEq("AddQuery", SQL_AddQuery(txn, "SELECT COUNT(id) FROM egg", 70), 2);
+	SQL_ExecuteTransaction(
+		db,
+		txn,
+		Txn_Test1_OnSuccess,
+		Txn_Test1_OnFailure,
+		1000
+	);
+
+	txn = SQL_CreateTransaction();
+	AssertEq("AddQuery", SQL_AddQuery(txn, "INSERT INTO egg (id) VALUES (6)", 50), 0);
+	AssertEq("AddQuery", SQL_AddQuery(txn, "INSERT INTO egg (id) VALUES (6)", 60), 1);
+	AssertEq("AddQuery", SQL_AddQuery(txn, "SELECT COUNT(id) FROM egg", 70), 2);
+	SQL_ExecuteTransaction(
+		db,
+		txn,
+		Txn_Test2_OnSuccess,
+		Txn_Test2_OnFailure,
+		1000
+	);
+
+	CloseHandle(db);
+	return Plugin_Handled;
+}
