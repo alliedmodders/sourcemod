@@ -712,7 +712,7 @@ native Handle:SQL_CreateTransaction();
  * @return              The index of the query in the transaction's query list.
  * @error               Invalid transaction handle.
  */
-native Handle:SQL_AddQuery(Handle:txn, const String:query[], any:data=0);
+native SQL_AddQuery(Handle:txn, const String:query[], any:data=0);
 
 /**
  * Callback for a successful transaction.
