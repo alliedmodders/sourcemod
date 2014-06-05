@@ -1489,6 +1489,13 @@ public:
 	{
 	}
 
+	~TTransactOp()
+	{
+		for (size_t i = 0; i < results_.length(); i++)
+			results_[i]->Destroy();
+		results_.clear();
+	}
+
 	IdentityToken_t *GetOwner()
 	{
 		return ident_;
@@ -1505,7 +1512,7 @@ public:
 private:
 	bool Succeeded() const
 	{
-		return error_.length() > 0;
+		return error_.length() == 0;
 	}
 
 	void SetDbError()
@@ -1540,13 +1547,13 @@ private:
 		for (size_t i = 0; i < txn_->entries.length(); i++)
 		{
 			Transaction::Entry &entry = txn_->entries[i];
-			ke::AutoPtr<IQuery> result(db_->DoQuery(entry.query.chars()));
+			IQuery *result = db_->DoQuery(entry.query.chars());
 			if (!result)
 			{
 				failIndex_ = (cell_t)i;
 				return;
 			}
-			results_.append(ke::Move(result));
+			results_.append(result);
 		}
 
 		if (!db_->DoSimpleQuery("COMMIT"))
@@ -1584,6 +1591,9 @@ private:
 			return false;
 		}
 
+		// Add an extra refcount for the handle.
+		db_->AddRef();
+
 		assert(results_.length() == txn_->entries.length());
 
 		ke::AutoArray<cell_t> data(new cell_t[results_.length()]);
@@ -1594,10 +1604,15 @@ private:
 			Handle_t rh = CreateLocalHandle(hCombinedQueryType, obj, &sec);
 			if (rh == BAD_HANDLE)
 			{
+				// Messy - free handles up to what we've allocated, and then
+				// manually destroy any remaining result sets.
 				delete obj;
 				for (size_t iter = 0; iter < i; iter++)
 					handlesys->FreeHandle(handles[iter], &sec);
+				for (size_t iter = i; iter < results_.length(); iter++)
+					results_[iter]->Destroy();
 				handlesys->FreeHandle(dbh, &sec);
+				results_.clear();
 
 				error_ = "unable to allocate handle";
 				return false;
@@ -1613,10 +1628,12 @@ private:
 		success_->PushArray(data, results_.length());
 		success_->Execute(NULL);
 
-		// Cleanup.
+		// Cleanup. Note we clear results_, since freeing their handles will
+		// call Destroy(), and we don't want to double-free in ~TTransactOp.
 		for (size_t i = 0; i < results_.length(); i++)
 			handlesys->FreeHandle(handles[i], &sec);
 		handlesys->FreeHandle(dbh, &sec);
+		results_.clear();
 
 		return true;
 	}
@@ -1624,7 +1641,7 @@ private:
 public:
 	void RunThinkPart()
 	{
-		if (!success_ || !failure_)
+		if (!success_ && !failure_)
 			return;
 
 		if (Succeeded() && success_)
@@ -1642,6 +1659,12 @@ public:
 				data[i] = txn_->entries[i].data;
 
 			Handle_t dbh = CreateLocalHandle(g_DBMan.GetDatabaseType(), db_, &sec);
+			if (dbh != BAD_HANDLE)
+			{
+				// Add an extra refcount for the handle.
+				db_->AddRef();
+			}
+
 			failure_->PushCell(dbh);
 			failure_->PushCell(data_);
 			failure_->PushCell(results_.length());
@@ -1661,7 +1684,7 @@ private:
 	cell_t data_;
 	AutoHandleRooter autoHandle_;
 	ke::AString error_;
-	ke::Vector<ke::AutoPtr<IQuery> > results_;
+	ke::Vector<IQuery *> results_;
 	cell_t failIndex_;
 };
 
