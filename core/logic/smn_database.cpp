@@ -1547,7 +1547,7 @@ private:
 		for (size_t i = 0; i < txn_->entries.length(); i++)
 		{
 			Transaction::Entry &entry = txn_->entries[i];
-			IQuery *result = db_->DoQuery(entry.query.chars());
+			IQuery *result = Exec(entry.query.chars());
 			if (!result)
 			{
 				failIndex_ = (cell_t)i;
@@ -1623,7 +1623,7 @@ private:
 
 		success_->PushCell(dbh);
 		success_->PushCell(data_);
-		success_->PushCell(results_.length());
+		success_->PushCell(txn_->entries.length());
 		success_->PushArray(handles, results_.length());
 		success_->PushArray(data, results_.length());
 		success_->Execute(NULL);
@@ -1667,7 +1667,7 @@ public:
 
 			failure_->PushCell(dbh);
 			failure_->PushCell(data_);
-			failure_->PushCell(results_.length());
+			failure_->PushCell(txn_->entries.length());
 			failure_->PushString(error_.chars());
 			failure_->PushCell(failIndex_);
 			failure_->PushArray(data, txn_->entries.length());
