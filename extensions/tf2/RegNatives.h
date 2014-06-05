@@ -32,7 +32,7 @@
 #ifndef _INCLUDE_TF2TOOLS_REGNATIVES_H_
 #define _INCLUDE_TF2TOOLS_REGNATIVES_H_
 
-#include <sh_list.h>
+#include <am-vector.h>
 
 class RegNatives
 {
@@ -40,7 +40,7 @@ public:
 	void Register(ICallWrapper *pWrapper);
 	void UnregisterAll();
 private:
-	SourceHook::List<ICallWrapper *> m_List;
+	ke::Vector<ICallWrapper *> m_Natives;
 };
 
 extern RegNatives g_RegNatives;
