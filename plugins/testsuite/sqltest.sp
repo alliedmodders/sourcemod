@@ -305,6 +305,7 @@ public Action:Command_TestTxn(args)
 
 	// Make sure the transaction was rolled back - COUNT should be 5.
 	txn = SQL_CreateTransaction();
+	AssertEq("CloneHandle", _:CloneHandle(txn), _:INVALID_HANDLE);
 	SQL_AddQuery(txn, "SELECT COUNT(id) FROM egg");
 	SQL_ExecuteTransaction(
 		db,
