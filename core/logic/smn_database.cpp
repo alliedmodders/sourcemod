@@ -1475,14 +1475,8 @@ static cell_t SQL_AddQuery(IPluginContext *pContext, const cell_t *params)
 class TTransactOp : public IDBThreadOperation
 {
 public:
-	TTransactOp(
-		IDatabase *db,
-		Transaction *txn,
-		Handle_t txnHandle,
-		IdentityToken_t *ident,
-		IPluginFunction *onSuccess,
-		IPluginFunction *onError,
-		cell_t data)
+	TTransactOp(IDatabase *db, Transaction *txn, Handle_t txnHandle, IdentityToken_t *ident,
+                IPluginFunction *onSuccess, IPluginFunction *onError, cell_t data)
 	: 
 		db_(db),
 		txn_(txn),
