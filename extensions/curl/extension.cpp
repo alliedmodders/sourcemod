@@ -104,7 +104,7 @@ void CurlExt::SDK_OnUnload()
 	g_pHandleSys->RemoveType(g_DownloadHandle, myself->GetIdentity());
 	plsys->RemovePluginsListener(this);
 	smutils->RemoveGameFrameHook(&OnGameFrame);
-	g_SessionManager.Cleanup();
+	g_SessionManager.Shutdown();
 	curl_global_cleanup();
 }
 
@@ -757,6 +757,48 @@ void HTTPSessionManager::RunFrame()
 		pRequestsLock->Unlock();
 	}
 
+	RemoveFinishedThreads();
+}
+
+void HTTPSessionManager::Initialize()
+{
+	pRequestsLock = threader->MakeMutex();
+	pCallbacksLock = threader->MakeMutex();
+}
+
+void HTTPSessionManager::Shutdown()
+{
+	// Block until all running threads have finished
+	while (!this->threads.empty())
+	{
+		this->RemoveFinishedThreads();
+	}
+
+	// Destroy all remaining callback calls
+	this->pCallbacksLock->Lock();
+	this->callbacks.clear();
+	this->pCallbacksLock->Unlock();
+
+	if (pRequestsLock != NULL)
+	{
+		pRequestsLock->DestroyThis();
+	}
+
+	if (pCallbacksLock != NULL)
+	{
+		pCallbacksLock->DestroyThis();
+	}
+}
+
+void HTTPSessionManager::AddCallback(HTTPRequest request)
+{
+	this->pCallbacksLock->Lock();
+	this->callbacks.push_front(request);
+	this->pCallbacksLock->Unlock();
+}
+
+void HTTPSessionManager::RemoveFinishedThreads()
+{
 	// Do some quick "garbage collection" on finished threads
 	if (!this->threads.empty())
 	{
@@ -775,32 +817,6 @@ void HTTPSessionManager::RunFrame()
 			}
 		}
 	}
-}
-
-void HTTPSessionManager::Initialize()
-{
-	pRequestsLock = threader->MakeMutex();
-	pCallbacksLock = threader->MakeMutex();
-}
-
-void HTTPSessionManager::Cleanup()
-{
-	if (pRequestsLock != NULL)
-	{
-		pRequestsLock->DestroyThis();
-	}
-
-	if (pCallbacksLock != NULL)
-	{
-		pCallbacksLock->DestroyThis();
-	}
-}
-
-void HTTPSessionManager::AddCallback(HTTPRequest request)
-{
-	this->pCallbacksLock->Lock();
-	this->callbacks.push_front(request);
-	this->pCallbacksLock->Unlock();
 }
 
 void HTTPSessionManager::HTTPAsyncRequestHandler::RunThread(IThreadHandle *pHandle)
