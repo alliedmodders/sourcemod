@@ -38,15 +38,15 @@
 /**
  * @section		HTTP request status codes.
  */
-#define HTTP_OK		1 /* Request finished without errors */
-#define HTTP_ERROR	0 /* Request failed, call HTTP_GetLastError() for more information. */
+#define HTTP_OK			1 /* Request finished without errors */
+#define HTTP_ERROR		0 /* Request failed, call HTTP_GetLastError() for more information. */
 
 /**
  * HTTP download function callbacks.
  */
 funcenum HTTP_SessionCallback {
 	// Callback with session handle and request result
-    public(Handle:session, result),
+	public(Handle:session, result),
 	// Callback with session handle, request result and download handle
 	public(Handle:session, result, Handle:downloader),
 	// Callback with session handle, request result, download handle and optional user data
