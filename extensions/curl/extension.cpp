@@ -37,6 +37,7 @@
 #include "curlapi.h"
 #include "FileDownloader.h"
 #include "MemoryDownloader.h"
+#include <string.h>
 
 
 /**
