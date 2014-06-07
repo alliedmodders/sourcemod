@@ -242,11 +242,8 @@ private:
 	IMutex *pRequestsLock;
 	Queue<HTTPRequest> requests;
 	// NOTE: this needs no lock since it's only accessed from main thread
-	//std::list<IThreadHandle*> threads;
 	ke::LinkedList<IThreadHandle*> threads;
 	IMutex *pCallbacksLock;
-	//std::deque<HTTPRequest> callbacks;
-	//ke::LinkedList<HTTPRequest> callbacks;
 	Queue<HTTPRequest> callbacks;
 
 	class HTTPAsyncRequestHandler : public IThread
