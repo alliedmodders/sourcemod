@@ -699,25 +699,21 @@ void HTTPSessionManager::RunFrame()
 			// Is the requesting plugin still alive?
 			if (pCtx != NULL)
 			{
-				// TODO: this may be unnecessary
-				if (plsys->FindPluginByContext(request.pCtx->GetContext()))
-				{
-					funcid_t id = request.contextPack.pCallbackFunction->uPluginFunction;
-					IPluginFunction *pFunction = NULL;
-					pFunction = pCtx->GetFunctionById(id);
+				funcid_t id = request.contextPack.pCallbackFunction->uPluginFunction;
+				IPluginFunction *pFunction = NULL;
+				pFunction = pCtx->GetFunctionById(id);
 
-					if (pFunction != NULL)
+				if (pFunction != NULL)
+				{
+					// Push data and execute callback
+					pFunction->PushCell(request.handles.hndlSession);
+					pFunction->PushCell(request.result);
+					pFunction->PushCell(request.handles.hndlDownloader);
+					if (request.contextPack.pCallbackFunction->bHasContext)
 					{
-						// Push data and execute callback
-						pFunction->PushCell(request.handles.hndlSession);
-						pFunction->PushCell(request.result);
-						pFunction->PushCell(request.handles.hndlDownloader);
-						if (request.contextPack.pCallbackFunction->bHasContext)
-						{
-							pFunction->PushCell(request.contextPack.iPluginContextValue);
-						}
-						pFunction->Execute(NULL);
+						pFunction->PushCell(request.contextPack.iPluginContextValue);
 					}
+					pFunction->Execute(NULL);
 				}
 			}
 
