@@ -49,7 +49,8 @@ char * UTIL_strncpy(char * destination, const char * source, size_t num);
 enum DbDriver
 {
 	Driver_MySQL,
-	Driver_SQLite
+	Driver_SQLite,
+	Driver_PgSQL
 };
 
 #define MAX_TRANSLATE_PARAMS		32
