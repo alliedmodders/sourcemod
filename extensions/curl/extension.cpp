@@ -700,8 +700,7 @@ void HTTPSessionManager::RunFrame()
 			if (pCtx != NULL)
 			{
 				funcid_t id = request.contextPack.pCallbackFunction->uPluginFunction;
-				IPluginFunction *pFunction = NULL;
-				pFunction = pCtx->GetFunctionById(id);
+				IPluginFunction *pFunction = pCtx->GetFunctionById(id);
 
 				if (pFunction != NULL)
 				{
