@@ -514,8 +514,11 @@ static cell_t HTTP_GetBodyContent(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Buffer too small\n");
 	}
 
-	memcpy(body, dldr->GetBuffer(), params[3]);
-	body[dldr->GetSize()] = '\0';
+	if (dldr->GetBuffer() != NULL)
+	{
+		memcpy(body, dldr->GetBuffer(), params[3]);
+		body[dldr->GetSize()] = '\0';
+	}
 
 	return pCtx->StringToLocal(params[2], params[3], body);
 }
