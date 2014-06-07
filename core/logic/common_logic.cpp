@@ -70,6 +70,7 @@ IAdminSystem *adminsys = &g_Admins;
 IGameHelpers *gamehelpers;
 ISourcePawnEngine *g_pSourcePawn;
 ISourcePawnEngine2 *g_pSourcePawn2;
+SMV8::IManager *g_pV8;
 CNativeOwner g_CoreNatives;
 IScriptManager *scripts = &g_PluginSys;
 
@@ -155,6 +156,7 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 	gamehelpers = core->gamehelpers;
 	g_pSourcePawn = *core->spe1;
 	g_pSourcePawn2 = *core->spe2;
+	g_pV8 = *core->v8;
 	SMGlobalClass::head = core->listeners;
 
 	g_ShareSys.Initialize();

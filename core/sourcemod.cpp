@@ -51,9 +51,11 @@ SH_DECL_HOOK1_void(IVEngineServer, ServerCommand, SH_NOATTRIB, false, const char
 SourceModBase g_SourceMod;
 
 ILibrary *g_pJIT = NULL;
+ILibrary *g_pV8Lib = NULL;
 SourceHook::String g_BaseDir;
 ISourcePawnEngine *g_pSourcePawn = NULL;
 ISourcePawnEngine2 *g_pSourcePawn2 = NULL;
+SMV8::IManager *g_pV8 = NULL;
 IdentityToken_t *g_pCoreIdent = NULL;
 IForward *g_pOnMapEnd = NULL;
 IGameConfig *g_pGameConf = NULL;
@@ -243,6 +245,48 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 		if (error && maxlength)
 		{
 			snprintf(error, maxlength, "JIT could not be initialized");
+		}
+		return false;
+	}
+
+
+	// Attempt to load V8
+	g_SMAPI->PathFormat(file, sizeof(file), "%s/bin/v8.%s",
+		GetSourceModPath(),
+		PLATFORM_LIB_EXT
+		);
+
+	g_pV8Lib = g_LibSys.OpenLibrary(file, myerror, sizeof(myerror));
+	if (!g_pV8Lib)
+	{
+		if (error && maxlength)
+		{
+			UTIL_Format(error, maxlength, "%s (failed to load bin/v8.%s)", 
+				myerror,
+				PLATFORM_LIB_EXT);
+		}
+		return false;
+	}
+
+	GET_V8 getv8 = (GET_V8)g_pV8Lib->GetSymbolAddress("GetV8Manager");
+	if (getv8 == NULL)
+	{
+		if (error && maxlength)
+		{
+			snprintf(error, maxlength, "V8 is too old; upgrade SourceMod");
+		}
+		return false;
+	}
+
+	const char* err;
+	g_pV8 = getv8();
+	g_pV8->Initialize(this, &g_LibSys, &err);
+
+	if (err)
+	{
+		if (error && maxlength)
+		{
+			snprintf(error, maxlength, "Can't initialize V8 engine: %s", err);
 		}
 		return false;
 	}

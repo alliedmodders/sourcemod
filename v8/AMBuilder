@@ -1,0 +1,35 @@
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python: 
+import os
+
+#for sdk_name in SM.sdks:
+#  sdk = SM.sdks[sdk_name]
+binary_name = 'v8.so'
+
+binary = SM.ExtLibrary(builder, binary_name)
+compiler = binary.compiler
+
+compiler.cxxincludes += [
+  os.path.join(builder.sourcePath,'public','v8'),
+  os.path.join(SM.v8_root,'include')
+]
+compiler.postlink += [
+  os.path.join(SM.v8_root,'out','ia32.release','obj.target','tools','gyp','libv8_snapshot.a')
+]
+compiler.cxxflags.remove('-fno-exceptions')
+
+binary.sources += [
+  'DependencyManager.cpp',
+  'dll_exports.cpp',
+  os.path.join('Require','CurrentDirectoryProvider.cpp'),
+  os.path.join('Require','PackageRepositoryProvider.cpp'),
+  os.path.join('Require','RequireManager.cpp'),
+  'ScriptLoader.cpp',
+  'SPAPIPluginContextEmulation.cpp',
+  'SPAPIPluginFunctionEmulation.cpp',
+  'SPAPIPluginRuntimeEmulation.cpp',
+  'V8Manager.cpp',
+  'V8ToSPMarshaller.cpp',
+]
+
+SM.binaries += [builder.Add(binary)]
+

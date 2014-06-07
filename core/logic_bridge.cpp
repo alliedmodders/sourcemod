@@ -557,6 +557,7 @@ static sm_core_t core_bridge =
 	&g_HL2,
 	&g_pSourcePawn,
 	&g_pSourcePawn2,
+	&g_pV8,
 	/* Functions */
 	find_convar,
 	strncopy,

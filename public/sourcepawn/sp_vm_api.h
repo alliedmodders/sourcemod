@@ -1311,6 +1311,12 @@ namespace SourcePawn
 		 */
 		virtual bool IsJitEnabled() =0;
 	};
+
+	class IDebugListenerV8 : public IDebugListener
+	{
+	public:
+		virtual void GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err, const char *message, va_list ap) = 0;
+	};
 };
 
 #endif //_INCLUDE_SOURCEPAWN_VM_API_H_

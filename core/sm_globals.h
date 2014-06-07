@@ -40,6 +40,7 @@
 #include <sp_vm_api.h>
 #include "sm_platform.h"
 #include <IShareSys.h>
+#include <v8/IV8Manager.h>
 
 using namespace SourcePawn;
 using namespace SourceMod;
@@ -196,6 +197,7 @@ public:
 extern ISourcePawnEngine *g_pSourcePawn;
 extern ISourcePawnEngine2 *g_pSourcePawn2;
 extern IdentityToken_t *g_pCoreIdent;
+extern SMV8::IManager *g_pV8;
 
 namespace SourceMod
 {

@@ -42,6 +42,7 @@
 #include "GameConfigs.h"
 #include "common_logic.h"
 #include "Translator.h"
+#include <string>
 
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
@@ -870,7 +871,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 			const char *name = dir->GetEntryName();
 			size_t len = strlen(name);
 			if (len >= 4
-				&& strcmp(&name[len-4], ".smx") == 0)
+				&& (strcmp(&name[len-4], ".smx") == 0 || strcmp(&name[len-3], ".js") || strcmp(&name[len-7], ".coffee")))
 			{
 				/* If the filename matches, load the plugin */
 				char plugin[PLATFORM_MAX_PATH];
@@ -886,6 +887,16 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 		dir->NextEntry();
 	}
 	libsys->CloseDirectory(dir);
+}
+
+// TODO: Make better. Reason for not a method: would alter CPluginManager interface, which some extensions depend on
+static bool IsV8Plugin(CPlugin* plugin)
+{
+	std::string filename(plugin->GetFilename());
+	
+	return 	filename.find(".js", filename.size() - 3) != std::string::npos
+		||	filename.find(".coffee", filename.size() - 7) != std::string::npos
+		||	filename.find(".pakplugin", filename.size() - 10) != std::string::npos;
 }
 
 LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool debug, PluginType type, char error[], size_t maxlength)
@@ -921,43 +932,61 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 
 	pPlugin->m_type = PluginType_MapUpdated;
 
-	ICompilation *co = NULL;
-
-	if (pPlugin->m_status == Plugin_Uncompiled)
+	if(IsV8Plugin(pPlugin))
 	{
-		co = g_pSourcePawn2->StartCompilation();
-	}
-
-	/* Do the actual compiling */
-	if (co != NULL)
-	{
-		char fullpath[PLATFORM_MAX_PATH];
-		g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", pPlugin->m_filename);
-
-		pPlugin->m_pRuntime = g_pSourcePawn2->LoadPlugin(co, fullpath, &err);
-		if (pPlugin->m_pRuntime == NULL)
+		const char *err;
+		if((pPlugin->m_pRuntime = g_pV8->LoadPlugin(pPlugin->m_filename,&err)) && err == NULL && pPlugin->UpdateInfo())
+			pPlugin->m_status = Plugin_Created;
+		else 	
 		{
-			if (error)
+			if(err != NULL)
 			{
-				smcore.Format(error, 
-					maxlength, 
-					"Unable to load plugin (error %d: %s)", 
-					err, 
-					g_pSourcePawn2->GetErrorString(err));
+				smcore.LogError("Could not load V8 plugin due to errors: %s",err);
 			}
+
 			pPlugin->m_status = Plugin_BadLoad;
 		}
-		else
+	}
+	else
+	{
+		ICompilation *co = NULL;
+
+		if (pPlugin->m_status == Plugin_Uncompiled)
 		{
-			if (pPlugin->UpdateInfo())
-			{
-				pPlugin->m_status = Plugin_Created;
-			}
-			else
+			co = g_pSourcePawn2->StartCompilation();
+		}
+
+		/* Do the actual compiling */
+		if (co != NULL)
+		{
+			char fullpath[PLATFORM_MAX_PATH];
+			g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", pPlugin->m_filename);
+
+			pPlugin->m_pRuntime = g_pSourcePawn2->LoadPlugin(co, fullpath, &err);
+			if (pPlugin->m_pRuntime == NULL)
 			{
 				if (error)
 				{
-					smcore.Format(error, maxlength, "%s", pPlugin->m_errormsg);
+					smcore.Format(error, 
+						maxlength, 
+						"Unable to load plugin (error %d: %s)", 
+						err, 
+						g_pSourcePawn2->GetErrorString(err));
+				}
+				pPlugin->m_status = Plugin_BadLoad;
+			}
+			else
+			{
+				if (pPlugin->UpdateInfo())
+				{
+					pPlugin->m_status = Plugin_Created;
+				}
+				else
+				{
+					if (error)
+					{
+						smcore.Format(error, maxlength, "%s", pPlugin->m_errormsg);
+					}
 				}
 			}
 		}

@@ -37,7 +37,7 @@
 
 class DebugReport : 
 	public SMGlobalClass, 
-	public IDebugListener
+	public IDebugListenerV8
 {
 public: // SMGlobalClass
 	void OnSourceModAllInitialized();

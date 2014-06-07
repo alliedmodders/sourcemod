@@ -51,6 +51,10 @@ for sdk_name in SM.sdks:
   binary = SM.HL2Config(project, binary_name, sdk)
   compiler = binary.compiler
 
+  compiler.cxxincludes += [
+    os.path.join(builder.sourcePath, 'public', 'v8')
+  ]
+
   if sdk.name == 'csgo':
     # Protobuf 2.3 headers have some signed/unsigned compares. I believe that it's fixed in later versions, but Valve.
     if compiler.cxx.behavior == 'gcc':

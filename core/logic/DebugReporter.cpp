@@ -38,6 +38,7 @@ DebugReport g_DbgReporter;
 void DebugReport::OnSourceModAllInitialized()
 {
 	g_pSourcePawn->SetDebugListener(this);
+	g_pV8->SetDebugListener(this);
 }
 
 void DebugReport::OnDebugSpew(const char *msg, ...)
