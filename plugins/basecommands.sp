@@ -50,6 +50,7 @@ new Handle:hTopMenu = INVALID_HANDLE;
 
 new Handle:g_MapList;
 new Handle:g_ProtectedVars;
+new Handle:g_ConVars;
 
 #include "basecommands/kick.sp"
 #include "basecommands/reloadadmins.sp"
@@ -90,6 +91,7 @@ public OnPluginStart()
 	SetMapListCompatBind("sm_map menu", mapListPath);
 	
 	g_ProtectedVars = CreateTrie();
+	g_ConVars = CreateTrie();
 	ProtectVar("rcon_password");
 	ProtectVar("sm_show_activity");
 	ProtectVar("sm_immunity_mode");
@@ -118,7 +120,7 @@ bool:IsVarProtected(const String:cvar[])
 
 bool:IsClientAllowedToChangeCvar(client, const String:cvarname[])
 {
-	new Handle:hndl = FindConVar(cvarname);
+	new Handle:hndl = GetConVarHandle(cvarname);
 
 	new bool:allowed = false;
 	new client_flags = client == 0 ? ADMFLAG_ROOT : GetUserFlagBits(client);
@@ -320,7 +322,7 @@ public Action:Command_Cvar(client, args)
 		return Plugin_Handled;
 	}
 
-	new Handle:hndl = FindConVar(cvarname);
+	new Handle:hndl = GetConVarHandle(cvarname);
 	if (hndl == INVALID_HANDLE)
 	{
 		ReplyToCommand(client, "[SM] %t", "Unable to find cvar", cvarname);
@@ -372,7 +374,7 @@ public Action:Command_ResetCvar(client, args)
 	decl String:cvarname[64];
 	GetCmdArg(1, cvarname, sizeof(cvarname));
 	
-	new Handle:hndl = FindConVar(cvarname);
+	new Handle:hndl = GetConVarHandle(cvarname);
 	if (hndl == INVALID_HANDLE)
 	{
 		ReplyToCommand(client, "[SM] %t", "Unable to find cvar", cvarname);
@@ -402,6 +404,23 @@ public Action:Command_ResetCvar(client, args)
 	LogAction(client, -1, "\"%L\" reset cvar (cvar \"%s\") (value \"%s\")", client, cvarname, value);
 
 	return Plugin_Handled;
+}
+
+Handle:GetConVarHandle(const String:cvarName[])
+{
+	new Handle:hndl;
+	if (GetTrieValue(g_ConVars, cvarName, hndl))
+	{
+		return hndl;
+	}
+	
+	hndl = FindConVar(cvarName);
+	if (hndl != INVALID_HANDLE)
+	{
+		SetTrieValue(g_ConVars, cvarName, hndl);
+	}
+	
+	return hndl;
 }
 
 public Action:Command_Rcon(client, args)
