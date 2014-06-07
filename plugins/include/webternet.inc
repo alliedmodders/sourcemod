@@ -36,10 +36,8 @@
 #define _webternet_included
 
 /**
- * @section		HTTP request status codes.
+ * @section		HTTP request natives.
  */
-#define HTTP_OK			1 /* Request finished without errors */
-#define HTTP_ERROR		0 /* Request failed, call HTTP_GetLastError() for more information. */
 
 /**
  * HTTP download function callbacks.
@@ -86,7 +84,7 @@ native bool:HTTP_SetFailOnHTTPError(Handle:session, bool:fail);
  * 
  * @return				True on success, false on fail/error.
  */
-native HTTP_GetLastError(Handle:session, String:error[], maxlen);
+native bool:HTTP_GetLastError(Handle:session, String:error[], maxlen);
 
 /**
  * Creates a new file-based download handler. It stores the response as a local file.
@@ -135,7 +133,7 @@ native HTTP_GetBodySize(Handle:downloader);
  *						Beware that this function fails if the buffer is too small;
  *						count in one extra byte for the NULL-terminator.
  */
-native HTTP_GetBodyContent(Handle:downloader, String:body[], maxlen);
+native bool:HTTP_GetBodyContent(Handle:downloader, String:body[], maxlen);
 
 /**
  * Creates a new empty web form handle.
@@ -158,7 +156,7 @@ native Handle:HTTP_CreateWebForm();
  * 
  * @note				The supplied data gets URL-encoded automatically.
  */
-native HTTP_AddStringToWebForm(Handle:form, const String:name[], const String:data[]);
+native bool:HTTP_AddStringToWebForm(Handle:form, const String:name[], const String:data[]);
 
 /**
  * Adds a local file to upload to an existing web form.
@@ -168,7 +166,7 @@ native HTTP_AddStringToWebForm(Handle:form, const String:name[], const String:da
  * @param path			The local file path.
  * @return				True on success, false on fail/error.
  */
-native HTTP_AddFileToWebForm(Handle:form, const String:name[], const String:path[]);
+native bool:HTTP_AddFileToWebForm(Handle:form, const String:name[], const String:path[]);
 
 /**
  * Initiates an asynchronous download attempt (GET-request) for a given URL.
@@ -186,7 +184,7 @@ native HTTP_AddFileToWebForm(Handle:form, const String:name[], const String:path
  *						Session and download handle have to be freed with CloseHandle()
  *						after the corresponding callback function has been executed.
  */
-native HTTP_Download(Handle:session, Handle:downloader, const String:url[], HTTP_SessionCallback:callback, any:data = INVALID_HANDLE);
+native bool:HTTP_Download(Handle:session, Handle:downloader, const String:url[], HTTP_SessionCallback:callback, any:data = INVALID_HANDLE);
 
 /**
  * Initiates an asynchronous download attempt (POST-request) for a given URL.
@@ -206,7 +204,7 @@ native HTTP_Download(Handle:session, Handle:downloader, const String:url[], HTTP
  *						after the corresponding callback function has been executed.
  *						The web form handle is not closed as it may be reused.
  */
-native HTTP_PostAndDownload(Handle:session, Handle:downloader, Handle:form, const String:url[], HTTP_SessionCallback:callback, any:data = INVALID_HANDLE);
+native bool:HTTP_PostAndDownload(Handle:session, Handle:downloader, Handle:form, const String:url[], HTTP_SessionCallback:callback, any:data = INVALID_HANDLE);
 
 /**
  * @endsection
