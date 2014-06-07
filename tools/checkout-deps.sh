@@ -68,6 +68,20 @@ elif [ $iswin -eq 0 ]; then
 fi
 getmysql
 
+if [ $ismac -eq 0] && [ $iswin -eq 0] && [ ! -d "postgresql-9.3" ]; then
+  if [ `command -v wget` ]; then
+    wget http://ftp.postgresql.org/pub/source/v9.3.4/postgresql-9.3.4.tar.gz -O pgsql.tar.gz
+  elif [ `command -v curl` ]; then
+    curl -o pgsql.tar.gz http://ftp.postgresql.org/pub/source/v9.3.4/postgresql-9.3.4.tar.gz
+  else
+    echo "Failed to locate wget or curl. Install one of these programs to download PostgreSQL."
+    exit 1
+  fi
+  $decomp pgsql.tar.gz
+  mv postgresql-9.3.4 postgresql-9.3
+  rm pgsql.tar.gz
+fi
+
 checkout ()
 {
   if [ ! -d "$name" ]; then

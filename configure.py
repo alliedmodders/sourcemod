@@ -32,6 +32,8 @@ parser.options.add_option('--enable-optimize', action='store_const', const='1', 
                        help='Enable optimization')
 parser.options.add_option('--no-mysql', action='store_false', default=True, dest='hasMySql',
                        help='Disable building MySQL extension')
+parser.options.add_option('--no-pgsql', action='store_false', default=True, dest='hasPgSql',
+                       help='Disable building PostgreSQL extension')
 parser.options.add_option('-s', '--sdks', default='all', dest='sdks',
                        help='Build against specified SDKs; valid args are "none", "all", "present",'
                             ' or comma-delimited list of engine names (default: %default)')

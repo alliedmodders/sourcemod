@@ -1,0 +1,37 @@
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
+import os
+
+if SM.pgsql_root:
+  binary = SM.ExtLibrary(builder, 'dbi.pgsql.ext')
+  binary.compiler.cxxincludes += [
+    os.path.join(SM.pgsql_root, 'include'),
+    os.path.join(SM.mms_root, 'core', 'sourcehook')
+  ]
+
+  if builder.target_platform == 'linux' or builder.target_platform == 'mac':
+    binary.compiler.postlink += [
+      os.path.join(SM.pgsql_root, 'interfaces', 'libpq', 'libpq.a'),
+      '-lz',
+      '-lpthread',
+      '-lm'
+    ]
+  elif builder.target_platform == 'windows':
+    binary.compiler.postlink += [
+      os.path.join(SM.pgsql_root, 'Release', 'libpq', 'libpq.lib'),
+      os.path.join(SM.pgsql_root, 'Release', 'libpgport', 'libpgport.lib'),
+      os.path.join(SM.pgsql_root, 'lib', 'opt', 'zlib.lib'),
+      'wsock32.lib',
+      'ws2_32.lib',
+      'secur32.lib'
+    ]
+
+  binary.sources += [
+    '../../public/smsdk_ext.cpp',
+    'pgsql/PgBasicResults.cpp',
+    'pgsql/PgDatabase.cpp',
+    'pgsql/PgDriver.cpp',
+    'pgsql/PgStatement.cpp',
+    'extension.cpp'
+  ]
+  SM.extensions += [builder.Add(binary)]
+
