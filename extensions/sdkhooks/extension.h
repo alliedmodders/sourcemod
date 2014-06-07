@@ -5,7 +5,6 @@
 #include <ISDKHooks.h>
 #include <IBinTools.h>
 #include <convar.h>
-#include <sh_list.h>
 #include <amtl/am-vector.h>
 #include <vtable_hook_helper.h>
 
@@ -251,7 +250,7 @@ public:  // ISDKHooks
 	virtual void RemoveEntityListener(ISMEntityListener *listener);
 
 private:
-	SourceHook::List<ISMEntityListener *> m_EntListeners;
+	ke::Vector<ISMEntityListener *> m_EntListeners;
 
 public:
 	/**
