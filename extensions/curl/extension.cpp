@@ -612,8 +612,6 @@ void HTTPSessionManager::PluginUnloaded(IPlugin *plugin)
 					if (!callbacks.empty())
 					{
 						// Run through callback queue
-						//for (std::deque<HTTPRequest>::iterator i(callbacks.begin()), end(callbacks.end()); i != end; ++i)
-						//for (ke::LinkedList<HTTPRequest>::iterator i(callbacks.begin()), end(callbacks.end()); i != end; ++i)
 						for (Queue<HTTPRequest>::iterator i(callbacks.begin()), end(callbacks.end()); i != end; ++i)
 						{
 							// Identify callbacks associated to (nearly) unmapped plugin context
@@ -793,7 +791,6 @@ void HTTPSessionManager::Shutdown()
 void HTTPSessionManager::AddCallback(HTTPRequest request)
 {
 	this->pCallbacksLock->Lock();
-	//this->callbacks.push_front(request);
 	this->callbacks.push(request);
 	this->pCallbacksLock->Unlock();
 }
@@ -803,7 +800,6 @@ void HTTPSessionManager::RemoveFinishedThreads()
 	// Do some quick "garbage collection" on finished threads
 	if (!this->threads.empty())
 	{
-		//for (std::list<IThreadHandle*>::iterator i(threads.begin()), end(threads.end()); i != end; ++i)
 		for (ke::LinkedList<IThreadHandle*>::iterator i(threads.begin()), end(threads.end()); i != end; ++i)
 		{
 			if ((*i) != NULL)
