@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2014 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -34,15 +34,36 @@
 #include "ExtensionSys.h"
 #include "stringutil.h"
 #include "ISourceMod.h"
+#include "AutoHandleRooter.h"
+#include "am-string.h"
+#include "am-vector.h"
+#include "am-refcounting.h"
 
 HandleType_t hStmtType;
-
 HandleType_t hCombinedQueryType;
-typedef struct
+HandleType_t hTransactionType;
+
+struct CombinedQuery
 {
 	IQuery *query;
 	IDatabase *db;
-} CombinedQuery;
+
+	CombinedQuery(IQuery *query, IDatabase *db)
+	: query(query), db(db)
+	{
+	}
+};
+
+struct Transaction
+{
+	struct Entry
+	{
+		ke::AString query;
+		cell_t data;
+	};
+
+	ke::Vector<Entry> entries;
+};
 
 class DatabaseHelpers : 
 	public SMGlobalClass,
@@ -51,23 +72,23 @@ class DatabaseHelpers :
 public:
 	virtual void OnSourceModAllInitialized()
 	{
-		HandleAccess acc;
-
 		/* Disable cloning */
+		HandleAccess acc;
 		handlesys->InitAccessDefaults(NULL, &acc);
 		acc.access[HandleAccess_Clone] = HANDLE_RESTRICT_OWNER|HANDLE_RESTRICT_IDENTITY;
 
 		TypeAccess tacc;
-
 		handlesys->InitAccessDefaults(&tacc, NULL);
 		tacc.ident = g_pCoreIdent;
 
 		hCombinedQueryType = handlesys->CreateType("IQuery", this, 0, &tacc, &acc, g_pCoreIdent, NULL);
 		hStmtType = handlesys->CreateType("IPreparedQuery", this, 0, &tacc, &acc, g_pCoreIdent, NULL);
+		hTransactionType = handlesys->CreateType("Transaction", this, 0, &tacc, &acc, g_pCoreIdent, NULL);
 	}
 
 	virtual void OnSourceModShutdown()
 	{
+		handlesys->RemoveType(hTransactionType, g_pCoreIdent);
 		handlesys->RemoveType(hStmtType, g_pCoreIdent);
 		handlesys->RemoveType(hCombinedQueryType, g_pCoreIdent);
 	}
@@ -82,9 +103,24 @@ public:
 		} else if (type == hStmtType) {
 			IPreparedQuery *query = (IPreparedQuery *)object;
 			query->Destroy();
+		} else if (type == hTransactionType) {
+			delete (Transaction *)object;
 		}
 	}
 } s_DatabaseNativeHelpers;
+
+// Create a handle that can only be closed locally. That's the intent, at
+// least. Since its callers pass the plugin's identity, the plugin can just
+// close it anyway.
+static inline Handle_t CreateLocalHandle(HandleType_t type, void *object, const HandleSecurity *sec)
+{
+	HandleAccess access;
+	handlesys->InitAccessDefaults(NULL, &access);
+
+	access.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
+
+	return handlesys->CreateHandleEx(type, object, sec, &access, NULL);
+}
 
 //is this safe for stmt handles? i think since it's single inheritance, it always will be.
 inline HandleError ReadQueryHndl(Handle_t hndl, IPluginContext *pContext, IQuery **query)
@@ -157,18 +193,8 @@ public:
 		 */
 		m_pDatabase->IncReferenceCount();
 
-		/* Now create our own Handle such that it can only be closed by us.
-		 * We allow cloning just in case someone wants to hold onto it.
-		 */
 		HandleSecurity sec(me->GetIdentity(), g_pCoreIdent);
-		HandleAccess access;
-		handlesys->InitAccessDefaults(NULL, &access);
-		access.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
-		m_MyHandle = handlesys->CreateHandleEx(g_DBMan.GetDatabaseType(),
-			db,
-			&sec,
-			&access,
-			NULL);
+		m_MyHandle = CreateLocalHandle(g_DBMan.GetDatabaseType(), m_pDatabase, &sec);
 	}
 	~TQueryOp()
 	{
@@ -225,9 +251,7 @@ public:
 		
 		if (m_pQuery)
 		{
-			CombinedQuery *c = new CombinedQuery;
-			c->query = m_pQuery;
-			c->db = m_pDatabase;
+			CombinedQuery *c = new CombinedQuery(m_pQuery, m_pDatabase);
 			
 			qh = handlesys->CreateHandle(hCombinedQueryType, c, me->GetIdentity(), g_pCoreIdent, NULL);
 			if (qh != BAD_HANDLE)
@@ -737,9 +761,7 @@ static cell_t SQL_Query(IPluginContext *pContext, const cell_t *params)
 		return BAD_HANDLE;
 	}
 
-	CombinedQuery *c = new CombinedQuery;
-	c->query = qr;
-	c->db = db;
+	CombinedQuery *c = new CombinedQuery(qr, db);
 	Handle_t hndl = handlesys->CreateHandle(hCombinedQueryType, c, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	if (hndl == BAD_HANDLE)
 	{
@@ -1416,6 +1438,307 @@ static cell_t SQL_SetCharset(IPluginContext *pContext, const cell_t *params)
 	return db->SetCharacterSet(characterset);
 }
 
+static cell_t SQL_CreateTransaction(IPluginContext *pContext, const cell_t *params)
+{
+	Transaction *txn = new Transaction();
+	Handle_t handle = handlesys->CreateHandle(hTransactionType, txn, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	if (!handle)
+	{
+		delete txn;
+		return BAD_HANDLE;
+	}
+
+	return handle;
+}
+
+static cell_t SQL_AddQuery(IPluginContext *pContext, const cell_t *params)
+{
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	Transaction *txn;
+	Handle_t handle = params[1];
+	HandleError err = handlesys->ReadHandle(handle, hTransactionType, &sec, (void **)&txn);
+	if (err != HandleError_None)
+		return pContext->ThrowNativeError("Invalid handle %x (error %d)", handle, err);
+
+	char *query;
+	pContext->LocalToString(params[2], &query);
+
+	Transaction::Entry entry;
+	entry.query = query;
+	entry.data = params[3];
+	txn->entries.append(ke::Move(entry));
+
+	return cell_t(txn->entries.length() - 1);
+}
+
+class TTransactOp : public IDBThreadOperation
+{
+public:
+	TTransactOp(IDatabase *db, Transaction *txn, Handle_t txnHandle, IdentityToken_t *ident,
+                IPluginFunction *onSuccess, IPluginFunction *onError, cell_t data)
+	: 
+		db_(db),
+		txn_(txn),
+		ident_(ident),
+		success_(onSuccess),
+		failure_(onError),
+		data_(data),
+		autoHandle_(txnHandle),
+		failIndex_(-1)
+	{
+	}
+
+	~TTransactOp()
+	{
+		for (size_t i = 0; i < results_.length(); i++)
+			results_[i]->Destroy();
+		results_.clear();
+	}
+
+	IdentityToken_t *GetOwner()
+	{
+		return ident_;
+	}
+	IDBDriver *GetDriver()
+	{
+		return db_->GetDriver();
+	}
+	void Destroy()
+	{
+		delete this;
+	}
+
+private:
+	bool Succeeded() const
+	{
+		return error_.length() == 0;
+	}
+
+	void SetDbError()
+	{
+		const char *error = db_->GetError();
+		if (!error || strlen(error) == 0)
+			error_ = "unknown error";
+		else
+			error_ = error;
+	}
+
+	IQuery *Exec(const char *query)
+	{
+		IQuery *result = db_->DoQuery(query);
+		if (!result)
+		{
+			SetDbError();
+			db_->DoSimpleQuery("ROLLBACK");
+			return NULL;
+		}
+		return result;
+	}
+
+	void ExecuteTransaction()
+	{
+		if (!db_->DoSimpleQuery("BEGIN"))
+		{
+			SetDbError();
+			return;
+		}
+
+		for (size_t i = 0; i < txn_->entries.length(); i++)
+		{
+			Transaction::Entry &entry = txn_->entries[i];
+			IQuery *result = Exec(entry.query.chars());
+			if (!result)
+			{
+				failIndex_ = (cell_t)i;
+				return;
+			}
+			results_.append(result);
+		}
+
+		if (!db_->DoSimpleQuery("COMMIT"))
+		{
+			SetDbError();
+			db_->DoSimpleQuery("ROLLBACK");
+		}
+	}
+
+public:
+	void RunThreadPart()
+	{
+		db_->LockForFullAtomicOperation();
+		ExecuteTransaction();
+		db_->UnlockFromFullAtomicOperation();
+	}
+
+	void CancelThinkPart()
+	{
+		if (Succeeded())
+			error_ = "Driver is unloading";
+		RunThinkPart();
+	}
+
+private:
+	bool CallSuccess()
+	{
+		HandleSecurity sec(ident_, g_pCoreIdent);
+
+		// Allocate all the handles for calling the success callback.
+		Handle_t dbh = CreateLocalHandle(g_DBMan.GetDatabaseType(), db_, &sec);
+		if (dbh == BAD_HANDLE)
+		{
+			error_ = "unable to allocate handle";
+			return false;
+		}
+
+		// Add an extra refcount for the handle.
+		db_->AddRef();
+
+		assert(results_.length() == txn_->entries.length());
+
+		ke::AutoArray<cell_t> data(new cell_t[results_.length()]);
+		ke::AutoArray<cell_t> handles(new cell_t[results_.length()]);
+		for (size_t i = 0; i < results_.length(); i++)
+		{
+			CombinedQuery *obj = new CombinedQuery(results_[i], db_);
+			Handle_t rh = CreateLocalHandle(hCombinedQueryType, obj, &sec);
+			if (rh == BAD_HANDLE)
+			{
+				// Messy - free handles up to what we've allocated, and then
+				// manually destroy any remaining result sets.
+				delete obj;
+				for (size_t iter = 0; iter < i; iter++)
+					handlesys->FreeHandle(handles[iter], &sec);
+				for (size_t iter = i; iter < results_.length(); iter++)
+					results_[iter]->Destroy();
+				handlesys->FreeHandle(dbh, &sec);
+				results_.clear();
+
+				error_ = "unable to allocate handle";
+				return false;
+			}
+			handles[i] = rh;
+			data[i] = txn_->entries[i].data;
+		}
+
+		success_->PushCell(dbh);
+		success_->PushCell(data_);
+		success_->PushCell(txn_->entries.length());
+		success_->PushArray(handles, results_.length());
+		success_->PushArray(data, results_.length());
+		success_->Execute(NULL);
+
+		// Cleanup. Note we clear results_, since freeing their handles will
+		// call Destroy(), and we don't want to double-free in ~TTransactOp.
+		for (size_t i = 0; i < results_.length(); i++)
+			handlesys->FreeHandle(handles[i], &sec);
+		handlesys->FreeHandle(dbh, &sec);
+		results_.clear();
+
+		return true;
+	}
+
+public:
+	void RunThinkPart()
+	{
+		if (!success_ && !failure_)
+			return;
+
+		if (Succeeded() && success_)
+		{
+			if (CallSuccess())
+				return;
+		}
+
+		if (!Succeeded() && failure_)
+		{
+			HandleSecurity sec(ident_, g_pCoreIdent);
+
+			ke::AutoArray<cell_t> data(new cell_t[results_.length()]);
+			for (size_t i = 0; i < txn_->entries.length(); i++)
+				data[i] = txn_->entries[i].data;
+
+			Handle_t dbh = CreateLocalHandle(g_DBMan.GetDatabaseType(), db_, &sec);
+			if (dbh != BAD_HANDLE)
+			{
+				// Add an extra refcount for the handle.
+				db_->AddRef();
+			}
+
+			failure_->PushCell(dbh);
+			failure_->PushCell(data_);
+			failure_->PushCell(txn_->entries.length());
+			failure_->PushString(error_.chars());
+			failure_->PushCell(failIndex_);
+			failure_->PushArray(data, txn_->entries.length());
+			failure_->Execute(NULL);
+		}
+	}
+
+private:
+	ke::Ref<IDatabase> db_;
+	Transaction *txn_;
+	IdentityToken_t *ident_;
+	IPluginFunction *success_;
+	IPluginFunction *failure_;
+	cell_t data_;
+	AutoHandleRooter autoHandle_;
+	ke::AString error_;
+	ke::Vector<IQuery *> results_;
+	cell_t failIndex_;
+};
+
+static cell_t SQL_ExecuteTransaction(IPluginContext *pContext, const cell_t *params)
+{
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	IDatabase *db = NULL;
+	HandleError err = g_DBMan.ReadHandle(params[1], DBHandle_Database, (void **)&db);
+	if (err != HandleError_None)
+		return pContext->ThrowNativeError("Invalid database handle %x (error: %d)", params[1], err);
+
+	Transaction *txn;
+	if ((err = handlesys->ReadHandle(params[2], hTransactionType, &sec, (void **)&txn)) != HandleError_None)
+		return pContext->ThrowNativeError("Invalid transaction handle %x (error %d)", params[2], err);
+
+	if (!db->GetDriver()->IsThreadSafe())
+		return pContext->ThrowNativeError("Driver \"%s\" is not thread safe!", db->GetDriver()->GetIdentifier());
+
+	IPluginFunction *onSuccess = NULL;
+	IPluginFunction *onError = NULL;
+	if (params[3] != -1 && ((onSuccess = pContext->GetFunctionById(params[3])) == NULL))
+		return pContext->ThrowNativeError("Function id %x is invalid", params[3]);
+	if (params[4] != -1 && ((onError = pContext->GetFunctionById(params[4])) == NULL))
+		return pContext->ThrowNativeError("Function id %x is invalid", params[4]);
+
+	cell_t data = params[5];
+	PrioQueueLevel priority = PrioQueue_Normal;
+	if (params[6] == (cell_t)PrioQueue_High)
+		priority = PrioQueue_High;
+	else if (params[6] == (cell_t)PrioQueue_Low)
+		priority = PrioQueue_Low;
+
+	TTransactOp *op = new TTransactOp(db, txn, params[2], pContext->GetIdentity(), onSuccess, onError, data);
+
+	// The handle owns the underlying Transaction object, but we want to close
+	// the plugin's view both to ensure reliable access for us and to prevent
+	// further tampering on the main thread. To do this, TTransactOp clones the
+	// transaction handle and automatically closes it. Therefore, it's safe to
+	// close the plugin's handle here.
+	handlesys->FreeHandle(params[2], &sec);
+
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+	if (pPlugin->GetProperty("DisallowDBThreads", NULL) || !g_DBMan.AddToThreadQueue(op, priority))
+	{
+		// Do everything right now.
+		op->RunThreadPart();
+		op->RunThinkPart();
+		op->Destroy();
+	}
+
+	return 0;
+}
+
 REGISTER_NATIVES(dbNatives)
 {
 	{"SQL_BindParamInt",		SQL_BindParamInt},
@@ -1457,7 +1780,10 @@ REGISTER_NATIVES(dbNatives)
 	{"SQL_TQuery",				SQL_TQuery},
 	{"SQL_UnlockDatabase",		SQL_UnlockDatabase},
 	{"SQL_ConnectCustom",		SQL_ConnectCustom},
-	{"SQL_SetCharset",		SQL_SetCharset},
+	{"SQL_SetCharset",			SQL_SetCharset},
+	{"SQL_CreateTransaction",	SQL_CreateTransaction},
+	{"SQL_AddQuery",			SQL_AddQuery},
+	{"SQL_ExecuteTransaction",	SQL_ExecuteTransaction},
 	{NULL,						NULL},
 };
 
