@@ -577,7 +577,7 @@ void HTTPSessionManager::PluginUnloaded(IPlugin *plugin)
 		if (!requests.empty())
 		{
 			// Run through requests queue
-			for (std::deque<HTTPRequest>::iterator i(requests.begin()), end(requests.end()); i != end; ++i)
+			for (Queue<HTTPRequest>::iterator i(requests.begin()), end(requests.end()); i != end; ++i)
 			{
 				// Identify requests associated to (nearly) unmapped plugin context
 				if (i->pCtx == plugin->GetBaseContext())
@@ -595,7 +595,8 @@ void HTTPSessionManager::PluginUnloaded(IPlugin *plugin)
 	// Wait for running requests to finish
 	if (!threads.empty())
 	{
-		for (std::list<IThreadHandle*>::iterator i(threads.begin()), end(threads.end()); i != end; ++i)
+		//for (std::list<IThreadHandle*>::iterator i(threads.begin()), end(threads.end()); i != end; ++i)
+		for (ke::LinkedList<IThreadHandle*>::iterator i(threads.begin()), end(threads.end()); i != end; ++i)
 		{
 			if ((*i) != NULL)
 			{
@@ -611,7 +612,9 @@ void HTTPSessionManager::PluginUnloaded(IPlugin *plugin)
 					if (!callbacks.empty())
 					{
 						// Run through callback queue
-						for (std::deque<HTTPRequest>::iterator i(callbacks.begin()), end(callbacks.end()); i != end; ++i)
+						//for (std::deque<HTTPRequest>::iterator i(callbacks.begin()), end(callbacks.end()); i != end; ++i)
+						//for (ke::LinkedList<HTTPRequest>::iterator i(callbacks.begin()), end(callbacks.end()); i != end; ++i)
+						for (Queue<HTTPRequest>::iterator i(callbacks.begin()), end(callbacks.end()); i != end; ++i)
 						{
 							// Identify callbacks associated to (nearly) unmapped plugin context
 							if (i->pCtx == plugin->GetBaseContext())
@@ -644,7 +647,7 @@ void HTTPSessionManager::PostAndDownload(IPluginContext *pCtx,
 	request.contextPack = contextPack;
 
 	pRequestsLock->Lock();
-	this->requests.push_front(request);
+	this->requests.push(request);
 	pRequestsLock->Unlock();
 }
 
@@ -662,7 +665,7 @@ void HTTPSessionManager::Download(IPluginContext *pCtx,
 	request.contextPack = contextPack;
 
 	pRequestsLock->Lock();
-	this->requests.push_front(request);
+	this->requests.push(request);
 	pRequestsLock->Unlock();
 }
 
@@ -693,7 +696,7 @@ void HTTPSessionManager::RunFrame()
 	{
 		if (!this->callbacks.empty())
 		{
-			HTTPRequest request = this->callbacks.front();
+			HTTPRequest request = this->callbacks.first();
 			IPluginContext *pCtx = request.pCtx;
 
 			// Is the requesting plugin still alive?
@@ -716,7 +719,7 @@ void HTTPSessionManager::RunFrame()
 				}
 			}
 
-			this->callbacks.pop_front();
+			this->callbacks.pop();
 		}
 
 		this->pCallbacksLock->Unlock();
@@ -738,18 +741,19 @@ void HTTPSessionManager::RunFrame()
 			{
 				// Create new thread object
 				HTTPAsyncRequestHandler *async = 
-					new HTTPAsyncRequestHandler(this->requests.front());
+					new HTTPAsyncRequestHandler(this->requests.first());
 				// Skip requests with unloaded parent plugin
-				if (this->requests.front().pCtx != NULL)
+				if (this->requests.first().pCtx != NULL)
 				{
 					// Create new thread
 					IThreadHandle *pThread = 
 						threader->MakeThread(async, Thread_Default);
 					// Save thread handle
-					this->threads.push_front(pThread);
+					//this->threads.push_front(pThread);
+					this->threads.append(pThread);
 				}
 				// Remove request as it's being handled now
-				this->requests.pop_front();
+				this->requests.pop();
 			}
 		}
 
@@ -768,10 +772,7 @@ void HTTPSessionManager::Initialize()
 void HTTPSessionManager::Shutdown()
 {
 	// Block until all running threads have finished
-	while (!this->threads.empty())
-	{
-		this->RemoveFinishedThreads();
-	}
+	this->RemoveFinishedThreads();
 
 	// Destroy all remaining callback calls
 	this->pCallbacksLock->Lock();
@@ -792,7 +793,8 @@ void HTTPSessionManager::Shutdown()
 void HTTPSessionManager::AddCallback(HTTPRequest request)
 {
 	this->pCallbacksLock->Lock();
-	this->callbacks.push_front(request);
+	//this->callbacks.push_front(request);
+	this->callbacks.push(request);
 	this->pCallbacksLock->Unlock();
 }
 
@@ -801,17 +803,15 @@ void HTTPSessionManager::RemoveFinishedThreads()
 	// Do some quick "garbage collection" on finished threads
 	if (!this->threads.empty())
 	{
-		for (std::list<IThreadHandle*>::iterator i(threads.begin()), end(threads.end()); i != end; ++i)
+		//for (std::list<IThreadHandle*>::iterator i(threads.begin()), end(threads.end()); i != end; ++i)
+		for (ke::LinkedList<IThreadHandle*>::iterator i(threads.begin()), end(threads.end()); i != end; ++i)
 		{
 			if ((*i) != NULL)
 			{
 				if ((*i)->GetState() == Thread_Done)
 				{
 					(*i)->DestroyThis();
-					this->threads.remove((*i));
-					// NOTE: this action breaks the iteration so we have
-					// to leave the loop and start over on next frame
-					break;
+					i = this->threads.erase(i);
 				}
 			}
 		}
