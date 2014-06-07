@@ -164,7 +164,7 @@ extern DownloadHandler g_DownloadHandler;
 extern HandleType_t g_DownloadHandle;
 
 struct HTTPRequestCompletedContextFunction {
-	// NOTE: deprecated!
+	// TODO: remove as it's redundant
 	IPluginContext *pContext;
 	funcid_t uPluginFunction;
 	bool bHasContext;
