@@ -40,8 +40,8 @@
 #include "smsdk_ext.h"
 #include "IWebternet.h"
 #include "IBaseDownloader.h"
-#include <queue>
-#include <list>
+#include <amtl/am-linkedlist.h>
+#include <sm_queue.h>
 
 
 /**
@@ -229,6 +229,10 @@ private:
 		const char *url;
 		HTTPRequestCompletedContextPack contextPack;
 		cell_t result;
+		bool operator==(const HTTPRequest& lhs) const
+		{
+			return !memcmp(&lhs, this, sizeof(HTTPRequest));
+		}
 	};
 
 	void RemoveFinishedThreads();
@@ -236,11 +240,14 @@ private:
 
 	static const unsigned int iMaxRequestsPerFrame = 20;
 	IMutex *pRequestsLock;
-	std::deque<HTTPRequest> requests;
+	Queue<HTTPRequest> requests;
 	// NOTE: this needs no lock since it's only accessed from main thread
-	std::list<IThreadHandle*> threads;
+	//std::list<IThreadHandle*> threads;
+	ke::LinkedList<IThreadHandle*> threads;
 	IMutex *pCallbacksLock;
-	std::deque<HTTPRequest> callbacks;
+	//std::deque<HTTPRequest> callbacks;
+	//ke::LinkedList<HTTPRequest> callbacks;
+	Queue<HTTPRequest> callbacks;
 
 	class HTTPAsyncRequestHandler : public IThread
 	{
