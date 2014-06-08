@@ -44,11 +44,11 @@
  */
 funcenum HTTP_SessionCallback {
 	// Callback with session handle and request result
-	public(Handle:session, result),
+	public(Handle:session, bool:succeeded),
 	// Callback with session handle, request result and download handle
-	public(Handle:session, result, Handle:downloader),
+	public(Handle:session, bool:succeeded, Handle:downloader),
 	// Callback with session handle, request result, download handle and optional user data
-	public(Handle:session, result, Handle:downloader, any:data),
+	public(Handle:session, bool:succeeded, Handle:downloader, any:data),
 };
 
 /**
