@@ -5,7 +5,6 @@ libcurl = builder.RunScript('curl-src/lib/AMBuilder')
 
 binary = SM.ExtLibrary(builder, 'webternet.ext')
 binary.compiler.includes += [
-  os.path.join(SM.mms_root, 'core', 'sourcehook'),
   os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl-src', 'include')
 ]
 binary.compiler.defines += ['CURL_STATICLIB']
