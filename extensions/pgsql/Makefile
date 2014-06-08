@@ -8,7 +8,7 @@ HL2SDK_OB = ../../../hl2sdk-ob
 HL2SDK_OB_VALVE = ../../../hl2sdk-ob-valve
 HL2SDK_L4D = ../../../hl2sdk-l4d
 MMSOURCE17 = ../../../mmsource-central
-PGSQL = ../../../postgresql-9.3/src
+PGSQL = ../../../postgresql-9.3
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -19,7 +19,7 @@ PROJECT = dbi.pgsql
 #Uncomment for Metamod: Source enabled extension
 #USEMETA = true
 
-OBJECTS = sdk/smsdk_ext.cpp extension.cpp \
+OBJECTS = $(SMSDK)/public/smsdk_ext.cpp extension.cpp \
 	pgsql/PgBasicResults.cpp pgsql/PgDatabase.cpp \
 	pgsql/PgDriver.cpp pgsql/PgStatement.cpp
 
@@ -84,7 +84,7 @@ ifeq "$(USEMETA)" "true"
 		-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
 else
 	INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/amtl -I$(MMSOURCE17)/core/sourcehook \
-		-I/usr/local/pgsql/include -I$(PGSQL)/include
+		-I$(PGSQL)/build/include -I$(PGSQL)/src/include
 	CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_ORANGEBOXVALVE=4 -DSE_LEFT4DEAD=5 
 endif
 
