@@ -42,6 +42,7 @@
 #include "IBaseDownloader.h"
 #include <amtl/am-linkedlist.h>
 #include <sm_queue.h>
+#include <string.h>
 
 
 /**
