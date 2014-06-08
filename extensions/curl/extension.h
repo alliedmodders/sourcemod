@@ -41,7 +41,7 @@
 #include "IWebternet.h"
 #include "IBaseDownloader.h"
 #include <amtl/am-linkedlist.h>
-#include <sm_queue.h>
+#include <amtl/am-vector.h>
 #include <string.h>
 
 
@@ -241,11 +241,11 @@ private:
 
 	static const unsigned int iMaxRequestsPerFrame = 20;
 	IMutex *pRequestsLock;
-	Queue<HTTPRequest> requests;
+	ke::Vector<HTTPRequest> requests;
 	// NOTE: this needs no lock since it's only accessed from main thread
 	ke::LinkedList<IThreadHandle*> threads;
 	IMutex *pCallbacksLock;
-	Queue<HTTPRequest> callbacks;
+	ke::Vector<HTTPRequest> callbacks;
 
 	class HTTPAsyncRequestHandler : public IThread
 	{

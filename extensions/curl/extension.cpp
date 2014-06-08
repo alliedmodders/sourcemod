@@ -37,7 +37,6 @@
 #include "curlapi.h"
 #include "FileDownloader.h"
 #include "MemoryDownloader.h"
-#include <string.h>
 
 
 /**
@@ -577,14 +576,14 @@ void HTTPSessionManager::PluginUnloaded(IPlugin *plugin)
 		if (!requests.empty())
 		{
 			// Run through requests queue
-			for (Queue<HTTPRequest>::iterator i(requests.begin()), end(requests.end()); i != end; ++i)
+			for (unsigned int i = 0; i < requests.length(); i++)
 			{
 				// Identify requests associated to (nearly) unmapped plugin context
-				if (i->pCtx == plugin->GetBaseContext())
+				if (requests[i].pCtx == plugin->GetBaseContext())
 				{
 					// All context related data and callbacks are marked invalid
-					i->pCtx = NULL;
-					i->contextPack.pCallbackFunction = NULL;
+					requests[i].pCtx = NULL;
+					requests[i].contextPack.pCallbackFunction = NULL;
 				}
 			}
 		}
@@ -612,14 +611,15 @@ void HTTPSessionManager::PluginUnloaded(IPlugin *plugin)
 					if (!callbacks.empty())
 					{
 						// Run through callback queue
-						for (Queue<HTTPRequest>::iterator i(callbacks.begin()), end(callbacks.end()); i != end; ++i)
+						//for (Queue<HTTPRequest>::iterator i(callbacks.begin()), end(callbacks.end()); i != end; ++i)
+						for (unsigned int i = 0; i < callbacks.length(); i++)
 						{
 							// Identify callbacks associated to (nearly) unmapped plugin context
-							if (i->pCtx == plugin->GetBaseContext())
+							if (callbacks[i].pCtx == plugin->GetBaseContext())
 							{
 								// All context related data and callbacks are marked invalid
-								i->pCtx = NULL;
-								i->contextPack.pCallbackFunction = NULL;
+								callbacks[i].pCtx = NULL;
+								callbacks[i].contextPack.pCallbackFunction = NULL;
 							}
 						}
 					}
@@ -645,7 +645,7 @@ void HTTPSessionManager::PostAndDownload(IPluginContext *pCtx,
 	request.contextPack = contextPack;
 
 	pRequestsLock->Lock();
-	this->requests.push(request);
+	this->requests.append(request);
 	pRequestsLock->Unlock();
 }
 
@@ -663,7 +663,7 @@ void HTTPSessionManager::Download(IPluginContext *pCtx,
 	request.contextPack = contextPack;
 
 	pRequestsLock->Lock();
-	this->requests.push(request);
+	this->requests.append(request);
 	pRequestsLock->Unlock();
 }
 
@@ -694,7 +694,7 @@ void HTTPSessionManager::RunFrame()
 	{
 		if (!this->callbacks.empty())
 		{
-			HTTPRequest request = this->callbacks.first();
+			HTTPRequest request = this->callbacks.back();
 			IPluginContext *pCtx = request.pCtx;
 
 			// Is the requesting plugin still alive?
@@ -739,9 +739,9 @@ void HTTPSessionManager::RunFrame()
 			{
 				// Create new thread object
 				HTTPAsyncRequestHandler *async = 
-					new HTTPAsyncRequestHandler(this->requests.first());
+					new HTTPAsyncRequestHandler(this->requests.back());
 				// Skip requests with unloaded parent plugin
-				if (this->requests.first().pCtx != NULL)
+				if (this->requests.back().pCtx != NULL)
 				{
 					// Create new thread
 					IThreadHandle *pThread = 
@@ -791,7 +791,7 @@ void HTTPSessionManager::Shutdown()
 void HTTPSessionManager::AddCallback(HTTPRequest request)
 {
 	this->pCallbacksLock->Lock();
-	this->callbacks.push(request);
+	this->callbacks.append(request);
 	this->pCallbacksLock->Unlock();
 }
 
