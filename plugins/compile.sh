@@ -10,6 +10,10 @@ then
         smxfile="`echo $i | sed -e 's/\.sp$/\.smx/'`";
 	    echo -e "\nCompiling $i...";
 	    ./spcomp $i -ocompiled/$smxfile
+	    RETVAL=$?
+	    if [ $RETVAL -ne 0 ]; then
+	    	return 1;
+	    fi
     done
 else
 
@@ -18,5 +22,9 @@ do
 	smxfile="`echo $sourcefile | sed -e 's/\.sp$/\.smx/'`"
 	echo -e "\nCompiling $sourcefile ..."
 	./spcomp $sourcefile -ocompiled/$smxfile
+	RETVAL=$?
+	if [ $RETVAL -ne 0 ]; then
+	    	return 1;
+	fi
 done
 fi
