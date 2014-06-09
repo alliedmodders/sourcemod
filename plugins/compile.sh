@@ -12,7 +12,7 @@ then
 	    ./spcomp $i -ocompiled/$smxfile
 	    RETVAL=$?
 	    if [ $RETVAL -ne 0 ]; then
-	    	return 1;
+	    	exit 1;
 	    fi
     done
 else
@@ -24,7 +24,7 @@ do
 	./spcomp $sourcefile -ocompiled/$smxfile
 	RETVAL=$?
 	if [ $RETVAL -ne 0 ]; then
-	    	return 1;
+	    	exit 1;
 	fi
 done
 fi
