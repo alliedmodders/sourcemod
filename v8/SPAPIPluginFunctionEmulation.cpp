@@ -16,7 +16,7 @@ namespace SMV8
 			Cancel();
 		}
 
-		int PluginFunction::PushValue(Handle<Value> val)
+		int PluginFunction::PushValue(Local<Value> val)
 		{
 			params[curParam++].Reset(runtime.isolate, val);
 			return SP_ERROR_NONE;
@@ -25,46 +25,46 @@ namespace SMV8
 		int PluginFunction::PushCell(cell_t cell)
 		{
 			HandleScope handle_scope(runtime.isolate);
-			Handle<Context> context = Handle<Context>::New(runtime.isolate, runtime.v8Context);
+			Local<Context> context = Local<Context>::New(runtime.isolate, runtime.v8Context);
 			Context::Scope context_scope(context);
-			return PushValue(Integer::New(cell));
+			return PushValue(Integer::New(runtime.isolate, cell));
 		}
 
 		int PluginFunction::PushCellByRef(cell_t *cell, int flags)
 		{
 			HandleScope handle_scope(runtime.isolate);
-			Handle<Context> context = Handle<Context>::New(runtime.isolate, runtime.v8Context);
+			Local<Context> context = Local<Context>::New(runtime.isolate, runtime.v8Context);
 			Context::Scope context_scope(context);
-			return PushValue(MakeRefObj(Integer::New(*cell), cell, 1, flags & SM_PARAM_COPYBACK));
+			return PushValue(MakeRefObj(Integer::New(runtime.isolate, *cell), cell, 1, flags & SM_PARAM_COPYBACK));
 		}
 
 		int PluginFunction::PushFloat(float number)
 		{
 			HandleScope handle_scope(runtime.isolate);
-			Handle<Context> context = Handle<Context>::New(runtime.isolate, runtime.v8Context);
+			Local<Context> context = Local<Context>::New(runtime.isolate, runtime.v8Context);
 			Context::Scope context_scope(context);
-			return PushValue(Number::New(number));
+			return PushValue(Number::New(runtime.isolate, number));
 		}
 
 		int PluginFunction::PushFloatByRef(float *number, int flags)
 		{
 			HandleScope handle_scope(runtime.isolate);
-			Handle<Context> context = Handle<Context>::New(runtime.isolate, runtime.v8Context);
+			Local<Context> context = Local<Context>::New(runtime.isolate, runtime.v8Context);
 			Context::Scope context_scope(context);
-			return PushValue(MakeRefObj(Number::New(*number), number, 1, flags & SM_PARAM_COPYBACK));
+			return PushValue(MakeRefObj(Number::New(runtime.isolate, *number), number, 1, flags & SM_PARAM_COPYBACK));
 		}
 
 		// TODO: Problem: No float arrays
 		int PluginFunction::PushArray(cell_t *inarray, unsigned int cells, int flags)
 		{
 			HandleScope handle_scope(runtime.isolate);
-			Handle<Context> context = Handle<Context>::New(runtime.isolate, runtime.v8Context);
+			Local<Context> context = Local<Context>::New(runtime.isolate, runtime.v8Context);
 			Context::Scope context_scope(context);
-			Handle<Array> array = Array::New(cells);
+			Local<Array> array = Array::New(runtime.isolate, cells);
 
 			for(unsigned int i = 0; i < cells; i++)
 			{
-				array->Set(i, Integer::New(inarray[i]));
+				array->Set(i, Integer::New(runtime.isolate, inarray[i]));
 			}
 
 			return PushValue(MakeRefObj(array, inarray, cells, flags & SM_PARAM_COPYBACK));
@@ -74,25 +74,25 @@ namespace SMV8
 		{
 			// Alternative: give raw string back, but unpredictable
 			HandleScope handle_scope(runtime.isolate);
-			Handle<Context> context = Handle<Context>::New(runtime.isolate, runtime.v8Context);
+			Local<Context> context = Local<Context>::New(runtime.isolate, runtime.v8Context);
 			Context::Scope context_scope(context);
-			return PushValue(MakeRefObj(String::New(string), NULL, strlen(string) + 1, false));
+			return PushValue(MakeRefObj(String::NewFromUtf8(runtime.isolate, string), NULL, strlen(string) + 1, false));
 		}
 
 		int PluginFunction::PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags)
 		{
 			HandleScope handle_scope(runtime.isolate);
-			Handle<Context> context = Handle<Context>::New(runtime.isolate, runtime.v8Context);
+			Local<Context> context = Local<Context>::New(runtime.isolate, runtime.v8Context);
 			Context::Scope context_scope(context);
-			return PushValue(MakeRefObj(String::New(buffer), buffer, length, cp_flags & SM_PARAM_COPYBACK));
+			return PushValue(MakeRefObj(String::NewFromUtf8(runtime.isolate, buffer), buffer, length, cp_flags & SM_PARAM_COPYBACK));
 		}
 
-		Handle<Object> PluginFunction::MakeRefObj(Handle<Value> val, void *addr, size_t size, bool copyback)
+		Local<Object> PluginFunction::MakeRefObj(Local<Value> val, void *addr, size_t size, bool copyback)
 		{
-			HandleScope handle_scope(runtime.isolate);
-			Handle<Object> res = Object::New();
-			res->Set(String::New("value"), val);
-			res->Set(String::New("size"), Integer::New(size));
+			EscapableHandleScope handle_scope(runtime.isolate);
+			Local<Object> res = Object::New(runtime.isolate);
+			res->Set(String::NewFromUtf8(runtime.isolate, "value"), val);
+			res->Set(String::NewFromUtf8(runtime.isolate, "size"), Integer::New(runtime.isolate, size));
 
 			if(copyback)
 			{
@@ -103,21 +103,21 @@ namespace SMV8
 				refs.push_back(ri);
 			}
 
-			return handle_scope.Close(res);
+			return handle_scope.Escape(res);
 		}
 
 		void PluginFunction::Cancel()
 		{
 			for(SPToV8ReferenceInfo *ref: refs)
 			{
-				ref->refObj.Dispose();
+				ref->refObj.Reset();
 				delete ref;
 			}
 			refs.clear();
 
 			for(int i = 0; i < curParam; i++)
 			{
-				params[i].Dispose();
+				params[i].Reset();
 			}
 			curParam = 0;
 		}
@@ -159,31 +159,31 @@ namespace SMV8
 		{
 			PluginContext* pcontext = static_cast<PluginContext*>(ctx);
 			HandleScope handle_scope(runtime.isolate);
-			Handle<Context> context = Handle<Context>::New(runtime.isolate, runtime.v8Context);
+			Local<Context> context = Local<Context>::New(runtime.isolate, runtime.v8Context);
 			Context::Scope context_scope(context);
 
-			Handle<Value> args[SP_MAX_EXEC_PARAMS];
+			Local<Value> args[SP_MAX_EXEC_PARAMS];
 
 			for(int i = 0; i < curParam; i++)
 			{
-				args[i] = Handle<Value>::New(runtime.isolate, params[i]);
+				args[i] = Local<Value>::New(runtime.isolate, params[i]);
 			}
 
 			TryCatch trycatch;
 
-			Handle<Value> res = pcontext->ExecuteV8(this, curParam, args);
+			Local<Value> res = pcontext->ExecuteV8(this, curParam, args);
 
 			if(res.IsEmpty()) 
 			{  
-				Handle<Value> exception = trycatch.Exception();
-				Handle<Value> stack_trace = trycatch.StackTrace();
-				String::AsciiValue exceptionStr(exception);
+				Local<Value> exception = trycatch.Exception();
+				Local<Value> stack_trace = trycatch.StackTrace();
+				String::Utf8Value exceptionStr(exception);
 
 				std::string err = *exceptionStr;
 				if(!stack_trace.IsEmpty())
 				{
 					err += "\n";
-					err += *String::AsciiValue(stack_trace.As<String>());
+					err += *String::Utf8Value(stack_trace.As<String>());
 				}
 
 				runtime.manager->ReportError(ctx, GetFunctionID(), 0, err);
@@ -210,8 +210,8 @@ namespace SMV8
 
 			for(SPToV8ReferenceInfo *ref: refs)
 			{
-				Handle<Object> refObj = Handle<Object>::New(runtime.isolate, ref->refObj);
-				Handle<Value> val = refObj->Get(String::New("value"));
+				Local<Object> refObj = Local<Object>::New(runtime.isolate, ref->refObj);
+				Local<Value> val = refObj->Get(String::NewFromUtf8(runtime.isolate, "value"));
 
 				if(val->IsNumber())
 					SetSingleCellValue(val.As<Number>(), (cell_t *)ref->addr);
@@ -222,7 +222,7 @@ namespace SMV8
 			}
 		}
 
-		void PluginFunction::SetSingleCellValue(Handle<Number> val, cell_t *addr)
+		void PluginFunction::SetSingleCellValue(Local<Number> val, cell_t *addr)
 		{
 			if(val->IsInt32())
 				*addr = (cell_t)val.As<Integer>()->Value();
@@ -230,17 +230,17 @@ namespace SMV8
 				*addr = sp_ftoc((float)val->Value());
 		}
 
-		void PluginFunction::CopyBackString(Handle<String> val, SPToV8ReferenceInfo *ref)
+		void PluginFunction::CopyBackString(Local<String> val, SPToV8ReferenceInfo *ref)
 		{
 			// TODO: UTF-8
 			
-			String::AsciiValue ascii(val);
+			String::Utf8Value ascii(val);
 			size_t len = std::min((size_t)ascii.length() + 1,ref->size);
 			memcpy(ref->addr, *ascii, len);
 			((char*)ref->addr)[len - 1] = '\0';
 		}
 
-		void PluginFunction::CopyBackArray(Handle<Array> val, SPToV8ReferenceInfo *ref)
+		void PluginFunction::CopyBackArray(Local<Array> val, SPToV8ReferenceInfo *ref)
 		{
 			for(unsigned int i = 0; i < std::min(val->Length(), ref->size); i++)
 			{

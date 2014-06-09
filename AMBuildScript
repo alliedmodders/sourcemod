@@ -502,12 +502,12 @@ BuildScripts = [
   'extensions/updater/AMBuilder',
   'sourcepawn/compiler/AMBuilder',
   'sourcepawn/jit/AMBuilder',
+  'v8/AMBuilder',
 ]
 
 if builder.backend == 'amb2':
   BuildScripts += [
     'plugins/AMBuilder',
-	'v8/AMBuilder',
     'tools/buildbot/PackageScript',
   ]
 

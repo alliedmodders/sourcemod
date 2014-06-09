@@ -1,8 +1,6 @@
 #ifndef _INCLUDE_PUBLIC_V8MANAGER_H_
 #define _INCLUDE_PUBLIC_V8MANAGER_H_
 
-#include <v8.h>
-
 #include <ISourceMod.h>
 #include <sp_vm_api.h>
 #undef min
@@ -12,7 +10,6 @@
 
 namespace SMV8
 {
-	using namespace v8;
 	using namespace SourceMod;
 
 	class IManager

@@ -71,7 +71,7 @@ namespace SMV8
 
 	ScriptLoader::~ScriptLoader()
 	{
-		coffeeCompilerContext.Dispose();
+		coffeeCompilerContext.Reset();
 	}
 
 	SMV8Script ScriptLoader::AutoLoadScript(const std::string& location) const
@@ -132,10 +132,10 @@ namespace SMV8
 		ostringstream oss;
 		oss << ifs.rdbuf();
 
-		Handle<Context> context = Handle<Context>::New(isolate, coffeeCompilerContext);
+		Local<Context> context = Local<Context>::New(isolate, coffeeCompilerContext);
 		Context::Scope context_scope(context);
 
-		Handle<Script> coffeeCompiler = Script::Compile(String::New(oss.str().c_str()));
+		Local<Script> coffeeCompiler = Script::Compile(String::NewFromUtf8(isolate, oss.str().c_str()));
 		coffeeCompiler->Run();
 	}
 
@@ -143,20 +143,20 @@ namespace SMV8
 	{
 		HandleScope handle_scope(isolate);
 
-		Handle<Context> context = Handle<Context>::New(isolate, coffeeCompilerContext);
+		Local<Context> context = Local<Context>::New(isolate, coffeeCompilerContext);
 		Context::Scope context_scope(context);
 
-		Handle<Object> coffeescript = context->Global()->Get(String::New("CoffeeScript")).As<Object>();
+		Local<Object> coffeescript = context->Global()->Get(String::NewFromUtf8(isolate, "CoffeeScript")).As<Object>();
 
 		const int argc = 1;
-		Handle<Value> argv[argc] = { String::New(coffee.c_str()) };
+		Local<Value> argv[argc] = { String::NewFromUtf8(isolate, coffee.c_str()) };
 
 		TryCatch trycatch;
-		Handle<Value> result = coffeescript->Get(String::New("compile")).As<Function>()->Call(coffeescript, argc, argv);
+		Local<Value> result = coffeescript->Get(String::NewFromUtf8(isolate, "compile")).As<Function>()->Call(coffeescript, argc, argv);
 		if(result.IsEmpty())
 		{
-			Handle<Value> exception = trycatch.Exception();
-			String::AsciiValue exceptionStr(exception);
+			Local<Value> exception = trycatch.Exception();
+			String::Utf8Value exceptionStr(exception);
 
 			std::string err = *exceptionStr;
 

@@ -18,11 +18,11 @@ namespace SMV8
 		SMV8Script pkgman = scriptLoader->LoadScript("v8/support/pkgman.coffee");
 
 		HandleScope handle_scope(isolate);
-		Handle<Context> context = Context::New(isolate, NULL, BuildGlobalObjectTemplate());
+		Local<Context> context = Context::New(isolate, NULL, BuildGlobalObjectTemplate());
 		depman_context.Reset(isolate, context);
 		Context::Scope context_scope(context);
-		Script::Compile(String::New(pkgman.GetCode().c_str()))->Run().As<Object>();
-		Handle<Object> depMan = context->Global()->Get(String::New("dependencyManager")).As<Object>();
+		Script::Compile(String::NewFromUtf8(isolate, pkgman.GetCode().c_str()))->Run().As<Object>();
+		Local<Object> depMan = context->Global()->Get(String::NewFromUtf8(isolate, "dependencyManager")).As<Object>();
 		bool depManEmpty = depMan.IsEmpty();
 		bool depManObj = depMan->IsObject();
 		jsDepMan.Reset(isolate, depMan);
@@ -30,22 +30,22 @@ namespace SMV8
 
 	DependencyManager::~DependencyManager()
 	{
-		jsDepMan.Dispose();
-		depman_context.Dispose();
+		jsDepMan.Reset();
+		depman_context.Reset();
 	}
 
 	void DependencyManager::LoadDependencies(const string& package_path)
 	{
 		HandleScope handle_scope(isolate);
 
-		Local<Context> context = Handle<Context>::New(isolate,depman_context);
+		Local<Context> context = Local<Context>::New(isolate,depman_context);
 		Context::Scope context_scope(context);
 
-		Local<Object> depMan = Handle<Object>::New(isolate, jsDepMan);
+		Local<Object> depMan = Local<Object>::New(isolate, jsDepMan);
 
 		const unsigned int argc = 1;
-		Handle<Value> argv[argc] = {String::New(package_path.c_str())};
-		depMan->Get(String::New("loadDependencies")).As<Function>()->Call(depMan, argc, argv);
+		Local<Value> argv[argc] = {String::NewFromUtf8(isolate, package_path.c_str())};
+		depMan->Get(String::NewFromUtf8(isolate, "loadDependencies")).As<Function>()->Call(depMan, argc, argv);
 	}
 
 	// TODO: Throw error if not found
@@ -53,37 +53,37 @@ namespace SMV8
 	{
 		HandleScope handle_scope(isolate);
 
-		Local<Context> context = Handle<Context>::New(isolate,depman_context);
+		Local<Context> context = Local<Context>::New(isolate,depman_context);
 		Context::Scope context_scope(context);
 
-		Local<Object> depMan = Handle<Object>::New(isolate, jsDepMan);
+		Local<Object> depMan = Local<Object>::New(isolate, jsDepMan);
 
 		const unsigned int argc = 2;
-		Handle<Value> argv[argc] = {String::New(source_pkg.c_str()), String::New(require_path.c_str())};
-		Handle<String> result = depMan->Get(String::New("resolvePath")).As<Function>()->Call(depMan, argc, argv).As<String>();
+		Local<Value> argv[argc] = {String::NewFromUtf8(isolate, source_pkg.c_str()), String::NewFromUtf8(isolate, require_path.c_str())};
+		Local<String> result = depMan->Get(String::NewFromUtf8(isolate, "resolvePath")).As<Function>()->Call(depMan, argc, argv).As<String>();
 
-		return *String::AsciiValue(result);
+		return *String::Utf8Value(result);
 	}
 
 	void DependencyManager::Depend(const string& depender, const string& pkg, const string& restriction)
 	{
 		HandleScope handle_scope(isolate);
 
-		Local<Context> context = Handle<Context>::New(isolate,depman_context);
+		Local<Context> context = Local<Context>::New(isolate,depman_context);
 		Context::Scope context_scope(context);
 
-		Local<Object> depMan = Handle<Object>::New(isolate, jsDepMan);
+		Local<Object> depMan = Local<Object>::New(isolate, jsDepMan);
 
 		const unsigned int argc = 3;
-		Handle<Value> argv[argc] = {String::New(depender.c_str()), String::New(pkg.c_str()), String::New(restriction.c_str())};
+		Local<Value> argv[argc] = {String::NewFromUtf8(isolate, depender.c_str()), String::NewFromUtf8(isolate, pkg.c_str()), String::NewFromUtf8(isolate, restriction.c_str())};
 
 		TryCatch trycatch;
-		Handle<Value> result = depMan->Get(String::New("depend")).As<Function>()->Call(depMan, argc, argv);
+		Local<Value> result = depMan->Get(String::NewFromUtf8(isolate, "depend")).As<Function>()->Call(depMan, argc, argv);
 
 		if(result.IsEmpty())
 		{
-			Handle<Value> err = trycatch.Exception();
-			string exceptionStr = *String::AsciiValue(err);
+			Local<Value> err = trycatch.Exception();
+			string exceptionStr = *String::Utf8Value(err);
 
 			throw runtime_error(exceptionStr);
 		}
@@ -93,49 +93,49 @@ namespace SMV8
 	{
 		HandleScope handle_scope(isolate);
 
-		Local<Context> context = Handle<Context>::New(isolate,depman_context);
+		Local<Context> context = Local<Context>::New(isolate,depman_context);
 		Context::Scope context_scope(context);
 
-		Local<Object> depMan = Handle<Object>::New(isolate, jsDepMan);
+		Local<Object> depMan = Local<Object>::New(isolate, jsDepMan);
 
 		const unsigned int argc = 1;
-		Handle<Value> argv[argc] = {String::New(depender.c_str())};
+		Local<Value> argv[argc] = {String::NewFromUtf8(isolate, depender.c_str())};
 
-		depMan->Get(String::New("resetAliases")).As<Function>()->Call(depMan, argc, argv);
+		depMan->Get(String::NewFromUtf8(isolate, "resetAliases")).As<Function>()->Call(depMan, argc, argv);
 	}
 
-	Handle<ObjectTemplate> DependencyManager::BuildGlobalObjectTemplate()
+	Local<ObjectTemplate> DependencyManager::BuildGlobalObjectTemplate()
 	{
-		HandleScope handle_scope(isolate);
-		Handle<ObjectTemplate> externals = ObjectTemplate::New();
-		externals->Set("readPakfile",FunctionTemplate::New(&ext_readPakfile,External::New(this)));
-		externals->Set("findLocalVersions",FunctionTemplate::New(&ext_findLocalVersions,External::New(this)));
-		Handle<ObjectTemplate> gt = ObjectTemplate::New();
-		gt->Set("externals", externals);
-		return handle_scope.Close(gt);
+		EscapableHandleScope handle_scope(isolate);
+		Local<ObjectTemplate> externals = ObjectTemplate::New();
+		externals->Set(String::NewFromUtf8(isolate, "readPakfile"), FunctionTemplate::New(isolate, &ext_readPakfile,External::New(isolate, this)));
+		externals->Set(String::NewFromUtf8(isolate, "findLocalVersions"), FunctionTemplate::New(isolate, &ext_findLocalVersions,External::New(isolate, this)));
+		Local<ObjectTemplate> gt = ObjectTemplate::New();
+		gt->Set(String::NewFromUtf8(isolate, "externals"), externals);
+		return handle_scope.Escape(gt);
 	}
 
 	void DependencyManager::ext_readPakfile(const FunctionCallbackInfo<Value>& info)
 	{
 		DependencyManager *self = (DependencyManager *)info.Data().As<External>()->Value();
-		string package = *String::AsciiValue(info[0].As<String>());
+		string package = *String::Utf8Value(info[0].As<String>());
 		string pkgfile = self->packages_root + package + "/Pakfile";
 
 		SMV8Script s = self->scriptLoader->LoadScript(pkgfile, true);
-		info.GetReturnValue().Set(String::New(s.GetCode().c_str()));
+		info.GetReturnValue().Set(String::NewFromUtf8(info.GetIsolate(), s.GetCode().c_str()));
 	}
 
 	void DependencyManager::ext_findLocalVersions(const FunctionCallbackInfo<Value>& info)
 	{
 		HandleScope handle_scope(info.GetIsolate());
 		DependencyManager *self = (DependencyManager *)info.Data().As<External>()->Value();
-		string package = *String::AsciiValue(info[0].As<String>());
+		string package = *String::Utf8Value(info[0].As<String>());
 		string packageDir = self->packages_root + package;
 		char pkgCollectionPath[PLATFORM_MAX_PATH];
 
 		self->sm->BuildPath(Path_SM, pkgCollectionPath, sizeof(pkgCollectionPath), packageDir.c_str());
 
-		Handle<Array> res = Array::New();
+		Local<Array> res = Array::New(info.GetIsolate());
 
 		if(!self->libsys->PathExists(pkgCollectionPath) || !self->libsys->IsPathDirectory(pkgCollectionPath))
 		{
@@ -151,7 +151,7 @@ namespace SMV8
 			{
 				const char* name = pkgCollectionDir->GetEntryName();
 				if(strcmp(name, ".") != 0 && strcmp(name, "..") != 0)
-					res->Set(i++, String::New(name));
+					res->Set(i++, String::NewFromUtf8(info.GetIsolate(), name));
 			}
 
 			pkgCollectionDir->NextEntry();

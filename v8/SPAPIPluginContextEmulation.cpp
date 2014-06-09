@@ -426,16 +426,16 @@ namespace SMV8
 			return SP_ERROR_ABORTED;
 		}
 
-		Handle<Value> PluginContext::ExecuteV8(IPluginFunction *function, int argc, Handle<Value> argv[])
+		Local<Value> PluginContext::ExecuteV8(IPluginFunction *function, int argc, Local<Value> argv[])
 		{
 			bool savedInExec = inExec;
 			inExec = true;
 
-			HandleScope handle_scope(parentRuntime->GetIsolate());
-			Handle<Value> res = parentRuntime->CallV8Function(function->GetFunctionID(), argc, argv);
+			EscapableHandleScope handle_scope(parentRuntime->GetIsolate());
+			Local<Value> res = parentRuntime->CallV8Function(function->GetFunctionID(), argc, argv);
 
 			inExec = savedInExec;
-			return handle_scope.Close(res);
+			return handle_scope.Escape(res);
 		}
 
 		int PluginContext::GetLastNativeError()

@@ -97,12 +97,12 @@ namespace SMV8
 				unsigned int num_params, 
 				cell_t *result);
 			virtual IPluginRuntime *GetParentRuntime();
-			virtual int PushValue(Handle<Value> val);
-			virtual void SetSingleCellValue(Handle<Number> val, cell_t *result);
-			virtual void CopyBackString(Handle<String> val, SPToV8ReferenceInfo *ref);
-			virtual void CopyBackArray(Handle<Array> val, SPToV8ReferenceInfo *ref);
+			virtual int PushValue(Local<Value> val);
+			virtual void SetSingleCellValue(Local<Number> val, cell_t *result);
+			virtual void CopyBackString(Local<String> val, SPToV8ReferenceInfo *ref);
+			virtual void CopyBackArray(Local<Array> val, SPToV8ReferenceInfo *ref);
 			virtual void CopyBackRefs();
-			virtual Handle<Object> MakeRefObj(Handle<Value> val, void *addr, size_t size, bool copyback);
+			virtual Local<Object> MakeRefObj(Local<Value> val, void *addr, size_t size, bool copyback);
 		private:
 			PluginRuntime& runtime;
 			funcid_t id;
@@ -169,7 +169,7 @@ namespace SMV8
 				const cell_t *params, 
 				unsigned int num_params, 
 				cell_t *result);
-			Handle<Value> ExecuteV8(IPluginFunction *function, int argc, Handle<Value> argv[]);
+			Local<Value> ExecuteV8(IPluginFunction *function, int argc, Local<Value> argv[]);
 			virtual int GetLastNativeError();
 			virtual cell_t *GetLocalParams();
 			virtual void SetKey(int k, void *value);
@@ -230,24 +230,24 @@ namespace SMV8
 			virtual size_t GetMemUsage();
 			virtual unsigned char *GetCodeHash();
 			virtual unsigned char *GetDataHash();
-			virtual Handle<Value> CallV8Function(funcid_t func, int argc, Handle<Value> argv[]);
+			virtual Local<Value> CallV8Function(funcid_t func, int argc, Local<Value> argv[]);
 			virtual Isolate* GetIsolate();
 			virtual void ExtractForwards();
-			virtual funcid_t MakeVolatilePublic(Handle<Function> func);
+			virtual funcid_t MakeVolatilePublic(Local<Function> func);
 		protected:
-			virtual Handle<ObjectTemplate> GenerateGlobalObjectTemplate();
-			virtual Handle<ObjectTemplate> GenerateNativesObjectTemplate();
-			virtual Handle<ObjectTemplate> GeneratePluginObjectTemplate();
-			virtual Handle<ObjectTemplate> GeneratePluginInfoObjectTemplate();
+			virtual Local<ObjectTemplate> GenerateGlobalObjectTemplate();
+			virtual Local<ObjectTemplate> GenerateNativesObjectTemplate();
+			virtual Local<ObjectTemplate> GeneratePluginObjectTemplate();
+			virtual Local<ObjectTemplate> GeneratePluginInfoObjectTemplate();
 			static void DeclareNative(const FunctionCallbackInfo<Value>& info);
-//			virtual void InsertNativeParams(NativeData& nd, Handle<Array> signature);
-//			virtual NativeParamInfo CreateNativeParamInfo(Handle<Object> paramInfo);
+//			virtual void InsertNativeParams(NativeData& nd, Local<Array> signature);
+//			virtual NativeParamInfo CreateNativeParamInfo(Local<Object> paramInfo);
 			virtual void ExtractPluginInfo();
 			virtual void LoadEmulatedString(const std::string& realstr, cell_t& local_addr_target);
 			virtual void RegisterNativeInNativesObject(NativeData& native);
 			static void NativeRouter(const FunctionCallbackInfo<Value>& info);
 			virtual funcid_t AllocateVolatilePublic(PublicData *pd);
-			static void VolatilePublicDisposer(Isolate* isolate, Persistent<Function> *func, PublicData* self);
+			static void VolatilePublicDisposer(const WeakCallbackData<Function, PublicData>& data);
 			static void Require(const FunctionCallbackInfo<Value>& info);
 			static void GetMaxClients(const FunctionCallbackInfo<Value>& info);
 			virtual void GenerateMaxClients();

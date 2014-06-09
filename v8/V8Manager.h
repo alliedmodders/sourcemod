@@ -1,5 +1,6 @@
 #pragma once
 #include <IV8Manager.h>
+#include <v8.h>
 #include "ScriptLoader.h"
 #include "DependencyManager.h"
 #include "Require/RequireManager.h"

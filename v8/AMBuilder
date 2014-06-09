@@ -1,23 +1,10 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python: 
 import os
 
-#for sdk_name in SM.sdks:
-#  sdk = SM.sdks[sdk_name]
-binary_name = 'v8.so'
+binary_name = 'v8'
 
-binary = SM.ExtLibrary(builder, binary_name)
-compiler = binary.compiler
-
-compiler.cxxincludes += [
-  os.path.join(builder.sourcePath,'public','v8'),
-  os.path.join(SM.v8_root,'include')
-]
-compiler.postlink += [
-  os.path.join(SM.v8_root,'out','ia32.release','obj.target','tools','gyp','libv8_snapshot.a')
-]
-compiler.cxxflags.remove('-fno-exceptions')
-
-binary.sources += [
+project = SM.HL2Project(builder, 'v8')
+project.sources += [
   'DependencyManager.cpp',
   'dll_exports.cpp',
   os.path.join('Require','CurrentDirectoryProvider.cpp'),
@@ -31,5 +18,25 @@ binary.sources += [
   'V8ToSPMarshaller.cpp',
 ]
 
-SM.binaries += [builder.Add(binary)]
+binary = project.Configure(binary_name,SM.tag) # SM.ExtLibrary(builder, binary_name)
+compiler = binary.compiler
+
+compiler.cxxincludes += [
+  os.path.join(builder.sourcePath,'public','v8'),
+  os.path.join(SM.v8_root,'include')
+]
+
+if builder.target_platform == 'linux':
+  compiler.postlink += [
+    os.path.join(SM.v8_root,'out','ia32.release','obj.target','tools','gyp','libv8_snapshot.a')
+  ]
+elif builder.target_platform == 'windows':
+  compiler.postlink += [
+    os.path.join(SM.v8_root,'build','Release','lib','libv8_snapshot.lib')
+  ]
+
+if compiler.cxx.behavior == 'gcc':
+  compiler.cxxflags.remove('-fno-exceptions')
+
+SM.binaries += [builder.Add(project)]
 

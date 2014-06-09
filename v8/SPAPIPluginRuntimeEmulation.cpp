@@ -45,29 +45,29 @@ namespace SMV8
 			HandleScope handle_scope(isolate);
 
 			// Create a new context for this plugin, store it in a persistent handle.
-			Handle<Context> ourContext = Context::New(isolate, NULL, GenerateGlobalObjectTemplate());
+			Local<Context> ourContext = Context::New(isolate, NULL, GenerateGlobalObjectTemplate());
 			v8Context.Reset(isolate, ourContext);
 
 			Context::Scope context_scope(ourContext);
 
 			SMV8Script intrinsics = script_loader->AutoLoadScript("v8/support/intrinsics");
-			Script::Compile(String::New(intrinsics.GetCode().c_str()), String::New(intrinsics.GetPath().c_str()))->Run();
+			Script::Compile(String::NewFromUtf8(isolate, intrinsics.GetCode().c_str()), String::NewFromUtf8(isolate, intrinsics.GetPath().c_str()))->Run();
 
 			TryCatch trycatch;
-			Handle<Script> script = Script::Compile(String::New(plugin_script.GetCode().c_str()), String::New(plugin_script.GetPath().c_str()));
-			Handle<Value> res = script->Run();
+			Local<Script> script = Script::Compile(String::NewFromUtf8(isolate, plugin_script.GetCode().c_str()), String::NewFromUtf8(isolate, plugin_script.GetPath().c_str()));
+			Local<Value> res = script->Run();
 
 			if(res.IsEmpty())
 			{
-				Handle<Value> exception = trycatch.Exception();
-				Handle<Value> stack_trace = trycatch.StackTrace();
-				String::AsciiValue exceptionStr(exception);
+				Local<Value> exception = trycatch.Exception();
+				Local<Value> stack_trace = trycatch.StackTrace();
+				String::Utf8Value exceptionStr(exception);
 
 				std::string err = *exceptionStr;
 				if(!stack_trace.IsEmpty())
 				{
 					err += "\n";
-					err += *String::AsciiValue(stack_trace.As<String>());
+					err += *String::Utf8Value(stack_trace.As<String>());
 				}
 
 				throw runtime_error(err);
@@ -82,7 +82,7 @@ namespace SMV8
 		{
 			for(PublicData* &pd: publics)
 			{
-				pd->func.Dispose();
+				pd->func.Reset();
 				delete pd;
 			}
 			publics.clear();
@@ -91,77 +91,77 @@ namespace SMV8
 				delete nd;
 			}
 			natives.clear();
-			v8Context.Dispose();
+			v8Context.Reset();
 		}
 
 		/**
 		 * Generate the global object
 		 */
-		Handle<ObjectTemplate> PluginRuntime::GenerateGlobalObjectTemplate()
+		Local<ObjectTemplate> PluginRuntime::GenerateGlobalObjectTemplate()
 		{
-			HandleScope handle_scope(isolate);
-			Handle<ObjectTemplate> global(ObjectTemplate::New());
-			global->Set("natives",GenerateNativesObjectTemplate());
-			global->Set("plugin",GeneratePluginObjectTemplate());
-			global->Set("forwards",ObjectTemplate::New());
-			global->Set("require", FunctionTemplate::New(&Require, External::New(this)));
-			global->Set("requireExt", FunctionTemplate::New(&RequireExt, External::New(this)));
-			return handle_scope.Close(global);
+			EscapableHandleScope handle_scope(isolate);
+			Local<ObjectTemplate> global(ObjectTemplate::New());
+			global->Set(String::NewFromUtf8(isolate, "natives"), GenerateNativesObjectTemplate());
+			global->Set(String::NewFromUtf8(isolate, "plugin"), GeneratePluginObjectTemplate());
+			global->Set(String::NewFromUtf8(isolate, "forwards"), ObjectTemplate::New());
+			global->Set(String::NewFromUtf8(isolate, "require"), FunctionTemplate::New(isolate, &Require, External::New(isolate, this)));
+			global->Set(String::NewFromUtf8(isolate, "requireExt"), FunctionTemplate::New(isolate, &RequireExt, External::New(isolate, this)));
+			return handle_scope.Escape(global);
 		}
 
 		void PluginRuntime::GetMaxClients(const FunctionCallbackInfo<Value>& info)
 		{
 			PluginRuntime* self = (PluginRuntime*)info.Data().As<External>()->Value();
-			info.GetReturnValue().Set(Integer::New(*self->maxClients));
+			info.GetReturnValue().Set(Integer::New(info.GetIsolate(), *self->maxClients));
 		}
 
 		/**
 		 * Generate the natives object
 		 */
-		Handle<ObjectTemplate> PluginRuntime::GenerateNativesObjectTemplate()
+		Local<ObjectTemplate> PluginRuntime::GenerateNativesObjectTemplate()
 		{
-			HandleScope handle_scope(isolate);
-			Handle<ObjectTemplate> natives(ObjectTemplate::New());
-			Handle<External> self = External::New(this);
-			natives->Set("declare", FunctionTemplate::New(DeclareNative,self));
-			natives->Set("GetMaxClients", FunctionTemplate::New(&GetMaxClients, External::New(this)));
-			return handle_scope.Close(natives);
+			EscapableHandleScope handle_scope(isolate);
+			Local<ObjectTemplate> natives(ObjectTemplate::New());
+			Local<External> self = External::New(isolate, this);
+			natives->Set(String::NewFromUtf8(isolate, "declare"), FunctionTemplate::New(isolate, DeclareNative,self));
+			natives->Set(String::NewFromUtf8(isolate, "GetMaxClients"), FunctionTemplate::New(isolate, &GetMaxClients, External::New(isolate, this)));
+			return handle_scope.Escape(natives);
 		}
 
-		Handle<ObjectTemplate> PluginRuntime::GeneratePluginObjectTemplate()
+		Local<ObjectTemplate> PluginRuntime::GeneratePluginObjectTemplate()
 		{
-			HandleScope handle_scope(isolate);
-			Handle<ObjectTemplate> plugin = ObjectTemplate::New();
-			plugin->Set("info", GeneratePluginInfoObjectTemplate());
-			return handle_scope.Close(plugin);
+			EscapableHandleScope handle_scope(isolate);
+			Local<ObjectTemplate> plugin = ObjectTemplate::New();
+			plugin->Set(String::NewFromUtf8(isolate, "info"), GeneratePluginInfoObjectTemplate());
+			return handle_scope.Escape(plugin);
 		}
 
-		Handle<ObjectTemplate> PluginRuntime::GeneratePluginInfoObjectTemplate()
+		Local<ObjectTemplate> PluginRuntime::GeneratePluginInfoObjectTemplate()
 		{
-			HandleScope handle_scope(isolate);
-			Handle<ObjectTemplate> info = ObjectTemplate::New();
-			info->Set("name", String::New("?????"));
-			info->Set("description", String::New("God knows what this does..."));
-			info->Set("author", String::New("Shitty programmer who can't write plugin info"));
-			info->Set("version", String::New("v0.0.0.0.0.0.0.1aa"));
-			info->Set("url", String::New("http://fillinyourplugininfo.dude"));
-			return handle_scope.Close(info);
+			EscapableHandleScope handle_scope(isolate);
+			Local<ObjectTemplate> info = ObjectTemplate::New();
+			info->Set(String::NewFromUtf8(isolate, "name"), String::NewFromUtf8(isolate, "?????"));
+			info->Set(String::NewFromUtf8(isolate, "description"), String::NewFromUtf8(isolate, "God knows what this does..."));
+			info->Set(String::NewFromUtf8(isolate, "author"), String::NewFromUtf8(isolate, "Shitty programmer who can't write plugin info"));
+			info->Set(String::NewFromUtf8(isolate, "version"), String::NewFromUtf8(isolate, "v0.0.0.0.0.0.0.1aa"));
+			info->Set(String::NewFromUtf8(isolate, "url"), String::NewFromUtf8(isolate, "http://fillinyourplugininfo.dude"));
+			return handle_scope.Escape(info);
 		}
 
 		void PluginRuntime::ExtractForwards()
 		{
 			HandleScope handle_scope(isolate);
 
-			Handle<Context> context(Handle<Context>::New(isolate,v8Context));
-			Handle<Object> global(context->Global());
-			Handle<Object> forwards(global->Get(String::New("forwards")).As<Object>());
-			Handle<Array> keys = forwards->GetOwnPropertyNames();
+			Local<Context> context(Local<Context>::New(isolate,v8Context));
+			Local<Object> global(context->Global());
+			Local<Object> forwards(global->Get(String::NewFromUtf8(isolate, "forwards")).As<Object>());
+			Local<Array> keys = forwards->GetOwnPropertyNames();
 
 			for(unsigned int i = 0; i < keys->Length(); i++)
 			{
-				Handle<String> key = keys->Get(i).As<String>();
+				Local<String> key = keys->Get(i).As<String>();
 				PublicData* pd = new PublicData;
-				pd->name = *String::AsciiValue(key);
+				pd->name = *String::Utf8Value(key);
 				pd->func.Reset(isolate,forwards->Get(key).As<Function>());
 				pd->pfunc = new PluginFunction(*this, i);
 				pd->state.funcid = i;
@@ -181,11 +181,13 @@ namespace SMV8
 			PluginRuntime* self = (PluginRuntime*)info.Data().As<External>()->Value();
 			HandleScope(self->isolate);
 
-			if(info.Length() < 1)
-				ThrowException(String::New("Invalid argument count"));
+			if(info.Length() < 1) {
+				info.GetReturnValue().Set(self->isolate->ThrowException(String::NewFromUtf8(self->isolate, "Invalid argument count")));
+				return;
+			}
 
 			// Check if this native is already loaded
-			std::string nativeName = *String::AsciiValue(info[0].As<String>());
+			std::string nativeName = *String::Utf8Value(info[0].As<String>());
 			uint32_t existingIdx;
 			if(self->FindNativeByName(nativeName.c_str(), &existingIdx) == SP_ERROR_NONE)
 				return;
@@ -208,12 +210,12 @@ namespace SMV8
 		void PluginRuntime::RegisterNativeInNativesObject(NativeData& native)
 		{
 			HandleScope handle_scope(isolate);
-			Handle<Context> context(Handle<Context>::New(isolate,v8Context));
-			Handle<Object> global(context->Global());
-			Handle<Object> oNatives = global->Get(String::New("natives")).As<Object>();
-			Handle<External> ndata = External::New(&native);
-			Handle<Function> func = FunctionTemplate::New(&NativeRouter,ndata)->GetFunction();
-			oNatives->Set(String::New(native.name.c_str()), func);
+			Local<Context> context(Local<Context>::New(isolate,v8Context));
+			Local<Object> global(context->Global());
+			Local<Object> oNatives = global->Get(String::NewFromUtf8(isolate, "natives")).As<Object>();
+			Local<External> ndata = External::New(isolate, &native);
+			Local<Function> func = FunctionTemplate::New(isolate, &NativeRouter,ndata)->GetFunction();
+			oNatives->Set(String::NewFromUtf8(isolate, native.name.c_str()), func);
 		}
 
 		void PluginRuntime::NativeRouter(const FunctionCallbackInfo<Value>& info)
@@ -223,7 +225,7 @@ namespace SMV8
 			{
 	/*			if(info.Length() < nd->params.size())
 				{
-					ThrowException(String::New("Not enough parameters for native."));
+					ThrowException(String::NewFromUtf8("Not enough parameters for native."));
 				}
 	*/
 				V8ToSPMarshaller marshaller(*nd->runtime->isolate, *nd);
@@ -231,31 +233,31 @@ namespace SMV8
 			}
 			catch(runtime_error& e)
 			{
-				info.GetReturnValue().Set(ThrowException(String::New(("Error when calling native function '" + nd->name + "': " + e.what()).c_str())));
+				info.GetReturnValue().Set(nd->runtime->isolate->ThrowException(String::NewFromUtf8(info.GetIsolate(), ("Error when calling native function '" + nd->name + "': " + e.what()).c_str())));
 			}
 			catch(logic_error& e)
 			{
-				info.GetReturnValue().Set(ThrowException(String::New(("Error when calling native function '" + nd->name + "': " + e.what()).c_str())));
+				info.GetReturnValue().Set(nd->runtime->isolate->ThrowException(String::NewFromUtf8(info.GetIsolate(), ("Error when calling native function '" + nd->name + "': " + e.what()).c_str())));
 			}
 		}
 
-/*		void PluginRuntime::InsertNativeParams(NativeData& nd, Handle<Array> signature)
+/*		void PluginRuntime::InsertNativeParams(NativeData& nd, Local<Array> signature)
 		{
 			HandleScope(isolate);
 
 			for(unsigned int i = 0; i < signature->Length(); i++)
 			{
-				Handle<Object> paramInfo = signature->Get(i).As<Object>();
+				Local<Object> paramInfo = signature->Get(i).As<Object>();
 				nd.params.push_back(CreateNativeParamInfo(paramInfo));
 			}
 		}
 
-		NativeParamInfo PluginRuntime::CreateNativeParamInfo(Handle<Object> paramInfo)
+		NativeParamInfo PluginRuntime::CreateNativeParamInfo(Local<Object> paramInfo)
 		{
-			Handle<String> name = paramInfo->Get(String::New("name")).As<String>();
-			Handle<Integer> type = paramInfo->Get(String::New("type")).As<Integer>();
+			Local<String> name = paramInfo->Get(String::NewFromUtf8("name")).As<String>();
+			Local<Integer> type = paramInfo->Get(String::NewFromUtf8("type")).As<Integer>();
 
-			String::AsciiValue nameAscii(name);
+			String::Utf8Value nameAscii(name);
 
 			return NativeParamInfo(*nameAscii, (CellType)type->Value());
 		}
@@ -268,30 +270,30 @@ namespace SMV8
 			// We need to tell make sure that inside the  script we're requiring now, requires are made from that
 			// script's perspective
 			SMV8Script *curscript = self->current_script;
-			SMV8Script s = self->script_loader->AutoLoadScript(self->reqMan->Require(*curscript, *String::AsciiValue(info[0].As<String>())));
+			SMV8Script s = self->script_loader->AutoLoadScript(self->reqMan->Require(*curscript, *String::Utf8Value(info[0].As<String>())));
 			self->current_script = &s;
 
 			HandleScope handle_scope(info.GetIsolate());
-			Handle<Object> tmp = Object::New();
+			Local<Object> tmp = Object::New(info.GetIsolate());
 
 			// TODO: Security risk (or more like security suicide), try to execute in different context later
 			string adjusted_code = "(function(){ var tmp = {}; (function(){ " + s.GetCode() + " }).call(tmp); return tmp; }).call(this)";
 
-			Handle<Value> req = Script::Compile(String::New(adjusted_code.c_str()), String::New(s.GetPath().c_str()))->Run();
+			Local<Value> req = Script::Compile(String::NewFromUtf8(info.GetIsolate(), adjusted_code.c_str()), String::NewFromUtf8(info.GetIsolate(), s.GetPath().c_str()))->Run();
 
 			self->current_script = curscript;
 
 			info.GetReturnValue().Set(req);
 		}
 
-		Handle<Value> PluginRuntime::CallV8Function(funcid_t funcid, int argc, Handle<Value> argv[])
+		Local<Value> PluginRuntime::CallV8Function(funcid_t funcid, int argc, Local<Value> argv[])
 		{
-			HandleScope handle_scope(isolate);
+			EscapableHandleScope handle_scope(isolate);
 
 			PublicData* data(publics[funcid]);
-			Handle<Function> func = Handle<Function>::New(isolate, data->func);
+			Local<Function> func = Local<Function>::New(isolate, data->func);
 
-			return handle_scope.Close(func->Call(func, argc, argv));
+			return handle_scope.Escape(func->Call(func, argc, argv));
 		}
 
 		/**
@@ -304,7 +306,7 @@ namespace SMV8
 		funcid_t PluginRuntime::AllocateVolatilePublic(PublicData *pd)
 		{
 			// Try to reuse funcid's
-			for(int i = 0; i < publics.size(); i++)
+			for(unsigned int i = 0; i < publics.size(); i++)
 			{
 				if(publics[i] == NULL)
 				{
@@ -322,7 +324,7 @@ namespace SMV8
 		 * Makes a "volatile" (weak reference) public for functions passed as parameter.
 		 * This public is delisted as soon as it goes out of scope.
 		 */
-		funcid_t PluginRuntime::MakeVolatilePublic(Handle<Function> func)
+		funcid_t PluginRuntime::MakeVolatilePublic(Local<Function> func)
 		{
 			PublicData *pd = new PublicData;
 			funcid_t funcId = AllocateVolatilePublic(pd);
@@ -337,7 +339,7 @@ namespace SMV8
 			pd->state.name = pd->name.c_str();
 			pd->runtime = this;
 
-			pd->func.MakeWeak(isolate, pd, &VolatilePublicDisposer); 
+			pd->func.SetWeak(pd, &VolatilePublicDisposer); 
 
 			return funcId;
 		}
@@ -345,10 +347,11 @@ namespace SMV8
 		/**
 		 * Callback which is called when a volatile public goes out of scope
 		 */
-		void PluginRuntime::VolatilePublicDisposer(Isolate* isolate, Persistent<Function> *func, PublicData* pd)
+		void PluginRuntime::VolatilePublicDisposer(const WeakCallbackData<Function, PublicData>& data)
 		{
+			PublicData* pd = data.GetParameter();
 			funcid_t funcId = pd->state.funcid;
-			func->Dispose();
+//			data.->Reset();
 			pd->runtime->publics[funcId] = NULL;
 			delete pd;
 		}
@@ -367,12 +370,12 @@ namespace SMV8
 
 			if(info.Length() < 2)
 			{
-				info.GetReturnValue().Set(ThrowException(String::New("Too few arguments")));
+				info.GetReturnValue().Set(info.GetIsolate()->ThrowException(String::NewFromUtf8(info.GetIsolate(), "Too few arguments")));
 				return;
 			}
 
-			string name = *String::AsciiValue(info[0]->ToString());
-			string file = *String::AsciiValue(info[1]->ToString());
+			string name = *String::Utf8Value(info[0]->ToString());
+			string file = *String::Utf8Value(info[1]->ToString());
 			bool autoload = info.Length() >= 3 ? info[2]->ToBoolean()->Value() : true;
 			bool required = info.Length() >= 4 ? info[3]->ToBoolean()->Value() : true;
 
@@ -478,16 +481,16 @@ namespace SMV8
 			sm_plugininfo_s_t realInfo;
 			sm_plugininfo_c_t emulatedInfo;
 
-			Handle<Context> context(Handle<Context>::New(isolate,v8Context));
-			Handle<Object> global(context->Global());
-			Handle<Object> plugin(global->Get(String::New("plugin")).As<Object>());
-			Handle<Object> info(plugin->Get(String::New("info")).As<Object>());
+			Local<Context> context(Local<Context>::New(isolate,v8Context));
+			Local<Object> global(context->Global());
+			Local<Object> plugin(global->Get(String::NewFromUtf8(isolate, "plugin")).As<Object>());
+			Local<Object> info(plugin->Get(String::NewFromUtf8(isolate, "info")).As<Object>());
 
-			realInfo.name = *String::AsciiValue(info->Get(String::New("name")).As<String>());
-			realInfo.description = *String::AsciiValue(info->Get(String::New("description")).As<String>());
-			realInfo.author = *String::AsciiValue(info->Get(String::New("author")).As<String>());
-			realInfo.version = *String::AsciiValue(info->Get(String::New("version")).As<String>());
-			realInfo.url = *String::AsciiValue(info->Get(String::New("url")).As<String>());
+			realInfo.name = *String::Utf8Value(info->Get(String::NewFromUtf8(isolate, "name")).As<String>());
+			realInfo.description = *String::Utf8Value(info->Get(String::NewFromUtf8(isolate, "description")).As<String>());
+			realInfo.author = *String::Utf8Value(info->Get(String::NewFromUtf8(isolate, "author")).As<String>());
+			realInfo.version = *String::Utf8Value(info->Get(String::NewFromUtf8(isolate, "version")).As<String>());
+			realInfo.url = *String::Utf8Value(info->Get(String::NewFromUtf8(isolate, "url")).As<String>());
 
 			LoadEmulatedString(realInfo.name, emulatedInfo.name);
 			LoadEmulatedString(realInfo.description, emulatedInfo.description);

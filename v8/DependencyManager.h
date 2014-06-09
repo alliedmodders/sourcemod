@@ -26,7 +26,7 @@ namespace SMV8
 		static void ext_findLocalVersions(const FunctionCallbackInfo<Value>& info);
 		static const std::string packages_root;
 	private:
-		Handle<ObjectTemplate> BuildGlobalObjectTemplate();
+		Local<ObjectTemplate> BuildGlobalObjectTemplate();
 		Isolate *isolate;
 		ISourceMod *sm;
 		ILibrarySys *libsys;
