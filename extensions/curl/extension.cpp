@@ -82,11 +82,17 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	// Register natives
 	g_pShareSys->AddNatives(myself, curlext_natives);
 	// Register session handle handler
+	HandleAccess sessionRules;
+	g_pHandleSys->InitAccessDefaults(NULL, &sessionRules);
+	sessionRules.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
 	g_SessionHandle = g_pHandleSys->CreateType("HTTPSession", 
-		&g_SessionHandler, 0, 0, NULL, myself->GetIdentity(), NULL);
+		&g_SessionHandler, 0, 0, &sessionRules, myself->GetIdentity(), NULL);
 	// Register web form handle handler
+	HandleAccess formRules;
+	g_pHandleSys->InitAccessDefaults(NULL, &formRules);
+	formRules.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY;
 	g_FormHandle = g_pHandleSys->CreateType("HTTPWebForm",
-		&g_FormHandler, 0, 0, NULL, myself->GetIdentity(), NULL);
+		&g_FormHandler, 0, 0, &formRules, myself->GetIdentity(), NULL);
 	// Register web form handle handler
 	g_DownloadHandle = g_pHandleSys->CreateType("HTTPDownloader",
 		&g_DownloadHandler, 0, 0, NULL, myself->GetIdentity(), NULL);
@@ -635,7 +641,7 @@ void HTTPSessionManager::PostAndDownload(IPluginContext *pCtx,
 	HTTPRequestHandleSet handles, const char *url, 
 	HTTPRequestCompletedContextPack contextPack)
 {
-	HTTPRequest request;
+	HTTPRequest request = {};
 	BurnSessionHandle(pCtx, handles);
 
 	request.pCtx = pCtx;
@@ -653,7 +659,7 @@ void HTTPSessionManager::Download(IPluginContext *pCtx,
 	HTTPRequestHandleSet handles, const char *url, 
 	HTTPRequestCompletedContextPack contextPack)
 {
-	HTTPRequest request;
+	HTTPRequest request = {};
 	BurnSessionHandle(pCtx, handles);
 
 	request.pCtx = pCtx;
