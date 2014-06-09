@@ -8,7 +8,7 @@ then
     for i in "$@"; 
     do
         smxfile="`echo $i | sed -e 's/\.sp$/\.smx/'`";
-	    echo -n "Compiling $i...";
+	    echo -e "\nCompiling $i...";
 	    ./spcomp $i -ocompiled/$smxfile
     done
 else
@@ -16,7 +16,7 @@ else
 for sourcefile in *.sp
 do
 	smxfile="`echo $sourcefile | sed -e 's/\.sp$/\.smx/'`"
-	echo -n "Compiling $sourcefile ..."
+	echo -e "\nCompiling $sourcefile ..."
 	./spcomp $sourcefile -ocompiled/$smxfile
 done
 fi
