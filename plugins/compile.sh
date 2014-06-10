@@ -24,7 +24,7 @@ do
 	./spcomp $sourcefile -ocompiled/$smxfile
 	RETVAL=$?
 	if [ $RETVAL -ne 0 ]; then
-	    	exit 1;
+	    exit 1;
 	fi
 done
 fi
