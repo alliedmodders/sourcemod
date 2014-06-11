@@ -38,8 +38,9 @@
 #endif
 
 /* flags for litchar() */
-#define RAWMODE         1
-#define UTF8MODE        2
+#define RAWMODE         0x1
+#define UTF8MODE        0x2
+#define ISPACKED        0x4
 static cell litchar(const unsigned char **lptr,int flags);
 static symbol *find_symbol(const symbol *root,const char *name,int fnumber,int automaton,int *cmptag);
 
@@ -1492,6 +1493,7 @@ static int substpattern(unsigned char *line,size_t buffersize,char *pattern,char
   const unsigned char *p,*s,*e;
   unsigned char *args[10];
   int match,arg,len,argsnum=0;
+  int stringize;
 
   memset(args,0,sizeof args);
 
@@ -1588,11 +1590,18 @@ static int substpattern(unsigned char *line,size_t buffersize,char *pattern,char
   if (match) {
     /* calculate the length of the substituted string */
     for (e=(unsigned char*)substitution,len=0; *e!='\0'; e++) {
+      if(*e=='#' && *(e+1)=='%' && isdigit(*(e+2)) && argsnum) {
+        stringize=1;
+          e++;           /* skip '#' */
+      } else {
+        stringize=0;
+      } /* if */
       if (*e=='%' && isdigit(*(e+1)) && argsnum) {
         arg=*(e+1)-'0';
         assert(arg>=0 && arg<=9);
+        assert(stringize==0 || stringize==1);
         if (args[arg]!=NULL) {
-          len+=strlen((char*)args[arg]);
+          len+=strlen((char*)args[arg])+2*stringize;
           e++;
         } else {
           len++;
@@ -1608,12 +1617,22 @@ static int substpattern(unsigned char *line,size_t buffersize,char *pattern,char
       /* substitute pattern */
       strdel((char*)line,(int)(s-line));
       for (e=(unsigned char*)substitution,s=line; *e!='\0'; e++) {
+        if (*e=='#' && *(e+1)=='%' && isdigit(*(e+2))) {
+          stringize=1;
+          e++;         /* skip '#' */
+        } else {
+          stringize=0;
+        } /* if */
         if (*e=='%' && isdigit(*(e+1))) {
           arg=*(e+1)-'0';
           assert(arg>=0 && arg<=9);
           if (args[arg]!=NULL) {
+            if (stringize)
+              strins((char*)s++,"\"",1);
             strins((char*)s,(char*)args[arg],strlen((char*)args[arg]));
             s+=strlen((char*)args[arg]);
+            if (stringize)
+              strins((char*)s++,"\"",1);
           } else {
             error(236); /* parameter does not exist, incorrect #define pattern */
             strins((char*)s,(char*)e,2);
@@ -1701,6 +1720,61 @@ static void substallpatterns(unsigned char *line,int buffersize)
   } /* while */
 }
 #endif
+
+/*  scanellipsis
+ *  Look for ... in the string and (if not there) in the remainder of the file,
+ *  but restore (or keep intact):
+ *  - the current position in the file
+ *  - the comment parsing state
+ *  - the line buffer used by the lexical analyser
+ *  - the active line number and the active file
+ *
+ *  The function returns 1 if an ellipsis was found and 0 if not
+ */
+static int scanellipsis(const unsigned char *lptr)
+{
+  static void *inpfmark=NULL;
+  unsigned char *localbuf;
+  short localcomment,found;
+
+  /* first look for the ellipsis in the remainder of the string */
+  while (*lptr<=' ' && *lptr!='\0')
+    lptr++;
+  if (lptr[0]=='.' && lptr[1]=='.' && lptr[2]=='.')
+    return 1;
+  if (*lptr!='\0')
+    return 0;           /* stumbled on something that is not an ellipsis and not white-space */
+
+  /* the ellipsis was not on the active line, read more lines from the current
+   * file (but save its position first)
+   */
+  if (inpf==NULL || pc_eofsrc(inpf))
+    return 0;           /* quick exit: cannot read after EOF */
+  if ((localbuf=(unsigned char*)malloc((sLINEMAX+1)*sizeof(unsigned char)))==NULL)
+    return 0;
+  inpfmark=pc_getpossrc(inpf,inpfmark);
+  localcomment=icomment;
+
+  found=0;
+  /* read from the file, skip preprocessing, but strip off comments */
+  while (!found && pc_readsrc(inpf,localbuf,sLINEMAX)!=NULL) {
+    stripcom(localbuf);
+    lptr=localbuf;
+    /* skip white space */
+    while (*lptr<=' ' && *lptr!='\0')
+      lptr++;
+    if (lptr[0]=='.' && lptr[1]=='.' && lptr[2]=='.')
+      found=1;
+    else if (*lptr!='\0')
+      break;                       /* stumbled on something that is not an ellipsis and not white-space */
+  } /* while */
+
+  /* clean up & reset */
+  free(localbuf);
+  pc_resetsrc(inpf,inpfmark);
+  icomment=localcomment;
+  return found;
+}
 
 /*  preprocess
  *
@@ -1865,7 +1939,7 @@ char *sc_tokens[] = {
 
 SC_FUNC int lex(cell *lexvalue,char **lexsym)
 {
-  int i,toolong,newline,stringflags;
+  int i,toolong,newline;
   char **tokptr;
   const unsigned char *starttoken;
 
@@ -1977,35 +2051,94 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
         error(220);
       } /* if */
     } /* if */
-  } else if (*lptr=='\"' || (*lptr==sc_ctrlchar && *(lptr+1)=='\"'))
-  {                                     /* unpacked string literal */
+  } else if (*lptr=='\"'                                 /* unpacked string literal */
+#if 0
+             || (*lptr==sc_ctrlchar && *(lptr+1)=='\"')  /* unpacked raw string */
+             || (*lptr=='!' && *(lptr+1)=='\"')          /* packed string */
+             || (*lptr=='!' && *(lptr+1)==sc_ctrlchar && *(lptr+2)=='\"')  /* packed raw string */
+             || (*lptr==sc_ctrlchar && *(lptr+1)=='!' && *(lptr+2)=='\"') /* packed raw string */
+#endif
+             )
+  {                                     
+    int stringflags,segmentflags;
+    char *cat;
     _lextok=tSTRING;
-    stringflags= (*lptr==sc_ctrlchar) ? RAWMODE : 0;
     *lexvalue=_lexval=litidx;
-    lptr+=1;            /* skip double quote */
-    if ((stringflags & RAWMODE)!=0)
-      lptr+=1;          /* skip "escape" character too */
-    /* Note that this should always be packedstring() for SourcePawn */
-    lptr=sc_packstr ? packedstring(lptr,stringflags) : unpackedstring(lptr,stringflags);
-    if (*lptr=='\"')
-      lptr+=1;          /* skip final quote */
+    _lexstr[0]='\0';
+    stringflags=-1;       /* to mark the first segment */
+    for ( ;; ) {
+      if(*lptr=='!')
+        segmentflags= (*(lptr+1)==sc_ctrlchar) ? RAWMODE | ISPACKED : ISPACKED;
+      else if (*lptr==sc_ctrlchar)
+        segmentflags= (*(lptr+1)=='!') ? RAWMODE | ISPACKED : RAWMODE;
+      else
+        segmentflags=0;
+      if ((segmentflags & ISPACKED)!=0)
+        lptr+=1;          /* skip '!' character */
+      if ((segmentflags & RAWMODE)!=0)
+        lptr+=1;          /* skip "escape" character too */
+      assert(*lptr=='\"');
+      lptr+=1;
+      if (stringflags==-1)
+        stringflags=segmentflags;
+      else if (stringflags!=segmentflags)
+        error(238);       /* mixing packed/unpacked/raw strings in concatenation */
+      cat=strchr(_lexstr,'\0');
+      assert(cat!=NULL);
+      while (*lptr!='\"' && *lptr!='\0' && (cat-_lexstr)<sLINEMAX) {
+        if (*lptr!='\a') {  /* ignore '\a' (which was inserted at a line concatenation) */
+          *cat++=*lptr;
+					if (*lptr==sc_ctrlchar && *(lptr+1)!='\0')
+						*cat++=*++lptr; /* skip escape character plus the escaped character */
+				} /* if */
+        lptr++;
+      } /* while */
+      *cat='\0';          /* terminate string */
+      if (*lptr=='\"')
+        lptr+=1;          /* skip final quote */
+      else
+        error(37);        /* invalid (non-terminated) string */
+      /* see whether an ellipsis is following the string */
+      if (!scanellipsis(lptr))
+        break;            /* no concatenation of string literals */
+      /* there is an ellipses, go on parsing (this time with full preprocessing) */
+      while (*lptr<=' ') {
+        if (*lptr=='\0') {
+          preprocess();           /* preprocess resets "lptr" */
+          assert(freading && lptr!=term_expr);
+        } else {
+          lptr++;
+        } /* if */
+      } /* while */
+      assert(freading && lptr[0]=='.' && lptr[1]=='.' && lptr[2]=='.');
+      lptr+=3;
+      while (*lptr<=' ') {
+        if (*lptr=='\0') {
+          preprocess();           /* preprocess resets "lptr" */
+          assert(freading && lptr!=term_expr);
+        } else {
+          lptr++;
+        } /* if */
+      } /* while */
+      if (!freading || !(*lptr=='\"'
+#if 0
+                         || *lptr==sc_ctrlchar && *(lptr+1)=='\"'
+                         || *lptr=='!' && *(lptr+1)=='\"'
+                         || *lptr=='!' && *(lptr+1)==sc_ctrlchar && *(lptr+2)=='\"'
+                         || *lptr==sc_ctrlchar && *(lptr+1)=='!' && *(lptr+2)=='\"'
+#endif
+                         ))
+      {
+        error(37);                /* invalid string concatenation */
+        break;
+      } /* if */
+    } /* for */
+    if (sc_packstr)
+      stringflags ^= ISPACKED;    /* invert packed/unpacked parameters */
+    if ((stringflags & ISPACKED)!=0)
+      packedstring((unsigned char *)_lexstr,stringflags);
     else
-      error(37);        /* invalid (non-terminated) string */
-  } else if ((*lptr=='!' && *(lptr+1)=='\"')
-             || (*lptr=='!' && *(lptr+1)==sc_ctrlchar && *(lptr+2)=='\"')
-             || (*lptr==sc_ctrlchar && *(lptr+1)=='!' && *(lptr+2)=='\"'))
-  {                                     /* packed string literal */
-    _lextok=tSTRING;
-    stringflags= (*lptr==sc_ctrlchar || *(lptr+1)==sc_ctrlchar) ? RAWMODE : 0;
-    *lexvalue=_lexval=litidx;
-    lptr+=2;            /* skip exclamation point and double quote */
-    if ((stringflags & RAWMODE)!=0)
-      lptr+=1;          /* skip "escape" character too */
-    lptr=sc_packstr ? unpackedstring(lptr,stringflags) : packedstring(lptr,stringflags);
-    if (*lptr=='\"')
-      lptr+=1;          /* skip final quote */
-    else
-      error(37);        /* invalid (non-terminated) string */
+      unpackedstring((unsigned char *)_lexstr,stringflags);
   } else if (*lptr=='\'') {             /* character literal */
     lptr+=1;            /* skip quote */
     _lextok=tNUMBER;
