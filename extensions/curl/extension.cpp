@@ -48,11 +48,6 @@ CurlExt curl_ext;		/**< Global singleton for extension's main interface */
 
 SMEXT_LINK(&curl_ext);
 
-#if 0
-SessionHandler g_SessionHandler;
-FormHandler g_FormHandler;
-DownloadHandler g_DownloadHandler;
-#endif
 HandleType_t g_SessionHandle = 0;
 HandleType_t g_FormHandle = 0;
 HandleType_t g_DownloadHandle = 0;
