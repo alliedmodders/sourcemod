@@ -98,7 +98,7 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_pHandleSys->InitAccessDefaults(NULL, &dldrRules);
 	dldrRules.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
 	g_DownloadHandle = g_pHandleSys->CreateType("HTTPDownloader",
-		&g_DownloadHandler, 0, 0, NULL, myself->GetIdentity(), NULL);
+		&g_DownloadHandler, 0, 0, &dldrRules, myself->GetIdentity(), NULL);
 	plsys->AddPluginsListener(this);
 	smutils->AddGameFrameHook(&OnGameFrame);
 	g_SessionManager.Initialize();
