@@ -130,6 +130,16 @@ size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
 
 // Handle helper class
+class HTTPHandleDispatcher : public IHandleTypeDispatch
+{
+public:
+	virtual void OnHandleDestroy(HandleType_t type, void *object);
+};
+
+extern HTTPHandleDispatcher g_HTTPHandler;
+
+#if 0
+
 class SessionHandler : public IHandleTypeDispatch
 {
 public:
@@ -163,10 +173,9 @@ class DownloadHandler : public IHandleTypeDispatch
 
 extern DownloadHandler g_DownloadHandler;
 extern HandleType_t g_DownloadHandle;
+#endif
 
 struct HTTPRequestCompletedContextFunction {
-	// TODO: remove as it's redundant
-	IPluginContext *pContext;
 	funcid_t uPluginFunction;
 	bool bHasContext;
 };
@@ -230,6 +239,7 @@ private:
 		const char *url;
 		HTTPRequestCompletedContextPack contextPack;
 		cell_t result;
+
 		bool operator==(const HTTPRequest& lhs) const
 		{
 			return !memcmp(&lhs, this, sizeof(HTTPRequest));
@@ -263,7 +273,6 @@ private:
 		{
 			delete this;
 		}
-		static void ExecuteCallback(void *data);
 	};
 };
 
