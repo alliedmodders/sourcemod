@@ -20,8 +20,8 @@ namespace SMV8
 		std::string GetVersionedPackage() const;
 		bool IsInPackage() const;
 	private:
-		std::string path;
 		std::string code;
+		std::string path;
 	};
 
 	class ScriptLoader

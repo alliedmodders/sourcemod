@@ -193,6 +193,7 @@ class SMConfig(object):
         '-fno-threadsafe-statics',
         '-Wno-non-virtual-dtor',
         '-Wno-overloaded-virtual',
+		'-std=c++11',
       ]
 
       if have_gcc:

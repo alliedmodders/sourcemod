@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IRequireProvider.h"
-#include "..\DependencyManager.h"
+#include "../DependencyManager.h"
 #include <ISourceMod.h>
 
 namespace SMV8

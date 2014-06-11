@@ -1,6 +1,7 @@
 #include "Marshaller.h"
 #include <math.h>
 #include <sstream>
+#include <stdexcept>
 
 namespace SMV8
 {
@@ -291,14 +292,14 @@ namespace SMV8
 
 			if(ri->forcefloat)
 			{
-				for(unsigned int i = 0; i < size; i++)
+				for(int i = 0; i < size; i++)
 				{
 					arr->Set(i, Number::New(&isolate, sp_ctof(*(phys_addr + i))));
 				}
 			}
 			else
 			{
-				for(unsigned int i = 0; i < size; i++)
+				for(int i = 0; i < size; i++)
 				{
 					arr->Set(i, Integer::New(&isolate, *(phys_addr + i)));
 				}

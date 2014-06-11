@@ -1,6 +1,7 @@
 #include "CurrentDirectoryProvider.h"
 #include <sm_platform.h>
 #include <fstream>
+#include <stdexcept>
 
 namespace SMV8
 {

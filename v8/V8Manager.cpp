@@ -1,7 +1,7 @@
 #include "V8Manager.h"
 
 #include "SPAPIEmulation.h"
-
+#include <stdexcept>
 
 namespace SMV8
 {

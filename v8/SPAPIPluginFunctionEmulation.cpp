@@ -1,5 +1,6 @@
 #include "SPAPIEmulation.h"
 #include <cmath>
+#include <cstring>
 
 namespace SMV8
 {

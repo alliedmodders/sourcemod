@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <ILibrarySys.h>
+#include <cstring>
 
 namespace SMV8
 {

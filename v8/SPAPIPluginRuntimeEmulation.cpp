@@ -4,6 +4,8 @@
 //#include <sp_vm_function.h>
 #include "Marshaller.h"
 #include <sstream>
+#include <stdexcept>
+#include <cstring>
 
 namespace SMV8
 {

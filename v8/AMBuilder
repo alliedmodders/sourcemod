@@ -28,15 +28,26 @@ compiler.cxxincludes += [
 
 if builder.target_platform == 'linux':
   compiler.postlink += [
+	'-lpthread',
+    os.path.join(SM.v8_root,'out','ia32.release','obj.target','third_party','icu','libicui18n.a'),
+    os.path.join(SM.v8_root,'out','ia32.release','obj.target','third_party','icu','libicuuc.a'),
+    os.path.join(SM.v8_root,'out','ia32.release','obj.target','third_party','icu','libicudata.a'),
+    os.path.join(SM.v8_root,'out','ia32.release','obj.target','tools','gyp','libv8_base.ia32.a'),
     os.path.join(SM.v8_root,'out','ia32.release','obj.target','tools','gyp','libv8_snapshot.a')
   ]
 elif builder.target_platform == 'windows':
   compiler.postlink += [
-    os.path.join(SM.v8_root,'build','Release','lib','libv8_snapshot.lib')
+    'ws2_32.lib',
+	'advapi32.lib',
+	'winmm.lib',
+    os.path.join(SM.v8_root,'build','Release','lib','icui18n.lib'),
+    os.path.join(SM.v8_root,'build','Release','lib','icuuc.lib'),
+    os.path.join(SM.v8_root,'build','Release','lib','v8_base.ia32.lib'),
+    os.path.join(SM.v8_root,'build','Release','lib','v8_snapshot.lib')
   ]
 
 if compiler.cxx.behavior == 'gcc':
   compiler.cxxflags.remove('-fno-exceptions')
 
-SM.binaries += [builder.Add(project)]
+SM.binaries += builder.Add(project)
 
