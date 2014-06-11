@@ -117,15 +117,15 @@
 			}
 			"CalcIsAttackCriticalHelper"
 			{
-				"windows"	"381"
-				"linux"		"388"
-				"mac"		"388"
+				"windows"	"383"
+				"linux"		"390"
+				"mac"		"390"
 			}
 			"CalcIsAttackCriticalHelperNoCrits"
 			{
-				"windows"	"382"
-				"linux"		"389"
-				"mac"		"389"
+				"windows"	"384"
+				"linux"		"391"
+				"mac"		"391"
 			}
 		}
 	}
