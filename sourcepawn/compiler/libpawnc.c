@@ -146,16 +146,6 @@ void pc_closesrc(void *handle)
 	fclose((FILE*)handle);
 }
 
-/* pc_resetsrc()
- * "position" may only hold a pointer that was previously obtained from
- * pc_getpossrc()
- */
-void pc_resetsrc(void *handle,void *position)
-{
-	assert(handle!=NULL);
-	fsetpos((FILE*)handle,(fpos_t *)position);
-}
-
 /* pc_readsrc()
  * Reads a single line from the source file (or up to a maximum number of
  * characters if the line in the input file is too long).
@@ -174,12 +164,40 @@ int pc_writesrc(void *handle,unsigned char *source)
 	return fputs((char*)source,(FILE*)handle) >= 0;
 }
 
-void *pc_getpossrc(void *handle)
-{
-	static fpos_t lastpos;	/* may need to have a LIFO stack of such positions */
+#define MAXPOSITIONS  4
+static fpos_t srcpositions[MAXPOSITIONS];
+static unsigned char srcposalloc[MAXPOSITIONS];
 
-	fgetpos((FILE*)handle,&lastpos);
-	return &lastpos;
+void *pc_getpossrc(void *handle,void *position)
+{
+	if (position==NULL) {
+		/* allocate a new slot */
+		int i;
+		for (i=0; i<MAXPOSITIONS && srcposalloc[i]!=0; i++)
+			/* nothing */;
+		assert(i<MAXPOSITIONS); /* if not, there is a queue overrun */
+		if (i>=MAXPOSITIONS)
+			return NULL;
+		position=&srcpositions[i];
+		srcposalloc[i]=1;
+	} else {
+		/* use the gived slot */
+		assert((fpos_t*)position>=srcpositions && (fpos_t*)position<srcpositions+sizeof(srcpositions));
+	} /* if */
+	fgetpos((FILE*)handle,(fpos_t*)position);
+	return position;
+}
+
+/* pc_resetsrc()
+ * "position" may only hold a pointer that was previously obtained from
+ * pc_getpossrc()
+ */
+void pc_resetsrc(void *handle,void *position)
+{
+	assert(handle!=NULL);
+	assert(position!=NULL);
+	fsetpos((FILE*)handle,(fpos_t *)position);
+	/* note: the item is not cleared from the pool */
 }
 
 int pc_eofsrc(void *handle)
