@@ -2136,9 +2136,9 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
     if (sc_packstr)
       stringflags ^= ISPACKED;    /* invert packed/unpacked parameters */
     if ((stringflags & ISPACKED)!=0)
-      packedstring(_lexstr,stringflags);
+      packedstring((unsigned char *)_lexstr,stringflags);
     else
-      unpackedstring(_lexstr,stringflags);
+      unpackedstring((unsigned char *)_lexstr,stringflags);
   } else if (*lptr=='\'') {             /* character literal */
     lptr+=1;            /* skip quote */
     _lextok=tNUMBER;
