@@ -48,12 +48,15 @@ CurlExt curl_ext;		/**< Global singleton for extension's main interface */
 
 SMEXT_LINK(&curl_ext);
 
+#if 0
 SessionHandler g_SessionHandler;
-HandleType_t g_SessionHandle = 0;
 FormHandler g_FormHandler;
-HandleType_t g_FormHandle = 0;
 DownloadHandler g_DownloadHandler;
+#endif
+HandleType_t g_SessionHandle = 0;
+HandleType_t g_FormHandle = 0;
 HandleType_t g_DownloadHandle = 0;
+HTTPHandleDispatcher g_HTTPHandler;
 HTTPSessionManager& g_SessionManager = HTTPSessionManager::instance();
 
 bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
@@ -82,23 +85,24 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	// Register natives
 	g_pShareSys->AddNatives(myself, curlext_natives);
 	// Register session handle handler
-	HandleAccess sessionRules;
-	g_pHandleSys->InitAccessDefaults(NULL, &sessionRules);
-	sessionRules.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
+	HandleAccess hacc;
+	g_pHandleSys->InitAccessDefaults(NULL, &hacc);
+	hacc.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
 	g_SessionHandle = g_pHandleSys->CreateType("HTTPSession", 
-		&g_SessionHandler, 0, 0, &sessionRules, myself->GetIdentity(), NULL);
+		&g_HTTPHandler, 0, 0, &hacc, myself->GetIdentity(), NULL);
+
 	// Register web form handle handler
-	HandleAccess formRules;
-	g_pHandleSys->InitAccessDefaults(NULL, &formRules);
-	formRules.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY;
+	g_pHandleSys->InitAccessDefaults(NULL, &hacc);
+	hacc.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY;
 	g_FormHandle = g_pHandleSys->CreateType("HTTPWebForm",
-		&g_FormHandler, 0, 0, &formRules, myself->GetIdentity(), NULL);
+		&g_HTTPHandler, 0, 0, &hacc, myself->GetIdentity(), NULL);
+
 	// Register download handle handler
-	HandleAccess dldrRules;
-	g_pHandleSys->InitAccessDefaults(NULL, &dldrRules);
-	dldrRules.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
+	g_pHandleSys->InitAccessDefaults(NULL, &hacc);
+	hacc.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
 	g_DownloadHandle = g_pHandleSys->CreateType("HTTPDownloader",
-		&g_DownloadHandler, 0, 0, &dldrRules, myself->GetIdentity(), NULL);
+		&g_HTTPHandler, 0, 0, &hacc, myself->GetIdentity(), NULL);
+
 	plsys->AddPluginsListener(this);
 	smutils->AddGameFrameHook(&OnGameFrame);
 	g_SessionManager.Initialize();
@@ -374,8 +378,6 @@ static cell_t HTTP_PostAndDownload(IPluginContext *pCtx, const cell_t *params)
 	HTTPRequestCompletedContextPack contextPack;
 	contextPack.pCallbackFunction = new HTTPRequestCompletedContextFunction;
 
-	// TODO: this might be obsolete
-	contextPack.pCallbackFunction->pContext = pCtx;
 	// 5th param: callback function
 	contextPack.pCallbackFunction->uPluginFunction = params[5];
 
@@ -441,8 +443,6 @@ static cell_t HTTP_Download(IPluginContext *pCtx, const cell_t *params)
 	HTTPRequestCompletedContextPack contextPack;
 	contextPack.pCallbackFunction = new HTTPRequestCompletedContextFunction;
 
-	// TODO: this might be obsolete
-	contextPack.pCallbackFunction->pContext = pCtx;
 	// 4th param: callback function
 	contextPack.pCallbackFunction->uPluginFunction = params[4];
 
@@ -855,4 +855,20 @@ void HTTPSessionManager::HTTPAsyncRequestHandler::RunThread(IThreadHandle *pHand
 	}
 
 	g_SessionManager.AddCallback(request);
+}
+
+void HTTPHandleDispatcher::OnHandleDestroy(HandleType_t type, void *object)
+{
+	if (type == g_SessionHandle)
+	{
+		delete ((IWebTransfer *)object);
+	}
+	else if (type == g_DownloadHandle)
+	{
+		delete ((IBaseDownloader *)object);
+	}
+	else if (type == g_FormHandle)
+	{
+		delete ((IWebForm *)object);
+	}
 }
