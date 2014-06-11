@@ -98,6 +98,7 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_DownloadHandle = g_pHandleSys->CreateType("HTTPDownloader",
 		&g_HTTPHandler, 0, 0, &hacc, myself->GetIdentity(), NULL);
 
+	// Register game listeners
 	plsys->AddPluginsListener(this);
 	smutils->AddGameFrameHook(&OnGameFrame);
 
