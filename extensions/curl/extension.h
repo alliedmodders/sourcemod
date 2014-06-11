@@ -138,43 +138,6 @@ public:
 
 extern HTTPHandleDispatcher g_HTTPHandler;
 
-#if 0
-
-class SessionHandler : public IHandleTypeDispatch
-{
-public:
-	virtual void OnHandleDestroy(HandleType_t type, void *object)
-	{
-		delete ((IWebTransfer *)object);
-	}
-};
-
-extern SessionHandler g_SessionHandler;
-extern HandleType_t g_SessionHandle;
-
-class FormHandler : public IHandleTypeDispatch
-{
-	virtual void OnHandleDestroy(HandleType_t type, void *object)
-	{
-		delete ((IWebForm *)object);
-	}
-};
-
-extern FormHandler g_FormHandler;
-extern HandleType_t g_FormHandle;
-
-class DownloadHandler : public IHandleTypeDispatch
-{
-	virtual void OnHandleDestroy(HandleType_t type, void *object)
-	{
-		delete ((IBaseDownloader *)object);
-	}
-};
-
-extern DownloadHandler g_DownloadHandler;
-extern HandleType_t g_DownloadHandle;
-#endif
-
 struct HTTPRequestCompletedContextFunction {
 	funcid_t uPluginFunction;
 	bool bHasContext;
