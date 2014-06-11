@@ -93,7 +93,10 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	formRules.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY;
 	g_FormHandle = g_pHandleSys->CreateType("HTTPWebForm",
 		&g_FormHandler, 0, 0, &formRules, myself->GetIdentity(), NULL);
-	// Register web form handle handler
+	// Register download handle handler
+	HandleAccess dldrRules;
+	g_pHandleSys->InitAccessDefaults(NULL, &dldrRules);
+	dldrRules.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
 	g_DownloadHandle = g_pHandleSys->CreateType("HTTPDownloader",
 		&g_DownloadHandler, 0, 0, NULL, myself->GetIdentity(), NULL);
 	plsys->AddPluginsListener(this);
