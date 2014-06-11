@@ -42,6 +42,7 @@
 #include "IBaseDownloader.h"
 #include <amtl/am-linkedlist.h>
 #include <amtl/am-vector.h>
+#include <amtl/am-thread-utils.h>
 #include <string.h>
 
 
@@ -168,7 +169,6 @@ public:
 	}
 	~HTTPSessionManager() {}
 
-	void Initialize();
 	void Shutdown();
 	void PluginUnloaded(IPlugin *plugin);
 	void RunFrame();
@@ -213,11 +213,11 @@ private:
 	void AddCallback(HTTPRequest request);
 
 	static const unsigned int iMaxRequestsPerFrame = 20;
-	IMutex *pRequestsLock;
+	ke::ConditionVariable requests_;
 	ke::Vector<HTTPRequest> requests;
-	// NOTE: this needs no lock since it's only accessed from main thread
+	ke::ConditionVariable threads_;
 	ke::LinkedList<IThreadHandle*> threads;
-	IMutex *pCallbacksLock;
+	ke::ConditionVariable callbacks_;
 	ke::Vector<HTTPRequest> callbacks;
 
 	class HTTPAsyncRequestHandler : public IThread
