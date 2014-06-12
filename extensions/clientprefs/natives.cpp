@@ -243,8 +243,8 @@ static cell_t GetCookieIterator(IPluginContext *pContext, const cell_t *params)
 {
 	g_ClientPrefs.AttemptReconnection();
 
-	SourceHook::List<Cookie *>::iterator *iter = new SourceHook::List<Cookie *>::iterator;
-	*iter = g_CookieManager.cookieList.begin();
+	size_t *iter = new size_t;
+	*iter = 0;
 
 	Handle_t hndl = handlesys->CreateHandle(g_CookieIterator, iter, pContext->GetIdentity(), myself->GetIdentity(), NULL);
 	if (hndl == BAD_HANDLE)
@@ -259,7 +259,7 @@ static cell_t ReadCookieIterator(IPluginContext *pContext, const cell_t *params)
 {
 	g_ClientPrefs.AttemptReconnection();
 
-	SourceHook::List<Cookie *>::iterator *iter;
+	size_t *iter;
 
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError err;
@@ -274,14 +274,12 @@ static cell_t ReadCookieIterator(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Cookie iterator handle %x (error %d)", hndl, err);
 	}
 
-	if (*iter == g_CookieManager.cookieList.end())
+	if (*iter >= g_CookieManager.cookieList.length())
 	{
 		return 0;
 	}
 
-	Cookie *pCookie = (Cookie *)**iter;
-
-	(*iter)++;
+	Cookie *pCookie = g_CookieManager.cookieList[(*iter)++];
 
 	pContext->StringToLocalUTF8(params[2], params[3], pCookie->name, NULL);
 	pContext->StringToLocalUTF8(params[5], params[6], pCookie->description, NULL);
@@ -333,18 +331,18 @@ cell_t AddSettingsMenuItem(IPluginContext *pContext, const cell_t *params)
 	/* Track this in case the plugin unloads */
 
 	IPlugin *pPlugin = plsys->FindPluginByContext(pContext->GetContext());
-	SourceHook::List<char *> *pList = NULL;
+	ke::Vector<char *> *pList = NULL;
 
 	if (!pPlugin->GetProperty("SettingsMenuItems", (void **)&pList, false) || !pList)
 	{
-		pList = new SourceHook::List<char *>;
+		pList = new ke::Vector<char *>;
 		pPlugin->SetProperty("SettingsMenuItems", pList);
 	}
 
 	char *copyarray = new char[strlen(display)+1];
 	g_pSM->Format(copyarray, strlen(display)+1, "%s", display);
 
-	pList->push_back(copyarray);
+	pList->append(copyarray);
 
 	return 0;
 }
@@ -403,18 +401,18 @@ cell_t AddSettingsPrefabMenuItem(IPluginContext *pContext, const cell_t *params)
 	/* Track this in case the plugin unloads */
 
 	IPlugin *pPlugin = plsys->FindPluginByContext(pContext->GetContext());
-	SourceHook::List<char *> *pList = NULL;
+	ke::Vector<char *> *pList = NULL;
 
 	if (!pPlugin->GetProperty("SettingsMenuItems", (void **)&pList, false) || !pList)
 	{
-		pList = new SourceHook::List<char *>;
+		pList = new ke::Vector<char *>;
 		pPlugin->SetProperty("SettingsMenuItems", pList);
 	}
 
 	char *copyarray = new char[strlen(display)+1];
 	g_pSM->Format(copyarray, strlen(display)+1, "%s", display);
 
-	pList->push_back(copyarray);
+	pList->append(copyarray);
 
 	return 0;
 }

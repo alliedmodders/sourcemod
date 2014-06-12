@@ -35,7 +35,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "smsdk_ext.h"
-#include "sh_list.h"
+#include "am-vector.h"
 
 #include <am-thread-utils.h>
 #include <am-refcounting.h>
@@ -158,7 +158,7 @@ public:
 	bool databaseLoading;
 
 private:
-	SourceHook::List<TQueryOp *> cachedQueries;
+	ke::Vector<TQueryOp *> cachedQueries;
 	ke::Mutex queryLock;
 	IdentityToken_t *identity;
 };
@@ -177,7 +177,7 @@ class CookieIteratorHandler : public IHandleTypeDispatch
 public:
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		delete (SourceHook::List<Cookie *>::iterator *)object;
+		delete (size_t *)object;
 	}
 };
 

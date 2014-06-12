@@ -33,7 +33,7 @@
 #define _INCLUDE_SOURCEMOD_CLIENTPREFS_COOKIE_H_
 
 #include "extension.h"
-#include "sh_list.h"
+#include "am-vector.h"
 #include <sm_namehashset.h>
 
 #define MAX_NAME_LENGTH 30
@@ -128,12 +128,12 @@ public:
 
 public:
 	IForward *cookieDataLoadedForward;
-	SourceHook::List<Cookie *> cookieList;
+	ke::Vector<Cookie *> cookieList;
 	IBaseMenu *clientMenu;
 
 private:
 	NameHashSet<Cookie *> cookieFinder;
-	SourceHook::List<CookieData *> clientData[SM_MAXPLAYERS+1];
+	ke::Vector<CookieData *> clientData[SM_MAXPLAYERS+1];
 
 	bool connected[SM_MAXPLAYERS+1];
 	bool statsLoaded[SM_MAXPLAYERS+1];
