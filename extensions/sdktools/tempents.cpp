@@ -285,6 +285,9 @@ void TempEntityManager::Initialize()
 	int offset;
 	m_Loaded = false;
 
+#if SOURCE_ENGINE == SE_TF2
+	m_ListHead = servertools->GetTempEntList();
+#else
 	/*
 	 * First try to lookup s_pTempEntities directly for platforms with symbols.
 	 * If symbols aren't present (Windows or stripped Linux/Mac), 
@@ -311,6 +314,7 @@ void TempEntityManager::Initialize()
 	{
 		return;
 	}
+#endif // == TF2
 
 	if (!g_pGameConf->GetOffset("GetTEName", &m_NameOffs))
 	{
