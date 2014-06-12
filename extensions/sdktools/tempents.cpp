@@ -314,7 +314,7 @@ void TempEntityManager::Initialize()
 	{
 		return;
 	}
-#endif
+#endif // == TF2
 
 	if (!g_pGameConf->GetOffset("GetTEName", &m_NameOffs))
 	{

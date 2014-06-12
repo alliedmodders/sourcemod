@@ -789,7 +789,7 @@ static cell_t NativeFindEntityByClassname(IPluginContext *pContext, const cell_t
 
 	return -1;
 }
-#endif
+#endif // >= ORANGEBOX && != TF2
 
 static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *params)
 {
@@ -820,7 +820,7 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 	{
 		return NativeFindEntityByClassname(pContext, params);
 	}
-#endif
+#endif // >= SE_ORANGEBOX
 
 	if (!pCall)
 	{
@@ -857,7 +857,7 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 			return NativeFindEntityByClassname(pContext, params);
 #else
 			return pContext->ThrowNativeError("%s", error);
-#endif
+#endif // >= ORANGEBOX
 		}
 	}
 
@@ -869,7 +869,7 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 	FINISH_CALL_SIMPLE(&pEntity);
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
-#endif
+#endif // == TF2
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
