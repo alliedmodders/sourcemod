@@ -714,7 +714,7 @@ static cell_t GetClientEyeAngles(IPluginContext *pContext, const cell_t *params)
 	return got_angles ? 1 : 0;
 }
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX && SOURCE_ENGINE != SE_TF2
 static cell_t NativeFindEntityByClassname(IPluginContext *pContext, const cell_t *params)
 {
 	char *searchname;
@@ -793,6 +793,25 @@ static cell_t NativeFindEntityByClassname(IPluginContext *pContext, const cell_t
 
 static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_TF2
+	CBaseEntity *pStartEnt = NULL;
+	if (params[1] != -1)
+	{
+		pStartEnt = gamehelpers->ReferenceToEntity(params[1]);
+		if (!pStartEnt)
+		{
+			return pContext->ThrowNativeError("Entity %d (%d) is invalid",
+				gamehelpers->ReferenceToIndex(params[1]),
+				params[1]);
+		}
+	}
+
+	char *searchname;
+	pContext->LocalToString(params[2], &searchname);
+
+	CBaseEntity *pEntity = servertools->FindEntityByClassname(pStartEnt, searchname);
+	return gamehelpers->EntityToBCompatRef(pEntity);
+#else
 	static ValveCall *pCall = NULL;
 	static bool bProbablyNoFEBC = false;
 
@@ -850,6 +869,7 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 	FINISH_CALL_SIMPLE(&pEntity);
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
+#endif
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
