@@ -497,19 +497,19 @@ Handle_t ConVarManager::FindConVar(const char *name)
 	ConVarInfo *pInfo;
 	Handle_t hndl;
 
-	/* Search for convar */
+	/* Check convar cache to find out if we already have a handle */
+	if (convar_cache_lookup(name, &pInfo))
+	{
+		return pInfo->handle;
+	}
+
+	/* Couldn't find it in cache, so search for it */
 	pConVar = icvar->FindVar(name);
 
 	/* If it doesn't exist, then return an invalid handle */
 	if (!pConVar)
 	{
 		return BAD_HANDLE;
-	}
-
-	/* At this point, the convar exists. So, find out if we already have a handle */
-	if (convar_cache_lookup(name, &pInfo))
-	{
-		return pInfo->handle;
 	}
 
 	/* Create and initialize ConVarInfo structure */
