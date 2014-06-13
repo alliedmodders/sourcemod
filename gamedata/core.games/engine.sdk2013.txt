@@ -14,6 +14,13 @@
 	/* CGlobalEntityList */
 	"#default"
 	{
+		/* These games have symbols stripped from the linux binaries */
+		"#supported"
+		{
+			"game"		"synergy"
+			"game"		"empires"
+		}
+		
 		"Offsets"
 		{
 			/* Offset into LevelShutdown */
@@ -42,6 +49,48 @@
 			"gEntList"
 			{
 				"library"	"server"
+				"mac"		"@gEntList"
+			}
+		}
+	}
+	
+	/* CGlobalEntityList */
+	"#default"
+	{
+		/* These games do have symbols in the linux binaries */
+		"#supported"
+		{
+			"game"		"fof"
+			"game"		"nmrih"
+		}
+		
+		"Offsets"
+		{
+			/* Offset into LevelShutdown */
+			"gEntList"
+			{
+				"windows"	"11"
+			}
+
+			"EntInfo"
+			{
+				"windows"	"4"	
+				"linux"		"4"
+				"mac"		"4"
+			}
+		}
+		
+		"Signatures"
+		{
+			"LevelShutdown"
+			{
+				"library"	"server"
+				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
+			}
+			"gEntList"
+			{
+				"library"	"server"
+				"linux"		"@gEntList"
 				"mac"		"@gEntList"
 			}
 		}
