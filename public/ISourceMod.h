@@ -149,11 +149,11 @@ namespace SourceMod
 		 * @brief Logs a message to a file path you pass as well as to console.
 		 *
 		 * @param pExt		Extension calling this function.
-		 * @param fileP		File path that output will be written to.
+		 * @param fileName	File name that output will be written to.
 		 * @param format	Message format.
 		 * @param ...		Message format parameters.
 		 */
-		 virtual void LogToFile(IExtension *pExt, const char *fileP, const char *format, ...) =0;
+		 virtual void LogToFile(IExtension *pExt, const char *fileName, const char *format, ...) =0;
 
 		/**
 		 * @brief Formats a string from a native.
