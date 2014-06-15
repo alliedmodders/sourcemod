@@ -573,29 +573,10 @@ const sp_nativeinfo_t curlext_natives[] =
 
 void HTTPSessionManager::PluginUnloaded(IPlugin *plugin)
 {
-	// Check for pending requests and cancel them
-	{
-		ke::AutoLock lock(&requests_);
-
-		if (!requests.empty())
-		{
-			// Run through requests queue
-			for (unsigned int i = 0; i < requests.length(); i++)
-			{
-				// Identify requests associated to (nearly) unmapped plugin context
-				if (requests[i].pCtx == plugin->GetBaseContext())
-				{
-					// All context related data and callbacks are marked invalid
-					requests[i].pCtx = NULL;
-					requests[i].contextPack.pCallbackFunction = NULL;
-				}
-			}
-		}
-	}
-
 	// Wait for running requests to finish
-	if (threads_.DoTryLock())
 	{
+		ke::AutoLock lock(&threads_);
+
 		if (!threads.empty())
 		{
 			for (ke::LinkedList<IThreadHandle*>::iterator i(threads.begin()), end(threads.end()); i != end; ++i)
@@ -605,29 +586,9 @@ void HTTPSessionManager::PluginUnloaded(IPlugin *plugin)
 					(*i)->WaitForThread();
 					(*i)->DestroyThis();
 					i = this->threads.erase(i);
-
-					// Check for pending callbacks and cancel them
-					ke::AutoLock lock(&callbacks_);
-
-					if (!callbacks.empty())
-					{
-						// Run through callback queue
-						for (unsigned int i = 0; i < callbacks.length(); i++)
-						{
-							// Identify callbacks associated to (nearly) unmapped plugin context
-							if (callbacks[i].pCtx == plugin->GetBaseContext())
-							{
-								// All context related data and callbacks are marked invalid
-								callbacks[i].pCtx = NULL;
-								callbacks[i].contextPack.pCallbackFunction = NULL;
-							}
-						}
-					}
 				}
 			}
 		}
-
-		threads_.DoUnlock();
 	}
 }
 
@@ -638,7 +599,7 @@ void HTTPSessionManager::PostAndDownload(IPluginContext *pCtx,
 	HTTPRequest request = {};
 	BurnSessionHandle(pCtx, handles);
 
-	request.pCtx = pCtx;
+	request.plugin = FindPluginByContext(pCtx)->GetMyHandle();
 	request.handles = handles;
 	request.method = HTTP_POST;
 	request.url = url;
@@ -657,7 +618,7 @@ void HTTPSessionManager::Download(IPluginContext *pCtx,
 	HTTPRequest request = {};
 	BurnSessionHandle(pCtx, handles);
 
-	request.pCtx = pCtx;
+	request.plugin = FindPluginByContext(pCtx)->GetMyHandle();
 	request.handles = handles;
 	request.method = HTTP_GET;
 	request.url = url;
@@ -694,14 +655,16 @@ void HTTPSessionManager::RunFrame()
 	// Try to execute pending callbacks
 	if (callbacks_.DoTryLock())
 	{
-		if (!this->callbacks.empty())
+		if (!callbacks.empty())
 		{
 			HTTPRequest request = this->callbacks.back();
-			IPluginContext *pCtx = request.pCtx;
+			HandleError herr;
+			IPlugin *parent = plsys->PluginFromHandle(request.plugin, &herr);
 
 			// Is the requesting plugin still alive?
-			if (pCtx != NULL)
+			if (parent != NULL && herr != HandleError_Freed)
 			{
+				IPluginContext *pCtx = parent->GetBaseContext();
 				funcid_t id = request.contextPack.pCallbackFunction->uPluginFunction;
 				IPluginFunction *pFunction = pCtx->GetFunctionById(id);
 
@@ -719,7 +682,7 @@ void HTTPSessionManager::RunFrame()
 				}
 			}
 
-			this->callbacks.pop();
+			callbacks.pop();
 		}
 
 		callbacks_.DoUnlock();
@@ -737,22 +700,25 @@ void HTTPSessionManager::RunFrame()
 		// of parallel execution.
 		for (unsigned int i = 0; i < iMaxRequestsPerFrame; i++)
 		{
-			if (!this->requests.empty())
+			if (!requests.empty())
 			{
 				// Create new thread object
 				HTTPAsyncRequestHandler *async = 
-					new HTTPAsyncRequestHandler(this->requests.back());
+					new HTTPAsyncRequestHandler(requests.back());
+				HandleError herr;
+				IPlugin *parent = 
+					plsys->PluginFromHandle(requests.back().plugin, &herr);
 				// Skip requests with unloaded parent plugin
-				if (this->requests.back().pCtx != NULL)
+				if (parent != NULL && herr != HandleError_Freed)
 				{
 					// Create new thread
 					IThreadHandle *pThread = 
 						threader->MakeThread(async, Thread_Default);
 					// Save thread handle
-					this->threads.append(pThread);
+					threads.append(pThread);
 				}
 				// Remove request as it's being handled now
-				this->requests.pop();
+				requests.pop();
 			}
 		}
 
@@ -760,7 +726,7 @@ void HTTPSessionManager::RunFrame()
 	}
 
 	// Do some quick "garbage collection" on finished threads
-	RemoveFinishedThreads();
+	this->RemoveFinishedThreads();
 }
 
 void HTTPSessionManager::Shutdown()
@@ -806,9 +772,17 @@ void HTTPSessionManager::RemoveFinishedThreads()
 
 void HTTPSessionManager::HTTPAsyncRequestHandler::RunThread(IThreadHandle *pHandle)
 {
-	HandleError err;
+	HandleError herr;
+	IPlugin *parent = plsys->PluginFromHandle(request.plugin, &herr);
+
+	if (parent == NULL || herr == HandleError_Freed)
+	{
+		// The parent plugin got unloaded, no more work to do
+		return;
+	}
+
 	HandleSecurity sec;
-	sec.pOwner = this->request.pCtx->GetIdentity();
+	sec.pOwner = parent->GetIdentity();
 	sec.pIdentity = myself->GetIdentity();
 
 	IWebTransfer *xfer = NULL;
@@ -852,4 +826,25 @@ void HTTPHandleDispatcher::OnHandleDestroy(HandleType_t type, void *object)
 	{
 		delete ((IWebForm *)object);
 	}
+}
+
+IPlugin *FindPluginByContext(IPluginContext *pContext) {
+	IPlugin *pFoundPlugin;
+
+	IPluginIterator *pPluginIterator = plsys->GetPluginIterator();
+	while (pPluginIterator->MorePlugins())
+	{
+		IPlugin *pPlugin = pPluginIterator->GetPlugin();
+
+		if (pPlugin->GetBaseContext() == pContext)
+		{
+			pFoundPlugin = pPlugin;
+			break;
+		}
+
+		pPluginIterator->NextPlugin();
+	}
+	pPluginIterator->Release();
+
+	return pFoundPlugin;
 }
