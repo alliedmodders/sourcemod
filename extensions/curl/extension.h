@@ -196,7 +196,7 @@ private:
 
 	struct HTTPRequest 
 	{
-		IPluginContext *pCtx;
+		Handle_t plugin;
 		HTTPRequestMethod method;
 		HTTPRequestHandleSet handles;
 		const char *url;
@@ -240,6 +240,7 @@ private:
 };
 
 void OnGameFrame(bool simulating);
+IPlugin *FindPluginByContext(IPluginContext *pContext);
 
 // Natives
 extern const sp_nativeinfo_t curlext_natives[];
