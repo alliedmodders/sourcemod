@@ -594,44 +594,40 @@ void HTTPSessionManager::PluginUnloaded(IPlugin *plugin)
 	}
 
 	// Wait for running requests to finish
+	if (threads_.DoTryLock())
 	{
-		ke::AutoTryLock lock(&threads_);
-
-		if (threads_.Locked())
+		if (!threads.empty())
 		{
-			if (!threads.empty())
+			for (ke::LinkedList<IThreadHandle*>::iterator i(threads.begin()), end(threads.end()); i != end; ++i)
 			{
-				for (ke::LinkedList<IThreadHandle*>::iterator i(threads.begin()), end(threads.end()); i != end; ++i)
+				if ((*i) != NULL)
 				{
-					if ((*i) != NULL)
+					(*i)->WaitForThread();
+					(*i)->DestroyThis();
+					i = this->threads.erase(i);
+
+					// Check for pending callbacks and cancel them
+					ke::AutoLock lock(&callbacks_);
+
+					if (!callbacks.empty())
 					{
-						(*i)->WaitForThread();
-						(*i)->DestroyThis();
-						i = this->threads.erase(i);
-
-						// Check for pending callbacks and cancel them
+						// Run through callback queue
+						for (unsigned int i = 0; i < callbacks.length(); i++)
 						{
-							ke::AutoLock lock(&callbacks_);
-
-							if (!callbacks.empty())
+							// Identify callbacks associated to (nearly) unmapped plugin context
+							if (callbacks[i].pCtx == plugin->GetBaseContext())
 							{
-								// Run through callback queue
-								for (unsigned int i = 0; i < callbacks.length(); i++)
-								{
-									// Identify callbacks associated to (nearly) unmapped plugin context
-									if (callbacks[i].pCtx == plugin->GetBaseContext())
-									{
-										// All context related data and callbacks are marked invalid
-										callbacks[i].pCtx = NULL;
-										callbacks[i].contextPack.pCallbackFunction = NULL;
-									}
-								}
+								// All context related data and callbacks are marked invalid
+								callbacks[i].pCtx = NULL;
+								callbacks[i].contextPack.pCallbackFunction = NULL;
 							}
 						}
 					}
 				}
 			}
 		}
+
+		threads_.DoUnlock();
 	}
 }
 
@@ -696,74 +692,71 @@ void HTTPSessionManager::BurnSessionHandle(IPluginContext *pCtx,
 void HTTPSessionManager::RunFrame()
 {
 	// Try to execute pending callbacks
+	if (callbacks_.DoTryLock())
 	{
-		ke::AutoTryLock lock(&callbacks_);
-		if (this->callbacks_.Locked())
+		if (!this->callbacks.empty())
 		{
-			if (!this->callbacks.empty())
+			HTTPRequest request = this->callbacks.back();
+			IPluginContext *pCtx = request.pCtx;
+
+			// Is the requesting plugin still alive?
+			if (pCtx != NULL)
 			{
-				HTTPRequest request = this->callbacks.back();
-				IPluginContext *pCtx = request.pCtx;
+				funcid_t id = request.contextPack.pCallbackFunction->uPluginFunction;
+				IPluginFunction *pFunction = pCtx->GetFunctionById(id);
 
-				// Is the requesting plugin still alive?
-				if (pCtx != NULL)
+				if (pFunction != NULL)
 				{
-					funcid_t id = request.contextPack.pCallbackFunction->uPluginFunction;
-					IPluginFunction *pFunction = pCtx->GetFunctionById(id);
-
-					if (pFunction != NULL)
+					// Push data and execute callback
+					pFunction->PushCell(request.handles.hndlSession);
+					pFunction->PushCell(request.result);
+					pFunction->PushCell(request.handles.hndlDownloader);
+					if (request.contextPack.pCallbackFunction->bHasContext)
 					{
-						// Push data and execute callback
-						pFunction->PushCell(request.handles.hndlSession);
-						pFunction->PushCell(request.result);
-						pFunction->PushCell(request.handles.hndlDownloader);
-						if (request.contextPack.pCallbackFunction->bHasContext)
-						{
-							pFunction->PushCell(request.contextPack.iPluginContextValue);
-						}
-						pFunction->Execute(NULL);
+						pFunction->PushCell(request.contextPack.iPluginContextValue);
 					}
+					pFunction->Execute(NULL);
 				}
-
-				this->callbacks.pop();
 			}
+
+			this->callbacks.pop();
 		}
+
+		callbacks_.DoUnlock();
 	}
 
 	// Try to fire up some new asynchronous requests
+	if (requests_.DoTryLock())
 	{
-		ke::AutoTryLock lock(&requests_);
-		if (requests_.Locked())
+		// NOTE: this is my "burst thread creation" solution
+		// Using a thread pool is slow as it executes the threads
+		// sequentially and not parallel.
+		// Not using a thread pool might cause SRCDS to crash, so
+		// we are spawning just a few threads every frame to not
+		// affect performance too much and still having the advantage
+		// of parallel execution.
+		for (unsigned int i = 0; i < iMaxRequestsPerFrame; i++)
 		{
-			// NOTE: this is my "burst thread creation" solution
-			// Using a thread pool is slow as it executes the threads
-			// sequentially and not parallel.
-			// Not using a thread pool might cause SRCDS to crash, so
-			// we are spawning just a few threads every frame to not
-			// affect performance too much and still having the advantage
-			// of parallel execution.
-			for (unsigned int i = 0; i < iMaxRequestsPerFrame; i++)
+			if (!this->requests.empty())
 			{
-				if (!this->requests.empty())
+				// Create new thread object
+				HTTPAsyncRequestHandler *async = 
+					new HTTPAsyncRequestHandler(this->requests.back());
+				// Skip requests with unloaded parent plugin
+				if (this->requests.back().pCtx != NULL)
 				{
-					// Create new thread object
-					HTTPAsyncRequestHandler *async = 
-						new HTTPAsyncRequestHandler(this->requests.back());
-					// Skip requests with unloaded parent plugin
-					if (this->requests.back().pCtx != NULL)
-					{
-						// Create new thread
-						IThreadHandle *pThread = 
-							threader->MakeThread(async, Thread_Default);
-						// Save thread handle
-						//this->threads.push_front(pThread);
-						this->threads.append(pThread);
-					}
-					// Remove request as it's being handled now
-					this->requests.pop();
+					// Create new thread
+					IThreadHandle *pThread = 
+						threader->MakeThread(async, Thread_Default);
+					// Save thread handle
+					this->threads.append(pThread);
 				}
+				// Remove request as it's being handled now
+				this->requests.pop();
 			}
 		}
+
+		requests_.DoUnlock();
 	}
 
 	// Do some quick "garbage collection" on finished threads
@@ -784,16 +777,13 @@ void HTTPSessionManager::Shutdown()
 
 void HTTPSessionManager::AddCallback(HTTPRequest request)
 {
-	{
-		ke::AutoLock lock(&callbacks_);
-		this->callbacks.append(request);
-	}
+	ke::AutoLock lock(&callbacks_);
+	this->callbacks.append(request);
 }
 
 void HTTPSessionManager::RemoveFinishedThreads()
 {
-	ke::AutoLock lock(&threads_);
-	if (threads_.Locked())
+	if (threads_.DoTryLock())
 	{
 		if (!this->threads.empty())
 		{
@@ -809,6 +799,8 @@ void HTTPSessionManager::RemoveFinishedThreads()
 				}
 			}
 		}
+
+		threads_.DoUnlock();
 	}
 }
 
