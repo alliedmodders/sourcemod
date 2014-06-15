@@ -113,6 +113,7 @@ public: // ISourceMod
 	size_t BuildPath(PathType type, char *buffer, size_t maxlength, const char *format, ...);
 	void LogMessage(IExtension *pExt, const char *format, ...);
 	void LogError(IExtension *pExt, const char *format, ...);
+	void LogToFile(IExtension *pExt, const char *fileName, const char *format, ...);
 	size_t FormatString(char *buffer, size_t maxlength, IPluginContext *pContext, const cell_t *params, unsigned int param);
 	IDataPack *CreateDataPack();
 	void FreeDataPack(IDataPack *pack);
