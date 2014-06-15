@@ -597,6 +597,31 @@ void SourceModBase::LogError(IExtension *pExt, const char *format, ...)
 	}
 }
 
+void SourceModBase::LogToFile(IExtension *pExt, const char *fileName, const char *format, ...)
+{
+	IExtensionInterface *pAPI = pExt->GetAPI();
+	const char *tag = pAPI->GetExtensionTag();
+	char _filename[256];
+	char buffer[2048];
+	va_list ap;
+
+	va_start(ap, format);
+	vsnprintf(buffer, sizeof(buffer), format, ap);
+	va_end(ap);
+	g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/%s", fileName);
+	FILE *file = fopen(_filename, "a+");
+	if (file)
+	{
+		if (tag)
+		{
+			g_Logger.LogToOpenFile(file, "[%s] %s", tag, buffer);
+		} else {
+			g_Logger.LogToOpenFile(file, "%s", buffer);
+		}
+		fclose(file);
+	}
+}
+
 size_t SourceModBase::FormatString(char *buffer, size_t maxlength, IPluginContext *pContext, const cell_t *params, unsigned int param)
 {
 	char *fmt;
