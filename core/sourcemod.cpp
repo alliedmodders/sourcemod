@@ -611,6 +611,7 @@ void SourceModBase::LogToFile(IExtension *pExt, const char *fileName, const char
 	g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/%s", fileName);
 	FILE *file = fopen(_filename, "a+");
 	if (file)
+	{
 		if (tag)
 		{
 			g_Logger.LogToOpenFile(file, "[%s] %s", tag, buffer);
