@@ -3257,6 +3257,9 @@ static void domethodmap()
     error(93);
   strcpy(mapname, str);
 
+  if (!isupper(*mapname))
+    error(109);
+
   int maptag = pc_addtag(mapname);
   if (methodmap_find_by_tag(maptag))
     error(103, mapname);
