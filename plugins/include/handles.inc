@@ -77,6 +77,15 @@ native bool:CloseHandle(Handle:hndl);
 native Handle:CloneHandle(Handle:hndl, Handle:plugin=INVALID_HANDLE);
 
 /**
+ * Helper for object-oriented syntax.
+ */
+methodmap Handle
+{
+	Clone = CloneHandle;
+	Close = CloseHandle;
+};
+
+/**
  * Do not use this function.  Returns if a Handle and its contents 
  * are readable, whereas INVALID_HANDLE only checks for the absence 
  * of a Handle.
