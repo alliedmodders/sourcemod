@@ -1,3 +1,4 @@
+/* vim: set ts=8 sts=2 sw=2 tw=99 et: */
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -10,6 +11,8 @@ funcenum_t *firstenum = NULL;
 funcenum_t *lastenum = NULL;
 pstruct_t *firststruct = NULL;
 pstruct_t *laststruct = NULL;
+methodmap_t *methodmap_first = NULL;
+methodmap_t *methodmap_last = NULL;
 
 structarg_t *pstructs_getarg(pstruct_t *pstruct, const char *member)
 {
@@ -345,20 +348,20 @@ void _stack_genusage(memuse_list_t *stack, int dofree)
   while (cur)
   {
     if (cur->type == MEMUSE_DYNAMIC)
-	{
+    {
       /* no idea yet */
       assert(0);
-	} else {
+    } else {
       modstk(cur->size * sizeof(cell));
-	}
-	if (dofree)
-	{
+    }
+    if (dofree)
+    {
       tmp = cur->prev;
       free(cur);
       cur = tmp;
-	} else {
+    } else {
       cur = cur->prev;
-	}
+    }
   }
   if (dofree)
   {
@@ -426,4 +429,56 @@ void resetstacklist()
 void resetheaplist()
 {
   _reset_memlist(&heapusage);
+}
+
+void methodmap_add(methodmap_t *map)
+{
+  if (!methodmap_first) {
+    methodmap_first = map;
+    methodmap_last = map;
+  } else {
+    methodmap_last->next = map;
+    methodmap_last = map;
+  }
+}
+
+methodmap_t *methodmap_find_by_tag(int tag)
+{
+  methodmap_t *ptr = methodmap_first;
+  for (; ptr; ptr = ptr->next) {
+    if (ptr->tag == tag)
+      return ptr;
+  }
+  return NULL;
+}
+
+methodmap_t *methodmap_find_by_name(const char *name)
+{
+  int tag = pc_findtag(name);
+  if (tag == -1)
+    return NULL;
+  return methodmap_find_by_tag(tag);
+}
+
+methodmap_method_t *methodmap_find_method(methodmap_t *map, const char *name)
+{
+  size_t i;
+  for (i = 0; i < map->nummethods; i++) {
+    if (strcmp(map->methods[i]->name, name) == 0)
+      return map->methods[i];
+  }
+  return NULL;
+}
+
+void methodmaps_free()
+{
+  methodmap_t *ptr = methodmap_first;
+  while (ptr) {
+    methodmap_t *next = ptr->next;
+    free(ptr->methods);
+    free(ptr);
+    ptr = next;
+  }
+  methodmap_first = NULL;
+  methodmap_last = NULL;
 }

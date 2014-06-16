@@ -1,3 +1,4 @@
+/* vim: set sts=2 ts=8 sw=2 tw=99 et: */
 #ifndef _INCLUDE_SOURCEPAWN_COMPILER_TRACKER_H_
 #define _INCLUDE_SOURCEPAWN_COMPILER_TRACKER_H_
 
@@ -66,6 +67,22 @@ typedef struct pstruct_s
   struct pstruct_s *next;
 } pstruct_t;
 
+typedef struct methodmap_method_s
+{
+  char name[sNAMEMAX+1];
+  symbol *target;
+} methodmap_method_t;
+
+typedef struct methodmap_s
+{
+  struct methodmap_s *next;
+  struct methodmap_s *parent;
+  int tag;
+  char name[sNAMEMAX+1];
+  methodmap_method_t **methods;
+  size_t nummethods;
+} methodmap_t;
+
 /**
  * Pawn Structs
  */
@@ -110,6 +127,15 @@ void genheapfree(int stop_id);
  */
 void resetstacklist();
 void resetheaplist();
+
+/**
+ * Method maps.
+ */
+void methodmap_add(methodmap_t *map);
+methodmap_t *methodmap_find_by_tag(int tag);
+methodmap_t *methodmap_find_by_name(const char *name);
+methodmap_method_t *methodmap_find_method(methodmap_t *map, const char *name);
+void methodmaps_free();
 
 extern memuse_list_t *heapusage;
 extern memuse_list_t *stackusage;

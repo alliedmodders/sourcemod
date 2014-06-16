@@ -1,3 +1,4 @@
+/* vim: set sts=2 ts=8 sw=2 tw=99 et: */
 /*  Pawn compiler
  *
  *  Function and variable definition and declaration, statement parser.
@@ -107,7 +108,7 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
 static cell init(int ident,int *tag,int *errorfound);
 static int getstates(const char *funcname);
 static void attachstatelist(symbol *sym, int state_id);
-static void funcstub(int fnative);
+static symbol *funcstub(int fnative);
 static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stock);
 static int declargs(symbol *sym,int chkshadow);
 static void doarg(char *name,int ident,int offset,int tags[],int numtags,
@@ -137,6 +138,7 @@ static void dogoto(void);
 static void dolabel(void);
 static void doreturn(void);
 static void dofuncenum(int listmode);
+static void domethodmap();
 static void dobreak(void);
 static void docont(void);
 static void dosleep(void);
@@ -345,7 +347,8 @@ int pc_compile(int argc, char *argv[])
     #endif
     resetglobals();
     pstructs_free();
-	funcenums_free();
+    funcenums_free();
+    methodmaps_free();
     sc_ctrlchar=sc_ctrlchar_org;
     sc_packstr=lcl_packstr;
     sc_needsemicolon=lcl_needsemicolon;
@@ -407,6 +410,7 @@ int pc_compile(int argc, char *argv[])
   reduce_referrers(&glbtab);
   delete_symbols(&glbtab,0,TRUE,FALSE);
   funcenums_free();
+  methodmaps_free();
   pstructs_free();
   #if !defined NO_DEFINE
     delete_substtable();
@@ -529,6 +533,7 @@ cleanup:
   delete_sourcefiletable();
   delete_dbgstringtable();
   funcenums_free();
+  methodmaps_free();
   pstructs_free();
   #if !defined NO_DEFINE
     delete_substtable();
@@ -626,6 +631,26 @@ static void inst_datetime_defines(void)
 
   insert_subst("__DATE__", date, 8);
   insert_subst("__TIME__", ltime, 8);
+}
+
+const char *pc_tagname(int tag)
+{
+  constvalue *ptr=tagname_tab.next;
+  for (; ptr; ptr=ptr->next) {
+    if ((int)(ptr->value & TAGMASK) == (tag & TAGMASK))
+      return ptr->name;
+  }
+  return "<unknown>";
+}
+
+int pc_findtag(const char *name)
+{
+  constvalue *ptr=tagname_tab.next;
+  for (; ptr; ptr=ptr->next) {
+    if (strcmp(name,ptr->name)==0)
+      return (int)(ptr->value & TAGMASK);
+  }
+  return -1;
 }
 
 #if defined __cplusplus
@@ -1487,6 +1512,9 @@ static void parse(void)
       break;
     case tFUNCENUM:
       dofuncenum(TRUE);
+      break;
+    case tMETHODMAP:
+      domethodmap();
       break;
     case tFUNCTAG:
       dofuncenum(FALSE);
@@ -3209,6 +3237,122 @@ static void declstruct(void)
 	matchtoken(';');	/* eat up optional semicolon */
 }
 
+/**
+ * domethodmap - declare a method map for OO-ish syntax.
+ *
+ * methodmap ::= "methodmap" symbol ("<" symbol)? "{" methodmap-body? "}"
+ * methodmap-body ::= symbol "=" methodmap-method term (, methodmap-body)*
+ * methodmap-method ::= native-decl|symbol
+ */
+static void domethodmap()
+{
+  int val;
+  char *str;
+  char mapname[sNAMEMAX + 1];
+  methodmap_t *map;
+  methodmap_t *parent = NULL;
+
+  // Get the tag.
+  if (lex(&val, &str) != tSYMBOL)
+    error(93);
+  strcpy(mapname, str);
+
+  int maptag = pc_addtag(mapname);
+  if (methodmap_find_by_tag(maptag))
+    error(103, mapname);
+
+  int extends = matchtoken('<');
+  if (extends) {
+    if (lex(&val, &str) != tSYMBOL) {
+      error(93);
+      return;
+    }
+
+    if ((parent = methodmap_find_by_name(str)) == NULL) {
+      error(102, str);
+    }
+  }
+
+  map = (methodmap_t *)calloc(1, sizeof(methodmap_t));
+  map->parent = parent;
+  map->tag = maptag;
+  strcpy(map->name, mapname);
+
+  methodmap_add(map);
+
+  needtoken('{');
+  while (!matchtoken('}')) {
+    int tok;
+    symbol *target;
+    const arginfo *first_arg;
+    char ident[sNAMEMAX + 1];
+    methodmap_method_t *method;
+    methodmap_method_t **methods;
+
+    tok = lex(&val, &str);
+    if (tok != tSYMBOL) {
+      // Error, and if EOF, return.
+      error(93);
+      if (tok == 0)
+        return;
+    }
+    strcpy(ident, str);
+
+    needtoken('=');
+
+    tok = lex(&val, &str);
+    if (tok == tNATIVE) {
+      if ((target = funcstub(TRUE)) == NULL)
+        return; 
+    } else if (tok == tSYMBOL) {
+      target = findglb(str, sGLOBAL);
+      if (!target)
+        error(17, str);
+      else if (target->ident != iFUNCTN) 
+        error(10);
+    } else {
+      error(10);
+    }
+
+    if (!target || target->ident != iFUNCTN) {
+      matchtoken(';');
+      continue;
+    }
+
+    // Check the implicit this parameter. Currently we only allow scalars. As
+    // to not encourage enum-structs, we will not allow those either.
+    first_arg = &target->dim.arglist[0];
+    if (first_arg->ident == 0 ||
+        first_arg->ident != iVARIABLE ||
+        (first_arg->usage & uCONST) ||
+        first_arg->hasdefault ||
+        first_arg->numtags != 1 ||
+        first_arg->tags[0] != map->tag)
+    {
+      error(108, mapname);
+    }
+
+    methods = (methodmap_method_t **)realloc(map->methods, sizeof(methodmap_method_t *) * map->nummethods);
+    if (!methods) {
+      error(123);
+      return;
+    }
+    map->methods = methods;
+
+    method = (methodmap_method_t *)calloc(1, sizeof(methodmap_method_t));
+    if (!method) {
+      error(123);
+      return;
+    }
+    map->methods[map->nummethods++] = method;
+
+    strcpy(method->name, ident);
+    method->target = target;
+
+    matchtoken(';');
+  }
+  matchtoken(';');
+}
 
 /**
  * dofuncenum - declare function enumerations
@@ -3997,7 +4141,7 @@ SC_FUNC char *funcdisplayname(char *dest,char *funcname)
   return dest;
 }
 
-static void funcstub(int fnative)
+static symbol *funcstub(int fnative)
 {
   int tok,tag,fpublic;
   char *str;
@@ -4022,7 +4166,7 @@ static void funcstub(int fnative)
      */
     if (numdim == sDIMEN_MAX) {
       error(53);                /* exceeding maximum number of dimensions */
-      return;
+      return NULL;
     } /* if */
     size=needsub(&idxtag[numdim],NULL); /* get size; size==0 for "var[]" */
     if (size==0)
@@ -4050,12 +4194,12 @@ static void funcstub(int fnative)
   if (tok==tOPERATOR) {
     opertok=operatorname(symbolname);
     if (opertok==0)
-      return;                   /* error message already given */
+      return NULL;              /* error message already given */
     check_operatortag(opertok,tag,symbolname);
   } else {
     if (tok!=tSYMBOL && freading) {
       error(10);                /* illegal function or declaration */
-      return;
+      return NULL;
     } /* if */
     strcpy(symbolname,str);
   } /* if */
@@ -4063,7 +4207,7 @@ static void funcstub(int fnative)
 
   sym=fetchfunc(symbolname,tag);/* get a pointer to the function entry */
   if (sym==NULL)
-    return;
+    return NULL;
   if (fnative) {
     sym->usage=(char)(uNATIVE | uRETVALUE | uDEFINE | (sym->usage & uPROTOTYPED));
     sym->x.lib=curlibrary;
@@ -4122,6 +4266,8 @@ static void funcstub(int fnative)
 
   litidx=0;                     /* clear the literal pool */
   delete_symbols(&loctab,0,TRUE,TRUE);/* clear local variables queue */
+
+  return sym;
 }
 
 /*  newfunc    - begin a function

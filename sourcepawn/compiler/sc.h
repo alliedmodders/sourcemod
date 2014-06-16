@@ -237,7 +237,7 @@ typedef struct s_symbol {
 
 #define sSTATEVAR  3    /* criterion to find variables (sSTATEVAR implies a global variable) */
 
-typedef struct s_value {
+typedef struct value_s {
   symbol *sym;          /* symbol in symbol table, NULL for (constant) expression */
   cell constval;        /* value of the constant expression (if ident==iCONSTEXPR)
                          * also used for the size of a literal array */
@@ -248,6 +248,12 @@ typedef struct s_value {
   char boolresult;      /* boolean result for relational operators */
   cell *arrayidx;       /* last used array indices, for checking self assignment */
 } value;
+
+/* Wrapper around value + l/rvalue bit. */
+typedef struct svalue_s {
+  value val;
+  int lvalue;
+} svalue;
 
 /*  "while" statement queue (also used for "for" and "do - while" loops) */
 enum {
@@ -293,7 +299,7 @@ typedef struct s_stringpair {
  */
 #define tFIRST   256    /* value of first multi-character operator */
 #define tMIDDLE  280    /* value of last multi-character operator */
-#define tLAST    332    /* value of last multi-character match-able token */
+#define tLAST    333    /* value of last multi-character match-able token */
 /* multi-character operators */
 #define taMULT   256    /* *= */
 #define taDIV    257    /* /= */
@@ -342,50 +348,51 @@ typedef struct s_stringpair {
 #define tFUNCTAG 299
 #define tGOTO    300
 #define tIF      301
-#define tNATIVE  302
-#define tNEW     303
-#define tDECL    304
-#define tOPERATOR 305
-#define tPUBLIC  306
-#define tRETURN  307
-#define tSIZEOF  308
-#define tSLEEP   309
-#define tSTATIC  310
-#define tSTOCK   311
-#define tSTRUCT  312
-#define tSWITCH  313
-#define tTAGOF   314
-#define tTHEN    315
-#define tWHILE   316
+#define tMETHODMAP 302
+#define tNATIVE  303
+#define tNEW     304
+#define tDECL    305
+#define tOPERATOR 306
+#define tPUBLIC  307
+#define tRETURN  308
+#define tSIZEOF  309
+#define tSLEEP   310
+#define tSTATIC  311
+#define tSTOCK   312
+#define tSTRUCT  313
+#define tSWITCH  314
+#define tTAGOF   315
+#define tTHEN    316
+#define tWHILE   317
 /* compiler directives */
-#define tpASSERT 317    /* #assert */
-#define tpDEFINE 318
-#define tpELSE   319    /* #else */
-#define tpELSEIF 320    /* #elseif */
-#define tpEMIT   321
-#define tpENDIF  322
-#define tpENDINPUT 323
-#define tpENDSCRPT 324
-#define tpERROR  325
-#define tpFILE   326
-#define tpIF     327    /* #if */
-#define tINCLUDE 328
-#define tpLINE   329
-#define tpPRAGMA 330
-#define tpTRYINCLUDE 331
-#define tpUNDEF  332
+#define tpASSERT 318    /* #assert */
+#define tpDEFINE 319
+#define tpELSE   320    /* #else */
+#define tpELSEIF 321    /* #elseif */
+#define tpEMIT   322
+#define tpENDIF  323
+#define tpENDINPUT 324
+#define tpENDSCRPT 325
+#define tpERROR  326
+#define tpFILE   327
+#define tpIF     328    /* #if */
+#define tINCLUDE 329
+#define tpLINE   330
+#define tpPRAGMA 331
+#define tpTRYINCLUDE 332
+#define tpUNDEF  333
 /* semicolon is a special case, because it can be optional */
-#define tTERM    333    /* semicolon or newline */
-#define tENDEXPR 334    /* forced end of expression */
+#define tTERM    334    /* semicolon or newline */
+#define tENDEXPR 335    /* forced end of expression */
 /* other recognized tokens */
-#define tNUMBER  335    /* integer number */
-#define tRATIONAL 336   /* rational number */
-#define tSYMBOL  337
-#define tLABEL   338
-#define tSTRING  339
-#define tEXPR    341 /* for assigment to "lastst" only (see SC1.C) */
-#define tENDLESS 342 /* endless loop, for assigment to "lastst" only */
-#define tEMPTYBLOCK 343 /* empty blocks for AM bug 4825 */
+#define tNUMBER  336    /* integer number */
+#define tRATIONAL 337   /* rational number */
+#define tSYMBOL  338
+#define tLABEL   339
+#define tSTRING  340
+#define tEXPR    342 /* for assigment to "lastst" only (see SC1.C) */
+#define tENDLESS 343 /* endless loop, for assigment to "lastst" only */
+#define tEMPTYBLOCK 344 /* empty blocks for AM bug 4825 */
 
 /* (reversed) evaluation of staging buffer */
 #define sSTARTREORDER 0x01
@@ -467,8 +474,10 @@ typedef enum s_optmark {
 int pc_compile(int argc, char **argv);
 int pc_addconstant(char *name,cell value,int tag);
 int pc_addtag(char *name);
+int pc_findtag(const char *name);
 int pc_addfunctag(char *name);
 int pc_enablewarning(int number,int enable);
+const char *pc_tagname(int tag);
 
 /*
  * Functions called from the compiler (to be implemented by you)
@@ -570,8 +579,7 @@ SC_FUNC symbol *findglb(const char *name,int filter);
 SC_FUNC symbol *findloc(const char *name);
 SC_FUNC symbol *findconst(const char *name,int *matchtag);
 SC_FUNC symbol *finddepend(const symbol *parent);
-SC_FUNC symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag,
-                       int usage);
+SC_FUNC symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag, int usage);
 SC_FUNC symbol *addvariable(const char *name,cell addr,int ident,int vclass,int tag,
                             int dim[],int numdim,int idxtag[]);
 SC_FUNC symbol *addvariable2(const char *name,cell addr,int ident,int vclass,int tag,

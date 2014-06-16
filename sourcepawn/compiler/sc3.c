@@ -1,3 +1,4 @@
+/* vim: set ts=8 sts=2 sw=2 tw=99 et: */
 /*  Pawn compiler - Recursive descend expresion parser
  *
  *  Copyright (c) ITB CompuPhase, 1997-2005
@@ -56,7 +57,7 @@ static int hier2(value *lval);
 static int hier1(value *lval1);
 static int primary(value *lval);
 static void clear_value(value *lval);
-static void callfunction(symbol *sym,value *lval_result,int matchparanthesis);
+static void callfunction(symbol *sym, const svalue *implicitthis, value *lval_result, int matchparanthesis);
 static int dbltest(void (*oper)(),value *lval1,value *lval2);
 static int commutative(void (*oper)());
 static int constant(value *lval);
@@ -291,7 +292,7 @@ SC_FUNC int checktags_string(int tags[], int numtags, value *sym1)
   }
   for (i=0; i<numtags; i++) {
     if ((sym1->tag == pc_tag_string && tags[i] == 0) ||
-		(sym1->tag == 0 && tags[i] == pc_tag_string))
+        (sym1->tag == 0 && tags[i] == pc_tag_string))
       return TRUE;
   }
   return FALSE;
@@ -299,13 +300,13 @@ SC_FUNC int checktags_string(int tags[], int numtags, value *sym1)
 
 SC_FUNC int checktag_string(value *sym1, value *sym2)
 {
-  if (sym1->ident == iARRAY || sym2->ident == iARRAY
-	  || sym1->ident == iREFARRAY || sym2->ident == iREFARRAY)
+  if (sym1->ident == iARRAY || sym2->ident == iARRAY ||
+      sym1->ident == iREFARRAY || sym2->ident == iREFARRAY)
   {
     return FALSE;
   }
-  if ((sym1->tag == pc_tag_string && sym2->tag == 0)
-	  || (sym1->tag == 0 && sym2->tag == pc_tag_string))
+  if ((sym1->tag == pc_tag_string && sym2->tag == 0) ||
+      (sym1->tag == 0 && sym2->tag == pc_tag_string))
   {
     return TRUE;
   }
@@ -1583,7 +1584,7 @@ static int hier2(value *lval)
         if (subsym!=NULL)
           subsym=finddepend(subsym);
       } /* for */
-	  if (level>sym->dim.array.level+1) {
+      if (level>sym->dim.array.level+1) {
         error(28,sym->name);  /* invalid subscript */
       } else if (level==sym->dim.array.level+1) {
         lval->constval=(idxsym!=NULL && idxsym->dim.array.length>0) ? idxsym->dim.array.length : 1;
@@ -1637,7 +1638,7 @@ static int hier2(value *lval)
         if (subsym!=NULL)
           subsym=finddepend(subsym);
       } /* for */
-	  if (level>sym->dim.array.level+1) {
+      if (level>sym->dim.array.level+1) {
         error(28,sym->name);  /* invalid subscript */
       } else if (level==sym->dim.array.level+1) {
         lval->constval= (idxsym!=NULL && idxsym->dim.array.length>0) ? idxsym->dim.array.length : 1;
@@ -1812,7 +1813,7 @@ static int hier1(value *lval1)
   cursym=lval1->sym;
 restart:
   sym=cursym;
-  if (matchtoken('[') || matchtoken('{') || matchtoken('(')) {
+  if (matchtoken('[') || matchtoken('{') || matchtoken('(') || matchtoken('.')) {
     tok=tokeninfo(&val,&st);    /* get token read by matchtoken() */
     magic_string = (sym && (sym->tag == pc_tag_string && sym->dim.array.level == 0));
     if (sym==NULL && symtok!=tSYMBOL) {
@@ -1974,14 +1975,62 @@ restart:
           lval1->tag=sym->tag;
         lval1->constval=0;
       } /* if */
+
+      // If there's a call coming up, keep parsing.
+      if (matchtoken('.')) {
+        lexpush();
+        goto restart;
+      }
+
       /* a cell in an array is an lvalue, a character in an array is not
        * always a *valid* lvalue */
       return TRUE;
     } else {            /* tok=='(' -> function(...) */
+      svalue thisval = {*lval1, lvalue};
+      svalue *implicitthis = NULL;
+      if (tok == '.') {
+        methodmap_t *map;
+
+        /* Catch invalid calls early so we don't compile with a tag mismatch. */
+        switch (thisval.val.ident) {
+          case iARRAY:
+          case iREFARRAY:
+            error(106);
+            break;
+
+          case iFUNCTN:
+          case iREFFUNC:
+            error(107);
+            break;
+        }
+
+        if ((map = methodmap_find_by_tag(thisval.val.tag)) == NULL)
+          error(104, pc_tagname(thisval.val.tag));
+        
+        if (needtoken(tSYMBOL) && map) {
+          cell lexval;
+          char *lexstr;
+          methodmap_method_t *method;
+
+          tokeninfo(&lexval, &lexstr);
+          if ((method = methodmap_find_method(map, lexstr)) == NULL)
+            error(105, map->name, lexstr);
+          if (method) {
+            implicitthis = &thisval;
+            sym = method->target;
+          }
+        }
+
+        // If we don't find a '(' next, just fail to compile for now -- and
+        // don't even try to do a function call, just restart the parse loop.
+        if (!needtoken('('))
+          goto restart;
+
+        tok = '(';
+      }
+
       assert(tok=='(');
-      if (sym==NULL
-          || (sym->ident!=iFUNCTN && sym->ident!=iREFFUNC))
-      {
+      if (sym==NULL || (sym->ident!=iFUNCTN && sym->ident!=iREFFUNC)) {
         if (sym==NULL && sc_status==statFIRST) {
           /* could be a "use before declaration"; in that case, create a stub
            * function so that the usage can be marked.
@@ -1998,14 +2047,14 @@ restart:
         funcdisplayname(symname,sym->name);
         error(4,symname);             /* function not defined */
       } /* if */
-      callfunction(sym,lval1,TRUE);
+      callfunction(sym,implicitthis,lval1,TRUE);
       return FALSE;             /* result of function call is no lvalue */
     } /* if */
   } /* if */
   if (sym!=NULL && lval1->ident==iFUNCTN) {
     assert(sym->ident==iFUNCTN);
     if (sc_allowproccall) {
-      callfunction(sym,lval1,FALSE);
+      callfunction(sym,NULL,lval1,FALSE);
     } else if ((sym->usage & uNATIVE) != uNATIVE) {
       symbol *oldsym=sym;
       int n=-1,iter=0;
@@ -2036,14 +2085,14 @@ restart:
         }
         lval1->tag=pc_addfunctag(faketag);
         oldsym->usage |= uREAD;
-		sym->usage |= uREAD;
+        sym->usage |= uREAD;
       } else {
         error(76);                /* invalid function call, or syntax error */
       } /* if */
       return FALSE;
-	} else {
-	  error(76);                  /* invalid function call, or syntax error */
-	}
+    } else {
+      error(76);                  /* invalid function call, or syntax error */
+    }
   } /* if */
   return lvalue;
 }
@@ -2243,7 +2292,7 @@ enum {
  *  Generates code to call a function. This routine handles default arguments
  *  and positional as well as named parameters.
  */
-static void callfunction(symbol *sym,value *lval_result,int matchparanthesis)
+static void callfunction(symbol *sym, const svalue *implicitthis, value *lval_result, int matchparanthesis)
 {
 static long nest_stkusage=0L;
 static int nesting=0;
@@ -2261,6 +2310,7 @@ static int nesting=0;
   symbol *symret;
   cell lexval;
   char *lexstr;
+  int pending_this = (implicitthis ? TRUE : FALSE);
 
   assert(sym!=NULL);
   lval_result->ident=iEXPRESSION; /* preset, may be changed later */
@@ -2321,9 +2371,9 @@ static int nesting=0;
         lexpush();                /* reset the '.' */
     } /* if */
   } /* if */
-  if (!close) {
+  if (pending_this || !close) {
     do {
-      if (matchtoken('.')) {
+      if (!pending_this && matchtoken('.')) {
         namedparams=TRUE;
         if (needtoken(tSYMBOL))
           tokeninfo(&lexval,&lexstr);
@@ -2350,7 +2400,7 @@ static int nesting=0;
       stgmark((char)(sEXPRSTART+argpos));/* mark beginning of new expression in stage */
       if (arglist[argpos]!=ARG_UNHANDLED)
         error(58);                /* argument already set */
-      if (matchtoken('_')) {
+      if (!pending_this && matchtoken('_')) {
         arglist[argpos]=ARG_IGNORED;  /* flag argument as "present, but ignored" */
         if (arg[argidx].ident==0 || arg[argidx].ident==iVARARGS) {
           error(92);             /* argument count mismatch */
@@ -2368,7 +2418,12 @@ static int nesting=0;
         arglist[argpos]=ARG_DONE; /* flag argument as "present" */
         if (arg[argidx].ident!=0 && arg[argidx].numtags==1)     /* set the expected tag, if any */
           lval.cmptag=arg[argidx].tags[0];
-        lvalue=hier14(&lval);
+        if (pending_this) {
+          lval = implicitthis->val;
+          lvalue = implicitthis->lvalue;
+        } else {
+          lvalue = hier14(&lval);
+        }
         assert(sc_status==statFIRST || arg[argidx].ident == 0 || arg[argidx].tags!=NULL);
         switch (arg[argidx].ident) {
         case 0:
@@ -2547,18 +2602,32 @@ static int nesting=0;
       } /* if */
       assert(arglist[argpos]!=ARG_UNHANDLED);
       nargs++;
+
+      /**
+       * We can already have decided it was time to close because of pending_this.
+       * If that's the case, then bail out now.
+       */
+      if (pending_this && close) {
+        pending_this = FALSE;
+        break;
+      }
+
       if (matchparanthesis) {
         close=matchtoken(')');
         if (!close)               /* if not paranthese... */
-          if (!needtoken(','))    /* ...should be comma... */
+          /* Not expecting comma if the first argument was implicit. */
+          if (!pending_this && !needtoken(','))
             break;                /* ...but abort loop if neither */
       } else {
-        close=!matchtoken(',');
+        /* Not expecting comma if the first argument was implicit. */
+        close = (!pending_this && !matchtoken(','));
         if (close) {              /* if not comma... */
           if (needtoken(tTERM)==1)/* ...must be end of statement */
             lexpush();            /* push again, because end of statement is analised later */
         } /* if */
       } /* if */
+
+      pending_this = FALSE;
     } while (!close && freading && !matchtoken(tENDEXPR)); /* do */
   } /* if */
   /* check remaining function arguments (they may have default values) */
@@ -2797,7 +2866,7 @@ static int constant(value *lval)
                                  * value distinguishes between literal arrays
                                  * and literal strings (this was done for
                                  * array assignment). */
-	lval->tag=pc_tag_string;
+    lval->tag=pc_tag_string;
   } else if (tok=='{') {
     int tag,lasttag=-1;
     val=litidx;
