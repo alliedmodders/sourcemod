@@ -467,6 +467,8 @@ methodmap_method_t *methodmap_find_method(methodmap_t *map, const char *name)
     if (strcmp(map->methods[i]->name, name) == 0)
       return map->methods[i];
   }
+  if (map->parent)
+    return methodmap_find_method(map->parent, name);
   return NULL;
 }
 

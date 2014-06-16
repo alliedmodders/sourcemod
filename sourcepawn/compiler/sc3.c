@@ -493,6 +493,16 @@ SC_FUNC int matchtag(int formaltag, int actualtag, int allowcoerce)
       }
     }
   }
+
+  // See if the tag has a methodmap associated with it. If so, see if the given
+  // tag is anywhere on the inheritance chain.
+  methodmap_t *map = methodmap_find_by_tag(actualtag);
+  if (map) {
+    for (; map; map = map->parent) {
+      if (map->tag == formaltag)
+        return TRUE;
+    }
+  }
   
   return FALSE;
 }
