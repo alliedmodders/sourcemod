@@ -328,182 +328,182 @@ SC_FUNC int matchtag(int formaltag,int actualtag,int allowcoerce)
      * tag is "coerced" to zero
      */
     if (!allowcoerce || formaltag!=0 || (actualtag & FIXEDTAG)!=0) {
-		if (formaltag == pc_anytag || actualtag == pc_anytag)
-		{
-			return TRUE;
-		}
+      if (formaltag == pc_anytag || actualtag == pc_anytag)
+      {
+        return TRUE;
+      }
 
-		if (formaltag & FUNCTAG)
-		{
-			if (actualtag == pc_functag || (formaltag == pc_functag && actualtag & FUNCTAG))
-			{
-				return TRUE;
-			} else if (actualtag & FUNCTAG) {
-				constvalue *v = find_tag_byval(actualtag);
-				int index;
-				short usage = uPUBLIC;
-				symbol *sym, *found = NULL;
-				funcenum_t *e;
-				functag_t *t;
+      if (formaltag & FUNCTAG)
+      {
+        if (actualtag == pc_functag || (formaltag == pc_functag && actualtag & FUNCTAG))
+        {
+          return TRUE;
+        } else if (actualtag & FUNCTAG) {
+          constvalue *v = find_tag_byval(actualtag);
+          int index;
+          short usage = uPUBLIC;
+          symbol *sym, *found = NULL;
+          funcenum_t *e;
+          functag_t *t;
 
-				if (strncmp(v->name, "$Func", 5) != 0)
-				{
-					return FALSE;
-				}
+          if (strncmp(v->name, "$Func", 5) != 0)
+          {
+            return FALSE;
+          }
 
-				/* Now we have to go about looking up each function in this enum.  WHICH IS IT. */
-				e = funcenums_find_byval(formaltag);
-				if (!e)
-				{
-					return FALSE;
-				}
+          /* Now we have to go about looking up each function in this enum.  WHICH IS IT. */
+          e = funcenums_find_byval(formaltag);
+          if (!e)
+          {
+            return FALSE;
+          }
 
-				assert(v->name[5] == '@' || v->name[5] == '!');
+          assert(v->name[5] == '@' || v->name[5] == '!');
 
-				/* Deduce which function type this is */
-				if (v->name[5] == '@')
-				{
-					usage = uPUBLIC;
-				} else if (v->name[5] == '!') {
-					usage = uSTOCK;
-				}
+          /* Deduce which function type this is */
+          if (v->name[5] == '@')
+          {
+            usage = uPUBLIC;
+          } else if (v->name[5] == '!') {
+            usage = uSTOCK;
+          }
 
-				index = atoi(&v->name[6]);
+          index = atoi(&v->name[6]);
 
-				assert(index >= 0);
+          assert(index >= 0);
 
-				/* Find the function, either by public idx or code addr */
-				if (usage == uPUBLIC)
-				{
-					for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-						if (sym->ident==iFUNCTN && (sym->usage & uPUBLIC)!=0 && (sym->vclass == sGLOBAL))
-						{
-							if (index-- == 0)
-							{
-								found = sym;
-								break;
-							}
-						}
-					}
-				} else if (usage == uSTOCK) {
-					for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-						if (sym->ident==iFUNCTN && (sym->vclass == sGLOBAL))
-						{
-							if (sym->codeaddr == index)
-							{
-								found = sym;
-								break;
-							}
-						}
-					}
-				}
+          /* Find the function, either by public idx or code addr */
+          if (usage == uPUBLIC)
+          {
+            for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
+              if (sym->ident==iFUNCTN && (sym->usage & uPUBLIC)!=0 && (sym->vclass == sGLOBAL))
+              {
+                if (index-- == 0)
+                {
+                  found = sym;
+                  break;
+                }
+              }
+            }
+          } else if (usage == uSTOCK) {
+            for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
+              if (sym->ident==iFUNCTN && (sym->vclass == sGLOBAL))
+              {
+                if (sym->codeaddr == index)
+                {
+                  found = sym;
+                  break;
+                }
+              }
+            }
+          }
 
-				if (!found)
-				{
-					assert(found);
-					return FALSE;
-				}
+          if (!found)
+          {
+            assert(found);
+            return FALSE;
+          }
 
-				/* Wow, we now have:
-				 * 1) The functional enum deduced from formaltag
-				 * 2) The function trying to be shoved in deduced from actualtag
-				 * Now we have to check if it matches any one of the functags inside the enum.
-				 */
-				t = e->first;
-				while (t)
-				{
-					int curarg,skip=0,i;
-					arginfo *func_arg;
-					funcarg_t *enum_arg;
-					/* Check return type first. */
-					if (t->ret_tag != sym->tag)
-					{
-						t = t->next;
-						continue;
-					}
-					/* Check usage */
-					if (t->type != usage)
-					{
-						t = t->next;
-						continue;
-					}
-					/* Begin iterating arguments */
-					for (curarg=0; curarg<t->argcount; curarg++)
-					{
-						enum_arg = &t->args[curarg];
-						/* Check whether we've exhausted our arguments */
-						if (sym->dim.arglist[curarg].ident == 0)
-						{
-							/* Can we bail out early? */
-							if (!enum_arg->ommittable)
-							{
-								/* No! */
-								skip = 1;
-							}
-							break;
-						}
-						func_arg = &sym->dim.arglist[curarg];
-						/* First check the ident type */
-						if (enum_arg->ident != func_arg->ident)
-						{
-							skip = 1;
-							break;
-						}
-						/* Next check arrayness */
-						if (enum_arg->dimcount != func_arg->numdim)
-						{
-							skip = 1;
-							break;
-						}
-						if (enum_arg->dimcount > 0)
-						{
-							for (i=0; i<enum_arg->dimcount; i++)
-							{
-								if (enum_arg->dims[i] != func_arg->dim[i])
-								{
-									skip = 1;
-									break;
-								}
-							}
-							if (skip)
-							{
-								break;
-							}
-						}
-						/* Lastly, check the tags */
-						if (enum_arg->tagcount != func_arg->numtags)
-						{
-							skip = 1;
-							break;
-						}
-						/* They should all be in the same order just for clarity... */
-						for (i=0; i<enum_arg->tagcount; i++)
-						{
-							if (enum_arg->tags[i] != func_arg->tags[i])
-							{
-								skip = 1;
-								break;
-							}
-						}
-						if (skip)
-						{
-							break;
-						}
-					}
-					if (!skip)
-					{
-						/* Make sure there are no trailing arguments */
-						if (sym->dim.arglist[curarg].ident == 0)
-						{
-							return TRUE;
-						}
-					}
-					t = t->next;
-				}
-			}
-		}
-		return FALSE;
-	}
+          /* Wow, we now have:
+           * 1) The functional enum deduced from formaltag
+           * 2) The function trying to be shoved in deduced from actualtag
+           * Now we have to check if it matches any one of the functags inside the enum.
+           */
+          t = e->first;
+          while (t)
+          {
+            int curarg,skip=0,i;
+            arginfo *func_arg;
+            funcarg_t *enum_arg;
+            /* Check return type first. */
+            if (t->ret_tag != sym->tag)
+            {
+              t = t->next;
+              continue;
+            }
+            /* Check usage */
+            if (t->type != usage)
+            {
+              t = t->next;
+              continue;
+            }
+            /* Begin iterating arguments */
+            for (curarg=0; curarg<t->argcount; curarg++)
+            {
+              enum_arg = &t->args[curarg];
+              /* Check whether we've exhausted our arguments */
+              if (sym->dim.arglist[curarg].ident == 0)
+              {
+                /* Can we bail out early? */
+                if (!enum_arg->ommittable)
+                {
+                  /* No! */
+                  skip = 1;
+                }
+                break;
+              }
+              func_arg = &sym->dim.arglist[curarg];
+              /* First check the ident type */
+              if (enum_arg->ident != func_arg->ident)
+              {
+                skip = 1;
+                break;
+              }
+              /* Next check arrayness */
+              if (enum_arg->dimcount != func_arg->numdim)
+              {
+                skip = 1;
+                break;
+              }
+              if (enum_arg->dimcount > 0)
+              {
+                for (i=0; i<enum_arg->dimcount; i++)
+                {
+                  if (enum_arg->dims[i] != func_arg->dim[i])
+                  {
+                    skip = 1;
+                    break;
+                  }
+                }
+                if (skip)
+                {
+                  break;
+                }
+              }
+              /* Lastly, check the tags */
+              if (enum_arg->tagcount != func_arg->numtags)
+              {
+                skip = 1;
+                break;
+              }
+              /* They should all be in the same order just for clarity... */
+              for (i=0; i<enum_arg->tagcount; i++)
+              {
+                if (enum_arg->tags[i] != func_arg->tags[i])
+                {
+                  skip = 1;
+                  break;
+                }
+              }
+              if (skip)
+              {
+                break;
+              }
+            }
+            if (!skip)
+            {
+              /* Make sure there are no trailing arguments */
+              if (sym->dim.arglist[curarg].ident == 0)
+              {
+                return TRUE;
+              }
+            }
+            t = t->next;
+          }
+        }
+      }
+      return FALSE;
+    }
   } /* if */
   return TRUE;
 }
@@ -2004,8 +2004,9 @@ restart:
             break;
         }
 
-        if ((map = methodmap_find_by_tag(thisval.val.tag)) == NULL)
+        if ((map = methodmap_find_by_tag(thisval.val.tag)) == NULL) {
           error(104, pc_tagname(thisval.val.tag));
+        }
         
         if (needtoken(tSYMBOL) && map) {
           cell lexval;
@@ -2483,14 +2484,14 @@ static int nesting=0;
           /* otherwise, the expression result is already in PRI */
           assert(arg[argidx].numtags>0);
           check_userop(NULL,lval.tag,arg[argidx].tags[0],2,NULL,&lval.tag);
-          if (!checktags_string(arg[argidx].tags, arg[argidx].numtags, &lval)
-              && !checktag(arg[argidx].tags,arg[argidx].numtags,lval.tag))
-		  {
-			if (arg[argidx].numtags == 1 && arg[argidx].tags[0] & FUNCTAG)
+          if (!checktags_string(arg[argidx].tags, arg[argidx].numtags, &lval) &&
+              !checktag(arg[argidx].tags, arg[argidx].numtags, lval.tag))
+          {
+            if (arg[argidx].numtags == 1 && arg[argidx].tags[0] & FUNCTAG)
               error(100);         /* error - function prototypes do not match */
-			else
+            else
               error(213);         /* warning - tag mismatch */
-		  }
+          }
           if (lval.tag!=0)
             append_constval(&taglst,arg[argidx].name,lval.tag,0);
           argidx++;               /* argument done */
