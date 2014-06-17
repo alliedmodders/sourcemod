@@ -3251,6 +3251,7 @@ static void domethodmap()
   char mapname[sNAMEMAX + 1];
   methodmap_t *map;
   methodmap_t *parent = NULL;
+  const char *decltype = "methodmap";
 
   // Get the tag.
   if (lex(&val, &str) != tSYMBOL)
@@ -3258,11 +3259,11 @@ static void domethodmap()
   strcpy(mapname, str);
 
   if (!isupper(*mapname))
-    error(109);
+    error(109, decltype);
 
   int maptag = pc_addtag(mapname);
   if (methodmap_find_by_tag(maptag))
-    error(103, mapname);
+    error(103, decltype, mapname);
 
   int extends = matchtoken('<');
   if (extends) {
@@ -3332,7 +3333,7 @@ static void domethodmap()
         first_arg->numtags != 1 ||
         first_arg->tags[0] != map->tag)
     {
-      error(108, mapname);
+      error(108, decltype, mapname);
     }
 
     methods = (methodmap_method_t **)realloc(map->methods, sizeof(methodmap_method_t *) * map->nummethods);
@@ -3603,6 +3604,8 @@ static void decl_enum(int vclass)
    */
   if (lex(&val,&str)==tLABEL) {
     tag=pc_addtag(str);
+    if (methodmap_find_by_tag(tag))
+      error(110, str, "methodmap");
     explicittag=TRUE;
   } else {
     lexpush();
@@ -3613,8 +3616,14 @@ static void decl_enum(int vclass)
   /* get optional enum name (also serves as a tag if no explicit tag was set) */
   if (lex(&val,&str)==tSYMBOL) {        /* read in (new) token */
     strcpy(enumname,str);               /* save enum name (last constant) */
-    if (!explicittag)
+    if (!explicittag) {
       tag=pc_addtag(enumname);
+      if (methodmap_find_by_tag(tag))
+        error(110, str, "methodmap");
+    } else {
+      if (methodmap_find_by_name(enumname))
+        error(110, str, "methodmap");
+    }
   } else {
     lexpush();                          /* analyze again */
     enumname[0]='\0';
