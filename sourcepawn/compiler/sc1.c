@@ -3343,6 +3343,7 @@ static void domethodmap()
       error(108, decltype, mapname);
     }
 
+    // Ensure the methodmap tag is compatible with |this|.
     tok = 0;
     for (mapptr = map; mapptr; mapptr = mapptr->parent) {
       if (first_arg->tags[0] == mapptr->tag) {
