@@ -3295,6 +3295,7 @@ static void domethodmap()
   while (!matchtoken('}')) {
     int tok;
     symbol *target;
+    methodmap_t *mapptr;
     const arginfo *first_arg;
     char ident[sNAMEMAX + 1];
     methodmap_method_t *method;
@@ -3337,11 +3338,20 @@ static void domethodmap()
         first_arg->ident != iVARIABLE ||
         (first_arg->usage & uCONST) ||
         first_arg->hasdefault ||
-        first_arg->numtags != 1 ||
-        first_arg->tags[0] != map->tag)
+        first_arg->numtags != 1)
     {
       error(108, decltype, mapname);
     }
+
+    tok = 0;
+    for (mapptr = map; mapptr; mapptr = mapptr->parent) {
+      if (first_arg->tags[0] == mapptr->tag) {
+        tok = 1;
+        break;
+      }
+    }
+    if (!tok)
+      error(108, decltype, mapname);
 
     methods = (methodmap_method_t **)realloc(map->methods, sizeof(methodmap_method_t *) * map->nummethods);
     if (!methods) {
