@@ -67,6 +67,18 @@ typedef struct pstruct_s
   struct pstruct_s *next;
 } pstruct_t;
 
+// The ordering of these definitions should be preserved for
+// can_redef_layout_spec().
+typedef enum
+{
+  Layout_None,
+  Layout_Enum,
+  Layout_FuncTag,
+  Layout_PawnStruct,
+  Layout_MethodMap,
+  Layout_Class
+} LayoutSpec;
+
 typedef struct methodmap_method_s
 {
   char name[sNAMEMAX+1];
@@ -78,6 +90,7 @@ typedef struct methodmap_s
   struct methodmap_s *next;
   struct methodmap_s *parent;
   int tag;
+  LayoutSpec spec;
   char name[sNAMEMAX+1];
   methodmap_method_t **methods;
   size_t nummethods;
@@ -99,6 +112,14 @@ void funcenums_free();
 funcenum_t *funcenums_add(const char *name);
 funcenum_t *funcenums_find_byval(int value);
 functag_t *functags_add(funcenum_t *en, functag_t *src);
+
+/**
+ * Given a name or tag, find any extra weirdness it has associated with it.
+ */
+LayoutSpec deduce_layout_spec_by_tag(int tag);
+LayoutSpec deduce_layout_spec_by_name(const char *name);
+const char *layout_spec_name(LayoutSpec spec);
+int can_redef_layout_spec(LayoutSpec olddef, LayoutSpec newdef);
 
 /**
  * Heap functions

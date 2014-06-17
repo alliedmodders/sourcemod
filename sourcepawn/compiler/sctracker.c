@@ -484,3 +484,85 @@ void methodmaps_free()
   methodmap_first = NULL;
   methodmap_last = NULL;
 }
+
+LayoutSpec deduce_layout_spec_by_tag(int tag)
+{
+  symbol *sym;
+  const char *name;
+  methodmap_t *map;
+  if ((map = methodmap_find_by_tag(tag)) != NULL)
+    return map->spec;
+  if (tag & FUNCTAG)
+    return Layout_FuncTag;
+
+  name = pc_tagname(tag);
+  if (pstructs_find(name))
+    return Layout_PawnStruct;
+  if ((sym = findglb(name, sGLOBAL)) != NULL)
+    return Layout_Enum;
+
+  return Layout_None;
+}
+
+LayoutSpec deduce_layout_spec_by_name(const char *name)
+{
+  symbol *sym;
+  methodmap_t *map;
+  int tag = pc_findtag(name);
+  if (tag != -1 && (tag & FUNCTAG))
+    return Layout_FuncTag;
+  if (pstructs_find(name))
+    return Layout_PawnStruct;
+  if ((map = methodmap_find_by_name(name)) != NULL)
+    return map->spec;
+  if ((sym = findglb(name, sGLOBAL)) != NULL)
+    return Layout_Enum;
+
+  return Layout_None;
+}
+
+const char *layout_spec_name(LayoutSpec spec)
+{
+  switch (spec) {
+    case Layout_None:
+      return "<none>";
+    case Layout_Enum:
+      return "enum";
+    case Layout_FuncTag:
+      return "functag";
+    case Layout_PawnStruct:
+      return "deprecated-struct";
+    case Layout_MethodMap:
+      return "methodmap";
+    case Layout_Class:
+      return "class";
+  }
+  return "<unknown>";
+}
+
+int can_redef_layout_spec(LayoutSpec def1, LayoutSpec def2)
+{
+  // Normalize the ordering, since these checks are symmetrical.
+  if (def1 > def2) {
+    LayoutSpec temp = def2;
+    def2 = def1;
+    def1 = temp;
+  }
+
+  switch (def1) {
+    case Layout_None:
+      return TRUE;
+    case Layout_Enum:
+      if (def2 == Layout_Enum || def2 == Layout_FuncTag)
+        return TRUE;
+      return def2 == Layout_MethodMap;
+    case Layout_FuncTag:
+      return def2 == Layout_Enum || def2 == Layout_FuncTag;
+    case Layout_PawnStruct:
+    case Layout_MethodMap:
+      return FALSE;
+    case Layout_Class:
+      return FALSE;
+  }
+  return FALSE;
+}

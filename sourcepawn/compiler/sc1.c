@@ -3138,6 +3138,13 @@ static void decl_const(int vclass)
   needtoken(tTERM);
 }
 
+static void check_struct_name(const char *name)
+{
+  LayoutSpec spec = deduce_layout_spec_by_name(name);
+  if (!can_redef_layout_spec(spec, Layout_PawnStruct))
+    error(110, name, layout_spec_name(spec));
+}
+
 /*
  * declstruct - declare a struct type
  */
@@ -3148,6 +3155,7 @@ static void declstruct(void)
 	int tok;
 	pstruct_t *pstruct;
 	int size;
+	LayoutSpec spec;
 
 	/* get the explicit tag (required!) */
 	tok = lex(&val,&str);
@@ -3156,10 +3164,7 @@ static void declstruct(void)
 		error(93);
 	}
 
-	if (pstructs_find(str) != NULL)
-	{
-		error(98);
-	}
+	check_struct_name(str);
 
 	pstruct = pstructs_add(str);
 
@@ -3246,8 +3251,9 @@ static void declstruct(void)
  */
 static void domethodmap()
 {
-  int val;
   char *str;
+  LayoutSpec spec;
+  int val, extends;
   char mapname[sNAMEMAX + 1];
   methodmap_t *map;
   methodmap_t *parent = NULL;
@@ -3261,11 +3267,11 @@ static void domethodmap()
   if (!isupper(*mapname))
     error(109, decltype);
 
-  int maptag = pc_addtag(mapname);
-  if (methodmap_find_by_tag(maptag))
-    error(103, decltype, mapname);
+  spec = deduce_layout_spec_by_name(mapname);
+  if (!can_redef_layout_spec(spec, Layout_MethodMap))
+    error(110, mapname, layout_spec_name(spec));
 
-  int extends = matchtoken('<');
+  extends = matchtoken('<');
   if (extends) {
     if (lex(&val, &str) != tSYMBOL) {
       error(93);
@@ -3279,7 +3285,8 @@ static void domethodmap()
 
   map = (methodmap_t *)calloc(1, sizeof(methodmap_t));
   map->parent = parent;
-  map->tag = maptag;
+  map->tag = pc_addtag(mapname);
+  map->spec = Layout_MethodMap;
   strcpy(map->name, mapname);
 
   methodmap_add(map);
@@ -3597,15 +3604,17 @@ static void decl_enum(int vclass)
   cell increment,multiplier;
   constvalue *enumroot;
   symbol *enumsym;
+  LayoutSpec spec;
 
   /* get an explicit tag, if any (we need to remember whether an explicit
    * tag was passed, even if that explicit tag was "_:", so we cannot call
    * pc_addtag() here
    */
   if (lex(&val,&str)==tLABEL) {
-    tag=pc_addtag(str);
-    if (methodmap_find_by_tag(tag))
-      error(110, str, "methodmap");
+    tag = pc_addtag(str);
+    spec = deduce_layout_spec_by_tag(tag);
+    if (!can_redef_layout_spec(spec, Layout_Enum))
+      error(110, str, layout_spec_name(spec));
     explicittag=TRUE;
   } else {
     lexpush();
@@ -3618,11 +3627,13 @@ static void decl_enum(int vclass)
     strcpy(enumname,str);               /* save enum name (last constant) */
     if (!explicittag) {
       tag=pc_addtag(enumname);
-      if (methodmap_find_by_tag(tag))
-        error(110, str, "methodmap");
+      spec = deduce_layout_spec_by_tag(tag);
+      if (!can_redef_layout_spec(spec, Layout_Enum))
+        error(110, enumname, layout_spec_name(spec));
     } else {
-      if (methodmap_find_by_name(enumname))
-        error(110, str, "methodmap");
+      spec = deduce_layout_spec_by_name(enumname);
+      if (!can_redef_layout_spec(spec, Layout_Enum))
+        error(110, enumname, layout_spec_name(spec));
     }
   } else {
     lexpush();                          /* analyze again */
