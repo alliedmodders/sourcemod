@@ -197,7 +197,7 @@
 		"#supported"
 		{
 			"game"		"dod"
-			//"game"		"tf"
+			"game"		"tf"
 			"game"		"hl2mp"
 		}
 		"Signatures"
