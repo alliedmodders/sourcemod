@@ -115,7 +115,7 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 	// Fast lookup failed - check the slow way for hooks that haven't fired yet
 	if ((fastLookup = EntityOutputs->Retrieve(sOutput, (void **)&pOutputName)) == false)
 	{
-		const char *classname = GetEntityClassname(pCaller);
+		const char *classname = gamehelpers->GetEntityClassname(pCaller);
 		if (!classname)
 		{
 			return;
@@ -352,22 +352,4 @@ const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pCal
 	}
 
 	return NULL;
-}
-
-const char *EntityOutputManager::GetEntityClassname(CBaseEntity *pEntity)
-{
-	static int offset = -1;
-	if (offset == -1)
-	{
-		datamap_t *pMap = gamehelpers->GetDataMap(pEntity);
-		sm_datatable_info_t info;
-		if (!gamehelpers->FindDataMapInfo(pMap, "m_iClassname", &info))
-		{
-			return NULL;
-		}
-		
-		offset = info.actual_offset;
-	}
-
-	return *(const char **)(((unsigned char *)pEntity) + offset);
 }
