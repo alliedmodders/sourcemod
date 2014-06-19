@@ -116,8 +116,12 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 	if ((fastLookup = EntityOutputs->Retrieve(sOutput, (void **)&pOutputName)) == false)
 	{
 		const char *classname = GetEntityClassname(pCaller);
-		const char *outputname = FindOutputName(pOutput, pCaller);
-		
+		if (!classname)
+		{
+			return;
+		}
+
+		const char *outputname = FindOutputName(pOutput, pCaller);		
 		if (!outputname)
 		{
 			return;
