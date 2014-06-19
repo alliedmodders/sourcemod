@@ -46,7 +46,7 @@ cell_t HookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Entity index %i (%i)", gamehelpers->ReferenceToIndex(params[1]), params[1]);
 	}
 
-	const char *classname = g_OutputManager.GetEntityClassname(pEntity);
+	const char *classname = gamehelpers->GetEntityClassname(pEntity);
 
 	char *outputname;
 	pContext->LocalToString(params[2], &outputname);
@@ -226,7 +226,7 @@ cell_t UnHookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Entity index %i (%i)", gamehelpers->ReferenceToIndex(params[1]), params[1]);
 	}
 
-	const char *classname = g_OutputManager.GetEntityClassname(pEntity);
+	const char *classname = gamehelpers->GetEntityClassname(pEntity);
 
 	char *outputname;
 	pContext->LocalToString(params[2], &outputname);
