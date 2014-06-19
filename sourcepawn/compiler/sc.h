@@ -297,102 +297,107 @@ typedef struct s_stringpair {
 /*  Tokens recognized by lex()
  *  Some of these constants are assigned as well to the variable "lastst" (see SC1.C)
  */
-#define tFIRST   256    /* value of first multi-character operator */
-#define tMIDDLE  280    /* value of last multi-character operator */
-#define tLAST    333    /* value of last multi-character match-able token */
-/* multi-character operators */
-#define taMULT   256    /* *= */
-#define taDIV    257    /* /= */
-#define taMOD    258    /* %= */
-#define taADD    259    /* += */
-#define taSUB    260    /* -= */
-#define taSHL    261    /* <<= */
-#define taSHRU   262    /* >>>= */
-#define taSHR    263    /* >>= */
-#define taAND    264    /* &= */
-#define taXOR    265    /* ^= */
-#define taOR     266    /* |= */
-#define tlOR     267    /* || */
-#define tlAND    268    /* && */
-#define tlEQ     269    /* == */
-#define tlNE     270    /* != */
-#define tlLE     271    /* <= */
-#define tlGE     272    /* >= */
-#define tSHL     273    /* << */
-#define tSHRU    274    /* >>> */
-#define tSHR     275    /* >> */
-#define tINC     276    /* ++ */
-#define tDEC     277    /* -- */
-#define tELLIPS  278    /* ... */
-#define tDBLDOT  279    /* .. */
-#define tDBLCOLON 280   /* :: */
+enum {
+  /* value of first multi-character operator */
+  tFIRST     = 256,
+  /* multi-character operators */
+  taMULT     = tFIRST, /* *= */
+  taDIV,     /* /= */
+  taMOD,     /* %= */
+  taADD,     /* += */
+  taSUB,     /* -= */
+  taSHL,     /* <<= */
+  taSHRU,    /* >>>= */
+  taSHR,     /* >>= */
+  taAND,     /* &= */
+  taXOR,     /* ^= */
+  taOR,      /* |= */
+  tlOR,      /* || */
+  tlAND,     /* && */
+  tlEQ,      /* == */
+  tlNE,      /* != */
+  tlLE,      /* <= */
+  tlGE,      /* >= */
+  tSHL,      /* << */
+  tSHRU,     /* >>> */
+  tSHR,      /* >> */
+  tINC,      /* ++ */
+  tDEC,      /* -- */
+  tELLIPS,   /* ... */
+  tDBLDOT,   /* .. */
+  tDBLCOLON, /* :: */
+  /* value of last multi-character operator */
+  tMIDDLE    = tDBLCOLON,
 /* reserved words (statements) */
-#define tASSERT  281
-#define tBEGIN   282
-#define tBREAK   283
-#define tCASE    284
-#define tCELLSOF 285
-#define tCHAR    286
-#define tCONST   287
-#define tCONTINUE 288
-#define tDEFAULT 289
-#define tDEFINED 290
-#define tDO      291
-#define tELSE    292
-#define tEND     293
-#define tENUM    294
-#define tEXIT    295
-#define tFOR     296
-#define tFORWARD 297
-#define tFUNCENUM 298
-#define tFUNCTAG 299
-#define tGOTO    300
-#define tIF      301
-#define tMETHODMAP 302
-#define tNATIVE  303
-#define tNEW     304
-#define tDECL    305
-#define tOPERATOR 306
-#define tPUBLIC  307
-#define tRETURN  308
-#define tSIZEOF  309
-#define tSLEEP   310
-#define tSTATIC  311
-#define tSTOCK   312
-#define tSTRUCT  313
-#define tSWITCH  314
-#define tTAGOF   315
-#define tTHEN    316
-#define tWHILE   317
-/* compiler directives */
-#define tpASSERT 318    /* #assert */
-#define tpDEFINE 319
-#define tpELSE   320    /* #else */
-#define tpELSEIF 321    /* #elseif */
-#define tpEMIT   322
-#define tpENDIF  323
-#define tpENDINPUT 324
-#define tpENDSCRPT 325
-#define tpERROR  326
-#define tpFILE   327
-#define tpIF     328    /* #if */
-#define tINCLUDE 329
-#define tpLINE   330
-#define tpPRAGMA 331
-#define tpTRYINCLUDE 332
-#define tpUNDEF  333
-/* semicolon is a special case, because it can be optional */
-#define tTERM    334    /* semicolon or newline */
-#define tENDEXPR 335    /* forced end of expression */
-/* other recognized tokens */
-#define tNUMBER  336    /* integer number */
-#define tRATIONAL 337   /* rational number */
-#define tSYMBOL  338
-#define tLABEL   339
-#define tSTRING  340
-#define tEXPR    342 /* for assigment to "lastst" only (see SC1.C) */
-#define tENDLESS 343 /* endless loop, for assigment to "lastst" only */
-#define tEMPTYBLOCK 344 /* empty blocks for AM bug 4825 */
+  tASSERT,
+  tBEGIN,
+  tBREAK,
+  tCASE,
+  tCELLSOF,
+  tCHAR,
+  tCONST,
+  tCONTINUE,
+  tDEFAULT,
+  tDEFINED,
+  tDO,
+  tELSE,
+  tEND,
+  tENUM,
+  tEXIT,
+  tFOR,
+  tFORWARD,
+  tFUNCENUM,
+  tFUNCTAG,
+  tGOTO,
+  tIF,
+  tMETHODMAP,
+  tNATIVE,
+  tNEW,
+  tDECL,
+  tOPERATOR,
+  tPUBLIC,
+  tRETURN,
+  tSIZEOF,
+  tSLEEP,
+  tSTATIC,
+  tSTOCK,
+  tSTRUCT,
+  tSWITCH,
+  tTAGOF,
+  tTHEN,
+  tWHILE,
+  /* compiler directives */
+  tpASSERT,     /* #assert */
+  tpDEFINE,
+  tpELSE,       /* #else */
+  tpELSEIF,     /* #elseif */
+  tpEMIT,
+  tpENDIF,
+  tpENDINPUT,
+  tpENDSCRPT,
+  tpERROR,
+  tpFILE,
+  tpIF,         /* #if */
+  tINCLUDE,
+  tpLINE,
+  tpPRAGMA,
+  tpTRYINCLUDE,
+  tpUNDEF,
+  tLAST = tpUNDEF,   /* value of last multi-character match-able token */
+  /* semicolon is a special case, because it can be optional */
+  tTERM,          /* semicolon or newline */
+  tENDEXPR,       /* forced end of expression */
+  /* other recognized tokens */
+  tNUMBER,        /* integer number */
+  tRATIONAL,      /* rational number */
+  tSYMBOL,
+  tLABEL,
+  tSTRING,
+  tEXPR,          /* for assigment to "lastst" only (see SC1.C) */
+  tENDLESS,       /* endless loop, for assigment to "lastst" only */
+  tEMPTYBLOCK,    /* empty blocks for AM bug 4825 */
+  tLAST_TOKEN_ID
+};
 
 /* (reversed) evaluation of staging buffer */
 #define sSTARTREORDER 0x01

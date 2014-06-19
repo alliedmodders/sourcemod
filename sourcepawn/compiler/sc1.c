@@ -5855,7 +5855,7 @@ static void statement(int *lastindent,int allow_decl)
       compound(save==fline,tok);
     } else {
       lastst = tEMPTYBLOCK;
-	}
+    }
     /* lastst (for "last statement") does not change 
        you're not my father, don't tell me what to do */
     break;
