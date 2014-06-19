@@ -113,7 +113,15 @@ static cell_t FindStringIndex(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[2], &str);
 
-	return pTable->FindStringIndex(str);
+	int strindex = pTable->FindStringIndex(str);
+
+	// INVALID_STRING_INDEX is 65535 at time of writing, but already defined in sp inc files as -1
+	if (strindex == INVALID_STRING_INDEX)
+	{
+		return -1;
+	}
+
+	return strindex;
 }
 
 static cell_t ReadStringTable(IPluginContext *pContext, const cell_t *params)
