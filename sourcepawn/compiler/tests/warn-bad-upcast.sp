@@ -1,7 +1,7 @@
 native CloseHandle(Handle:this);
 
 methodmap Handle {
-	Close = CloseHandle;
+	public Close = CloseHandle;
 };
 
 methodmap Crab {
