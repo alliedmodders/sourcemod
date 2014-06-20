@@ -122,11 +122,8 @@ void HolidayManager::UnhookIfNecessary()
 	if (m_isHolidayForward->GetFunctionCount() > 0)
 		return;
 
-	if (m_iHookID)
-	{
-		SH_REMOVE_HOOK_ID(m_iHookID);
-		m_iHookID = 0;
-	}
+	SH_REMOVE_HOOK_ID(m_iHookID);
+	m_iHookID = 0;
 }
 
 void HolidayManager::OnPluginLoaded(IPlugin *plugin)
@@ -141,32 +138,25 @@ void HolidayManager::OnPluginUnloaded(IPlugin *plugin)
 
 bool HolidayManager::Hook_IsHolidayActive(int holiday)
 {
-	void *pGameRules = NULL;
-	if (g_pSDKTools)
+	void *pGameRules = META_IFACEPTR(void *);
+
+	bool actualres = SH_MCALL(pGameRules, IsHolidayActive)(holiday);
+	if (!m_isHolidayForward)
 	{
-		pGameRules = g_pSDKTools->GetGameRules();
+		g_pSM->LogMessage(myself, "Invalid Forward");
+		RETURN_META_VALUE(MRES_IGNORED, true);
 	}
 
-	if (pGameRules)
+	cell_t result = 0;
+	cell_t newres = actualres ? 1 : 0;
+
+	m_isHolidayForward->PushCell(holiday);
+	m_isHolidayForward->PushCellByRef(&newres);
+	m_isHolidayForward->Execute(&result);
+
+	if (result > Pl_Continue)
 	{
-		bool actualres = SH_MCALL(pGameRules, IsHolidayActive)(holiday);
-		if (!m_isHolidayForward)
-		{
-			g_pSM->LogMessage(myself, "Invalid Forward");
-			RETURN_META_VALUE(MRES_IGNORED, true);
-		}
-
-		cell_t result = 0;
-		cell_t newres = actualres ? 1 : 0;
-
-		m_isHolidayForward->PushCell(holiday);
-		m_isHolidayForward->PushCellByRef(&newres);
-		m_isHolidayForward->Execute(&result);
-
-		if (result > Pl_Continue)
-		{
-			RETURN_META_VALUE(MRES_SUPERCEDE, (newres == 0) ? false : true);
-		}
+		RETURN_META_VALUE(MRES_SUPERCEDE, (newres == 0) ? false : true);
 	}
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
