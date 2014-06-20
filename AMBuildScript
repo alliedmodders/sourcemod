@@ -171,6 +171,9 @@ class SMConfig(object):
         '-msse',
         '-m32',
       ]
+      cxx.cxxflags += [
+          '-std=c++11',
+      ]
 
       have_gcc = cxx.vendor == 'gcc'
       have_clang = cxx.vendor == 'clang'
@@ -188,6 +191,8 @@ class SMConfig(object):
         '-fno-threadsafe-statics',
         '-Wno-non-virtual-dtor',
         '-Wno-overloaded-virtual',
+        '-Wno-implicit-exception-spec-mismatch',
+        '-Wno-deprecated-register',
       ]
 
       if have_gcc:
