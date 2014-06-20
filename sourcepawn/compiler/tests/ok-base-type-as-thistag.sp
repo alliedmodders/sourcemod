@@ -4,7 +4,7 @@ methodmap Handle {
 };
 
 methodmap Crab < Handle {
-	Close = CloseHandle;
+	public Close = CloseHandle;
 };
 
 public main()
