@@ -2,8 +2,8 @@ native Float:CreateHandle(count);
 native CloseHandle(Handle:handle);
 
 methodmap Handle {
-	public Handle = CreateHandle;
-	public Close = CloseHandle;
+	public Handle() = CreateHandle;
+	public Close() = CloseHandle;
 };
 
 public main() {

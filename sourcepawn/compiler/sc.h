@@ -355,6 +355,7 @@ enum {
   tCONTINUE,
   tDEFAULT,
   tDEFINED,
+  tDELETE,
   tDO,
   tELSE,
   tEND,

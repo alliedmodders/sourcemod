@@ -741,7 +741,8 @@ native SQL_AddQuery(Transaction:txn, const String:query[], any:data=0);
 
 methodmap Transaction < Handle
 {
-		public AddQuery = SQL_AddQuery;
+		public Transaction() = SQL_CreateTransaction;
+		public AddQuery() = SQL_AddQuery;
 };
 
 /**

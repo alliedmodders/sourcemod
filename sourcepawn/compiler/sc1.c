@@ -95,6 +95,7 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,
                     int stock,int fconst);
 static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct);
 static int declloc(int fstatic);
+static void dodelete();
 static void decl_const(int table);
 static void declstruct();
 static void decl_enum(int table);
@@ -3248,7 +3249,7 @@ static void declstruct(void)
 		}
 		if (pstructs_addarg(pstruct, &arg) == NULL)
 		{
-			error(99, arg.name, pstruct->name);
+			error(103, arg.name, layout_spec_name(Layout_PawnStruct));
 		}
 	} while (matchtoken(','));
 	needtoken('}');
@@ -3350,9 +3351,11 @@ methodmap_method_t *parse_method(methodmap_t *map)
   int is_dtor = 0;
   int is_bind = 0;
   int is_native = 0;
-  char ident[sNAMEMAX + 1] = "<unknown>";
-  char bindname[sNAMEMAX + 1] = "<unknown>";
   const char *decltype = layout_spec_name(map->spec);
+
+  // We keep a wider buffer since we do name munging.
+  char ident[sNAMEMAX * 3 + 1] = "<unknown>";
+  char bindname[sNAMEMAX * 3 + 1] = "<unknown>";
 
   needtoken(tPUBLIC);
 
@@ -3366,7 +3369,12 @@ methodmap_method_t *parse_method(methodmap_t *map)
       tokeninfo(&tok.val, &tok.str);
       strcpy(ident, tok.str);
     }
+    needtoken('(');
+    needtoken(')');
     needtoken('=');
+    if (!expecttoken(tSYMBOL, &tok))
+      return NULL;
+    strcpy(bindname, tok.str);
   } else {
     is_native = matchtoken(tNATIVE);
 
@@ -3390,7 +3398,10 @@ methodmap_method_t *parse_method(methodmap_t *map)
         strcpy(ident, tok.str);
         tok.str = ident;
 
-        if (matchtoken('=')) {
+        if (matchtoken('(')) {
+          needtoken(')');
+          needtoken('=');
+
           // Grab the name we're binding to.
           is_bind = 1;
           if (!expecttoken(tSYMBOL, &tok))
@@ -3433,6 +3444,34 @@ methodmap_method_t *parse_method(methodmap_t *map)
   if (!target)
     return NULL;
 
+  if (is_dtor) {
+    // Make sure the dtor has the right name.
+    if (strcmp(ident, map->name) != 0)
+      error(114, decltype, map->name);
+
+    if (!(target->usage & uNATIVE)) {
+      // Must be a native.
+      error(118);
+      return NULL;
+    }
+
+    if (target->tag != 0 && target->tag != pc_tag_void) {
+      // Cannot return a value.
+      error(99);
+      return NULL;
+    }
+
+    if (target->dim.arglist[0].ident && target->dim.arglist[1].ident) {
+      // Cannot have extra arguments.
+      error(119);
+      return NULL;
+    }
+
+    // Make sure the final name includes the ~.
+    strcpy(ident, "~");
+    strcat(ident, map->name);
+  }
+
   // Check that a method with this name doesn't already exist.
   for (size_t i = 0; i < map->nummethods; i++) {
     if (strcmp(map->methods[i]->name, ident) == 0) {
@@ -3444,6 +3483,8 @@ methodmap_method_t *parse_method(methodmap_t *map)
   methodmap_method_t *method = (methodmap_method_t *)calloc(1, sizeof(methodmap_method_t));
   strcpy(method->name, ident);
   method->target = target;
+  if (is_dtor)
+    map->dtor = method;
 
   // If the symbol is a constructor, we bypass the initial argument checks,
   // and instead require that it returns something with the same tag.
@@ -3567,6 +3608,62 @@ static void domethodmap(LayoutSpec spec)
   }
 
   needtoken(tTERM);
+}
+
+// delete ::= "delete" expr
+static void dodelete()
+{
+  int tag;
+  symbol *sym;
+
+  int ident = doexpr(TRUE, FALSE, TRUE, FALSE, &tag, &sym, TRUE);
+  needtoken(tTERM);
+
+  switch (ident) {
+    case iFUNCTN:
+    case iREFFUNC:
+      error(115, "functions");
+      return;
+
+    case iARRAY:
+    case iREFARRAY:
+    case iARRAYCELL:
+    case iARRAYCHAR:
+      error(115, "arrays");
+      return;
+  }
+
+  if (tag == 0) {
+    error(115, "primitive types or enums");
+    return;
+  }
+
+  methodmap_t *map = methodmap_find_by_tag(tag);
+  if (!map) {
+    error(115, pc_tagname(tag));
+    return;
+  }
+
+  if (!map->dtor) {
+    error(115, layout_spec_name(map->spec), map->name);
+    return;
+  }
+
+  // For some reason, we don't get a sysreq.n once this passes through the
+  // peephole optimizer. I can't tell why. -dvander
+  //
+  // push pri
+  // push.c 1
+  // sysreq.c N 1
+  // stack 8
+  pushreg(sPRI);
+  markexpr(sPARM,NULL,0);
+  {
+    pushval(1);
+    ffcall(map->dtor->target, NULL, 1);
+    map->dtor->target->usage |= uREAD;
+  }
+  markexpr(sEXPR,NULL,0);
 }
 
 /**
@@ -6026,6 +6123,10 @@ static void statement(int *lastindent,int allow_decl)
     } else {
       error(3);                 /* declaration only valid in a block */
     } /* if */
+    break;
+  case tDELETE:
+    dodelete();
+    lastst=tDELETE;
     break;
   case tDECL:
     if (allow_decl) {

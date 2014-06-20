@@ -79,9 +79,13 @@ typedef enum
   Layout_Class
 } LayoutSpec;
 
+// The method name buffer is larger since we can include our parent class's
+// name, a "." to separate it, and a "~" for constructors.
+#define METHOD_NAMEMAX sNAMEMAX * 2 + 2
+
 typedef struct methodmap_method_s
 {
-  char name[sNAMEMAX+1];
+  char name[METHOD_NAMEMAX + 1];
   symbol *target;
 } methodmap_method_t;
 
@@ -94,6 +98,9 @@ typedef struct methodmap_s
   char name[sNAMEMAX+1];
   methodmap_method_t **methods;
   size_t nummethods;
+
+  // Shortcut.
+  methodmap_method_t *dtor;
 } methodmap_t;
 
 /**
