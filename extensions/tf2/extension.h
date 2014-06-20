@@ -120,7 +120,6 @@ public:
 #endif
 private:
 	bool m_CritDetoursEnabled;
-	bool m_IsHolidayHookEnabled;
 	bool m_CondChecksEnabled;
 	bool m_RulesDetoursEnabled;
 	bool m_TeleportDetourEnabled;

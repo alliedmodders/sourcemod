@@ -128,7 +128,6 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_pCVar = icvar;
 
 	m_CritDetoursEnabled = false;
-	m_IsHolidayHookEnabled = false;
 	m_CondChecksEnabled = false;
 	m_RulesDetoursEnabled = false;
 	m_TeleportDetourEnabled = false;
