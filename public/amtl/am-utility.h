@@ -71,7 +71,7 @@ ReturnAndVoid(T &t)
 
 #if defined(KE_CXX11)
 # define KE_DELETE = delete
-# define KE_OVERRIDE = override
+# define KE_OVERRIDE override
 #else
 # define KE_DELETE
 # define KE_OVERRIDE
