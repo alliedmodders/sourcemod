@@ -16,7 +16,7 @@
 
 #define KE_PLATFORM_POSIX
 
-#if defined linux
+#if defined __linux__
 #define KE_PLATFORM_LINUX
 #elif defined __APPLE__
 #define KE_PLATFORM_APPLE
