@@ -3318,6 +3318,33 @@ int parse_decl(declinfo_t *decl, const token_t *first, int flags)
   return TRUE;
 }
 
+void define_constructor(methodmap_t *map, methodmap_method_t *method)
+{
+  symbol *sym = findglb(map->name, sGLOBAL);
+  if (sym && sym->ident == iPROXY && sym->parent == method->target)
+    return;
+
+  if (sym) {
+    const char *type = "<unknown>";
+    switch (sym->ident) {
+      case iVARIABLE:
+      case iARRAY:
+      case iARRAYCELL:
+      case iARRAYCHAR:
+        type = "variable";
+        break;
+      case iFUNCTN:
+        type = "function";
+        break;
+    }
+    error(113, map->name, type);
+    return;
+  }
+
+  sym = addsym(map->name, 0, iPROXY, sGLOBAL, 0, 0);
+  sym->target = method->target;
+}
+
 methodmap_method_t *parse_method(methodmap_t *map)
 {
   int is_dtor = 0;
@@ -3406,6 +3433,27 @@ methodmap_method_t *parse_method(methodmap_t *map)
   if (!target)
     return NULL;
 
+  // Check that a method with this name doesn't already exist.
+  for (size_t i = 0; i < map->nummethods; i++) {
+    if (strcmp(map->methods[i]->name, ident) == 0) {
+      error(103, ident, decltype);
+      return NULL;
+    }
+  }
+
+  methodmap_method_t *method = (methodmap_method_t *)calloc(1, sizeof(methodmap_method_t));
+  strcpy(method->name, ident);
+  method->target = target;
+
+  // If the symbol is a constructor, we bypass the initial argument checks,
+  // and instead require that it returns something with the same tag.
+  if (strcmp(ident, map->name) == 0) {
+    if (target->tag != map->tag)
+      error(112, map->name);
+    define_constructor(map, method);
+    return method;
+  }
+
   // Check the implicit this parameter. Currently we only allow scalars. As
   // to not encourage enum-structs, we will not allow those either.
   const arginfo *first_arg = &target->dim.arglist[0];
@@ -3416,6 +3464,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
       first_arg->numtags != 1)
   {
     error(108, decltype, map->name);
+    return NULL;
   }
 
   // Ensure the methodmap tag is compatible with |this|.
@@ -3429,9 +3478,6 @@ methodmap_method_t *parse_method(methodmap_t *map)
   if (!ok)
     error(108, decltype, map->name);
 
-  methodmap_method_t *method = (methodmap_method_t *)calloc(1, sizeof(methodmap_method_t));
-  strcpy(method->name, ident);
-  method->target = target;
   return method;
 }
 
@@ -5690,6 +5736,9 @@ static int testsymbols(symbol *root,int level,int testlabs,int testconst)
         errorset(sSETPOS,sym->lnumber);
         error(203,sym->name);       /* symbol isn't used: ... */
       } /* if */
+      break;
+    case iPROXY:
+      // Ignore usage on proxies.
       break;
     default:
       /* a variable */

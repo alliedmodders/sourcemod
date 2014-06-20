@@ -113,7 +113,8 @@ typedef struct s_constvalue {
  */
 typedef struct s_symbol {
   struct s_symbol *next;
-  struct s_symbol *parent;  /* hierarchical types (multi-dimensional arrays) */
+  struct s_symbol *parent;  /* hierarchical types */
+  struct s_symbol *target;  /* proxy target */
   char name[sNAMEMAX+1];
   uint32_t hash;        /* value derived from name, for quicker searching */
   cell addr;            /* address or offset (or value for constant, index for native function) */
@@ -167,6 +168,7 @@ typedef struct s_symbol {
 #define iFUNCTN     9
 #define iREFFUNC    10
 #define iVARARGS    11  /* function specified ... as argument(s) */
+#define iPROXY      12  /* proxies to another symbol. */
 
 /*  Possible entries for "usage"
  *

@@ -2653,6 +2653,9 @@ SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_
       mustdelete=delete_functions || (sym->usage & uNATIVE)!=0;
       assert(sym->parent==NULL);
       break;
+    case iPROXY:
+      mustdelete=delete_functions || (sym->target->usage & uNATIVE)!=0;
+      break;
     case iARRAYCELL:
     case iARRAYCHAR:
     case iEXPRESSION:
@@ -2831,6 +2834,10 @@ SC_FUNC symbol *findglb(const char *name,int filter)
    */
   if (sym==NULL)
     sym=FindInHashTable(sp_Globals,name,fcurrent);
+
+  if (sym && sym->ident == iPROXY)
+    return sym->target;
+
   return sym;
 }
 
