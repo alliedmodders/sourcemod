@@ -42,6 +42,7 @@
 #include "teleporter.h"
 #include "CDetour/detours.h"
 #include "ISDKHooks.h"
+#include "ISDKTools.h"
 
 /**
  * @file extension.cpp
@@ -54,6 +55,7 @@ IGameConfig *g_pGameConf = NULL;
 
 IBinTools *g_pBinTools = NULL;
 ISDKHooks *g_pSDKHooks = NULL;
+ISDKTools *g_pSDKTools = NULL;
 
 SMEXT_LINK(&g_TF2Tools);
 
@@ -94,6 +96,7 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 	sharesys->AddDependency(myself, "sdkhooks.ext", true, true);
+	sharesys->AddDependency(myself, "sdktools.ext", false, true);
 
 	char conf_error[255] = "";
 	if (!gameconfs->LoadGameConfigFile("sm-tf2.games", &g_pGameConf, conf_error, sizeof(conf_error)))
@@ -116,7 +119,6 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	playerhelpers->AddClientListener(this);
 
 	g_critForward = forwards->CreateForward("TF2_CalcIsAttackCritical", ET_Hook, 4, NULL, Param_Cell, Param_Cell, Param_String, Param_CellByRef);
-	g_isHolidayForward = forwards->CreateForward("TF2_OnIsHolidayActive", ET_Event, 2, NULL, Param_Cell, Param_CellByRef);
 	g_addCondForward = forwards->CreateForward("TF2_OnConditionAdded", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	g_removeCondForward = forwards->CreateForward("TF2_OnConditionRemoved", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	g_waitingPlayersStartForward = forwards->CreateForward("TF2_OnWaitingForPlayersStart", ET_Ignore, 0, NULL);
@@ -126,10 +128,12 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_pCVar = icvar;
 
 	m_CritDetoursEnabled = false;
-	m_IsHolidayDetourEnabled = false;
+	m_IsHolidayHookEnabled = false;
 	m_CondChecksEnabled = false;
 	m_RulesDetoursEnabled = false;
 	m_TeleportDetourEnabled = false;
+
+	g_HolidayManager.OnSDKLoad(late);
 
 	return true;
 }
@@ -164,6 +168,8 @@ void TF2Tools::SDK_OnUnload()
 {
 	SH_REMOVE_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_STATIC(OnServerActivate), true);
 
+	g_HolidayManager.OnSDKUnload();
+
 	g_RegNatives.UnregisterAll();
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->UnregisterCommandTargetProcessor(this);
@@ -172,7 +178,6 @@ void TF2Tools::SDK_OnUnload()
 	plsys->RemovePluginsListener(this);
 
 	forwards->ReleaseForward(g_critForward);
-	forwards->ReleaseForward(g_isHolidayForward);
 	forwards->ReleaseForward(g_addCondForward);
 	forwards->ReleaseForward(g_removeCondForward);
 	forwards->ReleaseForward(g_waitingPlayersStartForward);
@@ -189,6 +194,7 @@ void TF2Tools::SDK_OnAllLoaded()
 {
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
 	SM_GET_LATE_IFACE(SDKHOOKS, g_pSDKHooks);
+	SM_GET_LATE_IFACE(SDKTOOLS, g_pSDKTools);
 
 	if (g_pSDKHooks != NULL)
 	{
@@ -227,6 +233,11 @@ bool TF2Tools::QueryInterfaceDrop(SMInterface *pInterface)
 		return false;
 	}
 
+	if (pInterface == g_pSDKTools)
+	{
+		g_pSDKTools = NULL;
+	}
+
 	return IExtensionInterface::QueryInterfaceDrop(pInterface);
 }
 
@@ -238,6 +249,7 @@ void TF2Tools::NotifyInterfaceDrop(SMInterface *pInterface)
 void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 {
 	g_resourceEntity = FindResourceEntity();
+	g_HolidayManager.OnServerActivated();
 }
 
 bool TF2Tools::ProcessCommandTarget(cmd_target_info_t *info)
@@ -342,11 +354,6 @@ void TF2Tools::OnPluginLoaded(IPlugin *plugin)
 		m_CritDetoursEnabled = g_CritManager.TryEnable();
 	}
 
-	if (!m_IsHolidayDetourEnabled && g_isHolidayForward->GetFunctionCount())
-	{
-		m_IsHolidayDetourEnabled = InitialiseIsHolidayDetour();
-	}
-
 	if (!m_CondChecksEnabled
 		&& ( g_addCondForward->GetFunctionCount() || g_removeCondForward->GetFunctionCount() )
 		)
@@ -373,11 +380,6 @@ void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
 	{
 		g_CritManager.Disable();
 		m_CritDetoursEnabled = false;
-	}
-	if (m_IsHolidayDetourEnabled && !g_isHolidayForward->GetFunctionCount())
-	{
-		RemoveIsHolidayDetour();
-		m_IsHolidayDetourEnabled = false;
 	}
 	if (m_CondChecksEnabled)
 	{

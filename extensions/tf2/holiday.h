@@ -33,13 +33,46 @@
 #define _INCLUDE_SOURCEMOD_HOLIDAY_H_
 
 #include "extension.h"
-#include <jit/jit_helpers.h>
-#include <jit/x86/x86_macros.h>
-#include "CDetour/detours.h"
+#include <ISDKTools.h>
 
-bool InitialiseIsHolidayDetour();
-void RemoveIsHolidayDetour();
+class HolidayManager : public IPluginsListener
+{
+public:
+	HolidayManager();
 
-extern IForward *g_isHolidayForward;
+public:
+	void OnSDKLoad(bool bLate);
+	void OnSDKUnload();
+	void OnServerActivated();
+
+public: //IPluginsListener
+	void OnPluginLoaded(IPlugin *plugin);
+	void OnPluginUnloaded(IPlugin *plugin);
+
+public:
+	bool Hook_IsHolidayActive(int holiday);
+	void Hook_LevelShutdown();
+
+private:
+	bool IsHookEnabled() const { return m_iHookID != 0; }
+	void *GetGameRules();
+	void HookIfNecessary();
+	void UnhookIfNecessary();
+
+private:
+	int m_iHookID;
+	IForward *m_isHolidayForward;
+	bool m_bInMap;
+};
+
+inline void *HolidayManager::GetGameRules()
+{
+	if (!g_pSDKTools)
+		return NULL;
+
+	return g_pSDKTools->GetGameRules();
+}
+
+extern HolidayManager g_HolidayManager;
 
 #endif //_INCLUDE_SOURCEMOD_HOLIDAY_H_
