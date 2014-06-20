@@ -728,18 +728,20 @@ functag public SQLTxnSuccess(Handle:db, any:data, numQueries, Handle:results[], 
  */
 functag public SQLTxnFailure(Handle:db, any:data, numQueries, const String:error[], failIndex, any:queryData[]);
 
+/**
+ * Adds a query to a transaction object.
+ *
+ * @param txn           A transaction handle.
+ * @param query         Query string.
+ * @param data			Extra data value to pass to the final callback.
+ * @return              The index of the query in the transaction's query list.
+ * @error               Invalid transaction handle.
+ */
+native SQL_AddQuery(Transaction:txn, const String:query[], any:data=0);
+
 methodmap Transaction < Handle
 {
-		/**
-		 * Adds a query to a transaction object.
-		 *
-		 * @param txn           A transaction handle.
-		 * @param query         Query string.
-		 * @param data			Extra data value to pass to the final callback.
-		 * @return              The index of the query in the transaction's query list.
-		 * @error               Invalid transaction handle.
-		 */
-		AddQuery = native SQL_AddQuery(Transaction:txn, const String:query[], any:data=0);
+		public AddQuery = SQL_AddQuery;
 };
 
 /**

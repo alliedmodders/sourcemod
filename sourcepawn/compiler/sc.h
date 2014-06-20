@@ -150,7 +150,6 @@ typedef struct s_symbol {
   char *documentation;  /* optional documentation string */
 } symbol;
 
-
 /*  Possible entries for "ident". These are used in the "symbol", "value"
  *  and arginfo structures. Not every constant is valid for every use.
  *  In an argument list, the list is terminated with a "zero" ident; labels
@@ -255,6 +254,14 @@ typedef struct svalue_s {
   int lvalue;
 } svalue;
 
+/* For parsing declarations. */
+typedef struct {
+  char type[sNAMEMAX + 1];
+  constvalue *enumroot;
+  int tag;
+  char usage;
+} declinfo_t;
+
 /*  "while" statement queue (also used for "for" and "do - while" loops) */
 enum {
   wqBRK,        /* used to restore stack for "break" */
@@ -289,6 +296,13 @@ typedef struct s_stringpair {
   char flags;
   char *documentation;
 } stringpair;
+
+// Helper for token info.
+typedef struct {
+  int id;
+  cell val;
+  char *str;
+} token_t;
 
 /* macros for code generation */
 #define opcodes(n)      ((n)*sizeof(cell))      /* opcode size */
@@ -350,6 +364,7 @@ enum {
   tFUNCTAG,
   tGOTO,
   tIF,
+  tINT,
   tMETHODMAP,
   tNATIVE,
   tNEW,
@@ -365,6 +380,7 @@ enum {
   tSWITCH,
   tTAGOF,
   tTHEN,
+  tVOID,
   tWHILE,
   /* compiler directives */
   tpASSERT,     /* #assert */
@@ -479,10 +495,12 @@ typedef enum s_optmark {
 int pc_compile(int argc, char **argv);
 int pc_addconstant(char *name,cell value,int tag);
 int pc_addtag(char *name);
+int pc_addtag_flags(char *name, int flags);
 int pc_findtag(const char *name);
 int pc_addfunctag(char *name);
 int pc_enablewarning(int number,int enable);
 const char *pc_tagname(int tag);
+int parse_decl(declinfo_t *decl, const token_t *first, int flags);
 
 /*
  * Functions called from the compiler (to be implemented by you)
@@ -567,11 +585,13 @@ SC_FUNC int plungefile(char *name,int try_currentpath,int try_includepaths);   /
 SC_FUNC void preprocess(void);
 SC_FUNC void lexinit(void);
 SC_FUNC int lex(cell *lexvalue,char **lexsym);
+SC_FUNC int lextok(token_t *tok);
 SC_FUNC void lexpush(void);
 SC_FUNC void lexclr(int clreol);
 SC_FUNC int matchtoken(int token);
 SC_FUNC int tokeninfo(cell *val,char **str);
 SC_FUNC int needtoken(int token);
+SC_FUNC int expecttoken(int id, token_t *tok);
 SC_FUNC void litadd(cell value);
 SC_FUNC void litinsert(cell value,int pos);
 SC_FUNC int alphanum(char c);
@@ -847,7 +867,8 @@ SC_VDECL int sc_curstates;    /* ID of the current state list */
 SC_VDECL int pc_optimize;     /* (peephole) optimization level */
 SC_VDECL int pc_memflags;     /* special flags for the stack/heap usage */
 SC_VDECL int pc_functag;      /* global function tag */
-SC_VDECL int pc_tag_string;   /* global string tag */
+SC_VDECL int pc_tag_string;   /* global String tag */
+SC_VDECL int pc_tag_void;     /* global void tag */
 SC_VDECL int pc_anytag;       /* global any tag */
 SC_VDECL int glbstringread;	  /* last global string read */
 

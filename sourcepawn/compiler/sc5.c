@@ -52,8 +52,8 @@
 static unsigned char warndisable[(NUM_WARNINGS + 7) / 8]; /* 8 flags in a char */
 
 static int errflag;
-static int errstart;    /* line number at which the instruction started */
-static int errline;     /* forced line number for the error message */
+static int errstart;     /* line number at which the instruction started */
+static int sErrLine;     /* forced line number for the error message */
 
 /*  error
  *
@@ -74,6 +74,12 @@ static int lastline,errorcount;
 static short lastfile;
   char *msg,*pre;
   va_list argptr;
+
+  // sErrLine is used to temporarily change the line number of reported errors.
+  // Pawn has an upstream bug where this is not reset on early-return, which
+  // can lead to broken line numbers in error messages.
+  int errline = sErrLine;
+  sErrLine = -1;
 
   /* errflag is reset on each semicolon.
    * In a two-pass compiler, an error should not be reported twice. Therefore
@@ -148,7 +154,6 @@ static short lastfile;
     longjmp(errbuf,2);          /* fatal error, quit */
   } /* if */
 
-  errline=-1;
   /* check whether we are seeing many errors on the same line */
   if ((errstart<0 && lastline!=fline) || lastline<errstart || lastline>fline || fcurrent!=lastfile)
     errorcount=0;
@@ -176,10 +181,10 @@ SC_FUNC void errorset(int code,int line)
     break;
   case sEXPRRELEASE:
     errstart=-1;        /* forget start line number */
-    errline=-1;
+    sErrLine=-1;
     break;
   case sSETPOS:
-    errline=line;
+    sErrLine=line;
     break;
   } /* switch */
 }

@@ -81,8 +81,8 @@ native Handle:CloneHandle(Handle:hndl, Handle:plugin=INVALID_HANDLE);
  */
 methodmap Handle
 {
-	Clone = CloneHandle;
-	Close = CloseHandle;
+	public Clone = CloneHandle;
+	public Close = CloseHandle;
 };
 
 /**

@@ -1928,8 +1928,8 @@ char *sc_tokens[] = {
          "...", "..", "::",
          "assert", "*begin", "break", "case", "cellsof", "chars", "const", "continue", "default",
          "defined", "do", "else", "*end", "enum", "exit", "for", "forward", "funcenum", "functag", "goto",
-         "if", "methodmap", "native", "new", "decl", "operator", "public", "return", "sizeof",
-         "sleep", "static", "stock", "struct", "switch", "tagof", "*then", "while",
+         "if", "int", "methodmap", "native", "new", "decl", "operator", "public", "return", "sizeof",
+         "sleep", "static", "stock", "struct", "switch", "tagof", "*then", "void", "while",
          "#assert", "#define", "#else", "#elseif", "#emit", "#endif", "#endinput",
          "#endscript", "#error", "#file", "#if", "#include", "#line", "#pragma",
          "#tryinclude", "#undef",
@@ -3012,3 +3012,18 @@ static char itohstr[30];
   return itohstr;
 }
 
+SC_FUNC int lextok(token_t *tok)
+{
+  tok->id = lex(&tok->val, &tok->str);
+  return tok->id;
+}
+
+SC_FUNC int expecttoken(int id, token_t *tok)
+{
+  int rval = needtoken(id);
+  if (rval) {
+    tok->id = tokeninfo(&tok->val, &tok->str);
+    return rval;
+  }
+  return FALSE;
+}

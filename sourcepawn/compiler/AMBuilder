@@ -11,7 +11,7 @@ compiler.includes += [
 ]
  
 if compiler.cc.behavior == 'gcc':
-  compiler.cflags += ['-Wno-format']
+  compiler.cflags += ['-std=c99', '-Wno-format']
   if builder.target_platform == 'linux':
     compiler.postlink += ['-lgcc', '-lm']
 elif compiler.cc.behavior == 'msvc':
