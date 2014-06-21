@@ -1867,6 +1867,8 @@ static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct)
 		matchtoken(';');
 		/* Mark it as undefined instead */
 		mysym->usage = uSTOCK|uSTRUCT;
+		free(found);
+		free(values);
 		return;
 	} else {
 		mysym->usage = usage;
