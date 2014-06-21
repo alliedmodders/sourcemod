@@ -414,6 +414,13 @@ void popstacklist(int codegen)
   {
     _stack_genusage(stackusage, 1);
     assert(stackusage->head==NULL);
+  } else {
+    memuse_t *use = stackusage->head;
+    while (use) {
+      memuse_t *temp = use->prev;
+      free(use);
+      use = temp;
+    }
   }
 
   oldlist = stackusage->prev;
