@@ -50,7 +50,7 @@ BEGIN
             VALUE "FileVersion", SM_VERSION_STRING
             VALUE "InternalName", "SourceMod Webternet Extension"
             VALUE "LegalCopyright", "Copyright (c) 2004-2009, AlliedModders LLC"
-            VALUE "OriginalFilename", "webternet.ext.dll"
+            VALUE "OriginalFilename", BINARY_NAME
             VALUE "ProductName", "SourceMod Webternet Extension"
             VALUE "ProductVersion", SM_VERSION_STRING
         END
