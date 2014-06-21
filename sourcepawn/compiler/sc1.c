@@ -3558,11 +3558,11 @@ static void domethodmap(LayoutSpec spec)
   if (!isupper(*mapname))
     error(109, spectype);
 
-  enum LayoutSpec old_spec = deduce_layout_spec_by_name(mapname);
+  LayoutSpec old_spec = deduce_layout_spec_by_name(mapname);
   if (!can_redef_layout_spec(spec, old_spec))
     error(110, mapname, layout_spec_name(old_spec));
 
-  struct methodmap_t *parent = NULL;
+  methodmap_t *parent = NULL;
 
   if (matchtoken('<')) {
     if (lex(&val, &str) != tSYMBOL) {

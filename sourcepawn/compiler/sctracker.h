@@ -69,7 +69,7 @@ typedef struct pstruct_s
 
 // The ordering of these definitions should be preserved for
 // can_redef_layout_spec().
-typedef enum
+typedef enum LayoutSpec_t
 {
   Layout_None,
   Layout_Enum,
