@@ -108,8 +108,6 @@ public:
 	void OnHookAdded();
 	void OnHookRemoved();
 
-	const char *GetEntityClassname(CBaseEntity *pEntity);
-
 private:
 	bool enabled;
 
