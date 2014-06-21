@@ -3434,7 +3434,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
   if (is_bind) {
     target = findglb(bindname, sGLOBAL);
     if (!target)
-      error(17, ident);
+      error(17, bindname);
     else if (target->ident != iFUNCTN) 
       error(10);
   } else {
@@ -3645,7 +3645,18 @@ static void dodelete()
     return;
   }
 
-  if (!map->dtor) {
+  {
+    methodmap_t *iter = map;
+    while (iter) {
+      if (iter->dtor) {
+        map = iter;
+        break;
+      }
+      iter = iter->parent;
+    }
+  }
+
+  if (!map || !map->dtor) {
     error(115, layout_spec_name(map->spec), map->name);
     return;
   }

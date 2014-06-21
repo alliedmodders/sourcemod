@@ -42,7 +42,7 @@ def run_tests(args):
 
             if status == 'ok' and kind != 'pass':
                 with open(os.path.join(testdir, test + '.txt')) as fp:
-                    text = fp.read()
+                    text = fp.read().strip()
                 if text not in stdout:
                     print('Expected to find text in stdout: >>>')
                     print(text)
