@@ -3504,6 +3504,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
       first_arg->hasdefault ||
       first_arg->numtags != 1)
   {
+    free(method);
     error(108, spectype, map->name);
     return NULL;
   }
@@ -3598,7 +3599,7 @@ static void domethodmap(LayoutSpec spec)
 
     needtoken(tTERM);
 
-    methods = (methodmap_method_t **)realloc(map->methods, sizeof(methodmap_method_t *) * map->nummethods);
+    methods = (methodmap_method_t **)realloc(map->methods, sizeof(methodmap_method_t *) * (map->nummethods + 1));
     if (!methods) {
       error(123);
       return;

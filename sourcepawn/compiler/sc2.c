@@ -2612,6 +2612,29 @@ SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_
   constvalue *stateptr;
   int mustdelete;
 
+  // Hack - proxies have a "target" pointer, but the target could be deleted
+  // already if done inside the main loop below. To get around this we do a
+  // precursor pass. Note that proxies can only be at the global scope.
+  if (origRoot == &glbtab) {
+    symbol *iter = root;
+    while (iter->next) {
+      sym = iter->next;
+
+      if (sym->ident != iPROXY) {
+        iter = sym;
+	continue;
+      }
+
+      if (delete_functions || (sym->target->usage & uNATIVE) != 0) {
+        RemoveFromHashTable(sp_Globals, sym);
+        iter->next = sym->next;
+        free_symbol(sym);
+      } else {
+        iter = sym;
+      }
+    }
+  }
+
   /* erase only the symbols with a deeper nesting level than the
    * specified nesting level */
   while (root->next!=NULL) {
@@ -2655,7 +2678,8 @@ SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_
       assert(sym->parent==NULL);
       break;
     case iPROXY:
-      mustdelete=delete_functions || (sym->target->usage & uNATIVE)!=0;
+      // Original loop determined it was okay to keep.
+      mustdelete=FALSE;
       break;
     case iARRAYCELL:
     case iARRAYCHAR:

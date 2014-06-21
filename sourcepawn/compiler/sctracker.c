@@ -484,6 +484,8 @@ void methodmaps_free()
   methodmap_t *ptr = methodmap_first;
   while (ptr) {
     methodmap_t *next = ptr->next;
+    for (size_t i = 0; i < ptr->nummethods; i++)
+      free(ptr->methods[i]);
     free(ptr->methods);
     free(ptr);
     ptr = next;
