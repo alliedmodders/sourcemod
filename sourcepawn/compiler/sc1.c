@@ -3550,6 +3550,8 @@ static void domethodmap(LayoutSpec spec)
 {
   int val;
   char *str;
+  LayoutSpec old_spec;
+  methodmap_t *parent = NULL;
   const char *spectype = layout_spec_name(spec);
 
   // methodmap ::= "methodmap" symbol ("<" symbol)? "{" methodmap-body "}"
@@ -3561,11 +3563,9 @@ static void domethodmap(LayoutSpec spec)
   if (!isupper(*mapname))
     error(109, spectype);
 
-  LayoutSpec old_spec = deduce_layout_spec_by_name(mapname);
+  old_spec = deduce_layout_spec_by_name(mapname);
   if (!can_redef_layout_spec(spec, old_spec))
     error(110, mapname, layout_spec_name(old_spec));
-
-  methodmap_t *parent = NULL;
 
   if (matchtoken('<')) {
     if (lex(&val, &str) != tSYMBOL) {
