@@ -113,7 +113,8 @@ typedef struct s_constvalue {
  */
 typedef struct s_symbol {
   struct s_symbol *next;
-  struct s_symbol *parent;  /* hierarchical types (multi-dimensional arrays) */
+  struct s_symbol *parent;  /* hierarchical types */
+  struct s_symbol *target;  /* proxy target */
   char name[sNAMEMAX+1];
   uint32_t hash;        /* value derived from name, for quicker searching */
   cell addr;            /* address or offset (or value for constant, index for native function) */
@@ -150,7 +151,6 @@ typedef struct s_symbol {
   char *documentation;  /* optional documentation string */
 } symbol;
 
-
 /*  Possible entries for "ident". These are used in the "symbol", "value"
  *  and arginfo structures. Not every constant is valid for every use.
  *  In an argument list, the list is terminated with a "zero" ident; labels
@@ -168,6 +168,7 @@ typedef struct s_symbol {
 #define iFUNCTN     9
 #define iREFFUNC    10
 #define iVARARGS    11  /* function specified ... as argument(s) */
+#define iPROXY      12  /* proxies to another symbol. */
 
 /*  Possible entries for "usage"
  *
@@ -237,7 +238,7 @@ typedef struct s_symbol {
 
 #define sSTATEVAR  3    /* criterion to find variables (sSTATEVAR implies a global variable) */
 
-typedef struct s_value {
+typedef struct value_s {
   symbol *sym;          /* symbol in symbol table, NULL for (constant) expression */
   cell constval;        /* value of the constant expression (if ident==iCONSTEXPR)
                          * also used for the size of a literal array */
@@ -248,6 +249,20 @@ typedef struct s_value {
   char boolresult;      /* boolean result for relational operators */
   cell *arrayidx;       /* last used array indices, for checking self assignment */
 } value;
+
+/* Wrapper around value + l/rvalue bit. */
+typedef struct svalue_s {
+  value val;
+  int lvalue;
+} svalue;
+
+/* For parsing declarations. */
+typedef struct {
+  char type[sNAMEMAX + 1];
+  constvalue *enumroot;
+  int tag;
+  char usage;
+} declinfo_t;
 
 /*  "while" statement queue (also used for "for" and "do - while" loops) */
 enum {
@@ -284,6 +299,13 @@ typedef struct s_stringpair {
   char *documentation;
 } stringpair;
 
+// Helper for token info.
+typedef struct {
+  int id;
+  cell val;
+  char *str;
+} token_t;
+
 /* macros for code generation */
 #define opcodes(n)      ((n)*sizeof(cell))      /* opcode size */
 #define opargs(n)       ((n)*sizeof(cell))      /* size of typical argument */
@@ -291,101 +313,110 @@ typedef struct s_stringpair {
 /*  Tokens recognized by lex()
  *  Some of these constants are assigned as well to the variable "lastst" (see SC1.C)
  */
-#define tFIRST   256    /* value of first multi-character operator */
-#define tMIDDLE  280    /* value of last multi-character operator */
-#define tLAST    332    /* value of last multi-character match-able token */
-/* multi-character operators */
-#define taMULT   256    /* *= */
-#define taDIV    257    /* /= */
-#define taMOD    258    /* %= */
-#define taADD    259    /* += */
-#define taSUB    260    /* -= */
-#define taSHL    261    /* <<= */
-#define taSHRU   262    /* >>>= */
-#define taSHR    263    /* >>= */
-#define taAND    264    /* &= */
-#define taXOR    265    /* ^= */
-#define taOR     266    /* |= */
-#define tlOR     267    /* || */
-#define tlAND    268    /* && */
-#define tlEQ     269    /* == */
-#define tlNE     270    /* != */
-#define tlLE     271    /* <= */
-#define tlGE     272    /* >= */
-#define tSHL     273    /* << */
-#define tSHRU    274    /* >>> */
-#define tSHR     275    /* >> */
-#define tINC     276    /* ++ */
-#define tDEC     277    /* -- */
-#define tELLIPS  278    /* ... */
-#define tDBLDOT  279    /* .. */
-#define tDBLCOLON 280   /* :: */
+enum {
+  /* value of first multi-character operator */
+  tFIRST     = 256,
+  /* multi-character operators */
+  taMULT     = tFIRST, /* *= */
+  taDIV,     /* /= */
+  taMOD,     /* %= */
+  taADD,     /* += */
+  taSUB,     /* -= */
+  taSHL,     /* <<= */
+  taSHRU,    /* >>>= */
+  taSHR,     /* >>= */
+  taAND,     /* &= */
+  taXOR,     /* ^= */
+  taOR,      /* |= */
+  tlOR,      /* || */
+  tlAND,     /* && */
+  tlEQ,      /* == */
+  tlNE,      /* != */
+  tlLE,      /* <= */
+  tlGE,      /* >= */
+  tSHL,      /* << */
+  tSHRU,     /* >>> */
+  tSHR,      /* >> */
+  tINC,      /* ++ */
+  tDEC,      /* -- */
+  tELLIPS,   /* ... */
+  tDBLDOT,   /* .. */
+  tDBLCOLON, /* :: */
+  /* value of last multi-character operator */
+  tMIDDLE    = tDBLCOLON,
 /* reserved words (statements) */
-#define tASSERT  281
-#define tBEGIN   282
-#define tBREAK   283
-#define tCASE    284
-#define tCELLSOF 285
-#define tCHAR    286
-#define tCONST   287
-#define tCONTINUE 288
-#define tDEFAULT 289
-#define tDEFINED 290
-#define tDO      291
-#define tELSE    292
-#define tEND     293
-#define tENUM    294
-#define tEXIT    295
-#define tFOR     296
-#define tFORWARD 297
-#define tFUNCENUM 298
-#define tFUNCTAG 299
-#define tGOTO    300
-#define tIF      301
-#define tNATIVE  302
-#define tNEW     303
-#define tDECL    304
-#define tOPERATOR 305
-#define tPUBLIC  306
-#define tRETURN  307
-#define tSIZEOF  308
-#define tSLEEP   309
-#define tSTATIC  310
-#define tSTOCK   311
-#define tSTRUCT  312
-#define tSWITCH  313
-#define tTAGOF   314
-#define tTHEN    315
-#define tWHILE   316
-/* compiler directives */
-#define tpASSERT 317    /* #assert */
-#define tpDEFINE 318
-#define tpELSE   319    /* #else */
-#define tpELSEIF 320    /* #elseif */
-#define tpEMIT   321
-#define tpENDIF  322
-#define tpENDINPUT 323
-#define tpENDSCRPT 324
-#define tpERROR  325
-#define tpFILE   326
-#define tpIF     327    /* #if */
-#define tINCLUDE 328
-#define tpLINE   329
-#define tpPRAGMA 330
-#define tpTRYINCLUDE 331
-#define tpUNDEF  332
-/* semicolon is a special case, because it can be optional */
-#define tTERM    333    /* semicolon or newline */
-#define tENDEXPR 334    /* forced end of expression */
-/* other recognized tokens */
-#define tNUMBER  335    /* integer number */
-#define tRATIONAL 336   /* rational number */
-#define tSYMBOL  337
-#define tLABEL   338
-#define tSTRING  339
-#define tEXPR    341 /* for assigment to "lastst" only (see SC1.C) */
-#define tENDLESS 342 /* endless loop, for assigment to "lastst" only */
-#define tEMPTYBLOCK 343 /* empty blocks for AM bug 4825 */
+  tASSERT,
+  tBEGIN,
+  tBREAK,
+  tCASE,
+  tCELLSOF,
+  tCHAR,
+  tCONST,
+  tCONTINUE,
+  tDEFAULT,
+  tDEFINED,
+  tDELETE,
+  tDO,
+  tELSE,
+  tEND,
+  tENUM,
+  tEXIT,
+  tFOR,
+  tFORWARD,
+  tFUNCENUM,
+  tFUNCTAG,
+  tGOTO,
+  tIF,
+  tINT,
+  tMETHODMAP,
+  tNATIVE,
+  tNEW,
+  tDECL,
+  tOPERATOR,
+  tPUBLIC,
+  tRETURN,
+  tSIZEOF,
+  tSLEEP,
+  tSTATIC,
+  tSTOCK,
+  tSTRUCT,
+  tSWITCH,
+  tTAGOF,
+  tTHEN,
+  tVOID,
+  tWHILE,
+  /* compiler directives */
+  tpASSERT,     /* #assert */
+  tpDEFINE,
+  tpELSE,       /* #else */
+  tpELSEIF,     /* #elseif */
+  tpEMIT,
+  tpENDIF,
+  tpENDINPUT,
+  tpENDSCRPT,
+  tpERROR,
+  tpFILE,
+  tpIF,         /* #if */
+  tINCLUDE,
+  tpLINE,
+  tpPRAGMA,
+  tpTRYINCLUDE,
+  tpUNDEF,
+  tLAST = tpUNDEF,   /* value of last multi-character match-able token */
+  /* semicolon is a special case, because it can be optional */
+  tTERM,          /* semicolon or newline */
+  tENDEXPR,       /* forced end of expression */
+  /* other recognized tokens */
+  tNUMBER,        /* integer number */
+  tRATIONAL,      /* rational number */
+  tSYMBOL,
+  tLABEL,
+  tSTRING,
+  tEXPR,          /* for assigment to "lastst" only (see SC1.C) */
+  tENDLESS,       /* endless loop, for assigment to "lastst" only */
+  tEMPTYBLOCK,    /* empty blocks for AM bug 4825 */
+  tLAST_TOKEN_ID
+};
 
 /* (reversed) evaluation of staging buffer */
 #define sSTARTREORDER 0x01
@@ -467,8 +498,12 @@ typedef enum s_optmark {
 int pc_compile(int argc, char **argv);
 int pc_addconstant(char *name,cell value,int tag);
 int pc_addtag(char *name);
+int pc_addtag_flags(char *name, int flags);
+int pc_findtag(const char *name);
 int pc_addfunctag(char *name);
 int pc_enablewarning(int number,int enable);
+const char *pc_tagname(int tag);
+int parse_decl(declinfo_t *decl, const token_t *first, int flags);
 
 /*
  * Functions called from the compiler (to be implemented by you)
@@ -553,11 +588,13 @@ SC_FUNC int plungefile(char *name,int try_currentpath,int try_includepaths);   /
 SC_FUNC void preprocess(void);
 SC_FUNC void lexinit(void);
 SC_FUNC int lex(cell *lexvalue,char **lexsym);
+SC_FUNC int lextok(token_t *tok);
 SC_FUNC void lexpush(void);
 SC_FUNC void lexclr(int clreol);
 SC_FUNC int matchtoken(int token);
 SC_FUNC int tokeninfo(cell *val,char **str);
 SC_FUNC int needtoken(int token);
+SC_FUNC int expecttoken(int id, token_t *tok);
 SC_FUNC void litadd(cell value);
 SC_FUNC void litinsert(cell value,int pos);
 SC_FUNC int alphanum(char c);
@@ -570,8 +607,7 @@ SC_FUNC symbol *findglb(const char *name,int filter);
 SC_FUNC symbol *findloc(const char *name);
 SC_FUNC symbol *findconst(const char *name,int *matchtag);
 SC_FUNC symbol *finddepend(const symbol *parent);
-SC_FUNC symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag,
-                       int usage);
+SC_FUNC symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag, int usage);
 SC_FUNC symbol *addvariable(const char *name,cell addr,int ident,int vclass,int tag,
                             int dim[],int numdim,int idxtag[]);
 SC_FUNC symbol *addvariable2(const char *name,cell addr,int ident,int vclass,int tag,
@@ -834,7 +870,8 @@ SC_VDECL int sc_curstates;    /* ID of the current state list */
 SC_VDECL int pc_optimize;     /* (peephole) optimization level */
 SC_VDECL int pc_memflags;     /* special flags for the stack/heap usage */
 SC_VDECL int pc_functag;      /* global function tag */
-SC_VDECL int pc_tag_string;   /* global string tag */
+SC_VDECL int pc_tag_string;   /* global String tag */
+SC_VDECL int pc_tag_void;     /* global void tag */
 SC_VDECL int pc_anytag;       /* global any tag */
 SC_VDECL int glbstringread;	  /* last global string read */
 

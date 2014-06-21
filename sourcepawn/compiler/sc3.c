@@ -1,3 +1,4 @@
+/* vim: set ts=8 sts=2 sw=2 tw=99 et: */
 /*  Pawn compiler - Recursive descend expresion parser
  *
  *  Copyright (c) ITB CompuPhase, 1997-2005
@@ -56,7 +57,7 @@ static int hier2(value *lval);
 static int hier1(value *lval1);
 static int primary(value *lval);
 static void clear_value(value *lval);
-static void callfunction(symbol *sym,value *lval_result,int matchparanthesis);
+static void callfunction(symbol *sym, const svalue *implicitthis, value *lval_result, int matchparanthesis);
 static int dbltest(void (*oper)(),value *lval1,value *lval2);
 static int commutative(void (*oper)());
 static int constant(value *lval);
@@ -291,7 +292,7 @@ SC_FUNC int checktags_string(int tags[], int numtags, value *sym1)
   }
   for (i=0; i<numtags; i++) {
     if ((sym1->tag == pc_tag_string && tags[i] == 0) ||
-		(sym1->tag == 0 && tags[i] == pc_tag_string))
+        (sym1->tag == 0 && tags[i] == pc_tag_string))
       return TRUE;
   }
   return FALSE;
@@ -299,13 +300,13 @@ SC_FUNC int checktags_string(int tags[], int numtags, value *sym1)
 
 SC_FUNC int checktag_string(value *sym1, value *sym2)
 {
-  if (sym1->ident == iARRAY || sym2->ident == iARRAY
-	  || sym1->ident == iREFARRAY || sym2->ident == iREFARRAY)
+  if (sym1->ident == iARRAY || sym2->ident == iARRAY ||
+      sym1->ident == iREFARRAY || sym2->ident == iREFARRAY)
   {
     return FALSE;
   }
-  if ((sym1->tag == pc_tag_string && sym2->tag == 0)
-	  || (sym1->tag == 0 && sym2->tag == pc_tag_string))
+  if ((sym1->tag == pc_tag_string && sym2->tag == 0) ||
+      (sym1->tag == 0 && sym2->tag == pc_tag_string))
   {
     return TRUE;
   }
@@ -320,191 +321,190 @@ SC_FUNC int matchtag_string(int ident, int tag)
   return (tag == pc_tag_string) ? TRUE : FALSE;
 }
 
-SC_FUNC int matchtag(int formaltag,int actualtag,int allowcoerce)
+SC_FUNC int matchtag(int formaltag, int actualtag, int allowcoerce)
 {
-  if (formaltag != actualtag) {
-    /* if the formal tag is zero and the actual tag is not "fixed", the actual
-     * tag is "coerced" to zero
-     */
-    if (!allowcoerce || formaltag!=0 || (actualtag & FIXEDTAG)!=0) {
-		if (formaltag == pc_anytag || actualtag == pc_anytag)
-		{
-			return TRUE;
-		}
+  if (formaltag == actualtag)
+    return TRUE;
 
-		if (formaltag & FUNCTAG)
-		{
-			if (actualtag == pc_functag || (formaltag == pc_functag && actualtag & FUNCTAG))
-			{
-				return TRUE;
-			} else if (actualtag & FUNCTAG) {
-				constvalue *v = find_tag_byval(actualtag);
-				int index;
-				short usage = uPUBLIC;
-				symbol *sym, *found = NULL;
-				funcenum_t *e;
-				functag_t *t;
+  /* if the formal tag is zero and the actual tag is not "fixed", the actual
+   * tag is "coerced" to zero
+   */
+  if (allowcoerce && !formaltag && !(actualtag & FIXEDTAG))
+    return TRUE;
 
-				if (strncmp(v->name, "$Func", 5) != 0)
-				{
-					return FALSE;
-				}
+  if (formaltag == pc_anytag || actualtag == pc_anytag)
+    return TRUE;
 
-				/* Now we have to go about looking up each function in this enum.  WHICH IS IT. */
-				e = funcenums_find_byval(formaltag);
-				if (!e)
-				{
-					return FALSE;
-				}
+  if (formaltag & FUNCTAG) {
+    if (actualtag == pc_functag || (formaltag == pc_functag && actualtag & FUNCTAG))
+      return TRUE;
 
-				assert(v->name[5] == '@' || v->name[5] == '!');
+    if (actualtag & FUNCTAG) {
+      constvalue *v = find_tag_byval(actualtag);
+      int index;
+      short usage = uPUBLIC;
+      symbol *sym, *found = NULL;
+      funcenum_t *e;
+      functag_t *t;
 
-				/* Deduce which function type this is */
-				if (v->name[5] == '@')
-				{
-					usage = uPUBLIC;
-				} else if (v->name[5] == '!') {
-					usage = uSTOCK;
-				}
+      if (strncmp(v->name, "$Func", 5) != 0)
+        return FALSE;
 
-				index = atoi(&v->name[6]);
+      /* Now we have to go about looking up each function in this enum.  WHICH IS IT. */
+      e = funcenums_find_byval(formaltag);
+      if (!e)
+        return FALSE;
 
-				assert(index >= 0);
+      assert(v->name[5] == '@' || v->name[5] == '!');
 
-				/* Find the function, either by public idx or code addr */
-				if (usage == uPUBLIC)
-				{
-					for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-						if (sym->ident==iFUNCTN && (sym->usage & uPUBLIC)!=0 && (sym->vclass == sGLOBAL))
-						{
-							if (index-- == 0)
-							{
-								found = sym;
-								break;
-							}
-						}
-					}
-				} else if (usage == uSTOCK) {
-					for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-						if (sym->ident==iFUNCTN && (sym->vclass == sGLOBAL))
-						{
-							if (sym->codeaddr == index)
-							{
-								found = sym;
-								break;
-							}
-						}
-					}
-				}
+      /* Deduce which function type this is */
+      if (v->name[5] == '@')
+      {
+        usage = uPUBLIC;
+      } else if (v->name[5] == '!') {
+        usage = uSTOCK;
+      }
 
-				if (!found)
-				{
-					assert(found);
-					return FALSE;
-				}
+      index = atoi(&v->name[6]);
 
-				/* Wow, we now have:
-				 * 1) The functional enum deduced from formaltag
-				 * 2) The function trying to be shoved in deduced from actualtag
-				 * Now we have to check if it matches any one of the functags inside the enum.
-				 */
-				t = e->first;
-				while (t)
-				{
-					int curarg,skip=0,i;
-					arginfo *func_arg;
-					funcarg_t *enum_arg;
-					/* Check return type first. */
-					if (t->ret_tag != sym->tag)
-					{
-						t = t->next;
-						continue;
-					}
-					/* Check usage */
-					if (t->type != usage)
-					{
-						t = t->next;
-						continue;
-					}
-					/* Begin iterating arguments */
-					for (curarg=0; curarg<t->argcount; curarg++)
-					{
-						enum_arg = &t->args[curarg];
-						/* Check whether we've exhausted our arguments */
-						if (sym->dim.arglist[curarg].ident == 0)
-						{
-							/* Can we bail out early? */
-							if (!enum_arg->ommittable)
-							{
-								/* No! */
-								skip = 1;
-							}
-							break;
-						}
-						func_arg = &sym->dim.arglist[curarg];
-						/* First check the ident type */
-						if (enum_arg->ident != func_arg->ident)
-						{
-							skip = 1;
-							break;
-						}
-						/* Next check arrayness */
-						if (enum_arg->dimcount != func_arg->numdim)
-						{
-							skip = 1;
-							break;
-						}
-						if (enum_arg->dimcount > 0)
-						{
-							for (i=0; i<enum_arg->dimcount; i++)
-							{
-								if (enum_arg->dims[i] != func_arg->dim[i])
-								{
-									skip = 1;
-									break;
-								}
-							}
-							if (skip)
-							{
-								break;
-							}
-						}
-						/* Lastly, check the tags */
-						if (enum_arg->tagcount != func_arg->numtags)
-						{
-							skip = 1;
-							break;
-						}
-						/* They should all be in the same order just for clarity... */
-						for (i=0; i<enum_arg->tagcount; i++)
-						{
-							if (enum_arg->tags[i] != func_arg->tags[i])
-							{
-								skip = 1;
-								break;
-							}
-						}
-						if (skip)
-						{
-							break;
-						}
-					}
-					if (!skip)
-					{
-						/* Make sure there are no trailing arguments */
-						if (sym->dim.arglist[curarg].ident == 0)
-						{
-							return TRUE;
-						}
-					}
-					t = t->next;
-				}
-			}
-		}
-		return FALSE;
-	}
-  } /* if */
-  return TRUE;
+      assert(index >= 0);
+
+      /* Find the function, either by public idx or code addr */
+      if (usage == uPUBLIC)
+      {
+        for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
+          if (sym->ident==iFUNCTN && (sym->usage & uPUBLIC)!=0 && (sym->vclass == sGLOBAL))
+          {
+            if (index-- == 0)
+            {
+              found = sym;
+              break;
+            }
+          }
+        }
+      } else if (usage == uSTOCK) {
+        for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
+          if (sym->ident==iFUNCTN && (sym->vclass == sGLOBAL))
+          {
+            if (sym->codeaddr == index)
+            {
+              found = sym;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!found)
+      {
+        assert(found);
+        return FALSE;
+      }
+
+      /* Wow, we now have:
+       * 1) The functional enum deduced from formaltag
+       * 2) The function trying to be shoved in deduced from actualtag
+       * Now we have to check if it matches any one of the functags inside the enum.
+       */
+      t = e->first;
+      while (t)
+      {
+        int curarg,skip=0,i;
+        arginfo *func_arg;
+        funcarg_t *enum_arg;
+        /* Check return type first. */
+        if (t->ret_tag != sym->tag)
+        {
+          t = t->next;
+          continue;
+        }
+        /* Check usage */
+        if (t->type != usage)
+        {
+          t = t->next;
+          continue;
+        }
+        /* Begin iterating arguments */
+        for (curarg=0; curarg<t->argcount; curarg++)
+        {
+          enum_arg = &t->args[curarg];
+          /* Check whether we've exhausted our arguments */
+          if (sym->dim.arglist[curarg].ident == 0)
+          {
+            /* Can we bail out early? */
+            if (!enum_arg->ommittable)
+            {
+              /* No! */
+              skip = 1;
+            }
+            break;
+          }
+          func_arg = &sym->dim.arglist[curarg];
+          /* First check the ident type */
+          if (enum_arg->ident != func_arg->ident)
+          {
+            skip = 1;
+            break;
+          }
+          /* Next check arrayness */
+          if (enum_arg->dimcount != func_arg->numdim)
+          {
+            skip = 1;
+            break;
+          }
+          if (enum_arg->dimcount > 0)
+          {
+            for (i=0; i<enum_arg->dimcount; i++)
+            {
+              if (enum_arg->dims[i] != func_arg->dim[i])
+              {
+                skip = 1;
+                break;
+              }
+            }
+            if (skip)
+              break;
+          }
+          /* Lastly, check the tags */
+          if (enum_arg->tagcount != func_arg->numtags)
+          {
+            skip = 1;
+            break;
+          }
+          /* They should all be in the same order just for clarity... */
+          for (i=0; i<enum_arg->tagcount; i++)
+          {
+            if (enum_arg->tags[i] != func_arg->tags[i])
+            {
+              skip = 1;
+              break;
+            }
+          }
+          if (skip)
+            break;
+        }
+        if (!skip)
+        {
+          /* Make sure there are no trailing arguments */
+          if (sym->dim.arglist[curarg].ident == 0)
+            return TRUE;
+        }
+        t = t->next;
+      }
+    }
+  }
+
+  // See if the tag has a methodmap associated with it. If so, see if the given
+  // tag is anywhere on the inheritance chain.
+  methodmap_t *map = methodmap_find_by_tag(actualtag);
+  if (map) {
+    for (; map; map = map->parent) {
+      if (map->tag == formaltag)
+        return TRUE;
+    }
+  }
+  
+  return FALSE;
 }
 
 /*
@@ -1583,7 +1583,7 @@ static int hier2(value *lval)
         if (subsym!=NULL)
           subsym=finddepend(subsym);
       } /* for */
-	  if (level>sym->dim.array.level+1) {
+      if (level>sym->dim.array.level+1) {
         error(28,sym->name);  /* invalid subscript */
       } else if (level==sym->dim.array.level+1) {
         lval->constval=(idxsym!=NULL && idxsym->dim.array.length>0) ? idxsym->dim.array.length : 1;
@@ -1637,7 +1637,7 @@ static int hier2(value *lval)
         if (subsym!=NULL)
           subsym=finddepend(subsym);
       } /* for */
-	  if (level>sym->dim.array.level+1) {
+      if (level>sym->dim.array.level+1) {
         error(28,sym->name);  /* invalid subscript */
       } else if (level==sym->dim.array.level+1) {
         lval->constval= (idxsym!=NULL && idxsym->dim.array.length>0) ? idxsym->dim.array.length : 1;
@@ -1812,7 +1812,7 @@ static int hier1(value *lval1)
   cursym=lval1->sym;
 restart:
   sym=cursym;
-  if (matchtoken('[') || matchtoken('{') || matchtoken('(')) {
+  if (matchtoken('[') || matchtoken('{') || matchtoken('(') || matchtoken('.')) {
     tok=tokeninfo(&val,&st);    /* get token read by matchtoken() */
     magic_string = (sym && (sym->tag == pc_tag_string && sym->dim.array.level == 0));
     if (sym==NULL && symtok!=tSYMBOL) {
@@ -1974,14 +1974,66 @@ restart:
           lval1->tag=sym->tag;
         lval1->constval=0;
       } /* if */
+
+      // If there's a call coming up, keep parsing.
+      if (matchtoken('.')) {
+        lexpush();
+        goto restart;
+      }
+
       /* a cell in an array is an lvalue, a character in an array is not
        * always a *valid* lvalue */
       return TRUE;
     } else {            /* tok=='(' -> function(...) */
+      svalue thisval;
+      thisval.val = *lval1;
+      thisval.lvalue = lvalue;
+
+      svalue *implicitthis = NULL;
+      if (tok == '.') {
+        methodmap_t *map;
+
+        /* Catch invalid calls early so we don't compile with a tag mismatch. */
+        switch (thisval.val.ident) {
+          case iARRAY:
+          case iREFARRAY:
+            error(106);
+            break;
+
+          case iFUNCTN:
+          case iREFFUNC:
+            error(107);
+            break;
+        }
+
+        if ((map = methodmap_find_by_tag(thisval.val.tag)) == NULL) {
+          error(104, pc_tagname(thisval.val.tag));
+        }
+        
+        if (needtoken(tSYMBOL) && map) {
+          cell lexval;
+          char *lexstr;
+          methodmap_method_t *method;
+
+          tokeninfo(&lexval, &lexstr);
+          if ((method = methodmap_find_method(map, lexstr)) == NULL)
+            error(105, map->name, lexstr);
+          if (method) {
+            implicitthis = &thisval;
+            sym = method->target;
+          }
+        }
+
+        // If we don't find a '(' next, just fail to compile for now -- and
+        // don't even try to do a function call, just restart the parse loop.
+        if (!needtoken('('))
+          goto restart;
+
+        tok = '(';
+      }
+
       assert(tok=='(');
-      if (sym==NULL
-          || (sym->ident!=iFUNCTN && sym->ident!=iREFFUNC))
-      {
+      if (sym==NULL || (sym->ident!=iFUNCTN && sym->ident!=iREFFUNC)) {
         if (sym==NULL && sc_status==statFIRST) {
           /* could be a "use before declaration"; in that case, create a stub
            * function so that the usage can be marked.
@@ -1998,14 +2050,14 @@ restart:
         funcdisplayname(symname,sym->name);
         error(4,symname);             /* function not defined */
       } /* if */
-      callfunction(sym,lval1,TRUE);
+      callfunction(sym,implicitthis,lval1,TRUE);
       return FALSE;             /* result of function call is no lvalue */
     } /* if */
   } /* if */
   if (sym!=NULL && lval1->ident==iFUNCTN) {
     assert(sym->ident==iFUNCTN);
     if (sc_allowproccall) {
-      callfunction(sym,lval1,FALSE);
+      callfunction(sym,NULL,lval1,FALSE);
     } else if ((sym->usage & uNATIVE) != uNATIVE) {
       symbol *oldsym=sym;
       int n=-1,iter=0;
@@ -2036,14 +2088,14 @@ restart:
         }
         lval1->tag=pc_addfunctag(faketag);
         oldsym->usage |= uREAD;
-		sym->usage |= uREAD;
+        sym->usage |= uREAD;
       } else {
         error(76);                /* invalid function call, or syntax error */
       } /* if */
       return FALSE;
-	} else {
-	  error(76);                  /* invalid function call, or syntax error */
-	}
+    } else {
+      error(76);                  /* invalid function call, or syntax error */
+    }
   } /* if */
   return lvalue;
 }
@@ -2243,7 +2295,7 @@ enum {
  *  Generates code to call a function. This routine handles default arguments
  *  and positional as well as named parameters.
  */
-static void callfunction(symbol *sym,value *lval_result,int matchparanthesis)
+static void callfunction(symbol *sym, const svalue *implicitthis, value *lval_result, int matchparanthesis)
 {
 static long nest_stkusage=0L;
 static int nesting=0;
@@ -2261,6 +2313,7 @@ static int nesting=0;
   symbol *symret;
   cell lexval;
   char *lexstr;
+  int pending_this = (implicitthis ? TRUE : FALSE);
 
   assert(sym!=NULL);
   lval_result->ident=iEXPRESSION; /* preset, may be changed later */
@@ -2321,9 +2374,9 @@ static int nesting=0;
         lexpush();                /* reset the '.' */
     } /* if */
   } /* if */
-  if (!close) {
+  if (pending_this || !close) {
     do {
-      if (matchtoken('.')) {
+      if (!pending_this && matchtoken('.')) {
         namedparams=TRUE;
         if (needtoken(tSYMBOL))
           tokeninfo(&lexval,&lexstr);
@@ -2350,7 +2403,7 @@ static int nesting=0;
       stgmark((char)(sEXPRSTART+argpos));/* mark beginning of new expression in stage */
       if (arglist[argpos]!=ARG_UNHANDLED)
         error(58);                /* argument already set */
-      if (matchtoken('_')) {
+      if (!pending_this && matchtoken('_')) {
         arglist[argpos]=ARG_IGNORED;  /* flag argument as "present, but ignored" */
         if (arg[argidx].ident==0 || arg[argidx].ident==iVARARGS) {
           error(92);             /* argument count mismatch */
@@ -2368,7 +2421,12 @@ static int nesting=0;
         arglist[argpos]=ARG_DONE; /* flag argument as "present" */
         if (arg[argidx].ident!=0 && arg[argidx].numtags==1)     /* set the expected tag, if any */
           lval.cmptag=arg[argidx].tags[0];
-        lvalue=hier14(&lval);
+        if (pending_this) {
+          lval = implicitthis->val;
+          lvalue = implicitthis->lvalue;
+        } else {
+          lvalue = hier14(&lval);
+        }
         assert(sc_status==statFIRST || arg[argidx].ident == 0 || arg[argidx].tags!=NULL);
         switch (arg[argidx].ident) {
         case 0:
@@ -2428,14 +2486,14 @@ static int nesting=0;
           /* otherwise, the expression result is already in PRI */
           assert(arg[argidx].numtags>0);
           check_userop(NULL,lval.tag,arg[argidx].tags[0],2,NULL,&lval.tag);
-          if (!checktags_string(arg[argidx].tags, arg[argidx].numtags, &lval)
-              && !checktag(arg[argidx].tags,arg[argidx].numtags,lval.tag))
-		  {
-			if (arg[argidx].numtags == 1 && arg[argidx].tags[0] & FUNCTAG)
+          if (!checktags_string(arg[argidx].tags, arg[argidx].numtags, &lval) &&
+              !checktag(arg[argidx].tags, arg[argidx].numtags, lval.tag))
+          {
+            if (arg[argidx].numtags == 1 && arg[argidx].tags[0] & FUNCTAG)
               error(100);         /* error - function prototypes do not match */
-			else
+            else
               error(213);         /* warning - tag mismatch */
-		  }
+          }
           if (lval.tag!=0)
             append_constval(&taglst,arg[argidx].name,lval.tag,0);
           argidx++;               /* argument done */
@@ -2547,18 +2605,32 @@ static int nesting=0;
       } /* if */
       assert(arglist[argpos]!=ARG_UNHANDLED);
       nargs++;
+
+      /**
+       * We can already have decided it was time to close because of pending_this.
+       * If that's the case, then bail out now.
+       */
+      if (pending_this && close) {
+        pending_this = FALSE;
+        break;
+      }
+
       if (matchparanthesis) {
         close=matchtoken(')');
         if (!close)               /* if not paranthese... */
-          if (!needtoken(','))    /* ...should be comma... */
+          /* Not expecting comma if the first argument was implicit. */
+          if (!pending_this && !needtoken(','))
             break;                /* ...but abort loop if neither */
       } else {
-        close=!matchtoken(',');
+        /* Not expecting comma if the first argument was implicit. */
+        close = (!pending_this && !matchtoken(','));
         if (close) {              /* if not comma... */
           if (needtoken(tTERM)==1)/* ...must be end of statement */
             lexpush();            /* push again, because end of statement is analised later */
         } /* if */
       } /* if */
+
+      pending_this = FALSE;
     } while (!close && freading && !matchtoken(tENDEXPR)); /* do */
   } /* if */
   /* check remaining function arguments (they may have default values) */
@@ -2797,7 +2869,7 @@ static int constant(value *lval)
                                  * value distinguishes between literal arrays
                                  * and literal strings (this was done for
                                  * array assignment). */
-	lval->tag=pc_tag_string;
+    lval->tag=pc_tag_string;
   } else if (tok=='{') {
     int tag,lasttag=-1;
     val=litidx;

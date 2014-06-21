@@ -1,3 +1,4 @@
+/* vim: set ts=8 sts=2 sw=2 tw=99 et: */
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -10,6 +11,8 @@ funcenum_t *firstenum = NULL;
 funcenum_t *lastenum = NULL;
 pstruct_t *firststruct = NULL;
 pstruct_t *laststruct = NULL;
+methodmap_t *methodmap_first = NULL;
+methodmap_t *methodmap_last = NULL;
 
 structarg_t *pstructs_getarg(pstruct_t *pstruct, const char *member)
 {
@@ -345,20 +348,20 @@ void _stack_genusage(memuse_list_t *stack, int dofree)
   while (cur)
   {
     if (cur->type == MEMUSE_DYNAMIC)
-	{
+    {
       /* no idea yet */
       assert(0);
-	} else {
+    } else {
       modstk(cur->size * sizeof(cell));
-	}
-	if (dofree)
-	{
+    }
+    if (dofree)
+    {
       tmp = cur->prev;
       free(cur);
       cur = tmp;
-	} else {
+    } else {
       cur = cur->prev;
-	}
+    }
   }
   if (dofree)
   {
@@ -411,6 +414,13 @@ void popstacklist(int codegen)
   {
     _stack_genusage(stackusage, 1);
     assert(stackusage->head==NULL);
+  } else {
+    memuse_t *use = stackusage->head;
+    while (use) {
+      memuse_t *temp = use->prev;
+      free(use);
+      use = temp;
+    }
   }
 
   oldlist = stackusage->prev;
@@ -426,4 +436,142 @@ void resetstacklist()
 void resetheaplist()
 {
   _reset_memlist(&heapusage);
+}
+
+void methodmap_add(methodmap_t *map)
+{
+  if (!methodmap_first) {
+    methodmap_first = map;
+    methodmap_last = map;
+  } else {
+    methodmap_last->next = map;
+    methodmap_last = map;
+  }
+}
+
+methodmap_t *methodmap_find_by_tag(int tag)
+{
+  methodmap_t *ptr = methodmap_first;
+  for (; ptr; ptr = ptr->next) {
+    if (ptr->tag == tag)
+      return ptr;
+  }
+  return NULL;
+}
+
+methodmap_t *methodmap_find_by_name(const char *name)
+{
+  int tag = pc_findtag(name);
+  if (tag == -1)
+    return NULL;
+  return methodmap_find_by_tag(tag);
+}
+
+methodmap_method_t *methodmap_find_method(methodmap_t *map, const char *name)
+{
+  size_t i;
+  for (i = 0; i < map->nummethods; i++) {
+    if (strcmp(map->methods[i]->name, name) == 0)
+      return map->methods[i];
+  }
+  if (map->parent)
+    return methodmap_find_method(map->parent, name);
+  return NULL;
+}
+
+void methodmaps_free()
+{
+  methodmap_t *ptr = methodmap_first;
+  while (ptr) {
+    methodmap_t *next = ptr->next;
+    for (size_t i = 0; i < ptr->nummethods; i++)
+      free(ptr->methods[i]);
+    free(ptr->methods);
+    free(ptr);
+    ptr = next;
+  }
+  methodmap_first = NULL;
+  methodmap_last = NULL;
+}
+
+LayoutSpec deduce_layout_spec_by_tag(int tag)
+{
+  symbol *sym;
+  const char *name;
+  methodmap_t *map;
+  if ((map = methodmap_find_by_tag(tag)) != NULL)
+    return map->spec;
+  if (tag & FUNCTAG)
+    return Layout_FuncTag;
+
+  name = pc_tagname(tag);
+  if (pstructs_find(name))
+    return Layout_PawnStruct;
+  if ((sym = findglb(name, sGLOBAL)) != NULL)
+    return Layout_Enum;
+
+  return Layout_None;
+}
+
+LayoutSpec deduce_layout_spec_by_name(const char *name)
+{
+  symbol *sym;
+  methodmap_t *map;
+  int tag = pc_findtag(name);
+  if (tag != -1 && (tag & FUNCTAG))
+    return Layout_FuncTag;
+  if (pstructs_find(name))
+    return Layout_PawnStruct;
+  if ((map = methodmap_find_by_name(name)) != NULL)
+    return map->spec;
+  if ((sym = findglb(name, sGLOBAL)) != NULL)
+    return Layout_Enum;
+
+  return Layout_None;
+}
+
+const char *layout_spec_name(LayoutSpec spec)
+{
+  switch (spec) {
+    case Layout_None:
+      return "<none>";
+    case Layout_Enum:
+      return "enum";
+    case Layout_FuncTag:
+      return "functag";
+    case Layout_PawnStruct:
+      return "deprecated-struct";
+    case Layout_MethodMap:
+      return "methodmap";
+    case Layout_Class:
+      return "class";
+  }
+  return "<unknown>";
+}
+
+int can_redef_layout_spec(LayoutSpec def1, LayoutSpec def2)
+{
+  // Normalize the ordering, since these checks are symmetrical.
+  if (def1 > def2) {
+    LayoutSpec temp = def2;
+    def2 = def1;
+    def1 = temp;
+  }
+
+  switch (def1) {
+    case Layout_None:
+      return TRUE;
+    case Layout_Enum:
+      if (def2 == Layout_Enum || def2 == Layout_FuncTag)
+        return TRUE;
+      return def2 == Layout_MethodMap;
+    case Layout_FuncTag:
+      return def2 == Layout_Enum || def2 == Layout_FuncTag;
+    case Layout_PawnStruct:
+    case Layout_MethodMap:
+      return FALSE;
+    case Layout_Class:
+      return FALSE;
+  }
+  return FALSE;
 }

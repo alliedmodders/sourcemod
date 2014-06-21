@@ -1,3 +1,4 @@
+/* vim: set sts=2 ts=8 sw=2 tw=99 et: */
 /*  Pawn compiler
  *
  *  Function and variable definition and declaration, statement parser.
@@ -75,6 +76,7 @@
 int pc_anytag = 0;
 int pc_functag = 0;
 int pc_tag_string = 0;
+int pc_tag_void = 0;
 
 static void resetglobals(void);
 static void initglobals(void);
@@ -93,6 +95,7 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,
                     int stock,int fconst);
 static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct);
 static int declloc(int fstatic);
+static void dodelete();
 static void decl_const(int table);
 static void declstruct();
 static void decl_enum(int table);
@@ -107,7 +110,7 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
 static cell init(int ident,int *tag,int *errorfound);
 static int getstates(const char *funcname);
 static void attachstatelist(symbol *sym, int state_id);
-static void funcstub(int fnative);
+static symbol *funcstub(int fnative);
 static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stock);
 static int declargs(symbol *sym,int chkshadow);
 static void doarg(char *name,int ident,int offset,int tags[],int numtags,
@@ -137,6 +140,7 @@ static void dogoto(void);
 static void dolabel(void);
 static void doreturn(void);
 static void dofuncenum(int listmode);
+static void domethodmap(LayoutSpec spec);
 static void dobreak(void);
 static void docont(void);
 static void dosleep(void);
@@ -345,7 +349,8 @@ int pc_compile(int argc, char *argv[])
     #endif
     resetglobals();
     pstructs_free();
-	funcenums_free();
+    funcenums_free();
+    methodmaps_free();
     sc_ctrlchar=sc_ctrlchar_org;
     sc_packstr=lcl_packstr;
     sc_needsemicolon=lcl_needsemicolon;
@@ -407,6 +412,7 @@ int pc_compile(int argc, char *argv[])
   reduce_referrers(&glbtab);
   delete_symbols(&glbtab,0,TRUE,FALSE);
   funcenums_free();
+  methodmaps_free();
   pstructs_free();
   #if !defined NO_DEFINE
     delete_substtable();
@@ -529,6 +535,7 @@ cleanup:
   delete_sourcefiletable();
   delete_dbgstringtable();
   funcenums_free();
+  methodmaps_free();
   pstructs_free();
   #if !defined NO_DEFINE
     delete_substtable();
@@ -628,14 +635,33 @@ static void inst_datetime_defines(void)
   insert_subst("__TIME__", ltime, 8);
 }
 
+const char *pc_tagname(int tag)
+{
+  constvalue *ptr=tagname_tab.next;
+  for (; ptr; ptr=ptr->next) {
+    if ((int)(ptr->value & TAGMASK) == (tag & TAGMASK))
+      return ptr->name;
+  }
+  return "<unknown>";
+}
+
+int pc_findtag(const char *name)
+{
+  constvalue *ptr=tagname_tab.next;
+  for (; ptr; ptr=ptr->next) {
+    if (strcmp(name,ptr->name)==0)
+      return (int)(ptr->value & TAGMASK);
+  }
+  return -1;
+}
+
 #if defined __cplusplus
   extern "C"
 #endif
 int pc_addtag(char *name)
 {
-  cell val;
-  constvalue *ptr;
-  int last,tag;
+  int val;
+  int flags = 0;
 
   if (name==NULL) {
     /* no tagname was given, check for one */
@@ -644,6 +670,17 @@ int pc_addtag(char *name)
       return 0;         /* untagged */
     } /* if */
   } /* if */
+
+  if (isupper(*name))
+    flags |= FIXEDTAG;
+
+  return pc_addtag_flags(name, flags);
+}
+
+int pc_addtag_flags(char *name, int flags)
+{
+  constvalue *ptr;
+  int last,tag;
 
   assert(strchr(name,':')==NULL); /* colon should already have been stripped */
   last=0;
@@ -661,8 +698,7 @@ int pc_addtag(char *name)
 
   /* tagname currently unknown, add it */
   tag=last+1;           /* guaranteed not to exist already */
-  if (isupper(*name))
-    tag |= (int)FIXEDTAG;
+  tag|=flags;
   append_constval(&tagname_tab,name,(cell)tag,0);
   return tag;
 }
@@ -1326,6 +1362,8 @@ static void setconstants(void)
   pc_anytag = pc_addtag("any");
   pc_functag = pc_addfunctag("Function");
   pc_tag_string = pc_addtag("String");
+  pc_tag_void = pc_addtag_flags("void", FIXEDTAG);
+  sc_rationaltag = pc_addtag("Float");
 
   add_constant("true",1,sGLOBAL,1);     /* boolean flags */
   add_constant("false",0,sGLOBAL,1);
@@ -1487,6 +1525,9 @@ static void parse(void)
       break;
     case tFUNCENUM:
       dofuncenum(TRUE);
+      break;
+    case tMETHODMAP:
+      domethodmap(Layout_MethodMap);
       break;
     case tFUNCTAG:
       dofuncenum(FALSE);
@@ -1826,6 +1867,8 @@ static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct)
 		matchtoken(';');
 		/* Mark it as undefined instead */
 		mysym->usage = uSTOCK|uSTRUCT;
+		free(found);
+		free(values);
 		return;
 	} else {
 		mysym->usage = usage;
@@ -3110,6 +3153,13 @@ static void decl_const(int vclass)
   needtoken(tTERM);
 }
 
+static void check_struct_name(const char *name)
+{
+  LayoutSpec spec = deduce_layout_spec_by_name(name);
+  if (!can_redef_layout_spec(spec, Layout_PawnStruct))
+    error(110, name, layout_spec_name(spec));
+}
+
 /*
  * declstruct - declare a struct type
  */
@@ -3128,10 +3178,7 @@ static void declstruct(void)
 		error(93);
 	}
 
-	if (pstructs_find(str) != NULL)
-	{
-		error(98);
-	}
+	check_struct_name(str);
 
 	pstruct = pstructs_add(str);
 
@@ -3202,13 +3249,423 @@ static void declstruct(void)
 		}
 		if (pstructs_addarg(pstruct, &arg) == NULL)
 		{
-			error(99, arg.name, pstruct->name);
+			error(103, arg.name, layout_spec_name(Layout_PawnStruct));
 		}
 	} while (matchtoken(','));
 	needtoken('}');
 	matchtoken(';');	/* eat up optional semicolon */
 }
 
+int parse_typeexpr(declinfo_t *decl, const token_t *first, int flags)
+{
+  token_t tok;
+
+  if (first) {
+    tok = *first;
+  } else {
+    lextok(&tok);
+  }
+
+  if (tok.id == tCONST) {
+    decl->usage |= uCONST;
+    lextok(&tok);
+  }
+
+  if (tok.id == tLABEL || tok.id == '[')
+    return FALSE;
+
+  switch (tok.id) {
+    case tINT:
+      strcpy(decl->type, "int");
+      decl->tag = 0;
+      break;
+    case tCHAR:
+      strcpy(decl->type, "char");
+      decl->tag = pc_tag_string;
+      break;
+    case tVOID:
+      strcpy(decl->type, "void");
+      decl->tag = pc_tag_void;
+      break;
+    case tSYMBOL:
+      strcpy(decl->type, tok.str);
+      if (strcmp(decl->type, "float") == 0) {
+        decl->tag = sc_rationaltag;
+      } else {
+        decl->tag = pc_findtag(decl->type);
+        if (decl->tag == sc_rationaltag)
+          error(98, "Float", "float");
+        else if (decl->tag == pc_tag_string)
+          error(98, "String", "char");
+        else if (decl->tag == 0)
+          error(98, "_", "int");
+      }
+    default:
+      return FALSE;
+  }
+
+  return TRUE;
+}
+
+// Parse a new-style declaration. If the name was already fetched (because we
+// didn't have enough lookahead), it can be given ahead of time.
+int parse_decl(declinfo_t *decl, const token_t *first, int flags)
+{
+  memset(decl, 0, sizeof(*decl));
+
+  if (!parse_typeexpr(decl, first, flags))
+    return FALSE;
+
+  return TRUE;
+}
+
+void define_constructor(methodmap_t *map, methodmap_method_t *method)
+{
+  symbol *sym = findglb(map->name, sGLOBAL);
+  if (sym && sym->ident == iPROXY && sym->parent == method->target)
+    return;
+
+  if (sym) {
+    const char *type = "<unknown>";
+    switch (sym->ident) {
+      case iVARIABLE:
+      case iARRAY:
+      case iARRAYCELL:
+      case iARRAYCHAR:
+        type = "variable";
+        break;
+      case iFUNCTN:
+        type = "function";
+        break;
+    }
+    error(113, map->name, type);
+    return;
+  }
+
+  sym = addsym(map->name, 0, iPROXY, sGLOBAL, 0, 0);
+  sym->target = method->target;
+}
+
+methodmap_method_t *parse_method(methodmap_t *map)
+{
+  int is_dtor = 0;
+  int is_bind = 0;
+  int is_native = 0;
+  const char *spectype = layout_spec_name(map->spec);
+
+  // We keep a wider buffer since we do name munging.
+  char ident[sNAMEMAX * 3 + 1] = "<unknown>";
+  char bindname[sNAMEMAX * 3 + 1] = "<unknown>";
+
+  needtoken(tPUBLIC);
+
+  token_t tok;
+  declinfo_t decl;
+  if (matchtoken('~')) {
+    // We got something like "public ~Blah = X"
+    is_bind = 1;
+    is_dtor = 1;
+    if (needtoken(tSYMBOL)) {
+      tokeninfo(&tok.val, &tok.str);
+      strcpy(ident, tok.str);
+    }
+    needtoken('(');
+    needtoken(')');
+    needtoken('=');
+    if (!expecttoken(tSYMBOL, &tok))
+      return NULL;
+    strcpy(bindname, tok.str);
+  } else {
+    is_native = matchtoken(tNATIVE);
+
+    if (is_native) {
+      // If we have a native, we should always get a type expression next.
+      parse_decl(&decl, NULL, 0);
+    } else {
+      // Parsing "public Clone =" and "public Handle Clone = " requires two tokens
+      // of lookahead. By the time we see the '=' in the first example, we'd have
+      // expected a function name, but it's too late to back up - _lexpush is only
+      // one token deep.
+      //
+      // If we see a symbol and a '=', we know it's a simple binding. Otherwise,
+      // we have to take the token we got from lextok() and ask parse_decl() to
+      // start parsing it as a type expression.
+      int is_symbol = (lextok(&tok) == tSYMBOL);
+      if (is_symbol) {
+        // Save the string because matchtoken() will overwrite the token buffer.
+        // Note we also have to repoint tok so parse_decl will point at our
+        // local copy.
+        strcpy(ident, tok.str);
+        tok.str = ident;
+
+        if (matchtoken('(')) {
+          needtoken(')');
+          needtoken('=');
+
+          // Grab the name we're binding to.
+          is_bind = 1;
+          if (!expecttoken(tSYMBOL, &tok))
+            return NULL;
+          strcpy(bindname, tok.str);
+        }
+      }
+
+      if (!is_bind) {
+        // We didn't find an '=', so proceed with a normal function signature.
+        parse_decl(&decl, &tok, 0);
+        is_dtor = matchtoken('~');
+
+        if (lextok(&tok) != tSYMBOL) {
+          // Error, and if EOF, return. The lexpush is so we don't accidentally
+          // skip over a terminator or something, since we scan to the end of the
+          // line.
+          lexpush();
+          error(111);
+          if (tok.id == 0)
+            return NULL;
+        }
+
+        strcpy(ident, tok.str);
+      } // if (tok == symbol && matchtoken('='))
+    } // if (is_native)
+  } // if (matchtoken('~'))
+  
+  symbol *target = NULL;
+  if (is_bind) {
+    target = findglb(bindname, sGLOBAL);
+    if (!target)
+      error(17, ident);
+    else if (target->ident != iFUNCTN) 
+      error(10);
+  } else {
+    error(10);
+  }
+
+  if (!target)
+    return NULL;
+
+  if (is_dtor) {
+    // Make sure the dtor has the right name.
+    if (strcmp(ident, map->name) != 0)
+      error(114, spectype, map->name);
+
+    if (!(target->usage & uNATIVE)) {
+      // Must be a native.
+      error(118);
+      return NULL;
+    }
+
+    if (target->tag != 0 && target->tag != pc_tag_void) {
+      // Cannot return a value.
+      error(99);
+      return NULL;
+    }
+
+    if (target->dim.arglist[0].ident && target->dim.arglist[1].ident) {
+      // Cannot have extra arguments.
+      error(119);
+      return NULL;
+    }
+
+    // Make sure the final name includes the ~.
+    strcpy(ident, "~");
+    strcat(ident, map->name);
+  }
+
+  // Check that a method with this name doesn't already exist.
+  for (size_t i = 0; i < map->nummethods; i++) {
+    if (strcmp(map->methods[i]->name, ident) == 0) {
+      error(103, ident, spectype);
+      return NULL;
+    }
+  }
+
+  methodmap_method_t *method = (methodmap_method_t *)calloc(1, sizeof(methodmap_method_t));
+  strcpy(method->name, ident);
+  method->target = target;
+  if (is_dtor)
+    map->dtor = method;
+
+  // If the symbol is a constructor, we bypass the initial argument checks,
+  // and instead require that it returns something with the same tag.
+  if (strcmp(ident, map->name) == 0) {
+    if (target->tag != map->tag)
+      error(112, map->name);
+    define_constructor(map, method);
+    return method;
+  }
+
+  // Check the implicit this parameter. Currently we only allow scalars. As
+  // to not encourage enum-structs, we will not allow those either.
+  const arginfo *first_arg = &target->dim.arglist[0];
+  if (first_arg->ident == 0 ||
+      first_arg->ident != iVARIABLE ||
+      (first_arg->usage & uCONST) ||
+      first_arg->hasdefault ||
+      first_arg->numtags != 1)
+  {
+    free(method);
+    error(108, spectype, map->name);
+    return NULL;
+  }
+
+  // Ensure the methodmap tag is compatible with |this|.
+  int ok = 0;
+  for (methodmap_t *mapptr = map; mapptr; mapptr = mapptr->parent) {
+    if (first_arg->tags[0] == mapptr->tag) {
+      ok = 1;
+      break;
+    }
+  }
+  if (!ok)
+    error(108, spectype, map->name);
+
+  return method;
+}
+
+static int consume_line()
+{
+  int val;
+  char *str;
+
+  // First check for EOF.
+  if (lex(&val, &str) == 0)
+    return FALSE;
+  lexpush();
+
+  while (!matchtoken(tTERM)) {
+    // Check for EOF.
+    if (lex(&val, &str) == 0)
+      return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
+ * domethodmap - declare a method map for OO-ish syntax.
+ *
+ */
+static void domethodmap(LayoutSpec spec)
+{
+  int val;
+  char *str;
+  LayoutSpec old_spec;
+  methodmap_t *parent = NULL;
+  const char *spectype = layout_spec_name(spec);
+
+  // methodmap ::= "methodmap" symbol ("<" symbol)? "{" methodmap-body "}"
+  char mapname[sNAMEMAX + 1];
+  if (lex(&val, &str) != tSYMBOL)
+    error(93);
+  strcpy(mapname, str);
+
+  if (!isupper(*mapname))
+    error(109, spectype);
+
+  old_spec = deduce_layout_spec_by_name(mapname);
+  if (!can_redef_layout_spec(spec, old_spec))
+    error(110, mapname, layout_spec_name(old_spec));
+
+  if (matchtoken('<')) {
+    if (lex(&val, &str) != tSYMBOL) {
+      error(93);
+      return;
+    }
+
+    if ((parent = methodmap_find_by_name(str)) == NULL) {
+      error(102, str);
+    }
+  }
+
+  methodmap_t *map = (methodmap_t *)calloc(1, sizeof(methodmap_t));
+  map->parent = parent;
+  map->tag = pc_addtag(mapname);
+  map->spec = spec;
+  strcpy(map->name, mapname);
+
+  methodmap_add(map);
+
+  needtoken('{');
+  while (!matchtoken('}')) {
+    methodmap_method_t *method;
+    methodmap_method_t **methods;
+
+    if ((method = parse_method(map)) == NULL) {
+      if (!consume_line())
+        return;
+      continue;
+    }
+
+    needtoken(tTERM);
+
+    methods = (methodmap_method_t **)realloc(map->methods, sizeof(methodmap_method_t *) * (map->nummethods + 1));
+    if (!methods) {
+      error(123);
+      return;
+    }
+    map->methods = methods;
+    map->methods[map->nummethods++] = method;
+  }
+
+  needtoken(tTERM);
+}
+
+// delete ::= "delete" expr
+static void dodelete()
+{
+  int tag;
+  symbol *sym;
+
+  int ident = doexpr(TRUE, FALSE, TRUE, FALSE, &tag, &sym, TRUE);
+  needtoken(tTERM);
+
+  switch (ident) {
+    case iFUNCTN:
+    case iREFFUNC:
+      error(115, "functions");
+      return;
+
+    case iARRAY:
+    case iREFARRAY:
+    case iARRAYCELL:
+    case iARRAYCHAR:
+      error(115, "arrays");
+      return;
+  }
+
+  if (tag == 0) {
+    error(115, "primitive types or enums");
+    return;
+  }
+
+  methodmap_t *map = methodmap_find_by_tag(tag);
+  if (!map) {
+    error(115, pc_tagname(tag));
+    return;
+  }
+
+  if (!map->dtor) {
+    error(115, layout_spec_name(map->spec), map->name);
+    return;
+  }
+
+  // For some reason, we don't get a sysreq.n once this passes through the
+  // peephole optimizer. I can't tell why. -dvander
+  //
+  // push pri
+  // push.c 1
+  // sysreq.c N 1
+  // stack 8
+  pushreg(sPRI);
+  markexpr(sPARM,NULL,0);
+  {
+    pushval(1);
+    ffcall(map->dtor->target, NULL, 1);
+    map->dtor->target->usage |= uREAD;
+  }
+  markexpr(sEXPR,NULL,0);
+}
 
 /**
  * dofuncenum - declare function enumerations
@@ -3449,13 +3906,17 @@ static void decl_enum(int vclass)
   cell increment,multiplier;
   constvalue *enumroot;
   symbol *enumsym;
+  LayoutSpec spec;
 
   /* get an explicit tag, if any (we need to remember whether an explicit
    * tag was passed, even if that explicit tag was "_:", so we cannot call
    * pc_addtag() here
    */
   if (lex(&val,&str)==tLABEL) {
-    tag=pc_addtag(str);
+    tag = pc_addtag(str);
+    spec = deduce_layout_spec_by_tag(tag);
+    if (!can_redef_layout_spec(spec, Layout_Enum))
+      error(110, str, layout_spec_name(spec));
     explicittag=TRUE;
   } else {
     lexpush();
@@ -3466,8 +3927,16 @@ static void decl_enum(int vclass)
   /* get optional enum name (also serves as a tag if no explicit tag was set) */
   if (lex(&val,&str)==tSYMBOL) {        /* read in (new) token */
     strcpy(enumname,str);               /* save enum name (last constant) */
-    if (!explicittag)
+    if (!explicittag) {
       tag=pc_addtag(enumname);
+      spec = deduce_layout_spec_by_tag(tag);
+      if (!can_redef_layout_spec(spec, Layout_Enum))
+        error(110, enumname, layout_spec_name(spec));
+    } else {
+      spec = deduce_layout_spec_by_name(enumname);
+      if (!can_redef_layout_spec(spec, Layout_Enum))
+        error(110, enumname, layout_spec_name(spec));
+    }
   } else {
     lexpush();                          /* analyze again */
     enumname[0]='\0';
@@ -3997,7 +4466,7 @@ SC_FUNC char *funcdisplayname(char *dest,char *funcname)
   return dest;
 }
 
-static void funcstub(int fnative)
+static symbol *funcstub(int fnative)
 {
   int tok,tag,fpublic;
   char *str;
@@ -4022,7 +4491,7 @@ static void funcstub(int fnative)
      */
     if (numdim == sDIMEN_MAX) {
       error(53);                /* exceeding maximum number of dimensions */
-      return;
+      return NULL;
     } /* if */
     size=needsub(&idxtag[numdim],NULL); /* get size; size==0 for "var[]" */
     if (size==0)
@@ -4050,12 +4519,12 @@ static void funcstub(int fnative)
   if (tok==tOPERATOR) {
     opertok=operatorname(symbolname);
     if (opertok==0)
-      return;                   /* error message already given */
+      return NULL;              /* error message already given */
     check_operatortag(opertok,tag,symbolname);
   } else {
     if (tok!=tSYMBOL && freading) {
       error(10);                /* illegal function or declaration */
-      return;
+      return NULL;
     } /* if */
     strcpy(symbolname,str);
   } /* if */
@@ -4063,7 +4532,7 @@ static void funcstub(int fnative)
 
   sym=fetchfunc(symbolname,tag);/* get a pointer to the function entry */
   if (sym==NULL)
-    return;
+    return NULL;
   if (fnative) {
     sym->usage=(char)(uNATIVE | uRETVALUE | uDEFINE | (sym->usage & uPROTOTYPED));
     sym->x.lib=curlibrary;
@@ -4122,6 +4591,8 @@ static void funcstub(int fnative)
 
   litidx=0;                     /* clear the literal pool */
   delete_symbols(&loctab,0,TRUE,TRUE);/* clear local variables queue */
+
+  return sym;
 }
 
 /*  newfunc    - begin a function
@@ -5364,6 +5835,9 @@ static int testsymbols(symbol *root,int level,int testlabs,int testconst)
         error(203,sym->name);       /* symbol isn't used: ... */
       } /* if */
       break;
+    case iPROXY:
+      // Ignore usage on proxies.
+      break;
     default:
       /* a variable */
       if (sym->parent!=NULL)
@@ -5651,6 +6125,10 @@ static void statement(int *lastindent,int allow_decl)
       error(3);                 /* declaration only valid in a block */
     } /* if */
     break;
+  case tDELETE:
+    dodelete();
+    lastst=tDELETE;
+    break;
   case tDECL:
     if (allow_decl) {
       autozero=0;
@@ -5675,7 +6153,7 @@ static void statement(int *lastindent,int allow_decl)
       compound(save==fline,tok);
     } else {
       lastst = tEMPTYBLOCK;
-	}
+    }
     /* lastst (for "last statement") does not change 
        you're not my father, don't tell me what to do */
     break;

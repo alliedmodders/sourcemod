@@ -279,10 +279,10 @@ public Action:Command_TestTxn(args)
 
 	SetTestContext("CreateTransaction");
 
-	new Handle:txn = SQL_CreateTransaction();
-	AssertEq("AddQuery", SQL_AddQuery(txn, "INSERT INTO egg (id) VALUES (4)", 50), 0);
-	AssertEq("AddQuery", SQL_AddQuery(txn, "INSERT INTO egg (id) VALUES (5)", 60), 1);
-	AssertEq("AddQuery", SQL_AddQuery(txn, "SELECT COUNT(id) FROM egg", 70), 2);
+	new Transaction:txn = SQL_CreateTransaction();
+	AssertEq("AddQuery", txn.AddQuery("INSERT INTO egg (id) VALUES (4)", 50), 0);
+	AssertEq("AddQuery", txn.AddQuery("INSERT INTO egg (id) VALUES (5)", 60), 1);
+	AssertEq("AddQuery", txn.AddQuery("SELECT COUNT(id) FROM egg", 70), 2);
 	SQL_ExecuteTransaction(
 		db,
 		txn,
@@ -292,9 +292,9 @@ public Action:Command_TestTxn(args)
 	);
 
 	txn = SQL_CreateTransaction();
-	AssertEq("AddQuery", SQL_AddQuery(txn, "INSERT INTO egg (id) VALUES (6)", 50), 0);
-	AssertEq("AddQuery", SQL_AddQuery(txn, "INSERT INTO egg (id) VALUES (6)", 60), 1);
-	AssertEq("AddQuery", SQL_AddQuery(txn, "SELECT COUNT(id) FROM egg", 70), 2);
+	AssertEq("AddQuery", txn.AddQuery("INSERT INTO egg (id) VALUES (6)", 50), 0);
+	AssertEq("AddQuery", txn.AddQuery("INSERT INTO egg (id) VALUES (6)", 60), 1);
+	AssertEq("AddQuery", txn.AddQuery("SELECT COUNT(id) FROM egg", 70), 2);
 	SQL_ExecuteTransaction(
 		db,
 		txn,
@@ -306,13 +306,13 @@ public Action:Command_TestTxn(args)
 	// Make sure the transaction was rolled back - COUNT should be 5.
 	txn = SQL_CreateTransaction();
 	AssertEq("CloneHandle", _:CloneHandle(txn), _:INVALID_HANDLE);
-	SQL_AddQuery(txn, "SELECT COUNT(id) FROM egg");
+	txn.AddQuery("SELECT COUNT(id) FROM egg");
 	SQL_ExecuteTransaction(
 		db,
 		txn,
 		Txn_Test3_OnSuccess
 	);
 
-	CloseHandle(db);
+	db.Close();
 	return Plugin_Handled;
 }

@@ -1,3 +1,4 @@
+/* vim: set sts=2 ts=8 sw=2 tw=99 et: */
 #ifndef _INCLUDE_SOURCEPAWN_COMPILER_TRACKER_H_
 #define _INCLUDE_SOURCEPAWN_COMPILER_TRACKER_H_
 
@@ -66,6 +67,42 @@ typedef struct pstruct_s
   struct pstruct_s *next;
 } pstruct_t;
 
+// The ordering of these definitions should be preserved for
+// can_redef_layout_spec().
+typedef enum LayoutSpec_t
+{
+  Layout_None,
+  Layout_Enum,
+  Layout_FuncTag,
+  Layout_PawnStruct,
+  Layout_MethodMap,
+  Layout_Class
+} LayoutSpec;
+
+// The method name buffer is larger since we can include our parent class's
+// name, a "." to separate it, and a "~" for constructors.
+#define METHOD_NAMEMAX sNAMEMAX * 2 + 2
+
+typedef struct methodmap_method_s
+{
+  char name[METHOD_NAMEMAX + 1];
+  symbol *target;
+} methodmap_method_t;
+
+typedef struct methodmap_s
+{
+  struct methodmap_s *next;
+  struct methodmap_s *parent;
+  int tag;
+  LayoutSpec spec;
+  char name[sNAMEMAX+1];
+  methodmap_method_t **methods;
+  size_t nummethods;
+
+  // Shortcut.
+  methodmap_method_t *dtor;
+} methodmap_t;
+
 /**
  * Pawn Structs
  */
@@ -82,6 +119,14 @@ void funcenums_free();
 funcenum_t *funcenums_add(const char *name);
 funcenum_t *funcenums_find_byval(int value);
 functag_t *functags_add(funcenum_t *en, functag_t *src);
+
+/**
+ * Given a name or tag, find any extra weirdness it has associated with it.
+ */
+LayoutSpec deduce_layout_spec_by_tag(int tag);
+LayoutSpec deduce_layout_spec_by_name(const char *name);
+const char *layout_spec_name(LayoutSpec spec);
+int can_redef_layout_spec(LayoutSpec olddef, LayoutSpec newdef);
 
 /**
  * Heap functions
@@ -110,6 +155,15 @@ void genheapfree(int stop_id);
  */
 void resetstacklist();
 void resetheaplist();
+
+/**
+ * Method maps.
+ */
+void methodmap_add(methodmap_t *map);
+methodmap_t *methodmap_find_by_tag(int tag);
+methodmap_t *methodmap_find_by_name(const char *name);
+methodmap_method_t *methodmap_find_method(methodmap_t *map, const char *name);
+void methodmaps_free();
 
 extern memuse_list_t *heapusage;
 extern memuse_list_t *stackusage;

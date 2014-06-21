@@ -701,18 +701,7 @@ native SQL_TQuery(Handle:database, SQLTCallback:callback, const String:query[], 
  *
  * @return              A transaction handle.
  */
-native Handle:SQL_CreateTransaction();
-
-/**
- * Adds a query to a transaction object.
- *
- * @param txn           A transaction handle.
- * @param query         Query string.
- * @param data			Extra data value to pass to the final callback.
- * @return              The index of the query in the transaction's query list.
- * @error               Invalid transaction handle.
- */
-native SQL_AddQuery(Handle:txn, const String:query[], any:data=0);
+native Transaction:SQL_CreateTransaction();
 
 /**
  * Callback for a successful transaction.
@@ -740,6 +729,23 @@ functag public SQLTxnSuccess(Handle:db, any:data, numQueries, Handle:results[], 
 functag public SQLTxnFailure(Handle:db, any:data, numQueries, const String:error[], failIndex, any:queryData[]);
 
 /**
+ * Adds a query to a transaction object.
+ *
+ * @param txn           A transaction handle.
+ * @param query         Query string.
+ * @param data			Extra data value to pass to the final callback.
+ * @return              The index of the query in the transaction's query list.
+ * @error               Invalid transaction handle.
+ */
+native SQL_AddQuery(Transaction:txn, const String:query[], any:data=0);
+
+methodmap Transaction < Handle
+{
+		public Transaction() = SQL_CreateTransaction;
+		public AddQuery() = SQL_AddQuery;
+};
+
+/**
  * Sends a transaction to the database thread. The transaction handle is
  * automatically closed. When the transaction completes, the optional
  * callback is invoked.
@@ -755,7 +761,7 @@ functag public SQLTxnFailure(Handle:db, any:data, numQueries, const String:error
  */
 native SQL_ExecuteTransaction(
 		Handle:db,
-		Handle:txn,
+		Transaction:txn,
 		SQLTxnSuccess:onSuccess=SQLTxnSuccess:-1,
 		SQLTxnFailure:onError=SQLTxnFailure:-1,
 		any:data=0,

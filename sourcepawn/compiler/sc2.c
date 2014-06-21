@@ -242,8 +242,6 @@ static void check_empty(const unsigned char *lptr)
 static void doinclude(int silent)
 {
   char name[_MAX_PATH];
-  char symname[sNAMEMAX+1];
-  char *ptr;
   char c;
   int i, result;
 
@@ -1927,9 +1925,10 @@ char *sc_tokens[] = {
          "||", "&&", "==", "!=", "<=", ">=", "<<", ">>>", ">>", "++", "--",
          "...", "..", "::",
          "assert", "*begin", "break", "case", "cellsof", "chars", "const", "continue", "default",
-         "defined", "do", "else", "*end", "enum", "exit", "for", "forward", "funcenum", "functag", "goto",
-         "if", "native", "new", "decl", "operator", "public", "return", "sizeof",
-         "sleep", "static", "stock", "struct", "switch", "tagof", "*then", "while",
+         "defined", "delete", "do", "else", "*end", "enum", "exit", "for", "forward", "funcenum",
+	 "functag", "goto",
+         "if", "int", "methodmap", "native", "new", "decl", "operator", "public", "return", "sizeof",
+         "sleep", "static", "stock", "struct", "switch", "tagof", "*then", "void", "while",
          "#assert", "#define", "#else", "#elseif", "#emit", "#endif", "#endinput",
          "#endscript", "#error", "#file", "#if", "#include", "#line", "#pragma",
          "#tryinclude", "#undef",
@@ -2611,6 +2610,29 @@ SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_
   constvalue *stateptr;
   int mustdelete;
 
+  // Hack - proxies have a "target" pointer, but the target could be deleted
+  // already if done inside the main loop below. To get around this we do a
+  // precursor pass. Note that proxies can only be at the global scope.
+  if (origRoot == &glbtab) {
+    symbol *iter = root;
+    while (iter->next) {
+      sym = iter->next;
+
+      if (sym->ident != iPROXY) {
+        iter = sym;
+	continue;
+      }
+
+      if (delete_functions || (sym->target->usage & uNATIVE) != 0) {
+        RemoveFromHashTable(sp_Globals, sym);
+        iter->next = sym->next;
+        free_symbol(sym);
+      } else {
+        iter = sym;
+      }
+    }
+  }
+
   /* erase only the symbols with a deeper nesting level than the
    * specified nesting level */
   while (root->next!=NULL) {
@@ -2652,6 +2674,10 @@ SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_
        */
       mustdelete=delete_functions || (sym->usage & uNATIVE)!=0;
       assert(sym->parent==NULL);
+      break;
+    case iPROXY:
+      // Original loop determined it was okay to keep.
+      mustdelete=FALSE;
       break;
     case iARRAYCELL:
     case iARRAYCHAR:
@@ -2831,6 +2857,10 @@ SC_FUNC symbol *findglb(const char *name,int filter)
    */
   if (sym==NULL)
     sym=FindInHashTable(sp_Globals,name,fcurrent);
+
+  if (sym && sym->ident == iPROXY)
+    return sym->target;
+
   return sym;
 }
 
@@ -3012,3 +3042,18 @@ static char itohstr[30];
   return itohstr;
 }
 
+SC_FUNC int lextok(token_t *tok)
+{
+  tok->id = lex(&tok->val, &tok->str);
+  return tok->id;
+}
+
+SC_FUNC int expecttoken(int id, token_t *tok)
+{
+  int rval = needtoken(id);
+  if (rval) {
+    tok->id = tokeninfo(&tok->val, &tok->str);
+    return rval;
+  }
+  return FALSE;
+}
