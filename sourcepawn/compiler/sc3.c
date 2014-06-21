@@ -1985,7 +1985,10 @@ restart:
        * always a *valid* lvalue */
       return TRUE;
     } else {            /* tok=='(' -> function(...) */
-      svalue thisval = {*lval1, lvalue};
+      svalue thisval;
+      thisval.val = *lval1;
+      thisval.lvalue = lvalue;
+
       svalue *implicitthis = NULL;
       if (tok == '.') {
         methodmap_t *map;

@@ -679,7 +679,6 @@ int pc_addtag(char *name)
 
 int pc_addtag_flags(char *name, int flags)
 {
-  cell val;
   constvalue *ptr;
   int last,tag;
 
@@ -3169,7 +3168,6 @@ static void declstruct(void)
 	int tok;
 	pstruct_t *pstruct;
 	int size;
-	LayoutSpec spec;
 
 	/* get the explicit tag (required!) */
 	tok = lex(&val,&str);
@@ -3351,7 +3349,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
   int is_dtor = 0;
   int is_bind = 0;
   int is_native = 0;
-  const char *decltype = layout_spec_name(map->spec);
+  const char *spectype = layout_spec_name(map->spec);
 
   // We keep a wider buffer since we do name munging.
   char ident[sNAMEMAX * 3 + 1] = "<unknown>";
@@ -3447,7 +3445,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
   if (is_dtor) {
     // Make sure the dtor has the right name.
     if (strcmp(ident, map->name) != 0)
-      error(114, decltype, map->name);
+      error(114, spectype, map->name);
 
     if (!(target->usage & uNATIVE)) {
       // Must be a native.
@@ -3475,7 +3473,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
   // Check that a method with this name doesn't already exist.
   for (size_t i = 0; i < map->nummethods; i++) {
     if (strcmp(map->methods[i]->name, ident) == 0) {
-      error(103, ident, decltype);
+      error(103, ident, spectype);
       return NULL;
     }
   }
@@ -3504,7 +3502,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
       first_arg->hasdefault ||
       first_arg->numtags != 1)
   {
-    error(108, decltype, map->name);
+    error(108, spectype, map->name);
     return NULL;
   }
 
@@ -3517,7 +3515,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
     }
   }
   if (!ok)
-    error(108, decltype, map->name);
+    error(108, spectype, map->name);
 
   return method;
 }
@@ -3549,7 +3547,7 @@ static void domethodmap(LayoutSpec spec)
 {
   int val;
   char *str;
-  const char *decltype = layout_spec_name(spec);
+  const char *spectype = layout_spec_name(spec);
 
   // methodmap ::= "methodmap" symbol ("<" symbol)? "{" methodmap-body "}"
   char mapname[sNAMEMAX + 1];
@@ -3558,13 +3556,13 @@ static void domethodmap(LayoutSpec spec)
   strcpy(mapname, str);
 
   if (!isupper(*mapname))
-    error(109, decltype);
+    error(109, spectype);
 
-  LayoutSpec old_spec = deduce_layout_spec_by_name(mapname);
+  enum LayoutSpec old_spec = deduce_layout_spec_by_name(mapname);
   if (!can_redef_layout_spec(spec, old_spec))
     error(110, mapname, layout_spec_name(old_spec));
 
-  methodmap_t *parent = NULL;
+  struct methodmap_t *parent = NULL;
 
   if (matchtoken('<')) {
     if (lex(&val, &str) != tSYMBOL) {
