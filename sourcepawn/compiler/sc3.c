@@ -2040,7 +2040,7 @@ restart:
            */
           sym=fetchfunc(lastsymbol,0);
           if (sym==NULL)
-            error(123); /* insufficient memory */
+            error(163); /* insufficient memory */
           markusage(sym,uREAD);
         } else {
           return error(12);           /* invalid function call */
@@ -2192,7 +2192,7 @@ static int primary(value *lval)
       assert(sc_status==statFIRST);
       sym=fetchfunc(st,0);
       if (sym==NULL)
-        error(123);     /* insufficient memory */
+        error(163);     /* insufficient memory */
     } /* if */
     assert(sym!=NULL);
     assert(sym->ident==iFUNCTN || sym->ident==iREFFUNC);

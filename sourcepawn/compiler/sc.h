@@ -256,6 +256,8 @@ typedef struct svalue_s {
   int lvalue;
 } svalue;
 
+#define DECLFLAG_ONLY_NEW_TYPES  0x1
+
 /* For parsing declarations. */
 typedef struct {
   char type[sNAMEMAX + 1];

@@ -14,7 +14,6 @@ def run_tests(args):
     failed = False
 
     for test in tests:
-        print('Testing {0}...'.format(test))
         if test.startswith('fail-'):
             kind = 'fail'
         elif test.startswith('warn-'):
@@ -41,27 +40,33 @@ def run_tests(args):
                 status = 'fail'
 
             if status == 'ok' and kind != 'pass':
+                lines = []
                 with open(os.path.join(testdir, test + '.txt')) as fp:
-                    text = fp.read().strip()
-                if text not in stdout:
-                    print('Expected to find text in stdout: >>>')
-                    print(text)
-                    print('<<<')
-                    status = 'fail'
+                    for line in fp:
+                        lines.append(line.strip())
+                for line in lines:
+                    if line not in stdout:
+                        sys.stderr.write('Expected to find text in stdout: >>>\n')
+                        sys.stderr.write(text)
+                        sys.stderr.write('<<<\n')
+                        status = 'fail'
+                        break
             
             if status == 'fail':
+                print('Test {0} ... FAIL'.format(test))
                 failed = True
-                print('FAILED! Dumping stdout/stderr:')
-                print(stdout)
-                print(stderr)
+                sys.stderr.write('FAILED! Dumping stdout/stderr:\n')
+                sys.stderr.write(stdout)
+                sys.stderr.write(stderr)
             else:
-                print('... OK!')
+                print('Test {0} ... OK'.format(test))
 
         except Exception as exn:
             raise
             sys.stderr.write('FAILED! {0}\n'.format(exn.message))
 
     if failed:
+        sys.stderr.write('One or more tests failed!\n')
         sys.exit(1)
 
 def main():
