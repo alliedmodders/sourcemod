@@ -306,6 +306,15 @@ typedef struct {
   char *str;
 } token_t;
 
+// The method name buffer is larger since we can include our parent class's
+// name, a "." to separate it, and a "~" for constructors.
+#define METHOD_NAMEMAX sNAMEMAX * 2 + 2
+
+typedef struct {
+  token_t tok;
+  char name[METHOD_NAMEMAX + 1];
+} token_ident_t;
+
 /* macros for code generation */
 #define opcodes(n)      ((n)*sizeof(cell))      /* opcode size */
 #define opargs(n)       ((n)*sizeof(cell))      /* size of typical argument */
@@ -595,6 +604,8 @@ SC_FUNC int matchtoken(int token);
 SC_FUNC int tokeninfo(cell *val,char **str);
 SC_FUNC int needtoken(int token);
 SC_FUNC int expecttoken(int id, token_t *tok);
+SC_FUNC int matchsymbol(token_ident_t *ident);
+SC_FUNC int needsymbol(token_ident_t *ident);
 SC_FUNC void litadd(cell value);
 SC_FUNC void litinsert(cell value,int pos);
 SC_FUNC int alphanum(char c);
