@@ -235,7 +235,6 @@ typedef struct s_symbol {
 #define sGLOBAL   0     /* global variable/constant class (no states) */
 #define sLOCAL    1     /* local variable/constant */
 #define sSTATIC   2     /* global life, local scope */
-#define sPROXY    3     /* only find proxies */
 
 #define sSTATEVAR  3    /* criterion to find variables (sSTATEVAR implies a global variable) */
 

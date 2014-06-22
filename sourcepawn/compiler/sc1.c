@@ -82,6 +82,7 @@ typedef struct funcstub_setup_s {
   const char *name;
   int return_tag;
   int this_tag;
+  int is_new;
 } funcstub_setup_t;
 
 static void resetglobals(void);
@@ -3559,6 +3560,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
     check_name_length(fullname);
 
     setup.name = fullname;
+    setup.is_new = TRUE;
 
     if (is_native) {
       target = funcstub(TRUE, &setup);
@@ -4927,7 +4929,7 @@ static int newfunc(const funcstub_setup_t *setup,int fpublic,int fstatic,int sto
       lexpush();
     } else {
       // We require '{' for new methods.
-      if (setup->this_tag != -1)
+      if (setup->is_new)
         needtoken('{');
 
       /* Insert a separator so that comments following the statement will not
