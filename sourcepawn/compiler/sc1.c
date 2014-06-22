@@ -3315,6 +3315,7 @@ int parse_typeexpr(declinfo_t *decl, const token_t *first, int flags)
       }
       break;
     default:
+      error(122);
       return FALSE;
   }
 

@@ -165,6 +165,7 @@ static char *errmsg[] = {
 /*119*/  "destructors cannot have extra arguments\n",
 /*120*/  "methodmap and class signatures must use new-style declarations\n",
 /*121*/  "this syntax is not yet supported\n",
+/*122*/  "expected type expression\n",
 #else
   "\256pe\330\236\315k\212:\232\322bu\201fo\221\206\217\012",
   "\202l\224\252s\204g\355\333e\234\201(\247\256\317\267\202) \320 f\246low ea\271 \042c\336e\042\012",
