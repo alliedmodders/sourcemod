@@ -78,6 +78,12 @@ int pc_functag = 0;
 int pc_tag_string = 0;
 int pc_tag_void = 0;
 
+typedef struct funcstub_setup_s {
+  const char *name;
+  int return_tag;
+  int this_tag;
+} funcstub_setup_t;
+
 static void resetglobals(void);
 static void initglobals(void);
 static char *get_extension(char *filename);
@@ -110,7 +116,7 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
 static cell init(int ident,int *tag,int *errorfound);
 static int getstates(const char *funcname);
 static void attachstatelist(symbol *sym, int state_id);
-static symbol *funcstub(int fnative);
+static symbol *funcstub(int fnative, const funcstub_setup_t *setup);
 static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stock);
 static int declargs(symbol *sym,int chkshadow);
 static void doarg(char *name,int ident,int offset,int tags[],int numtags,
@@ -1564,10 +1570,10 @@ static void parse(void)
       } /* if */
       break;
     case tNATIVE:
-      funcstub(TRUE);           /* create a dummy function */
+      funcstub(TRUE, NULL);     /* create a dummy function */
       break;
     case tFORWARD:
-      funcstub(FALSE);
+      funcstub(FALSE, NULL);
       break;
     case '}':
       error(54);                /* unmatched closing brace */
@@ -3346,16 +3352,57 @@ void define_constructor(methodmap_t *map, methodmap_method_t *method)
   sym->target = method->target;
 }
 
+// Current lexer position is, we've parsed "public", an optional "native", and
+// a type expression.
+//
+// This returns true if there is a method bind, i.e. "() = Y".
+static int match_method_bind()
+{
+  // The grammar here is a little complicated. We must differentiate
+  // between two different rules:
+  //   public X() = Y;
+  //   public X() { ...
+  //
+  // If we parse up to '=', then it becomes harder to call newfunc() later,
+  // since ideally we'd like to back up to the '('. To work around this we
+  // use a hacked in lexer API to push older tokens back into the token
+  // stream.
+  token_t tok;
+  if (lextok(&tok) != '(') {
+    lexpush();
+    return FALSE;
+  }
+
+  if (!matchtoken(')')) {
+    for (int i = 0; i < 2; i++)
+      lexpush();
+    return FALSE;
+  }
+
+  if (!matchtoken('=')) {
+    for (int i = 0; i < 3; i++)
+      lexpush();
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
 methodmap_method_t *parse_method(methodmap_t *map)
 {
+  int is_ctor = 0;
   int is_dtor = 0;
   int is_bind = 0;
   int is_native = 0;
   const char *spectype = layout_spec_name(map->spec);
 
-  // We keep a wider buffer since we do name munging.
-  char ident[sNAMEMAX * 3 + 1] = "<unknown>";
-  char bindname[sNAMEMAX * 3 + 1] = "<unknown>";
+  // This stores the name of the method (for destructors, we add a ~).
+  token_ident_t ident;
+  strcpy(ident.name, "<unknown>");
+
+  // For binding syntax, like X() = Y, this stores the right-hand name.
+  token_ident_t bindsource;
+  strcpy(bindsource.name, "<unknown>");
 
   needtoken(tPUBLIC);
 
@@ -3363,80 +3410,100 @@ methodmap_method_t *parse_method(methodmap_t *map)
   declinfo_t decl;
   if (matchtoken('~')) {
     // We got something like "public ~Blah = X"
-    is_bind = 1;
-    is_dtor = 1;
-    if (needtoken(tSYMBOL)) {
-      tokeninfo(&tok.val, &tok.str);
-      strcpy(ident, tok.str);
-    }
-    needtoken('(');
-    needtoken(')');
-    needtoken('=');
-    if (!expecttoken(tSYMBOL, &tok))
+    is_bind = TRUE;
+    is_dtor = TRUE;
+    if (!needsymbol(&ident))
       return NULL;
-    strcpy(bindname, tok.str);
+    if (!needtoken('('))
+      return NULL;
+    if (!needtoken(')'))
+      return NULL;
+    if (!needtoken('='))
+      return NULL;
+    if (!needsymbol(&bindsource))
+      return NULL;
   } else {
+    int got_symbol;
+
     is_native = matchtoken(tNATIVE);
+    got_symbol = matchsymbol(&ident);
 
-    if (is_native) {
-      // If we have a native, we should always get a type expression next.
-      parse_decl(&decl, NULL, 0);
-    } else {
-      // Parsing "public Clone =" and "public Handle Clone = " requires two tokens
-      // of lookahead. By the time we see the '=' in the first example, we'd have
-      // expected a function name, but it's too late to back up - _lexpush is only
-      // one token deep.
-      //
-      // If we see a symbol and a '=', we know it's a simple binding. Otherwise,
-      // we have to take the token we got from lextok() and ask parse_decl() to
-      // start parsing it as a type expression.
-      int is_symbol = (lextok(&tok) == tSYMBOL);
-      if (is_symbol) {
-        // Save the string because matchtoken() will overwrite the token buffer.
-        // Note we also have to repoint tok so parse_decl will point at our
-        // local copy.
-        strcpy(ident, tok.str);
-        tok.str = ident;
+    if (!is_native && got_symbol) {
+      // We didn't see "native", but we saw a symbol. Match for '() =' which
+      // would indicate a method bind.
+      is_bind = match_method_bind();
 
-        if (matchtoken('(')) {
-          needtoken(')');
-          needtoken('=');
-
-          // Grab the name we're binding to.
-          is_bind = 1;
-          if (!expecttoken(tSYMBOL, &tok))
-            return NULL;
-          strcpy(bindname, tok.str);
-        }
+      if (is_bind) {
+        // If we saw "X() =", then grab the right-hand name.
+        if (!needsymbol(&bindsource))
+          return NULL;
       }
+    }
 
-      if (!is_bind) {
-        // We didn't find an '=', so proceed with a normal function signature.
-        parse_decl(&decl, &tok, 0);
+    if (!is_bind) {
+      // All we know at this point is that we do NOT have a method bind. Keep
+      // pattern matching for an inline constructor, destructor, or method.
+      if (!got_symbol) {
+        // We never saw an initial symbol, so it should be a destructor. If we
+        // don't see a '~', the current token (which is not a symbol) will fail
+        // the needsymbol() check, and we'll bail out.
         is_dtor = matchtoken('~');
+        if (!needsymbol(&ident))
+          return NULL;
+      } else if (matchtoken('(')) {
+        // There's no type expression. this is probably a constructor.
+        is_ctor = TRUE;
+      } else {
+        // Parse for type expression, priming it with the token we predicted
+        // would be an identifier.
+        if (!parse_decl(&decl, &ident.tok, 0))
+          return NULL;
 
-        if (lextok(&tok) != tSYMBOL) {
-          // Error, and if EOF, return. The lexpush is so we don't accidentally
-          // skip over a terminator or something, since we scan to the end of the
-          // line.
-          lexpush();
-          error(111);
-          if (tok.id == 0)
-            return NULL;
-        }
+        // Now, we should get an identifier.
+        if (!needsymbol(&ident))
+          return NULL;
 
-        strcpy(ident, tok.str);
-      } // if (tok == symbol && matchtoken('='))
-    } // if (is_native)
+        // If the identifier is a constructor, error, since the user specified
+        // a type.
+        if (strcmp(ident.name, map->name) == 0)
+          error(99, "constructor");
+      }
+    } else {
+      is_ctor = (strcmp(ident.name, map->name) == 0);
+    }
   } // if (matchtoken('~'))
+
+  // Do some preliminary verification of ctor/dtor names.
+  if (is_dtor) {
+    if (strcmp(ident.name, map->name) != 0)
+      error(114, "destructor", spectype, map->name);
+  } else if (is_ctor) {
+    if (strcmp(ident.name, map->name) != 0)
+      error(114, "constructor", spectype, map->name);
+  }
   
   symbol *target = NULL;
   if (is_bind) {
-    target = findglb(bindname, sGLOBAL);
+    target = findglb(bindsource.name, sGLOBAL);
     if (!target)
-      error(17, bindname);
+      error(17, bindsource.name);
     else if (target->ident != iFUNCTN) 
       error(10);
+    // if (decl.usage & uCONST)
+    //   error(112, map->name);
+
+    // funcstub_setup_t setup;
+    // if (is_dtor)
+    //   setup.return_tag = -1;
+    // else if (is_ctor)
+    //   setup.return_tag = map->tag;
+    // else
+    //   setup.return_tag = pc_addtag(decl.tag);
+
+    // setup.this_tag = map->tag;
+
+    // if (is_native)
+    //   target = funcstub(TRUE, &setup);
   } else {
     error(10);
   }
@@ -3444,11 +3511,8 @@ methodmap_method_t *parse_method(methodmap_t *map)
   if (!target)
     return NULL;
 
+  // Verify destructor targets.
   if (is_dtor) {
-    // Make sure the dtor has the right name.
-    if (strcmp(ident, map->name) != 0)
-      error(114, spectype, map->name);
-
     if (!(target->usage & uNATIVE)) {
       // Must be a native.
       error(118);
@@ -3457,7 +3521,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
 
     if (target->tag != 0 && target->tag != pc_tag_void) {
       // Cannot return a value.
-      error(99);
+      error(99, "destructor");
       return NULL;
     }
 
@@ -3467,30 +3531,33 @@ methodmap_method_t *parse_method(methodmap_t *map)
       return NULL;
     }
 
-    // Make sure the final name includes the ~.
-    strcpy(ident, "~");
-    strcat(ident, map->name);
+    // Make sure the final name has "~" in it.
+    strcpy(ident.name, "~");
+    strcat(ident.name, map->name);
+  }
+
+  // Verify constructor targets.
+  if (is_ctor) {
+    if (target->tag != map->tag)
+      error(112, map->name);
   }
 
   // Check that a method with this name doesn't already exist.
   for (size_t i = 0; i < map->nummethods; i++) {
-    if (strcmp(map->methods[i]->name, ident) == 0) {
-      error(103, ident, spectype);
+    if (strcmp(map->methods[i]->name, ident.name) == 0) {
+      error(103, ident.name, spectype);
       return NULL;
     }
   }
 
   methodmap_method_t *method = (methodmap_method_t *)calloc(1, sizeof(methodmap_method_t));
-  strcpy(method->name, ident);
+  strcpy(method->name, ident.name);
   method->target = target;
   if (is_dtor)
     map->dtor = method;
 
-  // If the symbol is a constructor, we bypass the initial argument checks,
-  // and instead require that it returns something with the same tag.
-  if (strcmp(ident, map->name) == 0) {
-    if (target->tag != map->tag)
-      error(112, map->name);
+  // If the symbol is a constructor, we bypass the initial argument checks.
+  if (is_ctor) {
     define_constructor(map, method);
     return method;
   }
@@ -4477,7 +4544,7 @@ SC_FUNC char *funcdisplayname(char *dest,char *funcname)
   return dest;
 }
 
-static symbol *funcstub(int fnative)
+static symbol *funcstub(int fnative, const funcstub_setup_t *setup)
 {
   int tok,tag,fpublic;
   char *str;
@@ -4494,25 +4561,35 @@ static symbol *funcstub(int fnative)
   litidx=0;                     /* clear the literal pool */
   assert(loctab.next==NULL);    /* local symbol table should be empty */
 
-  tag=pc_addtag(NULL);			/* get the tag of the return value */
+  // Either use an explicit return tag, or find a new one.
+  if (!setup || setup->return_tag == 0)
+    tag = pc_addtag(NULL);
+  else if (setup->return_tag == -1)
+    tag = 0;
+  else
+    tag = setup->return_tag;
+
   numdim=0;
-  while (matchtoken('[')) {
-    /* the function returns an array, get this tag for the index and the array
-     * dimensions
-     */
-    if (numdim == sDIMEN_MAX) {
-      error(53);                /* exceeding maximum number of dimensions */
-      return NULL;
-    } /* if */
-    size=needsub(&idxtag[numdim],NULL); /* get size; size==0 for "var[]" */
-    if (size==0)
-      error(9);                 /* invalid array size */
-    #if INT_MAX < LONG_MAX
-      if (size > INT_MAX)
-        error(125);             /* overflow, exceeding capacity */
-    #endif
-    dim[numdim++]=(int)size;
-  } /* while */
+  if (!setup) {
+    // Method functions can't return arrays, since it's broken anyway.
+    while (matchtoken('[')) {
+      /* the function returns an array, get this tag for the index and the array
+       * dimensions
+       */
+      if (numdim == sDIMEN_MAX) {
+        error(53);                /* exceeding maximum number of dimensions */
+        return NULL;
+      } /* if */
+      size=needsub(&idxtag[numdim],NULL); /* get size; size==0 for "var[]" */
+      if (size==0)
+        error(9);                 /* invalid array size */
+      #if INT_MAX < LONG_MAX
+        if (size > INT_MAX)
+          error(125);             /* overflow, exceeding capacity */
+      #endif
+      dim[numdim++]=(int)size;
+    } /* while */
+  }
 
   if (tag == pc_tag_string && numdim && dim[numdim-1])
     dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
@@ -4591,7 +4668,10 @@ static symbol *funcstub(int fnative)
       } /* if */
     } /* if */
   } /* if */
-  needtoken(tTERM);
+
+  // Don't assume inline if we're being setup.
+  if (!setup)
+    needtoken(tTERM);
 
   /* attach the array to the function symbol */
   if (numdim>0) {

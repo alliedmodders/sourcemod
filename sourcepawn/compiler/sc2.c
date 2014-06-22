@@ -1,3 +1,4 @@
+// vim: set ts=8 sts=2 sw=2 tw=99 et:
 /*  Pawn compiler - File input, preprocessing and lexical analysis functions
  *
  *  Copyright (c) ITB CompuPhase, 1997-2006
@@ -28,6 +29,7 @@
 #include <math.h>
 #include "lstring.h"
 #include "sc.h"
+#include "tokenbuffer.h"
 #if defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
   #include <sclinux.h>
 #endif
@@ -1900,15 +1902,30 @@ static const unsigned char *packedstring(const unsigned char *lptr,int flags)
  *  Global references: lptr          (altered)
  *                     fline         (referred to only)
  *                     litidx        (referred to only)
- *                     _lextok, _lexval, _lexstr
  *                     _pushed
  */
 
-static int _pushed;
-static int _lextok;
-static cell _lexval;
-static char _lexstr[sLINEMAX+1];
 static int _lexnewline;
+
+// lex() is called recursively, which messes up the lookahead buffer. To get
+// around this we use two separate token buffers.
+token_buffer_t sNormalBuffer;
+token_buffer_t sPreprocessBuffer;
+token_buffer_t *sTokenBuffer;
+
+static full_token_t *current_token()
+{
+  return &sTokenBuffer->tokens[sTokenBuffer->cursor];
+}
+
+static full_token_t *last_token()
+{
+  assert(sTokenBuffer->depth > 0);
+  int cursor = sTokenBuffer->cursor + 1;
+  if (cursor == MAX_TOKEN_DEPTH)
+    cursor = 0;
+  return &sTokenBuffer->tokens[cursor];
+}
 
 SC_FUNC void lexinit(void)
 {
@@ -1916,8 +1933,10 @@ SC_FUNC void lexinit(void)
   iflevel=0;            /* preprocessor: nesting of "#if" is currently 0 */
   skiplevel=0;          /* preprocessor: not currently skipping */
   icomment=0;           /* currently not in a multiline comment */
-  _pushed=FALSE;        /* no token pushed back into lex */
   _lexnewline=FALSE;
+  memset(&sNormalBuffer, 0, sizeof(sNormalBuffer));
+  memset(&sPreprocessBuffer, 0, sizeof(sPreprocessBuffer));
+  sTokenBuffer = &sNormalBuffer;
 }
 
 char *sc_tokens[] = {
@@ -1936,24 +1955,49 @@ char *sc_tokens[] = {
          "-label-", "-string-"
        };
 
+static full_token_t *next_token_ptr()
+{
+  assert(sTokenBuffer->depth == 0);
+  sTokenBuffer->num_tokens++;
+  sTokenBuffer->cursor++;
+  if (sTokenBuffer->cursor == MAX_TOKEN_DEPTH)
+    sTokenBuffer->cursor = 0;
+
+  return current_token();
+}
+
+static void preprocess_in_lex()
+{
+  sTokenBuffer = &sPreprocessBuffer;
+  preprocess();
+  sTokenBuffer = &sNormalBuffer;
+}
+
 SC_FUNC int lex(cell *lexvalue,char **lexsym)
 {
   int i,toolong,newline;
   char **tokptr;
   const unsigned char *starttoken;
 
-  if (_pushed) {
-    _pushed=FALSE;      /* reset "_pushed" flag */
-    *lexvalue=_lexval;
-    *lexsym=_lexstr;
-    return _lextok;
-  } /* if */
+  if (sTokenBuffer->depth > 0) {
+    sTokenBuffer->depth--;
+    sTokenBuffer->cursor++;
+    if (sTokenBuffer->cursor == MAX_TOKEN_DEPTH)
+      sTokenBuffer->cursor = 0;
+    *lexvalue = current_token()->value;
+    *lexsym = current_token()->str;
+    return current_token()->id;
+  }
 
-  _lextok=0;            /* preset all values */
-  _lexval=0;
-  _lexstr[0]='\0';
-  *lexvalue=_lexval;
-  *lexsym=_lexstr;
+  full_token_t *tok = next_token_ptr();
+  tok->id = 0;
+  tok->value = 0;
+  tok->str[0] = '\0';
+  tok->len = 0;
+
+  *lexvalue = tok->value;
+  *lexsym = tok->str;
+
   _lexnewline=FALSE;
   if (!freading)
     return 0;
@@ -1961,11 +2005,11 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
   newline= (lptr==pline);       /* does lptr point to start of line buffer */
   while (*lptr<=' ') {          /* delete leading white space */
     if (*lptr=='\0') {
-      preprocess();             /* preprocess resets "lptr" */
+      preprocess_in_lex();
       if (!freading)
         return 0;
       if (lptr==term_expr)      /* special sequence to terminate a pending expression */
-        return (_lextok=tENDEXPR);
+        return (tok->id = tENDEXPR);
       _lexnewline=TRUE;         /* set this after preprocess(), because
                                  * preprocess() calls lex() recursively */
       newline=TRUE;
@@ -1986,63 +2030,66 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
   tokptr=sc_tokens;
   while (i<=tMIDDLE) {  /* match multi-character operators */
     if (*lptr==**tokptr && match(*tokptr,FALSE)) {
-      _lextok=i;
+      tok->id = i;
       if (pc_docexpr)   /* optionally concatenate to documentation string */
         insert_autolist(*tokptr);
-      return _lextok;
+      return tok->id;
     } /* if */
     i+=1;
     tokptr+=1;
   } /* while */
   while (i<=tLAST) {    /* match reserved words and compiler directives */
     if (*lptr==**tokptr && match(*tokptr,TRUE)) {
-      _lextok=i;
+      tok->id = i;
       errorset(sRESET,0); /* reset error flag (clear the "panic mode")*/
       if (pc_docexpr)   /* optionally concatenate to documentation string */
         insert_autolist(*tokptr);
-      return _lextok;
+      return tok->id;
     } /* if */
     i+=1;
     tokptr+=1;
   } /* while */
 
   starttoken=lptr;      /* save start pointer (for concatenating to documentation string) */
-  if ((i=number(&_lexval,lptr))!=0) {   /* number */
-    _lextok=tNUMBER;
-    *lexvalue=_lexval;
+  if ((i=number(&tok->value, lptr))!=0) {   /* number */
+    tok->id = tNUMBER;
+    *lexvalue = tok->value;
     lptr+=i;
-  } else if ((i=ftoi(&_lexval,lptr))!=0) {
-    _lextok=tRATIONAL;
-    *lexvalue=_lexval;
+  } else if ((i=ftoi(&tok->value, lptr))!=0) {
+    tok->id = tRATIONAL;
+    *lexvalue = tok->value;
     lptr+=i;
   } else if (alpha(*lptr)) {            /* symbol or label */
     /*  Note: only sNAMEMAX characters are significant. The compiler
      *        generates a warning if a symbol exceeds this length.
      */
-    _lextok=tSYMBOL;
+    tok->id = tSYMBOL;
     i=0;
     toolong=0;
     while (alphanum(*lptr)){
-      _lexstr[i]=*lptr;
+      tok->str[i]=*lptr;
       lptr+=1;
       if (i<sNAMEMAX)
         i+=1;
       else
         toolong=1;
     } /* while */
-    _lexstr[i]='\0';
-    if (toolong)
-      error(200,_lexstr,sNAMEMAX);  /* symbol too long, truncated to sNAMEMAX chars */
-    if (_lexstr[0]==PUBLIC_CHAR && _lexstr[1]=='\0') {
-      _lextok=PUBLIC_CHAR;  /* '@' all alone is not a symbol, it is an operator */
-    } else if (_lexstr[0]=='_' && _lexstr[1]=='\0') {
-      _lextok='_';      /* '_' by itself is not a symbol, it is a placeholder */
+    tok->str[i]='\0';
+    tok->len = i;
+    if (toolong) {
+      /* symbol too long, truncated to sNAMEMAX chars */
+      error(200, tok->str, sNAMEMAX);  
+    }
+    if (tok->str[0]==PUBLIC_CHAR && tok->str[1]=='\0') {
+      tok->id = PUBLIC_CHAR;  /* '@' all alone is not a symbol, it is an operator */
+    } else if (tok->str[0]=='_' && tok->str[1]=='\0') {
+      tok->id = '_';      /* '_' by itself is not a symbol, it is a placeholder */
     } /* if */
-    if (*lptr==':' && *(lptr+1)!=':' && _lextok!=PUBLIC_CHAR) {
+    if (*lptr==':' && *(lptr+1)!=':' && tok->id != PUBLIC_CHAR) {
       if (sc_allowtags) {
-        _lextok=tLABEL; /* it wasn't a normal symbol, it was a label/tagname */
+        tok->id = tLABEL; /* it wasn't a normal symbol, it was a label/tagname */
         lptr+=1;        /* skip colon */
-      } else if (find_constval(&tagname_tab,_lexstr,0)!=NULL) {
+      } else if (find_constval(&tagname_tab,tok->str,0)!=NULL) {
         /* this looks like a tag override (because a tag with this name
          * exists), but tags are not allowed right now, so it is probably an
          * error
@@ -2061,9 +2108,9 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
   {                                     
     int stringflags,segmentflags;
     char *cat;
-    _lextok=tSTRING;
-    *lexvalue=_lexval=litidx;
-    _lexstr[0]='\0';
+    tok->id = tSTRING;
+    *lexvalue = tok->value = litidx;
+    tok->str[0]='\0';
     stringflags=-1;       /* to mark the first segment */
     for ( ;; ) {
       if(*lptr=='!')
@@ -2082,9 +2129,9 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
         stringflags=segmentflags;
       else if (stringflags!=segmentflags)
         error(238);       /* mixing packed/unpacked/raw strings in concatenation */
-      cat=strchr(_lexstr,'\0');
+      cat=strchr(tok->str,'\0');
       assert(cat!=NULL);
-      while (*lptr!='\"' && *lptr!='\0' && (cat-_lexstr)<sLINEMAX) {
+      while (*lptr!='\"' && *lptr!='\0' && (cat-tok->str)<sLINEMAX) {
         if (*lptr!='\a') {  /* ignore '\a' (which was inserted at a line concatenation) */
           *cat++=*lptr;
 					if (*lptr==sc_ctrlchar && *(lptr+1)!='\0')
@@ -2093,6 +2140,7 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
         lptr++;
       } /* while */
       *cat='\0';          /* terminate string */
+      tok->len = (size_t)(cat - tok->str);
       if (*lptr=='\"')
         lptr+=1;          /* skip final quote */
       else
@@ -2103,7 +2151,7 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
       /* there is an ellipses, go on parsing (this time with full preprocessing) */
       while (*lptr<=' ') {
         if (*lptr=='\0') {
-          preprocess();           /* preprocess resets "lptr" */
+          preprocess_in_lex();
           assert(freading && lptr!=term_expr);
         } else {
           lptr++;
@@ -2113,7 +2161,7 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
       lptr+=3;
       while (*lptr<=' ') {
         if (*lptr=='\0') {
-          preprocess();           /* preprocess resets "lptr" */
+          preprocess_in_lex();
           assert(freading && lptr!=term_expr);
         } else {
           lptr++;
@@ -2135,23 +2183,23 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
     if (sc_packstr)
       stringflags ^= ISPACKED;    /* invert packed/unpacked parameters */
     if ((stringflags & ISPACKED)!=0)
-      packedstring((unsigned char *)_lexstr,stringflags);
+      packedstring((unsigned char *)tok->str,stringflags);
     else
-      unpackedstring((unsigned char *)_lexstr,stringflags);
+      unpackedstring((unsigned char *)tok->str,stringflags);
   } else if (*lptr=='\'') {             /* character literal */
     lptr+=1;            /* skip quote */
-    _lextok=tNUMBER;
-    *lexvalue=_lexval=litchar(&lptr,UTF8MODE);
+    tok->id = tNUMBER;
+    *lexvalue = tok->value = litchar(&lptr,UTF8MODE);
     if (*lptr=='\'')
       lptr+=1;          /* skip final quote */
     else
       error(27);        /* invalid character constant (must be one character) */
   } else if (*lptr==';') {      /* semicolumn resets "error" flag */
-    _lextok=';';
+    tok->id = ';';
     lptr+=1;
     errorset(sRESET,0); /* reset error flag (clear the "panic mode")*/
   } else {
-    _lextok=*lptr;      /* if every match fails, return the character */
+    tok->id = *lptr;    /* if every match fails, return the character */
     lptr+=1;            /* increase the "lptr" pointer */
   } /* if */
 
@@ -2163,7 +2211,7 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
       free(docstr);
     } /* if */
   } /* if */
-  return _lextok;
+  return tok->id;
 }
 
 /*  lexpush
@@ -2180,8 +2228,14 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
  */
 SC_FUNC void lexpush(void)
 {
-  assert(_pushed==FALSE);
-  _pushed=TRUE;
+  assert(sTokenBuffer->depth < MAX_TOKEN_DEPTH);
+  assert(sTokenBuffer->depth < 1);
+  sTokenBuffer->depth++;
+  if (sTokenBuffer->cursor == 0)
+    sTokenBuffer->cursor = MAX_TOKEN_DEPTH - 1;
+  else
+    sTokenBuffer->cursor--;
+  assert(sTokenBuffer->depth <= sTokenBuffer->num_tokens);
 }
 
 /*  lexclr
@@ -2192,7 +2246,7 @@ SC_FUNC void lexpush(void)
  */
 SC_FUNC void lexclr(int clreol)
 {
-  _pushed=FALSE;
+  sTokenBuffer->depth = 0;
   if (clreol) {
     lptr=(unsigned char*)strchr((char*)pline,'\0');
     assert(lptr!=NULL);
@@ -2243,10 +2297,10 @@ SC_FUNC int tokeninfo(cell *val,char **str)
   /* if the token was pushed back, tokeninfo() returns the token and
    * parameters of the *next* token, not of the *current* token.
    */
-  assert(!_pushed);
-  *val=_lexval;
-  *str=_lexstr;
-  return _lextok;
+  assert(sTokenBuffer->depth == 0);
+  *val = current_token()->value;
+  *str = current_token()->str;
+  return current_token()->id;
 }
 
 /*  needtoken
@@ -2255,8 +2309,6 @@ SC_FUNC int tokeninfo(cell *val,char **str)
  *  it isn't there (and returns 0/FALSE in that case). Like function matchtoken(),
  *  this function returns 1 for "token found" and 2 for "statement termination
  *  token" found; see function matchtoken() for details.
- *
- *  Global references: _lextok;
  */
 SC_FUNC int needtoken(int token)
 {
@@ -2267,17 +2319,17 @@ SC_FUNC int needtoken(int token)
     return t;
   } else {
     /* token already pushed back */
-    assert(_pushed);
+    assert(sTokenBuffer->depth > 0);
     if (token<256)
       sprintf(s1,"%c",(char)token);        /* single character token */
     else
       strcpy(s1,sc_tokens[token-tFIRST]);  /* multi-character symbol */
     if (!freading)
       strcpy(s2,"-end of file-");
-    else if (_lextok<256)
-      sprintf(s2,"%c",(char)_lextok);
+    else if (current_token()->id < 256)
+      sprintf(s2,"%c",(char)current_token()->id);
     else
-      strcpy(s2,sc_tokens[_lextok-tFIRST]);
+      strcpy(s2, sc_tokens[current_token()->id - tFIRST]);
     error(1,s1,s2);     /* expected ..., but found ... */
     return FALSE;
   } /* if */
@@ -3056,4 +3108,24 @@ SC_FUNC int expecttoken(int id, token_t *tok)
     return rval;
   }
   return FALSE;
+}
+
+SC_FUNC int matchsymbol(token_ident_t *ident)
+{
+  if (lextok(&ident->tok) != tSYMBOL) {
+    lexpush();
+    return FALSE;
+  }
+  strcpy(ident->name, ident->tok.str);
+  ident->tok.str = ident->name;
+  return TRUE;
+}
+
+SC_FUNC int needsymbol(token_ident_t *ident)
+{
+  if (!expecttoken(tSYMBOL, &ident->tok))
+    return FALSE;
+  strcpy(ident->name, ident->tok.str);
+  ident->tok.str = ident->name;
+  return TRUE;
 }
