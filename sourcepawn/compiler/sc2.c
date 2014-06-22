@@ -2229,7 +2229,6 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
 SC_FUNC void lexpush(void)
 {
   assert(sTokenBuffer->depth < MAX_TOKEN_DEPTH);
-  assert(sTokenBuffer->depth < 1);
   sTokenBuffer->depth++;
   if (sTokenBuffer->cursor == 0)
     sTokenBuffer->cursor = MAX_TOKEN_DEPTH - 1;
@@ -2675,13 +2674,9 @@ SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_
 	continue;
       }
 
-      if (delete_functions || (sym->target->usage & uNATIVE) != 0) {
-        RemoveFromHashTable(sp_Globals, sym);
-        iter->next = sym->next;
-        free_symbol(sym);
-      } else {
-        iter = sym;
-      }
+      RemoveFromHashTable(sp_Globals, sym);
+      iter->next = sym->next;
+      free_symbol(sym);
     }
   }
 
@@ -3104,7 +3099,9 @@ SC_FUNC int expecttoken(int id, token_t *tok)
 {
   int rval = needtoken(id);
   if (rval) {
-    tok->id = tokeninfo(&tok->val, &tok->str);
+    tok->val = current_token()->value;
+    tok->id = current_token()->id;
+    tok->str = current_token()->str;
     return rval;
   }
   return FALSE;

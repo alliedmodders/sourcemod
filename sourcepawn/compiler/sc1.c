@@ -117,7 +117,7 @@ static cell init(int ident,int *tag,int *errorfound);
 static int getstates(const char *funcname);
 static void attachstatelist(symbol *sym, int state_id);
 static symbol *funcstub(int fnative, const funcstub_setup_t *setup);
-static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stock);
+static int newfunc(const funcstub_setup_t *setup,int fpublic,int fstatic,int stock,symbol **symp);
 static int declargs(symbol *sym, int chkshadow, const int *thistag);
 static void doarg(char *name,int ident,int offset,int tags[],int numtags,
                   int fpublic,int fconst,int chkshadow,arginfo *arg);
@@ -1562,13 +1562,20 @@ static void parse(void)
     case tLABEL:
     case tSYMBOL:
     case tOPERATOR:
+    {
+      funcstub_setup_t setup;
+      memset(&setup, 0, sizeof(setup));
+      setup.return_tag = -1;
+      setup.this_tag = -1;
+
       lexpush();
-      if (!newfunc(NULL,-1,FALSE,FALSE,FALSE)) {
+      if (!newfunc(&setup,FALSE,FALSE,FALSE,NULL)) {
         error(10);              /* illegal function or declaration */
         lexclr(TRUE);           /* drop the rest of the line */
         litidx=0;               /* drop the literal queue too */
       } /* if */
       break;
+    }
     case tNATIVE:
       funcstub(TRUE, NULL);     /* create a dummy function */
       break;
@@ -1784,19 +1791,30 @@ static void declfuncvar(int fpublic,int fstatic,int fstock,int fconst)
     return;
   } /* if */
   if (tok==tOPERATOR) {
+    funcstub_setup_t setup;
+    memset(&setup, 0, sizeof(setup));
+    setup.return_tag = tag;
+    setup.this_tag = -1;
     lexpush();          /* push "operator" keyword back (for later analysis) */
-    if (!newfunc(NULL,tag,fpublic,fstatic,fstock)) {
+    if (!newfunc(&setup,fpublic,fstatic,fstock,NULL)) {
       error(10);        /* illegal function or declaration */
       lexclr(TRUE);     /* drop the rest of the line */
       litidx=0;         /* drop the literal queue too */
     } /* if */
   } else {
+    funcstub_setup_t setup;
+    memset(&setup, 0, sizeof(setup));
+    setup.return_tag = tag;
+    setup.this_tag = -1;
+    setup.name = name;
+
     /* so tok is tSYMBOL */
     assert(strlen(str)<=sNAMEMAX);
     strcpy(name,str);
+
     /* only variables can be "const" or both "public" and "stock" */
-    invalidfunc= fconst || (fpublic && fstock);
-    if (invalidfunc || !newfunc(name,tag,fpublic,fstatic,fstock)) {
+    invalidfunc = fconst || (fpublic && fstock);
+    if (invalidfunc || !newfunc(&setup,fpublic,fstatic,fstock,NULL)) {
       /* if not a function, try a global variable */
       if (pstruct) {
         declstructvar(name,fpublic,pstruct);
@@ -3337,8 +3355,6 @@ int parse_decl(declinfo_t *decl, const token_t *first, int flags)
 void define_constructor(methodmap_t *map, methodmap_method_t *method)
 {
   symbol *sym = findglb(map->name, sGLOBAL);
-  if (sym && sym->ident == iPROXY && sym->parent == method->target)
-    return;
 
   if (sym) {
     const char *type = "<unknown>";
@@ -3383,18 +3399,29 @@ static int match_method_bind()
   }
 
   if (!matchtoken(')')) {
-    for (int i = 0; i < 2; i++)
-      lexpush();
+    lexpush();
     return FALSE;
   }
 
   if (!matchtoken('=')) {
-    for (int i = 0; i < 3; i++)
-      lexpush();
+    lexpush();
+    lexpush();
     return FALSE;
   }
 
   return TRUE;
+}
+
+// If a name is too long, error and truncate.
+void check_name_length(char *original)
+{
+  if (strlen(original) > sNAMEMAX) {
+    char buffer[METHOD_NAMEMAX + 1];
+    strcpy(buffer, original);
+    buffer[sNAMEMAX] = '\0';
+    error(123, original, buffer);
+    original[sNAMEMAX] = '\0';
+  }
 }
 
 methodmap_method_t *parse_method(methodmap_t *map)
@@ -3496,11 +3523,12 @@ methodmap_method_t *parse_method(methodmap_t *map)
     // Make sure the final name has "~" in it.
     strcpy(ident.name, "~");
     strcat(ident.name, map->name);
+    check_name_length(ident.name);
   } else if (is_ctor) {
     if (strcmp(ident.name, map->name) != 0)
       error(114, "constructor", spectype, map->name);
   }
-  
+
   symbol *target = NULL;
   if (is_bind) {
     // Find an existing symbol.
@@ -3519,7 +3547,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
       setup.return_tag = decl.tag;
 
     if (is_ctor)
-      setup.this_tag = 0;
+      setup.this_tag = -1;
     else
       setup.this_tag = map->tag;
 
@@ -3528,10 +3556,20 @@ methodmap_method_t *parse_method(methodmap_t *map)
     strcpy(fullname, map->name);
     strcat(fullname, ".");
     strcat(fullname, ident.name);
+    check_name_length(fullname);
+
     setup.name = fullname;
 
-    if (is_native)
+    if (is_native) {
       target = funcstub(TRUE, &setup);
+    } else {
+      if (!newfunc(&setup, FALSE, FALSE, TRUE, &target))
+        return NULL;
+      if (!target || (target->usage & uFORWARD)) {
+        error(10);
+        return NULL;
+      }
+    }
   }
 
   if (!target)
@@ -4572,7 +4610,7 @@ static symbol *funcstub(int fnative, const funcstub_setup_t *setup)
   int tok,tag,fpublic;
   char *str;
   cell val,size;
-  char symbolname[METHOD_NAMEMAX+1];
+  char symbolname[sNAMEMAX+1];
   int idxtag[sDIMEN_MAX];
   int dim[sDIMEN_MAX];
   int numdim;
@@ -4729,7 +4767,7 @@ static symbol *funcstub(int fnative, const funcstub_setup_t *setup)
  *                     glb_declared (altered)
  *                     sc_alignnext (altered)
  */
-static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stock)
+static int newfunc(const funcstub_setup_t *setup,int fpublic,int fstatic,int stock,symbol **symp)
 {
   symbol *sym;
   int argcnt,tok,tag,funcline;
@@ -4749,12 +4787,18 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
   assert(loctab.next==NULL);    /* local symbol table should be empty */
   filenum=fcurrent;     /* save file number at the start of the declaration */
 
-  if (firstname!=NULL) {
-    assert(strlen(firstname)<=sNAMEMAX);
-    strcpy(symbolname,firstname);       /* save symbol name */
-    tag=firsttag;
+  if (symp)
+    *symp = NULL;
+
+  if (setup->name) {
+    assert(strlen(setup->name) <= METHOD_NAMEMAX);
+    strcpy(symbolname, setup->name);       /* save symbol name */
+    tag = setup->return_tag;
   } else {
-    tag= (firsttag>=0) ? firsttag : pc_addtag(NULL);
+    if (setup->return_tag != -1)
+      tag = setup->return_tag;
+    else
+      tag = pc_addtag(NULL);
     tok=lex(&val,&str);
     assert(!fpublic);
     if (tok==tNATIVE || (tok==tPUBLIC && stock))
@@ -4813,7 +4857,7 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
     error(235,symbolname);
 #endif
   /* declare all arguments */
-  argcnt=declargs(sym, TRUE, NULL);
+  argcnt=declargs(sym, TRUE, &setup->this_tag);
   opererror=!operatoradjust(opertok,sym,symbolname,tag);
   if (strcmp(symbolname,uMAINFUNC)==0 || strcmp(symbolname,uENTRYFUNC)==0) {
     if (argcnt>0)
@@ -4882,6 +4926,10 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
     if (matchtoken('{')) {
       lexpush();
     } else {
+      // We require '{' for new methods.
+      if (setup->this_tag != -1)
+        needtoken('{');
+
       /* Insert a separator so that comments following the statement will not
        * be attached to this function; they should be attached to the next
        * function. This is not a problem for functions having a compound block,
@@ -4932,6 +4980,8 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
     code_idx=cidx;
     glb_declared=glbdecl;
   } /* if */
+  if (symp)
+    *symp = sym;
   return TRUE;
 }
 
@@ -5014,7 +5064,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
   fconst=FALSE;
   fpublic = (sym->usage & (uPUBLIC|uSTOCK))!=0;
 
-  if (thistag) {
+  if (thistag && *thistag != -1) {
     // Allocate space for a new argument, then terminate.
     sym->dim.arglist = (arginfo *)realloc(sym->dim.arglist, (argcnt + 2) * sizeof(arginfo));
     memset(&sym->dim.arglist[argcnt + 1], 0, sizeof(arginfo));
@@ -5026,6 +5076,10 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
     argptr->tags = malloc(sizeof(int));
     argptr->tags[0] = *thistag;
     argptr->numtags = 1;
+
+    addvariable2(argptr->name, (argcnt+3)*sizeof(cell), argptr->ident, sLOCAL, argptr->tags[0],
+                 argptr->dim, argptr->numdim, argptr->idxtag, 0);
+
     argcnt++;
   }
 
