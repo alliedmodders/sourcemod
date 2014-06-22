@@ -1672,6 +1672,8 @@ public:
 			failure_->PushCell(failIndex_);
 			failure_->PushArray(data, txn_->entries.length());
 			failure_->Execute(NULL);
+
+			handlesys->FreeHandle(dbh, &sec);
 		}
 	}
 
