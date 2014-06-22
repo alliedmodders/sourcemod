@@ -1,0 +1,3 @@
+type "Float" should be "float" in new-style declarations
+type "String" should be "char" in new-style declarations
+methodmap and class signatures must use new-style declarations

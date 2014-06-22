@@ -118,7 +118,7 @@ static int getstates(const char *funcname);
 static void attachstatelist(symbol *sym, int state_id);
 static symbol *funcstub(int fnative, const funcstub_setup_t *setup);
 static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stock);
-static int declargs(symbol *sym,int chkshadow);
+static int declargs(symbol *sym, int chkshadow, const int *thistag);
 static void doarg(char *name,int ident,int offset,int tags[],int numtags,
                   int fpublic,int fconst,int chkshadow,arginfo *arg);
 static void make_report(symbol *root,FILE *log,char *sourcefile);
@@ -221,17 +221,17 @@ int pc_compile(int argc, char *argv[])
 
   sp_Globals = NewHashTable();
   if (!sp_Globals)
-    error(123);
+    error(163);
 
   /* allocate memory for fixed tables */
   inpfname=(char*)malloc(_MAX_PATH);
   if (inpfname==NULL)
-    error(123);         /* insufficient memory */
+    error(163);         /* insufficient memory */
   litq=(cell*)malloc(litmax*sizeof(cell));
   if (litq==NULL)
-    error(123);         /* insufficient memory */
+    error(163);         /* insufficient memory */
   if (!phopt_init())
-    error(123);         /* insufficient memory */
+    error(163);         /* insufficient memory */
 
   setopt(argc,argv,outfname,errfname,incfname,reportname,codepage);
   strcpy(binfname,outfname);
@@ -256,7 +256,7 @@ int pc_compile(int argc, char *argv[])
   lcl_tabsize=sc_tabsize;
   #if !defined NO_CODEPAGE
     if (!cp_set(codepage))      /* set codepage */
-      error(128);               /* codepage mapping file not found */
+      error(168);               /* codepage mapping file not found */
   #endif
   /* optionally create a temporary input file that is a collection of all
    * input files
@@ -273,7 +273,7 @@ int pc_compile(int argc, char *argv[])
       tname=tempnam(NULL,"pawn");
     #elif defined(MACOS) && !defined(__MACH__)
       /* tempnam is not supported for the Macintosh CFM build. */
-      error(124,get_sourcefile(1));
+      error(164,get_sourcefile(1));
       tname=NULL;
       sname=NULL;
     #else
@@ -289,7 +289,7 @@ int pc_compile(int argc, char *argv[])
         pc_closesrc(ftmp);
         remove(tname);
         strcpy(inpfname,sname); /* avoid invalid filename */
-        error(120,sname);
+        error(160,sname);
       } /* if */
       pc_writesrc(ftmp,(unsigned char*)"#file \"");
       pc_writesrc(ftmp,(unsigned char*)sname);
@@ -308,18 +308,18 @@ int pc_compile(int argc, char *argv[])
   } /* if */
   inpf_org=(FILE*)pc_opensrc(inpfname);
   if (inpf_org==NULL)
-    error(120,inpfname);
+    error(160,inpfname);
   freading=TRUE;
   outf=(FILE*)pc_openasm(outfname); /* first write to assembler file (may be temporary) */
   if (outf==NULL)
-    error(121,outfname);
+    error(161,outfname);
   /* immediately open the binary file, for other programs to check */
   if (sc_asmfile || sc_listing) {
     binf=NULL;
   } else {
     binf=(FILE*)pc_openbin(binfname);
     if (binf==NULL)
-      error(121,binfname);
+      error(161,binfname);
   } /* if */
   setconstants();               /* set predefined constants and tagnames */
   for (i=0; i<skipinput; i++)   /* skip lines in the input file */
@@ -375,7 +375,7 @@ int pc_compile(int argc, char *argv[])
         plungefile(incfname,FALSE,TRUE);    /* parse "default.inc" */
       } else {
         if (!plungequalifiedfile(incfname)) /* parse "prefix" include file */
-          error(120,incfname);          /* cannot read from ... (fatal error) */
+          error(160,incfname);          /* cannot read from ... (fatal error) */
       } /* if */
     } /* if */
     preprocess();                       /* fetch first line */
@@ -510,7 +510,7 @@ cleanup:
         pc_printf("Total requirements:%8ld bytes\n", (long)hdrsize+(long)code_idx+(long)glb_declared*sizeof(cell)+(long)pc_stksize*sizeof(cell));
       } /* if */
       if (flag_exceed)
-        error(126,pc_amxlimit+pc_amxram); /* this causes a jump back to label "cleanup" */
+        error(166,pc_amxlimit+pc_amxram); /* this causes a jump back to label "cleanup" */
     } /* if */
   #endif
 
@@ -1138,14 +1138,14 @@ static void parserespf(char *filename,char *oname,char *ename,char *pname,
   long size;
 
   if ((fp=fopen(filename,"r"))==NULL)
-    error(120,filename);        /* error reading input file */
+    error(160,filename);        /* error reading input file */
   /* load the complete file into memory */
   fseek(fp,0L,SEEK_END);
   size=ftell(fp);
   fseek(fp,0L,SEEK_SET);
   assert(size<INT_MAX);
   if ((string=(char *)malloc((int)size+1))==NULL)
-    error(123);                 /* insufficient memory */
+    error(163);                 /* insufficient memory */
   /* fill with zeros; in MS-DOS, fread() may collapse CR/LF pairs to
    * a single '\n', so the string size may be smaller than the file
    * size. */
@@ -1154,7 +1154,7 @@ static void parserespf(char *filename,char *oname,char *ename,char *pname,
   fclose(fp);
   /* allocate table for option pointers */
   if ((argv=(char **)malloc(MAX_OPTIONS*sizeof(char*)))==NULL)
-    error(123);                 /* insufficient memory */
+    error(163);                 /* insufficient memory */
   /* fill the options table */
   ptr=strtok(string," \t\r\n");
   for (argc=1; argc<MAX_OPTIONS && ptr!=NULL; argc++) {
@@ -1163,7 +1163,7 @@ static void parserespf(char *filename,char *oname,char *ename,char *pname,
     ptr=strtok(NULL," \t\r\n");
   } /* for */
   if (ptr!=NULL)
-    error(122,"option table");   /* table overflow */
+    error(162,"option table");   /* table overflow */
   /* parse the option table */
   parseoptions(argc,argv,oname,ename,pname,rname,codepage);
   /* free allocated memory */
@@ -1273,7 +1273,7 @@ static void setconfig(char *root)
       #if !defined NO_CODEPAGE
         *ptr='\0';
         if (!cp_path(path,"codepage"))
-          error(129,path);        /* codepage path */
+          error(169,path);        /* codepage path */
       #endif
       /* also copy the root path (for the XML documentation) */
       #if !defined SC_LIGHT
@@ -2086,7 +2086,7 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
       size=needsub(&idxtag[numdim],&enumroot);  /* get size; size==0 for "var[]" */
       #if INT_MAX < LONG_MAX
         if (size > INT_MAX)
-          error(125);                   /* overflow, exceeding capacity */
+          error(165);                   /* overflow, exceeding capacity */
       #endif
 #if 0	/* We don't actually care */
       if (ispublic)
@@ -2386,7 +2386,7 @@ static int declloc(int fstatic)
 		  idxtag[numdim] = dim_sym ? dim_sym->tag : 0;
           #if INT_MAX < LONG_MAX
 		    if (dim[numdim] > INT_MAX)
-			  error(125);                   /* overflow, exceeding capacity */
+			  error(165);                   /* overflow, exceeding capacity */
           #endif
         } else {
           error(29); /* invalid expression, assumed 0 */
@@ -3277,8 +3277,15 @@ int parse_typeexpr(declinfo_t *decl, const token_t *first, int flags)
     lextok(&tok);
   }
 
-  if (tok.id == tLABEL || tok.id == '[')
+  if (tok.id == tLABEL && (flags & DECLFLAG_ONLY_NEW_TYPES)) {
+    error(120);
     return FALSE;
+  }
+
+  if (tok.id == '[') {
+    error(121);
+    return FALSE;
+  }
 
   switch (tok.id) {
     case tINT:
@@ -3306,6 +3313,7 @@ int parse_typeexpr(declinfo_t *decl, const token_t *first, int flags)
         else if (decl->tag == 0)
           error(98, "_", "int");
       }
+      break;
     default:
       return FALSE;
   }
@@ -3443,20 +3451,26 @@ methodmap_method_t *parse_method(methodmap_t *map)
     if (!is_bind) {
       // All we know at this point is that we do NOT have a method bind. Keep
       // pattern matching for an inline constructor, destructor, or method.
-      if (!got_symbol) {
-        // We never saw an initial symbol, so it should be a destructor. If we
-        // don't see a '~', the current token (which is not a symbol) will fail
-        // the needsymbol() check, and we'll bail out.
-        is_dtor = matchtoken('~');
+      if (!got_symbol && matchtoken('~')) {
+        // ::= '~' ident
+        is_dtor = TRUE;
         if (!needsymbol(&ident))
           return NULL;
-      } else if (matchtoken('(')) {
-        // There's no type expression. this is probably a constructor.
+      } else if (got_symbol && matchtoken('(')) {
+        // ::= ident '('
+
+        // Push the '(' token back for declargs().
         is_ctor = TRUE;
+        lexpush();
       } else {
+        // The first token of the type expression is either the symbol we
+        // predictively parsed earlier, or it's been pushed back into the
+        // lex buffer.
+        const token_t *first = got_symbol ? &ident.tok : NULL;
+
         // Parse for type expression, priming it with the token we predicted
         // would be an identifier.
-        if (!parse_decl(&decl, &ident.tok, 0))
+        if (!parse_decl(&decl, first, DECLFLAG_ONLY_NEW_TYPES))
           return NULL;
 
         // Now, we should get an identifier.
@@ -3477,6 +3491,10 @@ methodmap_method_t *parse_method(methodmap_t *map)
   if (is_dtor) {
     if (strcmp(ident.name, map->name) != 0)
       error(114, "destructor", spectype, map->name);
+
+    // Make sure the final name has "~" in it.
+    strcpy(ident.name, "~");
+    strcat(ident.name, map->name);
   } else if (is_ctor) {
     if (strcmp(ident.name, map->name) != 0)
       error(114, "constructor", spectype, map->name);
@@ -3484,28 +3502,35 @@ methodmap_method_t *parse_method(methodmap_t *map)
   
   symbol *target = NULL;
   if (is_bind) {
+    // Find an existing symbol.
     target = findglb(bindsource.name, sGLOBAL);
     if (!target)
       error(17, bindsource.name);
     else if (target->ident != iFUNCTN) 
       error(10);
-    // if (decl.usage & uCONST)
-    //   error(112, map->name);
-
-    // funcstub_setup_t setup;
-    // if (is_dtor)
-    //   setup.return_tag = -1;
-    // else if (is_ctor)
-    //   setup.return_tag = map->tag;
-    // else
-    //   setup.return_tag = pc_addtag(decl.tag);
-
-    // setup.this_tag = map->tag;
-
-    // if (is_native)
-    //   target = funcstub(TRUE, &setup);
   } else {
-    error(10);
+    funcstub_setup_t setup;
+    if (is_dtor)
+      setup.return_tag = -1;
+    else if (is_ctor)
+      setup.return_tag = map->tag;
+    else
+      setup.return_tag = decl.tag;
+
+    if (is_ctor)
+      setup.this_tag = 0;
+    else
+      setup.this_tag = map->tag;
+
+    // Build a new symbol. Construct a temporary name including the class.
+    char fullname[METHOD_NAMEMAX + 1];
+    strcpy(fullname, map->name);
+    strcat(fullname, ".");
+    strcat(fullname, ident.name);
+    setup.name = fullname;
+
+    if (is_native)
+      target = funcstub(TRUE, &setup);
   }
 
   if (!target)
@@ -3530,10 +3555,6 @@ methodmap_method_t *parse_method(methodmap_t *map)
       error(119);
       return NULL;
     }
-
-    // Make sure the final name has "~" in it.
-    strcpy(ident.name, "~");
-    strcat(ident.name, map->name);
   }
 
   // Verify constructor targets.
@@ -3553,8 +3574,6 @@ methodmap_method_t *parse_method(methodmap_t *map)
   methodmap_method_t *method = (methodmap_method_t *)calloc(1, sizeof(methodmap_method_t));
   strcpy(method->name, ident.name);
   method->target = target;
-  if (is_dtor)
-    map->dtor = method;
 
   // If the symbol is a constructor, we bypass the initial argument checks.
   if (is_ctor) {
@@ -3586,6 +3605,9 @@ methodmap_method_t *parse_method(methodmap_t *map)
   }
   if (!ok)
     error(108, spectype, map->name);
+
+  if (is_dtor)
+    map->dtor = method;
 
   return method;
 }
@@ -3668,7 +3690,7 @@ static void domethodmap(LayoutSpec spec)
 
     methods = (methodmap_method_t **)realloc(map->methods, sizeof(methodmap_method_t *) * (map->nummethods + 1));
     if (!methods) {
-      error(123);
+      error(163);
       return;
     }
     map->methods = methods;
@@ -4043,7 +4065,7 @@ static void decl_enum(int vclass)
       enumsym->usage |= uENUMROOT;
     /* start a new list for the element names */
     if ((enumroot=(constvalue*)malloc(sizeof(constvalue)))==NULL)
-      error(123);                       /* insufficient memory (fatal error) */
+      error(163);                       /* insufficient memory (fatal error) */
     memset(enumroot,0,sizeof(constvalue));
   } else {
     enumsym=NULL;
@@ -4193,7 +4215,7 @@ static void attachstatelist(symbol *sym, int state_id)
     constvalue *stateptr;
     if (sym->states==NULL) {
       if ((sym->states=(constvalue*)malloc(sizeof(constvalue)))==NULL)
-        error(123);             /* insufficient memory (fatal error) */
+        error(163);             /* insufficient memory (fatal error) */
       memset(sym->states,0,sizeof(constvalue));
     } /* if */
     /* see whether the id already exists (add new state only if it does not
@@ -4549,7 +4571,7 @@ static symbol *funcstub(int fnative, const funcstub_setup_t *setup)
   int tok,tag,fpublic;
   char *str;
   cell val,size;
-  char symbolname[sNAMEMAX+1];
+  char symbolname[METHOD_NAMEMAX+1];
   int idxtag[sDIMEN_MAX];
   int dim[sDIMEN_MAX];
   int numdim;
@@ -4585,7 +4607,7 @@ static symbol *funcstub(int fnative, const funcstub_setup_t *setup)
         error(9);                 /* invalid array size */
       #if INT_MAX < LONG_MAX
         if (size > INT_MAX)
-          error(125);             /* overflow, exceeding capacity */
+          error(165);             /* overflow, exceeding capacity */
       #endif
       dim[numdim++]=(int)size;
     } /* while */
@@ -4594,28 +4616,32 @@ static symbol *funcstub(int fnative, const funcstub_setup_t *setup)
   if (tag == pc_tag_string && numdim && dim[numdim-1])
     dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
 
-  tok=lex(&val,&str);
-  fpublic=(tok==tPUBLIC) || (tok==tSYMBOL && str[0]==PUBLIC_CHAR);
-  if (fnative) {
-    if (fpublic || tok==tSTOCK || tok==tSTATIC || (tok==tSYMBOL && *str==PUBLIC_CHAR))
-      error(42);                /* invalid combination of class specifiers */
-  } else {
-    if (tok==tPUBLIC || tok==tSTOCK || tok==tSTATIC)
-      tok=lex(&val,&str);
-  } /* if */
-
-  if (tok==tOPERATOR) {
-    opertok=operatorname(symbolname);
-    if (opertok==0)
-      return NULL;              /* error message already given */
-    check_operatortag(opertok,tag,symbolname);
-  } else {
-    if (tok!=tSYMBOL && freading) {
-      error(10);                /* illegal function or declaration */
-      return NULL;
+  if (!setup || !setup->name) {
+    tok=lex(&val,&str);
+    fpublic=(tok==tPUBLIC) || (tok==tSYMBOL && str[0]==PUBLIC_CHAR);
+    if (fnative) {
+      if (fpublic || tok==tSTOCK || tok==tSTATIC || (tok==tSYMBOL && *str==PUBLIC_CHAR))
+        error(42);                /* invalid combination of class specifiers */
+    } else {
+      if (tok==tPUBLIC || tok==tSTOCK || tok==tSTATIC)
+        tok=lex(&val,&str);
     } /* if */
-    strcpy(symbolname,str);
-  } /* if */
+
+    if (tok==tOPERATOR) {
+      opertok=operatorname(symbolname);
+      if (opertok==0)
+        return NULL;              /* error message already given */
+      check_operatortag(opertok,tag,symbolname);
+    } else {
+      if (tok!=tSYMBOL && freading) {
+        error(10);                /* illegal function or declaration */
+        return NULL;
+      } /* if */
+      strcpy(symbolname,str);
+    } /* if */
+  } else {
+    strcpy(symbolname, setup->name);
+  }
   needtoken('(');               /* only functions may be native/forward */
 
   sym=fetchfunc(symbolname,tag);/* get a pointer to the function entry */
@@ -4629,7 +4655,11 @@ static symbol *funcstub(int fnative, const funcstub_setup_t *setup)
   } /* if */
   sym->usage|=uFORWARD;
 
-  declargs(sym,FALSE);
+  const int *thistag = NULL;
+  if (setup && setup->this_tag)
+    thistag = &setup->this_tag;
+
+  declargs(sym, FALSE, thistag);
   /* "declargs()" found the ")" */
   sc_attachdocumentation(sym);  /* attach any documenation to the function */
   if (!operatoradjust(opertok,sym,symbolname,tag))
@@ -4782,7 +4812,7 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
     error(235,symbolname);
 #endif
   /* declare all arguments */
-  argcnt=declargs(sym,TRUE);
+  argcnt=declargs(sym, TRUE, NULL);
   opererror=!operatoradjust(opertok,sym,symbolname,tag);
   if (strcmp(symbolname,uMAINFUNC)==0 || strcmp(symbolname,uENTRYFUNC)==0) {
     if (argcnt>0)
@@ -4959,7 +4989,7 @@ static int argcompare(arginfo *a1,arginfo *a2)
  *  This routine adds an entry in the local symbol table for each argument
  *  found in the argument list. It returns the number of arguments.
  */
-static int declargs(symbol *sym,int chkshadow)
+static int declargs(symbol *sym, int chkshadow, const int *thistag)
 {
   #define MAXTAGS 16
   char *ptr;
@@ -4981,7 +5011,23 @@ static int declargs(symbol *sym,int chkshadow)
   ident=iVARIABLE;
   numtags=0;
   fconst=FALSE;
-  fpublic= (sym->usage & (uPUBLIC|uSTOCK))!=0;
+  fpublic = (sym->usage & (uPUBLIC|uSTOCK))!=0;
+
+  if (thistag) {
+    // Allocate space for a new argument, then terminate.
+    sym->dim.arglist = (arginfo *)realloc(sym->dim.arglist, (argcnt + 2) * sizeof(arginfo));
+    memset(&sym->dim.arglist[argcnt + 1], 0, sizeof(arginfo));
+
+    arginfo *argptr = &sym->dim.arglist[argcnt];
+    memset(argptr, 0, sizeof(*argptr));
+    strcpy(argptr->name, "this");
+    argptr->ident = iVARIABLE;
+    argptr->tags = malloc(sizeof(int));
+    argptr->tags[0] = *thistag;
+    argptr->numtags = 1;
+    argcnt++;
+  }
+
   /* the '(' parantheses has already been parsed */
   if (!matchtoken(')')){
     do {                                /* there are arguments; process them */
@@ -5046,7 +5092,7 @@ static int declargs(symbol *sym,int chkshadow)
           /* redimension the argument list, add the entry */
           sym->dim.arglist=(arginfo*)realloc(sym->dim.arglist,(argcnt+2)*sizeof(arginfo));
           if (sym->dim.arglist==0)
-            error(123);                 /* insufficient memory */
+            error(163);                 /* insufficient memory */
           memset(&sym->dim.arglist[argcnt+1],0,sizeof(arginfo));  /* keep the list terminated */
           sym->dim.arglist[argcnt]=arg;
         } else {
@@ -5075,7 +5121,7 @@ static int declargs(symbol *sym,int chkshadow)
           /* redimension the argument list, add the entry iVARARGS */
           sym->dim.arglist=(arginfo*)realloc(sym->dim.arglist,(argcnt+2)*sizeof(arginfo));
           if (sym->dim.arglist==0)
-            error(123);                 /* insufficient memory */
+            error(163);                 /* insufficient memory */
           memset(&sym->dim.arglist[argcnt+1],0,sizeof(arginfo));  /* keep the list terminated */
           sym->dim.arglist[argcnt].ident=iVARARGS;
           sym->dim.arglist[argcnt].hasdefault=FALSE;
@@ -5084,7 +5130,7 @@ static int declargs(symbol *sym,int chkshadow)
           sym->dim.arglist[argcnt].numtags=numtags;
           sym->dim.arglist[argcnt].tags=(int*)malloc(numtags*sizeof tags[0]);
           if (sym->dim.arglist[argcnt].tags==NULL)
-            error(123);                 /* insufficient memory */
+            error(163);                 /* insufficient memory */
           memcpy(sym->dim.arglist[argcnt].tags,tags,numtags*sizeof tags[0]);
         } else {
           if (argcnt>oldargcnt || sym->dim.arglist[argcnt].ident!=iVARARGS)
@@ -5179,7 +5225,7 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
       size=needsub(&arg->idxtag[arg->numdim],&enumroot);/* may be zero here, it is a pointer anyway */
       #if INT_MAX < LONG_MAX
         if (size > INT_MAX)
-          error(125);           /* overflow, exceeding capacity */
+          error(165);           /* overflow, exceeding capacity */
       #endif
       arg->dim[arg->numdim]=(int)size;
       arg->numdim+=1;
@@ -5261,7 +5307,7 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
           cell val;
           tokeninfo(&val,&name);
           if ((arg->defvalue.size.symname=duplicatestring(name)) == NULL)
-            error(123);         /* insufficient memory */
+            error(163);         /* insufficient memory */
           arg->defvalue.size.level=0;
           if (size_tag_token==uSIZEOF || size_tag_token==uCOUNTOF) {
             while (matchtoken('[')) {
@@ -5287,7 +5333,7 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
   arg->numtags=numtags;
   arg->tags=(int*)malloc(numtags*sizeof tags[0]);
   if (arg->tags==NULL)
-    error(123);                 /* insufficient memory */
+    error(163);                 /* insufficient memory */
   memcpy(arg->tags,tags,numtags*sizeof tags[0]);
   argsym=findloc(name);
   if (argsym!=NULL) {
@@ -6035,7 +6081,7 @@ static constvalue *insert_constval(constvalue *prev,constvalue *next,const char 
   constvalue *cur;
 
   if ((cur=(constvalue*)malloc(sizeof(constvalue)))==NULL)
-    error(123);       /* insufficient memory (fatal error) */
+    error(163);       /* insufficient memory (fatal error) */
   memset(cur,0,sizeof(constvalue));
   if (name!=NULL) {
     assert(strlen(name)<=sNAMEMAX);
@@ -7283,7 +7329,7 @@ static void addwhile(int *ptr)
   ptr[wqLOOP]=getlabel();
   ptr[wqEXIT]=getlabel();
   if (wqptr>=(wq+wqTABSZ-wqSIZE))
-    error(122,"loop table");    /* loop table overflow (too many active loops)*/
+    error(162,"loop table");    /* loop table overflow (too many active loops)*/
   k=0;
   while (k<wqSIZE){     /* copy "ptr" to while queue table */
     *wqptr=*ptr;

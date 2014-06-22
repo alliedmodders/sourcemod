@@ -197,7 +197,7 @@ AddToHashTable(HashTable *ht, symbol *sym)
 
     he = (HashEntry *)malloc(sizeof(HashEntry));
     if (!he)
-      error(123);
+      error(163);
     he->sym = sym;
     he->next = NULL;
     *hep = he;

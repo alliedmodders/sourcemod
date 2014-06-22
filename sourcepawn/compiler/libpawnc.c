@@ -73,7 +73,7 @@ static char *prefix[3]={ "error", "fatal error", "warning" };
 		char *pre;
 		int idx;
 
-		if (number < 120)
+		if (number < 160)
 			idx = 0;
 		else if (number < 200)
 			idx = 1;
