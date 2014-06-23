@@ -657,7 +657,7 @@ void HTTPSessionManager::RunFrame()
 	{
 		if (!callbacks.empty())
 		{
-			HTTPRequest request = this->callbacks.back();
+			HTTPRequest request = this->callbacks[0];
 			HandleError herr;
 			IPlugin *parent = plsys->PluginFromHandle(request.plugin, &herr);
 
@@ -682,7 +682,7 @@ void HTTPSessionManager::RunFrame()
 				}
 			}
 
-			callbacks.pop();
+			callbacks.remove(0);
 		}
 
 		callbacks_.DoUnlock();
