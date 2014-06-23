@@ -555,19 +555,27 @@ cell_t TF2_IsHolidayActive(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
 
-	// UTIL_IsHolidayActive(int)
+	// CTFGameRules::IsHolidayActive(int)
 	if (!pWrapper)
 	{
-		REGISTER_NATIVE_ADDR("IsHolidayActive", 
-			PassInfo pass[1]; \
-			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].size = sizeof(int); \
-			pass[0].type = PassType_Basic; \
-			PassInfo ret; \
-			ret.flags = PASSFLAG_BYVAL; \
-			ret.size = sizeof(bool); \
-			ret.type = PassType_Basic; \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &ret, pass, 1))
+		int offset;
+		if (!g_pGameConf->GetOffset("IsHolidayActive", &offset))
+		{
+			return pContext->ThrowNativeError("Failed to locate function");
+		}
+
+		PassInfo pass[1];
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].size = sizeof(int);
+		pass[0].type = PassType_Basic;
+		PassInfo ret;
+		ret.flags = PASSFLAG_BYVAL;
+		ret.size = sizeof(bool);
+		ret.type = PassType_Basic;
+
+		pWrapper = g_pBinTools->CreateVCall(offset, 0, 0, &ret, pass, 1);
+
+		g_RegNatives.Register(pWrapper);
 	}
 
 	unsigned char vstk[sizeof(int)];
