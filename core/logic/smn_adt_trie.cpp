@@ -37,7 +37,6 @@
 #include "sm_memtable.h"
 
 HandleType_t htCellTrie;
-HandleType_t htSnapshot;
 
 enum EntryType
 {
@@ -168,22 +167,6 @@ struct CellTrie : public ke::Refcounted<CellTrie>
 	StringHashMap<Entry> map;
 };
 
-struct TrieSnapshot
-{
-	TrieSnapshot()
-		: strings(128)
-	{ }
-
-	size_t mem_usage()
-	{
-		return length * sizeof(int) + strings.GetMemTable()->GetMemUsage();
-	}
-
-	size_t length;
-	ke::AutoArray<int> keys;
-	BaseStringTable strings;
-};
-
 class TrieHelpers : 
 	public SMGlobalClass,
 	public IHandleTypeDispatch
@@ -192,11 +175,9 @@ public: //SMGlobalClass
 	void OnSourceModAllInitialized()
 	{
 		htCellTrie = handlesys->CreateType("Trie", this, 0, NULL, NULL, g_pCoreIdent, NULL);
-		htSnapshot = handlesys->CreateType("TrieSnapshot", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 	}
 	void OnSourceModShutdown()
 	{
-		handlesys->RemoveType(htSnapshot, g_pCoreIdent);
 		handlesys->RemoveType(htCellTrie, g_pCoreIdent);
 	}
 public: //IHandleTypeDispatch
@@ -206,9 +187,6 @@ public: //IHandleTypeDispatch
 		{
 			CellTrie *pTrie = (CellTrie *)object;
 			pTrie->Release();
-		} else {
-			TrieSnapshot *snapshot = (TrieSnapshot *)object;
-			delete snapshot;
 		}
 	}
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
@@ -217,9 +195,6 @@ public: //IHandleTypeDispatch
 		{
 			CellTrie *pArray = (CellTrie *)object;
 			*pSize = sizeof(CellTrie) + pArray->map.mem_usage();
-		} else {
-			TrieSnapshot *snapshot = (TrieSnapshot *)object;
-			*pSize = sizeof(TrieSnapshot) + snapshot->mem_usage();
 		}
 		return true;
 	}
@@ -540,100 +515,6 @@ static cell_t GetTrieSize(IPluginContext *pContext, const cell_t *params)
 	return pTrie->map.elements();
 }
 
-static cell_t CreateTrieSnapshot(IPluginContext *pContext, const cell_t *params)
-{
-	HandleError err;
-	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
-
-	Handle_t hndl = params[1];
-
-	CellTrie *pTrie;
-	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
-	}
-
-	TrieSnapshot *snapshot = new TrieSnapshot;
-	snapshot->length = pTrie->map.elements();
-	snapshot->keys = new int[snapshot->length];
-	size_t i = 0;
-	for (StringHashMap<Entry>::iterator iter = pTrie->map.iter(); !iter.empty(); iter.next(), i++)
-		snapshot->keys[i] = snapshot->strings.AddString(iter->key.chars(), iter->key.length());
-	assert(i == snapshot->length);
-
-	if ((hndl = handlesys->CreateHandle(htSnapshot, snapshot, pContext->GetIdentity(), g_pCoreIdent, NULL))
-		== BAD_HANDLE)
-	{
-		delete snapshot;
-		return BAD_HANDLE;
-	}
-
-	return hndl;
-}
-
-static cell_t TrieSnapshotLength(IPluginContext *pContext, const cell_t *params)
-{
-	HandleError err;
-	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
-
-	Handle_t hndl = params[1];
-
-	TrieSnapshot *snapshot;
-	if ((err = handlesys->ReadHandle(hndl, htSnapshot, &sec, (void **)&snapshot))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
-	}
-
-	return snapshot->length;
-}
-
-static cell_t TrieSnapshotKeyBufferSize(IPluginContext *pContext, const cell_t *params)
-{
-	HandleError err;
-	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
-
-	Handle_t hndl = params[1];
-
-	TrieSnapshot *snapshot;
-	if ((err = handlesys->ReadHandle(hndl, htSnapshot, &sec, (void **)&snapshot))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
-	}
-
-	unsigned index = params[2];
-	if (index >= snapshot->length)
-		return pContext->ThrowNativeError("Invalid index %d", index);
-
-	return strlen(snapshot->strings.GetString(snapshot->keys[index])) + 1;
-}
-
-static cell_t GetTrieSnapshotKey(IPluginContext *pContext, const cell_t *params)
-{
-	HandleError err;
-	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
-
-	Handle_t hndl = params[1];
-
-	TrieSnapshot *snapshot;
-	if ((err = handlesys->ReadHandle(hndl, htSnapshot, &sec, (void **)&snapshot))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
-	}
-
-	unsigned index = params[2];
-	if (index >= snapshot->length)
-		return pContext->ThrowNativeError("Invalid index %d", index);
-
-	size_t written;
-	const char *str = snapshot->strings.GetString(snapshot->keys[index]);
-	pContext->StringToLocalUTF8(params[3], params[4], str, &written);
-	return written;
-}
-
 REGISTER_NATIVES(trieNatives)
 {
 	{"ClearTrie",				ClearTrie},
@@ -646,9 +527,5 @@ REGISTER_NATIVES(trieNatives)
 	{"SetTrieString",			SetTrieString},
 	{"SetTrieValue",			SetTrieValue},
 	{"GetTrieSize",				GetTrieSize},
-	{"CreateTrieSnapshot",		CreateTrieSnapshot},
-	{"TrieSnapshotLength",		TrieSnapshotLength},
-	{"TrieSnapshotKeyBufferSize", TrieSnapshotKeyBufferSize},
-	{"GetTrieSnapshotKey",		GetTrieSnapshotKey},
 	{NULL,						NULL},
 };
