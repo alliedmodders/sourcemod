@@ -12,127 +12,127 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-  RegServerCmd("test_tries", RunTests);
+  RegServerCmd("test_maps", RunTests);
 }
 
 public Action:RunTests(argc)
 {
-  new Handle:trie = CreateTrie();
+  new AdtMap:map = AdtMap();
 
   for (new i = 0; i < 64; i++) {
     new String:buffer[24];
     Format(buffer, sizeof(buffer), "%d", i);
 
-    if (!SetTrieValue(trie, buffer, i))
-      ThrowError("set trie to %d failed", i);
+    if (!map.SetValue(buffer, i))
+      ThrowError("set map to %d failed", i);
 
     new value;
-    if (!GetTrieValue(trie, buffer, value))
-      ThrowError("get trie %d", i);
+    if (!map.GetValue(buffer, value))
+      ThrowError("get map %d", i);
     if (value != i)
-      ThrowError("get trie %d == %d", i, i);
+      ThrowError("get map %d == %d", i, i);
   }
 
   // Setting 17 without replace should fail.
   new value;
-  if (SetTrieValue(trie, "17", 999, false))
-    ThrowError("set trie 17 should fail");
-  if (!GetTrieValue(trie, "17", value) || value != 17)
+  if (SetTrieValue(map, "17", 999, false))
+    ThrowError("set map 17 should fail");
+  if (!map.GetValue("17", value) || value != 17)
     ThrowError("value at 17 not correct");
-  if (!SetTrieValue(trie, "17", 999))
-    ThrowError("set trie 17 = 999 should succeed");
-  if (!GetTrieValue(trie, "17", value) || value != 999)
+  if (!SetTrieValue(map, "17", 999))
+    ThrowError("set map 17 = 999 should succeed");
+  if (!map.GetValue("17", value) || value != 999)
     ThrowError("value at 17 not correct");
 
   // Check size is 64.
-  if (GetTrieSize(trie) != 64)
-    ThrowError("trie size not 64");
+  if (map.Size != 64)
+    ThrowError("map size not 64");
 
   // Check "cat" is not found.
   new array[64];
   new String:string[64];
-  if (GetTrieValue(trie, "cat", value) ||
-      GetTrieArray(trie, "cat", array, sizeof(array)) ||
-      GetTrieString(trie, "cat", string, sizeof(string)))
+  if (map.GetValue("cat", value) ||
+      map.GetArray("cat", array, sizeof(array)) ||
+      map.GetString("cat", string, sizeof(string)))
   {
-    ThrowError("trie should not have a cat");
+    ThrowError("map should not have a cat");
   }
 
   // Check that "17" is not a string or array.
-  if (GetTrieArray(trie, "17", array, sizeof(array)) ||
-      GetTrieString(trie, "17", string, sizeof(string)))
+  if (map.GetArray("17", array, sizeof(array)) ||
+      map.GetString("17", string, sizeof(string)))
   {
     ThrowError("entry 17 should not be an array or string");
   }
 
   // Strings.
-  if (!SetTrieString(trie, "17", "hellokitty"))
+  if (!map.SetString("17", "hellokitty"))
     ThrowError("17 should be string");
-  if (!GetTrieString(trie, "17", string, sizeof(string)) ||
+  if (!map.GetString("17", string, sizeof(string)) ||
       strcmp(string, "hellokitty") != 0)
   {
     ThrowError("17 should be hellokitty");
   }
-  if (GetTrieValue(trie, "17", value) ||
-      GetTrieArray(trie, "17", array, sizeof(array)))
+  if (map.GetValue("17", value) ||
+      map.GetArray("17", array, sizeof(array)))
   {
     ThrowError("entry 17 should not be an array or string");
   }
 
   // Arrays.
   new data[5] = { 93, 1, 2, 3, 4 };
-  if (!SetTrieArray(trie, "17", data, 5))
+  if (!map.SetArray("17", data, 5))
     ThrowError("17 should be string");
-  if (!GetTrieArray(trie, "17", array, sizeof(array)))
+  if (!map.GetArray("17", array, sizeof(array)))
     ThrowError("17 should be hellokitty");
   for (new i = 0; i < 5; i++) {
     if (data[i] != array[i])
       ThrowError("17 slot %d should be %d, got %d", i, data[i], array[i]);
   }
-  if (GetTrieValue(trie, "17", value) ||
-      GetTrieString(trie, "17", string, sizeof(string)))
+  if (map.GetValue("17", value) ||
+      map.GetString("17", string, sizeof(string)))
   {
     ThrowError("entry 17 should not be an array or string");
   }
 
-  if (!SetTrieArray(trie, "17", data, 1))
+  if (!map.SetArray("17", data, 1))
     ThrowError("couldn't set 17 to 1-entry array");
   // Check that we fixed an old bug where 1-entry arrays where cells
-  if (!GetTrieArray(trie, "17", array, sizeof(array), value))
+  if (!map.GetArray("17", array, sizeof(array), value))
     ThrowError("couldn't fetch 1-entry array");
   if (value != 1)
     ThrowError("array size mismatch (%d, expected %d)", value, 1);
   // Check that we maintained backward compatibility.
-  if (!GetTrieValue(trie, "17", value))
+  if (!map.GetValue("17", value))
     ThrowError("backwards compatibility failed");
   if (value != data[0])
     ThrowError("wrong value (%d, expected %d)", value, data[0]);
 
   // Remove "17".
-  if (!RemoveFromTrie(trie, "17"))
+  if (!map.Remove("17"))
     ThrowError("17 should have been removed");
-  if (RemoveFromTrie(trie, "17"))
+  if (map.Remove("17"))
     ThrowError("17 should not exist");
-  if (GetTrieValue(trie, "17", value) ||
-      GetTrieArray(trie, "17", array, sizeof(array)) ||
-      GetTrieString(trie, "17", string, sizeof(string)))
+  if (map.GetValue("17", value) ||
+      map.GetArray("17", array, sizeof(array)) ||
+      map.GetString("17", string, sizeof(string)))
   {
-    ThrowError("trie should not have a 17");
+    ThrowError("map should not have a 17");
   }
 
-  ClearTrie(trie);
+  map.Clear();
 
-  if (GetTrieSize(trie))
+  if (map.Size)
     ThrowError("size should be 0");
 
-  SetTrieString(trie, "adventure", "time!");
-  SetTrieString(trie, "butterflies", "bees");
-  SetTrieString(trie, "egg", "egg");
+  map.SetString("adventure", "time!");
+  map.SetString("butterflies", "bees");
+  map.SetString("egg", "egg");
 
-  new Handle:keys = CreateTrieSnapshot(trie);
+  new Handle:keys = CreateTrieSnapshot(map);
   {
     if (TrieSnapshotLength(keys) != 3)
-      ThrowError("trie snapshot length should be 3");
+      ThrowError("map snapshot length should be 3");
 
     new bool:found[3];
     for (new i = 0; i < TrieSnapshotLength(keys); i++) {
@@ -153,10 +153,11 @@ public Action:RunTests(argc)
     if (!found[0] || !found[1] || !found[2])
       ThrowError("did not find all keys");
   }
-  CloseHandle(keys);
+  delete keys;
 
   PrintToServer("All tests passed!");
-  CloseHandle(trie);
+
+  delete map;
   return Plugin_Handled;
 }
 

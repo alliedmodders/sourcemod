@@ -49,7 +49,7 @@
  *
  * @return 			New Map Handle, which must be freed via CloseHandle().
  */
-native Handle:CreateTrie();
+native AdtMap:CreateTrie();
 
 /**
  * Sets a value in a hash map, either inserting a new entry or replacing an old one.
@@ -154,6 +154,22 @@ native ClearTrie(Handle:map);
  * @error			Invalid Handle.
  */
 native GetTrieSize(Handle:map);
+
+/* Object-oriented wrapper for maps. */
+methodmap AdtMap < Handle {
+	public AdtMap() = CreateTrie;
+	public SetValue() = SetTrieValue;
+	public SetArray() = SetTrieArray;
+	public SetString() = SetTrieString;
+	public GetValue() = GetTrieValue;
+	public GetArray() = GetTrieArray;
+	public GetString() = GetTrieString;
+	public Remove() = RemoveFromTrie;
+	public Clear() = ClearTrie;
+	property int Size {
+		public get() = GetTrieSize;
+	};
+};
 
 /**
  * Creates a snapshot of all keys in the map. If the map is changed after this
