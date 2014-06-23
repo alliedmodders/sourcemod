@@ -3511,7 +3511,6 @@ int check_this_tag(methodmap_t *map, symbol *target)
 
 int parse_property_accessor(const declinfo_t *decl, methodmap_t *map, methodmap_method_t *method)
 {
-  token_t tok;
   token_ident_t ident;
   int is_native = FALSE;
 
@@ -3590,10 +3589,10 @@ int parse_property_accessor(const declinfo_t *decl, methodmap_t *map, methodmap_
 methodmap_method_t *parse_property(methodmap_t *map)
 {
   declinfo_t decl;
+  token_ident_t ident;
+
   if (!parse_decl(&decl, NULL, DECLFLAG_ONLY_NEW_TYPES))
     return NULL;
-
-  token_ident_t ident;
   if (!needsymbol(&ident))
     return NULL;
 
