@@ -125,36 +125,6 @@ public Action:RunTests(argc)
   if (GetTrieSize(trie))
     ThrowError("size should be 0");
 
-  SetTrieString(trie, "adventure", "time!");
-  SetTrieString(trie, "butterflies", "bees");
-  SetTrieString(trie, "egg", "egg");
-
-  new Handle:keys = CreateTrieSnapshot(trie);
-  {
-    if (TrieSnapshotLength(keys) != 3)
-      ThrowError("trie snapshot length should be 3");
-
-    new bool:found[3];
-    for (new i = 0; i < TrieSnapshotLength(keys); i++) {
-      new size = TrieSnapshotKeyBufferSize(keys, i);
-      new String:buffer[size];
-      GetTrieSnapshotKey(keys, i, buffer, size);
-
-      if (strcmp(buffer, "adventure") == 0)
-        found[0] = true;
-      else if (strcmp(buffer, "butterflies") == 0)
-        found[1] = true;
-      else if (strcmp(buffer, "egg") == 0)
-        found[2] = true;
-      else
-        ThrowError("unexpected key: %s", buffer);
-    }
-
-    if (!found[0] || !found[1] || !found[2])
-      ThrowError("did not find all keys");
-  }
-  CloseHandle(keys);
-
   PrintToServer("All tests passed!");
   CloseHandle(trie);
   return Plugin_Handled;
