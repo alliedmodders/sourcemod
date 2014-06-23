@@ -311,7 +311,7 @@ typedef struct {
 // The method name buffer is larger since we can include our parent class's
 // name, a "." to separate it, a "~" for constructors, or a ".get/.set" for
 // accessors.
-#define METHOD_NAMEMAX sNAMEMAX * 6 + 2
+#define METHOD_NAMEMAX sNAMEMAX * 2 + 6
 
 typedef struct {
   token_t tok;
