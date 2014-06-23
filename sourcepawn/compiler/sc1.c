@@ -3341,6 +3341,26 @@ int parse_typeexpr(declinfo_t *decl, const token_t *first, int flags)
   return TRUE;
 }
 
+// Consumes a line, returns FALSE if EOF hit.
+static int consume_line()
+{
+  int val;
+  char *str;
+
+  // First check for EOF.
+  if (lex(&val, &str) == 0)
+    return FALSE;
+  lexpush();
+
+  while (!matchtoken(tTERM)) {
+    // Check for EOF.
+    if (lex(&val, &str) == 0)
+      return FALSE;
+  }
+
+  return TRUE;
+}
+
 // Parse a new-style declaration. If the name was already fetched (because we
 // didn't have enough lookahead), it can be given ahead of time.
 int parse_decl(declinfo_t *decl, const token_t *first, int flags)
@@ -3425,6 +3445,181 @@ void check_name_length(char *original)
   }
 }
 
+symbol *parse_inline_function(methodmap_t *map, const declinfo_t *decl, const char *name, int is_native, int is_ctor, int is_dtor)
+{
+  funcstub_setup_t setup;
+  if (is_dtor)
+    setup.return_tag = -1;
+  else if (is_ctor)
+    setup.return_tag = map->tag;
+  else
+    setup.return_tag = decl->tag;
+
+  if (is_ctor)
+    setup.this_tag = -1;
+  else
+    setup.this_tag = map->tag;
+
+  // Build a new symbol. Construct a temporary name including the class.
+  char fullname[METHOD_NAMEMAX + 1];
+  strcpy(fullname, map->name);
+  strcat(fullname, ".");
+  strcat(fullname, name);
+  check_name_length(fullname);
+
+  setup.name = fullname;
+  setup.is_new = TRUE;
+
+  symbol *target = NULL;
+  if (is_native) {
+    target = funcstub(TRUE, &setup);
+  } else {
+    if (!newfunc(&setup, FALSE, FALSE, TRUE, &target))
+      return NULL;
+    if (!target || (target->usage & uFORWARD)) {
+      error(10);
+      return NULL;
+    }
+  }
+  return target;
+}
+
+int check_this_tag(methodmap_t *map, symbol *target)
+{
+  // Check the implicit this parameter. Currently we only allow scalars. As
+  // to not encourage enum-structs, we will not allow those either.
+  const arginfo *first_arg = &target->dim.arglist[0];
+  if (first_arg->ident == 0 ||
+      first_arg->ident != iVARIABLE ||
+      (first_arg->usage & uCONST) ||
+      first_arg->hasdefault ||
+      first_arg->numtags != 1)
+  {
+    return FALSE;
+  }
+
+  // Ensure the methodmap tag is compatible with |this|.
+  int ok = FALSE;
+  for (methodmap_t *mapptr = map; mapptr; mapptr = mapptr->parent) {
+    if (first_arg->tags[0] == mapptr->tag) {
+      ok = TRUE;
+      break;
+    }
+  }
+  return ok;
+}
+
+int parse_property_accessor(const declinfo_t *decl, methodmap_t *map, methodmap_method_t *method)
+{
+  token_t tok;
+  token_ident_t ident;
+  int is_native = FALSE;
+
+  needtoken(tPUBLIC);
+  if (!matchsymbol(&ident)) {
+    if (!matchtoken(tNATIVE)) {
+      error(125);
+      return FALSE;
+    }
+    is_native = TRUE;
+    if (!needsymbol(&ident))
+      return FALSE;
+  }
+
+  int getter = TRUE;
+
+  if (strcmp(ident.name, "get") != 0) {
+    error(125);
+    return FALSE;
+  }
+
+  symbol *target = NULL;
+
+  token_ident_t bindsource;
+  int is_bind = match_method_bind();
+  if (is_bind) {
+    if (!needsymbol(&bindsource))
+      return FALSE;
+  }
+
+  if (is_bind) {
+    // Find an existing symbol.
+    target = findglb(bindsource.name, sGLOBAL);
+    if (!target)
+      error(17, bindsource.name);
+    else if (target->ident != iFUNCTN) 
+      error(10);
+  } else {
+    char tmpname[METHOD_NAMEMAX + 1];
+    strcpy(tmpname, method->name);
+    strcat(tmpname, ".get");
+    target = parse_inline_function(map, decl, tmpname, is_native, FALSE, FALSE);
+  }
+
+  if (!target)
+    return FALSE;
+
+  if (method->getter) {
+    error(126, "getter", method->name);
+    return FALSE;
+  }
+
+  if (getter) {
+    method->getter = target;
+
+    // Cannot have extra arguments.
+    if (target->dim.arglist[0].ident && target->dim.arglist[1].ident)
+      error(127);
+  }
+
+  // Must return the same tag as the property.
+  if (decl->tag != target->tag) {
+    const char *kind = getter ? "getter" : "setter";
+    error(128, "getter", map->name, decl->type);
+  }
+
+  if (!check_this_tag(map, target)) {
+    error(108, layout_spec_name(map->spec), map->name);
+    return FALSE;
+  }
+
+  needtoken(tTERM);
+  return TRUE;
+}
+
+methodmap_method_t *parse_property(methodmap_t *map)
+{
+  declinfo_t decl;
+  if (!parse_decl(&decl, NULL, DECLFLAG_ONLY_NEW_TYPES))
+    return NULL;
+
+  token_ident_t ident;
+  if (!needsymbol(&ident))
+    return NULL;
+
+  methodmap_method_t *method = (methodmap_method_t *)calloc(1, sizeof(methodmap_method_t));
+  strcpy(method->name, ident.name);
+  method->target = NULL;
+  method->getter = NULL;
+  method->setter = NULL;
+
+  if (!matchtoken(tTERM)) {
+    if (!needtoken('{'))
+      return method;
+
+    while (!matchtoken('}')) {
+      if (!parse_property_accessor(&decl, map,method)) {
+        if (!consume_line())
+          return NULL;
+      }
+    }
+
+    needtoken(tTERM);
+  }
+
+  return method;
+}
+
 methodmap_method_t *parse_method(methodmap_t *map)
 {
   int is_ctor = 0;
@@ -3440,8 +3635,6 @@ methodmap_method_t *parse_method(methodmap_t *map)
   // For binding syntax, like X() = Y, this stores the right-hand name.
   token_ident_t bindsource;
   strcpy(bindsource.name, "<unknown>");
-
-  needtoken(tPUBLIC);
 
   token_t tok;
   declinfo_t decl;
@@ -3539,39 +3732,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
     else if (target->ident != iFUNCTN) 
       error(10);
   } else {
-    funcstub_setup_t setup;
-    if (is_dtor)
-      setup.return_tag = -1;
-    else if (is_ctor)
-      setup.return_tag = map->tag;
-    else
-      setup.return_tag = decl.tag;
-
-    if (is_ctor)
-      setup.this_tag = -1;
-    else
-      setup.this_tag = map->tag;
-
-    // Build a new symbol. Construct a temporary name including the class.
-    char fullname[METHOD_NAMEMAX + 1];
-    strcpy(fullname, map->name);
-    strcat(fullname, ".");
-    strcat(fullname, ident.name);
-    check_name_length(fullname);
-
-    setup.name = fullname;
-    setup.is_new = TRUE;
-
-    if (is_native) {
-      target = funcstub(TRUE, &setup);
-    } else {
-      if (!newfunc(&setup, FALSE, FALSE, TRUE, &target))
-        return NULL;
-      if (!target || (target->usage & uFORWARD)) {
-        error(10);
-        return NULL;
-      }
-    }
+    target = parse_inline_function(map, &decl, ident.name, is_native, is_ctor, is_dtor);
   }
 
   if (!target)
@@ -3604,17 +3765,11 @@ methodmap_method_t *parse_method(methodmap_t *map)
       error(112, map->name);
   }
 
-  // Check that a method with this name doesn't already exist.
-  for (size_t i = 0; i < map->nummethods; i++) {
-    if (strcmp(map->methods[i]->name, ident.name) == 0) {
-      error(103, ident.name, spectype);
-      return NULL;
-    }
-  }
-
   methodmap_method_t *method = (methodmap_method_t *)calloc(1, sizeof(methodmap_method_t));
   strcpy(method->name, ident.name);
   method->target = target;
+  method->getter = NULL;
+  method->setter = NULL;
 
   // If the symbol is a constructor, we bypass the initial argument checks.
   if (is_ctor) {
@@ -3622,54 +3777,15 @@ methodmap_method_t *parse_method(methodmap_t *map)
     return method;
   }
 
-  // Check the implicit this parameter. Currently we only allow scalars. As
-  // to not encourage enum-structs, we will not allow those either.
-  const arginfo *first_arg = &target->dim.arglist[0];
-  if (first_arg->ident == 0 ||
-      first_arg->ident != iVARIABLE ||
-      (first_arg->usage & uCONST) ||
-      first_arg->hasdefault ||
-      first_arg->numtags != 1)
-  {
-    free(method);
+  if (!check_this_tag(map, target)) {
     error(108, spectype, map->name);
-    return NULL;
+    return method;
   }
-
-  // Ensure the methodmap tag is compatible with |this|.
-  int ok = 0;
-  for (methodmap_t *mapptr = map; mapptr; mapptr = mapptr->parent) {
-    if (first_arg->tags[0] == mapptr->tag) {
-      ok = 1;
-      break;
-    }
-  }
-  if (!ok)
-    error(108, spectype, map->name);
 
   if (is_dtor)
     map->dtor = method;
 
   return method;
-}
-
-static int consume_line()
-{
-  int val;
-  char *str;
-
-  // First check for EOF.
-  if (lex(&val, &str) == 0)
-    return FALSE;
-  lexpush();
-
-  while (!matchtoken(tTERM)) {
-    // Check for EOF.
-    if (lex(&val, &str) == 0)
-      return FALSE;
-  }
-
-  return TRUE;
 }
 
 /**
@@ -3718,10 +3834,30 @@ static void domethodmap(LayoutSpec spec)
 
   needtoken('{');
   while (!matchtoken('}')) {
-    methodmap_method_t *method;
+    token_t tok;
     methodmap_method_t **methods;
+    methodmap_method_t *method = NULL;
 
-    if ((method = parse_method(map)) == NULL) {
+    if (lextok(&tok) == tPUBLIC) {
+      method = parse_method(map);
+    } else if (tok.id == tSYMBOL && strcmp(tok.str, "property") == 0) {
+      method = parse_property(map);
+    } else {
+      error(124);
+    }
+
+    if (method) {
+      // Check that a method with this name doesn't already exist.
+      for (size_t i = 0; i < map->nummethods; i++) {
+        if (strcmp(map->methods[i]->name, method->name) == 0) {
+          error(103, method->name, spectype);
+          method = NULL;
+          break;
+        }
+      }
+    }
+
+    if (!method) {
       if (!consume_line())
         return;
       continue;
@@ -3794,7 +3930,7 @@ static void dodelete()
   // For some reason, we don't get a sysreq.n once this passes through the
   // peephole optimizer. I can't tell why. -dvander
   //
-  // push pri
+  // push.pri
   // push.c 1
   // sysreq.c N 1
   // stack 8
@@ -3803,7 +3939,7 @@ static void dodelete()
   {
     pushval(1);
     ffcall(map->dtor->target, NULL, 1);
-    map->dtor->target->usage |= uREAD;
+    markusage(map->dtor->target, uREAD);
   }
   markexpr(sEXPR,NULL,0);
 }
@@ -5079,8 +5215,18 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
     argptr->tags[0] = *thistag;
     argptr->numtags = 1;
 
-    addvariable2(argptr->name, (argcnt+3)*sizeof(cell), argptr->ident, sLOCAL, argptr->tags[0],
-                 argptr->dim, argptr->numdim, argptr->idxtag, 0);
+    symbol *sym = addvariable2(
+      argptr->name,
+      (argcnt+3)*sizeof(cell),
+      argptr->ident,
+      sLOCAL,
+      argptr->tags[0],
+      argptr->dim,
+      argptr->numdim,
+      argptr->idxtag,
+      0
+    );
+    markusage(sym, uREAD);
 
     argcnt++;
   }
