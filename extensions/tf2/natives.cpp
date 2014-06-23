@@ -34,6 +34,8 @@
 #include "time.h"
 #include "RegNatives.h"
 
+#include <ISDKTools.h>
+
 // native TF2_MakeBleed(client, attacker, Float:duration)
 cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 {
@@ -553,6 +555,12 @@ cell_t TF2_IsPlayerInDuel(IPluginContext *pContext, const cell_t *params)
 // native bool:TF2_IsHolidayActive(TFHoliday:holiday);
 cell_t TF2_IsHolidayActive(IPluginContext *pContext, const cell_t *params)
 {
+	void *pGameRules;
+	if (!g_pSDKTools || !(pGameRules = g_pSDKTools->GetGameRules()))
+	{
+		return pContext->ThrowNativeError("Failed to find GameRules");
+	}
+
 	static ICallWrapper *pWrapper = NULL;
 
 	// CTFGameRules::IsHolidayActive(int)
@@ -578,8 +586,10 @@ cell_t TF2_IsHolidayActive(IPluginContext *pContext, const cell_t *params)
 		g_RegNatives.Register(pWrapper);
 	}
 
-	unsigned char vstk[sizeof(int)];
+	unsigned char vstk[sizeof(void *) + sizeof(int)];
 	unsigned char *vptr = vstk;
+	*(void **)vptr = pGameRules;
+	vptr += sizeof(void *);
 	*(int *)vptr = params[1];
 	
 	bool retValue;
