@@ -52,7 +52,7 @@ funcenum HTTP_SessionCallback {
 };
 
 /**
- * Creates a new HTTP ready-to-use session handle. 
+ * Creates a new ready-to-use HTTP session handle. 
  * 
  * @return				Valid session handle on success, INVALID_HANDLE on failure.
  * 
