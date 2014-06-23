@@ -39,6 +39,7 @@ def run_tests(args):
             elif not compiled and kind != 'fail':
                 status = 'fail'
 
+            fails = []
             if status == 'ok' and kind != 'pass':
                 lines = []
                 with open(os.path.join(testdir, test + '.txt')) as fp:
@@ -46,18 +47,21 @@ def run_tests(args):
                         lines.append(line.strip())
                 for line in lines:
                     if line not in stdout:
-                        sys.stderr.write('Expected to find text in stdout: >>>\n')
-                        sys.stderr.write(text)
-                        sys.stderr.write('<<<\n')
-                        status = 'fail'
+                        fails += [
+                            'Expected to find text in stdout: >>>\n',
+                            line,
+                            '<<<\n',
+                        ]
                         break
             
-            if status == 'fail':
+            if status == 'fail' or len(fails):
                 print('Test {0} ... FAIL'.format(test))
                 failed = True
                 sys.stderr.write('FAILED! Dumping stdout/stderr:\n')
                 sys.stderr.write(stdout)
                 sys.stderr.write(stderr)
+                for line in fails:
+                    sys.stderr.write(line)
             else:
                 print('Test {0} ... OK'.format(test))
 

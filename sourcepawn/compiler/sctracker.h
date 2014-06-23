@@ -83,6 +83,8 @@ typedef struct methodmap_method_s
 {
   char name[METHOD_NAMEMAX + 1];
   symbol *target;
+  symbol *getter;
+  symbol *setter;
 } methodmap_method_t;
 
 typedef struct methodmap_s

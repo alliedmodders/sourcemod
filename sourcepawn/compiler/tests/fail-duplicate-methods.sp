@@ -1,7 +1,7 @@
-native X:Crab();
+native X:Crab(X:x);
 methodmap X {
-	public X() = Crab;
-	public X() = Crab;
+	public X2() = Crab;
+	public X2() = Crab;
 }
 
 public main() {

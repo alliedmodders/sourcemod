@@ -1786,6 +1786,28 @@ static int hier2(value *lval)
   } /* switch */
 }
 
+static void invoke_getter(methodmap_t *map, methodmap_method_t *method, svalue *thisval)
+{
+  if (thisval->lvalue)
+    rvalue(&thisval->val);
+
+  // push.pri
+  // push.c 1
+  // sysreq.c N 1
+  // stack 8
+  pushreg(sPRI);
+  markexpr(sPARM, NULL, 0);
+  {
+    pushval(1);
+    ffcall(method->getter, NULL, 1);
+    markusage(method->getter, uREAD);
+  }
+  markexpr(sEXPR, NULL, 0);
+
+  // We can't tell whether gets are effectful, but they really shouldn't be.
+  sideeffect = TRUE;
+}
+
 /*  hier1
  *
  *  The highest hierarchy level: it looks for pointer and array indices
@@ -1975,7 +1997,7 @@ restart:
         lval1->constval=0;
       } /* if */
 
-      // If there's a call coming up, keep parsing.
+      // If there's a call/fetch coming up, keep parsing.
       if (matchtoken('.')) {
         lexpush();
         goto restart;
@@ -2018,7 +2040,19 @@ restart:
           tokeninfo(&lexval, &lexstr);
           if ((method = methodmap_find_method(map, lexstr)) == NULL)
             error(105, map->name, lexstr);
-          if (method) {
+
+          if (method && method->getter) {
+            invoke_getter(map, method, &thisval);
+            clear_value(lval1);
+            lval1->ident = iEXPRESSION;
+            lval1->tag = method->getter->tag;
+            lvalue = FALSE;
+            goto restart;
+          }
+
+          if (!method || !method->target) {
+            error(105, map->name, lexstr);
+          } else {
             implicitthis = &thisval;
             sym = method->target;
           }
