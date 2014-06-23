@@ -3590,13 +3590,14 @@ methodmap_method_t *parse_property(methodmap_t *map)
 {
   declinfo_t decl;
   token_ident_t ident;
+  methodmap_method_t *method;
 
   if (!parse_decl(&decl, NULL, DECLFLAG_ONLY_NEW_TYPES))
     return NULL;
   if (!needsymbol(&ident))
     return NULL;
 
-  methodmap_method_t *method = (methodmap_method_t *)calloc(1, sizeof(methodmap_method_t));
+  method = (methodmap_method_t *)calloc(1, sizeof(methodmap_method_t));
   strcpy(method->name, ident.name);
   method->target = NULL;
   method->getter = NULL;
