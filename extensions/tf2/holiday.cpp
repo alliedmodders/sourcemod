@@ -31,49 +31,133 @@
 
 #include "holiday.h"
 
-CDetour *isHolidayDetour = NULL;
+SH_DECL_MANUALHOOK1(IsHolidayActive, 0, 0, 0, bool, int);
+SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, 0);
 
-IForward *g_isHolidayForward = NULL;
+HolidayManager g_HolidayManager;
 
-DETOUR_DECL_STATIC1(IsHolidayActive, bool, int, holiday)
+HolidayManager::HolidayManager() :
+m_iHookID(0),
+m_isHolidayForward(NULL),
+m_bInMap(false)
 {
-	bool actualres = DETOUR_STATIC_CALL(IsHolidayActive)(holiday);
-	if (!g_isHolidayForward)
+}
+
+void HolidayManager::OnSDKLoad(bool bLate)
+{
+	m_bInMap = bLate;
+
+	plsys->AddPluginsListener(this);
+	m_isHolidayForward = forwards->CreateForward("TF2_OnIsHolidayActive", ET_Event, 2, NULL, Param_Cell, Param_CellByRef);
+
+	SH_ADD_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &HolidayManager::Hook_LevelShutdown), false);
+}
+
+void HolidayManager::OnSDKUnload()
+{
+	UnhookIfNecessary();
+	SH_REMOVE_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &HolidayManager::Hook_LevelShutdown), false);
+
+	plsys->RemovePluginsListener(this);
+	forwards->ReleaseForward(m_isHolidayForward);
+}
+
+void HolidayManager::OnServerActivated()
+{
+	m_bInMap = true;
+
+	HookIfNecessary();
+}
+
+void HolidayManager::Hook_LevelShutdown()
+{
+	// GameRules is going away momentarily. Unhook before it does.
+	UnhookIfNecessary();
+
+	m_bInMap = false;
+}
+
+void HolidayManager::HookIfNecessary()
+{
+	// Already hooked
+	if (m_iHookID)
+		return;
+
+	// Nothing wants us
+	if (m_isHolidayForward->GetFunctionCount() == 0)
+		return;
+
+	void *pGameRules = GetGameRules();
+	if (!pGameRules)
+	{
+		if (m_bInMap)
+		{
+			g_pSM->LogError(myself, "Gamerules ptr not found. TF2_OnIsHolidayActive will not be available.");
+		}
+		return;
+	}
+
+	static int offset = -1;
+	if (offset == -1)
+	{
+		if (!g_pGameConf->GetOffset("IsHolidayActive", &offset))
+		{
+			g_pSM->LogError(myself, "IsHolidayActive gamedata offset missing. TF2_OnIsHolidayActive will not be available.");
+			return;
+		}
+
+		SH_MANUALHOOK_RECONFIGURE(IsHolidayActive, offset, 0, 0);
+	}
+
+	m_iHookID = SH_ADD_MANUALHOOK(IsHolidayActive, pGameRules, SH_MEMBER(this, &HolidayManager::Hook_IsHolidayActive), false);
+}
+
+void HolidayManager::UnhookIfNecessary()
+{
+	// Not hooked
+	if (!m_iHookID)
+		return;
+
+	// We're still wanted
+	if (m_isHolidayForward->GetFunctionCount() > 0)
+		return;
+
+	SH_REMOVE_HOOK_ID(m_iHookID);
+	m_iHookID = 0;
+}
+
+void HolidayManager::OnPluginLoaded(IPlugin *plugin)
+{
+	HookIfNecessary();
+}
+
+void HolidayManager::OnPluginUnloaded(IPlugin *plugin)
+{
+	UnhookIfNecessary();
+}
+
+bool HolidayManager::Hook_IsHolidayActive(int holiday)
+{
+	void *pGameRules = META_IFACEPTR(void *);
+
+	bool actualres = SH_MCALL(pGameRules, IsHolidayActive)(holiday);
+	if (!m_isHolidayForward)
 	{
 		g_pSM->LogMessage(myself, "Invalid Forward");
-		return actualres;
+		RETURN_META_VALUE(MRES_IGNORED, true);
 	}
 
 	cell_t result = 0;
 	cell_t newres = actualres ? 1 : 0;
 
-	g_isHolidayForward->PushCell(holiday);
-	g_isHolidayForward->PushCellByRef(&newres);
-	g_isHolidayForward->Execute(&result);
-	
+	m_isHolidayForward->PushCell(holiday);
+	m_isHolidayForward->PushCellByRef(&newres);
+	m_isHolidayForward->Execute(&result);
+
 	if (result > Pl_Continue)
 	{
-		return (newres == 0) ? false : true;
+		RETURN_META_VALUE(MRES_SUPERCEDE, (newres == 0) ? false : true);
 	}
 
-	return actualres;
-}
-
-bool InitialiseIsHolidayDetour()
-{
-	isHolidayDetour = DETOUR_CREATE_STATIC(IsHolidayActive, "IsHolidayActive");
-
-	if (isHolidayDetour != NULL)
-	{
-		isHolidayDetour->EnableDetour();
-		return true;
-	}
-
-	g_pSM->LogError(myself, "IsHolidayActive detour failed");
-	return false;
-}
-
-void RemoveIsHolidayDetour()
-{
-	isHolidayDetour->Destroy();
+	RETURN_META_VALUE(MRES_IGNORED, true);
 }

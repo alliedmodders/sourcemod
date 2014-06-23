@@ -42,6 +42,10 @@
 #include <server_class.h>
 #include <igameevents.h>
 
+namespace SourceMod {
+	class ISDKTools;
+}
+
 /**
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
@@ -116,7 +120,6 @@ public:
 #endif
 private:
 	bool m_CritDetoursEnabled;
-	bool m_IsHolidayDetourEnabled;
 	bool m_CondChecksEnabled;
 	bool m_RulesDetoursEnabled;
 	bool m_TeleportDetourEnabled;
@@ -139,6 +142,7 @@ enum TFClassType
 TFClassType ClassnameToType(const char *classname);
 
 extern IBinTools *g_pBinTools;
+extern ISDKTools *g_pSDKTools;
 extern IGameConfig *g_pGameConf;
 extern sm_sendprop_info_t *playerSharedOffset;
 
