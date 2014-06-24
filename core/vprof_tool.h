@@ -43,8 +43,9 @@ public:
 	const char *Name() KE_OVERRIDE;
 	const char *Description() KE_OVERRIDE;
 	bool Start() KE_OVERRIDE;
-	void Stop() KE_OVERRIDE;
+	void Stop(void (*render)(const char *fmt, ...)) KE_OVERRIDE;
 	bool IsActive() KE_OVERRIDE;
+	bool IsAttached() KE_OVERRIDE;
 	intptr_t RegisterCode(
 		uintptr_t addr,
 		size_t length,

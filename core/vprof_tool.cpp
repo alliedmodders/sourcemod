@@ -66,15 +66,22 @@ VProfTool::Start()
 }
 
 void
-VProfTool::Stop()
+VProfTool::Stop(void (*render)(const char *fmt, ...))
 {
 	g_VProfCurrentProfile.Stop();
+	RenderHelp(render);
 }
 
 bool
 VProfTool::IsActive()
 {
 	return g_VProfCurrentProfile.IsEnabled();
+}
+
+bool
+VProfTool::IsAttached()
+{
+	return true;
 }
 
 intptr_t

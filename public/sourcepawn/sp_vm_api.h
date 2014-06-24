@@ -1040,15 +1040,24 @@ namespace SourcePawn
 
 		/**
 		 * @brief Initiate a stop command.
+		 *
+		 * @param render            Function to render any help messages.
 		 */
-		virtual void Stop() = 0;
+		virtual void Stop(void (*render)(const char *fmt, ...)) = 0;
 	
 		/**
-		 * @brief Returns whether or not a profiler is active.
+		 * @brief Returns whether or not the profiler is currently profiling.
 		 *
 		 * @return                  True if active, false otherwise.
 		 */
 		virtual bool IsActive() = 0;
+
+		/**
+		 * @brief Returns whether the profiler is attached.
+		 *
+		 * @return                  True if attached, false otherwise.
+		 */
+		virtual bool IsAttached() = 0;
 
 		/**
 		 * @brief Registers JIT code with the profiler.

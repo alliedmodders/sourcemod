@@ -95,7 +95,7 @@ ProfileToolManager::OnRootConsoleCommand2(const char *cmdname, const ICommandArg
 			}
 			g_pSourcePawn2->DisableProfiling();
 			g_pSourcePawn2->SetProfilingTool(nullptr);
-			active_->Stop();
+			active_->Stop(render_help);
 			active_->RenderHelp(render_help);
 			return;
 		}
