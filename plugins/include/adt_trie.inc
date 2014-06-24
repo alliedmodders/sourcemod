@@ -49,7 +49,7 @@
  *
  * @return 			New Map Handle, which must be freed via CloseHandle().
  */
-native AdtStringMap:CreateTrie();
+native StringMap:CreateTrie();
 
 /**
  * Sets a value in a hash map, either inserting a new entry or replacing an old one.
