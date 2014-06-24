@@ -35,7 +35,6 @@
 #include <stdarg.h>
 #include "common_logic.h"
 #include "TextParsers.h"
-#include "Profiler.h"
 #include "sm_crc32.h"
 #include "MemoryUtils.h"
 #include "stringutil.h"
@@ -50,6 +49,7 @@
 #include "ExtensionSys.h"
 #include "ForwardSys.h"
 #include "AdminCache.h"
+#include "ProfileTools.h"
 
 sm_core_t smcore;
 IHandleSys *handlesys = &g_HandleSys;
@@ -109,11 +109,15 @@ static void DumpAdminCache(FILE *f)
 	g_Admins.DumpCache(f);
 }
 
+static void RegisterProfiler(IProfilingTool *tool)
+{
+	g_ProfileToolManager.RegisterTool(tool);
+}
+
 static sm_logic_t logic =
 {
 	NULL,
 	g_pThreader,
-	sm_profiler,
 	&g_Translator,
 	stristr,
 	CoreTranslate,
@@ -128,6 +132,7 @@ static sm_logic_t logic =
 	AddNatives,
 	DumpHandles,
 	DumpAdminCache,
+	RegisterProfiler,
 	&g_PluginSys,
 	&g_ShareSys,
 	&g_Extensions,

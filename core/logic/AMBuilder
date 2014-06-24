@@ -33,7 +33,6 @@ binary.sources += [
   'TextParsers.cpp',
   'smn_textparse.cpp',
   'smn_adt_trie.cpp',
-  'Profiler.cpp',
   'smn_functions.cpp',
   'smn_timers.cpp',
   'smn_players.cpp',
@@ -66,6 +65,7 @@ binary.sources += [
   'AdminCache.cpp',
   'sm_trie.cpp',
   'smn_console.cpp',
+  'ProfileTools.cpp',
 ]
 if builder.target_platform == 'windows':
   binary.sources += ['thread/WinThreads.cpp']

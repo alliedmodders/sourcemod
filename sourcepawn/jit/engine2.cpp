@@ -14,7 +14,7 @@ using namespace SourcePawn;
 
 SourcePawnEngine2::SourcePawnEngine2()
 {
-	m_Profiler = NULL;
+	profiler_ = NULL;
 	jit_enabled_ = true;
 }
 
@@ -147,22 +147,12 @@ void SourcePawnEngine2::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 
 const char *SourcePawnEngine2::GetEngineName()
 {
-	return "SourcePawn 1.2, jit-x86";
+	return "SourcePawn 1.3, jit-x86";
 }
 
 const char *SourcePawnEngine2::GetVersionString()
 {
 	return SOURCEMOD_VERSION;
-}
-
-IProfiler *SourcePawnEngine2::GetProfiler()
-{
-	return m_Profiler;
-}
-
-void SourcePawnEngine2::SetProfiler(IProfiler *profiler)
-{
-	m_Profiler = profiler;
 }
 
 IDebugListener *SourcePawnEngine2::SetDebugListener(IDebugListener *listener)

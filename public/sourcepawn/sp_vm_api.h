@@ -998,61 +998,99 @@ namespace SourcePawn
 	};
 
 	/**
-	 * @brief Represents a code profiler for plugins.
+	 * @brief Removed.
 	 */
-	class IProfiler
+	class IProfiler;
+
+	/**
+	 * @brief encapsulates a profiling tool that may be attached to SourcePawn.
+	 */
+	class IProfilingTool
 	{
 	public:
 		/**
-		 * @brief Invoked by the JIT to notify that a native is being started.
+		 * @brief Return the name of the profiling tool.
 		 *
-		 * @param pContext			Plugin context.
-		 * @param native			Native information.
+		 * @return                  Profiling tool name.
 		 */
-		virtual void OnNativeBegin(IPluginContext *pContext, sp_native_t *native) =0;
+		virtual const char *Name() = 0;
 
 		/**
-		 * @brief Invoked by the JIT to notify that the last native on the stack 
-		 * is no longer being executed.
+		 * @brief Description of the profiler.
+		 *
+		 * @return                  Description.
 		 */
-		virtual void OnNativeEnd() =0;
+		virtual const char *Description() = 0;
 
 		/**
-		 * @brief Invoked by the JIT to notify that a function call is starting.
+		 * @brief Called to render help text.
 		 *
-		 * @param pContext			Plugin context.
-		 * @param name				Function name, or NULL if not known.
-		 * @param code_addr			P-Code address.
+		 * @param  render           Function to render one line of text.
 		 */
-		virtual void OnFunctionBegin(IPluginContext *pContext, const char *name) =0;
+		virtual void RenderHelp(void (*render)(const char *fmt, ...)) = 0;
+	
+		/**
+		 * @brief Initiate a start command.
+		 *
+		 * Initiate start commands through a profiling tool, returning whether
+		 * or not the command is supported. If starting, SourceMod will generate
+		 * events even if it cannot signal the external profiler.
+		 */
+		virtual bool Start() = 0;
 
 		/**
-		 * @brief Invoked by the JIT to notify that the last function call has 
-		 * concluded.  In the case of an error inside a function, this will not 
-		 * be called.  Instead, the VM will call OnCallbackEnd() and the profiler 
-		 * stack must be unwound.
+		 * @brief Initiate a stop command.
 		 */
-		virtual void OnFunctionEnd() =0;
+		virtual void Stop() = 0;
+	
+		/**
+		 * @brief Returns whether or not a profiler is active.
+		 *
+		 * @return                  True if active, false otherwise.
+		 */
+		virtual bool IsActive() = 0;
 
 		/**
-		 * @brief Invoked by the VM to notify that a forward/callback is starting.
+		 * @brief Registers JIT code with the profiler.
 		 *
-		 * @param pContext			Plugin context.
-		 * @param pubfunc			Public function information.
-		 * @return					Unique number to pass to OnFunctionEnd().
+		 * @param addr              Address where the JIT code starts.
+		 * @param length            Length of the JIT code region.
+		 * @param name              Name to associate with the JIT code.
+		 * @param line_map			An array of pairs where the ith element is
+		 *                          an offset from code_addr and the i+1th
+		 *                          element is a line number.
+		 * @param line_count        Number of lines (line_map size should be lines*2).
+		 * @return                  A cookie for deregistering, or 0 on failure.
 		 */
-		virtual int OnCallbackBegin(IPluginContext *pContext, sp_public_t *pubfunc) =0;
+		virtual intptr_t RegisterCode(
+			uintptr_t addr,
+			size_t length,
+			const char *name,
+			const uintptr_t *line_map,
+			size_t line_count) = 0;
 
 		/**
-		 * @brief Invoked by the JIT to notify that a callback has ended.  
+		 * @brief Deregisters JIT code using a previous cookie.
 		 *
-		 * As noted in OnFunctionEnd(), this my be called with a misaligned 
-		 * profiler stack.  To correct this, the stack should be unwound 
-		 * (discarding data as appropriate) to a matching serial number.
-		 *
-		 * @param serial			Unique number from OnCallbackBegin().
+		 * @param cookie            A cookie returned by RegisterCode().
 		 */
-		virtual void OnCallbackEnd(int serial) =0;
+		virtual void DeregisterCode(intptr_t cookie) = 0;
+
+		/**
+		 * @brief Enters the scope of an event.
+		 *
+		 * LeaveScope() mus be called exactly once for each call to EnterScope().
+		 *
+		 * @param group             A named budget group, or NULL for the default.
+		 * @param name              Event name.
+		 */
+		virtual void EnterScope(const char *group, const char *name) = 0;
+		
+		/**
+		 * @brief Leave a profiling scope. This must be called exactly once for
+		 * each call to EnterScope().
+		 */
+		virtual void LeaveScope() = 0;
 	};
 
 	struct sp_plugin_s;
@@ -1251,9 +1289,9 @@ namespace SourcePawn
 		virtual IDebugListener *SetDebugListener(IDebugListener *listener) =0;
 
 		/**
-		 * @brief Sets the global profiler.
+		 * @brief Deprecated.
 		 *
-		 * @param profiler	Profiler pointer.
+		 * @param profiler	Deprecated.
 		 */
 		virtual void SetProfiler(IProfiler *profiler) =0;
 
@@ -1310,6 +1348,27 @@ namespace SourcePawn
 		 * @return			True if the JIT is enabled, false otherwise.
 		 */
 		virtual bool IsJitEnabled() =0;
+		
+		/**
+		 * @brief Enables profiling. SetProfilingTool() must have been called.
+		 *
+		 * Note that this does not activate the profiling tool. It only enables
+		 * notifications to the profiling tool. SourcePawn will send events to
+		 * the profiling tool even if the tool itself is reported as inactive.
+		 */
+		virtual void EnableProfiling() = 0;
+
+		/**
+		 * @brief Disables profiling.
+		 */
+		virtual void DisableProfiling() = 0;
+
+		/**
+		 * @brief Sets the profiling tool.
+		 *
+		 * @param tool      Profiling tool.
+		 */
+		virtual void SetProfilingTool(IProfilingTool *tool) =0;
 	};
 };
 

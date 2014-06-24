@@ -292,7 +292,6 @@ int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
   md5_data.finalize();
   md5_data.raw_digest(m_DataHash);
 
-  m_plugin.profiler = g_engine2.GetProfiler();
   m_pCtx = new BaseContext(this);
   co_ = g_Jit.StartCompilation(this);
 
@@ -491,11 +490,24 @@ BaseRuntime::GetFunctionById(funcid_t func_id)
       return NULL;
     pFunc = m_PubFuncs[func_id];
     if (!pFunc) {
-      m_PubFuncs[func_id] = new CFunction(this, 
-        (func_id << 1) | 1,
-        func_id);
+      m_PubFuncs[func_id] = new CFunction(this, (func_id << 1) | 1, func_id);
       pFunc = m_PubFuncs[func_id];
     }
+  }
+
+  return pFunc;
+}
+
+CFunction *
+BaseRuntime::GetPublicFunction(size_t index)
+{
+  CFunction *pFunc = m_PubFuncs[index];
+  if (!pFunc) {
+    sp_public_t *pub = NULL;
+    GetPublicByIndex(index, &pub);
+    if (pub)
+      m_PubFuncs[index] = new CFunction(this, (index << 1) | 1, index);
+    pFunc = m_PubFuncs[index];
   }
 
   return pFunc;
@@ -509,16 +521,7 @@ BaseRuntime::GetFunctionByName(const char *public_name)
   if (FindPublicByName(public_name, &index) != SP_ERROR_NONE)
     return NULL;
 
-  CFunction *pFunc = m_PubFuncs[index];
-  if (!pFunc) {
-    sp_public_t *pub = NULL;
-    GetPublicByIndex(index, &pub);
-    if (pub)
-      m_PubFuncs[index] = new CFunction(this, (index << 1) | 1, index);
-    pFunc = m_PubFuncs[index];
-  }
-
-  return pFunc;
+  return GetPublicFunction(index);
 }
 
 bool BaseRuntime::IsDebugging()
@@ -594,7 +597,6 @@ BaseRuntime::CreateBlank(uint32_t heastk)
   m_plugin.mem_size = heastk;
   m_plugin.memory = new uint8_t[heastk];
 
-  m_plugin.profiler = g_engine2.GetProfiler();
   m_pCtx = new BaseContext(this);
   co_ = g_Jit.StartCompilation(this);
 

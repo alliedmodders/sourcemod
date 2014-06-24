@@ -549,65 +549,47 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 	int ir;
 	int serial;
 	cell_t *sp;
-	funcid_t fnid;
 	JitFunction *fn;
-	sp_public_t *pubfunc;
 	cell_t _ignore_result;
-	unsigned int public_id;
 
-	fnid = function->GetFunctionID();
+	EnterProfileScope profileScope("SourcePawn", "EnterJIT");
 
 	if (!g_WatchdogTimer.HandleInterrupt())
 		return SP_ERROR_TIMEOUT;
 
-	if (fnid & 1)
-	{	
-		public_id = fnid >> 1;
-
-		if (m_pRuntime->GetPublicByIndex(public_id, &pubfunc) != SP_ERROR_NONE)
-		{
-			return SP_ERROR_NOT_FOUND;
-		}
-	}
-	else
-	{
+	funcid_t fnid = function->GetFunctionID();
+	if (!(fnid & 1))
 		return SP_ERROR_INVALID_ADDRESS;
-	}
+
+	unsigned public_id = fnid >> 1;
+	CFunction *cfun = m_pRuntime->GetPublicFunction(public_id);
+	if (!cfun)
+		return SP_ERROR_NOT_FOUND;
 
 	if (m_pRuntime->IsPaused())
-	{
 		return SP_ERROR_NOT_RUNNABLE;
-	}
 
 	if ((cell_t)(m_ctx.hp + 16*sizeof(cell_t)) > (cell_t)(m_ctx.sp - (sizeof(cell_t) * (num_params + 1))))
-	{
 		return SP_ERROR_STACKLOW;
-	}
 
 	if (result == NULL)
-	{
 		result = &_ignore_result;
-	}
 
 	/* We got this far.  It's time to start profiling. */
-	
-	if ((m_pRuntime->plugin()->prof_flags & SP_PROF_CALLBACKS) == SP_PROF_CALLBACKS)
-	{
-		serial = m_pRuntime->plugin()->profiler->OnCallbackBegin(this, pubfunc);
-	}
+	EnterProfileScope scriptScope("SourcePawn", cfun->FullName());
 
 	/* See if we have to compile the callee. */
 	if (g_engine2.IsJitEnabled() && (fn = m_pRuntime->m_PubJitFuncs[public_id]) == NULL)
 	{
 		/* We might not have to - check pcode offset. */
-		fn = m_pRuntime->GetJittedFunctionByOffset(pubfunc->code_offs);
+		fn = m_pRuntime->GetJittedFunctionByOffset(cfun->Public()->code_offs);
 		if (fn)
 		{
 			m_pRuntime->m_PubJitFuncs[public_id] = fn;
 		}
 		else
 		{
-			if ((fn = g_Jit.CompileFunction(m_pRuntime, pubfunc->code_offs, &ir)) == NULL)
+			if ((fn = g_Jit.CompileFunction(m_pRuntime, cfun->Public()->code_offs, &ir)) == NULL)
 			{
 				return ir;
 			}
@@ -651,7 +633,7 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 	if (g_engine2.IsJitEnabled())
 		ir = g_Jit.InvokeFunction(m_pRuntime, fn, result);
 	else
-		ir = Interpret(m_pRuntime, pubfunc->code_offs, result);
+		ir = Interpret(m_pRuntime, cfun->Public()->code_offs, result);
 
 	/* Restore some states, stop the frame tracer */
 
@@ -695,11 +677,6 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 	m_ctx.hp = save_hp;
 	m_ctx.rp = save_rp;
 	
-	if ((m_pRuntime->plugin()->prof_flags & SP_PROF_CALLBACKS) == SP_PROF_CALLBACKS)
-	{
-		m_pRuntime->plugin()->profiler->OnCallbackEnd(serial);
-	}
-
 	m_ctx.cip = save_cip;
 	m_ctx.n_idx = save_n_idx;
 	m_ctx.n_err = SP_ERROR_NONE;

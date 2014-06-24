@@ -317,7 +317,6 @@ struct sm_logic_t
 {
 	SMGlobalClass	*head;
 	IThreader		*threader;
-	IProfiler		*profiler;
 	ITranslator		*translator;
 	const char      *(*stristr)(const char *, const char *);
 	bool			(*CoreTranslate)(char *,  size_t, const char *, unsigned int, size_t *, ...);
@@ -332,6 +331,7 @@ struct sm_logic_t
 	void			(*AddNatives)(sp_nativeinfo_t *natives);
 	void			(*DumpHandles)(void (*dumpfn)(const char *fmt, ...));
 	void			(*DumpAdminCache)(FILE *);
+	void            (*RegisterProfiler)(IProfilingTool *tool);
 	IScriptManager	*scripts;
 	IShareSys		*sharesys;
 	IExtensionSys	*extsys;
