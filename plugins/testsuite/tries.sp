@@ -17,7 +17,7 @@ public OnPluginStart()
 
 public Action:RunTests(argc)
 {
-  new AdtMap:map = AdtMap();
+  new StringMap:map = StringMap();
 
   for (new i = 0; i < 64; i++) {
     new String:buffer[24];
