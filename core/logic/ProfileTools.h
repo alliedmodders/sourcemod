@@ -73,8 +73,12 @@ public:
 	IProfilingTool *FindToolByName(const char *name);
 
 private:
+	void StartFromConsole(IProfilingTool *tool);
+
+private:
 	ke::Vector<IProfilingTool *> tools_;
 	IProfilingTool *active_;
+	IProfilingTool *default_;
 	bool enabled_;
 };
 

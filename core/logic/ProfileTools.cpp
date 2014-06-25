@@ -31,7 +31,8 @@
 ProfileToolManager g_ProfileToolManager;
 
 ProfileToolManager::ProfileToolManager()
-	: active_(nullptr)
+	: active_(nullptr),
+	  default_(nullptr)
 {
 }
 
@@ -71,6 +72,28 @@ render_help(const char *fmt, ...)
 }
 
 void
+ProfileToolManager::StartFromConsole(IProfilingTool *tool)
+{
+	if (active_) {
+		rootmenu->ConsolePrint("A profile is already active using %s.", active_->Name());
+		return;
+	}
+
+	active_ = tool;
+	if (!active_->Start()) {
+		rootmenu->ConsolePrint("Failed to attach to or start %s.", active_->Name());
+		active_ = nullptr;
+		return;
+	}
+
+	g_pSourcePawn2->SetProfilingTool(active_);
+	g_pSourcePawn2->EnableProfiling();
+	rootmenu->ConsolePrint("Started profiling with %s.", active_->Name());
+
+	default_ = active_;
+}
+
+void
 ProfileToolManager::OnRootConsoleCommand2(const char *cmdname, const ICommandArgs *args)
 {
 	if (tools_.length() == 0) {
@@ -96,8 +119,24 @@ ProfileToolManager::OnRootConsoleCommand2(const char *cmdname, const ICommandArg
 			g_pSourcePawn2->DisableProfiling();
 			g_pSourcePawn2->SetProfilingTool(nullptr);
 			active_->Stop(render_help);
-			active_->RenderHelp(render_help);
+			active_ = nullptr;
 			return;
+		}
+
+		if (args->ArgC() < 4) {
+			if (strcmp(cmdname, "start") == 0) {
+				if (!default_) {
+					default_ = FindToolByName("vprof");
+					if (!default_ && tools_.length() > 0)
+						default_ = tools_[0];
+					if (!default_) {
+						rootmenu->ConsolePrint("Could not find any profiler to use.");
+						return;
+					}
+				}
+				StartFromConsole(default_);
+				return;
+			}
 		}
 
 		if (args->ArgC() < 4) {
@@ -107,22 +146,12 @@ ProfileToolManager::OnRootConsoleCommand2(const char *cmdname, const ICommandArg
 
 		const char *toolname = args->Arg(3);
 		if (strcmp(cmdname, "start") == 0) {
-			if (active_) {
-				rootmenu->ConsolePrint("A profile is already active using %s.", active_->Name());
-				return;
-			}
-			if ((active_ = FindToolByName(toolname)) == nullptr) {
+			IProfilingTool *tool = FindToolByName(toolname);
+			if (!tool) {
 				rootmenu->ConsolePrint("No tool with the name \"%s\" was found.", toolname);
 				return;
 			}
-			if (!active_->Start()) {
-				rootmenu->ConsolePrint("Failed to attach to or start %s.", active_->Name());
-				active_ = nullptr;
-				return;
-			}
-			g_pSourcePawn2->SetProfilingTool(active_);
-			g_pSourcePawn2->EnableProfiling();
-			rootmenu->ConsolePrint("Started profiling with %s.", active_->Name());
+			StartFromConsole(tool);
 			return;
 		}
 		if (strcmp(cmdname, "help") == 0) {
