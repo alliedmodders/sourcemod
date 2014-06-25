@@ -168,6 +168,7 @@ class SMConfig(object):
         '-Wno-switch',
         '-Wno-format',
         '-Wno-format-security',
+        '-Wno-array-bounds',
         '-msse',
         '-m32',
       ]
@@ -184,6 +185,8 @@ class SMConfig(object):
           cxx.cflags += ['-Wno-narrowing']
         if (have_gcc and cxx.version >= '4.7') or (have_clang and cxx.version >= '3'):
           cxx.cxxflags += ['-Wno-delete-non-virtual-dtor']
+        if have_gcc and cxx.version >= '4.8':
+          cxx.cflags += ['-Wno-unused-result']
       if have_clang:
         cxx.cxxflags += [
           '-Wno-implicit-exception-spec-mismatch',

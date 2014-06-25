@@ -31,6 +31,7 @@
 #include "sourcemm_api.h"
 
 #define VPROF_ENABLED
+#define RAD_TELEMETRY_DISABLED
 #include <tier0/vprof.h>
 
 VProfTool sVProfTool;
