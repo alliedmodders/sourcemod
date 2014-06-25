@@ -59,7 +59,6 @@ namespace SourcePawn
 		uint32_t	num_pubvars;	/**< Number of public variables */
 		sp_native_t	*natives;		/**< Natives table */
 		uint32_t	num_natives;	/**< Number of natives */
-		IProfiler *profiler;		/**< Pointer to IProfiler */
 		uint32_t	prof_flags;		/**< Profiling flags */
 		uint32_t	run_flags;		/**< Runtime flags */
 		uint32_t	pcode_version;	/**< P-Code version number */

@@ -184,6 +184,11 @@ class SMConfig(object):
           cxx.cflags += ['-Wno-narrowing']
         if (have_gcc and cxx.version >= '4.7') or (have_clang and cxx.version >= '3'):
           cxx.cxxflags += ['-Wno-delete-non-virtual-dtor']
+      if have_clang:
+        cxx.cxxflags += [
+          '-Wno-implicit-exception-spec-mismatch',
+          '-Wno-deprecated-register',
+        ]
 
       cxx.linkflags += ['-m32']
       cxx.cxxflags += [
@@ -191,8 +196,6 @@ class SMConfig(object):
         '-fno-threadsafe-statics',
         '-Wno-non-virtual-dtor',
         '-Wno-overloaded-virtual',
-        '-Wno-implicit-exception-spec-mismatch',
-        '-Wno-deprecated-register',
       ]
 
       if have_gcc:

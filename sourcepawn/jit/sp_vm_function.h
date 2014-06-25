@@ -61,6 +61,7 @@ public:
 	CFunction(BaseRuntime *pRuntime, 
 			  funcid_t fnid,
 			  uint32_t pub_id);
+	~CFunction();
 public:
 	virtual int PushCell(cell_t cell);
 	virtual int PushCellByRef(cell_t *cell, int flags);
@@ -82,7 +83,12 @@ public:
 		cell_t *result);
 	IPluginRuntime *GetParentRuntime();
 public:
-	void Set(BaseRuntime *runtime, funcid_t fnid, uint32_t pub_id);
+	const char *FullName() const {
+		return full_name_;
+	}
+	sp_public_t *Public() const {
+		return public_;
+	}
 private:
 	int _PushString(const char *string, int sz_flags, int cp_flags, size_t len);
 	int SetError(int err);
@@ -93,6 +99,8 @@ private:
 	unsigned int m_curparam;
 	int m_errorstate;
 	funcid_t m_FnId;
+	char *full_name_;
+	sp_public_t *public_;
 };
 
 #endif //_INCLUDE_SOURCEMOD_BASEFUNCTION_H_

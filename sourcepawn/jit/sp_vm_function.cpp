@@ -36,12 +36,9 @@
 * FUNCTION CALLING *
 ********************/
 
-void CFunction::Set(BaseRuntime *runtime, funcid_t fnid, uint32_t pub_id)
+CFunction::~CFunction()
 {
-	m_pRuntime = runtime;
-	m_curparam = 0;
-	m_errorstate = SP_ERROR_NONE;
-	m_FnId = fnid;
+	delete [] full_name_;
 }
 
 bool CFunction::IsRunnable()
@@ -68,6 +65,16 @@ CFunction::CFunction(BaseRuntime *runtime, funcid_t id, uint32_t pub_id) :
 	m_curparam(0), m_errorstate(SP_ERROR_NONE), m_FnId(id)
 {
 	m_pRuntime = runtime;
+
+	runtime->GetPublicByIndex(pub_id, &public_);
+
+	size_t rt_len = strlen(runtime->plugin()->name);
+	size_t len = rt_len + strlen("::") + strlen(public_->name);
+
+	full_name_ = new char[len + 1];
+	strcpy(full_name_, runtime->plugin()->name);
+	strcpy(&full_name_[rt_len], "::");
+	strcpy(&full_name_[rt_len + 2], public_->name);
 }
 
 int CFunction::PushCell(cell_t cell)

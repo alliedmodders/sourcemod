@@ -41,7 +41,8 @@ project.sources += [
   'MenuStyle_Radio.cpp',
   'sm_autonatives.cpp',
   'sm_srvcmds.cpp',
-  'ConsoleDetours.cpp'
+  'ConsoleDetours.cpp',
+  'vprof_tool.cpp',
 ]
 
 for sdk_name in SM.sdks:

@@ -1950,7 +1950,6 @@ JITX86::SetupContextVars(BaseRuntime *runtime, BaseContext *pCtx, sp_context_t *
   ctx->tracker->pCur = ctx->tracker->pBase;
   ctx->tracker->size = 1024 / sizeof(cell_t);
   ctx->basecx = pCtx;
-  ctx->vm[JITVARS_PROFILER] = g_engine2.GetProfiler();
   ctx->plugin = const_cast<sp_plugin_t *>(runtime->plugin());
 }
 

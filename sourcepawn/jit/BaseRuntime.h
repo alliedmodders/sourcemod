@@ -71,6 +71,7 @@ class BaseRuntime
   void AddJittedFunction(JitFunction *fn);
   void SetName(const char *name);
   unsigned GetNativeReplacement(size_t index);
+  CFunction *GetPublicFunction(size_t index);
 
   BaseContext *GetBaseContext();
   const sp_plugin_t *plugin() const {

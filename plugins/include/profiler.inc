@@ -75,3 +75,26 @@ native StopProfiling(Handle:prof);
  * @error			Invalid Handle.
  */
 native Float:GetProfilerTime(Handle:prof);
+
+/**
+ * Mark the start of a profiling event.
+ *
+ * @param group     Budget group. This can be "all" for a default, or a short
+ *                  description like "Timers" or "Events".
+ * @param name      A name to attribute to this profiling event.
+ * @noreturn
+ */
+native EnterProfilingEvent(const String:group[], const String:name[]);
+
+/**
+ * Mark the end of the last profiling event. This must be called in the same
+ * stack frame as StartProfilingEvent(). Not doing so, or throwing errors,
+ * will make the resulting profile very wrong.
+ */
+native LeaveProfilingEvent();
+
+/**
+ * Returns true if the global profiler is enabled; false otherwise. It is
+ * not necessary to call this before Enter/LeaveProfilingEvent.
+ */
+native bool:IsProfilingActive();

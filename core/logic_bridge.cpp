@@ -628,7 +628,6 @@ void InitLogicBridge()
 	glob->m_pGlobalClassNext = logicore.head;
 
 	g_pThreader = logicore.threader;
-	g_pSourcePawn2->SetProfiler(logicore.profiler);
 	translator = logicore.translator;
 	scripts = logicore.scripts;
 	sharesys = logicore.sharesys;
