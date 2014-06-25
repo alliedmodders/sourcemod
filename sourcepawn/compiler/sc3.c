@@ -321,161 +321,149 @@ SC_FUNC int matchtag_string(int ident, int tag)
   return (tag == pc_tag_string) ? TRUE : FALSE;
 }
 
-SC_FUNC int matchtag(int formaltag, int actualtag, int allowcoerce)
+static int obj_typeerror(int id, int tag1, int tag2)
 {
-  if (formaltag == actualtag)
+  const char *left = pc_tagname(tag1);
+  const char *right = pc_tagname(tag2);
+  if (!left || strcmp(left, "_") == 0)
+    left = "int";
+  if (!right || strcmp(right, "_") == 0)
+    right = "int";
+  error(id, right, left);
+  return FALSE;
+}
+
+static int matchobjecttags(int formaltag, int actualtag, int flags)
+{
+  // objects never coerce to non-objects, YET.
+  if ((formaltag & OBJECTTAG) && !(actualtag & OBJECTTAG))
+    return obj_typeerror(132, formaltag, actualtag);
+  if (!(formaltag & OBJECTTAG) && (actualtag & OBJECTTAG))
+    return obj_typeerror(131, formaltag, actualtag);
+
+  // Every object coerces to "object".
+  if (formaltag == pc_tag_object)
     return TRUE;
 
-  /* if the formal tag is zero and the actual tag is not "fixed", the actual
-   * tag is "coerced" to zero
-   */
-  if (allowcoerce && !formaltag && !(actualtag & FIXEDTAG))
-    return TRUE;
+  if (flags & MATCHTAG_COERCE)
+    return obj_typeerror(134, formaltag, actualtag);
 
-  if (formaltag == pc_anytag || actualtag == pc_anytag)
-    return TRUE;
-
-  if (formaltag & FUNCTAG) {
-    if (actualtag == pc_functag || (formaltag == pc_functag && actualtag & FUNCTAG))
+  methodmap_t *map = methodmap_find_by_tag(actualtag);
+  for (; map; map = map->parent) {
+    if (map->tag == formaltag)
       return TRUE;
+  }
 
-    if (actualtag & FUNCTAG) {
-      constvalue *v = find_tag_byval(actualtag);
-      int index;
-      short usage = uPUBLIC;
-      symbol *sym, *found = NULL;
-      funcenum_t *e;
-      functag_t *t;
+  return obj_typeerror(133, formaltag, actualtag);
+}
 
-      if (strncmp(v->name, "$Func", 5) != 0)
-        return FALSE;
+static int matchfunctags(int formaltag, int actualtag)
+{
+  if (actualtag == pc_functag || (formaltag == pc_functag && actualtag & FUNCTAG))
+    return TRUE;
 
-      /* Now we have to go about looking up each function in this enum.  WHICH IS IT. */
-      e = funcenums_find_byval(formaltag);
-      if (!e)
-        return FALSE;
+  if (actualtag & FUNCTAG) {
+    constvalue *v = find_tag_byval(actualtag);
+    int index;
+    short usage = uPUBLIC;
+    symbol *sym, *found = NULL;
+    funcenum_t *e;
+    functag_t *t;
 
-      assert(v->name[5] == '@' || v->name[5] == '!');
+    if (strncmp(v->name, "$Func", 5) != 0)
+      return FALSE;
 
-      /* Deduce which function type this is */
-      if (v->name[5] == '@')
-      {
-        usage = uPUBLIC;
-      } else if (v->name[5] == '!') {
-        usage = uSTOCK;
-      }
+    /* Now we have to go about looking up each function in this enum.  WHICH IS IT. */
+    e = funcenums_find_byval(formaltag);
+    if (!e)
+      return FALSE;
 
-      index = atoi(&v->name[6]);
+    assert(v->name[5] == '@' || v->name[5] == '!');
 
-      assert(index >= 0);
+    /* Deduce which function type this is */
+    if (v->name[5] == '@')
+    {
+      usage = uPUBLIC;
+    } else if (v->name[5] == '!') {
+      usage = uSTOCK;
+    }
 
-      /* Find the function, either by public idx or code addr */
-      if (usage == uPUBLIC)
-      {
-        for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-          if (sym->ident==iFUNCTN && (sym->usage & uPUBLIC)!=0 && (sym->vclass == sGLOBAL))
-          {
-            if (index-- == 0)
-            {
-              found = sym;
-              break;
-            }
-          }
-        }
-      } else if (usage == uSTOCK) {
-        for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-          if (sym->ident==iFUNCTN && (sym->vclass == sGLOBAL))
-          {
-            if (sym->codeaddr == index)
-            {
-              found = sym;
-              break;
-            }
+    index = atoi(&v->name[6]);
+
+    assert(index >= 0);
+
+    /* Find the function, either by public idx or code addr */
+    if (usage == uPUBLIC) {
+      for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
+        if (sym->ident==iFUNCTN && (sym->usage & uPUBLIC)!=0 && (sym->vclass == sGLOBAL)) {
+          if (index-- == 0) {
+            found = sym;
+            break;
           }
         }
       }
-
-      if (!found)
-      {
-        assert(found);
-        return FALSE;
+    } else if (usage == uSTOCK) {
+      for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
+        if (sym->ident==iFUNCTN && (sym->vclass == sGLOBAL)) {
+          if (sym->codeaddr == index) {
+            found = sym;
+            break;
+          }
+        }
       }
+    }
 
-      /* Wow, we now have:
-       * 1) The functional enum deduced from formaltag
-       * 2) The function trying to be shoved in deduced from actualtag
-       * Now we have to check if it matches any one of the functags inside the enum.
-       */
-      t = e->first;
-      while (t)
-      {
-        int curarg,skip=0,i;
-        arginfo *func_arg;
-        funcarg_t *enum_arg;
-        /* Check return type first. */
-        if (t->ret_tag != sym->tag)
-        {
-          t = t->next;
-          continue;
+    if (!found) {
+      assert(found);
+      return FALSE;
+    }
+
+    /* Wow, we now have:
+     * 1) The functional enum deduced from formaltag
+     * 2) The function trying to be shoved in deduced from actualtag
+     * Now we have to check if it matches any one of the functags inside the enum.
+     */
+    t = e->first;
+    while (t) {
+      int curarg,skip=0,i;
+      arginfo *func_arg;
+      funcarg_t *enum_arg;
+      /* Check return type first. */
+      if (t->ret_tag != sym->tag) {
+        t = t->next;
+        continue;
+      }
+      /* Check usage */
+      if (t->type != usage) {
+        t = t->next;
+        continue;
+      }
+      /* Begin iterating arguments */
+      for (curarg=0; curarg<t->argcount; curarg++) {
+        enum_arg = &t->args[curarg];
+        /* Check whether we've exhausted our arguments */
+        if (sym->dim.arglist[curarg].ident == 0) {
+          /* Can we bail out early? */
+          if (!enum_arg->ommittable) {
+            /* No! */
+            skip = 1;
+          }
+          break;
         }
-        /* Check usage */
-        if (t->type != usage)
-        {
-          t = t->next;
-          continue;
+        func_arg = &sym->dim.arglist[curarg];
+        /* First check the ident type */
+        if (enum_arg->ident != func_arg->ident) {
+          skip = 1;
+          break;
         }
-        /* Begin iterating arguments */
-        for (curarg=0; curarg<t->argcount; curarg++)
-        {
-          enum_arg = &t->args[curarg];
-          /* Check whether we've exhausted our arguments */
-          if (sym->dim.arglist[curarg].ident == 0)
-          {
-            /* Can we bail out early? */
-            if (!enum_arg->ommittable)
-            {
-              /* No! */
-              skip = 1;
-            }
-            break;
-          }
-          func_arg = &sym->dim.arglist[curarg];
-          /* First check the ident type */
-          if (enum_arg->ident != func_arg->ident)
-          {
-            skip = 1;
-            break;
-          }
-          /* Next check arrayness */
-          if (enum_arg->dimcount != func_arg->numdim)
-          {
-            skip = 1;
-            break;
-          }
-          if (enum_arg->dimcount > 0)
-          {
-            for (i=0; i<enum_arg->dimcount; i++)
-            {
-              if (enum_arg->dims[i] != func_arg->dim[i])
-              {
-                skip = 1;
-                break;
-              }
-            }
-            if (skip)
-              break;
-          }
-          /* Lastly, check the tags */
-          if (enum_arg->tagcount != func_arg->numtags)
-          {
-            skip = 1;
-            break;
-          }
-          /* They should all be in the same order just for clarity... */
-          for (i=0; i<enum_arg->tagcount; i++)
-          {
-            if (enum_arg->tags[i] != func_arg->tags[i])
-            {
+        /* Next check arrayness */
+        if (enum_arg->dimcount != func_arg->numdim) {
+          skip = 1;
+          break;
+        }
+        if (enum_arg->dimcount > 0) {
+          for (i=0; i<enum_arg->dimcount; i++) {
+            if (enum_arg->dims[i] != func_arg->dim[i]) {
               skip = 1;
               break;
             }
@@ -483,27 +471,78 @@ SC_FUNC int matchtag(int formaltag, int actualtag, int allowcoerce)
           if (skip)
             break;
         }
-        if (!skip)
-        {
-          /* Make sure there are no trailing arguments */
-          if (sym->dim.arglist[curarg].ident == 0)
-            return TRUE;
+        /* Lastly, check the tags */
+        if (enum_arg->tagcount != func_arg->numtags) {
+          skip = 1;
+          break;
         }
-        t = t->next;
+        /* They should all be in the same order just for clarity... */
+        for (i=0; i<enum_arg->tagcount; i++) {
+          if (enum_arg->tags[i] != func_arg->tags[i]) {
+            skip = 1;
+            break;
+          }
+        }
+        if (skip)
+          break;
       }
+      if (!skip) {
+        /* Make sure there are no trailing arguments */
+        if (sym->dim.arglist[curarg].ident == 0)
+          return TRUE;
+      }
+      t = t->next;
     }
   }
 
-  // See if the tag has a methodmap associated with it. If so, see if the given
-  // tag is anywhere on the inheritance chain.
-  methodmap_t *map = methodmap_find_by_tag(actualtag);
-  if (map) {
-    for (; map; map = map->parent) {
-      if (map->tag == formaltag)
-        return TRUE;
+  return FALSE;
+}
+
+SC_FUNC int matchtag(int formaltag, int actualtag, int flags)
+{
+  if (formaltag == actualtag)
+    return TRUE;
+
+  if ((formaltag & OBJECTTAG) || (actualtag & OBJECTTAG))
+    return matchobjecttags(formaltag, actualtag, flags);
+
+  if ((actualtag & FUNCTAG) && !(formaltag & FUNCTAG)) {
+    // We're being given a function, but the destination is not a function.
+    error(130);
+    return FALSE;
+  }
+
+  /* if the formal tag is zero and the actual tag is not "fixed", the actual
+   * tag is "coerced" to zero
+   */
+  if ((flags & MATCHTAG_COERCE) && !formaltag && !(actualtag & FIXEDTAG))
+    return TRUE;
+
+  if (formaltag == pc_anytag || actualtag == pc_anytag)
+    return TRUE;
+
+  if (formaltag & FUNCTAG) {
+    if (!matchfunctags(formaltag, actualtag)) {
+      error(100);
+      return FALSE;
+    }
+    return TRUE;
+  }
+
+  if (flags & MATCHTAG_COERCE) {
+    // See if the tag has a methodmap associated with it. If so, see if the given
+    // tag is anywhere on the inheritance chain.
+    methodmap_t *map = methodmap_find_by_tag(actualtag);
+    if (map) {
+      for (; map; map = map->parent) {
+        if (map->tag == formaltag)
+          return TRUE;
+      }
     }
   }
   
+  if (!(flags & MATCHTAG_SILENT))
+    error(213);
   return FALSE;
 }
 
@@ -823,12 +862,11 @@ static void plnge2(void (*oper)(void),
     } else if (lval1->ident==iCONSTEXPR && lval2->ident==iCONSTEXPR) {
       /* only constant expression if both constant */
       stgdel(index,cidx);       /* scratch generated code and calculate */
-      if (!matchtag(lval1->tag,lval2->tag,FALSE))
-        error(213);             /* tagname mismatch */
+      matchtag(lval1->tag,lval2->tag,FALSE);
       lval1->constval=calc(lval1->constval,oper,lval2->constval,&lval1->boolresult);
     } else {
-      if (!checktag_string(lval1, lval2) && !matchtag(lval1->tag,lval2->tag,FALSE))
-        error(213);             /* tagname mismatch */
+      if (!checktag_string(lval1, lval2))
+        matchtag(lval1->tag,lval2->tag,FALSE);
       (*oper)();                /* do the (signed) operation */
       lval1->ident=iEXPRESSION;
     } /* if */
@@ -1213,7 +1251,7 @@ static int hier14(value *lval1)
       return error(47); /* array dimensions must match */
     else if (ltlength<val || (exactmatch && ltlength>val) || val==0)
       return error(47); /* array sizes must match */
-    else if (lval3.ident!=iARRAYCELL && !matchtag(lval3.sym->x.tags.index,idxtag,TRUE))
+    else if (lval3.ident!=iARRAYCELL && !matchtag(lval3.sym->x.tags.index,idxtag,MATCHTAG_COERCE|MATCHTAG_SILENT))
       error(229,(lval2.sym!=NULL) ? lval2.sym->name : lval3.sym->name); /* index tag mismatch */
     if (level>0) {
       /* check the sizes of all sublevels too */
@@ -1236,7 +1274,7 @@ static int hier14(value *lval1)
          */
         if (sym1->dim.array.length!=sym2->dim.array.length)
           error(47);    /* array sizes must match */
-        else if (!matchtag(sym1->x.tags.index,sym2->x.tags.index,TRUE))
+        else if (!matchtag(sym1->x.tags.index,sym2->x.tags.index,MATCHTAG_COERCE|MATCHTAG_SILENT))
           error(229,sym2->name);  /* index tag mismatch */
       } /* for */
       /* get the total size in cells of the multi-dimensional array */
@@ -1254,8 +1292,8 @@ static int hier14(value *lval1)
     check_userop(NULL,lval2.tag,lval3.tag,2,&lval3,&lval2.tag);
     store(&lval3);      /* now, store the expression result */
   } /* if */
-  if (!oper && !checktag_string(&lval3, &lval2) && !matchtag(lval3.tag,lval2.tag,TRUE))
-    error(213);         /* tagname mismatch (if "oper", warning already given in plunge2()) */
+  if (!oper && !checktag_string(&lval3, &lval2))
+    matchtag(lval3.tag,lval2.tag,TRUE);
   if (lval3.sym)
     markusage(lval3.sym,uWRITTEN);
   sideeffect=TRUE;
@@ -1343,8 +1381,7 @@ static int hier13(value *lval)
       error(33,ptr);            /* array must be indexed */
     } /* if */
     /* ??? if both are arrays, should check dimensions */
-    if (!matchtag(lval->tag,lval2.tag,FALSE))
-      error(213);               /* tagname mismatch ('true' and 'false' expressions) */
+    matchtag(lval->tag,lval2.tag,FALSE);
     heap=popsaveheaplist();
     total2=dynarray_from_heaplist(heap);
     setlabel(flab2);
@@ -1518,6 +1555,8 @@ static int hier2(value *lval)
     tag=pc_addtag(st);
     lval->cmptag=tag;
     lvalue=hier2(lval);
+    if ((lval->tag & OBJECTTAG) || (tag & OBJECTTAG))
+      matchtag(tag, lval->tag, MATCHTAG_COERCE);
     lval->tag=tag;
     return lvalue;
   case tDEFINED:
@@ -1869,8 +1908,8 @@ restart:
       if (lval2.ident==iARRAY || lval2.ident==iREFARRAY)
         error(33,lval2.sym->name);      /* array must be indexed */
       needtoken(close);
-      if ((sym->usage & uENUMROOT) && !matchtag(sym->x.tags.index,lval2.tag,TRUE))
-        error(213);
+      if ((sym->usage & uENUMROOT))
+        matchtag(sym->x.tags.index,lval2.tag,TRUE);
       if (lval2.ident==iCONSTEXPR) {    /* constant expression */
         stgdel(index,cidx);             /* scratch generated code */
         if (lval1->arrayidx!=NULL) {    /* keep constant index, for checking */
@@ -2120,7 +2159,7 @@ restart:
           lval1->constval=(code_addr<<1)|0;
           snprintf(faketag, sizeof(faketag)-1, "$Func!%d", code_addr);
         }
-        lval1->tag=pc_addfunctag(faketag);
+        lval1->tag=pc_addtag_flags(faketag, FIXEDTAG|FUNCTAG);
         oldsym->usage |= uREAD;
         sym->usage |= uREAD;
       } else {
@@ -2309,12 +2348,27 @@ static int findnamedarg(arginfo *arg,char *name)
 int checktag(int tags[],int numtags,int exprtag)
 {
   int i;
+  int errcount = errnum;
+
+  if (numtags > 1 && (exprtag & OBJECTTAG)) {
+    // This would allow leaking of the pointer, unless we verify that all tags
+    // are object tags. It's easiest to just forbid this. The feature is broken
+    // anyway since there is no way to determine the actual value's type.
+    error(135);
+    return FALSE;
+  }
 
   assert(tags!=0);
   assert(numtags>0);
-  for (i=0; i<numtags; i++)
-    if (matchtag(tags[i],exprtag,TRUE))
+  for (i=0; i<numtags; i++) {
+    if (matchtag(tags[i],exprtag,MATCHTAG_COERCE|MATCHTAG_SILENT))
       return TRUE;    /* matching tag */
+  }
+
+  // If matchtag() didn't error, report an error.
+  if (errnum == errcount)
+    error(213);
+
   return FALSE;       /* no tag matched */
 }
 
@@ -2520,14 +2574,8 @@ static int nesting=0;
           /* otherwise, the expression result is already in PRI */
           assert(arg[argidx].numtags>0);
           check_userop(NULL,lval.tag,arg[argidx].tags[0],2,NULL,&lval.tag);
-          if (!checktags_string(arg[argidx].tags, arg[argidx].numtags, &lval) &&
-              !checktag(arg[argidx].tags, arg[argidx].numtags, lval.tag))
-          {
-            if (arg[argidx].numtags == 1 && arg[argidx].tags[0] & FUNCTAG)
-              error(100);         /* error - function prototypes do not match */
-            else
-              error(213);         /* warning - tag mismatch */
-          }
+          if (!checktags_string(arg[argidx].tags, arg[argidx].numtags, &lval))
+            checktag(arg[argidx].tags, arg[argidx].numtags, lval.tag);
           if (lval.tag!=0)
             append_constval(&taglst,arg[argidx].name,lval.tag,0);
           argidx++;               /* argument done */
@@ -2548,8 +2596,7 @@ static int nesting=0;
             } /* if */
           } /* if */
           /* otherwise, the address is already in PRI */
-          if (!checktag(arg[argidx].tags,arg[argidx].numtags,lval.tag))
-            error(213);
+          checktag(arg[argidx].tags,arg[argidx].numtags,lval.tag);
           if (lval.tag!=0)
             append_constval(&taglst,arg[argidx].name,lval.tag,0);
           argidx++;               /* argument done */
@@ -2625,8 +2672,7 @@ static int nesting=0;
             append_constval(&arrayszlst,arg[argidx].name,sym->dim.array.length,level);
           } /* if */
           /* address already in PRI */
-          if (!checktag(arg[argidx].tags,arg[argidx].numtags,lval.tag))
-            error(213);
+          checktag(arg[argidx].tags,arg[argidx].numtags,lval.tag);
           if (lval.tag!=0)
             append_constval(&taglst,arg[argidx].name,lval.tag,0);
           // ??? set uWRITTEN?
@@ -2918,8 +2964,8 @@ static int constant(value *lval)
         error(8);               /* must be constant expression */
       if (lasttag<0)
         lasttag=tag;
-      else if (!matchtag(lasttag,tag,FALSE))
-        error(213);             /* tagname mismatch */
+      else
+        matchtag(lasttag,tag,FALSE);
       litadd(item);             /* store expression result in literal table */
     } while (matchtoken(','));
     if (!needtoken('}'))

@@ -38,25 +38,25 @@
 #include <menus>
 
 /**
- * Actions a top menu will take on an object.
+ * Actions a top menu will take on an topobj.
  */
 enum TopMenuAction
 {
 	/**
 	 * An option is being drawn for a menu (or for sorting purposes).
 	 *
-	 * INPUT : TopMenu Handle, object ID, client index.
+	 * INPUT : TopMenu Handle, topobj ID, client index.
 	 * OUTPUT: Buffer for rendering, maxlength of buffer.
 	 */
 	TopMenuAction_DisplayOption = 0,
 	
 	/**
-	 * The title of a menu is being drawn for a given object.
+	 * The title of a menu is being drawn for a given topobj.
 	 *
 	 * Note: The Object ID will be INVALID_TOPMENUOBJECT if drawing the 
 	 * root title.  Otherwise, the Object ID is a category.
 	 *
-	 * INPUT : TopMenu Handle, object ID, client index.
+	 * INPUT : TopMenu Handle, topobj ID, client index.
 	 * OUTPUT: Buffer for rendering, maxlength of buffer.
 	 */
 	TopMenuAction_DisplayTitle = 1,
@@ -66,14 +66,14 @@ enum TopMenuAction
 	 *
 	 * The Object ID will always be an item (not a category).
 	 *
-	 * INPUT : TopMenu Handle, object ID, client index.
+	 * INPUT : TopMenu Handle, topobj ID, client index.
 	 */
 	TopMenuAction_SelectOption = 2,
 
 	/**
 	 * A menu option is being drawn and its flags can be overridden.
 	 *
-	 * INPUT : TopMenu Handle, object ID, client index.
+	 * INPUT : TopMenu Handle, topobj ID, client index.
 	 * OUTPUT: The first byte of the 'buffer' string should be set 
 	 *		   to the desired flags.  By default, it will contain
 	 *		   ITEMDRAW_DEFAULT.
@@ -81,16 +81,16 @@ enum TopMenuAction
 	 TopMenuAction_DrawOption = 3,
 	 
 	/**
-	 * Called when an object is being removed from the menu.
+	 * Called when an topobj is being removed from the menu.
 	 * This can be used to clean up data stored in the info string.
 	 *
-	 * INPUT : TopMenu Handle, object ID.
+	 * INPUT : TopMenu Handle, topobj ID.
 	 */
 	 TopMenuAction_RemoveObject = 4,
 };
 
 /**
- * Top menu object types.
+ * Top menu topobj types.
  */
 enum TopMenuObjectType
 {
@@ -109,7 +109,7 @@ enum TopMenuPosition
 };
 
 /**
- * Top menu object tag for type checking.
+ * Top menu topobj tag for type checking.
  */
 enum TopMenuObject
 {
@@ -121,7 +121,7 @@ enum TopMenuObject
  *
  * @param topmenu			Handle to the TopMenu.
  * @param action			TopMenuAction being performed.
- * @param object_id			The object ID (if used).
+ * @param topobj_id			The topobj ID (if used).
  * @param param				Extra parameter (if used).
  * @param buffer			Output buffer (if used).
  * @param maxlength			Output buffer (if used).
@@ -129,7 +129,7 @@ enum TopMenuObject
  */
 functag public TopMenuHandler(Handle:topmenu, 
 							  TopMenuAction:action,
-							  TopMenuObject:object_id,
+							  TopMenuObject:topobj_id,
 							  param,
 							  String:buffer[],
 							  maxlength);
@@ -172,13 +172,13 @@ native Handle:CreateTopMenu(TopMenuHandler:handler);
 native bool:LoadTopMenuConfig(Handle:topmenu, const String:file[], String:error[], maxlength);
 
 /**
- * Adds an object to a TopMenu.
+ * Adds an topobj to a TopMenu.
  *
  * @param topmenu			TopMenu Handle.
  * @param name				Object name (MUST be unique).
  * @param type				Object type.
- * @param handler			Handler for object.
- * @param parent			Parent object ID, or INVALID_TOPMENUOBJECT for none.
+ * @param handler			Handler for topobj.
+ * @param parent			Parent topobj ID, or INVALID_TOPMENUOBJECT for none.
  *							Items must have a category parent.
  *							Categories must not have a parent.
  * @param cmdname			Command name (for access overrides).
@@ -214,27 +214,27 @@ native GetTopMenuInfoString(Handle:topmenu, TopMenuObject:parent, String:buffer[
  * Retrieves the name string of a top menu item.
  *
  * @param topmenu			TopMenu Handle.
- * @param object			TopMenuObject ID.
+ * @param topobj			TopMenuObject ID.
  * @param buffer			Buffer to store info string.
  * @param maxlength			Maximum size of info string.
  * @return					Number of bytes written, not including the 
  *							null terminator.
  * @error					Invalid TopMenu Handle or TopMenuObject ID.
  */
-native GetTopMenuObjName(Handle:topmenu, TopMenuObject:object, String:buffer[], maxlength);
+native GetTopMenuObjName(Handle:topmenu, TopMenuObject:topobj, String:buffer[], maxlength);
 
 /**
- * Removes an object from a TopMenu.
+ * Removes an topobj from a TopMenu.
  *
- * Plugins' objects are automatically removed all TopMenus when the given 
+ * Plugins' topobjs are automatically removed all TopMenus when the given 
  * plugin unloads or pauses.  In the case of unpausing, all items are restored.
  *
  * @param topmenu			TopMenu Handle.
- * @param object			TopMenuObject ID.
+ * @param topobj			TopMenuObject ID.
  * @noreturn
  * @error					Invalid TopMenu Handle.
  */
-native RemoveFromTopMenu(Handle:topmenu, TopMenuObject:object);
+native RemoveFromTopMenu(Handle:topmenu, TopMenuObject:topobj);
 
 /**
  * Displays a TopMenu to a client.
@@ -251,7 +251,7 @@ native bool:DisplayTopMenu(Handle:topmenu, client, TopMenuPosition:position);
  * Displays a TopMenu category to a client.
  *
  * @param topmenu			TopMenu Handle.
- * @param category		Category object id.
+ * @param category		Category topobj id.
  * @param client			Client index.
  * @return					True on success, false on failure.
  * @error					Invalid TopMenu Handle or client not in game.
@@ -259,7 +259,7 @@ native bool:DisplayTopMenu(Handle:topmenu, client, TopMenuPosition:position);
 native bool:DisplayTopMenuCategory(Handle:topmenu, TopMenuObject:category, client);
 
 /**
- * Finds a category's object ID in a TopMenu.
+ * Finds a category's topobj ID in a TopMenu.
  *
  * @param topmenu			TopMenu Handle.
  * @param name				Object's unique name.
