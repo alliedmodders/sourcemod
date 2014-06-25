@@ -1003,7 +1003,7 @@ namespace SourcePawn
 	class IProfiler;
 
 	/**
-	 * @brief encapsulates a profiling tool that may be attached to SourcePawn.
+	 * @brief Encapsulates a profiling tool that may be attached to SourcePawn.
 	 */
 	class IProfilingTool
 	{
@@ -1058,32 +1058,6 @@ namespace SourcePawn
 		 * @return                  True if attached, false otherwise.
 		 */
 		virtual bool IsAttached() = 0;
-
-		/**
-		 * @brief Registers JIT code with the profiler.
-		 *
-		 * @param addr              Address where the JIT code starts.
-		 * @param length            Length of the JIT code region.
-		 * @param name              Name to associate with the JIT code.
-		 * @param line_map			An array of pairs where the ith element is
-		 *                          an offset from code_addr and the i+1th
-		 *                          element is a line number.
-		 * @param line_count        Number of lines (line_map size should be lines*2).
-		 * @return                  A cookie for deregistering, or 0 on failure.
-		 */
-		virtual intptr_t RegisterCode(
-			uintptr_t addr,
-			size_t length,
-			const char *name,
-			const uintptr_t *line_map,
-			size_t line_count) = 0;
-
-		/**
-		 * @brief Deregisters JIT code using a previous cookie.
-		 *
-		 * @param cookie            A cookie returned by RegisterCode().
-		 */
-		virtual void DeregisterCode(intptr_t cookie) = 0;
 
 		/**
 		 * @brief Enters the scope of an event.

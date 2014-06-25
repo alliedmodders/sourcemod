@@ -84,22 +84,6 @@ VProfTool::IsAttached()
 	return true;
 }
 
-intptr_t
-VProfTool::RegisterCode(
-	uintptr_t addr,
-	size_t length,
-	const char *name,
-	const uintptr_t *line_map,
-	size_t line_count)
-{
-	return 0;
-}
-
-void
-VProfTool::DeregisterCode(intptr_t cookie)
-{
-}
-
 void
 VProfTool::EnterScope(const char *group, const char *name)
 {

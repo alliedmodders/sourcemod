@@ -46,13 +46,6 @@ public:
 	void Stop(void (*render)(const char *fmt, ...)) KE_OVERRIDE;
 	bool IsActive() KE_OVERRIDE;
 	bool IsAttached() KE_OVERRIDE;
-	intptr_t RegisterCode(
-		uintptr_t addr,
-		size_t length,
-		const char *name,
-		const uintptr_t *line_map,
-		size_t line_count) KE_OVERRIDE;
-	void DeregisterCode(intptr_t cookie) KE_OVERRIDE;
 	void EnterScope(const char *group, const char *name) KE_OVERRIDE;
 	void LeaveScope() KE_OVERRIDE;
 	void RenderHelp(void (*render)(const char *fmt, ...)) KE_OVERRIDE;
