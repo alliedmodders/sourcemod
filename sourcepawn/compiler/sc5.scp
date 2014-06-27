@@ -164,7 +164,7 @@ static char *errmsg[] = {
 /*118*/  "destructors must be native functions\n",
 /*119*/  "destructors cannot have extra arguments\n",
 /*120*/  "methodmap and class signatures must use new-style type declarations\n",
-/*121*/  "this syntax is not yet supported\n",
+/*121*/  "cannot specify array dimensions on both type and name\n",
 /*122*/  "expected type expression\n",
 /*123*/  "fully-qualified name \"%s\" is too long, would be truncated to \"%s\"\n",
 /*124*/  "unexpected token, expected method or property\n",
@@ -179,6 +179,8 @@ static char *errmsg[] = {
 /*133*/  "cannot coerce unrelated object types %s and %s\n",
 /*134*/  "type mismatch (%s and %s)\n",
 /*135*/  "cannot use an object in a multi-tag selector\n",
+/*136*/  "arrays are not supported as return types\n",
+/*137*/  "cannot mix reference and array types\n",
 #else
   "\321e\307\232\264k\213:\233\316bu\201fo\223\205\220\012",
   "\202l\224\245s\204g\367\346e\331\201(\240\321\222\270\202) \260 follow ea\272 \042c\343e\042\012",

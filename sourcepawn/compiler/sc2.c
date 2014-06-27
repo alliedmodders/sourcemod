@@ -1151,6 +1151,10 @@ static int command(void)
           cell val;
           preproc_expr(&val,NULL);
           sc_needsemicolon=(int)val;
+        } else if (strcmp(str, "require_newdecls")==0) {
+          cell val;
+          preproc_expr(&val,NULL);
+          sc_require_newdecls = (int)val;
         } else if (strcmp(str,"tabsize")==0) {
           cell val;
           preproc_expr(&val,NULL);
@@ -2264,6 +2268,16 @@ SC_FUNC void lexclr(int clreol)
   } /* if */
 }
 
+// Return true if the symbol is ahead, false otherwise.
+SC_FUNC int lexpeek(int id)
+{
+  if (matchtoken(id)) {
+    lexpush();
+    return TRUE;
+  }
+  return FALSE;
+}
+
 /*  matchtoken
  *
  *  This routine is useful if only a simple check is needed. If the token
@@ -3115,6 +3129,16 @@ SC_FUNC int expecttoken(int id, token_t *tok)
     tok->id = current_token()->id;
     tok->str = current_token()->str;
     return rval;
+  }
+  return FALSE;
+}
+
+SC_FUNC int matchtoken2(int id, token_t *tok)
+{
+  if (matchtoken(id)) {
+    tok->id = tokeninfo(&tok->val, &tok->str);
+    return TRUE;
+    
   }
   return FALSE;
 }
