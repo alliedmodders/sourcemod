@@ -77,6 +77,7 @@ int pc_anytag = 0;
 int pc_functag = 0;
 int pc_tag_string = 0;
 int pc_tag_void = 0;
+int pc_tag_object = 0;
 
 typedef struct funcstub_setup_s {
   const char *name;
@@ -652,6 +653,16 @@ const char *pc_tagname(int tag)
   return "<unknown>";
 }
 
+constvalue *pc_tagptr(const char *name)
+{
+  constvalue *ptr=tagname_tab.next;
+  for (; ptr; ptr=ptr->next) {
+    if (strcmp(name, ptr->name)==0)
+      return ptr;
+  }
+  return NULL;
+}
+
 int pc_findtag(const char *name)
 {
   constvalue *ptr=tagname_tab.next;
@@ -696,8 +707,7 @@ int pc_addtag_flags(char *name, int flags)
     tag=(int)(ptr->value & TAGMASK);
     if (strcmp(name,ptr->name)==0)
       return tag;       /* tagname is known, return its sequence number */
-    tag &= (int)~FIXEDTAG;
-    tag &= (int)~FUNCTAG;
+    tag &= ~TAGFLAGMASK;
     if (tag>last)
       last=tag;
     ptr=ptr->next;
@@ -706,43 +716,6 @@ int pc_addtag_flags(char *name, int flags)
   /* tagname currently unknown, add it */
   tag=last+1;           /* guaranteed not to exist already */
   tag|=flags;
-  append_constval(&tagname_tab,name,(cell)tag,0);
-  return tag;
-}
-
-int pc_addfunctag(char *name)
-{
-  cell val;
-  constvalue *ptr;
-  int last,tag;
-
-  if (name==NULL) {
-    /* no tagname was given, check for one */
-    if (lex(&val,&name)!=tLABEL) {
-      lexpush();
-      return 0;         /* untagged */
-    } /* if */
-  } /* if */
-
-  assert(strchr(name,':')==NULL); /* colon should already have been stripped */
-  last=0;
-  ptr=tagname_tab.next;
-  while (ptr!=NULL) {
-    tag=(int)(ptr->value & TAGMASK);
-    if (strcmp(name,ptr->name)==0)
-      return tag;       /* tagname is known, return its sequence number */
-    tag &= (int)~FIXEDTAG;
-    tag &= (int)~FUNCTAG;
-    if (tag>last)
-      last=tag;
-    ptr=ptr->next;
-  } /* while */
-
-  /* tagname currently unknown, add it */
-  tag=last+1;           /* guaranteed not to exist already */
-  if (isupper(*name))
-    tag |= (int)FIXEDTAG;
-  tag |= (int)FUNCTAG;
   append_constval(&tagname_tab,name,(cell)tag,0);
   return tag;
 }
@@ -1367,10 +1340,11 @@ static void setconstants(void)
   append_constval(&tagname_tab,"bool",1,0);
 
   pc_anytag = pc_addtag("any");
-  pc_functag = pc_addfunctag("Function");
+  pc_functag = pc_addtag_flags("Function", FIXEDTAG|FUNCTAG);
   pc_tag_string = pc_addtag("String");
-  pc_tag_void = pc_addtag_flags("void", FIXEDTAG);
   sc_rationaltag = pc_addtag("Float");
+  pc_tag_void = pc_addtag_flags("void", FIXEDTAG);
+  pc_tag_object = pc_addtag_flags("object", FIXEDTAG|OBJECTTAG);
 
   add_constant("true",1,sGLOBAL,1);     /* boolean flags */
   add_constant("false",0,sGLOBAL,1);
@@ -1535,6 +1509,9 @@ static void parse(void)
       break;
     case tMETHODMAP:
       domethodmap(Layout_MethodMap);
+      break;
+    case tCLASS:
+      domethodmap(Layout_Class);
       break;
     case tFUNCTAG:
       dofuncenum(FALSE);
@@ -2526,13 +2503,8 @@ static int declloc(int fstatic)
         assert(staging);        /* end staging phase (optimize expression) */
         stgout(staging_start);
         stgset(FALSE);
-        if (!matchtag_string(cident, ctag) && !matchtag(tag,ctag,TRUE))
-		{
-		  if (tag & FUNCTAG)
-		    error(100);      /* error - function prototypes do not match */
-		  else
-		    error(213);      /* warning - tag mismatch */
-		}
+        if (!matchtag_string(cident, ctag))
+          matchtag(tag,ctag,TRUE);
         /* if the variable was not explicitly initialized, reset the
          * "uWRITTEN" flag that store() set */
         if (!explicit_init)
@@ -2838,13 +2810,7 @@ static void initials2(int ident,int tag,cell *size,int dim[],int numdim,
   if (ident==iVARIABLE) {
     assert(*size==1);
     init(ident,&ctag,NULL);
-    if (!matchtag(tag,ctag,TRUE))
-	{
-	  if (tag & FUNCTAG)
-	    error(100);     /* error - function prototypes do not match */
-	  else
-        error(213);     /* warning - tag mismatch */
-	}
+    matchtag(tag,ctag,TRUE);
   } else {
     assert(numdim>0);
     if (numdim==1) {
@@ -3042,19 +3008,12 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
         rtag=symfield->x.tags.index;  /* set the expected tag to the index tag */
         enumfield=enumfield->next;
       } /* if */
-      if (!matchtag(rtag,ctag,TRUE))
-	  {
-	    if (rtag & FUNCTAG)
-		  error(100);           /* error - function prototypes do not match */
-		else
-		  error(213);           /* warning - tag mismatch */
-	  }
+      matchtag(rtag,ctag,TRUE);
     } while (matchtoken(',')); /* do */
     needtoken('}');
   } else {
     init(ident,&ctag,errorfound);
-    if (!matchtag(tag,ctag,TRUE))
-      error(213);               /* tagname mismatch */
+    matchtag(tag,ctag,TRUE);
   } /* if */
   /* fill up the literal queue with a series */
   if (ellips) {
@@ -3156,6 +3115,8 @@ static void decl_const(int vclass)
 
   insert_docstring_separator();         /* see comment in newfunc() */
   do {
+    int orgfline;
+
     tag=pc_addtag(NULL);
     if (lex(&val,&str)!=tSYMBOL)        /* read in (new) token */
       error(20,str);                    /* invalid symbol name */
@@ -3163,14 +3124,14 @@ static void decl_const(int vclass)
     strcpy(constname,str);              /* save symbol name */
     needtoken('=');
     constexpr(&val,&exprtag,NULL);      /* get value */
+
     /* add_constant() checks for duplicate definitions */
-    if (!matchtag(tag,exprtag,FALSE)) {
-      /* temporarily reset the line number to where the symbol was defined */
-      int orgfline=fline;
-      fline=symbolline;
-      error(213);                       /* tagname mismatch */
-      fline=orgfline;
-    } /* if */
+    /* temporarily reset the line number to where the symbol was defined */
+    orgfline=fline;
+    fline=symbolline;
+    matchtag(tag,exprtag,FALSE);
+    fline=orgfline;
+
     sym=add_constant(constname,val,vclass,tag);
     if (sym!=NULL)
       sc_attachdocumentation(sym);/* attach any documenation to the constant */
@@ -3318,6 +3279,10 @@ int parse_typeexpr(declinfo_t *decl, const token_t *first, int flags)
     case tVOID:
       strcpy(decl->type, "void");
       decl->tag = pc_tag_void;
+      break;
+    case tOBJECT:
+      strcpy(decl->type, "object");
+      decl->tag = pc_tag_object;
       break;
     case tSYMBOL:
       strcpy(decl->type, tok.str);
@@ -3821,15 +3786,26 @@ static void domethodmap(LayoutSpec spec)
 
     if ((parent = methodmap_find_by_name(str)) == NULL) {
       error(102, str);
+    } else if (parent->spec != spec) {
+      error(129);
     }
   }
 
   methodmap_t *map = (methodmap_t *)calloc(1, sizeof(methodmap_t));
   map->parent = parent;
-  map->tag = pc_addtag(mapname);
   map->spec = spec;
   strcpy(map->name, mapname);
-
+  if (spec == Layout_MethodMap) {
+    map->tag = pc_addtag(mapname);
+  } else {
+    constvalue *tagptr = pc_tagptr(mapname);
+    if (!tagptr) {
+      map->tag = pc_addtag_flags(mapname, FIXEDTAG | OBJECTTAG);
+    } else {
+      tagptr->value |= OBJECTTAG;
+      map->tag = (tagptr->value & TAGMASK);
+    }
+  }
   methodmap_add(map);
 
   needtoken('{');
@@ -5526,8 +5502,7 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
       } else {
         constexpr(&arg->defvalue.val,&arg->defvalue_tag,NULL);
         assert(numtags>0);
-        if (!matchtag(tags[0],arg->defvalue_tag,TRUE))
-          error(213);           /* tagname mismatch */
+        matchtag(tags[0],arg->defvalue_tag,TRUE);
       } /* if */
     } /* if */
   } /* if */
@@ -7246,8 +7221,8 @@ static void doreturn(void)
     rettype|=uRETVALUE;                 /* function returns a value */
     /* check tagname with function tagname */
     assert(curfunc!=NULL);
-    if (!matchtag_string(ident, tag) && !matchtag(curfunc->tag,tag,TRUE))
-      error(213);                       /* tagname mismatch */
+    if (!matchtag_string(ident, tag))
+      matchtag(curfunc->tag,tag,TRUE);
     if (ident==iARRAY || ident==iREFARRAY) {
       int dim[sDIMEN_MAX],numdim;
       cell arraysize;

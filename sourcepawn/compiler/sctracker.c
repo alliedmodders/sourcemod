@@ -174,7 +174,7 @@ funcenum_t *funcenums_add(const char *name)
 	}
 
 	strcpy(e->name, name);
-	e->value = pc_addfunctag((char *)name);
+	e->value = pc_addtag_flags((char *)name, FIXEDTAG|FUNCTAG);
 
 	return e;
 }

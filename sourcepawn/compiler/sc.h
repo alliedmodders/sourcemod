@@ -363,8 +363,10 @@ enum {
   tCASE,
   tCELLSOF,
   tCHAR,
+  tCLASS,
   tCONST,
   tCONTINUE,
+  tDECL,
   tDEFAULT,
   tDEFINED,
   tDELETE,
@@ -383,7 +385,7 @@ enum {
   tMETHODMAP,
   tNATIVE,
   tNEW,
-  tDECL,
+  tOBJECT,
   tOPERATOR,
   tPUBLIC,
   tRETURN,
@@ -486,16 +488,12 @@ typedef enum s_optmark {
 
 #define suSLEEP_INSTR 0x01      /* the "sleep" instruction was used */
 
-#if INT_MAX<0x8000u
-  #define PUBLICTAG   0x8000u
-  #define FIXEDTAG    0x4000u
-  #define FUNCTAG     0x2000u
-#else
-  #define PUBLICTAG   0x80000000Lu
-  #define FIXEDTAG    0x40000000Lu
-  #define FUNCTAG     0x20000000Lu
-#endif
+#define PUBLICTAG    0x80000000Lu
+#define FIXEDTAG     0x40000000Lu
+#define FUNCTAG      0x20000000Lu
+#define OBJECTTAG    0x10000000Lu
 #define TAGMASK       (~PUBLICTAG)
+#define TAGFLAGMASK   (FIXEDTAG | FUNCTAG | OBJECTTAG)
 #define CELL_MAX      (((ucell)1 << (sizeof(cell)*8-1)) - 1)
 
 
@@ -512,7 +510,7 @@ int pc_addconstant(char *name,cell value,int tag);
 int pc_addtag(char *name);
 int pc_addtag_flags(char *name, int flags);
 int pc_findtag(const char *name);
-int pc_addfunctag(char *name);
+constvalue *pc_tagptr(const char *name);
 int pc_enablewarning(int number,int enable);
 const char *pc_tagname(int tag);
 int parse_decl(declinfo_t *decl, const token_t *first, int flags);
@@ -628,6 +626,9 @@ SC_FUNC symbol *addvariable2(const char *name,cell addr,int ident,int vclass,int
 							 int dim[],int numdim,int idxtag[],int slength);
 SC_FUNC int getlabel(void);
 SC_FUNC char *itoh(ucell val);
+
+#define MATCHTAG_COERCE  0x1 // allow coercion
+#define MATCHTAG_SILENT  0x2 // silence the error(213) warning
 
 /* function prototypes in SC3.C */
 SC_FUNC int check_userop(void (*oper)(void),int tag1,int tag2,int numparam,
@@ -886,6 +887,7 @@ SC_VDECL int pc_memflags;     /* special flags for the stack/heap usage */
 SC_VDECL int pc_functag;      /* global function tag */
 SC_VDECL int pc_tag_string;   /* global String tag */
 SC_VDECL int pc_tag_void;     /* global void tag */
+SC_VDECL int pc_tag_object;   /* root object tag */
 SC_VDECL int pc_anytag;       /* global any tag */
 SC_VDECL int glbstringread;	  /* last global string read */
 
