@@ -1077,6 +1077,9 @@ bool TopMenu::LoadConfiguration(const char *file, char *error, size_t maxlength)
 		return false;
 	}
 
+	m_SerialNo++;
+	m_bCatsNeedResort = true;
+
 	return true;
 }
 
@@ -1161,6 +1164,17 @@ SMCResult TopMenu::ReadSMC_NewSection(const SMCStates *states, const char *name)
 			cur_cat->name = m_Config.strings.AddString(name);
 			m_Config.cats.push_back(cur_cat);
 			current_parse_state = PARSE_STATE_CATEGORY;
+
+			// This category needs reordering now that the sorting file is defining something new for it.
+			for (unsigned int i = 0; i < (unsigned int)m_Categories.size(); i++)
+			{
+				if (strcmp(name, m_Categories[i]->obj->name) == 0)
+				{
+					m_Categories[i]->reorder = true;
+					m_Categories[i]->serial++;
+					break;
+				}
+			}
 		}
 		else
 		{
