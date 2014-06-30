@@ -233,6 +233,7 @@
 			"game"					"nmrih"
 			"game"					"berimbau"
 			"game"					"cstrike"
+			"game"					"synergy"
 		}
 		
 		"Keys"
