@@ -14,9 +14,9 @@
 *.user
 
 # Build directories
-CrazyDebug.*/
-Debug.*/
-Release.*/
+CrazyDebug*/
+Debug*/
+Release*/
 LIB-Release/
 LIB-Debug/
 
