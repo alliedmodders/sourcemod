@@ -188,10 +188,11 @@ class SMConfig(object):
         if have_gcc and cxx.version >= '4.8':
           cxx.cflags += ['-Wno-unused-result']
       if have_clang:
-        cxx.cxxflags += [
-          '-Wno-implicit-exception-spec-mismatch',
-          '-Wno-deprecated-register',
-        ]
+        cxx.cxxflags += ['-Wno-implicit-exception-spec-mismatch']
+        if (builder.target_platform == 'mac' and cxx.version >= '5.1') or cxx.version >= '3.4':
+          cxx.cxxflags += ['-Wno-deprecated-register']
+        else:
+          cxx.cxxflags += ['-Wno-deprecated']
 
       cxx.linkflags += ['-m32']
       cxx.cxxflags += [
