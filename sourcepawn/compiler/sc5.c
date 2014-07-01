@@ -75,6 +75,10 @@ static short lastfile;
   char *msg,*pre;
   va_list argptr;
 
+  if (number == 47) {
+    printf("EGG\n");
+  }
+
   // sErrLine is used to temporarily change the line number of reported errors.
   // Pawn has an upstream bug where this is not reset on early-return, which
   // can lead to broken line numbers in error messages.

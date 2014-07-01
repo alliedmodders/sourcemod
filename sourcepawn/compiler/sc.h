@@ -1,3 +1,4 @@
+// vim: set sts=2 ts=8 sw=2 tw=99 et:
 /*  Pawn compiler
  *
  *  Drafted after the Small-C compiler Version 2.01, originally created
@@ -272,6 +273,7 @@ typedef struct {
   int numdim;
   int dim[sDIMEN_MAX];
   int idxtag[sDIMEN_MAX];
+  cell array_size;
   constvalue *enumroot;
 
   // Type information.
