@@ -181,6 +181,7 @@ static char *errmsg[] = {
 /*135*/  "cannot use an object in a multi-tag selector\n",
 /*136*/  "arrays are not supported as return types\n",
 /*137*/  "cannot mix reference and array types\n",
+/*138*/  "const was specified twice\n",
 #else
   "\321e\307\232\264k\213:\233\316bu\201fo\223\205\220\012",
   "\202l\224\245s\204g\367\346e\331\201(\240\321\222\270\202) \260 follow ea\272 \042c\343e\042\012",
