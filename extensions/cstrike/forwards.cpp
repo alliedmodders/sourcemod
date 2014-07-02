@@ -152,12 +152,20 @@ DETOUR_DECL_MEMBER1(DetourTerminateRound, void, int, reason)
 #endif
 }
 
-DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, something, bool, toss)
+#if SOURCE_ENGINE == SE_CSGO
+DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, Vector, vec, bool, unknown)
+#else
+DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, bDropShield, bool, bThrowForward)
+#endif
 {
 	if (g_pIgnoreCSWeaponDropDetour)
 	{
 		g_pIgnoreCSWeaponDropDetour = false;
-		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, something, toss);
+#if SOURCE_ENGINE == SE_CSGO
+		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, vec, unknown);
+#else
+		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, bDropShield, bThrowForward);
+#endif
 		return;
 	}
 
@@ -170,8 +178,14 @@ DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, somet
 	g_pCSWeaponDropForward->Execute(&result);
 
 
-	if (result == Pl_Continue)
-		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, something, toss);
+	if (result >= Pl_Continue)
+	{
+#if SOURCE_ENGINE == SE_CSGO
+		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, vec, unknown);
+#else
+		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, bDropShield, bThrowForward);
+#endif
+	}
 
 	return;
 }
