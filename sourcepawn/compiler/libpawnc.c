@@ -116,7 +116,7 @@ void *pc_opensrc(char *filename)
 	}
 	#endif
 
-	return fopen(filename,"rt");
+	return fopen(filename,"rb");
 }
 
 /* pc_createsrc()
