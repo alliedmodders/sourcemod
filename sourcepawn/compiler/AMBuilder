@@ -17,6 +17,7 @@ if compiler.cc.behavior == 'gcc':
 elif compiler.cc.behavior == 'msvc':
   compiler.linkflags.remove('/SUBSYSTEM:WINDOWS')
   compiler.linkflags.append('/SUBSYSTEM:CONSOLE')
+  compiler.cxxflags.remove('/TP')
  
 if builder.target_platform == 'linux':
   compiler.defines += [

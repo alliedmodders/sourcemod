@@ -17,6 +17,9 @@ binary.compiler.includes += [
 if builder.target_platform == 'linux':
   binary.compiler.postlink += ['-lpthread', '-lrt']
 
+if binary.compiler.cc.behavior == 'msvc':
+  binary.compiler.cxxflags.remove('/TP')
+
 binary.sources += [
   'BaseRuntime.cpp',
   'engine2.cpp',
