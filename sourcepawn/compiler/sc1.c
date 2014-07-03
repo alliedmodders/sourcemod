@@ -1262,7 +1262,7 @@ static void setconfig(char *root)
 static void setcaption(void)
 {
   pc_printf("SourcePawn Compiler %s\n", SOURCEMOD_VERSION);
-  pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2008 AlliedModders, LLC\n\n");
+  pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2014 AlliedModders, LLC\n\n");
 }
 
 static void about(void)
@@ -3281,27 +3281,22 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
 
   switch (tok.id) {
     case tINT:
-      strcpy(type->type, "int");
       type->tag = 0;
       break;
     case tCHAR:
-      strcpy(type->type, "char");
       type->tag = pc_tag_string;
       break;
     case tVOID:
-      strcpy(type->type, "void");
       type->tag = pc_tag_void;
       break;
     case tOBJECT:
-      strcpy(type->type, "object");
       type->tag = pc_tag_object;
       break;
     case tSYMBOL:
-      strcpy(type->type, tok.str);
-      if (strcmp(type->type, "float") == 0) {
+      if (strcmp(tok.str, "float") == 0) {
         type->tag = sc_rationaltag;
       } else {
-        type->tag = pc_findtag(type->type);
+        type->tag = pc_findtag(tok.str);
         if (type->tag == sc_rationaltag) {
           error(98, "Float", "float");
         } else if (type->tag == pc_tag_string) {
@@ -3309,13 +3304,13 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
         } else if (type->tag == 0) {
           error(98, "_", "int");
         } else if (type->tag == -1) {
-          error(139, type->type);
+          error(139, tok.str);
           type->tag = 0;
         } else {
           // Perform some basic filters so we can start narrowing down what can
           // be used as a type.
           if (!(type->tag & TAGTYPEMASK))
-            error(139, type->type);
+            error(139, tok.str);
         }
       }
       break;
@@ -3763,7 +3758,7 @@ int parse_property_accessor(const typeinfo_t *type, methodmap_t *map, methodmap_
   // Must return the same tag as the property.
   if (type->tag != target->tag) {
     const char *kind = getter ? "getter" : "setter";
-    error(128, "getter", map->name, type->type);
+    error(128, "getter", map->name, type_to_name(type->tag));
   }
 
   if (!check_this_tag(map, target)) {

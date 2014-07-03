@@ -267,8 +267,6 @@ typedef struct svalue_s {
 #define TYPEMASK_NAMED_DECL      (TYPEFLAG_ARGUMENT | TYPEFLAG_VARIABLE)
 
 typedef struct {
-  char type[sNAMEMAX + 1];
-
   // Array information.
   int numdim;
   int dim[sDIMEN_MAX];
@@ -540,6 +538,7 @@ constvalue *pc_tagptr(const char *name);
 int pc_enablewarning(int number,int enable);
 const char *pc_tagname(int tag);
 int parse_decl(declinfo_t *decl, int flags);
+const char *type_to_name(int tag);
 
 /*
  * Functions called from the compiler (to be implemented by you)

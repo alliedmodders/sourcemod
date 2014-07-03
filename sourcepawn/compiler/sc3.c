@@ -314,6 +314,24 @@ SC_FUNC int checktag_string(value *sym1, value *sym2)
   return FALSE;
 }
 
+SC_FUNC const char *type_to_name(int tag)
+{
+  if (tag == 0)
+    return "int";
+  if (tag == sc_rationaltag)
+    return "float";
+  if (tag == pc_tag_string)
+    return "char";
+
+  const char *name = pc_tagname(tag);
+  if (name)
+    return NULL;
+
+  if (tag & FUNCTAG)
+    return "function";
+  return "unknown";
+}
+
 SC_FUNC int matchtag_string(int ident, int tag)
 {
   if (ident == iARRAY || ident == iREFARRAY)
