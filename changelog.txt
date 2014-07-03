@@ -1,5 +1,138 @@
 SourceMod Changelog
 
+SourceMod 1.6.0 [2014-07-03]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.6.0_Release_Notes
+
+User Changes:
+ - Added support for Dota 2 (bug 5656, bug 6068).
+ - Added support for Source SDK 2013 mods (bug 5917).
+ - Added support for Insurgency (bug 5951).
+ - Added support for Contagion (bug 6007).
+ - Added support for Blade Symphony (bug 5949).
+ - Updated support for some mods that moved to SDK 2013 - No More Room In Hell, Fistful of Frags, Empires, Synergy.
+ - Updated gamedata and other support for TF2, DoD:S, HL2:DM, CS:S, CS:GO, Left 4 Dead, and Nuclear Dawn.
+ - Added support for customizing ban reasons in basebans.sp (bug 5762) (Matthias "House" Kollek).
+ - Added support for searching all gameinfo search paths when seeking mapcycle file (bug 5839).
+ - Added sm_reload_translations command (bug 5750).
+ - Added support for single-file gamedata custom overrides (bug 5386) (Ondrej "RavuAlHemio" Hošek).
+ - Re-enabled SteamAuthstringValidation config option by default (bug 5791, PR 20).
+ - Fixed plugins not reaching ext dep lists, making dependent plugin not unload on ext unload (bug 5851) (Peace-Maker).
+ - Added printing of SendProp flags to netprop dumps (bug 6082).
+ - Removed support for obsolete plugin_settings.cfg (bug 5605).
+ - Fixed topmenu sorting not getting refreshed after reloading sorting config (bug 6032) (Peace-Maker).
+ - Fixed error log filename date sometimes being incorrect (bug 5761) (Matheus "M28" Valadares).
+ - Dump handle information when a plugin is forcefully unloaded. (bug 5666).
+ - Fixed sm_cancelvote not resetting rtv state. (bug 5808) (Peace-Maker).
+ - Fixed Mapchooser dying on single map rotation servers (bug 5179).
+ - Fixed various problems with unloading ClientPrefs and SourceMod (bug 5874).
+ - Fixed "sm version" command reporting incorrect compile time in many cases (bug 6078) (SystematicMania).
+ - Clear default database driver reference if backing extension is unloaded (bug 5934) (Peace-Maker).
+ - Moved funcommands material and sound definitions to gamedata for easier cross-game support (bug 6085).
+ - Implement a watchdog timer for scripts that take too long to execute (bug 5837).
+ - Use Linux game data for offsets and signatures/symbols on OS X if Mac-specific data is not available (bug 6056).
+
+Developer Changes:
+ - Added an API for off-thread SQL transactions. (bug 3775, PR 26).
+ - Added string literal concatenation using ellipses "..." (bug 4261, PR 5) (Peace-Maker).
+ - Added support for nested datatables. (bug 5446).
+ - Added PbRemoveRepeatedFieldValue native (bug 6066).
+ - Added support for getting/setting protobuf enum values with PbGetInt, PbSetInt, and PbAddInt natives.
+ - Removed deprecated PbReadRepeated natives that existed briefly in 1.5.0-dev prerelease versions.
+ - Added RequestFrame native for one-off next-frame actions (bug 5965).
+ - Added CS_DMG_HEADSHOT define for CS:S and CS:GO (PR 7) (Bara20).
+ - Added CS_SLOT_KNIFE define for CS:S and CS:GO (bug 6131).
+ - Updated TF_WEAPON enum (PR 37) (FlaminSarge).
+ - Added TFHoliday_AprilFools to TFHoliday enum (bug 6092) (Ross "Powerlord" Bemrose).
+ - Added new TF2_IsHolidayActive native to TF2 Ext (bug 6095) (Ross "Powerlord" Bemrose).
+ - Switch TF2 extension to hook CTFGameRules::IsHolidayActive for holiday forward (bug 6137, PR 42).
+ - Added GetPlayerJingleFile native. (bug 5690) (FlaminSarge).
+ - Added PrepSDKCall_SetAddress and Address support to PrepSDKCall_SetFromConf (bug 5261).
+ - Added ability to disable TopMenu Title Caching (bug 6034) (Peace-Maker).
+ - Added DisplayTopMenuCategory native (bug 6033) (Peace-Maker).
+ - Added support for Valve search paths to GetFileSize native (bug 5931).
+ - Fixed invalid entities sometimes passed to OnEntityCreated and OnEntityDestroyed (bug 6119).
+ - Fixed inconsistencies with OnClientDisconnected foward calls (bug 5988, PR 16).
+ - Changed OnClientSayCommand to now pass non-silent chat triggers onward (bug 5926) (SystematicMania).
+ - Changed OnClientSayCommand forwards to strip quotes from chat (bug 5986) (SystematicMania).
+ - Fixed FindStringIndex native not returning INVALID_STRING_INDEX when string not found (bug 6144, PR 40).
+ - Fixed GroundEntChanged hooks not being called (bug 6050) (Peace-Maker).
+ - Fixed INetChannelInfo natives to no longer require clients to be ingame (bug 5775) (SystematicMania).
+ - Fixed replace param being respected inconsistently in SetTrieArray (bug 6113).
+ - Fixed crash creating a timer when there are no handles available. (bug 5317) (Peace-Maker).
+ - Fixed crash in ReconnectClient and InactivateClient natives when IServer ptr is null (bug 6122).
+ - Fixed StoreFromAddress and LoadFromAddress continuing with bad values, usually crashing after error (bug 6080).
+ - Fixed compiler bug with multidimensional array variable release (bug 6100).
+ - Changed float comparison operators to return false for NaN (bug 6107).
+ - Added support in spcomp for sp/inc files > 32767 lines (bug 5959).
+ - Fixed FindFlagChar returning '?' for Admin_Custom6.
+ - Fixed AllPluginsLoaded activities happening before SM is loaded.
+ - Deduplicated a number of files used by extensions by moving them to the public directory (bug 5341).
+ - Removed 'state' keyword from compiler (bug 4572) (Ryan "VoiDeD" Stecker).
+ - Removed LogMessageEx definition from logging.inc because it never existed (bug 5897) (Peace-Maker).
+ - Removed native override API (bug 5852).
+ - Call OnLibraryAdded for all available libraries (bug 5925, PR 4).
+ - Made IGameConfig::GetMemSig return value clearer (bug 6081).
+ - Switched StringToInt(Ex) from using strtol to strtoul internally (bug 5939).
+ - Added an spcomp option to print #included files (bug 5997).
+ - Recompiled Regex extension libpcre against v8.32, enabling utf8, unicode props, and jit (bug 5593).
+ - Optimized native calls if statically bound (bug 5842).
+
+Internal Changes:
+ - Now using new AlliedModders Template Library (AMTL) in many places, https://github.com/alliedmodders/amtl
+ - Ported buildscripts to new AMBuild2 platform, https://github.com/alliedmodders/ambuild
+ - Moved much logic from core to logic binary to reduce file sizes and compile times (bug 5606, bug 5607, bug 5680, bug 5953, PR 12, PR 13).
+ - Refactored the JIT to use a newer, simpler macro assembler. (bug 5827).
+ - Added sourcepawn interpreter (bug 5902).
+ - Added support for compiling spcomp with emscripten.
+ - Rewrite IThreader implementation around new synchronization primitives (bug 5862).
+ - Rewrite DBManager to use the new synchronization primitives (bug 5870).
+ - Overhauled internals of ClientPrefs extension for improved stability (bug 5538).
+ - Changed ShareSys to store C++ native lists more optimally (bug 5852).
+ - Simplified NativeEntry state (bug 5852).
+ - Changed NativeEntry to use Refcounted to manage (bug 5852).
+ - Switched Translator and GameConfigs to hash tables (bug 5878).
+ - Switched numerous subsystems from KTrie to AMTL NameHashSet (bug 5884).
+ - Refactored Trie natives to use AMTL HashMap instead of KTrie (bug 5892).
+ - Removed usages of memtables from many subsystems (bug 5899).
+ - Changed EventHook name storage to use AMTL AString (bug 6188).
+ - Replaced SH List usages in game extensions with AMTL variants (PR 23).
+ - Replaced SourceHook list usages in clientprefs with AMTL (PR 25).
+ - Changed floating-point operations to use SSE when available (bug 5841).
+ - Moved tracker related opcodes entirely to C++.
+ - Statically align the stack at function boundaries (bug 5842).
+ - Removed InfoVars, reassigned DAT from EBP to ESI to preserve C++ stacktraces in JIT code (5844).
+ - Fixed dereferencing potential null pointer in CPlugin::GetProperty (bug 5725).
+ - Fixed memory corruption when parsing natives. (bug 5840).
+ - Fixed some memory errors (bug 5904).
+ - Fixed unaligned memory access in spcomp.
+ - Move versioning to a static library to improve trivial build speed (bug 5997).
+ - Added many missing handle security checks (bug 5595).
+ - Made GetEntityClassname get and cache m_iClassname offset from worldspawn for ents not having it in datadesc (bug 5654).
+ - Cache m_iEFlags offset for datamaps dump instead of getting for each ent (bug 5657).
+ - Fixed mismatched delete [] on thunks in JIT CompData dtor (bug 5639).
+ - Fixed various memory issues. (bug 5766).
+ - Added reference counting and use it for CGameConfig and IDatabase (bug 5876).
+ - Added atomic reference counting and port DBI (bug 5876).
+ - Replaced usages of deprecated Sourcehook Add/Remove macros (bug 5631).
+ - Fixed SDKHooks hook ent validation missing first datatable name (bug 5881).
+ - Fixed case where bots leave server without disconnect notice (hibernation) (PR 20).
+ - Changed FindConVar to utilize convar cache for improved performance (PR 27) (VoiDeD).
+ - Gave define value (of 1) to PLATFORM defs to match the same-name defs in some SDKs (PR 10).
+ - Wrapped ClientPrintf into IGamePlayer (bug 6021).
+ - Consolidated FileExists usage in logic bin (bug 5931).
+ - Removed hardcoded paths to tier0/vstdlib in ICommandLine lookup.
+ - Use updated IServerTools iface on TF2 for getting tempent list and FindEntityByClassname (PR 33).
+ - Added early exit in entity output detour if entity has no classname to prevent crash.
+ - Updated SDKTools entity output functions to use core's GetEntityClassname instead of own (PR 39).
+ - Consolidated SDKTools entity factory lookups.
+ - Changed SDKTools PlayerRunCmd to a global vtable hook to improve performance (bug 6051).
+ - Changed SDKHooks to use global vtable hooks to improve performance (bug 6070).
+ - Added client validation checks to EmitSound SoundsHooks (bug 5873).
+ - Added missing meta results to some pre-hooks in SDKHooks.
+ - Replaced magic numbers for sm_show_activity with named constants (PR 14).
+
+----------------------------------------------------------
 SourceMod 1.5.3 [2014-03-22]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.5.3_Release_Notes
