@@ -83,6 +83,8 @@ if [ $ismac -eq 0 ] && [ ! -d "postgresql-9.3" ]; then
   mv postgresql-9.3.4 postgresql-9.3
   rm pgsql.tar.gz
   
+  cp $sourcemodfolder/extensions/pgsql/pg_config_paths.h postgresql-9.3/src/interfaces/libpq/pg_config_paths.h
+  
   if [ $iswin -eq 1 ]; then
     cp postgresql-9.3/src/include/pg_config.h.win32 postgresql-9.3/src/include/pg_config.h
     cp postgresql-9.3/src/include/pg_config_ext.h.win32 postgresql-9.3/src/include/pg_config_ext.h

@@ -59,11 +59,11 @@ void DBI_PgSQL::SDK_OnUnload()
 
 const char *DBI_PgSQL::GetExtensionVerString()
 {
-	return SM_VERSION_STRING;
+	return SOURCEMOD_VERSION;
 }
 
 const char *DBI_PgSQL::GetExtensionDateString()
 {
-	return SM_BUILD_TIMESTAMP;
+	return SOURCEMOD_BUILD_TIME;
 }
 

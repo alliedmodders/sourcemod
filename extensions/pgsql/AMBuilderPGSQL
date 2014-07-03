@@ -39,6 +39,7 @@ elif builder.target_platform == 'windows':
   binary.sources += [
     os.path.join(SM.pgsql_root, 'src', 'port', 'getaddrinfo.c'),
 	os.path.join(SM.pgsql_root, 'src', 'port', 'inet_aton.c'),
+	os.path.join(SM.pgsql_root, 'src', 'port', 'crypt.c'),
     os.path.join(SM.pgsql_root, 'src', 'interfaces', 'libpq', 'win32.c'),
 	#os.path.join(SM.pgsql_root, 'src', 'port', 'win32error.c'),
     os.path.join(SM.pgsql_root, 'src', 'port', 'win32setlocale.c'),
@@ -57,8 +58,10 @@ elif builder.target_platform == 'linux':
 	'_REENTRANT',
 	'_THREAD_SAFE',
 	'_POSIX_PTHREAD_SEMANTICS',
+	'_GNU_SOURCE',
   ]
   
+  binary.compiler.cflags.remove('-Werror')
   binary.compiler.postlink += ['-pthread -lcrypt -lpthread']
   
   binary.sources += [
@@ -69,7 +72,6 @@ binary.sources += [
   os.path.join(SM.pgsql_root, 'src', 'port', 'pgstrcasecmp.c'),
   os.path.join(SM.pgsql_root, 'src', 'port', 'pqsignal.c'),
   os.path.join(SM.pgsql_root, 'src', 'port', 'thread.c'),
-  os.path.join(SM.pgsql_root, 'src', 'port', 'crypt.c'),
   os.path.join(SM.pgsql_root, 'src', 'port', 'noblock.c'),
   os.path.join(SM.pgsql_root, 'src', 'port', 'chklocale.c'),
   os.path.join(SM.pgsql_root, 'src', 'port', 'inet_net_ntop.c'),
