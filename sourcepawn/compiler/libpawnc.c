@@ -185,7 +185,7 @@ void *pc_createsrc(char *filename)
 	}
 
 	src->pos = src->buffer;
-	src->end = src->buffer;
+	src->end = src->buffer + src->maxlength;
 	return src;
 }
 
