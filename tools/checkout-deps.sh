@@ -17,7 +17,9 @@ elif [ `uname` != "Linux" ] && [ -n "${COMSPEC:+1}" ]; then
   decomp=unzip
 fi
 
+sourcemodfolder="sourcemod"
 if [ ! -d "sourcemod" ]; then
+  sourcemodfolder="sourcemod-1.5"
   if [ ! -d "sourcemod-1.5" ]; then
     echo "Could not find a SourceMod repository; make sure you aren't running this script inside it."
     exit 1
@@ -77,9 +79,21 @@ if [ $ismac -eq 0 ] && [ ! -d "postgresql-9.3" ]; then
     echo "Failed to locate wget or curl. Install one of these programs to download PostgreSQL."
     exit 1
   fi
-  $decomp pgsql.tar.gz
+  tar xfz pgsql.tar.gz
   mv postgresql-9.3.4 postgresql-9.3
   rm pgsql.tar.gz
+  
+  if [ $iswin -eq 1 ]; then
+    cp postgresql-9.3/src/include/pg_config.h.win32 postgresql-9.3/src/include/pg_config.h
+    cp postgresql-9.3/src/include/pg_config_ext.h.win32 postgresql-9.3/src/include/pg_config_ext.h
+    cp postgresql-9.3/src/include/port/win32.h postgresql-9.3/src/include/pg_config_os.h
+  else
+    cd postgresql-9.3
+	patch configure.in < ../$sourcemodfolder/extensions/pgsql/configure_autoconf.patch
+    autoconf
+    ./configure --without-readline
+	cd ..
+  fi
 fi
 
 checkout ()

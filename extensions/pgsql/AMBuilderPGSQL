@@ -47,6 +47,7 @@ elif builder.target_platform == 'windows':
     os.path.join(SM.pgsql_root, 'src', 'port', 'dirmod.c'),
     os.path.join(SM.pgsql_root, 'src', 'port', 'open.c'),
 	os.path.join(SM.pgsql_root, 'src', 'port', 'snprintf.c'),
+	os.path.join(SM.pgsql_root, 'src', 'common', 'fe_memutils.c'),
     os.path.join(SM.pgsql_root, 'src', 'interfaces', 'libpq', 'pthread-win32.c')
   ]
 elif builder.target_platform == 'linux':
@@ -88,8 +89,6 @@ binary.sources += [
   os.path.join(SM.pgsql_root, 'src', 'backend', 'utils', 'mb', 'wchar.c'),
   os.path.join(SM.pgsql_root, 'src', 'backend', 'utils', 'mb', 'encnames.c'),
   os.path.join(SM.pgsql_root, 'src', 'port', 'strlcpy.c'),
-
-  os.path.join(SM.pgsql_root, 'src', 'common', 'fe_memutils.c'),
 ]
 rvalue = builder.Add(binary)
 
