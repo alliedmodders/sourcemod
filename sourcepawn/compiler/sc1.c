@@ -78,6 +78,7 @@ int pc_functag = 0;
 int pc_tag_string = 0;
 int pc_tag_void = 0;
 int pc_tag_object = 0;
+int pc_tag_bool = 0;
 
 typedef struct funcstub_setup_s {
   const char *name;
@@ -1346,6 +1347,7 @@ static void setconstants(void)
   sc_rationaltag = pc_addtag("Float");
   pc_tag_void = pc_addtag_flags("void", FIXEDTAG);
   pc_tag_object = pc_addtag_flags("object", FIXEDTAG|OBJECTTAG);
+  pc_tag_bool = pc_addtag("bool");
 
   add_constant("true",1,sGLOBAL,1);     /* boolean flags */
   add_constant("false",0,sGLOBAL,1);
@@ -3292,9 +3294,15 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
     case tOBJECT:
       type->tag = pc_tag_object;
       break;
+    case tLABEL:
+      type->tag = pc_addtag(tok.str);
+      error(120);
+      break;
     case tSYMBOL:
       if (strcmp(tok.str, "float") == 0) {
         type->tag = sc_rationaltag;
+      } else if (strcmp(tok.str, "bool") == 0) {
+        type->tag == pc_tag_bool;
       } else {
         type->tag = pc_findtag(tok.str);
         if (type->tag == sc_rationaltag) {
@@ -4018,7 +4026,7 @@ static void domethodmap(LayoutSpec spec)
   map->spec = spec;
   strcpy(map->name, mapname);
   if (spec == Layout_MethodMap) {
-    map->tag = pc_addtag(mapname);
+    map->tag = pc_addtag_flags(mapname, FIXEDTAG | METHODMAPTAG);
   } else {
     constvalue *tagptr = pc_tagptr(mapname);
     if (!tagptr) {
@@ -4626,6 +4634,15 @@ static void attachstatelist(symbol *sym, int state_id)
   } /* if */
 }
 
+// This simpler version of matchtag() only checks whether two tags represent
+// the same type. Because methodmaps are attached to types and are not actually
+// types themselves, we strip out the methodmap bit in case a methodmap was
+// seen later than another instance of a tag.
+static int compare_tag(int tag1, int tag2)
+{
+  return (tag1 & (~METHODMAPTAG)) == (tag2 & (~METHODMAPTAG));
+}
+
 /*
  *  Finds a function in the global symbol table or creates a new entry.
  *  It does some basic processing and error checking.
@@ -4642,7 +4659,7 @@ SC_FUNC symbol *fetchfunc(char *name,int tag)
       error(21,name);                     /* yes, and it is a native */
     } /* if */
     assert(sym->vclass==sGLOBAL);
-    if ((sym->usage & uPROTOTYPED)!=0 && sym->tag!=tag)
+    if ((sym->usage & uPROTOTYPED)!=0 && !compare_tag(sym->tag, tag))
       error(25);                          /* mismatch from earlier prototype */
     if ((sym->usage & uDEFINE)==0) {
       /* as long as the function stays undefined, update the address and the tag */
@@ -5331,11 +5348,7 @@ static int argcompare(arginfo *a1,arginfo *a2)
 {
   int result,level,i;
 
-#if 0	/* SourceMod uses case insensitive args for forwards */
-  result= strcmp(a1->name,a2->name)==0;     /* name */
-#else
   result=1;
-#endif
   if (result)
     result= a1->ident==a2->ident;           /* type/class */
   if (result)
@@ -5343,13 +5356,13 @@ static int argcompare(arginfo *a1,arginfo *a2)
   if (result)
     result= a1->numtags==a2->numtags;       /* tags (number and names) */
   for (i=0; result && i<a1->numtags; i++)
-    result= a1->tags[i]==a2->tags[i];
+    result= compare_tag(a1->tags[i], a2->tags[i]);
   if (result)
     result= a1->numdim==a2->numdim;         /* array dimensions & index tags */
   for (level=0; result && level<a1->numdim; level++)
     result= a1->dim[level]==a2->dim[level];
   for (level=0; result && level<a1->numdim; level++)
-    result= a1->idxtag[level]==a2->idxtag[level];
+    result= compare_tag(a1->idxtag[level], a2->idxtag[level]);
   if (result)
     result= a1->hasdefault==a2->hasdefault; /* availability of default value */
   if (a1->hasdefault) {
@@ -5372,7 +5385,7 @@ static int argcompare(arginfo *a1,arginfo *a2)
       } /* if */
     } /* if */
     if (result)
-      result= a1->defvalue_tag==a2->defvalue_tag;
+      result= compare_tag(a1->defvalue_tag, a2->defvalue_tag);
   } /* if */
   return result;
 }
@@ -6537,7 +6550,7 @@ SC_FUNC symbol *add_constant(char *name,cell val,int vclass,int tag)
        */
       if (!redef)
         goto redef_enumfield;
-    } else if (sym->tag!=tag) {
+    } else if (!compare_tag(sym->tag, tag)) {
       redef=1;                  /* redefinition of a constant (non-enum) to a different tag is not allowed */
     } /* if */
     if (redef) {

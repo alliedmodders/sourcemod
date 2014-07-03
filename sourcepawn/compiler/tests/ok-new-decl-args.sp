@@ -23,6 +23,9 @@ stock E(E2 t)
 {
 }
 
+stock F(int n[10]) {
+}
+
 public main()
 {
   new x[10]
@@ -31,4 +34,5 @@ public main()
   C(x)
   D(E1:5)
   E(E2:5)
+  F(x)
 }

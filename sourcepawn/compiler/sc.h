@@ -515,8 +515,9 @@ typedef enum s_optmark {
 #define FUNCTAG      0x20000000Lu
 #define OBJECTTAG    0x10000000Lu
 #define ENUMTAG      0x08000000Lu
+#define METHODMAPTAG 0x04000000Lu
 #define TAGMASK       (~PUBLICTAG)
-#define TAGTYPEMASK   (FUNCTAG | OBJECTTAG | ENUMTAG)
+#define TAGTYPEMASK   (FUNCTAG | OBJECTTAG | ENUMTAG | METHODMAPTAG)
 #define TAGFLAGMASK   (FIXEDTAG | TAGTYPEMASK)
 #define CELL_MAX      (((ucell)1 << (sizeof(cell)*8-1)) - 1)
 
@@ -915,6 +916,7 @@ SC_VDECL int pc_functag;      /* global function tag */
 SC_VDECL int pc_tag_string;   /* global String tag */
 SC_VDECL int pc_tag_void;     /* global void tag */
 SC_VDECL int pc_tag_object;   /* root object tag */
+SC_VDECL int pc_tag_bool;     /* global bool tag */
 SC_VDECL int pc_anytag;       /* global any tag */
 SC_VDECL int glbstringread;	  /* last global string read */
 SC_VDECL int sc_require_newdecls; /* only newdecls are allowed */

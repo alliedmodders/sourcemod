@@ -3138,7 +3138,6 @@ SC_FUNC int matchtoken2(int id, token_t *tok)
   if (matchtoken(id)) {
     tok->id = tokeninfo(&tok->val, &tok->str);
     return TRUE;
-    
   }
   return FALSE;
 }
