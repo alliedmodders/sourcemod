@@ -3341,8 +3341,10 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
         break;
       }
       type->dim[type->numdim++] = 0;
-      if (!needtoken(']'))
+      if (!matchtoken(']')) {
+        error(140);
         goto err_out;
+      }
     } while (matchtoken('['));
     type->ident = iARRAY;
   }

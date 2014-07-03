@@ -23,16 +23,22 @@ stock E(E2 t)
 {
 }
 
-stock F(int n[10]) {
+stock F(const int n[10]) {
+}
+
+stock G(int& n)
+{
 }
 
 public main()
 {
   new x[10]
+  new t
   A(1)
   B(x)
   C(x)
   D(E1:5)
   E(E2:5)
   F(x)
+  G(t)
 }

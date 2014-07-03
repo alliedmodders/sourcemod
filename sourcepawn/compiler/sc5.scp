@@ -183,6 +183,7 @@ static char *errmsg[] = {
 /*137*/  "cannot mix reference and array types\n",
 /*138*/  "const was specified twice\n",
 /*139*/  "could not find type \"%s\"\n",
+/*140*/  "new-style array types cannot specify dimension sizes as part of their type\n",
 #else
   "\250\264\307\231\271k\214:\234\317bu\201fo\223\204\220\012",
   "\202l\224\252s\205g\370\346e\233\201(\242\250\324\273\202) \256 f\247low ea\274 \042c\342e\042\012",
