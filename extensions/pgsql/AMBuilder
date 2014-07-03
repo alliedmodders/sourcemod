@@ -2,35 +2,38 @@
 import os
 
 if SM.pgsql_root:
+  # First compile libpq
+  libpq = builder.RunScript('AMBuilderPGSQL', { 'SM': SM })
+
   binary = SM.ExtLibrary(builder, 'dbi.pgsql.ext')
   binary.compiler.cxxincludes += [
-    os.path.join(SM.pgsql_root, 'build', 'include'),
+    os.path.join(SM.pgsql_root, 'src', 'interfaces', 'libpq'),
     os.path.join(SM.pgsql_root, 'src', 'include'),
     os.path.join(SM.mms_root, 'core', 'sourcehook')
   ]
-
+  
+  # Link the compiled libpq
+  binary.compiler.postlink += [libpq.binary]
+  
   if builder.target_platform == 'linux' or builder.target_platform == 'mac':
     binary.compiler.postlink += [
-      os.path.join(SM.pgsql_root, 'build', 'lib', 'libpq.a'),
       '-lz',
       '-lpthread',
       '-lm'
     ]
   elif builder.target_platform == 'windows':
     binary.compiler.postlink += [
-      os.path.join(SM.pgsql_root, 'build', 'lib', 'libpq.lib'),
-      os.path.join(SM.pgsql_root, 'build', 'lib', 'libpgport.lib'),
       'wsock32.lib',
       'ws2_32.lib',
       'secur32.lib'
     ]
 
   binary.sources += [
-    '../../public/smsdk_ext.cpp',
-    'pgsql/PgBasicResults.cpp',
-    'pgsql/PgDatabase.cpp',
-    'pgsql/PgDriver.cpp',
-    'pgsql/PgStatement.cpp',
+    os.path.join('..', '..', 'public', 'smsdk_ext.cpp'),
+    os.path.join('pgsql', 'PgBasicResults.cpp'),
+    os.path.join('pgsql', 'PgDatabase.cpp'),
+    os.path.join('pgsql', 'PgDriver.cpp'),
+    os.path.join('pgsql', 'PgStatement.cpp'),
     'extension.cpp'
   ]
   SM.extensions += [builder.Add(binary)]

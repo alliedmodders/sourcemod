@@ -31,7 +31,7 @@
 
 #include "PgDriver.h"
 #include "PgDatabase.h"
-#include "sdk/smsdk_ext.h"
+#include "smsdk_ext.h"
 
 PgDriver g_PgDriver;
 
