@@ -3302,7 +3302,9 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
       if (strcmp(tok.str, "float") == 0) {
         type->tag = sc_rationaltag;
       } else if (strcmp(tok.str, "bool") == 0) {
-        type->tag == pc_tag_bool;
+        type->tag = pc_tag_bool;
+      } else if (strcmp(tok.str, "char") == 0) {
+        type->tag = pc_tag_string;
       } else {
         type->tag = pc_findtag(tok.str);
         if (type->tag == sc_rationaltag) {
@@ -4863,7 +4865,7 @@ static int check_operatortag(int opertok,int resulttag,char *opername)
   case tlNE:
   case tlLE:
   case tlGE:
-    if (resulttag!=pc_addtag("bool")) {
+    if (resulttag!=pc_tag_bool) {
       error(63,opername,"bool:"); /* operator X requires a "bool:" result tag */
       return FALSE;
     } /* if */
@@ -6930,9 +6932,10 @@ static int test(int label,int parens,int invert)
     } /* if */
     return testtype;
   } /* if */
-  if (tag!=0 && tag!=pc_addtag("bool"))
+  if (tag!=0 && tag!=pc_tag_bool) {
     if (check_userop(lneg,tag,0,1,NULL,&tag))
       invert= !invert;          /* user-defined ! operator inverted result */
+  }
   if (invert)
     jmp_ne0(label);             /* jump to label if true (different from 0) */
   else
