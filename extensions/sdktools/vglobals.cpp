@@ -130,6 +130,9 @@ bool UTIL_VerifySignature(const void *addr, const char *sig, size_t len)
 
 void GetIServer()
 {
+#if SOURCE_ENGINE == SE_TF2
+	iserver = engine->GetIServer();
+#else
 	void *addr;
 	const char *sigstr;
 	char sig[32];
@@ -188,6 +191,7 @@ void GetIServer()
 
 	/* Finally we have the interface we were looking for */
 	iserver = *reinterpret_cast<IServer **>(reinterpret_cast<unsigned char *>(vfunc) + offset);
+#endif // !TF2
 }
 
 void GetResourceEntity()
