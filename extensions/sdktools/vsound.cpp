@@ -1263,7 +1263,7 @@ sp_nativeinfo_t g_SoundNatives[] =
 	{"RemoveAmbientSoundHook",	smn_RemoveAmbientSoundHook},
 	{"RemoveNormalSoundHook",	smn_RemoveNormalSoundHook},
 	{"GetDistGainFromSoundLevel", smn_GetDistGainFromSoundLevel},
-	{"GetDistGainFromSoundLevel", smn_GetDistGainFromSoundLevel},
 	{"GetGameSoundParams",		smn_GetGameSoundParams},
+	{"PrecacheScriptSound", smn_PrecacheScriptSound},
 	{NULL,						NULL},
 };
