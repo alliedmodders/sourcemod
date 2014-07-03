@@ -704,8 +704,10 @@ int pc_addtag_flags(char *name, int flags)
   ptr=tagname_tab.next;
   while (ptr!=NULL) {
     tag=(int)(ptr->value & TAGMASK);
-    if (strcmp(name,ptr->name)==0)
+    if (strcmp(name,ptr->name)==0) {
+      ptr->value |= flags;
       return tag;       /* tagname is known, return its sequence number */
+    }
     tag &= ~TAGFLAGMASK;
     if (tag>last)
       last=tag;
@@ -3277,27 +3279,6 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
     lextok(&tok);
   }
 
-  // Note: we could have already filled in the prefix array bits below, so we
-  // check that ident != iARRAY before looking for an open bracket.
-  if (type->ident != iARRAY && tok.id == '[') {
-    // Not yet supported for return vals. This is allowed with old decls, but
-    // it's a huge hack. For now we forbid it in new code until it works right.
-    if (flags & TYPEFLAG_RETURN)
-      error(136);
-
-    while (tok.id == '[') {
-      if (type->numdim == sDIMEN_MAX) {
-        error(53);
-        break;
-      }
-      type->dim[type->numdim++] = 0;
-      if (!needtoken(']'))
-        goto err_out;
-      lextok(&tok);
-    }
-    type->ident = iARRAY;
-  }
-
   switch (tok.id) {
     case tINT:
       strcpy(type->type, "int");
@@ -3321,18 +3302,48 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
         type->tag = sc_rationaltag;
       } else {
         type->tag = pc_findtag(type->type);
-        if (type->tag == sc_rationaltag)
+        if (type->tag == sc_rationaltag) {
           error(98, "Float", "float");
-        else if (type->tag == pc_tag_string)
+        } else if (type->tag == pc_tag_string) {
           error(98, "String", "char");
-        else if (type->tag == 0)
+        } else if (type->tag == 0) {
           error(98, "_", "int");
+        } else if (type->tag == -1) {
+          error(139, type->type);
+          type->tag = 0;
+        } else {
+          // Perform some basic filters so we can start narrowing down what can
+          // be used as a type.
+          if (!(type->tag & TAGTYPEMASK))
+            error(139, type->type);
+        }
       }
       break;
     default:
       error(122);
       goto err_out;
   }
+
+  // Note: we could have already filled in the prefix array bits, so we check
+  // that ident != iARRAY before looking for an open bracket.
+  if (type->ident != iARRAY && matchtoken('[')) {
+    // Not yet supported for return vals. This is allowed with old decls, but
+    // it's a huge hack. For now we forbid it in new code until it works right.
+    if (flags & TYPEFLAG_RETURN)
+      error(136);
+
+    do {
+      if (type->numdim == sDIMEN_MAX) {
+        error(53);
+        break;
+      }
+      type->dim[type->numdim++] = 0;
+      if (!needtoken(']'))
+        goto err_out;
+    } while (matchtoken('['));
+    type->ident = iARRAY;
+  }
+
 
   if (flags & TYPEFLAG_ARGUMENT) {
     if (matchtoken('&')) {
@@ -4382,7 +4393,10 @@ static void decl_enum(int vclass)
    * pc_addtag() here
    */
   if (lex(&val,&str)==tLABEL) {
-    tag = pc_addtag(str);
+    int flags = ENUMTAG;
+    if (isupper(*str))
+      flags |= FIXEDTAG;
+    tag = pc_addtag_flags(str, flags);
     spec = deduce_layout_spec_by_tag(tag);
     if (!can_redef_layout_spec(spec, Layout_Enum))
       error(110, str, layout_spec_name(spec));
@@ -4397,7 +4411,10 @@ static void decl_enum(int vclass)
   if (lex(&val,&str)==tSYMBOL) {        /* read in (new) token */
     strcpy(enumname,str);               /* save enum name (last constant) */
     if (!explicittag) {
-      tag=pc_addtag(enumname);
+      int flags = ENUMTAG;
+      if (isupper(*str))
+        flags |= FIXEDTAG;
+      tag=pc_addtag_flags(enumname, flags);
       spec = deduce_layout_spec_by_tag(tag);
       if (!can_redef_layout_spec(spec, Layout_Enum))
         error(110, enumname, layout_spec_name(spec));
