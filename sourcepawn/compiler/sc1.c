@@ -78,6 +78,7 @@ int pc_functag = 0;
 int pc_tag_string = 0;
 int pc_tag_void = 0;
 int pc_tag_object = 0;
+int pc_tag_bool = 0;
 
 typedef struct funcstub_setup_s {
   const char *name;
@@ -121,8 +122,7 @@ static void attachstatelist(symbol *sym, int state_id);
 static symbol *funcstub(int fnative, const funcstub_setup_t *setup);
 static int newfunc(const funcstub_setup_t *setup,int fpublic,int fstatic,int stock,symbol **symp);
 static int declargs(symbol *sym, int chkshadow, const int *thistag);
-static void doarg(char *name,int ident,int offset,int tags[],int numtags,
-                  int fpublic,int fconst,int chkshadow,arginfo *arg);
+static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, arginfo *arg);
 static void make_report(symbol *root,FILE *log,char *sourcefile);
 static void reduce_referrers(symbol *root);
 static long max_stacksize(symbol *root,int *recursion);
@@ -705,8 +705,10 @@ int pc_addtag_flags(char *name, int flags)
   ptr=tagname_tab.next;
   while (ptr!=NULL) {
     tag=(int)(ptr->value & TAGMASK);
-    if (strcmp(name,ptr->name)==0)
+    if (strcmp(name,ptr->name)==0) {
+      ptr->value |= flags;
       return tag;       /* tagname is known, return its sequence number */
+    }
     tag &= ~TAGFLAGMASK;
     if (tag>last)
       last=tag;
@@ -1261,7 +1263,7 @@ static void setconfig(char *root)
 static void setcaption(void)
 {
   pc_printf("SourcePawn Compiler %s\n", SOURCEMOD_VERSION);
-  pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2008 AlliedModders, LLC\n\n");
+  pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2014 AlliedModders, LLC\n\n");
 }
 
 static void about(void)
@@ -1345,6 +1347,7 @@ static void setconstants(void)
   sc_rationaltag = pc_addtag("Float");
   pc_tag_void = pc_addtag_flags("void", FIXEDTAG);
   pc_tag_object = pc_addtag_flags("object", FIXEDTAG|OBJECTTAG);
+  pc_tag_bool = pc_addtag("bool");
 
   add_constant("true",1,sGLOBAL,1);     /* boolean flags */
   add_constant("false",0,sGLOBAL,1);
@@ -3242,70 +3245,6 @@ static void declstruct(void)
 	matchtoken(';');	/* eat up optional semicolon */
 }
 
-int parse_typeexpr(declinfo_t *decl, const token_t *first, int flags)
-{
-  token_t tok;
-
-  if (first) {
-    tok = *first;
-  } else {
-    lextok(&tok);
-  }
-
-  if (tok.id == tCONST) {
-    decl->usage |= uCONST;
-    lextok(&tok);
-  }
-
-  if (tok.id == tLABEL && (flags & DECLFLAG_ONLY_NEW_TYPES)) {
-    error(120);
-    return FALSE;
-  }
-
-  if (tok.id == '[') {
-    error(121);
-    return FALSE;
-  }
-
-  switch (tok.id) {
-    case tINT:
-      strcpy(decl->type, "int");
-      decl->tag = 0;
-      break;
-    case tCHAR:
-      strcpy(decl->type, "char");
-      decl->tag = pc_tag_string;
-      break;
-    case tVOID:
-      strcpy(decl->type, "void");
-      decl->tag = pc_tag_void;
-      break;
-    case tOBJECT:
-      strcpy(decl->type, "object");
-      decl->tag = pc_tag_object;
-      break;
-    case tSYMBOL:
-      strcpy(decl->type, tok.str);
-      if (strcmp(decl->type, "float") == 0) {
-        decl->tag = sc_rationaltag;
-      } else {
-        decl->tag = pc_findtag(decl->type);
-        if (decl->tag == sc_rationaltag)
-          error(98, "Float", "float");
-        else if (decl->tag == pc_tag_string)
-          error(98, "String", "char");
-        else if (decl->tag == 0)
-          error(98, "_", "int");
-      }
-      break;
-    default:
-      error(122);
-      return FALSE;
-  }
-
-  return TRUE;
-}
-
 // Consumes a line, returns FALSE if EOF hit.
 static int consume_line()
 {
@@ -3326,16 +3265,308 @@ static int consume_line()
   return TRUE;
 }
 
-// Parse a new-style declaration. If the name was already fetched (because we
-// didn't have enough lookahead), it can be given ahead of time.
-int parse_decl(declinfo_t *decl, const token_t *first, int flags)
+static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
 {
-  memset(decl, 0, sizeof(*decl));
+  token_t tok;
 
-  if (!parse_typeexpr(decl, first, flags))
-    return FALSE;
+  if (first)
+    tok = *first;
+  else
+    lextok(&tok);
+
+  if (tok.id == tCONST) {
+    if (type->usage & uCONST)
+      error(138);
+    type->usage |= uCONST;
+    lextok(&tok);
+  }
+
+  switch (tok.id) {
+    case tINT:
+      type->tag = 0;
+      break;
+    case tCHAR:
+      type->tag = pc_tag_string;
+      break;
+    case tVOID:
+      type->tag = pc_tag_void;
+      break;
+    case tOBJECT:
+      type->tag = pc_tag_object;
+      break;
+    case tLABEL:
+      type->tag = pc_addtag(tok.str);
+      error(120);
+      break;
+    case tSYMBOL:
+      if (strcmp(tok.str, "float") == 0) {
+        type->tag = sc_rationaltag;
+      } else if (strcmp(tok.str, "bool") == 0) {
+        type->tag = pc_tag_bool;
+      } else if (strcmp(tok.str, "char") == 0) {
+        type->tag = pc_tag_string;
+      } else {
+        type->tag = pc_findtag(tok.str);
+        if (type->tag == sc_rationaltag) {
+          error(98, "Float", "float");
+        } else if (type->tag == pc_tag_string) {
+          error(98, "String", "char");
+        } else if (type->tag == 0) {
+          error(98, "_", "int");
+        } else if (type->tag == -1) {
+          error(139, tok.str);
+          type->tag = 0;
+        } else {
+          // Perform some basic filters so we can start narrowing down what can
+          // be used as a type.
+          if (!(type->tag & TAGTYPEMASK))
+            error(139, tok.str);
+        }
+      }
+      break;
+    default:
+      error(122);
+      goto err_out;
+  }
+
+  // Note: we could have already filled in the prefix array bits, so we check
+  // that ident != iARRAY before looking for an open bracket.
+  if (type->ident != iARRAY && matchtoken('[')) {
+    // Not yet supported for return vals. This is allowed with old decls, but
+    // it's a huge hack. For now we forbid it in new code until it works right.
+    if (flags & TYPEFLAG_RETURN)
+      error(136);
+
+    do {
+      if (type->numdim == sDIMEN_MAX) {
+        error(53);
+        break;
+      }
+      type->dim[type->numdim++] = 0;
+      if (!matchtoken(']')) {
+        error(140);
+        goto err_out;
+      }
+    } while (matchtoken('['));
+    type->ident = iARRAY;
+  }
+
+
+  if (flags & TYPEFLAG_ARGUMENT) {
+    if (matchtoken('&')) {
+      if (type->ident == iARRAY) {
+        error(137);
+        goto err_out;
+      }
+      type->ident = iREFERENCE;
+    }
+  }
+
+  type->tags[0] = type->tag;
+  type->numtags = 1;
+  return TRUE;
+
+err_out:
+  type->tags[0] = type->tag;
+  type->numtags = 1;
+  return FALSE;
+}
+
+static void parse_old_array_dims(declinfo_t *decl, int flags)
+{
+  typeinfo_t *type = &decl->type;
+  constvalue **enumrootp;
+
+  // Illegal declaration (we'll have a name since ref requires decl).
+  if (type->ident == iREFERENCE)
+    error(67, decl->name);
+
+  if (flags & TYPEFLAG_ENUMROOT)
+    enumrootp = &type->enumroot;
+  else
+    enumrootp = NULL;
+
+  do {
+    cell size;
+
+    if (type->numdim == sDIMEN_MAX) {
+      error(53);
+      return;
+    }
+
+    type->array_size = needsub(&type->idxtag[type->numdim], enumrootp);
+    if (type->array_size > INT_MAX)
+      error(165);
+
+    type->dim[type->numdim++] = type->array_size;
+  } while (matchtoken('['));
+
+  type->ident = iARRAY;
+}
+
+static int parse_old_decl(declinfo_t *decl, int flags)
+{
+  token_t tok;
+  typeinfo_t *type = &decl->type;
+
+  if (matchtoken(tCONST)) {
+    if (type->usage & uCONST)
+      error(138);
+    type->usage |= uCONST;
+  }
+
+  if (flags & TYPEFLAG_ARGUMENT) {
+    if (matchtoken('&'))
+      type->ident = iREFERENCE;
+
+    // grammar for multitags is:
+    //   multi-tag ::= '{' (symbol (',' symbol)*)? '}' ':'
+    if (matchtoken('{')) {
+      while (type->numtags < MAXTAGS) {
+        int tag = 0;
+
+        if (!matchtoken('_')) {
+          // If we don't get the magic tag '_', then we should have a symbol.
+          if (expecttoken(tSYMBOL, &tok))
+            tag = pc_addtag(tok.str);
+        }
+        type->tags[type->numtags++] = tag;
+
+        if (matchtoken('}'))
+          break;
+        needtoken(',');
+      }
+      needtoken(':');
+    }
+  }
+  
+  if (type->numtags == 0) {
+    if (matchtoken2(tLABEL, &tok))
+      type->tags[type->numtags++] = pc_addtag(tok.str);
+    else
+      type->tags[type->numtags++] = 0;
+  }
+
+  // All finished with tag stuff.
+  type->tag = type->tags[0];
+
+  // Look for varargs and end early.
+  if (matchtoken(tELLIPS)) {
+    type->ident = iVARARGS;
+    return TRUE;
+  }
+
+  if (flags & TYPEMASK_NAMED_DECL) {
+    if (expecttoken(tSYMBOL, &tok))
+      strcpy(decl->name, tok.str);
+    else
+      strcpy(decl->name, "<unknown>");
+  }
+
+  if ((flags & TYPEMASK_NAMED_DECL) && !(flags & TYPEFLAG_NO_POSTDIMS)) {
+    if (matchtoken('['))
+      parse_old_array_dims(decl, flags);
+  }
 
   return TRUE;
+}
+
+static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags)
+{
+  token_t tok;
+
+  if (!parse_new_typeexpr(&decl->type, first, flags))
+    return FALSE;
+  if (!expecttoken(tSYMBOL, &tok))
+    return FALSE;
+  strcpy(decl->name, tok.str);
+
+  if ((flags & TYPEMASK_NAMED_DECL) && !(flags & TYPEFLAG_NO_POSTDIMS)) {
+    if (matchtoken('[')) {
+      if (decl->type.numdim == 0)
+        parse_old_array_dims(decl, flags);
+      else
+        error(121);
+    }
+  }
+
+  return TRUE;
+}
+
+// Parse a declaration.
+//
+// Grammar for named declarations is:
+//    "const"? symbol ('[' ']')* '&'? symbol
+//  | "const"? label? '&'? symbol '[' ']'
+//
+int parse_decl(declinfo_t *decl, int flags)
+{
+  token_t tok;
+  token_ident_t ident;
+
+  memset(decl, 0, sizeof(*decl));
+
+  decl->type.ident = iVARIABLE;
+
+  // Must attempt to match const first, since it's a common prefix.
+  if (matchtoken(tCONST))
+    decl->type.usage |= uCONST;
+
+  // If parsing an argument, there are two simple checks for whether this is a
+  // new or old-style declaration.
+  if ((flags & TYPEFLAG_ARGUMENT) && (lexpeek('&') || lexpeek('{')))
+    return parse_old_decl(decl, flags);
+
+  // Another dead giveaway is there being a label.
+  if (lexpeek(tLABEL))
+    return parse_old_decl(decl, flags);
+
+  // Otherwise, we have to eat a symbol to tell.
+  if (matchsymbol(&ident)) {
+    if (lexpeek(tSYMBOL)) {
+      // A new-style declaration only allows array dims or a symbol name, so
+      // this is a new-style declaration. Make sure to push back the first
+      // symbol.
+      return parse_new_decl(decl, &ident.tok, flags);
+    }
+
+    if ((flags & TYPEMASK_NAMED_DECL) && matchtoken('[')) {
+      // If we're not allowing postdims here, then it must be a newdecl.
+      if (flags & TYPEFLAG_NO_POSTDIMS) {
+        // Give the '[' and symbol back, since we're going to parse from the start.
+        lexpush();
+        lexpush();
+        return parse_new_decl(decl, NULL, flags);
+      }
+
+      // Oh no - we have to parse array dims before we can tell what kind of
+      // declarator this is. It could be either:
+      //    "x[] y" (new-style), or
+      //    "y[],"  (old-style)
+      parse_old_array_dims(decl, flags);
+
+      if (matchtoken(tSYMBOL) || matchtoken('&')) {
+        // This must be a newdecl, "x[] y" or "x[] &y", the latter of which
+        // is illegal, but we flow it through the right path anyway.
+        lexpush();
+        return parse_new_decl(decl, &ident.tok, flags);
+      }
+
+      // The most basic - "x[]" and that's it. Well, we know it has no tag and
+      // we know its name. We might as well just complete the entire decl.
+      strcpy(decl->name, ident.name);
+      decl->type.tags[decl->type.numtags++] = 0;
+      decl->type.tag = decl->type.tags[0];
+      return TRUE;
+    }
+
+    // Give the symbol back to the lexer. This is an old decl.
+    lexpush();
+    return parse_old_decl(decl, flags);
+  }
+
+  // All else has failed. Probably got a type keyword. New-style.
+  return parse_new_decl(decl, NULL, flags);
 }
 
 void define_constructor(methodmap_t *map, methodmap_method_t *method)
@@ -3410,7 +3641,7 @@ void check_name_length(char *original)
   }
 }
 
-symbol *parse_inline_function(methodmap_t *map, const declinfo_t *decl, const char *name, int is_native, int is_ctor, int is_dtor)
+symbol *parse_inline_function(methodmap_t *map, const typeinfo_t *type, const char *name, int is_native, int is_ctor, int is_dtor)
 {
   funcstub_setup_t setup;
   if (is_dtor)
@@ -3418,7 +3649,7 @@ symbol *parse_inline_function(methodmap_t *map, const declinfo_t *decl, const ch
   else if (is_ctor)
     setup.return_tag = map->tag;
   else
-    setup.return_tag = decl->tag;
+    setup.return_tag = type->tag;
 
   if (is_ctor)
     setup.this_tag = -1;
@@ -3474,7 +3705,7 @@ int check_this_tag(methodmap_t *map, symbol *target)
   return ok;
 }
 
-int parse_property_accessor(const declinfo_t *decl, methodmap_t *map, methodmap_method_t *method)
+int parse_property_accessor(const typeinfo_t *type, methodmap_t *map, methodmap_method_t *method)
 {
   token_ident_t ident;
   int is_native = FALSE;
@@ -3517,7 +3748,7 @@ int parse_property_accessor(const declinfo_t *decl, methodmap_t *map, methodmap_
     char tmpname[METHOD_NAMEMAX + 1];
     strcpy(tmpname, method->name);
     strcat(tmpname, ".get");
-    target = parse_inline_function(map, decl, tmpname, is_native, FALSE, FALSE);
+    target = parse_inline_function(map, type, tmpname, is_native, FALSE, FALSE);
   }
 
   if (!target)
@@ -3537,9 +3768,9 @@ int parse_property_accessor(const declinfo_t *decl, methodmap_t *map, methodmap_
   }
 
   // Must return the same tag as the property.
-  if (decl->tag != target->tag) {
+  if (type->tag != target->tag) {
     const char *kind = getter ? "getter" : "setter";
-    error(128, "getter", map->name, decl->type);
+    error(128, "getter", map->name, type_to_name(type->tag));
   }
 
   if (!check_this_tag(map, target)) {
@@ -3553,11 +3784,12 @@ int parse_property_accessor(const declinfo_t *decl, methodmap_t *map, methodmap_
 
 methodmap_method_t *parse_property(methodmap_t *map)
 {
-  declinfo_t decl;
+  typeinfo_t type;
   token_ident_t ident;
   methodmap_method_t *method;
 
-  if (!parse_decl(&decl, NULL, DECLFLAG_ONLY_NEW_TYPES))
+  memset(&type, 0, sizeof(type));
+  if (!parse_new_typeexpr(&type, NULL, TYPEFLAG_RETURN))
     return NULL;
   if (!needsymbol(&ident))
     return NULL;
@@ -3573,7 +3805,7 @@ methodmap_method_t *parse_property(methodmap_t *map)
       return method;
 
     while (!matchtoken('}')) {
-      if (!parse_property_accessor(&decl, map,method)) {
+      if (!parse_property_accessor(&type, map,method)) {
         if (!consume_line())
           return NULL;
       }
@@ -3601,8 +3833,10 @@ methodmap_method_t *parse_method(methodmap_t *map)
   token_ident_t bindsource;
   strcpy(bindsource.name, "<unknown>");
 
+  typeinfo_t type;
+  memset(&type, 0, sizeof(type));
+
   token_t tok;
-  declinfo_t decl;
   if (matchtoken('~')) {
     // We got something like "public ~Blah = X"
     is_bind = TRUE;
@@ -3657,7 +3891,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
 
         // Parse for type expression, priming it with the token we predicted
         // would be an identifier.
-        if (!parse_decl(&decl, first, DECLFLAG_ONLY_NEW_TYPES))
+        if (!parse_new_typeexpr(&type, first, TYPEFLAG_RETURN))
           return NULL;
 
         // Now, we should get an identifier.
@@ -3697,7 +3931,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
     else if (target->ident != iFUNCTN) 
       error(10);
   } else {
-    target = parse_inline_function(map, &decl, ident.name, is_native, is_ctor, is_dtor);
+    target = parse_inline_function(map, &type, ident.name, is_native, is_ctor, is_dtor);
   }
 
   if (!target)
@@ -3796,7 +4030,7 @@ static void domethodmap(LayoutSpec spec)
   map->spec = spec;
   strcpy(map->name, mapname);
   if (spec == Layout_MethodMap) {
-    map->tag = pc_addtag(mapname);
+    map->tag = pc_addtag_flags(mapname, FIXEDTAG | METHODMAPTAG);
   } else {
     constvalue *tagptr = pc_tagptr(mapname);
     if (!tagptr) {
@@ -4166,7 +4400,10 @@ static void decl_enum(int vclass)
    * pc_addtag() here
    */
   if (lex(&val,&str)==tLABEL) {
-    tag = pc_addtag(str);
+    int flags = ENUMTAG;
+    if (isupper(*str))
+      flags |= FIXEDTAG;
+    tag = pc_addtag_flags(str, flags);
     spec = deduce_layout_spec_by_tag(tag);
     if (!can_redef_layout_spec(spec, Layout_Enum))
       error(110, str, layout_spec_name(spec));
@@ -4181,7 +4418,10 @@ static void decl_enum(int vclass)
   if (lex(&val,&str)==tSYMBOL) {        /* read in (new) token */
     strcpy(enumname,str);               /* save enum name (last constant) */
     if (!explicittag) {
-      tag=pc_addtag(enumname);
+      int flags = ENUMTAG;
+      if (isupper(*str))
+        flags |= FIXEDTAG;
+      tag=pc_addtag_flags(enumname, flags);
       spec = deduce_layout_spec_by_tag(tag);
       if (!can_redef_layout_spec(spec, Layout_Enum))
         error(110, enumname, layout_spec_name(spec));
@@ -4398,6 +4638,15 @@ static void attachstatelist(symbol *sym, int state_id)
   } /* if */
 }
 
+// This simpler version of matchtag() only checks whether two tags represent
+// the same type. Because methodmaps are attached to types and are not actually
+// types themselves, we strip out the methodmap bit in case a methodmap was
+// seen later than another instance of a tag.
+static int compare_tag(int tag1, int tag2)
+{
+  return (tag1 & (~METHODMAPTAG)) == (tag2 & (~METHODMAPTAG));
+}
+
 /*
  *  Finds a function in the global symbol table or creates a new entry.
  *  It does some basic processing and error checking.
@@ -4414,7 +4663,7 @@ SC_FUNC symbol *fetchfunc(char *name,int tag)
       error(21,name);                     /* yes, and it is a native */
     } /* if */
     assert(sym->vclass==sGLOBAL);
-    if ((sym->usage & uPROTOTYPED)!=0 && sym->tag!=tag)
+    if ((sym->usage & uPROTOTYPED)!=0 && !compare_tag(sym->tag, tag))
       error(25);                          /* mismatch from earlier prototype */
     if ((sym->usage & uDEFINE)==0) {
       /* as long as the function stays undefined, update the address and the tag */
@@ -4616,7 +4865,7 @@ static int check_operatortag(int opertok,int resulttag,char *opername)
   case tlNE:
   case tlLE:
   case tlGE:
-    if (resulttag!=pc_addtag("bool")) {
+    if (resulttag!=pc_tag_bool) {
       error(63,opername,"bool:"); /* operator X requires a "bool:" result tag */
       return FALSE;
     } /* if */
@@ -5103,11 +5352,7 @@ static int argcompare(arginfo *a1,arginfo *a2)
 {
   int result,level,i;
 
-#if 0	/* SourceMod uses case insensitive args for forwards */
-  result= strcmp(a1->name,a2->name)==0;     /* name */
-#else
   result=1;
-#endif
   if (result)
     result= a1->ident==a2->ident;           /* type/class */
   if (result)
@@ -5115,13 +5360,13 @@ static int argcompare(arginfo *a1,arginfo *a2)
   if (result)
     result= a1->numtags==a2->numtags;       /* tags (number and names) */
   for (i=0; result && i<a1->numtags; i++)
-    result= a1->tags[i]==a2->tags[i];
+    result= compare_tag(a1->tags[i], a2->tags[i]);
   if (result)
     result= a1->numdim==a2->numdim;         /* array dimensions & index tags */
   for (level=0; result && level<a1->numdim; level++)
     result= a1->dim[level]==a2->dim[level];
   for (level=0; result && level<a1->numdim; level++)
-    result= a1->idxtag[level]==a2->idxtag[level];
+    result= compare_tag(a1->idxtag[level], a2->idxtag[level]);
   if (result)
     result= a1->hasdefault==a2->hasdefault; /* availability of default value */
   if (a1->hasdefault) {
@@ -5144,7 +5389,7 @@ static int argcompare(arginfo *a1,arginfo *a2)
       } /* if */
     } /* if */
     if (result)
-      result= a1->defvalue_tag==a2->defvalue_tag;
+      result= compare_tag(a1->defvalue_tag, a2->defvalue_tag);
   } /* if */
   return result;
 }
@@ -5156,13 +5401,12 @@ static int argcompare(arginfo *a1,arginfo *a2)
  */
 static int declargs(symbol *sym, int chkshadow, const int *thistag)
 {
-  #define MAXTAGS 16
   char *ptr;
-  int argcnt,oldargcnt,tok,tags[MAXTAGS],numtags;
+  int argcnt,oldargcnt,tok;
   cell val;
   arginfo arg, *arglist;
   char name[sNAMEMAX+1];
-  int ident,fpublic,fconst;
+  int ident,fpublic;
   int idx;
 
   /* if the function is already defined earlier, get the number of arguments
@@ -5173,9 +5417,6 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
     while (sym->dim.arglist[oldargcnt].ident!=0)
       oldargcnt++;
   argcnt=0;                             /* zero aruments up to now */
-  ident=iVARIABLE;
-  numtags=0;
-  fconst=FALSE;
   fpublic = (sym->usage & (uPUBLIC|uSTOCK))!=0;
 
   if (thistag && *thistag != -1) {
@@ -5210,52 +5451,43 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
   /* the '(' parantheses has already been parsed */
   if (!matchtoken(')')){
     do {                                /* there are arguments; process them */
-      /* any legal name increases argument count (and stack offset) */
-      tok=lex(&val,&ptr);
-      switch (tok) {
-      case 0:
-        /* nothing */
-        break;
-      case '&':
-        if (ident!=iVARIABLE || numtags>0)
-          error(1,"-identifier-","&");
-        ident=iREFERENCE;
-        break;
-      case tCONST:
-        if (ident!=iVARIABLE || numtags>0)
-          error(1,"-identifier-","const");
-        fconst=TRUE;
-        break;
-      case tLABEL:
-        if (numtags>0)
-          error(1,"-identifier-","-tagname-");
-        tags[0]=pc_addtag(ptr);
-        numtags=1;
-        break;
-      case '{':
-        if (numtags>0)
-          error(1,"-identifier-","-tagname-");
-        numtags=0;
-        while (numtags<MAXTAGS) {
-          if (!matchtoken('_') && !needtoken(tSYMBOL))
-            break;
-          tokeninfo(&val,&ptr);
-          tags[numtags++]=pc_addtag(ptr);
-          if (matchtoken('}'))
-            break;
-          needtoken(',');
-        } /* for */
-        needtoken(':');
-        tok=tLABEL;     /* for outer loop: flag that we have seen a tagname */
-        break;
-      case tSYMBOL:
-        if (argcnt>=sMAXARGS)
-          error(45);                    /* too many function arguments */
-        strcpy(name,ptr);               /* save symbol name */
-        if (name[0]==PUBLIC_CHAR)
-          error(56,name);               /* function arguments cannot be public */
-        if (numtags==0)
-          tags[numtags++]=0;            /* default tag */
+      declinfo_t decl;
+      parse_decl(&decl, TYPEFLAG_ARGUMENT|TYPEFLAG_ENUMROOT);
+      assert(decl.type.numtags > 0);
+
+      if (decl.type.ident == iVARARGS) {
+        assert(decl.type.numtags > 0);
+        if ((sym->usage & uPROTOTYPED)==0) {
+          /* redimension the argument list, add the entry iVARARGS */
+          sym->dim.arglist=(arginfo*)realloc(sym->dim.arglist,(argcnt+2)*sizeof(arginfo));
+          if (sym->dim.arglist==0)
+            error(163);                 /* insufficient memory */
+          memset(&sym->dim.arglist[argcnt+1],0,sizeof(arginfo));  /* keep the list terminated */
+          sym->dim.arglist[argcnt].ident=iVARARGS;
+          sym->dim.arglist[argcnt].hasdefault=FALSE;
+          sym->dim.arglist[argcnt].defvalue.val=0;
+          sym->dim.arglist[argcnt].defvalue_tag=0;
+          sym->dim.arglist[argcnt].numtags=decl.type.numtags;
+          sym->dim.arglist[argcnt].tags=(int*)malloc(decl.type.numtags*sizeof decl.type.tags[0]);
+          if (sym->dim.arglist[argcnt].tags==NULL)
+            error(163);                 /* insufficient memory */
+          memcpy(sym->dim.arglist[argcnt].tags,decl.type.tags,decl.type.numtags*sizeof decl.type.tags[0]);
+        } else {
+          if (argcnt>oldargcnt || sym->dim.arglist[argcnt].ident!=iVARARGS)
+            error(25);          /* function definition does not match prototype */
+        } /* if */
+        argcnt++;
+        continue;
+      }
+
+      if (argcnt>=sMAXARGS)
+        error(45);
+      if (decl.name[0] == PUBLIC_CHAR)
+        error(56,name);                 /* function arguments cannot be public */
+
+      if (1) {
+        if (decl.type.ident == iARRAY)
+          decl.type.ident = iREFARRAY;
         /* Stack layout:
          *   base + 0*sizeof(cell)  == previous "base"
          *   base + 1*sizeof(cell)  == function return address
@@ -5263,10 +5495,11 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
          *   base + 3*sizeof(cell)  == first argument of the function
          * So the offset of each argument is "(argcnt+3) * sizeof(cell)".
          */
-        doarg(name,ident,(argcnt+3)*sizeof(cell),tags,numtags,fpublic,fconst,chkshadow,&arg);
-        /* :TODO: fix this so stocks that are func pointers can't have default arguments? */
+        doarg(&decl,(argcnt+3)*sizeof(cell),fpublic,chkshadow,&arg);
+
         if ((sym->usage & uPUBLIC) && arg.hasdefault)
           error(59,name);       /* arguments of a public function may not have a default value */
+
         if ((sym->usage & uPROTOTYPED)==0) {
           /* redimension the argument list, add the entry */
           sym->dim.arglist=(arginfo*)realloc(sym->dim.arglist,(argcnt+2)*sizeof(arginfo));
@@ -5287,41 +5520,8 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
           free(arg.tags);
         } /* if */
         argcnt++;
-        ident=iVARIABLE;
-        numtags=0;
-        fconst=FALSE;
-        break;
-      case tELLIPS:
-        if (ident!=iVARIABLE)
-          error(10);                    /* illegal function or declaration */
-        if (numtags==0)
-          tags[numtags++]=0;            /* default tag */
-        if ((sym->usage & uPROTOTYPED)==0) {
-          /* redimension the argument list, add the entry iVARARGS */
-          sym->dim.arglist=(arginfo*)realloc(sym->dim.arglist,(argcnt+2)*sizeof(arginfo));
-          if (sym->dim.arglist==0)
-            error(163);                 /* insufficient memory */
-          memset(&sym->dim.arglist[argcnt+1],0,sizeof(arginfo));  /* keep the list terminated */
-          sym->dim.arglist[argcnt].ident=iVARARGS;
-          sym->dim.arglist[argcnt].hasdefault=FALSE;
-          sym->dim.arglist[argcnt].defvalue.val=0;
-          sym->dim.arglist[argcnt].defvalue_tag=0;
-          sym->dim.arglist[argcnt].numtags=numtags;
-          sym->dim.arglist[argcnt].tags=(int*)malloc(numtags*sizeof tags[0]);
-          if (sym->dim.arglist[argcnt].tags==NULL)
-            error(163);                 /* insufficient memory */
-          memcpy(sym->dim.arglist[argcnt].tags,tags,numtags*sizeof tags[0]);
-        } else {
-          if (argcnt>oldargcnt || sym->dim.arglist[argcnt].ident!=iVARARGS)
-            error(25);          /* function definition does not match prototype */
-        } /* if */
-        argcnt++;
-        break;
-      default:
-        error(10);                      /* illegal function or declaration */
-      } /* switch */
-    } while (tok=='&' || tok==tLABEL || tok==tCONST
-             || (tok!=tELLIPS && matchtoken(','))); /* more? */
+      }
+    } while (matchtoken(','));
     /* if the next token is not ",", it should be ")" */
     needtoken(')');
   } /* if */
@@ -5380,50 +5580,29 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
  *  "fpublic" indicates whether the function for this argument list is public.
  *  The arguments themselves are never public.
  */
-static void doarg(char *name,int ident,int offset,int tags[],int numtags,
-                  int fpublic,int fconst,int chkshadow,arginfo *arg)
+static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, arginfo *arg)
 {
   symbol *argsym;
   constvalue *enumroot;
-  cell size;
   int slength=0;
+  typeinfo_t *type = &decl->type;
 
-  strcpy(arg->name,name);
+  strcpy(arg->name, decl->name);
   arg->hasdefault=FALSE;        /* preset (most common case) */
   arg->defvalue.val=0;          /* clear */
   arg->defvalue_tag=0;
   arg->numdim=0;
-  if (matchtoken('[')) {
-    if (ident==iREFERENCE)
-      error(67,name);           /* illegal declaration ("&name[]" is unsupported) */
-    do {
-      if (arg->numdim == sDIMEN_MAX) {
-        error(53);              /* exceeding maximum number of dimensions */
-        return;
-      } /* if */
-      size=needsub(&arg->idxtag[arg->numdim],&enumroot);/* may be zero here, it is a pointer anyway */
-      #if INT_MAX < LONG_MAX
-        if (size > INT_MAX)
-          error(165);           /* overflow, exceeding capacity */
-      #endif
-      arg->dim[arg->numdim]=(int)size;
-      arg->numdim+=1;
-    } while (matchtoken('['));
-    ident=iREFARRAY;            /* "reference to array" (is a pointer) */
-#if 0 /* For SM, multiple tags including string don't make sense,
-		 so just check the first tag. Done manually so the string
-		 tag isn't matched with the any tag. */
-    if (checktag(tags, numtags, pc_tag_string)) {
-#endif
-	assert(tags!=0);
-	assert(numtags>0);
-	if (tags[0] == pc_tag_string) {
+  if (type->ident == iREFARRAY) {
+    arg->numdim = type->numdim;
+    memcpy(arg->dim, type->dim, sizeof(int) * type->numdim);
+    memcpy(arg->idxtag, type->idxtag, sizeof(int) * type->numdim);
+    assert(type->numtags > 0);
+    if (type->tags[0] == pc_tag_string) {
       slength = arg->dim[arg->numdim - 1];
-      arg->dim[arg->numdim - 1] = (size + sizeof(cell) - 1) / sizeof(cell);
+      arg->dim[arg->numdim - 1] = (type->array_size + sizeof(cell) - 1) / sizeof(cell);
     }
     if (matchtoken('=')) {
       assert(litidx==0);        /* at the start of a function, this is reset */
-      assert(numtags>0);
       /* Check if there is a symbol */
       if (matchtoken(tSYMBOL)) {
         symbol *sym;
@@ -5443,8 +5622,8 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
           }
         }
       } else {
-        initials2(ident,tags[0],&size,arg->dim,arg->numdim,enumroot, 1, 0);
-        assert(size>=litidx);
+        initials2(type->ident, type->tags[0], &type->array_size, arg->dim, arg->numdim, type->enumroot, 1, 0);
+        assert(type->array_size >= litidx);
         /* allocate memory to hold the initial values */
         arg->defvalue.array.data=(cell *)malloc(litidx*sizeof(cell));
         if (arg->defvalue.array.data!=NULL) {
@@ -5466,7 +5645,7 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
   } else {
     if (matchtoken('=')) {
       unsigned char size_tag_token;
-      assert(ident==iVARIABLE || ident==iREFERENCE);
+      assert(type->ident==iVARIABLE || type->ident==iREFERENCE);
       arg->hasdefault=TRUE;     /* argument has a default value */
       size_tag_token=(unsigned char)(matchtoken(tSIZEOF) ? uSIZEOF : 0);
       if (size_tag_token==0)
@@ -5475,8 +5654,8 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
         size_tag_token=(unsigned char)(matchtoken(tCELLSOF) ? uCOUNTOF : 0);
       if (size_tag_token!=0) {
         int paranthese;
-        if (ident==iREFERENCE)
-          error(66,name);       /* argument may not be a reference */
+        if (type->ident==iREFERENCE)
+          error(66, decl->name); /* argument may not be a reference */
         paranthese=0;
         while (matchtoken('('))
           paranthese++;
@@ -5494,41 +5673,41 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
               needtoken(']');
             } /* while */
           } /* if */
-          if (ident==iVARIABLE) /* make sure we set this only if not a reference */
+          if (type->ident==iVARIABLE) /* make sure we set this only if not a reference */
             arg->hasdefault |= size_tag_token;  /* uSIZEOF or uTAGOF */
         } /* if */
         while (paranthese--)
           needtoken(')');
       } else {
         constexpr(&arg->defvalue.val,&arg->defvalue_tag,NULL);
-        assert(numtags>0);
-        matchtag(tags[0],arg->defvalue_tag,TRUE);
+        assert(type->numtags > 0);
+        matchtag(type->tags[0], arg->defvalue_tag, TRUE);
       } /* if */
     } /* if */
   } /* if */
-  arg->ident=(char)ident;
-  arg->usage=(char)(fconst ? uCONST : 0);
-  arg->numtags=numtags;
-  arg->tags=(int*)malloc(numtags*sizeof tags[0]);
+  arg->ident=(char)type->ident;
+  arg->usage=type->usage;
+  arg->numtags=type->numtags;
+  arg->tags=(int*)malloc(type->numtags * sizeof(type->tags[0]));
   if (arg->tags==NULL)
     error(163);                 /* insufficient memory */
-  memcpy(arg->tags,tags,numtags*sizeof tags[0]);
-  argsym=findloc(name);
+  memcpy(arg->tags, type->tags, type->numtags * sizeof(type->tags[0]));
+  argsym=findloc(decl->name);
   if (argsym!=NULL) {
-    error(21,name);             /* symbol already defined */
+    error(21, decl->name);      /* symbol already defined */
   } else {
-    if (chkshadow && (argsym=findglb(name,sSTATEVAR))!=NULL && argsym->ident!=iFUNCTN)
-      error(219,name);          /* variable shadows another symbol */
+    if (chkshadow && (argsym=findglb(decl->name,sSTATEVAR))!=NULL && argsym->ident!=iFUNCTN)
+      error(219, decl->name);   /* variable shadows another symbol */
     /* add details of type and address */
-    assert(numtags>0);
-    argsym=addvariable2(name,offset,ident,sLOCAL,tags[0],
+    assert(type->numtags > 0);
+    argsym=addvariable2(decl->name,offset,type->ident,sLOCAL,type->tags[0],
                        arg->dim,arg->numdim,arg->idxtag,slength);
     argsym->compound=0;
-    if (ident==iREFERENCE)
+    if (type->ident==iREFERENCE)
       argsym->usage|=uREAD;     /* because references are passed back */
     if (fpublic)
       argsym->usage|=uREAD;     /* arguments of public functions are always "used" */
-    if (fconst)
+    if (type->usage & uCONST)
       argsym->usage|=uCONST;
   } /* if */
 }
@@ -6375,7 +6554,7 @@ SC_FUNC symbol *add_constant(char *name,cell val,int vclass,int tag)
        */
       if (!redef)
         goto redef_enumfield;
-    } else if (sym->tag!=tag) {
+    } else if (!compare_tag(sym->tag, tag)) {
       redef=1;                  /* redefinition of a constant (non-enum) to a different tag is not allowed */
     } /* if */
     if (redef) {
@@ -6753,9 +6932,10 @@ static int test(int label,int parens,int invert)
     } /* if */
     return testtype;
   } /* if */
-  if (tag!=0 && tag!=pc_addtag("bool"))
+  if (tag!=0 && tag!=pc_tag_bool) {
     if (check_userop(lneg,tag,0,1,NULL,&tag))
       invert= !invert;          /* user-defined ! operator inverted result */
+  }
   if (invert)
     jmp_ne0(label);             /* jump to label if true (different from 0) */
   else

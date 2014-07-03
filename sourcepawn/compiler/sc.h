@@ -1,3 +1,4 @@
+// vim: set sts=2 ts=8 sw=2 tw=99 et:
 /*  Pawn compiler
  *
  *  Drafted after the Small-C compiler Version 2.01, originally created
@@ -50,6 +51,7 @@
 #define CTRL_CHAR   '\\'    /* default control character */
 #define sCHARBITS   8       /* size of a packed character */
 
+#define MAXTAGS 16
 #define sDIMEN_MAX     4    /* maximum number of array dimensions */
 #define sLINEMAX     4095   /* input line length (in characters) */
 #define sCOMP_STACK   32    /* maximum nesting of #if .. #endif sections */
@@ -256,14 +258,34 @@ typedef struct svalue_s {
   int lvalue;
 } svalue;
 
-#define DECLFLAG_ONLY_NEW_TYPES  0x1
+#define TYPEFLAG_ONLY_NEW        0x01 // Only new-style types are allowed.
+#define TYPEFLAG_ARGUMENT        0x02 // The declaration is for an argument.
+#define TYPEFLAG_VARIABLE        0x04 // The declaration is for a variable.
+#define TYPEFLAG_ENUMROOT        0x08 // Multi-dimensional arrays should have an enumroot.
+#define TYPEFLAG_NO_POSTDIMS     0x10 // Do not parse post-fix dimensions.
+#define TYPEFLAG_RETURN          0x20 // Return type.
+#define TYPEMASK_NAMED_DECL      (TYPEFLAG_ARGUMENT | TYPEFLAG_VARIABLE)
+
+typedef struct {
+  // Array information.
+  int numdim;
+  int dim[sDIMEN_MAX];
+  int idxtag[sDIMEN_MAX];
+  cell array_size;
+  constvalue *enumroot;
+
+  // Type information.
+  int tag;           // Same as tags[0].
+  int tags[MAXTAGS]; // List of tags if multi-tagged.
+  int numtags;       // Number of tags found.
+  int ident;         // Either iREFERENCE, iARRAY, or iVARIABLE.
+  char usage;        // Usage flags.
+} typeinfo_t;
 
 /* For parsing declarations. */
 typedef struct {
-  char type[sNAMEMAX + 1];
-  constvalue *enumroot;
-  int tag;
-  char usage;
+  char name[sNAMEMAX + 1];
+  typeinfo_t type;
 } declinfo_t;
 
 /*  "while" statement queue (also used for "for" and "do - while" loops) */
@@ -492,8 +514,11 @@ typedef enum s_optmark {
 #define FIXEDTAG     0x40000000Lu
 #define FUNCTAG      0x20000000Lu
 #define OBJECTTAG    0x10000000Lu
+#define ENUMTAG      0x08000000Lu
+#define METHODMAPTAG 0x04000000Lu
 #define TAGMASK       (~PUBLICTAG)
-#define TAGFLAGMASK   (FIXEDTAG | FUNCTAG | OBJECTTAG)
+#define TAGTYPEMASK   (FUNCTAG | OBJECTTAG | ENUMTAG | METHODMAPTAG)
+#define TAGFLAGMASK   (FIXEDTAG | TAGTYPEMASK)
 #define CELL_MAX      (((ucell)1 << (sizeof(cell)*8-1)) - 1)
 
 
@@ -513,7 +538,8 @@ int pc_findtag(const char *name);
 constvalue *pc_tagptr(const char *name);
 int pc_enablewarning(int number,int enable);
 const char *pc_tagname(int tag);
-int parse_decl(declinfo_t *decl, const token_t *first, int flags);
+int parse_decl(declinfo_t *decl, int flags);
+const char *type_to_name(int tag);
 
 /*
  * Functions called from the compiler (to be implemented by you)
@@ -599,11 +625,13 @@ SC_FUNC void preprocess(void);
 SC_FUNC void lexinit(void);
 SC_FUNC int lex(cell *lexvalue,char **lexsym);
 SC_FUNC int lextok(token_t *tok);
+SC_FUNC int lexpeek(int id);
 SC_FUNC void lexpush(void);
 SC_FUNC void lexclr(int clreol);
 SC_FUNC int matchtoken(int token);
 SC_FUNC int tokeninfo(cell *val,char **str);
 SC_FUNC int needtoken(int token);
+SC_FUNC int matchtoken2(int id, token_t *tok);
 SC_FUNC int expecttoken(int id, token_t *tok);
 SC_FUNC int matchsymbol(token_ident_t *ident);
 SC_FUNC int needsymbol(token_ident_t *ident);
@@ -888,8 +916,10 @@ SC_VDECL int pc_functag;      /* global function tag */
 SC_VDECL int pc_tag_string;   /* global String tag */
 SC_VDECL int pc_tag_void;     /* global void tag */
 SC_VDECL int pc_tag_object;   /* root object tag */
+SC_VDECL int pc_tag_bool;     /* global bool tag */
 SC_VDECL int pc_anytag;       /* global any tag */
 SC_VDECL int glbstringread;	  /* last global string read */
+SC_VDECL int sc_require_newdecls; /* only newdecls are allowed */
 
 SC_VDECL constvalue sc_automaton_tab; /* automaton table */
 SC_VDECL constvalue sc_state_tab;     /* state table */

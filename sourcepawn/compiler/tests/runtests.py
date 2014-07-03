@@ -22,7 +22,7 @@ def run_tests(args):
             kind = 'pass'
 
         try:
-            argv = [args.spcomp, os.path.join(testdir, test + '.sp')]
+            argv = [os.path.abspath(args.spcomp), os.path.join(testdir, test + '.sp')]
             p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = p.communicate()
             stdout = stdout.decode('utf-8')

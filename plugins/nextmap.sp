@@ -52,7 +52,7 @@ new g_MapListSerial = -1;
 
 new g_CurrentMapStartTime;
 
-public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
+public APLRes:AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	decl String:game[128];
 	GetGameFolderName(game, sizeof(game));
@@ -75,7 +75,6 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {
-
 	LoadTranslations("common.phrases");
 	LoadTranslations("nextmap.phrases");
 	
@@ -110,7 +109,7 @@ public OnConfigsExecuted()
 	}
 }
 
-public Action:Command_List(client, args) 
+public Action:Command_List(int client, int args) 
 {
 	PrintToConsole(client, "Map Cycle:");
 	
@@ -170,7 +169,7 @@ FindAndSetNextMap()
 	SetNextMap(mapName);
 }
 
-public Action:Command_MapHistory(client, args)
+public Action:Command_MapHistory(int client, int args)
 {
 	new mapCount = GetMapHistorySize();
 	
@@ -203,7 +202,7 @@ public Action:Command_MapHistory(client, args)
 	return Plugin_Handled;
 }
 
-FormatTimeDuration(String:buffer[], maxlen, time)
+FormatTimeDuration(char[] buffer, int maxlen, int time)
 {
 	new	days = time / 86400;
 	new	hours = (time / 3600) % 24;
