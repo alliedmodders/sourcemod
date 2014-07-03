@@ -533,7 +533,7 @@ bool GetSoundParams(CSoundParameters *soundParams, const char *soundname, cell_t
 	if (ent > 0)
 	{
 		edict_t *edict = gamehelpers->EdictOfIndex(ent);
-		if (edict != NULL)
+		if (edict != NULL && !edict->IsFree())
 		{
 			IServerEntity *serverEnt = edict->GetIServerEntity();
 			if (serverEnt != NULL)
@@ -544,8 +544,7 @@ bool GetSoundParams(CSoundParameters *soundParams, const char *soundname, cell_t
 		}
 	}
 
-	soundemitterbase->GetParametersForSoundEx(soundname, index, *soundParams, gender);
-	return true;
+	return soundemitterbase->GetParametersForSoundEx(soundname, index, *soundParams, gender);
 }
 
 bool InternalPrecacheScriptSound(const char *soundname)
