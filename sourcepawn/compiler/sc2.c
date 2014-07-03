@@ -135,18 +135,18 @@ SC_FUNC void clearstk(void)
 SC_FUNC int plungequalifiedfile(char *name)
 {
 static char *extensions[] = { ".inc", ".p", ".pawn" };
-  FILE *fp;
+  void *fp;
   char *ext;
   int ext_idx;
 
   ext_idx=0;
   do {
-    fp=(FILE*)pc_opensrc(name);
+    fp=pc_opensrc(name);
     ext=strchr(name,'\0');      /* save position */
     if (fp==NULL) {
       /* try to append an extension */
       strcpy(ext,extensions[ext_idx]);
-      fp=(FILE*)pc_opensrc(name);
+      fp=pc_opensrc(name);
       if (fp==NULL)
         *ext='\0';              /* on failure, restore filename */
     } /* if */
@@ -326,7 +326,7 @@ static void readline(unsigned char *line)
       curlibrary=(constvalue *)POPSTK_P();
       free(inpfname);           /* return memory allocated for the include file name */
       inpfname=(char *)POPSTK_P();
-      inpf=(FILE *)POPSTK_P();
+      inpf=POPSTK_P();
       insert_dbgfile(inpfname);
       setfiledirect(inpfname);
       listline=-1;              /* force a #line directive when changing the file */
