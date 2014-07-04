@@ -3275,7 +3275,7 @@ static int parse_old_decl(declinfo_t *decl, int flags)
     }
   }
 
-  if ((flags & DECLMASK_NAMED_DECL) && !(flags & DECLFLAG_NO_POSTDIMS) && !decl->opertok) {
+  if ((flags & DECLMASK_NAMED_DECL) && !decl->opertok) {
     if (matchtoken('['))
       parse_old_array_dims(decl, flags);
   }
@@ -3316,7 +3316,7 @@ static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags)
     }
   }
 
-  if ((flags & DECLMASK_NAMED_DECL) && !(flags & DECLFLAG_NO_POSTDIMS)) {
+  if (flags & DECLMASK_NAMED_DECL) {
     if (matchtoken('[')) {
       if (decl->type.numdim == 0)
         parse_old_array_dims(decl, flags);
@@ -3401,14 +3401,6 @@ int parse_decl(declinfo_t *decl, int flags)
     }
 
     if ((flags & DECLMASK_NAMED_DECL) && matchtoken('[')) {
-      // If we're not allowing postdims here, then it must be a newdecl.
-      if (flags & DECLFLAG_NO_POSTDIMS) {
-        // Give the '[' and symbol back, since we're going to parse from the start.
-        lexpush();
-        lexpush();
-        return parse_new_decl(decl, NULL, flags);
-      }
-
       // Oh no - we have to parse array dims before we can tell what kind of
       // declarator this is. It could be either:
       //    "x[] y" (new-style), or

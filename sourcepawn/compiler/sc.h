@@ -262,8 +262,7 @@ typedef struct svalue_s {
 #define DECLFLAG_ARGUMENT        0x02 // The declaration is for an argument.
 #define DECLFLAG_VARIABLE        0x04 // The declaration is for a variable.
 #define DECLFLAG_ENUMROOT        0x08 // Multi-dimensional arrays should have an enumroot.
-#define DECLFLAG_NO_POSTDIMS     0x10 // Do not parse post-fix dimensions.
-#define DECLFLAG_MAYBE_FUNCTION  0x20 // Might be a named function.
+#define DECLFLAG_MAYBE_FUNCTION  0x10 // Might be a named function.
 #define DECLMASK_NAMED_DECL      (DECLFLAG_ARGUMENT | DECLFLAG_VARIABLE | DECLFLAG_MAYBE_FUNCTION)
 
 typedef struct {
