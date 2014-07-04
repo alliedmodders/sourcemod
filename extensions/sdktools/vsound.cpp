@@ -512,6 +512,74 @@ RETURN_META_NEWPARAMS(
 #endif
 }
 
+bool GetSoundParams(CSoundParameters *soundParams, const char *soundname, cell_t entindex)
+{
+	if ( !soundname[0] )
+		return false;
+
+#if SOURCE_ENGINE >= SE_PORTAL2
+	HSOUNDSCRIPTHASH index = (HSOUNDSCRIPTHASH)soundemitterbase->GetSoundIndex(soundname);
+#else
+	HSOUNDSCRIPTHANDLE index = (HSOUNDSCRIPTHANDLE)soundemitterbase->GetSoundIndex(soundname);
+#endif
+	if (!soundemitterbase->IsValidIndex(index))
+		return false;
+
+	gender_t gender = GENDER_NONE;
+
+	// I don't know if gender applies to any mutliplayer games, but just in case...
+	// Of course, if it's SOUND_FROM_PLAYER, we have no idea which gender it is
+	int ent = SoundReferenceToIndex(entindex);
+	if (ent > 0)
+	{
+		edict_t *edict = gamehelpers->EdictOfIndex(ent);
+		if (edict != NULL && !edict->IsFree())
+		{
+			IServerEntity *serverEnt = edict->GetIServerEntity();
+			if (serverEnt != NULL)
+			{
+				const char *actormodel = STRING(serverEnt->GetModelName());
+				gender = soundemitterbase->GetActorGender(actormodel);
+			}
+		}
+	}
+
+	return soundemitterbase->GetParametersForSoundEx(soundname, index, *soundParams, gender);
+}
+
+bool InternalPrecacheScriptSound(const char *soundname)
+{
+	int soundIndex = soundemitterbase->GetSoundIndex(soundname);
+	if (!soundemitterbase->IsValidIndex(soundIndex))
+	{
+		return false;
+	}
+
+	CSoundParametersInternal *internal = soundemitterbase->InternalGetParametersForSound(soundIndex);
+
+	if (!internal)
+		return false;
+
+	int waveCount = internal->NumSoundNames();
+
+	if (!waveCount)
+	{
+		return false;
+	}
+
+	for (int wave = 0; wave < waveCount; wave++)
+	{
+		const char* waveName = soundemitterbase->GetWaveName(internal->GetSoundNames()[wave].symbol);
+		// return true even if we precache no new wavs
+		if (!engsound->IsSoundPrecached(waveName))
+		{
+			engsound->PrecacheSound(waveName);
+		}
+	}
+
+	return true;
+}
+
 /************************
 *                       *
 * Sound Related Natives *
@@ -1135,6 +1203,51 @@ static cell_t smn_GetDistGainFromSoundLevel(IPluginContext *pContext, const cell
 	return sp_ftoc(engsound->GetDistGainFromSoundLevel((soundlevel_t)decibel, distance));
 }
 
+// native bool:GetGameSoundParams(const String:gameSound[], &channel, &soundLevel, &Float:volume, &pitch, String:sample[], maxlength, entity=SOUND_FROM_WORLD)
+static cell_t smn_GetGameSoundParams(IPluginContext *pContext, const cell_t *params)
+{
+	char *soundname;
+	pContext->LocalToString(params[1], &soundname);
+
+	CSoundParameters soundParams;
+
+	if (!GetSoundParams(&soundParams, soundname, params[8]))
+		return false;
+
+	cell_t *channel;
+	cell_t *fakeVolume;
+	cell_t *pitch;
+	cell_t *soundLevel;
+
+	pContext->LocalToPhysAddr(params[2], &channel);
+	pContext->LocalToPhysAddr(params[3], &soundLevel);
+	pContext->LocalToPhysAddr(params[4], &fakeVolume);
+	pContext->LocalToPhysAddr(params[5], &pitch);
+
+	*channel = soundParams.channel;
+	*pitch = soundParams.pitch;
+	*soundLevel = (cell_t)soundParams.soundlevel;
+	*fakeVolume = sp_ftoc(soundParams.volume);
+
+	pContext->StringToLocal(params[6], params[7], soundParams.soundname);
+
+	// Precache the sound we're returning
+	if (!engsound->IsSoundPrecached(soundParams.soundname))
+	{
+		InternalPrecacheScriptSound(soundname);
+	}
+
+	return true;
+}
+
+// native bool:PrecacheScriptSound(const String:soundname[])
+static cell_t smn_PrecacheScriptSound(IPluginContext *pContext, const cell_t *params)
+{
+	char *soundname;
+	pContext->LocalToString(params[1], &soundname);
+	return InternalPrecacheScriptSound(soundname);
+}
+
 sp_nativeinfo_t g_SoundNatives[] = 
 {
 	{"EmitAmbientSound",		EmitAmbientSound},
@@ -1149,5 +1262,7 @@ sp_nativeinfo_t g_SoundNatives[] =
 	{"RemoveAmbientSoundHook",	smn_RemoveAmbientSoundHook},
 	{"RemoveNormalSoundHook",	smn_RemoveNormalSoundHook},
 	{"GetDistGainFromSoundLevel", smn_GetDistGainFromSoundLevel},
+	{"GetGameSoundParams",		smn_GetGameSoundParams},
+	{"PrecacheScriptSound", smn_PrecacheScriptSound},
 	{NULL,						NULL},
 };

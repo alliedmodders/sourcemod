@@ -66,6 +66,7 @@ IPlayerInfoManager *playerinfomngr = NULL;
 ICvar *icvar = NULL;
 IServer *iserver = NULL;
 CGlobalVars *gpGlobals;
+ISoundEmitterSystemBase *soundemitterbase = NULL;
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 IServerTools *servertools = NULL;
@@ -258,6 +259,7 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	GET_V_IFACE_ANY(GetServerFactory, servertools, IServerTools, VSERVERTOOLS_INTERFACE_VERSION);
 #endif
+	GET_V_IFACE_ANY(GetEngineFactory, soundemitterbase, ISoundEmitterSystemBase, SOUNDEMITTERSYSTEM_INTERFACE_VERSION);
 
 	gpGlobals = ismm->GetCGlobals();
 	enginePatch = SH_GET_CALLCLASS(engine);

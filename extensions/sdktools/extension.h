@@ -50,6 +50,7 @@
 #include <convar.h>
 #include <iserver.h>
 #include <cdll_int.h>
+#include "SoundEmitterSystem/isoundemittersystembase.h"
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 #include <itoolentity.h>
@@ -124,6 +125,7 @@ extern CGlobalVars *gpGlobals;
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 extern IServerTools *servertools;
 #endif
+extern ISoundEmitterSystemBase *soundemitterbase;
 /* Interfaces from SourceMod */
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
