@@ -797,6 +797,32 @@ static cell_t smn_FileToKeyValues(IPluginContext *pCtx, const cell_t *params)
 	return g_HL2.KVLoadFromFile(kv, basefilesystem, path);
 }
 
+static cell_t smn_StringToKeyValues(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+	KeyValues *kv;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+
+	char *buffer;
+	char *resourceName;
+	pCtx->LocalToString(params[2], &buffer);
+	pCtx->LocalToString(params[3], &resourceName);
+
+	kv = pStk->pCurRoot.front();
+	return kv->LoadFromBuffer(resourceName, buffer);
+}
+
 static cell_t smn_KvSetEscapeSequences(IPluginContext *pCtx, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -1101,6 +1127,7 @@ REGISTER_NATIVES(keyvaluenatives)
 	{"KvGetDataType",			smn_KvGetDataType},
 	{"KeyValuesToFile",			smn_KeyValuesToFile},
 	{"FileToKeyValues",			smn_FileToKeyValues},
+	{"StringToKeyValues",		smn_StringToKeyValues},
 	{"KvSetEscapeSequences",	smn_KvSetEscapeSequences},
 	{"KvDeleteThis",			smn_KvDeleteThis},
 	{"KvDeleteKey",				smn_KvDeleteKey},
