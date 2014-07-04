@@ -80,13 +80,6 @@ int pc_tag_void = 0;
 int pc_tag_object = 0;
 int pc_tag_bool = 0;
 
-typedef struct funcstub_setup_s {
-  const char *name;
-  int return_tag;
-  int this_tag;
-  int is_new;
-} funcstub_setup_t;
-
 static void resetglobals(void);
 static void initglobals(void);
 static char *get_extension(char *filename);
@@ -99,9 +92,7 @@ static void setconstants(void);
 static void parse(void);
 static void dumplits(void);
 static void dumpzero(int count);
-static void declfuncvar(int fpublic,int fstatic,int fstock,int fconst);
-static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,
-                    int stock,int fconst);
+static void declglb(declinfo_t *decl,int fpublic,int fstatic,int stock);
 static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct);
 static int declloc(int fstatic);
 static void dodelete();
@@ -116,11 +107,13 @@ static cell initarray(int ident,int tag,int dim[],int numdim,int cur,
                       constvalue *enumroot,int *errorfound);
 static cell initvector(int ident,int tag,cell size,int fillzero,
                        constvalue *enumroot,int *errorfound);
+static void initials3(declinfo_t *decl);
+static cell fix_char_size(declinfo_t *decl);
 static cell init(int ident,int *tag,int *errorfound);
 static int getstates(const char *funcname);
 static void attachstatelist(symbol *sym, int state_id);
-static symbol *funcstub(int fnative, const funcstub_setup_t *setup);
-static int newfunc(const funcstub_setup_t *setup,int fpublic,int fstatic,int stock,symbol **symp);
+static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag);
+static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstatic, int stock, symbol **symp);
 static int declargs(symbol *sym, int chkshadow, const int *thistag);
 static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, arginfo *arg);
 static void make_report(symbol *root,FILE *log,char *sourcefile);
@@ -158,6 +151,7 @@ static void delwhile(void);
 static int *readwhile(void);
 static void inst_datetime_defines(void);
 static void inst_binary_name(char *binfname);
+static int operatorname(char *name);
 
 enum {
   TEST_PLAIN,           /* no parentheses */
@@ -1468,38 +1462,76 @@ static int getclassspec(int initialtok,int *fpublic,int *fstatic,int *fstock,int
   return err==0;
 }
 
+static void dodecl(const token_t *tok)
+{
+  declinfo_t decl;
+
+  if (tok->id == tNATIVE || tok->id == tFORWARD) {
+    parse_decl(&decl, DECLFLAG_MAYBE_FUNCTION);
+    funcstub(tok->id, &decl, NULL);
+    return;
+  }
+
+  int fpublic = (tok->id == tPUBLIC);
+  int fstock = (tok->id == tSTOCK);
+  int fstatic = (tok->id == tSTATIC);
+  
+  parse_decl(&decl, DECLFLAG_MAYBE_FUNCTION|DECLFLAG_VARIABLE|DECLFLAG_ENUMROOT);
+
+  if (!decl.opertok && (tok->id == tNEW || decl.has_postdims || !lexpeek('('))) {
+    if (decl.type.tag & STRUCTTAG) {
+      pstruct_t *pstruct = pstructs_find(pc_tagname(decl.type.tag));
+      declstructvar(decl.name, fpublic, pstruct);
+    } else {
+      declglb(&decl, fpublic, fstatic, fstock);
+    }
+  } else {
+    if (!newfunc(&decl, NULL, fpublic, fstatic, fstock, NULL)) {
+      // Illegal function or declaration. Drop the line, reset literal queue.
+      error(10);
+      lexclr(TRUE);
+      litidx = 0;
+    }
+  }
+}
+
 /*  parse       - process all input text
  *
  *  At this level, only static declarations and function definitions are legal.
  */
 static void parse(void)
 {
-  int tok,fconst,fstock,fstatic,fpublic;
-  cell val;
-  char *str;
+  token_t tok;
 
   while (freading){
-    /* first try whether a declaration possibly is native or public */
-    tok=lex(&val,&str);  /* read in (new) token */
-    switch (tok) {
+    switch (lextok(&tok)) {
     case 0:
       /* ignore zero's */
       break;
+    case tINT:
+    case tOBJECT:
+    case tCHAR:
+    case tVOID:
+    case tLABEL:
+    case tSYMBOL:
+      lexpush();
+      // Fallthrough.
     case tNEW:
-      if (getclassspec(tok,&fpublic,&fstatic,&fstock,&fconst))
-        declglb(NULL,0,fpublic,fstatic,fstock,fconst);
-      break;
     case tSTATIC:
-      /* This can be a static function or a static global variable; we know
-       * which of the two as soon as we have parsed up to the point where an
-       * opening paranthesis of a function would be expected. To back out after
-       * deciding it was a declaration of a static variable after all, we have
-       * to store the symbol name and tag.
-       */
-      if (getclassspec(tok,&fpublic,&fstatic,&fstock,&fconst)) {
-        assert(!fpublic);
-        declfuncvar(fpublic,fstatic,fstock,fconst);
-      } /* if */
+    case tPUBLIC:
+    case tSTOCK:
+    case tOPERATOR:
+    case tNATIVE:
+    case tFORWARD:
+    {
+      dodecl(&tok);
+      break;
+    }
+    case tFUNCTAG:
+      dofuncenum(FALSE);
+      break;
+    case tSTRUCT:
+      declstruct();
       break;
     case tCONST:
       decl_const(sGLOBAL);
@@ -1515,53 +1547,6 @@ static void parse(void)
       break;
     case tCLASS:
       domethodmap(Layout_Class);
-      break;
-    case tFUNCTAG:
-      dofuncenum(FALSE);
-      break;
-    case tSTRUCT:
-      declstruct();
-      break;
-    case tPUBLIC:
-      /* This can be a public function or a public variable; see the comment
-       * above (for static functions/variables) for details.
-       */
-      if (getclassspec(tok,&fpublic,&fstatic,&fstock,&fconst)) {
-        assert(!fstatic);
-        declfuncvar(fpublic,fstatic,fstock,fconst);
-      } /* if */
-      break;
-    case tSTOCK:
-      /* This can be a stock function or a stock *global*) variable; see the
-       * comment above (for static functions/variables) for details.
-       */
-      if (getclassspec(tok,&fpublic,&fstatic,&fstock,&fconst)) {
-        assert(fstock);
-        declfuncvar(fpublic,fstatic,fstock,fconst);
-      } /* if */
-      break;
-    case tLABEL:
-    case tSYMBOL:
-    case tOPERATOR:
-    {
-      funcstub_setup_t setup;
-      memset(&setup, 0, sizeof(setup));
-      setup.return_tag = -1;
-      setup.this_tag = -1;
-
-      lexpush();
-      if (!newfunc(&setup,FALSE,FALSE,FALSE,NULL)) {
-        error(10);              /* illegal function or declaration */
-        lexclr(TRUE);           /* drop the rest of the line */
-        litidx=0;               /* drop the literal queue too */
-      } /* if */
-      break;
-    }
-    case tNATIVE:
-      funcstub(TRUE, NULL);     /* create a dummy function */
-      break;
-    case tFORWARD:
-      funcstub(FALSE, NULL);
       break;
     case '}':
       error(54);                /* unmatched closing brace */
@@ -1738,73 +1723,6 @@ static void insert_docstring_separator(void)
   #define sc_attachdocumentation(s)      (void)(s)
   #define insert_docstring_separator()
 #endif
-
-static void declfuncvar(int fpublic,int fstatic,int fstock,int fconst)
-{
-  char name[sNAMEMAX+11];
-  int tok,tag=0;
-  char *str;
-  cell val;
-  int invalidfunc;
-  pstruct_t *pstruct = NULL;
-
-  tok=lex(&val,&str);
-  if (tok == tLABEL) {
-    pstruct=pstructs_find(str);
-    tag=pc_addtag(str);
-  } else {
-    lexpush();
-  }
-  tok=lex(&val,&str);
-  /* if we arrived here, this may not be a declaration of a native function
-   * or variable
-   */
-  if (tok==tNATIVE) {
-    error(42);          /* invalid combination of class specifiers */
-    return;
-  } /* if */
-
-  if (tok!=tSYMBOL && tok!=tOPERATOR) {
-    lexpush();
-    needtoken(tSYMBOL);
-    lexclr(TRUE);       /* drop the rest of the line */
-    litidx=0;           /* drop the literal queue too */
-    return;
-  } /* if */
-  if (tok==tOPERATOR) {
-    funcstub_setup_t setup;
-    memset(&setup, 0, sizeof(setup));
-    setup.return_tag = tag;
-    setup.this_tag = -1;
-    lexpush();          /* push "operator" keyword back (for later analysis) */
-    if (!newfunc(&setup,fpublic,fstatic,fstock,NULL)) {
-      error(10);        /* illegal function or declaration */
-      lexclr(TRUE);     /* drop the rest of the line */
-      litidx=0;         /* drop the literal queue too */
-    } /* if */
-  } else {
-    funcstub_setup_t setup;
-    memset(&setup, 0, sizeof(setup));
-    setup.return_tag = tag;
-    setup.this_tag = -1;
-    setup.name = name;
-
-    /* so tok is tSYMBOL */
-    assert(strlen(str)<=sNAMEMAX);
-    strcpy(name,str);
-
-    /* only variables can be "const" or both "public" and "stock" */
-    invalidfunc = fconst || (fpublic && fstock);
-    if (invalidfunc || !newfunc(&setup,fpublic,fstatic,fstock,NULL)) {
-      /* if not a function, try a global variable */
-      if (pstruct) {
-        declstructvar(name,fpublic,pstruct);
-      } else {
-        declglb(name,tag,fpublic,fstatic,fstock,fconst);
-      }
-    } /* if */
-  } /* if */
-}
 
 /* declstruct	- declare global struct symbols
  * 
@@ -2033,17 +1951,13 @@ static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct)
  *
  *  global references: glb_declared     (altered)
  */
-static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fstock,int fconst)
+static void declglb(declinfo_t *decl,int fpublic,int fstatic,int fstock)
 {
-  int ident,tag,ispublic;
-  int idxtag[sDIMEN_MAX];
-  char name[sNAMEMAX+1];
-  cell val,size,cidx;
+  int ispublic;
+  cell val,cidx;
   ucell address;
   int glb_incr;
   char *str;
-  int dim[sDIMEN_MAX];
-  int numdim;
   int slength=0;
   short filenum;
   symbol *sym;
@@ -2056,66 +1970,33 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
   insert_docstring_separator();         /* see comment in newfunc() */
   filenum=fcurrent;                     /* save file number at the start of the declaration */
   do {
-    size=1;                             /* single size (no array) */
-    numdim=0;                           /* no dimensions */
-    ident=iVARIABLE;
-    if (firstname!=NULL) {
-      assert(strlen(firstname)<=sNAMEMAX);
-      strcpy(name,firstname);           /* save symbol name */
-      tag=firsttag;
-      firstname=NULL;
-    } else {
-      tag=pc_addtag(NULL);
-      if (lex(&val,&str)!=tSYMBOL)      /* read in (new) token */
-        error(20,str);                  /* invalid symbol name */
-      assert(strlen(str)<=sNAMEMAX);
-      strcpy(name,str);                 /* save symbol name */
-    } /* if */
+    typeinfo_t *type = &decl->type;
+
     ispublic=fpublic;
-    if (name[0]==PUBLIC_CHAR) {
+    if (decl->name[0]==PUBLIC_CHAR) {
       ispublic=TRUE;                    /* implicitly public variable */
       assert(!fstatic);
-    } /* if */
-	while (matchtoken('[')) {
-      ident=iARRAY;
-      if (numdim == sDIMEN_MAX) {
-        error(53);                      /* exceeding maximum number of dimensions */
-        return;
-      } /* if */
-      size=needsub(&idxtag[numdim],&enumroot);  /* get size; size==0 for "var[]" */
-      #if INT_MAX < LONG_MAX
-        if (size > INT_MAX)
-          error(165);                   /* overflow, exceeding capacity */
-      #endif
-#if 0	/* We don't actually care */
-      if (ispublic)
-        error(56,name);                 /* arrays cannot be public */
-#endif
-      dim[numdim++]=(int)size;
-    } /* while */
-    if (ident == iARRAY && tag == pc_tag_string && dim[numdim-1]) {
-      slength=dim[numdim-1];
-      dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
     }
+    slength = fix_char_size(decl);
     assert(sc_curstates==0);
-    sc_curstates=getstates(name);
+    sc_curstates=getstates(decl->name);
     if (sc_curstates<0) {
-      error(85,name);           /* empty state list on declaration */
+      error(85,decl->name);           /* empty state list on declaration */
       sc_curstates=0;
     } else if (sc_curstates>0 && ispublic) {
-      error(88,name);           /* public variables may not have states */
+      error(88,decl->name);           /* public variables may not have states */
       sc_curstates=0;
     } /* if */
-    sym=findconst(name,NULL);
+    sym=findconst(decl->name,NULL);
     if (sym==NULL) {
-      sym=findglb(name,sSTATEVAR);
+      sym=findglb(decl->name,sSTATEVAR);
       /* if a global variable without states is found and this declaration has
        * states, the declaration is okay
        */
       if (sym!=NULL && sym->states==NULL && sc_curstates>0)
         sym=NULL;               /* set to NULL, we found the global variable */
-      if (sc_curstates>0 && findglb(name,sGLOBAL)!=NULL)
-        error(233,name);        /* state variable shadows a global variable */
+      if (sc_curstates>0 && findglb(decl->name,sGLOBAL)!=NULL)
+        error(233,decl->name);  /* state variable shadows a global variable */
     } /* if */
     /* we have either:
      * a) not found a matching variable (or rejected it, because it was a shadow)
@@ -2133,7 +2014,7 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
      * a different automaton
      */
     if (sym!=NULL && (sym->usage & uDEFINE)!=0)
-      error(21,name);                   /* symbol already defined */
+      error(21,decl->name);     /* symbol already defined */
     /* if this variable is never used (which can be detected only in the
      * second stage), shut off code generation
      */
@@ -2155,116 +2036,22 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
       litidx=0;         /* global initial data is dumped, so restart at zero */
     } /* if */
     assert(litidx==0);  /* literal queue should be empty (again) */
-    initials(ident,tag,&size,dim,numdim,enumroot);/* stores values in the literal queue */
-    if (tag == pc_tag_string && (numdim == 1) && !dim[numdim-1]) {
+    initials3(decl);
+    if (type->tag == pc_tag_string && type->numdim == 1 && !type->dim[type->numdim - 1]) {
       slength = glbstringread;
     }
-    assert(size>=litidx);
-    if (numdim==1)
-      dim[0]=(int)size;
-    /* before dumping the initial values (or zeros) check whether this variable
-     * overlaps another
-     */
-    if (sc_curstates>0) {
-      unsigned char *map;
-
-      if (litidx!=0)
-        error(89,name); /* state variables may not be initialized */
-      /* find an appropriate address for the state variable */
-      /* assume that it cannot be found */
-      address=sizeof(cell)*glb_declared;
-      glb_incr=(int)size;
-      /* use a memory map in which every cell occupies one bit */
-      if (glb_declared>0 && (map=(unsigned char*)malloc((glb_declared+7)/8))!=NULL) {
-        int fsa=state_getfsa(sc_curstates);
-        symbol *sweep;
-        cell sweepsize,addr;
-        memset(map,0,(glb_declared+7)/8);
-        assert(fsa>=0);
-        /* fill in all variables belonging to this automaton */
-        for (sweep=glbtab.next; sweep!=NULL; sweep=sweep->next) {
-          if (sweep->parent!=NULL || sweep->states==NULL || sweep==sym)
-            continue;   /* hierarchical type, or no states, or same as this variable */
-          if (sweep->ident!=iVARIABLE && sweep->ident!=iARRAY)
-            continue;   /* a function or a constant */
-          if ((sweep->usage & uDEFINE)==0)
-            continue;   /* undefined variable, ignore */
-          if (fsa!=state_getfsa(sweep->states->next->index))
-            continue;   /* wrong automaton */
-          /* when arrived here, this is a global variable, with states and
-           * belonging to the same automaton as the variable we are declaring
-           */
-          sweepsize=(sweep->ident==iVARIABLE) ? 1 : array_totalsize(sweep);
-          assert(sweep->addr % sizeof(cell) == 0);
-          addr=sweep->addr/sizeof(cell);
-          /* mark this address range */
-          while (sweepsize-->0) {
-            map[addr/8] |= (unsigned char)(1 << (addr % 8));
-            addr++;
-          } /* while */
-        } /* for */
-        /* go over it again, clearing any ranges that have conflicts */
-        for (sweep=glbtab.next; sweep!=NULL; sweep=sweep->next) {
-          if (sweep->parent!=NULL || sweep->states==NULL || sweep==sym)
-            continue;   /* hierarchical type, or no states, or same as this variable */
-          if (sweep->ident!=iVARIABLE && sweep->ident!=iARRAY)
-            continue;   /* a function or a constant */
-          if ((sweep->usage & uDEFINE)==0)
-            continue;   /* undefined variable, ignore */
-          if (fsa!=state_getfsa(sweep->states->next->index))
-            continue;   /* wrong automaton */
-          /* when arrived here, this is a global variable, with states and
-           * belonging to the same automaton as the variable we are declaring
-           */
-          /* if the lists of states of the existing variable and the new
-           * variable have a non-empty intersection, this is not a suitable
-           * overlap point -> wipe the address range
-           */
-          if (state_conflict_id(sc_curstates,sweep->states->next->index)) {
-            sweepsize=(sweep->ident==iVARIABLE) ? 1 : array_totalsize(sweep);
-            assert(sweep->addr % sizeof(cell) == 0);
-            addr=sweep->addr/sizeof(cell);
-            /* mark this address range */
-            while (sweepsize-->0) {
-              map[addr/8] &= (unsigned char)(~(1 << (addr % 8)));
-              addr++;
-            } /* while */
-          } /* if */
-        } /* for */
-        /* now walk through the map and find a starting point that is big enough */
-        sweepsize=0;
-        for (addr=0; addr<glb_declared; addr++) {
-          if ((map[addr/8] & (1 << (addr % 8)))==0)
-            continue;
-          for (sweepsize=addr+1; sweepsize<glb_declared; sweepsize++) {
-            if ((map[sweepsize/8] & (1 << (sweepsize % 8)))==0)
-              break;    /* zero bit found, skip this range */
-            if (sweepsize-addr>=size)
-              break;    /* fitting range found, no need to search further */
-          } /* for */
-          if (sweepsize-addr>=size)
-            break;      /* fitting range found, no need to search further */
-          addr=sweepsize;
-        } /* for */
-        free(map);
-        if (sweepsize-addr>=size) {
-          address=sizeof(cell)*addr;    /* fitting range found, set it */
-          glb_incr=0;
-        } /* if */
-      } /* if */
-    } else {
-      address=sizeof(cell)*glb_declared;
-      glb_incr=(int)size;
-    } /* if */
-    if (size != CELL_MAX && address==sizeof(cell)*glb_declared) {
+    assert(type->size>=litidx);
+    if (type->numdim == 1)
+      type->dim[0] = (int)type->size;
+    address=sizeof(cell)*glb_declared;
+    glb_incr=(int)type->size;
+    if (type->size != CELL_MAX && address==sizeof(cell)*glb_declared) {
       dumplits();       /* dump the literal queue */
-      dumpzero((int)size-litidx);
+      dumpzero((int)(type->size)-litidx);
     } /* if */
     litidx=0;
     if (sym==NULL) {    /* define only if not yet defined */
-      sym=addvariable2(name,address,ident,sGLOBAL,tag,dim,numdim,idxtag,slength);
-      if (sc_curstates>0)
-        attachstatelist(sym,sc_curstates);
+      sym=addvariable3(decl,address,sGLOBAL,slength);
     } else {            /* if declared but not yet defined, adjust the variable's address */
       assert((sym->states==NULL && sc_curstates==0)
              || (sym->states->next!=NULL && sym->states->next->index==sc_curstates && sym->states->next->next==NULL));
@@ -2276,7 +2063,7 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
     sc_curstates=0;
     if (ispublic)
       sym->usage|=uPUBLIC|uREAD;
-    if (fconst)
+    if (decl->type.usage & uCONST)
       sym->usage|=uCONST;
     if (fstock)
       sym->usage|=uSTOCK;
@@ -2885,6 +2672,12 @@ static void initials(int ident,int tag,cell *size,int dim[],int numdim,
   initials2(ident, tag, size, dim, numdim, enumroot, -1, -1);
 }
 
+static void initials3(declinfo_t *decl)
+{
+  typeinfo_t *type = &decl->type;
+  initials(type->ident, type->tag, &type->size, type->dim, type->numdim, type->enumroot);
+}
+
 static cell initarray(int ident,int tag,int dim[],int numdim,int cur,
                       int startlit,int counteddim[],constvalue *lastdim,
                       constvalue *enumroot,int *errorfound)
@@ -3171,6 +2964,11 @@ static void declstruct(void)
 
 	pstruct = pstructs_add(str);
 
+	int flags = STRUCTTAG;
+	if (isupper(*pstruct->name))
+		flags |= FIXEDTAG;
+	pc_addtag_flags(pstruct->name, flags);
+
 	needtoken('{');
 	do
 	{
@@ -3332,11 +3130,6 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
   // Note: we could have already filled in the prefix array bits, so we check
   // that ident != iARRAY before looking for an open bracket.
   if (type->ident != iARRAY && matchtoken('[')) {
-    // Not yet supported for return vals. This is allowed with old decls, but
-    // it's a huge hack. For now we forbid it in new code until it works right.
-    if (flags & TYPEFLAG_RETURN)
-      error(136);
-
     do {
       if (type->numdim == sDIMEN_MAX) {
         error(53);
@@ -3351,8 +3144,7 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
     type->ident = iARRAY;
   }
 
-
-  if (flags & TYPEFLAG_ARGUMENT) {
+  if (flags & DECLFLAG_ARGUMENT) {
     if (matchtoken('&')) {
       if (type->ident == iARRAY) {
         error(137);
@@ -3381,7 +3173,7 @@ static void parse_old_array_dims(declinfo_t *decl, int flags)
   if (type->ident == iREFERENCE)
     error(67, decl->name);
 
-  if (flags & TYPEFLAG_ENUMROOT)
+  if (flags & DECLFLAG_ENUMROOT)
     enumrootp = &type->enumroot;
   else
     enumrootp = NULL;
@@ -3394,14 +3186,15 @@ static void parse_old_array_dims(declinfo_t *decl, int flags)
       return;
     }
 
-    type->array_size = needsub(&type->idxtag[type->numdim], enumrootp);
-    if (type->array_size > INT_MAX)
+    type->size = needsub(&type->idxtag[type->numdim], enumrootp);
+    if (type->size > INT_MAX)
       error(165);
 
-    type->dim[type->numdim++] = type->array_size;
+    type->dim[type->numdim++] = type->size;
   } while (matchtoken('['));
 
   type->ident = iARRAY;
+  decl->has_postdims = TRUE;
 }
 
 static int parse_old_decl(declinfo_t *decl, int flags)
@@ -3415,7 +3208,7 @@ static int parse_old_decl(declinfo_t *decl, int flags)
     type->usage |= uCONST;
   }
 
-  if (flags & TYPEFLAG_ARGUMENT) {
+  if (flags & DECLFLAG_ARGUMENT) {
     if (matchtoken('&'))
       type->ident = iREFERENCE;
 
@@ -3456,14 +3249,20 @@ static int parse_old_decl(declinfo_t *decl, int flags)
     return TRUE;
   }
 
-  if (flags & TYPEMASK_NAMED_DECL) {
-    if (expecttoken(tSYMBOL, &tok))
-      strcpy(decl->name, tok.str);
-    else
-      strcpy(decl->name, "<unknown>");
+  if (flags & DECLMASK_NAMED_DECL) {
+    if ((flags & DECLFLAG_MAYBE_FUNCTION) && matchtoken(tOPERATOR)) {
+      decl->opertok = operatorname(decl->name);
+      if (decl->opertok == 0)
+        strcpy(decl->name, "<unknown>");
+    } else {
+      if (expecttoken(tSYMBOL, &tok))
+        strcpy(decl->name, tok.str);
+      else
+        strcpy(decl->name, "<unknown>");
+    }
   }
 
-  if ((flags & TYPEMASK_NAMED_DECL) && !(flags & TYPEFLAG_NO_POSTDIMS)) {
+  if ((flags & DECLMASK_NAMED_DECL) && !(flags & DECLFLAG_NO_POSTDIMS) && !decl->opertok) {
     if (matchtoken('['))
       parse_old_array_dims(decl, flags);
   }
@@ -3477,11 +3276,22 @@ static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags)
 
   if (!parse_new_typeexpr(&decl->type, first, flags))
     return FALSE;
-  if (!expecttoken(tSYMBOL, &tok))
-    return FALSE;
-  strcpy(decl->name, tok.str);
 
-  if ((flags & TYPEMASK_NAMED_DECL) && !(flags & TYPEFLAG_NO_POSTDIMS)) {
+  if (flags & DECLMASK_NAMED_DECL) {
+    if ((flags & DECLFLAG_MAYBE_FUNCTION) && matchtoken(tOPERATOR)) {
+      decl->opertok = operatorname(decl->name);
+      if (decl->opertok == 0)
+        strcpy(decl->name, "<unknown>");
+    } else {
+      if (!expecttoken(tSYMBOL, &tok)) {
+        strcpy(decl->name, "<unknown>");
+        return FALSE;
+      }
+      strcpy(decl->name, tok.str);
+    }
+  }
+
+  if ((flags & DECLMASK_NAMED_DECL) && !(flags & DECLFLAG_NO_POSTDIMS)) {
     if (matchtoken('[')) {
       if (decl->type.numdim == 0)
         parse_old_array_dims(decl, flags);
@@ -3490,6 +3300,7 @@ static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags)
     }
   }
 
+  decl->is_new = TRUE;
   return TRUE;
 }
 
@@ -3507,6 +3318,7 @@ int parse_decl(declinfo_t *decl, int flags)
   memset(decl, 0, sizeof(*decl));
 
   decl->type.ident = iVARIABLE;
+  decl->type.size = 1;
 
   // Must attempt to match const first, since it's a common prefix.
   if (matchtoken(tCONST))
@@ -3514,25 +3326,24 @@ int parse_decl(declinfo_t *decl, int flags)
 
   // If parsing an argument, there are two simple checks for whether this is a
   // new or old-style declaration.
-  if ((flags & TYPEFLAG_ARGUMENT) && (lexpeek('&') || lexpeek('{')))
+  if ((flags & DECLFLAG_ARGUMENT) && (lexpeek('&') || lexpeek('{')))
     return parse_old_decl(decl, flags);
 
-  // Another dead giveaway is there being a label.
-  if (lexpeek(tLABEL))
+  // Another dead giveaway is there being a label or typeless operator.
+  if (lexpeek(tLABEL) || lexpeek(tOPERATOR))
     return parse_old_decl(decl, flags);
 
   // Otherwise, we have to eat a symbol to tell.
   if (matchsymbol(&ident)) {
-    if (lexpeek(tSYMBOL)) {
+    if (lexpeek(tSYMBOL) || lexpeek(tOPERATOR)) {
       // A new-style declaration only allows array dims or a symbol name, so
-      // this is a new-style declaration. Make sure to push back the first
-      // symbol.
+      // this is a new-style declaration.
       return parse_new_decl(decl, &ident.tok, flags);
     }
 
-    if ((flags & TYPEMASK_NAMED_DECL) && matchtoken('[')) {
+    if ((flags & DECLMASK_NAMED_DECL) && matchtoken('[')) {
       // If we're not allowing postdims here, then it must be a newdecl.
-      if (flags & TYPEFLAG_NO_POSTDIMS) {
+      if (flags & DECLFLAG_NO_POSTDIMS) {
         // Give the '[' and symbol back, since we're going to parse from the start.
         lexpush();
         lexpush();
@@ -3641,20 +3452,31 @@ void check_name_length(char *original)
   }
 }
 
+static void make_primitive(typeinfo_t *type, int tag)
+{
+  memset(type, 0, sizeof(*type));
+  type->tag = tag;
+  type->tags[type->numtags++] = type->tag;
+  type->ident = iVARIABLE;
+}
+
 symbol *parse_inline_function(methodmap_t *map, const typeinfo_t *type, const char *name, int is_native, int is_ctor, int is_dtor)
 {
-  funcstub_setup_t setup;
-  if (is_dtor)
-    setup.return_tag = -1;
-  else if (is_ctor)
-    setup.return_tag = map->tag;
-  else
-    setup.return_tag = type->tag;
+  declinfo_t decl;
+  memset(&decl, 0, sizeof(decl));
 
-  if (is_ctor)
-    setup.this_tag = -1;
-  else
-    setup.this_tag = map->tag;
+  if (is_dtor) {
+    make_primitive(&decl.type, pc_tag_void);
+  } else if (is_ctor) {
+    make_primitive(&decl.type, map->tag);
+  } else {
+    decl.type = *type;
+  }
+  decl.is_new = TRUE;
+
+  const int *thistag = NULL;
+  if (!is_ctor)
+    thistag = &map->tag;
 
   // Build a new symbol. Construct a temporary name including the class.
   char fullname[METHOD_NAMEMAX + 1];
@@ -3662,15 +3484,13 @@ symbol *parse_inline_function(methodmap_t *map, const typeinfo_t *type, const ch
   strcat(fullname, ".");
   strcat(fullname, name);
   check_name_length(fullname);
-
-  setup.name = fullname;
-  setup.is_new = TRUE;
+  strcpy(decl.name, fullname);
 
   symbol *target = NULL;
   if (is_native) {
-    target = funcstub(TRUE, &setup);
+    target = funcstub(tMETHODMAP, &decl, thistag);
   } else {
-    if (!newfunc(&setup, FALSE, FALSE, TRUE, &target))
+    if (!newfunc(&decl, thistag, FALSE, FALSE, TRUE, &target))
       return NULL;
     if (!target || (target->usage & uFORWARD)) {
       error(10);
@@ -3789,7 +3609,7 @@ methodmap_method_t *parse_property(methodmap_t *map)
   methodmap_method_t *method;
 
   memset(&type, 0, sizeof(type));
-  if (!parse_new_typeexpr(&type, NULL, TYPEFLAG_RETURN))
+  if (!parse_new_typeexpr(&type, NULL, 0))
     return NULL;
   if (!needsymbol(&ident))
     return NULL;
@@ -3891,7 +3711,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
 
         // Parse for type expression, priming it with the token we predicted
         // would be an identifier.
-        if (!parse_new_typeexpr(&type, first, TYPEFLAG_RETURN))
+        if (!parse_new_typeexpr(&type, first, 0))
           return NULL;
 
         // Now, we should get an identifier.
@@ -4968,85 +4788,42 @@ SC_FUNC char *funcdisplayname(char *dest,char *funcname)
   return dest;
 }
 
-static symbol *funcstub(int fnative, const funcstub_setup_t *setup)
+static cell char_array_cells(cell size)
 {
-  int tok,tag,fpublic;
+  return (size + sizeof(cell) - 1) / sizeof(cell);
+}
+
+static cell fix_char_size(declinfo_t *decl)
+{
+  typeinfo_t *type = &decl->type;
+  if (type->tag == pc_tag_string && type->numdim && type->dim[type->numdim - 1]) {
+    cell slength = type->dim[type->numdim - 1];
+    type->dim[type->numdim - 1] = char_array_cells(type->size);
+    return slength;
+  }
+  return 0;
+}
+
+static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag)
+{
+  int tok,fpublic;
   char *str;
   cell val,size;
-  char symbolname[sNAMEMAX+1];
-  int idxtag[sDIMEN_MAX];
-  int dim[sDIMEN_MAX];
-  int numdim;
   symbol *sym,*sub;
-  int opertok;
+  int fnative = (tokid == tNATIVE || tokid == tMETHODMAP);
 
-  opertok=0;
   lastst=0;
   litidx=0;                     /* clear the literal pool */
   assert(loctab.next==NULL);    /* local symbol table should be empty */
 
-  // Either use an explicit return tag, or find a new one.
-  if (!setup || setup->return_tag == 0)
-    tag = pc_addtag(NULL);
-  else if (setup->return_tag == -1)
-    tag = 0;
-  else
-    tag = setup->return_tag;
+  fix_char_size(decl);
 
-  numdim=0;
-  if (!setup) {
-    // Method functions can't return arrays, since it's broken anyway.
-    while (matchtoken('[')) {
-      /* the function returns an array, get this tag for the index and the array
-       * dimensions
-       */
-      if (numdim == sDIMEN_MAX) {
-        error(53);                /* exceeding maximum number of dimensions */
-        return NULL;
-      } /* if */
-      size=needsub(&idxtag[numdim],NULL); /* get size; size==0 for "var[]" */
-      if (size==0)
-        error(9);                 /* invalid array size */
-      #if INT_MAX < LONG_MAX
-        if (size > INT_MAX)
-          error(165);             /* overflow, exceeding capacity */
-      #endif
-      dim[numdim++]=(int)size;
-    } /* while */
-  }
+  if (decl->opertok)
+    check_operatortag(decl->opertok, decl->type.tag, decl->name);
 
-  if (tag == pc_tag_string && numdim && dim[numdim-1])
-    dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
-
-  if (!setup || !setup->name) {
-    tok=lex(&val,&str);
-    fpublic=(tok==tPUBLIC) || (tok==tSYMBOL && str[0]==PUBLIC_CHAR);
-    if (fnative) {
-      if (fpublic || tok==tSTOCK || tok==tSTATIC || (tok==tSYMBOL && *str==PUBLIC_CHAR))
-        error(42);                /* invalid combination of class specifiers */
-    } else {
-      if (tok==tPUBLIC || tok==tSTOCK || tok==tSTATIC)
-        tok=lex(&val,&str);
-    } /* if */
-
-    if (tok==tOPERATOR) {
-      opertok=operatorname(symbolname);
-      if (opertok==0)
-        return NULL;              /* error message already given */
-      check_operatortag(opertok,tag,symbolname);
-    } else {
-      if (tok!=tSYMBOL && freading) {
-        error(10);                /* illegal function or declaration */
-        return NULL;
-      } /* if */
-      strcpy(symbolname,str);
-    } /* if */
-  } else {
-    strcpy(symbolname, setup->name);
-  }
   needtoken('(');               /* only functions may be native/forward */
 
-  sym=fetchfunc(symbolname,tag);/* get a pointer to the function entry */
+  sym=fetchfunc(decl->name, decl->type.tag); /* get a pointer to the function entry */
   if (sym==NULL)
     return NULL;
   if (fnative) {
@@ -5057,18 +4834,14 @@ static symbol *funcstub(int fnative, const funcstub_setup_t *setup)
   } /* if */
   sym->usage|=uFORWARD;
 
-  const int *thistag = NULL;
-  if (setup && setup->this_tag)
-    thistag = &setup->this_tag;
-
   declargs(sym, FALSE, thistag);
   /* "declargs()" found the ")" */
   sc_attachdocumentation(sym);  /* attach any documenation to the function */
-  if (!operatoradjust(opertok,sym,symbolname,tag))
+  if (!operatoradjust(decl->opertok,sym,decl->name,decl->type.tag))
     sym->usage &= ~uDEFINE;
 
-  if (getstates(symbolname)!=0) {
-    if (fnative || opertok!=0)
+  if (getstates(decl->name)!=0) {
+    if (fnative || decl->opertok!=0)
       error(82);                /* native functions and operators may not have states */
     else
       error(231);               /* ignoring state specifications on forward declarations */
@@ -5078,7 +4851,7 @@ static symbol *funcstub(int fnative, const funcstub_setup_t *setup)
    * for a native function, this is optional
    */
   if (fnative) {
-    if (opertok!=0) {
+    if (decl->opertok!=0) {
       needtoken('=');
       lexpush();        /* push back, for matchtoken() to retrieve again */
     } /* if */
@@ -5101,16 +4874,13 @@ static symbol *funcstub(int fnative, const funcstub_setup_t *setup)
     } /* if */
   } /* if */
 
-  // Don't assume inline if we're being setup.
-  if (!setup)
+  // Don't look for line endings if we're inline.
+  if (tokid != tMETHODMAP)
     needtoken(tTERM);
 
   /* attach the array to the function symbol */
-  if (numdim>0) {
-    assert(sym!=NULL);
-    sub=addvariable(symbolname,0,iARRAY,sGLOBAL,tag,dim,numdim,idxtag);
-    sub->parent=sym;
-  } /* if */
+  if (decl->type.numdim>0)
+    error(141);
 
   litidx=0;                     /* clear the literal pool */
   delete_symbols(&loctab,0,TRUE,TRUE);/* clear local variables queue */
@@ -5130,12 +4900,11 @@ static symbol *funcstub(int fnative, const funcstub_setup_t *setup)
  *                     glb_declared (altered)
  *                     sc_alignnext (altered)
  */
-static int newfunc(const funcstub_setup_t *setup,int fpublic,int fstatic,int stock,symbol **symp)
+static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstatic, int stock, symbol **symp)
 {
   symbol *sym;
-  int argcnt,tok,tag,funcline;
-  int opertok,opererror;
-  char symbolname[sNAMEMAX+1];
+  int argcnt,tok,funcline;
+  int opererror;
   char *str;
   cell val,cidx,glbdecl;
   short filenum;
@@ -5143,7 +4912,6 @@ static int newfunc(const funcstub_setup_t *setup,int fpublic,int fstatic,int sto
 
   assert(litidx==0);    /* literal queue should be empty */
   litidx=0;             /* clear the literal pool (should already be empty) */
-  opertok=0;
   lastst=0;             /* no statement yet */
   cidx=0;               /* just to avoid compiler warnings */
   glbdecl=0;
@@ -5153,44 +4921,20 @@ static int newfunc(const funcstub_setup_t *setup,int fpublic,int fstatic,int sto
   if (symp)
     *symp = NULL;
 
-  if (setup->name) {
-    assert(strlen(setup->name) <= METHOD_NAMEMAX);
-    strcpy(symbolname, setup->name);       /* save symbol name */
-    tag = setup->return_tag;
-  } else {
-    if (setup->return_tag != -1)
-      tag = setup->return_tag;
-    else
-      tag = pc_addtag(NULL);
-    tok=lex(&val,&str);
-    assert(!fpublic);
-    if (tok==tNATIVE || (tok==tPUBLIC && stock))
-      error(42);                /* invalid combination of class specifiers */
-    if (tok==tOPERATOR) {
-      opertok=operatorname(symbolname);
-      if (opertok==0)
-        return TRUE;            /* error message already given */
-      check_operatortag(opertok,tag,symbolname);
-    } else {
-      if (tok!=tSYMBOL && freading) {
-        error(20,str);          /* invalid symbol name */
-        return FALSE;
-      } /* if */
-      assert(strlen(str)<=sNAMEMAX);
-      strcpy(symbolname,str);
-    } /* if */
+  if (decl->opertok) {
+    check_operatortag(decl->opertok, decl->type.tag, decl->name);
   } /* if */
   /* check whether this is a function or a variable declaration */
   if (!matchtoken('('))
     return FALSE;
   /* so it is a function, proceed */
   funcline=fline;               /* save line at which the function is defined */
-  if (symbolname[0]==PUBLIC_CHAR) {
+  if (decl->name[0]==PUBLIC_CHAR) {
     fpublic=TRUE;               /* implicitly public function */
     if (stock)
       error(42);                /* invalid combination of class specifiers */
   } /* if */
-  sym=fetchfunc(symbolname,tag);/* get a pointer to the function entry */
+  sym=fetchfunc(decl->name, decl->type.tag);/* get a pointer to the function entry */
   if (sym==NULL || (sym->usage & uNATIVE)!=0)
     return TRUE;                /* it was recognized as a function declaration, but not as a valid one */
   if (fpublic)
@@ -5212,25 +4956,16 @@ static int newfunc(const funcstub_setup_t *setup,int fpublic,int fstatic,int sto
     sc_status=curstatus;
     sc_reparse=TRUE;      /* must add another pass to "initial scan" phase */
   } /* if */
-#if 0	/* Not used for SourceMod */
-  /* we want public functions to be explicitly prototyped, as they are called
-   * from the outside
-   */
-  if (fpublic && (sym->usage & uFORWARD)==0)
-    error(235,symbolname);
-#endif
+
   /* declare all arguments */
-  argcnt=declargs(sym, TRUE, &setup->this_tag);
-  opererror=!operatoradjust(opertok,sym,symbolname,tag);
-  if (strcmp(symbolname,uMAINFUNC)==0 || strcmp(symbolname,uENTRYFUNC)==0) {
+  argcnt = declargs(sym, TRUE, thistag);
+  opererror = !operatoradjust(decl->opertok, sym, decl->name, decl->type.tag);
+  if (strcmp(decl->name, uMAINFUNC)==0 || strcmp(decl->name, uENTRYFUNC)==0) {
     if (argcnt>0)
       error(5);         /* "main()" and "entry()" functions may not have any arguments */
     sym->usage|=uREAD;  /* "main()" is the program's entry point: always used */
   } /* if */
-  state_id=getstates(symbolname);
-  if (state_id>0 && (opertok!=0 || strcmp(symbolname,uMAINFUNC)==0))
-    error(82);          /* operators may not have states, main() may neither */
-  attachstatelist(sym,state_id);
+
   /* "declargs()" found the ")"; if a ";" appears after this, it was a
    * prototype */
   if (matchtoken(';')) {
@@ -5252,26 +4987,14 @@ static int newfunc(const funcstub_setup_t *setup,int fpublic,int fstatic,int sto
   } /* if */
   if ((sym->flags & flgDEPRECATED) != 0 && (sym->usage & uSTOCK) == 0) {
     char *ptr= (sym->documentation!=NULL) ? sym->documentation : "";
-    error(234,symbolname,ptr);  /* deprecated (probably a public function) */
+    error(234, decl->name, ptr);  /* deprecated (probably a public function) */
   } /* if */
   begcseg();
   sym->usage|=uDEFINE;  /* set the definition flag */
   if (stock)
     sym->usage|=uSTOCK;
-  if (opertok!=0 && opererror)
+  if (decl->opertok != 0 && opererror)
     sym->usage &= ~uDEFINE;
-  /* if the function has states, dump the label to the start of the function */
-  if (state_id!=0) {
-    constvalue *ptr=sym->states->next;
-    while (ptr!=NULL) {
-      assert(sc_status!=statWRITE || strlen(ptr->name)>0);
-      if (ptr->index==state_id) {
-        setlabel((int)strtol(ptr->name,NULL,16));
-        break;
-      } /* if */
-      ptr=ptr->next;
-    } /* while */
-  } /* if */
   startfunc(sym->name); /* creates stack frame */
   insert_dbgline(funcline);
   setline(FALSE);
@@ -5290,7 +5013,7 @@ static int newfunc(const funcstub_setup_t *setup,int fpublic,int fstatic,int sto
       lexpush();
     } else {
       // We require '{' for new methods.
-      if (setup->is_new)
+      if (decl->is_new)
         needtoken('{');
 
       /* Insert a separator so that comments following the statement will not
@@ -5303,9 +5026,7 @@ static int newfunc(const funcstub_setup_t *setup,int fpublic,int fstatic,int sto
       insert_docstring_separator();
     } /* if */
   #endif
-  sc_curstates=state_id;/* set state id, for accessing global state variables */
   statement(NULL,FALSE);
-  sc_curstates=0;
   if ((rettype & uRETVALUE)!=0)
     sym->usage|=uRETVALUE;
   if (declared!=0) {
@@ -5452,7 +5173,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
   if (!matchtoken(')')){
     do {                                /* there are arguments; process them */
       declinfo_t decl;
-      parse_decl(&decl, TYPEFLAG_ARGUMENT|TYPEFLAG_ENUMROOT);
+      parse_decl(&decl, DECLFLAG_ARGUMENT|DECLFLAG_ENUMROOT);
       assert(decl.type.numtags > 0);
 
       if (decl.type.ident == iVARARGS) {
@@ -5599,7 +5320,7 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
     assert(type->numtags > 0);
     if (type->tags[0] == pc_tag_string) {
       slength = arg->dim[arg->numdim - 1];
-      arg->dim[arg->numdim - 1] = (type->array_size + sizeof(cell) - 1) / sizeof(cell);
+      arg->dim[arg->numdim - 1] = (type->size + sizeof(cell) - 1) / sizeof(cell);
     }
     if (matchtoken('=')) {
       assert(litidx==0);        /* at the start of a function, this is reset */
@@ -5622,8 +5343,8 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
           }
         }
       } else {
-        initials2(type->ident, type->tags[0], &type->array_size, arg->dim, arg->numdim, type->enumroot, 1, 0);
-        assert(type->array_size >= litidx);
+        initials2(type->ident, type->tags[0], &type->size, arg->dim, arg->numdim, type->enumroot, 1, 0);
+        assert(type->size >= litidx);
         /* allocate memory to hold the initial values */
         arg->defvalue.array.data=(cell *)malloc(litidx*sizeof(cell));
         if (arg->defvalue.array.data!=NULL) {
