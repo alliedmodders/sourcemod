@@ -152,6 +152,8 @@ static int *readwhile(void);
 static void inst_datetime_defines(void);
 static void inst_binary_name(char *binfname);
 static int operatorname(char *name);
+static int reparse_old_decl(declinfo_t *decl, int flags);
+static int reparse_new_decl(declinfo_t *decl, int flags);
 
 enum {
   TEST_PLAIN,           /* no parentheses */
@@ -1479,6 +1481,8 @@ static void dodecl(const token_t *tok)
   parse_decl(&decl, DECLFLAG_MAYBE_FUNCTION|DECLFLAG_VARIABLE|DECLFLAG_ENUMROOT);
 
   if (!decl.opertok && (tok->id == tNEW || decl.has_postdims || !lexpeek('('))) {
+    if (tok->id == tNEW && decl.is_new)
+      error(143);
     if (decl.type.tag & STRUCTTAG) {
       pstruct_t *pstruct = pstructs_find(pc_tagname(decl.type.tag));
       declstructvar(decl.name, fpublic, pstruct);
@@ -1962,14 +1966,16 @@ static void declglb(declinfo_t *decl,int fpublic,int fstatic,int fstock)
   short filenum;
   symbol *sym;
   constvalue *enumroot;
-  #if !defined NDEBUG
-    cell glbdecl=0;
-  #endif
+#if !defined NDEBUG
+  cell glbdecl=0;
+#endif
+  declinfo_t orig_decl = *decl;
 
   assert(!fpublic || !fstatic);         /* may not both be set */
   insert_docstring_separator();         /* see comment in newfunc() */
   filenum=fcurrent;                     /* save file number at the start of the declaration */
-  do {
+
+  for (;;) {
     typeinfo_t *type = &decl->type;
 
     ispublic=fpublic;
@@ -2077,7 +2083,15 @@ static void declglb(declinfo_t *decl,int fpublic,int fstatic,int fstock)
     } else {
       glb_declared+=glb_incr;   /* add total number of cells (if added to the end) */
     } /* if */
-  } while (matchtoken(',')); /* enddo */   /* more? */
+
+    if (!matchtoken(','))
+      break;
+
+    if (decl->is_new)
+      reparse_new_decl(decl, DECLFLAG_VARIABLE|DECLFLAG_ENUMROOT);
+    else
+      reparse_old_decl(decl, DECLFLAG_VARIABLE|DECLFLAG_ENUMROOT);
+  };
   needtoken(tTERM);    /* if not comma, must be semicolumn */
 }
 
@@ -3269,6 +3283,18 @@ static int parse_old_decl(declinfo_t *decl, int flags)
   return TRUE;
 }
 
+static int reparse_old_decl(declinfo_t *decl, int flags)
+{
+  int usage = decl->type.usage & uCONST;
+
+  memset(decl, 0, sizeof(*decl));
+  decl->type.ident = iVARIABLE;
+  decl->type.size = 1;
+  decl->type.usage |= usage;
+
+  return parse_old_decl(decl, flags);
+}
+
 static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags)
 {
   token_t tok;
@@ -3300,6 +3326,40 @@ static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags)
   }
 
   decl->is_new = TRUE;
+  return TRUE;
+}
+
+static int reparse_new_decl(declinfo_t *decl, int flags)
+{
+  token_t tok;
+  if (expecttoken(tSYMBOL, &tok))
+    strcpy(decl->name, tok.str);
+
+  if (decl->has_postdims) {
+    // We have something like:
+    //    int x[], y...
+    //
+    // Reset the fact that we saw an array.
+    decl->type.numdim = 0;
+    decl->type.size = 0;
+    decl->type.enumroot = NULL;
+    decl->has_postdims = FALSE;
+    if (matchtoken('['))
+      parse_old_array_dims(decl, flags);
+  } else {
+    // No post-dimensions means anything here is part of the type.
+    if (matchtoken('[')) {
+      if (decl->type.numdim > 0) {
+        if (lexpeek('['))
+          error(121);
+      }
+      parse_old_array_dims(decl, flags);
+    } else if (decl->type.numdim) {
+      // Reset dimension sizes.
+      memset(decl->type.dim, 0, sizeof(decl->type.dim[0]) * decl->type.numdim);
+    }
+  }
+
   return TRUE;
 }
 
