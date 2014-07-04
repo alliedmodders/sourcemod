@@ -703,7 +703,7 @@ int pc_addtag_flags(char *name, int flags)
     tag=(int)(ptr->value & TAGMASK);
     if (strcmp(name,ptr->name)==0) {
       ptr->value |= flags;
-      return tag;       /* tagname is known, return its sequence number */
+      return ptr->value & TAGMASK;
     }
     tag &= ~TAGFLAGMASK;
     if (tag>last)
