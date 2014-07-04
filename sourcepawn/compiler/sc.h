@@ -521,8 +521,8 @@ typedef enum s_optmark {
 #define METHODMAPTAG 0x04000000Lu
 #define STRUCTTAG    0x02000000Lu
 #define TAGMASK       (~PUBLICTAG)
-#define TAGTYPEMASK   (FUNCTAG | OBJECTTAG | ENUMTAG | METHODMAPTAG)
-#define TAGFLAGMASK   (FIXEDTAG | TAGTYPEMASK | STRUCTTAG)
+#define TAGTYPEMASK   (FUNCTAG | OBJECTTAG | ENUMTAG | METHODMAPTAG | STRUCTTAG)
+#define TAGFLAGMASK   (FIXEDTAG | TAGTYPEMASK)
 #define CELL_MAX      (((ucell)1 << (sizeof(cell)*8-1)) - 1)
 
 
@@ -602,7 +602,7 @@ void sp_fdbg_ntv_hook(int index, symbol *sym);
 
 /* function prototypes in SC1.C */
 SC_FUNC void set_extension(char *filename,char *extension,int force);
-SC_FUNC symbol *fetchfunc(char *name,int tag);
+SC_FUNC symbol *fetchfunc(char *name);
 SC_FUNC char *operator_symname(char *symname,char *opername,int tag1,int tag2,int numtags,int resulttag);
 SC_FUNC char *funcdisplayname(char *dest,char *funcname);
 SC_FUNC int constexpr(cell *val,int *tag,symbol **symptr);

@@ -108,7 +108,7 @@ public Plugin:myinfo;
  *
  * @noreturn
  */
-forward OnPluginStart();
+forward void OnPluginStart();
 
 /**
  * @deprecated Use AskPluginLoad2() instead.
@@ -167,7 +167,7 @@ forward OnGameFrame();
  * @note This used to be OnServerLoad(), which is now deprecated.
  * Plugins still using the old forward will work.
  */
-forward OnMapStart();
+forward void OnMapStart();
 
 /**
  * Called right before a map ends.
@@ -184,7 +184,7 @@ forward OnMapEnd();
  *
  * @noreturn
  */
-forward OnConfigsExecuted();
+forward void OnConfigsExecuted();
 
 /**
  * This is called once, right after OnMapStart() but any time before 

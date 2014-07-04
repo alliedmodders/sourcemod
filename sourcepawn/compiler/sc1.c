@@ -3101,8 +3101,6 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
         type->tag = sc_rationaltag;
       } else if (strcmp(tok.str, "bool") == 0) {
         type->tag = pc_tag_bool;
-      } else if (strcmp(tok.str, "char") == 0) {
-        type->tag = pc_tag_string;
       } else {
         type->tag = pc_findtag(tok.str);
         if (type->tag == sc_rationaltag) {
@@ -3142,6 +3140,7 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
       }
     } while (matchtoken('['));
     type->ident = iARRAY;
+    type->size = 0;
   }
 
   if (flags & DECLFLAG_ARGUMENT) {
@@ -3360,6 +3359,7 @@ int parse_decl(declinfo_t *decl, int flags)
         // This must be a newdecl, "x[] y" or "x[] &y", the latter of which
         // is illegal, but we flow it through the right path anyway.
         lexpush();
+        decl->has_postdims = FALSE;
         return parse_new_decl(decl, &ident.tok, flags);
       }
 
@@ -4471,7 +4471,7 @@ static int compare_tag(int tag1, int tag2)
  *  Finds a function in the global symbol table or creates a new entry.
  *  It does some basic processing and error checking.
  */
-SC_FUNC symbol *fetchfunc(char *name,int tag)
+SC_FUNC symbol *fetchfunc(char *name)
 {
   symbol *sym;
 
@@ -4483,17 +4483,9 @@ SC_FUNC symbol *fetchfunc(char *name,int tag)
       error(21,name);                     /* yes, and it is a native */
     } /* if */
     assert(sym->vclass==sGLOBAL);
-    if ((sym->usage & uPROTOTYPED)!=0 && !compare_tag(sym->tag, tag))
-      error(25);                          /* mismatch from earlier prototype */
-    if ((sym->usage & uDEFINE)==0) {
-      /* as long as the function stays undefined, update the address and the tag */
-      if (sym->states==NULL)
-        sym->addr=code_idx;
-      sym->tag=tag;
-    } /* if */
   } else {
     /* don't set the "uDEFINE" flag; it may be a prototype */
-    sym=addsym(name,code_idx,iFUNCTN,sGLOBAL,tag,0);
+    sym=addsym(name,code_idx,iFUNCTN,sGLOBAL,0,0);
     assert(sym!=NULL);          /* fatal error 103 must be given on error */
     /* assume no arguments */
     sym->dim.arglist=(arginfo*)calloc(1, sizeof(arginfo));
@@ -4823,9 +4815,17 @@ static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag)
 
   needtoken('(');               /* only functions may be native/forward */
 
-  sym=fetchfunc(decl->name, decl->type.tag); /* get a pointer to the function entry */
+  sym=fetchfunc(decl->name);
   if (sym==NULL)
     return NULL;
+  if ((sym->usage & uPROTOTYPED)!=0 && !compare_tag(sym->tag, decl->type.tag))
+    error(25);
+  if ((sym->usage & uDEFINE) == 0) {
+    // As long as the function stays undefined, update its address and tag.
+    sym->addr = code_idx;
+    sym->tag = decl->type.tag;
+  }
+
   if (fnative) {
     sym->usage=(char)(uNATIVE | uRETVALUE | uDEFINE | (sym->usage & uPROTOTYPED));
     sym->x.lib=curlibrary;
@@ -4934,13 +4934,32 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
     if (stock)
       error(42);                /* invalid combination of class specifiers */
   } /* if */
-  sym=fetchfunc(decl->name, decl->type.tag);/* get a pointer to the function entry */
-  if (sym==NULL || (sym->usage & uNATIVE)!=0)
-    return TRUE;                /* it was recognized as a function declaration, but not as a valid one */
+
+  if ((sym=fetchfunc(decl->name)) == NULL)
+    return TRUE;
+
+  // Not a valid function declaration if native.
+  if (sym->usage & uNATIVE)
+    return TRUE;
+
+  // If the function has not been prototyed, set its tag.
+  if (!(sym->usage & uPROTOTYPED))
+    sym->tag = decl->type.tag;
+
+  // As long as the function stays undefined, update its address.
+  if (!(sym->usage & uDEFINE))
+    sym->addr = code_idx;
+
   if (fpublic)
     sym->usage|=uPUBLIC;
   if (fstatic)
     sym->fnumber=filenum;
+
+  if (sym->usage & (uPUBLIC | uFORWARD)) {
+    if (decl->type.numdim > 0)
+      error(141);
+  }
+
   /* if the function was used before being declared, and it has a tag for the
    * result, add a third pass (as second "skimming" parse) because the function
    * result may have been used with user-defined operators, which have now
@@ -5027,8 +5046,33 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
     } /* if */
   #endif
   statement(NULL,FALSE);
-  if ((rettype & uRETVALUE)!=0)
+
+  if ((rettype & uRETVALUE)!=0) {
     sym->usage|=uRETVALUE;
+  } else {
+    if (sym->tag == pc_tag_void &&
+        (sym->usage & uFORWARD) &&
+        !decl->type.tag &&
+        !decl->is_new)
+    {
+      // We got something like:
+      //    forward void X();
+      //    public X()
+      //
+      // Switch our decl type to void.
+      decl->type.tag = pc_tag_void;
+      decl->type.tags[0] = pc_tag_void;
+    }
+  }
+
+  // Check that return tags match.
+  if ((sym->usage & uPROTOTYPED) && !compare_tag(sym->tag, decl->type.tag)) {
+    int old_fline = fline;
+    fline = sym->lnumber;
+    error(25);
+    fline = old_fline;
+  }
+
   if (declared!=0) {
     /* This happens only in a very special (and useless) case, where a function
      * has only a single statement in its body (no compound block) and that
