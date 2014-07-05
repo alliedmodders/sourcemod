@@ -4881,11 +4881,12 @@ static cell fix_char_size(declinfo_t *decl)
 
 static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag)
 {
-  int tok,fpublic;
+  int tok;
   char *str;
   cell val,size;
   symbol *sym,*sub;
   int fnative = (tokid == tNATIVE || tokid == tMETHODMAP);
+  int fpublic = (tokid == tPUBLIC);
 
   lastst=0;
   litidx=0;                     /* clear the literal pool */
