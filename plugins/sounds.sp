@@ -35,7 +35,7 @@
 
 #include <sourcemod>
 
-public Plugin:myinfo =
+public Plugin myinfo =
 {
 	name = "Sound Commands",
 	author = "AlliedModders LLC",
@@ -44,7 +44,7 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-public OnPluginStart( )
+public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("sounds.phrases");
@@ -52,7 +52,7 @@ public OnPluginStart( )
 	RegAdminCmd("sm_play", Command_Play, ADMFLAG_GENERIC, "sm_play <#userid|name> <filename>");
 }
 
-public Action:Command_Play(client, args)
+public Action Command_Play(int client, int args)
 {
 	if (args < 2)
 	{
@@ -60,11 +60,11 @@ public Action:Command_Play(client, args)
 		return Plugin_Handled;
 	}
 
-	new String:Arguments[PLATFORM_MAX_PATH + 65];
+	char Arguments[PLATFORM_MAX_PATH + 65];
 	GetCmdArgString(Arguments, sizeof(Arguments));
 
- 	decl String:Arg[65];
-	new len = BreakString(Arguments, Arg, sizeof(Arg));
+ 	char Arg[65];
+	int len = BreakString(Arguments, Arg, sizeof(Arg));
 
 	/* Make sure it does not go out of bound by doing "sm_play user  "*/
 	if (len == -1)
@@ -77,7 +77,7 @@ public Action:Command_Play(client, args)
 	if (Arguments[len] == '"')
 	{
 		len++;
-		new FileLen = TrimString(Arguments[len]) + len;
+		int FileLen = TrimString(Arguments[len]) + len;
 
 		if (Arguments[FileLen - 1] == '"')
 		{
@@ -85,8 +85,9 @@ public Action:Command_Play(client, args)
 		}
 	}
 	
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	char target_name[MAX_TARGET_LENGTH];
+	char target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(
 			Arg,
@@ -102,7 +103,7 @@ public Action:Command_Play(client, args)
 		return Plugin_Handled;
 	}
 	
-	for (new i = 0; i < target_count; i++)
+	for (int i = 0; i < target_count; i++)
 	{
 		ClientCommand(target_list[i], "playgamesound \"%s\"", Arguments[len]);
 		LogAction(client, target_list[i], "\"%L\" played sound on \"%L\" (file \"%s\")", client, target_list[i], Arguments[len]);

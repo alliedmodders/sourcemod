@@ -3361,6 +3361,8 @@ static int reparse_new_decl(declinfo_t *decl, int flags)
     decl->type.numdim = 0;
     decl->type.size = 0;
     decl->type.enumroot = NULL;
+    decl->type.ident = iVARIABLE;
+    decl->type.size = 0;
     decl->has_postdims = FALSE;
     if (matchtoken('['))
       parse_old_array_dims(decl, flags);
@@ -6461,6 +6463,28 @@ static void statement(int *lastindent,int allow_decl)
     *lastindent=stmtindent;
     indent_nowarn=FALSE;        /* if warning was blocked, re-enable it */
   } /* if */
+
+  if (tok == tSYMBOL) {
+    // We reaaaally don't have enough lookahead for this, so we cheat and try
+    // to determine whether this is probably a declaration.
+    int is_decl = FALSE;
+    if (matchtoken('[')) {
+      if (lexpeek(']'))
+        is_decl = TRUE;
+      lexpush();
+    } else if (lexpeek(tSYMBOL)) {
+      is_decl = TRUE;
+    }
+
+    if (is_decl) {
+      lexpush();
+      autozero = TRUE;
+      lastst = tNEW;
+      declloc(tNEW);
+      return;
+    }
+  }
+
   switch (tok) {
   case 0:
     /* nothing */

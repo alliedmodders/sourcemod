@@ -2319,10 +2319,6 @@ SC_FUNC int matchtoken(int token)
  */
 SC_FUNC int tokeninfo(cell *val,char **str)
 {
-  /* if the token was pushed back, tokeninfo() returns the token and
-   * parameters of the *next* token, not of the *current* token.
-   */
-  assert(sTokenBuffer->depth == 0);
   *val = current_token()->value;
   *str = current_token()->str;
   return current_token()->id;
