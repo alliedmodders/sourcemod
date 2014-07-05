@@ -152,7 +152,7 @@ enum MenuSource
  * @param param2			Second action parameter (usually the item).
  * @noreturn
  */
-functag public MenuHandler(Handle:menu, MenuAction:action, param1, param2);
+functag public MenuHandler(Menu:menu, MenuAction:action, param1, param2);
 
 /**
  * Creates a new, empty menu using the default style.
@@ -164,7 +164,7 @@ functag public MenuHandler(Handle:menu, MenuAction:action, param1, param2);
  *							the only default actions.
  * @return					A new menu Handle.
  */
-native Handle:CreateMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT);
+native Menu:CreateMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT);
 
 /**
  * Displays a menu to a client.
@@ -528,7 +528,7 @@ stock bool:VoteMenuToAll(Handle:menu, time, flags=0)
  *							defines.
  * @noreturn
  */
-functag public VoteHandler(Handle:menu,
+functag public VoteHandler(Menu:menu,
 						   num_votes, 
 						   num_clients,
 						   const client_info[][2], 
@@ -545,6 +545,63 @@ functag public VoteHandler(Handle:menu,
  * @error					Invalid Handle or callback.
  */
 native SetVoteResultCallback(Handle:menu, VoteHandler:callback);
+
+methodmap Menu < Handle {
+	public Menu() = CreateMenu;
+	public Display() = DisplayMenu;
+	public DisplayAt() = DisplayMenuAtItem;
+	public AddItem() = AddMenuItem;
+	public InsertItem() = InsertMenuItem;
+	public RemoveItem() = RemoveMenuItem;
+	public RemoveAllItems() = RemoveAllMenuItems;
+	public GetItem() = GetMenuItem;
+	public GetTitle() = GetMenuTitle;
+	public SetTitle() = SetMenuTitle;
+	public ToPanel() = CreatePanelFromMenu;
+	public Cancel() = CancelMenu;
+	public DisplayVote() = VoteMenu;
+	public DisplayVoteToAll() = VoteMenuToAll;
+
+	public SetPagination() = SetMenuPagination;
+	property int Pagination {
+		public get() = GetMenuPagination;
+	}
+
+	public SetOptionFlags() = SetMenuOptionFlags;
+	property int OptionFlags {
+		public get() = GetMenuOptionFlags;
+	}
+
+	public SetExitButton() = SetMenuExitButton;
+	property bool ExitButton {
+		public get() = GetMenuExitButton;
+	}
+	public SetExitBackButton() = SetMenuExitBackButton;
+	property bool ExitBackButton {
+		public get() = GetMenuExitBackButton;
+	}
+	public SetNoVoteButton() = SetMenuNoVoteButton;
+	public SetVoteResultCallback() = SetVoteResultCallback;
+
+	property int ItemCount {
+		public get() = GetMenuItemCount;
+	}
+	property Handle Style {
+		public get() = GetMenuStyle;
+	}
+	property bool VoteInProgress {
+		public get() {
+			return IsVoteInProgress(this);
+		}
+	}
+
+	public void CancelVote() {
+		CancelVote();
+	}
+	public int GetSelectionPosition() {
+		return GetMenuSelectionPosition();
+	}
+};
 
 /**
  * Returns the number of seconds you should "wait" before displaying
