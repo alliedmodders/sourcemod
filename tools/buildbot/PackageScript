@@ -411,6 +411,7 @@ CopyFiles('plugins/testsuite', 'addons/sourcemod/scripting/testsuite',
     'structtest.sp',
     'tf2-test.sp',
     'tries.sp',
+    'keyvalues.sp',
   ]
 )
 CopyFiles('plugins/basecommands', 'addons/sourcemod/scripting/basecommands',
