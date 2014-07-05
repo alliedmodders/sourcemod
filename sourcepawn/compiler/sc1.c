@@ -3606,9 +3606,11 @@ symbol *parse_inline_function(methodmap_t *map, const typeinfo_t *type, const ch
   if (is_native) {
     target = funcstub(tMETHODMAP, &decl, thistag);
   } else {
-    sc_require_newdecls++;
+    int lcl_require_newdecls = sc_require_newdecls;
+
+    sc_require_newdecls = TRUE;
     int ok = newfunc(&decl, thistag, FALSE, FALSE, TRUE, &target);
-    sc_require_newdecls--;
+    sc_require_newdecls = lcl_require_newdecls;
 
     if (!ok)
       return NULL;
