@@ -7262,7 +7262,7 @@ static void doreturn(void)
     if (!matchtag_string(ident, tag))
       matchtag(curfunc->tag,tag,TRUE);
     if (ident==iARRAY || ident==iREFARRAY) {
-      int dim[sDIMEN_MAX],numdim;
+      int dim[sDIMEN_MAX], numdim = 0;
       cell arraysize;
       assert(sym!=NULL);
       if (sub!=NULL) {
