@@ -287,7 +287,7 @@ CompileFromThunk(BaseRuntime *runtime, cell_t pcode_offs, void **addrp, char *pc
       return err;
   }
 
-#if !defined NDEBUG
+#if defined JIT_SPEW
   g_engine1.GetDebugHook()->OnDebugSpew(
       "Patching thunk to %s::%s\n",
       runtime->plugin()->name,
@@ -327,14 +327,12 @@ Compiler::emit(int *errp)
     return NULL;
   }
 
-#if !defined NDEBUG
+#if defined JIT_SPEW
   g_engine1.GetDebugHook()->OnDebugSpew(
       "Compiling function %s::%s\n",
       plugin_->name,
       GetFunctionName(plugin_, pcode_start_));
 
-#endif
-#if defined DEBUG
   SpewOpcode(plugin_, code_start_, cip_);
 #endif
 
@@ -352,7 +350,7 @@ Compiler::emit(int *errp)
     if (*cip_ == OP_PROC || *cip_ == OP_ENDPROC)
       break;
 
-#if defined DEBUG
+#if defined JIT_SPEW
     SpewOpcode(plugin_, code_start_, cip_);
 #endif
 
