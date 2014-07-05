@@ -258,20 +258,19 @@ typedef struct svalue_s {
   int lvalue;
 } svalue;
 
-#define TYPEFLAG_ONLY_NEW        0x01 // Only new-style types are allowed.
-#define TYPEFLAG_ARGUMENT        0x02 // The declaration is for an argument.
-#define TYPEFLAG_VARIABLE        0x04 // The declaration is for a variable.
-#define TYPEFLAG_ENUMROOT        0x08 // Multi-dimensional arrays should have an enumroot.
-#define TYPEFLAG_NO_POSTDIMS     0x10 // Do not parse post-fix dimensions.
-#define TYPEFLAG_RETURN          0x20 // Return type.
-#define TYPEMASK_NAMED_DECL      (TYPEFLAG_ARGUMENT | TYPEFLAG_VARIABLE)
+#define DECLFLAG_ONLY_NEW        0x01 // Only new-style types are allowed.
+#define DECLFLAG_ARGUMENT        0x02 // The declaration is for an argument.
+#define DECLFLAG_VARIABLE        0x04 // The declaration is for a variable.
+#define DECLFLAG_ENUMROOT        0x08 // Multi-dimensional arrays should have an enumroot.
+#define DECLFLAG_MAYBE_FUNCTION  0x10 // Might be a named function.
+#define DECLMASK_NAMED_DECL      (DECLFLAG_ARGUMENT | DECLFLAG_VARIABLE | DECLFLAG_MAYBE_FUNCTION)
 
 typedef struct {
   // Array information.
   int numdim;
   int dim[sDIMEN_MAX];
   int idxtag[sDIMEN_MAX];
-  cell array_size;
+  cell size;
   constvalue *enumroot;
 
   // Type information.
@@ -286,6 +285,9 @@ typedef struct {
 typedef struct {
   char name[sNAMEMAX + 1];
   typeinfo_t type;
+  int is_new;        // New-style declaration.
+  int has_postdims;  // Dimensions, if present, were in postfix position.
+  int opertok;       // Operator token, if applicable.
 } declinfo_t;
 
 /*  "while" statement queue (also used for "for" and "do - while" loops) */
@@ -516,8 +518,9 @@ typedef enum s_optmark {
 #define OBJECTTAG    0x10000000Lu
 #define ENUMTAG      0x08000000Lu
 #define METHODMAPTAG 0x04000000Lu
+#define STRUCTTAG    0x02000000Lu
 #define TAGMASK       (~PUBLICTAG)
-#define TAGTYPEMASK   (FUNCTAG | OBJECTTAG | ENUMTAG | METHODMAPTAG)
+#define TAGTYPEMASK   (FUNCTAG | OBJECTTAG | ENUMTAG | METHODMAPTAG | STRUCTTAG)
 #define TAGFLAGMASK   (FIXEDTAG | TAGTYPEMASK)
 #define CELL_MAX      (((ucell)1 << (sizeof(cell)*8-1)) - 1)
 
@@ -598,7 +601,7 @@ void sp_fdbg_ntv_hook(int index, symbol *sym);
 
 /* function prototypes in SC1.C */
 SC_FUNC void set_extension(char *filename,char *extension,int force);
-SC_FUNC symbol *fetchfunc(char *name,int tag);
+SC_FUNC symbol *fetchfunc(char *name);
 SC_FUNC char *operator_symname(char *symname,char *opername,int tag1,int tag2,int numtags,int resulttag);
 SC_FUNC char *funcdisplayname(char *dest,char *funcname);
 SC_FUNC int constexpr(cell *val,int *tag,symbol **symptr);
@@ -651,7 +654,8 @@ SC_FUNC symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag, 
 SC_FUNC symbol *addvariable(const char *name,cell addr,int ident,int vclass,int tag,
                             int dim[],int numdim,int idxtag[]);
 SC_FUNC symbol *addvariable2(const char *name,cell addr,int ident,int vclass,int tag,
-							 int dim[],int numdim,int idxtag[],int slength);
+                             int dim[],int numdim,int idxtag[],int slength);
+SC_FUNC symbol *addvariable3(declinfo_t *decl,cell addr,int vclass,int slength);
 SC_FUNC int getlabel(void);
 SC_FUNC char *itoh(ucell val);
 

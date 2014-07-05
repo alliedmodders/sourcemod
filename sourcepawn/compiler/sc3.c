@@ -2129,7 +2129,7 @@ restart:
           /* could be a "use before declaration"; in that case, create a stub
            * function so that the usage can be marked.
            */
-          sym=fetchfunc(lastsymbol,0);
+          sym=fetchfunc(lastsymbol);
           if (sym==NULL)
             error(163); /* insufficient memory */
           markusage(sym,uREAD);
@@ -2281,7 +2281,7 @@ static int primary(value *lval)
        * call" syntax. So assume that the symbol refers to a function.
        */
       assert(sc_status==statFIRST);
-      sym=fetchfunc(st,0);
+      sym=fetchfunc(st);
       if (sym==NULL)
         error(163);     /* insufficient memory */
     } /* if */

@@ -36,7 +36,7 @@
 #include <sourcemod>
 #include "include/nextmap.inc"
 
-public Plugin:myinfo = 
+public Plugin myinfo = 
 {
 	name = "Nextmap",
 	author = "AlliedModders LLC",
@@ -46,13 +46,13 @@ public Plugin:myinfo =
 };
 
  
-new g_MapPos = -1;
-new Handle:g_MapList = INVALID_HANDLE;
-new g_MapListSerial = -1;
+int g_MapPos = -1;
+Handle g_MapList = INVALID_HANDLE;
+int g_MapListSerial = -1;
 
-new g_CurrentMapStartTime;
+int g_CurrentMapStartTime;
 
-public APLRes:AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	decl String:game[128];
 	GetGameFolderName(game, sizeof(game));
@@ -73,7 +73,7 @@ public APLRes:AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 }
 
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("nextmap.phrases");
@@ -89,12 +89,12 @@ public OnPluginStart()
 	SetNextMap(currentMap);
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
 	g_CurrentMapStartTime = GetTime();
 }
  
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {
 	decl String:lastMap[64], String:currentMap[64];
 	GetNextMap(lastMap, sizeof(lastMap));
@@ -109,7 +109,7 @@ public OnConfigsExecuted()
 	}
 }
 
-public Action:Command_List(int client, int args) 
+public Action Command_List(int client, int args) 
 {
 	PrintToConsole(client, "Map Cycle:");
 	
@@ -124,7 +124,7 @@ public Action:Command_List(int client, int args)
 	return Plugin_Handled;
 }
   
-FindAndSetNextMap()
+void FindAndSetNextMap()
 {
 	if (ReadMapList(g_MapList, 
 			g_MapListSerial, 
@@ -169,7 +169,7 @@ FindAndSetNextMap()
 	SetNextMap(mapName);
 }
 
-public Action:Command_MapHistory(int client, int args)
+public Action Command_MapHistory(int client, int args)
 {
 	new mapCount = GetMapHistorySize();
 	
@@ -202,7 +202,7 @@ public Action:Command_MapHistory(int client, int args)
 	return Plugin_Handled;
 }
 
-FormatTimeDuration(char[] buffer, int maxlen, int time)
+int FormatTimeDuration(char[] buffer, int maxlen, int time)
 {
 	new	days = time / 86400;
 	new	hours = (time / 3600) % 24;

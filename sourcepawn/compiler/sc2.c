@@ -1949,7 +1949,7 @@ char *sc_tokens[] = {
          "...", "..", "::",
          "assert",
          "*begin", "break",
-         "case", "cellsof", "chars", "class", "const", "continue",
+         "case", "cellsof", "char", "class", "const", "continue",
          "decl", "default", "defined", "delete", "do",
          "else", "*end", "enum", "exit",
          "for", "forward", "funcenum", "functag",
@@ -3019,6 +3019,22 @@ SC_FUNC symbol *addvariable(const char *name,cell addr,int ident,int vclass,int 
                             int dim[],int numdim,int idxtag[])
 {
   return addvariable2(name,addr,ident,vclass,tag,dim,numdim,idxtag,0);
+}
+
+SC_FUNC symbol *addvariable3(declinfo_t *decl,cell addr,int vclass,int slength)
+{
+  typeinfo_t *type = &decl->type;
+  return addvariable2(
+    decl->name,
+    addr,
+    type->ident,
+    vclass,
+    type->tag,
+    type->dim,
+    type->numdim,
+    type->idxtag,
+    slength
+  );
 }
 
 SC_FUNC symbol *addvariable2(const char *name,cell addr,int ident,int vclass,int tag,
