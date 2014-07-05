@@ -31,10 +31,11 @@
  * Version: $Id$
  */
 
-#pragma semicolon 1
-
 #include <sourcemod>
 #include "include/nextmap.inc"
+
+#pragma semicolon 1
+#pragma newdecls required
 
 public Plugin myinfo = 
 {

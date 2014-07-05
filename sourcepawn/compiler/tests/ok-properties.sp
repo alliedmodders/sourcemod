@@ -1,7 +1,7 @@
 native Float:GetCrabWhat(Crab:crab);
 
 methodmap Crab {
-	public Crab(n) {
+	public Crab(int n) {
 		return Crab:n;
 	}
 	property Crab Yams {

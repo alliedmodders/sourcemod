@@ -1110,12 +1110,6 @@ static int command(void)
               }
             }
           } /* if */
-#if 0	/* more unused */
-        } else if (strcmp(str,"pack")==0) {
-          cell val;
-          preproc_expr(&val,NULL);      /* default = packed/unpacked */
-          sc_packstr=(int)val;
-#endif
         } else if (strcmp(str,"rational")==0) {
           char name[sNAMEMAX+1];
           cell digits=0;
@@ -1151,10 +1145,16 @@ static int command(void)
           cell val;
           preproc_expr(&val,NULL);
           sc_needsemicolon=(int)val;
-        } else if (strcmp(str, "require_newdecls")==0) {
-          cell val;
-          preproc_expr(&val,NULL);
-          sc_require_newdecls = (int)val;
+        } else if (strcmp(str, "newdecls")==0) {
+          while (*lptr<=' ' && *lptr!='\0')
+            lptr++;
+          if (strncmp((char *)lptr, "required", 8) == 0)
+            sc_require_newdecls = 1;
+          else if (strncmp((char *)lptr, "optional", 8) == 0)
+            sc_require_newdecls = 0;
+          else
+            error(146);
+          lptr=(unsigned char*)strchr((char*)lptr,'\0'); /* skip to end (ignore "extra characters on line") */
         } else if (strcmp(str,"tabsize")==0) {
           cell val;
           preproc_expr(&val,NULL);

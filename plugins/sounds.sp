@@ -31,9 +31,10 @@
  * Version: $Id$
  */
 
-#pragma semicolon 1
-
 #include <sourcemod>
+
+#pragma semicolon 1
+#pragma newdecls required
 
 public Plugin myinfo =
 {
