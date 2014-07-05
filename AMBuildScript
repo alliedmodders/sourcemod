@@ -192,6 +192,7 @@ class SMConfig(object):
           cxx.cxxflags += ['-Wno-deprecated-register']
         else:
           cxx.cxxflags += ['-Wno-deprecated']
+        cxx.cflags += ['-Wno-sometimes-uninitialized']
 
       cxx.linkflags += ['-m32']
       cxx.cxxflags += [
