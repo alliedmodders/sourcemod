@@ -589,11 +589,6 @@ methodmap Menu < Handle {
 	property Handle Style {
 		public get() = GetMenuStyle;
 	}
-	property bool VoteInProgress {
-		public get() {
-			return IsVoteInProgress(this);
-		}
-	}
 	property int SelectionPosition {
 		public get() {
 			return GetMenuSelectionPosition();
