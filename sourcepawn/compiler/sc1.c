@@ -94,7 +94,7 @@ static void dumplits(void);
 static void dumpzero(int count);
 static void declglb(declinfo_t *decl,int fpublic,int fstatic,int stock);
 static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct);
-static int declloc(int fstatic);
+static void declloc(int tokid);
 static void dodelete();
 static void decl_const(int table);
 static void declstruct();
@@ -2107,171 +2107,97 @@ static void declglb(declinfo_t *decl,int fpublic,int fstatic,int fstock)
  *  global references: declared   (altered)
  *                     funcstatus (referred to only)
  */
-static int declloc(int fstatic)
+static void declloc(int tokid)
 {
-  int ident,tag;
-  int idxtag[sDIMEN_MAX];
-  char name[sNAMEMAX+1];
   symbol *sym;
-  constvalue *enumroot=NULL;
-  cell val,size;
+  cell val;
   char *str;
   value lval = {0};
   int cur_lit=0;
-  int dim[sDIMEN_MAX];
-  int numdim;
-  int fconst;
   int staging_start;
   int slength = 0;
+  int fstatic = (tokid == tSTATIC);
+  declinfo_t decl;
 
-  fconst=matchtoken(tCONST);
-  do {
-    ident=iVARIABLE;
-    size=1;
+  const int declflags = DECLFLAG_VARIABLE | DECLFLAG_ENUMROOT | DECLFLAG_DYNAMIC_ARRAYS;
+
+  parse_decl(&decl, declflags);
+
+  for (;;) {
+    typeinfo_t *type = &decl.type;
+
     slength=0;
-    numdim=0;                           /* no dimensions */
-    tag=pc_addtag(NULL);
-    if (lex(&val,&str)!=tSYMBOL)        /* read in (new) token */
-      error(20,str);                    /* invalid symbol name */
-    assert(strlen(str)<=sNAMEMAX);
-    strcpy(name,str);                   /* save symbol name */
-    if (name[0]==PUBLIC_CHAR)
-      error(56,name);                   /* local variables cannot be public */
+
+    if (decl.name[0]==PUBLIC_CHAR)
+      error(56, decl.name);             /* local variables cannot be public */
+
     /* Note: block locals may be named identical to locals at higher
      * compound blocks (as with standard C); so we must check (and add)
      * the "nesting level" of local variables to verify the
      * multi-definition of symbols.
      */
-    if ((sym=findloc(name))!=NULL && sym->compound==nestlevel)
-      error(21,name);                   /* symbol already defined */
+    if ((sym=findloc(decl.name))!=NULL && sym->compound==nestlevel)
+      error(21, decl.name);             /* symbol already defined */
+
     /* Although valid, a local variable whose name is equal to that
      * of a global variable or to that of a local variable at a lower
      * level might indicate a bug.
      */
-    if (((sym=findloc(name))!=NULL && sym->compound!=nestlevel) || findglb(name,sGLOBAL)!=NULL)
-      error(219,name);                  /* variable shadows another symbol */
-	if (matchtoken('[')) {
-      int _index;
-      cell _code;
-      int dim_ident;
-      symbol *dim_sym;
-      value dim_val;
-      int all_constant = 1;
-      int _staging = staging;
-
-      if (!_staging)
-        stgset(TRUE);
-      stgget(&_index, &_code);
-
-      do {
-        if (numdim == sDIMEN_MAX) {
-          error(53);                      /* exceeding maximum number of dimensions */
-          return (all_constant ? iARRAY : iREFARRAY);
-        } else if (numdim) { /* if */
-          /* If we have a dimension on the stack, push it */
-          pushreg(sPRI);
-        }
-        if (matchtoken(']')) {
-          idxtag[numdim] = 0;
-          dim[numdim] = 0;
-          numdim++;
-          continue;
-        }
-        dim_ident = doexpr2(TRUE,FALSE,FALSE,FALSE,&idxtag[numdim],&dim_sym,0,&dim_val);
-        if (dim_ident == iVARIABLE || dim_ident == iEXPRESSION || dim_ident == iARRAYCELL) {
-          all_constant = 0;
-          dim[numdim] = 0;
-        } else if (dim_ident == iCONSTEXPR) {
-          dim[numdim] = dim_val.constval;
-		  /* :TODO: :URGENT: Make sure this still works */
-          if (dim_sym && dim_sym->usage & uENUMROOT)
-            enumroot = dim_sym->dim.enumlist;
-		  idxtag[numdim] = dim_sym ? dim_sym->tag : 0;
-          #if INT_MAX < LONG_MAX
-		    if (dim[numdim] > INT_MAX)
-			  error(165);                   /* overflow, exceeding capacity */
-          #endif
-        } else {
-          error(29); /* invalid expression, assumed 0 */
-        }
-        numdim++;
-        needtoken(']');
-      } while (matchtoken('['));
-      if (all_constant) {
-        /* Change the last dimension to be based on chars instead if we have a string */
-        if (tag == pc_tag_string && numdim && dim[numdim-1]) {
-          slength = dim[numdim-1];
-          dim[numdim-1] = (dim[numdim-1] + sizeof(cell)-1) / sizeof(cell);
-        }
-        /* Scrap the code generated */
-        ident = iARRAY;
-        stgdel(_index, _code);
-      } else {
-        if (tag == pc_tag_string && numdim) {
-          stradjust(sPRI);
-        }
-        pushreg(sPRI);
-		/* No idea why this is here, but it throws away dimension info which
-		   would otherwise be used by addvariable2 below.  
-        memset(dim, 0, sizeof(int)*sDIMEN_MAX);
-		*/
-        ident = iREFARRAY;
-        genarray(numdim, autozero);
-      }
-      stgout(_index);
-      if (!_staging)
-        stgset(FALSE);
+    if (((sym=findloc(decl.name)) != NULL && sym->compound != nestlevel) ||
+        findglb(decl.name,sGLOBAL) != NULL)
+    {
+      error(219, decl.name);            /* variable shadows another symbol */
     }
-    if (getstates(name))
-      error(88,name);           /* local variables may not have states */
-    if (ident==iARRAY || fstatic) {
+
+    slength = fix_char_size(&decl);
+
+    if (type->ident == iARRAY || fstatic) {
       if (sc_alignnext) {
         aligndata(sc_dataalign);
         sc_alignnext=FALSE;
       } /* if */
       cur_lit=litidx;           /* save current index in the literal table */
-      if (numdim && !dim[numdim-1])
-        size = 0;
-      initials(ident,tag,&size,dim,numdim,enumroot);
-      if (tag == pc_tag_string && (numdim == 1) && !dim[numdim-1]) {
+      if (type->numdim && !type->dim[type->numdim-1])
+        type->size = 0;
+      initials(type->ident,type->tag,&type->size,type->dim,type->numdim,type->enumroot);
+      if (type->tag == pc_tag_string && type->numdim == 1 && !type->dim[type->numdim - 1])
         slength = glbstringread;
-      }
-      if (size==0)
-        return ident;           /* error message already given */
-      if (numdim==1)
-        dim[0]=(int)size;
+      if (type->size == 0)
+        return;
+      if (type->numdim == 1)
+        type->dim[0] = type->size;
     }
     /* reserve memory (on the stack) for the variable */
     if (fstatic) {
       /* write zeros for uninitialized fields */
-      while (litidx<cur_lit+size)
+      while (litidx < cur_lit + type->size)
         litadd(0);
-      sym=addvariable2(name,(cur_lit+glb_declared)*sizeof(cell),ident,sSTATIC,
-                      tag,dim,numdim,idxtag,slength);
-    } else if (ident!=iREFARRAY) {
-      declared+=(int)size;      /* variables are put on stack, adjust "declared" */
-      sym=addvariable2(name,-declared*sizeof(cell),ident,sLOCAL,tag,
-                      dim,numdim,idxtag,slength);
-      if (ident==iVARIABLE) {
+      sym=addvariable2(decl.name,(cur_lit+glb_declared)*sizeof(cell),type->ident,sSTATIC,
+                       type->tag,type->dim,type->numdim,type->idxtag,slength);
+    } else if (type->ident!=iREFARRAY) {
+      declared+=type->size;     /* variables are put on stack, adjust "declared" */
+      sym=addvariable2(decl.name,-declared*sizeof(cell),type->ident,sLOCAL,type->tag,
+                       type->dim,type->numdim,type->idxtag,slength);
+      if (type->ident == iVARIABLE) {
         assert(!staging);
         stgset(TRUE);           /* start stage-buffering */
         assert(stgidx==0);
         staging_start=stgidx;
       } /* if */
-      markexpr(sLDECL,name,-declared*sizeof(cell)); /* mark for better optimization */
-      modstk(-(int)size*sizeof(cell));
-      markstack(MEMUSE_STATIC, size);
+      markexpr(sLDECL,decl.name,-declared*sizeof(cell)); /* mark for better optimization */
+      modstk(-type->size * sizeof(cell));
+      markstack(MEMUSE_STATIC, type->size);
       assert(curfunc!=NULL);
       assert((curfunc->usage & uNATIVE)==0);
       if (curfunc->x.stacksize<declared+1)
         curfunc->x.stacksize=declared+1;  /* +1 for PROC opcode */
-    } else if (ident==iREFARRAY) {
+    } else if (type->ident == iREFARRAY) {
       declared+=1;	/* one cell for address */
-      sym=addvariable(name,-declared*sizeof(cell),ident,sLOCAL,tag,dim,numdim,idxtag);
+      sym=addvariable(decl.name,-declared*sizeof(cell),type->ident,sLOCAL,type->tag,type->dim,type->numdim,type->idxtag);
       //markexpr(sLDECL,name,-declared*sizeof(cell)); /* mark for better optimization */
       /* genarray() pushes the address onto the stack, so we don't need to call modstk() here! */
       markheap(MEMUSE_DYNAMIC, 0);
-	  markstack(MEMUSE_STATIC, 1);
+      markstack(MEMUSE_STATIC, 1);
       assert(curfunc != NULL && ((curfunc->usage & uNATIVE) == 0));
       if (curfunc->x.stacksize<declared+1)
         curfunc->x.stacksize=declared+1;  /* +1 for PROC opcode */
@@ -2280,14 +2206,14 @@ static int declloc(int fstatic)
      * to initialize it */
     assert(sym!=NULL);          /* we declared it, it must be there */
     sym->compound=nestlevel;    /* for multiple declaration/shadowing check */
-    if (fconst)
+    if (type->usage & uCONST)
       sym->usage|=uCONST;
     if (!fstatic) {             /* static variables already initialized */
-      if (ident==iVARIABLE) {
+      if (type->ident == iVARIABLE) {
         /* simple variable, also supports initialization */
-        int ctag = tag;         /* set to "tag" by default */
+        int ctag = type->tag;   /* set to "tag" by default */
         int explicit_init=FALSE;/* is the variable explicitly initialized? */
-        int cident=ident;
+        int cident = type->ident;
         if (matchtoken('=')) {
           if (!autozero)
             error(10);
@@ -2302,7 +2228,7 @@ static int declloc(int fstatic)
           lval.sym=sym;
           lval.ident=iVARIABLE;
           lval.constval=0;
-          lval.tag=tag;
+          lval.tag=type->tag;
           check_userop(NULL,ctag,lval.tag,2,NULL,&ctag);
           store(&lval);
           markexpr(sEXPR,NULL,0); /* full expression ends after the store */
@@ -2311,16 +2237,16 @@ static int declloc(int fstatic)
         stgout(staging_start);
         stgset(FALSE);
         if (!matchtag_string(cident, ctag))
-          matchtag(tag,ctag,TRUE);
+          matchtag(type->tag,ctag,TRUE);
         /* if the variable was not explicitly initialized, reset the
          * "uWRITTEN" flag that store() set */
         if (!explicit_init)
           sym->usage &= ~uWRITTEN;
-      } else if (ident!=iREFARRAY) {
+      } else if (type->ident != iREFARRAY) {
         /* an array */
         assert(cur_lit>=0 && cur_lit<=litidx && litidx<=litmax);
-        assert(size>0 && size>=sym->dim.array.length);
-        assert(numdim>1 || size==sym->dim.array.length);
+        assert(type->size > 0 && type->size >= sym->dim.array.length);
+        assert(type->numdim > 1 || type->size == sym->dim.array.length);
         if (autozero) {
           /* final literal values that are zero make no sense to put in the literal
            * pool, because values get zero-initialized anyway; we check for this,
@@ -2329,8 +2255,8 @@ static int declloc(int fstatic)
           while (litidx>cur_lit && litq[litidx-1]==0)
             litidx--;
           /* if the array is not completely filled, set all values to zero first */
-          if (litidx-cur_lit<size && (ucell)size<CELL_MAX)
-            fillarray(sym,size*sizeof(cell),0);
+          if (litidx - cur_lit < type->size && (ucell)type->size < CELL_MAX)
+            fillarray(sym, type->size * sizeof(cell), 0);
         }
         if (cur_lit<litidx) {
           /* check whether the complete array is set to a single value; if
@@ -2351,9 +2277,17 @@ static int declloc(int fstatic)
         } /* if */
       } /* if */
     } /* if */
-  } while (matchtoken(',')); /* enddo */   /* more? */
+
+    if (!matchtoken(','))
+      break;
+
+    if (decl.is_new)
+      reparse_new_decl(&decl, declflags);
+    else
+      reparse_old_decl(&decl, declflags);
+  }
   needtoken(tTERM);    /* if not comma, must be semicolumn */
-  return ident;
+  return;
 }
 
 /* this function returns the maximum value for a cell in case of an error
@@ -3194,22 +3128,103 @@ static void parse_old_array_dims(declinfo_t *decl, int flags)
   else
     enumrootp = NULL;
 
-  do {
-    cell size;
+  if (flags & DECLFLAG_DYNAMIC_ARRAYS) {
+    // This is a huge hack for declloc() - we'll generate the array code right
+    // into the staging buffer if needed.
+    cell staging_ptr;
+    int staging_index;
 
-    if (type->numdim == sDIMEN_MAX) {
-      error(53);
-      return;
+    int was_staging = staging;
+    if (!was_staging)
+      stgset(TRUE);
+    stgget(&staging_index, &staging_ptr);
+
+    type->size = 0;
+
+    do {
+      if (type->numdim == sDIMEN_MAX) {
+        error(53);
+        return;
+      }
+
+      if (type->numdim > 0) {
+        // Push the last dimension size, which is in PRI.
+        pushreg(sPRI);
+      }
+
+      if (matchtoken(']')) {
+        ldconst(0, sPRI);
+        type->idxtag[type->numdim] = 0;
+        type->dim[type->numdim] = 0;
+        type->numdim++;
+        continue;
+      }
+
+      value val;
+      symbol *sym;
+      int ident = doexpr2(
+        TRUE, FALSE, FALSE, FALSE,
+        &type->idxtag[type->numdim],
+        &sym, 0, &val
+      );
+
+      if (ident == iVARIABLE || ident == iEXPRESSION || ident == iARRAYCELL) {
+        type->size = -1;
+        type->dim[type->numdim] = 0;
+      } else if (ident == iCONSTEXPR) {
+        if (val.constval > 0) {
+          if (type->size != -1)
+            type->size = val.constval;
+          type->dim[type->numdim] = val.constval;
+        } else {
+          error(9);
+        }
+        if (sym && sym->usage & uENUMROOT)
+          type->enumroot = sym->dim.enumlist;
+        type->idxtag[type->numdim] = sym ? sym->tag : 0;
+      } else {
+        error(29);
+      }
+
+      type->numdim++;
+      needtoken(']');
+    } while (matchtoken('['));
+
+    if (type->size >= 0) {
+      // Everything was constant. Drop the emitted assembly.
+      type->ident = iARRAY;
+      stgdel(staging_index, staging_ptr);
+    } else {
+      if (type->tag == pc_tag_string)
+        stradjust(sPRI);
+      pushreg(sPRI);
+      genarray(type->numdim, autozero);
+      type->ident = iREFARRAY;
+      type->size = 0;
     }
 
-    type->size = needsub(&type->idxtag[type->numdim], enumrootp);
-    if (type->size > INT_MAX)
-      error(165);
+    stgout(staging_index);
+    if (!was_staging)
+      stgset(FALSE);
+  } else {
+    do {
+      cell size;
 
-    type->dim[type->numdim++] = type->size;
-  } while (matchtoken('['));
+      if (type->numdim == sDIMEN_MAX) {
+        error(53);
+        return;
+      }
 
-  type->ident = iARRAY;
+      type->size = needsub(&type->idxtag[type->numdim], enumrootp);
+      if (type->size > INT_MAX)
+        error(165);
+
+      type->dim[type->numdim++] = type->size;
+    } while (matchtoken('['));
+
+    type->ident = iARRAY;
+  }
+
   decl->has_postdims = TRUE;
 }
 
@@ -6449,35 +6464,26 @@ static void statement(int *lastindent,int allow_decl)
   case 0:
     /* nothing */
     break;
+  case tINT:
+  case tVOID:
+  case tCHAR:
+  case tOBJECT:
+    lexpush();
+    // Fall-through.
+  case tDECL:
+  case tSTATIC:
   case tNEW:
-    if (allow_decl) {
-      autozero=1;
-      declloc(FALSE);
-      lastst=tNEW;
-    } else {
-      error(3);                 /* declaration only valid in a block */
-    } /* if */
+    if (!allow_decl) {
+      error(3);
+      break;
+    }
+    autozero = (tok != tDECL);
+    lastst = (tok == tDECL) ? tDECL : tNEW;
+    declloc(tok);
     break;
   case tDELETE:
     dodelete();
     lastst=tDELETE;
-    break;
-  case tDECL:
-    if (allow_decl) {
-      autozero=0;
-      declloc(FALSE);
-      lastst=tDECL;
-    } else {
-      error(3);                 /* declaration only valid in a block */
-    } /* if */
-    break;
-  case tSTATIC:
-    if (allow_decl) {
-      declloc(TRUE);
-      lastst=tNEW;
-    } else {
-      error(3);                 /* declaration only valid in a block */
-    } /* if */
     break;
   case '{':
   case tBEGIN:
@@ -6893,17 +6899,29 @@ static int dofor(void)
   endtok= matchtoken('(') ? ')' : tDO;
   if (matchtoken(';')==0) {
     /* new variable declarations are allowed here */
-    if (matchtoken(tNEW)) {
-      /* The variable in expr1 of the for loop is at a
-       * 'compound statement' level of it own.
-       */
-      nestlevel++;
-      autozero=1;
-      declloc(FALSE); /* declare local variable */
-    } else {
-      doexpr(TRUE,TRUE,TRUE,TRUE,NULL,NULL,FALSE);  /* expression 1 */
-      needtoken(';');
-    } /* if */
+    token_t tok;
+
+    switch (lextok(&tok)) {
+      case tINT:
+      case tCHAR:
+      case tOBJECT:
+      case tVOID:
+        lexpush();
+        // Fallthrough.
+      case tNEW:
+        /* The variable in expr1 of the for loop is at a
+         * 'compound statement' level of it own.
+         */
+        nestlevel++;
+        autozero=1;
+        declloc(tFOR); /* declare local variable */
+        break;
+      default:
+        lexpush();
+        doexpr(TRUE,TRUE,TRUE,TRUE,NULL,NULL,FALSE);  /* expression 1 */
+        needtoken(';');
+        break;
+    }
   } /* if */
   /* Adjust the "declared" field in the "while queue", in case that
    * local variables were declared in the first expression of the
