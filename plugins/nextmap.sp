@@ -45,7 +45,6 @@ public Plugin myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
- 
 int g_MapPos = -1;
 Handle g_MapList = INVALID_HANDLE;
 int g_MapListSerial = -1;
@@ -54,7 +53,7 @@ int g_CurrentMapStartTime;
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	decl String:game[128];
+	char game[128];
 	GetGameFolderName(game, sizeof(game));
 
 	if (StrEqual(game, "left4dead", false)
@@ -84,7 +83,7 @@ public void OnPluginStart()
 	RegConsoleCmd("listmaps", Command_List);
 
 	// Set to the current map so OnMapStart() will know what to do
-	decl String:currentMap[64];
+	char currentMap[64];
 	GetCurrentMap(currentMap, 64);
 	SetNextMap(currentMap);
 }
@@ -96,7 +95,7 @@ public void OnMapStart()
  
 public void OnConfigsExecuted()
 {
-	decl String:lastMap[64], String:currentMap[64];
+	char lastMap[64], currentMap[64];
 	GetNextMap(lastMap, sizeof(lastMap));
 	GetCurrentMap(currentMap, 64);
 	
@@ -113,9 +112,9 @@ public Action Command_List(int client, int args)
 {
 	PrintToConsole(client, "Map Cycle:");
 	
-	new mapCount = GetArraySize(g_MapList);
-	decl String:mapName[32];
-	for (new i = 0; i < mapCount; i++)
+	int mapCount = GetArraySize(g_MapList);
+	char mapName[32];
+	for (int i = 0; i < mapCount; i++)
 	{
 		GetArrayString(g_MapList, i, mapName, sizeof(mapName));
 		PrintToConsole(client, "%s", mapName);
@@ -139,15 +138,15 @@ void FindAndSetNextMap()
 		}
 	}
 	
-	new mapCount = GetArraySize(g_MapList);
-	decl String:mapName[32];
+	int mapCount = GetArraySize(g_MapList);
+	char mapName[32];
 	
 	if (g_MapPos == -1)
 	{
-		decl String:current[64];
+		char current[64];
 		GetCurrentMap(current, 64);
 
-		for (new i = 0; i < mapCount; i++)
+		for (int i = 0; i < mapCount; i++)
 		{
 			GetArrayString(g_MapList, i, mapName, sizeof(mapName));
 			if (strcmp(current, mapName, false) == 0)
@@ -171,15 +170,15 @@ void FindAndSetNextMap()
 
 public Action Command_MapHistory(int client, int args)
 {
-	new mapCount = GetMapHistorySize();
+	int mapCount = GetMapHistorySize();
 	
-	decl String:mapName[32];
-	decl String:changeReason[100];
-	decl String:timeString[100];
-	decl String:playedTime[100];
-	new startTime;
+	char mapName[32];
+	char changeReason[100];
+	char timeString[100];
+	char playedTime[100];
+	int startTime;
 	
-	new lastMapStartTime = g_CurrentMapStartTime;
+	int lastMapStartTime = g_CurrentMapStartTime;
 	
 	PrintToConsole(client, "Map History:\n");
 	PrintToConsole(client, "Map : Started : Played Time : Reason for ending");
@@ -187,7 +186,7 @@ public Action Command_MapHistory(int client, int args)
 	GetCurrentMap(mapName, sizeof(mapName));
 	PrintToConsole(client, "%02i. %s (Current Map)", 0, mapName);
 	
-	for (new i=0; i<mapCount; i++)
+	for (int i=0; i<mapCount; i++)
 	{
 		GetMapHistory(i, mapName, sizeof(mapName), changeReason, sizeof(changeReason), startTime);
 
@@ -204,10 +203,10 @@ public Action Command_MapHistory(int client, int args)
 
 int FormatTimeDuration(char[] buffer, int maxlen, int time)
 {
-	new	days = time / 86400;
-	new	hours = (time / 3600) % 24;
-	new	minutes = (time / 60) % 60;
-	new	seconds =  time % 60;
+	int days = time / 86400;
+	int hours = (time / 3600) % 24;
+	int minutes = (time / 60) % 60;
+	int seconds =  time % 60;
 	
 	if (days > 0)
 	{
