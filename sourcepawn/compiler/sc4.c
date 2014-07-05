@@ -637,6 +637,12 @@ SC_FUNC void moveto1(void)
   code_idx+=opcodes(1)+opargs(0);
 }
 
+SC_FUNC void move_alt(void)
+{
+  stgwrite("\tmove.alt\n");
+  code_idx+=opcodes(1)+opargs(0);
+}
+
 /* Push primary or the alternate register onto the stack
  */
 SC_FUNC void pushreg(regid reg)
