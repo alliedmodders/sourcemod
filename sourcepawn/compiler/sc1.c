@@ -1478,8 +1478,12 @@ static void dodecl(const token_t *tok)
   int fpublic = (tok->id == tPUBLIC);
   int fstock = (tok->id == tSTOCK);
   int fstatic = (tok->id == tSTATIC);
+
+  int flags = DECLFLAG_MAYBE_FUNCTION | DECLFLAG_VARIABLE | DECLFLAG_ENUMROOT;
+  if (tok->id == tNEW)
+    flags |= DECLFLAG_OLD;
   
-  parse_decl(&decl, DECLFLAG_MAYBE_FUNCTION|DECLFLAG_VARIABLE|DECLFLAG_ENUMROOT);
+  parse_decl(&decl, flags);
 
   if (!decl.opertok && (tok->id == tNEW || decl.has_postdims || !lexpeek('('))) {
     if (tok->id == tNEW && decl.is_new)
@@ -2119,7 +2123,9 @@ static void declloc(int tokid)
   int fstatic = (tokid == tSTATIC);
   declinfo_t decl;
 
-  const int declflags = DECLFLAG_VARIABLE | DECLFLAG_ENUMROOT | DECLFLAG_DYNAMIC_ARRAYS;
+  int declflags = DECLFLAG_VARIABLE | DECLFLAG_ENUMROOT | DECLFLAG_DYNAMIC_ARRAYS;
+  if (tokid == tNEW || tokid == tDECL)
+    declflags |= DECLFLAG_OLD;
 
   parse_decl(&decl, declflags);
 
@@ -3286,6 +3292,19 @@ static int parse_old_decl(declinfo_t *decl, int flags)
       if (decl->opertok == 0)
         strcpy(decl->name, "<unknown>");
     } else {
+      if (!lexpeek(tSYMBOL)) {
+        switch (lextok(&tok)) {
+          case tOBJECT:
+          case tCHAR:
+          case tVOID:
+          case tINT:
+            error(143);
+            break;
+          default:
+            lexpush();
+            break;
+        }
+      }
       if (expecttoken(tSYMBOL, &tok))
         strcpy(decl->name, tok.str);
       else
@@ -3399,6 +3418,11 @@ int parse_decl(declinfo_t *decl, int flags)
   // Must attempt to match const first, since it's a common prefix.
   if (matchtoken(tCONST))
     decl->type.usage |= uCONST;
+
+  // Sometimes we know ahead of time whether the declaration will be old, for
+  // example, if preceded by tNEW or tDECL.
+  if (flags & DECLFLAG_OLD)
+    return parse_old_decl(decl, flags);
 
   // If parsing an argument, there are two simple checks for whether this is a
   // new or old-style declaration.
@@ -6480,7 +6504,7 @@ static void statement(int *lastindent,int allow_decl)
       lexpush();
       autozero = TRUE;
       lastst = tNEW;
-      declloc(tNEW);
+      declloc(tok);
       return;
     }
   }
@@ -6939,7 +6963,7 @@ static int dofor(void)
          */
         nestlevel++;
         autozero=1;
-        declloc(tFOR); /* declare local variable */
+        declloc(tok.id); /* declare local variable */
         break;
       default:
         lexpush();

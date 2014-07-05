@@ -264,6 +264,7 @@ typedef struct svalue_s {
 #define DECLFLAG_ENUMROOT        0x08 // Multi-dimensional arrays should have an enumroot.
 #define DECLFLAG_MAYBE_FUNCTION  0x10 // Might be a named function.
 #define DECLFLAG_DYNAMIC_ARRAYS  0x20 // Dynamic arrays are allowed.
+#define DECLFLAG_OLD             0x40 // Known old-style declaration.
 #define DECLMASK_NAMED_DECL      (DECLFLAG_ARGUMENT | DECLFLAG_VARIABLE | DECLFLAG_MAYBE_FUNCTION)
 
 typedef struct {
