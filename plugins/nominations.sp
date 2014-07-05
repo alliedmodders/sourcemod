@@ -35,8 +35,9 @@
 #include <mapchooser>
 
 #pragma semicolon 1
+#pragma newdecls required
 
-public Plugin:myinfo =
+public Plugin myinfo =
 {
 	name = "Map Nominations",
 	author = "AlliedModders LLC",
@@ -45,12 +46,12 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-new Handle:g_Cvar_ExcludeOld = INVALID_HANDLE;
-new Handle:g_Cvar_ExcludeCurrent = INVALID_HANDLE;
+Handle g_Cvar_ExcludeOld = null;
+Handle g_Cvar_ExcludeCurrent = null;
 
-new Handle:g_MapList = INVALID_HANDLE;
-new Handle:g_MapMenu = INVALID_HANDLE;
-new g_mapFileSerial = -1;
+Menu g_MapMenu = null;
+Handle g_MapList = null;
+int g_mapFileSerial = -1;
 
 #define MAPSTATUS_ENABLED (1<<0)
 #define MAPSTATUS_DISABLED (1<<1)
@@ -58,14 +59,14 @@ new g_mapFileSerial = -1;
 #define MAPSTATUS_EXCLUDE_PREVIOUS (1<<3)
 #define MAPSTATUS_EXCLUDE_NOMINATED (1<<4)
 
-new Handle:g_mapTrie;
+StringMap g_mapTrie = null;
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("nominations.phrases");
 	
-	new arraySize = ByteCountToCells(33);	
+	int arraySize = ByteCountToCells(33);
 	g_MapList = CreateArray(arraySize);
 	
 	g_Cvar_ExcludeOld = CreateConVar("sm_nominate_excludeold", "1", "Specifies if the current map should be excluded from the Nominations list", 0, true, 0.00, true, 1.0);
@@ -75,10 +76,10 @@ public OnPluginStart()
 	
 	RegAdminCmd("sm_nominate_addmap", Command_Addmap, ADMFLAG_CHANGEMAP, "sm_nominate_addmap <mapname> - Forces a map to be on the next mapvote.");
 	
-	g_mapTrie = CreateTrie();
+	g_mapTrie = StringMap();
 }
 
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {
 	if (ReadMapList(g_MapList,
 					g_mapFileSerial,
@@ -95,12 +96,12 @@ public OnConfigsExecuted()
 	BuildMapMenu();
 }
 
-public OnNominationRemoved(const String:map[], owner)
+public void OnNominationRemoved(char[] map, int owner)
 {
-	new status;
+	int status;
 	
 	/* Is the map in our list? */
-	if (!GetTrieValue(g_mapTrie, map, status))
+	if (!g_mapTrie.GetValue(map, status))
 	{
 		return;	
 	}
@@ -111,10 +112,10 @@ public OnNominationRemoved(const String:map[], owner)
 		return;
 	}
 	
-	SetTrieValue(g_mapTrie, map, MAPSTATUS_ENABLED);	
+	g_mapTrie.SetValue(map, MAPSTATUS_ENABLED);
 }
 
-public Action:Command_Addmap(client, args)
+public Action Command_Addmap(int client, int args)
 {
 	if (args < 1)
 	{
@@ -122,18 +123,18 @@ public Action:Command_Addmap(client, args)
 		return Plugin_Handled;
 	}
 	
-	decl String:mapname[64];
+	char mapname[64];
 	GetCmdArg(1, mapname, sizeof(mapname));
 
 	
-	new status;
-	if (!GetTrieValue(g_mapTrie, mapname, status))
+	int status;
+	if (!g_mapTrie.GetValue(mapname, status))
 	{
 		ReplyToCommand(client, "%t", "Map was not found", mapname);
 		return Plugin_Handled;		
 	}
 	
-	new NominateResult:result = NominateMap(mapname, true, 0);
+	NominateResult result = NominateMap(mapname, true, 0);
 	
 	if (result > Nominate_Replaced)
 	{
@@ -144,7 +145,7 @@ public Action:Command_Addmap(client, args)
 	}
 	
 	
-	SetTrieValue(g_mapTrie, mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
+	g_mapTrie.SetValue(mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
 
 	
 	ReplyToCommand(client, "%t", "Map Inserted", mapname);
@@ -153,7 +154,7 @@ public Action:Command_Addmap(client, args)
 	return Plugin_Handled;		
 }
 
-public OnClientSayCommand_Post(client, const String:command[], const String:sArgs[])
+public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
 	if (!client)
 	{
@@ -162,7 +163,7 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 	
 	if (strcmp(sArgs, "nominate", false) == 0)
 	{
-		new ReplySource:old = SetCmdReplySource(SM_REPLY_TO_CHAT);
+		ReplySource old = SetCmdReplySource(SM_REPLY_TO_CHAT);
 		
 		AttemptNominate(client);
 		
@@ -170,7 +171,7 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 	}
 }
 
-public Action:Command_Nominate(client, args)
+public Action Command_Nominate(int client, int args)
 {
 	if (!client)
 	{
@@ -183,11 +184,11 @@ public Action:Command_Nominate(client, args)
 		return Plugin_Handled;
 	}
 	
-	decl String:mapname[64];
+	char mapname[64];
 	GetCmdArg(1, mapname, sizeof(mapname));
 	
-	new status;
-	if (!GetTrieValue(g_mapTrie, mapname, status))
+	int status;
+	if (!g_mapTrie.GetValue(mapname, status))
 	{
 		ReplyToCommand(client, "%t", "Map was not found", mapname);
 		return Plugin_Handled;		
@@ -213,7 +214,7 @@ public Action:Command_Nominate(client, args)
 		return Plugin_Handled;
 	}
 	
-	new NominateResult:result = NominateMap(mapname, false, client);
+	NominateResult result = NominateMap(mapname, false, client);
 	
 	if (result > Nominate_Replaced)
 	{
@@ -231,43 +232,39 @@ public Action:Command_Nominate(client, args)
 	
 	/* Map was nominated! - Disable the menu item and update the trie */
 	
-	SetTrieValue(g_mapTrie, mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
+	g_mapTrie.SetValue(mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
 	
-	decl String:name[64];
+	char name[64];
 	GetClientName(client, name, sizeof(name));
 	PrintToChatAll("[SM] %t", "Map Nominated", name, mapname);
 	
 	return Plugin_Continue;
 }
 
-AttemptNominate(client)
+void AttemptNominate(int client)
 {
-	SetMenuTitle(g_MapMenu, "%T", "Nominate Title", client);
-	DisplayMenu(g_MapMenu, client, MENU_TIME_FOREVER);
+	g_MapMenu.SetTitle("%T", "Nominate Title", client);
+	g_MapMenu.Display(client, MENU_TIME_FOREVER);
 	
 	return;
 }
 
-BuildMapMenu()
+void BuildMapMenu()
 {
-	if (g_MapMenu != INVALID_HANDLE)
-	{
-		CloseHandle(g_MapMenu);
-		g_MapMenu = INVALID_HANDLE;
-	}
+	delete g_MapMenu;
 	
-	ClearTrie(g_mapTrie);
+	g_mapTrie.Clear();
 	
-	g_MapMenu = CreateMenu(Handler_MapSelectMenu, MENU_ACTIONS_DEFAULT|MenuAction_DrawItem|MenuAction_DisplayItem);
+	g_MapMenu = Menu(Handler_MapSelectMenu, MENU_ACTIONS_DEFAULT|MenuAction_DrawItem|MenuAction_DisplayItem);
 
-	decl String:map[64];
+	char map[64];
 	
-	new Handle:excludeMaps = INVALID_HANDLE;
-	decl String:currentMap[32];
+	ArrayList excludeMaps;
+	char currentMap[32];
 	
 	if (GetConVarBool(g_Cvar_ExcludeOld))
 	{	
-		excludeMaps = CreateArray(ByteCountToCells(33));
+		excludeMaps = ArrayList(ByteCountToCells(33));
 		GetExcludeMapList(excludeMaps);
 	}
 	
@@ -277,9 +274,9 @@ BuildMapMenu()
 	}
 	
 		
-	for (new i = 0; i < GetArraySize(g_MapList); i++)
+	for (int i = 0; i < GetArraySize(g_MapList); i++)
 	{
-		new status = MAPSTATUS_ENABLED;
+		int status = MAPSTATUS_ENABLED;
 		
 		GetArrayString(g_MapList, i, map, sizeof(map));
 		
@@ -294,36 +291,33 @@ BuildMapMenu()
 		/* Dont bother with this check if the current map check passed */
 		if (GetConVarBool(g_Cvar_ExcludeOld) && status == MAPSTATUS_ENABLED)
 		{
-			if (FindStringInArray(excludeMaps, map) != -1)
+			if (excludeMaps.FindString(map) != -1)
 			{
 				status = MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_PREVIOUS;
 			}
 		}
 		
-		AddMenuItem(g_MapMenu, map, map);
-		SetTrieValue(g_mapTrie, map, status);
+		g_MapMenu.AddItem(map, map);
+		g_mapTrie.SetValue(map, status);
 	}
 	
-	SetMenuExitButton(g_MapMenu, true);
+	g_MapMenu.SetExitButton(true);
 
-	if (excludeMaps != INVALID_HANDLE)
-	{
-		CloseHandle(excludeMaps);
-	}
+	delete excludeMaps;
 }
 
-public Handler_MapSelectMenu(Handle:menu, MenuAction:action, param1, param2)
+public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int param2)
 {
 	switch (action)
 	{
 		case MenuAction_Select:
 		{
-			decl String:map[64], String:name[64];
-			GetMenuItem(menu, param2, map, sizeof(map));		
+			char map[64], name[64];
+			menu.GetItem(param2, map, sizeof(map));		
 			
 			GetClientName(param1, name, 64);
 	
-			new NominateResult:result = NominateMap(map, false, param1);
+			NominateResult result = NominateMap(map, false, param1);
 			
 			/* Don't need to check for InvalidMap because the menu did that already */
 			if (result == Nominate_AlreadyInVote)
@@ -337,7 +331,7 @@ public Handler_MapSelectMenu(Handle:menu, MenuAction:action, param1, param2)
 				return 0;
 			}
 			
-			SetTrieValue(g_mapTrie, map, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
+			g_mapTrie.SetValue(map, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
 
 			if (result == Nominate_Replaced)
 			{
@@ -350,12 +344,12 @@ public Handler_MapSelectMenu(Handle:menu, MenuAction:action, param1, param2)
 		
 		case MenuAction_DrawItem:
 		{
-			decl String:map[64];
-			GetMenuItem(menu, param2, map, sizeof(map));
+			char map[64];
+			menu.GetItem(param2, map, sizeof(map));
 			
-			new status;
+			int status;
 			
-			if (!GetTrieValue(g_mapTrie, map, status))
+			if (!g_mapTrie.GetValue(map, status))
 			{
 				LogError("Menu selection of item not in trie. Major logic problem somewhere.");
 				return ITEMDRAW_DEFAULT;
@@ -372,18 +366,18 @@ public Handler_MapSelectMenu(Handle:menu, MenuAction:action, param1, param2)
 		
 		case MenuAction_DisplayItem:
 		{
-			decl String:map[64];
-			GetMenuItem(menu, param2, map, sizeof(map));
+			char map[64];
+			menu.GetItem(param2, map, sizeof(map));
 			
-			new status;
+			int status;
 			
-			if (!GetTrieValue(g_mapTrie, map, status))
+			if (!g_mapTrie.GetValue(map, status))
 			{
 				LogError("Menu selection of item not in trie. Major logic problem somewhere.");
 				return 0;
 			}
 			
-			decl String:display[100];
+			char display[100];
 			
 			if ((status & MAPSTATUS_DISABLED) == MAPSTATUS_DISABLED)
 			{
