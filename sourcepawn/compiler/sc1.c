@@ -3347,12 +3347,9 @@ static int reparse_new_decl(declinfo_t *decl, int flags)
     if (matchtoken('['))
       parse_old_array_dims(decl, flags);
   } else {
-    // No post-dimensions means anything here is part of the type.
     if (matchtoken('[')) {
-      if (decl->type.numdim > 0) {
-        if (lexpeek('['))
+      if (decl->type.numdim > 0)
           error(121);
-      }
       parse_old_array_dims(decl, flags);
     } else if (decl->type.numdim) {
       // Reset dimension sizes.
