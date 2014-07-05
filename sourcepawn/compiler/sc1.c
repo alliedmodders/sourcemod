@@ -4134,13 +4134,13 @@ static void dodelete()
     store(&sval.val);
   }
 
+  markexpr(sEXPR, NULL, 0);
+
 cleanup:
   if (lcl_staging) {
     stgout(lcl_stgidx);
     stgset(FALSE);
   }
-
-  markexpr(sEXPR, NULL, 0);
 }
 
 /**
