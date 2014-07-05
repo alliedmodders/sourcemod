@@ -6965,6 +6965,28 @@ static int dofor(void)
         autozero=1;
         declloc(tok.id); /* declare local variable */
         break;
+      case tSYMBOL:
+      {
+        // See comment in statement() near tSYMBOL.
+        int is_decl = FALSE;
+        if (matchtoken('[')) {
+          if (lexpeek(']'))
+            is_decl = TRUE;
+          lexpush();
+        } else if (lexpeek(tSYMBOL)) {
+          is_decl = TRUE;
+        }
+
+        if (is_decl) {
+          lexpush();
+          nestlevel++;
+          autozero=1;
+          declloc(tSYMBOL);
+          break;
+        }
+
+        // Fall-through to default!
+      }
       default:
         lexpush();
         doexpr(TRUE,TRUE,TRUE,TRUE,NULL,NULL,FALSE);  /* expression 1 */
