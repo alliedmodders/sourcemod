@@ -1350,7 +1350,7 @@ static void setconstants(void)
   pc_tag_void = pc_addtag_flags("void", FIXEDTAG);
   pc_tag_object = pc_addtag_flags("object", FIXEDTAG|OBJECTTAG);
   pc_tag_bool = pc_addtag("bool");
-  pc_tag_null_t = pc_addtag_flags("null", FIXEDTAG|OBJECTTAG);
+  pc_tag_null_t = pc_addtag_flags("null_t", FIXEDTAG|OBJECTTAG);
 
   add_constant("true",1,sGLOBAL,1);     /* boolean flags */
   add_constant("false",0,sGLOBAL,1);
