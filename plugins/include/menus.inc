@@ -594,12 +594,10 @@ methodmap Menu < Handle {
 			return IsVoteInProgress(this);
 		}
 	}
-
-	public void CancelVote() {
-		CancelVote();
-	}
-	public int GetSelectionPosition() {
-		return GetMenuSelectionPosition();
+	property int SelectionPosition {
+		public get() {
+			return GetMenuSelectionPosition();
+		}
 	}
 };
 
