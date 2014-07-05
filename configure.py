@@ -31,4 +31,6 @@ run.options.add_option('-s', '--sdks', default='all', dest='sdks',
                             'comma-delimited list of engine names (default: %default)')
 run.options.add_option('--breakpad-dump', action='store_true', dest='breakpad_dump',
 											 default=False, help='Dump and upload breakpad symbols')
+run.options.add_option('--disable-auto-versioning', action='store_true', dest='disable_auto_versioning',
+                       default=False, help='Disable the auto versioning script')
 run.Configure()

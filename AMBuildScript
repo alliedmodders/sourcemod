@@ -73,7 +73,7 @@ class SMConfig(object):
     self.versionlib = None
 
   def use_auto_versioning(self):
-    return builder.backend == 'amb2'
+    return builder.backend == 'amb2' and not builder.options.disable_auto_versioning
 
   @property
   def tag(self):
