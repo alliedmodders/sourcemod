@@ -200,7 +200,7 @@ int pc_compile(int argc, char *argv[])
   char codepage[MAXCODEPAGE+1];
   FILE *binf;
   void *inpfmark;
-  int lcl_packstr,lcl_needsemicolon,lcl_tabsize;
+  int lcl_packstr,lcl_needsemicolon,lcl_tabsize,lcl_require_newdecls;
   #if !defined SC_LIGHT
     int hdrsize=0;
   #endif
@@ -252,6 +252,7 @@ int pc_compile(int argc, char *argv[])
   sc_ctrlchar_org=sc_ctrlchar;
   lcl_packstr=sc_packstr;
   lcl_needsemicolon=sc_needsemicolon;
+  lcl_require_newdecls=sc_require_newdecls;
   lcl_tabsize=sc_tabsize;
   #if !defined NO_CODEPAGE
     if (!cp_set(codepage))      /* set codepage */
@@ -359,6 +360,7 @@ int pc_compile(int argc, char *argv[])
     sc_ctrlchar=sc_ctrlchar_org;
     sc_packstr=lcl_packstr;
     sc_needsemicolon=lcl_needsemicolon;
+    sc_require_newdecls=lcl_require_newdecls;
     sc_tabsize=lcl_tabsize;
     errorset(sRESET,0);
     /* reset the source file */
@@ -428,6 +430,7 @@ int pc_compile(int argc, char *argv[])
   sc_ctrlchar=sc_ctrlchar_org;
   sc_packstr=lcl_packstr;
   sc_needsemicolon=lcl_needsemicolon;
+  sc_require_newdecls=lcl_require_newdecls;
   sc_tabsize=lcl_tabsize;
   errorset(sRESET,0);
   /* reset the source file */
@@ -772,6 +775,7 @@ static void initglobals(void)
   sc_packstr=TRUE;     /* strings are packed by default */
   sc_compress=FALSE;	/* always disable compact encoding! */
   sc_needsemicolon=FALSE;/* semicolon required to terminate expressions? */
+  sc_require_newdecls = FALSE;
   sc_dataalign=sizeof(cell);
   pc_stksize=sDEF_AMXSTACK;/* default stack size */
   pc_amxlimit=0;        /* no limit on size of the abstract machine */
@@ -3317,6 +3321,9 @@ static int parse_old_decl(declinfo_t *decl, int flags)
       parse_old_array_dims(decl, flags);
   }
 
+  if (sc_require_newdecls)
+    error(147);
+
   return TRUE;
 }
 
@@ -3599,7 +3606,13 @@ symbol *parse_inline_function(methodmap_t *map, const typeinfo_t *type, const ch
   if (is_native) {
     target = funcstub(tMETHODMAP, &decl, thistag);
   } else {
-    if (!newfunc(&decl, thistag, FALSE, FALSE, TRUE, &target))
+    int lcl_require_newdecls = sc_require_newdecls;
+
+    sc_require_newdecls = TRUE;
+    int ok = newfunc(&decl, thistag, FALSE, FALSE, TRUE, &target);
+    sc_require_newdecls = lcl_require_newdecls;
+
+    if (!ok)
       return NULL;
     if (!target || (target->usage & uFORWARD)) {
       error(10);
