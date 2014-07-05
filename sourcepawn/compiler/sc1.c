@@ -154,6 +154,7 @@ static void inst_binary_name(char *binfname);
 static int operatorname(char *name);
 static int reparse_old_decl(declinfo_t *decl, int flags);
 static int reparse_new_decl(declinfo_t *decl, int flags);
+static void check_void_decl(const declinfo_t *decl, int variable);
 
 enum {
   TEST_PLAIN,           /* no parentheses */
@@ -1978,6 +1979,8 @@ static void declglb(declinfo_t *decl,int fpublic,int fstatic,int fstock)
   for (;;) {
     typeinfo_t *type = &decl->type;
 
+    check_void_decl(decl, TRUE);
+
     ispublic=fpublic;
     if (decl->name[0]==PUBLIC_CHAR) {
       ispublic=TRUE;                    /* implicitly public variable */
@@ -3429,7 +3432,23 @@ int parse_decl(declinfo_t *decl, int flags)
   return parse_new_decl(decl, NULL, flags);
 }
 
-void define_constructor(methodmap_t *map, methodmap_method_t *method)
+static void check_void_decl(const declinfo_t *decl, int variable)
+{
+  if (decl->type.tag != pc_tag_void)
+    return;
+
+  if (variable) {
+    error(144);
+    return;
+  }
+
+  if (decl->type.numdim > 0) {
+    error(145);
+    return;
+  }
+}
+
+static void define_constructor(methodmap_t *map, methodmap_method_t *method)
 {
   symbol *sym = findglb(map->name, sGLOBAL);
 
@@ -4970,9 +4989,12 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
   if (symp)
     *symp = NULL;
 
+  check_void_decl(decl, FALSE);
+
   if (decl->opertok) {
     check_operatortag(decl->opertok, decl->type.tag, decl->name);
   } /* if */
+
   /* check whether this is a function or a variable declaration */
   if (!matchtoken('('))
     return FALSE;
@@ -5266,8 +5288,11 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
   if (!matchtoken(')')){
     do {                                /* there are arguments; process them */
       declinfo_t decl;
+
       parse_decl(&decl, DECLFLAG_ARGUMENT|DECLFLAG_ENUMROOT);
       assert(decl.type.numtags > 0);
+
+      check_void_decl(&decl, TRUE);
 
       if (decl.type.ident == iVARARGS) {
         assert(decl.type.numtags > 0);

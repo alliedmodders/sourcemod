@@ -187,6 +187,8 @@ static char *errmsg[] = {
 /*141*/  "natives, forwards, and public functions cannot return arrays\n",
 /*142*/  "invalid type declaration\n",
 /*143*/  "new-style declarations should not have \"new\"\n",
+/*144*/  "void cannot be used as a variable type\n",
+/*145*/  "invalid type expression\n",
 #else
   "\250\261\311\232\271k\214:\234\303bu\201fo\223\204\221\012",
   "\202l\224\252s\205g\353\350e\233\201(\243\250\327\274\202) \255 f\247low ea\300 \042c\343e\042\012",
