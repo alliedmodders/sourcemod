@@ -1200,8 +1200,8 @@ static int hier14(value *lval1)
   if (!lvalue)
     return error(22);                   /* must be lvalue */
   /* may not change "constant" parameters */
-  assert(lval1->sym!=NULL);
-  if ((lval1->sym->usage & uCONST)!=0)
+  assert(lval1->sym || lval1->accessor);
+  if (lval1->sym && (lval1->sym->usage & uCONST) != 0)
     return error(22);           /* assignment to const argument */
   sc_allowproccall=FALSE;       /* may no longer use "procedure call" syntax */
 
@@ -1231,6 +1231,19 @@ static int hier14(value *lval1)
         if (same)
           error(226,lval3.sym->name);   /* self-assignment */
     } /* if */
+  } else if (lval1->ident == iACCESSOR) {
+    pushreg(sPRI);
+    if (oper) {
+      rvalue(lval1);
+      plnge2(oper,hier14,lval1,&lval2);
+    } else {
+      if (hier14(&lval2))
+        rvalue(&lval2);         /* instead of plnge2(). */
+      else if (lval2.ident==iVARIABLE)
+        lval2.ident=iEXPRESSION;/* mark as "rvalue" if it is not an "lvalue" */
+      checkfunction(&lval2);
+    }
+    popreg(sALT);
   } else {
     if (oper){
       rvalue(lval1);
@@ -1882,28 +1895,6 @@ static int hier2(value *lval)
   } /* switch */
 }
 
-static void invoke_getter(methodmap_t *map, methodmap_method_t *method, svalue *thisval)
-{
-  if (thisval->lvalue)
-    rvalue(&thisval->val);
-
-  // push.pri
-  // push.c 1
-  // sysreq.c N 1
-  // stack 8
-  pushreg(sPRI);
-  markexpr(sPARM, NULL, 0);
-  {
-    pushval(1);
-    ffcall(method->getter, NULL, 1);
-    markusage(method->getter, uREAD);
-  }
-  markexpr(sEXPR, NULL, 0);
-
-  // We can't tell whether gets are effectful, but they really shouldn't be.
-  sideeffect = TRUE;
-}
-
 /*  hier1
  *
  *  The highest hierarchy level: it looks for pointer and array indices
@@ -1931,6 +1922,10 @@ static int hier1(value *lval1)
 restart:
   sym=cursym;
   if (matchtoken('[') || matchtoken('{') || matchtoken('(') || matchtoken('.')) {
+    if (lvalue && lval1->ident == iACCESSOR) {
+      rvalue(lval1);
+      lvalue = FALSE;
+    }
     tok=tokeninfo(&val,&st);    /* get token read by matchtoken() */
     magic_string = (sym && (sym->tag == pc_tag_string && sym->dim.array.level == 0));
     if (sym==NULL && symtok!=tSYMBOL) {
@@ -2137,12 +2132,14 @@ restart:
           if ((method = methodmap_find_method(map, lexstr)) == NULL)
             error(105, map->name, lexstr);
 
-          if (method && method->getter) {
-            invoke_getter(map, method, &thisval);
+          if (method && (method->getter || method->setter)) {
+            if (lvalue)
+              rvalue(lval1);
             clear_value(lval1);
-            lval1->ident = iEXPRESSION;
+            lval1->ident = iACCESSOR;
             lval1->tag = method->getter->tag;
-            lvalue = FALSE;
+            lval1->accessor = method;
+            lvalue = TRUE;
             goto restart;
           }
 
@@ -2346,6 +2343,7 @@ static void clear_value(value *lval)
   lval->tag=0;
   lval->ident=0;
   lval->boolresult=FALSE;
+  lval->accessor=NULL;
   /* do not clear lval->arrayidx, it is preset in hier14() */
   /* do not clear lval->cmptag */
 }
@@ -2571,6 +2569,10 @@ static int nesting=0;
           lvalue = implicitthis->lvalue;
         } else {
           lvalue = hier14(&lval);
+          if (lvalue && lval.ident == iACCESSOR) {
+            rvalue(&lval);
+            lvalue = FALSE;
+          }
         }
         assert(sc_status==statFIRST || arg[argidx].ident == 0 || arg[argidx].tags!=NULL);
         switch (arg[argidx].ident) {

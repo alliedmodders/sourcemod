@@ -171,6 +171,7 @@ typedef struct s_symbol {
 #define iREFFUNC    10
 #define iVARARGS    11  /* function specified ... as argument(s) */
 #define iPROXY      12  /* proxies to another symbol. */
+#define iACCESSOR   13  /* property accessor via a methodmap_method_t */
 
 /*  Possible entries for "usage"
  *
@@ -240,6 +241,8 @@ typedef struct s_symbol {
 
 #define sSTATEVAR  3    /* criterion to find variables (sSTATEVAR implies a global variable) */
 
+struct methodmap_method_s;
+
 typedef struct value_s {
   symbol *sym;          /* symbol in symbol table, NULL for (constant) expression */
   cell constval;        /* value of the constant expression (if ident==iCONSTEXPR)
@@ -250,6 +253,9 @@ typedef struct value_s {
                          * iEXPRESSION or iREFERENCE */
   char boolresult;      /* boolean result for relational operators */
   cell *arrayidx;       /* last used array indices, for checking self assignment */
+
+  /* when ident == iACCESSOR */
+  struct methodmap_method_s *accessor;
 } value;
 
 /* Wrapper around value + l/rvalue bit. */
@@ -730,6 +736,8 @@ SC_FUNC void charalign(void);
 SC_FUNC void addconst(cell value);
 SC_FUNC void setheap_save(cell value);
 SC_FUNC void stradjust(regid reg);
+SC_FUNC void invoke_getter(struct methodmap_method_s *method);
+SC_FUNC void invoke_setter(struct methodmap_method_s *method);
 
 /*  Code generation functions for arithmetic operators.
  *

@@ -3665,9 +3665,10 @@ int parse_property_accessor(const typeinfo_t *type, methodmap_t *map, methodmap_
       return FALSE;
   }
 
-  int getter = TRUE;
+  int getter = (strcmp(ident.name, "get") == 0);
+  int setter = (strcmp(ident.name, "set") == 0);
 
-  if (strcmp(ident.name, "get") != 0) {
+  if (!getter && !setter) {
     error(125);
     return FALSE;
   }
@@ -3689,17 +3690,34 @@ int parse_property_accessor(const typeinfo_t *type, methodmap_t *map, methodmap_
     else if (target->ident != iFUNCTN) 
       error(10);
   } else {
+    typeinfo_t voidtype;
     char tmpname[METHOD_NAMEMAX + 1];
     strcpy(tmpname, method->name);
-    strcat(tmpname, ".get");
-    target = parse_inline_function(map, type, tmpname, is_native, FALSE, FALSE);
+    if (getter)
+      strcat(tmpname, ".get");
+    else
+      strcat(tmpname, ".set");
+
+    const typeinfo_t *ret_type;
+    if (getter) {
+      ret_type = type;
+    } else {
+      make_primitive(&voidtype, pc_tag_void);
+      ret_type = &voidtype;
+    }
+
+    target = parse_inline_function(map, ret_type, tmpname, is_native, FALSE, FALSE);
   }
 
   if (!target)
     return FALSE;
 
-  if (method->getter) {
+  if (getter && method->getter) {
     error(126, "getter", method->name);
+    return FALSE;
+  }
+  if (setter && method->setter) {
+    error(126, "setter", method->name);
     return FALSE;
   }
 
@@ -3709,17 +3727,43 @@ int parse_property_accessor(const typeinfo_t *type, methodmap_t *map, methodmap_
     // Cannot have extra arguments.
     if (target->dim.arglist[0].ident && target->dim.arglist[1].ident)
       error(127);
-  }
 
-  // Must return the same tag as the property.
-  if (type->tag != target->tag) {
-    const char *kind = getter ? "getter" : "setter";
-    error(128, "getter", map->name, type_to_name(type->tag));
-  }
+    if (!check_this_tag(map, target)) {
+      error(108, layout_spec_name(map->spec), map->name);
+      return FALSE;
+    }
 
-  if (!check_this_tag(map, target)) {
-    error(108, layout_spec_name(map->spec), map->name);
-    return FALSE;
+    // Must return the same tag as the property.
+    if (type->tag != target->tag) {
+      const char *kind = getter ? "getter" : "setter";
+      error(128, "getter", map->name, type_to_name(type->tag));
+    }
+  } else {
+    method->setter = target;
+
+    if (!check_this_tag(map, target)) {
+      error(108, layout_spec_name(map->spec), map->name);
+      return FALSE;
+    }
+
+    // Must have one extra argument taking the return type.
+    arginfo *arg = &target->dim.arglist[1];
+    if (arg->ident == 0 ||
+        arg->ident != iVARIABLE ||
+        arg->hasdefault ||
+        arg->numtags != 1 ||
+        arg->tags[0] != type->tag)
+    {
+      error(150, pc_tagname(type->tag));
+      return FALSE;
+    }
+    if (target->dim.arglist[2].ident) {
+      error(150, pc_tagname(type->tag));
+      return FALSE;
+    }
+    
+    if (target->tag != pc_tag_void)
+      error(151);
   }
 
   needtoken(tTERM);
@@ -3749,10 +3793,8 @@ methodmap_method_t *parse_property(methodmap_t *map)
       return method;
 
     while (!matchtoken('}')) {
-      if (!parse_property_accessor(&type, map,method)) {
-        if (!consume_line())
-          return NULL;
-      }
+      if (!parse_property_accessor(&type, map,method))
+        lexclr(TRUE);
     }
 
     needtoken(tTERM);
@@ -5382,17 +5424,22 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
   fpublic = (sym->usage & (uPUBLIC|uSTOCK))!=0;
 
   if (thistag && *thistag != -1) {
-    // Allocate space for a new argument, then terminate.
-    sym->dim.arglist = (arginfo *)realloc(sym->dim.arglist, (argcnt + 2) * sizeof(arginfo));
-    memset(&sym->dim.arglist[argcnt + 1], 0, sizeof(arginfo));
+    arginfo *argptr;
+    if ((sym->usage & uPROTOTYPED) == 0) {
+      // Allocate space for a new argument, then terminate.
+      sym->dim.arglist = (arginfo *)realloc(sym->dim.arglist, (argcnt + 2) * sizeof(arginfo));
+      memset(&sym->dim.arglist[argcnt + 1], 0, sizeof(arginfo));
 
-    arginfo *argptr = &sym->dim.arglist[argcnt];
-    memset(argptr, 0, sizeof(*argptr));
-    strcpy(argptr->name, "this");
-    argptr->ident = iVARIABLE;
-    argptr->tags = malloc(sizeof(int));
-    argptr->tags[0] = *thistag;
-    argptr->numtags = 1;
+      argptr = &sym->dim.arglist[argcnt];
+      memset(argptr, 0, sizeof(*argptr));
+      strcpy(argptr->name, "this");
+      argptr->ident = iVARIABLE;
+      argptr->tags = malloc(sizeof(int));
+      argptr->tags[0] = *thistag;
+      argptr->numtags = 1;
+    } else {
+      argptr = &sym->dim.arglist[0];
+    }
 
     symbol *sym = addvariable2(
       argptr->name,
@@ -5450,42 +5497,40 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
       if (decl.name[0] == PUBLIC_CHAR)
         error(56,name);                 /* function arguments cannot be public */
 
-      if (1) {
-        if (decl.type.ident == iARRAY)
-          decl.type.ident = iREFARRAY;
-        /* Stack layout:
-         *   base + 0*sizeof(cell)  == previous "base"
-         *   base + 1*sizeof(cell)  == function return address
-         *   base + 2*sizeof(cell)  == number of arguments
-         *   base + 3*sizeof(cell)  == first argument of the function
-         * So the offset of each argument is "(argcnt+3) * sizeof(cell)".
-         */
-        doarg(&decl,(argcnt+3)*sizeof(cell),fpublic,chkshadow,&arg);
+      if (decl.type.ident == iARRAY)
+        decl.type.ident = iREFARRAY;
+      /* Stack layout:
+       *   base + 0*sizeof(cell)  == previous "base"
+       *   base + 1*sizeof(cell)  == function return address
+       *   base + 2*sizeof(cell)  == number of arguments
+       *   base + 3*sizeof(cell)  == first argument of the function
+       * So the offset of each argument is "(argcnt+3) * sizeof(cell)".
+       */
+      doarg(&decl,(argcnt+3)*sizeof(cell),fpublic,chkshadow,&arg);
 
-        if ((sym->usage & uPUBLIC) && arg.hasdefault)
-          error(59,name);       /* arguments of a public function may not have a default value */
+      if ((sym->usage & uPUBLIC) && arg.hasdefault)
+        error(59,name);       /* arguments of a public function may not have a default value */
 
-        if ((sym->usage & uPROTOTYPED)==0) {
-          /* redimension the argument list, add the entry */
-          sym->dim.arglist=(arginfo*)realloc(sym->dim.arglist,(argcnt+2)*sizeof(arginfo));
-          if (sym->dim.arglist==0)
-            error(163);                 /* insufficient memory */
-          memset(&sym->dim.arglist[argcnt+1],0,sizeof(arginfo));  /* keep the list terminated */
-          sym->dim.arglist[argcnt]=arg;
-        } else {
-          /* check the argument with the earlier definition */
-          if (argcnt>oldargcnt || !argcompare(&sym->dim.arglist[argcnt],&arg))
-            error(25);          /* function definition does not match prototype */
-          /* may need to free default array argument and the tag list */
-          if (arg.ident==iREFARRAY && arg.hasdefault)
-            free(arg.defvalue.array.data);
-          else if ((arg.ident==iVARIABLE
-                   && ((arg.hasdefault & uSIZEOF)!=0 || (arg.hasdefault & uTAGOF)!=0)) || (arg.hasdefault & uCOUNTOF)!=0)
-            free(arg.defvalue.size.symname);
-          free(arg.tags);
-        } /* if */
-        argcnt++;
-      }
+      if ((sym->usage & uPROTOTYPED)==0) {
+        /* redimension the argument list, add the entry */
+        sym->dim.arglist=(arginfo*)realloc(sym->dim.arglist,(argcnt+2)*sizeof(arginfo));
+        if (sym->dim.arglist==0)
+          error(163);                 /* insufficient memory */
+        memset(&sym->dim.arglist[argcnt+1],0,sizeof(arginfo));  /* keep the list terminated */
+        sym->dim.arglist[argcnt]=arg;
+      } else {
+        /* check the argument with the earlier definition */
+        if (argcnt>oldargcnt || !argcompare(&sym->dim.arglist[argcnt],&arg))
+          error(25);          /* function definition does not match prototype */
+        /* may need to free default array argument and the tag list */
+        if (arg.ident==iREFARRAY && arg.hasdefault)
+          free(arg.defvalue.array.data);
+        else if ((arg.ident==iVARIABLE
+                 && ((arg.hasdefault & uSIZEOF)!=0 || (arg.hasdefault & uTAGOF)!=0)) || (arg.hasdefault & uCOUNTOF)!=0)
+          free(arg.defvalue.size.symname);
+        free(arg.tags);
+      } /* if */
+      argcnt++;
     } while (matchtoken(','));
     /* if the next token is not ",", it should be ")" */
     needtoken(')');

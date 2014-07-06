@@ -1,3 +1,4 @@
+// vim: set ts=8 sts=2 sw=2 tw=99 et:
 /*  Pawn compiler - code generation (unoptimized "assembler" code)
  *
  *  Copyright (c) ITB CompuPhase, 1997-2006
@@ -29,6 +30,7 @@
   #include <alloc/fortify.h>
 #endif
 #include "sc.h"
+#include "sctracker.h"
 
 static int fcurseg;     /* the file number (fcurrent) for the active segment */
 
@@ -407,6 +409,10 @@ SC_FUNC void rvalue(value *lval)
     outval(sym->addr,TRUE);
     markusage(sym,uREAD);
     code_idx+=opcodes(1)+opargs(1);
+  } else if (lval->ident==iACCESSOR) {
+    invoke_getter(lval->accessor);
+    lval->ident=iEXPRESSION;
+    lval->accessor=NULL;
   } else {
     /* direct or stack relative fetch */
     assert(sym!=NULL);
@@ -490,6 +496,8 @@ SC_FUNC void store(value *lval)
       stgwrite("\tsref.pri ");
     outval(sym->addr,TRUE);
     code_idx+=opcodes(1)+opargs(1);
+  } else if (lval->ident==iACCESSOR) {
+    invoke_setter(lval->accessor);
   } else {
     assert(sym!=NULL);
     markusage(sym,uWRITTEN);
@@ -1381,4 +1389,47 @@ SC_FUNC void outval(cell val,int newline)
   stgwrite(itoh(val));
   if (newline)
     stgwrite("\n");
+}
+
+SC_FUNC void invoke_getter(methodmap_method_t *method)
+{
+  if (!method->getter) {
+    error(149, method->name);
+    return;
+  }
+
+  // push.c 1
+  // sysreq.c N 1
+  // stack 8
+  markexpr(sPARM, NULL, 0);
+  {
+    pushreg(sPRI);
+    pushval(1);
+    ffcall(method->getter, NULL, 1);
+    markusage(method->getter, uREAD);
+  }
+  markexpr(sEXPR, NULL, 0);
+}
+
+SC_FUNC void invoke_setter(methodmap_method_t *method)
+{
+  if (!method->setter) {
+    error(152, method->name);
+    return;
+  }
+
+  // push.c 2
+  // sysreq.c N 1
+  // stack 8
+  markexpr(sPARM, NULL, 0);
+  {
+    pushreg(sPRI);
+    pushreg(sPRI);
+    pushreg(sALT);
+    pushval(2);
+    ffcall(method->setter, NULL, 2);
+    popreg(sPRI);
+    markusage(method->setter, uREAD);
+  }
+  markexpr(sEXPR, NULL, 0);
 }
