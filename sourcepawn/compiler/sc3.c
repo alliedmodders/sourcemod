@@ -356,6 +356,23 @@ static int matchobjecttags(int formaltag, int actualtag, int flags)
   // objects never coerce to non-objects, YET.
   if ((formaltag & OBJECTTAG) && !(actualtag & OBJECTTAG))
     return obj_typeerror(132, formaltag, actualtag);
+
+  if (actualtag == pc_tag_null_t) {
+    // All objects are nullable.
+    if (formaltag & OBJECTTAG)
+      return TRUE;
+
+    // Some methodmaps are nullable.
+    methodmap_t *map = methodmap_find_by_tag(formaltag);
+    for (; map; map = map->parent) {
+      if (map->nullable)
+        return TRUE;
+    }
+
+    error(148, pc_tagname(formaltag));
+    return FALSE;
+  }
+
   if (!(formaltag & OBJECTTAG) && (actualtag & OBJECTTAG))
     return obj_typeerror(131, formaltag, actualtag);
 
@@ -373,6 +390,15 @@ static int matchobjecttags(int formaltag, int actualtag, int flags)
   }
 
   return obj_typeerror(133, formaltag, actualtag);
+}
+
+static int matchreturntag(functag_t *t, symbol *sym)
+{
+  if (t->ret_tag == sym->tag)
+    return TRUE;
+  if (t->ret_tag == pc_tag_void && (sym->tag == 0 && !(sym->usage & uRETVALUE)))
+    return TRUE;
+  return FALSE;
 }
 
 static int matchfunctags(int formaltag, int actualtag)
@@ -447,7 +473,7 @@ static int matchfunctags(int formaltag, int actualtag)
       arginfo *func_arg;
       funcarg_t *enum_arg;
       /* Check return type first. */
-      if (t->ret_tag != sym->tag) {
+      if (!matchreturntag(t, sym)) {
         t = t->next;
         continue;
       }
@@ -496,7 +522,7 @@ static int matchfunctags(int formaltag, int actualtag)
         }
         /* They should all be in the same order just for clarity... */
         for (i=0; i<enum_arg->tagcount; i++) {
-          if (enum_arg->tags[i] != func_arg->tags[i]) {
+          if (!matchtag(func_arg->tags[i], enum_arg->tags[i], MATCHTAG_SILENT|MATCHTAG_COERCE)) {
             skip = 1;
             break;
           }
@@ -952,6 +978,19 @@ static cell calc(cell left,void (*oper)(),cell right,char *boolresult)
   else
     error(29);  /* invalid expression, assumed 0 (this should never occur) */
   return 0;
+}
+
+SC_FUNC int lvalexpr(svalue *sval)
+{
+  memset(sval, 0, sizeof(*sval));
+
+  errorset(sEXPRMARK, 0);
+  pushheaplist();
+  sval->lvalue = hier14(&sval->val);
+  popheaplist();
+  errorset(sEXPRRELEASE, 0);
+
+  return sval->val.ident;
 }
 
 SC_FUNC int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult,value *_lval)
@@ -2949,6 +2988,11 @@ static int constant(value *lval)
     lval->tag=sym->tag;
     lval->sym=sym;
     markusage(sym,uREAD);
+  } else if (tok==tNULL) {
+    lval->constval = 0;
+    ldconst(lval->constval, sPRI);
+    lval->ident = iCONSTEXPR;
+    lval->tag = pc_tag_null_t;
   } else if (tok==tNUMBER) {
     lval->constval=val;
     ldconst(lval->constval,sPRI);

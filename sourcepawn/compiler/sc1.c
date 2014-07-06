@@ -79,6 +79,7 @@ int pc_tag_string = 0;
 int pc_tag_void = 0;
 int pc_tag_object = 0;
 int pc_tag_bool = 0;
+int pc_tag_null_t = 0;
 
 static void resetglobals(void);
 static void initglobals(void);
@@ -1349,6 +1350,7 @@ static void setconstants(void)
   pc_tag_void = pc_addtag_flags("void", FIXEDTAG);
   pc_tag_object = pc_addtag_flags("object", FIXEDTAG|OBJECTTAG);
   pc_tag_bool = pc_addtag("bool");
+  pc_tag_null_t = pc_addtag_flags("null_t", FIXEDTAG|OBJECTTAG);
 
   add_constant("true",1,sGLOBAL,1);     /* boolean flags */
   add_constant("false",0,sGLOBAL,1);
@@ -3442,7 +3444,7 @@ int parse_decl(declinfo_t *decl, int flags)
 
   // Otherwise, we have to eat a symbol to tell.
   if (matchsymbol(&ident)) {
-    if (lexpeek(tSYMBOL) || lexpeek(tOPERATOR)) {
+    if (lexpeek(tSYMBOL) || lexpeek(tOPERATOR) || lexpeek('&')) {
       // A new-style declaration only allows array dims or a symbol name, so
       // this is a new-style declaration.
       return parse_new_decl(decl, &ident.tok, flags);
@@ -3973,6 +3975,9 @@ static void domethodmap(LayoutSpec spec)
   strcpy(map->name, mapname);
   if (spec == Layout_MethodMap) {
     map->tag = pc_addtag_flags(mapname, FIXEDTAG | METHODMAPTAG);
+
+    if (matchtoken(tNULLABLE))
+      map->nullable = TRUE;
   } else {
     constvalue *tagptr = pc_tagptr(mapname);
     if (!tagptr) {
@@ -4032,35 +4037,48 @@ static void domethodmap(LayoutSpec spec)
 // delete ::= "delete" expr
 static void dodelete()
 {
-  int tag;
-  symbol *sym;
+  svalue sval;
 
-  int ident = doexpr(TRUE, FALSE, TRUE, FALSE, &tag, &sym, TRUE);
+  int lcl_staging = FALSE;
+  if (!staging) {
+    stgset(TRUE);
+    lcl_staging = TRUE;
+    assert(stgidx == 0);
+  }
+  int lcl_stgidx = stgidx;
+
+  int ident = lvalexpr(&sval);
   needtoken(tTERM);
 
   switch (ident) {
     case iFUNCTN:
     case iREFFUNC:
       error(115, "functions");
-      return;
+      goto cleanup;
 
     case iARRAY:
     case iREFARRAY:
     case iARRAYCELL:
     case iARRAYCHAR:
-      error(115, "arrays");
-      return;
+    {
+      symbol *sym = sval.val.sym;
+      if (!sym || sym->dim.array.level > 0) {
+        error(115, "arrays");
+        goto cleanup;
+      }
+      break;
+    }
   }
 
-  if (tag == 0) {
+  if (sval.val.tag == 0) {
     error(115, "primitive types or enums");
-    return;
+    goto cleanup;
   }
 
-  methodmap_t *map = methodmap_find_by_tag(tag);
+  methodmap_t *map = methodmap_find_by_tag(sval.val.tag);
   if (!map) {
-    error(115, pc_tagname(tag));
-    return;
+    error(115, pc_tagname(sval.val.tag));
+    goto cleanup;
   }
 
   {
@@ -4076,24 +4094,53 @@ static void dodelete()
 
   if (!map || !map->dtor) {
     error(115, layout_spec_name(map->spec), map->name);
-    return;
+    goto cleanup;
   }
 
-  // For some reason, we don't get a sysreq.n once this passes through the
-  // peephole optimizer. I can't tell why. -dvander
-  //
+  // Only zap non-const lvalues.
+  int zap = sval.lvalue;
+  if (zap && sval.val.sym && (sval.val.sym->usage & uCONST))
+    zap = FALSE;
+
+  int popaddr = FALSE;
+  if (sval.lvalue) {
+    if (zap) {
+      if (sval.val.ident == iARRAYCELL || sval.val.ident == iARRAYCHAR) {
+        // Address is in pri so we have to save it.
+        pushreg(sPRI);
+        popaddr = TRUE;
+      }
+    }
+    rvalue(&sval.val);
+  }
+
   // push.pri
   // push.c 1
   // sysreq.c N 1
   // stack 8
   pushreg(sPRI);
-  markexpr(sPARM,NULL,0);
   {
     pushval(1);
     ffcall(map->dtor->target, NULL, 1);
     markusage(map->dtor->target, uREAD);
   }
-  markexpr(sEXPR,NULL,0);
+
+  if (zap) {
+    if (popaddr)
+      popreg(sALT);
+
+    // Store 0 back.
+    ldconst(0, sPRI);
+    store(&sval.val);
+  }
+
+  markexpr(sEXPR, NULL, 0);
+
+cleanup:
+  if (lcl_staging) {
+    stgout(lcl_stgidx);
+    stgset(FALSE);
+  }
 }
 
 /**
@@ -4113,20 +4160,44 @@ static void dofuncenum(int listmode)
 
 	/* get the explicit tag (required!) */
 	int l = lex(&val,&str);
-	if (l != tSYMBOL)
-	{
-		if (listmode == FALSE && l == tPUBLIC)
-		{
-			isNewStyle = 1;
-			newStyleTag = pc_addtag(NULL);
-			l = lex(&val, &str);
-			if (l != tSYMBOL)
-			{
+	if (l != tSYMBOL) {
+		if (listmode == FALSE && l == tPUBLIC) {
+			isNewStyle = TRUE;
+			switch (lex(&val, &str)) {
+			case tOBJECT:
+				newStyleTag = pc_tag_object;
+				break;
+			case tINT:
+				newStyleTag = 0;
+				break;
+			case tVOID:
+				newStyleTag = pc_tag_void;
+				break;
+			case tCHAR:
+				newStyleTag = pc_tag_string;
+				break;
+			case tLABEL:
+				newStyleTag = pc_addtag(str);
+				break;
+			case tSYMBOL:
+				// Check whether this is new-style declaration.
+				// we'll port this all to parse_decl() sometime.
+				if (lexpeek('('))
+					lexpush();
+				else
+					newStyleTag = pc_addtag(str);
+				break;
+			default:
 				error(93);
 			}
-		}
-		else
-		{
+
+			if (!needtoken(tSYMBOL)) {
+				lexclr(TRUE);
+				litidx = 0;
+				return;
+			}
+			l = tokeninfo(&val, &str);
+		} else {
 			error(93);
 		}
 	}

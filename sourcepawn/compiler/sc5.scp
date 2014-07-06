@@ -191,6 +191,7 @@ static char *errmsg[] = {
 /*145*/  "invalid type expression\n",
 /*146*/  "#pragma newdecls must be required or optional\n",
 /*147*/  "new-style declarations are required\n",
+/*148*/  "cannot assign null to a non-nullable type\n",
 #else
   "\247\255\311\232\273k\214:\234\306bu\201fo\223\204\222\012",
   "\202l\224\251s\206g\344\352e\233\201(\242\247\323\267\202) \254 f\252low ea\277 \042c\343e\042\012",

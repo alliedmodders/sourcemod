@@ -1956,7 +1956,7 @@ char *sc_tokens[] = {
          "goto",
          "if", "int",
          "methodmap",
-         "native", "new",
+         "native", "new", "null", "__nullable__",
          "object", "operator",
          "public",
          "return",
