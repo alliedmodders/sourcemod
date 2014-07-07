@@ -1170,6 +1170,12 @@ const char *CHalfLife2::GetEntityClassname(CBaseEntity *pEntity)
 	if (offset == -1)
 	{
 		CBaseEntity *pGetterEnt = ReferenceToEntity(0);
+		if (pGetterEnt == NULL)
+		{
+			// If we don't have a world entity yet, we'll have to rely on the given entity
+			pGetterEnt = pEntity;
+		}
+
 		datamap_t *pMap = GetDataMap(pGetterEnt);
 		
 		sm_datatable_info_t info;

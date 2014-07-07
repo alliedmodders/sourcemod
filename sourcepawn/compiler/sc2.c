@@ -2752,6 +2752,7 @@ SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_
     case iARRAYCHAR:
     case iEXPRESSION:
     case iVARARGS:
+    case iACCESSOR:
     default:
       assert(0);
       break;
