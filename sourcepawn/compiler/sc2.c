@@ -1956,7 +1956,7 @@ char *sc_tokens[] = {
          "goto",
          "if", "int",
          "methodmap",
-         "native", "new",
+         "native", "new", "null", "__nullable__",
          "object", "operator",
          "public",
          "return",
@@ -2752,6 +2752,7 @@ SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_
     case iARRAYCHAR:
     case iEXPRESSION:
     case iVARARGS:
+    case iACCESSOR:
     default:
       assert(0);
       break;

@@ -301,7 +301,7 @@ methodmap ArrayList < Handle {
 	public SwapAt() = SwapArrayItems;
 	public FindString() = FindStringInArray;
 	public FindValue() = FindValueInArray;
-	property int Size {
+	property int Length {
 		public get() = GetArraySize;
 	}
 };

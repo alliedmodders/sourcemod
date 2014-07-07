@@ -453,7 +453,7 @@ native GetMenuOptionFlags(Handle:menu);
  * @noreturn
  * @error					Invalid Handle.
  */
-native SetMenuOptionFlags(Handle:menu, flags);
+native void SetMenuOptionFlags(Handle:menu, flags);
 
 /**
  * Returns whether a vote is in progress.
@@ -562,24 +562,29 @@ methodmap Menu < Handle {
 	public DisplayVote() = VoteMenu;
 	public DisplayVoteToAll() = VoteMenuToAll;
 
-	public SetPagination() = SetMenuPagination;
 	property int Pagination {
 		public get() = GetMenuPagination;
+		public set(int value) {
+			SetMenuPagination(this, value);
+		}
 	}
-
-	public SetOptionFlags() = SetMenuOptionFlags;
 	property int OptionFlags {
 		public get() = GetMenuOptionFlags;
+		public set() = SetMenuOptionFlags;
 	}
-
-	public SetExitButton() = SetMenuExitButton;
 	property bool ExitButton {
 		public get() = GetMenuExitButton;
+		public set(bool value) {
+			SetMenuExitButton(this, value);
+		}
 	}
-	public SetExitBackButton() = SetMenuExitBackButton;
 	property bool ExitBackButton {
 		public get() = GetMenuExitBackButton;
+		public set(bool value) {
+			SetMenuExitBackButton(this, value);
+		}
 	}
+
 	public SetNoVoteButton() = SetMenuNoVoteButton;
 	public SetVoteResultCallback() = SetVoteResultCallback;
 
@@ -589,17 +594,10 @@ methodmap Menu < Handle {
 	property Handle Style {
 		public get() = GetMenuStyle;
 	}
-	property bool VoteInProgress {
+	property int SelectionPosition {
 		public get() {
-			return IsVoteInProgress(this);
+			return GetMenuSelectionPosition();
 		}
-	}
-
-	public void CancelVote() {
-		CancelVote();
-	}
-	public int GetSelectionPosition() {
-		return GetMenuSelectionPosition();
 	}
 };
 
