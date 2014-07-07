@@ -1556,23 +1556,43 @@ static int hier2(value *lval)
   case tINC:                    /* ++lval */
     if (!hier2(lval))
       return error(22);         /* must be lvalue */
-    assert(lval->sym!=NULL);
-    if ((lval->sym->usage & uCONST)!=0)
-      return error(22);         /* assignment to const argument */
-    if (!check_userop(user_inc,lval->tag,0,1,lval,&lval->tag))
-      inc(lval);                /* increase variable first */
-    rvalue(lval);               /* and read the result into PRI */
+    if (lval->ident != iACCESSOR) {
+      assert(lval->sym!=NULL);
+      if ((lval->sym->usage & uCONST)!=0)
+        return error(22);         /* assignment to const argument */
+      if (!check_userop(user_inc,lval->tag,0,1,lval,&lval->tag))
+        inc(lval);                /* increase variable first */
+      rvalue(lval);               /* and read the result into PRI */
+    } else {
+      pushreg(sPRI);
+      invoke_getter(lval->accessor);
+      if (!check_userop(user_inc,lval->tag,0,1,lval,&lval->tag))
+        inc_pri();
+      popreg(sALT);
+      invoke_setter(lval->accessor, TRUE);
+      lval->ident = iEXPRESSION;
+    }
     sideeffect=TRUE;
     return FALSE;               /* result is no longer lvalue */
   case tDEC:                    /* --lval */
     if (!hier2(lval))
       return error(22);         /* must be lvalue */
-    assert(lval->sym!=NULL);
-    if ((lval->sym->usage & uCONST)!=0)
-      return error(22);         /* assignment to const argument */
-    if (!check_userop(user_dec,lval->tag,0,1,lval,&lval->tag))
-      dec(lval);                /* decrease variable first */
-    rvalue(lval);               /* and read the result into PRI */
+    if (lval->ident != iACCESSOR) {
+      assert(lval->sym!=NULL);
+      if ((lval->sym->usage & uCONST)!=0)
+        return error(22);         /* assignment to const argument */
+      if (!check_userop(user_dec,lval->tag,0,1,lval,&lval->tag))
+        dec(lval);                /* decrease variable first */
+      rvalue(lval);               /* and read the result into PRI */
+    } else {
+      pushreg(sPRI);
+      invoke_getter(lval->accessor);
+      if (!check_userop(user_dec,lval->tag,0,1,lval,&lval->tag))
+        dec_pri();
+      popreg(sALT);
+      invoke_setter(lval->accessor, TRUE);
+      lval->ident = iEXPRESSION;
+    }
     sideeffect=TRUE;
     return FALSE;               /* result is no longer lvalue */
   case '~':                     /* ~ (one's complement) */
