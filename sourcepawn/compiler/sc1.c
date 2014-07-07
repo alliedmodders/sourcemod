@@ -4145,14 +4145,28 @@ static void dodelete()
     zap = FALSE;
 
   int popaddr = FALSE;
+  methodmap_method_t *accessor = NULL;
   if (sval.lvalue) {
     if (zap) {
-      if (sval.val.ident == iARRAYCELL || sval.val.ident == iARRAYCHAR) {
-        // Address is in pri so we have to save it.
-        pushreg(sPRI);
-        popaddr = TRUE;
+      switch (sval.val.ident) {
+        case iACCESSOR:
+          // rvalue() removes iACCESSOR so we store it locally.
+          accessor = sval.val.accessor;
+          if (!accessor->setter) {
+            zap = FALSE;
+            break;
+          }
+          pushreg(sPRI);
+          popaddr = TRUE;
+          break;
+        case iARRAYCELL:
+        case iARRAYCHAR:
+          pushreg(sPRI);
+          popaddr = TRUE;
+          break;
       }
     }
+    
     rvalue(&sval.val);
   }
 
@@ -4173,7 +4187,10 @@ static void dodelete()
 
     // Store 0 back.
     ldconst(0, sPRI);
-    store(&sval.val);
+    if (accessor)
+      invoke_setter(accessor, FALSE);
+    else
+      store(&sval.val);
   }
 
   markexpr(sEXPR, NULL, 0);
