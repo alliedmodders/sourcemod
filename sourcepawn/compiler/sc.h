@@ -171,6 +171,7 @@ typedef struct s_symbol {
 #define iREFFUNC    10
 #define iVARARGS    11  /* function specified ... as argument(s) */
 #define iPROXY      12  /* proxies to another symbol. */
+#define iACCESSOR   13  /* property accessor via a methodmap_method_t */
 
 /*  Possible entries for "usage"
  *
@@ -240,6 +241,8 @@ typedef struct s_symbol {
 
 #define sSTATEVAR  3    /* criterion to find variables (sSTATEVAR implies a global variable) */
 
+struct methodmap_method_s;
+
 typedef struct value_s {
   symbol *sym;          /* symbol in symbol table, NULL for (constant) expression */
   cell constval;        /* value of the constant expression (if ident==iCONSTEXPR)
@@ -250,6 +253,9 @@ typedef struct value_s {
                          * iEXPRESSION or iREFERENCE */
   char boolresult;      /* boolean result for relational operators */
   cell *arrayidx;       /* last used array indices, for checking self assignment */
+
+  /* when ident == iACCESSOR */
+  struct methodmap_method_s *accessor;
 } value;
 
 /* Wrapper around value + l/rvalue bit. */
@@ -411,6 +417,8 @@ enum {
   tMETHODMAP,
   tNATIVE,
   tNEW,
+  tNULL,
+  tNULLABLE,
   tOBJECT,
   tOPERATOR,
   tPUBLIC,
@@ -675,6 +683,7 @@ SC_FUNC cell array_totalsize(symbol *sym);
 SC_FUNC int matchtag_string(int ident, int tag);
 SC_FUNC int checktag_string(value *sym1, value *sym2);
 SC_FUNC int checktags_string(int tags[], int numtags, value *sym1);
+SC_FUNC int lvalexpr(svalue *sval);
 
 /* function prototypes in SC4.C */
 SC_FUNC void writeleader(symbol *root);
@@ -699,6 +708,7 @@ SC_FUNC void copyarray(symbol *sym,cell size);
 SC_FUNC void fillarray(symbol *sym,cell size,cell value);
 SC_FUNC void ldconst(cell val,regid reg);
 SC_FUNC void moveto1(void);
+SC_FUNC void move_alt(void);
 SC_FUNC void pushreg(regid reg);
 SC_FUNC void pushval(cell val);
 SC_FUNC void popreg(regid reg);
@@ -726,6 +736,10 @@ SC_FUNC void charalign(void);
 SC_FUNC void addconst(cell value);
 SC_FUNC void setheap_save(cell value);
 SC_FUNC void stradjust(regid reg);
+SC_FUNC void invoke_getter(struct methodmap_method_s *method);
+SC_FUNC void invoke_setter(struct methodmap_method_s *method, int save);
+SC_FUNC void inc_pri();
+SC_FUNC void dec_pri();
 
 /*  Code generation functions for arithmetic operators.
  *
@@ -923,6 +937,7 @@ SC_VDECL int pc_tag_string;   /* global String tag */
 SC_VDECL int pc_tag_void;     /* global void tag */
 SC_VDECL int pc_tag_object;   /* root object tag */
 SC_VDECL int pc_tag_bool;     /* global bool tag */
+SC_VDECL int pc_tag_null_t;   /* the null type */
 SC_VDECL int pc_anytag;       /* global any tag */
 SC_VDECL int glbstringread;	  /* last global string read */
 SC_VDECL int sc_require_newdecls; /* only newdecls are allowed */

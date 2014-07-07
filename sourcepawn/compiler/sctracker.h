@@ -92,6 +92,7 @@ typedef struct methodmap_s
   struct methodmap_s *next;
   struct methodmap_s *parent;
   int tag;
+  int nullable;
   LayoutSpec spec;
   char name[sNAMEMAX+1];
   methodmap_method_t **methods;

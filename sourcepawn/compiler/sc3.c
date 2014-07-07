@@ -356,6 +356,23 @@ static int matchobjecttags(int formaltag, int actualtag, int flags)
   // objects never coerce to non-objects, YET.
   if ((formaltag & OBJECTTAG) && !(actualtag & OBJECTTAG))
     return obj_typeerror(132, formaltag, actualtag);
+
+  if (actualtag == pc_tag_null_t) {
+    // All objects are nullable.
+    if (formaltag & OBJECTTAG)
+      return TRUE;
+
+    // Some methodmaps are nullable.
+    methodmap_t *map = methodmap_find_by_tag(formaltag);
+    for (; map; map = map->parent) {
+      if (map->nullable)
+        return TRUE;
+    }
+
+    error(148, pc_tagname(formaltag));
+    return FALSE;
+  }
+
   if (!(formaltag & OBJECTTAG) && (actualtag & OBJECTTAG))
     return obj_typeerror(131, formaltag, actualtag);
 
@@ -373,6 +390,15 @@ static int matchobjecttags(int formaltag, int actualtag, int flags)
   }
 
   return obj_typeerror(133, formaltag, actualtag);
+}
+
+static int matchreturntag(functag_t *t, symbol *sym)
+{
+  if (t->ret_tag == sym->tag)
+    return TRUE;
+  if (t->ret_tag == pc_tag_void && (sym->tag == 0 && !(sym->usage & uRETVALUE)))
+    return TRUE;
+  return FALSE;
 }
 
 static int matchfunctags(int formaltag, int actualtag)
@@ -447,7 +473,7 @@ static int matchfunctags(int formaltag, int actualtag)
       arginfo *func_arg;
       funcarg_t *enum_arg;
       /* Check return type first. */
-      if (t->ret_tag != sym->tag) {
+      if (!matchreturntag(t, sym)) {
         t = t->next;
         continue;
       }
@@ -496,7 +522,7 @@ static int matchfunctags(int formaltag, int actualtag)
         }
         /* They should all be in the same order just for clarity... */
         for (i=0; i<enum_arg->tagcount; i++) {
-          if (enum_arg->tags[i] != func_arg->tags[i]) {
+          if (!matchtag(func_arg->tags[i], enum_arg->tags[i], MATCHTAG_SILENT|MATCHTAG_COERCE)) {
             skip = 1;
             break;
           }
@@ -954,6 +980,19 @@ static cell calc(cell left,void (*oper)(),cell right,char *boolresult)
   return 0;
 }
 
+SC_FUNC int lvalexpr(svalue *sval)
+{
+  memset(sval, 0, sizeof(*sval));
+
+  errorset(sEXPRMARK, 0);
+  pushheaplist();
+  sval->lvalue = hier14(&sval->val);
+  popheaplist();
+  errorset(sEXPRRELEASE, 0);
+
+  return sval->val.ident;
+}
+
 SC_FUNC int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult,value *_lval)
 {
   value lval={0};
@@ -1161,8 +1200,8 @@ static int hier14(value *lval1)
   if (!lvalue)
     return error(22);                   /* must be lvalue */
   /* may not change "constant" parameters */
-  assert(lval1->sym!=NULL);
-  if ((lval1->sym->usage & uCONST)!=0)
+  assert(lval1->sym || lval1->accessor);
+  if (lval1->sym && (lval1->sym->usage & uCONST) != 0)
     return error(22);           /* assignment to const argument */
   sc_allowproccall=FALSE;       /* may no longer use "procedure call" syntax */
 
@@ -1192,6 +1231,19 @@ static int hier14(value *lval1)
         if (same)
           error(226,lval3.sym->name);   /* self-assignment */
     } /* if */
+  } else if (lval1->ident == iACCESSOR) {
+    pushreg(sPRI);
+    if (oper) {
+      rvalue(lval1);
+      plnge2(oper,hier14,lval1,&lval2);
+    } else {
+      if (hier14(&lval2))
+        rvalue(&lval2);         /* instead of plnge2(). */
+      else if (lval2.ident==iVARIABLE)
+        lval2.ident=iEXPRESSION;/* mark as "rvalue" if it is not an "lvalue" */
+      checkfunction(&lval2);
+    }
+    popreg(sALT);
   } else {
     if (oper){
       rvalue(lval1);
@@ -1504,23 +1556,43 @@ static int hier2(value *lval)
   case tINC:                    /* ++lval */
     if (!hier2(lval))
       return error(22);         /* must be lvalue */
-    assert(lval->sym!=NULL);
-    if ((lval->sym->usage & uCONST)!=0)
-      return error(22);         /* assignment to const argument */
-    if (!check_userop(user_inc,lval->tag,0,1,lval,&lval->tag))
-      inc(lval);                /* increase variable first */
-    rvalue(lval);               /* and read the result into PRI */
+    if (lval->ident != iACCESSOR) {
+      assert(lval->sym!=NULL);
+      if ((lval->sym->usage & uCONST)!=0)
+        return error(22);         /* assignment to const argument */
+      if (!check_userop(user_inc,lval->tag,0,1,lval,&lval->tag))
+        inc(lval);                /* increase variable first */
+      rvalue(lval);               /* and read the result into PRI */
+    } else {
+      pushreg(sPRI);
+      invoke_getter(lval->accessor);
+      if (!check_userop(user_inc,lval->tag,0,1,lval,&lval->tag))
+        inc_pri();
+      popreg(sALT);
+      invoke_setter(lval->accessor, TRUE);
+      lval->ident = iEXPRESSION;
+    }
     sideeffect=TRUE;
     return FALSE;               /* result is no longer lvalue */
   case tDEC:                    /* --lval */
     if (!hier2(lval))
       return error(22);         /* must be lvalue */
-    assert(lval->sym!=NULL);
-    if ((lval->sym->usage & uCONST)!=0)
-      return error(22);         /* assignment to const argument */
-    if (!check_userop(user_dec,lval->tag,0,1,lval,&lval->tag))
-      dec(lval);                /* decrease variable first */
-    rvalue(lval);               /* and read the result into PRI */
+    if (lval->ident != iACCESSOR) {
+      assert(lval->sym!=NULL);
+      if ((lval->sym->usage & uCONST)!=0)
+        return error(22);         /* assignment to const argument */
+      if (!check_userop(user_dec,lval->tag,0,1,lval,&lval->tag))
+        dec(lval);                /* decrease variable first */
+      rvalue(lval);               /* and read the result into PRI */
+    } else {
+      pushreg(sPRI);
+      invoke_getter(lval->accessor);
+      if (!check_userop(user_dec,lval->tag,0,1,lval,&lval->tag))
+        dec_pri();
+      popreg(sALT);
+      invoke_setter(lval->accessor, TRUE);
+      lval->ident = iEXPRESSION;
+    }
     sideeffect=TRUE;
     return FALSE;               /* result is no longer lvalue */
   case '~':                     /* ~ (one's complement) */
@@ -1781,41 +1853,67 @@ static int hier2(value *lval)
       case tINC:                /* lval++ */
         if (!lvalue)
           return error(22);     /* must be lvalue */
-        assert(lval->sym!=NULL);
-        if ((lval->sym->usage & uCONST)!=0)
-          return error(22);     /* assignment to const argument */
-        /* on incrementing array cells, the address in PRI must be saved for
-         * incremening the value, whereas the current value must be in PRI
-         * on exit.
-         */
-        saveresult= (lval->ident==iARRAYCELL || lval->ident==iARRAYCHAR);
-        if (saveresult)
-          pushreg(sPRI);        /* save address in PRI */
-        rvalue(lval);           /* read current value into PRI */
-        if (saveresult)
-          swap1();              /* save PRI on the stack, restore address in PRI */
-        if (!check_userop(user_inc,lval->tag,0,1,lval,&lval->tag))
-          inc(lval);            /* increase variable afterwards */
-        if (saveresult)
-          popreg(sPRI);         /* restore PRI (result of rvalue()) */
+        if (lval->ident != iACCESSOR) {
+          assert(lval->sym!=NULL);
+          if ((lval->sym->usage & uCONST)!=0)
+            return error(22);     /* assignment to const argument */
+          /* on incrementing array cells, the address in PRI must be saved for
+           * incremening the value, whereas the current value must be in PRI
+           * on exit.
+           */
+          saveresult= (lval->ident==iARRAYCELL || lval->ident==iARRAYCHAR);
+          if (saveresult)
+            pushreg(sPRI);        /* save address in PRI */
+          rvalue(lval);           /* read current value into PRI */
+          if (saveresult)
+            swap1();              /* save PRI on the stack, restore address in PRI */
+          if (!check_userop(user_inc,lval->tag,0,1,lval,&lval->tag))
+            inc(lval);            /* increase variable afterwards */
+          if (saveresult)
+            popreg(sPRI);         /* restore PRI (result of rvalue()) */
+        } else {
+          pushreg(sPRI);    // save obj
+          invoke_getter(lval->accessor);
+          swap1();          // pri = obj, stack = [oldval]
+          pushreg(sPRI);    // pri = obj, stack = [oldval, obj]
+          if (!check_userop(user_inc, lval->tag, 0, 1, lval, &lval->tag))
+            inc_pri();
+          popreg(sALT);
+          invoke_setter(lval->accessor, FALSE);
+          popreg(sPRI);
+          lval->ident = iEXPRESSION;
+        }
         sideeffect=TRUE;
         return FALSE;           /* result is no longer lvalue */
       case tDEC:                /* lval-- */
         if (!lvalue)
           return error(22);     /* must be lvalue */
-        assert(lval->sym!=NULL);
-        if ((lval->sym->usage & uCONST)!=0)
-          return error(22);     /* assignment to const argument */
-        saveresult= (lval->ident==iARRAYCELL || lval->ident==iARRAYCHAR);
-        if (saveresult)
-          pushreg(sPRI);        /* save address in PRI */
-        rvalue(lval);           /* read current value into PRI */
-        if (saveresult)
-          swap1();              /* save PRI on the stack, restore address in PRI */
-        if (!check_userop(user_dec,lval->tag,0,1,lval,&lval->tag))
-          dec(lval);            /* decrease variable afterwards */
-        if (saveresult)
-          popreg(sPRI);         /* restore PRI (result of rvalue()) */
+        if (lval->ident != iACCESSOR) {
+          assert(lval->sym!=NULL);
+          if ((lval->sym->usage & uCONST)!=0)
+            return error(22);     /* assignment to const argument */
+          saveresult= (lval->ident==iARRAYCELL || lval->ident==iARRAYCHAR);
+          if (saveresult)
+            pushreg(sPRI);        /* save address in PRI */
+          rvalue(lval);           /* read current value into PRI */
+          if (saveresult)
+            swap1();              /* save PRI on the stack, restore address in PRI */
+          if (!check_userop(user_dec,lval->tag,0,1,lval,&lval->tag))
+            dec(lval);            /* decrease variable afterwards */
+          if (saveresult)
+            popreg(sPRI);         /* restore PRI (result of rvalue()) */
+        } else {
+          pushreg(sPRI);    // save obj
+          invoke_getter(lval->accessor);
+          swap1();          // pri = obj, stack = [oldval]
+          pushreg(sPRI);    // pri = obj, stack = [oldval, obj]
+          if (!check_userop(user_dec, lval->tag, 0, 1, lval, &lval->tag))
+            dec_pri();
+          popreg(sALT);
+          invoke_setter(lval->accessor, FALSE);
+          popreg(sPRI);
+          lval->ident = iEXPRESSION;
+        }
         sideeffect=TRUE;
         return FALSE;
 /* This is temporarily disabled because we detect it automatically.
@@ -1841,28 +1939,6 @@ static int hier2(value *lval)
       } /* switch */
     } /* if */
   } /* switch */
-}
-
-static void invoke_getter(methodmap_t *map, methodmap_method_t *method, svalue *thisval)
-{
-  if (thisval->lvalue)
-    rvalue(&thisval->val);
-
-  // push.pri
-  // push.c 1
-  // sysreq.c N 1
-  // stack 8
-  pushreg(sPRI);
-  markexpr(sPARM, NULL, 0);
-  {
-    pushval(1);
-    ffcall(method->getter, NULL, 1);
-    markusage(method->getter, uREAD);
-  }
-  markexpr(sEXPR, NULL, 0);
-
-  // We can't tell whether gets are effectful, but they really shouldn't be.
-  sideeffect = TRUE;
 }
 
 /*  hier1
@@ -1892,6 +1968,10 @@ static int hier1(value *lval1)
 restart:
   sym=cursym;
   if (matchtoken('[') || matchtoken('{') || matchtoken('(') || matchtoken('.')) {
+    if (lvalue && lval1->ident == iACCESSOR) {
+      rvalue(lval1);
+      lvalue = FALSE;
+    }
     tok=tokeninfo(&val,&st);    /* get token read by matchtoken() */
     magic_string = (sym && (sym->tag == pc_tag_string && sym->dim.array.level == 0));
     if (sym==NULL && symtok!=tSYMBOL) {
@@ -2098,12 +2178,14 @@ restart:
           if ((method = methodmap_find_method(map, lexstr)) == NULL)
             error(105, map->name, lexstr);
 
-          if (method && method->getter) {
-            invoke_getter(map, method, &thisval);
+          if (method && (method->getter || method->setter)) {
+            if (lvalue)
+              rvalue(lval1);
             clear_value(lval1);
-            lval1->ident = iEXPRESSION;
+            lval1->ident = iACCESSOR;
             lval1->tag = method->getter->tag;
-            lvalue = FALSE;
+            lval1->accessor = method;
+            lvalue = TRUE;
             goto restart;
           }
 
@@ -2307,6 +2389,7 @@ static void clear_value(value *lval)
   lval->tag=0;
   lval->ident=0;
   lval->boolresult=FALSE;
+  lval->accessor=NULL;
   /* do not clear lval->arrayidx, it is preset in hier14() */
   /* do not clear lval->cmptag */
 }
@@ -2532,6 +2615,10 @@ static int nesting=0;
           lvalue = implicitthis->lvalue;
         } else {
           lvalue = hier14(&lval);
+          if (lvalue && lval.ident == iACCESSOR) {
+            rvalue(&lval);
+            lvalue = FALSE;
+          }
         }
         assert(sc_status==statFIRST || arg[argidx].ident == 0 || arg[argidx].tags!=NULL);
         switch (arg[argidx].ident) {
@@ -2949,6 +3036,11 @@ static int constant(value *lval)
     lval->tag=sym->tag;
     lval->sym=sym;
     markusage(sym,uREAD);
+  } else if (tok==tNULL) {
+    lval->constval = 0;
+    ldconst(lval->constval, sPRI);
+    lval->ident = iCONSTEXPR;
+    lval->tag = pc_tag_null_t;
   } else if (tok==tNUMBER) {
     lval->constval=val;
     ldconst(lval->constval,sPRI);
