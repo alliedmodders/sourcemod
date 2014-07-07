@@ -2191,6 +2191,14 @@ restart:
 
           if (!method || !method->target) {
             error(105, map->name, lexstr);
+
+            // Fetch a fake function so errors aren't as crazy.
+            char tmpname[METHOD_NAMEMAX + 1];
+            strcpy(tmpname, map->name);
+            strcat(tmpname, ".");
+            strcat(tmpname, lexstr);
+            tmpname[sNAMEMAX] = '\0';
+            sym = fetchfunc(tmpname);
           } else {
             implicitthis = &thisval;
             sym = method->target;
