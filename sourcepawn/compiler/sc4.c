@@ -497,7 +497,7 @@ SC_FUNC void store(value *lval)
     outval(sym->addr,TRUE);
     code_idx+=opcodes(1)+opargs(1);
   } else if (lval->ident==iACCESSOR) {
-    invoke_setter(lval->accessor);
+    invoke_setter(lval->accessor, TRUE);
   } else {
     assert(sym!=NULL);
     markusage(sym,uWRITTEN);
@@ -1248,6 +1248,17 @@ SC_FUNC void nooperation(void)
   code_idx+=opcodes(1);
 }
 
+SC_FUNC void inc_pri()
+{
+  stgwrite("\tinc.pri\n");
+  code_idx+=opcodes(1);
+}
+
+SC_FUNC void dec_pri()
+{
+  stgwrite("\tdec.pri\n");
+  code_idx+=opcodes(1);
+}
 
 /*  increment symbol
  */
@@ -1401,35 +1412,26 @@ SC_FUNC void invoke_getter(methodmap_method_t *method)
   // push.c 1
   // sysreq.c N 1
   // stack 8
-  markexpr(sPARM, NULL, 0);
-  {
-    pushreg(sPRI);
-    pushval(1);
-    ffcall(method->getter, NULL, 1);
-    markusage(method->getter, uREAD);
-  }
-  markexpr(sEXPR, NULL, 0);
+  pushreg(sPRI);
+  pushval(1);
+  ffcall(method->getter, NULL, 1);
+  markusage(method->getter, uREAD);
 }
 
-SC_FUNC void invoke_setter(methodmap_method_t *method)
+SC_FUNC void invoke_setter(methodmap_method_t *method, int save)
 {
   if (!method->setter) {
     error(152, method->name);
     return;
   }
 
-  // push.c 2
-  // sysreq.c N 1
-  // stack 8
-  markexpr(sPARM, NULL, 0);
-  {
+  if (save)
     pushreg(sPRI);
-    pushreg(sPRI);
-    pushreg(sALT);
-    pushval(2);
-    ffcall(method->setter, NULL, 2);
+  pushreg(sPRI);
+  pushreg(sALT);
+  pushval(2);
+  ffcall(method->setter, NULL, 2);
+  if (save)
     popreg(sPRI);
-    markusage(method->setter, uREAD);
-  }
-  markexpr(sEXPR, NULL, 0);
+  markusage(method->setter, uREAD);
 }

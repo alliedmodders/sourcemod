@@ -1833,41 +1833,67 @@ static int hier2(value *lval)
       case tINC:                /* lval++ */
         if (!lvalue)
           return error(22);     /* must be lvalue */
-        assert(lval->sym!=NULL);
-        if ((lval->sym->usage & uCONST)!=0)
-          return error(22);     /* assignment to const argument */
-        /* on incrementing array cells, the address in PRI must be saved for
-         * incremening the value, whereas the current value must be in PRI
-         * on exit.
-         */
-        saveresult= (lval->ident==iARRAYCELL || lval->ident==iARRAYCHAR);
-        if (saveresult)
-          pushreg(sPRI);        /* save address in PRI */
-        rvalue(lval);           /* read current value into PRI */
-        if (saveresult)
-          swap1();              /* save PRI on the stack, restore address in PRI */
-        if (!check_userop(user_inc,lval->tag,0,1,lval,&lval->tag))
-          inc(lval);            /* increase variable afterwards */
-        if (saveresult)
-          popreg(sPRI);         /* restore PRI (result of rvalue()) */
+        if (lval->ident != iACCESSOR) {
+          assert(lval->sym!=NULL);
+          if ((lval->sym->usage & uCONST)!=0)
+            return error(22);     /* assignment to const argument */
+          /* on incrementing array cells, the address in PRI must be saved for
+           * incremening the value, whereas the current value must be in PRI
+           * on exit.
+           */
+          saveresult= (lval->ident==iARRAYCELL || lval->ident==iARRAYCHAR);
+          if (saveresult)
+            pushreg(sPRI);        /* save address in PRI */
+          rvalue(lval);           /* read current value into PRI */
+          if (saveresult)
+            swap1();              /* save PRI on the stack, restore address in PRI */
+          if (!check_userop(user_inc,lval->tag,0,1,lval,&lval->tag))
+            inc(lval);            /* increase variable afterwards */
+          if (saveresult)
+            popreg(sPRI);         /* restore PRI (result of rvalue()) */
+        } else {
+          pushreg(sPRI);    // save obj
+          invoke_getter(lval->accessor);
+          swap1();          // pri = obj, stack = [oldval]
+          pushreg(sPRI);    // pri = obj, stack = [oldval, obj]
+          if (!check_userop(user_inc, lval->tag, 0, 1, lval, &lval->tag))
+            inc_pri();
+          popreg(sALT);
+          invoke_setter(lval->accessor, FALSE);
+          popreg(sPRI);
+          lval->ident = iEXPRESSION;
+        }
         sideeffect=TRUE;
         return FALSE;           /* result is no longer lvalue */
       case tDEC:                /* lval-- */
         if (!lvalue)
           return error(22);     /* must be lvalue */
-        assert(lval->sym!=NULL);
-        if ((lval->sym->usage & uCONST)!=0)
-          return error(22);     /* assignment to const argument */
-        saveresult= (lval->ident==iARRAYCELL || lval->ident==iARRAYCHAR);
-        if (saveresult)
-          pushreg(sPRI);        /* save address in PRI */
-        rvalue(lval);           /* read current value into PRI */
-        if (saveresult)
-          swap1();              /* save PRI on the stack, restore address in PRI */
-        if (!check_userop(user_dec,lval->tag,0,1,lval,&lval->tag))
-          dec(lval);            /* decrease variable afterwards */
-        if (saveresult)
-          popreg(sPRI);         /* restore PRI (result of rvalue()) */
+        if (lval->ident != iACCESSOR) {
+          assert(lval->sym!=NULL);
+          if ((lval->sym->usage & uCONST)!=0)
+            return error(22);     /* assignment to const argument */
+          saveresult= (lval->ident==iARRAYCELL || lval->ident==iARRAYCHAR);
+          if (saveresult)
+            pushreg(sPRI);        /* save address in PRI */
+          rvalue(lval);           /* read current value into PRI */
+          if (saveresult)
+            swap1();              /* save PRI on the stack, restore address in PRI */
+          if (!check_userop(user_dec,lval->tag,0,1,lval,&lval->tag))
+            dec(lval);            /* decrease variable afterwards */
+          if (saveresult)
+            popreg(sPRI);         /* restore PRI (result of rvalue()) */
+        } else {
+          pushreg(sPRI);    // save obj
+          invoke_getter(lval->accessor);
+          swap1();          // pri = obj, stack = [oldval]
+          pushreg(sPRI);    // pri = obj, stack = [oldval, obj]
+          if (!check_userop(user_dec, lval->tag, 0, 1, lval, &lval->tag))
+            dec_pri();
+          popreg(sALT);
+          invoke_setter(lval->accessor, FALSE);
+          popreg(sPRI);
+          lval->ident = iEXPRESSION;
+        }
         sideeffect=TRUE;
         return FALSE;
 /* This is temporarily disabled because we detect it automatically.

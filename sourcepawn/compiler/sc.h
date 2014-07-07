@@ -737,7 +737,9 @@ SC_FUNC void addconst(cell value);
 SC_FUNC void setheap_save(cell value);
 SC_FUNC void stradjust(regid reg);
 SC_FUNC void invoke_getter(struct methodmap_method_s *method);
-SC_FUNC void invoke_setter(struct methodmap_method_s *method);
+SC_FUNC void invoke_setter(struct methodmap_method_s *method, int save);
+SC_FUNC void inc_pri();
+SC_FUNC void dec_pri();
 
 /*  Code generation functions for arithmetic operators.
  *
