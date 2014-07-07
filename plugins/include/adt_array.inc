@@ -68,7 +68,7 @@ stock ByteCountToCells(size)
  *						NOT be auto-intialized.
  * @return				New Handle to the array object.
  */
-native Handle:CreateArray(blocksize=1, startsize=0);
+native ArrayList:CreateArray(blocksize=1, startsize=0);
 
 /**
  * Clears an array of all entries.  This is the same as ResizeArray(0).
@@ -281,3 +281,27 @@ native FindStringInArray(Handle:array, const String:item[]);
  * @error				Invalid Handle
  */
 native FindValueInArray(Handle:array, any:item); 
+
+methodmap ArrayList < Handle {
+	public ArrayList() = CreateArray;
+	public Clear() = ClearArray;
+	public Clone() = CloneArray;
+	public Resize() = ResizeArray;
+	public Push() = PushArrayCell;
+	public PushString() = PushArrayString;
+	public PushArray() = PushArrayArray;
+	public Get() = GetArrayCell;
+	public GetString() = GetArrayString;
+	public GetArray() = GetArrayArray;
+	public Set() = SetArrayCell;
+	public SetString() = SetArrayString;
+	public SetArray() = SetArrayArray;
+	public ShiftUp() = ShiftArrayUp;
+	public Erase() = RemoveFromArray;
+	public SwapAt() = SwapArrayItems;
+	public FindString() = FindStringInArray;
+	public FindValue() = FindValueInArray;
+	property int Length {
+		public get() = GetArraySize;
+	}
+};
