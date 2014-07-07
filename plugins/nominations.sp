@@ -96,7 +96,7 @@ public void OnConfigsExecuted()
 	BuildMapMenu();
 }
 
-public void OnNominationRemoved(char[] map, int owner)
+public void OnNominationRemoved(const char[] map, int owner)
 {
 	int status;
 	
@@ -300,8 +300,8 @@ void BuildMapMenu()
 		g_MapMenu.AddItem(map, map);
 		g_mapTrie.SetValue(map, status);
 	}
-	
-	g_MapMenu.SetExitButton(true);
+
+	g_MapMenu.ExitButton = true;
 
 	delete excludeMaps;
 }
