@@ -80,7 +80,7 @@ forward bool:OnClientConnect(client, String:rejectmsg[], maxlen);
  * @param client		Client index.
  * @noreturn
  */
-forward OnClientConnected(client);
+forward void OnClientConnected(client);
 
 /**
  * Called when a client is entering the game.
@@ -96,7 +96,7 @@ forward OnClientConnected(client);
  * @param client		Client index.
  * @noreturn
  */
-forward OnClientPutInServer(client);
+forward void OnClientPutInServer(client);
 
 /**
  * Called when a client is disconnecting from the server.
@@ -104,7 +104,7 @@ forward OnClientPutInServer(client);
  * @param client		Client index.
  * @noreturn
  */
-forward OnClientDisconnect(client);
+forward void OnClientDisconnect(client);
 
 /**
  * Called when a client is disconnected from the server.
@@ -112,7 +112,7 @@ forward OnClientDisconnect(client);
  * @param client		Client index.
  * @noreturn
  */
-forward OnClientDisconnect_Post(client);
+forward void OnClientDisconnect_Post(client);
 
 /**
  * Called when a client is sending a command.
@@ -132,7 +132,7 @@ forward Action:OnClientCommand(client, args);
  * @param client		Client index.
  * @noreturn
  */
-forward OnClientSettingsChanged(client);
+forward void OnClientSettingsChanged(client);
 
 /**
  * Called when a client receives a Steam ID.  The state of a client's 
@@ -145,7 +145,7 @@ forward OnClientSettingsChanged(client);
  * @param auth			Client auth string.
  * @noreturn
  */
-forward OnClientAuthorized(client, const String:auth[]);
+forward void OnClientAuthorized(client, const String:auth[]);
 
 /**
  * Called once a client is authorized and fully in-game, but 
@@ -180,7 +180,7 @@ forward Action:OnClientPreAdminCheck(client);
  * @param client		Client index.
  * @noreturn
  */
-forward OnClientPostAdminFilter(client);
+forward void OnClientPostAdminFilter(client);
 
 /**
  * Called once a client is authorized and fully in-game, and 
@@ -192,7 +192,7 @@ forward OnClientPostAdminFilter(client);
  * @param client		Client index.
  * @noreturn
  */
-forward OnClientPostAdminCheck(client);
+forward void OnClientPostAdminCheck(client);
 
 /**
  * This function will be deprecated in a future release.  Use the MaxClients variable instead.

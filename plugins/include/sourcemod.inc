@@ -172,7 +172,7 @@ forward void OnMapStart();
 /**
  * Called right before a map ends.
  */
-forward OnMapEnd();
+forward void OnMapEnd();
 
 /**
  * Called when the map has loaded, servercfgfile (server.cfg) has been 
@@ -201,20 +201,20 @@ forward void OnConfigsExecuted();
  *
  * @noreturn
  */
-forward OnAutoConfigsBuffered();
+forward void OnAutoConfigsBuffered();
 
 /**
  * @deprecated Use OnConfigsExecuted() instead.
  */
 #pragma deprecated Use OnConfigsExecuted() instead
-forward OnServerCfg();
+forward void OnServerCfg();
 
 /**
  * Called after all plugins have been loaded.  This is called once for 
  * every plugin.  If a plugin late loads, it will be called immediately 
  * after OnPluginStart().
  */
-forward OnAllPluginsLoaded();
+forward void OnAllPluginsLoaded();
 
 /**
  * Returns the calling plugin's Handle.
@@ -461,7 +461,7 @@ native GetExtensionFileStatus(const String:name[], String:error[]="", maxlength=
  *
  * @param name			Library name.
  */
-forward OnLibraryAdded(const String:name[]);
+forward void OnLibraryAdded(const String:name[]);
 
 /**
  * Called right before a library is removed that the current plugin references 
@@ -470,7 +470,7 @@ forward OnLibraryAdded(const String:name[]);
  *
  * @param name			Library name.
  */
-forward OnLibraryRemoved(const String:name[]);
+forward void OnLibraryRemoved(const String:name[]);
 
 #define MAPLIST_FLAG_MAPSFOLDER		(1<<0)		/**< On failure, use all maps in the maps folder. */
 #define MAPLIST_FLAG_CLEARARRAY		(1<<1)		/**< If an input array is specified, clear it before adding. */
@@ -564,7 +564,7 @@ forward bool:OnClientFloodCheck(client);
  * @param blocked		True if client flooded last "say", false otherwise.
  * @noreturn
  */
-forward OnClientFloodResult(client, bool:blocked);
+forward void OnClientFloodResult(client, bool:blocked);
 
 /**
  * Feature types.

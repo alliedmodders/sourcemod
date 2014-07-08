@@ -53,6 +53,10 @@ static cell_t sm_IsValidHandle(IPluginContext *pContext, const cell_t *params)
 static cell_t sm_CloseHandle(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
+
+	if (!hndl)
+		return 0;
+
 	HandleSecurity sec;
 
 	sec.pIdentity = NULL;

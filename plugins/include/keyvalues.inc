@@ -361,6 +361,18 @@ native bool:KeyValuesToFile(Handle:kv, const String:file[]);
 native bool:FileToKeyValues(Handle:kv, const String:file[]);
 
 /**
+ * Converts a given string to a KeyValues tree.  The string is read into
+ * the current postion of the tree.
+ *
+ * @param kv			KeyValues Handle.
+ * @param buffer		String buffer to load into the KeyValues.
+ * @param resourceName	The resource name of the KeyValues, used for error tracking purposes.
+ * @return				True on success, false otherwise.
+ * @error				Invalid Handle.
+ */
+native bool:StringToKeyValues(Handle:kv, const String:buffer[], const String:resourceName[]="StringToKeyValues");
+
+/**
  * Sets whether or not the KeyValues parser will read escape sequences.
  * For example, \n would be read as a literal newline.  This defaults
  * to false for new KeyValues structures.

@@ -968,4 +968,4 @@ forward Action:OnClientSayCommand(client, const String:command[], const String:s
  * @param sArgs			Chat argument string.
  * 
  */
-forward OnClientSayCommand_Post(client, const String:command[], const String:sArgs[]);
+forward void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs);
