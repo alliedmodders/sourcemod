@@ -1526,12 +1526,17 @@ static void parse(void)
     case 0:
       /* ignore zero's */
       break;
+    case tSYMBOL:
+      if (strcmp(tok.str, "class") == 0) {
+        domethodmap(Layout_Class);
+        break;
+      }
+      // Fallthrough.
     case tINT:
     case tOBJECT:
     case tCHAR:
     case tVOID:
     case tLABEL:
-    case tSYMBOL:
       lexpush();
       // Fallthrough.
     case tNEW:
@@ -1562,9 +1567,6 @@ static void parse(void)
       break;
     case tMETHODMAP:
       domethodmap(Layout_MethodMap);
-      break;
-    case tCLASS:
-      domethodmap(Layout_Class);
       break;
     case '}':
       error(54);                /* unmatched closing brace */

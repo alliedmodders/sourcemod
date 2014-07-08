@@ -395,7 +395,6 @@ enum {
   tCASE,
   tCELLSOF,
   tCHAR,
-  tCLASS,
   tCONST,
   tCONTINUE,
   tDECL,
