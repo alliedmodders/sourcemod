@@ -1949,7 +1949,7 @@ char *sc_tokens[] = {
          "...", "..", "::",
          "assert",
          "*begin", "break",
-         "case", "cellsof", "char", "class", "const", "continue",
+         "case", "cellsof", "char", "const", "continue",
          "decl", "default", "defined", "delete", "do",
          "else", "*end", "enum", "exit",
          "for", "forward", "funcenum", "functag", "function",
