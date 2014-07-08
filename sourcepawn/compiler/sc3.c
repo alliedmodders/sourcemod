@@ -1659,8 +1659,12 @@ static int hier2(value *lval)
     tag=pc_addtag(st);
     lval->cmptag=tag;
     lvalue=hier2(lval);
-    if ((lval->tag & OBJECTTAG) || (tag & OBJECTTAG))
+    if ((lval->tag & OBJECTTAG) || (tag & OBJECTTAG)) {
       matchtag(tag, lval->tag, MATCHTAG_COERCE);
+    } else if ((tag & FUNCTAG) != (lval->tag & FUNCTAG)) {
+      // Warn: unsupported cast.
+      error(237);
+    }
     lval->tag=tag;
     return lvalue;
   case tDEFINED:
