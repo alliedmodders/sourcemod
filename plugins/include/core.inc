@@ -49,14 +49,6 @@ struct PlVers
 };
 
 /**
- * Function helper values.
- */
-enum Function
-{
-     INVALID_FUNCTION = -1,
-};
-
-/**
  * Specifies what to do after a hook completes.
  */
 enum Action

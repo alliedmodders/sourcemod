@@ -80,6 +80,7 @@ int pc_tag_void = 0;
 int pc_tag_object = 0;
 int pc_tag_bool = 0;
 int pc_tag_null_t = 0;
+int pc_tag_nullfunc_t = 0;
 
 static void resetglobals(void);
 static void initglobals(void);
@@ -1351,10 +1352,12 @@ static void setconstants(void)
   pc_tag_object = pc_addtag_flags("object", FIXEDTAG|OBJECTTAG);
   pc_tag_bool = pc_addtag("bool");
   pc_tag_null_t = pc_addtag_flags("null_t", FIXEDTAG|OBJECTTAG);
+  pc_tag_nullfunc_t = pc_addtag_flags("nullfunc_t", FIXEDTAG|OBJECTTAG);
 
   add_constant("true",1,sGLOBAL,1);     /* boolean flags */
   add_constant("false",0,sGLOBAL,1);
   add_constant("EOS",0,sGLOBAL,0);      /* End Of String, or '\0' */
+  add_constant("INVALID_FUNCTION", -1, sGLOBAL, pc_tag_nullfunc_t);
   #if PAWN_CELL_SIZE==16
     add_constant("cellbits",16,sGLOBAL,0);
     #if defined _I16_MAX
