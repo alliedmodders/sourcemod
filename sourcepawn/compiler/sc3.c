@@ -357,6 +357,16 @@ static int matchobjecttags(int formaltag, int actualtag, int flags)
   if ((formaltag & OBJECTTAG) && !(actualtag & OBJECTTAG))
     return obj_typeerror(132, formaltag, actualtag);
 
+  if (actualtag == pc_tag_nullfunc_t) {
+    // All functions are nullable. We use a separate constant for backward
+    // compatibility; plugins and extensions check -1, not 0.
+    if (formaltag & FUNCTAG)
+      return TRUE;
+
+    error(154, pc_tagname(formaltag));
+    return FALSE;
+  }
+
   if (actualtag == pc_tag_null_t) {
     // All objects are nullable.
     if (formaltag & OBJECTTAG)
@@ -403,126 +413,116 @@ static int matchreturntag(functag_t *t, symbol *sym)
 
 static int matchfunctags(int formaltag, int actualtag)
 {
-  if (actualtag == pc_functag || (formaltag == pc_functag && actualtag & FUNCTAG))
+  if (formaltag == pc_functag && (actualtag & FUNCTAG))
     return TRUE;
 
-  if (actualtag & FUNCTAG) {
-    constvalue *v = find_tag_byval(actualtag);
-    int index;
-    short usage = uPUBLIC;
-    symbol *sym, *found = NULL;
-    funcenum_t *e;
-    functag_t *t;
+  if (actualtag == pc_tag_nullfunc_t)
+    return TRUE;
 
-    if (strncmp(v->name, "$Func", 5) != 0)
-      return FALSE;
+  if (!(actualtag & FUNCTAG))
+    return FALSE;
 
-    /* Now we have to go about looking up each function in this enum.  WHICH IS IT. */
-    e = funcenums_find_byval(formaltag);
-    if (!e)
-      return FALSE;
+  constvalue *v = find_tag_byval(actualtag);
+  int index;
+  short usage = uPUBLIC;
+  symbol *sym, *found = NULL;
+  funcenum_t *e;
+  functag_t *t;
 
-    assert(v->name[5] == '@' || v->name[5] == '!');
+  if (strncmp(v->name, "$Func", 5) != 0)
+    return FALSE;
 
-    /* Deduce which function type this is */
-    if (v->name[5] == '@')
-    {
-      usage = uPUBLIC;
-    } else if (v->name[5] == '!') {
-      usage = uSTOCK;
-    }
+  /* Now we have to go about looking up each function in this enum.  WHICH IS IT. */
+  e = funcenums_find_byval(formaltag);
+  if (!e)
+    return FALSE;
 
-    index = atoi(&v->name[6]);
+  assert(v->name[5] == '@' || v->name[5] == '!');
 
-    assert(index >= 0);
+  /* Deduce which function type this is */
+  if (v->name[5] == '@')
+  {
+    usage = uPUBLIC;
+  } else if (v->name[5] == '!') {
+    usage = uSTOCK;
+  }
 
-    /* Find the function, either by public idx or code addr */
-    if (usage == uPUBLIC) {
-      for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-        if (sym->ident==iFUNCTN && (sym->usage & uPUBLIC)!=0 && (sym->vclass == sGLOBAL)) {
-          if (index-- == 0) {
-            found = sym;
-            break;
-          }
-        }
-      }
-    } else if (usage == uSTOCK) {
-      for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-        if (sym->ident==iFUNCTN && (sym->vclass == sGLOBAL)) {
-          if (sym->codeaddr == index) {
-            found = sym;
-            break;
-          }
+  index = atoi(&v->name[6]);
+
+  assert(index >= 0);
+
+  /* Find the function, either by public idx or code addr */
+  if (usage == uPUBLIC) {
+    for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
+      if (sym->ident==iFUNCTN && (sym->usage & uPUBLIC)!=0 && (sym->vclass == sGLOBAL)) {
+        if (index-- == 0) {
+          found = sym;
+          break;
         }
       }
     }
-
-    if (!found) {
-      assert(found);
-      return FALSE;
+  } else if (usage == uSTOCK) {
+    for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
+      if (sym->ident==iFUNCTN && (sym->vclass == sGLOBAL)) {
+        if (sym->codeaddr == index) {
+          found = sym;
+          break;
+        }
+      }
     }
+  }
 
-    /* Wow, we now have:
-     * 1) The functional enum deduced from formaltag
-     * 2) The function trying to be shoved in deduced from actualtag
-     * Now we have to check if it matches any one of the functags inside the enum.
-     */
-    t = e->first;
-    while (t) {
-      int curarg,skip=0,i;
-      arginfo *func_arg;
-      funcarg_t *enum_arg;
-      /* Check return type first. */
-      if (!matchreturntag(t, sym)) {
-        t = t->next;
-        continue;
+  if (!found) {
+    assert(found);
+    return FALSE;
+  }
+
+  /* Wow, we now have:
+   * 1) The functional enum deduced from formaltag
+   * 2) The function trying to be shoved in deduced from actualtag
+   * Now we have to check if it matches any one of the functags inside the enum.
+   */
+  t = e->first;
+  while (t) {
+    int curarg,skip=0,i;
+    arginfo *func_arg;
+    funcarg_t *enum_arg;
+    /* Check return type first. */
+    if (!matchreturntag(t, sym)) {
+      t = t->next;
+      continue;
+    }
+    /* Check usage */
+    if (t->type != usage) {
+      t = t->next;
+      continue;
+    }
+    /* Begin iterating arguments */
+    for (curarg=0; curarg<t->argcount; curarg++) {
+      enum_arg = &t->args[curarg];
+      /* Check whether we've exhausted our arguments */
+      if (sym->dim.arglist[curarg].ident == 0) {
+        /* Can we bail out early? */
+        if (!enum_arg->ommittable) {
+          /* No! */
+          skip = 1;
+        }
+        break;
       }
-      /* Check usage */
-      if (t->type != usage) {
-        t = t->next;
-        continue;
+      func_arg = &sym->dim.arglist[curarg];
+      /* First check the ident type */
+      if (enum_arg->ident != func_arg->ident) {
+        skip = 1;
+        break;
       }
-      /* Begin iterating arguments */
-      for (curarg=0; curarg<t->argcount; curarg++) {
-        enum_arg = &t->args[curarg];
-        /* Check whether we've exhausted our arguments */
-        if (sym->dim.arglist[curarg].ident == 0) {
-          /* Can we bail out early? */
-          if (!enum_arg->ommittable) {
-            /* No! */
-            skip = 1;
-          }
-          break;
-        }
-        func_arg = &sym->dim.arglist[curarg];
-        /* First check the ident type */
-        if (enum_arg->ident != func_arg->ident) {
-          skip = 1;
-          break;
-        }
-        /* Next check arrayness */
-        if (enum_arg->dimcount != func_arg->numdim) {
-          skip = 1;
-          break;
-        }
-        if (enum_arg->dimcount > 0) {
-          for (i=0; i<enum_arg->dimcount; i++) {
-            if (enum_arg->dims[i] != func_arg->dim[i]) {
-              skip = 1;
-              break;
-            }
-          }
-          if (skip)
-            break;
-        }
-        /* Lastly, check the tags */
-        if (enum_arg->tagcount != func_arg->numtags) {
-          skip = 1;
-          break;
-        }
-        /* They should all be in the same order just for clarity... */
-        for (i=0; i<enum_arg->tagcount; i++) {
-          if (!matchtag(func_arg->tags[i], enum_arg->tags[i], MATCHTAG_SILENT|MATCHTAG_COERCE)) {
+      /* Next check arrayness */
+      if (enum_arg->dimcount != func_arg->numdim) {
+        skip = 1;
+        break;
+      }
+      if (enum_arg->dimcount > 0) {
+        for (i=0; i<enum_arg->dimcount; i++) {
+          if (enum_arg->dims[i] != func_arg->dim[i]) {
             skip = 1;
             break;
           }
@@ -530,13 +530,27 @@ static int matchfunctags(int formaltag, int actualtag)
         if (skip)
           break;
       }
-      if (!skip) {
-        /* Make sure there are no trailing arguments */
-        if (sym->dim.arglist[curarg].ident == 0)
-          return TRUE;
+      /* Lastly, check the tags */
+      if (enum_arg->tagcount != func_arg->numtags) {
+        skip = 1;
+        break;
       }
-      t = t->next;
+      /* They should all be in the same order just for clarity... */
+      for (i=0; i<enum_arg->tagcount; i++) {
+        if (!matchtag(func_arg->tags[i], enum_arg->tags[i], MATCHTAG_SILENT|MATCHTAG_COERCE)) {
+          skip = 1;
+          break;
+        }
+      }
+      if (skip)
+        break;
     }
+    if (!skip) {
+      /* Make sure there are no trailing arguments */
+      if (sym->dim.arglist[curarg].ident == 0)
+        return TRUE;
+    }
+    t = t->next;
   }
 
   return FALSE;
@@ -2266,6 +2280,7 @@ restart:
         } else {
           lval1->constval=(code_addr<<1)|0;
           snprintf(faketag, sizeof(faketag)-1, "$Func!%d", code_addr);
+          error(153);
         }
         lval1->tag=pc_addtag_flags(faketag, FIXEDTAG|FUNCTAG);
         oldsym->usage |= uREAD;

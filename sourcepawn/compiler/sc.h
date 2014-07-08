@@ -411,6 +411,7 @@ enum {
   tFORWARD,
   tFUNCENUM,
   tFUNCTAG,
+  tFUNCTION,
   tGOTO,
   tIF,
   tINT,
@@ -938,6 +939,7 @@ SC_VDECL int pc_tag_void;     /* global void tag */
 SC_VDECL int pc_tag_object;   /* root object tag */
 SC_VDECL int pc_tag_bool;     /* global bool tag */
 SC_VDECL int pc_tag_null_t;   /* the null type */
+SC_VDECL int pc_tag_nullfunc_t;   /* the null function type */
 SC_VDECL int pc_anytag;       /* global any tag */
 SC_VDECL int glbstringread;	  /* last global string read */
 SC_VDECL int sc_require_newdecls; /* only newdecls are allowed */
