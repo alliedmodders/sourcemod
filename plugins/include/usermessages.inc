@@ -162,7 +162,7 @@ functag public MsgPostHook(UserMsg:msg_id, bool:sent);
  * @noreturn
  * @error				Invalid message index.
  */
-native HookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false, MsgPostHook:post=MsgPostHook:-1);
+native HookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false, MsgPostHook:post=INVALID_FUNCTION);
 
 /**
  * Removes one usermessage hook.

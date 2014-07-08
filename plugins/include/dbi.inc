@@ -762,7 +762,7 @@ methodmap Transaction < Handle
 native SQL_ExecuteTransaction(
 		Handle:db,
 		Transaction:txn,
-		SQLTxnSuccess:onSuccess=SQLTxnSuccess:-1,
-		SQLTxnFailure:onError=SQLTxnFailure:-1,
+		SQLTxnSuccess:onSuccess = INVALID_FUNCTION,
+		SQLTxnFailure:onError = INVALID_FUNCTION,
 		any:data=0,
 		DBPriority:priority=DBPrio_Normal);

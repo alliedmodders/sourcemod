@@ -182,7 +182,7 @@ functag public CookieMenuHandler(client, CookieMenuAction:action, any:info, Stri
  * @noreturn
  * @error				Invalid cookie handle.
  */
-native SetCookiePrefabMenu(Handle:cookie, CookieMenu:type, const String:display[], CookieMenuHandler:handler=CookieMenuHandler:-1, info=0);
+native SetCookiePrefabMenu(Handle:cookie, CookieMenu:type, const String:display[], CookieMenuHandler:handler=INVALID_FUNCTION, info=0);
 
 /**
  * Adds a new item to the client cookie settings menu.

@@ -846,7 +846,7 @@ native RedrawMenuItem(const String:text[]);
  * @return				True on success, false on failure.
  * @error				Invalid client index, or radio menus not supported.
  */
-native bool:InternalShowMenu(client, const String:str[], time, keys=-1, MenuHandler:handler=MenuHandler:-1);
+native bool:InternalShowMenu(client, const String:str[], time, keys=-1, MenuHandler:handler=INVALID_FUNCTION);
 
 /**
  * Retrieves voting information from MenuAction_VoteEnd.
