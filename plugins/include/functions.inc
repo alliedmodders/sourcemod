@@ -117,7 +117,7 @@ enum ExecType
  * @param plugin			Handle of the plugin that contains the function.
 							Pass INVALID_HANDLE to search in the calling plugin.
  * @param name				Name of the function.
- * @return 					Function id or null if not found.
+ * @return 					Function id or INVALID_FUNCTION if not found.
  * @error					Invalid or corrupt plugin handle.
  */
 native Function:GetFunctionByName(Handle:plugin, const String:name[]);
