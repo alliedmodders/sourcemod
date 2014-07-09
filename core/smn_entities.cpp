@@ -1564,9 +1564,11 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 			case FIELD_CLASSPTR:
 				type = PropEnt_Entity;
 				break;
+#if SOURCE_ENGINE != SE_DOTA
 			case FIELD_EDICT:
 				type = PropEnt_Edict;
 				break;
+#endif
 			default:
 				return pContext->ThrowNativeError("Data field %s is not an entity nor edict (%d)",
 					prop,
@@ -1657,11 +1659,13 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 			case FIELD_CLASSPTR:
 				type = PropEnt_Entity;
 				break;
+#if SOURCE_ENGINE != SE_DOTA
 			case FIELD_EDICT:
 				type = PropEnt_Edict;
 				if (!pEdict)
 					return pContext->ThrowNativeError("Edict %d is invalid", params[1]);
 				break;
+#endif
 			default:
 				return pContext->ThrowNativeError("Data field %s is not an entity nor edict (%d)",
 					prop,
