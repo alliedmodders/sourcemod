@@ -1519,6 +1519,13 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+enum PropEntType
+{
+	PropEnt_Handle,
+	PropEnt_Entity,
+	PropEnt_Edict,
+};
+
 static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
@@ -1526,6 +1533,7 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	int offset;
 	int bit_count;
 	edict_t *pEdict;
+	PropEntType type;
 
 	int element = 0;
 	if (params[0] >= 4)
@@ -1548,12 +1556,23 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 
 			FIND_PROP_DATA(td);
 
-			if (td->fieldType != FIELD_EHANDLE)
+			switch (td->fieldType)
 			{
-				return pContext->ThrowNativeError("Data field %s is not an entity (%d != %d)", 
+			case FIELD_EHANDLE:
+				type = PropEnt_Handle;
+				break;
+			case FIELD_CLASSPTR:
+				type = PropEnt_Entity;
+				break;
+#if SOURCE_ENGINE != SE_DOTA
+			case FIELD_EDICT:
+				type = PropEnt_Edict;
+				break;
+#endif
+			default:
+				return pContext->ThrowNativeError("Data field %s is not an entity nor edict (%d)",
 					prop,
-					td->fieldType,
-					FIELD_EHANDLE);
+					td->fieldType);
 			}
 
 			CHECK_SET_PROP_DATA_OFFSET();
@@ -1562,6 +1581,7 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 		}
 	case Prop_Send:
 		{
+			type = PropEnt_Handle;
 			FIND_PROP_SEND(DPT_Int, "integer");
 			break;
 		}
@@ -1571,13 +1591,34 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
-	CBaseEntity *pHandleEntity = g_HL2.ReferenceToEntity(hndl.GetEntryIndex());
+	switch (type)
+	{
+	case PropEnt_Handle:
+		{
+			CBaseHandle &hndl = *(CBaseHandle *) ((uint8_t *) pEntity + offset);
+			CBaseEntity *pHandleEntity = g_HL2.ReferenceToEntity(hndl.GetEntryIndex());
 
-	if (!pHandleEntity || hndl != reinterpret_cast<IHandleEntity *>(pHandleEntity)->GetRefEHandle())
-		return -1;
+			if (!pHandleEntity || hndl != reinterpret_cast<IHandleEntity *>(pHandleEntity)->GetRefEHandle())
+				return -1;
 
-	return g_HL2.EntityToBCompatRef(pHandleEntity);
+			return g_HL2.EntityToBCompatRef(pHandleEntity);
+		}
+	case PropEnt_Entity:
+		{
+			CBaseEntity *pPropEntity = *(CBaseEntity **) ((uint8_t *) pEntity + offset);
+			return g_HL2.EntityToBCompatRef(pPropEntity);
+		}
+	case PropEnt_Edict:
+		{
+			edict_t *pEdict = *(edict_t **) ((uint8_t *) pEntity + offset);
+			if (!pEdict || pEdict->IsFree())
+				return -1;
+
+			return IndexOfEdict(pEdict);
+		}
+	}
+	
+	return -1;
 }
 
 static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
@@ -1587,6 +1628,7 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	int offset;
 	int bit_count;
 	edict_t *pEdict;
+	PropEntType type;
 
 	int element = 0;
 	if (params[0] >= 5)
@@ -1609,12 +1651,25 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 
 			FIND_PROP_DATA(td);
 
-			if (td->fieldType != FIELD_EHANDLE)
+			switch (td->fieldType)
 			{
-				return pContext->ThrowNativeError("Data field %s is not an entity (%d != %d)", 
+			case FIELD_EHANDLE:
+				type = PropEnt_Handle;
+				break;
+			case FIELD_CLASSPTR:
+				type = PropEnt_Entity;
+				break;
+#if SOURCE_ENGINE != SE_DOTA
+			case FIELD_EDICT:
+				type = PropEnt_Edict;
+				if (!pEdict)
+					return pContext->ThrowNativeError("Edict %d is invalid", params[1]);
+				break;
+#endif
+			default:
+				return pContext->ThrowNativeError("Data field %s is not an entity nor edict (%d)",
 					prop,
-					td->fieldType,
-					FIELD_EHANDLE);
+					td->fieldType);
 			}
 
 			CHECK_SET_PROP_DATA_OFFSET();
@@ -1623,6 +1678,7 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 		}
 	case Prop_Send:
 		{
+			type = PropEnt_Handle;
 			FIND_PROP_SEND(DPT_Int, "integer");
 			break;
 		}
@@ -1632,28 +1688,50 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
-
-	if (params[4] == -1)
+	CBaseEntity *pOther = GetEntity(params[4]);
+	if (!pOther)
 	{
-		hndl.Set(NULL);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[4]), params[4]);
 	}
-	else
-	{
-		CBaseEntity *pOther = GetEntity(params[4]);
 
-		if (!pOther)
+	switch (type)
+	{
+	case PropEnt_Handle:
 		{
-			return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[4]), params[4]);
+			CBaseHandle &hndl = *(CBaseHandle *) ((uint8_t *) pEntity + offset);
+			hndl.Set((IHandleEntity *) pOther);
+
+			if (params[2] == Prop_Send && (pEdict != NULL))
+			{
+				g_HL2.SetEdictStateChanged(pEdict, offset);
+			}
 		}
 
-		IHandleEntity *pHandleEnt = (IHandleEntity *)pOther;
-		hndl.Set(pHandleEnt);
-	}
+		break;
 
-	if (params[2] == Prop_Send && (pEdict != NULL))
-	{
-		g_HL2.SetEdictStateChanged(pEdict, offset);
+	case PropEnt_Entity:
+		{
+			*(CBaseEntity **) ((uint8_t *) pEntity + offset) = pOther;
+			break;
+		}
+
+	case PropEnt_Edict:
+		{
+			IServerNetworkable *pNetworkable = ((IServerUnknown *) pOther)->GetNetworkable();
+			if (!pNetworkable)
+			{
+				return pContext->ThrowNativeError("Entity %d (%d) does not have a valid edict", g_HL2.ReferenceToIndex(params[4]), params[4]);
+			}
+
+			edict_t *pOtherEdict = pNetworkable->GetEdict();
+			if (!pOtherEdict || pOtherEdict->IsFree())
+			{
+				return pContext->ThrowNativeError("Entity %d (%d) does not have a valid edict", g_HL2.ReferenceToIndex(params[4]), params[4]);
+			}
+
+			*(edict_t **) ((uint8_t *) pEntity + offset) = pOtherEdict;
+			break;
+		}
 	}
 
 	return 1;
