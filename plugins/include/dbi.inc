@@ -641,9 +641,9 @@ native SQL_UnlockDatabase(Handle:database);
  *						empty even if an error condition exists, so it is important 
  *						to check the actual Handle value instead.
  * @param data			Data passed in via the original threaded invocation.
- * @param 
+ * @noreturn
  */
-functag public SQLTCallback(Handle:owner, Handle:hndl, const String:error[], any:data);
+functag public void SQLTCallback(Handle:owner, Handle:hndl, const String:error[], any:data);
 
 /**
  * Tells whether two database handles both point to the same database 
@@ -713,7 +713,7 @@ native Transaction:SQL_CreateTransaction();
  * @param queryData     An array of each data value passed to SQL_AddQuery().
  * @noreturn
  */
-functag public SQLTxnSuccess(Handle:db, any:data, numQueries, Handle:results[], any:queryData[]);
+functag public void SQLTxnSuccess(Handle:db, any:data, numQueries, Handle:results[], any:queryData[]);
 
 /**
  * Callback for a failed transaction.
@@ -726,7 +726,7 @@ functag public SQLTxnSuccess(Handle:db, any:data, numQueries, Handle:results[], 
  * @param queryData     An array of each data value passed to SQL_AddQuery().
  * @noreturn
  */
-functag public SQLTxnFailure(Handle:db, any:data, numQueries, const String:error[], failIndex, any:queryData[]);
+functag public void SQLTxnFailure(Handle:db, any:data, numQueries, const String:error[], failIndex, any:queryData[]);
 
 /**
  * Adds a query to a transaction object.

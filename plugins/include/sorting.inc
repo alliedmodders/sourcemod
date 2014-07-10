@@ -98,7 +98,7 @@ native SortStrings(String:array[][], array_size, SortOrder:order = Sort_Ascendin
  *						0 if first is equal to second
  *						1 if first should go after second
  */
-functag public SortFunc1D(elem1, elem2, const array[], Handle:hndl);
+functag public int SortFunc1D(elem1, elem2, const array[], Handle:hndl);
 
 /** 
  * Sorts a custom 1D array.  You must pass in a comparison function.
@@ -163,7 +163,7 @@ native SortADTArray(Handle:array, SortOrder:order, SortType:type);
  *					0 if first is equal to second
  *					1 if first should go after second
  */
-functag public SortFuncADTArray(index1, index2, Handle:array, Handle:hndl);
+functag public int SortFuncADTArray(index1, index2, Handle:array, Handle:hndl);
 
 /**
  * Custom sorts an ADT Array. You must pass in a comparison function.
