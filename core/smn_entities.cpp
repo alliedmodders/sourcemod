@@ -1689,7 +1689,7 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	}
 
 	CBaseEntity *pOther = GetEntity(params[4]);
-	if (!pOther)
+	if (!pOther && params[4] != -1)
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[4]), params[4]);
 	}
@@ -1717,16 +1717,20 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 
 	case PropEnt_Edict:
 		{
-			IServerNetworkable *pNetworkable = ((IServerUnknown *) pOther)->GetNetworkable();
-			if (!pNetworkable)
+			edict_t *pOtherEdict = NULL;
+			if (pOther)
 			{
-				return pContext->ThrowNativeError("Entity %d (%d) does not have a valid edict", g_HL2.ReferenceToIndex(params[4]), params[4]);
-			}
+				IServerNetworkable *pNetworkable = ((IServerUnknown *) pOther)->GetNetworkable();
+				if (!pNetworkable)
+				{
+					return pContext->ThrowNativeError("Entity %d (%d) does not have a valid edict", g_HL2.ReferenceToIndex(params[4]), params[4]);
+				}
 
-			edict_t *pOtherEdict = pNetworkable->GetEdict();
-			if (!pOtherEdict || pOtherEdict->IsFree())
-			{
-				return pContext->ThrowNativeError("Entity %d (%d) does not have a valid edict", g_HL2.ReferenceToIndex(params[4]), params[4]);
+				pOtherEdict = pNetworkable->GetEdict();
+				if (!pOtherEdict || pOtherEdict->IsFree())
+				{
+					return pContext->ThrowNativeError("Entity %d (%d) does not have a valid edict", g_HL2.ReferenceToIndex(params[4]), params[4]);
+				}
 			}
 
 			*(edict_t **) ((uint8_t *) pEntity + offset) = pOtherEdict;
