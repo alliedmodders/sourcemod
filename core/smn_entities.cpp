@@ -1699,16 +1699,7 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	case PropEnt_Handle:
 		{
 			CBaseHandle &hndl = *(CBaseHandle *) ((uint8_t *) pEntity + offset);
-
-			if (!pOther)
-			{
-				hndl.Set(NULL);
-			}
-			else
-			{
-				IHandleEntity *pHandleEnt = (IHandleEntity *) pOther;
-				hndl.Set(pHandleEnt);
-			}
+			hndl.Set((IHandleEntity *) pOther);
 
 			if (params[2] == Prop_Send && (pEdict != NULL))
 			{
