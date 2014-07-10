@@ -150,9 +150,8 @@ enum MenuSource
  * @param action			The action of the menu.
  * @param param1			First action parameter (usually the client).
  * @param param2			Second action parameter (usually the item).
- * @noreturn
  */
-functag public MenuHandler(Menu:menu, MenuAction:action, param1, param2);
+functag public int MenuHandler(Menu:menu, MenuAction:action, param1, param2);
 
 /**
  * Creates a new, empty menu using the default style.
@@ -528,7 +527,7 @@ stock bool:VoteMenuToAll(Handle:menu, time, flags=0)
  *							defines.
  * @noreturn
  */
-functag public VoteHandler(Menu:menu,
+functag public void VoteHandler(Menu:menu,
 						   num_votes, 
 						   num_clients,
 						   const client_info[][2], 

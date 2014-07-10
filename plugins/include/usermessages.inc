@@ -147,8 +147,9 @@ functag public Action:MsgHook(UserMsg:msg_id, Handle:msg, const players[], playe
  *
  * @param msg_id		Message index.
  * @param sent			True if message was sent, false if blocked.
+ * @noreturn
  */
-functag public MsgPostHook(UserMsg:msg_id, bool:sent);
+functag public void MsgPostHook(UserMsg:msg_id, bool:sent);
 
 /**
  * Hooks a user message.

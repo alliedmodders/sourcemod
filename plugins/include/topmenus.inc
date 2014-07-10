@@ -127,7 +127,7 @@ enum TopMenuObject
  * @param maxlength			Output buffer (if used).
  * @noreturn
  */
-functag public TopMenuHandler(Handle:topmenu, 
+functag public void TopMenuHandler(Handle:topmenu, 
 							  TopMenuAction:action,
 							  TopMenuObject:topobj_id,
 							  param,

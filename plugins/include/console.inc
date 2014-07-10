@@ -456,7 +456,7 @@ native Handle:FindConVar(const String:name[]);
  * @param newValue		String containing the new value of the convar.
  * @noreturn
  */
-functag public ConVarChanged(Handle:convar, const String:oldValue[], const String:newValue[]);
+functag public void ConVarChanged(Handle:convar, const String:oldValue[], const String:newValue[]);
 
 /**
  * Creates a hook for when a console variable's value is changed.

@@ -165,9 +165,10 @@ forward OnClientCookiesCached(client);
  * @param action		CookieMenuAction being performed.
  * @param info			Info data passed.
  * @param buffer		Outbut buffer.
- * @param maxlen		Max length of the output buffer.			
+ * @param maxlen		Max length of the output buffer.
+ * @noreturn			
  */
-functag public CookieMenuHandler(client, CookieMenuAction:action, any:info, String:buffer[], maxlen);
+functag public void CookieMenuHandler(client, CookieMenuAction:action, any:info, String:buffer[], maxlen);
 
 /**
  * Add a new prefab item to the client cookie settings menu.

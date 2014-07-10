@@ -108,7 +108,7 @@ native bool:SMC_GetErrorString(SMCError:error, String:buffer[], buf_max);
  * @param smc			The SMC Parse Handle.
  * @noreturn
  */
-functag public SMC_ParseStart(Handle:smc);
+functag public void SMC_ParseStart(Handle:smc);
 
 /**
  * Sets the SMC_ParseStart function of a parse Handle.
@@ -128,7 +128,7 @@ native SMC_SetParseStart(Handle:smc, SMC_ParseStart:func);
  * @param failed		True if parsing failed, false otherwise.
  * @noreturn
  */
-functag public SMC_ParseEnd(Handle:smc, bool:halted, bool:failed);
+functag public void SMC_ParseEnd(Handle:smc, bool:halted, bool:failed);
 
 /**
  * Sets the SMC_ParseEnd of a parse handle.
