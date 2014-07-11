@@ -1488,6 +1488,9 @@ static void dodecl(const token_t *tok)
   int fstock = (tok->id == tSTOCK);
   int fstatic = (tok->id == tSTATIC);
 
+  if (fstatic && matchtoken(tSTOCK))
+    fstock = TRUE;
+
   int flags = DECLFLAG_MAYBE_FUNCTION | DECLFLAG_VARIABLE | DECLFLAG_ENUMROOT;
   if (tok->id == tNEW)
     flags |= DECLFLAG_OLD;
