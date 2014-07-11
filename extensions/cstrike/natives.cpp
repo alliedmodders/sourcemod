@@ -372,12 +372,10 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 
 	float delay = sp_ctof(params[1]);
 	int reason = params[2];
-	signed int unknown = 1;//We might want to find what this is?
 	__asm
 	{
 		push reason
 		movss xmm1, delay
-		mov edi, unknown
 		mov ecx, gamerules
 		call addr
 	}
