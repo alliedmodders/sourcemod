@@ -1989,7 +1989,7 @@ static void preprocess_in_lex()
   sTokenBuffer = &sNormalBuffer;
 }
 
-// Pops a token off the lex queue.
+// Pops a token off the token buffer, making it the current token.
 static void lexpop()
 {
   assert(sTokenBuffer->depth > 0);
