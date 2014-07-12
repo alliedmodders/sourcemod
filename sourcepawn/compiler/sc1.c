@@ -6652,6 +6652,10 @@ static void statement(int *lastindent,int allow_decl)
     }
 
     if (is_decl) {
+      if (!allow_decl) {
+        error(3);
+        return;
+      }
       lexpush();
       autozero = TRUE;
       lastst = tNEW;
