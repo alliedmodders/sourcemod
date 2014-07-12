@@ -168,8 +168,8 @@ methodmap StringMap < Handle {
 	public Clear() = ClearTrie;
 	property int Size {
 		public get() = GetTrieSize;
-	};
-};
+	}
+}
 
 /**
  * Creates a snapshot of all keys in the map. If the map is changed after this

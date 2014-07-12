@@ -598,7 +598,7 @@ methodmap Menu < Handle {
 			return GetMenuSelectionPosition();
 		}
 	}
-};
+}
 
 /**
  * Returns the number of seconds you should "wait" before displaying

@@ -3,10 +3,17 @@
 #define _sourcepawn_compiler_token_stream_h_
 
 typedef struct {
+  int line;
+  int col;
+} token_pos_t;
+
+typedef struct {
   int id;
   int value;
   char str[sLINEMAX + 1];
   size_t len;
+  token_pos_t start;
+  token_pos_t end;
 } full_token_t;
 
 #define MAX_TOKEN_DEPTH 4
