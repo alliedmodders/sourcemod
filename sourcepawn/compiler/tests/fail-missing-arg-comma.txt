@@ -1,0 +1,1 @@
+(1) : error 001: expected token: ")", but found "-identifier-"
