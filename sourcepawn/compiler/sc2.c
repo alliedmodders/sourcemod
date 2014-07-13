@@ -1922,7 +1922,7 @@ static full_token_t *current_token()
   return &sTokenBuffer->tokens[sTokenBuffer->cursor];
 }
 
-static full_token_t *last_token()
+static full_token_t *next_token()
 {
   assert(sTokenBuffer->depth > 0);
   int cursor = sTokenBuffer->cursor + 1;
@@ -1971,7 +1971,7 @@ char *sc_tokens[] = {
          "-label-", "-string-"
        };
 
-static full_token_t *next_token_ptr()
+static full_token_t *advance_token_ptr()
 {
   assert(sTokenBuffer->depth == 0);
   sTokenBuffer->num_tokens++;
@@ -1989,6 +1989,17 @@ static void preprocess_in_lex()
   sTokenBuffer = &sNormalBuffer;
 }
 
+// Pops a token off the token buffer, making it the current token.
+static void lexpop()
+{
+  assert(sTokenBuffer->depth > 0);
+
+  sTokenBuffer->depth--;
+  sTokenBuffer->cursor++;
+  if (sTokenBuffer->cursor == MAX_TOKEN_DEPTH)
+    sTokenBuffer->cursor = 0;
+}
+
 SC_FUNC int lex(cell *lexvalue,char **lexsym)
 {
   int i,toolong,newline;
@@ -1996,16 +2007,13 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
   const unsigned char *starttoken;
 
   if (sTokenBuffer->depth > 0) {
-    sTokenBuffer->depth--;
-    sTokenBuffer->cursor++;
-    if (sTokenBuffer->cursor == MAX_TOKEN_DEPTH)
-      sTokenBuffer->cursor = 0;
+    lexpop();
     *lexvalue = current_token()->value;
     *lexsym = current_token()->str;
     return current_token()->id;
   }
 
-  full_token_t *tok = next_token_ptr();
+  full_token_t *tok = advance_token_ptr();
   tok->id = 0;
   tok->value = 0;
   tok->str[0] = '\0';
@@ -2042,6 +2050,9 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
         stmtindent++;
   } /* if */
 
+  tok->start.line = fline;
+  tok->start.col = (int)(lptr - pline);
+
   i=tFIRST;
   tokptr=sc_tokens;
   while (i<=tMIDDLE) {  /* match multi-character operators */
@@ -2049,6 +2060,8 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
       tok->id = i;
       if (pc_docexpr)   /* optionally concatenate to documentation string */
         insert_autolist(*tokptr);
+      tok->end.line = fline;
+      tok->end.col = (int)(lptr - pline);
       return tok->id;
     } /* if */
     i+=1;
@@ -2060,6 +2073,8 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
       errorset(sRESET,0); /* reset error flag (clear the "panic mode")*/
       if (pc_docexpr)   /* optionally concatenate to documentation string */
         insert_autolist(*tokptr);
+      tok->end.line = fline;
+      tok->end.col = (int)(lptr - pline);
       return tok->id;
     } /* if */
     i+=1;
@@ -2227,6 +2242,8 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
       free(docstr);
     } /* if */
   } /* if */
+  tok->end.line = fline;
+  tok->end.col = (int)(lptr - pline);
   return tok->id;
 }
 
@@ -2294,19 +2311,23 @@ SC_FUNC int matchtoken(int token)
   char *str;
   int tok;
 
-  tok=lex(&val,&str);
-  if (tok==token || (token==tTERM && (tok==';' || tok==tENDEXPR))) {
+  tok = lex(&val, &str);
+
+  if (token == tok)
     return 1;
-  } else if (!sc_needsemicolon && token==tTERM && (_lexnewline || !freading)) {
+  if (token==tTERM && (tok==';' || tok==tENDEXPR))
+    return 1;
+
+  if (!sc_needsemicolon && token==tTERM && (_lexnewline || !freading)) {
     /* Push "tok" back, because it is the token following the implicit statement
      * termination (newline) token.
      */
     lexpush();
     return 2;
-  } else {
-    lexpush();
-    return 0;
-  } /* if */
+  }
+
+  lexpush();
+  return 0;
 }
 
 /*  tokeninfo
@@ -2347,13 +2368,64 @@ SC_FUNC int needtoken(int token)
       strcpy(s1,sc_tokens[token-tFIRST]);  /* multi-character symbol */
     if (!freading)
       strcpy(s2,"-end of file-");
-    else if (last_token()->id < 256)
-      sprintf(s2,"%c",(char)last_token()->id);
+    else if (next_token()->id < 256)
+      sprintf(s2,"%c",(char)next_token()->id);
     else
-      strcpy(s2, sc_tokens[last_token()->id - tFIRST]);
+      strcpy(s2, sc_tokens[next_token()->id - tFIRST]);
     error(1,s1,s2);     /* expected ..., but found ... */
     return FALSE;
   } /* if */
+}
+
+// If the next token is on the current line, return that token. Otherwise,
+// return tNEWLINE.
+SC_FUNC int peek_same_line()
+{
+  // We should not call this without having parsed at least one token.
+  assert(sTokenBuffer->num_tokens > 0);
+
+  // If there's tokens pushed back, then |fline| is the line of the furthest
+  // token parsed. If fline == current token's line, we are guaranteed any
+  // buffered token is still on the same line.
+  if (sTokenBuffer->depth > 0 && current_token()->end.line == fline)
+    return next_token()->id;
+
+  // Make sure the next token is lexed by lexing, and then buffering it.
+  full_token_t *next;
+  {
+    token_t tmp;
+    lextok(&tmp);
+    next = current_token();
+    lexpush();
+  }
+
+  // If the next token starts on the line the last token ends, then the next
+  // token is considered on the same line.
+  if (next->start.line == current_token()->end.line)
+    return next->id;
+
+  return tEOL;
+}
+
+SC_FUNC int require_newline(int allow_semi)
+{
+  if (allow_semi) {
+    // Semicolon must be on the same line.
+    if (peek_same_line() == ';')
+      lexpop();
+  }
+
+  int tokid = peek_same_line();
+  if (tokid == tEOL || tokid == 0)
+    return TRUE;
+
+  char s[20];
+  if (tokid < 256)
+    sprintf(s, "%c", (char)tokid);
+  else
+    strcpy(s, sc_tokens[tokid - tFIRST]);
+  error(155, s);
+  return FALSE;
 }
 
 /*  match
@@ -2897,7 +2969,6 @@ SC_FUNC void markusage(symbol *sym,int usage)
     } /* if */
   } /* if */
 }
-
 
 /*  findglb
  *

@@ -3769,12 +3769,11 @@ int parse_property_accessor(const typeinfo_t *type, methodmap_t *map, methodmap_
       error(150, pc_tagname(type->tag));
       return FALSE;
     }
-    
     if (target->tag != pc_tag_void)
       error(151);
   }
 
-  needtoken(tTERM);
+  require_newline(is_bind || (target->usage & uNATIVE));
   return TRUE;
 }
 
@@ -3796,16 +3795,13 @@ methodmap_method_t *parse_property(methodmap_t *map)
   method->getter = NULL;
   method->setter = NULL;
 
-  if (!matchtoken(tTERM)) {
-    if (!needtoken('{'))
-      return method;
-
+  if (matchtoken('{')) {
     while (!matchtoken('}')) {
       if (!parse_property_accessor(&type, map,method))
         lexclr(TRUE);
     }
 
-    needtoken(tTERM);
+    require_newline(FALSE);
   }
 
   return method;
@@ -3967,17 +3963,14 @@ methodmap_method_t *parse_method(methodmap_t *map)
   // If the symbol is a constructor, we bypass the initial argument checks.
   if (is_ctor) {
     define_constructor(map, method);
-    return method;
-  }
-
-  if (!check_this_tag(map, target)) {
+  } else if (!check_this_tag(map, target)) {
     error(108, spectype, map->name);
-    return method;
   }
 
   if (is_dtor)
     map->dtor = method;
 
+  require_newline(is_bind || (target->usage & uNATIVE));
   return method;
 }
 
@@ -4070,8 +4063,6 @@ static void domethodmap(LayoutSpec spec)
       continue;
     }
 
-    needtoken(tTERM);
-
     methods = (methodmap_method_t **)realloc(map->methods, sizeof(methodmap_method_t *) * (map->nummethods + 1));
     if (!methods) {
       error(163);
@@ -4081,7 +4072,7 @@ static void domethodmap(LayoutSpec spec)
     map->methods[map->nummethods++] = method;
   }
 
-  needtoken(tTERM);
+  require_newline(TRUE);
 }
 
 // delete ::= "delete" expr

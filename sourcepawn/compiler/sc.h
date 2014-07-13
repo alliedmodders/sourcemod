@@ -463,6 +463,7 @@ enum {
   tEXPR,          /* for assigment to "lastst" only (see SC1.C) */
   tENDLESS,       /* endless loop, for assigment to "lastst" only */
   tEMPTYBLOCK,    /* empty blocks for AM bug 4825 */
+  tEOL,           /* newline, only returned by peek_new_line() */
   tLAST_TOKEN_ID
 };
 
@@ -648,6 +649,8 @@ SC_FUNC int matchtoken2(int id, token_t *tok);
 SC_FUNC int expecttoken(int id, token_t *tok);
 SC_FUNC int matchsymbol(token_ident_t *ident);
 SC_FUNC int needsymbol(token_ident_t *ident);
+SC_FUNC int peek_same_line();
+SC_FUNC int require_newline(int allow_semi);
 SC_FUNC void litadd(cell value);
 SC_FUNC void litinsert(cell value,int pos);
 SC_FUNC int alphanum(char c);
