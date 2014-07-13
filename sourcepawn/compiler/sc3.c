@@ -2250,12 +2250,17 @@ restart:
         error(4,symname);             /* function not defined */
       } /* if */
       callfunction(sym,implicitthis,lval1,TRUE);
+      if (lexpeek('.')) {
+        lvalue = FALSE;
+        goto restart;
+      }
       return FALSE;             /* result of function call is no lvalue */
     } /* if */
   } /* if */
   if (sym!=NULL && lval1->ident==iFUNCTN) {
     assert(sym->ident==iFUNCTN);
     if (sc_allowproccall) {
+      // Note: this is unreachable in SourceMod, we don't support paren-less calls.
       callfunction(sym,NULL,lval1,FALSE);
     } else if ((sym->usage & uNATIVE) != uNATIVE) {
       symbol *oldsym=sym;
