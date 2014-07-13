@@ -5252,13 +5252,20 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
     return TRUE;
   } /* if */
   /* so it is not a prototype, proceed */
+
   /* if this is a function that is not referred to (this can only be detected
    * in the second stage), shut code generation off */
   if (sc_status==statWRITE && (sym->usage & uREAD)==0 && !fpublic) {
-    sc_status=statSKIP;
     cidx=code_idx;
     glbdecl=glb_declared;
+
+    sc_status=statSKIP;
+
+    // If this is a method, output errors even if it's unused.
+    if (thistag && *thistag != -1)
+      sc_err_status = TRUE;
   } /* if */
+
   if ((sym->flags & flgDEPRECATED) != 0 && (sym->usage & uSTOCK) == 0) {
     char *ptr= (sym->documentation!=NULL) ? sym->documentation : "";
     error(234, decl->name, ptr);  /* deprecated (probably a public function) */
@@ -5362,6 +5369,7 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
     sc_status=statWRITE;
     code_idx=cidx;
     glb_declared=glbdecl;
+    sc_err_status=FALSE;
   } /* if */
   if (symp)
     *symp = sym;

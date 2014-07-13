@@ -83,6 +83,7 @@ SC_VDEFINE int indent_nowarn=FALSE;/* skip warning "217 loose indentation" */
 SC_VDEFINE int sc_tabsize=8;       /* number of spaces that a TAB represents */
 SC_VDEFINE short sc_allowtags=TRUE;  /* allow/detect tagnames in lex() */
 SC_VDEFINE int sc_status;          /* read/write status */
+SC_VDEFINE int sc_err_status;
 SC_VDEFINE int sc_rationaltag=0;   /* tag for rational numbers */
 SC_VDEFINE int rational_digits=0;  /* number of fractional digits */
 SC_VDEFINE int sc_allowproccall=0; /* allow/detect tagnames in lex() */

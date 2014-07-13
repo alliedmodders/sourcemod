@@ -87,7 +87,7 @@ public Action Command_Play(int client, int args)
 	}
 	
 	char target_name[MAX_TARGET_LENGTH];
-	char target_list[MAXPLAYERS], target_count;
+	int target_list[MAXPLAYERS], target_count;
 	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(

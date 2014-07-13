@@ -927,6 +927,7 @@ SC_VDECL int indent_nowarn;   /* skip warning "217 loose indentation" */
 SC_VDECL int sc_tabsize;      /* number of spaces that a TAB represents */
 SC_VDECL short sc_allowtags;  /* allow/detect tagnames in lex() */
 SC_VDECL int sc_status;       /* read/write status */
+SC_VDECL int sc_err_status;   /* TRUE if errors should be generated even if sc_status = SKIP */
 SC_VDECL int sc_rationaltag;  /* tag for rational numbers */
 SC_VDECL int rational_digits; /* number of fractional digits */
 SC_VDECL int sc_allowproccall;/* allow/detect tagnames in lex() */

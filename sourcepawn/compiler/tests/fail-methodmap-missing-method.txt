@@ -1,0 +1,1 @@
+(6) : error 017: undefined symbol "ThisFuncDoesntExist"
