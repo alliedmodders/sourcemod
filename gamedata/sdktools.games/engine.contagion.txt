@@ -228,7 +228,7 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"507"
+				"windows"	"432"
 			}
 			"RemovePlayerItem"
 			{

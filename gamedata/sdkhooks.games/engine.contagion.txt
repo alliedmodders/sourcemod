@@ -102,4 +102,16 @@
 			}
 		}
 	}
+	"#default"
+	{
+		"Offsets"
+		{
+			"EntityListeners"
+			{
+				"windows"		"131108"
+				"linux"			"131108"
+				"mac"			"131108"
+			}
+		}
+	}
 }
