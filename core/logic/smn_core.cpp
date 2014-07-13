@@ -380,7 +380,7 @@ static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] == 1)
 	{
-		pPlugin->SetErrorState(Plugin_Error, "%s", str);
+		pPlugin->SetErrorState(Plugin_Failed, "%s", str);
 
 		return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", str);
 	}
@@ -391,12 +391,12 @@ static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
 		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
 		if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 		{
-			pPlugin->SetErrorState(Plugin_Error, "%s", str);
+			pPlugin->SetErrorState(Plugin_Failed, "%s", str);
 			return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "Formatting error (%s)", str);
 		}
 		else
 		{
-			pPlugin->SetErrorState(Plugin_Error, "%s", buffer);
+			pPlugin->SetErrorState(Plugin_Failed, "%s", buffer);
 			return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", buffer);
 		}
 	}

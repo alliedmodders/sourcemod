@@ -195,14 +195,19 @@ IPluginRuntime *CPlugin::GetRuntime()
 
 void CPlugin::SetErrorState(PluginStatus status, const char *error_fmt, ...)
 {
-	PluginStatus old_status = m_status;
-	m_status = status;
-
-	if (old_status == Plugin_Running)
+	if (m_status == Plugin_Running)
 	{
 		/* Tell everyone we're now paused */
-		g_PluginSys._SetPauseState(this, true);
+		SetPauseState(true);
+		/* If we won't recover from this error, drop everything and pause dependent plugins too! */
+		if (status == Plugin_Failed)
+		{
+			DropEverything();
+		}
 	}
+
+	/* SetPauseState sets the status to Plugin_Paused, but we might want to see some other status set. */
+	m_status = status;
 
 	va_list ap;
 	va_start(ap, error_fmt);
@@ -531,13 +536,20 @@ bool CPlugin::SetPauseState(bool paused)
 	if (paused && GetStatus() != Plugin_Running)
 	{
 		return false;
-	} else if (!paused && GetStatus() != Plugin_Paused) {
+	}
+	else if (!paused && GetStatus() != Plugin_Paused && GetStatus() != Plugin_Error) {
 		return false;
 	}
 
 	if (paused)
 	{
 		LibraryActions(LibraryAction_Removed);
+	}
+	else
+	{
+		// Set to running again BEFORE trying to call OnPluginPauseChange ;)
+		m_status = Plugin_Running;
+		m_pRuntime->SetPauseState(false);
 	}
 
 	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("OnPluginPauseChange");
@@ -552,9 +564,6 @@ bool CPlugin::SetPauseState(bool paused)
 	{
 		m_status = Plugin_Paused;
 		m_pRuntime->SetPauseState(true);
-	} else {
-		m_status = Plugin_Running;
-		m_pRuntime->SetPauseState(false);
 	}
 
 	g_PluginSys._SetPauseState(this, paused);
@@ -1496,11 +1505,9 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 	if (pPlugin->GetStatus() == Plugin_Error)
 	{
 		/* If we got here, all natives are okay again! */
-		pPlugin->m_status = Plugin_Running;
 		if (pPlugin->m_pRuntime->IsPaused())
 		{
-			pPlugin->m_pRuntime->SetPauseState(false);
-			_SetPauseState(pPlugin, false);
+			pPlugin->SetPauseState(false);
 		}
 	}
 }
