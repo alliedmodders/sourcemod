@@ -86,10 +86,10 @@ static short lastfile;
    * the error reporting is enabled only in the second pass (and only when
    * actually producing output). Fatal errors may never be ignored.
    */
-  int is_fatal = (number < 160 || number > 200);
-  if (errflag && is_fatal)
+  int not_fatal = (number < 160 || number >= 200);
+  if (errflag && not_fatal)
     return 0;
-  if (sc_status != statWRITE && is_fatal) {
+  if (sc_status != statWRITE && not_fatal) {
     if (!sc_err_status)
       return 0;
   }
