@@ -45,6 +45,8 @@ namespace SourcePawn
 	};
 }
 
+extern void LogFatalPCodeError(const char *fmt, ...);
+
 extern SourcePawn::SourcePawnEngine2 g_engine2;
 
 #endif //_INCLUDE_SOURCEPAWN_ENGINE_2_H_
