@@ -323,12 +323,6 @@ JitFunction *
 Compiler::emit(int *errp)
 {
   if (cip_ >= code_end_ || *cip_ != OP_PROC) {
-    LogFatalPCodeError("[j] emit() overran cip (name=%s) (cs=%d) (ce=%d) (cip=%d)",
-      plugin_->name,
-      pcode_start_,
-      cell_t((uint8_t *)cip_ - plugin_->pcode),
-      cell_t((uint8_t *)code_end_ - plugin_->pcode)
-    );
     *errp = SP_ERROR_INVALID_INSTRUCTION;
     return NULL;
   }
@@ -1351,13 +1345,6 @@ Compiler::emitOp(OPCODE op)
       break;
 
     default:
-      LogFatalPCodeError("[j] unknown opcode (name=%s) (cs=%d) (ce=%d) (cip=%d) (op=%d)",
-        plugin_->name,
-        pcode_start_,
-        cell_t((uint8_t *)cip_ - plugin_->pcode),
-        cell_t((uint8_t *)code_end_ - plugin_->pcode),
-        op
-      );
       error_ = SP_ERROR_INVALID_INSTRUCTION;
       return false;
   }
@@ -1557,12 +1544,6 @@ cell_t
 Compiler::readCell()
 {
   if (cip_ >= code_end_) {
-    LogFatalPCodeError("[j] readCell() overran (name=%s) (cs=%d) (ce=%d) (cip=%d)",
-      plugin_->name,
-      pcode_start_,
-      cell_t((uint8_t *)cip_ - plugin_->pcode),
-      cell_t((uint8_t *)code_end_ - plugin_->pcode)
-    );
     error_= SP_ERROR_INVALID_INSTRUCTION;
     return 0;
   }

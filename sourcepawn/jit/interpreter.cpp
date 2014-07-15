@@ -19,7 +19,6 @@
 #include "interpreter.h"
 #include "opcodes.h"
 #include "watchdog_timer.h"
-#include "engine2.h"
 
 #define STACK_MARGIN 64
 
@@ -47,10 +46,6 @@ static inline cell_t *
 Jump(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t target)
 {
   if (!IsValidOffset(target) || uint32_t(target) >= plugin->pcode_size) {
-    LogFatalPCodeError("[i] invalid jump (name=%s) (target=%d)",
-      plugin->name,
-      target
-    );
     ctx->err = SP_ERROR_INVALID_INSTRUCTION;
     return NULL;
   }
@@ -66,11 +61,6 @@ JumpTarget(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t *cip, bool cond)
 
   cell_t target = *cip;
   if (!IsValidOffset(target) || uint32_t(target) >= plugin->pcode_size) {
-    LogFatalPCodeError("[i] invalid jump (name=%s) (cip=%d) (target=%d)",
-      plugin->name,
-      cell_t((uint8_t *)cip - plugin->pcode),
-      target
-    );
     ctx->err = SP_ERROR_INVALID_INSTRUCTION;
     return NULL;
   }
@@ -241,14 +231,8 @@ Interpret(BaseRuntime *rt, uint32_t aCodeStart, cell_t *rval)
   cell_t *code = reinterpret_cast<cell_t *>(plugin->pcode);
   cell_t *codeend = reinterpret_cast<cell_t *>(plugin->pcode + plugin->pcode_size);
 
-  if (!IsValidOffset(aCodeStart) || aCodeStart > plugin->pcode_size) {
-    LogFatalPCodeError("[i] invalid cs (name=%s) (cs=%d) (size=%d)",
-      rt->plugin()->name,
-      aCodeStart,
-      plugin->pcode_size
-    );
+  if (!IsValidOffset(aCodeStart) || aCodeStart > plugin->pcode_size)
     return SP_ERROR_INVALID_INSTRUCTION;
-  }
 
   sp_context_t *ctx = rt->GetBaseContext()->GetCtx();
   ctx->err = SP_ERROR_NONE;
@@ -264,11 +248,6 @@ Interpret(BaseRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 
   for (;;) {
     if (cip >= codeend) {
-      LogFatalPCodeError("[i] cip overrun (name=%s) (cs=%d) (cip=%d)",
-        rt->plugin()->name,
-        aCodeStart,
-        cell_t(cip - code)
-      );
       ctx->err = SP_ERROR_INVALID_INSTRUCTION;
       goto error;
     }
@@ -785,11 +764,6 @@ Interpret(BaseRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       {
         cell_t amount = *cip++;
         if (!IsValidOffset(amount)) {
-          LogFatalPCodeError("[i] invalid stack offset (name=%s) (cs=%d) (cip=%d)",
-            rt->plugin()->name,
-            aCodeStart,
-            cell_t(cip - code)
-          );
           ctx->err = SP_ERROR_INVALID_INSTRUCTION;
           goto error;
         }
@@ -996,11 +970,6 @@ Interpret(BaseRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 
       default:
       {
-        LogFatalPCodeError("[i] unknown instruction (name=%s) (cs=%d) (cip=%d)",
-          rt->plugin()->name,
-          aCodeStart,
-          cell_t(cip - code)
-        );
         ctx->err = SP_ERROR_INVALID_INSTRUCTION;
         goto error;
       }

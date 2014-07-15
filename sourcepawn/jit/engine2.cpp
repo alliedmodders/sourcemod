@@ -1,6 +1,5 @@
 // vim: set ts=4 sw=4 tw=99 noet:
 #include <stdio.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include "engine2.h"
@@ -221,15 +220,3 @@ bool SourcePawnEngine2::InstallWatchdogTimer(size_t timeout_ms)
 	return g_WatchdogTimer.Initialize(timeout_ms);
 }
 
-void LogFatalPCodeError(const char *fmt, ...)
-{
-	FILE *fp = fopen("spjit-fatal-log.txt", "at");
-	if (!fp)
-		return;
-	va_list ap;
-	va_start(ap, fmt);
-	vfprintf(fp, fmt, ap);
-	fprintf(fp, "\n");
-	va_end(ap);
-	fclose(fp);
-}
