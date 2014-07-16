@@ -1195,7 +1195,7 @@ bool SDKHooks::Hook_ReloadPost()
 	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
 	CVTableHook vhook(pEntity);
-	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_Reload];
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_ReloadPost];
 	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
 		if (vhook != vtablehooklist[entry]->vtablehook)
