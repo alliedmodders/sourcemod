@@ -4214,7 +4214,10 @@ static void dodelete()
   {
     pushval(1);
     ffcall(map->dtor->target, NULL, 1);
-    markusage(map->dtor->target, uREAD);
+
+    // Only mark usage if we're not skipping codegen.
+    if (sc_status != statSKIP)
+      markusage(map->dtor->target, uREAD);
   }
 
   if (zap) {
