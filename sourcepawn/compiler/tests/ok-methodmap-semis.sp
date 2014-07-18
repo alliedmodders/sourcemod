@@ -1,5 +1,7 @@
 #pragma semicolon 1
 
+native IsValidEntity(entity);
+
 methodmap Entity
 {
 	public Entity(const char[] className) {
