@@ -4056,7 +4056,7 @@ static void domethodmap(LayoutSpec spec)
   if (spec == Layout_MethodMap) {
     map->tag = pc_addtag_flags(mapname, FIXEDTAG | METHODMAPTAG);
 
-    if (matchtoken(tNULLABLE))
+    if (matchtoken(tNULLABLE) || (parent && parent->nullable))
       map->nullable = TRUE;
   } else {
     constvalue *tagptr = pc_tagptr(mapname);

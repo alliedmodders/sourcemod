@@ -353,6 +353,15 @@ static int obj_typeerror(int id, int tag1, int tag2)
 
 static int matchobjecttags(int formaltag, int actualtag, int flags)
 {
+  if ((flags & MATCHTAG_COMMUTATIVE) &&
+      (formaltag == pc_tag_null_t || formaltag == pc_tag_nullfunc_t))
+  {
+    // Bypass the check immediately after for non-object coercion.
+    int tmp = actualtag;
+    actualtag = formaltag;
+    formaltag = tmp;
+  }
+
   // objects never coerce to non-objects, YET.
   if ((formaltag & OBJECTTAG) && !(actualtag & OBJECTTAG))
     return obj_typeerror(132, formaltag, actualtag);
@@ -372,12 +381,11 @@ static int matchobjecttags(int formaltag, int actualtag, int flags)
     if (formaltag & OBJECTTAG)
       return TRUE;
 
-    // Some methodmaps are nullable.
+    // Some methodmaps are nullable. The nullable property is inherited
+    // automatically.
     methodmap_t *map = methodmap_find_by_tag(formaltag);
-    for (; map; map = map->parent) {
-      if (map->nullable)
-        return TRUE;
-    }
+    if (map->nullable)
+      return TRUE;
 
     error(148, pc_tagname(formaltag));
     return FALSE;
@@ -923,8 +931,9 @@ static void plnge2(void (*oper)(void),
       matchtag(lval1->tag,lval2->tag,FALSE);
       lval1->constval=calc(lval1->constval,oper,lval2->constval,&lval1->boolresult);
     } else {
+      // For the purposes of tag matching, we consider the order to be irrelevant.
       if (!checktag_string(lval1, lval2))
-        matchtag(lval1->tag,lval2->tag,FALSE);
+        matchtag(lval1->tag, lval2->tag, MATCHTAG_COMMUTATIVE);
       (*oper)();                /* do the (signed) operation */
       lval1->ident=iEXPRESSION;
     } /* if */
