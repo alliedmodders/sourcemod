@@ -672,8 +672,9 @@ SC_FUNC symbol *addvariable3(declinfo_t *decl,cell addr,int vclass,int slength);
 SC_FUNC int getlabel(void);
 SC_FUNC char *itoh(ucell val);
 
-#define MATCHTAG_COERCE  0x1 // allow coercion
-#define MATCHTAG_SILENT  0x2 // silence the error(213) warning
+#define MATCHTAG_COERCE       0x1 // allow coercion
+#define MATCHTAG_SILENT       0x2 // silence the error(213) warning
+#define MATCHTAG_COMMUTATIVE  0x4 // order does not matter
 
 /* function prototypes in SC3.C */
 SC_FUNC int check_userop(void (*oper)(void),int tag1,int tag2,int numparam,
