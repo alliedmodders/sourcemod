@@ -3095,7 +3095,7 @@ static int parse_new_typename(const token_t *tok)
       } else if (tag == -1) {
         error(139, tok->str);
         tag = 0;
-      } else {
+      } else if (tag != pc_anytag) {
         // Perform some basic filters so we can start narrowing down what can
         // be used as a type.
         if (!(tag & TAGTYPEMASK))
@@ -5527,6 +5527,9 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
       assert(decl.type.numtags > 0);
 
       check_void_decl(&decl, TRUE);
+
+      if (decl.is_new && (sym->usage & uNATIVE) && decl.type.tag == pc_anytag)
+        error(156);
 
       if (decl.type.ident == iVARARGS) {
         assert(decl.type.numtags > 0);
