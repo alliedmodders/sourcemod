@@ -154,6 +154,7 @@ static int *readwhile(void);
 static void inst_datetime_defines(void);
 static void inst_binary_name(char *binfname);
 static int operatorname(char *name);
+static int parse_new_typename(const token_t *tok);
 static int reparse_old_decl(declinfo_t *decl, int flags);
 static int reparse_new_decl(declinfo_t *decl, int flags);
 static void check_void_decl(const declinfo_t *decl, int variable);
@@ -2875,7 +2876,7 @@ static void decl_const(int vclass)
 {
   char constname[sNAMEMAX+1];
   cell val;
-  char *str;
+  token_t tok;
   int tag,exprtag;
   int symbolline;
   symbol *sym;
@@ -2884,11 +2885,41 @@ static void decl_const(int vclass)
   do {
     int orgfline;
 
-    tag=pc_addtag(NULL);
-    if (lex(&val,&str)!=tSYMBOL)        /* read in (new) token */
-      error(20,str);                    /* invalid symbol name */
+    // Since spcomp is terrible, it's hard to use parse_decl() here - there
+    // are all sorts of restrictions on const. We just implement some quick
+    // detection instead.
+    int tag = 0;
+    switch (lextok(&tok)) {
+      case tINT:
+      case tOBJECT:
+      case tCHAR:
+        tag = parse_new_typename(&tok);
+        break;
+      case tLABEL:
+        tag = pc_addtag(tok.str);
+        break;
+      case tSYMBOL:
+        // See if we can peek ahead another symbol.
+        if (lexpeek(tSYMBOL)) {
+          // This is a new-style declaration.
+          tag = parse_new_typename(&tok);
+        } else {
+          // Otherwise, we got "const X ..." so the tag is int. Give the
+          // symbol back to the lexer so we get it as the name.
+          lexpush();
+        }
+        break;
+      default:
+        error(122);
+        break;
+    }
+
+    if (expecttoken(tSYMBOL, &tok))
+      strcpy(constname, tok.str);
+    else
+      strcpy(constname, "<unknown>");
+
     symbolline=fline;                   /* save line where symbol was found */
-    strcpy(constname,str);              /* save symbol name */
     needtoken('=');
     constexpr(&val,&exprtag,NULL);      /* get value */
 
@@ -3034,6 +3065,50 @@ static int consume_line()
   return TRUE;
 }
 
+static int parse_new_typename(const token_t *tok)
+{
+  switch (tok->id) {
+    case tINT:
+      return 0;
+    case tCHAR:
+      return pc_tag_string;
+    case tVOID:
+      return pc_tag_void;
+    case tOBJECT:
+      return pc_tag_object;
+    case tLABEL:
+      error(120);
+      return pc_addtag(tok->str);
+    case tSYMBOL:
+    {
+      if (strcmp(tok->str, "float") == 0)
+        return sc_rationaltag;
+      if (strcmp(tok->str, "bool") == 0)
+        return pc_tag_bool;
+      int tag = pc_findtag(tok->str);
+      if (tag == sc_rationaltag) {
+        error(98, "Float", "float");
+      } else if (tag == pc_tag_string) {
+        error(98, "String", "char");
+      } else if (tag == 0) {
+        error(98, "_", "int");
+      } else if (tag == -1) {
+        error(139, tok->str);
+        tag = 0;
+      } else {
+        // Perform some basic filters so we can start narrowing down what can
+        // be used as a type.
+        if (!(tag & TAGTYPEMASK))
+          error(139, tok->str);
+      }
+      return tag;
+    }
+  }
+
+  error(122);
+  return -1;
+}
+
 static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
 {
   token_t tok;
@@ -3050,51 +3125,9 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
     lextok(&tok);
   }
 
-  switch (tok.id) {
-    case tINT:
-      type->tag = 0;
-      break;
-    case tCHAR:
-      type->tag = pc_tag_string;
-      break;
-    case tVOID:
-      type->tag = pc_tag_void;
-      break;
-    case tOBJECT:
-      type->tag = pc_tag_object;
-      break;
-    case tLABEL:
-      type->tag = pc_addtag(tok.str);
-      error(120);
-      break;
-    case tSYMBOL:
-      if (strcmp(tok.str, "float") == 0) {
-        type->tag = sc_rationaltag;
-      } else if (strcmp(tok.str, "bool") == 0) {
-        type->tag = pc_tag_bool;
-      } else {
-        type->tag = pc_findtag(tok.str);
-        if (type->tag == sc_rationaltag) {
-          error(98, "Float", "float");
-        } else if (type->tag == pc_tag_string) {
-          error(98, "String", "char");
-        } else if (type->tag == 0) {
-          error(98, "_", "int");
-        } else if (type->tag == -1) {
-          error(139, tok.str);
-          type->tag = 0;
-        } else {
-          // Perform some basic filters so we can start narrowing down what can
-          // be used as a type.
-          if (!(type->tag & TAGTYPEMASK))
-            error(139, tok.str);
-        }
-      }
-      break;
-    default:
-      error(122);
-      goto err_out;
-  }
+  type->tag = parse_new_typename(&tok);
+  if (type->tag == -1)
+    goto err_out;
 
   // Note: we could have already filled in the prefix array bits, so we check
   // that ident != iARRAY before looking for an open bracket.
@@ -3431,6 +3464,10 @@ int parse_decl(declinfo_t *decl, int flags)
 
   decl->type.ident = iVARIABLE;
   decl->type.size = 1;
+
+  // Match early varargs as old decl.
+  if (matchtoken(tELLIPS))
+    return parse_old_decl(decl, flags);
 
   // Must attempt to match const first, since it's a common prefix.
   if (matchtoken(tCONST))
