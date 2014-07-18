@@ -1415,7 +1415,9 @@ SC_FUNC void invoke_getter(methodmap_method_t *method)
   pushreg(sPRI);
   pushval(1);
   ffcall(method->getter, NULL, 1);
-  markusage(method->getter, uREAD);
+
+  if (sc_status != statSKIP)
+    markusage(method->getter, uREAD);
 }
 
 SC_FUNC void invoke_setter(methodmap_method_t *method, int save)
@@ -1433,5 +1435,7 @@ SC_FUNC void invoke_setter(methodmap_method_t *method, int save)
   ffcall(method->setter, NULL, 2);
   if (save)
     popreg(sPRI);
-  markusage(method->setter, uREAD);
+
+  if (sc_status != statSKIP)
+    markusage(method->setter, uREAD);
 }
