@@ -169,6 +169,7 @@ public:
 	}
 	~HTTPSessionManager() {}
 
+	void Initialize();
 	void Shutdown();
 	void PluginUnloaded(IPlugin *plugin);
 	void RunFrame();
@@ -213,8 +214,7 @@ private:
 	void AddCallback(HTTPRequest request);
 
 	static const unsigned int iMaxRequestsPerFrame = 20;
-	ke::ConditionVariable requests_;
-	ke::Vector<HTTPRequest> requests;
+	IThreadWorker *m_pWorker;
 	ke::ConditionVariable threads_;
 	ke::LinkedList<IThreadHandle*> threads;
 	ke::ConditionVariable callbacks_;

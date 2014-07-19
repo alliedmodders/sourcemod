@@ -100,8 +100,9 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	// Register game listeners
 	plsys->AddPluginsListener(this);
+	g_SessionManager.Initialize();
 	smutils->AddGameFrameHook(&OnGameFrame);
-
+	
 	return true;
 }
 
@@ -574,6 +575,11 @@ const sp_nativeinfo_t curlext_natives[] =
 void HTTPSessionManager::PluginUnloaded(IPlugin *plugin)
 {
 	// Wait for running requests to finish
+	/* NOTE: when a plugin gets unloaded all associated handles get
+	 * automatically destroyed, so running threads may access invalid
+	 * memory and crash the host process. This blocking "solution" may
+	 * have to be re factored to a better solution.
+	 */
 	{
 		ke::AutoLock lock(&threads_);
 
@@ -605,10 +611,7 @@ void HTTPSessionManager::PostAndDownload(IPluginContext *pCtx,
 	request.url = url;
 	request.contextPack = contextPack;
 
-	{
-		ke::AutoLock lock(&requests_);
-		this->requests.append(request);
-	}
+	m_pWorker->MakeThread(new HTTPAsyncRequestHandler(request), Thread_AutoRelease);
 }
 
 void HTTPSessionManager::Download(IPluginContext *pCtx, 
@@ -624,10 +627,7 @@ void HTTPSessionManager::Download(IPluginContext *pCtx,
 	request.url = url;
 	request.contextPack = contextPack;
 
-	{
-		ke::AutoLock lock(&requests_);
-		this->requests.append(request);
-	}
+	m_pWorker->MakeThread(new HTTPAsyncRequestHandler(request), Thread_AutoRelease);
 }
 
 void HTTPSessionManager::BurnSessionHandle(IPluginContext *pCtx, 
@@ -688,43 +688,6 @@ void HTTPSessionManager::RunFrame()
 		callbacks_.DoUnlock();
 	}
 
-	// Try to fire up some new asynchronous requests
-	if (requests_.DoTryLock())
-	{
-		// NOTE: this is my "burst thread creation" solution
-		// Using a thread pool is slow as it executes the threads
-		// sequentially and not parallel.
-		// Not using a thread pool might cause SRCDS to crash, so
-		// we are spawning just a few threads every frame to not
-		// affect performance too much and still having the advantage
-		// of parallel execution.
-		for (unsigned int i = 0; i < iMaxRequestsPerFrame; i++)
-		{
-			if (!requests.empty())
-			{
-				// Create new thread object
-				HTTPAsyncRequestHandler *async = 
-					new HTTPAsyncRequestHandler(requests.back());
-				HandleError herr;
-				IPlugin *parent = 
-					plsys->PluginFromHandle(requests.back().plugin, &herr);
-				// Skip requests with unloaded parent plugin
-				if (parent != NULL && herr != HandleError_Freed)
-				{
-					// Create new thread
-					IThreadHandle *pThread = 
-						threader->MakeThread(async, Thread_Default);
-					// Save thread handle
-					threads.append(pThread);
-				}
-				// Remove request as it's being handled now
-				requests.pop();
-			}
-		}
-
-		requests_.DoUnlock();
-	}
-
 	// Do some quick "garbage collection" on finished threads
 	this->RemoveFinishedThreads();
 }
@@ -739,6 +702,8 @@ void HTTPSessionManager::Shutdown()
 		ke::AutoLock lock(&callbacks_);
 		this->callbacks.clear();
 	}
+
+	threader->DestroyWorker(m_pWorker);
 }
 
 void HTTPSessionManager::AddCallback(HTTPRequest request)
@@ -768,6 +733,12 @@ void HTTPSessionManager::RemoveFinishedThreads()
 
 		threads_.DoUnlock();
 	}
+}
+
+void HTTPSessionManager::Initialize()
+{
+	m_pWorker = threader->MakeWorker(NULL, true);
+	m_pWorker->Start();
 }
 
 void HTTPSessionManager::HTTPAsyncRequestHandler::RunThread(IThreadHandle *pHandle)
