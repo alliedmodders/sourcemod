@@ -42,10 +42,10 @@
 
 struct PlVers
 {
-	version,
-	String:filevers[],
-	String:date[],
-	String:time[]
+	public int version;
+	public const char[] filevers;
+	public const char[] date;
+	public const char[] time;
 };
 
 /**
@@ -111,10 +111,10 @@ enum PluginInfo
  */
 struct Extension
 {
-	const String:name[],	/**< Short name */
-	const String:file[],	/**< Default file name */
-	bool:autoload,			/**< Whether or not to auto-load */
-	bool:required,			/**< Whether or not to require */
+	public const char[] name;	/**< Short name */
+	public const char[] file;	/**< Default file name */
+	public bool autoload;		/**< Whether or not to auto-load */
+	public bool required;		/**< Whether or not to require */
 };
 
 /**
@@ -122,9 +122,9 @@ struct Extension
  */
 struct SharedPlugin
 {
-	const String:name[],	/**< Short name */
-	const String:file[],	/**< File name */
-	bool:required,			/**< Whether or not to require */
+	public const char[] name;	/**< Short name */
+	public const char[] file;	/**< File name */
+	public bool required;		/**< Whether or not to require */
 };
 
 public Float:NULL_VECTOR[3];		/**< Pass this into certain functions to act as a C++ NULL */

@@ -264,14 +264,14 @@ typedef struct svalue_s {
   int lvalue;
 } svalue;
 
-#define DECLFLAG_ONLY_NEW        0x01 // Only new-style types are allowed.
 #define DECLFLAG_ARGUMENT        0x02 // The declaration is for an argument.
 #define DECLFLAG_VARIABLE        0x04 // The declaration is for a variable.
 #define DECLFLAG_ENUMROOT        0x08 // Multi-dimensional arrays should have an enumroot.
 #define DECLFLAG_MAYBE_FUNCTION  0x10 // Might be a named function.
 #define DECLFLAG_DYNAMIC_ARRAYS  0x20 // Dynamic arrays are allowed.
 #define DECLFLAG_OLD             0x40 // Known old-style declaration.
-#define DECLMASK_NAMED_DECL      (DECLFLAG_ARGUMENT | DECLFLAG_VARIABLE | DECLFLAG_MAYBE_FUNCTION)
+#define DECLFLAG_FIELD           0x80 // Struct field.
+#define DECLMASK_NAMED_DECL      (DECLFLAG_ARGUMENT | DECLFLAG_VARIABLE | DECLFLAG_MAYBE_FUNCTION | DECLFLAG_FIELD)
 
 typedef struct {
   // Array information.

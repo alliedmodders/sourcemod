@@ -155,6 +155,7 @@ static void inst_datetime_defines(void);
 static void inst_binary_name(char *binfname);
 static int operatorname(char *name);
 static int parse_new_typename(const token_t *tok);
+static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags);
 static int reparse_old_decl(declinfo_t *decl, int flags);
 static int reparse_new_decl(declinfo_t *decl, int flags);
 static void check_void_decl(const declinfo_t *decl, int variable);
@@ -2906,6 +2907,8 @@ static void check_struct_name(const char *name)
   LayoutSpec spec = deduce_layout_spec_by_name(name);
   if (!can_redef_layout_spec(spec, Layout_PawnStruct))
     error(110, name, layout_spec_name(spec));
+  if (!isupper(*name))
+    error(109, "struct");
 }
 
 /*
@@ -2921,71 +2924,52 @@ static void declstruct(void)
 
   /* get the explicit tag (required!) */
   tok = lex(&val,&str);
-  if (tok != tSYMBOL)
+  if (tok != tSYMBOL) {
     error(93);
-
-  check_struct_name(str);
+  } else {
+    check_struct_name(str);
+  }
 
   pstruct = pstructs_add(str);
 
-  int flags = STRUCTTAG;
-  if (isupper(*pstruct->name))
-    flags |= FIXEDTAG;
-  pc_addtag_flags(pstruct->name, flags);
+  pc_addtag_flags(pstruct->name, STRUCTTAG|FIXEDTAG);
 
   needtoken('{');
   do {
-    structarg_t arg;
     if (matchtoken('}')) {
       /* Quick exit */
       lexpush();
       break;
     }
-    memset(&arg, 0, sizeof(structarg_t));
-    tok = lex(&val,&str);
-    if (tok == tCONST) {
-      arg.fconst = 1;
-      tok = lex(&val,&str);
+
+    declinfo_t decl;
+    memset(&decl, 0, sizeof(decl));
+
+    decl.type.ident = iVARIABLE;
+    decl.type.size = 1;
+    if (!needtoken(tPUBLIC) || !parse_new_decl(&decl, NULL, DECLFLAG_FIELD)) {
+      // skip the rest of the line.
+      lexclr(TRUE);
+      break;
     }
-    arg.ident = 0;
-    if (tok == '&') {
-      arg.ident = iREFERENCE;
-      tok = lex(&val,&str);
-    }
-    if (tok == tLABEL) {
-      arg.tag = pc_addtag(str);
-      tok = lex(&val,&str);
-    }
-    if (tok != tSYMBOL) {
-      error(1, "-identifier-", str);
-      continue;
-    }
-    strcpy(arg.name, str);
-    if (matchtoken('[')) {
-      if (arg.ident == iREFERENCE)
-        error(67, arg.name);
-      arg.ident = iARRAY;
-      do  {
-        constvalue *enumroot;
-        int ignore_tag;
-        if (arg.dimcount == sDIMEN_MAX) {
-          error(53);
-          break;
-        }
-        size = needsub(&ignore_tag, &enumroot);
-        arg.dims[arg.dimcount++] = size;
-      } while (matchtoken('['));
-      /* Handle strings */
-      if (arg.tag == pc_tag_string && arg.dims[arg.dimcount-1])
-        arg.dims[arg.dimcount-1] = (size + sizeof(cell)-1) / sizeof(cell);
-      if (arg.dimcount == 1 && !arg.dims[arg.dimcount-1])
-        arg.ident = iREFARRAY;
-    } else if (!arg.ident) {
-      arg.ident = iVARIABLE;
-    }
+
+    structarg_t arg;
+    memset(&arg, 0, sizeof(arg));
+
+    arg.tag = decl.type.tag;
+    arg.dimcount = decl.type.numdim;
+    memcpy(arg.dims, decl.type.dim, sizeof(int) * arg.dimcount);
+    strcpy(arg.name, decl.name);
+    arg.fconst = !!(decl.type.usage & uCONST);
+    arg.ident = decl.type.ident;
+    if (arg.ident == iARRAY)
+      arg.ident = iREFARRAY;
+
     if (pstructs_addarg(pstruct, &arg) == NULL)
       error(103, arg.name, layout_spec_name(Layout_PawnStruct));
-  } while (matchtoken(','));
+
+    require_newline(TRUE);
+  } while (!lexpeek('}'));
   needtoken('}');
   matchtoken(';');  /* eat up optional semicolon */
 }
