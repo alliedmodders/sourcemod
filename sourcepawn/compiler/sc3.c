@@ -384,7 +384,7 @@ static int matchobjecttags(int formaltag, int actualtag, int flags)
     // Some methodmaps are nullable. The nullable property is inherited
     // automatically.
     methodmap_t *map = methodmap_find_by_tag(formaltag);
-    if (map->nullable)
+    if (map && map->nullable)
       return TRUE;
 
     error(148, pc_tagname(formaltag));
