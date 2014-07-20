@@ -1394,12 +1394,6 @@ SC_FUNC void jmp_eq0(int number)
   code_idx+=opcodes(1)+opargs(1);
 }
 
-SC_FUNC void xchg(void)
-{
-  stgwrite("\txchg\n");
-  code_idx+=opcodes(1);
-}
-
 /* write a value in hexadecimal; optionally adds a newline */
 SC_FUNC void outval(cell val,int newline)
 {

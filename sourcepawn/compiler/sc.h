@@ -718,7 +718,6 @@ SC_FUNC void pushval(cell val);
 SC_FUNC void popreg(regid reg);
 SC_FUNC void genarray(int dims, int _autozero);
 SC_FUNC void swap1(void);
-SC_FUNC void xchg(void);
 SC_FUNC void ffswitch(int label);
 SC_FUNC void ffcase(cell value,char *labelname,int newtable);
 SC_FUNC void ffcall(symbol *sym,const char *label,int numargs);
