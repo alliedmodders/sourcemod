@@ -2913,100 +2913,81 @@ static void check_struct_name(const char *name)
  */
 static void declstruct(void)
 {
-	cell val;
-	char *str;
-	int tok;
-	pstruct_t *pstruct;
-	int size;
+  cell val;
+  char *str;
+  int tok;
+  pstruct_t *pstruct;
+  int size;
 
-	/* get the explicit tag (required!) */
-	tok = lex(&val,&str);
-	if (tok != tSYMBOL)
-	{
-		error(93);
-	}
+  /* get the explicit tag (required!) */
+  tok = lex(&val,&str);
+  if (tok != tSYMBOL)
+    error(93);
 
-	check_struct_name(str);
+  check_struct_name(str);
 
-	pstruct = pstructs_add(str);
+  pstruct = pstructs_add(str);
 
-	int flags = STRUCTTAG;
-	if (isupper(*pstruct->name))
-		flags |= FIXEDTAG;
-	pc_addtag_flags(pstruct->name, flags);
+  int flags = STRUCTTAG;
+  if (isupper(*pstruct->name))
+    flags |= FIXEDTAG;
+  pc_addtag_flags(pstruct->name, flags);
 
-	needtoken('{');
-	do
-	{
-		structarg_t arg;
-		if (matchtoken('}'))
-		{
-			/* Quick exit */
-			lexpush();
-			break;
-		}
-		memset(&arg, 0, sizeof(structarg_t));
-		tok = lex(&val,&str);
-		if (tok == tCONST)
-		{
-			arg.fconst = 1;
-			tok = lex(&val,&str);
-		}
-		arg.ident = 0;
-		if (tok == '&')
-		{
-			arg.ident = iREFERENCE;
-			tok = lex(&val,&str);
-		}
-		if (tok == tLABEL)
-		{
-			arg.tag = pc_addtag(str);
-			tok = lex(&val,&str);
-		}
-		if (tok != tSYMBOL)
-		{
-			error(1, "-identifier-", str);
-			continue;
-		}
-		strcpy(arg.name, str);
-		if (matchtoken('['))
-		{
-			if (arg.ident == iREFERENCE)
-			{
-				error(67, arg.name);
-			}
-			arg.ident = iARRAY;
-			do 
-			{
-				constvalue *enumroot;
-				int ignore_tag;
-				if (arg.dimcount == sDIMEN_MAX)
-				{
-					error(53);
-					break;
-				}
-				size = needsub(&ignore_tag, &enumroot);
-				arg.dims[arg.dimcount++] = size;
-			} while (matchtoken('['));
-			/* Handle strings */
-			if (arg.tag == pc_tag_string && arg.dims[arg.dimcount-1])
-			{
-				arg.dims[arg.dimcount-1] = (size + sizeof(cell)-1) / sizeof(cell);
-			}
-			if (arg.dimcount == 1 && !arg.dims[arg.dimcount-1])
-			{
-				arg.ident = iREFARRAY;
-			}
-		} else if (!arg.ident) {
-			arg.ident = iVARIABLE;
-		}
-		if (pstructs_addarg(pstruct, &arg) == NULL)
-		{
-			error(103, arg.name, layout_spec_name(Layout_PawnStruct));
-		}
-	} while (matchtoken(','));
-	needtoken('}');
-	matchtoken(';');	/* eat up optional semicolon */
+  needtoken('{');
+  do {
+    structarg_t arg;
+    if (matchtoken('}')) {
+      /* Quick exit */
+      lexpush();
+      break;
+    }
+    memset(&arg, 0, sizeof(structarg_t));
+    tok = lex(&val,&str);
+    if (tok == tCONST) {
+      arg.fconst = 1;
+      tok = lex(&val,&str);
+    }
+    arg.ident = 0;
+    if (tok == '&') {
+      arg.ident = iREFERENCE;
+      tok = lex(&val,&str);
+    }
+    if (tok == tLABEL) {
+      arg.tag = pc_addtag(str);
+      tok = lex(&val,&str);
+    }
+    if (tok != tSYMBOL) {
+      error(1, "-identifier-", str);
+      continue;
+    }
+    strcpy(arg.name, str);
+    if (matchtoken('[')) {
+      if (arg.ident == iREFERENCE)
+        error(67, arg.name);
+      arg.ident = iARRAY;
+      do  {
+        constvalue *enumroot;
+        int ignore_tag;
+        if (arg.dimcount == sDIMEN_MAX) {
+          error(53);
+          break;
+        }
+        size = needsub(&ignore_tag, &enumroot);
+        arg.dims[arg.dimcount++] = size;
+      } while (matchtoken('['));
+      /* Handle strings */
+      if (arg.tag == pc_tag_string && arg.dims[arg.dimcount-1])
+        arg.dims[arg.dimcount-1] = (size + sizeof(cell)-1) / sizeof(cell);
+      if (arg.dimcount == 1 && !arg.dims[arg.dimcount-1])
+        arg.ident = iREFARRAY;
+    } else if (!arg.ident) {
+      arg.ident = iVARIABLE;
+    }
+    if (pstructs_addarg(pstruct, &arg) == NULL)
+      error(103, arg.name, layout_spec_name(Layout_PawnStruct));
+  } while (matchtoken(','));
+  needtoken('}');
+  matchtoken(';');  /* eat up optional semicolon */
 }
 
 // Consumes a line, returns FALSE if EOF hit.
