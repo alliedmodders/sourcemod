@@ -218,7 +218,8 @@ static void (*unopers[])(void) = { lneg, neg, user_inc, user_dec };
     assert(lval!=NULL);
     if (lval->ident==iARRAYCELL || lval->ident==iARRAYCHAR)
       pushreg(sPRI);            /* save current address in PRI */
-    rvalue(lval);               /* get the symbol's value in PRI */
+    if (lval->ident!=iACCESSOR)
+      rvalue(lval);               /* get the symbol's value in PRI */
   } /* if */
 
   assert(!savepri || !savealt); /* either one MAY be set, but not both */
@@ -277,8 +278,10 @@ static void (*unopers[])(void) = { lneg, neg, user_inc, user_dec };
     assert(lval!=NULL);
     if (lval->ident==iARRAYCELL || lval->ident==iARRAYCHAR)
       popreg(sALT);             /* restore address (in ALT) */
-    store(lval);                /* store PRI in the symbol */
-    moveto1();                  /* make sure PRI is restored on exit */
+    if (lval->ident!=iACCESSOR) {
+      store(lval);                /* store PRI in the symbol */
+      moveto1();                  /* make sure PRI is restored on exit */
+    }
   } /* if */
   return TRUE;
 }
@@ -1901,10 +1904,15 @@ static int hier2(value *lval)
         } else {
           pushreg(sPRI);    // save obj
           invoke_getter(lval->accessor);
-          swap1();          // pri = obj, stack = [oldval]
-          pushreg(sPRI);    // pri = obj, stack = [oldval, obj]
+          move_alt();     // alt = oldval
+          swap1();        // pri = saved obj, stack = [oldval]
+          pushreg(sPRI);  // pri = obj, alt = oldval, stack = [obj, oldval]
+          moveto1();      // pri = oldval, stack = [obj, oldval]
+
+          // check_userop on an iACCESSOR acts as though the value is an rvalue.
           if (!check_userop(user_inc, lval->tag, 0, 1, lval, &lval->tag))
             inc_pri();
+
           popreg(sALT);
           invoke_setter(lval->accessor, FALSE);
           popreg(sPRI);
@@ -1932,10 +1940,15 @@ static int hier2(value *lval)
         } else {
           pushreg(sPRI);    // save obj
           invoke_getter(lval->accessor);
-          swap1();          // pri = obj, stack = [oldval]
-          pushreg(sPRI);    // pri = obj, stack = [oldval, obj]
+          move_alt();     // alt = oldval
+          swap1();        // pri = saved obj, stack = [oldval]
+          pushreg(sPRI);  // pri = obj, alt = oldval, stack = [obj, oldval]
+          moveto1();      // pri = oldval, stack = [obj, oldval]
+
+          // check_userop on an iACCESSOR acts as though the value is an rvalue.
           if (!check_userop(user_dec, lval->tag, 0, 1, lval, &lval->tag))
             dec_pri();
+
           popreg(sALT);
           invoke_setter(lval->accessor, FALSE);
           popreg(sPRI);
