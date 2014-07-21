@@ -51,7 +51,7 @@ typedef struct structarg_s
 {
   int tag;
   int dimcount;
-  cell dims[sDIMEN_MAX];
+  int dims[sDIMEN_MAX];
   char name[sNAMEMAX+1];
   int fconst;
   int ident;

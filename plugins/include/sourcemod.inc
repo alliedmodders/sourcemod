@@ -40,11 +40,11 @@
  */
 struct Plugin
 {
-   const String:name[],			/**< Plugin Name */
-   const String:description[],	/**< Plugin Description */
-   const String:author[],		/**< Plugin Author */
-   const String:version[],		/**< Plugin Version */
-   const String:url[],			/**< Plugin URL */
+   public const char[] name;		/**< Plugin Name */
+   public const char[] description;	/**< Plugin Description */
+   public const char[] author;		/**< Plugin Author */
+   public const char[] version;		/**< Plugin Version */
+   public const char[] url;			/**< Plugin URL */
 };
 
 #include <core>
