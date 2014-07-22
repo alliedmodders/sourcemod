@@ -148,6 +148,7 @@ void *pc_opensrc(char *filename)
 
 	src->pos = src->buffer;
 	src->end = src->buffer + length;
+	fclose(fp);
 	return src;
 
 err:
