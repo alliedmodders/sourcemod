@@ -3395,7 +3395,7 @@ int parse_decl(declinfo_t *decl, int flags)
   decl->type.size = 1;
 
   // Match early varargs as old decl.
-  if (matchtoken(tELLIPS))
+  if (lexpeek(tELLIPS))
     return parse_old_decl(decl, flags);
 
   // Must attempt to match const first, since it's a common prefix.
