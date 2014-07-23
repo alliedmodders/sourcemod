@@ -3972,7 +3972,7 @@ static void domethodmap(LayoutSpec spec)
     }
 
     if ((parent = methodmap_find_by_name(str)) == NULL) {
-      error(102, str);
+      error(102, spectype, str);
     } else if (parent->spec != spec) {
       error(129);
     }

@@ -95,14 +95,14 @@ static void grow_stgbuffer(char **buffer, int *curmax, int requiredsize)
    * over a few kBytes, there is probably a run-away expression
    */
   if (requiredsize>sSTG_MAX)
-    error(102,"staging buffer");    /* staging buffer overflow (fatal error) */
+    error(163);    /* staging buffer overflow (fatal error) */
   *curmax=requiredsize+sSTG_GROW;
   if (*buffer!=NULL)
     p=(char *)realloc(*buffer,*curmax*sizeof(char));
   else
     p=(char *)malloc(*curmax*sizeof(char));
   if (p==NULL)
-    error(102,"staging buffer");    /* staging buffer overflow (fatal error) */
+    error(163);    /* staging buffer overflow (fatal error) */
   *buffer=p;
   if (clear)
     **buffer='\0';
