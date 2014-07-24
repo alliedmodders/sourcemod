@@ -3,6 +3,10 @@ import os
 
 # Build the packing binary garbage.
 scpack = SM.Program(builder, 'scpack')
+if scpack.compiler.cc.behavior == 'msvc':
+  scpack.compiler.linkflags.remove('/SUBSYSTEM:WINDOWS')
+  scpack.compiler.linkflags.append('/SUBSYSTEM:CONSOLE')
+  scpack.compiler.cxxflags.remove('/TP')
 scpack.sources = ['scpack.c']
 scpack = builder.Add(scpack)
 
