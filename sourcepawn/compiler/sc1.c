@@ -1192,35 +1192,31 @@ static void setopt(int argc,char **argv,char *oname,char *ename,char *pname,
 }
 
 #if defined __BORLANDC__ || defined __WATCOMC__
-  #pragma argsused
+# pragma argsused
 #endif
 static void setconfig(char *root)
 {
-  #if defined macintosh
-    insert_path(":include:");
-  #else
     char path[_MAX_PATH];
     char *ptr,*base;
     int len;
 
     /* add the default "include" directory */
-    #if defined __WIN32__ || defined _WIN32
+#if defined __WIN32__ || defined _WIN32
       GetModuleFileNameA(NULL,path,_MAX_PATH);
-    #elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
+#elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__ || defined DARWIN
       /* see www.autopackage.org for the BinReloc module */
       br_init_lib(NULL);
       ptr=br_find_exe("spcomp");
       strlcpy(path,ptr,sizeof path);
       free(ptr);
-    #else
+#else
       if (root!=NULL)
         strlcpy(path,root,sizeof path); /* path + filename (hopefully) */
-    #endif
-    #if defined __MSDOS__
+# if defined __MSDOS__
       /* strip the options (appended to the path + filename) */
       if ((ptr=strpbrk(path," \t/"))!=NULL)
         *ptr='\0';
-    #endif
+# endif
     /* terminate just behind last \ or : */
     if ((ptr=strrchr(path,DIRSEP_CHAR))!=NULL || (ptr=strchr(path,':'))!=NULL) {
       /* If there is no "\" or ":", the string probably does not contain the
@@ -1251,18 +1247,18 @@ static void setconfig(char *root)
       } /* if */
       insert_path(path);
       /* same for the codepage root */
-      #if !defined NO_CODEPAGE
+# if !defined NO_CODEPAGE
         *ptr='\0';
         if (!cp_path(path,"codepage"))
           error(169,path);        /* codepage path */
-      #endif
+# endif
       /* also copy the root path (for the XML documentation) */
-      #if !defined SC_LIGHT
+# if !defined SC_LIGHT
         *ptr='\0';
         strcpy(sc_rootpath,path);
-      #endif
+# endif
     } /* if */
-  #endif /* macintosh */
+#endif /* macintosh */
 }
 
 static void setcaption(void)

@@ -70,7 +70,7 @@ binary.sources += [
   'zlib/zutil.c',
   'sp_symhash.c'
 ]
-if builder.target_platform == 'linux':
+if builder.target_platform != 'windows':
   binary.sources.append('binreloc.c')
  
 SM.spcomp = builder.Add(binary)
