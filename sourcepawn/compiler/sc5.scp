@@ -200,6 +200,7 @@ static char *errmsg[] = {
 /*154*/  "cannot assign INVALID_FUNCTION to a non-function type\n",
 /*155*/  "expected newline, but found '%s'\n",
 /*156*/  "the 'any' type is not allowed in new-style natives\n",
+/*157*/  "'%s' is a reserved keyword\n",
 #else
   "\315e\306\230\266k\217:\235\276bu\201fo\220\204\223\012",
   "\202l\224\251s\205g\346\356e\233\201(\243\315\215\267\202) \253 f\255low ea\305 \042c\353e\042\012",
