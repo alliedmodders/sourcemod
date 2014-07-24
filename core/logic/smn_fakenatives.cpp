@@ -441,6 +441,7 @@ REGISTER_NATIVES(nativeNatives)
 	{"GetNativeArray",			GetNativeArray},
 	{"GetNativeCell",			GetNativeCell},
 	{"GetNativeCellRef",		GetNativeCellRef},
+	{"GetNativeFunction",       GetNativeCell},
 	{"GetNativeString",			GetNativeString},
 	{"GetNativeStringLength",	GetNativeStringLength},
 	{"FormatNativeString",		FormatNativeString},
