@@ -654,7 +654,7 @@ const char *pc_tagname(int tag)
     if ((int)(ptr->value & TAGMASK) == (tag & TAGMASK))
       return ptr->name;
   }
-  return "<unknown>";
+  return "__unknown__";
 }
 
 constvalue *pc_tagptr(const char *name)
@@ -2878,7 +2878,7 @@ static void decl_const(int vclass)
     if (expecttoken(tSYMBOL, &tok))
       strcpy(constname, tok.str);
     else
-      strcpy(constname, "<unknown>");
+      strcpy(constname, "__unknown__");
 
     symbolline=fline;                   /* save line where symbol was found */
     needtoken('=');
@@ -3262,7 +3262,7 @@ static int parse_old_decl(declinfo_t *decl, int flags)
     if ((flags & DECLFLAG_MAYBE_FUNCTION) && matchtoken(tOPERATOR)) {
       decl->opertok = operatorname(decl->name);
       if (decl->opertok == 0)
-        strcpy(decl->name, "<unknown>");
+        strcpy(decl->name, "__unknown__");
     } else {
       if (!lexpeek(tSYMBOL)) {
         switch (lextok(&tok)) {
@@ -3280,7 +3280,7 @@ static int parse_old_decl(declinfo_t *decl, int flags)
       if (expecttoken(tSYMBOL, &tok))
         strcpy(decl->name, tok.str);
       else
-        strcpy(decl->name, "<unknown>");
+        strcpy(decl->name, "__unknown__");
     }
   }
 
@@ -3318,10 +3318,10 @@ static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags)
     if ((flags & DECLFLAG_MAYBE_FUNCTION) && matchtoken(tOPERATOR)) {
       decl->opertok = operatorname(decl->name);
       if (decl->opertok == 0)
-        strcpy(decl->name, "<unknown>");
+        strcpy(decl->name, "__unknown__");
     } else {
       if (!expecttoken(tSYMBOL, &tok)) {
-        strcpy(decl->name, "<unknown>");
+        strcpy(decl->name, "__unknown__");
         return FALSE;
       }
       strcpy(decl->name, tok.str);
@@ -3473,7 +3473,7 @@ static void define_constructor(methodmap_t *map, methodmap_method_t *method)
   symbol *sym = findglb(map->name, sGLOBAL);
 
   if (sym) {
-    const char *type = "<unknown>";
+    const char *type = "__unknown__";
     switch (sym->ident) {
       case iVARIABLE:
       case iARRAY:
@@ -3779,11 +3779,11 @@ methodmap_method_t *parse_method(methodmap_t *map)
 
   // This stores the name of the method (for destructors, we add a ~).
   token_ident_t ident;
-  strcpy(ident.name, "<unknown>");
+  strcpy(ident.name, "__unknown__");
 
   // For binding syntax, like X() = Y, this stores the right-hand name.
   token_ident_t bindsource;
-  strcpy(bindsource.name, "<unknown>");
+  strcpy(bindsource.name, "__unknown__");
 
   typeinfo_t type;
   memset(&type, 0, sizeof(type));
