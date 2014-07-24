@@ -1212,11 +1212,14 @@ static void setconfig(char *root)
 #else
       if (root!=NULL)
         strlcpy(path,root,sizeof path); /* path + filename (hopefully) */
+#endif
+
 # if defined __MSDOS__
       /* strip the options (appended to the path + filename) */
       if ((ptr=strpbrk(path," \t/"))!=NULL)
         *ptr='\0';
-# endif
+# endif /* __MSDOS__ */
+
     /* terminate just behind last \ or : */
     if ((ptr=strrchr(path,DIRSEP_CHAR))!=NULL || (ptr=strchr(path,':'))!=NULL) {
       /* If there is no "\" or ":", the string probably does not contain the
@@ -1246,19 +1249,20 @@ static void setconfig(char *root)
         } /* if */
       } /* if */
       insert_path(path);
+
       /* same for the codepage root */
 # if !defined NO_CODEPAGE
         *ptr='\0';
         if (!cp_path(path,"codepage"))
           error(169,path);        /* codepage path */
-# endif
+# endif /* !NO_CODEPAGE */
+
       /* also copy the root path (for the XML documentation) */
 # if !defined SC_LIGHT
         *ptr='\0';
         strcpy(sc_rootpath,path);
-# endif
+# endif /* !SC_LIGHT */
     } /* if */
-#endif /* macintosh */
 }
 
 static void setcaption(void)
