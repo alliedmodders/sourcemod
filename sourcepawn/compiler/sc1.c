@@ -3265,12 +3265,18 @@ static int parse_old_decl(declinfo_t *decl, int flags)
         strcpy(decl->name, "__unknown__");
     } else {
       if (!lexpeek(tSYMBOL)) {
+        extern char *sc_tokens[];
         switch (lextok(&tok)) {
           case tOBJECT:
           case tCHAR:
           case tVOID:
           case tINT:
-            error(143);
+            if (lexpeek(tSYMBOL)) {
+              error(143);
+            } else {
+              error(157, sc_tokens[tok.id - tFIRST]);
+              strcpy(decl->name, sc_tokens[tok.id - tFIRST]);
+            }
             break;
           default:
             lexpush();
@@ -3279,7 +3285,7 @@ static int parse_old_decl(declinfo_t *decl, int flags)
       }
       if (expecttoken(tSYMBOL, &tok))
         strcpy(decl->name, tok.str);
-      else
+      else if (decl->name[0] == '\0')
         strcpy(decl->name, "__unknown__");
     }
   }
