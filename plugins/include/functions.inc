@@ -429,6 +429,15 @@ native SetNativeString(param, const String:source[], maxlength, bool:utf8=true, 
 native any:GetNativeCell(param);
 
 /**
+ * Gets a function pointer from a native parameter.
+ *
+ * @param param             Parameter number, starting from 1.
+ * @return                  Function pointer at the given parameter number.
+ * @error                   Invalid parameter number, or calling from a non-native function.
+ */
+native Function GetNativeFunction(param);
+
+/**
  * Gets a cell from a native parameter, by reference.
  *
  * @param param				Parameter number, starting from 1.
