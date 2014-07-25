@@ -296,7 +296,9 @@ IPreparedQuery *PgDatabase::PrepareQuery(const char *query, char *error, size_t 
 		if(error)
 		{
 			strncopy(error, PQresultErrorMessage(res), maxlength);
-		} else if(errCode) {
+		}
+		
+		if(errCode) {
 			char *sqlState = PQresultErrorField(res, PG_DIAG_SQLSTATE);
 			// FIXME: Sqlstates can be non-number strings like 01P01.
 			// http://www.postgresql.org/docs/9.2/static/errcodes-appendix.html
