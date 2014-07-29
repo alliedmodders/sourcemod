@@ -441,6 +441,7 @@ FeatureStatus SDKHooks::GetFeatureStatus(FeatureType type, const char *name)
 
 static void CopyEntityVector(const ke::Vector<HookList> &source, ke::Vector<IPluginFunction *> &destination, int entity)
 {
+	destination.ensure(8); /* Skip trivial allocations as AMTL uses length<<1. */
 	for (size_t iter = 0; iter < source.length(); ++iter)
 	{
 		if (source[iter].entity != entity)
