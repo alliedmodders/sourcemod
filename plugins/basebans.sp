@@ -58,22 +58,12 @@ new String:g_BanReasonsPath[PLATFORM_MAX_PATH];
 
 #include "basebans/ban.sp"
 
-public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
-{
-	BuildPath(Path_SM, g_BanReasonsPath, sizeof(g_BanReasonsPath), "configs/banreasons.txt");
-	if(LoadBanReasons())
-	{
-		return APLRes_Success;
-	}
-	else
-	{
-		Format(error, err_max, "Couldn't load file %s: See log for details.", g_BanReasonsPath);
-		return APLRes_Failure;
-	}
-}
-
 public OnPluginStart()
 {
+	BuildPath(Path_SM, g_BanReasonsPath, sizeof(g_BanReasonsPath), "configs/banreasons.txt");
+
+	LoadBanReasons();
+
 	LoadTranslations("common.phrases");
 	LoadTranslations("basebans.phrases");
 	LoadTranslations("core.phrases");
@@ -106,14 +96,7 @@ public OnPluginEnd()
 public OnMapStart()
 {
 	//(Re-)Load BanReasons
-	if(g_hKvBanReasons != INVALID_HANDLE)
-	{
-		CloseHandle(g_hKvBanReasons);
-	}
-	if(!LoadBanReasons())
-	{
-		SetFailState("Error trying to load or parse %s: See logfile for details", g_BanReasonsPath);
-	}
+	LoadBanReasons();
 }
 
 public OnClientDisconnect(client)
@@ -121,32 +104,32 @@ public OnClientDisconnect(client)
 	g_IsWaitingForChatReason[client] = false;
 }
 
-public bool:LoadBanReasons()
+LoadBanReasons()
 {
+	if (g_hKvBanReasons != INVALID_HANDLE)
+	{
+		CloseHandle(g_hKvBanReasons);
+	}
+
 	g_hKvBanReasons = CreateKeyValues("banreasons");
+
 	if(FileToKeyValues(g_hKvBanReasons, g_BanReasonsPath))
 	{
 		decl String:sectionName[255];
 		if(!KvGetSectionName(g_hKvBanReasons, sectionName, sizeof(sectionName)))
 		{
-			LogMessage("Error in %s: File corrupt or in the wrong format", g_BanReasonsPath);
-			return false;
+			return SetFailState("Error in %s: File corrupt or in the wrong format", g_BanReasonsPath);
 		}
+
 		if(strcmp(sectionName, "banreasons") != 0)
 		{
-			LogMessage("Error in %s: Couldn't find 'banreasons'", g_BanReasonsPath);
-			return false;
+			return SetFailState("Error in %s: Couldn't find 'banreasons'", g_BanReasonsPath);
 		}
 		
 		//Reset kvHandle
 		KvRewind(g_hKvBanReasons);
-		
-		return true;
-	}
-	else
-	{
-		LogMessage("Error in %s: File not found, corrupt or in the wrong format", g_BanReasonsPath);
-		return false;
+	} else {
+		return SetFailState("Error in %s: File not found, corrupt or in the wrong format", g_BanReasonsPath);
 	}
 }
 
