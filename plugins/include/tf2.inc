@@ -361,10 +361,12 @@ native bool:TF2_IsPlayerInDuel(client);
 
 /**
  * Removes an econ wearable (hat, misc, etc) from a player.
+ * This also deletes the wearable entity.
  *
  * @param client	Client index.
  * @param wearable	Index of the wearable entity.
  * @noreturn
+ * @error			Invalid client index, client not in game, invalid wearable entity, or no mod support.
 */
 native TF2_RemoveWearable(client, wearable);
 
