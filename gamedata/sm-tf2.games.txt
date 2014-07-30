@@ -137,6 +137,13 @@
 				"linux"		"139"
 				"mac"		"139"
 			}
+
+			"RemoveWearable"
+			{
+				"windows"	"426"
+				"linux"		"427"
+				"mac"		"427"
+			}
 		}
 	}
 }

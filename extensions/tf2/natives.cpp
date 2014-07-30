@@ -599,6 +599,55 @@ cell_t TF2_IsHolidayActive(IPluginContext *pContext, const cell_t *params)
 	return (retValue) ? 1 : 0;
 }
 
+cell_t TF2_RemoveWearable(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	//CBasePlayer::RemoveWearable(CEconWearable *)
+
+	if (!pWrapper)
+	{
+		int offset;
+
+		if (!g_pGameConf->GetOffset("RemoveWearable", &offset))
+		{
+			return pContext->ThrowNativeError("Failed to locate function");
+		}
+
+		PassInfo pass[1];
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].size = sizeof(CBaseEntity *);
+		pass[0].type = PassType_Basic;
+
+		pWrapper = g_pBinTools->CreateVCall(offset, 0, 0, NULL, pass, 1);
+
+		g_RegNatives.Register(pWrapper);
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = UTIL_GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	CBaseEntity *pWearable;
+	if (!(pWearable = UTIL_GetCBaseEntity(params[2], false)))
+	{
+		return pContext->ThrowNativeError("Wearable index %d is not valid", params[2]);
+	}
+
+	unsigned char vstk[sizeof(void *) + sizeof(CBaseEntity *)];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = (void *)pEntity;
+	vptr += sizeof(void *);
+	*(CBaseEntity **)vptr = pWearable;
+
+	pWrapper->Execute(vstk, NULL);
+
+	return 1;
+}
+
 sp_nativeinfo_t g_TFNatives[] = 
 {
 	{"TF2_IgnitePlayer",			TF2_Burn},
@@ -616,5 +665,6 @@ sp_nativeinfo_t g_TFNatives[] =
 	{"TF2_MakeBleed",				TF2_MakeBleed},
 	{"TF2_IsPlayerInDuel",				TF2_IsPlayerInDuel},
 	{"TF2_IsHolidayActive",				TF2_IsHolidayActive},
+	{"TF2_RemoveWearable",			TF2_RemoveWearable},
 	{NULL,							NULL}
 };
