@@ -360,6 +360,15 @@ native bool:TF2_IsHolidayActive(TFHoliday:holiday);
 native bool:TF2_IsPlayerInDuel(client);
 
 /**
+ * Removes an econ wearable (hat, misc, etc) from a player.
+ *
+ * @param client	Client index.
+ * @param wearable	Index of the wearable entity.
+ * @noreturn
+*/
+native TF2_RemoveWearable(client, wearable);
+
+/**
  * Called after a condition is added to a player
  *
  * @param client		Index of the client to which the conditon is being added.
