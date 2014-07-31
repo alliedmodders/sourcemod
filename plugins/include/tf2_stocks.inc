@@ -456,69 +456,27 @@ stock TF2_RemoveAllWeapons(client)
 	}
 }
 
-stock TF2_RemoveWearable(client, wearable) 
-{
-	new Handle:config=LoadGameConfigFile("sm-tf2.games");
-	if(config==INVALID_HANDLE)
-	{
-		LogError("RemoveWearable gamedata could not be found.");
-		PrintToServer("WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
-		AcceptEntityInput(wearable, "kill");
-		return;
-	}
-	StartPrepSDKCall(SDKCall_Player);
-	PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "RemoveWearable");
-	CloseHandle(config);
-	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-	new Handle:removeWearable;
-	if((removeWearable=EndPrepSDKCall())==INVALID_HANDLE)
-	{
-		LogError("Couldn't load SDK function (CTFPlayer::RemoveWearable). SDK call failed.");
-		PrintToServer("WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
-		AcceptEntityInput(wearable, "kill");
-		return;
-	}
-	SDKCall(removeWearable, client, wearable);
-}
-
-stock TF2_EquipWearable(client, wearable)
-{
-	new Handle:config = LoadGameConfigFile("sm-tf2.games");
-	if(config == INVALID_HANDLE)
-	{
-		LogError("EquipWearable gamedata could not be found.");
-		return;
-	}
-	StartPrepSDKCall(SDKCall_Player);
-	PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "equipwearable");
-	CloseHandle(config);
-	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-	new Handle:equipWearable;
-	if((equipWearable = EndPrepSDKCall()) == INVALID_HANDLE)
-	{
-		LogError("Couldn't load SDK function (CTFPlayer::EquipWearable). SDK call failed.");
-		return;
-	}
-	SDKCall(equipWearable, client, wearable);
-} 
-
+//Credit to friagram for the stocks.
+new Handle:isWearable = INVALID_HANDLE
 stock TF2_IsWearable(wearable)
 {
-	new Handle:config = LoadGameConfigFile("ff2data");
-	if(config == INVALID_HANDLE)
+	if (isWearable == INVALID_HANDLE)
 	{
-		LogError("IsWearable gamedata could not be found.");
-		return false;
-	}
-	StartPrepSDKCall(SDKCall_Entity);
-	PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "IsWearable");
-	CloseHandle(config);
-	PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
-	new Handle:isWearable;
-	if((isWearable = EndPrepSDKCall()) == INVALID_HANDLE)
-	{
-		LogError("Couldn't load SDK function (CTFPlayer::IsWearable). SDK call failed.");
-		return false;
+		new Handle:config = LoadGameConfigFile("sm-tf2.games");
+		if(config == INVALID_HANDLE)
+		{
+			LogError("IsWearable gamedata could not be found.");
+			return false;
+		}
+		StartPrepSDKCall(SDKCall_Entity);
+		PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "IsWearable");
+		CloseHandle(config);
+		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+		if((isWearable = EndPrepSDKCall()) == INVALID_HANDLE)
+		{
+			LogError("Couldn't load SDK function (CTFPlayer::IsWearable). SDK call failed.");
+			return false;
+		}
 	}
 	return SDKCall(isWearable, wearable);
 }

@@ -111,18 +111,6 @@
 		}
 		"Offsets"
 		{
-			"EquipWearable"
-			{
-				"windows"	"425"
-				"linux"		"426"
-				"mac"		"426"
-			}
-			"RemoveWearable"
-			{
-				"windows"	"426"
-				"linux"		"427"
-				"mac"		"427"
-			}
 			"IsWearable"
 			{
 				"windows"	"87"
