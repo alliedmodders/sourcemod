@@ -14,7 +14,7 @@ binary.compiler.includes += [
 if builder.target_platform == 'mac':
   binary.compiler.defines += [
     'FRONTEND',
-	'UNSAFE_STAT_OK'
+    'UNSAFE_STAT_OK'
   ]
 elif builder.target_platform == 'windows':
   binary.compiler.includes += [
@@ -25,8 +25,8 @@ elif builder.target_platform == 'windows':
     'FRONTEND',
     'WIN32',
     '_WINDOWS',
-	'_CRT_SECURE_NO_DEPRECATE',
-	'ENABLE_THREAD_SAFETY'
+    '_CRT_SECURE_NO_DEPRECATE',
+    'ENABLE_THREAD_SAFETY'
   ]
   binary.compiler.cxxflags.append('/nologo')
   binary.compiler.cxxflags.append('/W3')
@@ -38,34 +38,34 @@ elif builder.target_platform == 'windows':
   
   binary.sources += [
     os.path.join(SM.pgsql_root, 'src', 'port', 'getaddrinfo.c'),
-	os.path.join(SM.pgsql_root, 'src', 'port', 'inet_aton.c'),
-	os.path.join(SM.pgsql_root, 'src', 'port', 'crypt.c'),
+    os.path.join(SM.pgsql_root, 'src', 'port', 'inet_aton.c'),
+    os.path.join(SM.pgsql_root, 'src', 'port', 'crypt.c'),
     os.path.join(SM.pgsql_root, 'src', 'interfaces', 'libpq', 'win32.c'),
-	#os.path.join(SM.pgsql_root, 'src', 'port', 'win32error.c'),
+    #os.path.join(SM.pgsql_root, 'src', 'port', 'win32error.c'),
     os.path.join(SM.pgsql_root, 'src', 'port', 'win32setlocale.c'),
-	os.path.join(SM.pgsql_root, 'src', 'port', 'pgsleep.c'),
-	os.path.join(SM.pgsql_root, 'src', 'port', 'dirent.c'),
+    os.path.join(SM.pgsql_root, 'src', 'port', 'pgsleep.c'),
+    os.path.join(SM.pgsql_root, 'src', 'port', 'dirent.c'),
     os.path.join(SM.pgsql_root, 'src', 'port', 'dirmod.c'),
     os.path.join(SM.pgsql_root, 'src', 'port', 'open.c'),
-	os.path.join(SM.pgsql_root, 'src', 'port', 'snprintf.c'),
-	os.path.join(SM.pgsql_root, 'src', 'common', 'fe_memutils.c'),
+    os.path.join(SM.pgsql_root, 'src', 'port', 'snprintf.c'),
+    os.path.join(SM.pgsql_root, 'src', 'common', 'fe_memutils.c'),
     os.path.join(SM.pgsql_root, 'src', 'interfaces', 'libpq', 'pthread-win32.c')
   ]
 elif builder.target_platform == 'linux':
   binary.compiler.defines += [
     'FRONTEND',
-	'UNSAFE_STAT_OK',
-	'_REENTRANT',
-	'_THREAD_SAFE',
-	'_POSIX_PTHREAD_SEMANTICS',
-	'_GNU_SOURCE',
+    'UNSAFE_STAT_OK',
+    '_REENTRANT',
+    '_THREAD_SAFE',
+    '_POSIX_PTHREAD_SEMANTICS',
+    '_GNU_SOURCE',
   ]
   
   binary.compiler.cflags.remove('-Werror')
   binary.compiler.postlink += ['-pthread -lcrypt -lpthread']
   
   binary.sources += [
-	os.path.join(SM.pgsql_root, 'src', 'port', 'getpeereid.c'),
+    os.path.join(SM.pgsql_root, 'src', 'port', 'getpeereid.c'),
   ]
 
 binary.sources += [
