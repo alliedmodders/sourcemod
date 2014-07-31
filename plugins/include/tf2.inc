@@ -371,6 +371,14 @@ native bool:TF2_IsPlayerInDuel(client);
 native TF2_RemoveWearable(client, wearable);
 
 /**
+ * Returns whether or not an entity is a valid econ wearable (hat, misc, etc).
+ * @param entity		Entity to check if it's a wearable.
+ * @return				True if entity is a wearable, false otherwise.
+ * @error				Invalid entity index or no mod support.
+*/
+native TF2_IsWearable(entity);
+
+/**
  * Called after a condition is added to a player
  *
  * @param client		Index of the client to which the conditon is being added.

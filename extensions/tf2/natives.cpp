@@ -648,6 +648,49 @@ cell_t TF2_RemoveWearable(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+cell_t TF2_IsWearable(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	//CBasePlayer::IsWearable(CEconWearable *)
+
+	if (!pWrapper)
+	{
+		int offset;
+
+		if (!g_pGameConf->GetOffset("IsWearable", &offset))
+		{
+			return pContext->ThrowNativeError("Failed to locate function");
+		}
+
+		PassInfo pass[1];
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].size = sizeof(CBaseEntity *);
+		pass[0].type = PassType_Basic;
+
+		pWrapper = g_pBinTools->CreateVCall(offset, 0, 0, NULL, pass, 1);
+
+		g_RegNatives.Register(pWrapper);
+	}
+	
+	CBaseEntity *pEntity;
+	if (!(pWearable = UTIL_GetCBaseEntity(params[1], false)))
+	{
+		return pContext->ThrowNativeError("Entity index %d is not valid", params[1]);
+	}
+
+	unsigned char vstk[sizeof(void *) + sizeof(CBaseEntity *)];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = (void *)pEntity;
+	
+	cell_t ret = 0;
+	
+	pWrapper->Execute(vstk, (void*)&ret);
+
+	return ret;
+}
+
 sp_nativeinfo_t g_TFNatives[] = 
 {
 	{"TF2_IgnitePlayer",			TF2_Burn},

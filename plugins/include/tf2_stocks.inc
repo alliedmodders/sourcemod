@@ -457,29 +457,6 @@ stock TF2_RemoveAllWeapons(client)
 }
 
 //Credit to friagram for the stocks.
-new Handle:isWearable = INVALID_HANDLE
-stock TF2_IsWearable(wearable)
-{
-	if (isWearable == INVALID_HANDLE)
-	{
-		new Handle:config = LoadGameConfigFile("sm-tf2.games");
-		if(config == INVALID_HANDLE)
-		{
-			LogError("IsWearable gamedata could not be found.");
-			return false;
-		}
-		StartPrepSDKCall(SDKCall_Entity);
-		PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "IsWearable");
-		CloseHandle(config);
-		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
-		if((isWearable = EndPrepSDKCall()) == INVALID_HANDLE)
-		{
-			LogError("Couldn't load SDK function (CTFPlayer::IsWearable). SDK call failed.");
-			return false;
-		}
-	}
-	return SDKCall(isWearable, wearable);
-}
 
 stock TF2_RemoveWeaponSlot2(client, slot) 
 { 
