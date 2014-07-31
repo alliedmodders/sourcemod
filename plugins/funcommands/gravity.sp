@@ -36,7 +36,7 @@ new g_GravityTarget[MAXPLAYERS+1];
 PerformGravity(client, target, Float:amount)
 {
 	SetEntityGravity(target, amount);
-	LogAction(client, target, "\"%L\" set gravity on \"%L\" to %d.", client, target, amount);
+	LogAction(client, target, "\"%L\" set gravity on \"%L\" to %f.", client, target, amount);
 }
 
 public AdminMenu_Gravity(Handle:topmenu, 
