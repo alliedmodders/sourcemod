@@ -430,6 +430,7 @@ stock bool:TF2_SetPlayerResourceData(client, TFResourceType:type, any:value)
  * @noreturn
  * @error				Invalid client, invalid slot or lack of mod support
  */
+#pragma deprecated Use TF2_RemoveWeaponSlot2
 stock TF2_RemoveWeaponSlot(client, slot)
 {
 	new weaponIndex;
@@ -446,11 +447,108 @@ stock TF2_RemoveWeaponSlot(client, slot)
  * @param client		Player's index.
  * @noreturn
  */
+#pragma deprecated Use TF2_RemoveAllWeapons2
 stock TF2_RemoveAllWeapons(client)
 {
 	for (new i = 0; i <= 5; i++)
 	{
 		TF2_RemoveWeaponSlot(client, i);
+	}
+}
+
+stock TF2_RemoveWearable(client, wearable) 
+{
+	new Handle:config=LoadGameConfigFile("sm-tf2.games");
+	if(config==INVALID_HANDLE)
+	{
+		LogError("RemoveWearable gamedata could not be found.");
+		PrintToServer("WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
+		AcceptEntityInput(wearable, "kill");
+		return;
+	}
+	StartPrepSDKCall(SDKCall_Player);
+	PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "RemoveWearable");
+	CloseHandle(config);
+	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+	new Handle:removeWearable;
+	if((removeWearable=EndPrepSDKCall())==INVALID_HANDLE)
+	{
+		LogError("Couldn't load SDK function (CTFPlayer::RemoveWearable). SDK call failed.");
+		PrintToServer("WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
+		AcceptEntityInput(wearable, "kill");
+		return;
+	}
+	SDKCall(removeWearable, client, wearable);
+}
+
+stock TF2_EquipWearable(client, wearable)
+{
+	new Handle:config = LoadGameConfigFile("sm-tf2.games");
+	if(config == INVALID_HANDLE)
+	{
+		LogError("EquipWearable gamedata could not be found.");
+		return;
+	}
+	StartPrepSDKCall(SDKCall_Player);
+	PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "equipwearable");
+	CloseHandle(config);
+	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+	new Handle:equipWearable;
+	if((equipWearable = EndPrepSDKCall()) == INVALID_HANDLE)
+	{
+		LogError("Couldn't load SDK function (CTFPlayer::EquipWearable). SDK call failed.");
+		return;
+	}
+	SDKCall(equipWearable, client, wearable);
+} 
+
+stock TF2_IsWearable(wearable)
+{
+	new Handle:config = LoadGameConfigFile("ff2data");
+	if(config == INVALID_HANDLE)
+	{
+		LogError("IsWearable gamedata could not be found.");
+		return false;
+	}
+	StartPrepSDKCall(SDKCall_Entity);
+	PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "IsWearable");
+	CloseHandle(config);
+	PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+	new Handle:isWearable;
+	if((isWearable = EndPrepSDKCall()) == INVALID_HANDLE)
+	{
+		LogError("Couldn't load SDK function (CTFPlayer::IsWearable). SDK call failed.");
+		return false;
+	}
+	return SDKCall(isWearable, wearable);
+}
+
+stock TF2_RemoveWeaponSlot2(client, slot) 
+{ 
+	decl ew; 
+	new weaponIndex; 
+	while ((weaponIndex = GetPlayerWeaponSlot(client, slot)) != -1) 
+	{ 
+		ew = GetEntPropEnt(weaponIndex, Prop_Send, "m_hExtraWearable"); 
+		if(IsValidEntity(ew)) 
+		{ 
+			TF2_RemoveWearable(client, ew); 
+		} 
+		ew = GetEntPropEnt(weaponIndex, Prop_Send, "m_hExtraWearableViewModel"); 
+		if(IsValidEntity(ew)) 
+		{ 
+			TF2_RemoveWearable(client, ew); 
+		} 
+		RemovePlayerItem(client, weaponIndex); 
+		AcceptEntityInput(weaponIndex, "Kill"); 
+	} 
+} 
+
+stock TF2_RemoveAllWeapons2(client)
+{
+	for(new slot = 0; slot <= 5; slot++)
+	{
+		TF2_RemoveWeaponSlot2(client, slot);
 	}
 }
 
