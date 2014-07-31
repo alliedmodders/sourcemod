@@ -674,7 +674,7 @@ cell_t TF2_IsWearable(IPluginContext *pContext, const cell_t *params)
 	}
 	
 	CBaseEntity *pEntity;
-	if (!(pWearable = UTIL_GetCBaseEntity(params[1], false)))
+	if (!(pEntity = UTIL_GetCBaseEntity(params[1], false)))
 	{
 		return pContext->ThrowNativeError("Entity index %d is not valid", params[1]);
 	}
