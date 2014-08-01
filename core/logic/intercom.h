@@ -93,7 +93,7 @@ public:
 	virtual int Read(void* pOutput, int size, FileHandle_t file) = 0;
 	virtual void Seek(FileHandle_t file, int post, int seekType) = 0;
 	virtual unsigned int Tell(FileHandle_t file) = 0;
-	virtual int WriteFileLine(FileHandle_t file, const char *pLine) = 0;
+	virtual int FPrint(FileHandle_t file, const char *pData) = 0;
 	virtual void Flush(FileHandle_t file) = 0;
 };
 

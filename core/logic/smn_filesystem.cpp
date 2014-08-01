@@ -587,7 +587,7 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 		FileHandle_t pFile = (FileHandle_t) pTempFile;
 		smcore.atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
 		sprintf(buffer, "%s\n", buffer);
-		smcore.filesystem->WriteFileLine(pFile, buffer);
+		smcore.filesystem->FPrint(pFile, buffer);
 	}
 	else
 	{

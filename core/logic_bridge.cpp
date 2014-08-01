@@ -186,9 +186,9 @@ public:
 	{
 		return filesystem->Tell(file);
 	}
-	int WriteFileLine(FileHandle_t file, const char *pLine)
+	int FPrint(FileHandle_t file, const char *pData)
 	{
-		return filesystem->FPrintf(file, pLine);
+		return filesystem->FPrintf(file, "%s", pData);
 	}
 	void Flush(FileHandle_t file)
 	{
