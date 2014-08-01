@@ -40,6 +40,7 @@
 #include "common_logic.h"
 
 HandleType_t g_FileType;
+HandleType_t g_ValveFileType;
 HandleType_t g_DirType;
 IChangeableForward *g_pLogHook = NULL;
 
@@ -55,6 +56,7 @@ public:
 	virtual void OnSourceModAllInitialized()
 	{
 		g_FileType = handlesys->CreateType("File", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		g_ValveFileType = handlesys->CreateType("ValveFile", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 		g_DirType = handlesys->CreateType("Directory", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 		g_pLogHook = forwardsys->CreateForwardEx(NULL, ET_Hook, 1, NULL, Param_String);
 		pluginsys->AddPluginsListener(this);
@@ -65,8 +67,10 @@ public:
 		forwardsys->ReleaseForward(g_pLogHook);
 		handlesys->RemoveType(g_DirType, g_pCoreIdent);
 		handlesys->RemoveType(g_FileType, g_pCoreIdent);
+		handlesys->RemoveType(g_ValveFileType, g_pCoreIdent);
 		g_DirType = 0;
 		g_FileType = 0;
+		g_ValveFileType = 0;
 	}
 	virtual void OnHandleDestroy(HandleType_t type, void *object)
 	{
@@ -79,6 +83,11 @@ public:
 		{
 			IDirectory *pDir = (IDirectory *)object;
 			libsys->CloseDirectory(pDir);
+		}
+		else if (type == g_ValveFileType)
+		{
+			FileHandle_t fp = (FileHandle_t) object;
+			smcore.filesystem->Close(fp);
 		}
 	}
 	virtual void AddLogHook(IPluginFunction *pFunc)
@@ -191,16 +200,29 @@ static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	char realpath[PLATFORM_MAX_PATH];
-	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+	Handle_t handle = 0;
 
-	FILE *pFile = fopen(realpath, mode);
-	if (!pFile)
+	if (params[0] <= 2 || !params[3])
 	{
-		return 0;
+		char realpath[PLATFORM_MAX_PATH];
+		g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+		
+		FILE *pFile = fopen(realpath, mode);
+		if (pFile)
+		{
+			handle = handlesys->CreateHandle(g_FileType, pFile, pContext->GetIdentity(), g_pCoreIdent, NULL);
+		}
+	}
+	else
+	{
+		FileHandle_t pFile = smcore.filesystem->Open(name, mode); // Should we allow pathID?
+		if (pFile)
+		{
+			handle = handlesys->CreateHandle(g_ValveFileType, pFile, pContext->GetIdentity(), g_pCoreIdent, NULL);
+		}
 	}
 
-	return handlesys->CreateHandle(g_FileType, pFile, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	return handle;
 }
 
 static cell_t sm_DeleteFile(IPluginContext *pContext, const cell_t *params)
@@ -224,17 +246,11 @@ static cell_t sm_ReadFileLine(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	FILE *pFile;
 	int err;
 
+	void *pTempFile;
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
-
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
-	}
 
 	char *buf;
 	if ((err=pContext->LocalToString(params[2], &buf)) != SP_ERROR_NONE)
@@ -243,9 +259,25 @@ static cell_t sm_ReadFileLine(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	if (fgets(buf, params[3], pFile) == NULL)
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, (void **) &pTempFile)) == HandleError_None)
 	{
-		return 0;
+		FILE *pFile = (FILE *) pTempFile;
+		if (fgets(buf, params[3], pFile) == NULL)
+		{
+			return 0;
+		}
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, (void **) &pTempFile)) == HandleError_None)
+	{
+		FileHandle_t pFile = (FileHandle_t) pTempFile;
+		if (smcore.filesystem->ReadLine(buf, params[3], pFile) == NULL)
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
 
 	return 1;
@@ -256,18 +288,28 @@ static cell_t sm_IsEndOfFile(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	FILE *pFile;
+	void *pTempFile;
+	cell_t ret;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, (void **) &pTempFile)) == HandleError_None)
+	{
+		FILE *pFile = (FILE *) pTempFile;
+		ret = feof(pFile) ? 1 : 0;
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, (void **) &pTempFile)) == HandleError_None)
+	{
+		FileHandle_t pFile = (FileHandle_t) pTempFile;
+		ret = smcore.filesystem->EndOfFile(pFile) ? 1 : 0;
+	}
+	else
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
 
-	return (feof(pFile)) ? 1 : 0;
+	return ret;
 }
 
 static cell_t sm_FileSeek(IPluginContext *pContext, const cell_t *params)
@@ -275,18 +317,25 @@ static cell_t sm_FileSeek(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	FILE *pFile;
+	void *pTempFile;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, (void **) &pTempFile)) == HandleError_None)
+	{
+		FILE *pFile = (FILE *) pTempFile;
+		fseek(pFile, params[2], params[3]);
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, (void **) &pTempFile)) == HandleError_None)
+	{
+		FileHandle_t pFile = (FileHandle_t) pTempFile;
+		smcore.filesystem->Seek(pFile, params[2], params[3]);
+	}
+	else
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
-
-	fseek(pFile, params[2], params[3]);
 	
 	return 1;
 }
@@ -296,18 +345,28 @@ static cell_t sm_FilePosition(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	FILE *pFile;
+	void *pTempFile;
+	cell_t ret;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, (void **) &pTempFile)) == HandleError_None)
+	{
+		FILE *pFile = (FILE *) pTempFile;
+		ret = ftell(pFile);
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, (void **) &pTempFile)) == HandleError_None)
+	{
+		FileHandle_t pFile = (FileHandle_t) pTempFile;
+		ret = smcore.filesystem->Tell(pFile);
+	}
+	else
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
 
-	return ftell(pFile);
+	return ret;
 }
 
 static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
@@ -501,19 +560,14 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	FILE *pFile;
+	void *pTempFile;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
-	}
-
 	char *fmt;
 	int err;
+
 	if ((err=pContext->LocalToString(params[2], &fmt)) != SP_ERROR_NONE)
 	{
 		pContext->ThrowNativeErrorEx(err, NULL);
@@ -522,8 +576,23 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 
 	char buffer[2048];
 	int arg = 3;
-	smcore.atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
-	fprintf(pFile, "%s\n", buffer);
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, (void **) &pTempFile)) == HandleError_None)
+	{
+		FILE *pFile = (FILE *) pTempFile;
+		smcore.atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
+		fprintf(pFile, "%s\n", buffer);
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, (void **) &pTempFile)) == HandleError_None)
+	{
+		FileHandle_t pFile = (FileHandle_t) pTempFile;
+		smcore.atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
+		sprintf(buffer, "%s\n", buffer);
+		smcore.filesystem->WriteFileLine(pFile, buffer);
+	}
+	else
+	{
+		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
+	}
 
 	return 1;
 }
@@ -533,18 +602,28 @@ static cell_t sm_FlushFile(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	FILE *pFile;
+	void *pTempFile;
+	cell_t ret = 1;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, (void **) &pTempFile)) == HandleError_None)
+	{
+		FILE *pFile = (FILE *) pTempFile;
+		ret = (fflush(pFile) == 0) ? 1 : 0;
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, (void **) &pTempFile)) == HandleError_None)
+	{
+		FileHandle_t pFile = (FileHandle_t) pTempFile;
+		smcore.filesystem->Flush(pFile);// This doesnt have a return assume 1?
+	}
+	else
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
 
-	return (fflush(pFile) == 0) ? 1 : 0;
+	return ret;
 }
 
 static cell_t sm_BuildPath(IPluginContext *pContext, const cell_t *params)
@@ -709,55 +788,110 @@ static cell_t sm_ReadFile(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
-	FILE *pFile;
 	size_t read = 0;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
+	void *pTempFile = NULL;
+
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, (void **) &pTempFile)) == HandleError_None)
+	{
+		FILE *pFile = (FILE *) pTempFile;
+
+		if (params[4] != 1 && params[4] != 2 && params[4] != 4)
+		{
+			return pContext->ThrowNativeError("Invalid size specifier (%d is not 1, 2, or 4)", params[4]);
+		}
+
+		cell_t *data;
+		pContext->LocalToPhysAddr(params[2], &data);
+		
+		if (params[4] == 4)
+		{
+			read = fread(data, sizeof(cell_t), params[3], pFile);
+		}
+		else if (params[4] == 2)
+		{
+			uint16_t val;
+			for (cell_t i = 0; i < params[3]; i++)
+			{
+				if (fread(&val, sizeof(uint16_t), 1, pFile) != 1)
+				{
+					break;
+				}
+				data[read++] = val;
+			}
+		}
+		else if (params[4] == 1)
+		{
+			uint8_t val;
+			for (cell_t i = 0; i < params[3]; i++)
+			{
+				if (fread(&val, sizeof(uint8_t), 1, pFile) != 1)
+				{
+					break;
+				}
+				data[read++] = val;
+			}
+		}
+
+		if (read != (size_t) params[3] && ferror(pFile) != 0)
+		{
+			return -1;
+		}
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, (void **) &pTempFile)) == HandleError_None)
+	{
+		FileHandle_t pFile = (FileHandle_t) pTempFile;
+		
+		if (params[4] != 1 && params[4] != 2 && params[4] != 4)
+		{
+			return pContext->ThrowNativeError("Invalid size specifier (%d is not 1, 2, or 4)", params[4]);
+		}
+		
+		cell_t *data;
+		pContext->LocalToPhysAddr(params[2], &data);
+		
+		if (params[4] == 4)
+		{
+			read = 1;
+			if (smcore.filesystem->Read(data, sizeof(cell_t), pFile) != sizeof(cell_t))
+			{
+				read = 0;
+			}
+		}
+		else if (params[4] == 2)
+		{
+			uint16_t val;
+			for (cell_t i = 0; i < params[3]; i++)
+			{
+				if (smcore.filesystem->Read(&val, sizeof(uint16_t), pFile) != sizeof(uint16_t))
+				{
+					break;
+				}
+				data[read++] = val;
+			}
+		}
+		else if (params[4] == 1)
+		{
+			uint8_t val;
+			for (cell_t i = 0; i < params[3]; i++)
+			{
+				if (smcore.filesystem->Read(&val, sizeof(uint8_t), pFile) != sizeof(uint8_t))
+				{
+					break;
+				}
+				data[read++] = val;
+			}
+		}
+		
+		if (read != (size_t) params[3])
+		{
+			return -1;
+		}
+	}
+
+	else
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
-	}
-
-	if (params[4] != 1 && params[4] != 2 && params[4] != 4)
-	{
-		return pContext->ThrowNativeError("Invalid size specifier (%d is not 1, 2, or 4)", params[4]);
-	}
-
-	cell_t *data;
-	pContext->LocalToPhysAddr(params[2], &data);
-
-	if (params[4] == 4)
-	{
-		read = fread(data, sizeof(cell_t), params[3], pFile);
-	}
-	else if (params[4] == 2)
-	{
-		uint16_t val;
-		for (cell_t i = 0; i < params[3]; i++)
-		{
-			if (fread(&val, sizeof(uint16_t), 1, pFile) != 1)
-			{
-				break;
-			}
-			data[read++] = val;
-		}
-	}
-	else if (params[4] == 1)
-	{
-		uint8_t val;
-		for (cell_t i = 0; i < params[3]; i++)
-		{
-			if (fread(&val, sizeof(uint8_t), 1, pFile) != 1)
-			{
-				break;
-			}
-			data[read++] = val;
-		}
-	}
-
-	if (read != (size_t)params[3] && ferror(pFile) != 0)
-	{
-		return -1;
 	}
 
 	return read;
