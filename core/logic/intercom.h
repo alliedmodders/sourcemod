@@ -91,10 +91,13 @@ public:
 	virtual bool FileExists(const char *pFileName, const char *pPathID = 0) = 0;
 	virtual unsigned int Size(const char *pFileName, const char *pPathID = 0) = 0;
 	virtual int Read(void* pOutput, int size, FileHandle_t file) = 0;
+	virtual int Write(void const* pInput, int size, FileHandle_t file) = 0;
 	virtual void Seek(FileHandle_t file, int post, int seekType) = 0;
 	virtual unsigned int Tell(FileHandle_t file) = 0;
 	virtual int FPrint(FileHandle_t file, const char *pData) = 0;
 	virtual void Flush(FileHandle_t file) = 0;
+	virtual bool IsOk(FileHandle_t file) = 0;
+	virtual void RemoveFile(const char *pRelativePath, const char *pathID = 0) = 0;
 };
 
 namespace SourceMod

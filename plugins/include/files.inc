@@ -136,17 +136,25 @@ native bool:ReadDirEntry(Handle:dir, String:buffer[], maxlength, &FileType:type=
  *
  * @param file			File to open.
  * @param mode			Open mode.
+ * @param use_valve_fs  If true, the Valve file system will be used instead.
+ *                      This can be used to find files existing in any of
+ *                      the GAME search paths, rather than solely files
+ *                      existing directly in the gamedir.
  * @return				A Handle to the file, INVALID_HANDLE on open error.
  */
-native Handle:OpenFile(const String:file[], const String:mode[]);
+native Handle:OpenFile(const String:file[], const String:mode[], bool:use_valve_fs=false);
 
 /**
  * Deletes a file.
  *
  * @param path			Path of the file to delete.
+ * @param use_valve_fs  If true, the Valve file system will be used instead.
+ *                      This can be used to find files existing in any of
+ *                      the GAME search paths, rather than solely files
+ *                      existing directly in the gamedir.
  * @return				True on success, false otherwise.
  */
-native bool:DeleteFile(const String:path[]);
+native bool:DeleteFile(const String:path[], bool:use_valve_fs=false);
 
 /**
  * Reads a line from a text file.

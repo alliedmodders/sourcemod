@@ -178,6 +178,10 @@ public:
 	{
 		return filesystem->Read(pOutput, size, file);
 	}
+	int Write(void const* pInput, int size, FileHandle_t file)
+	{
+		return filesystem->Write(pInput, size, file);
+	}
 	void Seek(FileHandle_t file, int pos, int seekType)
 	{
 		filesystem->Seek(file, pos, (FileSystemSeek_t) seekType);
@@ -193,6 +197,14 @@ public:
 	void Flush(FileHandle_t file)
 	{
 		filesystem->Flush(file);
+	}
+	bool IsOk(FileHandle_t file)
+	{
+		return filesystem->IsOk(file);
+	}
+	void RemoveFile(const char *pRelativePath, const char *pathID)
+	{
+		filesystem->RemoveFile(pRelativePath, pathID);
 	}
 };
 
