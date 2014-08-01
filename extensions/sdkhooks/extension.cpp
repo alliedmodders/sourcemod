@@ -88,6 +88,8 @@ HookTypeData g_HookTypes[SDKHook_MAXHOOKS] =
 	{"Reload",                "DT_BaseCombatWeapon",    false},
 	{"ReloadPost",            "DT_BaseCombatWeapon",    false},
 	{"GetMaxHealth",          "",                       false},
+	{"Blocked",               "",                       false},
+	{"BlockedPost",           "",                       false},
 };
 
 SDKHooks g_Interface;
@@ -191,6 +193,7 @@ SH_DECL_MANUALHOOK1(Weapon_CanUse, 0, 0, 0, bool, CBaseCombatWeapon *);
 SH_DECL_MANUALHOOK3_void(Weapon_Drop, 0, 0, 0, CBaseCombatWeapon *, const Vector *, const Vector *);
 SH_DECL_MANUALHOOK1_void(Weapon_Equip, 0, 0, 0, CBaseCombatWeapon *);
 SH_DECL_MANUALHOOK2(Weapon_Switch, 0, 0, 0, bool, CBaseCombatWeapon *, int);
+SH_DECL_MANUALHOOK1_void(Blocked, 0, 0, 0, CBaseEntity *);
 
 
 /**
@@ -529,6 +532,7 @@ void SDKHooks::SetupHooks()
 	CHECKOFFSET_W(Equip,          true,  true);
 	CHECKOFFSET_W(Switch,         true,  true);
 	CHECKOFFSET(VPhysicsUpdate,   true,  true);
+	CHECKOFFSET(Blocked,          true,  true);
 
 	// this one is in a class all its own -_-
 	offset = 0;
@@ -698,6 +702,12 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 				break;
 			case SDKHook_ShouldCollide:
 				hookid = SH_ADD_MANUALVPHOOK(ShouldCollide, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ShouldCollide), false);
+				break;
+			case SDKHook_Blocked:
+				hookid = SH_ADD_MANUALVPHOOK(Blocked, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Blocked), false);
+				break;
+			case SDKHook_BlockedPost:
+				hookid = SH_ADD_MANUALVPHOOK(Blocked, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_BlockedPost), true);
 				break;
 		}
 
@@ -1574,6 +1584,26 @@ void SDKHooks::Hook_VPhysicsUpdate(IPhysicsObject *pPhysics)
 void SDKHooks::Hook_VPhysicsUpdatePost(IPhysicsObject *pPhysics)
 {
 	Call(META_IFACEPTR(CBaseEntity), SDKHook_VPhysicsUpdatePost);
+}
+
+void SDKHooks::Hook_Blocked(CBaseEntity *pOther)
+{
+	cell_t result = Call(META_IFACEPTR(CBaseEntity), SDKHook_Blocked, pOther);
+
+	if(result >= Pl_Handled)
+		RETURN_META(MRES_SUPERCEDE);
+
+	RETURN_META(MRES_IGNORED);
+}
+
+void SDKHooks::Hook_BlockedPost(CBaseEntity *pOther)
+{
+	cell_t result = Call(META_IFACEPTR(CBaseEntity), SDKHook_BlockedPost, pOther);
+
+	if(result >= Pl_Handled)
+		RETURN_META(MRES_SUPERCEDE);
+
+	RETURN_META(MRES_IGNORED);
 }
 
 bool SDKHooks::Hook_WeaponCanSwitchTo(CBaseCombatWeapon *pWeapon)
