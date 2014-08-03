@@ -125,9 +125,21 @@ public:
 	inline bool Remove(const char *pFilePath)
 	{
 		if (_fstype == FSType::VALVE)
-			return smcore.filesystem->RemoveFile(pFilePath), true;
+		{
+			if (!smcore.filesystem->FileExists(pFilePath))
+				return false;
+
+			smcore.filesystem->RemoveFile(pFilePath);
+
+			if (smcore.filesystem->FileExists(pFilePath))
+				return false;
+
+			return true;
+		}
 		else
+		{
 			return unlink(pFilePath) == 0;
+		}
 	}
 
 	inline bool EndOfFile(void *pFile)
