@@ -430,6 +430,7 @@ stock bool:TF2_SetPlayerResourceData(client, TFResourceType:type, any:value)
  * @noreturn
  * @error				Invalid client, invalid slot or lack of mod support
  */
+#pragma deprecated Use TF2_RemoveWeaponSlot2
 stock TF2_RemoveWeaponSlot(client, slot)
 {
 	new weaponIndex;
@@ -460,11 +461,43 @@ stock TF2_RemoveWeaponSlot(client, slot)
  * @param client		Player's index.
  * @noreturn
  */
+#pragma deprecated Use TF2_RemoveAllWeapons2
 stock TF2_RemoveAllWeapons(client)
 {
 	for (new i = 0; i <= 5; i++)
 	{
 		TF2_RemoveWeaponSlot(client, i);
+	}
+}
+
+//Credit to friagram for the stocks.
+
+stock TF2_RemoveWeaponSlot2(client, slot) 
+{ 
+	decl ew; 
+	new weaponIndex; 
+	while ((weaponIndex = GetPlayerWeaponSlot(client, slot)) != -1) 
+	{ 
+		ew = GetEntPropEnt(weaponIndex, Prop_Send, "m_hExtraWearable"); 
+		if(IsValidEntity(ew)) 
+		{ 
+			TF2_RemoveWearable(client, ew); 
+		} 
+		ew = GetEntPropEnt(weaponIndex, Prop_Send, "m_hExtraWearableViewModel"); 
+		if(IsValidEntity(ew)) 
+		{ 
+			TF2_RemoveWearable(client, ew); 
+		} 
+		RemovePlayerItem(client, weaponIndex); 
+		AcceptEntityInput(weaponIndex, "Kill"); 
+	} 
+} 
+
+stock TF2_RemoveAllWeapons2(client)
+{
+	for(new slot = 0; slot <= 5; slot++)
+	{
+		TF2_RemoveWeaponSlot2(client, slot);
 	}
 }
 

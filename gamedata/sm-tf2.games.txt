@@ -111,6 +111,12 @@
 		}
 		"Offsets"
 		{
+			"IsWearable"
+			{
+				"windows"	"87"
+				"linux"		"88"
+				"mac"		"88"
+			}
 			"ForceRespawn"
 			{
 				"windows"	"324"
