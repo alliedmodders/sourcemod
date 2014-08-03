@@ -70,32 +70,19 @@ elif [ $iswin -eq 0 ]; then
 fi
 getmysql
 
+postgresver="9.3.4"
 if [ $ismac -eq 0 ] && [ ! -d "postgresql-9.3" ]; then
   if [ `command -v wget` ]; then
-    wget http://ftp.postgresql.org/pub/source/v9.3.4/postgresql-9.3.4.tar.gz -O pgsql.tar.gz
+    wget http://ftp.postgresql.org/pub/source/v$postgresver/postgresql-$postgresver.tar.gz -O pgsql.tar.gz
   elif [ `command -v curl` ]; then
-    curl -o pgsql.tar.gz http://ftp.postgresql.org/pub/source/v9.3.4/postgresql-9.3.4.tar.gz
+    curl -o pgsql.tar.gz http://ftp.postgresql.org/pub/source/v$postgresver/postgresql-$postgresver.tar.gz
   else
     echo "Failed to locate wget or curl. Install one of these programs to download PostgreSQL."
     exit 1
   fi
   tar xfz pgsql.tar.gz
-  mv postgresql-9.3.4 postgresql-9.3
+  mv postgresql-$postgresver postgresql-9.3
   rm pgsql.tar.gz
-  
-  cp $sourcemodfolder/extensions/pgsql/pg_config_paths.h postgresql-9.3/src/interfaces/libpq/pg_config_paths.h
-  
-  if [ $iswin -eq 1 ]; then
-    cp postgresql-9.3/src/include/pg_config.h.win32 postgresql-9.3/src/include/pg_config.h
-    cp postgresql-9.3/src/include/pg_config_ext.h.win32 postgresql-9.3/src/include/pg_config_ext.h
-    cp postgresql-9.3/src/include/port/win32.h postgresql-9.3/src/include/pg_config_os.h
-  else
-    cd postgresql-9.3
-	patch configure.in < ../$sourcemodfolder/extensions/pgsql/configure_autoconf.patch
-    autoconf
-    ./configure --without-readline
-	cd ..
-  fi
 fi
 
 checkout ()
