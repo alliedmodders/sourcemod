@@ -1961,7 +1961,7 @@ char *sc_tokens[] = {
          "public",
          "return",
          "sizeof", "sleep", "static", "stock", "struct", "switch",
-         "tagof", "*then",
+         "tagof", "*then", "typedef",
          "void",
          "while",
          "#assert", "#define", "#else", "#elseif", "#emit", "#endif", "#endinput",
@@ -1969,7 +1969,7 @@ char *sc_tokens[] = {
          "#tryinclude", "#undef",
          ";", ";", "-integer value-", "-rational value-", "-identifier-",
          "-label-", "-string-"
-       };
+};
 
 static full_token_t *advance_token_ptr()
 {

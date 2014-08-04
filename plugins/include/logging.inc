@@ -123,7 +123,7 @@ forward Action:OnLogAction(Handle:source,
  * @return				Plugin_Handled or Plugin_Stop will prevent the message 
  * 						from being written to the log file.
  */
-functag public Action:GameLogHook(const String:message[]);
+typedef GameLogHook = function Action (const char[] message);
 
 /**
  * Adds a game log hook.

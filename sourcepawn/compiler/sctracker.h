@@ -22,7 +22,7 @@ typedef struct funcarg_s
   int tagcount;
   int tags[sTAGS_MAX];
   int dimcount;
-  cell dims[sDIMEN_MAX];
+  int dims[sDIMEN_MAX];
   int ident;
   int fconst;
   int ommittable;

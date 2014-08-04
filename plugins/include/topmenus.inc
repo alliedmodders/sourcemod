@@ -127,12 +127,14 @@ enum TopMenuObject
  * @param maxlength			Output buffer (if used).
  * @noreturn
  */
-functag public void TopMenuHandler(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:topobj_id,
-							  param,
-							  String:buffer[],
-							  maxlength);
+typedef TopMenuHandler = function void (
+  Handle topmenu, 
+  TopMenuAction action,
+  TopMenuObject topobj_id,
+  int param,
+  char[] buffer,
+  int maxlength
+);
 
 /**
  * Creates a TopMenu.
