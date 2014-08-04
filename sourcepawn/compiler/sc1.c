@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined	__WIN32__ || defined _WIN32 || defined __MSDOS__
+#if defined __WIN32__ || defined _WIN32 || defined __MSDOS__
   #include <conio.h>
   #include <io.h>
 #endif
@@ -131,7 +131,7 @@ static int test(int label,int parens,int invert);
 static int doexpr(int comma,int chkeffect,int allowarray,int mark_endexpr,
                   int *tag,symbol **symptr,int chkfuncresult);
 static int doexpr2(int comma,int chkeffect,int allowarray,int mark_endexpr,
-				  int *tag,symbol **symptr,int chkfuncresult,value *lval);
+                   int *tag,symbol **symptr,int chkfuncresult,value *lval);
 static void doassert(void);
 static void doexit(void);
 static int doif(void);
@@ -183,7 +183,7 @@ static int *wqptr;              /* pointer to next entry */
   static char sc_rootpath[_MAX_PATH];
   static char *sc_documentation=NULL;/* main documentation */
 #endif
-#if defined	__WIN32__ || defined _WIN32 || defined _Windows
+#if defined __WIN32__ || defined _WIN32 || defined _Windows
   static HWND hwndFinish = 0;
 #endif
 
@@ -271,7 +271,7 @@ int pc_compile(int argc, char *argv[])
     char *tname,*sname;
     void *ftmp,*fsrc;
     int fidx;
-    #if defined	__WIN32__ || defined _WIN32
+    #if defined __WIN32__ || defined _WIN32
       tname=_tempnam(NULL,"pawn");
     #elif defined __MSDOS__ || defined _Windows
       tname=tempnam(NULL,"pawn");
@@ -485,7 +485,7 @@ cleanup:
 
   #if !defined SC_LIGHT
     if (errnum==0 && strlen(errfname)==0) {
-#if 0	//bug in compiler -- someone's script caused this function to infrecurs
+#if 0 //bug in compiler -- someone's script caused this function to infrecurs
       int recursion;
       long stacksize=max_stacksize(&glbtab,&recursion);
 #endif
@@ -571,7 +571,7 @@ cleanup:
     if (retcode==0 && verbosity>=2)
       pc_printf("\nDone.\n");
   } /* if */
-  #if defined	__WIN32__ || defined _WIN32 || defined _Windows
+  #if defined __WIN32__ || defined _WIN32 || defined _Windows
     if (IsWindow(hwndFinish))
       PostMessageA(hwndFinish,RegisterWindowMessageA("PawnNotify"),retcode,0L);
   #endif
@@ -615,7 +615,7 @@ static void inst_binary_name(char *binfname)
 
   if (binptr == NULL)
   {
-	  binptr = binfname;
+    binptr = binfname;
   }
 
   snprintf(newpath, sizeof(newpath), "\"%s\"", binfname);
@@ -777,7 +777,7 @@ static void initglobals(void)
   sc_debug=sCHKBOUNDS|sSYMBOLIC;   /* sourcemod: full debug stuff */
   pc_optimize=sOPTIMIZE_DEFAULT;   /* sourcemod: full optimization */
   sc_packstr=TRUE;     /* strings are packed by default */
-  sc_compress=FALSE;	/* always disable compact encoding! */
+  sc_compress=FALSE;    /* always disable compact encoding! */
   sc_needsemicolon=FALSE;/* semicolon required to terminate expressions? */
   sc_require_newdecls = FALSE;
   sc_dataalign=sizeof(cell);
@@ -904,7 +904,7 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
         if (verbosity>1)
           verbosity=1;
         break;
-#if 0	/* not allowed in SourceMod */
+#if 0 /* not allowed in SourceMod */
       case 'C':
         #if AMX_COMPACTMARGIN > 2
           sc_compress=toggle_option(ptr,sc_compress);
@@ -949,7 +949,7 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
       case 'e':
         strlcpy(ename,option_value(ptr),_MAX_PATH); /* set name of error file */
         break;
-#if defined	__WIN32__ || defined _WIN32 || defined _Windows
+#if defined __WIN32__ || defined _WIN32 || defined _Windows
       case 'H':
         hwndFinish=(HWND)atoi(option_value(ptr));
         if (!IsWindow(hwndFinish))
@@ -1279,7 +1279,7 @@ static void about(void)
     pc_printf("Options:\n");
     pc_printf("         -A<num>  alignment in bytes of the data segment and the stack\n");
     pc_printf("         -a       output assembler code\n");
-#if 0	/* not toggleable in SourceMod */
+#if 0 /* not toggleable in SourceMod */
     pc_printf("         -C[+/-]  compact encoding for output file (default=%c)\n", sc_compress ? '+' : '-');
 #endif
     pc_printf("         -c<name> codepage name or number; e.g. 1252 for Windows Latin-1\n");
@@ -1294,7 +1294,7 @@ static void about(void)
     pc_printf("             3    same as -d2, but implies -O0\n");
 #endif
     pc_printf("         -e<name> set name of error file (quiet compile)\n");
-#if defined	__WIN32__ || defined _WIN32 || defined _Windows
+#if defined __WIN32__ || defined _WIN32 || defined _Windows
     pc_printf("         -H<hwnd> window handle to send a notification message on finish\n");
 #endif
     pc_printf("         -h       show included file paths\n");
@@ -1326,7 +1326,7 @@ static void about(void)
 #endif
     pc_printf("         sym=val  define constant \"sym\" with value \"val\"\n");
     pc_printf("         sym=     define constant \"sym\" with value 0\n");
-#if defined	__WIN32__ || defined _WIN32 || defined _Windows || defined __MSDOS__
+#if defined __WIN32__ || defined _WIN32 || defined _Windows || defined __MSDOS__
     pc_printf("\nOptions may start with a dash or a slash; the options \"-d0\" and \"/d0\" are\n");
     pc_printf("equivalent.\n");
 #endif
@@ -1749,9 +1749,9 @@ static void insert_docstring_separator(void)
   #define insert_docstring_separator()
 #endif
 
-/* declstruct	- declare global struct symbols
+/* declstruct - declare global struct symbols
  * 
- * global references: glb_declared		(altered)
+ * global references: glb_declared (altered)
  */
 static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct)
 {
@@ -2178,7 +2178,7 @@ static void declloc(int tokid)
       if (curfunc->x.stacksize<declared+1)
         curfunc->x.stacksize=declared+1;  /* +1 for PROC opcode */
     } else if (type->ident == iREFARRAY) {
-      declared+=1;	/* one cell for address */
+      declared+=1; /* one cell for address */
       sym=addvariable(decl.name,-declared*sizeof(cell),type->ident,sLOCAL,type->tag,type->dim,type->numdim,type->idxtag);
       //markexpr(sLDECL,name,-declared*sizeof(cell)); /* mark for better optimization */
       /* genarray() pushes the address onto the stack, so we don't need to call modstk() here! */
@@ -2297,177 +2297,177 @@ static cell calc_arraysize(int dim[],int numdim,int cur)
 
 static cell gen_indirection_vecs(array_info_t *ar, int dim, cell cur_offs)
 {
-	int i;
-	cell write_offs = cur_offs;
-	cell *data_offs = ar->data_offs;
+  int i;
+  cell write_offs = cur_offs;
+  cell *data_offs = ar->data_offs;
 
-	cur_offs += ar->dim_list[dim];
+  cur_offs += ar->dim_list[dim];
 
-	/**
-	 * Dimension n-x where x > 2 will have sub-vectors.  
-	 * Otherwise, we just need to reference the data section.
-	 */
-	if (ar->dim_count > 2 && dim < ar->dim_count - 2)
-	{
-		/**
-		 * For each index at this dimension, write offstes to our sub-vectors.
-		 * After we write one sub-vector, we generate its sub-vectors recursively.
-		 * At the end, we're given the next offset we can use.
-		 */
-		for (i = 0; i < ar->dim_list[dim]; i++)
-		{
-			ar->base[write_offs] = (cur_offs - write_offs) * sizeof(cell);
-			write_offs++;
-			ar->cur_dims[dim] = i;
-			cur_offs = gen_indirection_vecs(ar, dim + 1, cur_offs);
-		}
-	} else if (ar->dim_count > 1) {
-		/**
-		 * In this section, there are no sub-vectors, we need to write offsets 
-		 * to the data.  This is separate so the data stays in one big chunk.
-		 * The data offset will increment by the size of the last dimension, 
-		 * because that is where the data is finally computed as.  But the last 
-		 * dimension can be of variable size, so we have to detect that.
-		 */
-		if (ar->dim_list[dim + 1] == 0)
-		{
-			int vec_start = 0;
+  /**
+   * Dimension n-x where x > 2 will have sub-vectors.  
+   * Otherwise, we just need to reference the data section.
+   */
+  if (ar->dim_count > 2 && dim < ar->dim_count - 2)
+  {
+    /**
+     * For each index at this dimension, write offstes to our sub-vectors.
+     * After we write one sub-vector, we generate its sub-vectors recursively.
+     * At the end, we're given the next offset we can use.
+     */
+    for (i = 0; i < ar->dim_list[dim]; i++)
+    {
+      ar->base[write_offs] = (cur_offs - write_offs) * sizeof(cell);
+      write_offs++;
+      ar->cur_dims[dim] = i;
+      cur_offs = gen_indirection_vecs(ar, dim + 1, cur_offs);
+    }
+  } else if (ar->dim_count > 1) {
+    /**
+     * In this section, there are no sub-vectors, we need to write offsets 
+     * to the data.  This is separate so the data stays in one big chunk.
+     * The data offset will increment by the size of the last dimension, 
+     * because that is where the data is finally computed as.  But the last 
+     * dimension can be of variable size, so we have to detect that.
+     */
+    if (ar->dim_list[dim + 1] == 0)
+    {
+      int vec_start = 0;
 
-			/**
-			 * Using the precalculated offsets, compute an index into the last 
-			 * dimension array.
-			 */
-			for (i = 0; i < dim; i++)
-			{
-				vec_start += ar->cur_dims[i] * ar->dim_offs_precalc[i];
-			}
+      /**
+       * Using the precalculated offsets, compute an index into the last 
+       * dimension array.
+       */
+      for (i = 0; i < dim; i++)
+      {
+        vec_start += ar->cur_dims[i] * ar->dim_offs_precalc[i];
+      }
 
-			/**
-			 * Now, vec_start points to a vector of last dimension offsets for 
-			 * the preceding dimension combination(s).
-			 * I.e. (1,2,i,j) in [3][4][5][] will be:
-			 *  j = 1*(4*5) + 2*(5) + i, and the parenthetical expressions are 
-			 * precalculated for us so we can easily generalize here.
-			 */
-			for (i = 0; i < ar->dim_list[dim]; i++)
-			{
-				ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell);
-				write_offs++;
-				*data_offs = *data_offs + ar->lastdim_list[vec_start + i];
-			}
-		} else {
-			/**
-			 * The last dimension size is constant.  There's no extra work to 
-			 * compute the last dimension size.
-			 */
-			for (i = 0; i < ar->dim_list[dim]; i++)
-			{
-				ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell);
-				write_offs++;
-				*data_offs = *data_offs + ar->dim_list[dim + 1];
-			}
-		}
-	}
+      /**
+       * Now, vec_start points to a vector of last dimension offsets for 
+       * the preceding dimension combination(s).
+       * I.e. (1,2,i,j) in [3][4][5][] will be:
+       *  j = 1*(4*5) + 2*(5) + i, and the parenthetical expressions are 
+       * precalculated for us so we can easily generalize here.
+       */
+      for (i = 0; i < ar->dim_list[dim]; i++)
+      {
+        ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell);
+        write_offs++;
+        *data_offs = *data_offs + ar->lastdim_list[vec_start + i];
+      }
+    } else {
+      /**
+       * The last dimension size is constant.  There's no extra work to 
+       * compute the last dimension size.
+       */
+      for (i = 0; i < ar->dim_list[dim]; i++)
+      {
+        ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell);
+        write_offs++;
+        *data_offs = *data_offs + ar->dim_list[dim + 1];
+      }
+    }
+  }
 
-	return cur_offs;
+  return cur_offs;
 }
 
 static cell calc_indirection(const int dim_list[], int dim_count, int dim)
 {
-	cell size = dim_list[dim];
+  cell size = dim_list[dim];
 
-	if (dim < dim_count - 2)
-	{
-		size += dim_list[dim] * calc_indirection(dim_list, dim_count, dim + 1);
-	}
+  if (dim < dim_count - 2)
+  {
+    size += dim_list[dim] * calc_indirection(dim_list, dim_count, dim + 1);
+  }
 
-	return size;
+  return size;
 }
 
 static void adjust_indirectiontables(int dim[],int numdim,int cur,cell increment,
                                      int startlit,constvalue *lastdim,int *skipdim)
 {
-	/* Find how many cells the indirection table will be */
-	cell tbl_size;
-	int *dyn_list = NULL;
-	int cur_dims[sDIMEN_MAX];
-	cell dim_offset_precalc[sDIMEN_MAX];
-	array_info_t ar;
+  /* Find how many cells the indirection table will be */
+  cell tbl_size;
+  int *dyn_list = NULL;
+  int cur_dims[sDIMEN_MAX];
+  cell dim_offset_precalc[sDIMEN_MAX];
+  array_info_t ar;
 
-	if (numdim == 1)
-	{
-		return;
-	}
+  if (numdim == 1)
+  {
+    return;
+  }
 
-	tbl_size = calc_indirection(dim, numdim, 0);
-	memset(cur_dims, 0, sizeof(cur_dims));
+  tbl_size = calc_indirection(dim, numdim, 0);
+  memset(cur_dims, 0, sizeof(cur_dims));
 
-	/**
-	 * Flatten the last dimension array list -- this makes 
-	 * things MUCH easier in the indirection calculator.
-	 */
-	if (lastdim)
-	{
-		int i;
-		constvalue *ld = lastdim->next;
+  /**
+   * Flatten the last dimension array list -- this makes 
+   * things MUCH easier in the indirection calculator.
+   */
+  if (lastdim)
+  {
+    int i;
+    constvalue *ld = lastdim->next;
 
-		/* Get the total number of last dimensions. */
-		for (i = 0; ld != NULL; i++, ld = ld->next)
-		{
-			/* Nothing */
-		}
-		/* Store them in an array instead of a linked list. */
-		dyn_list = (int *)malloc(sizeof(int) * i);
-		for (i = 0, ld = lastdim->next;
-			 ld != NULL;
-			 i++, ld = ld->next)
-		{
-			dyn_list[i] = ld->value;
-		}
+    /* Get the total number of last dimensions. */
+    for (i = 0; ld != NULL; i++, ld = ld->next)
+    {
+      /* Nothing */
+    }
+    /* Store them in an array instead of a linked list. */
+    dyn_list = (int *)malloc(sizeof(int) * i);
+    for (i = 0, ld = lastdim->next;
+       ld != NULL;
+       i++, ld = ld->next)
+    {
+      dyn_list[i] = ld->value;
+    }
 
-		/**
-		 * Pre-calculate all of the offsets.  This speeds up and simplifies 
-		 * the indirection process.  For example, if we have an array like:
-		 * [a][b][c][d][], and given (A,B,C), we want to find the size of 
-		 * the last dimension [A][B][C][i], we must do:
-		 *
-		 * list[A*(b*c*d) + B*(c*d) + C*(d) + i]
-		 *
-		 * Generalizing this algorithm in the indirection process is expensive, 
-		 * so we lessen the need for nested loops by pre-computing the parts:
-		 * (b*c*d), (c*d), and (d).
-		 *
-		 * In other words, finding the offset to dimension N at index I is 
-		 * I * (S[N+1] * S[N+2] ... S[N+n-1]) where S[] is the size of dimension
-		 * function, and n is the index of the last dimension.
-		 */
-		for (i = 0; i < numdim - 1; i++)
-		{
-			int j;
+    /**
+     * Pre-calculate all of the offsets.  This speeds up and simplifies 
+     * the indirection process.  For example, if we have an array like:
+     * [a][b][c][d][], and given (A,B,C), we want to find the size of 
+     * the last dimension [A][B][C][i], we must do:
+     *
+     * list[A*(b*c*d) + B*(c*d) + C*(d) + i]
+     *
+     * Generalizing this algorithm in the indirection process is expensive, 
+     * so we lessen the need for nested loops by pre-computing the parts:
+     * (b*c*d), (c*d), and (d).
+     *
+     * In other words, finding the offset to dimension N at index I is 
+     * I * (S[N+1] * S[N+2] ... S[N+n-1]) where S[] is the size of dimension
+     * function, and n is the index of the last dimension.
+     */
+    for (i = 0; i < numdim - 1; i++)
+    {
+      int j;
 
-			dim_offset_precalc[i] = 1;
-			for (j = i + 1; j < numdim - 1; j++)
-			{
-				dim_offset_precalc[i] *= dim[j];
-			}
-		}
+      dim_offset_precalc[i] = 1;
+      for (j = i + 1; j < numdim - 1; j++)
+      {
+        dim_offset_precalc[i] *= dim[j];
+      }
+    }
 
-		ar.dim_offs_precalc = dim_offset_precalc;
-		ar.lastdim_list = dyn_list;
-	} else {
-		ar.dim_offs_precalc = NULL;
-		ar.lastdim_list = NULL;
-	}
+    ar.dim_offs_precalc = dim_offset_precalc;
+    ar.lastdim_list = dyn_list;
+  } else {
+    ar.dim_offs_precalc = NULL;
+    ar.lastdim_list = NULL;
+  }
 
-	ar.base = &litq[startlit];
-	ar.data_offs = &tbl_size;
-	ar.dim_list = dim;
-	ar.dim_count = numdim;
-	ar.cur_dims = cur_dims;
+  ar.base = &litq[startlit];
+  ar.data_offs = &tbl_size;
+  ar.dim_list = dim;
+  ar.dim_count = numdim;
+  ar.cur_dims = cur_dims;
 
-	gen_indirection_vecs(&ar, 0, 0);
+  gen_indirection_vecs(&ar, 0, 0);
 
-	free(dyn_list);
+  free(dyn_list);
 }
 
 /*  initials
@@ -2604,7 +2604,7 @@ static void initials2(int ident,int tag,cell *size,int dim[],int numdim,
 }
 
 static void initials(int ident,int tag,cell *size,int dim[],int numdim,
-					 constvalue *enumroot)
+                     constvalue *enumroot)
 {
   initials2(ident, tag, size, dim, numdim, enumroot, -1, -1);
 }
@@ -4181,250 +4181,196 @@ cleanup:
  */
 static void dofuncenum(int listmode)
 {
-	cell val;
-	char *str;
-	// char *ptr;
-	char tagname[sNAMEMAX+1];
-	constvalue *cur;
-	funcenum_t *fenum = NULL;
-	int i;
-	int newStyleTag = 0;
-	int isNewStyle = 0;
+  cell val;
+  char *str;
+  // char *ptr;
+  char tagname[sNAMEMAX+1];
+  constvalue *cur;
+  funcenum_t *fenum = NULL;
+  int i;
+  int newStyleTag = 0;
+  int isNewStyle = 0;
 
-	/* get the explicit tag (required!) */
-	int l = lex(&val,&str);
-	if (l != tSYMBOL) {
-		if (listmode == FALSE && l == tPUBLIC) {
-			isNewStyle = TRUE;
-			switch (lex(&val, &str)) {
-			case tOBJECT:
-				newStyleTag = pc_tag_object;
-				break;
-			case tINT:
-				newStyleTag = 0;
-				break;
-			case tVOID:
-				newStyleTag = pc_tag_void;
-				break;
-			case tCHAR:
-				newStyleTag = pc_tag_string;
-				break;
-			case tLABEL:
-				newStyleTag = pc_addtag(str);
-				break;
-			case tSYMBOL:
-				// Check whether this is new-style declaration.
-				// we'll port this all to parse_decl() sometime.
-				if (lexpeek('('))
-					lexpush();
-				else
-					newStyleTag = pc_addtag(str);
-				break;
-			default:
-				error(93);
-			}
+  /* get the explicit tag (required!) */
+  int l = lex(&val,&str);
+  if (l != tSYMBOL) {
+    if (listmode == FALSE && l == tPUBLIC) {
+      isNewStyle = TRUE;
+      switch (lex(&val, &str)) {
+      case tOBJECT:
+        newStyleTag = pc_tag_object;
+        break;
+      case tINT:
+        newStyleTag = 0;
+        break;
+      case tVOID:
+        newStyleTag = pc_tag_void;
+        break;
+      case tCHAR:
+        newStyleTag = pc_tag_string;
+        break;
+      case tLABEL:
+        newStyleTag = pc_addtag(str);
+        break;
+      case tSYMBOL:
+        // Check whether this is new-style declaration.
+        // we'll port this all to parse_decl() sometime.
+        if (lexpeek('('))
+          lexpush();
+        else
+          newStyleTag = pc_addtag(str);
+        break;
+      default:
+        error(93);
+      }
 
-			if (!needtoken(tSYMBOL)) {
-				lexclr(TRUE);
-				litidx = 0;
-				return;
-			}
-			l = tokeninfo(&val, &str);
-		} else {
-			error(93);
-		}
-	}
+      if (!needtoken(tSYMBOL)) {
+        lexclr(TRUE);
+        litidx = 0;
+        return;
+      }
+      l = tokeninfo(&val, &str);
+    } else {
+      error(93);
+    }
+  }
 
-	/* This tag can't already exist! */
-	cur=tagname_tab.next;
-	while (cur)
-	{
-		if (strcmp(cur->name, str) == 0)
-		{
-			/* Another bad one... */
-			if (!(cur->value & FUNCTAG))
-			{
-				error(94);
-			}
-			break;
-		}
-		cur = cur->next;
-	}
-	strcpy(tagname, str);
+  /* This tag can't already exist! */
+  cur=tagname_tab.next;
+  while (cur) {
+    if (strcmp(cur->name, str) == 0) {
+      /* Another bad one... */
+      if (!(cur->value & FUNCTAG))
+        error(94);
+      break;
+    }
+    cur = cur->next;
+  }
+  strcpy(tagname, str);
 
-	fenum = funcenums_add(tagname);
+  fenum = funcenums_add(tagname);
 
-	if (listmode)
-	{
-		needtoken('{');
-	}
-	do
-	{
-		functag_t func;
-		if (listmode && matchtoken('}'))
-		{
-			/* Quick exit */
-			lexpush();
-			break;
-		}
-		memset(&func, 0, sizeof(func));
-		if (!isNewStyle)
-		{
-			func.ret_tag = pc_addtag(NULL);	/* Get the return tag */
-			l = lex(&val, &str);
-			/* :TODO:
-			 * Right now, there is a problem.  We can't pass non-public function pointer addresses around,
-			 * because the address isn't known until the final reparse.  Unfortunately, you can write code
-			 * before the address is known, because Pawn's compiler isn't truly multipass.
-			 *
-			 * When you call a function, there's no problem, because it does not write the address.
-			 * The assembly looks like this:
-			 *   call MyFunction
-			 * Then, only at assembly time (once all passes are done), does it know the address.
-			 * I do not see any solution to this because there is no way I know to inject the function name
-			 * rather than the constant value.  And even if we could, we'd have to change the assembler recognize that.
-			 */
-			if (l == tPUBLIC) {
-				func.type = uPUBLIC;
-			} else {
-				error(1, "-public-", str);
-			}
-		}
-		else
-		{
-			func.ret_tag = newStyleTag;
-			func.type = uPUBLIC;
-		}
-		needtoken('(');
-		do 
-		{
-			funcarg_t *arg = &(func.args[func.argcount]);
+  if (listmode)
+    needtoken('{');
+  do {
+    functag_t func;
+    if (listmode && matchtoken('}')) {
+      /* Quick exit */
+      lexpush();
+      break;
+    }
+    memset(&func, 0, sizeof(func));
+    if (!isNewStyle) {
+      func.ret_tag = pc_addtag(NULL);  /* Get the return tag */
+      l = lex(&val, &str);
+      /* :TODO:
+       * Right now, there is a problem.  We can't pass non-public function pointer addresses around,
+       * because the address isn't known until the final reparse.  Unfortunately, you can write code
+       * before the address is known, because Pawn's compiler isn't truly multipass.
+       *
+       * When you call a function, there's no problem, because it does not write the address.
+       * The assembly looks like this:
+       *   call MyFunction
+       * Then, only at assembly time (once all passes are done), does it know the address.
+       * I do not see any solution to this because there is no way I know to inject the function name
+       * rather than the constant value.  And even if we could, we'd have to change the assembler recognize that.
+       */
+      if (l == tPUBLIC) {
+        func.type = uPUBLIC;
+      } else {
+        error(1, "-public-", str);
+      }
+    } else {
+      func.ret_tag = newStyleTag;
+      func.type = uPUBLIC;
+    }
+    needtoken('(');
+    do {
+      funcarg_t *arg = &(func.args[func.argcount]);
 
-			/* Quick exit */
-			if (matchtoken(')'))
-			{
-				lexpush();
-				break;
-			}
-			l = lex(&val, &str);
-			if (l == '&')
-			{
-				if ((arg->ident != iVARIABLE && arg->ident != 0) || arg->tagcount > 0)
-				{
-					error(1, "-identifier-", "&");
-				}
-				arg->ident = iREFERENCE;
-			} else if (l == tCONST) {
-				if ((arg->ident != iVARIABLE && arg->ident != 0) || arg->tagcount > 0)
-				{
-					error(1, "-identifier-", "const");
-				}
-				arg->fconst=TRUE;
-			} else if (l == tLABEL) {
-				if (arg->tagcount > 0)
-				{
-					error(1, "-identifier-", "-tagname-");
-				}
-				arg->tags[arg->tagcount++] = pc_addtag(str);
-#if 0
-				while (arg->tagcount < sTAGS_MAX)
-				{
-					if (!matchtoken('_') && !needtoken(tSYMBOL))
-					{
-						break;
-					}
-					tokeninfo(&val, &ptr);
-					arg->tags[arg->tagcount++] = pc_addtag(ptr);
-					if (matchtoken('}'))
-					{
-						break;
-					}
-					needtoken(',');
-				}
-				needtoken(':');
-#endif
-				l=tLABEL;
-			} else if (l == tSYMBOL) {
-				if (func.argcount >= sARGS_MAX)
-				{
-					error(45);
-				}
-				if (str[0] == PUBLIC_CHAR)
-				{
-					error(56, str);
-				}
-				if (matchtoken('['))
-				{
-					cell size;
-					if (arg->ident == iREFERENCE)
-					{
-						error(67, str);
-					}
-					do 
-					{
-						constvalue *enumroot;
-						int ignore_tag;
-						if (arg->dimcount == sDIMEN_MAX)
-						{
-							error(53);
-							break;
-						}
-						size = needsub(&ignore_tag, &enumroot);
-						arg->dims[arg->dimcount] = size;
-						arg->dimcount += 1;
-					} while (matchtoken('['));
-					/* Handle strings */
-					if ((arg->tagcount == 1 && arg->tags[0] == pc_tag_string)
-						&& arg->dims[arg->dimcount-1])
-					{
-						arg->dims[arg->dimcount-1] = (size + sizeof(cell)-1) / sizeof(cell);
-					}
-					arg->ident=iREFARRAY;
-				} else if (arg->ident == 0) {
-					arg->ident = iVARIABLE;
-				}
-			
-				if (matchtoken('='))
-				{
-					needtoken('0');
-					arg->ommittable = TRUE;
-					func.ommittable = TRUE;
-				} else if (func.ommittable) {
-					error(95);
-				}
-				func.argcount++;
-			} else if (l == tELLIPS) {
-				if (arg->ident == iVARIABLE)
-				{
-					error(10);
-				}
-				arg->ident = iVARARGS;
-				func.argcount++;
-			} else {
-				error(10);
-			}
-		} while (l == '&' || l == tLABEL || l == tCONST || (l != tELLIPS && matchtoken(',')));
-		needtoken(')');
-		for (i=0; i<func.argcount; i++)
-		{
-			if (func.args[i].tagcount == 0)
-			{
-				func.args[i].tags[0] = 0;
-				func.args[i].tagcount = 1;
-			}
-		}
-		functags_add(fenum, &func);
-		if (!listmode)
-		{
-			break;
-		}
-	} while (matchtoken(','));
-	if (listmode)
-	{
-		needtoken('}');
-	}
-	matchtoken(';'); /* eat an optional semicolon.  nom nom nom */
-	errorset(sRESET, 0);
+      /* Quick exit */
+      if (matchtoken(')')) {
+        lexpush();
+        break;
+      }
+      l = lex(&val, &str);
+      if (l == '&') {
+        if ((arg->ident != iVARIABLE && arg->ident != 0) || arg->tagcount > 0)
+          error(1, "-identifier-", "&");
+        arg->ident = iREFERENCE;
+      } else if (l == tCONST) {
+        if ((arg->ident != iVARIABLE && arg->ident != 0) || arg->tagcount > 0)
+          error(1, "-identifier-", "const");
+        arg->fconst=TRUE;
+      } else if (l == tLABEL) {
+        if (arg->tagcount > 0)
+          error(1, "-identifier-", "-tagname-");
+        arg->tags[arg->tagcount++] = pc_addtag(str);
+        l=tLABEL;
+      } else if (l == tSYMBOL) {
+        if (func.argcount >= sARGS_MAX)
+          error(45);
+        if (str[0] == PUBLIC_CHAR)
+          error(56, str);
+        if (matchtoken('['))
+        {
+          cell size;
+          if (arg->ident == iREFERENCE)
+            error(67, str);
+          do {
+            constvalue *enumroot;
+            int ignore_tag;
+            if (arg->dimcount == sDIMEN_MAX) {
+              error(53);
+              break;
+            }
+            size = needsub(&ignore_tag, &enumroot);
+            arg->dims[arg->dimcount] = size;
+            arg->dimcount += 1;
+          } while (matchtoken('['));
+          /* Handle strings */
+          if ((arg->tagcount == 1 && arg->tags[0] == pc_tag_string)
+            && arg->dims[arg->dimcount-1])
+          {
+            arg->dims[arg->dimcount-1] = (size + sizeof(cell)-1) / sizeof(cell);
+          }
+          arg->ident=iREFARRAY;
+        } else if (arg->ident == 0) {
+          arg->ident = iVARIABLE;
+        }
+      
+        if (matchtoken('=')) {
+          needtoken('0');
+          arg->ommittable = TRUE;
+          func.ommittable = TRUE;
+        } else if (func.ommittable) {
+          error(95);
+        }
+        func.argcount++;
+      } else if (l == tELLIPS) {
+        if (arg->ident == iVARIABLE)
+          error(10);
+        arg->ident = iVARARGS;
+        func.argcount++;
+      } else {
+        error(10);
+      }
+    } while (l == '&' || l == tLABEL || l == tCONST || (l != tELLIPS && matchtoken(',')));
+    needtoken(')');
+    for (i=0; i<func.argcount; i++) {
+      if (func.args[i].tagcount == 0) {
+        func.args[i].tags[0] = 0;
+        func.args[i].tagcount = 1;
+      }
+    }
+    functags_add(fenum, &func);
+    if (!listmode)
+      break;
+  } while (matchtoken(','));
+  if (listmode)
+    needtoken('}');
+  matchtoken(';'); /* eat an optional semicolon.  nom nom nom */
+  errorset(sRESET, 0);
 }
 
 /*  decl_enum   - declare enumerated constants
@@ -5625,10 +5571,10 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
           error(17, name);      /* undefined symbol */
         } else {
           arg->hasdefault=TRUE; /* argument as a default value */
-		  memset(&arg->defvalue, 0, sizeof(arg->defvalue));
+          memset(&arg->defvalue, 0, sizeof(arg->defvalue));
           arg->defvalue.array.data=NULL;
-		  arg->defvalue.array.addr=sym->addr;
-		  arg->defvalue_tag=sym->tag;
+          arg->defvalue.array.addr=sym->addr;
+          arg->defvalue_tag=sym->tag;
           if (sc_status==statWRITE && (sym->usage & uREAD)==0) {
             markusage(sym, uREAD);
           }
@@ -6279,7 +6225,7 @@ static long max_stacksize(symbol *root,int *recursion)
     if (sym->ident!=iFUNCTN || (sym->usage & uNATIVE)!=0)
       continue;
     /* accumulate stack size for this symbol */
-	save_symbol = sym;
+    save_symbol = sym;
     size=max_stacksize_recurse(sym,sym,0L,&maxparams,recursion);
     assert(size>=0);
     if (maxsize<size)
@@ -7555,7 +7501,7 @@ static void doreturn(void)
   } /* if */
   destructsymbols(&loctab,0);           /* call destructor for *all* locals */
   genheapfree(-1);
-  genstackfree(-1);						/* free everything on the stack */
+  genstackfree(-1);                     /* free everything on the stack */
   ffret(strcmp(curfunc->name,uENTRYFUNC)!=0);
 }
 
