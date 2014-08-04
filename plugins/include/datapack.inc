@@ -73,6 +73,16 @@ native WritePackFloat(Handle:pack, Float:val);
 native WritePackString(Handle:pack, const String:str[]);
 
 /**
+ * Packs a function pointer into a data pack.
+ *
+ * @param pack		Handle to the data pack.
+ * @param fktptr	Function pointer to add.
+ * @noreturn
+ * @error			Invalid handle.
+ */
+native WritePackFunction(Handle:pack, Function:fktptr);
+
+/**
  * Reads a cell from a data pack.
  *
  * @param pack		Handle to the data pack.
@@ -100,6 +110,15 @@ native Float:ReadPackFloat(Handle:pack);
  * @error			Invalid handle, or bounds error.
  */
 native ReadPackString(Handle:pack, String:buffer[], maxlen);
+
+/**
+ * Reads a function pointer from a data pack.
+ *
+ * @param pack		Handle to the data pack.
+ * @return			Function pointer.
+ * @error			Invalid handle, or bounds error.
+ */
+native Function ReadPackFunction(Handle:pack);
 
 /**
  * Resets the position in a data pack.

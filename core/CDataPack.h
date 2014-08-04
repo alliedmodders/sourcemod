@@ -51,12 +51,14 @@ public: //IDataReader
 	const char *ReadString(size_t *len) const;
 	void *GetMemory() const;
 	void *ReadMemory(size_t *size) const;
+	cell_t ReadFunction() const;
 public: //IDataPack
 	void ResetSize();
 	void PackCell(cell_t cell);
 	void PackFloat(float val);
 	void PackString(const char *string);
 	size_t CreateMemory(size_t size, void **addr);
+	void PackFunction(cell_t function);
 public:
 	void Initialize();
 private:
@@ -66,6 +68,14 @@ private:
 	mutable char *m_curptr;
 	size_t m_capacity;
 	size_t m_size;
+
+	enum DataPackType {
+		Raw,
+		Cell,
+		Float,
+		String,
+		Function
+	};
 };
 
 #endif //_INCLUDE_SOURCEMOD_CDATAPACK_H_

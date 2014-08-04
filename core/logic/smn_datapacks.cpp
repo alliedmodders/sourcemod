@@ -148,6 +148,27 @@ static cell_t smn_WritePackString(IPluginContext *pContext, const cell_t *params
 	return 1;
 }
 
+static cell_t smn_WritePackFunction(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	IDataPack *pDataPack;
+
+	sec.pOwner = pContext->GetIdentity();
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr = handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+	}
+
+	pDataPack->PackFunction(params[2]);
+
+	return 1;
+}
+
 static cell_t smn_ReadPackCell(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -164,7 +185,7 @@ static cell_t smn_ReadPackCell(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
 	}
 
-	if (!pDataPack->IsReadable(sizeof(size_t) + sizeof(cell_t)))
+	if (!pDataPack->IsReadable(sizeof(char) + sizeof(size_t) + sizeof(cell_t)))
 	{
 		return pContext->ThrowNativeError("DataPack operation is out of bounds.");
 	}
@@ -188,7 +209,7 @@ static cell_t smn_ReadPackFloat(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
 	}
 
-	if (!pDataPack->IsReadable(sizeof(size_t) + sizeof(float)))
+	if (!pDataPack->IsReadable(sizeof(char) + sizeof(size_t) + sizeof(float)))
 	{
 		return pContext->ThrowNativeError("DataPack operation is out of bounds.");
 	}
@@ -221,6 +242,30 @@ static cell_t smn_ReadPackString(IPluginContext *pContext, const cell_t *params)
 	pContext->StringToLocal(params[2], params[3], str);
 
 	return 1;
+}
+
+static cell_t smn_ReadPackFunction(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	IDataPack *pDataPack;
+
+	sec.pOwner = pContext->GetIdentity();
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr = handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+	}
+
+	if (!pDataPack->IsReadable(sizeof(char) + sizeof(size_t) + sizeof(cell_t)))
+	{
+		return pContext->ThrowNativeError("DataPack operation is out of bounds.");
+	}
+
+	return pDataPack->ReadFunction();
 }
 
 static cell_t smn_ResetPack(IPluginContext *pContext, const cell_t *params)
@@ -318,9 +363,11 @@ REGISTER_NATIVES(datapacknatives)
 	{"WritePackCell",			smn_WritePackCell},
 	{"WritePackFloat",			smn_WritePackFloat},
 	{"WritePackString",			smn_WritePackString},
+	{"WritePackFunction",		smn_WritePackFunction},
 	{"ReadPackCell",			smn_ReadPackCell},
 	{"ReadPackFloat",			smn_ReadPackFloat},
 	{"ReadPackString",			smn_ReadPackString},
+	{"ReadPackFunction",		smn_ReadPackFunction},
 	{"ResetPack",				smn_ResetPack},
 	{"GetPackPosition",			smn_GetPackPosition},
 	{"SetPackPosition",			smn_SetPackPosition},
