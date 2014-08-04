@@ -143,6 +143,7 @@ static void dogoto(void);
 static void dolabel(void);
 static void doreturn(void);
 static void dofuncenum(int listmode);
+static void dotypedef();
 static void domethodmap(LayoutSpec spec);
 static void dobreak(void);
 static void docont(void);
@@ -1557,6 +1558,9 @@ static void parse(void)
     }
     case tFUNCTAG:
       dofuncenum(FALSE);
+      break;
+    case tTYPEDEF:
+      dotypedef();
       break;
     case tSTRUCT:
       declstruct();
@@ -2996,6 +3000,13 @@ static int consume_line()
 
 static int parse_new_typename(const token_t *tok)
 {
+  token_t tmp;
+
+  if (!tok) {
+    lextok(&tmp);
+    tok = &tmp;
+  }
+
   switch (tok->id) {
     case tINT:
       return 0;
@@ -4175,6 +4186,85 @@ cleanup:
     stgset(FALSE);
   }
 }
+
+/**
+ * function-type ::= "(" function-type-inner ")"
+ *                 | function-type-inner
+ * function-type-inner ::= "function" type-expr "(" new-style-args ")"
+ */
+static void parse_function_type(functag_t *type)
+{
+  memset(type, 0, sizeof(*type));
+
+  int lparen = matchtoken('(');
+  needtoken(tFUNCTION);
+
+  type->ret_tag = parse_new_typename(NULL);
+  type->type = uPUBLIC;
+
+  needtoken('(');
+
+  while (!matchtoken(')')) {
+    declinfo_t decl;
+
+    // Initialize.
+    memset(&decl, 0, sizeof(decl));
+    decl.type.ident = iVARIABLE;
+
+    parse_new_decl(&decl, NULL, DECLFLAG_ARGUMENT);
+
+    // Eat optional symbol name.
+    matchtoken(tSYMBOL);
+
+    // Error once when we're past max args.
+    if (type->argcount == sARGS_MAX) {
+      error(45);
+      continue;
+    }
+
+    funcarg_t *arg = &type->args[type->argcount++];
+    arg->tagcount = 1;
+    arg->tags[0] = decl.type.tag;
+    arg->dimcount = decl.type.numdim;
+    memcpy(arg->dims, decl.type.dim, arg->dimcount * sizeof(decl.type.dim[0]));
+    arg->fconst = (decl.type.usage & uCONST) ? TRUE : FALSE;
+    if (decl.type.ident == iARRAY)
+      arg->ident = iREFARRAY;
+    else
+      arg->ident = decl.type.ident;
+
+    if (!matchtoken(',')) {
+      needtoken(')');
+      break;
+    }
+  }
+
+  if (lparen)
+    needtoken(')');
+
+  require_newline(TRUE);
+  errorset(sRESET, 0);
+}
+
+static void dotypedef()
+{
+  token_ident_t ident;
+  if (!needsymbol(&ident))
+    return;
+
+  int prev_tag = pc_findtag(ident.name);
+  if (prev_tag != -1 && !(prev_tag & FUNCTAG))
+    error(94);
+
+  needtoken('=');
+
+  funcenum_t *def = funcenums_add(ident.name);
+
+  functag_t type;
+  parse_function_type(&type);
+  functags_add(def, &type);
+}
+
 
 /**
  * dofuncenum - declare function enumerations

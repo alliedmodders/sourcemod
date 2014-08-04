@@ -35,6 +35,7 @@
 #endif
 #define _float_included
 
+#if !defined __sourcepawn2__
 /**
  * Converts an integer into a floating point value.
  *
@@ -42,6 +43,7 @@
  * @return				Floating point value.
  */
 native Float:float(value);
+#endif
 
 /**
  * Multiplies two floats together.

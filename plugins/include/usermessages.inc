@@ -140,7 +140,7 @@ native EndMessage();
  *						blocks the message from being sent, and Plugin_Continue 
  *						resumes normal functionality.
  */
-functag public Action:MsgHook(UserMsg:msg_id, Handle:msg, const players[], playersNum, bool:reliable, bool:init);
+typedef MsgHook = function Action (UserMsg msg_id, Handle msg, const int[] players, int playersNum, bool reliable, bool init);
 
 /**
  * Called when a message hook has completed.
@@ -149,7 +149,7 @@ functag public Action:MsgHook(UserMsg:msg_id, Handle:msg, const players[], playe
  * @param sent			True if message was sent, false if blocked.
  * @noreturn
  */
-functag public void MsgPostHook(UserMsg:msg_id, bool:sent);
+typedef MsgPostHook = function void (UserMsg msg_id, bool sent);
 
 /**
  * Hooks a user message.

@@ -151,7 +151,7 @@ enum MenuSource
  * @param param1			First action parameter (usually the client).
  * @param param2			Second action parameter (usually the item).
  */
-functag public int MenuHandler(Menu:menu, MenuAction:action, param1, param2);
+typedef MenuHandler = function int (Menu menu, MenuAction action, int param1, int param2);
 
 /**
  * Creates a new, empty menu using the default style.
@@ -527,12 +527,14 @@ stock bool:VoteMenuToAll(Handle:menu, time, flags=0)
  *							defines.
  * @noreturn
  */
-functag public void VoteHandler(Menu:menu,
-						   num_votes, 
-						   num_clients,
-						   const client_info[][2], 
-						   num_items,
-						   const item_info[][2]);	   
+typedef VoteHandler = function void (
+  Menu menu,
+  int num_votes, 
+  int num_clients,
+  const int client_info[][2], 
+  int num_items,
+  const int item_info[][2]
+);
 
 /**
  * Sets an advanced vote handling callback.  If this callback is set,

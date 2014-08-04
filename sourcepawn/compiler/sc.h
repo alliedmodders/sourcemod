@@ -357,7 +357,7 @@ typedef struct {
 /*  Tokens recognized by lex()
  *  Some of these constants are assigned as well to the variable "lastst" (see SC1.C)
  */
-enum {
+enum TokenKind {
   /* value of first multi-character operator */
   tFIRST     = 256,
   /* multi-character operators */
@@ -431,6 +431,7 @@ enum {
   tSWITCH,
   tTAGOF,
   tTHEN,
+  tTYPEDEF,
   tVOID,
   tWHILE,
   /* compiler directives */
