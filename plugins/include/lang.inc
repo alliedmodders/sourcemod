@@ -59,7 +59,6 @@ native SetGlobalTransTarget(client);
 
 /**
  * Retrieves the language number of a client.
- * Currently this simply returns the server language index.
  *
  * @param client	Client index.
  * @return			Language number client is using.
