@@ -448,7 +448,7 @@ stock TF2_RemoveWeaponSlot(client, slot)
 		{
 			TF2_RemoveWearable(client, extraWearable);
 		}
-		
+
 		RemovePlayerItem(client, weaponIndex);
 		AcceptEntityInput(weaponIndex, "Kill");
 	}
