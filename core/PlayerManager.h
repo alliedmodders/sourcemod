@@ -131,6 +131,9 @@ private:
 	bool m_bIsReplay;
 	serial_t m_Serial;
 	unsigned int m_SteamAccountID;
+#if SOURCE_ENGINE == SE_CSGO
+	QueryCvarCookie_t m_LanguageCookie;
+#endif
 };
 
 class PlayerManager : 
@@ -211,6 +214,9 @@ public:
 	unsigned int GetReplyTo();
 	unsigned int SetReplyTo(unsigned int reply);
 	void MaxPlayersChanged(int newvalue = -1);
+#if SOURCE_ENGINE == SE_CSGO
+	bool HandleConVarQuery(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue);
+#endif
 private:
 #if SOURCE_ENGINE == SE_DOTA
 	void OnServerActivate();
