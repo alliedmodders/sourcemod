@@ -82,7 +82,9 @@ class IFileSystem_Logic
 {
 public:
 	virtual const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle) = 0;
+	virtual const char *FindFirst(const char *pWildCard, FileFindHandle_t *pHandle) = 0;
 	virtual const char *FindNext(FileFindHandle_t handle) = 0;
+	virtual bool FindIsDirectory(FileFindHandle_t handle) = 0;
 	virtual void FindClose(FileFindHandle_t handle) = 0;
 	virtual FileHandle_t Open(const char *pFileName, const char *pOptions, const char *pathID = 0) = 0;
 	virtual void Close(FileHandle_t file) = 0;
@@ -98,6 +100,9 @@ public:
 	virtual void Flush(FileHandle_t file) = 0;
 	virtual bool IsOk(FileHandle_t file) = 0;
 	virtual void RemoveFile(const char *pRelativePath, const char *pathID = 0) = 0;
+	virtual void RenameFile(char const *pOldPath, char const *pNewPath, const char *pathID = 0) = 0;
+	virtual bool IsDirectory(const char *pFileName, const char *pathID = 0) = 0;
+	virtual void CreateDirHierarchy(const char *path, const char *pathID = 0) = 0;
 };
 
 namespace SourceMod
