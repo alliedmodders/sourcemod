@@ -111,6 +111,12 @@
 		}
 		"Offsets"
 		{
+			"RemoveExtraWearables"
+			{
+				"windows"	"386"
+				"linux"		"387"
+				"mac"		"387"
+			}
 			"ForceRespawn"
 			{
 				"windows"	"324"

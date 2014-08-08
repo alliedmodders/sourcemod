@@ -371,6 +371,15 @@ native bool:TF2_IsPlayerInDuel(client);
 native TF2_RemoveWearable(client, wearable);
 
 /**
+ * Removes extra wearables from a weapon(if any)
+ *
+ * @param weapon	Weapon to remove extra wearables from(if any)
+ * @noreturn
+ * @error			Invalid weapon index or no mod support.
+*/
+native TF2_RemoveExtraWearables(weapon);
+
+/**
  * Called after a condition is added to a player
  *
  * @param client		Index of the client to which the conditon is being added.

@@ -648,6 +648,44 @@ cell_t TF2_RemoveWearable(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+cell_t TF2_RemoveExtraWearables(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	//CTFWeaponBase::RemoveExtraWearables(void)
+
+	if (!pWrapper)
+	{
+		int offset;
+
+		if (!g_pGameConf->GetOffset("RemoveExtraWearables", &offset))
+		{
+			return pContext->ThrowNativeError("Failed to locate function");
+		}
+
+		PassInfo pass[1];
+
+		pWrapper = g_pBinTools->CreateVCall(offset, 0, 0, NULL, pass, 0);
+
+		g_RegNatives.Register(pWrapper);
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = UTIL_GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Weapon index %d is not valid", params[1]);
+	}
+
+	unsigned char vstk[sizeof(void *)];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = (void *)pEntity;
+
+	pWrapper->Execute(vstk, NULL);
+
+	return 1;
+}
+
 sp_nativeinfo_t g_TFNatives[] = 
 {
 	{"TF2_IgnitePlayer",			TF2_Burn},
@@ -666,5 +704,6 @@ sp_nativeinfo_t g_TFNatives[] =
 	{"TF2_IsPlayerInDuel",				TF2_IsPlayerInDuel},
 	{"TF2_IsHolidayActive",				TF2_IsHolidayActive},
 	{"TF2_RemoveWearable",			TF2_RemoveWearable},
+	{"TF2_RemoveExtraWearables",	TF2_RemoveExtraWearables},
 	{NULL,							NULL}
 };
