@@ -395,6 +395,7 @@ void SourceModBase::LevelShutdown()
 		{
 			g_pOnMapEnd->Execute(NULL);
 		}
+		extsys->CallOnCoreMapEnd();
 
 		g_Timers.RemoveMapChangeTimers();
 

@@ -136,7 +136,7 @@ namespace SourceMod
 	 * V6 - added TestFeature() to IShareSys.
 	 * V7 - added OnDependenciesDropped() to IExtensionInterface.
 	 */
-	#define SMINTERFACE_EXTENSIONAPI_VERSION	7
+	#define SMINTERFACE_EXTENSIONAPI_VERSION	8
 
 	/**
 	 * @brief The interface an extension must expose.
@@ -323,6 +323,15 @@ namespace SourceMod
 		 * simplier.
 		 */
 		virtual void OnDependenciesDropped()
+		{
+		}
+
+		/**
+		 * @brief Called on level shutdown
+		 *
+		 */
+
+		virtual void OnCoreMapEnd()
 		{
 		}
 	};
