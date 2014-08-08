@@ -435,9 +435,6 @@ stock TF2_RemoveWeaponSlot(client, slot)
 	new weaponIndex;
 	while ((weaponIndex = GetPlayerWeaponSlot(client, slot)) != -1)
 	{
-		RemovePlayerItem(client, weaponIndex);
-		AcceptEntityInput(weaponIndex, "Kill");
-
 		// bug #6206
 		// papering over a valve bug where a weapon's extra wearables aren't properly removed from the weapon's owner
 		new extraWearable = GetEntPropEnt(weaponIndex, Prop_Send, "m_hExtraWearable");
@@ -451,6 +448,9 @@ stock TF2_RemoveWeaponSlot(client, slot)
 		{
 			TF2_RemoveWearable(client, extraWearable);
 		}
+
+		RemovePlayerItem(client, weaponIndex);
+		AcceptEntityInput(weaponIndex, "Kill");
 	}
 }
 
