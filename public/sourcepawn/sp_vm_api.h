@@ -1044,6 +1044,15 @@ namespace SourcePawn
 		 * @param render            Function to render any help messages.
 		 */
 		virtual void Stop(void (*render)(const char *fmt, ...)) = 0;
+
+		/**
+		 * @brief Dump profiling information.
+		 *
+		 * Informs the profiling tool to dump any current profiling information
+		 * it has accumulated. The format and location of the output is profiling
+		 * tool specific.
+		 */
+		virtual void Dump() = 0;
 	
 		/**
 		 * @brief Returns whether or not the profiler is currently profiling.
