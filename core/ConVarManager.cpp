@@ -648,8 +648,11 @@ QueryCvarCookie_t ConVarManager::QueryClientConVar(edict_t *pPlayer, const char 
 		return InvalidQueryCvarCookie;
 	}
 
-	ConVarQuery query = {cookie, pCallback, (cell_t)hndl, IndexOfEdict(pPlayer)};
-	m_ConVarQueries.push_back(query);
+	if (pCallback != NULL)
+	{
+		ConVarQuery query = { cookie, pCallback, (cell_t) hndl, IndexOfEdict(pPlayer) };
+		m_ConVarQueries.push_back(query);
+	}
 #endif
 
 	return cookie;
@@ -753,6 +756,13 @@ void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, CEntityIn
 void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
 #endif // SE_DOTA
 {
+#if SOURCE_ENGINE == SE_CSGO
+	if (g_Players.HandleConVarQuery(cookie, pPlayer, result, cvarName, cvarValue))
+	{
+		return;
+	}
+#endif
+
 	IPluginFunction *pCallback = NULL;
 	cell_t value = 0;
 	List<ConVarQuery>::iterator iter;
