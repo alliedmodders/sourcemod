@@ -73,6 +73,14 @@ VProfTool::Stop(void (*render)(const char *fmt, ...))
 	RenderHelp(render);
 }
 
+void
+VProfTool::Dump()
+{
+	g_VProfCurrentProfile.Pause();
+	g_VProfCurrentProfile.OutputReport(VPRT_FULL);
+	g_VProfCurrentProfile.Resume();
+}
+
 bool
 VProfTool::IsActive()
 {
@@ -105,5 +113,5 @@ VProfTool::LeaveScope()
 void
 VProfTool::RenderHelp(void (*render)(const char *fmt, ...))
 {
-	render("Use vprof_generate_report in your console to analyze a profile session.");
+	render("Use 'sm prof dump vprof' or one of the vprof_generate_report commands in your console to analyze a profile session.");
 }

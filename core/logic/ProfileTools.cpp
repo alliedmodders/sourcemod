@@ -122,6 +122,13 @@ ProfileToolManager::OnRootConsoleCommand2(const char *cmdname, const ICommandArg
 			active_ = nullptr;
 			return;
 		}
+		if (strcmp(cmdname, "dump") == 0) {
+			if (active_) {
+				// if we have an active profiler, dump it
+				active_->Dump();
+				return;
+			}
+		}
 
 		if (args->ArgC() < 4) {
 			if (strcmp(cmdname, "start") == 0) {
@@ -154,6 +161,15 @@ ProfileToolManager::OnRootConsoleCommand2(const char *cmdname, const ICommandArg
 			StartFromConsole(tool);
 			return;
 		}
+		if (strcmp(cmdname, "dump") == 0) {
+			IProfilingTool *tool = FindToolByName(toolname);
+			if (!tool) {
+				rootmenu->ConsolePrint("No tool with the name \"%s\" was found.", toolname);
+				return;
+			}
+			tool->Dump();
+			return;
+		}
 		if (strcmp(cmdname, "help") == 0) {
 			IProfilingTool *tool = FindToolByName(toolname);
 			if (!tool) {
@@ -169,5 +185,6 @@ ProfileToolManager::OnRootConsoleCommand2(const char *cmdname, const ICommandArg
 	rootmenu->DrawGenericOption("list", "List all available profiling tools.");
 	rootmenu->DrawGenericOption("start", "Start a profile with a given tool.");
 	rootmenu->DrawGenericOption("stop", "Stop the current profile session.");
+	rootmenu->DrawGenericOption("dump", "Dumps output from the current profile session.");
 	rootmenu->DrawGenericOption("help", "Display help text for a profiler.");
 }
