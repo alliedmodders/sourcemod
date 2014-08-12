@@ -504,7 +504,7 @@ cleanup:
         pc_printf("Header size:       %8ld bytes\n", (long)hdrsize);
         pc_printf("Code size:         %8ld bytes\n", (long)code_idx);
         pc_printf("Data size:         %8ld bytes\n", (long)glb_declared*sizeof(cell));
-        pc_printf("Stack/heap size:   %8ld bytes; ", (long)pc_stksize*sizeof(cell));
+        pc_printf("Stack/heap size:   %8ld bytes\n", (long)pc_stksize*sizeof(cell));
 #if 0
         pc_printf("estimated max. usage");
         if (recursion)
@@ -1269,7 +1269,8 @@ static void setconfig(char *root)
 static void setcaption(void)
 {
   pc_printf("SourcePawn Compiler %s\n", SOURCEMOD_VERSION);
-  pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2014 AlliedModders, LLC\n\n");
+  pc_printf("Copyright (c) 1997-2006 ITB CompuPhase\n");
+  pc_printf("Copyright (c) 2004-2014 AlliedModders LLC\n\n");
 }
 
 static void about(void)
