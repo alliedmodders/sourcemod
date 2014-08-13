@@ -195,7 +195,7 @@ class GenericCommandHooker : public IConCommandLinkListener
 		size_t index;
 		if (!FindVtable(vtable, index))
 		{
-			g_Logger.LogError("Console detour tried to unhook command \"%s\" but it wasn't found", pBase->GetName());
+			logger->LogError("Console detour tried to unhook command \"%s\" but it wasn't found", pBase->GetName());
 			return;
 		}
 
@@ -219,7 +219,7 @@ public:
 
 		if (dispatch.thisptroffs < 0)
 		{
-			g_Logger.LogError("Command filter could not determine ConCommand layout");
+			logger->LogError("Command filter could not determine ConCommand layout");
 			return false;
 		}
 
@@ -228,7 +228,7 @@ public:
 
 		if (!vtables.size())
 		{
-			g_Logger.LogError("Command filter could not find any cvars!");
+			logger->LogError("Command filter could not find any cvars!");
 			return false;
 		}
 

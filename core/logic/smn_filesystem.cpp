@@ -38,6 +38,7 @@
 #include <ISourceMod.h>
 #include <ITranslator.h>
 #include "common_logic.h"
+#include "Logger.h"
 
 HandleType_t g_FileType;
 HandleType_t g_DirType;
@@ -598,7 +599,7 @@ static cell_t sm_LogMessage(IPluginContext *pContext, const cell_t *params)
 	}
 
 	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
-	smcore.Log("[%s] %s", pPlugin->GetFilename(), buffer);
+	g_Logger.LogMessage("[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;
 }
@@ -616,7 +617,7 @@ static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
 	}
 
 	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
-	smcore.LogError("[%s] %s", pPlugin->GetFilename(), buffer);
+	g_Logger.LogError("[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;
 }
@@ -669,7 +670,7 @@ static cell_t sm_LogToOpenFile(IPluginContext *pContext, const cell_t *params)
 	}
 
 	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
-	smcore.LogToFile(pFile, "[%s] %s", pPlugin->GetFilename(), buffer);
+	g_Logger.LogToOpenFile(pFile, "[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;
 }
@@ -699,7 +700,7 @@ static cell_t sm_LogToOpenFileEx(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	smcore.LogToFile(pFile, "%s", buffer);
+	g_Logger.LogToOpenFile(pFile, "%s", buffer);
 
 	return 1;
 }

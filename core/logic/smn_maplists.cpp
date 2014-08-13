@@ -202,8 +202,8 @@ public:
 			{
 				errmsg = "Unknown error";
 			}
-			smcore.LogError("[SM] Could not parse file \"%s\"", m_ConfigFile);
-			smcore.LogError("[SM] Error on line %d (col %d): %s", states.line, states.col, errmsg);
+			logger->LogError("[SM] Could not parse file \"%s\"", m_ConfigFile);
+			logger->LogError("[SM] Error on line %d (col %d): %s", states.line, states.col, errmsg);
 		}
 		else
 		{

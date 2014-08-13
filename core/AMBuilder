@@ -31,7 +31,6 @@ project.sources += [
   'smn_console.cpp',
   'UserMessages.cpp',
   'MenuManager.cpp',
-  'smn_core.cpp',
   'smn_hudtext.cpp',
   'smn_usermsgs.cpp',
   'MenuStyle_Base.cpp',
