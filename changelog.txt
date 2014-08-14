@@ -1,5 +1,26 @@
 SourceMod Changelog
 
+SourceMod 1.6.1 [2014-08-17]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.6.1_Release_Notes
+
+User Changes:
+ - Updated game support for CS:GO and Fistful of Frags.
+ - Added support for Romanian language.
+ - Re-added languages.cfg, missing from 1.6.0, causing all clients to use server language.
+ - Fixed a regression in version 1.6.0 that caused certain SDKHooks usage patterns to cause a server crash (PR 107).
+ - Improved error reporting in basebans plugin when banreasons.txt is missing (PR 115).
+ - Fixed incorrect logged gravity value for sm_gravity command (Ryan "VoiDeD" Stecker) (PR 116).
+ - Fixed a regression in version 1.6.0 causing SDKHook_ReloadPost hooks to not fire in plugins (Peace-Maker) (PR 96).
+ - Added workaround for game bug in TF2_RemoveWeaponSlot to avoid wearable entities left on map (Ryan "VoiDeD" Stecker) (bug 6206, PR 121).
+ - Removed DisableJIT option from core.cfg. (It was never meant for normal use.) 
+
+Developer Changes:
+ - Added new TF2_RemoveWearable native (Ryan "VoiDeD" Stecker, WildCard65) (PR 114).
+ - Added new functions for interacting with and playing scripted game sounds (Ross "Powerlord" Bemrose) (bug 5942, PR 65).
+ - Added new StringToKeyValues natives (Ryan "VoiDeD" Stecker) (PR 74).
+
+----------------------------------------------------------
 SourceMod 1.6.0 [2014-07-03]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.6.0_Release_Notes
