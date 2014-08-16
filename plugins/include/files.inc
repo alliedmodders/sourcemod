@@ -377,6 +377,15 @@ native bool:RemoveDir(const String:path[]);
 native bool:CreateDirectory(const String:path[], mode);
 
 /**
+ * Changes a file or directories permissions.
+ *
+ * @param path			Path to the file.
+ * @param mode			Permissions to set.
+ * @return				True on success, false otherwise.
+ */
+native bool:SetFilePermissions(const String:path[], mode);
+
+/**
  * Returns a file timestamp as a unix timestamp.
  *
  * @param file			File name.
