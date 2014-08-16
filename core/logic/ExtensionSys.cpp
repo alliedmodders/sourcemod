@@ -1360,6 +1360,24 @@ void CExtensionManager::CallOnCoreMapStart(edict_t *pEdictList, int edictCount, 
 	}
 }
 
+void CExtensionManager::CallOnCoreMapEnd()
+{
+	IExtensionInterface *pAPI;
+	List<CExtension *>::iterator iter;
+
+	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
+	{
+		if ((pAPI = (*iter)->GetAPI()) == NULL)
+		{
+			continue;
+		}
+		if (pAPI->GetExtensionVersion() > 7)
+		{
+			pAPI->OnCoreMapEnd();
+		}
+	}
+}
+
 const CVector<IExtension *> *CExtensionManager::ListExtensions()
 {
 	CVector<IExtension *> *list = new CVector<IExtension *>();
