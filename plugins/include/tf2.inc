@@ -447,5 +447,6 @@ public __ext_tf2_SetNTVOptional()
 	MarkNativeAsOptional("TF2_GetClass");
 	MarkNativeAsOptional("TF2_IsPlayerInDuel");
 	MarkNativeAsOptional("TF2_IsHolidayActive");
+	MarkNativeAsOptional("TF2_RemoveWearable");
 }
 #endif
