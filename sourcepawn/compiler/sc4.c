@@ -34,6 +34,7 @@
 
 static int fcurseg;     /* the file number (fcurrent) for the active segment */
 
+SC_FUNC void load_i();
 
 /* When a subroutine returns to address 0, the AMX must halt. In earlier
  * releases, the RET and RETN opcodes checked for the special case 0 address.
@@ -391,8 +392,7 @@ SC_FUNC void rvalue(value *lval)
   sym=lval->sym;
   if (lval->ident==iARRAYCELL) {
     /* indirect fetch, address already in PRI */
-    stgwrite("\tload.i\n");
-    code_idx+=opcodes(1);
+    load_i();
   } else if (lval->ident==iARRAYCHAR) {
     /* indirect fetch of a character from a pack, address already in PRI */
     stgwrite("\tlodb.i ");
@@ -467,6 +467,82 @@ SC_FUNC void address(symbol *sym,regid reg)
   outval(sym->addr,TRUE);
   markusage(sym,uREAD);
   code_idx+=opcodes(1)+opargs(1);
+}
+
+// Compute an address to the storage slot of a local variable.
+SC_FUNC void address_slot(symbol *sym, regid reg)
+{
+  assert(sym->vclass==sLOCAL);
+  switch (reg) {
+  case sPRI:
+    stgwrite("\taddr.pri ");
+    break;
+  case sALT:
+    stgwrite("\taddr.alt ");
+    break;
+  } /* switch */
+  outval(sym->addr,TRUE);
+  markusage(sym,uREAD);
+  code_idx+=opcodes(1)+opargs(1);
+}
+
+static void addr_reg(int val, regid reg)
+{
+  if (reg == sPRI)
+    stgwrite("\taddr.pri ");
+  else
+    stgwrite("\taddr.alt ");
+  outval(val, TRUE);
+  code_idx += opcodes(1) + opargs(1);
+}
+
+// Load the number of arguments into PRI. Frame layout:
+//   base + 0*sizeof(cell) == previous "base"
+//   base + 1*sizeof(cell) == function return address
+//   base + 2*sizeof(cell) == number of arguments
+//   base + 3*sizeof(cell) == first argument of the function
+static void load_argcount(regid reg)
+{
+  if (reg == sPRI)
+    stgwrite("\tload.s.pri ");
+  else
+    stgwrite("\tload.s.alt ");
+  outval(2 * sizeof(cell), TRUE);
+  code_idx += opcodes(1) + opargs(1);
+}
+
+// PRI = ALT + (PRI * cellsize)
+SC_FUNC void idxaddr()
+{
+  stgwrite("\tidxaddr\n");
+  code_idx += opcodes(1);
+}
+
+SC_FUNC void load_i()
+{
+  stgwrite("\tload.i\n");
+  code_idx+=opcodes(1);
+}
+
+// Load the hidden array argument into ALT.
+SC_FUNC void load_hidden_arg()
+{
+  pushreg(sPRI);
+
+  // Compute an address to the first argument, then add the argument count
+  // to find the address after the final argument:
+  //    addr.alt   0xc   ; Compute &first_arg
+  //    load.s.alt 0x8   ; Load arg count
+  //    idxaddr          ; Compute (&first_arg) + argcount
+  //    load.i           ; Load *(&first_arg + argcount)
+  //    move.alt         ; Move result into ALT.
+  addr_reg(0xc, sALT);
+  load_argcount(sPRI);
+  idxaddr();
+  load_i();
+  move_alt();
+
+  popreg(sPRI);
 }
 
 /*  store
