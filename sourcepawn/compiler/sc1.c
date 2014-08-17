@@ -7586,10 +7586,10 @@ static void doreturn(void)
        * it stays on the heap for the moment, and it is removed -usually- at
        * the end of the expression/statement, see expression() in SC3.C)
        */
-      if (!is_variadic(curfunc)) {
-        address(sub,sALT);           /* ALT = destination */
-      } else {
+      if (is_variadic(curfunc)) {
         load_hidden_arg();
+      } else {
+        address(sub,sALT);           /* ALT = destination */
       }
       arraysize=calc_arraysize(dim,numdim,0);
       memcopy(arraysize*sizeof(cell));  /* source already in PRI */

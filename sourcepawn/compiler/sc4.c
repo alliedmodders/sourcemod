@@ -469,23 +469,6 @@ SC_FUNC void address(symbol *sym,regid reg)
   code_idx+=opcodes(1)+opargs(1);
 }
 
-// Compute an address to the storage slot of a local variable.
-SC_FUNC void address_slot(symbol *sym, regid reg)
-{
-  assert(sym->vclass==sLOCAL);
-  switch (reg) {
-  case sPRI:
-    stgwrite("\taddr.pri ");
-    break;
-  case sALT:
-    stgwrite("\taddr.alt ");
-    break;
-  } /* switch */
-  outval(sym->addr,TRUE);
-  markusage(sym,uREAD);
-  code_idx+=opcodes(1)+opargs(1);
-}
-
 static void addr_reg(int val, regid reg)
 {
   if (reg == sPRI)
