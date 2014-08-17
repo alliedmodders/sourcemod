@@ -106,8 +106,6 @@ private:
 	bool m_InitialState;
 };
 
-void Engine_LogPrintWrapper(const char *msg);
-
 extern Logger g_Logger;
 
 #endif // _INCLUDE_SOURCEMOD_CLOGGER_H_

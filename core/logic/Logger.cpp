@@ -474,7 +474,7 @@ void Logger::_PrintToGameLog(const char *fmt, va_list ap)
 	msg[len++] = '\n';
 	msg[len] = '\0';
 
-	Engine_LogPrintWrapper(msg);
+	smcore.LogToGame(msg);
 }
 
 const char *Logger::GetLogFileName(LogType type) const

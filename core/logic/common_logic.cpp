@@ -73,6 +73,7 @@ ISourcePawnEngine *g_pSourcePawn;
 ISourcePawnEngine2 *g_pSourcePawn2;
 CNativeOwner g_CoreNatives;
 IScriptManager *scripts = &g_PluginSys;
+IExtensionSys *extsys = &g_Extensions;
 ILogger *logger = &g_Logger;
 
 static void AddCorePhraseFile(const char *filename)
