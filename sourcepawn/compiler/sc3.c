@@ -481,7 +481,6 @@ static int functag_compare(const functag_t *formal, const functag_t *actual)
     }
 
     const funcarg_t *actual_arg = &actual->args[i];
-
     if (!funcarg_compare(formal_arg, actual_arg))
       return FALSE;
   }
