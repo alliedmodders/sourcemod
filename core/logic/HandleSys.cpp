@@ -957,8 +957,8 @@ bool HandleSystem::InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHa
 }
 
 #define HANDLE_LOG_VERY_BAD(message, ...) \
-	smcore.LogFatal(message, ##__VA_ARGS__); \
-	smcore.LogError(message, ##__VA_ARGS__);
+	logger->LogFatal(message, ##__VA_ARGS__); \
+	logger->LogError(message, ##__VA_ARGS__);
 
 bool HandleSystem::TryAndFreeSomeHandles()
 {

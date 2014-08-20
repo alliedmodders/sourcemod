@@ -42,6 +42,7 @@
 #include "GameConfigs.h"
 #include "common_logic.h"
 #include "Translator.h"
+#include "Logger.h"
 
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
@@ -844,8 +845,8 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 	{
 		char error[256];
 		libsys->GetPlatformError(error, sizeof(error));
-		smcore.LogError("[SM] Failure reading from plugins path: %s", localpath);
-		smcore.LogError("[SM] Platform returned error: %s", error);
+		g_Logger.LogError("[SM] Failure reading from plugins path: %s", localpath);
+		g_Logger.LogError("[SM] Platform returned error: %s", error);
 		return;
 	}
 
@@ -990,9 +991,9 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 			} else {
 				if (bulletinUrl[0] != '\0')
 				{
-					smcore.Log("%s: Known malware detected. See %s for more info, blocking disabled in core.cfg", pPlugin->GetFilename(), bulletinUrl);
+					g_Logger.LogMessage("%s: Known malware detected. See %s for more info, blocking disabled in core.cfg", pPlugin->GetFilename(), bulletinUrl);
 				} else {
-					smcore.Log("%s: Possible malware or illegal plugin detected, blocking disabled in core.cfg", pPlugin->GetFilename());
+					g_Logger.LogMessage("%s: Possible malware or illegal plugin detected, blocking disabled in core.cfg", pPlugin->GetFilename());
 				}
 			}
 		}
@@ -1094,7 +1095,7 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 
 	if ((res=_LoadPlugin(&pl, plugin, false, PluginType_MapUpdated, error, sizeof(error))) == LoadRes_Failure)
 	{
-		smcore.LogError("[SM] Failed to load plugin \"%s\": %s.", plugin, error);
+		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s.", plugin, error);
 		pl->SetErrorState(
 			pl->GetStatus() <= Plugin_Created ? Plugin_BadLoad : pl->GetStatus(), 
 			"%s",
@@ -1136,7 +1137,7 @@ void CPluginManager::LoadAll_SecondPass()
 			error[0] = '\0';
 			if (!RunSecondPass(pPlugin, error, sizeof(error)))
 			{
-				smcore.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), error);
+				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), error);
 				pPlugin->SetErrorState(Plugin_Failed, "%s", error);
 			}
 		}

@@ -606,7 +606,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path, bool bErrorOn
 	{
 		if (bErrorOnMissing || libsys->IsPathFile(p->GetPath()))
 		{
-			smcore.LogError("[SM] Unable to load extension \"%s\": %s", path, error);
+			logger->LogError("[SM] Unable to load extension \"%s\": %s", path, error);
 		}
 		
 		p->SetError(error);

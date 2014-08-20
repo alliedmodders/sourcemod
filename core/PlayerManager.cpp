@@ -1238,7 +1238,7 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 	if ((networkid_force = engine->GetClientConVarValue(client, "networkid_force")) && networkid_force[0] != '\0')
 	{
 		unsigned int accountId = pPlayer->GetSteamAccountID();
-		g_Logger.LogMessage("\"%s<%d><STEAM_1:%d:%d><>\" has bad networkid (id \"%s\") (ip \"%s\")",
+		logger->LogMessage("\"%s<%d><STEAM_1:%d:%d><>\" has bad networkid (id \"%s\") (ip \"%s\")",
 			new_name, pPlayer->GetUserId(), accountId & 1, accountId >> 1, networkid_force, pPlayer->GetIPAddress());
 
 		pPlayer->Kick("NetworkID spoofing detected.");

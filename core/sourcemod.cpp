@@ -573,9 +573,9 @@ void SourceModBase::LogMessage(IExtension *pExt, const char *format, ...)
 
 	if (tag)
 	{
-		g_Logger.LogMessage("[%s] %s", tag, buffer);
+		logger->LogMessage("[%s] %s", tag, buffer);
 	} else {
-		g_Logger.LogMessage("%s", buffer);
+		logger->LogMessage("%s", buffer);
 	}
 }
 
@@ -592,9 +592,9 @@ void SourceModBase::LogError(IExtension *pExt, const char *format, ...)
 
 	if (tag)
 	{
-		g_Logger.LogError("[%s] %s", tag, buffer);
+		logger->LogError("[%s] %s", tag, buffer);
 	} else {
-		g_Logger.LogError("%s", buffer);
+		logger->LogError("%s", buffer);
 	}
 }
 

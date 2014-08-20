@@ -32,6 +32,7 @@
 #include <IPluginSys.h>
 #include <stdarg.h>
 #include "DebugReporter.h"
+#include "Logger.h"
 
 DebugReport g_DbgReporter;
 
@@ -49,7 +50,7 @@ void DebugReport::OnDebugSpew(const char *msg, ...)
 	smcore.FormatArgs(buffer, sizeof(buffer), msg, ap);
 	va_end(ap);
 
-	smcore.Log("[SM] %s", buffer);
+	g_Logger.LogMessage("[SM] %s", buffer);
 }
 
 void DebugReport::GenerateError(IPluginContext *ctx, cell_t func_idx, int err, const char *message, ...)
@@ -71,12 +72,12 @@ void DebugReport::GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err,
 
 	if (error)
 	{
-		smcore.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
+		g_Logger.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
 	} else {
-		smcore.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
+		g_Logger.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
 	}
 
-	smcore.LogError("[SM] %s", buffer);
+	g_Logger.LogError("[SM] %s", buffer);
 
 	if (func_idx != -1)
 	{
@@ -86,7 +87,7 @@ void DebugReport::GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err,
 			sp_public_t *function;
 			if (ctx->GetRuntime()->GetPublicByIndex(func_idx, &function) == SP_ERROR_NONE)
 			{
-				smcore.LogError("[SM] Unable to call function \"%s\" due to above error(s).", function->name);
+				g_Logger.LogError("[SM] Unable to call function \"%s\" due to above error(s).", function->name);
 			}
 		}
 	}
@@ -106,18 +107,18 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 
 	if (error)
 	{
-		smcore.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
+		g_Logger.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
 	} else {
-		smcore.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
+		g_Logger.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
 	}
 
-	smcore.LogError("[SM] %s", buffer);
+	g_Logger.LogError("[SM] %s", buffer);
 
 	IPluginDebugInfo *pDebug;
 	if ((pDebug = pContext->GetRuntime()->GetDebugInfo()) == NULL)
 	{
-		smcore.LogError("[SM] Debug mode is not enabled for \"%s\"", plname);
-		smcore.LogError("[SM] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",
+		g_Logger.LogError("[SM] Debug mode is not enabled for \"%s\"", plname);
+		g_Logger.LogError("[SM] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",
 			_GetPluginIndex(pContext));
 		return;
 	}
@@ -125,9 +126,9 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 	const char *name;
 	if (pDebug->LookupFunction(code_addr, &name) == SP_ERROR_NONE)
 	{
-		smcore.LogError("[SM] Unable to call function \"%s\" due to above error(s).", name);
+		g_Logger.LogError("[SM] Unable to call function \"%s\" due to above error(s).", name);
 	} else {
-		smcore.LogError("[SM] Unable to call function (name unknown, address \"%x\").", code_addr);
+		g_Logger.LogError("[SM] Unable to call function (name unknown, address \"%x\").", code_addr);
 	}
 }
 
@@ -139,7 +140,7 @@ void DebugReport::OnContextExecuteError(IPluginContext *ctx, IContextTrace *erro
 
 	if (n_err != SP_ERROR_NATIVE)
 	{
-		smcore.LogError("[SM] Plugin encountered error %d: %s",
+		g_Logger.LogError("[SM] Plugin encountered error %d: %s",
 			n_err,
 			error->GetErrorString());
 	}
@@ -149,26 +150,26 @@ void DebugReport::OnContextExecuteError(IPluginContext *ctx, IContextTrace *erro
 		const char *custerr;
 		if ((custerr=error->GetCustomErrorString()) != NULL)
 		{
-			smcore.LogError("[SM] Native \"%s\" reported: %s", lastname, custerr);
+			g_Logger.LogError("[SM] Native \"%s\" reported: %s", lastname, custerr);
 		} else {
-			smcore.LogError("[SM] Native \"%s\" encountered a generic error.", lastname);
+			g_Logger.LogError("[SM] Native \"%s\" encountered a generic error.", lastname);
 		}
 	}
 
 	if (!error->DebugInfoAvailable())
 	{
-		smcore.LogError("[SM] Debug mode is not enabled for \"%s\"", plname);
-		smcore.LogError("[SM] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",
+		g_Logger.LogError("[SM] Debug mode is not enabled for \"%s\"", plname);
+		g_Logger.LogError("[SM] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",
 			_GetPluginIndex(ctx));
 		return;
 	}
 
 	CallStackInfo stk_info;
 	int i = 0;
-	smcore.LogError("[SM] Displaying call stack trace for plugin \"%s\":", plname);
+	g_Logger.LogError("[SM] Displaying call stack trace for plugin \"%s\":", plname);
 	while (error->GetTraceInfo(&stk_info))
 	{
-		smcore.LogError("[SM]   [%d]  Line %d, %s::%s()",
+		g_Logger.LogError("[SM]   [%d]  Line %d, %s::%s()",
 			i++,
 			stk_info.line,
 			stk_info.filename,

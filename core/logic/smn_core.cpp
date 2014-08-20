@@ -32,14 +32,14 @@
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
-#include "sm_stringutil.h"
-#include "sm_globals.h"
-#include "sourcemod.h"
-#include "LibrarySys.h"
-#include "TimerSys.h"
+#include "common_logic.h"
 #include "Logger.h"
+
+#include <ISourceMod.h>
+#include <ITranslator.h>
+
+#include <sourcehook.h>
 #include <sh_memory.h>
-#include "logic_bridge.h"
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
@@ -50,8 +50,10 @@
 #endif
 
 HandleType_t g_PlIter;
-ConVar sm_datetime_format("sm_datetime_format", "%m/%d/%Y - %H:%M:%S", 0, "Default formatting time rules");
+
 IForward *g_OnLogAction = NULL;
+
+static ConVar *sm_datetime_format = NULL;
 
 class CoreNativeHelpers : 
 	public SMGlobalClass,
@@ -75,6 +77,8 @@ public:
 			Param_Cell,
 			Param_Cell,
 			Param_String);
+		
+		sm_datetime_format = smcore.FindConVar("sm_datetime_format");
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
@@ -119,14 +123,14 @@ void LogAction(Handle_t hndl, int type, int client, int target, const char *mess
 
 	g_Logger.LogMessage("[%s] %s", logtag, message);
 }
-
-static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
+ 
+ static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
 {
 	char buffer[512];
 
-	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
+	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
+	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
 	if (pContext->GetLastNativeError() == SP_ERROR_NONE)
 	{
@@ -138,7 +142,7 @@ static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetTime(IPluginContext *pContext, const cell_t *params)
 {
-	time_t t = GetAdjustedTime();
+	time_t t = g_pSM->GetAdjustedTime();
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[1], &addr);
 
@@ -168,14 +172,14 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 
 	if (format == NULL)
 	{
-		format = const_cast<char *>(sm_datetime_format.GetString());
+		format = const_cast<char *>(smcore.GetCvarString(sm_datetime_format));
 	}
 
 #if defined SUBPLATFORM_SECURECRT
 	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
 #endif
 
-	time_t t = (params[4] == -1) ? GetAdjustedTime() : (time_t)params[4];
+	time_t t = (params[4] == -1) ? g_pSM->GetAdjustedTime() : (time_t)params[4];
 	size_t written = strftime(buffer, params[2], format, localtime(&t));
 
 #if defined SUBPLATFORM_SECURECRT
@@ -384,7 +388,7 @@ static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
 	{
 		char buffer[2048];
 
-		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
 		if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 		{
 			pPlugin->SetErrorState(Plugin_Error, "%s", str);
@@ -433,14 +437,14 @@ static cell_t AutoExecConfig(IPluginContext *pContext, const cell_t *params)
 		static char temp_file[PLATFORM_MAX_PATH];
 		char *ptr;
 
-		g_LibSys.GetFileFromPath(temp_str, sizeof(temp_str), plugin->GetFilename());
+		libsys->GetFileFromPath(temp_str, sizeof(temp_str), plugin->GetFilename());
 		if ((ptr = strstr(temp_str, ".smx")) != NULL)
 		{
 			*ptr = '\0';
 		}
 
 		/* We have the raw filename! */
-		UTIL_Format(temp_file, sizeof(temp_file), "plugin.%s", temp_str);
+		g_pSM->Format(temp_file, sizeof(temp_file), "plugin.%s", temp_str);
 		cfg = temp_file;
 	}
 
@@ -506,8 +510,8 @@ static cell_t LibraryExists(IPluginContext *pContext, const cell_t *params)
 static cell_t sm_LogAction(IPluginContext *pContext, const cell_t *params)
 {
 	char buffer[2048];
-	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 3);
+	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
+	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 3);
 
 	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
@@ -527,7 +531,7 @@ static cell_t LogToFile(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[1], &file);
 
 	char path[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "%s", file);
+	g_pSM->BuildPath(Path_Game, path, sizeof(path), "%s", file);
 
 	FILE *fp = fopen(path, "at");
 	if (!fp)
@@ -536,8 +540,8 @@ static cell_t LogToFile(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char buffer[2048];
-	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
+	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
 	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
@@ -560,7 +564,7 @@ static cell_t LogToFileEx(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[1], &file);
 
 	char path[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "%s", file);
+	g_pSM->BuildPath(Path_Game, path, sizeof(path), "%s", file);
 
 	FILE *fp = fopen(path, "at");
 	if (!fp)
@@ -569,8 +573,8 @@ static cell_t LogToFileEx(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char buffer[2048];
-	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
+	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
 	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
@@ -653,10 +657,10 @@ static cell_t RequireFeature(IPluginContext *pContext, const cell_t *params)
 		char default_message[255];
 		SMPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 
-		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 3);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 3);
 		if (pContext->GetLastNativeError() != SP_ERROR_NONE || buffer[0] == '\0')
 		{
-			UTIL_Format(default_message, sizeof(default_message), "Feature \"%s\" not available", name);
+			g_pSM->Format(default_message, sizeof(default_message), "Feature \"%s\" not available", name);
 			msg = default_message;
 		}
 		pPlugin->SetErrorState(Plugin_Error, "%s", msg);
@@ -743,19 +747,19 @@ static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 
 REGISTER_NATIVES(coreNatives)
 {
-	{"AutoExecConfig",			AutoExecConfig},
-	{"GetPluginFilename",		GetPluginFilename},
-	{"GetPluginInfo",			GetPluginInfo},
-	{"GetPluginIterator",		GetPluginIterator},
-	{"GetPluginStatus",			GetPluginStatus},
-	{"GetSysTickCount",			GetSysTickCount},
+	{"ThrowError",				ThrowError},
 	{"GetTime",					GetTime},
-	{"IsPluginDebugging",		IsPluginDebugging},
+	{"FormatTime",				FormatTime},
+	{"GetPluginIterator",		GetPluginIterator},
 	{"MorePlugins",				MorePlugins},
 	{"ReadPlugin",				ReadPlugin},
-	{"ThrowError",				ThrowError},
+	{"GetPluginStatus",			GetPluginStatus},
+	{"GetPluginFilename",		GetPluginFilename},
+	{"IsPluginDebugging",		IsPluginDebugging},
+	{"GetPluginInfo",			GetPluginInfo},
 	{"SetFailState",			SetFailState},
-	{"FormatTime",				FormatTime},
+	{"GetSysTickCount",			GetSysTickCount},
+	{"AutoExecConfig",			AutoExecConfig},
 	{"MarkNativeAsOptional",	MarkNativeAsOptional},
 	{"RegPluginLibrary",		RegPluginLibrary},
 	{"LibraryExists",			LibraryExists},
@@ -771,4 +775,3 @@ REGISTER_NATIVES(coreNatives)
 	{"StoreToAddress",          StoreToAddress},
 	{NULL,						NULL},
 };
-
