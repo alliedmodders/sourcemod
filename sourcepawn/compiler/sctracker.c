@@ -16,187 +16,167 @@ methodmap_t *methodmap_last = NULL;
 
 structarg_t *pstructs_getarg(pstruct_t *pstruct, const char *member)
 {
-	int i;
+  int i;
 
-	for (i=0; i<pstruct->argcount; i++)
-	{
-		if (strcmp(pstruct->args[i]->name, member) == 0)
-		{
-			return pstruct->args[i];
-		}
-	}
+  for (i=0; i<pstruct->argcount; i++) {
+    if (strcmp(pstruct->args[i]->name, member) == 0)
+      return pstruct->args[i];
+  }
 
-	return NULL;
+  return NULL;
 }
 
 pstruct_t *pstructs_add(const char *name)
 {
-	pstruct_t *p = (pstruct_t *)malloc(sizeof(pstruct_t));
-	
-	memset(p, 0, sizeof(pstruct_t));
-	strcpy(p->name, name);
-	
-	if (!firststruct)
-	{
-		firststruct = p;
-		laststruct = p;
-	} else {
-		laststruct->next = p;
-		laststruct = p;
-	}
+  pstruct_t *p = (pstruct_t *)malloc(sizeof(pstruct_t));
+  
+  memset(p, 0, sizeof(pstruct_t));
+  strcpy(p->name, name);
+  
+  if (!firststruct) {
+    firststruct = p;
+    laststruct = p;
+  } else {
+    laststruct->next = p;
+    laststruct = p;
+  }
 
-	return p;
+  return p;
 }
 
 void pstructs_free()
 {
-	pstruct_t *p, *next;
+  pstruct_t *p, *next;
 
-	p = firststruct;
-	while (p)
-	{
-		while (p->argcount--)
-		{
-			free(p->args[p->argcount]);
-		}
-		free(p->args);
-		next = p->next;
-		free(p);
-		p = next;
-	}
-	firststruct = NULL;
-	laststruct = NULL;
+  p = firststruct;
+  while (p) {
+    while (p->argcount--)
+      free(p->args[p->argcount]);
+    free(p->args);
+    next = p->next;
+    free(p);
+    p = next;
+  }
+  firststruct = NULL;
+  laststruct = NULL;
 }
 
 pstruct_t *pstructs_find(const char *name)
 {
-	pstruct_t *p = firststruct;
+  pstruct_t *p = firststruct;
 
-	while (p)
-	{
-		if (strcmp(p->name, name) == 0)
-		{
-			return p;
-		}
-		p = p->next;
-	}
+  while (p) {
+    if (strcmp(p->name, name) == 0)
+      return p;
+    p = p->next;
+  }
 
-	return NULL;
+  return NULL;
 }
 
 structarg_t *pstructs_addarg(pstruct_t *pstruct, const structarg_t *arg)
 {
-	structarg_t *newarg;
-	int i;
+  structarg_t *newarg;
+  int i;
 
-	for (i=0; i<pstruct->argcount; i++)
-	{
-		if (strcmp(pstruct->args[i]->name, arg->name) == 0)
-		{
-			/* Don't allow dup names */
-			return NULL;
-		}
-	}
-	
-	newarg = (structarg_t *)malloc(sizeof(structarg_t));
+  for (i=0; i<pstruct->argcount; i++) {
+    if (strcmp(pstruct->args[i]->name, arg->name) == 0) {
+      /* Don't allow dup names */
+      return NULL;
+    }
+  }
+  
+  newarg = (structarg_t *)malloc(sizeof(structarg_t));
 
-	memcpy(newarg, arg, sizeof(structarg_t));
+  memcpy(newarg, arg, sizeof(structarg_t));
 
-	if (pstruct->argcount == 0)
-	{
-		pstruct->args = (structarg_t **)malloc(sizeof(structarg_t *) * 1);
-	} else {
-		pstruct->args = (structarg_t **)realloc(
-							pstruct->args,
-							sizeof(structarg_t *) * (pstruct->argcount + 1));
-	}
+  if (pstruct->argcount == 0) {
+    pstruct->args = (structarg_t **)malloc(sizeof(structarg_t *) * 1);
+  } else {
+    pstruct->args = (structarg_t **)realloc(
+              pstruct->args,
+              sizeof(structarg_t *) * (pstruct->argcount + 1));
+  }
 
-	newarg->offs = pstruct->argcount * sizeof(cell);
-	newarg->index = pstruct->argcount;
-	pstruct->args[pstruct->argcount++] = newarg;
+  newarg->offs = pstruct->argcount * sizeof(cell);
+  newarg->index = pstruct->argcount;
+  pstruct->args[pstruct->argcount++] = newarg;
 
-	return newarg;
+  return newarg;
 }
 
 void funcenums_free()
 {
-	funcenum_t *e, *next;
+  funcenum_t *e, *next;
 
-	e = firstenum;
-	while (e)
-	{
-		functag_t *tag, *nexttag;
-		tag = e->first;
-		while (tag)
-		{
-			nexttag = tag->next;
-			free(tag);
-			tag = nexttag;
-		}
-		next = e->next;
-		free(e);
-		e = next;
-	}
+  e = firstenum;
+  while (e) {
+    functag_t *tag, *nexttag;
+    tag = e->first;
+    while (tag) {
+      nexttag = tag->next;
+      free(tag);
+      tag = nexttag;
+    }
+    next = e->next;
+    free(e);
+    e = next;
+  }
 
-	firstenum = NULL;
-	lastenum = NULL;
+  firstenum = NULL;
+  lastenum = NULL;
 }
 
 funcenum_t *funcenums_find_byval(int value)
 {
-	funcenum_t *e = firstenum;
+  funcenum_t *e = firstenum;
 
-	while (e)
-	{
-		if (e->value == value)
-		{
-			return e;
-		}
-		e = e->next;
-	}
+  while (e) {
+    if (e->value == value)
+      return e;
+    e = e->next;
+  }
 
-	return NULL;
+  return NULL;
 }
 
 funcenum_t *funcenums_add(const char *name)
 {
-	funcenum_t *e = (funcenum_t *)malloc(sizeof(funcenum_t));
+  funcenum_t *e = (funcenum_t *)malloc(sizeof(funcenum_t));
 
-	memset(e, 0, sizeof(funcenum_t));
+  memset(e, 0, sizeof(funcenum_t));
 
-	if (firstenum == NULL)
-	{
-		firstenum = e;
-		lastenum = e;
-	} else {
-		lastenum->next = e;
-		lastenum = e;
-	}
+  if (firstenum == NULL) {
+    firstenum = e;
+    lastenum = e;
+  } else {
+    lastenum->next = e;
+    lastenum = e;
+  }
 
-	strcpy(e->name, name);
-	e->value = pc_addtag_flags((char *)name, FIXEDTAG|FUNCTAG);
+  strcpy(e->name, name);
+  e->value = pc_addtag_flags((char *)name, FIXEDTAG|FUNCTAG);
 
-	return e;
+  return e;
 }
 
 functag_t *functags_add(funcenum_t *en, functag_t *src)
 {
-	functag_t *t = (functag_t *)malloc(sizeof(functag_t));
-	
-	memcpy(t, src, sizeof(functag_t));
+  functag_t *t = (functag_t *)malloc(sizeof(functag_t));
+  
+  memcpy(t, src, sizeof(functag_t));
 
-	t->next = NULL;
+  t->next = NULL;
 
-	if (en->first == NULL)
-	{
-		en->first = t;
-		en->last = t;
-	} else {
-		en->last->next = t;
-		en->last = t;
-	}
+  if (en->first == NULL) {
+    en->first = t;
+    en->last = t;
+  } else {
+    en->last->next = t;
+    en->last = t;
+  }
 
-	return t;
+  return t;
 }
 
 /**
@@ -318,16 +298,13 @@ void _heap_freeusage(memuse_list_t *heap, int dofree)
 {
   memuse_t *cur=heap->head;
   memuse_t *tmp;
-  while (cur)
-  {
-    if (cur->type == MEMUSE_STATIC)
-	{
+  while (cur) {
+    if (cur->type == MEMUSE_STATIC) {
       modheap((-1)*cur->size*sizeof(cell));
     } else {
       modheap_i();
     }
-    if (dofree)
-    {
+    if (dofree) {
       tmp=cur->prev;
       free(cur);
       cur=tmp;
@@ -336,9 +313,7 @@ void _heap_freeusage(memuse_list_t *heap, int dofree)
     }
   }
   if (dofree)
-  {
     heap->head=NULL;
-  }
 }
 
 void _stack_genusage(memuse_list_t *stack, int dofree)
