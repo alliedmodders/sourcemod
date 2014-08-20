@@ -413,13 +413,80 @@ static int matchobjecttags(int formaltag, int actualtag, int flags)
   return obj_typeerror(133, formaltag, actualtag);
 }
 
-static int matchreturntag(functag_t *t, symbol *sym)
+static int matchreturntag(const functag_t *formal, const functag_t *actual)
 {
-  if (t->ret_tag == sym->tag)
+  if (formal->ret_tag == actual->ret_tag)
     return TRUE;
-  if (t->ret_tag == pc_tag_void && (sym->tag == 0 && !(sym->usage & uRETVALUE)))
-    return TRUE;
+  if (formal->ret_tag == pc_tag_void) {
+    if (actual->ret_tag == 0 && !(actual->usage & uRETVALUE))
+      return TRUE;
+  }
   return FALSE;
+}
+
+static int funcarg_compare(const funcarg_t *formal, const funcarg_t *actual)
+{
+  // Check type.
+  if (actual->ident != formal->ident)
+    return FALSE;
+
+  // Check rank.
+  if (actual->dimcount != formal->dimcount)
+    return FALSE;
+
+  // Check arity.
+  for (int i = 0; i < formal->dimcount; i++) {
+    if (actual->dims[i] != formal->dims[i])
+      return FALSE;
+  }
+
+  // Check tags.
+  if (actual->tagcount != formal->tagcount)
+    return FALSE;
+  for (int i = 0; i < formal->tagcount; i++) {
+    // Note we invert the order we pass things to matchtag() here. If the
+    // typedef specifies base type X, and the function specifies derived
+    // type Y, we want this to type since such an assignment is valid.
+    // 
+    // Most programming languages do not subtype arguments like this. We do
+    // it in SourcePawn to preserve compatibility during the Transitional
+    // Syntax effort.
+    int actual_tag = actual->tags[i];
+    int formal_tag = formal->tags[i];
+    if (!matchtag(actual_tag, formal_tag, MATCHTAG_SILENT|MATCHTAG_COERCE))
+      return FALSE;
+  }
+
+  return TRUE;
+}
+
+static int functag_compare(const functag_t *formal, const functag_t *actual)
+{
+  // Check return types.
+  if (!matchreturntag(formal, actual))
+    return FALSE;
+
+  // Make sure there are no trailing arguments.
+  if (actual->argcount > formal->argcount)
+    return FALSE;
+
+  // Check arguments.
+  for (int i = 0; i < formal->argcount; i++) {
+    const funcarg_t *formal_arg = &formal->args[i];
+
+    if (i >= actual->argcount) {
+      if (formal_arg->ommittable)
+        return TRUE;
+      return FALSE;
+    }
+
+    const funcarg_t *actual_arg = &actual->args[i];
+
+    if (!funcarg_compare(formal_arg, actual_arg))
+      return FALSE;
+  }
+
+  return TRUE;
 }
 
 static int matchfunctags(int formaltag, int actualtag)
@@ -433,135 +500,17 @@ static int matchfunctags(int formaltag, int actualtag)
   if (!(actualtag & FUNCTAG))
     return FALSE;
 
-  constvalue *v = find_tag_byval(actualtag);
-  int index;
-  short usage = uPUBLIC;
-  symbol *sym, *found = NULL;
-  funcenum_t *e;
-  functag_t *t;
-
-  if (strncmp(v->name, "$Func", 5) != 0)
+  functag_t *actual = functag_find_intrinsic(actualtag);
+  if (!actual)
     return FALSE;
 
-  /* Now we have to go about looking up each function in this enum.  WHICH IS IT. */
-  e = funcenums_find_byval(formaltag);
+  funcenum_t *e = funcenums_find_by_tag(formaltag);
   if (!e)
     return FALSE;
 
-  assert(v->name[5] == '@' || v->name[5] == '!');
-
-  /* Deduce which function type this is */
-  if (v->name[5] == '@')
-  {
-    usage = uPUBLIC;
-  } else if (v->name[5] == '!') {
-    usage = uSTOCK;
-  }
-
-  index = atoi(&v->name[6]);
-
-  assert(index >= 0);
-
-  /* Find the function, either by public idx or code addr */
-  if (usage == uPUBLIC) {
-    for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-      if (sym->ident==iFUNCTN && (sym->usage & uPUBLIC)!=0 && (sym->vclass == sGLOBAL)) {
-        if (index-- == 0) {
-          found = sym;
-          break;
-        }
-      }
-    }
-  } else if (usage == uSTOCK) {
-    for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-      if (sym->ident==iFUNCTN && (sym->vclass == sGLOBAL)) {
-        if (sym->codeaddr == index) {
-          found = sym;
-          break;
-        }
-      }
-    }
-  }
-
-  if (!found) {
-    assert(found);
-    return FALSE;
-  }
-
-  /* Wow, we now have:
-   * 1) The functional enum deduced from formaltag
-   * 2) The function trying to be shoved in deduced from actualtag
-   * Now we have to check if it matches any one of the functags inside the enum.
-   */
-  t = e->first;
-  while (t) {
-    int curarg,skip=0,i;
-    arginfo *func_arg;
-    funcarg_t *enum_arg;
-    /* Check return type first. */
-    if (!matchreturntag(t, sym)) {
-      t = t->next;
-      continue;
-    }
-    /* Check usage */
-    if (t->type != usage) {
-      t = t->next;
-      continue;
-    }
-    /* Begin iterating arguments */
-    for (curarg=0; curarg<t->argcount; curarg++) {
-      enum_arg = &t->args[curarg];
-      /* Check whether we've exhausted our arguments */
-      if (sym->dim.arglist[curarg].ident == 0) {
-        /* Can we bail out early? */
-        if (!enum_arg->ommittable) {
-          /* No! */
-          skip = 1;
-        }
-        break;
-      }
-      func_arg = &sym->dim.arglist[curarg];
-      /* First check the ident type */
-      if (enum_arg->ident != func_arg->ident) {
-        skip = 1;
-        break;
-      }
-      /* Next check arrayness */
-      if (enum_arg->dimcount != func_arg->numdim) {
-        skip = 1;
-        break;
-      }
-      if (enum_arg->dimcount > 0) {
-        for (i=0; i<enum_arg->dimcount; i++) {
-          if (enum_arg->dims[i] != func_arg->dim[i]) {
-            skip = 1;
-            break;
-          }
-        }
-        if (skip)
-          break;
-      }
-      /* Lastly, check the tags */
-      if (enum_arg->tagcount != func_arg->numtags) {
-        skip = 1;
-        break;
-      }
-      /* They should all be in the same order just for clarity... */
-      for (i=0; i<enum_arg->tagcount; i++) {
-        if (!matchtag(func_arg->tags[i], enum_arg->tags[i], MATCHTAG_SILENT|MATCHTAG_COERCE)) {
-          skip = 1;
-          break;
-        }
-      }
-      if (skip)
-        break;
-    }
-    if (!skip) {
-      /* Make sure there are no trailing arguments */
-      if (sym->dim.arglist[curarg].ident == 0)
-        return TRUE;
-    }
-    t = t->next;
+  for (functag_t *formal = e->first; formal; formal = formal->next) {
+    if (functag_compare(formal, actual))
+      return TRUE;
   }
 
   return FALSE;
@@ -2287,41 +2236,30 @@ restart:
       return FALSE;
     }
 
-    symbol *oldsym=sym;
-    int n=-1,iter=0;
-    int usage = ((sym->usage & uPUBLIC) == uPUBLIC) ? uPUBLIC : 0;
-    cell code_addr=0;
-    for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-      if (sym->ident==iFUNCTN && sym->vclass == sGLOBAL && (!usage || (sym->usage & usage))) {
-        if (strcmp(sym->name, lval1->sym->name)==0) {
-          n = iter;
-          code_addr = sym->codeaddr;
-          break;
-        }
-        iter++;
+    int public_index = 0;
+    symbol *target = NULL;
+    for (symbol *iter = glbtab.next; iter; iter = iter->next) {
+      if (iter->ident != iFUNCTN || iter->vclass != sGLOBAL)
+        continue;
+      if (strcmp(iter->name, lval1->sym->name) == 0) {
+        target = iter;
+        break;
       }
+      if (iter->usage & uPUBLIC)
+        public_index++;
     }
 
-    if (n == -1) {
+    if (!target || !(target->usage & uPUBLIC)) {
       error(76);
       return FALSE;
     }
 
-    char faketag[sNAMEMAX+1];
-    lval1->sym=NULL;
-    lval1->ident=iCONSTEXPR;
-    /* Generate a quick pseudo-tag! */
-    if (usage == uPUBLIC) {
-      lval1->constval=(n<<1)|1;
-      snprintf(faketag, sizeof(faketag)-1, "$Func@%d", n);
-    } else {
-      lval1->constval=(code_addr<<1)|0;
-      snprintf(faketag, sizeof(faketag)-1, "$Func!%d", code_addr);
-      error(153);
-    }
-    lval1->tag=pc_addtag_flags(faketag, FIXEDTAG|FUNCTAG);
-    oldsym->usage |= uREAD;
-    sym->usage |= uREAD;
+    funcenum_t *fe = funcenum_for_symbol(target);
+    lval1->sym = NULL;
+    lval1->ident = iCONSTEXPR;
+    lval1->constval = (public_index << 1) | 1;
+    lval1->tag = fe->tag;
+    target->usage |= uREAD;
   } /* if */
   return lvalue;
 }

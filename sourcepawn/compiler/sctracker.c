@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdarg.h>
 #include "sc.h"
 #include "sctracker.h"
 
@@ -127,12 +128,12 @@ void funcenums_free()
   lastenum = NULL;
 }
 
-funcenum_t *funcenums_find_byval(int value)
+funcenum_t *funcenums_find_by_tag(int tag)
 {
   funcenum_t *e = firstenum;
 
   while (e) {
-    if (e->value == value)
+    if (e->tag == tag)
       return e;
     e = e->next;
   }
@@ -146,7 +147,7 @@ funcenum_t *funcenums_add(const char *name)
 
   memset(e, 0, sizeof(funcenum_t));
 
-  if (firstenum == NULL) {
+  if (!firstenum) {
     firstenum = e;
     lastenum = e;
   } else {
@@ -155,9 +156,55 @@ funcenum_t *funcenums_add(const char *name)
   }
 
   strcpy(e->name, name);
-  e->value = pc_addtag_flags((char *)name, FIXEDTAG|FUNCTAG);
+  e->tag = pc_addtag_flags((char *)name, FIXEDTAG|FUNCTAG);
 
   return e;
+}
+
+funcenum_t *funcenum_for_symbol(symbol *sym)
+{
+  functag_t ft;
+  memset(&ft, 0, sizeof(ft));
+
+  ft.ret_tag = sym->tag;
+  ft.usage = uPUBLIC & (sym->usage & uRETVALUE);
+  ft.argcount = 0;
+  ft.ommittable = FALSE;
+  for (arginfo *arg = sym->dim.arglist; arg->ident; arg++) {
+    funcarg_t *dest = &ft.args[ft.argcount++];
+
+    dest->tagcount = arg->numtags;
+    memcpy(dest->tags, arg->tags, arg->numtags * sizeof(int));
+
+    dest->dimcount = arg->numdim;
+    memcpy(dest->dims, arg->dim, arg->numdim * sizeof(int));
+
+    dest->ident = arg->ident;
+    dest->fconst = !!(arg->usage & uCONST);
+    dest->ommittable = FALSE;
+  }
+
+  char name[METHOD_NAMEMAX+1];
+  UTIL_Format(name, sizeof(name), "::ft:%s:%d:%d", sym->name, sym->addr, sym->codeaddr);
+
+  funcenum_t *fe = funcenums_add(name);
+  functags_add(fe, &ft);
+
+  return fe;
+}
+
+// Finds a functag that was created intrinsically.
+functag_t *functag_find_intrinsic(int tag)
+{
+  funcenum_t *fe = funcenums_find_by_tag(tag);
+  if (!fe)
+    return NULL;
+
+  if (strncmp(fe->name, "::ft:", 5) != 0)
+    return NULL;
+
+  assert(fe->first && fe->first == fe->last);
+  return fe->first;
 }
 
 functag_t *functags_add(funcenum_t *en, functag_t *src)
@@ -549,4 +596,19 @@ int can_redef_layout_spec(LayoutSpec def1, LayoutSpec def2)
       return FALSE;
   }
   return FALSE;
+}
+
+size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start(ap, fmt);
+  size_t len = vsnprintf(buffer, maxlength, fmt, ap);
+  va_end(ap);
+
+  if (len >= maxlength) {
+    buffer[maxlength - 1] = '\0';
+    return maxlength - 1;
+  }
+  return len;
 }
