@@ -745,6 +745,7 @@ SC_FUNC void invoke_getter(struct methodmap_method_s *method);
 SC_FUNC void invoke_setter(struct methodmap_method_s *method, int save);
 SC_FUNC void inc_pri();
 SC_FUNC void dec_pri();
+SC_FUNC void load_hidden_arg();
 
 /*  Code generation functions for arithmetic operators.
  *
