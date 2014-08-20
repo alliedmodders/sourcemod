@@ -4223,6 +4223,9 @@ static void parse_function_type(functag_t *type)
       continue;
     }
 
+    // Account for strings.
+    fix_char_size(&decl);
+
     funcarg_t *arg = &type->args[type->argcount++];
     arg->tagcount = 1;
     arg->tags[0] = decl.type.tag;
