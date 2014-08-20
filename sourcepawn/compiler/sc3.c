@@ -2281,45 +2281,42 @@ restart:
   } /* if */
   if (sym!=NULL && lval1->ident==iFUNCTN) {
     assert(sym->ident==iFUNCTN);
-    if (sc_allowproccall) {
-      // Note: this is unreachable in SourceMod, we don't support paren-less calls.
-      callfunction(sym,NULL,lval1,FALSE);
-    } else if ((sym->usage & uNATIVE) != uNATIVE) {
-      symbol *oldsym=sym;
-      int n=-1,iter=0;
-      int usage = ((sym->usage & uPUBLIC) == uPUBLIC) ? uPUBLIC : 0;
-      cell code_addr=0;
-      for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-        if (sym->ident==iFUNCTN && sym->vclass == sGLOBAL && (!usage || (sym->usage & usage)))
-        {
-          if (strcmp(sym->name, lval1->sym->name)==0) {
-            n = iter;
-            code_addr = sym->codeaddr;
-            break;
-          }
-          iter++;
-        }
-      }
-      if (n!=-1) {
-        char faketag[sNAMEMAX+1];
-        lval1->sym=NULL;
-        lval1->ident=iCONSTEXPR;
-        /* Generate a quick pseudo-tag! */
-        if (usage == uPUBLIC) {
-          lval1->constval=(n<<1)|1;
-          snprintf(faketag, sizeof(faketag)-1, "$Func@%d", n);
-        } else {
-          lval1->constval=(code_addr<<1)|0;
-          snprintf(faketag, sizeof(faketag)-1, "$Func!%d", code_addr);
-          error(153);
-        }
-        lval1->tag=pc_addtag_flags(faketag, FIXEDTAG|FUNCTAG);
-        oldsym->usage |= uREAD;
-        sym->usage |= uREAD;
-      } else {
-        error(76);                /* invalid function call, or syntax error */
-      } /* if */
+
+    if (sym->usage & uNATIVE) {
+      error(76);
       return FALSE;
+    }
+
+    symbol *oldsym=sym;
+    int n=-1,iter=0;
+    int usage = ((sym->usage & uPUBLIC) == uPUBLIC) ? uPUBLIC : 0;
+    cell code_addr=0;
+    for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
+      if (sym->ident==iFUNCTN && sym->vclass == sGLOBAL && (!usage || (sym->usage & usage))) {
+        if (strcmp(sym->name, lval1->sym->name)==0) {
+          n = iter;
+          code_addr = sym->codeaddr;
+          break;
+        }
+        iter++;
+      }
+    }
+    if (n!=-1) {
+      char faketag[sNAMEMAX+1];
+      lval1->sym=NULL;
+      lval1->ident=iCONSTEXPR;
+      /* Generate a quick pseudo-tag! */
+      if (usage == uPUBLIC) {
+        lval1->constval=(n<<1)|1;
+        snprintf(faketag, sizeof(faketag)-1, "$Func@%d", n);
+      } else {
+        lval1->constval=(code_addr<<1)|0;
+        snprintf(faketag, sizeof(faketag)-1, "$Func!%d", code_addr);
+        error(153);
+      }
+      lval1->tag=pc_addtag_flags(faketag, FIXEDTAG|FUNCTAG);
+      oldsym->usage |= uREAD;
+      sym->usage |= uREAD;
     } else {
       error(76);                  /* invalid function call, or syntax error */
     }
