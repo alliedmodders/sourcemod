@@ -2301,25 +2301,27 @@ restart:
         iter++;
       }
     }
-    if (n!=-1) {
-      char faketag[sNAMEMAX+1];
-      lval1->sym=NULL;
-      lval1->ident=iCONSTEXPR;
-      /* Generate a quick pseudo-tag! */
-      if (usage == uPUBLIC) {
-        lval1->constval=(n<<1)|1;
-        snprintf(faketag, sizeof(faketag)-1, "$Func@%d", n);
-      } else {
-        lval1->constval=(code_addr<<1)|0;
-        snprintf(faketag, sizeof(faketag)-1, "$Func!%d", code_addr);
-        error(153);
-      }
-      lval1->tag=pc_addtag_flags(faketag, FIXEDTAG|FUNCTAG);
-      oldsym->usage |= uREAD;
-      sym->usage |= uREAD;
-    } else {
-      error(76);                  /* invalid function call, or syntax error */
+
+    if (n == -1) {
+      error(76);
+      return FALSE;
     }
+
+    char faketag[sNAMEMAX+1];
+    lval1->sym=NULL;
+    lval1->ident=iCONSTEXPR;
+    /* Generate a quick pseudo-tag! */
+    if (usage == uPUBLIC) {
+      lval1->constval=(n<<1)|1;
+      snprintf(faketag, sizeof(faketag)-1, "$Func@%d", n);
+    } else {
+      lval1->constval=(code_addr<<1)|0;
+      snprintf(faketag, sizeof(faketag)-1, "$Func!%d", code_addr);
+      error(153);
+    }
+    lval1->tag=pc_addtag_flags(faketag, FIXEDTAG|FUNCTAG);
+    oldsym->usage |= uREAD;
+    sym->usage |= uREAD;
   } /* if */
   return lvalue;
 }
