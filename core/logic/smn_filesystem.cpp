@@ -267,7 +267,7 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 		if (pFirst)
 		{
 			valveDir->bHandledFirstPath = false;
-			strncpy(valveDir->szFirstPath, pFirst, sizeof(ValveDirectory::szFirstPath));
+			strncpy(valveDir->szFirstPath, pFirst, sizeof(valveDir->szFirstPath));
 		}
 		else
 		{
