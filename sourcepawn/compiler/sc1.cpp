@@ -193,9 +193,6 @@ char g_tmpfile[_MAX_PATH] = {0};
 
 /*  "main" of the compiler
  */
-#if defined __cplusplus
-  extern "C"
-#endif
 int pc_compile(int argc, char *argv[])
 {
   int entry,i,jmpcode;
@@ -582,9 +579,6 @@ cleanup:
   return retcode;
 }
 
-#if defined __cplusplus
-  extern "C"
-#endif
 int pc_addconstant(const char *name,cell value,int tag)
 {
   errorset(sFORCESET,0);        /* make sure error engine is silenced */
@@ -678,9 +672,6 @@ int pc_findtag(const char *name)
   return -1;
 }
 
-#if defined __cplusplus
-  extern "C"
-#endif
 int pc_addtag(const char *name)
 {
   int val;
@@ -833,7 +824,7 @@ static char *get_extension(char *filename)
  * Set the default extension, or force an extension. To erase the
  * extension of a filename, set "extension" to an empty string.
  */
-SC_FUNC void set_extension(char *filename,const char *extension,int force)
+void set_extension(char *filename,const char *extension,int force)
 {
   char *ptr;
 
@@ -4726,7 +4717,7 @@ static int compare_tag(int tag1, int tag2)
  *  Finds a function in the global symbol table or creates a new entry.
  *  It does some basic processing and error checking.
  */
-SC_FUNC symbol *fetchfunc(char *name)
+symbol *fetchfunc(char *name)
 {
   symbol *sym;
 
@@ -4955,7 +4946,7 @@ static char *tag2str(char *dest,int tag)
   return isdigit(dest[1]) ? &dest[1] : dest;
 }
 
-SC_FUNC char *operator_symname(char *symname,const char *opername,int tag1,int tag2,int numtags,int resulttag)
+char *operator_symname(char *symname,const char *opername,int tag1,int tag2,int numtags,int resulttag)
 {
   char tagstr1[10], tagstr2[10];
   int opertok;
@@ -5005,7 +4996,7 @@ constvalue *find_tag_byval(int tag)
   return tagsym;
 }
 
-SC_FUNC char *funcdisplayname(char *dest,char *funcname)
+char *funcdisplayname(char *dest,char *funcname)
 {
   int tags[2];
   char opname[10];
@@ -6493,7 +6484,7 @@ static constvalue *insert_constval(constvalue *prev,constvalue *next,const char 
   return cur;
 }
 
-SC_FUNC constvalue *append_constval(constvalue *table,const char *name,cell val,int index)
+constvalue *append_constval(constvalue *table,const char *name,cell val,int index)
 {
   constvalue *cur,*prev;
 
@@ -6503,7 +6494,7 @@ SC_FUNC constvalue *append_constval(constvalue *table,const char *name,cell val,
   return insert_constval(prev,NULL,name,val,index);
 }
 
-SC_FUNC constvalue *find_constval(constvalue *table,char *name,int index)
+constvalue *find_constval(constvalue *table,char *name,int index)
 {
   constvalue *ptr = table->next;
 
@@ -6546,7 +6537,7 @@ static int delete_constval(constvalue *table,char *name)
 }
 #endif
 
-SC_FUNC void delete_consttable(constvalue *table)
+void delete_consttable(constvalue *table)
 {
   constvalue *cur=table->next, *next;
 
@@ -6562,7 +6553,7 @@ SC_FUNC void delete_consttable(constvalue *table)
  *
  *  Adds a symbol to the symbol table. Returns NULL on failure.
  */
-SC_FUNC symbol *add_constant(const char *name,cell val,int vclass,int tag)
+symbol *add_constant(const char *name,cell val,int vclass,int tag)
 {
   symbol *sym;
 
@@ -6896,7 +6887,7 @@ static int doexpr2(int comma,int chkeffect,int allowarray,int mark_endexpr,
 
 /*  exprconst
  */
-SC_FUNC int exprconst(cell *val,int *tag,symbol **symptr)
+int exprconst(cell *val,int *tag,symbol **symptr)
 {
   int ident,index;
   cell cidx;
@@ -7633,7 +7624,7 @@ static void docont(void)
   jumplabel(ptr[wqLOOP]);
 }
 
-SC_FUNC void exporttag(int tag)
+void exporttag(int tag)
 {
   /* find the tag by value in the table, then set the top bit to mark it
    * "public"

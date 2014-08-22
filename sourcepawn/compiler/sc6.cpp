@@ -659,7 +659,7 @@ static int findopcode(char *instr,int maxlen)
   return 0;             /* not found, return special index */
 }
 
-SC_FUNC int assemble(void *fout, void *fin)
+int assemble(void *fout, void *fin)
 {
   AMX_HEADER hdr;
   AMX_FUNCSTUBNT func;

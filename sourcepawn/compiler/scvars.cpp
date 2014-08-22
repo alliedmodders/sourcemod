@@ -32,82 +32,82 @@
  *  All global variables that are shared amongst the compiler files are
  *  declared here.
  */
-SC_VDEFINE symbol loctab;                   /* local symbol table */
-SC_VDEFINE symbol glbtab;                   /* global symbol table */
-SC_VDEFINE cell *litq;                      /* the literal queue */
-SC_VDEFINE unsigned char pline[sLINEMAX+1]; /* the line read from the input file */
-SC_VDEFINE const unsigned char *lptr;       /* points to the current position in "pline" */
-SC_VDEFINE constvalue tagname_tab = { NULL, "", 0, 0};  /* tagname table */
-SC_VDEFINE constvalue libname_tab = { NULL, "", 0, 0};  /* library table (#pragma library "..." syntax) */
-SC_VDEFINE constvalue *curlibrary = NULL;   /* current library */
-SC_VDEFINE int pc_addlibtable = TRUE;       /* is the library table added to the AMX file? */
-SC_VDEFINE symbol *curfunc;                 /* pointer to current function */
-SC_VDEFINE char *inpfname;                  /* pointer to name of the file currently read from */
-SC_VDEFINE char outfname[_MAX_PATH];        /* intermediate (assembler) file name */
-SC_VDEFINE char binfname[_MAX_PATH];        /* binary file name */
-SC_VDEFINE char errfname[_MAX_PATH];        /* error file name */
-SC_VDEFINE char sc_ctrlchar = CTRL_CHAR;    /* the control character (or escape character)*/
-SC_VDEFINE char sc_ctrlchar_org = CTRL_CHAR;/* the default control character */
-SC_VDEFINE int litidx    = 0;               /* index to literal table */
-SC_VDEFINE int litmax    = sDEF_LITMAX;     /* current size of the literal table */
-SC_VDEFINE int stgidx    = 0;      /* index to the staging buffer */
-SC_VDEFINE int sc_labnum = 0;      /* number of (internal) labels */
-SC_VDEFINE int staging   = 0;      /* true if staging output */
-SC_VDEFINE cell declared = 0;      /* number of local cells declared */
-SC_VDEFINE cell glb_declared=0;    /* number of global cells declared */
-SC_VDEFINE cell code_idx = 0;      /* number of bytes with generated code */
-SC_VDEFINE int ntv_funcid= 0;      /* incremental number of native function */
-SC_VDEFINE int errnum    = 0;      /* number of errors */
-SC_VDEFINE int warnnum   = 0;      /* number of warnings */
-SC_VDEFINE int sc_debug  = sCHKBOUNDS; /* by default: bounds checking+assertions */
-SC_VDEFINE int sc_packstr= FALSE;  /* strings are packed by default? */
-SC_VDEFINE int sc_asmfile= FALSE;  /* create .ASM file? */
-SC_VDEFINE int sc_listing= FALSE;  /* create .LST file? */
-SC_VDEFINE int sc_compress=TRUE;   /* compress bytecode? */
-SC_VDEFINE int sc_needsemicolon=TRUE;/* semicolon required to terminate expressions? */
-SC_VDEFINE int sc_dataalign=sizeof(cell);/* data alignment value */
-SC_VDEFINE int sc_alignnext=FALSE; /* must frame of the next function be aligned? */
-SC_VDEFINE int pc_docexpr=FALSE;   /* must expression be attached to documentation comment? */
-SC_VDEFINE int curseg    = 0;      /* 1 if currently parsing CODE, 2 if parsing DATA */
-SC_VDEFINE cell pc_stksize=sDEF_AMXSTACK;/* default stack size */
-SC_VDEFINE cell pc_amxlimit=0;     /* default abstract machine size limit = none */
-SC_VDEFINE cell pc_amxram=0;       /* default abstract machine data size limit = none */
-SC_VDEFINE int freading  = FALSE;  /* Is there an input file ready for reading? */
-SC_VDEFINE int fline     = 0;      /* the line number in the current file */
-SC_VDEFINE short fnumber = 0;      /* the file number in the file table (debugging) */
-SC_VDEFINE short fcurrent= 0;      /* current file being processed (debugging) */
-SC_VDEFINE short sc_intest=FALSE;  /* true if inside a test */
-SC_VDEFINE int sideeffect= 0;      /* true if an expression causes a side-effect */
-SC_VDEFINE int stmtindent= 0;      /* current indent of the statement */
-SC_VDEFINE int indent_nowarn=FALSE;/* skip warning "217 loose indentation" */
-SC_VDEFINE int sc_tabsize=8;       /* number of spaces that a TAB represents */
-SC_VDEFINE short sc_allowtags=TRUE;  /* allow/detect tagnames in lex() */
-SC_VDEFINE int sc_status;          /* read/write status */
-SC_VDEFINE int sc_err_status;
-SC_VDEFINE int sc_rationaltag=0;   /* tag for rational numbers */
-SC_VDEFINE int rational_digits=0;  /* number of fractional digits */
-SC_VDEFINE int sc_allowproccall=0; /* allow/detect tagnames in lex() */
-SC_VDEFINE short sc_is_utf8=FALSE; /* is this source file in UTF-8 encoding */
-SC_VDEFINE char *pc_deprecate=NULL;/* if non-null, mark next declaration as deprecated */
-SC_VDEFINE int sc_curstates=0;     /* ID of the current state list */
-SC_VDEFINE int pc_optimize=sOPTIMIZE_NOMACRO; /* (peephole) optimization level */
-SC_VDEFINE int pc_memflags=0;      /* special flags for the stack/heap usage */
-SC_VDEFINE int sc_showincludes=0;  /* show include files */
-SC_VDEFINE int sc_require_newdecls=0; /* Require new-style declarations */
+symbol loctab;                   /* local symbol table */
+symbol glbtab;                   /* global symbol table */
+cell *litq;                      /* the literal queue */
+unsigned char pline[sLINEMAX+1]; /* the line read from the input file */
+const unsigned char *lptr;       /* points to the current position in "pline" */
+constvalue tagname_tab = { NULL, "", 0, 0};  /* tagname table */
+constvalue libname_tab = { NULL, "", 0, 0};  /* library table (#pragma library "..." syntax) */
+constvalue *curlibrary = NULL;   /* current library */
+int pc_addlibtable = TRUE;       /* is the library table added to the AMX file? */
+symbol *curfunc;                 /* pointer to current function */
+char *inpfname;                  /* pointer to name of the file currently read from */
+char outfname[_MAX_PATH];        /* intermediate (assembler) file name */
+char binfname[_MAX_PATH];        /* binary file name */
+char errfname[_MAX_PATH];        /* error file name */
+char sc_ctrlchar = CTRL_CHAR;    /* the control character (or escape character)*/
+char sc_ctrlchar_org = CTRL_CHAR;/* the default control character */
+int litidx    = 0;               /* index to literal table */
+int litmax    = sDEF_LITMAX;     /* current size of the literal table */
+int stgidx    = 0;      /* index to the staging buffer */
+int sc_labnum = 0;      /* number of (internal) labels */
+int staging   = 0;      /* true if staging output */
+cell declared = 0;      /* number of local cells declared */
+cell glb_declared=0;    /* number of global cells declared */
+cell code_idx = 0;      /* number of bytes with generated code */
+int ntv_funcid= 0;      /* incremental number of native function */
+int errnum    = 0;      /* number of errors */
+int warnnum   = 0;      /* number of warnings */
+int sc_debug  = sCHKBOUNDS; /* by default: bounds checking+assertions */
+int sc_packstr= FALSE;  /* strings are packed by default? */
+int sc_asmfile= FALSE;  /* create .ASM file? */
+int sc_listing= FALSE;  /* create .LST file? */
+int sc_compress=TRUE;   /* compress bytecode? */
+int sc_needsemicolon=TRUE;/* semicolon required to terminate expressions? */
+int sc_dataalign=sizeof(cell);/* data alignment value */
+int sc_alignnext=FALSE; /* must frame of the next function be aligned? */
+int pc_docexpr=FALSE;   /* must expression be attached to documentation comment? */
+int curseg    = 0;      /* 1 if currently parsing CODE, 2 if parsing DATA */
+cell pc_stksize=sDEF_AMXSTACK;/* default stack size */
+cell pc_amxlimit=0;     /* default abstract machine size limit = none */
+cell pc_amxram=0;       /* default abstract machine data size limit = none */
+int freading  = FALSE;  /* Is there an input file ready for reading? */
+int fline     = 0;      /* the line number in the current file */
+short fnumber = 0;      /* the file number in the file table (debugging) */
+short fcurrent= 0;      /* current file being processed (debugging) */
+short sc_intest=FALSE;  /* true if inside a test */
+int sideeffect= 0;      /* true if an expression causes a side-effect */
+int stmtindent= 0;      /* current indent of the statement */
+int indent_nowarn=FALSE;/* skip warning "217 loose indentation" */
+int sc_tabsize=8;       /* number of spaces that a TAB represents */
+short sc_allowtags=TRUE;  /* allow/detect tagnames in lex() */
+int sc_status;          /* read/write status */
+int sc_err_status;
+int sc_rationaltag=0;   /* tag for rational numbers */
+int rational_digits=0;  /* number of fractional digits */
+int sc_allowproccall=0; /* allow/detect tagnames in lex() */
+short sc_is_utf8=FALSE; /* is this source file in UTF-8 encoding */
+char *pc_deprecate=NULL;/* if non-null, mark next declaration as deprecated */
+int sc_curstates=0;     /* ID of the current state list */
+int pc_optimize=sOPTIMIZE_NOMACRO; /* (peephole) optimization level */
+int pc_memflags=0;      /* special flags for the stack/heap usage */
+int sc_showincludes=0;  /* show include files */
+int sc_require_newdecls=0; /* Require new-style declarations */
 
-SC_VDEFINE constvalue sc_automaton_tab = { NULL, "", 0, 0}; /* automaton table */
-SC_VDEFINE constvalue sc_state_tab = { NULL, "", 0, 0};   /* state table */
+constvalue sc_automaton_tab = { NULL, "", 0, 0}; /* automaton table */
+constvalue sc_state_tab = { NULL, "", 0, 0};   /* state table */
 
-SC_VDEFINE void *inpf    = NULL;   /* file read from (source or include) */
-SC_VDEFINE void *inpf_org= NULL;   /* main source file */
-SC_VDEFINE void *outf    = NULL;   /* (intermediate) text file written to */
+void *inpf    = NULL;   /* file read from (source or include) */
+void *inpf_org= NULL;   /* main source file */
+void *outf    = NULL;   /* (intermediate) text file written to */
 
-SC_VDEFINE jmp_buf errbuf;
+jmp_buf errbuf;
 
-SC_VDEFINE HashTable *sp_Globals = NULL;
+HashTable *sp_Globals = NULL;
 
 #if !defined SC_LIGHT
-  SC_VDEFINE int sc_makereport=FALSE; /* generate a cross-reference report */
+  int sc_makereport=FALSE; /* generate a cross-reference report */
 #endif
 
 #if defined __WATCOMC__ && !defined NDEBUG

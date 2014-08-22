@@ -113,7 +113,7 @@ static int cp_readline(FILE *fp,char *string,size_t size)
  * codepages are most conveniently stored in a subdirectory of this home
  * directory.
  */
-SC_FUNC int cp_path(const char *root, const char *directory)
+int cp_path(const char *root, const char *directory)
 {
   size_t len1,len2;
   int add_slash1,add_slash2;
@@ -154,7 +154,7 @@ SC_FUNC int cp_path(const char *root, const char *directory)
  *    <cprootpath>/cp<name>
  *    <cprootpath>/cp<name>.txt
  */
-SC_FUNC int cp_set(const char *name)
+int cp_set(const char *name)
 {
   char filename[_MAX_PATH];
   FILE *fp=NULL;
@@ -277,7 +277,7 @@ SC_FUNC int cp_set(const char *name)
   return TRUE;
 }
 
-SC_FUNC cell cp_translate(const unsigned char *string,const unsigned char **endptr)
+cell cp_translate(const unsigned char *string,const unsigned char **endptr)
 {
   wchar_t result;
 
@@ -312,7 +312,7 @@ SC_FUNC cell cp_translate(const unsigned char *string,const unsigned char **endp
 #endif  /* NO_CODEPAGE */
 
 #if !defined NO_UTF8
-SC_FUNC cell get_utf8_char(const unsigned char *string,const unsigned char **endptr)
+cell get_utf8_char(const unsigned char *string,const unsigned char **endptr)
 {
   int follow=0;
   long lowmark=0;
@@ -391,7 +391,7 @@ SC_FUNC cell get_utf8_char(const unsigned char *string,const unsigned char **end
 }
 #endif
 
-SC_FUNC int scan_utf8(void *fp,const char *filename)
+int scan_utf8(void *fp,const char *filename)
 {
   #if defined NO_UTF8
     return 0;

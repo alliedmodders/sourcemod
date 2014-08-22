@@ -36,8 +36,8 @@ enum FileSections
   FS_Number,
 };
 
-extern "C" int pc_printf(const char *message,...);
-extern "C" int pc_compile(int argc, char **argv);
+int pc_printf(const char *message,...);
+int pc_compile(int argc, char **argv);
 void sfwrite(const void *buf, size_t size, size_t count, sp_file_t *spf);
 
 memfile_t *bin_file = NULL;
@@ -518,7 +518,7 @@ void sfwrite(const void *buf, size_t size, size_t count, sp_file_t *spf)
     longjmp(brkout, 1);
 }
 
-extern "C" void sp_fdbg_ntv_start(int num_natives)
+void sp_fdbg_ntv_start(int num_natives)
 {
   if (num_natives == 0)
     return;
@@ -528,8 +528,7 @@ extern "C" void sp_fdbg_ntv_start(int num_natives)
 }
 
 #include "sc.h"
-
-extern "C" void sp_fdbg_ntv_hook(int index, symbol *sym)
+void sp_fdbg_ntv_hook(int index, symbol *sym)
 {
   int i, j;
   t_native *native;

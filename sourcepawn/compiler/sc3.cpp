@@ -113,7 +113,7 @@ static int nextop(int *opidx,int *list)
   return FALSE;         /* entire list scanned, nothing found */
 }
 
-SC_FUNC int check_userop(void (*oper)(void),int tag1,int tag2,int numparam,
+int check_userop(void (*oper)(void),int tag1,int tag2,int numparam,
                          value *lval,int *resulttag)
 {
   static const char *binoperstr[] = {
@@ -290,7 +290,7 @@ SC_FUNC int check_userop(void (*oper)(void),int tag1,int tag2,int numparam,
   return TRUE;
 }
 
-SC_FUNC int checktags_string(int tags[], int numtags, value *sym1)
+int checktags_string(int tags[], int numtags, value *sym1)
 {
   int i;
   if (sym1->ident == iARRAY || sym1->ident == iREFARRAY)
@@ -305,7 +305,7 @@ SC_FUNC int checktags_string(int tags[], int numtags, value *sym1)
   return FALSE;
 }
 
-SC_FUNC int checktag_string(value *sym1, value *sym2)
+int checktag_string(value *sym1, value *sym2)
 {
   if (sym1->ident == iARRAY || sym2->ident == iARRAY ||
       sym1->ident == iREFARRAY || sym2->ident == iREFARRAY)
@@ -321,7 +321,7 @@ SC_FUNC int checktag_string(value *sym1, value *sym2)
   return FALSE;
 }
 
-SC_FUNC const char *type_to_name(int tag)
+const char *type_to_name(int tag)
 {
   if (tag == 0)
     return "int";
@@ -339,7 +339,7 @@ SC_FUNC const char *type_to_name(int tag)
   return "unknown";
 }
 
-SC_FUNC int matchtag_string(int ident, int tag)
+int matchtag_string(int ident, int tag)
 {
   if (ident == iARRAY || ident == iREFARRAY)
     return FALSE;
@@ -519,7 +519,7 @@ static int matchfunctags(int formaltag, int actualtag)
   return FALSE;
 }
 
-SC_FUNC int matchtag(int formaltag, int actualtag, int flags)
+int matchtag(int formaltag, int actualtag, int flags)
 {
   if (formaltag == actualtag)
     return TRUE;
@@ -958,7 +958,7 @@ static cell calc(cell left,void (*oper)(),cell right,char *boolresult)
   return 0;
 }
 
-SC_FUNC int lvalexpr(svalue *sval)
+int lvalexpr(svalue *sval)
 {
   memset(sval, 0, sizeof(*sval));
 
@@ -971,7 +971,7 @@ SC_FUNC int lvalexpr(svalue *sval)
   return sval->val.ident;
 }
 
-SC_FUNC int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult,value *_lval)
+int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult,value *_lval)
 {
   value lval={0};
   pushheaplist();
@@ -994,7 +994,7 @@ SC_FUNC int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult,valu
   return lval.ident;
 }
 
-SC_FUNC int sc_getstateid(constvalue **automaton,constvalue **state)
+int sc_getstateid(constvalue **automaton,constvalue **state)
 {
   char name[sNAMEMAX+1];
   cell val;
@@ -1047,7 +1047,7 @@ SC_FUNC int sc_getstateid(constvalue **automaton,constvalue **state)
   return 1;
 }
 
-SC_FUNC cell array_totalsize(symbol *sym)
+cell array_totalsize(symbol *sym)
 {
   cell length;
 

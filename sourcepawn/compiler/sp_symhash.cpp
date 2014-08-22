@@ -64,13 +64,13 @@ struct HashTable : public ke::HashTable<SymbolHashPolicy>
 {
 };
 
-SC_FUNC uint32_t
+uint32_t
 NameHash(const char *str)
 {
   return ke::HashCharSequence(str, strlen(str));
 }
 
-SC_FUNC HashTable *NewHashTable()
+HashTable *NewHashTable()
 {
   HashTable *ht = new HashTable();
   if (!ht->init()) {
@@ -80,13 +80,13 @@ SC_FUNC HashTable *NewHashTable()
   return ht;
 }
 
-SC_FUNC void
+void
 DestroyHashTable(HashTable *ht)
 {
   delete ht;
 }
 
-SC_FUNC symbol *
+symbol *
 FindTaggedInHashTable(HashTable *ht, const char *name, int fnumber, int *cmptag)
 {
   NameAndScope nas(name, fnumber, cmptag);
@@ -103,7 +103,7 @@ FindTaggedInHashTable(HashTable *ht, const char *name, int fnumber, int *cmptag)
   return *r;
 }
 
-SC_FUNC symbol *
+symbol *
 FindInHashTable(HashTable *ht, const char *name, int fnumber)
 {
   NameAndScope nas(name, fnumber, nullptr);
@@ -113,7 +113,7 @@ FindInHashTable(HashTable *ht, const char *name, int fnumber)
   return *r;
 }
 
-SC_FUNC void
+void
 AddToHashTable(HashTable *ht, symbol *sym)
 {
   HashTable::Insert i = ht->findForAdd(sym);
@@ -121,7 +121,7 @@ AddToHashTable(HashTable *ht, symbol *sym)
   ht->add(i, sym);
 }
 
-SC_FUNC void
+void
 RemoveFromHashTable(HashTable *ht, symbol *sym)
 {
   HashTable::Result r = ht->find(sym);
