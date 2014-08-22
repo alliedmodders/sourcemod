@@ -82,7 +82,6 @@ class IFileSystem_Logic
 {
 public:
 	virtual const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle) = 0;
-	virtual const char *FindFirst(const char *pWildCard, FileFindHandle_t *pHandle) = 0;
 	virtual const char *FindNext(FileFindHandle_t handle) = 0;
 	virtual bool FindIsDirectory(FileFindHandle_t handle) = 0;
 	virtual void FindClose(FileFindHandle_t handle) = 0;

@@ -59,10 +59,10 @@ public:
 		_fstype = fstype;
 	}
 public:
-	inline void *Open(const char *filename, const char *mode)
+	inline void *Open(const char *filename, const char *mode, const char *pathID)
 	{
 		if (_fstype == FSType::VALVE)
-			return smcore.filesystem->Open(filename, mode);
+			return smcore.filesystem->Open(filename, mode, pathID);
 		else
 			return fopen(filename, mode);
 	}
@@ -123,16 +123,16 @@ public:
 			fclose((FILE *)pFile);
 	}
 
-	inline bool Remove(const char *pFilePath)
+	inline bool Remove(const char *pFilePath, const char *pathID)
 	{
 		if (_fstype == FSType::VALVE)
 		{
-			if (!smcore.filesystem->FileExists(pFilePath))
+			if (!smcore.filesystem->FileExists(pFilePath, pathID))
 				return false;
 
-			smcore.filesystem->RemoveFile(pFilePath);
+			smcore.filesystem->RemoveFile(pFilePath, pathID);
 
-			if (smcore.filesystem->FileExists(pFilePath))
+			if (smcore.filesystem->FileExists(pFilePath, pathID))
 				return false;
 
 			return true;
@@ -263,7 +263,15 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 		char wildcardedPath[PLATFORM_MAX_PATH];
 		snprintf(wildcardedPath, sizeof(wildcardedPath), "%s*", path);
 		ValveDirectory *valveDir = new ValveDirectory;
-		const char *pFirst = smcore.filesystem->FindFirst(wildcardedPath, &valveDir->hndl);
+		
+		char *pathID;
+		if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)
+		{
+			pContext->ThrowNativeErrorEx(err, NULL);
+			return 0;
+		}
+		
+		const char *pFirst = smcore.filesystem->FindFirstEx(wildcardedPath, pathID, &valveDir->hndl);
 		if (pFirst)
 		{
 			valveDir->bHandledFirstPath = false;
@@ -409,6 +417,7 @@ static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
 	HandleType_t handleType;
 	FSHelper fshelper;
 	const char *openpath;
+	char *pathID;
 	if (params[0] <= 2 || !params[3])
 	{
 		handleType = g_FileType;
@@ -420,12 +429,18 @@ static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
 	}
 	else
 	{
+		if ((err=pContext->LocalToStringNULL(params[4], &pathID)) != SP_ERROR_NONE)
+		{
+			pContext->ThrowNativeErrorEx(err, NULL);
+			return 0;
+		}
+		
 		handleType = g_ValveFileType;
 		fshelper.SetFSType(FSType::VALVE);
 		openpath = name;
 	}
 
-	void *pFile = fshelper.Open(openpath, mode);
+	void *pFile = fshelper.Open(openpath, mode, pathID);
 	if (pFile)
 	{
 		handle = handlesys->CreateHandle(handleType, pFile, pContext->GetIdentity(), g_pCoreIdent, NULL);
@@ -446,6 +461,7 @@ static cell_t sm_DeleteFile(IPluginContext *pContext, const cell_t *params)
 
 	FSHelper fshelper;
 	const char *filepath;
+	char *pathID;
 	if (params[0] < 2 || !params[2])
 	{
 		fshelper.SetFSType(FSType::STDIO);
@@ -455,11 +471,17 @@ static cell_t sm_DeleteFile(IPluginContext *pContext, const cell_t *params)
 	}
 	else
 	{
+		if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)
+		{
+			pContext->ThrowNativeErrorEx(err, NULL);
+			return 0;
+		}
+		
 		fshelper.SetFSType(FSType::VALVE);
 		filepath = name;
 	}
 
-	return fshelper.Remove(filepath) ? 1 : 0;
+	return fshelper.Remove(filepath, pathID) ? 1 : 0;
 }
 
 static cell_t sm_ReadFileLine(IPluginContext *pContext, const cell_t *params)
@@ -594,7 +616,17 @@ static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] >= 2 && params[2] == 1)
 	{
-		return smcore.filesystem->FileExists(name) ? 1 : 0;
+		char *pathID = NULL;
+		if (params[0] >= 3)
+		{
+			if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)
+			{
+				pContext->ThrowNativeErrorEx(err, NULL);
+				return 0;
+			}
+		}
+		
+		return smcore.filesystem->FileExists(name, pathID) ? 1 : 0;
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
@@ -641,7 +673,14 @@ static cell_t sm_RenameFile(IPluginContext *pContext, const cell_t *params)
 	
 	if (params[0] >= 3 && params[3] == 1)
 	{
-		smcore.filesystem->RenameFile(oldpath, newpath);
+		char *pathID;
+		if ((err=pContext->LocalToStringNULL(params[4], &pathID)) != SP_ERROR_NONE)
+		{
+			pContext->ThrowNativeErrorEx(err, NULL);
+			return 0;
+		}
+		
+		smcore.filesystem->RenameFile(oldpath, newpath, pathID);
 		return 1;
 	}
 
@@ -669,7 +708,14 @@ static cell_t sm_DirExists(IPluginContext *pContext, const cell_t *params)
 	
 	if (params[0] >= 2 && params[2] == 1)
 	{
-		return smcore.filesystem->IsDirectory(name) ? 1 : 0;
+		char *pathID;
+		if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)
+		{
+			pContext->ThrowNativeErrorEx(err, NULL);
+			return 0;
+		}
+		
+		return smcore.filesystem->IsDirectory(name, pathID) ? 1 : 0;
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
@@ -711,9 +757,19 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] >= 2 && params[2] == 1)
 	{
-		if (smcore.filesystem->FileExists(name))
+		char *pathID = NULL;
+		if (params[0] >= 3)
 		{
-			return smcore.filesystem->Size(name);
+			if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)
+			{
+				pContext->ThrowNativeErrorEx(err, NULL);
+				return -1;
+			}
+		}
+		
+		if (smcore.filesystem->FileExists(name, pathID))
+		{
+			return smcore.filesystem->Size(name, pathID);
 		}
 		else
 		{
@@ -755,12 +811,19 @@ static cell_t sm_CreateDirectory(IPluginContext *pContext, const cell_t *params)
 	
 	if (params[0] >= 3 && params[3] == 1)
 	{
-		if (smcore.filesystem->IsDirectory(name))
+		int err;
+		char *pathID;
+		if ((err=pContext->LocalToStringNULL(params[4], &pathID)) != SP_ERROR_NONE)
+		{
+			return pContext->ThrowNativeErrorEx(err, NULL);
+		}
+		
+		if (smcore.filesystem->IsDirectory(name, pathID))
 			return 0;
 		
-		smcore.filesystem->CreateDirHierarchy(name);
+		smcore.filesystem->CreateDirHierarchy(name, pathID);
 		
-		if (smcore.filesystem->IsDirectory(name))
+		if (smcore.filesystem->IsDirectory(name, pathID))
 			return 1;
 		
 		return 0;

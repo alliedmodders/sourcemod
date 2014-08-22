@@ -142,10 +142,6 @@ public:
 	{
 		return filesystem->FindFirstEx(pWildCard, pPathID, pHandle);
 	}
-	const char *FindFirst(const char *pWildCard, FileFindHandle_t *pHandle)
-	{
-		return filesystem->FindFirst(pWildCard, pHandle);
-	}
 	const char *FindNext(FileFindHandle_t handle)
 	{
 		return filesystem->FindNext(handle);
