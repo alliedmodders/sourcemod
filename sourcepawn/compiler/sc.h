@@ -547,8 +547,8 @@ typedef enum s_optmark {
  */
 int pc_compile(int argc, char **argv);
 int pc_addconstant(char *name,cell value,int tag);
-int pc_addtag(char *name);
-int pc_addtag_flags(char *name, int flags);
+int pc_addtag(const char *name);
+int pc_addtag_flags(const char *name, int flags);
 int pc_findtag(const char *name);
 constvalue *pc_tagptr(const char *name);
 int pc_enablewarning(int number,int enable);

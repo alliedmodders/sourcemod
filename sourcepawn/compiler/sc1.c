@@ -681,17 +681,19 @@ int pc_findtag(const char *name)
 #if defined __cplusplus
   extern "C"
 #endif
-int pc_addtag(char *name)
+int pc_addtag(const char *name)
 {
   int val;
   int flags = 0;
 
   if (name==NULL) {
     /* no tagname was given, check for one */
-    if (lex(&val,&name)!=tLABEL) {
+    char *nameptr;
+    if (lex(&val,&nameptr)!=tLABEL) {
       lexpush();
       return 0;         /* untagged */
     } /* if */
+    name = nameptr;
   } /* if */
 
   if (isupper(*name))
@@ -700,7 +702,7 @@ int pc_addtag(char *name)
   return pc_addtag_flags(name, flags);
 }
 
-int pc_addtag_flags(char *name, int flags)
+int pc_addtag_flags(const char *name, int flags)
 {
   constvalue *ptr;
   int last,tag;

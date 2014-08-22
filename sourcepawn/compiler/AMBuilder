@@ -84,7 +84,7 @@ binary.sources += [
   'pawncc.cpp',
   'sc1.c',
   'sc2.c',
-  'sc3.c',
+  'sc3.cpp',
   'sc4.cpp',
   'sc5.cpp',
   'sc6.cpp',
