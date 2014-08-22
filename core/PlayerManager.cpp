@@ -47,6 +47,12 @@
 #include "logic_bridge.h"
 #include <sourcemod_version.h>
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+#include <steam/steamclientpublic.h>
+#endif
+
+class CSteamID;
+
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
 IForward *PreAdminCheck = NULL;
@@ -399,15 +405,28 @@ void PlayerManager::RunAuthChecks()
 {
 	CPlayer *pPlayer;
 	const char *authstr;
+	const CSteamID *steamid = NULL;
 	unsigned int removed = 0;
 	for (unsigned int i=1; i<=m_AuthQueue[0]; i++)
 	{
 		pPlayer = &m_Players[m_AuthQueue[i]];
 #if SOURCE_ENGINE == SE_DOTA
+		steamid = engine->GetClientSteamID(pPlayer->m_iIndex);
 		authstr = engine->GetPlayerNetworkIDString(pPlayer->m_iIndex - 1);
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
+		steamid = engine->GetClientSteamID(pPlayer->m_pEdict);
+		authstr = engine->GetPlayerNetworkIDString(pPlayer->m_pEdict);
 #else
 		authstr = engine->GetPlayerNetworkIDString(pPlayer->m_pEdict);
 #endif
+
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+		if (authstr && authstr[0] == '[' && steamid)
+		{
+			authstr = steamid->Render();
+		}
+#endif
+
 		pPlayer->SetAuthString(authstr);
 
 		if (!pPlayer->IsAuthStringValidated())
@@ -2436,3 +2455,28 @@ void CPlayer::PrintToConsole(const char *pMsg)
 	engine->ClientPrintf(m_pEdict, pMsg);
 #endif
 }
+
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+const EUniverse kCurrentSteamUniverse = k_EUniversePublic;
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
+const EUniverse kCurrentSteamUniverse = k_EUniverseInvalid;
+#endif
+
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+const char *CSteamID::Render() const
+{
+	static char szSteamID[64];
+
+	switch (GetEAccountType())
+	{
+	case k_EAccountTypeInvalid:
+	case k_EAccountTypeIndividual:
+		snprintf(szSteamID, sizeof(szSteamID), "STEAM_%u:%u:%u", kCurrentSteamUniverse, GetAccountID() % 2, GetAccountID() << 1);
+		break;
+	default:
+		szSteamID[0] = '\0';
+	}
+
+	return szSteamID;
+}
+#endif
