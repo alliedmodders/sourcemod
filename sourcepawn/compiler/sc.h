@@ -612,8 +612,8 @@ long pc_lengthbin(void *handle); /* return the length of the file */
   #define SC_VDEFINE
 #endif
 
-void sp_fdbg_ntv_start(int num_natives);
-void sp_fdbg_ntv_hook(int index, symbol *sym);
+SC_FUNC void sp_fdbg_ntv_start(int num_natives);
+SC_FUNC void sp_fdbg_ntv_hook(int index, symbol *sym);
 
 /* function prototypes in SC1.C */
 SC_FUNC void set_extension(char *filename,char *extension,int force);
@@ -837,21 +837,6 @@ SC_FUNC stringlist *insert_dbgsymbol(symbol *sym);
 SC_FUNC char *get_dbgstring(int index);
 SC_FUNC void delete_dbgstringtable(void);
 SC_FUNC stringlist *get_dbgstrings();
-
-/* function prototypes in SCMEMFILE.C */
-#if !defined tMEMFILE
-  typedef unsigned char MEMFILE;
-  #define tMEMFILE  1
-#endif
-MEMFILE *mfcreate(const char *filename);
-void mfclose(MEMFILE *mf);
-int mfdump(MEMFILE *mf);
-long mflength(const MEMFILE *mf);
-long mfseek(MEMFILE *mf,long offset,int whence);
-unsigned int mfwrite(MEMFILE *mf,const unsigned char *buffer,unsigned int size);
-unsigned int mfread(MEMFILE *mf,unsigned char *buffer,unsigned int size);
-char *mfgets(MEMFILE *mf,char *string,unsigned int size);
-int mfputs(MEMFILE *mf,const char *string);
 
 /* function prototypes in SCI18N.C */
 #define MAXCODEPAGE 12

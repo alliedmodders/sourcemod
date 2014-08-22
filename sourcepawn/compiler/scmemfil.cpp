@@ -34,8 +34,6 @@
 #if defined FORTIFY
   #include <alloc/fortify.h>
 #endif
-typedef memfile_t MEMFILE;
-#define tMEMFILE  1
 
 #include "sc.h"
 

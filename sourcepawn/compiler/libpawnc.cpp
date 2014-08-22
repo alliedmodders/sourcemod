@@ -69,10 +69,9 @@ int pc_printf(const char *message,...)
  */
 int pc_error(int number,char *message,char *filename,int firstline,int lastline,va_list argptr)
 {
-static char *prefix[3]={ "error", "fatal error", "warning" };
+static const char *prefix[3]={ "error", "fatal error", "warning" };
 
 	if (number!=0) {
-		char *pre;
 		int idx;
 
 		if (number < 160)
@@ -82,7 +81,7 @@ static char *prefix[3]={ "error", "fatal error", "warning" };
 		else
 			idx = 2;
 
-		pre=prefix[idx];
+		const char *pre=prefix[idx];
 		if (firstline>=0)
 			fprintf(stdout,"%s(%d -- %d) : %s %03d: ",filename,firstline,lastline,pre,number);
 		else

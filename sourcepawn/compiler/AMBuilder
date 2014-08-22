@@ -78,10 +78,10 @@ elif builder.target_platform == 'mac':
   ]
  
 binary.sources += [
-  'libpawnc.c',
+  'libpawnc.cpp',
   'lstring.c',
-  'memfile.c',
-  'pawncc.c',
+  'memfile.cpp',
+  'pawncc.cpp',
   'sc1.c',
   'sc2.c',
   'sc3.c',
@@ -92,11 +92,11 @@ binary.sources += [
   'scexpand.c',
   'sci18n.c',
   'sclist.c',
-  'scmemfil.c',
+  'scmemfil.cpp',
   'scstate.c',
   'sctracker.c',
   'scvars.c',
-  'sp_file.c',
+  'sp_file.cpp',
   'zlib/adler32.c',
   'zlib/compress.c',
   'zlib/crc32.c',
