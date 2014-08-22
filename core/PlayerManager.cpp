@@ -2471,7 +2471,7 @@ const char *CSteamID::Render() const
 	{
 	case k_EAccountTypeInvalid:
 	case k_EAccountTypeIndividual:
-		snprintf(szSteamID, sizeof(szSteamID), "STEAM_%u:%u:%u", kCurrentSteamUniverse, GetAccountID() % 2, GetAccountID() << 1);
+		snprintf(szSteamID, sizeof(szSteamID), "STEAM_%u:%u:%u", kCurrentSteamUniverse, GetAccountID() % 2, GetAccountID() >> 1);
 		break;
 	default:
 		szSteamID[0] = '\0';
