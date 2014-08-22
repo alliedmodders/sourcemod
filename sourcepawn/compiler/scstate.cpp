@@ -87,7 +87,7 @@ static constvalue *find_automaton(const char *name,int *last)
   return NULL;
 }
 
-SC_FUNC constvalue *automaton_add(const char *name)
+constvalue *automaton_add(const char *name)
 {
   constvalue *ptr;
   int last;
@@ -101,13 +101,13 @@ SC_FUNC constvalue *automaton_add(const char *name)
   return ptr;
 }
 
-SC_FUNC constvalue *automaton_find(const char *name)
+constvalue *automaton_find(const char *name)
 {
   int last;
   return find_automaton(name,&last);
 }
 
-SC_FUNC constvalue *automaton_findid(int id)
+constvalue *automaton_findid(int id)
 {
   constvalue *ptr;
   for (ptr=sc_automaton_tab.next; ptr!=NULL && ptr->index!=id; ptr=ptr->next)
@@ -135,7 +135,7 @@ static constvalue *find_state(const char *name,int fsa,int *last)
   return NULL;
 }
 
-SC_FUNC constvalue *state_add(const char *name,int fsa)
+constvalue *state_add(const char *name,int fsa)
 {
   constvalue *ptr;
   int last;
@@ -149,13 +149,13 @@ SC_FUNC constvalue *state_add(const char *name,int fsa)
   return ptr;
 }
 
-SC_FUNC constvalue *state_find(const char *name,int fsa_id)
+constvalue *state_find(const char *name,int fsa_id)
 {
   int last;     /* dummy */
   return find_state(name,fsa_id,&last);
 }
 
-SC_FUNC constvalue *state_findid(int id)
+constvalue *state_findid(int id)
 {
   constvalue *ptr;
   for (ptr=sc_state_tab.next; ptr!=NULL && ptr->value!=id; ptr=ptr->next)
@@ -163,7 +163,7 @@ SC_FUNC constvalue *state_findid(int id)
   return ptr;
 }
 
-SC_FUNC void state_buildlist(int **list,int *listsize,int *count,int stateid)
+void state_buildlist(int **list,int *listsize,int *count,int stateid)
 {
   int idx;
 
@@ -227,7 +227,7 @@ static statelist *state_getlist_ptr(int listid)
   return ptr;
 }
 
-SC_FUNC int state_addlist(int *list,int count,int fsa)
+int state_addlist(int *list,int count,int fsa)
 {
   statelist *ptr;
   int last;
@@ -253,7 +253,7 @@ SC_FUNC int state_addlist(int *list,int count,int fsa)
   return ptr->listid;
 }
 
-SC_FUNC void state_deletetable(void)
+void state_deletetable(void)
 {
   statelist *ptr;
 
@@ -268,7 +268,7 @@ SC_FUNC void state_deletetable(void)
   } /* while */
 }
 
-SC_FUNC int state_getfsa(int listid)
+int state_getfsa(int listid)
 {
   statelist *ptr;
 
@@ -280,7 +280,7 @@ SC_FUNC int state_getfsa(int listid)
   return (ptr!=NULL) ? ptr->fsa : -1; /* fsa 0 exists */
 }
 
-SC_FUNC int state_count(int listid)
+int state_count(int listid)
 {
   statelist *ptr=state_getlist_ptr(listid);
   if (ptr==NULL)
@@ -288,7 +288,7 @@ SC_FUNC int state_count(int listid)
   return ptr->numstates;
 }
 
-SC_FUNC int state_inlist(int listid,int state)
+int state_inlist(int listid,int state)
 {
   statelist *ptr;
   int i;
@@ -302,7 +302,7 @@ SC_FUNC int state_inlist(int listid,int state)
   return FALSE;
 }
 
-SC_FUNC int state_listitem(int listid,int index)
+int state_listitem(int listid,int index)
 {
   statelist *ptr;
 
@@ -329,7 +329,7 @@ static int checkconflict(statelist *psrc,statelist *ptgt)
  * of a symbol exists in any other statelist id's of the same function; it also
  * verifies that all definitions of the symbol are in the same automaton.
  */
-SC_FUNC void state_conflict(symbol *root)
+void state_conflict(symbol *root)
 {
   statelist *psrc,*ptgt;
   constvalue *srcptr,*tgtptr;
@@ -363,7 +363,7 @@ SC_FUNC void state_conflict(symbol *root)
 /* check whether the two state lists (whose ids are passed in) share any
  * states
  */
-SC_FUNC int state_conflict_id(int listid1,int listid2)
+int state_conflict_id(int listid1,int listid2)
 {
   statelist *psrc,*ptgt;
 
