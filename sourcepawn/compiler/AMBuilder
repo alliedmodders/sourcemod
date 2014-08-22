@@ -42,6 +42,7 @@ binary = SM.Program(builder, 'spcomp')
 compiler = binary.compiler
 compiler.includes += [
   os.path.join(builder.sourcePath, 'public'),
+  os.path.join(builder.sourcePath, 'public', 'amtl'),
   os.path.join(builder.sourcePath, 'public', 'sourcepawn'),
   os.path.join(builder.sourcePath, 'sourcepawn', 'compiler'),
   os.path.join(builder.buildPath, 'includes'),
@@ -50,7 +51,8 @@ compiler.includes += [
 compiler.sourcedeps += packed_includes
  
 if compiler.cc.behavior == 'gcc':
-  compiler.cflags += ['-std=c99', '-Wno-format']
+  compiler.cflags += ['-Wno-format']
+  compiler.c_only_flags += ['-std=c99']
   if builder.target_platform == 'linux':
     compiler.postlink += ['-lgcc', '-lm']
 elif compiler.cc.behavior == 'msvc':
@@ -107,7 +109,7 @@ binary.sources += [
   'zlib/trees.c',
   'zlib/uncompr.c',
   'zlib/zutil.c',
-  'sp_symhash.c'
+  'sp_symhash.cpp'
 ]
 if builder.target_platform != 'windows':
   binary.sources.append('binreloc.c')

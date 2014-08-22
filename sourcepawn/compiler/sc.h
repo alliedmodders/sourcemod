@@ -599,7 +599,11 @@ long pc_lengthbin(void *handle); /* return the length of the file */
  * files are "external"
  */
 #if !defined SC_FUNC
-  #define SC_FUNC
+# if defined(__cplusplus)
+#  define SC_FUNC extern "C"
+# else
+#  define SC_FUNC
+# endif
 #endif
 #if !defined SC_VDECL
   #define SC_VDECL  extern
@@ -616,7 +620,7 @@ SC_FUNC void set_extension(char *filename,char *extension,int force);
 SC_FUNC symbol *fetchfunc(char *name);
 SC_FUNC char *operator_symname(char *symname,char *opername,int tag1,int tag2,int numtags,int resulttag);
 SC_FUNC char *funcdisplayname(char *dest,char *funcname);
-SC_FUNC int constexpr(cell *val,int *tag,symbol **symptr);
+SC_FUNC int exprconst(cell *val,int *tag,symbol **symptr);
 SC_FUNC constvalue *append_constval(constvalue *table,const char *name,cell val,int index);
 SC_FUNC constvalue *find_constval(constvalue *table,char *name,int index);
 SC_FUNC void delete_consttable(constvalue *table);

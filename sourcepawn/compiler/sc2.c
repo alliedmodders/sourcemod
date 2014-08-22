@@ -796,7 +796,7 @@ static int preproc_expr(cell *val,int *tag)
   term=strchr((char*)pline,'\0');
   assert(term!=NULL);
   chrcat((char*)pline,PREPROC_TERM);    /* the "DEL" code (see SC.H) */
-  result=constexpr(val,tag,NULL);       /* get value (or 0 on error) */
+  result=exprconst(val,tag,NULL);       /* get value (or 0 on error) */
   *term='\0';                           /* erase the token (if still present) */
   lexclr(FALSE);                        /* clear any "pushed" tokens */
   return result;

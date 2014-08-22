@@ -2794,7 +2794,7 @@ static cell init(int ident,int *tag,int *errorfound)
       litidx=1;         /* reset literal queue */
     } /* if */
     *tag=pc_tag_string;
-  } else if (constexpr(&i,tag,NULL)){
+  } else if (exprconst(&i,tag,NULL)){
     litadd(i);          /* store expression result in literal table */
   } else {
     if (errorfound!=NULL)
@@ -2819,7 +2819,7 @@ static cell needsub(int *tag,constvalue **enumroot)
   if (matchtoken(']'))      /* we have already seen "[" */
     return 0;               /* zero size (like "char msg[]") */
 
-  constexpr(&val,tag,&sym); /* get value (must be constant expression) */
+  exprconst(&val,tag,&sym); /* get value (must be constant expression) */
   if (val<0) {
     error(9);               /* negative array size is invalid; assumed zero */
     val=0;
@@ -2891,7 +2891,7 @@ static void decl_const(int vclass)
 
     symbolline=fline;                   /* save line where symbol was found */
     needtoken('=');
-    constexpr(&val,&exprtag,NULL);      /* get value */
+    exprconst(&val,&exprtag,NULL);      /* get value */
 
     /* add_constant() checks for duplicate definitions */
     /* temporarily reset the line number to where the symbol was defined */
@@ -4523,11 +4523,11 @@ static void decl_enum(int vclass)
   multiplier=1;
   if (matchtoken('(')) {
     if (matchtoken(taADD)) {
-      constexpr(&increment,NULL,NULL);
+      exprconst(&increment,NULL,NULL);
     } else if (matchtoken(taMULT)) {
-      constexpr(&multiplier,NULL,NULL);
+      exprconst(&multiplier,NULL,NULL);
     } else if (matchtoken(taSHL)) {
-      constexpr(&val,NULL,NULL);
+      exprconst(&val,NULL,NULL);
       while (val-->0)
         multiplier*=2;
     } /* if */
@@ -4568,12 +4568,12 @@ static void decl_enum(int vclass)
     size=increment;                     /* default increment of 'val' */
     fieldtag=0;                         /* default field tag */
     if (matchtoken('[')) {
-      constexpr(&size,&fieldtag,NULL);  /* get size */
+      exprconst(&size,&fieldtag,NULL);  /* get size */
       needtoken(']');
     } /* if */
     /* :TODO: do we need a size modifier here for pc_tag_string? */
     if (matchtoken('='))
-      constexpr(&value,NULL,NULL);      /* get value */
+      exprconst(&value,NULL,NULL);      /* get value */
     /* add_constant() checks whether a variable (global or local) or
      * a constant with the same name already exists
      */
@@ -5125,7 +5125,7 @@ static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag)
         tokeninfo(&val,&str);
         insert_alias(sym->name,str);
       } else {
-        constexpr(&val,NULL,NULL);
+        exprconst(&val,NULL,NULL);
         sym->addr=val;
         /* At the moment, I have assumed that this syntax is only valid if
          * val < 0. To properly mix "normal" native functions and indexed
@@ -5728,7 +5728,7 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
         while (paranthese--)
           needtoken(')');
       } else {
-        constexpr(&arg->defvalue.val,&arg->defvalue_tag,NULL);
+        exprconst(&arg->defvalue.val,&arg->defvalue_tag,NULL);
         assert(type->numtags > 0);
         matchtag(type->tags[0], arg->defvalue_tag, TRUE);
       } /* if */
@@ -6901,9 +6901,9 @@ static int doexpr2(int comma,int chkeffect,int allowarray,int mark_endexpr,
   return ident;
 }
 
-/*  constexpr
+/*  exprconst
  */
-SC_FUNC int constexpr(cell *val,int *tag,symbol **symptr)
+SC_FUNC int exprconst(cell *val,int *tag,symbol **symptr)
 {
   int ident,index;
   cell cidx;
@@ -7294,7 +7294,7 @@ static void doswitch(void)
          *     parse all expressions until that special token.
          */
 
-        constexpr(&val,NULL,NULL);
+        exprconst(&val,NULL,NULL);
         /* Search the insertion point (the table is kept in sorted order, so
          * that advanced abstract machines can sift the case table with a
          * binary search). Check for duplicate case values at the same time.

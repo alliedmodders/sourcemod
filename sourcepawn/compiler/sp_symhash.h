@@ -4,17 +4,7 @@
 
 SC_FUNC uint32_t NameHash(const char *str);
 
-typedef struct HashEntry {
-    symbol *sym;
-    struct HashEntry *next;
-} HashEntry;
-
-struct HashTable {
-    uint32_t nbuckets;
-    uint32_t nused;
-    uint32_t bucketmask;
-    HashEntry **buckets;
-};
+struct HashTable;
 
 SC_FUNC HashTable *NewHashTable();
 SC_FUNC void DestroyHashTable(HashTable *ht);
