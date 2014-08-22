@@ -159,7 +159,7 @@ native Handle:OpenFile(const String:file[], const String:mode[], bool:use_valve_
  *                      search path, rather than solely files existing directly
  *						in the gamedir.
  * @param valve_path_id	If use_valve_fs, a search path from gameinfo or NULL_STRING for all search paths.
- * @return				True on success, false otherwise.
+ * @return				True on success, false on failure or if file not immediately removed.
  */
 native bool:DeleteFile(const String:path[], bool:use_valve_fs=false, const String:valve_path_id[]="DEFAULT_WRITE_PATH");
 
