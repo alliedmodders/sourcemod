@@ -42,11 +42,16 @@ unsigned char sequences_table[][2] = {
 
 #define seqsize(o,p)    (opcodes(o)+opargs(p))
 typedef struct {
+  const char *find;
+  const char *replace;
+  int savesize;         /* number of bytes saved (in bytecode) */
+} PRE_SEQUENCE;
+typedef struct {
   char *find;
   char *replace;
   int savesize;         /* number of bytes saved (in bytecode) */
 } SEQUENCE;
-static SEQUENCE sequences_cmp[] = {
+static PRE_SEQUENCE sequences_cmp[] = {
   /* A very common sequence in four varieties
    *    load.s.pri n1           load.s.pri n2
    *    push.pri                load.s.alt n1
