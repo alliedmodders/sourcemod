@@ -161,7 +161,7 @@ native Handle:OpenFile(const String:file[], const String:mode[], bool:use_valve_
  * @param valve_path_id	If use_valve_fs, a search path from gameinfo or NULL_STRING for all search paths.
  * @return				True on success, false otherwise.
  */
-native bool:DeleteFile(const String:path[], bool:use_valve_fs=false, const String:valve_path_id="DEFAULT_WRITE_PATH");
+native bool:DeleteFile(const String:path[], bool:use_valve_fs=false, const String:valve_path_id[]="DEFAULT_WRITE_PATH");
 
 /**
  * Reads a line from a text file.
@@ -324,7 +324,7 @@ native FilePosition(Handle:file);
  * @param valve_path_id	If use_valve_fs, a search path from gameinfo or NULL_STRING for all search paths.
  * @return				True if the file exists, false otherwise.
  */
-native bool:FileExists(const String:path[], bool:use_valve_fs=false, const String:valve_path_id="GAME");
+native bool:FileExists(const String:path[], bool:use_valve_fs=false, const String:valve_path_id[]="GAME");
 
 /**
  * Renames a file.
@@ -337,7 +337,7 @@ native bool:FileExists(const String:path[], bool:use_valve_fs=false, const Strin
  * @param valve_path_id	If use_valve_fs, a search path from gameinfo or NULL_STRING for all search paths.
  * @return				True on success or use_valve_fs specified, false otherwise.
  */
-native bool:RenameFile(const String:newpath[], const String:oldpath[], bool:use_valve_fs=false, const String:valve_path_id="DEFAULT_WRITE_PATH");
+native bool:RenameFile(const String:newpath[], const String:oldpath[], bool:use_valve_fs=false, const String:valve_path_id[]="DEFAULT_WRITE_PATH");
 
 /**
  * Checks if a directory exists.
@@ -350,7 +350,7 @@ native bool:RenameFile(const String:newpath[], const String:oldpath[], bool:use_
  * @param valve_path_id	If use_valve_fs, a search path from gameinfo or NULL_STRING for all search paths.
  * @return				True if the directory exists, false otherwise.
  */
-native bool:DirExists(const String:path[], bool:use_valve_fs=false, const String:valve_path_id="GAME");
+native bool:DirExists(const String:path[], bool:use_valve_fs=false, const String:valve_path_id[]="GAME");
 
 /**
  * Get the file size in bytes.
@@ -363,7 +363,7 @@ native bool:DirExists(const String:path[], bool:use_valve_fs=false, const String
  * @param valve_path_id	If use_valve_fs, a search path from gameinfo or NULL_STRING for all search paths.
  * @return				File size in bytes, -1 if file not found.
  */
-native FileSize(const String:path[], bool:use_valve_fs=false, const String:valve_path_id="GAME");
+native FileSize(const String:path[], bool:use_valve_fs=false, const String:valve_path_id[]="GAME");
 
 /**
  * Flushes a file's buffered output; any buffered output
@@ -406,7 +406,7 @@ native bool:RemoveDir(const String:path[]);
  * @param valve_path_id	If use_valve_fs, a search path from gameinfo or NULL_STRING for default.
  *                      In this case, mode is ignored.
  */
-native bool:CreateDirectory(const String:path[], mode, bool:use_valve_fs=false);
+native bool:CreateDirectory(const String:path[], mode, bool:use_valve_fs=false, const String:valve_path_id="DEFAULT_WRITE_PATH");
 
 /**
  * Returns a file timestamp as a unix timestamp.
