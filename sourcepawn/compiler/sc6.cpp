@@ -44,7 +44,7 @@ typedef cell (*OPCODE_PROC)(FILE *fbin,char *params,cell opcode);
 
 typedef struct {
   cell opcode;
-  char *name;
+  const char *name;
   int segment;          /* sIN_CSEG=parse in cseg, sIN_DSEG=parse in dseg */
   OPCODE_PROC func;
 } OPCODEC;
