@@ -546,7 +546,7 @@ typedef enum s_optmark {
  * Functions you call from the "driver" program
  */
 int pc_compile(int argc, char **argv);
-int pc_addconstant(char *name,cell value,int tag);
+int pc_addconstant(const char *name,cell value,int tag);
 int pc_addtag(const char *name);
 int pc_addtag_flags(const char *name, int flags);
 int pc_findtag(const char *name);
@@ -616,15 +616,15 @@ SC_FUNC void sp_fdbg_ntv_start(int num_natives);
 SC_FUNC void sp_fdbg_ntv_hook(int index, symbol *sym);
 
 /* function prototypes in SC1.C */
-SC_FUNC void set_extension(char *filename,char *extension,int force);
+SC_FUNC void set_extension(char *filename,const char *extension,int force);
 SC_FUNC symbol *fetchfunc(char *name);
-SC_FUNC char *operator_symname(char *symname,char *opername,int tag1,int tag2,int numtags,int resulttag);
+SC_FUNC char *operator_symname(char *symname,const char *opername,int tag1,int tag2,int numtags,int resulttag);
 SC_FUNC char *funcdisplayname(char *dest,char *funcname);
 SC_FUNC int exprconst(cell *val,int *tag,symbol **symptr);
 SC_FUNC constvalue *append_constval(constvalue *table,const char *name,cell val,int index);
 SC_FUNC constvalue *find_constval(constvalue *table,char *name,int index);
 SC_FUNC void delete_consttable(constvalue *table);
-SC_FUNC symbol *add_constant(char *name,cell val,int vclass,int tag);
+SC_FUNC symbol *add_constant(const char *name,cell val,int vclass,int tag);
 SC_FUNC void exporttag(int tag);
 SC_FUNC void sc_attachdocumentation(symbol *sym);
 SC_FUNC constvalue *find_tag_byval(int tag);
@@ -794,7 +794,7 @@ SC_FUNC int error(int number,...);
 SC_FUNC void errorset(int code,int line);
 
 /* function prototypes in SC6.C */
-SC_FUNC int assemble(FILE *fout,FILE *fin);
+SC_FUNC int assemble(void *fout,void *fin);
 
 /* function prototypes in SC7.C */
 SC_FUNC void stgbuffer_cleanup(void);
@@ -816,7 +816,7 @@ SC_FUNC void delete_aliastable(void);
 SC_FUNC stringlist *insert_path(char *path);
 SC_FUNC char *get_path(int index);
 SC_FUNC void delete_pathtable(void);
-SC_FUNC stringpair *insert_subst(char *pattern,char *substitution,int prefixlen);
+SC_FUNC stringpair *insert_subst(const char *pattern,const char *substitution,int prefixlen);
 SC_FUNC int get_subst(int index,char **pattern,char **substitution);
 SC_FUNC stringpair *find_subst(char *name,int length);
 SC_FUNC int delete_subst(char *name,int length);

@@ -49,7 +49,7 @@ SC_FUNC char* duplicatestring(const char* sourcestring)
 }
 
 
-static stringpair *insert_stringpair(stringpair *root,char *first,char *second,int matchlength)
+static stringpair *insert_stringpair(stringpair *root,const char *first,const char *second,int matchlength)
 {
   stringpair *cur,*pred;
 
@@ -275,7 +275,7 @@ static void adjustindex(char c)
   substindex[(int)c-PUBLIC_CHAR]=cur;
 }
 
-SC_FUNC stringpair *insert_subst(char *pattern,char *substitution,int prefixlen)
+SC_FUNC stringpair *insert_subst(const char *pattern,const char *substitution,int prefixlen)
 {
   stringpair *cur;
 

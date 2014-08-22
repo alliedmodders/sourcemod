@@ -37,10 +37,10 @@
 #endif
 
 
-static void append_dbginfo(FILE *fout);
+static void append_dbginfo(void *fout);
 
 
-typedef cell (*OPCODE_PROC)(FILE *fbin,char *params,cell opcode);
+typedef cell (*OPCODE_PROC)(void *fbin,char *params,cell opcode);
 
 typedef struct {
   cell opcode;
@@ -192,7 +192,7 @@ static char *stripcomment(char *str)
   return str;
 }
 
-static void write_encoded(FILE *fbin,ucell *c,int num)
+static void write_encoded(void *fbin,ucell *c,int num)
 {
   #if PAWN_CELL_SIZE == 16
     #define ENC_MAX   3     /* a 16-bit cell is encoded in max. 3 bytes */
@@ -246,7 +246,7 @@ static void write_encoded(FILE *fbin,ucell *c,int num)
 #if defined __BORLANDC__ || defined __WATCOMC__
   #pragma argsused
 #endif
-static cell noop(FILE *fbin,char *params,cell opcode)
+static cell noop(void *fbin,char *params,cell opcode)
 {
   return 0;
 }
@@ -254,7 +254,7 @@ static cell noop(FILE *fbin,char *params,cell opcode)
 #if defined __BORLANDC__ || defined __WATCOMC__
   #pragma argsused
 #endif
-static cell set_currentfile(FILE *fbin,char *params,cell opcode)
+static cell set_currentfile(void *fbin,char *params,cell opcode)
 {
   fcurrent=(short)getparam(params,NULL);
   return 0;
@@ -263,14 +263,14 @@ static cell set_currentfile(FILE *fbin,char *params,cell opcode)
 #if defined __BORLANDC__ || defined __WATCOMC__
   #pragma argsused
 #endif
-static cell parm0(FILE *fbin,char *params,cell opcode)
+static cell parm0(void *fbin,char *params,cell opcode)
 {
   if (fbin!=NULL)
     write_encoded(fbin,(ucell*)&opcode,1);
   return opcodes(1);
 }
 
-static cell parm1(FILE *fbin,char *params,cell opcode)
+static cell parm1(void *fbin,char *params,cell opcode)
 {
   ucell p=getparam(params,NULL);
   if (fbin!=NULL) {
@@ -280,7 +280,7 @@ static cell parm1(FILE *fbin,char *params,cell opcode)
   return opcodes(1)+opargs(1);
 }
 
-static cell parm2(FILE *fbin,char *params,cell opcode)
+static cell parm2(void *fbin,char *params,cell opcode)
 {
   ucell p1=getparam(params,&params);
   ucell p2=getparam(params,NULL);
@@ -292,7 +292,7 @@ static cell parm2(FILE *fbin,char *params,cell opcode)
   return opcodes(1)+opargs(2);
 }
 
-static cell parm3(FILE *fbin,char *params,cell opcode)
+static cell parm3(void *fbin,char *params,cell opcode)
 {
   ucell p1=getparam(params,&params);
   ucell p2=getparam(params,&params);
@@ -306,7 +306,7 @@ static cell parm3(FILE *fbin,char *params,cell opcode)
   return opcodes(1)+opargs(3);
 }
 
-static cell parm4(FILE *fbin,char *params,cell opcode)
+static cell parm4(void *fbin,char *params,cell opcode)
 {
   ucell p1=getparam(params,&params);
   ucell p2=getparam(params,&params);
@@ -322,7 +322,7 @@ static cell parm4(FILE *fbin,char *params,cell opcode)
   return opcodes(1)+opargs(4);
 }
 
-static cell parm5(FILE *fbin,char *params,cell opcode)
+static cell parm5(void *fbin,char *params,cell opcode)
 {
   ucell p1=getparam(params,&params);
   ucell p2=getparam(params,&params);
@@ -343,7 +343,7 @@ static cell parm5(FILE *fbin,char *params,cell opcode)
 #if defined __BORLANDC__ || defined __WATCOMC__
   #pragma argsused
 #endif
-static cell do_dump(FILE *fbin,char *params,cell opcode)
+static cell do_dump(void *fbin,char *params,cell opcode)
 {
   ucell p;
   int num = 0;
@@ -359,7 +359,7 @@ static cell do_dump(FILE *fbin,char *params,cell opcode)
   return num*sizeof(cell);
 }
 
-static cell do_call(FILE *fbin,char *params,cell opcode)
+static cell do_call(void *fbin,char *params,cell opcode)
 {
   char name[sNAMEMAX+1];
   int i;
@@ -399,7 +399,7 @@ static cell do_call(FILE *fbin,char *params,cell opcode)
   return opcodes(1)+opargs(1);
 }
 
-static cell do_jump(FILE *fbin,char *params,cell opcode)
+static cell do_jump(void *fbin,char *params,cell opcode)
 {
   int i;
   ucell p;
@@ -416,7 +416,7 @@ static cell do_jump(FILE *fbin,char *params,cell opcode)
   return opcodes(1)+opargs(1);
 }
 
-static cell do_switch(FILE *fbin,char *params,cell opcode)
+static cell do_switch(void *fbin,char *params,cell opcode)
 {
   int i;
   ucell p;
@@ -436,7 +436,7 @@ static cell do_switch(FILE *fbin,char *params,cell opcode)
 #if defined __BORLANDC__ || defined __WATCOMC__
   #pragma argsused
 #endif
-static cell do_case(FILE *fbin,char *params,cell opcode)
+static cell do_case(void *fbin,char *params,cell opcode)
 {
   int i;
   ucell p,v;
@@ -659,7 +659,7 @@ static int findopcode(char *instr,int maxlen)
   return 0;             /* not found, return special index */
 }
 
-SC_FUNC int assemble(FILE *fout,FILE *fin)
+SC_FUNC int assemble(void *fout, void *fin)
 {
   AMX_HEADER hdr;
   AMX_FUNCSTUBNT func;
@@ -1058,7 +1058,7 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
   return size;
 }
 
-static void append_dbginfo(FILE *fout)
+static void append_dbginfo(void *fout)
 {
   AMX_DBG_HDR dbghdr;
   AMX_DBG_LINE dbgline;
