@@ -41,7 +41,7 @@
  * to other memory allocators becomes easier.
  * By Søren Hannibal.
  */
-SC_FUNC char* duplicatestring(const char* sourcestring)
+char* duplicatestring(const char* sourcestring)
 {
   char* result=(char*)malloc(strlen(sourcestring)+1);
   strcpy(result,sourcestring);
@@ -49,7 +49,7 @@ SC_FUNC char* duplicatestring(const char* sourcestring)
 }
 
 
-static stringpair *insert_stringpair(stringpair *root,char *first,char *second,int matchlength)
+static stringpair *insert_stringpair(stringpair *root,const char *first,const char *second,int matchlength)
 {
   stringpair *cur,*pred;
 
@@ -137,7 +137,7 @@ static int delete_stringpair(stringpair *root,stringpair *item)
 }
 
 /* ----- string list functions ----------------------------------- */
-static stringlist *insert_string(stringlist *root,char *string)
+static stringlist *insert_string(stringlist *root,const char *string)
 {
   stringlist *cur;
 
@@ -190,7 +190,7 @@ static int delete_string(stringlist *root,int index)
   return FALSE;
 }
 
-SC_FUNC void delete_stringtable(stringlist *root)
+void delete_stringtable(stringlist *root)
 {
   stringlist *cur,*next;
 
@@ -210,7 +210,7 @@ SC_FUNC void delete_stringtable(stringlist *root)
 /* ----- alias table --------------------------------------------- */
 static stringpair alias_tab = {NULL, NULL, NULL};   /* alias table */
 
-SC_FUNC stringpair *insert_alias(char *name,char *alias)
+stringpair *insert_alias(char *name,char *alias)
 {
   stringpair *cur;
 
@@ -223,7 +223,7 @@ SC_FUNC stringpair *insert_alias(char *name,char *alias)
   return cur;
 }
 
-SC_FUNC int lookup_alias(char *target,char *name)
+int lookup_alias(char *target,char *name)
 {
   stringpair *cur=find_stringpair(alias_tab.next,name,strlen(name));
   if (cur!=NULL) {
@@ -233,7 +233,7 @@ SC_FUNC int lookup_alias(char *target,char *name)
   return cur!=NULL;
 }
 
-SC_FUNC void delete_aliastable(void)
+void delete_aliastable(void)
 {
   delete_stringpairtable(&alias_tab);
 }
@@ -241,17 +241,17 @@ SC_FUNC void delete_aliastable(void)
 /* ----- include paths list -------------------------------------- */
 static stringlist includepaths;  /* directory list for include files */
 
-SC_FUNC stringlist *insert_path(char *path)
+stringlist *insert_path(char *path)
 {
   return insert_string(&includepaths,path);
 }
 
-SC_FUNC char *get_path(int index)
+char *get_path(int index)
 {
   return get_string(&includepaths,index);
 }
 
-SC_FUNC void delete_pathtable(void)
+void delete_pathtable(void)
 {
   delete_stringtable(&includepaths);
   assert(includepaths.next==NULL);
@@ -275,7 +275,7 @@ static void adjustindex(char c)
   substindex[(int)c-PUBLIC_CHAR]=cur;
 }
 
-SC_FUNC stringpair *insert_subst(char *pattern,char *substitution,int prefixlen)
+stringpair *insert_subst(const char *pattern,const char *substitution,int prefixlen)
 {
   stringpair *cur;
 
@@ -306,7 +306,7 @@ SC_FUNC stringpair *insert_subst(char *pattern,char *substitution,int prefixlen)
   return cur;
 }
 
-SC_FUNC stringpair *find_subst(char *name,int length)
+stringpair *find_subst(char *name,int length)
 {
   stringpair *item;
   assert(name!=NULL);
@@ -319,12 +319,13 @@ SC_FUNC stringpair *find_subst(char *name,int length)
   if (item && (item->flags & flgDEPRECATED) != 0)
   {
     static char macro[128];
-    char *rem, *msg = (item->documentation != NULL) ? item->documentation : "";
+    const char *msg = (item->documentation != NULL) ? item->documentation : "";
     strlcpy(macro, item->first, sizeof(macro));
 
     /* If macro contains an opening parentheses and a percent sign, then assume that
      * it takes arguments and remove them from the warning message.
      */
+    char *rem;
     if ((rem = strchr(macro, '(')) != NULL && strchr(macro, '%') > rem)
     {
       *rem = '\0';
@@ -335,7 +336,7 @@ SC_FUNC stringpair *find_subst(char *name,int length)
   return item;
 }
 
-SC_FUNC int delete_subst(char *name,int length)
+int delete_subst(char *name,int length)
 {
   stringpair *item;
   assert(name!=NULL);
@@ -356,7 +357,7 @@ SC_FUNC int delete_subst(char *name,int length)
   return TRUE;
 }
 
-SC_FUNC void delete_substtable(void)
+void delete_substtable(void)
 {
   int i;
   delete_stringpairtable(&substpair);
@@ -370,17 +371,17 @@ SC_FUNC void delete_substtable(void)
 /* ----- input file list ----------------------------------------- */
 static stringlist sourcefiles;
 
-SC_FUNC stringlist *insert_sourcefile(char *string)
+stringlist *insert_sourcefile(char *string)
 {
   return insert_string(&sourcefiles,string);
 }
 
-SC_FUNC char *get_sourcefile(int index)
+char *get_sourcefile(int index)
 {
   return get_string(&sourcefiles,index);
 }
 
-SC_FUNC void delete_sourcefiletable(void)
+void delete_sourcefiletable(void)
 {
   delete_stringtable(&sourcefiles);
   assert(sourcefiles.next==NULL);
@@ -391,22 +392,22 @@ SC_FUNC void delete_sourcefiletable(void)
 #if !defined SC_LIGHT
 static stringlist docstrings;
 
-SC_FUNC stringlist *insert_docstring(char *string)
+stringlist *insert_docstring(char *string)
 {
   return insert_string(&docstrings,string);
 }
 
-SC_FUNC char *get_docstring(int index)
+char *get_docstring(int index)
 {
   return get_string(&docstrings,index);
 }
 
-SC_FUNC void delete_docstring(int index)
+void delete_docstring(int index)
 {
   delete_string(&docstrings,index);
 }
 
-SC_FUNC void delete_docstringtable(void)
+void delete_docstringtable(void)
 {
   delete_stringtable(&docstrings);
   assert(docstrings.next==NULL);
@@ -417,17 +418,17 @@ SC_FUNC void delete_docstringtable(void)
 /* ----- autolisting --------------------------------------------- */
 static stringlist autolist;
 
-SC_FUNC stringlist *insert_autolist(char *string)
+stringlist *insert_autolist(const char *string)
 {
   return insert_string(&autolist,string);
 }
 
-SC_FUNC char *get_autolist(int index)
+char *get_autolist(int index)
 {
   return get_string(&autolist,index);
 }
 
-SC_FUNC void delete_autolisttable(void)
+void delete_autolisttable(void)
 {
   delete_stringtable(&autolist);
   assert(autolist.next==NULL);
@@ -463,7 +464,7 @@ SC_FUNC void delete_autolisttable(void)
 
 static stringlist dbgstrings;
 
-SC_FUNC stringlist *insert_dbgfile(const char *filename)
+stringlist *insert_dbgfile(const char *filename)
 {
 
   if (sc_status==statWRITE && (sc_debug & sSYMBOLIC)!=0) {
@@ -476,7 +477,7 @@ SC_FUNC stringlist *insert_dbgfile(const char *filename)
   return NULL;
 }
 
-SC_FUNC stringlist *insert_dbgline(int linenr)
+stringlist *insert_dbgline(int linenr)
 {
   if (sc_status==statWRITE && (sc_debug & sSYMBOLIC)!=0) {
     char string[40];
@@ -488,7 +489,7 @@ SC_FUNC stringlist *insert_dbgline(int linenr)
   return NULL;
 }
 
-SC_FUNC stringlist *insert_dbgsymbol(symbol *sym)
+stringlist *insert_dbgsymbol(symbol *sym)
 {
   if (sc_status==statWRITE && (sc_debug & sSYMBOLIC)!=0) {
     char string[2*sNAMEMAX+128];
@@ -521,17 +522,17 @@ SC_FUNC stringlist *insert_dbgsymbol(symbol *sym)
   return NULL;
 }
 
-SC_FUNC stringlist *get_dbgstrings()
+stringlist *get_dbgstrings()
 {
   return &dbgstrings;
 }
 
-SC_FUNC char *get_dbgstring(int index)
+char *get_dbgstring(int index)
 {
   return get_string(&dbgstrings,index);
 }
 
-SC_FUNC void delete_dbgstringtable(void)
+void delete_dbgstringtable(void)
 {
   delete_stringtable(&dbgstrings);
   assert(dbgstrings.next==NULL);

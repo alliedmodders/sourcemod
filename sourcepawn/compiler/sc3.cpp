@@ -35,7 +35,7 @@ static int skim(int *opstr,void (*testfunc)(int),int dropval,int endval,
                 int (*hier)(value*),value *lval);
 static void dropout(int lvalue,void (*testfunc)(int val),int exit1,value *lval);
 static int plnge(int *opstr,int opoff,int (*hier)(value *lval),value *lval,
-                 char *forcetag,int chkbitwise);
+                 const char *forcetag,int chkbitwise);
 static int plnge1(int (*hier)(value *lval),value *lval);
 static void plnge2(void (*oper)(void),
                    int (*hier)(value *lval),
@@ -113,16 +113,20 @@ static int nextop(int *opidx,int *list)
   return FALSE;         /* entire list scanned, nothing found */
 }
 
-SC_FUNC int check_userop(void (*oper)(void),int tag1,int tag2,int numparam,
+int check_userop(void (*oper)(void),int tag1,int tag2,int numparam,
                          value *lval,int *resulttag)
 {
-static char *binoperstr[] = { "*", "/", "%", "+", "-", "", "", "",
-                              "", "", "", "<=", ">=", "<", ">", "==", "!=" };
-static int binoper_savepri[] = { FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-                                 FALSE, FALSE, FALSE, FALSE, FALSE,
-                                 TRUE, TRUE, TRUE, TRUE, FALSE, FALSE };
-static char *unoperstr[] = { "!", "-", "++", "--" };
-static void (*unopers[])(void) = { lneg, neg, user_inc, user_dec };
+  static const char *binoperstr[] = {
+    "*", "/", "%", "+", "-", "", "", "",
+    "", "", "", "<=", ">=", "<", ">", "==", "!="
+  };
+  static int binoper_savepri[] = { FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
+                                   FALSE, FALSE, FALSE, FALSE, FALSE,
+                                   TRUE, TRUE, TRUE, TRUE, FALSE, FALSE
+  };
+  static const char *unoperstr[] = { "!", "-", "++", "--" };
+  static void (*unopers[])(void) = { lneg, neg, user_inc, user_dec };
+
   char opername[4] = "", symbolname[sNAMEMAX+1];
   int i,swapparams,savepri,savealt;
   int paramspassed;
@@ -286,7 +290,7 @@ static void (*unopers[])(void) = { lneg, neg, user_inc, user_dec };
   return TRUE;
 }
 
-SC_FUNC int checktags_string(int tags[], int numtags, value *sym1)
+int checktags_string(int tags[], int numtags, value *sym1)
 {
   int i;
   if (sym1->ident == iARRAY || sym1->ident == iREFARRAY)
@@ -301,7 +305,7 @@ SC_FUNC int checktags_string(int tags[], int numtags, value *sym1)
   return FALSE;
 }
 
-SC_FUNC int checktag_string(value *sym1, value *sym2)
+int checktag_string(value *sym1, value *sym2)
 {
   if (sym1->ident == iARRAY || sym2->ident == iARRAY ||
       sym1->ident == iREFARRAY || sym2->ident == iREFARRAY)
@@ -317,7 +321,7 @@ SC_FUNC int checktag_string(value *sym1, value *sym2)
   return FALSE;
 }
 
-SC_FUNC const char *type_to_name(int tag)
+const char *type_to_name(int tag)
 {
   if (tag == 0)
     return "int";
@@ -335,7 +339,7 @@ SC_FUNC const char *type_to_name(int tag)
   return "unknown";
 }
 
-SC_FUNC int matchtag_string(int ident, int tag)
+int matchtag_string(int ident, int tag)
 {
   if (ident == iARRAY || ident == iREFARRAY)
     return FALSE;
@@ -515,7 +519,7 @@ static int matchfunctags(int formaltag, int actualtag)
   return FALSE;
 }
 
-SC_FUNC int matchtag(int formaltag, int actualtag, int flags)
+int matchtag(int formaltag, int actualtag, int flags)
 {
   if (formaltag == actualtag)
     return TRUE;
@@ -719,7 +723,7 @@ static void checkfunction(value *lval)
  *  Plunge to a lower level
  */
 static int plnge(int *opstr,int opoff,int (*hier)(value *lval),value *lval,
-                 char *forcetag,int chkbitwise)
+                 const char *forcetag,int chkbitwise)
 {
   int lvalue,opidx;
   int count;
@@ -862,10 +866,10 @@ static void plnge2(void (*oper)(void),
     checkfunction(lval1);
     checkfunction(lval2);
     if (lval1->ident==iARRAY || lval1->ident==iREFARRAY) {
-      char *ptr=(lval1->sym!=NULL) ? lval1->sym->name : "-unknown-";
+      const char *ptr=(lval1->sym!=NULL) ? lval1->sym->name : "-unknown-";
       error(33,ptr);                    /* array must be indexed */
     } else if (lval2->ident==iARRAY || lval2->ident==iREFARRAY) {
-      char *ptr=(lval2->sym!=NULL) ? lval2->sym->name : "-unknown-";
+      const char *ptr=(lval2->sym!=NULL) ? lval2->sym->name : "-unknown-";
       error(33,ptr);                    /* array must be indexed */
     } /* if */
     /* ??? ^^^ should do same kind of error checking with functions */
@@ -954,7 +958,7 @@ static cell calc(cell left,void (*oper)(),cell right,char *boolresult)
   return 0;
 }
 
-SC_FUNC int lvalexpr(svalue *sval)
+int lvalexpr(svalue *sval)
 {
   memset(sval, 0, sizeof(*sval));
 
@@ -967,7 +971,7 @@ SC_FUNC int lvalexpr(svalue *sval)
   return sval->val.ident;
 }
 
-SC_FUNC int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult,value *_lval)
+int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult,value *_lval)
 {
   value lval={0};
   pushheaplist();
@@ -990,7 +994,7 @@ SC_FUNC int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult,valu
   return lval.ident;
 }
 
-SC_FUNC int sc_getstateid(constvalue **automaton,constvalue **state)
+int sc_getstateid(constvalue **automaton,constvalue **state)
 {
   char name[sNAMEMAX+1];
   cell val;
@@ -1033,7 +1037,7 @@ SC_FUNC int sc_getstateid(constvalue **automaton,constvalue **state)
   assert(*automaton!=NULL);
   *state=state_find(name,fsa);
   if (*state==NULL) {
-    char *fsaname=(*automaton)->name;
+    const char *fsaname=(*automaton)->name;
     if (*fsaname=='\0')
       fsaname="<main>";
     error(87,name,fsaname);   /* unknown state for automaton */
@@ -1043,7 +1047,7 @@ SC_FUNC int sc_getstateid(constvalue **automaton,constvalue **state)
   return 1;
 }
 
-SC_FUNC cell array_totalsize(symbol *sym)
+cell array_totalsize(symbol *sym)
 {
   cell length;
 
@@ -2526,7 +2530,7 @@ static int nesting=0;
   sc_allowproccall=FALSE;       /* parameters may not use procedure call syntax */
 
   if ((sym->flags & flgDEPRECATED)!=0) {
-    char *ptr= (sym->documentation!=NULL) ? sym->documentation : "";
+    const char *ptr= (sym->documentation!=NULL) ? sym->documentation : "";
     error(234,sym->name,ptr);   /* deprecated (probably a native function) */
   } /* if */
 
@@ -2557,10 +2561,9 @@ static int nesting=0;
     do {
       if (!pending_this && matchtoken('.')) {
         namedparams=TRUE;
-        if (needtoken(tSYMBOL))
-          tokeninfo(&lexval,&lexstr);
-        else
-          lexstr="";
+        if (!needtoken(tSYMBOL))
+          break;
+        tokeninfo(&lexval,&lexstr);
         argpos=findnamedarg(arg,lexstr);
         if (argpos<0) {
           error(17,lexstr);       /* undefined symbol */

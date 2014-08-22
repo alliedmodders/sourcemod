@@ -79,7 +79,7 @@ typedef struct tagAMX_DBG_HDR {
 
 typedef struct tagAMX_DBG_FILE {
   ucell   address       PACKED; /* address in the code segment where generated code (for this file) starts */
-  const char name[1];           /* ASCII string, zero-terminated */
+  char    name[1];           /* ASCII string, zero-terminated */
 } PACKED AMX_DBG_FILE;
 
 typedef struct tagAMX_DBG_LINE {
@@ -95,7 +95,7 @@ typedef struct tagAMX_DBG_SYMBOL {
   char    ident;                /* kind of symbol (function/variable) */
   char    vclass;               /* class of symbol (global/local) */
   int16_t dim           PACKED; /* number of dimensions */
-  const char name[1];           /* ASCII string, zero-terminated */
+  char    name[1];           /* ASCII string, zero-terminated */
 } PACKED AMX_DBG_SYMBOL;
 
 typedef struct tagAMX_DBG_SYMDIM {
@@ -105,19 +105,19 @@ typedef struct tagAMX_DBG_SYMDIM {
 
 typedef struct tagAMX_DBG_TAG {
   int16_t tag           PACKED; /* tag id */
-  const char name[1];           /* ASCII string, zero-terminated */
+  char    name[1];           /* ASCII string, zero-terminated */
 } PACKED AMX_DBG_TAG;
 
 typedef struct tagAMX_DBG_MACHINE {
   int16_t automaton     PACKED; /* automaton id */
   ucell address         PACKED; /* address of state variable */
-  const char name[1];           /* ASCII string, zero-terminated */
+  char  name[1];           /* ASCII string, zero-terminated */
 } PACKED AMX_DBG_MACHINE;
 
 typedef struct tagAMX_DBG_STATE {
   int16_t state         PACKED; /* state id */
   int16_t automaton     PACKED; /* automaton id */
-  const char name[1];           /* ASCII string, zero-terminated */
+  char    name[1];           /* ASCII string, zero-terminated */
 } PACKED AMX_DBG_STATE;
 
 typedef struct tagAMX_DBG {
