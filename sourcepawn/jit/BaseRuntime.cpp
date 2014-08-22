@@ -11,6 +11,7 @@
 
 #include "md5/md5.h"
 
+using namespace sp;
 using namespace SourcePawn;
 
 static inline bool
@@ -171,9 +172,9 @@ int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
     if (!(m_plugin.pcode) && !strcmp(nameptr, ".code")) {
       sp_file_code_t *cod = (sp_file_code_t *)(base + secptr->dataoffs);
 
-      if (cod->codeversion < SP_CODEVERS_JIT1)
+      if (cod->codeversion < SmxConsts::CODE_VERSION_JIT1)
         return SP_ERROR_CODE_TOO_OLD;
-      if (cod->codeversion > SP_CODEVERS_JIT2)
+      if (cod->codeversion > SmxConsts::CODE_VERSION_JIT2)
         return SP_ERROR_CODE_TOO_NEW;
 
       m_plugin.pcode = base + secptr->dataoffs + cod->code;
@@ -266,7 +267,7 @@ int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
   if (m_plugin.pcode == NULL || m_plugin.data == NULL)
     return SP_ERROR_FILE_FORMAT;
 
-  if ((m_plugin.flags & SP_FLAG_DEBUG) && (
+  if ((m_plugin.flags & sp::CODEFLAG_DEBUG) && (
     !(m_plugin.debug.files) || 
     !(m_plugin.debug.lines) || 
     !(m_plugin.debug.symbols) || 
