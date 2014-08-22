@@ -47,7 +47,7 @@ static cell litchar(const unsigned char **lptr,int flags);
 static symbol *find_symbol(const symbol *root,const char *name,int fnumber,int automaton,int *cmptag);
 
 static void substallpatterns(unsigned char *line,int buffersize);
-static int match(char *st,int end);
+static int match(const char *st,int end);
 static int alpha(char c);
 
 #define SKIPMODE      1 /* bit field in "#if" stack */
@@ -134,7 +134,8 @@ SC_FUNC void clearstk(void)
 
 SC_FUNC int plungequalifiedfile(char *name)
 {
-static char *extensions[] = { ".inc", ".p", ".pawn" };
+  static const char *extensions[] = { ".inc", ".p", ".pawn" };
+
   void *fp;
   char *ext;
   int ext_idx;
@@ -1251,7 +1252,7 @@ static int command(void)
         break;
       default: {
         char s2[20];
-        extern char *sc_tokens[];/* forward declaration */
+        extern const char *sc_tokens[];/* forward declaration */
         if (tok<256)
           sprintf(s2,"%c",(char)tok);
         else
@@ -1482,7 +1483,7 @@ static char *strdel(char *str,size_t len)
   return str;
 }
 
-static char *strins(char *dest,char *src,size_t srclen)
+static char *strins(char *dest,const char *src,size_t srclen)
 {
   size_t destlen=strlen(dest);
   assert(srclen<=strlen(src));
@@ -1943,7 +1944,7 @@ SC_FUNC void lexinit(void)
   sTokenBuffer = &sNormalBuffer;
 }
 
-char *sc_tokens[] = {
+const char *sc_tokens[] = {
          "*=", "/=", "%=", "+=", "-=", "<<=", ">>>=", ">>=", "&=", "^=", "|=",
          "||", "&&", "==", "!=", "<=", ">=", "<<", ">>>", ">>", "++", "--",
          "...", "..", "::",
@@ -2003,7 +2004,6 @@ static void lexpop()
 SC_FUNC int lex(cell *lexvalue,char **lexsym)
 {
   int i,toolong,newline;
-  char **tokptr;
   const unsigned char *starttoken;
 
   if (sTokenBuffer->depth > 0) {
@@ -2054,7 +2054,7 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
   tok->start.col = (int)(lptr - pline);
 
   i=tFIRST;
-  tokptr=sc_tokens;
+  const char **tokptr=sc_tokens;
   while (i<=tMIDDLE) {  /* match multi-character operators */
     if (*lptr==**tokptr && match(*tokptr,FALSE)) {
       tok->id = i;
@@ -2440,7 +2440,7 @@ SC_FUNC int require_newline(int allow_semi)
  *
  *  Global references: lptr   (altered)
  */
-static int match(char *st,int end)
+static int match(const char *st,int end)
 {
   int k;
   const unsigned char *ptr;

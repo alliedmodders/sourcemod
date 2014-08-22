@@ -828,7 +828,7 @@ SC_FUNC stringlist *insert_docstring(char *string);
 SC_FUNC char *get_docstring(int index);
 SC_FUNC void delete_docstring(int index);
 SC_FUNC void delete_docstringtable(void);
-SC_FUNC stringlist *insert_autolist(char *string);
+SC_FUNC stringlist *insert_autolist(const char *string);
 SC_FUNC char *get_autolist(int index);
 SC_FUNC void delete_autolisttable(void);
 SC_FUNC stringlist *insert_dbgfile(const char *filename);
@@ -844,7 +844,7 @@ SC_FUNC int cp_path(const char *root,const char *directory);
 SC_FUNC int cp_set(const char *name);
 SC_FUNC cell cp_translate(const unsigned char *string,const unsigned char **endptr);
 SC_FUNC cell get_utf8_char(const unsigned char *string,const unsigned char **endptr);
-SC_FUNC int scan_utf8(FILE *fp,const char *filename);
+SC_FUNC int scan_utf8(void *fp,const char *filename);
 
 /* function prototypes in SCSTATE.C */
 SC_FUNC constvalue *automaton_add(const char *name);
@@ -942,9 +942,9 @@ SC_VDECL int sc_require_newdecls; /* only newdecls are allowed */
 SC_VDECL constvalue sc_automaton_tab; /* automaton table */
 SC_VDECL constvalue sc_state_tab;     /* state table */
 
-SC_VDECL FILE *inpf;          /* file read from (source or include) */
-SC_VDECL FILE *inpf_org;      /* main source file */
-SC_VDECL FILE *outf;          /* file written to */
+SC_VDECL void *inpf;          /* file read from (source or include) */
+SC_VDECL void *inpf_org;      /* main source file */
+SC_VDECL void *outf;          /* file written to */
 
 SC_VDECL jmp_buf errbuf;      /* target of longjmp() on a fatal error */
 

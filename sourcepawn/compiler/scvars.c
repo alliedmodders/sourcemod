@@ -98,9 +98,9 @@ SC_VDEFINE int sc_require_newdecls=0; /* Require new-style declarations */
 SC_VDEFINE constvalue sc_automaton_tab = { NULL, "", 0, 0}; /* automaton table */
 SC_VDEFINE constvalue sc_state_tab = { NULL, "", 0, 0};   /* state table */
 
-SC_VDEFINE FILE *inpf    = NULL;   /* file read from (source or include) */
-SC_VDEFINE FILE *inpf_org= NULL;   /* main source file */
-SC_VDEFINE FILE *outf    = NULL;   /* (intermediate) text file written to */
+SC_VDEFINE void *inpf    = NULL;   /* file read from (source or include) */
+SC_VDEFINE void *inpf_org= NULL;   /* main source file */
+SC_VDEFINE void *outf    = NULL;   /* (intermediate) text file written to */
 
 SC_VDEFINE jmp_buf errbuf;
 

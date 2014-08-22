@@ -137,7 +137,7 @@ static int delete_stringpair(stringpair *root,stringpair *item)
 }
 
 /* ----- string list functions ----------------------------------- */
-static stringlist *insert_string(stringlist *root,char *string)
+static stringlist *insert_string(stringlist *root,const char *string)
 {
   stringlist *cur;
 
@@ -418,7 +418,7 @@ SC_FUNC void delete_docstringtable(void)
 /* ----- autolisting --------------------------------------------- */
 static stringlist autolist;
 
-SC_FUNC stringlist *insert_autolist(char *string)
+SC_FUNC stringlist *insert_autolist(const char *string)
 {
   return insert_string(&autolist,string);
 }

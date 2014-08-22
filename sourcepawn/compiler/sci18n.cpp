@@ -391,7 +391,7 @@ SC_FUNC cell get_utf8_char(const unsigned char *string,const unsigned char **end
 }
 #endif
 
-SC_FUNC int scan_utf8(FILE *fp,const char *filename)
+SC_FUNC int scan_utf8(void *fp,const char *filename)
 {
   #if defined NO_UTF8
     return 0;

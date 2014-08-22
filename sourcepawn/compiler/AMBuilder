@@ -83,7 +83,7 @@ binary.sources += [
   'memfile.cpp',
   'pawncc.cpp',
   'sc1.c',
-  'sc2.c',
+  'sc2.cpp',
   'sc3.cpp',
   'sc4.cpp',
   'sc5.cpp',
