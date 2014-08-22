@@ -580,7 +580,7 @@ int  pc_eofsrc(void *handle);
 void *pc_openasm(char *filename); /* read/write */
 void pc_closeasm(void *handle,int deletefile);
 void pc_resetasm(void *handle);
-int  pc_writeasm(void *handle,char *str);
+int  pc_writeasm(void *handle,const char *str);
 char *pc_readasm(void *handle,char *target,int maxchars);
 
 /* output to binary (.AMX) file */

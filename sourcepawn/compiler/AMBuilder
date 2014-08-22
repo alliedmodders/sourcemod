@@ -85,7 +85,7 @@ binary.sources += [
   'sc1.c',
   'sc2.c',
   'sc3.c',
-  'sc4.c',
+  'sc4.cpp',
   'sc5.cpp',
   'sc6.cpp',
   'sc7.cpp',
