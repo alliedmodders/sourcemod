@@ -964,9 +964,10 @@ SC_VDECL jmp_buf errbuf;      /* target of longjmp() on a fatal error */
 #endif
 
 #if defined WIN32
-#if !defined snprintf
-#define snprintf _snprintf
-#endif
+# if !defined snprintf
+#  define snprintf _snprintf
+#  define vsnprintf _vsnprintf
+# endif
 #endif
 
 #endif /* SC_SKIP_VDECL */

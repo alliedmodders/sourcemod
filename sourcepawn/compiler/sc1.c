@@ -705,7 +705,7 @@ int pc_addtag_flags(char *name, int flags)
   constvalue *ptr;
   int last,tag;
 
-  assert(strchr(name,':')==NULL); /* colon should already have been stripped */
+  assert((flags & FUNCTAG) || strchr(name,':')==NULL); /* colon should already have been stripped */
   last=0;
   ptr=tagname_tab.next;
   while (ptr!=NULL) {
@@ -4201,7 +4201,7 @@ static void parse_function_type(functag_t *type)
   needtoken(tFUNCTION);
 
   type->ret_tag = parse_new_typename(NULL);
-  type->type = uPUBLIC;
+  type->usage = uPUBLIC;
 
   needtoken('(');
 
@@ -4370,13 +4370,13 @@ static void dofuncenum(int listmode)
        * rather than the constant value.  And even if we could, we'd have to change the assembler recognize that.
        */
       if (l == tPUBLIC) {
-        func.type = uPUBLIC;
+        func.usage = uPUBLIC;
       } else {
         error(1, "-public-", str);
       }
     } else {
       func.ret_tag = newStyleTag;
-      func.type = uPUBLIC;
+      func.usage = uPUBLIC;
     }
     needtoken('(');
     do {
