@@ -93,7 +93,7 @@ binary.sources += [
   'sci18n.c',
   'sclist.c',
   'scmemfil.cpp',
-  'scstate.c',
+  'scstate.cpp',
   'sctracker.c',
   'scvars.c',
   'sp_file.cpp',
