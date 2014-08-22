@@ -79,7 +79,7 @@ elif builder.target_platform == 'mac':
  
 binary.sources += [
   'libpawnc.cpp',
-  'lstring.c',
+  'lstring.cpp',
   'memfile.cpp',
   'pawncc.cpp',
   'sc1.c',
@@ -91,7 +91,7 @@ binary.sources += [
   'sc7.c',
   'scexpand.c',
   'sci18n.c',
-  'sclist.c',
+  'sclist.cpp',
   'scmemfil.cpp',
   'scstate.cpp',
   'sctracker.c',

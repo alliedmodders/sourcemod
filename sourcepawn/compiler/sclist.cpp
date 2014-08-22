@@ -319,12 +319,13 @@ SC_FUNC stringpair *find_subst(char *name,int length)
   if (item && (item->flags & flgDEPRECATED) != 0)
   {
     static char macro[128];
-    char *rem, *msg = (item->documentation != NULL) ? item->documentation : "";
+    const char *msg = (item->documentation != NULL) ? item->documentation : "";
     strlcpy(macro, item->first, sizeof(macro));
 
     /* If macro contains an opening parentheses and a percent sign, then assume that
      * it takes arguments and remove them from the warning message.
      */
+    char *rem;
     if ((rem = strchr(macro, '(')) != NULL && strchr(macro, '%') > rem)
     {
       *rem = '\0';
