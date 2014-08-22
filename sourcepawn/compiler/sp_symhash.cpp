@@ -128,29 +128,3 @@ RemoveFromHashTable(HashTable *ht, symbol *sym)
   assert(r.found());
   ht->remove(r);
 }
-
-#if defined __linux__ || defined __APPLE__
-extern "C" void __cxa_pure_virtual(void)
-{
-}
-
-void *operator new(size_t size)
-{
-	return malloc(size);
-}
-
-void *operator new[](size_t size) 
-{
-	return malloc(size);
-}
-
-void operator delete(void *ptr) 
-{
-	free(ptr);
-}
-
-void operator delete[](void * ptr)
-{
-	free(ptr);
-}
-#endif
