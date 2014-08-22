@@ -406,7 +406,7 @@ native bool:RemoveDir(const String:path[]);
  * @param valve_path_id	If use_valve_fs, a search path from gameinfo or NULL_STRING for default.
  *                      In this case, mode is ignored.
  */
-native bool:CreateDirectory(const String:path[], mode, bool:use_valve_fs=false, const String:valve_path_id="DEFAULT_WRITE_PATH");
+native bool:CreateDirectory(const String:path[], mode, bool:use_valve_fs=false, const String:valve_path_id[]="DEFAULT_WRITE_PATH");
 
 /**
  * Returns a file timestamp as a unix timestamp.
