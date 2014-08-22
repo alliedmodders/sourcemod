@@ -398,7 +398,7 @@ native bool:RemoveDir(const String:path[]);
  *                      DEFAULT_WRITE_PATH search path, rather than directly in the gamedir.
  *                      In this case, mode is ignored.
  */
-native bool:CreateDirectory(const String:path[], mode);
+native bool:CreateDirectory(const String:path[], mode, bool:use_valve_fs=false);
 
 /**
  * Returns a file timestamp as a unix timestamp.
