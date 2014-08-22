@@ -37,7 +37,7 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 	/* Rewind for safety */
 	fread(&hdr, sizeof(sp_file_hdr_t), 1, fp);
 
-	if (hdr.magic != SPFILE_MAGIC)
+	if (hdr.magic != SmxConsts::FILE_MAGIC)
 	{
 		error = SP_ERROR_FILE_FORMAT;
 		goto return_error;
@@ -45,7 +45,7 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 
 	switch (hdr.compression)
 	{
-	case SPFILE_COMPRESSION_GZ:
+	case SmxConsts::FILE_COMPRESSION_GZ:
 		{
 			uint32_t uncompsize = hdr.imagesize - hdr.dataoffs;
 			uint32_t compsize = hdr.disksize - hdr.dataoffs;
@@ -77,7 +77,7 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 			free(uncompdata);
 			break;
 		}
-	case SPFILE_COMPRESSION_NONE:
+	case SmxConsts::FILE_COMPRESSION_NONE:
 		{
 			base = (uint8_t *)malloc(hdr.imagesize);
 			rewind(fp);

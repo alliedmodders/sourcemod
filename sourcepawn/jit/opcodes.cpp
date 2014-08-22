@@ -31,6 +31,7 @@
 #include "opcodes.h"
 #include "jit_shared.h"
 
+using namespace sp;
 using namespace SourcePawn;
 
 const char *OpcodeNames[] = {
