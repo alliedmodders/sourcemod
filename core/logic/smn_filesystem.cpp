@@ -258,7 +258,7 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 	
 	Handle_t handle = 0;
 	
-	if (params[0] <= 1 || !params[2])
+	if (params[0] >= 2 && params[2])
 	{
 		char wildcardedPath[PLATFORM_MAX_PATH];
 		snprintf(wildcardedPath, sizeof(wildcardedPath), "%s*", path);
