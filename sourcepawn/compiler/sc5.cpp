@@ -69,10 +69,10 @@ static int sErrLine;     /* forced line number for the error message */
  */
 SC_FUNC int error(int number,...)
 {
-static char *prefix[3]={ "error", "fatal error", "warning" };
+static const char *prefix[3]={ "error", "fatal error", "warning" };
 static int lastline,errorcount;
 static short lastfile;
-  char *msg,*pre;
+  const char *msg,*pre;
   va_list argptr;
 
   // sErrLine is used to temporarily change the line number of reported errors.

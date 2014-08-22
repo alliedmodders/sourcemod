@@ -67,7 +67,7 @@ int pc_printf(const char *message,...)
  *		If the function returns 0, the parser attempts to continue compilation.
  *		On a non-zero return value, the parser aborts.
  */
-int pc_error(int number,char *message,char *filename,int firstline,int lastline,va_list argptr)
+int pc_error(int number,const char *message,const char *filename,int firstline,int lastline,va_list argptr)
 {
 static const char *prefix[3]={ "error", "fatal error", "warning" };
 
