@@ -37,17 +37,27 @@ namespace ke {
 
 template <typename T> class Ref;
 
-// Holds a refcounted T without addrefing it. This is similar to PassRef<>
-// below, but is intended only for freshly allocated objects which start
-// with reference count 1, and we don't want to add an extra ref just by
-// assigning to PassRef<> or Ref<>.
+// Objects in AMTL inheriting from Refcounted will have an initial refcount
+// of 0. However, in some systems (such as COM), the initial refcount is 1,
+// or functions may return raw pointers that have been AddRef'd. In these
+// cases it would be a mistake to use Ref<> or PassRef<>, since the object
+// would leak an extra reference.
+//
+// This container holds a refcounted object without addrefing it. This is
+// intended only for interacting with functions which return an object that
+// has been manually AddRef'd. Note that this will perform a Release(), so
+// so it is necessary to assign it to retain the object.
 template <typename T>
-class Newborn
+class AlreadyRefed
 {
   public:
-    Newborn(T *t)
+    AlreadyRefed(T *t)
       : thing_(t)
     {
+    }
+    ~AlreadyRefed() {
+        if (thing_)
+            thing_->Release();
     }
 
     T *release() const {
@@ -59,10 +69,10 @@ class Newborn
 };
 
 template <typename T>
-static inline Newborn<T>
-NoAddRef(T *t)
+static inline AlreadyRefed<T>
+AdoptRef(T *t)
 {
-    return Newborn<T>(t);
+    return AlreadyRefed<T>(t);
 }
 
 // When returning a value, we'd rather not be needlessly changing the refcount,
@@ -81,7 +91,14 @@ class PassRef
     {
     }
 
-    PassRef(const Newborn<T *> &other)
+    PassRef(const AlreadyRefed<T *> &other)
+      : thing_(other.release())
+    {
+        // Don't addref, newborn means already addref'd.
+    }
+
+    template <typename S>
+    PassRef(const AlreadyRefed<S *> &other)
       : thing_(other.release())
     {
         // Don't addref, newborn means already addref'd.
@@ -134,7 +151,7 @@ class PassRef
   private:
     // Disallowed operators.
     PassRef &operator =(T *other);
-    PassRef &operator =(Newborn<T> &other);
+    PassRef &operator =(AlreadyRefed<T> &other);
 
     void AddRef() {
         if (thing_)
@@ -149,13 +166,18 @@ class PassRef
     mutable T *thing_;
 };
 
-// Classes which are refcounted should inherit from this.
+// Classes which are refcounted should inherit from this. Note that reference
+// counts start at 0 in AMTL, rather than 1. This avoids the complexity of
+// having to adopt the initial ref upon allocation. However, this also means
+// invoking Release() on a newly allocated object is illegal. Newborn objects
+// must either be assigned to a Ref or PassRef (NOT an AdoptRef/AlreadyRefed),
+// or must be deleted using |delete|.
 template <typename T>
 class Refcounted
 {
   public:
     Refcounted()
-      : refcount_(1)
+      : refcount_(0)
     {
     }
 
@@ -217,7 +239,12 @@ class Ref
       : thing_(other.release())
     {
     }
-    Ref(const Newborn<T> &other)
+    Ref(const AlreadyRefed<T> &other)
+      : thing_(other.release())
+    {
+    }
+    template <typename S>
+    Ref(const AlreadyRefed<S> &other)
       : thing_(other.release())
     {
     }
@@ -255,7 +282,7 @@ class Ref
     }
 
     template <typename S>
-    Ref &operator =(const Newborn<S> &other) {
+    Ref &operator =(const AlreadyRefed<S> &other) {
         Release();
         thing_ = other.release();
         return *this;
