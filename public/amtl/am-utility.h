@@ -339,6 +339,25 @@ class StorageBuffer
   };
 };
 
+template <typename T>
+class SaveAndSet
+{
+ public:
+  SaveAndSet(T *location, const T &value)
+   : location_(location),
+     old_(*location)
+  {
+    *location_ = value;
+  }
+  ~SaveAndSet() {
+    *location_ = old_;
+  }
+
+ private:
+  T *location_;
+  T old_;
+};
+
 #if defined(_MSC_VER)
 # define KE_SIZET_FMT           "%Iu"
 #elif defined(__GNUC__)

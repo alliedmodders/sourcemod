@@ -578,13 +578,6 @@ void pc_resetasm(void *handle);
 int  pc_writeasm(void *handle,const char *str);
 char *pc_readasm(void *handle,char *target,int maxchars);
 
-/* output to binary (.AMX) file */
-void *pc_openbin(char *filename);
-void pc_closebin(void *handle,int deletefile);
-void pc_resetbin(void *handle,long offset);
-int  pc_writebin(void *handle,void *buffer,int size);
-long pc_lengthbin(void *handle); /* return the length of the file */
-
 void sp_fdbg_ntv_start(int num_natives);
 void sp_fdbg_ntv_hook(int index, symbol *sym);
 
@@ -767,7 +760,7 @@ int error(int number,...);
 void errorset(int code,int line);
 
 /* function prototypes in SC6.C */
-int assemble(void *fout,void *fin);
+void assemble(const char *outname, void *fin);
 
 /* function prototypes in SC7.C */
 void stgbuffer_cleanup(void);

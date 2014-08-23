@@ -45,6 +45,7 @@ compiler.includes += [
   os.path.join(builder.sourcePath, 'public', 'amtl'),
   os.path.join(builder.sourcePath, 'public', 'sourcepawn'),
   os.path.join(builder.sourcePath, 'sourcepawn', 'compiler'),
+  os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
   os.path.join(builder.buildPath, 'includes'),
   os.path.join(builder.buildPath, builder.buildFolder),
 ]
@@ -54,7 +55,8 @@ if compiler.cc.behavior == 'gcc':
   compiler.cflags += ['-Wno-format']
   compiler.c_only_flags += ['-std=c99']
   if builder.target_platform == 'linux':
-    compiler.postlink += ['-lgcc', '-lm']
+    compiler.postlink += ['-lm']
+  compiler.postlink += ['-lstdc++']
 elif compiler.cc.behavior == 'msvc':
   compiler.linkflags.remove('/SUBSYSTEM:WINDOWS')
   compiler.linkflags.append('/SUBSYSTEM:CONSOLE')
@@ -95,7 +97,7 @@ binary.sources += [
   'scstate.cpp',
   'sctracker.cpp',
   'scvars.cpp',
-  'sp_file.cpp',
+  'smx-builder.cpp',
   'zlib/adler32.c',
   'zlib/compress.c',
   'zlib/crc32.c',
