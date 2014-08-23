@@ -672,11 +672,11 @@ static int ftoi(cell *val,const unsigned char *curptr)
       exp=(exp*10)+(*ptr-'0');
       ptr++;
     } /* while */
-    #if defined __GNUC__
-      fmult=pow10(exp*sign);
-    #else
-      fmult=pow(10,exp*sign);
-    #endif
+#if defined __GNUC__
+    fmult=pow10(exp*sign);
+#else
+    fmult=pow(10.0,exp*sign);
+#endif
     fnum *= fmult;
     dnum *= (unsigned long)(fmult+0.5);
   } /* if */

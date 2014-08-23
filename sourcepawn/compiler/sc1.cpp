@@ -1920,14 +1920,12 @@ static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct)
 static void declglb(declinfo_t *decl,int fpublic,int fstatic,int fstock)
 {
   int ispublic;
-  cell val,cidx;
+  cell cidx;
   ucell address;
   int glb_incr;
-  char *str;
   int slength=0;
   short filenum;
   symbol *sym;
-  constvalue *enumroot;
 #if !defined NDEBUG
   cell glbdecl=0;
 #endif
@@ -3174,8 +3172,6 @@ static void parse_old_array_dims(declinfo_t *decl, int flags)
       stgset(FALSE);
   } else {
     do {
-      cell size;
-
       if (type->numdim == sDIMEN_MAX) {
         error(53);
         return;
@@ -3253,7 +3249,7 @@ static int parse_old_decl(declinfo_t *decl, int flags)
         strcpy(decl->name, "__unknown__");
     } else {
       if (!lexpeek(tSYMBOL)) {
-        extern char *sc_tokens[];
+        extern const char *sc_tokens[];
         switch (lextok(&tok)) {
           case tOBJECT:
           case tCHAR:
@@ -3376,7 +3372,6 @@ static int reparse_new_decl(declinfo_t *decl, int flags)
 //
 int parse_decl(declinfo_t *decl, int flags)
 {
-  token_t tok;
   token_ident_t ident;
 
   memset(decl, 0, sizeof(*decl));
@@ -5050,7 +5045,7 @@ static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag)
   int tok;
   char *str;
   cell val,size;
-  symbol *sym,*sub;
+  symbol *sym;
   int fnative = (tokid == tNATIVE || tokid == tMETHODMAP);
   int fpublic = (tokid == tPUBLIC);
 
@@ -5158,7 +5153,6 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
   char *str;
   cell val,cidx,glbdecl;
   short filenum;
-  int state_id;
 
   assert(litidx==0);    /* literal queue should be empty */
   litidx=0;             /* clear the literal pool (should already be empty) */
@@ -5429,10 +5423,9 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
 {
   char *ptr;
   int argcnt,oldargcnt,tok;
-  cell val;
   arginfo arg, *arglist;
   char name[sNAMEMAX+1];
-  int ident,fpublic;
+  int fpublic;
   int idx;
 
   /* if the function is already defined earlier, get the number of arguments
@@ -5618,7 +5611,6 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
 static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, arginfo *arg)
 {
   symbol *argsym;
-  constvalue *enumroot;
   int slength=0;
   typeinfo_t *type = &decl->type;
 
