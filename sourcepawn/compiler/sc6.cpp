@@ -45,8 +45,6 @@
 using namespace sp;
 using namespace ke;
 
-static void append_debug_Tables(SmxBuilder *builder);
-
 typedef cell (*OPCODE_PROC)(Vector<cell> *buffer, char *params, cell opcode);
 
 typedef struct {
@@ -661,8 +659,10 @@ typedef SmxListSection<sp_fdbg_line_t> SmxDebugLineSection;
 typedef SmxListSection<sp_fdbg_file_t> SmxDebugFileSection;
 typedef SmxListSection<sp_file_tag_t> SmxTagSection;
 typedef SmxBlobSection<void> SmxDebugSymbolsSection;
+typedef SmxBlobSection<void> SmxDebugNativesSection;
+typedef Vector<symbol *> SymbolList;
 
-static void append_debug_tables(SmxBuilder *builder, StringPool &pool)
+static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolList &nativeList)
 {
   // We use a separate name table for historical reasons that are no longer
   // necessary. In the future we should just alias this to ".names".
@@ -671,6 +671,7 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool)
   Ref<SmxDebugLineSection> lines = new SmxDebugLineSection(".dbg.lines");
   Ref<SmxDebugFileSection> files = new SmxDebugFileSection(".dbg.files");
   Ref<SmxDebugSymbolsSection> symbols = new SmxDebugSymbolsSection(".dbg.symbols");
+  Ref<SmxDebugNativesSection> natives = new SmxDebugNativesSection(".dbg.natives");
   Ref<SmxTagSection> tags = new SmxTagSection(".tags");
 
   stringlist *dbgstrs = get_dbgstrings();
@@ -768,12 +769,49 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool)
     tag.name = names->add(pool, constptr->name);
   }
 
+  // Finish up debug header statistics.
   info->header().num_files = files->count();
   info->header().num_lines = lines->count();
 
+  // Write natives.
+  sp_fdbg_ntvtab_t natives_header;
+  natives_header.num_entries = nativeList.length();
+  natives->add(&natives_header, sizeof(natives_header));
+
+  for (size_t i = 0; i < nativeList.length(); i++) {
+    symbol *sym = nativeList[i];
+
+    sp_fdbg_native_t info;
+    info.index = i;
+    info.name = names->add(pool, sym->name);
+    info.tagid = sym->tag;
+    info.nargs = 0;
+    for (arginfo *arg = sym->dim.arglist; arg->ident; arg++)
+      info.nargs++;
+    natives->add(&info, sizeof(info));
+
+    for (arginfo *arg = sym->dim.arglist; arg->ident; arg++) {
+      sp_fdbg_ntvarg_t argout;
+      argout.ident = arg->ident;
+      argout.tagid = arg->tags[0];
+      argout.dimcount = arg->numdim;
+      argout.name = names->add(pool, arg->name);
+      natives->add(&argout, sizeof(argout));
+
+      for (int j = 0; j < argout.dimcount; j++) {
+        sp_fdbg_arraydim_t dim;
+        dim.tagid = arg->idxtag[j];
+        dim.size = arg->dim[j];
+        natives->add(&dim, sizeof(dim));
+      }
+    }
+  }
+
+  // Add these in the same order SourceMod 1.6 added them.
   builder->add(files);
   builder->add(symbols);
   builder->add(lines);
+  builder->add(natives);
   builder->add(names);
   builder->add(info);
   builder->add(tags);
@@ -872,7 +910,7 @@ static void assemble_to_buffer(MemoryBuffer *buffer, void *fin)
   builder.add(pubvars);
   builder.add(natives);
   builder.add(names);
-  append_debug_tables(&builder, pool);
+  append_debug_tables(&builder, pool, nativeList);
 
   builder.write(buffer);
 }
