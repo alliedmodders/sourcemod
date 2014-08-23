@@ -190,7 +190,7 @@ class SMConfig(object):
           cxx.cflags += ['-Wno-unused-result']
       if have_clang:
         cxx.cxxflags += ['-Wno-implicit-exception-spec-mismatch']
-        if (builder.target_platform == 'mac' and cxx.version >= '5.1') or cxx.version >= '3.4':
+        if cxx.version >= 'apple-clang-5.1' or cxx.version >= 'clang-3.4':
           cxx.cxxflags += ['-Wno-deprecated-register']
         else:
           cxx.cxxflags += ['-Wno-deprecated']
