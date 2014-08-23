@@ -2720,8 +2720,11 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
     } while (matchtoken(',')); /* do */
     needtoken('}');
   } else {
-    init(ident,&ctag,errorfound);
-    matchtag(tag,ctag,TRUE);
+    if (!lexpeek('}'))
+    {
+      init(ident,&ctag,errorfound);
+      matchtag(tag,ctag,TRUE);
+    }
   } /* if */
   /* fill up the literal queue with a series */
   if (ellips) {
