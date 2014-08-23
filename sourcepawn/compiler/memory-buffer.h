@@ -22,7 +22,16 @@
 #include <am-utility.h>
 #include "smx-builder.h"
 
-class MemoryBuffer : public ke::ISmxBuffer
+// Interface for SmxBuilder to blit bytes.
+class ISmxBuffer
+{
+ public:
+  virtual bool write(const void *bytes, size_t len) = 0;
+  virtual size_t pos() const = 0;
+};
+
+// An in-memory buffer for SmxBuilder.
+class MemoryBuffer : public ISmxBuffer
 {
   static const size_t kDefaultSize = 4096;
 

@@ -24,16 +24,11 @@
 #include <am-refcounting.h>
 #include <smx/smx-headers.h>
 #include "string-pool.h"
+#include "memory-buffer.h"
 
 namespace ke {
 
-class ISmxBuffer
-{
- public:
-  virtual bool write(const void *bytes, size_t len) = 0;
-  virtual size_t pos() const = 0;
-};
-
+// An SmxSection is a named blob of data.
 class SmxSection : public Refcounted<SmxSection>
 {
  public:
@@ -53,13 +48,19 @@ class SmxSection : public Refcounted<SmxSection>
   AString name_;
 };
 
+// An SmxBlobSection is a section that has some kind of header structure
+// (specified as a template parameter), and then an arbitrary run of bytes
+// immediately after.
 template <typename T>
 class SmxBlobSection : public SmxSection
 {
  public:
   SmxBlobSection(const char *name)
-   : SmxSection(name)
+   : SmxSection(name),
+     extra_(nullptr),
+     extra_len_(0)
   {
+    memset(&t_, 0, sizeof(t_));
   }
 
   T &header() {
@@ -72,6 +73,8 @@ class SmxBlobSection : public SmxSection
   bool write(ISmxBuffer *buf) KE_OVERRIDE {
     if (!buf->write(&t_, sizeof(t_)))
       return false;
+    if (!extra_len_)
+      return true;
     return buf->write(extra_, extra_len_);
   }
   size_t length() const KE_OVERRIDE {
@@ -84,6 +87,32 @@ class SmxBlobSection : public SmxSection
   size_t extra_len_;
 };
 
+// An SmxBlobSection without headers.
+template <>
+class SmxBlobSection<void> : public SmxSection
+{
+ public:
+  SmxBlobSection(const char *name)
+   : SmxSection(name)
+  {
+  }
+
+  void add(void *bytes, size_t len) {
+    buffer_.write(bytes, len);
+  }
+  bool write(ISmxBuffer *buf) KE_OVERRIDE {
+    return buf->write(buffer_.bytes(), buffer_.size());
+  }
+  size_t length() const KE_OVERRIDE {
+    return buffer_.size();
+  }
+
+ private:
+  MemoryBuffer buffer_;
+};
+
+// An SmxListSection is a section that is a simple table of uniformly-sized
+// structures. It has no header of its own.
 template <typename T>
 class SmxListSection : public SmxSection
 {
@@ -104,18 +133,23 @@ class SmxListSection : public SmxSection
     return buf->write(list_.buffer(), list_.length() * sizeof(T));
   }
   size_t length() const KE_OVERRIDE {
-    return list_.length() * sizeof(T);
+    return count() * sizeof(T);
+  }
+  size_t count() const {
+    return list_.length();
   }
 
  private:
   Vector<T> list_;
 };
 
+// A name table is a blob of zero-terminated strings. Strings are entered
+// into the table as atoms, so duplicate stings are not emitted.
 class SmxNameTable : public SmxSection
 {
  public:
   SmxNameTable(const char *name)
-   : SmxSection(".names"),
+   : SmxSection(name),
      buffer_size_(0)
   {
     name_table_.init(64);

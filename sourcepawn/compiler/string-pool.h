@@ -19,14 +19,19 @@
 #ifndef _include_jitcraft_string_pool_h_
 #define _include_jitcraft_string_pool_h_
 
+// string-pool is a collection of helpers to atomize/internalize strings. The
+// StringPool class provides Atom objects which can be used for efficiently
+// handling string sets or dictionaries.
+
 #include <am-hashtable.h>
 #include <am-string.h>
 #include <string.h>
 
 namespace ke {
 
-// Wrapper around AString, since we might want to remove charfs() in a GC-safe
-// implementation.
+// An Atom is a string that has a unique instance. That is, any Atom("a") is
+// guaranteed to be pointer-equivalent to another Atom("a"), as long as they
+// originated from the same StringPool.
 class Atom
 {
   friend class StringPool;
@@ -49,6 +54,7 @@ class Atom
   AString str_;
 };
 
+// Helper class to use as a key for hash table lookups.
 class CharsAndLength
 {
  public:
@@ -76,6 +82,7 @@ class CharsAndLength
   size_t length_;
 };
 
+// Atom dictionary.
 class StringPool
 {
  public:

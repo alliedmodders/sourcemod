@@ -45,7 +45,7 @@
 using namespace sp;
 using namespace ke;
 
-static void append_dbginfo(void *fout);
+static void append_debug_Tables(SmxBuilder *builder);
 
 typedef cell (*OPCODE_PROC)(Vector<cell> *buffer, char *params, cell opcode);
 
@@ -615,10 +615,173 @@ static int sort_by_addr(const void *a1, const void *a2)
   return s1->addr - s2->addr;
 }
 
+// Helper for parsing a debug string. Debug strings look like this:
+//  L:40 10
+class DebugString
+{
+ public:
+  DebugString() : kind_('\0'), str_(nullptr)
+  { }
+  DebugString(char *str)
+   : kind_(str[0]),
+     str_(str)
+  {
+    assert(str_[1] == ':');
+    str_ += 2;
+  }
+  char kind() const {
+    return kind_;
+  }
+  ucell parse() {
+    return hex2long(str_, &str_);
+  }
+  char *skipspaces() {
+    str_ = ::skipwhitespace(str_);
+    return str_;
+  }
+  void expect(char c) {
+    assert(*str_ == c);
+    str_++;
+  }
+  char *skipto(char c) {
+    str_ = strchr(str_, c);
+    return str_;
+  }
+  char getc() {
+    return *str_++;
+  }
+
+ private:
+  char kind_;
+  char *str_;
+};
+
+typedef SmxBlobSection<sp_fdbg_info_t> SmxDebugInfoSection;
+typedef SmxListSection<sp_fdbg_line_t> SmxDebugLineSection;
+typedef SmxListSection<sp_fdbg_file_t> SmxDebugFileSection;
+typedef SmxListSection<sp_file_tag_t> SmxTagSection;
+typedef SmxBlobSection<void> SmxDebugSymbolsSection;
+
+static void append_debug_tables(SmxBuilder *builder, StringPool &pool)
+{
+  // We use a separate name table for historical reasons that are no longer
+  // necessary. In the future we should just alias this to ".names".
+  Ref<SmxNameTable> names = new SmxNameTable(".dbg.strings");
+  Ref<SmxDebugInfoSection> info = new SmxDebugInfoSection(".dbg.info");
+  Ref<SmxDebugLineSection> lines = new SmxDebugLineSection(".dbg.lines");
+  Ref<SmxDebugFileSection> files = new SmxDebugFileSection(".dbg.files");
+  Ref<SmxDebugSymbolsSection> symbols = new SmxDebugSymbolsSection(".dbg.symbols");
+  Ref<SmxTagSection> tags = new SmxTagSection(".tags");
+
+  stringlist *dbgstrs = get_dbgstrings();
+
+  // State for tracking which file we're on. We replicate the original AMXDBG
+  // behavior here which excludes duplicate addresses.
+  ucell prev_file_addr = 0;
+  const char *prev_file_name = nullptr;
+
+  // Add debug data.
+  for (stringlist *iter = dbgstrs; iter; iter = iter->next) {
+    if (iter->line[0] == '\0')
+      continue;
+
+    DebugString str(iter->line);
+    switch (str.kind()) {
+      case 'F':
+      {
+        ucell codeidx = str.parse();
+        if (codeidx != prev_file_addr) {
+          if (prev_file_name) {
+            sp_fdbg_file_t &entry = files->add();
+            entry.addr = prev_file_addr;
+            entry.name = names->add(pool, prev_file_name);
+          }
+          prev_file_addr = codeidx;
+        }
+        prev_file_name = str.skipspaces();
+        break;
+      }
+
+      case 'L':
+      {
+        sp_fdbg_line_t &entry = lines->add();
+        entry.addr = str.parse();
+        entry.line = str.parse();
+        break;
+      }
+
+      case 'S':
+      {
+        sp_fdbg_symbol_t sym;
+        sp_fdbg_arraydim_t dims[sDIMEN_MAX];
+
+        sym.addr = str.parse();
+        sym.tagid = str.parse();
+
+        str.skipspaces();
+        str.expect(':');
+        char *name = str.skipspaces();
+        char *nameend = str.skipto(' ');
+        Atom *atom = pool.add(name, nameend - name);
+
+        sym.codestart = str.parse();
+        sym.codeend = str.parse();
+        sym.ident = (char)str.parse();
+        sym.vclass = (char)str.parse();
+        sym.dimcount = 0;
+        sym.name = names->add(atom);
+
+        info->header().num_syms++;
+
+        str.skipspaces();
+        if (str.getc() == '[') {
+          info->header().num_arrays++;
+          for (char *ptr = str.skipspaces(); *ptr != ']'; ptr = str.skipspaces()) {
+            dims[sym.dimcount].tagid = str.parse();
+            str.skipspaces();
+            str.expect(':');
+            dims[sym.dimcount].size = str.parse();
+            sym.dimcount++;
+          }
+        }
+
+        symbols->add(&sym, sizeof(sym));
+        symbols->add(dims, sizeof(dims[0]) * sym.dimcount);
+        break;
+      }
+    }
+  }
+
+  // Add the last file.
+  if (prev_file_name) {
+    sp_fdbg_file_t &entry = files->add();
+    entry.addr = prev_file_addr;
+    entry.name = names->add(pool, prev_file_name);
+  }
+
+  // Build the tags table.
+  for (constvalue *constptr = tagname_tab.next; constptr; constptr = constptr->next) {
+    assert(strlen(constptr->name)>0);
+
+    sp_file_tag_t &tag = tags->add();
+    tag.tag_id = constptr->value;
+    tag.name = names->add(pool, constptr->name);
+  }
+
+  info->header().num_files = files->count();
+  info->header().num_lines = lines->count();
+
+  builder->add(files);
+  builder->add(symbols);
+  builder->add(lines);
+  builder->add(names);
+  builder->add(info);
+  builder->add(tags);
+}
+
 typedef SmxListSection<sp_file_natives_t> SmxNativeSection;
 typedef SmxListSection<sp_file_publics_t> SmxPublicSection;
 typedef SmxListSection<sp_file_pubvars_t> SmxPubvarSection;
-typedef SmxListSection<sp_file_tag_t> SmxTagSection;
 typedef SmxBlobSection<sp_file_data_t> SmxDataSection;
 typedef SmxBlobSection<sp_file_code_t> SmxCodeSection;
 
@@ -629,7 +792,6 @@ static void assemble_to_buffer(MemoryBuffer *buffer, void *fin)
   Ref<SmxNativeSection> natives = new SmxNativeSection(".natives");
   Ref<SmxPublicSection> publics = new SmxPublicSection(".publics");
   Ref<SmxPubvarSection> pubvars = new SmxPubvarSection(".pubvars");
-  Ref<SmxTagSection> tags = new SmxTagSection(".tags");
   Ref<SmxDataSection> data = new SmxDataSection(".data");
   Ref<SmxCodeSection> code = new SmxCodeSection(".code");
   Ref<SmxNameTable> names = new SmxNameTable(".names");
@@ -655,15 +817,6 @@ static void assemble_to_buffer(MemoryBuffer *buffer, void *fin)
       }
     }
   } 
-
-  // Build the tags table.
-  for (constvalue *constptr = tagname_tab.next; constptr; constptr = constptr->next) {
-    assert(strlen(constptr->name)>0);
-
-    sp_file_tag_t &tag = tags->add();
-    tag.tag_id = constptr->value;
-    tag.name = names->add(pool, constptr->name);
-  }
 
   // Shuffle natives to be in address order.
   qsort(nativeList.buffer(), nativeList.length(), sizeof(symbol *), sort_by_addr);
@@ -719,7 +872,8 @@ static void assemble_to_buffer(MemoryBuffer *buffer, void *fin)
   builder.add(pubvars);
   builder.add(natives);
   builder.add(names);
-  builder.add(tags);
+  append_debug_tables(&builder, pool);
+
   builder.write(buffer);
 }
 
@@ -774,226 +928,4 @@ void assemble(const char *binfname, void *fin)
   free(zbuf);
 
   splat_to_binary(binfname, buffer.bytes(), buffer.size());
-}
-
-int pc_writebin(void *handle,void *buffer,int size) {
-  assert(false);
-  return 1;
-}
-
-static void append_dbginfo(void *fout)
-{
-  AMX_DBG_HDR dbghdr;
-  AMX_DBG_LINE dbgline;
-  AMX_DBG_SYMBOL dbgsym;
-  AMX_DBG_SYMDIM dbgidxtag[sDIMEN_MAX];
-  int dim,dbgsymdim;
-  char *str,*prevstr,*name,*prevname;
-  ucell codeidx,previdx;
-  constvalue *constptr;
-  char symname[2*sNAMEMAX+16];
-  int16_t id1,id2;
-  ucell address;
-  stringlist *dbgstrs = get_dbgstrings();
-  stringlist *iter;
-
-  /* header with general information */
-  memset(&dbghdr, 0, sizeof dbghdr);
-  dbghdr.size=sizeof dbghdr;
-  dbghdr.magic=AMX_DBG_MAGIC;
-  dbghdr.file_version=CUR_FILE_VERSION;
-  dbghdr.amx_version=MIN_AMX_VERSION;
-
-  dbgstrs=dbgstrs->next;
-
-  /* first pass: collect the number of items in various tables */
-
-  /* file table */
-  previdx=0;
-  prevstr=NULL;
-  prevname=NULL;
-  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
-    str = iter->line;
-    assert(str!=NULL);
-    assert(str[0]!='\0' && str[1]==':');
-    if (str[0]=='F') {
-      codeidx=hex2long(str+2,&name);
-      if (codeidx!=previdx) {
-        if (prevstr!=NULL) {
-          assert(prevname!=NULL);
-          dbghdr.files++;
-          dbghdr.size+=sizeof(cell)+strlen(prevname)+1;
-        } /* if */
-        previdx=codeidx;
-      } /* if */
-      prevstr=str;
-      prevname=skipwhitespace(name);
-    } /* if */
-  } /* for */
-  if (prevstr!=NULL) {
-    assert(prevname!=NULL);
-    dbghdr.files++;
-    dbghdr.size+=sizeof(cell)+strlen(prevname)+1;
-  } /* if */
-
-  /* line number table */
-  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
-    str = iter->line;
-    assert(str!=NULL);
-    assert(str[0]!='\0' && str[1]==':');
-    if (str[0]=='L') {
-      dbghdr.lines++;
-      dbghdr.size+=sizeof(AMX_DBG_LINE);
-    } /* if */
-  } /* for */
-
-  /* symbol table */
-  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
-    str = iter->line;
-    assert(str!=NULL);
-    assert(str[0]!='\0' && str[1]==':');
-    if (str[0]=='S') {
-      dbghdr.symbols++;
-      name=strchr(str+2,':');
-      assert(name!=NULL);
-      dbghdr.size+=sizeof(AMX_DBG_SYMBOL)+strlen(skipwhitespace(name+1));
-      if ((prevstr=strchr(name,'['))!=NULL)
-        while ((prevstr=strchr(prevstr+1,':'))!=NULL)
-          dbghdr.size+=sizeof(AMX_DBG_SYMDIM);
-    } /* if */
-  } /* for */
-
-  /* tag table */
-  for (constptr=tagname_tab.next; constptr!=NULL; constptr=constptr->next) {
-    assert(strlen(constptr->name)>0);
-    dbghdr.tags++;
-    dbghdr.size+=sizeof(AMX_DBG_TAG)+strlen(constptr->name);
-  } /* for */
-
-  /* automaton table */
-  for (constptr=sc_automaton_tab.next; constptr!=NULL; constptr=constptr->next) {
-    assert((constptr->index==0 && strlen(constptr->name)==0) || strlen(constptr->name)>0);
-    dbghdr.automatons++;
-    dbghdr.size+=sizeof(AMX_DBG_MACHINE)+strlen(constptr->name);
-  } /* for */
-
-  /* state table */
-  for (constptr=sc_state_tab.next; constptr!=NULL; constptr=constptr->next) {
-    assert(strlen(constptr->name)>0);
-    dbghdr.states++;
-    dbghdr.size+=sizeof(AMX_DBG_STATE)+strlen(constptr->name);
-  } /* for */
-
-
-  /* pass 2: generate the tables */
-  writeerror |= !pc_writebin(fout,&dbghdr,sizeof dbghdr);
-
-  /* file table */
-  previdx=0;
-  prevstr=NULL;
-  prevname=NULL;
-  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
-    str = iter->line;
-    assert(str[0]!='\0' && str[1]==':');
-    if (str[0]=='F') {
-      codeidx=hex2long(str+2,&name);
-      if (codeidx!=previdx) {
-        if (prevstr!=NULL) {
-          assert(prevname!=NULL);
-          writeerror |= !pc_writebin(fout,&previdx,sizeof previdx);
-          writeerror |= !pc_writebin(fout,prevname,strlen(prevname)+1);
-        } /* if */
-        previdx=codeidx;
-      } /* if */
-      prevstr=str;
-      prevname=skipwhitespace(name);
-    } /* if */
-  } /* for */
-  if (prevstr!=NULL) {
-    assert(prevname!=NULL);
-    writeerror |= !pc_writebin(fout,&previdx,sizeof previdx);
-    writeerror |= !pc_writebin(fout,prevname,strlen(prevname)+1);
-  } /* if */
-
-  /* line number table */
-  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
-    str = iter->line;
-    assert(str!=NULL);
-    assert(str[0]!='\0' && str[1]==':');
-    if (str[0]=='L') {
-      dbgline.address=hex2long(str+2,&str);
-      dbgline.line=(int32_t)hex2long(str,NULL);
-      writeerror |= !pc_writebin(fout,&dbgline,sizeof dbgline);
-    } /* if */
-  } /* for */
-
-  /* symbol table */
-  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
-    str = iter->line;
-    assert(str!=NULL);
-    assert(str[0]!='\0' && str[1]==':');
-    if (str[0]=='S') {
-      dbgsym.address=hex2long(str+2,&str);
-      dbgsym.tag=(int16_t)hex2long(str,&str);
-      str=skipwhitespace(str);
-      assert(*str==':');
-      name=skipwhitespace(str+1);
-      str=strchr(name,' ');
-      assert(str!=NULL);
-      assert((int)(str-name)<sizeof symname);
-      strlcpy(symname,name,(int)(str-name)+1);
-      dbgsym.codestart=hex2long(str,&str);
-      dbgsym.codeend=hex2long(str,&str);
-      dbgsym.ident=(char)hex2long(str,&str);
-      dbgsym.vclass=(char)hex2long(str,&str);
-      dbgsym.dim=0;
-      str=skipwhitespace(str);
-      if (*str=='[') {
-        while (*(str=skipwhitespace(str+1))!=']') {
-          dbgidxtag[dbgsym.dim].tag=(int16_t)hex2long(str,&str);
-          str=skipwhitespace(str);
-          assert(*str==':');
-          dbgidxtag[dbgsym.dim].size=hex2long(str+1,&str);
-          dbgsym.dim++;
-        } /* while */
-      } /* if */
-      dbgsymdim = dbgsym.dim;
-      writeerror |= !pc_writebin(fout,&dbgsym,offsetof(AMX_DBG_SYMBOL, name));
-      writeerror |= !pc_writebin(fout,symname,strlen(symname)+1);
-      for (dim=0; dim<dbgsymdim; dim++) {
-        writeerror |= !pc_writebin(fout,&dbgidxtag[dim],sizeof dbgidxtag[dim]);
-      } /* for */
-    } /* if */
-  } /* for */
-
-  /* tag table */
-  for (constptr=tagname_tab.next; constptr!=NULL; constptr=constptr->next) {
-    assert(strlen(constptr->name)>0);
-    id1=(int16_t)(constptr->value & TAGMASK);
-    writeerror |= !pc_writebin(fout,&id1,sizeof id1);
-    writeerror |= !pc_writebin(fout,constptr->name,strlen(constptr->name)+1);
-  } /* for */
-
-  /* automaton table */
-  for (constptr=sc_automaton_tab.next; constptr!=NULL; constptr=constptr->next) {
-    assert((constptr->index==0 && strlen(constptr->name)==0) || strlen(constptr->name)>0);
-    id1=(int16_t)constptr->index;
-    address=(ucell)constptr->value;
-    writeerror |= !pc_writebin(fout,&id1,sizeof id1);
-    writeerror |= !pc_writebin(fout,&address,sizeof address);
-    writeerror |= !pc_writebin(fout,constptr->name,strlen(constptr->name)+1);
-  } /* for */
-
-  /* state table */
-  for (constptr=sc_state_tab.next; constptr!=NULL; constptr=constptr->next) {
-    assert(strlen(constptr->name)>0);
-    id1=(int16_t)constptr->value;
-    id2=(int16_t)constptr->index;
-    address=(ucell)constptr->value;
-    writeerror |= !pc_writebin(fout,&id1,sizeof id1);
-    writeerror |= !pc_writebin(fout,&id2,sizeof id2);
-    writeerror |= !pc_writebin(fout,constptr->name,strlen(constptr->name)+1);
-  } /* for */
-
-  delete_dbgstringtable();
 }
