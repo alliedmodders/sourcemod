@@ -2069,8 +2069,6 @@ static void declglb(declinfo_t *decl,int fpublic,int fstatic,int fstock)
 static void declloc(int tokid)
 {
   symbol *sym;
-  cell val;
-  char *str;
   value lval = {0};
   int cur_lit=0;
   int staging_start;
@@ -2817,7 +2815,7 @@ static void decl_const(int vclass)
   char constname[sNAMEMAX+1];
   cell val;
   token_t tok;
-  int tag,exprtag;
+  int exprtag;
   int symbolline;
   symbol *sym;
 
@@ -2895,7 +2893,6 @@ static void declstruct(void)
   char *str;
   int tok;
   pstruct_t *pstruct;
-  int size;
 
   /* get the explicit tag (required!) */
   tok = lex(&val,&str);
@@ -3777,7 +3774,6 @@ methodmap_method_t *parse_method(methodmap_t *map)
   typeinfo_t type;
   memset(&type, 0, sizeof(type));
 
-  token_t tok;
   if (matchtoken('~')) {
     // We got something like "public ~Blah = X"
     is_bind = TRUE;
@@ -5042,9 +5038,8 @@ static cell fix_char_size(declinfo_t *decl)
 
 static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag)
 {
-  int tok;
   char *str;
-  cell val,size;
+  cell val;
   symbol *sym;
   int fnative = (tokid == tNATIVE || tokid == tMETHODMAP);
   int fpublic = (tokid == tPUBLIC);
@@ -5148,10 +5143,9 @@ static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag)
 static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstatic, int stock, symbol **symp)
 {
   symbol *sym;
-  int argcnt,tok,funcline;
+  int argcnt,funcline;
   int opererror;
-  char *str;
-  cell val,cidx,glbdecl;
+  cell cidx,glbdecl;
   short filenum;
 
   assert(litidx==0);    /* literal queue should be empty */
@@ -5422,7 +5416,7 @@ static int argcompare(arginfo *a1,arginfo *a2)
 static int declargs(symbol *sym, int chkshadow, const int *thistag)
 {
   char *ptr;
-  int argcnt,oldargcnt,tok;
+  int argcnt,oldargcnt;
   arginfo arg, *arglist;
   char name[sNAMEMAX+1];
   int fpublic;
