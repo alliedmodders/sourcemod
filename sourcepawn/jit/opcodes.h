@@ -35,8 +35,6 @@
 #include <smx/smx-v1-opcodes.h>
 #include "jit_shared.h"
 
-typedef sp::OPCODE OPCODE;
-
 namespace SourcePawn {
   void SpewOpcode(const sp_plugin_t *plugin, cell_t *start, cell_t *cip);
 }
