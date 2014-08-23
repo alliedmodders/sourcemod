@@ -60,10 +60,10 @@ elif compiler.cc.behavior == 'msvc':
   compiler.linkflags.append('/SUBSYSTEM:CONSOLE')
   compiler.cxxflags.remove('/TP')
  
+compiler.defines += ['HAVE_STDINT_H']
 if builder.target_platform == 'linux':
   compiler.defines += [
     'LINUX',
-    'HAVE_STDINT_H',
     'AMX_ANSIONLY',
     'ENABLE_BINRELOC',
     '_GNU_SOURCE'
@@ -71,7 +71,6 @@ if builder.target_platform == 'linux':
 elif builder.target_platform == 'mac':
   compiler.defines += [
     'DARWIN',
-    'HAVE_STDINT_H',
     'AMX_ANSIONLY',
     'ENABLE_BINRELOC',
     'HAVE_SAFESTR'
