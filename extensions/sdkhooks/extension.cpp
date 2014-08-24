@@ -416,7 +416,7 @@ void SDKHooks::OnClientDisconnecting(int client)
 
 void SDKHooks::AddEntityListener(ISMEntityListener *listener)
 {
-	m_EntListeners.push_back(listener);
+	m_EntListeners.append(listener);
 }
 
 void SDKHooks::RemoveEntityListener(ISMEntityListener *listener)
@@ -1661,11 +1661,9 @@ void SDKHooks::HandleEntityCreated(CBaseEntity *pEntity, int ref)
 	const char *pName = gamehelpers->GetEntityClassname(pEntity);
 
 	// Send OnEntityCreated to SM listeners
-	SourceHook::List<ISMEntityListener *>::iterator iter;
-	ISMEntityListener *pListener = NULL;
-	for (iter = m_EntListeners.begin(); iter != m_EntListeners.end(); iter++)
+	for (size_t iter = 0; iter < m_EntListeners.length(); ++iter)
 	{
-		pListener = (*iter);
+		ISMEntityListener *pListener = m_EntListeners[iter];
 		pListener->OnEntityCreated(pEntity, pName ? pName : "");
 	}
 
@@ -1680,11 +1678,9 @@ void SDKHooks::HandleEntityCreated(CBaseEntity *pEntity, int ref)
 void SDKHooks::HandleEntityDeleted(CBaseEntity *pEntity, int ref)
 {
 	// Send OnEntityDestroyed to SM listeners
-	SourceHook::List<ISMEntityListener *>::iterator iter;
-	ISMEntityListener *pListener = NULL;
-	for (iter = m_EntListeners.begin(); iter != m_EntListeners.end(); iter++)
+	for (size_t iter = 0; iter < m_EntListeners.length(); ++iter)
 	{
-		pListener = (*iter);
+		ISMEntityListener *pListener = m_EntListeners[iter];
 		pListener->OnEntityDestroyed(pEntity);
 	}
 
