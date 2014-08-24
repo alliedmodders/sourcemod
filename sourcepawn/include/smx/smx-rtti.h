@@ -40,20 +40,38 @@ namespace sp {
 # pragma pack(1)
 #endif
 
-// Tables present in smx v2:
-//  .names            Blob of null-terminated strings.
-//  .methods          Table of smx_method_t entries.
-//  .pcode            Blob of smx_pcode_header_t entries.
-//  .globals          Table of smx_global_var_t entries.
-//  .types            Blob of type information.
+// Run-time type information is stored in the ".rtti" section. It is a
+// binary blob and does not a fixed table encoding.
+//
+// When the term "variable length uint32" is used, it is a 32-bit unsigned
+// integer encoded in a variable number of bytes. The ranges and masks for
+// the encoding is as follows:
+//   0x00000000-0x0000007F: 0x7F
+//   0x00000080-0x00003FFF: 0xFF 0x7F
+//   0x00004000-0x001FFFFF: 0xFF 0xFF 0x7F
+//   0x01000000-0x0FFFFFFF: 0xFF 0xFF 0xFF 0x7F
+//   0x10000000-0xFFFFFFFF: 0xFF 0xFF 0xFF 0xFF 0x0F
+// Variable length uint32 is also referred to as "vuint32".
+//
+// When the term "typeid" is used, it is a uint32 (either variable length or
+// not), of which bits 6 and 7 are a control code.
+//    0?: The first byte of the type fits in bits 0-6. If the encoding of the
+//        typeid is in a fixed-width context, this also guarantees the type
+//        sequence fits into 4 bytes (including the control byte).
+//    10: Bits 0-4 are an index into the .types table. Bit 5 indicates
+//        variable-length encoding. The maximum number of bytes is 4. The
+//        ranges and sequences are:
+//          0x00000000-0x0000001F: 0x9F
+//          0x00000020-0x00000FFF: 0xBF 0x7F
+//          0x00001000-0x0007FFFF: 0xBF 0xFF 0x7F
+//          0x00800000-0x001FFFFF: 0xBF 0xFF 0xFF 0x7F
+//        The maximum encodable index is 2^25-1.
+//    11: reserved
 
 // TypeSpec is a variable-length encoding referenced anywhere that "typespec"
-// is specified.
+// is specified. TypeSpec signatures can reference other typespecs via typeids.
 //
-// Whenever a TypeSpec is referenced from outside the .types table, specifically
-// as a "typeid", it has an encoding to save space: If the id is < 0x20, then
-// the id is a single-byte TypeSpec. Otherwise, the |id - 0x20| is an offset
-// into the .types section.
+// Anytime a uint32 is referenced in a typespec, it is variable-length encoded.
 enum class TypeSpec : uint8_t
 {
   // The void type is special in that it is not a storable type.
@@ -77,130 +95,56 @@ enum class TypeSpec : uint8_t
   float32           = 0xC,
   RESERVED_float64  = 0xD,
 
-  // char8 is semantically an alias for int8.
-  char8             = 0xE,
+  RESERVED_char32   = 0xE,    // Full unicode point.
 
-  RESERVED_char32   = 0xF,    // Full unicode point.
+  RESERVED_string   = 0x11,   // String reference.
+  RESERVED_object   = 0x12,   // Opaque object reference.
 
-  RESERVED_string   = 0x16,   // String reference.
-  RESERVED_object   = 0x17,   // Opaque object reference.
-
-  // Followed by an int32 index into the .classes table.
-  RESERVED_classdef  = 0x40,
-
-  // Followed by an int32 index into the .structs table.
-  RESERVED_structdef = 0x41,
-
-  // Followed by:
-  //      [int8 formalCount]  ; Number of formal parameters, counting varargs.
-  //      [typespec *formals] ; Sequence of formal parameter specifications.
+  // This is allowed as a prefix before the following types:
+  //   fixedarray
+  //   array
   //
-  // When the type spec is for a method definition (for example, the .method
-  // table), then each type in |formals| must begin with "named" (0x7e) or,
-  // if it is the last formal, may be "variadic" (0x7a).
-  method            = 0x50,
+  constref          = 0x13,
 
   // Fixed arrays have their size as part of their type, are copied by-value,
   // and passed by-reference.
   //
   // Followed by:
-  //     typespec type     ; Type specification of innermost elements.
+  //     typeid   type     ; Type of innermost elements.
   //     uint8    rank     ; Number of dimensions
-  //     int32*   dims     ; One dimension for each rank.
-  fixedarray        = 0x60,
+  //     uint32*  dims     ; One dimension for each rank.
+  fixedarray        = 0x14,
 
-  // Arrays are true arrays. They are copied by-reference and passed by-
-  // reference.
+  // A normal array does not have a fixed size and is exactly one dimension.
   //
   // Followed by:
-  //     typesec  type     ; Type specification of innermost elements.
-  //     uint8    rank     ; Number of dimensions.
-  RESERVED_array    = 0x61,
+  //     typeid   type     ; Type of array elements.
+  array             = 0x15,
 
-  // Only legal as the initial byte or byte following "named" (0x7e) in a
-  // parameter for a method signature.
-  //
-  // Followed by a typespec. Only typespecs < 0x60 ar elegal.
-  byref             = 0x70,
+  // Indicates a method signature.
+  method            = 0x30,
 
-  // Only legal as the initial byte or byte following "named" (0x7e) in a
-  // parameter for a method signature.
-  //
-  // Followed by a typespec.
-  variadic          = 0x7A,
+  // These bytes are reserved for signature blobs.
+  RESERVED_start    = 0x70,
+  RESERVED_end      = 0x7e,
 
-  // Only legal as the initial byte in a parameter or local variable signature.
-  //
-  // Followed by:
-  //     uint32    name    ; Index into the .names section.
-  //     typespec  type    ; Type.
-  named             = 0x7E,
-
-  // For readability, this may be emitted at the end of typespec lists. It must
-  // not be emitted at the end of nested typespecs.
-  terminator        = 0x7F
+  // Placeholder. New types must be < 0x7f to comply with typeid encoding.
+  RESERVED_terminator = 0x7f
 };
 
-// Flags for method definitions.
-enum class MethodFlags : uint32_t
+// A method signature is comprised of the following bytes:
+// 
+// method ::= prefix argcount params
+// argcount ::= vuint32
+// params ::= typeid* (refva typeid)?
+enum class MethodSignature : uint8_t
 {
-  STATIC            = 0x1,
-  VARIADIC          = 0x2,
-  PUBLIC            = 0x4,
-  NATIVE            = 0x8,
-  OPTIONAL          = 0x10
-};
+  // Prefix byte (TypeSpec::method).
+  prefix    = 0x30,
 
-// Specifies an entry in the .methods table.
-struct smx_method_t
-{
-  // Offset into the .names section.
-  uint32_t name;
-
-  MethodFlags flags;
-
-  // Offset into .types, which must point at a TypeSpec::method.
-  uint32_t typespec;
-
-  // Offset into .pcode. If flags contains NATIVE, this must be 0.
-  uint32_t address;
-};
-
-enum class GlobalVarFlags : uint32_t
-{
-  PUBLIC = 0x04,
-  CONST  = 0x08
-};
-
-// Specifies an entry in the .globals table.
-struct smx_global_var_t
-{
-  // Offset into the .names section.
-  uint32_t name;
-
-  GlobalVarFlags flags;
-
-  // TypeId of the global.
-  uint32_t type_id;
-};
-
-// Specifies the layout we expect at a valid pcode starting position.
-struct smx_pcode_header_t
-{
-  // Must be 0.
-  uint32_t reserved;
-
-  // Number of local variables.
-  uint16_t nlocals;
-
-  // Maximum depth of the operand stack.
-  uint16_t max_depth;
-
-  // Pointer to .types section where local information begins.
-  uint32_t local_specs;
-
-  // Number of bytes of pcode in the method.
-  uint32_t length;
+  // Indicates an old-style variadic parameter (i.e. any:... or ...), where
+  // each parameter must be passed by-reference.
+  refva     = 0x70
 };
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -144,10 +144,10 @@ typedef struct sp_fdbg_ntvtab_s
 // sp_fdbg_ntvarg_t for each argument.
 typedef struct sp_fdbg_native_s
 {
-  uint32_t index;      /**< Native index in the plugin. */
+  uint32_t index;     /**< Native index in the plugin. */
   uint32_t name;      /**< Offset into debug nametable. */
   int16_t tagid;      /**< Return tag. */
-  uint16_t nargs;      /**< Number of formal arguments. */
+  uint16_t nargs;     /**< Number of formal arguments. */
 } sp_fdbg_native_t;
 
 static const uint8_t IDENT_NATIVE_VARARGS = 1;
@@ -160,6 +160,34 @@ typedef struct sp_fdbg_ntvarg_s
   uint16_t  dimcount; /**< Dimension count (for arrays) */
   uint32_t  name;     /**< Offset into debug nametable */
 } sp_fdbg_ntvarg_t;
+
+// Flags for method definitions.
+enum class MethodFlags : uint32_t
+{
+  // Indicates the method has the "public" keyword.
+  PUBLIC = 0x00000001
+};
+
+// If present, this table is the canonical method list. The section name for
+// this table is ".methods".
+struct sp_method_t
+{
+  // Offset into the .names section.
+  uint32_t name;
+
+  // Method flags.
+  uint32_t flags;
+
+  // typeid that should evaluate to a MethodSignature. The "method" prefix
+  // byte should not be present; it is only used for inline types.
+  uint32_t typeinfo;
+
+  // Offset into the .code table, which must begin at a PROC instruction.
+  uint32_t address;
+
+  // Reserved words.
+  uint32_t reserved0;
+};
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // DO NOT DEFINE NEW STRUCTURES BELOW.
