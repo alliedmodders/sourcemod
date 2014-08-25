@@ -98,6 +98,7 @@ binary.sources += [
   'sctracker.cpp',
   'scvars.cpp',
   'smx-builder.cpp',
+  'smx-rtti-builder.cpp',
   'zlib/adler32.c',
   'zlib/compress.c',
   'zlib/crc32.c',

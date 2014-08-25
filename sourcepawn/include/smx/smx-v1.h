@@ -181,9 +181,8 @@ struct sp_method_t
   // Method flags.
   uint32_t flags;
 
-  // typeid that should evaluate to a MethodSignature. The "method" prefix
-  // byte should not be present; it is only used for inline types.
-  uint32_t typeinfo;
+  // typeid that should evaluate to a MethodSignature.
+  uint32_t type;
 
   // Offset into the .code table, which must begin at a PROC instruction.
   uint32_t address;

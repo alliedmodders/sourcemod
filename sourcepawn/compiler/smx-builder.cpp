@@ -101,6 +101,10 @@ SmxBuilder::write(ISmxBuffer *buf)
 bool
 SmxNameTable::write(ISmxBuffer *buf)
 {
+  // Write an initial nul byte so we can use 0 as an invalid index.
+  char nul = '\0';
+  buf->write(&nul, 1);
+
   for (size_t i = 0; i < names_.length(); i++) {
     Atom *str = names_[i];
     if (!buf->write(str->chars(), str->length() + 1))

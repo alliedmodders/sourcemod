@@ -53,20 +53,17 @@ namespace sp {
 //   0x10000000-0xFFFFFFFF: 0xFF 0xFF 0xFF 0xFF 0x0F
 // Variable length uint32 is also referred to as "vuint32".
 //
-// When the term "typeid" is used, it is a uint32 (either variable length or
-// not), of which bits 6 and 7 are a control code.
-//    0?: The first byte of the type fits in bits 0-6. If the encoding of the
-//        typeid is in a fixed-width context, this also guarantees the type
-//        sequence fits into 4 bytes (including the control byte).
-//    10: Bits 0-4 are an index into the .types table. Bit 5 indicates
-//        variable-length encoding. The maximum number of bytes is 4. The
-//        ranges and sequences are:
-//          0x00000000-0x0000001F: 0x9F
-//          0x00000020-0x00000FFF: 0xBF 0x7F
-//          0x00001000-0x0007FFFF: 0xBF 0xFF 0x7F
-//          0x00800000-0x001FFFFF: 0xBF 0xFF 0xFF 0x7F
-//        The maximum encodable index is 2^25-1.
-//    11: reserved
+// When the term "typeid" is used, it refers to the following fixed-width
+// uint32 encoding. The two most significant bits determine the meaning:
+//   00: bits 0-23 are an index into the .types table, other bits must be 0.
+//   01: invalid
+//   10: Bits 0-29 are an offset into the .rtti table.
+//   11: Bits 0-29 are an embedded typespec sequence.
+static const uint32_t kTypeIdControlMask  = 0xC0000000;
+static const uint32_t kTypeIdTypeIndex    = 0x00000000;
+static const uint32_t kTypeIdSpecOffset   = 0x80000000;
+static const uint32_t kTypeIdEmbeddedSpec = 0xC0000000;
+static const uint32_t kTypeIdTypeIndexMask = 0x00FFFFFF;
 
 // TypeSpec is a variable-length encoding referenced anywhere that "typespec"
 // is specified. TypeSpec signatures can reference other typespecs via typeids.
@@ -119,7 +116,7 @@ namespace TypeSpec
   // Followed by:
   //     typeid   type     ; Type of innermost elements.
   //     uint8    rank     ; Number of dimensions
-  //     uint32*  dims     ; One dimension for each rank.
+  //     vuint32* dims     ; One dimension for each rank.
   static const uint8_t fixedarray        = 0x14;
 
   // A normal array does not have a fixed size and is exactly one dimension.
@@ -128,8 +125,19 @@ namespace TypeSpec
   //     typeid   type     ; Type of array elements.
   static const uint8_t array             = 0x15;
 
+  // Followed by an index to the .types table, encoded as a uint32.
+  static const uint8_t typeref           = 0x22;
+
   // Indicates a method signature.
   static const uint8_t method            = 0x30;
+
+  // Unencodable. SP1 has some bizarre structures we can't fully support in
+  // the RTTI system yet. 
+
+  // Indicates an unencodable type. For example, funcenums cannot be encoded
+  // with RTTI because they are undiscriminated unions. The type system will
+  // reject any operation on unencodable types.
+  static const uint8_t unencodable       = 0x6f;
 
   // These bytes are reserved for signature blobs.
   static const uint8_t RESERVED_start    = 0x70;
@@ -159,8 +167,8 @@ namespace MethodSignature
   // each parameter must be passed by-reference.
   static const uint8_t refva  = 0x70;
 
-  // Indicates that the parameter is passed by-reference. Only allowed for
-  // primitive types.
+  // Indicates that the parameter is passed by-reference. Not allowed for
+  // arrays.
   static const uint8_t byref  = 0x71;
 };
 
@@ -184,7 +192,8 @@ namespace TypeDefFlags
   static const uint32_t NULLABLE   = 0x00000020;
 };
 
-// List of entries found in the .types table.
+// List of entries found in the .types table. The initial row must be all 0s,
+// as it serves as a sentinel.
 struct smx_typedef_t
 {
   // TypeDefFlags attributes.
@@ -194,7 +203,8 @@ struct smx_typedef_t
   // .names section.
   uint32_t name;
 
-  // Base type. For enums, this must be TypeSpec::int32 or another enum. For
+  // Base type.
+  //  For enums, this must be TypeSpec::int32 or another enum. For
   // aliases, it must must be a typeid describing the type being aliased.
   uint32_t base;
 
