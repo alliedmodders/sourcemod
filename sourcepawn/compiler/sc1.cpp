@@ -617,7 +617,7 @@ const char *pc_tagname(int tag)
 {
   constvalue *ptr=tagname_tab.next;
   for (; ptr; ptr=ptr->next) {
-    if ((int)(ptr->value & TAGMASK) == (tag & TAGMASK))
+    if (TAGID(ptr->value) == TAGID(tag))
       return ptr->name;
   }
   return "__unknown__";
@@ -638,7 +638,7 @@ int pc_findtag(const char *name)
   constvalue *ptr=tagname_tab.next;
   for (; ptr; ptr=ptr->next) {
     if (strcmp(name,ptr->name)==0)
-      return (int)(ptr->value & TAGMASK);
+      return ptr->value;
   }
   return -1;
 }
@@ -667,27 +667,25 @@ int pc_addtag(const char *name)
 int pc_addtag_flags(const char *name, int flags)
 {
   constvalue *ptr;
-  int last,tag;
+  int last;
 
   assert((flags & FUNCTAG) || strchr(name,':')==NULL); /* colon should already have been stripped */
   last=0;
   ptr=tagname_tab.next;
   while (ptr!=NULL) {
-    tag=(int)(ptr->value & TAGMASK);
     if (strcmp(name,ptr->name)==0) {
+      // Update the flag set.
       ptr->value |= flags;
-      return ptr->value & TAGMASK;
+      return ptr->value;
     }
-    tag &= ~TAGFLAGMASK;
-    if (tag>last)
-      last=tag;
-    ptr=ptr->next;
+    if (TAGID(ptr->value) > last)
+      last = TAGID(ptr->value);
+    ptr = ptr->next;
   } /* while */
 
   /* tagname currently unknown, add it */
-  tag=last+1;           /* guaranteed not to exist already */
-  tag|=flags;
-  append_constval(&tagname_tab,name,(cell)tag,0);
+  int tag = (last + 1) | flags;
+  append_constval(&tagname_tab, name, (cell)tag, 0);
   return tag;
 }
 
@@ -3942,13 +3940,7 @@ static void domethodmap(LayoutSpec spec)
     if (matchtoken(tNULLABLE) || (parent && parent->nullable))
       map->nullable = TRUE;
   } else {
-    constvalue *tagptr = pc_tagptr(mapname);
-    if (!tagptr) {
-      map->tag = pc_addtag_flags(mapname, FIXEDTAG | OBJECTTAG);
-    } else {
-      tagptr->value |= OBJECTTAG;
-      map->tag = (tagptr->value & TAGMASK);
-    }
+    map->tag = pc_addtag_flags(mapname, FIXEDTAG | OBJECTTAG);
   }
   methodmap_add(map);
 
@@ -4907,7 +4899,6 @@ static int check_operatortag(int opertok,int resulttag,char *opername)
 
 static char *tag2str(char *dest,int tag)
 {
-  tag &= TAGMASK;
   assert(tag>=0);
   sprintf(dest,"0%x",tag);
   return isdigit(dest[1]) ? &dest[1] : dest;
@@ -4956,11 +4947,7 @@ static int parse_funcname(char *fname,int *tag1,int *tag2,char *opname)
 
 constvalue *find_tag_byval(int tag)
 {
-  constvalue *tagsym;
-  tagsym=find_constval_byval(&tagname_tab,tag & ~PUBLICTAG);
-  if (tagsym==NULL)
-    tagsym=find_constval_byval(&tagname_tab,tag | PUBLICTAG);
-  return tagsym;
+  return find_constval_byval(&tagname_tab, tag);
 }
 
 char *funcdisplayname(char *dest,char *funcname)
@@ -7586,20 +7573,6 @@ static void docont(void)
   jumplabel(ptr[wqLOOP]);
 }
 
-void exporttag(int tag)
-{
-  /* find the tag by value in the table, then set the top bit to mark it
-   * "public"
-   */
-  if (tag!=0 && (tag & PUBLICTAG)==0) {
-    constvalue *ptr;
-    for (ptr=tagname_tab.next; ptr!=NULL && tag!=(int)(ptr->value & TAGMASK); ptr=ptr->next)
-      /* nothing */;
-    if (ptr!=NULL)
-      ptr->value |= PUBLICTAG;
-  } /* if */
-}
-
 static void doexit(void)
 {
   int tag=0;
@@ -7611,7 +7584,6 @@ static void doexit(void)
     ldconst(0,sPRI);
   } /* if */
   ldconst(tag,sALT);
-  exporttag(tag);
   destructsymbols(&loctab,0);           /* call destructor for *all* locals */
   ffabort(xEXIT);
 }
@@ -7627,7 +7599,6 @@ static void dosleep(void)
     ldconst(0,sPRI);
   } /* if */
   ldconst(tag,sALT);
-  exporttag(tag);
   ffabort(xSLEEP);
 
   /* for stack usage checking, mark the use of the sleep instruction */

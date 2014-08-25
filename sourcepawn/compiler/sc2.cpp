@@ -1135,7 +1135,6 @@ static int command(void)
           } /* if */
           /* add the tag (make it public) and check the values */
           i=pc_addtag(name);
-          exporttag(i);
           if (sc_rationaltag==0 || (sc_rationaltag==i && rational_digits==(int)digits)) {
             sc_rationaltag=i;
             rational_digits=(int)digits;
