@@ -872,6 +872,7 @@ static void build_method_table(SmxBuilder *builder, Ref<SmxNameTable> names, Ref
 
   builder->add(rtti);
   builder->add(rtti->typedefs());
+  builder->add(methods);
 }
 
 typedef SmxListSection<sp_file_natives_t> SmxNativeSection;
