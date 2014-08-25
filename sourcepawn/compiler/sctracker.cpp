@@ -133,7 +133,7 @@ funcenum_t *funcenums_find_by_tag(int tag)
   funcenum_t *e = firstenum;
 
   while (e) {
-    if (e->tag == tag)
+    if (TAGID(e->tag) == TAGID(tag))
       return e;
     e = e->next;
   }
@@ -475,7 +475,7 @@ methodmap_t *methodmap_find_by_tag(int tag)
 {
   methodmap_t *ptr = methodmap_first;
   for (; ptr; ptr = ptr->next) {
-    if (ptr->tag == tag)
+    if (TAGID(ptr->tag) == TAGID(tag))
       return ptr;
   }
   return NULL;

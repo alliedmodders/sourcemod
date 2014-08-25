@@ -40,6 +40,7 @@
 #include <smx/smx-v1.h>
 #include <zlib/zlib.h>
 #include "smx-builder.h"
+#include "smx-rtti-builder.h"
 #include "memory-buffer.h"
 
 using namespace sp;
@@ -666,7 +667,7 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolLis
 {
   // We use a separate name table for historical reasons that are no longer
   // necessary. In the future we should just alias this to ".names".
-  Ref<SmxNameTable> names = new SmxNameTable(".dbg.strings");
+  Ref<SmxNameTable> names = new SmxNameTable(pool, ".dbg.strings");
   Ref<SmxDebugInfoSection> info = new SmxDebugInfoSection(".dbg.info");
   Ref<SmxDebugLineSection> lines = new SmxDebugLineSection(".dbg.lines");
   Ref<SmxDebugFileSection> files = new SmxDebugFileSection(".dbg.files");
@@ -695,7 +696,7 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolLis
           if (prev_file_name) {
             sp_fdbg_file_t &entry = files->add();
             entry.addr = prev_file_addr;
-            entry.name = names->add(pool, prev_file_name);
+            entry.name = names->add(prev_file_name);
           }
           prev_file_addr = codeidx;
         }
@@ -757,7 +758,7 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolLis
   if (prev_file_name) {
     sp_fdbg_file_t &entry = files->add();
     entry.addr = prev_file_addr;
-    entry.name = names->add(pool, prev_file_name);
+    entry.name = names->add(prev_file_name);
   }
 
   // Build the tags table.
@@ -766,7 +767,7 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolLis
 
     sp_file_tag_t &tag = tags->add();
     tag.tag_id = constptr->value;
-    tag.name = names->add(pool, constptr->name);
+    tag.name = names->add(constptr->name);
   }
 
   // Finish up debug header statistics.
@@ -783,7 +784,7 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolLis
 
     sp_fdbg_native_t info;
     info.index = i;
-    info.name = names->add(pool, sym->name);
+    info.name = names->add(sym->name);
     info.tagid = sym->tag;
     info.nargs = 0;
     for (arginfo *arg = sym->dim.arglist; arg->ident; arg++)
@@ -795,7 +796,7 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolLis
       argout.ident = arg->ident;
       argout.tagid = arg->tags[0];
       argout.dimcount = arg->numdim;
-      argout.name = names->add(pool, arg->name);
+      argout.name = names->add(arg->name);
       natives->add(&argout, sizeof(argout));
 
       for (int j = 0; j < argout.dimcount; j++) {
@@ -817,6 +818,63 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolLis
   builder->add(tags);
 }
 
+typedef SmxListSection<sp_method_t> SmxMethodSection;
+
+static void build_method_table(SmxBuilder *builder, Ref<SmxNameTable> names, Ref<SmxRttiSection> rtti)
+{
+  Ref<SmxMethodSection> methods = new SmxMethodSection(".methods");
+
+  for (symbol *sym=glbtab.next; sym; sym=sym->next) {
+    if (sym->ident != iFUNCTN)
+      continue;
+
+    // Exclude anything we won't have generated code for.
+    if (sym->usage & uNATIVE)
+      continue;
+    if (!(sym->usage & uDEFINE))
+      continue;
+    if (!(sym->usage & uPUBLIC) && !(sym->usage & uREAD))
+      continue;
+
+    sp_method_t &method = methods->add();
+    method.name = names->add(sym->name);
+    method.flags = 0;
+    method.address = sym->addr;
+    method.reserved0 = 0;
+    if (sym->usage & uPUBLIC)
+      method.flags |= MethodFlags::PUBLIC;
+
+    // Count the number of arguments.
+    uint32_t nargs = 0;
+    for (arginfo *arg = sym->dim.arglist; arg->ident; arg++)
+      nargs++;
+
+    TypeInfoBuilder type;
+    type.start_method(nargs);
+
+    rtti->embed_tag(type, sym->tag);
+    for (arginfo *arg = sym->dim.arglist; arg->ident; arg++) {
+      if (arg->ident == iVARARGS) {
+        // Assert this is the last argument.
+        assert((arg + 1)->ident == 0);
+
+        type.append(MethodSignature::refva);
+        method.flags |= MethodFlags::REFVA;
+        rtti->embed_tag(type, arg->tags[0]);
+        break;
+      }
+
+      ArgInfoDesc desc(arg);
+      rtti->embed_arg(type, &desc);
+    }
+    method.type = rtti->emit_type(type);
+  }
+
+  builder->add(rtti);
+  builder->add(rtti->typedefs());
+  builder->add(methods);
+}
+
 typedef SmxListSection<sp_file_natives_t> SmxNativeSection;
 typedef SmxListSection<sp_file_publics_t> SmxPublicSection;
 typedef SmxListSection<sp_file_pubvars_t> SmxPubvarSection;
@@ -832,7 +890,8 @@ static void assemble_to_buffer(MemoryBuffer *buffer, void *fin)
   Ref<SmxPubvarSection> pubvars = new SmxPubvarSection(".pubvars");
   Ref<SmxDataSection> data = new SmxDataSection(".data");
   Ref<SmxCodeSection> code = new SmxCodeSection(".code");
-  Ref<SmxNameTable> names = new SmxNameTable(".names");
+  Ref<SmxNameTable> names = new SmxNameTable(pool, ".names");
+  Ref<SmxRttiSection> rtti = new SmxRttiSection(names);
 
   Vector<symbol *> nativeList;
 
@@ -845,13 +904,13 @@ static void assemble_to_buffer(MemoryBuffer *buffer, void *fin)
       } else if ((sym->usage & uPUBLIC)!=0 && (sym->usage & uDEFINE)!=0) {
         sp_file_publics_t &pubfunc = publics->add();
         pubfunc.address = sym->addr;
-        pubfunc.name = names->add(pool, sym->name);
+        pubfunc.name = names->add(sym->name);
       }
     } else if (sym->ident==iVARIABLE || sym->ident == iARRAY || sym->ident == iREFARRAY) {
       if ((sym->usage & uPUBLIC)!=0 && (sym->usage & (uREAD | uWRITTEN))!=0) {
         sp_file_pubvars_t &pubvar = pubvars->add();
         pubvar.address = sym->addr;
-        pubvar.name = names->add(pool, sym->name);
+        pubvar.name = names->add(sym->name);
       }
     }
   } 
@@ -866,9 +925,9 @@ static void assemble_to_buffer(MemoryBuffer *buffer, void *fin)
 
     char testalias[sNAMEMAX + 1];
     if (lookup_alias(testalias, sym->name))
-      entry.name = names->add(pool, "@");
+      entry.name = names->add("@");
     else
-      entry.name = names->add(pool, sym->name);
+      entry.name = names->add(sym->name);
   }
 
   // Relocate all labels in the assembly buffer.
@@ -911,6 +970,8 @@ static void assemble_to_buffer(MemoryBuffer *buffer, void *fin)
   builder.add(natives);
   builder.add(names);
   append_debug_tables(&builder, pool, nativeList);
+
+  build_method_table(&builder, names, rtti);
 
   builder.write(buffer);
 }

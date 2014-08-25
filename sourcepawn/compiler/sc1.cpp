@@ -615,12 +615,20 @@ static void inst_datetime_defines(void)
 
 const char *pc_tagname(int tag)
 {
+  constvalue *ptr = pc_tagptr_by_id(tag);
+  if (ptr)
+    return ptr->name;
+  return "__unknown__";
+}
+
+constvalue *pc_tagptr_by_id(int tag)
+{
   constvalue *ptr=tagname_tab.next;
   for (; ptr; ptr=ptr->next) {
     if (TAGID(ptr->value) == TAGID(tag))
-      return ptr->name;
+      return ptr;
   }
-  return "__unknown__";
+  return nullptr;
 }
 
 constvalue *pc_tagptr(const char *name)

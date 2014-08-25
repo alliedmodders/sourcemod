@@ -25,6 +25,7 @@
 #include <smx/smx-headers.h>
 #include "string-pool.h"
 #include "memory-buffer.h"
+#include "sc-utility.h"
 
 namespace ke {
 
@@ -138,6 +139,9 @@ class SmxListSection : public SmxSection
   size_t count() const {
     return list_.length();
   }
+  T &at(size_t index) {
+    return list_[index];
+  }
 
  private:
   Vector<T> list_;
@@ -148,15 +152,16 @@ class SmxListSection : public SmxSection
 class SmxNameTable : public SmxSection
 {
  public:
-  SmxNameTable(const char *name)
+  SmxNameTable(StringPool &pool, const char *name)
    : SmxSection(name),
+     pool_(pool),
      buffer_size_(0)
   {
     name_table_.init(64);
   }
 
-  uint32_t add(StringPool &pool, const char *str) {
-    return add(pool.add(str));
+  uint32_t add(const char *str) {
+    return add(pool_.add(str));
   }
 
   uint32_t add(Atom *str) {
@@ -175,7 +180,8 @@ class SmxNameTable : public SmxSection
 
   bool write(ISmxBuffer *buf) KE_OVERRIDE;
   size_t length() const KE_OVERRIDE {
-    return buffer_size_;
+    // Always add an extra byte, so we can treat index 0 as invalid.
+    return buffer_size_ + 1;
   }
 
  private:
@@ -189,6 +195,7 @@ class SmxNameTable : public SmxSection
   };
   typedef HashMap<Atom *, size_t, HashPolicy> NameTable;
 
+  StringPool &pool_;
   NameTable name_table_;
   Vector<Atom *> names_;
   uint32_t buffer_size_;
