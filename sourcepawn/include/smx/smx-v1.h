@@ -162,10 +162,13 @@ typedef struct sp_fdbg_ntvarg_s
 } sp_fdbg_ntvarg_t;
 
 // Flags for method definitions.
-enum class MethodFlags : uint32_t
+namespace MethodFlags
 {
   // Indicates the method has the "public" keyword.
-  PUBLIC = 0x00000001
+  static const uint32_t PUBLIC = 0x00000001;
+
+  // Indicates the method uses the old-style variadic keyword.
+  static const uint32_t REFVA  = 0x00000002;
 };
 
 // If present, this table is the canonical method list. The section name for
@@ -185,7 +188,7 @@ struct sp_method_t
   // Offset into the .code table, which must begin at a PROC instruction.
   uint32_t address;
 
-  // Reserved words.
+  // Reserved words. Must be 0.
   uint32_t reserved0;
 };
 
