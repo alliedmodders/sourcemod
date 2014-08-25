@@ -3192,6 +3192,8 @@ static int parse_old_decl(declinfo_t *decl, int flags)
       }
       needtoken(':');
     }
+    if (type->numtags > 1)
+      error(158);
   }
   
   if (type->numtags == 0) {
