@@ -1806,10 +1806,9 @@ static int hier2(value *lval)
       else if (level==sym->dim.array.level+1 && idxsym!=NULL)
         tag= idxsym->x.tags.index;
     } /* if */
-    exporttag(tag);
     clear_value(lval);
     lval->ident=iCONSTEXPR;
-    lval->constval=tag | PUBLICTAG;
+    lval->constval=tag;
     ldconst(lval->constval,sPRI);
     while (paranthese--)
       needtoken(')');
@@ -2899,8 +2898,7 @@ static int nesting=0;
       asz=find_constval(&taglst,arg[argidx].defvalue.size.symname,
                         arg[argidx].defvalue.size.level);
       if (asz != NULL) {
-        exporttag(asz->value);
-        array_sz=asz->value | PUBLICTAG;  /* must be set, because it just was exported */
+        array_sz=asz->value;  /* must be set, because it just was exported */
       } else {
         array_sz=0;
       } /* if */
