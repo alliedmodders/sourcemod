@@ -212,7 +212,6 @@ struct smx_typedef_t
   uint32_t reserved0;
   uint32_t reserved1;
   uint32_t reserved2;
-  uint32_t reserved3;
 };
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
