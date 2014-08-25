@@ -524,16 +524,15 @@ typedef enum s_optmark {
 
 #define suSLEEP_INSTR 0x01      /* the "sleep" instruction was used */
 
-#define PUBLICTAG    0x80000000Lu
 #define FIXEDTAG     0x40000000Lu
 #define FUNCTAG      0x20000000Lu
 #define OBJECTTAG    0x10000000Lu
 #define ENUMTAG      0x08000000Lu
 #define METHODMAPTAG 0x04000000Lu
 #define STRUCTTAG    0x02000000Lu
-#define TAGMASK       (~PUBLICTAG)
 #define TAGTYPEMASK   (FUNCTAG | OBJECTTAG | ENUMTAG | METHODMAPTAG | STRUCTTAG)
 #define TAGFLAGMASK   (FIXEDTAG | TAGTYPEMASK)
+#define TAGID(tag)    ((tag) & ~(TAGFLAGMASK))
 #define CELL_MAX      (((ucell)1 << (sizeof(cell)*8-1)) - 1)
 
 
@@ -591,7 +590,6 @@ constvalue *append_constval(constvalue *table,const char *name,cell val,int inde
 constvalue *find_constval(constvalue *table,char *name,int index);
 void delete_consttable(constvalue *table);
 symbol *add_constant(const char *name,cell val,int vclass,int tag);
-void exporttag(int tag);
 void sc_attachdocumentation(symbol *sym);
 constvalue *find_tag_byval(int tag);
 int get_actual_compound(symbol *sym);
