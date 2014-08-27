@@ -25,12 +25,12 @@ compiler.cxxincludes += [
 
 if builder.target_platform == 'linux':
   compiler.postlink += [
-    '-lpthread',
+    os.path.join(SM.v8_root,'out','ia32.release','obj.target','tools','gyp','libv8_base.ia32.a'),
+    os.path.join(SM.v8_root,'out','ia32.release','obj.target','tools','gyp','libv8_snapshot.a'),
     os.path.join(SM.v8_root,'out','ia32.release','obj.target','third_party','icu','libicui18n.a'),
     os.path.join(SM.v8_root,'out','ia32.release','obj.target','third_party','icu','libicuuc.a'),
     os.path.join(SM.v8_root,'out','ia32.release','obj.target','third_party','icu','libicudata.a'),
-    os.path.join(SM.v8_root,'out','ia32.release','obj.target','tools','gyp','libv8_base.ia32.a'),
-    os.path.join(SM.v8_root,'out','ia32.release','obj.target','tools','gyp','libv8_snapshot.a')
+    '-lpthread'
   ]
 elif builder.target_platform == 'windows':
   compiler.postlink += [
