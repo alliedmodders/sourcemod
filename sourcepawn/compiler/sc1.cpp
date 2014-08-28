@@ -144,6 +144,7 @@ static void dolabel(void);
 static void doreturn(void);
 static void dofuncenum(int listmode);
 static void dotypedef();
+static void dounion();
 static void domethodmap(LayoutSpec spec);
 static void dobreak(void);
 static void docont(void);
@@ -1534,6 +1535,9 @@ static void parse(void)
       break;
     case tTYPEDEF:
       dotypedef();
+      break;
+    case tUNION:
+      dounion();
       break;
     case tSTRUCT:
       declstruct();
@@ -4247,6 +4251,27 @@ static void dotypedef()
   functags_add(def, &type);
 }
 
+// Unsafe union - only supports function types. This is a transition hack for SP2.
+static void dounion()
+{
+  token_ident_t ident;
+  if (!needsymbol(&ident))
+    return;
+
+  int prev_tag = pc_findtag(ident.name);
+  if (prev_tag != -1 && !(prev_tag & FUNCTAG))
+    error(94);
+
+  funcenum_t *def = funcenums_add(ident.name);
+  needtoken('{');
+  while (!matchtoken('}')) {
+    functag_t type;
+    parse_function_type(&type);
+    functags_add(def, &type);
+  }
+
+  require_newline(TRUE);
+}
 
 /**
  * dofuncenum - declare function enumerations

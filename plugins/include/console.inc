@@ -669,7 +669,7 @@ native SetConVarBounds(Handle:convar, ConVarBounds:type, bool:set, Float:value=0
  */
 native GetConVarName(Handle:convar, String:name[], maxlength);
 
-funcenum ConVarQueryFinished
+union ConVarQueryFinished
 {	
 	/**
 	 * Called when a query to retrieve a client's console variable has finished.
@@ -683,7 +683,7 @@ funcenum ConVarQueryFinished
 	 * @param value			Value that was passed when query was started.
 	 * @noreturn
 	 */
-	public(QueryCookie:cookie, client, ConVarQueryResult:result, const String:cvarName[], const String:cvarValue[], any:value),
+	function void (QueryCookie cookie, int client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue, any value);
 	
 	/**
 	 * Called when a query to retrieve a client's console variable has finished.
@@ -696,7 +696,7 @@ funcenum ConVarQueryFinished
 	 * @param convarValue	Value of client convar that was queried if successful. This will be "" if it was not.
 	 * @noreturn
 	 */
-	public(QueryCookie:cookie, client, ConVarQueryResult:result, const String:cvarName[], const String:cvarValue[])
+	function void (QueryCookie cookie, int client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue);
 };
 
 /**
