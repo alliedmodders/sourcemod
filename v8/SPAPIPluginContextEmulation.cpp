@@ -9,6 +9,7 @@ namespace SMV8
 			: parentRuntime(parentRuntime), inExec(false)
 		{
 			ClearLastNativeError();
+			heapSize = 4096;
 			heap = new char[4096];
 			hp = heap;
 		}

@@ -180,7 +180,7 @@ namespace SMV8
 
 		void V8ToSPMarshaller::PushFunction(Local<Function> val, cell_t* param_dst)
 		{
-			funcid_t funcId = runtime.MakeVolatilePublic(val);
+			funcid_t funcId = runtime.EnsureVolatilePublic(val);
 			*param_dst = funcId;
 		}
 

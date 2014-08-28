@@ -233,7 +233,7 @@ namespace SMV8
 			virtual Local<Value> CallV8Function(funcid_t func, int argc, Local<Value> argv[]);
 			virtual Isolate* GetIsolate();
 			virtual void ExtractForwards();
-			virtual funcid_t MakeVolatilePublic(Local<Function> func);
+			virtual funcid_t EnsureVolatilePublic(Local<Function> func);
 		protected:
 			virtual Local<ObjectTemplate> GenerateGlobalObjectTemplate();
 			virtual Local<ObjectTemplate> GenerateNativesObjectTemplate();
@@ -247,6 +247,7 @@ namespace SMV8
 			virtual void RegisterNativeInNativesObject(NativeData& native);
 			static void NativeRouter(const FunctionCallbackInfo<Value>& info);
 			virtual funcid_t AllocateVolatilePublic(PublicData *pd);
+			virtual funcid_t MakeVolatilePublic(Local<Function> func);
 			static void VolatilePublicDisposer(const WeakCallbackData<Function, PublicData>& data);
 			static void Require(const FunctionCallbackInfo<Value>& info);
 			static void GetMaxClients(const FunctionCallbackInfo<Value>& info);

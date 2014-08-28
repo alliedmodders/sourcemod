@@ -279,7 +279,7 @@ namespace SMV8
 			Local<Object> tmp = Object::New(info.GetIsolate());
 
 			// TODO: Security risk (or more like security suicide), try to execute in different context later
-			string adjusted_code = "(function(){ var tmp = {}; (function(){ " + s.GetCode() + " }).call(tmp); return tmp; }).call(this)";
+			string adjusted_code = "(function(){ var module = { exports: {} }; (function(){ " + s.GetCode() + " }).call(module.exports); return module.exports; }).call(this)";
 
 			Local<Value> req = Script::Compile(String::NewFromUtf8(info.GetIsolate(), adjusted_code.c_str()), String::NewFromUtf8(info.GetIsolate(), s.GetPath().c_str()))->Run();
 
@@ -334,6 +334,8 @@ namespace SMV8
 			ostringstream oss;
 			oss << "____auto____public_" << funcId;
 
+			func->SetHiddenValue(String::NewFromUtf8(isolate, "sm::funcId"), Integer::NewFromUnsigned(isolate, funcId));
+
 			pd->func.Reset(isolate,func);
 			pd->name = oss.str();
 			pd->pfunc = new PluginFunction(*this, funcId);
@@ -344,6 +346,15 @@ namespace SMV8
 			pd->func.SetWeak(pd, &VolatilePublicDisposer); 
 
 			return funcId;
+		}
+
+		funcid_t PluginRuntime::EnsureVolatilePublic(Local<Function> func)
+		{
+			HandleScope handle_scope(isolate);
+
+			Local<Integer> storedFuncId = func->GetHiddenValue(String::NewFromUtf8(isolate, "sm::funcId")).As<Integer>();
+
+			return storedFuncId.IsEmpty() ? MakeVolatilePublic(func) : storedFuncId->Uint32Value();
 		}
 
 		/**
