@@ -42,6 +42,7 @@ binary = SM.Program(builder, 'spcomp')
 compiler = binary.compiler
 compiler.includes += [
   os.path.join(builder.sourcePath, 'public'),
+  os.path.join(builder.sourcePath, 'public', 'amtl'),
   os.path.join(builder.sourcePath, 'public', 'sourcepawn'),
   os.path.join(builder.sourcePath, 'sourcepawn', 'compiler'),
   os.path.join(builder.buildPath, 'includes'),
@@ -50,7 +51,8 @@ compiler.includes += [
 compiler.sourcedeps += packed_includes
  
 if compiler.cc.behavior == 'gcc':
-  compiler.cflags += ['-std=c99', '-Wno-format']
+  compiler.cflags += ['-Wno-format']
+  compiler.c_only_flags += ['-std=c99']
   if builder.target_platform == 'linux':
     compiler.postlink += ['-lgcc', '-lm']
 elif compiler.cc.behavior == 'msvc':
@@ -58,10 +60,10 @@ elif compiler.cc.behavior == 'msvc':
   compiler.linkflags.append('/SUBSYSTEM:CONSOLE')
   compiler.cxxflags.remove('/TP')
  
+compiler.defines += ['HAVE_STDINT_H']
 if builder.target_platform == 'linux':
   compiler.defines += [
     'LINUX',
-    'HAVE_STDINT_H',
     'AMX_ANSIONLY',
     'ENABLE_BINRELOC',
     '_GNU_SOURCE'
@@ -69,32 +71,31 @@ if builder.target_platform == 'linux':
 elif builder.target_platform == 'mac':
   compiler.defines += [
     'DARWIN',
-    'HAVE_STDINT_H',
     'AMX_ANSIONLY',
     'ENABLE_BINRELOC',
     'HAVE_SAFESTR'
   ]
  
 binary.sources += [
-  'libpawnc.c',
-  'lstring.c',
-  'memfile.c',
-  'pawncc.c',
-  'sc1.c',
-  'sc2.c',
-  'sc3.c',
-  'sc4.c',
-  'sc5.c',
-  'sc6.c',
-  'sc7.c',
-  'scexpand.c',
-  'sci18n.c',
-  'sclist.c',
-  'scmemfil.c',
-  'scstate.c',
-  'sctracker.c',
-  'scvars.c',
-  'sp_file.c',
+  'libpawnc.cpp',
+  'lstring.cpp',
+  'memfile.cpp',
+  'pawncc.cpp',
+  'sc1.cpp',
+  'sc2.cpp',
+  'sc3.cpp',
+  'sc4.cpp',
+  'sc5.cpp',
+  'sc6.cpp',
+  'sc7.cpp',
+  'scexpand.cpp',
+  'sci18n.cpp',
+  'sclist.cpp',
+  'scmemfil.cpp',
+  'scstate.cpp',
+  'sctracker.cpp',
+  'scvars.cpp',
+  'sp_file.cpp',
   'zlib/adler32.c',
   'zlib/compress.c',
   'zlib/crc32.c',
@@ -107,7 +108,7 @@ binary.sources += [
   'zlib/trees.c',
   'zlib/uncompr.c',
   'zlib/zutil.c',
-  'sp_symhash.c'
+  'sp_symhash.cpp'
 ]
 if builder.target_platform != 'windows':
   binary.sources.append('binreloc.c')

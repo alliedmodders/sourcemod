@@ -37,7 +37,7 @@
  * will be copied.  Always NUL terminates (unless siz == 0).
  * Returns strlen(src); if retval >= siz, truncation occurred.
  */
-size_t
+extern "C" size_t
 strlcpy(char *dst, const char *src, size_t siz)
 {
 	char *d = dst;
@@ -93,7 +93,7 @@ strlcpy(char *dst, const char *src, size_t siz)
  * Returns strlen(src) + MIN(siz, strlen(initial dst)).
  * If retval >= siz, truncation occurred.
  */
-size_t
+extern "C" size_t
 strlcat(char *dst, const char *src, size_t siz)
 {
 	char *d = dst;

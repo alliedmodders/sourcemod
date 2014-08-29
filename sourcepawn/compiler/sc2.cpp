@@ -47,7 +47,7 @@ static cell litchar(const unsigned char **lptr,int flags);
 static symbol *find_symbol(const symbol *root,const char *name,int fnumber,int automaton,int *cmptag);
 
 static void substallpatterns(unsigned char *line,int buffersize);
-static int match(char *st,int end);
+static int match(const char *st,int end);
 static int alpha(char c);
 
 #define SKIPMODE      1 /* bit field in "#if" stack */
@@ -86,7 +86,7 @@ static double pow10(double d)
 static stkitem *stack=NULL;
 static int stkidx=0,stktop=0;
 
-SC_FUNC void pushstk(stkitem val)
+void pushstk(stkitem val)
 {
   assert(stkidx<=stktop);
   if (stkidx==stktop) {
@@ -109,7 +109,7 @@ SC_FUNC void pushstk(stkitem val)
   stkidx+=1;
 }
 
-SC_FUNC stkitem popstk(void)
+stkitem popstk(void)
 {
   if (stkidx==0) {
     stkitem s;
@@ -121,7 +121,7 @@ SC_FUNC stkitem popstk(void)
   return stack[stkidx];
 }
 
-SC_FUNC void clearstk(void)
+void clearstk(void)
 {
   assert(stack!=NULL || stktop==0);
   if (stack!=NULL) {
@@ -132,9 +132,10 @@ SC_FUNC void clearstk(void)
   assert(stktop==0);
 }
 
-SC_FUNC int plungequalifiedfile(char *name)
+int plungequalifiedfile(char *name)
 {
-static char *extensions[] = { ".inc", ".p", ".pawn" };
+  static const char *extensions[] = { ".inc", ".p", ".pawn" };
+
   void *fp;
   char *ext;
   int ext_idx;
@@ -184,7 +185,7 @@ static char *extensions[] = { ".inc", ".p", ".pawn" };
   return TRUE;
 }
 
-SC_FUNC int plungefile(char *name,int try_currentpath,int try_includepaths)
+int plungefile(char *name,int try_currentpath,int try_includepaths)
 {
   int result=FALSE;
 
@@ -671,11 +672,11 @@ static int ftoi(cell *val,const unsigned char *curptr)
       exp=(exp*10)+(*ptr-'0');
       ptr++;
     } /* while */
-    #if defined __GNUC__
-      fmult=pow10(exp*sign);
-    #else
-      fmult=pow(10,exp*sign);
-    #endif
+#if defined __GNUC__
+    fmult=pow10(exp*sign);
+#else
+    fmult=pow(10.0,exp*sign);
+#endif
     fnum *= fmult;
     dnum *= (unsigned long)(fmult+0.5);
   } /* if */
@@ -796,7 +797,7 @@ static int preproc_expr(cell *val,int *tag)
   term=strchr((char*)pline,'\0');
   assert(term!=NULL);
   chrcat((char*)pline,PREPROC_TERM);    /* the "DEL" code (see SC.H) */
-  result=constexpr(val,tag,NULL);       /* get value (or 0 on error) */
+  result=exprconst(val,tag,NULL);       /* get value (or 0 on error) */
   *term='\0';                           /* erase the token (if still present) */
   lexclr(FALSE);                        /* clear any "pushed" tokens */
   return result;
@@ -1251,7 +1252,7 @@ static int command(void)
         break;
       default: {
         char s2[20];
-        extern char *sc_tokens[];/* forward declaration */
+        extern const char *sc_tokens[];/* forward declaration */
         if (tok<256)
           sprintf(s2,"%c",(char)tok);
         else
@@ -1482,7 +1483,7 @@ static char *strdel(char *str,size_t len)
   return str;
 }
 
-static char *strins(char *dest,char *src,size_t srclen)
+static char *strins(char *dest,const char *src,size_t srclen)
 {
   size_t destlen=strlen(dest);
   assert(srclen<=strlen(src));
@@ -1792,7 +1793,7 @@ static int scanellipsis(const unsigned char *lptr)
  *                     pline    (altered)
  *                     freading (referred to only)
  */
-SC_FUNC void preprocess(void)
+void preprocess(void)
 {
   int iscommand;
 
@@ -1931,7 +1932,7 @@ static full_token_t *next_token()
   return &sTokenBuffer->tokens[cursor];
 }
 
-SC_FUNC void lexinit(void)
+void lexinit(void)
 {
   stkidx=0;             /* index for pushstk() and popstk() */
   iflevel=0;            /* preprocessor: nesting of "#if" is currently 0 */
@@ -1943,7 +1944,7 @@ SC_FUNC void lexinit(void)
   sTokenBuffer = &sNormalBuffer;
 }
 
-char *sc_tokens[] = {
+const char *sc_tokens[] = {
          "*=", "/=", "%=", "+=", "-=", "<<=", ">>>=", ">>=", "&=", "^=", "|=",
          "||", "&&", "==", "!=", "<=", ">=", "<<", ">>>", ">>", "++", "--",
          "...", "..", "::",
@@ -2000,10 +2001,9 @@ static void lexpop()
     sTokenBuffer->cursor = 0;
 }
 
-SC_FUNC int lex(cell *lexvalue,char **lexsym)
+int lex(cell *lexvalue,char **lexsym)
 {
   int i,toolong,newline;
-  char **tokptr;
   const unsigned char *starttoken;
 
   if (sTokenBuffer->depth > 0) {
@@ -2054,7 +2054,7 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
   tok->start.col = (int)(lptr - pline);
 
   i=tFIRST;
-  tokptr=sc_tokens;
+  const char **tokptr=sc_tokens;
   while (i<=tMIDDLE) {  /* match multi-character operators */
     if (*lptr==**tokptr && match(*tokptr,FALSE)) {
       tok->id = i;
@@ -2259,7 +2259,7 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
  *  to read and return the information from these variables, rather than
  *  to read in a new token from the input file.
  */
-SC_FUNC void lexpush(void)
+void lexpush(void)
 {
   assert(sTokenBuffer->depth < MAX_TOKEN_DEPTH);
   sTokenBuffer->depth++;
@@ -2276,7 +2276,7 @@ SC_FUNC void lexpush(void)
  *  symbol (a not continue with some old one). This is required upon return
  *  from Assembler mode, and in a few cases after detecting an syntax error.
  */
-SC_FUNC void lexclr(int clreol)
+void lexclr(int clreol)
 {
   sTokenBuffer->depth = 0;
   if (clreol) {
@@ -2286,7 +2286,7 @@ SC_FUNC void lexclr(int clreol)
 }
 
 // Return true if the symbol is ahead, false otherwise.
-SC_FUNC int lexpeek(int id)
+int lexpeek(int id)
 {
   if (matchtoken(id)) {
     lexpush();
@@ -2305,7 +2305,7 @@ SC_FUNC int lexpeek(int id)
  *  (i.e. not present in the source code) should not be pushed back, which is
  *  why it is sometimes important to distinguish the two.
  */
-SC_FUNC int matchtoken(int token)
+int matchtoken(int token)
 {
   cell val;
   char *str;
@@ -2338,7 +2338,7 @@ SC_FUNC int matchtoken(int token)
  *
  *  The token itself is the return value. Normally, this one is already known.
  */
-SC_FUNC int tokeninfo(cell *val,char **str)
+int tokeninfo(cell *val,char **str)
 {
   *val = current_token()->value;
   *str = current_token()->str;
@@ -2352,7 +2352,7 @@ SC_FUNC int tokeninfo(cell *val,char **str)
  *  this function returns 1 for "token found" and 2 for "statement termination
  *  token" found; see function matchtoken() for details.
  */
-SC_FUNC int needtoken(int token)
+int needtoken(int token)
 {
   char s1[20],s2[20];
   int t;
@@ -2379,7 +2379,7 @@ SC_FUNC int needtoken(int token)
 
 // If the next token is on the current line, return that token. Otherwise,
 // return tNEWLINE.
-SC_FUNC int peek_same_line()
+int peek_same_line()
 {
   // We should not call this without having parsed at least one token.
   assert(sTokenBuffer->num_tokens > 0);
@@ -2407,7 +2407,7 @@ SC_FUNC int peek_same_line()
   return tEOL;
 }
 
-SC_FUNC int require_newline(int allow_semi)
+int require_newline(int allow_semi)
 {
   if (allow_semi) {
     // Semicolon must be on the same line.
@@ -2440,7 +2440,7 @@ SC_FUNC int require_newline(int allow_semi)
  *
  *  Global references: lptr   (altered)
  */
-static int match(char *st,int end)
+static int match(const char *st,int end)
 {
   int k;
   const unsigned char *ptr;
@@ -2482,7 +2482,7 @@ static void chk_grow_litq(void)
  *  Global references: litidx  (altered)
  *                     litq    (altered)
  */
-SC_FUNC void litadd(cell value)
+void litadd(cell value)
 {
   chk_grow_litq();
   assert(litidx<litmax);
@@ -2497,7 +2497,7 @@ SC_FUNC void litadd(cell value)
  *  Global references: litidx  (altered)
  *                     litq    (altered)
  */
-SC_FUNC void litinsert(cell value,int pos)
+void litinsert(cell value,int pos)
 {
   chk_grow_litq();
   assert(litidx<litmax);
@@ -2632,7 +2632,7 @@ static int alpha(char c)
  *
  *  Test if character "c" is alphanumeric ("a".."z", "0".."9", "_" or "@")
  */
-SC_FUNC int alphanum(char c)
+int alphanum(char c)
 {
   return (alpha(c) || isdigit(c));
 }
@@ -2641,7 +2641,7 @@ SC_FUNC int alphanum(char c)
  *
  *  Test if character "c" is a hexadecimal digit ("0".."9" or "a".."f").
  */
-SC_FUNC int ishex(char c)
+int ishex(char c)
 {
   return (c>='0' && c<='9') || (c>='a' && c<='f') || (c>='A' && c<='F');
 }
@@ -2717,7 +2717,7 @@ static void free_symbol(symbol *sym)
   free(sym);
 }
 
-SC_FUNC void delete_symbol(symbol *root,symbol *sym)
+void delete_symbol(symbol *root,symbol *sym)
 {
   symbol *origRoot=root;
   /* find the symbol and its predecessor
@@ -2738,7 +2738,7 @@ SC_FUNC void delete_symbol(symbol *root,symbol *sym)
   free_symbol(sym);
 }
 
-SC_FUNC int get_actual_compound(symbol *sym)
+int get_actual_compound(symbol *sym)
 {
   if (sym->ident == iARRAY || sym->ident == iREFARRAY) {
     while (sym->parent)
@@ -2748,7 +2748,7 @@ SC_FUNC int get_actual_compound(symbol *sym)
   return sym->compound;
 }
 
-SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_functions)
+void delete_symbols(symbol *root,int level,int delete_labels,int delete_functions)
 {
   symbol *origRoot=root;
   symbol *sym,*parent_sym;
@@ -2908,7 +2908,7 @@ static symbol *find_symbol_child(const symbol *root,const symbol *sym)
  * bywhom will be the function that uses a variable or that calls
  * the function.
  */
-SC_FUNC int refer_symbol(symbol *entry,symbol *bywhom)
+int refer_symbol(symbol *entry,symbol *bywhom)
 {
   int count;
 
@@ -2950,7 +2950,7 @@ SC_FUNC int refer_symbol(symbol *entry,symbol *bywhom)
   return TRUE;
 }
 
-SC_FUNC void markusage(symbol *sym,int usage)
+void markusage(symbol *sym,int usage)
 {
   assert(sym!=NULL);
   sym->usage |= (char)usage;
@@ -2974,7 +2974,7 @@ SC_FUNC void markusage(symbol *sym,int usage)
  *
  *  Returns a pointer to the global symbol (if found) or NULL (if not found)
  */
-SC_FUNC symbol *findglb(const char *name,int filter)
+symbol *findglb(const char *name,int filter)
 {
   /* find a symbol with a matching automaton first */
   symbol *sym=NULL;
@@ -3010,12 +3010,12 @@ SC_FUNC symbol *findglb(const char *name,int filter)
  *  Returns a pointer to the local symbol (if found) or NULL (if not found).
  *  See add_symbol() how the deepest nesting level is searched first.
  */
-SC_FUNC symbol *findloc(const char *name)
+symbol *findloc(const char *name)
 {
   return find_symbol(&loctab,name,-1,-1,NULL);
 }
 
-SC_FUNC symbol *findconst(const char *name,int *cmptag)
+symbol *findconst(const char *name,int *cmptag)
 {
   symbol *sym;
 
@@ -3033,7 +3033,7 @@ SC_FUNC symbol *findconst(const char *name,int *cmptag)
   return sym;
 }
 
-SC_FUNC symbol *finddepend(const symbol *parent)
+symbol *finddepend(const symbol *parent)
 {
   symbol *sym;
 
@@ -3048,7 +3048,7 @@ SC_FUNC symbol *finddepend(const symbol *parent)
  *  Adds a symbol to the symbol table (either global or local variables,
  *  or global and local constants).
  */
-SC_FUNC symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag,int usage)
+symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag,int usage)
 {
   symbol entry, **refer;
 
@@ -3083,13 +3083,13 @@ SC_FUNC symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag,i
   return add_symbol(&loctab,&entry,FALSE);
 }
 
-SC_FUNC symbol *addvariable(const char *name,cell addr,int ident,int vclass,int tag,
+symbol *addvariable(const char *name,cell addr,int ident,int vclass,int tag,
                             int dim[],int numdim,int idxtag[])
 {
   return addvariable2(name,addr,ident,vclass,tag,dim,numdim,idxtag,0);
 }
 
-SC_FUNC symbol *addvariable3(declinfo_t *decl,cell addr,int vclass,int slength)
+symbol *addvariable3(declinfo_t *decl,cell addr,int vclass,int slength)
 {
   typeinfo_t *type = &decl->type;
   return addvariable2(
@@ -3105,7 +3105,7 @@ SC_FUNC symbol *addvariable3(declinfo_t *decl,cell addr,int vclass,int slength)
   );
 }
 
-SC_FUNC symbol *addvariable2(const char *name,cell addr,int ident,int vclass,int tag,
+symbol *addvariable2(const char *name,cell addr,int ident,int vclass,int tag,
                             int dim[],int numdim,int idxtag[],int slength)
 {
   symbol *sym;
@@ -3154,7 +3154,7 @@ SC_FUNC symbol *addvariable2(const char *name,cell addr,int ident,int vclass,int
  *  Returns te next internal label number. The global variable sc_labnum is
  *  initialized to zero.
  */
-SC_FUNC int getlabel(void)
+int getlabel(void)
 {
   return sc_labnum++;
 }
@@ -3164,7 +3164,7 @@ SC_FUNC int getlabel(void)
  *  Converts a number to a hexadecimal string and returns a pointer to that
  *  string. This function is NOT re-entrant.
  */
-SC_FUNC char *itoh(ucell val)
+char *itoh(ucell val)
 {
 static char itohstr[30];
   char *ptr;
@@ -3199,13 +3199,13 @@ static char itohstr[30];
   return itohstr;
 }
 
-SC_FUNC int lextok(token_t *tok)
+int lextok(token_t *tok)
 {
   tok->id = lex(&tok->val, &tok->str);
   return tok->id;
 }
 
-SC_FUNC int expecttoken(int id, token_t *tok)
+int expecttoken(int id, token_t *tok)
 {
   int rval = needtoken(id);
   if (rval) {
@@ -3217,7 +3217,7 @@ SC_FUNC int expecttoken(int id, token_t *tok)
   return FALSE;
 }
 
-SC_FUNC int matchtoken2(int id, token_t *tok)
+int matchtoken2(int id, token_t *tok)
 {
   if (matchtoken(id)) {
     tok->id = tokeninfo(&tok->val, &tok->str);
@@ -3226,7 +3226,7 @@ SC_FUNC int matchtoken2(int id, token_t *tok)
   return FALSE;
 }
 
-SC_FUNC int matchsymbol(token_ident_t *ident)
+int matchsymbol(token_ident_t *ident)
 {
   if (lextok(&ident->tok) != tSYMBOL) {
     lexpush();
@@ -3237,7 +3237,7 @@ SC_FUNC int matchsymbol(token_ident_t *ident)
   return TRUE;
 }
 
-SC_FUNC int needsymbol(token_ident_t *ident)
+int needsymbol(token_ident_t *ident)
 {
   if (!expecttoken(tSYMBOL, &ident->tok))
     return FALSE;

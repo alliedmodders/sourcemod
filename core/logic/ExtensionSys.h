@@ -173,6 +173,7 @@ public:
 	void AddLibrary(IExtension *pSource, const char *library);
 	bool LibraryExists(const char *library);
 	void CallOnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
+	void CallOnCoreMapEnd();
 	void AddRawDependency(IExtension *ext, IdentityToken_t *other, void *iface);
 	const CVector<IExtension *> *ListExtensions();
 	void FreeExtensionList(const CVector<IExtension *> *list);

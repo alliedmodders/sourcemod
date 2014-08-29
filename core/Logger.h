@@ -38,76 +38,13 @@
 
 using namespace SourceHook;
 
-enum LogType
+class LoggerCore : public SMGlobalClass
 {
-	LogType_Normal,
-	LogType_Error
-};
-
-enum LoggingMode
-{
-	LoggingMode_Daily,
-	LoggingMode_PerMap,
-	LoggingMode_Game
-};
-
-class Logger : public SMGlobalClass
-{
-public:
-	Logger() : m_Mode(LoggingMode_Daily), m_ErrMapStart(false), 
-		m_Active(false), m_DelayedStart(false), m_DailyPrintHdr(false), 
-		m_InitialState(true)
-	{
-	}
 public: //SMGlobalClass
-	ConfigResult OnSourceModConfigChanged(const char *key, 
-		const char *value, 
-		ConfigSource source,
-		char *error, 
-		size_t maxlength);
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllShutdown();
-	void OnSourceModLevelChange(const char *mapName);
-public:
-	void InitLogger(LoggingMode mode);
-	void CloseLogger();
-	void EnableLogging();
-	void DisableLogging();
-	void LogMessage(const char *msg, ...);
-	void LogMessageEx(const char *msg, va_list ap);
-	void LogError(const char *msg, ...);
-	void LogErrorEx(const char *msg, va_list ap); 
-	void LogFatal(const char *msg, ...);
-	void LogFatalEx(const char *msg, va_list ap);
-	void LogToOpenFile(FILE *fp, const char *msg, ...);
-	void LogToOpenFileEx(FILE *fp, const char *msg, va_list ap);
-	/* This version does not print to console, and is thus thread-safe */
-	void LogToFileOnly(FILE *fp, const char *msg, ...);
-	void LogToFileOnlyEx(FILE *fp, const char *msg, va_list ap);
-	void MapChange(const char *mapname);
-	const char *GetLogFileName(LogType type) const;
-	LoggingMode GetLoggingMode() const;
-private:
-	void _CloseFile();
-	void _NewMapFile();
-	void _PrintToGameLog(const char *fmt, va_list ap);
-private:
-	String m_NrmFileName;
-	String m_ErrFileName;
-	String m_CurMapName;
-	LoggingMode m_Mode;
-	int m_NrmCurDay;
-	int m_ErrCurDay;
-	bool m_ErrMapStart;
-	bool m_Active;
-	bool m_DelayedStart;
-	bool m_DailyPrintHdr;
-	bool m_InitialState;
 };
 
 void Engine_LogPrintWrapper(const char *msg);
-
-extern bool g_in_game_log_hook;
-extern Logger g_Logger;
 
 #endif // _INCLUDE_SOURCEMOD_CLOGGER_H_

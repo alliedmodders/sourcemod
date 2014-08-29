@@ -193,9 +193,6 @@ char g_tmpfile[_MAX_PATH] = {0};
 
 /*  "main" of the compiler
  */
-#if defined __cplusplus
-  extern "C"
-#endif
 int pc_compile(int argc, char *argv[])
 {
   int entry,i,jmpcode;
@@ -582,10 +579,7 @@ cleanup:
   return retcode;
 }
 
-#if defined __cplusplus
-  extern "C"
-#endif
-int pc_addconstant(char *name,cell value,int tag)
+int pc_addconstant(const char *name,cell value,int tag)
 {
   errorset(sFORCESET,0);        /* make sure error engine is silenced */
   sc_status=statIDLE;
@@ -678,20 +672,19 @@ int pc_findtag(const char *name)
   return -1;
 }
 
-#if defined __cplusplus
-  extern "C"
-#endif
-int pc_addtag(char *name)
+int pc_addtag(const char *name)
 {
   int val;
   int flags = 0;
 
   if (name==NULL) {
     /* no tagname was given, check for one */
-    if (lex(&val,&name)!=tLABEL) {
+    char *nameptr;
+    if (lex(&val,&nameptr)!=tLABEL) {
       lexpush();
       return 0;         /* untagged */
     } /* if */
+    name = nameptr;
   } /* if */
 
   if (isupper(*name))
@@ -700,12 +693,12 @@ int pc_addtag(char *name)
   return pc_addtag_flags(name, flags);
 }
 
-int pc_addtag_flags(char *name, int flags)
+int pc_addtag_flags(const char *name, int flags)
 {
   constvalue *ptr;
   int last,tag;
 
-  assert(strchr(name,':')==NULL); /* colon should already have been stripped */
+  assert((flags & FUNCTAG) || strchr(name,':')==NULL); /* colon should already have been stripped */
   last=0;
   ptr=tagname_tab.next;
   while (ptr!=NULL) {
@@ -831,7 +824,7 @@ static char *get_extension(char *filename)
  * Set the default extension, or force an extension. To erase the
  * extension of a filename, set "extension" to an empty string.
  */
-SC_FUNC void set_extension(char *filename,char *extension,int force)
+void set_extension(char *filename,const char *extension,int force)
 {
   char *ptr;
 
@@ -1362,35 +1355,14 @@ static void setconstants(void)
   add_constant("false",0,sGLOBAL,1);
   add_constant("EOS",0,sGLOBAL,0);      /* End Of String, or '\0' */
   add_constant("INVALID_FUNCTION", -1, sGLOBAL, pc_tag_nullfunc_t);
-  #if PAWN_CELL_SIZE==16
-    add_constant("cellbits",16,sGLOBAL,0);
-    #if defined _I16_MAX
-      add_constant("cellmax",_I16_MAX,sGLOBAL,0);
-      add_constant("cellmin",_I16_MIN,sGLOBAL,0);
-    #else
-      add_constant("cellmax",SHRT_MAX,sGLOBAL,0);
-      add_constant("cellmin",SHRT_MIN,sGLOBAL,0);
-    #endif
-  #elif PAWN_CELL_SIZE==32
-    add_constant("cellbits",32,sGLOBAL,0);
-    #if defined _I32_MAX
-      add_constant("cellmax",_I32_MAX,sGLOBAL,0);
-      add_constant("cellmin",_I32_MIN,sGLOBAL,0);
-    #else
-      add_constant("cellmax",LONG_MAX,sGLOBAL,0);
-      add_constant("cellmin",LONG_MIN,sGLOBAL,0);
-    #endif
-  #elif PAWN_CELL_SIZE==64
-    #if !defined _I64_MIN
-      #define _I64_MIN  (-9223372036854775807ULL - 1)
-      #define _I64_MAX    9223372036854775807ULL
-    #endif
-    add_constant("cellbits",64,sGLOBAL,0);
-    add_constant("cellmax",_I64_MAX,sGLOBAL,0);
-    add_constant("cellmin",_I64_MIN,sGLOBAL,0);
-  #else
-    #error Unsupported cell size
-  #endif
+  add_constant("cellbits",32,sGLOBAL,0);
+#if defined _I32_MAX
+  add_constant("cellmax",_I32_MAX,sGLOBAL,0);
+  add_constant("cellmin",_I32_MIN,sGLOBAL,0);
+#else
+  add_constant("cellmax",LONG_MAX,sGLOBAL,0);
+  add_constant("cellmin",LONG_MIN,sGLOBAL,0);
+#endif
   add_constant("charbits",sCHARBITS,sGLOBAL,0);
   add_constant("charmin",0,sGLOBAL,0);
   add_constant("charmax",~(-1 << sCHARBITS) - 1,sGLOBAL,0);
@@ -1948,14 +1920,12 @@ static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct)
 static void declglb(declinfo_t *decl,int fpublic,int fstatic,int fstock)
 {
   int ispublic;
-  cell val,cidx;
+  cell cidx;
   ucell address;
   int glb_incr;
-  char *str;
   int slength=0;
   short filenum;
   symbol *sym;
-  constvalue *enumroot;
 #if !defined NDEBUG
   cell glbdecl=0;
 #endif
@@ -2750,8 +2720,11 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
     } while (matchtoken(',')); /* do */
     needtoken('}');
   } else {
-    init(ident,&ctag,errorfound);
-    matchtag(tag,ctag,TRUE);
+    if (!lexpeek('}'))
+    {
+      init(ident,&ctag,errorfound);
+      matchtag(tag,ctag,TRUE);
+    }
   } /* if */
   /* fill up the literal queue with a series */
   if (ellips) {
@@ -2794,7 +2767,7 @@ static cell init(int ident,int *tag,int *errorfound)
       litidx=1;         /* reset literal queue */
     } /* if */
     *tag=pc_tag_string;
-  } else if (constexpr(&i,tag,NULL)){
+  } else if (exprconst(&i,tag,NULL)){
     litadd(i);          /* store expression result in literal table */
   } else {
     if (errorfound!=NULL)
@@ -2819,7 +2792,7 @@ static cell needsub(int *tag,constvalue **enumroot)
   if (matchtoken(']'))      /* we have already seen "[" */
     return 0;               /* zero size (like "char msg[]") */
 
-  constexpr(&val,tag,&sym); /* get value (must be constant expression) */
+  exprconst(&val,tag,&sym); /* get value (must be constant expression) */
   if (val<0) {
     error(9);               /* negative array size is invalid; assumed zero */
     val=0;
@@ -2891,7 +2864,7 @@ static void decl_const(int vclass)
 
     symbolline=fline;                   /* save line where symbol was found */
     needtoken('=');
-    constexpr(&val,&exprtag,NULL);      /* get value */
+    exprconst(&val,&exprtag,NULL);      /* get value */
 
     /* add_constant() checks for duplicate definitions */
     /* temporarily reset the line number to where the symbol was defined */
@@ -3202,8 +3175,6 @@ static void parse_old_array_dims(declinfo_t *decl, int flags)
       stgset(FALSE);
   } else {
     do {
-      cell size;
-
       if (type->numdim == sDIMEN_MAX) {
         error(53);
         return;
@@ -3281,7 +3252,7 @@ static int parse_old_decl(declinfo_t *decl, int flags)
         strcpy(decl->name, "__unknown__");
     } else {
       if (!lexpeek(tSYMBOL)) {
-        extern char *sc_tokens[];
+        extern const char *sc_tokens[];
         switch (lextok(&tok)) {
           case tOBJECT:
           case tCHAR:
@@ -3404,7 +3375,6 @@ static int reparse_new_decl(declinfo_t *decl, int flags)
 //
 int parse_decl(declinfo_t *decl, int flags)
 {
-  token_t tok;
   token_ident_t ident;
 
   memset(decl, 0, sizeof(*decl));
@@ -4059,19 +4029,36 @@ static void domethodmap(LayoutSpec spec)
   require_newline(TRUE);
 }
 
+class AutoStage
+{
+ public:
+  AutoStage() : lcl_staging_(FALSE)
+  {
+    if (!staging) {
+      stgset(TRUE);
+      lcl_staging_ = TRUE;
+      lcl_stgidx_ = stgidx;
+      assert(stgidx == 0);
+    }
+  }
+  ~AutoStage() {
+    if (lcl_staging_) {
+      stgout(lcl_stgidx_);
+      stgset(FALSE);
+    }
+  }
+
+ private:
+  int lcl_staging_;
+  int lcl_stgidx_;
+};
+
 // delete ::= "delete" expr
 static void dodelete()
 {
+  AutoStage staging_on;
+
   svalue sval;
-
-  int lcl_staging = FALSE;
-  if (!staging) {
-    stgset(TRUE);
-    lcl_staging = TRUE;
-    assert(stgidx == 0);
-  }
-  int lcl_stgidx = stgidx;
-
   int ident = lvalexpr(&sval);
   needtoken(tTERM);
 
@@ -4079,7 +4066,7 @@ static void dodelete()
     case iFUNCTN:
     case iREFFUNC:
       error(115, "functions");
-      goto cleanup;
+      return;
 
     case iARRAY:
     case iREFARRAY:
@@ -4089,7 +4076,7 @@ static void dodelete()
       symbol *sym = sval.val.sym;
       if (!sym || sym->dim.array.level > 0) {
         error(115, "arrays");
-        goto cleanup;
+        return;
       }
       break;
     }
@@ -4097,13 +4084,13 @@ static void dodelete()
 
   if (sval.val.tag == 0) {
     error(115, "primitive types or enums");
-    goto cleanup;
+    return;
   }
 
   methodmap_t *map = methodmap_find_by_tag(sval.val.tag);
   if (!map) {
     error(115, pc_tagname(sval.val.tag));
-    goto cleanup;
+    return;
   }
 
   {
@@ -4119,7 +4106,7 @@ static void dodelete()
 
   if (!map || !map->dtor) {
     error(115, layout_spec_name(map->spec), map->name);
-    goto cleanup;
+    return;
   }
 
   // Only zap non-const lvalues.
@@ -4180,12 +4167,6 @@ static void dodelete()
   }
 
   markexpr(sEXPR, NULL, 0);
-
-cleanup:
-  if (lcl_staging) {
-    stgout(lcl_stgidx);
-    stgset(FALSE);
-  }
 }
 
 /**
@@ -4201,7 +4182,7 @@ static void parse_function_type(functag_t *type)
   needtoken(tFUNCTION);
 
   type->ret_tag = parse_new_typename(NULL);
-  type->type = uPUBLIC;
+  type->usage = uPUBLIC;
 
   needtoken('(');
 
@@ -4222,6 +4203,9 @@ static void parse_function_type(functag_t *type)
       error(45);
       continue;
     }
+
+    // Account for strings.
+    fix_char_size(&decl);
 
     funcarg_t *arg = &type->args[type->argcount++];
     arg->tagcount = 1;
@@ -4367,13 +4351,13 @@ static void dofuncenum(int listmode)
        * rather than the constant value.  And even if we could, we'd have to change the assembler recognize that.
        */
       if (l == tPUBLIC) {
-        func.type = uPUBLIC;
+        func.usage = uPUBLIC;
       } else {
         error(1, "-public-", str);
       }
     } else {
       func.ret_tag = newStyleTag;
-      func.type = uPUBLIC;
+      func.usage = uPUBLIC;
     }
     needtoken('(');
     do {
@@ -4523,11 +4507,11 @@ static void decl_enum(int vclass)
   multiplier=1;
   if (matchtoken('(')) {
     if (matchtoken(taADD)) {
-      constexpr(&increment,NULL,NULL);
+      exprconst(&increment,NULL,NULL);
     } else if (matchtoken(taMULT)) {
-      constexpr(&multiplier,NULL,NULL);
+      exprconst(&multiplier,NULL,NULL);
     } else if (matchtoken(taSHL)) {
-      constexpr(&val,NULL,NULL);
+      exprconst(&val,NULL,NULL);
       while (val-->0)
         multiplier*=2;
     } /* if */
@@ -4568,12 +4552,12 @@ static void decl_enum(int vclass)
     size=increment;                     /* default increment of 'val' */
     fieldtag=0;                         /* default field tag */
     if (matchtoken('[')) {
-      constexpr(&size,&fieldtag,NULL);  /* get size */
+      exprconst(&size,&fieldtag,NULL);  /* get size */
       needtoken(']');
     } /* if */
     /* :TODO: do we need a size modifier here for pc_tag_string? */
     if (matchtoken('='))
-      constexpr(&value,NULL,NULL);      /* get value */
+      exprconst(&value,NULL,NULL);      /* get value */
     /* add_constant() checks whether a variable (global or local) or
      * a constant with the same name already exists
      */
@@ -4734,7 +4718,7 @@ static int compare_tag(int tag1, int tag2)
  *  Finds a function in the global symbol table or creates a new entry.
  *  It does some basic processing and error checking.
  */
-SC_FUNC symbol *fetchfunc(char *name)
+symbol *fetchfunc(char *name)
 {
   symbol *sym;
 
@@ -4963,7 +4947,7 @@ static char *tag2str(char *dest,int tag)
   return isdigit(dest[1]) ? &dest[1] : dest;
 }
 
-SC_FUNC char *operator_symname(char *symname,char *opername,int tag1,int tag2,int numtags,int resulttag)
+char *operator_symname(char *symname,const char *opername,int tag1,int tag2,int numtags,int resulttag)
 {
   char tagstr1[10], tagstr2[10];
   int opertok;
@@ -5013,7 +4997,7 @@ constvalue *find_tag_byval(int tag)
   return tagsym;
 }
 
-SC_FUNC char *funcdisplayname(char *dest,char *funcname)
+char *funcdisplayname(char *dest,char *funcname)
 {
   int tags[2];
   char opname[10];
@@ -5064,7 +5048,7 @@ static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag)
   int tok;
   char *str;
   cell val,size;
-  symbol *sym,*sub;
+  symbol *sym;
   int fnative = (tokid == tNATIVE || tokid == tMETHODMAP);
   int fpublic = (tokid == tPUBLIC);
 
@@ -5125,7 +5109,7 @@ static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag)
         tokeninfo(&val,&str);
         insert_alias(sym->name,str);
       } else {
-        constexpr(&val,NULL,NULL);
+        exprconst(&val,NULL,NULL);
         sym->addr=val;
         /* At the moment, I have assumed that this syntax is only valid if
          * val < 0. To properly mix "normal" native functions and indexed
@@ -5172,7 +5156,6 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
   char *str;
   cell val,cidx,glbdecl;
   short filenum;
-  int state_id;
 
   assert(litidx==0);    /* literal queue should be empty */
   litidx=0;             /* clear the literal pool (should already be empty) */
@@ -5279,7 +5262,7 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
   } /* if */
 
   if ((sym->flags & flgDEPRECATED) != 0 && (sym->usage & uSTOCK) == 0) {
-    char *ptr= (sym->documentation!=NULL) ? sym->documentation : "";
+    const char *ptr= (sym->documentation!=NULL) ? sym->documentation : "";
     error(234, decl->name, ptr);  /* deprecated (probably a public function) */
   } /* if */
   begcseg();
@@ -5443,10 +5426,9 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
 {
   char *ptr;
   int argcnt,oldargcnt,tok;
-  cell val;
   arginfo arg, *arglist;
   char name[sNAMEMAX+1];
-  int ident,fpublic;
+  int fpublic;
   int idx;
 
   /* if the function is already defined earlier, get the number of arguments
@@ -5470,7 +5452,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
       memset(argptr, 0, sizeof(*argptr));
       strcpy(argptr->name, "this");
       argptr->ident = iVARIABLE;
-      argptr->tags = malloc(sizeof(int));
+      argptr->tags = (int *)malloc(sizeof(int));
       argptr->tags[0] = *thistag;
       argptr->numtags = 1;
     } else {
@@ -5632,7 +5614,6 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
 static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, arginfo *arg)
 {
   symbol *argsym;
-  constvalue *enumroot;
   int slength=0;
   typeinfo_t *type = &decl->type;
 
@@ -5728,7 +5709,7 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
         while (paranthese--)
           needtoken(')');
       } else {
-        constexpr(&arg->defvalue.val,&arg->defvalue_tag,NULL);
+        exprconst(&arg->defvalue.val,&arg->defvalue_tag,NULL);
         assert(type->numtags > 0);
         matchtag(type->tags[0], arg->defvalue_tag, TRUE);
       } /* if */
@@ -5773,11 +5754,12 @@ static int count_referrers(symbol *entry)
 }
 
 #if !defined SC_LIGHT
-static int find_xmltag(char *source,char *xmltag,char *xmlparam,char *xmlvalue,
+static int find_xmltag(char *source, const char *xmltag, const char *xmlparam, const char *xmlvalue,
                        char **outer_start,int *outer_length,
-                       char **inner_start,int *inner_length)
+                       const char **inner_start,int *inner_length)
 {
-  char *ptr,*inner_end;
+  char *ptr;
+  const char *inner_end;
   int xmltag_len,xmlparam_len,xmlvalue_len;
   int match;
 
@@ -6120,7 +6102,8 @@ static void make_report(symbol *root,FILE *log,char *sourcefile)
     assert(sym->dim.arglist!=NULL);
     for (arg=0; sym->dim.arglist[arg].ident!=0; arg++) {
       int dim,paraminfo;
-      char *outer_start,*inner_start;
+      char *outer_start;
+      const char *inner_start;
       int outer_length,inner_length;
       if (sym->dim.arglist[arg].ident==iVARARGS)
         fprintf(log,"\t\t\t<param name=\"...\">\n");
@@ -6173,10 +6156,9 @@ static void make_report(symbol *root,FILE *log,char *sourcefile)
           && find_xmltag(sym->documentation, "param", "name", sym->dim.arglist[arg].name,
                          &outer_start, &outer_length, &inner_start, &inner_length))
       {
-        char *tail;
         fprintf(log,"\t\t\t\t%.*s\n",inner_length,inner_start);
         /* delete from documentation string */
-        tail=outer_start+outer_length;
+        char *tail=outer_start+outer_length;
         memmove(outer_start,tail,strlen(tail)+1);
       } /* if */
       fprintf(log,"\t\t\t</param>\n");
@@ -6500,7 +6482,7 @@ static constvalue *insert_constval(constvalue *prev,constvalue *next,const char 
   return cur;
 }
 
-SC_FUNC constvalue *append_constval(constvalue *table,const char *name,cell val,int index)
+constvalue *append_constval(constvalue *table,const char *name,cell val,int index)
 {
   constvalue *cur,*prev;
 
@@ -6510,7 +6492,7 @@ SC_FUNC constvalue *append_constval(constvalue *table,const char *name,cell val,
   return insert_constval(prev,NULL,name,val,index);
 }
 
-SC_FUNC constvalue *find_constval(constvalue *table,char *name,int index)
+constvalue *find_constval(constvalue *table,char *name,int index)
 {
   constvalue *ptr = table->next;
 
@@ -6553,7 +6535,7 @@ static int delete_constval(constvalue *table,char *name)
 }
 #endif
 
-SC_FUNC void delete_consttable(constvalue *table)
+void delete_consttable(constvalue *table)
 {
   constvalue *cur=table->next, *next;
 
@@ -6569,7 +6551,7 @@ SC_FUNC void delete_consttable(constvalue *table)
  *
  *  Adds a symbol to the symbol table. Returns NULL on failure.
  */
-SC_FUNC symbol *add_constant(char *name,cell val,int vclass,int tag)
+symbol *add_constant(const char *name,cell val,int vclass,int tag)
 {
   symbol *sym;
 
@@ -6901,9 +6883,9 @@ static int doexpr2(int comma,int chkeffect,int allowarray,int mark_endexpr,
   return ident;
 }
 
-/*  constexpr
+/*  exprconst
  */
-SC_FUNC int constexpr(cell *val,int *tag,symbol **symptr)
+int exprconst(cell *val,int *tag,symbol **symptr)
 {
   int ident,index;
   cell cidx;
@@ -6978,7 +6960,7 @@ static int test(int label,int parens,int invert)
   if (endtok!=0)
     needtoken(endtok);
   if (ident==iARRAY || ident==iREFARRAY) {
-    char *ptr=(sym->name!=NULL) ? sym->name : "-unknown-";
+    const char *ptr=(sym->name!=NULL) ? sym->name : "-unknown-";
     error(33,ptr);              /* array must be indexed */
   } /* if */
   if (ident==iCONSTEXPR) {      /* constant expression */
@@ -7294,7 +7276,7 @@ static void doswitch(void)
          *     parse all expressions until that special token.
          */
 
-        constexpr(&val,NULL,NULL);
+        exprconst(&val,NULL,NULL);
         /* Search the insertion point (the table is kept in sorted order, so
          * that advanced abstract machines can sift the case table with a
          * binary search). Check for duplicate case values at the same time.
@@ -7466,6 +7448,18 @@ static symbol *fetchlab(char *name)
   return sym;
 }
 
+static int is_variadic(symbol *sym)
+{
+  assert(sym->ident==iFUNCTN);
+  arginfo *arg = sym->dim.arglist;
+  while (arg->ident) {
+    if (arg->ident == iVARARGS)
+      return TRUE;
+    arg++;
+  }
+  return FALSE;
+}
+
 /*  doreturn
  *
  *  Global references: rettype  (altered)
@@ -7574,7 +7568,11 @@ static void doreturn(void)
        * it stays on the heap for the moment, and it is removed -usually- at
        * the end of the expression/statement, see expression() in SC3.C)
        */
-      address(sub,sALT);                /* ALT = destination */
+      if (is_variadic(curfunc)) {
+        load_hidden_arg();
+      } else {
+        address(sub,sALT);           /* ALT = destination */
+      }
       arraysize=calc_arraysize(dim,numdim,0);
       memcopy(arraysize*sizeof(cell));  /* source already in PRI */
       /* moveto1(); is not necessary, callfunction() does a popreg() */
@@ -7624,7 +7622,7 @@ static void docont(void)
   jumplabel(ptr[wqLOOP]);
 }
 
-SC_FUNC void exporttag(int tag)
+void exporttag(int tag)
 {
   /* find the tag by value in the table, then set the top bit to mark it
    * "public"

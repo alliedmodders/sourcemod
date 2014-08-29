@@ -40,6 +40,7 @@
 #include "watchdog_timer.h"
 #include "interpreter.h"
 
+using namespace sp;
 using namespace Knight;
 
 #if defined USE_UNGEN_OPCODES
@@ -230,7 +231,7 @@ GetFunctionName(const sp_plugin_t *plugin, uint32_t offs)
     for (iter = 0; iter < max; iter++) {
       sym = (sp_fdbg_symbol_t *)cursor;
 
-      if (sym->ident == SP_SYM_FUNCTION && sym->codestart <= offs && sym->codeend > offs)
+      if (sym->ident == sp::IDENT_FUNCTION && sym->codestart <= offs && sym->codeend > offs)
         return plugin->debug.stringbase + sym->name;
 
       if (sym->dimcount > 0) {
@@ -252,7 +253,7 @@ GetFunctionName(const sp_plugin_t *plugin, uint32_t offs)
     for (iter = 0; iter < max; iter++) {
       sym = (sp_u_fdbg_symbol_t *)cursor;
 
-      if (sym->ident == SP_SYM_FUNCTION && sym->codestart <= offs && sym->codeend > offs)
+      if (sym->ident == sp::IDENT_FUNCTION && sym->codestart <= offs && sym->codeend > offs)
         return plugin->debug.stringbase + sym->name;
 
       if (sym->dimcount > 0) {

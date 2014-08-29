@@ -34,8 +34,12 @@
   #include <sclinux.h>
 #endif
 
+#if defined HAVE_STDINT_H
+# include <stddef.h>
+# include <stdint.h>
+#endif
+
 #if defined __GNUC__
-  #include <stdint.h>
   #if !defined HAVE_STDINT_H
     #define HAVE_STDINT_H
   #endif

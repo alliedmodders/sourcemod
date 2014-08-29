@@ -38,6 +38,21 @@
 #include <ISourceMod.h>
 #include <ITranslator.h>
 #include "common_logic.h"
+#include "Logger.h"
+
+#if defined PLATFORM_WINDOWS
+#include <io.h>
+
+#define FPERM_U_READ		0x0100	/* User can read. */
+#define FPERM_U_WRITE		0x0080	/* User can write. */
+#define FPERM_U_EXEC		0x0040	/* User can exec. */
+#define FPERM_G_READ		0x0020	/* Group can read. */
+#define FPERM_G_WRITE		0x0010	/* Group can write. */
+#define FPERM_G_EXEC		0x0008	/* Group can exec. */
+#define FPERM_O_READ		0x0004	/* Anyone can read. */
+#define FPERM_O_WRITE		0x0002	/* Anyone can write. */
+#define FPERM_O_EXEC		0x0001	/* Anyone can exec. */
+#endif
 
 HandleType_t g_FileType;
 HandleType_t g_DirType;
@@ -465,6 +480,31 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 #endif
 }
 
+static cell_t sm_SetFilePermissions(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	char realpath[PLATFORM_MAX_PATH];
+
+	pContext->LocalToString(params[1], &name);
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+
+#if defined PLATFORM_WINDOWS
+	int mask = 0;
+	if (params[2] & FPERM_U_WRITE || params[2] & FPERM_G_WRITE || params[2] & FPERM_O_WRITE)
+	{
+		mask |= _S_IWRITE;
+	}
+	if (params[2] & FPERM_U_READ || params[2] & FPERM_G_READ || params[2] & FPERM_O_READ ||
+		params[2] & FPERM_U_EXEC || params[2] & FPERM_G_EXEC || params[2] & FPERM_O_EXEC)
+	{
+		mask |= _S_IREAD;
+	}
+	return _chmod(realpath, mask) == 0;
+#else
+	return chmod(realpath, params[2]) == 0;
+#endif
+}
+
 static cell_t sm_CreateDirectory(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
@@ -598,7 +638,7 @@ static cell_t sm_LogMessage(IPluginContext *pContext, const cell_t *params)
 	}
 
 	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
-	smcore.Log("[%s] %s", pPlugin->GetFilename(), buffer);
+	g_Logger.LogMessage("[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;
 }
@@ -616,7 +656,7 @@ static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
 	}
 
 	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
-	smcore.LogError("[%s] %s", pPlugin->GetFilename(), buffer);
+	g_Logger.LogError("[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;
 }
@@ -669,7 +709,7 @@ static cell_t sm_LogToOpenFile(IPluginContext *pContext, const cell_t *params)
 	}
 
 	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
-	smcore.LogToFile(pFile, "[%s] %s", pPlugin->GetFilename(), buffer);
+	g_Logger.LogToOpenFile(pFile, "[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;
 }
@@ -699,7 +739,7 @@ static cell_t sm_LogToOpenFileEx(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	smcore.LogToFile(pFile, "%s", buffer);
+	g_Logger.LogToOpenFile(pFile, "%s", buffer);
 
 	return 1;
 }
@@ -971,5 +1011,6 @@ REGISTER_NATIVES(filesystem)
 	{"AddGameLogHook",			sm_AddGameLogHook},
 	{"RemoveGameLogHook",		sm_RemoveGameLogHook},
 	{"CreateDirectory",			sm_CreateDirectory},
+	{"SetFilePermissions",		sm_SetFilePermissions},
 	{NULL,						NULL},
 };

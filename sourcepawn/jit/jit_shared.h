@@ -3,7 +3,9 @@
 #define _INCLUDE_SOURCEPAWN_JIT_SHARED_H_
 
 #include <sp_vm_api.h>
+#include <smx/smx-v1.h>
 
+using namespace sp;
 using namespace SourcePawn;
 
 #define SP_MAX_RETURN_STACK		1024

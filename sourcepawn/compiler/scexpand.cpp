@@ -16,7 +16,7 @@
 
 #define STACKSIZE 16
 
-SC_FUNC int strexpand(char *dest, unsigned char *source, int maxlen, unsigned char pairtable[128][2])
+int strexpand(char *dest, unsigned char *source, int maxlen, unsigned char pairtable[128][2])
 {
   unsigned char stack[STACKSIZE];
   short c, top = 0;

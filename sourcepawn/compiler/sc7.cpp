@@ -108,7 +108,7 @@ static void grow_stgbuffer(char **buffer, int *curmax, int requiredsize)
     **buffer='\0';
 }
 
-SC_FUNC void stgbuffer_cleanup(void)
+void stgbuffer_cleanup(void)
 {
   if (stgbuf!=NULL) {
     free(stgbuf);
@@ -141,7 +141,7 @@ SC_FUNC void stgbuffer_cleanup(void)
  *                     stgbuf  (altered)
  *                     staging (referred to only)
  */
-SC_FUNC void stgmark(char mark)
+void stgmark(char mark)
 {
   if (staging) {
     CHECK_STGBUFFER(stgidx);
@@ -188,7 +188,7 @@ static int filewrite(char *str)
  *                     stgbuf  (altered)
  *                     staging (referred to only)
  */
-SC_FUNC void stgwrite(const char *st)
+void stgwrite(const char *st)
 {
   int len;
 
@@ -224,7 +224,7 @@ SC_FUNC void stgwrite(const char *st)
  *                     stgbuf  (referred to only)
  *                     staging (referred to only)
  */
-SC_FUNC void stgout(int index)
+void stgout(int index)
 {
   int reordered=0;
   int idx;
@@ -348,7 +348,7 @@ static int stgstring(char *start,char *end)
  *  Global references: stgidx (altered)
  *                     staging (reffered to only)
  */
-SC_FUNC void stgdel(int index,cell code_index)
+void stgdel(int index,cell code_index)
 {
   if (staging) {
     stgidx=index;
@@ -356,7 +356,7 @@ SC_FUNC void stgdel(int index,cell code_index)
   } /* if */
 }
 
-SC_FUNC int stgget(int *index,cell *code_index)
+int stgget(int *index,cell *code_index)
 {
   if (staging) {
     *index=stgidx;
@@ -375,7 +375,7 @@ SC_FUNC int stgget(int *index,cell *code_index)
  *                     stgidx   (altered)
  *                     stgbuf   (contents altered)
  */
-SC_FUNC void stgset(int onoff)
+void stgset(int onoff)
 {
   staging=onoff;
   if (staging){
@@ -398,7 +398,7 @@ SC_FUNC void stgset(int onoff)
  */
 static SEQUENCE *sequences;
 
-SC_FUNC int phopt_init(void)
+int phopt_init(void)
 {
   int number, i, len;
   char str[160];
@@ -440,7 +440,7 @@ SC_FUNC int phopt_init(void)
   return TRUE;
 }
 
-SC_FUNC int phopt_cleanup(void)
+int phopt_cleanup(void)
 {
   int i;
   if (sequences!=NULL) {

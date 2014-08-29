@@ -89,11 +89,11 @@ void DBManager::OnSourceModLevelChange(const char *mapName)
 	ke::AutoLock lock(&m_ConfigLock);
 	if ((err = textparsers->ParseFile_SMC(m_Filename, this, &states)) != SMCError_Okay)
 	{
-		smcore.LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename);
+		logger->LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename);
 		if (err != SMCError_Custom)
 		{
 			const char *txt = textparsers->GetSMCErrorString(err);
-			smcore.LogError("[SM] Line %d: %s", states.line, txt);
+			logger->LogError("[SM] Line %d: %s", states.line, txt);
 		}
 	}
 }
@@ -541,7 +541,7 @@ bool DBManager::AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio)
 		{
 			if (!s_OneTimeThreaderErrorMsg)
 			{
-				smcore.LogError("[SM] Unable to create db threader (error unknown)");
+				logger->LogError("[SM] Unable to create db threader (error unknown)");
 				s_OneTimeThreaderErrorMsg = true;
 			}
 			m_Worker = NULL;

@@ -198,11 +198,11 @@ private:
 
 		if (!m_bFileNameLogged)
 		{
-			smcore.LogError("[SM] Parse error(s) detected in file \"%s\":", m_File);
+			logger->LogError("[SM] Parse error(s) detected in file \"%s\":", m_File);
 			m_bFileNameLogged = true;
 		}
 
-		smcore.LogError("[SM] (Line %d): %s", states ? states->line : 0, buffer);
+		logger->LogError("[SM] (Line %d): %s", states ? states->line : 0, buffer);
 	}
 private:
 	bool m_bFileNameLogged;

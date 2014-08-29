@@ -36,8 +36,8 @@
  * @file sp_vm_types.h
  * @brief Contains all run-time SourcePawn structures.
  */
-
-#include "sp_file_headers.h"
+#include <stddef.h>
+#include <stdint.h>
 
 typedef	uint32_t	ucell_t;			/**< Unsigned 32bit integer */
 typedef int32_t		cell_t;				/**< Basic 32bit signed integer type for plugins */
@@ -189,10 +189,25 @@ typedef struct sp_debug_line_s
 	uint32_t		line;	/**< Line number */
 } sp_debug_line_t;
 
-/**
- * @brief These structures are equivalent.
- */
-typedef sp_fdbg_arraydim_t	sp_debug_arraydim_t;
+// Occurs after an fdbg_symbol entry, for each dimension.
+typedef struct sp_debug_arraydim_s
+{
+  int16_t   tagid;      /**< Tag id */
+  uint32_t  size;       /**< Size of dimension */
+} sp_debug_arraydim_t;
+
+// Same as from <smx/smx-v1-headers.h>.
+typedef struct sp_debug_symbol_raw_s
+{
+  int32_t   addr;       /**< Address rel to DAT or stack frame */
+  int16_t   tagid;      /**< Tag id */
+  uint32_t  codestart;  /**< Start scope validity in code */
+  uint32_t  codeend;    /**< End scope validity in code */
+  uint8_t   ident;      /**< Variable type */
+  uint8_t   vclass;     /**< Scope class (local vs global) */
+  uint16_t  dimcount;   /**< Dimension count (for arrays) */
+  uint32_t  name;       /**< Offset into debug nametable */
+} sp_debug_symbol_raw_t;
 
 /**
  * @brief The majority of this struct is already located in the parent 
@@ -200,11 +215,11 @@ typedef sp_fdbg_arraydim_t	sp_debug_arraydim_t;
  */
 typedef struct sp_debug_symbol_s
 {
-	uint32_t		codestart;	/**< Relocated code address */
-	uint32_t		codeend;	/**< Relocated code end address */
-	const char *	name;		/**< Relocated name */
-	sp_debug_arraydim_t *dims;	/**< Relocated dimension struct, if any */
-	sp_fdbg_symbol_t	*sym;	/**< Pointer to original symbol */
+	uint32_t		codestart;	 /**< Relocated code address */
+	uint32_t		codeend;	 /**< Relocated code end address */
+	const char *	name;		 /**< Relocated name */
+	sp_debug_arraydim_t   *dims; /**< Relocated dimension struct, if any */
+	sp_debug_symbol_raw_t *sym;	 /**< Pointer to original symbol */
 } sp_debug_symbol_t;
 
 #endif //_INCLUDE_SOURCEPAWN_VM_TYPES_H

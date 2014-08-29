@@ -120,7 +120,7 @@ public: //ICommandTargetProcessor
 				Handle_t hndl = handlesys->CreateHandleEx(htCellArray, array, &sec, NULL, NULL);
 				AutoHandleCloner ahc(hndl, sec);
 				if (ahc.getClone() == BAD_HANDLE) {
-					smcore.LogError("[SM] Could not allocate a handle (%s, %d)", __FILE__, __LINE__);
+					logger->LogError("[SM] Could not allocate a handle (%s, %d)", __FILE__, __LINE__);
 					delete array;
 					return false;
 				}

@@ -163,7 +163,7 @@ private:
 	cell_t data_;
 };
 
-struct CellTrie : public ke::Refcounted<CellTrie>
+struct CellTrie
 {
 	StringHashMap<Entry> map;
 };
@@ -204,8 +204,7 @@ public: //IHandleTypeDispatch
 	{
 		if (type == htCellTrie)
 		{
-			CellTrie *pTrie = (CellTrie *)object;
-			pTrie->Release();
+			delete (CellTrie *)object;
 		} else {
 			TrieSnapshot *snapshot = (TrieSnapshot *)object;
 			delete snapshot;

@@ -50,6 +50,7 @@
 #include "ForwardSys.h"
 #include "AdminCache.h"
 #include "ProfileTools.h"
+#include "Logger.h"
 
 sm_core_t smcore;
 IHandleSys *handlesys = &g_HandleSys;
@@ -72,6 +73,8 @@ ISourcePawnEngine *g_pSourcePawn;
 ISourcePawnEngine2 *g_pSourcePawn2;
 CNativeOwner g_CoreNatives;
 IScriptManager *scripts = &g_PluginSys;
+IExtensionSys *extsys = &g_Extensions;
+ILogger *logger = &g_Logger;
 
 static void AddCorePhraseFile(const char *filename)
 {
@@ -140,6 +143,7 @@ static sm_logic_t logic =
 	&g_Forwards,
 	&g_Admins,
 	NULL,
+	&g_Logger,
 	-1.0f
 };
 
