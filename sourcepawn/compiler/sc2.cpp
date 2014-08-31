@@ -1963,6 +1963,7 @@ const char *sc_tokens[] = {
          "return",
          "sizeof", "sleep", "static", "stock", "struct", "switch",
          "tagof", "*then", "typedef",
+         "union",
          "void",
          "while",
          "#assert", "#define", "#else", "#elseif", "#emit", "#endif", "#endinput",

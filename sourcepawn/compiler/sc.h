@@ -432,6 +432,7 @@ enum TokenKind {
   tTAGOF,
   tTHEN,
   tTYPEDEF,
+  tUNION,
   tVOID,
   tWHILE,
   /* compiler directives */

@@ -48,7 +48,7 @@ enum EventHookMode
 /**
  * Hook function types for events.
  */
-funcenum EventHook
+union EventHook
 {
 	/**
 	 * Called when a game event is fired.
@@ -59,7 +59,7 @@ funcenum EventHook
 	 * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
 	 * @return				Ignored for post hooks. Plugin_Handled will block event if hooked as pre.
 	 */
-	Action:public(Handle:event, const String:name[], bool:dontBroadcast),
+	function Action (Handle event, const char[] name, bool dontBroadcast);
 	/**
 	 * Called when a game event is fired.
 	 *
@@ -69,7 +69,7 @@ funcenum EventHook
 	 * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
 	 * @noreturn
 	 */
-	public(Handle:event, const String:name[], bool:dontBroadcast),
+	function void (Handle event, const char[] name, bool dontBroadcast);
 };
 
 /**

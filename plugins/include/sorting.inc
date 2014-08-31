@@ -123,10 +123,10 @@ native SortCustom1D(array[], array_size, SortFunc1D:sortfunc, Handle:hndl=INVALI
  *						0 if first is equal to second
  *						1 if first should go after second
  */
-funcenum SortFunc2D
+union SortFunc2D
 {
-	public(elem1[], elem2[], const array[][], Handle:hndl),
-	public(String:elem1[], String:elem2[], const String:array[][], Handle:hndl),
+	function int (int[] elem1, int[] elem2, const int[][] array, Handle hndl);
+	function int (char[] elem1, char[] elem2, const char[][] array, Handle hndl);
 };
 
 /** 
