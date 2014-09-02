@@ -53,5 +53,10 @@
 				"mac"		"@gEntList"
 			}
 		}
+		
+		"Keys"
+		{
+			"UseInvalidUniverseInSteam2IDs"		"1"
+		}
 	}
 }

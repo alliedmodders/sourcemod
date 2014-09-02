@@ -1914,7 +1914,7 @@ CPlayer::CPlayer()
 	m_bIsSourceTV = false;
 	m_bIsReplay = false;
 	m_Serial.value = -1;
-	m_SteamAccountID = 0;
+	m_SteamID = k_steamIDNil;
 #if SOURCE_ENGINE == SE_CSGO
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
@@ -1997,7 +1997,7 @@ void CPlayer::Disconnect()
 	m_bIsSourceTV = false;
 	m_bIsReplay = false;
 	m_Serial.value = -1;
-	m_SteamAccountID = 0;
+	m_SteamID = k_steamIDNil;
 #if SOURCE_ENGINE == SE_CSGO
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
@@ -2033,16 +2033,17 @@ const char *CPlayer::GetAuthString(bool validated)
 	return m_AuthID.c_str();
 }
 
-unsigned int CPlayer::GetSteamAccountID(bool validated)
+const CSteamID &CPlayer::GetSteamID(bool validated)
 {
 	if (IsFakeClient() || (validated && !IsAuthStringValidated()))
 	{
-		return 0;
+		static const CSteamID invalidId = k_steamIDNil;
+		return invalidId;
 	}
 
-	if (m_SteamAccountID != 0)
+	if (m_SteamID.IsValid())
 	{
-		return m_SteamAccountID;
+		return m_SteamID;
 	}
 
 #if SOURCE_ENGINE < SE_ORANGEBOX
@@ -2050,22 +2051,35 @@ unsigned int CPlayer::GetSteamAccountID(bool validated)
 	/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
 	if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
 	{
-		m_SteamAccountID = (atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1));
+		m_SteamID = CSteamID(atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1),
+			k_unSteamUserDesktopInstance, k_EUniversePublic, k_EAccountTypeIndividual);
 	}
 #else
-	unsigned long long *steamId;
+	const CSteamID *steamId;
 #if SOURCE_ENGINE == SE_DOTA
-	steamId = (unsigned long long *)engine->GetClientSteamID(m_iIndex);
+	steamId = engine->GetClientSteamID(m_iIndex);
 #else
-	steamId = (unsigned long long *)engine->GetClientSteamID(m_pEdict);
+	steamId = engine->GetClientSteamID(m_pEdict);
 #endif
 
 	if (steamId)
 	{
-		m_SteamAccountID = (*steamId & 0xFFFFFFFF);
+		m_SteamID = (*steamId);
 	}
 #endif
-	return m_SteamAccountID;
+	return m_SteamID;
+}
+
+unsigned int CPlayer::GetSteamAccountID(bool validated)
+{
+	if (!IsFakeClient() && (!validated || IsAuthStringValidated()))
+	{
+		const CSteamID &id = GetSteamID();
+		if (id.IsValid())
+			return id.GetAccountID();
+	}
+	
+	return 0;
 }
 
 edict_t *CPlayer::GetEdict()

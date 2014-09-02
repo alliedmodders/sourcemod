@@ -37,11 +37,20 @@
 #include <ITranslator.h>
 #include <sh_string.h>
 #include <sh_list.h>
+#include "GameConfigs.h"
 #include "CellArray.h"
 #include "AutoHandleRooter.h"
 
 using namespace SourceHook;
 using namespace SourceMod;
+
+#ifndef PRIu64
+#ifdef _WIN32
+#define PRIu64 "I64u"
+#else
+#define PRIu64 "llu"
+#endif
+#endif
 
 static const int kActivityNone = 0;
 static const int kActivityNonAdmins = 1;		// Show admin activity to non-admins anonymously.
@@ -322,6 +331,15 @@ static cell_t sm_GetClientIP(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+// Must match clients.inc
+enum class AuthStringType
+{
+	Engine,
+	Steam2,
+	Steam3,
+	SteamID64,
+};
+
 static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 {
 	int index = params[1];
@@ -337,19 +355,100 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	bool validate = true;
-	if (params[0] > 3)
+	if (params[0] >= 4)
 	{
 		validate = !!params[4];
 	}
-
-	const char *authstr = pPlayer->GetAuthString(validate);
-
-	if (!authstr || authstr[0] == '\0')
+	
+	AuthStringType authType = AuthStringType::Engine;
+	if (params[0] >= 5)
 	{
-		return 0;
+		authType = (AuthStringType)params[5];
 	}
 
-	pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), authstr);
+	switch (authType)
+	{
+	case AuthStringType::Engine:
+		{
+			const char *authstr = pPlayer->GetAuthString(validate);
+			if (!authstr || authstr[0] == '\0')
+			{
+				return 0;
+			}
+
+			pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), authstr);
+		}
+		break;
+	case AuthStringType::Steam2:
+	case AuthStringType::Steam3:
+		{
+			if (pPlayer->IsFakeClient())
+			{
+				pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), "BOT");
+				return 1;
+			}
+			
+			uint64_t steamId = pPlayer->GetSteamID64(validate);
+			if (steamId == 0)
+			{
+				if (gamehelpers->IsLANServer())
+				{
+					pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), "STEAM_ID_LAN");
+				}
+				else
+				{				
+					pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), "STEAM_ID_PENDING");
+				}
+				
+				return 1;
+			}
+			
+			char szAuth[64];
+			unsigned int universe = steamId >> 56;
+			unsigned int accountId = steamId & 0xFFFFFFFF;
+			unsigned int instance = (steamId >> 32) & 0x000FFFFF;
+			if (authType == AuthStringType::Steam2)
+			{
+				if (atoi(g_pGameConf->GetKeyValue("UseInvalidUniverseInSteam2IDs")) == 1)
+				{
+					universe = 0;
+				}
+				
+				snprintf(szAuth, sizeof(szAuth), "STEAM_%u:%u:%u", universe, accountId % 2, accountId >> 1);
+			}
+			else if (instance != 1)
+			{
+				snprintf(szAuth, sizeof(szAuth), "[U:%u:%u:%u]", universe, accountId, instance);
+			}
+			else
+			{
+				snprintf(szAuth, sizeof(szAuth), "[U:%u:%u]", universe, accountId);
+			}
+			
+			pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), szAuth);
+		}
+		break;
+	
+	case AuthStringType::SteamID64:
+		{
+			if (pPlayer->IsFakeClient() || gamehelpers->IsLANServer())
+			{
+				return 0;
+			}
+			
+			uint64_t steamId = pPlayer->GetSteamID64(validate);
+			if (steamId == 0)
+			{
+				return 0;
+			}
+			
+			char szAuth[64];
+			snprintf(szAuth, sizeof(szAuth), "%" PRIu64, steamId);
+			
+			pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), szAuth);
+		}
+		break;
+	}	
 
 	return 1;
 }

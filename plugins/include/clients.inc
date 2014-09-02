@@ -46,6 +46,19 @@ enum NetFlow
 };
 
 /**
+ * Auth string types.
+ */
+enum AuthStringType
+{
+	AuthString_Engine,     /**< The game-specific auth string as returned from the engine */
+	
+	// The following are only available on games that support Steam authentication.
+	AuthString_Steam2,     /**< Steam2 rendered format, ex "STEAM_1:1:4153990" */
+	AuthString_Steam3,     /**< Steam3 rendered format, ex "[U:1:8307981]" */
+	AuthString_SteamID64,  /**< A SteamID64 (uint64) as a String, ex "76561197968573709" */
+};
+
+/**
  * MAXPLAYERS is not the same as MaxClients.
  * MAXPLAYERS is a hardcoded value as an upper limit.  MaxClients changes based on the server.
  *
@@ -264,10 +277,11 @@ native bool:GetClientIP(client, String:ip[], maxlen, bool:remport=true);
  * @param validate		Check backend validation status.
  * 				DO NOT PASS FALSE UNLESS YOU UNDERSTAND THE CONSEQUENCES,
  *			        You WILL KNOW if you need to use this, MOST WILL NOT.
+ * @param authType		Auth string type and format to use.
  * @return				True on success, false otherwise.
  * @error				If the client is not connected or the index is invalid.
  */
-native bool:GetClientAuthString(client, String:auth[], maxlen, bool:validate=true);
+native bool:GetClientAuthString(client, String:auth[], maxlen, bool:validate=true, AuthStringType:authType=AuthString_Engine);
 
 /**
  * Returns the client's Steam account ID.
