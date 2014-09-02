@@ -1598,11 +1598,7 @@ void SDKHooks::Hook_Blocked(CBaseEntity *pOther)
 
 void SDKHooks::Hook_BlockedPost(CBaseEntity *pOther)
 {
-	cell_t result = Call(META_IFACEPTR(CBaseEntity), SDKHook_BlockedPost, pOther);
-
-	if(result >= Pl_Handled)
-		RETURN_META(MRES_SUPERCEDE);
-
+	Call(META_IFACEPTR(CBaseEntity), SDKHook_BlockedPost, pOther);
 	RETURN_META(MRES_IGNORED);
 }
 
