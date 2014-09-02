@@ -249,6 +249,7 @@ enum {
 	TF_WEAPON_SPELLBOOK,
 	TF_WEAPON_SPELLBOOK_PROJECTILE,
 	TF_WEAPON_SNIPERRIFLE_CLASSIC,
+	TF_WEAPON_PARACHUTE,
 };
 
 // TF2 Weapon Loadout Slots
@@ -435,6 +436,20 @@ stock TF2_RemoveWeaponSlot(client, slot)
 	new weaponIndex;
 	while ((weaponIndex = GetPlayerWeaponSlot(client, slot)) != -1)
 	{
+		// bug #6206
+		// papering over a valve bug where a weapon's extra wearables aren't properly removed from the weapon's owner
+		new extraWearable = GetEntPropEnt(weaponIndex, Prop_Send, "m_hExtraWearable");
+		if (extraWearable != -1)
+		{
+			TF2_RemoveWearable(client, extraWearable);
+		}
+
+		extraWearable = GetEntPropEnt(weaponIndex, Prop_Send, "m_hExtraWearableViewModel");
+		if (extraWearable != -1)
+		{
+			TF2_RemoveWearable(client, extraWearable);
+		}
+
 		RemovePlayerItem(client, weaponIndex);
 		AcceptEntityInput(weaponIndex, "Kill");
 	}

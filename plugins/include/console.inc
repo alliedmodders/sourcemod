@@ -328,7 +328,7 @@ native FormatActivitySource(client, target, const String:namebuf[], maxlength);
  * @return				An Action value.  Not handling the command
  *						means that Source will report it as "not found."
  */
-functag public Action:SrvCmd(args);
+typedef SrvCmd = function Action (int args);
 
 /**
  * Creates a server-only console command, or hooks an already existing one.  
@@ -352,7 +352,7 @@ native RegServerCmd(const String:cmd[], SrvCmd:callback, const String:descriptio
  * @return				An Action value.  Not handling the command
  *						means that Source will report it as "not found."
  */
-functag public Action:ConCmd(client, args);
+typedef ConCmd = function Action (int client, int args);
 
 /**
  * Creates a console command, or hooks an already existing one.
@@ -456,7 +456,7 @@ native Handle:FindConVar(const String:name[]);
  * @param newValue		String containing the new value of the convar.
  * @noreturn
  */
-functag public void ConVarChanged(Handle:convar, const String:oldValue[], const String:newValue[]);
+typedef ConVarChanged = function void (Handle convar, const char[] oldValue, const char[] newValue);
 
 /**
  * Creates a hook for when a console variable's value is changed.
@@ -669,7 +669,7 @@ native SetConVarBounds(Handle:convar, ConVarBounds:type, bool:set, Float:value=0
  */
 native GetConVarName(Handle:convar, String:name[], maxlength);
 
-funcenum ConVarQueryFinished
+union ConVarQueryFinished
 {	
 	/**
 	 * Called when a query to retrieve a client's console variable has finished.
@@ -683,7 +683,7 @@ funcenum ConVarQueryFinished
 	 * @param value			Value that was passed when query was started.
 	 * @noreturn
 	 */
-	public(QueryCookie:cookie, client, ConVarQueryResult:result, const String:cvarName[], const String:cvarValue[], any:value),
+	function void (QueryCookie cookie, int client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue, any value);
 	
 	/**
 	 * Called when a query to retrieve a client's console variable has finished.
@@ -696,7 +696,7 @@ funcenum ConVarQueryFinished
 	 * @param convarValue	Value of client convar that was queried if successful. This will be "" if it was not.
 	 * @noreturn
 	 */
-	public(QueryCookie:cookie, client, ConVarQueryResult:result, const String:cvarName[], const String:cvarValue[])
+	function void (QueryCookie cookie, int client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue);
 };
 
 /**
@@ -905,7 +905,7 @@ native RemoveServerTag(const String:tag[]);
  * @param argc          Argument count.
  * @return				Action to take (see extended notes above).
  */
-functag public Action:CommandListener(client, const String:command[], argc);
+typedef CommandListener = function Action (int client, const char[] command, int argc);
 
 #define FEATURECAP_COMMANDLISTENER  "command listener"
 

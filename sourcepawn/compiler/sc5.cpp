@@ -67,12 +67,12 @@ static int sErrLine;     /* forced line number for the error message */
  *                     fcurrent   (reffered to only)
  *                     errflag    (altered)
  */
-SC_FUNC int error(int number,...)
+int error(int number,...)
 {
-static char *prefix[3]={ "error", "fatal error", "warning" };
+static const char *prefix[3]={ "error", "fatal error", "warning" };
 static int lastline,errorcount;
 static short lastfile;
-  char *msg,*pre;
+  const char *msg,*pre;
   va_list argptr;
 
   // sErrLine is used to temporarily change the line number of reported errors.
@@ -172,7 +172,7 @@ static short lastfile;
   return 0;
 }
 
-SC_FUNC void errorset(int code,int line)
+void errorset(int code,int line)
 {
   switch (code) {
   case sRESET:

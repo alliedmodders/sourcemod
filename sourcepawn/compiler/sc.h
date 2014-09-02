@@ -357,7 +357,7 @@ typedef struct {
 /*  Tokens recognized by lex()
  *  Some of these constants are assigned as well to the variable "lastst" (see SC1.C)
  */
-enum {
+enum TokenKind {
   /* value of first multi-character operator */
   tFIRST     = 256,
   /* multi-character operators */
@@ -431,6 +431,8 @@ enum {
   tSWITCH,
   tTAGOF,
   tTHEN,
+  tTYPEDEF,
+  tUNION,
   tVOID,
   tWHILE,
   /* compiler directives */
@@ -536,18 +538,13 @@ typedef enum s_optmark {
 #define CELL_MAX      (((ucell)1 << (sizeof(cell)*8-1)) - 1)
 
 
-/* interface functions */
-#if defined __cplusplus
-  extern "C" {
-#endif
-
 /*
  * Functions you call from the "driver" program
  */
 int pc_compile(int argc, char **argv);
-int pc_addconstant(char *name,cell value,int tag);
-int pc_addtag(char *name);
-int pc_addtag_flags(char *name, int flags);
+int pc_addconstant(const char *name,cell value,int tag);
+int pc_addtag(const char *name);
+int pc_addtag_flags(const char *name, int flags);
 int pc_findtag(const char *name);
 constvalue *pc_tagptr(const char *name);
 int pc_enablewarning(int number,int enable);
@@ -563,7 +560,7 @@ const char *type_to_name(int tag);
 int pc_printf(const char *message,...);
 
 /* error report function */
-int pc_error(int number,char *message,char *filename,int firstline,int lastline,va_list argptr);
+int pc_error(int number,const char *message,const char *filename,int firstline,int lastline,va_list argptr);
 
 /* input from source file */
 void *pc_opensrc(char *filename); /* reading only */
@@ -579,7 +576,7 @@ int  pc_eofsrc(void *handle);
 void *pc_openasm(char *filename); /* read/write */
 void pc_closeasm(void *handle,int deletefile);
 void pc_resetasm(void *handle);
-int  pc_writeasm(void *handle,char *str);
+int  pc_writeasm(void *handle,const char *str);
 char *pc_readasm(void *handle,char *target,int maxchars);
 
 /* output to binary (.AMX) file */
@@ -589,161 +586,144 @@ void pc_resetbin(void *handle,long offset);
 int  pc_writebin(void *handle,void *buffer,int size);
 long pc_lengthbin(void *handle); /* return the length of the file */
 
-#if defined __cplusplus
-  }
-#endif
-
-
-/* by default, functions and variables used in throughout the compiler
- * files are "external"
- */
-#if !defined SC_FUNC
-  #define SC_FUNC
-#endif
-#if !defined SC_VDECL
-  #define SC_VDECL  extern
-#endif
-#if !defined SC_VDEFINE
-  #define SC_VDEFINE
-#endif
-
 void sp_fdbg_ntv_start(int num_natives);
 void sp_fdbg_ntv_hook(int index, symbol *sym);
 
 /* function prototypes in SC1.C */
-SC_FUNC void set_extension(char *filename,char *extension,int force);
-SC_FUNC symbol *fetchfunc(char *name);
-SC_FUNC char *operator_symname(char *symname,char *opername,int tag1,int tag2,int numtags,int resulttag);
-SC_FUNC char *funcdisplayname(char *dest,char *funcname);
-SC_FUNC int constexpr(cell *val,int *tag,symbol **symptr);
-SC_FUNC constvalue *append_constval(constvalue *table,const char *name,cell val,int index);
-SC_FUNC constvalue *find_constval(constvalue *table,char *name,int index);
-SC_FUNC void delete_consttable(constvalue *table);
-SC_FUNC symbol *add_constant(char *name,cell val,int vclass,int tag);
-SC_FUNC void exporttag(int tag);
-SC_FUNC void sc_attachdocumentation(symbol *sym);
-SC_FUNC constvalue *find_tag_byval(int tag);
-SC_FUNC int get_actual_compound(symbol *sym);
+void set_extension(char *filename,const char *extension,int force);
+symbol *fetchfunc(char *name);
+char *operator_symname(char *symname,const char *opername,int tag1,int tag2,int numtags,int resulttag);
+char *funcdisplayname(char *dest,char *funcname);
+int exprconst(cell *val,int *tag,symbol **symptr);
+constvalue *append_constval(constvalue *table,const char *name,cell val,int index);
+constvalue *find_constval(constvalue *table,char *name,int index);
+void delete_consttable(constvalue *table);
+symbol *add_constant(const char *name,cell val,int vclass,int tag);
+void exporttag(int tag);
+void sc_attachdocumentation(symbol *sym);
+constvalue *find_tag_byval(int tag);
+int get_actual_compound(symbol *sym);
 
 /* function prototypes in SC2.C */
 #define PUSHSTK_P(v)  { stkitem s_; s_.pv=(v); pushstk(s_); }
 #define PUSHSTK_I(v)  { stkitem s_; s_.i=(v); pushstk(s_); }
 #define POPSTK_P()    (popstk().pv)
 #define POPSTK_I()    (popstk().i)
-SC_FUNC void pushstk(stkitem val);
-SC_FUNC stkitem popstk(void);
-SC_FUNC void clearstk(void);
-SC_FUNC int plungequalifiedfile(char *name);  /* explicit path included */
-SC_FUNC int plungefile(char *name,int try_currentpath,int try_includepaths);   /* search through "include" paths */
-SC_FUNC void preprocess(void);
-SC_FUNC void lexinit(void);
-SC_FUNC int lex(cell *lexvalue,char **lexsym);
-SC_FUNC int lextok(token_t *tok);
-SC_FUNC int lexpeek(int id);
-SC_FUNC void lexpush(void);
-SC_FUNC void lexclr(int clreol);
-SC_FUNC int matchtoken(int token);
-SC_FUNC int tokeninfo(cell *val,char **str);
-SC_FUNC int needtoken(int token);
-SC_FUNC int matchtoken2(int id, token_t *tok);
-SC_FUNC int expecttoken(int id, token_t *tok);
-SC_FUNC int matchsymbol(token_ident_t *ident);
-SC_FUNC int needsymbol(token_ident_t *ident);
-SC_FUNC int peek_same_line();
-SC_FUNC int require_newline(int allow_semi);
-SC_FUNC void litadd(cell value);
-SC_FUNC void litinsert(cell value,int pos);
-SC_FUNC int alphanum(char c);
-SC_FUNC int ishex(char c);
-SC_FUNC void delete_symbol(symbol *root,symbol *sym);
-SC_FUNC void delete_symbols(symbol *root,int level,int del_labels,int delete_functions);
-SC_FUNC int refer_symbol(symbol *entry,symbol *bywhom);
-SC_FUNC void markusage(symbol *sym,int usage);
-SC_FUNC symbol *findglb(const char *name,int filter);
-SC_FUNC symbol *findloc(const char *name);
-SC_FUNC symbol *findconst(const char *name,int *matchtag);
-SC_FUNC symbol *finddepend(const symbol *parent);
-SC_FUNC symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag, int usage);
-SC_FUNC symbol *addvariable(const char *name,cell addr,int ident,int vclass,int tag,
+void pushstk(stkitem val);
+stkitem popstk(void);
+void clearstk(void);
+int plungequalifiedfile(char *name);  /* explicit path included */
+int plungefile(char *name,int try_currentpath,int try_includepaths);   /* search through "include" paths */
+void preprocess(void);
+void lexinit(void);
+int lex(cell *lexvalue,char **lexsym);
+int lextok(token_t *tok);
+int lexpeek(int id);
+void lexpush(void);
+void lexclr(int clreol);
+int matchtoken(int token);
+int tokeninfo(cell *val,char **str);
+int needtoken(int token);
+int matchtoken2(int id, token_t *tok);
+int expecttoken(int id, token_t *tok);
+int matchsymbol(token_ident_t *ident);
+int needsymbol(token_ident_t *ident);
+int peek_same_line();
+int require_newline(int allow_semi);
+void litadd(cell value);
+void litinsert(cell value,int pos);
+int alphanum(char c);
+int ishex(char c);
+void delete_symbol(symbol *root,symbol *sym);
+void delete_symbols(symbol *root,int level,int del_labels,int delete_functions);
+int refer_symbol(symbol *entry,symbol *bywhom);
+void markusage(symbol *sym,int usage);
+symbol *findglb(const char *name,int filter);
+symbol *findloc(const char *name);
+symbol *findconst(const char *name,int *matchtag);
+symbol *finddepend(const symbol *parent);
+symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag, int usage);
+symbol *addvariable(const char *name,cell addr,int ident,int vclass,int tag,
                             int dim[],int numdim,int idxtag[]);
-SC_FUNC symbol *addvariable2(const char *name,cell addr,int ident,int vclass,int tag,
+symbol *addvariable2(const char *name,cell addr,int ident,int vclass,int tag,
                              int dim[],int numdim,int idxtag[],int slength);
-SC_FUNC symbol *addvariable3(declinfo_t *decl,cell addr,int vclass,int slength);
-SC_FUNC int getlabel(void);
-SC_FUNC char *itoh(ucell val);
+symbol *addvariable3(declinfo_t *decl,cell addr,int vclass,int slength);
+int getlabel(void);
+char *itoh(ucell val);
 
 #define MATCHTAG_COERCE       0x1 // allow coercion
 #define MATCHTAG_SILENT       0x2 // silence the error(213) warning
 #define MATCHTAG_COMMUTATIVE  0x4 // order does not matter
 
 /* function prototypes in SC3.C */
-SC_FUNC int check_userop(void (*oper)(void),int tag1,int tag2,int numparam,
+int check_userop(void (*oper)(void),int tag1,int tag2,int numparam,
                          value *lval,int *resulttag);
-SC_FUNC int matchtag(int formaltag,int actualtag,int allowcoerce);
-SC_FUNC int checktag(int tags[],int numtags,int exprtag);
-SC_FUNC int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult,value *_lval);
-SC_FUNC int sc_getstateid(constvalue **automaton,constvalue **state);
-SC_FUNC cell array_totalsize(symbol *sym);
-SC_FUNC int matchtag_string(int ident, int tag);
-SC_FUNC int checktag_string(value *sym1, value *sym2);
-SC_FUNC int checktags_string(int tags[], int numtags, value *sym1);
-SC_FUNC int lvalexpr(svalue *sval);
+int matchtag(int formaltag,int actualtag,int allowcoerce);
+int checktag(int tags[],int numtags,int exprtag);
+int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult,value *_lval);
+int sc_getstateid(constvalue **automaton,constvalue **state);
+cell array_totalsize(symbol *sym);
+int matchtag_string(int ident, int tag);
+int checktag_string(value *sym1, value *sym2);
+int checktags_string(int tags[], int numtags, value *sym1);
+int lvalexpr(svalue *sval);
 
 /* function prototypes in SC4.C */
-SC_FUNC void writeleader(symbol *root);
-SC_FUNC void writetrailer(void);
-SC_FUNC void begcseg(void);
-SC_FUNC void begdseg(void);
-SC_FUNC void setline(int chkbounds);
-SC_FUNC void setfiledirect(char *name);
-SC_FUNC void setlinedirect(int line);
-SC_FUNC void setlabel(int index);
-SC_FUNC void markexpr(optmark type,const char *name,cell offset);
-SC_FUNC void startfunc(char *fname);
-SC_FUNC void endfunc(void);
-SC_FUNC void alignframe(int numbytes);
-SC_FUNC void rvalue(value *lval);
-SC_FUNC void address(symbol *ptr,regid reg);
-SC_FUNC void store(value *lval);
-SC_FUNC void loadreg(cell address,regid reg);
-SC_FUNC void storereg(cell address,regid reg);
-SC_FUNC void memcopy(cell size);
-SC_FUNC void copyarray(symbol *sym,cell size);
-SC_FUNC void fillarray(symbol *sym,cell size,cell value);
-SC_FUNC void ldconst(cell val,regid reg);
-SC_FUNC void moveto1(void);
-SC_FUNC void move_alt(void);
-SC_FUNC void pushreg(regid reg);
-SC_FUNC void pushval(cell val);
-SC_FUNC void popreg(regid reg);
-SC_FUNC void genarray(int dims, int _autozero);
-SC_FUNC void swap1(void);
-SC_FUNC void ffswitch(int label);
-SC_FUNC void ffcase(cell value,char *labelname,int newtable);
-SC_FUNC void ffcall(symbol *sym,const char *label,int numargs);
-SC_FUNC void ffret(int remparams);
-SC_FUNC void ffabort(int reason);
-SC_FUNC void ffbounds(cell size);
-SC_FUNC void jumplabel(int number);
-SC_FUNC void defstorage(void);
-SC_FUNC void modstk(int delta);
-SC_FUNC void setstk(cell value);
-SC_FUNC void modheap(int delta);
-SC_FUNC void modheap_i();
-SC_FUNC void setheap_pri(void);
-SC_FUNC void setheap(cell value);
-SC_FUNC void cell2addr(void);
-SC_FUNC void cell2addr_alt(void);
-SC_FUNC void addr2cell(void);
-SC_FUNC void char2addr(void);
-SC_FUNC void charalign(void);
-SC_FUNC void addconst(cell value);
-SC_FUNC void setheap_save(cell value);
-SC_FUNC void stradjust(regid reg);
-SC_FUNC void invoke_getter(struct methodmap_method_s *method);
-SC_FUNC void invoke_setter(struct methodmap_method_s *method, int save);
-SC_FUNC void inc_pri();
-SC_FUNC void dec_pri();
+void writeleader(symbol *root);
+void writetrailer(void);
+void begcseg(void);
+void begdseg(void);
+void setline(int chkbounds);
+void setfiledirect(char *name);
+void setlinedirect(int line);
+void setlabel(int index);
+void markexpr(optmark type,const char *name,cell offset);
+void startfunc(char *fname);
+void endfunc(void);
+void alignframe(int numbytes);
+void rvalue(value *lval);
+void address(symbol *ptr,regid reg);
+void store(value *lval);
+void loadreg(cell address,regid reg);
+void storereg(cell address,regid reg);
+void memcopy(cell size);
+void copyarray(symbol *sym,cell size);
+void fillarray(symbol *sym,cell size,cell value);
+void ldconst(cell val,regid reg);
+void moveto1(void);
+void move_alt(void);
+void pushreg(regid reg);
+void pushval(cell val);
+void popreg(regid reg);
+void genarray(int dims, int _autozero);
+void swap1(void);
+void ffswitch(int label);
+void ffcase(cell value,char *labelname,int newtable);
+void ffcall(symbol *sym,const char *label,int numargs);
+void ffret(int remparams);
+void ffabort(int reason);
+void ffbounds(cell size);
+void jumplabel(int number);
+void defstorage(void);
+void modstk(int delta);
+void setstk(cell value);
+void modheap(int delta);
+void modheap_i();
+void setheap_pri(void);
+void setheap(cell value);
+void cell2addr(void);
+void cell2addr_alt(void);
+void addr2cell(void);
+void char2addr(void);
+void charalign(void);
+void addconst(cell value);
+void setheap_save(cell value);
+void stradjust(regid reg);
+void invoke_getter(struct methodmap_method_s *method);
+void invoke_setter(struct methodmap_method_s *method, int save);
+void inc_pri();
+void dec_pri();
+void load_hidden_arg();
 
 /*  Code generation functions for arithmetic operators.
  *
@@ -753,218 +733,204 @@ SC_FUNC void dec_pri();
  *          |   +--------- "u"nsigned operator, "s"igned operator or "b"oth
  *          +------------- "o"perator
  */
-SC_FUNC void os_mult(void); /* multiplication (signed) */
-SC_FUNC void os_div(void);  /* division (signed) */
-SC_FUNC void os_mod(void);  /* modulus (signed) */
-SC_FUNC void ob_add(void);  /* addition */
-SC_FUNC void ob_sub(void);  /* subtraction */
-SC_FUNC void ob_sal(void);  /* shift left (arithmetic) */
-SC_FUNC void os_sar(void);  /* shift right (arithmetic, signed) */
-SC_FUNC void ou_sar(void);  /* shift right (logical, unsigned) */
-SC_FUNC void ob_or(void);   /* bitwise or */
-SC_FUNC void ob_xor(void);  /* bitwise xor */
-SC_FUNC void ob_and(void);  /* bitwise and */
-SC_FUNC void ob_eq(void);   /* equality */
-SC_FUNC void ob_ne(void);   /* inequality */
-SC_FUNC void relop_prefix(void);
-SC_FUNC void relop_suffix(void);
-SC_FUNC void os_le(void);   /* less or equal (signed) */
-SC_FUNC void os_ge(void);   /* greater or equal (signed) */
-SC_FUNC void os_lt(void);   /* less (signed) */
-SC_FUNC void os_gt(void);   /* greater (signed) */
+void os_mult(void); /* multiplication (signed) */
+void os_div(void);  /* division (signed) */
+void os_mod(void);  /* modulus (signed) */
+void ob_add(void);  /* addition */
+void ob_sub(void);  /* subtraction */
+void ob_sal(void);  /* shift left (arithmetic) */
+void os_sar(void);  /* shift right (arithmetic, signed) */
+void ou_sar(void);  /* shift right (logical, unsigned) */
+void ob_or(void);   /* bitwise or */
+void ob_xor(void);  /* bitwise xor */
+void ob_and(void);  /* bitwise and */
+void ob_eq(void);   /* equality */
+void ob_ne(void);   /* inequality */
+void relop_prefix(void);
+void relop_suffix(void);
+void os_le(void);   /* less or equal (signed) */
+void os_ge(void);   /* greater or equal (signed) */
+void os_lt(void);   /* less (signed) */
+void os_gt(void);   /* greater (signed) */
 
-SC_FUNC void lneg(void);
-SC_FUNC void neg(void);
-SC_FUNC void invert(void);
-SC_FUNC void nooperation(void);
-SC_FUNC void inc(value *lval);
-SC_FUNC void dec(value *lval);
-SC_FUNC void jmp_ne0(int number);
-SC_FUNC void jmp_eq0(int number);
-SC_FUNC void outval(cell val,int newline);
+void lneg(void);
+void neg(void);
+void invert(void);
+void nooperation(void);
+void inc(value *lval);
+void dec(value *lval);
+void jmp_ne0(int number);
+void jmp_eq0(int number);
+void outval(cell val,int newline);
 
 /* function prototypes in SC5.C */
-SC_FUNC int error(int number,...);
-SC_FUNC void errorset(int code,int line);
+int error(int number,...);
+void errorset(int code,int line);
 
 /* function prototypes in SC6.C */
-SC_FUNC int assemble(FILE *fout,FILE *fin);
+int assemble(void *fout,void *fin);
 
 /* function prototypes in SC7.C */
-SC_FUNC void stgbuffer_cleanup(void);
-SC_FUNC void stgmark(char mark);
-SC_FUNC void stgwrite(const char *st);
-SC_FUNC void stgout(int index);
-SC_FUNC void stgdel(int index,cell code_index);
-SC_FUNC int stgget(int *index,cell *code_index);
-SC_FUNC void stgset(int onoff);
-SC_FUNC int phopt_init(void);
-SC_FUNC int phopt_cleanup(void);
+void stgbuffer_cleanup(void);
+void stgmark(char mark);
+void stgwrite(const char *st);
+void stgout(int index);
+void stgdel(int index,cell code_index);
+int stgget(int *index,cell *code_index);
+void stgset(int onoff);
+int phopt_init(void);
+int phopt_cleanup(void);
 
 /* function prototypes in SCLIST.C */
-SC_FUNC char* duplicatestring(const char* sourcestring);
-SC_FUNC stringpair *insert_alias(char *name,char *alias);
-SC_FUNC stringpair *find_alias(char *name);
-SC_FUNC int lookup_alias(char *target,char *name);
-SC_FUNC void delete_aliastable(void);
-SC_FUNC stringlist *insert_path(char *path);
-SC_FUNC char *get_path(int index);
-SC_FUNC void delete_pathtable(void);
-SC_FUNC stringpair *insert_subst(char *pattern,char *substitution,int prefixlen);
-SC_FUNC int get_subst(int index,char **pattern,char **substitution);
-SC_FUNC stringpair *find_subst(char *name,int length);
-SC_FUNC int delete_subst(char *name,int length);
-SC_FUNC void delete_substtable(void);
-SC_FUNC stringlist *insert_sourcefile(char *string);
-SC_FUNC char *get_sourcefile(int index);
-SC_FUNC void delete_sourcefiletable(void);
-SC_FUNC stringlist *insert_docstring(char *string);
-SC_FUNC char *get_docstring(int index);
-SC_FUNC void delete_docstring(int index);
-SC_FUNC void delete_docstringtable(void);
-SC_FUNC stringlist *insert_autolist(char *string);
-SC_FUNC char *get_autolist(int index);
-SC_FUNC void delete_autolisttable(void);
-SC_FUNC stringlist *insert_dbgfile(const char *filename);
-SC_FUNC stringlist *insert_dbgline(int linenr);
-SC_FUNC stringlist *insert_dbgsymbol(symbol *sym);
-SC_FUNC char *get_dbgstring(int index);
-SC_FUNC void delete_dbgstringtable(void);
-SC_FUNC stringlist *get_dbgstrings();
-
-/* function prototypes in SCMEMFILE.C */
-#if !defined tMEMFILE
-  typedef unsigned char MEMFILE;
-  #define tMEMFILE  1
-#endif
-MEMFILE *mfcreate(const char *filename);
-void mfclose(MEMFILE *mf);
-int mfdump(MEMFILE *mf);
-long mflength(const MEMFILE *mf);
-long mfseek(MEMFILE *mf,long offset,int whence);
-unsigned int mfwrite(MEMFILE *mf,const unsigned char *buffer,unsigned int size);
-unsigned int mfread(MEMFILE *mf,unsigned char *buffer,unsigned int size);
-char *mfgets(MEMFILE *mf,char *string,unsigned int size);
-int mfputs(MEMFILE *mf,const char *string);
+char* duplicatestring(const char* sourcestring);
+stringpair *insert_alias(char *name,char *alias);
+stringpair *find_alias(char *name);
+int lookup_alias(char *target,char *name);
+void delete_aliastable(void);
+stringlist *insert_path(char *path);
+char *get_path(int index);
+void delete_pathtable(void);
+stringpair *insert_subst(const char *pattern,const char *substitution,int prefixlen);
+int get_subst(int index,char **pattern,char **substitution);
+stringpair *find_subst(char *name,int length);
+int delete_subst(char *name,int length);
+void delete_substtable(void);
+stringlist *insert_sourcefile(char *string);
+char *get_sourcefile(int index);
+void delete_sourcefiletable(void);
+stringlist *insert_docstring(char *string);
+char *get_docstring(int index);
+void delete_docstring(int index);
+void delete_docstringtable(void);
+stringlist *insert_autolist(const char *string);
+char *get_autolist(int index);
+void delete_autolisttable(void);
+stringlist *insert_dbgfile(const char *filename);
+stringlist *insert_dbgline(int linenr);
+stringlist *insert_dbgsymbol(symbol *sym);
+char *get_dbgstring(int index);
+void delete_dbgstringtable(void);
+stringlist *get_dbgstrings();
 
 /* function prototypes in SCI18N.C */
 #define MAXCODEPAGE 12
-SC_FUNC int cp_path(const char *root,const char *directory);
-SC_FUNC int cp_set(const char *name);
-SC_FUNC cell cp_translate(const unsigned char *string,const unsigned char **endptr);
-SC_FUNC cell get_utf8_char(const unsigned char *string,const unsigned char **endptr);
-SC_FUNC int scan_utf8(FILE *fp,const char *filename);
+int cp_path(const char *root,const char *directory);
+int cp_set(const char *name);
+cell cp_translate(const unsigned char *string,const unsigned char **endptr);
+cell get_utf8_char(const unsigned char *string,const unsigned char **endptr);
+int scan_utf8(void *fp,const char *filename);
 
 /* function prototypes in SCSTATE.C */
-SC_FUNC constvalue *automaton_add(const char *name);
-SC_FUNC constvalue *automaton_find(const char *name);
-SC_FUNC constvalue *automaton_findid(int id);
-SC_FUNC constvalue *state_add(const char *name,int fsa_id);
-SC_FUNC constvalue *state_find(const char *name,int fsa_id);
-SC_FUNC constvalue *state_findid(int id);
-SC_FUNC void state_buildlist(int **list,int *listsize,int *count,int stateid);
-SC_FUNC int state_addlist(int *list,int count,int fsa_id);
-SC_FUNC void state_deletetable(void);
-SC_FUNC int state_getfsa(int listid);
-SC_FUNC int state_count(int listid);
-SC_FUNC int state_inlist(int listid,int state);
-SC_FUNC int state_listitem(int listid,int index);
-SC_FUNC void state_conflict(symbol *root);
-SC_FUNC int state_conflict_id(int listid1,int listid2);
+constvalue *automaton_add(const char *name);
+constvalue *automaton_find(const char *name);
+constvalue *automaton_findid(int id);
+constvalue *state_add(const char *name,int fsa_id);
+constvalue *state_find(const char *name,int fsa_id);
+constvalue *state_findid(int id);
+void state_buildlist(int **list,int *listsize,int *count,int stateid);
+int state_addlist(int *list,int count,int fsa_id);
+void state_deletetable(void);
+int state_getfsa(int listid);
+int state_count(int listid);
+int state_inlist(int listid,int state);
+int state_listitem(int listid,int index);
+void state_conflict(symbol *root);
+int state_conflict_id(int listid1,int listid2);
 
 /* external variables (defined in scvars.c) */
 #if !defined SC_SKIP_VDECL
 typedef struct HashTable HashTable;
-SC_VDECL struct HashTable *sp_Globals;
-SC_VDECL symbol loctab;       /* local symbol table */
-SC_VDECL symbol glbtab;       /* global symbol table */
-SC_VDECL cell *litq;          /* the literal queue */
-SC_VDECL unsigned char pline[]; /* the line read from the input file */
-SC_VDECL const unsigned char *lptr;/* points to the current position in "pline" */
-SC_VDECL constvalue tagname_tab;/* tagname table */
-SC_VDECL constvalue libname_tab;/* library table (#pragma library "..." syntax) */
-SC_VDECL constvalue *curlibrary;/* current library */
-SC_VDECL int pc_addlibtable;  /* is the library table added to the AMX file? */
-SC_VDECL symbol *curfunc;     /* pointer to current function */
-SC_VDECL char *inpfname;      /* name of the file currently read from */
-SC_VDECL char outfname[];     /* intermediate (assembler) file name */
-SC_VDECL char binfname[];     /* binary file name */
-SC_VDECL char errfname[];     /* error file name */
-SC_VDECL char sc_ctrlchar;    /* the control character (or escape character) */
-SC_VDECL char sc_ctrlchar_org;/* the default control character */
-SC_VDECL int litidx;          /* index to literal table */
-SC_VDECL int litmax;          /* current size of the literal table */
-SC_VDECL int stgidx;          /* index to the staging buffer */
-SC_VDECL int sc_labnum;       /* number of (internal) labels */
-SC_VDECL int staging;         /* true if staging output */
-SC_VDECL cell declared;       /* number of local cells declared */
-SC_VDECL cell glb_declared;   /* number of global cells declared */
-SC_VDECL cell code_idx;       /* number of bytes with generated code */
-SC_VDECL int ntv_funcid;      /* incremental number of native function */
-SC_VDECL int errnum;          /* number of errors */
-SC_VDECL int warnnum;         /* number of warnings */
-SC_VDECL int sc_debug;        /* debug/optimization options (bit field) */
-SC_VDECL int sc_packstr;      /* strings are packed by default? */
-SC_VDECL int sc_asmfile;      /* create .ASM file? */
-SC_VDECL int sc_listing;      /* create .LST file? */
-SC_VDECL int sc_compress;     /* compress bytecode? */
-SC_VDECL int sc_needsemicolon;/* semicolon required to terminate expressions? */
-SC_VDECL int sc_dataalign;    /* data alignment value */
-SC_VDECL int sc_alignnext;    /* must frame of the next function be aligned? */
-SC_VDECL int pc_docexpr;      /* must expression be attached to documentation comment? */
-SC_VDECL int sc_showincludes; /* show include files? */
-SC_VDECL int curseg;          /* 1 if currently parsing CODE, 2 if parsing DATA */
-SC_VDECL cell pc_stksize;     /* stack size */
-SC_VDECL cell pc_amxlimit;    /* abstract machine size limit (code + data, or only code) */
-SC_VDECL cell pc_amxram;      /* abstract machine data size limit */
-SC_VDECL int freading;        /* is there an input file ready for reading? */
-SC_VDECL int fline;           /* the line number in the current file */
-SC_VDECL short fnumber;       /* number of files in the file table (debugging) */
-SC_VDECL short fcurrent;      /* current file being processed (debugging) */
-SC_VDECL short sc_intest;     /* true if inside a test */
-SC_VDECL int sideeffect;      /* true if an expression causes a side-effect */
-SC_VDECL int stmtindent;      /* current indent of the statement */
-SC_VDECL int indent_nowarn;   /* skip warning "217 loose indentation" */
-SC_VDECL int sc_tabsize;      /* number of spaces that a TAB represents */
-SC_VDECL short sc_allowtags;  /* allow/detect tagnames in lex() */
-SC_VDECL int sc_status;       /* read/write status */
-SC_VDECL int sc_err_status;   /* TRUE if errors should be generated even if sc_status = SKIP */
-SC_VDECL int sc_rationaltag;  /* tag for rational numbers */
-SC_VDECL int rational_digits; /* number of fractional digits */
-SC_VDECL int sc_allowproccall;/* allow/detect tagnames in lex() */
-SC_VDECL short sc_is_utf8;    /* is this source file in UTF-8 encoding */
-SC_VDECL char *pc_deprecate;  /* if non-NULL, mark next declaration as deprecated */
-SC_VDECL int sc_curstates;    /* ID of the current state list */
-SC_VDECL int pc_optimize;     /* (peephole) optimization level */
-SC_VDECL int pc_memflags;     /* special flags for the stack/heap usage */
-SC_VDECL int pc_functag;      /* global function tag */
-SC_VDECL int pc_tag_string;   /* global String tag */
-SC_VDECL int pc_tag_void;     /* global void tag */
-SC_VDECL int pc_tag_object;   /* root object tag */
-SC_VDECL int pc_tag_bool;     /* global bool tag */
-SC_VDECL int pc_tag_null_t;   /* the null type */
-SC_VDECL int pc_tag_nullfunc_t;   /* the null function type */
-SC_VDECL int pc_anytag;       /* global any tag */
-SC_VDECL int glbstringread;	  /* last global string read */
-SC_VDECL int sc_require_newdecls; /* only newdecls are allowed */
+extern struct HashTable *sp_Globals;
+extern symbol loctab;       /* local symbol table */
+extern symbol glbtab;       /* global symbol table */
+extern cell *litq;          /* the literal queue */
+extern unsigned char pline[]; /* the line read from the input file */
+extern const unsigned char *lptr;/* points to the current position in "pline" */
+extern constvalue tagname_tab;/* tagname table */
+extern constvalue libname_tab;/* library table (#pragma library "..." syntax) */
+extern constvalue *curlibrary;/* current library */
+extern int pc_addlibtable;  /* is the library table added to the AMX file? */
+extern symbol *curfunc;     /* pointer to current function */
+extern char *inpfname;      /* name of the file currently read from */
+extern char outfname[];     /* intermediate (assembler) file name */
+extern char binfname[];     /* binary file name */
+extern char errfname[];     /* error file name */
+extern char sc_ctrlchar;    /* the control character (or escape character) */
+extern char sc_ctrlchar_org;/* the default control character */
+extern int litidx;          /* index to literal table */
+extern int litmax;          /* current size of the literal table */
+extern int stgidx;          /* index to the staging buffer */
+extern int sc_labnum;       /* number of (internal) labels */
+extern int staging;         /* true if staging output */
+extern cell declared;       /* number of local cells declared */
+extern cell glb_declared;   /* number of global cells declared */
+extern cell code_idx;       /* number of bytes with generated code */
+extern int ntv_funcid;      /* incremental number of native function */
+extern int errnum;          /* number of errors */
+extern int warnnum;         /* number of warnings */
+extern int sc_debug;        /* debug/optimization options (bit field) */
+extern int sc_packstr;      /* strings are packed by default? */
+extern int sc_asmfile;      /* create .ASM file? */
+extern int sc_listing;      /* create .LST file? */
+extern int sc_compress;     /* compress bytecode? */
+extern int sc_needsemicolon;/* semicolon required to terminate expressions? */
+extern int sc_dataalign;    /* data alignment value */
+extern int sc_alignnext;    /* must frame of the next function be aligned? */
+extern int pc_docexpr;      /* must expression be attached to documentation comment? */
+extern int sc_showincludes; /* show include files? */
+extern int curseg;          /* 1 if currently parsing CODE, 2 if parsing DATA */
+extern cell pc_stksize;     /* stack size */
+extern cell pc_amxlimit;    /* abstract machine size limit (code + data, or only code) */
+extern cell pc_amxram;      /* abstract machine data size limit */
+extern int freading;        /* is there an input file ready for reading? */
+extern int fline;           /* the line number in the current file */
+extern short fnumber;       /* number of files in the file table (debugging) */
+extern short fcurrent;      /* current file being processed (debugging) */
+extern short sc_intest;     /* true if inside a test */
+extern int sideeffect;      /* true if an expression causes a side-effect */
+extern int stmtindent;      /* current indent of the statement */
+extern int indent_nowarn;   /* skip warning "217 loose indentation" */
+extern int sc_tabsize;      /* number of spaces that a TAB represents */
+extern short sc_allowtags;  /* allow/detect tagnames in lex() */
+extern int sc_status;       /* read/write status */
+extern int sc_err_status;   /* TRUE if errors should be generated even if sc_status = SKIP */
+extern int sc_rationaltag;  /* tag for rational numbers */
+extern int rational_digits; /* number of fractional digits */
+extern int sc_allowproccall;/* allow/detect tagnames in lex() */
+extern short sc_is_utf8;    /* is this source file in UTF-8 encoding */
+extern char *pc_deprecate;  /* if non-NULL, mark next declaration as deprecated */
+extern int sc_curstates;    /* ID of the current state list */
+extern int pc_optimize;     /* (peephole) optimization level */
+extern int pc_memflags;     /* special flags for the stack/heap usage */
+extern int pc_functag;      /* global function tag */
+extern int pc_tag_string;   /* global String tag */
+extern int pc_tag_void;     /* global void tag */
+extern int pc_tag_object;   /* root object tag */
+extern int pc_tag_bool;     /* global bool tag */
+extern int pc_tag_null_t;   /* the null type */
+extern int pc_tag_nullfunc_t;   /* the null function type */
+extern int pc_anytag;       /* global any tag */
+extern int glbstringread;	  /* last global string read */
+extern int sc_require_newdecls; /* only newdecls are allowed */
 
-SC_VDECL constvalue sc_automaton_tab; /* automaton table */
-SC_VDECL constvalue sc_state_tab;     /* state table */
+extern constvalue sc_automaton_tab; /* automaton table */
+extern constvalue sc_state_tab;     /* state table */
 
-SC_VDECL FILE *inpf;          /* file read from (source or include) */
-SC_VDECL FILE *inpf_org;      /* main source file */
-SC_VDECL FILE *outf;          /* file written to */
+extern void *inpf;          /* file read from (source or include) */
+extern void *inpf_org;      /* main source file */
+extern void *outf;          /* file written to */
 
-SC_VDECL jmp_buf errbuf;      /* target of longjmp() on a fatal error */
+extern jmp_buf errbuf;      /* target of longjmp() on a fatal error */
 
 #if !defined SC_LIGHT
-  SC_VDECL int sc_makereport; /* generate a cross-reference report */
+  extern int sc_makereport; /* generate a cross-reference report */
 #endif
 
 #if defined WIN32
-#if !defined snprintf
-#define snprintf _snprintf
-#endif
+# if !defined snprintf
+#  define snprintf _snprintf
+#  define vsnprintf _vsnprintf
+# endif
 #endif
 
 #endif /* SC_SKIP_VDECL */

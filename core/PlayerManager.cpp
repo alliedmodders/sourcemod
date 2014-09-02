@@ -502,6 +502,9 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 	/* Get the client's language */
 	if (m_QueryLang)
 	{
+#if SOURCE_ENGINE == SE_CSGO
+		pPlayer->m_LangId = translator->GetServerLanguage();
+#else
 		const char *name;
 		if (!pPlayer->IsFakeClient() && (name=engine->GetClientConVarValue(client, "cl_language")))
 		{
@@ -510,6 +513,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 		} else {
 			pPlayer->m_LangId = translator->GetServerLanguage();
 		}
+#endif
 	}
 	
 	List<IClientListener *>::iterator iter;
@@ -727,6 +731,13 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		}
 		pPlayer->Authorize_Post();
 	}
+#if SOURCE_ENGINE == SE_CSGO
+	else
+	{
+		// Not a bot
+		pPlayer->m_LanguageCookie = g_ConVarManager.QueryClientConVar(pEntity, "cl_language", NULL, 0);
+	}
+#endif
 
 	if (playerinfo)
 	{
@@ -1227,7 +1238,7 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 	if ((networkid_force = engine->GetClientConVarValue(client, "networkid_force")) && networkid_force[0] != '\0')
 	{
 		unsigned int accountId = pPlayer->GetSteamAccountID();
-		g_Logger.LogMessage("\"%s<%d><STEAM_1:%d:%d><>\" has bad networkid (id \"%s\") (ip \"%s\")",
+		logger->LogMessage("\"%s<%d><STEAM_1:%d:%d><>\" has bad networkid (id \"%s\") (ip \"%s\")",
 			new_name, pPlayer->GetUserId(), accountId & 1, accountId >> 1, networkid_force, pPlayer->GetIPAddress());
 
 		pPlayer->Kick("NetworkID spoofing detected.");
@@ -1862,6 +1873,24 @@ void CmdMaxplayersCallback()
 	g_Players.MaxPlayersChanged();
 }
 
+#if SOURCE_ENGINE == SE_CSGO
+bool PlayerManager::HandleConVarQuery(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
+{
+	for (int i = 1; i <= m_maxClients; i++)
+	{
+		if (m_Players[i].m_LanguageCookie == cookie)
+		{
+			unsigned int langid;
+			m_Players[i].m_LangId = (translator->GetLanguageByName(cvarValue, &langid)) ? langid : translator->GetServerLanguage();
+
+			return true;
+		}
+	}
+
+	return false;
+}
+#endif
+
 
 /*******************
  *** PLAYER CODE ***
@@ -1886,6 +1915,9 @@ CPlayer::CPlayer()
 	m_bIsReplay = false;
 	m_Serial.value = -1;
 	m_SteamAccountID = 0;
+#if SOURCE_ENGINE == SE_CSGO
+	m_LanguageCookie = InvalidQueryCvarCookie;
+#endif
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
@@ -1966,6 +1998,9 @@ void CPlayer::Disconnect()
 	m_bIsReplay = false;
 	m_Serial.value = -1;
 	m_SteamAccountID = 0;
+#if SOURCE_ENGINE == SE_CSGO
+	m_LanguageCookie = InvalidQueryCvarCookie;
+#endif
 }
 
 void CPlayer::SetName(const char *name)

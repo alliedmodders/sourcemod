@@ -9,10 +9,18 @@
 
 #if !defined HAVE_SAFESTR
 
-size_t
+#if defined(__cplusplus)
+# define EXPORT extern "C"
+#else
+# define EXPORT
+#endif
+
+EXPORT size_t
 strlcpy(char *dst, const char *src, size_t siz);
 
-size_t
+EXPORT size_t
 strlcat(char *dst, const char *src, size_t siz);
+
+#undef EXPORT
 
 #endif

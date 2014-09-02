@@ -8,30 +8,30 @@
  */
 typedef struct sp_writefuncs_s
 {
-	void *(*fnOpen)(const char *);	/* filename, returns handle */
-	void (*fnClose)(void *);			/* handle */
-	/* buffer, size, count, handle, returns count written */
-	size_t (*fnWrite)(const void *, size_t, size_t, void *);	
-	/* buffer, size, count, handle, returns count read */
-	size_t (*fnRead)(void *, size_t, size_t, void *);
-	/* returns current position from start */
-	size_t (*fnGetPos)(void *);
-	/* sets current position from start, return 0 for success, nonzero for error */
-	int (*fnSetPos)(void *, size_t);
+  void *(*fnOpen)(const char *);  /* filename, returns handle */
+  void (*fnClose)(void *);      /* handle */
+  /* buffer, size, count, handle, returns count written */
+  size_t (*fnWrite)(const void *, size_t, size_t, void *);  
+  /* buffer, size, count, handle, returns count read */
+  size_t (*fnRead)(void *, size_t, size_t, void *);
+  /* returns current position from start */
+  size_t (*fnGetPos)(void *);
+  /* sets current position from start, return 0 for success, nonzero for error */
+  int (*fnSetPos)(void *, size_t);
 } sp_writefuncs_t;
 
 typedef struct sp_file_s
 {
-	sp_file_hdr_t header;
-	sp_file_section_t *sections;
-	size_t *offsets;
-	sp_writefuncs_t funcs;
-	size_t lastsection;
-	size_t curoffs;
-	void *handle;
-	int state;
-	char *nametab;
-	size_t nametab_idx;
+  sp_file_hdr_t header;
+  sp_file_section_t *sections;
+  size_t *offsets;
+  sp_writefuncs_t funcs;
+  size_t lastsection;
+  size_t curoffs;
+  void *handle;
+  int state;
+  char *nametab;
+  size_t nametab_idx;
 } sp_file_t;
 
 /**

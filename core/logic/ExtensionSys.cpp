@@ -606,7 +606,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path, bool bErrorOn
 	{
 		if (bErrorOnMissing || libsys->IsPathFile(p->GetPath()))
 		{
-			smcore.LogError("[SM] Unable to load extension \"%s\": %s", path, error);
+			logger->LogError("[SM] Unable to load extension \"%s\": %s", path, error);
 		}
 		
 		p->SetError(error);
@@ -1356,6 +1356,24 @@ void CExtensionManager::CallOnCoreMapStart(edict_t *pEdictList, int edictCount, 
 		if (pAPI->GetExtensionVersion() > 3)
 		{
 			pAPI->OnCoreMapStart(pEdictList, edictCount, clientMax);
+		}
+	}
+}
+
+void CExtensionManager::CallOnCoreMapEnd()
+{
+	IExtensionInterface *pAPI;
+	List<CExtension *>::iterator iter;
+
+	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
+	{
+		if ((pAPI = (*iter)->GetAPI()) == NULL)
+		{
+			continue;
+		}
+		if (pAPI->GetExtensionVersion() > 7)
+		{
+			pAPI->OnCoreMapEnd();
 		}
 	}
 }

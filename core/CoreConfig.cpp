@@ -262,7 +262,7 @@ void CoreConfig::Initialize()
 	{
  		/* :TODO: This won't actually log or print anything :( - So fix that somehow */
 		const char *error = textparsers->GetSMCErrorString(err);
-		g_Logger.LogFatal("[SM] Error encountered parsing core config file: %s", error ? error : "");
+		logger->LogFatal("[SM] Error encountered parsing core config file: %s", error ? error : "");
 	}
 }
 
@@ -274,7 +274,7 @@ SMCResult CoreConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key,
 	if (err == ConfigResult_Reject)
 	{
 		/* This is a fatal error */
-		g_Logger.LogFatal("Config error (key: %s) (value: %s) %s", key, value, error);
+		logger->LogFatal("Config error (key: %s) (value: %s) %s", key, value, error);
 	}
 
 	return SMCResult_Continue;
@@ -469,7 +469,7 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 			}
 			else
 			{
-				g_Logger.LogError("Failed to auto generate config for %s, make sure the directory has write permission.", pl->GetFilename());
+				logger->LogError("Failed to auto generate config for %s, make sure the directory has write permission.", pl->GetFilename());
 				return can_create;
 			}
 		}

@@ -219,7 +219,7 @@ void ClientPrefs::DatabaseConnect()
 	char error[256];
 	int errCode = 0;
 
-	Database = Newborn<IDatabase>(Driver->Connect(DBInfo, true, error, sizeof(error)));
+	Database = AdoptRef(Driver->Connect(DBInfo, true, error, sizeof(error)));
 
 	if (!Database)
 	{

@@ -35,12 +35,15 @@
 
 namespace ke {
 
+// See the comment above Refcounted<T> for more information. This class is
+// identical, except changing the reference count is guaranteed to be atomic
+// with respect to other threads changing the reference count.
 template <typename T>
 class RefcountedThreadsafe
 {
   public:
     RefcountedThreadsafe()
-     : refcount_(1)
+     : refcount_(0)
     {
     }
 

@@ -108,7 +108,7 @@ native bool:SMC_GetErrorString(SMCError:error, String:buffer[], buf_max);
  * @param smc			The SMC Parse Handle.
  * @noreturn
  */
-functag public void SMC_ParseStart(Handle:smc);
+typedef SMC_ParseStart = function void (Handle smc);
 
 /**
  * Sets the SMC_ParseStart function of a parse Handle.
@@ -128,7 +128,7 @@ native SMC_SetParseStart(Handle:smc, SMC_ParseStart:func);
  * @param failed		True if parsing failed, false otherwise.
  * @noreturn
  */
-functag public void SMC_ParseEnd(Handle:smc, bool:halted, bool:failed);
+typedef SMC_ParseEnd = function void (Handle smc, bool halted, bool failed);
 
 /**
  * Sets the SMC_ParseEnd of a parse handle.
@@ -149,7 +149,7 @@ native SMC_SetParseEnd(Handle:smc, SMC_ParseEnd:func);
  * @param opt_quotes	True if the section name was quote-enclosed in the file.
  * @return				An SMCResult action to take.
  */
-functag public SMCResult:SMC_NewSection(Handle:smc, const String:name[], bool:opt_quotes);
+typedef SMC_NewSection = function SMCResult (Handle smc, const char[] name, bool opt_quotes);
 
 /**
  * Called when the parser finds a new key/value pair.
@@ -162,7 +162,7 @@ functag public SMCResult:SMC_NewSection(Handle:smc, const String:name[], bool:op
  * @param value_quotes	Whether or not the value was enclosed in quotes.
  * @return				An SMCResult action to take.
  */
-functag public SMCResult:SMC_KeyValue(Handle:smc, const String:key[], const String:value[], bool:key_quotes, bool:value_quotes);
+typedef SMC_KeyValue = function SMCResult (Handle smc, const char[] key, const char[] value, bool key_quotes, bool value_quotes);
 
 /**
  * Called when the parser finds the end of the current section.
@@ -170,7 +170,7 @@ functag public SMCResult:SMC_KeyValue(Handle:smc, const String:key[], const Stri
  * @param smc			The SMC Parse Handle.
  * @return				An SMCResult action to take.
  */
-functag public SMCResult:SMC_EndSection(Handle:smc);
+typedef SMC_EndSection = function SMCResult (Handle smc);
 
 /**
  * Sets the three main reader functions.
@@ -191,7 +191,7 @@ native SMC_SetReaders(Handle:smc, SMC_NewSection:ns, SMC_KeyValue:kv, SMC_EndSec
  * @param lineno		The line number it occurs on.
  * @return				An SMCResult action to take.
  */
-functag public SMCResult:SMC_RawLine(Handle:smc, const String:line[], lineno);
+typedef SMC_RawLine = function SMCResult (Handle smc, const char[] line, int lineno);
 
 /**
  * Sets a raw line reader on an SMC parser Handle.

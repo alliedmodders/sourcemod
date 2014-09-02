@@ -167,7 +167,7 @@ void SourceMod_Core::OnVSPListening(IServerPluginCallbacks *iface)
 	/* This shouldn't happen */
 	if (!iface)
 	{
-		g_Logger.LogFatal("Metamod:Source version is out of date. SourceMod requires 1.4.2 or greater.");
+		logger->LogFatal("Metamod:Source version is out of date. SourceMod requires 1.4.2 or greater.");
 		return;
 	}
 

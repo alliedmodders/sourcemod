@@ -45,7 +45,7 @@
 /**
  * Any of the following prototypes will work for a timed function.
  */
-funcenum Timer
+union Timer
 {
 	/**
  	 * Called when the timer interval has elapsed.
@@ -55,7 +55,7 @@ funcenum Timer
  	 * @return				Plugin_Stop to stop a repeating timer, any other value for
  	 *						default behavior.
  	 */
-	Action:public(Handle:timer, Handle:hndl),
+	function Action(Handle timer, Handle hndl);
 	
 	/**
  	 * Called when the timer interval has elapsed.
@@ -65,7 +65,7 @@ funcenum Timer
  	 * @return				Plugin_Stop to stop a repeating timer, any other value for
  	 *						default behavior.
  	 */
-	Action:public(Handle:timer, any:data),
+	function Action(Handle timer, any data);
 	
 	/**
  	 * Called when the timer interval has elapsed.
@@ -74,7 +74,7 @@ funcenum Timer
  	 * @return				Plugin_Stop to stop a repeating timer, any other value for
  	 *						default behavior.
  	 */
-	Action:public(Handle:timer),
+	function Action(Handle timer);
 };
 
 /**

@@ -106,7 +106,7 @@ static cell_t MatchRegex(IPluginContext *pCtx, const cell_t *params)
 
 	if ((err=g_pHandleSys->ReadHandle(hndl, g_RegexHandle, &sec, (void **)&x)) != HandleError_None)
 	{
-		return pCtx->ThrowNativeError("Invalid file handle %x (error %d)", hndl, err);
+		return pCtx->ThrowNativeError("Invalid regex handle %x (error %d)", hndl, err);
 	}
 
 	if (!x)
@@ -159,7 +159,7 @@ static cell_t GetRegexSubString(IPluginContext *pCtx, const cell_t *params)
 
 	if ((err=g_pHandleSys->ReadHandle(hndl, g_RegexHandle, &sec, (void **)&x)) != HandleError_None)
 	{
-		return pCtx->ThrowNativeError("Invalid file handle %x (error %d)", hndl, err);
+		return pCtx->ThrowNativeError("Invalid regex handle %x (error %d)", hndl, err);
 	}
 
 	if (!x)

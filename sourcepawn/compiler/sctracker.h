@@ -22,7 +22,7 @@ typedef struct funcarg_s
   int tagcount;
   int tags[sTAGS_MAX];
   int dimcount;
-  cell dims[sDIMEN_MAX];
+  int dims[sDIMEN_MAX];
   int ident;
   int fconst;
   int ommittable;
@@ -31,7 +31,7 @@ typedef struct funcarg_s
 typedef struct functag_s
 {
   int ret_tag;
-  int type;
+  int usage;
   int argcount;
   int ommittable;
   funcarg_t args[sARGS_MAX];
@@ -40,8 +40,8 @@ typedef struct functag_s
 
 typedef struct funcenum_s
 {
-  int value;
-  char name[sNAMEMAX+1];
+  int tag;
+  char name[METHOD_NAMEMAX+1];
   functag_t *first;
   functag_t *last;
   struct funcenum_s *next;
@@ -116,8 +116,10 @@ structarg_t *pstructs_getarg(pstruct_t *pstruct, const char *member);
  */
 void funcenums_free();
 funcenum_t *funcenums_add(const char *name);
-funcenum_t *funcenums_find_byval(int value);
+funcenum_t *funcenums_find_by_tag(int tag);
 functag_t *functags_add(funcenum_t *en, functag_t *src);
+funcenum_t *funcenum_for_symbol(symbol *sym);
+functag_t *functag_find_intrinsic(int tag);
 
 /**
  * Given a name or tag, find any extra weirdness it has associated with it.
@@ -166,5 +168,7 @@ void methodmaps_free();
 
 extern memuse_list_t *heapusage;
 extern memuse_list_t *stackusage;
+
+size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 
 #endif //_INCLUDE_SOURCEPAWN_COMPILER_TRACKER_H_

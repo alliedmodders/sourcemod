@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined	__WIN32__ || defined _WIN32 || defined __MSDOS__
+#if defined __WIN32__ || defined _WIN32 || defined __MSDOS__
   #include <conio.h>
   #include <io.h>
 #endif
@@ -131,7 +131,7 @@ static int test(int label,int parens,int invert);
 static int doexpr(int comma,int chkeffect,int allowarray,int mark_endexpr,
                   int *tag,symbol **symptr,int chkfuncresult);
 static int doexpr2(int comma,int chkeffect,int allowarray,int mark_endexpr,
-				  int *tag,symbol **symptr,int chkfuncresult,value *lval);
+                   int *tag,symbol **symptr,int chkfuncresult,value *lval);
 static void doassert(void);
 static void doexit(void);
 static int doif(void);
@@ -143,6 +143,8 @@ static void dogoto(void);
 static void dolabel(void);
 static void doreturn(void);
 static void dofuncenum(int listmode);
+static void dotypedef();
+static void dounion();
 static void domethodmap(LayoutSpec spec);
 static void dobreak(void);
 static void docont(void);
@@ -183,7 +185,7 @@ static int *wqptr;              /* pointer to next entry */
   static char sc_rootpath[_MAX_PATH];
   static char *sc_documentation=NULL;/* main documentation */
 #endif
-#if defined	__WIN32__ || defined _WIN32 || defined _Windows
+#if defined __WIN32__ || defined _WIN32 || defined _Windows
   static HWND hwndFinish = 0;
 #endif
 
@@ -192,9 +194,6 @@ char g_tmpfile[_MAX_PATH] = {0};
 
 /*  "main" of the compiler
  */
-#if defined __cplusplus
-  extern "C"
-#endif
 int pc_compile(int argc, char *argv[])
 {
   int entry,i,jmpcode;
@@ -271,7 +270,7 @@ int pc_compile(int argc, char *argv[])
     char *tname,*sname;
     void *ftmp,*fsrc;
     int fidx;
-    #if defined	__WIN32__ || defined _WIN32
+    #if defined __WIN32__ || defined _WIN32
       tname=_tempnam(NULL,"pawn");
     #elif defined __MSDOS__ || defined _Windows
       tname=tempnam(NULL,"pawn");
@@ -485,7 +484,7 @@ cleanup:
 
   #if !defined SC_LIGHT
     if (errnum==0 && strlen(errfname)==0) {
-#if 0	//bug in compiler -- someone's script caused this function to infrecurs
+#if 0 //bug in compiler -- someone's script caused this function to infrecurs
       int recursion;
       long stacksize=max_stacksize(&glbtab,&recursion);
 #endif
@@ -503,7 +502,7 @@ cleanup:
         pc_printf("Header size:       %8ld bytes\n", (long)hdrsize);
         pc_printf("Code size:         %8ld bytes\n", (long)code_idx);
         pc_printf("Data size:         %8ld bytes\n", (long)glb_declared*sizeof(cell));
-        pc_printf("Stack/heap size:   %8ld bytes; ", (long)pc_stksize*sizeof(cell));
+        pc_printf("Stack/heap size:   %8ld bytes\n", (long)pc_stksize*sizeof(cell));
 #if 0
         pc_printf("estimated max. usage");
         if (recursion)
@@ -571,7 +570,7 @@ cleanup:
     if (retcode==0 && verbosity>=2)
       pc_printf("\nDone.\n");
   } /* if */
-  #if defined	__WIN32__ || defined _WIN32 || defined _Windows
+  #if defined __WIN32__ || defined _WIN32 || defined _Windows
     if (IsWindow(hwndFinish))
       PostMessageA(hwndFinish,RegisterWindowMessageA("PawnNotify"),retcode,0L);
   #endif
@@ -581,10 +580,7 @@ cleanup:
   return retcode;
 }
 
-#if defined __cplusplus
-  extern "C"
-#endif
-int pc_addconstant(char *name,cell value,int tag)
+int pc_addconstant(const char *name,cell value,int tag)
 {
   errorset(sFORCESET,0);        /* make sure error engine is silenced */
   sc_status=statIDLE;
@@ -615,7 +611,7 @@ static void inst_binary_name(char *binfname)
 
   if (binptr == NULL)
   {
-	  binptr = binfname;
+    binptr = binfname;
   }
 
   snprintf(newpath, sizeof(newpath), "\"%s\"", binfname);
@@ -677,20 +673,19 @@ int pc_findtag(const char *name)
   return -1;
 }
 
-#if defined __cplusplus
-  extern "C"
-#endif
-int pc_addtag(char *name)
+int pc_addtag(const char *name)
 {
   int val;
   int flags = 0;
 
   if (name==NULL) {
     /* no tagname was given, check for one */
-    if (lex(&val,&name)!=tLABEL) {
+    char *nameptr;
+    if (lex(&val,&nameptr)!=tLABEL) {
       lexpush();
       return 0;         /* untagged */
     } /* if */
+    name = nameptr;
   } /* if */
 
   if (isupper(*name))
@@ -699,12 +694,12 @@ int pc_addtag(char *name)
   return pc_addtag_flags(name, flags);
 }
 
-int pc_addtag_flags(char *name, int flags)
+int pc_addtag_flags(const char *name, int flags)
 {
   constvalue *ptr;
   int last,tag;
 
-  assert(strchr(name,':')==NULL); /* colon should already have been stripped */
+  assert((flags & FUNCTAG) || strchr(name,':')==NULL); /* colon should already have been stripped */
   last=0;
   ptr=tagname_tab.next;
   while (ptr!=NULL) {
@@ -777,7 +772,7 @@ static void initglobals(void)
   sc_debug=sCHKBOUNDS|sSYMBOLIC;   /* sourcemod: full debug stuff */
   pc_optimize=sOPTIMIZE_DEFAULT;   /* sourcemod: full optimization */
   sc_packstr=TRUE;     /* strings are packed by default */
-  sc_compress=FALSE;	/* always disable compact encoding! */
+  sc_compress=FALSE;    /* always disable compact encoding! */
   sc_needsemicolon=FALSE;/* semicolon required to terminate expressions? */
   sc_require_newdecls = FALSE;
   sc_dataalign=sizeof(cell);
@@ -830,7 +825,7 @@ static char *get_extension(char *filename)
  * Set the default extension, or force an extension. To erase the
  * extension of a filename, set "extension" to an empty string.
  */
-SC_FUNC void set_extension(char *filename,char *extension,int force)
+void set_extension(char *filename,const char *extension,int force)
 {
   char *ptr;
 
@@ -904,7 +899,7 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
         if (verbosity>1)
           verbosity=1;
         break;
-#if 0	/* not allowed in SourceMod */
+#if 0 /* not allowed in SourceMod */
       case 'C':
         #if AMX_COMPACTMARGIN > 2
           sc_compress=toggle_option(ptr,sc_compress);
@@ -949,7 +944,7 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
       case 'e':
         strlcpy(ename,option_value(ptr),_MAX_PATH); /* set name of error file */
         break;
-#if defined	__WIN32__ || defined _WIN32 || defined _Windows
+#if defined __WIN32__ || defined _WIN32 || defined _Windows
       case 'H':
         hwndFinish=(HWND)atoi(option_value(ptr));
         if (!IsWindow(hwndFinish))
@@ -1268,7 +1263,8 @@ static void setconfig(char *root)
 static void setcaption(void)
 {
   pc_printf("SourcePawn Compiler %s\n", SOURCEMOD_VERSION);
-  pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2014 AlliedModders, LLC\n\n");
+  pc_printf("Copyright (c) 1997-2006 ITB CompuPhase\n");
+  pc_printf("Copyright (c) 2004-2014 AlliedModders LLC\n\n");
 }
 
 static void about(void)
@@ -1279,7 +1275,7 @@ static void about(void)
     pc_printf("Options:\n");
     pc_printf("         -A<num>  alignment in bytes of the data segment and the stack\n");
     pc_printf("         -a       output assembler code\n");
-#if 0	/* not toggleable in SourceMod */
+#if 0 /* not toggleable in SourceMod */
     pc_printf("         -C[+/-]  compact encoding for output file (default=%c)\n", sc_compress ? '+' : '-');
 #endif
     pc_printf("         -c<name> codepage name or number; e.g. 1252 for Windows Latin-1\n");
@@ -1294,7 +1290,7 @@ static void about(void)
     pc_printf("             3    same as -d2, but implies -O0\n");
 #endif
     pc_printf("         -e<name> set name of error file (quiet compile)\n");
-#if defined	__WIN32__ || defined _WIN32 || defined _Windows
+#if defined __WIN32__ || defined _WIN32 || defined _Windows
     pc_printf("         -H<hwnd> window handle to send a notification message on finish\n");
 #endif
     pc_printf("         -h       show included file paths\n");
@@ -1326,7 +1322,7 @@ static void about(void)
 #endif
     pc_printf("         sym=val  define constant \"sym\" with value \"val\"\n");
     pc_printf("         sym=     define constant \"sym\" with value 0\n");
-#if defined	__WIN32__ || defined _WIN32 || defined _Windows || defined __MSDOS__
+#if defined __WIN32__ || defined _WIN32 || defined _Windows || defined __MSDOS__
     pc_printf("\nOptions may start with a dash or a slash; the options \"-d0\" and \"/d0\" are\n");
     pc_printf("equivalent.\n");
 #endif
@@ -1360,35 +1356,14 @@ static void setconstants(void)
   add_constant("false",0,sGLOBAL,1);
   add_constant("EOS",0,sGLOBAL,0);      /* End Of String, or '\0' */
   add_constant("INVALID_FUNCTION", -1, sGLOBAL, pc_tag_nullfunc_t);
-  #if PAWN_CELL_SIZE==16
-    add_constant("cellbits",16,sGLOBAL,0);
-    #if defined _I16_MAX
-      add_constant("cellmax",_I16_MAX,sGLOBAL,0);
-      add_constant("cellmin",_I16_MIN,sGLOBAL,0);
-    #else
-      add_constant("cellmax",SHRT_MAX,sGLOBAL,0);
-      add_constant("cellmin",SHRT_MIN,sGLOBAL,0);
-    #endif
-  #elif PAWN_CELL_SIZE==32
-    add_constant("cellbits",32,sGLOBAL,0);
-    #if defined _I32_MAX
-      add_constant("cellmax",_I32_MAX,sGLOBAL,0);
-      add_constant("cellmin",_I32_MIN,sGLOBAL,0);
-    #else
-      add_constant("cellmax",LONG_MAX,sGLOBAL,0);
-      add_constant("cellmin",LONG_MIN,sGLOBAL,0);
-    #endif
-  #elif PAWN_CELL_SIZE==64
-    #if !defined _I64_MIN
-      #define _I64_MIN  (-9223372036854775807ULL - 1)
-      #define _I64_MAX    9223372036854775807ULL
-    #endif
-    add_constant("cellbits",64,sGLOBAL,0);
-    add_constant("cellmax",_I64_MAX,sGLOBAL,0);
-    add_constant("cellmin",_I64_MIN,sGLOBAL,0);
-  #else
-    #error Unsupported cell size
-  #endif
+  add_constant("cellbits",32,sGLOBAL,0);
+#if defined _I32_MAX
+  add_constant("cellmax",_I32_MAX,sGLOBAL,0);
+  add_constant("cellmin",_I32_MIN,sGLOBAL,0);
+#else
+  add_constant("cellmax",LONG_MAX,sGLOBAL,0);
+  add_constant("cellmin",LONG_MIN,sGLOBAL,0);
+#endif
   add_constant("charbits",sCHARBITS,sGLOBAL,0);
   add_constant("charmin",0,sGLOBAL,0);
   add_constant("charmax",~(-1 << sCHARBITS) - 1,sGLOBAL,0);
@@ -1557,6 +1532,12 @@ static void parse(void)
     }
     case tFUNCTAG:
       dofuncenum(FALSE);
+      break;
+    case tTYPEDEF:
+      dotypedef();
+      break;
+    case tUNION:
+      dounion();
       break;
     case tSTRUCT:
       declstruct();
@@ -1749,9 +1730,9 @@ static void insert_docstring_separator(void)
   #define insert_docstring_separator()
 #endif
 
-/* declstruct	- declare global struct symbols
+/* declstruct - declare global struct symbols
  * 
- * global references: glb_declared		(altered)
+ * global references: glb_declared (altered)
  */
 static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct)
 {
@@ -1943,14 +1924,12 @@ static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct)
 static void declglb(declinfo_t *decl,int fpublic,int fstatic,int fstock)
 {
   int ispublic;
-  cell val,cidx;
+  cell cidx;
   ucell address;
   int glb_incr;
-  char *str;
   int slength=0;
   short filenum;
   symbol *sym;
-  constvalue *enumroot;
 #if !defined NDEBUG
   cell glbdecl=0;
 #endif
@@ -2178,7 +2157,7 @@ static void declloc(int tokid)
       if (curfunc->x.stacksize<declared+1)
         curfunc->x.stacksize=declared+1;  /* +1 for PROC opcode */
     } else if (type->ident == iREFARRAY) {
-      declared+=1;	/* one cell for address */
+      declared+=1; /* one cell for address */
       sym=addvariable(decl.name,-declared*sizeof(cell),type->ident,sLOCAL,type->tag,type->dim,type->numdim,type->idxtag);
       //markexpr(sLDECL,name,-declared*sizeof(cell)); /* mark for better optimization */
       /* genarray() pushes the address onto the stack, so we don't need to call modstk() here! */
@@ -2297,177 +2276,177 @@ static cell calc_arraysize(int dim[],int numdim,int cur)
 
 static cell gen_indirection_vecs(array_info_t *ar, int dim, cell cur_offs)
 {
-	int i;
-	cell write_offs = cur_offs;
-	cell *data_offs = ar->data_offs;
+  int i;
+  cell write_offs = cur_offs;
+  cell *data_offs = ar->data_offs;
 
-	cur_offs += ar->dim_list[dim];
+  cur_offs += ar->dim_list[dim];
 
-	/**
-	 * Dimension n-x where x > 2 will have sub-vectors.  
-	 * Otherwise, we just need to reference the data section.
-	 */
-	if (ar->dim_count > 2 && dim < ar->dim_count - 2)
-	{
-		/**
-		 * For each index at this dimension, write offstes to our sub-vectors.
-		 * After we write one sub-vector, we generate its sub-vectors recursively.
-		 * At the end, we're given the next offset we can use.
-		 */
-		for (i = 0; i < ar->dim_list[dim]; i++)
-		{
-			ar->base[write_offs] = (cur_offs - write_offs) * sizeof(cell);
-			write_offs++;
-			ar->cur_dims[dim] = i;
-			cur_offs = gen_indirection_vecs(ar, dim + 1, cur_offs);
-		}
-	} else if (ar->dim_count > 1) {
-		/**
-		 * In this section, there are no sub-vectors, we need to write offsets 
-		 * to the data.  This is separate so the data stays in one big chunk.
-		 * The data offset will increment by the size of the last dimension, 
-		 * because that is where the data is finally computed as.  But the last 
-		 * dimension can be of variable size, so we have to detect that.
-		 */
-		if (ar->dim_list[dim + 1] == 0)
-		{
-			int vec_start = 0;
+  /**
+   * Dimension n-x where x > 2 will have sub-vectors.  
+   * Otherwise, we just need to reference the data section.
+   */
+  if (ar->dim_count > 2 && dim < ar->dim_count - 2)
+  {
+    /**
+     * For each index at this dimension, write offstes to our sub-vectors.
+     * After we write one sub-vector, we generate its sub-vectors recursively.
+     * At the end, we're given the next offset we can use.
+     */
+    for (i = 0; i < ar->dim_list[dim]; i++)
+    {
+      ar->base[write_offs] = (cur_offs - write_offs) * sizeof(cell);
+      write_offs++;
+      ar->cur_dims[dim] = i;
+      cur_offs = gen_indirection_vecs(ar, dim + 1, cur_offs);
+    }
+  } else if (ar->dim_count > 1) {
+    /**
+     * In this section, there are no sub-vectors, we need to write offsets 
+     * to the data.  This is separate so the data stays in one big chunk.
+     * The data offset will increment by the size of the last dimension, 
+     * because that is where the data is finally computed as.  But the last 
+     * dimension can be of variable size, so we have to detect that.
+     */
+    if (ar->dim_list[dim + 1] == 0)
+    {
+      int vec_start = 0;
 
-			/**
-			 * Using the precalculated offsets, compute an index into the last 
-			 * dimension array.
-			 */
-			for (i = 0; i < dim; i++)
-			{
-				vec_start += ar->cur_dims[i] * ar->dim_offs_precalc[i];
-			}
+      /**
+       * Using the precalculated offsets, compute an index into the last 
+       * dimension array.
+       */
+      for (i = 0; i < dim; i++)
+      {
+        vec_start += ar->cur_dims[i] * ar->dim_offs_precalc[i];
+      }
 
-			/**
-			 * Now, vec_start points to a vector of last dimension offsets for 
-			 * the preceding dimension combination(s).
-			 * I.e. (1,2,i,j) in [3][4][5][] will be:
-			 *  j = 1*(4*5) + 2*(5) + i, and the parenthetical expressions are 
-			 * precalculated for us so we can easily generalize here.
-			 */
-			for (i = 0; i < ar->dim_list[dim]; i++)
-			{
-				ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell);
-				write_offs++;
-				*data_offs = *data_offs + ar->lastdim_list[vec_start + i];
-			}
-		} else {
-			/**
-			 * The last dimension size is constant.  There's no extra work to 
-			 * compute the last dimension size.
-			 */
-			for (i = 0; i < ar->dim_list[dim]; i++)
-			{
-				ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell);
-				write_offs++;
-				*data_offs = *data_offs + ar->dim_list[dim + 1];
-			}
-		}
-	}
+      /**
+       * Now, vec_start points to a vector of last dimension offsets for 
+       * the preceding dimension combination(s).
+       * I.e. (1,2,i,j) in [3][4][5][] will be:
+       *  j = 1*(4*5) + 2*(5) + i, and the parenthetical expressions are 
+       * precalculated for us so we can easily generalize here.
+       */
+      for (i = 0; i < ar->dim_list[dim]; i++)
+      {
+        ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell);
+        write_offs++;
+        *data_offs = *data_offs + ar->lastdim_list[vec_start + i];
+      }
+    } else {
+      /**
+       * The last dimension size is constant.  There's no extra work to 
+       * compute the last dimension size.
+       */
+      for (i = 0; i < ar->dim_list[dim]; i++)
+      {
+        ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell);
+        write_offs++;
+        *data_offs = *data_offs + ar->dim_list[dim + 1];
+      }
+    }
+  }
 
-	return cur_offs;
+  return cur_offs;
 }
 
 static cell calc_indirection(const int dim_list[], int dim_count, int dim)
 {
-	cell size = dim_list[dim];
+  cell size = dim_list[dim];
 
-	if (dim < dim_count - 2)
-	{
-		size += dim_list[dim] * calc_indirection(dim_list, dim_count, dim + 1);
-	}
+  if (dim < dim_count - 2)
+  {
+    size += dim_list[dim] * calc_indirection(dim_list, dim_count, dim + 1);
+  }
 
-	return size;
+  return size;
 }
 
 static void adjust_indirectiontables(int dim[],int numdim,int cur,cell increment,
                                      int startlit,constvalue *lastdim,int *skipdim)
 {
-	/* Find how many cells the indirection table will be */
-	cell tbl_size;
-	int *dyn_list = NULL;
-	int cur_dims[sDIMEN_MAX];
-	cell dim_offset_precalc[sDIMEN_MAX];
-	array_info_t ar;
+  /* Find how many cells the indirection table will be */
+  cell tbl_size;
+  int *dyn_list = NULL;
+  int cur_dims[sDIMEN_MAX];
+  cell dim_offset_precalc[sDIMEN_MAX];
+  array_info_t ar;
 
-	if (numdim == 1)
-	{
-		return;
-	}
+  if (numdim == 1)
+  {
+    return;
+  }
 
-	tbl_size = calc_indirection(dim, numdim, 0);
-	memset(cur_dims, 0, sizeof(cur_dims));
+  tbl_size = calc_indirection(dim, numdim, 0);
+  memset(cur_dims, 0, sizeof(cur_dims));
 
-	/**
-	 * Flatten the last dimension array list -- this makes 
-	 * things MUCH easier in the indirection calculator.
-	 */
-	if (lastdim)
-	{
-		int i;
-		constvalue *ld = lastdim->next;
+  /**
+   * Flatten the last dimension array list -- this makes 
+   * things MUCH easier in the indirection calculator.
+   */
+  if (lastdim)
+  {
+    int i;
+    constvalue *ld = lastdim->next;
 
-		/* Get the total number of last dimensions. */
-		for (i = 0; ld != NULL; i++, ld = ld->next)
-		{
-			/* Nothing */
-		}
-		/* Store them in an array instead of a linked list. */
-		dyn_list = (int *)malloc(sizeof(int) * i);
-		for (i = 0, ld = lastdim->next;
-			 ld != NULL;
-			 i++, ld = ld->next)
-		{
-			dyn_list[i] = ld->value;
-		}
+    /* Get the total number of last dimensions. */
+    for (i = 0; ld != NULL; i++, ld = ld->next)
+    {
+      /* Nothing */
+    }
+    /* Store them in an array instead of a linked list. */
+    dyn_list = (int *)malloc(sizeof(int) * i);
+    for (i = 0, ld = lastdim->next;
+       ld != NULL;
+       i++, ld = ld->next)
+    {
+      dyn_list[i] = ld->value;
+    }
 
-		/**
-		 * Pre-calculate all of the offsets.  This speeds up and simplifies 
-		 * the indirection process.  For example, if we have an array like:
-		 * [a][b][c][d][], and given (A,B,C), we want to find the size of 
-		 * the last dimension [A][B][C][i], we must do:
-		 *
-		 * list[A*(b*c*d) + B*(c*d) + C*(d) + i]
-		 *
-		 * Generalizing this algorithm in the indirection process is expensive, 
-		 * so we lessen the need for nested loops by pre-computing the parts:
-		 * (b*c*d), (c*d), and (d).
-		 *
-		 * In other words, finding the offset to dimension N at index I is 
-		 * I * (S[N+1] * S[N+2] ... S[N+n-1]) where S[] is the size of dimension
-		 * function, and n is the index of the last dimension.
-		 */
-		for (i = 0; i < numdim - 1; i++)
-		{
-			int j;
+    /**
+     * Pre-calculate all of the offsets.  This speeds up and simplifies 
+     * the indirection process.  For example, if we have an array like:
+     * [a][b][c][d][], and given (A,B,C), we want to find the size of 
+     * the last dimension [A][B][C][i], we must do:
+     *
+     * list[A*(b*c*d) + B*(c*d) + C*(d) + i]
+     *
+     * Generalizing this algorithm in the indirection process is expensive, 
+     * so we lessen the need for nested loops by pre-computing the parts:
+     * (b*c*d), (c*d), and (d).
+     *
+     * In other words, finding the offset to dimension N at index I is 
+     * I * (S[N+1] * S[N+2] ... S[N+n-1]) where S[] is the size of dimension
+     * function, and n is the index of the last dimension.
+     */
+    for (i = 0; i < numdim - 1; i++)
+    {
+      int j;
 
-			dim_offset_precalc[i] = 1;
-			for (j = i + 1; j < numdim - 1; j++)
-			{
-				dim_offset_precalc[i] *= dim[j];
-			}
-		}
+      dim_offset_precalc[i] = 1;
+      for (j = i + 1; j < numdim - 1; j++)
+      {
+        dim_offset_precalc[i] *= dim[j];
+      }
+    }
 
-		ar.dim_offs_precalc = dim_offset_precalc;
-		ar.lastdim_list = dyn_list;
-	} else {
-		ar.dim_offs_precalc = NULL;
-		ar.lastdim_list = NULL;
-	}
+    ar.dim_offs_precalc = dim_offset_precalc;
+    ar.lastdim_list = dyn_list;
+  } else {
+    ar.dim_offs_precalc = NULL;
+    ar.lastdim_list = NULL;
+  }
 
-	ar.base = &litq[startlit];
-	ar.data_offs = &tbl_size;
-	ar.dim_list = dim;
-	ar.dim_count = numdim;
-	ar.cur_dims = cur_dims;
+  ar.base = &litq[startlit];
+  ar.data_offs = &tbl_size;
+  ar.dim_list = dim;
+  ar.dim_count = numdim;
+  ar.cur_dims = cur_dims;
 
-	gen_indirection_vecs(&ar, 0, 0);
+  gen_indirection_vecs(&ar, 0, 0);
 
-	free(dyn_list);
+  free(dyn_list);
 }
 
 /*  initials
@@ -2604,7 +2583,7 @@ static void initials2(int ident,int tag,cell *size,int dim[],int numdim,
 }
 
 static void initials(int ident,int tag,cell *size,int dim[],int numdim,
-					 constvalue *enumroot)
+                     constvalue *enumroot)
 {
   initials2(ident, tag, size, dim, numdim, enumroot, -1, -1);
 }
@@ -2745,8 +2724,11 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
     } while (matchtoken(',')); /* do */
     needtoken('}');
   } else {
-    init(ident,&ctag,errorfound);
-    matchtag(tag,ctag,TRUE);
+    if (!lexpeek('}'))
+    {
+      init(ident,&ctag,errorfound);
+      matchtag(tag,ctag,TRUE);
+    }
   } /* if */
   /* fill up the literal queue with a series */
   if (ellips) {
@@ -2789,7 +2771,7 @@ static cell init(int ident,int *tag,int *errorfound)
       litidx=1;         /* reset literal queue */
     } /* if */
     *tag=pc_tag_string;
-  } else if (constexpr(&i,tag,NULL)){
+  } else if (exprconst(&i,tag,NULL)){
     litadd(i);          /* store expression result in literal table */
   } else {
     if (errorfound!=NULL)
@@ -2814,7 +2796,7 @@ static cell needsub(int *tag,constvalue **enumroot)
   if (matchtoken(']'))      /* we have already seen "[" */
     return 0;               /* zero size (like "char msg[]") */
 
-  constexpr(&val,tag,&sym); /* get value (must be constant expression) */
+  exprconst(&val,tag,&sym); /* get value (must be constant expression) */
   if (val<0) {
     error(9);               /* negative array size is invalid; assumed zero */
     val=0;
@@ -2886,7 +2868,7 @@ static void decl_const(int vclass)
 
     symbolline=fline;                   /* save line where symbol was found */
     needtoken('=');
-    constexpr(&val,&exprtag,NULL);      /* get value */
+    exprconst(&val,&exprtag,NULL);      /* get value */
 
     /* add_constant() checks for duplicate definitions */
     /* temporarily reset the line number to where the symbol was defined */
@@ -2996,6 +2978,13 @@ static int consume_line()
 
 static int parse_new_typename(const token_t *tok)
 {
+  token_t tmp;
+
+  if (!tok) {
+    lextok(&tmp);
+    tok = &tmp;
+  }
+
   switch (tok->id) {
     case tINT:
       return 0;
@@ -3190,8 +3179,6 @@ static void parse_old_array_dims(declinfo_t *decl, int flags)
       stgset(FALSE);
   } else {
     do {
-      cell size;
-
       if (type->numdim == sDIMEN_MAX) {
         error(53);
         return;
@@ -3269,7 +3256,7 @@ static int parse_old_decl(declinfo_t *decl, int flags)
         strcpy(decl->name, "__unknown__");
     } else {
       if (!lexpeek(tSYMBOL)) {
-        extern char *sc_tokens[];
+        extern const char *sc_tokens[];
         switch (lextok(&tok)) {
           case tOBJECT:
           case tCHAR:
@@ -3392,7 +3379,6 @@ static int reparse_new_decl(declinfo_t *decl, int flags)
 //
 int parse_decl(declinfo_t *decl, int flags)
 {
-  token_t tok;
   token_ident_t ident;
 
   memset(decl, 0, sizeof(*decl));
@@ -4047,19 +4033,36 @@ static void domethodmap(LayoutSpec spec)
   require_newline(TRUE);
 }
 
+class AutoStage
+{
+ public:
+  AutoStage() : lcl_staging_(FALSE)
+  {
+    if (!staging) {
+      stgset(TRUE);
+      lcl_staging_ = TRUE;
+      lcl_stgidx_ = stgidx;
+      assert(stgidx == 0);
+    }
+  }
+  ~AutoStage() {
+    if (lcl_staging_) {
+      stgout(lcl_stgidx_);
+      stgset(FALSE);
+    }
+  }
+
+ private:
+  int lcl_staging_;
+  int lcl_stgidx_;
+};
+
 // delete ::= "delete" expr
 static void dodelete()
 {
+  AutoStage staging_on;
+
   svalue sval;
-
-  int lcl_staging = FALSE;
-  if (!staging) {
-    stgset(TRUE);
-    lcl_staging = TRUE;
-    assert(stgidx == 0);
-  }
-  int lcl_stgidx = stgidx;
-
   int ident = lvalexpr(&sval);
   needtoken(tTERM);
 
@@ -4067,7 +4070,7 @@ static void dodelete()
     case iFUNCTN:
     case iREFFUNC:
       error(115, "functions");
-      goto cleanup;
+      return;
 
     case iARRAY:
     case iREFARRAY:
@@ -4077,7 +4080,7 @@ static void dodelete()
       symbol *sym = sval.val.sym;
       if (!sym || sym->dim.array.level > 0) {
         error(115, "arrays");
-        goto cleanup;
+        return;
       }
       break;
     }
@@ -4085,13 +4088,13 @@ static void dodelete()
 
   if (sval.val.tag == 0) {
     error(115, "primitive types or enums");
-    goto cleanup;
+    return;
   }
 
   methodmap_t *map = methodmap_find_by_tag(sval.val.tag);
   if (!map) {
     error(115, pc_tagname(sval.val.tag));
-    goto cleanup;
+    return;
   }
 
   {
@@ -4107,7 +4110,7 @@ static void dodelete()
 
   if (!map || !map->dtor) {
     error(115, layout_spec_name(map->spec), map->name);
-    goto cleanup;
+    return;
   }
 
   // Only zap non-const lvalues.
@@ -4168,12 +4171,109 @@ static void dodelete()
   }
 
   markexpr(sEXPR, NULL, 0);
+}
 
-cleanup:
-  if (lcl_staging) {
-    stgout(lcl_stgidx);
-    stgset(FALSE);
+/**
+ * function-type ::= "(" function-type-inner ")"
+ *                 | function-type-inner
+ * function-type-inner ::= "function" type-expr "(" new-style-args ")"
+ */
+static void parse_function_type(functag_t *type)
+{
+  memset(type, 0, sizeof(*type));
+
+  int lparen = matchtoken('(');
+  needtoken(tFUNCTION);
+
+  type->ret_tag = parse_new_typename(NULL);
+  type->usage = uPUBLIC;
+
+  needtoken('(');
+
+  while (!matchtoken(')')) {
+    declinfo_t decl;
+
+    // Initialize.
+    memset(&decl, 0, sizeof(decl));
+    decl.type.ident = iVARIABLE;
+
+    parse_new_decl(&decl, NULL, DECLFLAG_ARGUMENT);
+
+    // Eat optional symbol name.
+    matchtoken(tSYMBOL);
+
+    // Error once when we're past max args.
+    if (type->argcount == sARGS_MAX) {
+      error(45);
+      continue;
+    }
+
+    // Account for strings.
+    fix_char_size(&decl);
+
+    funcarg_t *arg = &type->args[type->argcount++];
+    arg->tagcount = 1;
+    arg->tags[0] = decl.type.tag;
+    arg->dimcount = decl.type.numdim;
+    memcpy(arg->dims, decl.type.dim, arg->dimcount * sizeof(decl.type.dim[0]));
+    arg->fconst = (decl.type.usage & uCONST) ? TRUE : FALSE;
+    if (decl.type.ident == iARRAY)
+      arg->ident = iREFARRAY;
+    else
+      arg->ident = decl.type.ident;
+
+    if (!matchtoken(',')) {
+      needtoken(')');
+      break;
+    }
   }
+
+  if (lparen)
+    needtoken(')');
+
+  require_newline(TRUE);
+  errorset(sRESET, 0);
+}
+
+static void dotypedef()
+{
+  token_ident_t ident;
+  if (!needsymbol(&ident))
+    return;
+
+  int prev_tag = pc_findtag(ident.name);
+  if (prev_tag != -1 && !(prev_tag & FUNCTAG))
+    error(94);
+
+  needtoken('=');
+
+  funcenum_t *def = funcenums_add(ident.name);
+
+  functag_t type;
+  parse_function_type(&type);
+  functags_add(def, &type);
+}
+
+// Unsafe union - only supports function types. This is a transition hack for SP2.
+static void dounion()
+{
+  token_ident_t ident;
+  if (!needsymbol(&ident))
+    return;
+
+  int prev_tag = pc_findtag(ident.name);
+  if (prev_tag != -1 && !(prev_tag & FUNCTAG))
+    error(94);
+
+  funcenum_t *def = funcenums_add(ident.name);
+  needtoken('{');
+  while (!matchtoken('}')) {
+    functag_t type;
+    parse_function_type(&type);
+    functags_add(def, &type);
+  }
+
+  require_newline(TRUE);
 }
 
 /**
@@ -4181,250 +4281,196 @@ cleanup:
  */
 static void dofuncenum(int listmode)
 {
-	cell val;
-	char *str;
-	// char *ptr;
-	char tagname[sNAMEMAX+1];
-	constvalue *cur;
-	funcenum_t *fenum = NULL;
-	int i;
-	int newStyleTag = 0;
-	int isNewStyle = 0;
+  cell val;
+  char *str;
+  // char *ptr;
+  char tagname[sNAMEMAX+1];
+  constvalue *cur;
+  funcenum_t *fenum = NULL;
+  int i;
+  int newStyleTag = 0;
+  int isNewStyle = 0;
 
-	/* get the explicit tag (required!) */
-	int l = lex(&val,&str);
-	if (l != tSYMBOL) {
-		if (listmode == FALSE && l == tPUBLIC) {
-			isNewStyle = TRUE;
-			switch (lex(&val, &str)) {
-			case tOBJECT:
-				newStyleTag = pc_tag_object;
-				break;
-			case tINT:
-				newStyleTag = 0;
-				break;
-			case tVOID:
-				newStyleTag = pc_tag_void;
-				break;
-			case tCHAR:
-				newStyleTag = pc_tag_string;
-				break;
-			case tLABEL:
-				newStyleTag = pc_addtag(str);
-				break;
-			case tSYMBOL:
-				// Check whether this is new-style declaration.
-				// we'll port this all to parse_decl() sometime.
-				if (lexpeek('('))
-					lexpush();
-				else
-					newStyleTag = pc_addtag(str);
-				break;
-			default:
-				error(93);
-			}
+  /* get the explicit tag (required!) */
+  int l = lex(&val,&str);
+  if (l != tSYMBOL) {
+    if (listmode == FALSE && l == tPUBLIC) {
+      isNewStyle = TRUE;
+      switch (lex(&val, &str)) {
+      case tOBJECT:
+        newStyleTag = pc_tag_object;
+        break;
+      case tINT:
+        newStyleTag = 0;
+        break;
+      case tVOID:
+        newStyleTag = pc_tag_void;
+        break;
+      case tCHAR:
+        newStyleTag = pc_tag_string;
+        break;
+      case tLABEL:
+        newStyleTag = pc_addtag(str);
+        break;
+      case tSYMBOL:
+        // Check whether this is new-style declaration.
+        // we'll port this all to parse_decl() sometime.
+        if (lexpeek('('))
+          lexpush();
+        else
+          newStyleTag = pc_addtag(str);
+        break;
+      default:
+        error(93);
+      }
 
-			if (!needtoken(tSYMBOL)) {
-				lexclr(TRUE);
-				litidx = 0;
-				return;
-			}
-			l = tokeninfo(&val, &str);
-		} else {
-			error(93);
-		}
-	}
+      if (!needtoken(tSYMBOL)) {
+        lexclr(TRUE);
+        litidx = 0;
+        return;
+      }
+      l = tokeninfo(&val, &str);
+    } else {
+      error(93);
+    }
+  }
 
-	/* This tag can't already exist! */
-	cur=tagname_tab.next;
-	while (cur)
-	{
-		if (strcmp(cur->name, str) == 0)
-		{
-			/* Another bad one... */
-			if (!(cur->value & FUNCTAG))
-			{
-				error(94);
-			}
-			break;
-		}
-		cur = cur->next;
-	}
-	strcpy(tagname, str);
+  /* This tag can't already exist! */
+  cur=tagname_tab.next;
+  while (cur) {
+    if (strcmp(cur->name, str) == 0) {
+      /* Another bad one... */
+      if (!(cur->value & FUNCTAG))
+        error(94);
+      break;
+    }
+    cur = cur->next;
+  }
+  strcpy(tagname, str);
 
-	fenum = funcenums_add(tagname);
+  fenum = funcenums_add(tagname);
 
-	if (listmode)
-	{
-		needtoken('{');
-	}
-	do
-	{
-		functag_t func;
-		if (listmode && matchtoken('}'))
-		{
-			/* Quick exit */
-			lexpush();
-			break;
-		}
-		memset(&func, 0, sizeof(func));
-		if (!isNewStyle)
-		{
-			func.ret_tag = pc_addtag(NULL);	/* Get the return tag */
-			l = lex(&val, &str);
-			/* :TODO:
-			 * Right now, there is a problem.  We can't pass non-public function pointer addresses around,
-			 * because the address isn't known until the final reparse.  Unfortunately, you can write code
-			 * before the address is known, because Pawn's compiler isn't truly multipass.
-			 *
-			 * When you call a function, there's no problem, because it does not write the address.
-			 * The assembly looks like this:
-			 *   call MyFunction
-			 * Then, only at assembly time (once all passes are done), does it know the address.
-			 * I do not see any solution to this because there is no way I know to inject the function name
-			 * rather than the constant value.  And even if we could, we'd have to change the assembler recognize that.
-			 */
-			if (l == tPUBLIC) {
-				func.type = uPUBLIC;
-			} else {
-				error(1, "-public-", str);
-			}
-		}
-		else
-		{
-			func.ret_tag = newStyleTag;
-			func.type = uPUBLIC;
-		}
-		needtoken('(');
-		do 
-		{
-			funcarg_t *arg = &(func.args[func.argcount]);
+  if (listmode)
+    needtoken('{');
+  do {
+    functag_t func;
+    if (listmode && matchtoken('}')) {
+      /* Quick exit */
+      lexpush();
+      break;
+    }
+    memset(&func, 0, sizeof(func));
+    if (!isNewStyle) {
+      func.ret_tag = pc_addtag(NULL);  /* Get the return tag */
+      l = lex(&val, &str);
+      /* :TODO:
+       * Right now, there is a problem.  We can't pass non-public function pointer addresses around,
+       * because the address isn't known until the final reparse.  Unfortunately, you can write code
+       * before the address is known, because Pawn's compiler isn't truly multipass.
+       *
+       * When you call a function, there's no problem, because it does not write the address.
+       * The assembly looks like this:
+       *   call MyFunction
+       * Then, only at assembly time (once all passes are done), does it know the address.
+       * I do not see any solution to this because there is no way I know to inject the function name
+       * rather than the constant value.  And even if we could, we'd have to change the assembler recognize that.
+       */
+      if (l == tPUBLIC) {
+        func.usage = uPUBLIC;
+      } else {
+        error(1, "-public-", str);
+      }
+    } else {
+      func.ret_tag = newStyleTag;
+      func.usage = uPUBLIC;
+    }
+    needtoken('(');
+    do {
+      funcarg_t *arg = &(func.args[func.argcount]);
 
-			/* Quick exit */
-			if (matchtoken(')'))
-			{
-				lexpush();
-				break;
-			}
-			l = lex(&val, &str);
-			if (l == '&')
-			{
-				if ((arg->ident != iVARIABLE && arg->ident != 0) || arg->tagcount > 0)
-				{
-					error(1, "-identifier-", "&");
-				}
-				arg->ident = iREFERENCE;
-			} else if (l == tCONST) {
-				if ((arg->ident != iVARIABLE && arg->ident != 0) || arg->tagcount > 0)
-				{
-					error(1, "-identifier-", "const");
-				}
-				arg->fconst=TRUE;
-			} else if (l == tLABEL) {
-				if (arg->tagcount > 0)
-				{
-					error(1, "-identifier-", "-tagname-");
-				}
-				arg->tags[arg->tagcount++] = pc_addtag(str);
-#if 0
-				while (arg->tagcount < sTAGS_MAX)
-				{
-					if (!matchtoken('_') && !needtoken(tSYMBOL))
-					{
-						break;
-					}
-					tokeninfo(&val, &ptr);
-					arg->tags[arg->tagcount++] = pc_addtag(ptr);
-					if (matchtoken('}'))
-					{
-						break;
-					}
-					needtoken(',');
-				}
-				needtoken(':');
-#endif
-				l=tLABEL;
-			} else if (l == tSYMBOL) {
-				if (func.argcount >= sARGS_MAX)
-				{
-					error(45);
-				}
-				if (str[0] == PUBLIC_CHAR)
-				{
-					error(56, str);
-				}
-				if (matchtoken('['))
-				{
-					cell size;
-					if (arg->ident == iREFERENCE)
-					{
-						error(67, str);
-					}
-					do 
-					{
-						constvalue *enumroot;
-						int ignore_tag;
-						if (arg->dimcount == sDIMEN_MAX)
-						{
-							error(53);
-							break;
-						}
-						size = needsub(&ignore_tag, &enumroot);
-						arg->dims[arg->dimcount] = size;
-						arg->dimcount += 1;
-					} while (matchtoken('['));
-					/* Handle strings */
-					if ((arg->tagcount == 1 && arg->tags[0] == pc_tag_string)
-						&& arg->dims[arg->dimcount-1])
-					{
-						arg->dims[arg->dimcount-1] = (size + sizeof(cell)-1) / sizeof(cell);
-					}
-					arg->ident=iREFARRAY;
-				} else if (arg->ident == 0) {
-					arg->ident = iVARIABLE;
-				}
-			
-				if (matchtoken('='))
-				{
-					needtoken('0');
-					arg->ommittable = TRUE;
-					func.ommittable = TRUE;
-				} else if (func.ommittable) {
-					error(95);
-				}
-				func.argcount++;
-			} else if (l == tELLIPS) {
-				if (arg->ident == iVARIABLE)
-				{
-					error(10);
-				}
-				arg->ident = iVARARGS;
-				func.argcount++;
-			} else {
-				error(10);
-			}
-		} while (l == '&' || l == tLABEL || l == tCONST || (l != tELLIPS && matchtoken(',')));
-		needtoken(')');
-		for (i=0; i<func.argcount; i++)
-		{
-			if (func.args[i].tagcount == 0)
-			{
-				func.args[i].tags[0] = 0;
-				func.args[i].tagcount = 1;
-			}
-		}
-		functags_add(fenum, &func);
-		if (!listmode)
-		{
-			break;
-		}
-	} while (matchtoken(','));
-	if (listmode)
-	{
-		needtoken('}');
-	}
-	matchtoken(';'); /* eat an optional semicolon.  nom nom nom */
-	errorset(sRESET, 0);
+      /* Quick exit */
+      if (matchtoken(')')) {
+        lexpush();
+        break;
+      }
+      l = lex(&val, &str);
+      if (l == '&') {
+        if ((arg->ident != iVARIABLE && arg->ident != 0) || arg->tagcount > 0)
+          error(1, "-identifier-", "&");
+        arg->ident = iREFERENCE;
+      } else if (l == tCONST) {
+        if ((arg->ident != iVARIABLE && arg->ident != 0) || arg->tagcount > 0)
+          error(1, "-identifier-", "const");
+        arg->fconst=TRUE;
+      } else if (l == tLABEL) {
+        if (arg->tagcount > 0)
+          error(1, "-identifier-", "-tagname-");
+        arg->tags[arg->tagcount++] = pc_addtag(str);
+        l=tLABEL;
+      } else if (l == tSYMBOL) {
+        if (func.argcount >= sARGS_MAX)
+          error(45);
+        if (str[0] == PUBLIC_CHAR)
+          error(56, str);
+        if (matchtoken('['))
+        {
+          cell size;
+          if (arg->ident == iREFERENCE)
+            error(67, str);
+          do {
+            constvalue *enumroot;
+            int ignore_tag;
+            if (arg->dimcount == sDIMEN_MAX) {
+              error(53);
+              break;
+            }
+            size = needsub(&ignore_tag, &enumroot);
+            arg->dims[arg->dimcount] = size;
+            arg->dimcount += 1;
+          } while (matchtoken('['));
+          /* Handle strings */
+          if ((arg->tagcount == 1 && arg->tags[0] == pc_tag_string)
+            && arg->dims[arg->dimcount-1])
+          {
+            arg->dims[arg->dimcount-1] = (size + sizeof(cell)-1) / sizeof(cell);
+          }
+          arg->ident=iREFARRAY;
+        } else if (arg->ident == 0) {
+          arg->ident = iVARIABLE;
+        }
+      
+        if (matchtoken('=')) {
+          needtoken('0');
+          arg->ommittable = TRUE;
+          func.ommittable = TRUE;
+        } else if (func.ommittable) {
+          error(95);
+        }
+        func.argcount++;
+      } else if (l == tELLIPS) {
+        if (arg->ident == iVARIABLE)
+          error(10);
+        arg->ident = iVARARGS;
+        func.argcount++;
+      } else {
+        error(10);
+      }
+    } while (l == '&' || l == tLABEL || l == tCONST || (l != tELLIPS && matchtoken(',')));
+    needtoken(')');
+    for (i=0; i<func.argcount; i++) {
+      if (func.args[i].tagcount == 0) {
+        func.args[i].tags[0] = 0;
+        func.args[i].tagcount = 1;
+      }
+    }
+    functags_add(fenum, &func);
+    if (!listmode)
+      break;
+  } while (matchtoken(','));
+  if (listmode)
+    needtoken('}');
+  matchtoken(';'); /* eat an optional semicolon.  nom nom nom */
+  errorset(sRESET, 0);
 }
 
 /*  decl_enum   - declare enumerated constants
@@ -4486,11 +4532,11 @@ static void decl_enum(int vclass)
   multiplier=1;
   if (matchtoken('(')) {
     if (matchtoken(taADD)) {
-      constexpr(&increment,NULL,NULL);
+      exprconst(&increment,NULL,NULL);
     } else if (matchtoken(taMULT)) {
-      constexpr(&multiplier,NULL,NULL);
+      exprconst(&multiplier,NULL,NULL);
     } else if (matchtoken(taSHL)) {
-      constexpr(&val,NULL,NULL);
+      exprconst(&val,NULL,NULL);
       while (val-->0)
         multiplier*=2;
     } /* if */
@@ -4531,12 +4577,12 @@ static void decl_enum(int vclass)
     size=increment;                     /* default increment of 'val' */
     fieldtag=0;                         /* default field tag */
     if (matchtoken('[')) {
-      constexpr(&size,&fieldtag,NULL);  /* get size */
+      exprconst(&size,&fieldtag,NULL);  /* get size */
       needtoken(']');
     } /* if */
     /* :TODO: do we need a size modifier here for pc_tag_string? */
     if (matchtoken('='))
-      constexpr(&value,NULL,NULL);      /* get value */
+      exprconst(&value,NULL,NULL);      /* get value */
     /* add_constant() checks whether a variable (global or local) or
      * a constant with the same name already exists
      */
@@ -4697,7 +4743,7 @@ static int compare_tag(int tag1, int tag2)
  *  Finds a function in the global symbol table or creates a new entry.
  *  It does some basic processing and error checking.
  */
-SC_FUNC symbol *fetchfunc(char *name)
+symbol *fetchfunc(char *name)
 {
   symbol *sym;
 
@@ -4926,7 +4972,7 @@ static char *tag2str(char *dest,int tag)
   return isdigit(dest[1]) ? &dest[1] : dest;
 }
 
-SC_FUNC char *operator_symname(char *symname,char *opername,int tag1,int tag2,int numtags,int resulttag)
+char *operator_symname(char *symname,const char *opername,int tag1,int tag2,int numtags,int resulttag)
 {
   char tagstr1[10], tagstr2[10];
   int opertok;
@@ -4976,7 +5022,7 @@ constvalue *find_tag_byval(int tag)
   return tagsym;
 }
 
-SC_FUNC char *funcdisplayname(char *dest,char *funcname)
+char *funcdisplayname(char *dest,char *funcname)
 {
   int tags[2];
   char opname[10];
@@ -5027,7 +5073,7 @@ static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag)
   int tok;
   char *str;
   cell val,size;
-  symbol *sym,*sub;
+  symbol *sym;
   int fnative = (tokid == tNATIVE || tokid == tMETHODMAP);
   int fpublic = (tokid == tPUBLIC);
 
@@ -5088,7 +5134,7 @@ static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag)
         tokeninfo(&val,&str);
         insert_alias(sym->name,str);
       } else {
-        constexpr(&val,NULL,NULL);
+        exprconst(&val,NULL,NULL);
         sym->addr=val;
         /* At the moment, I have assumed that this syntax is only valid if
          * val < 0. To properly mix "normal" native functions and indexed
@@ -5135,7 +5181,6 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
   char *str;
   cell val,cidx,glbdecl;
   short filenum;
-  int state_id;
 
   assert(litidx==0);    /* literal queue should be empty */
   litidx=0;             /* clear the literal pool (should already be empty) */
@@ -5242,7 +5287,7 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
   } /* if */
 
   if ((sym->flags & flgDEPRECATED) != 0 && (sym->usage & uSTOCK) == 0) {
-    char *ptr= (sym->documentation!=NULL) ? sym->documentation : "";
+    const char *ptr= (sym->documentation!=NULL) ? sym->documentation : "";
     error(234, decl->name, ptr);  /* deprecated (probably a public function) */
   } /* if */
   begcseg();
@@ -5406,10 +5451,9 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
 {
   char *ptr;
   int argcnt,oldargcnt,tok;
-  cell val;
   arginfo arg, *arglist;
   char name[sNAMEMAX+1];
-  int ident,fpublic;
+  int fpublic;
   int idx;
 
   /* if the function is already defined earlier, get the number of arguments
@@ -5433,7 +5477,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
       memset(argptr, 0, sizeof(*argptr));
       strcpy(argptr->name, "this");
       argptr->ident = iVARIABLE;
-      argptr->tags = malloc(sizeof(int));
+      argptr->tags = (int *)malloc(sizeof(int));
       argptr->tags[0] = *thistag;
       argptr->numtags = 1;
     } else {
@@ -5595,7 +5639,6 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
 static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, arginfo *arg)
 {
   symbol *argsym;
-  constvalue *enumroot;
   int slength=0;
   typeinfo_t *type = &decl->type;
 
@@ -5625,10 +5668,10 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
           error(17, name);      /* undefined symbol */
         } else {
           arg->hasdefault=TRUE; /* argument as a default value */
-		  memset(&arg->defvalue, 0, sizeof(arg->defvalue));
+          memset(&arg->defvalue, 0, sizeof(arg->defvalue));
           arg->defvalue.array.data=NULL;
-		  arg->defvalue.array.addr=sym->addr;
-		  arg->defvalue_tag=sym->tag;
+          arg->defvalue.array.addr=sym->addr;
+          arg->defvalue_tag=sym->tag;
           if (sc_status==statWRITE && (sym->usage & uREAD)==0) {
             markusage(sym, uREAD);
           }
@@ -5691,7 +5734,7 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
         while (paranthese--)
           needtoken(')');
       } else {
-        constexpr(&arg->defvalue.val,&arg->defvalue_tag,NULL);
+        exprconst(&arg->defvalue.val,&arg->defvalue_tag,NULL);
         assert(type->numtags > 0);
         matchtag(type->tags[0], arg->defvalue_tag, TRUE);
       } /* if */
@@ -5736,11 +5779,12 @@ static int count_referrers(symbol *entry)
 }
 
 #if !defined SC_LIGHT
-static int find_xmltag(char *source,char *xmltag,char *xmlparam,char *xmlvalue,
+static int find_xmltag(char *source, const char *xmltag, const char *xmlparam, const char *xmlvalue,
                        char **outer_start,int *outer_length,
-                       char **inner_start,int *inner_length)
+                       const char **inner_start,int *inner_length)
 {
-  char *ptr,*inner_end;
+  char *ptr;
+  const char *inner_end;
   int xmltag_len,xmlparam_len,xmlvalue_len;
   int match;
 
@@ -6083,7 +6127,8 @@ static void make_report(symbol *root,FILE *log,char *sourcefile)
     assert(sym->dim.arglist!=NULL);
     for (arg=0; sym->dim.arglist[arg].ident!=0; arg++) {
       int dim,paraminfo;
-      char *outer_start,*inner_start;
+      char *outer_start;
+      const char *inner_start;
       int outer_length,inner_length;
       if (sym->dim.arglist[arg].ident==iVARARGS)
         fprintf(log,"\t\t\t<param name=\"...\">\n");
@@ -6136,10 +6181,9 @@ static void make_report(symbol *root,FILE *log,char *sourcefile)
           && find_xmltag(sym->documentation, "param", "name", sym->dim.arglist[arg].name,
                          &outer_start, &outer_length, &inner_start, &inner_length))
       {
-        char *tail;
         fprintf(log,"\t\t\t\t%.*s\n",inner_length,inner_start);
         /* delete from documentation string */
-        tail=outer_start+outer_length;
+        char *tail=outer_start+outer_length;
         memmove(outer_start,tail,strlen(tail)+1);
       } /* if */
       fprintf(log,"\t\t\t</param>\n");
@@ -6279,7 +6323,7 @@ static long max_stacksize(symbol *root,int *recursion)
     if (sym->ident!=iFUNCTN || (sym->usage & uNATIVE)!=0)
       continue;
     /* accumulate stack size for this symbol */
-	save_symbol = sym;
+    save_symbol = sym;
     size=max_stacksize_recurse(sym,sym,0L,&maxparams,recursion);
     assert(size>=0);
     if (maxsize<size)
@@ -6463,7 +6507,7 @@ static constvalue *insert_constval(constvalue *prev,constvalue *next,const char 
   return cur;
 }
 
-SC_FUNC constvalue *append_constval(constvalue *table,const char *name,cell val,int index)
+constvalue *append_constval(constvalue *table,const char *name,cell val,int index)
 {
   constvalue *cur,*prev;
 
@@ -6473,7 +6517,7 @@ SC_FUNC constvalue *append_constval(constvalue *table,const char *name,cell val,
   return insert_constval(prev,NULL,name,val,index);
 }
 
-SC_FUNC constvalue *find_constval(constvalue *table,char *name,int index)
+constvalue *find_constval(constvalue *table,char *name,int index)
 {
   constvalue *ptr = table->next;
 
@@ -6516,7 +6560,7 @@ static int delete_constval(constvalue *table,char *name)
 }
 #endif
 
-SC_FUNC void delete_consttable(constvalue *table)
+void delete_consttable(constvalue *table)
 {
   constvalue *cur=table->next, *next;
 
@@ -6532,7 +6576,7 @@ SC_FUNC void delete_consttable(constvalue *table)
  *
  *  Adds a symbol to the symbol table. Returns NULL on failure.
  */
-SC_FUNC symbol *add_constant(char *name,cell val,int vclass,int tag)
+symbol *add_constant(const char *name,cell val,int vclass,int tag)
 {
   symbol *sym;
 
@@ -6864,9 +6908,9 @@ static int doexpr2(int comma,int chkeffect,int allowarray,int mark_endexpr,
   return ident;
 }
 
-/*  constexpr
+/*  exprconst
  */
-SC_FUNC int constexpr(cell *val,int *tag,symbol **symptr)
+int exprconst(cell *val,int *tag,symbol **symptr)
 {
   int ident,index;
   cell cidx;
@@ -6941,7 +6985,7 @@ static int test(int label,int parens,int invert)
   if (endtok!=0)
     needtoken(endtok);
   if (ident==iARRAY || ident==iREFARRAY) {
-    char *ptr=(sym->name!=NULL) ? sym->name : "-unknown-";
+    const char *ptr=(sym->name!=NULL) ? sym->name : "-unknown-";
     error(33,ptr);              /* array must be indexed */
   } /* if */
   if (ident==iCONSTEXPR) {      /* constant expression */
@@ -7257,7 +7301,7 @@ static void doswitch(void)
          *     parse all expressions until that special token.
          */
 
-        constexpr(&val,NULL,NULL);
+        exprconst(&val,NULL,NULL);
         /* Search the insertion point (the table is kept in sorted order, so
          * that advanced abstract machines can sift the case table with a
          * binary search). Check for duplicate case values at the same time.
@@ -7429,6 +7473,18 @@ static symbol *fetchlab(char *name)
   return sym;
 }
 
+static int is_variadic(symbol *sym)
+{
+  assert(sym->ident==iFUNCTN);
+  arginfo *arg = sym->dim.arglist;
+  while (arg->ident) {
+    if (arg->ident == iVARARGS)
+      return TRUE;
+    arg++;
+  }
+  return FALSE;
+}
+
 /*  doreturn
  *
  *  Global references: rettype  (altered)
@@ -7537,7 +7593,11 @@ static void doreturn(void)
        * it stays on the heap for the moment, and it is removed -usually- at
        * the end of the expression/statement, see expression() in SC3.C)
        */
-      address(sub,sALT);                /* ALT = destination */
+      if (is_variadic(curfunc)) {
+        load_hidden_arg();
+      } else {
+        address(sub,sALT);           /* ALT = destination */
+      }
       arraysize=calc_arraysize(dim,numdim,0);
       memcopy(arraysize*sizeof(cell));  /* source already in PRI */
       /* moveto1(); is not necessary, callfunction() does a popreg() */
@@ -7555,7 +7615,7 @@ static void doreturn(void)
   } /* if */
   destructsymbols(&loctab,0);           /* call destructor for *all* locals */
   genheapfree(-1);
-  genstackfree(-1);						/* free everything on the stack */
+  genstackfree(-1);                     /* free everything on the stack */
   ffret(strcmp(curfunc->name,uENTRYFUNC)!=0);
 }
 
@@ -7587,7 +7647,7 @@ static void docont(void)
   jumplabel(ptr[wqLOOP]);
 }
 
-SC_FUNC void exporttag(int tag)
+void exporttag(int tag)
 {
   /* find the tag by value in the table, then set the top bit to mark it
    * "public"

@@ -168,7 +168,7 @@ void CHalfLife2::InitLogicalEntData()
 		if (!addr)
 		{
 			// Key exists so notify if lookup fails, but try other method.
-			g_Logger.LogError("Failed lookup of gEntList directly - Reverting to lookup via LevelShutdown");
+			logger->LogError("Failed lookup of gEntList directly - Reverting to lookup via LevelShutdown");
 		}
 		else
 		{
@@ -186,7 +186,7 @@ void CHalfLife2::InitLogicalEntData()
 			int offset;
 			if (!g_pGameConf->GetOffset("gEntList", &offset))
 			{
-				g_Logger.LogError("Logical Entities not supported by this mod (gEntList) - Reverting to networkable entities only");
+				logger->LogError("Logical Entities not supported by this mod (gEntList) - Reverting to networkable entities only");
 				return;
 			}
 
@@ -198,7 +198,7 @@ void CHalfLife2::InitLogicalEntData()
 	// If we have g_EntList from either of the above methods, make sure we can get the offset from it to EntInfo as well
 	if (g_EntList && !g_pGameConf->GetOffset("EntInfo", &entInfoOffset))
 	{
-		g_Logger.LogError("Logical Entities not supported by this mod (EntInfo) - Reverting to networkable entities only");
+		logger->LogError("Logical Entities not supported by this mod (EntInfo) - Reverting to networkable entities only");
 		g_EntList = NULL;
 		return;
 	}
@@ -211,7 +211,7 @@ void CHalfLife2::InitLogicalEntData()
 	
 	if (!g_EntList && !g_pEntInfoList)
 	{
-		g_Logger.LogError("Failed lookup of gEntList - Reverting to networkable entities only");
+		logger->LogError("Failed lookup of gEntList - Reverting to networkable entities only");
 		return;
 	}
 }
@@ -225,7 +225,7 @@ void CHalfLife2::InitCommandLine()
 		ke::AutoPtr<ILibrary> lib(g_LibSys.OpenLibrary(TIER0_NAME, error, sizeof(error)));
 		if (lib == NULL)
 		{
-			g_Logger.LogError("Could not load %s: %s", TIER0_NAME, error);
+			logger->LogError("Could not load %s: %s", TIER0_NAME, error);
 			return;
 		}
 		
@@ -242,7 +242,7 @@ void CHalfLife2::InitCommandLine()
 		ke::AutoPtr<ILibrary> lib(g_LibSys.OpenLibrary(VSTDLIB_NAME, error, sizeof(error)));
 		if (lib == NULL)
 		{
-			g_Logger.LogError("Could not load %s: %s", VSTDLIB_NAME, error);
+			logger->LogError("Could not load %s: %s", VSTDLIB_NAME, error);
 			return;
 		}
 
@@ -251,7 +251,7 @@ void CHalfLife2::InitCommandLine()
 	
 	if (m_pGetCommandLine == NULL)
 	{
-		g_Logger.LogError("Could not locate any command line functionality");
+		logger->LogError("Could not locate any command line functionality");
 	}
 }
 

@@ -36,6 +36,7 @@
 #include "sm_stringutil.h"
 #include "sourcehook.h"
 #include "sm_srvcmds.h"
+#include "logic_bridge.h"
 
 NextMapManager g_NextMap;
 
@@ -130,7 +131,7 @@ void NextMapManager::HookChangeLevel(const char *map, const char *unknown, const
 {
 	if (g_forcedChange)
 	{
-		g_Logger.LogMessage("[SM] Changed map to \"%s\"", map);
+		logger->LogMessage("[SM] Changed map to \"%s\"", map);
 		RETURN_META(MRES_IGNORED);
 	}
 
@@ -141,7 +142,7 @@ void NextMapManager::HookChangeLevel(const char *map, const char *unknown, const
 		RETURN_META(MRES_IGNORED);
 	}
 
-	g_Logger.LogMessage("[SM] Changed map to \"%s\"", newmap);
+	logger->LogMessage("[SM] Changed map to \"%s\"", newmap);
 
 	UTIL_Format(m_tempChangeInfo.m_mapName, sizeof(m_tempChangeInfo.m_mapName), newmap);
 	UTIL_Format(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), "Normal level change");

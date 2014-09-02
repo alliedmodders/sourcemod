@@ -44,7 +44,7 @@
  * @param delay			Delay in seconds? before the event gets fired.
  * @noreturn
  */
-functag public void EntityOutput(const String:output[], caller, activator, Float:delay);
+typedef EntityOutput = function void (const char[] output, int caller, int activator, float delay);
 
 /**
  * Add an entity output hook on a entity classname

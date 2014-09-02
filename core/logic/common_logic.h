@@ -53,6 +53,8 @@ extern IPlayerManager *playerhelpers;
 extern IAdminSystem *adminsys;
 extern IGameHelpers *gamehelpers;
 extern IScriptManager *scripts;
+extern IExtensionSys *extsys;
+extern ILogger *logger;
 
 #endif /* _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_ */
 

@@ -113,6 +113,13 @@ namespace SourceMod
 		* @return			Pointer to the data, or NULL if out of bounds.
 		*/
 		virtual void *ReadMemory(size_t *size) const =0;
+
+		/**
+		 * @brief Reads a function pointer from the data stream.
+		 *
+		 * @return			A function pointer read from the current position.
+		 */
+		virtual cell_t ReadFunction() const =0;
 	};
 
 	/**
@@ -160,6 +167,13 @@ namespace SourceMod
 		 * @return			Current position of the stream beforehand.
 		 */
 		virtual size_t CreateMemory(size_t size, void **addr) =0;
+
+		/**
+		 * @brief Packs one function pointer into the data stream.
+		 *
+		 * @param function	The function pointer to write.
+		 */
+		virtual void PackFunction(cell_t function) =0;
 	};
 }
 

@@ -118,18 +118,21 @@ LoadBanReasons()
 		decl String:sectionName[255];
 		if(!KvGetSectionName(g_hKvBanReasons, sectionName, sizeof(sectionName)))
 		{
-			return SetFailState("Error in %s: File corrupt or in the wrong format", g_BanReasonsPath);
+			SetFailState("Error in %s: File corrupt or in the wrong format", g_BanReasonsPath);
+			return;
 		}
 
 		if(strcmp(sectionName, "banreasons") != 0)
 		{
-			return SetFailState("Error in %s: Couldn't find 'banreasons'", g_BanReasonsPath);
+			SetFailState("Error in %s: Couldn't find 'banreasons'", g_BanReasonsPath);
+			return;
 		}
 		
 		//Reset kvHandle
 		KvRewind(g_hKvBanReasons);
 	} else {
-		return SetFailState("Error in %s: File not found, corrupt or in the wrong format", g_BanReasonsPath);
+		SetFailState("Error in %s: File not found, corrupt or in the wrong format", g_BanReasonsPath);
+		return;
 	}
 }
 

@@ -86,6 +86,7 @@ IExtensionSys *extsys;
 IHandleSys *handlesys;
 IForwardManager *forwardsys;
 IAdminSystem *adminsys;
+ILogger *logger;
 
 class VEngineServer_Logic : public IVEngineServer_Logic
 {
@@ -146,6 +147,10 @@ public:
 	{
 		return filesystem->FindNext(handle);
 	}
+	bool FindIsDirectory(FileFindHandle_t handle)
+	{
+		return filesystem->FindIsDirectory(handle);
+	}
 	void FindClose(FileFindHandle_t handle)
 	{
 		filesystem->FindClose(handle);
@@ -173,6 +178,50 @@ public:
 	unsigned int Size(const char *pFileName, const char *pPathID = 0)
 	{
 		return filesystem->Size(pFileName, pPathID);
+	}
+	int Read(void* pOutput, int size, FileHandle_t file)
+	{
+		return filesystem->Read(pOutput, size, file);
+	}
+	int Write(void const* pInput, int size, FileHandle_t file)
+	{
+		return filesystem->Write(pInput, size, file);
+	}
+	void Seek(FileHandle_t file, int pos, int seekType)
+	{
+		filesystem->Seek(file, pos, (FileSystemSeek_t) seekType);
+	}
+	unsigned int Tell(FileHandle_t file)
+	{
+		return filesystem->Tell(file);
+	}
+	int FPrint(FileHandle_t file, const char *pData)
+	{
+		return filesystem->FPrintf(file, "%s", pData);
+	}
+	void Flush(FileHandle_t file)
+	{
+		filesystem->Flush(file);
+	}
+	bool IsOk(FileHandle_t file)
+	{
+		return filesystem->IsOk(file);
+	}
+	void RemoveFile(const char *pRelativePath, const char *pathID)
+	{
+		filesystem->RemoveFile(pRelativePath, pathID);
+	}
+	void RenameFile(char const *pOldPath, char const *pNewPath, const char *pathID)
+	{
+		filesystem->RenameFile(pOldPath, pNewPath, pathID);
+	}
+	bool IsDirectory(const char *pFileName, const char *pathID)
+	{
+		return filesystem->IsDirectory(pFileName, pathID);
+	}
+	void CreateDirHierarchy(const char *path, const char *pathID)
+	{
+		filesystem->CreateDirHierarchy(path, pathID);
 	}
 };
 
@@ -251,44 +300,11 @@ static VPlayerInfo_Logic logic_playerinfo;
 
 static ConVar sm_show_activity("sm_show_activity", "13", FCVAR_SPONLY, "Activity display setting (see sourcemod.cfg)");
 static ConVar sm_immunity_mode("sm_immunity_mode", "1", FCVAR_SPONLY, "Mode for deciding immunity protection");
+static ConVar sm_datetime_format("sm_datetime_format", "%m/%d/%Y - %H:%M:%S", 0, "Default formatting time rules");
 
 static ConVar *find_convar(const char *name)
 {
 	return icvar->FindVar(name);
-}
-
-static void log_error(const char *fmt, ...)
-{
-	va_list ap;
-
-	va_start(ap, fmt);
-	g_Logger.LogErrorEx(fmt, ap);
-	va_end(ap);
-}
-
-static void log_fatal(const char *fmt, ...)
-{
-	va_list ap;
-
-	va_start(ap, fmt);
-	g_Logger.LogFatalEx(fmt, ap);
-	va_end(ap);
-}
-
-static void log_message(const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	g_Logger.LogMessageEx(fmt, ap);
-	va_end(ap);
-}
-
-static void log_to_file(FILE *fp, const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	g_Logger.LogToOpenFileEx(fp, fmt, ap);
-	va_end(ap);
 }
 
 static void log_to_game(const char *message)
@@ -304,6 +320,11 @@ static void conprint(const char *message)
 static const char *get_cvar_string(ConVar* cvar)
 {
 	return cvar->GetString();
+}
+
+static bool get_cvar_bool(ConVar* cvar)
+{
+	return cvar->GetBool();
 }
 
 static bool get_game_name(char *buffer, size_t maxlength)
@@ -561,13 +582,10 @@ static sm_core_t core_bridge =
 	find_convar,
 	strncopy,
 	UTIL_TrimWhitespace,
-	log_error,
-	log_fatal,
-	log_message,
-	log_to_file,
 	log_to_game,
 	conprint,
 	get_cvar_string,
+	get_cvar_bool,
 	UTIL_Format,
 	UTIL_FormatArgs,
 	gnprintf,
@@ -636,6 +654,7 @@ void InitLogicBridge()
 	handlesys = logicore.handlesys;
 	forwardsys = logicore.forwardsys;
 	adminsys = logicore.adminsys;
+	logger = logicore.logger;
 }
 
 bool StartLogicBridge(char *error, size_t maxlength)

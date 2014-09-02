@@ -643,7 +643,7 @@ native SQL_UnlockDatabase(Handle:database);
  * @param data			Data passed in via the original threaded invocation.
  * @noreturn
  */
-functag public void SQLTCallback(Handle:owner, Handle:hndl, const String:error[], any:data);
+typedef SQLTCallback = function void (Handle owner, Handle hndl, const char[] error, any data);
 
 /**
  * Tells whether two database handles both point to the same database 
@@ -713,7 +713,7 @@ native Transaction:SQL_CreateTransaction();
  * @param queryData     An array of each data value passed to SQL_AddQuery().
  * @noreturn
  */
-functag public void SQLTxnSuccess(Handle:db, any:data, numQueries, Handle:results[], any:queryData[]);
+typedef SQLTxnSuccess = function void (Handle db, any data, int numQueries, Handle[] results, any[] queryData);
 
 /**
  * Callback for a failed transaction.
@@ -726,7 +726,7 @@ functag public void SQLTxnSuccess(Handle:db, any:data, numQueries, Handle:result
  * @param queryData     An array of each data value passed to SQL_AddQuery().
  * @noreturn
  */
-functag public void SQLTxnFailure(Handle:db, any:data, numQueries, const String:error[], failIndex, any:queryData[]);
+typedef SQLTxnFailure = function void (Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData);
 
 /**
  * Adds a query to a transaction object.

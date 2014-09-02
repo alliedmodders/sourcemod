@@ -738,7 +738,7 @@ int DebugInfo::LookupFunction(ucell_t addr, const char **name)
 		{
 			sym = (sp_fdbg_symbol_t *)cursor;
 
-			if (sym->ident == SP_SYM_FUNCTION
+			if (sym->ident == sp::IDENT_FUNCTION
 				&& sym->codestart <= addr 
 				&& sym->codeend > addr)
 			{
@@ -769,7 +769,7 @@ int DebugInfo::LookupFunction(ucell_t addr, const char **name)
 		{
 			sym = (sp_u_fdbg_symbol_t *)cursor;
 
-			if (sym->ident == SP_SYM_FUNCTION
+			if (sym->ident == sp::IDENT_FUNCTION
 				&& sym->codestart <= addr 
 				&& sym->codeend > addr)
 			{

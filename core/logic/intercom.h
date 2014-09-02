@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 28)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 29)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -83,6 +83,7 @@ class IFileSystem_Logic
 public:
 	virtual const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle) = 0;
 	virtual const char *FindNext(FileFindHandle_t handle) = 0;
+	virtual bool FindIsDirectory(FileFindHandle_t handle) = 0;
 	virtual void FindClose(FileFindHandle_t handle) = 0;
 	virtual FileHandle_t Open(const char *pFileName, const char *pOptions, const char *pathID = 0) = 0;
 	virtual void Close(FileHandle_t file) = 0;
@@ -90,6 +91,17 @@ public:
 	virtual bool EndOfFile(FileHandle_t file) = 0;
 	virtual bool FileExists(const char *pFileName, const char *pPathID = 0) = 0;
 	virtual unsigned int Size(const char *pFileName, const char *pPathID = 0) = 0;
+	virtual int Read(void* pOutput, int size, FileHandle_t file) = 0;
+	virtual int Write(void const* pInput, int size, FileHandle_t file) = 0;
+	virtual void Seek(FileHandle_t file, int post, int seekType) = 0;
+	virtual unsigned int Tell(FileHandle_t file) = 0;
+	virtual int FPrint(FileHandle_t file, const char *pData) = 0;
+	virtual void Flush(FileHandle_t file) = 0;
+	virtual bool IsOk(FileHandle_t file) = 0;
+	virtual void RemoveFile(const char *pRelativePath, const char *pathID = 0) = 0;
+	virtual void RenameFile(char const *pOldPath, char const *pNewPath, const char *pathID = 0) = 0;
+	virtual bool IsDirectory(const char *pFileName, const char *pathID = 0) = 0;
+	virtual void CreateDirHierarchy(const char *path, const char *pathID = 0) = 0;
 };
 
 namespace SourceMod
@@ -211,6 +223,15 @@ public:
 	virtual void AddRawDependency(IExtension *myself, IdentityToken_t *token, void *iface) = 0;
 	virtual const CVector<IExtension *> *ListExtensions() = 0;
 	virtual void FreeExtensionList(const CVector<IExtension *> *list) = 0;
+	virtual void CallOnCoreMapEnd() = 0;
+};
+
+class ILogger
+{
+public:
+	virtual void LogMessage(const char *msg, ...) = 0;
+	virtual void LogError(const char *msg, ...) = 0;
+	virtual void LogFatal(const char *msg, ...) = 0;
 };
 
 class AutoPluginList
@@ -273,13 +294,10 @@ struct sm_core_t
 	ConVar *		(*FindConVar)(const char*);
 	unsigned int	(*strncopy)(char*, const char*, size_t);
 	char *			(*TrimWhitespace)(char *, size_t &);
-	void			(*LogError)(const char*, ...);
-	void			(*LogFatal)(const char*, ...);
-	void			(*Log)(const char*, ...);
-	void			(*LogToFile)(FILE *fp, const char*, ...);
 	void			(*LogToGame)(const char *message);
 	void			(*ConPrint)(const char *message);
 	const char *	(*GetCvarString)(ConVar*);
+	bool			(*GetCvarBool)(ConVar*);
 	size_t			(*Format)(char*, size_t, const char*, ...);
 	size_t			(*FormatArgs)(char*, size_t, const char*,va_list ap);
 	bool			(*gnprintf)(char *, size_t, const char *, IPhraseCollection *, void **,
@@ -325,7 +343,7 @@ struct sm_logic_t
 	char            *(*ReplaceEx)(char *, size_t, const char *, size_t, const char *, size_t, bool);
 	size_t          (*DecodeHexString)(unsigned char *, size_t, const char *);
 	IGameConfig *   (*GetCoreGameConfig)();
-	bool			(*OnLogPrint)(const char *msg);	// true to supercede
+	bool			(*OnLogPrint)(const char *msg);	// true to supersede
 	IDebugListener   *debugger;
 	void			(*GenerateError)(IPluginContext *, cell_t, int, const char *, ...);
 	void			(*AddNatives)(sp_nativeinfo_t *natives);
@@ -339,6 +357,7 @@ struct sm_logic_t
 	IForwardManager	*forwardsys;
 	IAdminSystem	*adminsys;
 	IdentityToken_t *core_ident;
+	ILogger			*logger;
 	float			sentinel;
 };
 

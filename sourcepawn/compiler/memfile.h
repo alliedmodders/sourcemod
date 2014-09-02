@@ -52,4 +52,15 @@ long memfile_tell(memfile_t *mf);
  */
 void memfile_reset(memfile_t *mf);
 
+typedef memfile_t MEMFILE;
+MEMFILE *mfcreate(const char *filename);
+void mfclose(MEMFILE *mf);
+int mfdump(MEMFILE *mf);
+long mflength(const MEMFILE *mf);
+long mfseek(MEMFILE *mf,long offset,int whence);
+unsigned int mfwrite(MEMFILE *mf,const unsigned char *buffer,unsigned int size);
+unsigned int mfread(MEMFILE *mf,unsigned char *buffer,unsigned int size);
+char *mfgets(MEMFILE *mf,char *string,unsigned int size);
+int mfputs(MEMFILE *mf,const char *string);
+
 #endif //_INCLUDE_MEMFILE_H

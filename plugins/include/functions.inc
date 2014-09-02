@@ -357,7 +357,7 @@ native Call_Cancel();
  * @param numParams			Number of parameters passed to the native.
  * @return 					Value for the native call to return.
  */
-functag public int NativeCall(Handle:plugin, numParams);
+typedef NativeCall = function int (Handle plugin, int numParams);
 
 /**
  * Creates a dynamic native.  This should only be called in AskPluginLoad(), or 
@@ -508,7 +508,7 @@ native FormatNativeString(out_param,
  * @param data			Data passed to the RequestFrame native.
  * @noreturn
  */
-functag public void RequestFrameCallback(any:data);
+typedef RequestFrameCallback = function void (any data);
 
 /**
  * Creates a single use Next Frame hook.
