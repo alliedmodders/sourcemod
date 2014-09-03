@@ -90,6 +90,8 @@ HookTypeData g_HookTypes[SDKHook_MAXHOOKS] =
 	{"GetMaxHealth",          "",                       false},
 	{"Blocked",               "",                       false},
 	{"BlockedPost",           "",                       false},
+	{"OnTakeDamageAlive",     "DT_BaseCombatCharacter", false},
+	{"OnTakeDamageAlivePost", "DT_BaseCombatCharacter", false},
 };
 
 SDKHooks g_Interface;
@@ -168,6 +170,7 @@ SH_DECL_MANUALHOOK0(GetMaxHealth, 0, 0, 0, int);
 #endif
 SH_DECL_MANUALHOOK1_void(GroundEntChanged, 0, 0, 0, void *);
 SH_DECL_MANUALHOOK1(OnTakeDamage, 0, 0, 0, int, CTakeDamageInfoHack &);
+SH_DECL_MANUALHOOK1(OnTakeDamageAlive, 0, 0, 0, int, CTakeDamageInfoHack &);
 SH_DECL_MANUALHOOK0_void(PreThink, 0, 0, 0);
 SH_DECL_MANUALHOOK0_void(PostThink, 0, 0, 0);
 SH_DECL_MANUALHOOK0(Reload, 0, 0, 0, bool);
@@ -515,6 +518,7 @@ void SDKHooks::SetupHooks()
 	CHECKOFFSET(FireBullets,      false, true);
 	CHECKOFFSET(GroundEntChanged, false, true);
 	CHECKOFFSET(OnTakeDamage,     true,  true);
+	CHECKOFFSET(OnTakeDamageAlive,true, true);
 	CHECKOFFSET(PreThink,         true,  true);
 	CHECKOFFSET(PostThink,        true,  true);
 	CHECKOFFSET(Reload,           true,  true);
@@ -606,6 +610,12 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 				break;
 			case SDKHook_OnTakeDamagePost:
 				hookid = SH_ADD_MANUALVPHOOK(OnTakeDamage, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamagePost), true);
+				break;
+			case SDKHook_OnTakeDamageAlive:
+				hookid = SH_ADD_MANUALVPHOOK(OnTakeDamageAlive, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamageAlive), false);
+				break;
+			case SDKHook_OnTakeDamageAlivePost:
+				hookid = SH_ADD_MANUALVPHOOK(OnTakeDamageAlive, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamageAlivePost), true);
 				break;
 			case SDKHook_PreThink:
 				hookid = SH_ADD_MANUALVPHOOK(PreThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PreThink), false);
@@ -999,12 +1009,12 @@ void SDKHooks::Hook_GroundEntChangedPost(void *pVar)
 	Call(META_IFACEPTR(CBaseEntity), SDKHook_GroundEntChangedPost);
 }
 
-int SDKHooks::Hook_OnTakeDamage(CTakeDamageInfoHack &info)
+int SDKHooks::HandleOnTakeDamageHook(CTakeDamageInfoHack &info, SDKHookType hookType)
 {
 	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
 	CVTableHook vhook(pEntity);
-	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_OnTakeDamage];
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[hookType];
 	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
 		if (vhook != vtablehooklist[entry]->vtablehook)
@@ -1020,10 +1030,10 @@ int SDKHooks::Hook_OnTakeDamage(CTakeDamageInfoHack &info)
 		int weapon = info.GetWeapon();
 
 		Vector force = info.GetDamageForce();
-		cell_t damageForce[3] = {sp_ftoc(force.x), sp_ftoc(force.y), sp_ftoc(force.z)};
+		cell_t damageForce[3] = { sp_ftoc(force.x), sp_ftoc(force.y), sp_ftoc(force.z) };
 
 		Vector pos = info.GetDamagePosition();
-		cell_t damagePosition[3] = {sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z)};
+		cell_t damagePosition[3] = { sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z) };
 
 		cell_t res, ret = Pl_Continue;
 
@@ -1039,23 +1049,23 @@ int SDKHooks::Hook_OnTakeDamage(CTakeDamageInfoHack &info)
 			callback->PushCellByRef(&damagetype);
 			callback->PushCellByRef(&weapon);
 			callback->PushArray(damageForce, 3, SM_PARAM_COPYBACK);
-			callback->PushArray(damagePosition, 3, SM_PARAM_COPYBACK);	
+			callback->PushArray(damagePosition, 3, SM_PARAM_COPYBACK);
 			callback->PushCell(info.GetDamageCustom());
 			callback->Execute(&res);
 
-			if(res >= ret)
+			if (res >= ret)
 			{
 				ret = res;
-				if(ret == Pl_Changed)
+				if (ret == Pl_Changed)
 				{
 					CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
-					if(!pEntAttacker)
+					if (!pEntAttacker)
 					{
 						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for attacker is invalid", attacker);
 						RETURN_META_VALUE(MRES_IGNORED, 0);
 					}
 					CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
-					if(!pEntInflictor)
+					if (!pEntInflictor)
 					{
 						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for inflictor is invalid", inflictor);
 						RETURN_META_VALUE(MRES_IGNORED, 0);
@@ -1077,12 +1087,12 @@ int SDKHooks::Hook_OnTakeDamage(CTakeDamageInfoHack &info)
 				}
 			}
 		}
-		
-		if(ret >= Pl_Handled)
+
+		if (ret >= Pl_Handled)
 			RETURN_META_VALUE(MRES_SUPERCEDE, 1);
 
-		if(ret == Pl_Changed)
-			RETURN_META_VALUE(MRES_HANDLED, 1); 
+		if (ret == Pl_Changed)
+			RETURN_META_VALUE(MRES_HANDLED, 1);
 
 		break;
 	}
@@ -1090,12 +1100,12 @@ int SDKHooks::Hook_OnTakeDamage(CTakeDamageInfoHack &info)
 	RETURN_META_VALUE(MRES_IGNORED, 0);
 }
 
-int SDKHooks::Hook_OnTakeDamagePost(CTakeDamageInfoHack &info)
+int SDKHooks::HandleOnTakeDamageHookPost(CTakeDamageInfoHack &info, SDKHookType hookType)
 {
 	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
 	CVTableHook vhook(pEntity);
-	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_OnTakeDamagePost];
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[hookType];
 	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
 	{
 		if (vhook != vtablehooklist[entry]->vtablehook)
@@ -1118,11 +1128,11 @@ int SDKHooks::Hook_OnTakeDamagePost(CTakeDamageInfoHack &info)
 			callback->PushCell(info.GetWeapon());
 
 			Vector force = info.GetDamageForce();
-			cell_t damageForce[3] = {sp_ftoc(force.x), sp_ftoc(force.y), sp_ftoc(force.z)};
+			cell_t damageForce[3] = { sp_ftoc(force.x), sp_ftoc(force.y), sp_ftoc(force.z) };
 			callback->PushArray(damageForce, 3);
 
 			Vector pos = info.GetDamagePosition();
-			cell_t damagePosition[3] = {sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z)};
+			cell_t damagePosition[3] = { sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z) };
 			callback->PushArray(damagePosition, 3);
 
 			callback->PushCell(info.GetDamageCustom());
@@ -1134,6 +1144,26 @@ int SDKHooks::Hook_OnTakeDamagePost(CTakeDamageInfoHack &info)
 	}
 
 	RETURN_META_VALUE(MRES_IGNORED, 0);
+}
+
+int SDKHooks::Hook_OnTakeDamage(CTakeDamageInfoHack &info)
+{
+	return HandleOnTakeDamageHook(info, SDKHook_OnTakeDamage);
+}
+
+int SDKHooks::Hook_OnTakeDamagePost(CTakeDamageInfoHack &info)
+{
+	return HandleOnTakeDamageHookPost(info, SDKHook_OnTakeDamagePost);
+}
+
+int SDKHooks::Hook_OnTakeDamageAlive(CTakeDamageInfoHack &info)
+{
+	return HandleOnTakeDamageHook(info, SDKHook_OnTakeDamageAlive);
+}
+
+int SDKHooks::Hook_OnTakeDamageAlivePost(CTakeDamageInfoHack &info)
+{
+	return HandleOnTakeDamageHookPost(info, SDKHook_OnTakeDamageAlivePost);
 }
 
 void SDKHooks::Hook_PreThink()

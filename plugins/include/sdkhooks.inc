@@ -119,6 +119,8 @@ enum SDKHookType
 	SDKHook_GetMaxHealth,  /**< ep2v and later */
 	SDKHook_Blocked,
 	SDKHook_BlockedPost,
+	SDKHook_OnTakeDamageAlive,
+	SDKHook_OnTakeDamageAlivePost,
 };
 
 /*
@@ -138,6 +140,9 @@ enum SDKHookType
 	
 	SDKHook_OnTakeDamage,
 	SDKHook_OnTakeDamagePost,
+	
+	SDKHook_OnTakeDamageAlive,
+	SDKHook_OnTakeDamageAlivePost,
 	
 	SDKHook_PreThink,
 	SDKHook_PreThinkPost,
@@ -244,6 +249,7 @@ union SDKHookCB
 	function Action (int entity, int &maxhealth);
 	
 	// OnTakeDamage
+	// OnTakeDamagAlive
 	// Note: The weapon parameter is not used by all games and damage sources.
 	// Note: Force application is dependent on game and damage type(s)
 	// SDKHooks 1.0+
@@ -256,6 +262,7 @@ union SDKHookCB
 		float[3] damageForce, float[3] damagePosition, int damagecustom);
 	
 	// OnTakeDamagePost
+	// OnTakeDamageAlivePost
 	function void (int victim, int attacker, int inflictor, float damage, int damagetype);
 	function void (int victim, int attacker, int inflictor, float damage, int damagetype, const float[3] damageForce, const float[3] damagePosition);
 	
