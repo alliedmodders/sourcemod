@@ -381,13 +381,17 @@ static cell_t SteamIDToLocal(IPluginContext *pCtx, int index, AuthStringType aut
 				if (gamehelpers->IsLANServer())
 				{
 					pCtx->StringToLocal(local_addr, bytes, "STEAM_ID_LAN");
+					return 1;
 				}
-				else
+				else if (!validate)
 				{				
 					pCtx->StringToLocal(local_addr, bytes, "STEAM_ID_PENDING");
+					return 1;
 				}
-				
-				return 1;
+				else
+				{
+					return 0;
+				}
 			}
 			
 			char szAuth[64];
