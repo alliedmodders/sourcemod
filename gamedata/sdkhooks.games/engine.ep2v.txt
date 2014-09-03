@@ -35,6 +35,12 @@
 				"linux"		"63"
 				"mac"		"63"
 			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"271"
+				"linux"		"272"
+				"mac"		"272"
+			}
 			"PreThink"
 			{
 				"windows"	"331"
@@ -180,6 +186,12 @@
 				"linux"		"63"
 				"mac"		"63"
 			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"271"
+				"linux"		"272"
+				"mac"		"272"
+			}
 			"PreThink"
 			{
 				"windows"	"331"
@@ -324,6 +336,12 @@
 				"windows"	"62"
 				"linux"		"63"
 				"mac"		"63"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"271"
+				"linux"		"272"
+				"mac"		"272"
 			}
 			"PreThink"
 			{
