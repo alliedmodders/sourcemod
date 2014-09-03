@@ -1,3 +1,4 @@
+// vim: set ts=8 sts=2 sw=2 tw=99 et:
 /*  Pawn compiler - Error message system
  *  In fact a very simple system, using only 'panic mode'.
  *
@@ -81,6 +82,8 @@ static short lastfile;
   int errline = sErrLine;
   sErrLine = -1;
 
+  bool is_warning = (number >= 200 && !sc_warnings_are_errors);
+
   /* errflag is reset on each semicolon.
    * In a two-pass compiler, an error should not be reported twice. Therefore
    * the error reporting is enabled only in the second pass (and only when
@@ -113,8 +116,13 @@ static short lastfile;
     errnum++;           /* a fatal error also counts as an error */
   } else {
     msg=warnmsg[number-200];
-    pre=prefix[2];
-    warnnum++;
+    if (sc_warnings_are_errors) {
+      pre=prefix[0];
+      errnum++;
+    } else {
+      pre=prefix[2];
+      warnnum++;
+    }
   } /* if */
 
   assert(errstart<=fline);
@@ -164,7 +172,7 @@ static short lastfile;
     errorcount=0;
   lastline=fline;
   lastfile=fcurrent;
-  if (number<200)
+  if (!is_warning)
     errorcount++;
   if (errorcount>=3)
     error(167);         /* too many error/warning messages on one line */
