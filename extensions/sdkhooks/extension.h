@@ -90,6 +90,8 @@ enum SDKHookType
 	SDKHook_GetMaxHealth,
 	SDKHook_Blocked,
 	SDKHook_BlockedPost,
+	SDKHook_OnTakeDamageAlive,
+	SDKHook_OnTakeDamageAlivePost,
 	SDKHook_MAXHOOKS
 };
 
@@ -288,6 +290,8 @@ public:
 	void Hook_GroundEntChangedPost(void *pVar);
 	int Hook_OnTakeDamage(CTakeDamageInfoHack &info);
 	int Hook_OnTakeDamagePost(CTakeDamageInfoHack &info);
+	int Hook_OnTakeDamageAlive(CTakeDamageInfoHack &info);
+	int Hook_OnTakeDamageAlivePost(CTakeDamageInfoHack &info);
 	void Hook_PreThink();
 	void Hook_PreThinkPost();
 	void Hook_PostThink();
@@ -339,6 +343,10 @@ private:
 	void HandleEntityDeleted(CBaseEntity *pEntity, int ref);
 	void Unhook(CBaseEntity *pEntity);
 	void Unhook(IPluginContext *pContext);
+
+private:
+	int HandleOnTakeDamageHook(CTakeDamageInfoHack &info, SDKHookType hookType);
+	int HandleOnTakeDamageHookPost(CTakeDamageInfoHack &info, SDKHookType hookType);
 };
 
 extern CGlobalVars *gpGlobals;
