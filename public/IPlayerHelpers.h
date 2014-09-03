@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	20
+#define SMINTERFACE_PLAYERMANAGER_VERSION	21
 
 struct edict_t;
 class IPlayerInfo;
@@ -267,6 +267,15 @@ namespace SourceMod
 		 * @brief Removes admin access from the client.
 		 */
 		virtual void ClearAdmin() =0;
+		
+		/**
+		 * @brief Returns the client's Steam ID as a uint64.
+		 *
+		 * @param validated		Check backend validation status.
+		 * 
+		 * @return			Steam Id or 0 if not available.
+		 */
+		virtual uint64_t GetSteamId64(bool validated = true) =0;
 	};
 
 	/**

@@ -43,6 +43,8 @@
 #include <sh_vector.h>
 #include "ConVarManager.h"
 
+#include <steam/steamclientpublic.h>
+
 using namespace SourceHook;
 
 #define PLAYER_LIFE_UNKNOWN	0
@@ -71,6 +73,8 @@ public:
 	const char *GetIPAddress();
 	const char *GetAuthString(bool validated = true);
 	unsigned int GetSteamAccountID(bool validated = true);
+	const CSteamID &GetSteamId(bool validated = true);
+	uint64_t GetSteamId64(bool validated = true) { return GetSteamId(validated).ConvertToUint64(); }
 	edict_t *GetEdict();
 	bool IsInGame();
 	bool WasCountedAsInGame();
@@ -130,7 +134,7 @@ private:
 	bool m_bIsSourceTV;
 	bool m_bIsReplay;
 	serial_t m_Serial;
-	unsigned int m_SteamAccountID;
+	CSteamID m_SteamId;
 #if SOURCE_ENGINE == SE_CSGO
 	QueryCvarCookie_t m_LanguageCookie;
 #endif
