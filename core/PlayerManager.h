@@ -73,8 +73,8 @@ public:
 	const char *GetIPAddress();
 	const char *GetAuthString(bool validated = true);
 	unsigned int GetSteamAccountID(bool validated = true);
-	const CSteamID &GetSteamID(bool validated = true);
-	uint64_t GetSteamID64(bool validated = true) { return GetSteamID(validated).ConvertToUint64(); }
+	const CSteamID &GetSteamId(bool validated = true);
+	uint64_t GetSteamId64(bool validated = true) { return GetSteamId(validated).ConvertToUint64(); }
 	edict_t *GetEdict();
 	bool IsInGame();
 	bool WasCountedAsInGame();
@@ -134,7 +134,7 @@ private:
 	bool m_bIsSourceTV;
 	bool m_bIsReplay;
 	serial_t m_Serial;
-	CSteamID m_SteamID;
+	CSteamID m_SteamId;
 #if SOURCE_ENGINE == SE_CSGO
 	QueryCvarCookie_t m_LanguageCookie;
 #endif

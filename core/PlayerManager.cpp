@@ -1914,7 +1914,7 @@ CPlayer::CPlayer()
 	m_bIsSourceTV = false;
 	m_bIsReplay = false;
 	m_Serial.value = -1;
-	m_SteamID = k_steamIDNil;
+	m_SteamId = k_steamIDNil;
 #if SOURCE_ENGINE == SE_CSGO
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
@@ -1997,7 +1997,7 @@ void CPlayer::Disconnect()
 	m_bIsSourceTV = false;
 	m_bIsReplay = false;
 	m_Serial.value = -1;
-	m_SteamID = k_steamIDNil;
+	m_SteamId = k_steamIDNil;
 #if SOURCE_ENGINE == SE_CSGO
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
@@ -2033,7 +2033,7 @@ const char *CPlayer::GetAuthString(bool validated)
 	return m_AuthID.c_str();
 }
 
-const CSteamID &CPlayer::GetSteamID(bool validated)
+const CSteamID &CPlayer::GetSteamId(bool validated)
 {
 	if (IsFakeClient() || (validated && !IsAuthStringValidated()))
 	{
@@ -2041,9 +2041,9 @@ const CSteamID &CPlayer::GetSteamID(bool validated)
 		return invalidId;
 	}
 
-	if (m_SteamID.IsValid())
+	if (m_SteamId.IsValid())
 	{
-		return m_SteamID;
+		return m_SteamId;
 	}
 
 #if SOURCE_ENGINE < SE_ORANGEBOX
@@ -2051,7 +2051,7 @@ const CSteamID &CPlayer::GetSteamID(bool validated)
 	/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
 	if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
 	{
-		m_SteamID = CSteamID(atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1),
+		m_SteamId = CSteamID(atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1),
 			k_unSteamUserDesktopInstance, k_EUniversePublic, k_EAccountTypeIndividual);
 	}
 #else
@@ -2064,17 +2064,17 @@ const CSteamID &CPlayer::GetSteamID(bool validated)
 
 	if (steamId)
 	{
-		m_SteamID = (*steamId);
+		m_SteamId = (*steamId);
 	}
 #endif
-	return m_SteamID;
+	return m_SteamId;
 }
 
 unsigned int CPlayer::GetSteamAccountID(bool validated)
 {
 	if (!IsFakeClient() && (!validated || IsAuthStringValidated()))
 	{
-		const CSteamID &id = GetSteamID();
+		const CSteamID &id = GetSteamId();
 		if (id.IsValid())
 			return id.GetAccountID();
 	}

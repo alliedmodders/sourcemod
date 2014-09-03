@@ -273,9 +273,9 @@ namespace SourceMod
 		 *
 		 * @param validated		Check backend validation status.
 		 * 
-		 * @return			Steam ID or 0 if not available.
+		 * @return			Steam Id or 0 if not available.
 		 */
-		virtual uint64_t GetSteamID64(bool validated = true) =0;
+		virtual uint64_t GetSteamId64(bool validated = true) =0;
 	};
 
 	/**

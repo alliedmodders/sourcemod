@@ -54,14 +54,14 @@ enum NetFlow
  * "STEAM_ID_LAN" - Authentication is disabled because of being on a LAN server.
  * "BOT" - The client is a bot.
  */
-enum AuthStringType
+enum AuthIdType
 {
-	AuthString_Engine = 0, /**< The game-specific auth string as returned from the engine */
+	AuthId_Engine = 0,     /**< The game-specific auth string as returned from the engine */
 	
 	// The following are only available on games that support Steam authentication.
-	AuthString_Steam2,     /**< Steam2 rendered format, ex "STEAM_1:1:4153990" */
-	AuthString_Steam3,     /**< Steam3 rendered format, ex "[U:1:8307981]" */
-	AuthString_SteamID64,  /**< A SteamID64 (uint64) as a String, ex "76561197968573709" */
+	AuthId_Steam2,         /**< Steam2 rendered format, ex "STEAM_1:1:4153990" */
+	AuthId_Steam3,         /**< Steam3 rendered format, ex "[U:1:8307981]" */
+	AuthId_SteamID64,      /**< A SteamID64 (uint64) as a String, ex "76561197968573709" */
 };
 
 /**
@@ -293,8 +293,8 @@ native bool:GetClientAuthString(client, String:auth[], maxlen, bool:validate=tru
  * Retrieves a client's authentication string (SteamID).
  *
  * @param client		Player index.
- * @param authType		Auth string type and format to use.
- * @param auth			Buffer to store the client's auth string.
+ * @param authType		Auth id type and format to use.
+ * @param auth			Buffer to store the client's auth id.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
  * @param validate		Check backend validation status.
  * 				DO NOT PASS FALSE UNLESS YOU UNDERSTAND THE CONSEQUENCES,
@@ -302,7 +302,7 @@ native bool:GetClientAuthString(client, String:auth[], maxlen, bool:validate=tru
  * @return				True on success, false otherwise.
  * @error				If the client is not connected or the index is invalid.
  */
-native bool:GetClientAuthId(client, AuthStringType:authType, String:auth[], maxlen, bool:validate=true);
+native bool:GetClientAuthId(client, AuthIdType:authType, String:auth[], maxlen, bool:validate=true);
 
 /**
  * Returns the client's Steam account ID.

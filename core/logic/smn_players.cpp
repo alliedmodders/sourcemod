@@ -332,15 +332,15 @@ static cell_t sm_GetClientIP(IPluginContext *pCtx, const cell_t *params)
 }
 
 // Must match clients.inc
-enum class AuthStringType
+enum class AuthIdType
 {
 	Engine = 0,
 	Steam2,
 	Steam3,
-	SteamID64,
+	SteamId64,
 };
 
-static cell_t SteamIDToLocal(IPluginContext *pCtx, int index, AuthStringType authType, cell_t local_addr, size_t bytes, bool validate)
+static cell_t SteamIdToLocal(IPluginContext *pCtx, int index, AuthIdType authType, cell_t local_addr, size_t bytes, bool validate)
 {
 	if ((index < 1) || (index > playerhelpers->GetMaxClients()))
 	{
@@ -355,7 +355,7 @@ static cell_t SteamIDToLocal(IPluginContext *pCtx, int index, AuthStringType aut
 
 	switch (authType)
 	{
-	case AuthStringType::Engine:
+	case AuthIdType::Engine:
 		{
 			const char *authstr = pPlayer->GetAuthString(validate);
 			if (!authstr || authstr[0] == '\0')
@@ -366,8 +366,8 @@ static cell_t SteamIDToLocal(IPluginContext *pCtx, int index, AuthStringType aut
 			pCtx->StringToLocal(local_addr, bytes, authstr);
 		}
 		break;
-	case AuthStringType::Steam2:
-	case AuthStringType::Steam3:
+	case AuthIdType::Steam2:
+	case AuthIdType::Steam3:
 		{
 			if (pPlayer->IsFakeClient())
 			{
@@ -375,7 +375,7 @@ static cell_t SteamIDToLocal(IPluginContext *pCtx, int index, AuthStringType aut
 				return 1;
 			}
 			
-			uint64_t steamId = pPlayer->GetSteamID64(validate);
+			uint64_t steamId = pPlayer->GetSteamId64(validate);
 			if (steamId == 0)
 			{
 				if (gamehelpers->IsLANServer())
@@ -398,7 +398,7 @@ static cell_t SteamIDToLocal(IPluginContext *pCtx, int index, AuthStringType aut
 			unsigned int universe = steamId >> 56;
 			unsigned int accountId = steamId & 0xFFFFFFFF;
 			unsigned int instance = (steamId >> 32) & 0x000FFFFF;
-			if (authType == AuthStringType::Steam2)
+			if (authType == AuthIdType::Steam2)
 			{
 				if (atoi(g_pGameConf->GetKeyValue("UseInvalidUniverseInSteam2IDs")) == 1)
 				{
@@ -420,14 +420,14 @@ static cell_t SteamIDToLocal(IPluginContext *pCtx, int index, AuthStringType aut
 		}
 		break;
 	
-	case AuthStringType::SteamID64:
+	case AuthIdType::SteamId64:
 		{
 			if (pPlayer->IsFakeClient() || gamehelpers->IsLANServer())
 			{
 				return 0;
 			}
 			
-			uint64_t steamId = pPlayer->GetSteamID64(validate);
+			uint64_t steamId = pPlayer->GetSteamId64(validate);
 			if (steamId == 0)
 			{
 				return 0;
@@ -452,12 +452,12 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 		validate = !!params[4];
 	}
 	
-	return SteamIDToLocal(pCtx, params[1], AuthStringType::Steam2, params[2], (size_t)params[3], validate);
+	return SteamIdToLocal(pCtx, params[1], AuthIdType::Steam2, params[2], (size_t)params[3], validate);
 }
 
 static cell_t sm_GetClientAuthId(IPluginContext *pCtx, const cell_t *params)
 {
-	return SteamIDToLocal(pCtx, params[1], (AuthStringType)params[2], params[3], (size_t)params[4], params[5] != 0);
+	return SteamIdToLocal(pCtx, params[1], (AuthIdType)params[2], params[3], (size_t)params[4], params[5] != 0);
 }
 
 static cell_t sm_GetSteamAccountID(IPluginContext *pCtx, const cell_t *params)
