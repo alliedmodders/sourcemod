@@ -47,6 +47,12 @@ enum NetFlow
 
 /**
  * Auth string types.
+ *
+ * Note that for the Steam2 and Steam3 types, the following ids are
+ * also valid values:
+ * "STEAM_ID_PENDING" - Authentication is pending.
+ * "STEAM_ID_LAN" - Authentication is disabled because of being on a LAN server.
+ * "BOT" - The client is a bot.
  */
 enum AuthStringType
 {
