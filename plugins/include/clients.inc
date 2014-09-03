@@ -56,7 +56,7 @@ enum NetFlow
  */
 enum AuthStringType
 {
-	AuthString_Engine,     /**< The game-specific auth string as returned from the engine */
+	AuthString_Engine = 0, /**< The game-specific auth string as returned from the engine */
 	
 	// The following are only available on games that support Steam authentication.
 	AuthString_Steam2,     /**< Steam2 rendered format, ex "STEAM_1:1:4153990" */

@@ -334,7 +334,7 @@ static cell_t sm_GetClientIP(IPluginContext *pCtx, const cell_t *params)
 // Must match clients.inc
 enum class AuthStringType
 {
-	Engine,
+	Engine = 0,
 	Steam2,
 	Steam3,
 	SteamID64,
@@ -405,7 +405,7 @@ static cell_t SteamIDToLocal(IPluginContext *pCtx, int index, AuthStringType aut
 					universe = 0;
 				}
 				
-				snprintf(szAuth, sizeof(szAuth), "STEAM_%u:%u:%u", universe, accountId % 2, accountId >> 1);
+				snprintf(szAuth, sizeof(szAuth), "STEAM_%u:%u:%u", universe, accountId & 1, accountId >> 1);
 			}
 			else if (instance != 1)
 			{
