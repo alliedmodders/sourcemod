@@ -74,7 +74,7 @@ static const char *prefix[3]={ "error", "fatal error", "warning" };
   if (number!=0) {
     int idx;
 
-    if (number < 160)
+    if (number < 160 || (number >= 200 && sc_warnings_are_errors))
       idx = 0;
     else if (number < 200)
       idx = 1;
