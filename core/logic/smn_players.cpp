@@ -455,7 +455,7 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 	return SteamIDToLocal(pCtx, params[1], AuthStringType::Steam2, params[2], (size_t)params[3], validate);
 }
 
-static cell_t sm_GetClientAuthStr2(IPluginContext *pCtx, const cell_t *params)
+static cell_t sm_GetClientAuthId(IPluginContext *pCtx, const cell_t *params)
 {
 	return SteamIDToLocal(pCtx, params[1], (AuthStringType)params[2], params[3], (size_t)params[4], params[5] != 0);
 }
@@ -1646,7 +1646,7 @@ REGISTER_NATIVES(playernatives)
 	{ "CanUserTarget", CanUserTarget },
 	{ "ChangeClientTeam", ChangeClientTeam },
 	{ "GetClientAuthString", sm_GetClientAuthStr },
-	{ "GetClientAuthString2", sm_GetClientAuthStr2 },
+	{ "GetClientAuthId", sm_GetClientAuthId },
 	{ "GetSteamAccountID", sm_GetSteamAccountID },
 	{ "GetClientCount", sm_GetClientCount },
 	{ "GetClientInfo", sm_GetClientInfo },

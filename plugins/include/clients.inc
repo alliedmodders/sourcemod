@@ -286,7 +286,7 @@ native bool:GetClientIP(client, String:ip[], maxlen, bool:remport=true);
  * @return				True on success, false otherwise.
  * @error				If the client is not connected or the index is invalid.
  */
-#pragma deprecated Use GetClientAuthString2
+#pragma deprecated Use GetClientAuthId
 native bool:GetClientAuthString(client, String:auth[], maxlen, bool:validate=true);
 
 /**
@@ -302,7 +302,7 @@ native bool:GetClientAuthString(client, String:auth[], maxlen, bool:validate=tru
  * @return				True on success, false otherwise.
  * @error				If the client is not connected or the index is invalid.
  */
-native bool:GetClientAuthString2(client, AuthStringType:authType, String:auth[], maxlen, bool:validate=true);
+native bool:GetClientAuthId(client, AuthStringType:authType, String:auth[], maxlen, bool:validate=true);
 
 /**
  * Returns the client's Steam account ID.
