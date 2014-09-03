@@ -107,6 +107,12 @@
 				"linux"		"158"
 				"mac"		"158"
 			}
+			"Blocked"
+			{
+				"windows"	"102"
+				"linux"		"103"
+				"mac"		"103"
+			}
 			"Weapon_CanSwitchTo"
 			{
 				"windows"	"265"
@@ -246,6 +252,12 @@
 				"linux"		"158"
 				"mac"		"158"
 			}
+			"Blocked"
+			{
+				"windows"	"102"
+				"linux"		"103"
+				"mac"		"103"
+			}
 			"Weapon_CanSwitchTo"
 			{
 				"windows"	"265"
@@ -384,6 +396,12 @@
 				"windows"	"157"
 				"linux"		"158"
 				"mac"		"158"
+			}
+			"Blocked"
+			{
+				"windows"	"102"
+				"linux"		"103"
+				"mac"		"103"
 			}
 			"Weapon_CanSwitchTo"
 			{

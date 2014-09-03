@@ -117,10 +117,15 @@ enum SDKHookType
 	SDKHook_Reload,
 	SDKHook_ReloadPost,
 	SDKHook_GetMaxHealth,  /**< ep2v and later */
+	SDKHook_Blocked,
+	SDKHook_BlockedPost,
 };
 
 /*
 	Alphabetized for easy readability
+
+	SDKHook_Blocked,
+	SDKHook_BlockedPost,
 	
 	SDKHook_EndTouch,
 	SDKHook_EndTouchPost,
@@ -210,6 +215,7 @@ union SDKHookCB
 	// EndTouch
 	// StartTouch
 	// Touch
+	// Blocked
 	function Action (int entity, int other);
 	
 	// EndTouchPost

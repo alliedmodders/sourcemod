@@ -88,6 +88,8 @@ enum SDKHookType
 	SDKHook_Reload,
 	SDKHook_ReloadPost,
 	SDKHook_GetMaxHealth,
+	SDKHook_Blocked,
+	SDKHook_BlockedPost,
 	SDKHook_MAXHOOKS
 };
 
@@ -319,6 +321,8 @@ public:
 	void Hook_UsePost(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	void Hook_VPhysicsUpdate(IPhysicsObject *pPhysics);
 	void Hook_VPhysicsUpdatePost(IPhysicsObject *pPhysics);
+	void Hook_Blocked(CBaseEntity *pOther);
+	void Hook_BlockedPost(CBaseEntity *pOther);
 	bool Hook_WeaponCanSwitchTo(CBaseCombatWeapon *pWeapon);
 	bool Hook_WeaponCanSwitchToPost(CBaseCombatWeapon *pWeapon);
 	bool Hook_WeaponCanUse(CBaseCombatWeapon *pWeapon);
