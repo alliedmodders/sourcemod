@@ -277,11 +277,26 @@ native bool:GetClientIP(client, String:ip[], maxlen, bool:remport=true);
  * @param validate		Check backend validation status.
  * 				DO NOT PASS FALSE UNLESS YOU UNDERSTAND THE CONSEQUENCES,
  *			        You WILL KNOW if you need to use this, MOST WILL NOT.
- * @param authType		Auth string type and format to use.
  * @return				True on success, false otherwise.
  * @error				If the client is not connected or the index is invalid.
  */
-native bool:GetClientAuthString(client, String:auth[], maxlen, bool:validate=true, AuthStringType:authType=AuthString_Engine);
+#pragma deprecated Use GetClientAuthString2
+native bool:GetClientAuthString(client, String:auth[], maxlen, bool:validate=true);
+
+/**
+ * Retrieves a client's authentication string (SteamID).
+ *
+ * @param client		Player index.
+ * @param authType		Auth string type and format to use.
+ * @param auth			Buffer to store the client's auth string.
+ * @param maxlen		Maximum length of string buffer (includes NULL terminator).
+ * @param validate		Check backend validation status.
+ * 				DO NOT PASS FALSE UNLESS YOU UNDERSTAND THE CONSEQUENCES,
+ *			        You WILL KNOW if you need to use this, MOST WILL NOT.
+ * @return				True on success, false otherwise.
+ * @error				If the client is not connected or the index is invalid.
+ */
+native bool:GetClientAuthString2(client, AuthStringType:authType, String:auth[], maxlen, bool:validate=true);
 
 /**
  * Returns the client's Steam account ID.

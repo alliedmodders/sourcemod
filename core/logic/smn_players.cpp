@@ -340,9 +340,8 @@ enum class AuthStringType
 	SteamID64,
 };
 
-static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
+static cell_t SteamIDToLocal(IPluginContext *pCtx, int index, AuthStringType authType, cell_t local_addr, size_t bytes, bool validate)
 {
-	int index = params[1];
 	if ((index < 1) || (index > playerhelpers->GetMaxClients()))
 	{
 		return pCtx->ThrowNativeError("Client index %d is invalid", index);
@@ -352,18 +351,6 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 	if (!pPlayer->IsConnected())
 	{
 		return pCtx->ThrowNativeError("Client %d is not connected", index);
-	}
-
-	bool validate = true;
-	if (params[0] >= 4)
-	{
-		validate = !!params[4];
-	}
-	
-	AuthStringType authType = AuthStringType::Engine;
-	if (params[0] >= 5)
-	{
-		authType = (AuthStringType)params[5];
 	}
 
 	switch (authType)
@@ -376,7 +363,7 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 				return 0;
 			}
 
-			pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), authstr);
+			pCtx->StringToLocal(local_addr, bytes, authstr);
 		}
 		break;
 	case AuthStringType::Steam2:
@@ -384,7 +371,7 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 		{
 			if (pPlayer->IsFakeClient())
 			{
-				pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), "BOT");
+				pCtx->StringToLocal(local_addr, bytes, "BOT");
 				return 1;
 			}
 			
@@ -393,11 +380,11 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 			{
 				if (gamehelpers->IsLANServer())
 				{
-					pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), "STEAM_ID_LAN");
+					pCtx->StringToLocal(local_addr, bytes, "STEAM_ID_LAN");
 				}
 				else
 				{				
-					pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), "STEAM_ID_PENDING");
+					pCtx->StringToLocal(local_addr, bytes, "STEAM_ID_PENDING");
 				}
 				
 				return 1;
@@ -425,7 +412,7 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 				snprintf(szAuth, sizeof(szAuth), "[U:%u:%u]", universe, accountId);
 			}
 			
-			pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), szAuth);
+			pCtx->StringToLocal(local_addr, bytes, szAuth);
 		}
 		break;
 	
@@ -445,12 +432,28 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 			char szAuth[64];
 			snprintf(szAuth, sizeof(szAuth), "%" PRIu64, steamId);
 			
-			pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), szAuth);
+			pCtx->StringToLocal(local_addr, bytes, szAuth);
 		}
 		break;
 	}	
 
 	return 1;
+}
+
+static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
+{
+	bool validate = true;
+	if (params[0] >= 4)
+	{
+		validate = !!params[4];
+	}
+	
+	return SteamIDToLocal(pCtx, params[1], AuthStringType::Steam2, params[2], (size_t)params[3], validate);
+}
+
+static cell_t sm_GetClientAuthStr2(IPluginContext *pCtx, const cell_t *params)
+{
+	return SteamIDToLocal(pCtx, params[1], (AuthStringType)params[2], params[3], (size_t)params[4], params[5] != 0);
 }
 
 static cell_t sm_GetSteamAccountID(IPluginContext *pCtx, const cell_t *params)
@@ -1639,6 +1642,7 @@ REGISTER_NATIVES(playernatives)
 	{ "CanUserTarget", CanUserTarget },
 	{ "ChangeClientTeam", ChangeClientTeam },
 	{ "GetClientAuthString", sm_GetClientAuthStr },
+	{ "GetClientAuthString2", sm_GetClientAuthStr2 },
 	{ "GetSteamAccountID", sm_GetSteamAccountID },
 	{ "GetClientCount", sm_GetClientCount },
 	{ "GetClientInfo", sm_GetClientInfo },
