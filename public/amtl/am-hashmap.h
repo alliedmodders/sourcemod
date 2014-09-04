@@ -138,19 +138,24 @@ class HashMap : public AllocPolicy
   // The map must not have been mutated in between findForAdd() and add().
   // The Insert object is still valid after add() returns, however.
   bool add(Insert &i, const K &key, const V &value) {
-    return table_.add(i, Entry(key, value));
+    Entry entry(key, value);
+    return table_.add(i, ke::Move(entry));
   }
   bool add(Insert &i, Moveable<K> key, const V &value) {
-    return table_.add(i, Entry(key, value));
+    Entry entry(key, value);
+    return table_.add(i, ke::Move(entry));
   }
   bool add(Insert &i, const K &key, Moveable<V> value) {
-    return table_.add(i, Entry(key, value));
+    Entry entry(key, value);
+    return table_.add(i, ke::Move(entry));
   }
   bool add(Insert &i, Moveable<K> key, Moveable<V> value) {
-    return table_.add(i, Entry(key, value));
+    Entry entry(key, value);
+    return table_.add(i, ke::Move(entry));
   }
   bool add(Insert &i, Moveable<K> key) {
-    return table_.add(i, Entry(key, V()));
+    Entry entry(key, V());
+    return table_.add(i, ke::Move(entry));
   }
 
   // This can be used to avoid compiler constructed temporaries, since AMTL
