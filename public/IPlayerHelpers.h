@@ -276,6 +276,28 @@ namespace SourceMod
 		 * @return			Steam Id or 0 if not available.
 		 */
 		virtual uint64_t GetSteamId64(bool validated = true) =0;
+		
+		/**
+		 * @brief Returns the client's Steam ID rendered in Steam2 format.
+		 *
+		 * @param out			Buffer in which to output the id.
+		 * @param maxlen		Maximum length of the output buffer in bytes.
+		 * @param validated		Check backend validation status.
+		 * 
+		 * @return			True on success or false if not available.
+		 */
+		virtual bool GetSteam2Id(char *out, size_t maxlen, bool validated = true) =0;
+		
+		/**
+		 * @brief Returns the client's Steam ID rendered in Steam3 format.
+		 *
+		 * @param out			Buffer in which to output the id.
+		 * @param maxlen		Maximum length of the output buffer in bytes.
+		 * @param validated		Check backend validation status.
+		 * 
+		 * @return			True on success or false if not available.
+		 */
+		virtual bool GetSteam3Id(char *out, size_t maxlen, bool validated = true) =0;
 	};
 
 	/**

@@ -2070,6 +2070,83 @@ const CSteamID &CPlayer::GetSteamId(bool validated)
 	return m_SteamId;
 }
 
+bool CPlayer::GetSteam2Id(char *out, size_t maxlen, bool validate)
+{
+	if (IsFakeClient())
+	{
+		snprintf(out, maxlen, "BOT");
+		return true;
+	}
+			
+	auto steamId = GetSteamId(validate);
+	if (!steamId.IsValid())
+	{
+		if (g_HL2.IsLANServer())
+		{
+			snprintf(out, maxlen, "STEAM_ID_LAN");
+			return true;
+		}
+		else if (!validate)
+		{				
+			snprintf(out, maxlen, "STEAM_ID_PENDING");
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	EUniverse universe = steamId.GetEUniverse();
+	if (atoi(g_pGameConf->GetKeyValue("UseInvalidUniverseInSteam2IDs")) == 1)
+	{
+		universe = k_EUniverseInvalid;
+	}
+	
+	snprintf(out, maxlen, "STEAM_%u:%u:%u", universe, steamId.GetAccountID() & 1, steamId.GetAccountID() >> 1);
+	return true;
+}
+
+bool CPlayer::GetSteam3Id(char *out, size_t maxlen, bool validate)
+{
+	if (IsFakeClient())
+	{
+		snprintf(out, maxlen, "BOT");
+		return true;
+	}
+			
+	auto steamId = GetSteamId(validate);
+	if (!steamId.IsValid())
+	{
+		if (g_HL2.IsLANServer())
+		{
+			snprintf(out, maxlen, "STEAM_ID_LAN");
+			return true;
+		}
+		else if (!validate)
+		{				
+			snprintf(out, maxlen, "STEAM_ID_PENDING");
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	// TODO: make sure all hl2sdks' steamclientpublic.h have k_unSteamUserDesktopInstance.
+	if (steamId.GetUnAccountInstance() == 1 /* k_unSteamUserDesktopInstance */)
+	{
+		snprintf(out, maxlen, "[U:%u:%u]", steamId.GetEUniverse(), steamId.GetAccountID());
+	}
+	else
+	{
+		snprintf(out, maxlen, "[U:%u:%u:%u]", steamId.GetEUniverse(), steamId.GetAccountID(), steamId.GetUnAccountInstance());
+	}
+	
+	return true;
+}
+
 unsigned int CPlayer::GetSteamAccountID(bool validated)
 {
 	if (!IsFakeClient() && (!validated || IsAuthStringValidated()))

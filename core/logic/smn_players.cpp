@@ -367,53 +367,22 @@ static cell_t SteamIdToLocal(IPluginContext *pCtx, int index, AuthIdType authTyp
 		}
 		break;
 	case AuthIdType::Steam2:
+		{
+			char szAuth[64];
+			if (!pPlayer->GetSteam2Id(szAuth, sizeof(szAuth), validate))
+			{
+				return 0;
+			}
+			
+			pCtx->StringToLocal(local_addr, bytes, szAuth);
+		}
+		break;
 	case AuthIdType::Steam3:
 		{
-			if (pPlayer->IsFakeClient())
-			{
-				pCtx->StringToLocal(local_addr, bytes, "BOT");
-				return 1;
-			}
-			
-			uint64_t steamId = pPlayer->GetSteamId64(validate);
-			if (steamId == 0)
-			{
-				if (gamehelpers->IsLANServer())
-				{
-					pCtx->StringToLocal(local_addr, bytes, "STEAM_ID_LAN");
-					return 1;
-				}
-				else if (!validate)
-				{				
-					pCtx->StringToLocal(local_addr, bytes, "STEAM_ID_PENDING");
-					return 1;
-				}
-				else
-				{
-					return 0;
-				}
-			}
-			
 			char szAuth[64];
-			unsigned int universe = steamId >> 56;
-			unsigned int accountId = steamId & 0xFFFFFFFF;
-			unsigned int instance = (steamId >> 32) & 0x000FFFFF;
-			if (authType == AuthIdType::Steam2)
+			if (!pPlayer->GetSteam2Id(szAuth, sizeof(szAuth), validate))
 			{
-				if (atoi(g_pGameConf->GetKeyValue("UseInvalidUniverseInSteam2IDs")) == 1)
-				{
-					universe = 0;
-				}
-				
-				snprintf(szAuth, sizeof(szAuth), "STEAM_%u:%u:%u", universe, accountId & 1, accountId >> 1);
-			}
-			else if (instance != 1)
-			{
-				snprintf(szAuth, sizeof(szAuth), "[U:%u:%u:%u]", universe, accountId, instance);
-			}
-			else
-			{
-				snprintf(szAuth, sizeof(szAuth), "[U:%u:%u]", universe, accountId);
+				return 0;
 			}
 			
 			pCtx->StringToLocal(local_addr, bytes, szAuth);

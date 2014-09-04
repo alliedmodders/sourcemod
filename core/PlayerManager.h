@@ -75,6 +75,8 @@ public:
 	unsigned int GetSteamAccountID(bool validated = true);
 	const CSteamID &GetSteamId(bool validated = true);
 	uint64_t GetSteamId64(bool validated = true) { return GetSteamId(validated).ConvertToUint64(); }
+	bool GetSteam2Id(char *out, size_t maxlen, bool validated = true);
+	bool GetSteam3Id(char *out, size_t maxlen, bool validated = true);
 	edict_t *GetEdict();
 	bool IsInGame();
 	bool WasCountedAsInGame();
