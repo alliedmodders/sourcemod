@@ -101,6 +101,9 @@ MyDatabase::MyDatabase(MYSQL *mysql, const DatabaseInfo *info, bool persistent)
 	m_Info.driver = NULL;
 	m_Info.maxTimeout = info->maxTimeout;
 	m_Info.port = info->port;
+
+	// DBI, for historical reasons, guarantees an initial refcount of 1.
+	AddRef();
 }
 
 MyDatabase::~MyDatabase()
