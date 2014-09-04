@@ -56,7 +56,7 @@ class AString
     if (other.length_)
       set(other.chars_, other.length_);
     else
-     length_ = 0;
+      length_ = 0;
   }
   AString(Moveable<AString> other)
     : chars_(other->chars_.take()),
@@ -117,6 +117,8 @@ class AString
   }
 
  private:
+  static const size_t kInvalidLength = (size_t)-1;
+
   void set(const char *str, size_t length) {
     chars_ = new char[length + 1];
     length_ = length;
