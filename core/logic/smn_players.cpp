@@ -352,41 +352,37 @@ static cell_t SteamIdToLocal(IPluginContext *pCtx, int index, AuthIdType authTyp
 	{
 		return pCtx->ThrowNativeError("Client %d is not connected", index);
 	}
-
+	
+	const char *authstr;
+	
 	switch (authType)
 	{
 	case AuthIdType::Engine:
+		authstr = pPlayer->GetAuthString(validate);
+		if (!authstr || authstr[0] == '\0')
 		{
-			const char *authstr = pPlayer->GetAuthString(validate);
-			if (!authstr || authstr[0] == '\0')
-			{
-				return 0;
-			}
-
-			pCtx->StringToLocal(local_addr, bytes, authstr);
+			return 0;
 		}
+
+		pCtx->StringToLocal(local_addr, bytes, authstr);
 		break;
 	case AuthIdType::Steam2:
+		authstr = pPlayer->GetSteam2Id(validate);
+		if (!authstr || authstr[0] == '\0')
 		{
-			char szAuth[64];
-			if (!pPlayer->GetSteam2Id(szAuth, sizeof(szAuth), validate))
-			{
-				return 0;
-			}
-			
-			pCtx->StringToLocal(local_addr, bytes, szAuth);
+			return 0;
 		}
+			
+		pCtx->StringToLocal(local_addr, bytes, authstr);
 		break;
 	case AuthIdType::Steam3:
+		authstr = pPlayer->GetSteam3Id(validate);
+		if (!authstr || authstr[0] == '\0')
 		{
-			char szAuth[64];
-			if (!pPlayer->GetSteam2Id(szAuth, sizeof(szAuth), validate))
-			{
-				return 0;
-			}
-			
-			pCtx->StringToLocal(local_addr, bytes, szAuth);
+			return 0;
 		}
+			
+		pCtx->StringToLocal(local_addr, bytes, authstr);
 		break;
 	
 	case AuthIdType::SteamId64:

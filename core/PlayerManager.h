@@ -41,6 +41,7 @@
 #include <sh_string.h>
 #include <sh_list.h>
 #include <sh_vector.h>
+#include <am-string.h>
 #include "ConVarManager.h"
 
 #include <steam/steamclientpublic.h>
@@ -75,8 +76,8 @@ public:
 	unsigned int GetSteamAccountID(bool validated = true);
 	const CSteamID &GetSteamId(bool validated = true);
 	uint64_t GetSteamId64(bool validated = true) { return GetSteamId(validated).ConvertToUint64(); }
-	bool GetSteam2Id(char *out, size_t maxlen, bool validated = true);
-	bool GetSteam3Id(char *out, size_t maxlen, bool validated = true);
+	const char *GetSteam2Id(bool validated = true);
+	const char *GetSteam3Id(bool validated = true);
 	edict_t *GetEdict();
 	bool IsInGame();
 	bool WasCountedAsInGame();
@@ -109,7 +110,7 @@ private:
 	void Disconnect();
 	void SetName(const char *name);
 	void DumpAdmin(bool deleting);
-	void SetAuthString(const char *auth);
+	void UpdateAuthIds();
 	void Authorize();
 	void Authorize_Post();
 	void DoPostConnectAuthorization();
@@ -123,6 +124,8 @@ private:
 	String m_Ip;
 	String m_IpNoPort;
 	String m_AuthID;
+	ke::AString m_Steam2Id;
+	ke::AString m_Steam3Id;
 	AdminId m_Admin;
 	bool m_TempAdmin;
 	edict_t *m_pEdict;

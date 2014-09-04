@@ -403,12 +403,9 @@ void PlayerManager::RunAuthChecks()
 	for (unsigned int i=1; i<=m_AuthQueue[0]; i++)
 	{
 		pPlayer = &m_Players[m_AuthQueue[i]];
-#if SOURCE_ENGINE == SE_DOTA
-		authstr = engine->GetPlayerNetworkIDString(pPlayer->m_iIndex - 1);
-#else
-		authstr = engine->GetPlayerNetworkIDString(pPlayer->m_pEdict);
-#endif
-		pPlayer->SetAuthString(authstr);
+		pPlayer->UpdateAuthIds();
+		
+		authstr = pPlayer->m_AuthID.c_str();
 
 		if (!pPlayer->IsAuthStringValidated())
 		{
@@ -620,15 +617,10 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 	{
 		/* Run manual connection routines */
 		char error[255];
-		const char *authid;
-#if SOURCE_ENGINE == SE_DOTA
-		authid = engine->GetPlayerNetworkIDString(client - 1);
-#else
-		authid = engine->GetPlayerNetworkIDString(pEntity);
-#endif
-		pPlayer->SetAuthString(authid);
-		pPlayer->Authorize();
+
 		pPlayer->m_bFakeClient = true;
+		pPlayer->UpdateAuthIds();
+		pPlayer->Authorize();
 
 		/*
 		 * While we're already filtered to just bots, we'll do other checks to
@@ -720,13 +712,13 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
-			pListener->OnClientAuthorized(client, authid);
+			pListener->OnClientAuthorized(client, pPlayer->m_AuthID.c_str());
 		}
 		/* Finally, tell plugins */
 		if (m_clauth->GetFunctionCount())
 		{
 			m_clauth->PushCell(client);
-			m_clauth->PushString(authid);
+			m_clauth->PushString(pPlayer->m_AuthID.c_str());
 			m_clauth->Execute(NULL);
 		}
 		pPlayer->Authorize_Post();
@@ -1914,7 +1906,6 @@ CPlayer::CPlayer()
 	m_bIsSourceTV = false;
 	m_bIsReplay = false;
 	m_Serial.value = -1;
-	m_SteamId = k_steamIDNil;
 #if SOURCE_ENGINE == SE_CSGO
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
@@ -1963,14 +1954,99 @@ void CPlayer::Connect()
 	}
 }
 
-void CPlayer::SetAuthString(const char *steamid)
+void CPlayer::UpdateAuthIds()
 {
 	if (m_IsAuthorized)
 	{
 		return;
 	}
+	
+	// First cache engine networkid
+	const char *authstr;
+#if SOURCE_ENGINE == SE_DOTA
+	authstr = engine->GetPlayerNetworkIDString(m_iIndex - 1);
+#else
+	authstr = engine->GetPlayerNetworkIDString(m_pEdict);
+#endif
+	m_AuthID.assign(authstr);
+	
+	// Then, cache SteamId
+	if (IsFakeClient())
+	{
+		m_SteamId = k_steamIDNil;
+	}
+	else
+	{
+#if SOURCE_ENGINE < SE_ORANGEBOX
+		const char * pAuth = GetAuthString();
+		/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
+		if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
+		{
+			m_SteamId = CSteamID(atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1),
+				k_unSteamUserDesktopInstance, k_EUniversePublic, k_EAccountTypeIndividual);
+		}
+#else
+		const CSteamID *steamId;
+#if SOURCE_ENGINE == SE_DOTA
+		steamId = engine->GetClientSteamID(m_iIndex);
+#else
+		steamId = engine->GetClientSteamID(m_pEdict);
+#endif
 
-	m_AuthID.assign(steamid);
+		if (steamId)
+		{
+			m_SteamId = (*steamId);
+		}
+#endif
+	}
+	
+	// Now cache Steam2/3 rendered ids
+	if (IsFakeClient())
+	{
+		m_Steam2Id = "BOT";
+		m_Steam3Id = "BOT";
+		return;
+	}
+	
+	if (!m_SteamId.IsValid())
+	{
+		if (g_HL2.IsLANServer())
+		{
+			m_Steam2Id = "STEAM_ID_LAN";
+			m_Steam3Id = "STEAM_ID_LAN";
+			return;
+		}
+		else
+		{
+			m_Steam2Id = "STEAM_ID_PENDING";
+			m_Steam3Id = "STEAM_ID_PENDING";
+		}
+		
+		return;
+	}
+	
+	EUniverse steam2universe = m_SteamId.GetEUniverse();
+	if (atoi(g_pGameConf->GetKeyValue("UseInvalidUniverseInSteam2IDs")) == 1)
+	{
+		steam2universe = k_EUniverseInvalid;
+	}
+	
+	char szAuthBuffer[64];
+	snprintf(szAuthBuffer, sizeof(szAuthBuffer), "STEAM_%u:%u:%u", steam2universe, m_SteamId.GetAccountID() & 1, m_SteamId.GetAccountID() >> 1);
+	
+	m_Steam2Id = szAuthBuffer;
+	
+	// TODO: make sure all hl2sdks' steamclientpublic.h have k_unSteamUserDesktopInstance.
+	if (m_SteamId.GetUnAccountInstance() == 1 /* k_unSteamUserDesktopInstance */)
+	{
+		snprintf(szAuthBuffer, sizeof(szAuthBuffer), "[U:%u:%u]", m_SteamId.GetEUniverse(), m_SteamId.GetAccountID());
+	}
+	else
+	{
+		snprintf(szAuthBuffer, sizeof(szAuthBuffer), "[U:%u:%u:%u]", m_SteamId.GetEUniverse(), m_SteamId.GetAccountID(), m_SteamId.GetUnAccountInstance());
+	}
+	
+	m_Steam3Id = szAuthBuffer;
 }
 
 // Ensure a valid AuthString is set before calling.
@@ -1988,6 +2064,9 @@ void CPlayer::Disconnect()
 	m_Name.clear();
 	m_Ip.clear();
 	m_AuthID.clear();
+	m_SteamId = k_steamIDNil;
+	m_Steam2Id = "";
+	m_Steam3Id = "";
 	m_pEdict = NULL;
 	m_Info = NULL;
 	m_bAdminCheckSignalled = false;
@@ -1997,7 +2076,6 @@ void CPlayer::Disconnect()
 	m_bIsSourceTV = false;
 	m_bIsReplay = false;
 	m_Serial.value = -1;
-	m_SteamId = k_steamIDNil;
 #if SOURCE_ENGINE == SE_CSGO
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
@@ -2035,116 +2113,33 @@ const char *CPlayer::GetAuthString(bool validated)
 
 const CSteamID &CPlayer::GetSteamId(bool validated)
 {
-	if (IsFakeClient() || (validated && !IsAuthStringValidated()))
+	if (validated && !IsAuthStringValidated())
 	{
 		static const CSteamID invalidId = k_steamIDNil;
 		return invalidId;
 	}
-
-	if (m_SteamId.IsValid())
-	{
-		return m_SteamId;
-	}
-
-#if SOURCE_ENGINE < SE_ORANGEBOX
-	const char * pAuth = GetAuthString();
-	/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
-	if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
-	{
-		m_SteamId = CSteamID(atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1),
-			k_unSteamUserDesktopInstance, k_EUniversePublic, k_EAccountTypeIndividual);
-	}
-#else
-	const CSteamID *steamId;
-#if SOURCE_ENGINE == SE_DOTA
-	steamId = engine->GetClientSteamID(m_iIndex);
-#else
-	steamId = engine->GetClientSteamID(m_pEdict);
-#endif
-
-	if (steamId)
-	{
-		m_SteamId = (*steamId);
-	}
-#endif
+	
 	return m_SteamId;
 }
 
-bool CPlayer::GetSteam2Id(char *out, size_t maxlen, bool validate)
+const char *CPlayer::GetSteam2Id(bool validated)
 {
-	if (IsFakeClient())
+	if (validated && !IsAuthStringValidated())
 	{
-		snprintf(out, maxlen, "BOT");
-		return true;
+		return NULL;
 	}
-			
-	auto steamId = GetSteamId(validate);
-	if (!steamId.IsValid())
-	{
-		if (g_HL2.IsLANServer())
-		{
-			snprintf(out, maxlen, "STEAM_ID_LAN");
-			return true;
-		}
-		else if (!validate)
-		{				
-			snprintf(out, maxlen, "STEAM_ID_PENDING");
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	
-	EUniverse universe = steamId.GetEUniverse();
-	if (atoi(g_pGameConf->GetKeyValue("UseInvalidUniverseInSteam2IDs")) == 1)
-	{
-		universe = k_EUniverseInvalid;
-	}
-	
-	snprintf(out, maxlen, "STEAM_%u:%u:%u", universe, steamId.GetAccountID() & 1, steamId.GetAccountID() >> 1);
-	return true;
+
+	return m_Steam2Id.chars();
 }
 
-bool CPlayer::GetSteam3Id(char *out, size_t maxlen, bool validate)
+const char *CPlayer::GetSteam3Id(bool validated)
 {
-	if (IsFakeClient())
+	if (validated && !IsAuthStringValidated())
 	{
-		snprintf(out, maxlen, "BOT");
-		return true;
+		return NULL;
 	}
-			
-	auto steamId = GetSteamId(validate);
-	if (!steamId.IsValid())
-	{
-		if (g_HL2.IsLANServer())
-		{
-			snprintf(out, maxlen, "STEAM_ID_LAN");
-			return true;
-		}
-		else if (!validate)
-		{				
-			snprintf(out, maxlen, "STEAM_ID_PENDING");
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	
-	// TODO: make sure all hl2sdks' steamclientpublic.h have k_unSteamUserDesktopInstance.
-	if (steamId.GetUnAccountInstance() == 1 /* k_unSteamUserDesktopInstance */)
-	{
-		snprintf(out, maxlen, "[U:%u:%u]", steamId.GetEUniverse(), steamId.GetAccountID());
-	}
-	else
-	{
-		snprintf(out, maxlen, "[U:%u:%u:%u]", steamId.GetEUniverse(), steamId.GetAccountID(), steamId.GetUnAccountInstance());
-	}
-	
-	return true;
+
+	return m_Steam3Id.chars();
 }
 
 unsigned int CPlayer::GetSteamAccountID(bool validated)
