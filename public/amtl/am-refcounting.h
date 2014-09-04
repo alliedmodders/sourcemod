@@ -55,6 +55,13 @@ class AlreadyRefed
       : thing_(t)
     {
     }
+    AlreadyRefed(const AlreadyRefed<T> &other)
+      : thing_(other.thing_)
+    {
+        // If copy elision for some reason doesn't happen (for example, when
+        // returning from AdoptRef), just null out the source ref.
+        other.thing_ = NULL;
+    }
     ~AlreadyRefed() {
         if (thing_)
             thing_->Release();
