@@ -356,7 +356,7 @@ native GetAdminUsername(AdminId:id, String:name[], maxlength);
  * @param auth			Auth method to use, predefined or from RegisterAuthIdentType().
  * @param ident			String containing the arbitrary, unique identity.
  * @return				True on success, false if the auth method was not found,
- *						or ident was already taken.
+ *						ident was already taken, or ident invalid for auth method.
  */
 native bool:BindAdminIdentity(AdminId:id, const String:auth[], const String:ident[]);
 
