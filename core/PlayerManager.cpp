@@ -1544,22 +1544,41 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 		}
 
 		/* Do we need to look for a steam id? */
+		int steamIdType = 0;
 		if (strncmp(&info->pattern[1], "STEAM_", 6) == 0)
 		{
-			size_t p, len;
-			char new_pattern[256];
-
-			strcpy(new_pattern, "STEAM_");
-			len = strlen(&info->pattern[7]);
-			for (p = 0; p < len; p++)
+			steamIdType = 2;
+		}
+		else if (strncmp(&info->pattern[1], "[U:", 3) == 0)
+		{
+			steamIdType = 3;
+		}
+		
+		if (steamIdType > 0)
+		{
+			const char *search_pattern;
+			char tmp_pattern[256];
+			if (steamIdType == 2)
 			{
-				new_pattern[6 + p] = info->pattern[7 + p];
-				if (new_pattern[6 + p] == '_')
+				size_t p, len;
+
+				strcpy(tmp_pattern, "STEAM_");
+				len = strlen(&info->pattern[7]);
+				for (p = 0; p < len; p++)
 				{
-					new_pattern[6 + p] = ':';
+					tmp_pattern[6 + p] = info->pattern[7 + p];
+					if (tmp_pattern[6 + p] == '_')
+					{
+						tmp_pattern[6 + p] = ':';
+					}
 				}
+				tmp_pattern[6 + p] = '\0';
+				search_pattern = tmp_pattern;
 			}
-			new_pattern[6 + p] = '\0';
+			else
+			{
+				search_pattern = &info->pattern[1];
+			}
 
 			for (int i = 1; i <= max_clients; i++)
 			{
@@ -1571,8 +1590,10 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				{
 					continue;
 				}
-				const char *authstr = pTarget->GetAuthString(false); // We want to make it easy for people to be kicked/banned, so don't require validation for command targets.
-				if (authstr && strcmp(authstr, new_pattern) == 0)
+				
+				// We want to make it easy for people to be kicked/banned, so don't require validation for command targets.
+				const char *steamId = steamIdType == 2 ? pTarget->GetSteam2Id(false) : pTarget->GetSteam3Id(false);
+				if (steamId && strcmp(steamId, search_pattern) == 0)
 				{
 					if ((info->reason = FilterCommandTarget(pAdmin, pTarget, info->flags))
 						== COMMAND_TARGET_VALID)
