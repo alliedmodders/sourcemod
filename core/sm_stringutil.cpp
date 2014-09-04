@@ -39,6 +39,7 @@
 #include "logic_bridge.h"
 #include "sourcemod.h"
 #include <am-utility.h>
+#include <am-float.h>
 
 #define LADJUST			0x00000004		/* left adjustment */
 #define ZEROPAD			0x00000080		/* zero (as opposed to blank) pad */
