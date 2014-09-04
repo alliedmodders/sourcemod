@@ -89,7 +89,7 @@ class AutoPtr
       : t_(NULL)
     {
     }
-    AutoPtr(T *t)
+    explicit AutoPtr(T *t)
       : t_(t)
     {
     }
@@ -339,10 +339,65 @@ class StorageBuffer
   };
 };
 
+template <typename T>
+class SaveAndSet
+{
+ public:
+  SaveAndSet(T *location, const T &value)
+   : location_(location),
+     old_(*location)
+  {
+    *location_ = value;
+  }
+  ~SaveAndSet() {
+    *location_ = old_;
+  }
+
+ private:
+  T *location_;
+  T old_;
+};
+
+template <typename T>
+class StackLinked
+{
+ public:
+  StackLinked<T>(T **prevp)
+   : prevp_(prevp),
+     prev_(*prevp)
+  {
+    *prevp_ = static_cast<T *>(this);
+  }
+  virtual ~StackLinked() {
+    assert(*prevp_ == this);
+    *prevp_ = prev_;
+  }
+
+ private:
+  T **prevp_;
+  T *prev_;
+};
+
+#if __cplusplus >= 201103L
+# define KE_CXX11
+#endif
+
+#if defined(KE_CXX11)
+# define KE_DELETE = delete
+# define KE_OVERRIDE override
+#else
+# define KE_DELETE
+# define KE_OVERRIDE
+#endif
+
 #if defined(_MSC_VER)
 # define KE_SIZET_FMT           "%Iu"
+# define KE_I64_FMT             "%I64d"
+# define KE_U64_FMT             "%I64u"
 #elif defined(__GNUC__)
 # define KE_SIZET_FMT           "%zu"
+# define KE_I64_FMT             "%lld"
+# define KE_U64_FMT             "%llu"
 #else
 # error "Implement format specifier string"
 #endif
