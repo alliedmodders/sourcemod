@@ -253,7 +253,7 @@ union SDKHookCB
 	// Note: The weapon parameter is not used by all games and damage sources.
 	// Note: Force application is dependent on game and damage type(s)
 	// SDKHooks 1.0+
-	function Action (int victim, int &attacker, int &inflictor, float &damage, int &damagetype),
+	function Action (int victim, int &attacker, int &inflictor, float &damage, int &damagetype);
 	// SDKHooks 2.0+
 	function Action (int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float[3] damageForce, float[3] damagePosition);
 	// SDKHooks 2.1+  (can check for support at runtime using GetFeatureStatus on SDKHook_DmgCustomInOTD capability.
