@@ -9,7 +9,6 @@ project.sources += [
   'sm_stringutil.cpp',
   'MenuVoting.cpp',
   'smn_events.cpp',
-  'smn_menus.cpp',
   'CDataPack.cpp',
   'frame_hooks.cpp',
   'smn_nextmap.cpp',

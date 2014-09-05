@@ -333,6 +333,14 @@ namespace SourceMod
 		 * @return				Approximate number of bytes being used.
 		 */
 		virtual unsigned int GetApproxMemUsage() =0;
+		
+		/**
+		 * @brief Sets panel content directly
+		 *
+		 * @param str			New panel contents.
+		 * @return				True if supported, otherwise false.
+		 */
+		virtual bool DirectSet(const char *str) =0;
 	};
 
 	/**
@@ -423,6 +431,13 @@ namespace SourceMod
 		 * @return				Approximate number of bytes being used.
 		 */
 		virtual unsigned int GetApproxMemUsage() =0;
+		
+		/**
+		 * @brief Returns whether or not this style is supported by the current game.
+		 *
+		 * @return				True if supported, otherwise false.
+		 */
+		virtual bool IsSupported() =0;
 	};
 
 	/**

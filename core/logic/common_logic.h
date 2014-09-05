@@ -55,6 +55,7 @@ extern IGameHelpers *gamehelpers;
 extern IScriptManager *scripts;
 extern IExtensionSys *extsys;
 extern ILogger *logger;
+extern IMenuManager *menus;
 
 #endif /* _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_ */
 

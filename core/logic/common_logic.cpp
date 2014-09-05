@@ -162,6 +162,7 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 	timersys = core->timersys;
 	playerhelpers = core->playerhelpers;
 	gamehelpers = core->gamehelpers;
+	menus = core->menus;
 	g_pSourcePawn = *core->spe1;
 	g_pSourcePawn2 = *core->spe2;
 	SMGlobalClass::head = core->listeners;

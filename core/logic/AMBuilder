@@ -68,6 +68,7 @@ binary.sources += [
   'ProfileTools.cpp',
   'Logger.cpp',
   'smn_core.cpp',
+  'smn_menus.cpp',
 ]
 if builder.target_platform == 'windows':
   binary.sources += ['thread/WinThreads.cpp']

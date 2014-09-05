@@ -120,6 +120,7 @@ namespace SourceMod
 	class IPhraseCollection;
 	class ITranslator;
 	class IGameConfig;
+	class IMenuManager;
 }
 
 class IVEngineServer;
@@ -288,6 +289,7 @@ struct sm_core_t
 	ITimerSystem    *timersys;
 	IPlayerManager  *playerhelpers;
 	IGameHelpers    *gamehelpers;
+	IMenuManager	*menus;
 	ISourcePawnEngine **spe1;
 	ISourcePawnEngine2 **spe2;
 	/* Functions */
