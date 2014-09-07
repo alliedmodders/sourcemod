@@ -255,16 +255,16 @@ union SDKHookCB
 	// SDKHooks 1.0+
 	function Action (int victim, int &attacker, int &inflictor, float &damage, int &damagetype);
 	// SDKHooks 2.0+
-	function Action (int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float[3] damageForce, float[3] damagePosition);
+	function Action (int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3]);
 	// SDKHooks 2.1+  (can check for support at runtime using GetFeatureStatus on SDKHook_DmgCustomInOTD capability.
 	// DON'T attempt to access 'damagecustom' var if feature status != available
 	function Action (int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon,
-		float[3] damageForce, float[3] damagePosition, int damagecustom);
+		float damageForce[3], float damagePosition[3], int damagecustom);
 	
 	// OnTakeDamagePost
 	// OnTakeDamageAlivePost
 	function void (int victim, int attacker, int inflictor, float damage, int damagetype);
-	function void (int victim, int attacker, int inflictor, float damage, int damagetype, const float[3] damageForce, const float[3] damagePosition);
+	function void (int victim, int attacker, int inflictor, float damage, int damagetype, const float damageForce[3], const float damagePosition[3]);
 	
 	// FireBulletsPost
 	function void (int client, int shots, const char[] weaponname);
