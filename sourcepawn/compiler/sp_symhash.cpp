@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "sp_file_headers.h"
 #include "sc.h"
 #include "sp_symhash.h"
 #include <am-hashtable.h>

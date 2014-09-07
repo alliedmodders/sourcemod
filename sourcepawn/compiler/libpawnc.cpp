@@ -1,4 +1,4 @@
-// vim: set sts=8 ts=4 sw=4 tw=99 noet:
+// vim: set sts=8 ts=2 sw=2 tw=99 noet:
 /*  LIBPAWNC.C
  *
  *  A "glue file" for building the Pawn compiler as a DLL or shared library.
@@ -340,43 +340,4 @@ int pc_writeasm(void *handle,const char *string)
 char *pc_readasm(void *handle, char *string, int maxchars)
 {
   return mfgets((MEMFILE*)handle,string,maxchars);
-}
-
-extern memfile_t *bin_file;
-
-/* Should return a pointer, which is used as a "magic cookie" to all I/O
- * functions; return NULL for failure.
- */
-void *pc_openbin(char *filename)
-{
-  return memfile_creat(filename, 1);
-}
-
-void pc_closebin(void *handle,int deletefile)
-{
-  if (deletefile) {
-    memfile_destroy((memfile_t *)handle);
-    bin_file = NULL;
-  } else {
-    bin_file = (memfile_t *)handle;
-  }
-}
-
-/* pc_resetbin()
- * Can seek to any location in the file.
- * The offset is always from the start of the file.
- */
-void pc_resetbin(void *handle,long offset)
-{
-  memfile_seek((memfile_t *)handle, offset);
-}
-
-int pc_writebin(void *handle,void *buffer,int size)
-{
-  return memfile_write((memfile_t *)handle, buffer, size);
-}
-
-long pc_lengthbin(void *handle)
-{
-  return memfile_tell((memfile_t *)handle);
 }

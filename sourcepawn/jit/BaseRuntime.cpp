@@ -172,9 +172,9 @@ int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
     if (!(m_plugin.pcode) && !strcmp(nameptr, ".code")) {
       sp_file_code_t *cod = (sp_file_code_t *)(base + secptr->dataoffs);
 
-      if (cod->codeversion < SmxConsts::CODE_VERSION_JIT1)
+      if (cod->codeversion < SmxConsts::CODE_VERSION_SP1_MIN)
         return SP_ERROR_CODE_TOO_OLD;
-      if (cod->codeversion > SmxConsts::CODE_VERSION_JIT2)
+      if (cod->codeversion > SmxConsts::CODE_VERSION_SP1_MAX)
         return SP_ERROR_CODE_TOO_NEW;
 
       m_plugin.pcode = base + secptr->dataoffs + cod->code;

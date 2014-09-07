@@ -147,7 +147,7 @@ void SourcePawnEngine2::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 
 const char *SourcePawnEngine2::GetEngineName()
 {
-	return "SourcePawn 1.3, jit-x86";
+	return "SourcePawn 1.7, jit-x86";
 }
 
 const char *SourcePawnEngine2::GetVersionString()

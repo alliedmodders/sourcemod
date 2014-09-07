@@ -1,3 +1,4 @@
+// vim: set sts=2 ts=8 sw=2 tw=99 et:
 /*  Pawn compiler - Binary code generation (the "assembler")
  *
  *  Copyright (c) ITB CompuPhase, 1997-2006
@@ -35,12 +36,16 @@
 #if defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
   #include <sclinux.h>
 #endif
+#include <am-utility.h>
+#include <smx/smx-v1.h>
+#include <zlib/zlib.h>
+#include "smx-builder.h"
+#include "memory-buffer.h"
 
+using namespace sp;
+using namespace ke;
 
-static void append_dbginfo(void *fout);
-
-
-typedef cell (*OPCODE_PROC)(void *fbin,char *params,cell opcode);
+typedef cell (*OPCODE_PROC)(Vector<cell> *buffer, char *params, cell opcode);
 
 typedef struct {
   cell opcode;
@@ -50,7 +55,7 @@ typedef struct {
 } OPCODEC;
 
 static cell codeindex;  /* similar to "code_idx" */
-static cell *lbltab;    /* label table */
+static cell *LabelTable;    /* label table */
 static int writeerror;
 static int bytes_in, bytes_out;
 static jmp_buf compact_err;
@@ -107,74 +112,6 @@ static ucell getparam(const char *s,char **n)
   return result;
 }
 
-#if BYTE_ORDER==BIG_ENDIAN
-static uint16_t *align16(uint16_t *v)
-{
-  unsigned char *s = (unsigned char *)v;
-  unsigned char t;
-
-  /* swap two bytes */
-  t=s[0];
-  s[0]=s[1];
-  s[1]=t;
-  return v;
-}
-
-static uint32_t *align32(uint32_t *v)
-{
-  unsigned char *s = (unsigned char *)v;
-  unsigned char t;
-
-  /* swap outer two bytes */
-  t=s[0];
-  s[0]=s[3];
-  s[3]=t;
-  /* swap inner two bytes */
-  t=s[1];
-  s[1]=s[2];
-  s[2]=t;
-  return v;
-}
-
-#if PAWN_CELL_SIZE>=64
-static uint64_t *align64(uint64_t *v)
-{
-	unsigned char *s = (unsigned char *)v;
-	unsigned char t;
-
-	t=s[0];
-	s[0]=s[7];
-	s[7]=t;
-
-	t=s[1];
-	s[1]=s[6];
-	s[6]=t;
-
-	t=s[2];
-	s[2]=s[5];
-	s[5]=t;
-
-	t=s[3];
-	s[3]=s[4];
-	s[4]=t;
-
-	return v;
-}
-#endif
-
-  #if PAWN_CELL_SIZE==16
-    #define aligncell(v)  align16(v)
-  #elif PAWN_CELL_SIZE==32
-    #define aligncell(v)  align32(v)
-  #elif PAWN_CELL_SIZE==64
-    #define aligncell(v)  align64(v)
-  #endif
-#else
-  #define align16(v)    (v)
-  #define align32(v)    (v)
-  #define aligncell(v)  (v)
-#endif
-
 static char *skipwhitespace(char *str)
 {
   while (isspace(*str))
@@ -192,266 +129,178 @@ static char *stripcomment(char *str)
   return str;
 }
 
-static void write_encoded(void *fbin,ucell *c,int num)
-{
-  #if PAWN_CELL_SIZE == 16
-    #define ENC_MAX   3     /* a 16-bit cell is encoded in max. 3 bytes */
-    #define ENC_MASK  0x03  /* after 2x7 bits, 2 bits remain to make 16 bits */
-  #elif PAWN_CELL_SIZE == 32
-    #define ENC_MAX   5     /* a 32-bit cell is encoded in max. 5 bytes */
-    #define ENC_MASK  0x0f  /* after 4x7 bits, 4 bits remain to make 32 bits */
-  #elif PAWN_CELL_SIZE == 64
-    #define ENC_MAX   10    /* a 32-bit cell is encoded in max. 10 bytes */
-    #define ENC_MASK  0x01  /* after 9x7 bits, 1 bit remains to make 64 bits */
-  #endif
-
-  assert(fbin!=NULL);
-  while (num-->0) {
-    if (sc_compress) {
-      ucell p=(ucell)*c;
-      unsigned char t[ENC_MAX];
-      unsigned char code;
-      int index;
-      for (index=0; index<ENC_MAX; index++) {
-        t[index]=(unsigned char)(p & 0x7f);     /* store 7 bits */
-        p>>=7;
-      } /* for */
-      /* skip leading zeros */
-      while (index>1 && t[index-1]==0 && (t[index-2] & 0x40)==0)
-        index--;
-      /* skip leading -1s */
-      if (index==ENC_MAX && t[index-1]==ENC_MASK && (t[index-2] & 0x40)!=0)
-        index--;
-      while (index>1 && t[index-1]==0x7f && (t[index-2] & 0x40)!=0)
-        index--;
-      /* write high byte first, write continuation bits */
-      assert(index>0);
-      while (index-->0) {
-        code=(unsigned char)((index==0) ? t[index] : (t[index]|0x80));
-        writeerror |= !pc_writebin(fbin,&code,1);
-        bytes_out++;
-      } /* while */
-      bytes_in+=sizeof *c;
-      assert(AMX_COMPACTMARGIN>2);
-      if (bytes_out-bytes_in>=AMX_COMPACTMARGIN-2)
-        longjmp(compact_err,1);
-    } else {
-      assert((pc_lengthbin(fbin) % sizeof(cell)) == 0);
-      writeerror |= !pc_writebin(fbin,aligncell(c),sizeof *c);
-    } /* if */
-    c++;
-  } /* while */
-}
-
-#if defined __BORLANDC__ || defined __WATCOMC__
-  #pragma argsused
-#endif
-static cell noop(void *fbin,char *params,cell opcode)
+static cell noop(Vector<cell> *buffer, char *params, cell opcode)
 {
   return 0;
 }
 
-#if defined __BORLANDC__ || defined __WATCOMC__
-  #pragma argsused
-#endif
-static cell set_currentfile(void *fbin,char *params,cell opcode)
+static cell set_currentfile(Vector<cell> *buffer, char *params, cell opcode)
 {
   fcurrent=(short)getparam(params,NULL);
   return 0;
 }
 
-#if defined __BORLANDC__ || defined __WATCOMC__
-  #pragma argsused
-#endif
-static cell parm0(void *fbin,char *params,cell opcode)
+static cell parm0(Vector<cell> *buffer, char *params, cell opcode)
 {
-  if (fbin!=NULL)
-    write_encoded(fbin,(ucell*)&opcode,1);
+  if (buffer)
+    buffer->append(opcode);
   return opcodes(1);
 }
 
-static cell parm1(void *fbin,char *params,cell opcode)
+static cell parm1(Vector<cell> *buffer, char *params, cell opcode)
 {
-  ucell p=getparam(params,NULL);
-  if (fbin!=NULL) {
-    write_encoded(fbin,(ucell*)&opcode,1);
-    write_encoded(fbin,&p,1);
-  } /* if */
-  return opcodes(1)+opargs(1);
+  ucell p = getparam(params, nullptr);
+  if (buffer) {
+    buffer->append(opcode);
+    buffer->append(p);
+  }
+  return opcodes(1) + opargs(1);
 }
 
-static cell parm2(void *fbin,char *params,cell opcode)
+static cell parm2(Vector<cell> *buffer, char *params, cell opcode)
 {
-  ucell p1=getparam(params,&params);
-  ucell p2=getparam(params,NULL);
-  if (fbin!=NULL) {
-    write_encoded(fbin,(ucell*)&opcode,1);
-    write_encoded(fbin,&p1,1);
-    write_encoded(fbin,&p2,1);
-  } /* if */
-  return opcodes(1)+opargs(2);
+  ucell p1 = getparam(params, &params);
+  ucell p2 = getparam(params, nullptr);
+  if (buffer) {
+    buffer->append(opcode);
+    buffer->append(p1);
+    buffer->append(p2);
+  }
+  return opcodes(1) + opargs(2);
 }
 
-static cell parm3(void *fbin,char *params,cell opcode)
+static cell parm3(Vector<cell> *buffer, char *params, cell opcode)
 {
-  ucell p1=getparam(params,&params);
-  ucell p2=getparam(params,&params);
-  ucell p3=getparam(params,NULL);
-  if (fbin!=NULL) {
-    write_encoded(fbin,(ucell*)&opcode,1);
-    write_encoded(fbin,&p1,1);
-    write_encoded(fbin,&p2,1);
-    write_encoded(fbin,&p3,1);
-  } /* if */
-  return opcodes(1)+opargs(3);
+  ucell p1 = getparam(params, &params);
+  ucell p2 = getparam(params, &params);
+  ucell p3 = getparam(params, nullptr);
+  if (buffer) {
+    buffer->append(opcode);
+    buffer->append(p1);
+    buffer->append(p2);
+    buffer->append(p3);
+  }
+  return opcodes(1) + opargs(3);
 }
 
-static cell parm4(void *fbin,char *params,cell opcode)
+static cell parm4(Vector<cell> *buffer, char *params, cell opcode)
 {
-  ucell p1=getparam(params,&params);
-  ucell p2=getparam(params,&params);
-  ucell p3=getparam(params,&params);
-  ucell p4=getparam(params,NULL);
-  if (fbin!=NULL) {
-    write_encoded(fbin,(ucell*)&opcode,1);
-    write_encoded(fbin,&p1,1);
-    write_encoded(fbin,&p2,1);
-    write_encoded(fbin,&p3,1);
-    write_encoded(fbin,&p4,1);
-  } /* if */
-  return opcodes(1)+opargs(4);
+  ucell p1 = getparam(params, &params);
+  ucell p2 = getparam(params, &params);
+  ucell p3 = getparam(params, &params);
+  ucell p4 = getparam(params, nullptr);
+  if (buffer) {
+    buffer->append(opcode);
+    buffer->append(p1);
+    buffer->append(p2);
+    buffer->append(p3);
+    buffer->append(p4);
+  }
+  return opcodes(1) + opargs(4);
 }
 
-static cell parm5(void *fbin,char *params,cell opcode)
+static cell parm5(Vector<cell> *buffer, char *params, cell opcode)
 {
-  ucell p1=getparam(params,&params);
-  ucell p2=getparam(params,&params);
-  ucell p3=getparam(params,&params);
-  ucell p4=getparam(params,&params);
-  ucell p5=getparam(params,NULL);
-  if (fbin!=NULL) {
-    write_encoded(fbin,(ucell*)&opcode,1);
-    write_encoded(fbin,&p1,1);
-    write_encoded(fbin,&p2,1);
-    write_encoded(fbin,&p3,1);
-    write_encoded(fbin,&p4,1);
-    write_encoded(fbin,&p5,1);
-  } /* if */
-  return opcodes(1)+opargs(5);
+  ucell p1 = getparam(params, &params);
+  ucell p2 = getparam(params, &params);
+  ucell p3 = getparam(params, &params);
+  ucell p4 = getparam(params, &params);
+  ucell p5 = getparam(params, nullptr);
+  if (buffer) {
+    buffer->append(opcode);
+    buffer->append(p1);
+    buffer->append(p2);
+    buffer->append(p3);
+    buffer->append(p4);
+    buffer->append(p5);
+  }
+  return opcodes(1) + opargs(5);
 }
 
-#if defined __BORLANDC__ || defined __WATCOMC__
-  #pragma argsused
-#endif
-static cell do_dump(void *fbin,char *params,cell opcode)
+static cell do_dump(Vector<cell> *buffer, char *params, cell opcode)
 {
-  ucell p;
   int num = 0;
 
-  while (*params!='\0') {
-    p=getparam(params,&params);
-    if (fbin!=NULL)
-      write_encoded(fbin,&p,1);
+  while (*params != '\0') {
+    ucell p = getparam(params, &params);
+    if (buffer)
+      buffer->append(p);
     num++;
     while (isspace(*params))
       params++;
-  } /* while */
-  return num*sizeof(cell);
+  }
+  return num * sizeof(cell);
 }
 
-static cell do_call(void *fbin,char *params,cell opcode)
+static cell do_call(Vector<cell> *buffer, char *params, cell opcode)
 {
   char name[sNAMEMAX+1];
-  int i;
-  symbol *sym;
-  ucell p;
 
+  int i;
   for (i=0; !isspace(*params); i++,params++) {
-    assert(*params!='\0');
-    assert(i<sNAMEMAX);
-    name[i]=*params;
-  } /* for */
+    assert(*params != '\0');
+    assert(i < sNAMEMAX);
+    name[i] = *params;
+  }
   name[i]='\0';
 
-  if (name[0]=='l' && name[1]=='.') {
-    /* this is a label, not a function symbol */
-    i=(int)hex2long(name+2,NULL);
-    assert(i>=0 && i<sc_labnum);
-    if (fbin!=NULL) {
-      assert(lbltab!=NULL);
-      p=lbltab[i];
-    } /* if */
+  cell p;
+  if (name[0] == 'l' && name[1] == '.') {
+    // Lookup the label address.
+    int val = (int)hex2long(name + 2, nullptr);
+    assert(val >= 0 && val < sc_labnum);
+    p = LabelTable[val];
   } else {
-    /* look up the function address; note that the correct file number must
-     * already have been set (in order for static globals to be found).
-     */
-    sym=findglb(name,sGLOBAL);
-    assert(sym!=NULL);
-    assert(sym->ident==iFUNCTN || sym->ident==iREFFUNC);
-    assert(sym->vclass==sGLOBAL);
-    p=sym->addr;
-  } /* if */
+    // Look up the function address; note that the correct file number must
+    // already have been set (in order for static globals to be found).
+    symbol *sym = findglb(name, sGLOBAL);
+    assert(sym->ident == iFUNCTN || sym->ident == iREFFUNC);
+    assert(sym->vclass == sGLOBAL);
+    p = sym->addr;
+  }
 
-  if (fbin!=NULL) {
-    write_encoded(fbin,(ucell*)&opcode,1);
-    write_encoded(fbin,&p,1);
-  } /* if */
-  return opcodes(1)+opargs(1);
+  if (buffer) {
+    buffer->append(opcode);
+    buffer->append(p);
+  }
+  return opcodes(1) + opargs(1);
 }
 
-static cell do_jump(void *fbin,char *params,cell opcode)
+static cell do_jump(Vector<cell> *buffer, char *params, cell opcode)
 {
-  int i;
-  ucell p;
+  int i = (int)hex2long(params, nullptr);
+  assert(i >= 0 && i < sc_labnum);
 
-  i=(int)hex2long(params,NULL);
-  assert(i>=0 && i<sc_labnum);
-
-  if (fbin!=NULL) {
-    assert(lbltab!=NULL);
-    p=lbltab[i];
-    write_encoded(fbin,(ucell*)&opcode,1);
-    write_encoded(fbin,&p,1);
-  } /* if */
-  return opcodes(1)+opargs(1);
+  if (buffer) {
+    buffer->append(opcode);
+    buffer->append(LabelTable[i]);
+  }
+  return opcodes(1) + opargs(1);
 }
 
-static cell do_switch(void *fbin,char *params,cell opcode)
+static cell do_switch(Vector<cell> *buffer, char *params, cell opcode)
 {
-  int i;
-  ucell p;
+  int i = (int)hex2long(params, nullptr);
+  assert(i >= 0 && i < sc_labnum);
 
-  i=(int)hex2long(params,NULL);
-  assert(i>=0 && i<sc_labnum);
-
-  if (fbin!=NULL) {
-    assert(lbltab!=NULL);
-    p=lbltab[i];
-    write_encoded(fbin,(ucell*)&opcode,1);
-    write_encoded(fbin,&p,1);
-  } /* if */
-  return opcodes(1)+opargs(1);
+  if (buffer) {
+    buffer->append(opcode);
+    buffer->append(LabelTable[i]);
+  }
+  return opcodes(1) + opargs(1);
 }
 
-#if defined __BORLANDC__ || defined __WATCOMC__
-  #pragma argsused
-#endif
-static cell do_case(void *fbin,char *params,cell opcode)
+static cell do_case(Vector<cell> *buffer, char *params, cell opcode)
 {
-  int i;
-  ucell p,v;
+  cell v = hex2long(params ,&params);
+  int i = (int)hex2long(params, nullptr);
+  assert(i >= 0 && i < sc_labnum);
 
-  v=hex2long(params,&params);
-  i=(int)hex2long(params,NULL);
-  assert(i>=0 && i<sc_labnum);
-
-  if (fbin!=NULL) {
-    assert(lbltab!=NULL);
-    p=lbltab[i];
-    write_encoded(fbin,&v,1);
-    write_encoded(fbin,&p,1);
-  } /* if */
-  return opcodes(0)+opargs(2);
+  if (buffer) {
+    buffer->append(v);
+    buffer->append(LabelTable[i]);
+  }
+  return opcodes(0) + opargs(2);
 }
 
 static OPCODEC opcodelist[] = {
@@ -659,661 +508,462 @@ static int findopcode(char *instr,int maxlen)
   return 0;             /* not found, return special index */
 }
 
-int assemble(void *fout, void *fin)
+// This pass is necessary because the code addresses of labels is only known
+// after the peephole optimization flag. Labels can occur inside expressions
+// (e.g. the conditional operator), which are optimized.
+static void relocate_labels(void *fin)
 {
-  AMX_HEADER hdr;
-  AMX_FUNCSTUBNT func;
-  int numpublics,numnatives,numlibraries,numpubvars,numtags,padding;
-  long nametablesize,nameofs;
-  #if PAWN_CELL_SIZE > 32
-    char line[512];
-  #else
-    char line[256];
-  #endif
-  char *instr,*params;
-  int i,pass,size;
-  int16_t count;
-  symbol *sym, **nativelist;
-  constvalue *constptr;
-  cell mainaddr;
-  char nullchar;
-  char testalias[sNAMEMAX+1];
+  if (sc_labnum <= 0)
+    return;
 
-  /* if compression failed, restart the assembly with compaction switched off */
-  if (setjmp(compact_err)!=0) {
-    assert(sc_compress);  /* cannot arrive here if compact encoding was disabled */
-    sc_compress=FALSE;
-    pc_resetbin(fout,0);
-    error(232);           /* disabled compact encoding */
-  } /* if */
+  assert(!LabelTable);
+  LabelTable = (cell *)calloc(sc_labnum, sizeof(cell));
 
-  #if !defined NDEBUG
-    /* verify that the opcode list is sorted (skip entry 1; it is reserved
-     * for a non-existant opcode)
-     */
+  char line[256];
+  cell codeindex = 0;
+
+  pc_resetasm(fin);
+  while (pc_readasm(fin, line, sizeof(line))) {
+    stripcomment(line);
+
+    char *instr = skipwhitespace(line);
+    if (*instr == '\0') // Ignore empty lines.
+      continue;
+
+    if (tolower(*instr) == 'l' && *(instr + 1) == '.') {
+      int lindex = (int)hex2long(instr + 2, nullptr);
+      assert(lindex >= 0 && lindex < sc_labnum);
+      LabelTable[lindex] = codeindex;
+    } else {
+      // Get to the end of the instruction (make use of the '\n' that fgets()
+      // added at the end of the line; this way we *always* drop on a whitespace
+      // character.
+      char *params;
+      for (params = instr; *params != '\0' && !isspace(*params); params++) {
+        // Nothing.
+      }
+      assert(params > instr);
+
+      int op_index = findopcode(instr, (int)(params - instr));
+      OPCODEC &op = opcodelist[op_index];
+      if (!op.name) {
+        *params = '\0';
+        error(104, instr);
+      }
+
+      if (op.segment == sIN_CSEG)
+        codeindex += op.func(nullptr, skipwhitespace(params), op.opcode);
+    }
+  }
+}
+
+// Generate code or data into a buffer.
+static void generate_segment(Vector<cell> *buffer, void *fin, int pass)
+{
+  pc_resetasm(fin);
+
+  char line[255];
+  while (pc_readasm(fin, line, sizeof(line))) {
+    stripcomment(line);
+    char *instr = skipwhitespace(line);
+    
+    // Ignore empty lines and labels.
+    if (*instr=='\0' || (tolower(*instr) == 'l' && *(instr + 1)=='.'))
+      continue;
+
+    // Get to the end of the instruction (make use of the '\n' that fgets()
+    // added at the end of the line; this way we will *always* drop on a
+    // whitespace character) */
+    char *params;
+    for (params=instr; *params != '\0' && !isspace(*params); params++) {
+      // Do nothing.
+    }
+    assert(params > instr);
+
+    int op_index = findopcode(instr, (int)(params-instr));
+    OPCODEC &op = opcodelist[op_index];
+    assert(op.name != nullptr);
+
+    if (op.segment != pass)
+      continue;
+
+    op.func(buffer, skipwhitespace(params), op.opcode);
+  }
+}
+
+#if !defined NDEBUG
+// The opcode list should be sorted by name.
+class VerifyOpcodeSorting
+{
+ public:
+  VerifyOpcodeSorting() {
     assert(opcodelist[1].name!=NULL);
-    for (i=2; i<(sizeof opcodelist / sizeof opcodelist[0]); i++) {
+    for (int i = 2; i<(sizeof opcodelist / sizeof opcodelist[0]); i++) {
       assert(opcodelist[i].name!=NULL);
       assert(stricmp(opcodelist[i].name,opcodelist[i-1].name)>0);
     } /* for */
-  #endif
+  }
+} sVerifyOpcodeSorting;
+#endif
 
-  writeerror=FALSE;
-  nametablesize=sizeof(int16_t);
-  numpublics=0;
-  numnatives=0;
-  numpubvars=0;
-  mainaddr=-1;
-  /* count number of public and native functions and public variables */
-  for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-    int match=0;
-    if (sym->ident==iFUNCTN) {
-      if ((sym->usage & uNATIVE)!=0 && (sym->usage & uREAD)!=0 && sym->addr>=0) {
-        match=++numnatives;
-      }
-      if ((sym->usage & uPUBLIC)!=0 && (sym->usage & uDEFINE)!=0)
-        match=++numpublics;
-      if (strcmp(sym->name,uMAINFUNC)==0) {
-        assert(sym->vclass==sGLOBAL);
-        mainaddr=sym->addr;
-      } /* if */
-    } else if (sym->ident==iVARIABLE || sym->ident == iARRAY || sym->ident == iREFARRAY) {
-      if ((sym->usage & uPUBLIC)!=0 && (sym->usage & (uREAD | uWRITTEN))!=0)
-        match=++numpubvars;
-    } /* if */
-    if (match) {
-      const char *aliasptr = sym->name;
-      assert(sym!=NULL);
-      if (((sym->usage & uNATIVE)!=0) && lookup_alias(testalias,sym->name)) {
-        aliasptr = "@";
-      } /* if */
-      nametablesize+=strlen(aliasptr)+1;
-    } /* if */
-  } /* for */
-  assert(numnatives==ntv_funcid);
-
-  /* count number of libraries */
-  numlibraries=0;
-  if (pc_addlibtable) {
-    for (constptr=libname_tab.next; constptr!=NULL; constptr=constptr->next) {
-      if (constptr->value>0) {
-        assert(strlen(constptr->name)>0);
-        numlibraries++;
-        nametablesize+=strlen(constptr->name)+1;
-      } /* if */
-    } /* for */
-  } /* if */
-
-  /* count number of public tags */
-  numtags=0;
-  for (constptr=tagname_tab.next; constptr!=NULL; constptr=constptr->next) {
-    /*if ((constptr->value & PUBLICTAG)!=0) {*/
-      assert(strlen(constptr->name)>0);
-      numtags++;
-      nametablesize+=strlen(constptr->name)+1;
-    /*} if */
-  } /* for */
-
-  /* pad the header to sc_dataalign
-   * => thereby the code segment is aligned
-   * => since the code segment is padded to a sc_dataalign boundary, the data segment is aligned
-   * => and thereby the stack top is aligned too
-   */
-  assert(sc_dataalign!=0);
-  padding= (int)(sc_dataalign - (sizeof hdr + nametablesize) % sc_dataalign);
-  if (padding==sc_dataalign)
-    padding=0;
-
-  /* write the abstract machine header */
-  memset(&hdr, 0, sizeof hdr);
-  hdr.magic=(unsigned short)AMX_MAGIC;
-  hdr.file_version=(char)((pc_optimize<=sOPTIMIZE_NOMACRO) ? MAX_FILE_VER_JIT : CUR_FILE_VERSION);
-  hdr.amx_version=(char)((pc_optimize<=sOPTIMIZE_NOMACRO) ? MIN_AMX_VER_JIT : MIN_AMX_VERSION);
-  hdr.flags=(short)(sc_debug & sSYMBOLIC);
-  if (sc_compress)
-    hdr.flags|=AMX_FLAG_COMPACT;
-  if (sc_debug==0)
-    hdr.flags|=AMX_FLAG_NOCHECKS;
-  if (pc_memflags & suSLEEP_INSTR)
-    hdr.flags|=AMX_FLAG_SLEEP;
-  hdr.defsize=sizeof(AMX_FUNCSTUBNT);
-  hdr.publics=sizeof hdr; /* public table starts right after the header */
-  hdr.natives=hdr.publics + numpublics*sizeof(AMX_FUNCSTUBNT);
-  hdr.libraries=hdr.natives + numnatives*sizeof(AMX_FUNCSTUBNT);
-  hdr.pubvars=hdr.libraries + numlibraries*sizeof(AMX_FUNCSTUBNT);
-  hdr.tags=hdr.pubvars + numpubvars*sizeof(AMX_FUNCSTUBNT);
-  hdr.nametable=hdr.tags + numtags*sizeof(AMX_FUNCSTUBNT);
-  hdr.cod=hdr.nametable + nametablesize + padding;
-  hdr.dat=hdr.cod + code_idx;
-  hdr.hea=hdr.dat + glb_declared*sizeof(cell);
-  hdr.stp=hdr.hea + pc_stksize*sizeof(cell);
-  hdr.cip=mainaddr;
-  hdr.size=hdr.hea; /* preset, this is incorrect in case of compressed output */
-  pc_writebin(fout,&hdr,sizeof hdr);
-
-  /* dump zeros up to the rest of the header, so that we can easily "seek" */
-  nullchar='\0';
-  for (nameofs=sizeof hdr; nameofs<hdr.cod; nameofs++)
-    pc_writebin(fout,&nullchar,1);
-  nameofs=hdr.nametable+sizeof(int16_t);
-
-  /* write the public functions table */
-  count=0;
-  for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-    if (sym->ident==iFUNCTN
-        && (sym->usage & uPUBLIC)!=0 && (sym->usage & uDEFINE)!=0)
-    {
-      assert(sym->vclass==sGLOBAL);
-      func.address=sym->addr;
-      func.nameofs=nameofs;
-      #if BYTE_ORDER==BIG_ENDIAN
-        align32(&func.address);
-        align32(&func.nameofs);
-      #endif
-      pc_resetbin(fout,hdr.publics+count*sizeof(AMX_FUNCSTUBNT));
-      pc_writebin(fout,&func,sizeof func);
-      pc_resetbin(fout,nameofs);
-      pc_writebin(fout,sym->name,strlen(sym->name)+1);
-      nameofs+=strlen(sym->name)+1;
-      count++;
-    } /* if */
-  } /* for */
-
-  /* write the natives table */
-  /* The native functions must be written in sorted order. (They are
-   * sorted on their "id", not on their name). A nested loop to find
-   * each successive function would be an O(n^2) operation. But we
-   * do not really need to sort, because the native function id's
-   * are sequential and there are no duplicates. So we first walk
-   * through the complete symbol list and store a pointer to every
-   * native function of interest in a temporary table, where its id
-   * serves as the index in the table. Now we can walk the table and
-   * have all native functions in sorted order.
-   */
-  if (numnatives>0) {
-    nativelist=(symbol **)malloc(numnatives*sizeof(symbol *));
-    if (nativelist==NULL)
-      error(103);               /* insufficient memory */
-    #if !defined NDEBUG
-      memset(nativelist,0,numnatives*sizeof(symbol *)); /* for NULL checking */
-    #endif
-    for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-      if (sym->ident==iFUNCTN && (sym->usage & uNATIVE)!=0 && (sym->usage & uREAD)!=0 && sym->addr>=0) {
-        assert(sym->addr < numnatives);
-        nativelist[(int)sym->addr]=sym;
-      } /* if */
-    } /* for */
-    count=0;
-    sp_fdbg_ntv_start(numnatives);
-    for (i=0; i<numnatives; i++) {
-      const char *aliasptr;
-      sym=nativelist[i];
-      sp_fdbg_ntv_hook(i, sym);
-      assert(sym!=NULL);
-      aliasptr = sym->name;
-      if (lookup_alias(testalias,sym->name)) {
-        aliasptr = "@";
-      }
-      assert(sym->vclass==sGLOBAL);
-      func.address=0;
-      func.nameofs=nameofs;
-      #if BYTE_ORDER==BIG_ENDIAN
-        align32(&func.address);
-        align32(&func.nameofs);
-      #endif
-      pc_resetbin(fout,hdr.natives+count*sizeof(AMX_FUNCSTUBNT));
-      pc_writebin(fout,&func,sizeof func);
-      pc_resetbin(fout,nameofs);
-      pc_writebin(fout,(void *)aliasptr,strlen(aliasptr)+1);
-      nameofs+=strlen(aliasptr)+1;
-      count++;
-    } /* for */
-    free(nativelist);
-  } /* if */
-
-  /* write the libraries table */
-  if (pc_addlibtable) {
-    count=0;
-    for (constptr=libname_tab.next; constptr!=NULL; constptr=constptr->next) {
-      if (constptr->value>0) {
-        assert(strlen(constptr->name)>0);
-        func.address=0;
-        func.nameofs=nameofs;
-        #if BYTE_ORDER==BIG_ENDIAN
-          align32(&func.address);
-          align32(&func.nameofs);
-        #endif
-        pc_resetbin(fout,hdr.libraries+count*sizeof(AMX_FUNCSTUBNT));
-        pc_writebin(fout,&func,sizeof func);
-        pc_resetbin(fout,nameofs);
-        pc_writebin(fout,constptr->name,strlen(constptr->name)+1);
-        nameofs+=strlen(constptr->name)+1;
-        count++;
-      } /* if */
-    } /* for */
-  } /* if */
-
-  /* write the public variables table */
-  count=0;
-  for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
-    if ((sym->ident==iVARIABLE || sym->ident==iARRAY || sym->ident==iREFARRAY)
-        && (sym->usage & uPUBLIC)!=0 && (sym->usage & (uREAD | uWRITTEN))!=0) {
-      //removed until structs don't seem to mess this up
-      //assert((sym->usage & uDEFINE)!=0);
-      assert(sym->vclass==sGLOBAL);
-      func.address=sym->addr;
-      func.nameofs=nameofs;
-      #if BYTE_ORDER==BIG_ENDIAN
-        align32(&func.address);
-        align32(&func.nameofs);
-      #endif
-      pc_resetbin(fout,hdr.pubvars+count*sizeof(AMX_FUNCSTUBNT));
-      pc_writebin(fout,&func,sizeof func);
-      pc_resetbin(fout,nameofs);
-      pc_writebin(fout,sym->name,strlen(sym->name)+1);
-      nameofs+=strlen(sym->name)+1;
-      count++;
-    } /* if */
-  } /* for */
-
-  /* write the public tagnames table */
-  count=0;
-  for (constptr=tagname_tab.next; constptr!=NULL; constptr=constptr->next) {
-    /*if ((constptr->value & PUBLICTAG)!=0) {*/
-      assert(strlen(constptr->name)>0);
-      func.address=constptr->value & TAGMASK;
-      func.nameofs=nameofs;
-      #if BYTE_ORDER==BIG_ENDIAN
-        align32(&func.address);
-        align32(&func.nameofs);
-      #endif
-      pc_resetbin(fout,hdr.tags+count*sizeof(AMX_FUNCSTUBNT));
-      pc_writebin(fout,&func,sizeof func);
-      pc_resetbin(fout,nameofs);
-      pc_writebin(fout,constptr->name,strlen(constptr->name)+1);
-      nameofs+=strlen(constptr->name)+1;
-      count++;
-    /*} if */
-  } /* for */
-
-  /* write the "maximum name length" field in the name table */
-  assert(nameofs==hdr.nametable+nametablesize);
-  pc_resetbin(fout,hdr.nametable);
-  count=sNAMEMAX;
-  #if BYTE_ORDER==BIG_ENDIAN
-    align16(&count);
-  #endif
-  pc_writebin(fout,&count,sizeof count);
-  pc_resetbin(fout,hdr.cod);
-
-  /* First pass: relocate all labels */
-  /* This pass is necessary because the code addresses of labels is only known
-   * after the peephole optimization flag. Labels can occur inside expressions
-   * (e.g. the conditional operator), which are optimized.
-   */
-  lbltab=NULL;
-  if (sc_labnum>0) {
-    /* only very short programs have zero labels; no first pass is needed
-     * if there are no labels */
-    lbltab=(cell *)malloc(sc_labnum*sizeof(cell));
-    if (lbltab==NULL)
-      error(103);               /* insufficient memory */
-    codeindex=0;
-    pc_resetasm(fin);
-    while (pc_readasm(fin,line,sizeof line)!=NULL) {
-      stripcomment(line);
-      instr=skipwhitespace(line);
-      /* ignore empty lines */
-      if (*instr=='\0')
-        continue;
-      if (tolower(*instr)=='l' && *(instr+1)=='.') {
-        int lindex=(int)hex2long(instr+2,NULL);
-        assert(lindex>=0 && lindex<sc_labnum);
-        lbltab[lindex]=codeindex;
-      } else {
-        /* get to the end of the instruction (make use of the '\n' that fgets()
-         * added at the end of the line; this way we will *always* drop on a
-         * whitespace character) */
-        for (params=instr; *params!='\0' && !isspace(*params); params++)
-          /* nothing */;
-        assert(params>instr);
-        i=findopcode(instr,(int)(params-instr));
-        if (opcodelist[i].name==NULL) {
-          *params='\0';
-          error(104,instr);     /* invalid assembler instruction */
-        } /* if */
-        if (opcodelist[i].segment==sIN_CSEG)
-          codeindex+=opcodelist[i].func(NULL,skipwhitespace(params),opcodelist[i].opcode);
-      } /* if */
-    } /* while */
-  } /* if */
-
-  /* Second pass (actually 2 more passes, one for all code and one for all data) */
-  bytes_in=0;
-  bytes_out=0;
-  for (pass=sIN_CSEG; pass<=sIN_DSEG; pass++) {
-    pc_resetasm(fin);
-    while (pc_readasm(fin,line,sizeof line)!=NULL) {
-      stripcomment(line);
-      instr=skipwhitespace(line);
-      /* ignore empty lines and labels (labels have a special syntax, so these
-       * must be parsed separately) */
-      if (*instr=='\0' || (tolower(*instr)=='l' && *(instr+1)=='.'))
-        continue;
-      /* get to the end of the instruction (make use of the '\n' that fgets()
-       * added at the end of the line; this way we will *always* drop on a
-       * whitespace character) */
-      for (params=instr; *params!='\0' && !isspace(*params); params++)
-        /* nothing */;
-      assert(params>instr);
-      i=findopcode(instr,(int)(params-instr));
-      assert(opcodelist[i].name!=NULL);
-      if (opcodelist[i].segment==pass)
-        opcodelist[i].func(fout,skipwhitespace(params),opcodelist[i].opcode);
-    } /* while */
-  } /* for */
-  if (bytes_out-bytes_in>0)
-    error(106);         /* compression buffer overflow */
-
-  if (lbltab!=NULL) {
-    free(lbltab);
-    #if !defined NDEBUG
-      lbltab=NULL;
-    #endif
-  } /* if */
-
-  if (sc_compress)
-    hdr.size=pc_lengthbin(fout);/* get this value before appending debug info */
-  if (!writeerror && (sc_debug & sSYMBOLIC)!=0)
-    append_dbginfo(fout);       /* optionally append debug file */
-
-  if (writeerror)
-    error(101,"disk full");
-
-  /* adjust the header */
-  size=(int)hdr.cod;    /* save, the value in the header may be swapped */
-  #if BYTE_ORDER==BIG_ENDIAN
-    align32(&hdr.size);
-    align16(&hdr.magic);
-    align16(&hdr.flags);
-    align16(&hdr.defsize);
-    align32(&hdr.publics);
-    align32(&hdr.natives);
-    align32(&hdr.libraries);
-    align32(&hdr.pubvars);
-    align32(&hdr.tags);
-    align32(&hdr.nametable);
-    align32(&hdr.cod);
-    align32(&hdr.dat);
-    align32(&hdr.hea);
-    align32(&hdr.stp);
-    align32(&hdr.cip);
-  #endif
-  pc_resetbin(fout,0);
-  pc_writebin(fout,&hdr,sizeof hdr);
-
-  /* return the size of the header (including name tables, but excluding code
-   * or data sections)
-   */
-  return size;
+static int sort_by_addr(const void *a1, const void *a2)
+{
+  symbol *s1 = *(symbol **)a1;
+  symbol *s2 = *(symbol **)a2;
+  return s1->addr - s2->addr;
 }
 
-static void append_dbginfo(void *fout)
+// Helper for parsing a debug string. Debug strings look like this:
+//  L:40 10
+class DebugString
 {
-  AMX_DBG_HDR dbghdr;
-  AMX_DBG_LINE dbgline;
-  AMX_DBG_SYMBOL dbgsym;
-  AMX_DBG_SYMDIM dbgidxtag[sDIMEN_MAX];
-  int dim,dbgsymdim;
-  char *str,*prevstr,*name,*prevname;
-  ucell codeidx,previdx;
-  constvalue *constptr;
-  char symname[2*sNAMEMAX+16];
-  int16_t id1,id2;
-  ucell address;
+ public:
+  DebugString() : kind_('\0'), str_(nullptr)
+  { }
+  DebugString(char *str)
+   : kind_(str[0]),
+     str_(str)
+  {
+    assert(str_[1] == ':');
+    str_ += 2;
+  }
+  char kind() const {
+    return kind_;
+  }
+  ucell parse() {
+    return hex2long(str_, &str_);
+  }
+  char *skipspaces() {
+    str_ = ::skipwhitespace(str_);
+    return str_;
+  }
+  void expect(char c) {
+    assert(*str_ == c);
+    str_++;
+  }
+  char *skipto(char c) {
+    str_ = strchr(str_, c);
+    return str_;
+  }
+  char getc() {
+    return *str_++;
+  }
+
+ private:
+  char kind_;
+  char *str_;
+};
+
+typedef SmxBlobSection<sp_fdbg_info_t> SmxDebugInfoSection;
+typedef SmxListSection<sp_fdbg_line_t> SmxDebugLineSection;
+typedef SmxListSection<sp_fdbg_file_t> SmxDebugFileSection;
+typedef SmxListSection<sp_file_tag_t> SmxTagSection;
+typedef SmxBlobSection<void> SmxDebugSymbolsSection;
+typedef SmxBlobSection<void> SmxDebugNativesSection;
+typedef Vector<symbol *> SymbolList;
+
+static void append_debug_tables(SmxBuilder *builder, StringPool &pool, Ref<SmxNameTable> names, SymbolList &nativeList)
+{
+  // We use a separate name table for historical reasons that are no longer
+  // necessary. In the future we should just alias this to ".names".
+  Ref<SmxNameTable> dbgnames = new SmxNameTable(".dbg.strings");
+  Ref<SmxDebugInfoSection> info = new SmxDebugInfoSection(".dbg.info");
+  Ref<SmxDebugLineSection> lines = new SmxDebugLineSection(".dbg.lines");
+  Ref<SmxDebugFileSection> files = new SmxDebugFileSection(".dbg.files");
+  Ref<SmxDebugSymbolsSection> symbols = new SmxDebugSymbolsSection(".dbg.symbols");
+  Ref<SmxDebugNativesSection> natives = new SmxDebugNativesSection(".dbg.natives");
+  Ref<SmxTagSection> tags = new SmxTagSection(".tags");
+
   stringlist *dbgstrs = get_dbgstrings();
-  stringlist *iter;
 
-  /* header with general information */
-  memset(&dbghdr, 0, sizeof dbghdr);
-  dbghdr.size=sizeof dbghdr;
-  dbghdr.magic=AMX_DBG_MAGIC;
-  dbghdr.file_version=CUR_FILE_VERSION;
-  dbghdr.amx_version=MIN_AMX_VERSION;
+  // State for tracking which file we're on. We replicate the original AMXDBG
+  // behavior here which excludes duplicate addresses.
+  ucell prev_file_addr = 0;
+  const char *prev_file_name = nullptr;
 
-  dbgstrs=dbgstrs->next;
+  // Add debug data.
+  for (stringlist *iter = dbgstrs; iter; iter = iter->next) {
+    if (iter->line[0] == '\0')
+      continue;
 
-  /* first pass: collect the number of items in various tables */
+    DebugString str(iter->line);
+    switch (str.kind()) {
+      case 'F':
+      {
+        ucell codeidx = str.parse();
+        if (codeidx != prev_file_addr) {
+          if (prev_file_name) {
+            sp_fdbg_file_t &entry = files->add();
+            entry.addr = prev_file_addr;
+            entry.name = dbgnames->add(pool, prev_file_name);
+          }
+          prev_file_addr = codeidx;
+        }
+        prev_file_name = str.skipspaces();
+        break;
+      }
 
-  /* file table */
-  previdx=0;
-  prevstr=NULL;
-  prevname=NULL;
-  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
-    str = iter->line;
-    assert(str!=NULL);
-    assert(str[0]!='\0' && str[1]==':');
-    if (str[0]=='F') {
-      codeidx=hex2long(str+2,&name);
-      if (codeidx!=previdx) {
-        if (prevstr!=NULL) {
-          assert(prevname!=NULL);
-          dbghdr.files++;
-          dbghdr.size+=sizeof(cell)+strlen(prevname)+1;
-        } /* if */
-        previdx=codeidx;
-      } /* if */
-      prevstr=str;
-      prevname=skipwhitespace(name);
-    } /* if */
-  } /* for */
-  if (prevstr!=NULL) {
-    assert(prevname!=NULL);
-    dbghdr.files++;
-    dbghdr.size+=sizeof(cell)+strlen(prevname)+1;
-  } /* if */
+      case 'L':
+      {
+        sp_fdbg_line_t &entry = lines->add();
+        entry.addr = str.parse();
+        entry.line = str.parse();
+        break;
+      }
 
-  /* line number table */
-  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
-    str = iter->line;
-    assert(str!=NULL);
-    assert(str[0]!='\0' && str[1]==':');
-    if (str[0]=='L') {
-      dbghdr.lines++;
-      dbghdr.size+=sizeof(AMX_DBG_LINE);
-    } /* if */
-  } /* for */
+      case 'S':
+      {
+        sp_fdbg_symbol_t sym;
+        sp_fdbg_arraydim_t dims[sDIMEN_MAX];
 
-  /* symbol table */
-  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
-    str = iter->line;
-    assert(str!=NULL);
-    assert(str[0]!='\0' && str[1]==':');
-    if (str[0]=='S') {
-      dbghdr.symbols++;
-      name=strchr(str+2,':');
-      assert(name!=NULL);
-      dbghdr.size+=sizeof(AMX_DBG_SYMBOL)+strlen(skipwhitespace(name+1));
-      if ((prevstr=strchr(name,'['))!=NULL)
-        while ((prevstr=strchr(prevstr+1,':'))!=NULL)
-          dbghdr.size+=sizeof(AMX_DBG_SYMDIM);
-    } /* if */
-  } /* for */
+        sym.addr = str.parse();
+        sym.tagid = str.parse();
 
-  /* tag table */
-  for (constptr=tagname_tab.next; constptr!=NULL; constptr=constptr->next) {
+        str.skipspaces();
+        str.expect(':');
+        char *name = str.skipspaces();
+        char *nameend = str.skipto(' ');
+        Atom *atom = pool.add(name, nameend - name);
+
+        sym.codestart = str.parse();
+        sym.codeend = str.parse();
+        sym.ident = (char)str.parse();
+        sym.vclass = (char)str.parse();
+        sym.dimcount = 0;
+        sym.name = dbgnames->add(atom);
+
+        info->header().num_syms++;
+
+        str.skipspaces();
+        if (str.getc() == '[') {
+          info->header().num_arrays++;
+          for (char *ptr = str.skipspaces(); *ptr != ']'; ptr = str.skipspaces()) {
+            dims[sym.dimcount].tagid = str.parse();
+            str.skipspaces();
+            str.expect(':');
+            dims[sym.dimcount].size = str.parse();
+            sym.dimcount++;
+          }
+        }
+
+        symbols->add(&sym, sizeof(sym));
+        symbols->add(dims, sizeof(dims[0]) * sym.dimcount);
+        break;
+      }
+    }
+  }
+
+  // Add the last file.
+  if (prev_file_name) {
+    sp_fdbg_file_t &entry = files->add();
+    entry.addr = prev_file_addr;
+    entry.name = dbgnames->add(pool, prev_file_name);
+  }
+
+  // Build the tags table.
+  for (constvalue *constptr = tagname_tab.next; constptr; constptr = constptr->next) {
     assert(strlen(constptr->name)>0);
-    dbghdr.tags++;
-    dbghdr.size+=sizeof(AMX_DBG_TAG)+strlen(constptr->name);
-  } /* for */
 
-  /* automaton table */
-  for (constptr=sc_automaton_tab.next; constptr!=NULL; constptr=constptr->next) {
-    assert((constptr->index==0 && strlen(constptr->name)==0) || strlen(constptr->name)>0);
-    dbghdr.automatons++;
-    dbghdr.size+=sizeof(AMX_DBG_MACHINE)+strlen(constptr->name);
-  } /* for */
+    sp_file_tag_t &tag = tags->add();
+    tag.tag_id = constptr->value;
+    tag.name = names->add(pool, constptr->name);
+  }
 
-  /* state table */
-  for (constptr=sc_state_tab.next; constptr!=NULL; constptr=constptr->next) {
-    assert(strlen(constptr->name)>0);
-    dbghdr.states++;
-    dbghdr.size+=sizeof(AMX_DBG_STATE)+strlen(constptr->name);
-  } /* for */
+  // Finish up debug header statistics.
+  info->header().num_files = files->count();
+  info->header().num_lines = lines->count();
 
+  // Write natives.
+  sp_fdbg_ntvtab_t natives_header;
+  natives_header.num_entries = nativeList.length();
+  natives->add(&natives_header, sizeof(natives_header));
 
-  /* pass 2: generate the tables */
-  #if BYTE_ORDER==BIG_ENDIAN
-    align32((uint32_t*)&dbghdr.size);
-    align16(&dbghdr.magic);
-    align16(&dbghdr.flags);
-    align16(&dbghdr.files);
-    align16(&dbghdr.lines);
-    align16(&dbghdr.symbols);
-    align16(&dbghdr.tags);
-    align16(&dbghdr.automatons);
-    align16(&dbghdr.states);
-  #endif
-  writeerror |= !pc_writebin(fout,&dbghdr,sizeof dbghdr);
+  for (size_t i = 0; i < nativeList.length(); i++) {
+    symbol *sym = nativeList[i];
 
-  /* file table */
-  previdx=0;
-  prevstr=NULL;
-  prevname=NULL;
-  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
-    str = iter->line;
-    assert(str[0]!='\0' && str[1]==':');
-    if (str[0]=='F') {
-      codeidx=hex2long(str+2,&name);
-      if (codeidx!=previdx) {
-        if (prevstr!=NULL) {
-          assert(prevname!=NULL);
-          #if BYTE_ORDER==BIG_ENDIAN
-            aligncell(&previdx);
-          #endif
-          writeerror |= !pc_writebin(fout,&previdx,sizeof previdx);
-          writeerror |= !pc_writebin(fout,prevname,strlen(prevname)+1);
-        } /* if */
-        previdx=codeidx;
-      } /* if */
-      prevstr=str;
-      prevname=skipwhitespace(name);
-    } /* if */
-  } /* for */
-  if (prevstr!=NULL) {
-    assert(prevname!=NULL);
-    #if BYTE_ORDER==BIG_ENDIAN
-      aligncell(&previdx);
-    #endif
-    writeerror |= !pc_writebin(fout,&previdx,sizeof previdx);
-    writeerror |= !pc_writebin(fout,prevname,strlen(prevname)+1);
-  } /* if */
+    sp_fdbg_native_t info;
+    info.index = i;
+    info.name = dbgnames->add(pool, sym->name);
+    info.tagid = sym->tag;
+    info.nargs = 0;
+    for (arginfo *arg = sym->dim.arglist; arg->ident; arg++)
+      info.nargs++;
+    natives->add(&info, sizeof(info));
 
-  /* line number table */
-  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
-    str = iter->line;
-    assert(str!=NULL);
-    assert(str[0]!='\0' && str[1]==':');
-    if (str[0]=='L') {
-      dbgline.address=hex2long(str+2,&str);
-      dbgline.line=(int32_t)hex2long(str,NULL);
-      #if BYTE_ORDER==BIG_ENDIAN
-        aligncell(&dbgline.address);
-        align32(&dbgline.line);
-      #endif
-      writeerror |= !pc_writebin(fout,&dbgline,sizeof dbgline);
-    } /* if */
-  } /* for */
+    for (arginfo *arg = sym->dim.arglist; arg->ident; arg++) {
+      sp_fdbg_ntvarg_t argout;
+      argout.ident = arg->ident;
+      argout.tagid = arg->tags[0];
+      argout.dimcount = arg->numdim;
+      argout.name = dbgnames->add(pool, arg->name);
+      natives->add(&argout, sizeof(argout));
 
-  /* symbol table */
-  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
-    str = iter->line;
-    assert(str!=NULL);
-    assert(str[0]!='\0' && str[1]==':');
-    if (str[0]=='S') {
-      dbgsym.address=hex2long(str+2,&str);
-      dbgsym.tag=(int16_t)hex2long(str,&str);
-      str=skipwhitespace(str);
-      assert(*str==':');
-      name=skipwhitespace(str+1);
-      str=strchr(name,' ');
-      assert(str!=NULL);
-      assert((int)(str-name)<sizeof symname);
-      strlcpy(symname,name,(int)(str-name)+1);
-      dbgsym.codestart=hex2long(str,&str);
-      dbgsym.codeend=hex2long(str,&str);
-      dbgsym.ident=(char)hex2long(str,&str);
-      dbgsym.vclass=(char)hex2long(str,&str);
-      dbgsym.dim=0;
-      str=skipwhitespace(str);
-      if (*str=='[') {
-        while (*(str=skipwhitespace(str+1))!=']') {
-          dbgidxtag[dbgsym.dim].tag=(int16_t)hex2long(str,&str);
-          str=skipwhitespace(str);
-          assert(*str==':');
-          dbgidxtag[dbgsym.dim].size=hex2long(str+1,&str);
-          dbgsym.dim++;
-        } /* while */
-      } /* if */
-      dbgsymdim = dbgsym.dim;
-      #if BYTE_ORDER==BIG_ENDIAN
-        aligncell(&dbgsym.address);
-        align16(&dbgsym.tag);
-        aligncell(&dbgsym.codestart);
-        aligncell(&dbgsym.codeend);
-        align16(&dbgsym.dim);
-      #endif
-      writeerror |= !pc_writebin(fout,&dbgsym,offsetof(AMX_DBG_SYMBOL, name));
-      writeerror |= !pc_writebin(fout,symname,strlen(symname)+1);
-      for (dim=0; dim<dbgsymdim; dim++) {
-        #if BYTE_ORDER==BIG_ENDIAN
-          align16(&dbgidxtag[dim].tag);
-          aligncell(&dbgidxtag[dim].size);
-        #endif
-        writeerror |= !pc_writebin(fout,&dbgidxtag[dim],sizeof dbgidxtag[dim]);
-      } /* for */
-    } /* if */
-  } /* for */
+      for (int j = 0; j < argout.dimcount; j++) {
+        sp_fdbg_arraydim_t dim;
+        dim.tagid = arg->idxtag[j];
+        dim.size = arg->dim[j];
+        natives->add(&dim, sizeof(dim));
+      }
+    }
+  }
 
-  /* tag table */
-  for (constptr=tagname_tab.next; constptr!=NULL; constptr=constptr->next) {
-    assert(strlen(constptr->name)>0);
-    id1=(int16_t)(constptr->value & TAGMASK);
-    #if BYTE_ORDER==BIG_ENDIAN
-      align16(&id1);
-    #endif
-    writeerror |= !pc_writebin(fout,&id1,sizeof id1);
-    writeerror |= !pc_writebin(fout,constptr->name,strlen(constptr->name)+1);
-  } /* for */
+  // Add these in the same order SourceMod 1.6 added them.
+  builder->add(files);
+  builder->add(symbols);
+  builder->add(lines);
+  builder->add(natives);
+  builder->add(dbgnames);
+  builder->add(info);
+  builder->add(tags);
+}
 
-  /* automaton table */
-  for (constptr=sc_automaton_tab.next; constptr!=NULL; constptr=constptr->next) {
-    assert((constptr->index==0 && strlen(constptr->name)==0) || strlen(constptr->name)>0);
-    id1=(int16_t)constptr->index;
-    address=(ucell)constptr->value;
-    #if BYTE_ORDER==BIG_ENDIAN
-      align16(&id1);
-      aligncell(&address);
-    #endif
-    writeerror |= !pc_writebin(fout,&id1,sizeof id1);
-    writeerror |= !pc_writebin(fout,&address,sizeof address);
-    writeerror |= !pc_writebin(fout,constptr->name,strlen(constptr->name)+1);
-  } /* for */
+typedef SmxListSection<sp_file_natives_t> SmxNativeSection;
+typedef SmxListSection<sp_file_publics_t> SmxPublicSection;
+typedef SmxListSection<sp_file_pubvars_t> SmxPubvarSection;
+typedef SmxBlobSection<sp_file_data_t> SmxDataSection;
+typedef SmxBlobSection<sp_file_code_t> SmxCodeSection;
 
-  /* state table */
-  for (constptr=sc_state_tab.next; constptr!=NULL; constptr=constptr->next) {
-    assert(strlen(constptr->name)>0);
-    id1=(int16_t)constptr->value;
-    id2=(int16_t)constptr->index;
-    address=(ucell)constptr->value;
-    #if BYTE_ORDER==BIG_ENDIAN
-      align16(&id1);
-      align16(&id2);
-    #endif
-    writeerror |= !pc_writebin(fout,&id1,sizeof id1);
-    writeerror |= !pc_writebin(fout,&id2,sizeof id2);
-    writeerror |= !pc_writebin(fout,constptr->name,strlen(constptr->name)+1);
-  } /* for */
+static void assemble_to_buffer(MemoryBuffer *buffer, void *fin)
+{
+  StringPool pool;
+  SmxBuilder builder;
+  Ref<SmxNativeSection> natives = new SmxNativeSection(".natives");
+  Ref<SmxPublicSection> publics = new SmxPublicSection(".publics");
+  Ref<SmxPubvarSection> pubvars = new SmxPubvarSection(".pubvars");
+  Ref<SmxDataSection> data = new SmxDataSection(".data");
+  Ref<SmxCodeSection> code = new SmxCodeSection(".code");
+  Ref<SmxNameTable> names = new SmxNameTable(".names");
 
-  delete_dbgstringtable();
+  Vector<symbol *> nativeList;
+
+  // Build the easy symbol tables.
+  for (symbol *sym=glbtab.next; sym; sym=sym->next) {
+    if (sym->ident==iFUNCTN) {
+      if ((sym->usage & uNATIVE)!=0 && (sym->usage & uREAD)!=0 && sym->addr >= 0) {
+        // Natives require special handling, so we save them for later.
+        nativeList.append(sym);
+      } else if ((sym->usage & uPUBLIC)!=0 && (sym->usage & uDEFINE)!=0) {
+        sp_file_publics_t &pubfunc = publics->add();
+        pubfunc.address = sym->addr;
+        pubfunc.name = names->add(pool, sym->name);
+      }
+    } else if (sym->ident==iVARIABLE || sym->ident == iARRAY || sym->ident == iREFARRAY) {
+      if ((sym->usage & uPUBLIC)!=0 && (sym->usage & (uREAD | uWRITTEN))!=0) {
+        sp_file_pubvars_t &pubvar = pubvars->add();
+        pubvar.address = sym->addr;
+        pubvar.name = names->add(pool, sym->name);
+      }
+    }
+  } 
+
+  // Shuffle natives to be in address order.
+  qsort(nativeList.buffer(), nativeList.length(), sizeof(symbol *), sort_by_addr);
+  for (size_t i = 0; i < nativeList.length(); i++) {
+    symbol *sym = nativeList[i];
+    assert(size_t(sym->addr) == i);
+
+    sp_file_natives_t &entry = natives->add();
+
+    char testalias[sNAMEMAX + 1];
+    if (lookup_alias(testalias, sym->name))
+      entry.name = names->add(pool, "@");
+    else
+      entry.name = names->add(pool, sym->name);
+  }
+
+  // Relocate all labels in the assembly buffer.
+  relocate_labels(fin);
+
+  // Generate buffers.
+  Vector<cell> code_buffer, data_buffer;
+  generate_segment(&code_buffer, fin, sIN_CSEG);
+  generate_segment(&data_buffer, fin, sIN_DSEG);
+
+  // Set up the code section.
+  code->header().codesize = code_buffer.length() * sizeof(cell);
+  code->header().cellsize = sizeof(cell);
+  code->header().codeversion = SmxConsts::CODE_VERSION_JIT_1_1;
+  code->header().flags = CODEFLAG_DEBUG;
+  code->header().main = 0;
+  code->header().code = sizeof(sp_file_code_t);
+  code->setBlob((uint8_t *)code_buffer.buffer(), code_buffer.length() * sizeof(cell));
+
+  // Set up the data section. Note pre-SourceMod 1.7, the |memsize| was
+  // computed as AMX::stp, which included the entire memory size needed to
+  // store the file. Here (in 1.7+), we allocate what is actually needed
+  // by the plugin.
+  data->header().datasize = data_buffer.length() * sizeof(cell);
+  data->header().memsize =
+    data->header().datasize +
+    glb_declared * sizeof(cell) +
+    pc_stksize * sizeof(cell);
+  data->header().data = sizeof(sp_file_data_t);
+  data->setBlob((uint8_t *)data_buffer.buffer(), data_buffer.length() * sizeof(cell));
+
+  free(LabelTable);
+  LabelTable = nullptr;
+
+  // Add tables in the same order SourceMod 1.6 added them.
+  builder.add(code);
+  builder.add(data);
+  builder.add(publics);
+  builder.add(pubvars);
+  builder.add(natives);
+  builder.add(names);
+  append_debug_tables(&builder, pool, names, nativeList);
+
+  builder.write(buffer);
+}
+
+static void splat_to_binary(const char *binfname, void *bytes, size_t size)
+{
+  // Note: error 161 will setjmp(), which skips destructors :(
+  FILE *fp = fopen(binfname, "wb");
+  if (!fp) {
+    error(161, binfname);
+    return;
+  }
+  if (fwrite(bytes, 1, size, fp) != size) {
+    fclose(fp);
+    error(161, binfname);
+    return;
+  }
+  fclose(fp);
+}
+
+void assemble(const char *binfname, void *fin)
+{
+  MemoryBuffer buffer;
+  assemble_to_buffer(&buffer, fin);
+
+  // Buffer compression logic. 
+  sp_file_hdr_t *header = (sp_file_hdr_t *)buffer.bytes();
+  size_t region_size = header->imagesize - header->dataoffs;
+  size_t zbuf_max = compressBound(region_size);
+  Bytef *zbuf = (Bytef *)malloc(zbuf_max);
+
+  uLong new_disksize = zbuf_max;
+  int err = compress2(
+    zbuf, 
+    &new_disksize,
+    (Bytef *)(buffer.bytes() + header->dataoffs),
+    region_size,
+    Z_BEST_COMPRESSION
+  );
+  if (err != Z_OK) {
+    free(zbuf);
+    pc_printf("Unable to compress, error %d\n", err);
+    pc_printf("Falling back to no compression.\n");
+    splat_to_binary(binfname, buffer.bytes(), buffer.size());
+    return;
+  }
+
+  header->disksize = new_disksize + header->dataoffs;
+  header->compression = SmxConsts::FILE_COMPRESSION_GZ;
+
+  buffer.rewind(header->dataoffs);
+  buffer.write(zbuf, new_disksize);
+  free(zbuf);
+
+  splat_to_binary(binfname, buffer.bytes(), buffer.size());
 }

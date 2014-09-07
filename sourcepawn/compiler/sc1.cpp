@@ -201,16 +201,11 @@ int pc_compile(int argc, char *argv[])
   char incfname[_MAX_PATH];
   char reportname[_MAX_PATH];
   char codepage[MAXCODEPAGE+1];
-  FILE *binf;
   void *inpfmark;
   int lcl_packstr,lcl_needsemicolon,lcl_tabsize,lcl_require_newdecls;
-  #if !defined SC_LIGHT
-    int hdrsize=0;
-  #endif
   char *ptr;
 
   /* set global variables to their initial value */
-  binf=NULL;
   initglobals();
   errorset(sRESET,0);
   errorset(sEXPRRELEASE,0);
@@ -316,14 +311,6 @@ int pc_compile(int argc, char *argv[])
   outf=(FILE*)pc_openasm(outfname); /* first write to assembler file (may be temporary) */
   if (outf==NULL)
     error(161,outfname);
-  /* immediately open the binary file, for other programs to check */
-  if (sc_asmfile || sc_listing) {
-    binf=NULL;
-  } else {
-    binf=(FILE*)pc_openbin(binfname);
-    if (binf==NULL)
-      error(161,binfname);
-  } /* if */
   setconstants();               /* set predefined constants and tagnames */
   for (i=0; i<skipinput; i++)   /* skip lines in the input file */
     if (pc_readsrc(inpf_org,pline,sLINEMAX)!=NULL)
@@ -464,33 +451,27 @@ int pc_compile(int argc, char *argv[])
 cleanup:
   if (inpf!=NULL)               /* main source file is not closed, do it now */
     pc_closesrc(inpf);
-  /* write the binary file (the file is already open) */
+
+  // Write the binary file.
   if (!(sc_asmfile || sc_listing) && errnum==0 && jmpcode==0) {
-    assert(binf!=NULL);
-    pc_resetasm(outf);          /* flush and loop back, for reading */
-    #if !defined SC_LIGHT
-      hdrsize=
-    #endif
-    assemble(binf,outf);        /* assembler file is now input */
-  } /* if */
+    pc_resetasm(outf);
+    assemble(binfname, outf);
+  }
+
   if (outf!=NULL) {
     pc_closeasm(outf,!(sc_asmfile || sc_listing));
     outf=NULL;
   } /* if */
-  if (binf!=NULL) {
-    pc_closebin(binf,errnum!=0);
-    binf=NULL;
-  } /* if */
 
-  #if !defined SC_LIGHT
+#if !defined SC_LIGHT
     if (errnum==0 && strlen(errfname)==0) {
-#if 0 //bug in compiler -- someone's script caused this function to infrecurs
+# if 0 //bug in compiler -- someone's script caused this function to infrecurs
       int recursion;
       long stacksize=max_stacksize(&glbtab,&recursion);
-#endif
+# endif
       int flag_exceed=0;
       if (pc_amxlimit>0) {
-        long totalsize=hdrsize+code_idx;
+        long totalsize=code_idx;
         if (pc_amxram==0)
           totalsize+=(glb_declared+pc_stksize)*sizeof(cell);
         if (totalsize>=pc_amxlimit)
@@ -499,20 +480,10 @@ cleanup:
       if (pc_amxram>0 && (glb_declared+pc_stksize)*sizeof(cell)>=(unsigned long)pc_amxram)
         flag_exceed=1;
       if ((!norun && (sc_debug & sSYMBOLIC)!=0) || verbosity>=2 || flag_exceed) {
-        pc_printf("Header size:       %8ld bytes\n", (long)hdrsize);
         pc_printf("Code size:         %8ld bytes\n", (long)code_idx);
         pc_printf("Data size:         %8ld bytes\n", (long)glb_declared*sizeof(cell));
         pc_printf("Stack/heap size:   %8ld bytes\n", (long)pc_stksize*sizeof(cell));
-#if 0
-        pc_printf("estimated max. usage");
-        if (recursion)
-          pc_printf(": unknown, due to recursion\n");
-        else if ((pc_memflags & suSLEEP_INSTR)!=0)
-          pc_printf(": unknown, due to the \"sleep\" instruction\n");
-        else
-          pc_printf("=%ld cells (%ld bytes)\n",stacksize,stacksize*sizeof(cell));
-#endif
-        pc_printf("Total requirements:%8ld bytes\n", (long)hdrsize+(long)code_idx+(long)glb_declared*sizeof(cell)+(long)pc_stksize*sizeof(cell));
+        pc_printf("Total requirements:%8ld bytes\n", (long)code_idx+(long)glb_declared*sizeof(cell)+(long)pc_stksize*sizeof(cell));
       } /* if */
       if (flag_exceed)
         error(166,pc_amxlimit+pc_amxram); /* this causes a jump back to label "cleanup" */
@@ -2077,8 +2048,6 @@ static void declglb(declinfo_t *decl,int fpublic,int fstatic,int fstock)
 static void declloc(int tokid)
 {
   symbol *sym;
-  cell val;
-  char *str;
   value lval = {0};
   int cur_lit=0;
   int staging_start;
@@ -2828,7 +2797,7 @@ static void decl_const(int vclass)
   char constname[sNAMEMAX+1];
   cell val;
   token_t tok;
-  int tag,exprtag;
+  int exprtag;
   int symbolline;
   symbol *sym;
 
@@ -2906,7 +2875,6 @@ static void declstruct(void)
   char *str;
   int tok;
   pstruct_t *pstruct;
-  int size;
 
   /* get the explicit tag (required!) */
   tok = lex(&val,&str);
@@ -3790,7 +3758,6 @@ methodmap_method_t *parse_method(methodmap_t *map)
   typeinfo_t type;
   memset(&type, 0, sizeof(type));
 
-  token_t tok;
   if (matchtoken('~')) {
     // We got something like "public ~Blah = X"
     is_bind = TRUE;
@@ -5076,9 +5043,8 @@ static cell fix_char_size(declinfo_t *decl)
 
 static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag)
 {
-  int tok;
   char *str;
-  cell val,size;
+  cell val;
   symbol *sym;
   int fnative = (tokid == tNATIVE || tokid == tMETHODMAP);
   int fpublic = (tokid == tPUBLIC);
@@ -5182,10 +5148,9 @@ static symbol *funcstub(int tokid, declinfo_t *decl, const int *thistag)
 static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstatic, int stock, symbol **symp)
 {
   symbol *sym;
-  int argcnt,tok,funcline;
+  int argcnt,funcline;
   int opererror;
-  char *str;
-  cell val,cidx,glbdecl;
+  cell cidx,glbdecl;
   short filenum;
 
   assert(litidx==0);    /* literal queue should be empty */
@@ -5456,7 +5421,7 @@ static int argcompare(arginfo *a1,arginfo *a2)
 static int declargs(symbol *sym, int chkshadow, const int *thistag)
 {
   char *ptr;
-  int argcnt,oldargcnt,tok;
+  int argcnt,oldargcnt;
   arginfo arg, *arglist;
   char name[sNAMEMAX+1];
   int fpublic;

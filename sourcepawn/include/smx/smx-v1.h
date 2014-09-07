@@ -161,6 +161,10 @@ typedef struct sp_fdbg_ntvarg_s
   uint32_t  name;     /**< Offset into debug nametable */
 } sp_fdbg_ntvarg_t;
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// DO NOT DEFINE NEW STRUCTURES BELOW.
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 #if defined __GNUC__
 # pragma pack()    /* reset default packing */
 #else

@@ -39,9 +39,8 @@ struct SmxConsts
   static const uint32_t FILE_MAGIC = 0x53504646;
 
   // File format verison number.
-  // 0x0101 - Initial version used by spcomp1 and SourceMod 1.0.
-  // 0x0102 - Used by spcomp1 and SourceMod 1.1+.
-  // 0x0103 - Used by SourceMod 1.7+.
+  // 0x0101 - SourcePawn 1.0; initial version used by SourceMod 1.0.
+  // 0x0102 - SourcePawn 1.1; used by SourceMod 1.1+.
   // 0x0200 - Used by spcomp2.
   //
   // The major version bits (8-15) indicate a product number. Consumers should
@@ -49,8 +48,11 @@ struct SmxConsts
   //
   // The minor version bits (0-7) indicate a compatibility revision. Any minor
   // version higher than the current version should be rejected.
-  static const uint16_t SP1_VERSION_MIN = 0x0101;
-  static const uint16_t SP1_VERSION_MAX = 0x0103;
+  static const uint16_t SP1_VERSION_1_0 = 0x0101;
+  static const uint16_t SP1_VERSION_1_1 = 0x0102;
+  static const uint16_t SP1_VERSION_1_7 = 0x0107;
+  static const uint16_t SP1_VERSION_MIN = SP1_VERSION_1_0;
+  static const uint16_t SP1_VERSION_MAX = SP1_VERSION_1_7;
   static const uint16_t SP2_VERSION_MIN = 0x0200;
   static const uint16_t SP2_VERSION_MAX = 0x0200;
 
@@ -58,11 +60,12 @@ struct SmxConsts
   static const uint8_t FILE_COMPRESSION_NONE = 0;
   static const uint8_t FILE_COMPRESSION_GZ = 1;
 
-  // SourcePawn 1.0.
-  static const uint8_t CODE_VERSION_JIT1 = 9;
-
-  // SourcePawn 1.1.
-  static const uint8_t CODE_VERSION_JIT2 = 10;
+  // SourcePawn 1.
+  static const uint8_t CODE_VERSION_JIT_1_0 = 9;
+  static const uint8_t CODE_VERSION_JIT_1_1 = 10;
+  static const uint8_t CODE_VERSION_JIT_1_7 = 11;
+  static const uint8_t CODE_VERSION_SP1_MIN = CODE_VERSION_JIT_1_0;
+  static const uint8_t CODE_VERSION_SP1_MAX = CODE_VERSION_JIT_1_1;
 
   // For SP1 consumers, the container version may not be checked, but usually
   // the code version is. This constant allows newer containers to be rejected
@@ -94,18 +97,28 @@ typedef struct sp_file_hdr_s
   uint32_t  magic;
   uint16_t  version;
 
-  // Compression algorithm. If the file is not compressed, then imagesize and
-  // disksize are the same value, and dataoffs is 0.
+  // disksize, imagesize, and dataoffs (at the end) describe a region of the
+  // file that may be compressed. The region must occur after the initial
+  // sp_file_hdr_t header. For SourceMod compatibility, the meanings are as
+  // follows.
   //
-  // The start of the compressed region is indicated by dataoffs. The length
-  // of the compressed region is (disksize - dataoffs). The amount of memory
-  // required to hold the decompressed bytes is (imagesize - dataoffs). The
-  // compressed region should be expanded in-place. That is, bytes before
-  // "dataoffs" should be retained, and the decompressed region should be
-  // appended.
+  // Without compression:
+  //   imagesize is the amount of bytes that must be read into memory to parse
+  //             the SMX container, starting from the first byte of the file.
+  //   disksize is undefined.
+  //   dataoffs is undefined.
   //
-  // |imagesize| is the amount of memory required to hold the entire container
-  // in memory.
+  // With compression:
+  //   dataoffs is an offset to the start of the compression region.
+  //   disksize is the length of the compressed region, in bytes, plus dataoffs.
+  //   imagesize is the size of the entire SMX container after decompression.
+  //
+  //   This means that at least |imagesize-dataoffs| must be allocated to
+  //   decompress, and the compressed region's length is |datasize-dataoffs|.
+  //
+  // The compressed region should always be expanded "in-place". That is, to
+  // parse the container, the compressed bytes should be replaced with
+  // decompressed bytes.
   //
   // Note: This scheme may seem odd. It's a combination of historical debt and
   // previously unspecified behavior. The original .amx file format contained
