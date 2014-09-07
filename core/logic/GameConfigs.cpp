@@ -1082,6 +1082,7 @@ bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pCon
 	}
 
 	pConfig = new CGameConfig(file);
+	pConfig->AddRef();
 
 	/* :HACKHACK: Don't parse the main config file */
 	bool retval = true;

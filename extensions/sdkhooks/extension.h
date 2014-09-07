@@ -88,6 +88,10 @@ enum SDKHookType
 	SDKHook_Reload,
 	SDKHook_ReloadPost,
 	SDKHook_GetMaxHealth,
+	SDKHook_Blocked,
+	SDKHook_BlockedPost,
+	SDKHook_OnTakeDamageAlive,
+	SDKHook_OnTakeDamageAlivePost,
 	SDKHook_MAXHOOKS
 };
 
@@ -286,6 +290,8 @@ public:
 	void Hook_GroundEntChangedPost(void *pVar);
 	int Hook_OnTakeDamage(CTakeDamageInfoHack &info);
 	int Hook_OnTakeDamagePost(CTakeDamageInfoHack &info);
+	int Hook_OnTakeDamageAlive(CTakeDamageInfoHack &info);
+	int Hook_OnTakeDamageAlivePost(CTakeDamageInfoHack &info);
 	void Hook_PreThink();
 	void Hook_PreThinkPost();
 	void Hook_PostThink();
@@ -319,6 +325,8 @@ public:
 	void Hook_UsePost(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	void Hook_VPhysicsUpdate(IPhysicsObject *pPhysics);
 	void Hook_VPhysicsUpdatePost(IPhysicsObject *pPhysics);
+	void Hook_Blocked(CBaseEntity *pOther);
+	void Hook_BlockedPost(CBaseEntity *pOther);
 	bool Hook_WeaponCanSwitchTo(CBaseCombatWeapon *pWeapon);
 	bool Hook_WeaponCanSwitchToPost(CBaseCombatWeapon *pWeapon);
 	bool Hook_WeaponCanUse(CBaseCombatWeapon *pWeapon);
@@ -335,6 +343,10 @@ private:
 	void HandleEntityDeleted(CBaseEntity *pEntity, int ref);
 	void Unhook(CBaseEntity *pEntity);
 	void Unhook(IPluginContext *pContext);
+
+private:
+	int HandleOnTakeDamageHook(CTakeDamageInfoHack &info, SDKHookType hookType);
+	int HandleOnTakeDamageHookPost(CTakeDamageInfoHack &info, SDKHookType hookType);
 };
 
 extern CGlobalVars *gpGlobals;

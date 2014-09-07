@@ -36,6 +36,7 @@
 #include "MersenneTwister.h"
 #include <IPluginSys.h>
 #include <am-utility.h>
+#include <am-float.h>
 
 /****************************************
 *                                       *

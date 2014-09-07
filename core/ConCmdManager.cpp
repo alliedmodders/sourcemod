@@ -383,7 +383,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	{
 		if (!m_CmdGrps.add(i, group))
 			return false;
-		i->value = NoAddRef(new CommandGroup());
+		i->value = new CommandGroup();
 	}
 	Ref<CommandGroup> cmdgroup = i->value;
 

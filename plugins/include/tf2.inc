@@ -153,6 +153,10 @@ enum TFCond
 	TFCond_HalloweenTiny,
 	TFCond_HalloweenInHell,
 	TFCond_HalloweenGhostMode,
+
+	TFCond_DodgeChance = 79,
+	TFCond_Parachute,
+	TFCond_BlastJumping,
 };
 
 const Float:TFCondDuration_Infinite = -1.0;

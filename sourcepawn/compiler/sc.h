@@ -432,6 +432,7 @@ enum TokenKind {
   tTAGOF,
   tTHEN,
   tTYPEDEF,
+  tUNION,
   tVOID,
   tWHILE,
   /* compiler directives */
@@ -904,6 +905,7 @@ extern int pc_tag_nullfunc_t;   /* the null function type */
 extern int pc_anytag;       /* global any tag */
 extern int glbstringread;	  /* last global string read */
 extern int sc_require_newdecls; /* only newdecls are allowed */
+extern bool sc_warnings_are_errors;
 
 extern constvalue sc_automaton_tab; /* automaton table */
 extern constvalue sc_state_tab;     /* state table */

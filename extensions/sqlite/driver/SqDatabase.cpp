@@ -36,6 +36,8 @@
 SqDatabase::SqDatabase(sqlite3 *sq3, bool persistent) : 
 	m_sq3(sq3), m_Persistent(persistent)
 {
+	// DBI, for historical reasons, guarantees an initial refcount of 1.
+	AddRef();
 }
 
 SqDatabase::~SqDatabase()

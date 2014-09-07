@@ -110,7 +110,7 @@ enum RayType
 	RayType_Infinite	/**< The trace ray will go from the start position to infinity using a direction vector. */
 };
 
-funcenum TraceEntityFilter
+union TraceEntityFilter
 {
 	/**
 	 * Called on entity filtering.
@@ -119,7 +119,7 @@ funcenum TraceEntityFilter
  	 * @param contentsMask	Contents Mask.
  	 * @return				True to allow the current entity to be hit, otherwise false.
  	 */
-	bool:public(entity, contentsMask),
+	function bool (int entity, int contentsMask);
 	
 	/**
 	 * Called on entity filtering.
@@ -129,7 +129,7 @@ funcenum TraceEntityFilter
  	 * @param data			Data value, if used.
  	 * @return				True to allow the current entity to be hit, otherwise false.
  	 */
-	bool:public(entity, contentsMask, any:data),
+	function bool (int entity, int contentsMask, any data);
 };
 
 /**

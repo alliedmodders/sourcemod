@@ -55,8 +55,134 @@
 #endif
 
 HandleType_t g_FileType;
+HandleType_t g_ValveFileType;
 HandleType_t g_DirType;
+HandleType_t g_ValveDirType;
 IChangeableForward *g_pLogHook = NULL;
+
+enum class FSType
+{
+	STDIO,
+	VALVE,
+};
+
+class FSHelper
+{
+public:
+	void SetFSType(FSType fstype)
+	{
+		_fstype = fstype;
+	}
+public:
+	inline void *Open(const char *filename, const char *mode, const char *pathID)
+	{
+		if (_fstype == FSType::VALVE)
+			return smcore.filesystem->Open(filename, mode, pathID);
+		else
+			return fopen(filename, mode);
+	}
+
+	inline int Read(void *pOut, int size, void *pFile)
+	{
+		if (_fstype == FSType::VALVE)
+			return smcore.filesystem->Read(pOut, size, (FileHandle_t)pFile);
+		else
+			return fread(pOut, 1, size, (FILE *)pFile) * size;
+	}
+
+	inline char *ReadLine(char *pOut, int size, void *pFile)
+	{
+		if (_fstype == FSType::VALVE)
+			return smcore.filesystem->ReadLine(pOut, size, (FileHandle_t)pFile);
+		else
+			return fgets(pOut, size, (FILE *)pFile);
+	}
+
+	inline size_t Write(const void *pData, int size, void *pFile)
+	{
+		if (_fstype == FSType::VALVE)
+			return (size_t)smcore.filesystem->Write(pData, size, (FileHandle_t)pFile);
+		else
+			return fwrite(pData, 1, size, (FILE *)pFile);
+	}
+
+	inline void Seek(void *pFile, int pos, int seekType)
+	{
+		if (_fstype == FSType::VALVE)
+			smcore.filesystem->Seek((FileHandle_t)pFile, pos, seekType);
+		else
+			fseek((FILE *)pFile, pos, seekType);
+	}
+
+	inline int Tell(void *pFile)
+	{
+		if (_fstype == FSType::VALVE)
+			return smcore.filesystem->Tell((FileHandle_t)pFile);
+		else
+			return ftell((FILE *)pFile);
+	}
+
+	inline bool HasError(void *pFile)
+	{
+		if (_fstype == FSType::VALVE)
+			return !smcore.filesystem->IsOk((FileHandle_t)pFile);
+		else
+			return ferror((FILE *)pFile) != 0;
+	}
+
+	inline void Close(void *pFile)
+	{
+		if (_fstype == FSType::VALVE)
+			smcore.filesystem->Close((FileHandle_t)pFile);
+		else
+			fclose((FILE *)pFile);
+	}
+
+	inline bool Remove(const char *pFilePath, const char *pathID)
+	{
+		if (_fstype == FSType::VALVE)
+		{
+			if (!smcore.filesystem->FileExists(pFilePath, pathID))
+				return false;
+
+			smcore.filesystem->RemoveFile(pFilePath, pathID);
+
+			if (smcore.filesystem->FileExists(pFilePath, pathID))
+				return false;
+
+			return true;
+		}
+		else
+		{
+			return unlink(pFilePath) == 0;
+		}
+	}
+
+	inline bool EndOfFile(void *pFile)
+	{
+		if (_fstype == FSType::VALVE)
+			return smcore.filesystem->EndOfFile((FileHandle_t)pFile);
+		else
+			return feof((FILE *)pFile) != 0;
+	}
+
+	inline bool Flush(void *pFile)
+	{
+		if (_fstype == FSType::VALVE)
+			return smcore.filesystem->Flush((FileHandle_t)pFile), true;
+		else
+			return fflush((FILE *)pFile) == 0;
+	}
+private:
+	FSType _fstype;
+};
+
+struct ValveDirectory
+{
+	FileFindHandle_t hndl;
+	char szFirstPath[PLATFORM_MAX_PATH];
+	bool bHandledFirstPath;
+};
 
 class FileNatives : 
 	public SMGlobalClass,
@@ -70,7 +196,9 @@ public:
 	virtual void OnSourceModAllInitialized()
 	{
 		g_FileType = handlesys->CreateType("File", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		g_ValveFileType = handlesys->CreateType("ValveFile", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 		g_DirType = handlesys->CreateType("Directory", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		g_ValveDirType = handlesys->CreateType("ValveDirectory", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 		g_pLogHook = forwardsys->CreateForwardEx(NULL, ET_Hook, 1, NULL, Param_String);
 		pluginsys->AddPluginsListener(this);
 	}
@@ -80,8 +208,12 @@ public:
 		forwardsys->ReleaseForward(g_pLogHook);
 		handlesys->RemoveType(g_DirType, g_pCoreIdent);
 		handlesys->RemoveType(g_FileType, g_pCoreIdent);
+		handlesys->RemoveType(g_ValveFileType, g_pCoreIdent);
+		handlesys->RemoveType(g_ValveDirType, g_pCoreIdent);
 		g_DirType = 0;
 		g_FileType = 0;
+		g_ValveFileType = 0;
+		g_ValveDirType = 0;
 	}
 	virtual void OnHandleDestroy(HandleType_t type, void *object)
 	{
@@ -94,6 +226,17 @@ public:
 		{
 			IDirectory *pDir = (IDirectory *)object;
 			libsys->CloseDirectory(pDir);
+		}
+		else if (type == g_ValveFileType)
+		{
+			FileHandle_t fp = (FileHandle_t) object;
+			smcore.filesystem->Close(fp);
+		}
+		else if (type == g_ValveDirType)
+		{
+			ValveDirectory *valveDir = (ValveDirectory *)object;
+			smcore.filesystem->FindClose(valveDir->hndl);
+			delete valveDir;
 		}
 	}
 	virtual void AddLogHook(IPluginFunction *pFunc)
@@ -127,23 +270,56 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 		pContext->ThrowNativeErrorEx(err, NULL);
 		return 0;
 	}
-
-	char realpath[PLATFORM_MAX_PATH];
-	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
-
-	IDirectory *pDir = libsys->OpenDirectory(realpath);
-	if (!pDir)
+	
+	Handle_t handle = 0;
+	
+	if (params[0] >= 2 && params[2])
 	{
-		return 0;
+		char wildcardedPath[PLATFORM_MAX_PATH];
+		snprintf(wildcardedPath, sizeof(wildcardedPath), "%s*", path);
+		ValveDirectory *valveDir = new ValveDirectory;
+		
+		char *pathID;
+		if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)
+		{
+			pContext->ThrowNativeErrorEx(err, NULL);
+			return 0;
+		}
+		
+		const char *pFirst = smcore.filesystem->FindFirstEx(wildcardedPath, pathID, &valveDir->hndl);
+		if (pFirst)
+		{
+			valveDir->bHandledFirstPath = false;
+			strncpy(valveDir->szFirstPath, pFirst, sizeof(valveDir->szFirstPath));
+		}
+		else
+		{
+			valveDir->bHandledFirstPath = true;
+		}
+		
+		handle = handlesys->CreateHandle(g_ValveDirType, valveDir, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	}
+	else
+	{
+		char realpath[PLATFORM_MAX_PATH];
+		g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
 
-	return handlesys->CreateHandle(g_DirType, pDir, pContext->GetIdentity(), g_pCoreIdent, NULL);
+		IDirectory *pDir = libsys->OpenDirectory(realpath);
+		if (!pDir)
+		{
+			return 0;
+		}
+
+		handle = handlesys->CreateHandle(g_DirType, pDir, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	}
+	
+	return handle;
 }
 
 static cell_t sm_ReadDirEntry(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
-	IDirectory *pDir;
+	void *pTempDir;
 	HandleError herr;
 	HandleSecurity sec;
 	int err;
@@ -151,44 +327,90 @@ static cell_t sm_ReadDirEntry(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_DirType, &sec, (void **)&pDir))
-		!= HandleError_None)
+	if ((herr=handlesys->ReadHandle(hndl, g_DirType, &sec, &pTempDir)) == HandleError_None)
+	{
+		IDirectory *pDir = (IDirectory *)pTempDir;
+		if (!pDir->MoreFiles())
+		{
+			return 0;
+		}
+
+		cell_t *filetype;
+		if ((err=pContext->LocalToPhysAddr(params[4], &filetype)) != SP_ERROR_NONE)
+		{
+			pContext->ThrowNativeErrorEx(err, NULL);
+			return 0;
+		}
+
+		if (pDir->IsEntryDirectory())
+		{
+			*filetype = 1;
+		} else if (pDir->IsEntryFile()) {
+			*filetype = 2;
+		} else {
+			*filetype = 0;
+		}
+
+		const char *path = pDir->GetEntryName();
+		if ((err=pContext->StringToLocalUTF8(params[2], params[3], path, NULL))
+			!= SP_ERROR_NONE)
+		{
+			return pContext->ThrowNativeErrorEx(err, NULL);
+		}
+
+		pDir->NextEntry();
+	}
+	else if ((herr=handlesys->ReadHandle(hndl, g_ValveDirType, &sec, &pTempDir)) == HandleError_None)
+	{
+		ValveDirectory *valveDir = (ValveDirectory *)pTempDir;
+		
+		const char *pEntry = NULL;
+		if (!valveDir->bHandledFirstPath)
+		{
+			if (valveDir->szFirstPath[0])
+			{
+				pEntry = valveDir->szFirstPath;
+			}
+		}
+		else
+		{
+			pEntry = smcore.filesystem->FindNext(valveDir->hndl);
+		}
+		
+		valveDir->bHandledFirstPath = true;
+		
+		// No more entries
+		if (!pEntry)
+		{
+			return 0;
+		}
+		
+		if ((err=pContext->StringToLocalUTF8(params[2], params[3], pEntry, NULL))
+			!= SP_ERROR_NONE)
+		{
+			return pContext->ThrowNativeErrorEx(err, NULL);
+		}
+
+		cell_t *filetype;
+		if ((err=pContext->LocalToPhysAddr(params[4], &filetype)) != SP_ERROR_NONE)
+		{
+			pContext->ThrowNativeErrorEx(err, NULL);
+			return 0;
+		}
+
+		if (smcore.filesystem->FindIsDirectory(valveDir->hndl))
+		{
+			*filetype = 1;
+		} else {
+			*filetype = 2;
+		}		
+	}
+	else
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
 
-	if (!pDir->MoreFiles())
-	{
-		return false;
-	}
-
-	cell_t *filetype;
-	if ((err=pContext->LocalToPhysAddr(params[4], &filetype)) != SP_ERROR_NONE)
-	{
-		pContext->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
-
-	if (pDir->IsEntryDirectory())
-	{
-		*filetype = 1;
-	} else if (pDir->IsEntryFile()) {
-		*filetype = 2;
-	} else {
-		*filetype = 0;
-	}
-
-	const char *path = pDir->GetEntryName();
-	if ((err=pContext->StringToLocalUTF8(params[2], params[3], path, NULL))
-		!= SP_ERROR_NONE)
-	{
-		pContext->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
-
-	pDir->NextEntry();
-
-	return true;
+	return 1;
 }
 
 static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
@@ -206,16 +428,40 @@ static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	char realpath[PLATFORM_MAX_PATH];
-	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
-
-	FILE *pFile = fopen(realpath, mode);
-	if (!pFile)
+	Handle_t handle = 0;
+	HandleType_t handleType;
+	FSHelper fshelper;
+	const char *openpath;
+	char *pathID;
+	if (params[0] <= 2 || !params[3])
 	{
-		return 0;
+		handleType = g_FileType;
+		fshelper.SetFSType(FSType::STDIO);
+
+		char realpath[PLATFORM_MAX_PATH];
+		g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+		openpath = realpath;
+	}
+	else
+	{
+		if ((err=pContext->LocalToStringNULL(params[4], &pathID)) != SP_ERROR_NONE)
+		{
+			pContext->ThrowNativeErrorEx(err, NULL);
+			return 0;
+		}
+		
+		handleType = g_ValveFileType;
+		fshelper.SetFSType(FSType::VALVE);
+		openpath = name;
 	}
 
-	return handlesys->CreateHandle(g_FileType, pFile, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	void *pFile = fshelper.Open(openpath, mode, pathID);
+	if (pFile)
+	{
+		handle = handlesys->CreateHandle(handleType, pFile, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	}
+
+	return handle;
 }
 
 static cell_t sm_DeleteFile(IPluginContext *pContext, const cell_t *params)
@@ -228,10 +474,29 @@ static cell_t sm_DeleteFile(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	char realpath[PLATFORM_MAX_PATH];
-	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+	FSHelper fshelper;
+	const char *filepath;
+	char *pathID;
+	if (params[0] < 2 || !params[2])
+	{
+		fshelper.SetFSType(FSType::STDIO);
+		char realpath[PLATFORM_MAX_PATH];
+		g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+		filepath = realpath;
+	}
+	else
+	{
+		if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)
+		{
+			pContext->ThrowNativeErrorEx(err, NULL);
+			return 0;
+		}
+		
+		fshelper.SetFSType(FSType::VALVE);
+		filepath = name;
+	}
 
-	return (unlink(realpath)) ? 0 : 1;
+	return fshelper.Remove(filepath, pathID) ? 1 : 0;
 }
 
 static cell_t sm_ReadFileLine(IPluginContext *pContext, const cell_t *params)
@@ -239,17 +504,11 @@ static cell_t sm_ReadFileLine(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	FILE *pFile;
 	int err;
 
+	void *pFile;
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
-
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
-	}
 
 	char *buf;
 	if ((err=pContext->LocalToString(params[2], &buf)) != SP_ERROR_NONE)
@@ -258,12 +517,22 @@ static cell_t sm_ReadFileLine(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	if (fgets(buf, params[3], pFile) == NULL)
+	FSHelper fshelper;
+	
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, &pFile)) == HandleError_None)
 	{
-		return 0;
+		fshelper.SetFSType(FSType::STDIO);
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::VALVE);
+	}
+	else
+	{
+		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
 
-	return 1;
+	return fshelper.ReadLine(buf, params[3], pFile) == NULL ? 0 : 1;
 }
 
 static cell_t sm_IsEndOfFile(IPluginContext *pContext, const cell_t *params)
@@ -271,18 +540,26 @@ static cell_t sm_IsEndOfFile(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	FILE *pFile;
+	void *pFile;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
+	FSHelper fshelper;
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::STDIO);
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::VALVE);
+	}
+	else
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
 
-	return (feof(pFile)) ? 1 : 0;
+	return fshelper.EndOfFile(pFile) ? 1 : 0;
 }
 
 static cell_t sm_FileSeek(IPluginContext *pContext, const cell_t *params)
@@ -290,18 +567,26 @@ static cell_t sm_FileSeek(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	FILE *pFile;
+	void *pFile;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
+	FSHelper fshelper;
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::STDIO);
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::VALVE);
+	}
+	else
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
 
-	fseek(pFile, params[2], params[3]);
+	fshelper.Seek(pFile, params[2], params[3]);
 	
 	return 1;
 }
@@ -311,18 +596,27 @@ static cell_t sm_FilePosition(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	FILE *pFile;
+	void *pFile;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
+	FSHelper fshelper;
+
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::STDIO);
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::VALVE);
+	}
+	else
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
 
-	return ftell(pFile);
+	return (cell_t)fshelper.Tell(pFile);
 }
 
 static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
@@ -337,7 +631,17 @@ static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] >= 2 && params[2] == 1)
 	{
-		return smcore.filesystem->FileExists(name) ? 1 : 0;
+		char *pathID = NULL;
+		if (params[0] >= 3)
+		{
+			if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)
+			{
+				pContext->ThrowNativeErrorEx(err, NULL);
+				return 0;
+			}
+		}
+		
+		return smcore.filesystem->FileExists(name, pathID) ? 1 : 0;
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
@@ -381,6 +685,19 @@ static cell_t sm_RenameFile(IPluginContext *pContext, const cell_t *params)
 		pContext->ThrowNativeErrorEx(err, NULL);
 		return 0;
 	}
+	
+	if (params[0] >= 3 && params[3] == 1)
+	{
+		char *pathID;
+		if ((err=pContext->LocalToStringNULL(params[4], &pathID)) != SP_ERROR_NONE)
+		{
+			pContext->ThrowNativeErrorEx(err, NULL);
+			return 0;
+		}
+		
+		smcore.filesystem->RenameFile(oldpath, newpath, pathID);
+		return 1;
+	}
 
 	char new_realpath[PLATFORM_MAX_PATH];
 	g_pSM->BuildPath(Path_Game, new_realpath, sizeof(new_realpath), "%s", newpath);
@@ -402,6 +719,18 @@ static cell_t sm_DirExists(IPluginContext *pContext, const cell_t *params)
 	{
 		pContext->ThrowNativeErrorEx(err, NULL);
 		return 0;
+	}
+	
+	if (params[0] >= 2 && params[2] == 1)
+	{
+		char *pathID;
+		if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)
+		{
+			pContext->ThrowNativeErrorEx(err, NULL);
+			return 0;
+		}
+		
+		return smcore.filesystem->IsDirectory(name, pathID) ? 1 : 0;
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
@@ -443,9 +772,19 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] >= 2 && params[2] == 1)
 	{
-		if (smcore.filesystem->FileExists(name))
+		char *pathID = NULL;
+		if (params[0] >= 3)
 		{
-			return smcore.filesystem->Size(name);
+			if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)
+			{
+				pContext->ThrowNativeErrorEx(err, NULL);
+				return -1;
+			}
+		}
+		
+		if (smcore.filesystem->FileExists(name, pathID))
+		{
+			return smcore.filesystem->Size(name, pathID);
 		}
 		else
 		{
@@ -508,9 +847,29 @@ static cell_t sm_SetFilePermissions(IPluginContext *pContext, const cell_t *para
 static cell_t sm_CreateDirectory(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
-	char realpath[PLATFORM_MAX_PATH];
-
 	pContext->LocalToString(params[1], &name);
+	
+	if (params[0] >= 3 && params[3] == 1)
+	{
+		int err;
+		char *pathID;
+		if ((err=pContext->LocalToStringNULL(params[4], &pathID)) != SP_ERROR_NONE)
+		{
+			return pContext->ThrowNativeErrorEx(err, NULL);
+		}
+		
+		if (smcore.filesystem->IsDirectory(name, pathID))
+			return 0;
+		
+		smcore.filesystem->CreateDirHierarchy(name, pathID);
+		
+		if (smcore.filesystem->IsDirectory(name, pathID))
+			return 1;
+		
+		return 0;
+	}
+	
+	char realpath[PLATFORM_MAX_PATH];
 	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 
 #if defined PLATFORM_WINDOWS
@@ -541,19 +900,14 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	FILE *pFile;
+	void *pTempFile;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
-	}
-
 	char *fmt;
 	int err;
+
 	if ((err=pContext->LocalToString(params[2], &fmt)) != SP_ERROR_NONE)
 	{
 		pContext->ThrowNativeErrorEx(err, NULL);
@@ -562,8 +916,23 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 
 	char buffer[2048];
 	int arg = 3;
-	smcore.atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
-	fprintf(pFile, "%s\n", buffer);
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, &pTempFile)) == HandleError_None)
+	{
+		FILE *pFile = (FILE *) pTempFile;
+		smcore.atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
+		fprintf(pFile, "%s\n", buffer);
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, &pTempFile)) == HandleError_None)
+	{
+		FileHandle_t pFile = (FileHandle_t) pTempFile;
+		smcore.atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
+		sprintf(buffer, "%s\n", buffer);
+		smcore.filesystem->FPrint(pFile, buffer);
+	}
+	else
+	{
+		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
+	}
 
 	return 1;
 }
@@ -573,18 +942,26 @@ static cell_t sm_FlushFile(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	FILE *pFile;
+	void *pFile;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
+	FSHelper fshelper;
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::STDIO);
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::VALVE);
+	}
+	else
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
 
-	return (fflush(pFile) == 0) ? 1 : 0;
+	return fshelper.Flush(pFile) ? 1 : 0;
 }
 
 static cell_t sm_BuildPath(IPluginContext *pContext, const cell_t *params)
@@ -749,11 +1126,20 @@ static cell_t sm_ReadFile(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
-	FILE *pFile;
 	size_t read = 0;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
+	void *pFile = NULL;
+	FSHelper fshelper;
+
+	if ((herr = handlesys->ReadHandle(hndl, g_FileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::STDIO);
+	}
+	else if ((herr = handlesys->ReadHandle(hndl, g_ValveFileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::VALVE);
+	}
+	else
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
@@ -765,21 +1151,21 @@ static cell_t sm_ReadFile(IPluginContext *pContext, const cell_t *params)
 
 	cell_t *data;
 	pContext->LocalToPhysAddr(params[2], &data);
-
+		
 	if (params[4] == 4)
 	{
-		read = fread(data, sizeof(cell_t), params[3], pFile);
+		read = fshelper.Read(data, sizeof(cell_t) * params[3], pFile);
 	}
 	else if (params[4] == 2)
 	{
 		uint16_t val;
 		for (cell_t i = 0; i < params[3]; i++)
 		{
-			if (fread(&val, sizeof(uint16_t), 1, pFile) != 1)
+			if (fshelper.Read(&val, sizeof(uint16_t), pFile) != 1)
 			{
 				break;
 			}
-			data[read++] = val;
+			data[read += sizeof(uint16_t)] = val;
 		}
 	}
 	else if (params[4] == 1)
@@ -787,20 +1173,20 @@ static cell_t sm_ReadFile(IPluginContext *pContext, const cell_t *params)
 		uint8_t val;
 		for (cell_t i = 0; i < params[3]; i++)
 		{
-			if (fread(&val, sizeof(uint8_t), 1, pFile) != 1)
+			if (fshelper.Read(&val, sizeof(uint8_t), pFile) != 1)
 			{
 				break;
 			}
-			data[read++] = val;
+			data[read += sizeof(uint8_t)] = val;
 		}
 	}
 
-	if (read != (size_t)params[3] && ferror(pFile) != 0)
+	if (read != ((size_t)params[3] * params[4]) && fshelper.HasError(pFile))
 	{
 		return -1;
 	}
 
-	return read;
+	return read / params[4];
 }
 
 static cell_t sm_ReadFileString(IPluginContext *pContext, const cell_t *params)
@@ -808,18 +1194,27 @@ static cell_t sm_ReadFileString(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
-	FILE *pFile;
+	void *pFile;
 	cell_t num_read = 0;
-
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
-	}
 
 	char *buffer;
 	pContext->LocalToString(params[2], &buffer);
 
+	FSHelper fshelper;
+
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::STDIO);
+	}
+	else if ((herr=handlesys->ReadHandle(hndl, g_ValveFileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::VALVE);
+	}
+	else
+	{
+		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
+	}
+	
 	if (params[4] != -1)
 	{
 		if (size_t(params[4]) > size_t(params[3]))
@@ -829,9 +1224,9 @@ static cell_t sm_ReadFileString(IPluginContext *pContext, const cell_t *params)
 				params[3]);
 		}
 
-		num_read = (cell_t)fread(buffer, 1, params[4], pFile);
+		num_read = (cell_t)fshelper.Read(buffer, params[4], pFile);
 
-		if (num_read != params[4] && ferror(pFile))
+		if (num_read != params[4] && fshelper.HasError(pFile))
 		{
 			return -1;
 		}
@@ -846,9 +1241,9 @@ static cell_t sm_ReadFileString(IPluginContext *pContext, const cell_t *params)
 		{
 			break;
 		}
-		if (fread(&val, sizeof(val), 1, pFile) != 1)
+		if (fshelper.Read(&val, sizeof(val), pFile) != 1)
 		{
-			if (ferror(pFile))
+			if (fshelper.HasError(pFile))
 			{
 				return -1;
 			}
@@ -877,10 +1272,18 @@ static cell_t sm_WriteFile(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
-	FILE *pFile;
+	void *pFile;
+	FSHelper fshelper;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::STDIO);
+	}
+	else if ((herr=handlesys->ReadHandle(hndl, g_ValveFileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::VALVE);
+	}
+	else
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
@@ -897,7 +1300,7 @@ static cell_t sm_WriteFile(IPluginContext *pContext, const cell_t *params)
 
 	if (params[4] == 4)
 	{
-		if (fwrite(data, sizeof(cell_t), params[3], pFile) != (size_t)params[3])
+		if (fshelper.Write(data, sizeof(cell_t) * params[3], pFile) != (sizeof(cell_t) * (size_t)params[3]))
 		{
 			return 0;
 		}
@@ -906,7 +1309,7 @@ static cell_t sm_WriteFile(IPluginContext *pContext, const cell_t *params)
 	{
 		for (cell_t i = 0; i < params[3]; i++)
 		{
-			if (fwrite(&data[i], sizeof(int16_t), 1, pFile) != 1)
+			if (fshelper.Write(&data[i], sizeof(int16_t), pFile) != sizeof(int16_t))
 			{
 				return 0;
 			}
@@ -916,7 +1319,7 @@ static cell_t sm_WriteFile(IPluginContext *pContext, const cell_t *params)
 	{
 		for (cell_t i = 0; i < params[3]; i++)
 		{
-			if (fwrite(&data[i], sizeof(int8_t), 1, pFile) != 1)
+			if (fshelper.Write(&data[i], sizeof(int8_t), pFile) != sizeof(int8_t))
 			{
 				return 0;
 			}
@@ -931,10 +1334,18 @@ static cell_t sm_WriteFileString(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
-	FILE *pFile;
+	void *pFile;
+	FSHelper fshelper;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
-		!= HandleError_None)
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::STDIO);
+	}
+	else if ((herr=handlesys->ReadHandle(hndl, g_ValveFileType, &sec, &pFile)) == HandleError_None)
+	{
+		fshelper.SetFSType(FSType::VALVE);
+	}
+	else
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
@@ -949,7 +1360,7 @@ static cell_t sm_WriteFileString(IPluginContext *pContext, const cell_t *params)
 		len++;
 	}
 
-	return (fwrite(buffer, sizeof(char), len, pFile) == len) ? 1 : 0;
+	return (fshelper.Write(buffer, len, pFile) == len) ? 1 : 0;
 }
 
 static cell_t sm_AddGameLogHook(IPluginContext *pContext, const cell_t *params)

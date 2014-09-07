@@ -1,6 +1,6 @@
 // vim: set sts=8 ts=2 sw=2 tw=99 et:
 //
-// Copyright (C) 2013, David Anderson and AlliedModders LLC
+// Copyright (C) 2013-2014, David Anderson and AlliedModders LLC
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -26,46 +26,74 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+#ifndef _include_amtl_fixedarray_h_
+#define _include_amtl_fixedarray_h_
 
-#ifndef _include_amtl_ts_refcounting_h_
-#define _include_amtl_ts_refcounting_h_
-
-#include <am-refcounting.h>
-#include <am-atomics.h>
+#include <am-utility.h>
+#include <am-allocator-policies.h>
+#include <am-moveable.h>
 
 namespace ke {
 
-// See the comment above Refcounted<T> for more information. This class is
-// identical, except changing the reference count is guaranteed to be atomic
-// with respect to other threads changing the reference count.
-template <typename T>
-class RefcountedThreadsafe
+template <typename T, typename AllocPolicy = SystemAllocatorPolicy>
+class FixedArray : public AllocPolicy
 {
-  public:
-    RefcountedThreadsafe()
-     : refcount_(0)
-    {
-    }
+ public:
+  FixedArray(size_t length, AllocPolicy = AllocPolicy()) {
+    length_ = length;
+    data_ = (T *)this->malloc(sizeof(T) * length_);
+    if (!data_)
+      return;
 
-    void AddRef() {
-      refcount_.increment();
-    }
-    bool Release() {
-        if (!refcount_.decrement()) {
-            delete static_cast<T *>(this);
-            return false;
-        }
-        return true;
-    }
+    for (size_t i = 0; i < length_; i++)
+      new (&data_[i]) T();
+  }
+  ~FixedArray() {
+    for (size_t i = 0; i < length_; i++)
+      data_[i].~T();
+    this->free(data_);
+  }
 
-  protected:
-    ~RefcountedThreadsafe() {
-    }
+  // This call may be skipped if the allocator policy is infallible.
+  bool initialize() {
+    return length_ == 0 || !!data_;
+  }
 
-  private:
-    AtomicRefCount refcount_;
+  size_t length() const {
+    return length_;
+  }
+  T &operator [](size_t index) {
+    return at(index);
+  }
+  const T &operator [](size_t index) const {
+    return at(index);
+  }
+  T &at(size_t index) {
+    assert(index < length());
+    return data_[index];
+  }
+  const T &at(size_t index) const {
+    assert(index < length());
+    return data_[index];
+  }
+  void set(size_t index, const T &t) {
+    assert(index < length());
+    data_[index] = t;
+  }
+  void set(size_t index, ke::Moveable<T> t) {
+    assert(index < length());
+    data_[index] = t;
+  }
+
+ private:
+  FixedArray(const FixedArray &other) KE_DELETE;
+  FixedArray &operator =(const FixedArray &other) KE_DELETE;
+
+ private:
+  size_t length_;
+  T *data_;
 };
 
 } // namespace ke
 
-#endif // _include_amtl_ts_refcounting_h_
+#endif // _include_amtl_fixedarray_h_

@@ -27,45 +27,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef _include_amtl_ts_refcounting_h_
-#define _include_amtl_ts_refcounting_h_
+#ifndef _include_amtl_float_h_
+#define _include_amtl_float_h_
 
-#include <am-refcounting.h>
-#include <am-atomics.h>
+#include <math.h>
+#include <float.h>
 
 namespace ke {
 
-// See the comment above Refcounted<T> for more information. This class is
-// identical, except changing the reference count is guaranteed to be atomic
-// with respect to other threads changing the reference count.
-template <typename T>
-class RefcountedThreadsafe
+static inline bool
+IsNaN(double v)
 {
-  public:
-    RefcountedThreadsafe()
-     : refcount_(0)
-    {
-    }
-
-    void AddRef() {
-      refcount_.increment();
-    }
-    bool Release() {
-        if (!refcount_.decrement()) {
-            delete static_cast<T *>(this);
-            return false;
-        }
-        return true;
-    }
-
-  protected:
-    ~RefcountedThreadsafe() {
-    }
-
-  private:
-    AtomicRefCount refcount_;
-};
+#ifdef _MSC_VER
+  return !!_isnan(v);
+#else
+  return isnan(v);
+#endif
+}
 
 } // namespace ke
 
-#endif // _include_amtl_ts_refcounting_h_
+#endif // _include_amtl_float_h_

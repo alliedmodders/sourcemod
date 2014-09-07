@@ -144,6 +144,7 @@ static void dolabel(void);
 static void doreturn(void);
 static void dofuncenum(int listmode);
 static void dotypedef();
+static void dounion();
 static void domethodmap(LayoutSpec spec);
 static void dobreak(void);
 static void docont(void);
@@ -914,6 +915,9 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
       case 'e':
         strlcpy(ename,option_value(ptr),_MAX_PATH); /* set name of error file */
         break;
+      case 'E':
+        sc_warnings_are_errors = true;
+        break;
 #if defined __WIN32__ || defined _WIN32 || defined _Windows
       case 'H':
         hwndFinish=(HWND)atoi(option_value(ptr));
@@ -1282,6 +1286,7 @@ static void about(void)
     pc_printf("         -t<num>  TAB indent size (in character positions, default=%d)\n",sc_tabsize);
     pc_printf("         -v<num>  verbosity level; 0=quiet, 1=normal, 2=verbose (default=%d)\n",verbosity);
     pc_printf("         -w<num>  disable a specific warning by its number\n");
+    pc_printf("         -E       treat warnings as errors\n");
     pc_printf("         -X<num>  abstract machine size limit in bytes\n");
     pc_printf("         -XD<num> abstract machine data/stack size limit in bytes\n");
     pc_printf("         -\\       use '\\' for escape characters\n");
@@ -1505,6 +1510,9 @@ static void parse(void)
       break;
     case tTYPEDEF:
       dotypedef();
+      break;
+    case tUNION:
+      dounion();
       break;
     case tSTRUCT:
       declstruct();
@@ -2689,8 +2697,11 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
     } while (matchtoken(',')); /* do */
     needtoken('}');
   } else {
-    init(ident,&ctag,errorfound);
-    matchtag(tag,ctag,TRUE);
+    if (!lexpeek('}'))
+    {
+      init(ident,&ctag,errorfound);
+      matchtag(tag,ctag,TRUE);
+    }
   } /* if */
   /* fill up the literal queue with a series */
   if (ellips) {
@@ -3192,6 +3203,8 @@ static int parse_old_decl(declinfo_t *decl, int flags)
       }
       needtoken(':');
     }
+    if (type->numtags > 1)
+      error(158);
   }
   
   if (type->numtags == 0) {
@@ -4214,6 +4227,27 @@ static void dotypedef()
   functags_add(def, &type);
 }
 
+// Unsafe union - only supports function types. This is a transition hack for SP2.
+static void dounion()
+{
+  token_ident_t ident;
+  if (!needsymbol(&ident))
+    return;
+
+  int prev_tag = pc_findtag(ident.name);
+  if (prev_tag != -1 && !(prev_tag & FUNCTAG))
+    error(94);
+
+  funcenum_t *def = funcenums_add(ident.name);
+  needtoken('{');
+  while (!matchtoken('}')) {
+    functag_t type;
+    parse_function_type(&type);
+    functags_add(def, &type);
+  }
+
+  require_newline(TRUE);
+}
 
 /**
  * dofuncenum - declare function enumerations

@@ -35,6 +35,12 @@
 				"linux"		"63"
 				"mac"		"63"
 			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"271"
+				"linux"		"272"
+				"mac"		"272"
+			}
 			"PreThink"
 			{
 				"windows"	"331"
@@ -107,6 +113,12 @@
 				"linux"		"158"
 				"mac"		"158"
 			}
+			"Blocked"
+			{
+				"windows"	"102"
+				"linux"		"103"
+				"mac"		"103"
+			}
 			"Weapon_CanSwitchTo"
 			{
 				"windows"	"265"
@@ -173,6 +185,12 @@
 				"windows"	"62"
 				"linux"		"63"
 				"mac"		"63"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"271"
+				"linux"		"272"
+				"mac"		"272"
 			}
 			"PreThink"
 			{
@@ -245,6 +263,12 @@
 				"windows"	"157"
 				"linux"		"158"
 				"mac"		"158"
+			}
+			"Blocked"
+			{
+				"windows"	"102"
+				"linux"		"103"
+				"mac"		"103"
 			}
 			"Weapon_CanSwitchTo"
 			{
@@ -313,6 +337,12 @@
 				"linux"		"63"
 				"mac"		"63"
 			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"271"
+				"linux"		"272"
+				"mac"		"272"
+			}
 			"PreThink"
 			{
 				"windows"	"331"
@@ -384,6 +414,12 @@
 				"windows"	"157"
 				"linux"		"158"
 				"mac"		"158"
+			}
+			"Blocked"
+			{
+				"windows"	"102"
+				"linux"		"103"
+				"mac"		"103"
 			}
 			"Weapon_CanSwitchTo"
 			{

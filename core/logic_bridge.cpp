@@ -147,6 +147,10 @@ public:
 	{
 		return filesystem->FindNext(handle);
 	}
+	bool FindIsDirectory(FileFindHandle_t handle)
+	{
+		return filesystem->FindIsDirectory(handle);
+	}
 	void FindClose(FileFindHandle_t handle)
 	{
 		filesystem->FindClose(handle);
@@ -174,6 +178,50 @@ public:
 	unsigned int Size(const char *pFileName, const char *pPathID = 0)
 	{
 		return filesystem->Size(pFileName, pPathID);
+	}
+	int Read(void* pOutput, int size, FileHandle_t file)
+	{
+		return filesystem->Read(pOutput, size, file);
+	}
+	int Write(void const* pInput, int size, FileHandle_t file)
+	{
+		return filesystem->Write(pInput, size, file);
+	}
+	void Seek(FileHandle_t file, int pos, int seekType)
+	{
+		filesystem->Seek(file, pos, (FileSystemSeek_t) seekType);
+	}
+	unsigned int Tell(FileHandle_t file)
+	{
+		return filesystem->Tell(file);
+	}
+	int FPrint(FileHandle_t file, const char *pData)
+	{
+		return filesystem->FPrintf(file, "%s", pData);
+	}
+	void Flush(FileHandle_t file)
+	{
+		filesystem->Flush(file);
+	}
+	bool IsOk(FileHandle_t file)
+	{
+		return filesystem->IsOk(file);
+	}
+	void RemoveFile(const char *pRelativePath, const char *pathID)
+	{
+		filesystem->RemoveFile(pRelativePath, pathID);
+	}
+	void RenameFile(char const *pOldPath, char const *pNewPath, const char *pathID)
+	{
+		filesystem->RenameFile(pOldPath, pNewPath, pathID);
+	}
+	bool IsDirectory(const char *pFileName, const char *pathID)
+	{
+		return filesystem->IsDirectory(pFileName, pathID);
+	}
+	void CreateDirHierarchy(const char *path, const char *pathID)
+	{
+		filesystem->CreateDirHierarchy(path, pathID);
 	}
 };
 

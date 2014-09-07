@@ -94,6 +94,7 @@ int pc_optimize=sOPTIMIZE_NOMACRO; /* (peephole) optimization level */
 int pc_memflags=0;      /* special flags for the stack/heap usage */
 int sc_showincludes=0;  /* show include files */
 int sc_require_newdecls=0; /* Require new-style declarations */
+bool sc_warnings_are_errors=false;
 
 constvalue sc_automaton_tab = { NULL, "", 0, 0}; /* automaton table */
 constvalue sc_state_tab = { NULL, "", 0, 0};   /* state table */

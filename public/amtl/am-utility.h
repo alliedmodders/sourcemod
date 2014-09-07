@@ -34,8 +34,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <math.h>
-#include <float.h>
 #if defined(_MSC_VER)
 # include <intrin.h>
 #endif
@@ -89,7 +87,7 @@ class AutoPtr
       : t_(NULL)
     {
     }
-    AutoPtr(T *t)
+    explicit AutoPtr(T *t)
       : t_(t)
     {
     }
@@ -221,16 +219,6 @@ FindRightmostBit(size_t number)
 }
 
 static inline bool
-IsNaN(double v)
-{
-#ifdef _MSC_VER
-  return !!_isnan(v);
-#else
-  return isnan(v);
-#endif
-}
-
-static inline bool
 IsPowerOfTwo(size_t value)
 {
     if (value == 0)
@@ -358,10 +346,46 @@ class SaveAndSet
   T old_;
 };
 
+template <typename T>
+class StackLinked
+{
+ public:
+  StackLinked<T>(T **prevp)
+   : prevp_(prevp),
+     prev_(*prevp)
+  {
+    *prevp_ = static_cast<T *>(this);
+  }
+  virtual ~StackLinked() {
+    assert(*prevp_ == this);
+    *prevp_ = prev_;
+  }
+
+ private:
+  T **prevp_;
+  T *prev_;
+};
+
+#if __cplusplus >= 201103L
+# define KE_CXX11
+#endif
+
+#if defined(KE_CXX11)
+# define KE_DELETE = delete
+# define KE_OVERRIDE override
+#else
+# define KE_DELETE
+# define KE_OVERRIDE
+#endif
+
 #if defined(_MSC_VER)
 # define KE_SIZET_FMT           "%Iu"
+# define KE_I64_FMT             "%I64d"
+# define KE_U64_FMT             "%I64u"
 #elif defined(__GNUC__)
 # define KE_SIZET_FMT           "%zu"
+# define KE_I64_FMT             "%lld"
+# define KE_U64_FMT             "%llu"
 #else
 # error "Implement format specifier string"
 #endif
