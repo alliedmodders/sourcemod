@@ -662,11 +662,11 @@ typedef SmxBlobSection<void> SmxDebugSymbolsSection;
 typedef SmxBlobSection<void> SmxDebugNativesSection;
 typedef Vector<symbol *> SymbolList;
 
-static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolList &nativeList)
+static void append_debug_tables(SmxBuilder *builder, StringPool &pool, Ref<SmxNameTable> names, SymbolList &nativeList)
 {
   // We use a separate name table for historical reasons that are no longer
   // necessary. In the future we should just alias this to ".names".
-  Ref<SmxNameTable> names = new SmxNameTable(".dbg.strings");
+  Ref<SmxNameTable> dbgnames = new SmxNameTable(".dbg.strings");
   Ref<SmxDebugInfoSection> info = new SmxDebugInfoSection(".dbg.info");
   Ref<SmxDebugLineSection> lines = new SmxDebugLineSection(".dbg.lines");
   Ref<SmxDebugFileSection> files = new SmxDebugFileSection(".dbg.files");
@@ -695,7 +695,7 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolLis
           if (prev_file_name) {
             sp_fdbg_file_t &entry = files->add();
             entry.addr = prev_file_addr;
-            entry.name = names->add(pool, prev_file_name);
+            entry.name = dbgnames->add(pool, prev_file_name);
           }
           prev_file_addr = codeidx;
         }
@@ -730,7 +730,7 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolLis
         sym.ident = (char)str.parse();
         sym.vclass = (char)str.parse();
         sym.dimcount = 0;
-        sym.name = names->add(atom);
+        sym.name = dbgnames->add(atom);
 
         info->header().num_syms++;
 
@@ -757,7 +757,7 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolLis
   if (prev_file_name) {
     sp_fdbg_file_t &entry = files->add();
     entry.addr = prev_file_addr;
-    entry.name = names->add(pool, prev_file_name);
+    entry.name = dbgnames->add(pool, prev_file_name);
   }
 
   // Build the tags table.
@@ -783,7 +783,7 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolLis
 
     sp_fdbg_native_t info;
     info.index = i;
-    info.name = names->add(pool, sym->name);
+    info.name = dbgnames->add(pool, sym->name);
     info.tagid = sym->tag;
     info.nargs = 0;
     for (arginfo *arg = sym->dim.arglist; arg->ident; arg++)
@@ -795,7 +795,7 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolLis
       argout.ident = arg->ident;
       argout.tagid = arg->tags[0];
       argout.dimcount = arg->numdim;
-      argout.name = names->add(pool, arg->name);
+      argout.name = dbgnames->add(pool, arg->name);
       natives->add(&argout, sizeof(argout));
 
       for (int j = 0; j < argout.dimcount; j++) {
@@ -812,7 +812,7 @@ static void append_debug_tables(SmxBuilder *builder, StringPool &pool, SymbolLis
   builder->add(symbols);
   builder->add(lines);
   builder->add(natives);
-  builder->add(names);
+  builder->add(dbgnames);
   builder->add(info);
   builder->add(tags);
 }
@@ -910,7 +910,7 @@ static void assemble_to_buffer(MemoryBuffer *buffer, void *fin)
   builder.add(pubvars);
   builder.add(natives);
   builder.add(names);
-  append_debug_tables(&builder, pool, nativeList);
+  append_debug_tables(&builder, pool, names, nativeList);
 
   builder.write(buffer);
 }
