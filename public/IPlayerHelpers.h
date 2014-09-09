@@ -276,6 +276,24 @@ namespace SourceMod
 		 * @return			Steam Id or 0 if not available.
 		 */
 		virtual uint64_t GetSteamId64(bool validated = true) =0;
+		
+		/**
+		 * @brief Returns the client's Steam ID rendered in Steam2 format.
+		 *
+		 * @param validated		Check backend validation status.
+		 * 
+		 * @return			True on success or false if not available.
+		 */
+		virtual const char *GetSteam2Id(bool validated = true) =0;
+		
+		/**
+		 * @brief Returns the client's Steam ID rendered in Steam3 format.
+		 *
+		 * @param validated		Check backend validation status.
+		 * 
+		 * @return			True on success or false if not available.
+		 */
+		virtual const char *GetSteam3Id(bool validated = true) =0;
 	};
 
 	/**

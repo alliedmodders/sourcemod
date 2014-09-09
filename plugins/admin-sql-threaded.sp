@@ -477,7 +477,7 @@ FetchUser(Handle:db, client)
 	GetClientIP(client, ipaddr, sizeof(ipaddr));
 	
 	steamid[0] = '\0';
-	if (GetClientAuthString(client, steamid, sizeof(steamid)))
+	if (GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid)))
 	{
 		if (StrEqual(steamid, "STEAM_ID_LAN"))
 		{

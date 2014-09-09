@@ -98,6 +98,13 @@ DecodeAuthMethod(const String:auth[], String:method[32], &offset)
 {
 	if ((StrContains(auth, "STEAM_") == 0) || (strncmp("0:", auth, 2) == 0) || (strncmp("1:", auth, 2) == 0))
 	{
+		// Steam2 Id
+		strcopy(method, sizeof(method), AUTHMETHOD_STEAM);
+		offset = 0;
+	}
+	else if (!strncmp(auth, "[U:", 3) && auth[strlen(auth) - 1] == ']')
+	{
+		// Steam3 Id
 		strcopy(method, sizeof(method), AUTHMETHOD_STEAM);
 		offset = 0;
 	}
