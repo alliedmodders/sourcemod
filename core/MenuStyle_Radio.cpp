@@ -261,15 +261,6 @@ CRadioDisplay *CRadioStyle::MakeRadioDisplay(CRadioMenu *menu)
 	return display;
 }
 
-IMenuPanel *CRadioStyle::MakeRadioDisplay(const char *str, int keys)
-{
-	CRadioDisplay *pPanel = MakeRadioDisplay(NULL);
-
-	pPanel->DirectSet(str, keys);
-
-	return pPanel;
-}
-
 void CRadioStyle::FreeRadioDisplay(CRadioDisplay *display)
 {
 	m_FreeDisplays.push(display);
@@ -336,11 +327,12 @@ void CRadioDisplay::Reset()
 	keys = 0;
 }
 
-void CRadioDisplay::DirectSet(const char *str, int keymap)
+bool CRadioDisplay::DirectSet(const char *str)
 {
 	m_Title.clear();
 	m_BufferText.assign(str);
-	keys = keymap;
+	
+	return true;
 }
 
 unsigned int CRadioDisplay::GetCurrentKey()

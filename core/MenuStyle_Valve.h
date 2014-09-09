@@ -75,6 +75,7 @@ public: //IMenuStyle
 	IBaseMenu *CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner);
 	unsigned int GetMaxPageItems();
 	unsigned int GetApproxMemUsage();
+	bool IsSupported() { return true; }
 private:
 	void HookCreateMessage(edict_t *pEdict, DIALOG_TYPE type, KeyValues *kv, IServerPluginCallbacks *plugin);
 private:
@@ -105,6 +106,7 @@ public:
 	bool SetCurrentKey(unsigned int key);
 	int GetAmountRemaining();
 	unsigned int GetApproxMemUsage();
+	bool DirectSet(const char *str) { return false; }
 private:
 	KeyValues *m_pKv;
 	unsigned int m_NextPos;

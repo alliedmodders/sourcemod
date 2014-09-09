@@ -29,20 +29,16 @@
  * Version: $Id$
  */
 
-#include "sm_globals.h"
+#include "common_logic.h"
 #include <sh_stack.h>
-#include "MenuManager.h"
-#include "MenuStyle_Valve.h"
-#include "MenuStyle_Radio.h"
-#include "PlayerManager.h"
-#include "sm_stringutil.h"
-#include "sourcemm_api.h"
+#include <IMenuManager.h>
+#include <IPlayerHelpers.h>
+#include "DebugReporter.h"
 #if defined MENU_DEBUG
 #include "Logger.h"
 #endif
-#include "ChatTriggers.h"
-#include "logic_bridge.h"
-#include "sourcemod.h"
+#include <ISourceMod.h>
+#include <stdlib.h>
 
 #if defined CreateMenu
 #undef CreateMenu
@@ -67,6 +63,50 @@ enum MenuAction
 	MenuAction_DrawItem = (1<<8),	/**< A style is being drawn; return the new style (param1=client, param2=item) */
 	MenuAction_DisplayItem = (1<<9),	/**< the odd duck */
 };
+
+static HandleError ReadMenuHandle(Handle_t handle, IBaseMenu **menu)
+{
+	static HandleType_t menuType = NO_HANDLE_TYPE;
+	if (menuType == NO_HANDLE_TYPE && !handlesys->FindHandleType("IBaseMenu", &menuType))
+	{
+		// This should never happen so exact error doesn't matter.
+		return HandleError_Index;
+	}
+
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = NULL;
+	return handlesys->ReadHandle(handle, menuType, &sec, (void **)menu);
+}
+
+static HandleError ReadStyleHandle(Handle_t handle, IMenuStyle **style)
+{
+	static HandleType_t styleType = NO_HANDLE_TYPE;
+	if (styleType == NO_HANDLE_TYPE && !handlesys->FindHandleType("IMenuStyle", &styleType))
+	{
+		// This should never happen so exact error doesn't matter.
+		return HandleError_Index;
+	}
+
+	HandleSecurity sec;
+
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = g_pCoreIdent;
+
+	return handlesys->ReadHandle(handle, styleType, &sec, (void **)style);
+}
+
+static IMenuStyle &ValveMenuStyle()
+{
+	static IMenuStyle *valveMenuStyle = menus->FindStyleByName("valve");
+	return *valveMenuStyle;
+}
+
+static IMenuStyle &RadioMenuStyle()
+{
+	static IMenuStyle *radioMenuStyle = menus->FindStyleByName("radio");
+	return *radioMenuStyle;
+}
 
 class CPanelHandler : public IMenuHandler
 {
@@ -269,13 +309,13 @@ void CPanelHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int item)
 {
 	if (m_pFunc)
 	{
-		unsigned int old_reply = g_ChatTriggers.SetReplyTo(SM_REPLY_CHAT);
+		unsigned int old_reply = playerhelpers->SetReplyTo(SM_REPLY_CHAT);
 		m_pFunc->PushCell(BAD_HANDLE);
 		m_pFunc->PushCell(MenuAction_Select);
 		m_pFunc->PushCell(client);
 		m_pFunc->PushCell(item);
 		m_pFunc->Execute(NULL);
-		g_ChatTriggers.SetReplyTo(old_reply);
+		playerhelpers->SetReplyTo(old_reply);
 	}
 	g_MenuHelpers.FreePanelHandler(this);
 }
@@ -330,18 +370,18 @@ void CMenuHandler::OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item,
 
 	s_CurSelectPosition = &first_item;
 
-	unsigned int old_reply = g_ChatTriggers.SetReplyTo(SM_REPLY_CHAT);
+	unsigned int old_reply = playerhelpers->SetReplyTo(SM_REPLY_CHAT);
 	DoAction(menu, MenuAction_Select, client, item);
-	g_ChatTriggers.SetReplyTo(old_reply);
+	playerhelpers->SetReplyTo(old_reply);
 
 	s_CurSelectPosition = old_pos;
 }
 
 void CMenuHandler::OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
 {
-	unsigned int old_reply = g_ChatTriggers.SetReplyTo(SM_REPLY_CHAT);
+	unsigned int old_reply = playerhelpers->SetReplyTo(SM_REPLY_CHAT);
 	DoAction(menu, MenuAction_Cancel, client, (cell_t)reason);
-	g_ChatTriggers.SetReplyTo(old_reply);
+	playerhelpers->SetReplyTo(old_reply);
 }
 
 void CMenuHandler::OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
@@ -470,7 +510,7 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 			if ((err = pContext->HeapAlloc(client_array_size, &client_array_address, &client_array_base))
 				!= SP_ERROR_NONE)
 			{
-				logicore.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for client list.", client_array_size * sizeof(cell_t));
+				g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for client list.", client_array_size * sizeof(cell_t));
 				no_call = true;
 			} else {
 				cell_t target_offs = sizeof(cell_t) * results->num_clients;
@@ -503,7 +543,7 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 			if ((err = pContext->HeapAlloc(item_array_size, &item_array_address, &item_array_base))
 				!= SP_ERROR_NONE)
 			{
-				logicore.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for item list.", item_array_size);
+				g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for item list.", item_array_size);
 				no_call = true;
 			} else {
 				cell_t target_offs = sizeof(cell_t) * results->num_items;
@@ -592,14 +632,14 @@ inline IMenuStyle *GetStyleFromCell(cell_t cell)
 
 	if (cell == MenuStyle_Valve)
 	{
-		return &g_ValveMenuStyle;
+		return &ValveMenuStyle();
 	} else if (cell == MenuStyle_Radio
-			   && g_RadioMenuStyle.IsSupported())
+			   && RadioMenuStyle().IsSupported())
 	{
-		return &g_RadioMenuStyle;
+		return &RadioMenuStyle();
 	}
 
-	return g_Menus.GetDefaultStyle();
+	return menus->GetDefaultStyle();
 }
 
 /***********************************
@@ -608,7 +648,7 @@ inline IMenuStyle *GetStyleFromCell(cell_t cell)
 
 static cell_t CreateMenu(IPluginContext *pContext, const cell_t *params)
 {
-	IMenuStyle *style = g_Menus.GetDefaultStyle();
+	IMenuStyle *style = menus->GetDefaultStyle();
 	IPluginFunction *pFunction;
 
 	if ((pFunction=pContext->GetFunctionById(params[1])) == NULL)
@@ -635,7 +675,7 @@ static cell_t DisplayMenu(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -649,7 +689,7 @@ static cell_t DisplayMenuAtItem(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -659,7 +699,7 @@ static cell_t DisplayMenuAtItem(IPluginContext *pContext, const cell_t *params)
 
 static cell_t VoteMenu(IPluginContext *pContext, const cell_t *params)
 {
-	if (g_Menus.IsVoteInProgress())
+	if (menus->IsVoteInProgress())
 	{
 		return pContext->ThrowNativeError("A vote is already in progress");
 	}
@@ -668,7 +708,7 @@ static cell_t VoteMenu(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -682,7 +722,7 @@ static cell_t VoteMenu(IPluginContext *pContext, const cell_t *params)
 		flags = params[5];
 	}
 
-	if (!g_Menus.StartVote(menu, params[3], addr, params[4], flags))
+	if (!menus->StartVote(menu, params[3], addr, params[4], flags))
 	{
 		return 0;
 	}
@@ -696,7 +736,7 @@ static cell_t AddMenuItem(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -717,7 +757,7 @@ static cell_t InsertMenuItem(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -738,7 +778,7 @@ static cell_t RemoveMenuItem(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -752,7 +792,7 @@ static cell_t RemoveAllMenuItems(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -768,7 +808,7 @@ static cell_t GetMenuItem(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -797,7 +837,7 @@ static cell_t SetMenuPagination(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -811,7 +851,7 @@ static cell_t GetMenuPagination(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -825,7 +865,7 @@ static cell_t GetMenuItemCount(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -839,13 +879,13 @@ static cell_t SetMenuTitle(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
 
 	char buffer[1024];
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
 	menu->SetDefaultTitle(buffer);
 
@@ -858,7 +898,7 @@ static cell_t GetMenuTitle(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -877,7 +917,7 @@ static cell_t CreatePanelFromMenu(IPluginContext *pContext, const cell_t *params
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -898,7 +938,7 @@ static cell_t GetMenuExitButton(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -912,7 +952,7 @@ static cell_t GetMenuExitBackButton(IPluginContext *pContext, const cell_t *para
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -926,7 +966,7 @@ static cell_t SetMenuExitButton(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -952,7 +992,7 @@ static cell_t SetMenuNoVoteButton(IPluginContext *pContext, const cell_t *params
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -978,7 +1018,7 @@ static cell_t SetMenuExitBackButton(IPluginContext *pContext, const cell_t *para
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -1003,19 +1043,19 @@ static cell_t CancelMenu(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
 
-	g_Menus.CancelMenu(menu);
+	menus->CancelMenu(menu);
 
 	return 1;
 }
 
 static cell_t IsVoteInProgress(IPluginContext *pContext, const cell_t *params)
 {
-	return g_Menus.IsVoteInProgress() ? 1 : 0;
+	return menus->IsVoteInProgress() ? 1 : 0;
 }
 
 static cell_t GetMenuStyle(IPluginContext *pContext, const cell_t *params)
@@ -1024,7 +1064,7 @@ static cell_t GetMenuStyle(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -1051,12 +1091,12 @@ static cell_t CreatePanel(IPluginContext *pContext, const cell_t *params)
 
 	if (hndl != 0)
 	{
-		if ((err=g_Menus.ReadStyleHandle(params[1], &style)) != HandleError_None)
+		if ((err = ReadStyleHandle(params[1], &style)) != HandleError_None)
 		{
 			return pContext->ThrowNativeError("MenuStyle handle %x is invalid (error %d)", hndl, err);
 		}
 	} else {
-		style = g_Menus.GetDefaultStyle();
+		style = menus->GetDefaultStyle();
 	}
 
 	IMenuPanel *panel = style->CreatePanel();
@@ -1079,12 +1119,12 @@ static cell_t CreateMenuEx(IPluginContext *pContext, const cell_t *params)
 
 	if (hndl != 0)
 	{
-		if ((err=g_Menus.ReadStyleHandle(params[1], &style)) != HandleError_None)
+		if ((err = ReadStyleHandle(params[1], &style)) != HandleError_None)
 		{
 			return pContext->ThrowNativeError("MenuStyle handle %x is invalid (error %d)", hndl, err);
 		}
 	} else {
-		style = g_Menus.GetDefaultStyle();
+		style = menus->GetDefaultStyle();
 	}
 
 	IPluginFunction *pFunction;
@@ -1114,12 +1154,12 @@ static cell_t GetClientMenu(IPluginContext *pContext, const cell_t *params)
 
 	if (hndl != 0)
 	{
-		if ((err=g_Menus.ReadStyleHandle(params[1], &style)) != HandleError_None)
+		if ((err = ReadStyleHandle(params[1], &style)) != HandleError_None)
 		{
 			return pContext->ThrowNativeError("MenuStyle handle %x is invalid (error %d)", hndl, err);
 		}
 	} else {
-		style = g_Menus.GetDefaultStyle();
+		style = menus->GetDefaultStyle();
 	}
 
 	return style->GetClientMenu(params[1], NULL);
@@ -1133,12 +1173,12 @@ static cell_t CancelClientMenu(IPluginContext *pContext, const cell_t *params)
 
 	if (hndl != 0)
 	{
-		if ((err=g_Menus.ReadStyleHandle(params[1], &style)) != HandleError_None)
+		if ((err = ReadStyleHandle(params[1], &style)) != HandleError_None)
 		{
 			return pContext->ThrowNativeError("MenuStyle handle %x is invalid (error %d)", hndl, err);
 		}
 	} else {
-		style = g_Menus.GetDefaultStyle();
+		style = menus->GetDefaultStyle();
 	}
 
 	return style->CancelClientMenu(params[1], params[2] ? true : false) ? 1 : 0;
@@ -1152,12 +1192,12 @@ static cell_t GetMaxPageItems(IPluginContext *pContext, const cell_t *params)
 
 	if (hndl != 0)
 	{
-		if ((err=g_Menus.ReadStyleHandle(params[1], &style)) != HandleError_None)
+		if ((err = ReadStyleHandle(params[1], &style)) != HandleError_None)
 		{
 			return pContext->ThrowNativeError("MenuStyle handle %x is invalid (error %d)", hndl, err);
 		}
 	} else {
-		style = g_Menus.GetDefaultStyle();
+		style = menus->GetDefaultStyle();
 	}
 
 	return style->GetMaxPageItems();
@@ -1354,7 +1394,7 @@ static cell_t GetMenuOptionFlags(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -1368,7 +1408,7 @@ static cell_t SetMenuOptionFlags(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -1380,12 +1420,12 @@ static cell_t SetMenuOptionFlags(IPluginContext *pContext, const cell_t *params)
 
 static cell_t CancelVote(IPluginContext *pContxt, const cell_t *params)
 {
-	if (!g_Menus.IsVoteInProgress())
+	if (!menus->IsVoteInProgress())
 	{
 		return pContxt->ThrowNativeError("No vote is in progress");
 	}
 
-	g_Menus.CancelVoting();
+	menus->CancelVoting();
 
 	return 1;
 }
@@ -1396,7 +1436,7 @@ static cell_t SetVoteResultCallback(IPluginContext *pContext, const cell_t *para
 	HandleError err;
 	IBaseMenu *menu;
 
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
@@ -1422,7 +1462,7 @@ static cell_t SetVoteResultCallback(IPluginContext *pContext, const cell_t *para
 
 static cell_t CheckVoteDelay(IPluginContext *pContext, const cell_t *params)
 {
-	return g_Menus.GetRemainingVoteDelay();
+	return menus->GetRemainingVoteDelay();
 }
 
 static cell_t GetMenuSelectionPosition(IPluginContext *pContext, const cell_t *params)
@@ -1441,17 +1481,17 @@ static cell_t IsClientInVotePool(IPluginContext *pContext, const cell_t *params)
 	IGamePlayer *pPlayer;
 
 	client = params[1];
-	if ((pPlayer = g_Players.GetPlayerByIndex(client)) == NULL)
+	if ((pPlayer = playerhelpers->GetGamePlayer(client)) == NULL)
 	{
 		return pContext->ThrowNativeError("Invalid client index %d", client);
 	}
 
-	if (!g_Menus.IsVoteInProgress())
+	if (!menus->IsVoteInProgress())
 	{
 		return pContext->ThrowNativeError("No vote is in progress");
 	}
 
-	return g_Menus.IsClientInVotePool(client) ? 1 : 0;
+	return menus->IsClientInVotePool(client) ? 1 : 0;
 }
 
 static cell_t RedrawClientVoteMenu(IPluginContext *pContext, const cell_t *params)
@@ -1460,17 +1500,17 @@ static cell_t RedrawClientVoteMenu(IPluginContext *pContext, const cell_t *param
 	IGamePlayer *pPlayer;
 
 	client = params[1];
-	if ((pPlayer = g_Players.GetPlayerByIndex(client)) == NULL)
+	if ((pPlayer = playerhelpers->GetGamePlayer(client)) == NULL)
 	{
 		return pContext->ThrowNativeError("Invalid client index %d", client);
 	}
 
-	if (!g_Menus.IsVoteInProgress())
+	if (!menus->IsVoteInProgress())
 	{
 		return pContext->ThrowNativeError("No vote is in progress");
 	}
 
-	if (!g_Menus.IsClientInVotePool(client))
+	if (!menus->IsClientInVotePool(client))
 	{
 		return pContext->ThrowNativeError("Client is not in the voting pool");
 	}
@@ -1481,7 +1521,7 @@ static cell_t RedrawClientVoteMenu(IPluginContext *pContext, const cell_t *param
 		revote = false;
 	}
 
-	return g_Menus.RedrawClientVoteMenu2(client, revote) ? 1 : 0;
+	return menus->RedrawClientVoteMenu2(client, revote) ? 1 : 0;
 }
 
 class EmptyMenuHandler : public IMenuHandler
@@ -1492,7 +1532,7 @@ public:
 static cell_t InternalShowMenu(IPluginContext *pContext, const cell_t *params)
 {
 	int client = params[1];
-	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
 
 	if (pPlayer == NULL)
 	{
@@ -1503,7 +1543,7 @@ static cell_t InternalShowMenu(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
-	if (!g_RadioMenuStyle.IsSupported())
+	if (!RadioMenuStyle().IsSupported())
 	{
 		return pContext->ThrowNativeError("Radio menus are not supported on this mod");
 	}
@@ -1511,12 +1551,15 @@ static cell_t InternalShowMenu(IPluginContext *pContext, const cell_t *params)
 	char *str;
 	pContext->LocalToString(params[2], &str);
 
-	IMenuPanel *pPanel = g_RadioMenuStyle.MakeRadioDisplay(str, params[4]);
+	IMenuPanel *pPanel = RadioMenuStyle().CreatePanel();
 
 	if (pPanel == NULL)
 	{
 		return 0;
 	}
+
+	pPanel->DirectSet(str);
+	pPanel->SetSelectableKeys(params[4]);
 
 	IMenuHandler *pHandler;
 	CPanelHandler *pActualHandler = NULL;

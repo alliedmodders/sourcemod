@@ -43,6 +43,7 @@
 #include "logic_bridge.h"
 #include "PlayerManager.h"
 #include "HalfLife2.h"
+#include "MenuManager.h"
 #include "CoreConfig.h"
 #include "ConCmdManager.h"
 #include "IDBDriver.h"
@@ -576,6 +577,7 @@ static sm_core_t core_bridge =
 	&g_Timers,
 	&g_Players,
 	&g_HL2,
+	&g_Menus,
 	&g_pSourcePawn,
 	&g_pSourcePawn2,
 	/* Functions */
