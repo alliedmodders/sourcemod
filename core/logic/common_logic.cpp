@@ -75,6 +75,7 @@ CNativeOwner g_CoreNatives;
 IScriptManager *scripts = &g_PluginSys;
 IExtensionSys *extsys = &g_Extensions;
 ILogger *logger = &g_Logger;
+IMenuManager *menus;
 
 static void AddCorePhraseFile(const char *filename)
 {
