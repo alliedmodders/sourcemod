@@ -35,6 +35,7 @@ spcomp_argv = [
   '-i' + os.path.relpath(os.path.join(builder.sourcePath, 'plugins', 'include'),
                          os.path.join(builder.buildPath, builder.buildFolder)),
   '-h',
+  '-E',
 ]
 
 def build_plugin(script_path, smx_file):
