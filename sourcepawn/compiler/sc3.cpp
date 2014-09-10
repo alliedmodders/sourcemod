@@ -643,7 +643,7 @@ static int skim(int *opstr,void (*testfunc)(int),int dropval,int endval,
 
     foundop=nextop(&opidx,opstr);
     if ((foundop || hits) && (lval->ident==iARRAY || lval->ident==iREFARRAY))
-      error(33, lval->sym ? (lval->sym->name ? lval->sym->name : "-unknown") : "-unknown-");  /* array was not indexed in an expression */
+      error(33, lval->sym ? lval->sym->name : "-unknown-");  /* array was not indexed in an expression */
     if (foundop) {
       if (!hits) {
         /* this is the first operator in the list */
@@ -1419,12 +1419,12 @@ static int hier13(value *lval)
     array2= (lval2.ident==iARRAY || lval2.ident==iREFARRAY);
     if (!array1 && array2) {
       const char *ptr = "-unknown-";
-      if (lval->sym != NULL && lval->sym->name != NULL)
+      if (lval->sym != NULL)
         ptr = lval->sym->name;
       error(33,ptr);            /* array must be indexed */
     } else if (array1 && !array2) {
       const char *ptr = "-unknown-";
-      if (lval2.sym != NULL && lval2.sym->name != NULL)
+      if (lval2.sym != NULL)
         ptr = lval2.sym->name;
       error(33,ptr);            /* array must be indexed */
     } /* if */

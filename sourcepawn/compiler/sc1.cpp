@@ -6943,7 +6943,7 @@ static int test(int label,int parens,int invert)
   if (endtok!=0)
     needtoken(endtok);
   if (ident==iARRAY || ident==iREFARRAY) {
-    const char *ptr=(sym->name!=NULL) ? sym->name : "-unknown-";
+    const char *ptr=sym->name;
     error(33,ptr);              /* array must be indexed */
   } /* if */
   if (ident==iCONSTEXPR) {      /* constant expression */
