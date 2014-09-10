@@ -282,7 +282,7 @@ namespace SourceMod
 		 *
 		 * @param validated		Check backend validation status.
 		 * 
-		 * @return			True on success or false if not available.
+		 * @return			Steam2 Id on success or NULL if not available.
 		 */
 		virtual const char *GetSteam2Id(bool validated = true) =0;
 		
@@ -291,7 +291,7 @@ namespace SourceMod
 		 *
 		 * @param validated		Check backend validation status.
 		 * 
-		 * @return			True on success or false if not available.
+		 * @return			Steam3 Id on success or NULL if not available.
 		 */
 		virtual const char *GetSteam3Id(bool validated = true) =0;
 	};

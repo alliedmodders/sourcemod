@@ -443,7 +443,7 @@ void PlayerManager::RunAuthChecks()
 				/* :TODO: handle the case of a player disconnecting in the middle */
 				m_clauth->PushCell(client);
 				/* For legacy reasons, people are expecting the Steam2 id here if using Steam auth */
-				m_clauth->PushString(steamId[0] ? steamId : authstr);
+				m_clauth->PushString(steamId ? steamId : authstr);
 				m_clauth->Execute(NULL);
 			}
 
@@ -722,7 +722,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 			const char *steamId = pPlayer->GetSteam2Id();
 			m_clauth->PushCell(client);
 			/* For legacy reasons, people are expecting the Steam2 id here if using Steam auth */
-			m_clauth->PushString(steamId[0] ? steamId : pPlayer->m_AuthID.c_str());
+			m_clauth->PushString(steamId ? steamId : pPlayer->m_AuthID.c_str());
 			m_clauth->Execute(NULL);
 		}
 		pPlayer->Authorize_Post();
@@ -2155,7 +2155,7 @@ const CSteamID &CPlayer::GetSteamId(bool validated)
 
 const char *CPlayer::GetSteam2Id(bool validated)
 {
-	if (validated && !IsAuthStringValidated())
+	if (!m_Steam2Id.length() || (validated && !IsAuthStringValidated()))
 	{
 		return NULL;
 	}
@@ -2165,7 +2165,7 @@ const char *CPlayer::GetSteam2Id(bool validated)
 
 const char *CPlayer::GetSteam3Id(bool validated)
 {
-	if (validated && !IsAuthStringValidated())
+	if (!m_Steam2Id.length() || validated && !IsAuthStringValidated()))
 	{
 		return NULL;
 	}
