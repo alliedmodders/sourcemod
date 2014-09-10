@@ -2165,7 +2165,7 @@ const char *CPlayer::GetSteam2Id(bool validated)
 
 const char *CPlayer::GetSteam3Id(bool validated)
 {
-	if (!m_Steam2Id.length() || validated && !IsAuthStringValidated()))
+	if (!m_Steam2Id.length() || (validated && !IsAuthStringValidated()))
 	{
 		return NULL;
 	}
