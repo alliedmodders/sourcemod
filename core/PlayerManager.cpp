@@ -422,6 +422,8 @@ void PlayerManager::RunAuthChecks()
 			unsigned int client = m_AuthQueue[i];
 			m_AuthQueue[i] = 0;
 			removed++;
+			
+			const char *steamId = pPlayer->GetSteam2Id();
 
 			/* Send to extensions */
 			List<IClientListener *>::iterator iter;
@@ -429,7 +431,7 @@ void PlayerManager::RunAuthChecks()
 			for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 			{
 				pListener = (*iter);
-				pListener->OnClientAuthorized(client, authstr);
+				pListener->OnClientAuthorized(client, steamId ? steamId : authstr);
 				if (!pPlayer->IsConnected())
 				{
 					break;
@@ -439,7 +441,6 @@ void PlayerManager::RunAuthChecks()
 			/* Send to plugins if player is still connected */
 			if (pPlayer->IsConnected() && m_clauth->GetFunctionCount())
 			{
-				const char *steamId = pPlayer->GetSteam2Id();
 				/* :TODO: handle the case of a player disconnecting in the middle */
 				m_clauth->PushCell(client);
 				/* For legacy reasons, people are expecting the Steam2 id here if using Steam auth */
@@ -709,17 +710,18 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		cell_t res;
 		m_clconnect_post->PushCell(client);
 		m_clconnect_post->Execute(&res, NULL);
+		
+		const char *steamId = pPlayer->GetSteam2Id();
 
 		/* Now do authorization */
 		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
-			pListener->OnClientAuthorized(client, pPlayer->m_AuthID.c_str());
+			pListener->OnClientAuthorized(client, steamId ? steamId : pPlayer->m_AuthID.c_str());
 		}
 		/* Finally, tell plugins */
 		if (m_clauth->GetFunctionCount())
 		{
-			const char *steamId = pPlayer->GetSteam2Id();
 			m_clauth->PushCell(client);
 			/* For legacy reasons, people are expecting the Steam2 id here if using Steam auth */
 			m_clauth->PushString(steamId ? steamId : pPlayer->m_AuthID.c_str());
