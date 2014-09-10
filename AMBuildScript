@@ -167,8 +167,6 @@ class SMConfig(object):
         '-Werror',
         '-Wno-unused',
         '-Wno-switch',
-        '-Wno-format',
-        '-Wno-format-security',
         '-Wno-array-bounds',
         '-msse',
         '-m32',
