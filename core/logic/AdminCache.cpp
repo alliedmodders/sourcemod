@@ -1067,7 +1067,7 @@ bool AdminCache::GetUnifiedSteamIdentity(const char *ident, char *out, size_t ma
 	if (len >= 11 && !strncmp(ident, "STEAM_", 6) && ident[8] != '_')
 	{
 		// non-bot/lan Steam2 Id
-		snprintf(out, maxlen, "%s", ident[8]);
+		snprintf(out, maxlen, "%s", &ident[8]);
 		return true;
 	}
 	else if (len >= 7 && !strncmp(ident, "[U:", 3) && ident[len-1] == ']')
