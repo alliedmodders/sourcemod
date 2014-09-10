@@ -439,9 +439,11 @@ void PlayerManager::RunAuthChecks()
 			/* Send to plugins if player is still connected */
 			if (pPlayer->IsConnected() && m_clauth->GetFunctionCount())
 			{
+				const char *steamId = pPlayer->GetSteam2Id();
 				/* :TODO: handle the case of a player disconnecting in the middle */
 				m_clauth->PushCell(client);
-				m_clauth->PushString(authstr);
+				/* For legacy reasons, people are expecting the Steam2 id here if using Steam auth */
+				m_clauth->PushString(steamId[0] ? steamId : authstr);
 				m_clauth->Execute(NULL);
 			}
 
@@ -717,8 +719,10 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		/* Finally, tell plugins */
 		if (m_clauth->GetFunctionCount())
 		{
+			const char *steamId = pPlayer->GetSteam2Id();
 			m_clauth->PushCell(client);
-			m_clauth->PushString(pPlayer->m_AuthID.c_str());
+			/* For legacy reasons, people are expecting the Steam2 id here if using Steam auth */
+			m_clauth->PushString(steamId[0] ? steamId : pPlayer->m_AuthID.c_str());
 			m_clauth->Execute(NULL);
 		}
 		pPlayer->Authorize_Post();
