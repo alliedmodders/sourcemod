@@ -422,6 +422,8 @@ void PlayerManager::RunAuthChecks()
 			unsigned int client = m_AuthQueue[i];
 			m_AuthQueue[i] = 0;
 			removed++;
+			
+			const char *steamId = pPlayer->GetSteam2Id();
 
 			/* Send to extensions */
 			List<IClientListener *>::iterator iter;
@@ -429,7 +431,7 @@ void PlayerManager::RunAuthChecks()
 			for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 			{
 				pListener = (*iter);
-				pListener->OnClientAuthorized(client, authstr);
+				pListener->OnClientAuthorized(client, steamId ? steamId : authstr);
 				if (!pPlayer->IsConnected())
 				{
 					break;
@@ -441,7 +443,8 @@ void PlayerManager::RunAuthChecks()
 			{
 				/* :TODO: handle the case of a player disconnecting in the middle */
 				m_clauth->PushCell(client);
-				m_clauth->PushString(authstr);
+				/* For legacy reasons, people are expecting the Steam2 id here if using Steam auth */
+				m_clauth->PushString(steamId ? steamId : authstr);
 				m_clauth->Execute(NULL);
 			}
 
@@ -707,18 +710,21 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		cell_t res;
 		m_clconnect_post->PushCell(client);
 		m_clconnect_post->Execute(&res, NULL);
+		
+		const char *steamId = pPlayer->GetSteam2Id();
 
 		/* Now do authorization */
 		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
-			pListener->OnClientAuthorized(client, pPlayer->m_AuthID.c_str());
+			pListener->OnClientAuthorized(client, steamId ? steamId : pPlayer->m_AuthID.c_str());
 		}
 		/* Finally, tell plugins */
 		if (m_clauth->GetFunctionCount())
 		{
 			m_clauth->PushCell(client);
-			m_clauth->PushString(pPlayer->m_AuthID.c_str());
+			/* For legacy reasons, people are expecting the Steam2 id here if using Steam auth */
+			m_clauth->PushString(steamId ? steamId : pPlayer->m_AuthID.c_str());
 			m_clauth->Execute(NULL);
 		}
 		pPlayer->Authorize_Post();
@@ -2151,7 +2157,7 @@ const CSteamID &CPlayer::GetSteamId(bool validated)
 
 const char *CPlayer::GetSteam2Id(bool validated)
 {
-	if (validated && !IsAuthStringValidated())
+	if (!m_Steam2Id.length() || (validated && !IsAuthStringValidated()))
 	{
 		return NULL;
 	}
@@ -2161,7 +2167,7 @@ const char *CPlayer::GetSteam2Id(bool validated)
 
 const char *CPlayer::GetSteam3Id(bool validated)
 {
-	if (validated && !IsAuthStringValidated())
+	if (!m_Steam2Id.length() || (validated && !IsAuthStringValidated()))
 	{
 		return NULL;
 	}

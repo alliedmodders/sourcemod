@@ -394,7 +394,9 @@ void ClientPrefs::CatchLateLoadClients()
 			continue;
 		}
 
-		g_CookieManager.OnClientAuthorized(i, pPlayer->GetAuthString());
+		/* For legacy reasons, OnClientAuthorized gives the Steam2 id here if using Steam auth */
+		const char *steamId = pPlayer->GetSteam2Id();
+		g_CookieManager.OnClientAuthorized(i, steamId ? steamId : pPlayer->GetAuthString());
 	}
 }
 
