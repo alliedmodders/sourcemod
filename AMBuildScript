@@ -381,6 +381,9 @@ class SMConfig(object):
       if builder.target_platform in ['linux', 'mac']:
         compiler.defines += ['NO_HOOK_MALLOC', 'NO_MALLOC_OVERRIDE']
 
+    if sdk.name == 'csgo' and builder.target_platform == 'linux':
+      compiler.linkflags += ['-lstdc++']
+
     for path in paths:
       compiler.cxxincludes += [os.path.join(sdk.path, *path)]
 
