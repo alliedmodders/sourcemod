@@ -17,6 +17,11 @@ binary.compiler.includes += [
   os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
 ]
 
+if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+  binary.compiler.cxxflags += ['-fno-rtti']
+elif binary.compiler.vendor == 'msvc':
+  binary.compiler.cxxflags += ['/GR-']
+
 if builder.target_platform == 'linux':
   binary.compiler.postlink += ['-lpthread', '-lrt']
 

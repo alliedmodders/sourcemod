@@ -19,6 +19,12 @@ if builder.target_platform == 'linux':
 elif builder.target_platform == 'mac':
   binary.compiler.cflags += ['-Wno-deprecated-declarations']
   binary.compiler.postlink += ['-framework', 'CoreServices']
+
+if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+  binary.compiler.cxxflags += ['-fno-rtti']
+elif binary.compiler.vendor == 'msvc':
+  binary.compiler.cxxflags += ['/GR-']
+
 binary.sources += [
   'common_logic.cpp',
   'smn_adt_array.cpp',
