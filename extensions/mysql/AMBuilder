@@ -7,6 +7,10 @@ if SM.mysql_root:
     os.path.join(SM.mysql_root, 'include'),
     os.path.join(SM.mms_root, 'core', 'sourcehook')
   ]
+  if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+    binary.compiler.cxxflags += ['-fno-rtti']
+  elif binary.compiler.vendor == 'msvc':
+    binary.compiler.cxxflags += ['/GR-']
 
   if builder.target_platform == 'linux' or builder.target_platform == 'mac':
     binary.compiler.postlink += [
