@@ -13,6 +13,10 @@ binary.compiler.cxxincludes += [
   os.path.join(SM.mms_root, 'core'),
   os.path.join(SM.mms_root, 'sourcehook')
 ]
+if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+  binary.compiler.cxxflags += ['-fno-rtti']
+elif binary.compiler.vendor == 'msvc':
+  binary.compiler.cxxflags += ['/GR-']
 binary.compiler.linkflags += extra_ldflags
 binary.sources = [
   'loader.cpp'
