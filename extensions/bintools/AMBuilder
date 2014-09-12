@@ -8,6 +8,10 @@ binary.compiler.cxxincludes += [
   os.path.join(builder.sourcePath, 'public', 'jit'),
   os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
 ]
+if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+  binary.compiler.cxxflags += ['-fno-rtti']
+elif binary.compiler.vendor == 'msvc':
+  binary.compiler.cxxflags += ['/GR-']
 
 binary.sources += [
   'extension.cpp',
