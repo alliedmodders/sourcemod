@@ -46,7 +46,7 @@
 			"ClanTagOffset"
 			{
 				"windows"	"12"
-				"linux"		"41"
+				"linux"		"29"
 				"mac"		"22"
 			}
 			//Offset into HandleCommand_Buy_Internal
