@@ -8,6 +8,10 @@ binary.compiler.includes += [
   os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl-src', 'include')
 ]
 binary.compiler.defines += ['CURL_STATICLIB']
+if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+  binary.compiler.cxxflags += ['-fno-rtti']
+elif binary.compiler.vendor == 'msvc':
+  binary.compiler.cxxflags += ['/GR-']
 binary.compiler.postlink += [libcurl.binary]
 if builder.target_platform == 'linux':
   binary.compiler.postlink += ['-lrt']

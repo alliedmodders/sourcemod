@@ -5,6 +5,10 @@ binary = SM.ExtLibrary(builder, 'dbi.sqlite.ext')
 binary.compiler.cxxincludes += [
   os.path.join(SM.mms_root, 'core', 'sourcehook'),
 ]
+if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+  binary.compiler.cxxflags += ['-fno-rtti']
+elif binary.compiler.vendor == 'msvc':
+  binary.compiler.cxxflags += ['/GR-']
 
 binary.compiler.defines += [
   'SQLITE_OMIT_LOAD_EXTENSION',
