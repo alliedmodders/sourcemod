@@ -349,6 +349,13 @@ void ClientPrefs::ProcessQueryCache()
 	cachedQueries.clear();
 }
 
+const char *GetPlayerCompatAuthId(IGamePlayer *pPlayer)
+{
+	/* For legacy reasons, OnClientAuthorized gives the Steam2 id here if using Steam auth */
+	const char *steamId = pPlayer->GetSteam2Id();
+	return steamId ? steamId : pPlayer->GetAuthString();
+}
+
 size_t IsAuthIdConnected(char *authID)
 {
 	IGamePlayer *player;
@@ -362,7 +369,7 @@ size_t IsAuthIdConnected(char *authID)
 			continue;
 		}
 		
-		authString = player->GetAuthString();
+		authString = GetPlayerCompatAuthId(player);
 		
 		if (authString == NULL || authString[0] == '\0')
 		{
@@ -394,9 +401,7 @@ void ClientPrefs::CatchLateLoadClients()
 			continue;
 		}
 
-		/* For legacy reasons, OnClientAuthorized gives the Steam2 id here if using Steam auth */
-		const char *steamId = pPlayer->GetSteam2Id();
-		g_CookieManager.OnClientAuthorized(i, steamId ? steamId : pPlayer->GetAuthString());
+		g_CookieManager.OnClientAuthorized(i, GetPlayerCompatAuthId(pPlayer));
 	}
 }
 

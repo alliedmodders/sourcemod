@@ -159,7 +159,7 @@ void CookieManager::OnClientAuthorized(int client, const char *authstring)
 	g_ClientPrefs.AttemptReconnection();
 	
 	TQueryOp *op = new TQueryOp(Query_SelectData, player->GetSerial());
-	UTIL_strncpy(op->m_params.steamId, authstring, MAX_NAME_LENGTH);
+	UTIL_strncpy(op->m_params.steamId, GetPlayerCompatAuthId(player), MAX_NAME_LENGTH);
 
 	g_ClientPrefs.AddQueryToQueue(op);
 }
@@ -181,7 +181,7 @@ void CookieManager::OnClientDisconnecting(int client)
 	
 	if (player)
 	{
-		pAuth = player->GetAuthString();
+		pAuth = GetPlayerCompatAuthId(player);
 		g_ClientPrefs.ClearQueryCache(player->GetSerial());
 	}
 
