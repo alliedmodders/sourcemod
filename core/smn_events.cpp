@@ -284,13 +284,14 @@ static cell_t sm_GetEventString(IPluginContext *pContext, const cell_t *params)
 	char *key;
 	pContext->LocalToString(params[2], &key);
 
-	char *defValue = "";
+	char *defValue = NULL;
 	if (params[0] > 4)
 	{
 		pContext->LocalToString(params[5], &defValue);
 	}
 
-	pContext->StringToLocalUTF8(params[3], params[4], pInfo->pEvent->GetString(key, defValue), NULL);
+	const char *value = pInfo->pEvent->GetString(key, defValue ? defValue : "");
+	pContext->StringToLocalUTF8(params[3], params[4], value, NULL);
 
 	return 1;
 }
