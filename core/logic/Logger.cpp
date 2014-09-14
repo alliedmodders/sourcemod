@@ -198,6 +198,7 @@ void Logger::InitLogger(LoggingMode mode)
 {
 	m_Mode = mode;
 	m_Active = m_InitialState;
+	m_InErrorForward = false;
 
 	time_t t = g_pSM->GetAdjustedTime();
 	tm *curtime = localtime(&t);
@@ -405,22 +406,13 @@ void Logger::LogErrorEx(const char *vafmt, va_list ap)
 		return;
 	}
 
-	if (m_OnLogError->GetFunctionCount() > 0)
+	char errorBuffer[4096];
+	smcore.FormatArgs(errorBuffer, sizeof(errorBuffer), vafmt, ap);
+
+	if (LogToErrorForward(0 /* no source handle */, 0 /* core identity */, errorBuffer))
 	{
-		char errorBuffer[4096];
-		smcore.FormatArgs(errorBuffer, sizeof(errorBuffer), vafmt, ap);
-
-		cell_t result = 0;
-
-		m_OnLogError->PushCell(0); // no source handle
-		m_OnLogError->PushCell(0); // core identity
-		m_OnLogError->PushString(errorBuffer);
-		m_OnLogError->Execute(&result);
-
-		if (result >= Pl_Handled)
-		{
-			return;
-		}
+		// error forward handled this error, don't log to file
+		return;
 	}
 
 	time_t t = g_pSM->GetAdjustedTime();
@@ -527,6 +519,35 @@ const char *Logger::GetLogFileName(LogType type) const
 LoggingMode Logger::GetLoggingMode() const
 {
 	return m_Mode;
+}
+
+bool Logger::LogToErrorForward(int handle, int identity, const char *msg)
+{
+	if (m_InErrorForward)
+	{
+		// if we're erroring inside the error forward, don't recursively call the forward again
+		// we'll still want to log this error to file, however
+		return false;
+	}
+
+	m_InErrorForward = true;
+
+	if (m_OnLogError->GetFunctionCount() == 0)
+	{
+		// no listeners, log to file
+		return false;
+	}
+
+	cell_t result = Pl_Continue;
+
+	m_OnLogError->PushCell(handle);
+	m_OnLogError->PushCell(identity);
+	m_OnLogError->PushString(msg);
+	m_OnLogError->Execute(&result);
+
+	m_InErrorForward = false;
+
+	return result >= Pl_Handled;
 }
 
 void Logger::EnableLogging()

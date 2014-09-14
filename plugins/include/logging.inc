@@ -113,6 +113,8 @@ forward Action:OnLogAction(Handle:source,
 /**
  * Called when an error is going to be logged.
  *
+ * Note that if an error occurs within this forward, the forward will not be called again recursively.
+ *
  * @param source		Handle to the object logging the error, or INVALID_HANDLE if Core is logging the error.
  * @param ident			Type of object logging the error (plugin, etx, or core).
  * @param message		Error message that is being logged.

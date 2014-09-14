@@ -90,6 +90,8 @@ public:
 	void MapChange(const char *mapname);
 	const char *GetLogFileName(LogType type) const;
 	LoggingMode GetLoggingMode() const;
+	// returns true if file logging should not be done
+	bool LogToErrorForward(int handle, int identity, const char *msg);
 private:
 	void _CloseFile();
 	void _NewMapFile();
@@ -107,6 +109,7 @@ private:
 	bool m_DailyPrintHdr;
 	bool m_InitialState;
 	IForward *m_OnLogError;
+	bool m_InErrorForward;
 };
 
 extern Logger g_Logger;
