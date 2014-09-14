@@ -91,8 +91,8 @@ public:
 	const char *GetLogFileName(LogType type) const;
 	LoggingMode GetLoggingMode() const;
 	// returns true if file logging should not be done
-	bool LogToErrorForward(int handle, int identity, const char *msg);
-	bool SetInErrorForward(bool inForward);
+	bool LogToForward(LogForwardType type, int handle, int identity, const char *msg);
+	bool SetInForward(LogForwardType type, bool inForward);
 private:
 	void _CloseFile();
 	void _NewMapFile();
@@ -109,8 +109,8 @@ private:
 	bool m_DelayedStart;
 	bool m_DailyPrintHdr;
 	bool m_InitialState;
-	IForward *m_OnLogError;
-	bool m_InErrorForward;
+	IForward *m_OnLogForward[LogForward_Max];
+	bool m_InForward[LogForward_Max];
 };
 
 extern Logger g_Logger;
