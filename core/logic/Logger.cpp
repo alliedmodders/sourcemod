@@ -93,9 +93,19 @@ void Logger::OnSourceModStartup(bool late)
 	InitLogger(m_Mode);
 }
 
+void Logger::OnSourceModAllInitialized()
+{
+	m_OnLogError = forwardsys->CreateForward("OnLogError", ET_Hook, 3, NULL, Param_Cell, Param_Cell, Param_String);
+}
+
 void Logger::OnSourceModAllShutdown()
 {
 	CloseLogger();
+}
+
+void Logger::OnSourceModShutdown()
+{
+	forwardsys->ReleaseForward(m_OnLogError);
 }
 
 void Logger::OnSourceModLevelChange(const char *mapName)
@@ -393,6 +403,24 @@ void Logger::LogErrorEx(const char *vafmt, va_list ap)
 	if (!m_Active)
 	{
 		return;
+	}
+
+	if (m_OnLogError->GetFunctionCount() > 0)
+	{
+		char errorBuffer[4096];
+		smcore.FormatArgs(errorBuffer, sizeof(errorBuffer), vafmt, ap);
+
+		cell_t result = 0;
+
+		m_OnLogError->PushCell(0); // no source handle
+		m_OnLogError->PushCell(0); // core identity
+		m_OnLogError->PushString(errorBuffer);
+		m_OnLogError->Execute(&result);
+
+		if (result >= Pl_Handled)
+		{
+			return;
+		}
 	}
 
 	time_t t = g_pSM->GetAdjustedTime();

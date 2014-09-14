@@ -67,7 +67,9 @@ public: //SMGlobalClass
 		char *error, 
 		size_t maxlength);
 	void OnSourceModStartup(bool late);
+	void OnSourceModAllInitialized();
 	void OnSourceModAllShutdown();
+	void OnSourceModShutdown();
 	void OnSourceModLevelChange(const char *mapName);
 public:
 	void InitLogger(LoggingMode mode);
@@ -104,6 +106,7 @@ private:
 	bool m_DelayedStart;
 	bool m_DailyPrintHdr;
 	bool m_InitialState;
+	IForward *m_OnLogError;
 };
 
 extern Logger g_Logger;
