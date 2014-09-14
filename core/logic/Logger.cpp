@@ -550,6 +550,15 @@ bool Logger::LogToErrorForward(int handle, int identity, const char *msg)
 	return result >= Pl_Handled;
 }
 
+bool Logger::SetInErrorForward(bool inForward)
+{
+	bool oldValue = m_InErrorForward;
+
+	m_InErrorForward = inForward;
+
+	return oldValue;
+}
+
 void Logger::EnableLogging()
 {
 	if (m_Active)

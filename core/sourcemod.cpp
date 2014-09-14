@@ -590,12 +590,24 @@ void SourceModBase::LogError(IExtension *pExt, const char *format, ...)
 	vsnprintf(buffer, sizeof(buffer), format, ap);
 	va_end(ap);
 
+	if (logger->LogToErrorForward(0 /* no ext handle */, 1 /* extension identity */, buffer))
+	{
+		// forward handled it, don't log
+		return;
+	}
+
+	// forward didn't handle this error, but we don't want to call into the forward another time as core
+	// we do this by tricking it into thinking it's inside the forward already, so it won't call it a second time
+	bool oldSetting = logger->SetInErrorForward(true);
+
 	if (tag)
 	{
 		logger->LogError("[%s] %s", tag, buffer);
 	} else {
 		logger->LogError("%s", buffer);
 	}
+
+	logger->SetInErrorForward(oldSetting);
 }
 
 size_t SourceModBase::FormatString(char *buffer, size_t maxlength, IPluginContext *pContext, const cell_t *params, unsigned int param)

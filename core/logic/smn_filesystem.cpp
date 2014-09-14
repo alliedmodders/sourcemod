@@ -1033,7 +1033,20 @@ static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
 	}
 
 	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+
+	if (g_Logger.LogToErrorForward(pPlugin->GetMyHandle(), 2 /* plugin identity */, buffer))
+	{
+		// forward handled it, don't log
+		return 1;
+	}
+
+	// forward didn't handle this error, but we don't want to call into the forward another time as core
+	// we do this by tricking it into thinking it's inside the forward already, so it won't call it a second time
+	bool oldSetting = g_Logger.SetInErrorForward(true);
+
 	g_Logger.LogError("[%s] %s", pPlugin->GetFilename(), buffer);
+
+	g_Logger.SetInErrorForward(oldSetting);
 
 	return 1;
 }

@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 29)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 30)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -233,6 +233,8 @@ public:
 	virtual void LogMessage(const char *msg, ...) = 0;
 	virtual void LogError(const char *msg, ...) = 0;
 	virtual void LogFatal(const char *msg, ...) = 0;
+	virtual bool LogToErrorForward(int handle, int identity, const char *msg) = 0;
+	virtual bool SetInErrorForward(bool inForward) = 0;
 };
 
 class AutoPluginList

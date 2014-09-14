@@ -92,6 +92,7 @@ public:
 	LoggingMode GetLoggingMode() const;
 	// returns true if file logging should not be done
 	bool LogToErrorForward(int handle, int identity, const char *msg);
+	bool SetInErrorForward(bool inForward);
 private:
 	void _CloseFile();
 	void _NewMapFile();
