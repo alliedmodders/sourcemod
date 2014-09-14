@@ -530,13 +530,13 @@ bool Logger::LogToErrorForward(int handle, int identity, const char *msg)
 		return false;
 	}
 
-	m_InErrorForward = true;
-
 	if (m_OnLogError->GetFunctionCount() == 0)
 	{
 		// no listeners, log to file
 		return false;
 	}
+
+	m_InErrorForward = true;
 
 	cell_t result = Pl_Continue;
 
