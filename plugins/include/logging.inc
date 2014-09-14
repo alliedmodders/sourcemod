@@ -120,7 +120,7 @@ forward Action:OnLogAction(Handle:source,
  * @param message		Error message that is being logged.
  * @return				Plugin_Handled or Plugin_Stop will prevent the error from being written to the error log file.
 */
-forward Action:OnLogError(Handle:source, Identity:ident, const String:message[])
+forward Action:OnLogError(Handle:source, Identity:ident, const String:message[]);
 
 /**
  * Called when a game log message is received.
