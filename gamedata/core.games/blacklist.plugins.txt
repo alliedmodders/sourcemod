@@ -24,9 +24,11 @@
 			"plugin_f99d77668e7aa0adb6a960322ab05568"	""	/* UCP Server (Endi) - Version 7.8 */
 			"plugin_7b3ce69f15e61cc896228cb8424be589"	""	/* UCP Server (Endi) - Version 7.8.2 */
 			"plugin_24602c74f183cfcd157b3d50dee96c52"	""	/* UCP Server (Endi) - Version 7.8.3 */
+			"plugin_43bd225c5fdcd3af35729ca9d481b20d"	""	/* UCP Server (Endi) - Version 8.3 */
 			"plugin_78140f1a0f26cd3297767d0598eac4b1"	""	/* [Any] PReplay (DarthNinja) - Version 1.0.0 */
 			"plugin_55923ba6bfe41569a3e4fbd7ca4606e5"	""	/* VIP Plugin (World-Source.Ru) - Version 2.0 */
-			"plugin_4bf983e1d5b61ba0b1ab9a7e53bfda27"	""	/* WarMod CS:GO (Twelve-60)  */
+			"plugin_4bf983e1d5b61ba0b1ab9a7e53bfda27"	""	/* WarMod CS:GO (Twelve-60) */
+			"plugin_08574c4295afdaa5f613b8ceef96ecc3"	""	/* AlliedBans (TommY) - Version 3.140902A */
 		}
 	}
 }
