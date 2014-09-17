@@ -121,9 +121,9 @@ IMenuPanel *ValveMenuStyle::CreatePanel()
 	return new CValveMenuDisplay();
 }
 
-IBaseMenu *ValveMenuStyle::CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner)
+IBaseMenu *ValveMenuStyle::CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner, MenuUserData *pUserData)
 {
-	return new CValveMenu(pHandler, pOwner);
+	return new CValveMenu(pHandler, pOwner, pUserData);
 }
 
 const char *ValveMenuStyle::GetStyleName()
@@ -355,8 +355,8 @@ unsigned int CValveMenuDisplay::GetApproxMemUsage()
 	return sizeof(CValveMenuDisplay) + (sizeof(KeyValues) * m_NextPos * 10);
 }
 
-CValveMenu::CValveMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner) : 
-CBaseMenu(pHandler, &g_ValveMenuStyle, pOwner), 
+CValveMenu::CValveMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner, MenuUserData *pUserData) : 
+CBaseMenu(pHandler, &g_ValveMenuStyle, pOwner, pUserData), 
 	m_IntroColor(255, 0, 0, 255)
 {
 	strcpy(m_IntroMsg, "You have a menu, press ESC");

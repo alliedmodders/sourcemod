@@ -34,9 +34,10 @@
 
 #include <IShareSys.h>
 #include <IHandleSys.h>
+#include <IPluginSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		16
+#define SMINTERFACE_MENUMANAGER_VERSION		17
 
 /**
  * @file IMenuManager.h
@@ -179,6 +180,7 @@ namespace SourceMod
 	#define MENUFLAG_BUTTON_EXITBACK	(1<<1)	/**< Menu has an "exit back" button */
 	#define MENUFLAG_NO_SOUND			(1<<2)	/**< Menu will not have any select sounds */
 	#define MENUFLAG_BUTTON_NOVOTE		(1<<3)	/**< Menu has a "No Vote" button at slot 1 */
+	#define MENUFLAG_HNDL_CLOSE			(1<<4)	/**< Menu will automatically call CloseHandle() on its data when finished */
 
 	#define VOTEFLAG_NO_REVOTES			(1<<0)	/**< Players cannot change their votes */
 
@@ -205,6 +207,12 @@ namespace SourceMod
 		MenuSource_External = 1,				/**< External menu, no pointer */
 		MenuSource_BaseMenu = 2,				/**< An IBaseMenu pointer. */
 		MenuSource_Display = 3,					/**< IMenuPanel source, no pointer */
+	};
+
+	struct MenuUserData
+	{
+		int UserData;
+		IPluginContext *pContext;
 	};
 
 	class IMenuStyle;
@@ -384,9 +392,10 @@ namespace SourceMod
 		 * @param handler		IMenuHandler pointer.
 		 * @param pOwner		Optional IdentityToken_t owner for handle 
 		 *						creation.
+		 * @param pUserData		Optional data for menu callback.
 		 * @return				An IBaseMenu pointer.
 		 */
-		virtual IBaseMenu *CreateMenu(IMenuHandler *handler, IdentityToken_t *pOwner=NULL) =0;
+		virtual IBaseMenu *CreateMenu(IMenuHandler *handler, IdentityToken_t *pOwner=NULL, MenuUserData *pUserData=NULL) =0;
 
 		/**
 		 * @brief Returns the maximum number of items per page.
@@ -636,6 +645,13 @@ namespace SourceMod
 		 * @return				Approximate number of bytes being used.
 		 */
 		virtual unsigned int GetApproxMemUsage() =0;
+
+		/**
+		 * @brief Return user data passed it at menu creation.
+		 *
+		 * @return				MenuUserData struct with handle and plugin context.
+		 */
+		virtual MenuUserData *GetUserData() =0;
 	};
 
 	/** 

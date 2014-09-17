@@ -225,9 +225,9 @@ IMenuPanel *CRadioStyle::CreatePanel()
 	return g_RadioMenuStyle.MakeRadioDisplay();
 }
 
-IBaseMenu *CRadioStyle::CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner)
+IBaseMenu *CRadioStyle::CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner, MenuUserData *pUserData)
 {
-	return new CRadioMenu(pHandler, pOwner);
+	return new CRadioMenu(pHandler, pOwner, pUserData);
 }
 
 unsigned int CRadioStyle::GetMaxPageItems()
@@ -556,8 +556,8 @@ unsigned int CRadioDisplay::GetApproxMemUsage()
 		+ m_Title.size();
 }
 
-CRadioMenu::CRadioMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner) : 
-CBaseMenu(pHandler, &g_RadioMenuStyle, pOwner)
+CRadioMenu::CRadioMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner, MenuUserData *pUserData) : 
+CBaseMenu(pHandler, &g_RadioMenuStyle, pOwner, pUserData)
 {
 	m_Pagination = s_RadioMaxPageItems - MAX_PAGINATION_OPTIONS;
 }

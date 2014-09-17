@@ -603,8 +603,8 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 	return true;
 }
 
-CBaseMenu::CBaseMenu(IMenuHandler *pHandler, IMenuStyle *pStyle, IdentityToken_t *pOwner) : 
-m_pStyle(pStyle), m_Pagination(7), m_bShouldDelete(false), m_bCancelling(false), 
+CBaseMenu::CBaseMenu(IMenuHandler *pHandler, IMenuStyle *pStyle, IdentityToken_t *pOwner, MenuUserData *pUserData) : 
+m_pStyle(pStyle), m_pUserData(pUserData), m_Pagination(7), m_bShouldDelete(false), m_bCancelling(false), 
 m_pOwner(pOwner ? pOwner : g_pCoreIdent), m_bDeleting(false), m_bWillFreeHandle(false), 
 m_hHandle(BAD_HANDLE), m_pHandler(pHandler), m_nFlags(MENUFLAG_BUTTON_EXIT)
 {
@@ -825,4 +825,9 @@ IMenuHandler *CBaseMenu::GetHandler()
 unsigned int CBaseMenu::GetBaseMemUsage()
 {
 	return m_Title.length() + (m_items.length() * sizeof(CItem));
+}
+
+MenuUserData *CBaseMenu::GetUserData()
+{
+	return m_pUserData;
 }

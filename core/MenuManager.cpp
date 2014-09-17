@@ -79,6 +79,17 @@ void MenuManager::OnHandleDestroy(HandleType_t type, void *object)
 	if (type == m_MenuType)
 	{
 		IBaseMenu *menu = (IBaseMenu *)object;
+		if (menu->GetMenuOptionFlags() & MENUFLAG_HNDL_CLOSE)
+		{
+			MenuUserData *pUserData = menu->GetUserData();
+			Handle_t usrhndl = static_cast<Handle_t>(pUserData->UserData);
+			HandleSecurity sec;
+
+			sec.pOwner = pUserData->pContext->GetIdentity();
+			sec.pIdentity = g_pCoreIdent;
+
+			handlesys->FreeHandle(usrhndl, &sec);
+		}
 		menu->Destroy(false);
 	}
 	else if (type == m_StyleType)
