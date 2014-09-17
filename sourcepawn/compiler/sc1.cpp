@@ -5218,6 +5218,9 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
     sym->usage|=uREAD;  /* "main()" is the program's entry point: always used */
   } /* if */
 
+  if ((sym->usage & uDEFINE)!=0)
+    error(21, sym->name);
+
   /* "declargs()" found the ")"; if a ";" appears after this, it was a
    * prototype */
   if (matchtoken(';')) {
