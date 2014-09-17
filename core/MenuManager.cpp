@@ -79,13 +79,12 @@ void MenuManager::OnHandleDestroy(HandleType_t type, void *object)
 	if (type == m_MenuType)
 	{
 		IBaseMenu *menu = (IBaseMenu *)object;
-		if (menu->GetMenuOptionFlags() & MENUFLAG_HNDL_CLOSE)
+		if (menu->GetMenuOptionFlags() & MENUFLAG_HNDL_CLOSE && menu->GetUserData() != NULL && menu->GetUserData()->UserData)
 		{
-			MenuUserData *pUserData = menu->GetUserData();
-			Handle_t usrhndl = static_cast<Handle_t>(pUserData->UserData);
+			Handle_t usrhndl = static_cast<Handle_t>(menu->GetUserData()->UserData);
 			HandleSecurity sec;
 
-			sec.pOwner = pUserData->pContext->GetIdentity();
+			sec.pOwner = menu->GetUserData()->pContext->GetIdentity();
 			sec.pIdentity = g_pCoreIdent;
 
 			handlesys->FreeHandle(usrhndl, &sec);

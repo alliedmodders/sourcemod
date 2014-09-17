@@ -212,7 +212,7 @@ namespace SourceMod
 	struct MenuUserData
 	{
 		int UserData;
-		IPluginContext *pContext;
+		SourcePawn::IPluginContext *pContext;
 	};
 
 	class IMenuStyle;
