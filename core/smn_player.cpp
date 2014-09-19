@@ -414,11 +414,22 @@ static cell_t GetClientAuthId(IPluginContext *pContext, const cell_t *params)
 	{
 	case AuthType_Engine:
 		{
-			const char *authstr = pPlayer->GetAuthString(params[5]);
-			if (!authstr || authstr[0] == '\0')
+			const char *authstr;
+			if (params[5])
 			{
-				return 0;
+				// Keep this as a validation check
+				authstr = pPlayer->GetAuthString(params[5]);
+				if (!authstr || authstr[0] == '\0')
+				{
+					return 0;
+				}
 			}
+
+#if SOURCE_ENGINE == SE_DOTA			
+			authstr = engine->GetPlayerNetworkIDString(pPlayer->GetIndex());
+#else
+			authstr = engine->GetPlayerNetworkIDString(pPlayer->GetEdict());
+#endif
 			pContext->StringToLocal(params[3], params[4], authstr);
 		}
 		break;
