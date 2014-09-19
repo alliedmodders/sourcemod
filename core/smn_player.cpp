@@ -410,12 +410,14 @@ static cell_t GetClientAuthId(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
 	}
 	
+	bool validate = !!params[5];
+	
 	switch (params[2])
 	{
 	case AuthType_Engine:
 		{
 			const char *authstr;
-			if (params[5])
+			if (validate)
 			{
 				// Keep this as a validation check
 				authstr = pPlayer->GetAuthString(params[5]);
@@ -443,7 +445,7 @@ static cell_t GetClientAuthId(IPluginContext *pContext, const cell_t *params)
 			}
 			
 			static char authstr[64];
-			unsigned int acctId = pPlayer->GetSteamAccountID(params[5]);
+			unsigned int acctId = pPlayer->GetSteamAccountID(validate);
 			if (acctId == 0)
 			{
 				if (g_HL2.IsLANServer())
@@ -484,7 +486,7 @@ static cell_t GetClientAuthId(IPluginContext *pContext, const cell_t *params)
 			{
 				return 0;
 			}
-			unsigned int acctId = pPlayer->GetSteamAccountID(params[5]);
+			unsigned int acctId = pPlayer->GetSteamAccountID(validate);
 			if (acctId == 0)
 			{
 				return 0;
