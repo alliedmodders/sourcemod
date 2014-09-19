@@ -615,6 +615,17 @@ void DBManager::ThreadMain()
 				ke::AutoLock lock(&m_ThinkLock);
 				m_ThinkQueue.push(op);
 			}
+			
+			
+			if (!m_Terminate)
+			{
+				ke::AutoUnlock unlock(&m_QueueEvent);
+#ifdef _WIN32
+				Sleep(20);
+#else
+				usleep(20000);
+#endif
+			}
 		}
 
 		if (m_Terminate)
