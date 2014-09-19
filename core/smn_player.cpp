@@ -37,6 +37,15 @@
 #include <inetchannel.h>
 #include <iclient.h>
 
+#ifndef PRIu64
+#ifdef _WIN32
+#define PRIu64 "I64u"
+#else
+#define PRIu64 "llu"
+#endif
+#endif
+
+
 static cell_t sm_GetMaxHumanPlayers(IPluginContext *pCtx, const cell_t *params)
 {
 	int maxHumans = -1;
@@ -380,6 +389,111 @@ static cell_t RunAdminCacheChecks(IPluginContext *pContext, const cell_t *params
 	return (id != pPlayer->GetAdminId()) ? 1 : 0;
 }
 
+// Must match clients.inc
+enum AuthIdType
+{
+	AuthType_Engine = 0,
+	AuthType_Steam2,
+	AuthType_Steam3,
+	AuthType_SteamId64,
+};
+
+static cell_t GetClientAuthId(IPluginContext *pContext, const cell_t *params)
+{
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
+	}
+	else if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
+	}
+	
+	switch (params[2])
+	{
+	case AuthType_Engine:
+		{
+			const char *authstr = pPlayer->GetAuthString(params[5]);
+			if (!authstr || authstr[0] == '\0')
+			{
+				return 0;
+			}
+			pContext->StringToLocal(params[3], params[4], authstr);
+		}
+		break;
+	case AuthType_Steam2:
+	case AuthType_Steam3:
+		{
+			if (pPlayer->IsFakeClient())
+			{
+				pContext->StringToLocal(params[3], params[4], "BOT");
+				return 1;
+			}
+			
+			static char authstr[64];
+			unsigned int acctId = pPlayer->GetSteamAccountID(params[5]);
+			if (acctId == 0)
+			{
+				if (g_HL2.IsLANServer())
+				{
+					pContext->StringToLocal(params[3], params[4], "STEAM_ID_LAN");
+					return 1;
+				}
+				else if (!params[5])
+				{
+					pContext->StringToLocal(params[3], params[4], "STEAM_ID_PENDING");
+					return 1;
+				}
+				
+				return 0;
+			}
+			
+			if (params[2] == AuthType_Steam2)
+			{
+#if SOURCE_ENGINE <= SE_LEFT4DEAD
+				unsigned int universe = 0;
+#else
+				unsigned int universe = 1;
+#endif
+				_snprintf(authstr, sizeof(authstr), "STEAM_%u:%u:%u", universe, acctId & 1, acctId >> 1);
+				pContext->StringToLocal(params[3], params[4], authstr);
+				break;
+			}
+			else
+			{
+				_snprintf(authstr, sizeof(authstr), "[U:1:%u]", acctId);
+				pContext->StringToLocal(params[3], params[4], authstr);
+			}
+		}
+		break;
+	case AuthType_SteamId64:
+		{
+			if (pPlayer->IsFakeClient() || g_HL2.IsLANServer())
+			{
+				return 0;
+			}
+			unsigned int acctId = pPlayer->GetSteamAccountID(params[5]);
+			if (acctId == 0)
+			{
+				return 0;
+			}
+			
+			uint64_t steamId = acctId;
+			steamId |= ((uint64_t)1<<32); // Instance (1/Desktop)
+			steamId |= ((uint64_t)1<<52); // Type (1/Individual)
+			steamId |= ((uint64_t)1<<56); // Universe (1/Public)
+			
+			static char authstr[64];
+			snprintf(authstr, sizeof(authstr), "%" PRIu64, steamId);
+			pContext->StringToLocal(params[3], params[4], authstr);
+		}
+		break;
+	}
+	
+	return 1;
+}
+
 REGISTER_NATIVES(playernatives)
 {
 	{"GetMaxHumanPlayers",		sm_GetMaxHumanPlayers},
@@ -393,6 +507,7 @@ REGISTER_NATIVES(playernatives)
 	{"GetClientAvgData",		GetAvgData},
 	{"GetClientAvgPackets",		GetAvgPackets},
 	{"RunAdminCacheChecks",		RunAdminCacheChecks},
+	{"GetClientAuthId",			GetClientAuthId},
 	{NULL,						NULL}
 };
 
