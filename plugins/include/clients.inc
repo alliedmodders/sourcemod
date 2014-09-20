@@ -46,6 +46,25 @@ enum NetFlow
 };
 
 /**
+ * Auth string types.
+ *
+ * Note that for the Steam2 and Steam3 types, the following ids are
+ * also valid values:
+ * "STEAM_ID_PENDING" - Authentication is pending.
+ * "STEAM_ID_LAN" - Authentication is disabled because of being on a LAN server.
+ * "BOT" - The client is a bot.
+ */
+enum AuthIdType
+{
+	AuthId_Engine = 0, /**< The game-specific auth string as returned from the engine */
+
+	// The following are only available on games that support Steam authentication.
+	AuthId_Steam2, /**< Steam2 rendered format, ex "STEAM_1:1:4153990" */
+	AuthId_Steam3, /**< Steam3 rendered format, ex "[U:1:8307981]" */
+	AuthId_SteamID64, /**< A SteamID64 (uint64) as a String, ex "76561197968573709" */
+};
+
+/**
  * MAXPLAYERS is not the same as MaxClients.
  * MAXPLAYERS is a hardcoded value as an upper limit.  MaxClients changes based on the server.
  *
@@ -268,6 +287,21 @@ native bool:GetClientIP(client, String:ip[], maxlen, bool:remport=true);
  * @error				If the client is not connected or the index is invalid.
  */
 native bool:GetClientAuthString(client, String:auth[], maxlen, bool:validate=true);
+
+/**
+ * Retrieves a client's authentication string (SteamID).
+ *
+ * @param client		Player index.
+ * @param authType		Auth id type and format to use.
+ * @param auth			Buffer to store the client's auth id.
+ * @param maxlen		Maximum length of string buffer (includes NULL terminator).
+ * @param validate		Check backend validation status.
+ * 				DO NOT PASS FALSE UNLESS YOU UNDERSTAND THE CONSEQUENCES,
+ *			        You WILL KNOW if you need to use this, MOST WILL NOT.
+ * @return				True on success, false otherwise.
+ * @error				If the client is not connected or the index is invalid.
+ */
+native bool:GetClientAuthId(client, AuthIdType:authType, String:auth[], maxlen, bool:validate=true);
 
 /**
  * Returns the client's Steam account ID.
