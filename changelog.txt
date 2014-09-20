@@ -1,5 +1,19 @@
 SourceMod Changelog
 
+SourceMod 1.6.2 [2014-09-20]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.6.2_Release_Notes
+
+User Changes:
+ - Updated game support for TF2, CS:GO, No More Room in Hell and Fistful of Frags.
+ - Added compatibility shim to force Steam player auth strings to be in "Steam2" rendered format (PR 136).
+ - Fixed possible performance regression in DBI handling.
+
+Developer Changes:
+ - Added new GetClientAuthId native to retrieve player auth strings in desired format (PR 159).
+ - Updated TF2 weapon and player condition enums (FlaminSarge).
+
+----------------------------------------------------------
 SourceMod 1.6.1 [2014-08-17]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.6.1_Release_Notes
