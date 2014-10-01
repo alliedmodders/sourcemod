@@ -750,7 +750,7 @@ stock Menu:CreateDataMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_D
 stock Menu:CreateDataMenuEx(Handle:hStyle=INVALID_HANDLE, MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT, &Handle:datapack)
 {
 	datapack = CreateDataPack();
-	Menu menu = CreateMenuEx(hStyle, handler, actions, pack);
+	Menu menu = CreateMenuEx(hStyle, handler, actions, datapack);
 	menu.SetCloseHandle(true);
 	return menu;
 }
