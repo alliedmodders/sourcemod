@@ -193,6 +193,29 @@ union MenuHandler
 native Menu:CreateMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT, any:data=INVALID_HANDLE);
 
 /**
+ * Creates a new, empty menu using the default style associated with a new datapack.
+ * @note The datapack is automatically freed when the menu ends.
+ * @note The position of the datapack is not reset or changed for the menu handler.
+ *
+ * @param handler			Function which will receive menu actions.
+ * @param actions			Optionally set which actions to receive.  Select, 
+ *							Cancel, and End will always be received regardless
+ *							of whether they are set or not.  They are also
+ *							the only default actions.
+ * @param datapack			The newly created datapack is passed though this by-reference 
+ *							parameter to the menu callback function.
+ * @return					A new menu Handle.
+ */
+
+stock Menu:CreateDataMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT, &Handle:datapack)
+{
+	datapack = CreateDataPack();
+	Menu menu = Menu(handler, actions, pack);
+	menu.SetCloseHandle(true);
+	return menu;
+}
+
+/**
  * Displays a menu to a client.
  *
  * @param menu				Menu Handle.
@@ -707,6 +730,30 @@ native Handle:CreatePanel(Handle:hStyle=INVALID_HANDLE);
  * @error				Invalid Handle other than INVALID_HANDLE.
  */
 native Handle:CreateMenuEx(Handle:hStyle=INVALID_HANDLE, MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT, any:data=INVALID_HANDLE);
+
+/** 
+ * Creates a Menu from a MenuStyle  associated with a new datapack.
+ * @note The datapack is automatically freed when the menu ends.
+ * @note The position of the datapack is not reset or changed for the menu handler.
+ *
+ * @param hStyle		MenuStyle Handle, or INVALID_HANDLE to use the default style.
+ * @param handler		Function which will receive menu actions.
+ * @param actions		Optionally set which actions to receive.  Select, 
+ *						Cancel, and End will always be received regardless
+ *						of whether they are set or not.  They are also
+ *						the only default actions.
+ * @param datapack		The newly created datapack is passed though this by-reference 
+ *						parameter to the menu callback function.
+ * @return				A new menu Handle.
+ * @error				Invalid Handle other than INVALID_HANDLE.
+ */
+stock Handle:CreateDataMenuEx(Handle:hStyle=INVALID_HANDLE, MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT, &Handle:datapack)
+{
+	datapack = CreateDataPack();
+	Handle menu = CreateMenuEx(hStyle, handler, actions, pack);
+	SetMenuCloseHandle(menu, true);
+	return menu;
+}
 
 /**
  * Returns whether a client is viewing a menu.
