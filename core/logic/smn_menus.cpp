@@ -1169,7 +1169,7 @@ static cell_t CreateMenuEx(IPluginContext *pContext, const cell_t *params)
 
 	MenuUserData *pUserData = new MenuUserData();
 	pUserData->pContext = pContext;
-	pUserData->UserData = params[3];
+	pUserData->UserData = params[4];
 
 	IBaseMenu *pMenu = style->CreateMenu(handler, pContext->GetIdentity(), pUserData);
 	hndl = pMenu->GetHandle();
