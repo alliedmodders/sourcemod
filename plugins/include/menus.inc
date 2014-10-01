@@ -207,11 +207,11 @@ native Menu:CreateMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFA
  * @return					A new menu Handle.
  */
 
-stock Menu:CreateDataMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT, &Handle:datapack)
+stock Handle:CreateDataMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT, &Handle:datapack)
 {
 	datapack = CreateDataPack();
-	Menu menu = Menu(handler, actions, pack);
-	menu.SetCloseHandle(true);
+	Handle menu = CreateMenu(handler, actions, pack);
+	SetMenuCloseHandle(menu, true);
 	return menu;
 }
 
