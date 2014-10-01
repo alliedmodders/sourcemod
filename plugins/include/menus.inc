@@ -210,7 +210,7 @@ native Menu:CreateMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFA
 stock Handle:CreateDataMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT, &Handle:datapack)
 {
 	datapack = CreateDataPack();
-	Handle menu = CreateMenu(handler, actions, pack);
+	Handle menu = CreateMenu(handler, actions, datapack);
 	SetMenuCloseHandle(menu, true);
 	return menu;
 }
