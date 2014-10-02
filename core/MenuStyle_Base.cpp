@@ -612,6 +612,7 @@ m_hHandle(BAD_HANDLE), m_pHandler(pHandler), m_nFlags(MENUFLAG_BUTTON_EXIT), m_p
 
 CBaseMenu::~CBaseMenu()
 {
+	delete m_pUserData;
 }
 
 Handle_t CBaseMenu::GetHandle()
