@@ -577,6 +577,7 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 			m_pVoteResults->PushCell(client_array_address);
 			m_pVoteResults->PushCell(results->num_items);
 			m_pVoteResults->PushCell(item_array_address);
+			m_pVoteResults->PushCell(menu->GetUserData()->UserData);
 			m_pVoteResults->Execute(NULL);
 		}
 

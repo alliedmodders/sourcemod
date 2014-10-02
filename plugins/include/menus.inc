@@ -553,26 +553,76 @@ stock bool:VoteMenuToAll(Handle:menu, time, flags=0)
 	
 	return VoteMenu(menu, players, total, time, flags);
 }
-/**
- * Callback for when a vote has ended and results are available.
- *
- * @param menu				The menu being voted on.
- * @param num_votes			Number of votes tallied in total.
- * @param num_clients		Number of clients who could vote.
- * @param client_info		Array of clients.  Use VOTEINFO_CLIENT_ defines.
- * @param num_items			Number of unique items that were selected.
- * @param item_info			Array of items, sorted by count.  Use VOTEINFO_ITEM
- *							defines.
- * @noreturn
- */
-typedef VoteHandler = function void (
-  Menu menu,
-  int num_votes, 
-  int num_clients,
-  const int client_info[][2], 
-  int num_items,
-  const int item_info[][2]
-);
+
+union VoteHandler
+{
+	/**
+	 * Callback for when a vote has ended and results are available.
+	 *
+	 * @param menu				The menu being voted on.
+	 * @param num_votes			Number of votes tallied in total.
+	 * @param num_clients		Number of clients who could vote.
+	 * @param client_info		Array of clients.  Use VOTEINFO_CLIENT_ defines.
+	 * @param num_items			Number of unique items that were selected.
+	 * @param item_info			Array of items, sorted by count.  Use VOTEINFO_ITEM
+	 *							defines.
+  	 * @param hndl				Handle passed to CreateMenu()/CreateMenuEx() when menu was created.
+	 * @noreturn
+	 */
+	function void (
+	  Menu menu,
+	  int num_votes, 
+	  int num_clients,
+	  const int client_info[][2], 
+	  int num_items,
+	  const int item_info[][2],
+	  Handle hndl
+	);
+
+	/**
+	 * Callback for when a vote has ended and results are available.
+	 *
+	 * @param menu				The menu being voted on.
+	 * @param num_votes			Number of votes tallied in total.
+	 * @param num_clients		Number of clients who could vote.
+	 * @param client_info		Array of clients.  Use VOTEINFO_CLIENT_ defines.
+	 * @param num_items			Number of unique items that were selected.
+	 * @param item_info			Array of items, sorted by count.  Use VOTEINFO_ITEM
+	 *							defines.
+ 	 * @param data				Data passed to CreateMenu()/CreateMenuEx() when menu was created.
+	 * @noreturn
+	 */
+	function void (
+	  Menu menu,
+	  int num_votes, 
+	  int num_clients,
+	  const int client_info[][2], 
+	  int num_items,
+	  const int item_info[][2],
+	  any data
+	);
+
+	/**
+	 * Callback for when a vote has ended and results are available.
+	 *
+	 * @param menu				The menu being voted on.
+	 * @param num_votes			Number of votes tallied in total.
+	 * @param num_clients		Number of clients who could vote.
+	 * @param client_info		Array of clients.  Use VOTEINFO_CLIENT_ defines.
+	 * @param num_items			Number of unique items that were selected.
+	 * @param item_info			Array of items, sorted by count.  Use VOTEINFO_ITEM
+	 *							defines.
+	 * @noreturn
+	 */
+	function void (
+	  Menu menu,
+	  int num_votes, 
+	  int num_clients,
+	  const int client_info[][2], 
+	  int num_items,
+	  const int item_info[][2]
+	);
+}
 
 /**
  * Sets an advanced vote handling callback.  If this callback is set,
