@@ -183,7 +183,7 @@ public: //IAdminSystem
 	bool IsValidAdmin(AdminId id);
 	bool CheckClientCommandAccess(int client, const char *cmd, FlagBits cmdflags);
 public:
-	void DumpCache(FILE *fp);
+	bool DumpCache(const char *filename);
 	AdminGroup *GetGroup(GroupId gid);
 	AdminUser *GetUser(AdminId id);
 	const char *GetString(int idx);
