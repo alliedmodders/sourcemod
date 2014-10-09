@@ -105,6 +105,7 @@ enum DBPriority
  * @param maxlength		Maximum length of the error buffer.
  * @return				A database connection Handle, or INVALID_HANDLE on failure.
  */
+#pragma deprecated Use SQL_TConnect
 native Handle:SQL_Connect(const String:confname[], bool:persistent, String:error[], maxlength);
 
 /**
@@ -117,6 +118,7 @@ native Handle:SQL_Connect(const String:confname[], bool:persistent, String:error
  * @return				A database connection Handle, or INVALID_HANDLE on failure.
  * 						On failure the error buffer will be filled with a message.
  */
+#pragma deprecated Use SQL_TConnect with "default" as database name
 stock Handle:SQL_DefConnect(String:error[], maxlength, bool:persistent=true)
 {
 	return SQL_Connect("default", persistent, error, maxlength);
@@ -143,6 +145,7 @@ stock Handle:SQL_DefConnect(String:error[], maxlength, bool:persistent=true)
  * 						On failure the error buffer will be filled with a message.
  * @error				Invalid KeyValues handle.
  */
+#pragma deprecated Add database details to databases.cfg and use SQL_TConnect
 native Handle:SQL_ConnectCustom(Handle:keyvalues,
 								String:error[],
 								maxlength,
@@ -163,6 +166,7 @@ native Handle:SQL_ConnectCustom(Handle:keyvalues,
  * @return				A database connection Handle, or INVALID_HANDLE on failure.
  * 						On failure the error buffer will be filled with a message.
  */
+#pragma deprecated Add database details to databases.cfg and use SQL_TConnect
 stock Handle:SQLite_UseDatabase(const String:database[],
 								String:error[], 
 								maxlength)
@@ -323,8 +327,9 @@ native bool:SQL_EscapeString(Handle:database,
 
 /**
  * This is a backwards compatibility stock.  You should use SQL_EscapeString() 
- * instead, as this function will probably be deprecated in SourceMod 1.1.
+ * instead, as this function should have been deprecated in SourceMod 1.1.
  */
+#pragma deprecated Use SQL_EscapeString
 stock bool:SQL_QuoteString(Handle:database,
 						   const String:string[],
 						   String:buffer[],
@@ -346,6 +351,7 @@ stock bool:SQL_QuoteString(Handle:database,
  *						SQL_GetError to find the last error.
  * @error				Invalid database Handle.
  */
+#pragma deprecated Use SQL_TQuery
 native bool:SQL_FastQuery(Handle:database, const String:query[], len=-1);
 
 /**
@@ -361,6 +367,7 @@ native bool:SQL_FastQuery(Handle:database, const String:query[], len=-1);
  *						otherwise.  The Handle must be freed with CloseHandle().
  * @error				Invalid database Handle.
  */
+#pragma deprecated Use SQL_TQuery
 native Handle:SQL_Query(Handle:database, const String:query[], len=-1);
 
 /**
@@ -379,6 +386,7 @@ native Handle:SQL_Query(Handle:database, const String:query[], len=-1);
  *						otherwise.  The Handle must be freed with CloseHandle().
  * @error				Invalid database Handle.
  */
+#pragma deprecated Prepared statements are not supported
 native Handle:SQL_PrepareQuery(Handle:database, const String:query[], String:error[], maxlength);
 
 /**
@@ -564,6 +572,7 @@ native SQL_FetchSize(Handle:query, field);
  * @error				Invalid statement Handle or parameter index, or
  *						SQL error.
  */
+#pragma deprecated Prepared statements are not supported
 native SQL_BindParamInt(Handle:statement, param, number, bool:signed=true);
 
 /**
@@ -576,6 +585,7 @@ native SQL_BindParamInt(Handle:statement, param, number, bool:signed=true);
  * @error				Invalid statement Handle or parameter index, or
  *						SQL error.
  */
+#pragma deprecated Prepared statements are not supported
 native SQL_BindParamFloat(Handle:statement, param, Float:value);
 
 /**
@@ -592,6 +602,7 @@ native SQL_BindParamFloat(Handle:statement, param, Float:value);
  * @error				Invalid statement Handle or parameter index, or
  *						SQL error.
  */
+#pragma deprecated Prepared statements are not supported
 native SQL_BindParamString(Handle:statement, param, const String:value[], bool:copy);
 
 /**
@@ -601,6 +612,7 @@ native SQL_BindParamString(Handle:statement, param, const String:value[], bool:c
  * @return				True on success, false on failure.
  * @error				Invalid statement Handle.
  */
+#pragma deprecated Prepared statements are not supported
 native bool:SQL_Execute(Handle:statement);
 
 /**
@@ -621,6 +633,7 @@ native bool:SQL_Execute(Handle:statement);
  * @noreturn
  * @error				Invalid database Handle.
  */
+#pragma deprecated No longer necessary. Non-threaded queries are unsupported.
 native SQL_LockDatabase(Handle:database);
 
 /**
@@ -630,6 +643,7 @@ native SQL_LockDatabase(Handle:database);
  * @noreturn
  * @error				Invalid database Handle.
  */
+#pragma deprecated No longer necessary. Non-threaded queries are unsupported.
 native SQL_UnlockDatabase(Handle:database);
 
 /**
