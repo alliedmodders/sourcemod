@@ -73,7 +73,7 @@ static cell_t sm_GetCommandLineParam(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
-static cell_t sm_GetCommandLineParamNumber(IPluginContext *pCtx, const cell_t *params)
+static cell_t sm_GetCommandLineParamInt(IPluginContext *pCtx, const cell_t *params)
 {
 	ICommandLine *pCmdLine = g_HL2.GetValveCommandLine();
 
@@ -124,7 +124,7 @@ REGISTER_NATIVES(commandlinenatives)
 {
 	{"GetCommandLine",				sm_GetCommandLine},
 	{"GetCommandLineParam",			sm_GetCommandLineParam},
-	{"GetCommandLineParamNumber",	sm_GetCommandLineParamNumber},
+	{"GetCommandLineParamInt",		sm_GetCommandLineParamInt},
 	{"GetCommandLineParamFloat",	sm_GetCommandLineParamFloat},
 	{"FindCommandLineParam",		sm_FindCommandLineParam},
 	{NULL,							NULL},
