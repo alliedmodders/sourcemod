@@ -108,9 +108,9 @@ static void DumpHandles(void (*dumpfn)(const char *fmt, ...))
 	g_HandleSys.Dump(dumpfn);
 }
 
-static void DumpAdminCache(FILE *f)
+static bool DumpAdminCache(const char *filename)
 {
-	g_Admins.DumpCache(f);
+	return g_Admins.DumpCache(filename);
 }
 
 static void RegisterProfiler(IProfilingTool *tool)
