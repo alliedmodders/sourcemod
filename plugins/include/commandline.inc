@@ -65,7 +65,7 @@ native GetCommandLineParam(const String:param[], String:value[], maxlen, const S
  * @return			The integer value of the command line parameter value.
  * @error			No command line available, or no mod support.
  */
-native GetCommandLineParamNumber(const String:param[], defValue=0);
+native GetCommandLineParamInt(const String:param[], defValue=0);
 
 /**
  * Gets the value of a command line parameter the server was launched with.
