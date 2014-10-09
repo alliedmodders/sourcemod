@@ -424,21 +424,15 @@ CON_COMMAND(sm_reload_translations, "Reparses all loaded translation files")
 
 CON_COMMAND(sm_dump_admcache, "Dumps the admin cache for debugging")
 {
-	FILE *fp;
 	char buffer[PLATFORM_MAX_PATH];
-
 	g_SourceMod.BuildPath(Path_SM, buffer, sizeof(buffer), "data/admin_cache_dump.txt");
 
-	if ((fp = fopen(buffer, "wt")) == NULL)
+	if (!logicore.DumpAdminCache(buffer))
 	{
 		g_RootMenu.ConsolePrint("Could not open file for writing: %s", buffer);
 		return;
 	}
 
-	logicore.DumpAdminCache(fp);
-
 	g_RootMenu.ConsolePrint("Admin cache dumped to: %s", buffer);
-
-	fclose(fp);
 }
 
