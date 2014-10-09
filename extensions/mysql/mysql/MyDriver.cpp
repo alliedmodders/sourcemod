@@ -106,6 +106,9 @@ MYSQL *Connect(const DatabaseInfo *info, char *error, size_t maxlength)
 	 */
 	my_bool my_true = true;
 	mysql_options(mysql, MYSQL_OPT_RECONNECT, (const char *)&my_true);
+        
+	const unsigned int five = 5;
+	mysql_options(mysql, MYSQL_OPT_READ_TIMEOUT, (const char *)&five);
 
 	if (info->host[0] == '/')
 	{
