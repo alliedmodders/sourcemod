@@ -145,10 +145,11 @@ native CancelCreatedEvent(Handle:event);
  *
  * @param event			Handle to the event.
  * @param key			Name of event key.
+ * @param defValue		Optional default value to use if the key is not found.
  * @return				The boolean value of the specfied event key.
  * @error				Invalid or corrupt Handle.
  */
-native bool:GetEventBool(Handle:event, const String:key[]);
+native bool:GetEventBool(Handle:event, const String:key[], bool:defValue=false);
 
 /**
  * Sets the boolean value of a game event's key.
@@ -166,10 +167,11 @@ native SetEventBool(Handle:event, const String:key[], bool:value);
  *
  * @param event			Handle to the event.
  * @param key			Name of event key.
+ * @param defValue		Optional default value to use if the key is not found.
  * @return				The integer value of the specfied event key.
  * @error				Invalid or corrupt Handle.
  */
-native GetEventInt(Handle:event, const String:key[]);
+native GetEventInt(Handle:event, const String:key[], defValue=0);
 
 /**
  * Sets the integer value of a game event's key.
@@ -192,10 +194,11 @@ native SetEventInt(Handle:event, const String:key[], value);
  *
  * @param event			Handle to the event.
  * @param key			Name of event key.
+ * @param defValue		Optional default value to use if the key is not found.
  * @return				The floating point value of the specfied event key.
  * @error				Invalid or corrupt Handle.
  */
-native Float:GetEventFloat(Handle:event, const String:key[]);
+native Float:GetEventFloat(Handle:event, const String:key[], Float:defValue=0.0);
 
 /**
  * Sets the floating point value of a game event's key.
@@ -215,10 +218,11 @@ native SetEventFloat(Handle:event, const String:key[], Float:value);
  * @param key			Name of event key.
  * @param value			Buffer to store the value of the specified event key.
  * @param maxlength		Maximum length of string buffer.
+ * @param defValue		Optional default value to use if the key is not found.
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native GetEventString(Handle:event, const String:key[], String:value[], maxlength);
+native GetEventString(Handle:event, const String:key[], String:value[], maxlength, const String:defvalue[]="");
 
 /**
  * Sets the string value of a game event's key.
