@@ -304,7 +304,7 @@ public Action:Command_AddBan(client, args)
 	new bool:idValid = false;
 	if (!strncmp(authid, "STEAM_", 6) && authid[7] == ':')
 		idValid = true;
-	else if (!strcmp(authid, "[U:", 3))
+	else if (!strncmp(authid, "[U:", 3))
 		idValid = true;
 	
 	if (!idValid)
