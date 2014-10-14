@@ -170,7 +170,7 @@ SH_DECL_MANUALHOOK0(GetMaxHealth, 0, 0, 0, int);
 #endif
 SH_DECL_MANUALHOOK1_void(GroundEntChanged, 0, 0, 0, void *);
 SH_DECL_MANUALHOOK1(OnTakeDamage, 0, 0, 0, int, CTakeDamageInfoHack &);
-SH_DECL_MANUALHOOK1(OnTakeDamageAlive, 0, 0, 0, int, CTakeDamageInfoHack &);
+SH_DECL_MANUALHOOK1(OnTakeDamage_Alive, 0, 0, 0, int, CTakeDamageInfoHack &);
 SH_DECL_MANUALHOOK0_void(PreThink, 0, 0, 0);
 SH_DECL_MANUALHOOK0_void(PostThink, 0, 0, 0);
 SH_DECL_MANUALHOOK0(Reload, 0, 0, 0, bool);
@@ -611,11 +611,11 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 			case SDKHook_OnTakeDamagePost:
 				hookid = SH_ADD_MANUALVPHOOK(OnTakeDamage, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamagePost), true);
 				break;
-			case SDKHook_OnTakeDamageAlive:
-				hookid = SH_ADD_MANUALVPHOOK(OnTakeDamageAlive, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamageAlive), false);
+			case SDKHook_OnTakeDamage_Alive:
+				hookid = SH_ADD_MANUALVPHOOK(OnTakeDamage_Alive, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamage_Alive), false);
 				break;
-			case SDKHook_OnTakeDamageAlivePost:
-				hookid = SH_ADD_MANUALVPHOOK(OnTakeDamageAlive, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamageAlivePost), true);
+			case SDKHook_OnTakeDamage_AlivePost:
+				hookid = SH_ADD_MANUALVPHOOK(OnTakeDamage_Alive, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_OnTakeDamage_AlivePost), true);
 				break;
 			case SDKHook_PreThink:
 				hookid = SH_ADD_MANUALVPHOOK(PreThink, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_PreThink), false);
@@ -1156,14 +1156,14 @@ int SDKHooks::Hook_OnTakeDamagePost(CTakeDamageInfoHack &info)
 	return HandleOnTakeDamageHookPost(info, SDKHook_OnTakeDamagePost);
 }
 
-int SDKHooks::Hook_OnTakeDamageAlive(CTakeDamageInfoHack &info)
+int SDKHooks::Hook_OnTakeDamage_Alive(CTakeDamageInfoHack &info)
 {
-	return HandleOnTakeDamageHook(info, SDKHook_OnTakeDamageAlive);
+	return HandleOnTakeDamageHook(info, SDKHook_OnTakeDamage_Alive);
 }
 
-int SDKHooks::Hook_OnTakeDamageAlivePost(CTakeDamageInfoHack &info)
+int SDKHooks::Hook_OnTakeDamage_AlivePost(CTakeDamageInfoHack &info)
 {
-	return HandleOnTakeDamageHookPost(info, SDKHook_OnTakeDamageAlivePost);
+	return HandleOnTakeDamageHookPost(info, SDKHook_OnTakeDamage_AlivePost);
 }
 
 void SDKHooks::Hook_PreThink()
