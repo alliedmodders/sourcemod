@@ -518,7 +518,7 @@ void SDKHooks::SetupHooks()
 	CHECKOFFSET(FireBullets,      false, true);
 	CHECKOFFSET(GroundEntChanged, false, true);
 	CHECKOFFSET(OnTakeDamage,     true,  true);
-	CHECKOFFSET(OnTakeDamageAlive,true, true);
+	CHECKOFFSET(OnTakeDamage_Alive,true, true);
 	CHECKOFFSET(PreThink,         true,  true);
 	CHECKOFFSET(PostThink,        true,  true);
 	CHECKOFFSET(Reload,           true,  true);
