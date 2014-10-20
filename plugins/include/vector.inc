@@ -82,9 +82,10 @@ native GetVectorCrossProduct(const Float:vec1[3], const Float:vec2[3], Float:res
  *
  * @param vec		Vector.
  * @param result	Resultant vector.
+ * @param len2d		If true, Vectors will act as Vector2D.
  * @return			Vector length.
  */
-native Float:NormalizeVector(const Float:vec[3], Float:result[3]);
+native Float:NormalizeVector(const Float:vec[3], Float:result[3], bool:len2d=false);
 
 /**
  * Returns vectors in the direction of an angle.
