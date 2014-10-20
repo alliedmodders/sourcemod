@@ -40,9 +40,10 @@
  *
  * @param vec		Vector.
  * @param squared	If true, the result will be squared (for optimization).
+ * @param len2d		If true, vector will act as Vector2D.
  * @return			Vector length (magnitude).			
  */
-native Float:GetVectorLength(const Float:vec[3], bool:squared=false);
+native Float:GetVectorLength(const Float:vec[3], bool:squared=false, bool:len2d = false);
 
 /**
  * Calculates the distance between two vectors.
@@ -50,18 +51,20 @@ native Float:GetVectorLength(const Float:vec[3], bool:squared=false);
  * @param vec1		First vector.
  * @param vec2		Second vector.
  * @param squared	If true, the result will be squared (for optimization).
+ * @param len2d		If true, vectors will act as Vector2D.
  * @return			Vector distance.
  */
-native Float:GetVectorDistance(const Float:vec1[3], const Float:vec2[3], bool:squared=false);
+native Float:GetVectorDistance(const Float:vec1[3], const Float:vec2[3], bool:squared=false, bool:len2d = false);
 
 /**
  * Calculates the dot product of two vectors.
  *
  * @param vec1		First vector.
  * @param vec2		Second vector.
+ * @param len2d		Vectors will act as Vector2D.
  * @return			Dot product of the two vectors.
  */
-native Float:GetVectorDotProduct(const Float:vec1[3], const Float:vec2[3]);
+native Float:GetVectorDotProduct(const Float:vec1[3], const Float:vec2[3], bool:len2d = false);
 
 /**
  * Computes the cross product of two vectors.  Any input array can be the same 
