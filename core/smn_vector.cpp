@@ -40,7 +40,7 @@
 #define SET_VECTOR(addr, vec) \
 	addr[0] = sp_ftoc(vec.x); \
 	addr[1] = sp_ftoc(vec.y); \
-	addr[2] = sp_ftoc(vec.z); 
+	addr[2] = sp_ftoc(vec.z);
 
 static cell_t GetVectorLength(IPluginContext *pContext, const cell_t *params)
 {
@@ -49,12 +49,11 @@ static cell_t GetVectorLength(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToPhysAddr(params[1], &addr);
 
 	Vector source(sp_ctof(addr[0]), sp_ctof(addr[1]), sp_ctof(addr[2]));
-	
-	if (!params[2])
-	{
-		return sp_ftoc(source.Length());
+
+	if (!params[2]) {
+		return params[3] ? sp_ftoc(source.Length2D()) : sp_ftoc(source.Length());
 	} else {
-		return sp_ftoc(source.LengthSqr());
+		return params[3] ? sp_ftoc(source.Length2DSqr()) : sp_ftoc(source.LengthSqr());
 	}
 }
 
@@ -68,11 +67,10 @@ static cell_t GetVectorDistance(IPluginContext *pContext, const cell_t *params)
 	Vector source(sp_ctof(addr1[0]), sp_ctof(addr1[1]), sp_ctof(addr1[2]));
 	Vector dest(sp_ctof(addr2[0]), sp_ctof(addr2[1]), sp_ctof(addr2[2]));
 
-	if (!params[3])
-	{
-		return sp_ftoc(source.DistTo(dest));
+	if (!params[3]) {
+		return params[4] ? sp_ftoc(source.AsVector2D().DistTo(dest.AsVector2D())) : sp_ftoc(source.DistTo(dest));
 	} else {
-		return sp_ftoc(source.DistToSqr(dest));
+		return params[4] ? sp_ftoc(source.AsVector2D().DistToSqr(dest.AsVector2D())) : sp_ftoc(source.DistToSqr(dest));
 	}
 }
 
@@ -86,7 +84,7 @@ static cell_t GetVectorDotProduct(IPluginContext *pContext, const cell_t *params
 	Vector source(sp_ctof(addr1[0]), sp_ctof(addr1[1]), sp_ctof(addr1[2]));
 	Vector dest(sp_ctof(addr2[0]), sp_ctof(addr2[1]), sp_ctof(addr2[2]));
 
-	return sp_ftoc(source.Dot(dest));
+	return params[3] ? sp_ftoc(source.AsVector2D().Dot(dest.AsVector2D())) : sp_ftoc(source.Dot(dest));
 }
 
 static cell_t GetVectorCrossProduct(IPluginContext *pContext, const cell_t *params)
