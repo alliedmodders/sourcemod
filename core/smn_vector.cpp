@@ -42,6 +42,10 @@
 	addr[1] = sp_ftoc(vec.y); \
 	addr[2] = sp_ftoc(vec.z);
 
+#define SET_VECTOR2D(addr, vec) \
+	addr[0] = sp_ftoc(vec.x); \
+	addr[1] = sp_ftoc(vec.y);
+
 static cell_t GetVectorLength(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t *addr;
@@ -169,14 +173,24 @@ static cell_t GetVectorVectors(IPluginContext *pContext, const cell_t *params)
 static cell_t NormalizeVector(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t *addr;
-
 	pContext->LocalToPhysAddr(params[1], &addr);
 
-	Vector source(sp_ctof(addr[0]), sp_ctof(addr[1]), sp_ctof(addr[2]));
-	float length = VectorNormalize(source);
+	float length = 0.0f;
 
-	pContext->LocalToPhysAddr(params[2], &addr);
-	SET_VECTOR(addr, source);
+	if (!params[3])
+	{
+		Vector source(sp_ctof(addr[0]), sp_ctof(addr[1]), sp_ctof(addr[2]));
+		length = VectorNormalize(source);
+
+		pContext->LocalToPhysAddr(params[2], &addr);
+		SET_VECTOR(addr, source);
+	} else {
+		Vector2D source2d(sp_ctof(addr[0]), sp_ctof(addr[1]));
+		length = Vector2DNormalize(source2d);
+
+		pContext->LocalToPhysAddr(params[2], &addr);
+		SET_VECTOR2D(addr, source2d);
+	}
 
 	return sp_ftoc(length);
 }
