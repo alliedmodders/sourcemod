@@ -50,11 +50,10 @@ static cell_t GetVectorLength(IPluginContext *pContext, const cell_t *params)
 
 	Vector source(sp_ctof(addr[0]), sp_ctof(addr[1]), sp_ctof(addr[2]));
 
-	if (!params[2]) {
+	if (!params[2])
 		return params[3] ? sp_ftoc(source.Length2D()) : sp_ftoc(source.Length());
-	} else {
+	else
 		return params[3] ? sp_ftoc(source.Length2DSqr()) : sp_ftoc(source.LengthSqr());
-	}
 }
 
 static cell_t GetVectorDistance(IPluginContext *pContext, const cell_t *params)
@@ -67,11 +66,10 @@ static cell_t GetVectorDistance(IPluginContext *pContext, const cell_t *params)
 	Vector source(sp_ctof(addr1[0]), sp_ctof(addr1[1]), sp_ctof(addr1[2]));
 	Vector dest(sp_ctof(addr2[0]), sp_ctof(addr2[1]), sp_ctof(addr2[2]));
 
-	if (!params[3]) {
+	if (!params[3])
 		return params[4] ? sp_ftoc(source.AsVector2D().DistTo(dest.AsVector2D())) : sp_ftoc(source.DistTo(dest));
-	} else {
+	else
 		return params[4] ? sp_ftoc(source.AsVector2D().DistToSqr(dest.AsVector2D())) : sp_ftoc(source.DistToSqr(dest));
-	}
 }
 
 static cell_t GetVectorDotProduct(IPluginContext *pContext, const cell_t *params)
