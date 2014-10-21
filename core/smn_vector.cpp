@@ -40,7 +40,11 @@
 #define SET_VECTOR(addr, vec) \
 	addr[0] = sp_ftoc(vec.x); \
 	addr[1] = sp_ftoc(vec.y); \
-	addr[2] = sp_ftoc(vec.z); 
+	addr[2] = sp_ftoc(vec.z);
+
+#define SET_VECTOR2D(addr, vec) \
+	addr[0] = sp_ftoc(vec.x); \
+	addr[1] = sp_ftoc(vec.y);
 
 static cell_t GetVectorLength(IPluginContext *pContext, const cell_t *params)
 {
@@ -49,13 +53,11 @@ static cell_t GetVectorLength(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToPhysAddr(params[1], &addr);
 
 	Vector source(sp_ctof(addr[0]), sp_ctof(addr[1]), sp_ctof(addr[2]));
-	
+
 	if (!params[2])
-	{
-		return sp_ftoc(source.Length());
-	} else {
-		return sp_ftoc(source.LengthSqr());
-	}
+		return params[3] ? sp_ftoc(source.Length2D()) : sp_ftoc(source.Length());
+	else
+		return params[3] ? sp_ftoc(source.Length2DSqr()) : sp_ftoc(source.LengthSqr());
 }
 
 static cell_t GetVectorDistance(IPluginContext *pContext, const cell_t *params)
@@ -69,11 +71,9 @@ static cell_t GetVectorDistance(IPluginContext *pContext, const cell_t *params)
 	Vector dest(sp_ctof(addr2[0]), sp_ctof(addr2[1]), sp_ctof(addr2[2]));
 
 	if (!params[3])
-	{
-		return sp_ftoc(source.DistTo(dest));
-	} else {
-		return sp_ftoc(source.DistToSqr(dest));
-	}
+		return params[4] ? sp_ftoc(source.AsVector2D().DistTo(dest.AsVector2D())) : sp_ftoc(source.DistTo(dest));
+	else
+		return params[4] ? sp_ftoc(source.AsVector2D().DistToSqr(dest.AsVector2D())) : sp_ftoc(source.DistToSqr(dest));
 }
 
 static cell_t GetVectorDotProduct(IPluginContext *pContext, const cell_t *params)
@@ -86,7 +86,7 @@ static cell_t GetVectorDotProduct(IPluginContext *pContext, const cell_t *params
 	Vector source(sp_ctof(addr1[0]), sp_ctof(addr1[1]), sp_ctof(addr1[2]));
 	Vector dest(sp_ctof(addr2[0]), sp_ctof(addr2[1]), sp_ctof(addr2[2]));
 
-	return sp_ftoc(source.Dot(dest));
+	return params[3] ? sp_ftoc(source.AsVector2D().Dot(dest.AsVector2D())) : sp_ftoc(source.Dot(dest));
 }
 
 static cell_t GetVectorCrossProduct(IPluginContext *pContext, const cell_t *params)
@@ -173,14 +173,24 @@ static cell_t GetVectorVectors(IPluginContext *pContext, const cell_t *params)
 static cell_t NormalizeVector(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t *addr;
-
 	pContext->LocalToPhysAddr(params[1], &addr);
 
-	Vector source(sp_ctof(addr[0]), sp_ctof(addr[1]), sp_ctof(addr[2]));
-	float length = VectorNormalize(source);
+	float length = 0.0f;
 
-	pContext->LocalToPhysAddr(params[2], &addr);
-	SET_VECTOR(addr, source);
+	if (!params[3])
+	{
+		Vector source(sp_ctof(addr[0]), sp_ctof(addr[1]), sp_ctof(addr[2]));
+		length = VectorNormalize(source);
+
+		pContext->LocalToPhysAddr(params[2], &addr);
+		SET_VECTOR(addr, source);
+	} else {
+		Vector2D source2d(sp_ctof(addr[0]), sp_ctof(addr[1]));
+		length = Vector2DNormalize(source2d);
+
+		pContext->LocalToPhysAddr(params[2], &addr);
+		SET_VECTOR2D(addr, source2d);
+	}
 
 	return sp_ftoc(length);
 }
