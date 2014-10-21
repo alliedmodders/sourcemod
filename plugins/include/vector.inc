@@ -45,6 +45,17 @@
 native Float:GetVectorLength(const Float:vec[3], bool:squared=false);
 
 /**
+ * Calculates a vector's 2d length.
+ * You might have used the 3d vector before,
+ * But this only computes the 2d length.
+ *
+ * @param vec		Vector.
+ * @param squared	If true, the result will be squared (for optimization).
+ * @return			Vector length (magnitude).			
+ */
+native Float:GetVectorLength2D(const Float:vec[3], bool:squared=false);
+
+/**
  * Calculates the distance between two vectors.
  *
  * @param vec1		First vector.
@@ -53,6 +64,17 @@ native Float:GetVectorLength(const Float:vec[3], bool:squared=false);
  * @return			Vector distance.
  */
 native Float:GetVectorDistance(const Float:vec1[3], const Float:vec2[3], bool:squared=false);
+
+/**
+ * Calculates the 2d distance between two vectors.
+ * Even if the vector is 3d, the third dimension does not count.
+ *
+ * @param vec1		First vector.
+ * @param vec2		Second vector.
+ * @param squared	If true, the result will be squared (for optimization).
+ * @return			Vector distance.
+ */
+native Float:GetVectorDistance2D(const Float:vec1[3], const Float:vec2[3], bool:squared=false);
 
 /**
  * Calculates the dot product of two vectors.
