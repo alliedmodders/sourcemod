@@ -221,13 +221,15 @@ static cell_t NormalizeVector(IPluginContext *pContext, const cell_t *params)
 
 REGISTER_NATIVES(vectorNatives)
 {
-	{"GetAngleVectors",			GetAngleVectors},
-	{"GetVectorAngles",			GetVectorAngles},
+	{"GetAngleVectors",		GetAngleVectors},
+	{"GetVectorAngles",		GetVectorAngles},
 	{"GetVectorCrossProduct",	GetVectorCrossProduct},
 	{"GetVectorDistance",		GetVectorDistance},
+	{"GetVectorDistance2D",		GetVectorDistance},
 	{"GetVectorDotProduct",		GetVectorDotProduct},
-	{"GetVectorLength",			GetVectorLength},
+	{"GetVectorLength",		GetVectorLength},
+	{"GetVectorLength2D",		GetVectorLength},
 	{"GetVectorVectors",		GetVectorVectors},
-	{"NormalizeVector",			NormalizeVector},
-	{NULL,					NULL}
+	{"NormalizeVector",		NormalizeVector},
+	{NULL,				NULL}
 };
