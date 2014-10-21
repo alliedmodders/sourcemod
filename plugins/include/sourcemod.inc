@@ -74,6 +74,7 @@ struct Plugin
 #include <banning>
 #include <commandfilters>
 #include <nextmap>
+#include <commandline>
 
 enum APLRes
 {
