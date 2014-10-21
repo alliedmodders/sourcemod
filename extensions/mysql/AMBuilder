@@ -17,7 +17,8 @@ if SM.mysql_root:
       os.path.join(SM.mysql_root, 'lib', 'libmysqlclient_r.a'),
       '-lz',
       '-lpthread',
-      '-lm'
+      '-lm',
+      '-lrt'
     ]
   elif builder.target_platform == 'windows':
     binary.compiler.postlink += [
