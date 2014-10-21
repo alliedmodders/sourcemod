@@ -58,6 +58,22 @@ static cell_t GetVectorLength(IPluginContext *pContext, const cell_t *params)
 	}
 }
 
+static cell_t GetVectorLength2D(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *addr;
+
+	pContext->LocalToPhysAddr(params[1], &addr);
+
+	Vector2D source(sp_ctof(addr[0]), sp_ctof(addr[1]));
+	
+	if (!params[2])
+	{
+		return sp_ftoc(source.Length());
+	} else {
+		return sp_ftoc(source.LengthSqr());
+	}
+}
+
 static cell_t GetVectorDistance(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t *addr1, *addr2;
@@ -67,6 +83,24 @@ static cell_t GetVectorDistance(IPluginContext *pContext, const cell_t *params)
 
 	Vector source(sp_ctof(addr1[0]), sp_ctof(addr1[1]), sp_ctof(addr1[2]));
 	Vector dest(sp_ctof(addr2[0]), sp_ctof(addr2[1]), sp_ctof(addr2[2]));
+
+	if (!params[3])
+	{
+		return sp_ftoc(source.DistTo(dest));
+	} else {
+		return sp_ftoc(source.DistToSqr(dest));
+	}
+}
+
+static cell_t GetVectorDistance2D(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *addr1, *addr2;
+
+	pContext->LocalToPhysAddr(params[1], &addr1);
+	pContext->LocalToPhysAddr(params[2], &addr2);
+
+	Vector2D source(sp_ctof(addr1[0]), sp_ctof(addr1[1]));
+	Vector2D dest(sp_ctof(addr2[0]), sp_ctof(addr2[1]));
 
 	if (!params[3])
 	{
