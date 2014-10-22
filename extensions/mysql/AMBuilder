@@ -18,8 +18,9 @@ if SM.mysql_root:
       '-lz',
       '-lpthread',
       '-lm',
-      '-lrt'
     ]
+  if builder.target_platform == 'linux':
+    binary.compiler.postlink += ['-lrt']
   elif builder.target_platform == 'windows':
     binary.compiler.postlink += [
       os.path.join(SM.mysql_root, 'lib', 'opt', 'mysqlclient.lib'),
