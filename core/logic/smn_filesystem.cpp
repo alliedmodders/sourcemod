@@ -271,13 +271,19 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 	
+	if (!path[0])
+	{
+		return pContext->ThrowNativeError("Invalid file path");
+	}
+	
 	Handle_t handle = 0;
 	
 	if (params[0] >= 2 && params[2])
 	{
+		size_t len = strlen(path);
 		char wildcardedPath[PLATFORM_MAX_PATH];
-		snprintf(wildcardedPath, sizeof(wildcardedPath), "%s*", path);
 		ValveDirectory *valveDir = new ValveDirectory;
+		snprintf(wildcardedPath, sizeof(wildcardedPath), "%s%s*", path, (path[len-1] != '/' && path[len-1] != '\\') ? "/" : "");
 		
 		char *pathID;
 		if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)
