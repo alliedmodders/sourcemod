@@ -175,8 +175,8 @@ methodmap DataPack < Handle
 	public IsReadable() = IsPackReadable;
 	
 	property int Position {
-        public get() = GetPackPosition;
+		public get() = GetPackPosition;
 		public set() = SetPackPosition;
-    }
+	}
 };
 
