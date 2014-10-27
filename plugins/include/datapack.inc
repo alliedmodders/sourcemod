@@ -40,7 +40,7 @@
  *
  * @return			A Handle to the data pack.  Must be closed with CloseHandle().
  */
-native Handle:CreateDataPack();
+native DataPack CreateDataPack();
 
 /**
  * Packs a normal cell into a data pack.
@@ -50,7 +50,7 @@ native Handle:CreateDataPack();
  * @noreturn
  * @error			Invalid handle.
  */
-native WritePackCell(Handle:pack, any:cell);
+native void WritePackCell(Handle pack, any cell);
 
 /**
  * Packs a float into a data pack.
@@ -60,7 +60,7 @@ native WritePackCell(Handle:pack, any:cell);
  * @noreturn
  * @error			Invalid handle.
  */
-native WritePackFloat(Handle:pack, Float:val);
+native void WritePackFloat(Handle pack, float val);
 
 /**
  * Packs a string into a data pack.
@@ -70,7 +70,7 @@ native WritePackFloat(Handle:pack, Float:val);
  * @noreturn
  * @error			Invalid handle.
  */
-native WritePackString(Handle:pack, const String:str[]);
+native void WritePackString(Handle pack, const char str[]);
 
 /**
  * Packs a function pointer into a data pack.
@@ -80,7 +80,7 @@ native WritePackString(Handle:pack, const String:str[]);
  * @noreturn
  * @error			Invalid handle.
  */
-native WritePackFunction(Handle:pack, Function:fktptr);
+native void WritePackFunction(Handle pack, Function fktptr);
 
 /**
  * Reads a cell from a data pack.
@@ -89,7 +89,7 @@ native WritePackFunction(Handle:pack, Function:fktptr);
  * @return			Cell value.
  * @error			Invalid handle, or bounds error.
  */
-native any:ReadPackCell(Handle:pack);
+native any ReadPackCell(Handle pack);
 
 /**
  * Reads a float from a data pack.
@@ -98,7 +98,7 @@ native any:ReadPackCell(Handle:pack);
  * @return			Float value.
  * @error			Invalid handle, or bounds error.
  */
-native Float:ReadPackFloat(Handle:pack);
+native float ReadPackFloat(Handle pack);
 
 /**
  * Reads a string from a data pack.
@@ -109,7 +109,7 @@ native Float:ReadPackFloat(Handle:pack);
  * @noreturn
  * @error			Invalid handle, or bounds error.
  */
-native ReadPackString(Handle:pack, String:buffer[], maxlen);
+native void ReadPackString(Handle pack, char buffer[], maxlen);
 
 /**
  * Reads a function pointer from a data pack.
@@ -118,7 +118,7 @@ native ReadPackString(Handle:pack, String:buffer[], maxlen);
  * @return			Function pointer.
  * @error			Invalid handle, or bounds error.
  */
-native Function ReadPackFunction(Handle:pack);
+native Function ReadPackFunction(Handle pack);
 
 /**
  * Resets the position in a data pack.
@@ -128,7 +128,7 @@ native Function ReadPackFunction(Handle:pack);
  * @noreturn
  * @error			Invalid handle.
  */
-native ResetPack(Handle:pack, bool:clear=false);
+native void ResetPack(Handle pack, bool clear=false);
 
 /**
  * Returns the read or write position in a data pack.
@@ -137,7 +137,7 @@ native ResetPack(Handle:pack, bool:clear=false);
  * @return			Numerical position in the data pack.
  * @error			Invalid handle.
  */
-native GetPackPosition(Handle:pack);
+native int GetPackPosition(Handle pack);
 
 /**
  * Sets the read/write position in a data pack.
@@ -147,7 +147,7 @@ native GetPackPosition(Handle:pack);
  * @noreturn
  * @error			Invalid handle, or position is beyond the pack bounds.
  */
-native SetPackPosition(Handle:pack, position);
+native void SetPackPosition(Handle pack, int position);
 
 /**
  * Returns whether or not a specified number of bytes from the data pack
@@ -158,4 +158,25 @@ native SetPackPosition(Handle:pack, position);
  * @return			True if can be read, false otherwise.
  * @error			Invalid handle.
  */
-native bool:IsPackReadable(Handle:pack, bytes);
+native bool IsPackReadable(Handle pack, int bytes);
+
+methodmap DataPack < Handle
+{
+	public DataPack() = CreateDataPack;
+	public WriteCell() = WritePackCell;
+	public WriteFloat() = WritePackFloat;
+	public WriteString() = WritePackString;
+	public WriteFunction() = WritePackFunction;
+	public ReadCell() = ReadPackCell;
+	public ReadFloat() = ReadPackFloat;
+	public ReadString() = ReadPackString;
+	public ReadFunction() = ReadPackFunction;
+	public Reset() = ResetPack;
+	public IsReadable() = IsPackReadable;
+	
+	property int Position {
+        public get() = GetPackPosition;
+		public set() = SetPackPosition;
+    }
+};
+
