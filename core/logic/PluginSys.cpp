@@ -1147,7 +1147,7 @@ void CPluginManager::LoadAll_SecondPass()
 			if (!RunSecondPass(pPlugin, error, sizeof(error)))
 			{
 				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), error);
-				pPlugin->SetErrorState(Plugin_Failed, "%s", error);
+				pPlugin->SetErrorState(Plugin_BadLoad, "%s", error);
 			}
 		}
 	}
@@ -2224,7 +2224,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			const sm_plugininfo_t *info = pl->GetPublicInfo();
 
 			rootmenu->ConsolePrint("  Filename: %s", pl->GetFilename());
-			if (pl->GetStatus() <= Plugin_Error)
+			if (pl->GetStatus() <= Plugin_Error || pl->GetStatus() == Plugin_Failed)
 			{
 				if (IS_STR_FILLED(info->name))
 				{
@@ -2247,7 +2247,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				{
 					rootmenu->ConsolePrint("  URL: %s", info->url);
 				}
-				if (pl->GetStatus() == Plugin_Error)
+				if (pl->GetStatus() == Plugin_Error || pl->GetStatus() == Plugin_Failed)
 				{
 					rootmenu->ConsolePrint("  Error: %s", pl->m_errormsg);
 				}
