@@ -83,7 +83,7 @@ new g_voteClient[2];		/* Holds the target's client id and user id */
 #define	VOTE_IP		2
 new String:g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
 
-new Handle:hTopMenu = INVALID_HANDLE;
+TopMenu hTopMenu;
 
 #include "funvotes/votegravity.sp"
 #include "funvotes/voteburn.sp"
@@ -128,14 +128,14 @@ public OnPluginStart()
 	*/
 	
 	/* Account for late loading */
-	new Handle:topmenu;
-	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	TopMenu topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != null))
 	{
 		OnAdminMenuReady(topmenu);
 	}
 }
 
-public OnAdminMenuReady(Handle:topmenu)
+public OnAdminMenuReady(TopMenu topmenu)
 {
 	/* Block us from being called twice */
 	if (topmenu == hTopMenu)
@@ -147,49 +147,15 @@ public OnAdminMenuReady(Handle:topmenu)
 	hTopMenu = topmenu;
 	
 	/* Build the "Voting Commands" category */
-	new TopMenuObject:voting_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_VOTINGCOMMANDS);
+	new TopMenuObject:voting_commands = hTopMenu.FindCategory(ADMINMENU_VOTINGCOMMANDS);
 
 	if (voting_commands != INVALID_TOPMENUOBJECT)
 	{
-		AddToTopMenu(hTopMenu,
-			"sm_votegravity",
-			TopMenuObject_Item,
-			AdminMenu_VoteGravity,
-			voting_commands,
-			"sm_votegravity",
-			ADMFLAG_VOTE);
-			
-		AddToTopMenu(hTopMenu,
-			"sm_voteburn",
-			TopMenuObject_Item,
-			AdminMenu_VoteBurn,
-			voting_commands,
-			"sm_voteburn",
-			ADMFLAG_VOTE|ADMFLAG_SLAY);
-			
-		AddToTopMenu(hTopMenu,
-			"sm_voteslay",
-			TopMenuObject_Item,
-			AdminMenu_VoteSlay,
-			voting_commands,
-			"sm_voteslay",
-			ADMFLAG_VOTE|ADMFLAG_SLAY);
-			
-		AddToTopMenu(hTopMenu,
-			"sm_votealltalk",
-			TopMenuObject_Item,
-			AdminMenu_VoteAllTalk,
-			voting_commands,
-			"sm_votealltalk",
-			ADMFLAG_VOTE);
-			
-		AddToTopMenu(hTopMenu,
-			"sm_voteff",
-			TopMenuObject_Item,
-			AdminMenu_VoteFF,
-			voting_commands,
-			"sm_voteff",
-			ADMFLAG_VOTE);
+		hTopMenu.AddItem("sm_votegravity", AdminMenu_VoteGravity, voting_commands, "sm_votegravity", ADMFLAG_VOTE);
+		hTopMenu.AddItem("sm_voteburn", AdminMenu_VoteBurn, voting_commands, "sm_voteburn", ADMFLAG_VOTE|ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_voteslay", AdminMenu_VoteSlay, voting_commands, "sm_voteslay", ADMFLAG_VOTE|ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_votealltalk", AdminMenu_VoteAllTalk, voting_commands, "sm_votealltalk", ADMFLAG_VOTE);
+		hTopMenu.AddItem("sm_voteff", AdminMenu_VoteFF, voting_commands, "sm_voteff", ADMFLAG_VOTE);
 	}
 }
 

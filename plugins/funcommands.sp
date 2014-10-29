@@ -48,7 +48,7 @@ public Plugin:myinfo =
 };
 
 // Admin Menu
-new Handle:hTopMenu = INVALID_HANDLE;
+TopMenu hTopMenu;
 
 // Sounds
 new String:g_BlipSound[PLATFORM_MAX_PATH];
@@ -110,8 +110,8 @@ public OnPluginStart()
 	HookEvents( );
 	
 	/* Account for late loading */
-	new Handle:topmenu;
-	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	TopMenu topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != null))
 	{
 		OnAdminMenuReady(topmenu);
 	}
@@ -258,7 +258,7 @@ public Action:Event_RoundEnd(Handle:event,const String:name[],bool:dontBroadcast
 	KillAllDrugs();
 }
 
-public OnAdminMenuReady(Handle:topmenu)
+public OnAdminMenuReady(TopMenu topmenu)
 {
 	/* Block us from being called twice */
 	if (topmenu == hTopMenu)
@@ -270,89 +270,20 @@ public OnAdminMenuReady(Handle:topmenu)
 	hTopMenu = topmenu;
 	
 	/* Find the "Player Commands" category */
-	new TopMenuObject:player_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_PLAYERCOMMANDS);
+	TopMenuObject player_commands = hTopMenu.FindCategory(ADMINMENU_PLAYERCOMMANDS);
 
 	if (player_commands != INVALID_TOPMENUOBJECT)
 	{
-		AddToTopMenu(hTopMenu,
-			"sm_beacon",
-			TopMenuObject_Item,
-			AdminMenu_Beacon,
-			player_commands,
-			"sm_beacon",
-			ADMFLAG_SLAY);
-	
-		AddToTopMenu(hTopMenu,
-			"sm_timebomb",
-			TopMenuObject_Item,
-			AdminMenu_TimeBomb,
-			player_commands,
-			"sm_timebomb",
-			ADMFLAG_SLAY);
-
-		AddToTopMenu(hTopMenu,
-			"sm_burn",
-			TopMenuObject_Item,
-			AdminMenu_Burn,
-			player_commands,
-			"sm_burn",
-			ADMFLAG_SLAY);
-		
-		AddToTopMenu(hTopMenu,
-			"sm_firebomb",
-			TopMenuObject_Item,
-			AdminMenu_FireBomb,
-			player_commands,
-			"sm_firebomb",
-			ADMFLAG_SLAY);
-
-		AddToTopMenu(hTopMenu,
-			"sm_freeze",
-			TopMenuObject_Item,
-			AdminMenu_Freeze,
-			player_commands,
-			"sm_freeze",
-			ADMFLAG_SLAY);
-			
-		AddToTopMenu(hTopMenu,
-			"sm_freezebomb",
-			TopMenuObject_Item,
-			AdminMenu_FreezeBomb,
-			player_commands,
-			"sm_freezebomb",
-			ADMFLAG_SLAY);
-
-		AddToTopMenu(hTopMenu,
-			"sm_gravity",
-			TopMenuObject_Item,
-			AdminMenu_Gravity,
-			player_commands,
-			"sm_gravity",
-			ADMFLAG_SLAY);
-
-		AddToTopMenu(hTopMenu,
-			"sm_blind",
-			TopMenuObject_Item,
-			AdminMenu_Blind,
-			player_commands,
-			"sm_blind",
-			ADMFLAG_SLAY);
-
-		AddToTopMenu(hTopMenu,
-			"sm_noclip",
-			TopMenuObject_Item,
-			AdminMenu_NoClip,
-			player_commands,
-			"sm_noclip",
-			ADMFLAG_SLAY);
-
-		AddToTopMenu(hTopMenu,
-			"sm_drug",
-			TopMenuObject_Item,
-			AdminMenu_Drug,
-			player_commands,
-			"sm_drug",
-			ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_beacon", AdminMenu_Beacon, player_commands, "sm_beacon", ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_timebomb", AdminMenu_TimeBomb, player_commands, "sm_timebomb", ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_burn", AdminMenu_Burn, player_commands, "sm_burn", ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_firebomb", AdminMenu_FireBomb, player_commands, "sm_firebomb", ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_freeze", AdminMenu_Freeze, player_commands, "sm_freeze", ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_freezebomb", AdminMenu_FreezeBomb, player_commands, "sm_freezebomb", ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_gravity", AdminMenu_Gravity, player_commands, "sm_gravity", ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_blind", AdminMenu_Blind, player_commands, "sm_blind", ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_noclip", AdminMenu_NoClip, player_commands, "sm_noclip", ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_drug", AdminMenu_Drug, player_commands, "sm_drug", ADMFLAG_SLAY);
 	}
 }
 
