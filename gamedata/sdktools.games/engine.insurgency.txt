@@ -224,9 +224,9 @@
 			 */
 			"InfoChanged"
 			{
-				"windows"	"168"
-				"linux"		"168"
-				"mac"		"168"
+				"windows"	"176"
+				"linux"		"176"
+				"mac"		"176"
 			}
 		}
 	}
