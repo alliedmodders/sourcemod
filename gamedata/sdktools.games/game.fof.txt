@@ -144,8 +144,8 @@
 			"Weapon_GetSlot"
 			{
 				"windows"	"268"
-				"linux"		"279"
-				"mac"		"279"
+				"linux"		"269"
+				"mac"		"269"
 			}
 			"Ignite"
 			{
