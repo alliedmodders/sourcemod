@@ -6,21 +6,21 @@
 		{
 			"EndTouch"
 			{
-				"windows"	"101"
-				"linux"		"102"
-				"mac"		"102"
+				"windows"	"102"
+				"linux"		"103"
+				"mac"		"103"
 			}
 			"FireBullets"
 			{
-				"windows"	"113"
-				"linux"		"114"
-				"mac"		"114"
+				"windows"	"114"
+				"linux"		"115"
+				"mac"		"115"
 			}
 			"GroundEntChanged"
 			{
-				"windows"	"178"
-				"linux"		"180"
-				"mac"		"180"
+				"windows"	"179"
+				"linux"		"181"
+				"mac"		"181"
 			}
 			"OnTakeDamage"
 			{
@@ -30,21 +30,21 @@
 			}
 			"PreThink"
 			{
-				"windows"	"345"
-				"linux"		"346"
-				"mac"		"346"
+				"windows"	"346"
+				"linux"		"347"
+				"mac"		"347"
 			}
 			"PostThink"
 			{
-				"windows"	"325"
-				"linux"		"326"
-				"mac"		"325"
+				"windows"	"326"
+				"linux"		"327"
+				"mac"		"327"
 			}
 			"Reload"
 			{
-				"windows"	"269"
-				"linux"		"270"
-				"mac"		"270"
+				"windows"	"271"
+				"linux"		"272"
+				"mac"		"272"
 			}
 			"SetTransmit"
 			{
@@ -66,9 +66,9 @@
 			}
 			"StartTouch"
 			{
-				"windows"	"99"
-				"linux"		"100"
-				"mac"		"100"
+				"windows"	"100"
+				"linux"		"101"
+				"mac"		"101"
 			}
 			"Think"
 			{
@@ -78,9 +78,9 @@
 			}
 			"Touch"
 			{
-				"windows"	"100"
-				"linux"		"101"
-				"mac"		"101"
+				"windows"	"101"
+				"linux"		"102"
+				"mac"		"102"
 			}
 			"TraceAttack"
 			{
@@ -90,45 +90,45 @@
 			}
 			"Use"
 			{
-				"windows"	"97"
-				"linux"		"98"
-				"mac"		"98"
+				"windows"	"98"
+				"linux"		"99"
+				"mac"		"99"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"158"
-				"linux"		"159"
-				"mac"		"159"
+				"windows"	"159"
+				"linux"		"160"
+				"mac"		"160"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"267"
-				"linux"		"268"
-				"mac"		"268"
+				"windows"	"268"
+				"linux"		"269"
+				"mac"		"269"
 			}
 			"Weapon_CanUse"
-			{
-				"windows"	"261"
-				"linux"		"262"
-				"mac"		"262"
-			}
-			"Weapon_Drop"
-			{
-				"windows"	"264"
-				"linux"		"265"
-				"mac"		"265"
-			}
-			"Weapon_Equip"
 			{
 				"windows"	"262"
 				"linux"		"263"
 				"mac"		"263"
 			}
-			"Weapon_Switch"
+			"Weapon_Drop"
 			{
 				"windows"	"265"
 				"linux"		"266"
 				"mac"		"266"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"263"
+				"linux"		"264"
+				"mac"		"264"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"266"
+				"linux"		"267"
+				"mac"		"267"
 			}
 		}
 	}
