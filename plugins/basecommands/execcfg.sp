@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod Basecommands Plugin
  * Provides exec cfg functionality
@@ -106,15 +106,15 @@ public Action:Command_ExecCfg(client, args)
 	return Plugin_Handled;
 }
 
-new Handle:config_parser = INVALID_HANDLE;
+SMCParser config_parser;
 ParseConfigs()
 {
-	if (config_parser == INVALID_HANDLE)
-	{
-		config_parser = SMC_CreateParser();
-	}
+	if (!config_parser)
+		config_parser = SMCParser();
 	
-	SMC_SetReaders(config_parser, NewSection, KeyValue, EndSection);
+	config_parser.OnEnterSection = NewSection;
+	config_parser.OnLeaveSection = EndSection;
+	config_parser.OnKeyValue = KeyValue;
 	
 	if (g_ConfigMenu != INVALID_HANDLE)
 	{
@@ -135,8 +135,8 @@ ParseConfigs()
 		return;		
 	}
 	
-	new line;
-	new SMCError:err = SMC_ParseFile(config_parser, configPath, line);
+	int line;
+	SMCError err = config_parser.ParseFile(configPath, line);
 	if (err != SMCError_Okay)
 	{
 		decl String:error[256];
@@ -148,17 +148,17 @@ ParseConfigs()
 	return;
 }
 
-public SMCResult:NewSection(Handle:smc, const String:name[], bool:opt_quotes)
+public SMCResult NewSection(SMCParser smc, const char[] name, bool opt_quotes)
 {
 
 }
 
-public SMCResult:KeyValue(Handle:smc, const String:key[], const String:value[], bool:key_quotes, bool:value_quotes)
+public SMCResult KeyValue(SMCParser smc, const char[] key, const char[] value, bool key_quotes, bool value_quotes)
 {
 	AddMenuItem(g_ConfigMenu, key, value);
 }
 
-public SMCResult:EndSection(Handle:smc)
+public SMCResult EndSection(SMCParser smc)
 {
 	
 }

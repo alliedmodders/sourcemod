@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod Admin File Reader Plugin
  * Reads the admins.cfg file.  Do not compile this directly.
@@ -35,7 +35,7 @@
 #define USER_STATE_ADMINS		1
 #define USER_STATE_INADMIN		2
 
-static Handle:g_hUserParser = INVALID_HANDLE;
+static SMCParser g_hUserParser;
 static g_UserState = USER_STATE_NONE;
 static String:g_CurAuth[64];
 static String:g_CurIdent[64];
@@ -210,14 +210,13 @@ public SMCResult:ReadUsers_CurrentLine(Handle:smc, const String:line[], lineno)
 
 static InitializeUserParser()
 {
-	if (g_hUserParser == INVALID_HANDLE)
+	if (!g_hUserParser)
 	{
-		g_hUserParser = SMC_CreateParser();
-		SMC_SetReaders(g_hUserParser,
-					   ReadUsers_NewSection,
-					   ReadUsers_KeyValue,
-					   ReadUsers_EndSection);
-		SMC_SetRawLine(g_hUserParser, ReadUsers_CurrentLine);
+		g_hUserParser = SMCParser();
+		g_hUserParser.OnEnterSection = ReadUsers_NewSection;
+		g_hUserParser.OnKeyValue = ReadUsers_KeyValue;
+		g_hUserParser.OnLeaveSection = ReadUsers_EndSection;
+		g_hUserParser.OnRawLine = ReadUsers_CurrentLine;
 		
 		g_GroupArray = CreateArray();
 	}
@@ -233,11 +232,11 @@ ReadUsers()
 	InitGlobalStates();
 	g_UserState = USER_STATE_NONE;
 		
-	new SMCError:err = SMC_ParseFile(g_hUserParser, g_Filename);
+	SMCError err = g_hUserParser.ParseFile(g_Filename);
 	if (err != SMCError_Okay)
 	{
-		decl String:buffer[64];
-		if (SMC_GetErrorString(err, buffer, sizeof(buffer)))
+		char buffer[64];
+		if (g_hUserParser.GetErrorString(err, buffer, sizeof(buffer)))
 		{
 			ParseError("%s", buffer);
 		}

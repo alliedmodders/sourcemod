@@ -1077,7 +1077,7 @@ const char *TextParsers::GetSMCErrorString(SMCError err)
 		NULL,
 		"Stream failed to open",
 		"Stream returned read error",
-		NULL,
+		"Callback error",
 		"Un-quoted section has invalid tokens",
 		"Section declared without header",
 		"Section declared with unknown tokens",

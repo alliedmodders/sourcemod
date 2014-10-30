@@ -13,7 +13,7 @@ enum GroupCommands
 new g_groupList[GroupCommands];
 new g_groupCount;
 
-new Handle:g_configParser = INVALID_HANDLE;
+SMCParser g_configParser;
 
 enum Places
 {
@@ -324,12 +324,12 @@ BuildDynamicMenu()
 
 ParseConfigs()
 {
-	if (g_configParser == INVALID_HANDLE)
-	{
-		g_configParser = SMC_CreateParser();
-	}
+	if (!g_configParser)
+		g_configParser = SMCParser();
 	
-	SMC_SetReaders(g_configParser, NewSection, KeyValue, EndSection);
+        g_configParser.OnEnterSection = NewSection;
+        g_configParser.OnKeyValue = KeyValue;
+        g_configParser.OnLeaveSection = EndSection;
 	
 	if (g_groupList[groupListName] != INVALID_HANDLE)
 	{
@@ -363,8 +363,8 @@ ParseConfigs()
 		return;		
 	}
 	
-	new line;
-	new SMCError:err = SMC_ParseFile(g_configParser, configPath, line);
+	int line;
+	SMCError err = g_configParser.ParseFile(configPath, line);
 	if (err != SMCError_Okay)
 	{
 		decl String:error[256];
@@ -376,18 +376,18 @@ ParseConfigs()
 	return;
 }
 
-public SMCResult:NewSection(Handle:smc, const String:name[], bool:opt_quotes)
+public SMCResult NewSection(SMCParser smc, const char[] name, bool opt_quotes)
 {
 
 }
 
-public SMCResult:KeyValue(Handle:smc, const String:key[], const String:value[], bool:key_quotes, bool:value_quotes)
+public SMCResult KeyValue(SMCParser smc, const char[] key, const char[] value, bool key_quotes, bool value_quotes)
 {
 	PushArrayString(g_groupList[groupListName], key);
 	PushArrayString(g_groupList[groupListCommand], value);
 }
 
-public SMCResult:EndSection(Handle:smc)
+public SMCResult EndSection(SMCParser smc)
 {
 	g_groupCount = GetArraySize(g_groupList[groupListName]);
 }
