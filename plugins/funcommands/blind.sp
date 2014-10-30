@@ -53,13 +53,14 @@ PerformBlind(client, target, amount)
 	new color[4] = { 0, 0, 0, 0 };
 	color[3] = amount;
 	
-	new Handle:message = StartMessageEx(g_FadeUserMsgId, targets, 1);
+	Handle message = StartMessageEx(g_FadeUserMsgId, targets, 1);
 	if (GetUserMessageType() == UM_Protobuf)
 	{
-		PbSetInt(message, "duration", duration);
-		PbSetInt(message, "hold_time", holdtime);
-		PbSetInt(message, "flags", flags);
-		PbSetColor(message, "clr", color);
+		Protobuf pb = UserMessageToProtobuf(message);
+		pb.SetInt("duration", duration);
+		pb.SetInt("hold_time", holdtime);
+		pb.SetInt("flags", flags);
+		pb.SetColor("clr", color);
 	}
 	else
 	{
