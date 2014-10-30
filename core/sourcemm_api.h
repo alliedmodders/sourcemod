@@ -50,6 +50,7 @@
 #include <random.h>
 #include <filesystem.h>
 #include <IEngineSound.h>
+#include <toolframework/itoolentity.h>
 
 #ifndef METAMOD_PLAPI_VERSION
 	#include <metamod_wrappers.h>
@@ -103,6 +104,7 @@ extern IPlayerInfoManager *playerinfo;
 extern IBaseFileSystem *basefilesystem;
 extern IFileSystem *filesystem;
 extern IEngineSound *enginesound;
+extern IServerTools *servertools;
 extern IServerPluginHelpers *serverpluginhelpers;
 extern IServerPluginCallbacks *vsp_interface;
 extern int vsp_version;
