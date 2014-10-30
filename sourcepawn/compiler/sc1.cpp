@@ -3686,8 +3686,7 @@ int parse_property_accessor(const typeinfo_t *type, methodmap_t *map, methodmap_
 
     // Must have one extra argument taking the return type.
     arginfo *arg = &target->dim.arglist[1];
-    if (arg->ident == 0 ||
-        arg->ident != iVARIABLE ||
+    if (arg->ident != iVARIABLE ||
         arg->hasdefault ||
         arg->numtags != 1 ||
         arg->tags[0] != type->tag)
