@@ -438,7 +438,7 @@ native GetCmdArgString(String:buffer[], maxlength);
  * @return				A handle to the newly created convar. If the convar already exists, a handle to it will still be returned.
  * @error				Convar name is blank or is the same as an existing console command.
  */
-native Handle:CreateConVar(const String:name[], const String:defaultValue[], const String:description[]="", flags=0, bool:hasMin=false, Float:min=0.0, bool:hasMax=false, Float:max=0.0);
+native ConVar:CreateConVar(const String:name[], const String:defaultValue[], const String:description[]="", flags=0, bool:hasMin=false, Float:min=0.0, bool:hasMax=false, Float:max=0.0);
 
 /**
  * Searches for a console variable.
@@ -446,7 +446,7 @@ native Handle:CreateConVar(const String:name[], const String:defaultValue[], con
  * @param name			Name of convar to find.
  * @return				A handle to the convar if it is found. INVALID_HANDLE otherwise.
  */
-native Handle:FindConVar(const String:name[]);
+native ConVar:FindConVar(const String:name[]);
 
 /**
  * Called when a console variable's value is changed.
@@ -969,3 +969,23 @@ forward Action:OnClientSayCommand(client, const String:command[], const String:s
  * 
  */
 forward void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs);
+
+methodmap ConVar < Handle
+{
+	public ConVar() = CreateConVar;
+	public GetBool() = GetConVarBool;
+	public SetBool() = SetConVarBool;
+	public GetInt() = GetConVarInt;
+	public SetInt() = SetConVarInt;
+	public GetString() = GetConVarString;
+	public SetString() = SetConVarString;
+	public GetFloat() = GetConVarFloat;
+	public SetFloat() = SetConVarFloat;
+	public GetFlags() = GetConVarFlags;
+	public SetFlags() = SetConVarFlags;
+	public GetBounds() = GetConVarBounds;
+	public SetBounds() = SetConVarBounds;
+	public GetDefault() = GetConVarDefault;
+	public GetName() = GetConVarName;
+	
+}
