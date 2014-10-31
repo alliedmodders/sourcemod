@@ -1445,7 +1445,11 @@ static void dodecl(const token_t *tok)
   if (tok->id == tNEW)
     flags |= DECLFLAG_OLD;
   
-  parse_decl(&decl, flags);
+  if (!parse_decl(&decl, flags)) {
+    // Error will have been reported earlier. Reset |decl| so we don't crash
+    // thinking tag -1 has every flag.
+    decl.type.tag = 0;
+  }
 
   if (!decl.opertok && (tok->id == tNEW || decl.has_postdims || !lexpeek('('))) {
     if (tok->id == tNEW && decl.is_new)
