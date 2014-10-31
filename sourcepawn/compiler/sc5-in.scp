@@ -199,7 +199,7 @@ static const char *errmsg[] = {
 /*153*/  "cannot use non-public functions as callbacks\n",
 /*154*/  "cannot assign INVALID_FUNCTION to a non-function type\n",
 /*155*/  "expected newline, but found '%s'\n",
-/*156*/  "the 'any' type is not allowed in new-style natives\n",
+/*156*/  "unused156\n",
 /*157*/  "'%s' is a reserved keyword\n",
 /*158*/  "multi-tags are no longer supported\n",
 #else
