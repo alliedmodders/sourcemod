@@ -1101,6 +1101,18 @@ static cell_t smn_KvGetSectionSymbol(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t KeyValues_Import(IPluginContext *pContext, const cell_t *params)
+{
+	// This version takes (dest, src). The original is (src, dest).
+	cell_t new_params[3] = {
+		2,
+		params[2],
+		params[1],
+	};
+
+	return smn_CopySubkeys(pContext, new_params);
+}
+
 static KeyValueNatives s_KeyValueNatives;
 
 REGISTER_NATIVES(keyvaluenatives)
@@ -1139,5 +1151,42 @@ REGISTER_NATIVES(keyvaluenatives)
 	{"KvGetSectionSymbol",		smn_KvGetSectionSymbol},
 	{"KvGetVector",				smn_KvGetVector},
 	{"KvSetVector",				smn_KvSetVector},
+
+	// Transitional syntax support.
+	{"KeyValues.KeyValues",				smn_CreateKeyValues},
+	{"KeyValues.SetString",				smn_KvSetString},
+	{"KeyValues.SetNum",				smn_KvSetNum},
+	{"KeyValues.SetUInt64",				smn_KvSetUInt64},
+	{"KeyValues.SetFloat",				smn_KvSetFloat},
+	{"KeyValues.SetColor",				smn_KvSetColor},
+	{"KeyValues.GetString",				smn_KvGetString},
+	{"KeyValues.GetNum",				smn_KvGetNum},
+	{"KeyValues.GetFloat",				smn_KvGetFloat},
+	{"KeyValues.GetColor",				smn_KvGetColor},
+	{"KeyValues.GetUInt64",				smn_KvGetUInt64},
+	{"KeyValues.JumpToKey",				smn_KvJumpToKey},
+	{"KeyValues.JumpToKeySymbol",		smn_KvJumpToKeySymbol},
+	{"KeyValues.GotoNextKey",			smn_KvGotoNextKey},
+	{"KeyValues.GotoFirstSubKey",		smn_KvGotoFirstSubKey},
+	{"KeyValues.GoBack",				smn_KvGoBack},
+	{"KeyValues.Rewind",				smn_KvRewind},
+	{"KeyValues.GetSectionName",		smn_KvGetSectionName},
+	{"KeyValues.SetSectionName",		smn_KvSetSectionName},
+	{"KeyValues.GetDataType",			smn_KvGetDataType},
+	{"KeyValues.SetEscapeSequences",	smn_KvSetEscapeSequences},
+	{"KeyValues.DeleteThis",			smn_KvDeleteThis},
+	{"KeyValues.DeleteKey",				smn_KvDeleteKey},
+	{"KeyValues.NodesInStack",			smn_KvNodesInStack},
+	{"KeyValues.SavePosition",			smn_KvSavePosition},
+	{"KeyValues.FindKeyById",			smn_FindKeyById},
+	{"KeyValues.GetNameSymbol",			smn_GetNameSymbol},
+	{"KeyValues.GetSectionSymbol",		smn_KvGetSectionSymbol},
+	{"KeyValues.GetVector",				smn_KvGetVector},
+	{"KeyValues.SetVector",				smn_KvSetVector},
+	{"KeyValues.Import",				KeyValues_Import},
+	{"KeyValues.ImportFromFile",		smn_FileToKeyValues},
+	{"KeyValues.ImportFromString",		smn_StringToKeyValues},
+	{"KeyValues.ExportToFile",			smn_KeyValuesToFile},
+
 	{NULL,						NULL}
 };
