@@ -5470,9 +5470,6 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
 
       check_void_decl(&decl, TRUE);
 
-      if (decl.is_new && (sym->usage & uNATIVE) && decl.type.tag == pc_anytag)
-        error(156);
-
       if (decl.type.ident == iVARARGS) {
         assert(decl.type.numtags > 0);
         if ((sym->usage & uPROTOTYPED)==0) {

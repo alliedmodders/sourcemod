@@ -1,1 +1,0 @@
-(1) : error 156: the 'any' type is not allowed in new-style natives
