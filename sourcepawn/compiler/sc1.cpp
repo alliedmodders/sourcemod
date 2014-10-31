@@ -3742,6 +3742,7 @@ methodmap_method_t *parse_property(methodmap_t *map)
 
 methodmap_method_t *parse_method(methodmap_t *map)
 {
+  int maybe_ctor = 0;
   int is_ctor = 0;
   int is_dtor = 0;
   int is_bind = 0;
@@ -3803,7 +3804,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
         // ::= ident '('
 
         // Push the '(' token back for declargs().
-        is_ctor = TRUE;
+        maybe_ctor = TRUE;
         lexpush();
       } else {
         // The first token of the type expression is either the symbol we
@@ -3839,8 +3840,10 @@ methodmap_method_t *parse_method(methodmap_t *map)
     strcpy(ident.name, "~");
     strcat(ident.name, map->name);
     check_name_length(ident.name);
-  } else if (is_ctor) {
-    if (strcmp(ident.name, map->name) != 0)
+  } else if (maybe_ctor) {
+    if (strcmp(ident.name, map->name) == 0)
+      is_ctor = TRUE;
+    else
       error(114, "constructor", spectype, map->name);
   }
 
