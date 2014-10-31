@@ -117,13 +117,10 @@ BuildDynamicMenu()
 
 		KvGetString(kvMenu, "admin", admin, sizeof(admin),"sm_admin");
 				
-		if ((categoryId =FindTopMenuCategory(hAdminMenu, buffer)) == INVALID_TOPMENUOBJECT)
+		if ((categoryId = hAdminMenu.FindCategory(buffer)) == INVALID_TOPMENUOBJECT)
 		{
-			categoryId = AddToTopMenu(hAdminMenu,
-							buffer,
-							TopMenuObject_Category,
+			categoryId = hAdminMenu.AddCategory(buffer,
 							DynamicMenuCategoryHandler,
-							INVALID_TOPMENUOBJECT,
 							admin,
 							ADMFLAG_GENERIC,
 							name);
@@ -309,9 +306,7 @@ BuildDynamicMenu()
 			decl String:locString[10];
 			IntToString(location, locString, sizeof(locString));
 
-			if (AddToTopMenu(hAdminMenu,
-				buffer,
-				TopMenuObject_Item,
+			if (hAdminMenu.AddItem(buffer,
 				DynamicMenuItemHandler,
   				categoryId,
   				admin,
@@ -590,7 +585,7 @@ public ParamCheck(client)
 	{	
 		//nothing else need to be done. Run teh command.
 		
-		DisplayTopMenu(hAdminMenu, client, TopMenuPosition_LastCategory);
+		hAdminMenu.Display(client, TopMenuPosition_LastCategory);
 		
 		decl String:unquotedCommand[CMD_LENGTH];
 		UnQuoteString(g_command[client], unquotedCommand, sizeof(unquotedCommand), "#@");
@@ -654,7 +649,7 @@ public Menu_Selection(Handle:menu, MenuAction:action, param1, param2)
 	if (action == MenuAction_Cancel && param2 == MenuCancel_ExitBack)
 	{
 		//client exited we should go back to submenu i think
-		DisplayTopMenu(hAdminMenu, param1, TopMenuPosition_LastCategory);
+		hAdminMenu.Display(param1, TopMenuPosition_LastCategory);
 	}
 }
 

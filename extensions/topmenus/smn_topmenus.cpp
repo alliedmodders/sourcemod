@@ -417,6 +417,38 @@ static cell_t SetTopMenuTitleCaching(IPluginContext *pContext, const cell_t *par
 	return 0;
 }
 
+static cell_t TopMenu_AddItem(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t new_params[] = {
+		8,
+		params[1],				// this
+		params[2],				// name
+		TopMenuObject_Item,		// type
+		params[3],				// handler
+		params[4],				// parent
+		params[5],				// cmdname
+		params[6],				// flags
+		params[7],				// info_string
+	};
+	return AddToTopMenu(pContext, new_params);
+}
+
+static cell_t TopMenu_AddCategory(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t new_params[] = {
+		8,
+		params[1],				// this
+		params[2],				// name
+		TopMenuObject_Category,	// type
+		params[3],				// handler
+		0,						// parent
+		params[4],				// cmdname
+		params[5],				// flags
+		params[6],				// info_string
+	};
+	return AddToTopMenu(pContext, new_params);
+}
+
 sp_nativeinfo_t g_TopMenuNatives[] = 
 {
 	{"AddToTopMenu",			AddToTopMenu},
@@ -429,5 +461,19 @@ sp_nativeinfo_t g_TopMenuNatives[] =
 	{"GetTopMenuInfoString",	GetTopMenuInfoString},
 	{"GetTopMenuObjName",		GetTopMenuName},
 	{"SetTopMenuTitleCaching",		SetTopMenuTitleCaching},
+
+	// Transitional variants.
+	{"TopMenu.TopMenu",			CreateTopMenu},
+	{"TopMenu.AddItem",			TopMenu_AddItem},
+	{"TopMenu.AddCategory",		TopMenu_AddCategory},
+	{"TopMenu.Display",			DisplayTopMenu},
+	{"TopMenu.DisplayCategory",	DisplayTopMenuCategory},
+	{"TopMenu.LoadConfig",		LoadTopMenuConfig},
+	{"TopMenu.Remove",			RemoveFromTopMenu},
+	{"TopMenu.FindCategory",	FindTopMenuCategory},
+	{"TopMenu.GetInfoString",	GetTopMenuInfoString},
+	{"TopMenu.GetObjName",		GetTopMenuName},
+	{"TopMenu.CacheTitles.set",	SetTopMenuTitleCaching},
+
 	{NULL,					NULL},
 };

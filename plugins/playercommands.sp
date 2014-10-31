@@ -47,7 +47,7 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-new Handle:hTopMenu = INVALID_HANDLE;
+TopMenu hTopMenu;
 
 /* Used to get the SDK / Engine version. */
 /* This is used in sm_rename and sm_changeteam */
@@ -69,14 +69,14 @@ public OnPluginStart()
 	g_ModVersion = GetEngineVersion();
 	
 	/* Account for late loading */
-	new Handle:topmenu;
-	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	TopMenu topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != null))
 	{
 		OnAdminMenuReady(topmenu);
 	}
 }
 
-public OnAdminMenuReady(Handle:topmenu)
+public OnAdminMenuReady(TopMenu topmenu)
 {
 	/* Block us from being called twice */
 	if (topmenu == hTopMenu)
@@ -88,32 +88,12 @@ public OnAdminMenuReady(Handle:topmenu)
 	hTopMenu = topmenu;
 	
 	/* Find the "Player Commands" category */
-	new TopMenuObject:player_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_PLAYERCOMMANDS);
+	TopMenuObject player_commands = hTopMenu.FindCategory(ADMINMENU_PLAYERCOMMANDS);
 
 	if (player_commands != INVALID_TOPMENUOBJECT)
 	{
-		AddToTopMenu(hTopMenu,
-			"sm_slay",
-			TopMenuObject_Item,
-			AdminMenu_Slay,
-			player_commands,
-			"sm_slay",
-			ADMFLAG_SLAY);
-			
-		AddToTopMenu(hTopMenu,
-			"sm_slap",
-			TopMenuObject_Item,
-			AdminMenu_Slap,
-			player_commands,
-			"sm_slap",
-			ADMFLAG_SLAY);
-
-		AddToTopMenu(hTopMenu,
-			"sm_rename",
-			TopMenuObject_Item,
-			AdminMenu_Rename,
-			player_commands,
-			"sm_rename",
-			ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_slay", AdminMenu_Slay, player_commands, "sm_slay", ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_slap", AdminMenu_Slap, player_commands, "sm_slap", ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_rename", AdminMenu_Rename, player_commands, "sm_rename", ADMFLAG_SLAY);
 	}
 }

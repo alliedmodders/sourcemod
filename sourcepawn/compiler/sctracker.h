@@ -85,6 +85,19 @@ typedef struct methodmap_method_s
   symbol *target;
   symbol *getter;
   symbol *setter;
+
+  int property_tag() const {
+    assert(getter || setter);
+    if (getter)
+      return getter->tag;
+    arginfo *thisp = &setter->dim.arglist[0];
+    if (thisp->ident == 0)
+      return pc_tag_void;
+    arginfo *valp = &setter->dim.arglist[1];
+    if (valp->ident != iVARIABLE || valp->numtags != 1)
+      return pc_tag_void;
+    return valp->tags[0];
+  }
 } methodmap_method_t;
 
 typedef struct methodmap_s

@@ -2174,7 +2174,7 @@ restart:
               rvalue(lval1);
             clear_value(lval1);
             lval1->ident = iACCESSOR;
-            lval1->tag = method->getter->tag;
+            lval1->tag = method->property_tag();
             lval1->accessor = method;
             lvalue = TRUE;
             goto restart;

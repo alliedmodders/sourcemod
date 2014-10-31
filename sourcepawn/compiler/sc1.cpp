@@ -1445,7 +1445,11 @@ static void dodecl(const token_t *tok)
   if (tok->id == tNEW)
     flags |= DECLFLAG_OLD;
   
-  parse_decl(&decl, flags);
+  if (!parse_decl(&decl, flags)) {
+    // Error will have been reported earlier. Reset |decl| so we don't crash
+    // thinking tag -1 has every flag.
+    decl.type.tag = 0;
+  }
 
   if (!decl.opertok && (tok->id == tNEW || decl.has_postdims || !lexpeek('('))) {
     if (tok->id == tNEW && decl.is_new)
@@ -3686,8 +3690,7 @@ int parse_property_accessor(const typeinfo_t *type, methodmap_t *map, methodmap_
 
     // Must have one extra argument taking the return type.
     arginfo *arg = &target->dim.arglist[1];
-    if (arg->ident == 0 ||
-        arg->ident != iVARIABLE ||
+    if (arg->ident != iVARIABLE ||
         arg->hasdefault ||
         arg->numtags != 1 ||
         arg->tags[0] != type->tag)
@@ -3739,6 +3742,7 @@ methodmap_method_t *parse_property(methodmap_t *map)
 
 methodmap_method_t *parse_method(methodmap_t *map)
 {
+  int maybe_ctor = 0;
   int is_ctor = 0;
   int is_dtor = 0;
   int is_bind = 0;
@@ -3800,7 +3804,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
         // ::= ident '('
 
         // Push the '(' token back for declargs().
-        is_ctor = TRUE;
+        maybe_ctor = TRUE;
         lexpush();
       } else {
         // The first token of the type expression is either the symbol we
@@ -3836,8 +3840,10 @@ methodmap_method_t *parse_method(methodmap_t *map)
     strcpy(ident.name, "~");
     strcat(ident.name, map->name);
     check_name_length(ident.name);
-  } else if (is_ctor) {
-    if (strcmp(ident.name, map->name) != 0)
+  } else if (maybe_ctor) {
+    if (strcmp(ident.name, map->name) == 0)
+      is_ctor = TRUE;
+    else
       error(114, "constructor", spectype, map->name);
   }
 
@@ -5470,9 +5476,6 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
       assert(decl.type.numtags > 0);
 
       check_void_decl(&decl, TRUE);
-
-      if (decl.is_new && (sym->usage & uNATIVE) && decl.type.tag == pc_anytag)
-        error(156);
 
       if (decl.type.ident == iVARARGS) {
         assert(decl.type.numtags > 0);
