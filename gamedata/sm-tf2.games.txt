@@ -18,7 +18,7 @@
 			"Burn"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x51\x57\x8B\xF9\x8B\x8F\x2A\x2A\x2A\x2A\x8B\x01\x8B\x80\x2A\x2A\x2A\x2A\xFF\xD0\x84\xC0\x0F"
+				"windows"	"\x55\x8B\xEC\x51\x56\x8B\xF1\x8B\x8E\x2A\x2A\x2A\x2A\x8B\x01\x8B\x80\x2A\x2A\x2A\x2A\xFF\xD0\x84\xC0\x0F\x84"
 				"linux"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 				"mac"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 			}
@@ -113,21 +113,21 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"324"
-				"linux"		"325"
-				"mac"		"325"
+				"windows"	"325"
+				"linux"		"326"
+				"mac"		"326"
 			}
 			"CalcIsAttackCriticalHelper"
-			{
-				"windows"	"383"
-				"linux"		"390"
-				"mac"		"390"
-			}
-			"CalcIsAttackCriticalHelperNoCrits"
 			{
 				"windows"	"384"
 				"linux"		"391"
 				"mac"		"391"
+			}
+			"CalcIsAttackCriticalHelperNoCrits"
+			{
+				"windows"	"385"
+				"linux"		"392"
+				"mac"		"392"
 			}
 			
 			// CTFGameRules::IsHolidayActive
@@ -140,9 +140,9 @@
 
 			"RemoveWearable"
 			{
-				"windows"	"426"
-				"linux"		"427"
-				"mac"		"427"
+				"windows"	"427"
+				"linux"		"428"
+				"mac"		"428"
 			}
 		}
 	}
