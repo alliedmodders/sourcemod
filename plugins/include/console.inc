@@ -29,7 +29,7 @@
  *
  * Version: $Id$
  */
- 
+
 #if defined _console_included
  #endinput
 #endif
@@ -970,6 +970,7 @@ forward Action:OnClientSayCommand(client, const String:command[], const String:s
  */
 forward void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs);
 
+// Most of these aren't properties because they're more complex
 methodmap ConVar < Handle
 {
 	public ConVar() = CreateConVar;
@@ -977,15 +978,15 @@ methodmap ConVar < Handle
 	public SetBool() = SetConVarBool;
 	public GetInt() = GetConVarInt;
 	public SetInt() = SetConVarInt;
-	public GetString() = GetConVarString;
-	public SetString() = SetConVarString;
 	public GetFloat() = GetConVarFloat;
 	public SetFloat() = SetConVarFloat;
+	public GetString() = GetConVarString;
+	public SetString() = SetConVarString;
+	public Reset() = ResetConVar;
 	public GetFlags() = GetConVarFlags;
 	public SetFlags() = SetConVarFlags;
 	public GetBounds() = GetConVarBounds;
 	public SetBounds() = SetConVarBounds;
 	public GetDefault() = GetConVarDefault;
 	public GetName() = GetConVarName;
-	
 }
