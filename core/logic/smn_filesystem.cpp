@@ -181,7 +181,7 @@ public:
 	}
 
 	size_t Read(void *pOut, int size) KE_OVERRIDE {
-		return fread(pOut, size, 1, fp_);
+		return fread(pOut, 1, size, fp_);
 	}
 	char *ReadLine(char *pOut, int size) KE_OVERRIDE {
 		return fgets(pOut, size, fp_);
@@ -1104,6 +1104,35 @@ static cell_t sm_RemoveGameLogHook(IPluginContext *pContext, const cell_t *param
 	return 1;
 }
 
+template <typename T>
+static cell_t File_ReadTyped(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<FileObject> file(pContext, params[1], g_FileType);
+	if (!file.Ok())
+		return 0;
+
+	cell_t *data;
+	pContext->LocalToPhysAddr(params[2], &data);
+
+	T value;
+	if (file->Read(&value, sizeof(value)) != sizeof(value))
+		return 0;
+
+	*data = value;
+	return 1;
+}
+
+template <typename T>
+static cell_t File_WriteTyped(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<FileObject> file(pContext, params[1], g_FileType);
+	if (!file.Ok())
+		return 0;
+
+	T value = (T)params[2];
+	return !!(file->Write(&value, sizeof(value)) == sizeof(value));
+}
+
 REGISTER_NATIVES(filesystem)
 {
 	{"OpenDirectory",			sm_OpenDirectory},
@@ -1136,5 +1165,26 @@ REGISTER_NATIVES(filesystem)
 	{"RemoveGameLogHook",		sm_RemoveGameLogHook},
 	{"CreateDirectory",			sm_CreateDirectory},
 	{"SetFilePermissions",		sm_SetFilePermissions},
+
+	{"File.ReadLine",			sm_ReadFileLine},
+	{"File.Read",				sm_ReadFile},
+	{"File.ReadString",			sm_ReadFileString},
+	{"File.Write",				sm_WriteFile},
+	{"File.WriteString",		sm_WriteFileString},
+	{"File.WriteLine",			sm_WriteFileLine},
+	{"File.EndOfFile",			sm_IsEndOfFile},
+	{"File.Seek",				sm_FileSeek},
+	{"File.Position.get",		sm_FilePosition},
+	{"File.ReadInt8",			File_ReadTyped<int8_t>},
+	{"File.ReadUint8",			File_ReadTyped<uint8_t>},
+	{"File.ReadInt16",			File_ReadTyped<int16_t>},
+	{"File.ReadInt32",			File_ReadTyped<int32_t>},
+	{"File.WriteInt8",			File_WriteTyped<int8_t>},
+	{"File.WriteInt16",			File_WriteTyped<int16_t>},
+	{"File.WriteInt32",			File_WriteTyped<int32_t>},
+
+	// Transitional syntax support.
+	{"DirectoryListing.GetNext",			sm_ReadDirEntry},
+
 	{NULL,						NULL},
 };

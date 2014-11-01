@@ -4170,7 +4170,7 @@ static void dodelete()
   switch (ident) {
     case iFUNCTN:
     case iREFFUNC:
-      error(115, "functions");
+      error(167, "functions");
       return;
 
     case iARRAY:
@@ -4180,7 +4180,7 @@ static void dodelete()
     {
       symbol *sym = sval.val.sym;
       if (!sym || sym->dim.array.level > 0) {
-        error(115, "arrays");
+        error(167, "arrays");
         return;
       }
       break;
@@ -4188,13 +4188,13 @@ static void dodelete()
   }
 
   if (sval.val.tag == 0) {
-    error(115, "primitive types or enums");
+    error(167, "integers");
     return;
   }
 
   methodmap_t *map = methodmap_find_by_tag(sval.val.tag);
   if (!map) {
-    error(115, pc_tagname(sval.val.tag));
+    error(115, "type", pc_tagname(sval.val.tag));
     return;
   }
 
