@@ -98,10 +98,10 @@
 	}
 	
 	"#default"
+	{
+		"Keys"
 		{
-			"Keys"
-			{
-				"UseInvalidUniverseInSteam2IDs"		"1"
-			}
+			"UseInvalidUniverseInSteam2IDs"		"1"
+		}
 	}
 }
