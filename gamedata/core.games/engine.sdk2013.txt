@@ -19,6 +19,7 @@
 		{
 			"game"		"synergy"
 			"game"		"empires"
+			"game"		"pvkii"
 		}
 		
 		"Offsets"
@@ -93,14 +94,6 @@
 				"linux"		"@gEntList"
 				"mac"		"@gEntList"
 			}
-		}
-	}
-	
-	"#default"
-	{
-		"Keys"
-		{
-			"UseInvalidUniverseInSteam2IDs"		"1"
 		}
 	}
 }

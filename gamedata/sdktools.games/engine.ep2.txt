@@ -18,7 +18,6 @@
 		{
 			"game"		"ageofchivalry"
 			"game"		"bg2"
-			"game"		"pvkii"
 			"game"		"gesource"
 			"game"		"fas"
 			"game"		"fistful_of_frags"
@@ -71,7 +70,6 @@
 		"#supported"
 		{
 			"game"		"ageofchivalry"
-			"game"		"pvkii"
 			"game"		"fistful_of_frags"
 			"game"		"cspromod"
 			"game"		"ag2"
@@ -97,7 +95,6 @@
 			"game"		"ageofchivalry"
 			"game"		"zps"
 			"game"		"bg2"
-			"game"		"pvkii"
 			"game"		"gesource"
 			"game"		"RnLBeta"
 			"game"		"obsidian"

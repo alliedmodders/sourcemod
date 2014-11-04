@@ -17,8 +17,8 @@
 			}
 			"OnTakeDamage"
 			{
-				"windows"	"61"
-				"linux"		"62"
+				"windows"	"243"
+				"linux"		"244"
 			}
 			"PreThink"
 			{
