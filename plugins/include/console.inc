@@ -456,7 +456,7 @@ native ConVar:FindConVar(const String:name[]);
  * @param newValue		String containing the new value of the convar.
  * @noreturn
  */
-typedef ConVarChanged = function void (Handle convar, const char[] oldValue, const char[] newValue);
+typedef ConVarChanged = function void (ConVar convar, const char[] oldValue, const char[] newValue);
 
 /**
  * Creates a hook for when a console variable's value is changed.
