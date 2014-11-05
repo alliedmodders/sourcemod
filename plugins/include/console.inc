@@ -989,4 +989,6 @@ methodmap ConVar < Handle
 	public SetBounds() = SetConVarBounds;
 	public GetDefault() = GetConVarDefault;
 	public GetName() = GetConVarName;
+	public HookChange() = HookConVarChange;
+	public UnhookChange() = UnhookConVarChange;
 }
