@@ -982,13 +982,13 @@ methodmap ConVar < Handle
 	public SetFloat() = SetConVarFloat;
 	public GetString() = GetConVarString;
 	public SetString() = SetConVarString;
-	public Reset() = ResetConVar;
+	public RestoreDefaultValue() = ResetConVar;
 	public GetFlags() = GetConVarFlags;
 	public SetFlags() = SetConVarFlags;
 	public GetBounds() = GetConVarBounds;
 	public SetBounds() = SetConVarBounds;
-	public GetDefault() = GetConVarDefault;
+	public GetDefaultValue() = GetConVarDefault;
 	public GetName() = GetConVarName;
-	public HookChange() = HookConVarChange;
-	public UnhookChange() = UnhookConVarChange;
+	public AddChangeHook() = HookConVarChange;
+	public RemoveChangeHook() = UnhookConVarChange;
 }
