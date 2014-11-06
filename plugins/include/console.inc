@@ -29,7 +29,7 @@
  *
  * Version: $Id$
  */
- 
+
 #if defined _console_included
  #endinput
 #endif
@@ -438,7 +438,7 @@ native GetCmdArgString(String:buffer[], maxlength);
  * @return				A handle to the newly created convar. If the convar already exists, a handle to it will still be returned.
  * @error				Convar name is blank or is the same as an existing console command.
  */
-native Handle:CreateConVar(const String:name[], const String:defaultValue[], const String:description[]="", flags=0, bool:hasMin=false, Float:min=0.0, bool:hasMax=false, Float:max=0.0);
+native ConVar:CreateConVar(const String:name[], const String:defaultValue[], const String:description[]="", flags=0, bool:hasMin=false, Float:min=0.0, bool:hasMax=false, Float:max=0.0);
 
 /**
  * Searches for a console variable.
@@ -446,7 +446,7 @@ native Handle:CreateConVar(const String:name[], const String:defaultValue[], con
  * @param name			Name of convar to find.
  * @return				A handle to the convar if it is found. INVALID_HANDLE otherwise.
  */
-native Handle:FindConVar(const String:name[]);
+native ConVar:FindConVar(const String:name[]);
 
 /**
  * Called when a console variable's value is changed.
@@ -456,7 +456,7 @@ native Handle:FindConVar(const String:name[]);
  * @param newValue		String containing the new value of the convar.
  * @noreturn
  */
-typedef ConVarChanged = function void (Handle convar, const char[] oldValue, const char[] newValue);
+typedef ConVarChanged = function void (ConVar convar, const char[] oldValue, const char[] newValue);
 
 /**
  * Creates a hook for when a console variable's value is changed.
@@ -969,3 +969,26 @@ forward Action:OnClientSayCommand(client, const String:command[], const String:s
  * 
  */
 forward void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs);
+
+// Most of these aren't properties because they're more complex
+methodmap ConVar < Handle
+{
+	public ConVar() = CreateConVar;
+	public GetBool() = GetConVarBool;
+	public SetBool() = SetConVarBool;
+	public GetInt() = GetConVarInt;
+	public SetInt() = SetConVarInt;
+	public GetFloat() = GetConVarFloat;
+	public SetFloat() = SetConVarFloat;
+	public GetString() = GetConVarString;
+	public SetString() = SetConVarString;
+	public RestoreDefaultValue() = ResetConVar;
+	public GetFlags() = GetConVarFlags;
+	public SetFlags() = SetConVarFlags;
+	public GetBounds() = GetConVarBounds;
+	public SetBounds() = SetConVarBounds;
+	public GetDefaultValue() = GetConVarDefault;
+	public GetName() = GetConVarName;
+	public AddChangeHook() = HookConVarChange;
+	public RemoveChangeHook() = UnhookConVarChange;
+}
