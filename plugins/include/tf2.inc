@@ -168,6 +168,7 @@ enum TFHoliday
 	TFHoliday_Christmas,
 	TFHoliday_ValentinesDay,
 	TFHoliday_MeetThePyro,
+	TFHoliday_SpyVsEngyWar,
 	TFHoliday_FullMoon,
 	TFHoliday_HalloweenOrFullMoon,
 	TFHoliday_HalloweenOrFullMoonOrValentines,
