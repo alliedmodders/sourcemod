@@ -157,6 +157,13 @@ enum TFCond
 	TFCond_DodgeChance = 79,
 	TFCond_Parachute,
 	TFCond_BlastJumping,
+	TFCond_HalloweenKart,
+	TFCond_HalloweenKartDash,
+	TFCond_HalloweenBigHeadLowGravity,
+	TFCond_HalloweenMiniMelee,
+	TFCond_HalloweenSwimming,
+	TFCond_HalloweenKartNoTurn,
+	TFCond_HalloweenKartCage,
 };
 
 const Float:TFCondDuration_Infinite = -1.0;
