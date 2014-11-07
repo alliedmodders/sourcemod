@@ -129,7 +129,7 @@ native Event CreateEvent(const char name[], bool force=false);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native void FireEvent(Event event, bool dontBroadcast=false);
+native void FireEvent(Handle event, bool dontBroadcast=false);
 
 /**
  * Cancels a previously created game event that has not been fired.
@@ -138,7 +138,7 @@ native void FireEvent(Event event, bool dontBroadcast=false);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native void CancelCreatedEvent(Event event);
+native void CancelCreatedEvent(Handle event);
 
 /**
  * Returns the boolean value of a game event's key.
@@ -149,7 +149,7 @@ native void CancelCreatedEvent(Event event);
  * @return				The boolean value of the specfied event key.
  * @error				Invalid or corrupt Handle.
  */
-native bool GetEventBool(Event event, const char key[], bool defValue=false);
+native bool GetEventBool(Handle event, const char key[], bool defValue=false);
 
 /**
  * Sets the boolean value of a game event's key.
@@ -160,7 +160,7 @@ native bool GetEventBool(Event event, const char key[], bool defValue=false);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native void SetEventBool(Event event, const char key[], bool value);
+native void SetEventBool(Handle event, const char key[], bool value);
 
 /**
  * Returns the integer value of a game event's key.
@@ -171,7 +171,7 @@ native void SetEventBool(Event event, const char key[], bool value);
  * @return				The integer value of the specfied event key.
  * @error				Invalid or corrupt Handle.
  */
-native int GetEventInt(Event event, const char key[], int defValue=0);
+native int GetEventInt(Handle event, const char key[], int defValue=0);
 
 /**
  * Sets the integer value of a game event's key.
@@ -187,7 +187,7 @@ native int GetEventInt(Event event, const char key[], int defValue=0);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native void SetEventInt(Event event, const char key[], int value);
+native void SetEventInt(Handle event, const char key[], int value);
 
 /**
  * Returns the floating point value of a game event's key.
@@ -198,7 +198,7 @@ native void SetEventInt(Event event, const char key[], int value);
  * @return				The floating point value of the specfied event key.
  * @error				Invalid or corrupt Handle.
  */
-native float GetEventFloat(Event event, const char key[], float defValue=0.0);
+native float GetEventFloat(Handle event, const char key[], float defValue=0.0);
 
 /**
  * Sets the floating point value of a game event's key.
@@ -209,7 +209,7 @@ native float GetEventFloat(Event event, const char key[], float defValue=0.0);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native void SetEventFloat(Event event, const char key[], float value);
+native void SetEventFloat(Handle event, const char key[], float value);
 
 /**
  * Retrieves the string value of a game event's key.
@@ -222,7 +222,7 @@ native void SetEventFloat(Event event, const char key[], float value);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native void GetEventString(Event event, const char key[], char value[], int maxlength, const char defvalue[]="");
+native void GetEventString(Handle event, const char key[], char value[], int maxlength, const char defvalue[]="");
 
 /**
  * Sets the string value of a game event's key.
@@ -233,7 +233,7 @@ native void GetEventString(Event event, const char key[], char value[], int maxl
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native void SetEventString(Event event, const char key[], const char value[]);
+native void SetEventString(Handle event, const char key[], const char value[]);
 
 /**
  * Retrieves the name of a game event.
@@ -244,7 +244,7 @@ native void SetEventString(Event event, const char key[], const char value[]);
  * @noreturn
  * @error				Invalid or corrupt Handle.     
  */
-native void GetEventName(Event event, char name[], int maxlength);
+native void GetEventName(Handle event, char name[], int maxlength);
 
 /**
  * Sets whether an event's broadcasting will be disabled or not.
@@ -257,7 +257,7 @@ native void GetEventName(Event event, char name[], int maxlength);
  * @noreturn
  * @error               Invalid Handle.
  */
-native void SetEventBroadcast(Event event, bool dontBroadcast);
+native void SetEventBroadcast(Handle event, bool dontBroadcast);
 
 methodmap Event < Handle {
 	public Event() = CreateEvent;
