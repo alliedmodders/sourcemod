@@ -272,4 +272,5 @@ methodmap Event < Handle {
 	public GetString() = GetEventString;
 	public SetString() = SetEventString;
 	public GetName() = GetEventName;
+	public SetBroadcast() = SetEventBroadcast;
 }
