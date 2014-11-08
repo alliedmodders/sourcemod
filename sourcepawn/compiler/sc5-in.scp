@@ -365,24 +365,24 @@ static const char *errmsg[] = {
 
 static const char *fatalmsg[] = {
 #ifdef SCPACK
-/*160*/  "cannot read from file: \"%s\"\n",
-/*161*/  "cannot write to file: \"%s\"\n",
-/*162*/  "table overflow: \"%s\"\n",
+/*180*/  "cannot read from file: \"%s\"\n",
+/*181*/  "cannot write to file: \"%s\"\n",
+/*182*/  "table overflow: \"%s\"\n",
           /* table can be: loop table
            *               literal table
            *               staging buffer
            *               option table (response file)
            *               peephole optimizer table
            */
-/*163*/  "insufficient memory\n",
-/*164*/  "invalid assembler instruction \"%s\"\n",
-/*165*/  "numeric overflow, exceeding capacity\n",
-/*166*/  "compiled script exceeds the maximum memory size (%ld bytes)\n",
-/*167*/  "too many error messages on one line\n",
-/*168*/  "codepage mapping file not found\n",
-/*169*/  "invalid path: \"%s\"\n",
-/*170*/  "assertion failed: %s\n",
-/*171*/  "user error: %s\n",
+/*183*/  "insufficient memory\n",
+/*184*/  "invalid assembler instruction \"%s\"\n",
+/*185*/  "numeric overflow, exceeding capacity\n",
+/*186*/  "compiled script exceeds the maximum memory size (%ld bytes)\n",
+/*187*/  "too many error messages on one line\n",
+/*188*/  "codepage mapping file not found\n",
+/*189*/  "invalid path: \"%s\"\n",
+/*190*/  "assertion failed: %s\n",
+/*191*/  "user error: %s\n",
 #else
   "\256\214a\204from \344le:\354",
   "\256writ\200\266 \344le:\354",

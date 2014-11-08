@@ -218,17 +218,17 @@ int pc_compile(int argc, char *argv[])
 
   sp_Globals = NewHashTable();
   if (!sp_Globals)
-    error(163);
+    error(FATAL_ERROR_OOM);
 
   /* allocate memory for fixed tables */
   inpfname=(char*)malloc(_MAX_PATH);
   if (inpfname==NULL)
-    error(163);         /* insufficient memory */
+    error(FATAL_ERROR_OOM);         /* insufficient memory */
   litq=(cell*)malloc(litmax*sizeof(cell));
   if (litq==NULL)
-    error(163);         /* insufficient memory */
+    error(FATAL_ERROR_OOM);         /* insufficient memory */
   if (!phopt_init())
-    error(163);         /* insufficient memory */
+    error(FATAL_ERROR_OOM);         /* insufficient memory */
 
   setopt(argc,argv,outfname,errfname,incfname,reportname,codepage);
   strcpy(binfname,outfname);
@@ -254,7 +254,7 @@ int pc_compile(int argc, char *argv[])
   lcl_tabsize=sc_tabsize;
   #if !defined NO_CODEPAGE
     if (!cp_set(codepage))      /* set codepage */
-      error(168);               /* codepage mapping file not found */
+      error(FATAL_ERROR_NO_CODEPAGE);
   #endif
   /* optionally create a temporary input file that is a collection of all
    * input files
@@ -271,7 +271,7 @@ int pc_compile(int argc, char *argv[])
       tname=tempnam(NULL,"pawn");
     #elif defined(MACOS) && !defined(__MACH__)
       /* tempnam is not supported for the Macintosh CFM build. */
-      error(164,get_sourcefile(1));
+      error(FATAL_ERROR_INVALID_INSN,get_sourcefile(1));
       tname=NULL;
       sname=NULL;
     #else
@@ -287,7 +287,7 @@ int pc_compile(int argc, char *argv[])
         pc_closesrc(ftmp);
         remove(tname);
         strcpy(inpfname,sname); /* avoid invalid filename */
-        error(160,sname);
+        error(FATAL_ERROR_READ,sname);
       } /* if */
       pc_writesrc(ftmp,(unsigned char*)"#file \"");
       pc_writesrc(ftmp,(unsigned char*)sname);
@@ -306,11 +306,11 @@ int pc_compile(int argc, char *argv[])
   } /* if */
   inpf_org=pc_opensrc(inpfname);
   if (inpf_org==NULL)
-    error(160,inpfname);
+    error(FATAL_ERROR_READ,inpfname);
   freading=TRUE;
   outf=(FILE*)pc_openasm(outfname); /* first write to assembler file (may be temporary) */
   if (outf==NULL)
-    error(161,outfname);
+    error(FATAL_ERROR_WRITE,outfname);
   setconstants();               /* set predefined constants and tagnames */
   for (i=0; i<skipinput; i++)   /* skip lines in the input file */
     if (pc_readsrc(inpf_org,pline,sLINEMAX)!=NULL)
@@ -366,7 +366,7 @@ int pc_compile(int argc, char *argv[])
         plungefile(incfname,FALSE,TRUE);    /* parse "default.inc" */
       } else {
         if (!plungequalifiedfile(incfname)) /* parse "prefix" include file */
-          error(160,incfname);          /* cannot read from ... (fatal error) */
+          error(FATAL_ERROR_READ,incfname);
       } /* if */
     } /* if */
     preprocess();                       /* fetch first line */
@@ -486,7 +486,7 @@ cleanup:
         pc_printf("Total requirements:%8ld bytes\n", (long)code_idx+(long)glb_declared*sizeof(cell)+(long)pc_stksize*sizeof(cell));
       } /* if */
       if (flag_exceed)
-        error(166,pc_amxlimit+pc_amxram); /* this causes a jump back to label "cleanup" */
+        error(FATAL_ERROR_INT_OVERFLOW,pc_amxlimit+pc_amxram); /* this causes a jump back to label "cleanup" */
     } /* if */
   #endif
 
@@ -1086,14 +1086,14 @@ static void parserespf(char *filename,char *oname,char *ename,char *pname,
   long size;
 
   if ((fp=fopen(filename,"r"))==NULL)
-    error(160,filename);        /* error reading input file */
+    error(FATAL_ERROR_READ,filename);
   /* load the complete file into memory */
   fseek(fp,0L,SEEK_END);
   size=ftell(fp);
   fseek(fp,0L,SEEK_SET);
   assert(size<INT_MAX);
   if ((string=(char *)malloc((int)size+1))==NULL)
-    error(163);                 /* insufficient memory */
+    error(FATAL_ERROR_OOM);                 /* insufficient memory */
   /* fill with zeros; in MS-DOS, fread() may collapse CR/LF pairs to
    * a single '\n', so the string size may be smaller than the file
    * size. */
@@ -1102,7 +1102,7 @@ static void parserespf(char *filename,char *oname,char *ename,char *pname,
   fclose(fp);
   /* allocate table for option pointers */
   if ((argv=(char **)malloc(MAX_OPTIONS*sizeof(char*)))==NULL)
-    error(163);                 /* insufficient memory */
+    error(FATAL_ERROR_OOM);                 /* insufficient memory */
   /* fill the options table */
   ptr=strtok(string," \t\r\n");
   for (argc=1; argc<MAX_OPTIONS && ptr!=NULL; argc++) {
@@ -1111,7 +1111,7 @@ static void parserespf(char *filename,char *oname,char *ename,char *pname,
     ptr=strtok(NULL," \t\r\n");
   } /* for */
   if (ptr!=NULL)
-    error(162,"option table");   /* table overflow */
+    error(FATAL_ERROR_ALLOC_OVERFLOW,"option table");
   /* parse the option table */
   parseoptions(argc,argv,oname,ename,pname,rname,codepage);
   /* free allocated memory */
@@ -1221,7 +1221,7 @@ static void setconfig(char *root)
 # if !defined NO_CODEPAGE
         *ptr='\0';
         if (!cp_path(path,"codepage"))
-          error(169,path);        /* codepage path */
+          error(FATAL_ERROR_INVALID_PATH,path);
 # endif /* !NO_CODEPAGE */
 
       /* also copy the root path (for the XML documentation) */
@@ -3160,7 +3160,7 @@ static void parse_old_array_dims(declinfo_t *decl, int flags)
 
       type->size = needsub(&type->idxtag[type->numdim], enumrootp);
       if (type->size > INT_MAX)
-        error(165);
+        error(FATAL_ERROR_INT_OVERFLOW);
 
       type->dim[type->numdim++] = type->size;
     } while (matchtoken('['));
@@ -3994,7 +3994,7 @@ static void domethodmap(LayoutSpec spec)
 
     methods = (methodmap_method_t **)realloc(map->methods, sizeof(methodmap_method_t *) * (map->nummethods + 1));
     if (!methods) {
-      error(163);
+      error(FATAL_ERROR_OOM);
       return;
     }
     map->methods = methods;
@@ -4521,7 +4521,7 @@ static void decl_enum(int vclass)
       enumsym->usage |= uENUMROOT;
     /* start a new list for the element names */
     if ((enumroot=(constvalue*)malloc(sizeof(constvalue)))==NULL)
-      error(163);                       /* insufficient memory (fatal error) */
+      error(FATAL_ERROR_OOM);                       /* insufficient memory (fatal error) */
     memset(enumroot,0,sizeof(constvalue));
   } else {
     enumsym=NULL;
@@ -4671,7 +4671,7 @@ static void attachstatelist(symbol *sym, int state_id)
     constvalue *stateptr;
     if (sym->states==NULL) {
       if ((sym->states=(constvalue*)malloc(sizeof(constvalue)))==NULL)
-        error(163);             /* insufficient memory (fatal error) */
+        error(FATAL_ERROR_OOM);             /* insufficient memory (fatal error) */
       memset(sym->states,0,sizeof(constvalue));
     } /* if */
     /* see whether the id already exists (add new state only if it does not
@@ -5483,7 +5483,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
           /* redimension the argument list, add the entry iVARARGS */
           sym->dim.arglist=(arginfo*)realloc(sym->dim.arglist,(argcnt+2)*sizeof(arginfo));
           if (sym->dim.arglist==0)
-            error(163);                 /* insufficient memory */
+            error(FATAL_ERROR_OOM);                 /* insufficient memory */
           memset(&sym->dim.arglist[argcnt+1],0,sizeof(arginfo));  /* keep the list terminated */
           sym->dim.arglist[argcnt].ident=iVARARGS;
           sym->dim.arglist[argcnt].hasdefault=FALSE;
@@ -5492,7 +5492,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
           sym->dim.arglist[argcnt].numtags=decl.type.numtags;
           sym->dim.arglist[argcnt].tags=(int*)malloc(decl.type.numtags*sizeof decl.type.tags[0]);
           if (sym->dim.arglist[argcnt].tags==NULL)
-            error(163);                 /* insufficient memory */
+            error(FATAL_ERROR_OOM);                 /* insufficient memory */
           memcpy(sym->dim.arglist[argcnt].tags,decl.type.tags,decl.type.numtags*sizeof decl.type.tags[0]);
         } else {
           if (argcnt>oldargcnt || sym->dim.arglist[argcnt].ident!=iVARARGS)
@@ -5525,7 +5525,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
         /* redimension the argument list, add the entry */
         sym->dim.arglist=(arginfo*)realloc(sym->dim.arglist,(argcnt+2)*sizeof(arginfo));
         if (sym->dim.arglist==0)
-          error(163);                 /* insufficient memory */
+          error(FATAL_ERROR_OOM);                 /* insufficient memory */
         memset(&sym->dim.arglist[argcnt+1],0,sizeof(arginfo));  /* keep the list terminated */
         sym->dim.arglist[argcnt]=arg;
       } else {
@@ -5684,7 +5684,7 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
           cell val;
           tokeninfo(&val,&name);
           if ((arg->defvalue.size.symname=duplicatestring(name)) == NULL)
-            error(163);         /* insufficient memory */
+            error(FATAL_ERROR_OOM);         /* insufficient memory */
           arg->defvalue.size.level=0;
           if (size_tag_token==uSIZEOF || size_tag_token==uCOUNTOF) {
             while (matchtoken('[')) {
@@ -5709,7 +5709,7 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
   arg->numtags=type->numtags;
   arg->tags=(int*)malloc(type->numtags * sizeof(type->tags[0]));
   if (arg->tags==NULL)
-    error(163);                 /* insufficient memory */
+    error(FATAL_ERROR_OOM);                 /* insufficient memory */
   memcpy(arg->tags, type->tags, type->numtags * sizeof(type->tags[0]));
   argsym=findloc(decl->name);
   if (argsym!=NULL) {
@@ -6458,7 +6458,7 @@ static constvalue *insert_constval(constvalue *prev,constvalue *next,const char 
   constvalue *cur;
 
   if ((cur=(constvalue*)malloc(sizeof(constvalue)))==NULL)
-    error(163);       /* insufficient memory (fatal error) */
+    error(FATAL_ERROR_OOM);       /* insufficient memory (fatal error) */
   memset(cur,0,sizeof(constvalue));
   if (name!=NULL) {
     assert(strlen(name)<=sNAMEMAX);
@@ -7758,7 +7758,7 @@ static void addwhile(int *ptr)
   ptr[wqLOOP]=getlabel();
   ptr[wqEXIT]=getlabel();
   if (wqptr>=(wq+wqTABSZ-wqSIZE))
-    error(162,"loop table");    /* loop table overflow (too many active loops)*/
+    error(FATAL_ERROR_ALLOC_OVERFLOW,"loop table");    /* loop table overflow (too many active loops)*/
   k=0;
   while (k<wqSIZE){     /* copy "ptr" to while queue table */
     *wqptr=*ptr;

@@ -96,7 +96,7 @@ void pushstk(stkitem val)
     assert(newsize>stktop);
     newstack=(stkitem*)malloc(newsize*sizeof(stkitem));
     if (newstack==NULL)
-      error(162,"parser stack");  /* stack overflow (recursive include?) */
+      error(FATAL_ERROR_ALLOC_OVERFLOW,"parser stack");
     /* swap the stacks */
     memcpy(newstack,stack,stkidx*sizeof(stkitem));
     if (stack!=NULL)
@@ -172,7 +172,7 @@ int plungequalifiedfile(char *name)
   PUSHSTK_I(fline);
   inpfname=duplicatestring(name);/* set name of include file */
   if (inpfname==NULL)
-    error(163);             /* insufficient memory */
+    error(FATAL_ERROR_OOM);
   inpf=fp;                  /* set input file pointer to include file */
   fnumber++;
   fline=0;                  /* set current line number to 0 */
@@ -276,7 +276,7 @@ static void doinclude(int silent)
 
   result=plungefile(name,(c!='>'),TRUE);
   if (!result && !silent)
-    error(160,name);            /* cannot read from ... (fatal error) */
+    error(FATAL_ERROR_READ,name);
 }
 
 /*  readline
@@ -890,7 +890,7 @@ static int command(void)
     ret=CMD_IF;
     assert(iflevel>=0);
     if (iflevel>=sCOMP_STACK)
-      error(162,"Conditional compilation stack"); /* table overflow */
+      error(FATAL_ERROR_ALLOC_OVERFLOW,"Conditional compilation stack");
     iflevel++;
     if (SKIPPING)
       break;                    /* break out of switch */
@@ -979,7 +979,7 @@ static int command(void)
         free(inpfname);
         inpfname=duplicatestring(pathname);
         if (inpfname==NULL)
-          error(163);           /* insufficient memory */
+          error(FATAL_ERROR_OOM);
         fline=0;
       } /* if */
     } /* if */
@@ -1023,7 +1023,7 @@ static int command(void)
             name[i]='\0';
           } /* if */
           if (!cp_set(name))
-            error(168);         /* codepage mapping file not found */
+            error(FATAL_ERROR_NO_CODEPAGE);
         } else if (strcmp(str,"compress")==0) {
           cell val;
           preproc_expr(&val,NULL);
@@ -1292,7 +1292,7 @@ static int command(void)
       /* store matched pattern */
       pattern=(char*)malloc(count+1);
       if (pattern==NULL)
-        error(163);     /* insufficient memory */
+        error(FATAL_ERROR_OOM);
       lptr=start;
       count=0;
       while (lptr!=end) {
@@ -1326,7 +1326,7 @@ static int command(void)
       /* store matched substitution */
       substitution=(char*)malloc(count+1);  /* +1 for '\0' */
       if (substitution==NULL)
-        error(163);     /* insufficient memory */
+        error(FATAL_ERROR_OOM);
       lptr=start;
       count=0;
       while (lptr!=end) {
@@ -1542,7 +1542,7 @@ static int substpattern(unsigned char *line,size_t buffersize,char *pattern,char
         len=(int)(e-s);
         args[arg]=(unsigned char*)malloc(len+1);
         if (args[arg]==NULL)
-          error(163); /* insufficient memory */
+          error(FATAL_ERROR_OOM);
         strlcpy((char*)args[arg],(char*)s,len+1);
         /* character behind the pattern was matched too */
         if (*e==*p) {
@@ -2469,7 +2469,7 @@ static void chk_grow_litq(void)
     litmax+=sDEF_LITMAX;
     p=(cell *)realloc(litq,litmax*sizeof(cell));
     if (p==NULL)
-      error(162,"literal table");   /* literal table overflow (fatal error) */
+      error(FATAL_ERROR_ALLOC_OVERFLOW,"literal table");
     litq=p;
   } /* if */
 }
@@ -2662,7 +2662,7 @@ static symbol *add_symbol(symbol *root,symbol *entry,int sort)
       root=root->next;
 
   if ((newsym=(symbol *)malloc(sizeof(symbol)))==NULL) {
-    error(163);
+    error(FATAL_ERROR_OOM);
     return NULL;
   } /* if */
   memcpy(newsym,entry,sizeof(symbol));
@@ -3057,7 +3057,7 @@ symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag,int usage
 
   /* create an empty referrer list */
   if ((refer=(symbol**)malloc(sizeof(symbol*)))==NULL) {
-    error(163);         /* insufficient memory */
+    error(FATAL_ERROR_OOM);
     return NULL;
   } /* if */
   *refer=NULL;

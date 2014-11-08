@@ -2212,7 +2212,7 @@ restart:
            */
           sym=fetchfunc(lastsymbol);
           if (sym==NULL)
-            error(163); /* insufficient memory */
+            error(FATAL_ERROR_OOM);
           markusage(sym,uREAD);
         } else {
           return error(12);           /* invalid function call */
@@ -2358,7 +2358,7 @@ static int primary(value *lval)
       assert(sc_status==statFIRST);
       sym=fetchfunc(st);
       if (sym==NULL)
-        error(163);     /* insufficient memory */
+        error(FATAL_ERROR_OOM);
     } /* if */
     assert(sym!=NULL);
     assert(sym->ident==iFUNCTN || sym->ident==iREFFUNC);
