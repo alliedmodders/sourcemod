@@ -157,6 +157,7 @@ static void inst_datetime_defines(void);
 static void inst_binary_name(char *binfname);
 static int operatorname(char *name);
 static int parse_new_typename(const token_t *tok);
+static bool parse_new_typename(const token_t *tok, int *outp);
 static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags);
 static int reparse_old_decl(declinfo_t *decl, int flags);
 static int reparse_new_decl(declinfo_t *decl, int flags);
@@ -2184,6 +2185,30 @@ static void declloc(int tokid)
           genarray(1, false);
           ldconst((cur_lit + glb_declared) * sizeof(cell), sPRI);
           copyarray(sym, cells * sizeof(cell));
+        } else if (matchtoken(tNEW)) {
+          int tag = 0;
+          if (parse_new_typename(NULL, &tag)) {
+            if (tag != type->tag)
+              error(164, pc_typename(tag), pc_typename(type->tag));
+          }
+
+          for (int i = 0; i < type->numdim; i++) {
+            if (!needtoken('['))
+              break;
+
+            value val;
+            symbol *child;
+            int ident = doexpr2(
+              TRUE, FALSE, TRUE, FALSE,
+              &type->idxtag[i],
+              &child, 0, &val);
+            pushreg(sPRI);
+
+            if (!needtoken(']'))
+              break;
+          }
+          
+          genarray(type->numdim, true);
         } else if (lexpeek('{')) {
           // Dynamic array with fixed initializer.
           error(160);
@@ -3064,6 +3089,16 @@ static int parse_new_typename(const token_t *tok)
   return -1;
 }
 
+static bool parse_new_typename(const token_t *tok, int *tagp)
+{
+  int tag = parse_new_typename(tok);
+  if (tag >= 0)
+    *tagp = tag;
+  else
+    *tagp = 0;
+  return true;
+}
+
 static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
 {
   token_t tok;
@@ -3080,8 +3115,7 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
     lextok(&tok);
   }
 
-  type->tag = parse_new_typename(&tok);
-  if (type->tag == -1)
+  if (!parse_new_typename(&tok, &type->tag))
     goto err_out;
 
   // Note: we could have already filled in the prefix array bits, so we check
@@ -4224,7 +4258,7 @@ static void parse_function_type(functag_t *type)
   int lparen = matchtoken('(');
   needtoken(tFUNCTION);
 
-  type->ret_tag = parse_new_typename(NULL);
+  parse_new_typename(NULL, &type->ret_tag);
   type->usage = uPUBLIC;
 
   needtoken('(');
