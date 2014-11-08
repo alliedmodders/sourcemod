@@ -2206,6 +2206,17 @@ static void declloc(int tokid)
               &type->idxtag[i],
               &child, 0, &val);
             pushreg(sPRI);
+            
+            switch (ident) {
+              case iVARIABLE:
+              case iEXPRESSION:
+              case iARRAYCELL:
+              case iCONSTEXPR:
+                break;
+              default:
+                error(29);
+                break;
+            }
 
             if (!needtoken(']'))
               break;
