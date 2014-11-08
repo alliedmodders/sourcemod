@@ -614,6 +614,17 @@ static void inst_datetime_defines(void)
   insert_subst("__TIME__", ltime, 8);
 }
 
+const char *pc_typename(int tag)
+{
+  if (tag == 0)
+    return "int";
+  if (tag == sc_rationaltag)
+    return "float";
+  if (tag == pc_tag_string)
+    return "char";
+  return pc_tagname(tag);
+}
+
 const char *pc_tagname(int tag)
 {
   constvalue *ptr=tagname_tab.next;
@@ -1985,6 +1996,11 @@ static void declglb(declinfo_t *decl,int fpublic,int fstatic,int fstock)
       litidx=0;         /* global initial data is dumped, so restart at zero */
     } /* if */
     assert(litidx==0);  /* literal queue should be empty (again) */
+    if (type->ident == iREFARRAY) {
+      // Dynamc array in global scope.
+      assert(type->is_new);
+      error(162);
+    }
     initials3(decl);
     if (type->tag == pc_tag_string && type->numdim == 1 && !type->dim[type->numdim - 1]) {
       slength = glbstringread;
@@ -2036,6 +2052,25 @@ static void declglb(declinfo_t *decl,int fpublic,int fstatic,int fstock)
       reparse_old_decl(decl, DECLFLAG_VARIABLE|DECLFLAG_ENUMROOT);
   };
   needtoken(tTERM);    /* if not comma, must be semicolumn */
+}
+
+static bool parse_local_array_initializer(typeinfo_t *type, int *curlit, int *slength)
+{
+  if (sc_alignnext) {
+    aligndata(sc_dataalign);
+    sc_alignnext=FALSE;
+  } /* if */
+  *curlit = litidx; /* save current index in the literal table */
+  if (type->numdim && !type->dim[type->numdim-1])
+    type->size = 0;
+  initials(type->ident,type->tag,&type->size,type->dim,type->numdim,type->enumroot);
+  if (type->tag == pc_tag_string && type->numdim == 1 && !type->dim[type->numdim - 1])
+    *slength = glbstringread;
+  if (type->size == 0)
+    return false;
+  if (type->numdim == 1)
+    type->dim[0] = type->size;
+  return true;
 }
 
 /*  declloc     - declare local symbols
@@ -2092,20 +2127,8 @@ static void declloc(int tokid)
     slength = fix_char_size(&decl);
 
     if (type->ident == iARRAY || fstatic) {
-      if (sc_alignnext) {
-        aligndata(sc_dataalign);
-        sc_alignnext=FALSE;
-      } /* if */
-      cur_lit=litidx;           /* save current index in the literal table */
-      if (type->numdim && !type->dim[type->numdim-1])
-        type->size = 0;
-      initials(type->ident,type->tag,&type->size,type->dim,type->numdim,type->enumroot);
-      if (type->tag == pc_tag_string && type->numdim == 1 && !type->dim[type->numdim - 1])
-        slength = glbstringread;
-      if (type->size == 0)
+      if (!parse_local_array_initializer(type, &cur_lit, &slength))
         return;
-      if (type->numdim == 1)
-        type->dim[0] = type->size;
     }
     /* reserve memory (on the stack) for the variable */
     if (fstatic) {
@@ -2132,6 +2155,17 @@ static void declloc(int tokid)
       if (curfunc->x.stacksize<declared+1)
         curfunc->x.stacksize=declared+1;  /* +1 for PROC opcode */
     } else if (type->ident == iREFARRAY) {
+      if (matchtoken('=')) {
+        if (lexpeek('{')) {
+          // Dynamic array with fixed initializer.
+          error(160);
+
+          // Parse just to clear the tokens. First give '=' back.
+          lexpush();
+          if (!parse_local_array_initializer(type, &cur_lit, &slength))
+            return;
+        }
+      }
       declared+=1; /* one cell for address */
       sym=addvariable(decl.name,-declared*sizeof(cell),type->ident,sLOCAL,type->tag,type->dim,type->numdim,type->idxtag);
       //markexpr(sLDECL,name,-declared*sizeof(cell)); /* mark for better optimization */
@@ -3035,7 +3069,7 @@ static int parse_new_typeexpr(typeinfo_t *type, const token_t *first, int flags)
         goto err_out;
       }
     } while (matchtoken('['));
-    type->ident = iARRAY;
+    type->ident = iREFARRAY;
     type->size = 0;
   }
 
@@ -3146,6 +3180,10 @@ static void parse_old_array_dims(declinfo_t *decl, int flags)
       genarray(type->numdim, autozero);
       type->ident = iREFARRAY;
       type->size = 0;
+      if (type->is_new) {
+        // Fixed array with dynamic size.
+        error(161, pc_typename(type->tag));
+      }
     }
 
     stgout(staging_index);
@@ -3301,6 +3339,8 @@ static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags)
     }
   }
 
+  decl->type.is_new = TRUE;
+
   if (flags & DECLMASK_NAMED_DECL) {
     if (matchtoken('[')) {
       if (decl->type.numdim == 0)
@@ -3310,7 +3350,6 @@ static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags)
     }
   }
 
-  decl->type.is_new = TRUE;
   return TRUE;
 }
 
@@ -5606,6 +5645,9 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
   int slength=0;
   typeinfo_t *type = &decl->type;
 
+  // Otherwise we get very weird line number ranges, anything to the current fline.
+  errorset(sEXPRMARK,0);
+
   strcpy(arg->name, decl->name);
   arg->hasdefault=FALSE;        /* preset (most common case) */
   arg->defvalue.val=0;          /* clear */
@@ -5641,6 +5683,10 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
           }
         }
       } else {
+        if (type->is_new && !type->has_postdims && lexpeek('{')) {
+          // Dynamic array with fixed initializer.
+          error(160);
+        }
         initials2(type->ident, type->tags[0], &type->size, arg->dim, arg->numdim, type->enumroot, 1, 0);
         assert(type->size >= litidx);
         /* allocate memory to hold the initial values */
@@ -5660,7 +5706,17 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
         } /* if */
         litidx=0;                 /* reset */
       }
-    } /* if */
+    } else {
+      if (type->is_new && type->has_postdims) {
+        for (int i = 0; i < type->numdim; i++) {
+          if (type->dim[i] <= 0) {
+            // Fixed-array with unknown size.
+            error(159);
+            break;
+          }
+        }
+      }
+    }
   } else {
     if (matchtoken('=')) {
       unsigned char size_tag_token;
@@ -5729,6 +5785,8 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
     if (type->usage & uCONST)
       argsym->usage|=uCONST;
   } /* if */
+
+  errorset(sEXPRRELEASE,0);
 }
 
 static int count_referrers(symbol *entry)
