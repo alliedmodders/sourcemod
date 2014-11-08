@@ -1702,7 +1702,7 @@ static int hier2(value *lval)
         lval->constval=array_levelsize(sym,level);
       }
       if (lval->constval==0 && strchr((char *)lptr,PREPROC_TERM)==NULL)
-        error(224,st);          /* indeterminate array size in "sizeof" expression */
+        error(163,st);          /* indeterminate array size in "sizeof" expression */
     } /* if */
     ldconst(lval->constval,sPRI);
     while (paranthese--)
@@ -1756,7 +1756,7 @@ static int hier2(value *lval)
         lval->constval=array_levelsize(sym,level);
       }
       if (lval->constval==0 && strchr((char *)lptr,PREPROC_TERM)==NULL)
-        error(224,st);          /* indeterminate array size in "sizeof" expression */
+        error(163,st);          /* indeterminate array size in "sizeof" expression */
     } /* if */
     ldconst(lval->constval,sPRI);
     while (paranthese--)
@@ -2212,7 +2212,7 @@ restart:
            */
           sym=fetchfunc(lastsymbol);
           if (sym==NULL)
-            error(163); /* insufficient memory */
+            error(FATAL_ERROR_OOM);
           markusage(sym,uREAD);
         } else {
           return error(12);           /* invalid function call */
@@ -2358,7 +2358,7 @@ static int primary(value *lval)
       assert(sc_status==statFIRST);
       sym=fetchfunc(st);
       if (sym==NULL)
-        error(163);     /* insufficient memory */
+        error(FATAL_ERROR_OOM);
     } /* if */
     assert(sym!=NULL);
     assert(sym->ident==iFUNCTN || sym->ident==iREFFUNC);
@@ -2890,7 +2890,7 @@ static int nesting=0;
       if (asz!=NULL) {
         array_sz=asz->value;
         if (array_sz==0)
-          error(224,arg[argidx].name);    /* indeterminate array size in "sizeof" expression */
+          error(163,arg[argidx].name);    /* indeterminate array size in "sizeof" expression */
       } else {
         array_sz=1;
       } /* if */

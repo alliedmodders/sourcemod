@@ -89,7 +89,7 @@ static short lastfile;
    * the error reporting is enabled only in the second pass (and only when
    * actually producing output). Fatal errors may never be ignored.
    */
-  int not_fatal = (number < 160 || number >= 200);
+  int not_fatal = (number < FIRST_FATAL_ERROR || number >= 200);
   if (errflag && not_fatal)
     return 0;
   if (sc_status != statWRITE && not_fatal) {
@@ -105,13 +105,13 @@ static short lastfile;
       return 0;
   } /* if */
 
-  if (number<160){
+  if (number<FIRST_FATAL_ERROR) {
     msg=errmsg[number-1];
     pre=prefix[0];
     errflag=TRUE;       /* set errflag (skip rest of erroneous expression) */
     errnum++;
   } else if (number<200){
-    msg=fatalmsg[number-160];
+    msg=fatalmsg[number-FIRST_FATAL_ERROR];
     pre=prefix[1];
     errnum++;           /* a fatal error also counts as an error */
   } else {
@@ -154,7 +154,7 @@ static short lastfile;
   } /* if */
   va_end(argptr);
 
-  if ((number>=160 && number<200) || errnum>25){
+  if ((number>=FIRST_FATAL_ERROR && number<200) || errnum>25){
     if (strlen(errfname)==0) {
       va_start(argptr,number);
       pc_error(0,"\nCompilation aborted.",NULL,0,0,argptr);
@@ -175,7 +175,7 @@ static short lastfile;
   if (!is_warning)
     errorcount++;
   if (errorcount>=3)
-    error(167);         /* too many error/warning messages on one line */
+    error(FATAL_ERROR_OVERWHELMED_BY_BAD);
 
   return 0;
 }

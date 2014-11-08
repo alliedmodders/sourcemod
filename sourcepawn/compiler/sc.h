@@ -287,14 +287,16 @@ typedef struct {
   int numtags;       // Number of tags found.
   int ident;         // Either iREFERENCE, iARRAY, or iVARIABLE.
   char usage;        // Usage flags.
+  bool is_new;       // New-style declaration.
+  bool has_postdims; // Dimensions, if present, were in postfix position.
+
+  bool isCharArray() const;
 } typeinfo_t;
 
 /* For parsing declarations. */
 typedef struct {
   char name[sNAMEMAX + 1];
   typeinfo_t type;
-  int is_new;        // New-style declaration.
-  int has_postdims;  // Dimensions, if present, were in postfix position.
   int opertok;       // Operator token, if applicable.
 } declinfo_t;
 
@@ -937,5 +939,24 @@ typedef struct array_info_s
   int *cur_dims;					/* Current dimensions the recursion is at */
   cell *base;						/* &litq[startlit] */
 } array_info_t;
+
+enum FatalError {
+  FIRST_FATAL_ERROR = 180,
+
+  FATAL_ERROR_READ  = FIRST_FATAL_ERROR,
+  FATAL_ERROR_WRITE,
+  FATAL_ERROR_ALLOC_OVERFLOW,
+  FATAL_ERROR_OOM,
+  FATAL_ERROR_INVALID_INSN,
+  FATAL_ERROR_INT_OVERFLOW,
+  FATAL_ERROR_SCRIPT_OVERFLOW,
+  FATAL_ERROR_OVERWHELMED_BY_BAD,
+  FATAL_ERROR_NO_CODEPAGE,
+  FATAL_ERROR_INVALID_PATH,
+  FATAL_ERROR_ASSERTION_FAILED,
+  FATAL_ERROR_USER_ERROR,
+
+  FATAL_ERRORS_TOTAL
+};
 
 #endif /* SC_H_INCLUDED */

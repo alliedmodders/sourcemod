@@ -2,7 +2,7 @@ stock A(int n)
 {
 }
 
-stock B(int n[])
+stock B(int n[10])
 {
 }
 
