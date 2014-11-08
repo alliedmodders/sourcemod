@@ -289,6 +289,8 @@ typedef struct {
   char usage;        // Usage flags.
   bool is_new;       // New-style declaration.
   bool has_postdims; // Dimensions, if present, were in postfix position.
+
+  bool isCharArray() const;
 } typeinfo_t;
 
 /* For parsing declarations. */

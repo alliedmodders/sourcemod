@@ -2155,8 +2155,36 @@ static void declloc(int tokid)
       if (curfunc->x.stacksize<declared+1)
         curfunc->x.stacksize=declared+1;  /* +1 for PROC opcode */
     } else if (type->ident == iREFARRAY) {
-      if (matchtoken('=')) {
-        if (lexpeek('{')) {
+      // Generate the symbol so we can access its stack address during initialization.
+      declared+=1; /* one cell for address */
+      sym=addvariable(decl.name,-declared*sizeof(cell),type->ident,sLOCAL,type->tag,type->dim,type->numdim,type->idxtag);
+
+      // If we're new-style, a REFARRAY indicates prefix brackets. We need to
+      // be initialized since we don't support fully dynamic arrays yet; i.e.,
+      // "int[] x;" doesn't have any sensible semantics. There are two
+      // acceptable initialization sequences: "new <type>" and a string
+      // literal. In other cases (such as a fixed-array literal), we error.
+      //
+      // For now, we only implement the string literal initializer.
+      if (type->is_new && needtoken('=')) {
+        if (type->isCharArray()) {
+          // Error if we're assigning something other than a string literal.
+          needtoken(tSTRING);
+
+          // Note: the genarray call pushes the result array into the stack
+          // slot of our local variable - we can access |sym| after.
+          //
+          // push.c      N
+          // genarray    1
+          // const.pri   DAT + offset
+          // load.s.alt  sym->addr
+          // movs        N * sizeof(cell)
+          int cells = litidx - cur_lit;
+          pushval(cells);
+          genarray(1, false);
+          ldconst((cur_lit + glb_declared) * sizeof(cell), sPRI);
+          copyarray(sym, cells * sizeof(cell));
+        } else if (lexpeek('{')) {
           // Dynamic array with fixed initializer.
           error(160);
 
@@ -2164,11 +2192,12 @@ static void declloc(int tokid)
           lexpush();
           if (!parse_local_array_initializer(type, &cur_lit, &slength))
             return;
+        } else {
+          // Give the '=' back so we error later.
+          lexpush();
         }
       }
-      declared+=1; /* one cell for address */
-      sym=addvariable(decl.name,-declared*sizeof(cell),type->ident,sLOCAL,type->tag,type->dim,type->numdim,type->idxtag);
-      //markexpr(sLDECL,name,-declared*sizeof(cell)); /* mark for better optimization */
+
       /* genarray() pushes the address onto the stack, so we don't need to call modstk() here! */
       markheap(MEMUSE_DYNAMIC, 0);
       markstack(MEMUSE_STATIC, 1);
@@ -7842,3 +7871,7 @@ static int *readwhile(void)
   } /* if */
 }
 
+bool typeinfo_t::isCharArray() const
+{
+  return numdim == 1 && tag == pc_tag_string;
+}
