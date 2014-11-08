@@ -2127,6 +2127,9 @@ static void declloc(int tokid)
 
     slength = fix_char_size(&decl);
 
+    if (fstatic && type->ident == iREFARRAY)
+      error(165);
+
     if (type->ident == iARRAY || fstatic) {
       if (!parse_local_array_initializer(type, &cur_lit, &slength))
         return;
