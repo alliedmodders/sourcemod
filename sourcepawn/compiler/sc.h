@@ -287,14 +287,14 @@ typedef struct {
   int numtags;       // Number of tags found.
   int ident;         // Either iREFERENCE, iARRAY, or iVARIABLE.
   char usage;        // Usage flags.
+  bool is_new;       // New-style declaration.
+  bool has_postdims; // Dimensions, if present, were in postfix position.
 } typeinfo_t;
 
 /* For parsing declarations. */
 typedef struct {
   char name[sNAMEMAX + 1];
   typeinfo_t type;
-  int is_new;        // New-style declaration.
-  int has_postdims;  // Dimensions, if present, were in postfix position.
   int opertok;       // Operator token, if applicable.
 } declinfo_t;
 

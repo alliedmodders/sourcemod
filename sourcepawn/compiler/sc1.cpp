@@ -1451,8 +1451,8 @@ static void dodecl(const token_t *tok)
     decl.type.tag = 0;
   }
 
-  if (!decl.opertok && (tok->id == tNEW || decl.has_postdims || !lexpeek('('))) {
-    if (tok->id == tNEW && decl.is_new)
+  if (!decl.opertok && (tok->id == tNEW || decl.type.has_postdims || !lexpeek('('))) {
+    if (tok->id == tNEW && decl.type.is_new)
       error(143);
     if (decl.type.tag & STRUCTTAG) {
       pstruct_t *pstruct = pstructs_find(pc_tagname(decl.type.tag));
@@ -2030,7 +2030,7 @@ static void declglb(declinfo_t *decl,int fpublic,int fstatic,int fstock)
     if (!matchtoken(','))
       break;
 
-    if (decl->is_new)
+    if (decl->type.is_new)
       reparse_new_decl(decl, DECLFLAG_VARIABLE|DECLFLAG_ENUMROOT);
     else
       reparse_old_decl(decl, DECLFLAG_VARIABLE|DECLFLAG_ENUMROOT);
@@ -2221,7 +2221,7 @@ static void declloc(int tokid)
     if (!matchtoken(','))
       break;
 
-    if (decl.is_new)
+    if (decl.type.is_new)
       reparse_new_decl(&decl, declflags);
     else
       reparse_old_decl(&decl, declflags);
@@ -3168,7 +3168,7 @@ static void parse_old_array_dims(declinfo_t *decl, int flags)
     type->ident = iARRAY;
   }
 
-  decl->has_postdims = TRUE;
+  decl->type.has_postdims = TRUE;
 }
 
 static int parse_old_decl(declinfo_t *decl, int flags)
@@ -3310,7 +3310,7 @@ static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags)
     }
   }
 
-  decl->is_new = TRUE;
+  decl->type.is_new = TRUE;
   return TRUE;
 }
 
@@ -3320,7 +3320,7 @@ static int reparse_new_decl(declinfo_t *decl, int flags)
   if (expecttoken(tSYMBOL, &tok))
     strcpy(decl->name, tok.str);
 
-  if (decl->has_postdims) {
+  if (decl->type.has_postdims) {
     // We have something like:
     //    int x[], y...
     //
@@ -3330,7 +3330,7 @@ static int reparse_new_decl(declinfo_t *decl, int flags)
     decl->type.enumroot = NULL;
     decl->type.ident = iVARIABLE;
     decl->type.size = 0;
-    decl->has_postdims = FALSE;
+    decl->type.has_postdims = false;
     if (matchtoken('['))
       parse_old_array_dims(decl, flags);
   } else {
@@ -3403,7 +3403,7 @@ int parse_decl(declinfo_t *decl, int flags)
         // This must be a newdecl, "x[] y" or "x[] &y", the latter of which
         // is illegal, but we flow it through the right path anyway.
         lexpush();
-        decl->has_postdims = FALSE;
+        decl->type.has_postdims = false;
         return parse_new_decl(decl, &ident.tok, flags);
       }
 
@@ -3532,7 +3532,7 @@ symbol *parse_inline_function(methodmap_t *map, const typeinfo_t *type, const ch
   } else {
     decl.type = *type;
   }
-  decl.is_new = TRUE;
+  decl.type.is_new = TRUE;
 
   const int *thistag = NULL;
   if (!is_ctor)
@@ -5281,7 +5281,7 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
       lexpush();
     } else {
       // We require '{' for new methods.
-      if (decl->is_new)
+      if (decl->type.is_new)
         needtoken('{');
 
       /* Insert a separator so that comments following the statement will not
@@ -5302,7 +5302,7 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
     if (sym->tag == pc_tag_void &&
         (sym->usage & uFORWARD) &&
         !decl->type.tag &&
-        !decl->is_new)
+        !decl->type.is_new)
     {
       // We got something like:
       //    forward void X();
