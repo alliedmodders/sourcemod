@@ -81,7 +81,7 @@ union EventHook
  * @noreturn
  * @error				Invalid event name or invalid callback function.
  */
-native void HookEvent(const char name[], EventHook callback, EventHookMode mode=EventHookMode_Post);
+native void HookEvent(const char[] name, EventHook callback, EventHookMode mode=EventHookMode_Post);
 
 /**
  * Creates a hook for when a game event is fired.
@@ -92,7 +92,7 @@ native void HookEvent(const char name[], EventHook callback, EventHookMode mode=
  * @return				True if event exists and was hooked successfully, false otherwise.
  * @error				Invalid callback function.
  */
-native bool HookEventEx(const char name[], EventHook callback, EventHookMode mode=EventHookMode_Post);
+native bool HookEventEx(const char[] name, EventHook callback, EventHookMode mode=EventHookMode_Post);
 
 /**
  * Removes a hook for when a game event is fired.
@@ -103,7 +103,7 @@ native bool HookEventEx(const char name[], EventHook callback, EventHookMode mod
  * @noreturn
  * @error				Invalid callback function or no active hook for specified event.
  */
-native void UnhookEvent(const char name[], EventHook callback, EventHookMode mode=EventHookMode_Post);
+native void UnhookEvent(const char[] name, EventHook callback, EventHookMode mode=EventHookMode_Post);
 
 /**
  * Creates a game event to be fired later.
@@ -117,7 +117,7 @@ native void UnhookEvent(const char name[], EventHook callback, EventHookMode mod
  * @return				Handle to event. INVALID_HANDLE is returned if the event doesn't exist or isn't 
 						being hooked (unless force is true).
  */
-native Event CreateEvent(const char name[], bool force=false);
+native Event CreateEvent(const char[] name, bool force=false);
 
 /**
  * Fires a game event.
@@ -149,7 +149,7 @@ native void CancelCreatedEvent(Handle event);
  * @return				The boolean value of the specfied event key.
  * @error				Invalid or corrupt Handle.
  */
-native bool GetEventBool(Handle event, const char key[], bool defValue=false);
+native bool GetEventBool(Handle event, const char[] key, bool defValue=false);
 
 /**
  * Sets the boolean value of a game event's key.
@@ -160,7 +160,7 @@ native bool GetEventBool(Handle event, const char key[], bool defValue=false);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native void SetEventBool(Handle event, const char key[], bool value);
+native void SetEventBool(Handle event, const char[] key, bool value);
 
 /**
  * Returns the integer value of a game event's key.
@@ -171,7 +171,7 @@ native void SetEventBool(Handle event, const char key[], bool value);
  * @return				The integer value of the specfied event key.
  * @error				Invalid or corrupt Handle.
  */
-native int GetEventInt(Handle event, const char key[], int defValue=0);
+native int GetEventInt(Handle event, const char[] key, int defValue=0);
 
 /**
  * Sets the integer value of a game event's key.
@@ -187,7 +187,7 @@ native int GetEventInt(Handle event, const char key[], int defValue=0);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native void SetEventInt(Handle event, const char key[], int value);
+native void SetEventInt(Handle event, const char[] key, int value);
 
 /**
  * Returns the floating point value of a game event's key.
@@ -198,7 +198,7 @@ native void SetEventInt(Handle event, const char key[], int value);
  * @return				The floating point value of the specfied event key.
  * @error				Invalid or corrupt Handle.
  */
-native float GetEventFloat(Handle event, const char key[], float defValue=0.0);
+native float GetEventFloat(Handle event, const char[] key, float defValue=0.0);
 
 /**
  * Sets the floating point value of a game event's key.
@@ -209,7 +209,7 @@ native float GetEventFloat(Handle event, const char key[], float defValue=0.0);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native void SetEventFloat(Handle event, const char key[], float value);
+native void SetEventFloat(Handle event, const char[] key, float value);
 
 /**
  * Retrieves the string value of a game event's key.
@@ -222,7 +222,7 @@ native void SetEventFloat(Handle event, const char key[], float value);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native void GetEventString(Handle event, const char key[], char value[], int maxlength, const char defvalue[]="");
+native void GetEventString(Handle event, const char[] key, char[] value, int maxlength, const char[] defvalue="");
 
 /**
  * Sets the string value of a game event's key.
@@ -233,7 +233,7 @@ native void GetEventString(Handle event, const char key[], char value[], int max
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native void SetEventString(Handle event, const char key[], const char value[]);
+native void SetEventString(Handle event, const char[] key, const char[] value);
 
 /**
  * Retrieves the name of a game event.
@@ -244,7 +244,7 @@ native void SetEventString(Handle event, const char key[], const char value[]);
  * @noreturn
  * @error				Invalid or corrupt Handle.     
  */
-native void GetEventName(Handle event, char name[], int maxlength);
+native void GetEventName(Handle event, char[] name, int maxlength);
 
 /**
  * Sets whether an event's broadcasting will be disabled or not.
