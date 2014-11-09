@@ -2096,6 +2096,8 @@ static void declloc(int tokid)
   int declflags = DECLFLAG_VARIABLE | DECLFLAG_ENUMROOT | DECLFLAG_DYNAMIC_ARRAYS;
   if (tokid == tNEW || tokid == tDECL)
     declflags |= DECLFLAG_OLD;
+  else if (tokid == tNEWDECL)
+    declflags |= DECLFLAG_NEW;
 
   parse_decl(&decl, declflags);
 
@@ -3499,6 +3501,8 @@ int parse_decl(declinfo_t *decl, int flags)
   // example, if preceded by tNEW or tDECL.
   if (flags & DECLFLAG_OLD)
     return parse_old_decl(decl, flags);
+  if (flags & DECLFLAG_NEW)
+    return parse_new_decl(decl, NULL, flags);
 
   // If parsing an argument, there are two simple checks for whether this is a
   // new or old-style declaration.
@@ -6791,7 +6795,7 @@ static void statement(int *lastindent,int allow_decl)
       lexpush();
       autozero = TRUE;
       lastst = tNEW;
-      declloc(tok);
+      declloc(tNEWDECL);
       return;
     }
   }
