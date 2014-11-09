@@ -69,13 +69,14 @@ KillDrug(client)
 	}
 	else
 	{	
-		BfWriteShort(message, duration);
-		BfWriteShort(message, holdtime);
-		BfWriteShort(message, flags);
-		BfWriteByte(message, color[0]);
-		BfWriteByte(message, color[1]);
-		BfWriteByte(message, color[2]);
-		BfWriteByte(message, color[3]);
+		BfWrite bf = UserMessageToBfWrite(message);
+		bf.WriteShort(duration);
+		bf.WriteShort(holdtime);
+		bf.WriteShort(flags);
+		bf.WriteByte(color[0]);
+		bf.WriteByte(color[1]);
+		bf.WriteByte(color[2]);
+		bf.WriteByte(color[3]);
 	}
 	
 	EndMessage();
