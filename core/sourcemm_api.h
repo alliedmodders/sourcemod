@@ -47,7 +47,6 @@
 #include <eiface.h>
 #include <igameevents.h>
 #include <iplayerinfo.h>
-#include <random.h>
 #include <filesystem.h>
 #include <IEngineSound.h>
 #include <toolframework/itoolentity.h>
@@ -99,7 +98,6 @@ extern CGlobalVars *gpGlobals;
 extern IGameEventManager2 *gameevents;
 extern SourceHook::CallClass<IVEngineServer> *enginePatch;
 extern SourceHook::CallClass<IServerGameDLL> *gamedllPatch;
-extern IUniformRandomStream *engrandom;
 extern IPlayerInfoManager *playerinfo;
 extern IBaseFileSystem *basefilesystem;
 extern IFileSystem *filesystem;
