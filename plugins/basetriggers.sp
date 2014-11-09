@@ -132,9 +132,9 @@ public Event_GameStart(Handle:event, const String:name[], bool:dontBroadcast)
 	g_TotalRounds = 0;	
 }
 
-public Event_TeamPlayWinPanel(Handle:event, const String:name[], bool:dontBroadcast)
+public Event_TeamPlayWinPanel(Event event, const String:name[], bool:dontBroadcast)
 {
-	if(GetEventInt(event, "round_complete") == 1 || StrEqual(name, "arena_win_panel"))
+	if (event.GetInt("round_complete") == 1 || StrEqual(name, "arena_win_panel"))
 	{
 		g_TotalRounds++;
 	}

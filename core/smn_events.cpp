@@ -418,6 +418,21 @@ REGISTER_NATIVES(gameEventNatives)
 	{"SetEventFloat",		sm_SetEventFloat},
 	{"SetEventString",		sm_SetEventString},
 	{"SetEventBroadcast",   sm_SetEventBroadcast},
+
+	// Transitional syntax support.
+	{"Event.Fire",			sm_FireEvent},
+	{"Event.Cancel",		sm_CancelCreatedEvent},
+	{"Event.GetName",		sm_GetEventName},
+	{"Event.GetBool",		sm_GetEventBool},
+	{"Event.GetInt",		sm_GetEventInt},
+	{"Event.GetFloat",		sm_GetEventFloat},
+	{"Event.GetString",		sm_GetEventString},
+	{"Event.SetBool",		sm_SetEventBool},
+	{"Event.SetInt",		sm_SetEventInt},
+	{"Event.SetFloat",		sm_SetEventFloat},
+	{"Event.SetString",		sm_SetEventString},
+	{"Event.BroadcastDisabled.set", sm_SetEventBroadcast},
+
 	{NULL,					NULL}
 };
 
