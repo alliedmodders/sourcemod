@@ -233,7 +233,10 @@ char *pc_readsrc(void *handle,unsigned char *target,int maxchars)
         src->pos++;
         if (outptr < outend)
           *outptr++ = '\n';
-      }
+      } else {
+				// Replace with \n.
+				*(outptr - 1) = '\n';
+			}
       break;
     }
   }
