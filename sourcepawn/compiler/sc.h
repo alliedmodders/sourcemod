@@ -464,6 +464,7 @@ enum TokenKind {
   tSYMBOL,
   tLABEL,
   tSTRING,
+  tPENDING_STRING, /* string, but not yet dequeued */
   tEXPR,          /* for assigment to "lastst" only (see SC1.C) */
   tENDLESS,       /* endless loop, for assigment to "lastst" only */
   tEMPTYBLOCK,    /* empty blocks for AM bug 4825 */
@@ -958,6 +959,16 @@ enum FatalError {
   FATAL_ERROR_USER_ERROR,
 
   FATAL_ERRORS_TOTAL
+};
+
+struct AutoDisableLiteralQueue
+{
+ public:
+  AutoDisableLiteralQueue();
+  ~AutoDisableLiteralQueue();
+
+ private:
+  bool prev_value_;
 };
 
 #endif /* SC_H_INCLUDED */

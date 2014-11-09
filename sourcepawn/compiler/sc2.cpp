@@ -69,6 +69,18 @@ static double pow10(double d)
 }
 #endif
 
+static bool sLiteralQueueDisabled = false;
+
+AutoDisableLiteralQueue::AutoDisableLiteralQueue()
+ : prev_value_(sLiteralQueueDisabled)
+{
+  sLiteralQueueDisabled = true;
+}
+
+AutoDisableLiteralQueue::~AutoDisableLiteralQueue()
+{
+  sLiteralQueueDisabled = prev_value_;
+}
 
 /*  pushstk & popstk
  *
@@ -1969,7 +1981,7 @@ const char *sc_tokens[] = {
          "#endscript", "#error", "#file", "#if", "#include", "#line", "#pragma",
          "#tryinclude", "#undef",
          ";", ";", "-integer value-", "-rational value-", "-identifier-",
-         "-label-", "-string-"
+         "-label-", "-string-", "-string-"
 };
 
 static full_token_t *advance_token_ptr()
@@ -2136,7 +2148,12 @@ int lex(cell *lexvalue,char **lexsym)
              || (*lptr==sc_ctrlchar && *(lptr+1)=='!' && *(lptr+2)=='\"') /* packed raw string */
 #endif
              )
-  {                                     
+  {
+    if (sLiteralQueueDisabled) {
+      tok->id = tPENDING_STRING;
+      tok->end = tok->start;
+      return tok->id;
+    }
     int stringflags,segmentflags;
     char *cat;
     tok->id = tSTRING;
@@ -2261,6 +2278,11 @@ int lex(cell *lexvalue,char **lexsym)
  */
 void lexpush(void)
 {
+  if (current_token()->id == tPENDING_STRING) {
+    // Don't push back fake tokens.
+    return;
+  }
+
   assert(sTokenBuffer->depth < MAX_TOKEN_DEPTH);
   sTokenBuffer->depth++;
   if (sTokenBuffer->cursor == 0)
@@ -2484,6 +2506,7 @@ static void chk_grow_litq(void)
  */
 void litadd(cell value)
 {
+  assert(!sLiteralQueueDisabled);
   chk_grow_litq();
   assert(litidx<litmax);
   litq[litidx++]=value;
@@ -2499,6 +2522,7 @@ void litadd(cell value)
  */
 void litinsert(cell value,int pos)
 {
+  assert(!sLiteralQueueDisabled);
   chk_grow_litq();
   assert(litidx<litmax);
   assert(pos>=0 && pos<=litidx);

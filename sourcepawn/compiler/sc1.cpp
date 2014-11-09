@@ -2716,6 +2716,13 @@ static cell initarray(int ident,int tag,int dim[],int numdim,int cur,
     totalsize+=dsize;
     if (*errorfound || !matchtoken(','))
       abortparse=TRUE;
+    {
+      // We need this since, lex() could add a string to the literal queue,
+      // which totally messes up initvector's state tracking. What a mess.
+      AutoDisableLiteralQueue disable;
+      if (lexpeek('}'))
+        abortparse=TRUE;
+    }
   } /* for */
   needtoken('}');
   assert(counteddim!=NULL);
