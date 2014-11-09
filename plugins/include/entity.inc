@@ -682,15 +682,12 @@ native GetEntPropArraySize(entity, PropType:type, const String:prop[]);
  * @param array			Array to read into.
  * @param arraySize		Number of values to read.
  * @param dataSize		Size of each value in bytes (1, 2, or 4).
- * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-stock GetEntDataArray(entity, offset, array[], arraySize, dataSize=4)
+stock void GetEntDataArray(int entity, int offset, int[] array, int arraySize, int dataSize=4)
 {
-	for (new i=0; i<arraySize; i++)
-	{
-		array[i] = GetEntData(entity, offset + i*dataSize, dataSize)
-	}
+	for (int i=0; i<arraySize; i++)
+		array[i] = GetEntData(entity, offset + i*dataSize, dataSize);
 }
 
 /**
