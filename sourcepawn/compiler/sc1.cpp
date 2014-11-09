@@ -2171,7 +2171,7 @@ static void declloc(int tokid)
       //
       // For now, we only implement the string literal initializer.
       if (type->is_new && needtoken('=')) {
-        if (type->isCharArray()) {
+        if (type->isCharArray() && !lexpeek(tNEW)) {
           // Error if we're assigning something other than a string literal.
           needtoken(tSTRING);
 
@@ -2205,6 +2205,8 @@ static void declloc(int tokid)
               TRUE, FALSE, TRUE, FALSE,
               &type->idxtag[i],
               &child, 0, &val);
+            if (i == type->numdim - 1 && type->tag == pc_tag_string)
+              stradjust(sPRI);
             pushreg(sPRI);
             
             switch (ident) {
