@@ -434,6 +434,7 @@ enum TokenKind {
   tSWITCH,
   tTAGOF,
   tTHEN,
+  tTHIS,
   tTYPEDEF,
   tUNION,
   tVOID,

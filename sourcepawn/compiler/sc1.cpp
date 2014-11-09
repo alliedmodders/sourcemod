@@ -3702,7 +3702,6 @@ int check_this_tag(methodmap_t *map, symbol *target)
   const arginfo *first_arg = &target->dim.arglist[0];
   if (first_arg->ident == 0 ||
       first_arg->ident != iVARIABLE ||
-      (first_arg->usage & uCONST) ||
       first_arg->hasdefault ||
       first_arg->numtags != 1)
   {
@@ -5576,6 +5575,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
       argptr->tags = (int *)malloc(sizeof(int));
       argptr->tags[0] = *thistag;
       argptr->numtags = 1;
+      argptr->usage = uCONST;
     } else {
       argptr = &sym->dim.arglist[0];
     }
@@ -5591,6 +5591,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
       argptr->idxtag,
       0
     );
+    sym->usage |= uCONST;
     markusage(sym, uREAD);
 
     argcnt++;

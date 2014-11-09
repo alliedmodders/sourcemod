@@ -209,6 +209,7 @@ static const char *errmsg[] = {
 /*163*/  "indeterminate array size in \"sizeof\" expression (symbol \"%s\")\n",
 /*164*/  "allocated array type '%s' doesn't match original type '%s'\n",
 /*165*/  "cannot create dynamic arrays in static scope - did you mean to create a fixed-length array with brackets after the variable name?\n",
+/*166*/  "cannot use 'this' outside of a methodmap method or property\n",
 #else
   "\315e\306\227\266k\217:\235\277bu\201fo\220\204\223\012",
   "\202l\224\250s\205g\346\356e\233\201(\243\315\214\267\202) \253 f\255low ea\305 \042c\353e\042\012",
