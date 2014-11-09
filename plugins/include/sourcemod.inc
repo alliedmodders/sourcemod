@@ -84,18 +84,6 @@ enum APLRes
 };
 
 /**
- * Declare this as a struct in your plugin to expose its information.
- * Example:
- *
- * public Plugin:myinfo =
- * {
- *    name = "My Plugin",
- *    //etc
- * };
- */
-public Plugin:myinfo;
- 
-/**
  * Called when the plugin is fully initialized and all known external references 
  * are resolved. This is only called once in the lifetime of the plugin, and is 
  * paired with OnPluginEnd().
