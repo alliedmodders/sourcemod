@@ -64,6 +64,7 @@ struct Plugin
 #include <textparse>
 #include <clients>
 #include <console>
+#include <convars>
 #include <events>
 #include <bitbuffer>
 #include <protobuf>
