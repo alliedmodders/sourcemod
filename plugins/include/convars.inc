@@ -50,21 +50,32 @@ enum ConVarQueryResult
 	ConVarQuery_Protected				/**< Client convar was found, but it is protected. The server cannot retrieve its value. */
 };
 
-/**
- * Creates a new console variable.
- *
- * @param name			Name of new convar.
- * @param defaultValue	String containing the default value of new convar.
- * @param description	Optional description of the convar.
- * @param flags			Optional bitstring of flags determining how the convar should be handled. See FCVAR_* constants for more details.
- * @param hasMin		Optional boolean that determines if the convar has a minimum value.
- * @param min			Minimum floating point value that the convar can have if hasMin is true.
- * @param hasMax		Optional boolean that determines if the convar has a maximum value.
- * @param max			Maximum floating point value that the convar can have if hasMax is true.
- * @return				A handle to the newly created convar. If the convar already exists, a handle to it will still be returned.
- * @error				Convar name is blank or is the same as an existing console command.
- */
-native ConVar:CreateConVar(const String:name[], const String:defaultValue[], const String:description[]="", flags=0, bool:hasMin=false, Float:min=0.0, bool:hasMax=false, Float:max=0.0);
+// Creates a new console variable.
+//
+// @param name			Name of new convar.
+// @param defaultValue	String containing the default value of new convar.
+// @param description	Optional description of the convar.
+// @param flags			Optional bitstring of flags determining how the convar should be handled. See FCVAR_* constants for more details.
+// @param hasMin		Optional boolean that determines if the convar has a minimum value.
+// @param min			Minimum floating point value that the convar can have if hasMin is true.
+// @param hasMax		Optional boolean that determines if the convar has a maximum value.
+// @param max			Maximum floating point value that the convar can have if hasMax is true.
+// @return				A handle to the newly created convar. If the convar already exists, a handle to it will still be returned.
+// @error				Convar name is blank or is the same as an existing console command.
+native ConVar CreateConVar(
+	const char[] name,
+	const char[] defaultValue,
+	const char[] description="",
+	int flags=0,
+	bool hasMin=false, float min=0.0,
+	bool hasMax=false, float max=0.0);
+
+// Searches for a console variable.
+//
+// @param name			Name of convar to find.
+// @return				A ConVar object if found; null otherwise.
+native ConVar FindConVar(const char[] name);
+
 
 // Most of these aren't properties because they're more complex
 methodmap ConVar < Handle
@@ -72,20 +83,11 @@ methodmap ConVar < Handle
 }
 
 /**
- * Searches for a console variable.
- *
- * @param name			Name of convar to find.
- * @return				A handle to the convar if it is found. INVALID_HANDLE otherwise.
- */
-native ConVar:FindConVar(const String:name[]);
-
-/**
  * Called when a console variable's value is changed.
  *
  * @param convar		Handle to the convar that was changed.
  * @param oldValue		String containing the value of the convar before it was changed.
  * @param newValue		String containing the new value of the convar.
- * @noreturn
  */
 typedef ConVarChanged = function void (ConVar convar, const char[] oldValue, const char[] newValue);
 
@@ -94,20 +96,18 @@ typedef ConVarChanged = function void (ConVar convar, const char[] oldValue, con
  *
  * @param convar		Handle to the convar.
  * @param callback		An OnConVarChanged function pointer.
- * @noreturn
  * @error				Invalid or corrupt Handle or invalid callback function.
  */
-native HookConVarChange(Handle:convar, ConVarChanged:callback);
+native void HookConVarChange(Handle convar, ConVarChanged callback);
 
 /**
  * Removes a hook for when a console variable's value is changed.
  *
  * @param convar		Handle to the convar.
  * @param callback		An OnConVarChanged function pointer.
- * @noreturn
  * @error				Invalid or corrupt Handle, invalid callback function, or no active hook on convar.
  */
-native UnhookConVarChange(Handle:convar, ConVarChanged:callback);
+native void UnhookConVarChange(Handle convar, ConVarChanged callback);
 
 /**
  * Returns the boolean value of a console variable.
@@ -116,7 +116,7 @@ native UnhookConVarChange(Handle:convar, ConVarChanged:callback);
  * @return				The boolean value of the convar.
  * @error				Invalid or corrupt Handle.
  */
-native bool:GetConVarBool(Handle:convar);
+native bool GetConVarBool(Handle convar);
 
 /**
  * Sets the boolean value of a console variable.
@@ -131,10 +131,9 @@ native bool:GetConVarBool(Handle:convar);
  *						and actually exists on clients.
  * @param notify		If set to true, clients will be notified that the convar has changed.
  *						This will only work if the convar has the FCVAR_NOTIFY flag.
- * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetConVarBool(Handle:convar, bool:value, bool:replicate=false, bool:notify=false);
+native void SetConVarBool(Handle convar, bool value, bool replicate=false, bool notify=false);
 
 /**
  * Returns the integer value of a console variable.
@@ -143,7 +142,7 @@ native SetConVarBool(Handle:convar, bool:value, bool:replicate=false, bool:notif
  * @return				The integer value of the convar.
  * @error				Invalid or corrupt Handle.
  */
-native GetConVarInt(Handle:convar);
+native GetConVarInt(Handle convar);
 
 /**
  * Sets the integer value of a console variable.
@@ -158,10 +157,9 @@ native GetConVarInt(Handle:convar);
  *						and actually exists on clients.
  * @param notify		If set to true, clients will be notified that the convar has changed.
  *						This will only work if the convar has the FCVAR_NOTIFY flag.
- * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetConVarInt(Handle:convar, value, bool:replicate=false, bool:notify=false);
+native void SetConVarInt(Handle convar, int value, bool replicate=false, bool notify=false);
 
 /**
  * Returns the floating point value of a console variable.
@@ -170,7 +168,7 @@ native SetConVarInt(Handle:convar, value, bool:replicate=false, bool:notify=fals
  * @return				The floating point value of the convar.
  * @error				Invalid or corrupt Handle.
  */
-native Float:GetConVarFloat(Handle:convar);
+native float GetConVarFloat(Handle convar);
 
 /**
  * Sets the floating point value of a console variable.
@@ -185,10 +183,9 @@ native Float:GetConVarFloat(Handle:convar);
  *						and actually exists on clients.
  * @param notify		If set to true, clients will be notified that the convar has changed.
  *						This will only work if the convar has the FCVAR_NOTIFY flag.
- * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetConVarFloat(Handle:convar, Float:value, bool:replicate=false, bool:notify=false);
+native void SetConVarFloat(Handle convar, float value, bool replicate=false, bool notify=false);
 
 /**
  * Retrieves the string value of a console variable.
@@ -196,10 +193,9 @@ native SetConVarFloat(Handle:convar, Float:value, bool:replicate=false, bool:not
  * @param convar		Handle to the convar.
  * @param value			Buffer to store the value of the convar.
  * @param maxlength		Maximum length of string buffer.
- * @noreturn
  * @error				Invalid or corrupt Handle.     
  */
-native GetConVarString(Handle:convar, String:value[], maxlength);
+native void GetConVarString(Handle convar, char[] value, int maxlength);
 
 /**
  * Sets the string value of a console variable.
@@ -214,10 +210,9 @@ native GetConVarString(Handle:convar, String:value[], maxlength);
  *						and actually exists on clients.
  * @param notify		If set to true, clients will be notified that the convar has changed.
  *						This will only work if the convar has the FCVAR_NOTIFY flag.
- * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetConVarString(Handle:convar, const String:value[], bool:replicate=false, bool:notify=false);
+native void SetConVarString(Handle convar, const char[] value, bool replicate=false, bool notify=false);
 
 /**
  * Resets the console variable to its default value.
@@ -231,10 +226,9 @@ native SetConVarString(Handle:convar, const String:value[], bool:replicate=false
  *						and actually exists on clients.
  * @param notify		If set to true, clients will be notified that the convar has changed.
  *						This will only work if the convar has the FCVAR_NOTIFY flag.
- * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native ResetConVar(Handle:convar, bool:replicate=false, bool:notify=false);
+native void ResetConVar(Handle convar, bool replicate=false, bool notify=false);
 
 /**
  * Retrieves the default string value of a console variable.
@@ -245,7 +239,7 @@ native ResetConVar(Handle:convar, bool:replicate=false, bool:notify=false);
  * @return				Number of bytes written to the buffer (UTF-8 safe).
  * @error				Invalid or corrupt Handle.
  */
-native GetConVarDefault(Handle:convar, String:value[], maxlength);
+native int GetConVarDefault(Handle convar, char[] value, int maxlength);
 
 /**
  * Returns the bitstring of flags on a console variable.
@@ -254,7 +248,7 @@ native GetConVarDefault(Handle:convar, String:value[], maxlength);
  * @return				A bitstring containing the FCVAR_* flags that are enabled.
  * @error				Invalid or corrupt Handle.
  */
-native GetConVarFlags(Handle:convar);
+native int GetConVarFlags(Handle convar);
 
 /**
  * Sets the bitstring of flags on a console variable.
@@ -264,7 +258,7 @@ native GetConVarFlags(Handle:convar);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetConVarFlags(Handle:convar, flags);
+native SetConVarFlags(Handle convar, flags);
 
 /**
  * Retrieves the specified bound of a console variable.
@@ -275,7 +269,7 @@ native SetConVarFlags(Handle:convar, flags);
  * @return				True if the convar has the specified bound set, false otherwise.
  * @error				Invalid or corrupt Handle.
  */
-native bool:GetConVarBounds(Handle:convar, ConVarBounds:type, &Float:value);
+native bool GetConVarBounds(Handle convar, ConVarBounds type, float &value);
 
 /**
  * Sets the specified bound of a console variable.
@@ -284,10 +278,9 @@ native bool:GetConVarBounds(Handle:convar, ConVarBounds:type, &Float:value);
  * @param type			Type of bound to set, ConVarBound_Lower or ConVarBound_Upper
  * @param set			If set to true, convar will use specified bound. If false, bound will be removed.
  * @param value			Floating point value to use as the specified bound.
- * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetConVarBounds(Handle:convar, ConVarBounds:type, bool:set, Float:value=0.0);
+native void SetConVarBounds(Handle convar, ConVarBounds type, bool set, float value=0.0);
 
 /**
  * Retrieves the name of a console variable.
@@ -298,7 +291,7 @@ native SetConVarBounds(Handle:convar, ConVarBounds:type, bool:set, Float:value=0
  * @noreturn
  * @error				Invalid or corrupt Handle.     
  */
-native GetConVarName(Handle:convar, String:name[], maxlength);
+native GetConVarName(Handle convar, char[] name, maxlength);
 
 union ConVarQueryFinished
 {	
@@ -340,7 +333,7 @@ union ConVarQueryFinished
  * @return				A cookie that uniquely identifies the query. 
  *						Returns QUERYCOOKIE_FAILED on failure, such as when used on a bot.
  */
-native QueryCookie:QueryClientConVar(client, const String:cvarName[], ConVarQueryFinished:callback, any:value=0);
+native QueryCookie QueryClientConVar(int client, const char[] cvarName, ConVarQueryFinished callback, any value=0);
 
 /**
  * Returns true if the supplied character is valid in a ConVar name.
@@ -348,7 +341,7 @@ native QueryCookie:QueryClientConVar(client, const String:cvarName[], ConVarQuer
  * @param c			Character to validate.
  * @return			True is valid for ConVars, false otherwise
  */
-stock bool:IsValidConVarChar(c)
+stock bool IsValidConVarChar(int c)
 {
 	return (c == '_' || IsCharAlpha(c) || IsCharNumeric(c));
 }
@@ -362,5 +355,5 @@ stock bool:IsValidConVarChar(c)
  * @return				True on success, false on failure
  * @error 				Invalid client index, client not in game, or client is fake
  */
-native bool:SendConVarValue(client, Handle:convar, const String:value[]);
+native bool SendConVarValue(int client, Handle convar, const char[] value);
 
