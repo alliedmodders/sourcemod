@@ -271,7 +271,6 @@ typedef struct svalue_s {
 #define DECLFLAG_DYNAMIC_ARRAYS  0x20 // Dynamic arrays are allowed.
 #define DECLFLAG_OLD             0x40 // Known old-style declaration.
 #define DECLFLAG_FIELD           0x80 // Struct field.
-#define DECLFLAG_NEW            0x100 // Known new-style declaration.
 #define DECLMASK_NAMED_DECL      (DECLFLAG_ARGUMENT | DECLFLAG_VARIABLE | DECLFLAG_MAYBE_FUNCTION | DECLFLAG_FIELD)
 
 typedef struct {
@@ -470,7 +469,6 @@ enum TokenKind {
   tENDLESS,       /* endless loop, for assigment to "lastst" only */
   tEMPTYBLOCK,    /* empty blocks for AM bug 4825 */
   tEOL,           /* newline, only returned by peek_new_line() */
-  tNEWDECL,       /* for declloc() */
   tLAST_TOKEN_ID
 };
 
