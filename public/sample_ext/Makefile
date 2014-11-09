@@ -10,6 +10,7 @@ HL2SDK_ORIG = ../../../hl2sdk
 HL2SDK_OB = ../../../hl2sdk-ob
 HL2SDK_CSS = ../../../hl2sdk-css
 HL2SDK_OB_VALVE = ../../../hl2sdk-ob-valve
+HL2SDK_TF2 = ../../../hl2sdk-tf2
 HL2SDK_L4D = ../../../hl2sdk-l4d
 HL2SDK_L4D2 = ../../../hl2sdk-l4d2
 HL2SDK_CSGO = ../../../hl2sdk-csgo
@@ -44,7 +45,7 @@ CPP_OSX = clang
 override ENGSET = false
 
 # Check for valid list of engines
-ifneq (,$(filter original orangebox orangeboxvalve css left4dead left4dead2 csgo,$(ENGINE)))
+ifneq (,$(filter original orangebox orangeboxvalve css left4dead left4dead2 csgo tf2,$(ENGINE)))
 	override ENGSET = true
 endif
 
@@ -63,6 +64,10 @@ endif
 ifeq "$(ENGINE)" "orangeboxvalve"
 	HL2SDK = $(HL2SDK_OB_VALVE)
 	CFLAGS += -DSOURCE_ENGINE=7
+endif
+ifeq "$(ENGINE)" "tf2"
+        HL2SDK = $(HL2SDK_TF2)
+        CFLAGS += -DSOURCE_ENGINE=7
 endif
 ifeq "$(ENGINE)" "left4dead"
 	HL2SDK = $(HL2SDK_L4D)
@@ -106,7 +111,11 @@ ifneq (,$(filter original orangebox,$(ENGINE)))
 	LIB_SUFFIX = _i486.$(LIB_EXT)
 else
 	LIB_PREFIX = lib
-	LIB_SUFFIX = .$(LIB_EXT)
+        ifeq "$(ENGINE)" "tf2"
+                LIB_SUFFIX = _srv.$(LIB_EXT)
+        else
+                LIB_SUFFIX = .$(LIB_EXT)
+        endif
 endif
 
 INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
@@ -215,7 +224,7 @@ all: check
 check:
 	if [ "$(USEMETA)" = "true" ] && [ "$(ENGSET)" = "false" ]; then \
 		echo "You must supply one of the following values for ENGINE:"; \
-		echo "csgo, left4dead2, left4dead, css, orangeboxvalve, orangebox, or original"; \
+		echo "tf2, csgo, left4dead2, left4dead, css, orangeboxvalve, orangebox, or original"; \
 		exit 1; \
 	fi
 
