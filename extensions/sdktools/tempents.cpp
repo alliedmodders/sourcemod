@@ -291,7 +291,7 @@ void TempEntityManager::Initialize()
 	|| SOURCE_ENGINE == SE_CSS   \
 	|| SOURCE_ENGINE == SE_SDK2013
 
-	if (g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr))
+	if (g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", NULL))
 	{
 		m_ListHead = servertools->GetTempEntList();
 	}

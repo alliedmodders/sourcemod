@@ -136,7 +136,7 @@ void GetIServer()
 	|| SOURCE_ENGINE == SE_CSS   \
 	|| SOURCE_ENGINE == SE_SDK2013
 
-	if (g_SMAPI->GetEngineFactory(false)("VEngineServer022", nullptr))
+	if (g_SMAPI->GetEngineFactory(false)("VEngineServer022", NULL))
 	{
 		iserver = engine->GetIServer();
 		return;
