@@ -1675,6 +1675,7 @@ static int hier2(value *lval)
     clear_value(lval);
     lval->ident=iCONSTEXPR;
     lval->constval=1;           /* preset */
+    markusage(sym, uREAD);
     if (sym->ident==iARRAY || sym->ident==iREFARRAY) {
       int level;
       symbol *idxsym=NULL;
