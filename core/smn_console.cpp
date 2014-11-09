@@ -1182,28 +1182,19 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
 
 	if (!pPlayer)
-	{
 		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
-	}
 
 	if (!pPlayer->IsConnected())
-	{
 		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
-	}
 
 	if (pPlayer->IsFakeClient())
-	{
 		return pContext->ThrowNativeError("Client %d is fake and cannot be targeted", params[1]);
-	}
 
 	INetChannel *netchan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(params[1]));
 	if (netchan == NULL)
-	{
 		return 0;
-	}
 
 	netchan->SendData(buffer);
-
 	return 1;
 }
 
@@ -1247,6 +1238,59 @@ static cell_t RemoveCommandListener(IPluginContext *pContext, const cell_t *para
 	return 1;
 }
 
+static cell_t ConVar_BoolValue_set(IPluginContext *pContext, const cell_t *params)
+{
+	static cell_t new_params[5] = {
+		4,
+		params[1],
+		params[2],
+		0, /* Default replicate setting. */
+		0, /* Default replicate setting. */
+	};
+
+	return sm_SetConVarNum(pContext, new_params);
+}
+
+static cell_t ConVar_IntValue_set(IPluginContext *pContext, const cell_t *params)
+{
+	static cell_t new_params[5] = {
+		4,
+		params[1],
+		params[2],
+		0, /* Default replicate setting. */
+		0, /* Default replicate setting. */
+	};
+
+	return sm_SetConVarNum(pContext, new_params);
+}
+
+static cell_t ConVar_FloatValue_set(IPluginContext *pContext, const cell_t *params)
+{
+	static cell_t new_params[5] = {
+		4,
+		params[1],
+		params[2],
+		0, /* Default replicate setting. */
+		0, /* Default replicate setting. */
+	};
+
+	return sm_SetConVarFloat(pContext, new_params);
+}
+
+static cell_t ConVar_ReplicateToClient(IPluginContext *pContext, const cell_t *params)
+{
+	// Old version is (client, handle, value).
+	// New version is (handle, client, value).
+	static cell_t new_params[4] = {
+		3,
+		params[2],
+		params[1],
+		params[3],
+	};
+
+	return SendConVarValue(pContext, new_params);
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -1287,5 +1331,29 @@ REGISTER_NATIVES(consoleNatives)
 	{"SendConVarValue",		SendConVarValue},
 	{"AddCommandListener",	AddCommandListener},
 	{"RemoveCommandListener", RemoveCommandListener},
+
+	// Transitional syntax support.
+	{"ConVar.BoolValue.get",	sm_GetConVarBool},
+	{"ConVar.BoolValue.set",	ConVar_BoolValue_set},
+	{"ConVar.FloatValue.get",	sm_GetConVarFloat},
+	{"ConVar.FloatValue.set",	ConVar_FloatValue_set},
+	{"ConVar.IntValue.get",		sm_GetConVarInt},
+	{"ConVar.IntValue.set",		ConVar_IntValue_set},
+	{"ConVar.Flags.get",		sm_GetConVarFlags},
+	{"ConVar.Flags.set",		sm_SetConVarFlags},
+	{"ConVar.SetBool",			sm_SetConVarNum},
+	{"ConVar.SetInt",			sm_SetConVarNum},
+	{"ConVar.SetFloat",			sm_SetConVarFloat},
+	{"ConVar.GetString",		sm_GetConVarString},
+	{"ConVar.SetString",		sm_SetConVarString},
+	{"ConVar.RestoreDefault",	sm_ResetConVar},
+	{"ConVar.GetDefault",		GetConVarDefault},
+	{"ConVar.GetBounds",		sm_GetConVarBounds},
+	{"ConVar.SetBounds",		sm_SetConVarBounds},
+	{"ConVar.GetName",			sm_GetConVarName},
+	{"ConVar.ReplicateToClient",	ConVar_ReplicateToClient},
+	{"ConVar.AddChangeHook",	sm_HookConVarChange},
+	{"ConVar.RemoveChangeHook",	sm_UnhookConVarChange},
+
 	{NULL,					NULL}
 };

@@ -44,11 +44,18 @@ enum ConVarBounds
  */
 enum ConVarQueryResult
 {
-	ConVarQuery_Okay = 0,				/**< Retrieval of client convar value was successful. */
-	ConVarQuery_NotFound,				/**< Client convar was not found. */
-	ConVarQuery_NotValid,				/**< A console command with the same name was found, but there is no convar. */
-	ConVarQuery_Protected				/**< Client convar was found, but it is protected. The server cannot retrieve its value. */
+	ConVarQuery_Okay = 0,				//< Retrieval of client convar value was successful. */
+	ConVarQuery_NotFound,				//< Client convar was not found. */
+	ConVarQuery_NotValid,				//< A console command with the same name was found, but there is no convar. */
+	ConVarQuery_Protected				//< Client convar was found, but it is protected. The server cannot retrieve its value. */
 };
+
+// Called when a console variable's value is changed.
+// 
+// @param convar		Handle to the convar that was changed.
+// @param oldValue		String containing the value of the convar before it was changed.
+// @param newValue		String containing the new value of the convar.
+typedef ConVarChanged = function void (ConVar convar, const char[] oldValue, const char[] newValue);
 
 // Creates a new console variable.
 //
@@ -76,20 +83,156 @@ native ConVar CreateConVar(
 // @return				A ConVar object if found; null otherwise.
 native ConVar FindConVar(const char[] name);
 
-
-// Most of these aren't properties because they're more complex
+// A ConVar is a configurable, named setting in the srcds console.
 methodmap ConVar < Handle
 {
-}
+	// Retrieves or sets a boolean value for the convar.
+	property bool BoolValue {
+		public native get();
+		public native set(bool b);
+	}
 
-/**
- * Called when a console variable's value is changed.
- *
- * @param convar		Handle to the convar that was changed.
- * @param oldValue		String containing the value of the convar before it was changed.
- * @param newValue		String containing the new value of the convar.
- */
-typedef ConVarChanged = function void (ConVar convar, const char[] oldValue, const char[] newValue);
+	// Retrieves or sets an integer value for the convar.
+	property int IntValue {
+		public native get();
+		public native set(int value);
+	}
+
+	// Retrieves or sets a float value for the convar.
+	property float FloatValue {
+		public native get();
+		public native set(float value);
+	}
+
+	// Gets or sets the flag bits (FCVAR_*) on the convar.
+	property int Flags {
+		public native get();
+		public native set(int flags);
+	}
+
+	// Sets the boolean value of a console variable.
+	//
+	// Note: The replicate and notify params are only relevant for the
+	// original, Dark Messiah, and Episode 1 engines. Newer engines
+	// automatically do these things when the convar value is changed.
+	//
+	// @param value     New boolean value.
+	// @param replicate If set to true, the new convar value will be set on all clients.
+	//                  This will only work if the convar has the FCVAR_REPLICATED flag
+	//                  and actually exists on clients.
+	// @param notify    If set to true, clients will be notified that the convar has changed.
+	//                  This will only work if the convar has the FCVAR_NOTIFY flag.
+	public native void SetBool(bool value, bool replicate=false, bool notify=false);
+
+	// Sets the integer value of a console variable.
+	//
+	// Note: The replicate and notify params are only relevant for the
+	// original, Dark Messiah, and Episode 1 engines. Newer engines
+	// automatically do these things when the convar value is changed.
+	//
+	// @param value     New integer value.
+	// @param replicate If set to true, the new convar value will be set on all clients.
+	//                  This will only work if the convar has the FCVAR_REPLICATED flag
+	//                  and actually exists on clients.
+	// @param notify    If set to true, clients will be notified that the convar has changed.
+	//                  This will only work if the convar has the FCVAR_NOTIFY flag.
+	public native void SetInt(int value, bool replicate=false, bool notify=false);
+
+	// Sets the floating point value of a console variable.
+	//
+	// Note: The replicate and notify params are only relevant for the
+	// original, Dark Messiah, and Episode 1 engines. Newer engines
+	// automatically do these things when the convar value is changed.
+	//
+	// @param value     New floating point value.
+	// @param replicate If set to true, the new convar value will be set on all clients.
+	//                  This will only work if the convar has the FCVAR_REPLICATED flag
+	//                  and actually exists on clients.
+	// @param notify    If set to true, clients will be notified that the convar has changed.
+	//                  This will only work if the convar has the FCVAR_NOTIFY flag.
+	public native void SetFloat(float value, bool replicate=false, bool notify=false);
+
+	// Retrieves the string value of a console variable.
+	//
+	// @param convar     Handle to the convar.
+	// @param value      Buffer to store the value of the convar.
+	// @param maxlength  Maximum length of string buffer.
+	public native void GetString(char[] value, int maxlength);
+
+	// Sets the string value of a console variable.
+	//
+	// Note: The replicate and notify params are only relevant for the
+	// original, Dark Messiah, and Episode 1 engines. Newer engines
+	// automatically do these things when the convar value is changed.
+	//
+	// @param value      New string value.
+	// @param replicate  If set to true, the new convar value will be set on all clients.
+	//                   This will only work if the convar has the FCVAR_REPLICATED flag
+	//                   and actually exists on clients.
+	// @param notify     If set to true, clients will be notified that the convar has changed.
+	//                   This will only work if the convar has the FCVAR_NOTIFY flag.
+	public native void SetString(const char[] value, bool replicate=false, bool notify=false);
+
+	// Resets the console variable to its default value.
+	//
+	// Note: The replicate and notify params are only relevant for the
+	// original, Dark Messiah, and Episode 1 engines. Newer engines
+	// automatically do these things when the convar value is changed.
+	//
+	// @param replicate  If set to true, the new convar value will be set on all clients.
+	//                   This will only work if the convar has the FCVAR_REPLICATED flag
+	//                   and actually exists on clients.
+	// @param notify     If set to true, clients will be notified that the convar has changed.
+	//                   This will only work if the convar has the FCVAR_NOTIFY flag.
+	public native void RestoreDefault(bool replicate=false, bool notify=false);
+
+	// Retrieves the default string value of a console variable.
+	//
+	// @param value      Buffer to store the default value of the convar.
+	// @param maxlength  Maximum length of string buffer.
+	// @return           Number of bytes written to the buffer (UTF-8 safe).
+	public native int GetDefault(char[] value, int maxlength);
+
+	// Retrieves the specified bound of a console variable.
+	//
+	// @param type       Type of bound to retrieve, ConVarBound_Lower or ConVarBound_Upper.
+	// @param value      By-reference cell to store the specified floating point bound value.
+	// @return           True if the convar has the specified bound set, false otherwise.
+	public native bool GetBounds(ConVarBounds type, float &value);
+
+	// Sets the specified bound of a console variable.
+	//
+	// @param type       Type of bound to set, ConVarBound_Lower or ConVarBound_Upper
+	// @param set        If set to true, convar will use specified bound. If false, bound will be removed.
+	// @param value      Floating point value to use as the specified bound.
+	public native void SetBounds(ConVarBounds type, bool set, float value=0.0);
+
+	// Retrieves the name of a console variable.
+	//
+	// @param name       Buffer to store the name of the convar.
+	// @param maxlength  Maximum length of string buffer.
+	public native void GetName(char[] name, maxlength);
+
+	// Replicates a convar value to a specific client. This does not change the actual convar value.
+	//
+	// @param client     Client index
+	// @param value      String value to send
+	// @return           True on success, false on failure
+	// @error            Invalid client index, client not in game, or client is fake
+	public native bool ReplicateToClient(int client, const char[] value);
+
+	// Creates a hook for when a console variable's value is changed.
+	//
+	// @param callback  An OnConVarChanged function pointer.
+	public native void AddChangeHook(ConVarChanged callback);
+
+	// Removes a hook for when a console variable's value is changed.
+	//
+	// @param convar    Handle to the convar.
+	// @param callback  An OnConVarChanged function pointer.
+	// @error           No active hook on convar.
+	public native void RemoveChangeHook(ConVarChanged callback);
+}
 
 /**
  * Creates a hook for when a console variable's value is changed.
@@ -142,7 +285,7 @@ native void SetConVarBool(Handle convar, bool value, bool replicate=false, bool 
  * @return				The integer value of the convar.
  * @error				Invalid or corrupt Handle.
  */
-native GetConVarInt(Handle convar);
+native int GetConVarInt(Handle convar);
 
 /**
  * Sets the integer value of a console variable.
@@ -255,10 +398,9 @@ native int GetConVarFlags(Handle convar);
  *
  * @param convar		Handle to the convar.
  * @param flags			A bitstring containing the FCVAR_* flags to enable.
- * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetConVarFlags(Handle convar, flags);
+native void SetConVarFlags(Handle convar, flags);
 
 /**
  * Retrieves the specified bound of a console variable.
@@ -288,38 +430,42 @@ native void SetConVarBounds(Handle convar, ConVarBounds type, bool set, float va
  * @param convar		Handle to the convar.
  * @param name			Buffer to store the name of the convar.
  * @param maxlength		Maximum length of string buffer.
- * @noreturn
  * @error				Invalid or corrupt Handle.     
  */
-native GetConVarName(Handle convar, char[] name, maxlength);
+native void GetConVarName(Handle convar, char[] name, maxlength);
+
+/**
+ * Replicates a convar value to a specific client. This does not change the actual convar value.
+ *
+ * @param client		Client index
+ * @param convar		ConVar handle
+ * @param value			String value to send
+ * @return				True on success, false on failure
+ * @error 				Invalid client index, client not in game, or client is fake
+ */
+native bool SendConVarValue(int client, Handle convar, const char[] value);
 
 union ConVarQueryFinished
 {	
-	/**
-	 * Called when a query to retrieve a client's console variable has finished.
-	 *
-	 * @param cookie		Unique identifier of query.
-	 * @param client		Player index.
-	 * @param result		Result of query that tells one whether or not query was successful.
-	 *						See ConVarQueryResult enum for more details.
-	 * @param convarName	Name of client convar that was queried.
-	 * @param convarValue	Value of client convar that was queried if successful. This will be "" if it was not.
-	 * @param value			Value that was passed when query was started.
-	 * @noreturn
-	 */
+	// Called when a query to retrieve a client's console variable has finished.
+	//
+	// @param cookie		Unique identifier of query.
+	// @param client		Player index.
+	// @param result		Result of query that tells one whether or not query was successful.
+	//						See ConVarQueryResult enum for more details.
+	// @param convarName	Name of client convar that was queried.
+	// @param convarValue	Value of client convar that was queried if successful. This will be "" if it was not.
+	// @param value			Value that was passed when query was started.
 	function void (QueryCookie cookie, int client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue, any value);
 	
-	/**
-	 * Called when a query to retrieve a client's console variable has finished.
-	 *
-	 * @param cookie		Unique identifier of query.
-	 * @param client		Player index.
-	 * @param result		Result of query that tells one whether or not query was successful.
-	 *						See ConVarQueryResult enum for more details.
-	 * @param convarName	Name of client convar that was queried.
-	 * @param convarValue	Value of client convar that was queried if successful. This will be "" if it was not.
-	 * @noreturn
-	 */
+	// Called when a query to retrieve a client's console variable has finished.
+	//
+	// @param cookie		Unique identifier of query.
+	// @param client		Player index.
+	// @param result		Result of query that tells one whether or not query was successful.
+	//						See ConVarQueryResult enum for more details.
+	// @param convarName	Name of client convar that was queried.
+	// @param convarValue	Value of client convar that was queried if successful. This will be "" if it was not.
 	function void (QueryCookie cookie, int client, ConVarQueryResult result, const char[] cvarName, const char[] cvarValue);
 };
 
@@ -345,15 +491,3 @@ stock bool IsValidConVarChar(int c)
 {
 	return (c == '_' || IsCharAlpha(c) || IsCharNumeric(c));
 }
-
-/**
- * Replicates a convar value to a specific client. This does not change the actual convar value.
- *
- * @param client		Client index
- * @param convar		ConVar handle
- * @param value			String value to send
- * @return				True on success, false on failure
- * @error 				Invalid client index, client not in game, or client is fake
- */
-native bool SendConVarValue(int client, Handle convar, const char[] value);
-
