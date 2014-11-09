@@ -645,9 +645,28 @@ REGISTER_NATIVES(trieNatives)
 	{"SetTrieString",			SetTrieString},
 	{"SetTrieValue",			SetTrieValue},
 	{"GetTrieSize",				GetTrieSize},
+
 	{"CreateTrieSnapshot",		CreateTrieSnapshot},
 	{"TrieSnapshotLength",		TrieSnapshotLength},
 	{"TrieSnapshotKeyBufferSize", TrieSnapshotKeyBufferSize},
 	{"GetTrieSnapshotKey",		GetTrieSnapshotKey},
+
+	// Transitional syntax support.
+	{"StringMap.StringMap",		CreateTrie},
+	{"StringMap.Clear",			ClearTrie},
+	{"StringMap.GetArray",		GetTrieArray},
+	{"StringMap.GetString",		GetTrieString},
+	{"StringMap.GetValue",		GetTrieValue},
+	{"StringMap.Remove",		RemoveFromTrie},
+	{"StringMap.SetArray",		SetTrieArray},
+	{"StringMap.SetString",		SetTrieString},
+	{"StringMap.SetValue",		SetTrieValue},
+	{"StringMap.Size.get",		GetTrieSize},
+	{"StringMap.Snapshot",		CreateTrieSnapshot},
+
+	{"StringMapSnapshot.Length.get",	TrieSnapshotLength},
+	{"StringMapSnapshot.KeyBufferSize", TrieSnapshotKeyBufferSize},
+	{"StringMapSnapshot.GetKey",		GetTrieSnapshotKey},
+
 	{NULL,						NULL},
 };
