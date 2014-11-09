@@ -1,5 +1,5 @@
-native CloneHandle(Handle:this);
-native CloseHandle(Handle:this);
+native CloneHandle(Handle:handle);
+native CloseHandle(Handle:handle);
 
 methodmap Handle {
 	public Clone() = CloneHandle;

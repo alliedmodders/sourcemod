@@ -1,4 +1,4 @@
-native Q(X:this, a);
+native Q(X:handle, a);
 
 methodmap X {
 	public ~X() = Q;

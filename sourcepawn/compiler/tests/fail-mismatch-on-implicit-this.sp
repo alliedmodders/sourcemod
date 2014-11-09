@@ -1,4 +1,4 @@
-native CloseHandle(HandleEgg:this);
+native CloseHandle(HandleEgg:handle);
 
 methodmap Handle {
 	public Close() = CloseHandle;

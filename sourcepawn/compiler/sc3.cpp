@@ -2304,12 +2304,28 @@ static int primary(value *lval)
 
   clear_value(lval);    /* clear lval */
   tok=lex(&val,&st);
+
+  if (tok == tTHIS) {
+    strcpy(lastsymbol, "this");
+    if ((sym = findloc("this")) == NULL) {
+      error(166);           /* 'this' outside method body */
+      ldconst(0, sPRI);
+      return FALSE;
+    }
+    
+    assert(sym->ident == iVARIABLE);
+    lval->sym = sym;
+    lval->ident = sym->ident;
+    lval->tag = sym->tag;
+    return TRUE;
+  }
+
   if (tok==tSYMBOL) {
     /* lastsymbol is char[sNAMEMAX+1], lex() should have truncated any symbol
      * to sNAMEMAX significant characters */
     assert(strlen(st)<sizeof lastsymbol);
     strcpy(lastsymbol,st);
-  } /* if */
+  }
   if (tok==tSYMBOL && !findconst(st,NULL)) {
     /* first look for a local variable */
     if ((sym=findloc(st))!=0) {
