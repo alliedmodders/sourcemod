@@ -550,7 +550,7 @@ int matchtag(int formaltag, int actualtag, int flags)
     return TRUE;
   }
 
-  if (flags & MATCHTAG_COERCE) {
+  if (flags & (MATCHTAG_COERCE|MATCHTAG_DEDUCE)) {
     // See if the tag has a methodmap associated with it. If so, see if the given
     // tag is anywhere on the inheritance chain.
     methodmap_t *map = methodmap_find_by_tag(actualtag);
@@ -888,7 +888,7 @@ static void plnge2(void (*oper)(void),
     } else {
       // For the purposes of tag matching, we consider the order to be irrelevant.
       if (!checktag_string(lval1, lval2))
-        matchtag(lval1->tag, lval2->tag, MATCHTAG_COMMUTATIVE);
+        matchtag(lval1->tag, lval2->tag, MATCHTAG_COMMUTATIVE|MATCHTAG_DEDUCE);
       (*oper)();                /* do the (signed) operation */
       lval1->ident=iEXPRESSION;
     } /* if */

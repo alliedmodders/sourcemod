@@ -647,6 +647,7 @@ char *itoh(ucell val);
 #define MATCHTAG_COERCE       0x1 // allow coercion
 #define MATCHTAG_SILENT       0x2 // silence the error(213) warning
 #define MATCHTAG_COMMUTATIVE  0x4 // order does not matter
+#define MATCHTAG_DEDUCE       0x8 // correct coercion
 
 /* function prototypes in SC3.C */
 int check_userop(void (*oper)(void),int tag1,int tag2,int numparam,
