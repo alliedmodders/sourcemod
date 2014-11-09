@@ -582,5 +582,27 @@ REGISTER_NATIVES(cellArrayNatives)
 	{"CloneArray",					CloneArray},
 	{"FindStringInArray",			FindStringInArray},
 	{"FindValueInArray",			FindValueInArray},
+
+	// Transitional syntax support.
+	{"ArrayList.ArrayList",			CreateArray},
+	{"ArrayList.Clear",				ClearArray},
+	{"ArrayList.Length.get",		GetArraySize},
+	{"ArrayList.Resize",			ResizeArray},
+	{"ArrayList.Get",				GetArrayCell},
+	{"ArrayList.GetString",			GetArrayString},
+	{"ArrayList.GetArray",			GetArrayArray},
+	{"ArrayList.Push",				PushArrayCell},
+	{"ArrayList.PushString",		PushArrayString},
+	{"ArrayList.PushArray",			PushArrayArray},
+	{"ArrayList.Set",				SetArrayCell},
+	{"ArrayList.SetString",			SetArrayString},
+	{"ArrayList.SetArray",			SetArrayArray},
+	{"ArrayList.Erease",			RemoveFromArray},
+	{"ArrayList.ShiftUp",			ShiftArrayUp},
+	{"ArrayList.SwapAt",			SwapArrayItems},
+	{"ArrayList.Clone",				CloneArray},
+	{"ArrayList.FindString",		FindStringInArray},
+	{"ArrayList.FindValue",			FindValueInArray},
+
 	{NULL,							NULL},
 };
