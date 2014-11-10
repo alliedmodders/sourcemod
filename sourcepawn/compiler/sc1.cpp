@@ -1496,10 +1496,12 @@ static void parse(void)
       /* ignore zero's */
       break;
     case tSYMBOL:
+#if 0
       if (strcmp(tok.str, "class") == 0) {
         domethodmap(Layout_Class);
         break;
       }
+#endif
       // Fallthrough.
     case tINT:
     case tOBJECT:
