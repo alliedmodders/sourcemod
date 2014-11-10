@@ -162,8 +162,8 @@ enum TFCond
 	TFCond_BalloonHead,
 	TFCond_MeleeOnly,
 	TFCond_SwimmingCurse,
-	
-	TFCond_HalloweenKartCage = 88,
+	TFCond_HalloweenKartNoTurn,
+	TFCond_HalloweenKartCage,
 };
 
 const Float:TFCondDuration_Infinite = -1.0;
