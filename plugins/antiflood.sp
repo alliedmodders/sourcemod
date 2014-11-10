@@ -47,7 +47,7 @@ public Plugin:myinfo =
 new Float:g_LastTime[MAXPLAYERS + 1] = {0.0, ...};		/* Last time player used say or say_team */
 new g_FloodTokens[MAXPLAYERS + 1] = {0, ...};			/* Number of flood tokens player has */
 
-new Handle:sm_flood_time;								/* Handle to sm_flood_time convar */
+ConVar sm_flood_time;									/* Handle to sm_flood_time convar */
 
 public OnPluginStart()
 {
@@ -60,11 +60,11 @@ public OnClientPutInServer(client)
 	g_FloodTokens[client] = 0;
 }
 
-new Float:max_chat;
+float max_chat;
 
-public bool:OnClientFloodCheck(client)
+public bool OnClientFloodCheck(int client)
 {
-	max_chat = GetConVarFloat(sm_flood_time);
+	max_chat = sm_flood_time.FloatValue;
 	
 	if (max_chat <= 0.0 
  		|| CheckCommandAccess(client, "sm_flood_access", ADMFLAG_ROOT, true))
