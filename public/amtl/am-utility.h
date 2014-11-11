@@ -179,7 +179,7 @@ Log2(size_t number)
 {
     assert(number != 0);
 
-#ifdef _MSC_VER
+#if defined _MSC_VER
     unsigned long rval;
 # ifdef _M_IX86
     _BitScanReverse(&rval, number);
@@ -187,6 +187,8 @@ Log2(size_t number)
     _BitScanReverse64(&rval, number);
 # endif
     return rval;
+#elif defined __GNUC__
+    return 31 - __builtin_clz(number);
 #else
     size_t bit;
     asm("bsr %1, %0\n"
@@ -201,7 +203,7 @@ FindRightmostBit(size_t number)
 {
     assert(number != 0);
 
-#ifdef _MSC_VER
+#if defined _MSC_VER
     unsigned long rval;
 # ifdef _M_IX86
     _BitScanForward(&rval, number);
@@ -209,6 +211,8 @@ FindRightmostBit(size_t number)
     _BitScanForward64(&rval, number);
 # endif
     return rval;
+#elif defined __GNUC__
+    return __builtin_ctz(number);
 #else
     size_t bit;
     asm("bsf %1, %0\n"
