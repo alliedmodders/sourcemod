@@ -95,7 +95,19 @@ enum PluginStatus
 };
 
 /**
- * Plugin information properties.
+ * Plugin information properties. Plugins can declare a global variable with
+ * their info. Example,
+ *
+ *   public Plugin:myinfo = {
+ *   	name = "Admin Help",
+ *   	author = "AlliedModders LLC",
+ *   	description = "Display command information",
+ *   	version = "1.0",
+ *   	url = "http://www.sourcemod.net/"
+ *   };
+ *
+ * SourceMod will display this information when a user inspects plugins in the
+ * console.
  */
 enum PluginInfo
 {

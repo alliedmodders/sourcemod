@@ -1,0 +1,3 @@
+public OnPluginStart() {
+	return this;
+}

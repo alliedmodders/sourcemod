@@ -45,13 +45,13 @@ ISmmPluginManager *g_pMMPlugins = NULL;
 CGlobalVars *gpGlobals = NULL;
 ICvar *icvar = NULL;
 IGameEventManager2 *gameevents = NULL;
-IUniformRandomStream *engrandom = NULL;
 CallClass<IVEngineServer> *enginePatch = NULL;
 CallClass<IServerGameDLL> *gamedllPatch = NULL;
 IPlayerInfoManager *playerinfo = NULL;
 IBaseFileSystem *basefilesystem = NULL;
 IFileSystem *filesystem = NULL;
 IEngineSound *enginesound = NULL;
+IServerTools *servertools = NULL;
 IServerPluginHelpers *serverpluginhelpers = NULL;
 IServerPluginCallbacks *vsp_interface = NULL;
 int vsp_version = 0;
@@ -67,10 +67,10 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	GET_V_IFACE_CURRENT(GetServerFactory, serverClients, IServerGameClients, INTERFACEVERSION_SERVERGAMECLIENTS);
 	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(GetEngineFactory, gameevents, IGameEventManager2, INTERFACEVERSION_GAMEEVENTSMANAGER2);
-	GET_V_IFACE_CURRENT(GetEngineFactory, engrandom, IUniformRandomStream, VENGINE_SERVER_RANDOM_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(GetFileSystemFactory, basefilesystem, IBaseFileSystem, BASEFILESYSTEM_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(GetFileSystemFactory, filesystem, IFileSystem, FILESYSTEM_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(GetEngineFactory, enginesound, IEngineSound, IENGINESOUND_SERVER_INTERFACE_VERSION);
+	GET_V_IFACE_CURRENT(GetServerFactory, servertools, IServerTools, VSERVERTOOLS_INTERFACE_VERSION);
 #if SOURCE_ENGINE != SE_DOTA
 	GET_V_IFACE_CURRENT(GetEngineFactory, serverpluginhelpers, IServerPluginHelpers, INTERFACEVERSION_ISERVERPLUGINHELPERS);
 #endif

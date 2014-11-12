@@ -47,9 +47,9 @@
 #include <eiface.h>
 #include <igameevents.h>
 #include <iplayerinfo.h>
-#include <random.h>
 #include <filesystem.h>
 #include <IEngineSound.h>
+#include <toolframework/itoolentity.h>
 
 #ifndef METAMOD_PLAPI_VERSION
 	#include <metamod_wrappers.h>
@@ -98,11 +98,11 @@ extern CGlobalVars *gpGlobals;
 extern IGameEventManager2 *gameevents;
 extern SourceHook::CallClass<IVEngineServer> *enginePatch;
 extern SourceHook::CallClass<IServerGameDLL> *gamedllPatch;
-extern IUniformRandomStream *engrandom;
 extern IPlayerInfoManager *playerinfo;
 extern IBaseFileSystem *basefilesystem;
 extern IFileSystem *filesystem;
 extern IEngineSound *enginesound;
+extern IServerTools *servertools;
 extern IServerPluginHelpers *serverpluginhelpers;
 extern IServerPluginCallbacks *vsp_interface;
 extern int vsp_version;

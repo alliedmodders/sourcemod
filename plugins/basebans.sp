@@ -53,7 +53,7 @@ new g_BanTargetUserId[MAXPLAYERS+1];
 new g_BanTime[MAXPLAYERS+1];
 
 new g_IsWaitingForChatReason[MAXPLAYERS+1];
-new Handle:g_hKvBanReasons;
+KeyValues g_hKvBanReasons;
 new String:g_BanReasonsPath[PLATFORM_MAX_PATH];
 
 #include "basebans/ban.sp"
@@ -84,15 +84,6 @@ public OnPluginStart()
 	}
 }
 
-public OnPluginEnd()
-{
-	//Close kv-handle
-	if(g_hKvBanReasons != INVALID_HANDLE)
-	{
-		CloseHandle(g_hKvBanReasons);
-	}
-}
-
 public OnMapStart()
 {
 	//(Re-)Load BanReasons
@@ -106,30 +97,27 @@ public OnClientDisconnect(client)
 
 LoadBanReasons()
 {
-	if (g_hKvBanReasons != INVALID_HANDLE)
-	{
-		CloseHandle(g_hKvBanReasons);
-	}
+	delete g_hKvBanReasons;
 
-	g_hKvBanReasons = CreateKeyValues("banreasons");
+	g_hKvBanReasons = KeyValues("banreasons");
 
-	if(FileToKeyValues(g_hKvBanReasons, g_BanReasonsPath))
+	if (g_hKvBanReasons.ImportFromFile(g_BanReasonsPath))
 	{
-		decl String:sectionName[255];
-		if(!KvGetSectionName(g_hKvBanReasons, sectionName, sizeof(sectionName)))
+		char sectionName[255];
+		if (!g_hKvBanReasons.GetSectionName(sectionName, sizeof(sectionName)))
 		{
 			SetFailState("Error in %s: File corrupt or in the wrong format", g_BanReasonsPath);
 			return;
 		}
 
-		if(strcmp(sectionName, "banreasons") != 0)
+		if (strcmp(sectionName, "banreasons") != 0)
 		{
 			SetFailState("Error in %s: Couldn't find 'banreasons'", g_BanReasonsPath);
 			return;
 		}
 		
 		//Reset kvHandle
-		KvRewind(g_hKvBanReasons);
+		g_hKvBanReasons.Rewind();
 	} else {
 		SetFailState("Error in %s: File not found, corrupt or in the wrong format", g_BanReasonsPath);
 		return;

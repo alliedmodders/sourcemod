@@ -285,36 +285,46 @@ void TempEntityManager::Initialize()
 	int offset;
 	m_Loaded = false;
 
-#if SOURCE_ENGINE == SE_TF2
-	m_ListHead = servertools->GetTempEntList();
-#else
-	/*
-	 * First try to lookup s_pTempEntities directly for platforms with symbols.
-	 * If symbols aren't present (Windows or stripped Linux/Mac), 
-	 * attempt find via CBaseTempEntity ctor + offset
-	 */
+#if SOURCE_ENGINE == SE_TF2      \
+	|| SOURCE_ENGINE == SE_DODS  \
+	|| SOURCE_ENGINE == SE_HL2DM \
+	|| SOURCE_ENGINE == SE_CSS   \
+	|| SOURCE_ENGINE == SE_SDK2013
 
-	/* Read our sigs and offsets from the config file */
-	if (g_pGameConf->GetMemSig("s_pTempEntities", &addr) && addr)
+	if (g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr))
 	{
-		
-		/* Store the head of the TE linked list */
-		m_ListHead = *(void **)addr;
+		m_ListHead = servertools->GetTempEntList();
 	}
-	else if (g_pGameConf->GetMemSig("CBaseTempEntity", &addr) && addr)
+	else
+#endif
 	{
-		if (!g_pGameConf->GetOffset("s_pTempEntities", &offset))
+		/*
+		 * First try to lookup s_pTempEntities directly for platforms with symbols.
+		 * If symbols aren't present (Windows or stripped Linux/Mac),
+		 * attempt find via CBaseTempEntity ctor + offset
+		 */
+
+		/* Read our sigs and offsets from the config file */
+		if (g_pGameConf->GetMemSig("s_pTempEntities", &addr) && addr)
+		{
+
+			/* Store the head of the TE linked list */
+			m_ListHead = *(void **) addr;
+		}
+		else if (g_pGameConf->GetMemSig("CBaseTempEntity", &addr) && addr)
+		{
+			if (!g_pGameConf->GetOffset("s_pTempEntities", &offset))
+			{
+				return;
+			}
+			/* Store the head of the TE linked list */
+			m_ListHead = **(void ***) ((unsigned char *) addr + offset);
+		}
+		else
 		{
 			return;
 		}
-		/* Store the head of the TE linked list */
-		m_ListHead = **(void ***)((unsigned char *)addr + offset);
 	}
-	else
-	{
-		return;
-	}
-#endif // == TF2
 
 	if (!g_pGameConf->GetOffset("GetTEName", &m_NameOffs))
 	{

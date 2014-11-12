@@ -70,7 +70,7 @@ native void WritePackFloat(Handle pack, float val);
  * @noreturn
  * @error			Invalid handle.
  */
-native void WritePackString(Handle pack, const char str[]);
+native void WritePackString(Handle pack, const char[] str);
 
 /**
  * Packs a function pointer into a data pack.
@@ -109,7 +109,7 @@ native float ReadPackFloat(Handle pack);
  * @noreturn
  * @error			Invalid handle, or bounds error.
  */
-native void ReadPackString(Handle pack, char buffer[], maxlen);
+native void ReadPackString(Handle pack, char[] buffer, maxlen);
 
 /**
  * Reads a function pointer from a data pack.

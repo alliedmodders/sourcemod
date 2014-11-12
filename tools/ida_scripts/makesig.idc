@@ -1,7 +1,7 @@
 #include <idc.idc>
 
 /* makesig.idc: IDA script to automatically create and wildcard a function signature.
- * Copyright 2012, Asher Baker
+ * Copyright 2014, Asher Baker
  * 
  * This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
  * 
@@ -12,7 +12,7 @@
  * 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
  * 
  * 3. This notice may not be removed or altered from any source distribution.
-*/
+ */
 
 static main()
 {
@@ -22,21 +22,19 @@ static main()
 	
 	auto pAddress = ScreenEA();
 	pAddress = GetFunctionAttr(pAddress, FUNCATTR_START);
-	if (pAddress == BADADDR)
-	{
+	if (pAddress == BADADDR) {
 		Warning("Make sure you are in a function!");							
 		SetStatus(IDA_STATUS_READY);
 		return;
 	}
 	
-	auto sig;
+	auto name = Name(pAddress);
+	auto sig = "", found = 0;
 	auto pFunctionEnd = GetFunctionAttr(pAddress, FUNCATTR_END);
 	
-	while (pAddress != BADADDR)
-	{
+	while (pAddress != BADADDR) {
 		auto pInfo = DecodeInstruction(pAddress);
-		if (!pInfo)
-		{
+		if (!pInfo) {
 			Warning("Something went terribly wrong D:");       
 			SetStatus(IDA_STATUS_READY);
 			return;
@@ -46,39 +44,52 @@ static main()
 		// isTail(GetFlags(pAddress)) == Operand
 		// ((GetFlags(pAddress) & MS_CODE) == FF_IMMD) == :iiam:
 		
-		auto bDone = 0;
-		
-		if (pInfo.n == 1)
-		{
-			if (pInfo.Op0.type == o_near || pInfo.Op0.type == o_far)
-			{
-				sig = sprintf("%s%02X %s", sig, Byte(pAddress), PrintWildcards(GetDTSize(pInfo.Op0.dtyp)));
-				bDone = 1;
+		if (pInfo.n == 1 && (pInfo.Op0.type == o_near || pInfo.Op0.type == o_far)) {
+			if (Byte(pAddress) == 0x0F) { // Two-byte instruction
+				sig = sig + sprintf("0x0F %02X ", Byte(pAddress + 1)) + PrintWildcards(GetDTSize(pInfo.Op0.dtyp));
+			} else {
+				sig = sig + sprintf("%02X ", Byte(pAddress)) + PrintWildcards(GetDTSize(pInfo.Op0.dtyp));
 			}
-		}
-		
-		if (!bDone) { // unknown, just wildcard addresses
-			auto i;
-			for (i = 0; i < pInfo.size; i++)
-			{
+		} else { // unknown, just wildcard addresses
+			auto i = 0;
+			for (i = 0; i < pInfo.size; i++) {
 				auto pLoc = pAddress + i;
-				if (GetFixupTgtType(pLoc) == FIXUP_OFF32)
-				{
-					sig = sprintf("%s%s", sig, PrintWildcards(4));
+				if (GetFixupTgtType(pLoc) == FIXUP_OFF32) {
+					sig = sig + PrintWildcards(4);
 					i = i + 3;
 				} else {
-					sig = sprintf("%s%02X ", sig, Byte(pLoc));
+					sig = sig + sprintf("%02X ", Byte(pLoc));
 				}
 			}
 		}
 		
-		if (IsGoodSig(sig))
+		if (IsGoodSig(sig)) {
+			found = 1;
 			break;
+		}
 		
 		pAddress = NextHead(pAddress, pFunctionEnd);
 	}
-	
-	Message("%s\n", sig);
+
+	if (found == 0) {
+		Warning("Ran out of bytes to create unique signature.");       
+		SetStatus(IDA_STATUS_READY);
+		return;
+	}
+
+	auto len = strlen(sig) - 1, smsig = "\\x";
+	for (i = 0; i < len; i++) {
+		auto c = substr(sig, i, i + 1);
+		if (c == " ") {
+			smsig = smsig + "\\x";
+		} else if (c == "?") {
+			smsig = smsig + "2A";
+		} else {
+			smsig = smsig + c;
+		}
+	}
+
+	Message("Signature for %s:\n%s\n%s\n", name, sig, smsig);
 	
 	SetStatus(IDA_STATUS_READY);
 	return;
@@ -86,8 +97,7 @@ static main()
 
 static GetDTSize(dtyp)
 {
-	if (dtyp == dt_byte)
-	{
+	if (dtyp == dt_byte) {
 		return 1;
 	} else if (dtyp == dt_word) {
 		return 2;
@@ -105,22 +115,25 @@ static GetDTSize(dtyp)
 
 static PrintWildcards(count)
 {
-	auto i, string;
-	for (i = 0; i < count; i++)
-	{
-		string = sprintf("%s? ", string);
+	auto i = 0, string = "";
+	for (i = 0; i < count; i++) {
+		string = string + "? ";
 	}
+
 	return string;
 }
 
 static IsGoodSig(sig)
 {
-	auto count, addr;
+
+	auto count = 0, addr;
 	addr = FindBinary(addr, SEARCH_DOWN|SEARCH_NEXT, sig);
-	while (addr != BADADDR)
-	{
+	while (count <= 2 && addr != BADADDR) {
 		count = count + 1;
 		addr = FindBinary(addr, SEARCH_DOWN|SEARCH_NEXT, sig);
 	}
+
+	//Message("%s(%d)\n", sig, count);
+
 	return (count == 1);
 }

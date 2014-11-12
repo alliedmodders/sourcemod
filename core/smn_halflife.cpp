@@ -35,9 +35,11 @@
 #include "PlayerManager.h"
 #include "HalfLife2.h"
 
+#include <vstdlib/random.h>
+
 static cell_t SetRandomSeed(IPluginContext *pContext, const cell_t *params)
 {
-	engrandom->SetSeed(params[1]);
+	::RandomSeed(params[1]);
 
 	return 1;
 }
@@ -47,14 +49,14 @@ static cell_t GetRandomFloat(IPluginContext *pContext, const cell_t *params)
 	float fMin = sp_ctof(params[1]);
 	float fMax = sp_ctof(params[2]);
 
-	float fRandom = engrandom->RandomFloat(fMin, fMax);
+	float fRandom = ::RandomFloat(fMin, fMax);
 
 	return sp_ftoc(fRandom);
 }
 
 static cell_t GetRandomInt(IPluginContext *pContext, const cell_t *params)
 {
-	return engrandom->RandomInt(params[1], params[2]);
+	return ::RandomInt(params[1], params[2]);
 }
 
 static cell_t IsMapValid(IPluginContext *pContext, const cell_t *params)

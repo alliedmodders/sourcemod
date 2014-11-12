@@ -920,12 +920,12 @@ static void splat_to_binary(const char *binfname, void *bytes, size_t size)
   // Note: error 161 will setjmp(), which skips destructors :(
   FILE *fp = fopen(binfname, "wb");
   if (!fp) {
-    error(161, binfname);
+    error(FATAL_ERROR_WRITE, binfname);
     return;
   }
   if (fwrite(bytes, 1, size, fp) != size) {
     fclose(fp);
-    error(161, binfname);
+    error(FATAL_ERROR_WRITE, binfname);
     return;
   }
   fclose(fp);
