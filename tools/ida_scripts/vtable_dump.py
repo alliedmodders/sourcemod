@@ -13,7 +13,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 """
 
 __author__ = "Asher Baker"
-__copyright__ = "Copyright 2012, Asher Baker"
+__copyright__ = "Copyright 2014, Asher Baker"
 __license__ = "zlib/libpng"
 
 import re
@@ -48,8 +48,13 @@ def ExtractTypeInfo(ea, level = 0):
 	global classname
 	global offsetdata
 	
-	# Param needed to support old IDAPython versions
-	end = NextNotTail(ea)
+	end = ea + 4
+	
+	while len(Name(end)) == 0:
+		end += 4
+	
+	while Dword(end - 4) == 0:
+		end -= 4
 	
 	# Skip vtable
 	ea += 4
@@ -69,7 +74,7 @@ def ExtractTypeInfo(ea, level = 0):
 	
 	if not ea < end: # Base Type
 		pass
-	elif isData(GetFlags(Dword(ea))): # Single Inheritance
+	elif Dword(ea) != 0: #elif isData(GetFlags(Dword(ea))): # Single Inheritance
 		ExtractTypeInfo(Dword(ea), level + 1)
 		ea += 4
 	else: # Multiple Inheritance
@@ -101,11 +106,15 @@ def Analyze():
 	
 	ea = ScreenEA()
 	
-	if not isHead(GetFlags(ea)):
-		# Param needed to support old IDAPython versions
-		ea = PrevHead(ea, 0)
+	end = ea + 4
+	while Demangle(Name(end), GetLongPrm(INF_LONG_DN)) is None:
+		end += 4
 	
-	end = NextNotTail(ea)
+	while Dword(end - 4) == 0:
+		end -= 4
+	
+	while Demangle(Name(ea), GetLongPrm(INF_LONG_DN)) is None:
+		ea -= 4
 	
 	name = Demangle(Name(ea), GetLongPrm(INF_LONG_DN))
 	if ea == BADADDR or name is None or not re.search(r"vf?table(?: |'\{)for", name):
@@ -124,6 +133,7 @@ def Analyze():
 	while ea < end:
 		# Read thisoffs
 		offset = -twos_comp(Dword(ea), 32)
+		#print "Offset: 0x%08X (%08X)" % (offset, ea)
 		ea += 4
 		
 		# Read typeinfo address
@@ -134,7 +144,7 @@ def Analyze():
 			print "Inheritance Tree:"
 			ExtractTypeInfo(typeinfo)
 		
-		while ea < end and isCode(GetFlags(Dword(ea))):
+		while ea < end and (isCode(GetFlags(Dword(ea))) or Name(Dword(ea)) == "___cxa_pure_virtual"):
 			name = Name(Dword(ea))
 			demangled = Demangle(name, GetLongPrm(INF_LONG_DN))
 			#print "Name: %s, Demangled: %s" % (name, demangled)

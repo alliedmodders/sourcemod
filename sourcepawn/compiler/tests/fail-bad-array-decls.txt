@@ -1,0 +1,7 @@
+(1) : error 162: cannot create dynamic arrays in global scope - did you mean to create a fixed-length array with brackets after the variable name?
+(6) : error 161: brackets after variable name indicate a fixed-size array, but a dynamic size was given - did you mean to use 'new int[size]' syntax?
+(7) : error 160: brackets in between type and variable name indicate a dynamic-size array, but a fixed-size initializer was given
+(8) : error 165: cannot create dynamic arrays in static scope - did you mean to create a fixed-length array with brackets after the variable name?
+(11) : error 159: brackets after variable name indicate a fixed-size array, but size could not be determined - either specify sizes, an array initializer, or use dynamic syntax (such as 'char[] x')
+(15) : error 160: brackets in between type and variable name indicate a dynamic-size array, but a fixed-size initializer was given
+

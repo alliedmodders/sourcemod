@@ -199,9 +199,17 @@ static const char *errmsg[] = {
 /*153*/  "cannot use non-public functions as callbacks\n",
 /*154*/  "cannot assign INVALID_FUNCTION to a non-function type\n",
 /*155*/  "expected newline, but found '%s'\n",
-/*156*/  "the 'any' type is not allowed in new-style natives\n",
+/*156*/  "unused156\n",
 /*157*/  "'%s' is a reserved keyword\n",
 /*158*/  "multi-tags are no longer supported\n",
+/*159*/  "brackets after variable name indicate a fixed-size array, but size could not be determined - either specify sizes, an array initializer, or use dynamic syntax (such as 'char[] x')\n",
+/*160*/  "brackets in between type and variable name indicate a dynamic-size array, but a fixed-size initializer was given\n",
+/*161*/  "brackets after variable name indicate a fixed-size array, but a dynamic size was given - did you mean to use 'new %s[size]' syntax?\n",
+/*162*/  "cannot create dynamic arrays in global scope - did you mean to create a fixed-length array with brackets after the variable name?\n",
+/*163*/  "indeterminate array size in \"sizeof\" expression (symbol \"%s\")\n",
+/*164*/  "allocated array type '%s' doesn't match original type '%s'\n",
+/*165*/  "cannot create dynamic arrays in static scope - did you mean to create a fixed-length array with brackets after the variable name?\n",
+/*166*/  "cannot use 'this' outside of a methodmap method or property\n",
 #else
   "\315e\306\227\266k\217:\235\277bu\201fo\220\204\223\012",
   "\202l\224\250s\205g\346\356e\233\201(\243\315\214\267\202) \253 f\255low ea\305 \042c\353e\042\012",
@@ -365,24 +373,24 @@ static const char *errmsg[] = {
 
 static const char *fatalmsg[] = {
 #ifdef SCPACK
-/*160*/  "cannot read from file: \"%s\"\n",
-/*161*/  "cannot write to file: \"%s\"\n",
-/*162*/  "table overflow: \"%s\"\n",
+/*180*/  "cannot read from file: \"%s\"\n",
+/*181*/  "cannot write to file: \"%s\"\n",
+/*182*/  "table overflow: \"%s\"\n",
           /* table can be: loop table
            *               literal table
            *               staging buffer
            *               option table (response file)
            *               peephole optimizer table
            */
-/*163*/  "insufficient memory\n",
-/*164*/  "invalid assembler instruction \"%s\"\n",
-/*165*/  "numeric overflow, exceeding capacity\n",
-/*166*/  "compiled script exceeds the maximum memory size (%ld bytes)\n",
-/*167*/  "too many error messages on one line\n",
-/*168*/  "codepage mapping file not found\n",
-/*169*/  "invalid path: \"%s\"\n",
-/*170*/  "assertion failed: %s\n",
-/*171*/  "user error: %s\n",
+/*183*/  "insufficient memory\n",
+/*184*/  "invalid assembler instruction \"%s\"\n",
+/*185*/  "numeric overflow, exceeding capacity\n",
+/*186*/  "compiled script exceeds the maximum memory size (%ld bytes)\n",
+/*187*/  "too many error messages on one line\n",
+/*188*/  "codepage mapping file not found\n",
+/*189*/  "invalid path: \"%s\"\n",
+/*190*/  "assertion failed: %s\n",
+/*191*/  "user error: %s\n",
 #else
   "\256\214a\204from \344le:\354",
   "\256writ\200\266 \344le:\354",
@@ -425,7 +433,7 @@ static const char *warnmsg[] = {
 /*221*/  "label name \"%s\" shadows tag name\n",
 /*222*/  "number of digits exceeds rational number precision\n",
 /*223*/  "redundant \"sizeof\": argument size is always 1 (symbol \"%s\")\n",
-/*224*/  "indeterminate array size in \"sizeof\" expression (symbol \"%s\")\n",
+/*224*/  "unused\n",
 /*225*/  "unreachable code\n",
 /*226*/  "a variable is assigned to itself (symbol \"%s\")\n",
 /*227*/  "more initializers than enum fields\n",

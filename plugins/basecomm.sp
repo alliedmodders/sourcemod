@@ -54,7 +54,7 @@ new Handle:g_Cvar_Deadtalk = INVALID_HANDLE;	// Holds the handle for sm_deadtalk
 new Handle:g_Cvar_Alltalk = INVALID_HANDLE;	// Holds the handle for sv_alltalk
 new bool:g_Hooked = false;			// Tracks if we've hooked events for deadtalk
 
-new Handle:hTopMenu = INVALID_HANDLE;
+TopMenu hTopMenu;
 
 new g_GagTarget[MAXPLAYERS+1];
 
@@ -93,14 +93,14 @@ public OnPluginStart()
 	HookConVarChange(g_Cvar_Alltalk, ConVarChange_Alltalk);
 	
 	/* Account for late loading */
-	new Handle:topmenu;
-	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	TopMenu topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != null))
 	{
 		OnAdminMenuReady(topmenu);
 	}
 }
 
-public OnAdminMenuReady(Handle:topmenu)
+public OnAdminMenuReady(TopMenu topmenu)
 {
 	/* Block us from being called twice */
 	if (topmenu == hTopMenu)
@@ -112,17 +112,11 @@ public OnAdminMenuReady(Handle:topmenu)
 	hTopMenu = topmenu;
 	
 	/* Build the "Player Commands" category */
-	new TopMenuObject:player_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_PLAYERCOMMANDS);
+	TopMenuObject player_commands = hTopMenu.FindCategory(ADMINMENU_PLAYERCOMMANDS);
 	
 	if (player_commands != INVALID_TOPMENUOBJECT)
 	{
-		AddToTopMenu(hTopMenu, 
-			"sm_gag",
-			TopMenuObject_Item,
-			AdminMenu_Gag,
-			player_commands,
-			"sm_gag",
-			ADMFLAG_CHAT);
+		hTopMenu.AddItem("sm_gag", AdminMenu_Gag, player_commands, "sm_gag", ADMFLAG_CHAT);
 	}
 }
 

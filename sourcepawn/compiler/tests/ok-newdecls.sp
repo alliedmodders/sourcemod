@@ -9,10 +9,8 @@ new crab2 = 5;
 bool crab3 = true;
 int crab4 = 6;
 new crab5[] = {1, 2, 3};
-bool[] crab6 = {true, false, false, true}
 bool crab7[] = {false, true, true}
 char crab8[] = "hello"
-char[] crab9 = "bye"
 
 native float operator*(float oper1, float oper2) = FloatMul;
 
@@ -41,7 +39,6 @@ new Float:ham, bool:ham2;
 int cram, cram2, cram3;
 new cram4[] = {1, 2}, cram5[] = {3, 4, 7}
 int cram6[] = {1, 2}, cram7[] = {3, 4, 7}
-int[] cram8 = {3, 4}, cram9 = {4, 8, 10}
 
 public OnPluginStart()
 {
@@ -50,6 +47,4 @@ public OnPluginStart()
   cram4[0] = 2
   cram5[2] = 2
   cram7[2] = 2
-  cram8[1] = 5
-  cram9[2] = 5
 }

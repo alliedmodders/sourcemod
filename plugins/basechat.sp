@@ -368,14 +368,14 @@ SendDialogToOne(client, color, const String:text[], any:...)
 	new String:message[100];
 	VFormat(message, sizeof(message), text, 4);	
 	
-	new Handle:kv = CreateKeyValues("Stuff", "title", message);
-	KvSetColor(kv, "color", g_Colors[color][0], g_Colors[color][1], g_Colors[color][2], 255);
-	KvSetNum(kv, "level", 1);
-	KvSetNum(kv, "time", 10);
+	KeyValues kv = KeyValues("Stuff", "title", message);
+	kv.SetColor("color", g_Colors[color][0], g_Colors[color][1], g_Colors[color][2], 255);
+	kv.SetNum("level", 1);
+	kv.SetNum("time", 10);
 	
 	CreateDialog(client, kv, DialogType_Msg);
-	
-	CloseHandle(kv);	
+
+	delete kv;
 }
 
 SendPrivateChat(client, target, const String:message[])

@@ -568,15 +568,15 @@ native ShowHudText(client, channel, const String:message[], any:...);
  */
 stock ShowMOTDPanel(client, const String:title[], const String:msg[], type=MOTDPANEL_TYPE_INDEX)
 {
-	decl String:num[3];
-	new Handle:Kv = CreateKeyValues("data");
+	char num[3];
 	IntToString(type, num, sizeof(num));
 
-	KvSetString(Kv, "title", title);
-	KvSetString(Kv, "type", num);
-	KvSetString(Kv, "msg", msg);
-	ShowVGUIPanel(client, "info", Kv);
-	CloseHandle(Kv);
+	KeyValues kv = KeyValues("data");
+	kv.SetString("title", title);
+	kv.SetString("type", num);
+	kv.SetString("msg", msg);
+	ShowVGUIPanel(client, "info", kv);
+	delete kv;
 }
 
 /**
@@ -590,13 +590,14 @@ stock ShowMOTDPanel(client, const String:title[], const String:msg[], type=MOTDP
  */
 stock DisplayAskConnectBox(client, Float:time, const String:ip[], const String:password[] = "")
 {
-	decl String:destination[288];
+	char destination[288];
 	FormatEx(destination, sizeof(destination), "%s/%s", ip, password);
-	new Handle:Kv = CreateKeyValues("data");
-	KvSetFloat(Kv, "time", time);
-	KvSetString(Kv, "title", destination);
-	CreateDialog(client, Kv, DialogType_AskConnect);
-	CloseHandle(Kv);
+
+	KeyValues kv = KeyValues("data");
+	kv.SetFloat("time", time);
+	kv.SetString("title", destination);
+	CreateDialog(client, kv, DialogType_AskConnect);
+	delete kv;
 }
 
 /**

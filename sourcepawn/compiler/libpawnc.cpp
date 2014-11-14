@@ -74,7 +74,7 @@ static const char *prefix[3]={ "error", "fatal error", "warning" };
   if (number!=0) {
     int idx;
 
-    if (number < 160 || (number >= 200 && sc_warnings_are_errors))
+    if (number < FIRST_FATAL_ERROR || (number >= 200 && sc_warnings_are_errors))
       idx = 0;
     else if (number < 200)
       idx = 1;
@@ -233,7 +233,10 @@ char *pc_readsrc(void *handle,unsigned char *target,int maxchars)
         src->pos++;
         if (outptr < outend)
           *outptr++ = '\n';
-      }
+      } else {
+				// Replace with \n.
+				*(outptr - 1) = '\n';
+			}
       break;
     }
   }

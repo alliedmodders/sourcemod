@@ -42,21 +42,21 @@
 			}
 			"OnTakeDamage_Alive"
 			{
-				"windows"	"292"
-				"linux"		"293"
-				"mac"		"293"
+				"windows"	"293"
+				"linux"		"294"
+				"mac"		"294"
 			}
 			"PreThink"
-			{
-				"windows"	"364"
-				"linux"		"365"
-				"mac"		"365"
-			}
-			"PostThink"
 			{
 				"windows"	"365"
 				"linux"		"366"
 				"mac"		"366"
+			}
+			"PostThink"
+			{
+				"windows"	"366"
+				"linux"		"367"
+				"mac"		"367"
 			}
 			"Reload"
 			{

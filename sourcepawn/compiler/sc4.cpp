@@ -754,6 +754,10 @@ void popreg(regid reg)
 
 /*
  * Generate an array
+ *   stk -= dims
+ *   [stk] = hea
+ *   stk += 1
+ *   hea += 1 + (# cells in array)
  */
 void genarray(int dims, int _autozero)
 {

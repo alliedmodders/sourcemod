@@ -177,7 +177,7 @@ native Float:GetTickInterval();
  * the map yet), then this will be called once the server begins ticking, even 
  * if there is no time limit set.
  */
-forward OnMapTimeLeftChanged();
+forward void OnMapTimeLeftChanged();
 
 /**
  * Returns whether or not the server is processing frames or not.  

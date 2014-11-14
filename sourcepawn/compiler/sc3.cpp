@@ -550,7 +550,7 @@ int matchtag(int formaltag, int actualtag, int flags)
     return TRUE;
   }
 
-  if (flags & MATCHTAG_COERCE) {
+  if (flags & (MATCHTAG_COERCE|MATCHTAG_DEDUCE)) {
     // See if the tag has a methodmap associated with it. If so, see if the given
     // tag is anywhere on the inheritance chain.
     methodmap_t *map = methodmap_find_by_tag(actualtag);
@@ -888,7 +888,7 @@ static void plnge2(void (*oper)(void),
     } else {
       // For the purposes of tag matching, we consider the order to be irrelevant.
       if (!checktag_string(lval1, lval2))
-        matchtag(lval1->tag, lval2->tag, MATCHTAG_COMMUTATIVE);
+        matchtag(lval1->tag, lval2->tag, MATCHTAG_COMMUTATIVE|MATCHTAG_DEDUCE);
       (*oper)();                /* do the (signed) operation */
       lval1->ident=iEXPRESSION;
     } /* if */
@@ -1675,6 +1675,7 @@ static int hier2(value *lval)
     clear_value(lval);
     lval->ident=iCONSTEXPR;
     lval->constval=1;           /* preset */
+    markusage(sym, uREAD);
     if (sym->ident==iARRAY || sym->ident==iREFARRAY) {
       int level;
       symbol *idxsym=NULL;
@@ -1702,7 +1703,7 @@ static int hier2(value *lval)
         lval->constval=array_levelsize(sym,level);
       }
       if (lval->constval==0 && strchr((char *)lptr,PREPROC_TERM)==NULL)
-        error(224,st);          /* indeterminate array size in "sizeof" expression */
+        error(163,st);          /* indeterminate array size in "sizeof" expression */
     } /* if */
     ldconst(lval->constval,sPRI);
     while (paranthese--)
@@ -1756,7 +1757,7 @@ static int hier2(value *lval)
         lval->constval=array_levelsize(sym,level);
       }
       if (lval->constval==0 && strchr((char *)lptr,PREPROC_TERM)==NULL)
-        error(224,st);          /* indeterminate array size in "sizeof" expression */
+        error(163,st);          /* indeterminate array size in "sizeof" expression */
     } /* if */
     ldconst(lval->constval,sPRI);
     while (paranthese--)
@@ -2174,7 +2175,7 @@ restart:
               rvalue(lval1);
             clear_value(lval1);
             lval1->ident = iACCESSOR;
-            lval1->tag = method->getter->tag;
+            lval1->tag = method->property_tag();
             lval1->accessor = method;
             lvalue = TRUE;
             goto restart;
@@ -2212,7 +2213,7 @@ restart:
            */
           sym=fetchfunc(lastsymbol);
           if (sym==NULL)
-            error(163); /* insufficient memory */
+            error(FATAL_ERROR_OOM);
           markusage(sym,uREAD);
         } else {
           return error(12);           /* invalid function call */
@@ -2303,12 +2304,28 @@ static int primary(value *lval)
 
   clear_value(lval);    /* clear lval */
   tok=lex(&val,&st);
+
+  if (tok == tTHIS) {
+    strcpy(lastsymbol, "this");
+    if ((sym = findloc("this")) == NULL) {
+      error(166);           /* 'this' outside method body */
+      ldconst(0, sPRI);
+      return FALSE;
+    }
+    
+    assert(sym->ident == iVARIABLE);
+    lval->sym = sym;
+    lval->ident = sym->ident;
+    lval->tag = sym->tag;
+    return TRUE;
+  }
+
   if (tok==tSYMBOL) {
     /* lastsymbol is char[sNAMEMAX+1], lex() should have truncated any symbol
      * to sNAMEMAX significant characters */
     assert(strlen(st)<sizeof lastsymbol);
     strcpy(lastsymbol,st);
-  } /* if */
+  }
   if (tok==tSYMBOL && !findconst(st,NULL)) {
     /* first look for a local variable */
     if ((sym=findloc(st))!=0) {
@@ -2358,7 +2375,7 @@ static int primary(value *lval)
       assert(sc_status==statFIRST);
       sym=fetchfunc(st);
       if (sym==NULL)
-        error(163);     /* insufficient memory */
+        error(FATAL_ERROR_OOM);
     } /* if */
     assert(sym!=NULL);
     assert(sym->ident==iFUNCTN || sym->ident==iREFFUNC);
@@ -2890,7 +2907,7 @@ static int nesting=0;
       if (asz!=NULL) {
         array_sz=asz->value;
         if (array_sz==0)
-          error(224,arg[argidx].name);    /* indeterminate array size in "sizeof" expression */
+          error(163,arg[argidx].name);    /* indeterminate array size in "sizeof" expression */
       } else {
         array_sz=1;
       } /* if */
