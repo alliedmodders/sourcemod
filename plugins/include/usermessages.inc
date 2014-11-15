@@ -70,6 +70,13 @@ enum UserMessageType
  */
 native UserMessageType:GetUserMessageType();
 
+stock Protobuf UserMessageToProtobuf(Handle msg)
+{
+	if (GetUserMessageType() != UM_Protobuf)
+		return null;
+	return Protobuf:msg;
+}
+
 /**
  * Returns the ID of a given message, or -1 on failure.
  *
