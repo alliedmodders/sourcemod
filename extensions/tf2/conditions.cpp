@@ -37,7 +37,9 @@
 
 #include <bitvec.h>
 
-typedef CBitVec<128> condbitvec_t;
+const int TF_MAX_CONDITIONS = 128;
+
+typedef CBitVec<TF_MAX_CONDITIONS> condbitvec_t;
 condbitvec_t g_PlayerActiveConds[SM_MAXPLAYERS + 1];
 
 IForward *g_addCondForward = NULL;
@@ -68,6 +70,8 @@ inline void GetPlayerConds(CBaseEntity *pPlayer, condbitvec_t *pOut)
 
 inline void CondBitVecAndNot(const condbitvec_t &src, const condbitvec_t &addStr, condbitvec_t *out)
 {
+	static_assert(TF_MAX_CONDITIONS == 128, "CondBitVecAndNot hack is hardcoded for 128-bit bitvec.");
+
 	// CBitVec has And and Not, but not a simple, combined AndNot.
 	// We'll also treat the halves as two 64-bit ints instead of four 32-bit ints
 	// as a minor optimization (maybe?) that the compiler is not making itself.
