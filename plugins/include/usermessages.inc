@@ -77,6 +77,22 @@ stock Protobuf UserMessageToProtobuf(Handle msg)
 	return Protobuf:msg;
 }
 
+// Make sure to only call this on writable buffers (eg from StartMessage).
+stock BfWrite UserMessageToBfWrite(Handle msg)
+{
+	if (GetUserMessageType() != UM_Protobuf)
+		return null;
+	return BfWrite:msg;
+}
+
+// Make sure to only call this on readable buffers (eg from a message hook).
+stock BfWrite UserMessageToBfRead(Handle msg)
+{
+	if (GetUserMessageType() != UM_Protobuf)
+		return null;
+	return BfRead:msg;
+}
+
 /**
  * Returns the ID of a given message, or -1 on failure.
  *
