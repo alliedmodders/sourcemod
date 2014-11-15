@@ -83,6 +83,42 @@ cell_t FindClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 		NULL);
 }
 
+size_t IsAuthIdConnected(char *authID)
+{
+	IGamePlayer *player;
+	const char *authString;
+	
+	for (int playerIndex = playerhelpers->GetMaxClients()+1; --playerIndex > 0;)
+	{
+		player = playerhelpers->GetGamePlayer(playerIndex);
+		if (player == NULL || !player->IsConnected())
+		{
+			continue;
+		}
+		
+		authString = player->GetAuthString();
+		if (authString == NULL || authString[0] == '\0' || strcmp(authString, authID) != 0)
+		{
+			continue;
+		}
+		
+		authString = player->GetSteam2Id();
+		if (authString == NULL || authString[0] == '\0' || strcmp(authString, authID) != 0)
+		{
+			continue;
+		}
+		
+		authString = player->GetSteam3Id();
+		if (authString == NULL || authString[0] == '\0' || strcmp(authString, authID) != 0)
+		{
+			continue;
+		}
+
+		return playerIndex;
+	}
+	return 0;
+}
+
 cell_t SetAuthIdCookie(IPluginContext *pContext, const cell_t *params)
 {
 	g_ClientPrefs.AttemptReconnection();

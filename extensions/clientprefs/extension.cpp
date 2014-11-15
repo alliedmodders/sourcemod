@@ -356,34 +356,6 @@ const char *GetPlayerCompatAuthId(IGamePlayer *pPlayer)
 	return steamId ? steamId : pPlayer->GetAuthString();
 }
 
-size_t IsAuthIdConnected(char *authID)
-{
-	IGamePlayer *player;
-	const char *authString;
-	
-	for (int playerIndex = playerhelpers->GetMaxClients()+1; --playerIndex > 0;)
-	{
-		player = playerhelpers->GetGamePlayer(playerIndex);
-		if (player == NULL || !player->IsConnected())
-		{
-			continue;
-		}
-		
-		authString = GetPlayerCompatAuthId(player);
-		
-		if (authString == NULL || authString[0] == '\0')
-		{
-			continue;
-		}
-
-		if (strcmp(authString, authID) == 0)
-		{
-			return playerIndex;
-		}
-	}
-	return 0;
-}
-
 void ClientPrefs::CatchLateLoadClients()
 {
 	IGamePlayer *pPlayer;
