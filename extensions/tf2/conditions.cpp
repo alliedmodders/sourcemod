@@ -107,16 +107,16 @@ void Conditions_OnGameFrame(bool simulating)
 		CondBitVecAndNot(oldconds, newconds, &removedconds);
 
 		int bit;
-		bit = 0;
-		while ((bit = addedconds.FindNextSetBit(bit)) != -1)
+		bit = -1;
+		while ((bit = addedconds.FindNextSetBit(bit + 1)) != -1)
 		{
 			g_addCondForward->PushCell(i);
 			g_addCondForward->PushCell(bit);
 			g_addCondForward->Execute(NULL, NULL);
 		}
 
-		bit = 0;
-		while ((bit = removedconds.FindNextSetBit(bit)) != -1)
+		bit = -1;
+		while ((bit = removedconds.FindNextSetBit(bit + 1)) != -1)
 		{
 			g_removeCondForward->PushCell(i);
 			g_removeCondForward->PushCell(bit);
