@@ -17,10 +17,10 @@ public OnPluginStart()
 
 public Action:RunTests(argc)
 {
-  new StringMap:map = StringMap();
+  StringMap map = StringMap();
 
   for (new i = 0; i < 64; i++) {
-    new String:buffer[24];
+    char buffer[24];
     Format(buffer, sizeof(buffer), "%d", i);
 
     if (!map.SetValue(buffer, i))
@@ -35,11 +35,11 @@ public Action:RunTests(argc)
 
   // Setting 17 without replace should fail.
   new value;
-  if (SetTrieValue(map, "17", 999, false))
+  if (map.SetValue("17", 999, false))
     ThrowError("set map 17 should fail");
   if (!map.GetValue("17", value) || value != 17)
     ThrowError("value at 17 not correct");
-  if (!SetTrieValue(map, "17", 999))
+  if (!map.SetValue("17", 999))
     ThrowError("set map 17 = 999 should succeed");
   if (!map.GetValue("17", value) || value != 999)
     ThrowError("value at 17 not correct");
@@ -49,8 +49,8 @@ public Action:RunTests(argc)
     ThrowError("map size not 64");
 
   // Check "cat" is not found.
-  new array[64];
-  new String:string[64];
+  int array[64];
+  char string[64];
   if (map.GetValue("cat", value) ||
       map.GetArray("cat", array, sizeof(array)) ||
       map.GetString("cat", string, sizeof(string)))
@@ -129,16 +129,16 @@ public Action:RunTests(argc)
   map.SetString("butterflies", "bees");
   map.SetString("egg", "egg");
 
-  new Handle:keys = CreateTrieSnapshot(map);
+  StringMapSnapshot keys = map.Snapshot();
   {
-    if (TrieSnapshotLength(keys) != 3)
+    if (keys.Length != 3)
       ThrowError("map snapshot length should be 3");
 
-    new bool:found[3];
-    for (new i = 0; i < TrieSnapshotLength(keys); i++) {
-      new size = TrieSnapshotKeyBufferSize(keys, i);
-      new String:buffer[size];
-      GetTrieSnapshotKey(keys, i, buffer, size);
+    bool found[3];
+    for (new i = 0; i < keys.Length; i++) {
+      new size = keys.KeyBufferSize(i);
+      char[] buffer = new char[size];
+      keys.GetKey(i, buffer, size);
 
       if (strcmp(buffer, "adventure") == 0)
         found[0] = true;
