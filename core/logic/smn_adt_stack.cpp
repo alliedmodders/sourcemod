@@ -1,8 +1,8 @@
 /**
-* vim: set ts=4 :
+* vim: set ts=4 sw=4 tw=99 noet :
 * =============================================================================
 * SourceMod
-* Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+* Copyright (C) 2004-2014 AlliedModders LLC.  All rights reserved.
 * =============================================================================
 *
 * This program is free software; you can redistribute it and/or modify it under
@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include "common_logic.h"
 #include "CellArray.h"
+#include "handle_helpers.h"
 
 HandleType_t htCellStack;
 
@@ -293,6 +294,79 @@ static cell_t IsStackEmpty(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
+static cell_t ArrayStack_Pop(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<CellArray> array(pContext, params[1], htCellStack); 
+	if (!array.Ok())
+		return 0;
+
+	if (array->size() == 0)
+		return pContext->ThrowNativeError("stack is empty");
+
+	cell_t *blk = array->at(array->size() - 1);
+	cell_t idx = (size_t)params[2];
+
+	cell_t rval;
+	if (params[3] == 0) {
+		if (idx >= array->blocksize())
+			return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", idx, array->blocksize());
+		rval = blk[idx];
+	} else {
+		if (idx >= array->blocksize() * 4)
+			return pContext->ThrowNativeError("Invalid byte %d (blocksize: %d bytes)", idx, array->blocksize() * 4);
+		rval = (cell_t)*((char *)blk + idx);
+	}
+
+	array->remove(array->size() - 1);
+	return rval;
+}
+
+static cell_t ArrayStack_PopString(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<CellArray> array(pContext, params[1], htCellStack); 
+	if (!array.Ok())
+		return 0;
+
+	if (array->size() == 0)
+		return pContext->ThrowNativeError("stack is empty");
+
+	size_t idx = array->size() - 1;
+	cell_t *blk = array->at(idx);
+
+	cell_t *pWritten;
+	pContext->LocalToPhysAddr(params[4], &pWritten);
+
+	size_t numWritten;
+	pContext->StringToLocalUTF8(params[2], params[3], (char *)blk, &numWritten);
+	*pWritten = (cell_t)numWritten;
+	array->remove(idx);
+	return 1;
+}
+
+static cell_t ArrayStack_PopArray(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<CellArray> array(pContext, params[1], htCellStack); 
+	if (!array.Ok())
+		return 0;
+
+	if (array->size() == 0)
+		return pContext->ThrowNativeError("stack is empty");
+
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[2], &addr);
+
+	size_t idx = array->size() - 1;
+	cell_t *blk = array->at(idx);
+	size_t indexes = array->blocksize();
+
+	if (params[3] != -1 && (size_t)params[3] <= array->blocksize())
+		indexes = params[3];
+
+	memcpy(addr, blk, sizeof(cell_t) * indexes);
+	array->remove(idx);
+	return 0;
+}
+
 REGISTER_NATIVES(cellStackNatives)
 {
 	{"CreateStack",					CreateStack},
@@ -303,5 +377,16 @@ REGISTER_NATIVES(cellStackNatives)
 	{"PushStackArray",				PushStackArray},
 	{"PushStackCell",				PushStackCell},
 	{"PushStackString",				PushStackString},
+
+	// Transitional syntax support.
+	{"ArrayStack.ArrayStack",		CreateStack},
+	{"ArrayStack.Pop",				ArrayStack_Pop},
+	{"ArrayStack.PopString",		ArrayStack_PopString},
+	{"ArrayStack.PopArray",			ArrayStack_PopArray},
+	{"ArrayStack.Push",				PushStackCell},
+	{"ArrayStack.PushString",		PushStackString},
+	{"ArrayStack.PushArray",		PushStackArray},
+	{"ArrayStack.Empty.get",		IsStackEmpty},
+
 	{NULL,							NULL},
 };
