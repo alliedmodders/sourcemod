@@ -80,7 +80,7 @@ native Handle:CloneHandle(Handle:hndl, Handle:plugin=INVALID_HANDLE);
  */
 methodmap Handle __nullable__
 {
-	public Clone() = CloneHandle;
+	public Close() = CloseHandle;
 	public ~Handle() = CloseHandle;
 }
 
