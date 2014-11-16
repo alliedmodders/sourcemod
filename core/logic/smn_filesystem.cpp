@@ -459,7 +459,6 @@ static cell_t sm_ReadDirEntry(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
 {
-	int err;
 	char *name, *mode;
 	pContext->LocalToString(params[1], &name);
 	pContext->LocalToString(params[2], &mode);
@@ -489,7 +488,6 @@ static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_DeleteFile(IPluginContext *pContext, const cell_t *params)
 {
-	int err;
 	char *name;
 	pContext->LocalToString(params[1], &name);
 
