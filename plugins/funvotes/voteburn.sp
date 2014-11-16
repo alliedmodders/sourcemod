@@ -48,25 +48,25 @@ DisplayVoteBurnMenu(client, target, String:name[])
 	g_voteType = voteType:burn;
 	
 	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	SetMenuTitle(g_hVoteMenu, "Voteburn player");
-	AddMenuItem(g_hVoteMenu, VOTE_YES, "Yes");
-	AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
-	SetMenuExitButton(g_hVoteMenu, false);
-	VoteMenuToAll(g_hVoteMenu, 20);
+	g_hVoteMenu.SetTitle("Voteburn player");
+	g_hVoteMenu.AddItem(VOTE_YES, "Yes");
+	g_hVoteMenu.AddItem(VOTE_NO, "No");
+	g_hVoteMenu.ExitButton = false;
+	g_hVoteMenu.DisplayVoteToAll(20);
 }
 
 DisplayBurnTargetMenu(client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_Burn);
+	Menu menu = CreateMenu(MenuHandler_Burn);
 	
 	decl String:title[100];
 	Format(title, sizeof(title), "%T:", "Burn vote", client);
-	SetMenuTitle(menu, title);
-	SetMenuExitBackButton(menu, true);
+	menu.SetTitle(title);
+	menu.ExitBackButton = true;
 	
 	AddTargetsToMenu(menu, client, true, true);
 	
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+	menu.Display(client, MENU_TIME_FOREVER);
 }
 
 public AdminMenu_VoteBurn(Handle:topmenu, 
@@ -91,11 +91,11 @@ public AdminMenu_VoteBurn(Handle:topmenu,
 	}
 }
 
-public MenuHandler_Burn(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_Burn(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
-		CloseHandle(menu);
+		delete menu;
 	}
 	else if (action == MenuAction_Cancel)
 	{
@@ -109,7 +109,7 @@ public MenuHandler_Burn(Handle:menu, MenuAction:action, param1, param2)
 		decl String:info[32], String:name[32];
 		new userid, target;
 		
-		GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
+		menu.GetItem(param2, info, sizeof(info), _, name, sizeof(name));
 		userid = StringToInt(info);
 
 		if ((target = GetClientOfUserId(userid)) == 0)

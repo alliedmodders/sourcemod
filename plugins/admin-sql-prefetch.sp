@@ -58,7 +58,7 @@ public OnRebuildAdminCache(AdminCachePart:part)
 		db = SQL_Connect("default", true, error, sizeof(error));
 	}
 	
-	if (db == INVALID_HANDLE)
+	if (db == null)
 	{
 		LogError("Could not connect to database \"default\": %s", error);
 		return;
@@ -73,7 +73,7 @@ public OnRebuildAdminCache(AdminCachePart:part)
 		FetchUsers(db);
 	}
 	
-	CloseHandle(db);
+	delete db;
 }
 
 FetchUsers(Handle:db)
@@ -82,7 +82,7 @@ FetchUsers(Handle:db)
 	new Handle:hQuery;
 
 	Format(query, sizeof(query), "SELECT id, authtype, identity, password, flags, name, immunity FROM sm_admins");
-	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hQuery = SQL_Query(db, query)) == null)
 	{
 		SQL_GetError(db, error, sizeof(error));
 		LogError("FetchUsers() query failed: %s", query);
@@ -155,7 +155,7 @@ FetchUsers(Handle:db)
 
 	new Handle:hGroupQuery;
 	Format(query, sizeof(query), "SELECT ag.admin_id AS id, g.name FROM sm_admins_groups ag JOIN sm_groups g ON ag.group_id = g.id  ORDER BY id, inherit_order ASC");
-	if ((hGroupQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hGroupQuery = SQL_Query(db, query)) == null)
 	{
 		SQL_GetError(db, error, sizeof(error));
 		LogError("FetchUsers() query failed: %s", query);
@@ -181,9 +181,9 @@ FetchUsers(Handle:db)
 		}
 	}
 	
-	CloseHandle(hQuery);
-	CloseHandle(hGroupQuery);
-	CloseHandle(htAdmins);
+	delete hQuery;
+	delete hGroupQuery;
+	delete htAdmins;
 }
 
 FetchGroups(Handle:db)
@@ -193,7 +193,7 @@ FetchGroups(Handle:db)
 	
 	Format(query, sizeof(query), "SELECT flags, name, immunity_level FROM sm_groups");
 
-	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hQuery = SQL_Query(db, query)) == null)
 	{
 		decl String:error[255];
 		SQL_GetError(db, error, sizeof(error));
@@ -239,7 +239,7 @@ FetchGroups(Handle:db)
 		SetAdmGroupImmunityLevel(gid, immunity);
 	}
 	
-	CloseHandle(hQuery);
+	delete hQuery;
 	
 	/** 
 	 * Get immunity in a big lump.  This is a nasty query but it gets the job done.
@@ -249,7 +249,7 @@ FetchGroups(Handle:db)
 	len += Format(query[len], sizeof(query)-len, " LEFT JOIN sm_groups g1 ON g1.id = gi.group_id ");
 	len += Format(query[len], sizeof(query)-len, " LEFT JOIN sm_groups g2 ON g2.id = gi.other_id");
 	
-	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hQuery = SQL_Query(db, query)) == null)
 	{
 		decl String:error[255];
 		SQL_GetError(db, error, sizeof(error));
@@ -279,14 +279,14 @@ FetchGroups(Handle:db)
 #endif
 	}
 	
-	CloseHandle(hQuery);
+	delete hQuery;
 	
 	/**
 	 * Fetch overrides in a lump query.
 	 */
 	Format(query, sizeof(query), "SELECT g.name, go.type, go.name, go.access FROM sm_group_overrides go LEFT JOIN sm_groups g ON go.group_id = g.id");
 	
-	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hQuery = SQL_Query(db, query)) == null)
 	{
 		decl String:error[255];
 		SQL_GetError(db, error, sizeof(error));
@@ -330,7 +330,7 @@ FetchGroups(Handle:db)
 		AddAdmGroupCmdOverride(gid, cmd, o_type, o_rule);
 	}
 	
-	CloseHandle(hQuery);
+	delete hQuery;
 }
 
 FetchOverrides(Handle:db)
@@ -340,7 +340,7 @@ FetchOverrides(Handle:db)
 	
 	Format(query, sizeof(query), "SELECT type, name, flags FROM sm_overrides");
 
-	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hQuery = SQL_Query(db, query)) == null)
 	{
 		decl String:error[255];
 		SQL_GetError(db, error, sizeof(error));
@@ -372,6 +372,6 @@ FetchOverrides(Handle:db)
 		}
 	}
 	
-	CloseHandle(hQuery);
+	delete hQuery;
 }
 

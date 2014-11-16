@@ -35,7 +35,7 @@
  {
  	static Handle:hForward;
 	
-	if(hForward == INVALID_HANDLE)
+	if(hForward == null)
 	{
 		hForward = CreateGlobalForward("BaseComm_OnClientMute", ET_Ignore, Param_Cell, Param_Cell);
 	}
@@ -50,7 +50,7 @@
  {
  	static Handle:hForward;
 	
-	if(hForward == INVALID_HANDLE)
+	if(hForward == null)
 	{
 		hForward = CreateGlobalForward("BaseComm_OnClientGag", ET_Ignore, Param_Cell, Param_Cell);
 	}

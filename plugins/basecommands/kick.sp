@@ -47,16 +47,16 @@ PerformKick(client, target, const String:reason[])
 
 DisplayKickMenu(client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_Kick);
+	Menu menu = CreateMenu(MenuHandler_Kick);
 	
 	decl String:title[100];
 	Format(title, sizeof(title), "%T:", "Kick player", client);
-	SetMenuTitle(menu, title);
-	SetMenuExitBackButton(menu, true);
+	menu.SetTitle(title);
+	menu.ExitBackButton = true;
 	
 	AddTargetsToMenu(menu, client, false, false);
 	
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+	menu.Display(client, MENU_TIME_FOREVER);
 }
 
 public AdminMenu_Kick(Handle:topmenu, 
@@ -76,11 +76,11 @@ public AdminMenu_Kick(Handle:topmenu,
 	}
 }
 
-public MenuHandler_Kick(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_Kick(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
-		CloseHandle(menu);
+		delete menu;
 	}
 	else if (action == MenuAction_Cancel)
 	{
@@ -94,7 +94,7 @@ public MenuHandler_Kick(Handle:menu, MenuAction:action, param1, param2)
 		decl String:info[32];
 		new userid, target;
 		
-		GetMenuItem(menu, param2, info, sizeof(info));
+		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
 
 		if ((target = GetClientOfUserId(userid)) == 0)

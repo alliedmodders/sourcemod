@@ -45,23 +45,23 @@ DisplayVoteGravityMenu(client,count,String:items[5][])
 	{
 		strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), items[0]);
 			
-		SetMenuTitle(g_hVoteMenu, "Change Gravity To");
-		AddMenuItem(g_hVoteMenu, items[0], "Yes");
-		AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
+		g_hVoteMenu.SetTitle("Change Gravity To");
+		g_hVoteMenu.AddItem(items[0], "Yes");
+		g_hVoteMenu.AddItem(VOTE_NO, "No");
 	}
 	else
 	{
 		g_voteInfo[VOTE_NAME][0] = '\0';
 		
-		SetMenuTitle(g_hVoteMenu, "Gravity Vote");
+		g_hVoteMenu.SetTitle("Gravity Vote");
 		for (new i = 0; i < count; i++)
 		{
-			AddMenuItem(g_hVoteMenu, items[i], items[i]);
+			g_hVoteMenu.AddItem(items[i], items[i]);
 		}	
 	}
 	
-	SetMenuExitButton(g_hVoteMenu, false);
-	VoteMenuToAll(g_hVoteMenu, 20);
+	g_hVoteMenu.ExitButton = false;
+	g_hVoteMenu.DisplayVoteToAll(20);
 }
 
 public AdminMenu_VoteGravity(Handle:topmenu, 

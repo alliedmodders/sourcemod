@@ -49,7 +49,7 @@ public Plugin:myinfo =
 #define VOTE_NO "###no###"
 #define VOTE_YES "###yes###"
 
-new Handle:g_hVoteMenu = INVALID_HANDLE;
+Menu g_hVoteMenu = null;
 
 ConVar g_Cvar_Limits[3] = {null, ...};
 //new Handle:g_Cvar_VoteSay = INVALID_HANDLE;
@@ -99,7 +99,7 @@ public OnPluginStart()
 
 	/*
 	g_Cvar_Show = FindConVar("sm_vote_show");
-	if (g_Cvar_Show == INVALID_HANDLE)
+	if (g_Cvar_Show == null)
 	{
 		g_Cvar_Show = CreateConVar("sm_vote_show", "1", "Show player's votes? Default on.", 0, true, 0.0, true, 1.0);
 	}
@@ -119,8 +119,8 @@ public OnPluginStart()
 	g_SelectedMaps = CreateArray(33);
 	
 	g_MapList = CreateMenu(MenuHandler_Map, MenuAction_DrawItem|MenuAction_Display);
-	SetMenuTitle(g_MapList, "%T", "Please select a map", LANG_SERVER);
-	SetMenuExitBackButton(g_MapList, true);
+	g_MapList.SetTitle("%T", "Please select a map", LANG_SERVER);
+	g_MapList.ExitBackButton = true;
 	
 	decl String:mapListPath[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, mapListPath, sizeof(mapListPath), "configs/adminmenu_maplist.ini");
@@ -200,28 +200,28 @@ public Action:Command_Vote(client, args)
 	g_voteType = voteType:question;
 	
 	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	SetMenuTitle(g_hVoteMenu, "%s?", g_voteArg);
+	g_hVoteMenu.SetTitle("%s?", g_voteArg);
 	
 	if (answerCount < 2)
 	{
-		AddMenuItem(g_hVoteMenu, VOTE_YES, "Yes");
-		AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
+		g_hVoteMenu.AddItem(VOTE_YES, "Yes");
+		g_hVoteMenu.AddItem(VOTE_NO, "No");
 	}
 	else
 	{
 		for (new i = 0; i < answerCount; i++)
 		{
-			AddMenuItem(g_hVoteMenu, answers[i], answers[i]);
+			g_hVoteMenu.AddItem(answers[i], answers[i]);
 		}	
 	}
 	
-	SetMenuExitButton(g_hVoteMenu, false);
-	VoteMenuToAll(g_hVoteMenu, 20);		
+	g_hVoteMenu.ExitButton = false;
+	g_hVoteMenu.DisplayVoteToAll(20);		
 	
 	return Plugin_Handled;	
 }
 
-public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
+public Handler_VoteCallback(Menu menu, MenuAction action, param1, param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -231,20 +231,20 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 	{
 	 	if (g_voteType != voteType:question)
 	 	{
-			decl String:title[64];
-			GetMenuTitle(menu, title, sizeof(title));
+			char title[64];
+			menu.GetTitle(title, sizeof(title));
 			
-	 		decl String:buffer[255];
+	 		char buffer[255];
 			Format(buffer, sizeof(buffer), "%T", title, param1, g_voteInfo[VOTE_NAME]);
 
-			new Handle:panel = Handle:param2;
-			SetPanelTitle(panel, buffer);
+			Panel panel = Panel:param2;
+			panel.SetTitle(buffer);
 		}
 	}
 	else if (action == MenuAction_DisplayItem)
 	{
 		decl String:display[64];
-		GetMenuItem(menu, param2, "", 0, _, display, sizeof(display));
+		menu.GetItem(param2, "", 0, _, display, sizeof(display));
 	 
 	 	if (strcmp(display, "No") == 0 || strcmp(display, "Yes") == 0)
 	 	{
@@ -269,7 +269,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 		int votes, totalVotes;
 
 		GetMenuVoteInfo(param2, votes, totalVotes);
-		GetMenuItem(menu, param1, item, sizeof(item), _, display, sizeof(display));
+		menu.GetItem(param1, item, sizeof(item), _, display, sizeof(display));
 		
 		if (strcmp(item, VOTE_NO) == 0 && param1 == 1)
 		{
@@ -362,7 +362,7 @@ VoteSelect(Handle:menu, param1, param2 = 0)
 	{
 		decl String:voter[64], String:junk[64], String:choice[64];
 		GetClientName(param1, voter, sizeof(voter));
-		GetMenuItem(menu, param2, junk, sizeof(junk), _, choice, sizeof(choice));
+		menu.GetItem(param2, junk, sizeof(junk), _, choice, sizeof(choice));
 		PrintToChatAll("[SM] %T", "Vote Select", LANG_SERVER, voter, choice);
 	}
 }
@@ -370,8 +370,8 @@ VoteSelect(Handle:menu, param1, param2 = 0)
 
 VoteMenuClose()
 {
-	CloseHandle(g_hVoteMenu);
-	g_hVoteMenu = INVALID_HANDLE;
+	delete g_hVoteMenu;
+	g_hVoteMenu = null;
 }
 
 Float:GetVotePercent(votes, totalVotes)

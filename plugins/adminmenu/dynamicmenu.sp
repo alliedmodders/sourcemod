@@ -336,7 +336,7 @@ ParseConfigs()
 		CloseHandle(g_groupList[groupListName]);
 	}
 	
-	if (g_groupList[groupListCommand] != INVALID_HANDLE)
+	if (g_groupList[groupListCommand] != null)
 	{
 		CloseHandle(g_groupList[groupListCommand]);
 	}
@@ -457,8 +457,8 @@ public ParamCheck(client)
 	{
 		GetArrayArray(outputItem[Item_submenus], g_currentPlace[client][Place_ReplaceNum] - 1, outputSubmenu[0]);
 		
-		new Handle:itemMenu = CreateMenu(Menu_Selection);
-		SetMenuExitBackButton(itemMenu, true);
+		Menu itemMenu = CreateMenu(Menu_Selection);
+		itemMenu.ExitBackButton = true;
 			
 		if ((outputSubmenu[Submenu_type] == SubMenu_Group) || (outputSubmenu[Submenu_type] == SubMenu_GroupPlayer))
 		{	
@@ -469,7 +469,7 @@ public ParamCheck(client)
 			{			
 				GetArrayString(g_groupList[groupListName], i, nameBuffer, sizeof(nameBuffer));
 				GetArrayString(g_groupList[groupListCommand], i, commandBuffer, sizeof(commandBuffer));
-				AddMenuItem(itemMenu, commandBuffer, nameBuffer);
+				itemMenu.AddItem(commandBuffer, nameBuffer);
 			}
 		}
 		
@@ -490,7 +490,7 @@ public ParamCheck(client)
 					
 					if (IsMapValid(readData))
 					{
-						AddMenuItem(itemMenu, readData, readData);
+						itemMenu.AddItem(readData, readData);
 					}
 				}
 			}
@@ -516,32 +516,32 @@ public ParamCheck(client)
 						{
 							new userid = GetClientUserId(i);
 							Format(infoBuffer, sizeof(infoBuffer), "#%i", userid);
-							AddMenuItem(itemMenu, infoBuffer, nameBuffer);	
+							itemMenu.AddItem(infoBuffer, nameBuffer);	
 						}
 						case UserId2:
 						{
 							new userid = GetClientUserId(i);
 							Format(infoBuffer, sizeof(infoBuffer), "%i", userid);
-							AddMenuItem(itemMenu, infoBuffer, nameBuffer);							
+							itemMenu.AddItem(infoBuffer, nameBuffer);							
 						}
 						case SteamId:
 						{
 							if (GetClientAuthId(i, AuthId_Steam2, infoBuffer, sizeof(infoBuffer)))
-								AddMenuItem(itemMenu, infoBuffer, nameBuffer);
+								itemMenu.AddItem(infoBuffer, nameBuffer);
 						}	
 						case IpAddress:
 						{
 							GetClientIP(i, infoBuffer, sizeof(infoBuffer));
-							AddMenuItem(itemMenu, infoBuffer, nameBuffer);							
+							itemMenu.AddItem(infoBuffer, nameBuffer);							
 						}
 						case Name:
 						{
-							AddMenuItem(itemMenu, nameBuffer, nameBuffer);
+							itemMenu.AddItem(nameBuffer, nameBuffer);
 						}	
 						default: //assume client id
 						{
 							Format(temp,3,"%i",i);
-							AddMenuItem(itemMenu, temp, nameBuffer);						
+							itemMenu.AddItem(temp, nameBuffer);						
 						}								
 					}
 				}
@@ -549,8 +549,8 @@ public ParamCheck(client)
 		}
 		else if (outputSubmenu[Submenu_type] == SubMenu_OnOff)
 		{
-			AddMenuItem(itemMenu, "1", "On");
-			AddMenuItem(itemMenu, "0", "Off");
+			itemMenu.AddItem("1", "On");
+			itemMenu.AddItem("0", "Off");
 		}		
 		else
 		{
@@ -567,16 +567,16 @@ public ParamCheck(client)
 				
 				if (CheckCommandAccess(client, admin, 0))
 				{
-					AddMenuItem(itemMenu, value, text);
+					itemMenu.AddItem(value, text);
 				}
 			}
 			
 			ResetPack(outputSubmenu[Submenu_listdata]);	
 		}
 		
-		SetMenuTitle(itemMenu, outputSubmenu[Submenu_title]);
+		itemMenu.SetTitle(outputSubmenu[Submenu_title]);
 		
-		DisplayMenu(itemMenu, client, MENU_TIME_FOREVER);
+		itemMenu.Display(client, MENU_TIME_FOREVER);
 	}
 	else
 	{	
@@ -602,11 +602,11 @@ public ParamCheck(client)
 	}
 }
 
-public Menu_Selection(Handle:menu, MenuAction:action, param1, param2)
+public Menu_Selection(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
-		CloseHandle(menu);
+		delete menu;
 	}
 	
 	if (action == MenuAction_Select)
@@ -614,7 +614,7 @@ public Menu_Selection(Handle:menu, MenuAction:action, param1, param2)
 		new String:unquotedinfo[NAME_LENGTH];
  
 		/* Get item info */
-		new bool:found = GetMenuItem(menu, param2, unquotedinfo, sizeof(unquotedinfo));
+		new bool:found = menu.GetItem(param2, unquotedinfo, sizeof(unquotedinfo));
 		
 		if (!found)
 		{

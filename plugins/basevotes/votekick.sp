@@ -45,26 +45,26 @@ DisplayVoteKickMenu(client, target)
 	g_voteType = voteType:kick;
 	
 	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	SetMenuTitle(g_hVoteMenu, "Votekick Player");
-	AddMenuItem(g_hVoteMenu, VOTE_YES, "Yes");
-	AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
-	SetMenuExitButton(g_hVoteMenu, false);
-	VoteMenuToAll(g_hVoteMenu, 20);
+	g_hVoteMenu.SetTitle("Votekick Player");
+	g_hVoteMenu.AddItem(VOTE_YES, "Yes");
+	g_hVoteMenu.AddItem(VOTE_NO, "No");
+	g_hVoteMenu.ExitButton = false;
+	g_hVoteMenu.DisplayVoteToAll(20);
 
 }
 
 DisplayKickTargetMenu(client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_Kick);
+	Menu menu = CreateMenu(MenuHandler_Kick);
 	
 	decl String:title[100];
 	Format(title, sizeof(title), "%T:", "Kick vote", client);
-	SetMenuTitle(menu, title);
-	SetMenuExitBackButton(menu, true);
+	menu.SetTitle(title);
+	menu.ExitBackButton = true;
 	
 	AddTargetsToMenu(menu, client, false, false);
 	
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+	menu.Display(client, MENU_TIME_FOREVER);
 }
 
 public AdminMenu_VoteKick(Handle:topmenu, 
@@ -89,11 +89,11 @@ public AdminMenu_VoteKick(Handle:topmenu,
 	}
 }
 
-public MenuHandler_Kick(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_Kick(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
-		CloseHandle(menu);
+		delete menu;
 	}
 	else if (action == MenuAction_Cancel)
 	{
@@ -107,7 +107,7 @@ public MenuHandler_Kick(Handle:menu, MenuAction:action, param1, param2)
 		decl String:info[32], String:name[32];
 		new userid, target;
 		
-		GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
+		menu.GetItem(param2, info, sizeof(info), _, name, sizeof(name));
 		userid = StringToInt(info);
 
 		if ((target = GetClientOfUserId(userid)) == 0)

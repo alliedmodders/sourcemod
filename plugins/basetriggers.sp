@@ -52,7 +52,7 @@ ConVar g_Cvar_TriggerShow;
 ConVar g_Cvar_TimeleftInterval;
 ConVar g_Cvar_FriendlyFire;
 
-new Handle:g_Timer_TimeShow = INVALID_HANDLE;
+Handle g_Timer_TimeShow = null;
 
 ConVar g_Cvar_WinLimit;
 ConVar g_Cvar_FragLimit;
@@ -167,7 +167,7 @@ public ConVarChange_TimeleftInterval(Handle:convar, const String:oldValue[], con
 	
 	if (newval < 1.0)
 	{
-		if (g_Timer_TimeShow != INVALID_HANDLE)
+		if (g_Timer_TimeShow != null)
 		{
 			KillTimer(g_Timer_TimeShow);		
 		}
@@ -175,7 +175,7 @@ public ConVarChange_TimeleftInterval(Handle:convar, const String:oldValue[], con
 		return;
 	}
 	
-	if (g_Timer_TimeShow != INVALID_HANDLE)
+	if (g_Timer_TimeShow != null)
 	{
 		KillTimer(g_Timer_TimeShow);
 		g_Timer_TimeShow = CreateTimer(newval, Timer_DisplayTimeleft, _, TIMER_REPEAT);

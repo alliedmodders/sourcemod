@@ -31,7 +31,7 @@
  * Version: $Id$
  */
 
-new Handle:g_ConfigMenu = INVALID_HANDLE;
+Menu g_ConfigMenu = null;
 
 PerformExec(client, String:path[])
 {
@@ -61,11 +61,11 @@ public AdminMenu_ExecCFG(Handle:topmenu,
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
-		DisplayMenu(g_ConfigMenu, param, MENU_TIME_FOREVER);
+		g_ConfigMenu.Display(param, MENU_TIME_FOREVER);
 	}
 }
 
-public MenuHandler_ExecCFG(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_ExecCFG(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Cancel)
 	{
@@ -78,7 +78,7 @@ public MenuHandler_ExecCFG(Handle:menu, MenuAction:action, param1, param2)
 	{
 		decl String:path[256];
 		
-		GetMenuItem(menu, param2, path, sizeof(path));
+		menu.GetItem(param2, path, sizeof(path));
 	
 		PerformExec(param1, path);
 	}
@@ -116,14 +116,14 @@ ParseConfigs()
 	config_parser.OnLeaveSection = EndSection;
 	config_parser.OnKeyValue = KeyValue;
 	
-	if (g_ConfigMenu != INVALID_HANDLE)
+	if (g_ConfigMenu != null)
 	{
-		CloseHandle(g_ConfigMenu);
+		delete g_ConfigMenu;
 	}
 	
 	g_ConfigMenu = CreateMenu(MenuHandler_ExecCFG, MenuAction_Display);
-	SetMenuTitle(g_ConfigMenu, "%T", "Choose Config", LANG_SERVER);
-	SetMenuExitBackButton(g_ConfigMenu, true);
+	g_ConfigMenu.SetTitle("%T", "Choose Config", LANG_SERVER);
+	g_ConfigMenu.ExitBackButton = true;
 	
 	decl String:configPath[256];
 	BuildPath(Path_SM, configPath, sizeof(configPath), "configs/adminmenu_cfgs.txt");
@@ -155,7 +155,7 @@ public SMCResult NewSection(SMCParser smc, const char[] name, bool opt_quotes)
 
 public SMCResult KeyValue(SMCParser smc, const char[] key, const char[] value, bool key_quotes, bool value_quotes)
 {
-	AddMenuItem(g_ConfigMenu, key, value);
+	g_ConfigMenu.AddItem(key, value);
 }
 
 public SMCResult EndSection(SMCParser smc)

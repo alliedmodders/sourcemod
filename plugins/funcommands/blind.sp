@@ -103,39 +103,39 @@ public AdminMenu_Blind(Handle:topmenu,
 
 DisplayBlindMenu(client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_Blind);
+	Menu menu = CreateMenu(MenuHandler_Blind);
 	
 	decl String:title[100];
 	Format(title, sizeof(title), "%T:", "Blind player", client);
-	SetMenuTitle(menu, title);
-	SetMenuExitBackButton(menu, true);
+	menu.SetTitle(title);
+	menu.ExitBackButton = true;
 	
 	AddTargetsToMenu(menu, client, true, true);
 	
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+	menu.Display(client, MENU_TIME_FOREVER);
 }
 
 DisplayAmountMenu(client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_Amount);
+	Menu menu = CreateMenu(MenuHandler_Amount);
 	
 	decl String:title[100];
 	Format(title, sizeof(title), "%T: %N", "Blind amount", client, GetClientOfUserId(g_BlindTarget[client]));
-	SetMenuTitle(menu, title);
-	SetMenuExitBackButton(menu, true);
+	menu.SetTitle(title);
+	menu.ExitBackButton = true;
 	
 	AddTranslatedMenuItem(menu, "255", "Fully blind", client);
 	AddTranslatedMenuItem(menu, "240", "Half blind", client);
 	AddTranslatedMenuItem(menu, "0", "No blind", client);
 	
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_Blind(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_Blind(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
-		CloseHandle(menu);
+		delete menu;
 	}
 	else if (action == MenuAction_Cancel)
 	{
@@ -149,7 +149,7 @@ public MenuHandler_Blind(Handle:menu, MenuAction:action, param1, param2)
 		decl String:info[32];
 		new userid, target;
 		
-		GetMenuItem(menu, param2, info, sizeof(info));
+		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
 
 		if ((target = GetClientOfUserId(userid)) == 0)
@@ -177,11 +177,11 @@ public MenuHandler_Blind(Handle:menu, MenuAction:action, param1, param2)
 	return;
 }
 
-public MenuHandler_Amount(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_Amount(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
-		CloseHandle(menu);
+		delete menu;
 	}
 	else if (action == MenuAction_Cancel)
 	{
@@ -195,7 +195,7 @@ public MenuHandler_Amount(Handle:menu, MenuAction:action, param1, param2)
 		decl String:info[32];
 		new amount, target;
 		
-		GetMenuItem(menu, param2, info, sizeof(info));
+		menu.GetItem(param2, info, sizeof(info));
 		amount = StringToInt(info);
 
 		if ((target = GetClientOfUserId(g_BlindTarget[param1])) == 0)

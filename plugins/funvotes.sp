@@ -51,14 +51,14 @@ public Plugin:myinfo =
 #define VOTE_NO "###no###"
 #define VOTE_YES "###yes###"
 
-new Handle:g_hVoteMenu = INVALID_HANDLE;
+Menu g_hVoteMenu = null;
 
 ConVar g_Cvar_Limits[5] = {null, ...};
 ConVar g_Cvar_Gravity;
 ConVar g_Cvar_Alltalk;
 ConVar g_Cvar_FF;
 
-// new Handle:g_Cvar_Show = INVALID_HANDLE;
+// new Handle:g_Cvar_Show = null;
 
 enum voteType
 {
@@ -93,7 +93,7 @@ TopMenu hTopMenu;
 
 public OnPluginStart()
 {
-	if (FindPluginByFile("basefunvotes.smx") != INVALID_HANDLE)
+	if (FindPluginByFile("basefunvotes.smx") != null)
 	{
 		ThrowError("This plugin replaces basefuncommands.  You cannot run both at once.");
 	}
@@ -121,7 +121,7 @@ public OnPluginStart()
 	
 	/*
 	g_Cvar_Show = FindConVar("sm_vote_show");
-	if (g_Cvar_Show == INVALID_HANDLE)
+	if (g_Cvar_Show == null)
 	{
 		g_Cvar_Show = CreateConVar("sm_vote_show", "1", "Show player's votes? Default on.", 0, true, 0.0, true, 1.0);
 	}
@@ -161,7 +161,7 @@ public OnAdminMenuReady(Handle aTopMenu)
 	}
 }
 
-public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
+public Handler_VoteCallback(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -169,23 +169,23 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Display)
 	{
-	 	decl String:title[64];
-		GetMenuTitle(menu, title, sizeof(title));
+	 	char title[64];
+		menu.GetTitle(title, sizeof(title));
 
-	 	decl String:buffer[255];
+	 	char buffer[255];
 		Format(buffer, sizeof(buffer), "%T", title, param1, g_voteInfo[VOTE_NAME]);
 
-		new Handle:panel = Handle:param2;
-		SetPanelTitle(panel, buffer);
+		Panel panel = Panel:param2;
+		panel.SetTitle(buffer);
 	}
 	else if (action == MenuAction_DisplayItem)
 	{
-		decl String:display[64];
-		GetMenuItem(menu, param2, "", 0, _, display, sizeof(display));
+		char display[64];
+		menu.GetItem(param2, "", 0, _, display, sizeof(display));
 	 
 	 	if (strcmp(display, VOTE_NO) == 0 || strcmp(display, VOTE_YES) == 0)
 	 	{
-			decl String:buffer[255];
+			char buffer[255];
 			Format(buffer, sizeof(buffer), "%T", display, param1);
 
 			return RedrawMenuItem(buffer);
@@ -206,7 +206,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 		int votes, totalVotes;
 
 		GetMenuVoteInfo(param2, votes, totalVotes);
-		GetMenuItem(menu, param1, item, sizeof(item));
+		menu.GetItem(param1, item, sizeof(item));
 		
 		if (strcmp(item, VOTE_NO) == 0 && param1 == 1)
 		{
@@ -285,7 +285,7 @@ VoteSelect(Handle:menu, param1, param2 = 0)
 	{
 		decl String:voter[64], String:junk[64], String:choice[64];
 		GetClientName(param1, voter, sizeof(voter));
-		GetMenuItem(menu, param2, junk, sizeof(junk), _, choice, sizeof(choice));
+		menu.GetItem(param2, junk, sizeof(junk), _, choice, sizeof(choice));
 		PrintToChatAll("[SM] %T", "Vote Select", LANG_SERVER, voter, choice);
 	}
 }
@@ -293,8 +293,8 @@ VoteSelect(Handle:menu, param1, param2 = 0)
 
 VoteMenuClose()
 {
-	CloseHandle(g_hVoteMenu);
-	g_hVoteMenu = INVALID_HANDLE;
+	delete g_hVoteMenu;
+	g_hVoteMenu = null;
 }
 
 Float:GetVotePercent(votes, totalVotes)

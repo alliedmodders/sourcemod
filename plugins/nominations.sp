@@ -85,7 +85,7 @@ public void OnConfigsExecuted()
 					g_mapFileSerial,
 					"nominations",
 					MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER)
-		== INVALID_HANDLE)
+		== null)
 	{
 		if (g_mapFileSerial == -1)
 		{

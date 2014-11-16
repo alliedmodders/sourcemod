@@ -95,7 +95,7 @@ new EngineVersion:g_GameEngine = Engine_Unknown;
 
 public OnPluginStart()
 {
-	if (FindPluginByFile("basefuncommands.smx") != INVALID_HANDLE)
+	if (FindPluginByFile("basefuncommands.smx") != null)
 	{
 		ThrowError("This plugin replaces basefuncommands.  You cannot run both at once.");
 	}
@@ -180,7 +180,7 @@ HookEvents( )
 public OnMapStart()
 {
 	new Handle:gameConfig = LoadGameConfigFile("funcommands.games");
-	if (gameConfig == INVALID_HANDLE)
+	if (gameConfig == null)
 	{
 		SetFailState("Unable to load game config funcommands.games");
 		return;
@@ -237,7 +237,7 @@ public OnMapStart()
 		g_HaloSprite = PrecacheModel(buffer);
 	}
 	
-	CloseHandle(gameConfig);
+	delete gameConfig;
 }
 
 public OnMapEnd()
@@ -289,10 +289,10 @@ public OnAdminMenuReady(Handle aTopMenu)
 	}
 }
 
-AddTranslatedMenuItem(Handle:menu, const String:opt[], const String:phrase[], client)
+void AddTranslatedMenuItem(Menu menu, const char[] opt, const char[] phrase, int client)
 {
-	decl String:buffer[128];
+	char buffer[128];
 	Format(buffer, sizeof(buffer), "%T", phrase, client);
-	AddMenuItem(menu, opt, buffer);
+	menu.AddItem(opt, buffer);
 }
 

@@ -85,14 +85,14 @@ KillDrug(client)
 KillDrugTimer(client)
 {
 	KillTimer(g_DrugTimers[client]);
-	g_DrugTimers[client] = INVALID_HANDLE;	
+	g_DrugTimers[client] = null;	
 }
 
 KillAllDrugs()
 {
 	for (new i = 1; i <= MaxClients; i++)
 	{
-		if (g_DrugTimers[i] != INVALID_HANDLE)
+		if (g_DrugTimers[i] != null)
 		{
 			if(IsClientInGame(i))
 			{
@@ -112,7 +112,7 @@ PerformDrug(client, target, toggle)
 	{
 		case (2):
 		{
-			if (g_DrugTimers[target] == INVALID_HANDLE)
+			if (g_DrugTimers[target] == null)
 			{
 				CreateDrug(target);
 				LogAction(client, target, "\"%L\" drugged \"%L\"", client, target);
@@ -126,7 +126,7 @@ PerformDrug(client, target, toggle)
 
 		case (1):
 		{
-			if (g_DrugTimers[target] == INVALID_HANDLE)
+			if (g_DrugTimers[target] == null)
 			{
 				CreateDrug(target);
 				LogAction(client, target, "\"%L\" drugged \"%L\"", client, target);
@@ -135,7 +135,7 @@ PerformDrug(client, target, toggle)
 		
 		case (0):
 		{
-			if (g_DrugTimers[target] != INVALID_HANDLE)
+			if (g_DrugTimers[target] != null)
 			{
 				KillDrug(target);
 				LogAction(client, target, "\"%L\" undrugged \"%L\"", client, target);
@@ -222,23 +222,23 @@ public AdminMenu_Drug(Handle:topmenu,
 
 DisplayDrugMenu(client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_Drug);
+	Menu menu = CreateMenu(MenuHandler_Drug);
 	
 	decl String:title[100];
 	Format(title, sizeof(title), "%T:", "Drug player", client);
-	SetMenuTitle(menu, title);
-	SetMenuExitBackButton(menu, true);
+	menu.SetTitle(title);
+	menu.ExitBackButton = true;
 	
 	AddTargetsToMenu(menu, client, true, true);
 	
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_Drug(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_Drug(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
-		CloseHandle(menu);
+		delete menu;
 	}
 	else if (action == MenuAction_Cancel)
 	{
@@ -252,7 +252,7 @@ public MenuHandler_Drug(Handle:menu, MenuAction:action, param1, param2)
 		decl String:info[32];
 		new userid, target;
 		
-		GetMenuItem(menu, param2, info, sizeof(info));
+		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
 
 		if ((target = GetClientOfUserId(userid)) == 0)
