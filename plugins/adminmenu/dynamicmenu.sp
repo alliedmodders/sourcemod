@@ -479,12 +479,12 @@ public ParamCheck(client)
 			ReadPackString(outputSubmenu[Submenu_listdata], path, sizeof(path));
 			ResetPack(outputSubmenu[Submenu_listdata]);
 		
-			new Handle:file = OpenFile(path, "rt");
-			new String:readData[128];
+			File file = OpenFile(path, "rt");
+			char readData[128];
 			
-			if(file != INVALID_HANDLE)
+			if (file)
 			{
-				while(!IsEndOfFile(file) && ReadFileLine(file, readData, sizeof(readData)))
+				while (!file.EndOfFile() && file.ReadLine(readData, sizeof(readData)))
 				{
 					TrimString(readData);
 					
