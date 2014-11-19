@@ -89,6 +89,7 @@ enum MenuAction
 #define MENUFLAG_BUTTON_EXITBACK	(1<<1)	/**< Menu has an "exit back" button */
 #define MENUFLAG_NO_SOUND			(1<<2)	/**< Menu will not have any select sounds */
 #define MENUFLAG_BUTTON_NOVOTE		(1<<3)	/**< Menu has a "No Vote" button at slot 1 */
+#define MENUFLAG_HNDL_CLOSE			(1<<4)	/**< Menu will automatically call CloseHandle() on its data when finished */
 
 #define VOTEINFO_CLIENT_INDEX		0		/**< Client index */
 #define VOTEINFO_CLIENT_ITEM		1		/**< Item the client selected, or -1 for none */
@@ -143,15 +144,40 @@ enum MenuSource
 	MenuSource_RawPanel = 3,		/**< A display is active, but it is not tied to a menu */
 };
 
-/**
- * Called when a menu action is completed.
- *
- * @param menu				The menu being acted upon.
- * @param action			The action of the menu.
- * @param param1			First action parameter (usually the client).
- * @param param2			Second action parameter (usually the item).
- */
-typedef MenuHandler = function int (Menu menu, MenuAction action, int param1, int param2);
+union MenuHandler
+{
+	/**
+	 * Called when a menu action is completed.
+	 *
+	 * @param menu				The menu being acted upon.
+	 * @param action			The action of the menu.
+	 * @param param1			First action parameter (usually the client).
+	 * @param param2			Second action parameter (usually the item).
+  	 * @param hndl				Handle passed to CreateMenu()/CreateMenuEx() when menu was created.
+	 */
+	function int (Menu menu, MenuAction action, int param1, int param2, Handle hndl);
+
+	/**
+	 * Called when a menu action is completed.
+	 *
+	 * @param menu				The menu being acted upon.
+	 * @param action			The action of the menu.
+	 * @param param1			First action parameter (usually the client).
+	 * @param param2			Second action parameter (usually the item).
+ 	 * @param data				Data passed to CreateMenu()/CreateMenuEx() when menu was created.
+	 */
+	function int (Menu menu, MenuAction action, int param1, int param2, any data);
+
+	/**
+	 * Called when a menu action is completed.
+	 *
+	 * @param menu				The menu being acted upon.
+	 * @param action			The action of the menu.
+	 * @param param1			First action parameter (usually the client).
+	 * @param param2			Second action parameter (usually the item).
+	 */
+	function int (Menu menu, MenuAction action, int param1, int param2);
+};
 
 /**
  * Creates a new, empty menu using the default style.
@@ -161,9 +187,10 @@ typedef MenuHandler = function int (Menu menu, MenuAction action, int param1, in
  *							Cancel, and End will always be received regardless
  *							of whether they are set or not.  They are also
  *							the only default actions.
+ * @param data				Handle or value to pass through to the menu callback function.
  * @return					A new menu Handle.
  */
-native Menu:CreateMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT);
+native Menu:CreateMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT, any:data=INVALID_HANDLE);
 
 /**
  * Displays a menu to a client.
@@ -416,6 +443,17 @@ native SetMenuExitBackButton(Handle:menu, bool:button);
 native bool:SetMenuNoVoteButton(Handle:menu, bool:button);
 
 /**
+ * Sets whether or not the menu automatically calls CloseHandle() on its data when finished.
+ * By default, menus do not call CloseHandle().
+ *
+ * @param menu				Menu Handle.
+ * @param close				True to enable automatically calling CloseHandle, false to remove it.
+ * @return 					True if allowed; false on failure.
+ * @error					Invalid Handle.
+ */
+native bool:SetMenuCloseHandle(Handle:menu, bool:close);
+
+/**
  * Cancels a menu from displaying on all clients.  While the
  * cancellation is in progress, this menu cannot be re-displayed
  * to any clients.
@@ -515,26 +553,76 @@ stock bool:VoteMenuToAll(Handle:menu, time, flags=0)
 	
 	return VoteMenu(menu, players, total, time, flags);
 }
-/**
- * Callback for when a vote has ended and results are available.
- *
- * @param menu				The menu being voted on.
- * @param num_votes			Number of votes tallied in total.
- * @param num_clients		Number of clients who could vote.
- * @param client_info		Array of clients.  Use VOTEINFO_CLIENT_ defines.
- * @param num_items			Number of unique items that were selected.
- * @param item_info			Array of items, sorted by count.  Use VOTEINFO_ITEM
- *							defines.
- * @noreturn
- */
-typedef VoteHandler = function void (
-  Menu menu,
-  int num_votes, 
-  int num_clients,
-  const int client_info[][2], 
-  int num_items,
-  const int item_info[][2]
-);
+
+union VoteHandler
+{
+	/**
+	 * Callback for when a vote has ended and results are available.
+	 *
+	 * @param menu				The menu being voted on.
+	 * @param num_votes			Number of votes tallied in total.
+	 * @param num_clients		Number of clients who could vote.
+	 * @param client_info		Array of clients.  Use VOTEINFO_CLIENT_ defines.
+	 * @param num_items			Number of unique items that were selected.
+	 * @param item_info			Array of items, sorted by count.  Use VOTEINFO_ITEM
+	 *							defines.
+  	 * @param hndl				Handle passed to CreateMenu()/CreateMenuEx() when menu was created.
+	 * @noreturn
+	 */
+	function void (
+	  Menu menu,
+	  int num_votes, 
+	  int num_clients,
+	  const int client_info[][2], 
+	  int num_items,
+	  const int item_info[][2],
+	  Handle hndl
+	);
+
+	/**
+	 * Callback for when a vote has ended and results are available.
+	 *
+	 * @param menu				The menu being voted on.
+	 * @param num_votes			Number of votes tallied in total.
+	 * @param num_clients		Number of clients who could vote.
+	 * @param client_info		Array of clients.  Use VOTEINFO_CLIENT_ defines.
+	 * @param num_items			Number of unique items that were selected.
+	 * @param item_info			Array of items, sorted by count.  Use VOTEINFO_ITEM
+	 *							defines.
+ 	 * @param data				Data passed to CreateMenu()/CreateMenuEx() when menu was created.
+	 * @noreturn
+	 */
+	function void (
+	  Menu menu,
+	  int num_votes, 
+	  int num_clients,
+	  const int client_info[][2], 
+	  int num_items,
+	  const int item_info[][2],
+	  any data
+	);
+
+	/**
+	 * Callback for when a vote has ended and results are available.
+	 *
+	 * @param menu				The menu being voted on.
+	 * @param num_votes			Number of votes tallied in total.
+	 * @param num_clients		Number of clients who could vote.
+	 * @param client_info		Array of clients.  Use VOTEINFO_CLIENT_ defines.
+	 * @param num_items			Number of unique items that were selected.
+	 * @param item_info			Array of items, sorted by count.  Use VOTEINFO_ITEM
+	 *							defines.
+	 * @noreturn
+	 */
+	function void (
+	  Menu menu,
+	  int num_votes, 
+	  int num_clients,
+	  const int client_info[][2], 
+	  int num_items,
+	  const int item_info[][2]
+	);
+}
 
 /**
  * Sets an advanced vote handling callback.  If this callback is set,
@@ -587,6 +675,7 @@ methodmap Menu < Handle {
 	}
 
 	public SetNoVoteButton() = SetMenuNoVoteButton;
+	public SetCloseHandle() = SetMenuCloseHandle;
 	public SetVoteResultCallback() = SetVoteResultCallback;
 
 	property int ItemCount {
@@ -663,10 +752,58 @@ native Handle:CreatePanel(Handle:hStyle=INVALID_HANDLE);
  *						Cancel, and End will always be received regardless
  *						of whether they are set or not.  They are also
  *						the only default actions.
+ * @param data			Handle or value to pass through to the menu callback function
  * @return				A new menu Handle.
  * @error				Invalid Handle other than INVALID_HANDLE.
  */
-native Handle:CreateMenuEx(Handle:hStyle=INVALID_HANDLE, MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT);
+native Menu:CreateMenuEx(Handle:hStyle=INVALID_HANDLE, MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT, any:data=INVALID_HANDLE);
+
+/**
+ * Creates a new, empty menu using the default style associated with a new datapack.
+ * @note The datapack is automatically freed when the menu ends.
+ * @note The position of the datapack is not reset or changed for the menu handler.
+ *
+ * @param handler			Function which will receive menu actions.
+ * @param actions			Optionally set which actions to receive.  Select, 
+ *							Cancel, and End will always be received regardless
+ *							of whether they are set or not.  They are also
+ *							the only default actions.
+ * @param datapack			The newly created datapack is passed though this by-reference 
+ *							parameter to the menu callback function.
+ * @return					A new menu Handle.
+ */
+
+stock Menu:CreateDataMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT, &Handle:datapack)
+{
+	datapack = CreateDataPack();
+	Menu menu = CreateMenu(handler, actions, datapack);
+	menu.SetCloseHandle(true);
+	return menu;
+}
+
+/** 
+ * Creates a Menu from a MenuStyle  associated with a new datapack.
+ * @note The datapack is automatically freed when the menu ends.
+ * @note The position of the datapack is not reset or changed for the menu handler.
+ *
+ * @param hStyle		MenuStyle Handle, or INVALID_HANDLE to use the default style.
+ * @param handler		Function which will receive menu actions.
+ * @param actions		Optionally set which actions to receive.  Select, 
+ *						Cancel, and End will always be received regardless
+ *						of whether they are set or not.  They are also
+ *						the only default actions.
+ * @param datapack		The newly created datapack is passed though this by-reference 
+ *						parameter to the menu callback function.
+ * @return				A new menu Handle.
+ * @error				Invalid Handle other than INVALID_HANDLE.
+ */
+stock Menu:CreateDataMenuEx(Handle:hStyle=INVALID_HANDLE, MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT, &Handle:datapack)
+{
+	datapack = CreateDataPack();
+	Menu menu = CreateMenuEx(hStyle, handler, actions, datapack);
+	menu.SetCloseHandle(true);
+	return menu;
+}
 
 /**
  * Returns whether a client is viewing a menu.

@@ -460,6 +460,7 @@ cell_t CMenuHandler::DoAction(IBaseMenu *menu, MenuAction action, cell_t param1,
 	m_pBasic->PushCell((cell_t)action);
 	m_pBasic->PushCell(param1);
 	m_pBasic->PushCell(param2);
+	m_pBasic->PushCell(menu->GetUserData()->UserData);
 	m_pBasic->Execute(&res);
 	return res;
 }
@@ -576,6 +577,7 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 			m_pVoteResults->PushCell(client_array_address);
 			m_pVoteResults->PushCell(results->num_items);
 			m_pVoteResults->PushCell(item_array_address);
+			m_pVoteResults->PushCell(menu->GetUserData()->UserData);
 			m_pVoteResults->Execute(NULL);
 		}
 
@@ -657,7 +659,12 @@ static cell_t CreateMenu(IPluginContext *pContext, const cell_t *params)
 	}
 
 	CMenuHandler *handler = g_MenuHelpers.GetMenuHandler(pFunction, params[2]);
-	IBaseMenu *menu = style->CreateMenu(handler, pContext->GetIdentity());
+
+	MenuUserData *pUserData = new MenuUserData();
+	pUserData->pContext = pContext;
+	pUserData->UserData = params[3];
+
+	IBaseMenu *menu = style->CreateMenu(handler, pContext->GetIdentity(), pUserData);
 
 	Handle_t hndl = menu->GetHandle();
 	if (!hndl)
@@ -1012,6 +1019,32 @@ static cell_t SetMenuNoVoteButton(IPluginContext *pContext, const cell_t *params
 	return (flags == new_flags);
 }
 
+static cell_t SetMenuCloseHandle(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	unsigned int flags = menu->GetMenuOptionFlags();
+
+	if (params[2])
+	{
+		flags |= MENUFLAG_HNDL_CLOSE;
+	} else {
+		flags &= ~MENUFLAG_HNDL_CLOSE;
+	}
+
+	menu->SetMenuOptionFlags(flags);
+	unsigned int new_flags = menu->GetMenuOptionFlags();
+
+	return (flags == new_flags);
+}
+
 static cell_t SetMenuExitBackButton(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = (Handle_t)params[1];
@@ -1135,7 +1168,11 @@ static cell_t CreateMenuEx(IPluginContext *pContext, const cell_t *params)
 
 	CMenuHandler *handler = g_MenuHelpers.GetMenuHandler(pFunction, params[3]);
 
-	IBaseMenu *pMenu = style->CreateMenu(handler, pContext->GetIdentity());
+	MenuUserData *pUserData = new MenuUserData();
+	pUserData->pContext = pContext;
+	pUserData->UserData = params[4];
+
+	IBaseMenu *pMenu = style->CreateMenu(handler, pContext->GetIdentity(), pUserData);
 	hndl = pMenu->GetHandle();
 	if (!hndl)
 	{
@@ -1645,6 +1682,7 @@ REGISTER_NATIVES(menuNatives)
 	{"SetVoteResultCallback",	SetVoteResultCallback},
 	{"VoteMenu",				VoteMenu},
 	{"SetMenuNoVoteButton",		SetMenuNoVoteButton},
+	{"SetMenuCloseHandle",		SetMenuCloseHandle},
 	{NULL,						NULL},
 };
 

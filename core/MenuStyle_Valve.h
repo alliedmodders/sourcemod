@@ -72,7 +72,7 @@ public: //SMGlobalClass
 public: //IMenuStyle
 	const char *GetStyleName();
 	IMenuPanel *CreatePanel();
-	IBaseMenu *CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner);
+	IBaseMenu *CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner, MenuUserData *pUserData);
 	unsigned int GetMaxPageItems();
 	unsigned int GetApproxMemUsage();
 	bool IsSupported() { return true; }
@@ -117,7 +117,7 @@ class CValveMenu : public CBaseMenu
 {
 	friend class CValveMenuDisplay;
 public:
-	CValveMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner);
+	CValveMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner, MenuUserData *pUserData);
 public: //IBaseMenu
 	bool SetExtOption(MenuOption option, const void *valuePtr);
 	IMenuPanel *CreatePanel();

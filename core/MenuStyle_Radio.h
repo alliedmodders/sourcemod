@@ -84,7 +84,7 @@ public: //BaseMenuStyle
 public: //IMenuStyle
 	const char *GetStyleName();
 	IMenuPanel *CreatePanel();
-	IBaseMenu *CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner);
+	IBaseMenu *CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner, MenuUserData *pUserData);
 	unsigned int GetMaxPageItems();
 	unsigned int GetApproxMemUsage();
 public: //IUserMessageListener
@@ -139,7 +139,7 @@ private:
 class CRadioMenu : public CBaseMenu
 {
 public:
-	CRadioMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner);
+	CRadioMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner, MenuUserData *pUserData);
 public:
 	bool SetExtOption(MenuOption option, const void *valuePtr);
 	IMenuPanel *CreatePanel();

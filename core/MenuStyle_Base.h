@@ -130,7 +130,7 @@ protected:
 class CBaseMenu : public IBaseMenu
 {
 public:
-	CBaseMenu(IMenuHandler *pHandler, IMenuStyle *pStyle, IdentityToken_t *pOwner);
+	CBaseMenu(IMenuHandler *pHandler, IMenuStyle *pStyle, IdentityToken_t *pOwner, MenuUserData *pUserData);
 	virtual ~CBaseMenu();
 public:
 	virtual bool AppendItem(const char *info, const ItemDrawInfo &draw);
@@ -152,6 +152,7 @@ public:
 	virtual void SetMenuOptionFlags(unsigned int flags);
 	virtual IMenuHandler *GetHandler();
 	unsigned int GetBaseMemUsage();
+	virtual MenuUserData *GetUserData();
 private:
 	void InternalDelete();
 protected:
@@ -167,6 +168,7 @@ protected:
 	Handle_t m_hHandle;
 	IMenuHandler *m_pHandler;
 	unsigned int m_nFlags;
+	MenuUserData *m_pUserData;
 };
 
 #endif //_INCLUDE_MENUSTYLE_BASE_H
