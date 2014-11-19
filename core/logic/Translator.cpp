@@ -887,6 +887,14 @@ SMCResult Translator::ReadSMC_LeavingSection(const SMCStates *states)
 
 SMCResult Translator::ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
 {
+	size_t len = strlen(key);
+
+	if (len >= sizeof(((Language *)0)->m_code2))
+	{
+		logger->LogError("[SM] Warning encountered parsing languages.cfg file.");
+		logger->LogError("[SM] Invalid language code \"%s\" is too long.", key);
+	}
+
 	AddLanguage(key, value);
 
 	return SMCResult_Continue;
