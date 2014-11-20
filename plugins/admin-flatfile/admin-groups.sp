@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod Admin File Reader Plugin
  * Reads the admin_groups.cfg file.  Do not compile this directly.
@@ -38,13 +38,13 @@
 #define GROUP_PASS_FIRST		1
 #define GROUP_PASS_SECOND		2
 
-static Handle:g_hGroupParser = INVALID_HANDLE;
+static SMCParser g_hGroupParser;
 static GroupId:g_CurGrp = INVALID_GROUP_ID;
 static g_GroupState = GROUP_STATE_NONE;
 static g_GroupPass = 0;
 static bool:g_NeedReparse = false;
 
-public SMCResult:ReadGroups_NewSection(Handle:smc, const String:name[], bool:opt_quotes)
+public SMCResult ReadGroups_NewSection(SMCParser smc, const char[] name, bool opt_quotes)
 {
 	if (g_IgnoreLevel)
 	{
@@ -80,14 +80,13 @@ public SMCResult:ReadGroups_NewSection(Handle:smc, const String:name[], bool:opt
 	return SMCParse_Continue;
 }
 
-public SMCResult:ReadGroups_KeyValue(Handle:smc, 
-										const String:key[], 
-										const String:value[], 
-										bool:key_quotes, 
-										bool:value_quotes)
+public SMCResult ReadGroups_KeyValue(SMCParser smc, 
+										const char[] key, 
+										const char[] value, 
+										bool key_quotes, 
+										bool value_quotes)
 {
-	if (g_CurGrp == INVALID_GROUP_ID
-		|| g_IgnoreLevel)
+	if (g_CurGrp == INVALID_GROUP_ID || g_IgnoreLevel)
 	{
 		return SMCParse_Continue;
 	}
@@ -165,7 +164,7 @@ public SMCResult:ReadGroups_KeyValue(Handle:smc,
 	return SMCParse_Continue;
 }
 
-public SMCResult:ReadGroups_EndSection(Handle:smc)
+public SMCResult ReadGroups_EndSection(SMCParser smc)
 {
 	/* If we're ignoring, skip out */
 	if (g_IgnoreLevel)
@@ -187,7 +186,7 @@ public SMCResult:ReadGroups_EndSection(Handle:smc)
 	return SMCParse_Continue;
 }
 
-public SMCResult:ReadGroups_CurrentLine(Handle:smc, const String:line[], lineno)
+public SMCResult ReadGroups_CurrentLine(SMCParser smc, const char[] line, int lineno)
 {
 	g_CurrentLine = lineno;
 	
@@ -196,14 +195,13 @@ public SMCResult:ReadGroups_CurrentLine(Handle:smc, const String:line[], lineno)
 
 static InitializeGroupParser()
 {
-	if (g_hGroupParser == INVALID_HANDLE)
+	if (!g_hGroupParser)
 	{
-		g_hGroupParser = SMC_CreateParser();
-		SMC_SetReaders(g_hGroupParser,
-					   ReadGroups_NewSection,
-					   ReadGroups_KeyValue,
-					   ReadGroups_EndSection);
-		SMC_SetRawLine(g_hGroupParser, ReadGroups_CurrentLine);
+		g_hGroupParser = SMCParser();
+		g_hGroupParser.OnEnterSection = ReadGroups_NewSection;
+		g_hGroupParser.OnKeyValue = ReadGroups_KeyValue;
+		g_hGroupParser.OnLeaveSection = ReadGroups_EndSection;
+		g_hGroupParser.OnRawLine = ReadGroups_CurrentLine;
 	}
 }
 
@@ -216,11 +214,11 @@ static InternalReadGroups(const String:path[], pass)
 	g_GroupPass = pass;
 	g_NeedReparse = false;
 		
-	new SMCError:err = SMC_ParseFile(g_hGroupParser, path);
+	SMCError err = g_hGroupParser.ParseFile(path);
 	if (err != SMCError_Okay)
 	{
-		decl String:buffer[64];
-		if (SMC_GetErrorString(err, buffer, sizeof(buffer)))
+		char buffer[64];
+		if (g_hGroupParser.GetErrorString(err, buffer, sizeof(buffer)))
 		{
 			ParseError("%s", buffer);
 		} else {
