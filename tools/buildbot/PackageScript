@@ -1,4 +1,4 @@
-# vim: set ts=8 sts=2 sw=2 tw=99 et ft=python: 
+# vim: set ts=8 sts=2 sw=2 tw=99 et ft=python:
 import os
 
 builder.SetBuildFolder('package')
@@ -298,6 +298,7 @@ CopyFiles('plugins/include', 'addons/sourcemod/scripting/include',
     'commandfilters.inc',
     'commandline.inc',
     'console.inc',
+    'convars.inc',
     'core.inc',
     'cstrike.inc',
     'datapack.inc',
