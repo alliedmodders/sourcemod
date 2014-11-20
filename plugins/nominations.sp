@@ -46,8 +46,8 @@ public Plugin myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-Handle g_Cvar_ExcludeOld = null;
-Handle g_Cvar_ExcludeCurrent = null;
+ConVar g_Cvar_ExcludeOld;
+ConVar g_Cvar_ExcludeCurrent;
 
 Menu g_MapMenu = null;
 Handle g_MapList = null;
@@ -262,13 +262,13 @@ void BuildMapMenu()
 	ArrayList excludeMaps;
 	char currentMap[32];
 	
-	if (GetConVarBool(g_Cvar_ExcludeOld))
+	if (g_Cvar_ExcludeOld.BoolValue)
 	{	
 		excludeMaps = ArrayList(ByteCountToCells(33));
 		GetExcludeMapList(excludeMaps);
 	}
 	
-	if (GetConVarBool(g_Cvar_ExcludeCurrent))
+	if (g_Cvar_ExcludeCurrent.BoolValue)
 	{
 		GetCurrentMap(currentMap, sizeof(currentMap));
 	}
@@ -280,7 +280,7 @@ void BuildMapMenu()
 		
 		GetArrayString(g_MapList, i, map, sizeof(map));
 		
-		if (GetConVarBool(g_Cvar_ExcludeCurrent))
+		if (g_Cvar_ExcludeCurrent.BoolValue)
 		{
 			if (StrEqual(map, currentMap))
 			{
@@ -289,7 +289,7 @@ void BuildMapMenu()
 		}
 		
 		/* Dont bother with this check if the current map check passed */
-		if (GetConVarBool(g_Cvar_ExcludeOld) && status == MAPSTATUS_ENABLED)
+		if (g_Cvar_ExcludeOld.BoolValue && status == MAPSTATUS_ENABLED)
 		{
 			if (excludeMaps.FindString(map) != -1)
 			{

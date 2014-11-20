@@ -51,7 +51,7 @@ public Plugin:myinfo =
 
 new Handle:g_hVoteMenu = INVALID_HANDLE;
 
-new Handle:g_Cvar_Limits[3] = {INVALID_HANDLE, ...};
+ConVar g_Cvar_Limits[3] = {null, ...};
 //new Handle:g_Cvar_VoteSay = INVALID_HANDLE;
 
 enum voteType
@@ -262,8 +262,9 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 	}	
 	else if (action == MenuAction_VoteEnd)
 	{
-		decl String:item[64], String:display[64];
-		new Float:percent, Float:limit, votes, totalVotes;
+		char item[64], display[64];
+		float percent, limit;
+		int votes, totalVotes;
 
 		GetMenuVoteInfo(param2, votes, totalVotes);
 		GetMenuItem(menu, param1, item, sizeof(item), _, display, sizeof(display));
@@ -277,7 +278,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 		
 		if (g_voteType != voteType:question)
 		{
-			limit = GetConVarFloat(g_Cvar_Limits[g_voteType]);
+			limit = g_Cvar_Limits[g_voteType].FloatValue;
 		}
 		
 		/* :TODO: g_voteClient[userid] needs to be checked */

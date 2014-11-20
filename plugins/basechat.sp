@@ -49,7 +49,7 @@ public Plugin:myinfo =
 new String:g_ColorNames[13][10] = {"White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "Olive", "Lime", "Violet", "Lightblue"};
 new g_Colors[13][3] = {{255,255,255},{255,0,0},{0,255,0},{0,0,255},{255,255,0},{255,0,255},{0,255,255},{255,128,0},{255,0,128},{128,255,0},{0,255,128},{128,0,255},{0,128,255}};
 
-new Handle:g_Cvar_Chatmode = INVALID_HANDLE;
+ConVar g_Cvar_Chatmode;
 
 new EngineVersion:g_GameEngine = Engine_Unknown;
 
@@ -136,7 +136,7 @@ public Action:OnClientSayCommand(client, const String:command[], const String:sA
 	}
 	else if (strcmp(command, "say_team", false) == 0 || strcmp(command, "say_squad", false) == 0)
 	{
-		if (!CheckCommandAccess(client, "sm_chat", ADMFLAG_CHAT) && !GetConVarBool(g_Cvar_Chatmode))
+		if (!CheckCommandAccess(client, "sm_chat", ADMFLAG_CHAT) && !g_Cvar_Chatmode.BoolValue)
 		{
 			return Plugin_Continue;
 		}

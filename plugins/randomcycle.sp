@@ -43,7 +43,7 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-new Handle:g_Cvar_ExcludeMaps = INVALID_HANDLE;
+ConVar g_Cvar_ExcludeMaps;
 
 new Handle:g_MapList = INVALID_HANDLE;
 new Handle:g_OldMapList = INVALID_HANDLE;
@@ -82,7 +82,7 @@ public Action:Timer_RandomizeNextmap(Handle:timer)
 	decl String:map[32];
 
 	new bool:oldMaps = false;
-	if (GetConVarInt(g_Cvar_ExcludeMaps) && GetArraySize(g_MapList) > GetConVarInt(g_Cvar_ExcludeMaps))
+	if (g_Cvar_ExcludeMaps.IntValue && GetArraySize(g_MapList) > g_Cvar_ExcludeMaps.IntValue)
 	{
 		oldMaps = true;
 	}
@@ -99,7 +99,7 @@ public Action:Timer_RandomizeNextmap(Handle:timer)
 	PushArrayString(g_OldMapList, map);
 	SetNextMap(map);
 
-	if (GetArraySize(g_OldMapList) > GetConVarInt(g_Cvar_ExcludeMaps))
+	if (GetArraySize(g_OldMapList) > g_Cvar_ExcludeMaps.IntValue)
 	{
 		RemoveFromArray(g_OldMapList, 0);
 	}

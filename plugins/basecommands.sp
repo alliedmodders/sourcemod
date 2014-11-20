@@ -85,7 +85,7 @@ public OnPluginStart()
 	SetMenuTitle(g_MapList, "%T", "Please select a map", LANG_SERVER);
 	SetMenuExitBackButton(g_MapList, true);
 	
-	decl String:mapListPath[PLATFORM_MAX_PATH];
+	char mapListPath[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, mapListPath, sizeof(mapListPath), "configs/adminmenu_maplist.ini");
 	SetMapListCompatBind("sm_map menu", mapListPath);
 	
@@ -118,7 +118,7 @@ bool:IsVarProtected(const String:cvar[])
 
 bool:IsClientAllowedToChangeCvar(client, const String:cvarname[])
 {
-	new Handle:hndl = FindConVar(cvarname);
+	ConVar hndl = FindConVar(cvarname);
 
 	new bool:allowed = false;
 	new client_flags = client == 0 ? ADMFLAG_ROOT : GetUserFlagBits(client);
@@ -129,7 +129,7 @@ bool:IsClientAllowedToChangeCvar(client, const String:cvarname[])
 	}
 	else
 	{
-		if (GetConVarFlags(hndl) & FCVAR_PROTECTED)
+		if (hndl.Flags & FCVAR_PROTECTED)
 		{
 			allowed = ((client_flags & ADMFLAG_PASSWORD) == ADMFLAG_PASSWORD);
 		}
@@ -212,7 +212,7 @@ new String:g_FlagNames[FLAG_STRINGS][20] =
 
 CustomFlagsToString(String:buffer[], maxlength, flags)
 {
-	decl String:joins[6][6];
+	char joins[6][6];
 	new total;
 	
 	for (new i=_:Admin_Custom1; i<=_:Admin_Custom6; i++)
@@ -230,7 +230,7 @@ CustomFlagsToString(String:buffer[], maxlength, flags)
 
 FlagsToString(String:buffer[], maxlength, flags)
 {
-	decl String:joins[FLAG_STRINGS+1][32];
+	char joins[FLAG_STRINGS+1][32];
 	new total;
 
 	for (new i=0; i<FLAG_STRINGS; i++)
@@ -241,7 +241,7 @@ FlagsToString(String:buffer[], maxlength, flags)
 		}
 	}
 	
-	decl String:custom_flags[32];
+	char custom_flags[32];
 	if (CustomFlagsToString(custom_flags, sizeof(custom_flags), flags))
 	{
 		Format(joins[total++], 32, "custom(%s)", custom_flags);
@@ -265,7 +265,7 @@ public Action:Command_Cvar(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:cvarname[64];
+	char cvarname[64];
 	GetCmdArg(1, cvarname, sizeof(cvarname));
 	
 	if (client == 0 && StrEqual(cvarname, "protect"))
@@ -281,7 +281,7 @@ public Action:Command_Cvar(client, args)
 		return Plugin_Handled;
 	}
 
-	new Handle:hndl = FindConVar(cvarname);
+	ConVar hndl = FindConVar(cvarname);
 	if (hndl == INVALID_HANDLE)
 	{
 		ReplyToCommand(client, "[SM] %t", "Unable to find cvar", cvarname);
@@ -294,10 +294,10 @@ public Action:Command_Cvar(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:value[255];
+	char value[255];
 	if (args < 2)
 	{
-		GetConVarString(hndl, value, sizeof(value));
+		hndl.GetString(value, sizeof(value));
 
 		ReplyToCommand(client, "[SM] %t", "Value of cvar", cvarname, value);
 		return Plugin_Handled;
@@ -305,7 +305,7 @@ public Action:Command_Cvar(client, args)
 
 	GetCmdArg(2, value, sizeof(value));
 
-	if ((GetConVarFlags(hndl) & FCVAR_PROTECTED) != FCVAR_PROTECTED)
+	if ((hndl.Flags & FCVAR_PROTECTED) != FCVAR_PROTECTED)
 	{
 		ShowActivity2(client, "[SM] ", "%t", "Cvar changed", cvarname, value);
 	}
@@ -316,7 +316,7 @@ public Action:Command_Cvar(client, args)
 
 	LogAction(client, -1, "\"%L\" changed cvar (cvar \"%s\") (value \"%s\")", client, cvarname, value);
 
-	SetConVarString(hndl, value, true);
+	hndl.SetString(value, true);
 
 	return Plugin_Handled;
 }
@@ -330,10 +330,10 @@ public Action:Command_ResetCvar(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:cvarname[64];
+	char cvarname[64];
 	GetCmdArg(1, cvarname, sizeof(cvarname));
 	
-	new Handle:hndl = FindConVar(cvarname);
+	ConVar hndl = FindConVar(cvarname);
 	if (hndl == INVALID_HANDLE)
 	{
 		ReplyToCommand(client, "[SM] %t", "Unable to find cvar", cvarname);
@@ -346,12 +346,12 @@ public Action:Command_ResetCvar(client, args)
 		return Plugin_Handled;
 	}
 
-	ResetConVar(hndl);
+	hndl.RestoreDefault();
 
-	decl String:value[255];
-	GetConVarString(hndl, value, sizeof(value));
+	char value[255];
+	hndl.GetString(value, sizeof(value));
 
-	if ((GetConVarFlags(hndl) & FCVAR_PROTECTED) != FCVAR_PROTECTED)
+	if ((hndl.Flags & FCVAR_PROTECTED) != FCVAR_PROTECTED)
 	{
 		ShowActivity2(client, "[SM] ", "%t", "Cvar changed", cvarname, value);
 	}
@@ -373,7 +373,7 @@ public Action:Command_Rcon(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:argstring[255];
+	char argstring[255];
 	GetCmdArgString(argstring, sizeof(argstring));
 
 	LogAction(client, -1, "\"%L\" console command (cmdline \"%s\")", client, argstring);

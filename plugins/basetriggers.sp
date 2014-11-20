@@ -48,15 +48,15 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-new Handle:g_Cvar_TriggerShow = INVALID_HANDLE;
-new Handle:g_Cvar_TimeleftInterval = INVALID_HANDLE;
-new Handle:g_Cvar_FriendlyFire = INVALID_HANDLE;
+ConVar g_Cvar_TriggerShow;
+ConVar g_Cvar_TimeleftInterval;
+ConVar g_Cvar_FriendlyFire;
 
 new Handle:g_Timer_TimeShow = INVALID_HANDLE;
 
-new Handle:g_Cvar_WinLimit = INVALID_HANDLE;
-new Handle:g_Cvar_FragLimit = INVALID_HANDLE;
-new Handle:g_Cvar_MaxRounds = INVALID_HANDLE;
+ConVar g_Cvar_WinLimit;
+ConVar g_Cvar_FragLimit;
+ConVar g_Cvar_MaxRounds;
 
 #define TIMELEFT_ALL_ALWAYS		0		/* Print to all players */
 #define TIMELEFT_ALL_MAYBE		1		/* Print to all players if sm_trigger_show allows */
@@ -80,7 +80,7 @@ public OnPluginStart()
 	RegConsoleCmd("motd", Command_Motd);
 	RegConsoleCmd("ff", Command_FriendlyFire);
 	
-	HookConVarChange(g_Cvar_TimeleftInterval, ConVarChange_TimeleftInterval);
+	g_Cvar_TimeleftInterval.AddChangeHook(ConVarChange_TimeleftInterval);
 
 	decl String:folder[64];   	 
    	GetGameFolderName(folder, sizeof(folder));
@@ -257,10 +257,10 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 	}
 	else if (strcmp(sArgs, "thetime", false) == 0)
 	{
-		decl String:ctime[64];
+		char ctime[64];
 		FormatTime(ctime, 64, NULL_STRING);
 		
-		if(GetConVarInt(g_Cvar_TriggerShow))
+		if (g_Cvar_TriggerShow.IntValue)
 		{
 			PrintToChatAll("[SM] %t", "Thetime", ctime);
 		}
@@ -275,10 +275,10 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 	}
 	else if (strcmp(sArgs, "currentmap", false) == 0)
 	{
-		decl String:map[64];
+		char map[64];
 		GetCurrentMap(map, sizeof(map));
 		
-		if(GetConVarInt(g_Cvar_TriggerShow))
+		if (g_Cvar_TriggerShow.IntValue)
 		{
 			PrintToChatAll("[SM] %t", "Current Map", map);
 		}
@@ -289,10 +289,10 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 	}
 	else if (strcmp(sArgs, "nextmap", false) == 0)
 	{
-		decl String:map[32];
+		char map[32];
 		GetNextMap(map, sizeof(map));
 			
-		if(GetConVarInt(g_Cvar_TriggerShow))
+		if (g_Cvar_TriggerShow.IntValue)
 		{
 			if (mapchooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
 			{
@@ -323,15 +323,14 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 
 ShowTimeLeft(client, who)
 {
-	new bool:lastround = false;
-	new bool:written = false;
-	new bool:notimelimit = false;
+	bool lastround = false;
+	bool written = false;
+	bool notimelimit = false;
 	
-	decl String:finalOutput[1024];
-	finalOutput[0] = 0;
+	char finalOutput[1024];
 	
 	if (who == TIMELEFT_ALL_ALWAYS
-		|| (who == TIMELEFT_ALL_MAYBE && GetConVarInt(g_Cvar_TriggerShow)))
+		|| (who == TIMELEFT_ALL_MAYBE && g_Cvar_TriggerShow.IntValue))
 	{
 		client = 0;	
 	}
@@ -362,9 +361,9 @@ ShowTimeLeft(client, who)
 	
 	if (!lastround)
 	{
-		if (g_Cvar_WinLimit != INVALID_HANDLE)
+		if (g_Cvar_WinLimit)
 		{
-			new winlimit = GetConVarInt(g_Cvar_WinLimit);
+			int winlimit = g_Cvar_WinLimit.IntValue;
 			
 			if (winlimit > 0)
 			{
@@ -399,9 +398,9 @@ ShowTimeLeft(client, who)
 			}
 		}
 		
-		if (g_Cvar_FragLimit != INVALID_HANDLE)
+		if (g_Cvar_FragLimit)
 		{
-			new fraglimit = GetConVarInt(g_Cvar_FragLimit);
+			int fraglimit = g_Cvar_FragLimit.IntValue;
 			
 			if (fraglimit > 0)
 			{
@@ -436,9 +435,9 @@ ShowTimeLeft(client, who)
 			}
 		}
 		
-		if (g_Cvar_MaxRounds != INVALID_HANDLE)
+		if (g_Cvar_MaxRounds)
 		{
-			new maxrounds = GetConVarInt(g_Cvar_MaxRounds);
+			int maxrounds = g_Cvar_MaxRounds.IntValue;
 			
 			if (maxrounds > 0)
 			{
@@ -486,7 +485,7 @@ ShowTimeLeft(client, who)
 	}
 
 	if (who == TIMELEFT_ALL_ALWAYS
-		|| (who == TIMELEFT_ALL_MAYBE && GetConVarInt(g_Cvar_TriggerShow)))
+		|| (who == TIMELEFT_ALL_MAYBE && g_Cvar_TriggerShow.IntValue))
 	{
 		PrintToChatAll("[SM] %s", finalOutput);
 	}
@@ -503,10 +502,10 @@ ShowTimeLeft(client, who)
 
 ShowFriendlyFire(client)
 {
-	if (g_Cvar_FriendlyFire != INVALID_HANDLE)
+	if (g_Cvar_FriendlyFire)
 	{
-		decl String:phrase[24];
-		if (GetConVarBool(g_Cvar_FriendlyFire))
+		char phrase[24];
+		if (g_Cvar_FriendlyFire.BoolValue)
 		{
 			strcopy(phrase, sizeof(phrase), "Friendly Fire On");
 		}
@@ -515,7 +514,7 @@ ShowFriendlyFire(client)
 			strcopy(phrase, sizeof(phrase), "Friendly Fire Off");
 		}
 	
-		if(GetConVarInt(g_Cvar_TriggerShow))
+		if (g_Cvar_TriggerShow.IntValue)
 		{
 			PrintToChatAll("[SM] %t", phrase);
 		}
