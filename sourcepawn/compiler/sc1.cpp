@@ -4593,14 +4593,20 @@ static void decl_enum(int vclass)
    * pc_addtag() here
    */
   if (lex(&val,&str)==tLABEL) {
-    int flags = ENUMTAG;
-    if (isupper(*str))
-      flags |= FIXEDTAG;
-    tag = pc_addtag_flags(str, flags);
-    spec = deduce_layout_spec_by_tag(tag);
-    if (!can_redef_layout_spec(spec, Layout_Enum))
-      error(110, str, layout_spec_name(spec));
-    explicittag=TRUE;
+    if (pc_findtag(str) == 0) {
+      error(169);
+      tag = 0;
+      explicittag = FALSE;
+    } else {
+      int flags = ENUMTAG;
+      if (isupper(*str))
+        flags |= FIXEDTAG;
+      tag = pc_addtag_flags(str, flags);
+      spec = deduce_layout_spec_by_tag(tag);
+      if (!can_redef_layout_spec(spec, Layout_Enum))
+        error(110, str, layout_spec_name(spec));
+      explicittag=TRUE;
+    }
   } else {
     lexpush();
     tag=0;
@@ -4619,6 +4625,8 @@ static void decl_enum(int vclass)
       if (!can_redef_layout_spec(spec, Layout_Enum))
         error(110, enumname, layout_spec_name(spec));
     } else {
+      error(168);
+
       spec = deduce_layout_spec_by_name(enumname);
       if (!can_redef_layout_spec(spec, Layout_Enum))
         error(110, enumname, layout_spec_name(spec));
