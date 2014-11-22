@@ -5645,7 +5645,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
       if (argcnt>=sMAXARGS)
         error(45);
       if (decl.name[0] == PUBLIC_CHAR)
-        error(56,name);                 /* function arguments cannot be public */
+        error(56, decl.name); /* function arguments cannot be public */
 
       if (decl.type.ident == iARRAY)
         decl.type.ident = iREFARRAY;
@@ -5659,7 +5659,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
       doarg(&decl,(argcnt+3)*sizeof(cell),fpublic,chkshadow,&arg);
 
       if ((sym->usage & uPUBLIC) && arg.hasdefault)
-        error(59,name);       /* arguments of a public function may not have a default value */
+        error(59, decl.name); /* arguments of a public function may not have a default value */
 
       if ((sym->usage & uPROTOTYPED)==0) {
         /* redimension the argument list, add the entry */
