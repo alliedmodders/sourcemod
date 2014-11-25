@@ -19,7 +19,6 @@
 			"game"		"ageofchivalry"
 			"game"		"zps"
 			"game"		"bg2"
-			"game"		"pvkii"
 			"game"		"gesource"
 			"game"		"RnLBeta"
 			"game"		"obsidian"
