@@ -1,5 +1,19 @@
 SourceMod Changelog
 
+SourceMod 1.6.3 [2014-11-25]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.6.3_Release_Notes
+
+User Changes:
+ - Updated game support for TF2, CS:GO, No More Room in Hell, Insurgency, PVK2 and Fistful of Frags.
+ - Made changes to make TF2, CSS, DoDS, HL2DM, and SDK 2013 mods less likely to break on game update (PR 174, PR 192).
+ - Added support for longer key names in languages.cfg (to fix Portuguese) (bug 6282, PR 208).
+
+Developer Changes:
+ - Updated TF2 player condition and holiday enums (Ross "Powerlord" Bemrose) (PR 183, PR 181).
+ - Add support for TF2 player conditions >= 96 for condition functions/forwards (PR 205).
+
+----------------------------------------------------------
 SourceMod 1.6.2 [2014-09-20]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.6.2_Release_Notes
