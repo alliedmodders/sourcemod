@@ -91,31 +91,20 @@ size_t IsAuthIdConnected(char *authID)
 	for (int playerIndex = playerhelpers->GetMaxClients()+1; --playerIndex > 0;)
 	{
 		player = playerhelpers->GetGamePlayer(playerIndex);
-		if (player == NULL || !player->IsConnected())
+		if (player == NULL || !player->IsAuthorized())
 		{
 			continue;
 		}
 		
-		authString = player->GetAuthString();
-		if (authString == NULL || authString[0] == '\0' || strcmp(authString, authID) != 0)
+		if (!strcmp(player->GetAuthString(), authID)
+			|| !strcmp(player->GetSteam2Id(), authID)
+			|| !strcmp(player->GetSteam3Id(), authID)
+			)
 		{
-			continue;
+			return playerIndex;
 		}
-		
-		authString = player->GetSteam2Id();
-		if (authString == NULL || authString[0] == '\0' || strcmp(authString, authID) != 0)
-		{
-			continue;
-		}
-		
-		authString = player->GetSteam3Id();
-		if (authString == NULL || authString[0] == '\0' || strcmp(authString, authID) != 0)
-		{
-			continue;
-		}
-
-		return playerIndex;
 	}
+
 	return 0;
 }
 
