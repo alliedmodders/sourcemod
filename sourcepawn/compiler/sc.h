@@ -562,6 +562,7 @@ int pc_enablewarning(int number,int enable);
 const char *pc_tagname(int tag);
 int parse_decl(declinfo_t *decl, int flags);
 const char *type_to_name(int tag);
+bool parse_new_typename(const token_t *tok, int *tagp);
 
 /*
  * Functions called from the compiler (to be implemented by you)

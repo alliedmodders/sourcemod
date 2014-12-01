@@ -157,7 +157,6 @@ static void inst_datetime_defines(void);
 static void inst_binary_name(char *binfname);
 static int operatorname(char *name);
 static int parse_new_typename(const token_t *tok);
-static bool parse_new_typename(const token_t *tok, int *outp);
 static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags);
 static int reparse_old_decl(declinfo_t *decl, int flags);
 static int reparse_new_decl(declinfo_t *decl, int flags);
@@ -3116,7 +3115,7 @@ static int parse_new_typename(const token_t *tok)
   return -1;
 }
 
-static bool parse_new_typename(const token_t *tok, int *tagp)
+bool parse_new_typename(const token_t *tok, int *tagp)
 {
   int tag = parse_new_typename(tok);
   if (tag >= 0)

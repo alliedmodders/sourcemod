@@ -1,0 +1,1 @@
+(2) : error 144: void cannot be used as a variable type

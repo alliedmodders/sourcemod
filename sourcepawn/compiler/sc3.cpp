@@ -1660,6 +1660,33 @@ static int hier2(value *lval)
     callfunction(target, NULL, lval, TRUE);
     return FALSE;
   }
+  case tVIEW_AS:                /* newer tagname override */
+  {
+    needtoken('<');
+    int tag = 0;
+    {
+      token_t tok;
+      lextok(&tok);
+      if (!parse_new_typename(&tok, &tag))
+        tag = 0;
+    }
+    needtoken('>');
+
+    if (tag == pc_tag_void)
+      error(144);
+
+    lval->cmptag = tag;
+    lvalue = hier12(lval);
+
+    if ((lval->tag & OBJECTTAG) || (tag & OBJECTTAG)) {
+      matchtag(tag, lval->tag, MATCHTAG_COERCE);
+    } else if ((tag & FUNCTAG) != (lval->tag & FUNCTAG)) {
+      // Warn: unsupported cast.
+      error(237);
+    }
+    lval->tag = tag;
+    return lvalue;
+  }
   case tLABEL:                  /* tagname override */
     tag=pc_addtag(st);
     lval->cmptag=tag;
