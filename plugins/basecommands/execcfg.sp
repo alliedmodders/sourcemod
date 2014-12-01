@@ -110,7 +110,7 @@ SMCParser config_parser;
 ParseConfigs()
 {
 	if (!config_parser)
-		config_parser = SMCParser();
+		config_parser = new SMCParser();
 	
 	config_parser.OnEnterSection = NewSection;
 	config_parser.OnLeaveSection = EndSection;

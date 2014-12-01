@@ -212,7 +212,7 @@ static InitializeUserParser()
 {
 	if (!g_hUserParser)
 	{
-		g_hUserParser = SMCParser();
+		g_hUserParser = new SMCParser();
 		g_hUserParser.OnEnterSection = ReadUsers_NewSection;
 		g_hUserParser.OnKeyValue = ReadUsers_KeyValue;
 		g_hUserParser.OnLeaveSection = ReadUsers_EndSection;

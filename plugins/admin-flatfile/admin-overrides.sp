@@ -165,7 +165,7 @@ static InitializeOverrideParsers()
 {
 	if (!g_hOldOverrideParser)
 	{
-		g_hOldOverrideParser = SMCParser();
+		g_hOldOverrideParser = new SMCParser();
 		g_hOldOverrideParser.OnEnterSection = ReadOldOverrides_NewSection;
 		g_hOldOverrideParser.OnKeyValue = ReadOverrides_KeyValue;
 		g_hOldOverrideParser.OnLeaveSection = ReadOldOverrides_EndSection;
@@ -173,7 +173,7 @@ static InitializeOverrideParsers()
 	}
 	if (!g_hNewOverrideParser)
 	{
-		g_hNewOverrideParser = SMCParser();
+		g_hNewOverrideParser = new SMCParser();
 		g_hNewOverrideParser.OnEnterSection = ReadNewOverrides_NewSection;
 		g_hNewOverrideParser.OnKeyValue = ReadOverrides_KeyValue;
 		g_hNewOverrideParser.OnLeaveSection = ReadNewOverrides_EndSection;

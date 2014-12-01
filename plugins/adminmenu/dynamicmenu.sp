@@ -79,7 +79,7 @@ BuildDynamicMenu()
 	
 	char executeBuffer[32];
 	
-	KeyValues kvMenu = KeyValues("Commands");
+	KeyValues kvMenu = new KeyValues("Commands");
 	kvMenu.SetEscapeSequences(true); 
 	
 	char file[256];
@@ -325,7 +325,7 @@ BuildDynamicMenu()
 ParseConfigs()
 {
 	if (!g_configParser)
-		g_configParser = SMCParser();
+		g_configParser = new SMCParser();
 	
         g_configParser.OnEnterSection = NewSection;
         g_configParser.OnKeyValue = KeyValue;

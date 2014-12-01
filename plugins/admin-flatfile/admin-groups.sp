@@ -197,7 +197,7 @@ static InitializeGroupParser()
 {
 	if (!g_hGroupParser)
 	{
-		g_hGroupParser = SMCParser();
+		g_hGroupParser = new SMCParser();
 		g_hGroupParser.OnEnterSection = ReadGroups_NewSection;
 		g_hGroupParser.OnKeyValue = ReadGroups_KeyValue;
 		g_hGroupParser.OnLeaveSection = ReadGroups_EndSection;

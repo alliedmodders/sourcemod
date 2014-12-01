@@ -17,7 +17,7 @@ public OnPluginStart()
 
 public Action:RunTests(argc)
 {
-  StringMap map = StringMap();
+  StringMap map = new StringMap();
 
   for (new i = 0; i < 64; i++) {
     char buffer[24];

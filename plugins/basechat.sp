@@ -368,7 +368,7 @@ SendDialogToOne(client, color, const String:text[], any:...)
 	new String:message[100];
 	VFormat(message, sizeof(message), text, 4);	
 	
-	KeyValues kv = KeyValues("Stuff", "title", message);
+	KeyValues kv = new KeyValues("Stuff", "title", message);
 	kv.SetColor("color", g_Colors[color][0], g_Colors[color][1], g_Colors[color][2], 255);
 	kv.SetNum("level", 1);
 	kv.SetNum("time", 10);

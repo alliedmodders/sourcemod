@@ -99,7 +99,7 @@ LoadBanReasons()
 {
 	delete g_hKvBanReasons;
 
-	g_hKvBanReasons = KeyValues("banreasons");
+	g_hKvBanReasons = new KeyValues("banreasons");
 
 	if (g_hKvBanReasons.ImportFromFile(g_BanReasonsPath))
 	{
