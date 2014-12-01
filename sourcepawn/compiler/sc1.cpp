@@ -3594,6 +3594,7 @@ static void define_constructor(methodmap_t *map, methodmap_method_t *method)
 
   sym = addsym(map->name, 0, iPROXY, sGLOBAL, 0, 0);
   sym->target = method->target;
+  method->target->flags |= flgPROXIED;
 }
 
 // Current lexer position is, we've parsed "public", an optional "native", and
@@ -4034,6 +4035,8 @@ methodmap_method_t *parse_method(methodmap_t *map)
 
   if (is_dtor)
     map->dtor = method;
+  if (is_ctor)
+    map->ctor = method;
 
   require_newline(is_bind || (target->usage & uNATIVE));
   return method;

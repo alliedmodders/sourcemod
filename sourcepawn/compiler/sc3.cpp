@@ -1619,6 +1619,47 @@ static int hier2(value *lval)
       lval->constval=-lval->constval;
     } /* if */
     return FALSE;
+  case tNEW:                    /* call nullable methodmap constructor */
+  {
+    tok = lex(&val, &st);
+    if (tok != tSYMBOL)
+      return error(20, st);     /* illegal symbol name */
+
+    symbol *target = NULL;
+    methodmap_t *methodmap = methodmap_find_by_name(st);
+    if (!methodmap)
+      error(116, st);
+    else if (!methodmap->nullable)
+      error(171, methodmap->name);
+    else if (!methodmap->ctor)
+      error(172, methodmap->name);
+    else
+      target = methodmap->ctor->target;
+
+    if (!target) {
+      needtoken('(');
+      int depth = 1;
+      // Eat tokens until we get a newline or EOF or ')' or ';'
+      while (true) {
+        if (peek_same_line() == tEOL)
+          return FALSE;
+        if ((tok = lex(&val, &st)) == 0)
+          return FALSE;
+        if (tok == ')') {
+          if (--depth == 0)
+            return FALSE;
+        }
+        if (tok == ';')
+          return FALSE;
+        if (tok == '(')
+          depth++;
+      }
+    }
+
+    needtoken('(');
+    callfunction(target, NULL, lval, TRUE);
+    return FALSE;
+  }
   case tLABEL:                  /* tagname override */
     tag=pc_addtag(st);
     lval->cmptag=tag;
@@ -2223,6 +2264,16 @@ restart:
         funcdisplayname(symname,sym->name);
         error(4,symname);             /* function not defined */
       } /* if */
+
+      if (sym->flags & flgPROXIED) {
+        // Only constructors should be proxied, but we check anyway.
+        assert(!implicitthis);
+        if (methodmap_t *methodmap = methodmap_find_by_tag(sym->tag)) {
+          if (sym == methodmap->ctor->target && methodmap->nullable)
+            error(170, methodmap->name);
+        }
+      }
+
       callfunction(sym,implicitthis,lval1,TRUE);
       if (lexpeek('.')) {
         lvalue = FALSE;

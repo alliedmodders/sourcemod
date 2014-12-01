@@ -113,6 +113,7 @@ typedef struct methodmap_s
 
   // Shortcut.
   methodmap_method_t *dtor;
+  methodmap_method_t *ctor;
 } methodmap_t;
 
 /**

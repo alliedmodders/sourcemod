@@ -227,6 +227,7 @@ typedef struct s_symbol {
 #define uRETNONE  0x10
 
 #define flgDEPRECATED 0x01  /* symbol is deprecated (avoid use) */
+#define flgPROXIED    0x02  /* symbol has incoming proxy */
 
 #define uCOUNTOF  0x20  /* set in the "hasdefault" field of the arginfo struct */
 #define uTAGOF    0x40  /* set in the "hasdefault" field of the arginfo struct */
@@ -396,6 +397,7 @@ enum TokenKind {
   tBEGIN,
   tBREAK,
   tCASE,
+  tCAST_TO,
   tCELLSOF,
   tCHAR,
   tCONST,
@@ -417,6 +419,7 @@ enum TokenKind {
   tGOTO,
   tIF,
   tINT,
+  tLET,
   tMETHODMAP,
   tNATIVE,
   tNEW,
@@ -437,6 +440,8 @@ enum TokenKind {
   tTHIS,
   tTYPEDEF,
   tUNION,
+  tVAR,
+  tVIEW_AS,
   tVOID,
   tWHILE,
   /* compiler directives */
