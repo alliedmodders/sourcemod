@@ -246,6 +246,7 @@ struct methodmap_method_s;
 
 typedef struct value_s {
   symbol *sym;          /* symbol in symbol table, NULL for (constant) expression */
+  symbol *proxy;        /* original symbol if resolved via a proxy */
   cell constval;        /* value of the constant expression (if ident==iCONSTEXPR)
                          * also used for the size of a literal array */
   int tag;              /* tag (of the expression) */
@@ -640,7 +641,7 @@ void delete_symbol(symbol *root,symbol *sym);
 void delete_symbols(symbol *root,int level,int del_labels,int delete_functions);
 int refer_symbol(symbol *entry,symbol *bywhom);
 void markusage(symbol *sym,int usage);
-symbol *findglb(const char *name,int filter);
+symbol *findglb(const char *name,int filter,symbol **alias = NULL);
 symbol *findloc(const char *name);
 symbol *findconst(const char *name,int *matchtag);
 symbol *finddepend(const symbol *parent);

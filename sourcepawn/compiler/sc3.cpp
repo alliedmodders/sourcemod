@@ -2265,7 +2265,12 @@ restart:
         error(4,symname);             /* function not defined */
       } /* if */
 
-      if (sym->flags & flgPROXIED) {
+      // Check whether we're calling a constructor. This is a bit hacky, since
+      // we're relying on whatever the lval state is.
+      if ((sym->flags & flgPROXIED) &&
+          lval1->proxy &&
+          lval1->proxy->target == sym)
+      {
         // Only constructors should be proxied, but we check anyway.
         assert(!implicitthis);
         if (methodmap_t *methodmap = methodmap_find_by_tag(sym->tag)) {
@@ -2310,6 +2315,7 @@ restart:
 
     funcenum_t *fe = funcenum_for_symbol(target);
     lval1->sym = NULL;
+    lval1->proxy = NULL;
     lval1->ident = iCONSTEXPR;
     lval1->constval = (public_index << 1) | 1;
     lval1->tag = fe->tag;
@@ -2396,7 +2402,8 @@ static int primary(value *lval)
       } /* if */
     } /* if */
     /* now try a global variable */
-    if ((sym=findglb(st,sSTATEVAR))!=0) {
+    symbol *alias = NULL;
+    if ((sym = findglb(st, sSTATEVAR, &alias)) != 0) {
       if (sym->ident==iFUNCTN || sym->ident==iREFFUNC) {
         /* if the function is only in the table because it was inserted as a
          * stub in the first pass (i.e. it was "used" but never declared or
@@ -2408,6 +2415,7 @@ static int primary(value *lval)
         if ((sym->usage & uDEFINE)==0)
           error(17,st);
         lval->sym=sym;
+        lval->proxy=alias;
         lval->ident=sym->ident;
         lval->tag=sym->tag;
         if (sym->ident==iARRAY || sym->ident==iREFARRAY) {
@@ -2431,6 +2439,7 @@ static int primary(value *lval)
     assert(sym!=NULL);
     assert(sym->ident==iFUNCTN || sym->ident==iREFFUNC);
     lval->sym=sym;
+    lval->proxy=alias;
     lval->ident=sym->ident;
     lval->tag=sym->tag;
     return FALSE;       /* return 0 for function (not an lvalue) */
@@ -2446,6 +2455,7 @@ static int primary(value *lval)
 static void clear_value(value *lval)
 {
   lval->sym=NULL;
+  lval->proxy=NULL;
   lval->constval=0L;
   lval->tag=0;
   lval->ident=0;

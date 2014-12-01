@@ -2999,7 +2999,7 @@ void markusage(symbol *sym,int usage)
  *
  *  Returns a pointer to the global symbol (if found) or NULL (if not found)
  */
-symbol *findglb(const char *name,int filter)
+symbol *findglb(const char *name, int filter, symbol **alias)
 {
   /* find a symbol with a matching automaton first */
   symbol *sym=NULL;
@@ -3024,8 +3024,11 @@ symbol *findglb(const char *name,int filter)
   if (sym==NULL)
     sym=FindInHashTable(sp_Globals,name,fcurrent);
 
-  if (sym && sym->ident == iPROXY)
+  if (sym && sym->ident == iPROXY) {
+    if (alias)
+      *alias = sym;
     return sym->target;
+  }
 
   return sym;
 }
