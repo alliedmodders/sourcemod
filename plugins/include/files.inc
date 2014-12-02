@@ -423,7 +423,7 @@ native bool WriteFileLine(Handle hndl, const char[] format, any:...);
  */
 stock int ReadFileCell(Handle hndl, int &data, int size)
 {
-    int ret;
+	int ret;
 	int array[1];
 	
 	if ((ret = ReadFile(hndl, array, 1, size)) == 1)
