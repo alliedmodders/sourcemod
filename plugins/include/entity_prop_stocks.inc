@@ -371,6 +371,48 @@ stock SetEntityRenderFx(entity, RenderFx:fx)
 }
 
 /**
+ * Gets an entity's color.
+ *
+ * @param entity	Entity index.
+ * @return			RenderColor value.
+ * @error			Invalid entity index, or lack of mod compliance.
+ */
+stock GetEntityRenderColor(entity)
+{
+	static bool:gotconfig = false;
+	static String:prop[32];
+	static colors[4];
+	
+	if (!gotconfig)
+	{
+		new Handle:gc = LoadGameConfigFile("core.games");
+		new bool:exists = GameConfGetKeyValue(gc, "m_clrRender", prop, sizeof(prop));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(prop, sizeof(prop), "m_clrRender");
+		}
+		
+		gotconfig = true;
+	}
+	
+	new offset = GetEntSendPropOffs(entity, prop);
+	
+	if (offset <= 0)
+	{
+		ThrowError("GetEntityRenderColor not supported by this mod");
+	}
+	
+	colors[0] = GetEntData(entity, offset, 1);
+	colors[1] = GetEntData(entity, offset + 1, 1);
+	colors[2] = GetEntData(entity, offset + 2, 1);
+	colors[3] = GetEntData(entity, offset + 3, 1);
+
+	return colors;
+}
+
+/**
  * Sets an entity's color.
  *
  * @param entity	Entity index
