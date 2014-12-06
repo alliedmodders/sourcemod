@@ -550,7 +550,13 @@ static cell_t FindValueInArray(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
 	}
 
-	size_t blocknumber = (size_t) params[3];
+	// the blocknumber is not guaranteed to always be passed
+	size_t blocknumber = 0;
+	if (params[0] >= 3)
+	{
+		blocknumber = (size_t) params[3];
+	}
+
 	if (blocknumber >= array->blocksize())
 	{
 		return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", blocknumber, array->blocksize());
