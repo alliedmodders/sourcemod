@@ -571,7 +571,7 @@ stock ShowMOTDPanel(client, const String:title[], const String:msg[], type=MOTDP
 	char num[3];
 	IntToString(type, num, sizeof(num));
 
-	KeyValues kv = KeyValues("data");
+	KeyValues kv = new KeyValues("data");
 	kv.SetString("title", title);
 	kv.SetString("type", num);
 	kv.SetString("msg", msg);
@@ -593,7 +593,7 @@ stock DisplayAskConnectBox(client, Float:time, const String:ip[], const String:p
 	char destination[288];
 	FormatEx(destination, sizeof(destination), "%s/%s", ip, password);
 
-	KeyValues kv = KeyValues("data");
+	KeyValues kv = new KeyValues("data");
 	kv.SetFloat("time", time);
 	kv.SetString("title", destination);
 	CreateDialog(client, kv, DialogType_AskConnect);

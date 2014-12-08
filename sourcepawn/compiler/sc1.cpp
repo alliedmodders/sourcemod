@@ -157,7 +157,6 @@ static void inst_datetime_defines(void);
 static void inst_binary_name(char *binfname);
 static int operatorname(char *name);
 static int parse_new_typename(const token_t *tok);
-static bool parse_new_typename(const token_t *tok, int *outp);
 static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags);
 static int reparse_old_decl(declinfo_t *decl, int flags);
 static int reparse_new_decl(declinfo_t *decl, int flags);
@@ -3116,7 +3115,7 @@ static int parse_new_typename(const token_t *tok)
   return -1;
 }
 
-static bool parse_new_typename(const token_t *tok, int *tagp)
+bool parse_new_typename(const token_t *tok, int *tagp)
 {
   int tag = parse_new_typename(tok);
   if (tag >= 0)
@@ -3594,6 +3593,7 @@ static void define_constructor(methodmap_t *map, methodmap_method_t *method)
 
   sym = addsym(map->name, 0, iPROXY, sGLOBAL, 0, 0);
   sym->target = method->target;
+  method->target->flags |= flgPROXIED;
 }
 
 // Current lexer position is, we've parsed "public", an optional "native", and
@@ -4034,6 +4034,8 @@ methodmap_method_t *parse_method(methodmap_t *map)
 
   if (is_dtor)
     map->dtor = method;
+  if (is_ctor)
+    map->ctor = method;
 
   require_newline(is_bind || (target->usage & uNATIVE));
   return method;
@@ -4170,7 +4172,7 @@ static void dodelete()
   switch (ident) {
     case iFUNCTN:
     case iREFFUNC:
-      error(115, "functions");
+      error(167, "functions");
       return;
 
     case iARRAY:
@@ -4180,7 +4182,7 @@ static void dodelete()
     {
       symbol *sym = sval.val.sym;
       if (!sym || sym->dim.array.level > 0) {
-        error(115, "arrays");
+        error(167, "arrays");
         return;
       }
       break;
@@ -4188,13 +4190,13 @@ static void dodelete()
   }
 
   if (sval.val.tag == 0) {
-    error(115, "primitive types or enums");
+    error(167, "integers");
     return;
   }
 
   methodmap_t *map = methodmap_find_by_tag(sval.val.tag);
   if (!map) {
-    error(115, pc_tagname(sval.val.tag));
+    error(115, "type", pc_tagname(sval.val.tag));
     return;
   }
 
@@ -4593,14 +4595,20 @@ static void decl_enum(int vclass)
    * pc_addtag() here
    */
   if (lex(&val,&str)==tLABEL) {
-    int flags = ENUMTAG;
-    if (isupper(*str))
-      flags |= FIXEDTAG;
-    tag = pc_addtag_flags(str, flags);
-    spec = deduce_layout_spec_by_tag(tag);
-    if (!can_redef_layout_spec(spec, Layout_Enum))
-      error(110, str, layout_spec_name(spec));
-    explicittag=TRUE;
+    if (pc_findtag(str) == 0) {
+      error(169);
+      tag = 0;
+      explicittag = FALSE;
+    } else {
+      int flags = ENUMTAG;
+      if (isupper(*str))
+        flags |= FIXEDTAG;
+      tag = pc_addtag_flags(str, flags);
+      spec = deduce_layout_spec_by_tag(tag);
+      if (!can_redef_layout_spec(spec, Layout_Enum))
+        error(110, str, layout_spec_name(spec));
+      explicittag=TRUE;
+    }
   } else {
     lexpush();
     tag=0;
@@ -4619,6 +4627,8 @@ static void decl_enum(int vclass)
       if (!can_redef_layout_spec(spec, Layout_Enum))
         error(110, enumname, layout_spec_name(spec));
     } else {
+      error(168);
+
       spec = deduce_layout_spec_by_name(enumname);
       if (!can_redef_layout_spec(spec, Layout_Enum))
         error(110, enumname, layout_spec_name(spec));
@@ -5637,7 +5647,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
       if (argcnt>=sMAXARGS)
         error(45);
       if (decl.name[0] == PUBLIC_CHAR)
-        error(56,name);                 /* function arguments cannot be public */
+        error(56, decl.name); /* function arguments cannot be public */
 
       if (decl.type.ident == iARRAY)
         decl.type.ident = iREFARRAY;
@@ -5651,7 +5661,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
       doarg(&decl,(argcnt+3)*sizeof(cell),fpublic,chkshadow,&arg);
 
       if ((sym->usage & uPUBLIC) && arg.hasdefault)
-        error(59,name);       /* arguments of a public function may not have a default value */
+        error(59, decl.name); /* arguments of a public function may not have a default value */
 
       if ((sym->usage & uPROTOTYPED)==0) {
         /* redimension the argument list, add the entry */

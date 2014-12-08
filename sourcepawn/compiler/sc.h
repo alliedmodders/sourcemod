@@ -227,6 +227,7 @@ typedef struct s_symbol {
 #define uRETNONE  0x10
 
 #define flgDEPRECATED 0x01  /* symbol is deprecated (avoid use) */
+#define flgPROXIED    0x02  /* symbol has incoming proxy */
 
 #define uCOUNTOF  0x20  /* set in the "hasdefault" field of the arginfo struct */
 #define uTAGOF    0x40  /* set in the "hasdefault" field of the arginfo struct */
@@ -245,6 +246,7 @@ struct methodmap_method_s;
 
 typedef struct value_s {
   symbol *sym;          /* symbol in symbol table, NULL for (constant) expression */
+  symbol *proxy;        /* original symbol if resolved via a proxy */
   cell constval;        /* value of the constant expression (if ident==iCONSTEXPR)
                          * also used for the size of a literal array */
   int tag;              /* tag (of the expression) */
@@ -396,6 +398,7 @@ enum TokenKind {
   tBEGIN,
   tBREAK,
   tCASE,
+  tCAST_TO,
   tCELLSOF,
   tCHAR,
   tCONST,
@@ -417,6 +420,7 @@ enum TokenKind {
   tGOTO,
   tIF,
   tINT,
+  tLET,
   tMETHODMAP,
   tNATIVE,
   tNEW,
@@ -437,6 +441,8 @@ enum TokenKind {
   tTHIS,
   tTYPEDEF,
   tUNION,
+  tVAR,
+  tVIEW_AS,
   tVOID,
   tWHILE,
   /* compiler directives */
@@ -556,6 +562,7 @@ int pc_enablewarning(int number,int enable);
 const char *pc_tagname(int tag);
 int parse_decl(declinfo_t *decl, int flags);
 const char *type_to_name(int tag);
+bool parse_new_typename(const token_t *tok, int *tagp);
 
 /*
  * Functions called from the compiler (to be implemented by you)
@@ -635,7 +642,7 @@ void delete_symbol(symbol *root,symbol *sym);
 void delete_symbols(symbol *root,int level,int del_labels,int delete_functions);
 int refer_symbol(symbol *entry,symbol *bywhom);
 void markusage(symbol *sym,int usage);
-symbol *findglb(const char *name,int filter);
+symbol *findglb(const char *name,int filter,symbol **alias = NULL);
 symbol *findloc(const char *name);
 symbol *findconst(const char *name,int *matchtag);
 symbol *finddepend(const symbol *parent);

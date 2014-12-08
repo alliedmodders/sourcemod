@@ -35,32 +35,28 @@ public ReadSimpleUsers()
 {
 	BuildPath(Path_SM, g_Filename, sizeof(g_Filename), "configs/admins_simple.ini");
 	
-	new Handle:file = OpenFile(g_Filename, "rt");
-	if (file == INVALID_HANDLE)
+	File file = OpenFile(g_Filename, "rt");
+	if (!file)
 	{
 		ParseError("Could not open file!");
 		return;
 	}
 	
-	while (!IsEndOfFile(file))
+	while (!file.EndOfFile())
 	{
-		decl String:line[255];
-		if (!ReadFileLine(file, line, sizeof(line)))
-		{
+		char line[255];
+		if (!file.ReadLine(line, sizeof(line)))
 			break;
-		}
 		
 		/* Trim comments */
-		new len = strlen(line);
-		new bool:ignoring = false;
-		for (new i=0; i<len; i++)
+		int len = strlen(line);
+		bool ignoring = false;
+		for (int i=0; i<len; i++)
 		{
 			if (ignoring)
 			{
 				if (line[i] == '"')
-				{
 					ignoring = false;
-				}
 			} else {
 				if (line[i] == '"')
 				{
@@ -89,7 +85,7 @@ public ReadSimpleUsers()
 		ReadAdminLine(line);
 	}
 	
-	CloseHandle(file);
+	file.Close();
 }
 
 

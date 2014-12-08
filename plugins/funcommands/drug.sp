@@ -58,24 +58,25 @@ KillDrug(client)
 	new flags = (0x0001 | 0x0010);
 	new color[4] = { 0, 0, 0, 0 };
 
-	new Handle:message = StartMessageEx(g_FadeUserMsgId, clients, 1);
-
+	Handle message = StartMessageEx(g_FadeUserMsgId, clients, 1);
 	if (GetUserMessageType() == UM_Protobuf)
 	{
-		PbSetInt(message, "duration", duration);
-		PbSetInt(message, "hold_time", holdtime);
-		PbSetInt(message, "flags", flags);
-		PbSetColor(message, "clr", color);
+		Protobuf pb = UserMessageToProtobuf(message);
+		pb.SetInt("duration", duration);
+		pb.SetInt("hold_time", holdtime);
+		pb.SetInt("flags", flags);
+		pb.SetColor("clr", color);
 	}
 	else
 	{	
-		BfWriteShort(message, duration);
-		BfWriteShort(message, holdtime);
-		BfWriteShort(message, flags);
-		BfWriteByte(message, color[0]);
-		BfWriteByte(message, color[1]);
-		BfWriteByte(message, color[2]);
-		BfWriteByte(message, color[3]);
+		BfWrite bf = UserMessageToBfWrite(message);
+		bf.WriteShort(duration);
+		bf.WriteShort(holdtime);
+		bf.WriteShort(flags);
+		bf.WriteByte(color[0]);
+		bf.WriteByte(color[1]);
+		bf.WriteByte(color[2]);
+		bf.WriteByte(color[3]);
 	}
 	
 	EndMessage();
@@ -177,14 +178,14 @@ public Action:Timer_Drug(Handle:timer, any:client)
 	color[1] = GetRandomInt(0,255);
 	color[2] = GetRandomInt(0,255);
 
-	new Handle:message = StartMessageEx(g_FadeUserMsgId, clients, 1);
-	
+	Handle message = StartMessageEx(g_FadeUserMsgId, clients, 1);
 	if (GetUserMessageType() == UM_Protobuf)
 	{
-		PbSetInt(message, "duration", duration);
-		PbSetInt(message, "hold_time", holdtime);
-		PbSetInt(message, "flags", flags);
-		PbSetColor(message, "clr", color);
+		Protobuf pb = UserMessageToProtobuf(message);
+		pb.SetInt("duration", duration);
+		pb.SetInt("hold_time", holdtime);
+		pb.SetInt("flags", flags);
+		pb.SetColor("clr", color);
 	}
 	else
 	{

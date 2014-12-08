@@ -12,6 +12,59 @@
 "Games"
 {
 	/* Pirates, Vikings and Knights II */
+	
+	/* GameRules */
+	"#default"
+	{
+		"Offsets"
+		{
+			/* Offset into CreateGameRulesObject */
+			"g_pGameRules"
+			{
+				"windows"	"5"
+				"linux"		"9"
+			}
+		}
+		
+		"Signatures"
+		{
+			/* This signature sometimes has multiple matches, but this
+			 * does not matter as g_pGameRules is involved in all of them.
+			 * The same g_pGameRules offset applies to each match.
+			 *
+			 * Sometimes this block of bytes is at the beginning of the static
+			 * CreateGameRulesObject function and sometimes it is in the middle
+			 * of an entirely different function. This depends on the game.
+			 */
+			"CreateGameRulesObject"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x07"
+				"linux"		"\x55\x89\xE5\x56\x53\x83\xEC\x2A\xA1\x2A\x2A\x2A\x2A\x8B\x5D\x08\x85\xC0\x74\x08\x8B\x10\x89"
+			}
+			"g_pGameRules"
+			{
+				"library"	"server"
+				"mac"		"@g_pGameRules"
+			}
+		}
+	}
+	
+	/* CBaseEntityOutput::FireOutput */
+	"pvkii"
+	{
+		"Signatures"
+		{
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\x53\x8B\xC1\xC7\x2A\x2A\x2A\x2A\x2A\x00\x56\x57\x89"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x2A\x2A\x2A\x2A\x8B\x55\x08\x8B\x75\x14\x8B\x5A\x14\x85\xDB\x0F\x84"
+				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+		}
+	}
+	
 	"pvkii"
 	{
 		"Offsets"
@@ -19,80 +72,101 @@
 			/* CBasePlayer */
 			"GiveNamedItem"
 			{
-				"windows"	"354"
-				"linux"		"355"
+				"windows"	"403"
+				"linux"		"404"
+				"mac"		"404"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"241"
-				"linux"		"242"
+				"windows"	"272"
+				"linux"		"273"
+				"mac"		"273"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"239"
-				"linux"		"240"
+				"windows"	"270"
+				"linux"		"271"
+				"mac"		"271"
 			}
 			"Ignite"
 			{
-				"windows"	"196"
-				"linux"		"197"
+				"windows"	"211"
+				"linux"		"212"
+				"mac"		"212"
 			}
 			"Extinguish"
 			{
-				"windows"	"200"
-				"linux"		"201"
+				"windows"	"215"
+				"linux"		"216"
+				"mac"		"216"
 			}
 			"Teleport"
 			{
-				"windows"	"101"
-				"linux"		"102"
+				"windows"	"109"
+				"linux"		"110"
+				"mac"		"110"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"395"
-				"linux"		"395"
+				"windows"	"442"
+				"linux"		"442"
+				"mac"		"442"
 			}
 			"GetVelocity"
 			{
-				"windows"	"131"
-				"linux"		"132"
+				"windows"	"141"
+				"linux"		"142"
+				"mac"		"142"
 			}
 			"EyeAngles"
 			{
-				"windows"	"123"
-				"linux"		"124"
+				"windows"	"132"
+				"linux"		"133"
+				"mac"		"133"
 			}
 			"AcceptInput"
 			{
-				"windows"	"35"
-				"linux"		"36"
+				"windows"	"37"
+				"linux"		"38"
+				"mac"		"38"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"24"
-				"linux"		"25"
+				"windows"	"25"
+				"linux"		"26"
+				"mac"		"26"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"232"
-				"linux"		"233"
+				"windows"	"263"
+				"linux"		"264"
+				"mac"		"264"
 			}
 			"Activate"
 			{
-				"windows"	"32"
-				"linux"		"33"
+				"windows"	"34"
+				"linux"		"35"
+				"mac"		"35"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"374"
-				"linux"		"375"
+				"windows"	"421"
+				"linux"		"422"
+				"mac"		"422"
 			}
-			"FireOutputBackup"
+			"GiveAmmo"
 			{
-				"windows"	"6"
-				"linux"		"10"
+				"windows"	"254"
+				"linux"		"255"
+				"mac"		"255"
 			}
 		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"	"CPVK2GameRulesProxy"
+		}
+		
 		"Signatures"
 		{
 			"FireOutput"

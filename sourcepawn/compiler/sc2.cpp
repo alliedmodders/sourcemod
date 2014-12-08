@@ -1961,12 +1961,13 @@ const char *sc_tokens[] = {
          "...", "..", "::",
          "assert",
          "*begin", "break",
-         "case", "cellsof", "char", "const", "continue",
+         "case", "cast_to", "cellsof", "char", "const", "continue",
          "decl", "default", "defined", "delete", "do",
          "else", "*end", "enum", "exit",
          "for", "forward", "funcenum", "functag", "function",
          "goto",
          "if", "int",
+         "let",
          "methodmap",
          "native", "new", "null", "__nullable__",
          "object", "operator",
@@ -1975,7 +1976,7 @@ const char *sc_tokens[] = {
          "sizeof", "sleep", "static", "stock", "struct", "switch",
          "tagof", "*then", "this", "typedef",
          "union",
-         "void",
+         "var", "view_as", "void",
          "while",
          "#assert", "#define", "#else", "#elseif", "#emit", "#endif", "#endinput",
          "#endscript", "#error", "#file", "#if", "#include", "#line", "#pragma",
@@ -2998,7 +2999,7 @@ void markusage(symbol *sym,int usage)
  *
  *  Returns a pointer to the global symbol (if found) or NULL (if not found)
  */
-symbol *findglb(const char *name,int filter)
+symbol *findglb(const char *name, int filter, symbol **alias)
 {
   /* find a symbol with a matching automaton first */
   symbol *sym=NULL;
@@ -3023,8 +3024,11 @@ symbol *findglb(const char *name,int filter)
   if (sym==NULL)
     sym=FindInHashTable(sp_Globals,name,fcurrent);
 
-  if (sym && sym->ident == iPROXY)
+  if (sym && sym->ident == iPROXY) {
+    if (alias)
+      *alias = sym;
     return sym->target;
+  }
 
   return sym;
 }

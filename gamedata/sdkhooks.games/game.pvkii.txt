@@ -1,119 +1,153 @@
 "Games"
 {
-	/* Pirates, Vikings and Knights II 2.3 */
+	/* Pirates, Vikings and Knights II */
 	"pvkii"
 	{
 		"Offsets"
 		{
+			"Blocked"
+			{
+				"windows"	"103"
+				"linux"		"104"
+				"mac"		"104"
+			}
 			"EndTouch"
 			{
-				"windows"	"93"
-				"linux"		"94"
+				"windows"	"101"
+				"linux"		"102"
+				"mac"		"102"
 			}
 			"FireBullets"
 			{
-				"windows"	"105"
-				"linux"		"106"
+				"windows"	"113"
+				"linux"		"114"
+				"mac"		"114"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"118"
+				"linux"		"119"
+				"mac"		"119"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"178"
+				"linux"		"180"
+				"mac"		"180"
 			}
 			"OnTakeDamage"
 			{
-				"windows"	"61"
-				"linux"		"62"
+				"windows"	"63"
+				"linux"		"64"
+				"mac"		"64"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"274"
+				"linux"		"275"
+				"mac"		"275"
 			}
 			"PreThink"
 			{
-				"windows"	"292"
-				"linux"		"293"
+				"windows"	"335"
+				"linux"		"336"
+				"mac"		"336"
 			}
 			"PostThink"
 			{
-				"windows"	"293"
-				"linux"		"294"
+				"windows"	"336"
+				"linux"		"337"
+				"mac"		"337"
+			}
+			"Reload"
+			{
+				"windows"	"272"
+				"linux"		"273"
+				"mac"		"273"
 			}
 			"SetTransmit"
 			{
-				"windows"	"20"
-				"linux"		"21"
+				"windows"	"21"
+				"linux"		"22"
+				"mac"		"22"
 			}
 			"ShouldCollide"
 			{
-				"windows"	"15"
-				"linux"		"16"
+				"windows"	"16"
+				"linux"		"17"
+				"mac"		"17"
 			}
 			"Spawn"
 			{
-				"windows"	"22"
-				"linux"		"23"
+				"windows"	"23"
+				"linux"		"24"
+				"mac"		"24"
 			}
 			"StartTouch"
 			{
-				"windows"	"91"
-				"linux"		"92"
+				"windows"	"99"
+				"linux"		"100"
+				"mac"		"100"
 			}
 			"Think"
 			{
-				"windows"	"46"
-				"linux"		"47"
+				"windows"	"48"
+				"linux"		"49"
+				"mac"		"49"
 			}
 			"Touch"
 			{
-				"windows"	"92"
-				"linux"		"93"
+				"windows"	"100"
+				"linux"		"101"
+				"mac"		"101"
 			}
 			"TraceAttack"
 			{
-				"windows"	"59"
-				"linux"		"60"
-			}
-			"UpdateOnRemove"
-			{
-				"windows"	"98"
-				"linux"		"99"
+				"windows"	"61"
+				"linux"		"62"
+				"mac"		"62"
 			}
 			"Use"
 			{
-				"windows"	"90"
-				"linux"		"91"
+				"windows"	"98"
+				"linux"		"99"
+				"mac"		"99"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"145"
-				"linux"		"146"
+				"windows"	"158"
+				"linux"		"159"
+				"mac"		"159"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"237"
-				"linux"		"238"
+				"windows"	"268"
+				"linux"		"269"
+				"mac"		"269"
 			}
 			"Weapon_CanUse"
 			{
-				"windows"	"231"
-				"linux"		"232"
+				"windows"	"262"
+				"linux"		"263"
+				"mac"		"263"
 			}
 			"Weapon_Drop"
 			{
-				"windows"	"234"
-				"linux"		"235"
+				"windows"	"265"
+				"linux"		"266"
+				"mac"		"266"
 			}
 			"Weapon_Equip"
 			{
-				"windows"	"232"
-				"linux"		"233"
+				"windows"	"263"
+				"linux"		"264"
+				"mac"		"264"
 			}
 			"Weapon_Switch"
 			{
-				"windows"	"235"
-				"linux"		"236"
-			}
-		}
-		
-		"Signatures"
-		{
-			"IEntityFactoryDictionary"
-			{
-				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
+				"windows"	"266"
+				"linux"		"267"
+				"mac"		"267"
 			}
 		}
 	}

@@ -241,18 +241,17 @@ stock FindTarget(client, const String:target[], bool:nobots = false, bool:immuni
  	
  	ClearArray(array);
  
- 	new Handle:file = OpenFile(mapPath, "rt");
- 	if (file == INVALID_HANDLE)
- 	{
+ 	File file = OpenFile(mapPath, "rt");
+ 	if (!file) {
  		LogError("Could not open file: %s", mapPath);
- 		
  		return 0;
  	}
  
 	LogMessage("Loading maps from file: %s", mapPath);
 	
- 	decl String:buffer[64], len;
- 	while (!IsEndOfFile(file) && ReadFileLine(file, buffer, sizeof(buffer)))
+	int len;
+ 	char buffer[64];
+ 	while (!file.IsEndOfFile() && file.ReadLine(buffer, sizeof(buffer)))
  	{
  		TrimString(buffer);
  
@@ -274,6 +273,6 @@ stock FindTarget(client, const String:target[], bool:nobots = false, bool:immuni
  		PushArrayString(array, buffer);
  	}
  
- 	CloseHandle(file);
+	file.Close();
  	return GetArraySize(array);
 }

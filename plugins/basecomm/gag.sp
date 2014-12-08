@@ -233,11 +233,11 @@ PerformMute(client, target, bool:silent=false)
 PerformUnMute(client, target, bool:silent=false)
 {
 	g_Muted[target] = false;
-	if (GetConVarInt(g_Cvar_Deadtalk) == 1 && !IsPlayerAlive(target))
+	if (g_Cvar_Deadtalk.IntValue == 1 && !IsPlayerAlive(target))
 	{
 		SetClientListeningFlags(target, VOICE_LISTENALL);
 	}
-	else if (GetConVarInt(g_Cvar_Deadtalk) == 2 && !IsPlayerAlive(target))
+	else if (g_Cvar_Deadtalk.IntValue == 2 && !IsPlayerAlive(target))
 	{
 		SetClientListeningFlags(target, VOICE_TEAM);
 	}
@@ -306,11 +306,11 @@ PerformUnSilence(client, target)
 	{
 		g_Muted[target] = false;
 		
-		if (GetConVarInt(g_Cvar_Deadtalk) == 1 && !IsPlayerAlive(target))
+		if (g_Cvar_Deadtalk.IntValue == 1 && !IsPlayerAlive(target))
 		{
 			SetClientListeningFlags(target, VOICE_LISTENALL);
 		}
-		else if (GetConVarInt(g_Cvar_Deadtalk) == 2 && !IsPlayerAlive(target))
+		else if (g_Cvar_Deadtalk.IntValue == 2 && !IsPlayerAlive(target))
 		{
 			SetClientListeningFlags(target, VOICE_TEAM);
 		}

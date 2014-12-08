@@ -100,7 +100,7 @@ public OnMapStart()
 
 public OnAllPluginsLoaded()
 {
-	hAdminMenu = TopMenu(DefaultCategoryHandler);
+	hAdminMenu = new TopMenu(DefaultCategoryHandler);
 	
 	obj_playercmds = hAdminMenu.AddCategory("PlayerCommands", DefaultCategoryHandler);
 	obj_servercmds = hAdminMenu.AddCategory("ServerCommands", DefaultCategoryHandler);

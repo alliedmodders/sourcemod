@@ -319,7 +319,19 @@ static const String:TFResourceNames[TFResourceType][] =
 };
 
 /**
- * Get's a Clients current class.
+ * Gets a client's current team.
+ * 
+ * @param client		Client index.
+ * @return				Current TFTeam of client.
+ * @error				Invalid client index.
+ */
+stock TFTeam:TF2_GetClientTeam(client)
+{
+	return TFTeam:GetClientTeam(client);
+}
+
+/**
+ * Gets a client's current class.
  *
  * @param client		Player's index.
  * @return				Current TFClassType of player.
@@ -331,14 +343,14 @@ stock TFClassType:TF2_GetPlayerClass(client)
 }
 
 /**
- * Set's a Clients class.
+ * Sets a client's class.
  *
  * Note: If setting player class in a player spawn hook weapons should be set to false.
  *
  * @param client		Player's index.
  * @param classType		TFClassType class symbol.
- * @param weapons		This paramater is ignored.
- * @param persistent	If true changes the players desired class so the change stays after death.
+ * @param weapons		This parameter is ignored.
+ * @param persistent	If true, changes the player's desired class so the change stays after death.
  * @noreturn
  * @error				Invalid client index.
  */
@@ -369,12 +381,12 @@ stock TF2_GetPlayerResourceData(client, TFResourceType:type)
 	}
 	
 	new offset = FindSendPropInfo("CTFPlayerResource", TFResourceNames[type]);
-		
+	
 	if (offset < 1)
 	{
 		return -1;	
 	}
-				
+	
 	new entity = TF2_GetResourceEntity();
 	
 	if (entity == -1)
@@ -405,12 +417,12 @@ stock bool:TF2_SetPlayerResourceData(client, TFResourceType:type, any:value)
 	}
 	
 	new offset = FindSendPropInfo("CTFPlayerResource", TFResourceNames[type]);
-						
+	
 	if (offset < 1)
 	{
 		return false;	
 	}
-				
+	
 	new entity = TF2_GetResourceEntity();
 	
 	if (entity == -1)
@@ -512,10 +524,18 @@ stock bool:TF2_IsPlayerInCondition(client, TFCond:cond)
 			return true;
 		}
 	}
-	else
+	else if (_:cond < 96)
 	{
 		new bit = (1 << (_:cond - 64));
 		if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx2") & bit) == bit)
+		{
+			return true;
+		}
+	}
+	else
+	{
+		new bit = (1 << (_:cond - 96));
+		if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx3") & bit) == bit)
 		{
 			return true;
 		}

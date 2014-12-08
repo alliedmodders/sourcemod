@@ -35,13 +35,12 @@
 
 #include <iplayerinfo.h>
 
-typedef struct condflags_s {
-	uint64_t upper;
-	uint64_t lower;
-} condflags_t;
-condflags_t condflags_empty = { 0, 0 };
+#include <bitvec.h>
 
-condflags_t g_PlayerConds[SM_MAXPLAYERS+1];
+const int TF_MAX_CONDITIONS = 128;
+
+typedef CBitVec<TF_MAX_CONDITIONS> condbitvec_t;
+condbitvec_t g_PlayerActiveConds[SM_MAXPLAYERS + 1];
 
 IForward *g_addCondForward = NULL;
 IForward *g_removeCondForward = NULL;
@@ -49,26 +48,39 @@ IForward *g_removeCondForward = NULL;
 int playerCondOffset = -1;
 int playerCondExOffset = -1;
 int playerCondEx2Offset = -1;
+int playerCondEx3Offset = -1;
 int conditionBitsOffset = -1;
 
 bool g_bIgnoreRemove;
 
 #define MAX_CONDS (sizeof(uint64_t) * 8)
 
-inline condflags_t GetPlayerConds(CBaseEntity *pPlayer)
+inline void GetPlayerConds(CBaseEntity *pPlayer, condbitvec_t *pOut)
 {
-	condflags_t result;
-	uint32_t playerCond    =  *(uint32_t *)((intptr_t)pPlayer + playerCondOffset);
-	uint32_t condBits      =  *(uint32_t *)((intptr_t)pPlayer + conditionBitsOffset);
-	uint32_t playerCondEx  =  *(uint32_t *)((intptr_t)pPlayer + playerCondExOffset);
-	uint32_t playerCondEx2 =  *(uint32_t *)((intptr_t)pPlayer + playerCondEx2Offset);
+	uint32_t tmp =  *(uint32_t *)((intptr_t)pPlayer + playerCondOffset);
+	         tmp |= *(uint32_t *)((intptr_t)pPlayer + conditionBitsOffset);
+	pOut->SetDWord(0, tmp);
+	         tmp =  *(uint32_t *)((intptr_t)pPlayer + playerCondExOffset);
+	pOut->SetDWord(1, tmp);
+	         tmp =  *(uint32_t *)((intptr_t)pPlayer + playerCondEx2Offset);
+	pOut->SetDWord(2, tmp);
+	         tmp =  *(uint32_t *)((intptr_t) pPlayer + playerCondEx3Offset);
+	pOut->SetDWord(3, tmp);
+}
 
-	uint64_t playerCondExAdj = playerCondEx;
-	playerCondExAdj <<= 32;
+inline void CondBitVecAndNot(const condbitvec_t &src, const condbitvec_t &addStr, condbitvec_t *out)
+{
+	static_assert(TF_MAX_CONDITIONS == 128, "CondBitVecAndNot hack is hardcoded for 128-bit bitvec.");
 
-	result.lower = playerCond|condBits|playerCondExAdj;
-	result.upper = playerCondEx2;
-	return result;
+	// CBitVec has And and Not, but not a simple, combined AndNot.
+	// We'll also treat the halves as two 64-bit ints instead of four 32-bit ints
+	// as a minor optimization (maybe?) that the compiler is not making itself.
+	uint64 *pDest           = (uint64 *)out->Base();
+	const uint64 *pOperand1 = (const uint64 *) src.Base();
+	const uint64 *pOperand2 = (const uint64 *) addStr.Base();
+
+	pDest[0] = pOperand1[0] & ~pOperand2[0];
+	pDest[1] = pOperand1[1] & ~pOperand2[1];
 }
 
 void Conditions_OnGameFrame(bool simulating)
@@ -76,73 +88,46 @@ void Conditions_OnGameFrame(bool simulating)
 	if (!simulating)
 		return;
 
-	condflags_t oldconds;
-	condflags_t newconds;
+	static condbitvec_t newconds;
 	
-	condflags_t addedconds;
-	condflags_t removedconds;
+	static condbitvec_t addedconds;
+	static condbitvec_t removedconds;
 
 	int maxClients = gpGlobals->maxClients;
 	for (int i = 1; i <= maxClients; i++)
 	{
 		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(i);
-		if (!pPlayer || !pPlayer->IsInGame())
-			continue;
-
-		IPlayerInfo *info = pPlayer->GetPlayerInfo();
-		if (info->IsHLTV() || info->IsReplay())
+		if (!pPlayer->IsInGame() || pPlayer->IsSourceTV() || pPlayer->IsReplay())
 			continue;
 
 		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
-		oldconds = g_PlayerConds[i];
-		newconds = GetPlayerConds(pEntity);
+		condbitvec_t &oldconds = g_PlayerActiveConds[i];
+		GetPlayerConds(pEntity, &newconds);
 
-		if (oldconds.lower == newconds.lower && oldconds.upper == newconds.upper)
+		if (oldconds == newconds)
 			continue;
 
-		addedconds.lower = newconds.lower &~ oldconds.lower;
-		removedconds.lower = oldconds.lower &~ newconds.lower;
-		addedconds.upper = newconds.upper &~ oldconds.upper;
-		removedconds.upper = oldconds.upper &~ newconds.upper;
+		CondBitVecAndNot(newconds, oldconds, &addedconds);
+		CondBitVecAndNot(oldconds, newconds, &removedconds);
 
-		uint64_t j;
-		uint64_t bit;
-
-		uint64_t maxbit = MAX(addedconds.lower, addedconds.upper);
-		for (j = 0; j < MAX_CONDS && (bit = ((uint64_t)1 << j)) <= maxbit; j++)
+		int bit;
+		bit = -1;
+		while ((bit = addedconds.FindNextSetBit(bit + 1)) != -1)
 		{
-			if ((addedconds.lower & bit) == bit)
-			{
-				g_addCondForward->PushCell(i);
-				g_addCondForward->PushCell(j & 0xFFFFFFFF);
-				g_addCondForward->Execute(NULL, NULL);
-			}
-			if ((addedconds.upper & bit) == bit)
-			{
-				g_addCondForward->PushCell(i);
-				g_addCondForward->PushCell((j+64) & 0xFFFFFFFF);
-				g_addCondForward->Execute(NULL, NULL);
-			}
+			g_addCondForward->PushCell(i);
+			g_addCondForward->PushCell(bit);
+			g_addCondForward->Execute(NULL, NULL);
 		}
 
-		maxbit = MAX(removedconds.lower, removedconds.upper);
-		for (j = 0; j < MAX_CONDS && (bit = ((uint64_t)1 << j)) <= maxbit; j++)
+		bit = -1;
+		while ((bit = removedconds.FindNextSetBit(bit + 1)) != -1)
 		{
-			if ((removedconds.lower & bit) == bit)
-			{
-				g_removeCondForward->PushCell(i);
-				g_removeCondForward->PushCell(j & 0xFFFFFFFF);
-				g_removeCondForward->Execute(NULL, NULL);
-			}
-			if ((removedconds.upper & bit) == bit)
-			{
-				g_removeCondForward->PushCell(i);
-				g_removeCondForward->PushCell((j+64) & 0xFFFFFFFF);
-				g_removeCondForward->Execute(NULL, NULL);
-			}
+			g_removeCondForward->PushCell(i);
+			g_removeCondForward->PushCell(bit);
+			g_removeCondForward->Execute(NULL, NULL);
 		}
 
-		g_PlayerConds[i] = newconds;
+		g_PlayerActiveConds[i] = newconds;
 	}
 }
 
@@ -181,7 +166,15 @@ bool InitialiseConditionChecks()
 	
 	playerCondEx2Offset = prop.actual_offset;
 
-	if (playerCondOffset == -1 || playerCondExOffset == -1 || conditionBitsOffset == -1 || playerCondEx2Offset == -1)
+	if (!gamehelpers->FindSendPropInfo("CTFPlayer", "m_nPlayerCondEx3", &prop))
+	{
+		g_pSM->LogError(myself, "Failed to find m_nPlayerCondEx3 prop offset");
+		return false;
+	}
+
+	playerCondEx3Offset = prop.actual_offset;
+
+	if (playerCondOffset == -1 || playerCondExOffset == -1 || conditionBitsOffset == -1 || playerCondEx2Offset == -1 || playerCondEx3Offset == -1)
 		return false;
 	
 	int maxClients = gpGlobals->maxClients;
@@ -191,7 +184,7 @@ bool InitialiseConditionChecks()
 		if (!pPlayer || !pPlayer->IsInGame())
 			continue;
 
-		g_PlayerConds[i] = GetPlayerConds(gamehelpers->ReferenceToEntity(i));
+		GetPlayerConds(gamehelpers->ReferenceToEntity(i), &g_PlayerActiveConds[i]);
 	}
 
 	g_pSM->AddGameFrameHook(Conditions_OnGameFrame);
@@ -201,7 +194,7 @@ bool InitialiseConditionChecks()
 
 void Conditions_OnClientPutInServer(int client)
 {
-	g_PlayerConds[client] = condflags_empty;
+	g_PlayerActiveConds[client].ClearAll();
 }
 
 void RemoveConditionChecks()

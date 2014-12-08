@@ -54,7 +54,7 @@ enum PhraseParseState
 
 struct Language
 {
-	char m_code2[4];
+	char m_code2[32];
 	int m_CanonicalName;
 };
 

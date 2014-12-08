@@ -1619,6 +1619,74 @@ static int hier2(value *lval)
       lval->constval=-lval->constval;
     } /* if */
     return FALSE;
+  case tNEW:                    /* call nullable methodmap constructor */
+  {
+    tok = lex(&val, &st);
+    if (tok != tSYMBOL)
+      return error(20, st);     /* illegal symbol name */
+
+    symbol *target = NULL;
+    methodmap_t *methodmap = methodmap_find_by_name(st);
+    if (!methodmap)
+      error(116, st);
+    else if (!methodmap->nullable)
+      error(171, methodmap->name);
+    else if (!methodmap->ctor)
+      error(172, methodmap->name);
+    else
+      target = methodmap->ctor->target;
+
+    if (!target) {
+      needtoken('(');
+      int depth = 1;
+      // Eat tokens until we get a newline or EOF or ')' or ';'
+      while (true) {
+        if (peek_same_line() == tEOL)
+          return FALSE;
+        if ((tok = lex(&val, &st)) == 0)
+          return FALSE;
+        if (tok == ')') {
+          if (--depth == 0)
+            return FALSE;
+        }
+        if (tok == ';')
+          return FALSE;
+        if (tok == '(')
+          depth++;
+      }
+    }
+
+    needtoken('(');
+    callfunction(target, NULL, lval, TRUE);
+    return FALSE;
+  }
+  case tVIEW_AS:                /* newer tagname override */
+  {
+    needtoken('<');
+    int tag = 0;
+    {
+      token_t tok;
+      lextok(&tok);
+      if (!parse_new_typename(&tok, &tag))
+        tag = 0;
+    }
+    needtoken('>');
+
+    if (tag == pc_tag_void)
+      error(144);
+
+    lval->cmptag = tag;
+    lvalue = hier12(lval);
+
+    if ((lval->tag & OBJECTTAG) || (tag & OBJECTTAG)) {
+      matchtag(tag, lval->tag, MATCHTAG_COERCE);
+    } else if ((tag & FUNCTAG) != (lval->tag & FUNCTAG)) {
+      // Warn: unsupported cast.
+      error(237);
+    }
+    lval->tag = tag;
+    return lvalue;
+  }
   case tLABEL:                  /* tagname override */
     tag=pc_addtag(st);
     lval->cmptag=tag;
@@ -2223,6 +2291,21 @@ restart:
         funcdisplayname(symname,sym->name);
         error(4,symname);             /* function not defined */
       } /* if */
+
+      // Check whether we're calling a constructor. This is a bit hacky, since
+      // we're relying on whatever the lval state is.
+      if ((sym->flags & flgPROXIED) &&
+          lval1->proxy &&
+          lval1->proxy->target == sym)
+      {
+        // Only constructors should be proxied, but we check anyway.
+        assert(!implicitthis);
+        if (methodmap_t *methodmap = methodmap_find_by_tag(sym->tag)) {
+          if (sym == methodmap->ctor->target && methodmap->nullable)
+            error(170, methodmap->name);
+        }
+      }
+
       callfunction(sym,implicitthis,lval1,TRUE);
       if (lexpeek('.')) {
         lvalue = FALSE;
@@ -2259,6 +2342,7 @@ restart:
 
     funcenum_t *fe = funcenum_for_symbol(target);
     lval1->sym = NULL;
+    lval1->proxy = NULL;
     lval1->ident = iCONSTEXPR;
     lval1->constval = (public_index << 1) | 1;
     lval1->tag = fe->tag;
@@ -2345,7 +2429,8 @@ static int primary(value *lval)
       } /* if */
     } /* if */
     /* now try a global variable */
-    if ((sym=findglb(st,sSTATEVAR))!=0) {
+    symbol *alias = NULL;
+    if ((sym = findglb(st, sSTATEVAR, &alias)) != 0) {
       if (sym->ident==iFUNCTN || sym->ident==iREFFUNC) {
         /* if the function is only in the table because it was inserted as a
          * stub in the first pass (i.e. it was "used" but never declared or
@@ -2357,6 +2442,7 @@ static int primary(value *lval)
         if ((sym->usage & uDEFINE)==0)
           error(17,st);
         lval->sym=sym;
+        lval->proxy=alias;
         lval->ident=sym->ident;
         lval->tag=sym->tag;
         if (sym->ident==iARRAY || sym->ident==iREFARRAY) {
@@ -2380,6 +2466,7 @@ static int primary(value *lval)
     assert(sym!=NULL);
     assert(sym->ident==iFUNCTN || sym->ident==iREFFUNC);
     lval->sym=sym;
+    lval->proxy=alias;
     lval->ident=sym->ident;
     lval->tag=sym->tag;
     return FALSE;       /* return 0 for function (not an lvalue) */
@@ -2395,6 +2482,7 @@ static int primary(value *lval)
 static void clear_value(value *lval)
 {
   lval->sym=NULL;
+  lval->proxy=NULL;
   lval->constval=0L;
   lval->tag=0;
   lval->ident=0;
