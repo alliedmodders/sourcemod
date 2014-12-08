@@ -64,6 +64,7 @@ struct Plugin
 #include <textparse>
 #include <clients>
 #include <console>
+#include <convars>
 #include <events>
 #include <bitbuffer>
 #include <protobuf>
@@ -74,6 +75,7 @@ struct Plugin
 #include <banning>
 #include <commandfilters>
 #include <nextmap>
+#include <commandline>
 
 enum APLRes
 {
@@ -82,18 +84,6 @@ enum APLRes
 	APLRes_SilentFailure	/**< Plugin shouldn't load but do so silently */
 };
 
-/**
- * Declare this as a struct in your plugin to expose its information.
- * Example:
- *
- * public Plugin:myinfo =
- * {
- *    name = "My Plugin",
- *    //etc
- * };
- */
-public Plugin:myinfo;
- 
 /**
  * Called when the plugin is fully initialized and all known external references 
  * are resolved. This is only called once in the lifetime of the plugin, and is 
@@ -144,7 +134,7 @@ forward APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
  *
  * @noreturn
  */
-forward OnPluginEnd();
+forward void OnPluginEnd();
 
 /**
  * Called when the plugin's pause status is changing.
@@ -152,14 +142,14 @@ forward OnPluginEnd();
  * @param pause			True if the plugin is being paused, false otherwise.
  * @noreturn
  */
-forward OnPluginPauseChange(bool:pause);
+forward void OnPluginPauseChange(bool:pause);
 
 /**
  * Called before every server frame.  Note that you should avoid
  * doing expensive computations here, and you should declare large
  * local arrays using 'decl' instead of 'new'.
  */
-forward OnGameFrame();
+forward void OnGameFrame();
 
 /**
  * Called when the map is loaded.

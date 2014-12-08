@@ -1,4 +1,4 @@
-native CloseHandle(Handle:this);
+native CloseHandle(Handle:handle);
 
 enum Handle {
 	INVALID_HANDLE = 0,

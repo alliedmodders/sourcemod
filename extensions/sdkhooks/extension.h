@@ -90,8 +90,8 @@ enum SDKHookType
 	SDKHook_GetMaxHealth,
 	SDKHook_Blocked,
 	SDKHook_BlockedPost,
-	SDKHook_OnTakeDamageAlive,
-	SDKHook_OnTakeDamageAlivePost,
+	SDKHook_OnTakeDamage_Alive,
+	SDKHook_OnTakeDamage_AlivePost,
 	SDKHook_MAXHOOKS
 };
 
@@ -290,8 +290,8 @@ public:
 	void Hook_GroundEntChangedPost(void *pVar);
 	int Hook_OnTakeDamage(CTakeDamageInfoHack &info);
 	int Hook_OnTakeDamagePost(CTakeDamageInfoHack &info);
-	int Hook_OnTakeDamageAlive(CTakeDamageInfoHack &info);
-	int Hook_OnTakeDamageAlivePost(CTakeDamageInfoHack &info);
+	int Hook_OnTakeDamage_Alive(CTakeDamageInfoHack &info);
+	int Hook_OnTakeDamage_AlivePost(CTakeDamageInfoHack &info);
 	void Hook_PreThink();
 	void Hook_PreThinkPost();
 	void Hook_PostThink();

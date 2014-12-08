@@ -34,15 +34,15 @@
 new g_TimeBombSerial[MAXPLAYERS+1] = { 0, ... };
 new g_TimeBombTime[MAXPLAYERS+1] = { 0, ... };
 
-new Handle:g_Cvar_TimeBombTicks = INVALID_HANDLE;
-new Handle:g_Cvar_TimeBombRadius = INVALID_HANDLE;
-new Handle:g_Cvar_TimeBombMode = INVALID_HANDLE;
+ConVar g_Cvar_TimeBombTicks;
+ConVar g_Cvar_TimeBombRadius;
+ConVar g_Cvar_TimeBombMode;
 
 CreateTimeBomb(client)
 {
 	g_TimeBombSerial[client] = ++g_Serial_Gen;
 	CreateTimer(1.0, Timer_TimeBomb, client | (g_Serial_Gen << 7), DEFAULT_TIMER_FLAGS);
-	g_TimeBombTime[client] = GetConVarInt(g_Cvar_TimeBombTicks);
+	g_TimeBombTime[client] = g_Cvar_TimeBombTicks.IntValue;
 }
 
 KillTimeBomb(client)
@@ -80,8 +80,8 @@ PerformTimeBomb(client, target)
 
 public Action:Timer_TimeBomb(Handle:timer, any:value)
 {
-	new client = value & 0x7f;
-	new serial = value >> 7;
+	int client = value & 0x7f;
+	int serial = value >> 7;
 
 	if (!IsClientInGame(client)
 		|| !IsPlayerAlive(client)
@@ -92,16 +92,16 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 	}	
 	g_TimeBombTime[client]--;
 	
-	new Float:vec[3];
+	float vec[3];
 	GetClientEyePosition(client, vec);
 	
 	if (g_TimeBombTime[client] > 0)
 	{
-		new color;
+		int color;
 		
 		if (g_TimeBombTime[client] > 1)
 		{
-			color = RoundToFloor(g_TimeBombTime[client] * (128.0 / GetConVarFloat(g_Cvar_TimeBombTicks)));
+			color = RoundToFloor(g_TimeBombTime[client] * (128.0 / g_Cvar_TimeBombTicks.FloatValue));
 			if (g_BeepSound[0])
 			{
 				EmitAmbientSound(g_BeepSound, vec, client, SNDLEVEL_RAIDSIREN);	
@@ -118,7 +118,7 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 		
 		SetEntityRenderColor(client, 255, 128, color, 255);
 
-		decl String:name[64];
+		char name[64];
 		GetClientName(client, name, sizeof(name));
 		PrintCenterTextAll("%t", "Till Explodes", name, g_TimeBombTime[client]);
 		
@@ -127,9 +127,9 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 			GetClientAbsOrigin(client, vec);
 			vec[2] += 10;
 
-			TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_TimeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
+			TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_TimeBombRadius.FloatValue / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
 			TE_SendToAll();
-			TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_TimeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
+			TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_TimeBombRadius.FloatValue / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
 			TE_SendToAll();
 		}
 		return Plugin_Continue;
@@ -138,7 +138,7 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 	{
 		if (g_ExplosionSprite > -1)
 		{
-			TE_SetupExplosion(vec, g_ExplosionSprite, 5.0, 1, 0, GetConVarInt(g_Cvar_TimeBombRadius), 5000);
+			TE_SetupExplosion(vec, g_ExplosionSprite, 5.0, 1, 0, g_Cvar_TimeBombRadius.IntValue, 5000);
 			TE_SendToAll();
 		}
 
@@ -151,9 +151,9 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 		KillTimeBomb(client);
 		SetEntityRenderColor(client, 255, 255, 255, 255);
 		
-		if (GetConVarInt(g_Cvar_TimeBombMode) > 0)
+		if (g_Cvar_TimeBombMode.IntValue > 0)
 		{
-			new teamOnly = ((GetConVarInt(g_Cvar_TimeBombMode) == 1) ? true : false);
+			int teamOnly = ((g_Cvar_TimeBombMode.IntValue == 1) ? true : false);
 			
 			for (new i = 1; i <= MaxClients; i++)
 			{
@@ -167,18 +167,18 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 					continue;
 				}
 				
-				new Float:pos[3];
+				float pos[3];
 				GetClientEyePosition(i, pos);
 				
-				new Float:distance = GetVectorDistance(vec, pos);
+				float distance = GetVectorDistance(vec, pos);
 				
-				if (distance > GetConVarFloat(g_Cvar_TimeBombRadius))
+				if (distance > g_Cvar_TimeBombRadius.FloatValue)
 				{
 					continue;
 				}
 				
 				new damage = 220;
-				damage = RoundToFloor(damage * ((GetConVarFloat(g_Cvar_TimeBombRadius) - distance) / GetConVarFloat(g_Cvar_TimeBombRadius)));
+				damage = RoundToFloor(damage * ((g_Cvar_TimeBombRadius.FloatValue - distance) / g_Cvar_TimeBombRadius.FloatValue));
 					
 				SlapPlayer(i, damage, false);
 				
@@ -189,14 +189,14 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 				}
 				
 				/* ToDo
-				new Float:dir[3];
+				float dir[3];
 				SubtractVectors(vec, pos, dir);
 				TR_TraceRayFilter(vec, dir, MASK_SOLID, RayType_Infinite, TR_Filter_Client);
 
 				if (i == TR_GetEntityIndex())
 				{
 					new damage = 100;
-					new radius = GetConVarInt(g_Cvar_TimeBombRadius) / 2;
+					new radius = g_Cvar_TimeBombRadius.IntValue / 2;
 					
 					if (distance > radius)
 					{
@@ -252,9 +252,9 @@ public MenuHandler_TimeBomb(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Cancel)
 	{
-		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+		if (param2 == MenuCancel_ExitBack && hTopMenu)
 		{
-			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			hTopMenu.Display(param1, TopMenuPosition_LastCategory);
 		}
 	}
 	else if (action == MenuAction_Select)

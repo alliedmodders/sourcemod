@@ -717,6 +717,39 @@ REGISTER_NATIVES(bitbufnatives)
 	{"BfReadVecNormal",			smn_BfReadVecNormal},
 	{"BfReadAngles",			smn_BfReadAngles},
 	{"BfGetNumBytesLeft",		smn_BfGetNumBytesLeft},
+
+	// Transitional syntax support.
+	{"BfWrite.WriteBool",		smn_BfWriteBool},
+	{"BfWrite.WriteByte",		smn_BfWriteByte},
+	{"BfWrite.WriteChar",		smn_BfWriteChar},
+	{"BfWrite.WriteShort",		smn_BfWriteShort},
+	{"BfWrite.WriteWord",		smn_BfWriteWord},
+	{"BfWrite.WriteNum",		smn_BfWriteNum},
+	{"BfWrite.WriteFloat",		smn_BfWriteFloat},
+	{"BfWrite.WriteString",		smn_BfWriteString},
+	{"BfWrite.WriteEntity",		smn_BfWriteEntity},
+	{"BfWrite.WriteAngle",		smn_BfWriteAngle},
+	{"BfWrite.WriteCoord",		smn_BfWriteCoord},
+	{"BfWrite.WriteVecCoord",	smn_BfWriteVecCoord},
+	{"BfWrite.WriteVecNormal",	smn_BfWriteVecNormal},
+	{"BfWrite.WriteAngles",		smn_BfWriteAngles},
+
+	{"BfRead.ReadBool",			smn_BfReadBool},
+	{"BfRead.ReadByte",			smn_BfReadByte},
+	{"BfRead.ReadChar",			smn_BfReadChar},
+	{"BfRead.ReadShort",		smn_BfReadShort},
+	{"BfRead.ReadWord",			smn_BfReadWord},
+	{"BfRead.ReadNum",			smn_BfReadNum},
+	{"BfRead.ReadFloat",		smn_BfReadFloat},
+	{"BfRead.ReadString",		smn_BfReadString},
+	{"BfRead.ReadEntity",		smn_BfReadEntity},
+	{"BfRead.ReadAngle",		smn_BfReadAngle},
+	{"BfRead.ReadCoord",		smn_BfReadCoord},
+	{"BfRead.ReadVecCoord",		smn_BfReadVecCoord},
+	{"BfRead.ReadVecNormal",	smn_BfReadVecNormal},
+	{"BfRead.ReadAngles",		smn_BfReadAngles},
+	{"BfRead.BytesLeft.get",	smn_BfGetNumBytesLeft},
+
 	{NULL,						NULL}
 };
 

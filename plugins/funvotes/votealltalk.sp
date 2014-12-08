@@ -52,7 +52,7 @@ DisplayVoteAllTalkMenu(client)
 
 	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
 	
-	if (GetConVarBool(g_Cvar_Alltalk))
+	if (g_Cvar_Alltalk.BoolValue)
 	{
 		SetMenuTitle(g_hVoteMenu, "Votealltalk Off");
 	}

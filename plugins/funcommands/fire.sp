@@ -34,16 +34,16 @@
 new g_FireBombSerial[MAXPLAYERS+1] = { 0, ... };
 new g_FireBombTime[MAXPLAYERS+1] = { 0, ... };
 
-new Handle:g_Cvar_BurnDuration = INVALID_HANDLE;
-new Handle:g_Cvar_FireBombTicks = INVALID_HANDLE;
-new Handle:g_Cvar_FireBombRadius = INVALID_HANDLE;
-new Handle:g_Cvar_FireBombMode = INVALID_HANDLE;
+ConVar g_Cvar_BurnDuration;
+ConVar g_Cvar_FireBombTicks;
+ConVar g_Cvar_FireBombRadius;
+ConVar g_Cvar_FireBombMode;
 
 CreateFireBomb(client)
 {
 	g_FireBombSerial[client] = ++g_Serial_Gen;
 	CreateTimer(1.0, Timer_FireBomb, client | (g_Serial_Gen << 7), DEFAULT_TIMER_FLAGS);
-	g_FireBombTime[client] = GetConVarInt(g_Cvar_FireBombTicks);
+	g_FireBombTime[client] = g_Cvar_FireBombTicks.IntValue;
 }
 
 KillFireBomb(client)
@@ -99,16 +99,16 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 	}	
 	g_FireBombTime[client]--;
 	
-	new Float:vec[3];
+	float vec[3];
 	GetClientEyePosition(client, vec);
 	
 	if (g_FireBombTime[client] > 0)
 	{
-		new color;
+		int color;
 		
 		if (g_FireBombTime[client] > 1)
 		{
-			color = RoundToFloor(g_FireBombTime[client] * (255.0 / GetConVarFloat(g_Cvar_FireBombTicks)));
+			color = RoundToFloor(g_FireBombTime[client] * (255.0 / g_Cvar_FireBombTicks.FloatValue));
 			if (g_BeepSound[0])
 			{
 				EmitAmbientSound(g_BeepSound, vec, client, SNDLEVEL_RAIDSIREN);	
@@ -125,7 +125,7 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 		
 		SetEntityRenderColor(client, 255, color, color, 255);
 
-		decl String:name[64];
+		char name[64];
 		GetClientName(client, name, sizeof(name));
 		PrintCenterTextAll("%t", "Till Explodes", name, g_FireBombTime[client]);		
 		
@@ -134,9 +134,9 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 			GetClientAbsOrigin(client, vec);
 			vec[2] += 10;
 
-			TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FireBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
+			TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_FireBombRadius.FloatValue / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
 			TE_SendToAll();
-			TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FireBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
+			TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_FireBombRadius.FloatValue / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
 			TE_SendToAll();
 		}
 		return Plugin_Continue;
@@ -145,7 +145,7 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 	{
 		if (g_ExplosionSprite > -1)
 		{
-			TE_SetupExplosion(vec, g_ExplosionSprite, 0.1, 1, 0, GetConVarInt(g_Cvar_FireBombRadius), 5000);
+			TE_SetupExplosion(vec, g_ExplosionSprite, 0.1, 1, 0, g_Cvar_FireBombRadius.IntValue, 5000);
 			TE_SendToAll();
 		}
 		
@@ -153,16 +153,16 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 		{
 			GetClientAbsOrigin(client, vec);
 			vec[2] += 10;
-			TE_SetupBeamRingPoint(vec, 50.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.5, 30.0, 1.5, orangeColor, 5, 0);
+			TE_SetupBeamRingPoint(vec, 50.0, g_Cvar_FireBombRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.5, 30.0, 1.5, orangeColor, 5, 0);
 			TE_SendToAll();
 			vec[2] += 15;
-			TE_SetupBeamRingPoint(vec, 40.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 30.0, 1.5, orangeColor, 5, 0);
+			TE_SetupBeamRingPoint(vec, 40.0, g_Cvar_FireBombRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 30.0, 1.5, orangeColor, 5, 0);
 			TE_SendToAll();	
 			vec[2] += 15;
-			TE_SetupBeamRingPoint(vec, 30.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.7, 30.0, 1.5, orangeColor, 5, 0);
+			TE_SetupBeamRingPoint(vec, 30.0, g_Cvar_FireBombRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.7, 30.0, 1.5, orangeColor, 5, 0);
 			TE_SendToAll();
 			vec[2] += 15;
-			TE_SetupBeamRingPoint(vec, 20.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.8, 30.0, 1.5, orangeColor, 5, 0);
+			TE_SetupBeamRingPoint(vec, 20.0, g_Cvar_FireBombRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.8, 30.0, 1.5, orangeColor, 5, 0);
 			TE_SendToAll();		
 		}
 		
@@ -171,13 +171,13 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 			EmitAmbientSound(g_BoomSound, vec, client, SNDLEVEL_RAIDSIREN);
 		}
 
-		IgniteEntity(client, GetConVarFloat(g_Cvar_BurnDuration));
+		IgniteEntity(client, g_Cvar_BurnDuration.FloatValue);
 		KillFireBomb(client);
 		SetEntityRenderColor(client, 255, 255, 255, 255);
 		
-		if (GetConVarInt(g_Cvar_FireBombMode) > 0)
+		if (g_Cvar_FireBombMode.IntValue > 0)
 		{
-			new teamOnly = ((GetConVarInt(g_Cvar_FireBombMode) == 1) ? true : false);
+			int teamOnly = ((g_Cvar_FireBombMode.IntValue == 1) ? true : false);
 			
 			for (new i = 1; i <= MaxClients; i++)
 			{
@@ -191,18 +191,18 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 					continue;
 				}
 				
-				new Float:pos[3];
+				float pos[3];
 				GetClientAbsOrigin(i, pos);
 				
-				new Float:distance = GetVectorDistance(vec, pos);
+				float distance = GetVectorDistance(vec, pos);
 				
-				if (distance > GetConVarFloat(g_Cvar_FireBombRadius))
+				if (distance > g_Cvar_FireBombRadius.FloatValue)
 				{
 					continue;
 				}
 				
-				new Float:duration = GetConVarFloat(g_Cvar_BurnDuration);
-				duration *= (GetConVarFloat(g_Cvar_FireBombRadius) - distance) / GetConVarFloat(g_Cvar_FireBombRadius);
+				float duration = g_Cvar_BurnDuration.FloatValue;
+				duration *= (g_Cvar_FireBombRadius.FloatValue - distance) / g_Cvar_FireBombRadius.FloatValue;
 
 				IgniteEntity(i, duration);
 			}		
@@ -281,9 +281,9 @@ public MenuHandler_Burn(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Cancel)
 	{
-		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+		if (param2 == MenuCancel_ExitBack && hTopMenu)
 		{
-			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			hTopMenu.Display(param1, TopMenuPosition_LastCategory);
 		}
 	}
 	else if (action == MenuAction_Select)
@@ -326,9 +326,9 @@ public MenuHandler_FireBomb(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Cancel)
 	{
-		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+		if (param2 == MenuCancel_ExitBack && hTopMenu)
 		{
-			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			hTopMenu.Display(param1, TopMenuPosition_LastCategory);
 		}
 	}
 	else if (action == MenuAction_Select)
@@ -372,14 +372,14 @@ public Action:Command_Burn(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:arg[65];
+	char arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	new Float:seconds = GetConVarFloat(g_Cvar_BurnDuration);
+	float seconds = g_Cvar_BurnDuration.FloatValue;
 	
 	if (args > 1)
 	{
-		decl String:time[20];
+		char time[20];
 		GetCmdArg(2, time, sizeof(time));
 		if (StringToFloatEx(time, seconds) == 0)
 		{
@@ -388,8 +388,9 @@ public Action:Command_Burn(client, args)
 		}
 	}
 	
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(
 			arg,
@@ -430,11 +431,12 @@ public Action:Command_FireBomb(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:arg[65];
+	char arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(
 			arg,

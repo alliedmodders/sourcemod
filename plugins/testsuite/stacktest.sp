@@ -16,38 +16,36 @@ public OnPluginStart()
 
 public Action:Test_Stack(args)
 {
-	new Handle:stack;
-	new test[20]
-	decl String:buffer[42];
+	int test[20];
+	char buffer[42];
 	
 	test[0] = 5
 	test[1] = 7
 	
-	stack = CreateStack(30);
-	PushStackCell(stack, 50);
-	PushStackArray(stack, test, 2);
-	PushStackArray(stack, test, 2);
-	PushStackString(stack, "space craaab");
-	PushStackCell(stack, 12);
+	ArrayStack stack = ArrayStack(30);
+	stack.Push(50);
+	stack.PushArray(test, 2);
+	stack.PushArray(test, 2);
+	stack.PushString("space craaab");
+	stack.Push(12);
 	
-	PrintToServer("empty? %d", IsStackEmpty(stack));
+	PrintToServer("empty? %d", stack.Empty);
 	
-	PopStack(stack);
-	PopStackString(stack, buffer, sizeof(buffer));
+	stack.Pop();
+	stack.PopString(buffer, sizeof(buffer));
 	PrintToServer("popped: \"%s\"", buffer);
 	test[0] = 0
 	test[1] = 0
 	PrintToServer("values: %d, %d", test[0], test[1]);
-	PopStackArray(stack, test, 2);
+	stack.PopArray(test, 2);
 	PrintToServer("popped: %d, %d", test[0], test[1]);
-	PopStackCell(stack, test[0], 1);
+	test[0] = stack.Pop(1);
 	PrintToServer("popped: x, %d", test[0]);
-	PopStackCell(stack, test[0]);
+	test[0] = stack.Pop();
 	PrintToServer("popped: %d", test[0]);
 	
-	PrintToServer("empty? %d", IsStackEmpty(stack));
+	PrintToServer("empty? %d", stack.Empty);
 	
-	CloseHandle(stack);
-	
+	delete stack;
 	return Plugin_Handled;
 }

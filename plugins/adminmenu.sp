@@ -50,12 +50,12 @@ new Handle:hOnAdminMenuReady = INVALID_HANDLE;
 new Handle:hOnAdminMenuCreated = INVALID_HANDLE;
 
 /* Menus */
-new Handle:hAdminMenu = INVALID_HANDLE;
+TopMenu hAdminMenu;
 
 /* Top menu objects */
-new TopMenuObject:obj_playercmds = INVALID_TOPMENUOBJECT;
-new TopMenuObject:obj_servercmds = INVALID_TOPMENUOBJECT;
-new TopMenuObject:obj_votingcmds = INVALID_TOPMENUOBJECT;
+TopMenuObject obj_playercmds = INVALID_TOPMENUOBJECT;
+TopMenuObject obj_servercmds = INVALID_TOPMENUOBJECT;
+TopMenuObject obj_votingcmds = INVALID_TOPMENUOBJECT;
 
 #include "adminmenu/dynamicmenu.sp"
 
@@ -86,7 +86,7 @@ public OnConfigsExecuted()
 	
 	BuildPath(Path_SM, path, sizeof(path), "configs/adminmenu_sorting.txt");
 	
-	if (!LoadTopMenuConfig(hAdminMenu, path, error, sizeof(error)))
+	if (!hAdminMenu.LoadConfig(path, error, sizeof(error)))
 	{
 		LogError("Could not load admin menu config (file \"%s\": %s)", path, error);
 		return;
@@ -100,25 +100,11 @@ public OnMapStart()
 
 public OnAllPluginsLoaded()
 {
-	hAdminMenu = CreateTopMenu(DefaultCategoryHandler);
+	hAdminMenu = new TopMenu(DefaultCategoryHandler);
 	
-	obj_playercmds = AddToTopMenu(hAdminMenu, 
-		"PlayerCommands",
-		TopMenuObject_Category,
-		DefaultCategoryHandler,
-		INVALID_TOPMENUOBJECT);
-
-	obj_servercmds = AddToTopMenu(hAdminMenu,
-		"ServerCommands",
-		TopMenuObject_Category,
-		DefaultCategoryHandler,
-		INVALID_TOPMENUOBJECT);
-
-	obj_votingcmds = AddToTopMenu(hAdminMenu,
-		"VotingCommands",
-		TopMenuObject_Category,
-		DefaultCategoryHandler,
-		INVALID_TOPMENUOBJECT);
+	obj_playercmds = hAdminMenu.AddCategory("PlayerCommands", DefaultCategoryHandler);
+	obj_servercmds = hAdminMenu.AddCategory("ServerCommands", DefaultCategoryHandler);
+	obj_votingcmds = hAdminMenu.AddCategory("VotingCommands", DefaultCategoryHandler);
 		
 	BuildDynamicMenu();
 	
@@ -204,8 +190,7 @@ public Action:Command_DisplayMenu(client, args)
 		return Plugin_Handled;
 	}
 	
-	DisplayTopMenu(hAdminMenu, client, TopMenuPosition_Start);
-	
+	hAdminMenu.Display(client, TopMenuPosition_Start);
 	return Plugin_Handled;
 }
 

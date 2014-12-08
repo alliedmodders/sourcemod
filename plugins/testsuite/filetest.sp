@@ -9,37 +9,37 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	RegServerCmd("test_fread1", Test_ReadBinStr);
 }
 
-Handle:OpenFile2(const String:path[], const String:mode[])
+File OpenFile2(const String:path[], const String:mode[])
 {
-	new Handle:file = OpenFile(path, mode);
-	if (file == INVALID_HANDLE)
+	File file = OpenFile(path, mode);
+	if (!file)
 		PrintToServer("Failed to open file %s for %s", path, mode);
 	else
 		PrintToServer("Opened file handle %x: %s", file, path);
 	return file;
 }
 
-public Action:Test_ReadBinStr(args)
+public Action Test_ReadBinStr(args)
 {
-	new items[] = {1, 3, 5, 7, 0, 92, 193, 26, 0, 84, 248, 2};
-	new Handle:of = OpenFile2("smbintest", "wb");
-	if (of == INVALID_HANDLE)
+	int items[] = {1, 3, 5, 7, 0, 92, 193, 26, 0, 84, 248, 2};
+	File of = OpenFile2("smbintest", "wb");
+	if (!of)
 		return Plugin_Handled;
-	WriteFile(of, items, sizeof(items), 1);
-	CloseHandle(of);
+	of.Write(items, sizeof(items), 1);
+	of.Close();
 
-	new Handle:inf = OpenFile2("smbintest", "rb");
-	new String:buffer[sizeof(items)];
-	ReadFileString(inf, buffer, sizeof(items), sizeof(items));
-	FileSeek(inf, 0, SEEK_SET);
-	new items2[sizeof(items)];
-	ReadFile(inf, items2, sizeof(items), 1);
-	CloseHandle(inf);
+	File inf = OpenFile2("smbintest", "rb");
+	char buffer[sizeof(items)];
+	inf.ReadString(buffer, sizeof(items), sizeof(items));
+	inf.Seek(0, SEEK_SET);
+	int items2[sizeof(items)];
+	inf.Read(items2, sizeof(items), 1);
+	inf.Close();
 
 	for (new i = 0; i < sizeof(items); i++)
 	{
@@ -51,6 +51,17 @@ public Action:Test_ReadBinStr(args)
 		else if (items2[i] != items[i])
 		{
 			PrintToServer("FAILED ON INDEX %d: %d != %d", i, items2[i], items[i]);
+			return Plugin_Handled;
+		}
+	}
+
+	inf = OpenFile2("smbintest", "rb");
+	for (new i = 0; i < sizeof(items); i++)
+	{
+		new item;
+		if (!inf.ReadInt8(item) || item != items[i])
+		{
+			PrintToServer("FAILED ON INDEX %d: %d != %d", i, item, items[i]);
 			return Plugin_Handled;
 		}
 	}

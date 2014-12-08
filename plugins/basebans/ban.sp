@@ -132,19 +132,19 @@ DisplayBanReasonMenu(client)
 	decl String:reasonFull[255];
 	
 	//Iterate through the kv-file
-	KvGotoFirstSubKey(g_hKvBanReasons, false);
+	g_hKvBanReasons.GotoFirstSubKey(false);
 	do
 	{
-		KvGetSectionName(g_hKvBanReasons, reasonName, sizeof(reasonName));
-		KvGetString(g_hKvBanReasons, NULL_STRING, reasonFull, sizeof(reasonFull));
+		g_hKvBanReasons.GetSectionName(reasonName, sizeof(reasonName));
+		g_hKvBanReasons.GetString(NULL_STRING, reasonFull, sizeof(reasonFull));
 		
 		//Add entry
 		AddMenuItem(menu, reasonFull, reasonName);
 		
-	} while (KvGotoNextKey(g_hKvBanReasons, false));
+	} while (g_hKvBanReasons.GotoNextKey(false));
 	
 	//Reset kvHandle
-	KvRewind(g_hKvBanReasons);
+	g_hKvBanReasons.Rewind();
 
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
@@ -177,9 +177,9 @@ public MenuHandler_BanReasonList(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Cancel)
 	{
-		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+		if (param2 == MenuCancel_ExitBack && hTopMenu)
 		{
-			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			hTopMenu.Display(param1, TopMenuPosition_LastCategory);
 		}
 	}
 	else if (action == MenuAction_Select)
@@ -209,9 +209,9 @@ public MenuHandler_BanPlayerList(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Cancel)
 	{
-		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+		if (param2 == MenuCancel_ExitBack && hTopMenu)
 		{
-			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			hTopMenu.Display(param1, TopMenuPosition_LastCategory);
 		}
 	}
 	else if (action == MenuAction_Select)
@@ -247,9 +247,9 @@ public MenuHandler_BanTimeList(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Cancel)
 	{
-		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+		if (param2 == MenuCancel_ExitBack && hTopMenu)
 		{
-			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			hTopMenu.Display(param1, TopMenuPosition_LastCategory);
 		}
 	}
 	else if (action == MenuAction_Select)

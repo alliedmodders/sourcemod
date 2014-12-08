@@ -1,0 +1,1 @@
+(11) : error 169: cannot tag an enum as implicit-int

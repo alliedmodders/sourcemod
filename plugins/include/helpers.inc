@@ -97,59 +97,45 @@ stock Handle:FindPluginByFile(const String:filename[])
  * @deprecated Use FindTarget() or ProcessTargetString().
  */
 #pragma deprecated Use FindTarget() or ProcessTargetString()
-stock SearchForClients(const String:pattern[], clients[], maxClients)
+stock int SearchForClients(const char[] pattern, int[] clients, int maxClients)
 {
-	new total = 0;
+	int total = 0;
 	
 	if (maxClients == 0)
-	{
 		return 0;
-	}
 	
-	if (pattern[0] == '#')
-	{
-		new input = StringToInt(pattern[1]);
-		if (!input)
-		{
-			decl String:name[65]
-			for (new i=1; i<=MaxClients; i++)
-			{
+	if (pattern[0] == '#') {
+		int input = StringToInt(pattern[1]);
+		if (!input) {
+			char name[65];
+			for (int i=1; i<=MaxClients; i++) {
 				if (!IsClientInGame(i))
-				{
 					continue;
-				}
 				GetClientName(i, name, sizeof(name));
-				if (strcmp(name, pattern, false) == 0)
-				{
+				if (strcmp(name, pattern, false) == 0) {
 					clients[0] = i;
 					return 1;
 				}
 			}
 		} else {
-			new client = GetClientOfUserId(input);
-			if (client)
-			{
+			int client = GetClientOfUserId(input);
+			if (client) {
 				clients[0] = client;
 				return 1;
 			}
 		}
 	}
 	
-	decl String:name[65]
-	for (new i=1; i<=MaxClients; i++)
+	char name[65];
+	for (int i=1; i<=MaxClients; i++)
 	{
 		if (!IsClientInGame(i))
-		{
 			continue;
-		}
 		GetClientName(i, name, sizeof(name));
-		if (StrContains(name, pattern, false) != -1)
-		{
+		if (StrContains(name, pattern, false) != -1) {
 			clients[total++] = i;
 			if (total >= maxClients)
-			{
 				break;
-			}
 		}
 	}
 	
@@ -255,18 +241,17 @@ stock FindTarget(client, const String:target[], bool:nobots = false, bool:immuni
  	
  	ClearArray(array);
  
- 	new Handle:file = OpenFile(mapPath, "rt");
- 	if (file == INVALID_HANDLE)
- 	{
+ 	File file = OpenFile(mapPath, "rt");
+ 	if (!file) {
  		LogError("Could not open file: %s", mapPath);
- 		
  		return 0;
  	}
  
 	LogMessage("Loading maps from file: %s", mapPath);
 	
- 	decl String:buffer[64], len;
- 	while (!IsEndOfFile(file) && ReadFileLine(file, buffer, sizeof(buffer)))
+	int len;
+ 	char buffer[64];
+ 	while (!file.IsEndOfFile() && file.ReadLine(buffer, sizeof(buffer)))
  	{
  		TrimString(buffer);
  
@@ -288,6 +273,6 @@ stock FindTarget(client, const String:target[], bool:nobots = false, bool:immuni
  		PushArrayString(array, buffer);
  	}
  
- 	CloseHandle(file);
+	file.Close();
  	return GetArraySize(array);
 }

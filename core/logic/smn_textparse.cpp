@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2014 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -32,6 +32,7 @@
 #include "common_logic.h"
 #include <ITextParsers.h>
 #include <ISourceMod.h>
+#include "handle_helpers.h"
 
 HandleType_t g_TypeSMC = 0;
 
@@ -199,90 +200,51 @@ static cell_t SMC_CreateParser(IPluginContext *pContext, const cell_t *params)
 
 static cell_t SMC_SetParseStart(IPluginContext *pContext, const cell_t *params)
 {
-	Handle_t hndl = (Handle_t)params[1];
-	HandleError err;
-	ParseInfo *parse;
-	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
-
-	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, &sec, (void **)&parse))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
-	}
+	OpenHandle<ParseInfo> parse(pContext, params[1], g_TypeSMC);
+	if (!parse.Ok())
+		return 0;
 
 	parse->parse_start = pContext->GetFunctionById((funcid_t)params[2]);
-
 	return 1;
 }
 
 static cell_t SMC_SetParseEnd(IPluginContext *pContext, const cell_t *params)
 {
-	Handle_t hndl = (Handle_t)params[1];
-	HandleError err;
-	ParseInfo *parse;
-	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
-
-	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, &sec, (void **)&parse))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
-	}
+	OpenHandle<ParseInfo> parse(pContext, params[1], g_TypeSMC);
+	if (!parse.Ok())
+		return 0;
 
 	parse->parse_end = pContext->GetFunctionById((funcid_t)params[2]);
-
 	return 1;
 }
 
 static cell_t SMC_SetReaders(IPluginContext *pContext, const cell_t *params)
 {
-	Handle_t hndl = (Handle_t)params[1];
-	HandleError err;
-	ParseInfo *parse;
-	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
-
-	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, &sec, (void **)&parse))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
-	}
+	OpenHandle<ParseInfo> parse(pContext, params[1], g_TypeSMC);
+	if (!parse.Ok())
+		return 0;
 
 	parse->new_section = pContext->GetFunctionById((funcid_t)params[2]);
 	parse->key_value = pContext->GetFunctionById((funcid_t)params[3]);
 	parse->end_section = pContext->GetFunctionById((funcid_t)params[4]);
-
 	return 1;
 }
 
 static cell_t SMC_SetRawLine(IPluginContext *pContext, const cell_t *params)
 {
-	Handle_t hndl = (Handle_t)params[1];
-	HandleError err;
-	ParseInfo *parse;
-	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
-
-	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, &sec, (void **)&parse))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
-	}
+	OpenHandle<ParseInfo> parse(pContext, params[1], g_TypeSMC);
+	if (!parse.Ok())
+		return 0;
 
 	parse->raw_line = pContext->GetFunctionById((funcid_t)params[2]);
-
 	return 1;
 }
 
 static cell_t SMC_ParseFile(IPluginContext *pContext, const cell_t *params)
 {
-	Handle_t hndl = (Handle_t)params[1];
-	HandleError err;
-	ParseInfo *parse;
-	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
-
-	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, &sec, (void **)&parse))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
-	}
+	OpenHandle<ParseInfo> parse(pContext, params[1], g_TypeSMC);
+	if (!parse.Ok())
+		return 0;
 
 	char *file;
 	pContext->LocalToString(params[2], &file);
@@ -299,21 +261,63 @@ static cell_t SMC_ParseFile(IPluginContext *pContext, const cell_t *params)
 
 	*c_line = states.line;
 	*c_col = states.col;
-
 	return (cell_t)p_err;
 }
 
 static cell_t SMC_GetErrorString(IPluginContext *pContext, const cell_t *params)
 {
 	const char *str = textparsers->GetSMCErrorString((SMCError)params[1]);
-
 	if (!str)
-	{
 		return 0;
-	}
 
 	pContext->StringToLocal(params[2], params[3], str);
+	return 1;
+}
 
+static cell_t SMCParser_OnEnterSection_set(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<ParseInfo> parse(pContext, params[1], g_TypeSMC);
+	if (!parse.Ok())
+		return 0;
+
+	parse->new_section = pContext->GetFunctionById((funcid_t)params[2]);
+	return 1;
+}
+
+static cell_t SMCParser_OnLeaveSection_set(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<ParseInfo> parse(pContext, params[1], g_TypeSMC);
+	if (!parse.Ok())
+		return 0;
+
+	parse->end_section = pContext->GetFunctionById((funcid_t)params[2]);
+	return 1;
+}
+
+static cell_t SMCParser_OnKeyValue_set(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<ParseInfo> parse(pContext, params[1], g_TypeSMC);
+	if (!parse.Ok())
+		return 0;
+
+	parse->key_value = pContext->GetFunctionById((funcid_t)params[2]);
+	return 1;
+}
+
+static cell_t SMCParser_GetErrorString(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<ParseInfo> parse(pContext, params[1], g_TypeSMC);
+	if (!parse.Ok())
+		return 0;
+
+	const char *str = "no error";
+	if (params[2]) {
+		str = textparsers->GetSMCErrorString((SMCError)params[2]);
+		if (!str)
+			str = "unknown error";
+	}
+
+	pContext->StringToLocal(params[3], params[4], str);
 	return 1;
 }
 
@@ -326,5 +330,17 @@ REGISTER_NATIVES(textNatives)
 	{"SMC_SetParseEnd",				SMC_SetParseEnd},
 	{"SMC_SetReaders",				SMC_SetReaders},
 	{"SMC_SetRawLine",				SMC_SetRawLine},
+
+	// Transitional syntax support.
+	{"SMCParser.SMCParser",				SMC_CreateParser},
+	{"SMCParser.ParseFile",				SMC_ParseFile},
+	{"SMCParser.OnStart.set",			SMC_SetParseStart},
+	{"SMCParser.OnEnd.set",				SMC_SetParseEnd},
+	{"SMCParser.OnEnterSection.set",	SMCParser_OnEnterSection_set},
+	{"SMCParser.OnLeaveSection.set",	SMCParser_OnLeaveSection_set},
+	{"SMCParser.OnKeyValue.set",		SMCParser_OnKeyValue_set},
+	{"SMCParser.OnRawLine.set",			SMC_SetRawLine},
+	{"SMCParser.GetErrorString",		SMCParser_GetErrorString},
+
 	{NULL,							NULL},
 };

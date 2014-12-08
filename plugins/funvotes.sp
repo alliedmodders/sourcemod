@@ -53,10 +53,10 @@ public Plugin:myinfo =
 
 new Handle:g_hVoteMenu = INVALID_HANDLE;
 
-new Handle:g_Cvar_Limits[5] = {INVALID_HANDLE, ...};
-new Handle:g_Cvar_Gravity = INVALID_HANDLE;
-new Handle:g_Cvar_Alltalk = INVALID_HANDLE;
-new Handle:g_Cvar_FF = INVALID_HANDLE;
+ConVar g_Cvar_Limits[5] = {null, ...};
+ConVar g_Cvar_Gravity;
+ConVar g_Cvar_Alltalk;
+ConVar g_Cvar_FF;
 
 // new Handle:g_Cvar_Show = INVALID_HANDLE;
 
@@ -83,7 +83,7 @@ new g_voteClient[2];		/* Holds the target's client id and user id */
 #define	VOTE_IP		2
 new String:g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
 
-new Handle:hTopMenu = INVALID_HANDLE;
+TopMenu hTopMenu;
 
 #include "funvotes/votegravity.sp"
 #include "funvotes/voteburn.sp"
@@ -128,14 +128,14 @@ public OnPluginStart()
 	*/
 	
 	/* Account for late loading */
-	new Handle:topmenu;
-	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	TopMenu topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != null))
 	{
 		OnAdminMenuReady(topmenu);
 	}
 }
 
-public OnAdminMenuReady(Handle:topmenu)
+public OnAdminMenuReady(TopMenu topmenu)
 {
 	/* Block us from being called twice */
 	if (topmenu == hTopMenu)
@@ -147,49 +147,15 @@ public OnAdminMenuReady(Handle:topmenu)
 	hTopMenu = topmenu;
 	
 	/* Build the "Voting Commands" category */
-	new TopMenuObject:voting_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_VOTINGCOMMANDS);
+	new TopMenuObject:voting_commands = hTopMenu.FindCategory(ADMINMENU_VOTINGCOMMANDS);
 
 	if (voting_commands != INVALID_TOPMENUOBJECT)
 	{
-		AddToTopMenu(hTopMenu,
-			"sm_votegravity",
-			TopMenuObject_Item,
-			AdminMenu_VoteGravity,
-			voting_commands,
-			"sm_votegravity",
-			ADMFLAG_VOTE);
-			
-		AddToTopMenu(hTopMenu,
-			"sm_voteburn",
-			TopMenuObject_Item,
-			AdminMenu_VoteBurn,
-			voting_commands,
-			"sm_voteburn",
-			ADMFLAG_VOTE|ADMFLAG_SLAY);
-			
-		AddToTopMenu(hTopMenu,
-			"sm_voteslay",
-			TopMenuObject_Item,
-			AdminMenu_VoteSlay,
-			voting_commands,
-			"sm_voteslay",
-			ADMFLAG_VOTE|ADMFLAG_SLAY);
-			
-		AddToTopMenu(hTopMenu,
-			"sm_votealltalk",
-			TopMenuObject_Item,
-			AdminMenu_VoteAllTalk,
-			voting_commands,
-			"sm_votealltalk",
-			ADMFLAG_VOTE);
-			
-		AddToTopMenu(hTopMenu,
-			"sm_voteff",
-			TopMenuObject_Item,
-			AdminMenu_VoteFF,
-			voting_commands,
-			"sm_voteff",
-			ADMFLAG_VOTE);
+		hTopMenu.AddItem("sm_votegravity", AdminMenu_VoteGravity, voting_commands, "sm_votegravity", ADMFLAG_VOTE);
+		hTopMenu.AddItem("sm_voteburn", AdminMenu_VoteBurn, voting_commands, "sm_voteburn", ADMFLAG_VOTE|ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_voteslay", AdminMenu_VoteSlay, voting_commands, "sm_voteslay", ADMFLAG_VOTE|ADMFLAG_SLAY);
+		hTopMenu.AddItem("sm_votealltalk", AdminMenu_VoteAllTalk, voting_commands, "sm_votealltalk", ADMFLAG_VOTE);
+		hTopMenu.AddItem("sm_voteff", AdminMenu_VoteFF, voting_commands, "sm_voteff", ADMFLAG_VOTE);
 	}
 }
 
@@ -233,8 +199,9 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_VoteEnd)
 	{
-		decl String:item[64];
-		new Float:percent, Float:limit, votes, totalVotes;
+		char item[64];
+		float percent, limit;
+		int votes, totalVotes;
 
 		GetMenuVoteInfo(param2, votes, totalVotes);
 		GetMenuItem(menu, param1, item, sizeof(item));
@@ -246,7 +213,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 		
 		percent = GetVotePercent(votes, totalVotes);
 		
-		limit = GetConVarFloat(g_Cvar_Limits[g_voteType]);
+		limit = g_Cvar_Limits[g_voteType].FloatValue;
 		
 		/* :TODO: g_voteClient[userid] needs to be checked.
 		 */
@@ -269,7 +236,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 				{
 					PrintToChatAll("[SM] %t", "Cvar changed", "sv_gravity", item);					
 					LogAction(-1, -1, "Changing gravity to %s due to vote.", item);
-					SetConVarInt(g_Cvar_Gravity, StringToInt(item));
+					g_Cvar_Gravity.IntValue = StringToInt(item);
 				}
 				
 				case (voteType:burn):
@@ -291,16 +258,16 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 				
 				case (voteType:alltalk):
 				{
-					PrintToChatAll("[SM] %t", "Cvar changed", "sv_alltalk", (GetConVarBool(g_Cvar_Alltalk) ? "0" : "1"));
-					LogAction(-1, -1, "Changing alltalk to %s due to vote.", (GetConVarBool(g_Cvar_Alltalk) ? "0" : "1"));
-					SetConVarBool(g_Cvar_Alltalk, !GetConVarBool(g_Cvar_Alltalk));
+					PrintToChatAll("[SM] %t", "Cvar changed", "sv_alltalk", (g_Cvar_Alltalk.BoolValue ? "0" : "1"));
+					LogAction(-1, -1, "Changing alltalk to %s due to vote.", (g_Cvar_Alltalk.BoolValue ? "0" : "1"));
+					g_Cvar_Alltalk.BoolValue = !g_Cvar_Alltalk.BoolValue;
 				}
 				
 				case (voteType:ff):
 				{
-					PrintToChatAll("[SM] %t", "Cvar changed", "mp_friendlyfire", (GetConVarBool(g_Cvar_FF) ? "0" : "1"));
-					LogAction(-1, -1, "Changing friendly fire to %s due to vote.", (GetConVarBool(g_Cvar_FF) ? "0" : "1"));
-					SetConVarBool(g_Cvar_FF, !GetConVarBool(g_Cvar_FF));
+					PrintToChatAll("[SM] %t", "Cvar changed", "mp_friendlyfire", (g_Cvar_FF.BoolValue ? "0" : "1"));
+					LogAction(-1, -1, "Changing friendly fire to %s due to vote.", (g_Cvar_FF.BoolValue ? "0" : "1"));
+					g_Cvar_FF.BoolValue = !g_Cvar_FF.BoolValue;
 				}				
 			}
 		}

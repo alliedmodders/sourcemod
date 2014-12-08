@@ -153,6 +153,18 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 
 void CHalfLife2::InitLogicalEntData()
 {
+#if SOURCE_ENGINE == SE_TF2      \
+	|| SOURCE_ENGINE == SE_DODS  \
+	|| SOURCE_ENGINE == SE_HL2DM \
+	|| SOURCE_ENGINE == SE_CSS   \
+	|| SOURCE_ENGINE == SE_SDK2013
+
+	if (g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr))
+	{
+		g_EntList = servertools->GetEntityList();
+	}
+#endif
+
 	char *addr = NULL;
 
 	/*
@@ -162,21 +174,24 @@ void CHalfLife2::InitLogicalEntData()
 	 * If symbols aren't present (Windows or stripped Linux/Mac), 
 	 * attempt find via LevelShutdown + offset
 	 */
-	if (g_pGameConf->GetMemSig("gEntList", (void **)&addr))
+	if (!g_EntList)
 	{
-#if !defined PLATFORM_WINDOWS
-		if (!addr)
+		if (g_pGameConf->GetMemSig("gEntList", (void **) &addr))
 		{
-			// Key exists so notify if lookup fails, but try other method.
-			logger->LogError("Failed lookup of gEntList directly - Reverting to lookup via LevelShutdown");
-		}
-		else
-		{
-#endif
-			g_EntList = reinterpret_cast<void *>(addr);
 #if !defined PLATFORM_WINDOWS
-		}
+			if (!addr)
+			{
+				// Key exists so notify if lookup fails, but try other method.
+				logger->LogError("Failed lookup of gEntList directly - Reverting to lookup via LevelShutdown");
+			}
+			else
+			{
 #endif
+				g_EntList = reinterpret_cast<void *>(addr);
+#if !defined PLATFORM_WINDOWS
+			}
+#endif
+		}
 	}
 
 	if (!g_EntList)

@@ -182,7 +182,6 @@ public:
 };
 
 const char *GetPlayerCompatAuthId(IGamePlayer *pPlayer);
-size_t IsAuthIdConnected(char *authID);
 
 extern sp_nativeinfo_t g_ClientPrefNatives[];
 

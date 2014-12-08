@@ -128,9 +128,9 @@ public MenuHandler_GagPlayer(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Cancel)
 	{
-		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+		if (param2 == MenuCancel_ExitBack && hTopMenu)
 		{
-			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			hTopMenu.Display(param1, TopMenuPosition_LastCategory);
 		}
 	}
 	else if (action == MenuAction_Select)
@@ -165,9 +165,9 @@ public MenuHandler_GagTypes(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Cancel)
 	{
-		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+		if (param2 == MenuCancel_ExitBack && hTopMenu)
 		{
-			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			hTopMenu.Display(param1, TopMenuPosition_LastCategory);
 		}
 	}
 	else if (action == MenuAction_Select)
@@ -233,11 +233,11 @@ PerformMute(client, target, bool:silent=false)
 PerformUnMute(client, target, bool:silent=false)
 {
 	g_Muted[target] = false;
-	if (GetConVarInt(g_Cvar_Deadtalk) == 1 && !IsPlayerAlive(target))
+	if (g_Cvar_Deadtalk.IntValue == 1 && !IsPlayerAlive(target))
 	{
 		SetClientListeningFlags(target, VOICE_LISTENALL);
 	}
-	else if (GetConVarInt(g_Cvar_Deadtalk) == 2 && !IsPlayerAlive(target))
+	else if (g_Cvar_Deadtalk.IntValue == 2 && !IsPlayerAlive(target))
 	{
 		SetClientListeningFlags(target, VOICE_TEAM);
 	}
@@ -306,11 +306,11 @@ PerformUnSilence(client, target)
 	{
 		g_Muted[target] = false;
 		
-		if (GetConVarInt(g_Cvar_Deadtalk) == 1 && !IsPlayerAlive(target))
+		if (g_Cvar_Deadtalk.IntValue == 1 && !IsPlayerAlive(target))
 		{
 			SetClientListeningFlags(target, VOICE_LISTENALL);
 		}
-		else if (GetConVarInt(g_Cvar_Deadtalk) == 2 && !IsPlayerAlive(target))
+		else if (g_Cvar_Deadtalk.IntValue == 2 && !IsPlayerAlive(target))
 		{
 			SetClientListeningFlags(target, VOICE_TEAM);
 		}

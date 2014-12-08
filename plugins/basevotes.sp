@@ -51,7 +51,7 @@ public Plugin:myinfo =
 
 new Handle:g_hVoteMenu = INVALID_HANDLE;
 
-new Handle:g_Cvar_Limits[3] = {INVALID_HANDLE, ...};
+ConVar g_Cvar_Limits[3] = {null, ...};
 //new Handle:g_Cvar_VoteSay = INVALID_HANDLE;
 
 enum voteType
@@ -79,7 +79,7 @@ new String:g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
 new String:g_voteArg[256];	/* Used to hold ban/kick reasons or vote questions */
 
 
-new Handle:hTopMenu = INVALID_HANDLE;
+TopMenu hTopMenu;
 
 #include "basevotes/votekick.sp"
 #include "basevotes/voteban.sp"
@@ -110,8 +110,8 @@ public OnPluginStart()
 	g_Cvar_Limits[2] = CreateConVar("sm_vote_ban", "0.60", "percent required for successful ban vote.", 0, true, 0.05, true, 1.0);		
 	
 	/* Account for late loading */
-	new Handle:topmenu;
-	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	TopMenu topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != null))
 	{
 		OnAdminMenuReady(topmenu);
 	}
@@ -132,7 +132,7 @@ public OnConfigsExecuted()
 	g_mapCount = LoadMapList(g_MapList);
 }
 
-public OnAdminMenuReady(Handle:topmenu)
+public OnAdminMenuReady(TopMenu topmenu)
 {
 	/* Block us from being called twice */
 	if (topmenu == hTopMenu)
@@ -144,33 +144,13 @@ public OnAdminMenuReady(Handle:topmenu)
 	hTopMenu = topmenu;
 	
 	/* Build the "Voting Commands" category */
-	new TopMenuObject:voting_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_VOTINGCOMMANDS);
+	new TopMenuObject:voting_commands = hTopMenu.FindCategory(ADMINMENU_VOTINGCOMMANDS);
 
 	if (voting_commands != INVALID_TOPMENUOBJECT)
 	{
-		AddToTopMenu(hTopMenu,
-			"sm_votekick",
-			TopMenuObject_Item,
-			AdminMenu_VoteKick,
-			voting_commands,
-			"sm_votekick",
-			ADMFLAG_VOTE|ADMFLAG_KICK);
-			
-		AddToTopMenu(hTopMenu,
-			"sm_voteban",
-			TopMenuObject_Item,
-			AdminMenu_VoteBan,
-			voting_commands,
-			"sm_voteban",
-			ADMFLAG_VOTE|ADMFLAG_BAN);
-			
-		AddToTopMenu(hTopMenu,
-			"sm_votemap",
-			TopMenuObject_Item,
-			AdminMenu_VoteMap,
-			voting_commands,
-			"sm_votemap",
-			ADMFLAG_VOTE|ADMFLAG_CHANGEMAP);
+		hTopMenu.AddItem("sm_votekick", AdminMenu_VoteKick, voting_commands, "sm_votekick", ADMFLAG_VOTE|ADMFLAG_KICK);
+		hTopMenu.AddItem("sm_voteban", AdminMenu_VoteBan, voting_commands, "sm_voteban", ADMFLAG_VOTE|ADMFLAG_BAN);
+		hTopMenu.AddItem("sm_votemap", AdminMenu_VoteMap, voting_commands, "sm_votemap", ADMFLAG_VOTE|ADMFLAG_CHANGEMAP);
 	}
 }
 
@@ -282,8 +262,9 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 	}	
 	else if (action == MenuAction_VoteEnd)
 	{
-		decl String:item[64], String:display[64];
-		new Float:percent, Float:limit, votes, totalVotes;
+		char item[64], display[64];
+		float percent, limit;
+		int votes, totalVotes;
 
 		GetMenuVoteInfo(param2, votes, totalVotes);
 		GetMenuItem(menu, param1, item, sizeof(item), _, display, sizeof(display));
@@ -297,7 +278,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 		
 		if (g_voteType != voteType:question)
 		{
-			limit = GetConVarFloat(g_Cvar_Limits[g_voteType]);
+			limit = g_Cvar_Limits[g_voteType].FloatValue;
 		}
 		
 		/* :TODO: g_voteClient[userid] needs to be checked */

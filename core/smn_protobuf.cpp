@@ -811,6 +811,38 @@ REGISTER_NATIVES(protobufnatives)
 	{"PbReadMessage",				smn_PbReadMessage},
 	{"PbReadRepeatedMessage",		smn_PbReadRepeatedMessage},
 	{"PbAddMessage",				smn_PbAddMessage},
+
+	// Transitional syntax.
+	{"Protobuf.ReadInt",					smn_PbReadInt},
+	{"Protobuf.ReadFloat",					smn_PbReadFloat},
+	{"Protobuf.ReadBool",					smn_PbReadBool},
+	{"Protobuf.ReadString",					smn_PbReadString},
+	{"Protobuf.ReadColor",					smn_PbReadColor},
+	{"Protobuf.ReadAngle",					smn_PbReadAngle},
+	{"Protobuf.ReadVector",					smn_PbReadVector},
+	{"Protobuf.ReadVector2D",				smn_PbReadVector2D},
+	{"Protobuf.GetRepeatedFieldCount",		smn_PbGetRepeatedFieldCount},
+	{"Protobuf.SetInt",						smn_PbSetInt},
+	{"Protobuf.SetFloat",					smn_PbSetFloat},
+	{"Protobuf.SetBool",					smn_PbSetBool},
+	{"Protobuf.SetString",					smn_PbSetString},
+	{"Protobuf.SetColor",					smn_PbSetColor},
+	{"Protobuf.SetAngle",					smn_PbSetAngle},
+	{"Protobuf.SetVector",					smn_PbSetVector},
+	{"Protobuf.SetVector2D",				smn_PbSetVector2D},
+	{"Protobuf.AddInt",						smn_PbAddInt},
+	{"Protobuf.AddFloat",					smn_PbAddFloat},
+	{"Protobuf.AddBool",					smn_PbAddBool},
+	{"Protobuf.AddString",					smn_PbAddString},
+	{"Protobuf.AddColor",					smn_PbAddColor},
+	{"Protobuf.AddAngle",					smn_PbAddAngle},
+	{"Protobuf.AddVector",					smn_PbAddVector},
+	{"Protobuf.AddVector2D",				smn_PbAddVector2D},
+	{"Protobuf.RemoveRepeatedFieldValue",	smn_PbRemoveRepeatedFieldValue},
+	{"Protobuf.ReadMessage",				smn_PbReadMessage},
+	{"Protobuf.ReadRepeatedMessage",		smn_PbReadRepeatedMessage},
+	{"Protobuf.AddMessage",					smn_PbAddMessage},
+
 	{NULL,							NULL}
 };
 
@@ -820,7 +852,7 @@ REGISTER_NATIVES(protobufnatives)
                                      @@@@@@@@@@@@@@@@@@@@@      
                                     @@@@@@@@@@@@@@@@@@@@@@@@               
                                    @@@@@@@@    @@@@@@@@@@@@@
-                                   @@@@@@@@    @@@@@@@@@@@@@          
+                                   @@@@@@@@ o  @@@@@@@@@@@@@          
                                       @@@@@@  @@@@@@@@@@@@@@@             
                                  0000   @@@@@@@@@@@@@@@@@@@@@                
                               000000000   @@@@@@@@@@@@@@@@@@@           

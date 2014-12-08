@@ -59,7 +59,7 @@ union EventHook
 	 * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
 	 * @return				Ignored for post hooks. Plugin_Handled will block event if hooked as pre.
 	 */
-	function Action (Handle event, const char[] name, bool dontBroadcast);
+	function Action (Event event, const char[] name, bool dontBroadcast);
 	/**
 	 * Called when a game event is fired.
 	 *
@@ -69,7 +69,7 @@ union EventHook
 	 * @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
 	 * @noreturn
 	 */
-	function void (Handle event, const char[] name, bool dontBroadcast);
+	function void (Event event, const char[] name, bool dontBroadcast);
 };
 
 /**
@@ -81,7 +81,7 @@ union EventHook
  * @noreturn
  * @error				Invalid event name or invalid callback function.
  */
-native HookEvent(const String:name[], EventHook:callback, EventHookMode:mode=EventHookMode_Post);
+native void HookEvent(const char[] name, EventHook callback, EventHookMode mode=EventHookMode_Post);
 
 /**
  * Creates a hook for when a game event is fired.
@@ -92,7 +92,7 @@ native HookEvent(const String:name[], EventHook:callback, EventHookMode:mode=Eve
  * @return				True if event exists and was hooked successfully, false otherwise.
  * @error				Invalid callback function.
  */
-native bool:HookEventEx(const String:name[], EventHook:callback, EventHookMode:mode=EventHookMode_Post);
+native bool HookEventEx(const char[] name, EventHook callback, EventHookMode mode=EventHookMode_Post);
 
 /**
  * Removes a hook for when a game event is fired.
@@ -103,7 +103,7 @@ native bool:HookEventEx(const String:name[], EventHook:callback, EventHookMode:m
  * @noreturn
  * @error				Invalid callback function or no active hook for specified event.
  */
-native UnhookEvent(const String:name[], EventHook:callback, EventHookMode:mode=EventHookMode_Post);
+native void UnhookEvent(const char[] name, EventHook callback, EventHookMode mode=EventHookMode_Post);
 
 /**
  * Creates a game event to be fired later.
@@ -117,7 +117,7 @@ native UnhookEvent(const String:name[], EventHook:callback, EventHookMode:mode=E
  * @return				Handle to event. INVALID_HANDLE is returned if the event doesn't exist or isn't 
 						being hooked (unless force is true).
  */
-native Handle:CreateEvent(const String:name[], bool:force=false);
+native Event CreateEvent(const char[] name, bool force=false);
 
 /**
  * Fires a game event.
@@ -129,7 +129,7 @@ native Handle:CreateEvent(const String:name[], bool:force=false);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native FireEvent(Handle:event, bool:dontBroadcast=false);
+native void FireEvent(Handle event, bool dontBroadcast=false);
 
 /**
  * Cancels a previously created game event that has not been fired.
@@ -138,17 +138,18 @@ native FireEvent(Handle:event, bool:dontBroadcast=false);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native CancelCreatedEvent(Handle:event);
+native void CancelCreatedEvent(Handle event);
 
 /**
  * Returns the boolean value of a game event's key.
  *
  * @param event			Handle to the event.
  * @param key			Name of event key.
+ * @param defValue		Optional default value to use if the key is not found.
  * @return				The boolean value of the specfied event key.
  * @error				Invalid or corrupt Handle.
  */
-native bool:GetEventBool(Handle:event, const String:key[]);
+native bool GetEventBool(Handle event, const char[] key, bool defValue=false);
 
 /**
  * Sets the boolean value of a game event's key.
@@ -159,17 +160,18 @@ native bool:GetEventBool(Handle:event, const String:key[]);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetEventBool(Handle:event, const String:key[], bool:value);
+native void SetEventBool(Handle event, const char[] key, bool value);
 
 /**
  * Returns the integer value of a game event's key.
  *
  * @param event			Handle to the event.
  * @param key			Name of event key.
+ * @param defValue		Optional default value to use if the key is not found.
  * @return				The integer value of the specfied event key.
  * @error				Invalid or corrupt Handle.
  */
-native GetEventInt(Handle:event, const String:key[]);
+native int GetEventInt(Handle event, const char[] key, int defValue=0);
 
 /**
  * Sets the integer value of a game event's key.
@@ -185,17 +187,18 @@ native GetEventInt(Handle:event, const String:key[]);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetEventInt(Handle:event, const String:key[], value);
+native void SetEventInt(Handle event, const char[] key, int value);
 
 /**
  * Returns the floating point value of a game event's key.
  *
  * @param event			Handle to the event.
  * @param key			Name of event key.
+ * @param defValue		Optional default value to use if the key is not found.
  * @return				The floating point value of the specfied event key.
  * @error				Invalid or corrupt Handle.
  */
-native Float:GetEventFloat(Handle:event, const String:key[]);
+native float GetEventFloat(Handle event, const char[] key, float defValue=0.0);
 
 /**
  * Sets the floating point value of a game event's key.
@@ -206,7 +209,7 @@ native Float:GetEventFloat(Handle:event, const String:key[]);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetEventFloat(Handle:event, const String:key[], Float:value);
+native void SetEventFloat(Handle event, const char[] key, float value);
 
 /**
  * Retrieves the string value of a game event's key.
@@ -215,10 +218,11 @@ native SetEventFloat(Handle:event, const String:key[], Float:value);
  * @param key			Name of event key.
  * @param value			Buffer to store the value of the specified event key.
  * @param maxlength		Maximum length of string buffer.
+ * @param defValue		Optional default value to use if the key is not found.
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native GetEventString(Handle:event, const String:key[], String:value[], maxlength);
+native void GetEventString(Handle event, const char[] key, char[] value, int maxlength, const char[] defvalue="");
 
 /**
  * Sets the string value of a game event's key.
@@ -229,7 +233,7 @@ native GetEventString(Handle:event, const String:key[], String:value[], maxlengt
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetEventString(Handle:event, const String:key[], const String:value[]);
+native void SetEventString(Handle event, const char[] key, const char[] value);
 
 /**
  * Retrieves the name of a game event.
@@ -240,7 +244,7 @@ native SetEventString(Handle:event, const String:key[], const String:value[]);
  * @noreturn
  * @error				Invalid or corrupt Handle.     
  */
-native GetEventName(Handle:event, String:name[], maxlength);
+native void GetEventName(Handle event, char[] name, int maxlength);
 
 /**
  * Sets whether an event's broadcasting will be disabled or not.
@@ -253,5 +257,20 @@ native GetEventName(Handle:event, String:name[], maxlength);
  * @noreturn
  * @error               Invalid Handle.
  */
-native SetEventBroadcast(Handle:event, bool:dontBroadcast);
+native void SetEventBroadcast(Handle event, bool dontBroadcast);
 
+methodmap Event < Handle {
+	public Event() = CreateEvent;
+	public Fire() = FireEvent;
+	public Cancel() = CancelCreatedEvent;
+	public GetBool() = GetEventBool;
+	public SetBool() = SetEventBool;
+	public GetInt() = GetEventInt;
+	public SetInt() = SetEventInt;
+	public GetFloat() = GetEventFloat;
+	public SetFloat() = SetEventFloat;
+	public GetString() = GetEventString;
+	public SetString() = SetEventString;
+	public GetName() = GetEventName;
+	public SetBroadcast() = SetEventBroadcast;
+}

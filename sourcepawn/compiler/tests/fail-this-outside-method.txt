@@ -1,0 +1,1 @@
+(2) : error 166: cannot use 'this' outside of a methodmap method or property
