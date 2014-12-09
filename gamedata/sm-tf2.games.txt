@@ -74,7 +74,7 @@
 			"StunPlayer"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x28\x57\x8B\xF9\x8B\x87"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x28\x57\x8B\xF9\x8B\x87\x2A\x2A\x2A\x2A\x40"
 				"linux"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 				"mac"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 			}
