@@ -2053,6 +2053,55 @@ const char *sc_tokens[] = {
          "-label-", "-string-", "-string-"
 };
 
+static inline bool
+IsUnimplementedKeyword(int token)
+{
+  switch (token) {
+    case tACQUIRE:
+    case tAS:
+    case tCATCH:
+    case tCAST_TO:
+    case tDOUBLE:
+    case tEXPLICIT:
+    case tFINALLY:
+    case tFOREACH:
+    case tIMPLICIT:
+    case tIMPORT:
+    case tIN:
+    case tINT8:
+    case tINT16:
+    case tINT32:
+    case tINT64:
+    case tINTERFACE:
+    case tINTN:
+    case tLET:
+    case tNAMESPACE:
+    case tPACKAGE:
+    case tPRIVATE:
+    case tPROTECTED:
+    case tREADONLY:
+    case tSEALED:
+    case tTHROW:
+    case tTRY:
+    case tTYPEOF:
+    case tUINT8:
+    case tUINT16:
+    case tUINT32:
+    case tUINT64:
+    case tUINTN:
+    case tUNION:
+    case tUSING:
+    case tVAR:
+    case tVARIANT:
+    case tVIRTUAL:
+    case tVOLATILE:
+    case tWITH:
+      return true;
+    default:
+      return false;
+  }
+}
+
 static full_token_t *advance_token_ptr()
 {
   assert(sTokenBuffer->depth == 0);
@@ -2150,10 +2199,18 @@ int lex(cell *lexvalue,char **lexsym)
   } /* while */
   while (i<=tLAST) {    /* match reserved words and compiler directives */
     if (*lptr==**tokptr && match(*tokptr,TRUE)) {
-      tok->id = i;
-      errorset(sRESET,0); /* reset error flag (clear the "panic mode")*/
-      if (pc_docexpr)   /* optionally concatenate to documentation string */
-        insert_autolist(*tokptr);
+      if (IsUnimplementedKeyword(i)) {
+        // Try to gracefully error.
+        error(173, sc_tokens[i - tFIRST]);
+        tok->id = tSYMBOL;
+        strcpy(tok->str, sc_tokens[i - tFIRST]);
+        tok->len = strlen(tok->str);
+      } else {
+        tok->id = i;
+        errorset(sRESET,0); /* reset error flag (clear the "panic mode")*/
+        if (pc_docexpr)   /* optionally concatenate to documentation string */
+          insert_autolist(*tokptr);
+      }
       tok->end.line = fline;
       tok->end.col = (int)(lptr - pline);
       return tok->id;

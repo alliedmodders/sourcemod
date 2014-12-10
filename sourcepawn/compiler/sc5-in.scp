@@ -216,6 +216,7 @@ static const char *errmsg[] = {
 /*170*/  "creating new object '%s' requires using 'new' before its constructor\n",
 /*171*/  "cannot use 'new' with non-object-like methodmap '%s'\n",
 /*172*/  "methodmap '%s' does not have a constructor\n",
+/*173*/  "'%s' is a newly reserved keyword that may be used in the future; use a different name as an identifier\n",
 #else
   "\315e\306\227\266k\217:\235\277bu\201fo\220\204\223\012",
   "\202l\224\250s\205g\346\356e\233\201(\243\315\214\267\202) \253 f\255low ea\305 \042c\353e\042\012",
