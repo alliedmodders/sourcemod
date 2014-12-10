@@ -2205,6 +2205,25 @@ int lex(cell *lexvalue,char **lexsym)
         tok->id = tSYMBOL;
         strcpy(tok->str, sc_tokens[i - tFIRST]);
         tok->len = strlen(tok->str);
+      } else if (*lptr == ':' &&
+                 (i == tINT ||
+                  i == tVOID))
+      {
+        // Special case 'int:' to its old behavior: an implicit view_as<> cast
+        // with Pawn's awful lowercase coercion semantics.
+        const char *token = sc_tokens[i - tFIRST];
+        switch (i) {
+          case tINT:
+            error(238, token, token);
+            break;
+          case tVOID:
+            error(239, token, token);
+            break;
+        }
+        lptr++;
+        tok->id = tLABEL;
+        strcpy(tok->str, token);
+        tok->len = strlen(tok->str);
       } else {
         tok->id = i;
         errorset(sRESET,0); /* reset error flag (clear the "panic mode")*/
