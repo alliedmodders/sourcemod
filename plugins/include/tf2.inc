@@ -170,17 +170,20 @@ const Float:TFCondDuration_Infinite = -1.0;
 
 enum TFHoliday
 {
-	TFHoliday_Birthday = 1,
-	TFHoliday_Halloween,
-	TFHoliday_Christmas,
-	TFHoliday_ValentinesDay,
-	TFHoliday_MeetThePyro,
-	TFHoliday_SpyVsEngyWar,
-	TFHoliday_FullMoon,
-	TFHoliday_HalloweenOrFullMoon,
-	TFHoliday_HalloweenOrFullMoonOrValentines,
-	TFHoliday_AprilFools,
+	TFHoliday_Invalid = -1
 };
+
+public const TFHoliday:TFHoliday_Birthday;
+public const TFHoliday:TFHoliday_Halloween;
+public const TFHoliday:TFHoliday_Christmas;
+public const TFHoliday:TFHoliday_EndOfTheLine;
+public const TFHoliday:TFHoliday_ValentinesDay;
+public const TFHoliday:TFHoliday_MeetThePyro;
+public const TFHoliday:TFHoliday_SpyVsEngyWar;
+public const TFHoliday:TFHoliday_FullMoon;
+public const TFHoliday:TFHoliday_HalloweenOrFullMoon;
+public const TFHoliday:TFHoliday_HalloweenOrFullMoonOrValentines;
+public const TFHoliday:TFHoliday_AprilFools;
 
 enum TFObjectType
 {

@@ -126,9 +126,40 @@ void HolidayManager::UnhookIfNecessary()
 	m_iHookID = 0;
 }
 
+static inline void PopulateHolidayVar(IPluginRuntime *pRuntime, const char *pszName)
+{
+	uint32_t idx;
+	if (pRuntime->FindPubvarByName(pszName, &idx) != SP_ERROR_NONE)
+		return;
+
+	int varValue = -1;
+	const char *key = g_pGameConf->GetKeyValue(pszName);
+	if (key)
+	{
+		varValue = atoi(key);
+	}
+
+	sp_pubvar_t *var;
+	pRuntime->GetPubvarByIndex(idx, &var);
+	*var->offs = varValue;
+}
+
 void HolidayManager::OnPluginLoaded(IPlugin *plugin)
 {
 	HookIfNecessary();
+
+	auto *pRuntime = plugin->GetRuntime();
+	PopulateHolidayVar(pRuntime, "TFHoliday_Birthday");
+	PopulateHolidayVar(pRuntime, "TFHoliday_Halloween");
+	PopulateHolidayVar(pRuntime, "TFHoliday_Christmas");
+	PopulateHolidayVar(pRuntime, "TFHoliday_EndOfTheLine");
+	PopulateHolidayVar(pRuntime, "TFHoliday_ValentinesDay");
+	PopulateHolidayVar(pRuntime, "TFHoliday_MeetThePyro");
+	PopulateHolidayVar(pRuntime, "TFHoliday_SpyVsEngyWar");
+	PopulateHolidayVar(pRuntime, "TFHoliday_FullMoon");
+	PopulateHolidayVar(pRuntime, "TFHoliday_HalloweenOrFullMoon");
+	PopulateHolidayVar(pRuntime, "TFHoliday_HalloweenOrFullMoonOrValentines");
+	PopulateHolidayVar(pRuntime, "TFHoliday_AprilFools");
 }
 
 void HolidayManager::OnPluginUnloaded(IPlugin *plugin)
