@@ -202,7 +202,7 @@ enum UseType
 	Use_Toggle
 };
 
-union SDKHookCB
+typeset SDKHookCB
 {
 	// PreThink/Post
 	// PostThink/Post
