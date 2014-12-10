@@ -251,7 +251,7 @@ stock FindTarget(client, const String:target[], bool:nobots = false, bool:immuni
 	
 	int len;
  	char buffer[64];
- 	while (!file.IsEndOfFile() && file.ReadLine(buffer, sizeof(buffer)))
+ 	while (!file.EndOfFile() && file.ReadLine(buffer, sizeof(buffer)))
  	{
  		TrimString(buffer);
  

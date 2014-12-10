@@ -155,7 +155,7 @@ methodmap Regex < Handle
  */
 stock int SimpleRegexMatch(const char[] str, const char[] pattern, int flags = 0, char[] error="", int maxLen = 0)
 {
-	Regex regex = Regex(pattern, flags, error, maxLen);
+	Regex regex = new Regex(pattern, flags, error, maxLen);
 	if (!regex)
 		return -1;	
 	
