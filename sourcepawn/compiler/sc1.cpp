@@ -144,7 +144,7 @@ static void dolabel(void);
 static void doreturn(void);
 static void dofuncenum(int listmode);
 static void dotypedef();
-static void dounion();
+static void dotypeset();
 static void domethodmap(LayoutSpec spec);
 static void dobreak(void);
 static void docont(void);
@@ -1526,8 +1526,8 @@ static void parse(void)
     case tTYPEDEF:
       dotypedef();
       break;
-    case tUNION:
-      dounion();
+    case tTYPESET:
+      dotypeset();
       break;
     case tSTRUCT:
       declstruct();
@@ -4357,8 +4357,8 @@ static void dotypedef()
   functags_add(def, &type);
 }
 
-// Unsafe union - only supports function types. This is a transition hack for SP2.
-static void dounion()
+// Unsafe typeset - only supports function types. This is a transition hack for SP2.
+static void dotypeset()
 {
   token_ident_t ident;
   if (!needsymbol(&ident))

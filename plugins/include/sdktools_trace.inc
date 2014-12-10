@@ -110,7 +110,7 @@ enum RayType
 	RayType_Infinite	/**< The trace ray will go from the start position to infinity using a direction vector. */
 };
 
-union TraceEntityFilter
+typeset TraceEntityFilter
 {
 	/**
 	 * Called on entity filtering.

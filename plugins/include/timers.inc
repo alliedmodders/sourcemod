@@ -45,7 +45,7 @@
 /**
  * Any of the following prototypes will work for a timed function.
  */
-union Timer
+typeset Timer
 {
 	/**
  	 * Called when the timer interval has elapsed.

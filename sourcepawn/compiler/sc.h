@@ -440,6 +440,7 @@ enum TokenKind {
   tTHEN,
   tTHIS,
   tTYPEDEF,
+  tTYPESET,
   tUNION,
   tVAR,
   tVIEW_AS,

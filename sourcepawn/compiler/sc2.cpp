@@ -1974,7 +1974,7 @@ const char *sc_tokens[] = {
          "public",
          "return",
          "sizeof", "sleep", "static", "stock", "struct", "switch",
-         "tagof", "*then", "this", "typedef",
+         "tagof", "*then", "this", "typedef", "typeset",
          "union",
          "var", "view_as", "void",
          "while",

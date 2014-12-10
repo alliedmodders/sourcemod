@@ -445,7 +445,7 @@ native void GetConVarName(Handle convar, char[] name, maxlength);
  */
 native bool SendConVarValue(int client, Handle convar, const char[] value);
 
-union ConVarQueryFinished
+typeset ConVarQueryFinished
 {	
 	// Called when a query to retrieve a client's console variable has finished.
 	//

@@ -123,7 +123,7 @@ native SortCustom1D(array[], array_size, SortFunc1D:sortfunc, Handle:hndl=INVALI
  *						0 if first is equal to second
  *						1 if first should go after second
  */
-union SortFunc2D
+typeset SortFunc2D
 {
 	function int (int[] elem1, int[] elem2, const int[][] array, Handle hndl);
 	function int (char[] elem1, char[] elem2, const char[][] array, Handle hndl);

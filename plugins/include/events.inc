@@ -48,7 +48,7 @@ enum EventHookMode
 /**
  * Hook function types for events.
  */
-union EventHook
+typeset EventHook
 {
 	/**
 	 * Called when a game event is fired.
