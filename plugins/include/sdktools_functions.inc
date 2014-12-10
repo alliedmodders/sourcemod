@@ -298,7 +298,7 @@ native bool:GetPlayerJingleFile(client, String:hex[], maxlength);
  * @param out				Buffer to store the output traffic velocity.
  * @noreturn
  */
-native GetServerNetStats(&Float:in, &Float:out);
+native GetServerNetStats(&Float:inAmount, &Float:outAmout);
 
 /**
  * Equip's a player's weapon.
