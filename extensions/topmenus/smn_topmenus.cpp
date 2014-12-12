@@ -449,6 +449,21 @@ static cell_t TopMenu_AddCategory(IPluginContext *pContext, const cell_t *params
 	return AddToTopMenu(pContext, new_params);
 }
 
+static cell_t TopMenu_FromHandle(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError err;
+	TopMenu *pMenu;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if ((err = handlesys->ReadHandle(params[1], hTopMenuType, &sec, (void **)&pMenu))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	return params[1];
+}
+
 sp_nativeinfo_t g_TopMenuNatives[] = 
 {
 	{"AddToTopMenu",			AddToTopMenu},
@@ -474,6 +489,7 @@ sp_nativeinfo_t g_TopMenuNatives[] =
 	{"TopMenu.GetInfoString",	GetTopMenuInfoString},
 	{"TopMenu.GetObjName",		GetTopMenuName},
 	{"TopMenu.CacheTitles.set",	SetTopMenuTitleCaching},
+	{"TopMenu.FromHandle",      TopMenu_FromHandle},
 
 	{NULL,					NULL},
 };
