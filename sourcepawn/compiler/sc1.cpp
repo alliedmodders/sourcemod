@@ -3625,7 +3625,13 @@ static void make_primitive(typeinfo_t *type, int tag)
   type->ident = iVARIABLE;
 }
 
-symbol *parse_inline_function(methodmap_t *map, const typeinfo_t *type, const char *name, int is_native, int is_ctor, int is_dtor)
+symbol *parse_inline_function(methodmap_t *map,
+                              const typeinfo_t *type,
+                              const char *name,
+                              int is_native,
+                              int is_ctor,
+                              int is_dtor,
+                              bool is_static)
 {
   declinfo_t decl;
   memset(&decl, 0, sizeof(decl));
@@ -3640,7 +3646,7 @@ symbol *parse_inline_function(methodmap_t *map, const typeinfo_t *type, const ch
   decl.type.is_new = TRUE;
 
   const int *thistag = NULL;
-  if (!is_ctor)
+  if (!is_ctor && !is_static)
     thistag = &map->tag;
 
   // Build a new symbol. Construct a temporary name including the class.
@@ -3752,7 +3758,7 @@ int parse_property_accessor(const typeinfo_t *type, methodmap_t *map, methodmap_
       ret_type = &voidtype;
     }
 
-    target = parse_inline_function(map, ret_type, tmpname, is_native, FALSE, FALSE);
+    target = parse_inline_function(map, ret_type, tmpname, is_native, FALSE, FALSE, false);
   }
 
   if (!target)
@@ -3851,7 +3857,11 @@ methodmap_method_t *parse_method(methodmap_t *map)
   int is_dtor = 0;
   int is_bind = 0;
   int is_native = 0;
+  bool is_static = false;
   const char *spectype = layout_spec_name(map->spec);
+
+  if (matchtoken(tSTATIC))
+    is_static = true;
 
   // This stores the name of the method (for destructors, we add a ~).
   token_ident_t ident;
@@ -3864,7 +3874,8 @@ methodmap_method_t *parse_method(methodmap_t *map)
   typeinfo_t type;
   memset(&type, 0, sizeof(type));
 
-  if (matchtoken('~')) {
+  // Destructors cannot be static.
+  if (!is_static && matchtoken('~')) {
     // We got something like "public ~Blah = X"
     is_bind = TRUE;
     is_dtor = TRUE;
@@ -3951,6 +3962,11 @@ methodmap_method_t *parse_method(methodmap_t *map)
       error(114, "constructor", spectype, map->name);
   }
 
+  if (is_ctor && is_static) {
+    // Constructors may not be static.
+    error(175);
+  }
+
   symbol *target = NULL;
   if (is_bind) {
     // Find an existing symbol.
@@ -3960,7 +3976,7 @@ methodmap_method_t *parse_method(methodmap_t *map)
     else if (target->ident != iFUNCTN) 
       error(10);
   } else {
-    target = parse_inline_function(map, &type, ident.name, is_native, is_ctor, is_dtor);
+    target = parse_inline_function(map, &type, ident.name, is_native, is_ctor, is_dtor, is_static);
   }
 
   if (!target)
@@ -3998,13 +4014,15 @@ methodmap_method_t *parse_method(methodmap_t *map)
   method->target = target;
   method->getter = NULL;
   method->setter = NULL;
+  method->is_static = is_static;
 
   // If the symbol is a constructor, we bypass the initial argument checks.
   if (is_ctor) {
     if (map->ctor)
       error(113, map->name);
-  } else if (!check_this_tag(map, target)) {
-    error(108, spectype, map->name);
+  } else if (!is_static) {
+    if (!check_this_tag(map, target))
+      error(108, spectype, map->name);
   }
 
   if (is_dtor)

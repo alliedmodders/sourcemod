@@ -85,6 +85,7 @@ typedef struct methodmap_method_s
   symbol *target;
   symbol *getter;
   symbol *setter;
+  bool is_static;
 
   int property_tag() const {
     assert(getter || setter);

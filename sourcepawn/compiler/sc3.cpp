@@ -2001,6 +2001,96 @@ static int hier2(value *lval)
   } /* switch */
 }
 
+static symbol *
+fake_function_for_method(methodmap_t *map, const char *lexstr)
+{
+  // Fetch a fake function so errors aren't as crazy.
+  char tmpname[METHOD_NAMEMAX + 1];
+  strcpy(tmpname, map->name);
+  strcat(tmpname, ".");
+  strcat(tmpname, lexstr);
+  tmpname[sNAMEMAX] = '\0';
+  return fetchfunc(tmpname);
+}
+
+enum FieldExprResult
+{
+  FER_Fail,
+  FER_Accessor,
+  FER_CallFunction,
+  FER_CallMethod
+};
+
+static FieldExprResult
+field_expression(svalue &thisval, value *lval, symbol **target)
+{
+  // Catch invalid calls early so we don't compile with a tag mismatch.
+  switch (thisval.val.ident) {
+    case iARRAY:
+    case iREFARRAY:
+      error(106);
+      break;
+
+    case iFUNCTN:
+    case iREFFUNC:
+      error(107);
+      break;
+  }
+
+  cell lexval;
+  char *lexstr;
+  if (!needtoken(tSYMBOL))
+    return FER_Fail;
+  tokeninfo(&lexval, &lexstr);
+
+  if (thisval.val.ident == iMETHODMAP) {
+    methodmap_t *map = thisval.val.sym->methodmap;
+    methodmap_method_t *method = methodmap_find_method(map, lexstr);
+    if (!method) {
+      error(105, map->name, lexstr);
+      *target = fake_function_for_method(map, lexstr);
+      return FER_CallFunction;
+    }
+
+    if (!method->is_static)
+      error(176, method->name, map->name);
+    *target = method->target;
+    return FER_CallFunction;
+  }
+
+  methodmap_t *map;
+  if ((map = methodmap_find_by_tag(thisval.val.tag)) == NULL) {
+    error(104, pc_tagname(thisval.val.tag));
+    return FER_Fail;
+  }
+
+  methodmap_method_t *method;
+  if ((method = methodmap_find_method(map, lexstr)) == NULL) {
+    error(105, map->name, lexstr);
+    *target = fake_function_for_method(map, lexstr);
+    return FER_CallFunction;
+  }
+
+  if (method && (method->getter || method->setter)) {
+    if (thisval.lvalue)
+      rvalue(lval);
+    clear_value(lval);
+    lval->ident = iACCESSOR;
+    lval->tag = method->property_tag();
+    lval->accessor = method;
+    return FER_Accessor;
+  }
+
+  *target = method->target;
+
+  if (method->is_static) {
+    error(177, method->name, map->name, method->name);
+    return FER_CallFunction;
+  }
+  return FER_CallMethod;
+}
+
+
 /*  hier1
  *
  *  The highest hierarchy level: it looks for pointer and array indices
@@ -2223,59 +2313,17 @@ restart:
 
       svalue *implicitthis = NULL;
       if (tok == '.') {
-        methodmap_t *map;
-
-        /* Catch invalid calls early so we don't compile with a tag mismatch. */
-        switch (thisval.val.ident) {
-          case iARRAY:
-          case iREFARRAY:
-            error(106);
+        switch (field_expression(thisval, lval1, &sym)) {
+          case FER_Fail:
+          case FER_CallFunction:
             break;
-
-          case iFUNCTN:
-          case iREFFUNC:
-            error(107);
-            break;
-        }
-
-        if ((map = methodmap_find_by_tag(thisval.val.tag)) == NULL) {
-          error(104, pc_tagname(thisval.val.tag));
-        }
-        
-        if (needtoken(tSYMBOL) && map) {
-          cell lexval;
-          char *lexstr;
-          methodmap_method_t *method;
-
-          tokeninfo(&lexval, &lexstr);
-          if ((method = methodmap_find_method(map, lexstr)) == NULL)
-            error(105, map->name, lexstr);
-
-          if (method && (method->getter || method->setter)) {
-            if (lvalue)
-              rvalue(lval1);
-            clear_value(lval1);
-            lval1->ident = iACCESSOR;
-            lval1->tag = method->property_tag();
-            lval1->accessor = method;
-            lvalue = TRUE;
-            goto restart;
-          }
-
-          if (!method || !method->target) {
-            error(105, map->name, lexstr);
-
-            // Fetch a fake function so errors aren't as crazy.
-            char tmpname[METHOD_NAMEMAX + 1];
-            strcpy(tmpname, map->name);
-            strcat(tmpname, ".");
-            strcat(tmpname, lexstr);
-            tmpname[sNAMEMAX] = '\0';
-            sym = fetchfunc(tmpname);
-          } else {
+          case FER_CallMethod:
             implicitthis = &thisval;
-            sym = method->target;
-          }
+            break;
+          case FER_Accessor:
+            goto restart;
+          default:
+            assert(false);
         }
 
         // If we don't find a '(' next, just fail to compile for now -- and
