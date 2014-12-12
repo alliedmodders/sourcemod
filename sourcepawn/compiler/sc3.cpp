@@ -2025,14 +2025,27 @@ static int hier1(value *lval1)
   lvalue=primary(lval1);
   symtok=tokeninfo(&val,&st);   /* get token read by primary() */
   cursym=lval1->sym;
+
 restart:
   sym=cursym;
+
+  if (lval1->ident == iMETHODMAP &&
+      !(lexpeek('.') || lexpeek('(')))
+  {
+    // Cannot use methodmap as an rvalue/lvalue.
+    error(174, sym ? sym->name : "(unknown)");
+
+    lval1->ident = iCONSTEXPR;
+    lval1->tag = 0;
+    lval1->constval = 0;
+  }
+
   if (matchtoken('[') || matchtoken('{') || matchtoken('(') || matchtoken('.')) {
+    tok=tokeninfo(&val,&st);    /* get token read by matchtoken() */
     if (lvalue && lval1->ident == iACCESSOR) {
       rvalue(lval1);
       lvalue = FALSE;
     }
-    tok=tokeninfo(&val,&st);    /* get token read by matchtoken() */
     magic_string = (sym && (sym->tag == pc_tag_string && sym->dim.array.level == 0));
     if (sym==NULL && symtok!=tSYMBOL) {
       /* we do not have a valid symbol and we appear not to have read a valid
@@ -2275,7 +2288,18 @@ restart:
 
       assert(tok=='(');
       if (sym==NULL || (sym->ident!=iFUNCTN && sym->ident!=iREFFUNC)) {
-        if (sym==NULL && sc_status==statFIRST) {
+        if (sym && sym->ident == iMETHODMAP && sym->methodmap) {
+          if (!sym->methodmap->ctor) {
+            // Immediately fatal - no function to call.
+            return error(172, sym->name);
+          }
+          if (sym->methodmap->nullable) {
+            // Keep going, this is basically a style thing.
+            error(170, sym->methodmap->name);
+          }
+
+          sym = sym->methodmap->ctor->target;
+        } else if (sym==NULL && sc_status==statFIRST) {
           /* could be a "use before declaration"; in that case, create a stub
            * function so that the usage can be marked.
            */
@@ -2285,26 +2309,12 @@ restart:
           markusage(sym,uREAD);
         } else {
           return error(12);           /* invalid function call */
-        } /* if */
+        }
       } else if ((sym->usage & uMISSING)!=0) {
         char symname[2*sNAMEMAX+16];  /* allow space for user defined operators */
         funcdisplayname(symname,sym->name);
         error(4,symname);             /* function not defined */
       } /* if */
-
-      // Check whether we're calling a constructor. This is a bit hacky, since
-      // we're relying on whatever the lval state is.
-      if ((sym->flags & flgPROXIED) &&
-          lval1->proxy &&
-          lval1->proxy->target == sym)
-      {
-        // Only constructors should be proxied, but we check anyway.
-        assert(!implicitthis);
-        if (methodmap_t *methodmap = methodmap_find_by_tag(sym->tag)) {
-          if (sym == methodmap->ctor->target && methodmap->nullable)
-            error(170, methodmap->name);
-        }
-      }
 
       callfunction(sym,implicitthis,lval1,TRUE);
       if (lexpeek('.')) {
@@ -2342,7 +2352,6 @@ restart:
 
     funcenum_t *fe = funcenum_for_symbol(target);
     lval1->sym = NULL;
-    lval1->proxy = NULL;
     lval1->ident = iCONSTEXPR;
     lval1->constval = (public_index << 1) | 1;
     lval1->tag = fe->tag;
@@ -2429,8 +2438,7 @@ static int primary(value *lval)
       } /* if */
     } /* if */
     /* now try a global variable */
-    symbol *alias = NULL;
-    if ((sym = findglb(st, sSTATEVAR, &alias)) != 0) {
+    if ((sym = findglb(st, sSTATEVAR)) != 0) {
       if (sym->ident==iFUNCTN || sym->ident==iREFFUNC) {
         /* if the function is only in the table because it was inserted as a
          * stub in the first pass (i.e. it was "used" but never declared or
@@ -2442,15 +2450,18 @@ static int primary(value *lval)
         if ((sym->usage & uDEFINE)==0)
           error(17,st);
         lval->sym=sym;
-        lval->proxy=alias;
         lval->ident=sym->ident;
         lval->tag=sym->tag;
-        if (sym->ident==iARRAY || sym->ident==iREFARRAY) {
-          address(sym,sPRI);    /* get starting address in primary register */
-          return FALSE;         /* return 0 for array (not lvalue) */
-        } else {
-          return TRUE;          /* return 1 if lvalue (not function or array) */
-        } /* if */
+        switch (sym->ident) {
+          case iARRAY:
+          case iREFARRAY:
+            address(sym,sPRI);    /* get starting address in primary register */
+            return FALSE;         /* return 0 for array (not lvalue) */
+          case iMETHODMAP:
+            return FALSE;
+          default:
+            return TRUE;          /* return 1 if lvalue (not function or array) */
+        } /* switch */
       } /* if */
     } else {
       if (!sc_allowproccall)
@@ -2466,7 +2477,6 @@ static int primary(value *lval)
     assert(sym!=NULL);
     assert(sym->ident==iFUNCTN || sym->ident==iREFFUNC);
     lval->sym=sym;
-    lval->proxy=alias;
     lval->ident=sym->ident;
     lval->tag=sym->tag;
     return FALSE;       /* return 0 for function (not an lvalue) */
@@ -2482,7 +2492,6 @@ static int primary(value *lval)
 static void clear_value(value *lval)
 {
   lval->sym=NULL;
-  lval->proxy=NULL;
   lval->constval=0L;
   lval->tag=0;
   lval->ident=0;

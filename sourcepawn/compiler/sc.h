@@ -103,6 +103,8 @@ typedef struct s_constvalue {
                          * tag for enumeration lists */
 } constvalue;
 
+struct methodmap_t;
+
 /*  Symbol table format
  *
  *  The symbol name read from the input file is stored in "name", the
@@ -116,7 +118,6 @@ typedef struct s_constvalue {
 typedef struct s_symbol {
   struct s_symbol *next;
   struct s_symbol *parent;  /* hierarchical types */
-  struct s_symbol *target;  /* proxy target */
   char name[sNAMEMAX+1];
   uint32_t hash;        /* value derived from name, for quicker searching */
   cell addr;            /* address or offset (or value for constant, index for native function) */
@@ -151,6 +152,7 @@ typedef struct s_symbol {
   struct s_symbol **refer;  /* referrer list, functions that "use" this symbol */
   int numrefers;        /* number of entries in the referrer list */
   char *documentation;  /* optional documentation string */
+  methodmap_t *methodmap; /* if ident == iMETHODMAP */
 } symbol;
 
 /*  Possible entries for "ident". These are used in the "symbol", "value"
@@ -170,8 +172,8 @@ typedef struct s_symbol {
 #define iFUNCTN     9
 #define iREFFUNC    10
 #define iVARARGS    11  /* function specified ... as argument(s) */
-#define iPROXY      12  /* proxies to another symbol. */
 #define iACCESSOR   13  /* property accessor via a methodmap_method_t */
+#define iMETHODMAP  14  /* symbol defining a methodmap */
 
 /*  Possible entries for "usage"
  *
@@ -227,7 +229,6 @@ typedef struct s_symbol {
 #define uRETNONE  0x10
 
 #define flgDEPRECATED 0x01  /* symbol is deprecated (avoid use) */
-#define flgPROXIED    0x02  /* symbol has incoming proxy */
 
 #define uCOUNTOF  0x20  /* set in the "hasdefault" field of the arginfo struct */
 #define uTAGOF    0x40  /* set in the "hasdefault" field of the arginfo struct */
@@ -246,7 +247,6 @@ struct methodmap_method_s;
 
 typedef struct value_s {
   symbol *sym;          /* symbol in symbol table, NULL for (constant) expression */
-  symbol *proxy;        /* original symbol if resolved via a proxy */
   cell constval;        /* value of the constant expression (if ident==iCONSTEXPR)
                          * also used for the size of a literal array */
   int tag;              /* tag (of the expression) */
@@ -678,7 +678,7 @@ void delete_symbol(symbol *root,symbol *sym);
 void delete_symbols(symbol *root,int level,int del_labels,int delete_functions);
 int refer_symbol(symbol *entry,symbol *bywhom);
 void markusage(symbol *sym,int usage);
-symbol *findglb(const char *name,int filter,symbol **alias = NULL);
+symbol *findglb(const char *name,int filter);
 symbol *findloc(const char *name);
 symbol *findconst(const char *name,int *matchtag);
 symbol *finddepend(const symbol *parent);
