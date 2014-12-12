@@ -146,6 +146,11 @@ methodmap TopMenu < Handle
 	// @return              A new TopMenu.
 	public native TopMenu(TopMenuHandler handler);
 
+	// Returns a TopMenu handle from a generic handle. If the given handle is
+	// a TopMenu, the handle is simply casted back. Otherwise, an error is
+	// raised.
+	public static native TopMenu FromHandle(Handle handle);
+
 	// Re-sorts the items in a TopMenu via a configuration file.
 	//
 	// The format of the configuration file should be a Valve Key-Values 

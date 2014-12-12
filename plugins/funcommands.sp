@@ -258,8 +258,10 @@ public Action:Event_RoundEnd(Handle:event,const String:name[],bool:dontBroadcast
 	KillAllDrugs();
 }
 
-public OnAdminMenuReady(TopMenu topmenu)
+public OnAdminMenuReady(Handle aTopMenu)
 {
+	TopMenu topmenu = TopMenu.FromHandle(aTopMenu);
+
 	/* Block us from being called twice */
 	if (topmenu == hTopMenu)
 	{

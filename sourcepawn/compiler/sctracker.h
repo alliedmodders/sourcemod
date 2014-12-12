@@ -85,6 +85,7 @@ typedef struct methodmap_method_s
   symbol *target;
   symbol *getter;
   symbol *setter;
+  bool is_static;
 
   int property_tag() const {
     assert(getter || setter);
@@ -100,10 +101,10 @@ typedef struct methodmap_method_s
   }
 } methodmap_method_t;
 
-typedef struct methodmap_s
+struct methodmap_t
 {
-  struct methodmap_s *next;
-  struct methodmap_s *parent;
+  methodmap_t *next;
+  methodmap_t *parent;
   int tag;
   int nullable;
   LayoutSpec spec;
@@ -114,7 +115,7 @@ typedef struct methodmap_s
   // Shortcut.
   methodmap_method_t *dtor;
   methodmap_method_t *ctor;
-} methodmap_t;
+};
 
 /**
  * Pawn Structs

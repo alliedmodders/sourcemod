@@ -65,7 +65,7 @@
  * @param topmenu		Handle to the admin menu's TopMenu.
  * @noreturn
  */
-forward OnAdminMenuCreated(TopMenu topmenu);
+forward OnAdminMenuCreated(Handle topmenu);
 
 /**
  * Called when the admin menu is ready to have items added.
@@ -73,7 +73,7 @@ forward OnAdminMenuCreated(TopMenu topmenu);
  * @param topmenu		Handle to the admin menu's TopMenu.
  * @noreturn
  */
-forward OnAdminMenuReady(TopMenu topmenu);
+forward OnAdminMenuReady(Handle topmenu);
 
 /**
  * Retrieves the Handle to the admin top menu.

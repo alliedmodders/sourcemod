@@ -2924,25 +2924,6 @@ void delete_symbols(symbol *root,int level,int delete_labels,int delete_function
   constvalue *stateptr;
   int mustdelete;
 
-  // Hack - proxies have a "target" pointer, but the target could be deleted
-  // already if done inside the main loop below. To get around this we do a
-  // precursor pass. Note that proxies can only be at the global scope.
-  if (origRoot == &glbtab) {
-    symbol *iter = root;
-    while (iter->next) {
-      sym = iter->next;
-
-      if (sym->ident != iPROXY) {
-        iter = sym;
-	continue;
-      }
-
-      RemoveFromHashTable(sp_Globals, sym);
-      iter->next = sym->next;
-      free_symbol(sym);
-    }
-  }
-
   /* erase only the symbols with a deeper nesting level than the
    * specified nesting level */
   while (root->next!=NULL) {
@@ -2985,9 +2966,12 @@ void delete_symbols(symbol *root,int level,int delete_labels,int delete_function
       mustdelete=delete_functions || (sym->usage & uNATIVE)!=0;
       assert(sym->parent==NULL);
       break;
-    case iPROXY:
-      // Original loop determined it was okay to keep.
-      mustdelete=FALSE;
+    case iMETHODMAP:
+      // We delete methodmap symbols at the end, but since methodmaps
+      // themselves get wiped, we null the pointer.
+      sym->methodmap = nullptr;
+      mustdelete = delete_functions;
+      assert(!sym->parent);
       break;
     case iARRAYCELL:
     case iARRAYCHAR:
@@ -3143,7 +3127,7 @@ void markusage(symbol *sym,int usage)
  *
  *  Returns a pointer to the global symbol (if found) or NULL (if not found)
  */
-symbol *findglb(const char *name, int filter, symbol **alias)
+symbol *findglb(const char *name, int filter)
 {
   /* find a symbol with a matching automaton first */
   symbol *sym=NULL;
@@ -3167,12 +3151,6 @@ symbol *findglb(const char *name, int filter, symbol **alias)
    */
   if (sym==NULL)
     sym=FindInHashTable(sp_Globals,name,fcurrent);
-
-  if (sym && sym->ident == iPROXY) {
-    if (alias)
-      *alias = sym;
-    return sym->target;
-  }
 
   return sym;
 }

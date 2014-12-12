@@ -2001,6 +2001,96 @@ static int hier2(value *lval)
   } /* switch */
 }
 
+static symbol *
+fake_function_for_method(methodmap_t *map, const char *lexstr)
+{
+  // Fetch a fake function so errors aren't as crazy.
+  char tmpname[METHOD_NAMEMAX + 1];
+  strcpy(tmpname, map->name);
+  strcat(tmpname, ".");
+  strcat(tmpname, lexstr);
+  tmpname[sNAMEMAX] = '\0';
+  return fetchfunc(tmpname);
+}
+
+enum FieldExprResult
+{
+  FER_Fail,
+  FER_Accessor,
+  FER_CallFunction,
+  FER_CallMethod
+};
+
+static FieldExprResult
+field_expression(svalue &thisval, value *lval, symbol **target)
+{
+  // Catch invalid calls early so we don't compile with a tag mismatch.
+  switch (thisval.val.ident) {
+    case iARRAY:
+    case iREFARRAY:
+      error(106);
+      break;
+
+    case iFUNCTN:
+    case iREFFUNC:
+      error(107);
+      break;
+  }
+
+  cell lexval;
+  char *lexstr;
+  if (!needtoken(tSYMBOL))
+    return FER_Fail;
+  tokeninfo(&lexval, &lexstr);
+
+  if (thisval.val.ident == iMETHODMAP) {
+    methodmap_t *map = thisval.val.sym->methodmap;
+    methodmap_method_t *method = methodmap_find_method(map, lexstr);
+    if (!method) {
+      error(105, map->name, lexstr);
+      *target = fake_function_for_method(map, lexstr);
+      return FER_CallFunction;
+    }
+
+    if (!method->is_static)
+      error(176, method->name, map->name);
+    *target = method->target;
+    return FER_CallFunction;
+  }
+
+  methodmap_t *map;
+  if ((map = methodmap_find_by_tag(thisval.val.tag)) == NULL) {
+    error(104, pc_tagname(thisval.val.tag));
+    return FER_Fail;
+  }
+
+  methodmap_method_t *method;
+  if ((method = methodmap_find_method(map, lexstr)) == NULL) {
+    error(105, map->name, lexstr);
+    *target = fake_function_for_method(map, lexstr);
+    return FER_CallFunction;
+  }
+
+  if (method && (method->getter || method->setter)) {
+    if (thisval.lvalue)
+      rvalue(lval);
+    clear_value(lval);
+    lval->ident = iACCESSOR;
+    lval->tag = method->property_tag();
+    lval->accessor = method;
+    return FER_Accessor;
+  }
+
+  *target = method->target;
+
+  if (method->is_static) {
+    error(177, method->name, map->name, method->name);
+    return FER_CallFunction;
+  }
+  return FER_CallMethod;
+}
+
+
 /*  hier1
  *
  *  The highest hierarchy level: it looks for pointer and array indices
@@ -2025,14 +2115,27 @@ static int hier1(value *lval1)
   lvalue=primary(lval1);
   symtok=tokeninfo(&val,&st);   /* get token read by primary() */
   cursym=lval1->sym;
+
 restart:
   sym=cursym;
+
+  if (lval1->ident == iMETHODMAP &&
+      !(lexpeek('.') || lexpeek('(')))
+  {
+    // Cannot use methodmap as an rvalue/lvalue.
+    error(174, sym ? sym->name : "(unknown)");
+
+    lval1->ident = iCONSTEXPR;
+    lval1->tag = 0;
+    lval1->constval = 0;
+  }
+
   if (matchtoken('[') || matchtoken('{') || matchtoken('(') || matchtoken('.')) {
+    tok=tokeninfo(&val,&st);    /* get token read by matchtoken() */
     if (lvalue && lval1->ident == iACCESSOR) {
       rvalue(lval1);
       lvalue = FALSE;
     }
-    tok=tokeninfo(&val,&st);    /* get token read by matchtoken() */
     magic_string = (sym && (sym->tag == pc_tag_string && sym->dim.array.level == 0));
     if (sym==NULL && symtok!=tSYMBOL) {
       /* we do not have a valid symbol and we appear not to have read a valid
@@ -2210,59 +2313,17 @@ restart:
 
       svalue *implicitthis = NULL;
       if (tok == '.') {
-        methodmap_t *map;
-
-        /* Catch invalid calls early so we don't compile with a tag mismatch. */
-        switch (thisval.val.ident) {
-          case iARRAY:
-          case iREFARRAY:
-            error(106);
+        switch (field_expression(thisval, lval1, &sym)) {
+          case FER_Fail:
+          case FER_CallFunction:
             break;
-
-          case iFUNCTN:
-          case iREFFUNC:
-            error(107);
-            break;
-        }
-
-        if ((map = methodmap_find_by_tag(thisval.val.tag)) == NULL) {
-          error(104, pc_tagname(thisval.val.tag));
-        }
-        
-        if (needtoken(tSYMBOL) && map) {
-          cell lexval;
-          char *lexstr;
-          methodmap_method_t *method;
-
-          tokeninfo(&lexval, &lexstr);
-          if ((method = methodmap_find_method(map, lexstr)) == NULL)
-            error(105, map->name, lexstr);
-
-          if (method && (method->getter || method->setter)) {
-            if (lvalue)
-              rvalue(lval1);
-            clear_value(lval1);
-            lval1->ident = iACCESSOR;
-            lval1->tag = method->property_tag();
-            lval1->accessor = method;
-            lvalue = TRUE;
-            goto restart;
-          }
-
-          if (!method || !method->target) {
-            error(105, map->name, lexstr);
-
-            // Fetch a fake function so errors aren't as crazy.
-            char tmpname[METHOD_NAMEMAX + 1];
-            strcpy(tmpname, map->name);
-            strcat(tmpname, ".");
-            strcat(tmpname, lexstr);
-            tmpname[sNAMEMAX] = '\0';
-            sym = fetchfunc(tmpname);
-          } else {
+          case FER_CallMethod:
             implicitthis = &thisval;
-            sym = method->target;
-          }
+            break;
+          case FER_Accessor:
+            goto restart;
+          default:
+            assert(false);
         }
 
         // If we don't find a '(' next, just fail to compile for now -- and
@@ -2275,7 +2336,18 @@ restart:
 
       assert(tok=='(');
       if (sym==NULL || (sym->ident!=iFUNCTN && sym->ident!=iREFFUNC)) {
-        if (sym==NULL && sc_status==statFIRST) {
+        if (sym && sym->ident == iMETHODMAP && sym->methodmap) {
+          if (!sym->methodmap->ctor) {
+            // Immediately fatal - no function to call.
+            return error(172, sym->name);
+          }
+          if (sym->methodmap->nullable) {
+            // Keep going, this is basically a style thing.
+            error(170, sym->methodmap->name);
+          }
+
+          sym = sym->methodmap->ctor->target;
+        } else if (sym==NULL && sc_status==statFIRST) {
           /* could be a "use before declaration"; in that case, create a stub
            * function so that the usage can be marked.
            */
@@ -2285,26 +2357,12 @@ restart:
           markusage(sym,uREAD);
         } else {
           return error(12);           /* invalid function call */
-        } /* if */
+        }
       } else if ((sym->usage & uMISSING)!=0) {
         char symname[2*sNAMEMAX+16];  /* allow space for user defined operators */
         funcdisplayname(symname,sym->name);
         error(4,symname);             /* function not defined */
       } /* if */
-
-      // Check whether we're calling a constructor. This is a bit hacky, since
-      // we're relying on whatever the lval state is.
-      if ((sym->flags & flgPROXIED) &&
-          lval1->proxy &&
-          lval1->proxy->target == sym)
-      {
-        // Only constructors should be proxied, but we check anyway.
-        assert(!implicitthis);
-        if (methodmap_t *methodmap = methodmap_find_by_tag(sym->tag)) {
-          if (sym == methodmap->ctor->target && methodmap->nullable)
-            error(170, methodmap->name);
-        }
-      }
 
       callfunction(sym,implicitthis,lval1,TRUE);
       if (lexpeek('.')) {
@@ -2342,7 +2400,6 @@ restart:
 
     funcenum_t *fe = funcenum_for_symbol(target);
     lval1->sym = NULL;
-    lval1->proxy = NULL;
     lval1->ident = iCONSTEXPR;
     lval1->constval = (public_index << 1) | 1;
     lval1->tag = fe->tag;
@@ -2429,8 +2486,7 @@ static int primary(value *lval)
       } /* if */
     } /* if */
     /* now try a global variable */
-    symbol *alias = NULL;
-    if ((sym = findglb(st, sSTATEVAR, &alias)) != 0) {
+    if ((sym = findglb(st, sSTATEVAR)) != 0) {
       if (sym->ident==iFUNCTN || sym->ident==iREFFUNC) {
         /* if the function is only in the table because it was inserted as a
          * stub in the first pass (i.e. it was "used" but never declared or
@@ -2442,15 +2498,18 @@ static int primary(value *lval)
         if ((sym->usage & uDEFINE)==0)
           error(17,st);
         lval->sym=sym;
-        lval->proxy=alias;
         lval->ident=sym->ident;
         lval->tag=sym->tag;
-        if (sym->ident==iARRAY || sym->ident==iREFARRAY) {
-          address(sym,sPRI);    /* get starting address in primary register */
-          return FALSE;         /* return 0 for array (not lvalue) */
-        } else {
-          return TRUE;          /* return 1 if lvalue (not function or array) */
-        } /* if */
+        switch (sym->ident) {
+          case iARRAY:
+          case iREFARRAY:
+            address(sym,sPRI);    /* get starting address in primary register */
+            return FALSE;         /* return 0 for array (not lvalue) */
+          case iMETHODMAP:
+            return FALSE;
+          default:
+            return TRUE;          /* return 1 if lvalue (not function or array) */
+        } /* switch */
       } /* if */
     } else {
       if (!sc_allowproccall)
@@ -2466,7 +2525,6 @@ static int primary(value *lval)
     assert(sym!=NULL);
     assert(sym->ident==iFUNCTN || sym->ident==iREFFUNC);
     lval->sym=sym;
-    lval->proxy=alias;
     lval->ident=sym->ident;
     lval->tag=sym->tag;
     return FALSE;       /* return 0 for function (not an lvalue) */
@@ -2482,7 +2540,6 @@ static int primary(value *lval)
 static void clear_value(value *lval)
 {
   lval->sym=NULL;
-  lval->proxy=NULL;
   lval->constval=0L;
   lval->tag=0;
   lval->ident=0;

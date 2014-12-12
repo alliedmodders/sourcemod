@@ -1,0 +1,1 @@
+(11) : error 176: non-static method or property 'GetThing' must be called with a value of type 'X'
