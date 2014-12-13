@@ -43,12 +43,12 @@ enum CommType
 
 DisplayGagTypesMenu(client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_GagTypes);
+	Menu menu = CreateMenu(MenuHandler_GagTypes);
 	
 	decl String:title[100];
 	Format(title, sizeof(title), "%T: %N", "Choose Type", client, g_GagTarget[client]);
-	SetMenuTitle(menu, title);
-	SetMenuExitBackButton(menu, true);
+	menu.SetTitle(title);
+	menu.ExitBackButton = true;
 	
 	new target = g_GagTarget[client];
 	
@@ -79,28 +79,28 @@ DisplayGagTypesMenu(client)
 		AddTranslatedMenuItem(menu, "5", "UnSilence Player", client);
 	}
 		
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-AddTranslatedMenuItem(Handle:menu, const String:opt[], const String:phrase[], client)
+void AddTranslatedMenuItem(Menu menu, const char[] opt, const char[] phrase, int client)
 {
-	decl String:buffer[128];
+	char buffer[128];
 	Format(buffer, sizeof(buffer), "%T", phrase, client);
-	AddMenuItem(menu, opt, buffer);
+	menu.AddItem(opt, buffer);
 }
 
-DisplayGagPlayerMenu(client)
+void DisplayGagPlayerMenu(int client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_GagPlayer);
+	Menu menu = CreateMenu(MenuHandler_GagPlayer);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "Gag/Mute player", client);
-	SetMenuTitle(menu, title);
-	SetMenuExitBackButton(menu, true);
+	menu.SetTitle(title);
+	menu.ExitBackButton = true;
 	
 	AddTargetsToMenu(menu, client, true, false);
 	
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+	menu.Display(client, MENU_TIME_FOREVER);
 }
 
 public AdminMenu_Gag(Handle:topmenu, 
@@ -120,11 +120,11 @@ public AdminMenu_Gag(Handle:topmenu,
 	}
 }
 
-public MenuHandler_GagPlayer(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_GagPlayer(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
-		CloseHandle(menu);
+		delete menu;
 	}
 	else if (action == MenuAction_Cancel)
 	{
@@ -138,7 +138,7 @@ public MenuHandler_GagPlayer(Handle:menu, MenuAction:action, param1, param2)
 		decl String:info[32];
 		new userid, target;
 		
-		GetMenuItem(menu, param2, info, sizeof(info));
+		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
 
 		if ((target = GetClientOfUserId(userid)) == 0)
@@ -157,11 +157,11 @@ public MenuHandler_GagPlayer(Handle:menu, MenuAction:action, param1, param2)
 	}
 }
 
-public MenuHandler_GagTypes(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_GagTypes(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
-		CloseHandle(menu);
+		delete menu;
 	}
 	else if (action == MenuAction_Cancel)
 	{
@@ -175,7 +175,7 @@ public MenuHandler_GagTypes(Handle:menu, MenuAction:action, param1, param2)
 		decl String:info[32];
 		new CommType:type;
 		
-		GetMenuItem(menu, param2, info, sizeof(info));
+		menu.GetItem(param2, info, sizeof(info));
 		type = CommType:StringToInt(info);
 		
 		decl String:name[MAX_NAME_LENGTH];

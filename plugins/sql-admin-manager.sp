@@ -76,7 +76,7 @@ Handle:Connect()
 		db = SQL_Connect("default", true, error, sizeof(error));
 	}
 	
-	if (db == INVALID_HANDLE)
+	if (db == null)
 	{
 		LogError("Could not connect to database: %s", error);
 	}
@@ -159,7 +159,7 @@ public Action:Command_CreateTables(args)
 {
 	new client = 0;
 	new Handle:db = Connect();
-	if (db == INVALID_HANDLE)
+	if (db == null)
 	{
 		ReplyToCommand(client, "[SM] %t", "Could not connect to database");
 		return Plugin_Handled;
@@ -177,7 +177,7 @@ public Action:Command_CreateTables(args)
 		ReplyToCommand(client, "[SM] Unknown driver type '%s', cannot create tables.", ident);
 	}
 
-	CloseHandle(db);
+	delete db;
 
 	return Plugin_Handled;
 }
@@ -188,7 +188,7 @@ bool:GetUpdateVersion(client, Handle:db, versions[4])
 	new Handle:hQuery;
 
 	Format(query, sizeof(query), "SELECT cfg_value FROM sm_config WHERE cfg_key = 'admin_version'");
-	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hQuery = SQL_Query(db, query)) == null)
 	{
 		DoError(client, db, query, "Version lookup query failed");
 		return false;
@@ -208,7 +208,7 @@ bool:GetUpdateVersion(client, Handle:db, versions[4])
 		}
 	}
 
-	CloseHandle(hQuery);
+	delete hQuery;
 
 	if (current_version[3] < versions[3])
 	{
@@ -232,7 +232,7 @@ UpdateSQLite(client, Handle:db)
 	new Handle:hQuery;
 
 	Format(query, sizeof(query), "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'sm_config'");
-	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hQuery = SQL_Query(db, query)) == null)
 	{
 		DoError(client, db, query, "Table lookup query failed");
 		return;
@@ -240,7 +240,7 @@ UpdateSQLite(client, Handle:db)
 
 	new bool:found = SQL_FetchRow(hQuery);
 
-	CloseHandle(hQuery);
+	delete hQuery;
 
 	new versions[4];
 	if (found)
@@ -298,7 +298,7 @@ UpdateMySQL(client, Handle:db)
 	new Handle:hQuery;
 	
 	Format(query, sizeof(query), "SHOW TABLES");
-	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hQuery = SQL_Query(db, query)) == null)
 	{
 		DoError(client, db, query, "Table lookup query failed");
 		return;
@@ -314,7 +314,7 @@ UpdateMySQL(client, Handle:db)
 			found = true;
 		}
 	}
-	CloseHandle(hQuery);
+	delete hQuery;
 
 	new versions[4];
 
@@ -365,7 +365,7 @@ public Action:Command_UpdateTables(args)
 {
 	new client = 0;
 	new Handle:db = Connect();
-	if (db == INVALID_HANDLE)
+	if (db == null)
 	{
 		ReplyToCommand(client, "[SM] %t", "Could not connect to database");
 		return Plugin_Handled;
@@ -383,7 +383,7 @@ public Action:Command_UpdateTables(args)
 		ReplyToCommand(client, "[SM] Unknown driver type, cannot upgrade.");
 	}
 
-	CloseHandle(db);
+	delete db;
 
 	return Plugin_Handled;
 }
@@ -408,7 +408,7 @@ public Action:Command_SetAdminGroups(client, args)
 	}
 	
 	new Handle:db = Connect();
-	if (db == INVALID_HANDLE)
+	if (db == null)
 	{
 		ReplyToCommand(client, "[SM] %t", "Could not connect to database");
 		return Plugin_Handled;
@@ -427,7 +427,7 @@ public Action:Command_SetAdminGroups(client, args)
 		safe_identity);
 		
 	new Handle:hQuery;
-	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hQuery = SQL_Query(db, query)) == null)
 	{
 		return DoError(client, db, query, "Admin lookup query failed");
 	}
@@ -435,14 +435,14 @@ public Action:Command_SetAdminGroups(client, args)
 	if (!SQL_FetchRow(hQuery))
 	{
 		ReplyToCommand(client, "[SM] %t", "SQL Admin not found");
-		CloseHandle(hQuery);
-		CloseHandle(db);
+		delete hQuery;
+		delete db;
 		return Plugin_Handled;
 	}
 	
 	new id = SQL_FetchInt(hQuery, 0);
 	
-	CloseHandle(hQuery);
+	delete hQuery;
 	
 	/**
 	 * First delete all of the user's existing groups.
@@ -456,7 +456,7 @@ public Action:Command_SetAdminGroups(client, args)
 	if (args < 3)
 	{
 		ReplyToCommand(client, "[SM] %t", "SQL Admin groups reset");
-		CloseHandle(db);
+		delete db;
 		return Plugin_Handled;
 	}
 	
@@ -464,7 +464,7 @@ public Action:Command_SetAdminGroups(client, args)
 	new Handle:hAddQuery, Handle:hFindQuery;
 	
 	Format(query, sizeof(query), "SELECT id FROM sm_groups WHERE name = ?");
-	if ((hFindQuery = SQL_PrepareQuery(db, query, error, sizeof(error))) == INVALID_HANDLE)
+	if ((hFindQuery = SQL_PrepareQuery(db, query, error, sizeof(error))) == null)
 	{
 		return DoStmtError(client, db, query, error, "Group search prepare failed");
 	}
@@ -473,9 +473,9 @@ public Action:Command_SetAdminGroups(client, args)
 		sizeof(query), 
 		"INSERT INTO sm_admins_groups (admin_id, group_id, inherit_order) VALUES (%d, ?, ?)",
 		id);
-	if ((hAddQuery = SQL_PrepareQuery(db, query, error, sizeof(error))) == INVALID_HANDLE)
+	if ((hAddQuery = SQL_PrepareQuery(db, query, error, sizeof(error))) == null)
 	{
-		CloseHandle(hFindQuery);
+		delete hFindQuery;
 		return DoStmtError(client, db, query, error, "Add admin group prepare failed");
 	}
 	
@@ -502,9 +502,9 @@ public Action:Command_SetAdminGroups(client, args)
 		}
 	}
 	
-	CloseHandle(hAddQuery);
-	CloseHandle(hFindQuery);
-	CloseHandle(db);
+	delete hAddQuery;
+	delete hFindQuery;
+	delete db;
 	
 	if (inherit_order == 1)
 	{
@@ -525,7 +525,7 @@ public Action:Command_DelGroup(client, args)
 	}
 
 	new Handle:db = Connect();
-	if (db == INVALID_HANDLE)
+	if (db == null)
 	{
 		ReplyToCommand(client, "[SM] %t", "Could not connect to database");
 		return Plugin_Handled;
@@ -550,7 +550,7 @@ public Action:Command_DelGroup(client, args)
 	
 	new Handle:hQuery;
 	Format(query, sizeof(query), "SELECT id FROM sm_groups WHERE name = '%s'", safe_name);
-	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hQuery = SQL_Query(db, query)) == null)
 	{
 		return DoError(client, db, query, "Group retrieval query failed");
 	}
@@ -558,14 +558,14 @@ public Action:Command_DelGroup(client, args)
 	if (!SQL_FetchRow(hQuery))
 	{
 		ReplyToCommand(client, "[SM] %t", "SQL Group not found");
-		CloseHandle(hQuery);
-		CloseHandle(db);
+		delete hQuery;
+		delete db;
 		return Plugin_Handled;
 	}
 	
 	new id = SQL_FetchInt(hQuery, 0);
 	
-	CloseHandle(hQuery);
+	delete hQuery;
 	
 	/* Delete admin inheritance for this group */
 	Format(query, sizeof(query), "DELETE FROM sm_admins_groups WHERE group_id = %d", id);
@@ -597,7 +597,7 @@ public Action:Command_DelGroup(client, args)
 	
 	ReplyToCommand(client, "[SM] %t", "SQL Group deleted");
 	
-	CloseHandle(db);
+	delete db;
 	
 	return Plugin_Handled;
 }
@@ -623,7 +623,7 @@ public Action:Command_AddGroup(client, args)
 	}
 	
 	new Handle:db = Connect();
-	if (db == INVALID_HANDLE)
+	if (db == null)
 	{
 		ReplyToCommand(client, "[SM] %t", "Could not connect to database");
 		return Plugin_Handled;
@@ -637,7 +637,7 @@ public Action:Command_AddGroup(client, args)
 	new Handle:hQuery;
 	decl String:query[256];
 	Format(query, sizeof(query), "SELECT id FROM sm_groups WHERE name = '%s'", safe_name);
-	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hQuery = SQL_Query(db, query)) == null)
 	{
 		return DoError(client, db, query, "Group retrieval query failed");
 	}
@@ -645,12 +645,12 @@ public Action:Command_AddGroup(client, args)
 	if (SQL_GetRowCount(hQuery) > 0)
 	{
 		ReplyToCommand(client, "[SM] %t", "SQL Group already exists");
-		CloseHandle(hQuery);
-		CloseHandle(db);
+		delete hQuery;
+		delete db;
 		return Plugin_Handled;
 	}
 	
-	CloseHandle(hQuery);
+	delete hQuery;
 	
 	decl String:flags[30];
 	decl String:safe_flags[64];
@@ -671,7 +671,7 @@ public Action:Command_AddGroup(client, args)
 	
 	ReplyToCommand(client, "[SM] %t", "SQL Group added");
 	
-	CloseHandle(db);
+	delete db;
 		
 	return Plugin_Handled;
 }	
@@ -697,7 +697,7 @@ public Action:Command_DelAdmin(client, args)
 	}
 	
 	new Handle:db = Connect();
-	if (db == INVALID_HANDLE)
+	if (db == null)
 	{
 		ReplyToCommand(client, "[SM] %t", "Could not connect to database");
 		return Plugin_Handled;
@@ -716,7 +716,7 @@ public Action:Command_DelAdmin(client, args)
 		safe_identity);
 		
 	new Handle:hQuery;
-	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hQuery = SQL_Query(db, query)) == null)
 	{
 		return DoError(client, db, query, "Admin lookup query failed");
 	}
@@ -724,14 +724,14 @@ public Action:Command_DelAdmin(client, args)
 	if (!SQL_FetchRow(hQuery))
 	{
 		ReplyToCommand(client, "[SM] %t", "SQL Admin not found");
-		CloseHandle(hQuery);
-		CloseHandle(db);
+		delete hQuery;
+		delete db;
 		return Plugin_Handled;
 	}
 	
 	new id = SQL_FetchInt(hQuery, 0);
 	
-	CloseHandle(hQuery);
+	delete hQuery;
 	
 	/* Delete group bindings */
 	Format(query, sizeof(query), "DELETE FROM sm_admins_groups WHERE admin_id = %d", id);
@@ -746,7 +746,7 @@ public Action:Command_DelAdmin(client, args)
 		return DoError(client, db, query, "Admin deletion query failed");
 	}
 	
-	CloseHandle(db);
+	delete db;
 	
 	ReplyToCommand(client, "[SM] %t", "SQL Admin deleted");
 	
@@ -792,7 +792,7 @@ public Action:Command_AddAdmin(client, args)
 	decl String:query[256];
 	new Handle:hQuery;
 	new Handle:db = Connect();
-	if (db == INVALID_HANDLE)
+	if (db == null)
 	{
 		ReplyToCommand(client, "[SM] %t", "Could not connect to database");
 		return Plugin_Handled;
@@ -801,7 +801,7 @@ public Action:Command_AddAdmin(client, args)
 	SQL_EscapeString(db, identity, safe_identity, sizeof(safe_identity));
 	
 	Format(query, sizeof(query), "SELECT id FROM sm_admins WHERE authtype = '%s' AND identity = '%s'", authtype, identity);
-	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	if ((hQuery = SQL_Query(db, query)) == null)
 	{
 		return DoError(client, db, query, "Admin retrieval query failed");
 	}
@@ -809,12 +809,12 @@ public Action:Command_AddAdmin(client, args)
 	if (SQL_GetRowCount(hQuery) > 0)
 	{
 		ReplyToCommand(client, "[SM] %t", "SQL Admin already exists");
-		CloseHandle(hQuery);
-		CloseHandle(db);
+		delete hQuery;
+		delete db;
 		return Plugin_Handled;
 	}
 	
-	CloseHandle(hQuery);
+	delete hQuery;
 	
 	decl String:alias[64];
 	decl String:safe_alias[140];
@@ -852,7 +852,7 @@ public Action:Command_AddAdmin(client, args)
 	
 	ReplyToCommand(client, "[SM] %t", "SQL Admin added");
 	
-	CloseHandle(db);
+	delete db;
 		
 	return Plugin_Handled;
 }
@@ -878,7 +878,7 @@ stock Action:DoError(client, Handle:db, const String:query[], const String:msg[]
 		SQL_GetError(db, error, sizeof(error));
 		LogError("%s: %s", msg, error);
 		LogError("Query dump: %s", query);
-		CloseHandle(db);
+		delete db;
 		ReplyToCommand(client, "[SM] %t", "Failed to query database");
 		return Plugin_Handled;
 }
@@ -887,7 +887,7 @@ stock Action:DoStmtError(client, Handle:db, const String:query[], const String:e
 {
 		LogError("%s: %s", msg, error);
 		LogError("Query dump: %s", query);
-		CloseHandle(db);
+		delete db;
 		ReplyToCommand(client, "[SM] %t", "Failed to query database");
 		return Plugin_Handled;
 }

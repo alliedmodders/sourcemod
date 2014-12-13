@@ -20,7 +20,7 @@ public OnPluginStart()
 	RegServerCmd("sql_test_txn", Command_TestTxn)
 
 	new Handle:hibernate = FindConVar("sv_hibernate_when_empty");
-	if (hibernate != INVALID_HANDLE) {
+	if (hibernate != null) {
 		ServerCommand("sv_hibernate_when_empty 0");
 	}
 }
@@ -63,23 +63,23 @@ public Action:Command_TestSql1(args)
 {
 	new String:error[255]
 	new Handle:db = SQL_DefConnect(error, sizeof(error))
-	if (db == INVALID_HANDLE)
+	if (db == null)
 	{
 		PrintToServer("Failed to connect: %s", error)
 		return Plugin_Handled
 	}
 	
 	new Handle:query = SQL_Query(db, "SELECT * FROM gab")
-	if (query == INVALID_HANDLE)
+	if (query == null)
 	{
 		SQL_GetError(db, error, sizeof(error))
 		PrintToServer("Failed to query: %s", error)
 	} else {
 		PrintQueryData(query)
-		CloseHandle(query)
+		delete query
 	}
 	
-	CloseHandle(db)
+	delete db
 	
 	return Plugin_Handled;
 }
@@ -88,14 +88,14 @@ public Action:Command_TestSql2(args)
 {
 	new String:error[255]
 	new Handle:db = SQL_DefConnect(error, sizeof(error))
-	if (db == INVALID_HANDLE)
+	if (db == null)
 	{
 		PrintToServer("Failed to connect: %s", error)
 		return Plugin_Handled
 	}
 	
 	new Handle:stmt = SQL_PrepareQuery(db, "SELECT * FROM gab WHERE gaben > ?", error, sizeof(error))
-	if (stmt == INVALID_HANDLE)
+	if (stmt == null)
 	{
 		PrintToServer("Failed to prepare query: %s", error)
 	} else {
@@ -107,22 +107,22 @@ public Action:Command_TestSql2(args)
 		} else {
 			PrintQueryData(stmt)
 		}
-		CloseHandle(stmt)
+		delete stmt
 	}
 	
-	CloseHandle(db)
+	delete db
 	
 	return Plugin_Handled;
 }
 
-new Handle:g_ThreadedHandle = INVALID_HANDLE;
+new Handle:g_ThreadedHandle = null;
 
 public CallbackTest3(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
 	PrintToServer("CallbackTest1() (owner %x) (hndl %x) (error \"%s\") (data %d)", owner, hndl, error, data);
-	if (g_ThreadedHandle != INVALID_HANDLE && hndl != INVALID_HANDLE)
+	if (g_ThreadedHandle != null && hndl != null)
 	{
-		CloseHandle(hndl);
+		delete hndl;
 	} else {
 		g_ThreadedHandle = hndl;
 	}
@@ -130,7 +130,7 @@ public CallbackTest3(Handle:owner, Handle:hndl, const String:error[], any:data)
 
 public Action:Command_TestSql3(args)
 {
-	if (g_ThreadedHandle != INVALID_HANDLE)
+	if (g_ThreadedHandle != null)
 	{
 		PrintToServer("A threaded connection already exists, run the next test");
 		return Plugin_Handled;
@@ -149,14 +149,14 @@ public Action:Command_TestSql4(args)
 {
 	SQL_LockDatabase(g_ThreadedHandle);
 	new Handle:query = SQL_Query(g_ThreadedHandle, "SELECT * FROM gab")
-	if (query == INVALID_HANDLE)
+	if (query == null)
 	{
 		new String:error[255];
 		SQL_GetError(g_ThreadedHandle, error, sizeof(error))
 		PrintToServer("Failed to query: %s", error)
 	} else {
 		PrintQueryData(query)
-		CloseHandle(query)
+		delete query
 	}
 	SQL_UnlockDatabase(g_ThreadedHandle);
 	
@@ -165,7 +165,7 @@ public Action:Command_TestSql4(args)
 
 public CallbackTest5(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
-	if (hndl == INVALID_HANDLE)
+	if (hndl == null)
 	{
 		PrintToServer("Failed to query: %s", error)
 	} else {
@@ -176,7 +176,7 @@ public CallbackTest5(Handle:owner, Handle:hndl, const String:error[], any:data)
 
 public CallbackTest6(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
-	if (hndl == INVALID_HANDLE)
+	if (hndl == null)
 	{
 		PrintToServer("Failed to query: %s", error)
 	} else {
@@ -187,7 +187,7 @@ public CallbackTest6(Handle:owner, Handle:hndl, const String:error[], any:data)
 
 public CallbackTest7(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
-	if (hndl == INVALID_HANDLE)
+	if (hndl == null)
 	{
 		PrintToServer("Failed to query: %s", error)
 	} else {
@@ -266,7 +266,7 @@ public Action:Command_TestTxn(args)
 {
 	new String:error[256];
 	new Handle:db = SQL_Connect("storage-local", false, error, sizeof(error));
-	if (db == INVALID_HANDLE) {
+	if (db == null) {
 		ThrowError("ERROR: %s", error);
 		return Plugin_Handled;
 	}
@@ -305,7 +305,7 @@ public Action:Command_TestTxn(args)
 
 	// Make sure the transaction was rolled back - COUNT should be 5.
 	txn = SQL_CreateTransaction();
-	AssertEq("CloneHandle", _:CloneHandle(txn), _:INVALID_HANDLE);
+	AssertEq("CloneHandle", _:CloneHandle(txn), _:null);
 	txn.AddQuery("SELECT COUNT(id) FROM egg");
 	SQL_ExecuteTransaction(
 		db,

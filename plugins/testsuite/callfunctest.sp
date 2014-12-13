@@ -63,7 +63,7 @@ public OnReentrantCallReceived(num, String:str[])
 	PrintToServer("num = %d (expected: %d)", num, 7);
 	PrintToServer("str[] = \"%s\" (expected: \"%s\")", str, "nana");
 	
-	new Function:func = GetFunctionByName(INVALID_HANDLE, "OnReentrantCallReceivedTwo");
+	new Function:func = GetFunctionByName(null, "OnReentrantCallReceivedTwo");
 	
 	if (func == INVALID_FUNCTION)
 	{
@@ -73,7 +73,7 @@ public OnReentrantCallReceived(num, String:str[])
 	
 	PrintToServer("Calling OnReentrantCallReceivedTwo...");
 	
-	Call_StartFunction(INVALID_HANDLE, func);
+	Call_StartFunction(null, func);
 	Call_PushFloat(8.0);
 	err = Call_Finish(ret);
 	
@@ -105,7 +105,7 @@ public Action:Command_CallFunc(args)
 	new err;
 	new ret;
 	
-	new Function:func = GetFunctionByName(INVALID_HANDLE, "OnCallFuncReceived");
+	new Function:func = GetFunctionByName(null, "OnCallFuncReceived");
 	
 	if (func == INVALID_FUNCTION)
 	{
@@ -115,7 +115,7 @@ public Action:Command_CallFunc(args)
 	
 	PrintToServer("Calling OnCallFuncReceived...");
 	
-	Call_StartFunction(INVALID_HANDLE, func);
+	Call_StartFunction(null, func);
 	Call_PushCell(5);
 	Call_PushFloat(7.17);
 	Call_PushString(what);
@@ -146,7 +146,7 @@ public Action:Command_CallFunc(args)
 public Action:Command_ReentrantCallFunc(args)
 {	
 	new err, ret;
-	new Function:func = GetFunctionByName(INVALID_HANDLE, "OnReentrantCallReceived");
+	new Function:func = GetFunctionByName(null, "OnReentrantCallReceived");
 	
 	if (func == INVALID_FUNCTION)
 	{
@@ -156,7 +156,7 @@ public Action:Command_ReentrantCallFunc(args)
 	
 	PrintToServer("Calling OnReentrantCallReceived...");
 	
-	Call_StartFunction(INVALID_HANDLE, func);
+	Call_StartFunction(null, func);
 	Call_PushCell(7);
 	Call_PushString("nana");
 	err = Call_Finish(ret);

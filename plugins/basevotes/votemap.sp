@@ -31,7 +31,7 @@
  * Version: $Id$
  */
 
-new Handle:g_MapList = INVALID_HANDLE;
+Menu g_MapList;
 new g_mapCount;
 
 new Handle:g_SelectedMaps;
@@ -50,23 +50,23 @@ DisplayVoteMapMenu(client, mapCount, String:maps[5][])
 	{
 		strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), maps[0]);
 			
-		SetMenuTitle(g_hVoteMenu, "Change Map To");
-		AddMenuItem(g_hVoteMenu, maps[0], "Yes");
-		AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
+		g_hVoteMenu.SetTitle("Change Map To");
+		g_hVoteMenu.AddItem(maps[0], "Yes");
+		g_hVoteMenu.AddItem(VOTE_NO, "No");
 	}
 	else
 	{
 		g_voteInfo[VOTE_NAME][0] = '\0';
 		
-		SetMenuTitle(g_hVoteMenu, "Map Vote");
+		g_hVoteMenu.SetTitle("Map Vote");
 		for (new i = 0; i < mapCount; i++)
 		{
-			AddMenuItem(g_hVoteMenu, maps[i], maps[i]);
+			g_hVoteMenu.AddItem(maps[i], maps[i]);
 		}	
 	}
 	
-	SetMenuExitButton(g_hVoteMenu, false);
-	VoteMenuToAll(g_hVoteMenu, 20);		
+	g_hVoteMenu.ExitButton = false;
+	g_hVoteMenu.DisplayVoteToAll(20);		
 }
 
 ResetMenu()
@@ -77,25 +77,25 @@ ResetMenu()
 
 ConfirmVote(client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_Confirm);
+	Menu menu = CreateMenu(MenuHandler_Confirm);
 	
 	decl String:title[100];
 	Format(title, sizeof(title), "%T:", "Confirm Vote", client);
-	SetMenuTitle(menu, title);
-	SetMenuExitBackButton(menu, true);
+	menu.SetTitle(title);
+	menu.ExitBackButton = true;
 	
 	decl String:itemtext[256];
 	Format(itemtext, sizeof(itemtext), "%T", "Start the Vote", client);
-	AddMenuItem(menu, "Confirm", itemtext);
+	menu.AddItem("Confirm", itemtext);
 	
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);	
+	menu.Display(client, MENU_TIME_FOREVER);	
 }
 
-public MenuHandler_Confirm(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_Confirm(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
-		CloseHandle(menu);
+		delete menu;
 		g_VoteMapInUse = false;
 	}
 	else if (action == MenuAction_Cancel)
@@ -123,7 +123,7 @@ public MenuHandler_Confirm(Handle:menu, MenuAction:action, param1, param2)
 	}
 }
 
-public MenuHandler_Map(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_Map(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Cancel)
 	{		
@@ -141,7 +141,7 @@ public MenuHandler_Map(Handle:menu, MenuAction:action, param1, param2)
 	{
 		decl String:info[32], String:name[32];
 		
-		GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
+		menu.GetItem(param2, info, sizeof(info), _, name, sizeof(name));
 		
 		if (FindStringInArray(g_SelectedMaps, info) != -1)
 		{
@@ -156,14 +156,14 @@ public MenuHandler_Map(Handle:menu, MenuAction:action, param1, param2)
 	{
 		decl String:info[32], String:name[32];
 		
-		GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
+		menu.GetItem(param2, info, sizeof(info), _, name, sizeof(name));
 		
 		PushArrayString(g_SelectedMaps, info);
 		
 		/* Redisplay the list */
 		if (GetArraySize(g_SelectedMaps) < 5)
 		{
-			DisplayMenu(g_MapList, param1, MENU_TIME_FOREVER);
+			g_MapList.Display(param1, MENU_TIME_FOREVER);
 		}
 		else
 		{
@@ -197,7 +197,7 @@ public AdminMenu_VoteMap(Handle:topmenu,
 		{
 			ResetMenu();
 			g_VoteMapInUse = true;
-			DisplayMenu(g_MapList, param, MENU_TIME_FOREVER);
+			g_MapList.Display(param, MENU_TIME_FOREVER);
 		}
 		else 
 		{
@@ -260,10 +260,10 @@ public Action:Command_Votemap(client, args)
 	return Plugin_Handled;	
 }
 
-new Handle:g_map_array = INVALID_HANDLE;
+new Handle:g_map_array = null;
 new g_map_serial = -1;
 
-LoadMapList(Handle:menu)
+int LoadMapList(Menu menu)
 {
 	new Handle:map_array;
 	
@@ -271,25 +271,25 @@ LoadMapList(Handle:menu)
 			g_map_serial,
 			"sm_votemap menu",
 			MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_NO_DEFAULT|MAPLIST_FLAG_MAPSFOLDER))
-		!= INVALID_HANDLE)
+		!= null)
 	{
 		g_map_array = map_array;
 	}
 	
-	if (g_map_array == INVALID_HANDLE)
+	if (g_map_array == null)
 	{
 		return 0;
 	}
 	
 	RemoveAllMenuItems(menu);
 	
-	decl String:map_name[64];
+	char map_name[64];
 	new map_count = GetArraySize(g_map_array);
 	
 	for (new i = 0; i < map_count; i++)
 	{
 		GetArrayString(g_map_array, i, map_name, sizeof(map_name));
-		AddMenuItem(menu, map_name, map_name);
+		menu.AddItem(map_name, map_name);
 	}
 	
 	return map_count;

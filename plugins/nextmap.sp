@@ -47,7 +47,7 @@ public Plugin myinfo =
 };
 
 int g_MapPos = -1;
-Handle g_MapList = INVALID_HANDLE;
+Handle g_MapList = null;
 int g_MapListSerial = -1;
 
 int g_CurrentMapStartTime;
@@ -130,7 +130,7 @@ void FindAndSetNextMap()
 			g_MapListSerial, 
 			"mapcyclefile", 
 			MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_NO_DEFAULT)
-		== INVALID_HANDLE)
+		== null)
 	{
 		if (g_MapListSerial == -1)
 		{

@@ -41,36 +41,36 @@ PerformSlap(client, target, damage)
 
 DisplaySlapDamageMenu(client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_SlapDamage);
+	Menu menu = CreateMenu(MenuHandler_SlapDamage);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "Slap damage", client);
-	SetMenuTitle(menu, title);
-	SetMenuExitBackButton(menu, true);
+	menu.SetTitle(title);
+	menu.ExitBackButton = true;
 	
-	AddMenuItem(menu, "0", "0");
-	AddMenuItem(menu, "1", "1");
-	AddMenuItem(menu, "5", "5");
-	AddMenuItem(menu, "10", "10");
-	AddMenuItem(menu, "20", "20");
-	AddMenuItem(menu, "50", "50");
-	AddMenuItem(menu, "99", "99");
+	menu.AddItem("0", "0");
+	menu.AddItem("1", "1");
+	menu.AddItem("5", "5");
+	menu.AddItem("10", "10");
+	menu.AddItem("20", "20");
+	menu.AddItem("50", "50");
+	menu.AddItem("99", "99");
 	
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+	menu.Display(client, MENU_TIME_FOREVER);
 }
 
 DisplaySlapTargetMenu(client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_Slap);
+	Menu menu = CreateMenu(MenuHandler_Slap);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T: %d damage", "Slap player", client, g_SlapDamage[client]);
-	SetMenuTitle(menu, title);
-	SetMenuExitBackButton(menu, true);
+	menu.SetTitle(title);
+	menu.ExitBackButton = true;
 	
 	AddTargetsToMenu(menu, client, true, true);
 	
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+	menu.Display(client, MENU_TIME_FOREVER);
 }
 
 public AdminMenu_Slap(Handle:topmenu, 
@@ -90,11 +90,11 @@ public AdminMenu_Slap(Handle:topmenu,
 	}
 }
 
-public MenuHandler_SlapDamage(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_SlapDamage(Menu menu, MenuAction action, param1, param2)
 {
 	if (action == MenuAction_End)
 	{
-		CloseHandle(menu);
+		delete menu;
 	}
 	else if (action == MenuAction_Cancel)
 	{
@@ -105,20 +105,20 @@ public MenuHandler_SlapDamage(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32];
+		char info[32];
 		
-		GetMenuItem(menu, param2, info, sizeof(info));
+		menu.GetItem(param2, info, sizeof(info));
 		g_SlapDamage[param1] = StringToInt(info);
 		
 		DisplaySlapTargetMenu(param1);
 	}
 }
 
-public MenuHandler_Slap(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_Slap(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
-		CloseHandle(menu);
+		delete menu;
 	}
 	else if (action == MenuAction_Cancel)
 	{
@@ -129,10 +129,10 @@ public MenuHandler_Slap(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32];
+		char info[32];
 		new userid, target;
 		
-		GetMenuItem(menu, param2, info, sizeof(info));
+		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
 
 		if ((target = GetClientOfUserId(userid)) == 0)

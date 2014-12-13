@@ -67,7 +67,7 @@ public Plugin:myinfo =
  *    powers.
  */
 
-new Handle:hDatabase = INVALID_HANDLE;			/** Database connection */
+new Handle:hDatabase = null;			/** Database connection */
 new g_sequence = 0;								/** Global unique sequence number */
 new ConnectLock = 0;							/** Connect sequence number */
 new RebuildCachePart[3] = {0};					/** Cache part sequence numbers */
@@ -81,10 +81,10 @@ public OnMapEnd()
 	/**
 	 * Clean up on map end just so we can start a fresh connection when we need it later.
 	 */
-	if (hDatabase != INVALID_HANDLE)
+	if (hDatabase != null)
 	{
-		CloseHandle(hDatabase);
-		hDatabase = INVALID_HANDLE;
+		delete hDatabase;
+		hDatabase = null;
 	}
 }
 
@@ -110,11 +110,11 @@ public OnDatabaseConnect(Handle:owner, Handle:hndl, const String:error[], any:da
 	/**
 	 * If this happens to be an old connection request, ignore it.
 	 */
-	if (data != ConnectLock || hDatabase != INVALID_HANDLE)
+	if (data != ConnectLock || hDatabase != null)
 	{
-		if (hndl != INVALID_HANDLE)
+		if (hndl != null)
 		{
-			CloseHandle(hndl);
+			delete hndl;
 		}
 		return;
 	}
@@ -126,7 +126,7 @@ public OnDatabaseConnect(Handle:owner, Handle:hndl, const String:error[], any:da
 	 * See if the connection is valid.  If not, don't un-mark the caches
 	 * as needing rebuilding, in case the next connection request works.
 	 */
-	if (hDatabase == INVALID_HANDLE)
+	if (hDatabase == null)
 	{
 		LogError("Failed to connect to database: %s", error);
 		return;
@@ -206,7 +206,7 @@ public Action:OnClientPreAdminCheck(client)
 	 * we just have to hope either the database is waiting or someone will type 
 	 * sm_reloadadmins.
 	 */
-	if (hDatabase == INVALID_HANDLE)
+	if (hDatabase == null)
 	{
 		return Plugin_Continue;
 	}
@@ -248,7 +248,7 @@ public OnReceiveUserGroups(Handle:owner, Handle:hndl, const String:error[], any:
 	 */
 	if (PlayerSeq[client] != sequence)
 	{
-		CloseHandle(pk);
+		delete pk;
 		return;
 	}
 	
@@ -260,21 +260,21 @@ public OnReceiveUserGroups(Handle:owner, Handle:hndl, const String:error[], any:
 	if (GetUserAdmin(client) != adm)
 	{
 		NotifyPostAdminCheck(client);
-		CloseHandle(pk);
+		delete pk;
 		return;
 	}
 	
 	/**
 	 * See if we got results.
 	 */
-	if (hndl == INVALID_HANDLE)
+	if (hndl == null)
 	{
 		decl String:query[255];
 		ReadPackString(pk, query, sizeof(query));
 		LogError("SQL error receiving user: %s", error);
 		LogError("Query dump: %s", query);
 		NotifyPostAdminCheck(client);
-		CloseHandle(pk);
+		delete pk;
 		return;
 	}
 	
@@ -301,7 +301,7 @@ public OnReceiveUserGroups(Handle:owner, Handle:hndl, const String:error[], any:
 	 * We're DONE! Omg.
 	 */
 	NotifyPostAdminCheck(client);
-	CloseHandle(pk);
+	delete pk;
 }
 
 public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -318,14 +318,14 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 	if (PlayerSeq[client] != sequence)
 	{
 		/* Discard everything, since we're out of sequence. */
-		CloseHandle(pk);
+		delete pk;
 		return;
 	}
 	
 	/**
 	 * If we need to use the results, make sure they succeeded.
 	 */
-	if (hndl == INVALID_HANDLE)
+	if (hndl == null)
 	{
 		decl String:query[255];
 		ReadPackString(pk, query, sizeof(query));
@@ -333,7 +333,7 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 		LogError("Query dump: %s", query);
 		RunAdminCacheChecks(client);
 		NotifyPostAdminCheck(client);
-		CloseHandle(pk);
+		delete pk;
 		return;
 	}
 	
@@ -342,7 +342,7 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 	{
 		RunAdminCacheChecks(client);
 		NotifyPostAdminCheck(client);
-		CloseHandle(pk);
+		delete pk;
 		return;
 	}
 	
@@ -443,7 +443,7 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 	if (!id || !group_count)
 	{
 		NotifyPostAdminCheck(client);
-		CloseHandle(pk);
+		delete pk;
 		return;
 	}
 	
@@ -553,25 +553,25 @@ public OnReceiveGroupImmunity(Handle:owner, Handle:hndl, const String:error[], a
 	if (RebuildCachePart[_:AdminCache_Groups] != sequence)
 	{
 		/* Discard everything, since we're out of sequence. */
-		CloseHandle(pk);
+		delete pk;
 		return;
 	}
 	
 	/**
 	 * If we need to use the results, make sure they succeeded.
 	 */
-	if (hndl == INVALID_HANDLE)
+	if (hndl == null)
 	{
 		decl String:query[255];
 		ReadPackString(pk, query, sizeof(query));		
 		LogError("SQL error receiving group immunity: %s", error);
 		LogError("Query dump: %s", query);
-		CloseHandle(pk);	
+		delete pk;	
 		return;
 	}
 	
 	/* We're done with the pack forever. */
-	CloseHandle(pk);
+	delete pk;
 	
 	while (SQL_FetchRow(hndl))
 	{
@@ -610,20 +610,20 @@ public OnReceiveGroupOverrides(Handle:owner, Handle:hndl, const String:error[], 
 	if (RebuildCachePart[_:AdminCache_Groups] != sequence)
 	{
 		/* Discard everything, since we're out of sequence. */
-		CloseHandle(pk);
+		delete pk;
 		return;
 	}
 	
 	/**
 	 * If we need to use the results, make sure they succeeded.
 	 */
-	if (hndl == INVALID_HANDLE)
+	if (hndl == null)
 	{
 		decl String:query[255];
 		ReadPackString(pk, query, sizeof(query));		
 		LogError("SQL error receiving group overrides: %s", error);
 		LogError("Query dump: %s", query);
-		CloseHandle(pk);	
+		delete pk;	
 		return;
 	}
 	
@@ -696,20 +696,20 @@ public OnReceiveGroups(Handle:owner, Handle:hndl, const String:error[], any:data
 	if (RebuildCachePart[_:AdminCache_Groups] != sequence)
 	{
 		/* Discard everything, since we're out of sequence. */
-		CloseHandle(pk);
+		delete pk;
 		return;
 	}
 	
 	/**
 	 * If we need to use the results, make sure they succeeded.
 	 */
-	if (hndl == INVALID_HANDLE)
+	if (hndl == null)
 	{
 		decl String:query[255];
 		ReadPackString(pk, query, sizeof(query));
 		LogError("SQL error receiving groups: %s", error);
 		LogError("Query dump: %s", query);
-		CloseHandle(pk);
+		delete pk;
 		return;
 	}
 	
@@ -792,27 +792,27 @@ public OnReceiveOverrides(Handle:owner, Handle:hndl, const String:error[], any:d
 	if (RebuildCachePart[_:AdminCache_Overrides] != sequence)
 	{
 		/* Discard everything, since we're out of sequence. */
-		CloseHandle(pk);
+		delete pk;
 		return;
 	}
 	
 	/**
 	 * If we need to use the results, make sure they succeeded.
 	 */
-	if (hndl == INVALID_HANDLE)
+	if (hndl == null)
 	{
 		decl String:query[255];
 		ReadPackString(pk, query, sizeof(query));
 		LogError("SQL error receiving overrides: %s", error);
 		LogError("Query dump: %s", query);
-		CloseHandle(pk);
+		delete pk;
 		return;
 	}
 	
 	/**
 	 * We're done with you, now.
 	 */
-	CloseHandle(pk);
+	delete pk;
 	
 	decl String:type[64];
 	decl String:name[64];

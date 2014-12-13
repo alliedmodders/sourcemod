@@ -18,7 +18,7 @@ public Plugin:myinfo =
 #define STRING_RPLC_LOOPS	2000
 
 new Float:g_dict_time
-new Handle:g_Prof = INVALID_HANDLE
+new Handle:g_Prof = null
 
 public OnPluginStart()
 {

@@ -40,7 +40,7 @@ public Action:Command_GetString(args)
 
 	LogMessage("Value of %s: %s", arg2, value);
 
-	CloseHandle(strct);
+	delete strct;
 
 	return Plugin_Handled;
 }
@@ -61,7 +61,7 @@ public Action:Command_SetString(args)
 	new Handle:strct = GetWeaponStruct(arg1);
 	SetStructString(strct, arg2, value);
 
-	CloseHandle(strct);
+	delete strct;
 
 	return Plugin_Handled;	
 	
@@ -84,7 +84,7 @@ public Action:Command_GetInt(args)
 
 	LogMessage("Value of %s: %i", arg2, value);
 
-	CloseHandle(strct);
+	delete strct;
 
 	return Plugin_Handled;
 }
@@ -106,7 +106,7 @@ public Action:Command_SetInt(args)
 	SetStructInt(strct, arg2, StringToInt(value));
 
 
-	CloseHandle(strct);
+	delete strct;
 
 	return Plugin_Handled;
 }
@@ -128,7 +128,7 @@ public Action:Command_GetFloat(args)
 
 	LogMessage("Value of %s: %f", arg2, value);
 
-	CloseHandle(strct);
+	delete strct;
 
 	return Plugin_Handled;
 }
@@ -150,7 +150,7 @@ public Action:Command_SetFloat(args)
 	SetStructFloat(strct, arg2, StringToFloat(value));
 
 
-	CloseHandle(strct);
+	delete strct;
 
 	return Plugin_Handled;
 }

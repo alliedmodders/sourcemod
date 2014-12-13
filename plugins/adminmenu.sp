@@ -46,8 +46,8 @@ public Plugin:myinfo =
 };
 
 /* Forwards */
-new Handle:hOnAdminMenuReady = INVALID_HANDLE;
-new Handle:hOnAdminMenuCreated = INVALID_HANDLE;
+new Handle:hOnAdminMenuReady = null;
+new Handle:hOnAdminMenuCreated = null;
 
 /* Menus */
 TopMenu hAdminMenu;
@@ -182,7 +182,7 @@ public __AddTargetsToMenu2(Handle:plugin, numParams)
 	return UTIL_AddTargetsToMenu2(GetNativeCell(1), GetNativeCell(2), GetNativeCell(3));
 }
 
-public Action:Command_DisplayMenu(client, args)
+public Action:Command_DisplayMenu(int client, int args)
 {
 	if (client == 0)
 	{
@@ -194,11 +194,11 @@ public Action:Command_DisplayMenu(client, args)
 	return Plugin_Handled;
 }
 
-stock UTIL_AddTargetsToMenu2(Handle:menu, source_client, flags)
+stock int UTIL_AddTargetsToMenu2(Menu menu, source_client, flags)
 {
-	decl String:user_id[12];
-	decl String:name[MAX_NAME_LENGTH];
-	decl String:display[MAX_NAME_LENGTH+12];
+	char user_id[12];
+	char name[MAX_NAME_LENGTH];
+	char display[MAX_NAME_LENGTH+12];
 	
 	new num_clients;
 	
@@ -242,14 +242,14 @@ stock UTIL_AddTargetsToMenu2(Handle:menu, source_client, flags)
 		IntToString(GetClientUserId(i), user_id, sizeof(user_id));
 		GetClientName(i, name, sizeof(name));
 		Format(display, sizeof(display), "%s (%s)", name, user_id);
-		AddMenuItem(menu, user_id, display);
+		menu.AddItem(user_id, display);
 		num_clients++;
 	}
 	
 	return num_clients;
 }
 
-stock UTIL_AddTargetsToMenu(Handle:menu, source_client, bool:in_game_only, bool:alive_only)
+stock UTIL_AddTargetsToMenu(Menu menu, source_client, bool:in_game_only, bool:alive_only)
 {
 	new flags = 0;
 	

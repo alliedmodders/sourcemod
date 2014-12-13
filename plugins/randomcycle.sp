@@ -45,8 +45,8 @@ public Plugin:myinfo =
 
 ConVar g_Cvar_ExcludeMaps;
 
-new Handle:g_MapList = INVALID_HANDLE;
-new Handle:g_OldMapList = INVALID_HANDLE;
+new Handle:g_MapList = null;
+new Handle:g_OldMapList = null;
 new g_mapListSerial = -1;
 
 public OnPluginStart()
@@ -66,7 +66,7 @@ public OnConfigsExecuted()
 					g_mapListSerial, 
 					"randomcycle", 
 					MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER)
-		== INVALID_HANDLE)
+		== null)
 	{
 		if (g_mapListSerial == -1)
 		{

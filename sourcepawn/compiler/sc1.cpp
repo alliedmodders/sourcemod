@@ -3414,7 +3414,14 @@ static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags)
   if (!parse_new_typeexpr(&decl->type, first, flags))
     return FALSE;
 
+  decl->type.is_new = TRUE;
+
   if (flags & DECLMASK_NAMED_DECL) {
+    if ((flags & DECLFLAG_ARGUMENT) && matchtoken(tELLIPS)) {
+      decl->type.ident = iVARARGS;
+      return TRUE;
+    }
+
     if ((flags & DECLFLAG_MAYBE_FUNCTION) && matchtoken(tOPERATOR)) {
       decl->opertok = operatorname(decl->name);
       if (decl->opertok == 0)
@@ -3427,8 +3434,6 @@ static int parse_new_decl(declinfo_t *decl, const token_t *first, int flags)
       strcpy(decl->name, tok.str);
     }
   }
-
-  decl->type.is_new = TRUE;
 
   if (flags & DECLMASK_NAMED_DECL) {
     if (matchtoken('[')) {
@@ -3516,7 +3521,11 @@ int parse_decl(declinfo_t *decl, int flags)
 
   // Otherwise, we have to eat a symbol to tell.
   if (matchsymbol(&ident)) {
-    if (lexpeek(tSYMBOL) || lexpeek(tOPERATOR) || lexpeek('&')) {
+    if (lexpeek(tSYMBOL) ||
+        lexpeek(tOPERATOR) ||
+        lexpeek('&') ||
+        lexpeek(tELLIPS))
+    {
       // A new-style declaration only allows array dims or a symbol name, so
       // this is a new-style declaration.
       return parse_new_decl(decl, &ident.tok, flags);

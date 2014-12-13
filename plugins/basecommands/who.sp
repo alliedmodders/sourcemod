@@ -89,16 +89,16 @@ PerformWho(client, target, ReplySource:reply, bool:is_admin)
 
 DisplayWhoMenu(client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_Who);
+	Menu menu = CreateMenu(MenuHandler_Who);
 	
 	decl String:title[100];
 	Format(title, sizeof(title), "%T:", "Identify player", client);
-	SetMenuTitle(menu, title);
-	SetMenuExitBackButton(menu, true);
+	menu.SetTitle(title);
+	menu.ExitBackButton = true;
 	
 	AddTargetsToMenu2(menu, 0, COMMAND_FILTER_CONNECTED);
 	
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+	menu.Display(client, MENU_TIME_FOREVER);
 }
 
 public AdminMenu_Who(Handle:topmenu, 
@@ -118,11 +118,11 @@ public AdminMenu_Who(Handle:topmenu,
 	}
 }
 
-public MenuHandler_Who(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_Who(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
-		CloseHandle(menu);
+		delete menu;
 	}
 	else if (action == MenuAction_Cancel)
 	{
@@ -136,7 +136,7 @@ public MenuHandler_Who(Handle:menu, MenuAction:action, param1, param2)
 		decl String:info[32];
 		new userid, target;
 		
-		GetMenuItem(menu, param2, info, sizeof(info));
+		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
 
 		if ((target = GetClientOfUserId(userid)) == 0)
