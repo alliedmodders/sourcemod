@@ -111,6 +111,7 @@
 		"Keys"
 		{
 			"GameRulesProxy"	"CTFGameRulesProxy"
+			"GameRulesDataTable" "tf_gamerules_data"
 		}
 	}
 }

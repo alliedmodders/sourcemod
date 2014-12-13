@@ -37,6 +37,7 @@ extern void *g_EntList;
 extern CBaseHandle g_ResourceEntity;
 
 void InitializeValveGlobals();
+void UpdateValveGlobals();
 void GetIServer();
 void *GameRules();
 

@@ -342,6 +342,8 @@ bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char co
 {
 	m_bAnyLevelInited = true;
 
+	UpdateValveGlobals();
+
 	const char *name;
 	char key[32];
 	int count, n = 1;
