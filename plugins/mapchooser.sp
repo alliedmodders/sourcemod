@@ -370,7 +370,7 @@ public Event_TFRestartRound(Handle:event, const String:name[], bool:dontBroadcas
 	g_TotalRounds = 0;	
 }
 
-public Event_TeamPlayWinPanel(Handle:event, const String:name[], bool:dontBroadcast)
+public Event_TeamPlayWinPanel(Event event, const String:name[], bool:dontBroadcast)
 {
 	if (g_ChangeMapAtRoundEnd)
 	{
@@ -379,10 +379,10 @@ public Event_TeamPlayWinPanel(Handle:event, const String:name[], bool:dontBroadc
 		g_ChangeMapInProgress = true;
 	}
 	
-	new bluescore = GetEventInt(event, "blue_score");
-	new redscore = GetEventInt(event, "red_score");
+	new bluescore = event.GetInt("blue_score");
+	new redscore = event.GetInt("red_score");
 		
-	if(GetEventInt(event, "round_complete") == 1 || StrEqual(name, "arena_win_panel"))
+	if (event.GetInt("round_complete") == 1 || StrEqual(name, "arena_win_panel"))
 	{
 		g_TotalRounds++;
 		
@@ -393,7 +393,7 @@ public Event_TeamPlayWinPanel(Handle:event, const String:name[], bool:dontBroadc
 		
 		CheckMaxRounds(g_TotalRounds);
 		
-		switch(GetEventInt(event, "winning_team"))
+		switch(event.GetInt("winning_team"))
 		{
 			case 3:
 			{
@@ -412,7 +412,7 @@ public Event_TeamPlayWinPanel(Handle:event, const String:name[], bool:dontBroadc
 	}
 }
 /* You ask, why don't you just use team_score event? And I answer... Because CSS doesn't. */
-public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
+public Event_RoundEnd(Event event, const String:name[], bool:dontBroadcast)
 {
 	if (g_ChangeMapAtRoundEnd)
 	{
@@ -425,11 +425,11 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	if (strcmp(name, "round_win") == 0)
 	{
 		// Nuclear Dawn
-		winner = GetEventInt(event, "team");
+		winner = event.GetInt("team");
 	}
 	else
 	{
-		winner = GetEventInt(event, "winner");
+		winner = event.GetInt("winner");
 	}
 	
 	if (winner == 0 || winner == 1 || !g_Cvar_EndOfMapVote.BoolValue)
@@ -485,7 +485,7 @@ public CheckMaxRounds(roundcount)
 	}
 }
 
-public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
+public Event_PlayerDeath(Event event, const String:name[], bool:dontBroadcast)
 {
 	if (!GetArraySize(g_MapList) || !g_Cvar_Fraglimit || g_HasVoteStarted)
 	{
@@ -502,7 +502,7 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 	}
 
-	new fragger = GetClientOfUserId(GetEventInt(event, "attacker"));
+	new fragger = GetClientOfUserId(event.GetInt("attacker"));
 
 	if (!fragger)
 	{
