@@ -32,10 +32,14 @@
 #include "extension.h"
 #include "vhelpers.h"
 
-void **g_pGameRules = NULL;
-void *g_EntList = NULL;
+static void **g_ppGameRules = nullptr;
+void *g_EntList = nullptr;
 CBaseHandle g_ResourceEntity;
 
+void *GameRules()
+{
+	return g_ppGameRules ? *g_ppGameRules : g_ppGameRules;
+}
 
 void InitializeValveGlobals()
 {
@@ -52,7 +56,7 @@ void InitializeValveGlobals()
 	char *addr;
 	if (g_pGameConf->GetMemSig("g_pGameRules", (void **)&addr) && addr)
 	{
-		g_pGameRules = reinterpret_cast<void **>(addr);
+		g_ppGameRules = reinterpret_cast<void **>(addr);
 	}
 	else if (g_pGameConf->GetMemSig("CreateGameRulesObject", (void **)&addr) && addr)
 	{
@@ -61,7 +65,7 @@ void InitializeValveGlobals()
 		{
 			return;
 		}
-		g_pGameRules = *reinterpret_cast<void ***>(addr + offset);
+		g_ppGameRules = *reinterpret_cast<void ***>(addr + offset);
 	}
 }
 

@@ -340,6 +340,8 @@ bool SDKTools::RegisterConCommandBase(ConCommandBase *pVar)
 
 bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 {
+	m_bAnyLevelInited = true;
+
 	const char *name;
 	char key[32];
 	int count, n = 1;
@@ -472,10 +474,7 @@ public:
 	
 	virtual void *GetGameRules()
 	{
-		if (!g_pGameRules)
-			return NULL;
-		
-		return *g_pGameRules;
+		return GameRules();
 	}
 } g_SDKTools_API;
 

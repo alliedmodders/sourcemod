@@ -32,13 +32,13 @@
 #ifndef _INCLUDE_SDKTOOLS_VGLOBALS_H_
 #define _INCLUDE_SDKTOOLS_VGLOBALS_H_
 
-extern void **g_pGameRules;
 extern void *g_EntList;
 
 extern CBaseHandle g_ResourceEntity;
 
 void InitializeValveGlobals();
 void GetIServer();
+void *GameRules();
 
 void GetResourceEntity();
 
