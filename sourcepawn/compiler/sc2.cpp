@@ -1964,6 +1964,7 @@ const char *sc_tokens[] = {
          "assert",
          "*begin",
          "break",
+         "builtin",
          "catch",
          "case",
          "cast_to",

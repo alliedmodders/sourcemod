@@ -399,6 +399,7 @@ enum TokenKind {
   tASSERT,
   tBEGIN,
   tBREAK,
+  tBUILTIN,
   tCATCH,
   tCASE,
   tCAST_TO,
