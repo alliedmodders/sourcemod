@@ -1,7 +1,7 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2014 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -36,35 +36,6 @@
 #define _dbi_included
 
 /**
- * @handle Driver
- *
- * Contains information about an SQL driver.
- */
- 
-/**
- * @handle Database
- *
- * Contains information about a database connection.
- */
- 
-/**
- * @handle Query
- *
- * Contains information about an active query and its 
- * result sets.
- */
- 
-/**
- * @handle Statement : Query
- *
- * Extends a Query Handle and can be used as a Query Handle.
- * Statement Handles are for prepared queries and contain
- * their own function for binding parameters.  Statement
- * Handles can be used instead of database Handles in a few
- * select functions.
- */
-
-/**
  * Describes a database field fetch status.
  */
 enum DBResult
@@ -95,6 +66,345 @@ enum DBPriority
 	DBPrio_Low = 2,			/**< Low priority. */
 };
 
+// A Driver represents a database backend, currently MySQL or SQLite.
+//
+// Driver handles cannot be closed.
+methodmap DBDriver < Handle
+{
+	// Finds the driver associated with a name.
+	//
+	// Supported driver strings:
+	//    mysql
+	//    sqlite
+	//
+	// @param name          Driver identification string, or an empty string
+	//                      to return the default driver.
+	// @return              Driver handle, or null on failure.
+	public static native DBDriver Find(const char[] name = "");
+
+	// Retrieves a driver's identification string.
+	//
+	// Example: "mysql", "sqlite"
+	//
+	// @param ident         Identification string buffer.
+	// @param maxlength     Maximum length of the buffer.
+	public native void GetIdentifier(char[] ident, int maxlength);
+
+	// Retrieves a driver's product string.
+	//
+	// Example: "MySQL", "SQLite"
+	//
+	// @param product       Product string buffer.
+	// @param maxlength     Maximum length of the buffer.
+	public native void GetProduct(char[] product, int maxlength);
+};
+
+// Represents a set of results returned from executing a query.
+methodmap DBResultSet < Handle
+{
+	// Advances to the next set of results.
+	//
+	// In some SQL implementations, multiple result sets can exist on one query.  
+	// This is possible in MySQL with simple queries when executing a CALL 
+	// query.  If this is the case, all result sets must be processed before
+	// another query is made.
+	//
+	// @return             True if there was another result set, false otherwise.
+	public native bool FetchMoreResults();
+
+	// Returns whether or not a result set exists.  This will
+	// return true even if 0 results were returned, but false
+	// on queries like UPDATE, INSERT, or DELETE.
+	property bool HasResults {
+		public native get();
+	}
+
+	// Retrieves the number of rows in the last result set.
+	// 
+	// @param query        A query (or statement) Handle.
+	// @return             Number of rows in the current result set.
+	property int RowCount {
+		public native get();
+	}
+
+	// Retrieves the number of fields in the last result set.
+	property int FieldCount {
+		public native get();
+	}
+
+	// Returns the number of affected rows from the query that generated this
+	// result set.
+	property int AffectedRows {
+		public native get();
+	}
+
+	// Returns the insert id from the query that generated this result set.
+	property int InsertId {
+		public native get();
+	}
+
+	// Retrieves the name of a field by index.
+	// 
+	// @param field        Field number (starting from 0).
+	// @param name         Name buffer.
+	// @param maxlength    Maximum length of the name buffer.
+	// @error              Invalid field index, or no current result set.
+	public native void FieldNumToName(int field, char[] name, int maxlength);
+
+	// Retrieves a field index by name.
+	// 
+	// @param name         Name of the field (case sensitive).
+	// @param field        Variable to store field index in.
+	// @return             True if found, false if not found.
+	// @error              No current result set.
+	public native bool FieldNameToNum(const char[] name, int &field);
+
+	// Fetches a row from the current result set.  This must be 
+	// successfully called before any results are fetched.
+	//
+	// If this function fails, _MoreResults can be used to
+	// tell if there was an error or the result set is finished.
+	// 
+	// @return             True if a row was fetched, false otherwise.
+	public native bool FetchRow();
+
+	// Returns if there are more rows.
+	// 
+	// @return             True if there are more rows, false otherwise.
+	property bool MoreRows {
+		public native get();
+	}
+
+	// Rewinds a result set back to the first result.
+	// 
+	// @return             True on success, false otherwise.
+	// @error              No current result set.
+	public native bool Rewind();
+
+	// Fetches a string from a field in the current row of a result set.  
+	// If the result is NULL, an empty string will be returned.  A NULL 
+	// check can be done with the result parameter, or SQL_IsFieldNull().
+	// 
+	// @param field        The field index (starting from 0).
+	// @param buffer       String buffer.
+	// @param maxlength    Maximum size of the string buffer.
+	// @param result       Optional variable to store the status of the return value.
+	// @return             Number of bytes written.
+	// @error              Invalid field index, invalid type conversion requested
+	//                     from the database, or no current result set.
+	public native int FetchString(int field, char[] buffer, int maxlength,
+		                          DBResult &result=DBVal_Error);
+
+	// Fetches a float from a field in the current row of a result set.  
+	// If the result is NULL, a value of 0.0 will be returned.  A NULL 
+	// check can be done with the result parameter, or SQL_IsFieldNull().
+	// 
+	// @param field        The field index (starting from 0).
+	// @param result       Optional variable to store the status of the return value.
+	// @return             A float value.
+	// @error              Invalid field index, invalid type conversion requested
+	//                     from the database, or no current result set.
+	public native float FetchFloat(int field, DBResult &result=DBVal_Error);
+
+	// Fetches an integer from a field in the current row of a result set.  
+	// If the result is NULL, a value of 0 will be returned.  A NULL 
+	// check can be done with the result parameter, or SQL_IsFieldNull().
+	// 
+	// @param field        The field index (starting from 0).
+	// @param result       Optional variable to store the status of the return value.
+	// @return             An integer value.
+	// @error              Invalid field index, invalid type conversion requested
+	//                     from the database, or no current result set.
+	public native int FetchInt(int field, DBResult &result=DBVal_Error);
+
+	// Returns whether a field's data in the current row of a result set is 
+	// NULL or not.  NULL is an SQL type which means "no data."
+	// 
+	// @param field        The field index (starting from 0).
+	// @return             True if data is NULL, false otherwise.
+	// @error              Invalid field index, or no current result set.
+	public native bool IsFieldNull(Handle query, int field);
+
+	// Returns the length of a field's data in the current row of a result
+	// set.  This only needs to be called for strings to determine how many
+	// bytes to use.  Note that the return value does not include the null
+	// terminator.
+	// 
+	// @param field        The field index (starting from 0).
+	// @return             Number of bytes for the field's data size.
+	// @error              Invalid field index or no current result set.
+	public native int FetchSize(int field);
+};
+
+// Callback for a successful transaction.
+// 
+// @param db            Database handle.
+// @param data          Data value passed to SQL_ExecuteTransaction().
+// @param numQueries    Number of queries executed in the transaction.
+// @param results       An array of Query handle results, one for each of numQueries. They are closed automatically.
+// @param queryData     An array of each data value passed to SQL_AddQuery().
+typedef SQLTxnSuccess = function void (Database db, any data, int numQueries, Handle[] results, any[] queryData);
+
+// Callback for a failed transaction.
+//
+// @param db            Database handle.
+// @param data          Data value passed to SQL_ExecuteTransaction().
+// @param numQueries    Number of queries executed in the transaction.
+// @param error         Error message.
+// @param failIndex      Index of the query that failed, or -1 if something else.
+// @param queryData     An array of each data value passed to SQL_AddQuery().
+typedef SQLTxnFailure = function void (Database db, any data, int numQueries, const char[] error, int failIndex, any[] queryData);
+
+// A Transaction is a collection of SQL statements that must all execute
+// successfully or not at all.
+methodmap Transaction < Handle
+{
+	// Create a new transaction.
+	public native Transaction();
+
+	// Adds a query to the transaction.
+	//
+	// @param query        Query string.
+	// @param data         Extra data value to pass to the final callback.
+	// @return             The index of the query in the transaction's query list.
+	public native int AddQuery(const char[] query, any data=0);
+};
+
+// A DBStatement is a pre-compiled SQL query that may be executed multiple
+// times with different parameters. A DBStatement holds a reference to the
+// Database that prepared it.
+methodmap DBStatement < Handle
+{
+	// Binds a parameter in a prepared statement to a given integer value.
+	// 
+	// @param param         The parameter index (starting from 0).
+	// @param number        The number to bind.
+	// @param signed        True to bind the number as signed, false to 
+	//                      bind it as unsigned.
+	// @error               Invalid parameter index, or SQL error.
+	public native void BindInt(int param, int number, bool signed=true);
+
+	// Binds a parameter in a prepared statement to a given float value.
+	// 
+	// @param param         The parameter index (starting from 0).
+	// @param value         The float number to bind.
+	// @error               Invalid parameter index, or SQL error.
+	public native void BindFloat(int param, float value);
+
+	// Binds a parameter in a prepared statement to a given string value.
+	// 
+	// @param param         The parameter index (starting from 0).
+	// @param value         The string to bind.
+	// @param copy          Whether or not SourceMod should copy the value
+	//                      locally if necessary.  If the string contents
+	//                      won't change before calling SQL_Execute(), this
+	//                      can be set to false for optimization.
+	// @error               Invalid parameter index, or SQL error.
+	public native void BindString(int param, const char[] value, bool copy);
+};
+
+// Callback for receiving asynchronous database connections.
+//
+// @param db            Handle to the database connection.
+// @param error			Error string if there was an error.  The error could be 
+//						empty even if an error condition exists, so it is important 
+//						to check the actual Handle value instead.
+// @param data			Data passed in via the original threaded invocation.
+typedef SQLConnectCallback = function void (Database db, const char[] error, any data);
+
+// Callback for receiving asynchronous database query results.
+//
+// @param db            Cloned handle to the database connection.
+// @param results       Result object, or null on failure.
+// @param error			Error string if there was an error.  The error could be 
+//						empty even if an error condition exists, so it is important 
+//						to check the actual results value instead.
+// @param data			Data passed in via the original threaded invocation.
+typedef SQLQueryCallback = function void (Database db, DBResultSet results, const char[] error, any data);
+
+// A Database represents a live connection to a database, either over the
+// wire, through a unix domain socket, or over an open file.
+methodmap Database < Handle
+{
+	// Connects to a database asynchronously, so the game thread is not blocked.
+	//
+	// @param callback        Callback. If no driver was found, the owner is null.
+	// @param name            Database configuration name.
+	// @param data            Extra data value to pass to the callback.
+	public static native void Connect(SQLConnectCallback callback, const char[] name="default", any data=0);
+
+	// Returns the driver for this database connection.
+	property DBDriver Driver {
+		public native get();
+	}
+
+	// Sets the character set of the connection. 
+	// Like SET NAMES .. in mysql, but stays after connection problems.
+	// 
+	// Example: "utf8", "latin1"
+	//
+	// @param characterset  The character set string to change to.
+	// @return              True, if character set was changed, false otherwise.
+	public native bool SetCharset(const char[] charset);
+
+	// Escapes a database string for literal insertion.  This is not needed
+	// for binding strings in prepared statements.  
+	//
+	// Generally, database strings are inserted into queries enclosed in 
+	// single quotes (').  If user input has a single quote in it, the 
+	// quote needs to be escaped.  This function ensures that any unsafe 
+	// characters are safely escaped according to the database engine and 
+	// the database's character set.
+	//
+	// NOTE: SourceMod only guarantees properly escaped strings when the query
+	// encloses the string in ''. While drivers tend to allow " instead, the string
+	// may be not be escaped (for example, on SQLite)!
+	//
+	// @param string         String to quote.
+	// @param buffer         Buffer to store quoted string in.
+	// @param maxlength      Maximum length of the buffer.
+	// @param written        Optionally returns the number of bytes written.
+	// @return               True on success, false if buffer is not big enough.
+	//                       The buffer must be at least 2*strlen(string)+1.
+	public native bool Escape(const char[] string, char[] buffer, int maxlength, int &written=0);
+
+	// Returns whether a database is the same connection as another database.
+	public native bool IsSameConnection(Database other);
+
+	// Executes a query via a thread. The result handle is passed through the
+	// callback.
+	//
+	// The database handle returned through the callback is always a new Handle,
+	// and if necessary, IsSameConnection() should be used to test against other
+	// conenctions.
+	//
+	// The result handle returned through the callback is temporary and destroyed 
+	// at the end of the callback.
+	//
+	// @param callback       Callback.
+	// @param query          Query string.
+	// @param data           Extra data value to pass to the callback.
+	// @param prio           Priority queue to use.
+	public native void Query(SQLQueryCallback callback, const char[] query,
+	                         any data = 0,
+	                         DBPriority prio = DBPrio_Normal);
+
+	// Sends a transaction to the database thread. The transaction handle is
+	// automatically closed. When the transaction completes, the optional
+	// callback is invoked.
+	//
+	// @param txn           A transaction handle.
+	// @param onSuccess     An optional callback to receive a successful transaction.
+	// @param onError       An optional callback to receive an error message.
+	// @param data          An optional value to pass to callbacks.
+	// @param prio          Priority queue to use.
+	public native void Execute(Transaction txn,
+	                           SQLTxnSuccess:onSuccess = INVALID_FUNCTION,
+	                           SQLTxnFailure:onError = INVALID_FUNCTION,
+	                           any data = 0,
+	                           DBPriority priority = DBPrio_Normal);
+};
+
 /**
  * Creates an SQL connection from a named configuration.
  *
@@ -105,7 +415,7 @@ enum DBPriority
  * @param maxlength		Maximum length of the error buffer.
  * @return				A database connection Handle, or INVALID_HANDLE on failure.
  */
-native Handle:SQL_Connect(const String:confname[], bool:persistent, String:error[], maxlength);
+native Database SQL_Connect(const char[] confname, bool persistent, char[] error, int maxlength);
 
 /**
  * Creates a default SQL connection.
@@ -117,7 +427,7 @@ native Handle:SQL_Connect(const String:confname[], bool:persistent, String:error
  * @return				A database connection Handle, or INVALID_HANDLE on failure.
  * 						On failure the error buffer will be filled with a message.
  */
-stock Handle:SQL_DefConnect(String:error[], maxlength, bool:persistent=true)
+stock Database SQL_DefConnect(char[] error, int maxlength, bool persistent=true)
 {
 	return SQL_Connect("default", persistent, error, maxlength);
 }
@@ -143,10 +453,10 @@ stock Handle:SQL_DefConnect(String:error[], maxlength, bool:persistent=true)
  * 						On failure the error buffer will be filled with a message.
  * @error				Invalid KeyValues handle.
  */
-native Handle:SQL_ConnectCustom(Handle:keyvalues,
-								String:error[],
-								maxlength,
-								bool:persistent);
+native Database SQL_ConnectCustom(Handle keyvalues,
+			  					  char[] error,
+			  					  maxlength,
+			  					  bool persistent);
 
 /**
  * Grabs a handle to an SQLite database, creating one if it does not exist.  
@@ -163,17 +473,17 @@ native Handle:SQL_ConnectCustom(Handle:keyvalues,
  * @return				A database connection Handle, or INVALID_HANDLE on failure.
  * 						On failure the error buffer will be filled with a message.
  */
-stock Handle:SQLite_UseDatabase(const String:database[],
-								String:error[], 
-								maxlength)
+stock Database SQLite_UseDatabase(const char[] database,
+			  					  char[] error, 
+			  					  maxlength)
 {
-	new Handle:kv, Handle:db;
+	new Handle kv, Handle db;
 
 	kv = CreateKeyValues("");
 	KvSetString(kv, "driver", "sqlite");
 	KvSetString(kv, "database", database);
 
-	db = SQL_ConnectCustom(kv, error, maxlength, false);
+	db = SQL_ConnectCustom(kv, error, int maxlength, false);
 
 	CloseHandle(kv);
 
@@ -184,14 +494,14 @@ stock Handle:SQLite_UseDatabase(const String:database[],
  * This function is deprecated.  Use SQL_ConnectCustom or SQLite_UseDatabase instead.
  */
 #pragma deprecated Use SQL_ConnectCustom instead.
-native Handle:SQL_ConnectEx(Handle:driver, 
+native Handle SQL_ConnectEx(Handle driver, 
 							const String:host[],
 							const String:user[], 
 							const String:pass[],
 							const String:database[],
-							String:error[],
+							char[] error,
 							maxlength,
-							bool:persistent=true,
+							bool persistent=true,
 							port=0,
 							maxTimeout=0);
 							
@@ -201,7 +511,7 @@ native Handle:SQL_ConnectEx(Handle:driver,
  * @param name			Configuration name.
  * @return				True if it exists, false otherwise.
  */
-native bool:SQL_CheckConfig(const String:name[]);
+native bool SQL_CheckConfig(const char[] name);
 
 /**
  * Returns a driver Handle from a name string.
@@ -213,7 +523,7 @@ native bool:SQL_CheckConfig(const String:name[]);
  *						string to return the default driver.
  * @return				Driver Handle, or INVALID_HANDLE on failure.
  */
-native Handle:SQL_GetDriver(const String:name[]="");
+native Handle SQL_GetDriver(const char[] name="");
 
 /**
  * Reads the driver of an opened database.
@@ -223,7 +533,7 @@ native Handle:SQL_GetDriver(const String:name[]="");
  * @param ident_length	Maximum length of the buffer.
  * @return				Driver Handle.
  */
-native Handle:SQL_ReadDriver(Handle:database, String:ident[]="", ident_length=0);
+native Handle SQL_ReadDriver(Handle database, char[] ident="", ident_length=0);
 
 /**
  * Retrieves a driver's identification string.
@@ -236,7 +546,7 @@ native Handle:SQL_ReadDriver(Handle:database, String:ident[]="", ident_length=0)
  * @noreturn
  * @error				Invalid Handle other than INVALID_HANDLE.
  */
-native SQL_GetDriverIdent(Handle:driver, String:ident[], maxlength);
+native void SQL_GetDriverIdent(Handle driver, char[] ident, int maxlength);
 
 /**
  * Retrieves a driver's product string.
@@ -249,7 +559,7 @@ native SQL_GetDriverIdent(Handle:driver, String:ident[], maxlength);
  * @noreturn
  * @error				Invalid Handle other than INVALID_HANDLE.
  */
-native SQL_GetDriverProduct(Handle:driver, String:product[], maxlength);
+native void SQL_GetDriverProduct(Handle driver, char[] product, int maxlength);
 
 /**
  * Sets the character set of the current connection. 
@@ -261,7 +571,7 @@ native SQL_GetDriverProduct(Handle:driver, String:product[], maxlength);
  * @param characterset  The character set string to change to.
  * @return              True, if character set was changed, false otherwise.
  */
-native bool:SQL_SetCharset(Handle:database, const String:charset[]);
+native bool SQL_SetCharset(Handle database, const char[] charset);
 
 /**
  * Returns the number of affected rows from the last query.
@@ -270,7 +580,7 @@ native bool:SQL_SetCharset(Handle:database, const String:charset[]);
  * @return				Number of rows affected by the last query.
  * @error				Invalid database or statement Handle.
  */
-native SQL_GetAffectedRows(Handle:hndl);
+native int SQL_GetAffectedRows(Handle hndl);
 
 /**
  * Returns the last query's insertion id.
@@ -279,7 +589,7 @@ native SQL_GetAffectedRows(Handle:hndl);
  * @return				Last query's insertion id.
  * @error				Invalid database, query, or statement Handle.
  */
-native SQL_GetInsertId(Handle:hndl);
+native int SQL_GetInsertId(Handle hndl);
 
 /**
  * Returns the error reported by the last query.
@@ -290,7 +600,7 @@ native SQL_GetInsertId(Handle:hndl);
  * @return				True if there was an error, false otherwise.
  * @error				Invalid database, query, or statement Handle.
  */
-native bool:SQL_GetError(Handle:hndl, String:error[], maxlength);
+native bool SQL_GetError(Handle hndl, char[] error, int maxlength);
 
 /**
  * Escapes a database string for literal insertion.  This is not needed
@@ -315,23 +625,23 @@ native bool:SQL_GetError(Handle:hndl, String:error[], maxlength);
  *						The buffer must be at least 2*strlen(string)+1.
  * @error				Invalid database or statement Handle.
  */
-native bool:SQL_EscapeString(Handle:database, 
-							 const String:string[], 
-							 String:buffer[], 
-							 maxlength, 
-							 &written=0);
+native bool SQL_EscapeString(Handle database, 
+							 const char[] string, 
+							 char[] buffer, 
+							 int maxlength, 
+							 int &written=0);
 
 /**
  * This is a backwards compatibility stock.  You should use SQL_EscapeString() 
  * instead, as this function will probably be deprecated in SourceMod 1.1.
  */
-stock bool:SQL_QuoteString(Handle:database,
-						   const String:string[],
-						   String:buffer[],
+stock bool SQL_QuoteString(Handle database,
+						   const char[] string,
+						   char[] buffer,
 						   maxlength,
 						   &written=0)
 {
-	return SQL_EscapeString(database, string, buffer, maxlength, written);
+	return SQL_EscapeString(database, string, buffer, int maxlength, written);
 }
 
 /**
@@ -346,7 +656,7 @@ stock bool:SQL_QuoteString(Handle:database,
  *						SQL_GetError to find the last error.
  * @error				Invalid database Handle.
  */
-native bool:SQL_FastQuery(Handle:database, const String:query[], len=-1);
+native bool SQL_FastQuery(Handle database, const char[] query, int len=-1);
 
 /**
  * Executes a simple query and returns a new query Handle for
@@ -361,7 +671,7 @@ native bool:SQL_FastQuery(Handle:database, const String:query[], len=-1);
  *						otherwise.  The Handle must be freed with CloseHandle().
  * @error				Invalid database Handle.
  */
-native Handle:SQL_Query(Handle:database, const String:query[], len=-1);
+native DBResultSet SQL_Query(Handle database, const char[] query, int len=-1);
 
 /**
  * Creates a new prepared statement query.  Prepared statements can
@@ -379,7 +689,7 @@ native Handle:SQL_Query(Handle:database, const String:query[], len=-1);
  *						otherwise.  The Handle must be freed with CloseHandle().
  * @error				Invalid database Handle.
  */
-native Handle:SQL_PrepareQuery(Handle:database, const String:query[], String:error[], maxlength);
+native DBStatement SQL_PrepareQuery(Handle database, const char[] query, char[] error, int maxlength);
 
 /**
  * Advances to the next set of results.
@@ -393,7 +703,7 @@ native Handle:SQL_PrepareQuery(Handle:database, const String:query[], String:err
  * @return				True if there was another result set, false otherwise.
  * @error				Invalid query Handle.
  */
-native bool:SQL_FetchMoreResults(Handle:query);
+native bool SQL_FetchMoreResults(Handle query);
 
 /**
  * Returns whether or not a result set exists.  This will
@@ -404,7 +714,7 @@ native bool:SQL_FetchMoreResults(Handle:query);
  * @return				True if there is a result set, false otherwise.
  * @error				Invalid query Handle.
  */
-native bool:SQL_HasResultSet(Handle:query);
+native bool SQL_HasResultSet(Handle query);
 
 /**
  * Retrieves the number of rows in the last result set.
@@ -413,7 +723,7 @@ native bool:SQL_HasResultSet(Handle:query);
  * @return				Number of rows in the current result set.
  * @error				Invalid query Handle.
  */
-native SQL_GetRowCount(Handle:query);
+native int SQL_GetRowCount(Handle query);
 
 /**
  * Retrieves the number of fields in the last result set.
@@ -422,7 +732,7 @@ native SQL_GetRowCount(Handle:query);
  * @return				Number of fields in the current result set.
  * @error				Invalid query Handle.
  */
-native SQL_GetFieldCount(Handle:query);
+native int SQL_GetFieldCount(Handle query);
 
 /**
  * Retrieves the name of a field by index.
@@ -431,11 +741,10 @@ native SQL_GetFieldCount(Handle:query);
  * @param field			Field number (starting from 0).
  * @param name			Name buffer.
  * @param maxlength		Maximum length of the name buffer.
- * @noreturn
  * @error				Invalid query Handle, invalid field index, or
  *						no current result set.
  */
-native SQL_FieldNumToName(Handle:query, field, String:name[], maxlength);
+native void SQL_FieldNumToName(Handle query, int field, String:name[], int maxlength);
 
 /**
  * Retrieves a field index by name.
@@ -446,7 +755,7 @@ native SQL_FieldNumToName(Handle:query, field, String:name[], maxlength);
  * @return				True if found, false if not found.
  * @error				Invalid query Handle or no current result set.
  */
-native bool:SQL_FieldNameToNum(Handle:query, const String:name[], &field);
+native bool SQL_FieldNameToNum(Handle query, const char[] name, &field);
 
 /**
  * Fetches a row from the current result set.  This must be 
@@ -459,7 +768,7 @@ native bool:SQL_FieldNameToNum(Handle:query, const String:name[], &field);
  * @return				True if a row was fetched, false otherwise.
  * @error				Invalid query Handle.
  */
-native bool:SQL_FetchRow(Handle:query);
+native bool SQL_FetchRow(Handle query);
 
 /**
  * Returns if there are more rows.
@@ -468,7 +777,7 @@ native bool:SQL_FetchRow(Handle:query);
  * @return				True if there are more rows, false otherwise.
  * @error				Invalid query Handle.
  */
-native bool:SQL_MoreRows(Handle:query);
+native bool SQL_MoreRows(Handle query);
 
 /**
  * Rewinds a result set back to the first result.
@@ -477,7 +786,7 @@ native bool:SQL_MoreRows(Handle:query);
  * @return				True on success, false otherwise.
  * @error				Invalid query Handle or no current result set.
  */
-native bool:SQL_Rewind(Handle:query);
+native bool SQL_Rewind(Handle query);
 
 /**
  * Fetches a string from a field in the current row of a result set.  
@@ -494,7 +803,7 @@ native bool:SQL_Rewind(Handle:query);
  *						type conversion requested from the database,
  *						or no current result set.
  */
-native SQL_FetchString(Handle:query, field, String:buffer[], maxlength, &DBResult:result=DBVal_Error);
+native int SQL_FetchString(Handle query, int field, char[] buffer, int maxlength,  DBResult &result=DBVal_Error);
 
 /**
  * Fetches a float from a field in the current row of a result set.  
@@ -509,7 +818,7 @@ native SQL_FetchString(Handle:query, field, String:buffer[], maxlength, &DBResul
  *						type conversion requested from the database,
  *						or no current result set.
  */
-native Float:SQL_FetchFloat(Handle:query, field, &DBResult:result=DBVal_Error);
+native float SQL_FetchFloat(Handle query, int field, DBResult &result=DBVal_Error);
 
 /**
  * Fetches an integer from a field in the current row of a result set.  
@@ -524,7 +833,7 @@ native Float:SQL_FetchFloat(Handle:query, field, &DBResult:result=DBVal_Error);
  *						type conversion requested from the database,
  *						or no current result set.
  */
-native SQL_FetchInt(Handle:query, field, &DBResult:result=DBVal_Error);
+native int SQL_FetchInt(Handle query, int field, DBResult &result=DBVal_Error);
 
 /**
  * Returns whether a field's data in the current row of a result set is 
@@ -536,7 +845,7 @@ native SQL_FetchInt(Handle:query, field, &DBResult:result=DBVal_Error);
  * @error				Invalid query Handle or field index, or no
  *						current result set.
  */
-native bool:SQL_IsFieldNull(Handle:query, field);
+native bool SQL_IsFieldNull(Handle query, int field);
 
 /**
  * Returns the length of a field's data in the current row of a result
@@ -550,7 +859,7 @@ native bool:SQL_IsFieldNull(Handle:query, field);
  * @error				Invalid query Handle or field index or no
  *						current result set.
  */
-native SQL_FetchSize(Handle:query, field);
+native int SQL_FetchSize(Handle query, int field);
 
 /**
  * Binds a parameter in a prepared statement to a given integer value.
@@ -560,11 +869,10 @@ native SQL_FetchSize(Handle:query, field);
  * @param number		The number to bind.
  * @param signed		True to bind the number as signed, false to 
  *						bind it as unsigned.
- * @noreturn
  * @error				Invalid statement Handle or parameter index, or
  *						SQL error.
  */
-native SQL_BindParamInt(Handle:statement, param, number, bool:signed=true);
+native void SQL_BindParamInt(Handle statement, int param, int number, bool signed=true);
 
 /**
  * Binds a parameter in a prepared statement to a given float value.
@@ -572,11 +880,10 @@ native SQL_BindParamInt(Handle:statement, param, number, bool:signed=true);
  * @param statement		A statement (prepared query) Handle.
  * @param param			The parameter index (starting from 0).
  * @param value			The float number to bind.
- * @noreturn
  * @error				Invalid statement Handle or parameter index, or
  *						SQL error.
  */
-native SQL_BindParamFloat(Handle:statement, param, Float:value);
+native void SQL_BindParamFloat(Handle statement, int param, float value);
 
 /**
  * Binds a parameter in a prepared statement to a given string value.
@@ -588,11 +895,10 @@ native SQL_BindParamFloat(Handle:statement, param, Float:value);
  *						locally if necessary.  If the string contents
  *						won't change before calling SQL_Execute(), this
  *						can be set to false for optimization.
- * @noreturn
  * @error				Invalid statement Handle or parameter index, or
  *						SQL error.
  */
-native SQL_BindParamString(Handle:statement, param, const String:value[], bool:copy);
+native void SQL_BindParamString(Handle statement, int param, const char[] value, bool copy);
 
 /**
  * Executes a prepared statement.  All parameters must be bound beforehand.
@@ -601,7 +907,7 @@ native SQL_BindParamString(Handle:statement, param, const String:value[], bool:c
  * @return				True on success, false on failure.
  * @error				Invalid statement Handle.
  */
-native bool:SQL_Execute(Handle:statement);
+native bool SQL_Execute(Handle statement);
 
 /**
  * Locks a database so threading operations will not interrupt.
@@ -618,31 +924,26 @@ native bool:SQL_Execute(Handle:statement);
  * threaded operation has concluded.
  *
  * @param database		A database Handle.
- * @noreturn
  * @error				Invalid database Handle.
  */
-native SQL_LockDatabase(Handle:database);
+native void SQL_LockDatabase(Handle database);
 
 /**
  * Unlocks a database so threading operations may continue.
  *
  * @param database		A database Handle.
- * @noreturn
  * @error				Invalid database Handle.
  */
-native SQL_UnlockDatabase(Handle:database);
+native void SQL_UnlockDatabase(Handle database);
 
-/**
- * General callback for threaded SQL stuff.
- *
- * @param owner			Parent object of the Handle (or INVALID_HANDLE if none).
- * @param hndl			Handle to the child object (or INVALID_HANDLE if none).
- * @param error			Error string if there was an error.  The error could be 
- *						empty even if an error condition exists, so it is important 
- *						to check the actual Handle value instead.
- * @param data			Data passed in via the original threaded invocation.
- * @noreturn
- */
+// General callback for threaded SQL stuff.
+// 
+// @param owner			Parent object of the Handle (or INVALID_HANDLE if none).
+// @param hndl			Handle to the child object (or INVALID_HANDLE if none).
+// @param error			Error string if there was an error.  The error could be 
+//  					empty even if an error condition exists, so it is important 
+//  					to check the actual Handle value instead.
+// @param data			Data passed in via the original threaded invocation.
 typedef SQLTCallback = function void (Handle owner, Handle hndl, const char[] error, any data);
 
 /**
@@ -655,7 +956,7 @@ typedef SQLTCallback = function void (Handle owner, Handle hndl, const char[] er
  *						connection, false otherwise.
  * @error				Invalid Handle.
  */
-native bool:SQL_IsSameConnection(Handle:hndl1, Handle:hndl2);
+native bool SQL_IsSameConnection(Handle hndl1, Handle hndl2);
 
 /**
  * Connects to a database via a thread.  This can be used instead of
@@ -669,9 +970,8 @@ native bool:SQL_IsSameConnection(Handle:hndl1, Handle:hndl2);
  *						If no driver was found, the owner is INVALID_HANDLE.
  * @param name			Database name.
  * @param data			Extra data value to pass to the callback.
- * @noreturn
  */
-native SQL_TConnect(SQLTCallback:callback, const String:name[]="default", any:data=0);
+native void SQL_TConnect(SQLTCallback callback, const char[] name="default", any data=0);
 
 /**
  * Executes a simple query via a thread.  The query Handle is passed through
@@ -690,10 +990,9 @@ native SQL_TConnect(SQLTCallback:callback, const String:name[]="default", any:da
  * @param query			Query string.
  * @param data			Extra data value to pass to the callback.
  * @param prio			Priority queue to use.
- * @noreturn
  * @error				Invalid database Handle.
  */
-native SQL_TQuery(Handle:database, SQLTCallback:callback, const String:query[], any:data=0, DBPriority:prio=DBPrio_Normal);
+native void SQL_TQuery(Handle database, SQLTCallback callback, const char[] query, any data=0, DBPriority prio=DBPrio_Normal);
 
 /**
  * Creates a new transaction object. A transaction object is a list of queries
@@ -701,32 +1000,7 @@ native SQL_TQuery(Handle:database, SQLTCallback:callback, const String:query[], 
  *
  * @return              A transaction handle.
  */
-native Transaction:SQL_CreateTransaction();
-
-/**
- * Callback for a successful transaction.
- *
- * @param db            Database handle.
- * @param data          Data value passed to SQL_ExecuteTransaction().
- * @param numQueries    Number of queries executed in the transaction.
- * @param results       An array of Query handle results, one for each of numQueries. They are closed automatically.
- * @param queryData     An array of each data value passed to SQL_AddQuery().
- * @noreturn
- */
-typedef SQLTxnSuccess = function void (Handle db, any data, int numQueries, Handle[] results, any[] queryData);
-
-/**
- * Callback for a failed transaction.
- *
- * @param db            Database handle.
- * @param data          Data value passed to SQL_ExecuteTransaction().
- * @param numQueries    Number of queries executed in the transaction.
- * @param error         Error message.
- * @param failIndex      Index of the query that failed, or -1 if something else.
- * @param queryData     An array of each data value passed to SQL_AddQuery().
- * @noreturn
- */
-typedef SQLTxnFailure = function void (Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData);
+native Transaction SQL_CreateTransaction();
 
 /**
  * Adds a query to a transaction object.
@@ -737,13 +1011,7 @@ typedef SQLTxnFailure = function void (Handle db, any data, int numQueries, cons
  * @return              The index of the query in the transaction's query list.
  * @error               Invalid transaction handle.
  */
-native SQL_AddQuery(Transaction:txn, const String:query[], any:data=0);
-
-methodmap Transaction < Handle
-{
-		public Transaction() = SQL_CreateTransaction;
-		public AddQuery() = SQL_AddQuery;
-};
+native int SQL_AddQuery(Transaction txn, const char[] query, any data=0);
 
 /**
  * Sends a transaction to the database thread. The transaction handle is
@@ -760,9 +1028,9 @@ methodmap Transaction < Handle
  * @error               An invalid handle.
  */
 native SQL_ExecuteTransaction(
-		Handle:db,
+		Handle db,
 		Transaction:txn,
 		SQLTxnSuccess:onSuccess = INVALID_FUNCTION,
 		SQLTxnFailure:onError = INVALID_FUNCTION,
-		any:data=0,
+		any data=0,
 		DBPriority:priority=DBPrio_Normal);
