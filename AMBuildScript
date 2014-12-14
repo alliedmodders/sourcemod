@@ -256,9 +256,7 @@ class SMConfig(object):
     if builder.options.debug == '1':
       cxx.defines += ['DEBUG', '_DEBUG']
       if cxx.like('msvc'):
-        cxx.cflags += ['/Od', '/RTC1']
-        if cxx.version >= 1600:
-          cxx.cflags += ['/d2Zi+']
+        cxx.cflags += ['/Od', '/Zo', '/RTC1']
 
     # This needs to be after our optimization flags which could otherwise disable it.
     if cxx.vendor == 'msvc':
