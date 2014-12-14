@@ -1963,6 +1963,8 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 		*ptr = '\0';
 	}
 	m_IpNoPort.assign(ip2);
+
+	UpdateAuthIds();
 }
 
 void CPlayer::Connect()
