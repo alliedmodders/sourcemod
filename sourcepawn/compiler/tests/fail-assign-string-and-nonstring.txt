@@ -1,0 +1,2 @@
+(5) : error 179: cannot assign char[] to any[], storage classes differ
+(6) : error 179: cannot assign any[] to char[], storage classes differ

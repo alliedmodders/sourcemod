@@ -329,10 +329,12 @@ const char *type_to_name(int tag)
     return "float";
   if (tag == pc_tag_string)
     return "char";
+  if (tag == pc_anytag)
+    return "any";
 
   const char *name = pc_tagname(tag);
   if (name)
-    return NULL;
+    return "unknown";
 
   if (tag & FUNCTAG)
     return "function";
@@ -1340,8 +1342,15 @@ static int hier14(value *lval1)
     check_userop(NULL,lval2.tag,lval3.tag,2,&lval3,&lval2.tag);
     store(&lval3);      /* now, store the expression result */
   } /* if */
-  if (!oper && !checktag_string(&lval3, &lval2))
-    matchtag(lval3.tag,lval2.tag,TRUE);
+  if (!oper && !checktag_string(&lval3, &lval2)) {
+    if ((lval3.tag == pc_tag_string && lval2.tag != pc_tag_string) ||
+        (lval3.tag != pc_tag_string && lval2.tag == pc_tag_string))
+    {
+      error(179, type_to_name(lval3.tag), type_to_name(lval2.tag));
+    } else {
+      matchtag(lval3.tag,lval2.tag,TRUE);
+    }
+  }
   if (lval3.sym)
     markusage(lval3.sym,uWRITTEN);
   sideeffect=TRUE;
@@ -2931,7 +2940,17 @@ static int nesting=0;
             append_constval(&arrayszlst,arg[argidx].name,sym->dim.array.length,level);
           } /* if */
           /* address already in PRI */
+
           checktag(arg[argidx].tags,arg[argidx].numtags,lval.tag);
+
+          if (arg[argidx].numtags > 0) {
+            if ((arg[argidx].tags[0] != pc_tag_string && lval.tag == pc_tag_string) ||
+                (arg[argidx].tags[0] == pc_tag_string && lval.tag != pc_tag_string))
+            {
+              error(178, type_to_name(lval.tag), type_to_name(arg[argidx].tags[0]));
+            }
+          }
+
           if (lval.tag!=0)
             append_constval(&taglst,arg[argidx].name,lval.tag,0);
           // ??? set uWRITTEN?

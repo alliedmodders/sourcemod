@@ -1,0 +1,1 @@
+(8) : error 178: cannot coerce char[] to any[]; storage classes differ
