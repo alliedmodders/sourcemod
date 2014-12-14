@@ -120,7 +120,7 @@ static ServerClass *UTIL_FindServerClass(const char *classname)
 		sc = sc->m_pNext;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void UpdateValveGlobals()
@@ -131,9 +131,10 @@ void UpdateValveGlobals()
 	const char *pszDTName = g_pGameConf->GetKeyValue("GameRulesDataTable");
 	if (pszNetClass && pszDTName)
 	{
-		ServerClass *sc = UTIL_FindServerClass(pszNetClass);
 		sm_sendprop_info_t info;
-		if (UTIL_FindDataTable(sc->m_pTable, pszDTName, &info))
+		ServerClass *sc = UTIL_FindServerClass(pszNetClass);
+
+		if (sc && UTIL_FindDataTable(sc->m_pTable, pszDTName, &info))
 		{
 			auto proxyFn = info.prop->GetDataTableProxyFn();
 			if (proxyFn)
