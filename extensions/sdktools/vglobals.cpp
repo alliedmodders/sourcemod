@@ -32,10 +32,15 @@
 #include "extension.h"
 #include "vhelpers.h"
 
-void **g_pGameRules = NULL;
-void *g_EntList = NULL;
+static void *s_pGameRules = nullptr;
+static void **g_ppGameRules = nullptr;
+void *g_EntList = nullptr;
 CBaseHandle g_ResourceEntity;
 
+void *GameRules()
+{
+	return g_ppGameRules ? *g_ppGameRules : s_pGameRules;
+}
 
 void InitializeValveGlobals()
 {
@@ -52,7 +57,7 @@ void InitializeValveGlobals()
 	char *addr;
 	if (g_pGameConf->GetMemSig("g_pGameRules", (void **)&addr) && addr)
 	{
-		g_pGameRules = reinterpret_cast<void **>(addr);
+		g_ppGameRules = reinterpret_cast<void **>(addr);
 	}
 	else if (g_pGameConf->GetMemSig("CreateGameRulesObject", (void **)&addr) && addr)
 	{
@@ -61,7 +66,83 @@ void InitializeValveGlobals()
 		{
 			return;
 		}
-		g_pGameRules = *reinterpret_cast<void ***>(addr + offset);
+		g_ppGameRules = *reinterpret_cast<void ***>(addr + offset);
+	}
+}
+
+static bool UTIL_FindDataTable(SendTable *pTable,
+	const char *name,
+	sm_sendprop_info_t *info,
+	unsigned int offset = 0)
+{
+	const char *pname;
+	int props = pTable->GetNumProps();
+	SendProp *prop;
+	SendTable *table;
+
+	for (int i = 0; i<props; i++)
+	{
+		prop = pTable->GetProp(i);
+
+		if ((table = prop->GetDataTable()) != NULL)
+		{
+			pname = prop->GetName();
+			if (pname && strcmp(name, pname) == 0)
+			{
+				info->prop = prop;
+				info->actual_offset = offset + info->prop->GetOffset();
+				return true;
+			}
+
+			if (UTIL_FindDataTable(table,
+				name,
+				info,
+				offset + prop->GetOffset())
+				)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+static ServerClass *UTIL_FindServerClass(const char *classname)
+{
+	ServerClass *sc = gamedll->GetAllServerClasses();
+	while (sc)
+	{
+		if (strcmp(classname, sc->GetName()) == 0)
+		{
+			return sc;
+		}
+		sc = sc->m_pNext;
+	}
+
+	return nullptr;
+}
+
+void UpdateValveGlobals()
+{
+	s_pGameRules = nullptr;
+
+	const char *pszNetClass = g_pGameConf->GetKeyValue("GameRulesProxy");
+	const char *pszDTName = g_pGameConf->GetKeyValue("GameRulesDataTable");
+	if (pszNetClass && pszDTName)
+	{
+		sm_sendprop_info_t info;
+		ServerClass *sc = UTIL_FindServerClass(pszNetClass);
+
+		if (sc && UTIL_FindDataTable(sc->m_pTable, pszDTName, &info))
+		{
+			auto proxyFn = info.prop->GetDataTableProxyFn();
+			if (proxyFn)
+			{
+				CSendProxyRecipients recp;
+				s_pGameRules = proxyFn(nullptr, nullptr, nullptr, &recp, 0);
+			}
+		}
 	}
 }
 

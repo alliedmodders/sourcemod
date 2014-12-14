@@ -320,20 +320,17 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			break;
 		case ValveCall_GameRules:
 			{
-				if (g_pGameRules == NULL)
+				void *pGameRules = GameRules();
+				if (pGameRules == NULL)
 				{
 					vc->stk_put(ptr);
-					return pContext->ThrowNativeError("GameRules unsupported or not available; file a bug report");
-				}
 
-				void *gamerules = *g_pGameRules;
-
-				if (gamerules == NULL)
-				{
-					vc->stk_put(ptr);
-					return pContext->ThrowNativeError("GameRules not available before map is loaded");
+					if (g_SdkTools.HasAnyLevelInited())
+						return pContext->ThrowNativeError("GameRules unsupported or not available; file a bug report");
+					else
+						return pContext->ThrowNativeError("GameRules not available before map is loaded");
 				}
-				*(void **)ptr = gamerules;
+				*(void **)ptr = pGameRules;
 			}
 			break;
 		case ValveCall_EntityList:

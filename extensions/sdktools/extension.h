@@ -107,6 +107,11 @@ public: //ICommandTargetProcessor
 public:
 	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
+public:
+	bool HasAnyLevelInited() { return m_bAnyLevelInited; }
+
+private:
+	bool m_bAnyLevelInited = false;
 };
 
 extern SDKTools g_SdkTools;
