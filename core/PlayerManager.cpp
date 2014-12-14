@@ -2001,6 +2001,11 @@ void CPlayer::UpdateAuthIds()
 #else
 	authstr = engine->GetPlayerNetworkIDString(m_pEdict);
 #endif
+	if (m_AuthID.compare(authstr) == 0)
+	{
+		return;
+	}
+
 	m_AuthID = authstr;
 	
 	// Then, cache SteamId
