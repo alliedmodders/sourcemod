@@ -980,6 +980,41 @@ Compiler::emitOp(OPCODE op)
       __ sarl(pri, 2);
       break;
 
+    // Sign extend an [8,16] bit value to a 32-bit value, or a 32-bit value
+    // to a 64-bit value.
+    case OP_SIGN_PRI:
+    case OP_SIGN_ALT:
+    {
+      Register reg = (op == OP_SIGN_PRI) ? pri : alt;
+      size_t bits = readCell();
+      switch (bits) {
+        case 8:
+          __ movsxb(reg, reg);
+          break;
+        case 16:
+          __ movsxw(reg, reg);
+          break;
+        case 32:
+          // Address is in |reg|. We have to save pri/alt because cdq needs
+          // to destroy both. We move the sign-extended reg to ecx and then
+          // write it back after.
+          emitCheckAddress(reg);
+          __ push(eax);
+          __ push(edx);
+          __ movl(tmp, Operand(reg, 0));
+          __ cdq();
+          __ movl(tmp, edx);
+          __ pop(edx);
+          __ pop(eax);
+          __ movl(Operand(reg, 4), tmp);
+          break;
+        default:
+          error_= SP_ERROR_INVALID_INSTRUCTION;
+          return false;
+      }
+      break;
+    }
+
     case OP_ABS_F32:
       __ movl(pri, Operand(stk, 0));
       __ andl(pri, 0x7fffffff);

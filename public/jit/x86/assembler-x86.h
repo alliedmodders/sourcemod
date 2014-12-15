@@ -367,6 +367,7 @@ class AssemblerX86 : public Assembler
   void movb(Register dest, const Operand &src) {
     emit1(0x8a, dest.code, src);
   }
+
   void movzxb(Register dest, const Operand &src) {
     emit2(0x0f, 0xb6, dest.code, src);
   }
@@ -378,6 +379,24 @@ class AssemblerX86 : public Assembler
   }
   void movzxw(Register dest, const Register src) {
     emit2(0x0f, 0xb7, dest.code, src.code);
+  }
+
+  void movsxb(Register dest, const Operand &src) {
+    emit2(0x0f, 0xbe, dest.code, src);
+  }
+  void movsxb(Register dest, const Register src) {
+    emit2(0x0f, 0xbe, dest.code, src.code);
+  }
+  void movsxw(Register dest, const Operand &src) {
+    emit2(0x0f, 0xbf, dest.code, src);
+  }
+  void movsxw(Register dest, const Register src) {
+    emit2(0x0f, 0xbf, dest.code, src.code);
+  }
+
+  // Sign extend eax -> edx.
+  void cdq() {
+    emit1(0x99);
   }
 
   void lea(Register dest, const Operand &src) {

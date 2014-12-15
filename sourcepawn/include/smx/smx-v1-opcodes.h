@@ -161,8 +161,8 @@ namespace sp {
   _(ZERO_ALT,       "zero.alt")       \
   _(ZERO,           "zero")           \
   _(ZERO_S,         "zero.s")         \
-  _(UNGEN_SIGN_PRI, "sign.pri")       \
-  _(UNGEN_SIGN_ALT, "sign.alt")       \
+  _(SIGN_PRI,       "sign.pri")       \
+  _(SIGN_ALT,       "sign.alt")       \
   _(EQ,             "eq")             \
   _(NEQ,            "neq")            \
   _(LESS,           "less")           \
