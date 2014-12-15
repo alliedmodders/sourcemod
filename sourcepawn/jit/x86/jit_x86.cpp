@@ -43,10 +43,6 @@
 using namespace sp;
 using namespace Knight;
 
-#if defined USE_UNGEN_OPCODES
-#include "ungen_opcodes.h"
-#endif
-
 #define __ masm.
 
 JITX86 g_Jit;
@@ -977,13 +973,13 @@ Compiler::emitOp(OPCODE op)
       __ sarl(pri, 2);
       break;
 
-    case OP_FABS:
+    case OP_ABS_F32:
       __ movl(pri, Operand(stk, 0));
       __ andl(pri, 0x7fffffff);
       __ addl(stk, 4);
       break;
 
-    case OP_FLOAT:
+    case OP_CVT_I32_TO_F32:
       if (MacroAssemblerX86::Features().sse2) {
         __ cvtsi2ss(xmm0, Operand(edi, 0));
         __ movd(pri, xmm0);
@@ -996,32 +992,32 @@ Compiler::emitOp(OPCODE op)
       __ addl(stk, 4);
       break;
 
-    case OP_FLOATADD:
-    case OP_FLOATSUB:
-    case OP_FLOATMUL:
-    case OP_FLOATDIV:
+    case OP_ADD_F32:
+    case OP_SUB_F32:
+    case OP_MUL_F32:
+    case OP_DIV_F32:
       if (MacroAssemblerX86::Features().sse2) {
         __ movss(xmm0, Operand(stk, 0));
-        if (op == OP_FLOATADD)
+        if (op == OP_ADD_F32)
           __ addss(xmm0, Operand(stk, 4));
-        else if (op == OP_FLOATSUB)
+        else if (op == OP_SUB_F32)
           __ subss(xmm0, Operand(stk, 4));
-        else if (op == OP_FLOATMUL)
+        else if (op == OP_MUL_F32)
           __ mulss(xmm0, Operand(stk, 4));
-        else if (op == OP_FLOATDIV)
+        else if (op == OP_DIV_F32)
           __ divss(xmm0, Operand(stk, 4));
         __ movd(pri, xmm0);
       } else {
         __ subl(esp, 4);
         __ fld32(Operand(stk, 0));
 
-        if (op == OP_FLOATADD)
+        if (op == OP_ADD_F32)
           __ fadd32(Operand(stk, 4));
-        else if (op == OP_FLOATSUB)
+        else if (op == OP_SUB_F32)
           __ fsub32(Operand(stk, 4));
-        else if (op == OP_FLOATMUL)
+        else if (op == OP_MUL_F32)
           __ fmul32(Operand(stk, 4));
-        else if (op == OP_FLOATDIV)
+        else if (op == OP_DIV_F32)
           __ fdiv32(Operand(stk, 4));
 
         __ fstp32(Operand(esp, 0));
@@ -1030,7 +1026,7 @@ Compiler::emitOp(OPCODE op)
       __ addl(stk, 8);
       break;
 
-    case OP_RND_TO_NEAREST:
+    case OP_RND_F32_TO_NEAREST:
     {
       if (MacroAssemblerX86::Features().sse) {
         // Assume no one is touching MXCSR.
@@ -1050,7 +1046,7 @@ Compiler::emitOp(OPCODE op)
       break;
     }
 
-    case OP_RND_TO_CEIL:
+    case OP_RND_F32_TO_CEIL:
     {
       static float kRoundToCeil = -0.5f;
       // From http://wurstcaptures.untergrund.net/assembler_tricks.html#fastfloorf
@@ -1066,7 +1062,7 @@ Compiler::emitOp(OPCODE op)
       break;
     }
 
-    case OP_RND_TO_ZERO:
+    case OP_RND_F32_TO_ZERO:
       if (MacroAssemblerX86::Features().sse) {
         __ cvttss2si(pri, Operand(stk, 0));
       } else {
@@ -1083,7 +1079,7 @@ Compiler::emitOp(OPCODE op)
       __ addl(stk, 4);
       break;
 
-    case OP_RND_TO_FLOOR:
+    case OP_RND_F32_TO_FLOOR:
       __ fld32(Operand(stk, 0));
       __ subl(esp, 8);
       __ fstcw(Operand(esp, 4));
@@ -1100,7 +1096,7 @@ Compiler::emitOp(OPCODE op)
     // compiled code it should not be used or generated.
     //
     // Note that the checks here are inverted: the test is |rhs OP lhs|.
-    case OP_FLOATCMP:
+    case OP_CMP_F32:
     {
       Label bl, ab, done;
       if (MacroAssemblerX86::Features().sse) {
@@ -1126,31 +1122,31 @@ Compiler::emitOp(OPCODE op)
       break;
     }
 
-    case OP_FLOAT_GT:
+    case OP_GT_F32:
       emitFloatCmp(above);
       break;
 
-    case OP_FLOAT_GE:
+    case OP_GE_F32:
       emitFloatCmp(above_equal);
       break;
 
-    case OP_FLOAT_LE:
+    case OP_LE_F32:
       emitFloatCmp(below_equal);
       break;
 
-    case OP_FLOAT_LT:
+    case OP_LT_F32:
       emitFloatCmp(below);
       break;
 
-    case OP_FLOAT_EQ:
+    case OP_EQ_F32:
       emitFloatCmp(equal);
       break;
 
-    case OP_FLOAT_NE:
+    case OP_NE_F32:
       emitFloatCmp(not_equal);
       break;
 
-    case OP_FLOAT_NOT:
+    case OP_NOT_F32:
     {
       if (MacroAssemblerX86::Features().sse) {
         __ xorps(xmm0, xmm0);

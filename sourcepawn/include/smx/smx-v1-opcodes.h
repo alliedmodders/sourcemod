@@ -235,24 +235,24 @@ namespace sp {
   _(STRADJUST_PRI,  "stradjust.pri")  \
   _(UNGEN_STKADJUST,"stackadjust")    \
   _(ENDPROC,        "endproc")        \
-  _(FABS,           "fabs")           \
-  _(FLOAT,          "float")          \
-  _(FLOATADD,       "float.add")      \
-  _(FLOATSUB,       "float.sub")      \
-  _(FLOATMUL,       "float.mul")      \
-  _(FLOATDIV,       "float.div")      \
-  _(RND_TO_NEAREST, "round")          \
-  _(RND_TO_FLOOR,   "floor")          \
-  _(RND_TO_CEIL,    "ceil")           \
-  _(RND_TO_ZERO,    "rndtozero")      \
-  _(FLOATCMP,       "float.cmp")      \
-  _(FLOAT_GT,       "float.gt")       \
-  _(FLOAT_GE,       "float.ge")       \
-  _(FLOAT_LT,       "float.lt")       \
-  _(FLOAT_LE,       "float.le")       \
-  _(FLOAT_NE,       "float.ne")       \
-  _(FLOAT_EQ,       "float.eq")       \
-  _(FLOAT_NOT,      "float.not")
+  _(ABS_F32,        "abs.f32")        \
+  _(CVT_I32_TO_F32, "cvt.i32.f32")    \
+  _(ADD_F32,        "add.f32")        \
+  _(SUB_F32,        "sub.f32")        \
+  _(MUL_F32,        "mul.f32")        \
+  _(DIV_F32,        "div.f32")        \
+  _(RND_F32_TO_NEAREST, "round.f32")          \
+  _(RND_F32_TO_FLOOR,   "floor.f32")          \
+  _(RND_F32_TO_CEIL,    "ceil.f32")           \
+  _(RND_F32_TO_ZERO,    "rndtozero.f32")      \
+  _(CMP_F32,       "cmp.f32")      \
+  _(GT_F32,        "gt.f32")       \
+  _(GE_F32,        "ge.f32")       \
+  _(LT_F32,        "lt.f32")       \
+  _(LE_F32,        "le.f32")       \
+  _(NE_F32,        "ne.f32")       \
+  _(EQ_F32,        "eq.f32")       \
+  _(NOT_F32,       "not.f32")
 
 enum OPCODE {
 #define _(op, text) OP_##op,
