@@ -998,27 +998,39 @@ Compiler::emitOp(OPCODE op)
     case OP_DIV_F32:
       if (MacroAssemblerX86::Features().sse2) {
         __ movss(xmm0, Operand(stk, 0));
-        if (op == OP_ADD_F32)
-          __ addss(xmm0, Operand(stk, 4));
-        else if (op == OP_SUB_F32)
-          __ subss(xmm0, Operand(stk, 4));
-        else if (op == OP_MUL_F32)
-          __ mulss(xmm0, Operand(stk, 4));
-        else if (op == OP_DIV_F32)
-          __ divss(xmm0, Operand(stk, 4));
+        switch (op) {
+          case OP_ADD_F32:
+            __ addss(xmm0, Operand(stk, 4));
+            break;
+          case OP_SUB_F32:
+            __ subss(xmm0, Operand(stk, 4));
+            break;
+          case OP_MUL_F32:
+            __ mulss(xmm0, Operand(stk, 4));
+            break;
+          case OP_DIV_F32:
+            __ divss(xmm0, Operand(stk, 4));
+            break;
+        }
         __ movd(pri, xmm0);
       } else {
         __ subl(esp, 4);
         __ fld32(Operand(stk, 0));
 
-        if (op == OP_ADD_F32)
-          __ fadd32(Operand(stk, 4));
-        else if (op == OP_SUB_F32)
-          __ fsub32(Operand(stk, 4));
-        else if (op == OP_MUL_F32)
-          __ fmul32(Operand(stk, 4));
-        else if (op == OP_DIV_F32)
-          __ fdiv32(Operand(stk, 4));
+        switch (op) {
+          case OP_ADD_F32:
+            __ fadd32(Operand(stk, 4));
+            break;
+          case OP_SUB_F32:
+            __ fsub32(Operand(stk, 4));
+            break;
+          case OP_MUL_F32:
+            __ fmul32(Operand(stk, 4));
+            break;
+          case OP_DIV_F32:
+            __ fdiv32(Operand(stk, 4));
+            break;
+        }
 
         __ fstp32(Operand(esp, 0));
         __ pop(pri);
@@ -1125,23 +1137,18 @@ Compiler::emitOp(OPCODE op)
     case OP_GT_F32:
       emitFloatCmp(above);
       break;
-
     case OP_GE_F32:
       emitFloatCmp(above_equal);
       break;
-
     case OP_LE_F32:
       emitFloatCmp(below_equal);
       break;
-
     case OP_LT_F32:
       emitFloatCmp(below);
       break;
-
     case OP_EQ_F32:
       emitFloatCmp(equal);
       break;
-
     case OP_NE_F32:
       emitFloatCmp(not_equal);
       break;
