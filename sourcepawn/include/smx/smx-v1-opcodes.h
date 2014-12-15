@@ -125,10 +125,10 @@ namespace sp {
   _(JNZ,            "jnz")            \
   _(JEQ,            "jeq")            \
   _(JNEQ,           "jneq")           \
-  _(UNGEN_JLESS,    "jsless")         \
-  _(UNGEN_JLEQ,     "jleq")           \
-  _(UNGEN_JGRTR,    "jgrtr")          \
-  _(UNGEN_JGEQ,     "jgeq")           \
+  _(JLESS,          "jsless")         \
+  _(JLEQ,           "jleq")           \
+  _(JGRTR,          "jgrtr")          \
+  _(JGEQ,           "jgeq")           \
   _(JSLESS,         "jsless")         \
   _(JSLEQ,          "jsleq")          \
   _(JSGRTR,         "jsgrtr")         \
@@ -165,10 +165,10 @@ namespace sp {
   _(UNGEN_SIGN_ALT, "sign.alt")       \
   _(EQ,             "eq")             \
   _(NEQ,            "neq")            \
-  _(UNGEN_LESS,     "less")           \
-  _(UNGEN_LEQ,      "leq")            \
-  _(UNGEN_GRTR,     "grtr")           \
-  _(UNGEN_GEQ,      "geq")            \
+  _(LESS,           "less")           \
+  _(LEQ,            "leq")            \
+  _(GRTR,           "grtr")           \
+  _(GEQ,            "geq")            \
   _(SLESS,          "sless")          \
   _(SLEQ,           "sleq")           \
   _(SGRTR,          "sgrtr")          \

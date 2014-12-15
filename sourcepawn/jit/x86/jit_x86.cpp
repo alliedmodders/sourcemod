@@ -80,15 +80,27 @@ OpToCondition(OPCODE op)
    case OP_SLESS:
    case OP_JSLESS:
     return less;
+   case OP_LESS:
+   case OP_JLESS:
+    return below;
    case OP_SLEQ:
    case OP_JSLEQ:
     return less_equal;
+   case OP_LEQ:
+   case OP_JLEQ:
+    return below_equal;
    case OP_SGRTR:
    case OP_JSGRTR:
     return greater;
+   case OP_GRTR:
+   case OP_JGRTR:
+    return above;
    case OP_SGEQ:
    case OP_JSGEQ:
     return greater_equal;
+   case OP_GEQ:
+   case OP_JGEQ:
+    return above_equal;
    default:
     assert(false);
     return negative;
@@ -1231,10 +1243,16 @@ Compiler::emitOp(OPCODE op)
 
     case OP_JEQ:
     case OP_JNEQ:
+    // Signed.
     case OP_JSLESS:
     case OP_JSLEQ:
     case OP_JSGRTR:
     case OP_JSGEQ:
+    // Unsigned.
+    case OP_JLESS:
+    case OP_JLEQ:
+    case OP_JGRTR:
+    case OP_JGEQ:
     {
       Label *target = labelAt(readCell());
       if (!target)
