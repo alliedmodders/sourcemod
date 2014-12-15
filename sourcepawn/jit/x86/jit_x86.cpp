@@ -896,6 +896,33 @@ Compiler::emitOp(OPCODE op)
       break;
     }
 
+    case OP_UDIV:
+    {
+      // dividend = pri (eax)
+      // divisor = alt (edx)
+      __ testl(alt, alt);
+      __ j(zero, &error_divide_by_zero_);
+
+      __ movl(ecx, eax);
+      __ xorl(edx, edx);
+      __ div(ecx);
+      break;
+    }
+
+    case OP_UDIV_ALT:
+    {
+      // dividend = alt (edx)
+      // divisor = pri (eax)
+      __ testl(pri, pri);
+      __ j(zero, &error_divide_by_zero_);
+
+      __ movl(ecx, eax);
+      __ movl(eax, edx);
+      __ xorl(edx, edx);
+      __ div(ecx);
+      break;
+    }
+
     case OP_LODB_I:
     {
       cell_t val = readCell();

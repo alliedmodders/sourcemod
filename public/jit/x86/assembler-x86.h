@@ -563,11 +563,17 @@ class AssemblerX86 : public Assembler
   void notl(const Operand &srcdest) {
     emit1(0xf7, 2, srcdest);
   }
-  void idivl(Register dividend) {
-    emit1(0xf7, 7, dividend.code);
+  void idivl(Register divisor) {
+    emit1(0xf7, 7, divisor.code);
   }
-  void idivl(const Operand &dividend) {
-    emit1(0xf7, 7, dividend);
+  void idivl(const Operand &divisor) {
+    emit1(0xf7, 7, divisor);
+  }
+  void div(Register divisor) {
+    emit1(0xf7, 6, divisor.code);
+  }
+  void div(const Operand &divisor) {
+    emit1(0xf7, 6, divisor);
   }
 
   void ret() {

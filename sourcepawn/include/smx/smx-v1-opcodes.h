@@ -144,8 +144,8 @@ namespace sp {
   _(SDIV,           "sdiv")           \
   _(SDIV_ALT,       "sdiv.alt")       \
   _(UNGEN_UMUL,     "umul")           \
-  _(UNGEN_UDIV,     "udiv")           \
-  _(UNGEN_UDIV_ALT, "udiv.alt")       \
+  _(UDIV,           "udiv")           \
+  _(UDIV_ALT,       "udiv.alt")       \
   _(ADD,            "add")            \
   _(SUB,            "sub")            \
   _(SUB_ALT,        "sub.alt")        \
