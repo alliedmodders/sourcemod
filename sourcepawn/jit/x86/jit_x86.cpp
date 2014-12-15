@@ -1463,6 +1463,9 @@ Compiler::emitOp(OPCODE op)
       break;
     }
 
+    case OP_PREFIX_I64:
+      return emit64BitOp((OPCODE)readCell());
+
     case OP_NOP:
       break;
 
@@ -1471,6 +1474,270 @@ Compiler::emitOp(OPCODE op)
       return false;
   }
 
+  return true;
+}
+
+static void
+div_i64_impl(int64_t *left, int64_t *right, int64_t *out)
+{
+  *out = *left / *right;
+}
+
+#define DEFINE_CXX_I64_IMPL(name, type, op)                 \
+  static void                                               \
+  name##_##type##_impl(type *left, type *right, type *out)  \
+  {                                                         \
+    *out = *left op *right;                                 \
+  }
+
+DEFINE_CXX_I64_IMPL(div, int64_t, /);
+DEFINE_CXX_I64_IMPL(div, uint64_t, /);
+DEFINE_CXX_I64_IMPL(mod, int64_t, %);
+DEFINE_CXX_I64_IMPL(mod, uint64_t, %);
+
+#define DEFINE_CXX_B64_IMPL(name, type, op)                 \
+  static int                                                \
+  cmp_##type##_##name(type *left, type *right)              \
+  {                                                         \
+    return left op right;                                   \
+  }
+
+DEFINE_CXX_B64_IMPL(ge, int64_t, >=);
+DEFINE_CXX_B64_IMPL(gt, int64_t, >);
+DEFINE_CXX_B64_IMPL(lt, int64_t, <);
+DEFINE_CXX_B64_IMPL(le, int64_t, <=);
+DEFINE_CXX_B64_IMPL(ge, uint64_t, >=);
+DEFINE_CXX_B64_IMPL(gt, uint64_t, >);
+DEFINE_CXX_B64_IMPL(lt, uint64_t, <);
+DEFINE_CXX_B64_IMPL(le, uint64_t, <=);
+
+bool
+Compiler::emit64BitOp(OPCODE op)
+{
+  // Binary ops:
+  //    stk+12 = left, high
+  //    stk+8  = left, low
+  //    stk+4  = right, high
+  //    stk+0  = right, low
+  //
+  // pri, alt may be used as scratch.
+  switch (op) {
+    case OP_ADD:
+      __ movl(eax, Operand(stk, 0));
+      __ movl(edx, Operand(stk, 4));
+      __ addl(Operand(stk, 8), eax);
+      __ adcl(Operand(stk, 12), edx);
+      __ addl(stk, 8);
+      break;
+
+    case OP_SUB:
+      __ movl(eax, Operand(stk, 0));
+      __ movl(edx, Operand(stk, 4));
+      __ subl(Operand(stk, 8), eax);
+      __ sbbl(Operand(stk, 12), edx);
+      __ addl(stk, 8);
+      break;
+
+    case OP_SMUL:
+    case OP_UMUL:
+    {
+      // Perform the multiply in three steps, then add the results.
+      const Register right_lo = edx;
+      const Register right_hi = ebx;
+      const Register left_lo = eax;
+      const Register left_hi = ecx;
+      __ push(ebx);
+      __ movl(right_lo, Operand(stk, 0));
+      __ movl(right_hi, Operand(stk, 4));
+      __ movl(left_lo, Operand(stk, 8));
+      __ movl(left_hi, Operand(stk, 12));
+      __ imull(right_hi, left_lo); // eax*ebx -> ebx
+      __ imull(left_hi, right_lo); // edx*ecx -> ecx
+      __ mul(right_lo);            // eax*edx -> eax:edx
+      __ addl(ecx, ebx);           // ecx += ebx
+      __ addl(edx, ecx);           // edx += ecx
+      __ pop(ebx);
+      __ addl(stk, 8);
+      break;
+    }
+
+    case OP_SDIV:
+    case OP_UDIV:
+    case OP_UMODULO:
+    case OP_SMODULO:
+      __ cmpl(Operand(stk, 0), 0);
+      __ j(zero, &error_divide_by_zero_);
+      __ cmpl(Operand(stk, 4), 0);
+      __ j(zero, &error_divide_by_zero_);
+      __ lea(eax, Operand(stk, 0));
+      __ lea(edx, Operand(stk, 8));
+      __ push(edx);
+      __ push(eax);
+      __ push(edx);
+      if (op == OP_SDIV)
+        __ call(ExternalAddress((void *)div_int64_t_impl));
+      else if (op == OP_UDIV)
+        __ call(ExternalAddress((void *)div_uint64_t_impl));
+      else if (op == OP_SMODULO)
+        __ call(ExternalAddress((void *)mod_int64_t_impl));
+      else if (op == OP_UMODULO)
+        __ call(ExternalAddress((void *)mod_uint64_t_impl));
+      __ addl(esp, 12);
+      __ addl(stk, 8);
+      break;
+
+    case OP_AND:
+      __ movl(eax, Operand(stk, 0));
+      __ movl(edx, Operand(stk, 4));
+      __ andl(Operand(stk, 8), eax);
+      __ andl(Operand(stk, 12), edx);
+      __ addl(stk, 8);
+      break;
+
+    case OP_OR:
+      __ movl(eax, Operand(stk, 0));
+      __ movl(edx, Operand(stk, 4));
+      __ orl(Operand(stk, 8), eax);
+      __ orl(Operand(stk, 12), edx);
+      __ addl(stk, 8);
+      break;
+
+    case OP_XOR:
+      __ movl(eax, Operand(stk, 0));
+      __ movl(edx, Operand(stk, 4));
+      __ xorl(Operand(stk, 8), eax);
+      __ xorl(Operand(stk, 12), edx);
+      __ addl(stk, 8);
+      break;
+
+    case OP_SGRTR:
+    case OP_SLESS:
+    case OP_LESS:
+    case OP_GRTR:
+    case OP_LEQ:
+    case OP_SLEQ:
+    case OP_GEQ:
+    case OP_SGEQ:
+      __ lea(eax, Operand(stk, 0));
+      __ lea(edx, Operand(stk, 8));
+      __ push(edx);
+      __ push(eax);
+      switch (op) {
+        case OP_SGRTR:
+          __ call(ExternalAddress((void *)cmp_int64_t_gt));
+          break;
+        case OP_GRTR:
+          __ call(ExternalAddress((void *)cmp_uint64_t_gt));
+          break;
+        case OP_SLESS:
+          __ call(ExternalAddress((void *)cmp_int64_t_lt));
+          break;
+        case OP_LESS:
+          __ call(ExternalAddress((void *)cmp_uint64_t_lt));
+          break;
+        case OP_SLEQ:
+          __ call(ExternalAddress((void *)cmp_int64_t_le));
+          break;
+        case OP_LEQ:
+          __ call(ExternalAddress((void *)cmp_uint64_t_le));
+          break;
+        case OP_SGEQ:
+          __ call(ExternalAddress((void *)cmp_int64_t_ge));
+          break;
+        case OP_GEQ:
+          __ call(ExternalAddress((void *)cmp_uint64_t_ge));
+          break;
+      }
+      __ addl(esp, 8);
+      __ addl(stk, 16);
+      break;
+
+    case OP_EQ:
+    case OP_NEQ:
+    {
+      Label f, t;
+      __ movl(eax, Operand(stk, 0));
+      __ movl(edx, Operand(stk, 4));
+      __ cmpl(Operand(stk, 8), eax);
+      __ j((op == OP_EQ) ? not_equal : equal, &f);
+      __ cmpl(Operand(stk, 12), edx);
+      __ j((op == OP_EQ) ? not_equal : equal, &f);
+      __ movl(pri, 1);
+      __ jmp(&t);
+      __ bind(&f);
+      __ xorl(pri, pri);
+      __ bind(&t);
+      break;
+    }
+
+    // shift is in pri
+    case OP_SHL:
+    {
+      __ movl(ecx, pri);
+      __ movl(eax, Operand(stk, 0));
+      __ movl(edx, Operand(stk, 4));
+      Label done;
+      __ shldl_cl(edx, eax); // :TODO: right order?
+      __ sall_cl(eax);
+      __ testl(eax, 0x20);
+      __ j(zero, &done);
+      __ movl(edx, eax);
+      __ xorl(eax, eax);
+      __ movl(eax, edx);
+      __ xorl(edx, edx);
+      __ bind(&done);
+      __ movl(Operand(stk, 0), eax);
+      __ movl(Operand(stk, 4), edx);
+      break;
+    }
+
+    case OP_SHR:
+    case OP_SSHR:
+    {
+      __ movl(ecx, pri);
+      __ movl(eax, Operand(stk, 0));
+      __ movl(edx, Operand(stk, 4));
+      Label done;
+      __ shrdl_cl(eax, edx); // :TODO: right order?
+      if (op == OP_SHR)
+        __ shrl_cl(edx);
+      else if (op == OP_SSHR)
+        __ sarl_cl(edx);
+      __ testl(eax, 0x20);
+      __ j(zero, &done);
+      __ movl(eax, edx);
+      __ xorl(edx, edx);
+      __ bind(&done);
+      __ movl(Operand(stk, 0), eax);
+      __ movl(Operand(stk, 4), edx);
+      break;
+    }
+
+    case OP_NEG:
+      __ negl(Operand(stk, 0));
+      __ adcl(Operand(stk, 4), 0);
+      __ negl(Operand(stk, 4));
+      break;
+
+    case OP_INVERT:
+      __ notl(Operand(stk, 0));
+      __ notl(Operand(stk, 4));
+      break;
+
+    // i64 -> bool
+    case OP_NOT:
+      __ movl(eax, Operand(stk, 0));
+      __ orl(eax, Operand(stk, 4));
+      __ testl(eax, eax);
+      __ movl(eax, 0);
+      __ set(zero, r8_al);
+      __ addl(stk, 8);
+      break;
+
+    default:
+      error_ = SP_ERROR_INVALID_INSTRUCTION;
+      return false;
+  }
   return true;
 }
 

@@ -245,17 +245,20 @@ namespace sp {
   _(RND_F32_TO_FLOOR,   "floor.f32")          \
   _(RND_F32_TO_CEIL,    "ceil.f32")           \
   _(RND_F32_TO_ZERO,    "rndtozero.f32")      \
-  _(CMP_F32,       "cmp.f32")      \
-  _(GT_F32,        "gt.f32")       \
-  _(GE_F32,        "ge.f32")       \
-  _(LT_F32,        "lt.f32")       \
-  _(LE_F32,        "le.f32")       \
-  _(NE_F32,        "ne.f32")       \
-  _(EQ_F32,        "eq.f32")       \
-  _(NOT_F32,       "not.f32")      \
-  _(AND_C,         "and.c")        \
-  _(ZEX_PRI,       "zex.pri")      \
-  _(ZEX_ALT,       "zex.alt")
+  _(CMP_F32,       "cmp.f32")       \
+  _(GT_F32,        "gt.f32")        \
+  _(GE_F32,        "ge.f32")        \
+  _(LT_F32,        "lt.f32")        \
+  _(LE_F32,        "le.f32")        \
+  _(NE_F32,        "ne.f32")        \
+  _(EQ_F32,        "eq.f32")        \
+  _(NOT_F32,       "not.f32")       \
+  _(AND_C,         "and.c")         \
+  _(ZEX_PRI,       "zex.pri")       \
+  _(ZEX_ALT,       "zex.alt")       \
+  _(PREFIX_I64,    "prefix.i64")    \
+  _(SMODULO,       "smod")          \
+  _(UMODULO,       "umod")
 
 enum OPCODE {
 #define _(op, text) OP_##op,

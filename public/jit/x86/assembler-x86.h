@@ -430,6 +430,16 @@ class AssemblerX86 : public Assembler
   void shrl(const Operand &dest, uint8_t imm) {
     shift_imm(dest, 5, imm);
   }
+
+  void sall_cl(Register dest) {
+    shift_cl(dest.code, 4);
+  }
+  void sall(Register dest, uint8_t imm) {
+    shift_imm(dest.code, 4, imm);
+  }
+  void sall(const Operand &dest, uint8_t imm) {
+    shift_imm(dest, 4, imm);
+  }
   void sarl_cl(Register dest) {
     shift_cl(dest.code, 7);
   }
@@ -438,6 +448,19 @@ class AssemblerX86 : public Assembler
   }
   void sarl(const Operand &dest, uint8_t imm) {
     shift_imm(dest, 7, imm);
+  }
+
+  void shldl_cl(Register op2, const Operand &op1) {
+    emit2(0x0f, 0xa5, op2.code, op1);
+  }
+  void shldl_cl(Register op2, Register op1) {
+    emit2(0x0f, 0xa5, op2.code, op1.code);
+  }
+  void shrdl_cl(Register op2, const Operand &op1) {
+    emit2(0x0f, 0xad, op2.code, op1);
+  }
+  void shrdl_cl(Register op2, Register op1) {
+    emit2(0x0f, 0xad, op2.code, op1.code);
   }
 
   void cmpl(Register left, int32_t imm) {
@@ -520,6 +543,25 @@ class AssemblerX86 : public Assembler
     alu_imm(0, imm, dest);
   }
 
+  void adcl(const Operand &dest, Register src) {
+    emit1(0x11, src.code, dest);
+  }
+  void adcl(Register dest, const Operand &src) {
+    emit1(0x13, dest.code, src);
+  }
+  void adcl(Register dest, int32_t imm) {
+    alu_imm(2, imm, Operand(dest));
+  }
+  void adcl(const Operand &dest, int32_t imm) {
+    alu_imm(2, imm, dest);
+  }
+  void sbbl(const Operand &dest, Register src) {
+    emit1(0x19, src.code, dest);
+  }
+  void sbbl(Register dest, const Operand &src) {
+    emit1(0x1b, dest.code, src);
+  }
+
   void imull(Register dest, const Operand &src) {
     emit2(0x0f, 0xaf, dest.code, src);
   }
@@ -550,6 +592,10 @@ class AssemblerX86 : public Assembler
   }
   void testl(Register op1, Register op2) {
     emit1(0x85, op2.code, op1.code);
+  }
+  void testl(Register op1, int32_t imm) {
+    emit1(0xf7, 0, op1.code);
+    writeInt32(imm);
   }
   void set(ConditionCode cc, const Operand &dest) {
     emit2(0x0f, 0x90 + uint8_t(cc), 0, dest);

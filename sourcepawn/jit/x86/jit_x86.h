@@ -106,6 +106,7 @@ class Compiler
   void emitErrorPath(Label *dest, int code);
   void emitErrorPaths();
   void emitFloatCmp(ConditionCode cc);
+  bool emit64BitOp(OPCODE op);
 
   ExternalAddress cipAddr() {
     sp_context_t *ctx = rt_->GetBaseContext()->GetCtx();
