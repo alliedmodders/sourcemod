@@ -598,6 +598,12 @@ Compiler::emitOp(OPCODE op)
       __ imull(pri, alt);
       break;
 
+    case OP_UMUL:
+      __ movl(tmp, alt);
+      __ mul(edx);    // (edx:eax) = eax * edx
+      __ movl(alt, tmp);
+      break;
+
     case OP_NOT:
       __ testl(eax, eax);
       __ movl(eax, 0);

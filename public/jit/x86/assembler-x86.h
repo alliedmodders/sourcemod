@@ -538,6 +538,12 @@ class AssemblerX86 : public Assembler
   void imull(Register dest, Register src, int32_t imm) {
     imull(dest, Operand(src), imm);
   }
+  void mul(Register src) {
+    emit1(0xf7, 4, src.code);
+  }
+  void mul(const Operand &src) {
+    emit1(0xf7, 4, src);
+  }
 
   void testl(const Operand &op1, Register op2) {
     emit1(0x85, op2.code, op1);
