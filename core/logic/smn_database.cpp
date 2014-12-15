@@ -289,14 +289,20 @@ private:
 	Handle_t m_MyHandle;
 };
 
+enum AsyncCallbackMode {
+	ACM_Old,
+	ACM_New
+};
+
 class TConnectOp : public IDBThreadOperation
 {
 public:
-	TConnectOp(IPluginFunction *func, IDBDriver *driver, const char *_dbname, cell_t data)
+	TConnectOp(IPluginFunction *func, IDBDriver *driver, const char *_dbname, AsyncCallbackMode acm, cell_t data)
 	{
 		m_pFunction = func;
 		m_pDriver = driver;
 		m_pDatabase = NULL;
+		m_ACM = acm;
 		m_Data = data;
 		error[0] = '\0';
 		strncopy(dbname, _dbname, sizeof(dbname));
@@ -329,7 +335,8 @@ public:
 			m_pDatabase->Close();
 		}
 		m_pFunction->PushCell(BAD_HANDLE);
-		m_pFunction->PushCell(BAD_HANDLE);
+		if (m_ACM == ACM_Old)
+			m_pFunction->PushCell(BAD_HANDLE);
 		m_pFunction->PushString("Driver is unloading");
 		m_pFunction->PushCell(m_Data);
 		m_pFunction->Execute(NULL);
@@ -349,7 +356,8 @@ public:
 		}
 
 		m_pFunction->PushCell(m_pDriver->GetHandle());
-		m_pFunction->PushCell(hndl);
+		if (m_ACM == ACM_Old)
+			m_pFunction->PushCell(hndl);
 		m_pFunction->PushString(hndl == BAD_HANDLE ? error : "");
 		m_pFunction->PushCell(m_Data);
 		m_pFunction->Execute(NULL);
@@ -363,6 +371,7 @@ private:
 	IPluginFunction *m_pFunction;
 	IDBDriver *m_pDriver;
 	IDatabase *m_pDatabase;
+	AsyncCallbackMode m_ACM;
 	char dbname[64];
 	char error[255];
 	cell_t m_Data;
@@ -401,7 +410,7 @@ static cell_t SQL_Connect(IPluginContext *pContext, const cell_t *params)
 	return hndl;
 }
 
-static cell_t SQL_TConnect(IPluginContext *pContext, const cell_t *params)
+static cell_t ConnectToDbAsync(IPluginContext *pContext, const cell_t *params, AsyncCallbackMode acm)
 {
 	IPluginFunction *pf = pContext->GetFunctionById(params[1]);
 	if (!pf)
@@ -442,7 +451,8 @@ static cell_t SQL_TConnect(IPluginContext *pContext, const cell_t *params)
 	if (!pInfo || !driver)
 	{
 		pf->PushCell(BAD_HANDLE);
-		pf->PushCell(BAD_HANDLE);
+		if (acm == ACM_Old)
+			pf->PushCell(BAD_HANDLE);
 		pf->PushString(error);
 		pf->PushCell(0);
 		pf->Execute(NULL);
@@ -457,7 +467,7 @@ static cell_t SQL_TConnect(IPluginContext *pContext, const cell_t *params)
 	}
 
 	/* Finally, add to the thread if we can */
-	TConnectOp *op = new TConnectOp(pf, driver, conf, params[3]);
+	TConnectOp *op = new TConnectOp(pf, driver, conf, acm, params[3]);
 	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 	if (pPlugin->GetProperty("DisallowDBThreads", NULL)
 		|| !g_DBMan.AddToThreadQueue(op, PrioQueue_High))
@@ -469,6 +479,16 @@ static cell_t SQL_TConnect(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return 1;
+}
+
+static cell_t SQL_TConnect(IPluginContext *pContext, const cell_t *params)
+{
+	return ConnectToDbAsync(pContext, params, ACM_Old);
+}
+
+static cell_t Database_Connect(IPluginContext *pContext, const cell_t *params)
+{
+	return ConnectToDbAsync(pContext, params, ACM_New);
 }
 
 static cell_t SQL_ConnectEx(IPluginContext *pContext, const cell_t *params)
@@ -1350,6 +1370,20 @@ static cell_t SQL_ReadDriver(IPluginContext *pContext, const cell_t *params)
 	return driver->GetHandle();
 }
 
+static cell_t Database_Driver_get(IPluginContext *pContext, const cell_t *params)
+{
+	IDatabase *db1=NULL;
+	HandleError err;
+
+	if ((err = g_DBMan.ReadHandle(params[1], DBHandle_Database, (void **)&db1))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid database Handle 1/%x (error: %d)", params[1], err);
+	}
+
+	return db1->GetDriver()->GetHandle();
+}
+
 static cell_t SQL_CheckConfig(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
@@ -1743,9 +1777,48 @@ static cell_t SQL_ExecuteTransaction(IPluginContext *pContext, const cell_t *par
 
 REGISTER_NATIVES(dbNatives)
 {
+	// Transitional syntax support.
+	{"DBDriver.Find",			SQL_GetDriver},
+	{"DBDriver.GetIdentifier",	SQL_GetDriverIdent},
+	{"DBDriver.GetProduct",		SQL_GetDriverProduct},
+
+	{"DBResultSet.FetchMoreResults",	SQL_FetchMoreResults},
+	{"DBResultSet.HasResults.get",		SQL_HasResultSet},
+	{"DBResultSet.RowCount.get",		SQL_GetRowCount},
+	{"DBResultSet.FieldCount.get",		SQL_GetFieldCount},
+	{"DBResultSet.AffectedRows.get",	SQL_GetAffectedRows},
+	{"DBResultSet.InsertId.get",		SQL_GetInsertId},
+	{"DBResultSet.FieldNameToNum",		SQL_FieldNameToNum},
+	{"DBResultSet.FieldNumToName",		SQL_FieldNumToName},
+	{"DBResultSet.FetchRow",            SQL_FetchRow},
+	{"DBResultSet.MoreRows.get",		SQL_MoreRows},
+	{"DBResultSet.Rewind",				SQL_Rewind},
+	{"DBResultSet.FetchString",			SQL_FetchString},
+	{"DBResultSet.FetchFloat",			SQL_FetchFloat},
+	{"DBResultSet.FetchInt",			SQL_FetchInt},
+	{"DBResultSet.IsFieldNull",			SQL_IsFieldNull},
+	{"DBResultSet.FetchSize",			SQL_FetchSize},
+
+	{"Transaction.Transaction",			SQL_CreateTransaction},
+	{"Transaction.AddQuery",			SQL_AddQuery},
+
+	{"DBStatement.BindInt",				SQL_BindParamInt},
+	{"DBStatement.BindFloat",			SQL_BindParamFloat},
+	{"DBStatement.BindString",			SQL_BindParamString},
+
+	{"Database.Connect",				Database_Connect},
+	{"Database.Driver.get",				Database_Driver_get},
+	{"Database.SetCharset",				SQL_SetCharset},
+	{"Database.Escape",					SQL_QuoteString},
+	{"Database.IsSameConnection",		SQL_IsSameConnection},
+	{"Database.Execute",				SQL_ExecuteTransaction},
+
+	// Note: The callback is ABI compatible so we can re-use the native.
+	{"Database.Query",					SQL_TQuery},
+
 	{"SQL_BindParamInt",		SQL_BindParamInt},
 	{"SQL_BindParamFloat",		SQL_BindParamFloat},
-	{"SQL_BindParamString",		SQL_BindParamString},\
+	{"SQL_BindParamString",		SQL_BindParamString},
 	{"SQL_CheckConfig",			SQL_CheckConfig},
 	{"SQL_Connect",				SQL_Connect},
 	{"SQL_ConnectEx",			SQL_ConnectEx},

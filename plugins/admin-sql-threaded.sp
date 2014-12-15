@@ -67,7 +67,7 @@ public Plugin:myinfo =
  *    powers.
  */
 
-new Handle:hDatabase = null;			/** Database connection */
+Database hDatabase = null;						/** Database connection */
 new g_sequence = 0;								/** Global unique sequence number */
 new ConnectLock = 0;							/** Connect sequence number */
 new RebuildCachePart[3] = {0};					/** Cache part sequence numbers */
@@ -81,11 +81,7 @@ public OnMapEnd()
 	/**
 	 * Clean up on map end just so we can start a fresh connection when we need it later.
 	 */
-	if (hDatabase != null)
-	{
-		delete hDatabase;
-		hDatabase = null;
-	}
+	delete hDatabase;
 }
 
 public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
@@ -101,10 +97,10 @@ public OnClientDisconnect(client)
 	PlayerAuth[client] = false;
 }
 
-public OnDatabaseConnect(Handle:owner, Handle:hndl, const String:error[], any:data)
+public void OnDatabaseConnect(Database db, const char[] error, any data)
 {
 #if defined _DEBUG
-	PrintToServer("OnDatabaseConnect(%x,%x,%d) ConnectLock=%d", owner, hndl, data, ConnectLock);
+	PrintToServer("OnDatabaseConnect(%x, %d) ConnectLock=%d", db, data, ConnectLock);
 #endif
 
 	/**
@@ -112,15 +108,12 @@ public OnDatabaseConnect(Handle:owner, Handle:hndl, const String:error[], any:da
 	 */
 	if (data != ConnectLock || hDatabase != null)
 	{
-		if (hndl != null)
-		{
-			delete hndl;
-		}
+		delete db;
 		return;
 	}
 	
 	ConnectLock = 0;
-	hDatabase = hndl;
+	hDatabase = db;
 	
 	/**
 	 * See if the connection is valid.  If not, don't un-mark the caches
@@ -155,20 +148,20 @@ RequestDatabaseConnection()
 	ConnectLock = ++g_sequence;
 	if (SQL_CheckConfig("admins"))
 	{
-		SQL_TConnect(OnDatabaseConnect, "admins", ConnectLock);
+		Database.Connect(OnDatabaseConnect, "admins", ConnectLock);
 	} else {
-		SQL_TConnect(OnDatabaseConnect, "default", ConnectLock);
+		Database.Connect(OnDatabaseConnect, "default", ConnectLock);
 	}
 }
 
-public OnRebuildAdminCache(AdminCachePart:part)
+public OnRebuildAdminCache(AdminCachePart part)
 {
 	/**
 	 * Mark this part of the cache as being rebuilt.  This is used by the 
 	 * callback system to determine whether the results should still be 
 	 * used.
 	 */
-	new sequence = ++g_sequence;
+	int sequence = ++g_sequence;
 	RebuildCachePart[_:part] = sequence;
 	
 	/**
@@ -196,7 +189,7 @@ public OnRebuildAdminCache(AdminCachePart:part)
 	}
 }
 
-public Action:OnClientPreAdminCheck(client)
+public Action OnClientPreAdminCheck(client)
 {
 	PlayerAuth[client] = true;
 	
@@ -235,13 +228,13 @@ public Action:OnClientPreAdminCheck(client)
 	return Plugin_Handled;
 }
 
-public OnReceiveUserGroups(Handle:owner, Handle:hndl, const String:error[], any:data)
+public void OnReceiveUserGroups(Database db, DBResultSet rs, const char[] error, any data)
 {
-	new Handle:pk = Handle:data;
-	ResetPack(pk);
+	DataPack pk = view_as<DataPack>(data);
+	pk.Reset();
 	
-	new client = ReadPackCell(pk);
-	new sequence = ReadPackCell(pk);
+	int client = pk.ReadCell();
+	int sequence = pk.ReadCell();
 	
 	/**
 	 * Make sure it's the same client.
@@ -252,7 +245,7 @@ public OnReceiveUserGroups(Handle:owner, Handle:hndl, const String:error[], any:
 		return;
 	}
 	
-	new AdminId:adm = AdminId:ReadPackCell(pk);
+	AdminId adm = view_as<AdminId>(pk.ReadCell());
 	
 	/**
 	 * Someone could have sneakily changed the admin id while we waited.
@@ -267,10 +260,10 @@ public OnReceiveUserGroups(Handle:owner, Handle:hndl, const String:error[], any:
 	/**
 	 * See if we got results.
 	 */
-	if (hndl == null)
+	if (rs == null)
 	{
-		decl String:query[255];
-		ReadPackString(pk, query, sizeof(query));
+		char query[255];
+		pk.ReadString(query, sizeof(query));
 		LogError("SQL error receiving user: %s", error);
 		LogError("Query dump: %s", query);
 		NotifyPostAdminCheck(client);
@@ -278,12 +271,12 @@ public OnReceiveUserGroups(Handle:owner, Handle:hndl, const String:error[], any:
 		return;
 	}
 	
-	decl String:name[80];
-	new GroupId:gid;
+	char name[80];
+	GroupId gid;
 	
-	while (SQL_FetchRow(hndl))
+	while (rs.FetchRow())
 	{
-		SQL_FetchString(hndl, 0, name, sizeof(name));
+		rs.FetchString(0, name, sizeof(name));
 		
 		if ((gid = FindAdmGroup(name)) == INVALID_GROUP_ID)
 		{
@@ -304,17 +297,17 @@ public OnReceiveUserGroups(Handle:owner, Handle:hndl, const String:error[], any:
 	delete pk;
 }
 
-public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
+public void OnReceiveUser(Database db, DBResultSet rs, const char[] error, any data)
 {
-	new Handle:pk = Handle:data;
-	ResetPack(pk);
-	
-	new client = ReadPackCell(pk);
+	DataPack pk = view_as<DataPack>(data);
+	pk.Reset();
+
+	int client = pk.ReadCell();
 	
 	/**
 	 * Check if this is the latest result request.
 	 */
-	new sequence = ReadPackCell(pk);
+	int sequence = pk.ReadCell();
 	if (PlayerSeq[client] != sequence)
 	{
 		/* Discard everything, since we're out of sequence. */
@@ -325,10 +318,10 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 	/**
 	 * If we need to use the results, make sure they succeeded.
 	 */
-	if (hndl == null)
+	if (rs == null)
 	{
-		decl String:query[255];
-		ReadPackString(pk, query, sizeof(query));
+		char query[255];
+		pk.ReadString(query, sizeof(query));
 		LogError("SQL error receiving user: %s", error);
 		LogError("Query dump: %s", query);
 		RunAdminCacheChecks(client);
@@ -337,7 +330,7 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 		return;
 	}
 	
-	new num_accounts = SQL_GetRowCount(hndl);
+	int num_accounts = rs.RowCount;
 	if (num_accounts == 0)
 	{
 		RunAdminCacheChecks(client);
@@ -346,29 +339,29 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 		return;
 	}
 	
-	decl String:authtype[16];
-	decl String:identity[80];
-	decl String:password[80];
-	decl String:flags[32];
-	decl String:name[80];
-	new AdminId:adm, id;
-	new immunity;
+	char authtype[16];
+	char identity[80];
+	char password[80];
+	char flags[32];
+	char name[80];
+	int immunity, id;
+	AdminId adm;
 	
 	/**
 	 * Cache user info -- [0] = db id, [1] = cache id, [2] = groups
 	 */
-	decl user_lookup[num_accounts][3];
-	new total_users = 0;
+	char[][] user_lookup = new char[num_accounts][3];
+	int total_users = 0;
 	
-	while (SQL_FetchRow(hndl))
+	while (rs.FetchRow())
 	{
-		id = SQL_FetchInt(hndl, 0);
-		SQL_FetchString(hndl, 1, authtype, sizeof(authtype));
-		SQL_FetchString(hndl, 2, identity, sizeof(identity));
-		SQL_FetchString(hndl, 3, password, sizeof(password));
-		SQL_FetchString(hndl, 4, flags, sizeof(flags));
-		SQL_FetchString(hndl, 5, name, sizeof(name));
-		immunity = SQL_FetchInt(hndl, 7);
+		id = rs.FetchInt(0);
+		rs.FetchString(1, authtype, sizeof(authtype));
+		rs.FetchString(2, identity, sizeof(identity));
+		rs.FetchString(3, password, sizeof(password));
+		rs.FetchString(4, flags, sizeof(flags));
+		rs.FetchString(5, name, sizeof(name));
+		immunity = rs.FetchInt(7);
 		
 		/* For dynamic admins we clear anything already in the cache. */
 		if ((adm = FindAdminByIdentity(authtype, identity)) != INVALID_ADMIN_ID)
@@ -385,7 +378,7 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 		
 		user_lookup[total_users][0] = id;
 		user_lookup[total_users][1] = _:adm;
-		user_lookup[total_users][2] = SQL_FetchInt(hndl, 6);
+		user_lookup[total_users][2] = rs.FetchInt(6);
 		total_users++;
 		
 #if defined _DEBUG
@@ -401,8 +394,8 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 		SetAdminImmunityLevel(adm, immunity);
 		
 		/* Apply each flag */
-		new len = strlen(flags);
-		new AdminFlag:flag;
+		int len = strlen(flags);
+		AdminFlag flag;
 		for (new i=0; i<len; i++)
 		{
 			if (!FindFlagByChar(flags[i], flag))
@@ -416,7 +409,7 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 	/**
 	 * Try binding the user.
 	 */	
-	new group_count = 0;
+	int group_count = 0;
 	RunAdminCacheChecks(client);
 	adm = GetUserAdmin(client);
 	id = 0;
@@ -450,25 +443,25 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 	/**
 	 * The user has groups -- we need to fetch them!
 	 */
-	decl String:query[255];
+	char query[255];
 	Format(query, sizeof(query), "SELECT g.name FROM sm_admins_groups ag JOIN sm_groups g ON ag.group_id = g.id WHERE ag.admin_id = %d", id);
 	 
-	ResetPack(pk);
-	WritePackCell(pk, client);
-	WritePackCell(pk, sequence);
-	WritePackCell(pk, _:adm);
-	WritePackString(pk, query);
+	pk.Reset();
+	pk.WriteCell(client);
+	pk.WriteCell(sequence);
+	pk.WriteCell(_:adm);
+	pk.WriteString(query);
 	
-	SQL_TQuery(owner, OnReceiveUserGroups, query, pk, DBPrio_High);
+	db.Query(OnReceiveUserGroups, query, pk, DBPrio_High);
 }
 
-FetchUser(Handle:db, client)
+FetchUser(Database db, client)
 {
-	decl String:name[65];
-	decl String:safe_name[140];
-	decl String:steamid[32];
-	decl String:steamidalt[32];
-	decl String:ipaddr[24];
+	char name[65];
+	char safe_name[140];
+	char steamid[32];
+	char steamidalt[32];
+	char ipaddr[24];
 	
 	/**
 	 * Get authentication information from the client.
@@ -485,12 +478,12 @@ FetchUser(Handle:db, client)
 		}
 	}
 	
-	SQL_EscapeString(db, name, safe_name, sizeof(safe_name));
+	db.Escape(name, safe_name, sizeof(safe_name));
 	
 	/**
 	 * Construct the query using the information the user gave us.
 	 */
-	decl String:query[512];
+	char query[512];
 	new len = 0;
 	
 	len += Format(query[len], sizeof(query)-len, "SELECT a.id, a.authtype, a.identity, a.password, a.flags, a.name, COUNT(ag.group_id), immunity");
@@ -511,22 +504,21 @@ FetchUser(Handle:db, client)
 	 */	
 	PlayerSeq[client] = ++g_sequence;
 	
-	new Handle:pk;
-	pk = CreateDataPack();
-	WritePackCell(pk, client);
-	WritePackCell(pk, PlayerSeq[client]);
-	WritePackString(pk, query);
+	DataPack pk = new DataPack();
+	pk.WriteCell(client);
+	pk.WriteCell(PlayerSeq[client]);
+	pk.WriteString(query);
 	
 #if defined _DEBUG
 	PrintToServer("Sending user query: %s", query);
 #endif
 	
-	SQL_TQuery(db, OnReceiveUser, query, pk, DBPrio_High);
+	db.Query(OnReceiveUser, query, pk, DBPrio_High);
 }
 
-FetchUsersWeCan(Handle:db)
+FetchUsersWeCan(Database db)
 {
-	for (new i=1; i<=MaxClients; i++)
+	for (int i=1; i<=MaxClients; i++)
 	{
 		if (PlayerAuth[i] && GetUserAdmin(i) == INVALID_ADMIN_ID)
 		{
@@ -541,15 +533,15 @@ FetchUsersWeCan(Handle:db)
 }
 
 
-public OnReceiveGroupImmunity(Handle:owner, Handle:hndl, const String:error[], any:data)
+public void OnReceiveGroupImmunity(Database db, DBResultSet rs, const char[] error, any data)
 {
-	new Handle:pk = Handle:data;
-	ResetPack(pk);
+	DataPack pk = view_as<DataPack>(data);
+	pk.Reset();
 	
 	/**
 	 * Check if this is the latest result request.
 	 */
-	new sequence = ReadPackCell(pk);
+	int sequence = pk.ReadCell();
 	if (RebuildCachePart[_:AdminCache_Groups] != sequence)
 	{
 		/* Discard everything, since we're out of sequence. */
@@ -560,10 +552,10 @@ public OnReceiveGroupImmunity(Handle:owner, Handle:hndl, const String:error[], a
 	/**
 	 * If we need to use the results, make sure they succeeded.
 	 */
-	if (hndl == null)
+	if (rs == null)
 	{
-		decl String:query[255];
-		ReadPackString(pk, query, sizeof(query));		
+		char query[255];
+		pk.ReadString(query, sizeof(query));		
 		LogError("SQL error receiving group immunity: %s", error);
 		LogError("Query dump: %s", query);
 		delete pk;	
@@ -573,14 +565,14 @@ public OnReceiveGroupImmunity(Handle:owner, Handle:hndl, const String:error[], a
 	/* We're done with the pack forever. */
 	delete pk;
 	
-	while (SQL_FetchRow(hndl))
+	while (rs.FetchRow())
 	{
-		decl String:group1[80];
-		decl String:group2[80];
-		new GroupId:gid1, GroupId:gid2;
+		char group1[80];
+		char group2[80];
+		GroupId gid1, gid2;
 		
-		SQL_FetchString(hndl, 0, group1, sizeof(group1));
-		SQL_FetchString(hndl, 1, group2, sizeof(group2));
+		rs.FetchString(0, group1, sizeof(group1));
+		rs.FetchString(1, group2, sizeof(group2));
 		
 		if (((gid1 = FindAdmGroup(group1)) == INVALID_GROUP_ID)
 			|| (gid2 = FindAdmGroup(group2)) == INVALID_GROUP_ID)
@@ -598,15 +590,15 @@ public OnReceiveGroupImmunity(Handle:owner, Handle:hndl, const String:error[], a
 	RebuildCachePart[_:AdminCache_Groups] = 0;
 }
 
-public OnReceiveGroupOverrides(Handle:owner, Handle:hndl, const String:error[], any:data)
+public OnReceiveGroupOverrides(Database db, DBResultSet rs, const char[] error, any data)
 {
-	new Handle:pk = Handle:data;
-	ResetPack(pk);
+	DataPack pk = view_as<DataPack>(data);
+	pk.Reset();
 	
 	/**
 	 * Check if this is the latest result request.
 	 */
-	new sequence = ReadPackCell(pk);
+	int sequence = pk.ReadCell();
 	if (RebuildCachePart[_:AdminCache_Groups] != sequence)
 	{
 		/* Discard everything, since we're out of sequence. */
@@ -617,10 +609,10 @@ public OnReceiveGroupOverrides(Handle:owner, Handle:hndl, const String:error[], 
 	/**
 	 * If we need to use the results, make sure they succeeded.
 	 */
-	if (hndl == null)
+	if (rs == null)
 	{
-		decl String:query[255];
-		ReadPackString(pk, query, sizeof(query));		
+		char query[255];
+		pk.ReadString(query, sizeof(query));		
 		LogError("SQL error receiving group overrides: %s", error);
 		LogError("Query dump: %s", query);
 		delete pk;	
@@ -630,17 +622,17 @@ public OnReceiveGroupOverrides(Handle:owner, Handle:hndl, const String:error[], 
 	/**
 	 * Fetch the overrides.
 	 */
-	decl String:name[80];
-	decl String:type[16];
-	decl String:command[64];
-	decl String:access[16];
-	new GroupId:gid;
-	while (SQL_FetchRow(hndl))
+	char name[80];
+	char type[16];
+	char command[64];
+	char access[16];
+	GroupId gid;
+	while (rs.FetchRow())
 	{
-		SQL_FetchString(hndl, 0, name, sizeof(name));
-		SQL_FetchString(hndl, 1, type, sizeof(type));
-		SQL_FetchString(hndl, 2, command, sizeof(command));
-		SQL_FetchString(hndl, 3, access, sizeof(access));
+		rs.FetchString(0, name, sizeof(name));
+		rs.FetchString(1, type, sizeof(type));
+		rs.FetchString(2, command, sizeof(command));
+		rs.FetchString(3, access, sizeof(access));
 		
 		/* Find the group.  This is actually faster than doing the ID lookup. */
 		if ((gid = FindAdmGroup(name)) == INVALID_GROUP_ID)
@@ -649,13 +641,13 @@ public OnReceiveGroupOverrides(Handle:owner, Handle:hndl, const String:error[], 
 			continue;
 		}
 		
-		new OverrideType:o_type = Override_Command;
+		OverrideType o_type = Override_Command;
 		if (StrEqual(type, "group"))
 		{
 			o_type = Override_CommandGroup;
 		}
 				
-		new OverrideRule:o_rule = Command_Deny;
+		OverrideRule o_rule = Command_Deny;
 		if (StrEqual(access, "allow"))
 		{
 			o_rule = Command_Allow;
@@ -671,28 +663,28 @@ public OnReceiveGroupOverrides(Handle:owner, Handle:hndl, const String:error[], 
 	/**
 	 * It's time to get the group immunity list.
 	 */
-	new len = 0;
-	decl String:query[256];
+	int len = 0;
+	char query[256];
 	len += Format(query[len], sizeof(query)-len, "SELECT g1.name, g2.name FROM sm_group_immunity gi");
 	len += Format(query[len], sizeof(query)-len, " LEFT JOIN sm_groups g1 ON g1.id = gi.group_id ");
 	len += Format(query[len], sizeof(query)-len, " LEFT JOIN sm_groups g2 ON g2.id = gi.other_id");
 
-	ResetPack(pk);
-	WritePackCell(pk, sequence);
-	WritePackString(pk, query);
+	pk.Reset();
+	pk.WriteCell(sequence);
+	pk.WriteString(query);
 	
-	SQL_TQuery(owner, OnReceiveGroupImmunity, query, pk, DBPrio_High);
+	db.Query(OnReceiveGroupImmunity, query, pk, DBPrio_High);
 }
 
-public OnReceiveGroups(Handle:owner, Handle:hndl, const String:error[], any:data)
+public OnReceiveGroups(Database db, DBResultSet rs, const char[] error, any data)
 {
-	new Handle:pk = Handle:data;
-	ResetPack(pk);
+	DataPack pk = view_as<DataPack>(data);
+	pk.Reset();
 	
 	/**
 	 * Check if this is the latest result request.
 	 */
-	new sequence = ReadPackCell(pk);
+	int sequence = pk.ReadCell();
 	if (RebuildCachePart[_:AdminCache_Groups] != sequence)
 	{
 		/* Discard everything, since we're out of sequence. */
@@ -703,10 +695,10 @@ public OnReceiveGroups(Handle:owner, Handle:hndl, const String:error[], any:data
 	/**
 	 * If we need to use the results, make sure they succeeded.
 	 */
-	if (hndl == null)
+	if (rs == null)
 	{
-		decl String:query[255];
-		ReadPackString(pk, query, sizeof(query));
+		char query[255];
+		pk.ReadString(query, sizeof(query));
 		LogError("SQL error receiving groups: %s", error);
 		LogError("Query dump: %s", query);
 		delete pk;
@@ -716,29 +708,29 @@ public OnReceiveGroups(Handle:owner, Handle:hndl, const String:error[], any:data
 	/**
 	 * Now start fetching groups.
 	 */
-	decl String:flags[32];
-	decl String:name[128];
-	new immunity;
-	while (SQL_FetchRow(hndl))
+	char flags[32];
+	char name[128];
+	int immunity;
+	while (rs.FetchRow())
 	{
-		SQL_FetchString(hndl, 0, flags, sizeof(flags));
-		SQL_FetchString(hndl, 1, name, sizeof(name));
-		immunity = SQL_FetchInt(hndl, 2);
+		rs.FetchString(0, flags, sizeof(flags));
+		rs.FetchString(1, name, sizeof(name));
+		immunity = rs.FetchInt(2);
 		
 #if defined _DEBUG
 		PrintToServer("Adding group (%d, %s, %s)", immunity, flags, name);
 #endif
 		
 		/* Find or create the group */
-		new GroupId:gid;
+		GroupId gid;
 		if ((gid = FindAdmGroup(name)) == INVALID_GROUP_ID)
 		{
 			gid = CreateAdmGroup(name);
 		}
 
 		/* Add flags from the database to the group */
-		new num_flag_chars = strlen(flags);
-		for (new i=0; i<num_flag_chars; i++)
+		int num_flag_chars = strlen(flags);
+		for (int i=0; i<num_flag_chars; i++)
 		{
 			decl AdminFlag:flag;
 			if (!FindFlagByChar(flags[i], flag))
@@ -754,41 +746,40 @@ public OnReceiveGroups(Handle:owner, Handle:hndl, const String:error[], any:data
 	/**
 	 * It's time to get the group override list.
 	 */
-	decl String:query[255];
+	char query[255];
 	Format(query, 
 		sizeof(query), 
 		"SELECT g.name, og.type, og.name, og.access FROM sm_group_overrides og JOIN sm_groups g ON og.group_id = g.id ORDER BY g.id DESC");
 
-	ResetPack(pk);
-	WritePackCell(pk, sequence);
-	WritePackString(pk, query);
+	pk.Reset();
+	pk.WriteCell(sequence);
+	pk.WriteString(query);
 	
-	SQL_TQuery(owner, OnReceiveGroupOverrides, query, pk, DBPrio_High);
+	db.Query(OnReceiveGroupOverrides, query, pk, DBPrio_High);
 }
 
-FetchGroups(Handle:db, sequence)
+void FetchGroups(Database db, sequence)
 {
-	decl String:query[255];
-	new Handle:pk;
+	char query[255];
 	
 	Format(query, sizeof(query), "SELECT flags, name, immunity_level FROM sm_groups");
 
-	pk = CreateDataPack();
-	WritePackCell(pk, sequence);
-	WritePackString(pk, query);
+	DataPack pk = new DataPack();
+	pk.WriteCell(sequence);
+	pk.WriteString(query);
 	
-	SQL_TQuery(db, OnReceiveGroups, query, pk, DBPrio_High);
+	db.Query(OnReceiveGroups, query, pk, DBPrio_High);
 }
 
-public OnReceiveOverrides(Handle:owner, Handle:hndl, const String:error[], any:data)
+public void OnReceiveOverrides(Database db, DBResultSet rs, const char[] error, any data)
 {
-	new Handle:pk = Handle:data;
-	ResetPack(pk);
+	DataPack pk = view_as<DataPack>(data);
+	pk.Reset();
 	
 	/**
 	 * Check if this is the latest result request.
 	 */
-	new sequence = ReadPackCell(pk);
+	int sequence = pk.ReadCell();
 	if (RebuildCachePart[_:AdminCache_Overrides] != sequence)
 	{
 		/* Discard everything, since we're out of sequence. */
@@ -799,10 +790,10 @@ public OnReceiveOverrides(Handle:owner, Handle:hndl, const String:error[], any:d
 	/**
 	 * If we need to use the results, make sure they succeeded.
 	 */
-	if (hndl == null)
+	if (rs == null)
 	{
-		decl String:query[255];
-		ReadPackString(pk, query, sizeof(query));
+		char query[255];
+		pk.ReadString(query, sizeof(query));
 		LogError("SQL error receiving overrides: %s", error);
 		LogError("Query dump: %s", query);
 		delete pk;
@@ -814,15 +805,15 @@ public OnReceiveOverrides(Handle:owner, Handle:hndl, const String:error[], any:d
 	 */
 	delete pk;
 	
-	decl String:type[64];
-	decl String:name[64];
-	decl String:flags[32];
-	new flag_bits;
-	while (SQL_FetchRow(hndl))
+	char type[64];
+	char name[64];
+	char flags[32];
+	int flag_bits;
+	while (rs.FetchRow())
 	{
-		SQL_FetchString(hndl, 0, type, sizeof(type));
-		SQL_FetchString(hndl, 1, name, sizeof(name));
-		SQL_FetchString(hndl, 2, flags, sizeof(flags));
+		rs.FetchString(0, type, sizeof(type));
+		rs.FetchString(1, name, sizeof(name));
+		rs.FetchString(2, flags, sizeof(flags));
 		
 #if defined _DEBUG
 		PrintToServer("Adding override (%s, %s, %s)", type, name, flags);
@@ -841,17 +832,16 @@ public OnReceiveOverrides(Handle:owner, Handle:hndl, const String:error[], any:d
 	RebuildCachePart[_:AdminCache_Overrides] = 0;
 }
 
-FetchOverrides(Handle:db, sequence)
+void FetchOverrides(Database db, sequence)
 {
-	decl String:query[255];
-	new Handle:pk;
+	char query[255];
 	
 	Format(query, sizeof(query), "SELECT type, name, flags FROM sm_overrides");
 
-	pk = CreateDataPack();
-	WritePackCell(pk, sequence);
-	WritePackString(pk, query);
+	DataPack pk = new DataPack();
+	pk.WriteCell(sequence);
+	pk.WriteString(query);
 	
-	SQL_TQuery(db, OnReceiveOverrides, query, pk, DBPrio_High);
+	db.Query(OnReceiveOverrides, query, pk, DBPrio_High);
 }
 
