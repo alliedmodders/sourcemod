@@ -252,7 +252,8 @@ namespace sp {
   _(LE_F32,        "le.f32")       \
   _(NE_F32,        "ne.f32")       \
   _(EQ_F32,        "eq.f32")       \
-  _(NOT_F32,       "not.f32")
+  _(NOT_F32,       "not.f32")      \
+  _(AND_C,         "and.c")
 
 enum OPCODE {
 #define _(op, text) OP_##op,

@@ -620,6 +620,13 @@ Compiler::emitOp(OPCODE op)
       __ andl(pri, alt);
       break;
 
+    case OP_AND_C:
+    {
+      cell_t val = readCell();
+      __ andl(pri, val);
+      break;
+    }
+
     case OP_INVERT:
       __ notl(pri);
       break;
