@@ -1015,6 +1015,33 @@ Compiler::emitOp(OPCODE op)
       break;
     }
 
+    // Zero-extend an [8,16] bit value to a 32-bit value, or a 32-bit value
+    // to a 64-bit value.
+    case OP_ZEX_PRI:
+    case OP_ZEX_ALT:
+    {
+      Register reg = (op == OP_SIGN_PRI) ? pri : alt;
+      size_t bits = readCell();
+      switch (bits) {
+        case 8:
+          __ movzxb(reg, reg);
+          break;
+        case 16:
+          __ movzxw(reg, reg);
+          break;
+        case 32:
+          // Address is in |reg|.
+          __ lea(tmp, Operand(reg, 4));
+          emitCheckAddress(tmp);
+          __ movl(Operand(reg, 4), 0);
+          break;
+        default:
+          error_= SP_ERROR_INVALID_INSTRUCTION;
+          return false;
+      }
+      break;
+    }
+
     case OP_ABS_F32:
       __ movl(pri, Operand(stk, 0));
       __ andl(pri, 0x7fffffff);
