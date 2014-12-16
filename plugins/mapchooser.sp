@@ -1036,7 +1036,7 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 
 /* Add natives to allow nominate and initiate vote to be call */
 
-/* native  bool:NominateMap(const String:map[], bool:force, &NominateError:error); */
+/* native NominateResult NominateMap(const char[] map, bool force, int owner); */
 public int Native_NominateMap(Handle plugin, int numParams)
 {
 	int len;
@@ -1077,7 +1077,7 @@ bool InternalRemoveNominationByMap(char[] map)
 	return false;
 }
 
-/* native  bool:RemoveNominationByMap(const String:map[]); */
+/* native bool RemoveNominationByMap(const char[] map); */
 public int Native_RemoveNominationByMap(Handle plugin, int numParams)
 {
 	int len;
@@ -1091,7 +1091,7 @@ public int Native_RemoveNominationByMap(Handle plugin, int numParams)
 	char[] map = new char[len+1];
 	GetNativeString(1, map, len+1);
 	
-	return view_as<int>(InternalRemoveNominationByMap(map));
+	return InternalRemoveNominationByMap(map);
 }
 
 bool InternalRemoveNominationByOwner(int owner)
@@ -1117,13 +1117,13 @@ bool InternalRemoveNominationByOwner(int owner)
 	return false;
 }
 
-/* native  bool:RemoveNominationByOwner(owner); */
+/* native bool RemoveNominationByOwner(int owner); */
 public int Native_RemoveNominationByOwner(Handle plugin, int numParams)
 {	
-	return view_as<int>(InternalRemoveNominationByOwner(GetNativeCell(1)));
+	return InternalRemoveNominationByOwner(GetNativeCell(1));
 }
 
-/* native InitiateMapChooserVote(); */
+/* native InitiateMapChooserVote(MapChange when, ArrayList inputarray=null); */
 public int Native_InitiateVote(Handle plugin, int numParams)
 {
 	MapChange when = view_as<MapChange>(GetNativeCell(1));
@@ -1133,21 +1133,25 @@ public int Native_InitiateVote(Handle plugin, int numParams)
 	InitiateVote(when, inputarray);
 }
 
+/* native bool CanMapChooserStartVote(); */
 public int Native_CanVoteStart(Handle plugin, int numParams)
 {
 	return CanVoteStart();	
 }
 
+/* native bool HasEndOfMapVoteFinished(); */
 public int Native_CheckVoteDone(Handle plugin, int numParams)
 {
 	return g_MapVoteCompleted;
 }
 
+/* native bool EndOfMapVoteEnabled(); */
 public int Native_EndOfMapVoteEnabled(Handle plugin, int numParams)
 {
 	return g_Cvar_EndOfMapVote.BoolValue;
 }
 
+/* native GetExcludeMapList(ArrayList array); */
 public int Native_GetExcludeMapList(Handle plugin, int numParams)
 {
 	ArrayList array = view_as<ArrayList>(GetNativeCell(1));
@@ -1168,6 +1172,7 @@ public int Native_GetExcludeMapList(Handle plugin, int numParams)
 	return;
 }
 
+/* native GetNominatedMapList(ArrayList maparray, ArrayList ownerarray = null); */
 public int Native_GetNominatedMapList(Handle plugin, int numParams)
 {
 	ArrayList maparray = view_as<ArrayList>(GetNativeCell(1));
