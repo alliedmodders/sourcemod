@@ -682,11 +682,11 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 }
 
 public void Handler_VoteFinishedGeneric(Menu menu,
-						   int num_votes, 
+						   int num_votes,
 						   int num_clients,
-						   const int client_info[][2], 
+						   const int[][] client_info,
 						   int num_items,
-						   const int item_info[][2])
+						   const int[][] item_info)
 {
 	char map[PLATFORM_MAX_PATH];
 	menu.GetItem(item_info[0][VOTEINFO_ITEM_INDEX], map, sizeof(map));
@@ -777,11 +777,11 @@ public void Handler_VoteFinishedGeneric(Menu menu,
 }
 
 public void Handler_MapVoteFinished(Menu menu,
-						   int num_votes, 
+						   int num_votes,
 						   int num_clients,
-						   const int client_info[][2], 
+						   const int[][] client_info,
 						   int num_items,
-						   const int item_info[][2])
+						   const int[][] item_info)
 {
 	if (g_Cvar_RunOff.BoolValue && num_items > 1)
 	{
