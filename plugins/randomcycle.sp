@@ -34,7 +34,9 @@
 #pragma semicolon 1
 #include <sourcemod>
 
-public Plugin:myinfo =
+#pragma newdecls required
+
+public Plugin myinfo =
 {
 	name = "RandomCycle",
 	author = "AlliedModders LLC",
@@ -45,22 +47,22 @@ public Plugin:myinfo =
 
 ConVar g_Cvar_ExcludeMaps;
 
-new Handle:g_MapList = null;
-new Handle:g_OldMapList = null;
-new g_mapListSerial = -1;
+ArrayList g_MapList = null;
+ArrayList g_OldMapList = null;
+int g_mapListSerial = -1;
 
-public OnPluginStart()
+public void OnPluginStart()
 {
-	new arraySize = ByteCountToCells(33);	
-	g_MapList = CreateArray(arraySize);
-	g_OldMapList = CreateArray(arraySize);
+	int arraySize = ByteCountToCells(PLATFORM_MAX_PATH);	
+	g_MapList = new ArrayList(arraySize);
+	g_OldMapList = new ArrayList(arraySize);
 
 	g_Cvar_ExcludeMaps = CreateConVar("sm_randomcycle_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
 	
 	AutoExecConfig(true, "randomcycle");
 }
 
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {
 	if (ReadMapList(g_MapList, 
 					g_mapListSerial, 
@@ -77,31 +79,31 @@ public OnConfigsExecuted()
 	CreateTimer(5.0, Timer_RandomizeNextmap); // Small delay to give Nextmap time to complete OnMapStart()
 }
 
-public Action:Timer_RandomizeNextmap(Handle:timer)
+public Action Timer_RandomizeNextmap(Handle timer)
 {
-	decl String:map[32];
+	char map[PLATFORM_MAX_PATH];
 
-	new bool:oldMaps = false;
-	if (g_Cvar_ExcludeMaps.IntValue && GetArraySize(g_MapList) > g_Cvar_ExcludeMaps.IntValue)
+	bool oldMaps = false;
+	if (g_Cvar_ExcludeMaps.IntValue && g_MapList.Length > g_Cvar_ExcludeMaps.IntValue)
 	{
 		oldMaps = true;
 	}
 	
-	new b = GetRandomInt(0, GetArraySize(g_MapList) - 1);
-	GetArrayString(g_MapList, b, map, sizeof(map));
+	int b = GetRandomInt(0, g_MapList.Length - 1);
+	g_MapList.GetString(b, map, sizeof(map));
 
-	while (oldMaps && FindStringInArray(g_OldMapList, map) != -1)
+	while (oldMaps && g_OldMapList.FindString(map) != -1)
 	{
-		b = GetRandomInt(0, GetArraySize(g_MapList) - 1);
-		GetArrayString(g_MapList, b, map, sizeof(map));
+		b = GetRandomInt(0, g_MapList.Length - 1);
+		g_MapList.GetString(b, map, sizeof(map));
 	}
 	
-	PushArrayString(g_OldMapList, map);
+	g_OldMapList.PushString(map);
 	SetNextMap(map);
 
-	if (GetArraySize(g_OldMapList) > g_Cvar_ExcludeMaps.IntValue)
+	if (g_OldMapList.Length > g_Cvar_ExcludeMaps.IntValue)
 	{
-		RemoveFromArray(g_OldMapList, 0);
+		g_OldMapList.Erase(0);
 	}
 
 	LogAction(-1, -1, "RandomCycle has chosen %s for the nextmap.", map);	
