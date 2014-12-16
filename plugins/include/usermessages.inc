@@ -80,7 +80,7 @@ stock Protobuf UserMessageToProtobuf(Handle msg)
 // Make sure to only call this on writable buffers (eg from StartMessage).
 stock BfWrite UserMessageToBfWrite(Handle msg)
 {
-	if (GetUserMessageType() != UM_Protobuf)
+	if (GetUserMessageType() == UM_Protobuf)
 		return null;
 	return BfWrite:msg;
 }
@@ -88,7 +88,7 @@ stock BfWrite UserMessageToBfWrite(Handle msg)
 // Make sure to only call this on readable buffers (eg from a message hook).
 stock BfWrite UserMessageToBfRead(Handle msg)
 {
-	if (GetUserMessageType() != UM_Protobuf)
+	if (GetUserMessageType() == UM_Protobuf)
 		return null;
 	return BfRead:msg;
 }
