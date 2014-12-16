@@ -966,7 +966,6 @@ void CreateNextVote()
 		tempMaps.Erase(b);
 	}
 	
-	// TODO: Wait, why are we deleting the array we were just manipulating?  Check this!
 	delete tempMaps;
 }
 
