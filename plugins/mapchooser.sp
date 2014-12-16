@@ -272,7 +272,7 @@ public void OnClientDisconnect(int client)
 	g_NominateList.GetString(index, oldmap, sizeof(oldmap));
 	Call_StartForward(g_NominationsResetForward);
 	Call_PushString(oldmap);
-	Call_PushCell(GetArrayCell(g_NominateOwners, index));
+	Call_PushCell(g_NominateOwners.Get(index));
 	Call_Finish();
 	
 	g_NominateOwners.Erase(index);
@@ -960,7 +960,7 @@ void CreateNextVote()
 	int limit = (g_Cvar_IncludeMaps.IntValue < tempMaps.Length ? g_Cvar_IncludeMaps.IntValue : tempMaps.Length);
 	for (int i = 0; i < limit; i++)
 	{
-		int b = GetRandomInt(0, GetArraySize(tempMaps) - 1);
+		int b = GetRandomInt(0, tempMaps.Length - 1);
 		tempMaps.GetString(b, map, sizeof(map));		
 		g_NextMapList.PushString(map);
 		tempMaps.Erase(b);
@@ -1023,7 +1023,7 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 		g_NominateList.GetString(0, oldmap, sizeof(oldmap));
 		Call_StartForward(g_NominationsResetForward);
 		Call_PushString(oldmap);
-		Call_PushCell(GetArrayCell(g_NominateOwners, 0));
+		Call_PushCell(g_NominateOwners.Get(0));
 		Call_Finish();
 		
 		g_NominateList.Erase(0);
@@ -1054,7 +1054,7 @@ public int Native_NominateMap(Handle plugin, int numParams)
 
 bool InternalRemoveNominationByMap(char[] map)
 {	
-	for (int i = 0; i < GetArraySize(g_NominateList); i++)
+	for (int i = 0; i < g_NominateList.Length; i++)
 	{
 		char oldmap[PLATFORM_MAX_PATH];
 		g_NominateList.GetString(i, oldmap, sizeof(oldmap));
@@ -1063,7 +1063,7 @@ bool InternalRemoveNominationByMap(char[] map)
 		{
 			Call_StartForward(g_NominationsResetForward);
 			Call_PushString(oldmap);
-			Call_PushCell(GetArrayCell(g_NominateOwners, i));
+			Call_PushCell(g_NominateOwners.Get(i));
 			Call_Finish();
 
 			g_NominateList.Erase(i);
