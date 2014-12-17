@@ -791,9 +791,9 @@ public void Handler_MapVoteFinished(Menu menu,
 		if (winningvotes < required)
 		{
 			/* Insufficient Winning margin - Lets do a runoff */
-			g_VoteMenu = CreateMenu(Handler_MapVoteMenu, MENU_ACTIONS_ALL);
+			g_VoteMenu = new Menu(Handler_MapVoteMenu, MENU_ACTIONS_ALL);
 			g_VoteMenu.SetTitle("Runoff Vote Nextmap");
-			SetVoteResultCallback(g_VoteMenu, Handler_VoteFinishedGeneric);
+			g_VoteMenu.VoteResultCallback = Handler_VoteFinishedGeneric;
 
 			char map[PLATFORM_MAX_PATH];
 			char info1[PLATFORM_MAX_PATH];
