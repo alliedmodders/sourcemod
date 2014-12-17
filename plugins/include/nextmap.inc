@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2014 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -42,7 +42,7 @@
  * @param map		Next map to set.
  * @return			True if the nextmap was set, false if map was invalid.
  */
-native bool:SetNextMap(const String:map[]);
+native bool SetNextMap(const char[] map);
 
 /**
  * Returns SourceMod's internal nextmap.
@@ -51,7 +51,7 @@ native bool:SetNextMap(const String:map[]);
  * @param maxlen	Maximum length of the map buffer.
  * @return			True if a Map was found and copied, false if no nextmap is set (map will be unchanged).
  */
-native bool:GetNextMap(String:map[], maxlen);
+native bool GetNextMap(char[] map, int maxlen);
 
 /**
  * Changes the current map and records the reason for the change with maphistory
@@ -60,14 +60,14 @@ native bool:GetNextMap(String:map[], maxlen);
  * @param reason	Reason for change.
  * @noreturn
  */
-native ForceChangeLevel(const String:map[], const String:reason[]);
+native void ForceChangeLevel(const char[] map, const char[] reason);
 
 /**
  * Gets the current number of maps in the map history
  *
  * @return			Number of maps.
  */
-native GetMapHistorySize();
+native int GetMapHistorySize();
 
 /**
  * Retrieves a map from the map history list.
@@ -81,4 +81,4 @@ native GetMapHistorySize();
  * @noreturn
  * @error				Invalid item number.	
  */
-native GetMapHistory(item, String:map[], mapLen, String:reason[], reasonLen, &startTime);
+native void GetMapHistory(int item, char[] map, int mapLen, char[] reason, int reasonLen, int &startTime);
