@@ -335,7 +335,7 @@ void SetupTimeleftTimer()
 			DataPack data;
 			g_VoteTimer = CreateDataTimer(float(time - startTime), Timer_StartMapVote, data, TIMER_FLAG_NO_MAPCHANGE);
 			data.WriteCell(MapChange_MapEnd);
-			data.WriteCell(view_as<ArrayList>(null));
+			data.WriteCell(INVALID_HANDLE);
 			data.Reset();
 		}		
 	}
