@@ -405,7 +405,7 @@ void PlayerManager::RunAuthChecks()
 		pPlayer = &m_Players[m_AuthQueue[i]];
 		pPlayer->UpdateAuthIds();
 		
-		authstr = pPlayer->m_AuthID.c_str();
+		authstr = pPlayer->m_AuthID.chars();
 
 		if (!pPlayer->IsAuthStringValidated())
 		{
@@ -717,14 +717,14 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
-			pListener->OnClientAuthorized(client, steamId ? steamId : pPlayer->m_AuthID.c_str());
+			pListener->OnClientAuthorized(client, steamId ? steamId : pPlayer->m_AuthID.chars());
 		}
 		/* Finally, tell plugins */
 		if (m_clauth->GetFunctionCount())
 		{
 			m_clauth->PushCell(client);
 			/* For legacy reasons, people are expecting the Steam2 id here if using Steam auth */
-			m_clauth->PushString(steamId ? steamId : pPlayer->m_AuthID.c_str());
+			m_clauth->PushString(steamId ? steamId : pPlayer->m_AuthID.chars());
 			m_clauth->Execute(NULL);
 		}
 		pPlayer->Authorize_Post();
@@ -1963,6 +1963,8 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 		*ptr = '\0';
 	}
 	m_IpNoPort.assign(ip2);
+
+	UpdateAuthIds();
 }
 
 void CPlayer::Connect()
@@ -2001,7 +2003,12 @@ void CPlayer::UpdateAuthIds()
 #else
 	authstr = engine->GetPlayerNetworkIDString(m_pEdict);
 #endif
-	m_AuthID.assign(authstr);
+	if (m_AuthID.compare(authstr) == 0)
+	{
+		return;
+	}
+
+	m_AuthID = authstr;
 	
 	// Then, cache SteamId
 	if (IsFakeClient())
@@ -2097,7 +2104,7 @@ void CPlayer::Disconnect()
 	m_IsAuthorized = false;
 	m_Name.clear();
 	m_Ip.clear();
-	m_AuthID.clear();
+	m_AuthID = "";
 	m_SteamId = k_steamIDNil;
 	m_Steam2Id = "";
 	m_Steam3Id = "";
@@ -2142,7 +2149,7 @@ const char *CPlayer::GetAuthString(bool validated)
 		return NULL;
 	}
 
-	return m_AuthID.c_str();
+	return m_AuthID.chars();
 }
 
 const CSteamID &CPlayer::GetSteamId(bool validated)
@@ -2451,7 +2458,7 @@ void CPlayer::DoBasicAdminChecks()
 	}
 
 	/* Check steam id */
-	if ((id = adminsys->FindAdminByIdentity("steam", m_AuthID.c_str())) != INVALID_ADMIN_ID)
+	if ((id = adminsys->FindAdminByIdentity("steam", m_AuthID.chars())) != INVALID_ADMIN_ID)
 	{
 		if (g_Players.CheckSetAdmin(client, this, id))
 		{

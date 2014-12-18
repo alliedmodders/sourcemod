@@ -123,7 +123,7 @@ private:
 	String m_Name;
 	String m_Ip;
 	String m_IpNoPort;
-	String m_AuthID;
+	ke::AString m_AuthID;
 	ke::AString m_Steam2Id;
 	ke::AString m_Steam3Id;
 	AdminId m_Admin;
