@@ -1,0 +1,2 @@
+(12) : warning 240: 'MyType:' is an old-style tag operation; use view_as<MyType>(expression) instead
+(14) : warning 240: 'Float:' is an old-style tag operation; use view_as<float>(expression) instead

@@ -810,14 +810,28 @@ stock bool VoteMenuToAll(Handle menu, int time, int flags=0)
  * @param item_info			Array of items, sorted by count.  Use VOTEINFO_ITEM
  *							defines.
  */
-typedef VoteHandler = function void (
-  Menu menu,
-  int num_votes, 
-  int num_clients,
-  const int client_info[][2], 
-  int num_items,
-  const int item_info[][2]
-);
+typeset VoteHandler
+{
+	// old style
+	function void(
+		Menu menu,
+		int num_votes,
+		int num_clients,
+		const int client_info[][2],
+		int num_items,
+		const int item_info[][2]
+	);
+
+	// new style
+	function void(
+		Menu menu,
+		int num_votes,
+		int num_clients,
+		const int[][] client_info,
+		int num_items,
+		const int[][] item_info
+	);
+};
 
 /**
  * Sets an advanced vote handling callback.  If this callback is set,

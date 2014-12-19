@@ -462,6 +462,7 @@ static const char *warnmsg[] = {
 /*237*/  "coercing functions to and from primitives is unsupported and will be removed in the future\n",
 /*238*/  "'%s:' is an illegal cast; use view_as<%s>(expression)\n",
 /*239*/  "'%s' is an illegal tag; use %s as a type\n",
+/*240*/  "'%s:' is an old-style tag operation; use view_as<%s>(expression) instead\n",
 #else
   "\327 \275tr\242\231\227\266 %\204\305\206a\306\210\260",
   "\214\343i\215 \330\371\213t/\321cro \365",

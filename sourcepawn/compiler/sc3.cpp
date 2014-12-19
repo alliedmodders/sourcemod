@@ -334,7 +334,7 @@ const char *type_to_name(int tag)
 
   const char *name = pc_tagname(tag);
   if (name)
-    return "unknown";
+    return name;
 
   if (tag & FUNCTAG)
     return "function";
@@ -1698,6 +1698,10 @@ static int hier2(value *lval)
   }
   case tLABEL:                  /* tagname override */
     tag=pc_addtag(st);
+    if (sc_require_newdecls) {
+      // Warn: old style cast used when newdecls pragma is enabled
+      error(240, st, type_to_name(tag));
+    }
     lval->cmptag=tag;
     lvalue=hier2(lval);
     if ((lval->tag & OBJECTTAG) || (tag & OBJECTTAG)) {
