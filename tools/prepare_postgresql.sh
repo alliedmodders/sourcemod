@@ -52,7 +52,7 @@ if [ $ismac -eq 0 ] && [ ! -d "postgresql-$pgsqlmaj" ]; then
     cd postgresql-$pgsqlmaj
 	# pgsql 9.4 uses autoconf 2.69 now instead of requiring the old autoconf 2.63.
 	# autoconf 2.69 is the recent one in debian packages, so this patch might not be needed anymore.
-	#patch configure.in < ../$sourcemodfolder/extensions/pgsql/configure_autoconf.patch
+	patch configure.in < ../$sourcemodfolder/extensions/pgsql/configure_autoconf.patch
     autoconf
     ./configure --without-readline
 	cd ..
