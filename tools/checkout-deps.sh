@@ -7,7 +7,7 @@ ismac=0
 iswin=0
 
 archive_ext=tar.gz
-decomp="tar zxvf"
+decomp="tar zxf"
 
 if [ `uname` = "Darwin" ]; then
   ismac=1
