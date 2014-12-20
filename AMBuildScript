@@ -205,7 +205,7 @@ class SMConfig(object):
           raise Exception('Could not find a path to 64-bit MySQL!')
         self.mysql_root['x64'] = Normalize(self.mysql_root['x64'])
 
-    if builder.options.hasPgSql:
+    if getattr(builder.options, 'hasPgSql', False):
       if builder.options.pgsql_path:
         self.pgsql_root = builder.options.pgsql_path
       else:
