@@ -70,35 +70,7 @@ elif [ $iswin -eq 0 ]; then
 fi
 getmysql
 
-pgsqlver="9.4.0"
-pgsqlmaj="9.4"
-if [ $ismac -eq 0 ] && [ ! -d "postgresql-9.4" ]; then
-  if [ `command -v wget` ]; then
-    wget http://ftp.postgresql.org/pub/source/v$pgsqlver/postgresql-$pgsqlver.tar.gz -O pgsql.tar.gz
-  elif [ `command -v curl` ]; then
-    curl -o pgsql.tar.gz http://ftp.postgresql.org/pub/source/v$pgsqlver/postgresql-$pgsqlver.tar.gz
-  else
-    echo "Failed to locate wget or curl. Install one of these programs to download PostgreSQL."
-    exit 1
-  fi
-  tar xfz pgsql.tar.gz
-  mv postgresql-$pgsqlver postgresql-$pgsqlmaj
-  rm pgsql.tar.gz
-  
-  cp $sourcemodfolder/extensions/pgsql/pg_config_paths.h postgresql-$pgsqlmaj/src/interfaces/libpq/pg_config_paths.h
-  
-  if [ $iswin -eq 1 ]; then
-    cp postgresql-$pgsqlmaj/src/include/pg_config.h.win32 postgresql-$pgsqlmaj/src/include/pg_config.h
-    cp postgresql-$pgsqlmaj/src/include/pg_config_ext.h.win32 postgresql-$pgsqlmaj/src/include/pg_config_ext.h
-    cp postgresql-$pgsqlmaj/src/include/port/win32.h postgresql-$pgsqlmaj/src/include/pg_config_os.h
-  else
-    cd postgresql-$pgsqlmaj
-	patch configure.in < ../$sourcemodfolder/extensions/pgsql/configure_autoconf.patch
-    autoconf
-    ./configure --without-readline
-	cd ..
-  fi
-fi
+$sourcemodfolder/tools/prepare_postgresql.sh
 
 checkout ()
 {
