@@ -536,7 +536,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 
 	if (res)
 	{
-		if (!pPlayer->IsAuthorized())
+		if (!pPlayer->IsAuthorized() && !pPlayer->IsFakeClient())
 		{
 			m_AuthQueue[++m_AuthQueue[0]] = client;
 		}
@@ -622,8 +622,6 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		char error[255];
 
 		pPlayer->m_bFakeClient = true;
-		pPlayer->UpdateAuthIds();
-		pPlayer->Authorize();
 
 		/*
 		 * While we're already filtered to just bots, we'll do other checks to
@@ -710,6 +708,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		cell_t res;
 		m_clconnect_post->PushCell(client);
 		m_clconnect_post->Execute(&res, NULL);
+
+		pPlayer->Authorize();
 		
 		const char *steamId = pPlayer->GetSteam2Id();
 
