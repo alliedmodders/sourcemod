@@ -81,5 +81,10 @@
 				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x6A\x00"
 			}
 		}
+		"Keys"
+		{
+			"GameRulesProxy"		"CNEOGameRulesProxy"
+			"GameRulesDataTable"	"neo_gamerules_data"
+		}
 	}
 }

@@ -88,50 +88,6 @@
 		}
 	}
 
-	/* General GameRules */
-	"#default"
-	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"garrysmod"
-			"game"		"hl2mp"
-		}
-		
-		"Offsets"
-		{
-			/* Offset into CreateGameRulesObject */
-			"g_pGameRules"
-			{
-				"windows"	"5"
-			}
-		}
-		
-		"Signatures"
-		{
-			/* This signature sometimes has multiple matches, but this
-			 * does not matter as g_pGameRules is involved in all of them.
-			 * The same g_pGameRules offset applies to each match.
-			 *
-			 * Sometimes this block of bytes is at the beginning of the static
-			 * CreateGameRulesObject function and sometimes it is in the middle
-			 * of an entirely different function. This depends on the game.
-			 */
-			"CreateGameRulesObject"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x07"
-			}
-			"g_pGameRules"
-			{
-				"library"	"server"
-				"linux"		"@g_pGameRules"
-				"mac"		"@g_pGameRules"
-			}
-		}
-	}
-
 	/* IServer interface pointer */
 	"#default"
 	{

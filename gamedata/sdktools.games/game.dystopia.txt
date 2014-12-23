@@ -104,18 +104,12 @@
 				"library"	"server"
 				"windows"	"\x81\xEC\x84\x00\x00\x00\x56\x8B\xF1\x8B\x46\x6C\x57\x8D\x7E\x6C\x8D\x4C\x24\x08\x83\xC8\x20\x51\x89\x44\x24\x0C\xE8\x2A\x2A\x2A"
 			}
-
-			/* Dystopia always has to be different, doesn't it
-			 *
-			 * This is very similar to the general signature, except that
-			 * it does "mov edx, [eax+2Ch]" before making a call rather than
-			 * doing "call dword ptr [eax+2Ch]"
-			 */
-			"CreateGameRulesObject"
-			{
-				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\x6A\x01\xFF\xD2"
-			}
+		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"		"CDYSGameRulesProxy"
+			"GameRulesDataTable"	"dys_gamerules_data"
 		}
 	}
 }

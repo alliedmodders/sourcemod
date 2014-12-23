@@ -74,43 +74,6 @@
 		}
 	}
 	
-	/* General GameRules */
-	"#default"
-	{
-		"Offsets"
-		{
-			/* Offset into CreateGameRulesObject */
-			"g_pGameRules"
-			{
-				"windows"	"5"
-				"linux"		"1"
-			}
-		}
-		
-		"Signatures"
-		{
-			/* This signature sometimes has multiple matches, but this
-			 * does not matter as g_pGameRules is involved in all of them.
-			 * The same g_pGameRules offset applies to each match.
-			 *
-			 * Sometimes this block of bytes is at the beginning of the static
-			 * CreateGameRulesObject function and sometimes it is in the middle
-			 * of an entirely different function. This depends on the game.
-			 */
-			"CreateGameRulesObject"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x07"
-				"linux"		"\xA1\x2A\x2A\x2A\x2A\x8B\x5D\x08\x85\xC0\x74\x08\x8B\x10\x89"
-			}
-			"g_pGameRules"
-			{
-				"library"	"server"
-				"mac"		"@g_pGameRules"
-			}
-		}
-	}
-	
 	/* CBaseEntityOutput::FireOutput */
 	"#default"
 	{
@@ -221,6 +184,12 @@
 				"linux"		"425"
 				"mac"		"425"
 			}
+		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"		"CNHL2MPGameRulesProxy"
+			"GameRulesDataTable"	"hl2mp_gamerules_data"
 		}
 	}
 }

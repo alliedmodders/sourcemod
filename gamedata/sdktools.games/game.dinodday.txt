@@ -65,7 +65,8 @@
 		
 		"Keys"
 		{
-			"GameRulesProxy"	"CDDDGameRulesProxy"
+			"GameRulesProxy"		"CDDDGameRulesProxy"
+			"GameRulesDataTable"	"ddd_gamerules_data"
 		}
 	}
 }

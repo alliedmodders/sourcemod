@@ -110,11 +110,6 @@
 		
 		"Signatures"
 		{
-			"CreateGameRulesObject"
-			{
-				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x09\x8B\x01\x8B\x50\x2C\x6A\x01"
-			}
 			"FindEntityByClassname"
 			{
 				"library"	"server"
@@ -140,7 +135,8 @@
 		
 		"Keys"
 		{
-			"GameRulesProxy"	"CFFGameRulesProxy"
+			"GameRulesProxy"		"CFFGameRulesProxy"
+			"GameRulesDataTable"	"ff_gamerules_data"
 		}
 	}
 }

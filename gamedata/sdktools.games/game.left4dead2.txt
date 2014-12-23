@@ -214,7 +214,8 @@
 		
 		"Keys"
 		{
-			"GameRulesProxy"	"CTerrorGameRulesProxy"
+			"GameRulesProxy"		"CTerrorGameRulesProxy"
+			"GameRulesDataTable"	"terror_gamerules_data"
 		}
 	}
 }

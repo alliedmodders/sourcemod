@@ -107,5 +107,11 @@
 				"mac"		"252"
 			}
 		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"		"CHL2MPGameRulesProxy"
+			"GameRulesDataTable"	"hl2mp_gamerules_data"
+		}
 	}
 }

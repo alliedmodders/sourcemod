@@ -21,7 +21,8 @@
 			"SlapSound2"		"player/damage2.wav"
 			"SlapSound3"		"player/damage3.wav"
 			
-			"GameRulesProxy"	"CCSGameRulesProxy"
+			"GameRulesProxy"		"CCSGameRulesProxy"
+			"GameRulesDataTable"	"cs_gamerules_data"
 		}
 
 		"Offsets"

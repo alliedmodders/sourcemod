@@ -103,5 +103,11 @@
 				"linux"		"347"
 			}
 		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"		"CSDKGameRulesProxy"
+			"GameRulesDataTable"	"sdk_gamerules_data"
+		}
 	}
 }
