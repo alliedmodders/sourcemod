@@ -14,13 +14,6 @@
 	/* General Temp Entities */
 	"#default"
 	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"hl2mp"
-		}
-
 		"Offsets"
 		{
 			/* Offset into CBaseTempEntity constructor */
@@ -70,9 +63,7 @@
 		"#supported"
 		{
 			"game"		"dod"
-			"game"		"tf"
 			"game"		"hl2mp"
-			"game"		"garrysmod"
 		}
 		
 		"Signatures"
@@ -121,28 +112,6 @@
 				"library"	"engine"
 				"linux"		"@sv"
 				"mac"		"@sv"
-			}
-		}
-	}
-	
-	/* EntityFactoryDictionary function */
-	"#default"
-	{
-		"#supported"
-		{
-			"game"		"tf"
-			"game"		"dod"
-			"game"		"hl2mp"
-		}
-		
-		"Signatures"
-		{
-			"EntityFactory"
-			{
-				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
-				"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
 		}
 	}

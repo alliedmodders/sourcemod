@@ -140,11 +140,6 @@
 		"game"		"FortressForever"
 	}
 	
-	"game.garrysmod.txt"
-	{
-		"game"		"garrysmod"
-	}
-	
 	"game.empires.txt"
 	{
 		"game"		"empires"

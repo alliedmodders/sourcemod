@@ -86,11 +86,6 @@
 				"windows"	"360"
 				"linux"		"361"
 			}
-			"FireOutputBackup"
-			{
-				"windows"	"6"
-				"linux"		"10"
-			}
 		}
 		"Signatures"
 		{

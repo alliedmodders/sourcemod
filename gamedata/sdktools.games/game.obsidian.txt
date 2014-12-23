@@ -90,10 +90,6 @@
 			{
 				"windows"	"0"
 			}
-			"FireOutputBackup"
-			{
-				"windows"	"9"
-			}
 		}
 		"Signatures"
 		{

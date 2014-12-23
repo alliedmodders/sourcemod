@@ -122,26 +122,6 @@
 				"windows"	"235"
 				"linux"		"236"
 			}
-
-			// no longer used
-			"UpdateOnRemove"
-			{
-				"windows"	"97"
-				"linux"		"98"
-			}
-			//
-		}
-
-		"Signatures"
-		{
-			// no longer used
-			"IEntityFactoryDictionary"
-			{
-				"library"	"server"
-				"windows"	"\xA1\x2A\x2A\x2A\x2A\xA8\x01\x75\x2A\x83\xC8\x01\xB9\x2A\x2A\x2A\x2A\xA3\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
-			}
-			//
 		}
 	}
 }

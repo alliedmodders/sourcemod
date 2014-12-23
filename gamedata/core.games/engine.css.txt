@@ -13,16 +13,7 @@
 {
 	/* CGlobalEntityList */
 	"#default"
-	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"cstrike"
-			"game"		"garrysmod"
-			"game"		"hl2mp"
-		}
-		
+	{		
 		"Offsets"
 		{
 			/* Offset into LevelShutdown */

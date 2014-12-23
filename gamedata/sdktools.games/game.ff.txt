@@ -101,11 +101,6 @@
 				"windows"	"354"
 				"linux"		"355"
 			}
-			"FireOutputBackup"
-			{
-				"windows"	"6"
-				"linux"		"6"
-			}
 		}
 		
 		"Signatures"
