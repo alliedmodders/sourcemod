@@ -49,6 +49,7 @@ IForward *g_removeCondForward = NULL;
 int playerCondOffset = -1;
 int playerCondExOffset = -1;
 int playerCondEx2Offset = -1;
+int playerCondEx3Offset = -1;
 int conditionBitsOffset = -1;
 
 bool g_bIgnoreRemove;
@@ -62,12 +63,15 @@ inline condflags_t GetPlayerConds(CBaseEntity *pPlayer)
 	uint32_t condBits      =  *(uint32_t *)((intptr_t)pPlayer + conditionBitsOffset);
 	uint32_t playerCondEx  =  *(uint32_t *)((intptr_t)pPlayer + playerCondExOffset);
 	uint32_t playerCondEx2 =  *(uint32_t *)((intptr_t)pPlayer + playerCondEx2Offset);
+	uint32_t playerCondEx3 =  *(uint32_t *)((intptr_t)pPlayer + playerCondEx3Offset);
 
 	uint64_t playerCondExAdj = playerCondEx;
 	playerCondExAdj <<= 32;
+	uint64_t playerCondEx3Adj = playerCondEx3;
+	playerCondEx3Adj <<= 32;
 
 	result.lower = playerCond|condBits|playerCondExAdj;
-	result.upper = playerCondEx2;
+	result.upper = playerCondEx2|playerCondEx3Adj;
 	return result;
 }
 
@@ -181,7 +185,15 @@ bool InitialiseConditionChecks()
 	
 	playerCondEx2Offset = prop.actual_offset;
 
-	if (playerCondOffset == -1 || playerCondExOffset == -1 || conditionBitsOffset == -1 || playerCondEx2Offset == -1)
+	if (!gamehelpers->FindSendPropInfo("CTFPlayer", "m_nPlayerCondEx3", &prop))
+	{
+		g_pSM->LogError(myself, "Failed to find m_nPlayerCondEx3 prop offset");
+		return false;
+	}
+	
+	playerCondEx3Offset = prop.actual_offset;
+
+	if (playerCondOffset == -1 || playerCondExOffset == -1 || conditionBitsOffset == -1 || playerCondEx2Offset == -1 || playerCondEx3Offset == -1)
 		return false;
 	
 	int maxClients = gpGlobals->maxClients;
