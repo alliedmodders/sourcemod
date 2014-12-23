@@ -107,7 +107,7 @@ enum TFCond
 	TFCond_RegenBuffed,
 	TFCond_MarkedForDeath,
 	TFCond_NoHealingDamageBuff,
-	TFCond_SpeedBuffAlly,		//32
+	TFCond_SpeedBuffAlly, // 32
 	TFCond_HalloweenCritCandy,
 	TFCond_CritCanteen,
 	TFCond_CritDemoCharge,
@@ -171,7 +171,7 @@ enum TFCond
 	TFCond_RuneResist,
 	TFCond_RuneVampire,
 	TFCond_RuneWarlock,
-	TFCond_RunePrecision,
+	TFCond_RunePrecision, // 96
 	TFCond_RuneAgility,
 };
 
