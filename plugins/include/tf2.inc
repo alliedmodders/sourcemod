@@ -164,6 +164,15 @@ enum TFCond
 	TFCond_SwimmingCurse,
 	TFCond_HalloweenKartNoTurn,
 	TFCond_HalloweenKartCage,
+	TFCond_HasRune,
+	TFCond_RuneStrength,
+	TFCond_RuneHaste,
+	TFCond_RuneRegen,
+	TFCond_RuneResist,
+	TFCond_RuneVampire,
+	TFCond_RuneWarlock,
+	TFCond_RunePrecision,
+	TFCond_RuneAgility,
 };
 
 const Float:TFCondDuration_Infinite = -1.0;
