@@ -107,7 +107,7 @@ enum TFCond
 	TFCond_RegenBuffed,
 	TFCond_MarkedForDeath,
 	TFCond_NoHealingDamageBuff,
-	TFCond_SpeedBuffAlly,		//32
+	TFCond_SpeedBuffAlly, // 32
 	TFCond_HalloweenCritCandy,
 	TFCond_CritCanteen,
 	TFCond_CritDemoCharge,
@@ -164,6 +164,15 @@ enum TFCond
 	TFCond_SwimmingCurse,
 	TFCond_HalloweenKartNoTurn,
 	TFCond_HalloweenKartCage,
+	TFCond_HasRune,
+	TFCond_RuneStrength,
+	TFCond_RuneHaste,
+	TFCond_RuneRegen,
+	TFCond_RuneResist,
+	TFCond_RuneVampire,
+	TFCond_RuneWarlock,
+	TFCond_RunePrecision, // 96
+	TFCond_RuneAgility,
 };
 
 const Float:TFCondDuration_Infinite = -1.0;
