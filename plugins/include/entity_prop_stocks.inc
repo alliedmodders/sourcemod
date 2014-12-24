@@ -374,14 +374,17 @@ stock SetEntityRenderFx(entity, RenderFx:fx)
  * Gets an entity's color.
  *
  * @param entity	Entity index.
- * @return			RenderColor value.
+ * @param r 		Amount of red (0-255)
+ * @param g 		Amount of green (0-255)
+ * @param b 		Amount of blue (0-255)
+ * @param a 		Amount of alpha (0-255)
+ * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock GetEntityRenderColor(entity)
+stock GetEntityRenderColor(entity, &_:r, &_:g, &_:b, &_:a)
 {
 	static bool:gotconfig = false;
 	static String:prop[32];
-	static colors[4];
 	
 	if (!gotconfig)
 	{
@@ -404,12 +407,10 @@ stock GetEntityRenderColor(entity)
 		ThrowError("GetEntityRenderColor not supported by this mod");
 	}
 	
-	colors[0] = GetEntData(entity, offset, 1);
-	colors[1] = GetEntData(entity, offset + 1, 1);
-	colors[2] = GetEntData(entity, offset + 2, 1);
-	colors[3] = GetEntData(entity, offset + 3, 1);
-
-	return colors;
+	r = GetEntData(entity, offset, 1);
+	g = GetEntData(entity, offset + 1, 1);
+	b = GetEntData(entity, offset + 2, 1);
+	a = GetEntData(entity, offset + 3, 1);
 }
 
 /**
