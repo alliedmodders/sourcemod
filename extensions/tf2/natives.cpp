@@ -239,7 +239,7 @@ cell_t TF2_RemoveDisguise(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-void TF2_AddCond(CBaseEntity *pEntity, int condition, float duration, CBaseEntity *pProvider)
+bool TF2_AddCond(CBaseEntity *pEntity, int condition, float duration, CBaseEntity *pProvider)
 {
 	// Calling function is responsible for making sure inputs are valid
 
@@ -248,18 +248,24 @@ void TF2_AddCond(CBaseEntity *pEntity, int condition, float duration, CBaseEntit
 	// CTFPlayerShared::AddCond(int, float, CBaseEntity *)
 	if (!pWrapper)
 	{
-		REGISTER_NATIVE_ADDR("AddCondition", 
-			PassInfo pass[3]; \
-			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].size = sizeof(int); \
-			pass[0].type = PassType_Basic; \
-			pass[1].flags = PASSFLAG_BYVAL; \
-			pass[1].size = sizeof(float); \
-			pass[1].type = PassType_Basic; \
-			pass[2].flags = PASSFLAG_BYVAL; \
-			pass[2].size = sizeof(CBaseEntity *); \
-			pass[2].type = PassType_Basic; \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3))
+		void *addr;
+		if (!g_pGameConf->GetMemSig("AddCondition", &addr) || !addr)
+		{
+			g_pSM->LogError(myself, "Failed to locate AddCondition");
+			return false;
+		}
+		PassInfo pass[3];
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].size = sizeof(int);
+		pass[0].type = PassType_Basic;
+		pass[1].flags = PASSFLAG_BYVAL;
+		pass[1].size = sizeof(float);
+		pass[1].type = PassType_Basic;
+		pass[2].flags = PASSFLAG_BYVAL;
+		pass[2].size = sizeof(CBaseEntity *);
+		pass[2].type = PassType_Basic;
+		pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3);
+		g_RegNatives.Register(pWrapper);
 	}
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
@@ -276,7 +282,7 @@ void TF2_AddCond(CBaseEntity *pEntity, int condition, float duration, CBaseEntit
 	*(CBaseEntity **)vptr = pProvider;
 
 	pWrapper->Execute(vstk, NULL);
-
+	return true;
 }
 
 cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
@@ -294,7 +300,11 @@ cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Provider index %d is not valid", params[4]);
 	}
 
-	TF2_AddCond(pEntity, params[2], *(float *)&params[3], pProvider);
+	bool success = TF2_AddCond(pEntity, params[2], *(float *)&params[3], pProvider);
+	if (!success)
+	{
+		return pContext->ThrowNativeError("Failed to locate function");
+	}
 	return 1;
 }
 
@@ -704,7 +714,11 @@ cell_t TF2_AddTmpDamageBonus(IPluginContext *pContext, const cell_t *params)
 
 	float dmgBonus = *(float *)((intptr_t)pEntity + offset);
 
-	cell_t result = TF2_AddCond(pEntity, 12, duration, pProvider);
+	bool success = TF2_AddCond(pEntity, 12, duration, pProvider);
+	if (!success)
+	{
+		return pContext->ThrowNativeError("Failed to locate function");
+	}
 	*(float *)((intptr_t)pEntity + offset) = dmgBonus + multiplier;
 	return (cell_t)(dmgBonus + multiplier);
 }
@@ -732,7 +746,11 @@ cell_t TF2_SetTmpDamageBonus(IPluginContext *pContext, const cell_t *params)
 	float multiplier = *(float *)&params[2];
 	float duration = *(float *)&params[3]; //AddCond does this too, instead of sp_ctof. Why?
 
-	TF2_AddCond(pEntity, 12, duration, pProvider);
+	bool success = TF2_AddCond(pEntity, 12, duration, pProvider);
+	if (!success)
+	{
+		return pContext->ThrowNativeError("Failed to locate function");
+	}
 	*(float *)((intptr_t)pEntity + offset) = multiplier;
 	return 1;
 }
