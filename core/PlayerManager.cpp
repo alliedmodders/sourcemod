@@ -2003,6 +2003,13 @@ void CPlayer::UpdateAuthIds()
 #else
 	authstr = engine->GetPlayerNetworkIDString(m_pEdict);
 #endif
+
+	if (!authstr)
+	{
+		// engine doesn't have the client's auth string just yet, we can't do anything
+		return;
+	}
+
 	if (m_AuthID.compare(authstr) == 0)
 	{
 		return;
