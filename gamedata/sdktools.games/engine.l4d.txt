@@ -20,7 +20,8 @@
 			"SlapSound1"		"player/damage1.wav"
 			"SlapSound2"		"player/damage2.wav"
 			
-			"GameRulesProxy"	"CTerrorGameRulesProxy"
+			"GameRulesProxy"		"CTerrorGameRulesProxy"
+			"GameRulesDataTable"	"terror_gamerules_data"
 		}
 	}
 	
@@ -92,47 +93,6 @@
 				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x85\xC9\x57\x74\x19\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x83\xC0\x01\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x39\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\xEB\x03"
 				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-			}
-		}
-	}
-
-	/* General GameRules */
-	"#default"
-	{
-		"#supported"
-		{
-			"game"		"left4dead"
-		}
-		
-		"Offsets"
-		{
-			/* Offset into CreateGameRulesObject */
-			"g_pGameRules"
-			{
-				"windows"	"2"
-			}
-		}
-		
-		"Signatures"
-		{
-			/* This signature sometimes has multiple matches, but this
-			 * does not matter as g_pGameRules is involved in all of them.
-			 * The same g_pGameRules offset applies to each match.
-			 *
-			 * Sometimes this block of bytes is at the beginning of the static
-			 * CreateGameRulesObject function and sometimes it is in the middle
-			 * of an entirely different function. This depends on the game.
-			 */
-			"CreateGameRulesObject"
-			{
-				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\x6A\x01\xFF\xD2"
-			}
-			"g_pGameRules"
-			{
-				"library"	"server"
-				"linux"		"@g_pGameRules"
-				"mac"		"@g_pGameRules"
 			}
 		}
 	}

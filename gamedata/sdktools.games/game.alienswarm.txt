@@ -45,7 +45,8 @@
 		
 		"Keys"
 		{
-			"GameRulesProxy"	"CAlienSwarmProxy"
+			"GameRulesProxy"		"CAlienSwarmProxy"
+			"GameRulesDataTable"	"asw_gamerules_data"
 		}
 	}
 }

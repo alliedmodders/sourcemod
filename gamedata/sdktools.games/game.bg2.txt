@@ -86,11 +86,6 @@
 				"windows"	"360"
 				"linux"		"361"
 			}
-			"FireOutputBackup"
-			{
-				"windows"	"6"
-				"linux"		"10"
-			}
 		}
 		"Signatures"
 		{
@@ -118,6 +113,11 @@
 				"windows"	"\x81\xEC\x20\x1C\x00\x00\x53\x55\x56\x8B\x71\x14\x57\x89"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
+		}
+		"Keys"
+		{
+			"GameRulesProxy"		"CHL2MPGameRulesProxy"
+			"GameRulesDataTable"	"hl2mp_gamerules_data"
 		}
 	}
 }

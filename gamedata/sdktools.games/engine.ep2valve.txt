@@ -14,13 +14,6 @@
 	/* General Temp Entities */
 	"#default"
 	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"hl2mp"
-		}
-
 		"Offsets"
 		{
 			/* Offset into CBaseTempEntity constructor */
@@ -70,9 +63,7 @@
 		"#supported"
 		{
 			"game"		"dod"
-			"game"		"tf"
 			"game"		"hl2mp"
-			"game"		"garrysmod"
 		}
 		
 		"Signatures"
@@ -84,50 +75,6 @@
 				"windows"	"\x55\x8B\xEC\x53\x56\x57\x8B\xF9\x8B\x4D\x08\x85\xC9\x74\x15"
 				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-			}
-		}
-	}
-
-	/* General GameRules */
-	"#default"
-	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"garrysmod"
-			"game"		"hl2mp"
-		}
-		
-		"Offsets"
-		{
-			/* Offset into CreateGameRulesObject */
-			"g_pGameRules"
-			{
-				"windows"	"5"
-			}
-		}
-		
-		"Signatures"
-		{
-			/* This signature sometimes has multiple matches, but this
-			 * does not matter as g_pGameRules is involved in all of them.
-			 * The same g_pGameRules offset applies to each match.
-			 *
-			 * Sometimes this block of bytes is at the beginning of the static
-			 * CreateGameRulesObject function and sometimes it is in the middle
-			 * of an entirely different function. This depends on the game.
-			 */
-			"CreateGameRulesObject"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x07"
-			}
-			"g_pGameRules"
-			{
-				"library"	"server"
-				"linux"		"@g_pGameRules"
-				"mac"		"@g_pGameRules"
 			}
 		}
 	}
@@ -165,28 +112,6 @@
 				"library"	"engine"
 				"linux"		"@sv"
 				"mac"		"@sv"
-			}
-		}
-	}
-	
-	/* EntityFactoryDictionary function */
-	"#default"
-	{
-		"#supported"
-		{
-			"game"		"tf"
-			"game"		"dod"
-			"game"		"hl2mp"
-		}
-		
-		"Signatures"
-		{
-			"EntityFactory"
-			{
-				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
-				"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
 		}
 	}

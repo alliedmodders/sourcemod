@@ -79,10 +79,6 @@
 			{
 				"windows"	"0"
 			}
-			"FireOutputBackup"
-			{
-				"windows"	"9"
-			}
 		}
 		"Signatures"
 		{
@@ -101,6 +97,11 @@
 				"library"	"server"
 				"windows"	"\x81\xEC\x1C\x01\x00\x00\x53\x55\x56\x8B\x71\x14\x85\xF6"
 			}
+		}
+		"Keys"
+		{
+			"GameRulesProxy"		"CRnLGameRulesProxy"
+			"GameRulesDataTable"	"rnl_gamerules_data"
 		}
 	}
 }

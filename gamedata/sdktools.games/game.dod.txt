@@ -110,7 +110,8 @@
 		
 		"Keys"
 		{
-			"GameRulesProxy"	"CDODGameRulesProxy"
+			"GameRulesProxy"		"CDODGameRulesProxy"
+			"GameRulesDataTable"	"dod_gamerules_data"
 		}
 	}
 }

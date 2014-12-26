@@ -69,11 +69,6 @@
 				"windows"	"58"
 				"linux"		"59"
 			}
-			"UpdateOnRemove"
-			{
-				"windows"	"98"
-				"linux"		"99"
-			}
 			"Use"
 			{
 				"windows"	"90"
@@ -108,16 +103,6 @@
 			{
 				"windows"	"233"
 				"linux"		"234"
-			}
-		}
-		
-		"Signatures"
-		{
-			"IEntityFactoryDictionary"
-			{
-				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
 			}
 		}
 	}

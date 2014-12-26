@@ -50,13 +50,7 @@
 	
 	/* CGlobalEntityList */
 	"#default"
-	{
-		"#supported"
-		{
-			"game"		"left4dead2"
-			"game"		"nucleardawn"
-		}
-			
+	{			
 		"Signatures"
 		{
 			/* Functions in CGlobalEntityList */
@@ -234,7 +228,8 @@
 		
 		"Keys"
 		{
-			"GameRulesProxy"	"CNuclearDawnRulesProxy"
+			"GameRulesProxy"		"CNuclearDawnRulesProxy"
+			"GameRulesDataTable"	"nd_gamerules_data"
 		}
 		
 		"Signatures"

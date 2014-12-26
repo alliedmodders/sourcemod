@@ -76,5 +76,11 @@
 				"linux"		"376"
 			}
 		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"		"CSP_GameRulesProxy"
+			"GameRulesDataTable"	"csp_gamerules_data"
+		}
 	}
 }

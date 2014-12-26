@@ -87,10 +87,6 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
-			"g_pGameRules"
-			{
-				"windows"	"7"
-			}
 			"WeaponEquip"
 			{
 				"windows"	"198"
@@ -106,6 +102,12 @@
 				"windows"	"347"
 				"linux"		"348"
 			}
+		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"		"CHL2MPGameRulesProxy"
+			"GameRulesDataTable"	"hl2mp_gamerules_data"
 		}
 
 		"Signatures"
@@ -127,16 +129,6 @@
 				"library"	"server"
 				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x85\xC9\x57\x74\x18\x8B\x01\xFF\x50\x08\x8B\x08\x81\xE1\xFF\x0F\x00\x00\x83\xC1\x01\xC1\xE1\x04\x8B\x3C\x31\xEB\x06\x8B\xBE\x04\x00\x01\x00\x85\xFF\x74\x3A\x8B\x5C\x24\x18\x8B\x2D\x6C\xE5\x73\x22\x8D\x9B\x00\x00\x00\x00\x8B\x37\x85\xF6\x75\x0C\x68\xFC\xFB\x56\x22\xFF\xD5\x83\xC4\x04\xEB\x11\x39"
 				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-			}
-			"CreateGameRulesObject"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x10\xA1\x2A\x2A\x2A\x2A\x89\x45\xF4\x8B\x4D\xF4\x89\x4D\xF8\x83\x7D\xF8\x00"
-			}
-			"g_pGameRules"
-			{
-				"library"	"server"
-				"linux"		"@g_pGameRules"
 			}
 		}
 	}

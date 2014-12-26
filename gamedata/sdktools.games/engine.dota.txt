@@ -96,39 +96,7 @@
 		"Keys"
 		{
 			"GameRulesProxy"	"CDOTAGamerulesProxy"
-		}
-		
-		"Offsets"
-		{
-			/* Offset into CreateGameRulesObject */
-			"g_pGameRules"
-			{
-				"windows"	"3"
-				"linux"		"9"
-			}
-		}
-		
-		"Signatures"
-		{
-			/* This signature sometimes has multiple matches, but this
-			 * does not matter as g_pGameRules is involved in all of them.
-			 * The same g_pGameRules offset applies to each match.
-			 *
-			 * Sometimes this block of bytes is at the beginning of the static
-			 * CreateGameRulesObject function and sometimes it is in the middle
-			 * of an entirely different function. This depends on the game.
-			 */
-			"CreateGameRulesObject"
-			{
-				"library"	"server"
-				"windows"	"\x51\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x06\x8B\x01\x6A\x01\xFF\x10\xC7\x05\x2A\x2A\x2A\x2A\x00\x00\x00\x00\xE8"
-				"linux"		"\x55\x89\xE5\x56\x53\x83\xEC\x2A\xA1\x2A\x2A\x2A\x2A\x8B\x5D\x08\x85\xC0\x74\x08\x8B"
-			}
-			"g_pGameRules"
-			{
-				"library"	"server"
-				"mac"		"@g_pGameRules"
-			}
+			"GameRulesDataTable"	"dota_gamerules_data"
 		}
 	}
 
