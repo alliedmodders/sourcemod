@@ -82,7 +82,7 @@ native bool RemoveNominationByOwner(int owner);
  * @param array		An ADT array handle to add the map strings to.
  * @noreturn
  */
-native GetExcludeMapList(ArrayList array);
+native void GetExcludeMapList(ArrayList array);
 
 /**
  * Gets the current list of nominated maps.
@@ -91,7 +91,7 @@ native GetExcludeMapList(ArrayList array);
  * @param ownerarray	An optional ADT array handle to add the nominator client indexes to.
  * @noreturn
  */
-native GetNominatedMapList(ArrayList maparray, ArrayList ownerarray = null);
+native void GetNominatedMapList(ArrayList maparray, ArrayList ownerarray = null);
 
 /**
  * Checks if MapChooser will allow a vote
@@ -109,7 +109,7 @@ native bool CanMapChooserStartVote();
  * @param when			MapChange consant of when the resulting mapchange should occur.
  * @param inputarray	ADT array list of maps to add to the vote.
  */
-native InitiateMapChooserVote(MapChange when, ArrayList inputarray=null);
+native void InitiateMapChooserVote(MapChange when, ArrayList inputarray=null);
 
 /**
  * Checks if MapChooser's end of map vote has completed.
@@ -136,7 +136,7 @@ forward void OnNominationRemoved(const char[] map, int owner);
  */
 forward void OnMapVoteStarted();
 
-public SharedPlugin:__pl_mapchooser = 
+public SharedPlugin __pl_mapchooser = 
 {
 	name = "mapchooser",
 	file = "mapchooser.smx",
@@ -147,7 +147,7 @@ public SharedPlugin:__pl_mapchooser =
 #endif
 };
 
-public __pl_mapchooser_SetNTVOptional()
+public void __pl_mapchooser_SetNTVOptional()
 {
 	MarkNativeAsOptional("NominateMap");
 	MarkNativeAsOptional("RemoveNominationByMap");

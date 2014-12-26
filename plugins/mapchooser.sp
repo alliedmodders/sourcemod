@@ -1122,7 +1122,7 @@ public int Native_RemoveNominationByOwner(Handle plugin, int numParams)
 	return InternalRemoveNominationByOwner(GetNativeCell(1));
 }
 
-/* native InitiateMapChooserVote(MapChange when, ArrayList inputarray=null); */
+/* native void InitiateMapChooserVote(MapChange when, ArrayList inputarray=null); */
 public int Native_InitiateVote(Handle plugin, int numParams)
 {
 	MapChange when = view_as<MapChange>(GetNativeCell(1));
@@ -1150,7 +1150,7 @@ public int Native_EndOfMapVoteEnabled(Handle plugin, int numParams)
 	return g_Cvar_EndOfMapVote.BoolValue;
 }
 
-/* native GetExcludeMapList(ArrayList array); */
+/* native void GetExcludeMapList(ArrayList array); */
 public int Native_GetExcludeMapList(Handle plugin, int numParams)
 {
 	ArrayList array = view_as<ArrayList>(GetNativeCell(1));
@@ -1171,7 +1171,7 @@ public int Native_GetExcludeMapList(Handle plugin, int numParams)
 	return;
 }
 
-/* native GetNominatedMapList(ArrayList maparray, ArrayList ownerarray = null); */
+/* native void GetNominatedMapList(ArrayList maparray, ArrayList ownerarray = null); */
 public int Native_GetNominatedMapList(Handle plugin, int numParams)
 {
 	ArrayList maparray = view_as<ArrayList>(GetNativeCell(1));
