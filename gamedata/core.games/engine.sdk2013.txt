@@ -29,13 +29,6 @@
 				"windows"	"11"
 				"linux"		"13"
 			}
-
-			"EntInfo"
-			{
-				"windows"	"4"	
-				"linux"		"4"
-				"mac"		"4"
-			}
 		}
 		
 		"Signatures"
@@ -71,13 +64,6 @@
 			{
 				"windows"	"11"
 			}
-
-			"EntInfo"
-			{
-				"windows"	"4"	
-				"linux"		"4"
-				"mac"		"4"
-			}
 		}
 		
 		"Signatures"
@@ -92,6 +78,19 @@
 				"library"	"server"
 				"linux"		"@gEntList"
 				"mac"		"@gEntList"
+			}
+		}
+	}
+	
+	"#default"
+	{
+		"Offsets"
+		{
+			"EntInfo"
+			{
+				"windows"	"4"	
+				"linux"		"4"
+				"mac"		"4"
 			}
 		}
 	}
