@@ -624,3 +624,21 @@ native EntRefToEntIndex(ref);
  */
 native MakeCompatEntRef(ref);
 
+
+enum ClientRangeType
+{
+	RangeType_Visibility = 0,
+	RangeType_Audibility,
+}
+
+/**
+ * Find clients that are potentially in range of a position.
+ *
+ * @param origin		Coordinates from which to test range.
+ * @param rangeType		Range type to use for filtering clients.
+ * @param clients		Array to which found client indexes will be written.
+ * @param size			Maximum size of clients array.
+ * @return				Number of client indexes written to clients array.
+ */
+native int GetClientsInRange(float origin[3], ClientRangeType rangeType, int[] clients, int size);
+
