@@ -822,11 +822,11 @@ void UTIL_DrawDataTable(FILE *fp, datamap_t *pMap, int level)
 
 				if (externalname == NULL)
 				{
-					fprintf(fp,"%s- %s (%s)(%i Bytes)\n", spaces, pMap->dataDesc[i].fieldName, flags, pMap->dataDesc[i].fieldSizeInBytes);
+					fprintf(fp, "%s- %s (Offset %d) (%s)(%i Bytes)\n", spaces, pMap->dataDesc[i].fieldName, GetTypeDescOffs(&pMap->dataDesc[i]), flags, pMap->dataDesc[i].fieldSizeInBytes);
 				}
 				else
 				{
-					fprintf(fp,"%s- %s (%s)(%i Bytes) - %s\n", spaces, pMap->dataDesc[i].fieldName, flags, pMap->dataDesc[i].fieldSizeInBytes, externalname);
+					fprintf(fp, "%s- %s (Offset %d) (%s)(%i Bytes) - %s\n", spaces, pMap->dataDesc[i].fieldName, GetTypeDescOffs(&pMap->dataDesc[i]), flags, pMap->dataDesc[i].fieldSizeInBytes, externalname);
 				}
 			}
 		}
