@@ -36,6 +36,10 @@
 
 #include <ISDKTools.h>
 
+#ifndef TFCOND_TMPDAMAGEBONUS
+#define TFCOND_TMPDAMAGEBONUS 12
+#endif //TFCOND_TMPDAMAGEBONUS
+
 // native TF2_MakeBleed(client, attacker, Float:duration)
 cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 {
@@ -300,7 +304,7 @@ cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Provider index %d is not valid", params[4]);
 	}
 
-	bool success = TF2_AddCond(pEntity, params[2], *(float *)&params[3], pProvider);
+	bool success = TF2_AddCond(pEntity, params[2], sp_ctof(params[3]), pProvider);
 	if (!success)
 	{
 		return pContext->ThrowNativeError("Failed to locate function");
@@ -677,13 +681,13 @@ int GetTmpDamageBonusOffset()
 			g_pSM->LogError(myself, "Failed to locate TmpDamageBonusOffset");
 			return -1;
 		}
-		sm_sendprop_info_t prop;
-		if (!gamehelpers->FindSendPropInfo("CTFPlayer", "m_unTauntSourceItemID_High", &prop))
+		int propoffset;
+		if (!g_pGameConf->GetOffset("TmpDamageBonusProp", &propoffset))
 		{
-			g_pSM->LogError(myself, "Failed to find m_unTauntSourceItemID_High prop offset");
+			g_pSM->LogError(myself, "Failed to find TmpDamageBonusProp property offset");
 			return -1;
 		}
-		offset += prop.actual_offset;
+		offset += propoffset;
 		found = true;
 	}
 	return offset;
@@ -709,15 +713,15 @@ cell_t TF2_AddTmpDamageBonus(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Provider index %d is not valid", params[4]);
 	}
 
-	float multiplier = *(float *)&params[2];
-	float duration = *(float *)&params[3]; //AddCond does this too, instead of sp_ctof. Why?
+	float multiplier = sp_ctof(params[2]);
+	float duration = sp_ctof(params[3]);
 
 	float dmgBonus = *(float *)((intptr_t)pEntity + offset);
 
-	bool success = TF2_AddCond(pEntity, 12, duration, pProvider);
+	bool success = TF2_AddCond(pEntity, TFCOND_TMPDAMAGEBONUS, duration, pProvider);
 	if (!success)
 	{
-		return pContext->ThrowNativeError("Failed to locate function");
+		return pContext->ThrowNativeError("Failed to locate function for TF2 AddCondition");
 	}
 	*(float *)((intptr_t)pEntity + offset) = dmgBonus + multiplier;
 	return (cell_t)(dmgBonus + multiplier);
@@ -743,13 +747,13 @@ cell_t TF2_SetTmpDamageBonus(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Provider index %d is not valid", params[4]);
 	}
 
-	float multiplier = *(float *)&params[2];
-	float duration = *(float *)&params[3]; //AddCond does this too, instead of sp_ctof. Why?
+	float multiplier = sp_ctof(params[2]);
+	float duration = sp_ctof(params[3]);
 
-	bool success = TF2_AddCond(pEntity, 12, duration, pProvider);
+	bool success = TF2_AddCond(pEntity, TFCOND_TMPDAMAGEBONUS, duration, pProvider);
 	if (!success)
 	{
-		return pContext->ThrowNativeError("Failed to locate function");
+		return pContext->ThrowNativeError("Failed to locate function for TF2 AddCondition");
 	}
 	*(float *)((intptr_t)pEntity + offset) = multiplier;
 	return 1;
