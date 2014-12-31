@@ -219,6 +219,26 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
+	buffer[0] = '\0';
+	if (!gameconfs->LoadGameConfigFile("sdkhooks.games", &g_pGameConf, buffer, sizeof(buffer)))
+	{
+		if (buffer[0])
+		{
+			g_pSM->Format(error, maxlength, "Could not read sdkhooks.games gamedata: %s", buffer);
+		}
+
+		return false;
+	}
+
+	CUtlVector<IEntityListener *> *entListeners = EntListeners();
+	if (!entListeners)
+	{
+		g_pSM->Format(error, maxlength, "Failed to setup entity listeners");
+		return false;
+	}
+
+	entListeners->AddToTail(this);
+
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 	sharesys->AddNatives(myself, g_Natives);
 	sharesys->RegisterLibrary(myself, "sdkhooks");
@@ -236,26 +256,6 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_pOnGetGameNameDescription = forwards->CreateForward("OnGetGameDescription", ET_Hook, 2, NULL, Param_String);
 #endif
 	g_pOnLevelInit = forwards->CreateForward("OnLevelInit", ET_Hook, 2, NULL, Param_String, Param_String);
-
-	buffer[0] = '\0';
-	if (!gameconfs->LoadGameConfigFile("sdkhooks.games", &g_pGameConf, buffer, sizeof(buffer)))
-	{
-		if (buffer[0])
-		{
-			g_pSM->Format(error, maxlength, "Could not read sdkhooks.games gamedata: %s", buffer);
-		}
-		
-		return false;
-	}
-
-	CUtlVector<IEntityListener *> *entListeners = EntListeners();
-	if (!entListeners)
-	{
-		g_pSM->Format(error, maxlength, "Failed to setup entity listeners");
-		return false;
-	}
-
-	entListeners->AddToTail(this);
 
 	SetupHooks();
 
