@@ -102,7 +102,9 @@ extern IPlayerInfoManager *playerinfo;
 extern IBaseFileSystem *basefilesystem;
 extern IFileSystem *filesystem;
 extern IEngineSound *enginesound;
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 extern IServerTools *servertools;
+#endif
 extern IServerPluginHelpers *serverpluginhelpers;
 extern IServerPluginCallbacks *vsp_interface;
 extern int vsp_version;
