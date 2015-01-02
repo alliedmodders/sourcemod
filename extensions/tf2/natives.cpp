@@ -36,9 +36,7 @@
 
 #include <ISDKTools.h>
 
-#ifndef TFCOND_TMPDAMAGEBONUS
-#define TFCOND_TMPDAMAGEBONUS 12
-#endif //TFCOND_TMPDAMAGEBONUS
+const int TFCond_TmpDamageBonus = 12;
 
 // native TF2_MakeBleed(client, attacker, Float:duration)
 cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
@@ -718,7 +716,7 @@ cell_t TF2_AddTmpDamageBonus(IPluginContext *pContext, const cell_t *params)
 
 	float dmgBonus = *(float *)((intptr_t)pEntity + offset);
 
-	bool success = TF2_AddCond(pEntity, TFCOND_TMPDAMAGEBONUS, duration, pProvider);
+	bool success = TF2_AddCond(pEntity, TFCond_TmpDamageBonus, duration, pProvider);
 	if (!success)
 	{
 		return pContext->ThrowNativeError("Failed to locate function for TF2 AddCondition");
@@ -750,7 +748,7 @@ cell_t TF2_SetTmpDamageBonus(IPluginContext *pContext, const cell_t *params)
 	float multiplier = sp_ctof(params[2]);
 	float duration = sp_ctof(params[3]);
 
-	bool success = TF2_AddCond(pEntity, TFCOND_TMPDAMAGEBONUS, duration, pProvider);
+	bool success = TF2_AddCond(pEntity, TFCond_TmpDamageBonus, duration, pProvider);
 	if (!success)
 	{
 		return pContext->ThrowNativeError("Failed to locate function for TF2 AddCondition");
