@@ -581,3 +581,115 @@ stock TFObjectMode:TF2_GetObjectMode(entity)
 	
 	return TFObjectMode:GetEntData(entity, offset);
 }
+
+/**
+ * Gets current multiplier for TFCond_TmpDamageBonus for a player.
+ *
+ * @param client		Player's index.
+ * @return				Current damage multiplier.
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+stock Float:TF2_GetTmpDamageBonus(client)
+{
+	static offset = -1;
+	static bool:offsetfound = false;
+	if (!offsetfound)
+	{
+		new Handle:gameconf = LoadGameConfigFile("sm-tf2.games");
+		if (gameconf == INVALID_HANDLE)
+		{
+			ThrowError("Could not load offset for TmpDamageBonus stock");
+		}
+		new offsetprop = GameConfGetOffset(gameconf, "TmpDamageBonusProp");
+		if (offsetprop == -1)
+		{
+			ThrowError("Could not load offset for TmpDamageBonusProp");
+			CloseHandle(gameconf);
+		}
+		offset = GameConfGetOffset(gameconf, "TmpDamageBonusOffset");
+		if (offset == -1)
+		{
+			ThrowError("Could not load offset for TmpDamageBonusOffset");
+			CloseHandle(gameconf);
+		}
+		offset += offsetprop;
+		offsetfound = true;
+		CloseHandle(gameconf);
+	}
+	if (offset == -1)
+	{
+		ThrowError("Invalid offset for TmpDamageBonus stock");
+	}
+	if (!TF2_IsPlayerInCondition(client, TFCond_TmpDamageBonus))
+	{
+		return 1.0;
+	}
+	return GetEntDataFloat(client, offset);
+}
+
+/**
+ * Adds TFCond_TmpDamageBonus to a player and properly sets the damage multiplier.
+ * Overwrites current multiplier.
+ *
+ * @param client		Player's index.
+ * @param multiplier	Damage multiplier to set (1.0 is normal damage).
+ * @param duration		Duration of bonus.
+ *                      Pass TFCondDuration_Infinite to apply until manually removed.
+ * @param provider		Condition provider's index (0 for no provider).
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+stock TF2_SetTmpDamageBonus(client, Float:multiplier, Float:duration=TFCondDuration_Infinite, provider=0)
+{
+	static offset = -1;
+	static bool:offsetfound = false;
+	if (!offsetfound)
+	{
+		new Handle:gameconf = LoadGameConfigFile("sm-tf2.games");
+		if (gameconf == INVALID_HANDLE)
+		{
+			ThrowError("Could not load offset for TmpDamageBonus stock");
+		}
+		new offsetprop = GameConfGetOffset(gameconf, "TmpDamageBonusProp");
+		if (offsetprop == -1)
+		{
+			ThrowError("Could not load offset for TmpDamageBonusProp");
+			CloseHandle(gameconf);
+		}
+		offset = GameConfGetOffset(gameconf, "TmpDamageBonusOffset");
+		if (offset == -1)
+		{
+			ThrowError("Could not load offset for TmpDamageBonusOffset");
+			CloseHandle(gameconf);
+		}
+		offset += offsetprop;
+		offsetfound = true;
+		CloseHandle(gameconf);
+	}
+	if (offset == -1)
+	{
+		ThrowError("Invalid offset for TmpDamageBonus stock");
+	}
+	TF2_AddCondition(client, TFCond_TmpDamageBonus, duration, provider);
+	SetEntDataFloat(client, offset, multiplier, true);
+}
+
+/**
+ * Adds TFCond_TmpDamageBonus to a player and properly adds to the damage multiplier.
+ * Stacks additively with current multiplier.
+ *
+ * @param client		Player's index.
+ * @param multiplier	Damage multiplier to add to current multiplier.
+ * @param duration		Duration of bonus.
+ *                      Pass TFCondDuration_Infinite to apply until manually removed.
+ * @param provider		Condition provider's index (0 for no provider).
+ * @return				Resulting damage multiplier.
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+stock Float:TF2_AddTmpDamageBonus(client, Float:multiplier, Float:duration=TFCondDuration_Infinite, provider=0)
+{
+	new Float:oldmultiplier = TF2_GetTmpDamageBonus(client);
+	TF2_SetTmpDamageBonus(client, multiplier + oldmultiplier, duration, provider);
+	return multiplier + oldmultiplier;
+}
+
