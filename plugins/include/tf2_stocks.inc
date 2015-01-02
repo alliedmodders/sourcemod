@@ -603,14 +603,14 @@ stock Float:TF2_GetTmpDamageBonus(client)
 		new offsetprop = GameConfGetOffset(gameconf, "TmpDamageBonusProp");
 		if (offsetprop == -1)
 		{
-			ThrowError("Could not load offset for TmpDamageBonusProp");
 			CloseHandle(gameconf);
+			ThrowError("Could not load offset for TmpDamageBonusProp");
 		}
 		offset = GameConfGetOffset(gameconf, "TmpDamageBonusOffset");
 		if (offset == -1)
 		{
-			ThrowError("Could not load offset for TmpDamageBonusOffset");
 			CloseHandle(gameconf);
+			ThrowError("Could not load offset for TmpDamageBonusOffset");
 		}
 		offset += offsetprop;
 		offsetfound = true;
@@ -653,14 +653,14 @@ stock TF2_SetTmpDamageBonus(client, Float:multiplier, Float:duration=TFCondDurat
 		new offsetprop = GameConfGetOffset(gameconf, "TmpDamageBonusProp");
 		if (offsetprop == -1)
 		{
-			ThrowError("Could not load offset for TmpDamageBonusProp");
 			CloseHandle(gameconf);
+			ThrowError("Could not load offset for TmpDamageBonusProp");
 		}
 		offset = GameConfGetOffset(gameconf, "TmpDamageBonusOffset");
 		if (offset == -1)
 		{
-			ThrowError("Could not load offset for TmpDamageBonusOffset");
 			CloseHandle(gameconf);
+			ThrowError("Could not load offset for TmpDamageBonusOffset");
 		}
 		offset += offsetprop;
 		offsetfound = true;
