@@ -487,7 +487,6 @@ enum TokenKind {
   tpDEFINE,
   tpELSE,       /* #else */
   tpELSEIF,     /* #elseif */
-  tpEMIT,
   tpENDIF,
   tpENDINPUT,
   tpENDSCRPT,
