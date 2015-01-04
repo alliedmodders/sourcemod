@@ -1445,12 +1445,25 @@ static void dodecl(const token_t *tok)
     return;
   }
 
-  int fpublic = (tok->id == tPUBLIC);
-  int fstock = (tok->id == tSTOCK);
-  int fstatic = (tok->id == tSTATIC);
+  int fpublic = FALSE, fstock = FALSE, fstatic = FALSE, fconst = FALSE;
+  switch (tok->id) {
+    case tPUBLIC:
+      fpublic = TRUE;
+      break;
+    case tSTOCK:
+      fstock = TRUE;
+      if (matchtoken(tSTATIC))
+        fstatic = TRUE;
+      break;
+    case tSTATIC:
+      fstatic = TRUE;
 
-  if (fstatic && matchtoken(tSTOCK))
-    fstock = TRUE;
+      // For compatibility, we must include this case. Though "stock" should
+      // come first.
+      if (matchtoken(tSTOCK))
+        fstock = TRUE;
+      break;
+  }
 
   int flags = DECLFLAG_MAYBE_FUNCTION | DECLFLAG_VARIABLE | DECLFLAG_ENUMROOT;
   if (tok->id == tNEW)
@@ -1462,7 +1475,13 @@ static void dodecl(const token_t *tok)
     decl.type.tag = 0;
   }
 
-  if (!decl.opertok && (tok->id == tNEW || decl.type.has_postdims || !lexpeek('('))) {
+  // Hacky bag o' hints as to whether this is a variable decl.
+  bool probablyVariable = tok->id == tNEW ||
+                          decl.type.has_postdims ||
+                          !lexpeek('(') ||
+                          ((decl.type.usage & uCONST) == uCONST);
+
+  if (!decl.opertok && probablyVariable) {
     if (tok->id == tNEW && decl.type.is_new)
       error(143);
     if (decl.type.tag & STRUCTTAG) {
