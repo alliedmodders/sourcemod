@@ -4647,9 +4647,9 @@ static void decl_enum(int vclass)
   char *str;
   int tag,explicittag;
   cell increment,multiplier;
-  constvalue *enumroot;
   LayoutSpec spec;
   symbol *enumsym = nullptr;
+  constvalue *enumroot = nullptr;
 
   /* get an explicit tag, if any (we need to remember whether an explicit
    * tag was passed, even if that explicit tag was "_:", so we cannot call
