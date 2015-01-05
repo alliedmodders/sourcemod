@@ -225,6 +225,7 @@ static const char *errmsg[] = {
 /*179*/  "cannot assign %s[] to %s[], storage classes differ\n",
 /*180*/  "function return type differs from prototype. expected '%s', but got '%s'\n",
 /*181*/  "function argument named '%s' differs from prototype\n",
+/*182*/  "functions that return arrays cannot be used as callbacks\n",
 #else
   "\315e\306\227\266k\217:\235\277bu\201fo\220\204\223\012",
   "\202l\224\250s\205g\346\356e\233\201(\243\315\214\267\202) \253 f\255low ea\305 \042c\353e\042\012",

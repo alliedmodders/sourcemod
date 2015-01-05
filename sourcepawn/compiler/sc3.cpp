@@ -2403,31 +2403,22 @@ restart:
       error(76);
       return FALSE;
     }
-
-    int public_index = 0;
-    symbol *target = NULL;
-    for (symbol *iter = glbtab.next; iter; iter = iter->next) {
-      if (iter->ident != iFUNCTN || iter->vclass != sGLOBAL)
-        continue;
-      if (strcmp(iter->name, lval1->sym->name) == 0) {
-        target = iter;
-        break;
-      }
-      if (iter->usage & uPUBLIC)
-        public_index++;
-    }
-
-    if (!target || !(target->usage & uPUBLIC)) {
-      error(76);
+    if (finddepend(sym)) {
+      error(182);
       return FALSE;
     }
 
-    funcenum_t *fe = funcenum_for_symbol(target);
+    funcenum_t *fe = funcenum_for_symbol(sym);
+
+    // Get address into pri.
+    load_glbfn(sym);
+
+    // New-style "closure".
     lval1->sym = NULL;
-    lval1->ident = iCONSTEXPR;
-    lval1->constval = (public_index << 1) | 1;
+    lval1->ident = iEXPRESSION;
+    lval1->constval = 0;
     lval1->tag = fe->tag;
-    target->usage |= uREAD;
+    return FALSE;
   } /* if */
   return lvalue;
 }

@@ -235,6 +235,7 @@ namespace sp {
   _(STRADJUST_PRI,  "stradjust.pri")  \
   _(UNGEN_STKADJUST,"stackadjust")    \
   _(ENDPROC,        "endproc")        \
+  _(UNGEN_LDGFN_PRI,"ldgfn.pri")     \
   _(FABS,           "fabs")           \
   _(FLOAT,          "float")          \
   _(FLOATADD,       "float.add")      \

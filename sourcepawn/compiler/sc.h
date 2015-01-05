@@ -58,7 +58,7 @@
 #define sDEF_LITMAX  500    /* initial size of the literal pool, in "cells" */
 #define sDEF_AMXSTACK 4096  /* default stack size for AMX files */
 #define PREPROC_TERM  '\x7f'/* termination character for preprocessor expressions (the "DEL" code) */
-#define sDEF_PREFIX   "sourcemod.inc" /* default prefix filename */
+#define sDEF_PREFIX   "xsourcemod.inc" /* default prefix filename */
 #define sARGS_MAX		32	/* number of arguments a function can have, max */
 #define sTAGS_MAX		16  /* maximum number of tags on an argument */
 
@@ -149,6 +149,7 @@ typedef struct s_symbol {
   int numrefers;        /* number of entries in the referrer list */
   char *documentation;  /* optional documentation string */
   methodmap_t *methodmap; /* if ident == iMETHODMAP */
+  int funcid;           /* set for functions during codegen */
 } symbol;
 
 /*  Possible entries for "ident". These are used in the "symbol", "value"
@@ -757,6 +758,7 @@ void invoke_setter(struct methodmap_method_s *method, int save);
 void inc_pri();
 void dec_pri();
 void load_hidden_arg();
+void load_glbfn(symbol *sym);
 
 /*  Code generation functions for arithmetic operators.
  *
@@ -981,7 +983,7 @@ typedef struct array_info_s
 } array_info_t;
 
 enum FatalError {
-  FIRST_FATAL_ERROR = 182,
+  FIRST_FATAL_ERROR = 183,
 
   FATAL_ERROR_READ  = FIRST_FATAL_ERROR,
   FATAL_ERROR_WRITE,
