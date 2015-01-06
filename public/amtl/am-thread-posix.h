@@ -188,6 +188,7 @@ class Thread
     if (!Succeeded())
       return;
     pthread_join(thread_, NULL);
+    initialized_ = false;
   }
 
  private:
