@@ -1036,10 +1036,6 @@ static int command(void)
           } /* if */
           if (!cp_set(name))
             error(FATAL_ERROR_NO_CODEPAGE);
-        } else if (strcmp(str,"compress")==0) {
-          cell val;
-          preproc_expr(&val,NULL);
-          sc_compress=(int)val; /* switch code packing on/off */
         } else if (strcmp(str,"ctrlchar")==0) {
           while (*lptr<=' ' && *lptr!='\0')
             lptr++;
@@ -1059,70 +1055,6 @@ static int command(void)
           lptr=(unsigned char*)strchr((char*)lptr,'\0'); /* skip to end (ignore "extra characters on line") */
         } else if (strcmp(str,"dynamic")==0) {
           preproc_expr(&pc_stksize,NULL);
-        } else if (!strcmp(str,"library")
-          ||!strcmp(str,"reqclass")
-          ||!strcmp(str,"loadlib")
-          ||!strcmp(str,"explib")
-          ||!strcmp(str,"expclass")
-          ||!strcmp(str,"defclasslib")) {
-          char name[sNAMEMAX+1],sname[sNAMEMAX+1];
-           const char *prefix="";
-          sname[0]='\0';
-          sname[1]='\0';
-          if (!strcmp(str,"library"))
-            prefix="??li_";
-          else if (!strcmp(str,"reqclass"))
-            prefix="??rc_";
-          else if (!strcmp(str,"loadlib"))
-            prefix="??f_";
-          else if (!strcmp(str,"explib"))
-            prefix="??el_";
-          else if (!strcmp(str,"expclass"))
-            prefix="??ec_";
-          else if (!strcmp(str,"defclasslib"))
-            prefix="??d_";
-          while (*lptr<=' ' && *lptr!='\0')
-            lptr++;
-          if (*lptr=='"') {
-            lptr=getstring((unsigned char*)name,sizeof name,lptr);
-          } else {
-            int i;
-            for (i=0; i<sizeof name && (alphanum(*lptr) || *lptr=='-'); i++,lptr++)
-              name[i]=*lptr;
-            name[i]='\0';
-            if (!strncmp(str,"exp",3) || !strncmp(str,"def",3)) {
-              while (*lptr && isspace(*lptr))
-                lptr++;
-              for (i=1; i<sizeof sname && alphanum(*lptr); i++,lptr++)
-                sname[i]=*lptr;
-              sname[i]='\0';
-              if (!sname[1]) {
-                error(45);
-              } else {
-                sname[0]='_';
-              }
-            }
-          } /* if */
-          if (strlen(name)==0) {
-            curlibrary=NULL;
-          } else if (strcmp(name,"-")==0) {
-            pc_addlibtable=FALSE;
-          } else {
-            /* add the name if it does not yet exist in the table */
-            char newname[sNAMEMAX+1];
-            if (strlen(name)+strlen(prefix)+strlen(sname)<=sNAMEMAX) {
-              strcpy(newname,prefix);
-              strcat(newname,name);
-              strcat(newname,sname);
-              if (find_constval(&libname_tab,newname,0)==NULL) {
-                if (!strcmp(str,"library") || !strcmp(str,"reqclass")) {
-                  curlibrary=append_constval(&libname_tab,newname,1,0);
-                } else {
-                  append_constval(&libname_tab,newname,1,0);
-                }
-              }
-            }
-          } /* if */
         } else if (strcmp(str,"rational")==0) {
           char name[sNAMEMAX+1];
           cell digits=0;
@@ -1222,62 +1154,6 @@ static int command(void)
       inpf=NULL;
     } /* if */
     break;
-#if !defined NOEMIT
-  case tpEMIT: {
-    /* write opcode to output file */
-    char name[40];
-    int i;
-    while (*lptr<=' ' && *lptr!='\0')
-      lptr++;
-    for (i=0; i<40 && (isalpha(*lptr) || *lptr=='.'); i++,lptr++)
-      name[i]=(char)tolower(*lptr);
-    name[i]='\0';
-    stgwrite("\t");
-    stgwrite(name);
-    stgwrite(" ");
-    code_idx+=opcodes(1);
-    /* write parameter (if any) */
-    while (*lptr<=' ' && *lptr!='\0')
-      lptr++;
-    if (*lptr!='\0') {
-      symbol *sym;
-      tok=lex(&val,&str);
-      switch (tok) {
-      case tNUMBER:
-      case tRATIONAL:
-        outval(val,FALSE);
-        code_idx+=opargs(1);
-        break;
-      case tSYMBOL:
-        sym=findloc(str);
-        if (sym==NULL)
-          sym=findglb(str,sSTATEVAR);
-        if (sym==NULL || (sym->ident!=iFUNCTN && sym->ident!=iREFFUNC && (sym->usage & uDEFINE)==0)) {
-          error(17,str);        /* undefined symbol */
-        } else {
-          outval(sym->addr,FALSE);
-          /* mark symbol as "used", unknown whether for read or write */
-          markusage(sym,uREAD | uWRITTEN);
-          code_idx+=opargs(1);
-        } /* if */
-        break;
-      default: {
-        char s2[20];
-        extern const char *sc_tokens[];/* forward declaration */
-        if (tok<256)
-          sprintf(s2,"%c",(char)tok);
-        else
-          strcpy(s2,sc_tokens[tok-tFIRST]);
-        error(1,sc_tokens[tSYMBOL-tFIRST],s2);
-        break;
-      } /* case */
-      } /* switch */
-    } /* if */
-    stgwrite("\n");
-    check_empty(lptr);
-    break;
-  } /* case */
-#endif
 #if !defined NO_DEFINE
   case tpDEFINE: {
     ret=CMD_DEFINE;
@@ -2047,7 +1923,7 @@ const char *sc_tokens[] = {
          "volatile",
          "while",
          "with",
-         "#assert", "#define", "#else", "#elseif", "#emit", "#endif", "#endinput",
+         "#assert", "#define", "#else", "#elseif", "#endif", "#endinput",
          "#endscript", "#error", "#file", "#if", "#include", "#line", "#pragma",
          "#tryinclude", "#undef",
          ";", ";", "-integer value-", "-rational value-", "-identifier-",

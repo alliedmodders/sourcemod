@@ -67,7 +67,7 @@ methodmap ArrayList < Handle {
 	public native ArrayList(int blocksize=1, int startsize=0);
 
 	// Clears an array of all entries.  This is the same as Resize(0).
-	public native void ClearArray();
+	public native void Clear();
 
 	// Clones an array, returning a new handle with the same size and data.
 	// This should NOT be confused with CloneHandle. This is a completely new

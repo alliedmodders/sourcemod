@@ -597,7 +597,7 @@ REGISTER_NATIVES(cellArrayNatives)
 	{"ArrayList.Set",				SetArrayCell},
 	{"ArrayList.SetString",			SetArrayString},
 	{"ArrayList.SetArray",			SetArrayArray},
-	{"ArrayList.Erease",			RemoveFromArray},
+	{"ArrayList.Erase",				RemoveFromArray},
 	{"ArrayList.ShiftUp",			ShiftArrayUp},
 	{"ArrayList.SwapAt",			SwapArrayItems},
 	{"ArrayList.Clone",				CloneArray},

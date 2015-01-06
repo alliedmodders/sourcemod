@@ -264,7 +264,9 @@ typeset SDKHookCB
 	// OnTakeDamagePost
 	// OnTakeDamageAlivePost
 	function void (int victim, int attacker, int inflictor, float damage, int damagetype);
-	function void (int victim, int attacker, int inflictor, float damage, int damagetype, const float damageForce[3], const float damagePosition[3]);
+	function void (int victim, int attacker, int inflictor, float damage, int damagetype, int weapon, const float damageForce[3], const float damagePosition[3]);
+	function void (int victim, int attacker, int inflictor, float damage, int damagetype, int weapon, 
+		const float damageForce[3], const float damagePosition[3], int damagecustom);
 	
 	// FireBulletsPost
 	function void (int client, int shots, const char[] weaponname);
