@@ -174,6 +174,11 @@ class Thread
     if (!initialized_)
       delete data;
   }
+  ~Thread() {
+    if (!Succeeded())
+      return;
+    pthread_detach(thread_);
+  }
 
   bool Succeeded() const {
     return initialized_;
