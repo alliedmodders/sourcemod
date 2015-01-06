@@ -220,8 +220,8 @@ public void OnConfigsExecuted()
 	
 	g_MapVoteCompleted = false;
 	
-	g_NominateList.ClearArray();
-	g_NominateOwners.ClearArray();
+	g_NominateList.Clear();
+	g_NominateOwners.Clear();
 	
 	for (int i=0; i<MAXTEAMS; i++)
 	{
@@ -635,8 +635,8 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 		}
 		
 		/* Wipe out our nominations list - Nominations have already been informed of this */
-		g_NominateOwners.ClearArray();
-		g_NominateList.ClearArray();
+		g_NominateOwners.Clear();
+		g_NominateList.Clear();
 	}
 	else //We were given a list of maps to start the vote with
 	{
