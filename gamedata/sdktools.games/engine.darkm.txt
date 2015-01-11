@@ -297,6 +297,10 @@
 			{
 				"windows"	"32"
 			}
+			"PlayerRunCmd"
+			{
+				"windows"	"327"
+			}
 		}
 		
 		"Signatures"
