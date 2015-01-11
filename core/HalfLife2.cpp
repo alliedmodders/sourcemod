@@ -234,7 +234,7 @@ void CHalfLife2::InitLogicalEntData()
 void CHalfLife2::InitCommandLine()
 {
 	char error[256];
-
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 	if (!is_original_engine)
 	{
 		ke::AutoPtr<ILibrary> lib(g_LibSys.OpenLibrary(TIER0_NAME, error, sizeof(error)));
@@ -253,6 +253,7 @@ void CHalfLife2::InitCommandLine()
 		}
 	}
 	else
+#endif
 	{
 		ke::AutoPtr<ILibrary> lib(g_LibSys.OpenLibrary(VSTDLIB_NAME, error, sizeof(error)));
 		if (lib == NULL)
