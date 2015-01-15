@@ -151,19 +151,39 @@ native Handle:StartMessageEx(UserMsg:msg, clients[], numClients, flags=0);
 native EndMessage();
 
 /**
- * Called when a message is hooked
- *
- * @param msg_id		Message index.
- * @param msg			Handle to the input bit buffer or protobuf.
- * @param players		Array containing player indexes.
- * @param playersNum	Number of players in the array.
- * @param reliable		True if message is reliable, false otherwise.
- * @param init			True if message is an initmsg, false otherwise.
- * @return				Ignored for normal hooks.  For intercept hooks, Plugin_Handled 
- *						blocks the message from being sent, and Plugin_Continue 
- *						resumes normal functionality.
- */
-typedef MsgHook = function Action (UserMsg msg_id, BfRead msg, const int[] players, int playersNum, bool reliable, bool init);
+ * Hook function types for user messages.
+*/
+typeset MsgHook
+{
+	/**
+	 * Called when a bit buffer based usermessage is hooked
+	 *
+	 * @param msg_id		Message index.
+	 * @param msg			Handle to the input bit buffer.
+	 * @param players		Array containing player indexes.
+	 * @param playersNum	Number of players in the array.
+	 * @param reliable		True if message is reliable, false otherwise.
+	 * @param init			True if message is an initmsg, false otherwise.
+	 * @return				Ignored for normal hooks.  For intercept hooks, Plugin_Handled 
+	 *						blocks the message from being sent, and Plugin_Continue 
+	 *						resumes normal functionality.
+	 */
+	function Action (UserMsg msg_id, BfRead msg, const int[] players, int playersNum, bool reliable, bool init);
+	/**
+	 * Called when a protobuf based usermessage is hooked
+	 *
+	 * @param msg_id		Message index.
+	 * @param msg			Handle to the input protobuf.
+	 * @param players		Array containing player indexes.
+	 * @param playersNum	Number of players in the array.
+	 * @param reliable		True if message is reliable, false otherwise.
+	 * @param init			True if message is an initmsg, false otherwise.
+	 * @return				Ignored for normal hooks.  For intercept hooks, Plugin_Handled 
+	 *						blocks the message from being sent, and Plugin_Continue 
+	 *						resumes normal functionality.
+	 */
+	function Action (UserMsg msg_id, Protobuf msg, const int[] players, int playersNum, bool reliable, bool init);
+};
 
 /**
  * Called when a message hook has completed.
