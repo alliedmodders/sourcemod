@@ -163,7 +163,7 @@ native EndMessage();
  *						blocks the message from being sent, and Plugin_Continue 
  *						resumes normal functionality.
  */
-typedef MsgHook = function Action (UserMsg msg_id, BfRead msg, const int[] players, int playersNum, bool reliable, bool init);
+typedef MsgHook = function Action (UserMsg msg_id, Handle msg, const int[] players, int playersNum, bool reliable, bool init);
 
 /**
  * Called when a message hook has completed.
