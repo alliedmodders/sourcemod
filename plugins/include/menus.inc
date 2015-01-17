@@ -371,7 +371,7 @@ methodmap Menu < Handle
 		int[] players = new int[MaxClients];
 		for (int i = 1; i <= MaxClients; i++) {
 			if (!IsClientInGame(i) || IsFakeClient(i))
-				continue
+				continue;
 			players[total++] = i;
 		}
 		return this.DisplayVote(players, total, time, flags);
