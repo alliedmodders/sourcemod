@@ -39,6 +39,7 @@
 #include "AdminCache.h"
 #include "Translator.h"
 #include "common_logic.h"
+#include "stringutil.h"
 
 #define LEVEL_STATE_NONE		0
 #define LEVEL_STATE_LEVELS		1
@@ -1063,22 +1064,29 @@ bool AdminCache::GetMethodIndex(const char *name, unsigned int *_index)
 bool AdminCache::GetUnifiedSteamIdentity(const char *ident, char *out, size_t maxlen)
 {
 	int len = strlen(ident);
-	/* If the id was a steam id strip off the STEAM_*: part */
-	if (len >= 11 && !strncmp(ident, "STEAM_", 6) && ident[8] != '_')
+	if (!strcmp(ident, "BOT"))
 	{
-		// non-bot/lan Steam2 Id
+		// Bots
+		strncopy(out, ident, maxlen);
+		return true;
+	}
+	else if (len >= 11 && !strncmp(ident, "STEAM_", 6) && ident[8] != '_')
+	{
+		// non-bot/lan Steam2 Id, strip off the STEAM_* part
 		snprintf(out, maxlen, "%s", &ident[8]);
 		return true;
 	}
 	else if (len >= 7 && !strncmp(ident, "[U:", 3) && ident[len-1] == ']')
 	{
-		// Steam3 Id
+		// Steam3 Id, replicate the Steam2 Post-"STEAM_" part
 		uint32_t accountId = strtoul(&ident[5], nullptr, 10);
 		snprintf(out, maxlen, "%u:%u", accountId & 1, accountId >> 1);
 		return true;
 	}
 	else
 	{
+		// 64-bit CSteamID, replicate the Steam2 Post-"STEAM_" part
+
 		// some constants from steamclientpublic.h
 		static const uint32_t k_EAccountTypeIndividual = 1;
 		static const int k_EUniverseInvalid = 0;
