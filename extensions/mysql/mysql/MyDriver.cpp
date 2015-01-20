@@ -40,12 +40,11 @@ MyDriver::MyDriver()
 	m_MyHandle = BAD_HANDLE;
 }
 
-void CloseDBList(List<MyDatabase *> &l)
+void CloseDBList(ke::Vector<MyDatabase *> &l)
 {
-	List<MyDatabase *>::iterator iter;
-	for (iter=l.begin(); iter!=l.end(); iter++)
+	for (size_t iter = 0; iter < l.length(); ++iter)
 	{
-		MyDatabase *db = (*iter);
+		MyDatabase *db = l[iter];
 		while (!db->Close())
 		{
 			/* Spool until it closes  */
@@ -56,7 +55,6 @@ void CloseDBList(List<MyDatabase *> &l)
 
 void MyDriver::Shutdown()
 {
-	List<MyDatabase *>::iterator iter;
 	CloseDBList(m_PermDbs);
 
 	if (m_MyHandle != BAD_HANDLE)
@@ -159,12 +157,9 @@ IDatabase *MyDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 	if (persistent)
 	{
 		/* Try to find a matching persistent connection */
-		List<MyDatabase *>::iterator iter;
-		for (iter=m_PermDbs.begin();
-			 iter!=m_PermDbs.end();
-			 iter++)
+		for (size_t iter = 0; iter < m_PermDbs.length(); ++iter)
 		{
-			MyDatabase *db = (*iter);
+			MyDatabase *db = m_PermDbs[iter];
 			const DatabaseInfo &other = db->GetInfo();
 			if (CompareField(info->host, other.host)
 				&& CompareField(info->user, other.user)
@@ -188,7 +183,7 @@ IDatabase *MyDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 
 	if (persistent)
 	{
-		m_PermDbs.push_back(db);
+		m_PermDbs.append(db);
 	}
 	
 	return db;

@@ -46,7 +46,7 @@
 #endif
 
 #include <sh_string.h>
-#include <sh_list.h>
+#include <am-vector.h>
 #include <am-thread-utils.h>
 
 using namespace SourceMod;
@@ -75,8 +75,8 @@ public:
 private:
 	ke::Mutex m_Lock;
 	Handle_t m_MyHandle;
-	List<MyDatabase *> m_TempDbs;
-	List<MyDatabase *> m_PermDbs;
+	ke::Vector<MyDatabase *> m_TempDbs;
+	ke::Vector<MyDatabase *> m_PermDbs;
 };
 
 extern MyDriver g_MyDriver;

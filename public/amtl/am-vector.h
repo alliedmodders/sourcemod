@@ -116,6 +116,16 @@ class Vector : public AllocPolicy
     pop();
   }
 
+  void remove(const T &item, bool once = true) {
+    for (size_t i = 0; i < length(); ++i) {
+      if (at(i) == item) {
+       remove(i--);
+       if (once)
+        break;
+      }
+    }
+  }
+
   T popCopy() {
     T t = at(length() - 1);
     pop();
