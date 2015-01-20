@@ -307,6 +307,8 @@ typedef AmbientSHook = function Action (
  * @param level			Sound level.
  * @param pitch			Sound pitch.
  * @param flags			Sound flags.
+ * @param soundEntry		Game sound entry name. (Used in engines newer than Portal 2)
+ * @param seed			Sound seed. (Used in engines newer than Portal 2)
  * @return			Plugin_Continue to allow the sound to be played, Plugin_Stop to block it, 
  *				  Plugin_Changed when any parameter has been modified.
  */
@@ -319,7 +321,9 @@ typedef NormalSHook = function Action (
   float &volume,
   int &level,
   int &pitch,
-  int &flags
+  int &flags,
+  char soundEntry[PLATFORM_MAX_PATH],
+  int &seed
 );
 
 /**
