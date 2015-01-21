@@ -59,7 +59,7 @@ for sdk_name in SM.sdks:
     ]
   elif sdk.name == 'dota':
     compiler.cxxincludes += [
-      os.path.join(sdk.path, 'common', 'protobuf-2.5.0', 'src'),
+      os.path.join(sdk.path, 'common', 'protobuf-2.6.1', 'src'),
       os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
       os.path.join(sdk.path, 'public', 'game', 'shared', 'protobuf'),
       os.path.join(sdk.path, 'public', 'game', 'shared', 'dota', 'protobuf')
