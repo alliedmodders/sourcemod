@@ -96,10 +96,15 @@ MYSQL *Connect(const DatabaseInfo *info, char *error, size_t maxlength)
 	MYSQL *mysql = mysql_init(NULL);
 	const char *host = NULL, *socket = NULL;
 
+	decltype(info->maxTimeout) timeout = 60;
 	if (info->maxTimeout > 0)
 	{
-		mysql_options(mysql, MYSQL_OPT_CONNECT_TIMEOUT, (const char *)&(info->maxTimeout));
+		timeout = info->maxTimeout;
 	}
+
+	mysql_options(mysql, MYSQL_OPT_CONNECT_TIMEOUT, (const char *)&timeout);
+	mysql_options(mysql, MYSQL_OPT_READ_TIMEOUT, (const char *)&timeout);
+	mysql_options(mysql, MYSQL_OPT_WRITE_TIMEOUT, (const char *)&timeout);
 
 	/* Have MySQL automatically reconnect if it times out or loses connection.
 	 * This will prevent "MySQL server has gone away" errors after a while.
