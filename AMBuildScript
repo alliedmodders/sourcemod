@@ -216,8 +216,6 @@ class SMConfig(object):
         '_CRT_NONSTDC_NO_DEPRECATE',
         '_ITERATOR_DEBUG_LEVEL=0',
       ]
-      if cxx.version < 1800:
-        cxx.defines += 'strtoull=_strtoui64'
       cxx.cflags += [
         '/W3',
       ]
