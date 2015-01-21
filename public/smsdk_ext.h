@@ -100,7 +100,9 @@
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
+#ifndef META_NO_HL2SDK
 #include <eiface.h>
+#endif //META_NO_HL2SDK
 #endif
 
 #if !defined METAMOD_PLAPI_VERSION
@@ -317,8 +319,10 @@ extern IRootConsole *rootconsole;
 
 #if defined SMEXT_CONF_METAMOD
 PLUGIN_GLOBALVARS();
+#ifndef META_NO_HL2SDK
 extern IVEngineServer *engine;
 extern IServerGameDLL *gamedll;
+#endif //META_NO_HL2SDK
 #endif
 
 /** Creates a SourceMod interface macro pair */
