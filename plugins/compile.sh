@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 cd "$(dirname "$0")"
 
 test -e compiled || mkdir compiled
@@ -9,10 +9,6 @@ if [[ $# -ne 0 ]]; then
 		smxfile="`echo $sourcefile | sed -e 's/\.sp$/\.smx/'`"
 		echo -e "\nCompiling $sourcefile..."
 		./spcomp $sourcefile -ocompiled/$smxfile
-		RETVAL=$?
-		if [ $RETVAL -ne 0 ]; then
-			exit 1
-		fi
 	done
 else
 	for sourcefile in *.sp
@@ -20,9 +16,5 @@ else
 		smxfile="`echo $sourcefile | sed -e 's/\.sp$/\.smx/'`"
 		echo -e "\nCompiling $sourcefile ..."
 		./spcomp $sourcefile -ocompiled/$smxfile
-		RETVAL=$?
-		if [ $RETVAL -ne 0 ]; then
-			exit 1
-		fi
 	done
 fi
