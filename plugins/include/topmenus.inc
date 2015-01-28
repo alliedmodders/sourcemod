@@ -128,7 +128,7 @@ enum TopMenuObject:
  * @noreturn
  */
 typedef TopMenuHandler = function void (
-  Handle topmenu, 
+  TopMenu topmenu, 
   TopMenuAction action,
   TopMenuObject topobj_id,
   int param,
