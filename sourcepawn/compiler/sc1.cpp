@@ -5534,7 +5534,7 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
   // Check that return tags match.
   if ((sym->usage & uPROTOTYPED) && !compare_tag(sym->tag, decl->type.tag)) {
     int old_fline = fline;
-    fline = sym->lnumber;
+    fline = funcline;
     error(25);
     fline = old_fline;
   }
