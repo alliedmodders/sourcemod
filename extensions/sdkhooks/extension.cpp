@@ -894,9 +894,6 @@ bool SDKHooks::Hook_LevelInit(char const *pMapName, char const *pMapEntities, ch
 	g_pOnLevelInit->PushStringEx(g_szMapEntities, sizeof(g_szMapEntities), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	g_pOnLevelInit->Execute(&result);
 
-	if(result >= Pl_Handled)
-		RETURN_META_VALUE(MRES_SUPERCEDE, false);
-
 	if(result == Pl_Changed)
 		RETURN_META_VALUE_NEWPARAMS(MRES_HANDLED, true, &IServerGameDLL::LevelInit, (pMapName, g_szMapEntities, pOldLevel, pLandmarkName, loadGame, background));
 
