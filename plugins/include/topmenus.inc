@@ -406,7 +406,7 @@ native void SetTopMenuTitleCaching(Handle topmenu, bool cache_titles);
 /**
  * Do not edit below this line!
  */
-public Extension:__ext_topmenus = 
+public Extension __ext_topmenus = 
 {
 	name = "TopMenus",
 	file = "topmenus.ext",
