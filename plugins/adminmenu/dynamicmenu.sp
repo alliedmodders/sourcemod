@@ -6,12 +6,12 @@
 
 enum GroupCommands
 {
-	Handle:groupListName,
-	Handle:groupListCommand	
+	ArrayList:groupListName,
+	ArrayList:groupListCommand	
 };
 
-new g_groupList[GroupCommands];
-new g_groupCount;
+int g_groupList[GroupCommands];
+int g_groupCount;
 
 SMCParser g_configParser;
 
@@ -19,11 +19,11 @@ enum Places
 {
 	Place_Category,
 	Place_Item,
-	Place_ReplaceNum	
+	Place_ReplaceNum
 };
 
-new String:g_command[MAXPLAYERS+1][CMD_LENGTH];
-new g_currentPlace[MAXPLAYERS+1][Places];
+char g_command[MAXPLAYERS+1][CMD_LENGTH];
+int g_currentPlace[MAXPLAYERS+1][Places];
 
 /**
  * What to put in the 'info' menu field (for PlayerList and Player_Team menus only)
@@ -58,7 +58,7 @@ enum Item
 {
 	String:Item_cmd[256],
 	ExecuteType:Item_execute,
-	Handle:Item_submenus
+	ArrayList:Item_submenus
 }
 
 enum Submenu
@@ -67,12 +67,12 @@ enum Submenu
 	String:Submenu_title[32],
 	PlayerMethod:Submenu_method,
 	Submenu_listcount,
-	Handle:Submenu_listdata
+	DataPack:Submenu_listdata
 }
 
-new Handle:g_DataArray;
+ArrayList g_DataArray;
 
-BuildDynamicMenu()
+void BuildDynamicMenu()
 {
 	int itemInput[Item];
 	g_DataArray = CreateArray(sizeof(itemInput));
@@ -98,15 +98,15 @@ BuildDynamicMenu()
 	
 	FileToKeyValues(kvMenu, file);
 	
-	new String:name[NAME_LENGTH];
-	new String:buffer[NAME_LENGTH];
+	char name[NAME_LENGTH];
+	char buffer[NAME_LENGTH];
 		
 	if (!kvMenu.GotoFirstSubKey())
 		return;
 	
-	decl String:admin[30];
+	char admin[30];
 	
-	new TopMenuObject:categoryId;
+	TopMenuObject categoryId;
 	
 	do
 	{		
@@ -124,7 +124,7 @@ BuildDynamicMenu()
 
 		}
 
-		decl String:category_name[NAME_LENGTH];
+		char category_name[NAME_LENGTH];
 		strcopy(category_name, sizeof(category_name), buffer);
 		
 		if (!kvMenu.GotoFirstSubKey())
@@ -143,7 +143,7 @@ BuildDynamicMenu()
 				//No 'admin' keyvalue was found
 				//Use the first argument of the 'cmd' string instead
 				
-				decl String:temp[64];
+				char temp[64];
 				kvMenu.GetString("cmd", temp, sizeof(temp),"");
 				
 				BreakString(temp, admin, sizeof(admin));
@@ -162,16 +162,16 @@ BuildDynamicMenu()
 				itemInput[Item_execute] = Execute_Player;
 			}
   							
-  			/* iterate all submenus and load data into itemInput[Item_submenus] (adt array handle) */
+  			/* iterate all submenus and load data into itemInput[Item_submenus] (ArrayList) */
   			
-  			new count = 1;
-  			decl String:countBuffer[10] = "1";
+  			int count = 1;
+  			char countBuffer[10] = "1";
   			
-  			decl String:inputBuffer[48];
+  			char inputBuffer[48];
   			
   			while (kvMenu.JumpToKey(countBuffer))
   			{
-	  			new submenuInput[Submenu];
+	  			int submenuInput[Submenu];
 	  			
 	  			if (count == 1)
 	  			{
@@ -198,8 +198,8 @@ BuildDynamicMenu()
 					kvMenu.GetString("path", inputBuffer, sizeof(inputBuffer),"mapcycle.txt");
 					
 					submenuInput[Submenu_listdata] = CreateDataPack();
-					WritePackString(submenuInput[Submenu_listdata], inputBuffer);
-					ResetPack(submenuInput[Submenu_listdata]);
+					submenuInput[Submenu_listdata].WriteString(inputBuffer);
+					submenuInput[Submenu_listdata].Reset();
 				}
 				else if (StrContains(inputBuffer, "player") != -1)
 				{			
@@ -215,14 +215,14 @@ BuildDynamicMenu()
 					
 					submenuInput[Submenu_listdata] = CreateDataPack();
 					
-					new String:temp[6];
-					new String:value[64];
-					new String:text[64];
-					new String:subadm[30];	//  same as "admin", cf. line 110
-					new i=1;
-					new bool:more = true;
+					char temp[6];
+					char value[64];
+					char text[64];
+					char subadm[30];	//  same as "admin", cf. line 110
+					int i=1;
+					bool more = true;
 					
-					new listcount = 0;
+					int listcount = 0;
 								
 					do
 					{
@@ -242,16 +242,16 @@ BuildDynamicMenu()
 						else
 						{
 							listcount++;
-							WritePackString(submenuInput[Submenu_listdata], value);
-							WritePackString(submenuInput[Submenu_listdata], text);
-							WritePackString(submenuInput[Submenu_listdata], subadm);
+							submenuInput[Submenu_listdata].WriteString(value);
+							submenuInput[Submenu_listdata].WriteString(text);
+							submenuInput[Submenu_listdata].WriteString(subadm);
 						}
 						
 						i++;
 										
 					} while (more);
 					
-					ResetPack(submenuInput[Submenu_listdata]);
+					submenuInput[Submenu_listdata].Reset();
 					submenuInput[Submenu_listcount] = listcount;
 				}
 				
@@ -291,16 +291,16 @@ BuildDynamicMenu()
 	  			count++;
 	  			Format(countBuffer, sizeof(countBuffer), "%i", count);
 	  			
-	  			PushArrayArray(itemInput[Item_submenus], submenuInput[0]);
+	  			itemInput[Item_submenus].PushArray(submenuInput[0]);
 	  		
 	  			kvMenu.GoBack();	
   			}
   			
   			/* Save this entire item into the global items array and add it to the menu */
   			
-  			new location = PushArrayArray(g_DataArray, itemInput[0]);
+  			int location = g_DataArray.PushArray(itemInput[0]);
 			
-			decl String:locString[10];
+			char locString[10];
 			IntToString(location, locString, sizeof(locString));
 
 			if (hAdminMenu.AddItem(buffer,
@@ -322,7 +322,7 @@ BuildDynamicMenu()
 	delete kvMenu;
 }
 
-ParseConfigs()
+void ParseConfigs()
 {
 	if (!g_configParser)
 		g_configParser = new SMCParser();
@@ -331,20 +331,13 @@ ParseConfigs()
         g_configParser.OnKeyValue = KeyValue;
         g_configParser.OnLeaveSection = EndSection;
 	
-	if (g_groupList[groupListName] != INVALID_HANDLE)
-	{
-		CloseHandle(g_groupList[groupListName]);
-	}
-	
-	if (g_groupList[groupListCommand] != null)
-	{
-		CloseHandle(g_groupList[groupListCommand]);
-	}
+	delete g_groupList[groupListName];
+	delete g_groupList[groupListCommand];
 	
 	g_groupList[groupListName] = CreateArray(ARRAY_STRING_LENGTH);
 	g_groupList[groupListCommand] = CreateArray(ARRAY_STRING_LENGTH);
 	
-	decl String:configPath[256];
+	char configPath[256];
 	BuildPath(Path_SM, configPath, sizeof(configPath), "configs/dynamicmenu/adminmenu_grouping.txt");
 	if (FileExists(configPath))
 	{
@@ -367,7 +360,7 @@ ParseConfigs()
 	SMCError err = g_configParser.ParseFile(configPath, line);
 	if (err != SMCError_Okay)
 	{
-		decl String:error[256];
+		char error[256];
 		SMC_GetErrorString(err, error, sizeof(error));
 		LogError("Could not parse file (line %d, file \"%s\"):", line, configPath);
 		LogError("Parser encountered error: %s", error);
@@ -383,48 +376,48 @@ public SMCResult NewSection(SMCParser smc, const char[] name, bool opt_quotes)
 
 public SMCResult KeyValue(SMCParser smc, const char[] key, const char[] value, bool key_quotes, bool value_quotes)
 {
-	PushArrayString(g_groupList[groupListName], key);
-	PushArrayString(g_groupList[groupListCommand], value);
+	g_groupList[groupListName].PushString(key);
+	g_groupList[groupListCommand].PushString(value);
 }
 
 public SMCResult EndSection(SMCParser smc)
 {
-	g_groupCount = GetArraySize(g_groupList[groupListName]);
+	g_groupCount = g_groupList[groupListName].Length;
 }
 
-public DynamicMenuCategoryHandler(Handle:topmenu, 
-						TopMenuAction:action,
-						TopMenuObject:object_id,
-						param,
-						String:buffer[],
-						maxlength)
+public void DynamicMenuCategoryHandler(TopMenu topmenu, 
+						TopMenuAction action,
+						TopMenuObject object_id,
+						int param,
+						char[] buffer,
+						int maxlength)
 {
 	if ((action == TopMenuAction_DisplayTitle) || (action == TopMenuAction_DisplayOption))
 	{
-		GetTopMenuObjName(topmenu, object_id, buffer, maxlength);
+		topmenu.GetObjName(object_id, buffer, maxlength);
 	}
 }
 
-public DynamicMenuItemHandler(Handle:topmenu, 
-					  TopMenuAction:action,
-					  TopMenuObject:object_id,
-					  param,
-					  String:buffer[],
-					  maxlength)
+public void DynamicMenuItemHandler(TopMenu topmenu, 
+					  TopMenuAction action,
+					  TopMenuObject object_id,
+					  int param,
+					  char[] buffer,
+					  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		GetTopMenuObjName(topmenu, object_id, buffer, maxlength);
+		topmenu.GetObjName(object_id, buffer, maxlength);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{	
-		new String:locString[10];
-		GetTopMenuInfoString(topmenu, object_id, locString, sizeof(locString));
+		char locString[10];
+		topmenu.GetInfoString(object_id, locString, sizeof(locString));
 		
-		new location = StringToInt(locString);
+		int location = StringToInt(locString);
 		
-		new output[Item];
-		GetArrayArray(g_DataArray, location, output[0]);
+		int output[Item];
+		g_DataArray.GetArray(location, output[0]);
 		
 		strcopy(g_command[param], sizeof(g_command[]), output[Item_cmd]);
 					
@@ -435,15 +428,15 @@ public DynamicMenuItemHandler(Handle:topmenu,
 	}
 }
 
-public ParamCheck(client)
+public void ParamCheck(int client)
 {
-	new String:buffer[6];
-	new String:buffer2[6];
+	char buffer[6];
+	char buffer2[6];
 	
-	new outputItem[Item];
-	new outputSubmenu[Submenu];
+	int outputItem[Item];
+	int outputSubmenu[Submenu];
 	
-	GetArrayArray(g_DataArray, g_currentPlace[client][Place_Item], outputItem[0]);
+	g_DataArray.GetArray(g_currentPlace[client][Place_Item], outputItem[0]);
 		
 	if (g_currentPlace[client][Place_ReplaceNum] < 1)
 	{
@@ -455,29 +448,29 @@ public ParamCheck(client)
 	
 	if (StrContains(g_command[client], buffer) != -1 || StrContains(g_command[client], buffer2) != -1)
 	{
-		GetArrayArray(outputItem[Item_submenus], g_currentPlace[client][Place_ReplaceNum] - 1, outputSubmenu[0]);
+		outputItem[Item_submenus].GetArray(g_currentPlace[client][Place_ReplaceNum] - 1, outputSubmenu[0]);
 		
 		Menu itemMenu = CreateMenu(Menu_Selection);
 		itemMenu.ExitBackButton = true;
 			
 		if ((outputSubmenu[Submenu_type] == SubMenu_Group) || (outputSubmenu[Submenu_type] == SubMenu_GroupPlayer))
 		{	
-			decl String:nameBuffer[ARRAY_STRING_LENGTH];
-			decl String:commandBuffer[ARRAY_STRING_LENGTH];
+			char nameBuffer[ARRAY_STRING_LENGTH];
+			char commandBuffer[ARRAY_STRING_LENGTH];
 		
-			for (new i = 0; i<g_groupCount; i++)
+			for (int i = 0; i<g_groupCount; i++)
 			{			
-				GetArrayString(g_groupList[groupListName], i, nameBuffer, sizeof(nameBuffer));
-				GetArrayString(g_groupList[groupListCommand], i, commandBuffer, sizeof(commandBuffer));
+				g_groupList[groupListName].GetString(i, nameBuffer, sizeof(nameBuffer));
+				g_groupList[groupListCommand].GetString(i, commandBuffer, sizeof(commandBuffer));
 				itemMenu.AddItem(commandBuffer, nameBuffer);
 			}
 		}
 		
 		if (outputSubmenu[Submenu_type] == SubMenu_MapCycle)
 		{	
-			decl String:path[200];
-			ReadPackString(outputSubmenu[Submenu_listdata], path, sizeof(path));
-			ResetPack(outputSubmenu[Submenu_listdata]);
+			char path[200];
+			outputSubmenu[Submenu_listdata].ReadString(path, sizeof(path));
+			outputSubmenu[Submenu_listdata].Reset();
 		
 			File file = OpenFile(path, "rt");
 			char readData[128];
@@ -497,30 +490,30 @@ public ParamCheck(client)
 		}
 		else if ((outputSubmenu[Submenu_type] == SubMenu_Player) || (outputSubmenu[Submenu_type] == SubMenu_GroupPlayer))
 		{
-			new PlayerMethod:playermethod = outputSubmenu[Submenu_method];
+			PlayerMethod playermethod = outputSubmenu[Submenu_method];
 		
-			new String:nameBuffer[32];
-			new String:infoBuffer[32];
-			new String:temp[4];
+			char nameBuffer[MAX_NAME_LENGTH];
+			char infoBuffer[32];
+			char temp[4];
 			
 			//loop through players. Add name as text and name/userid/steamid as info
-			for (new i=1; i<=MaxClients; i++)
+			for (int i=1; i<=MaxClients; i++)
 			{
 				if (IsClientInGame(i))
 				{			
-					GetClientName(i, nameBuffer, 31);
+					GetClientName(i, nameBuffer, sizeof(nameBuffer));
 					
 					switch (playermethod)
 					{
 						case UserId:
 						{
-							new userid = GetClientUserId(i);
+							int userid = GetClientUserId(i);
 							Format(infoBuffer, sizeof(infoBuffer), "#%i", userid);
 							itemMenu.AddItem(infoBuffer, nameBuffer);	
 						}
 						case UserId2:
 						{
-							new userid = GetClientUserId(i);
+							int userid = GetClientUserId(i);
 							Format(infoBuffer, sizeof(infoBuffer), "%i", userid);
 							itemMenu.AddItem(infoBuffer, nameBuffer);							
 						}
@@ -554,16 +547,16 @@ public ParamCheck(client)
 		}		
 		else
 		{
-			new String:value[64];
-			new String:text[64];
+			char value[64];
+			char text[64];
 					
-			new String:admin[NAME_LENGTH];
+			char admin[NAME_LENGTH];
 			
-			for (new i=0; i<outputSubmenu[Submenu_listcount]; i++)
+			for (int i=0; i<outputSubmenu[Submenu_listcount]; i++)
 			{
-				ReadPackString(outputSubmenu[Submenu_listdata], value, sizeof(value));
-				ReadPackString(outputSubmenu[Submenu_listdata], text, sizeof(text));
-				ReadPackString(outputSubmenu[Submenu_listdata], admin, sizeof(admin));
+				outputSubmenu[Submenu_listdata].ReadString(value, sizeof(value));
+				outputSubmenu[Submenu_listdata].ReadString(text, sizeof(text));
+				outputSubmenu[Submenu_listdata].ReadString(admin, sizeof(admin));
 				
 				if (CheckCommandAccess(client, admin, 0))
 				{
@@ -571,7 +564,7 @@ public ParamCheck(client)
 				}
 			}
 			
-			ResetPack(outputSubmenu[Submenu_listdata]);	
+			outputSubmenu[Submenu_listdata].Reset();
 		}
 		
 		itemMenu.SetTitle(outputSubmenu[Submenu_title]);
@@ -584,7 +577,7 @@ public ParamCheck(client)
 		
 		hAdminMenu.Display(client, TopMenuPosition_LastCategory);
 		
-		decl String:unquotedCommand[CMD_LENGTH];
+		char unquotedCommand[CMD_LENGTH];
 		UnQuoteString(g_command[client], unquotedCommand, sizeof(unquotedCommand), "#@");
 		
 		if (outputItem[Item_execute] == Execute_Player) // assume 'player' type execute option
@@ -602,7 +595,7 @@ public ParamCheck(client)
 	}
 }
 
-public Menu_Selection(Menu menu, MenuAction action, int param1, int param2)
+public int Menu_Selection(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -611,22 +604,22 @@ public Menu_Selection(Menu menu, MenuAction action, int param1, int param2)
 	
 	if (action == MenuAction_Select)
 	{
-		new String:unquotedinfo[NAME_LENGTH];
+		char unquotedinfo[NAME_LENGTH];
  
 		/* Get item info */
-		new bool:found = menu.GetItem(param2, unquotedinfo, sizeof(unquotedinfo));
+		bool found = menu.GetItem(param2, unquotedinfo, sizeof(unquotedinfo));
 		
 		if (!found)
 		{
-			return;
+			return 0;
 		}
 		
-		new String:info[NAME_LENGTH*2+1];
+		char info[NAME_LENGTH*2+1];
 		QuoteString(unquotedinfo, info, sizeof(info), "#@");
 		
 		
-		new String:buffer[6];
-		new String:infobuffer[NAME_LENGTH+2];
+		char buffer[6];
+		char infobuffer[NAME_LENGTH+2];
 		Format(infobuffer, sizeof(infobuffer), "\"%s\"", info);
 		
 		Format(buffer, 5, "#%i", g_currentPlace[param1][Place_ReplaceNum]);
@@ -648,15 +641,17 @@ public Menu_Selection(Menu menu, MenuAction action, int param1, int param2)
 		//client exited we should go back to submenu i think
 		hAdminMenu.Display(param1, TopMenuPosition_LastCategory);
 	}
+
+	return 0;
 }
 
 
-stock bool:QuoteString(String:input[], String:output[], maxlen, String:quotechars[])
+stock bool QuoteString(char[] input, char[] output, int maxlen, char[] quotechars)
 {
-	new count = 0;
-	new len = strlen(input);
+	int count = 0;
+	int len = strlen(input);
 	
-	for (new i=0; i<len; i++)
+	for (int i=0; i<len; i++)
 	{
 		output[count] = input[i];
 		count++;
@@ -688,14 +683,14 @@ stock bool:QuoteString(String:input[], String:output[], maxlen, String:quotechar
 	return true;
 }
 
-stock bool:UnQuoteString(String:input[], String:output[], maxlen, String:quotechars[])
+stock bool UnQuoteString(char[] input, char[] output, int maxlen, char[] quotechars)
 {
-	new count = 1;
-	new len = strlen(input);
+	int count = 1;
+	int len = strlen(input);
 	
 	output[0] = input[0];
 	
-	for (new i=1; i<len; i++)
+	for (int i=1; i<len; i++)
 	{
 		output[count] = input[i];
 		count++;
