@@ -304,7 +304,7 @@ static cell_t ArrayStack_Pop(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("stack is empty");
 
 	cell_t *blk = array->at(array->size() - 1);
-	cell_t idx = (size_t)params[2];
+	size_t idx = (size_t)params[2];
 
 	cell_t rval;
 	if (params[3] == 0) {
