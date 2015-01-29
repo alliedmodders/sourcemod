@@ -2227,7 +2227,11 @@ restart:
          * from the field and save the size of the field too.
          */
         assert(lval2.sym==NULL || lval2.sym->dim.array.level==0);
-        if (lval2.sym!=NULL && lval2.sym->dim.array.length>0 && sym->dim.array.level==0) {
+        if (lval2.sym &&
+            lval2.sym->parent &&
+            lval2.sym->dim.array.length > 0 &&
+            sym->dim.array.level==0)
+        {
           lval1->tag=lval2.sym->x.tags.index;
           lval1->constval=lval2.sym->dim.array.length;
         } /* if */
@@ -2280,8 +2284,11 @@ restart:
        * from the field and save the size of the field too. Otherwise, the
        * tag is the one from the array symbol.
        */
-      if (lval2.ident==iCONSTEXPR && lval2.sym!=NULL
-          && lval2.sym->dim.array.length>0 && sym->dim.array.level==0)
+      if (lval2.ident==iCONSTEXPR &&
+          lval2.sym &&
+          lval2.sym->parent &&
+          lval2.sym->dim.array.length > 0 &&
+          sym->dim.array.level == 0)
       {
         lval1->tag=lval2.sym->x.tags.index;
         lval1->constval=lval2.sym->dim.array.length;
@@ -2310,15 +2317,17 @@ restart:
         lval1->constval=0;
       } /* if */
 
+      /* a cell in an array is an lvalue, a character in an array is not
+       * always a *valid* lvalue */
+      lvalue = TRUE;
+
       // If there's a call/fetch coming up, keep parsing.
       if (matchtoken('.')) {
         lexpush();
         goto restart;
       }
 
-      /* a cell in an array is an lvalue, a character in an array is not
-       * always a *valid* lvalue */
-      return TRUE;
+      return lvalue;
     } else {            /* tok=='(' -> function(...) */
       svalue thisval;
       thisval.val = *lval1;
