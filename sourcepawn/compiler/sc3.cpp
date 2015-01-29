@@ -2334,6 +2334,7 @@ restart:
             implicitthis = &thisval;
             break;
           case FER_Accessor:
+            lvalue = TRUE;
             goto restart;
           default:
             assert(false);
