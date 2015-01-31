@@ -2312,6 +2312,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 		}
 		else if (strcmp(cmd, "refresh") == 0)
 		{
+			RefreshAll();
 			smcore.DoGlobalPluginLoads();
 			rootmenu->ConsolePrint("[SM] The plugin list has been refreshed and reloaded.");
 			return;
