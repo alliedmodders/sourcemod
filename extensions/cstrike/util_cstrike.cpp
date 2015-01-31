@@ -229,6 +229,56 @@ const char *WeaponIDToAlias(int weaponID)
 #endif
 	return alias;
 }
+
+#if SOURCE_ENGINE == SE_CSGO && defined(WIN32)
+void *GetWeaponPriceFunction()
+{
+	static void *pGetWeaponPriceAddress = NULL;
+
+	if(pGetWeaponPriceAddress == NULL)
+	{
+		void *pAddress = NULL;
+		int offset = 0;
+		int callOffset = 0;
+		const char* byteCheck = NULL;
+
+		if(!g_pGameConf->GetMemSig("GetWeaponPrice", &pAddress) || pAddress == NULL)
+		{
+			g_pSM->LogError(myself, "Failed to get GetWeaponPrice address.");
+			return NULL;
+		}
+
+		if(!g_pGameConf->GetOffset("GetWeaponPriceFunc", &offset))
+		{
+			g_pSM->LogError(myself, "Failed to get GetWeaponPriceFunc offset.");
+			return NULL;
+		}
+
+		byteCheck = g_pGameConf->GetKeyValue("GetWeaponPriceByteCheck");
+
+		if(byteCheck == NULL)
+		{
+			g_pSM->LogError(myself, "Failed to get GetWeaponPriceByteCheck keyvalue.");
+			return NULL;
+		}
+
+		uint8_t iByte = strtoul(byteCheck, NULL, 16);
+
+		if(iByte != *(uint8_t *)((intptr_t)pAddress + (offset-1)))
+		{
+			g_pSM->LogError(myself, "GetWeaponPrice Byte check failed.");
+			return NULL;
+		}
+
+		callOffset = *(uint32_t *)((intptr_t)pAddress + offset);
+
+		pGetWeaponPriceAddress = (void *)((intptr_t)pAddress + offset + callOffset + sizeof(int));
+	}
+
+	return pGetWeaponPriceAddress;
+}
+#endif
+
 int GetRealWeaponID(int weaponId)
 {
 #if SOURCE_ENGINE == SE_CSGO
