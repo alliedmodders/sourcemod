@@ -61,9 +61,21 @@ DETOUR_DECL_MEMBER1(DetourHandleBuy, int, const char *, weapon)
 
 #if SOURCE_ENGINE != SE_CSGO
 DETOUR_DECL_MEMBER0(DetourWeaponPrice, int)
+#elif defined(WIN32)
+DETOUR_DECL_MEMBER2(DetourWeaponPrice, int, CEconItemView *, pEconItem, int, iUnknown)
+#else
+DETOUR_DECL_MEMBER3(DetourWeaponPrice, int, CEconItemView *, pEconItem, int, iUnknown, float, fUnknown)
+#endif
 {
-	int price = DETOUR_MEMBER_CALL(DetourWeaponPrice)();
 
+#if SOURCE_ENGINE != SE_CSGO
+	int price = DETOUR_MEMBER_CALL(DetourWeaponPrice)();
+#elif defined(WIN32)
+	int price = DETOUR_MEMBER_CALL(DetourWeaponPrice)(pEconItem, iUnknown);
+#else
+	int price = DETOUR_MEMBER_CALL(DetourWeaponPrice)(pEconItem, iUnknown, fUnknown);
+#endif
+	
 	if (lastclient == -1)
 		return price;
 
@@ -71,19 +83,6 @@ DETOUR_DECL_MEMBER0(DetourWeaponPrice, int)
 
 	return CallPriceForward(lastclient, weapon_name, price);
 }
-#else
-DETOUR_DECL_MEMBER2(DetourWeaponPrice, int, const char *, szAttribute, CEconItemView *, pEconItem)
-{
-	int price = DETOUR_MEMBER_CALL(DetourWeaponPrice)(szAttribute, pEconItem);
-
-	if(lastclient == -1 || strcmp(szAttribute, "in game price") != 0)
-		return price;
-
-	const char *weapon_name = reinterpret_cast<char *>(this+weaponNameOffset);
-
-	return CallPriceForward(lastclient, weapon_name, price);
-}
-#endif
 
 #if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 DETOUR_DECL_MEMBER2(DetourTerminateRound, void, float, delay, int, reason)
@@ -201,8 +200,15 @@ bool CreateWeaponPriceDetour()
 		}
 	}
 
-#if SOURCE_ENGINE == SE_CSGO
-	DWeaponPrice = DETOUR_CREATE_MEMBER(DetourWeaponPrice, "GetAttributeInt");
+#if SOURCE_ENGINE == SE_CSGO && defined(WIN32)
+	void *pGetWeaponPriceAddress = GetWeaponPriceFunction();
+
+	if(!pGetWeaponPriceAddress)
+	{
+		g_pSM->LogError(myself, "GetWeaponPrice detour could not be initialized - Disabled OnGetWeaponPrice forward.");
+	}
+
+	DWeaponPrice = DETOUR_CREATE_MEMBER(DetourWeaponPrice, pGetWeaponPriceAddress);
 #else
 	DWeaponPrice = DETOUR_CREATE_MEMBER(DetourWeaponPrice, "GetWeaponPrice");
 #endif

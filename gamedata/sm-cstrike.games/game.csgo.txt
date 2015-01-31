@@ -13,6 +13,10 @@
 {
 	"csgo"
 	{
+		"Keys"
+		{
+			"GetWeaponPriceByteCheck"	"E9"
+		}
 		"Offsets"
 		{
 			//Offset of szClassName in CCSWeaponInfo 
@@ -61,6 +65,15 @@
 				"windows"	"8"
 				"linux"		"9"
 				"mac"		"9"
+			}
+			"GetWeaponPriceFunc"
+			{
+				"windows"	"84"
+			}
+			//This is GetWeaponPriceFunc offset -1 (only used by GDC)
+			"GetWeaponPriceFuncGDC"
+			{
+				"windows"	"83"
 			}
 		}
 		"Signatures"
@@ -143,13 +156,13 @@
 				"linux"		"@_ZN9CCSPlayer10SetClanTagEPKc"
 				"mac"		"@_ZN9CCSPlayer10SetClanTagEPKc"
 			}
-			//Wild card first 6 bytes since we call it and detour it.
-			"GetAttributeInt"
+			//In windows this is CCSPlayer::GetWeaponPrice NOT CCSWeaponInfo::GetWeaponPrice
+			"GetWeaponPrice"
 			{
 				"library"	"server"
-				"windows"	"\x2A\x2A\x2A\x2A\x2A\x2A\x83\xEC\x1C\x53\x8B\x5D\x0C\xC7\x44\x24\x04\x00\x00\x00\x00\x56\x8B\xF1\x89\x74\x24\x0C\x57\x8B\x7D\x08\x85\xDB\x74\x2A\x80\x7B\x2A\x2A\x74\x2A\xE8\x2A\x2A\x2A\x2A\x57"
-				"linux"		"@_ZNK16FileWeaponInfo_t15GetAttributeIntEPKcPK13CEconItemView"
-				"mac"		"@_ZNK16FileWeaponInfo_t15GetAttributeIntEPKcPK13CEconItemView"
+				"windows"	"\x55\x8B\xEC\x8B\xD1\x8B\x4D\x08\x83\xF9\x33\x75\x2A\x83\xBA"
+				"linux"		"@_ZNK13CCSWeaponInfo14GetWeaponPriceEPK13CEconItemViewif"
+				"mac"		"@_ZNK13CCSWeaponInfo14GetWeaponPriceEPK13CEconItemViewif"
 			}
 			"SetModelFromClass"
 			{

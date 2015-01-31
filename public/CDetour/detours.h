@@ -167,6 +167,7 @@ public:
 
 protected:
 	CDetour(void *callbackfunction, void **trampoline, const char *signame);
+	CDetour(void*callbackfunction, void **trampoline, void *pAddress);
 
 	bool Init(ISourcePawnEngine *spengine, IGameConfig *gameconf);
 private:
@@ -239,6 +240,7 @@ public:
 	 * Note we changed the netadr_s reference into a void* to avoid needing to define the type
 	 */
 	static CDetour *CreateDetour(void *callbackfunction, void **trampoline, const char *signame);
+	static CDetour *CreateDetour(void *callbackfunction, void **trampoline, void *pAddress);
 
 	friend class CBlocker;
 	friend class CDetour;
