@@ -165,4 +165,6 @@ int GetFakeWeaponID(int weaponId);
 
 bool IsValidWeaponID(int weaponId);
 
+void *GetWeaponPriceFunction();
+
 #endif
