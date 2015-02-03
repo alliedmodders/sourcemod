@@ -5612,12 +5612,7 @@ static int argcompare(arginfo *a1,arginfo *a2)
        * Pawn currently does not forbid them) */
     } else {
       if (result) {
-        if ((a1->hasdefault & uSIZEOF)!=0 || (a1->hasdefault & uTAGOF)!=0 || (a1->hasdefault & uCOUNTOF)!=0)
-          result= a1->hasdefault==a2->hasdefault
-                  && strcmp(a1->defvalue.size.symname,a2->defvalue.size.symname)==0
-                  && a1->defvalue.size.level==a2->defvalue.size.level;
-        else
-          result= a1->defvalue.val==a2->defvalue.val;
+        result= a1->defvalue.val==a2->defvalue.val;
       } /* if */
     } /* if */
     if (result)
@@ -5754,9 +5749,6 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
         /* may need to free default array argument and the tag list */
         if (arg.ident==iREFARRAY && arg.hasdefault)
           free(arg.defvalue.array.data);
-        else if ((arg.ident==iVARIABLE
-                 && ((arg.hasdefault & uSIZEOF)!=0 || (arg.hasdefault & uTAGOF)!=0)) || (arg.hasdefault & uCOUNTOF)!=0)
-          free(arg.defvalue.size.symname);
         free(arg.tags);
       } /* if */
       argcnt++;
@@ -5764,47 +5756,6 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
     /* if the next token is not ",", it should be ")" */
     needtoken(')');
   } /* if */
-  /* resolve any "sizeof" arguments (now that all arguments are known) */
-  assert(sym->dim.arglist!=NULL);
-  arglist=sym->dim.arglist;
-  for (idx=0; idx<argcnt && arglist[idx].ident!=0; idx++) {
-    if ((arglist[idx].hasdefault & uSIZEOF)!=0 
-         || (arglist[idx].hasdefault & uTAGOF)!=0 
-         || (arglist[idx].hasdefault & uCOUNTOF)!=0) {
-      int altidx;
-      /* Find the argument with the name mentioned after the "sizeof". Note
-       * that we cannot use findloc here because we need the arginfo struct,
-       * not the symbol.
-       */
-      ptr=arglist[idx].defvalue.size.symname;
-      assert(ptr!=NULL);
-      for (altidx=0; altidx<argcnt && strcmp(ptr,arglist[altidx].name)!=0; altidx++)
-        /* nothing */;
-      if (altidx>=argcnt) {
-        error(17,ptr);                  /* undefined symbol */
-      } else {
-        assert(arglist[idx].defvalue.size.symname!=NULL);
-        /* check the level against the number of dimensions */
-        if (arglist[idx].defvalue.size.level>0
-            && arglist[idx].defvalue.size.level>=arglist[altidx].numdim)
-          error(28,arglist[idx].name);  /* invalid subscript */
-        /* check the type of the argument whose size to take; for a iVARIABLE
-         * or a iREFERENCE, this is always 1 (so the code is redundant)
-         */
-        assert(arglist[altidx].ident!=iVARARGS);
-        if (arglist[altidx].ident!=iREFARRAY 
-            && (((arglist[idx].hasdefault & uSIZEOF)!=0)
-                  || (arglist[idx].hasdefault & uCOUNTOF)!=0)) {
-          if ((arglist[idx].hasdefault & uTAGOF)!=0) {
-            error(81,arglist[idx].name);  /* cannot take "tagof" an indexed array */
-          } else {
-            assert(arglist[altidx].ident==iVARIABLE || arglist[altidx].ident==iREFERENCE);
-            error(223,ptr);             /* redundant sizeof */
-          } /* if */
-        } /* if */
-      } /* if */
-    } /* if */
-  } /* for */
 
   sym->usage|=uPROTOTYPED;
   errorset(sRESET,0);           /* reset error flag (clear the "panic mode")*/
@@ -5902,42 +5853,9 @@ static void doarg(declinfo_t *decl, int offset, int fpublic, int chkshadow, argi
       unsigned char size_tag_token;
       assert(type->ident==iVARIABLE || type->ident==iREFERENCE);
       arg->hasdefault=TRUE;     /* argument has a default value */
-      size_tag_token=(unsigned char)(matchtoken(tSIZEOF) ? uSIZEOF : 0);
-      if (size_tag_token==0)
-        size_tag_token=(unsigned char)(matchtoken(tTAGOF) ? uTAGOF : 0);
-      if (size_tag_token==0)
-        size_tag_token=(unsigned char)(matchtoken(tCELLSOF) ? uCOUNTOF : 0);
-      if (size_tag_token!=0) {
-        int paranthese;
-        if (type->ident==iREFERENCE)
-          error(66, decl->name); /* argument may not be a reference */
-        paranthese=0;
-        while (matchtoken('('))
-          paranthese++;
-        if (needtoken(tSYMBOL)) {
-          /* save the name of the argument whose size id to take */
-          char *name;
-          cell val;
-          tokeninfo(&val,&name);
-          if ((arg->defvalue.size.symname=duplicatestring(name)) == NULL)
-            error(FATAL_ERROR_OOM);         /* insufficient memory */
-          arg->defvalue.size.level=0;
-          if (size_tag_token==uSIZEOF || size_tag_token==uCOUNTOF) {
-            while (matchtoken('[')) {
-              arg->defvalue.size.level+=(short)1;
-              needtoken(']');
-            } /* while */
-          } /* if */
-          if (type->ident==iVARIABLE) /* make sure we set this only if not a reference */
-            arg->hasdefault |= size_tag_token;  /* uSIZEOF or uTAGOF */
-        } /* if */
-        while (paranthese--)
-          needtoken(')');
-      } else {
-        exprconst(&arg->defvalue.val,&arg->defvalue_tag,NULL);
-        assert(type->numtags > 0);
-        matchtag(type->tags[0], arg->defvalue_tag, TRUE);
-      } /* if */
+      exprconst(&arg->defvalue.val,&arg->defvalue_tag,NULL);
+      assert(type->numtags <= 1);
+      matchtag(type->tags[0], arg->defvalue_tag, TRUE);
     } /* if */
   } /* if */
   arg->ident=(char)type->ident;
