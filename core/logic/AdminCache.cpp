@@ -46,9 +46,9 @@
 #define LEVEL_STATE_FLAGS		2
 
 AdminCache g_Admins;
-char g_ReverseFlags[26];
+char g_ReverseFlags[AdminFlags_TOTAL];
 AdminFlag g_FlagLetters[26];
-bool g_FlagSet[26];
+bool g_FlagCharSet[26];
 
 /* Default flags */
 AdminFlag g_DefaultFlags[26] = 
@@ -72,9 +72,9 @@ public:
 			memcpy(g_FlagLetters, g_DefaultFlags, sizeof(AdminFlag) * 26);
 			for (unsigned int i=0; i<20; i++)
 			{
-				g_FlagSet[i] = true;
+				g_FlagCharSet[i] = true;
 			}
-			g_FlagSet[25] = true;
+			g_FlagCharSet[25] = true;
 		}
 	}
 private:
@@ -104,7 +104,7 @@ private:
 	{
 		m_LevelState = LEVEL_STATE_NONE;
 		m_IgnoreLevel = 0;
-		memset(g_FlagSet, 0, sizeof(g_FlagSet));
+		memset(g_FlagCharSet, 0, sizeof(g_FlagCharSet));
 	}
 	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name)
 	{
@@ -164,7 +164,7 @@ private:
 			return SMCResult_Continue;
 		}
 
-		g_FlagSet[c] = true;
+		g_FlagCharSet[c] = true;
 
 		return SMCResult_Continue;
 	}
@@ -1585,7 +1585,7 @@ bool AdminCache::FindFlag(char c, AdminFlag *pAdmFlag)
 {
 	if (c < 'a' 
 		|| c > 'z'
-		|| !g_FlagSet[(unsigned)c - (unsigned)'a'])
+		|| !g_FlagCharSet[(unsigned)c - (unsigned)'a'])
 	{
 		return false;
 	}
@@ -1600,17 +1600,13 @@ bool AdminCache::FindFlag(char c, AdminFlag *pAdmFlag)
 
 bool AdminCache::FindFlagChar(AdminFlag flag, char *c)
 {
-	if (!g_FlagSet[flag])
-	{
-		return false;
-	}
-
+	char flagchar = g_ReverseFlags[flag];
 	if (c)
 	{
-		*c = g_ReverseFlags[flag];
+		*c = flagchar;
 	}
 
-	return true;
+	return flagchar != '?';
 }
 
 FlagBits AdminCache::ReadFlagString(const char *flags, const char **end)
