@@ -2734,9 +2734,6 @@ static void free_symbol(symbol *sym)
     for (arg=sym->dim.arglist; arg->ident!=0; arg++) {
       if (arg->ident==iREFARRAY && arg->hasdefault)
         free(arg->defvalue.array.data);
-      else if (arg->ident==iVARIABLE
-               && ((arg->hasdefault & uSIZEOF)!=0 || (arg->hasdefault & uTAGOF)!=0))
-        free(arg->defvalue.size.symname);
       assert(arg->tags!=NULL);
       free(arg->tags);
     } /* for */

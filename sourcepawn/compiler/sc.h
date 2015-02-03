@@ -80,10 +80,6 @@ typedef struct s_arginfo {  /* function argument info */
   union {
     cell val;           /* default value */
     struct {
-      char *symname;    /* name of another symbol */
-      short level;      /* indirection level for that symbol */
-    } size;             /* used for "sizeof" default value */
-    struct {
       cell *data;       /* values of default array */
       int size;         /* complete length of default array */
       int arraysize;    /* size to reserve on the heap */
@@ -229,10 +225,6 @@ typedef struct s_symbol {
 #define uRETNONE  0x10
 
 #define flgDEPRECATED 0x01  /* symbol is deprecated (avoid use) */
-
-#define uCOUNTOF  0x20  /* set in the "hasdefault" field of the arginfo struct */
-#define uTAGOF    0x40  /* set in the "hasdefault" field of the arginfo struct */
-#define uSIZEOF   0x80  /* set in the "hasdefault" field of the arginfo struct */
 
 #define uMAINFUNC "main"
 #define uENTRYFUNC "entry"
