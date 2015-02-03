@@ -1,0 +1,1 @@
+(1) : error 163: indeterminate array size in "sizeof" expression (symbol "eggs")

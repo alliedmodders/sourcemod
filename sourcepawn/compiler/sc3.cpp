@@ -3009,13 +3009,6 @@ static int nesting=0;
   for (argidx=0; arg[argidx].ident!=0 && arg[argidx].ident!=iVARARGS; argidx++) {
     if (arglist[argidx]==ARG_DONE)
       continue;                 /* already seen and handled this argument */
-    /* in this first stage, we also skip the arguments with uSIZEOF and uTAGOF;
-     * these are handled last
-     */
-    if ((arg[argidx].hasdefault & uSIZEOF)!=0 || (arg[argidx].hasdefault & uTAGOF)!=0) {
-      assert(arg[argidx].ident==iVARIABLE);
-      continue;
-    } /* if */
     stgmark((char)(sEXPRSTART+argidx));/* mark beginning of new expression in stage */
     if (arg[argidx].hasdefault) {
       if (arg[argidx].ident==iREFARRAY) {
@@ -3059,49 +3052,6 @@ static int nesting=0;
     } else {
       error(92,argidx);        /* argument count mismatch */
     } /* if */
-    if (arglist[argidx]==ARG_UNHANDLED)
-      nargs++;
-    arglist[argidx]=ARG_DONE;
-  } /* for */
-  /* now a second loop to catch the arguments with default values that are
-   * the "sizeof" or "tagof" of other arguments
-   */
-  for (argidx=0; arg[argidx].ident!=0 && arg[argidx].ident!=iVARARGS; argidx++) {
-    constvalue *asz;
-    cell array_sz;
-    if (arglist[argidx]==ARG_DONE)
-      continue;                 /* already seen and handled this argument */
-    stgmark((char)(sEXPRSTART+argidx));/* mark beginning of new expression in stage */
-    assert(arg[argidx].ident==iVARIABLE);           /* if "sizeof", must be single cell */
-    /* if unseen, must be "sizeof" or "tagof" */
-    assert((arg[argidx].hasdefault & uSIZEOF)!=0 || (arg[argidx].hasdefault & uTAGOF)!=0);
-    if ((arg[argidx].hasdefault & uSIZEOF)!=0) {
-      /* find the argument; if it isn't found, the argument's default value
-       * was a "sizeof" of a non-array (a warning for this was already given
-       * when declaring the function)
-       */
-      asz=find_constval(&arrayszlst,arg[argidx].defvalue.size.symname,
-                        arg[argidx].defvalue.size.level);
-      if (asz!=NULL) {
-        array_sz=asz->value;
-        if (array_sz==0)
-          error(163,arg[argidx].name);    /* indeterminate array size in "sizeof" expression */
-      } else {
-        array_sz=1;
-      } /* if */
-    } else {
-      asz=find_constval(&taglst,arg[argidx].defvalue.size.symname,
-                        arg[argidx].defvalue.size.level);
-      if (asz != NULL) {
-        array_sz=asz->value;  /* must be set, because it just was exported */
-      } else {
-        array_sz=0;
-      } /* if */
-    } /* if */
-    ldconst(array_sz,sPRI);
-    pushreg(sPRI);              /* store the function argument on the stack */
-    markexpr(sPARM,NULL,0);
-    nest_stkusage++;
     if (arglist[argidx]==ARG_UNHANDLED)
       nargs++;
     arglist[argidx]=ARG_DONE;
