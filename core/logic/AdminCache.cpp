@@ -46,7 +46,7 @@
 #define LEVEL_STATE_FLAGS		2
 
 AdminCache g_Admins;
-char g_ReverseFlags[26];
+char g_ReverseFlags[AdminFlags_TOTAL];
 AdminFlag g_FlagLetters[26];
 bool g_FlagCharSet[26];
 
