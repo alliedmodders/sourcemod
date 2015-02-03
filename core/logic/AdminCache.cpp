@@ -1600,17 +1600,13 @@ bool AdminCache::FindFlag(char c, AdminFlag *pAdmFlag)
 
 bool AdminCache::FindFlagChar(AdminFlag flag, char *c)
 {
-	if (!g_FlagCharSet[flag])
-	{
-		return false;
-	}
-
+	char flagchar = g_ReverseFlags[flag];
 	if (c)
 	{
-		*c = g_ReverseFlags[flag];
+		*c = flagchar;
 	}
 
-	return true;
+	return flagchar != '?';
 }
 
 FlagBits AdminCache::ReadFlagString(const char *flags, const char **end)
