@@ -1,5 +1,51 @@
 SourceMod Changelog
 
+SourceMod 1.7.0 [2015-02-04]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.7.0_Release_Notes
+
+User Changes:
+ - Updated game compatibility for TF2, CS:GO, and Dota 2.
+ - Fixed regression in SM 1.6.3 causing load failure on games older than Orangebox. (PR 237)
+ - Rewrote internal Steam auth ID handling (PR 147, PR 153, PR 155, PR 162, PR 204, PR 210, PR 222, PR 246).
+ --- admins.cfg now supports Steam2, Steam3, and SteamID 64 formats for the Steam auth provider.
+ --- admins-simple.ini now supports Steam3 auth IDs in addition to Steam2 IDs.
+ --- Command targeting now supports both Steam3 auth IDs in addition to Steam2 IDs.
+ - Added default timeout for MySQL connections to avoid hangs. (PR 248).
+ - SDKTools' gamerules gamedata is now far less likely to break on updates (PR 220).
+ - Fixed crash with sm_dump_admcache on Windows (PR 163).
+ - Fixed SDKHooks causing crash on player join/leave or plugin load/unload if gamedata missing (PR 236).
+ - Changed default sm_trigger_show ConVar value to 0 / disabled.
+
+Developer Changes:
+ - Added new SourcePawn Transitional Syntax!
+ --- New methodmap-based APIs have been added for many existing functions and handle types.
+ --- New work-in-progress API doc page.
+ - Added Blocked hook type to SDKHooks (PR 119) (VoiDeD).
+ - Added OnTakeDamage_Alive hook type to SDKHooks (PR 149).
+ - Many more File natives now support Valve FS (PR 120, PR 169, PR 178).
+ - Added SetFilePermissions native (PR 43) (hlstriker).
+ - Added API for iterating StringMaps (formerly "tries").
+ - Added natives for accessing command line parameters (PR 164) (VoiDeD).
+ - Exposed engine Message_DetermineMulticastRecipients as GetClientsInRange native. (PR 234).
+ - CloseHandle (or delete) on INVALID_HANDLE is now a no-op, instead of an error (PR 74).
+ - GetClientAuthString is now deprecated. Use GetClientAuthId instead.
+ - Added OnCoreMapEnd to extension interface (PR 127).
+ - Fixed IThreader threads leaking if they're not joined. (bug 3460, PR 241).
+ - TFHoliday updates no longer require a plugin recompile (PR 217).
+ - Fixed FindFlagChar returning false when passing AdminFlag_Custom6 (bug 6248, PR 203).
+ - Added support for (entity) CLASSPTR and EDICT Prop_Data fields with GetEntPropEnt and SetEntPropEnt (PR 83).
+ - Doubled maximum handle count per plugin to 32,768 (PR 215), (Thordin).
+ - Added support for custom default values with GetEvent* natives, rather than using ""/0 for unset fields (PR 157) (VoiDeD).
+ - Removed old profiler, and added new, pluggable profiler (with hooks to VProf) (PR 54).
+ - Added command to dump profiler output (PR 128) (VoiDeD).
+ - Fixed ICommandLine and related features being reported as unavailable on Dark Messiah.
+ - Fixed OnPlayerRunCommand forward in SDKTools being unavailable on Dark Messiah.
+ - SourceMod now uses some C++11 and has newer compiler requirements.
+ - Added --disable-auto-versioning option to ambuild configure script.
+
+
+----------------------------------------------------------
 SourceMod 1.6.3 [2014-11-25]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.6.3_Release_Notes
