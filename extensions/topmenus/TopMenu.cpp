@@ -80,12 +80,15 @@ TopMenu::~TopMenu()
 		delete m_Config.cats[i];
 	}
 
-	/* Sweep players */
-	for (size_t i = 0; i <= (size_t)m_max_clients; i++)
+	if (m_clients != NULL)
 	{
-		TearDownClient(&m_clients[i]);
+		/* Sweep players */
+		for (size_t i = 0; i <= (size_t)m_max_clients; i++)
+		{
+			TearDownClient(&m_clients[i]);
+		}
+		free(m_clients);
 	}
-	free(m_clients);
 }
 
 unsigned int TopMenu::CalcMemUsage()
