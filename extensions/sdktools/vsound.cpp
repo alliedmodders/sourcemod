@@ -357,9 +357,9 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 	char buffer[PLATFORM_MAX_PATH];
 	strcpy(buffer, pSample);
 
-	char soundEntry[PLATFORM_MAX_PATH];
+	char soundEntry[PLATFORM_MAX_PATH] = "";
 #if SOURCE_ENGINE >= SE_PORTAL2
-	strcpy(soundEntry, pSoundEntry);
+	Q_strncpy(soundEntry, pSoundEntry, sizeof(soundEntry));
 #endif
 
 #if SOURCE_ENGINE < SE_PORTAL2
@@ -493,9 +493,9 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 	char buffer[PLATFORM_MAX_PATH];
 	strcpy(buffer, pSample);
 
-	char soundEntry[PLATFORM_MAX_PATH];
+	char soundEntry[PLATFORM_MAX_PATH] = "";
 #if SOURCE_ENGINE >= SE_PORTAL2
-	strcpy(soundEntry, pSoundEntry);
+	Q_strncpy(soundEntry, pSoundEntry, sizeof(soundEntry));
 #endif
 
 #if SOURCE_ENGINE < SE_PORTAL2
