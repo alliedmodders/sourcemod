@@ -17,6 +17,7 @@
 		{
 			// SDKTools
 			"GiveNamedItem"		"_ZN11CBasePlayer13GiveNamedItemEPKci"
+			"GiveAmmo"		"_ZN20CBaseCombatCharacter8GiveAmmoEiib"
 			"RemovePlayerItem"		"_ZN11CBasePlayer16RemovePlayerItemEP17CBaseCombatWeapon"
 			"Weapon_GetSlot"		"_ZNK20CBaseCombatCharacter14Weapon_GetSlotEi"
 			"Ignite"			"_ZN14CBaseAnimating6IgniteEfbfb"
@@ -35,10 +36,12 @@
 			"PlayerRunCmd"		"_ZN11CBasePlayer16PlayerRunCommandEP8CUserCmdP11IMoveHelper"
 			
 			// SDKHooks
+			"Blocked"			"_ZN11CBaseEntity7BlockedEPS_"
 			"EndTouch"			"_ZN11CBaseEntity8EndTouchEPS_"
 			"FireBullets"		"_ZN11CBaseEntity11FireBulletsERK17FireBulletsInfo_t"
 			"GroundEntChanged"	"_ZN11CBaseEntity35NetworkStateChanged_m_hGroundEntityEPv"
 			"OnTakeDamage"		"_ZN11CBaseEntity12OnTakeDamageERK15CTakeDamageInfo"
+			"OnTakeDamage_Alive"          "_ZN11CBaseEntity18OnTakeDamage_AliveERK15CTakeDamageInfo"
 			"PreThink"			"_ZN11CBasePlayer8PreThinkEv"
 			"PostConstructor"	"_ZN11CBaseEntity15PostConstructorEPKc"
 			"PostThink"			"_ZN11CBasePlayer9PostThinkEv"
@@ -73,10 +76,14 @@
 			"GetSoundEmissionOrigin"	"_ZNK11CBaseEntity22GetSoundEmissionOriginEv"
 			"GetServerClass"	"_ZN11CBaseEntity14GetServerClassEv"
 			"StudioFrameAdvance"	"_ZN14CBaseAnimating18StudioFrameAdvanceEv"
-			"ShouldGib"		"_ZN9CTFPlayer9ShouldGibERK15CTakeDamageInfob"
+			"ShouldGib"		"_ZN9CTFPlayer9ShouldGibERK15CTakeDamageInfo"
 			"GetRadius"		"_ZN13CTFBaseRocket9GetRadiusEv"
 			"DeflectPlayer"		"_ZN13CTFWeaponBase13DeflectPlayerEP9CTFPlayerS1_R6VectorS3_S3_"
 			"GetDataDescMap"	"_ZN11CBaseEntity14GetDataDescMapEv"
+			
+			// TF2 ext
+			"CalcIsAttackCriticalHelper"	"_ZN13CTFWeaponBase26CalcIsAttackCriticalHelperEv"
+			"CalcIsAttackCriticalHelperNoCrits"	"_ZN13CTFWeaponBase33CalcIsAttackCriticalHelperNoCritsEv"
 
 			// CSSDM
 			"IPointsForKill"	"_ZN14CTeamplayRules14IPointsForKillEP11CBasePlayerS1_"
@@ -93,6 +100,7 @@
 			"CBaseEntity::GetBaseEntity"		"_ZN11CBaseEntity13GetBaseEntityEv"
 			"RocketTouch"				"_ZN13CTFBaseRocket11RocketTouchEP11CBaseEntity"
 			"SRocketTouch"                           "_ZN13CTFBaseRocket11RocketTouchEP11CBaseEntity"
+			"PlayScene"					"_ZN9CTFPlayer9PlaySceneEPKcfP11AI_ResponseP16IRecipientFilter"
 			
 			// V V
 			"CBaseEntity::GetModelIndex"    "_ZNK11CBaseEntity13GetModelIndexEv"
@@ -167,6 +175,8 @@
 			"CTeamplayRoundBasedRules::SetStalemate"        "_ZN24CTeamplayRoundBasedRules12SetStalemateEibb"
 			"CTeamplayRoundBasedRules::SetScrambleTeams"    "_ZN14CTeamplayRules16SetScrambleTeamsEb"
 			"CTeamplayRoundBasedRules::CleanUpMap"		"_ZN12CTFGameRules10CleanUpMapEv"
+
+			"IsValidObserverTarget"		"_ZN11CBasePlayer21IsValidObserverTargetEP11CBaseEntity"
 		}
 		
 		"Options"
@@ -182,10 +192,12 @@
 		"#supported"
 		{
 			"engine"	"orangebox_valve"
+			"engine"	"sdk2013"
 			"engine"	"css"
 			"engine"	"left4dead2"
 			"engine"	"alienswarm"
 			"engine"	"csgo"
+			"engine"	"insurgency"
 		}
 		
 		"Keys"
@@ -216,6 +228,7 @@
 		"#supported"
 		{
 			"engine"	"css"
+			"engine"	"sdk2013"
 			"engine"	"orangebox_valve"
 		}
 
@@ -251,15 +264,11 @@
 		}
 	}
 
-	"#default"
+	"csgo"
 	{
-		"#supported"
-		{
-			"game"	"nucleardawn"
-		}
 		"Keys"
 		{
-			"GiveNamedItem"		"_ZN9CNDPlayer13GiveNamedItemEPKcib"
+			"GiveNamedItem" "_ZN11CBasePlayer13GiveNamedItemEPKciP13CEconItemViewb"
 		}
 	}
 
@@ -268,19 +277,28 @@
 		"#supported"
 		{
 			"engine"	"csgo"
+			"engine"	"insurgency"
 		}
 		
 		"Keys"
 		{
 			"Teleport"	"_ZN11CBaseEntity8TeleportEPK6VectorPK6QAngleS2_b"
-			"GiveNamedItem"	"_ZN11CBasePlayer13GiveNamedItemEPKciP13CEconItemViewb"
 		}
+	}
+
+	"insurgency"
+	{
+                "Keys"
+                {
+                        "GiveNamedItem" "_ZN11CBasePlayer13GiveNamedItemEPKcib"
+                }
 	}
 
 	"#default"
 	{
 		"#supported"
 		{
+			"engine"	"nucleardawn"
 			"game"		"synergy"
 		}
 
@@ -349,6 +367,14 @@
 			"CalcDominationAndRevenge_Offset"		"CalcDomRevPatch"
 			"CalcDominationAndRevenge_Byte_Win"		"0F"
 			"CalcDominationAndRevenge_Byte_Lin"		"74"
+		}
+	}
+
+	"nmrih"
+	{
+		"Keys"
+		{
+			"Ignite"	"_ZN14CBaseAnimating6IgniteEfbfbP11CBaseEntity8string_t"
 		}
 	}
 }
