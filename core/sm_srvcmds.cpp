@@ -399,7 +399,7 @@ CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle le
 	{
 		char filename[PLATFORM_MAX_PATH];
 		const char *arg = args.Arg(1);
-		g_SourceMod.BuildPath(Path_SM, filename, sizeof(filename), "%s", arg);
+		g_SourceMod.BuildPath(Path_Game, filename, sizeof(filename), "%s", arg);
 
 		FILE *fp = fopen(filename, "wt");
 		if (!fp)
