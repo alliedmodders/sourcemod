@@ -42,8 +42,6 @@
 #include <server_class.h>
 #include <igameevents.h>
 
-const int TF_MAXPLAYERS = 33;
-
 namespace SourceMod {
 	class ISDKTools;
 }

@@ -159,7 +159,7 @@ void PlayerConditionsMgr::Shutdown()
 
 void PlayerConditionsMgr::OnClientPutInServer(int client)
 {
-	memset(&m_OldConds[client], 0, CondVar_Count * sizeof(int));
+	memset(&m_OldConds[client], 0, sizeof(m_OldConds[0]));
 }
 
 PlayerConditionsMgr g_CondMgr;

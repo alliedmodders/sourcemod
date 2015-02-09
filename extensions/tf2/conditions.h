@@ -68,9 +68,9 @@ private:
 	template<CondVar var>
 	bool SetupProp(const char *varname);
 private:
-	int m_OldConds[TF_MAXPLAYERS + 1][CondVar_Count];
+	int m_OldConds[SM_MAXPLAYERS + 1][CondVar_LastNotifyProp];
 	sm_sendprop_info_t m_CondVarProps[CondVar_Count];
-	SendVarProxyFn m_BackupProxyFns[CondVar_Count];
+	SendVarProxyFn m_BackupProxyFns[CondVar_LastNotifyProp];
 };
 
 extern PlayerConditionsMgr g_CondMgr;
