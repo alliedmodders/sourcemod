@@ -477,15 +477,13 @@ stock Database SQLite_UseDatabase(const char[] database,
 			  					  char[] error, 
 			  					  maxlength)
 {
-	Handle kv, db;
+	KeyValues kv = CreateKeyValues("");
+	kv.SetString("driver", "sqlite");
+	kv.SetString("database", database);
 
-	kv = CreateKeyValues("");
-	KvSetString(kv, "driver", "sqlite");
-	KvSetString(kv, "database", database);
+	Database db = SQL_ConnectCustom(kv, error, maxlength, false);
 
-	db = SQL_ConnectCustom(kv, error, maxlength, false);
-
-	CloseHandle(kv);
+	delete kv;
 
 	return db;
 }
