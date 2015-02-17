@@ -171,7 +171,7 @@ namespace SourceMod
 		 * @param filter		Do not use.
 		 * @return				Error code, if any.
 		 */
-		virtual int Execute(cell_t *result, IForwardFilter *filter=NULL) =0;
+		virtual int Execute(cell_t *result=NULL, IForwardFilter *filter=NULL) =0;
 
 		/**
 		 * @brief Pushes an array of cells onto the current call.  Different rules than ICallable.
