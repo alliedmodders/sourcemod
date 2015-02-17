@@ -36,7 +36,7 @@
 
 #include <sourcemod>
 
-public Plugin:myinfo = 
+public Plugin myinfo = 
 {
 	name = "SQL Admins (Prefetch)",
 	author = "AlliedModders LLC",
@@ -45,7 +45,7 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-public OnRebuildAdminCache(AdminCachePart:part)
+public void OnRebuildAdminCache(AdminCachePart part)
 {
 	/* First try to get a database connection */
 	char error[255];
@@ -97,7 +97,7 @@ void FetchUsers(Database db)
 	char name[80];
 	int immunity;
 	AdminId adm;
-	GroupId gid;
+	GroupId grp;
 	int id;
 
 	/* Keep track of a mapping from admin DB IDs to internal AdminIds to
@@ -120,7 +120,7 @@ void FetchUsers(Database db)
 		if ((adm = FindAdminByIdentity(authtype, identity)) == INVALID_ADMIN_ID)
 		{
 			adm = CreateAdmin(name);
-			if (!BindAdminIdentity(adm, authtype, identity))
+			if (!adm.BindIdentity(authtype, identity))
 			{
 				LogError("Could not bind prefetched SQL admin (authtype \"%s\") (identity \"%s\")", authtype, identity);
 				continue;
@@ -136,22 +136,22 @@ void FetchUsers(Database db)
 		/* See if this admin wants a password */
 		if (password[0] != '\0')
 		{
-			SetAdminPassword(adm, password);
+			adm.SetPassword(password);
 		}
 		
 		/* Apply each flag */
 		int len = strlen(flags);
 		AdminFlag flag;
-		for (new i=0; i<len; i++)
+		for (int i=0; i<len; i++)
 		{
 			if (!FindFlagByChar(flags[i], flag))
 			{
 				continue;
 			}
-			SetAdminFlag(adm, flag, true);
+			adm.SetFlag(flag, true);
 		}
 
-		SetAdminImmunityLevel(adm, immunity);
+		adm.ImmunityLevel = immunity;
 	}
 
 	delete rs;
@@ -173,13 +173,13 @@ void FetchUsers(Database db)
 
 		if (htAdmins.GetValue(key, adm))
 		{
-			if ((gid = FindAdmGroup(group)) == INVALID_GROUP_ID)
+			if ((grp = FindAdmGroup(group)) == INVALID_GROUP_ID)
 			{
 				/* Group wasn't found, don't bother with it.  */
 				continue;
 			}
 
-			AdminInheritGroup(adm, gid);
+			adm.InheritGroup(grp);
 		}
 	}
 	
@@ -187,7 +187,7 @@ void FetchUsers(Database db)
 	delete htAdmins;
 }
 
-FetchGroups(Database db)
+void FetchGroups(Database db)
 {
 	char query[255];
 	DBResultSet rs;
@@ -218,26 +218,26 @@ FetchGroups(Database db)
 #endif
 		
 		/* Find or create the group */
-		GroupId gid;
-		if ((gid = FindAdmGroup(name)) == INVALID_GROUP_ID)
+		GroupId grp;
+		if ((grp = FindAdmGroup(name)) == INVALID_GROUP_ID)
 		{
-			gid = CreateAdmGroup(name);
+			grp = CreateAdmGroup(name);
 		}
 		
 		/* Add flags from the database to the group */
 		int num_flag_chars = strlen(flags);
-		for (new i=0; i<num_flag_chars; i++)
+		for (int i=0; i<num_flag_chars; i++)
 		{
-			decl AdminFlag:flag;
+			AdminFlag flag;
 			if (!FindFlagByChar(flags[i], flag))
 			{
 				continue;
 			}
-			SetAdmGroupAddFlag(gid, flag, true);
+			grp.SetFlag(flag, true);
 		}
 		
 		/* Set the immunity level this group has */
-		SetAdmGroupImmunityLevel(gid, immunity);
+		grp.ImmunityLevel = immunity;
 	}
 	
 	delete rs;
@@ -245,7 +245,7 @@ FetchGroups(Database db)
 	/** 
 	 * Get immunity in a big lump.  This is a nasty query but it gets the job done.
 	 */
-	new len = 0;
+	int len = 0;
 	len += Format(query[len], sizeof(query)-len, "SELECT g1.name, g2.name FROM sm_group_immunity gi");
 	len += Format(query[len], sizeof(query)-len, " LEFT JOIN sm_groups g1 ON g1.id = gi.group_id ");
 	len += Format(query[len], sizeof(query)-len, " LEFT JOIN sm_groups g2 ON g2.id = gi.other_id");
@@ -263,20 +263,20 @@ FetchGroups(Database db)
 	{
 		char group1[80];
 		char group2[80];
-		GroupId gid1, gid2;
+		GroupId grp, other;
 		
 		rs.FetchString(0, group1, sizeof(group1));
 		rs.FetchString(1, group2, sizeof(group2));
 		
-		if (((gid1 = FindAdmGroup(group1)) == INVALID_GROUP_ID)
-			|| (gid2 = FindAdmGroup(group2)) == INVALID_GROUP_ID)
+		if (((grp = FindAdmGroup(group1)) == INVALID_GROUP_ID)
+			|| (other = FindAdmGroup(group2)) == INVALID_GROUP_ID)
 		{
 			continue;
 		}
 		
-		SetAdmGroupImmuneFrom(gid1, gid2);
+		grp.AddGroupImmunity(other);
 #if defined _DEBUG
-		PrintToServer("SetAdmGroupImmuneFrom(%d, %d)", gid1, gid2);
+		PrintToServer("SetAdmGroupImmuneFrom(%d, %d)", grp, other);
 #endif
 	}
 	
@@ -306,8 +306,8 @@ FetchGroups(Database db)
 		rs.FetchString(2, cmd, sizeof(cmd));
 		rs.FetchString(3, access, sizeof(access));
 		
-		GroupId gid;
-		if ((gid = FindAdmGroup(name)) == INVALID_GROUP_ID)
+		GroupId grp;
+		if ((grp = FindAdmGroup(name)) == INVALID_GROUP_ID)
 		{
 			continue;
 		}
@@ -325,16 +325,16 @@ FetchGroups(Database db)
 		}
 				
 #if defined _DEBUG
-		PrintToServer("AddAdmGroupCmdOverride(%d, %s, %d, %d)", gid, cmd, o_type, o_rule);
+		PrintToServer("AddAdmGroupCmdOverride(%d, %s, %d, %d)", grp, cmd, o_type, o_rule);
 #endif
 		
-		AddAdmGroupCmdOverride(gid, cmd, o_type, o_rule);
+		grp.AddCommandOverride(cmd, o_type, o_rule);
 	}
 	
 	delete rs;
 }
 
-FetchOverrides(Database db)
+void FetchOverrides(Database db)
 {
 	char query[255];
 	DBResultSet rs;
