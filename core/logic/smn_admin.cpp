@@ -599,6 +599,16 @@ REGISTER_NATIVES(adminNatives)
 	{"AdminId.GroupCount.get",	GetAdminGroupCount},
 	{"AdminId.ImmunityLevel.get",	GetAdminImmunityLevel},
 	{"AdminId.ImmunityLevel.set",	SetAdminImmunityLevel},
+	{"GroupId.HasFlag",			GetAdmGroupAddFlag},
+	{"GroupId.SetFlag",			SetAdmGroupAddFlag},
+	{"GroupId.GetFlags",		GetAdmGroupAddFlags},
+	{"GroupId.GetGroupImmunity",	GetAdmGroupImmuneFrom},
+	{"GroupId.AddGroupImmunity",	SetAdmGroupImmuneFrom},
+	{"GroupId.GetCommandOverride",	GetAdmGroupCmdOverride},
+	{"GroupId.AddCommandOverride",  AddAdmGroupCmdOverride},
+	{"GroupId.GroupImmunitiesCount.get",	GetAdmGroupImmuneCount},
+	{"GroupId.ImmunityLevel.get",	GetAdmGroupImmunityLevel},
+	{"GroupId.ImmunityLevel.set",   SetAdmGroupImmunityLevel},
 	/* -------------------------------------------------- */
 	{NULL,						NULL},
 };

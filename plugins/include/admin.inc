@@ -215,7 +215,7 @@ methodmap AdminId {
 	// Returns group information from an admin.
 	//
 	// @param index         Group number to retrieve, from 0 to N-1, where N
-	//                      is the value of GetAdminGroupCount(id).
+	//                      is the value of the GroupCount property.
 	// @param name          Buffer to store the group's name.
 	//                      Note: This will safely chop UTF-8 strings.
 	// @param maxlength     Maximum size of the output name buffer.
@@ -230,7 +230,7 @@ methodmap AdminId {
 
 	// Gets an admin's password.
 	//
-	// @param buffer            Optional buffer to store the admin's password.
+	// @param buffer        Optional buffer to store the admin's password.
 	// @param maxlength     Maximum size of the output name buffer.
 	//                      Note: This will safely chop UTF-8 strings.
 	// @return              True if there was a password set, false otherwise.
@@ -270,6 +270,62 @@ methodmap AdminId {
 	property int ImmunityLevel {
 			public native get();
 			public native set(int level);
+	}
+}
+
+methodmap GroupId {
+	// Gets whether or not a flag is enabled on a group's flag set.
+	//
+	// @param flag			Admin flag to retrieve.
+	// @return				True if enabled, false otherwise,
+	public native bool HasFlag(AdminFlag flag);
+
+	// Adds or removes a flag from a group's flag set.
+	//
+	// @param flag			Admin flag to toggle.
+	// @param enabled		True to set the flag, false to unset/disable.
+	public native void SetFlag(AdminFlag flag, bool enabled);
+
+	// Returns the flag set that is added to users from this group.
+	//
+	// @return				Bitstring containing the flags enabled.
+	public native int GetFlags();
+
+	// Returns a group that this group is immune to given an index.
+	//
+	// @param number		Index from 0 to N-1, from GroupImmunitiesCount.
+	// @return				GroupId that this group is immune to, or INVALID_GROUP_ID on failure.
+	public native GroupId GetGroupImmunity(int index);
+
+	// Adds immunity to a specific group.
+	//
+	// @param other			Group id to receive immunity to.
+	public native void AddGroupImmunity(GroupId other);
+
+	// Retrieves a group-specific command override.
+	//
+	// @param name			String containing command name (case sensitive).
+	// @param type			Override type (specific command or group).
+	// @param rule			Optional pointer to store allow/deny setting.
+	// @return				True if an override exists, false otherwise.
+	public native bool GetCommandOverride(const char[] name, OverrideType type, OverrideRule &rule);
+
+	// Adds a group-specific override type.
+	//
+	// @param name			String containing command name (case sensitive).
+	// @param type			Override type (specific command or group).
+	// @param rule			Override allow/deny setting.
+	public native void AddCommandOverride(const char[] name, OverrideType type, OverrideRule rule);
+
+	// Number of specific group immunities
+	property int GroupImmunitiesCount {
+		public native get();
+	}
+
+	// Immunity level used for targetting.
+	property int ImmunityLevel {
+		public native get();
+		public native set(int level);
 	}
 }
 
