@@ -38,34 +38,41 @@
 IForward *g_addCondForward = NULL;
 IForward *g_removeCondForward = NULL;
 
-template<PlayerConditionsMgr::CondVar CondVar>
-static void OnPlayerCondChange(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
+struct CondChangeData_t
 {
-	g_CondMgr.OnConVarChange(CondVar, pProp, pStructBase, pData, pOut, iElement, objectID);
+	CBaseEntity *pPlayer;
+	PlayerConditionsMgr::CondVar var;
+	int newConds;
+};
+
+void HandleCondChange(void *pData)
+{
+	auto *pCondData = reinterpret_cast<CondChangeData_t *>(pData);
+	g_CondMgr.ProcessCondChange(pCondData);
 }
 
-void PlayerConditionsMgr::OnConVarChange(CondVar var, const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
+void PlayerConditionsMgr::ProcessCondChange(CondChangeData_t *pCondData)
 {
-	CBaseEntity *pPlayer = (CBaseEntity *)((intp) pStructBase - GetPropOffs(m_Shared));
-	int client = gamehelpers->EntityToBCompatRef(pPlayer);
+	int client = gamehelpers->EntityToBCompatRef(pCondData->pPlayer);
 
 	int newConds = 0;
 	int prevConds = 0;
+	CondVar var = pCondData->var;
 
 	if (var == m_nPlayerCond)
 	{
 		prevConds = m_OldConds[client][_condition_bits] | m_OldConds[client][var];
-		newConds = m_OldConds[client][_condition_bits] | *(int *) (pData);
+		newConds = m_OldConds[client][_condition_bits] | pCondData->newConds;
 	}
 	else if (var == _condition_bits)
 	{
 		prevConds = m_OldConds[client][m_nPlayerCond] | m_OldConds[client][var];
-		newConds = m_OldConds[client][m_nPlayerCond] | *(int *)(pData);
+		newConds = m_OldConds[client][m_nPlayerCond] | pCondData->newConds;
 	}
 	else
 	{
 		prevConds = m_OldConds[client][var];
-		newConds = *(int *)pData;
+		newConds = pCondData->newConds;
 	}
 
 	if (prevConds != newConds)
@@ -81,16 +88,34 @@ void PlayerConditionsMgr::OnConVarChange(CondVar var, const SendProp *pProp, con
 			{
 				g_addCondForward->PushCell(client);
 				g_addCondForward->PushCell(i);
-				g_addCondForward->Execute(NULL, NULL);
+				g_addCondForward->Execute(NULL);
 			}
 			else if (removedConds & (1 << i))
 			{
 				g_removeCondForward->PushCell(client);
 				g_removeCondForward->PushCell(i);
-				g_removeCondForward->Execute(NULL, NULL);
+				g_removeCondForward->Execute(NULL);
 			}
 		}
 	}
+
+	delete pCondData;
+}
+
+template<PlayerConditionsMgr::CondVar CondVar>
+static void OnPlayerCondChange(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
+{
+	g_CondMgr.OnConVarChange(CondVar, pProp, pStructBase, pData, pOut, iElement, objectID);
+}
+
+void PlayerConditionsMgr::OnConVarChange(CondVar var, const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
+{
+	auto pCondData = new CondChangeData_t;
+	pCondData->pPlayer = (CBaseEntity *)((intp)pStructBase - GetPropOffs(m_Shared));
+	pCondData->var = var;
+	pCondData->newConds = *(int *)pData;
+
+	g_pSM->AddFrameAction(&HandleCondChange, pCondData);
 
 	if (m_BackupProxyFns[var] != nullptr)
 		m_BackupProxyFns[var](pProp, pStructBase, pData, pOut, iElement, objectID);
