@@ -136,14 +136,17 @@ bool PlayerConditionsMgr::SetupProp(const char *varname)
 	return true;
 }
 
-bool PlayerConditionsMgr::Init()
+PlayerConditionsMgr::PlayerConditionsMgr()
 {
 	m_CondOffset[m_nPlayerCond] = 0;
 	m_CondOffset[_condition_bits] = 0;
 	m_CondOffset[m_nPlayerCondEx] = 32;
 	m_CondOffset[m_nPlayerCondEx2] = 64;
 	m_CondOffset[m_nPlayerCondEx3] = 96;
+}
 
+bool PlayerConditionsMgr::Init()
+{
 	memset(m_BackupProxyFns, 0, sizeof(m_BackupProxyFns));
 
 	bool bFoundProps = SetupProp<m_nPlayerCond>("m_nPlayerCond")

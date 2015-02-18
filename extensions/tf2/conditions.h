@@ -39,6 +39,7 @@ struct CondChangeData_t;
 class PlayerConditionsMgr : public IClientListener
 {
 public:
+	PlayerConditionsMgr();
 	bool Init();
 	void Shutdown();
 public: // IClientListener
