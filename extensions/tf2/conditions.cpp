@@ -110,7 +110,7 @@ static void OnPlayerCondChange(const SendProp *pProp, const void *pStructBase, c
 void PlayerConditionsMgr::OnConVarChange(CondVar var, const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
 {
 	auto pCondData = new CondChangeData_t;
-	pCondData->pPlayer = (CBaseEntity *)((intp)pStructBase - GetPropOffs(m_Shared));
+	pCondData->pPlayer = (CBaseEntity *)((intp)pData - GetPropOffs(var));
 	pCondData->var = var;
 	pCondData->newConds = *(int *)pData;
 
@@ -129,11 +129,8 @@ bool PlayerConditionsMgr::SetupProp(const char *varname)
 		return false;
 	}
 
-	if (var != m_Shared)
-	{
-		m_BackupProxyFns[var] = GetProp(var)->GetProxyFn();
-		GetProp(var)->SetProxyFn(OnPlayerCondChange<var>);
-	}
+	m_BackupProxyFns[var] = GetProp(var)->GetProxyFn();
+	GetProp(var)->SetProxyFn(OnPlayerCondChange<var>);
 
 	return true;
 }
@@ -155,8 +152,7 @@ bool PlayerConditionsMgr::Init()
 		&& SetupProp<_condition_bits>("_condition_bits")
 		&& SetupProp<m_nPlayerCondEx>("m_nPlayerCondEx")
 		&& SetupProp<m_nPlayerCondEx2>("m_nPlayerCondEx2")
-		&& SetupProp<m_nPlayerCondEx3>("m_nPlayerCondEx3")
-		&& SetupProp<m_Shared>("m_Shared");
+		&& SetupProp<m_nPlayerCondEx3>("m_nPlayerCondEx3");
 
 	if (!bFoundProps)
 		return false;
@@ -171,7 +167,7 @@ bool PlayerConditionsMgr::Init()
 			continue;
 
 		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
-		for (size_t j = 0; j < CondVar_LastNotifyProp; ++j)
+		for (size_t j = 0; j < CondVar_Count; ++j)
 		{
 			m_OldConds[i][j] = *(int *)((intp) pEntity + GetPropOffs((CondVar)j));
 		}
@@ -182,7 +178,7 @@ bool PlayerConditionsMgr::Init()
 
 void PlayerConditionsMgr::Shutdown()
 {
-	for (size_t i = 0; i < CondVar_LastNotifyProp; ++i)
+	for (size_t i = 0; i < CondVar_Count; ++i)
 	{
 		GetProp((CondVar)i)->SetProxyFn(m_BackupProxyFns[i]);
 	}

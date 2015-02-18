@@ -52,8 +52,6 @@ public:
 		m_nPlayerCondEx,
 		m_nPlayerCondEx2,
 		m_nPlayerCondEx3,
-		m_Shared,
-		CondVar_LastNotifyProp = m_Shared,
 
 		CondVar_Count
 	};
@@ -72,10 +70,10 @@ private:
 	template<CondVar var>
 	bool SetupProp(const char *varname);
 private:
-	int m_OldConds[SM_MAXPLAYERS + 1][CondVar_LastNotifyProp];
+	int m_OldConds[SM_MAXPLAYERS + 1][CondVar_Count];
 	sm_sendprop_info_t m_CondVarProps[CondVar_Count];
-	int m_CondOffset[CondVar_LastNotifyProp];
-	SendVarProxyFn m_BackupProxyFns[CondVar_LastNotifyProp];
+	int m_CondOffset[CondVar_Count];
+	SendVarProxyFn m_BackupProxyFns[CondVar_Count];
 };
 
 extern PlayerConditionsMgr g_CondMgr;
