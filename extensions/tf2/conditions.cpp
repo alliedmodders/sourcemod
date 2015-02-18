@@ -31,9 +31,6 @@
 
 #include "extension.h"
 #include "conditions.h"
-#include "util.h"
-
-#include <iplayerinfo.h>
 
 IForward *g_addCondForward = NULL;
 IForward *g_removeCondForward = NULL;
@@ -87,13 +84,13 @@ void PlayerConditionsMgr::ProcessCondChange(CondChangeData_t *pCondData)
 			if (addedConds & (1 << i))
 			{
 				g_addCondForward->PushCell(client);
-				g_addCondForward->PushCell(i);
+				g_addCondForward->PushCell(i + m_CondOffset[var]);
 				g_addCondForward->Execute(NULL);
 			}
 			else if (removedConds & (1 << i))
 			{
 				g_removeCondForward->PushCell(client);
-				g_removeCondForward->PushCell(i);
+				g_removeCondForward->PushCell(i + m_CondOffset[var]);
 				g_removeCondForward->Execute(NULL);
 			}
 		}
@@ -141,6 +138,12 @@ bool PlayerConditionsMgr::SetupProp(const char *varname)
 
 bool PlayerConditionsMgr::Init()
 {
+	m_CondOffset[m_nPlayerCond] = 0;
+	m_CondOffset[_condition_bits] = 0;
+	m_CondOffset[m_nPlayerCondEx] = 32;
+	m_CondOffset[m_nPlayerCondEx2] = 64;
+	m_CondOffset[m_nPlayerCondEx3] = 96;
+
 	memset(m_BackupProxyFns, 0, sizeof(m_BackupProxyFns));
 
 	bool bFoundProps = SetupProp<m_nPlayerCond>("m_nPlayerCond")

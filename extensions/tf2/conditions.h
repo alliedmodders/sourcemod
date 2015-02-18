@@ -73,6 +73,7 @@ private:
 private:
 	int m_OldConds[SM_MAXPLAYERS + 1][CondVar_LastNotifyProp];
 	sm_sendprop_info_t m_CondVarProps[CondVar_Count];
+	int m_CondOffset[CondVar_LastNotifyProp];
 	SendVarProxyFn m_BackupProxyFns[CondVar_LastNotifyProp];
 };
 
