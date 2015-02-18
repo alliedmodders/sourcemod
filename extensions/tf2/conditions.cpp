@@ -51,6 +51,8 @@ void HandleCondChange(void *pData)
 void PlayerConditionsMgr::ProcessCondChange(CondChangeData_t *pCondData)
 {
 	int client = gamehelpers->EntityToBCompatRef(pCondData->pPlayer);
+	if (!playerhelpers->GetGamePlayer(client)->IsInGame())
+		return;
 
 	int newConds = 0;
 	int prevConds = 0;
