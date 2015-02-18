@@ -1176,6 +1176,7 @@ REGISTER_NATIVES(filesystem)
 	{"File.ReadInt8",			File_ReadTyped<int8_t>},
 	{"File.ReadUint8",			File_ReadTyped<uint8_t>},
 	{"File.ReadInt16",			File_ReadTyped<int16_t>},
+	{"File.ReadUint16",			File_ReadTyped<uint16_t>},
 	{"File.ReadInt32",			File_ReadTyped<int32_t>},
 	{"File.WriteInt8",			File_WriteTyped<int8_t>},
 	{"File.WriteInt16",			File_WriteTyped<int16_t>},
