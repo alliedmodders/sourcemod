@@ -42,10 +42,11 @@ struct CondChangeData_t
 	int newConds;
 };
 
-void HandleCondChange(void *pData)
+static void HandleCondChange(void *pData)
 {
 	auto *pCondData = reinterpret_cast<CondChangeData_t *>(pData);
 	g_CondMgr.ProcessCondChange(pCondData);
+	delete pCondData;
 }
 
 void PlayerConditionsMgr::ProcessCondChange(CondChangeData_t *pCondData)
@@ -97,8 +98,6 @@ void PlayerConditionsMgr::ProcessCondChange(CondChangeData_t *pCondData)
 			}
 		}
 	}
-
-	delete pCondData;
 }
 
 template<PlayerConditionsMgr::CondVar CondVar>
