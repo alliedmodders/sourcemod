@@ -338,7 +338,7 @@ stock TFTeam:TF2_GetClientTeam(client)
  * @noreturn
  * @error               Invalid client index.
  */
-stock TFTeam:TF2_SetClientTeam(client, team)
+stock TF2_SetClientTeam(client, TFTeam:team)
 {
     ChangeClientTeam(client, _:team);
 }
