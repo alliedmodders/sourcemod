@@ -39,6 +39,8 @@
 #include "KeyValues.h"
 #include "sm_fastlink.h"
 #include <compat_wrappers.h>
+#include "logic/common_logic.h"
+#include "AutoHandleRooter.h"
 
 using namespace SourceMod;
 
