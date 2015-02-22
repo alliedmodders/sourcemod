@@ -35,7 +35,7 @@
 			/* Offset into CBaseTempEntity constructor */
 			"s_pTempEntities"
 			{
-				"windows"	"19"
+				"windows"	"11"
 			}
 			"GetTEName"
 			{
@@ -62,7 +62,7 @@
 			"CBaseTempEntity"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\xC1\x8B\x4D\x08\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x2A\x8B"
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x89\x41\x04\xC7\x01\x2A\x2A\x2A\x2A\xA1"
 			}
 			"s_pTempEntities"
 			{
@@ -82,7 +82,7 @@
 			"FindEntityByClassname"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x08\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x83\xF8\xFF\x75\x2A\xB8\xFF\x1F\x00\x00\x8D\x04\x40\x8B\x74\xC6\x2A\xEB"
+				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x08\x57\x85\xC9\x74\x26\x8B\x01\xFF\x50\x08\x8B\x00\x83\xF8\xFF\x75\x0E\xB8\xFF\x1F\x00\x00\x8D\x04\x40\x8B\x74\xC6\x10\xEB\x12\x0F\xB7\xC0\x8D\x04\x40\x8B\x74\xC6\x10\xEB\x06\x8B\xB6\x2A\x2A\x2A\x2A\x85\xF6\x74\x4C"
 				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
@@ -102,7 +102,7 @@
 			/* Offset into CreateGameRulesObject */
 			"g_pGameRules"
 			{
-				"windows"	"2"
+				"windows"	"5"
 			}
 		}
 		
@@ -119,50 +119,13 @@
 			"CreateGameRulesObject"
 			{
 				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\x6A\x01\xFF\xD2"
+				"windows"	"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x07\x8B"
 			}
 			"g_pGameRules"
 			{
 				"library"	"server"
 				"linux"		"@g_pGameRules"
 				"mac"		"@g_pGameRules"
-			}
-		}
-	}
-	
-	/* IServer interface pointer */
-	"#default"
-	{
-		"Keys"
-		{
-			/* Signature for the beginning of IVEngineServer::CreateFakeClient.
-			 *
-			 * The engine binary is not actually scanned in order to look for
-			 * this. SourceHook is used to used to determine the address of the
-			 * function and this signature is used to verify that it contains
-			 * the expected code. A pointer to sv (IServer interface) is used
-			 * here.
-			 */
-			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x50\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x75"
-		}
-		
-		"Offsets"
-		{
-			/* Offset into IVEngineServer::CreateFakeClient */
-			"sv"
-			{
-				"windows"	"8"
-			}
-		}
-		
-		"Signatures"
-		{
-			/* CBaseServer object for IServer interface */
-			"sv"
-			{
-				"library"	"engine"
-				"linux"		"@sv"
-				"mac"		"@sv"
 			}
 		}
 	}
@@ -175,7 +138,7 @@
 			"EntityFactory"
 			{
 				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\xA8\x01\x75\x1F\x83\xC8\x01\xB9\x2A\x2A\x2A\x2A\xA3\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8"
 				"linux"		"@_Z23EntityFactoryDictionaryv"
 				"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
@@ -190,7 +153,7 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\x2A\x2A\x2A\x2A\x2A\x53\x56\x8B\x71\x2A\x57"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\x53\x8B\xC1\xC7\x45\x2A\x2A\x2A\x2A\x00\x56\x57\x89"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
