@@ -41,6 +41,8 @@
 #include "sm_fastlink.h"
 #include <sh_stack.h>
 #include <compat_wrappers.h>
+#include "logic/common_logic.h"
+#include "AutoHandleRooter.h"
 
 using namespace SourceMod;
 
