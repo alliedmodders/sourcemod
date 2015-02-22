@@ -593,6 +593,7 @@ bool CRadioMenu::DisplayAtItem(int client,
 		return false;
 	}
 
+	AutoHandleRooter ahr(this->GetHandle());
 	return g_RadioMenuStyle.DoClientMenu(client,
 		this,
 		start_item,

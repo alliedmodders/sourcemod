@@ -408,6 +408,7 @@ bool CValveMenu::DisplayAtItem(int client,
 		return false;
 	}
 
+	AutoHandleRooter ahr(this->GetHandle());
 	return g_ValveMenuStyle.DoClientMenu(client, this, start_item, alt_handler ? alt_handler : m_pHandler, time);
 }
 
