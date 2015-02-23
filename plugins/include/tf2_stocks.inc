@@ -331,14 +331,14 @@ stock TFTeam:TF2_GetClientTeam(client)
 }
 
 /**
- * Sets a client's current team.
+ * Changes a client's current team.
  *
  * @param client        Client index.
  * @param team          TFTeam team symbol.
  * @noreturn
  * @error               Invalid client index.
  */
-stock TF2_SetClientTeam(client, TFTeam:team)
+stock TF2_ChangeClientTeam(client, TFTeam:team)
 {
     ChangeClientTeam(client, _:team);
 }
