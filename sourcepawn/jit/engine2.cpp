@@ -24,6 +24,7 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 	uint8_t *base;
 	int z_result;
 	int error;
+	size_t ignore;
 	BaseRuntime *pRuntime;
 
 	FILE *fp = fopen(file, "rb");
@@ -35,7 +36,7 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 	}
 
 	/* Rewind for safety */
-	fread(&hdr, sizeof(sp_file_hdr_t), 1, fp);
+	ignore = fread(&hdr, sizeof(sp_file_hdr_t), 1, fp);
 
 	if (hdr.magic != SmxConsts::FILE_MAGIC)
 	{
@@ -56,8 +57,8 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 			void *uncompdata = malloc(uncompsize);
 			void *sectheader = malloc(sectsize);
 
-			fread(sectheader, sectsize, 1, fp);
-			fread(tempbuf, compsize, 1, fp);
+			ignore = fread(sectheader, sectsize, 1, fp);
+			ignore = fread(tempbuf, compsize, 1, fp);
 
 			z_result = uncompress((Bytef *)uncompdata, &destlen, (Bytef *)tempbuf, compsize);
 			free(tempbuf);
@@ -81,7 +82,7 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 		{
 			base = (uint8_t *)malloc(hdr.imagesize);
 			rewind(fp);
-			fread(base, hdr.imagesize, 1, fp);
+			ignore = fread(base, hdr.imagesize, 1, fp);
 			break;
 		}
 	default:
@@ -113,6 +114,8 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 			break;
 		}
 	}
+
+	(void)ignore;
 
 	if (!pRuntime->plugin()->name)
 	{
