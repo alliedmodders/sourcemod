@@ -1,4 +1,4 @@
-// vim: set sts=2 ts=8 sw=2 tw=99 noet:
+// vim: set sts=2 ts=8 sw=2 tw=99 et:
 // 
 // Copyright (C) 2006-2015 AlliedModders LLC
 // 
