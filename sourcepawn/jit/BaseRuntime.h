@@ -6,10 +6,10 @@
 #include <am-vector.h>
 #include <am-inlinelist.h>
 #include "jit_shared.h"
+#include "jit_function.h"
 #include "sp_vm_function.h"
 
 class BaseContext;
-class JitFunction;
 
 class DebugInfo : public IPluginDebugInfo
 {
@@ -67,11 +67,11 @@ class BaseRuntime
   virtual size_t GetMemUsage();
   virtual unsigned char *GetCodeHash();
   virtual unsigned char *GetDataHash();
-  JitFunction *GetJittedFunctionByOffset(cell_t pcode_offset);
-  void AddJittedFunction(JitFunction *fn);
+  Function *GetJittedFunctionByOffset(cell_t pcode_offset);
+  void AddJittedFunction(Function *fn);
   void SetName(const char *name);
   unsigned GetNativeReplacement(size_t index);
-  CFunction *GetPublicFunction(size_t index);
+  ScriptedInvoker *GetPublicFunction(size_t index);
 
   BaseContext *GetBaseContext();
   const sp_plugin_t *plugin() const {
@@ -81,7 +81,7 @@ class BaseRuntime
   size_t NumJitFunctions() const {
     return m_JitFunctions.length();
   }
-  JitFunction *GetJitFunction(size_t i) const {
+  Function *GetJitFunction(size_t i) const {
     return m_JitFunctions[i];
   }
 
@@ -94,15 +94,15 @@ class BaseRuntime
   unsigned int m_NumFuncs;
   unsigned int m_MaxFuncs;
   floattbl_t *float_table_;
-  JitFunction **function_map_;
+  Function **function_map_;
   size_t function_map_size_;
-  ke::Vector<JitFunction *> m_JitFunctions;
+  ke::Vector<Function *> m_JitFunctions;
 
  public:
   DebugInfo m_Debug;
   BaseContext *m_pCtx;
-  CFunction **m_PubFuncs;
-  JitFunction **m_PubJitFuncs;
+  ScriptedInvoker **m_PubFuncs;
+  Function **m_PubJitFuncs;
 
  private:
   ICompilation *co_;

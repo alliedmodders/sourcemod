@@ -20,36 +20,36 @@
 * FUNCTION CALLING *
 ********************/
 
-CFunction::~CFunction()
+ScriptedInvoker::~ScriptedInvoker()
 {
   delete [] full_name_;
 }
 
 bool
-CFunction::IsRunnable()
+ScriptedInvoker::IsRunnable()
 {
   return !m_pRuntime->IsPaused();
 }
 
 int
-CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
+ScriptedInvoker::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
 {
   return CallFunction2(m_pRuntime->GetDefaultContext(), params, num_params, result);
 }
 
 int
-CFunction::CallFunction2(IPluginContext *pContext, const cell_t *params, unsigned int num_params, cell_t *result)
+ScriptedInvoker::CallFunction2(IPluginContext *pContext, const cell_t *params, unsigned int num_params, cell_t *result)
 {
   return pContext->Execute2(this, params, num_params, result);
 }
 
 IPluginContext *
-CFunction::GetParentContext()
+ScriptedInvoker::GetParentContext()
 {
   return m_pRuntime->GetDefaultContext();
 }
 
-CFunction::CFunction(BaseRuntime *runtime, funcid_t id, uint32_t pub_id)
+ScriptedInvoker::ScriptedInvoker(BaseRuntime *runtime, funcid_t id, uint32_t pub_id)
  : m_curparam(0),
    m_errorstate(SP_ERROR_NONE),
    m_FnId(id)
@@ -67,7 +67,7 @@ CFunction::CFunction(BaseRuntime *runtime, funcid_t id, uint32_t pub_id)
   strcpy(&full_name_[rt_len + 2], public_->name);
 }
 
-int CFunction::PushCell(cell_t cell)
+int ScriptedInvoker::PushCell(cell_t cell)
 {
   if (m_curparam >= SP_MAX_EXEC_PARAMS)
     return SetError(SP_ERROR_PARAMS_MAX);
@@ -80,13 +80,13 @@ int CFunction::PushCell(cell_t cell)
 }
 
 int
-CFunction::PushCellByRef(cell_t *cell, int flags)
+ScriptedInvoker::PushCellByRef(cell_t *cell, int flags)
 {
   return PushArray(cell, 1, flags);
 }
 
 int
-CFunction::PushFloat(float number)
+ScriptedInvoker::PushFloat(float number)
 {
   cell_t val = *(cell_t *)&number;
 
@@ -94,13 +94,13 @@ CFunction::PushFloat(float number)
 }
 
 int
-CFunction::PushFloatByRef(float *number, int flags)
+ScriptedInvoker::PushFloatByRef(float *number, int flags)
 {
   return PushCellByRef((cell_t *)number, flags);
 }
 
 int
-CFunction::PushArray(cell_t *inarray, unsigned int cells, int copyback)
+ScriptedInvoker::PushArray(cell_t *inarray, unsigned int cells, int copyback)
 {
   if (m_curparam >= SP_MAX_EXEC_PARAMS)
   {
@@ -121,19 +121,19 @@ CFunction::PushArray(cell_t *inarray, unsigned int cells, int copyback)
 }
 
 int
-CFunction::PushString(const char *string)
+ScriptedInvoker::PushString(const char *string)
 {
   return _PushString(string, SM_PARAM_STRING_COPY, 0, strlen(string)+1);
 }
 
 int
-CFunction::PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags)
+ScriptedInvoker::PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags)
 {
   return _PushString(buffer, sz_flags, cp_flags, length);
 }
 
 int
-CFunction::_PushString(const char *string, int sz_flags, int cp_flags, size_t len)
+ScriptedInvoker::_PushString(const char *string, int sz_flags, int cp_flags, size_t len)
 {
   if (m_curparam >= SP_MAX_EXEC_PARAMS)
     return SetError(SP_ERROR_PARAMS_MAX);
@@ -153,7 +153,7 @@ CFunction::_PushString(const char *string, int sz_flags, int cp_flags, size_t le
 }
 
 void
-CFunction::Cancel()
+ScriptedInvoker::Cancel()
 {
   if (!m_curparam)
     return;
@@ -163,13 +163,13 @@ CFunction::Cancel()
 }
 
 int
-CFunction::Execute(cell_t *result)
+ScriptedInvoker::Execute(cell_t *result)
 {
   return Execute2(m_pRuntime->GetDefaultContext(), result);
 }
 
 int
-CFunction::Execute2(IPluginContext *ctx, cell_t *result)
+ScriptedInvoker::Execute2(IPluginContext *ctx, cell_t *result)
 {
   int err = SP_ERROR_NONE;
 
@@ -303,19 +303,19 @@ CFunction::Execute2(IPluginContext *ctx, cell_t *result)
 }
 
 IPluginRuntime *
-CFunction::GetParentRuntime()
+ScriptedInvoker::GetParentRuntime()
 {
   return m_pRuntime;
 }
 
 funcid_t
-CFunction::GetFunctionID()
+ScriptedInvoker::GetFunctionID()
 {
   return m_FnId;
 }
 
 int
-CFunction::SetError(int err)
+ScriptedInvoker::SetError(int err)
 {
   m_errorstate = err;
 

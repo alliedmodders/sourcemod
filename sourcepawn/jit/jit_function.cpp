@@ -1,31 +1,27 @@
-// vim: set ts=8 ts=2 sw=2 tw=99 et:
+// vim: set sts=2 ts=8 sw=2 tw=99 et:
+// 
+// Copyright (C) 2006-2015 AlliedModders LLC
+// 
+// This file is part of SourcePawn. SourcePawn is free software: you can
+// redistribute it and/or modify it under the terms of the GNU General Public
+// License as published by the Free Software Foundation, either version 3 of
+// the License, or (at your option) any later version.
+//
+// You should have received a copy of the GNU General Public License along with
+// SourcePawn. If not, see http://www.gnu.org/licenses/.
+//
 #include "jit_function.h"
 #include "sp_vm_engine.h"
 #include "jit_x86.h"
 
-JitFunction::JitFunction(void *entry_addr, cell_t pcode_offs, LoopEdge *edges, uint32_t nedges)
-  : m_pEntryAddr(entry_addr),
-    m_PcodeOffs(pcode_offs),
-    edges_(edges),
-    nedges_(nedges)
+Function::Function(void *entry_addr, cell_t pcode_offs, FixedArray<LoopEdge> *edges)
+  : entry_(entry_addr),
+    code_offset_(pcode_offs),
+    edges_(edges)
 {
 }
 
-JitFunction::~JitFunction()
+Function::~Function()
 {
-  delete [] edges_;
-  g_Jit.FreeCode(m_pEntryAddr);
+  g_Jit.FreeCode(entry_);
 }
-
-void *
-JitFunction::GetEntryAddress() const
-{
-  return m_pEntryAddr;
-}
-
-cell_t
-JitFunction::GetPCodeAddress() const
-{
-  return m_PcodeOffs;
-}
-

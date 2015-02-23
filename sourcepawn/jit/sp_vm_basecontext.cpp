@@ -525,7 +525,7 @@ BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned 
   int ir;
   int serial;
   cell_t *sp;
-  JitFunction *fn;
+  Function *fn;
   cell_t _ignore_result;
 
   EnterProfileScope profileScope("SourcePawn", "EnterJIT");
@@ -538,7 +538,7 @@ BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned 
     return SP_ERROR_INVALID_ADDRESS;
 
   unsigned public_id = fnid >> 1;
-  CFunction *cfun = m_pRuntime->GetPublicFunction(public_id);
+  ScriptedInvoker *cfun = m_pRuntime->GetPublicFunction(public_id);
   if (!cfun)
     return SP_ERROR_NOT_FOUND;
 

@@ -68,8 +68,6 @@ class SourcePawnEngine : public ISourcePawnEngine
   void ReportError(BaseRuntime *runtime, int err, const char *errstr, cell_t rp_start);
 
  public: //Plugin function stuff
-  CFunction *GetFunctionFromPool(funcid_t f, IPluginContext  *plugin);
-  void ReleaseFunctionToPool(CFunction *func);
   IDebugListener *GetDebugHook();
 
  private:
