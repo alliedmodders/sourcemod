@@ -33,6 +33,7 @@
 #endif
 
 #include <sourcemod_version.h>
+#include "code-stubs.h"
 
 using namespace sp;
 using namespace SourcePawn;
@@ -185,6 +186,12 @@ SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file, int *err)
   size_t ignore;
   PluginRuntime *pRuntime;
 
+  if (co) {
+    if (err)
+      *err = SP_ERROR_PARAM;
+    return nullptr;
+  }
+
   FILE *fp = fopen(file, "rb");
 
   if (!fp) {
@@ -275,8 +282,6 @@ SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file, int *err)
   if (!pRuntime->plugin()->name)
     pRuntime->SetName(file);
 
-  pRuntime->ApplyCompilationOptions(co);
-
   fclose(fp);
 
   return pRuntime;
@@ -294,13 +299,13 @@ return_error:
 SPVM_NATIVE_FUNC
 SourcePawnEngine2::CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData)
 {
-  return g_Jit.CreateFakeNative(callback, pData);
+  return Environment::get()->stubs()->CreateFakeNativeStub(callback, pData);
 }
 
 void
 SourcePawnEngine2::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 {
-  g_Jit.DestroyFakeNative(func);
+  return Environment::get()->FreeCode((void *)func);
 }
 
 const char *
@@ -332,7 +337,7 @@ SourcePawnEngine2::GetAPIVersion()
 ICompilation *
 SourcePawnEngine2::StartCompilation()
 {
-  return g_Jit.StartCompilation();
+  return nullptr;
 }
 
 const char *
@@ -364,9 +369,6 @@ SourcePawnEngine2::CreateEmptyRuntime(const char *name, uint32_t memory)
   }
 
   rt->SetName(name != NULL ? name : "<anonymous>");
-
-  rt->ApplyCompilationOptions(NULL);
-  
   return rt;
 }
 

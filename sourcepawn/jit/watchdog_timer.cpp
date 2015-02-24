@@ -15,15 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with SourcePawn.  If not, see <http://www.gnu.org/licenses/>.
 #include "watchdog_timer.h"
-#include "x86/jit_x86.h"
 #include <string.h>
+#include "environment.h"
+//#include "x86/jit_x86.h"
 
-WatchdogTimer::WatchdogTimer()
-  : terminate_(false),
-    mainthread_(ke::GetCurrentThreadId()),
-    last_frame_id_(0),
-    second_timeout_(false),
-    timedout_(false)
+WatchdogTimer::WatchdogTimer(Environment *env)
+ : env_(env),
+   terminate_(false),
+   mainthread_(ke::GetCurrentThreadId()),
+   last_frame_id_(0),
+   second_timeout_(false),
+   timedout_(false)
 {
 }
 
@@ -68,7 +70,7 @@ WatchdogTimer::Run()
   ke::AutoLock lock(&cv_);
 
   // Initialize the frame id, so we don't have to wait longer on startup.
-  last_frame_id_ = g_Jit.FrameId();
+  last_frame_id_ = env_->FrameId();
 
   while (!terminate_) {
     ke::WaitResult rv = cv_.Wait(timeout_ms_ / 2);
@@ -89,8 +91,8 @@ WatchdogTimer::Run()
     // Note that it's okay if these two race: it's just a heuristic, and
     // worst case, we'll miss something that might have timed out but
     // ended up resuming.
-    uintptr_t frame_id = g_Jit.FrameId();
-    if (frame_id != last_frame_id_ || !g_Jit.RunningCode()) {
+    uintptr_t frame_id = env_->FrameId();
+    if (frame_id != last_frame_id_ || !env_->RunningCode()) {
       last_frame_id_ = frame_id;
       second_timeout_ = false;
       continue;
@@ -105,7 +107,7 @@ WatchdogTimer::Run()
 
     {
       // Prevent the JIT from linking or destroying runtimes and functions.
-      ke::AutoLock lock(g_Jit.Mutex());
+      ke::AutoLock lock(env_->lock());
 
       // Set the timeout notification bit. If this is detected before any patched
       // JIT backedges are reached, the main thread will attempt to acquire the
@@ -115,7 +117,7 @@ WatchdogTimer::Run()
       // Patch all jumps. This can race with the main thread's execution since
       // all code writes are 32-bit integer instruction operands, which are
       // guaranteed to be atomic on x86.
-      g_Jit.PatchAllJumpsForTimeout();
+      env_->PatchAllJumpsForTimeout();
     }
 
     // The JIT will be free to compile new functions while we wait, but it will
@@ -141,8 +143,8 @@ WatchdogTimer::NotifyTimeoutReceived()
   // notification, and is therefore blocked. We take the JIT lock
   // anyway for sanity.
   {
-    ke::AutoLock lock(g_Jit.Mutex());
-    g_Jit.UnpatchAllJumpsFromTimeout();
+    ke::AutoLock lock(env_->lock());
+    env_->UnpatchAllJumpsFromTimeout();
   }
 
   timedout_ = false;

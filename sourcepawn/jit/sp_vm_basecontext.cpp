@@ -58,12 +58,18 @@ BaseContext::BaseContext(PluginRuntime *pRuntime)
   m_ctx.n_idx = SP_ERROR_NONE;
   m_ctx.rp = 0;
 
-  g_Jit.SetupContextVars(m_pRuntime, this, &m_ctx);
+  m_ctx.tracker = new tracker_t;
+  m_ctx.tracker->pBase = (ucell_t *)malloc(1024);
+  m_ctx.tracker->pCur = m_ctx.tracker->pBase;
+  m_ctx.tracker->size = 1024 / sizeof(cell_t);
+  m_ctx.basecx = this;
+  m_ctx.plugin = const_cast<sp_plugin_t *>(pRuntime->plugin());
 }
 
 BaseContext::~BaseContext()
 {
-  g_Jit.FreeContextVars(&m_ctx);
+  free(m_ctx.tracker->pBase);
+  delete m_ctx.tracker;
 }
 
 IVirtualMachine *
@@ -562,7 +568,7 @@ BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned 
     if (fn) {
       m_pRuntime->m_PubJitFuncs[public_id] = fn;
     } else {
-      if ((fn = g_Jit.CompileFunction(m_pRuntime, cfun->Public()->code_offs, &ir)) == NULL)
+      if ((fn = CompileFunction(m_pRuntime, cfun->Public()->code_offs, &ir)) == NULL)
         return ir;
       m_pRuntime->m_PubJitFuncs[public_id] = fn;
     }
@@ -597,10 +603,10 @@ BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned 
   m_CustomMsg = false;
   m_InExec = true;
 
-  /* Start the frame tracer */
-
-  if (Environment::get()->IsJitEnabled())
-    ir = g_Jit.InvokeFunction(m_pRuntime, fn, result);
+  // Enter the execution engine.
+  Environment *env = Environment::get();
+  if (env->IsJitEnabled())
+    ir = env->Invoke(m_pRuntime, fn, result);
   else
     ir = Interpret(m_pRuntime, cfun->Public()->code_offs, result);
 

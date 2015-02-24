@@ -115,9 +115,6 @@ class PluginRuntime
   ScriptedInvoker **m_PubFuncs;
   CompiledFunction **m_PubJitFuncs;
 
- private:
-  ICompilation *co_;
-
  public:
   unsigned int m_CompSerial;
   

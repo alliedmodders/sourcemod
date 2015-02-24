@@ -17,6 +17,7 @@
 #include "plugin-runtime.h"
 #include "x86/jit_x86.h"
 #include "sp_vm_basecontext.h"
+#include "environment.h"
 
 #include "md5/md5.h"
 
@@ -34,7 +35,6 @@ PluginRuntime::PluginRuntime()
     m_pCtx(NULL), 
     m_PubFuncs(NULL),
     m_PubJitFuncs(NULL),
-    co_(NULL),
     m_CompSerial(0)
 {
   memset(&m_plugin, 0, sizeof(m_plugin));
@@ -48,8 +48,8 @@ PluginRuntime::PluginRuntime()
   memset(m_CodeHash, 0, sizeof(m_CodeHash));
   memset(m_DataHash, 0, sizeof(m_DataHash));
 
-  ke::AutoLock lock(g_Jit.Mutex());
-  g_Jit.RegisterRuntime(this);
+  ke::AutoLock lock(Environment::get()->lock());
+  Environment::get()->RegisterRuntime(this);
 }
 
 PluginRuntime::~PluginRuntime()
@@ -58,9 +58,9 @@ PluginRuntime::~PluginRuntime()
   // runtimes. It is not enough to ensure that the unlinking of the runtime is
   // protected; we cannot delete functions or code while the watchdog might be
   // executing. Therefore, the entire destructor is guarded.
-  ke::AutoLock lock(g_Jit.Mutex());
+  ke::AutoLock lock(Environment::get()->lock());
 
-  g_Jit.DeregisterRuntime(this);
+  Environment::get()->DeregisterRuntime(this);
 
   for (uint32_t i = 0; i < m_plugin.num_publics; i++)
     delete m_PubFuncs[i];
@@ -74,8 +74,6 @@ PluginRuntime::~PluginRuntime()
     delete m_JitFunctions[i];
 
   delete m_pCtx;
-  if (co_)
-    co_->Abort();
 
   free(m_plugin.base);
   delete [] m_plugin.memory;
@@ -303,7 +301,6 @@ int PluginRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
   md5_data.raw_digest(m_DataHash);
 
   m_pCtx = new BaseContext(this);
-  co_ = g_Jit.StartCompilation(this);
 
   SetupFloatNativeRemapping();
   function_map_size_ = m_plugin.pcode_size / sizeof(cell_t) + 1;
@@ -586,12 +583,6 @@ BaseContext *PluginRuntime::GetBaseContext()
 int
 PluginRuntime::ApplyCompilationOptions(ICompilation *co)
 {
-  if (co == NULL)
-    return SP_ERROR_NONE;
-
-  co_ = g_Jit.ApplyOptions(co_, co);
-  m_plugin.prof_flags = ((CompData *)co_)->profile;
-
   return SP_ERROR_NONE;
 }
 
@@ -608,7 +599,6 @@ PluginRuntime::CreateBlank(uint32_t heastk)
   m_plugin.memory = new uint8_t[heastk];
 
   m_pCtx = new BaseContext(this);
-  co_ = g_Jit.StartCompilation(this);
 
   return SP_ERROR_NONE;
 }
