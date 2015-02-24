@@ -11,6 +11,7 @@
 // SourcePawn. If not, see http://www.gnu.org/licenses/.
 //
 #include "compiled-function.h"
+#include "x86/jit_x86.h"
 #include "environment.h"
 
 using namespace sp;
