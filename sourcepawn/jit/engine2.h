@@ -14,6 +14,7 @@
 #define _INCLUDE_SOURCEPAWN_ENGINE_2_H_
 
 #include <sp_vm_api.h>
+#include <am-utility.h> // Replace with am-cxx later.
 
 namespace SourcePawn {
 
@@ -40,61 +41,14 @@ class SourcePawnEngine2 : public ISourcePawnEngine2
   IPluginRuntime *CreateEmptyRuntime(const char *name, uint32_t memory);
   bool InstallWatchdogTimer(size_t timeout_ms);
 
-  bool SetJitEnabled(bool enabled) {
-    jit_enabled_ = enabled;
-    return true;
-    }
-
-  bool IsJitEnabled() {
-    return jit_enabled_;
-  }
-
-  void SetProfiler(IProfiler *profiler) {
-    // Deprecated.
-  }
-
-  void EnableProfiling() {
-    profiling_enabled_ = !!profiler_;
-  }
-  void DisableProfiling() {
-    profiling_enabled_ = false;
-  }
-  bool IsProfilingEnabled() {
-    return profiling_enabled_;
-  }
-  void SetProfilingTool(IProfilingTool *tool) {
-    profiler_ = tool;
-  }
-
- public:
-  IProfilingTool *GetProfiler() {
-    return profiler_;
-  }
-
- private:
-  IProfilingTool *profiler_;
-  bool jit_enabled_;
-  bool profiling_enabled_;
+  bool SetJitEnabled(bool enabled) KE_OVERRIDE;
+  bool IsJitEnabled() KE_OVERRIDE;
+  void SetProfiler(IProfiler *profiler) KE_OVERRIDE;
+  void EnableProfiling() KE_OVERRIDE;
+  void DisableProfiling() KE_OVERRIDE;
+  void SetProfilingTool(IProfilingTool *tool) KE_OVERRIDE;
 };
 
 } // namespace SourcePawn
-
-extern SourcePawn::SourcePawnEngine2 g_engine2;
-
-class EnterProfileScope
-{
- public:
-  EnterProfileScope(const char *group, const char *name)
-  {
-    if (g_engine2.IsProfilingEnabled())
-      g_engine2.GetProfiler()->EnterScope(group, name);
-  }
-
-  ~EnterProfileScope()
-  {
-    if (g_engine2.IsProfilingEnabled())
-      g_engine2.GetProfiler()->LeaveScope();
-  }
-};
 
 #endif //_INCLUDE_SOURCEPAWN_ENGINE_2_H_

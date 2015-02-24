@@ -13,34 +13,11 @@
 #ifndef _INCLUDE_SOURCEPAWN_VM_ENGINE_H_
 #define _INCLUDE_SOURCEPAWN_VM_ENGINE_H_
 
-#include "sp_vm_api.h"
+#include <sp_vm_api.h>
+#include <am-utility.h> // Replace with am-cxx.h later.
 #include "scripted-invoker.h"
 
 class BaseContext;
-
-class CContextTrace : public IContextTrace
-{
- public:
-  CContextTrace(PluginRuntime *pRuntime, int err, const char *errstr, cell_t start_rp);
-
- public:
-  int GetErrorCode();
-  const char *GetErrorString();
-  bool DebugInfoAvailable();
-  const char *GetCustomErrorString();
-  bool GetTraceInfo(CallStackInfo *trace);
-  void ResetTrace();
-  const char *GetLastNative(uint32_t *index);
-
- private:
-  PluginRuntime *m_pRuntime;
-  sp_context_t *m_ctx;
-  int m_Error;
-  const char *m_pMsg;
-  cell_t m_StartRp;
-  cell_t m_Level;
-  IPluginDebugInfo *m_pDebug;
-};
 
 class SourcePawnEngine : public ISourcePawnEngine
 {
@@ -49,31 +26,22 @@ class SourcePawnEngine : public ISourcePawnEngine
   ~SourcePawnEngine();
 
  public: //ISourcePawnEngine
-  sp_plugin_t *LoadFromFilePointer(FILE *fp, int *err);
-  sp_plugin_t *LoadFromMemory(void *base, sp_plugin_t *plugin, int *err);
-  int FreeFromMemory(sp_plugin_t *plugin);
-  void *BaseAlloc(size_t size);
-  void BaseFree(void *memory);
-  void *ExecAlloc(size_t size);
-  void ExecFree(void *address);
-  IDebugListener *SetDebugListener(IDebugListener *pListener);
-  unsigned int GetContextCallCount();
-  unsigned int GetEngineAPIVersion();
-  void *AllocatePageMemory(size_t size);
-  void SetReadWrite(void *ptr);
-  void SetReadExecute(void *ptr);
+  sp_plugin_t *LoadFromFilePointer(FILE *fp, int *err) KE_OVERRIDE;
+  sp_plugin_t *LoadFromMemory(void *base, sp_plugin_t *plugin, int *err) KE_OVERRIDE;
+  int FreeFromMemory(sp_plugin_t *plugin) KE_OVERRIDE;
+  void *BaseAlloc(size_t size) KE_OVERRIDE;
+  void BaseFree(void *memory) KE_OVERRIDE;
+  void *ExecAlloc(size_t size) KE_OVERRIDE;
+  void ExecFree(void *address) KE_OVERRIDE;
+  IDebugListener *SetDebugListener(IDebugListener *pListener) KE_OVERRIDE;
+  unsigned int GetContextCallCount() KE_OVERRIDE;
+  unsigned int GetEngineAPIVersion() KE_OVERRIDE;
+  void *AllocatePageMemory(size_t size) KE_OVERRIDE;
+  void SetReadWrite(void *ptr) KE_OVERRIDE;
+  void SetReadExecute(void *ptr) KE_OVERRIDE;
+  void FreePageMemory(void *ptr) KE_OVERRIDE;
   void SetReadWriteExecute(void *ptr);
-  void FreePageMemory(void *ptr);
   const char *GetErrorString(int err);
-  void ReportError(PluginRuntime *runtime, int err, const char *errstr, cell_t rp_start);
-
- public: //Plugin function stuff
-  IDebugListener *GetDebugHook();
-
- private:
-  IDebugListener *m_pDebugHook;
 };
-
-extern SourcePawnEngine g_engine1;
 
 #endif //_INCLUDE_SOURCEPAWN_VM_ENGINE_H_

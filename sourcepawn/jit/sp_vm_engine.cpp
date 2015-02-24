@@ -16,14 +16,13 @@
 #include "sp_vm_types.h"
 #include <KeCodeAllocator.h>
 #include "sp_vm_engine.h"
+#include "jit_x86.h"
 #include "zlib/zlib.h"
 #include "sp_vm_basecontext.h"
-#include "jit_x86.h"
+#include "environment.h"
 #if defined __GNUC__
 #include <unistd.h>
 #endif
-
-SourcePawnEngine g_engine1;
 
 #if defined WIN32
  #define WIN32_LEAN_AND_MEAN
@@ -38,53 +37,14 @@ SourcePawnEngine g_engine1;
 
 using namespace SourcePawn;
 
-#define ERROR_MESSAGE_MAX    30
-static const char *g_ErrorMsgTable[] = 
-{
-  NULL,
-  "Unrecognizable file format",
-  "Decompressor was not found",
-  "Not enough space on the heap",
-  "Invalid parameter or parameter type",
-  "Invalid plugin address",
-  "Object or index not found",
-  "Invalid index or index not found",
-  "Not enough space on the stack",
-  "Debug section not found or debug not enabled",
-  "Invalid instruction",
-  "Invalid memory access",
-  "Stack went below stack boundary",
-  "Heap went below heap boundary",
-  "Divide by zero",
-  "Array index is out of bounds",
-  "Instruction contained invalid parameter",
-  "Stack memory leaked by native",
-  "Heap memory leaked by native",
-  "Dynamic array is too big",
-  "Tracker stack is out of bounds",
-  "Native is not bound",
-  "Maximum number of parameters reached",
-  "Native detected error",
-  "Plugin not runnable",
-  "Call was aborted",
-  "Plugin format is too old",
-  "Plugin format is too new",
-  "Out of memory",
-  "Integer overflow",
-  "Script execution timed out"
-};
-
 const char *
 SourcePawnEngine::GetErrorString(int error)
 {
-  if (error < 1 || error > ERROR_MESSAGE_MAX)
-    return NULL;
-  return g_ErrorMsgTable[error];
+  return Environment::get()->GetErrorString(error);
 }
 
 SourcePawnEngine::SourcePawnEngine()
 {
-  m_pDebugHook = NULL;
 }
 
 SourcePawnEngine::~SourcePawnEngine()
@@ -147,7 +107,7 @@ SourcePawnEngine::ExecFree(void *address)
 void
 SourcePawnEngine::SetReadWriteExecute(void *ptr)
 {
-//:TODO:  g_ExeMemory.SetRWE(ptr);
+  //:TODO:  g_ExeMemory.SetRWE(ptr);
   SetReadExecute(ptr);
 }
 
@@ -190,17 +150,15 @@ SourcePawnEngine::FreeFromMemory(sp_plugin_t *plugin)
 IDebugListener *
 SourcePawnEngine::SetDebugListener(IDebugListener *pListener)
 {
-  IDebugListener *old = m_pDebugHook;
-
-  m_pDebugHook = pListener;
-
+  IDebugListener *old = Environment::get()->debugger();
+  Environment::get()->SetDebugger(pListener);
   return old;
 }
 
 unsigned int
 SourcePawnEngine::GetEngineAPIVersion()
 {
-  return SOURCEPAWN_ENGINE_API_VERSION;
+  return 4;
 }
 
 unsigned int
@@ -208,124 +166,3 @@ SourcePawnEngine::GetContextCallCount()
 {
   return 0;
 }
-
-void
-SourcePawnEngine::ReportError(PluginRuntime *runtime, int err, const char *errstr, cell_t rp_start)
-{
-  if (m_pDebugHook == NULL)
-    return;
-
-  CContextTrace trace(runtime, err, errstr, rp_start);
-
-  m_pDebugHook->OnContextExecuteError(runtime->GetDefaultContext(), &trace);
-}
-
-CContextTrace::CContextTrace(PluginRuntime *pRuntime, int err, const char *errstr, cell_t start_rp) 
- : m_pRuntime(pRuntime),
-   m_Error(err),
-   m_pMsg(errstr),
-   m_StartRp(start_rp),
-   m_Level(0)
-{
-  m_ctx = pRuntime->m_pCtx->GetCtx();
-  m_pDebug = m_pRuntime->GetDebugInfo();
-}
-
-bool
-CContextTrace::DebugInfoAvailable()
-{
-  return (m_pDebug != NULL);
-}
-
-const char *
-CContextTrace::GetCustomErrorString()
-{
-  return m_pMsg;
-}
-
-int
-CContextTrace::GetErrorCode()
-{
-  return m_Error;
-}
-
-const char *
-CContextTrace::GetErrorString()
-{
-  if (m_Error > ERROR_MESSAGE_MAX || m_Error < 1)
-    return "Invalid error code";
-  return g_ErrorMsgTable[m_Error];
-}
-
-void
-CContextTrace::ResetTrace()
-{
-  m_Level = 0;
-}
-
-bool
-CContextTrace::GetTraceInfo(CallStackInfo *trace)
-{
-  cell_t cip;
-
-  if (m_Level == 0) {
-    cip = m_ctx->cip;
-  } else if (m_ctx->rp > 0) {
-    /* Entries go from ctx.rp - 1 to m_StartRp */
-    cell_t offs, start, end;
-
-    offs = m_Level - 1;
-    start = m_ctx->rp - 1;
-    end = m_StartRp;
-
-    if (start - offs < end)
-    {
-      return false;
-    }
-
-    cip = m_ctx->rstk_cips[start - offs];
-  } else {
-    return false;
-  }
-
-  if (trace == NULL) {
-    m_Level++;
-    return true;
-  }
-
-  if (m_pDebug->LookupFile(cip, &(trace->filename)) != SP_ERROR_NONE)
-    trace->filename = NULL;
-
-  if (m_pDebug->LookupFunction(cip, &(trace->function)) != SP_ERROR_NONE)
-    trace->function = NULL;
-
-  if (m_pDebug->LookupLine(cip, &(trace->line)) != SP_ERROR_NONE)
-    trace->line = 0;
-
-  m_Level++;
-
-  return true;
-}
-
-const char *
-CContextTrace::GetLastNative(uint32_t *index)
-{
-  if (m_ctx->n_err == SP_ERROR_NONE)
-    return NULL;
-
-  sp_native_t *native;
-  if (m_pRuntime->GetNativeByIndex(m_ctx->n_idx, &native) != SP_ERROR_NONE)
-    return NULL;
-
-  if (index)
-    *index = m_ctx->n_idx;
-
-  return native->name;
-}
-
-IDebugListener *
-SourcePawnEngine::GetDebugHook()
-{
-  return m_pDebugHook;
-}
-

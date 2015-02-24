@@ -51,7 +51,6 @@ using namespace Knight;
 
 JITX86 g_Jit;
 KeCodeCache *g_pCodeCache = NULL;
-ISourcePawnEngine *engine = &g_engine1;
 
 static inline uint8_t *
 LinkCode(AssemblerX86 &masm)

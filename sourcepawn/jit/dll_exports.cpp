@@ -32,13 +32,31 @@
 #include <sp_vm_api.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <am-utility.h> // Replace with am-cxx later.
 #include "dll_exports.h"
 #include "sp_vm_engine.h"
 #include "engine2.h"
+#include "environment.h"
 
+using namespace ke;
+using namespace sp;
 using namespace SourcePawn;
 
 SourcePawnEngine2 g_engine2;
+
+class SourcePawnFactory : public ISourcePawnFactory
+{
+public:
+	int ApiVersion() KE_OVERRIDE {
+		return SOURCEPAWN_API_VERSION;
+	}
+	ISourcePawnEnvironment *NewEnvironment() KE_OVERRIDE {
+		return Environment::New();
+	}
+	ISourcePawnEnvironment *CurrentEnvironment() KE_OVERRIDE {
+		return Environment::get();
+	}
+} sFactory;
 
 #ifdef SPSHELL
 template <typename T> class AutoT
@@ -65,6 +83,8 @@ public:
 private:
 	T *t_;
 };
+
+Environment *sEnv;
 
 class ShellDebugListener : public IDebugListener
 {
@@ -181,7 +201,7 @@ static int Execute(const char *file)
 	int err;
 	AutoT<IPluginRuntime> rt(g_engine2.LoadPlugin(co, file, &err));
 	if (!rt) {
-		fprintf(stderr, "Could not load plugin: %s\n", g_engine1.GetErrorString(err));
+		fprintf(stderr, "Could not load plugin: %s\n", sEnv->GetErrorString(err));
 		return 1;
 	}
 
@@ -199,7 +219,7 @@ static int Execute(const char *file)
 
 	int result = fun->Execute2(cx, &err);
 	if (err != SP_ERROR_NONE) {
-		fprintf(stderr, "Error executing main(): %s\n", g_engine1.GetErrorString(err));
+		fprintf(stderr, "Error executing main(): %s\n", sEnv->GetErrorString(err));
 		return 1;
 	}
 
@@ -213,34 +233,37 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	if (!g_engine2.Initialize()) {
+	if ((sEnv = Environment::New()) == nullptr) {
 		fprintf(stderr, "Could not initialize ISourcePawnEngine2\n");
 		return 1;
 	}
 
 	if (getenv("DISABLE_JIT"))
-		g_engine2.SetJitEnabled(false);
+		sEnv->SetJitEnabled(false);
 
 	ShellDebugListener debug;
-	g_engine1.SetDebugListener(&debug);
-	g_engine2.InstallWatchdogTimer(5000);
+	sEnv->SetDebugger(&debug);
+	sEnv->InstallWatchdogTimer(5000);
 
 	int errcode = Execute(argv[1]);
 
-	g_engine1.SetDebugListener(NULL);
-	g_engine2.Shutdown();
+	sEnv->SetDebugger(NULL);
+	sEnv->Shutdown();
+	delete sEnv;
+
 	return errcode;
 }
 
 #else
-EXPORTFUNC ISourcePawnEngine *GetSourcePawnEngine1()
-{
-	return &g_engine1;
-}
 
-EXPORTFUNC ISourcePawnEngine2 *GetSourcePawnEngine2()
+#define MIN_API_VERSION 0x0207
+
+EXPORTFUNC ISourcePawnFactory *
+GetSourcePawnFactory(int apiVersion)
 {
-	return &g_engine2;
+	if (apiVersion < MIN_API_VERSION || apiVersion > SOURCEPAWN_API_VERSION)
+		return nullptr;
+	return &sFactory;
 }
 #endif
 

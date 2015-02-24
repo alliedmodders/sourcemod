@@ -33,7 +33,9 @@ library = setup(builder.compiler.StaticLibrary('sourcepawn'))
 library.sources += [
   'plugin-runtime.cpp',
   'compiled-function.cpp',
+  'debug-trace.cpp',
   'engine2.cpp',
+  'environment.cpp',
   'sp_vm_basecontext.cpp',
   'sp_vm_engine.cpp',
   'scripted-invoker.cpp',

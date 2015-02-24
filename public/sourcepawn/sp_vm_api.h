@@ -1,32 +1,15 @@
-/**
- * vim: set ts=4 sw=4 tw=99 noet :
- * =============================================================================
- * SourcePawn
- * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
- * =============================================================================
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, version 3.0, as published by the
- * Free Software Foundation.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * As a special exception, AlliedModders LLC gives you permission to link the
- * code of this program (as well as its derivative works) to "Half-Life 2," the
- * "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
- * by the Valve Corporation.  You must obey the GNU General Public License in
- * all respects for all other code used.  Additionally, AlliedModders LLC grants
- * this exception to all derivative works.  AlliedModders LLC defines further
- * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
- * or <http://www.sourcemod.net/license.php>.
- */
-
+// vim: set sts=2 ts=8 sw=2 tw=99 et:
+// 
+// Copyright (C) 2006-2015 AlliedModders LLC
+// 
+// This file is part of SourcePawn. SourcePawn is free software: you can
+// redistribute it and/or modify it under the terms of the GNU General Public
+// License as published by the Free Software Foundation, either version 3 of
+// the License, or (at your option) any later version.
+//
+// You should have received a copy of the GNU General Public License along with
+// SourcePawn. If not, see http://www.gnu.org/licenses/.
+//
 #ifndef _INCLUDE_SOURCEPAWN_VM_API_H_
 #define _INCLUDE_SOURCEPAWN_VM_API_H_
 
@@ -38,20 +21,13 @@
 #include <stdio.h>
 #include "sp_vm_types.h"
 
-/** SourcePawn Engine API Version */
-#define SOURCEPAWN_ENGINE_API_VERSION	4
-#define SOURCEPAWN_ENGINE2_API_VERSION	6
+/** SourcePawn Engine API Versions */
+#define SOURCEPAWN_ENGINE2_API_VERSION 7
+#define SOURCEPAWN_API_VERSION         0x0207
 
-#if !defined SOURCEMOD_BUILD
-#define SOURCEMOD_BUILD
-#endif
-
-#if defined SOURCEMOD_BUILD
-namespace SourceMod
-{
+namespace SourceMod {
 	struct IdentityToken_t;
 };
-#endif
 
 struct sp_context_s;
 typedef struct sp_context_s sp_context_t;
@@ -69,7 +45,6 @@ namespace SourcePawn
 	#define SM_PARAM_STRING_COPY	(1<<1)		/**< String should be copied into the plugin */
 	#define SM_PARAM_STRING_BINARY	(1<<2)		/**< String should be handled as binary data */
 
-#if defined SOURCEMOD_BUILD
 	/**
 	 * @brief Pseudo-NULL reference types.
 	 */
@@ -78,7 +53,6 @@ namespace SourcePawn
 		SP_NULL_VECTOR = 0,		/**< Float[3] reference */
 		SP_NULL_STRING = 1,		/**< const String[1] reference */
 	};
-#endif
 
 	/**
 	 * @brief Represents what a function needs to implement in order to be callable.
@@ -1095,30 +1069,18 @@ namespace SourcePawn
 	{
 	public:
 		/**
-		 * @brief Deprecated, do not use.
-		 * 
-		 * @param fp		Unused.
-		 * @param err		Unused.
-		 * @return			NULL.
+		 * @brief Deprecated. Does nothing.
 		 */	
 		virtual sp_plugin_t *LoadFromFilePointer(FILE *fp, int *err) =0;
 	
 		/**
-		 * @brief Deprecated, do not use,
-		 *	
-		 * @param base		Unused.
-		 * @param plugin	Unused.
-		 * @param err		Unused.
-		 * @return			NULL.
-		 */
+		 * @brief Deprecated. Does nothing.
+		 */	
 		virtual sp_plugin_t *LoadFromMemory(void *base, sp_plugin_t *plugin, int *err) =0;
 
 		/**
-		 * @brief Deprecated, do not use.
-		 *
-		 * @param plugin	Unused.
-		 * @return			SP_ERROR_ABORTED.
-		 */
+		 * @brief Deprecated. Does nothing.
+		 */	
 		virtual int FreeFromMemory(sp_plugin_t *plugin) =0;
 
 		/**
@@ -1165,10 +1127,8 @@ namespace SourcePawn
 		virtual IDebugListener *SetDebugListener(IDebugListener *listener) =0;
 		
 		/**
-		 * @brief Deprecated, do not use.
-		 *
-		 * @return			0.
-		 */
+		 * @brief Deprecated. Does nothing.
+		 */	
 		virtual unsigned int GetContextCallCount() =0;
 
 		/**
@@ -1296,16 +1256,13 @@ namespace SourcePawn
 		virtual const char *GetErrorString(int err) =0;
 
 		/**
-		 * @brief Initializes the SourcePawn engine.
-		 *
-		 * @return			True on success, false if failed.
-		 */
+		 * @brief Deprecated. Does nothing.
+		 */	
 		virtual bool Initialize() =0;
 		
 		/**
-		 * @brief Shuts down the SourcePawn engine.  Only needs to be called if 
-		 * Initialize() succeeded.
-		 */
+		 * @brief Deprecated. Does nothing.
+		 */	
 		virtual void Shutdown() =0;
 
 		/**
@@ -1362,6 +1319,50 @@ namespace SourcePawn
 		 */
 		virtual void SetProfilingTool(IProfilingTool *tool) =0;
 	};
+
+	// @brief This class is the v3 API for SourcePawn. It provides access to
+	// the original v1 and v2 APIs as well.
+	class ISourcePawnEnvironment
+	{
+	public:
+		// The Environment must be freed with the delete keyword. This
+		// automatically calls Shutdown().
+		virtual ~ISourcePawnEnvironment()
+		{}
+
+		// @brief Return the API version.
+		virtual int ApiVersion() = 0;
+
+		// @brief Return a pointer to the v1 API.
+		virtual ISourcePawnEngine *APIv1() = 0;
+
+		// @brief Return a pointer to the v2 API.
+		virtual ISourcePawnEngine2 *APIv2() = 0;
+
+		// @brief Destroy the environment, releasing all resources and freeing
+		// all plugin memory. This should not be called while plugins have
+		// active code running on the stack.
+		virtual void Shutdown() = 0;
+	};
+
+	// @brief This class is the entry-point to using SourcePawn from a DLL.
+	class ISourcePawnFactory
+	{
+	public:
+		// @brief Return the API version.
+		virtual int ApiVersion() = 0;
+
+		// @brief Initializes a new environment on the current thread.
+		// Currently, at most one environment may be created in a process.
+		virtual ISourcePawnEnvironment *NewEnvironment() = 0;
+
+		// @brief Returns the environment for the calling thread.
+		virtual ISourcePawnEnvironment *CurrentEnvironment() = 0;
+	};
+
+	// @brief A function named "GetSourcePawnFactory" is exported from the
+	// SourcePawn DLL, conforming to the following signature:
+	typedef ISourcePawnFactory *(*GetSourcePawnFactoryFn)(int apiVersion);
 };
 
 #endif //_INCLUDE_SOURCEPAWN_VM_API_H_

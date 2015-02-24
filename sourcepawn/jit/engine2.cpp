@@ -20,13 +20,12 @@
 #include "sp_vm_engine.h"
 #include "watchdog_timer.h"
 #include <sourcemod_version.h>
+#include "environment.h"
 
 using namespace SourcePawn;
 
 SourcePawnEngine2::SourcePawnEngine2()
 {
-  profiler_ = NULL;
-  jit_enabled_ = true;
 }
 
 IPluginRuntime *
@@ -172,7 +171,9 @@ SourcePawnEngine2::GetVersionString()
 IDebugListener *
 SourcePawnEngine2::SetDebugListener(IDebugListener *listener)
 {
-  return g_engine1.SetDebugListener(listener);
+  IDebugListener *old = Environment::get()->debugger();
+  Environment::get()->SetDebugger(listener);
+  return old;
 }
 
 unsigned int
@@ -190,20 +191,18 @@ SourcePawnEngine2::StartCompilation()
 const char *
 SourcePawnEngine2::GetErrorString(int err)
 {
-  return g_engine1.GetErrorString(err);
+  return Environment::get()->GetErrorString(err);
 }
 
 bool
 SourcePawnEngine2::Initialize()
 {
-  return g_Jit.InitializeJIT();
+  return true;
 }
 
 void
 SourcePawnEngine2::Shutdown()
 {
-  g_WatchdogTimer.Shutdown();
-  g_Jit.ShutdownJIT();
 }
 
 IPluginRuntime *
@@ -227,6 +226,42 @@ SourcePawnEngine2::CreateEmptyRuntime(const char *name, uint32_t memory)
 bool
 SourcePawnEngine2::InstallWatchdogTimer(size_t timeout_ms)
 {
-  return g_WatchdogTimer.Initialize(timeout_ms);
+  return Environment::get()->InstallWatchdogTimer(timeout_ms);
 }
 
+bool
+SourcePawnEngine2::SetJitEnabled(bool enabled)
+{
+  Environment::get()->SetJitEnabled(enabled);
+  return Environment::get()->IsJitEnabled() == enabled;
+}
+
+bool
+SourcePawnEngine2::IsJitEnabled()
+{
+  return Environment::get()->IsJitEnabled();
+}
+
+void
+SourcePawnEngine2::SetProfiler(IProfiler *profiler)
+{
+  // Deprecated.
+}
+
+void
+SourcePawnEngine2::EnableProfiling()
+{
+  Environment::get()->EnableProfiling();
+}
+
+void
+SourcePawnEngine2::DisableProfiling()
+{
+  Environment::get()->DisableProfiling();
+}
+
+void
+SourcePawnEngine2::SetProfilingTool(IProfilingTool *tool)
+{
+  Environment::get()->SetProfiler(tool);
+}
