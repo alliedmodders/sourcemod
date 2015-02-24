@@ -19,6 +19,7 @@
 #include "interpreter.h"
 #include "opcodes.h"
 #include "watchdog_timer.h"
+#include "environment.h"
 
 #define STACK_MARGIN 64
 
@@ -67,7 +68,7 @@ JumpTarget(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t *cip, bool cond)
   }
 
   cell_t *next = reinterpret_cast<cell_t *>(plugin->pcode + target);
-  if (next < cip && !g_WatchdogTimer.HandleInterrupt()) {
+  if (next < cip && !Environment::get()->watchdog()->HandleInterrupt()) {
     ctx->err = SP_ERROR_TIMEOUT;
     return NULL;
   }

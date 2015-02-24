@@ -15,6 +15,7 @@
 #include "watchdog_timer.h"
 #include "debug-trace.h"
 #include "api.h"
+#include "watchdog_timer.h"
 
 using namespace sp;
 using namespace SourcePawn;
@@ -26,6 +27,10 @@ Environment::Environment()
    profiler_(nullptr),
    jit_enabled_(true),
    profiling_enabled_(false)
+{
+}
+
+Environment::~Environment()
 {
 }
 
@@ -57,6 +62,7 @@ Environment::Initialize()
 {
   api_v1_ = new SourcePawnEngine();
   api_v2_ = new SourcePawnEngine2();
+  watchdog_timer_ = new WatchdogTimer();
 
   if (!g_Jit.InitializeJIT())
     return false;
@@ -67,7 +73,7 @@ Environment::Initialize()
 void
 Environment::Shutdown()
 {
-  g_WatchdogTimer.Shutdown();
+  watchdog_timer_->Shutdown();
   g_Jit.ShutdownJIT();
 }
 
@@ -86,7 +92,7 @@ Environment::DisableProfiling()
 bool
 Environment::InstallWatchdogTimer(int timeout_ms)
 {
-  return g_WatchdogTimer.Initialize(timeout_ms);
+  return watchdog_timer_->Initialize(timeout_ms);
 }
 
 ISourcePawnEngine *

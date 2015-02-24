@@ -22,6 +22,8 @@ namespace sp {
 
 using namespace SourcePawn;
 
+class WatchdogTimer;
+
 // An Environment encapsulates everything that's needed to load and run
 // instances of plugins on a single thread. There can be at most one
 // environment per thread.
@@ -32,6 +34,7 @@ class Environment : public ISourcePawnEnvironment
 {
  public:
   Environment();
+  ~Environment();
 
   static Environment *New();
 
@@ -77,12 +80,17 @@ class Environment : public ISourcePawnEnvironment
     return debugger_;
   }
 
+  WatchdogTimer *watchdog() const {
+    return watchdog_timer_;
+  }
+
  private:
   bool Initialize();
 
  private:
   ke::AutoPtr<ISourcePawnEngine> api_v1_;
   ke::AutoPtr<ISourcePawnEngine2> api_v2_;
+  ke::AutoPtr<WatchdogTimer> watchdog_timer_;
 
   IDebugListener *debugger_;
   IProfilingTool *profiler_;

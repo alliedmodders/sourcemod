@@ -529,7 +529,7 @@ BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned 
 
   EnterProfileScope profileScope("SourcePawn", "EnterJIT");
 
-  if (!g_WatchdogTimer.HandleInterrupt())
+  if (!Environment::get()->watchdog()->HandleInterrupt())
     return SP_ERROR_TIMEOUT;
 
   funcid_t fnid = function->GetFunctionID();
@@ -631,7 +631,7 @@ BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned 
   }
 
   if (ir == SP_ERROR_TIMEOUT)
-    g_WatchdogTimer.NotifyTimeoutReceived();
+    Environment::get()->watchdog()->NotifyTimeoutReceived();
 
   if (ir != SP_ERROR_NONE)
     Environment::get()->ReportError(m_pRuntime, ir, m_MsgCache, save_rp);

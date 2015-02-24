@@ -18,8 +18,6 @@
 #include "x86/jit_x86.h"
 #include <string.h>
 
-WatchdogTimer g_WatchdogTimer;
-
 WatchdogTimer::WatchdogTimer()
   : terminate_(false),
     mainthread_(ke::GetCurrentThreadId()),
