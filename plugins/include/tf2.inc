@@ -438,6 +438,18 @@ forward TF2_OnWaitingForPlayersEnd();
  * @return				Plugin_Continue for original calculation, higher value to use 'result'.
  */
 forward Action:TF2_OnPlayerTeleport(client, teleporter, &bool:result);
+
+/**
+ * Forces a TF2 client to change team.
+ *
+ * @param client	Client to change team of.
+ * @param team		Team to make client be.
+ * @param autoTeam	Unknown what used for atm.
+ * @param silent	Possibly silent the team change?
+ * @error			Invalid client index, client not in game.
+ * @noreturn
+ */
+native TF2_ChangeTeam(client, TFTeam:team, bool:autoTeam=false, bool:silent = false);
  
 /**
  * Do not edit below this line!
@@ -472,5 +484,6 @@ public __ext_tf2_SetNTVOptional()
 	MarkNativeAsOptional("TF2_IsPlayerInDuel");
 	MarkNativeAsOptional("TF2_IsHolidayActive");
 	MarkNativeAsOptional("TF2_RemoveWearable");
+	MarkNativeAsOptional("TF2_ChangeTeam");
 }
 #endif

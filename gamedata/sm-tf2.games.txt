@@ -80,7 +80,7 @@
 			}
 			"MakeBleed"
 			{
-				"library" 	"server"
+				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x20\x56\x8B\xF1\x89\x75\xF8\x8B\x8E"
 				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefi"
 				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefi"
@@ -143,6 +143,12 @@
 				"windows"	"427"
 				"linux"		"428"
 				"mac"		"428"
+			}
+			"ChangeTeam"
+			{
+				"windows"	"419"
+				"linux"		"420"
+				"mac"		"420"
 			}
 		}
 	}
