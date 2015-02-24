@@ -25,7 +25,7 @@ typedef struct sp_plugin_debug_s
 	bool unpacked;				/**< Whether debug structures are unpacked */
 } sp_plugin_debug_t;
 
-class BaseContext;
+class PluginContext;
 
 /**
  * Breaks into a debugger
@@ -34,7 +34,7 @@ class BaseContext;
  *  [1] - frm
  *  [2] - cip
  */
-typedef int (*SPVM_DEBUGBREAK)(BaseContext *, uint32_t, uint32_t);
+typedef int (*SPVM_DEBUGBREAK)(PluginContext *, uint32_t, uint32_t);
 
 /**
  * @brief The rebased memory format of a plugin.  This differs from the on-disk structure 
@@ -69,7 +69,7 @@ namespace SourcePawn
 }
 
 struct tracker_t;
-class BaseContext;
+class PluginContext;
 
 typedef struct sp_context_s
 {
@@ -83,7 +83,7 @@ typedef struct sp_context_s
 	uint32_t		n_idx;			/**< Current native index being executed */
 	tracker_t 		*tracker;
 	sp_plugin_t 	*plugin;
-	BaseContext		*basecx;
+	PluginContext	*basecx;
 	void *			vm[8];			/**< VM-specific pointers */
 	cell_t			rp;				/**< Return stack pointer */
 	cell_t			rstk_cips[SP_MAX_RETURN_STACK];

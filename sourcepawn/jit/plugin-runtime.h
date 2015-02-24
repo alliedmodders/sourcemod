@@ -20,7 +20,7 @@
 #include "compiled-function.h"
 #include "scripted-invoker.h"
 
-class BaseContext;
+class PluginContext;
 
 class DebugInfo : public IPluginDebugInfo
 {
@@ -84,7 +84,7 @@ class PluginRuntime
   unsigned GetNativeReplacement(size_t index);
   ScriptedInvoker *GetPublicFunction(size_t index);
 
-  BaseContext *GetBaseContext();
+  PluginContext *GetBaseContext();
   const sp_plugin_t *plugin() const {
     return &m_plugin;
   }
@@ -111,7 +111,7 @@ class PluginRuntime
 
  public:
   DebugInfo m_Debug;
-  BaseContext *m_pCtx;
+  PluginContext *m_pCtx;
   ScriptedInvoker **m_PubFuncs;
   CompiledFunction **m_PubJitFuncs;
 

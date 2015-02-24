@@ -26,7 +26,7 @@ using namespace SourcePawn;
 #define CELLBOUNDMAX  (INT_MAX/sizeof(cell_t))
 #define STACKMARGIN    ((cell_t)(16*sizeof(cell_t)))
 
-BaseContext::BaseContext(PluginRuntime *pRuntime)
+PluginContext::PluginContext(PluginRuntime *pRuntime)
 {
   m_pRuntime = pRuntime;
 
@@ -66,56 +66,56 @@ BaseContext::BaseContext(PluginRuntime *pRuntime)
   m_ctx.plugin = const_cast<sp_plugin_t *>(pRuntime->plugin());
 }
 
-BaseContext::~BaseContext()
+PluginContext::~PluginContext()
 {
   free(m_ctx.tracker->pBase);
   delete m_ctx.tracker;
 }
 
 IVirtualMachine *
-BaseContext::GetVirtualMachine()
+PluginContext::GetVirtualMachine()
 {
   return NULL;
 }
 
 sp_context_t *
-BaseContext::GetContext()
+PluginContext::GetContext()
 {
   return reinterpret_cast<sp_context_t *>((IPluginContext * )this);
 }
 
 sp_context_t *
-BaseContext::GetCtx()
+PluginContext::GetCtx()
 {
   return &m_ctx;
 }
 
 bool
-BaseContext::IsDebugging()
+PluginContext::IsDebugging()
 {
   return true;
 }
 
 int
-BaseContext::SetDebugBreak(void *newpfn, void *oldpfn)
+PluginContext::SetDebugBreak(void *newpfn, void *oldpfn)
 {
   return SP_ERROR_ABORTED;
 }
 
 IPluginDebugInfo *
-BaseContext::GetDebugInfo()
+PluginContext::GetDebugInfo()
 {
   return NULL;
 }
 
 int
-BaseContext::Execute(uint32_t code_addr, cell_t *result)
+PluginContext::Execute(uint32_t code_addr, cell_t *result)
 {
   return SP_ERROR_ABORTED;
 }
 
 void
-BaseContext::SetErrorMessage(const char *msg, va_list ap)
+PluginContext::SetErrorMessage(const char *msg, va_list ap)
 {
   m_CustomMsg = true;
 
@@ -123,7 +123,7 @@ BaseContext::SetErrorMessage(const char *msg, va_list ap)
 }
 
 void
-BaseContext::_SetErrorMessage(const char *msg, ...)
+PluginContext::_SetErrorMessage(const char *msg, ...)
 {
   va_list ap;
   va_start(ap, msg);
@@ -132,7 +132,7 @@ BaseContext::_SetErrorMessage(const char *msg, ...)
 }
 
 cell_t
-BaseContext::ThrowNativeErrorEx(int error, const char *msg, ...)
+PluginContext::ThrowNativeErrorEx(int error, const char *msg, ...)
 {
   if (!m_InExec)
     return 0;
@@ -150,7 +150,7 @@ BaseContext::ThrowNativeErrorEx(int error, const char *msg, ...)
 }
 
 cell_t
-BaseContext::ThrowNativeError(const char *msg, ...)
+PluginContext::ThrowNativeError(const char *msg, ...)
 {
   if (!m_InExec)
     return 0;
@@ -168,7 +168,7 @@ BaseContext::ThrowNativeError(const char *msg, ...)
 }
 
 int
-BaseContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys_addr)
+PluginContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys_addr)
 {
   cell_t *addr;
   ucell_t realmem;
@@ -207,7 +207,7 @@ BaseContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys_add
 }
 
 int
-BaseContext::HeapPop(cell_t local_addr)
+PluginContext::HeapPop(cell_t local_addr)
 {
   cell_t cellcount;
   cell_t *addr;
@@ -230,7 +230,7 @@ BaseContext::HeapPop(cell_t local_addr)
 
 
 int
-BaseContext::HeapRelease(cell_t local_addr)
+PluginContext::HeapRelease(cell_t local_addr)
 {
   if (local_addr < (cell_t)m_pRuntime->plugin()->data_size)
     return SP_ERROR_INVALID_ADDRESS;
@@ -241,91 +241,91 @@ BaseContext::HeapRelease(cell_t local_addr)
 }
 
 int
-BaseContext::FindNativeByName(const char *name, uint32_t *index)
+PluginContext::FindNativeByName(const char *name, uint32_t *index)
 {
   return m_pRuntime->FindNativeByName(name, index);
 }
 
 int
-BaseContext::GetNativeByIndex(uint32_t index, sp_native_t **native)
+PluginContext::GetNativeByIndex(uint32_t index, sp_native_t **native)
 {
   return m_pRuntime->GetNativeByIndex(index, native);
 }
 
 uint32_t
-BaseContext::GetNativesNum()
+PluginContext::GetNativesNum()
 {
   return m_pRuntime->GetNativesNum();
 }
 
 int
-BaseContext::FindPublicByName(const char *name, uint32_t *index)
+PluginContext::FindPublicByName(const char *name, uint32_t *index)
 {
   return m_pRuntime->FindPublicByName(name, index);
 }
 
 int
-BaseContext::GetPublicByIndex(uint32_t index, sp_public_t **pblic)
+PluginContext::GetPublicByIndex(uint32_t index, sp_public_t **pblic)
 {
   return m_pRuntime->GetPublicByIndex(index, pblic);
 }
 
 uint32_t
-BaseContext::GetPublicsNum()
+PluginContext::GetPublicsNum()
 {
   return m_pRuntime->GetPublicsNum();
 }
 
 int
-BaseContext::GetPubvarByIndex(uint32_t index, sp_pubvar_t **pubvar)
+PluginContext::GetPubvarByIndex(uint32_t index, sp_pubvar_t **pubvar)
 {
   return m_pRuntime->GetPubvarByIndex(index, pubvar);
 }
 
 int
-BaseContext::FindPubvarByName(const char *name, uint32_t *index)
+PluginContext::FindPubvarByName(const char *name, uint32_t *index)
 {
   return m_pRuntime->FindPubvarByName(name, index);
 }
 
 int
-BaseContext::GetPubvarAddrs(uint32_t index, cell_t *local_addr, cell_t **phys_addr)
+PluginContext::GetPubvarAddrs(uint32_t index, cell_t *local_addr, cell_t **phys_addr)
 {
   return m_pRuntime->GetPubvarAddrs(index, local_addr, phys_addr);
 }
 
 uint32_t
-BaseContext::GetPubVarsNum()
+PluginContext::GetPubVarsNum()
 {
   return m_pRuntime->GetPubVarsNum();
 }
 
 int
-BaseContext::BindNatives(const sp_nativeinfo_t *natives, unsigned int num, int overwrite)
+PluginContext::BindNatives(const sp_nativeinfo_t *natives, unsigned int num, int overwrite)
 {
   return SP_ERROR_ABORTED;
 }
 
 int
-BaseContext::BindNative(const sp_nativeinfo_t *native)
+PluginContext::BindNative(const sp_nativeinfo_t *native)
 {
   return SP_ERROR_ABORTED;
 }
 
 int
-BaseContext::BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC func)
+PluginContext::BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC func)
 {
   return SP_ERROR_ABORTED;
 }
 
 int
-BaseContext::BindNativeToAny(SPVM_NATIVE_FUNC native)
+PluginContext::BindNativeToAny(SPVM_NATIVE_FUNC native)
 {
   return SP_ERROR_ABORTED;
 }
 
 int
-BaseContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
+PluginContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
 {
   if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp)) ||
       (local_addr < 0) || ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
@@ -340,25 +340,25 @@ BaseContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
 }
 
 int
-BaseContext::PushCell(cell_t value)
+PluginContext::PushCell(cell_t value)
 {
   return SP_ERROR_ABORTED;
 }
 
 int
-BaseContext::PushCellsFromArray(cell_t array[], unsigned int numcells)
+PluginContext::PushCellsFromArray(cell_t array[], unsigned int numcells)
 {
   return SP_ERROR_ABORTED;
 }
 
 int
-BaseContext::PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t array[], unsigned int numcells)
+PluginContext::PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t array[], unsigned int numcells)
 {
   return SP_ERROR_ABORTED;
 }
 
 int
-BaseContext::LocalToString(cell_t local_addr, char **addr)
+PluginContext::LocalToString(cell_t local_addr, char **addr)
 {
   if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp)) ||
       (local_addr < 0) || ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
@@ -371,13 +371,13 @@ BaseContext::LocalToString(cell_t local_addr, char **addr)
 }
 
 int
-BaseContext::PushString(cell_t *local_addr, char **phys_addr, const char *string)
+PluginContext::PushString(cell_t *local_addr, char **phys_addr, const char *string)
 {
   return SP_ERROR_ABORTED;
 }
 
 int
-BaseContext::StringToLocal(cell_t local_addr, size_t bytes, const char *source)
+PluginContext::StringToLocal(cell_t local_addr, size_t bytes, const char *source)
 {
   char *dest;
   size_t len;
@@ -439,7 +439,7 @@ __CheckValidChar(char *c)
 }
 
 int
-BaseContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const char *source, size_t *wrtnbytes)
+PluginContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const char *source, size_t *wrtnbytes)
 {
   char *dest;
   size_t len;
@@ -475,19 +475,19 @@ BaseContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const char *s
 }
 
 IPluginFunction *
-BaseContext::GetFunctionById(funcid_t func_id)
+PluginContext::GetFunctionById(funcid_t func_id)
 {
   return m_pRuntime->GetFunctionById(func_id);
 }
 
 IPluginFunction *
-BaseContext::GetFunctionByName(const char *public_name)
+PluginContext::GetFunctionByName(const char *public_name)
 {
   return m_pRuntime->GetFunctionByName(public_name);
 }
 
 int
-BaseContext::LocalToStringNULL(cell_t local_addr, char **addr)
+PluginContext::LocalToStringNULL(cell_t local_addr, char **addr)
 {
   int err;
   if ((err = LocalToString(local_addr, addr)) != SP_ERROR_NONE)
@@ -500,7 +500,7 @@ BaseContext::LocalToStringNULL(cell_t local_addr, char **addr)
 }
 
 SourceMod::IdentityToken_t *
-BaseContext::GetIdentity()
+PluginContext::GetIdentity()
 {
   SourceMod::IdentityToken_t *tok;
 
@@ -510,7 +510,7 @@ BaseContext::GetIdentity()
 }
 
 cell_t *
-BaseContext::GetNullRef(SP_NULL_TYPE type)
+PluginContext::GetNullRef(SP_NULL_TYPE type)
 {
   if (type == SP_NULL_VECTOR)
     return m_pNullVec;
@@ -519,13 +519,13 @@ BaseContext::GetNullRef(SP_NULL_TYPE type)
 }
 
 bool
-BaseContext::IsInExec()
+PluginContext::IsInExec()
 {
   return m_InExec;
 }
 
 int
-BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned int num_params, cell_t *result)
+PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned int num_params, cell_t *result)
 {
   int ir;
   int serial;
@@ -656,7 +656,7 @@ BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned 
 }
 
 IPluginRuntime *
-BaseContext::GetRuntime()
+PluginContext::GetRuntime()
 {
   return m_pRuntime;
 }
@@ -778,19 +778,19 @@ DebugInfo::LookupLine(ucell_t addr, uint32_t *line)
 #undef USHR
 
 int
-BaseContext::GetLastNativeError()
+PluginContext::GetLastNativeError()
 {
   return m_ctx.n_err;
 }
 
 cell_t *
-BaseContext::GetLocalParams()
+PluginContext::GetLocalParams()
 {
   return (cell_t *)(m_pRuntime->plugin()->memory + m_ctx.frm + (2 * sizeof(cell_t)));
 }
 
 void
-BaseContext::SetKey(int k, void *value)
+PluginContext::SetKey(int k, void *value)
 {
   if (k < 1 || k > 4)
     return;
@@ -800,7 +800,7 @@ BaseContext::SetKey(int k, void *value)
 }
 
 bool
-BaseContext::GetKey(int k, void **value)
+PluginContext::GetKey(int k, void **value)
 {
   if (k < 1 || k > 4 || m_keys_set[k - 1] == false)
     return false;
@@ -810,7 +810,7 @@ BaseContext::GetKey(int k, void **value)
 }
 
 void
-BaseContext::ClearLastNativeError()
+PluginContext::ClearLastNativeError()
 {
   m_ctx.n_err = SP_ERROR_NONE;
 }
