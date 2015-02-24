@@ -931,20 +931,12 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 
 	pPlugin->m_type = PluginType_MapUpdated;
 
-	ICompilation *co = NULL;
-
 	if (pPlugin->m_status == Plugin_Uncompiled)
-	{
-		co = g_pSourcePawn2->StartCompilation();
-	}
-
-	/* Do the actual compiling */
-	if (co != NULL)
 	{
 		char fullpath[PLATFORM_MAX_PATH];
 		g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", pPlugin->m_filename);
 
-		pPlugin->m_pRuntime = g_pSourcePawn2->LoadPlugin(co, fullpath, &err);
+		pPlugin->m_pRuntime = g_pSourcePawn2->LoadPlugin(nullptr, fullpath, &err);
 		if (pPlugin->m_pRuntime == NULL)
 		{
 			if (error)

@@ -61,25 +61,6 @@ struct CallThunk
   }
 };
 
-class CompData : public ICompilation
-{
-public:
-  CompData() 
-  : profile(0),
-    inline_level(0)
-  {
-  };
-  bool SetOption(const char *key, const char *val);
-  void Abort();
-public:
-  cell_t cur_func;            /* current func pcode offset */
-  /* Options */
-  int profile;                /* profiling flags */
-  int inline_level;           /* inline optimization level */
-  /* Per-compilation properties */
-  unsigned int func_idx;      /* current function index */
-};
-
 class Compiler
 {
  public:
@@ -152,12 +133,9 @@ class JITX86
  public:
   bool InitializeJIT();
   void ShutdownJIT();
-  ICompilation *StartCompilation(PluginRuntime *runtime);
-  ICompilation *StartCompilation();
   SPVM_NATIVE_FUNC CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData);
   void DestroyFakeNative(SPVM_NATIVE_FUNC func);
   CompiledFunction *CompileFunction(PluginRuntime *runtime, cell_t pcode_offs, int *err);
-  ICompilation *ApplyOptions(ICompilation *_IN, ICompilation *_OUT);
   int InvokeFunction(PluginRuntime *runtime, CompiledFunction *fn, cell_t *result);
 
   void *TimeoutStub() const {

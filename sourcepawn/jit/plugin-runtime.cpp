@@ -35,7 +35,6 @@ PluginRuntime::PluginRuntime()
     m_pCtx(NULL), 
     m_PubFuncs(NULL),
     m_PubJitFuncs(NULL),
-    co_(NULL),
     m_CompSerial(0)
 {
   memset(&m_plugin, 0, sizeof(m_plugin));
@@ -75,8 +74,6 @@ PluginRuntime::~PluginRuntime()
     delete m_JitFunctions[i];
 
   delete m_pCtx;
-  if (co_)
-    co_->Abort();
 
   free(m_plugin.base);
   delete [] m_plugin.memory;
@@ -304,7 +301,6 @@ int PluginRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
   md5_data.raw_digest(m_DataHash);
 
   m_pCtx = new BaseContext(this);
-  co_ = g_Jit.StartCompilation(this);
 
   SetupFloatNativeRemapping();
   function_map_size_ = m_plugin.pcode_size / sizeof(cell_t) + 1;
@@ -587,12 +583,6 @@ BaseContext *PluginRuntime::GetBaseContext()
 int
 PluginRuntime::ApplyCompilationOptions(ICompilation *co)
 {
-  if (co == NULL)
-    return SP_ERROR_NONE;
-
-  co_ = g_Jit.ApplyOptions(co_, co);
-  m_plugin.prof_flags = ((CompData *)co_)->profile;
-
   return SP_ERROR_NONE;
 }
 
@@ -609,7 +599,6 @@ PluginRuntime::CreateBlank(uint32_t heastk)
   m_plugin.memory = new uint8_t[heastk];
 
   m_pCtx = new BaseContext(this);
-  co_ = g_Jit.StartCompilation(this);
 
   return SP_ERROR_NONE;
 }

@@ -1876,21 +1876,6 @@ GenerateEntry(void **retp, void **timeoutp)
   return code;
 }
 
-ICompilation *JITX86::ApplyOptions(ICompilation *_IN, ICompilation *_OUT)
-{
-  if (_IN == NULL)
-    return _OUT;
-
-  CompData *_in = (CompData * )_IN;
-  CompData *_out = (CompData * )_OUT;
-
-  _in->inline_level = _out->inline_level;
-  _in->profile = _out->profile;
-
-  _out->Abort();
-  return _in;
-}
-
 JITX86::JITX86()
 {
   m_pJitEntry = NULL;
@@ -1965,42 +1950,6 @@ void
 JITX86::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 {
   Environment::get()->FreeCode((void *)func);
-}
-
-ICompilation *
-JITX86::StartCompilation()
-{
-  return new CompData;
-}
-
-ICompilation *
-JITX86::StartCompilation(PluginRuntime *runtime)
-{
-  return new CompData;
-}
-
-void
-CompData::Abort()
-{
-  delete this;
-}
-
-bool
-CompData::SetOption(const char *key, const char *val)
-{
-  if (strcmp(key, SP_JITCONF_DEBUG) == 0)
-    return true;
-  if (strcmp(key, SP_JITCONF_PROFILE) == 0) {
-    profile = atoi(val);
-
-    /** Callbacks must be profiled to profile functions! */
-    if ((profile & SP_PROF_FUNCTIONS) == SP_PROF_FUNCTIONS)
-      profile |= SP_PROF_CALLBACKS;
-
-    return true;
-  }
-
-  return false;
 }
 
 int

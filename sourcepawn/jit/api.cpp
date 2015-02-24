@@ -185,6 +185,12 @@ SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file, int *err)
   size_t ignore;
   PluginRuntime *pRuntime;
 
+  if (co) {
+    if (err)
+      *err = SP_ERROR_PARAM;
+    return nullptr;
+  }
+
   FILE *fp = fopen(file, "rb");
 
   if (!fp) {
@@ -275,8 +281,6 @@ SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file, int *err)
   if (!pRuntime->plugin()->name)
     pRuntime->SetName(file);
 
-  pRuntime->ApplyCompilationOptions(co);
-
   fclose(fp);
 
   return pRuntime;
@@ -332,7 +336,7 @@ SourcePawnEngine2::GetAPIVersion()
 ICompilation *
 SourcePawnEngine2::StartCompilation()
 {
-  return g_Jit.StartCompilation();
+  return nullptr;
 }
 
 const char *
@@ -364,9 +368,6 @@ SourcePawnEngine2::CreateEmptyRuntime(const char *name, uint32_t memory)
   }
 
   rt->SetName(name != NULL ? name : "<anonymous>");
-
-  rt->ApplyCompilationOptions(NULL);
-  
   return rt;
 }
 
