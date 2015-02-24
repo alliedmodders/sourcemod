@@ -32,7 +32,6 @@
 #include <sp_vm_api.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include "x86/jit_x86.h"
 #include "dll_exports.h"
 #include "sp_vm_engine.h"
 #include "engine2.h"
