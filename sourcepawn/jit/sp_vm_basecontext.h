@@ -14,7 +14,7 @@
 #define _INCLUDE_SOURCEPAWN_BASECONTEXT_H_
 
 #include "sp_vm_api.h"
-#include "sp_vm_function.h"
+#include "scripted-invoker.h"
 #include "BaseRuntime.h"
 #include "jit_shared.h"
 

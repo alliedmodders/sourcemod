@@ -13,7 +13,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "sp_vm_function.h"
+#include "scripted-invoker.h"
 #include "BaseRuntime.h"
 
 /********************

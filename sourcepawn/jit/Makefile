@@ -14,7 +14,7 @@ OBJECTS = dll_exports.cpp 	\
 	x86/jit_x86.cpp			\
 	sp_vm_basecontext.cpp	\
 	sp_vm_engine.cpp	\
-	sp_vm_function.cpp	\
+	scripted-invoker.cpp	\
 	engine2.cpp			\
 	BaseRuntime.cpp		\
 	opcodes.cpp		\

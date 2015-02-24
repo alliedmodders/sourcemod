@@ -35,7 +35,7 @@ binary.sources += [
   'engine2.cpp',
   'sp_vm_basecontext.cpp',
   'sp_vm_engine.cpp',
-  'sp_vm_function.cpp',
+  'scripted-invoker.cpp',
   'opcodes.cpp',
   'interpreter.cpp',
   'watchdog_timer.cpp',

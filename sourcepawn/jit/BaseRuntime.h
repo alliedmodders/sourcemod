@@ -7,7 +7,7 @@
 #include <am-inlinelist.h>
 #include "jit_shared.h"
 #include "compiled-function.h"
-#include "sp_vm_function.h"
+#include "scripted-invoker.h"
 
 class BaseContext;
 
