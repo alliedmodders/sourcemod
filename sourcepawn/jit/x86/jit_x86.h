@@ -85,7 +85,7 @@ public:
 class Compiler
 {
  public:
-  Compiler(BaseRuntime *rt, cell_t pcode_offs);
+  Compiler(PluginRuntime *rt, cell_t pcode_offs);
   ~Compiler();
 
   CompiledFunction *emit(int *errp);
@@ -122,7 +122,7 @@ class Compiler
 
  private:
   AssemblerX86 masm;
-  BaseRuntime *rt_;
+  PluginRuntime *rt_;
   const sp_plugin_t *plugin_;
   int error_;
   uint32_t pcode_start_;
@@ -154,18 +154,18 @@ class JITX86
  public:
   bool InitializeJIT();
   void ShutdownJIT();
-  ICompilation *StartCompilation(BaseRuntime *runtime);
+  ICompilation *StartCompilation(PluginRuntime *runtime);
   ICompilation *StartCompilation();
-  void SetupContextVars(BaseRuntime *runtime, BaseContext *pCtx, sp_context_t *ctx);
+  void SetupContextVars(PluginRuntime *runtime, BaseContext *pCtx, sp_context_t *ctx);
   void FreeContextVars(sp_context_t *ctx);
   SPVM_NATIVE_FUNC CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData);
   void DestroyFakeNative(SPVM_NATIVE_FUNC func);
-  CompiledFunction *CompileFunction(BaseRuntime *runtime, cell_t pcode_offs, int *err);
+  CompiledFunction *CompileFunction(PluginRuntime *runtime, cell_t pcode_offs, int *err);
   ICompilation *ApplyOptions(ICompilation *_IN, ICompilation *_OUT);
-  int InvokeFunction(BaseRuntime *runtime, CompiledFunction *fn, cell_t *result);
+  int InvokeFunction(PluginRuntime *runtime, CompiledFunction *fn, cell_t *result);
 
-  void RegisterRuntime(BaseRuntime *rt);
-  void DeregisterRuntime(BaseRuntime *rt);
+  void RegisterRuntime(PluginRuntime *rt);
+  void DeregisterRuntime(PluginRuntime *rt);
   void PatchAllJumpsForTimeout();
   void UnpatchAllJumpsFromTimeout();
   
@@ -190,7 +190,7 @@ class JITX86
   void *m_pJitEntry;         /* Entry function */
   void *m_pJitReturn;        /* Universal return address */
   void *m_pJitTimeout;       /* Universal timeout address */
-  ke::InlineList<BaseRuntime> runtimes_;
+  ke::InlineList<PluginRuntime> runtimes_;
   uintptr_t frame_id_;
   uintptr_t level_;
   ke::Mutex mutex_;

@@ -15,7 +15,7 @@
 
 #include <sp_vm_api.h>
 
-class BaseRuntime;
+class PluginRuntime;
 
 using namespace SourcePawn;
 
@@ -40,7 +40,7 @@ class ScriptedInvoker : public IPluginFunction
   friend class SourcePawnEngine;
 
  public:
-  ScriptedInvoker(BaseRuntime *pRuntime, funcid_t fnid, uint32_t pub_id);
+  ScriptedInvoker(PluginRuntime *pRuntime, funcid_t fnid, uint32_t pub_id);
   ~ScriptedInvoker();
 
  public:
@@ -77,7 +77,7 @@ class ScriptedInvoker : public IPluginFunction
   int SetError(int err);
 
  private:
-  BaseRuntime *m_pRuntime;
+  PluginRuntime *m_pRuntime;
   cell_t m_params[SP_MAX_EXEC_PARAMS];
   ParamInfo m_info[SP_MAX_EXEC_PARAMS];
   unsigned int m_curparam;

@@ -210,7 +210,7 @@ SourcePawnEngine::GetContextCallCount()
 }
 
 void
-SourcePawnEngine::ReportError(BaseRuntime *runtime, int err, const char *errstr, cell_t rp_start)
+SourcePawnEngine::ReportError(PluginRuntime *runtime, int err, const char *errstr, cell_t rp_start)
 {
   if (m_pDebugHook == NULL)
     return;
@@ -220,7 +220,7 @@ SourcePawnEngine::ReportError(BaseRuntime *runtime, int err, const char *errstr,
   m_pDebugHook->OnContextExecuteError(runtime->GetDefaultContext(), &trace);
 }
 
-CContextTrace::CContextTrace(BaseRuntime *pRuntime, int err, const char *errstr, cell_t start_rp) 
+CContextTrace::CContextTrace(PluginRuntime *pRuntime, int err, const char *errstr, cell_t start_rp) 
  : m_pRuntime(pRuntime),
    m_Error(err),
    m_pMsg(errstr),

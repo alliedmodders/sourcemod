@@ -25,7 +25,7 @@
 class BaseContext : public IPluginContext
 {
  public:
-  BaseContext(BaseRuntime *pRuntime);
+  BaseContext(PluginRuntime *pRuntime);
   ~BaseContext();
 
  public: //IPluginContext
@@ -90,7 +90,7 @@ class BaseContext : public IPluginContext
   char m_MsgCache[1024];
   bool m_CustomMsg;
   bool m_InExec;
-  BaseRuntime *m_pRuntime;
+  PluginRuntime *m_pRuntime;
   sp_context_t m_ctx;
   void *m_keys[4];
   bool m_keys_set[4];

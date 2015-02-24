@@ -37,7 +37,7 @@ SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file, int *err)
   int z_result;
   int error;
   size_t ignore;
-  BaseRuntime *pRuntime;
+  PluginRuntime *pRuntime;
 
   FILE *fp = fopen(file, "rb");
 
@@ -102,7 +102,7 @@ SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file, int *err)
     }
   }
 
-  pRuntime = new BaseRuntime();
+  pRuntime = new PluginRuntime();
   if ((error = pRuntime->CreateFromMemory(&hdr, base)) != SP_ERROR_NONE) {
     delete pRuntime;
     goto return_error;
@@ -211,7 +211,7 @@ SourcePawnEngine2::CreateEmptyRuntime(const char *name, uint32_t memory)
 {
   int err;
 
-  BaseRuntime *rt = new BaseRuntime();
+  PluginRuntime *rt = new PluginRuntime();
   if ((err = rt->CreateBlank(memory)) != SP_ERROR_NONE) {
     delete rt;
     return NULL;

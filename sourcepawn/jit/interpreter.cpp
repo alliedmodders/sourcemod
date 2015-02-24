@@ -95,7 +95,7 @@ CheckAddress(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t *stk, cell_t a
 }
 
 int
-PopTrackerAndSetHeap(BaseRuntime *rt)
+PopTrackerAndSetHeap(PluginRuntime *rt)
 {
   sp_context_t *ctx = rt->GetBaseContext()->GetCtx();
   tracker_t *trk = ctx->tracker;
@@ -192,7 +192,7 @@ BoundNativeCallback(sp_context_t *ctx, SPVM_NATIVE_FUNC pfn, cell_t *params)
 }
 
 static inline bool
-GenerateArray(BaseRuntime *rt, sp_context_t *ctx, cell_t dims, cell_t *stk, bool autozero)
+GenerateArray(PluginRuntime *rt, sp_context_t *ctx, cell_t dims, cell_t *stk, bool autozero)
 {
   if (dims == 1) {
     uint32_t size = *stk;
@@ -226,7 +226,7 @@ GenerateArray(BaseRuntime *rt, sp_context_t *ctx, cell_t dims, cell_t *stk, bool
 }
 
 int
-Interpret(BaseRuntime *rt, uint32_t aCodeStart, cell_t *rval)
+Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 {
   const sp_plugin_t *plugin = rt->plugin();
   cell_t *code = reinterpret_cast<cell_t *>(plugin->pcode);
