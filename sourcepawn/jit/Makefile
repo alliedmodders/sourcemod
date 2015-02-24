@@ -18,7 +18,7 @@ OBJECTS = dll_exports.cpp 	\
 	engine2.cpp			\
 	BaseRuntime.cpp		\
 	opcodes.cpp		\
-	jit_function.cpp	\
+	compiled-function.cpp	\
 	md5/md5.cpp			\
 	zlib/adler32.c		\
 	zlib/compress.c		\

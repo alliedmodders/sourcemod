@@ -17,7 +17,7 @@ OBJECTS = dll_exports.cpp 	\
 	sp_vm_function.cpp	\
 	engine2.cpp			\
 	BaseRuntime.cpp		\
-	jit_function.cpp	\
+	compiled-function.cpp	\
 	opcodes.cpp		\
 	watchdog_timer.cpp \
 	interpreter.cpp \

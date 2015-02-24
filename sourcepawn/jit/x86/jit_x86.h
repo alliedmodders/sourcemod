@@ -25,7 +25,7 @@
 #include "jit_shared.h"
 #include "BaseRuntime.h"
 #include "sp_vm_basecontext.h"
-#include "jit_function.h"
+#include "compiled-function.h"
 #include "opcodes.h"
 #include <am-thread-utils.h>
 

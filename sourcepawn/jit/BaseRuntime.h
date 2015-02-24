@@ -6,7 +6,7 @@
 #include <am-vector.h>
 #include <am-inlinelist.h>
 #include "jit_shared.h"
-#include "jit_function.h"
+#include "compiled-function.h"
 #include "sp_vm_function.h"
 
 class BaseContext;

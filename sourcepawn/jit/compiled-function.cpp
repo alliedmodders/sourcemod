@@ -10,7 +10,7 @@
 // You should have received a copy of the GNU General Public License along with
 // SourcePawn. If not, see http://www.gnu.org/licenses/.
 //
-#include "jit_function.h"
+#include "compiled-function.h"
 #include "sp_vm_engine.h"
 #include "jit_x86.h"
 
