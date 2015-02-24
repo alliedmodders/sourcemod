@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "scripted-invoker.h"
-#include "BaseRuntime.h"
+#include "plugin-runtime.h"
 
 /********************
 * FUNCTION CALLING *
@@ -49,7 +49,7 @@ ScriptedInvoker::GetParentContext()
   return m_pRuntime->GetDefaultContext();
 }
 
-ScriptedInvoker::ScriptedInvoker(BaseRuntime *runtime, funcid_t id, uint32_t pub_id)
+ScriptedInvoker::ScriptedInvoker(PluginRuntime *runtime, funcid_t id, uint32_t pub_id)
  : m_curparam(0),
    m_errorstate(SP_ERROR_NONE),
    m_FnId(id)

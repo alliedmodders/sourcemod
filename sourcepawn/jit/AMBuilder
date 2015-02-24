@@ -29,7 +29,7 @@ if binary.compiler.cc.behavior == 'msvc':
   binary.compiler.cxxflags.remove('/TP')
 
 binary.sources += [
-  'BaseRuntime.cpp',
+  'plugin-runtime.cpp',
   'compiled-function.cpp',
   'dll_exports.cpp',
   'engine2.cpp',

@@ -16,7 +16,7 @@ OBJECTS = dll_exports.cpp 	\
 	sp_vm_engine.cpp	\
 	scripted-invoker.cpp	\
 	engine2.cpp			\
-	BaseRuntime.cpp		\
+	plugin-runtime.cpp		\
 	compiled-function.cpp	\
 	opcodes.cpp		\
 	watchdog_timer.cpp \

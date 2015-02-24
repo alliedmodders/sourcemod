@@ -1,9 +1,20 @@
-// vim: set ts=8 sts=2 sw=2 tw=99 et:
+// vim: set sts=2 ts=8 sw=2 tw=99 et:
+// 
+// Copyright (C) 2006-2015 AlliedModders LLC
+// 
+// This file is part of SourcePawn. SourcePawn is free software: you can
+// redistribute it and/or modify it under the terms of the GNU General Public
+// License as published by the Free Software Foundation, either version 3 of
+// the License, or (at your option) any later version.
+//
+// You should have received a copy of the GNU General Public License along with
+// SourcePawn. If not, see http://www.gnu.org/licenses/.
+//
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "BaseRuntime.h"
+#include "plugin-runtime.h"
 #include "sp_vm_engine.h"
 #include "x86/jit_x86.h"
 #include "sp_vm_basecontext.h"
@@ -20,7 +31,7 @@ IsPointerCellAligned(void *p)
   return uintptr_t(p) % 4 == 0;
 }
 
-BaseRuntime::BaseRuntime()
+PluginRuntime::PluginRuntime()
   : m_Debug(&m_plugin),
     m_pCtx(NULL), 
     m_PubFuncs(NULL),
@@ -43,7 +54,7 @@ BaseRuntime::BaseRuntime()
   g_Jit.RegisterRuntime(this);
 }
 
-BaseRuntime::~BaseRuntime()
+PluginRuntime::~PluginRuntime()
 {
   // The watchdog thread takes the global JIT lock while it patches all
   // runtimes. It is not enough to ensure that the unlinking of the runtime is
@@ -104,7 +115,7 @@ static const NativeMapping sNativeMap[] = {
 };
 
 void
-BaseRuntime::SetupFloatNativeRemapping()
+PluginRuntime::SetupFloatNativeRemapping()
 {
   float_table_ = new floattbl_t[m_plugin.num_natives];
   for (size_t i = 0; i < m_plugin.num_natives; i++) {
@@ -122,7 +133,7 @@ BaseRuntime::SetupFloatNativeRemapping()
 }
 
 unsigned
-BaseRuntime::GetNativeReplacement(size_t index)
+PluginRuntime::GetNativeReplacement(size_t index)
 {
   if (!float_table_[index].found)
     return OP_NOP;
@@ -130,7 +141,7 @@ BaseRuntime::GetNativeReplacement(size_t index)
 }
 
 void
-BaseRuntime::SetName(const char *name)
+PluginRuntime::SetName(const char *name)
 {
   m_plugin.name = strdup(name);
 }
@@ -140,7 +151,7 @@ static cell_t InvalidNative(IPluginContext *pCtx, const cell_t *params)
   return pCtx->ThrowNativeErrorEx(SP_ERROR_INVALID_NATIVE, "Invalid native");
 }
 
-int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
+int PluginRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
 {
   char *nameptr;
   uint8_t sectnum = 0;
@@ -305,7 +316,7 @@ int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
 }
 
 void
-BaseRuntime::AddJittedFunction(CompiledFunction *fn)
+PluginRuntime::AddJittedFunction(CompiledFunction *fn)
 {
   m_JitFunctions.append(fn);
 
@@ -319,7 +330,7 @@ BaseRuntime::AddJittedFunction(CompiledFunction *fn)
 }
 
 CompiledFunction *
-BaseRuntime::GetJittedFunctionByOffset(cell_t pcode_offset)
+PluginRuntime::GetJittedFunctionByOffset(cell_t pcode_offset)
 {
   assert(pcode_offset % 4 == 0);
 
@@ -330,7 +341,7 @@ BaseRuntime::GetJittedFunctionByOffset(cell_t pcode_offset)
 }
 
 int
-BaseRuntime::FindNativeByName(const char *name, uint32_t *index)
+PluginRuntime::FindNativeByName(const char *name, uint32_t *index)
 {
   for (uint32_t i=0; i<m_plugin.num_natives; i++) {
     if (strcmp(m_plugin.natives[i].name, name) == 0) {
@@ -344,7 +355,7 @@ BaseRuntime::FindNativeByName(const char *name, uint32_t *index)
 }
 
 int
-BaseRuntime::GetNativeByIndex(uint32_t index, sp_native_t **native)
+PluginRuntime::GetNativeByIndex(uint32_t index, sp_native_t **native)
 {
   if (index >= m_plugin.num_natives)
     return SP_ERROR_INDEX;
@@ -356,20 +367,20 @@ BaseRuntime::GetNativeByIndex(uint32_t index, sp_native_t **native)
 }
 
 sp_native_t *
-BaseRuntime::GetNativeByIndex(uint32_t index)
+PluginRuntime::GetNativeByIndex(uint32_t index)
 {
   assert(index < m_plugin.num_natives);
   return &m_plugin.natives[index];
 }
 
 uint32_t
-BaseRuntime::GetNativesNum()
+PluginRuntime::GetNativesNum()
 {
   return m_plugin.num_natives;
 }
 
 int
-BaseRuntime::FindPublicByName(const char *name, uint32_t *index)
+PluginRuntime::FindPublicByName(const char *name, uint32_t *index)
 {
   int diff, high, low;
   uint32_t mid;
@@ -395,7 +406,7 @@ BaseRuntime::FindPublicByName(const char *name, uint32_t *index)
 }
 
 int
-BaseRuntime::GetPublicByIndex(uint32_t index, sp_public_t **pblic)
+PluginRuntime::GetPublicByIndex(uint32_t index, sp_public_t **pblic)
 {
   if (index >= m_plugin.num_publics)
     return SP_ERROR_INDEX;
@@ -407,13 +418,13 @@ BaseRuntime::GetPublicByIndex(uint32_t index, sp_public_t **pblic)
 }
 
 uint32_t
-BaseRuntime::GetPublicsNum()
+PluginRuntime::GetPublicsNum()
 {
   return m_plugin.num_publics;
 }
 
 int
-BaseRuntime::GetPubvarByIndex(uint32_t index, sp_pubvar_t **pubvar)
+PluginRuntime::GetPubvarByIndex(uint32_t index, sp_pubvar_t **pubvar)
 {
   if (index >= m_plugin.num_pubvars)
     return SP_ERROR_INDEX;
@@ -425,7 +436,7 @@ BaseRuntime::GetPubvarByIndex(uint32_t index, sp_pubvar_t **pubvar)
 }
 
 int
-BaseRuntime::FindPubvarByName(const char *name, uint32_t *index)
+PluginRuntime::FindPubvarByName(const char *name, uint32_t *index)
 {
   int diff, high, low;
   uint32_t mid;
@@ -451,7 +462,7 @@ BaseRuntime::FindPubvarByName(const char *name, uint32_t *index)
 }
 
 int
-BaseRuntime::GetPubvarAddrs(uint32_t index, cell_t *local_addr, cell_t **phys_addr)
+PluginRuntime::GetPubvarAddrs(uint32_t index, cell_t *local_addr, cell_t **phys_addr)
 {
   if (index >= m_plugin.num_pubvars)
     return SP_ERROR_INDEX;
@@ -463,25 +474,25 @@ BaseRuntime::GetPubvarAddrs(uint32_t index, cell_t *local_addr, cell_t **phys_ad
 }
 
 uint32_t
-BaseRuntime::GetPubVarsNum()
+PluginRuntime::GetPubVarsNum()
 {
   return m_plugin.num_pubvars;
 }
 
 IPluginContext *
-BaseRuntime::GetDefaultContext()
+PluginRuntime::GetDefaultContext()
 {
   return m_pCtx;
 }
 
 IPluginDebugInfo *
-BaseRuntime::GetDebugInfo()
+PluginRuntime::GetDebugInfo()
 {
   return &m_Debug;
 }
 
 IPluginFunction *
-BaseRuntime::GetFunctionById(funcid_t func_id)
+PluginRuntime::GetFunctionById(funcid_t func_id)
 {
   ScriptedInvoker *pFunc = NULL;
 
@@ -500,7 +511,7 @@ BaseRuntime::GetFunctionById(funcid_t func_id)
 }
 
 ScriptedInvoker *
-BaseRuntime::GetPublicFunction(size_t index)
+PluginRuntime::GetPublicFunction(size_t index)
 {
   ScriptedInvoker *pFunc = m_PubFuncs[index];
   if (!pFunc) {
@@ -515,7 +526,7 @@ BaseRuntime::GetPublicFunction(size_t index)
 }
 
 IPluginFunction *
-BaseRuntime::GetFunctionByName(const char *public_name)
+PluginRuntime::GetFunctionByName(const char *public_name)
 {
   uint32_t index;
 
@@ -525,12 +536,12 @@ BaseRuntime::GetFunctionByName(const char *public_name)
   return GetPublicFunction(index);
 }
 
-bool BaseRuntime::IsDebugging()
+bool PluginRuntime::IsDebugging()
 {
   return true;
 }
 
-void BaseRuntime::SetPauseState(bool paused)
+void PluginRuntime::SetPauseState(bool paused)
 {
   if (paused)
   {
@@ -542,12 +553,12 @@ void BaseRuntime::SetPauseState(bool paused)
   }
 }
 
-bool BaseRuntime::IsPaused()
+bool PluginRuntime::IsPaused()
 {
   return ((m_plugin.run_flags & SPFLAG_PLUGIN_PAUSED) == SPFLAG_PLUGIN_PAUSED);
 }
 
-size_t BaseRuntime::GetMemUsage()
+size_t PluginRuntime::GetMemUsage()
 {
   size_t mem = 0;
 
@@ -559,23 +570,23 @@ size_t BaseRuntime::GetMemUsage()
   return mem;
 }
 
-unsigned char *BaseRuntime::GetCodeHash()
+unsigned char *PluginRuntime::GetCodeHash()
 {
   return m_CodeHash;
 }
 
-unsigned char *BaseRuntime::GetDataHash()
+unsigned char *PluginRuntime::GetDataHash()
 {
   return m_DataHash;
 }
 
-BaseContext *BaseRuntime::GetBaseContext()
+BaseContext *PluginRuntime::GetBaseContext()
 {
   return m_pCtx;
 }
 
 int
-BaseRuntime::ApplyCompilationOptions(ICompilation *co)
+PluginRuntime::ApplyCompilationOptions(ICompilation *co)
 {
   if (co == NULL)
     return SP_ERROR_NONE;
@@ -587,7 +598,7 @@ BaseRuntime::ApplyCompilationOptions(ICompilation *co)
 }
 
 int
-BaseRuntime::CreateBlank(uint32_t heastk)
+PluginRuntime::CreateBlank(uint32_t heastk)
 {
   memset(&m_plugin, 0, sizeof(m_plugin));
 

@@ -27,7 +27,7 @@ using namespace SourcePawn;
 #define CELLBOUNDMAX  (INT_MAX/sizeof(cell_t))
 #define STACKMARGIN    ((cell_t)(16*sizeof(cell_t)))
 
-BaseContext::BaseContext(BaseRuntime *pRuntime)
+BaseContext::BaseContext(PluginRuntime *pRuntime)
 {
   m_pRuntime = pRuntime;
 

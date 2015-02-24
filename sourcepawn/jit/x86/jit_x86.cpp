@@ -35,7 +35,7 @@
 #include "jit_x86.h"
 #include "../sp_vm_engine.h"
 #include "../engine2.h"
-#include "../BaseRuntime.h"
+#include "../plugin-runtime.h"
 #include "../sp_vm_basecontext.h"
 #include "watchdog_timer.h"
 #include "interpreter.h"
@@ -169,7 +169,7 @@ GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], cell_t _dimcou
 }
 
 int
-GenerateFullArray(BaseRuntime *rt, uint32_t argc, cell_t *argv, int autozero)
+GenerateFullArray(PluginRuntime *rt, uint32_t argc, cell_t *argv, int autozero)
 {
   sp_context_t *ctx = rt->GetBaseContext()->GetCtx();
 
@@ -272,7 +272,7 @@ GetFunctionName(const sp_plugin_t *plugin, uint32_t offs)
 #endif
 
 static int
-CompileFromThunk(BaseRuntime *runtime, cell_t pcode_offs, void **addrp, char *pc)
+CompileFromThunk(PluginRuntime *runtime, cell_t pcode_offs, void **addrp, char *pc)
 {
   // If the watchdog timer has declared a timeout, we must process it now,
   // and possibly refuse to compile, since otherwise we will compile a
@@ -302,7 +302,7 @@ CompileFromThunk(BaseRuntime *runtime, cell_t pcode_offs, void **addrp, char *pc
   return SP_ERROR_NONE;
 }
 
-Compiler::Compiler(BaseRuntime *rt, cell_t pcode_offs)
+Compiler::Compiler(PluginRuntime *rt, cell_t pcode_offs)
   : rt_(rt),
     plugin_(rt->plugin()),
     error_(SP_ERROR_NONE),
@@ -1927,7 +1927,7 @@ JITX86::ShutdownJIT()
 }
 
 CompiledFunction *
-JITX86::CompileFunction(BaseRuntime *prt, cell_t pcode_offs, int *err)
+JITX86::CompileFunction(PluginRuntime *prt, cell_t pcode_offs, int *err)
 {
   Compiler cc(prt, pcode_offs);
   CompiledFunction *fun = cc.emit(err);
@@ -1943,7 +1943,7 @@ JITX86::CompileFunction(BaseRuntime *prt, cell_t pcode_offs, int *err)
 }
 
 void
-JITX86::SetupContextVars(BaseRuntime *runtime, BaseContext *pCtx, sp_context_t *ctx)
+JITX86::SetupContextVars(PluginRuntime *runtime, BaseContext *pCtx, sp_context_t *ctx)
 {
   ctx->tracker = new tracker_t;
   ctx->tracker->pBase = (ucell_t *)malloc(1024);
@@ -1993,7 +1993,7 @@ JITX86::StartCompilation()
 }
 
 ICompilation *
-JITX86::StartCompilation(BaseRuntime *runtime)
+JITX86::StartCompilation(PluginRuntime *runtime)
 {
   return new CompData;
 }
@@ -2030,7 +2030,7 @@ CompData::SetOption(const char *key, const char *val)
 }
 
 int
-JITX86::InvokeFunction(BaseRuntime *runtime, CompiledFunction *fn, cell_t *result)
+JITX86::InvokeFunction(PluginRuntime *runtime, CompiledFunction *fn, cell_t *result)
 {
   sp_context_t *ctx = runtime->GetBaseContext()->GetCtx();
 
@@ -2061,14 +2061,14 @@ JITX86::FreeCode(void *code)
 }
 
 void
-JITX86::RegisterRuntime(BaseRuntime *rt)
+JITX86::RegisterRuntime(PluginRuntime *rt)
 {
   mutex_.AssertCurrentThreadOwns();
   runtimes_.append(rt);
 }
 
 void
-JITX86::DeregisterRuntime(BaseRuntime *rt)
+JITX86::DeregisterRuntime(PluginRuntime *rt)
 {
   mutex_.AssertCurrentThreadOwns();
   runtimes_.remove(rt);
@@ -2078,8 +2078,8 @@ void
 JITX86::PatchAllJumpsForTimeout()
 {
   mutex_.AssertCurrentThreadOwns();
-  for (ke::InlineList<BaseRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
-    BaseRuntime *rt = *iter;
+  for (ke::InlineList<PluginRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
+    PluginRuntime *rt = *iter;
     for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
       CompiledFunction *fun = rt->GetJitFunction(i);
       uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());
@@ -2097,8 +2097,8 @@ void
 JITX86::UnpatchAllJumpsFromTimeout()
 {
   mutex_.AssertCurrentThreadOwns();
-  for (ke::InlineList<BaseRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
-    BaseRuntime *rt = *iter;
+  for (ke::InlineList<PluginRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
+    PluginRuntime *rt = *iter;
     for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
       CompiledFunction *fun = rt->GetJitFunction(i);
       uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());

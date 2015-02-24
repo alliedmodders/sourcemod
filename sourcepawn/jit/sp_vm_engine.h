@@ -21,7 +21,7 @@ class BaseContext;
 class CContextTrace : public IContextTrace
 {
  public:
-  CContextTrace(BaseRuntime *pRuntime, int err, const char *errstr, cell_t start_rp);
+  CContextTrace(PluginRuntime *pRuntime, int err, const char *errstr, cell_t start_rp);
 
  public:
   int GetErrorCode();
@@ -33,7 +33,7 @@ class CContextTrace : public IContextTrace
   const char *GetLastNative(uint32_t *index);
 
  private:
-  BaseRuntime *m_pRuntime;
+  PluginRuntime *m_pRuntime;
   sp_context_t *m_ctx;
   int m_Error;
   const char *m_pMsg;
@@ -65,7 +65,7 @@ class SourcePawnEngine : public ISourcePawnEngine
   void SetReadWriteExecute(void *ptr);
   void FreePageMemory(void *ptr);
   const char *GetErrorString(int err);
-  void ReportError(BaseRuntime *runtime, int err, const char *errstr, cell_t rp_start);
+  void ReportError(PluginRuntime *runtime, int err, const char *errstr, cell_t rp_start);
 
  public: //Plugin function stuff
   IDebugListener *GetDebugHook();
