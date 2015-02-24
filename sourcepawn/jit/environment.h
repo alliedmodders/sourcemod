@@ -15,7 +15,10 @@
 
 #include <sp_vm_api.h>
 #include <am-utility.h> // Replace with am-cxx later.
+#include <am-inlinelist.h>
+#include <am-thread-utils.h>
 #include "code-allocator.h"
+#include "plugin-runtime.h"
 
 class PluginRuntime;
 
@@ -59,6 +62,15 @@ class Environment : public ISourcePawnEnvironment
   void *AllocateCode(size_t size);
   void FreeCode(void *code);
 
+  // Runtime management.
+  void RegisterRuntime(PluginRuntime *rt);
+  void DeregisterRuntime(PluginRuntime *rt);
+  void PatchAllJumpsForTimeout();
+  void UnpatchAllJumpsFromTimeout();
+  ke::Mutex *lock() {
+    return &mutex_;
+  }
+
   // Helpers.
   void SetProfiler(IProfilingTool *profiler) {
     profiler_ = profiler;
@@ -89,6 +101,21 @@ class Environment : public ISourcePawnEnvironment
     return watchdog_timer_;
   }
 
+  // These are indicators used for the watchdog timer.
+  uintptr_t FrameId() const {
+    return frame_id_;
+  }
+  bool RunningCode() const {
+    return invoke_depth_ != 0;
+  }
+  void EnterInvoke() {
+    if (invoke_depth_++ == 0)
+      frame_id_++;
+  }
+  void LeaveInvoke() {
+    invoke_depth_--;
+  }
+
  private:
   bool Initialize();
 
@@ -96,6 +123,7 @@ class Environment : public ISourcePawnEnvironment
   ke::AutoPtr<ISourcePawnEngine> api_v1_;
   ke::AutoPtr<ISourcePawnEngine2> api_v2_;
   ke::AutoPtr<WatchdogTimer> watchdog_timer_;
+  ke::Mutex mutex_;
 
   IDebugListener *debugger_;
   IProfilingTool *profiler_;
@@ -103,6 +131,10 @@ class Environment : public ISourcePawnEnvironment
   bool profiling_enabled_;
 
   Knight::KeCodeCache *code_pool_;
+  ke::InlineList<PluginRuntime> runtimes_;
+
+  uintptr_t frame_id_;
+  uintptr_t invoke_depth_;
 };
 
 class EnterProfileScope
@@ -121,6 +153,6 @@ class EnterProfileScope
   }
 };
 
-}
+} // namespace sp
 
 #endif // _include_sourcepawn_vm_environment_h_

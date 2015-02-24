@@ -1928,7 +1928,7 @@ JITX86::CompileFunction(PluginRuntime *prt, cell_t pcode_offs, int *err)
 
   // Grab the lock before linking code in, since the watchdog timer will look
   // at this list on another thread.
-  ke::AutoLock lock(g_Jit.Mutex());
+  ke::AutoLock lock(Environment::get()->lock());
 
   prt->AddJittedFunction(fun);
   return fun;
@@ -2031,62 +2031,11 @@ JITX86::InvokeFunction(PluginRuntime *runtime, CompiledFunction *fn, cell_t *res
 
   JIT_EXECUTE pfn = (JIT_EXECUTE)m_pJitEntry;
 
-  if (level_++ == 0)
-    frame_id_++;
+  Environment::get()->EnterInvoke();
   int err = pfn(ctx, runtime->plugin()->memory, fn->GetEntryAddress());
-  level_--;
+  Environment::get()->LeaveInvoke();
 
   *result = ctx->rval;
   return err;
 }
 
-void
-JITX86::RegisterRuntime(PluginRuntime *rt)
-{
-  mutex_.AssertCurrentThreadOwns();
-  runtimes_.append(rt);
-}
-
-void
-JITX86::DeregisterRuntime(PluginRuntime *rt)
-{
-  mutex_.AssertCurrentThreadOwns();
-  runtimes_.remove(rt);
-}
-
-void
-JITX86::PatchAllJumpsForTimeout()
-{
-  mutex_.AssertCurrentThreadOwns();
-  for (ke::InlineList<PluginRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
-    PluginRuntime *rt = *iter;
-    for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
-      CompiledFunction *fun = rt->GetJitFunction(i);
-      uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());
-
-      for (size_t j = 0; j < fun->NumLoopEdges(); j++) {
-        const LoopEdge &e = fun->GetLoopEdge(j);
-        int32_t diff = intptr_t(m_pJitTimeout) - intptr_t(base + e.offset);
-        *reinterpret_cast<int32_t *>(base + e.offset - 4) = diff;
-      }
-    }
-  }
-}
-
-void
-JITX86::UnpatchAllJumpsFromTimeout()
-{
-  mutex_.AssertCurrentThreadOwns();
-  for (ke::InlineList<PluginRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
-    PluginRuntime *rt = *iter;
-    for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
-      CompiledFunction *fun = rt->GetJitFunction(i);
-      uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());
-
-      for (size_t j = 0; j < fun->NumLoopEdges(); j++) {
-        const LoopEdge &e = fun->GetLoopEdge(j);
-        *reinterpret_cast<int32_t *>(base + e.offset - 4) = e.disp32;
-      }
-    }
-  }
-}

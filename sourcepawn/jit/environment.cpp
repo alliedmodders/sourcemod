@@ -63,7 +63,7 @@ Environment::Initialize()
 {
   api_v1_ = new SourcePawnEngine();
   api_v2_ = new SourcePawnEngine2();
-  watchdog_timer_ = new WatchdogTimer();
+  watchdog_timer_ = new WatchdogTimer(this);
 
   if ((code_pool_ = Knight::KE_CreateCodeCache()) == nullptr)
     return false;
@@ -180,4 +180,55 @@ void
 Environment::FreeCode(void *code)
 {
   Knight::KE_FreeCode(code_pool_, code);
+}
+
+void
+Environment::RegisterRuntime(PluginRuntime *rt)
+{
+  mutex_.AssertCurrentThreadOwns();
+  runtimes_.append(rt);
+}
+
+void
+Environment::DeregisterRuntime(PluginRuntime *rt)
+{
+  mutex_.AssertCurrentThreadOwns();
+  runtimes_.remove(rt);
+}
+
+void
+Environment::PatchAllJumpsForTimeout()
+{
+  mutex_.AssertCurrentThreadOwns();
+  for (ke::InlineList<PluginRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
+    PluginRuntime *rt = *iter;
+    for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
+      CompiledFunction *fun = rt->GetJitFunction(i);
+      uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());
+
+      for (size_t j = 0; j < fun->NumLoopEdges(); j++) {
+        const LoopEdge &e = fun->GetLoopEdge(j);
+        int32_t diff = intptr_t(g_Jit.TimeoutStub()) - intptr_t(base + e.offset);
+        *reinterpret_cast<int32_t *>(base + e.offset - 4) = diff;
+      }
+    }
+  }
+}
+
+void
+Environment::UnpatchAllJumpsFromTimeout()
+{
+  mutex_.AssertCurrentThreadOwns();
+  for (ke::InlineList<PluginRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
+    PluginRuntime *rt = *iter;
+    for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
+      CompiledFunction *fun = rt->GetJitFunction(i);
+      uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());
+
+      for (size_t j = 0; j < fun->NumLoopEdges(); j++) {
+        const LoopEdge &e = fun->GetLoopEdge(j);
+        *reinterpret_cast<int32_t *>(base + e.offset - 4) = e.disp32;
+      }
+    }
+  }
 }

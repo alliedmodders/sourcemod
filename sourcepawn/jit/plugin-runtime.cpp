@@ -17,6 +17,7 @@
 #include "plugin-runtime.h"
 #include "x86/jit_x86.h"
 #include "sp_vm_basecontext.h"
+#include "environment.h"
 
 #include "md5/md5.h"
 
@@ -48,8 +49,8 @@ PluginRuntime::PluginRuntime()
   memset(m_CodeHash, 0, sizeof(m_CodeHash));
   memset(m_DataHash, 0, sizeof(m_DataHash));
 
-  ke::AutoLock lock(g_Jit.Mutex());
-  g_Jit.RegisterRuntime(this);
+  ke::AutoLock lock(Environment::get()->lock());
+  Environment::get()->RegisterRuntime(this);
 }
 
 PluginRuntime::~PluginRuntime()
@@ -58,9 +59,9 @@ PluginRuntime::~PluginRuntime()
   // runtimes. It is not enough to ensure that the unlinking of the runtime is
   // protected; we cannot delete functions or code while the watchdog might be
   // executing. Therefore, the entire destructor is guarded.
-  ke::AutoLock lock(g_Jit.Mutex());
+  ke::AutoLock lock(Environment::get()->lock());
 
-  g_Jit.DeregisterRuntime(this);
+  Environment::get()->DeregisterRuntime(this);
 
   for (uint32_t i = 0; i < m_plugin.num_publics; i++)
     delete m_PubFuncs[i];

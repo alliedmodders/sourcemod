@@ -26,7 +26,6 @@
 #include "sp_vm_basecontext.h"
 #include "compiled-function.h"
 #include "opcodes.h"
-#include <am-thread-utils.h>
 
 using namespace SourcePawn;
 
@@ -163,33 +162,19 @@ class JITX86
   ICompilation *ApplyOptions(ICompilation *_IN, ICompilation *_OUT);
   int InvokeFunction(PluginRuntime *runtime, CompiledFunction *fn, cell_t *result);
 
-  void RegisterRuntime(PluginRuntime *rt);
-  void DeregisterRuntime(PluginRuntime *rt);
-  void PatchAllJumpsForTimeout();
-  void UnpatchAllJumpsFromTimeout();
-  
+  void *TimeoutStub() const {
+    return m_pJitTimeout;
+  }
+
  public:
   ExternalAddress GetUniversalReturn() {
     return ExternalAddress(m_pJitReturn);
-  }
-  uintptr_t FrameId() const {
-    return frame_id_;
-  }
-  bool RunningCode() const {
-    return level_ != 0;
-  }
-  ke::Mutex *Mutex() {
-    return &mutex_;
   }
 
  private:
   void *m_pJitEntry;         /* Entry function */
   void *m_pJitReturn;        /* Universal return address */
   void *m_pJitTimeout;       /* Universal timeout address */
-  ke::InlineList<PluginRuntime> runtimes_;
-  uintptr_t frame_id_;
-  uintptr_t level_;
-  ke::Mutex mutex_;
 };
 
 const Register pri = eax;
