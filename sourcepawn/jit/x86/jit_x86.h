@@ -29,6 +29,10 @@
 
 using namespace SourcePawn;
 
+namespace sp {
+class Environment;
+}
+
 #define JIT_INLINE_ERRORCHECKS  (1<<0)
 #define JIT_INLINE_NATIVES      (1<<1)
 #define STACK_MARGIN            64      //8 parameters of safety, I guess
@@ -101,6 +105,7 @@ class Compiler
 
  private:
   AssemblerX86 masm;
+  sp::Environment *env_;
   PluginRuntime *rt_;
   const sp_plugin_t *plugin_;
   int error_;
@@ -131,26 +136,7 @@ class JITX86
   JITX86();
 
  public:
-  bool InitializeJIT();
-  void ShutdownJIT();
-  SPVM_NATIVE_FUNC CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData);
-  void DestroyFakeNative(SPVM_NATIVE_FUNC func);
   CompiledFunction *CompileFunction(PluginRuntime *runtime, cell_t pcode_offs, int *err);
-  int InvokeFunction(PluginRuntime *runtime, CompiledFunction *fn, cell_t *result);
-
-  void *TimeoutStub() const {
-    return m_pJitTimeout;
-  }
-
- public:
-  ExternalAddress GetUniversalReturn() {
-    return ExternalAddress(m_pJitReturn);
-  }
-
- private:
-  void *m_pJitEntry;         /* Entry function */
-  void *m_pJitReturn;        /* Universal return address */
-  void *m_pJitTimeout;       /* Universal timeout address */
 };
 
 const Register pri = eax;

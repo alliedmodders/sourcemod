@@ -33,6 +33,7 @@
 #endif
 
 #include <sourcemod_version.h>
+#include "code-stubs.h"
 
 using namespace sp;
 using namespace SourcePawn;
@@ -298,13 +299,13 @@ return_error:
 SPVM_NATIVE_FUNC
 SourcePawnEngine2::CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData)
 {
-  return g_Jit.CreateFakeNative(callback, pData);
+  return Environment::get()->stubs()->CreateFakeNativeStub(callback, pData);
 }
 
 void
 SourcePawnEngine2::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 {
-  g_Jit.DestroyFakeNative(func);
+  return Environment::get()->FreeCode((void *)func);
 }
 
 const char *

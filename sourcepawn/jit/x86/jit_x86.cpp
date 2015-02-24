@@ -38,6 +38,8 @@
 #include "watchdog_timer.h"
 #include "interpreter.h"
 #include "environment.h"
+#include "code-stubs.h"
+#include "x86-utils.h"
 
 using namespace sp;
 
@@ -48,20 +50,6 @@ using namespace sp;
 #define __ masm.
 
 JITX86 g_Jit;
-
-static inline uint8_t *
-LinkCode(AssemblerX86 &masm)
-{
-  if (masm.outOfMemory())
-    return NULL;
-
-  void *code = Environment::get()->AllocateCode(masm.length());
-  if (!code)
-    return NULL;
-
-  masm.emitToExecutableMemory(code);
-  return reinterpret_cast<uint8_t *>(code);
-}
 
 static inline ConditionCode
 OpToCondition(OPCODE op)
@@ -299,7 +287,8 @@ CompileFromThunk(PluginRuntime *runtime, cell_t pcode_offs, void **addrp, char *
 }
 
 Compiler::Compiler(PluginRuntime *rt, cell_t pcode_offs)
-  : rt_(rt),
+  : env_(Environment::get()),
+    rt_(rt),
     plugin_(rt->plugin()),
     error_(SP_ERROR_NONE),
     pcode_start_(pcode_offs),
@@ -365,7 +354,7 @@ Compiler::emit(int *errp)
   emitCallThunks();
   emitErrorPaths();
 
-  uint8_t *code = LinkCode(masm);
+  uint8_t *code = LinkCode(env_, masm);
   if (!code) {
     *errp = SP_ERROR_OUT_OF_MEMORY;
     return NULL;
@@ -1532,7 +1521,7 @@ Compiler::emitCallThunks()
 
     __ bind(&error);
     __ movl(Operand(cipAddr()), thunk->pcode_offset);
-    __ jmp(g_Jit.GetUniversalReturn());
+    __ jmp(ExternalAddress(env_->stubs()->ReturnStub()));
   }
 }
 
@@ -1727,7 +1716,7 @@ Compiler::emitErrorPath(Label *dest, int code)
   if (dest->used()) {
     __ bind(dest);
     __ movl(eax, code);
-    __ jmp(g_Jit.GetUniversalReturn());
+    __ jmp(ExternalAddress(env_->stubs()->ReturnStub()));
   }
 }
 
@@ -1797,109 +1786,11 @@ Compiler::emitErrorPaths()
     __ bind(&extern_error_);
     __ movl(eax, intptr_t(rt_->GetBaseContext()->GetCtx()));
     __ movl(eax, Operand(eax, offsetof(sp_context_t, n_err)));
-    __ jmp(g_Jit.GetUniversalReturn());
+    __ jmp(ExternalAddress(env_->stubs()->ReturnStub()));
   }
 }
 
-typedef int (*JIT_EXECUTE)(sp_context_t *ctx, uint8_t *memory, void *code);
-
-static void *
-GenerateEntry(void **retp, void **timeoutp)
-{
-  AssemblerX86 masm;
-
-  __ push(ebp);
-  __ movl(ebp, esp);
-
-  __ push(esi);   // ebp - 4
-  __ push(edi);   // ebp - 8
-  __ push(ebx);   // ebp - 12
-  __ push(esp);   // ebp - 16
-
-  __ movl(ebx, Operand(ebp, 8 + 4 * 0));
-  __ movl(eax, Operand(ebp, 8 + 4 * 1));
-  __ movl(ecx, Operand(ebp, 8 + 4 * 2));
-
-  // Set up run-time registers.
-  __ movl(edi, Operand(ebx, offsetof(sp_context_t, sp)));
-  __ addl(edi, eax);
-  __ movl(esi, eax);
-  __ movl(ebx, edi);
-
-  // Align the stack.
-  __ andl(esp, 0xfffffff0);
-
-  // Call into plugin (align the stack first).
-  __ call(ecx);
-
-  // Get input context, store rval.
-  __ movl(ecx, Operand(ebp, 8 + 4 * 0));
-  __ movl(Operand(ecx, offsetof(sp_context_t, rval)), pri);
-
-  // Set no error.
-  __ movl(eax, SP_ERROR_NONE);
-
-  // Store latest stk. If we have an error code, we'll jump directly to here,
-  // so eax will already be set.
-  Label ret;
-  __ bind(&ret);
-  __ subl(stk, dat);
-  __ movl(Operand(ecx, offsetof(sp_context_t, sp)), stk);
-
-  // Restore stack.
-  __ movl(esp, Operand(ebp, -16));
-
-  // Restore registers and gtfo.
-  __ pop(ebx);
-  __ pop(edi);
-  __ pop(esi);
-  __ pop(ebp);
-  __ ret();
-
-  // The universal emergency return will jump to here.
-  Label error;
-  __ bind(&error);
-  __ movl(ecx, Operand(ebp, 8 + 4 * 0)); // ret-path expects ecx = ctx
-  __ jmp(&ret);
-
-  Label timeout;
-  __ bind(&timeout);
-  __ movl(eax, SP_ERROR_TIMEOUT);
-  __ jmp(&error);
-
-  void *code = LinkCode(masm);
-  if (!code)
-    return NULL;
-
-  *retp = reinterpret_cast<uint8_t *>(code) + error.offset();
-  *timeoutp = reinterpret_cast<uint8_t *>(code) + timeout.offset();
-  return code;
-}
-
 JITX86::JITX86()
-{
-  m_pJitEntry = NULL;
-}
-
-bool
-JITX86::InitializeJIT()
-{
-  m_pJitEntry = GenerateEntry(&m_pJitReturn, &m_pJitTimeout);
-  if (!m_pJitEntry)
-    return false;
-
-  MacroAssemblerX86 masm;
-  MacroAssemblerX86::GenerateFeatureDetection(masm);
-  void *code = LinkCode(masm);
-  if (!code)
-    return false;
-  MacroAssemblerX86::RunFeatureDetection(code);
-
-  return true;
-}
-
-void
-JITX86::ShutdownJIT()
 {
 }
 
@@ -1918,55 +1809,3 @@ JITX86::CompileFunction(PluginRuntime *prt, cell_t pcode_offs, int *err)
   prt->AddJittedFunction(fun);
   return fun;
 }
-
-SPVM_NATIVE_FUNC
-JITX86::CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData)
-{
-  AssemblerX86 masm;
-
-  __ push(ebx);
-  __ push(edi);
-  __ push(esi);
-  __ movl(edi, Operand(esp, 16)); // store ctx
-  __ movl(esi, Operand(esp, 20)); // store params
-  __ movl(ebx, esp);
-  __ andl(esp, 0xfffffff0);
-  __ subl(esp, 4);
-
-  __ push(intptr_t(pData));
-  __ push(esi);
-  __ push(edi);
-  __ call(ExternalAddress((void *)callback));
-  __ movl(esp, ebx);
-  __ pop(esi);
-  __ pop(edi);
-  __ pop(ebx);
-  __ ret();
-
-  return (SPVM_NATIVE_FUNC)LinkCode(masm);
-}
-
-void
-JITX86::DestroyFakeNative(SPVM_NATIVE_FUNC func)
-{
-  Environment::get()->FreeCode((void *)func);
-}
-
-int
-JITX86::InvokeFunction(PluginRuntime *runtime, CompiledFunction *fn, cell_t *result)
-{
-  sp_context_t *ctx = runtime->GetBaseContext()->GetCtx();
-
-  // Note that cip, hp, sp are saved and restored by Execute2().
-  ctx->cip = fn->GetCodeOffset();
-
-  JIT_EXECUTE pfn = (JIT_EXECUTE)m_pJitEntry;
-
-  Environment::get()->EnterInvoke();
-  int err = pfn(ctx, runtime->plugin()->memory, fn->GetEntryAddress());
-  Environment::get()->LeaveInvoke();
-
-  *result = ctx->rval;
-  return err;
-}
-

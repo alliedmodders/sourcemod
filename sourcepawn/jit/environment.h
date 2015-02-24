@@ -26,6 +26,7 @@ namespace sp {
 
 using namespace SourcePawn;
 
+class CodeStubs;
 class WatchdogTimer;
 
 // An Environment encapsulates everything that's needed to load and run
@@ -61,6 +62,9 @@ class Environment : public ISourcePawnEnvironment
   // Allocate and free executable memory.
   void *AllocateCode(size_t size);
   void FreeCode(void *code);
+  CodeStubs *stubs() {
+    return code_stubs_;
+  }
 
   // Runtime management.
   void RegisterRuntime(PluginRuntime *rt);
@@ -70,6 +74,7 @@ class Environment : public ISourcePawnEnvironment
   ke::Mutex *lock() {
     return &mutex_;
   }
+  int Invoke(PluginRuntime *runtime, CompiledFunction *fn, cell_t *result);
 
   // Helpers.
   void SetProfiler(IProfilingTool *profiler) {
@@ -135,6 +140,8 @@ class Environment : public ISourcePawnEnvironment
 
   uintptr_t frame_id_;
   uintptr_t invoke_depth_;
+
+  ke::AutoPtr<CodeStubs> code_stubs_;
 };
 
 class EnterProfileScope

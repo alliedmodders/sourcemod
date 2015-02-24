@@ -603,10 +603,10 @@ BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned 
   m_CustomMsg = false;
   m_InExec = true;
 
-  /* Start the frame tracer */
-
-  if (Environment::get()->IsJitEnabled())
-    ir = g_Jit.InvokeFunction(m_pRuntime, fn, result);
+  // Enter the execution engine.
+  Environment *env = Environment::get();
+  if (env->IsJitEnabled())
+    ir = env->Invoke(m_pRuntime, fn, result);
   else
     ir = Interpret(m_pRuntime, cfun->Public()->code_offs, result);
 
