@@ -37,6 +37,7 @@
 #include "../sp_vm_basecontext.h"
 #include "watchdog_timer.h"
 #include "interpreter.h"
+#include "environment.h"
 
 using namespace sp;
 using namespace Knight;
@@ -274,7 +275,7 @@ CompileFromThunk(PluginRuntime *runtime, cell_t pcode_offs, void **addrp, char *
   // If the watchdog timer has declared a timeout, we must process it now,
   // and possibly refuse to compile, since otherwise we will compile a
   // function that is not patched for timeouts.
-  if (!g_WatchdogTimer.HandleInterrupt())
+  if (!Environment::get()->watchdog()->HandleInterrupt())
     return SP_ERROR_TIMEOUT;
 
   CompiledFunction *fn = runtime->GetJittedFunctionByOffset(pcode_offs);
