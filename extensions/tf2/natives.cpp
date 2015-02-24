@@ -648,6 +648,59 @@ cell_t TF2_RemoveWearable(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+cell_t TF2_ChangeTeam(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	//CTFPlayer::ChangeTeam(int, bool, bool)
+
+	if (!pWrapper)
+	{
+		int offset;
+		
+		if (!g_pGameConf->GetOffset("ChangeTeam", &offset))
+		{
+			return pContext->ThrowNativeError("Failed to locate function");
+		}
+
+		PassInfo pass[3];
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].size = sizeof(int);
+		pass[0].type = PassType_Basic;
+		pass[1].flags = PASSFLAG_BYVAL;
+		pass[1].size = sizeof(bool);
+		pass[1].type = PassType_Basic;
+		pass[2].flags = PASSFLAG_BYVAL;
+		pass[2].size = sizeof(bool);
+		pass[2].type = PassType_Basic;
+
+		pWrapper = g_pBinTools->CreateVCall(offset, 0, 0, NULL, pass, 3);
+
+		g_RegNatives.Register(pWrapper);
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = UTIL_GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	unsigned char vstk[sizeof(void *) + sizeof(int) + (sizeof(bool) * 2)];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = (void *)pEntity;
+	vptr += sizeof(void *);
+	*(int)vptr = static_cast<int>(params[2]);
+	vptr += sizeof(int);
+	*(bool)vptr = static_cast<bool>(params[3]);
+	vptr += sizeof(bool);
+	*(bool)vptr = static_cast<bool>(params[3]);
+
+	pWrapper->Execute(vstk, NULL);
+
+	return 1;
+}
+
 sp_nativeinfo_t g_TFNatives[] = 
 {
 	{"TF2_IgnitePlayer",			TF2_Burn},
@@ -666,5 +719,6 @@ sp_nativeinfo_t g_TFNatives[] =
 	{"TF2_IsPlayerInDuel",				TF2_IsPlayerInDuel},
 	{"TF2_IsHolidayActive",				TF2_IsHolidayActive},
 	{"TF2_RemoveWearable",			TF2_RemoveWearable},
+	{"TF2_ChangeTeam",				TF2_ChangeTeam},
 	{NULL,							NULL}
 };
