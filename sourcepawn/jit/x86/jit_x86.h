@@ -130,15 +130,6 @@ class Compiler
   ke::Vector<CallThunk *> thunks_; //:TODO: free
 };
 
-class JITX86
-{
- public:
-  JITX86();
-
- public:
-  CompiledFunction *CompileFunction(PluginRuntime *runtime, cell_t pcode_offs, int *err);
-};
-
 const Register pri = eax;
 const Register alt = edx;
 const Register stk = edi;
@@ -146,7 +137,8 @@ const Register dat = esi;
 const Register tmp = ecx;
 const Register frm = ebx;
 
-extern JITX86 g_Jit;
+CompiledFunction *
+CompileFunction(PluginRuntime *prt, cell_t pcode_offs, int *err);
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_H_
 

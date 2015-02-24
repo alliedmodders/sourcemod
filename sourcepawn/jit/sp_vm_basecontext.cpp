@@ -568,7 +568,7 @@ BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned 
     if (fn) {
       m_pRuntime->m_PubJitFuncs[public_id] = fn;
     } else {
-      if ((fn = g_Jit.CompileFunction(m_pRuntime, cfun->Public()->code_offs, &ir)) == NULL)
+      if ((fn = CompileFunction(m_pRuntime, cfun->Public()->code_offs, &ir)) == NULL)
         return ir;
       m_pRuntime->m_PubJitFuncs[public_id] = fn;
     }

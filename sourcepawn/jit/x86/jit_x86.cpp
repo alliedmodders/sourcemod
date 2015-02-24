@@ -49,8 +49,6 @@ using namespace sp;
 
 #define __ masm.
 
-JITX86 g_Jit;
-
 static inline ConditionCode
 OpToCondition(OPCODE op)
 {
@@ -255,6 +253,22 @@ GetFunctionName(const sp_plugin_t *plugin, uint32_t offs)
 }
 #endif
 
+CompiledFunction *
+CompileFunction(PluginRuntime *prt, cell_t pcode_offs, int *err)
+{
+  Compiler cc(prt, pcode_offs);
+  CompiledFunction *fun = cc.emit(err);
+  if (!fun)
+    return NULL;
+
+  // Grab the lock before linking code in, since the watchdog timer will look
+  // at this list on another thread.
+  ke::AutoLock lock(Environment::get()->lock());
+
+  prt->AddJittedFunction(fun);
+  return fun;
+}
+
 static int
 CompileFromThunk(PluginRuntime *runtime, cell_t pcode_offs, void **addrp, char *pc)
 {
@@ -267,7 +281,7 @@ CompileFromThunk(PluginRuntime *runtime, cell_t pcode_offs, void **addrp, char *
   CompiledFunction *fn = runtime->GetJittedFunctionByOffset(pcode_offs);
   if (!fn) {
     int err;
-    fn = g_Jit.CompileFunction(runtime, pcode_offs, &err);
+    fn = CompileFunction(runtime, pcode_offs, &err);
     if (!fn)
       return err;
   }
@@ -1788,24 +1802,4 @@ Compiler::emitErrorPaths()
     __ movl(eax, Operand(eax, offsetof(sp_context_t, n_err)));
     __ jmp(ExternalAddress(env_->stubs()->ReturnStub()));
   }
-}
-
-JITX86::JITX86()
-{
-}
-
-CompiledFunction *
-JITX86::CompileFunction(PluginRuntime *prt, cell_t pcode_offs, int *err)
-{
-  Compiler cc(prt, pcode_offs);
-  CompiledFunction *fun = cc.emit(err);
-  if (!fun)
-    return NULL;
-
-  // Grab the lock before linking code in, since the watchdog timer will look
-  // at this list on another thread.
-  ke::AutoLock lock(Environment::get()->lock());
-
-  prt->AddJittedFunction(fun);
-  return fun;
 }
