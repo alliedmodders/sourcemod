@@ -58,18 +58,16 @@ PluginContext::PluginContext(PluginRuntime *pRuntime)
   m_ctx.n_idx = SP_ERROR_NONE;
   rp_ = 0;
 
-  m_ctx.tracker = new tracker_t;
-  m_ctx.tracker->pBase = (ucell_t *)malloc(1024);
-  m_ctx.tracker->pCur = m_ctx.tracker->pBase;
-  m_ctx.tracker->size = 1024 / sizeof(cell_t);
+  tracker_.pBase = (ucell_t *)malloc(1024);
+  tracker_.pCur = tracker_.pBase;
+  tracker_.size = 1024 / sizeof(cell_t);
   m_ctx.basecx = this;
   m_ctx.plugin = const_cast<sp_plugin_t *>(pRuntime->plugin());
 }
 
 PluginContext::~PluginContext()
 {
-  free(m_ctx.tracker->pBase);
-  delete m_ctx.tracker;
+  free(tracker_.pBase);
 }
 
 IVirtualMachine *
@@ -813,4 +811,42 @@ void
 PluginContext::ClearLastNativeError()
 {
   m_ctx.n_err = SP_ERROR_NONE;
+}
+
+int
+PluginContext::popTrackerAndSetHeap()
+{
+  assert(tracker_.pCur > tracker_.pBase);
+
+  tracker_.pCur--;
+  if (tracker_.pCur < tracker_.pBase)
+    return SP_ERROR_TRACKER_BOUNDS;
+
+  ucell_t amt = *tracker_.pCur;
+  if (amt > (m_ctx.hp - m_pRuntime->plugin()->data_size))
+    return SP_ERROR_HEAPMIN;
+
+  m_ctx.hp -= amt;
+  return SP_ERROR_NONE;
+}
+
+int
+PluginContext::pushTracker(uint32_t amount)
+{
+  if ((size_t)(tracker_.pCur - tracker_.pBase) >= tracker_.size)
+    return SP_ERROR_TRACKER_BOUNDS;
+
+  if (tracker_.pCur + 1 - (tracker_.pBase + tracker_.size) == 0) {
+    size_t disp = tracker_.size - 1;
+    tracker_.size *= 2;
+    tracker_.pBase = (ucell_t *)realloc(tracker_.pBase, tracker_.size * sizeof(cell_t));
+
+    if (!tracker_.pBase)
+      return SP_ERROR_TRACKER_BOUNDS;
+
+    tracker_.pCur = tracker_.pBase + disp;
+  }
+
+  *tracker_.pCur++ = amount;
+  return SP_ERROR_NONE;
 }

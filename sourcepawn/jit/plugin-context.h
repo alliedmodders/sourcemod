@@ -18,6 +18,18 @@
 #include "plugin-runtime.h"
 #include "jit_shared.h"
 
+struct HeapTracker
+{
+  HeapTracker()
+   : size(0),
+     pBase(nullptr),
+     pCur(nullptr)
+  {}
+  size_t size; 
+  ucell_t *pBase; 
+  ucell_t *pCur;
+};
+
 class PluginContext : public IPluginContext
 {
  public:
@@ -82,6 +94,9 @@ class PluginContext : public IPluginContext
   static inline size_t offsetOfRstkCips() {
     return offsetof(PluginContext, rstk_cips_);
   }
+  static inline size_t offsetOfTracker() {
+    return offsetof(PluginContext, tracker_);
+  }
 
   bool pushReturnCip(cell_t cip) {
     if (rp_ >= SP_MAX_RETURN_STACK)
@@ -101,6 +116,9 @@ class PluginContext : public IPluginContext
     return rstk_cips_[index];
   }
 
+  int popTrackerAndSetHeap();
+  int pushTracker(uint32_t amount);
+
  private:
   void SetErrorMessage(const char *msg, va_list ap);
   void _SetErrorMessage(const char *msg, ...);
@@ -115,6 +133,9 @@ class PluginContext : public IPluginContext
   sp_context_t m_ctx;
   void *m_keys[4];
   bool m_keys_set[4];
+
+  // Tracker for local HEA growth.
+  HeapTracker tracker_;
 
   // Return stack.
   cell_t rp_;

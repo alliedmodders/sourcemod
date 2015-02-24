@@ -187,7 +187,7 @@ GenerateFullArray(PluginRuntime *rt, uint32_t argc, cell_t *argv, int autozero)
   if (dat_hp >= argv - STACK_MARGIN)
     return SP_ERROR_HEAPLOW;
 
-  if (int err = PushTracker(rt->GetBaseContext()->GetCtx(), bytes))
+  if (int err = rt->GetBaseContext()->pushTracker(bytes))
     return err;
 
   cell_t *base = reinterpret_cast<cell_t *>(rt->plugin()->memory + ctx->hp);
@@ -382,6 +382,19 @@ Compiler::emit(int *errp)
   }
 
   return new CompiledFunction(code, pcode_start_, edges.take());
+}
+
+// Helpers for invoking context members.
+static int
+InvokePushTracker(PluginContext *cx, uint32_t amount)
+{
+  return cx->pushTracker(amount);
+}
+
+static int
+InvokePopTrackerAndSetHeap(PluginContext *cx)
+{
+  return cx->popTrackerAndSetHeap();
 }
 
 bool
@@ -1258,8 +1271,8 @@ Compiler::emitOp(OPCODE op)
       __ push(alt);
 
       __ push(amount * 4);
-      __ push(intptr_t(rt_->GetBaseContext()->GetCtx()));
-      __ call(ExternalAddress((void *)PushTracker));
+      __ push(intptr_t(rt_->GetBaseContext()));
+      __ call(ExternalAddress((void *)InvokePushTracker));
       __ addl(esp, 8);
       __ testl(eax, eax);
       __ j(not_zero, &extern_error_);
@@ -1276,8 +1289,8 @@ Compiler::emitOp(OPCODE op)
       __ push(alt);
 
       // Get the context pointer and call the sanity checker.
-      __ push(intptr_t(rt_));
-      __ call(ExternalAddress((void *)PopTrackerAndSetHeap));
+      __ push(intptr_t(rt_->GetBaseContext()));
+      __ call(ExternalAddress((void *)InvokePopTrackerAndSetHeap));
       __ addl(esp, 4);
       __ testl(eax, eax);
       __ j(not_zero, &extern_error_);
@@ -1405,8 +1418,8 @@ Compiler::emitGenArray(bool autozero)
 
     __ shll(tmp, 2);
     __ push(tmp);
-    __ push(intptr_t(rt_->GetBaseContext()->GetCtx()));
-    __ call(ExternalAddress((void *)PushTracker));
+    __ push(intptr_t(rt_->GetBaseContext()));
+    __ call(ExternalAddress((void *)InvokePushTracker));
     __ addl(esp, 4);
     __ pop(tmp);
     __ shrl(tmp, 2);

@@ -95,48 +95,6 @@ CheckAddress(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t *stk, cell_t a
   return true;
 }
 
-int
-PopTrackerAndSetHeap(PluginRuntime *rt)
-{
-  sp_context_t *ctx = rt->GetBaseContext()->GetCtx();
-  tracker_t *trk = ctx->tracker;
-  assert(trk->pCur > trk->pBase);
-
-  trk->pCur--;
-  if (trk->pCur < trk->pBase)
-    return SP_ERROR_TRACKER_BOUNDS;
-
-  ucell_t amt = *trk->pCur;
-  if (amt > (ctx->hp - rt->plugin()->data_size))
-    return SP_ERROR_HEAPMIN;
-
-  ctx->hp -= amt;
-  return SP_ERROR_NONE;
-}
-
-int
-PushTracker(sp_context_t *ctx, size_t amount)
-{
-  tracker_t *trk = ctx->tracker;
-
-  if ((size_t)(trk->pCur - trk->pBase) >= trk->size)
-    return SP_ERROR_TRACKER_BOUNDS;
-
-  if (trk->pCur + 1 - (trk->pBase + trk->size) == 0) {
-    size_t disp = trk->size - 1;
-    trk->size *= 2;
-    trk->pBase = (ucell_t *)realloc(trk->pBase, trk->size * sizeof(cell_t));
-
-    if (!trk->pBase)
-      return SP_ERROR_TRACKER_BOUNDS;
-
-    trk->pCur = trk->pBase + disp;
-  }
-
-  *trk->pCur++ = amount;
-  return SP_ERROR_NONE;
-}
-
 cell_t
 NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 {
@@ -211,7 +169,7 @@ GenerateArray(PluginRuntime *rt, sp_context_t *ctx, cell_t dims, cell_t *stk, bo
       return false;
     }
 
-    if ((ctx->err = PushTracker(ctx, bytes)) != SP_ERROR_NONE)
+    if ((ctx->err = rt->GetBaseContext()->pushTracker(bytes)) != SP_ERROR_NONE)
       return false;
 
     if (autozero)
@@ -849,7 +807,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       case OP_TRACKER_PUSH_C:
       {
         cell_t amount = *cip++;
-        int error = PushTracker(ctx, amount * 4);
+        int error = cx->pushTracker(amount * 4);
         if (error != SP_ERROR_NONE) {
           ctx->err = error;
           goto error;
@@ -859,7 +817,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 
       case OP_TRACKER_POP_SETHEAP:
       {
-        int error = PopTrackerAndSetHeap(rt);
+        int error = cx->popTrackerAndSetHeap();
         if (error != SP_ERROR_NONE) {
           ctx->err = error;
           goto error;

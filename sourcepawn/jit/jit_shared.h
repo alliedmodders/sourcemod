@@ -68,7 +68,6 @@ namespace SourcePawn
 	} sp_plugin_t;
 }
 
-struct tracker_t;
 class PluginContext;
 
 typedef struct sp_context_s
@@ -81,7 +80,6 @@ typedef struct sp_context_s
 	int32_t			err;			/**< Error last set by interpreter */
 	int32_t			n_err;			/**< Error code set by a native */
 	uint32_t		n_idx;			/**< Current native index being executed */
-	tracker_t 		*tracker;
 	sp_plugin_t     *plugin;
 	PluginContext   *basecx;
 } sp_context_t;

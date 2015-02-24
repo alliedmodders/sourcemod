@@ -22,19 +22,10 @@
 #include "plugin-runtime.h"
 #include "plugin-context.h"
 
-struct tracker_t
-{
-  size_t size; 
-  ucell_t *pBase; 
-  ucell_t *pCur;
-};
-
 int Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval);
 
 int GenerateFullArray(PluginRuntime *rt, uint32_t argc, cell_t *argv, int autozero);
 cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params);
 cell_t BoundNativeCallback(sp_context_t *ctx, SPVM_NATIVE_FUNC pfn, cell_t *params);
-int PopTrackerAndSetHeap(PluginRuntime *rt);
-int PushTracker(sp_context_t *ctx, size_t amount);
 
 #endif // _include_sourcepawn_interpreter_h_
