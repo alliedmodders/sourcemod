@@ -1,18 +1,16 @@
-#include <KePlatform.h>
 #include <assert.h>
 #include <string.h>
+#include <am-utility.h>
 
-#if defined KE_PLATFORM_WINDOWS
+#if defined(WIN32)
 #include <windows.h>
-#elif defined KE_PLATFORM_POSIX
+#else
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/mman.h>
-#else
-#error "TODO"
 #endif
 
-#include "KeCodeAllocator.h"
+#include "code-allocator.h"
 
 #define ALIGNMENT	16
 
@@ -91,7 +89,7 @@ KeCodeCache *Knight::KE_CreateCodeCache()
 
 	memset(cache, 0, sizeof(KeCodeCache));
 
-#if defined KE_PLATFORM_WINDOWS
+#if defined(WIN32)
 	SYSTEM_INFO info;
 
 	GetSystemInfo(&info);
@@ -264,13 +262,11 @@ KeCodeRegion *ke_AddRegionForSize(KeCodeCache *cache, size_t size)
 	size += cache->page_granularity * 2;
 	size -= size % cache->page_granularity;
 
-#if defined KE_PLATFORM_WINDOWS
+#if defined(WIN32)
 	region->block_start = (unsigned char *)VirtualAlloc(NULL, size, MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-#elif defined KE_PLATFORM_POSIX
+#else
 	region->block_start = (unsigned char *)mmap(NULL, size, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANON, -1, 0);
 	region->block_start = (region->block_start == MAP_FAILED) ? NULL : region->block_start;
-#else
-#error "TODO"
 #endif
 
 	if (region->block_start == NULL)
@@ -381,7 +377,7 @@ KeCodeRegion *ke_DestroyRegion(KeCodeRegion *region)
 
 	next = region->next;
 
-#if defined KE_PLATFORM_WINDOWS
+#if defined(WIN32)
 	VirtualFree(region->block_start, 0, MEM_RELEASE);
 #else
 	munmap(region->block_start, region->total_size);

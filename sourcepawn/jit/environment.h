@@ -15,6 +15,7 @@
 
 #include <sp_vm_api.h>
 #include <am-utility.h> // Replace with am-cxx later.
+#include "code-allocator.h"
 
 class PluginRuntime;
 
@@ -53,6 +54,10 @@ class Environment : public ISourcePawnEnvironment
   // Runtime functions.
   const char *GetErrorString(int err);
   void ReportError(PluginRuntime *runtime, int err, const char *errstr, cell_t rp_start);
+
+  // Allocate and free executable memory.
+  void *AllocateCode(size_t size);
+  void FreeCode(void *code);
 
   // Helpers.
   void SetProfiler(IProfilingTool *profiler) {
@@ -96,6 +101,8 @@ class Environment : public ISourcePawnEnvironment
   IProfilingTool *profiler_;
   bool jit_enabled_;
   bool profiling_enabled_;
+
+  Knight::KeCodeCache *code_pool_;
 };
 
 class EnterProfileScope

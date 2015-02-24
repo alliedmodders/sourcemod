@@ -19,7 +19,6 @@
 
 #include <sp_vm_types.h>
 #include <sp_vm_api.h>
-#include <KeCodeAllocator.h>
 #include <macro-assembler-x86.h>
 #include <am-vector.h>
 #include "jit_shared.h"
@@ -173,9 +172,6 @@ class JITX86
   ExternalAddress GetUniversalReturn() {
     return ExternalAddress(m_pJitReturn);
   }
-  void *AllocCode(size_t size);
-  void FreeCode(void *code);
-
   uintptr_t FrameId() const {
     return frame_id_;
   }
@@ -203,7 +199,6 @@ const Register dat = esi;
 const Register tmp = ecx;
 const Register frm = ebx;
 
-extern Knight::KeCodeCache *g_pCodeCache;
 extern JITX86 g_Jit;
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_H_
