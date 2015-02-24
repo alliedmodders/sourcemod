@@ -277,10 +277,10 @@ int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
   }
 
   if (m_plugin.num_publics > 0) {
-    m_PubFuncs = new CFunction *[m_plugin.num_publics];
-    memset(m_PubFuncs, 0, sizeof(CFunction *) * m_plugin.num_publics);
-    m_PubJitFuncs = new JitFunction *[m_plugin.num_publics];
-    memset(m_PubJitFuncs, 0, sizeof(JitFunction *) * m_plugin.num_publics);
+    m_PubFuncs = new ScriptedInvoker *[m_plugin.num_publics];
+    memset(m_PubFuncs, 0, sizeof(ScriptedInvoker *) * m_plugin.num_publics);
+    m_PubJitFuncs = new CompiledFunction *[m_plugin.num_publics];
+    memset(m_PubJitFuncs, 0, sizeof(CompiledFunction *) * m_plugin.num_publics);
   }
 
   MD5 md5_pcode;
@@ -298,18 +298,18 @@ int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
 
   SetupFloatNativeRemapping();
   function_map_size_ = m_plugin.pcode_size / sizeof(cell_t) + 1;
-  function_map_ = new JitFunction *[function_map_size_];
-  memset(function_map_, 0, function_map_size_ * sizeof(JitFunction *));
+  function_map_ = new CompiledFunction *[function_map_size_];
+  memset(function_map_, 0, function_map_size_ * sizeof(CompiledFunction *));
 
   return SP_ERROR_NONE;
 }
 
 void
-BaseRuntime::AddJittedFunction(JitFunction *fn)
+BaseRuntime::AddJittedFunction(CompiledFunction *fn)
 {
   m_JitFunctions.append(fn);
 
-  cell_t pcode_offset = fn->GetPCodeAddress();
+  cell_t pcode_offset = fn->GetCodeOffset();
   assert(pcode_offset % 4 == 0);
 
   uint32_t pcode_index = pcode_offset / 4;
@@ -318,7 +318,7 @@ BaseRuntime::AddJittedFunction(JitFunction *fn)
   function_map_[pcode_index] = fn;
 }
 
-JitFunction *
+CompiledFunction *
 BaseRuntime::GetJittedFunctionByOffset(cell_t pcode_offset)
 {
   assert(pcode_offset % 4 == 0);
@@ -483,7 +483,7 @@ BaseRuntime::GetDebugInfo()
 IPluginFunction *
 BaseRuntime::GetFunctionById(funcid_t func_id)
 {
-  CFunction *pFunc = NULL;
+  ScriptedInvoker *pFunc = NULL;
 
   if (func_id & 1) {
     func_id >>= 1;
@@ -491,7 +491,7 @@ BaseRuntime::GetFunctionById(funcid_t func_id)
       return NULL;
     pFunc = m_PubFuncs[func_id];
     if (!pFunc) {
-      m_PubFuncs[func_id] = new CFunction(this, (func_id << 1) | 1, func_id);
+      m_PubFuncs[func_id] = new ScriptedInvoker(this, (func_id << 1) | 1, func_id);
       pFunc = m_PubFuncs[func_id];
     }
   }
@@ -499,15 +499,15 @@ BaseRuntime::GetFunctionById(funcid_t func_id)
   return pFunc;
 }
 
-CFunction *
+ScriptedInvoker *
 BaseRuntime::GetPublicFunction(size_t index)
 {
-  CFunction *pFunc = m_PubFuncs[index];
+  ScriptedInvoker *pFunc = m_PubFuncs[index];
   if (!pFunc) {
     sp_public_t *pub = NULL;
     GetPublicByIndex(index, &pub);
     if (pub)
-      m_PubFuncs[index] = new CFunction(this, (index << 1) | 1, index);
+      m_PubFuncs[index] = new ScriptedInvoker(this, (index << 1) | 1, index);
     pFunc = m_PubFuncs[index];
   }
 

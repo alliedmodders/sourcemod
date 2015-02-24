@@ -14,10 +14,10 @@ OBJECTS = dll_exports.cpp 	\
 	x86/jit_x86.cpp			\
 	sp_vm_basecontext.cpp	\
 	sp_vm_engine.cpp	\
-	sp_vm_function.cpp	\
+	scripted-invoker.cpp	\
 	engine2.cpp			\
 	BaseRuntime.cpp		\
-	jit_function.cpp	\
+	compiled-function.cpp	\
 	opcodes.cpp		\
 	watchdog_timer.cpp \
 	interpreter.cpp \
@@ -58,7 +58,7 @@ INCLUDE = -I. -I.. -I$(SMSDK)/public -I$(SMSDK)/public/jit -I$(SMSDK)/public/jit
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -DHAVE_STDINT_H \
 	-m32 -Wno-uninitialized -Werror -DSPSHELL -ggdb3 -Wno-unused
-CXXFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti -Wno-delete-non-virtual-dtor
+CXXFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti -Wno-delete-non-virtual-dtor -std=c++11
 
 ################################################
 ### DO NOT EDIT BELOW HERE FOR MOST PROJECTS ###

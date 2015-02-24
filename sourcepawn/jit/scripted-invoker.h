@@ -34,15 +34,14 @@ struct ParamInfo
 };
 
 class CPlugin;
-class JitFunction;
 
-class CFunction : public IPluginFunction
+class ScriptedInvoker : public IPluginFunction
 {
   friend class SourcePawnEngine;
 
  public:
-  CFunction(BaseRuntime *pRuntime, funcid_t fnid, uint32_t pub_id);
-  ~CFunction();
+  ScriptedInvoker(BaseRuntime *pRuntime, funcid_t fnid, uint32_t pub_id);
+  ~ScriptedInvoker();
 
  public:
   virtual int PushCell(cell_t cell);
