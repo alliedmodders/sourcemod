@@ -156,7 +156,7 @@ static const char *sErrorMsgTable[] =
 const char *
 Environment::GetErrorString(int error)
 {
-  if (error < 1 || error > (sizeof(sErrorMsgTable) / sizeof(sErrorMsgTable[0])))
+  if (error < 1 || error > int(sizeof(sErrorMsgTable) / sizeof(sErrorMsgTable[0])))
     return NULL;
   return sErrorMsgTable[error];
 }
