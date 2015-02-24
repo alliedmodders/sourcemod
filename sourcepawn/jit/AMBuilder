@@ -78,6 +78,9 @@ shell.compiler.linkflags[0:0] = [libsourcepawn]
 shell.sources += [
   'dll_exports.cpp'
 ]
+if shell.compiler.cc.behavior == 'msvc':
+  shell.compiler.linkflags.remove('/SUBSYSTEM:WINDOWS')
+  shell.compiler.linkflags.append('/SUBSYSTEM:CONSOLE')
 
 if builder.target_platform == 'linux':
   shell.compiler.postlink += ['-lpthread', '-lrt']
