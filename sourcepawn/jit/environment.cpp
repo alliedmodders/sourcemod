@@ -26,7 +26,8 @@ Environment::Environment()
  : debugger_(nullptr),
    profiler_(nullptr),
    jit_enabled_(true),
-   profiling_enabled_(false)
+   profiling_enabled_(false),
+   code_pool_(nullptr)
 {
 }
 
@@ -41,14 +42,14 @@ Environment::New()
   if (sEnvironment)
     return nullptr;
 
-  Environment *env = new Environment();
-  if (!env->Initialize()) {
-    delete env;
+  sEnvironment = new Environment();
+  if (!sEnvironment->Initialize()) {
+    delete sEnvironment;
+    sEnvironment = nullptr;
     return nullptr;
   }
 
-  sEnvironment = env;
-  return env;
+  return sEnvironment;
 }
 
 Environment *
@@ -64,6 +65,10 @@ Environment::Initialize()
   api_v2_ = new SourcePawnEngine2();
   watchdog_timer_ = new WatchdogTimer();
 
+  if ((code_pool_ = Knight::KE_CreateCodeCache()) == nullptr)
+    return false;
+
+  // Safe to initialize JIT now that we have the code cache.
   if (!g_Jit.InitializeJIT())
     return false;
 
@@ -75,6 +80,10 @@ Environment::Shutdown()
 {
   watchdog_timer_->Shutdown();
   g_Jit.ShutdownJIT();
+  Knight::KE_DestroyCodeCache(code_pool_);
+
+  assert(sEnvironment == this);
+  sEnvironment = nullptr;
 }
 
 void
@@ -159,4 +168,16 @@ Environment::ReportError(PluginRuntime *runtime, int err, const char *errstr, ce
   CContextTrace trace(runtime, err, errstr, rp_start);
 
   debugger_->OnContextExecuteError(runtime->GetDefaultContext(), &trace);
+}
+
+void *
+Environment::AllocateCode(size_t size)
+{
+  return Knight::KE_AllocCode(code_pool_, size);
+}
+
+void
+Environment::FreeCode(void *code)
+{
+  Knight::KE_FreeCode(code_pool_, code);
 }

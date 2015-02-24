@@ -40,7 +40,6 @@
 #include "environment.h"
 
 using namespace sp;
-using namespace Knight;
 
 #if defined USE_UNGEN_OPCODES
 #include "ungen_opcodes.h"
@@ -49,7 +48,6 @@ using namespace Knight;
 #define __ masm.
 
 JITX86 g_Jit;
-KeCodeCache *g_pCodeCache = NULL;
 
 static inline uint8_t *
 LinkCode(AssemblerX86 &masm)
@@ -57,7 +55,7 @@ LinkCode(AssemblerX86 &masm)
   if (masm.outOfMemory())
     return NULL;
 
-  void *code = Knight::KE_AllocCode(g_pCodeCache, masm.length());
+  void *code = Environment::get()->AllocateCode(masm.length());
   if (!code)
     return NULL;
 
@@ -1901,8 +1899,6 @@ JITX86::JITX86()
 bool
 JITX86::InitializeJIT()
 {
-  g_pCodeCache = KE_CreateCodeCache();
-
   m_pJitEntry = GenerateEntry(&m_pJitReturn, &m_pJitTimeout);
   if (!m_pJitEntry)
     return false;
@@ -1913,7 +1909,6 @@ JITX86::InitializeJIT()
   if (!code)
     return false;
   MacroAssemblerX86::RunFeatureDetection(code);
-  KE_FreeCode(g_pCodeCache, code);
 
   return true;
 }
@@ -1921,7 +1916,6 @@ JITX86::InitializeJIT()
 void
 JITX86::ShutdownJIT()
 {
-  KE_DestroyCodeCache(g_pCodeCache);
 }
 
 CompiledFunction *
@@ -1981,7 +1975,7 @@ JITX86::CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData)
 void
 JITX86::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 {
-  KE_FreeCode(g_pCodeCache, (void *)func);
+  Environment::get()->FreeCode((void *)func);
 }
 
 ICompilation *
@@ -2044,18 +2038,6 @@ JITX86::InvokeFunction(PluginRuntime *runtime, CompiledFunction *fn, cell_t *res
 
   *result = ctx->rval;
   return err;
-}
-
-void *
-JITX86::AllocCode(size_t size)
-{
-  return Knight::KE_AllocCode(g_pCodeCache, size);
-}
-
-void
-JITX86::FreeCode(void *code)
-{
-  KE_FreeCode(g_pCodeCache, code);
 }
 
 void
