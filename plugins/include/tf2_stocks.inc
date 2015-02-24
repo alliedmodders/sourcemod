@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -262,7 +262,7 @@ enum
 	TFWeaponSlot_Building,
 	TFWeaponSlot_PDA,
 	TFWeaponSlot_Item1,
-	TFWeaponSlot_Item2	
+	TFWeaponSlot_Item2
 };
 
 // Identifiers for the eventtype property on the teamplay_flag_event event
@@ -279,12 +279,12 @@ enum TFResourceType
 	TFResource_Ping,
 	TFResource_Score,
 	TFResource_Deaths,
-	TFResource_TotalScore, 
+	TFResource_TotalScore,
 	TFResource_Captures,
 	TFResource_Defenses,
 	TFResource_Dominations,
 	TFResource_Revenge,
-	TFResource_BuildingsDestroyed, 
+	TFResource_BuildingsDestroyed,
 	TFResource_Headshots,
 	TFResource_Backstabs,
 	TFResource_HealPoints,
@@ -320,7 +320,7 @@ static const String:TFResourceNames[TFResourceType][] =
 
 /**
  * Gets a client's current team.
- * 
+ *
  * @param client		Client index.
  * @return				Current TFTeam of client.
  * @error				Invalid client index.
@@ -328,6 +328,19 @@ static const String:TFResourceNames[TFResourceType][] =
 stock TFTeam:TF2_GetClientTeam(client)
 {
 	return TFTeam:GetClientTeam(client);
+}
+
+/**
+ * Changes a client's current team.
+ *
+ * @param client        Client index.
+ * @param team          TFTeam team symbol.
+ * @noreturn
+ * @error               Invalid client index.
+ */
+stock TF2_ChangeClientTeam(client, TFTeam:team)
+{
+    ChangeClientTeam(client, _:team);
 }
 
 /**
@@ -357,7 +370,7 @@ stock TFClassType:TF2_GetPlayerClass(client)
 stock TF2_SetPlayerClass(client, TFClassType:classType, bool:weapons=true, bool:persistent=true)
 {
 	SetEntProp(client, Prop_Send, "m_iClass", _:classType);
-	
+
 	if (persistent)
 	{
 		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:classType);
@@ -377,23 +390,23 @@ stock TF2_GetPlayerResourceData(client, TFResourceType:type)
 {
 	if (!IsClientConnected(client))
 	{
-		return -1;	
+		return -1;
 	}
-	
+
 	new offset = FindSendPropInfo("CTFPlayerResource", TFResourceNames[type]);
-	
+
 	if (offset < 1)
 	{
-		return -1;	
+		return -1;
 	}
-	
+
 	new entity = TF2_GetResourceEntity();
-	
+
 	if (entity == -1)
 	{
 		return -1;
 	}
-	
+
 	return GetEntData(entity, offset + (client*4));
 }
 
@@ -413,26 +426,26 @@ stock bool:TF2_SetPlayerResourceData(client, TFResourceType:type, any:value)
 {
 	if (!IsClientConnected(client))
 	{
-		return false;	
+		return false;
 	}
-	
+
 	new offset = FindSendPropInfo("CTFPlayerResource", TFResourceNames[type]);
-	
+
 	if (offset < 1)
 	{
-		return false;	
+		return false;
 	}
-	
+
 	new entity = TF2_GetResourceEntity();
-	
+
 	if (entity == -1)
 	{
-		return false;	
+		return false;
 	}
-	
+
 	SetEntData(entity, offset + (client*4), value);
-	
-	return true;	
+
+	return true;
 }
 
 /**
@@ -510,7 +523,7 @@ stock bool:TF2_IsPlayerInCondition(client, TFCond:cond)
 		{
 			return true;
 		}
-		
+
 		if ((GetEntProp(client, Prop_Send, "_condition_bits") & bit) == bit)
 		{
 			return true;
@@ -540,7 +553,7 @@ stock bool:TF2_IsPlayerInCondition(client, TFCond:cond)
 			return true;
 		}
 	}
-	
+
 	return false;
 }
 
@@ -554,12 +567,12 @@ stock bool:TF2_IsPlayerInCondition(client, TFCond:cond)
 stock TFObjectType:TF2_GetObjectType(entity)
 {
 	new offset = GetEntSendPropOffs(entity, "m_iObjectType");
-	
+
 	if (offset <= 0)
 	{
 		ThrowError("Entity index %d is not an object", entity);
 	}
-	
+
 	return TFObjectType:GetEntData(entity, offset);
 }
 
@@ -573,11 +586,11 @@ stock TFObjectType:TF2_GetObjectType(entity)
 stock TFObjectMode:TF2_GetObjectMode(entity)
 {
 	new offset = GetEntSendPropOffs(entity, "m_iObjectMode");
-	
+
 	if (offset <= 0)
 	{
 		ThrowError("Entity index %d is not an object", entity);
 	}
-	
+
 	return TFObjectMode:GetEntData(entity, offset);
 }
