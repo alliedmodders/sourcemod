@@ -1462,8 +1462,8 @@ Compiler::emitCall()
 
   // eax = context
   // ecx = rp
-  __ movl(eax, intptr_t(rt_->GetBaseContext()->GetCtx()));
-  __ movl(ecx, Operand(eax, offsetof(sp_context_t, rp)));
+  __ movl(eax, intptr_t(rt_->GetBaseContext()));
+  __ movl(ecx, Operand(eax, PluginContext::offsetOfRp()));
 
   // Check if the return stack is used up.
   __ cmpl(ecx, SP_MAX_RETURN_STACK);
@@ -1471,10 +1471,10 @@ Compiler::emitCall()
 
   // Add to the return stack.
   uintptr_t cip = uintptr_t(cip_ - 2) - uintptr_t(plugin_->pcode);
-  __ movl(Operand(eax, ecx, ScaleFour, offsetof(sp_context_t, rstk_cips)), cip);
+  __ movl(Operand(eax, ecx, ScaleFour, PluginContext::offsetOfRstkCips()), cip);
 
   // Increment the return stack pointer.
-  __ addl(Operand(eax, offsetof(sp_context_t, rp)), 1);
+  __ addl(Operand(eax, PluginContext::offsetOfRp()), 1);
 
   // Store the CIP of the function we're about to call.
   __ movl(Operand(cipAddr()), offset);
@@ -1495,8 +1495,8 @@ Compiler::emitCall()
   __ movl(Operand(cipAddr()), cip);
 
   // Mark us as leaving the last frame.
-  __ movl(tmp, intptr_t(rt_->GetBaseContext()->GetCtx()));
-  __ subl(Operand(tmp, offsetof(sp_context_t, rp)), 1);
+  __ movl(tmp, intptr_t(rt_->GetBaseContext()));
+  __ subl(Operand(tmp, PluginContext::offsetOfRp()), 1);
   return true;
 }
 

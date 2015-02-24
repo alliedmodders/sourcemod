@@ -85,8 +85,6 @@ typedef struct sp_context_s
 	sp_plugin_t 	*plugin;
 	PluginContext	*basecx;
 	void *			vm[8];			/**< VM-specific pointers */
-	cell_t			rp;				/**< Return stack pointer */
-	cell_t			rstk_cips[SP_MAX_RETURN_STACK];
 } sp_context_t;
 
 //#define SPFLAG_PLUGIN_DEBUG			(1<<0)

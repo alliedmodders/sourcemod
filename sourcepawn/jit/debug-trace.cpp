@@ -20,6 +20,7 @@ using namespace SourcePawn;
 
 CContextTrace::CContextTrace(PluginRuntime *pRuntime, int err, const char *errstr, cell_t start_rp) 
  : m_pRuntime(pRuntime),
+   context_(pRuntime->GetBaseContext()),
    m_Error(err),
    m_pMsg(errstr),
    m_StartRp(start_rp),
@@ -66,20 +67,18 @@ CContextTrace::GetTraceInfo(CallStackInfo *trace)
 
   if (m_Level == 0) {
     cip = m_ctx->cip;
-  } else if (m_ctx->rp > 0) {
+  } else if (context_->rp() > 0) {
     /* Entries go from ctx.rp - 1 to m_StartRp */
     cell_t offs, start, end;
 
     offs = m_Level - 1;
-    start = m_ctx->rp - 1;
+    start = context_->rp() - 1;
     end = m_StartRp;
 
     if (start - offs < end)
-    {
       return false;
-    }
 
-    cip = m_ctx->rstk_cips[start - offs];
+    cip = context_->getReturnStackCip(start - offs);
   } else {
     return false;
   }

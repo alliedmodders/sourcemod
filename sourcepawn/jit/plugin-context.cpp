@@ -56,7 +56,7 @@ PluginContext::PluginContext(PluginRuntime *pRuntime)
   m_ctx.frm = m_ctx.sp;
   m_ctx.n_err = SP_ERROR_NONE;
   m_ctx.n_idx = SP_ERROR_NONE;
-  m_ctx.rp = 0;
+  rp_ = 0;
 
   m_ctx.tracker = new tracker_t;
   m_ctx.tracker->pBase = (ucell_t *)malloc(1024);
@@ -584,7 +584,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
   save_hp = m_ctx.hp;
   save_exec = m_InExec;
   save_n_idx = m_ctx.n_idx;
-  save_rp = m_ctx.rp;
+  save_rp = rp_;
   save_cip = m_ctx.cip;
 
   /* Push parameters */
@@ -628,10 +628,10 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
         m_ctx.hp, 
         save_hp);
     }
-    if (m_ctx.rp != save_rp) {
+    if (rp_ != save_rp) {
       ir = SP_ERROR_STACKLEAK;
       _SetErrorMessage("Return stack leak detected: rp:%d should be %d!",
-        m_ctx.rp,
+        rp_,
         save_rp);
     }
   }
@@ -644,7 +644,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
 
   m_ctx.sp = save_sp;
   m_ctx.hp = save_hp;
-  m_ctx.rp = save_rp;
+  rp_ = save_rp;
   
   m_ctx.cip = save_cip;
   m_ctx.n_idx = save_n_idx;

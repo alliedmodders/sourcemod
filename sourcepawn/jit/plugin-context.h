@@ -76,6 +76,31 @@ class PluginContext : public IPluginContext
  public:
   bool IsInExec();
 
+  static inline size_t offsetOfRp() {
+    return offsetof(PluginContext, rp_);
+  }
+  static inline size_t offsetOfRstkCips() {
+    return offsetof(PluginContext, rstk_cips_);
+  }
+
+  bool pushReturnCip(cell_t cip) {
+    if (rp_ >= SP_MAX_RETURN_STACK)
+      return false;
+    rstk_cips_[rp_++] = cip;
+    return true;
+  }
+  void popReturnCip() {
+    assert(rp_ > 0);
+    rp_--;
+  }
+  cell_t rp() const {
+    return rp_;
+  }
+  cell_t getReturnStackCip(int index) {
+    assert(index >= 0 && index < SP_MAX_RETURN_STACK);
+    return rstk_cips_[index];
+  }
+
  private:
   void SetErrorMessage(const char *msg, va_list ap);
   void _SetErrorMessage(const char *msg, ...);
@@ -90,6 +115,10 @@ class PluginContext : public IPluginContext
   sp_context_t m_ctx;
   void *m_keys[4];
   bool m_keys_set[4];
+
+  // Return stack.
+  cell_t rp_;
+  cell_t rstk_cips_[SP_MAX_RETURN_STACK];
 };
 
 #endif //_INCLUDE_SOURCEPAWN_BASECONTEXT_H_

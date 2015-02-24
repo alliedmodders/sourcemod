@@ -18,7 +18,10 @@ def setup(binary):
   compiler = binary.compiler
   compiler.includes += Includes
   if compiler.vendor == 'gcc' or compiler.vendor == 'clang':
-    compiler.cxxflags += ['-fno-rtti']
+    compiler.cxxflags += [
+      '-fno-rtti',
+      '-Wno-invalid-offsetof',
+    ]
   elif binary.compiler.vendor == 'msvc':
     compiler.cxxflags += ['/GR-']
  

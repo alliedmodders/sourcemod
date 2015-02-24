@@ -236,7 +236,8 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
   if (!IsValidOffset(aCodeStart) || aCodeStart > plugin->pcode_size)
     return SP_ERROR_INVALID_INSTRUCTION;
 
-  sp_context_t *ctx = rt->GetBaseContext()->GetCtx();
+  PluginContext *cx = rt->GetBaseContext();
+  sp_context_t *ctx = cx->GetCtx();
   ctx->err = SP_ERROR_NONE;
 
   // Save the original frm. BaseContext won't, and if we error, we won't hit
@@ -889,14 +890,12 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
           goto error;
         }
 
-        if (ctx->rp >= SP_MAX_RETURN_STACK) {
+        // For debugging.
+        uintptr_t rcip = uintptr_t(cip - 2) - uintptr_t(plugin->pcode);
+        if (!cx->pushReturnCip(rcip)) {
           ctx->err = SP_ERROR_STACKLOW;
           goto error;
         }
-
-        // For debugging.
-        uintptr_t rcip = uintptr_t(cip - 2) - uintptr_t(plugin->pcode);
-        ctx->rstk_cips[ctx->rp++] = rcip;
         ctx->cip = offset;
         ctx->sp = uintptr_t(stk) - uintptr_t(plugin->memory);
 
@@ -904,7 +903,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 
         stk = reinterpret_cast<cell_t *>(plugin->memory + ctx->sp);
         ctx->cip = rcip;
-        ctx->rp--;
+        cx->popReturnCip();
 
         if (err != SP_ERROR_NONE)
           goto error;
