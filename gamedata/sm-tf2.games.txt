@@ -144,7 +144,6 @@
 				"linux"		"428"
 				"mac"		"428"
 			}
-			
 			"ChangeTeam"
 			{
 				"windows"	"419"
