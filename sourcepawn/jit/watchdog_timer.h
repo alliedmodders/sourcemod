@@ -21,6 +21,8 @@
 #include <stdint.h>
 #include <am-thread-utils.h>
 
+namespace sp {
+
 typedef bool (*WatchdogCallback)();
 
 class WatchdogTimer : public ke::IRunnable
@@ -56,6 +58,6 @@ class WatchdogTimer : public ke::IRunnable
   bool timedout_;
 };
 
-extern WatchdogTimer g_WatchdogTimer;
+} // namespace sp
 
 #endif // _include_sourcepawn_watchdog_timer_posix_h_
