@@ -33,8 +33,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "jit_x86.h"
-#include "../plugin-runtime.h"
-#include "../sp_vm_basecontext.h"
+#include "plugin-runtime.h"
+#include "plugin-context.h"
 #include "watchdog_timer.h"
 #include "interpreter.h"
 #include "environment.h"

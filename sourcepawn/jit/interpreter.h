@@ -20,7 +20,7 @@
 #include <sp_vm_types.h>
 #include <sp_vm_api.h>
 #include "plugin-runtime.h"
-#include "sp_vm_basecontext.h"
+#include "plugin-context.h"
 
 struct tracker_t
 {

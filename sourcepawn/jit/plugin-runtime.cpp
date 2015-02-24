@@ -16,7 +16,7 @@
 #include <assert.h>
 #include "plugin-runtime.h"
 #include "x86/jit_x86.h"
-#include "sp_vm_basecontext.h"
+#include "plugin-context.h"
 #include "environment.h"
 
 #include "md5/md5.h"

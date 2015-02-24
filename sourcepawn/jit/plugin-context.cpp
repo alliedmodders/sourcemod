@@ -14,8 +14,8 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <limits.h>
-#include "sp_vm_api.h"
-#include "sp_vm_basecontext.h"
+#include <sp_vm_api.h>
+#include "plugin-context.h"
 #include "watchdog_timer.h"
 #include "x86/jit_x86.h"
 #include "interpreter.h"
