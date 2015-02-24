@@ -16,7 +16,7 @@ OBJECTS = dll_exports.cpp 	\
 	sp_vm_engine.cpp	\
 	scripted-invoker.cpp	\
 	engine2.cpp			\
-	BaseRuntime.cpp		\
+	plugin-runtime.cpp		\
 	opcodes.cpp		\
 	compiled-function.cpp	\
 	md5/md5.cpp			\

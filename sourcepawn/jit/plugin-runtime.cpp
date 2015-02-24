@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "BaseRuntime.h"
+#include "plugin-runtime.h"
 #include "sp_vm_engine.h"
 #include "x86/jit_x86.h"
 #include "sp_vm_basecontext.h"

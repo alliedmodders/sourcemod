@@ -35,7 +35,7 @@
 #include "jit_x86.h"
 #include "../sp_vm_engine.h"
 #include "../engine2.h"
-#include "../BaseRuntime.h"
+#include "../plugin-runtime.h"
 #include "../sp_vm_basecontext.h"
 #include "watchdog_timer.h"
 #include "interpreter.h"

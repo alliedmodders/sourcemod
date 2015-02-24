@@ -15,7 +15,7 @@
 
 #include "sp_vm_api.h"
 #include "scripted-invoker.h"
-#include "BaseRuntime.h"
+#include "plugin-runtime.h"
 #include "jit_shared.h"
 
 /**

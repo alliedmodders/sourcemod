@@ -16,7 +16,7 @@
 #include "engine2.h"
 #include "x86/jit_x86.h"
 #include "zlib/zlib.h"
-#include "BaseRuntime.h"
+#include "plugin-runtime.h"
 #include "sp_vm_engine.h"
 #include "watchdog_timer.h"
 #include <sourcemod_version.h>

@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "scripted-invoker.h"
-#include "BaseRuntime.h"
+#include "plugin-runtime.h"
 
 /********************
 * FUNCTION CALLING *
