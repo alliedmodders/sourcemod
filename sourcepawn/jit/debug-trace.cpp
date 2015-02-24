@@ -11,7 +11,7 @@
 // SourcePawn. If not, see http://www.gnu.org/licenses/.
 //
 #include "debug-trace.h"
-#include "sp_vm_basecontext.h"
+#include "plugin-context.h"
 #include "environment.h"
 
 using namespace ke;

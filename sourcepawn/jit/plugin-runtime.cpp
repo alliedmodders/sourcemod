@@ -16,7 +16,7 @@
 #include <assert.h>
 #include "plugin-runtime.h"
 #include "x86/jit_x86.h"
-#include "sp_vm_basecontext.h"
+#include "plugin-context.h"
 #include "environment.h"
 
 #include "md5/md5.h"
@@ -300,7 +300,7 @@ int PluginRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
   md5_data.finalize();
   md5_data.raw_digest(m_DataHash);
 
-  m_pCtx = new BaseContext(this);
+  m_pCtx = new PluginContext(this);
 
   SetupFloatNativeRemapping();
   function_map_size_ = m_plugin.pcode_size / sizeof(cell_t) + 1;
@@ -559,7 +559,7 @@ size_t PluginRuntime::GetMemUsage()
 
   mem += sizeof(this);
   mem += sizeof(sp_plugin_t);
-  mem += sizeof(BaseContext);
+  mem += sizeof(PluginContext);
   mem += m_plugin.base_size;
 
   return mem;
@@ -575,7 +575,7 @@ unsigned char *PluginRuntime::GetDataHash()
   return m_DataHash;
 }
 
-BaseContext *PluginRuntime::GetBaseContext()
+PluginContext *PluginRuntime::GetBaseContext()
 {
   return m_pCtx;
 }
@@ -598,7 +598,7 @@ PluginRuntime::CreateBlank(uint32_t heastk)
   m_plugin.mem_size = heastk;
   m_plugin.memory = new uint8_t[heastk];
 
-  m_pCtx = new BaseContext(this);
+  m_pCtx = new PluginContext(this);
 
   return SP_ERROR_NONE;
 }

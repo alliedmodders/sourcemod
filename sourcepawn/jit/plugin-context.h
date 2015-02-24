@@ -18,15 +18,11 @@
 #include "plugin-runtime.h"
 #include "jit_shared.h"
 
-/**
- * :TODO: Make functions allocate as a lump instead of individual allocations!
- */
-
-class BaseContext : public IPluginContext
+class PluginContext : public IPluginContext
 {
  public:
-  BaseContext(PluginRuntime *pRuntime);
-  ~BaseContext();
+  PluginContext(PluginRuntime *pRuntime);
+  ~PluginContext();
 
  public: //IPluginContext
   IVirtualMachine *GetVirtualMachine();

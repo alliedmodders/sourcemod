@@ -23,7 +23,7 @@
 #include <am-vector.h>
 #include "jit_shared.h"
 #include "plugin-runtime.h"
-#include "sp_vm_basecontext.h"
+#include "plugin-context.h"
 #include "compiled-function.h"
 #include "opcodes.h"
 
