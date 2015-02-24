@@ -82,9 +82,8 @@ typedef struct sp_context_s
 	int32_t			n_err;			/**< Error code set by a native */
 	uint32_t		n_idx;			/**< Current native index being executed */
 	tracker_t 		*tracker;
-	sp_plugin_t 	*plugin;
-	PluginContext	*basecx;
-	void *			vm[8];			/**< VM-specific pointers */
+	sp_plugin_t     *plugin;
+	PluginContext   *basecx;
 } sp_context_t;
 
 //#define SPFLAG_PLUGIN_DEBUG			(1<<0)
