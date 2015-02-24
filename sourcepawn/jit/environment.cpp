@@ -11,11 +11,10 @@
 // SourcePawn. If not, see http://www.gnu.org/licenses/.
 //
 #include "environment.h"
-#include "sp_vm_engine.h"
-#include "engine2.h"
 #include "x86/jit_x86.h"
 #include "watchdog_timer.h"
 #include "debug-trace.h"
+#include "api.h"
 
 using namespace sp;
 using namespace SourcePawn;

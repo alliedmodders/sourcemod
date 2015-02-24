@@ -34,15 +34,11 @@
 #include <stdarg.h>
 #include <am-utility.h> // Replace with am-cxx later.
 #include "dll_exports.h"
-#include "sp_vm_engine.h"
-#include "engine2.h"
 #include "environment.h"
 
 using namespace ke;
 using namespace sp;
 using namespace SourcePawn;
-
-SourcePawnEngine2 g_engine2;
 
 class SourcePawnFactory : public ISourcePawnFactory
 {
@@ -192,14 +188,14 @@ static cell_t PrintFloat(IPluginContext *cx, const cell_t *params)
 
 static int Execute(const char *file)
 {
-	ICompilation *co = g_engine2.StartCompilation();
+	ICompilation *co = sEnv->APIv2()->StartCompilation();
 	if (!co) {
 		fprintf(stderr, "Could not create a compilation context\n");
 		return 1;
 	}
 
 	int err;
-	AutoT<IPluginRuntime> rt(g_engine2.LoadPlugin(co, file, &err));
+	AutoT<IPluginRuntime> rt(sEnv->APIv2()->LoadPlugin(co, file, &err));
 	if (!rt) {
 		fprintf(stderr, "Could not load plugin: %s\n", sEnv->GetErrorString(err));
 		return 1;

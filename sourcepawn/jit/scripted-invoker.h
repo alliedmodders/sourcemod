@@ -37,8 +37,6 @@ class CPlugin;
 
 class ScriptedInvoker : public IPluginFunction
 {
-  friend class SourcePawnEngine;
-
  public:
   ScriptedInvoker(PluginRuntime *pRuntime, funcid_t fnid, uint32_t pub_id);
   ~ScriptedInvoker();

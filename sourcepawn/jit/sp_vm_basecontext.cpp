@@ -16,10 +16,8 @@
 #include <limits.h>
 #include "sp_vm_api.h"
 #include "sp_vm_basecontext.h"
-#include "sp_vm_engine.h"
 #include "watchdog_timer.h"
 #include "x86/jit_x86.h"
-#include "engine2.h"
 #include "interpreter.h"
 #include "environment.h"
 
