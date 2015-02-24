@@ -23,12 +23,14 @@
 
 namespace sp {
 
+class Environment;
+
 typedef bool (*WatchdogCallback)();
 
 class WatchdogTimer : public ke::IRunnable
 {
  public:
-  WatchdogTimer();
+  WatchdogTimer(Environment *env);
   ~WatchdogTimer();
 
   bool Initialize(size_t timeout_ms);
@@ -43,6 +45,8 @@ class WatchdogTimer : public ke::IRunnable
   void Run();
 
  private:
+  Environment *env_;
+
   bool terminate_;
   size_t timeout_ms_;
   ke::ThreadId mainthread_;

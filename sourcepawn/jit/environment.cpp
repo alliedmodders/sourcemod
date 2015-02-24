@@ -15,6 +15,7 @@
 #include "watchdog_timer.h"
 #include "debug-trace.h"
 #include "api.h"
+#include "code-stubs.h"
 #include "watchdog_timer.h"
 
 using namespace sp;
@@ -63,13 +64,14 @@ Environment::Initialize()
 {
   api_v1_ = new SourcePawnEngine();
   api_v2_ = new SourcePawnEngine2();
-  watchdog_timer_ = new WatchdogTimer();
+  code_stubs_ = new CodeStubs(this);
+  watchdog_timer_ = new WatchdogTimer(this);
 
   if ((code_pool_ = Knight::KE_CreateCodeCache()) == nullptr)
     return false;
 
-  // Safe to initialize JIT now that we have the code cache.
-  if (!g_Jit.InitializeJIT())
+  // Safe to initialize code now that we have the code cache.
+  if (!code_stubs_->Initialize())
     return false;
 
   return true;
@@ -79,7 +81,7 @@ void
 Environment::Shutdown()
 {
   watchdog_timer_->Shutdown();
-  g_Jit.ShutdownJIT();
+  code_stubs_->Shutdown();
   Knight::KE_DestroyCodeCache(code_pool_);
 
   assert(sEnvironment == this);
@@ -180,4 +182,73 @@ void
 Environment::FreeCode(void *code)
 {
   Knight::KE_FreeCode(code_pool_, code);
+}
+
+void
+Environment::RegisterRuntime(PluginRuntime *rt)
+{
+  mutex_.AssertCurrentThreadOwns();
+  runtimes_.append(rt);
+}
+
+void
+Environment::DeregisterRuntime(PluginRuntime *rt)
+{
+  mutex_.AssertCurrentThreadOwns();
+  runtimes_.remove(rt);
+}
+
+void
+Environment::PatchAllJumpsForTimeout()
+{
+  mutex_.AssertCurrentThreadOwns();
+  for (ke::InlineList<PluginRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
+    PluginRuntime *rt = *iter;
+    for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
+      CompiledFunction *fun = rt->GetJitFunction(i);
+      uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());
+
+      for (size_t j = 0; j < fun->NumLoopEdges(); j++) {
+        const LoopEdge &e = fun->GetLoopEdge(j);
+        int32_t diff = intptr_t(code_stubs_->TimeoutStub()) - intptr_t(base + e.offset);
+        *reinterpret_cast<int32_t *>(base + e.offset - 4) = diff;
+      }
+    }
+  }
+}
+
+void
+Environment::UnpatchAllJumpsFromTimeout()
+{
+  mutex_.AssertCurrentThreadOwns();
+  for (ke::InlineList<PluginRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
+    PluginRuntime *rt = *iter;
+    for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
+      CompiledFunction *fun = rt->GetJitFunction(i);
+      uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());
+
+      for (size_t j = 0; j < fun->NumLoopEdges(); j++) {
+        const LoopEdge &e = fun->GetLoopEdge(j);
+        *reinterpret_cast<int32_t *>(base + e.offset - 4) = e.disp32;
+      }
+    }
+  }
+}
+
+int
+Environment::Invoke(PluginRuntime *runtime, CompiledFunction *fn, cell_t *result)
+{
+  sp_context_t *ctx = runtime->GetBaseContext()->GetCtx();
+
+  // Note that cip, hp, sp are saved and restored by Execute2().
+  ctx->cip = fn->GetCodeOffset();
+
+  InvokeStubFn invoke = code_stubs_->InvokeStub();
+
+  EnterInvoke();
+  int err = invoke(ctx, runtime->plugin()->memory, fn->GetEntryAddress());
+  LeaveInvoke();
+
+  *result = ctx->rval;
+  return err;
 }

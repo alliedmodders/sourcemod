@@ -274,26 +274,7 @@ namespace SourcePawn
 		virtual int LookupLine(ucell_t addr, uint32_t *line) =0;
 	};
 
-	/**
-	 * @brief Represents a JIT compilation or plugin loading options.
-	 */
-	class ICompilation
-	{
-	public:
-		/**
-		 * @brief Sets a compilation option.
-		 *
-		 * @param key		Option name.
-		 * @param val		Option value.
-		 * @return			True on success, false on failure.
-		 */
-		virtual bool SetOption(const char *key, const char *val) =0;
-
-		/**
-		 * @brief Aborts the compilation and destroys this object.
-		 */
-		virtual void Abort() =0;
-	};
+	class ICompilation;
 
 	/**
 	 * @brief Interface to managing a runtime plugin.
@@ -425,11 +406,9 @@ namespace SourcePawn
 		virtual bool IsDebugging() =0;
 
 		/**
-		 * @brief Applies new compilation/runtime settings to the runtime code.
+		 * @brief If |co| is non-NULL, destroys |co|. No other action is taken.
 		 *
-		 * The compilation object is destroyed once this function completes.
-		 *
-		 * @return				Error code (SP_ERROR_NONE on success).
+		 * @return	                        Returns SP_ERROR_NONE.
 		 */
 		virtual int ApplyCompilationOptions(ICompilation *co) =0;
 		
@@ -1194,9 +1173,9 @@ namespace SourcePawn
 		virtual const char *GetVersionString() =0;
 
 		/**
-		 * @brief Creates a new compilation options object.
+		 * @brief Deprecated. Returns null.
 		 *
-		 * @return			Compilation options object.
+		 * @return			Null.
 		 */
 		virtual ICompilation *StartCompilation() =0;
 
@@ -1206,10 +1185,10 @@ namespace SourcePawn
 		 * If a compilation object is supplied, it is destroyed upon 
 		 * the function's return.
 		 * 
-		 * @param co		Compilation options, or NULL for defaults.
+		 * @param co		Must be NULL.
 		 * @param file		Path to the file to compile.
 		 * @param err		Error code (filled on failure); required.
-		 * @return			New runtime pointer, or NULL on failure.
+		 * @return		New runtime pointer, or NULL on failure.
 		 */
 		virtual IPluginRuntime *LoadPlugin(ICompilation *co, const char *file, int *err) =0;
 

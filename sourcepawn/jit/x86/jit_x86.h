@@ -26,9 +26,12 @@
 #include "sp_vm_basecontext.h"
 #include "compiled-function.h"
 #include "opcodes.h"
-#include <am-thread-utils.h>
 
 using namespace SourcePawn;
+
+namespace sp {
+class Environment;
+}
 
 #define JIT_INLINE_ERRORCHECKS  (1<<0)
 #define JIT_INLINE_NATIVES      (1<<1)
@@ -60,25 +63,6 @@ struct CallThunk
     : pcode_offset(pcode_offset)
   {
   }
-};
-
-class CompData : public ICompilation
-{
-public:
-  CompData() 
-  : profile(0),
-    inline_level(0)
-  {
-  };
-  bool SetOption(const char *key, const char *val);
-  void Abort();
-public:
-  cell_t cur_func;            /* current func pcode offset */
-  /* Options */
-  int profile;                /* profiling flags */
-  int inline_level;           /* inline optimization level */
-  /* Per-compilation properties */
-  unsigned int func_idx;      /* current function index */
 };
 
 class Compiler
@@ -121,6 +105,7 @@ class Compiler
 
  private:
   AssemblerX86 masm;
+  sp::Environment *env_;
   PluginRuntime *rt_;
   const sp_plugin_t *plugin_;
   int error_;
@@ -145,53 +130,6 @@ class Compiler
   ke::Vector<CallThunk *> thunks_; //:TODO: free
 };
 
-class JITX86
-{
- public:
-  JITX86();
-
- public:
-  bool InitializeJIT();
-  void ShutdownJIT();
-  ICompilation *StartCompilation(PluginRuntime *runtime);
-  ICompilation *StartCompilation();
-  void SetupContextVars(PluginRuntime *runtime, BaseContext *pCtx, sp_context_t *ctx);
-  void FreeContextVars(sp_context_t *ctx);
-  SPVM_NATIVE_FUNC CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData);
-  void DestroyFakeNative(SPVM_NATIVE_FUNC func);
-  CompiledFunction *CompileFunction(PluginRuntime *runtime, cell_t pcode_offs, int *err);
-  ICompilation *ApplyOptions(ICompilation *_IN, ICompilation *_OUT);
-  int InvokeFunction(PluginRuntime *runtime, CompiledFunction *fn, cell_t *result);
-
-  void RegisterRuntime(PluginRuntime *rt);
-  void DeregisterRuntime(PluginRuntime *rt);
-  void PatchAllJumpsForTimeout();
-  void UnpatchAllJumpsFromTimeout();
-  
- public:
-  ExternalAddress GetUniversalReturn() {
-    return ExternalAddress(m_pJitReturn);
-  }
-  uintptr_t FrameId() const {
-    return frame_id_;
-  }
-  bool RunningCode() const {
-    return level_ != 0;
-  }
-  ke::Mutex *Mutex() {
-    return &mutex_;
-  }
-
- private:
-  void *m_pJitEntry;         /* Entry function */
-  void *m_pJitReturn;        /* Universal return address */
-  void *m_pJitTimeout;       /* Universal timeout address */
-  ke::InlineList<PluginRuntime> runtimes_;
-  uintptr_t frame_id_;
-  uintptr_t level_;
-  ke::Mutex mutex_;
-};
-
 const Register pri = eax;
 const Register alt = edx;
 const Register stk = edi;
@@ -199,7 +137,8 @@ const Register dat = esi;
 const Register tmp = ecx;
 const Register frm = ebx;
 
-extern JITX86 g_Jit;
+CompiledFunction *
+CompileFunction(PluginRuntime *prt, cell_t pcode_offs, int *err);
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_H_
 
