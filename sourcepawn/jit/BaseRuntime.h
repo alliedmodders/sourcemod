@@ -67,8 +67,8 @@ class BaseRuntime
   virtual size_t GetMemUsage();
   virtual unsigned char *GetCodeHash();
   virtual unsigned char *GetDataHash();
-  Function *GetJittedFunctionByOffset(cell_t pcode_offset);
-  void AddJittedFunction(Function *fn);
+  CompiledFunction *GetJittedFunctionByOffset(cell_t pcode_offset);
+  void AddJittedFunction(CompiledFunction *fn);
   void SetName(const char *name);
   unsigned GetNativeReplacement(size_t index);
   ScriptedInvoker *GetPublicFunction(size_t index);
@@ -81,7 +81,7 @@ class BaseRuntime
   size_t NumJitFunctions() const {
     return m_JitFunctions.length();
   }
-  Function *GetJitFunction(size_t i) const {
+  CompiledFunction *GetJitFunction(size_t i) const {
     return m_JitFunctions[i];
   }
 
@@ -94,15 +94,15 @@ class BaseRuntime
   unsigned int m_NumFuncs;
   unsigned int m_MaxFuncs;
   floattbl_t *float_table_;
-  Function **function_map_;
+  CompiledFunction **function_map_;
   size_t function_map_size_;
-  ke::Vector<Function *> m_JitFunctions;
+  ke::Vector<CompiledFunction *> m_JitFunctions;
 
  public:
   DebugInfo m_Debug;
   BaseContext *m_pCtx;
   ScriptedInvoker **m_PubFuncs;
-  Function **m_PubJitFuncs;
+  CompiledFunction **m_PubJitFuncs;
 
  private:
   ICompilation *co_;

@@ -14,14 +14,14 @@
 #include "sp_vm_engine.h"
 #include "jit_x86.h"
 
-Function::Function(void *entry_addr, cell_t pcode_offs, FixedArray<LoopEdge> *edges)
+CompiledFunction::CompiledFunction(void *entry_addr, cell_t pcode_offs, FixedArray<LoopEdge> *edges)
   : entry_(entry_addr),
     code_offset_(pcode_offs),
     edges_(edges)
 {
 }
 
-Function::~Function()
+CompiledFunction::~CompiledFunction()
 {
   g_Jit.FreeCode(entry_);
 }

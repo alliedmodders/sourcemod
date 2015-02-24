@@ -88,7 +88,7 @@ class Compiler
   Compiler(BaseRuntime *rt, cell_t pcode_offs);
   ~Compiler();
 
-  Function *emit(int *errp);
+  CompiledFunction *emit(int *errp);
 
  private:
   bool setup(cell_t pcode_offs);
@@ -160,9 +160,9 @@ class JITX86
   void FreeContextVars(sp_context_t *ctx);
   SPVM_NATIVE_FUNC CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData);
   void DestroyFakeNative(SPVM_NATIVE_FUNC func);
-  Function *CompileFunction(BaseRuntime *runtime, cell_t pcode_offs, int *err);
+  CompiledFunction *CompileFunction(BaseRuntime *runtime, cell_t pcode_offs, int *err);
   ICompilation *ApplyOptions(ICompilation *_IN, ICompilation *_OUT);
-  int InvokeFunction(BaseRuntime *runtime, Function *fn, cell_t *result);
+  int InvokeFunction(BaseRuntime *runtime, CompiledFunction *fn, cell_t *result);
 
   void RegisterRuntime(BaseRuntime *rt);
   void DeregisterRuntime(BaseRuntime *rt);

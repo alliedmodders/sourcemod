@@ -525,7 +525,7 @@ BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned 
   int ir;
   int serial;
   cell_t *sp;
-  Function *fn;
+  CompiledFunction *fn;
   cell_t _ignore_result;
 
   EnterProfileScope profileScope("SourcePawn", "EnterJIT");

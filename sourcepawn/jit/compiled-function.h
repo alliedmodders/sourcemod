@@ -27,11 +27,11 @@ struct LoopEdge
   int32_t disp32;
 };
 
-class Function
+class CompiledFunction
 {
  public:
-  Function(void *entry_addr, cell_t pcode_offs, FixedArray<LoopEdge> *edges);
-  ~Function();
+  CompiledFunction(void *entry_addr, cell_t pcode_offs, FixedArray<LoopEdge> *edges);
+  ~CompiledFunction();
 
  public:
   void *GetEntryAddress() const {

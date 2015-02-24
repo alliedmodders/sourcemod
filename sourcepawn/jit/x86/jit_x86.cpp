@@ -280,7 +280,7 @@ CompileFromThunk(BaseRuntime *runtime, cell_t pcode_offs, void **addrp, char *pc
   if (!g_WatchdogTimer.HandleInterrupt())
     return SP_ERROR_TIMEOUT;
 
-  Function *fn = runtime->GetJittedFunctionByOffset(pcode_offs);
+  CompiledFunction *fn = runtime->GetJittedFunctionByOffset(pcode_offs);
   if (!fn) {
     int err;
     fn = g_Jit.CompileFunction(runtime, pcode_offs, &err);
@@ -320,7 +320,7 @@ Compiler::~Compiler()
   delete [] jump_map_;
 }
 
-Function *
+CompiledFunction *
 Compiler::emit(int *errp)
 {
   if (cip_ >= code_end_ || *cip_ != OP_PROC) {
@@ -382,7 +382,7 @@ Compiler::emit(int *errp)
     edges->at(i).disp32 = *reinterpret_cast<int32_t *>(code + edges->at(i).offset - 4);
   }
 
-  return new Function(code, pcode_start_, edges.take());
+  return new CompiledFunction(code, pcode_start_, edges.take());
 }
 
 bool
@@ -1480,7 +1480,7 @@ Compiler::emitCall()
   // Store the CIP of the function we're about to call.
   __ movl(Operand(cipAddr()), offset);
 
-  Function *fun = rt_->GetJittedFunctionByOffset(offset);
+  CompiledFunction *fun = rt_->GetJittedFunctionByOffset(offset);
   if (!fun) {
     // Need to emit a delayed thunk.
     CallThunk *thunk = new CallThunk(offset);
@@ -1926,11 +1926,11 @@ JITX86::ShutdownJIT()
   KE_DestroyCodeCache(g_pCodeCache);
 }
 
-Function *
+CompiledFunction *
 JITX86::CompileFunction(BaseRuntime *prt, cell_t pcode_offs, int *err)
 {
   Compiler cc(prt, pcode_offs);
-  Function *fun = cc.emit(err);
+  CompiledFunction *fun = cc.emit(err);
   if (!fun)
     return NULL;
 
@@ -2030,7 +2030,7 @@ CompData::SetOption(const char *key, const char *val)
 }
 
 int
-JITX86::InvokeFunction(BaseRuntime *runtime, Function *fn, cell_t *result)
+JITX86::InvokeFunction(BaseRuntime *runtime, CompiledFunction *fn, cell_t *result)
 {
   sp_context_t *ctx = runtime->GetBaseContext()->GetCtx();
 
@@ -2081,7 +2081,7 @@ JITX86::PatchAllJumpsForTimeout()
   for (ke::InlineList<BaseRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
     BaseRuntime *rt = *iter;
     for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
-      Function *fun = rt->GetJitFunction(i);
+      CompiledFunction *fun = rt->GetJitFunction(i);
       uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());
 
       for (size_t j = 0; j < fun->NumLoopEdges(); j++) {
@@ -2100,7 +2100,7 @@ JITX86::UnpatchAllJumpsFromTimeout()
   for (ke::InlineList<BaseRuntime>::iterator iter = runtimes_.begin(); iter != runtimes_.end(); iter++) {
     BaseRuntime *rt = *iter;
     for (size_t i = 0; i < rt->NumJitFunctions(); i++) {
-      Function *fun = rt->GetJitFunction(i);
+      CompiledFunction *fun = rt->GetJitFunction(i);
       uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());
 
       for (size_t j = 0; j < fun->NumLoopEdges(); j++) {

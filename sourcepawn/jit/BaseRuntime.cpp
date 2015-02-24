@@ -279,8 +279,8 @@ int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
   if (m_plugin.num_publics > 0) {
     m_PubFuncs = new ScriptedInvoker *[m_plugin.num_publics];
     memset(m_PubFuncs, 0, sizeof(ScriptedInvoker *) * m_plugin.num_publics);
-    m_PubJitFuncs = new Function *[m_plugin.num_publics];
-    memset(m_PubJitFuncs, 0, sizeof(Function *) * m_plugin.num_publics);
+    m_PubJitFuncs = new CompiledFunction *[m_plugin.num_publics];
+    memset(m_PubJitFuncs, 0, sizeof(CompiledFunction *) * m_plugin.num_publics);
   }
 
   MD5 md5_pcode;
@@ -298,14 +298,14 @@ int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
 
   SetupFloatNativeRemapping();
   function_map_size_ = m_plugin.pcode_size / sizeof(cell_t) + 1;
-  function_map_ = new Function *[function_map_size_];
-  memset(function_map_, 0, function_map_size_ * sizeof(Function *));
+  function_map_ = new CompiledFunction *[function_map_size_];
+  memset(function_map_, 0, function_map_size_ * sizeof(CompiledFunction *));
 
   return SP_ERROR_NONE;
 }
 
 void
-BaseRuntime::AddJittedFunction(Function *fn)
+BaseRuntime::AddJittedFunction(CompiledFunction *fn)
 {
   m_JitFunctions.append(fn);
 
@@ -318,7 +318,7 @@ BaseRuntime::AddJittedFunction(Function *fn)
   function_map_[pcode_index] = fn;
 }
 
-Function *
+CompiledFunction *
 BaseRuntime::GetJittedFunctionByOffset(cell_t pcode_offset)
 {
   assert(pcode_offset % 4 == 0);
