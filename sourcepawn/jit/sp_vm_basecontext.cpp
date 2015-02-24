@@ -58,12 +58,18 @@ BaseContext::BaseContext(PluginRuntime *pRuntime)
   m_ctx.n_idx = SP_ERROR_NONE;
   m_ctx.rp = 0;
 
-  g_Jit.SetupContextVars(m_pRuntime, this, &m_ctx);
+  m_ctx.tracker = new tracker_t;
+  m_ctx.tracker->pBase = (ucell_t *)malloc(1024);
+  m_ctx.tracker->pCur = m_ctx.tracker->pBase;
+  m_ctx.tracker->size = 1024 / sizeof(cell_t);
+  m_ctx.basecx = this;
+  m_ctx.plugin = const_cast<sp_plugin_t *>(pRuntime->plugin());
 }
 
 BaseContext::~BaseContext()
 {
-  g_Jit.FreeContextVars(&m_ctx);
+  free(m_ctx.tracker->pBase);
+  delete m_ctx.tracker;
 }
 
 IVirtualMachine *

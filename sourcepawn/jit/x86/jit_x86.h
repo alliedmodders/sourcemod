@@ -154,8 +154,6 @@ class JITX86
   void ShutdownJIT();
   ICompilation *StartCompilation(PluginRuntime *runtime);
   ICompilation *StartCompilation();
-  void SetupContextVars(PluginRuntime *runtime, BaseContext *pCtx, sp_context_t *ctx);
-  void FreeContextVars(sp_context_t *ctx);
   SPVM_NATIVE_FUNC CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData);
   void DestroyFakeNative(SPVM_NATIVE_FUNC func);
   CompiledFunction *CompileFunction(PluginRuntime *runtime, cell_t pcode_offs, int *err);

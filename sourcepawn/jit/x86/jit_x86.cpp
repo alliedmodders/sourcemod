@@ -1934,17 +1934,6 @@ JITX86::CompileFunction(PluginRuntime *prt, cell_t pcode_offs, int *err)
   return fun;
 }
 
-void
-JITX86::SetupContextVars(PluginRuntime *runtime, BaseContext *pCtx, sp_context_t *ctx)
-{
-  ctx->tracker = new tracker_t;
-  ctx->tracker->pBase = (ucell_t *)malloc(1024);
-  ctx->tracker->pCur = ctx->tracker->pBase;
-  ctx->tracker->size = 1024 / sizeof(cell_t);
-  ctx->basecx = pCtx;
-  ctx->plugin = const_cast<sp_plugin_t *>(runtime->plugin());
-}
-
 SPVM_NATIVE_FUNC
 JITX86::CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData)
 {
@@ -1994,13 +1983,6 @@ void
 CompData::Abort()
 {
   delete this;
-}
-
-void
-JITX86::FreeContextVars(sp_context_t *ctx)
-{
-  free(ctx->tracker->pBase);
-  delete ctx->tracker;
 }
 
 bool
