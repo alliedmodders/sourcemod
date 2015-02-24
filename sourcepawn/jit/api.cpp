@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <KeCodeAllocator.h>
 #include "x86/jit_x86.h"
 #include "environment.h"
 #include "api.h"
@@ -74,7 +73,7 @@ SourcePawnEngine::ExecAlloc(size_t size)
 void *
 SourcePawnEngine::AllocatePageMemory(size_t size)
 {
-  return g_Jit.AllocCode(size);
+  return Environment::get()->AllocateCode(size);
 }
 
 void
@@ -92,7 +91,7 @@ SourcePawnEngine::SetReadWrite(void *ptr)
 void
 SourcePawnEngine::FreePageMemory(void *ptr)
 {
-  g_Jit.FreeCode(ptr);
+  Environment::get()->FreeCode(ptr);
 }
 
 void

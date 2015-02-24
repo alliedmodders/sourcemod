@@ -9,7 +9,6 @@ Includes = [
   os.path.join(builder.sourcePath, 'public', 'amtl'),
   os.path.join(builder.sourcePath, 'public', 'jit'),
   os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
-  os.path.join(builder.sourcePath, 'knight', 'shared'),
 
   # The include path for SP v2 stuff.
   os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
@@ -31,6 +30,7 @@ def setup(binary):
 library = setup(builder.compiler.StaticLibrary('sourcepawn'))
 library.sources += [
   'api.cpp',
+  'code-allocator.cpp',
   'plugin-runtime.cpp',
   'compiled-function.cpp',
   'debug-trace.cpp',
@@ -54,7 +54,6 @@ library.sources += [
   'zlib/uncompr.c',
   'zlib/zutil.c',
   'md5/md5.cpp',
-  '../../knight/shared/KeCodeAllocator.cpp',
   '../../public/jit/x86/assembler-x86.cpp',
 ]
 libsourcepawn = builder.Add(library).binary

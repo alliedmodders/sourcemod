@@ -11,7 +11,9 @@
 // SourcePawn. If not, see http://www.gnu.org/licenses/.
 //
 #include "compiled-function.h"
-#include "x86/jit_x86.h"
+#include "environment.h"
+
+using namespace sp;
 
 CompiledFunction::CompiledFunction(void *entry_addr, cell_t pcode_offs, FixedArray<LoopEdge> *edges)
   : entry_(entry_addr),
@@ -22,5 +24,5 @@ CompiledFunction::CompiledFunction(void *entry_addr, cell_t pcode_offs, FixedArr
 
 CompiledFunction::~CompiledFunction()
 {
-  g_Jit.FreeCode(entry_);
+  Environment::get()->FreeCode(entry_);
 }

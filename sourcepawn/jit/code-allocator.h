@@ -1,7 +1,6 @@
 #ifndef _INCLUDE_KNIGHT_KE_CODE_ALLOCATOR_H_
 #define _INCLUDE_KNIGHT_KE_CODE_ALLOCATOR_H_
 
-#include <KeLinking.h>
 #include <stddef.h>
 #include <stdint.h>
 
