@@ -16,11 +16,10 @@
 #include <limits.h>
 #include "sp_vm_api.h"
 #include "sp_vm_basecontext.h"
-#include "sp_vm_engine.h"
 #include "watchdog_timer.h"
 #include "x86/jit_x86.h"
-#include "engine2.h"
 #include "interpreter.h"
+#include "environment.h"
 
 using namespace SourcePawn;
 
@@ -555,7 +554,7 @@ BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned 
   EnterProfileScope scriptScope("SourcePawn", cfun->FullName());
 
   /* See if we have to compile the callee. */
-  if (g_engine2.IsJitEnabled() &&
+  if (Environment::get()->IsJitEnabled() &&
       (fn = m_pRuntime->m_PubJitFuncs[public_id]) == NULL)
   {
     /* We might not have to - check pcode offset. */
@@ -600,7 +599,7 @@ BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned 
 
   /* Start the frame tracer */
 
-  if (g_engine2.IsJitEnabled())
+  if (Environment::get()->IsJitEnabled())
     ir = g_Jit.InvokeFunction(m_pRuntime, fn, result);
   else
     ir = Interpret(m_pRuntime, cfun->Public()->code_offs, result);
@@ -635,7 +634,7 @@ BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned 
     g_WatchdogTimer.NotifyTimeoutReceived();
 
   if (ir != SP_ERROR_NONE)
-    g_engine1.ReportError(m_pRuntime, ir, m_MsgCache, save_rp);
+    Environment::get()->ReportError(m_pRuntime, ir, m_MsgCache, save_rp);
 
   m_ctx.sp = save_sp;
   m_ctx.hp = save_hp;

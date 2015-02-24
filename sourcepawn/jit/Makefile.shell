@@ -11,6 +11,7 @@ MMSOURCE17 = ../../../mmsource-1.7
 PROJECT = spshell
 
 OBJECTS = dll_exports.cpp 	\
+	environment.cpp		\
 	x86/jit_x86.cpp			\
 	sp_vm_basecontext.cpp	\
 	sp_vm_engine.cpp	\

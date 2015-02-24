@@ -33,8 +33,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "jit_x86.h"
-#include "../sp_vm_engine.h"
-#include "../engine2.h"
 #include "../plugin-runtime.h"
 #include "../sp_vm_basecontext.h"
 #include "watchdog_timer.h"
@@ -51,7 +49,6 @@ using namespace Knight;
 
 JITX86 g_Jit;
 KeCodeCache *g_pCodeCache = NULL;
-ISourcePawnEngine *engine = &g_engine1;
 
 static inline uint8_t *
 LinkCode(AssemblerX86 &masm)

@@ -54,16 +54,13 @@ ILibrary *g_pJIT = NULL;
 SourceHook::String g_BaseDir;
 ISourcePawnEngine *g_pSourcePawn = NULL;
 ISourcePawnEngine2 *g_pSourcePawn2 = NULL;
+ISourcePawnEnvironment *g_pPawnEnv = NULL;
 IdentityToken_t *g_pCoreIdent = NULL;
 IForward *g_pOnMapEnd = NULL;
 IGameConfig *g_pGameConf = NULL;
 bool g_Loaded = false;
 bool sm_show_debug_spew = false;
 bool sm_disable_jit = false;
-
-typedef ISourcePawnEngine *(*GET_SP_V1)();
-typedef ISourcePawnEngine2 *(*GET_SP_V2)();
-typedef void (*NOTIFYSHUTDOWN)();
 
 #ifdef PLATFORM_WINDOWS
 ConVar sm_basepath("sm_basepath", "addons\\sourcemod", 0, "SourceMod base path (set via command line)");
@@ -73,18 +70,17 @@ ConVar sm_basepath("sm_basepath", "addons/sourcemod", 0, "SourceMod base path (s
 
 void ShutdownJIT()
 {
-	NOTIFYSHUTDOWN notify = (NOTIFYSHUTDOWN)g_pJIT->GetSymbolAddress("NotifyShutdown");
-	if (notify)
-	{
-		notify();
-	}
+	if (g_pPawnEnv) {
+		g_pPawnEnv->Shutdown();
+		delete g_pPawnEnv;
 
-	if (g_pSourcePawn2 != NULL)
-	{
-		g_pSourcePawn2->Shutdown();
+		g_pPawnEnv = NULL;
+		g_pSourcePawn2 = NULL;
+		g_pSourcePawn = NULL;
 	}
 
 	g_pJIT->CloseLibrary();
+	g_pJIT = NULL;
 }
 
 SourceModBase::SourceModBase()
@@ -202,50 +198,34 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 		return false;
 	}
 
-	GET_SP_V1 getv1 = (GET_SP_V1)g_pJIT->GetSymbolAddress("GetSourcePawnEngine1");
-	GET_SP_V2 getv2 = (GET_SP_V2)g_pJIT->GetSymbolAddress("GetSourcePawnEngine2");
+	GetSourcePawnFactoryFn factoryFn =
+		(GetSourcePawnFactoryFn)g_pJIT->GetSymbolAddress("GetSourcePawnFactory");
 
-	if (getv1 == NULL)
-	{
+	if (!factoryFn) {
 		if (error && maxlength)
-		{
-			snprintf(error, maxlength, "JIT is too old; upgrade SourceMod");
-		}
-		ShutdownJIT();
-		return false;
-	}
-	else if (getv2 == NULL)
-	{
-		if (error && maxlength)
-		{
-			snprintf(error, maxlength, "JIT is too old; upgrade SourceMod");
-		}
+			snprintf(error, maxlength, "SourcePawn library is out of date");
 		ShutdownJIT();
 		return false;
 	}
 
-	g_pSourcePawn = getv1();
-	g_pSourcePawn2 = getv2();
-
-	if (g_pSourcePawn2->GetAPIVersion() < 3)
-	{
-		g_pSourcePawn2 = NULL;
+	ISourcePawnFactory *factory = factoryFn(SOURCEPAWN_API_VERSION);
+	if (!factory) {
 		if (error && maxlength)
-		{
-			snprintf(error, maxlength, "JIT version is out of date");
-		}
+			snprintf(error, maxlength, "SourcePawn library is out of date");
+		ShutdownJIT();
 		return false;
 	}
 
-	if (!g_pSourcePawn2->Initialize())
-	{
-		g_pSourcePawn2 = NULL;
+	g_pPawnEnv = factory->NewEnvironment();
+	if (!g_pPawnEnv) {
 		if (error && maxlength)
-		{
-			snprintf(error, maxlength, "JIT could not be initialized");
-		}
+			snprintf(error, maxlength, "Could not create a SourcePawn environment!");
+		ShutdownJIT();
 		return false;
 	}
+
+	g_pSourcePawn = g_pPawnEnv->APIv1();
+	g_pSourcePawn2 = g_pPawnEnv->APIv2();
 
 	g_pSourcePawn2->SetDebugListener(logicore.debugger);
 

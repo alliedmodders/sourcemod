@@ -15,10 +15,8 @@
 #include <string.h>
 #include <assert.h>
 #include "plugin-runtime.h"
-#include "sp_vm_engine.h"
 #include "x86/jit_x86.h"
 #include "sp_vm_basecontext.h"
-#include "engine2.h"
 
 #include "md5/md5.h"
 

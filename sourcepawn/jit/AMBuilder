@@ -4,7 +4,6 @@ import os
 Includes = [
   os.path.join(SM.mms_root, 'core', 'sourcehook'),
   os.path.join(builder.sourcePath, 'sourcepawn', 'jit'),
-  os.path.join(builder.sourcePath, 'sourcepawn', 'jit', 'x86'),
   os.path.join(builder.sourcePath, 'public'),
   os.path.join(builder.sourcePath, 'public', 'sourcepawn'),
   os.path.join(builder.sourcePath, 'public', 'amtl'),
@@ -31,11 +30,12 @@ def setup(binary):
 # Build the static library.
 library = setup(builder.compiler.StaticLibrary('sourcepawn'))
 library.sources += [
+  'api.cpp',
   'plugin-runtime.cpp',
   'compiled-function.cpp',
-  'engine2.cpp',
+  'debug-trace.cpp',
+  'environment.cpp',
   'sp_vm_basecontext.cpp',
-  'sp_vm_engine.cpp',
   'scripted-invoker.cpp',
   'opcodes.cpp',
   'interpreter.cpp',
