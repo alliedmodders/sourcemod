@@ -22,8 +22,8 @@
 #include "sp_vm_types.h"
 
 /** SourcePawn Engine API Versions */
-#define SOURCEPAWN_ENGINE2_API_VERSION 8
-#define SOURCEPAWN_API_VERSION         0x0208
+#define SOURCEPAWN_ENGINE2_API_VERSION 9
+#define SOURCEPAWN_API_VERSION         0x0209
 
 namespace SourceMod {
 	struct IdentityToken_t;
@@ -1316,6 +1316,16 @@ namespace SourcePawn
 		 * @param tool      Profiling tool.
 		 */
 		virtual void SetProfilingTool(IProfilingTool *tool) =0;
+
+		/**
+		 * @brief Loads a plugin from disk.
+		 *
+		 * @param file		Path to the file to compile.
+		 * @param errpr		Buffer to store an error message (optional).
+		 * @param maxlength	Maximum length of the error buffer.
+		 * @return		New runtime pointer, or NULL on failure.
+		 */
+		virtual IPluginRuntime *LoadBinaryFromFile(const char *file, char *error, size_t maxlength) = 0;
 	};
 
 	// @brief This class is the v3 API for SourcePawn. It provides access to

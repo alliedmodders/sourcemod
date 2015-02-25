@@ -17,23 +17,13 @@
 #include <am-vector.h>
 #include <am-inlinelist.h>
 #include <am-hashmap.h>
-#include "jit_shared.h"
 #include "compiled-function.h"
 #include "scripted-invoker.h"
+#include "legacy-image.h"
+
+namespace sp {
 
 class PluginContext;
-
-class DebugInfo : public IPluginDebugInfo
-{
-public:
-  DebugInfo(sp_plugin_t *plugin);
-public:
-  int LookupFile(ucell_t addr, const char **filename);
-  int LookupFunction(ucell_t addr, const char **name);
-  int LookupLine(ucell_t addr, uint32_t *line);
-private:
-  sp_plugin_t *m_pPlugin;
-};
 
 struct floattbl_t
 {
@@ -48,15 +38,16 @@ struct floattbl_t
 /* Jit wants fast access to this so we expose things as public */
 class PluginRuntime
   : public SourcePawn::IPluginRuntime,
+    public SourcePawn::IPluginDebugInfo,
     public ke::InlineListNode<PluginRuntime>
 {
  public:
-  PluginRuntime();
+  PluginRuntime(LegacyImage *image);
   ~PluginRuntime();
 
+  bool Initialize();
+
  public:
-  virtual int CreateBlank(uint32_t heastk);
-  virtual int CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base);
   virtual bool IsDebugging();
   virtual IPluginDebugInfo *GetDebugInfo();
   virtual int FindNativeByName(const char *name, uint32_t *index);
@@ -85,11 +76,11 @@ class PluginRuntime
   ScriptedInvoker *GetPublicFunction(size_t index);
   int UpdateNativeBinding(uint32_t index, SPVM_NATIVE_FUNC pfn, uint32_t flags, void *data) KE_OVERRIDE;
   const sp_native_t *GetNative(uint32_t index) KE_OVERRIDE;
+  int LookupLine(ucell_t addr, uint32_t *line) KE_OVERRIDE;
+  int LookupFunction(ucell_t addr, const char **name) KE_OVERRIDE;
+  int LookupFile(ucell_t addr, const char **filename) KE_OVERRIDE;
 
   PluginContext *GetBaseContext();
-  const sp_plugin_t *plugin() const {
-    return &m_plugin;
-  }
 
   size_t NumJitFunctions() const {
     return m_JitFunctions.length();
@@ -97,18 +88,43 @@ class PluginRuntime
   CompiledFunction *GetJitFunction(size_t i) const {
     return m_JitFunctions[i];
   }
+  const char *Name() const {
+    return name_;
+  }
 
   static inline size_t offsetToPlugin() {
-    return offsetof(PluginRuntime, m_plugin);
+    return 0x0fff0000;
+  }
+
+ public:
+  typedef LegacyImage::Code Code;
+  typedef LegacyImage::Data Data;
+
+  const Code &code() const {
+    return code_;
+  }
+  const Data &data() const {
+    return data_;
+  }
+  LegacyImage *image() const {
+    return image_;
   }
 
  private:
   void SetupFloatNativeRemapping();
 
  private:
-  sp_plugin_t m_plugin;
-  ke::AutoArray<uint8_t> alt_pcode_;
+  ke::AutoPtr<sp::LegacyImage> image_;
+  ke::AutoArray<uint8_t> aligned_code_;
   ke::AutoArray<floattbl_t> float_table_;
+  ke::AutoArray<char> name_;
+  Code code_;
+  Data data_;
+  ke::AutoArray<sp_native_t> natives_;
+  ke::AutoArray<sp_public_t> publics_;
+  ke::AutoArray<sp_pubvar_t> pubvars_;
+  ke::AutoArray<ScriptedInvoker *> entrypoints_;
+  ke::AutoPtr<PluginContext> context_;
 
   struct FunctionMapPolicy {
     static inline uint32_t hash(ucell_t value) {
@@ -123,17 +139,17 @@ class PluginRuntime
   FunctionMap function_map_;
   ke::Vector<CompiledFunction *> m_JitFunctions;
 
- public:
-  DebugInfo m_Debug;
-  ke::AutoPtr<PluginContext> m_pCtx;
-  ScriptedInvoker **m_PubFuncs;
+  // Pause state.
+  bool paused_;
 
- public:
-  unsigned int m_CompSerial;
-  
-  unsigned char m_CodeHash[16];
-  unsigned char m_DataHash[16];
+  // Checksumming.
+  bool computed_code_hash_;
+  bool computed_data_hash_;
+  unsigned char code_hash_[16];
+  unsigned char data_hash_[16];
 };
+
+} // sp
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_RUNTIME_H_
 

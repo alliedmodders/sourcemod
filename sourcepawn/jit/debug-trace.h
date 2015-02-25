@@ -15,12 +15,12 @@
 
 #include <sp_vm_api.h>
 
-class PluginRuntime;
-class PluginContext;
-
 namespace sp {
 
 using namespace SourcePawn;
+
+class PluginRuntime;
+class PluginContext;
 
 class CContextTrace : public IContextTrace
 {

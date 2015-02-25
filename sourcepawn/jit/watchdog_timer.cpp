@@ -17,7 +17,8 @@
 #include "watchdog_timer.h"
 #include <string.h>
 #include "environment.h"
-//#include "x86/jit_x86.h"
+
+using namespace sp;
 
 WatchdogTimer::WatchdogTimer(Environment *env)
  : env_(env),
