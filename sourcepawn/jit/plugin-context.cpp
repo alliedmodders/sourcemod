@@ -550,17 +550,15 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
   EnterProfileScope scriptScope("SourcePawn", cfun->FullName());
 
   /* See if we have to compile the callee. */
-  if (Environment::get()->IsJitEnabled() &&
-      (fn = m_pRuntime->m_PubJitFuncs[public_id]) == NULL)
-  {
+  if (Environment::get()->IsJitEnabled()) {
     /* We might not have to - check pcode offset. */
-    fn = m_pRuntime->GetJittedFunctionByOffset(cfun->Public()->code_offs);
-    if (fn) {
-      m_pRuntime->m_PubJitFuncs[public_id] = fn;
-    } else {
-      if ((fn = CompileFunction(m_pRuntime, cfun->Public()->code_offs, &ir)) == NULL)
-        return ir;
-      m_pRuntime->m_PubJitFuncs[public_id] = fn;
+    if ((fn = cfun->cachedCompiledFunction()) == nullptr) {
+      fn = m_pRuntime->GetJittedFunctionByOffset(cfun->Public()->code_offs);
+      if (!fn) {
+        if ((fn = CompileFunction(m_pRuntime, cfun->Public()->code_offs, &ir)) == NULL)
+          return ir;
+      }
+      cfun->setCachedCompiledFunction(fn);
     }
   }
 

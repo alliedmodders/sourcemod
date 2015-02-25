@@ -165,7 +165,7 @@ CompileFromThunk(PluginRuntime *runtime, cell_t pcode_offs, void **addrp, char *
   }
 
 #if defined JIT_SPEW
-  g_engine1.GetDebugHook()->OnDebugSpew(
+  Environment::get()->debugger()->OnDebugSpew(
       "Patching thunk to %s::%s\n",
       runtime->plugin()->name,
       GetFunctionName(runtime->plugin(), pcode_offs));

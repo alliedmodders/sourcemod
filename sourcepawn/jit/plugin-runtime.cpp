@@ -34,7 +34,6 @@ PluginRuntime::PluginRuntime()
   : m_Debug(&m_plugin),
     m_pCtx(NULL), 
     m_PubFuncs(NULL),
-    m_PubJitFuncs(NULL),
     m_CompSerial(0)
 {
   memset(&m_plugin, 0, sizeof(m_plugin));
@@ -42,7 +41,6 @@ PluginRuntime::PluginRuntime()
   m_MaxFuncs = 0;
   m_NumFuncs = 0;
   float_table_ = NULL;
-  function_map_ = NULL;
   alt_pcode_ = NULL;
   
   memset(m_CodeHash, 0, sizeof(m_CodeHash));
@@ -65,9 +63,7 @@ PluginRuntime::~PluginRuntime()
   for (uint32_t i = 0; i < m_plugin.num_publics; i++)
     delete m_PubFuncs[i];
   delete [] m_PubFuncs;
-  delete [] m_PubJitFuncs;
   delete [] float_table_;
-  delete [] function_map_;
   delete [] alt_pcode_;
 
   for (size_t i = 0; i < m_JitFunctions.length(); i++)
@@ -286,8 +282,6 @@ int PluginRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
   if (m_plugin.num_publics > 0) {
     m_PubFuncs = new ScriptedInvoker *[m_plugin.num_publics];
     memset(m_PubFuncs, 0, sizeof(ScriptedInvoker *) * m_plugin.num_publics);
-    m_PubJitFuncs = new CompiledFunction *[m_plugin.num_publics];
-    memset(m_PubJitFuncs, 0, sizeof(CompiledFunction *) * m_plugin.num_publics);
   }
 
   MD5 md5_pcode;
@@ -303,9 +297,9 @@ int PluginRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
   m_pCtx = new PluginContext(this);
 
   SetupFloatNativeRemapping();
-  function_map_size_ = m_plugin.pcode_size / sizeof(cell_t) + 1;
-  function_map_ = new CompiledFunction *[function_map_size_];
-  memset(function_map_, 0, function_map_size_ * sizeof(CompiledFunction *));
+
+  if (!function_map_.init(32))
+    return SP_ERROR_OUT_OF_MEMORY;
 
   return SP_ERROR_NONE;
 }
@@ -315,24 +309,20 @@ PluginRuntime::AddJittedFunction(CompiledFunction *fn)
 {
   m_JitFunctions.append(fn);
 
-  cell_t pcode_offset = fn->GetCodeOffset();
-  assert(pcode_offset % 4 == 0);
+  ucell_t pcode_offset = fn->GetCodeOffset();
+  FunctionMap::Insert p = function_map_.findForAdd(pcode_offset);
+  assert(!p.found());
 
-  uint32_t pcode_index = pcode_offset / 4;
-  assert(pcode_index < function_map_size_);
-
-  function_map_[pcode_index] = fn;
+  function_map_.add(p, pcode_offset, fn);
 }
 
 CompiledFunction *
 PluginRuntime::GetJittedFunctionByOffset(cell_t pcode_offset)
 {
-  assert(pcode_offset % 4 == 0);
-
-  uint32_t pcode_index = pcode_offset / 4;
-  assert(pcode_index < function_map_size_);
-
-  return function_map_[pcode_index];
+  FunctionMap::Result r = function_map_.find(pcode_offset);
+  if (r.found())
+    return r->value;
+  return nullptr;
 }
 
 int

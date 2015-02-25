@@ -52,7 +52,8 @@ ScriptedInvoker::GetParentContext()
 ScriptedInvoker::ScriptedInvoker(PluginRuntime *runtime, funcid_t id, uint32_t pub_id)
  : m_curparam(0),
    m_errorstate(SP_ERROR_NONE),
-   m_FnId(id)
+   m_FnId(id),
+   cc_function_(nullptr)
 {
   m_pRuntime = runtime;
 
