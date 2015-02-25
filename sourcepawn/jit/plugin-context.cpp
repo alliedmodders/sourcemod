@@ -61,7 +61,6 @@ PluginContext::PluginContext(PluginRuntime *pRuntime)
   tracker_.pBase = (ucell_t *)malloc(1024);
   tracker_.pCur = tracker_.pBase;
   tracker_.size = 1024 / sizeof(cell_t);
-  m_ctx.plugin = const_cast<sp_plugin_t *>(pRuntime->plugin());
 }
 
 PluginContext::~PluginContext()

@@ -72,7 +72,6 @@ class PluginContext;
 
 typedef struct sp_context_s
 {
-	sp_plugin_t     *plugin;
 } sp_context_t;
 
 //#define SPFLAG_PLUGIN_DEBUG			(1<<0)
