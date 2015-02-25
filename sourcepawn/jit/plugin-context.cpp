@@ -52,8 +52,8 @@ PluginContext::PluginContext(PluginRuntime *pRuntime)
   }
 
   m_ctx.hp = m_pRuntime->plugin()->data_size;
-  m_ctx.sp = m_pRuntime->plugin()->mem_size - sizeof(cell_t);
-  frm_ = m_ctx.sp;
+  sp_ = m_pRuntime->plugin()->mem_size - sizeof(cell_t);
+  frm_ = sp_;
   rp_ = 0;
   last_native_ = -1;
   native_error_ = SP_ERROR_NONE;
@@ -185,7 +185,7 @@ PluginContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys_a
   /**
    * Check if the space between the heap and stack is sufficient.
    */
-  if ((cell_t)(m_ctx.sp - m_ctx.hp - realmem) < STACKMARGIN)
+  if ((cell_t)(sp_ - m_ctx.hp - realmem) < STACKMARGIN)
     return SP_ERROR_HEAPLOW;
 
   addr = (cell_t *)(m_pRuntime->plugin()->memory + m_ctx.hp);
@@ -212,7 +212,7 @@ PluginContext::HeapPop(cell_t local_addr)
 
   /* check the bounds of this address */
   local_addr -= sizeof(cell_t);
-  if (local_addr < (cell_t)m_pRuntime->plugin()->data_size || local_addr >= m_ctx.sp)
+  if (local_addr < (cell_t)m_pRuntime->plugin()->data_size || local_addr >= sp_)
     return SP_ERROR_INVALID_ADDRESS;
 
   addr = (cell_t *)(m_pRuntime->plugin()->memory + local_addr);
@@ -325,7 +325,7 @@ PluginContext::BindNativeToAny(SPVM_NATIVE_FUNC native)
 int
 PluginContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
 {
-  if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp)) ||
+  if (((local_addr >= m_ctx.hp) && (local_addr < sp_)) ||
       (local_addr < 0) || ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
   {
     return SP_ERROR_INVALID_ADDRESS;
@@ -358,7 +358,7 @@ PluginContext::PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t arra
 int
 PluginContext::LocalToString(cell_t local_addr, char **addr)
 {
-  if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp)) ||
+  if (((local_addr >= m_ctx.hp) && (local_addr < sp_)) ||
       (local_addr < 0) || ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
   {
     return SP_ERROR_INVALID_ADDRESS;
@@ -380,7 +380,7 @@ PluginContext::StringToLocal(cell_t local_addr, size_t bytes, const char *source
   char *dest;
   size_t len;
 
-  if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp)) ||
+  if (((local_addr >= m_ctx.hp) && (local_addr < sp_)) ||
       (local_addr < 0) || ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
   {
     return SP_ERROR_INVALID_ADDRESS;
@@ -443,7 +443,7 @@ PluginContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const char 
   size_t len;
   bool needtocheck = false;
 
-  if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp)) ||
+  if (((local_addr >= m_ctx.hp) && (local_addr < sp_)) ||
       (local_addr < 0) ||
       ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
   {
@@ -548,7 +548,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
   if (m_pRuntime->IsPaused())
     return SP_ERROR_NOT_RUNNABLE;
 
-  if ((cell_t)(m_ctx.hp + 16*sizeof(cell_t)) > (cell_t)(m_ctx.sp - (sizeof(cell_t) * (num_params + 1))))
+  if ((cell_t)(m_ctx.hp + 16*sizeof(cell_t)) > (cell_t)(sp_ - (sizeof(cell_t) * (num_params + 1))))
     return SP_ERROR_STACKLOW;
 
   if (result == NULL)
@@ -578,7 +578,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
   uint32_t save_n_idx;
   cell_t save_sp, save_hp, save_rp, save_cip;
 
-  save_sp = m_ctx.sp;
+  save_sp = sp_;
   save_hp = m_ctx.hp;
   save_exec = m_InExec;
   save_n_idx = last_native_;
@@ -587,8 +587,8 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
 
   /* Push parameters */
 
-  m_ctx.sp -= sizeof(cell_t) * (num_params + 1);
-  sp = (cell_t *)(m_pRuntime->plugin()->memory + m_ctx.sp);
+  sp_ -= sizeof(cell_t) * (num_params + 1);
+  sp = (cell_t *)(m_pRuntime->plugin()->memory + sp_);
 
   sp[0] = num_params;
   for (unsigned int i = 0; i < num_params; i++)
@@ -614,10 +614,10 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
 
   if (ir == SP_ERROR_NONE) {
     native_error_ = SP_ERROR_NONE;
-    if (m_ctx.sp != save_sp) {
+    if (sp_ != save_sp) {
       ir = SP_ERROR_STACKLEAK;
       _SetErrorMessage("Stack leak detected: sp:%d should be %d!", 
-        m_ctx.sp, 
+        sp_, 
         save_sp);
     }
     if (m_ctx.hp != save_hp) {
@@ -640,7 +640,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
   if (ir != SP_ERROR_NONE)
     Environment::get()->ReportError(m_pRuntime, ir, m_MsgCache, save_rp);
 
-  m_ctx.sp = save_sp;
+  sp_ = save_sp;
   m_ctx.hp = save_hp;
   rp_ = save_rp;
   
@@ -854,7 +854,7 @@ PluginContext::pushTracker(uint32_t amount)
 cell_t
 PluginContext::invokeNative(ucell_t native_idx, cell_t *params)
 {
-  cell_t save_sp = m_ctx.sp;
+  cell_t save_sp = sp_;
   cell_t save_hp = m_ctx.hp;
 
   // Note: Invoke() saves the last native, so we don't need to here.
@@ -872,7 +872,7 @@ PluginContext::invokeNative(ucell_t native_idx, cell_t *params)
   if (native_error_ != SP_ERROR_NONE)
     return result;
 
-  if (save_sp != m_ctx.sp) {
+  if (save_sp != sp_) {
     native_error_ = SP_ERROR_STACKLEAK;
     return result;
   }
@@ -887,7 +887,7 @@ PluginContext::invokeNative(ucell_t native_idx, cell_t *params)
 cell_t
 PluginContext::invokeBoundNative(SPVM_NATIVE_FUNC pfn, cell_t *params)
 {
-  cell_t save_sp = m_ctx.sp;
+  cell_t save_sp = sp_;
   cell_t save_hp = m_ctx.hp;
 
   cell_t result = pfn(this, params);
@@ -895,7 +895,7 @@ PluginContext::invokeBoundNative(SPVM_NATIVE_FUNC pfn, cell_t *params)
   if (native_error_ != SP_ERROR_NONE)
     return result;
 
-  if (save_sp != m_ctx.sp) {
+  if (save_sp != sp_) {
     native_error_ = SP_ERROR_STACKLEAK;
     return result;
   }

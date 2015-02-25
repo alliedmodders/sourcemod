@@ -1612,9 +1612,8 @@ Compiler::emitNativeCall(OPCODE op)
 
   // Relocate our absolute stk to be dat-relative, and update the context's
   // view.
-  __ movl(eax, intptr_t(rt_->GetBaseContext()->GetCtx()));
   __ subl(stk, dat);
-  __ movl(Operand(eax, offsetof(sp_context_t, sp)), stk);
+  __ movl(Operand(eax, PluginContext::offsetOfSp()), stk);
 
   sp_native_t *native = rt_->GetNativeByIndex(native_index);
   if ((native->status != SP_NATIVE_BOUND) ||

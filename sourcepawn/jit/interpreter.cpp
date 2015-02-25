@@ -137,12 +137,13 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
   // the stack unwinding code.
   cell_t orig_frm = cx->frm();
 
+  cell_t &frm = *cx->addressOfFrm();
+  cell_t &sp = *cx->addressOfSp();
+
   cell_t pri = 0;
   cell_t alt = 0;
   cell_t *cip = code + (aCodeStart / 4);
-  cell_t *stk = reinterpret_cast<cell_t *>(plugin->memory + ctx->sp);
-
-  cell_t &frm = *cx->addressOfFrm();
+  cell_t *stk = reinterpret_cast<cell_t *>(plugin->memory + sp);
 
   for (;;) {
     if (cip >= codeend) {
@@ -808,11 +809,11 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
           goto error;
         }
         *cx->addressOfCip() = offset;
-        ctx->sp = uintptr_t(stk) - uintptr_t(plugin->memory);
+        sp = uintptr_t(stk) - uintptr_t(plugin->memory);
 
         int err = Interpret(rt, offset, &pri);
 
-        stk = reinterpret_cast<cell_t *>(plugin->memory + ctx->sp);
+        stk = reinterpret_cast<cell_t *>(plugin->memory + sp);
         *cx->addressOfCip() = rcip;
         cx->popReturnCip();
 
@@ -848,7 +849,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
           *--stk = num_params;
         }
 
-        ctx->sp = uintptr_t(stk) - uintptr_t(plugin->memory);
+        sp = uintptr_t(stk) - uintptr_t(plugin->memory);
         pri = cx->invokeNative(native_index, stk);
         if (cx->GetLastNativeError() != SP_ERROR_NONE) {
           err = cx->GetLastNativeError();
@@ -892,7 +893,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 
  done:
   assert(orig_frm == frm);
-  ctx->sp = uintptr_t(stk) - uintptr_t(plugin->memory);
+  sp = uintptr_t(stk) - uintptr_t(plugin->memory);
   return err;
 
  error:

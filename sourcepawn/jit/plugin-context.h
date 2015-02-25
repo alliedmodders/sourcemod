@@ -103,9 +103,18 @@ class PluginContext : public IPluginContext
   static inline size_t offsetOfNativeError() {
     return offsetof(PluginContext, native_error_);
   }
+  static inline size_t offsetOfSp() {
+    return offsetof(PluginContext, sp_);
+  }
+  static inline size_t offsetOfRuntime() {
+    return offsetof(PluginContext, m_pRuntime);
+  }
 
   int32_t *addressOfCip() {
     return &cip_;
+  }
+  int32_t *addressOfSp() {
+    return &sp_;
   }
   cell_t *addressOfFrm() {
     return &frm_;
@@ -175,7 +184,8 @@ class PluginContext : public IPluginContext
   // Most recent CIP.
   int32_t cip_;
 
-  // Frame pointer.
+  // Stack and frame pointer.
+  cell_t sp_;
   cell_t frm_;
 };
 

@@ -96,6 +96,10 @@ class PluginRuntime
     return m_JitFunctions[i];
   }
 
+  static inline size_t offsetToPlugin() {
+    return offsetof(PluginRuntime, m_plugin);
+  }
+
  private:
   void SetupFloatNativeRemapping();
 

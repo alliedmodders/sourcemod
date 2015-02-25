@@ -73,7 +73,6 @@ class PluginContext;
 typedef struct sp_context_s
 {
 	cell_t			hp;				/**< Heap pointer */
-	cell_t			sp;				/**< Stack pointer */
 	cell_t			rval;			/**< Return value from InvokeFunction() */
 	sp_plugin_t     *plugin;
 	PluginContext   *basecx;

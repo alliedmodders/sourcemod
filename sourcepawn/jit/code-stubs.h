@@ -16,13 +16,13 @@
 #include <stdint.h>
 #include <sp_vm_api.h>
 
-typedef struct sp_context_s sp_context_t;
+class PluginContext;
 
 namespace sp {
 
 class Environment;
 
-typedef int (*InvokeStubFn)(sp_context_t *ctx, uint8_t *memory, void *code);
+typedef int (*InvokeStubFn)(PluginContext *cx, void *code, cell_t *rval);
 
 class CodeStubs
 {

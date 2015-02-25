@@ -239,7 +239,6 @@ int
 Environment::Invoke(PluginRuntime *runtime, CompiledFunction *fn, cell_t *result)
 {
   PluginContext *cx = runtime->GetBaseContext();
-  sp_context_t *ctx = cx->GetCtx();
 
   // Note that cip, hp, sp are saved and restored by Execute2().
   *cx->addressOfCip() = fn->GetCodeOffset();
@@ -247,9 +246,8 @@ Environment::Invoke(PluginRuntime *runtime, CompiledFunction *fn, cell_t *result
   InvokeStubFn invoke = code_stubs_->InvokeStub();
 
   EnterInvoke();
-  int err = invoke(ctx, runtime->plugin()->memory, fn->GetEntryAddress());
+  int err = invoke(cx, fn->GetEntryAddress(), result);
   LeaveInvoke();
 
-  *result = ctx->rval;
   return err;
 }
