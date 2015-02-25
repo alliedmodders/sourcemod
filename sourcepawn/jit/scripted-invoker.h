@@ -19,6 +19,10 @@ class PluginRuntime;
 
 using namespace SourcePawn;
 
+namespace sp {
+class CompiledFunction;
+}
+
 struct ParamInfo
 {
   int flags;      /* Copy-back flags */
@@ -70,6 +74,13 @@ class ScriptedInvoker : public IPluginFunction
     return public_;
   }
 
+  sp::CompiledFunction *cachedCompiledFunction() const {
+    return cc_function_;
+  }
+  void setCachedCompiledFunction(sp::CompiledFunction *fn) {
+    cc_function_ = fn;
+  }
+
  private:
   int _PushString(const char *string, int sz_flags, int cp_flags, size_t len);
   int SetError(int err);
@@ -83,6 +94,7 @@ class ScriptedInvoker : public IPluginFunction
   funcid_t m_FnId;
   char *full_name_;
   sp_public_t *public_;
+  sp::CompiledFunction *cc_function_;
 };
 
 #endif //_INCLUDE_SOURCEMOD_BASEFUNCTION_H_
