@@ -18,7 +18,6 @@
 #include "plugin-context.h"
 #include "watchdog_timer.h"
 #include "x86/jit_x86.h"
-#include "interpreter.h"
 #include "environment.h"
 
 using namespace SourcePawn;
@@ -593,10 +592,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
 
   // Enter the execution engine.
   Environment *env = Environment::get();
-  if (env->IsJitEnabled())
-    ir = env->Invoke(m_pRuntime, fn, result);
-  else
-    ir = Interpret(m_pRuntime, cfun->Public()->code_offs, result);
+  ir = env->Invoke(m_pRuntime, fn, result);
 
   /* Restore some states, stop the frame tracer */
 

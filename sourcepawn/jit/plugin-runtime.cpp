@@ -32,17 +32,11 @@ IsPointerCellAligned(void *p)
 
 PluginRuntime::PluginRuntime()
   : m_Debug(&m_plugin),
-    m_pCtx(NULL), 
     m_PubFuncs(NULL),
     m_CompSerial(0)
 {
   memset(&m_plugin, 0, sizeof(m_plugin));
 
-  m_MaxFuncs = 0;
-  m_NumFuncs = 0;
-  float_table_ = NULL;
-  alt_pcode_ = NULL;
-  
   memset(m_CodeHash, 0, sizeof(m_CodeHash));
   memset(m_DataHash, 0, sizeof(m_DataHash));
 
@@ -63,13 +57,9 @@ PluginRuntime::~PluginRuntime()
   for (uint32_t i = 0; i < m_plugin.num_publics; i++)
     delete m_PubFuncs[i];
   delete [] m_PubFuncs;
-  delete [] float_table_;
-  delete [] alt_pcode_;
 
   for (size_t i = 0; i < m_JitFunctions.length(); i++)
     delete m_JitFunctions[i];
-
-  delete m_pCtx;
 
   free(m_plugin.base);
   delete [] m_plugin.memory;
