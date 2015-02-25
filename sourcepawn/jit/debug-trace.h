@@ -39,7 +39,6 @@ class CContextTrace : public IContextTrace
  private:
   PluginRuntime *m_pRuntime;
   PluginContext *context_;
-  sp_context_t *m_ctx;
   int m_Error;
   const char *m_pMsg;
   cell_t m_StartRp;

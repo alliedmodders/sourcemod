@@ -26,7 +26,6 @@ CContextTrace::CContextTrace(PluginRuntime *pRuntime, int err, const char *errst
    m_StartRp(start_rp),
    m_Level(0)
 {
-  m_ctx = pRuntime->m_pCtx->GetCtx();
   m_pDebug = m_pRuntime->GetDebugInfo();
 }
 

@@ -45,7 +45,7 @@ Write(const sp_plugin_t *plugin, cell_t offset, cell_t value)
 }
 
 static inline cell_t *
-Jump(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t target)
+Jump(const sp_plugin_t *plugin, cell_t target)
 {
   if (!IsValidOffset(target) || uint32_t(target) >= plugin->pcode_size)
     return NULL;
@@ -53,7 +53,7 @@ Jump(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t target)
 }
 
 static inline cell_t *
-JumpTarget(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t *cip, bool cond, int *errp)
+JumpTarget(const sp_plugin_t *plugin, cell_t *cip, bool cond, int *errp)
 {
   if (!cond)
     return cip + 1;
@@ -84,7 +84,6 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
     return SP_ERROR_INVALID_INSTRUCTION;
 
   PluginContext *cx = rt->GetBaseContext();
-  sp_context_t *ctx = cx->GetCtx();
 
   int err = SP_ERROR_NONE;
 
@@ -675,41 +674,41 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       }
 
       case OP_JUMP:
-        if ((cip = JumpTarget(plugin, ctx, cip, true, &err)) == NULL)
+        if ((cip = JumpTarget(plugin, cip, true, &err)) == NULL)
           goto error;
         break;
 
       case OP_JZER:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri == 0, &err)) == NULL)
+        if ((cip = JumpTarget(plugin, cip, pri == 0, &err)) == NULL)
           goto error;
         break;
       case OP_JNZ:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri != 0, &err)) == NULL)
+        if ((cip = JumpTarget(plugin, cip, pri != 0, &err)) == NULL)
           goto error;
         break;
 
       case OP_JEQ:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri == alt, &err)) == NULL)
+        if ((cip = JumpTarget(plugin, cip, pri == alt, &err)) == NULL)
           goto error;
         break;
       case OP_JNEQ:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri != alt, &err)) == NULL)
+        if ((cip = JumpTarget(plugin, cip, pri != alt, &err)) == NULL)
           goto error;
         break;
       case OP_JSLESS:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri < alt, &err)) == NULL)
+        if ((cip = JumpTarget(plugin, cip, pri < alt, &err)) == NULL)
           goto error;
         break;
       case OP_JSLEQ:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri <= alt, &err)) == NULL)
+        if ((cip = JumpTarget(plugin, cip, pri <= alt, &err)) == NULL)
           goto error;
         break;
       case OP_JSGRTR:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri > alt, &err)) == NULL)
+        if ((cip = JumpTarget(plugin, cip, pri > alt, &err)) == NULL)
           goto error;
         break;
       case OP_JSGEQ:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri >= alt, &err)) == NULL)
+        if ((cip = JumpTarget(plugin, cip, pri >= alt, &err)) == NULL)
           goto error;
         break;
 
@@ -831,7 +830,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
           }
         }
 
-        if ((cip = Jump(plugin, ctx, target)) == NULL) {
+        if ((cip = Jump(plugin, target)) == NULL) {
           err = SP_ERROR_INVALID_INSTRUCTION;
           goto error;
         }

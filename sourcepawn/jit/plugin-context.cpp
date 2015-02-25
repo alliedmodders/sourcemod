@@ -80,12 +80,6 @@ PluginContext::GetContext()
   return reinterpret_cast<sp_context_t *>((IPluginContext * )this);
 }
 
-sp_context_t *
-PluginContext::GetCtx()
-{
-  return &m_ctx;
-}
-
 bool
 PluginContext::IsDebugging()
 {

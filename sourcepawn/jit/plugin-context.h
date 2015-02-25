@@ -39,7 +39,6 @@ class PluginContext : public IPluginContext
  public: //IPluginContext
   IVirtualMachine *GetVirtualMachine();
   sp_context_t *GetContext();
-  sp_context_t *GetCtx();
   bool IsDebugging();
   int SetDebugBreak(void *newpfn, void *oldpfn);
   IPluginDebugInfo *GetDebugInfo();
@@ -187,7 +186,6 @@ class PluginContext : public IPluginContext
   bool m_CustomMsg;
   bool m_InExec;
   PluginRuntime *m_pRuntime;
-  sp_context_t m_ctx;
   void *m_keys[4];
   bool m_keys_set[4];
 

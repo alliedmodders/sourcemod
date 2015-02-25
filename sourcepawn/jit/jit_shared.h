@@ -70,10 +70,6 @@ namespace SourcePawn
 
 class PluginContext;
 
-typedef struct sp_context_s
-{
-} sp_context_t;
-
 //#define SPFLAG_PLUGIN_DEBUG			(1<<0)
 #define SPFLAG_PLUGIN_PAUSED		(1<<1)
 
