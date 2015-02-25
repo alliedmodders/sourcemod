@@ -646,11 +646,7 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 		if (m_pRuntime->FindNativeByName(entry->name(), &idx) != SP_ERROR_NONE)
 			continue;
 
-		sp_native_t *native;
-		m_pRuntime->GetNativeByIndex(idx, &native);
-
-		native->pfn = NULL;
-		native->status = SP_NATIVE_UNBOUND;
+		m_pRuntime->UpdateNativeBinding(idx, nullptr, 0, nullptr);
 		unbound++;
 	}
 
@@ -1357,16 +1353,14 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	/* Find any unbound natives. Right now, these are not allowed. */
 	IPluginContext *pContext = pPlugin->GetBaseContext();
 	uint32_t num = pContext->GetNativesNum();
-	sp_native_t *native;
 	for (unsigned int i=0; i<num; i++)
 	{
-		if (pContext->GetNativeByIndex(i, &native) != SP_ERROR_NONE)
-		{
+		const sp_native_t *native = pContext->GetRuntime()->GetNative(i);
+		if (!native)
 			break;
-		}
-		if (native->status == SP_NATIVE_UNBOUND
-			&& native->name[0] != '@'
-			&& !(native->flags & SP_NTVFLAG_OPTIONAL))
+		if (native->status == SP_NATIVE_UNBOUND &&
+			native->name[0] != '@' &&
+			!(native->flags & SP_NTVFLAG_OPTIONAL))
 		{
 			if (error)
 			{
@@ -1478,16 +1472,14 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 	 */
 	IPluginContext *pContext = pPlugin->GetBaseContext();
 	uint32_t num = pContext->GetNativesNum();
-	sp_native_t *native;
 	for (unsigned int i=0; i<num; i++)
 	{
-		if (pContext->GetNativeByIndex(i, &native) != SP_ERROR_NONE)
-		{
+		const sp_native_t *native = pContext->GetRuntime()->GetNative(i);
+		if (!native)
 			break;
-		}
-		if (native->status == SP_NATIVE_UNBOUND
-			&& native->name[0] != '@'
-			&& !(native->flags & SP_NTVFLAG_OPTIONAL))
+		if (native->status == SP_NATIVE_UNBOUND &&
+			native->name[0] != '@' &&
+			!(native->flags & SP_NTVFLAG_OPTIONAL))
 		{
 			pPlugin->SetErrorState(Plugin_Error, "Native not found: %s", native->name);
 			return;

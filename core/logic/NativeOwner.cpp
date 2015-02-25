@@ -84,11 +84,11 @@ void CNativeOwner::UnbindWeakRef(const WeakNative &ref)
 	IPluginContext *pContext;
 
 	pContext = ref.pl->GetBaseContext();
-	if ((pContext->GetNativeByIndex(ref.idx, &native)) == SP_ERROR_NONE)
-	{
-		native->status = SP_NATIVE_UNBOUND;
-		native->pfn = NULL;
-	}
+	pContext->GetRuntime()->UpdateNativeBinding(
+	  ref.idx,
+	  nullptr,
+	  0,
+	  nullptr);
 }
 
 void CNativeOwner::DropEverything()

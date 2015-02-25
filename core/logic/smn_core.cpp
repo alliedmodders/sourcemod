@@ -457,7 +457,6 @@ static cell_t MarkNativeAsOptional(IPluginContext *pContext, const cell_t *param
 {
 	char *name;
 	uint32_t idx;
-	sp_native_t *native;
 
 	pContext->LocalToString(params[1], &name);
 	if (pContext->FindNativeByName(name, &idx) != SP_ERROR_NONE)
@@ -466,10 +465,7 @@ static cell_t MarkNativeAsOptional(IPluginContext *pContext, const cell_t *param
 		return 0;
 	}
 
-	pContext->GetNativeByIndex(idx, &native);
-
-	native->flags |= SP_NTVFLAG_OPTIONAL;
-
+	pContext->GetRuntime()->UpdateNativeBinding(idx, nullptr, SP_NTVFLAG_OPTIONAL, nullptr);
 	return 1;
 }
 

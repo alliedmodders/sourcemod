@@ -352,19 +352,31 @@ PluginRuntime::FindNativeByName(const char *name, uint32_t *index)
 int
 PluginRuntime::GetNativeByIndex(uint32_t index, sp_native_t **native)
 {
+  return SP_ERROR_PARAM;
+}
+
+int
+PluginRuntime::UpdateNativeBinding(uint32_t index, SPVM_NATIVE_FUNC pfn, uint32_t flags, void *data)
+{
   if (index >= m_plugin.num_natives)
     return SP_ERROR_INDEX;
 
-  if (native)
-    *native = &(m_plugin.natives[index]);
+  sp_native_t *native = &m_plugin.natives[index];
 
+  native->pfn = pfn;
+  native->status = pfn
+                   ? SP_NATIVE_BOUND
+                   : SP_NATIVE_UNBOUND;
+  native->flags = flags;
+  native->user = data;
   return SP_ERROR_NONE;
 }
 
-sp_native_t *
-PluginRuntime::GetNativeByIndex(uint32_t index)
+const sp_native_t *
+PluginRuntime::GetNative(uint32_t index)
 {
-  assert(index < m_plugin.num_natives);
+  if (index >= m_plugin.num_natives)
+    return nullptr;
   return &m_plugin.natives[index];
 }
 
