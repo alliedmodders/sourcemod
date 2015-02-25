@@ -16,10 +16,9 @@
 #include <stdint.h>
 #include <sp_vm_api.h>
 
-class PluginContext;
-
 namespace sp {
 
+class PluginContext;
 class Environment;
 
 typedef int (*InvokeStubFn)(PluginContext *cx, void *code, cell_t *rval);

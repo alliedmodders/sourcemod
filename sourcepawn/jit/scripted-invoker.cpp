@@ -20,6 +20,9 @@
 * FUNCTION CALLING *
 ********************/
 
+using namespace sp;
+using namespace SourcePawn;
+
 ScriptedInvoker::~ScriptedInvoker()
 {
   delete [] full_name_;
@@ -59,11 +62,11 @@ ScriptedInvoker::ScriptedInvoker(PluginRuntime *runtime, funcid_t id, uint32_t p
 
   runtime->GetPublicByIndex(pub_id, &public_);
 
-  size_t rt_len = strlen(runtime->plugin()->name);
+  size_t rt_len = strlen(runtime->Name());
   size_t len = rt_len + strlen("::") + strlen(public_->name);
 
   full_name_ = new char[len + 1];
-  strcpy(full_name_, runtime->plugin()->name);
+  strcpy(full_name_, runtime->Name());
   strcpy(&full_name_[rt_len], "::");
   strcpy(&full_name_[rt_len + 2], public_->name);
 }

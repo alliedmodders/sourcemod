@@ -20,12 +20,11 @@
 #include "code-allocator.h"
 #include "plugin-runtime.h"
 
-class PluginRuntime;
-
 namespace sp {
 
 using namespace SourcePawn;
 
+class PluginRuntime;
 class CodeStubs;
 class WatchdogTimer;
 

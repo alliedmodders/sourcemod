@@ -15,13 +15,12 @@
 
 #include <sp_vm_api.h>
 
-class PluginRuntime;
+namespace sp {
 
 using namespace SourcePawn;
 
-namespace sp {
+class PluginRuntime;
 class CompiledFunction;
-}
 
 struct ParamInfo
 {
@@ -36,8 +35,6 @@ struct ParamInfo
     int sz_flags;  /* has sz flags */
   } str;
 };
-
-class CPlugin;
 
 class ScriptedInvoker : public IPluginFunction
 {
@@ -74,10 +71,10 @@ class ScriptedInvoker : public IPluginFunction
     return public_;
   }
 
-  sp::CompiledFunction *cachedCompiledFunction() const {
+  CompiledFunction *cachedCompiledFunction() const {
     return cc_function_;
   }
-  void setCachedCompiledFunction(sp::CompiledFunction *fn) {
+  void setCachedCompiledFunction(CompiledFunction *fn) {
     cc_function_ = fn;
   }
 
@@ -94,7 +91,9 @@ class ScriptedInvoker : public IPluginFunction
   funcid_t m_FnId;
   char *full_name_;
   sp_public_t *public_;
-  sp::CompiledFunction *cc_function_;
+  CompiledFunction *cc_function_;
 };
+
+} // namespace sp
 
 #endif //_INCLUDE_SOURCEMOD_BASEFUNCTION_H_

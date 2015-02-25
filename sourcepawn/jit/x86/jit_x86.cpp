@@ -76,7 +76,7 @@ OpToCondition(OPCODE op)
   }
 }
 
-#if !defined NDEBUG
+#if 0 && !defined NDEBUG
 static const char *
 GetFunctionName(const sp_plugin_t *plugin, uint32_t offs)
 {
@@ -131,7 +131,7 @@ GetFunctionName(const sp_plugin_t *plugin, uint32_t offs)
 #endif
 
 CompiledFunction *
-CompileFunction(PluginRuntime *prt, cell_t pcode_offs, int *err)
+sp::CompileFunction(PluginRuntime *prt, cell_t pcode_offs, int *err)
 {
   Compiler cc(prt, pcode_offs);
   CompiledFunction *fun = cc.emit(err);
@@ -181,14 +181,14 @@ Compiler::Compiler(PluginRuntime *rt, cell_t pcode_offs)
   : env_(Environment::get()),
     rt_(rt),
     context_(rt->GetBaseContext()),
-    plugin_(rt->plugin()),
+    image_(rt_->image()),
     error_(SP_ERROR_NONE),
     pcode_start_(pcode_offs),
-    code_start_(reinterpret_cast<cell_t *>(plugin_->pcode + pcode_start_)),
+    code_start_(reinterpret_cast<const cell_t *>(rt_->code().bytes + pcode_start_)),
     cip_(code_start_),
-    code_end_(reinterpret_cast<cell_t *>(plugin_->pcode + plugin_->pcode_size))
+    code_end_(reinterpret_cast<const cell_t *>(rt_->code().bytes + rt_->code().length))
 {
-  size_t nmaxops = plugin_->pcode_size / sizeof(cell_t) + 1;
+  size_t nmaxops = rt_->code().length / sizeof(cell_t) + 1;
   jump_map_ = new Label[nmaxops];
 }
 
@@ -208,13 +208,13 @@ Compiler::emit(int *errp)
 #if defined JIT_SPEW
   g_engine1.GetDebugHook()->OnDebugSpew(
       "Compiling function %s::%s\n",
-      plugin_->name,
+      rt_->Name(),
       GetFunctionName(plugin_, pcode_start_));
 
   SpewOpcode(plugin_, code_start_, cip_);
 #endif
 
-  cell_t *codeseg = reinterpret_cast<cell_t *>(plugin_->pcode);
+  const cell_t *codeseg = reinterpret_cast<const cell_t *>(rt_->code().bytes);
 
   cip_++;
   if (!emitOp(OP_PROC)) {
@@ -1077,7 +1077,7 @@ Compiler::emitOp(OPCODE op)
 
      if (amount > 0) {
        // Check if the stack went beyond the stack top - usually a compiler error.
-       __ cmpl(stk, intptr_t(plugin_->memory + plugin_->mem_size));
+       __ cmpl(stk, intptr_t(context_->memory() + context_->HeapSize()));
        __ j(not_below, &error_stack_min_);
      } else {
        // Check if the stack is going to collide with the heap.
@@ -1096,7 +1096,7 @@ Compiler::emitOp(OPCODE op)
       __ addl(Operand(hpAddr()), amount);
 
       if (amount < 0) {
-        __ cmpl(Operand(hpAddr()), plugin_->data_size);
+        __ cmpl(Operand(hpAddr()), context_->DataSize());
         __ j(below, &error_heap_min_);
       } else {
         __ movl(tmp, Operand(hpAddr()));
@@ -1198,7 +1198,7 @@ Compiler::emitOp(OPCODE op)
 
     case OP_BREAK:
     {
-      cell_t cip = uintptr_t(cip_ - 1) - uintptr_t(plugin_->pcode);
+      cell_t cip = uintptr_t(cip_ - 1) - uintptr_t(rt_->code().bytes);
       __ movl(Operand(cipAddr()), cip);
       break;
     }
@@ -1262,7 +1262,7 @@ Label *
 Compiler::labelAt(size_t offset)
 {
   if (offset % 4 != 0 ||
-      offset > plugin_->pcode_size ||
+      offset > rt_->code().length ||
       offset <= pcode_start_)
   {
     // If the jump target is misaligned, or out of pcode bounds, or is an
@@ -1280,7 +1280,7 @@ void
 Compiler::emitCheckAddress(Register reg)
 {
   // Check if we're in memory bounds.
-  __ cmpl(reg, plugin_->mem_size);
+  __ cmpl(reg, context_->HeapSize());
   __ j(not_below, &error_memaccess_);
 
   // Check if we're in the invalid region between hp and sp.
@@ -1335,7 +1335,7 @@ Compiler::emitGenArray(bool autozero)
   } else {
     __ push(pri);
 
-    // int GenerateArray(sp_plugin_t, vars[], uint32_t, cell_t *, int, unsigned *);
+    // int GenerateArray(cx, vars[], uint32_t, cell_t *, int, unsigned *);
     __ push(autozero ? 1 : 0);
     __ push(stk);
     __ push(val);
@@ -1362,7 +1362,7 @@ Compiler::emitCall()
 
   // If this offset looks crappy, i.e. not aligned or out of bounds, we just
   // abort.
-  if (offset % 4 != 0 || uint32_t(offset) >= plugin_->pcode_size) {
+  if (offset % 4 != 0 || uint32_t(offset) >= rt_->code().length) {
     error_ = SP_ERROR_INSTRUCTION_PARAM;
     return false;
   }
@@ -1377,7 +1377,7 @@ Compiler::emitCall()
   __ j(not_below, &error_stack_low_);
 
   // Add to the return stack.
-  uintptr_t cip = uintptr_t(cip_ - 2) - uintptr_t(plugin_->pcode);
+  uintptr_t cip = uintptr_t(cip_ - 2) - uintptr_t(rt_->code().bytes);
   __ movl(Operand(eax, ecx, ScaleFour, PluginContext::offsetOfRstkCips()), cip);
 
   // Increment the return stack pointer.
@@ -1461,7 +1461,7 @@ Compiler::emitNativeCall(OPCODE op)
 {
   uint32_t native_index = readCell();
 
-  if (native_index >= plugin_->num_natives) {
+  if (native_index >= image_->NumNatives()) {
     error_ = SP_ERROR_INSTRUCTION_PARAM;
     return false;
   }
@@ -1537,7 +1537,7 @@ Compiler::emitSwitch()
   if (!labelAt(offset))
     return false;
 
-  cell_t *tbl = (cell_t *)((char *)plugin_->pcode + offset + sizeof(cell_t));
+  cell_t *tbl = (cell_t *)((char *)rt_->code().bytes + offset + sizeof(cell_t));
 
   struct Entry {
     cell_t val;

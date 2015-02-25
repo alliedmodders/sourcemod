@@ -16,7 +16,8 @@
 #include "sp_vm_api.h"
 #include "scripted-invoker.h"
 #include "plugin-runtime.h"
-#include "jit_shared.h"
+
+namespace sp {
 
 struct HeapTracker
 {
@@ -30,11 +31,15 @@ struct HeapTracker
   ucell_t *pCur;
 };
 
+static const size_t SP_MAX_RETURN_STACK = 1024;
+
 class PluginContext : public IPluginContext
 {
  public:
   PluginContext(PluginRuntime *pRuntime);
   ~PluginContext();
+
+  bool Initialize();
 
  public: //IPluginContext
   IVirtualMachine *GetVirtualMachine();
@@ -84,6 +89,16 @@ class PluginContext : public IPluginContext
   void Refresh();
   void ClearLastNativeError();
 
+  size_t HeapSize() const {
+    return mem_size_;
+  }
+  uint8_t *memory() const {
+    return memory_;
+  }
+  size_t DataSize() const {
+    return data_size_;
+  }
+
  public:
   bool IsInExec();
 
@@ -107,6 +122,9 @@ class PluginContext : public IPluginContext
   }
   static inline size_t offsetOfRuntime() {
     return offsetof(PluginContext, m_pRuntime);
+  }
+  static inline size_t offsetOfMemory() {
+    return offsetof(PluginContext, memory_);
   }
 
   int32_t *addressOfCip() {
@@ -163,13 +181,13 @@ class PluginContext : public IPluginContext
   }
 
   inline bool checkAddress(cell_t *stk, cell_t addr) {
-    if (uint32_t(addr) >= m_pRuntime->plugin()->mem_size)
+    if (uint32_t(addr) >= mem_size_)
       return false;
 
     if (addr < hp_)
       return true;
 
-    if (reinterpret_cast<cell_t *>(m_pRuntime->plugin()->memory + addr) < stk)
+    if (reinterpret_cast<cell_t *>(memory_ + addr) < stk)
       return false;
 
     return true;
@@ -180,12 +198,16 @@ class PluginContext : public IPluginContext
   void _SetErrorMessage(const char *msg, ...);
 
  private:
+  PluginRuntime *m_pRuntime;
+  uint8_t *memory_;
+  uint32_t data_size_;
+  uint32_t mem_size_;
+
   cell_t *m_pNullVec;
   cell_t *m_pNullString;
   char m_MsgCache[1024];
   bool m_CustomMsg;
   bool m_InExec;
-  PluginRuntime *m_pRuntime;
   void *m_keys[4];
   bool m_keys_set[4];
 
@@ -208,5 +230,7 @@ class PluginContext : public IPluginContext
   cell_t hp_;
   cell_t frm_;
 };
+
+} // namespace sp
 
 #endif //_INCLUDE_SOURCEPAWN_BASECONTEXT_H_

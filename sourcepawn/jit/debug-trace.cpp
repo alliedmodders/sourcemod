@@ -13,6 +13,7 @@
 #include "debug-trace.h"
 #include "plugin-context.h"
 #include "environment.h"
+#include "plugin-runtime.h"
 
 using namespace ke;
 using namespace sp;

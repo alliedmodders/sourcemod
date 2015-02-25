@@ -29,7 +29,6 @@
  * Version: $Id$
  */
 #include "opcodes.h"
-#include "jit_shared.h"
 
 using namespace sp;
 using namespace SourcePawn;
@@ -41,6 +40,7 @@ const char *OpcodeNames[] = {
   NULL
 };
 
+#ifdef JIT_SPEW
 void
 SourcePawn::SpewOpcode(const sp_plugin_t *plugin, cell_t *start, cell_t *cip)
 {
@@ -137,4 +137,5 @@ SourcePawn::SpewOpcode(const sp_plugin_t *plugin, cell_t *start, cell_t *cip)
 
   fprintf(stdout, "\n");
 }
+#endif
 
