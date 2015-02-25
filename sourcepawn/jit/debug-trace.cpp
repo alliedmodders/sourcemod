@@ -105,7 +105,7 @@ CContextTrace::GetTraceInfo(CallStackInfo *trace)
 const char *
 CContextTrace::GetLastNative(uint32_t *index)
 {
-  if (m_ctx->n_err == SP_ERROR_NONE)
+  if (context_->GetLastNativeError() == SP_ERROR_NONE)
     return NULL;
 
   int lastNative = context_->lastNative();

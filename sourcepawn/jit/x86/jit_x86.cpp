@@ -1632,8 +1632,8 @@ Compiler::emitNativeCall(OPCODE op)
   }
 
   // Check for errors.
-  __ movl(ecx, intptr_t(rt_->GetBaseContext()->GetCtx()));
-  __ movl(ecx, Operand(ecx, offsetof(sp_context_t, n_err)));
+  __ movl(ecx, intptr_t(rt_->GetBaseContext()));
+  __ movl(ecx, Operand(ecx, PluginContext::offsetOfNativeError()));
   __ testl(ecx, ecx);
   __ j(not_zero, &extern_error_);
   
@@ -1824,8 +1824,8 @@ Compiler::emitErrorPaths()
 
   if (extern_error_.used()) {
     __ bind(&extern_error_);
-    __ movl(eax, intptr_t(rt_->GetBaseContext()->GetCtx()));
-    __ movl(eax, Operand(eax, offsetof(sp_context_t, n_err)));
+    __ movl(eax, intptr_t(rt_->GetBaseContext()));
+    __ movl(eax, Operand(eax, PluginContext::offsetOfNativeError()));
     __ jmp(ExternalAddress(env_->stubs()->ReturnStub()));
   }
 }

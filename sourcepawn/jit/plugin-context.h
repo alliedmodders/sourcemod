@@ -100,6 +100,9 @@ class PluginContext : public IPluginContext
   static inline size_t offsetOfLastNative() {
     return offsetof(PluginContext, last_native_);
   }
+  static inline size_t offsetOfNativeError() {
+    return offsetof(PluginContext, native_error_);
+  }
 
   // Return stack logic.
   bool pushReturnCip(cell_t cip) {
@@ -151,8 +154,9 @@ class PluginContext : public IPluginContext
   cell_t rp_;
   cell_t rstk_cips_[SP_MAX_RETURN_STACK];
 
-  // Track the currently executing native index.
-  uint32_t last_native_;
+  // Track the currently executing native index, and any error it throws.
+  int32_t last_native_;
+  int native_error_;
 };
 
 #endif //_INCLUDE_SOURCEPAWN_BASECONTEXT_H_

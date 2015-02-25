@@ -78,7 +78,6 @@ typedef struct sp_context_s
 	cell_t			rval;			/**< Return value from InvokeFunction() */
 	int32_t			cip;			/**< Code pointer last error occurred in */
 	int32_t			err;			/**< Error last set by interpreter */
-	int32_t			n_err;			/**< Error code set by a native */
 	sp_plugin_t     *plugin;
 	PluginContext   *basecx;
 } sp_context_t;

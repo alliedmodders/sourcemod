@@ -54,9 +54,9 @@ PluginContext::PluginContext(PluginRuntime *pRuntime)
   m_ctx.hp = m_pRuntime->plugin()->data_size;
   m_ctx.sp = m_pRuntime->plugin()->mem_size - sizeof(cell_t);
   m_ctx.frm = m_ctx.sp;
-  m_ctx.n_err = SP_ERROR_NONE;
   rp_ = 0;
   last_native_ = -1;
+  native_error_ = SP_ERROR_NONE;
 
   tracker_.pBase = (ucell_t *)malloc(1024);
   tracker_.pCur = tracker_.pBase;
@@ -135,7 +135,7 @@ PluginContext::ThrowNativeErrorEx(int error, const char *msg, ...)
   if (!m_InExec)
     return 0;
 
-  m_ctx.n_err = error;
+  native_error_ = error;
   
   if (msg) {
     va_list ap;
@@ -153,7 +153,7 @@ PluginContext::ThrowNativeError(const char *msg, ...)
   if (!m_InExec)
     return 0;
 
-  m_ctx.n_err = SP_ERROR_NATIVE;
+  native_error_ = SP_ERROR_NATIVE;
 
   if (msg) {
     va_list ap;
@@ -595,7 +595,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
     sp[i + 1] = params[i];
 
   /* Clear internal state */
-  m_ctx.n_err = SP_ERROR_NONE;
+  native_error_ = SP_ERROR_NONE;
   last_native_ = -1;
   m_MsgCache[0] = '\0';
   m_CustomMsg = false;
@@ -613,7 +613,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
   m_InExec = save_exec;
 
   if (ir == SP_ERROR_NONE) {
-    m_ctx.n_err = SP_ERROR_NONE;
+    native_error_ = SP_ERROR_NONE;
     if (m_ctx.sp != save_sp) {
       ir = SP_ERROR_STACKLEAK;
       _SetErrorMessage("Stack leak detected: sp:%d should be %d!", 
@@ -646,7 +646,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
   
   m_ctx.cip = save_cip;
   last_native_ = save_n_idx;
-  m_ctx.n_err = SP_ERROR_NONE;
+  native_error_ = SP_ERROR_NONE;
   m_MsgCache[0] = '\0';
   m_CustomMsg = false;
 
@@ -778,7 +778,7 @@ DebugInfo::LookupLine(ucell_t addr, uint32_t *line)
 int
 PluginContext::GetLastNativeError()
 {
-  return m_ctx.n_err;
+  return native_error_;
 }
 
 cell_t *
@@ -810,7 +810,7 @@ PluginContext::GetKey(int k, void **value)
 void
 PluginContext::ClearLastNativeError()
 {
-  m_ctx.n_err = SP_ERROR_NONE;
+  native_error_ = SP_ERROR_NONE;
 }
 
 int
@@ -863,21 +863,21 @@ PluginContext::invokeNative(ucell_t native_idx, cell_t *params)
   sp_native_t *native = &m_pRuntime->plugin()->natives[native_idx];
 
   if (native->status == SP_NATIVE_UNBOUND) {
-    m_ctx.n_err = SP_ERROR_INVALID_NATIVE;
+    native_error_ = SP_ERROR_INVALID_NATIVE;
     return 0;
   }
 
   cell_t result = native->pfn(m_ctx.basecx, params);
 
-  if (m_ctx.n_err != SP_ERROR_NONE)
+  if (native_error_ != SP_ERROR_NONE)
     return result;
 
   if (save_sp != m_ctx.sp) {
-    m_ctx.n_err = SP_ERROR_STACKLEAK;
+    native_error_ = SP_ERROR_STACKLEAK;
     return result;
   }
   if (save_hp != m_ctx.hp) {
-    m_ctx.n_err = SP_ERROR_HEAPLEAK;
+    native_error_ = SP_ERROR_HEAPLEAK;
     return result;
   }
 
@@ -892,15 +892,15 @@ PluginContext::invokeBoundNative(SPVM_NATIVE_FUNC pfn, cell_t *params)
 
   cell_t result = pfn(this, params);
 
-  if (m_ctx.n_err != SP_ERROR_NONE)
+  if (native_error_ != SP_ERROR_NONE)
     return result;
 
   if (save_sp != m_ctx.sp) {
-    m_ctx.n_err = SP_ERROR_STACKLEAK;
+    native_error_ = SP_ERROR_STACKLEAK;
     return result;
   }
   if (save_hp != m_ctx.hp) {
-    m_ctx.n_err = SP_ERROR_HEAPLEAK;
+    native_error_ = SP_ERROR_HEAPLEAK;
     return result;
   }
 

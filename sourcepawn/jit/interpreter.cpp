@@ -842,8 +842,8 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 
         ctx->sp = uintptr_t(stk) - uintptr_t(plugin->memory);
         pri = cx->invokeNative(native_index, stk);
-        if (ctx->n_err != SP_ERROR_NONE) {
-          ctx->err = ctx->n_err;
+        if (cx->GetLastNativeError() != SP_ERROR_NONE) {
+          ctx->err = cx->GetLastNativeError();
           goto error;
         }
 
