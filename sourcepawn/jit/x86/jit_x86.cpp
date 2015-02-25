@@ -1206,8 +1206,6 @@ Compiler::emitOp(OPCODE op)
 
     case OP_HALT:
       __ align(16);
-      __ movl(tmp, intptr_t(rt_->GetBaseContext()->GetCtx()));
-      __ movl(Operand(tmp, offsetof(sp_context_t, rval)), pri);
       __ movl(pri, readCell());
       __ jmp(&extern_error_);
       break;

@@ -72,7 +72,6 @@ class PluginContext;
 
 typedef struct sp_context_s
 {
-	cell_t			rval;			/**< Return value from InvokeFunction() */
 	sp_plugin_t     *plugin;
 } sp_context_t;
 
