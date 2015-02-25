@@ -74,7 +74,6 @@ typedef struct sp_context_s
 {
 	cell_t			rval;			/**< Return value from InvokeFunction() */
 	sp_plugin_t     *plugin;
-	PluginContext   *basecx;
 } sp_context_t;
 
 //#define SPFLAG_PLUGIN_DEBUG			(1<<0)

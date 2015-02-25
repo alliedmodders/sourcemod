@@ -61,7 +61,6 @@ PluginContext::PluginContext(PluginRuntime *pRuntime)
   tracker_.pBase = (ucell_t *)malloc(1024);
   tracker_.pCur = tracker_.pBase;
   tracker_.size = 1024 / sizeof(cell_t);
-  m_ctx.basecx = this;
   m_ctx.plugin = const_cast<sp_plugin_t *>(pRuntime->plugin());
 }
 
@@ -867,7 +866,7 @@ PluginContext::invokeNative(ucell_t native_idx, cell_t *params)
     return 0;
   }
 
-  cell_t result = native->pfn(m_ctx.basecx, params);
+  cell_t result = native->pfn(this, params);
 
   if (native_error_ != SP_ERROR_NONE)
     return result;
