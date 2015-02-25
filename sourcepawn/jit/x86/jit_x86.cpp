@@ -77,128 +77,6 @@ OpToCondition(OPCODE op)
   }
 }
 
-struct array_creation_t
-{
-  const cell_t *dim_list;     /* Dimension sizes */
-  cell_t dim_count;           /* Number of dimensions */
-  cell_t *data_offs;          /* Current offset AFTER the indirection vectors (data) */
-  cell_t *base;               /* array base */
-};
-
-static cell_t
-GenerateInnerArrayIndirectionVectors(array_creation_t *ar, int dim, cell_t cur_offs)
-{
-  cell_t write_offs = cur_offs;
-  cell_t *data_offs = ar->data_offs;
-
-  cur_offs += ar->dim_list[dim];
-
-  // Dimension n-x where x > 2 will have sub-vectors.  
-  // Otherwise, we just need to reference the data section.
-  if (ar->dim_count > 2 && dim < ar->dim_count - 2) {
-    // For each index at this dimension, write offstes to our sub-vectors.
-    // After we write one sub-vector, we generate its sub-vectors recursively.
-    // At the end, we're given the next offset we can use.
-    for (int i = 0; i < ar->dim_list[dim]; i++) {
-      ar->base[write_offs] = (cur_offs - write_offs) * sizeof(cell_t);
-      write_offs++;
-      cur_offs = GenerateInnerArrayIndirectionVectors(ar, dim + 1, cur_offs);
-    }
-  } else {
-    // In this section, there are no sub-vectors, we need to write offsets 
-    // to the data.  This is separate so the data stays in one big chunk.
-    // The data offset will increment by the size of the last dimension, 
-    // because that is where the data is finally computed as. 
-    for (int i = 0; i < ar->dim_list[dim]; i++) {
-      ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell_t);
-      write_offs++;
-      *data_offs = *data_offs + ar->dim_list[dim + 1];
-    }
-  }
-
-  return cur_offs;
-}
-
-static cell_t
-calc_indirection(const array_creation_t *ar, cell_t dim)
-{
-  cell_t size = ar->dim_list[dim];
-  if (dim < ar->dim_count - 2)
-    size += ar->dim_list[dim] * calc_indirection(ar, dim + 1);
-  return size;
-}
-
-static cell_t
-GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], cell_t _dimcount, bool autozero)
-{
-  array_creation_t ar;
-  cell_t data_offs;
-
-  /* Reverse the dimensions */
-  cell_t dim_list[sDIMEN_MAX];
-  int cur_dim = 0;
-  for (int i = _dimcount - 1; i >= 0; i--)
-    dim_list[cur_dim++] = dims[i];
-  
-  ar.base = arraybase;
-  ar.dim_list = dim_list;
-  ar.dim_count = _dimcount;
-  ar.data_offs = &data_offs;
-
-  data_offs = calc_indirection(&ar, 0);
-  GenerateInnerArrayIndirectionVectors(&ar, 0, 0);
-  return data_offs;
-}
-
-int
-GenerateFullArray(PluginRuntime *rt, uint32_t argc, cell_t *argv, int autozero)
-{
-  sp_context_t *ctx = rt->GetBaseContext()->GetCtx();
-
-  // Calculate how many cells are needed.
-  if (argv[0] <= 0)
-    return SP_ERROR_ARRAY_TOO_BIG;
-
-  uint32_t cells = argv[0];
-
-  for (uint32_t dim = 1; dim < argc; dim++) {
-    cell_t dimsize = argv[dim];
-    if (dimsize <= 0)
-      return SP_ERROR_ARRAY_TOO_BIG;
-    if (!ke::IsUint32MultiplySafe(cells, dimsize))
-      return SP_ERROR_ARRAY_TOO_BIG;
-    cells *= uint32_t(dimsize);
-    if (!ke::IsUint32AddSafe(cells, dimsize))
-      return SP_ERROR_ARRAY_TOO_BIG;
-    cells += uint32_t(dimsize);
-  }
-
-  if (!ke::IsUint32MultiplySafe(cells, 4))
-    return SP_ERROR_ARRAY_TOO_BIG;
-
-  uint32_t bytes = cells * 4;
-  if (!ke::IsUint32AddSafe(ctx->hp, bytes))
-    return SP_ERROR_ARRAY_TOO_BIG;
-
-  uint32_t new_hp = ctx->hp + bytes;
-  cell_t *dat_hp = reinterpret_cast<cell_t *>(rt->plugin()->memory + new_hp);
-
-  // argv, coincidentally, is STK.
-  if (dat_hp >= argv - STACK_MARGIN)
-    return SP_ERROR_HEAPLOW;
-
-  if (int err = rt->GetBaseContext()->pushTracker(bytes))
-    return err;
-
-  cell_t *base = reinterpret_cast<cell_t *>(rt->plugin()->memory + ctx->hp);
-  cell_t offs = GenerateArrayIndirectionVectors(base, argv, argc, !!autozero);
-  assert(size_t(offs) == cells);
-
-  argv[argc - 1] = ctx->hp;
-  ctx->hp = new_hp;
-  return SP_ERROR_NONE;
-}
-
 #if !defined NDEBUG
 static const char *
 GetFunctionName(const sp_plugin_t *plugin, uint32_t offs)
@@ -408,6 +286,12 @@ static cell_t
 InvokeBoundNativeHelper(PluginContext *cx, SPVM_NATIVE_FUNC fn, cell_t *params)
 {
   return cx->invokeBoundNative(fn, params);
+}
+
+static int
+InvokeGenerateFullArray(PluginContext *cx, uint32_t argc, cell_t *argv, int autozero)
+{
+  return cx->generateFullArray(argc, argv, autozero);
 }
 
 bool
@@ -1458,8 +1342,8 @@ Compiler::emitGenArray(bool autozero)
     __ push(autozero ? 1 : 0);
     __ push(stk);
     __ push(val);
-    __ push(intptr_t(rt_));
-    __ call(ExternalAddress((void *)GenerateFullArray));
+    __ push(intptr_t(context_));
+    __ call(ExternalAddress((void *)InvokeGenerateFullArray));
     __ addl(esp, 4 * sizeof(void *));
 
     // restore pri to tmp

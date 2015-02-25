@@ -119,12 +119,18 @@ class PluginContext : public IPluginContext
   cell_t *addressOfFrm() {
     return &frm_;
   }
+  cell_t *addressOfHp() {
+    return &hp_;
+  }
 
   int32_t cip() const {
     return cip_;
   }
   cell_t frm() const {
     return frm_;
+  }
+  cell_t hp() const {
+    return hp_;
   }
 
   // Return stack logic.
@@ -149,10 +155,25 @@ class PluginContext : public IPluginContext
   int popTrackerAndSetHeap();
   int pushTracker(uint32_t amount);
 
+  int generateArray(cell_t dims, cell_t *stk, bool autozero);
+  int generateFullArray(uint32_t argc, cell_t *argv, int autozero);
   cell_t invokeNative(ucell_t native_idx, cell_t *params);
   cell_t invokeBoundNative(SPVM_NATIVE_FUNC pfn, cell_t *params);
   int lastNative() const {
     return last_native_;
+  }
+
+  inline bool checkAddress(cell_t *stk, cell_t addr) {
+    if (uint32_t(addr) >= m_pRuntime->plugin()->mem_size)
+      return false;
+
+    if (addr < hp_)
+      return true;
+
+    if (reinterpret_cast<cell_t *>(m_pRuntime->plugin()->memory + addr) < stk)
+      return false;
+
+    return true;
   }
 
  private:
@@ -184,8 +205,9 @@ class PluginContext : public IPluginContext
   // Most recent CIP.
   int32_t cip_;
 
-  // Stack and frame pointer.
+  // Stack, heap, and frame pointer.
   cell_t sp_;
+  cell_t hp_;
   cell_t frm_;
 };
 

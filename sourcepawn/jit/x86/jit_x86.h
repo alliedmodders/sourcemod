@@ -94,8 +94,7 @@ class Compiler
     return ExternalAddress(context_->addressOfCip());
   }
   ExternalAddress hpAddr() {
-    sp_context_t *ctx = rt_->GetBaseContext()->GetCtx();
-    return ExternalAddress(&ctx->hp);
+    return ExternalAddress(context_->addressOfHp());
   }
   ExternalAddress frmAddr() {
     return ExternalAddress(context_->addressOfFrm());

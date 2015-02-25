@@ -51,7 +51,7 @@ PluginContext::PluginContext(PluginRuntime *pRuntime)
     m_pNullString = NULL;
   }
 
-  m_ctx.hp = m_pRuntime->plugin()->data_size;
+  hp_ = m_pRuntime->plugin()->data_size;
   sp_ = m_pRuntime->plugin()->mem_size - sizeof(cell_t);
   frm_ = sp_;
   rp_ = 0;
@@ -185,21 +185,21 @@ PluginContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys_a
   /**
    * Check if the space between the heap and stack is sufficient.
    */
-  if ((cell_t)(sp_ - m_ctx.hp - realmem) < STACKMARGIN)
+  if ((cell_t)(sp_ - hp_ - realmem) < STACKMARGIN)
     return SP_ERROR_HEAPLOW;
 
-  addr = (cell_t *)(m_pRuntime->plugin()->memory + m_ctx.hp);
+  addr = (cell_t *)(m_pRuntime->plugin()->memory + hp_);
   /* store size of allocation in cells */
   *addr = (cell_t)cells;
   addr++;
-  m_ctx.hp += sizeof(cell_t);
+  hp_ += sizeof(cell_t);
 
-  *local_addr = m_ctx.hp;
+  *local_addr = hp_;
 
   if (phys_addr)
     *phys_addr = addr;
 
-  m_ctx.hp += realmem;
+  hp_ += realmem;
 
   return SP_ERROR_NONE;
 }
@@ -218,10 +218,10 @@ PluginContext::HeapPop(cell_t local_addr)
   addr = (cell_t *)(m_pRuntime->plugin()->memory + local_addr);
   cellcount = (*addr) * sizeof(cell_t);
   /* check if this memory count looks valid */
-  if ((signed)(m_ctx.hp - cellcount - sizeof(cell_t)) != local_addr)
+  if ((signed)(hp_ - cellcount - sizeof(cell_t)) != local_addr)
     return SP_ERROR_INVALID_ADDRESS;
 
-  m_ctx.hp = local_addr;
+  hp_ = local_addr;
 
   return SP_ERROR_NONE;
 }
@@ -233,7 +233,7 @@ PluginContext::HeapRelease(cell_t local_addr)
   if (local_addr < (cell_t)m_pRuntime->plugin()->data_size)
     return SP_ERROR_INVALID_ADDRESS;
 
-  m_ctx.hp = local_addr - sizeof(cell_t);
+  hp_ = local_addr - sizeof(cell_t);
 
   return SP_ERROR_NONE;
 }
@@ -325,7 +325,7 @@ PluginContext::BindNativeToAny(SPVM_NATIVE_FUNC native)
 int
 PluginContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
 {
-  if (((local_addr >= m_ctx.hp) && (local_addr < sp_)) ||
+  if (((local_addr >= hp_) && (local_addr < sp_)) ||
       (local_addr < 0) || ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
   {
     return SP_ERROR_INVALID_ADDRESS;
@@ -358,7 +358,7 @@ PluginContext::PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t arra
 int
 PluginContext::LocalToString(cell_t local_addr, char **addr)
 {
-  if (((local_addr >= m_ctx.hp) && (local_addr < sp_)) ||
+  if (((local_addr >= hp_) && (local_addr < sp_)) ||
       (local_addr < 0) || ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
   {
     return SP_ERROR_INVALID_ADDRESS;
@@ -380,7 +380,7 @@ PluginContext::StringToLocal(cell_t local_addr, size_t bytes, const char *source
   char *dest;
   size_t len;
 
-  if (((local_addr >= m_ctx.hp) && (local_addr < sp_)) ||
+  if (((local_addr >= hp_) && (local_addr < sp_)) ||
       (local_addr < 0) || ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
   {
     return SP_ERROR_INVALID_ADDRESS;
@@ -443,7 +443,7 @@ PluginContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const char 
   size_t len;
   bool needtocheck = false;
 
-  if (((local_addr >= m_ctx.hp) && (local_addr < sp_)) ||
+  if (((local_addr >= hp_) && (local_addr < sp_)) ||
       (local_addr < 0) ||
       ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
   {
@@ -548,7 +548,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
   if (m_pRuntime->IsPaused())
     return SP_ERROR_NOT_RUNNABLE;
 
-  if ((cell_t)(m_ctx.hp + 16*sizeof(cell_t)) > (cell_t)(sp_ - (sizeof(cell_t) * (num_params + 1))))
+  if ((cell_t)(hp_ + 16*sizeof(cell_t)) > (cell_t)(sp_ - (sizeof(cell_t) * (num_params + 1))))
     return SP_ERROR_STACKLOW;
 
   if (result == NULL)
@@ -579,7 +579,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
   cell_t save_sp, save_hp, save_rp, save_cip;
 
   save_sp = sp_;
-  save_hp = m_ctx.hp;
+  save_hp = hp_;
   save_exec = m_InExec;
   save_n_idx = last_native_;
   save_rp = rp_;
@@ -620,10 +620,10 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
         sp_, 
         save_sp);
     }
-    if (m_ctx.hp != save_hp) {
+    if (hp_ != save_hp) {
       ir = SP_ERROR_HEAPLEAK;
       _SetErrorMessage("Heap leak detected: hp:%d should be %d!", 
-        m_ctx.hp, 
+        hp_, 
         save_hp);
     }
     if (rp_ != save_rp) {
@@ -641,7 +641,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
     Environment::get()->ReportError(m_pRuntime, ir, m_MsgCache, save_rp);
 
   sp_ = save_sp;
-  m_ctx.hp = save_hp;
+  hp_ = save_hp;
   rp_ = save_rp;
   
   cip_ = save_cip;
@@ -823,10 +823,10 @@ PluginContext::popTrackerAndSetHeap()
     return SP_ERROR_TRACKER_BOUNDS;
 
   ucell_t amt = *tracker_.pCur;
-  if (amt > (m_ctx.hp - m_pRuntime->plugin()->data_size))
+  if (amt > (hp_ - m_pRuntime->plugin()->data_size))
     return SP_ERROR_HEAPMIN;
 
-  m_ctx.hp -= amt;
+  hp_ -= amt;
   return SP_ERROR_NONE;
 }
 
@@ -855,7 +855,7 @@ cell_t
 PluginContext::invokeNative(ucell_t native_idx, cell_t *params)
 {
   cell_t save_sp = sp_;
-  cell_t save_hp = m_ctx.hp;
+  cell_t save_hp = hp_;
 
   // Note: Invoke() saves the last native, so we don't need to here.
   last_native_ = native_idx;
@@ -876,7 +876,7 @@ PluginContext::invokeNative(ucell_t native_idx, cell_t *params)
     native_error_ = SP_ERROR_STACKLEAK;
     return result;
   }
-  if (save_hp != m_ctx.hp) {
+  if (save_hp != hp_) {
     native_error_ = SP_ERROR_HEAPLEAK;
     return result;
   }
@@ -888,7 +888,7 @@ cell_t
 PluginContext::invokeBoundNative(SPVM_NATIVE_FUNC pfn, cell_t *params)
 {
   cell_t save_sp = sp_;
-  cell_t save_hp = m_ctx.hp;
+  cell_t save_hp = hp_;
 
   cell_t result = pfn(this, params);
 
@@ -899,10 +899,161 @@ PluginContext::invokeBoundNative(SPVM_NATIVE_FUNC pfn, cell_t *params)
     native_error_ = SP_ERROR_STACKLEAK;
     return result;
   }
-  if (save_hp != m_ctx.hp) {
+  if (save_hp != hp_) {
     native_error_ = SP_ERROR_HEAPLEAK;
     return result;
   }
 
   return result;
 }
+
+struct array_creation_t
+{
+  const cell_t *dim_list;     /* Dimension sizes */
+  cell_t dim_count;           /* Number of dimensions */
+  cell_t *data_offs;          /* Current offset AFTER the indirection vectors (data) */
+  cell_t *base;               /* array base */
+};
+
+static cell_t
+GenerateInnerArrayIndirectionVectors(array_creation_t *ar, int dim, cell_t cur_offs)
+{
+  cell_t write_offs = cur_offs;
+  cell_t *data_offs = ar->data_offs;
+
+  cur_offs += ar->dim_list[dim];
+
+  // Dimension n-x where x > 2 will have sub-vectors.  
+  // Otherwise, we just need to reference the data section.
+  if (ar->dim_count > 2 && dim < ar->dim_count - 2) {
+    // For each index at this dimension, write offstes to our sub-vectors.
+    // After we write one sub-vector, we generate its sub-vectors recursively.
+    // At the end, we're given the next offset we can use.
+    for (int i = 0; i < ar->dim_list[dim]; i++) {
+      ar->base[write_offs] = (cur_offs - write_offs) * sizeof(cell_t);
+      write_offs++;
+      cur_offs = GenerateInnerArrayIndirectionVectors(ar, dim + 1, cur_offs);
+    }
+  } else {
+    // In this section, there are no sub-vectors, we need to write offsets 
+    // to the data.  This is separate so the data stays in one big chunk.
+    // The data offset will increment by the size of the last dimension, 
+    // because that is where the data is finally computed as. 
+    for (int i = 0; i < ar->dim_list[dim]; i++) {
+      ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell_t);
+      write_offs++;
+      *data_offs = *data_offs + ar->dim_list[dim + 1];
+    }
+  }
+
+  return cur_offs;
+}
+
+static cell_t
+calc_indirection(const array_creation_t *ar, cell_t dim)
+{
+  cell_t size = ar->dim_list[dim];
+  if (dim < ar->dim_count - 2)
+    size += ar->dim_list[dim] * calc_indirection(ar, dim + 1);
+  return size;
+}
+
+static cell_t
+GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], cell_t _dimcount, bool autozero)
+{
+  array_creation_t ar;
+  cell_t data_offs;
+
+  /* Reverse the dimensions */
+  cell_t dim_list[sDIMEN_MAX];
+  int cur_dim = 0;
+  for (int i = _dimcount - 1; i >= 0; i--)
+    dim_list[cur_dim++] = dims[i];
+  
+  ar.base = arraybase;
+  ar.dim_list = dim_list;
+  ar.dim_count = _dimcount;
+  ar.data_offs = &data_offs;
+
+  data_offs = calc_indirection(&ar, 0);
+  GenerateInnerArrayIndirectionVectors(&ar, 0, 0);
+  return data_offs;
+}
+
+int
+PluginContext::generateFullArray(uint32_t argc, cell_t *argv, int autozero)
+{
+  // Calculate how many cells are needed.
+  if (argv[0] <= 0)
+    return SP_ERROR_ARRAY_TOO_BIG;
+
+  uint32_t cells = argv[0];
+
+  for (uint32_t dim = 1; dim < argc; dim++) {
+    cell_t dimsize = argv[dim];
+    if (dimsize <= 0)
+      return SP_ERROR_ARRAY_TOO_BIG;
+    if (!ke::IsUint32MultiplySafe(cells, dimsize))
+      return SP_ERROR_ARRAY_TOO_BIG;
+    cells *= uint32_t(dimsize);
+    if (!ke::IsUint32AddSafe(cells, dimsize))
+      return SP_ERROR_ARRAY_TOO_BIG;
+    cells += uint32_t(dimsize);
+  }
+
+  if (!ke::IsUint32MultiplySafe(cells, 4))
+    return SP_ERROR_ARRAY_TOO_BIG;
+
+  uint32_t bytes = cells * 4;
+  if (!ke::IsUint32AddSafe(hp_, bytes))
+    return SP_ERROR_ARRAY_TOO_BIG;
+
+  uint32_t new_hp = hp_ + bytes;
+  cell_t *dat_hp = reinterpret_cast<cell_t *>(m_pRuntime->plugin()->memory + new_hp);
+
+  // argv, coincidentally, is STK.
+  if (dat_hp >= argv - STACK_MARGIN)
+    return SP_ERROR_HEAPLOW;
+
+  if (int err = pushTracker(bytes))
+    return err;
+
+  cell_t *base = reinterpret_cast<cell_t *>(m_pRuntime->plugin()->memory + hp_);
+  cell_t offs = GenerateArrayIndirectionVectors(base, argv, argc, !!autozero);
+  assert(size_t(offs) == cells);
+
+  argv[argc - 1] = hp_;
+  hp_ = new_hp;
+  return SP_ERROR_NONE;
+}
+
+int
+PluginContext::generateArray(cell_t dims, cell_t *stk, bool autozero)
+{
+  if (dims == 1) {
+    uint32_t size = *stk;
+    if (size == 0 || !ke::IsUint32MultiplySafe(size, 4))
+      return SP_ERROR_ARRAY_TOO_BIG;
+    *stk = hp_;
+
+    uint32_t bytes = size * 4;
+
+    hp_ += bytes;
+    if (uintptr_t(m_pRuntime->plugin()->memory + hp_) >= uintptr_t(stk))
+      return SP_ERROR_HEAPLOW;
+
+    if (int err = pushTracker(bytes))
+      return err;
+
+    if (autozero)
+      memset(m_pRuntime->plugin()->memory + hp_, 0, bytes);
+
+    return SP_ERROR_NONE;
+  }
+
+  if (int err = generateFullArray(dims, stk, autozero))
+    return err;
+
+  return SP_ERROR_NONE;
+}
+
