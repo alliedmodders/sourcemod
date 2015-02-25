@@ -66,7 +66,7 @@ CContextTrace::GetTraceInfo(CallStackInfo *trace)
   cell_t cip;
 
   if (m_Level == 0) {
-    cip = m_ctx->cip;
+    cip = context_->cip();
   } else if (context_->rp() > 0) {
     /* Entries go from ctx.rp - 1 to m_StartRp */
     cell_t offs, start, end;

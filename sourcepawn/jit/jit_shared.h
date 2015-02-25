@@ -76,7 +76,6 @@ typedef struct sp_context_s
 	cell_t			sp;				/**< Stack pointer */
 	cell_t			frm;			/**< Frame pointer */
 	cell_t			rval;			/**< Return value from InvokeFunction() */
-	int32_t			cip;			/**< Code pointer last error occurred in */
 	sp_plugin_t     *plugin;
 	PluginContext   *basecx;
 } sp_context_t;

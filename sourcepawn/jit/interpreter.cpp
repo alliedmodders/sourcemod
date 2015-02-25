@@ -777,7 +777,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       }
 
       case OP_BREAK:
-        ctx->cip = uintptr_t(cip - 1) - uintptr_t(plugin->pcode);
+        *cx->addressOfCip() = uintptr_t(cip - 1) - uintptr_t(plugin->pcode);
         break;
 
       case OP_BOUNDS:
@@ -805,13 +805,13 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
           err = SP_ERROR_STACKLOW;
           goto error;
         }
-        ctx->cip = offset;
+        *cx->addressOfCip() = offset;
         ctx->sp = uintptr_t(stk) - uintptr_t(plugin->memory);
 
         int err = Interpret(rt, offset, &pri);
 
         stk = reinterpret_cast<cell_t *>(plugin->memory + ctx->sp);
-        ctx->cip = rcip;
+        *cx->addressOfCip() = rcip;
         cx->popReturnCip();
 
         if (err != SP_ERROR_NONE)

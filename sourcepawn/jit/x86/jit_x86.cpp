@@ -303,6 +303,7 @@ CompileFromThunk(PluginRuntime *runtime, cell_t pcode_offs, void **addrp, char *
 Compiler::Compiler(PluginRuntime *rt, cell_t pcode_offs)
   : env_(Environment::get()),
     rt_(rt),
+    context_(rt->GetBaseContext()),
     plugin_(rt->plugin()),
     error_(SP_ERROR_NONE),
     pcode_start_(pcode_offs),

@@ -104,6 +104,13 @@ class PluginContext : public IPluginContext
     return offsetof(PluginContext, native_error_);
   }
 
+  int32_t *addressOfCip() {
+    return &cip_;
+  }
+  int32_t cip() const {
+    return cip_;
+  }
+
   // Return stack logic.
   bool pushReturnCip(cell_t cip) {
     if (rp_ >= SP_MAX_RETURN_STACK)
@@ -157,6 +164,9 @@ class PluginContext : public IPluginContext
   // Track the currently executing native index, and any error it throws.
   int32_t last_native_;
   int native_error_;
+
+  // Most recent CIP.
+  int32_t cip_;
 };
 
 #endif //_INCLUDE_SOURCEPAWN_BASECONTEXT_H_

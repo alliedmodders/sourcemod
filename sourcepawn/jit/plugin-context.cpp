@@ -583,7 +583,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
   save_exec = m_InExec;
   save_n_idx = last_native_;
   save_rp = rp_;
-  save_cip = m_ctx.cip;
+  save_cip = cip_;
 
   /* Push parameters */
 
@@ -644,7 +644,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
   m_ctx.hp = save_hp;
   rp_ = save_rp;
   
-  m_ctx.cip = save_cip;
+  cip_ = save_cip;
   last_native_ = save_n_idx;
   native_error_ = SP_ERROR_NONE;
   m_MsgCache[0] = '\0';
