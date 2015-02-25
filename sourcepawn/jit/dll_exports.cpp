@@ -173,12 +173,7 @@ static void BindNative(IPluginRuntime *rt, const char *name, SPVM_NATIVE_FUNC fn
 	if ((err = rt->FindNativeByName(name, &index)) != SP_ERROR_NONE)
 		return;
 
-	sp_native_t *native;
-	if (rt->GetNativeByIndex(index, &native) != SP_ERROR_NONE)
-		return;
-
-	native->pfn = fn;
-	native->status = SP_NATIVE_BOUND;
+	rt->UpdateNativeBinding(index, fn, 0, nullptr);
 }
 
 static cell_t PrintFloat(IPluginContext *cx, const cell_t *params)

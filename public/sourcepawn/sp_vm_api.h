@@ -22,8 +22,8 @@
 #include "sp_vm_types.h"
 
 /** SourcePawn Engine API Versions */
-#define SOURCEPAWN_ENGINE2_API_VERSION 7
-#define SOURCEPAWN_API_VERSION         0x0207
+#define SOURCEPAWN_ENGINE2_API_VERSION 8
+#define SOURCEPAWN_API_VERSION         0x0208
 
 namespace SourceMod {
 	struct IdentityToken_t;
@@ -305,10 +305,11 @@ namespace SourcePawn
 		virtual int FindNativeByName(const char *name, uint32_t *index) =0;
 
 		/**
-		 * @brief Gets native info by index.
+		 * @brief Deprecated, does nothing.
 		 *
-		 * @param index			Index number of native.
-		 * @param native		Optionally filled with pointer to native structure.
+		 * @param index			Unused.
+		 * @param native		Unused.
+                 * @return                      Returns SP_ERROR_PARAM.
 		 */
 		virtual int GetNativeByIndex(uint32_t index, sp_native_t **native) =0;
 
@@ -446,6 +447,23 @@ namespace SourcePawn
 		 * @return				16-byte buffer with MD5 hash of the plugin's Data.
 		 */
 		virtual unsigned char *GetDataHash() =0;
+
+                /**
+                 * @brief Update the native binding at the given index.
+                 *
+                 * @param pfn       Native function pointer.
+                 * @param flags     Native flags.
+                 * @param user      User data pointer.
+                 */
+		virtual int UpdateNativeBinding(uint32_t index, SPVM_NATIVE_FUNC pfn, uint32_t flags, void *data) = 0;
+
+		/**
+		 * @brief Returns the native at the given index.
+		 *
+		 * @param index     Native index.
+		 * @return	    Native pointer, or NULL on failure.
+		 */
+		virtual const sp_native_t *GetNative(uint32_t index) = 0;
 	};
 
 	/**
@@ -537,10 +555,11 @@ namespace SourcePawn
 		virtual int FindNativeByName(const char *name, uint32_t *index) =0;
 
 		/**
-		 * @brief Deprecated, use IPluginRuntime instead.
+		 * @brief Deprecated, does nothing.
 		 *
-		 * @param index			Index number of native.
-		 * @param native		Optionally filled with pointer to native structure.
+		 * @param index			Unused.
+		 * @param native		Unused.
+                 * @return                      Returns SP_ERROR_PARAM.
 		 */
 		virtual int GetNativeByIndex(uint32_t index, sp_native_t **native) =0;
 
