@@ -36,7 +36,6 @@
 #include "plugin-runtime.h"
 #include "plugin-context.h"
 #include "watchdog_timer.h"
-#include "interpreter.h"
 #include "environment.h"
 #include "code-stubs.h"
 #include "x86-utils.h"

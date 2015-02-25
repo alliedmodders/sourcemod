@@ -42,7 +42,6 @@ library.sources += [
   'environment.cpp',
   'scripted-invoker.cpp',
   'opcodes.cpp',
-  'interpreter.cpp',
   'watchdog_timer.cpp',
   'x86/code-stubs-x86.cpp',
   'x86/jit_x86.cpp',
