@@ -53,7 +53,7 @@ PluginContext::PluginContext(PluginRuntime *pRuntime)
 
   m_ctx.hp = m_pRuntime->plugin()->data_size;
   m_ctx.sp = m_pRuntime->plugin()->mem_size - sizeof(cell_t);
-  m_ctx.frm = m_ctx.sp;
+  frm_ = m_ctx.sp;
   rp_ = 0;
   last_native_ = -1;
   native_error_ = SP_ERROR_NONE;
@@ -784,7 +784,7 @@ PluginContext::GetLastNativeError()
 cell_t *
 PluginContext::GetLocalParams()
 {
-  return (cell_t *)(m_pRuntime->plugin()->memory + m_ctx.frm + (2 * sizeof(cell_t)));
+  return (cell_t *)(m_pRuntime->plugin()->memory + frm_ + (2 * sizeof(cell_t)));
 }
 
 void

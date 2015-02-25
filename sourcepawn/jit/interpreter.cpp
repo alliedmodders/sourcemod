@@ -135,12 +135,14 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 
   // Save the original frm. BaseContext won't, and if we error, we won't hit
   // the stack unwinding code.
-  cell_t orig_frm = ctx->frm;
+  cell_t orig_frm = cx->frm();
 
   cell_t pri = 0;
   cell_t alt = 0;
   cell_t *cip = code + (aCodeStart / 4);
   cell_t *stk = reinterpret_cast<cell_t *>(plugin->memory + ctx->sp);
+
+  cell_t &frm = *cx->addressOfFrm();
 
   for (;;) {
     if (cip >= codeend) {
@@ -175,7 +177,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
         break;
 
       case OP_ZERO_S:
-        Write(plugin, ctx->frm + *cip++, 0);
+        Write(plugin, frm + *cip++, 0);
         break;
 
       case OP_PUSH_PRI:
@@ -215,7 +217,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
         int i = 1;
 
         do {
-          cell_t addr = ctx->frm + *cip++;
+          cell_t addr = frm + *cip++;
           *--stk = addr;
         } while (i++ < n);
         break;
@@ -233,7 +235,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 
         int i = 1;
         do {
-          cell_t value = Read(plugin, ctx->frm + *cip++);
+          cell_t value = Read(plugin, frm + *cip++);
           *--stk = value;
         } while (i++ < n);
         break;
@@ -278,9 +280,9 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 
       case OP_PROC:
       {
-        *--stk = ctx->frm;
+        *--stk = frm;
         *--stk = 0;
-        ctx->frm = uintptr_t(stk) - uintptr_t(plugin->memory);
+        frm = uintptr_t(stk) - uintptr_t(plugin->memory);
         break;
       }
 
@@ -399,8 +401,8 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       case OP_INC_S:
       {
         cell_t offset = *cip++;
-        cell_t value = Read(plugin, ctx->frm + offset);
-        Write(plugin, ctx->frm + offset, value + 1);
+        cell_t value = Read(plugin, frm + offset);
+        Write(plugin, frm + offset, value + 1);
         break;
       }
 
@@ -429,8 +431,8 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       case OP_DEC_S:
       {
         cell_t offset = *cip++;
-        cell_t value = Read(plugin, ctx->frm + offset);
-        Write(plugin, ctx->frm + offset, value - 1);
+        cell_t value = Read(plugin, frm + offset);
+        Write(plugin, frm + offset, value - 1);
         break;
       }
 
@@ -450,27 +452,27 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
         break;
 
       case OP_LOAD_S_PRI:
-        pri = Read(plugin, ctx->frm + *cip++);
+        pri = Read(plugin, frm + *cip++);
         break;
       case OP_LOAD_S_ALT:
-        alt = Read(plugin, ctx->frm + *cip++);
+        alt = Read(plugin, frm + *cip++);
         break;
 
       case OP_LOAD_S_BOTH:
-        pri = Read(plugin, ctx->frm + *cip++);
-        alt = Read(plugin, ctx->frm + *cip++);
+        pri = Read(plugin, frm + *cip++);
+        alt = Read(plugin, frm + *cip++);
         break;
 
       case OP_LREF_S_PRI:
       {
-        pri = Read(plugin, ctx->frm + *cip++);
+        pri = Read(plugin, frm + *cip++);
         pri = Read(plugin, pri);
         break;
       }
 
       case OP_LREF_S_ALT:
       {
-        alt = Read(plugin, ctx->frm + *cip++);
+        alt = Read(plugin, frm + *cip++);
         alt = Read(plugin, alt);
         break;
       }
@@ -483,10 +485,10 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
         break;
 
       case OP_ADDR_PRI:
-        pri = ctx->frm + *cip++;
+        pri = frm + *cip++;
         break;
       case OP_ADDR_ALT:
-        alt = ctx->frm + *cip++;
+        alt = frm + *cip++;
         break;
 
       case OP_STOR_PRI:
@@ -497,10 +499,10 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
         break;
 
       case OP_STOR_S_PRI:
-        Write(plugin, ctx->frm + *cip++, pri);
+        Write(plugin, frm + *cip++, pri);
         break;
       case OP_STOR_S_ALT:
-        Write(plugin, ctx->frm +*cip++, alt);
+        Write(plugin, frm +*cip++, alt);
         break;
 
       case OP_IDXADDR:
@@ -510,7 +512,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       case OP_SREF_S_PRI:
       {
         cell_t offset = *cip++;
-        cell_t addr = Read(plugin, ctx->frm + offset);
+        cell_t addr = Read(plugin, frm + offset);
         Write(plugin, addr, pri);
         break;
       }
@@ -518,7 +520,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       case OP_SREF_S_ALT:
       {
         cell_t offset = *cip++;
-        cell_t addr = Read(plugin, ctx->frm + offset);
+        cell_t addr = Read(plugin, frm + offset);
         Write(plugin, addr, alt);
         break;
       }
@@ -573,7 +575,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       {
         cell_t offset = *cip++;
         cell_t value = *cip++;
-        Write(plugin, ctx->frm + offset, value);
+        Write(plugin, frm + offset, value);
         break;
       }
 
@@ -645,7 +647,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       case OP_RETN:
       {
         stk++;
-        ctx->frm = *stk++;
+        frm = *stk++;
         stk += *stk + 1;
         *rval = pri;
         err = SP_ERROR_NONE;
@@ -889,12 +891,12 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
   }
 
  done:
-  assert(orig_frm == ctx->frm);
+  assert(orig_frm == frm);
   ctx->sp = uintptr_t(stk) - uintptr_t(plugin->memory);
   return err;
 
  error:
-  ctx->frm = orig_frm;
+  frm = orig_frm;
   goto done;
 }
 

@@ -107,8 +107,15 @@ class PluginContext : public IPluginContext
   int32_t *addressOfCip() {
     return &cip_;
   }
+  cell_t *addressOfFrm() {
+    return &frm_;
+  }
+
   int32_t cip() const {
     return cip_;
+  }
+  cell_t frm() const {
+    return frm_;
   }
 
   // Return stack logic.
@@ -167,6 +174,9 @@ class PluginContext : public IPluginContext
 
   // Most recent CIP.
   int32_t cip_;
+
+  // Frame pointer.
+  cell_t frm_;
 };
 
 #endif //_INCLUDE_SOURCEPAWN_BASECONTEXT_H_
