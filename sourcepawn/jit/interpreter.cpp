@@ -47,29 +47,26 @@ Write(const sp_plugin_t *plugin, cell_t offset, cell_t value)
 static inline cell_t *
 Jump(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t target)
 {
-  if (!IsValidOffset(target) || uint32_t(target) >= plugin->pcode_size) {
-    ctx->err = SP_ERROR_INVALID_INSTRUCTION;
+  if (!IsValidOffset(target) || uint32_t(target) >= plugin->pcode_size)
     return NULL;
-  }
-
   return reinterpret_cast<cell_t *>(plugin->pcode + target);
 }
 
 static inline cell_t *
-JumpTarget(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t *cip, bool cond)
+JumpTarget(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t *cip, bool cond, int *errp)
 {
   if (!cond)
     return cip + 1;
 
   cell_t target = *cip;
   if (!IsValidOffset(target) || uint32_t(target) >= plugin->pcode_size) {
-    ctx->err = SP_ERROR_INVALID_INSTRUCTION;
+    *errp = SP_ERROR_INVALID_INSTRUCTION;
     return NULL;
   }
 
   cell_t *next = reinterpret_cast<cell_t *>(plugin->pcode + target);
   if (next < cip && !Environment::get()->watchdog()->HandleInterrupt()) {
-    ctx->err = SP_ERROR_TIMEOUT;
+    *errp = SP_ERROR_TIMEOUT;
     return NULL;
   }
 
@@ -79,54 +76,46 @@ JumpTarget(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t *cip, bool cond)
 static inline bool
 CheckAddress(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t *stk, cell_t addr)
 {
-  if (uint32_t(addr) >= plugin->mem_size) {
-    ctx->err = SP_ERROR_MEMACCESS;
+  if (uint32_t(addr) >= plugin->mem_size)
     return false;
-  }
 
   if (addr < ctx->hp)
     return true;
 
-  if (reinterpret_cast<cell_t *>(plugin->memory + addr) < stk) {
-    ctx->err = SP_ERROR_MEMACCESS;
+  if (reinterpret_cast<cell_t *>(plugin->memory + addr) < stk)
     return false;
-  }
 
   return true;
 }
 
-static inline bool
+static inline int
 GenerateArray(PluginRuntime *rt, sp_context_t *ctx, cell_t dims, cell_t *stk, bool autozero)
 {
   if (dims == 1) {
     uint32_t size = *stk;
-    if (size == 0 || !ke::IsUint32MultiplySafe(size, 4)) {
-      ctx->err = SP_ERROR_ARRAY_TOO_BIG;
-      return false;
-    }
+    if (size == 0 || !ke::IsUint32MultiplySafe(size, 4))
+      return SP_ERROR_ARRAY_TOO_BIG;
     *stk = ctx->hp;
 
     uint32_t bytes = size * 4;
 
     ctx->hp += bytes;
-    if (uintptr_t(ctx->plugin->memory + ctx->hp) >= uintptr_t(stk)) {
-      ctx->err = SP_ERROR_HEAPLOW;
-      return false;
-    }
+    if (uintptr_t(ctx->plugin->memory + ctx->hp) >= uintptr_t(stk))
+      return SP_ERROR_HEAPLOW;
 
-    if ((ctx->err = rt->GetBaseContext()->pushTracker(bytes)) != SP_ERROR_NONE)
-      return false;
+    if (int err = rt->GetBaseContext()->pushTracker(bytes))
+      return err;
 
     if (autozero)
       memset(ctx->plugin->memory + ctx->hp, 0, bytes);
 
-    return true;
+    return SP_ERROR_NONE;
   }
 
-  if ((ctx->err = GenerateFullArray(rt, dims, stk, autozero)) != SP_ERROR_NONE)
-    return false;
+  if (int err = GenerateFullArray(rt, dims, stk, autozero))
+    return err;
 
-  return true;
+  return SP_ERROR_NONE;
 }
 
 int
@@ -141,7 +130,8 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 
   PluginContext *cx = rt->GetBaseContext();
   sp_context_t *ctx = cx->GetCtx();
-  ctx->err = SP_ERROR_NONE;
+
+  int err = SP_ERROR_NONE;
 
   // Save the original frm. BaseContext won't, and if we error, we won't hit
   // the stack unwinding code.
@@ -154,7 +144,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 
   for (;;) {
     if (cip >= codeend) {
-      ctx->err = SP_ERROR_INVALID_INSTRUCTION;
+      err = SP_ERROR_INVALID_INSTRUCTION;
       goto error;
     }
 
@@ -415,8 +405,10 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       }
 
       case OP_INC_I:
-        if (!CheckAddress(plugin, ctx, stk, pri))
+        if (!CheckAddress(plugin, ctx, stk, pri)) {
+          err = SP_ERROR_MEMACCESS;
           goto error;
+        }
         Write(plugin, pri, Read(plugin, pri) + 1);
         break;
 
@@ -443,8 +435,10 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       }
 
       case OP_DEC_I:
-        if (!CheckAddress(plugin, ctx, stk, pri))
+        if (!CheckAddress(plugin, ctx, stk, pri)) {
+          err = SP_ERROR_MEMACCESS;
           goto error;
+        }
         Write(plugin, pri, Read(plugin, pri) - 1);
         break;
 
@@ -548,8 +542,10 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 
       case OP_LIDX:
         pri = alt + pri * 4;
-        if (!CheckAddress(plugin, ctx, stk, pri))
+        if (!CheckAddress(plugin, ctx, stk, pri)) {
+          err = SP_ERROR_MEMACCESS;
           goto error;
+        }
         pri = Read(plugin, pri);
         break;
 
@@ -557,8 +553,10 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       {
         cell_t val = *cip++;
         pri = alt + (pri << val);
-        if (!CheckAddress(plugin, ctx, stk, pri))
+        if (!CheckAddress(plugin, ctx, stk, pri)) {
+          err = SP_ERROR_MEMACCESS;
           goto error;
+        }
         pri = Read(plugin, pri);
         break;
       }
@@ -580,14 +578,18 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       }
 
       case OP_LOAD_I:
-        if (!CheckAddress(plugin, ctx, stk, pri))
+        if (!CheckAddress(plugin, ctx, stk, pri)) {
+          err = SP_ERROR_MEMACCESS;
           goto error;
+        }
         pri = Read(plugin, pri);
         break;
 
       case OP_STOR_I:
-        if (!CheckAddress(plugin, ctx, stk, alt))
+        if (!CheckAddress(plugin, ctx, stk, alt)) {
+          err = SP_ERROR_MEMACCESS;
           goto error;
+        }
         Write(plugin, alt, pri);
         break;
 
@@ -597,11 +599,11 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
         cell_t dividend = (op == OP_SDIV) ? pri : alt;
         cell_t divisor = (op == OP_SDIV) ? alt : pri;
         if (divisor == 0) {
-          ctx->err = SP_ERROR_DIVIDE_BY_ZERO;
+          err = SP_ERROR_DIVIDE_BY_ZERO;
           goto error;
         }
         if (dividend == INT_MIN && divisor == -1) {
-          ctx->err = SP_ERROR_INTEGER_OVERFLOW;
+          err = SP_ERROR_INTEGER_OVERFLOW;
           goto error;
         }
         pri = dividend / divisor;
@@ -612,8 +614,10 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       case OP_LODB_I:
       {
         cell_t val = *cip++;
-        if (!CheckAddress(plugin, ctx, stk, pri))
+        if (!CheckAddress(plugin, ctx, stk, pri)) {
+          err = SP_ERROR_MEMACCESS;
           goto error;
+        }
         pri = Read(plugin, pri);
         if (val == 1)
           pri &= 0xff;
@@ -625,8 +629,10 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       case OP_STRB_I:
       {
         cell_t val = *cip++;
-        if (!CheckAddress(plugin, ctx, stk, alt))
+        if (!CheckAddress(plugin, ctx, stk, alt)) {
+          err = SP_ERROR_MEMACCESS;
           goto error;
+        }
         if (val == 1)
           *reinterpret_cast<int8_t *>(plugin->memory + alt) = pri;
         else if (val == 2)
@@ -642,7 +648,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
         ctx->frm = *stk++;
         stk += *stk + 1;
         *rval = pri;
-        ctx->err = SP_ERROR_NONE;
+        err = SP_ERROR_NONE;
         goto done;
       }
 
@@ -670,19 +676,19 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       {
         cell_t amount = *cip++;
         if (!IsValidOffset(amount)) {
-          ctx->err = SP_ERROR_INVALID_INSTRUCTION;
+          err = SP_ERROR_INVALID_INSTRUCTION;
           goto error;
         }
 
         stk += amount / 4;
         if (amount > 0) {
           if (uintptr_t(stk) >= uintptr_t(plugin->memory + plugin->mem_size)) {
-            ctx->err = SP_ERROR_STACKMIN;
+            err = SP_ERROR_STACKMIN;
             goto error;
           }
         } else {
           if (uintptr_t(stk) < uintptr_t(plugin->memory + ctx->hp + STACK_MARGIN)) {
-            ctx->err = SP_ERROR_STACKLOW;
+            err = SP_ERROR_STACKLOW;
             goto error;
           }
         }
@@ -698,12 +704,12 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
 
         if (amount > 0) {
           if (uintptr_t(plugin->memory + ctx->hp) > uintptr_t(stk)) {
-            ctx->err = SP_ERROR_HEAPLOW;
+            err = SP_ERROR_HEAPLOW;
             goto error;
           }
         } else {
           if (uint32_t(ctx->hp) < plugin->data_size) {
-            ctx->err = SP_ERROR_HEAPMIN;
+            err = SP_ERROR_HEAPMIN;
             goto error;
           }
         }
@@ -711,41 +717,41 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       }
 
       case OP_JUMP:
-        if ((cip = JumpTarget(plugin, ctx, cip, true)) == NULL)
+        if ((cip = JumpTarget(plugin, ctx, cip, true, &err)) == NULL)
           goto error;
         break;
 
       case OP_JZER:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri == 0)) == NULL)
+        if ((cip = JumpTarget(plugin, ctx, cip, pri == 0, &err)) == NULL)
           goto error;
         break;
       case OP_JNZ:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri != 0)) == NULL)
+        if ((cip = JumpTarget(plugin, ctx, cip, pri != 0, &err)) == NULL)
           goto error;
         break;
 
       case OP_JEQ:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri == alt)) == NULL)
+        if ((cip = JumpTarget(plugin, ctx, cip, pri == alt, &err)) == NULL)
           goto error;
         break;
       case OP_JNEQ:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri != alt)) == NULL)
+        if ((cip = JumpTarget(plugin, ctx, cip, pri != alt, &err)) == NULL)
           goto error;
         break;
       case OP_JSLESS:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri < alt)) == NULL)
+        if ((cip = JumpTarget(plugin, ctx, cip, pri < alt, &err)) == NULL)
           goto error;
         break;
       case OP_JSLEQ:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri <= alt)) == NULL)
+        if ((cip = JumpTarget(plugin, ctx, cip, pri <= alt, &err)) == NULL)
           goto error;
         break;
       case OP_JSGRTR:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri > alt)) == NULL)
+        if ((cip = JumpTarget(plugin, ctx, cip, pri > alt, &err)) == NULL)
           goto error;
         break;
       case OP_JSGEQ:
-        if ((cip = JumpTarget(plugin, ctx, cip, pri >= alt)) == NULL)
+        if ((cip = JumpTarget(plugin, ctx, cip, pri >= alt, &err)) == NULL)
           goto error;
         break;
 
@@ -754,7 +760,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
         cell_t amount = *cip++;
         int error = cx->pushTracker(amount * 4);
         if (error != SP_ERROR_NONE) {
-          ctx->err = error;
+          err = error;
           goto error;
         }
         break;
@@ -764,7 +770,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       {
         int error = cx->popTrackerAndSetHeap();
         if (error != SP_ERROR_NONE) {
-          ctx->err = error;
+          err = error;
           goto error;
         }
         break;
@@ -778,7 +784,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       {
         cell_t value = *cip++;
         if (uint32_t(pri) > uint32_t(value)) {
-          ctx->err = SP_ERROR_ARRAY_BOUNDS;
+          err = SP_ERROR_ARRAY_BOUNDS;
           goto error;
         }
         break;
@@ -789,14 +795,14 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
         cell_t offset = *cip++;
 
         if (!IsValidOffset(offset) || uint32_t(offset) >= plugin->pcode_size) {
-          ctx->err = SP_ERROR_INSTRUCTION_PARAM;
+          err = SP_ERROR_INSTRUCTION_PARAM;
           goto error;
         }
 
         // For debugging.
         uintptr_t rcip = uintptr_t(cip - 2) - uintptr_t(plugin->pcode);
         if (!cx->pushReturnCip(rcip)) {
-          ctx->err = SP_ERROR_STACKLOW;
+          err = SP_ERROR_STACKLOW;
           goto error;
         }
         ctx->cip = offset;
@@ -817,7 +823,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
       case OP_GENARRAY_Z:
       {
         cell_t val = *cip++;
-        if (!GenerateArray(rt, ctx, val, stk, op == OP_GENARRAY_Z))
+        if ((err = GenerateArray(rt, ctx, val, stk, op == OP_GENARRAY_Z)) != SP_ERROR_NONE)
           goto error;
 
         stk += (val - 1) * 4;
@@ -830,7 +836,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
         uint32_t native_index = *cip++;
 
         if (native_index >= plugin->num_natives) {
-          ctx->err = SP_ERROR_INSTRUCTION_PARAM;
+          err = SP_ERROR_INSTRUCTION_PARAM;
           goto error;
         }
 
@@ -843,7 +849,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
         ctx->sp = uintptr_t(stk) - uintptr_t(plugin->memory);
         pri = cx->invokeNative(native_index, stk);
         if (cx->GetLastNativeError() != SP_ERROR_NONE) {
-          ctx->err = cx->GetLastNativeError();
+          err = cx->GetLastNativeError();
           goto error;
         }
 
@@ -867,14 +873,16 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
           }
         }
 
-        if ((cip = Jump(plugin, ctx, target)) == NULL)
+        if ((cip = Jump(plugin, ctx, target)) == NULL) {
+          err = SP_ERROR_INVALID_INSTRUCTION;
           goto error;
+        }
         break;
       }
 
       default:
       {
-        ctx->err = SP_ERROR_INVALID_INSTRUCTION;
+        err = SP_ERROR_INVALID_INSTRUCTION;
         goto error;
       }
     } // switch
@@ -883,7 +891,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
  done:
   assert(orig_frm == ctx->frm);
   ctx->sp = uintptr_t(stk) - uintptr_t(plugin->memory);
-  return ctx->err;
+  return err;
 
  error:
   ctx->frm = orig_frm;
