@@ -397,6 +397,18 @@ InvokePopTrackerAndSetHeap(PluginContext *cx)
   return cx->popTrackerAndSetHeap();
 }
 
+static cell_t
+InvokeNativeHelper(PluginContext *cx, ucell_t native_idx, cell_t *params)
+{
+  return cx->invokeNative(native_idx, params);
+}
+
+static cell_t
+InvokeBoundNativeHelper(PluginContext *cx, SPVM_NATIVE_FUNC fn, cell_t *params)
+{
+  return cx->invokeBoundNative(fn, params);
+}
+
 bool
 Compiler::emitOp(OPCODE op)
 {
@@ -1594,13 +1606,14 @@ Compiler::emitNativeCall(OPCODE op)
   // Push the last parameter for the C++ function.
   __ push(stk);
 
+  __ movl(eax, intptr_t(rt_->GetBaseContext()));
+  __ movl(Operand(eax, PluginContext::offsetOfLastNative()), native_index);
+
   // Relocate our absolute stk to be dat-relative, and update the context's
   // view.
   __ movl(eax, intptr_t(rt_->GetBaseContext()->GetCtx()));
   __ subl(stk, dat);
   __ movl(Operand(eax, offsetof(sp_context_t, sp)), stk);
-
-  __ movl(Operand(eax, offsetof(sp_context_t, n_idx)), native_index);
 
   sp_native_t *native = rt_->GetNativeByIndex(native_index);
   if ((native->status != SP_NATIVE_BOUND) ||
@@ -1609,13 +1622,13 @@ Compiler::emitNativeCall(OPCODE op)
     // The native is either unbound, or it could become unbound in the
     // future. Invoke the slower native callback.
     __ push(native_index);
-    __ push(eax);
-    __ call(ExternalAddress((void *)NativeCallback));
+    __ push(intptr_t(rt_->GetBaseContext()));
+    __ call(ExternalAddress((void *)InvokeNativeHelper));
   } else {
     // The native is bound so we have a few more guarantees.
     __ push(intptr_t(native->pfn));
-    __ push(eax);
-    __ call(ExternalAddress((void *)BoundNativeCallback));
+    __ push(intptr_t(rt_->GetBaseContext()));
+    __ call(ExternalAddress((void *)InvokeBoundNativeHelper));
   }
 
   // Check for errors.

@@ -97,7 +97,11 @@ class PluginContext : public IPluginContext
   static inline size_t offsetOfTracker() {
     return offsetof(PluginContext, tracker_);
   }
+  static inline size_t offsetOfLastNative() {
+    return offsetof(PluginContext, last_native_);
+  }
 
+  // Return stack logic.
   bool pushReturnCip(cell_t cip) {
     if (rp_ >= SP_MAX_RETURN_STACK)
       return false;
@@ -118,6 +122,12 @@ class PluginContext : public IPluginContext
 
   int popTrackerAndSetHeap();
   int pushTracker(uint32_t amount);
+
+  cell_t invokeNative(ucell_t native_idx, cell_t *params);
+  cell_t invokeBoundNative(SPVM_NATIVE_FUNC pfn, cell_t *params);
+  int lastNative() const {
+    return last_native_;
+  }
 
  private:
   void SetErrorMessage(const char *msg, va_list ap);
@@ -140,6 +150,9 @@ class PluginContext : public IPluginContext
   // Return stack.
   cell_t rp_;
   cell_t rstk_cips_[SP_MAX_RETURN_STACK];
+
+  // Track the currently executing native index.
+  uint32_t last_native_;
 };
 
 #endif //_INCLUDE_SOURCEPAWN_BASECONTEXT_H_

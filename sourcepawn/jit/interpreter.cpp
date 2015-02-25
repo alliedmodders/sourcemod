@@ -95,61 +95,6 @@ CheckAddress(const sp_plugin_t *plugin, sp_context_t *ctx, cell_t *stk, cell_t a
   return true;
 }
 
-cell_t
-NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
-{
-  cell_t save_sp = ctx->sp;
-  cell_t save_hp = ctx->hp;
-
-  ctx->n_idx = native_idx;
-
-  sp_native_t *native = &ctx->plugin->natives[native_idx];
-
-  if (native->status == SP_NATIVE_UNBOUND) {
-    ctx->n_err = SP_ERROR_INVALID_NATIVE;
-    return 0;
-  }
-
-  cell_t result = native->pfn(ctx->basecx, params);
-
-  if (ctx->n_err != SP_ERROR_NONE)
-    return result;
-
-  if (save_sp != ctx->sp) {
-    ctx->n_err = SP_ERROR_STACKLEAK;
-    return result;
-  }
-  if (save_hp != ctx->hp) {
-    ctx->n_err = SP_ERROR_HEAPLEAK;
-    return result;
-  }
-
-  return result;
-}
-
-cell_t
-BoundNativeCallback(sp_context_t *ctx, SPVM_NATIVE_FUNC pfn, cell_t *params)
-{
-  cell_t save_sp = ctx->sp;
-  cell_t save_hp = ctx->hp;
-
-  cell_t result = pfn(ctx->basecx, params);
-
-  if (ctx->n_err != SP_ERROR_NONE)
-    return result;
-
-  if (save_sp != ctx->sp) {
-    ctx->n_err = SP_ERROR_STACKLEAK;
-    return result;
-  }
-  if (save_hp != ctx->hp) {
-    ctx->n_err = SP_ERROR_HEAPLEAK;
-    return result;
-  }
-
-  return result;
-}
-
 static inline bool
 GenerateArray(PluginRuntime *rt, sp_context_t *ctx, cell_t dims, cell_t *stk, bool autozero)
 {
@@ -896,7 +841,7 @@ Interpret(PluginRuntime *rt, uint32_t aCodeStart, cell_t *rval)
         }
 
         ctx->sp = uintptr_t(stk) - uintptr_t(plugin->memory);
-        pri = NativeCallback(ctx, native_index, stk);
+        pri = cx->invokeNative(native_index, stk);
         if (ctx->n_err != SP_ERROR_NONE) {
           ctx->err = ctx->n_err;
           goto error;
