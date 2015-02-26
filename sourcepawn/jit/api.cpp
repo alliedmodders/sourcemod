@@ -34,6 +34,7 @@
 
 #include <sourcemod_version.h>
 #include "code-stubs.h"
+#include "smx-v1-image.h"
 
 using namespace sp;
 using namespace SourcePawn;
@@ -176,124 +177,93 @@ SourcePawnEngine2::SourcePawnEngine2()
 {
 }
 
+static size_t
+UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start(ap, fmt);
+  size_t len = vsnprintf(buffer, maxlength, fmt, ap);
+  va_end(ap);
+
+  if (len >= maxlength) {
+    buffer[maxlength - 1] = '\0';
+    return maxlength - 1;
+  }
+  return len;
+}
+
 IPluginRuntime *
 SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file, int *err)
 {
-  sp_file_hdr_t hdr;
-  uint8_t *base;
-  int z_result;
-  int error;
-  size_t ignore;
-  PluginRuntime *pRuntime;
-
   if (co) {
     if (err)
       *err = SP_ERROR_PARAM;
     return nullptr;
   }
 
+  IPluginRuntime *rt = LoadBinaryFromFile(file, nullptr, 0);
+  if (!rt) {
+    if (err) {
+      if (FILE *fp = fopen(file, "rb")) {
+        fclose(fp);
+        *err = SP_ERROR_NOT_FOUND;
+      } else {
+        *err = SP_ERROR_FILE_FORMAT;
+      }
+    }
+    return nullptr;
+  }
+
+  return rt;
+}
+
+IPluginRuntime *
+SourcePawnEngine2::LoadBinaryFromFile(const char *file, char *error, size_t maxlength)
+{
   FILE *fp = fopen(file, "rb");
 
   if (!fp) {
-    error = SP_ERROR_NOT_FOUND;
-    goto return_error;
+    UTIL_Format(error, maxlength, "file not found");
+    return nullptr;
   }
 
-  /* Rewind for safety */
-  ignore = fread(&hdr, sizeof(sp_file_hdr_t), 1, fp);
-
-  if (hdr.magic != SmxConsts::FILE_MAGIC) {
-    error = SP_ERROR_FILE_FORMAT;
-    goto return_error;
-  }
-
-  switch (hdr.compression)
-  {
-  case SmxConsts::FILE_COMPRESSION_GZ:
-    {
-      uint32_t uncompsize = hdr.imagesize - hdr.dataoffs;
-      uint32_t compsize = hdr.disksize - hdr.dataoffs;
-      uint32_t sectsize = hdr.dataoffs - sizeof(sp_file_hdr_t);
-      uLongf destlen = uncompsize;
-
-      char *tempbuf = (char *)malloc(compsize);
-      void *uncompdata = malloc(uncompsize);
-      void *sectheader = malloc(sectsize);
-
-      ignore = fread(sectheader, sectsize, 1, fp);
-      ignore = fread(tempbuf, compsize, 1, fp);
-
-      z_result = uncompress((Bytef *)uncompdata, &destlen, (Bytef *)tempbuf, compsize);
-      free(tempbuf);
-      if (z_result != Z_OK)
-      {
-        free(sectheader);
-        free(uncompdata);
-        error = SP_ERROR_DECOMPRESSOR;
-        goto return_error;
-      }
-
-      base = (uint8_t *)malloc(hdr.imagesize);
-      memcpy(base, &hdr, sizeof(sp_file_hdr_t));
-      memcpy(base + sizeof(sp_file_hdr_t), sectheader, sectsize);
-      free(sectheader);
-      memcpy(base + hdr.dataoffs, uncompdata, uncompsize);
-      free(uncompdata);
-      break;
-    }
-  case SmxConsts::FILE_COMPRESSION_NONE:
-    {
-      base = (uint8_t *)malloc(hdr.imagesize);
-      rewind(fp);
-      ignore = fread(base, hdr.imagesize, 1, fp);
-      break;
-    }
-  default:
-    {
-      error = SP_ERROR_DECOMPRESSOR;
-      goto return_error;
-    }
-  }
-
-  pRuntime = new PluginRuntime();
-  if ((error = pRuntime->CreateFromMemory(&hdr, base)) != SP_ERROR_NONE) {
-    delete pRuntime;
-    goto return_error;
-  }
-
-  size_t len;
-  
-  len = strlen(file);
-  for (size_t i = len - 1; i < len; i--)
-  {
-    if (file[i] == '/' 
-    #if defined WIN32
-      || file[i] == '\\'
-    #endif
-    )
-    {
-      pRuntime->SetName(&file[i+1]);
-      break;
-    }
-  }
-
-  (void)ignore;
-
-  if (!pRuntime->plugin()->name)
-    pRuntime->SetName(file);
-
+  ke::AutoPtr<SmxV1Image> image(new SmxV1Image(fp));
   fclose(fp);
 
-  return pRuntime;
-
-return_error:
-  *err = error;
-  if (fp != NULL)
-  {
-      fclose(fp);
+  if (!image->validate()) {
+    const char *errorMessage = image->errorMessage();
+    if (!errorMessage)
+      errorMessage = "file parse error";
+    UTIL_Format(error, maxlength, "%s", errorMessage);
+    return nullptr;
   }
 
-  return NULL;
+  PluginRuntime *pRuntime = new PluginRuntime(image.take());
+  if (!pRuntime->Initialize()) {
+    delete pRuntime;
+
+    UTIL_Format(error, maxlength, "out of memory");
+    return nullptr;
+  }
+
+  size_t len = strlen(file);
+  for (size_t i = len - 1; i < len; i--) {
+    if (file[i] == '/' 
+# if defined WIN32
+      || file[i] == '\\'
+# endif
+    )
+    {
+      pRuntime->SetName(&file[i + 1]);
+      break;
+    }
+  }
+
+  if (!pRuntime->Name())
+    pRuntime->SetName(file);
+
+  return pRuntime;
 }
 
 SPVM_NATIVE_FUNC
@@ -362,8 +332,10 @@ SourcePawnEngine2::CreateEmptyRuntime(const char *name, uint32_t memory)
 {
   int err;
 
-  PluginRuntime *rt = new PluginRuntime();
-  if ((err = rt->CreateBlank(memory)) != SP_ERROR_NONE) {
+  ke::AutoPtr<EmptyImage> image(new EmptyImage(memory));
+
+  PluginRuntime *rt = new PluginRuntime(image.take());
+  if (!rt->Initialize()) {
     delete rt;
     return NULL;
   }

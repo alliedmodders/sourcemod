@@ -19,18 +19,62 @@
 #include "watchdog_timer.h"
 #include "x86/jit_x86.h"
 #include "environment.h"
+#include "compiled-function.h"
 
+using namespace sp;
 using namespace SourcePawn;
 
 #define CELLBOUNDMAX  (INT_MAX/sizeof(cell_t))
 #define STACKMARGIN    ((cell_t)(16*sizeof(cell_t)))
 
-PluginContext::PluginContext(PluginRuntime *pRuntime)
-{
-  m_pRuntime = pRuntime;
+static const size_t kMinHeapSize = 16384;
 
-  m_InExec = false;
-  m_CustomMsg = false;
+PluginContext::PluginContext(PluginRuntime *pRuntime)
+ : m_pRuntime(pRuntime),
+   memory_(nullptr),
+   data_size_(m_pRuntime->data().length),
+   mem_size_(m_pRuntime->image()->HeapSize()),
+   m_pNullVec(nullptr),
+   m_pNullString(nullptr),
+   m_CustomMsg(false),
+   m_InExec(false)
+{
+  // Compute and align a minimum memory amount.
+  if (mem_size_ < data_size_)
+    mem_size_ = data_size_;
+  mem_size_ = ke::Align(mem_size_, sizeof(cell_t));
+
+  // Add a minimum heap size if needed.
+  if (mem_size_ < data_size_ + kMinHeapSize)
+    mem_size_ = data_size_ + kMinHeapSize;
+  assert(ke::IsAligned(mem_size_, sizeof(cell_t)));
+
+  hp_ = data_size_;
+  sp_ = mem_size_ - sizeof(cell_t);
+  frm_ = sp_;
+  rp_ = 0;
+  last_native_ = -1;
+  native_error_ = SP_ERROR_NONE;
+
+  tracker_.pBase = (ucell_t *)malloc(1024);
+  tracker_.pCur = tracker_.pBase;
+  tracker_.size = 1024 / sizeof(cell_t);
+}
+
+PluginContext::~PluginContext()
+{
+  free(tracker_.pBase);
+  delete[] memory_;
+}
+
+bool
+PluginContext::Initialize()
+{
+  memory_ = new uint8_t[mem_size_];
+  if (!memory_)
+    return false;
+  memset(memory_ + data_size_, 0, mem_size_ - data_size_);
+  memcpy(memory_, m_pRuntime->data().bytes, data_size_);
 
   /* Initialize the null references */
   uint32_t index;
@@ -50,21 +94,7 @@ PluginContext::PluginContext(PluginRuntime *pRuntime)
     m_pNullString = NULL;
   }
 
-  hp_ = m_pRuntime->plugin()->data_size;
-  sp_ = m_pRuntime->plugin()->mem_size - sizeof(cell_t);
-  frm_ = sp_;
-  rp_ = 0;
-  last_native_ = -1;
-  native_error_ = SP_ERROR_NONE;
-
-  tracker_.pBase = (ucell_t *)malloc(1024);
-  tracker_.pCur = tracker_.pBase;
-  tracker_.size = 1024 / sizeof(cell_t);
-}
-
-PluginContext::~PluginContext()
-{
-  free(tracker_.pBase);
+  return true;
 }
 
 IVirtualMachine *
@@ -179,7 +209,7 @@ PluginContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys_a
   if ((cell_t)(sp_ - hp_ - realmem) < STACKMARGIN)
     return SP_ERROR_HEAPLOW;
 
-  addr = (cell_t *)(m_pRuntime->plugin()->memory + hp_);
+  addr = (cell_t *)(memory_ + hp_);
   /* store size of allocation in cells */
   *addr = (cell_t)cells;
   addr++;
@@ -203,10 +233,10 @@ PluginContext::HeapPop(cell_t local_addr)
 
   /* check the bounds of this address */
   local_addr -= sizeof(cell_t);
-  if (local_addr < (cell_t)m_pRuntime->plugin()->data_size || local_addr >= sp_)
+  if (local_addr < (cell_t)data_size_ || local_addr >= sp_)
     return SP_ERROR_INVALID_ADDRESS;
 
-  addr = (cell_t *)(m_pRuntime->plugin()->memory + local_addr);
+  addr = (cell_t *)(memory_ + local_addr);
   cellcount = (*addr) * sizeof(cell_t);
   /* check if this memory count looks valid */
   if ((signed)(hp_ - cellcount - sizeof(cell_t)) != local_addr)
@@ -221,7 +251,7 @@ PluginContext::HeapPop(cell_t local_addr)
 int
 PluginContext::HeapRelease(cell_t local_addr)
 {
-  if (local_addr < (cell_t)m_pRuntime->plugin()->data_size)
+  if (local_addr < (cell_t)data_size_)
     return SP_ERROR_INVALID_ADDRESS;
 
   hp_ = local_addr - sizeof(cell_t);
@@ -317,13 +347,13 @@ int
 PluginContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
 {
   if (((local_addr >= hp_) && (local_addr < sp_)) ||
-      (local_addr < 0) || ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
+      (local_addr < 0) || ((ucell_t)local_addr >= mem_size_))
   {
     return SP_ERROR_INVALID_ADDRESS;
   }
 
   if (phys_addr)
-    *phys_addr = (cell_t *)(m_pRuntime->plugin()->memory + local_addr);
+    *phys_addr = (cell_t *)(memory_ + local_addr);
 
   return SP_ERROR_NONE;
 }
@@ -350,11 +380,11 @@ int
 PluginContext::LocalToString(cell_t local_addr, char **addr)
 {
   if (((local_addr >= hp_) && (local_addr < sp_)) ||
-      (local_addr < 0) || ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
+      (local_addr < 0) || ((ucell_t)local_addr >= mem_size_))
   {
     return SP_ERROR_INVALID_ADDRESS;
   }
-  *addr = (char *)(m_pRuntime->plugin()->memory + local_addr);
+  *addr = (char *)(memory_ + local_addr);
 
   return SP_ERROR_NONE;
 }
@@ -372,7 +402,7 @@ PluginContext::StringToLocal(cell_t local_addr, size_t bytes, const char *source
   size_t len;
 
   if (((local_addr >= hp_) && (local_addr < sp_)) ||
-      (local_addr < 0) || ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
+      (local_addr < 0) || ((ucell_t)local_addr >= mem_size_))
   {
     return SP_ERROR_INVALID_ADDRESS;
   }
@@ -381,7 +411,7 @@ PluginContext::StringToLocal(cell_t local_addr, size_t bytes, const char *source
     return SP_ERROR_NONE;
 
   len = strlen(source);
-  dest = (char *)(m_pRuntime->plugin()->memory + local_addr);
+  dest = (char *)(memory_ + local_addr);
 
   if (len >= bytes)
     len = bytes - 1;
@@ -436,7 +466,7 @@ PluginContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const char 
 
   if (((local_addr >= hp_) && (local_addr < sp_)) ||
       (local_addr < 0) ||
-      ((ucell_t)local_addr >= m_pRuntime->plugin()->mem_size))
+      ((ucell_t)local_addr >= mem_size_))
   {
     return SP_ERROR_INVALID_ADDRESS;
   }
@@ -445,7 +475,7 @@ PluginContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const char 
     return SP_ERROR_NONE;
 
   len = strlen(source);
-  dest = (char *)(m_pRuntime->plugin()->memory + local_addr);
+  dest = (char *)(memory_ + local_addr);
 
   if ((size_t)len >= maxbytes) {
     len = maxbytes - 1;
@@ -577,7 +607,7 @@ PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigne
   /* Push parameters */
 
   sp_ -= sizeof(cell_t) * (num_params + 1);
-  sp = (cell_t *)(m_pRuntime->plugin()->memory + sp_);
+  sp = (cell_t *)(memory_ + sp_);
 
   sp[0] = num_params;
   for (unsigned int i = 0; i < num_params; i++)
@@ -645,122 +675,6 @@ PluginContext::GetRuntime()
   return m_pRuntime;
 }
 
-DebugInfo::DebugInfo(sp_plugin_t *plugin) : m_pPlugin(plugin)
-{
-}
-
-#define USHR(x) ((unsigned int)(x)>>1)
-
-int
-DebugInfo::LookupFile(ucell_t addr, const char **filename)
-{
-  int high, low, mid;
-
-  high = m_pPlugin->debug.files_num;
-  low = -1;
-
-  while (high - low > 1) {
-    mid = USHR(low + high);
-    if (m_pPlugin->debug.files[mid].addr <= addr)
-      low = mid;
-    else
-      high = mid;
-  }
-
-  if (low == -1)
-    return SP_ERROR_NOT_FOUND;
-
-  *filename = m_pPlugin->debug.stringbase + m_pPlugin->debug.files[low].name;
-  return SP_ERROR_NONE;
-}
-
-int
-DebugInfo::LookupFunction(ucell_t addr, const char **name)
-{
-  if (!m_pPlugin->debug.unpacked) {
-    uint32_t max, iter;
-    sp_fdbg_symbol_t *sym;
-    uint8_t *cursor = (uint8_t *)(m_pPlugin->debug.symbols);
-
-    max = m_pPlugin->debug.syms_num;
-    for (iter = 0; iter < max; iter++) {
-      sym = (sp_fdbg_symbol_t *)cursor;
-
-      if (sym->ident == sp::IDENT_FUNCTION &&
-          sym->codestart <= addr &&
-          sym->codeend > addr)
-      {
-        *name = m_pPlugin->debug.stringbase + sym->name;
-        return SP_ERROR_NONE;
-      }
-
-      if (sym->dimcount > 0) {
-        cursor += sizeof(sp_fdbg_symbol_t);
-        cursor += sizeof(sp_fdbg_arraydim_t) * sym->dimcount;
-        continue;
-      }
-
-      cursor += sizeof(sp_fdbg_symbol_t);
-    }
-
-    return SP_ERROR_NOT_FOUND;
-  } else {
-    uint32_t max, iter;
-    sp_u_fdbg_symbol_t *sym;
-    uint8_t *cursor = (uint8_t *)(m_pPlugin->debug.symbols);
-
-    max = m_pPlugin->debug.syms_num;
-    for (iter = 0; iter < max; iter++) {
-      sym = (sp_u_fdbg_symbol_t *)cursor;
-
-      if (sym->ident == sp::IDENT_FUNCTION &&
-          sym->codestart <= addr &&
-          sym->codeend > addr)
-      {
-        *name = m_pPlugin->debug.stringbase + sym->name;
-        return SP_ERROR_NONE;
-      }
-
-      if (sym->dimcount > 0) {
-        cursor += sizeof(sp_u_fdbg_symbol_t);
-        cursor += sizeof(sp_u_fdbg_arraydim_t) * sym->dimcount;
-        continue;
-      }
-
-      cursor += sizeof(sp_u_fdbg_symbol_t);
-    }
-
-    return SP_ERROR_NOT_FOUND;
-  }
-}
-
-int
-DebugInfo::LookupLine(ucell_t addr, uint32_t *line)
-{
-  int high, low, mid;
-
-  high = m_pPlugin->debug.lines_num;
-  low = -1;
-
-  while (high - low > 1) {
-    mid = USHR(low + high);
-    if (m_pPlugin->debug.lines[mid].addr <= addr)
-      low = mid;
-    else
-      high = mid;
-  }
-
-  if (low == -1)
-    return SP_ERROR_NOT_FOUND;
-
-  /* Since the CIP occurs BEFORE the line, we have to add one */
-  *line = m_pPlugin->debug.lines[low].line + 1;
-
-  return SP_ERROR_NONE;
-}
-
-#undef USHR
-
 int
 PluginContext::GetLastNativeError()
 {
@@ -770,7 +684,7 @@ PluginContext::GetLastNativeError()
 cell_t *
 PluginContext::GetLocalParams()
 {
-  return (cell_t *)(m_pRuntime->plugin()->memory + frm_ + (2 * sizeof(cell_t)));
+  return (cell_t *)(memory_ + frm_ + (2 * sizeof(cell_t)));
 }
 
 void
@@ -809,7 +723,7 @@ PluginContext::popTrackerAndSetHeap()
     return SP_ERROR_TRACKER_BOUNDS;
 
   ucell_t amt = *tracker_.pCur;
-  if (amt > (hp_ - m_pRuntime->plugin()->data_size))
+  if (amt > (hp_ - data_size_))
     return SP_ERROR_HEAPMIN;
 
   hp_ -= amt;
@@ -846,7 +760,7 @@ PluginContext::invokeNative(ucell_t native_idx, cell_t *params)
   // Note: Invoke() saves the last native, so we don't need to here.
   last_native_ = native_idx;
 
-  sp_native_t *native = &m_pRuntime->plugin()->natives[native_idx];
+  const sp_native_t *native = m_pRuntime->GetNative(native_idx);
 
   if (native->status == SP_NATIVE_UNBOUND) {
     native_error_ = SP_ERROR_INVALID_NATIVE;
@@ -995,7 +909,7 @@ PluginContext::generateFullArray(uint32_t argc, cell_t *argv, int autozero)
     return SP_ERROR_ARRAY_TOO_BIG;
 
   uint32_t new_hp = hp_ + bytes;
-  cell_t *dat_hp = reinterpret_cast<cell_t *>(m_pRuntime->plugin()->memory + new_hp);
+  cell_t *dat_hp = reinterpret_cast<cell_t *>(memory_ + new_hp);
 
   // argv, coincidentally, is STK.
   if (dat_hp >= argv - STACK_MARGIN)
@@ -1004,7 +918,7 @@ PluginContext::generateFullArray(uint32_t argc, cell_t *argv, int autozero)
   if (int err = pushTracker(bytes))
     return err;
 
-  cell_t *base = reinterpret_cast<cell_t *>(m_pRuntime->plugin()->memory + hp_);
+  cell_t *base = reinterpret_cast<cell_t *>(memory_ + hp_);
   cell_t offs = GenerateArrayIndirectionVectors(base, argv, argc, !!autozero);
   assert(size_t(offs) == cells);
 
@@ -1025,14 +939,14 @@ PluginContext::generateArray(cell_t dims, cell_t *stk, bool autozero)
     uint32_t bytes = size * 4;
 
     hp_ += bytes;
-    if (uintptr_t(m_pRuntime->plugin()->memory + hp_) >= uintptr_t(stk))
+    if (uintptr_t(memory_ + hp_) >= uintptr_t(stk))
       return SP_ERROR_HEAPLOW;
 
     if (int err = pushTracker(bytes))
       return err;
 
     if (autozero)
-      memset(m_pRuntime->plugin()->memory + hp_, 0, bytes);
+      memset(memory_ + hp_, 0, bytes);
 
     return SP_ERROR_NONE;
   }

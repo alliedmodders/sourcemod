@@ -21,7 +21,6 @@
 #include <sp_vm_api.h>
 #include <macro-assembler-x86.h>
 #include <am-vector.h>
-#include "jit_shared.h"
 #include "plugin-runtime.h"
 #include "plugin-context.h"
 #include "compiled-function.h"
@@ -30,8 +29,9 @@
 using namespace SourcePawn;
 
 namespace sp {
+class LegacyImage;
 class Environment;
-}
+class CompiledFunction;
 
 #define JIT_INLINE_ERRORCHECKS  (1<<0)
 #define JIT_INLINE_NATIVES      (1<<1)
@@ -71,17 +71,17 @@ class Compiler
   Compiler(PluginRuntime *rt, cell_t pcode_offs);
   ~Compiler();
 
-  CompiledFunction *emit(int *errp);
+  sp::CompiledFunction *emit(int *errp);
 
  private:
   bool setup(cell_t pcode_offs);
-  bool emitOp(OPCODE op);
+  bool emitOp(sp::OPCODE op);
   cell_t readCell();
 
  private:
   Label *labelAt(size_t offset);
   bool emitCall();
-  bool emitNativeCall(OPCODE op);
+  bool emitNativeCall(sp::OPCODE op);
   bool emitSwitch();
   void emitGenArray(bool autozero);
   void emitCallThunks();
@@ -102,15 +102,15 @@ class Compiler
 
  private:
   AssemblerX86 masm;
-  sp::Environment *env_;
+  Environment *env_;
   PluginRuntime *rt_;
   PluginContext *context_;
-  const sp_plugin_t *plugin_;
+  LegacyImage *image_;
   int error_;
   uint32_t pcode_start_;
-  cell_t *code_start_;
-  cell_t *cip_;
-  cell_t *code_end_;
+  const cell_t *code_start_;
+  const cell_t *cip_;
+  const cell_t *code_end_;
   Label *jump_map_;
   ke::Vector<size_t> backward_jumps_;
 
@@ -137,6 +137,8 @@ const Register frm = ebx;
 
 CompiledFunction *
 CompileFunction(PluginRuntime *prt, cell_t pcode_offs, int *err);
+
+}
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_H_
 

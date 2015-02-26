@@ -61,13 +61,13 @@ class SourcePawnEngine2 : public ISourcePawnEngine2
   void Shutdown() KE_OVERRIDE;
   IPluginRuntime *CreateEmptyRuntime(const char *name, uint32_t memory) KE_OVERRIDE;
   bool InstallWatchdogTimer(size_t timeout_ms) KE_OVERRIDE;
-
   bool SetJitEnabled(bool enabled) KE_OVERRIDE;
   bool IsJitEnabled() KE_OVERRIDE;
   void SetProfiler(IProfiler *profiler) KE_OVERRIDE;
   void EnableProfiling() KE_OVERRIDE;
   void DisableProfiling() KE_OVERRIDE;
   void SetProfilingTool(IProfilingTool *tool) KE_OVERRIDE;
+  IPluginRuntime *LoadBinaryFromFile(const char *file, char *error, size_t maxlength) KE_OVERRIDE;
 };
 
 } // namespace SourcePawn

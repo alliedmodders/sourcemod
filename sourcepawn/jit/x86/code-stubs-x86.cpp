@@ -13,7 +13,6 @@
 #include <sp_vm_api.h>
 #include "code-stubs.h"
 #include "x86-utils.h"
-#include "jit_shared.h"
 #include "jit_x86.h"
 
 using namespace sp;
@@ -53,10 +52,8 @@ CodeStubs::CompileInvokeStub()
   // ecx = code
   __ movl(ecx, Operand(ebp, 8 + 4 * 1));
 
-  // eax = cx->m_pRuntime->m_plugin.memory
-  __ movl(eax, Operand(ebx, PluginContext::offsetOfRuntime()));
-  __ addl(eax, PluginRuntime::offsetToPlugin());
-  __ movl(eax, Operand(eax, offsetof(sp_plugin_t, memory)));
+  // eax = cx->memory
+  __ movl(eax, Operand(ebx, PluginContext::offsetOfMemory()));
 
   // Set up run-time registers.
   __ movl(edi, Operand(ebx, PluginContext::offsetOfSp()));
