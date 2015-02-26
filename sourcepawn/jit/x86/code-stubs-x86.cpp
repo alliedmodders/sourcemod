@@ -47,12 +47,19 @@ CodeStubs::CompileInvokeStub()
   __ push(ebx);   // ebp - 12
   __ push(esp);   // ebp - 16
 
+  // ebx = cx
   __ movl(ebx, Operand(ebp, 8 + 4 * 0));
-  __ movl(eax, Operand(ebp, 8 + 4 * 1));
-  __ movl(ecx, Operand(ebp, 8 + 4 * 2));
+
+  // ecx = code
+  __ movl(ecx, Operand(ebp, 8 + 4 * 1));
+
+  // eax = cx->m_pRuntime->m_plugin.memory
+  __ movl(eax, Operand(ebx, PluginContext::offsetOfRuntime()));
+  __ addl(eax, PluginRuntime::offsetToPlugin());
+  __ movl(eax, Operand(eax, offsetof(sp_plugin_t, memory)));
 
   // Set up run-time registers.
-  __ movl(edi, Operand(ebx, offsetof(sp_context_t, sp)));
+  __ movl(edi, Operand(ebx, PluginContext::offsetOfSp()));
   __ addl(edi, eax);
   __ movl(esi, eax);
   __ movl(ebx, edi);
@@ -64,8 +71,8 @@ CodeStubs::CompileInvokeStub()
   __ call(ecx);
 
   // Get input context, store rval.
-  __ movl(ecx, Operand(ebp, 8 + 4 * 0));
-  __ movl(Operand(ecx, offsetof(sp_context_t, rval)), pri);
+  __ movl(ecx, Operand(ebp, 8 + 4 * 2));
+  __ movl(Operand(ecx, 0), pri);
 
   // Set no error.
   __ movl(eax, SP_ERROR_NONE);
@@ -75,7 +82,8 @@ CodeStubs::CompileInvokeStub()
   Label ret;
   __ bind(&ret);
   __ subl(stk, dat);
-  __ movl(Operand(ecx, offsetof(sp_context_t, sp)), stk);
+  __ movl(ecx, Operand(ebp, 8 + 4 * 0));
+  __ movl(Operand(ecx, PluginContext::offsetOfSp()), stk);
 
   // Restore stack.
   __ movl(esp, Operand(ebp, -16));

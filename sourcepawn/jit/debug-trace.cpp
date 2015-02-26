@@ -20,12 +20,12 @@ using namespace SourcePawn;
 
 CContextTrace::CContextTrace(PluginRuntime *pRuntime, int err, const char *errstr, cell_t start_rp) 
  : m_pRuntime(pRuntime),
+   context_(pRuntime->GetBaseContext()),
    m_Error(err),
    m_pMsg(errstr),
    m_StartRp(start_rp),
    m_Level(0)
 {
-  m_ctx = pRuntime->m_pCtx->GetCtx();
   m_pDebug = m_pRuntime->GetDebugInfo();
 }
 
@@ -65,21 +65,19 @@ CContextTrace::GetTraceInfo(CallStackInfo *trace)
   cell_t cip;
 
   if (m_Level == 0) {
-    cip = m_ctx->cip;
-  } else if (m_ctx->rp > 0) {
+    cip = context_->cip();
+  } else if (context_->rp() > 0) {
     /* Entries go from ctx.rp - 1 to m_StartRp */
     cell_t offs, start, end;
 
     offs = m_Level - 1;
-    start = m_ctx->rp - 1;
+    start = context_->rp() - 1;
     end = m_StartRp;
 
     if (start - offs < end)
-    {
       return false;
-    }
 
-    cip = m_ctx->rstk_cips[start - offs];
+    cip = context_->getReturnStackCip(start - offs);
   } else {
     return false;
   }
@@ -106,15 +104,19 @@ CContextTrace::GetTraceInfo(CallStackInfo *trace)
 const char *
 CContextTrace::GetLastNative(uint32_t *index)
 {
-  if (m_ctx->n_err == SP_ERROR_NONE)
+  if (context_->GetLastNativeError() == SP_ERROR_NONE)
+    return NULL;
+
+  int lastNative = context_->lastNative();
+  if (lastNative < 0)
     return NULL;
 
   sp_native_t *native;
-  if (m_pRuntime->GetNativeByIndex(m_ctx->n_idx, &native) != SP_ERROR_NONE)
+  if (m_pRuntime->GetNativeByIndex(lastNative, &native) != SP_ERROR_NONE)
     return NULL;
 
   if (index)
-    *index = m_ctx->n_idx;
+    *index = lastNative;
 
   return native->name;
 }

@@ -91,22 +91,20 @@ class Compiler
   void emitFloatCmp(ConditionCode cc);
 
   ExternalAddress cipAddr() {
-    sp_context_t *ctx = rt_->GetBaseContext()->GetCtx();
-    return ExternalAddress(&ctx->cip);
+    return ExternalAddress(context_->addressOfCip());
   }
   ExternalAddress hpAddr() {
-    sp_context_t *ctx = rt_->GetBaseContext()->GetCtx();
-    return ExternalAddress(&ctx->hp);
+    return ExternalAddress(context_->addressOfHp());
   }
   ExternalAddress frmAddr() {
-    sp_context_t *ctx = rt_->GetBaseContext()->GetCtx();
-    return ExternalAddress(&ctx->frm);
+    return ExternalAddress(context_->addressOfFrm());
   }
 
  private:
   AssemblerX86 masm;
   sp::Environment *env_;
   PluginRuntime *rt_;
+  PluginContext *context_;
   const sp_plugin_t *plugin_;
   int error_;
   uint32_t pcode_start_;

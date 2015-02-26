@@ -16,6 +16,7 @@
 #include <sp_vm_api.h>
 
 class PluginRuntime;
+class PluginContext;
 
 namespace sp {
 
@@ -37,7 +38,7 @@ class CContextTrace : public IContextTrace
 
  private:
   PluginRuntime *m_pRuntime;
-  sp_context_t *m_ctx;
+  PluginContext *context_;
   int m_Error;
   const char *m_pMsg;
   cell_t m_StartRp;

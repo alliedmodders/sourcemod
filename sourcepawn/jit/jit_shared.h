@@ -68,26 +68,7 @@ namespace SourcePawn
 	} sp_plugin_t;
 }
 
-struct tracker_t;
 class PluginContext;
-
-typedef struct sp_context_s
-{
-	cell_t			hp;				/**< Heap pointer */
-	cell_t			sp;				/**< Stack pointer */
-	cell_t			frm;			/**< Frame pointer */
-	cell_t			rval;			/**< Return value from InvokeFunction() */
-	int32_t			cip;			/**< Code pointer last error occurred in */
-	int32_t			err;			/**< Error last set by interpreter */
-	int32_t			n_err;			/**< Error code set by a native */
-	uint32_t		n_idx;			/**< Current native index being executed */
-	tracker_t 		*tracker;
-	sp_plugin_t 	*plugin;
-	PluginContext	*basecx;
-	void *			vm[8];			/**< VM-specific pointers */
-	cell_t			rp;				/**< Return stack pointer */
-	cell_t			rstk_cips[SP_MAX_RETURN_STACK];
-} sp_context_t;
 
 //#define SPFLAG_PLUGIN_DEBUG			(1<<0)
 #define SPFLAG_PLUGIN_PAUSED		(1<<1)

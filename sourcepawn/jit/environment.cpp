@@ -238,17 +238,16 @@ Environment::UnpatchAllJumpsFromTimeout()
 int
 Environment::Invoke(PluginRuntime *runtime, CompiledFunction *fn, cell_t *result)
 {
-  sp_context_t *ctx = runtime->GetBaseContext()->GetCtx();
+  PluginContext *cx = runtime->GetBaseContext();
 
   // Note that cip, hp, sp are saved and restored by Execute2().
-  ctx->cip = fn->GetCodeOffset();
+  *cx->addressOfCip() = fn->GetCodeOffset();
 
   InvokeStubFn invoke = code_stubs_->InvokeStub();
 
   EnterInvoke();
-  int err = invoke(ctx, runtime->plugin()->memory, fn->GetEntryAddress());
+  int err = invoke(cx, fn->GetEntryAddress(), result);
   LeaveInvoke();
 
-  *result = ctx->rval;
   return err;
 }

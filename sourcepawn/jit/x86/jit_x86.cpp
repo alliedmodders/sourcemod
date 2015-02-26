@@ -77,128 +77,6 @@ OpToCondition(OPCODE op)
   }
 }
 
-struct array_creation_t
-{
-  const cell_t *dim_list;     /* Dimension sizes */
-  cell_t dim_count;           /* Number of dimensions */
-  cell_t *data_offs;          /* Current offset AFTER the indirection vectors (data) */
-  cell_t *base;               /* array base */
-};
-
-static cell_t
-GenerateInnerArrayIndirectionVectors(array_creation_t *ar, int dim, cell_t cur_offs)
-{
-  cell_t write_offs = cur_offs;
-  cell_t *data_offs = ar->data_offs;
-
-  cur_offs += ar->dim_list[dim];
-
-  // Dimension n-x where x > 2 will have sub-vectors.  
-  // Otherwise, we just need to reference the data section.
-  if (ar->dim_count > 2 && dim < ar->dim_count - 2) {
-    // For each index at this dimension, write offstes to our sub-vectors.
-    // After we write one sub-vector, we generate its sub-vectors recursively.
-    // At the end, we're given the next offset we can use.
-    for (int i = 0; i < ar->dim_list[dim]; i++) {
-      ar->base[write_offs] = (cur_offs - write_offs) * sizeof(cell_t);
-      write_offs++;
-      cur_offs = GenerateInnerArrayIndirectionVectors(ar, dim + 1, cur_offs);
-    }
-  } else {
-    // In this section, there are no sub-vectors, we need to write offsets 
-    // to the data.  This is separate so the data stays in one big chunk.
-    // The data offset will increment by the size of the last dimension, 
-    // because that is where the data is finally computed as. 
-    for (int i = 0; i < ar->dim_list[dim]; i++) {
-      ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell_t);
-      write_offs++;
-      *data_offs = *data_offs + ar->dim_list[dim + 1];
-    }
-  }
-
-  return cur_offs;
-}
-
-static cell_t
-calc_indirection(const array_creation_t *ar, cell_t dim)
-{
-  cell_t size = ar->dim_list[dim];
-  if (dim < ar->dim_count - 2)
-    size += ar->dim_list[dim] * calc_indirection(ar, dim + 1);
-  return size;
-}
-
-static cell_t
-GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], cell_t _dimcount, bool autozero)
-{
-  array_creation_t ar;
-  cell_t data_offs;
-
-  /* Reverse the dimensions */
-  cell_t dim_list[sDIMEN_MAX];
-  int cur_dim = 0;
-  for (int i = _dimcount - 1; i >= 0; i--)
-    dim_list[cur_dim++] = dims[i];
-  
-  ar.base = arraybase;
-  ar.dim_list = dim_list;
-  ar.dim_count = _dimcount;
-  ar.data_offs = &data_offs;
-
-  data_offs = calc_indirection(&ar, 0);
-  GenerateInnerArrayIndirectionVectors(&ar, 0, 0);
-  return data_offs;
-}
-
-int
-GenerateFullArray(PluginRuntime *rt, uint32_t argc, cell_t *argv, int autozero)
-{
-  sp_context_t *ctx = rt->GetBaseContext()->GetCtx();
-
-  // Calculate how many cells are needed.
-  if (argv[0] <= 0)
-    return SP_ERROR_ARRAY_TOO_BIG;
-
-  uint32_t cells = argv[0];
-
-  for (uint32_t dim = 1; dim < argc; dim++) {
-    cell_t dimsize = argv[dim];
-    if (dimsize <= 0)
-      return SP_ERROR_ARRAY_TOO_BIG;
-    if (!ke::IsUint32MultiplySafe(cells, dimsize))
-      return SP_ERROR_ARRAY_TOO_BIG;
-    cells *= uint32_t(dimsize);
-    if (!ke::IsUint32AddSafe(cells, dimsize))
-      return SP_ERROR_ARRAY_TOO_BIG;
-    cells += uint32_t(dimsize);
-  }
-
-  if (!ke::IsUint32MultiplySafe(cells, 4))
-    return SP_ERROR_ARRAY_TOO_BIG;
-
-  uint32_t bytes = cells * 4;
-  if (!ke::IsUint32AddSafe(ctx->hp, bytes))
-    return SP_ERROR_ARRAY_TOO_BIG;
-
-  uint32_t new_hp = ctx->hp + bytes;
-  cell_t *dat_hp = reinterpret_cast<cell_t *>(rt->plugin()->memory + new_hp);
-
-  // argv, coincidentally, is STK.
-  if (dat_hp >= argv - STACK_MARGIN)
-    return SP_ERROR_HEAPLOW;
-
-  if (int err = PushTracker(rt->GetBaseContext()->GetCtx(), bytes))
-    return err;
-
-  cell_t *base = reinterpret_cast<cell_t *>(rt->plugin()->memory + ctx->hp);
-  cell_t offs = GenerateArrayIndirectionVectors(base, argv, argc, !!autozero);
-  assert(size_t(offs) == cells);
-
-  argv[argc - 1] = ctx->hp;
-  ctx->hp = new_hp;
-  return SP_ERROR_NONE;
-}
-
 #if !defined NDEBUG
 static const char *
 GetFunctionName(const sp_plugin_t *plugin, uint32_t offs)
@@ -303,6 +181,7 @@ CompileFromThunk(PluginRuntime *runtime, cell_t pcode_offs, void **addrp, char *
 Compiler::Compiler(PluginRuntime *rt, cell_t pcode_offs)
   : env_(Environment::get()),
     rt_(rt),
+    context_(rt->GetBaseContext()),
     plugin_(rt->plugin()),
     error_(SP_ERROR_NONE),
     pcode_start_(pcode_offs),
@@ -382,6 +261,37 @@ Compiler::emit(int *errp)
   }
 
   return new CompiledFunction(code, pcode_start_, edges.take());
+}
+
+// Helpers for invoking context members.
+static int
+InvokePushTracker(PluginContext *cx, uint32_t amount)
+{
+  return cx->pushTracker(amount);
+}
+
+static int
+InvokePopTrackerAndSetHeap(PluginContext *cx)
+{
+  return cx->popTrackerAndSetHeap();
+}
+
+static cell_t
+InvokeNativeHelper(PluginContext *cx, ucell_t native_idx, cell_t *params)
+{
+  return cx->invokeNative(native_idx, params);
+}
+
+static cell_t
+InvokeBoundNativeHelper(PluginContext *cx, SPVM_NATIVE_FUNC fn, cell_t *params)
+{
+  return cx->invokeBoundNative(fn, params);
+}
+
+static int
+InvokeGenerateFullArray(PluginContext *cx, uint32_t argc, cell_t *argv, int autozero)
+{
+  return cx->generateFullArray(argc, argv, autozero);
 }
 
 bool
@@ -1258,8 +1168,8 @@ Compiler::emitOp(OPCODE op)
       __ push(alt);
 
       __ push(amount * 4);
-      __ push(intptr_t(rt_->GetBaseContext()->GetCtx()));
-      __ call(ExternalAddress((void *)PushTracker));
+      __ push(intptr_t(rt_->GetBaseContext()));
+      __ call(ExternalAddress((void *)InvokePushTracker));
       __ addl(esp, 8);
       __ testl(eax, eax);
       __ j(not_zero, &extern_error_);
@@ -1276,8 +1186,8 @@ Compiler::emitOp(OPCODE op)
       __ push(alt);
 
       // Get the context pointer and call the sanity checker.
-      __ push(intptr_t(rt_));
-      __ call(ExternalAddress((void *)PopTrackerAndSetHeap));
+      __ push(intptr_t(rt_->GetBaseContext()));
+      __ call(ExternalAddress((void *)InvokePopTrackerAndSetHeap));
       __ addl(esp, 4);
       __ testl(eax, eax);
       __ j(not_zero, &extern_error_);
@@ -1296,8 +1206,6 @@ Compiler::emitOp(OPCODE op)
 
     case OP_HALT:
       __ align(16);
-      __ movl(tmp, intptr_t(rt_->GetBaseContext()->GetCtx()));
-      __ movl(Operand(tmp, offsetof(sp_context_t, rval)), pri);
       __ movl(pri, readCell());
       __ jmp(&extern_error_);
       break;
@@ -1405,8 +1313,8 @@ Compiler::emitGenArray(bool autozero)
 
     __ shll(tmp, 2);
     __ push(tmp);
-    __ push(intptr_t(rt_->GetBaseContext()->GetCtx()));
-    __ call(ExternalAddress((void *)PushTracker));
+    __ push(intptr_t(rt_->GetBaseContext()));
+    __ call(ExternalAddress((void *)InvokePushTracker));
     __ addl(esp, 4);
     __ pop(tmp);
     __ shrl(tmp, 2);
@@ -1432,8 +1340,8 @@ Compiler::emitGenArray(bool autozero)
     __ push(autozero ? 1 : 0);
     __ push(stk);
     __ push(val);
-    __ push(intptr_t(rt_));
-    __ call(ExternalAddress((void *)GenerateFullArray));
+    __ push(intptr_t(context_));
+    __ call(ExternalAddress((void *)InvokeGenerateFullArray));
     __ addl(esp, 4 * sizeof(void *));
 
     // restore pri to tmp
@@ -1462,8 +1370,8 @@ Compiler::emitCall()
 
   // eax = context
   // ecx = rp
-  __ movl(eax, intptr_t(rt_->GetBaseContext()->GetCtx()));
-  __ movl(ecx, Operand(eax, offsetof(sp_context_t, rp)));
+  __ movl(eax, intptr_t(rt_->GetBaseContext()));
+  __ movl(ecx, Operand(eax, PluginContext::offsetOfRp()));
 
   // Check if the return stack is used up.
   __ cmpl(ecx, SP_MAX_RETURN_STACK);
@@ -1471,10 +1379,10 @@ Compiler::emitCall()
 
   // Add to the return stack.
   uintptr_t cip = uintptr_t(cip_ - 2) - uintptr_t(plugin_->pcode);
-  __ movl(Operand(eax, ecx, ScaleFour, offsetof(sp_context_t, rstk_cips)), cip);
+  __ movl(Operand(eax, ecx, ScaleFour, PluginContext::offsetOfRstkCips()), cip);
 
   // Increment the return stack pointer.
-  __ addl(Operand(eax, offsetof(sp_context_t, rp)), 1);
+  __ addl(Operand(eax, PluginContext::offsetOfRp()), 1);
 
   // Store the CIP of the function we're about to call.
   __ movl(Operand(cipAddr()), offset);
@@ -1495,8 +1403,8 @@ Compiler::emitCall()
   __ movl(Operand(cipAddr()), cip);
 
   // Mark us as leaving the last frame.
-  __ movl(tmp, intptr_t(rt_->GetBaseContext()->GetCtx()));
-  __ subl(Operand(tmp, offsetof(sp_context_t, rp)), 1);
+  __ movl(tmp, intptr_t(rt_->GetBaseContext()));
+  __ subl(Operand(tmp, PluginContext::offsetOfRp()), 1);
   return true;
 }
 
@@ -1581,13 +1489,13 @@ Compiler::emitNativeCall(OPCODE op)
   // Push the last parameter for the C++ function.
   __ push(stk);
 
+  __ movl(eax, intptr_t(rt_->GetBaseContext()));
+  __ movl(Operand(eax, PluginContext::offsetOfLastNative()), native_index);
+
   // Relocate our absolute stk to be dat-relative, and update the context's
   // view.
-  __ movl(eax, intptr_t(rt_->GetBaseContext()->GetCtx()));
   __ subl(stk, dat);
-  __ movl(Operand(eax, offsetof(sp_context_t, sp)), stk);
-
-  __ movl(Operand(eax, offsetof(sp_context_t, n_idx)), native_index);
+  __ movl(Operand(eax, PluginContext::offsetOfSp()), stk);
 
   sp_native_t *native = rt_->GetNativeByIndex(native_index);
   if ((native->status != SP_NATIVE_BOUND) ||
@@ -1596,18 +1504,18 @@ Compiler::emitNativeCall(OPCODE op)
     // The native is either unbound, or it could become unbound in the
     // future. Invoke the slower native callback.
     __ push(native_index);
-    __ push(eax);
-    __ call(ExternalAddress((void *)NativeCallback));
+    __ push(intptr_t(rt_->GetBaseContext()));
+    __ call(ExternalAddress((void *)InvokeNativeHelper));
   } else {
     // The native is bound so we have a few more guarantees.
     __ push(intptr_t(native->pfn));
-    __ push(eax);
-    __ call(ExternalAddress((void *)BoundNativeCallback));
+    __ push(intptr_t(rt_->GetBaseContext()));
+    __ call(ExternalAddress((void *)InvokeBoundNativeHelper));
   }
 
   // Check for errors.
-  __ movl(ecx, intptr_t(rt_->GetBaseContext()->GetCtx()));
-  __ movl(ecx, Operand(ecx, offsetof(sp_context_t, n_err)));
+  __ movl(ecx, intptr_t(rt_->GetBaseContext()));
+  __ movl(ecx, Operand(ecx, PluginContext::offsetOfNativeError()));
   __ testl(ecx, ecx);
   __ j(not_zero, &extern_error_);
   
@@ -1798,8 +1706,8 @@ Compiler::emitErrorPaths()
 
   if (extern_error_.used()) {
     __ bind(&extern_error_);
-    __ movl(eax, intptr_t(rt_->GetBaseContext()->GetCtx()));
-    __ movl(eax, Operand(eax, offsetof(sp_context_t, n_err)));
+    __ movl(eax, intptr_t(rt_->GetBaseContext()));
+    __ movl(eax, Operand(eax, PluginContext::offsetOfNativeError()));
     __ jmp(ExternalAddress(env_->stubs()->ReturnStub()));
   }
 }

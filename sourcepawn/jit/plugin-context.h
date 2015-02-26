@@ -18,6 +18,18 @@
 #include "plugin-runtime.h"
 #include "jit_shared.h"
 
+struct HeapTracker
+{
+  HeapTracker()
+   : size(0),
+     pBase(nullptr),
+     pCur(nullptr)
+  {}
+  size_t size; 
+  ucell_t *pBase; 
+  ucell_t *pCur;
+};
+
 class PluginContext : public IPluginContext
 {
  public:
@@ -27,7 +39,6 @@ class PluginContext : public IPluginContext
  public: //IPluginContext
   IVirtualMachine *GetVirtualMachine();
   sp_context_t *GetContext();
-  sp_context_t *GetCtx();
   bool IsDebugging();
   int SetDebugBreak(void *newpfn, void *oldpfn);
   IPluginDebugInfo *GetDebugInfo();
@@ -76,6 +87,94 @@ class PluginContext : public IPluginContext
  public:
   bool IsInExec();
 
+  static inline size_t offsetOfRp() {
+    return offsetof(PluginContext, rp_);
+  }
+  static inline size_t offsetOfRstkCips() {
+    return offsetof(PluginContext, rstk_cips_);
+  }
+  static inline size_t offsetOfTracker() {
+    return offsetof(PluginContext, tracker_);
+  }
+  static inline size_t offsetOfLastNative() {
+    return offsetof(PluginContext, last_native_);
+  }
+  static inline size_t offsetOfNativeError() {
+    return offsetof(PluginContext, native_error_);
+  }
+  static inline size_t offsetOfSp() {
+    return offsetof(PluginContext, sp_);
+  }
+  static inline size_t offsetOfRuntime() {
+    return offsetof(PluginContext, m_pRuntime);
+  }
+
+  int32_t *addressOfCip() {
+    return &cip_;
+  }
+  int32_t *addressOfSp() {
+    return &sp_;
+  }
+  cell_t *addressOfFrm() {
+    return &frm_;
+  }
+  cell_t *addressOfHp() {
+    return &hp_;
+  }
+
+  int32_t cip() const {
+    return cip_;
+  }
+  cell_t frm() const {
+    return frm_;
+  }
+  cell_t hp() const {
+    return hp_;
+  }
+
+  // Return stack logic.
+  bool pushReturnCip(cell_t cip) {
+    if (rp_ >= SP_MAX_RETURN_STACK)
+      return false;
+    rstk_cips_[rp_++] = cip;
+    return true;
+  }
+  void popReturnCip() {
+    assert(rp_ > 0);
+    rp_--;
+  }
+  cell_t rp() const {
+    return rp_;
+  }
+  cell_t getReturnStackCip(int index) {
+    assert(index >= 0 && index < SP_MAX_RETURN_STACK);
+    return rstk_cips_[index];
+  }
+
+  int popTrackerAndSetHeap();
+  int pushTracker(uint32_t amount);
+
+  int generateArray(cell_t dims, cell_t *stk, bool autozero);
+  int generateFullArray(uint32_t argc, cell_t *argv, int autozero);
+  cell_t invokeNative(ucell_t native_idx, cell_t *params);
+  cell_t invokeBoundNative(SPVM_NATIVE_FUNC pfn, cell_t *params);
+  int lastNative() const {
+    return last_native_;
+  }
+
+  inline bool checkAddress(cell_t *stk, cell_t addr) {
+    if (uint32_t(addr) >= m_pRuntime->plugin()->mem_size)
+      return false;
+
+    if (addr < hp_)
+      return true;
+
+    if (reinterpret_cast<cell_t *>(m_pRuntime->plugin()->memory + addr) < stk)
+      return false;
+
+    return true;
+  }
+
  private:
   void SetErrorMessage(const char *msg, va_list ap);
   void _SetErrorMessage(const char *msg, ...);
@@ -87,9 +186,27 @@ class PluginContext : public IPluginContext
   bool m_CustomMsg;
   bool m_InExec;
   PluginRuntime *m_pRuntime;
-  sp_context_t m_ctx;
   void *m_keys[4];
   bool m_keys_set[4];
+
+  // Tracker for local HEA growth.
+  HeapTracker tracker_;
+
+  // Return stack.
+  cell_t rp_;
+  cell_t rstk_cips_[SP_MAX_RETURN_STACK];
+
+  // Track the currently executing native index, and any error it throws.
+  int32_t last_native_;
+  int native_error_;
+
+  // Most recent CIP.
+  int32_t cip_;
+
+  // Stack, heap, and frame pointer.
+  cell_t sp_;
+  cell_t hp_;
+  cell_t frm_;
 };
 
 #endif //_INCLUDE_SOURCEPAWN_BASECONTEXT_H_
