@@ -16,6 +16,7 @@
 #include <sp_vm_api.h>
 #include <am-vector.h>
 #include <am-inlinelist.h>
+#include <am-hashmap.h>
 #include "jit_shared.h"
 #include "compiled-function.h"
 #include "scripted-invoker.h"
@@ -110,15 +111,24 @@ class PluginRuntime
   unsigned int m_NumFuncs;
   unsigned int m_MaxFuncs;
   floattbl_t *float_table_;
-  CompiledFunction **function_map_;
-  size_t function_map_size_;
+
+  struct FunctionMapPolicy {
+    static inline uint32_t hash(ucell_t value) {
+      return ke::HashInteger<4>(value);
+    }
+    static inline bool matches(ucell_t a, ucell_t b) {
+      return a == b;
+    }
+  };
+  typedef ke::HashMap<ucell_t, CompiledFunction *, FunctionMapPolicy> FunctionMap;
+
+  FunctionMap function_map_;
   ke::Vector<CompiledFunction *> m_JitFunctions;
 
  public:
   DebugInfo m_Debug;
   PluginContext *m_pCtx;
   ScriptedInvoker **m_PubFuncs;
-  CompiledFunction **m_PubJitFuncs;
 
  public:
   unsigned int m_CompSerial;
