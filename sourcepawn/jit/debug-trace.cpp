@@ -111,8 +111,8 @@ CContextTrace::GetLastNative(uint32_t *index)
   if (lastNative < 0)
     return NULL;
 
-  sp_native_t *native;
-  if (m_pRuntime->GetNativeByIndex(lastNative, &native) != SP_ERROR_NONE)
+  const sp_native_t *native = m_pRuntime->GetNative(lastNative);
+  if (!native)
     return NULL;
 
   if (index)

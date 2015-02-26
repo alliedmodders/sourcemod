@@ -60,7 +60,6 @@ class PluginRuntime
   virtual IPluginDebugInfo *GetDebugInfo();
   virtual int FindNativeByName(const char *name, uint32_t *index);
   virtual int GetNativeByIndex(uint32_t index, sp_native_t **native);
-  virtual sp_native_t *GetNativeByIndex(uint32_t index);
   virtual uint32_t GetNativesNum();
   virtual int FindPublicByName(const char *name, uint32_t *index);
   virtual int GetPublicByIndex(uint32_t index, sp_public_t **publicptr);
@@ -83,6 +82,8 @@ class PluginRuntime
   void SetName(const char *name);
   unsigned GetNativeReplacement(size_t index);
   ScriptedInvoker *GetPublicFunction(size_t index);
+  int UpdateNativeBinding(uint32_t index, SPVM_NATIVE_FUNC pfn, uint32_t flags, void *data) KE_OVERRIDE;
+  const sp_native_t *GetNative(uint32_t index) KE_OVERRIDE;
 
   PluginContext *GetBaseContext();
   const sp_plugin_t *plugin() const {

@@ -1497,7 +1497,7 @@ Compiler::emitNativeCall(OPCODE op)
   __ subl(stk, dat);
   __ movl(Operand(eax, PluginContext::offsetOfSp()), stk);
 
-  sp_native_t *native = rt_->GetNativeByIndex(native_index);
+  const sp_native_t *native = rt_->GetNative(native_index);
   if ((native->status != SP_NATIVE_BOUND) ||
       (native->flags & (SP_NTVFLAG_OPTIONAL | SP_NTVFLAG_EPHEMERAL)))
   {
