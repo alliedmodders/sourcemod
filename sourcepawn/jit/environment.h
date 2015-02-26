@@ -90,7 +90,6 @@ class Environment : public ISourcePawnEnvironment
   void DisableProfiling();
 
   void SetJitEnabled(bool enabled) {
-    jit_enabled_ = enabled;
   }
   bool IsJitEnabled() const {
     return jit_enabled_;

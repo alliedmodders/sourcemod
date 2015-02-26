@@ -107,10 +107,8 @@ class PluginRuntime
 
  private:
   sp_plugin_t m_plugin;
-  uint8_t *alt_pcode_;
-  unsigned int m_NumFuncs;
-  unsigned int m_MaxFuncs;
-  floattbl_t *float_table_;
+  ke::AutoArray<uint8_t> alt_pcode_;
+  ke::AutoArray<floattbl_t> float_table_;
 
   struct FunctionMapPolicy {
     static inline uint32_t hash(ucell_t value) {
@@ -127,7 +125,7 @@ class PluginRuntime
 
  public:
   DebugInfo m_Debug;
-  PluginContext *m_pCtx;
+  ke::AutoPtr<PluginContext> m_pCtx;
   ScriptedInvoker **m_PubFuncs;
 
  public:
