@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod Team Fortress 2 Extension
- * Copyright (C) 2004-2011 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2015 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -33,15 +33,50 @@
 #define _INCLUDE_SOURCEMOD_CONDITIONS_H_
 
 #include "extension.h"
-#include <jit/jit_helpers.h>
-#include <jit/x86/x86_macros.h>
-#include "CDetour/detours.h"
 
-bool InitialiseConditionChecks();
-void RemoveConditionChecks();
-void DoRemoveCond(int client, int condition);
+struct CondChangeData_t;
 
-void Conditions_OnClientPutInServer(int client);
+class PlayerConditionsMgr : public IClientListener
+{
+public:
+	PlayerConditionsMgr();
+	bool Init();
+	void Shutdown();
+public: // IClientListener
+	void OnClientPutInServer(int client);
+public:
+	enum CondVar : size_t
+	{
+		m_nPlayerCond,
+		_condition_bits,
+		m_nPlayerCondEx,
+		m_nPlayerCondEx2,
+		m_nPlayerCondEx3,
+
+		CondVar_Count
+	};
+
+	void OnConVarChange(CondVar var, const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID);
+	void ProcessCondChange(CondChangeData_t *pCondData);
+private:
+	inline unsigned int GetPropOffs(CondVar var)
+	{
+		return m_CondVarProps[var].actual_offset;
+	}
+	inline SendProp *GetProp(CondVar var)
+	{
+		return m_CondVarProps[var].prop;
+	}
+	template<CondVar var>
+	bool SetupProp(const char *varname);
+private:
+	int m_OldConds[SM_MAXPLAYERS + 1][CondVar_Count];
+	sm_sendprop_info_t m_CondVarProps[CondVar_Count];
+	int m_CondOffset[CondVar_Count];
+	SendVarProxyFn m_BackupProxyFns[CondVar_Count];
+};
+
+extern PlayerConditionsMgr g_CondMgr;
 
 extern IForward *g_addCondForward;
 extern IForward *g_removeCondForward;
