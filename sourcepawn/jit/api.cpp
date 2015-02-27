@@ -11,6 +11,7 @@
 // SourcePawn. If not, see http://www.gnu.org/licenses/.
 //
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <assert.h>
 #include "x86/jit_x86.h"
