@@ -218,6 +218,7 @@ ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int
 		hook->pf->PushCell(args);
 
 		cell_t tempres = result;
+
 		if (hook->pf->Execute(&tempres) == SP_ERROR_NONE)
 		{
 			if (tempres > result)

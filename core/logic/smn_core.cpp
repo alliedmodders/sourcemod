@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -130,13 +130,14 @@ void LogAction(Handle_t hndl, int type, int client, int target, const char *mess
 
 	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
-
-	if (pContext->GetLastNativeError() == SP_ERROR_NONE)
 	{
-		pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", buffer);
+		DetectExceptions eh(pContext);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
+		if (eh.HasException())
+			return 0;
 	}
 
+	pContext->ReportError("%s", buffer);
 	return 0;
 }
 
@@ -388,16 +389,16 @@ static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
 	{
 		char buffer[2048];
 
-		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
-		if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 		{
-			pPlugin->SetErrorState(Plugin_Failed, "%s", str);
-			return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "Formatting error (%s)", str);
-		}
-		else
-		{
+			DetectExceptions eh(pContext);
+			g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
+			if (eh.HasException()) {
+				pPlugin->SetErrorState(Plugin_Failed, "%s", str);
+				return 0;
+			}
 			pPlugin->SetErrorState(Plugin_Failed, "%s", buffer);
-			return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", buffer);
+			pContext->ReportFatalError("%s", buffer);
+			return 0;
 		}
 	}
 
@@ -507,11 +508,11 @@ static cell_t sm_LogAction(IPluginContext *pContext, const cell_t *params)
 {
 	char buffer[2048];
 	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 3);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 3);
+		if (eh.HasException())
+			return 0;
 	}
 
 	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
@@ -536,13 +537,14 @@ static cell_t LogToFile(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char buffer[2048];
-	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
-		fclose(fp);
-		return 0;
+		DetectExceptions eh(pContext);
+		g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		if (eh.HasException()) {
+			fclose(fp);
+			return 0;
+		}
 	}
 
 	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
@@ -569,13 +571,14 @@ static cell_t LogToFileEx(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char buffer[2048];
-	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
-		fclose(fp);
-		return 0;
+		DetectExceptions eh(pContext);
+		g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		if (eh.HasException()) {
+			fclose(fp);
+			return 0;
+		}
 	}
 
 	g_Logger.LogToOpenFile(fp, "%s", buffer);
@@ -653,14 +656,20 @@ static cell_t RequireFeature(IPluginContext *pContext, const cell_t *params)
 		char default_message[255];
 		SMPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 
+		DetectExceptions eh(pContext);
 		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 3);
-		if (pContext->GetLastNativeError() != SP_ERROR_NONE || buffer[0] == '\0')
-		{
+		if (eh.HasException())
+			buffer[0] = '\0';
+
+		if (buffer[0] == '\0') {
 			g_pSM->Format(default_message, sizeof(default_message), "Feature \"%s\" not available", name);
 			msg = default_message;
 		}
 		pPlugin->SetErrorState(Plugin_Error, "%s", msg);
-		return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", msg);
+
+		if (!eh.HasException())
+			pContext->ReportFatalError("%s", msg);
+		return 0;
 	}
 
 	return 1;

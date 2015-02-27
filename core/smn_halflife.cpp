@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
@@ -321,12 +321,12 @@ static cell_t PrintToChat(IPluginContext *pContext, const cell_t *params)
 	g_SourceMod.SetGlobalTarget(client);
 
 	char buffer[192];
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
-	/* Check for an error before printing to the client */
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		if (eh.HasException())
+			return 0;
 	}
 
 	if (!g_HL2.TextMsg(client, HUD_PRINTTALK, buffer))
@@ -355,12 +355,12 @@ static cell_t PrintCenterText(IPluginContext *pContext, const cell_t *params)
 	g_SourceMod.SetGlobalTarget(client);
 
 	char buffer[192];
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
-
-	/* Check for an error before printing to the client */
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
+	
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		if (eh.HasException())
+			return 0;
 	}
 
 	if (!g_HL2.TextMsg(client, HUD_PRINTCENTER, buffer))
@@ -389,12 +389,11 @@ static cell_t PrintHintText(IPluginContext *pContext, const cell_t *params)
 	g_SourceMod.SetGlobalTarget(client);
 
 	char buffer[192];
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
-
-	/* Check for an error before printing to the client */
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		if (eh.HasException())
+			return 0;
 	}
 
 	if (!g_HL2.HintTextMsg(client, buffer))

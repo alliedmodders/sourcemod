@@ -177,19 +177,27 @@ SourcePawnEngine2::SourcePawnEngine2()
 {
 }
 
-static size_t
-UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
+size_t
+sp::UTIL_FormatVA(char *buffer, size_t maxlength, const char *fmt, va_list ap)
 {
-  va_list ap;
-
-  va_start(ap, fmt);
   size_t len = vsnprintf(buffer, maxlength, fmt, ap);
-  va_end(ap);
 
   if (len >= maxlength) {
     buffer[maxlength - 1] = '\0';
     return maxlength - 1;
   }
+  return len;
+}
+
+size_t
+sp::UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start(ap, fmt);
+  size_t len = UTIL_FormatVA(buffer, maxlength, fmt, ap);
+  va_end(ap);
+
   return len;
 }
 
@@ -255,13 +263,13 @@ SourcePawnEngine2::LoadBinaryFromFile(const char *file, char *error, size_t maxl
 # endif
     )
     {
-      pRuntime->SetName(&file[i + 1]);
+      pRuntime->SetNames(file, &file[i + 1]);
       break;
     }
   }
 
   if (!pRuntime->Name())
-    pRuntime->SetName(file);
+    pRuntime->SetNames(file, file);
 
   return pRuntime;
 }
@@ -340,7 +348,9 @@ SourcePawnEngine2::CreateEmptyRuntime(const char *name, uint32_t memory)
     return NULL;
   }
 
-  rt->SetName(name != NULL ? name : "<anonymous>");
+  if (!name)
+    name = "<anonymous>";
+  rt->SetNames(name, name);
   return rt;
 }
 
@@ -385,4 +395,10 @@ void
 SourcePawnEngine2::SetProfilingTool(IProfilingTool *tool)
 {
   Environment::get()->SetProfiler(tool);
+}
+
+ISourcePawnEnvironment *
+SourcePawnEngine2::Environment()
+{
+  return Environment::get();
 }

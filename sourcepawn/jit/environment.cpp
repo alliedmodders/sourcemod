@@ -13,7 +13,6 @@
 #include "environment.h"
 #include "x86/jit_x86.h"
 #include "watchdog_timer.h"
-#include "debug-trace.h"
 #include "api.h"
 #include "code-stubs.h"
 #include "watchdog_timer.h"
@@ -25,10 +24,12 @@ static Environment *sEnvironment = nullptr;
 
 Environment::Environment()
  : debugger_(nullptr),
+   exception_code_(SP_ERROR_NONE),
    profiler_(nullptr),
    jit_enabled_(true),
    profiling_enabled_(false),
-   code_pool_(nullptr)
+   code_pool_(nullptr),
+   top_(nullptr)
 {
 }
 
@@ -150,7 +151,9 @@ static const char *sErrorMsgTable[] =
   "Plugin format is too new",
   "Out of memory",
   "Integer overflow",
-  "Script execution timed out"
+  "Script execution timed out",
+  "Custom error",
+  "Fatal error"
 };
 
 const char *
@@ -159,17 +162,6 @@ Environment::GetErrorString(int error)
   if (error < 1 || error > int(sizeof(sErrorMsgTable) / sizeof(sErrorMsgTable[0])))
     return NULL;
   return sErrorMsgTable[error];
-}
-
-void
-Environment::ReportError(PluginRuntime *runtime, int err, const char *errstr, cell_t rp_start)
-{
-  if (!debugger_)
-    return;
-
-  CContextTrace trace(runtime, err, errstr, rp_start);
-
-  debugger_->OnContextExecuteError(runtime->GetDefaultContext(), &trace);
 }
 
 void *
@@ -198,6 +190,15 @@ Environment::DeregisterRuntime(PluginRuntime *rt)
   runtimes_.remove(rt);
 }
 
+static inline void
+SwapLoopEdge(uint8_t *code, LoopEdge &e)
+{
+  int32_t *loc = reinterpret_cast<int32_t *>(code + e.offset - 4);
+  int32_t new_disp32 = e.disp32;
+  e.disp32 = *loc;
+  *loc = new_disp32;
+}
+
 void
 Environment::PatchAllJumpsForTimeout()
 {
@@ -208,11 +209,8 @@ Environment::PatchAllJumpsForTimeout()
       CompiledFunction *fun = rt->GetJitFunction(i);
       uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());
 
-      for (size_t j = 0; j < fun->NumLoopEdges(); j++) {
-        const LoopEdge &e = fun->GetLoopEdge(j);
-        int32_t diff = intptr_t(code_stubs_->TimeoutStub()) - intptr_t(base + e.offset);
-        *reinterpret_cast<int32_t *>(base + e.offset - 4) = diff;
-      }
+      for (size_t j = 0; j < fun->NumLoopEdges(); j++)
+        SwapLoopEdge(base, fun->GetLoopEdge(j));
     }
   }
 }
@@ -227,10 +225,8 @@ Environment::UnpatchAllJumpsFromTimeout()
       CompiledFunction *fun = rt->GetJitFunction(i);
       uint8_t *base = reinterpret_cast<uint8_t *>(fun->GetEntryAddress());
 
-      for (size_t j = 0; j < fun->NumLoopEdges(); j++) {
-        const LoopEdge &e = fun->GetLoopEdge(j);
-        *reinterpret_cast<int32_t *>(base + e.offset - 4) = e.disp32;
-      }
+      for (size_t j = 0; j < fun->NumLoopEdges(); j++)
+        SwapLoopEdge(base, fun->GetLoopEdge(j));
     }
   }
 }
@@ -238,16 +234,168 @@ Environment::UnpatchAllJumpsFromTimeout()
 int
 Environment::Invoke(PluginRuntime *runtime, CompiledFunction *fn, cell_t *result)
 {
+  // Must be in an invoke frame.
+  assert(top_ && top_->cx() == runtime->GetBaseContext());
+
   PluginContext *cx = runtime->GetBaseContext();
 
-  // Note that cip, hp, sp are saved and restored by Execute2().
-  *cx->addressOfCip() = fn->GetCodeOffset();
-
   InvokeStubFn invoke = code_stubs_->InvokeStub();
+  return invoke(cx, fn->GetEntryAddress(), result);
+}
 
-  EnterInvoke();
-  int err = invoke(cx, fn->GetEntryAddress(), result);
-  LeaveInvoke();
+void
+Environment::ReportError(int code)
+{
+  const char *message = GetErrorString(code);
+  if (!message) {
+    char buffer[255];
+    UTIL_Format(buffer, sizeof(buffer), "Unknown error code %d", code);
+    ReportError(code, buffer);
+  } else {
+    ReportError(code, message);
+  }
+}
 
-  return err;
+class ErrorReport : public SourcePawn::IErrorReport
+{
+ public:
+  ErrorReport(int code, const char *message, PluginContext *cx)
+   : code_(code),
+     message_(message),
+     context_(cx)
+  {}
+
+  const char *Message() const KE_OVERRIDE {
+    return message_;
+  }
+  bool IsFatal() const KE_OVERRIDE {
+    switch (code_) {
+      case SP_ERROR_HEAPLOW:
+      case SP_ERROR_INVALID_ADDRESS:
+      case SP_ERROR_STACKLOW:
+      case SP_ERROR_INVALID_INSTRUCTION:
+      case SP_ERROR_MEMACCESS:
+      case SP_ERROR_STACKMIN:
+      case SP_ERROR_HEAPMIN:
+      case SP_ERROR_INSTRUCTION_PARAM:
+      case SP_ERROR_STACKLEAK:
+      case SP_ERROR_HEAPLEAK:
+      case SP_ERROR_TRACKER_BOUNDS:
+      case SP_ERROR_PARAMS_MAX:
+      case SP_ERROR_ABORTED:
+      case SP_ERROR_OUT_OF_MEMORY:
+      case SP_ERROR_FATAL:
+        return true;
+      default:
+        return false;
+    }
+  }
+  IPluginContext *Context() const KE_OVERRIDE {
+    return context_;
+  }
+
+ private:
+  int code_;
+  const char *message_;
+  PluginContext *context_;
+};
+
+void
+Environment::ReportErrorVA(const char *fmt, va_list ap)
+{
+  ReportErrorVA(SP_ERROR_USER, fmt, ap);
+}
+
+void
+Environment::ReportErrorVA(int code, const char *fmt, va_list ap)
+{
+  // :TODO: right-size the string rather than rely on this buffer.
+  char buffer[1024];
+  UTIL_FormatVA(buffer, sizeof(buffer), fmt, ap);
+  ReportError(code, buffer);
+}
+
+void
+Environment::ReportErrorFmt(int code, const char *message, ...)
+{
+  va_list ap;
+  va_start(ap, message);
+  ReportErrorVA(code, message, ap);
+  va_end(ap);
+}
+
+void
+Environment::ReportError(int code, const char *message)
+{
+  FrameIterator iter;
+  ErrorReport report(code, message, top_ ? top_->cx() : nullptr);
+
+  // If this fires, someone forgot to propagate an error.
+  assert(!hasPendingException());
+
+  // Save the exception state.
+  if (eh_top_) {
+    exception_code_ = code;
+    UTIL_Format(exception_message_, sizeof(exception_message_), "%s", message);
+  }
+
+  // For now, we always report exceptions even if they might be handled.
+  if (debugger_)
+    debugger_->ReportError(report, iter);
+}
+
+void
+Environment::EnterExceptionHandlingScope(ExceptionHandler *handler)
+{
+  handler->next_ = eh_top_;
+  eh_top_ = handler;
+}
+
+void
+Environment::LeaveExceptionHandlingScope(ExceptionHandler *handler)
+{
+  assert(handler == eh_top_);
+  eh_top_ = eh_top_->next_;
+
+  // To preserve compatibility with older API, we clear the exception state
+  // when there is no EH handler.
+  if (!eh_top_ || handler->catch_)
+    exception_code_ = SP_ERROR_NONE;
+}
+
+bool
+Environment::HasPendingException(const ExceptionHandler *handler)
+{
+  // Note here and elsewhere - this is not a sanity assert. In the future, the
+  // API may need to query the handler.
+  assert(handler == eh_top_);
+  return hasPendingException();
+}
+
+const char *
+Environment::GetPendingExceptionMessage(const ExceptionHandler *handler)
+{
+  // Note here and elsewhere - this is not a sanity assert. In the future, the
+  // API may need to query the handler.
+  assert(handler == eh_top_);
+  assert(HasPendingException(handler));
+  return exception_message_;
+}
+
+bool
+Environment::hasPendingException() const
+{
+  return exception_code_ != SP_ERROR_NONE;
+}
+
+void
+Environment::clearPendingException()
+{
+  exception_code_ = SP_ERROR_NONE;
+}
+
+int
+Environment::getPendingExceptionCode() const
+{
+  return exception_code_;
 }

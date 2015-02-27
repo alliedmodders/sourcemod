@@ -1,4 +1,4 @@
-// vim: set sts=2 ts=8 sw=2 tw=99 et:
+// vim: set ts=4 sw=4 tw=99 noet:
 // 
 // Copyright (C) 2006-2015 AlliedModders LLC
 // 
@@ -19,14 +19,18 @@
  */
 
 #include <stdio.h>
+#include <assert.h>
 #include "sp_vm_types.h"
 
 /** SourcePawn Engine API Versions */
-#define SOURCEPAWN_ENGINE2_API_VERSION 9
-#define SOURCEPAWN_API_VERSION         0x0209
+#define SOURCEPAWN_ENGINE2_API_VERSION 0xA
+#define SOURCEPAWN_API_VERSION	 0x020A
 
 namespace SourceMod {
 	struct IdentityToken_t;
+};
+namespace sp {
+	class Environment;
 };
 
 struct sp_context_s;
@@ -36,6 +40,8 @@ namespace SourcePawn
 {
 	class IVirtualMachine;
 	class IPluginRuntime;
+	class ISourcePawnEngine2;
+	class ISourcePawnEnvironment;
 
 	/* Parameter flags */
 	#define SM_PARAM_COPYBACK		(1<<0)		/**< Copy an array/reference back after call */
@@ -162,21 +168,23 @@ namespace SourcePawn
 		 * @brief Executes the function, resets the pushed parameter list, and 
 		 * performs any copybacks.
 		 *
+		 * The exception state is reset upon entering and leaving this
+		 * function. Callers that want to propagate exceptions from Execute()
+		 * should use Invoke(). ReportError is not preferred since it would
+		 * lose any custom exception messages.
+		 *
 		 * @param result		Pointer to store return value in.
 		 * @return				Error code, if any.
 		 */
 		virtual int Execute(cell_t *result) =0;
 
 		/**
-		 * @brief Executes the function with the given parameter array.
-		 * Parameters are read in forward order (i.e. index 0 is parameter #1)
-		 * NOTE: You will get an error if you attempt to use CallFunction() with
-		 * previously pushed parameters.
+		 * @brief This function is deprecated. If invoked, it reports an error.
 		 *
-		 * @param params		Array of cell parameters.
-		 * @param num_params	Number of parameters to push.
-		 * @param result		Pointer to store result of function on return.
-		 * @return				SourcePawn error code (if any).
+		 * @param params		Unused.
+		 * @param num_params	Unused.
+		 * @param result		Unused.
+		 * @return				SP_ERROR_ABORTED.
 		 */
 		virtual int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result) =0;
 
@@ -204,30 +212,22 @@ namespace SourcePawn
 		virtual funcid_t GetFunctionID() =0;
 
 		/**
-		 * @brief Executes the forward, resets the pushed parameter list, and 
-		 * performs any copybacks.
+		 * @brief This function is deprecated. If invoked, it reports an error.
 		 *
-		 * Note: A function can only be executed given a runtime it was created in.
-		 *
-		 * @param ctx			Context to execute the function in.
-		 * @param result		Pointer to store return value in.
-		 * @return				Error code, if any.
+		 * @param ctx			Unused.
+		 * @param result		Unused.
+		 * @return				SP_ERROR_ABORTED.
 		 */
 		virtual int Execute2(IPluginContext *ctx, cell_t *result) =0;
 
 		/**
-		 * @brief Executes the function with the given parameter array.
-		 * Parameters are read in forward order (i.e. index 0 is parameter #1)
-		 * NOTE: You will get an error if you attempt to use CallFunction() with
-		 * previously pushed parameters.
+		 * @brief This function is deprecated. If invoked, it reports an error.
 		 *
-		 * Note: A function can only be executed given a runtime it was created in.
-		 *
-		 * @param ctx			Context to execute the function in.
-		 * @param params		Array of cell parameters.
-		 * @param num_params	Number of parameters to push.
-		 * @param result		Pointer to store result of function on return.
-		 * @return				SourcePawn error code (if any).
+		 * @param ctx			Unused.
+		 * @param params		Unused.
+		 * @param num_params	Unused.
+		 * @param result		Unused.
+		 * @return				SP_ERROR_ABORTED.
 		 */
 		virtual int CallFunction2(IPluginContext *ctx, 
 			const cell_t *params, 
@@ -240,6 +240,20 @@ namespace SourcePawn
 		 * @return				IPluginRuntime pointer.
 		 */
 		virtual IPluginRuntime *GetParentRuntime() =0;
+
+		/**
+		 * @brief Executes the function, resets the pushed parameter list, and 
+		 * performs any copybacks.
+		 *
+		 * Unlike Execute(), this does not reset the exception state. It is
+		 * illegal to call Invoke() while an exception is unhandled. If it
+		 * returns false, an exception has been thrown, and must either be
+		 * handled via ExceptionHandler or propagated to its caller.
+		 *
+		 * @param result		Pointer to store return value in.
+		 * @return				True on success, false on error.
+		 */
+		virtual bool Invoke(cell_t *rval = nullptr) = 0;
 	};
 
 
@@ -309,7 +323,7 @@ namespace SourcePawn
 		 *
 		 * @param index			Unused.
 		 * @param native		Unused.
-                 * @return                      Returns SP_ERROR_PARAM.
+		 * @return		      Returns SP_ERROR_PARAM.
 		 */
 		virtual int GetNativeByIndex(uint32_t index, sp_native_t **native) =0;
 
@@ -409,7 +423,7 @@ namespace SourcePawn
 		/**
 		 * @brief If |co| is non-NULL, destroys |co|. No other action is taken.
 		 *
-		 * @return	                        Returns SP_ERROR_NONE.
+		 * @return				Returns SP_ERROR_NONE.
 		 */
 		virtual int ApplyCompilationOptions(ICompilation *co) =0;
 		
@@ -448,13 +462,13 @@ namespace SourcePawn
 		 */
 		virtual unsigned char *GetDataHash() =0;
 
-                /**
-                 * @brief Update the native binding at the given index.
-                 *
-                 * @param pfn       Native function pointer.
-                 * @param flags     Native flags.
-                 * @param user      User data pointer.
-                 */
+		/**
+		 * @brief Update the native binding at the given index.
+		 *
+		 * @param pfn       Native function pointer.
+		 * @param flags     Native flags.
+		 * @param user      User data pointer.
+		 */
 		virtual int UpdateNativeBinding(uint32_t index, SPVM_NATIVE_FUNC pfn, uint32_t flags, void *data) = 0;
 
 		/**
@@ -464,6 +478,11 @@ namespace SourcePawn
 		 * @return	    Native pointer, or NULL on failure.
 		 */
 		virtual const sp_native_t *GetNative(uint32_t index) = 0;
+
+		/**
+		 * @brief Return the file or location this plugin was loaded from.
+		 */
+		virtual const char *GetFilename() = 0;
 	};
 
 	/**
@@ -559,7 +578,7 @@ namespace SourcePawn
 		 *
 		 * @param index			Unused.
 		 * @param native		Unused.
-                 * @return                      Returns SP_ERROR_PARAM.
+		 * @return		      Returns SP_ERROR_PARAM.
 		 */
 		virtual int GetNativeByIndex(uint32_t index, sp_native_t **native) =0;
 
@@ -734,6 +753,8 @@ namespace SourcePawn
 		/**
 		 * @brief Throws a error and halts any current execution.
 		 *
+		 * This function is deprecated. Use ReportError() instead.
+		 *
 		 * @param error		The error number to set.
 		 * @param msg		Custom error message format.  NULL to use default.
 		 * @param ...		Message format arguments, if any.
@@ -743,6 +764,8 @@ namespace SourcePawn
 
 		/**
 		 * @brief Throws a generic native error and halts any current execution.
+		 *
+		 * This function is deprecated. Use ReportError() instead.
 		 *
 		 * @param msg		Custom error message format.  NULL to set no message.
 		 * @param ...		Message format arguments, if any.
@@ -816,14 +839,13 @@ namespace SourcePawn
 		virtual IPluginRuntime *GetRuntime() =0;
 
 		/**
-		 * @brief Executes a function in the context.  The function must be 
-		 * a member of the context's parent runtime.
+		 * @brief This function is deprecated. If invoked, it reports an error.
 		 *
-		 * @param function		Function.
-		 * @param params		Parameters.
-		 * @param num_params	Number of parameters in the parameter array.
-		 * @param result		Optional pointer to store the result on success.
-		 * @return				Error code.
+		 * @param function		Unused.
+		 * @param params		Unused.
+		 * @param num_params	Unused.
+		 * @param result		Unused.
+		 * @return				SP_ERROR_ABORTED.
 		 */
 		virtual int Execute2(IPluginFunction *function, 
 			const cell_t *params, 
@@ -832,9 +854,12 @@ namespace SourcePawn
 
 		/**
 		 * @brief Returns whether a context is in an error state.  
+		 *
+		 * This function is deprecated. Use DetectExceptions instead.
 		 * 
 		 * This should only be used inside natives to determine whether 
-		 * a prior call failed.
+		 * a prior call failed. The return value should only be compared
+		 * against SP_ERROR_NONE.
 		 */
 		virtual int GetLastNativeError() =0;
 
@@ -870,81 +895,171 @@ namespace SourcePawn
 		virtual bool GetKey(int k, void **value) =0;
 
 		/**
-		 * @brief Clears the last native error.
+		 * @brief If an exception is pending, this removes the exception. It
+		 * is deprecated and should not be used.
 		 */
 		virtual void ClearLastNativeError() =0;
+
+		/**
+		 * @brief Return a pointer to the ISourcePawnEngine2 that is active.
+		 * This is a convenience function.
+		 *
+		 * @return             API pointer.
+		 */
+		virtual ISourcePawnEngine2 *APIv2() = 0;
+
+		/**
+		 * @brief Report an error.
+		 *
+		 * @param message      Error message format.
+		 * @param ...          Formatting arguments.
+		 */
+		virtual void ReportError(const char *fmt, ...) = 0;
+
+		/**
+		 * @brief Report an error with variadic arguments.
+		 *
+		 * @param message      Error message format.
+		 * @param ap           Formatting arguments.
+		 */
+		virtual void ReportErrorVA(const char *fmt, va_list ap) = 0;
+
+		/**
+		 * @brief Report a fatal error. Fatal errors cannot be caught by any
+		 * exception handler.
+		 *
+		 * @param message      Error message format.
+		 * @param ...          Formatting arguments.
+		 */
+		virtual void ReportFatalError(const char *fmt, ...) = 0;
+
+		/**
+		 * @brief Report a fatal error with variadic arguments. Fatal errors
+		 * cannot be caught by any exception handler.
+		 *
+		 * @param message      Error message format.
+		 * @param ap           Formatting arguments.
+		 */
+		virtual void ReportFatalErrorVA(const char *fmt, va_list ap) = 0;
+
+		/**
+		 * @brief Report an error by its builtin number.
+		 *
+		 * @param number       Error number.
+		 */
+		virtual void ReportErrorNumber(int error) = 0;
 	};
 
+	/**
+	 * @brief Removed.
+	 */
+	class IContextTrace;
 
 	/**
-	 * @brief Information about a position in a call stack.
+	 * @brief Information about a reported error.
 	 */
-	struct CallStackInfo
-	{
-		const char *filename;		/**< NULL if not found */
-		unsigned int line;			/**< 0 if not found */
-		const char *function;		/**< NULL if not found */
-	};
-
-	/**
-	 * @brief Retrieves error information from a debug hook.
-	 */
-	class IContextTrace
+	class IErrorReport
 	{
 	public:
 		/**
-		 * @brief Returns the integer error code.
+		 * @brief Return the message of the error report.
 		 *
-		 * @return			Integer error code.
+		 * @return          Message string.
 		 */
-		virtual int GetErrorCode() =0;
+		virtual const char *Message() const = 0;
 
 		/**
-		 * @brief Returns a string describing the error.
+		 * @brief True if the error is fatal and cannot be handled (though
+		 * reporting can be suppressed).
 		 *
-		 * @return			Error string.
+		 * @return          True if fatal, false otherwise.
 		 */
-		virtual const char *GetErrorString() =0;
+		virtual bool IsFatal() const = 0;
 
 		/**
-		 * @brief Returns whether debug info is available.
+		 * @brief Return the plugin context that caused the error.
 		 *
-		 * @return			True if debug info is available, false otherwise.
+		 * @return          Plugin context.
 		 */
-		virtual bool DebugInfoAvailable() =0;
-
-		/**
-		 * @brief Returns a custom error message.
-		 *
-		 * @return			A pointer to a custom error message, or NULL otherwise.
-		 */
-		virtual const char *GetCustomErrorString() =0;
-
-		/**
-		 * @brief Returns trace info for a specific point in the backtrace, if any.
-		 * The next subsequent call to GetTraceInfo() will return the next item in the call stack.
-		 * Calls are retrieved in descending order (i.e. the first item is at the top of the stack/call sequence).
-		 *
-		 * @param trace		An ErrorTraceInfo buffer to store information (NULL to ignore).
-		 * @return			True if successful, false if there are no more traces.
-		 */
-		virtual bool GetTraceInfo(CallStackInfo *trace) =0;
-
-		/**
-		 * @brief Resets the trace to its original position (the call on the top of the stack).
-		 */
-		virtual void ResetTrace() =0;
-
-		/**
-		 * @brief Retrieves the name of the last native called.
-		 * Returns NULL if there was no native that caused the error.
-		 *
-		 * @param index		Optional pointer to store index.
-		 * @return			Native name, or NULL if none.
-		 */
-		virtual const char *GetLastNative(uint32_t *index) =0;
+		virtual IPluginContext *Context() const = 0;
 	};
 
+	/**
+	 * @brief Allows inspecting the stack frames of the SourcePawn environment.
+	 *
+	 * Invoking VM functions while iterating frames will cause the iterator
+	 * to become corrupt.
+	 *
+	 * Frames iterate in most-recent to least-recent order.
+	 */
+	class IFrameIterator
+	{
+	public:
+		/**
+		 * @brief Returns whether or not there are more frames to read.
+		 *
+		 * @return          True if there are more frames to read, false otherwise.
+		 */
+		virtual bool Done() const = 0;
+
+		/**
+		 * @brief Advances to the next frame.
+		 *
+		 * Note that the iterator starts at either a valid frame or no frame.
+		 */
+		virtual void Next() = 0;
+
+		/**
+		 * @brief Resets the iterator to the top of the stack.
+		 */
+		virtual void Reset() = 0;
+
+		/**
+		 * @brief Returns the context owning the current frame, if any.
+		 *
+		 * @return          Context, or null.
+		 */
+		virtual IPluginContext *Context() const = 0;
+
+		/**
+		 * @brief Returns whether or not the current frame is a native frame. If it
+		 * is, line numbers and file paths are not available.
+		 *
+		 * @return          True if a native frame, false otherwise.
+		 */
+		virtual bool IsNativeFrame() const = 0;
+
+		/**
+		 * @brief Returns true if the frame is a scripted frame.
+		 *
+		 * @return          True if a scripted frame, false otherwise.
+		 */
+		virtual bool IsScriptedFrame() const = 0;
+
+		/**
+		 * @brief Returns the line number of the current frame, or 0 if none is
+		 * available.
+		 *
+		 * @return          Line number on success, 0 on failure.
+		 */
+		virtual unsigned LineNumber() const = 0;
+
+		/**
+		 * @brief Returns the function name of the current frame, or null if
+		 * none could be computed.
+		 *
+		 * @return          Function name on success, null on failure.
+		 */
+		virtual const char *FunctionName() const = 0;
+
+		/**
+		 * @brief Returns the file path of the function of the current frame,
+		 * or none could be computed.
+		 *
+		 * @return          File path on success, null on failure.
+		 */
+		virtual const char *FilePath() const = 0;
+	};
 
 	/**
 	 * @brief Provides callbacks for debug information.
@@ -953,12 +1068,13 @@ namespace SourcePawn
 	{
 	public:
 		/**
-		 * @brief Invoked on a context execution error.
+		 * @brief No longer invoked.
 		 * 
-		 * @param ctx		Context.
-		 * @param error		Object holding error information and a backtrace.
+		 * @param ctx		Unused.
+		 * @param error		Unused.
 		 */
-		virtual void OnContextExecuteError(IPluginContext *ctx, IContextTrace *error) =0;
+		virtual void OnContextExecuteError(IPluginContext *ctx, IContextTrace *error)
+		{}
 
 		/**
 		 * @brief Called on debug spew.
@@ -967,6 +1083,15 @@ namespace SourcePawn
 		 * @param fmt		Message formatting arguments (printf-style).
 		 */
 		virtual void OnDebugSpew(const char *msg, ...) =0;
+
+		/**
+		 * @brief Called when an error is reported and no exception
+		 * handler was available.
+		 *
+		 * @param report	Error report object.
+		 * @param iter	    Stack frame iterator.
+		 */
+		virtual void ReportError(const IErrorReport &report, IFrameIterator &iter) = 0;
 	};
 
 	/**
@@ -983,21 +1108,21 @@ namespace SourcePawn
 		/**
 		 * @brief Return the name of the profiling tool.
 		 *
-		 * @return                  Profiling tool name.
+		 * @return		  Profiling tool name.
 		 */
 		virtual const char *Name() = 0;
 
 		/**
 		 * @brief Description of the profiler.
 		 *
-		 * @return                  Description.
+		 * @return		  Description.
 		 */
 		virtual const char *Description() = 0;
 
 		/**
 		 * @brief Called to render help text.
 		 *
-		 * @param  render           Function to render one line of text.
+		 * @param  render	   Function to render one line of text.
 		 */
 		virtual void RenderHelp(void (*render)(const char *fmt, ...)) = 0;
 	
@@ -1013,7 +1138,7 @@ namespace SourcePawn
 		/**
 		 * @brief Initiate a stop command.
 		 *
-		 * @param render            Function to render any help messages.
+		 * @param render	    Function to render any help messages.
 		 */
 		virtual void Stop(void (*render)(const char *fmt, ...)) = 0;
 
@@ -1029,14 +1154,14 @@ namespace SourcePawn
 		/**
 		 * @brief Returns whether or not the profiler is currently profiling.
 		 *
-		 * @return                  True if active, false otherwise.
+		 * @return		  True if active, false otherwise.
 		 */
 		virtual bool IsActive() = 0;
 
 		/**
 		 * @brief Returns whether the profiler is attached.
 		 *
-		 * @return                  True if attached, false otherwise.
+		 * @return		  True if attached, false otherwise.
 		 */
 		virtual bool IsAttached() = 0;
 
@@ -1045,8 +1170,8 @@ namespace SourcePawn
 		 *
 		 * LeaveScope() mus be called exactly once for each call to EnterScope().
 		 *
-		 * @param group             A named budget group, or NULL for the default.
-		 * @param name              Event name.
+		 * @param group	     A named budget group, or NULL for the default.
+		 * @param name	      Event name.
 		 */
 		virtual void EnterScope(const char *group, const char *name) = 0;
 		
@@ -1114,10 +1239,10 @@ namespace SourcePawn
 		virtual void ExecFree(void *address) =0;
 
 		/**
-		 * @brief Sets the debug listener.  This should only be called once.
-		 * If called successively (using manual chaining), only the last function should
-		 * attempt to call back into the same plugin.  Otherwise, globally cached states
-		 * can be accidentally overwritten.
+		 * @brief Sets the debug listener.
+		 *
+		 * This should be called once on application startup. It is
+		 * not considered part of the userland API and may change at any time.
 		 *
 		 * @param listener	Pointer to an IDebugListener.
 		 * @return			Old IDebugListener, or NULL if none.
@@ -1165,6 +1290,8 @@ namespace SourcePawn
 		 */
 		virtual void FreePageMemory(void *ptr) =0;
 	};
+
+	class ExceptionHandler;
 
 	/** 
 	 * @brief Outlines the interface a Virtual Machine (JIT) must expose
@@ -1228,10 +1355,10 @@ namespace SourcePawn
 		virtual void DestroyFakeNative(SPVM_NATIVE_FUNC func) =0;
 
 		/**
-		 * @brief Sets the debug listener.  This should only be called once.
-		 * If called successively (using manual chaining), only the last function should
-		 * attempt to call back into the same plugin.  Otherwise, globally cached states
-		 * can be accidentally overwritten.
+		 * @brief Sets the debug listener.
+		 *
+		 * This should be called once on application startup. It is
+		 * not considered part of the userland API and may change at any time.
 		 *
 		 * @param listener	Pointer to an IDebugListener.
 		 * @return			Old IDebugListener, or NULL if none.
@@ -1247,6 +1374,9 @@ namespace SourcePawn
 
 		/**
 		 * @brief Returns the string representation of an error message.
+		 *
+		 * This function is deprecated and should not be used. The exception
+		 * handling API should be used instead.
 		 *
 		 * @param err		Error code.
 		 * @return			Error string, or NULL if not found.
@@ -1326,6 +1456,11 @@ namespace SourcePawn
 		 * @return		New runtime pointer, or NULL on failure.
 		 */
 		virtual IPluginRuntime *LoadBinaryFromFile(const char *file, char *error, size_t maxlength) = 0;
+
+		/**
+		 * @brief Returns the environment.
+		 */
+		virtual ISourcePawnEnvironment *Environment() = 0;
 	};
 
 	// @brief This class is the v3 API for SourcePawn. It provides access to
@@ -1351,6 +1486,23 @@ namespace SourcePawn
 		// all plugin memory. This should not be called while plugins have
 		// active code running on the stack.
 		virtual void Shutdown() = 0;
+
+		// @brief Enters an exception handling scope. This is intended to be
+		// used on the stack and must have a corresponding call to
+		// LeaveExceptionHandlingScope. When in an exception handling scope,
+		// exceptions are not immediately reported. Instead the caller is
+		// responsible for propagation them or clearing them.
+		virtual void EnterExceptionHandlingScope(ExceptionHandler *handler) = 0;
+
+		// @brief Leaves the most recent exception handling scope. The handler
+		// is provided as a sanity check.
+		virtual void LeaveExceptionHandlingScope(ExceptionHandler *handler) = 0;
+
+		// @brief Returns whether or not an exception is currently pending.
+		virtual bool HasPendingException(const ExceptionHandler *handler) = 0;
+
+		// @brief Returns the message of the pending exception.
+		virtual const char *GetPendingExceptionMessage(const ExceptionHandler *handler) = 0;
 	};
 
 	// @brief This class is the entry-point to using SourcePawn from a DLL.
@@ -1371,6 +1523,96 @@ namespace SourcePawn
 	// @brief A function named "GetSourcePawnFactory" is exported from the
 	// SourcePawn DLL, conforming to the following signature:
 	typedef ISourcePawnFactory *(*GetSourcePawnFactoryFn)(int apiVersion);
+
+	// @brief A helper class for handling exceptions.
+	//
+	// ExceptionHandlers can be used to detect, catch, and re-throw VM errors
+	// within C++ code.
+	// 
+	// When throwing errors, SourcePawn creates an exception object. The
+	// exception object is global state. As long as an exception is present,
+	// all scripted code should immediately abort and return to their callers,
+	// all native code should exit, all code should propagate any error states
+	// until the exception is handled.
+	// 
+	// In some cases, an error code is not available. For example, if a native
+	// detects an exception, it does not have an error status to propagate. It
+	// should simply return instead. The return value will be ignored; the VM
+	// knows to abort the script.
+	class ExceptionHandler
+	{
+		friend class sp::Environment;
+
+	public:
+		ExceptionHandler(ISourcePawnEngine2 *api)
+		: env_(api->Environment()),
+		  catch_(true)
+		{
+			env_->EnterExceptionHandlingScope(this);
+		}
+		ExceptionHandler(IPluginContext *ctx)
+		: env_(ctx->APIv2()->Environment()),
+		  catch_(true)
+		{
+			env_->EnterExceptionHandlingScope(this);
+		}
+		~ExceptionHandler()
+		{
+			env_->LeaveExceptionHandlingScope(this);
+		}
+
+		virtual uint32_t ApiVersion() const {
+			return SOURCEPAWN_API_VERSION;
+		}
+
+		// Propagates the exception instead of catching it. After calling this,
+		// no more SourcePawn code should be executed until the exception is
+		// handled. Callers should return immediately.
+		void Rethrow() {
+			assert(catch_ && HasException());
+			catch_ = false;
+		}
+
+		bool HasException() const {
+			return env_->HasPendingException(this);
+		}
+
+		const char *Message() const {
+			return env_->GetPendingExceptionMessage(this);
+		}
+
+	private:
+		// Don't allow heap construction.
+		ExceptionHandler(const ExceptionHandler &other);
+		void operator =(const ExceptionHandler &other);
+		void *operator new(size_t size);
+		void operator delete(void *, size_t);
+
+	private:
+		ISourcePawnEnvironment *env_;
+		ExceptionHandler *next_;
+
+	protected:
+		// If true, the exception will be swallowed. 
+		bool catch_;
+	};
+
+	// @brief An implementation of ExceptionHandler that simply collects
+	// whether an exception was thrown.
+	class DetectExceptions : public ExceptionHandler
+	{
+	public:
+		DetectExceptions(ISourcePawnEngine2 *api)
+		: ExceptionHandler(api) 
+		{
+			catch_ = false;
+		}
+		DetectExceptions(IPluginContext *ctx)
+		: ExceptionHandler(ctx)
+		{
+			catch_ = false;
+		}
+	};
 };
 
 #endif //_INCLUDE_SOURCEPAWN_VM_API_H_

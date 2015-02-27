@@ -19,6 +19,7 @@
 #include <am-thread-utils.h>
 #include "code-allocator.h"
 #include "plugin-runtime.h"
+#include "stack-frames.h"
 
 namespace sp {
 
@@ -54,9 +55,18 @@ class Environment : public ISourcePawnEnvironment
 
   bool InstallWatchdogTimer(int timeout_ms);
 
+  void EnterExceptionHandlingScope(ExceptionHandler *handler) KE_OVERRIDE;
+  void LeaveExceptionHandlingScope(ExceptionHandler *handler) KE_OVERRIDE;
+  bool HasPendingException(const ExceptionHandler *handler) KE_OVERRIDE;
+  const char *GetPendingExceptionMessage(const ExceptionHandler *handler) KE_OVERRIDE;
+
   // Runtime functions.
   const char *GetErrorString(int err);
-  void ReportError(PluginRuntime *runtime, int err, const char *errstr, cell_t rp_start);
+  void ReportError(int code);
+  void ReportError(int code, const char *message);
+  void ReportErrorFmt(int code, const char *message, ...);
+  void ReportErrorVA(const char *fmt, va_list ap);
+  void ReportErrorVA(int code, const char *fmt, va_list ap);
 
   // Allocate and free executable memory.
   void *AllocateCode(size_t size);
@@ -104,19 +114,40 @@ class Environment : public ISourcePawnEnvironment
     return watchdog_timer_;
   }
 
+  bool hasPendingException() const;
+  void clearPendingException();
+  int getPendingExceptionCode() const;
+
   // These are indicators used for the watchdog timer.
   uintptr_t FrameId() const {
     return frame_id_;
   }
   bool RunningCode() const {
-    return invoke_depth_ != 0;
+    return !!top_;
   }
-  void EnterInvoke() {
-    if (invoke_depth_++ == 0)
+  void enterInvoke(InvokeFrame *frame) {
+    if (!top_)
       frame_id_++;
+    top_ = frame;
   }
-  void LeaveInvoke() {
-    invoke_depth_--;
+  void leaveInvoke() {
+    exit_frame_ = top_->prev_exit_frame();
+    top_ = top_->prev();
+  }
+
+  InvokeFrame *top() const {
+    return top_;
+  }
+  const ExitFrame &exit_frame() const {
+    return exit_frame_;
+  }
+
+ public:
+  static inline size_t offsetOfTopFrame() {
+    return offsetof(Environment, top_);
+  }
+  static inline size_t offsetOfExceptionCode() {
+    return offsetof(Environment, exception_code_);
   }
 
  private:
@@ -129,6 +160,10 @@ class Environment : public ISourcePawnEnvironment
   ke::Mutex mutex_;
 
   IDebugListener *debugger_;
+  ExceptionHandler *eh_top_;
+  int exception_code_;
+  char exception_message_[1024];
+
   IProfilingTool *profiler_;
   bool jit_enabled_;
   bool profiling_enabled_;
@@ -137,9 +172,11 @@ class Environment : public ISourcePawnEnvironment
   ke::InlineList<PluginRuntime> runtimes_;
 
   uintptr_t frame_id_;
-  uintptr_t invoke_depth_;
 
   ke::AutoPtr<CodeStubs> code_stubs_;
+
+  InvokeFrame *top_;
+  ExitFrame exit_frame_;
 };
 
 class EnterProfileScope

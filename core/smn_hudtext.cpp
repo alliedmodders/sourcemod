@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -415,10 +415,12 @@ static cell_t ShowSyncHudText(IPluginContext *pContext, const cell_t *params)
 	}
 
 	g_SourceMod.SetGlobalTarget(client);
-	g_SourceMod.FormatString(message_buffer, sizeof(message_buffer), pContext, params, 3);
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
+
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_SourceMod.FormatString(message_buffer, sizeof(message_buffer), pContext, params, 3);
+		if (eh.HasException())
+			return 0;
 	}
 
 	g_hud_params.channel = s_HudMsgHelpers.AutoSelectChannel(client, obj);
@@ -488,10 +490,12 @@ static cell_t ShowHudText(IPluginContext *pContext, const cell_t *params)
 	}
 
 	g_SourceMod.SetGlobalTarget(client);
-	g_SourceMod.FormatString(message_buffer, sizeof(message_buffer), pContext, params, 3);
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
+
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_SourceMod.FormatString(message_buffer, sizeof(message_buffer), pContext, params, 3);
+		if (eh.HasException())
+			return 0;
 	}
 
 	if (params[2] == -1)

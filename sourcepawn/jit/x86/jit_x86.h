@@ -33,6 +33,36 @@ class LegacyImage;
 class Environment;
 class CompiledFunction;
 
+struct ErrorPath
+{
+  SilentLabel label;
+  const cell_t *cip;
+  int err;
+
+  ErrorPath(const cell_t *cip, int err)
+   : cip(cip),
+     err(err)
+  {}
+  ErrorPath()
+  {}
+};
+
+struct BackwardJump {
+  // The pc at the jump instruction (i.e. after it).
+  uint32_t pc;
+  // The cip of the jump.
+  const cell_t *cip;
+  // The offset of the timeout thunk. This is filled in at the end.
+  uint32_t timeout_offset;
+
+  BackwardJump()
+  {}
+  BackwardJump(uint32_t pc, const cell_t *cip)
+   : pc(pc),
+     cip(cip)
+  {}
+};
+
 #define JIT_INLINE_ERRORCHECKS  (1<<0)
 #define JIT_INLINE_NATIVES      (1<<1)
 #define STACK_MARGIN            64      //8 parameters of safety, I guess
@@ -42,21 +72,9 @@ class CompiledFunction;
 
 #define sDIMEN_MAX              5    //this must mirror what the compiler has.
 
-typedef struct funcinfo_s
-{
-  unsigned int magic;
-  unsigned int index;
-} funcinfo_t;
-
-typedef struct functracker_s
-{
-  unsigned int num_functions;
-  unsigned int code_size;
-} functracker_t;
-
 struct CallThunk
 {
-  Label call;
+  SilentLabel call;
   cell_t pcode_offset;
 
   CallThunk(cell_t pcode_offset)
@@ -89,15 +107,24 @@ class Compiler
   void emitErrorPath(Label *dest, int code);
   void emitErrorPaths();
   void emitFloatCmp(ConditionCode cc);
+  void jumpOnError(ConditionCode cc, int err = 0);
+  void emitThrowPathIfNeeded(int err);
 
-  ExternalAddress cipAddr() {
-    return ExternalAddress(context_->addressOfCip());
-  }
   ExternalAddress hpAddr() {
     return ExternalAddress(context_->addressOfHp());
   }
   ExternalAddress frmAddr() {
     return ExternalAddress(context_->addressOfFrm());
+  }
+
+  // Map a return address (i.e. an exit point from a function) to its source
+  // cip. This lets us avoid tracking the cip during runtime. These are
+  // sorted by definition since we assemble and emit in forward order.
+  void emitCipMapping(const cell_t *cip) {
+    CipMapEntry entry;
+    entry.cipoffs = uintptr_t(cip) - uintptr_t(code_start_);
+    entry.pcoffs = masm.pc();
+    cip_map_.append(entry);
   }
 
  private:
@@ -110,20 +137,19 @@ class Compiler
   uint32_t pcode_start_;
   const cell_t *code_start_;
   const cell_t *cip_;
+  const cell_t *op_cip_;
   const cell_t *code_end_;
   Label *jump_map_;
-  ke::Vector<size_t> backward_jumps_;
+  ke::Vector<BackwardJump> backward_jumps_;
 
-  // Errors
-  Label error_bounds_;
-  Label error_heap_low_;
-  Label error_heap_min_;
-  Label error_stack_low_;
-  Label error_stack_min_;
-  Label error_divide_by_zero_;
-  Label error_memaccess_;
-  Label error_integer_overflow_;
-  Label extern_error_;
+  ke::Vector<CipMapEntry> cip_map_;
+
+  // Errors.
+  ke::Vector<ErrorPath> error_paths_;
+  Label throw_timeout_;
+  Label throw_error_code_[SP_MAX_ERROR_CODES];
+  Label report_error_;
+  Label return_reported_error_;
 
   ke::Vector<CallThunk *> thunks_; //:TODO: free
 };

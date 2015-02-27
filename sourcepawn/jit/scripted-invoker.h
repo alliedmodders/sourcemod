@@ -14,12 +14,14 @@
 #define _INCLUDE_SOURCEMOD_BASEFUNCTION_H_
 
 #include <sp_vm_api.h>
+#include <am-utility.h>
 
 namespace sp {
 
 using namespace SourcePawn;
 
 class PluginRuntime;
+class PluginContext;
 class CompiledFunction;
 
 struct ParamInfo
@@ -43,17 +45,18 @@ class ScriptedInvoker : public IPluginFunction
   ~ScriptedInvoker();
 
  public:
-  virtual int PushCell(cell_t cell);
-  virtual int PushCellByRef(cell_t *cell, int flags);
-  virtual int PushFloat(float number);
-  virtual int PushFloatByRef(float *number, int flags);
-  virtual int PushArray(cell_t *inarray, unsigned int cells, int copyback);
-  virtual int PushString(const char *string);
-  virtual int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags);
-  virtual int Execute(cell_t *result);
-  virtual void Cancel();
-  virtual int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result);
-  virtual IPluginContext *GetParentContext();
+  int PushCell(cell_t cell);
+  int PushCellByRef(cell_t *cell, int flags);
+  int PushFloat(float number);
+  int PushFloatByRef(float *number, int flags);
+  int PushArray(cell_t *inarray, unsigned int cells, int copyback);
+  int PushString(const char *string);
+  int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags);
+  int Execute(cell_t *result);
+  void Cancel();
+  int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result);
+  IPluginContext *GetParentContext();
+  bool Invoke(cell_t *result);
   bool IsRunnable();
   funcid_t GetFunctionID();
   int Execute2(IPluginContext *ctx, cell_t *result);
@@ -83,13 +86,15 @@ class ScriptedInvoker : public IPluginFunction
   int SetError(int err);
 
  private:
+  Environment *env_;
   PluginRuntime *m_pRuntime;
+  PluginContext *context_;
   cell_t m_params[SP_MAX_EXEC_PARAMS];
   ParamInfo m_info[SP_MAX_EXEC_PARAMS];
   unsigned int m_curparam;
   int m_errorstate;
   funcid_t m_FnId;
-  char *full_name_;
+  ke::AutoArray<char> full_name_;
   sp_public_t *public_;
   CompiledFunction *cc_function_;
 };

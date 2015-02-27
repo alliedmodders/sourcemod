@@ -33,6 +33,9 @@ struct HeapTracker
 
 static const size_t SP_MAX_RETURN_STACK = 1024;
 
+class Environment;
+class PluginContext;
+
 class PluginContext : public IPluginContext
 {
  public:
@@ -88,6 +91,14 @@ class PluginContext : public IPluginContext
   bool GetKey(int k, void **value);
   void Refresh();
   void ClearLastNativeError();
+  ISourcePawnEngine2 *APIv2() KE_OVERRIDE;
+  void ReportError(const char *fmt, ...) KE_OVERRIDE;
+  void ReportErrorVA(const char *fmt, va_list ap) KE_OVERRIDE;
+  void ReportFatalError(const char *fmt, ...) KE_OVERRIDE;
+  void ReportFatalErrorVA(const char *fmt, va_list ap) KE_OVERRIDE;
+  void ReportErrorNumber(int error) KE_OVERRIDE;
+
+  bool Invoke(funcid_t fnid, const cell_t *params, unsigned int num_params, cell_t *result);
 
   size_t HeapSize() const {
     return mem_size_;
@@ -98,24 +109,15 @@ class PluginContext : public IPluginContext
   size_t DataSize() const {
     return data_size_;
   }
+  PluginRuntime *runtime() const {
+    return m_pRuntime;
+  }
 
  public:
   bool IsInExec();
 
-  static inline size_t offsetOfRp() {
-    return offsetof(PluginContext, rp_);
-  }
-  static inline size_t offsetOfRstkCips() {
-    return offsetof(PluginContext, rstk_cips_);
-  }
   static inline size_t offsetOfTracker() {
     return offsetof(PluginContext, tracker_);
-  }
-  static inline size_t offsetOfLastNative() {
-    return offsetof(PluginContext, last_native_);
-  }
-  static inline size_t offsetOfNativeError() {
-    return offsetof(PluginContext, native_error_);
   }
   static inline size_t offsetOfSp() {
     return offsetof(PluginContext, sp_);
@@ -127,9 +129,6 @@ class PluginContext : public IPluginContext
     return offsetof(PluginContext, memory_);
   }
 
-  int32_t *addressOfCip() {
-    return &cip_;
-  }
   int32_t *addressOfSp() {
     return &sp_;
   }
@@ -140,33 +139,11 @@ class PluginContext : public IPluginContext
     return &hp_;
   }
 
-  int32_t cip() const {
-    return cip_;
-  }
   cell_t frm() const {
     return frm_;
   }
   cell_t hp() const {
     return hp_;
-  }
-
-  // Return stack logic.
-  bool pushReturnCip(cell_t cip) {
-    if (rp_ >= SP_MAX_RETURN_STACK)
-      return false;
-    rstk_cips_[rp_++] = cip;
-    return true;
-  }
-  void popReturnCip() {
-    assert(rp_ > 0);
-    rp_--;
-  }
-  cell_t rp() const {
-    return rp_;
-  }
-  cell_t getReturnStackCip(int index) {
-    assert(index >= 0 && index < SP_MAX_RETURN_STACK);
-    return rstk_cips_[index];
   }
 
   int popTrackerAndSetHeap();
@@ -176,9 +153,6 @@ class PluginContext : public IPluginContext
   int generateFullArray(uint32_t argc, cell_t *argv, int autozero);
   cell_t invokeNative(ucell_t native_idx, cell_t *params);
   cell_t invokeBoundNative(SPVM_NATIVE_FUNC pfn, cell_t *params);
-  int lastNative() const {
-    return last_native_;
-  }
 
   inline bool checkAddress(cell_t *stk, cell_t addr) {
     if (uint32_t(addr) >= mem_size_)
@@ -194,10 +168,7 @@ class PluginContext : public IPluginContext
   }
 
  private:
-  void SetErrorMessage(const char *msg, va_list ap);
-  void _SetErrorMessage(const char *msg, ...);
-
- private:
+  Environment *env_;
   PluginRuntime *m_pRuntime;
   uint8_t *memory_;
   uint32_t data_size_;
@@ -205,25 +176,11 @@ class PluginContext : public IPluginContext
 
   cell_t *m_pNullVec;
   cell_t *m_pNullString;
-  char m_MsgCache[1024];
-  bool m_CustomMsg;
-  bool m_InExec;
   void *m_keys[4];
   bool m_keys_set[4];
 
   // Tracker for local HEA growth.
   HeapTracker tracker_;
-
-  // Return stack.
-  cell_t rp_;
-  cell_t rstk_cips_[SP_MAX_RETURN_STACK];
-
-  // Track the currently executing native index, and any error it throws.
-  int32_t last_native_;
-  int native_error_;
-
-  // Most recent CIP.
-  int32_t cip_;
 
   // Stack, heap, and frame pointer.
   cell_t sp_;

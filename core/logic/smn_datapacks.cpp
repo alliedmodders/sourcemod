@@ -125,7 +125,6 @@ static cell_t smn_WritePackString(IPluginContext *pContext, const cell_t *params
 	HandleError herr;
 	HandleSecurity sec;
 	IDataPack *pDataPack;
-	int err;
 
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
@@ -137,12 +136,7 @@ static cell_t smn_WritePackString(IPluginContext *pContext, const cell_t *params
 	}
 
 	char *str;
-	if ((err=pContext->LocalToString(params[2], &str)) != SP_ERROR_NONE)
-	{
-		pContext->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
-
+	pContext->LocalToString(params[2], &str);
 	pDataPack->PackString(str);
 
 	return 1;

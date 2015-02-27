@@ -564,6 +564,7 @@ static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToPhysAddr(params[1], &result);
 
+	// Note: Execute() swallows exceptions, so this is okay.
 	if (s_pFunction)
 	{
 		IPluginFunction *pFunction = s_pFunction;

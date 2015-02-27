@@ -85,6 +85,10 @@ class FixedArray : public AllocPolicy
     data_[index] = t;
   }
 
+  T *buffer() const {
+    return data_;
+  }
+
  private:
   FixedArray(const FixedArray &other) KE_DELETE;
   FixedArray &operator =(const FixedArray &other) KE_DELETE;

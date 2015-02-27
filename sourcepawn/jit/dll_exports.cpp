@@ -35,6 +35,7 @@
 #include <am-utility.h> // Replace with am-cxx later.
 #include "dll_exports.h"
 #include "environment.h"
+#include "stack-frames.h"
 
 using namespace ke;
 using namespace sp;
@@ -55,72 +56,36 @@ public:
 } sFactory;
 
 #ifdef SPSHELL
-template <typename T> class AutoT
-{
-public:
-	AutoT(T *t)
-	: t_(t)
-	{
-	}
-	~AutoT()
-	{
-		delete t_;
-	}
-
-	operator T *() const {
-		return t_;
-	}
-	bool operator !() const {
-		return !t_;
-	}
-	T * operator ->() const {
-		return t_;
-	}
-private:
-	T *t_;
-};
-
 Environment *sEnv;
+
+static void
+DumpStack(IFrameIterator &iter)
+{
+	int index = 0;
+	for (; !iter.Done(); iter.Next(), index++) {
+		const char *name = iter.FunctionName();
+		if (!name) {
+			fprintf(stdout, "  [%d] <unknown>\n", index);
+			continue;
+		}
+
+		if (iter.IsScriptedFrame()) {
+			const char *file = iter.FilePath();
+			if (!file)
+				file = "<unknown>";
+			fprintf(stdout, "  [%d] %s::%s, line %d\n", index, file, name, iter.LineNumber());
+		} else {
+			fprintf(stdout, "  [%d] %s()\n", index, name);
+		}
+	}
+}
 
 class ShellDebugListener : public IDebugListener
 {
 public:
-	void OnContextExecuteError(IPluginContext *ctx, IContextTrace *error) {
-		int n_err = error->GetErrorCode();
-
-		if (n_err != SP_ERROR_NATIVE)
-		{
-			fprintf(stderr, "plugin error: %s\n", error->GetErrorString());
-		}
-
-		if (const char *lastname = error->GetLastNative(NULL))
-		{
-			if (const char *custerr = error->GetCustomErrorString())
-			{
-				fprintf(stderr, "Native \"%s\" reported: %s", lastname, custerr);
-			} else {
-				fprintf(stderr, "Native \"%s\" encountered a generic error.", lastname);
-			}
-		}
-
-		if (!error->DebugInfoAvailable())
-		{
-			fprintf(stderr, "Debug info not available!\n");
-			return;
-		}
-
-		CallStackInfo stk_info;
-		int i = 0;
-		fprintf(stderr, "Displaying call stack trace:\n");
-		while (error->GetTraceInfo(&stk_info))
-		{
-			fprintf(stderr,
-			    "   [%d]  Line %d, %s::%s()\n",
-				i++,
-				stk_info.line,
-				stk_info.filename,
-				stk_info.function);
-		}
+	void ReportError(const IErrorReport &report, IFrameIterator &iter) KE_OVERRIDE {
+		fprintf(stdout, "Exception thrown: %s\n", report.Message());
+		DumpStack(iter);
 	}
 
 	void OnDebugSpew(const char *msg, ...) {
@@ -181,18 +146,43 @@ static cell_t PrintFloat(IPluginContext *cx, const cell_t *params)
 	return printf("%f\n", sp_ctof(params[1]));
 }
 
+static cell_t DoExecute(IPluginContext *cx, const cell_t *params)
+{
+	int32_t ok = 0;
+	for (size_t i = 0; i < size_t(params[2]); i++) {
+		if (IPluginFunction *fn = cx->GetFunctionById(params[1])) {
+			if (fn->Execute(nullptr) != SP_ERROR_NONE)
+				continue;
+			ok++;
+		}
+	}
+	return ok;
+}
+
+static cell_t DoInvoke(IPluginContext *cx, const cell_t *params)
+{
+	for (size_t i = 0; i < size_t(params[2]); i++) {
+		if (IPluginFunction *fn = cx->GetFunctionById(params[1])) {
+			if (!fn->Invoke())
+				return 0;
+		}
+	}
+	return 1;
+}
+
+static cell_t DumpStackTrace(IPluginContext *cx, const cell_t *params)
+{
+	FrameIterator iter;
+	DumpStack(iter);
+	return 0;
+}
+
 static int Execute(const char *file)
 {
-	ICompilation *co = sEnv->APIv2()->StartCompilation();
-	if (!co) {
-		fprintf(stderr, "Could not create a compilation context\n");
-		return 1;
-	}
-
-	int err;
-	AutoT<IPluginRuntime> rt(sEnv->APIv2()->LoadPlugin(co, file, &err));
+	char error[255];
+	AutoPtr<IPluginRuntime> rt(sEnv->APIv2()->LoadBinaryFromFile(file, error, sizeof(error)));
 	if (!rt) {
-		fprintf(stderr, "Could not load plugin: %s\n", sEnv->GetErrorString(err));
+		fprintf(stderr, "Could not load plugin: %s\n", error);
 		return 1;
 	}
 
@@ -201,6 +191,9 @@ static int Execute(const char *file)
 	BindNative(rt, "printnums", PrintNums);
 	BindNative(rt, "printfloat", PrintFloat);
 	BindNative(rt, "donothing", DoNothing);
+	BindNative(rt, "execute", DoExecute);
+	BindNative(rt, "invoke", DoInvoke);
+	BindNative(rt, "dump_stack_trace", DumpStackTrace);
 
 	IPluginFunction *fun = rt->GetFunctionByName("main");
 	if (!fun)
@@ -208,10 +201,13 @@ static int Execute(const char *file)
 
 	IPluginContext *cx = rt->GetDefaultContext();
 
-	int result = fun->Execute2(cx, &err);
-	if (err != SP_ERROR_NONE) {
-		fprintf(stderr, "Error executing main(): %s\n", sEnv->GetErrorString(err));
-		return 1;
+	int result;
+	{
+		ExceptionHandler eh(cx);
+		if (!fun->Invoke(&result)) {
+			fprintf(stderr, "Error executing main: %s\n", eh.Message());
+			return 1;
+		}
 	}
 
 	return result;

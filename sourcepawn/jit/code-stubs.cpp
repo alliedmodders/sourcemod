@@ -18,8 +18,7 @@ using namespace sp;
 CodeStubs::CodeStubs(Environment *env)
  : env_(env),
    invoke_stub_(nullptr),
-   return_stub_(nullptr),
-   timeout_stub_(nullptr)
+   return_stub_(nullptr)
 {
 }
 

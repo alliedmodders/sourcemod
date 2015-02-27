@@ -230,11 +230,22 @@ class Label
     assert(this->offset() == offset);
   }
 
- private:
+ protected:
   // Note that 0 as an invalid offset is okay, because the offset we save for
   // pending jumps are after the jump opcode itself, and therefore 0 is never
   // valid, since there are no 0-byte jumps.
   uint32_t status_;
+};
+
+// Label that suppresses its assert, for non-stack use.
+class SilentLabel : public Label
+{
+ public:
+  SilentLabel()
+  {}
+  ~SilentLabel() {
+    status_ = 0;
+  }
 };
 
 // A DataLabel is a special form of Label intended for absolute addresses that

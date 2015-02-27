@@ -236,6 +236,9 @@ Compiler::emit(int *errp)
     // an opcode, we bind its corresponding label.
     __ bind(&jump_map_[cip_ - codeseg]);
 
+    // Save the start of the opcode for emitCipMap().
+    op_cip_ = cip_;
+
     OPCODE op = (OPCODE)readCell();
     if (!emitOp(op) || error_ != SP_ERROR_NONE) {
       *errp = (error_ == SP_ERROR_NONE) ? SP_ERROR_OUT_OF_MEMORY : error_;
@@ -244,6 +247,17 @@ Compiler::emit(int *errp)
   }
 
   emitCallThunks();
+
+  // For each backward jump, emit a little thunk so we can exit from a timeout.
+  // Track the offset of where the thunk is, so the watchdog timer can patch it.
+  for (size_t i = 0; i < backward_jumps_.length(); i++) {
+    BackwardJump &jump = backward_jumps_[i];
+    jump.timeout_offset = masm.pc();
+    __ call(&throw_timeout_);
+    emitCipMapping(jump.cip);
+  }
+
+  // This has to come last.
   emitErrorPaths();
 
   uint8_t *code = LinkCode(env_, masm);
@@ -255,42 +269,67 @@ Compiler::emit(int *errp)
   AutoPtr<FixedArray<LoopEdge>> edges(
     new FixedArray<LoopEdge>(backward_jumps_.length()));
   for (size_t i = 0; i < backward_jumps_.length(); i++) {
-    edges->at(i).offset = backward_jumps_[i];
-    edges->at(i).disp32 = *reinterpret_cast<int32_t *>(code + edges->at(i).offset - 4);
+    const BackwardJump &jump = backward_jumps_[i];
+    edges->at(i).offset = jump.pc;
+    edges->at(i).disp32 = int32_t(jump.timeout_offset) - int32_t(jump.pc);
   }
 
-  return new CompiledFunction(code, pcode_start_, edges.take());
+  AutoPtr<FixedArray<CipMapEntry>> cipmap(
+    new FixedArray<CipMapEntry>(cip_map_.length()));
+  memcpy(cipmap->buffer(), cip_map_.buffer(), cip_map_.length() * sizeof(CipMapEntry));
+
+  return new CompiledFunction(code, masm.length(), pcode_start_, edges.take(), cipmap.take());
 }
 
-// Helpers for invoking context members.
+// No exit frame - error code is returned directly.
 static int
 InvokePushTracker(PluginContext *cx, uint32_t amount)
 {
   return cx->pushTracker(amount);
 }
 
+// No exit frame - error code is returned directly.
 static int
 InvokePopTrackerAndSetHeap(PluginContext *cx)
 {
   return cx->popTrackerAndSetHeap();
 }
 
+// Error code must be checked in the environment.
 static cell_t
 InvokeNativeHelper(PluginContext *cx, ucell_t native_idx, cell_t *params)
 {
   return cx->invokeNative(native_idx, params);
 }
 
+// Error code must be checked in the environment.
 static cell_t
 InvokeBoundNativeHelper(PluginContext *cx, SPVM_NATIVE_FUNC fn, cell_t *params)
 {
   return cx->invokeBoundNative(fn, params);
 }
 
+// No exit frame - error code is returned directly.
 static int
 InvokeGenerateFullArray(PluginContext *cx, uint32_t argc, cell_t *argv, int autozero)
 {
   return cx->generateFullArray(argc, argv, autozero);
+}
+
+// Exit frame is a JitExitFrameForHelper.
+static void
+InvokeReportError(int err)
+{
+  Environment::get()->ReportError(err);
+}
+
+// Exit frame is a JitExitFrameForHelper. This is a special function since we
+// have to notify the watchdog timer that we're unblocked.
+static void
+InvokeReportTimeout()
+{
+  Environment::get()->watchdog()->NotifyTimeoutReceived();
+  InvokeReportError(SP_ERROR_TIMEOUT);
 }
 
 bool
@@ -450,8 +489,16 @@ Compiler::emitOp(OPCODE op)
       __ subl(tmp, dat);
       __ movl(Operand(frmAddr()), tmp);
 
-      // Align the stack to 16-bytes (each call adds 4 bytes).
-      __ subl(esp, 12);
+      // Store the function cip for stack traces.
+      __ push(pcode_start_);
+
+      // Align the stack to 16-bytes (each call adds 8 bytes).
+      __ subl(esp, 8);
+#if defined(DEBUG)
+      // Debug guards.
+      __ movl(Operand(esp, 0), 0xffaaee00);
+      __ movl(Operand(esp, 4), 0xffaaee04);
+#endif
       break;
 
     case OP_IDXADDR_B:
@@ -769,14 +816,14 @@ Compiler::emitOp(OPCODE op)
 
       // Guard against divide-by-zero.
       __ testl(divisor, divisor);
-      __ j(zero, &error_divide_by_zero_);
+      jumpOnError(zero, SP_ERROR_DIVIDE_BY_ZERO);
 
       // A more subtle case; -INT_MIN / -1 yields an overflow exception.
       Label ok;
       __ cmpl(divisor, -1);
       __ j(not_equal, &ok);
       __ cmpl(dividend, 0x80000000);
-      __ j(equal, &error_integer_overflow_);
+      jumpOnError(equal, SP_ERROR_INTEGER_OVERFLOW);
       __ bind(&ok);
 
       // Now we can actually perform the divide.
@@ -1078,13 +1125,13 @@ Compiler::emitOp(OPCODE op)
      if (amount > 0) {
        // Check if the stack went beyond the stack top - usually a compiler error.
        __ cmpl(stk, intptr_t(context_->memory() + context_->HeapSize()));
-       __ j(not_below, &error_stack_min_);
+      jumpOnError(not_below, SP_ERROR_STACKMIN);
      } else {
        // Check if the stack is going to collide with the heap.
        __ movl(tmp, Operand(hpAddr()));
        __ lea(tmp, Operand(dat, ecx, NoScale, STACK_MARGIN));
        __ cmpl(stk, tmp);
-       __ j(below, &error_stack_low_);
+       jumpOnError(below, SP_ERROR_STACKLOW);
      }
      break;
     }
@@ -1097,12 +1144,12 @@ Compiler::emitOp(OPCODE op)
 
       if (amount < 0) {
         __ cmpl(Operand(hpAddr()), context_->DataSize());
-        __ j(below, &error_heap_min_);
+        jumpOnError(below, SP_ERROR_HEAPMIN);
       } else {
         __ movl(tmp, Operand(hpAddr()));
         __ lea(tmp, Operand(dat, ecx, NoScale, STACK_MARGIN));
         __ cmpl(tmp, stk);
-        __ j(above, &error_heap_low_);
+        jumpOnError(above, SP_ERROR_HEAPLOW);
       }
       break;
     }
@@ -1114,7 +1161,7 @@ Compiler::emitOp(OPCODE op)
         return false;
       if (target->bound()) {
         __ jmp32(target);
-        backward_jumps_.append(masm.pc());
+        backward_jumps_.append(BackwardJump(masm.pc(), op_cip_));
       } else {
         __ jmp(target);
       }
@@ -1131,7 +1178,7 @@ Compiler::emitOp(OPCODE op)
       __ testl(pri, pri);
       if (target->bound()) {
         __ j32(cc, target);
-        backward_jumps_.append(masm.pc());
+        backward_jumps_.append(BackwardJump(masm.pc(), op_cip_));
       } else {
         __ j(cc, target);
       }
@@ -1152,7 +1199,7 @@ Compiler::emitOp(OPCODE op)
       __ cmpl(pri, alt);
       if (target->bound()) {
         __ j32(cc, target);
-        backward_jumps_.append(masm.pc());
+        backward_jumps_.append(BackwardJump(masm.pc(), op_cip_));
       } else {
         __ j(cc, target);
       }
@@ -1171,7 +1218,7 @@ Compiler::emitOp(OPCODE op)
       __ call(ExternalAddress((void *)InvokePushTracker));
       __ addl(esp, 8);
       __ testl(eax, eax);
-      __ j(not_zero, &extern_error_);
+      jumpOnError(not_zero);
 
       __ pop(alt);
       __ pop(pri);
@@ -1189,31 +1236,32 @@ Compiler::emitOp(OPCODE op)
       __ call(ExternalAddress((void *)InvokePopTrackerAndSetHeap));
       __ addl(esp, 4);
       __ testl(eax, eax);
-      __ j(not_zero, &extern_error_);
+      jumpOnError(not_zero);
 
       __ pop(alt);
       __ pop(pri);
       break;
     }
 
+    // This opcode is used to note where line breaks occur. We don't support
+    // live debugging, and if we did, we could build this map from the lines
+    // table. So we don't generate any code here.
     case OP_BREAK:
-    {
-      cell_t cip = uintptr_t(cip_ - 1) - uintptr_t(rt_->code().bytes);
-      __ movl(Operand(cipAddr()), cip);
       break;
-    }
 
+    // This should never be hit.
     case OP_HALT:
       __ align(16);
       __ movl(pri, readCell());
-      __ jmp(&extern_error_);
+      __ testl(eax, eax);
+      jumpOnError(not_zero);
       break;
 
     case OP_BOUNDS:
     {
       cell_t value = readCell();
       __ cmpl(eax, value);
-      __ j(above, &error_bounds_);
+      jumpOnError(above, SP_ERROR_ARRAY_BOUNDS);
       break;
     }
 
@@ -1281,7 +1329,7 @@ Compiler::emitCheckAddress(Register reg)
 {
   // Check if we're in memory bounds.
   __ cmpl(reg, context_->HeapSize());
-  __ j(not_below, &error_memaccess_);
+  jumpOnError(not_below, SP_ERROR_MEMACCESS);
 
   // Check if we're in the invalid region between hp and sp.
   Label done;
@@ -1289,7 +1337,7 @@ Compiler::emitCheckAddress(Register reg)
   __ j(below, &done);
   __ lea(tmp, Operand(dat, reg, NoScale));
   __ cmpl(tmp, stk);
-  __ j(below, &error_memaccess_);
+  jumpOnError(below, SP_ERROR_MEMACCESS);
   __ bind(&done);
 }
 
@@ -1308,7 +1356,7 @@ Compiler::emitGenArray(bool autozero)
     __ movl(Operand(hpAddr()), alt);
     __ addl(alt, dat);
     __ cmpl(alt, stk);
-    __ j(not_below, &error_heap_low_);
+    jumpOnError(not_below, SP_ERROR_HEAPLOW);
 
     __ shll(tmp, 2);
     __ push(tmp);
@@ -1318,7 +1366,7 @@ Compiler::emitGenArray(bool autozero)
     __ pop(tmp);
     __ shrl(tmp, 2);
     __ testl(eax, eax);
-    __ j(not_zero, &extern_error_);
+    jumpOnError(not_zero);
 
     if (autozero) {
       // Note - tmp is ecx and still intact.
@@ -1347,7 +1395,7 @@ Compiler::emitGenArray(bool autozero)
     __ pop(tmp);
 
     __ testl(eax, eax);
-    __ j(not_zero, &extern_error_);
+    jumpOnError(not_zero);
 
     // Move tmp back to pri, remove pushed args.
     __ movl(pri, tmp);
@@ -1367,25 +1415,6 @@ Compiler::emitCall()
     return false;
   }
 
-  // eax = context
-  // ecx = rp
-  __ movl(eax, intptr_t(rt_->GetBaseContext()));
-  __ movl(ecx, Operand(eax, PluginContext::offsetOfRp()));
-
-  // Check if the return stack is used up.
-  __ cmpl(ecx, SP_MAX_RETURN_STACK);
-  __ j(not_below, &error_stack_low_);
-
-  // Add to the return stack.
-  uintptr_t cip = uintptr_t(cip_ - 2) - uintptr_t(rt_->code().bytes);
-  __ movl(Operand(eax, ecx, ScaleFour, PluginContext::offsetOfRstkCips()), cip);
-
-  // Increment the return stack pointer.
-  __ addl(Operand(eax, PluginContext::offsetOfRp()), 1);
-
-  // Store the CIP of the function we're about to call.
-  __ movl(Operand(cipAddr()), offset);
-
   CompiledFunction *fun = rt_->GetJittedFunctionByOffset(offset);
   if (!fun) {
     // Need to emit a delayed thunk.
@@ -1398,12 +1427,8 @@ Compiler::emitCall()
     __ call(ExternalAddress(fun->GetEntryAddress()));
   }
 
-  // Restore the last cip.
-  __ movl(Operand(cipAddr()), cip);
-
-  // Mark us as leaving the last frame.
-  __ movl(tmp, intptr_t(rt_->GetBaseContext()));
-  __ subl(Operand(tmp, PluginContext::offsetOfRp()), 1);
+  // Map the return address to the cip that started this call.
+  emitCipMapping(op_cip_);
   return true;
 }
 
@@ -1415,15 +1440,27 @@ Compiler::emitCallThunks()
 
     Label error;
     __ bind(&thunk->call);
-    // Huge hack - get the return address, since that is the call that we
-    // need to patch.
+
+    // Get the return address, since that is the call that we need to patch.
     __ movl(eax, Operand(esp, 0));
 
+    // Push an OP_PROC frame as if we already called the function. This helps
+    // error reporting.
+    __ push(thunk->pcode_offset);
+    __ subl(esp, 8);
+
+    // Create the exit frame, then align the stack.
+    __ push(0);
+    __ movl(ecx, intptr_t(&Environment::get()->exit_frame()));
+    __ movl(Operand(ecx, ExitFrame::offsetOfExitNative()), -1);
+    __ movl(Operand(ecx, ExitFrame::offsetOfExitSp()), esp);
+
     // We need to push 4 arguments, and one of them will need an extra word
-    // on the stack. Allocate a big block so we're aligned, subtracting
-    // 4 because we got here via a call.
+    // on the stack. Allocate a big block so we're aligned.
+    //
+    // Note: we add 12 since the push above misaligned the stack.
     static const size_t kStackNeeded = 5 * sizeof(void *);
-    static const size_t kStackReserve = ke::Align(kStackNeeded, 16) - sizeof(void *);
+    static const size_t kStackReserve = ke::Align(kStackNeeded, 16) + 3 * sizeof(void *);
     __ subl(esp, kStackReserve);
 
     // Set arguments.
@@ -1435,14 +1472,10 @@ Compiler::emitCallThunks()
 
     __ call(ExternalAddress((void *)CompileFromThunk));
     __ movl(edx, Operand(esp, 4 * sizeof(void *)));
-    __ addl(esp, kStackReserve);
+    __ addl(esp, kStackReserve + 4 * sizeof(void *)); // Drop the exit frame and fake frame.
     __ testl(eax, eax);
-    __ j(not_zero, &error);
+    jumpOnError(not_zero);
     __ jmp(edx);
-
-    __ bind(&error);
-    __ movl(Operand(cipAddr()), thunk->pcode_offset);
-    __ jmp(ExternalAddress(env_->stubs()->ReturnStub()));
   }
 }
 
@@ -1482,18 +1515,23 @@ Compiler::emitNativeCall(OPCODE op)
     __ subl(stk, 4);
   }
 
+  // Create the exit frame. This is a JitExitFrameForNative, so everything we
+  // push up to the return address of the call instruction is reflected in
+  // that structure.
+  __ movl(eax, intptr_t(&Environment::get()->exit_frame()));
+  __ movl(Operand(eax, ExitFrame::offsetOfExitNative()), native_index);
+  __ movl(Operand(eax, ExitFrame::offsetOfExitSp()), esp);
+
   // Save registers.
   __ push(edx);
 
   // Push the last parameter for the C++ function.
   __ push(stk);
 
-  __ movl(eax, intptr_t(rt_->GetBaseContext()));
-  __ movl(Operand(eax, PluginContext::offsetOfLastNative()), native_index);
-
   // Relocate our absolute stk to be dat-relative, and update the context's
   // view.
   __ subl(stk, dat);
+  __ movl(eax, intptr_t(context_));
   __ movl(Operand(eax, PluginContext::offsetOfSp()), stk);
 
   const sp_native_t *native = rt_->GetNative(native_index);
@@ -1512,11 +1550,14 @@ Compiler::emitNativeCall(OPCODE op)
     __ call(ExternalAddress((void *)InvokeBoundNativeHelper));
   }
 
-  // Check for errors.
-  __ movl(ecx, intptr_t(rt_->GetBaseContext()));
-  __ movl(ecx, Operand(ecx, PluginContext::offsetOfNativeError()));
-  __ testl(ecx, ecx);
-  __ j(not_zero, &extern_error_);
+  // Map the return address to the cip that initiated this call.
+  emitCipMapping(op_cip_);
+
+  // Check for errors. Note we jump directly to the return stub since the
+  // error has already been reported.
+  __ movl(ecx, intptr_t(Environment::get()));
+  __ cmpl(Operand(ecx, Environment::offsetOfExceptionCode()), 0);
+  __ j(not_zero, &return_reported_error_);
   
   // Restore local state.
   __ addl(stk, dat);
@@ -1632,16 +1673,6 @@ Compiler::emitSwitch()
 }
 
 void
-Compiler::emitErrorPath(Label *dest, int code)
-{
-  if (dest->used()) {
-    __ bind(dest);
-    __ movl(eax, code);
-    __ jmp(ExternalAddress(env_->stubs()->ReturnStub()));
-  }
-}
-
-void
 Compiler::emitFloatCmp(ConditionCode cc)
 {
   unsigned lhs = 4;
@@ -1692,21 +1723,111 @@ Compiler::emitFloatCmp(ConditionCode cc)
 }
 
 void
+Compiler::jumpOnError(ConditionCode cc, int err)
+{
+  // Note: we accept 0 for err. In this case we expect the error to be in eax.
+  {
+    ErrorPath path(op_cip_, err);
+    error_paths_.append(path);
+  }
+
+  ErrorPath &path = error_paths_.back();
+  __ j(cc, &path.label);
+}
+
+void
 Compiler::emitErrorPaths()
 {
-  emitErrorPath(&error_divide_by_zero_, SP_ERROR_DIVIDE_BY_ZERO);
-  emitErrorPath(&error_stack_low_, SP_ERROR_STACKLOW);
-  emitErrorPath(&error_stack_min_, SP_ERROR_STACKMIN);
-  emitErrorPath(&error_bounds_, SP_ERROR_ARRAY_BOUNDS);
-  emitErrorPath(&error_memaccess_, SP_ERROR_MEMACCESS);
-  emitErrorPath(&error_heap_low_, SP_ERROR_HEAPLOW);
-  emitErrorPath(&error_heap_min_, SP_ERROR_HEAPMIN);
-  emitErrorPath(&error_integer_overflow_, SP_ERROR_INTEGER_OVERFLOW);
+  // For each path that had an error check, bind it to an error routine and
+  // add it to the cip map. What we'll get is something like:
+  //
+  //   cmp dividend, 0
+  //   jz error_thunk_0
+  //
+  // error_thunk_0:
+  //   call integer_overflow
+  //
+  // integer_overflow:
+  //   mov eax, SP_ERROR_DIVIDE_BY_ZERO
+  //   jmp report_error
+  //
+  // report_error:
+  //   create exit frame
+  //   push eax
+  //   call InvokeReportError(int err)
+  //
+  for (size_t i = 0; i < error_paths_.length(); i++) {
+    ErrorPath &path = error_paths_[i];
 
-  if (extern_error_.used()) {
-    __ bind(&extern_error_);
-    __ movl(eax, intptr_t(rt_->GetBaseContext()));
-    __ movl(eax, Operand(eax, PluginContext::offsetOfNativeError()));
+    // If there's no error code, it should be in eax. Otherwise we'll jump to
+    // a path that sets eax to a hardcoded value.
+    __ bind(&path.label);
+    if (path.err == 0)
+      __ call(&report_error_);
+    else
+      __ call(&throw_error_code_[path.err]);
+
+    emitCipMapping(path.cip);
+  }
+
+  emitThrowPathIfNeeded(SP_ERROR_DIVIDE_BY_ZERO);
+  emitThrowPathIfNeeded(SP_ERROR_STACKLOW);
+  emitThrowPathIfNeeded(SP_ERROR_STACKMIN);
+  emitThrowPathIfNeeded(SP_ERROR_ARRAY_BOUNDS);
+  emitThrowPathIfNeeded(SP_ERROR_MEMACCESS);
+  emitThrowPathIfNeeded(SP_ERROR_HEAPLOW);
+  emitThrowPathIfNeeded(SP_ERROR_HEAPMIN);
+  emitThrowPathIfNeeded(SP_ERROR_INTEGER_OVERFLOW);
+
+  if (report_error_.used()) {
+    __ bind(&report_error_);
+
+    // Create the exit frame. We always get here through a call from the opcode
+    // (and always via an out-of-line thunk).
+    __ movl(ecx, intptr_t(&Environment::get()->exit_frame()));
+    __ movl(Operand(ecx, ExitFrame::offsetOfExitNative()), -1);
+    __ movl(Operand(ecx, ExitFrame::offsetOfExitSp()), esp);
+
+    // Since the return stub wipes out the stack, we don't need to subl after
+    // the call.
+    __ push(eax);
+    __ call(ExternalAddress((void *)InvokeReportError));
     __ jmp(ExternalAddress(env_->stubs()->ReturnStub()));
   }
+
+  // We get here if we know an exception is already pending.
+  if (return_reported_error_.used()) {
+    __ bind(&return_reported_error_);
+    __ movl(eax, intptr_t(Environment::get()));
+    __ movl(eax, Operand(eax, Environment::offsetOfExceptionCode()));
+    __ jmp(ExternalAddress(env_->stubs()->ReturnStub()));
+  }
+
+  // The timeout uses a special stub.
+  if (throw_timeout_.used()) {
+    __ bind(&throw_timeout_);
+
+    // Create the exit frame.
+    __ movl(ecx, intptr_t(&Environment::get()->exit_frame()));
+    __ movl(Operand(ecx, ExitFrame::offsetOfExitNative()), -1);
+    __ movl(Operand(ecx, ExitFrame::offsetOfExitSp()), esp);
+
+    // Since the return stub wipes out the stack, we don't need to subl after
+    // the call.
+    __ call(ExternalAddress((void *)InvokeReportTimeout));
+    __ jmp(ExternalAddress(env_->stubs()->ReturnStub()));
+  }
+}
+
+void
+Compiler::emitThrowPathIfNeeded(int err)
+{
+  assert(err < SP_MAX_ERROR_CODES);
+
+  if (!throw_error_code_[err].used())
+    return;
+
+  __ bind(&throw_error_code_[err]);
+  __ movl(eax, err);
+  __ jmp(&report_error_);
 }

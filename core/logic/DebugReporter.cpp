@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -132,51 +132,6 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 	}
 }
 
-void DebugReport::OnContextExecuteError(IPluginContext *ctx, IContextTrace *error)
-{
-	const char *lastname;
-	const char *plname = pluginsys->FindPluginByContext(ctx->GetContext())->GetFilename();
-	int n_err = error->GetErrorCode();
-
-	if (n_err != SP_ERROR_NATIVE)
-	{
-		g_Logger.LogError("[SM] Plugin encountered error %d: %s",
-			n_err,
-			error->GetErrorString());
-	}
-
-	if ((lastname=error->GetLastNative(NULL)) != NULL)
-	{
-		const char *custerr;
-		if ((custerr=error->GetCustomErrorString()) != NULL)
-		{
-			g_Logger.LogError("[SM] Native \"%s\" reported: %s", lastname, custerr);
-		} else {
-			g_Logger.LogError("[SM] Native \"%s\" encountered a generic error.", lastname);
-		}
-	}
-
-	if (!error->DebugInfoAvailable())
-	{
-		g_Logger.LogError("[SM] Debug mode is not enabled for \"%s\"", plname);
-		g_Logger.LogError("[SM] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",
-			_GetPluginIndex(ctx));
-		return;
-	}
-
-	CallStackInfo stk_info;
-	int i = 0;
-	g_Logger.LogError("[SM] Displaying call stack trace for plugin \"%s\":", plname);
-	while (error->GetTraceInfo(&stk_info))
-	{
-		g_Logger.LogError("[SM]   [%d]  Line %d, %s::%s()",
-			i++,
-			stk_info.line,
-			stk_info.filename,
-			stk_info.function);
-	}
-}
-
 int DebugReport::_GetPluginIndex(IPluginContext *ctx)
 {
 	int id = 1;
@@ -199,3 +154,46 @@ int DebugReport::_GetPluginIndex(IPluginContext *ctx)
 	return pluginsys->GetPluginCount() + 1;
 }
 
+void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
+{
+	// Find the nearest plugin to blame.
+	const char *blame = nullptr;
+	for (; !iter.Done(); iter.Next()) {
+		if (iter.IsScriptedFrame()) {
+			IPlugin *plugin = pluginsys->FindPluginByContext(iter.Context()->GetContext());
+			if (plugin)
+				blame = plugin->GetFilename();
+			else
+				blame = iter.Context()->GetRuntime()->GetFilename();
+			break;
+		}
+	}
+
+	iter.Reset();
+
+	g_Logger.LogError("[SM] Exception reported: %s", report.Message());
+	if (blame)
+		g_Logger.LogError("[SM] Blaming plugin: %s", blame);
+	g_Logger.LogError("[SM] Call stack trace:");
+
+	for (int index = 0; !iter.Done(); iter.Next(), index++) {
+		const char *fn = iter.FunctionName();
+		if (!fn)
+			fn = "<unknown function>";
+
+		if (iter.IsNativeFrame()) {
+			g_Logger.LogError("[SM]   [%d] %s", index, fn);
+			continue;
+		}
+		if (iter.IsScriptedFrame()) {
+			const char *file = iter.FilePath();
+			if (!file)
+				file = "<unknown>";
+			g_Logger.LogError("[SM]   [%d] Line %d, %s::%s()",
+				index,
+				iter.LineNumber(),
+				file,
+				fn);
+		}
+	}
+}
