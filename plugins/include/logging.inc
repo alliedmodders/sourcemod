@@ -111,6 +111,28 @@ forward Action:OnLogAction(Handle:source,
 						   const String:message[]);
 
 /**
+ * Called when a message is going to be logged.
+ *
+ * @param source		Handle to the object logging the message, or INVALID_HANDLE if Core is logging the message.
+ * @param ident			Type of object logging the message (plugin, etx, or core).
+ * @param message		Message that is being logged.
+ * @return				Plugin_Handled or Plugin_Stop will prevent the message from being written to the log file.
+*/
+forward Action:OnLogMessage(Handle:source, Identity:ident, const String:message[]);
+
+/**
+ * Called when an error is going to be logged.
+ *
+ * Note that if an error occurs within this forward, the forward will not be called again recursively.
+ *
+ * @param source		Handle to the object logging the error, or INVALID_HANDLE if Core is logging the error.
+ * @param ident			Type of object logging the error (plugin, etx, or core).
+ * @param message		Error message that is being logged.
+ * @return				Plugin_Handled or Plugin_Stop will prevent the error from being written to the error log file.
+*/
+forward Action:OnLogError(Handle:source, Identity:ident, const String:message[]);
+
+/**
  * Called when a game log message is received.
  *
  * Any Log*() functions called within this callback will not recursively 

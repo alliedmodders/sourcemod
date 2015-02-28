@@ -93,9 +93,21 @@ void Logger::OnSourceModStartup(bool late)
 	InitLogger(m_Mode);
 }
 
+void Logger::OnSourceModAllInitialized()
+{
+	m_OnLogForward[LogForward_Error] = forwardsys->CreateForward("OnLogError", ET_Hook, 3, NULL, Param_Cell, Param_Cell, Param_String);
+	m_OnLogForward[LogForward_Message] = forwardsys->CreateForward("OnLogMessage", ET_Hook, 3, NULL, Param_Cell, Param_Cell, Param_String);
+}
+
 void Logger::OnSourceModAllShutdown()
 {
 	CloseLogger();
+}
+
+void Logger::OnSourceModShutdown()
+{
+	forwardsys->ReleaseForward(m_OnLogForward[LogForward_Message]);
+	forwardsys->ReleaseForward(m_OnLogForward[LogForward_Error]);
 }
 
 void Logger::OnSourceModLevelChange(const char *mapName)
@@ -188,6 +200,9 @@ void Logger::InitLogger(LoggingMode mode)
 {
 	m_Mode = mode;
 	m_Active = m_InitialState;
+
+	m_InForward[LogForward_Error] = false;
+	m_InForward[LogForward_Message] = false;
 
 	time_t t = g_pSM->GetAdjustedTime();
 	tm *curtime = localtime(&t);
@@ -315,6 +330,15 @@ void Logger::LogMessageEx(const char *vafmt, va_list ap)
 		return;
 	}
 
+	char msgBuffer[4096];
+	smcore.FormatArgs(msgBuffer, sizeof(msgBuffer), vafmt, ap);
+
+	if (LogToForward(LogForward_Message, 0 /* no source handle */, 0 /* core identity */, msgBuffer))
+	{
+		// forward handled this message, don't log anywhere else
+		return;
+	}
+
 	if (m_Mode == LoggingMode_Game)
 	{
 		_PrintToGameLog(vafmt, ap);
@@ -392,6 +416,15 @@ void Logger::LogErrorEx(const char *vafmt, va_list ap)
 {
 	if (!m_Active)
 	{
+		return;
+	}
+
+	char errorBuffer[4096];
+	smcore.FormatArgs(errorBuffer, sizeof(errorBuffer), vafmt, ap);
+
+	if (LogToForward(LogForward_Error, 0 /* no source handle */, 0 /* core identity */, errorBuffer))
+	{
+		// error forward handled this error, don't log to file
 		return;
 	}
 
@@ -499,6 +532,46 @@ const char *Logger::GetLogFileName(LogType type) const
 LoggingMode Logger::GetLoggingMode() const
 {
 	return m_Mode;
+}
+
+bool Logger::LogToForward(LogForwardType type, int handle, int identity, const char *msg)
+{
+	if (m_InForward[type])
+	{
+		// if we're erroring inside the error forward, don't recursively call the forward again
+		// we'll still want to log this error to file, however
+		return false;
+	}
+
+	IForward *forward = m_OnLogForward[type];
+
+	if (forward->GetFunctionCount() == 0)
+	{
+		// no listeners, log to file
+		return false;
+	}
+
+	m_InForward[type] = true;
+
+	cell_t result = Pl_Continue;
+
+	forward->PushCell(handle);
+	forward->PushCell(identity);
+	forward->PushString(msg);
+	forward->Execute(&result);
+
+	m_InForward[type] = false;
+
+	return result >= Pl_Handled;
+}
+
+bool Logger::SetInForward(LogForwardType type, bool inForward)
+{
+	bool oldValue = m_InForward[type];
+
+	m_InForward[type] = inForward;
+
+	return oldValue;
 }
 
 void Logger::EnableLogging()

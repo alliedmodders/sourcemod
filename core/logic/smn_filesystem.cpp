@@ -843,7 +843,20 @@ static cell_t sm_LogMessage(IPluginContext *pContext, const cell_t *params)
 	}
 
 	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+
+	if (g_Logger.LogToForward(LogForward_Message, pPlugin->GetMyHandle(), 2 /* plugin identity */, buffer))
+	{
+		// forward handled it, don't log
+		return 1;
+	}
+
+	// forward didn't handle this message, but we don't want to call into the forward another time as core
+	// we do this by tricking it into thinking it's inside the forward already, so it won't call it a second time
+	bool oldSetting = g_Logger.SetInForward(LogForward_Message, true);
+
 	g_Logger.LogMessage("[%s] %s", pPlugin->GetFilename(), buffer);
+
+	g_Logger.SetInForward(LogForward_Message, oldSetting);
 
 	return 1;
 }
@@ -861,7 +874,20 @@ static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
 	}
 
 	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+
+	if (g_Logger.LogToForward(LogForward_Error, pPlugin->GetMyHandle(), 2 /* plugin identity */, buffer))
+	{
+		// forward handled it, don't log
+		return 1;
+	}
+
+	// forward didn't handle this error, but we don't want to call into the forward another time as core
+	// we do this by tricking it into thinking it's inside the forward already, so it won't call it a second time
+	bool oldSetting = g_Logger.SetInForward(LogForward_Error, true);
+
 	g_Logger.LogError("[%s] %s", pPlugin->GetFilename(), buffer);
+
+	g_Logger.SetInForward(LogForward_Error, oldSetting);
 
 	return 1;
 }

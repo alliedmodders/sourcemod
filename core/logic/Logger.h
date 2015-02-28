@@ -67,7 +67,9 @@ public: //SMGlobalClass
 		char *error, 
 		size_t maxlength);
 	void OnSourceModStartup(bool late);
+	void OnSourceModAllInitialized();
 	void OnSourceModAllShutdown();
+	void OnSourceModShutdown();
 	void OnSourceModLevelChange(const char *mapName);
 public:
 	void InitLogger(LoggingMode mode);
@@ -88,6 +90,9 @@ public:
 	void MapChange(const char *mapname);
 	const char *GetLogFileName(LogType type) const;
 	LoggingMode GetLoggingMode() const;
+	// returns true if file logging should not be done
+	bool LogToForward(LogForwardType type, int handle, int identity, const char *msg);
+	bool SetInForward(LogForwardType type, bool inForward);
 private:
 	void _CloseFile();
 	void _NewMapFile();
@@ -104,6 +109,8 @@ private:
 	bool m_DelayedStart;
 	bool m_DailyPrintHdr;
 	bool m_InitialState;
+	IForward *m_OnLogForward[LogForward_Max];
+	bool m_InForward[LogForward_Max];
 };
 
 extern Logger g_Logger;
