@@ -226,3 +226,21 @@ stock TE_SendToClient(client, Float:delay=0.0)
 
 	return TE_Send(players, 1, delay);
 }
+
+/**
+ * Sends the current TE to all clients that are in 
+ * visible or audible range of the origin.
+ * @note See TE_Start().
+ * @note See GetClientsInRange()
+ *
+ * @param origin		Coordinates from which to test range.
+ * @param rangeType		Range type to use for filtering clients.
+ * @param delay			Delay in seconds to send the TE.
+ * @noreturn
+ */
+stock TE_SendToAllInRange(float origin[3], ClientRangeType rangeType, float delay=0.0)
+{
+	int[] clients = new int[MaxClients];
+	int total = GetClientsInRange(origin, rangeType, clients, MaxClients);
+	return TE_Send(clients, total, delay);
+}
