@@ -366,7 +366,7 @@ public void OnReceiveUser(Database db, DBResultSet rs, const char[] error, any d
 		/* For dynamic admins we clear anything already in the cache. */
 		if ((adm = FindAdminByIdentity(authtype, identity)) != INVALID_ADMIN_ID)
 		{
-			adm.Purge();
+			RemoveAdmin(adm);
 		}
 		
 		adm = CreateAdmin(name);

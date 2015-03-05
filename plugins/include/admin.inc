@@ -236,13 +236,6 @@ methodmap AdminId {
 	// @return              True if there was a password set, false otherwise.
 	public native bool GetPassword(char[] buffer="", maxlength=0);
 
-	// Purges an admin entry from the cache.
-	//
-	// @note This will remove any bindings to a specific user.
-	//
-	// @return              True on success, false otherwise.
-	public native bool Purge();
-
 	// Tests whether one admin can target another.
 	//
 	// The heuristics for this check are as follows:

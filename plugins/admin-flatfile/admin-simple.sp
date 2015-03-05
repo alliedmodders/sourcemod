@@ -219,7 +219,7 @@ void ReadAdminLine(const char[] line)
 		if (!admin.BindIdentity(auth_method, auth[auth_offset]))
 		{
 			/* We should never reach here */
-			admin.Purge();
+			RemoveAdmin(admin);
 			ParseError("Failed to bind identity %s (method %s)", auth[auth_offset], auth_method);			
 		}
 	}

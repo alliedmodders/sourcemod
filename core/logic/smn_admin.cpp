@@ -594,7 +594,6 @@ REGISTER_NATIVES(adminNatives)
 	{"AdminId.GetGroup",		GetAdminGroup},
 	{"AdminId.SetPassword",		SetAdminPassword},
 	{"AdminId.GetPassword",		GetAdminPassword},
-	{"AdminId.Purge",			RemoveAdmin},
 	{"AdminId.CanTarget",		CanAdminTarget},
 	{"AdminId.GroupCount.get",	GetAdminGroupCount},
 	{"AdminId.ImmunityLevel.get",	GetAdminImmunityLevel},
