@@ -256,13 +256,13 @@ methodmap AdminId {
 
 	// The number of groups of which this admin is a member.
 	property int GroupCount {
-			public native get();
+		public native get();
 	}
 
 	// Immunity level used for targetting.
 	property int ImmunityLevel {
-			public native get();
-			public native set(int level);
+		public native get();
+		public native set(int level);
 	}
 }
 
