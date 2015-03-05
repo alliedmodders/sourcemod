@@ -31,7 +31,7 @@
  * Version: $Id$
  */
 
-public ReadSimpleUsers()
+public void ReadSimpleUsers()
 {
 	BuildPath(Path_SM, g_Filename, sizeof(g_Filename), "configs/admins_simple.ini");
 	
@@ -90,7 +90,7 @@ public ReadSimpleUsers()
 
 
 
-DecodeAuthMethod(const String:auth[], String:method[32], &offset)
+void DecodeAuthMethod(const char[] auth, char method[32], int &offset)
 {
 	if ((StrContains(auth, "STEAM_") == 0) || (strncmp("0:", auth, 2) == 0) || (strncmp("1:", auth, 2) == 0))
 	{
@@ -119,13 +119,13 @@ DecodeAuthMethod(const String:auth[], String:method[32], &offset)
 	}
 }
 
-ReadAdminLine(const String:line[])
+void ReadAdminLine(const char[] line)
 {
-	new bool:is_bound;
-	new AdminId:admin;
-	new String:auth[64];
-	decl String:auth_method[32];
-	new idx, cur_idx, auth_offset;
+	bool is_bound;
+	AdminId admin;
+	char auth[64];
+	char auth_method[32];
+	int idx, cur_idx, auth_offset;
 	
 	if ((cur_idx = BreakString(line, auth, sizeof(auth))) == -1)
 	{
@@ -148,16 +148,16 @@ ReadAdminLine(const String:line[])
 	}
 	
 	/* Read flags */
-	new String:flags[64];	
+	char flags[64];	
 	cur_idx = BreakString(line[idx], flags, sizeof(flags));
 	idx += cur_idx;
 
 	/* Read immunity level, if any */
-	new level, flag_idx;
+	int level, flag_idx;
 
 	if ((flag_idx = StringToIntEx(flags, level)) > 0)
 	{
-		SetAdminImmunityLevel(admin, level);
+		admin.ImmunityLevel = level;
 		if (flags[flag_idx] == ':')
 		{
 			flag_idx++;
@@ -166,41 +166,41 @@ ReadAdminLine(const String:line[])
 
 	if (flags[flag_idx] == '@')
 	{
-		new GroupId:gid = FindAdmGroup(flags[flag_idx + 1]);
+		GroupId gid = FindAdmGroup(flags[flag_idx + 1]);
 		if (gid == INVALID_GROUP_ID)
 		{
 			ParseError("Invalid group detected: %s", flags[flag_idx + 1]);
 			return;
 		}
-		AdminInheritGroup(admin, gid);
+		admin.InheritGroup(gid);
 	}
 	else
 	{
-		new len = strlen(flags[flag_idx]);
-		new bool:is_default = false;
-		for (new i=0; i<len; i++)
+		int len = strlen(flags[flag_idx]);
+		bool is_default = false;
+		for (int i=0; i<len; i++)
 		{
 			if (!level && flags[flag_idx + i] == '$')
 			{
-				SetAdminImmunityLevel(admin, 1);
+				admin.ImmunityLevel = 1;
 			} else {
-				new AdminFlag:flag;
+				AdminFlag flag;
 				
 				if (!FindFlagByChar(flags[flag_idx + i], flag))
 				{
 					ParseError("Invalid flag detected: %c", flags[flag_idx + i]);
 					continue;
 				}
-				SetAdminFlag(admin, flag, true);
+				admin.SetFlag(flag, true);
 			}
 		}
 		
 		if (is_default)
 		{
-			new GroupId:gid = FindAdmGroup("Default");
+			GroupId gid = FindAdmGroup("Default");
 			if (gid != INVALID_GROUP_ID)
 			{
-				AdminInheritGroup(admin, gid);
+				admin.InheritGroup(gid);
 			}
 		}
 	}
@@ -208,15 +208,15 @@ ReadAdminLine(const String:line[])
 	/* Lastly, is there a password? */
 	if (cur_idx != -1)
 	{
-		decl String:password[64];
+		char password[64];
 		BreakString(line[idx], password, sizeof(password));
-		SetAdminPassword(admin, password);
+		admin.SetPassword(password);
 	}
 	
 	/* Now, bind the identity to something */
 	if (!is_bound)
 	{
-		if (!BindAdminIdentity(admin, auth_method, auth[auth_offset]))
+		if (!admin.BindIdentity(auth_method, auth[auth_offset]))
 		{
 			/* We should never reach here */
 			RemoveAdmin(admin);

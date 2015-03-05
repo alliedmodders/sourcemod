@@ -37,7 +37,7 @@
 
 #define COMMANDS_PER_PAGE	10
 
-public Plugin:myinfo = 
+public Plugin myinfo = 
 {
 	name = "Admin Help",
 	author = "AlliedModders LLC",
@@ -46,7 +46,7 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("adminhelp.phrases");
@@ -54,11 +54,11 @@ public OnPluginStart()
 	RegConsoleCmd("sm_searchcmd", HelpCmd, "Searches SourceMod commands");
 }
 
-public Action:HelpCmd(client, args)
+public Action HelpCmd(int client, int args)
 {
-	decl String:arg[64], String:CmdName[20];
-	new PageNum = 1;
-	new bool:DoSearch;
+	char arg[64], CmdName[20];
+	int PageNum = 1;
+	bool DoSearch;
 
 	GetCmdArg(0, CmdName, sizeof(CmdName));
 
@@ -76,17 +76,17 @@ public Action:HelpCmd(client, args)
 		ReplyToCommand(client, "[SM] %t", "See console for output");
 	}
 
-	decl String:Name[64];
-	decl String:Desc[255];
-	decl String:NoDesc[128];
-	new Flags;
-	new Handle:CmdIter = GetCommandIterator();
+	char Name[64];
+	char Desc[255];
+	char NoDesc[128];
+	int Flags;
+	Handle CmdIter = GetCommandIterator();
 
 	FormatEx(NoDesc, sizeof(NoDesc), "%T", "No description available", client);
 
 	if (DoSearch)
 	{
-		new i = 1;
+		int i = 1;
 		while (ReadCommandIterator(CmdIter, Name, sizeof(Name), Flags, Desc, sizeof(Desc)))
 		{
 			if ((StrContains(Name, arg, false) != -1) && CheckCommandAccess(client, Name, Flags))
@@ -105,8 +105,8 @@ public Action:HelpCmd(client, args)
 		/* Skip the first N commands if we need to */
 		if (PageNum > 1)
 		{
-			new i;
-			new EndCmd = (PageNum-1) * COMMANDS_PER_PAGE - 1;
+			int i;
+			int EndCmd = (PageNum-1) * COMMANDS_PER_PAGE - 1;
 			for (i=0; ReadCommandIterator(CmdIter, Name, sizeof(Name), Flags, Desc, sizeof(Desc)) && i<EndCmd; )
 			{
 				if (CheckCommandAccess(client, Name, Flags))
@@ -124,8 +124,8 @@ public Action:HelpCmd(client, args)
 		}
 
 		/* Start printing the commands to the client */
-		new i;
-		new StartCmd = (PageNum-1) * COMMANDS_PER_PAGE;
+		int i;
+		int StartCmd = (PageNum-1) * COMMANDS_PER_PAGE;
 		for (i=0; ReadCommandIterator(CmdIter, Name, sizeof(Name), Flags, Desc, sizeof(Desc)) && i<COMMANDS_PER_PAGE; )
 		{
 			if (CheckCommandAccess(client, Name, Flags))

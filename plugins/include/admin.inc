@@ -168,21 +168,174 @@ enum AdminCachePart
 	AdminCache_Admins = 2,			/**< All admins */
 };
 
+methodmap AdminId {
+	// Retrieves an admin's user name as made with CreateAdmin().
+	//
+	// @note This function can return UTF-8 strings, and will safely chop UTF-8 strings.
+	//
+	// @param name          String buffer to store name.
+	// @param maxlength     Maximum size of string buffer.
+	// @return              Number of bytes written.
+	public native void GetUsername(char[] name, int maxlength);
+
+	// Binds an admin to an identity for fast lookup later on.  The bind must be unique.
+	//
+	// @param authMethod    Auth method to use, predefined or from RegisterAuthIdentType().
+	// @param ident         String containing the arbitrary, unique identity.
+	// @return              True on success, false if the auth method was not found,
+	//                      ident was already taken, or ident invalid for auth method.
+	public native bool BindIdentity(const char[] authMethod, const char[] ident);
+
+	// Sets whether or not a flag is enabled on an admin.
+	//
+	// @param flag          Admin flag to use.
+	// @param enabled       True to enable, false to disable.
+	public native void SetFlag(AdminFlag flag, bool enabled);
+
+	// Returns whether or not a flag is enabled on an admin.
+	//
+	// @param flag          Admin flag to use.
+	// @param mode          Access mode to check.
+	// @return              True if enabled, false otherwise.
+	public native bool HasFlag(AdminFlag flag, AdmAccessMode mode=Access_Effective);
+
+	// Returns the bitstring of access flags on an admin.
+	//
+	// @param mode          Access mode to use.
+	// @return              A bitstring containing which flags are enabled.
+	public native int GetFlags(AdmAccessMode mode);
+
+	// Adds a group to an admin's inherited group list.  Any flags the group has
+	// will be added to the admin's effective flags.
+	//
+	// @param gid           GroupId index of the group.
+	// @return              True on success, false on invalid input or duplicate membership.
+	public native bool InheritGroup(GroupId gid);
+
+	// Returns group information from an admin.
+	//
+	// @param index         Group number to retrieve, from 0 to N-1, where N
+	//                      is the value of the GroupCount property.
+	// @param name          Buffer to store the group's name.
+	//                      Note: This will safely chop UTF-8 strings.
+	// @param maxlength     Maximum size of the output name buffer.
+	// @return              A GroupId index and a name pointer, or
+	//                      INVALID_GROUP_ID and NULL if an error occurred.
+	public native GroupId GetGroup(int index, const char[] name, int maxlength);
+
+	// Sets a password on an admin.
+	//
+	// @param password      String containing the password.
+	public native void SetPassword(const char[] password);
+
+	// Gets an admin's password.
+	//
+	// @param buffer        Optional buffer to store the admin's password.
+	// @param maxlength     Maximum size of the output name buffer.
+	//                      Note: This will safely chop UTF-8 strings.
+	// @return              True if there was a password set, false otherwise.
+	public native bool GetPassword(char[] buffer="", maxlength=0);
+
+	// Tests whether one admin can target another.
+	//
+	// The heuristics for this check are as follows:
+	// 0. If the targeting AdminId is INVALID_ADMIN_ID, targeting fails.
+	// 1. If the targeted AdminId is INVALID_ADMIN_ID, targeting succeeds.
+	// 2. If the targeted AdminId is the same as the targeting AdminId,
+	//    (self) targeting succeeds.
+	// 3. If the targeting admin is root, targeting succeeds.
+	// 4. If the targeted admin has access higher (as interpreted by
+	//    (sm_immunity_mode) than the targeting admin, then targeting fails.
+	// 5. If the targeted admin has specific immunity from the
+	//    targeting admin via group immunities, targeting fails.
+	// 6. Targeting succeeds.
+	//
+	// @param target        Target admin (may be INVALID_ADMIN_ID).
+	// @return              True if targetable, false if immune.
+	public native bool CanTarget(AdminId other);
+
+	// The number of groups of which this admin is a member.
+	property int GroupCount {
+		public native get();
+	}
+
+	// Immunity level used for targetting.
+	property int ImmunityLevel {
+		public native get();
+		public native set(int level);
+	}
+}
+
+methodmap GroupId {
+	// Gets whether or not a flag is enabled on a group's flag set.
+	//
+	// @param flag			Admin flag to retrieve.
+	// @return				True if enabled, false otherwise,
+	public native bool HasFlag(AdminFlag flag);
+
+	// Adds or removes a flag from a group's flag set.
+	//
+	// @param flag			Admin flag to toggle.
+	// @param enabled		True to set the flag, false to unset/disable.
+	public native void SetFlag(AdminFlag flag, bool enabled);
+
+	// Returns the flag set that is added to users from this group.
+	//
+	// @return				Bitstring containing the flags enabled.
+	public native int GetFlags();
+
+	// Returns a group that this group is immune to given an index.
+	//
+	// @param number		Index from 0 to N-1, from GroupImmunitiesCount.
+	// @return				GroupId that this group is immune to, or INVALID_GROUP_ID on failure.
+	public native GroupId GetGroupImmunity(int index);
+
+	// Adds immunity to a specific group.
+	//
+	// @param other			Group id to receive immunity to.
+	public native void AddGroupImmunity(GroupId other);
+
+	// Retrieves a group-specific command override.
+	//
+	// @param name			String containing command name (case sensitive).
+	// @param type			Override type (specific command or group).
+	// @param rule			Optional pointer to store allow/deny setting.
+	// @return				True if an override exists, false otherwise.
+	public native bool GetCommandOverride(const char[] name, OverrideType type, OverrideRule &rule);
+
+	// Adds a group-specific override type.
+	//
+	// @param name			String containing command name (case sensitive).
+	// @param type			Override type (specific command or group).
+	// @param rule			Override allow/deny setting.
+	public native void AddCommandOverride(const char[] name, OverrideType type, OverrideRule rule);
+
+	// Number of specific group immunities
+	property int GroupImmunitiesCount {
+		public native get();
+	}
+
+	// Immunity level used for targetting.
+	property int ImmunityLevel {
+		public native get();
+		public native set(int level);
+	}
+}
+
 /**
  * Called when part of the cache needs to be rebuilt.
  *
  * @param part			Part of the admin cache to rebuild.
  */
-forward OnRebuildAdminCache(AdminCachePart:part);
+forward void OnRebuildAdminCache(AdminCachePart part);
 
 /**
  * Tells the admin system to dump a portion of the cache.
  *
  * @param part			Part of the cache to dump.  Specifying groups also dumps admins.
  * @param rebuild		If true, the rebuild forwards will fire.
- * @noreturn
  */
-native DumpAdminCache(AdminCachePart:part, bool:rebuild);
+native void DumpAdminCache(AdminCachePart part, bool rebuild);
 
 /**
  * Adds a global command flag override.  Any command registered with this name
@@ -191,9 +344,8 @@ native DumpAdminCache(AdminCachePart:part, bool:rebuild);
  * @param cmd			String containing command name (case sensitive).
  * @param type			Override type (specific command or group).
  * @param flags			New admin flag.
- * @noreturn
  */
-native AddCommandOverride(const String:cmd[], OverrideType:type, flags);
+native void AddCommandOverride(const char[] cmd, OverrideType type, int flags);
 
 /**
  * Returns a command override.
@@ -203,16 +355,15 @@ native AddCommandOverride(const String:cmd[], OverrideType:type, flags);
  * @param flags			By-reference cell to store the flag (undefined if not found).
  * @return				True if there is an override, false otherwise.
  */
-native bool:GetCommandOverride(const String:cmd[], OverrideType:type, &flags);
+native bool GetCommandOverride(const char[] cmd, OverrideType type, int &flags);
 
 /**
  * Unsets a command override.
  *
  * @param cmd			String containing command name (case sensitive).
  * @param type			Override type (specific command or group).
- * @noreturn
  */
-native UnsetCommandOverride(const String:cmd[], OverrideType:type);
+native void UnsetCommandOverride(const char[] cmd, OverrideType type);
 
 /**
  * Adds a new group.  Name must be unique.
@@ -220,7 +371,7 @@ native UnsetCommandOverride(const String:cmd[], OverrideType:type);
  * @param group_name	String containing the group name.
  * @return				A new group id, INVALID_GROUP_ID if it already exists.
  */
-native GroupId:CreateAdmGroup(const String:group_name[]);
+native GroupId CreateAdmGroup(const char[] group_name);
 
 /**
  * Finds a group by name.
@@ -228,7 +379,7 @@ native GroupId:CreateAdmGroup(const String:group_name[]);
  * @param group_name	String containing the group name.
  * @return				A group id, or INVALID_GROUP_ID if not found.
  */
-native GroupId:FindAdmGroup(const String:group_name[]);
+native GroupId FindAdmGroup(const char[] group_name);
 
 /**
  * Adds or removes a flag from a group's flag set.
@@ -237,9 +388,8 @@ native GroupId:FindAdmGroup(const String:group_name[]);
  * @param id			Group id.
  * @param flag			Admin flag to toggle.
  * @param enabled		True to set the flag, false to unset/disable.
- * @noreturn
  */
-native SetAdmGroupAddFlag(GroupId:id, AdminFlag:flag, bool:enabled);
+native void SetAdmGroupAddFlag(GroupId id, AdminFlag flag, bool enabled);
 
 /**
  * Gets the set value of an add flag on a group's flag set.
@@ -249,7 +399,7 @@ native SetAdmGroupAddFlag(GroupId:id, AdminFlag:flag, bool:enabled);
  * @param flag			Admin flag to retrieve.
  * @return				True if enabled, false otherwise,
  */
-native bool:GetAdmGroupAddFlag(GroupId:id, AdminFlag:flag);
+native bool GetAdmGroupAddFlag(GroupId id, AdminFlag flag);
 
 /**
  * Returns the flag set that is added to a user from their group.
@@ -258,28 +408,27 @@ native bool:GetAdmGroupAddFlag(GroupId:id, AdminFlag:flag);
  * @param id			GroupId of the group.
  * @return				Bitstring containing the flags enabled.
  */
-native GetAdmGroupAddFlags(GroupId:id);
+native int GetAdmGroupAddFlags(GroupId id);
 
 /**
  * @deprecated			Functionality removed.
  */
 #pragma deprecated Use SetAdmGroupImmunityLevel() instead.
-native SetAdmGroupImmunity(GroupId:id, ImmunityType:type, bool:enabled);
+native void SetAdmGroupImmunity(GroupId id, ImmunityType type, bool enabled);
 
 /**
  * @deprecated			Functionality removed.
  */
 #pragma deprecated Use GetAdmGroupImmunityLevel() instead.
-native bool:GetAdmGroupImmunity(GroupId:id, ImmunityType:type);
+native bool GetAdmGroupImmunity(GroupId id, ImmunityType type);
 
 /**
  * Adds immunity to a specific group.
  *
  * @param id			Group id.
  * @param other_id		Group id to receive immunity to.
- * @noreturn
  */
-native SetAdmGroupImmuneFrom(GroupId:id, GroupId:other_id);
+native void SetAdmGroupImmuneFrom(GroupId id, GroupId other_id);
 
 /**
  * Returns the number of specific group immunities.
@@ -287,7 +436,7 @@ native SetAdmGroupImmuneFrom(GroupId:id, GroupId:other_id);
  * @param id			Group id.
  * @return				Number of group immunities.
  */
-native GetAdmGroupImmuneCount(GroupId:id);
+native int GetAdmGroupImmuneCount(GroupId id);
 
 /**
  * Returns a group that this group is immune to given an index.
@@ -296,7 +445,7 @@ native GetAdmGroupImmuneCount(GroupId:id);
  * @param number		Index from 0 to N-1, from GetAdmGroupImmuneCount().
  * @return				GroupId that this group is immune to, or INVALID_GROUP_ID on failure.
  */
-native GroupId:GetAdmGroupImmuneFrom(GroupId:id, number); 
+native GroupId GetAdmGroupImmuneFrom(GroupId id, int number); 
 
 /**
  * Adds a group-specific override type.
@@ -305,9 +454,8 @@ native GroupId:GetAdmGroupImmuneFrom(GroupId:id, number);
  * @param name			String containing command name (case sensitive).
  * @param type			Override type (specific command or group).
  * @param rule			Override allow/deny setting.
- * @noreturn
  */
-native AddAdmGroupCmdOverride(GroupId:id, const String:name[], OverrideType:type, OverrideRule:rule);
+native void AddAdmGroupCmdOverride(GroupId id, const char[] name, OverrideType type, OverrideRule rule);
 
 /**
  * Retrieves a group-specific command override.
@@ -318,16 +466,15 @@ native AddAdmGroupCmdOverride(GroupId:id, const String:name[], OverrideType:type
  * @param rule			Optional pointer to store allow/deny setting.
  * @return				True if an override exists, false otherwise.
  */
-native bool:GetAdmGroupCmdOverride(GroupId:id, const String:name[], OverrideType:type, &OverrideRule:rule);
+native bool GetAdmGroupCmdOverride(GroupId id, const char[] name, OverrideType type, OverrideRule &rule);
 
 /**
  * Registers an authentication identity type.  You normally never need to call this except for 
  * very specific systems.
  *
  * @param name		Codename to use for your authentication type.
- * @noreturn
  */
-native RegisterAuthIdentType(const String:name[]);
+native void RegisterAuthIdentType(const char[] name);
 
 /**
  * Creates a new admin entry in the permissions cache.
@@ -335,7 +482,7 @@ native RegisterAuthIdentType(const String:name[]);
  * @param name			Name for this entry (does not have to be unique).
  * 						Specify an empty string for an anonymous admin.
  */
-native AdminId:CreateAdmin(const String:name[]="");
+native AdminId CreateAdmin(const char[] name="");
 
 /**
  * Retrieves an admin's user name as made with CreateAdmin().
@@ -347,7 +494,7 @@ native AdminId:CreateAdmin(const String:name[]="");
  * @param maxlength		Maximum size of string buffer.
  * @return				Number of bytes written.
  */
-native GetAdminUsername(AdminId:id, String:name[], maxlength);
+native int GetAdminUsername(AdminId id, char[] name, int maxlength);
 
 /**
  * Binds an admin to an identity for fast lookup later on.  The bind must be unique.
@@ -358,7 +505,7 @@ native GetAdminUsername(AdminId:id, String:name[], maxlength);
  * @return				True on success, false if the auth method was not found,
  *						ident was already taken, or ident invalid for auth method.
  */
-native bool:BindAdminIdentity(AdminId:id, const String:auth[], const String:ident[]);
+native bool BindAdminIdentity(AdminId id, const char[] auth, const char[] ident);
 
 /**
  * Sets whether or not a flag is enabled on an admin.
@@ -366,9 +513,8 @@ native bool:BindAdminIdentity(AdminId:id, const String:auth[], const String:iden
  * @param id			AdminId index of the admin.
  * @param flag			Admin flag to use.
  * @param enabled		True to enable, false to disable.
- * @noreturn
  */
-native SetAdminFlag(AdminId:id, AdminFlag:flag, bool:enabled);
+native void SetAdminFlag(AdminId id, AdminFlag flag, bool enabled);
 
 /**
  * Returns whether or not a flag is enabled on an admin.
@@ -378,7 +524,7 @@ native SetAdminFlag(AdminId:id, AdminFlag:flag, bool:enabled);
  * @param mode			Access mode to check.
  * @return				True if enabled, false otherwise.
  */
-native bool:GetAdminFlag(AdminId:id, AdminFlag:flag, AdmAccessMode:mode=Access_Effective);
+native bool GetAdminFlag(AdminId id, AdminFlag flag, AdmAccessMode mode=Access_Effective);
 
 /**
  * Returns the bitstring of access flags on an admin.
@@ -387,7 +533,7 @@ native bool:GetAdminFlag(AdminId:id, AdminFlag:flag, AdmAccessMode:mode=Access_E
  * @param mode			Access mode to use.
  * @return				A bitstring containing which flags are enabled.
  */
-native GetAdminFlags(AdminId:id, AdmAccessMode:mode);
+native int GetAdminFlags(AdminId id, AdmAccessMode mode);
 
 /**
  * Adds a group to an admin's inherited group list.  Any flags the group has 
@@ -397,7 +543,7 @@ native GetAdminFlags(AdminId:id, AdmAccessMode:mode);
  * @param gid			GroupId index of the group.
  * @return				True on success, false on invalid input or duplicate membership.
  */
-native bool:AdminInheritGroup(AdminId:id, GroupId:gid);
+native bool AdminInheritGroup(AdminId id, GroupId gid);
 
 /**
  * Returns the number of groups this admin is a member of.
@@ -405,7 +551,7 @@ native bool:AdminInheritGroup(AdminId:id, GroupId:gid);
  * @param id			AdminId index of the admin.
  * @return				Number of groups this admin is a member of.
  */
-native GetAdminGroupCount(AdminId:id);
+native int GetAdminGroupCount(AdminId id);
 
 /**
  * Returns group information from an admin.
@@ -418,17 +564,16 @@ native GetAdminGroupCount(AdminId:id);
  * @param maxlength		Maximum size of the output name buffer.
  * @return				A GroupId index and a name pointer, or
  *						INVALID_GROUP_ID and NULL if an error occurred.
-*/
-native GroupId:GetAdminGroup(AdminId:id, index, const String:name[], maxlength);
+ */
+native GroupId GetAdminGroup(AdminId id, int index, const char[] name, int maxlength);
 
 /**
  * Sets a password on an admin.
  *
  * @param id			AdminId index of the admin.
  * @param password		String containing the password.
- * @noreturn
  */
-native SetAdminPassword(AdminId:id, const String:password[]);
+native void SetAdminPassword(AdminId id, const char[] password);
 
 /**
  * Gets an admin's password.
@@ -439,7 +584,7 @@ native SetAdminPassword(AdminId:id, const String:password[]);
  *						Note: This will safely chop UTF-8 strings.
  * @return				True if there was a password set, false otherwise.
  */
-native bool:GetAdminPassword(AdminId:id, String:buffer[]="", maxlength=0);
+native bool GetAdminPassword(AdminId id, char buffer[]="", int maxlength=0);
 
 /**
  * Attempts to find an admin by an auth method and an identity.
@@ -448,7 +593,7 @@ native bool:GetAdminPassword(AdminId:id, String:buffer[]="", maxlength=0);
  * @param identity		Identity string to look up.
  * @return				An AdminId index if found, INVALID_ADMIN_ID otherwise.
  */
-native AdminId:FindAdminByIdentity(const String:auth[], const String:identity[]);
+native AdminId FindAdminByIdentity(const char[] auth, const char[] identity);
 
 /**
  * Removes an admin entry from the cache.
@@ -458,7 +603,7 @@ native AdminId:FindAdminByIdentity(const String:auth[], const String:identity[])
  * @param id			AdminId index to remove/invalidate.
  * @return				True on success, false otherwise.
  */
-native bool:RemoveAdmin(AdminId:id);
+native bool RemoveAdmin(AdminId id);
 
 /**
  * Converts a flag bit string to a bit array.
@@ -468,7 +613,7 @@ native bool:RemoveAdmin(AdminId:id);
  * @param maxSize		Maximum number of flags the array can store.
  * @return				Number of flags written.
  */
-native FlagBitsToBitArray(bits, bool:array[], maxSize);
+native int FlagBitsToBitArray(int bits, bool[] array, int maxSize);
 
 /**
  * Converts a flag array to a bit string.
@@ -477,7 +622,7 @@ native FlagBitsToBitArray(bits, bool:array[], maxSize);
  * @param maxSize		Maximum size of the flag array.
  * @return				A bit string composed of the array bits.
  */
-native FlagBitArrayToBits(const bool:array[], maxSize);
+native int FlagBitArrayToBits(const bool[] array, int maxSize);
 
 /**
  * Converts an array of flags to bits.
@@ -486,7 +631,7 @@ native FlagBitArrayToBits(const bool:array[], maxSize);
  * @param numFlags		Number of flags in the array.
  * @return				A bit string composed of the array flags.
  */
-native FlagArrayToBits(const AdminFlag:array[], numFlags);
+native int FlagArrayToBits(const AdminFlag[] array, int numFlags);
 
 /**
  * Converts a bit string to an array of flags.
@@ -496,7 +641,7 @@ native FlagArrayToBits(const AdminFlag:array[], numFlags);
  * @param maxSize		Maximum size of the flag array.
  * @return				Number of flags written.
  */
-native FlagBitsToArray(bits, AdminFlag:array[], maxSize);
+native int FlagBitsToArray(int bits, AdminFlag[] array, int maxSize);
 
 /**
  * Finds a flag by its string name.
@@ -505,7 +650,7 @@ native FlagBitsToArray(bits, AdminFlag:array[], maxSize);
  * @param flag			Variable to store flag in.
  * @return				True on success, false if not found.
  */
-native bool:FindFlagByName(const String:name[], &AdminFlag:flag);
+native bool FindFlagByName(const char[] name, AdminFlag &flag);
 
 /**
  * Finds a flag by a given character.
@@ -514,7 +659,7 @@ native bool:FindFlagByName(const String:name[], &AdminFlag:flag);
  * @param flag			Variable to store flag in.
  * @return				True on success, false if not found.
  */
-native bool:FindFlagByChar(c, &AdminFlag:flag);
+native bool FindFlagByChar(int c, AdminFlag &flag);
 
 /**
  * Finds a flag char by a gived admin flag.
@@ -523,7 +668,7 @@ native bool:FindFlagByChar(c, &AdminFlag:flag);
  * @param c                    Variable to store flag char.
  * @return                     True on success, false if not found.
  */
-native bool:FindFlagChar(AdminFlag:flag, &c);
+native bool FindFlagChar(AdminFlag flag, int &c);
 
 /**
  * Converts a string of flag characters to a bit string.
@@ -532,7 +677,7 @@ native bool:FindFlagChar(AdminFlag:flag, &c);
  * @param numchars		Optional variable to store the number of bytes read.
  * @return				Bit string of ADMFLAG values.
  */
-native ReadFlagString(const String:flags[], &numchars=0);
+native int ReadFlagString(const char[] flags, int &numchars=0);
 
 /**
  * Tests whether one admin can target another.
@@ -553,7 +698,7 @@ native ReadFlagString(const String:flags[], &numchars=0);
  * @param target		Target admin (may be INVALID_ADMIN_ID).
  * @return				True if targetable, false if immune.
  */
-native CanAdminTarget(AdminId:admin, AdminId:target);
+native bool CanAdminTarget(AdminId admin, AdminId target);
 
 /**
  * Creates an admin auth method.  This does not need to be called more than once
@@ -562,7 +707,7 @@ native CanAdminTarget(AdminId:admin, AdminId:target);
  * @param method		Name of the authentication method.
  * @return				True on success, false on failure.
  */
-native bool:CreateAuthMethod(const String:method[]);
+native bool CreateAuthMethod(const char[] method);
 
 /**
  * Sets a group's immunity level.
@@ -571,7 +716,7 @@ native bool:CreateAuthMethod(const String:method[]);
  * @param level			Immunity level value.
  * @return				Old immunity level value.
  */
-native SetAdmGroupImmunityLevel(GroupId:gid, level);
+native int SetAdmGroupImmunityLevel(GroupId gid, int level);
 
 /**
  * Gets a group's immunity level (defaults to 0).
@@ -579,7 +724,7 @@ native SetAdmGroupImmunityLevel(GroupId:gid, level);
  * @param gid			Group Id.
  * @return				Immunity level value.
  */
-native GetAdmGroupImmunityLevel(GroupId:gid);
+native int GetAdmGroupImmunityLevel(GroupId gid);
 
 /**
  * Sets an admin's immunity level.
@@ -588,7 +733,7 @@ native GetAdmGroupImmunityLevel(GroupId:gid);
  * @param level			Immunity level value.
  * @return				Old immunity level value.
  */
-native SetAdminImmunityLevel(AdminId:id, level);
+native int SetAdminImmunityLevel(AdminId id, int level);
 
 /**
  * Gets an admin's immunity level.
@@ -596,7 +741,7 @@ native SetAdminImmunityLevel(AdminId:id, level);
  * @param id			Admin Id.
  * @return				Immunity level value.
  */
-native GetAdminImmunityLevel(AdminId:id);
+native int GetAdminImmunityLevel(AdminId id);
 
 /**
  * Converts a flag to its single bit.
@@ -604,9 +749,9 @@ native GetAdminImmunityLevel(AdminId:id);
  * @param flag			Flag to convert.
  * @return				Bit representation of the flag.
  */
-stock FlagToBit(AdminFlag:flag)
+stock int FlagToBit(AdminFlag flag)
 {
-	return (1<<_:flag);
+	return (1 << view_as<int>(flag));
 }
 
 /**
@@ -616,9 +761,9 @@ stock FlagToBit(AdminFlag:flag)
  * @param flag			Stores the converted flag by reference.
  * @return				True on success, false otherwise.
  */
-stock bool:BitToFlag(bit, &AdminFlag:flag)
+stock bool BitToFlag(int bit, AdminFlag &flag)
 {
-	new AdminFlag:array[1];
+	AdminFlag array[1];
 	
 	if (FlagBitsToArray(bit, array, 1))
 	{
