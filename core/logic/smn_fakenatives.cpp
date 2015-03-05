@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -81,18 +81,12 @@ cell_t FakeNativeRouter(IPluginContext *pContext, const cell_t *params, void *pD
 		s_curparams[i] = params[i];
 	}
 
-	/* Push info and execute. */
+	// Push info and execute. If Invoke() fails, the error will propagate up.
+	// We still carry on below to clear our global state.
 	cell_t result = 0;
 	native->call->PushCell(pCaller->GetMyHandle());
 	native->call->PushCell(params[0]);
-	int error;
-	if ((error=native->call->Execute(&result)) != SP_ERROR_NONE)
-	{
-		if (pContext->GetLastNativeError() == SP_ERROR_NONE)
-		{
-			pContext->ThrowNativeErrorEx(error, "Error encountered while processing a dynamic native");
-		}
-	}
+	native->call->Invoke(&result);
 
 	/* Restore everything from the stack if necessary */
 	s_curnative = pSaveNative;
@@ -141,15 +135,15 @@ static cell_t ThrowNativeError(IPluginContext *pContext, const cell_t *params)
 	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[512];
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
-		s_curcaller->ThrowNativeError("Error encountered while processing a dynamic native");
-	} else {
-		s_curcaller->ThrowNativeErrorEx(params[1], "%s", buffer);
+		DetectExceptions eh(pContext);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		if (eh.HasException())
+			return 0;
 	}
 
+	pContext->ReportError("%s", buffer);
 	return 0;
 }
 
@@ -402,36 +396,32 @@ static cell_t FormatNativeString(IPluginContext *pContext, const cell_t *params)
 	char *format_buffer;
 
 	if (out_param)
-	{
-		if ((err=s_curcaller->LocalToString(s_curparams[out_param], &output_buffer)) != SP_ERROR_NONE)
-		{
-			return err;
-		}
-	} else {
+		s_curcaller->LocalToString(s_curparams[out_param], &output_buffer);
+	else
 		pContext->LocalToString(params[6], &output_buffer);
-	}
 
 	if (fmt_param)
-	{
-		if ((err=s_curcaller->LocalToString(s_curparams[fmt_param], &format_buffer)) != SP_ERROR_NONE)
-		{
-			return err;
-		}
-	} else {
+		s_curcaller->LocalToString(s_curparams[fmt_param], &format_buffer);
+	else
 		pContext->LocalToString(params[7], &format_buffer);
-	}
 
 	/* Get maximum length */
 	size_t maxlen = (size_t)params[4];
 
 	/* Do the format */
-	size_t written = smcore.atcprintf(output_buffer, maxlen, format_buffer, s_curcaller, s_curparams, &var_param);
+	size_t written;
+	{
+		DetectExceptions eh(pContext);
+		written = smcore.atcprintf(output_buffer, maxlen, format_buffer, s_curcaller, s_curparams, &var_param);
+		if (eh.HasException())
+			return 0;
+	}
 
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[5], &addr);
 	*addr = (cell_t)written;
 
-	return s_curcaller->GetLastNativeError();
+	return SP_ERROR_NONE;
 }
 
 //tee hee

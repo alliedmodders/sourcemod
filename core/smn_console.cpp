@@ -909,11 +909,12 @@ static cell_t sm_ServerCommandEx(IPluginContext *pContext, const cell_t *params)
 	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[1024];
-	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 3);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
+	size_t len;
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 3);
+		if (eh.HasException())
+			return 0;
 	}
 
 	/* One byte for null terminator, one for newline */
@@ -965,11 +966,11 @@ static cell_t FakeClientCommandEx(IPluginContext *pContext, const cell_t *params
 	g_SourceMod.SetGlobalTarget(params[1]);
 
 	char buffer[256];
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		if (eh.HasException())
+			return 0;
 	}
 
 	g_HL2.AddToFakeCliCmdQueue(params[1], GetPlayerUserId(pPlayer->GetEdict()), buffer);

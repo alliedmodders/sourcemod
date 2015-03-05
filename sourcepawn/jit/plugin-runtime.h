@@ -15,6 +15,7 @@
 
 #include <sp_vm_api.h>
 #include <am-vector.h>
+#include <am-string.h>
 #include <am-inlinelist.h>
 #include <am-hashmap.h>
 #include "compiled-function.h"
@@ -71,7 +72,7 @@ class PluginRuntime
   virtual unsigned char *GetDataHash();
   CompiledFunction *GetJittedFunctionByOffset(cell_t pcode_offset);
   void AddJittedFunction(CompiledFunction *fn);
-  void SetName(const char *name);
+  void SetNames(const char *fullname, const char *name);
   unsigned GetNativeReplacement(size_t index);
   ScriptedInvoker *GetPublicFunction(size_t index);
   int UpdateNativeBinding(uint32_t index, SPVM_NATIVE_FUNC pfn, uint32_t flags, void *data) KE_OVERRIDE;
@@ -79,6 +80,9 @@ class PluginRuntime
   int LookupLine(ucell_t addr, uint32_t *line) KE_OVERRIDE;
   int LookupFunction(ucell_t addr, const char **name) KE_OVERRIDE;
   int LookupFile(ucell_t addr, const char **filename) KE_OVERRIDE;
+  const char *GetFilename() KE_OVERRIDE {
+    return full_name_.chars();
+  }
 
   PluginContext *GetBaseContext();
 
@@ -89,11 +93,7 @@ class PluginRuntime
     return m_JitFunctions[i];
   }
   const char *Name() const {
-    return name_;
-  }
-
-  static inline size_t offsetToPlugin() {
-    return 0x0fff0000;
+    return name_.chars();
   }
 
  public:
@@ -117,7 +117,8 @@ class PluginRuntime
   ke::AutoPtr<sp::LegacyImage> image_;
   ke::AutoArray<uint8_t> aligned_code_;
   ke::AutoArray<floattbl_t> float_table_;
-  ke::AutoArray<char> name_;
+  ke::AString name_;
+  ke::AString full_name_;
   Code code_;
   Data data_;
   ke::AutoArray<sp_native_t> natives_;

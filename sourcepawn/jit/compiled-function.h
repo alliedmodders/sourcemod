@@ -23,14 +23,31 @@ using namespace ke;
 
 struct LoopEdge
 {
+  // Offset to the patchable jump instruction, such that (base + offset - 4)
+  // yields a patchable location.
   uint32_t offset;
+  // The displacement to either the timeout routine or the original
+  // displacement, depending on the timeout state.
   int32_t disp32;
 };
+
+struct CipMapEntry {
+  // Offset from the first cip of the function.
+  uint32_t cipoffs;
+  // Offset from the first pc of the function.
+  uint32_t pcoffs;
+};
+
+static const ucell_t kInvalidCip = 0xffffffff;
 
 class CompiledFunction
 {
  public:
-  CompiledFunction(void *entry_addr, cell_t pcode_offs, FixedArray<LoopEdge> *edges);
+  CompiledFunction(void *entry_addr,
+                   size_t code_length,
+                   cell_t pcode_offs,
+                   FixedArray<LoopEdge> *edges,
+                   FixedArray<CipMapEntry> *cip_map);
   ~CompiledFunction();
 
  public:
@@ -43,14 +60,18 @@ class CompiledFunction
   uint32_t NumLoopEdges() const {
     return edges_->length();
   }
-  const LoopEdge &GetLoopEdge(size_t i) const {
+  LoopEdge &GetLoopEdge(size_t i) {
     return edges_->at(i);
   }
 
+  ucell_t FindCipByPc(void *pc);
+
  private:
   void *entry_;
+  size_t code_length_;
   cell_t code_offset_;
   AutoPtr<FixedArray<LoopEdge>> edges_;
+  AutoPtr<FixedArray<CipMapEntry>> cip_map_;
 };
 
 }

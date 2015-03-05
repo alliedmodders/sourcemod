@@ -14,6 +14,7 @@
 #include "code-stubs.h"
 #include "x86-utils.h"
 #include "jit_x86.h"
+#include "environment.h"
 
 using namespace sp;
 using namespace SourcePawn;
@@ -64,6 +65,12 @@ CodeStubs::CompileInvokeStub()
   // Align the stack.
   __ andl(esp, 0xfffffff0);
 
+  // Set up the last piece of the invoke frame. This lets us find the bounds
+  // of the call stack.
+  __ movl(eax, intptr_t(Environment::get()));
+  __ movl(eax, Operand(eax, Environment::offsetOfTopFrame()));
+  __ movl(Operand(eax, InvokeFrame::offsetOfEntrySp()), esp);
+
   // Call into plugin (align the stack first).
   __ call(ecx);
 
@@ -98,17 +105,11 @@ CodeStubs::CompileInvokeStub()
   __ movl(ecx, Operand(ebp, 8 + 4 * 0)); // ret-path expects ecx = ctx
   __ jmp(&ret);
 
-  Label timeout;
-  __ bind(&timeout);
-  __ movl(eax, SP_ERROR_TIMEOUT);
-  __ jmp(&error);
-
   invoke_stub_ = LinkCode(env_, masm);
   if (!invoke_stub_)
     return false;
 
   return_stub_ = reinterpret_cast<uint8_t *>(invoke_stub_) + error.offset();
-  timeout_stub_ = reinterpret_cast<uint8_t *>(invoke_stub_) + timeout.offset();
   return true;
 }
 

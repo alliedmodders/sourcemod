@@ -15,6 +15,8 @@
 #include <string.h>
 #include "scripted-invoker.h"
 #include "plugin-runtime.h"
+#include "environment.h"
+#include "plugin-context.h"
 
 /********************
 * FUNCTION CALLING *
@@ -23,43 +25,14 @@
 using namespace sp;
 using namespace SourcePawn;
 
-ScriptedInvoker::~ScriptedInvoker()
-{
-  delete [] full_name_;
-}
-
-bool
-ScriptedInvoker::IsRunnable()
-{
-  return !m_pRuntime->IsPaused();
-}
-
-int
-ScriptedInvoker::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
-{
-  return CallFunction2(m_pRuntime->GetDefaultContext(), params, num_params, result);
-}
-
-int
-ScriptedInvoker::CallFunction2(IPluginContext *pContext, const cell_t *params, unsigned int num_params, cell_t *result)
-{
-  return pContext->Execute2(this, params, num_params, result);
-}
-
-IPluginContext *
-ScriptedInvoker::GetParentContext()
-{
-  return m_pRuntime->GetDefaultContext();
-}
-
 ScriptedInvoker::ScriptedInvoker(PluginRuntime *runtime, funcid_t id, uint32_t pub_id)
- : m_curparam(0),
+ : env_(Environment::get()),
+   context_(runtime->GetBaseContext()),
+   m_curparam(0),
    m_errorstate(SP_ERROR_NONE),
    m_FnId(id),
    cc_function_(nullptr)
 {
-  m_pRuntime = runtime;
-
   runtime->GetPublicByIndex(pub_id, &public_);
 
   size_t rt_len = strlen(runtime->Name());
@@ -69,6 +42,36 @@ ScriptedInvoker::ScriptedInvoker(PluginRuntime *runtime, funcid_t id, uint32_t p
   strcpy(full_name_, runtime->Name());
   strcpy(&full_name_[rt_len], "::");
   strcpy(&full_name_[rt_len + 2], public_->name);
+}
+
+ScriptedInvoker::~ScriptedInvoker()
+{
+}
+
+bool
+ScriptedInvoker::IsRunnable()
+{
+  return !context_->runtime()->IsPaused();
+}
+
+int
+ScriptedInvoker::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
+{
+  Environment::get()->ReportError(SP_ERROR_ABORTED);
+  return SP_ERROR_ABORTED;
+}
+
+int
+ScriptedInvoker::CallFunction2(IPluginContext *pContext, const cell_t *params, unsigned int num_params, cell_t *result)
+{
+  Environment::get()->ReportError(SP_ERROR_ABORTED);
+  return SP_ERROR_ABORTED;
+}
+
+IPluginContext *
+ScriptedInvoker::GetParentContext()
+{
+  return context_;
 }
 
 int ScriptedInvoker::PushCell(cell_t cell)
@@ -169,21 +172,41 @@ ScriptedInvoker::Cancel()
 int
 ScriptedInvoker::Execute(cell_t *result)
 {
-  return Execute2(m_pRuntime->GetDefaultContext(), result);
+  Environment *env = Environment::get();
+  env->clearPendingException();
+
+  // For backward compatibility, we have to clear the exception state.
+  // Otherwise code like this:
+  //   
+  // static cell_t native(cx, params) {
+  //   for (auto callback : callbacks) {
+  //     callback->Execute();
+  //   }
+  // }
+  //
+  // Could unintentionally leak a pending exception back to the caller,
+  // which wouldn't have happened before the Great Exception Refactoring.
+  ExceptionHandler eh(context_);
+  if (!Invoke(result)) {
+    assert(env->hasPendingException());
+    return env->getPendingExceptionCode();
+  }
+
+  return SP_ERROR_NONE;
 }
 
-int
-ScriptedInvoker::Execute2(IPluginContext *ctx, cell_t *result)
+bool
+ScriptedInvoker::Invoke(cell_t *result)
 {
-  int err = SP_ERROR_NONE;
-
-  if (!IsRunnable())
-    m_errorstate = SP_ERROR_NOT_RUNNABLE;
-
-  if (m_errorstate != SP_ERROR_NONE) {
-    err = m_errorstate;
+  if (!IsRunnable()) {
     Cancel();
-    return err;
+    env_->ReportError(SP_ERROR_NOT_RUNNABLE);
+    return false;
+  }
+  if (int err = m_errorstate) {
+    Cancel();
+    env_->ReportError(err);
+    return false;
   }
 
   //This is for re-entrancy!
@@ -191,7 +214,6 @@ ScriptedInvoker::Execute2(IPluginContext *ctx, cell_t *result)
   ParamInfo temp_info[SP_MAX_EXEC_PARAMS];
   unsigned int numparams = m_curparam;
   unsigned int i;
-  bool docopies = true;
 
   if (numparams)
   {
@@ -201,16 +223,19 @@ ScriptedInvoker::Execute2(IPluginContext *ctx, cell_t *result)
   m_curparam = 0;
 
   /* Browse the parameters and build arrays */
+  bool ok = true;
   for (i=0; i<numparams; i++) {
     /* Is this marked as an array? */
     if (temp_info[i].marked) {
       if (!temp_info[i].str.is_sz) {
         /* Allocate a normal/generic array */
-        if ((err=ctx->HeapAlloc(temp_info[i].size, 
-                       &(temp_info[i].local_addr),
-                       &(temp_info[i].phys_addr)))
-          != SP_ERROR_NONE)
-        {
+        int err = context_->HeapAlloc(
+          temp_info[i].size, 
+          &(temp_info[i].local_addr),
+          &(temp_info[i].phys_addr));
+        if (err != SP_ERROR_NONE) {
+          env_->ReportError(err);
+          ok = false;
           break;
         }
         if (temp_info[i].orig_addr)
@@ -222,26 +247,26 @@ ScriptedInvoker::Execute2(IPluginContext *ctx, cell_t *result)
         size_t cells = (temp_info[i].size + sizeof(cell_t) - 1) / sizeof(cell_t);
 
         /* Allocate the buffer */
-        if ((err=ctx->HeapAlloc(cells,
-                    &(temp_info[i].local_addr),
-                    &(temp_info[i].phys_addr)))
-          != SP_ERROR_NONE)
-        {
+        int err = context_->HeapAlloc(
+          cells,
+          &(temp_info[i].local_addr),
+          &(temp_info[i].phys_addr));
+        if (err != SP_ERROR_NONE) {
+          env_->ReportError(err);
+          ok = false;
           break;
         }
+
         /* Copy original string if necessary */
         if ((temp_info[i].str.sz_flags & SM_PARAM_STRING_COPY) && (temp_info[i].orig_addr != NULL))
         {
           /* Cut off UTF-8 properly */
           if (temp_info[i].str.sz_flags & SM_PARAM_STRING_UTF8) {
-            if ((err=ctx->StringToLocalUTF8(temp_info[i].local_addr, 
-                              temp_info[i].size, 
-                              (const char *)temp_info[i].orig_addr,
-                              NULL))
-              != SP_ERROR_NONE)
-            {
-              break;
-            }
+            context_->StringToLocalUTF8(
+              temp_info[i].local_addr, 
+              temp_info[i].size, 
+              (const char *)temp_info[i].orig_addr,
+              NULL);
           }
           /* Copy a binary blob */
           else if (temp_info[i].str.sz_flags & SM_PARAM_STRING_BINARY)
@@ -251,13 +276,10 @@ ScriptedInvoker::Execute2(IPluginContext *ctx, cell_t *result)
           /* Copy ASCII characters */
           else
           {
-            if ((err=ctx->StringToLocal(temp_info[i].local_addr,
-                            temp_info[i].size,
-                            (const char *)temp_info[i].orig_addr))
-              != SP_ERROR_NONE)
-            {
-              break;
-            }
+            context_->StringToLocal(
+              temp_info[i].local_addr,
+              temp_info[i].size,
+              (const char *)temp_info[i].orig_addr);
           }
         }
       } /* End array/string calculation */
@@ -270,14 +292,11 @@ ScriptedInvoker::Execute2(IPluginContext *ctx, cell_t *result)
   }
 
   /* Make the call if we can */
-  if (err == SP_ERROR_NONE) {
-    if ((err = CallFunction2(ctx, temp_params, numparams, result)) != SP_ERROR_NONE)
-      docopies = false;
-  } else {
-    docopies = false;
-  }
+  if (ok)
+    ok = context_->Invoke(m_FnId, temp_params, numparams, result);
 
   /* i should be equal to the last valid parameter + 1 */
+  bool docopies = ok;
   while (i--) {
     if (!temp_info[i].marked)
       continue;
@@ -299,17 +318,24 @@ ScriptedInvoker::Execute2(IPluginContext *ctx, cell_t *result)
       }
     }
 
-    if ((err=ctx->HeapPop(temp_info[i].local_addr)) != SP_ERROR_NONE)
-      return err;
+    if (int err = context_->HeapPop(temp_info[i].local_addr))
+      env_->ReportError(err);
   }
 
-  return err;
+  return !env_->hasPendingException();
+}
+
+int
+ScriptedInvoker::Execute2(IPluginContext *ctx, cell_t *result)
+{
+  Environment::get()->ReportError(SP_ERROR_ABORTED);
+  return SP_ERROR_ABORTED;
 }
 
 IPluginRuntime *
 ScriptedInvoker::GetParentRuntime()
 {
-  return m_pRuntime;
+  return context_->runtime();
 }
 
 funcid_t

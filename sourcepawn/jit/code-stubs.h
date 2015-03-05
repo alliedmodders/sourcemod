@@ -40,9 +40,6 @@ class CodeStubs
   void *ReturnStub() const {
     return return_stub_;
   }
-  void *TimeoutStub() const {
-    return return_stub_;
-  }
 
  private:
   bool InitializeFeatureDetection();
@@ -52,7 +49,6 @@ class CodeStubs
   Environment *env_;
   void *invoke_stub_;
   void *return_stub_;   // Owned by invoke_stub_.
-  void *timeout_stub_;  // Owned by invoke_stub_.
 };
 
 }

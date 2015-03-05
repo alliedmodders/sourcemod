@@ -62,7 +62,6 @@ binary.sources += [
   'PluginSys.cpp',
   'HandleSys.cpp',
   'NativeOwner.cpp',
-  'NativeInvoker.cpp',
   'ExtensionSys.cpp',
   'DebugReporter.cpp',
   'Database.cpp',

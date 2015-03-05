@@ -88,6 +88,9 @@ typedef uint32_t	funcid_t;			/**< Function index code */
 #define SP_ERROR_OUT_OF_MEMORY			28  /**< Out of memory */
 #define SP_ERROR_INTEGER_OVERFLOW		29	/**< Integer overflow (-INT_MIN / -1) */
 #define SP_ERROR_TIMEOUT				30  /**< Timeout */
+#define SP_ERROR_USER                   31  /**< Custom message */
+#define SP_ERROR_FATAL                  32  /**< Custom fatal message */
+#define SP_MAX_ERROR_CODES              33
 //Hey you! Update the string table if you add to the end of me! */
 
 /**********************************************

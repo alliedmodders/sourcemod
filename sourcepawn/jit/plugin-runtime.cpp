@@ -161,11 +161,10 @@ PluginRuntime::GetNativeReplacement(size_t index)
 }
 
 void
-PluginRuntime::SetName(const char *name)
+PluginRuntime::SetNames(const char *fullname, const char *name)
 {
-  size_t len = strlen(name);
-  name_ = new char[len + 1];
-  strcpy(name_, name);
+  name_ = name;
+  full_name_ = name;
 }
 
 static cell_t
@@ -180,19 +179,21 @@ PluginRuntime::AddJittedFunction(CompiledFunction *fn)
   m_JitFunctions.append(fn);
 
   ucell_t pcode_offset = fn->GetCodeOffset();
-  FunctionMap::Insert p = function_map_.findForAdd(pcode_offset);
-  assert(!p.found());
+  {
+    FunctionMap::Insert p = function_map_.findForAdd(pcode_offset);
+    assert(!p.found());
 
-  function_map_.add(p, pcode_offset, fn);
+    function_map_.add(p, pcode_offset, fn);
+  }
 }
 
 CompiledFunction *
 PluginRuntime::GetJittedFunctionByOffset(cell_t pcode_offset)
 {
   FunctionMap::Result r = function_map_.find(pcode_offset);
-  if (r.found())
-    return r->value;
-  return nullptr;
+  if (!r.found())
+    return nullptr;
+  return r->value;
 }
 
 int

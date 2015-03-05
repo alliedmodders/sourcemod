@@ -52,13 +52,8 @@
 
 // Assumes message field name is param 2, gets as strField
 #define GET_FIELD_NAME_OR_ERR()                                           \
-	int err;                                                              \
 	char *strField;                                                       \
-	if ((err=pCtx->LocalToString(params[2], &strField)) != SP_ERROR_NONE) \
-	{                                                                     \
-		pCtx->ThrowNativeErrorEx(err, NULL);                              \
-		return 0;                                                         \
-	}
+	pCtx->LocalToString(params[2], &strField);
 
 static cell_t smn_PbReadInt(IPluginContext *pCtx, const cell_t *params)
 {
@@ -387,11 +382,7 @@ static cell_t smn_PbSetString(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	char *strValue;
-	if ((err=pCtx->LocalToString(params[3], &strValue)) != SP_ERROR_NONE)
-	{
-		pCtx->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
+	pCtx->LocalToString(params[3], &strValue);
 
 	int index = params[0] >= 4 ? params[4] : -1;
 	if (index < 0)
@@ -418,11 +409,7 @@ static cell_t smn_PbSetColor(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	cell_t *clrParams;
-	if ((err=pCtx->LocalToPhysAddr(params[3], &clrParams)) != SP_ERROR_NONE)
-	{
-		pCtx->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
+	pCtx->LocalToPhysAddr(params[3], &clrParams);
 
 	Color clr(
 		clrParams[0],
@@ -455,11 +442,7 @@ static cell_t smn_PbSetAngle(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	cell_t *angParams;
-	if ((err=pCtx->LocalToPhysAddr(params[3], &angParams)) != SP_ERROR_NONE)
-	{
-		pCtx->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
+	pCtx->LocalToPhysAddr(params[3], &angParams);
 
 	QAngle ang(
 		sp_ctof(angParams[0]),
@@ -491,11 +474,7 @@ static cell_t smn_PbSetVector(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	cell_t *vecParams;
-	if ((err=pCtx->LocalToPhysAddr(params[3], &vecParams)) != SP_ERROR_NONE)
-	{
-		pCtx->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
+	pCtx->LocalToPhysAddr(params[3], &vecParams);
 
 	Vector vec(
 		sp_ctof(vecParams[0]),
@@ -527,11 +506,7 @@ static cell_t smn_PbSetVector2D(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	cell_t *vecParams;
-	if ((err=pCtx->LocalToPhysAddr(params[3], &vecParams)) != SP_ERROR_NONE)
-	{
-		pCtx->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
+	pCtx->LocalToPhysAddr(params[3], &vecParams);
 
 	Vector2D vec(
 		sp_ctof(vecParams[0]),
@@ -602,11 +577,7 @@ static cell_t smn_PbAddString(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	char *strValue;
-	if ((err=pCtx->LocalToString(params[3], &strValue)) != SP_ERROR_NONE)
-	{
-		pCtx->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
+	pCtx->LocalToString(params[3], &strValue);
 
 	if (!msg->AddString(strField, strValue))
 	{
@@ -622,11 +593,7 @@ static cell_t smn_PbAddColor(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	cell_t *clrParams;
-	if ((err=pCtx->LocalToPhysAddr(params[3], &clrParams)) != SP_ERROR_NONE)
-	{
-		pCtx->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
+	pCtx->LocalToPhysAddr(params[3], &clrParams);
 
 	Color clr(
 		clrParams[0],
@@ -648,11 +615,7 @@ static cell_t smn_PbAddAngle(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	cell_t *angParams;
-	if ((err=pCtx->LocalToPhysAddr(params[3], &angParams)) != SP_ERROR_NONE)
-	{
-		pCtx->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
+	pCtx->LocalToPhysAddr(params[3], &angParams);
 
 	QAngle ang(
 		sp_ctof(angParams[0]),
@@ -673,11 +636,7 @@ static cell_t smn_PbAddVector(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	cell_t *vecParams;
-	if ((err=pCtx->LocalToPhysAddr(params[3], &vecParams)) != SP_ERROR_NONE)
-	{
-		pCtx->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
+	pCtx->LocalToPhysAddr(params[3], &vecParams);
 
 	Vector vec(
 		sp_ctof(vecParams[0]),
@@ -698,11 +657,7 @@ static cell_t smn_PbAddVector2D(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	cell_t *vecParams;
-	if ((err=pCtx->LocalToPhysAddr(params[3], &vecParams)) != SP_ERROR_NONE)
-	{
-		pCtx->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
+	pCtx->LocalToPhysAddr(params[3], &vecParams);
 
 	Vector2D vec(
 		sp_ctof(vecParams[0]),

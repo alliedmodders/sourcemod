@@ -30,14 +30,13 @@ using namespace SourcePawn;
 static const size_t kMinHeapSize = 16384;
 
 PluginContext::PluginContext(PluginRuntime *pRuntime)
- : m_pRuntime(pRuntime),
+ : env_(Environment::get()),
+   m_pRuntime(pRuntime),
    memory_(nullptr),
    data_size_(m_pRuntime->data().length),
    mem_size_(m_pRuntime->image()->HeapSize()),
    m_pNullVec(nullptr),
-   m_pNullString(nullptr),
-   m_CustomMsg(false),
-   m_InExec(false)
+   m_pNullString(nullptr)
 {
   // Compute and align a minimum memory amount.
   if (mem_size_ < data_size_)
@@ -52,9 +51,6 @@ PluginContext::PluginContext(PluginRuntime *pRuntime)
   hp_ = data_size_;
   sp_ = mem_size_ - sizeof(cell_t);
   frm_ = sp_;
-  rp_ = 0;
-  last_native_ = -1;
-  native_error_ = SP_ERROR_NONE;
 
   tracker_.pBase = (ucell_t *)malloc(1024);
   tracker_.pCur = tracker_.pBase;
@@ -133,56 +129,23 @@ PluginContext::Execute(uint32_t code_addr, cell_t *result)
   return SP_ERROR_ABORTED;
 }
 
-void
-PluginContext::SetErrorMessage(const char *msg, va_list ap)
-{
-  m_CustomMsg = true;
-
-  vsnprintf(m_MsgCache, sizeof(m_MsgCache), msg, ap);
-}
-
-void
-PluginContext::_SetErrorMessage(const char *msg, ...)
-{
-  va_list ap;
-  va_start(ap, msg);
-  SetErrorMessage(msg, ap);
-  va_end(ap);
-}
-
 cell_t
 PluginContext::ThrowNativeErrorEx(int error, const char *msg, ...)
 {
-  if (!m_InExec)
-    return 0;
-
-  native_error_ = error;
-  
-  if (msg) {
-    va_list ap;
-    va_start(ap, msg);
-    SetErrorMessage(msg, ap);
-    va_end(ap);
-  }
-
+  va_list ap;
+  va_start(ap, msg);
+  env_->ReportErrorVA(error, msg, ap);
+  va_end(ap);
   return 0;
 }
 
 cell_t
 PluginContext::ThrowNativeError(const char *msg, ...)
 {
-  if (!m_InExec)
-    return 0;
-
-  native_error_ = SP_ERROR_NATIVE;
-
-  if (msg) {
-    va_list ap;
-    va_start(ap, msg);
-    SetErrorMessage(msg, ap);
-    va_end(ap);
-  }
-
+  va_list ap;
+  va_start(ap, msg);
+  env_->ReportErrorVA(SP_ERROR_NATIVE, msg, ap);
+  va_end(ap);
   return 0;
 }
 
@@ -540,133 +503,124 @@ PluginContext::GetNullRef(SP_NULL_TYPE type)
 bool
 PluginContext::IsInExec()
 {
-  return m_InExec;
+  for (InvokeFrame *ivk = env_->top(); ivk; ivk = ivk->prev()) {
+    if (ivk->cx() == this)
+      return true;
+  }
+  return false;
 }
 
 int
 PluginContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned int num_params, cell_t *result)
 {
-  int ir;
-  int serial;
-  cell_t *sp;
-  CompiledFunction *fn;
-  cell_t _ignore_result;
+  ReportErrorNumber(SP_ERROR_ABORTED);
+  return SP_ERROR_ABORTED;
+}
 
+bool
+PluginContext::Invoke(funcid_t fnid, const cell_t *params, unsigned int num_params, cell_t *result)
+{
   EnterProfileScope profileScope("SourcePawn", "EnterJIT");
 
-  if (!Environment::get()->watchdog()->HandleInterrupt())
-    return SP_ERROR_TIMEOUT;
+  if (!env_->watchdog()->HandleInterrupt()) {
+    ReportErrorNumber(SP_ERROR_TIMEOUT);
+    return false;
+  }
 
-  funcid_t fnid = function->GetFunctionID();
-  if (!(fnid & 1))
-    return SP_ERROR_INVALID_ADDRESS;
+  assert((fnid & 1) != 0);
 
   unsigned public_id = fnid >> 1;
   ScriptedInvoker *cfun = m_pRuntime->GetPublicFunction(public_id);
-  if (!cfun)
-    return SP_ERROR_NOT_FOUND;
+  if (!cfun) {
+    ReportErrorNumber(SP_ERROR_NOT_FOUND);
+    return false;
+  }
 
-  if (m_pRuntime->IsPaused())
-    return SP_ERROR_NOT_RUNNABLE;
+  if (m_pRuntime->IsPaused()) {
+    ReportErrorNumber(SP_ERROR_NOT_RUNNABLE);
+    return false;
+  }
 
-  if ((cell_t)(hp_ + 16*sizeof(cell_t)) > (cell_t)(sp_ - (sizeof(cell_t) * (num_params + 1))))
-    return SP_ERROR_STACKLOW;
+  if ((cell_t)(hp_ + 16*sizeof(cell_t)) > (cell_t)(sp_ - (sizeof(cell_t) * (num_params + 1)))) {
+    ReportErrorNumber(SP_ERROR_STACKLOW);
+    return false;
+  }
 
+  // Yuck. We have to do this for compatibility, otherwise something like
+  // ForwardSys or any sort of multi-callback-fire code would die. Later,
+  // we'll expose an Invoke() or something that doesn't do this.
+  env_->clearPendingException();
+
+  cell_t ignore_result;
   if (result == NULL)
-    result = &_ignore_result;
+    result = &ignore_result;
 
   /* We got this far.  It's time to start profiling. */
   EnterProfileScope scriptScope("SourcePawn", cfun->FullName());
 
   /* See if we have to compile the callee. */
-  if (Environment::get()->IsJitEnabled()) {
+  CompiledFunction *fn = nullptr;
+  if (env_->IsJitEnabled()) {
     /* We might not have to - check pcode offset. */
     if ((fn = cfun->cachedCompiledFunction()) == nullptr) {
       fn = m_pRuntime->GetJittedFunctionByOffset(cfun->Public()->code_offs);
       if (!fn) {
-        if ((fn = CompileFunction(m_pRuntime, cfun->Public()->code_offs, &ir)) == NULL)
-          return ir;
+        int err = SP_ERROR_NONE;
+        if ((fn = CompileFunction(m_pRuntime, cfun->Public()->code_offs, &err)) == NULL) {
+          ReportErrorNumber(err);
+          return false;
+        }
       }
       cfun->setCachedCompiledFunction(fn);
     }
+  } else {
+    ReportError("JIT is not enabled!");
+    return false;
   }
 
   /* Save our previous state. */
-
-  bool save_exec;
-  uint32_t save_n_idx;
-  cell_t save_sp, save_hp, save_rp, save_cip;
-
-  save_sp = sp_;
-  save_hp = hp_;
-  save_exec = m_InExec;
-  save_n_idx = last_native_;
-  save_rp = rp_;
-  save_cip = cip_;
+  cell_t save_sp = sp_;
+  cell_t save_hp = hp_;
 
   /* Push parameters */
-
   sp_ -= sizeof(cell_t) * (num_params + 1);
-  sp = (cell_t *)(memory_ + sp_);
+  cell_t *sp = (cell_t *)(memory_ + sp_);
 
   sp[0] = num_params;
   for (unsigned int i = 0; i < num_params; i++)
     sp[i + 1] = params[i];
 
-  /* Clear internal state */
-  native_error_ = SP_ERROR_NONE;
-  last_native_ = -1;
-  m_MsgCache[0] = '\0';
-  m_CustomMsg = false;
-  m_InExec = true;
-
   // Enter the execution engine.
-  Environment *env = Environment::get();
-  ir = env->Invoke(m_pRuntime, fn, result);
-
-  /* Restore some states, stop the frame tracer */
-
-  m_InExec = save_exec;
+  int ir;
+  {
+    InvokeFrame ivkframe(this, fn->GetCodeOffset()); 
+    Environment *env = env_;
+    ir = env->Invoke(m_pRuntime, fn, result);
+  }
 
   if (ir == SP_ERROR_NONE) {
-    native_error_ = SP_ERROR_NONE;
+    // Verify that our state is still sane.
     if (sp_ != save_sp) {
-      ir = SP_ERROR_STACKLEAK;
-      _SetErrorMessage("Stack leak detected: sp:%d should be %d!", 
+      env_->ReportErrorFmt(
+        SP_ERROR_STACKLEAK,
+        "Stack leak detected: sp:%d should be %d!", 
         sp_, 
         save_sp);
+      return false;
     }
     if (hp_ != save_hp) {
-      ir = SP_ERROR_HEAPLEAK;
-      _SetErrorMessage("Heap leak detected: hp:%d should be %d!", 
+      env_->ReportErrorFmt(
+        SP_ERROR_HEAPLEAK,
+        "Heap leak detected: hp:%d should be %d!", 
         hp_, 
         save_hp);
-    }
-    if (rp_ != save_rp) {
-      ir = SP_ERROR_STACKLEAK;
-      _SetErrorMessage("Return stack leak detected: rp:%d should be %d!",
-        rp_,
-        save_rp);
+      return false;
     }
   }
 
-  if (ir == SP_ERROR_TIMEOUT)
-    Environment::get()->watchdog()->NotifyTimeoutReceived();
-
-  if (ir != SP_ERROR_NONE)
-    Environment::get()->ReportError(m_pRuntime, ir, m_MsgCache, save_rp);
-
   sp_ = save_sp;
   hp_ = save_hp;
-  rp_ = save_rp;
-  
-  cip_ = save_cip;
-  last_native_ = save_n_idx;
-  native_error_ = SP_ERROR_NONE;
-  m_MsgCache[0] = '\0';
-  m_CustomMsg = false;
-
-  return ir;
+  return ir == SP_ERROR_NONE;
 }
 
 IPluginRuntime *
@@ -678,7 +632,10 @@ PluginContext::GetRuntime()
 int
 PluginContext::GetLastNativeError()
 {
-  return native_error_;
+  Environment *env = env_;
+  if (!env->hasPendingException())
+    return SP_ERROR_NONE;
+  return env->getPendingExceptionCode();
 }
 
 cell_t *
@@ -710,7 +667,8 @@ PluginContext::GetKey(int k, void **value)
 void
 PluginContext::ClearLastNativeError()
 {
-  native_error_ = SP_ERROR_NONE;
+  if (env_->hasPendingException())
+    env_->clearPendingException();
 }
 
 int
@@ -757,28 +715,24 @@ PluginContext::invokeNative(ucell_t native_idx, cell_t *params)
   cell_t save_sp = sp_;
   cell_t save_hp = hp_;
 
-  // Note: Invoke() saves the last native, so we don't need to here.
-  last_native_ = native_idx;
-
   const sp_native_t *native = m_pRuntime->GetNative(native_idx);
 
   if (native->status == SP_NATIVE_UNBOUND) {
-    native_error_ = SP_ERROR_INVALID_NATIVE;
+    ReportErrorNumber(SP_ERROR_INVALID_NATIVE);
     return 0;
   }
 
   cell_t result = native->pfn(this, params);
 
-  if (native_error_ != SP_ERROR_NONE)
-    return result;
-
   if (save_sp != sp_) {
-    native_error_ = SP_ERROR_STACKLEAK;
-    return result;
+    if (!env_->hasPendingException())
+      ReportErrorNumber(SP_ERROR_STACKLEAK);
+    return 0;
   }
   if (save_hp != hp_) {
-    native_error_ = SP_ERROR_HEAPLEAK;
-    return result;
+    if (!env_->hasPendingException())
+      ReportErrorNumber(SP_ERROR_HEAPLEAK);
+    return 0;
   }
 
   return result;
@@ -792,15 +746,14 @@ PluginContext::invokeBoundNative(SPVM_NATIVE_FUNC pfn, cell_t *params)
 
   cell_t result = pfn(this, params);
 
-  if (native_error_ != SP_ERROR_NONE)
-    return result;
-
   if (save_sp != sp_) {
-    native_error_ = SP_ERROR_STACKLEAK;
+    if (!env_->hasPendingException())
+      ReportErrorNumber(SP_ERROR_STACKLEAK);
     return result;
   }
   if (save_hp != hp_) {
-    native_error_ = SP_ERROR_HEAPLEAK;
+    if (!env_->hasPendingException())
+      ReportErrorNumber(SP_ERROR_HEAPLEAK);
     return result;
   }
 
@@ -957,3 +910,44 @@ PluginContext::generateArray(cell_t dims, cell_t *stk, bool autozero)
   return SP_ERROR_NONE;
 }
 
+ISourcePawnEngine2 *
+PluginContext::APIv2()
+{
+  return env_->APIv2();
+}
+
+void
+PluginContext::ReportError(const char *fmt, ...)
+{
+  va_list ap;
+  va_start(ap, fmt);
+  env_->ReportErrorVA(fmt, ap);
+  va_end(ap);
+}
+
+void
+PluginContext::ReportErrorVA(const char *fmt, va_list ap)
+{
+  env_->ReportErrorVA(fmt, ap);
+}
+
+void
+PluginContext::ReportFatalError(const char *fmt, ...)
+{
+  va_list ap;
+  va_start(ap, fmt);
+  env_->ReportErrorVA(SP_ERROR_FATAL, fmt, ap);
+  va_end(ap);
+}
+
+void
+PluginContext::ReportFatalErrorVA(const char *fmt, va_list ap)
+{
+  env_->ReportErrorVA(SP_ERROR_FATAL, fmt, ap);
+}
+
+void
+PluginContext::ReportErrorNumber(int error)
+{
+  env_->ReportError(error);
+}

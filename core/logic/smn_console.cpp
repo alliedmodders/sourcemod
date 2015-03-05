@@ -150,11 +150,12 @@ static cell_t sm_ServerCommand(IPluginContext *pContext, const cell_t *params)
 	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[1024];
-	size_t len = g_pSM->FormatString(buffer, sizeof(buffer) - 2, pContext, params, 1);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
+	size_t len;
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		len = g_pSM->FormatString(buffer, sizeof(buffer) - 2, pContext, params, 1);
+		if (eh.HasException())
+			return 0;
 	}
 
 	/* One byte for null terminator, one for newline */
@@ -171,11 +172,12 @@ static cell_t sm_InsertServerCommand(IPluginContext *pContext, const cell_t *par
 	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[1024];
-	size_t len = g_pSM->FormatString(buffer, sizeof(buffer) - 2, pContext, params, 1);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
+	size_t len;
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		len = g_pSM->FormatString(buffer, sizeof(buffer) - 2, pContext, params, 1);
+		if (eh.HasException())
+			return 0;
 	}
 
 	/* One byte for null terminator, one for newline */
@@ -211,11 +213,12 @@ static cell_t sm_ClientCommand(IPluginContext *pContext, const cell_t *params)
 	g_pSM->SetGlobalTarget(params[1]);
 
 	char buffer[256];
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
+	size_t len;
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		if (eh.HasException())
+			return 0;
 	}
 
 	engine->ClientCommand(pPlayer->GetEdict(), buffer);
@@ -240,11 +243,11 @@ static cell_t FakeClientCommand(IPluginContext *pContext, const cell_t *params)
 	g_pSM->SetGlobalTarget(params[1]);
 
 	char buffer[256];
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		if (eh.HasException())
+			return 0;
 	}
 
 	engine->FakeClientCommand(pPlayer->GetEdict(), buffer);
@@ -258,11 +261,13 @@ static cell_t ReplyToCommand(IPluginContext *pContext, const cell_t *params)
 
 	/* Build the format string */
 	char buffer[1024];
-	size_t len = g_pSM->FormatString(buffer, sizeof(buffer) - 2, pContext, params, 2);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
+	size_t len;
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		len = g_pSM->FormatString(buffer, sizeof(buffer) - 2, pContext, params, 2);
+		if (eh.HasException())
+			return 0;
 	}
 
 	/* If we're printing to the server, shortcut out */

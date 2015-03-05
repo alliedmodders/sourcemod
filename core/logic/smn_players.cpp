@@ -1087,11 +1087,12 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 		if (replyto == SM_REPLY_CONSOLE)
 		{
 			g_pSM->SetGlobalTarget(client);
-			g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-			if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 			{
-				return 0;
+				DetectExceptions eh(pContext);
+				g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+				if (eh.HasException())
+					return 0;
 			}
 
 			g_pSM->Format(message, sizeof(message), "%s%s\n", tag, buffer);
@@ -1102,11 +1103,12 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 	else
 	{
 		g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-		if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 		{
-			return 0;
+			DetectExceptions eh(pContext);
+			g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+			if (eh.HasException())
+				return 0;
 		}
 
 		g_pSM->Format(message, sizeof(message), "%s%s\n", tag, buffer);
@@ -1141,11 +1143,12 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 				{
 					newsign = name;
 				}
-				g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-				if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 				{
-					return 0;
+					DetectExceptions eh(pContext);
+					g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+					if (eh.HasException())
+						return 0;
 				}
 
 				g_pSM->Format(message, sizeof(message), "%s%s: %s", tag, newsign, buffer);
@@ -1165,11 +1168,12 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 				{
 					newsign = name;
 				}
-				g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-				if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 				{
-					return 0;
+					DetectExceptions eh(pContext);
+					g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+					if (eh.HasException())
+						return 0;
 				}
 
 				g_pSM->Format(message, sizeof(message), "%s%s: %s", tag, newsign, buffer);
@@ -1210,11 +1214,11 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 		}
 
 		g_pSM->SetGlobalTarget(client);
-		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
-
-		if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 		{
-			return 0;
+			DetectExceptions eh(pContext);
+			g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+			if (eh.HasException())
+				return 0;
 		}
 
 		/* We don't display directly to the console because the chat text
@@ -1227,11 +1231,11 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 	else
 	{
 		g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
-
-		if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 		{
-			return 0;
+			DetectExceptions eh(pContext);
+			g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+			if (eh.HasException())
+				return 0;
 		}
 
 		g_pSM->Format(message, sizeof(message), "%s%s\n", tag, buffer);
@@ -1266,11 +1270,12 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 				{
 					newsign = name;
 				}
-				g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-				if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 				{
-					return 0;
+					DetectExceptions eh(pContext);
+					g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+					if (eh.HasException())
+						return 0;
 				}
 
 				g_pSM->Format(message, sizeof(message), "%s%s: %s", tag, newsign, buffer);
@@ -1290,11 +1295,12 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 				{
 					newsign = name;
 				}
-				g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-				if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 				{
-					return 0;
+					DetectExceptions eh(pContext);
+					g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+					if (eh.HasException())
+						return 0;
 				}
 
 				g_pSM->Format(message, sizeof(message), "%s%s: %s", tag, newsign, buffer);
@@ -1350,11 +1356,11 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 	g_pSM->SetGlobalTarget(client);
 
 	char buffer[256];
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		if (eh.HasException())
+			return 0;
 	}
 
 	if (pPlayer->IsFakeClient())
@@ -1387,11 +1393,11 @@ static cell_t KickClientEx(IPluginContext *pContext, const cell_t *params)
 	g_pSM->SetGlobalTarget(client);
 
 	char buffer[256];
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		if (eh.HasException())
+			return 0;
 	}
 
 	pPlayer->Kick(buffer);

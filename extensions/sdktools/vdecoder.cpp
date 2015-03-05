@@ -290,8 +290,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 	case Valve_Vector:
 		{
 			cell_t *addr;
-			int err;
-			err = pContext->LocalToPhysAddr(param, &addr);
+			pContext->LocalToPhysAddr(param, &addr);
 
 			unsigned char *mem = (unsigned char *)buffer;
 			if (data->type == PassType_Basic)
@@ -315,12 +314,6 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 					mem = (unsigned char *)_buffer + pCall->stackEnd + data->obj_offset;
 					*realPtr = (Vector *)mem;
 				}
-			}
-
-			if (err != SP_ERROR_NONE)
-			{
-				pContext->ThrowNativeErrorEx(err, "Could not read plugin data");
-				return Data_Fail;
 			}
 
 			/* Use placement new to initialize the object cleanly

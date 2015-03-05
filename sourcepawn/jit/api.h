@@ -68,8 +68,12 @@ class SourcePawnEngine2 : public ISourcePawnEngine2
   void DisableProfiling() KE_OVERRIDE;
   void SetProfilingTool(IProfilingTool *tool) KE_OVERRIDE;
   IPluginRuntime *LoadBinaryFromFile(const char *file, char *error, size_t maxlength) KE_OVERRIDE;
+  ISourcePawnEnvironment *Environment() KE_OVERRIDE;
 };
 
-} // namespace SourcePawn
+extern size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
+extern size_t UTIL_FormatVA(char *buffer, size_t maxlength, const char *fmt, va_list ap);
+
+} // namespace sp
 
 #endif // _include_sourcepawn_vm_api_h_
