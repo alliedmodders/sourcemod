@@ -91,9 +91,6 @@
 #if defined SMEXT_ENABLE_TRANSLATOR
 #include <ITranslator.h>
 #endif
-#if defined SMEXT_ENABLE_NINVOKE
-#include <INativeInvoker.h>
-#endif
 #if defined SMEXT_ENABLE_ROOTCONSOLEMENU
 #include <IRootConsoleMenu.h>
 #endif
@@ -309,9 +306,6 @@ extern IUserMessages *usermsgs;
 #endif
 #if defined SMEXT_ENABLE_TRANSLATOR
 extern ITranslator *translator;
-#endif
-#if defined SMEXT_ENABLE_NINVOKE
-extern INativeInterface *ninvoke;
 #endif
 #if defined SMEXT_ENABLE_ROOTCONSOLEMENU
 extern IRootConsole *rootconsole;

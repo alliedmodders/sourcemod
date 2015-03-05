@@ -97,9 +97,6 @@ IUserMessages *usermsgs = NULL;
 #if defined SMEXT_ENABLE_TRANSLATOR
 ITranslator *translator = NULL;
 #endif
-#if defined SMEXT_ENABLE_NINVOKE
-INativeInterface *ninvoke = NULL;
-#endif
 #if defined SMEXT_ENABLE_ROOTCONSOLEMENU
 IRootConsole *rootconsole = NULL;
 #endif
@@ -190,9 +187,6 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_TRANSLATOR
 	SM_GET_IFACE(TRANSLATOR, translator);
-#endif
-#if defined SMEXT_ENABLE_NINVOKE
-	SM_GET_IFACE(NINVOKE, ninvoke);
 #endif
 #if defined SMEXT_ENABLE_ROOTCONSOLEMENU
 	SM_GET_IFACE(ROOTCONSOLE, rootconsole);
