@@ -16,6 +16,7 @@
 #include "api.h"
 #include "code-stubs.h"
 #include "watchdog_timer.h"
+#include <stdarg.h>
 
 using namespace sp;
 using namespace SourcePawn;
