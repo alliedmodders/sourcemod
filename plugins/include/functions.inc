@@ -319,7 +319,7 @@ native Call_PushString(const String:value[]);
  * @param length			Length of string buffer.
  * @param szflags			Flags determining how string should be handled.
  *							See SM_PARAM_STRING_* constants for details.
- *							The default (0) is to push UTF-8.
+ *							The default (0) is to push ASCII.
  * @param cpflags			Whether or not changes should be copied back to the input array.
  *							See SM_PARAM_* constants for details.		
  * @noreturn
