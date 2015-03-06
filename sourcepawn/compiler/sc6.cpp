@@ -37,7 +37,9 @@
   #include <sclinux.h>
 #endif
 #include <am-utility.h>
+#include <am-string.h>
 #include <smx/smx-v1.h>
+#include <smx/smx-v1-opcodes.h>
 #include <zlib/zlib.h>
 #include "smx-builder.h"
 #include "memory-buffer.h"
@@ -232,6 +234,32 @@ static cell do_dump(Vector<cell> *buffer, char *params, cell opcode)
   return num * sizeof(cell);
 }
 
+static cell do_ldgfen(Vector<cell> *buffer, char *params, cell opcode)
+{
+  char name[sNAMEMAX+1];
+
+  int i;
+  for (i=0; !isspace(*params); i++,params++) {
+    assert(*params != '\0');
+    assert(i < sNAMEMAX);
+    name[i] = *params;
+  }
+  name[i]='\0';
+
+  symbol *sym = findglb(name, sGLOBAL);
+  assert(sym->ident == iFUNCTN);
+  assert(!(sym->usage & uNATIVE));
+  assert((sym->funcid & 1) == 1);
+
+  if (buffer) {
+    // Note: we emit const.pri for backward compatibility.
+    assert(opcode == sp::OP_UNGEN_LDGFN_PRI);
+    buffer->append(sp::OP_CONST_PRI);
+    buffer->append(sym->funcid);
+  }
+  return opcodes(1) + opargs(1);
+}
+
 static cell do_call(Vector<cell> *buffer, char *params, cell opcode)
 {
   char name[sNAMEMAX+1];
@@ -333,6 +361,7 @@ static OPCODEC opcodelist[] = {
   {112, "dec.pri",    sIN_CSEG, parm0 },
   {115, "dec.s",      sIN_CSEG, parm1 },
   {  0, "dump",       sIN_DSEG, do_dump },
+  {166, "endproc",    sIN_CSEG, parm0 },
   { 95, "eq",         sIN_CSEG, parm0 },
   {106, "eq.c.alt",   sIN_CSEG, parm1 },
   {105, "eq.c.pri",   sIN_CSEG, parm1 },
@@ -368,6 +397,7 @@ static OPCODEC opcodelist[] = {
   {128, "jump.pri",   sIN_CSEG, parm0 },  /* version 1 */
   { 53, "jzer",       sIN_CSEG, do_jump },
   { 31, "lctrl",      sIN_CSEG, parm1 },
+  {167, "ldgfn.pri",  sIN_CSEG, do_ldgfen },
   { 98, "leq",        sIN_CSEG, parm0 },
   { 97, "less",       sIN_CSEG, parm0 },
   { 25, "lidx",       sIN_CSEG, parm0 },
@@ -613,6 +643,18 @@ static int sort_by_addr(const void *a1, const void *a2)
   return s1->addr - s2->addr;
 }
 
+struct function_entry {
+  symbol *sym;
+  AString name;
+};
+
+static int sort_functions(const void *a1, const void *a2)
+{
+  function_entry &f1 = *(function_entry *)a1;
+  function_entry &f2 = *(function_entry *)a2;
+  return strcmp(f1.name.chars(), f2.name.chars());
+}
+
 // Helper for parsing a debug string. Debug strings look like this:
 //  L:40 10
 class DebugString
@@ -835,6 +877,7 @@ static void assemble_to_buffer(MemoryBuffer *buffer, void *fin)
   Ref<SmxNameTable> names = new SmxNameTable(".names");
 
   Vector<symbol *> nativeList;
+  Vector<function_entry> functions;
 
   // Build the easy symbol tables.
   for (symbol *sym=glbtab.next; sym; sym=sym->next) {
@@ -842,10 +885,26 @@ static void assemble_to_buffer(MemoryBuffer *buffer, void *fin)
       if ((sym->usage & uNATIVE)!=0 && (sym->usage & uREAD)!=0 && sym->addr >= 0) {
         // Natives require special handling, so we save them for later.
         nativeList.append(sym);
-      } else if ((sym->usage & uPUBLIC)!=0 && (sym->usage & uDEFINE)!=0) {
-        sp_file_publics_t &pubfunc = publics->add();
-        pubfunc.address = sym->addr;
-        pubfunc.name = names->add(pool, sym->name);
+        continue;
+      }
+      
+      if ((sym->usage & (uPUBLIC|uDEFINE)) == (uPUBLIC|uDEFINE) ||
+          (sym->usage & uREAD))
+      {
+        function_entry entry;
+        entry.sym = sym;
+        if (sym->usage & uPUBLIC) {
+          entry.name = sym->name;
+        } else {
+          // Create a private name.
+          char private_name[sNAMEMAX*3 + 1];
+          snprintf(private_name, sizeof(private_name), ".%d.%s", sym->addr, sym->name);
+
+          entry.name = private_name;
+        }
+
+        functions.append(entry);
+        continue;
       }
     } else if (sym->ident==iVARIABLE || sym->ident == iARRAY || sym->ident == iREFARRAY) {
       if ((sym->usage & uPUBLIC)!=0 && (sym->usage & (uREAD | uWRITTEN))!=0) {
@@ -854,7 +913,24 @@ static void assemble_to_buffer(MemoryBuffer *buffer, void *fin)
         pubvar.name = names->add(pool, sym->name);
       }
     }
-  } 
+  }
+
+  // The public list must be sorted.
+  qsort(functions.buffer(), functions.length(), sizeof(function_entry), sort_functions);
+  for (size_t i = 0; i < functions.length(); i++) {
+    function_entry &f = functions[i];
+    symbol *sym = f.sym;
+
+    assert(sym->addr > 0);
+    assert(sym->codeaddr > sym->addr);
+    assert(sym->usage & uDEFINE);
+
+    sp_file_publics_t &pubfunc = publics->add();
+    pubfunc.address = sym->addr;
+    pubfunc.name = names->add(pool, f.name.chars());
+
+    sym->funcid = (uint32_t(i) << 1) | 1;
+  }
 
   // Shuffle natives to be in address order.
   qsort(nativeList.buffer(), nativeList.length(), sizeof(symbol *), sort_by_addr);

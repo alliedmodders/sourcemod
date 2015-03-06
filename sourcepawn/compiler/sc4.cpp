@@ -1503,3 +1503,17 @@ void invoke_setter(methodmap_method_t *method, int save)
   if (sc_status != statSKIP)
     markusage(method->setter, uREAD);
 }
+
+// function value -> pri
+void load_glbfn(symbol *sym)
+{
+  assert(sym->ident == iFUNCTN);
+  assert(!(sym->usage & uNATIVE));
+  stgwrite("\tldgfn.pri ");
+  stgwrite(sym->name);
+  stgwrite("\n");
+  code_idx += opcodes(1) + opargs(1);
+
+  if (sc_status != statSKIP)
+    markusage(sym, uREAD);
+}

@@ -1,0 +1,1 @@
+(15) : error 182: functions that return arrays cannot be used as callbacks

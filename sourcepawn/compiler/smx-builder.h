@@ -129,6 +129,9 @@ class SmxListSection : public SmxSection
     list_.append(T());
     return list_.back();
   }
+  void add(const T &t) {
+    list_.append(t);
+  }
   bool write(ISmxBuffer *buf) KE_OVERRIDE {
     return buf->write(list_.buffer(), list_.length() * sizeof(T));
   }
