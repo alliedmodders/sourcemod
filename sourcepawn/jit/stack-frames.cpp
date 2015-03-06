@@ -21,7 +21,7 @@ using namespace ke;
 using namespace sp;
 using namespace SourcePawn;
 
-InvokeFrame::InvokeFrame(PluginContext *cx, cell_t entry_cip)
+InvokeFrame::InvokeFrame(PluginContext *cx, ucell_t entry_cip)
  : prev_(Environment::get()->top()),
    cx_(cx),
    prev_exit_frame_(Environment::get()->exit_frame()),
@@ -82,7 +82,7 @@ FrameIterator::nextInvokeFrame()
   assert(sp_stop_ >= sp_iter_);
 
   runtime_ = ivk_->cx()->runtime();
-  function_cip_ = -1;
+  function_cip_ = kInvalidCip;
   pc_ = nullptr;
   cip_ = kInvalidCip;
 
@@ -170,7 +170,7 @@ FrameIterator::findCip() const
 unsigned
 FrameIterator::LineNumber() const
 {
-  cell_t cip = findCip();
+  ucell_t cip = findCip();
   if (cip == kInvalidCip)
     return 0;
 
@@ -184,7 +184,7 @@ FrameIterator::LineNumber() const
 const char *
 FrameIterator::FilePath() const
 {
-  cell_t cip = findCip();
+  ucell_t cip = findCip();
   if (cip == kInvalidCip)
     return runtime_->image()->LookupFile(function_cip_);
 

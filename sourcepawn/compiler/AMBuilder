@@ -53,7 +53,6 @@ compiler.sourcedeps += packed_includes
  
 if compiler.cc.behavior == 'gcc':
   compiler.cflags += ['-Wno-format']
-  compiler.cflags += ['-Wno-error=sign-compare']
   compiler.c_only_flags += ['-std=c99']
   if builder.target_platform == 'linux':
     compiler.postlink += ['-lm']

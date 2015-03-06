@@ -22,7 +22,7 @@
  *  Version: $Id$
  */
 
-int strexpand(char *dest, unsigned char *source, int maxlen, unsigned char pairtable[128][2]);
+size_t strexpand(char *dest, unsigned char *source, size_t maxlen, unsigned char pairtable[128][2]);
 
 #define SCPACK_TERMINATOR ,     /* end each section with a comma */
 

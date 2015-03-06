@@ -598,7 +598,7 @@ class VerifyOpcodeSorting
  public:
   VerifyOpcodeSorting() {
     assert(opcodelist[1].name!=NULL);
-    for (int i = 2; i<(sizeof opcodelist / sizeof opcodelist[0]); i++) {
+    for (size_t i = 2; i<(sizeof opcodelist / sizeof opcodelist[0]); i++) {
       assert(opcodelist[i].name!=NULL);
       assert(stricmp(opcodelist[i].name,opcodelist[i-1].name)>0);
     } /* for */

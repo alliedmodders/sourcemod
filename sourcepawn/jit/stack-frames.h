@@ -64,7 +64,7 @@ class ExitFrame
 class InvokeFrame
 {
  public:
-  InvokeFrame(PluginContext *cx, cell_t cip);
+  InvokeFrame(PluginContext *cx, ucell_t cip);
   ~InvokeFrame();
 
   InvokeFrame *prev() const {
@@ -80,7 +80,7 @@ class InvokeFrame
   const intptr_t *entry_sp() const {
     return entry_sp_;
   }
-  cell_t entry_cip() const {
+  ucell_t entry_cip() const {
     return entry_cip_;
   }
 
@@ -93,7 +93,7 @@ class InvokeFrame
   InvokeFrame *prev_;
   PluginContext *cx_;
   ExitFrame prev_exit_frame_;
-  cell_t entry_cip_;
+  ucell_t entry_cip_;
   const intptr_t *entry_sp_;
 };
 
@@ -125,8 +125,8 @@ class FrameIterator : public SourcePawn::IFrameIterator
   PluginRuntime *runtime_;
   const intptr_t *sp_iter_;
   const intptr_t *sp_stop_;
-  cell_t function_cip_;
-  mutable cell_t cip_;
+  ucell_t function_cip_;
+  mutable ucell_t cip_;
   void *pc_;
 };
 

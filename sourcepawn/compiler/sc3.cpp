@@ -128,7 +128,8 @@ int check_userop(void (*oper)(void),int tag1,int tag2,int numparam,
   static void (*unopers[])(void) = { lneg, neg, user_inc, user_dec };
 
   char opername[4] = "", symbolname[sNAMEMAX+1];
-  int i,swapparams,savepri,savealt;
+  size_t i;
+  int swapparams,savepri,savealt;
   int paramspassed;
   symbol *sym;
 
