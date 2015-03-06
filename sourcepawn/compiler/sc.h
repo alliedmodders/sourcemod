@@ -58,7 +58,7 @@
 #define sDEF_LITMAX  500    /* initial size of the literal pool, in "cells" */
 #define sDEF_AMXSTACK 4096  /* default stack size for AMX files */
 #define PREPROC_TERM  '\x7f'/* termination character for preprocessor expressions (the "DEL" code) */
-#define sDEF_PREFIX   "xsourcemod.inc" /* default prefix filename */
+#define sDEF_PREFIX   "sourcemod.inc" /* default prefix filename */
 #define sARGS_MAX		32	/* number of arguments a function can have, max */
 #define sTAGS_MAX		16  /* maximum number of tags on an argument */
 
