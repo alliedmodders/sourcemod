@@ -5535,7 +5535,7 @@ static int newfunc(declinfo_t *decl, const int *thistag, int fpublic, int fstati
   if ((sym->usage & uPROTOTYPED) && !compare_tag(sym->tag, decl->type.tag)) {
     int old_fline = fline;
     fline = funcline;
-    error(25);
+    error(180, type_to_name(sym->tag), type_to_name(decl->type.tag));
     fline = old_fline;
   }
 
@@ -5745,7 +5745,7 @@ static int declargs(symbol *sym, int chkshadow, const int *thistag)
       } else {
         /* check the argument with the earlier definition */
         if (argcnt>oldargcnt || !argcompare(&sym->dim.arglist[argcnt],&arg))
-          error(25);          /* function definition does not match prototype */
+          error(181, arg.name);          /* function argument does not match prototype */
         /* may need to free default array argument and the tag list */
         if (arg.ident==iREFARRAY && arg.hasdefault)
           free(arg.defvalue.array.data);

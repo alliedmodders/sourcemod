@@ -981,7 +981,7 @@ typedef struct array_info_s
 } array_info_t;
 
 enum FatalError {
-  FIRST_FATAL_ERROR = 180,
+  FIRST_FATAL_ERROR = 182,
 
   FATAL_ERROR_READ  = FIRST_FATAL_ERROR,
   FATAL_ERROR_WRITE,
