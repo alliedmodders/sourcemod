@@ -223,6 +223,8 @@ static const char *errmsg[] = {
 /*177*/  "static method '%s' must be invoked via its type (try '%s.%s')\n",
 /*178*/  "cannot coerce %s[] to %s[]; storage classes differ\n",
 /*179*/  "cannot assign %s[] to %s[], storage classes differ\n",
+/*180*/  "function return type differs from prototype. expected '%s', but got '%s'\n",
+/*181*/  "function argument named '%s' differs from prototype\n",
 #else
   "\315e\306\227\266k\217:\235\277bu\201fo\220\204\223\012",
   "\202l\224\250s\205g\346\356e\233\201(\243\315\214\267\202) \253 f\255low ea\305 \042c\353e\042\012",
@@ -386,24 +388,24 @@ static const char *errmsg[] = {
 
 static const char *fatalmsg[] = {
 #ifdef SCPACK
-/*180*/  "cannot read from file: \"%s\"\n",
-/*181*/  "cannot write to file: \"%s\"\n",
-/*182*/  "table overflow: \"%s\"\n",
+/*182*/  "cannot read from file: \"%s\"\n",
+/*183*/  "cannot write to file: \"%s\"\n",
+/*184*/  "table overflow: \"%s\"\n",
           /* table can be: loop table
            *               literal table
            *               staging buffer
            *               option table (response file)
            *               peephole optimizer table
            */
-/*183*/  "insufficient memory\n",
-/*184*/  "invalid assembler instruction \"%s\"\n",
-/*185*/  "numeric overflow, exceeding capacity\n",
-/*186*/  "compiled script exceeds the maximum memory size (%ld bytes)\n",
-/*187*/  "too many error messages on one line\n",
-/*188*/  "codepage mapping file not found\n",
-/*189*/  "invalid path: \"%s\"\n",
-/*190*/  "assertion failed: %s\n",
-/*191*/  "user error: %s\n",
+/*185*/  "insufficient memory\n",
+/*186*/  "invalid assembler instruction \"%s\"\n",
+/*187*/  "numeric overflow, exceeding capacity\n",
+/*188*/  "compiled script exceeds the maximum memory size (%ld bytes)\n",
+/*189*/  "too many error messages on one line\n",
+/*190*/  "codepage mapping file not found\n",
+/*191*/  "invalid path: \"%s\"\n",
+/*192*/  "assertion failed: %s\n",
+/*193*/  "user error: %s\n",
 #else
   "\256\214a\204from \344le:\354",
   "\256writ\200\266 \344le:\354",
