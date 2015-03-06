@@ -156,7 +156,7 @@ native bool:AreClientCookiesCached(client);
  *
  * @param client		Client index.
  */
-forward OnClientCookiesCached(client);
+forward void OnClientCookiesCached(client);
 
 /**
  * Cookie Menu Callback prototype
