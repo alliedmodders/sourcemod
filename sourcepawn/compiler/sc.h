@@ -565,12 +565,12 @@ typedef enum s_optmark {
 
 #define suSLEEP_INSTR 0x01      /* the "sleep" instruction was used */
 
-#define FIXEDTAG     0x40000000Lu
-#define FUNCTAG      0x20000000Lu
-#define OBJECTTAG    0x10000000Lu
-#define ENUMTAG      0x08000000Lu
-#define METHODMAPTAG 0x04000000Lu
-#define STRUCTTAG    0x02000000Lu
+#define FIXEDTAG     0x40000000
+#define FUNCTAG      0x20000000
+#define OBJECTTAG    0x10000000
+#define ENUMTAG      0x08000000
+#define METHODMAPTAG 0x04000000
+#define STRUCTTAG    0x02000000
 #define TAGTYPEMASK   (FUNCTAG | OBJECTTAG | ENUMTAG | METHODMAPTAG | STRUCTTAG)
 #define TAGFLAGMASK   (FIXEDTAG | TAGTYPEMASK)
 #define TAGID(tag)    ((tag) & ~(TAGFLAGMASK))

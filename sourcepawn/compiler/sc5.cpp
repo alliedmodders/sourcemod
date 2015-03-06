@@ -49,7 +49,7 @@
   #pragma warning(pop)
 #endif
 
-#define NUM_WARNINGS    (sizeof warnmsg / sizeof warnmsg[0])
+#define NUM_WARNINGS    (int)(sizeof warnmsg / sizeof warnmsg[0])
 static unsigned char warndisable[(NUM_WARNINGS + 7) / 8]; /* 8 flags in a char */
 
 static int errflag;

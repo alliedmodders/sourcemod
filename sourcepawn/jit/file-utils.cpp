@@ -38,7 +38,7 @@ FileReader::FileReader(FILE *fp)
     return;
 
   ke::AutoArray<uint8_t> bytes(new uint8_t[size]);
-  if (!bytes || fread(bytes, sizeof(uint8_t), size, fp) != size)
+  if (!bytes || fread(bytes, sizeof(uint8_t), size, fp) != (size_t)size)
     return;
 
   buffer_ = bytes.take();

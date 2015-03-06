@@ -400,7 +400,7 @@ static SEQUENCE *sequences;
 
 int phopt_init(void)
 {
-  int number, i, len;
+  size_t number, i, len;
   char str[160];
 
   /* count number of sequences */
@@ -422,13 +422,13 @@ int phopt_init(void)
   for (i=0; i<number-1; i++) {
     len = strexpand(str,(unsigned char*)sequences_cmp[i].find,sizeof str,SCPACK_TABLE);
     assert(len<=sizeof str);
-    assert(len==(int)strlen(str)+1);
+    assert(len==strlen(str)+1);
     sequences[i].find=(char*)malloc(len);
     if (sequences[i].find!=NULL)
       strcpy(sequences[i].find,str);
     len = strexpand(str,(unsigned char*)sequences_cmp[i].replace,sizeof str,SCPACK_TABLE);
     assert(len<=sizeof str);
-    assert(len==(int)strlen(str)+1);
+    assert(len==strlen(str)+1);
     sequences[i].replace=(char*)malloc(len);
     if (sequences[i].replace!=NULL)
       strcpy(sequences[i].replace,str);

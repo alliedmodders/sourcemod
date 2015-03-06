@@ -258,8 +258,10 @@ enum OPCODE {
 #define _(op, text) OP_##op,
   OPCODE_LIST(_)
 #undef _
-  OPCODES_TOTAL
+  OPCODES_LAST
 };
+
+#define OPCODES_TOTAL (ucell_t)OPCODES_LAST
 
 } // namespace sp
 

@@ -16,11 +16,11 @@
 
 #define STACKSIZE 16
 
-int strexpand(char *dest, unsigned char *source, int maxlen, unsigned char pairtable[128][2])
+size_t strexpand(char *dest, unsigned char *source, size_t maxlen, unsigned char pairtable[128][2])
 {
   unsigned char stack[STACKSIZE];
   short c, top = 0;
-  int len;
+  size_t len;
 
   assert(maxlen > 0);
   len = 1;              /* already 1 byte for '\0' */

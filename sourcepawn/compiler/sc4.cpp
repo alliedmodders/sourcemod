@@ -365,7 +365,8 @@ void alignframe(int numbytes)
 {
   #if !defined NDEBUG
     /* "numbytes" should be a power of 2 for this code to work */
-    int i,count=0;
+    size_t i;
+    int count=0;
     for (i=0; i<sizeof numbytes*8; i++)
       if (numbytes & (1 << i))
         count++;

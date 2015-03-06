@@ -150,7 +150,7 @@ int plungequalifiedfile(char *name)
 
   void *fp;
   char *ext;
-  int ext_idx;
+  size_t ext_idx;
 
   ext_idx=0;
   do {
@@ -258,7 +258,8 @@ static void doinclude(int silent)
 {
   char name[_MAX_PATH];
   char c;
-  int i, result;
+  size_t i;
+  int result;
 
   while (*lptr<=' ' && *lptr!='\0')         /* skip leading whitespace */
     lptr++;
@@ -276,7 +277,7 @@ static void doinclude(int silent)
     name[i++]=*lptr++;
   while (i>0 && name[i-1]<=' ')
     i--;                        /* strip trailing whitespace */
-  assert(i>=0 && i<sizeof name);
+  assert(i<sizeof name);
   name[i]='\0';                 /* zero-terminate the string */
 
   if (*lptr!=c) {               /* verify correct string termination */
@@ -1029,7 +1030,7 @@ static int command(void)
           if (*lptr=='"') {
             lptr=getstring((unsigned char*)name,sizeof name,lptr);
           } else {
-            int i;
+            size_t i;
             for (i=0; i<sizeof name && alphanum(*lptr); i++,lptr++)
               name[i]=*lptr;
             name[i]='\0';
@@ -1058,7 +1059,7 @@ static int command(void)
         } else if (strcmp(str,"rational")==0) {
           char name[sNAMEMAX+1];
           cell digits=0;
-          int i;
+          size_t i;
           /* first gather all information, start with the tag name */
           while (*lptr<=' ' && *lptr!='\0')
             lptr++;
@@ -1078,9 +1079,9 @@ static int command(void)
               lptr++;
           } /* if */
           /* add the tag (make it public) and check the values */
-          i=pc_addtag(name);
-          if (sc_rationaltag==0 || (sc_rationaltag==i && rational_digits==(int)digits)) {
-            sc_rationaltag=i;
+          int tag=pc_addtag(name);
+          if (sc_rationaltag==0 || (sc_rationaltag==tag && rational_digits==(int)digits)) {
+            sc_rationaltag=tag;
             rational_digits=(int)digits;
           } else {
             error(69);          /* rational number format already set, can only be set once */
@@ -1107,7 +1108,8 @@ static int command(void)
           sc_alignnext=TRUE;
         } else if (strcmp(str,"unused")==0) {
           char name[sNAMEMAX+1];
-          int i,comma;
+          size_t i;
+          int comma;
           symbol *sym;
           do {
             /* get the name */
