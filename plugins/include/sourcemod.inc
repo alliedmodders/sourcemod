@@ -92,10 +92,6 @@ enum APLRes
  * If any run-time error is thrown during this callback, the plugin will be marked 
  * as failed.
  *
- * It is not necessary to close any handles or remove hooks in this function.  
- * SourceMod guarantees that plugin shutdown automatically and correctly releases 
- * all resources.
- *
  * @noreturn
  */
 forward void OnPluginStart();
@@ -131,6 +127,10 @@ forward APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 /**
  * Called when the plugin is about to be unloaded.
+ *
+ * It is not necessary to close any handles or remove hooks in this function.  
+ * SourceMod guarantees that plugin shutdown automatically and correctly releases 
+ * all resources.
  *
  * @noreturn
  */
