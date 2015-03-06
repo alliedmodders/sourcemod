@@ -399,32 +399,26 @@ native TF2_RemoveWearable(client, wearable);
  *
  * @param client		Index of the client to which the conditon is being added.
  * @param condition     Condition that is being added.
- * @noreturn
  */
-forward TF2_OnConditionAdded(client, TFCond:condition);
+forward void TF2_OnConditionAdded(client, TFCond:condition);
 
 /**
  * Called after a condition is removed from a player
  *
  * @param client		Index of the client to which the condition is being removed.
  * @param condition		Condition that is being removed.
- * @noreturn
  */
-forward TF2_OnConditionRemoved(client, TFCond:condition);
+forward void TF2_OnConditionRemoved(client, TFCond:condition);
 
 /**
  * Called when the server enters the Waiting for Players round state
- *
- * @noreturn
  */
-forward TF2_OnWaitingForPlayersStart();
+forward void TF2_OnWaitingForPlayersStart();
 
 /**
  * Called when the server exits the Waiting for Players round state
- *
- * @noreturn
  */
-forward TF2_OnWaitingForPlayersEnd();
+forward void TF2_OnWaitingForPlayersEnd();
 
 /**
  * Called when a player attempts to use a teleporter to decide if the player should be allowed to teleport.
