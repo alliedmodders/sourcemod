@@ -509,7 +509,7 @@ BuildScripts = [
   'extensions/topmenus/AMBuilder',
   'extensions/updater/AMBuilder',
   'sourcepawn/compiler/AMBuilder',
-  'sourcepawn/jit/AMBuilder',
+  'sourcepawn/vm/AMBuilder',
 ]
 
 if builder.backend == 'amb2':
