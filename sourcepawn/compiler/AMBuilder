@@ -1,43 +1,6 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python: 
 import os
 
-# Build the packing binary garbage.
-scpack = SM.Program(builder, 'scpack')
-if scpack.compiler.cc.behavior == 'msvc':
-  scpack.compiler.linkflags.remove('/SUBSYSTEM:WINDOWS')
-  scpack.compiler.linkflags.append('/SUBSYSTEM:CONSOLE')
-  scpack.compiler.cxxflags.remove('/TP')
-scpack.sources = ['scpack.c']
-scpack = builder.Add(scpack)
-
-# Generate pack files.
-packed_files = ['sc5', 'sc7']
-packed_includes = []
-for packed_file in packed_files:
-  # The absolute path to sc5-in.scp etc.
-  in_path = os.path.join(builder.currentSourcePath, '{0}-in.scp'.format(packed_file))
-
-  # The output file relative to the output folder, i.e. sourcepawn/compiler/sc5.scp.
-  out_path = os.path.join(builder.buildFolder, '{0}.scp'.format(packed_file))
-
-  # The absolute path to the build folder, i.e. /Users/.../sourcepawn/compiler.
-  build_folder = os.path.join(builder.buildPath, builder.buildFolder)
-
-  # scpack runs in ./sourcepawn/compiler/scpack/ so we build relative paths
-  # from there.
-  scpack_argv = [
-    os.path.join(builder.buildPath, scpack.binary.path),
-    os.path.relpath(in_path, build_folder),
-    os.path.relpath(os.path.join(builder.buildPath, out_path), build_folder),
-  ]
-
-  _, (entry,) = builder.AddCommand(
-    inputs = [scpack.binary, in_path],
-    argv = scpack_argv,
-    outputs = ['{0}.scp'.format(packed_file)],
-  )
-  packed_includes += [entry]
-
 binary = SM.Program(builder, 'spcomp')
 compiler = binary.compiler
 compiler.includes += [
@@ -49,7 +12,6 @@ compiler.includes += [
   os.path.join(builder.buildPath, 'includes'),
   os.path.join(builder.buildPath, builder.buildFolder),
 ]
-compiler.sourcedeps += packed_includes
  
 if compiler.cc.behavior == 'gcc':
   compiler.cflags += ['-Wno-format']
@@ -90,7 +52,6 @@ binary.sources += [
   'sc5.cpp',
   'sc6.cpp',
   'sc7.cpp',
-  'scexpand.cpp',
   'sci18n.cpp',
   'sclist.cpp',
   'scmemfil.cpp',
