@@ -34,7 +34,7 @@
 #include <assembler.h>
 #include <am-vector.h>
 #include <string.h>
-#include <assembler-x86.h>
+#include "assembler-x86.h"
 
 class MacroAssemblerX86 : public AssemblerX86
 {

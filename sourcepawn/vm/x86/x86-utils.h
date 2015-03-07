@@ -14,7 +14,7 @@
 #define _include_sourcepawn_vm_x86_utils_h_
 
 #include <stdint.h>
-#include <macro-assembler-x86.h>
+#include "macro-assembler-x86.h"
 
 namespace sp {
 

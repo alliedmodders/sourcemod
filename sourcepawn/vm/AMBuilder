@@ -47,6 +47,7 @@ library.sources += [
   'stack-frames.cpp',
   'smx-v1-image.cpp',
   'watchdog_timer.cpp',
+  'x86/assembler-x86.cpp',
   'x86/code-stubs-x86.cpp',
   'x86/jit_x86.cpp',
   'x86/x86-utils.cpp',
@@ -62,7 +63,6 @@ library.sources += [
   '../third_party/zlib/trees.c',
   '../third_party/zlib/uncompr.c',
   '../third_party/zlib/zutil.c',
-  '../../public/jit/x86/assembler-x86.cpp',
 ]
 libsourcepawn = builder.Add(library).binary
 

@@ -19,12 +19,12 @@
 
 #include <sp_vm_types.h>
 #include <sp_vm_api.h>
-#include <macro-assembler-x86.h>
 #include <am-vector.h>
 #include "plugin-runtime.h"
 #include "plugin-context.h"
 #include "compiled-function.h"
 #include "opcodes.h"
+#include "macro-assembler-x86.h"
 
 using namespace SourcePawn;
 

@@ -28,6 +28,6 @@
  *
  * Version: $Id$
  */
-#include <assembler-x86.h>
+#include "assembler-x86.h"
 
 CPUFeatures AssemblerX86::X86Features;
