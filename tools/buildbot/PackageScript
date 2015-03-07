@@ -465,6 +465,6 @@ CopyFiles('plugins/playercommands', 'addons/sourcemod/scripting/playercommands',
 )
 
 if builder.target_platform == 'windows':
-  CopyFiles('sourcepawn/batchtool', 'addons/sourcemod/scripting', ['compile.exe'])
+  CopyFiles('tools/batchtool', 'addons/sourcemod/scripting', ['compile.exe'])
 else:
   CopyFiles('plugins', 'addons/sourcemod/scripting', ['compile.sh'])
