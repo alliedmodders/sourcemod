@@ -44,9 +44,8 @@ compiler.includes += [
   os.path.join(builder.sourcePath, 'public'),
   os.path.join(builder.sourcePath, 'public', 'amtl'),
   os.path.join(builder.sourcePath, 'public', 'sourcepawn'),
-  os.path.join(builder.sourcePath, 'sourcepawn', 'compiler'),
-  os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
-  os.path.join(builder.sourcePath, 'sourcepawn', 'third_party'),
+  os.path.join(builder.currentSourcePath, '..', 'include'),
+  os.path.join(builder.currentSourcePath, '..', 'third_party'),
   os.path.join(builder.buildPath, 'includes'),
   os.path.join(builder.buildPath, builder.buildFolder),
 ]

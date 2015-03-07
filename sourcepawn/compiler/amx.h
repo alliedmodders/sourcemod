@@ -31,7 +31,7 @@
   #define __FreeBSD__
 #endif
 #if defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
-  #include <sclinux.h>
+  #include "sclinux.h"
 #endif
 
 #if defined HAVE_STDINT_H

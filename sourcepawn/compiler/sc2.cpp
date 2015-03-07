@@ -31,7 +31,7 @@
 #include "sc.h"
 #include "tokenbuffer.h"
 #if defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
-  #include <sclinux.h>
+  #include "sclinux.h"
 #endif
 #include "sp_symhash.h"
 

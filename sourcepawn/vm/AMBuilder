@@ -3,8 +3,8 @@ import os
 
 Includes = [
   os.path.join(SM.mms_root, 'core', 'sourcehook'),
-  os.path.join(builder.sourcePath, 'sourcepawn', 'vm'),
-  os.path.join(builder.sourcePath, 'sourcepawn', 'third_party'),
+  os.path.join(builder.currentSourcePath),
+  os.path.join(builder.currentSourcePath, '..', 'third_party'),
   os.path.join(builder.sourcePath, 'public'),
   os.path.join(builder.sourcePath, 'public', 'sourcepawn'),
   os.path.join(builder.sourcePath, 'public', 'amtl'),
