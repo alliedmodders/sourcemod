@@ -215,7 +215,7 @@ native bool SMC_GetErrorString(SMCError error, char[] buffer, int buf_max);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SMC_SetParseStart(Handle smc, SMC_ParseStart func);
+native void SMC_SetParseStart(Handle smc, SMC_ParseStart func);
 
 /**
  * Sets the SMC_ParseEnd of a parse handle.
@@ -225,7 +225,7 @@ native SMC_SetParseStart(Handle smc, SMC_ParseStart func);
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SMC_SetParseEnd(Handle smc, SMC_ParseEnd func);
+native void SMC_SetParseEnd(Handle smc, SMC_ParseEnd func);
 
 /**
  * Sets the three main reader functions.

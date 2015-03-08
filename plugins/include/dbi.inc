@@ -385,9 +385,10 @@ methodmap Database < Handle
 	// @param query          Query string.
 	// @param data           Extra data value to pass to the callback.
 	// @param prio           Priority queue to use.
-	public native void Query(SQLQueryCallback callback, const char[] query,
-	                         any data = 0,
-	                         DBPriority prio = DBPrio_Normal);
+	public native void Query(SQLQueryCallback callback,
+							const char[] query,
+	                        any data = 0,
+	                        DBPriority prio = DBPrio_Normal);
 
 	// Sends a transaction to the database thread. The transaction handle is
 	// automatically closed. When the transaction completes, the optional
@@ -399,8 +400,8 @@ methodmap Database < Handle
 	// @param data          An optional value to pass to callbacks.
 	// @param prio          Priority queue to use.
 	public native void Execute(Transaction txn,
-	                           SQLTxnSuccess:onSuccess = INVALID_FUNCTION,
-	                           SQLTxnFailure:onError = INVALID_FUNCTION,
+	                           SQLTxnSuccess onSuccess = INVALID_FUNCTION,
+	                           SQLTxnFailure onError = INVALID_FUNCTION,
 	                           any data = 0,
 	                           DBPriority priority = DBPrio_Normal);
 };
@@ -413,7 +414,7 @@ methodmap Database < Handle
  *						possible, false otherwise.
  * @param error			Error buffer.
  * @param maxlength		Maximum length of the error buffer.
- * @return				A database connection Handle, or INVALID_HANDLE on failure.
+ * @return				A database connection Handle, or null on failure.
  */
 native Database SQL_Connect(const char[] confname, bool persistent, char[] error, int maxlength);
 
@@ -424,7 +425,7 @@ native Database SQL_Connect(const char[] confname, bool persistent, char[] error
  * @param maxlength		Maximum length of the error buffer.
  * @param persistent	True to re-use a previous persistent connection
  *						if possible, false otherwise.
- * @return				A database connection Handle, or INVALID_HANDLE on failure.
+ * @return				A database connection Handle, or null on failure.
  * 						On failure the error buffer will be filled with a message.
  */
 stock Database SQL_DefConnect(char[] error, int maxlength, bool persistent=true)
@@ -449,13 +450,13 @@ stock Database SQL_DefConnect(char[] error, int maxlength, bool persistent=true)
  * @param maxlength		Maximum length of the error buffer.
  * @param persistent	True to re-use a previous persistent connection if
  *						possible, false otherwise.
- * @return				A database connection Handle, or INVALID_HANDLE on failure.
+ * @return				A database connection Handle, or null on failure.
  * 						On failure the error buffer will be filled with a message.
  * @error				Invalid KeyValues handle.
  */
 native Database SQL_ConnectCustom(Handle keyvalues,
 			  					  char[] error,
-			  					  maxlength,
+			  					  int maxlength,
 			  					  bool persistent);
 
 /**
@@ -470,12 +471,12 @@ native Database SQL_ConnectCustom(Handle keyvalues,
  * @param database		Database name.  
  * @param error			Error buffer.
  * @param maxlength		Maximum length of the error buffer.
- * @return				A database connection Handle, or INVALID_HANDLE on failure.
+ * @return				A database connection Handle, or null on failure.
  * 						On failure the error buffer will be filled with a message.
  */
 stock Database SQLite_UseDatabase(const char[] database,
 			  					  char[] error, 
-			  					  maxlength)
+			  					  int maxlength)
 {
 	KeyValues kv = CreateKeyValues("");
 	kv.SetString("driver", "sqlite");
@@ -492,16 +493,16 @@ stock Database SQLite_UseDatabase(const char[] database,
  * This function is deprecated.  Use SQL_ConnectCustom or SQLite_UseDatabase instead.
  */
 #pragma deprecated Use SQL_ConnectCustom instead.
-native Handle SQL_ConnectEx(Handle driver, 
-							const String:host[],
-							const String:user[], 
-							const String:pass[],
-							const String:database[],
+native Handle SQL_ConnectEx(Handle driver,
+							const char[] host,
+							const char[] user,
+							const char[] pass,
+							const char[] database,
 							char[] error,
-							maxlength,
+							int maxlength,
 							bool persistent=true,
-							port=0,
-							maxTimeout=0);
+							int port=0,
+							int maxTimeout=0);
 							
 /**
  * Returns if a named configuration is present in databases.cfg.
@@ -519,7 +520,7 @@ native bool SQL_CheckConfig(const char[] name);
  *
  * @param name			Driver identification string, or an empty
  *						string to return the default driver.
- * @return				Driver Handle, or INVALID_HANDLE on failure.
+ * @return				Driver Handle, or null on failure.
  */
 native Handle SQL_GetDriver(const char[] name="");
 
@@ -538,11 +539,11 @@ native Handle SQL_ReadDriver(Handle database, char[] ident="", ident_length=0);
  *
  * Example: "mysql", "sqlite"
  *
- * @param driver		Driver Handle, or INVALID_HANDLE for the default driver.
+ * @param driver		Driver Handle, or null for the default driver.
  * @param ident			Identification string buffer.
  * @param maxlength		Maximum length of the buffer.
  * @noreturn
- * @error				Invalid Handle other than INVALID_HANDLE.
+ * @error				Invalid Handle other than null.
  */
 native void SQL_GetDriverIdent(Handle driver, char[] ident, int maxlength);
 
@@ -551,11 +552,11 @@ native void SQL_GetDriverIdent(Handle driver, char[] ident, int maxlength);
  *
  * Example: "MySQL", "SQLite"
  *
- * @param driver		Driver Handle, or INVALID_HANDLE for the default driver.
+ * @param driver		Driver Handle, or null for the default driver.
  * @param product		Product string buffer.
  * @param maxlength		Maximum length of the buffer.
  * @noreturn
- * @error				Invalid Handle other than INVALID_HANDLE.
+ * @error				Invalid Handle other than null.
  */
 native void SQL_GetDriverProduct(Handle driver, char[] product, int maxlength);
 
@@ -636,8 +637,8 @@ native bool SQL_EscapeString(Handle database,
 stock bool SQL_QuoteString(Handle database,
 						   const char[] string,
 						   char[] buffer,
-						   maxlength,
-						   &written=0)
+						   int maxlength,
+						   int &written=0)
 {
 	return SQL_EscapeString(database, string, buffer, maxlength, written);
 }
@@ -665,7 +666,7 @@ native bool SQL_FastQuery(Handle database, const char[] query, int len=-1);
  * @param len			Optional parameter to specify the query length, in 
  *						bytes.  This can be used to send binary queries that 
  * 						have a premature terminator.
- * @return				A new Query Handle on success, INVALID_HANDLE
+ * @return				A new Query Handle on success, null
  *						otherwise.  The Handle must be freed with CloseHandle().
  * @error				Invalid database Handle.
  */
@@ -683,7 +684,7 @@ native DBResultSet SQL_Query(Handle database, const char[] query, int len=-1);
  * @param query			Query string.
  * @param error			Error buffer.
  * @param maxlength		Maximum size of the error buffer.
- * @return				A new statement Handle on success, INVALID_HANDLE
+ * @return				A new statement Handle on success, null
  *						otherwise.  The Handle must be freed with CloseHandle().
  * @error				Invalid database Handle.
  */
@@ -742,7 +743,7 @@ native int SQL_GetFieldCount(Handle query);
  * @error				Invalid query Handle, invalid field index, or
  *						no current result set.
  */
-native void SQL_FieldNumToName(Handle query, int field, String:name[], int maxlength);
+native void SQL_FieldNumToName(Handle query, int field, char[] name, int maxlength);
 
 /**
  * Retrieves a field index by name.
@@ -936,8 +937,8 @@ native void SQL_UnlockDatabase(Handle database);
 
 // General callback for threaded SQL stuff.
 // 
-// @param owner			Parent object of the Handle (or INVALID_HANDLE if none).
-// @param hndl			Handle to the child object (or INVALID_HANDLE if none).
+// @param owner			Parent object of the Handle (or null if none).
+// @param hndl			Handle to the child object (or null if none).
 // @param error			Error string if there was an error.  The error could be 
 //  					empty even if an error condition exists, so it is important 
 //  					to check the actual Handle value instead.
@@ -965,7 +966,7 @@ native bool SQL_IsSameConnection(Handle hndl1, Handle hndl2);
  * SQL_LockDatabase().
  *
  * @param callback		Callback; new Handle will be in hndl, owner is the driver.
- *						If no driver was found, the owner is INVALID_HANDLE.
+ *						If no driver was found, the owner is null.
  * @param name			Database name.
  * @param data			Extra data value to pass to the callback.
  */
@@ -1027,8 +1028,8 @@ native int SQL_AddQuery(Transaction txn, const char[] query, any data=0);
  */
 native SQL_ExecuteTransaction(
 		Handle db,
-		Transaction:txn,
-		SQLTxnSuccess:onSuccess = INVALID_FUNCTION,
-		SQLTxnFailure:onError = INVALID_FUNCTION,
+		Transaction txn,
+		SQLTxnSuccess onSuccess = INVALID_FUNCTION,
+		SQLTxnFailure onError = INVALID_FUNCTION,
 		any data=0,
-		DBPriority:priority=DBPrio_Normal);
+		DBPriority priority=DBPrio_Normal);

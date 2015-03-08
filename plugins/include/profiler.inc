@@ -45,7 +45,7 @@
  *
  * @return			Handle to the profiler object.
  */
-native Handle:CreateProfiler();
+native Handle CreateProfiler();
 
 /**
  * Starts profiling.
@@ -54,7 +54,7 @@ native Handle:CreateProfiler();
  * @noreturn
  * @error			Invalid Handle.
  */
-native StartProfiling(Handle:prof);
+native void StartProfiling(Handle prof);
 
 /**
  * Stops profiling.
@@ -63,7 +63,7 @@ native StartProfiling(Handle:prof);
  * @noreturn
  * @error			Invalid Handle or profiling was never started.
  */
-native StopProfiling(Handle:prof);
+native void StopProfiling(Handle prof);
 
 /**
  * Returns the amount of high-precision time in seconds
@@ -74,7 +74,7 @@ native StopProfiling(Handle:prof);
  * @return			Time elapsed in seconds.
  * @error			Invalid Handle.
  */
-native Float:GetProfilerTime(Handle:prof);
+native float GetProfilerTime(Handle prof);
 
 /**
  * Mark the start of a profiling event.
@@ -84,17 +84,17 @@ native Float:GetProfilerTime(Handle:prof);
  * @param name      A name to attribute to this profiling event.
  * @noreturn
  */
-native EnterProfilingEvent(const String:group[], const String:name[]);
+native void EnterProfilingEvent(const char[] group, const char[] name);
 
 /**
  * Mark the end of the last profiling event. This must be called in the same
  * stack frame as StartProfilingEvent(). Not doing so, or throwing errors,
  * will make the resulting profile very wrong.
  */
-native LeaveProfilingEvent();
+native void LeaveProfilingEvent();
 
 /**
  * Returns true if the global profiler is enabled; false otherwise. It is
  * not necessary to call this before Enter/LeaveProfilingEvent.
  */
-native bool:IsProfilingActive();
+native bool IsProfilingActive();
