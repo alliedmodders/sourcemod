@@ -35,7 +35,7 @@
 class CUserCmd;
 
 #include "extension.h"
-#include "amtl/am-vector.h"
+#include <am-vector.h>
 #include "vtable_hook_helper.h"
 
 class CHookManager : IPluginsListener, IFeatureProvider

@@ -7,7 +7,7 @@ Includes = [
   os.path.join(builder.currentSourcePath, '..', 'third_party'),
   os.path.join(builder.sourcePath, 'public'),
   os.path.join(builder.sourcePath, 'public', 'sourcepawn'),
-  os.path.join(builder.sourcePath, 'public', 'amtl'),
+  os.path.join(builder.sourcePath, 'public', 'amtl', 'include'),
   os.path.join(builder.sourcePath, 'public', 'jit'),
   os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
 

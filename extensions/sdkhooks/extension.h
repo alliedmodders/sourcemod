@@ -6,7 +6,7 @@
 #include <IBinTools.h>
 #include <convar.h>
 #include <sh_list.h>
-#include <amtl/am-vector.h>
+#include <am-vector.h>
 #include <vtable_hook_helper.h>
 
 #include <iplayerinfo.h>
