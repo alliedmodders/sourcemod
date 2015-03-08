@@ -1,1 +1,0 @@
-destructors must be native functions

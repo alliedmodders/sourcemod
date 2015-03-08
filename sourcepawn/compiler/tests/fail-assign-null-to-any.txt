@@ -1,1 +1,0 @@
-(3) : error 148: cannot assign null to a non-nullable type

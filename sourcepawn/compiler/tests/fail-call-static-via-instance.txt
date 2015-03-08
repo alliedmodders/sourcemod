@@ -1,1 +1,0 @@
-(12) : error 177: static method 'GetThing' must be invoked via its type (try 'X.GetThing')

@@ -1,3 +1,0 @@
-public x(any y)
-{
-}
