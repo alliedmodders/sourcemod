@@ -326,7 +326,7 @@ class SMConfig(object):
       os.path.join(builder.sourcePath, 'public'),
       os.path.join(builder.sourcePath, 'public', 'extensions'),
       os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
-      os.path.join(builder.sourcePath, 'public', 'amtl'),
+      os.path.join(builder.sourcePath, 'public', 'amtl', 'include'),
     ]
     return compiler
 

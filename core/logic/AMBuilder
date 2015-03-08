@@ -6,7 +6,7 @@ binary.compiler.cxxincludes += [
   os.path.join(builder.sourcePath, 'core', 'logic'),
   os.path.join(builder.sourcePath, 'public'),
   os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
-  os.path.join(builder.sourcePath, 'public', 'amtl'),
+  os.path.join(builder.sourcePath, 'public', 'amtl', 'include'),
   os.path.join(SM.mms_root, 'core', 'sourcehook')
 ]
 binary.compiler.defines += [

@@ -63,11 +63,11 @@ public:
 		: control_(0)
 	{
 	}
-	Entry(ke::Moveable<Entry> other)
+	Entry(Entry &&other)
 	{
-		control_ = other->control_;
-		data_ = other->data_;
-		other->control_ = 0;
+		control_ = other.control_;
+		data_ = other.data_;
+		other.control_ = 0;
 	}
 
 	~Entry()
