@@ -219,6 +219,17 @@ static cell_t GetTeamClientCount(IPluginContext *pContext, const cell_t *params)
 	return fn(g_Teams[teamindex].pEnt, 0);
 }
 
+static cell_t GetTeamEntity(IPluginContext *pContext, const cell_t *params)
+{
+	int teamindex = params[1];
+	if (teamindex >= (int)g_Teams.size() || !g_Teams[teamindex].ClassName)
+	{
+		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
+	}
+
+	return gamehelpers->EntityToBCompatRef(g_Teams[teamindex].pEnt);
+}
+
 sp_nativeinfo_t g_TeamNatives[] = 
 {
 	{"GetTeamCount",			GetTeamCount},
@@ -226,5 +237,6 @@ sp_nativeinfo_t g_TeamNatives[] =
 	{"GetTeamScore",			GetTeamScore},
 	{"SetTeamScore",			SetTeamScore},
 	{"GetTeamClientCount",		GetTeamClientCount},
+	{"GetTeamEntity",			GetTeamEntity},
 	{NULL,						NULL}
 };
