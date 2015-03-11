@@ -61,7 +61,7 @@ native SetGlobalTransTarget(client);
  * Retrieves the language number of a client.
  *
  * By default that language number is representing the language
- * the client's Steam application is using.
+ * that the client's Steam application is using.
  *
  * @param client	Client index.
  * @return			Language number client is using.
