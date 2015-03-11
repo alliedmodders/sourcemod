@@ -58,9 +58,10 @@ native LoadTranslations(const String:file[]);
 native SetGlobalTransTarget(client);
 
 /**
- * Retrieves the language number of a client. 
+ * Retrieves the language number of a client.
  *
- * That value is defined by the client's Steam application.
+ * The language number represent the language the client's 
+ * Steam application is using.
  *
  * @param client	Client index.
  * @return			Language number client is using.
