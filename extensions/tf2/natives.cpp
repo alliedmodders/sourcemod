@@ -78,7 +78,7 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *) + sizeof(float) + sizeof(int)];
+	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *) + sizeof(float) + sizeof(int) + sizeof(bool)];
 	unsigned char *vptr = vstk;
 
 	*(void **)vptr = obj;
@@ -134,7 +134,7 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *)];
+	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *) + sizeof(float)];
 	unsigned char *vptr = vstk;
 
 	*(void **)vptr = obj;
@@ -195,7 +195,7 @@ cell_t TF2_Disguise(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Target client index %d is not valid", params[4]);
 	}
 
-	unsigned char vstk[sizeof(void *) + 2*sizeof(int) + sizeof(bool)];
+	unsigned char vstk[sizeof(void *) + 2*sizeof(int) + sizeof(CBaseEntity *) + sizeof(bool)];
 	unsigned char *vptr = vstk;
 
 
