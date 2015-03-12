@@ -45,7 +45,7 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 	if(!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("MakeBleed",
-			PassInfo pass[4]; \
+			PassInfo pass[5]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
 			pass[0].size = sizeof(CBaseEntity *); \
 			pass[0].type = PassType_Basic; \
@@ -58,7 +58,10 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 			pass[3].flags = PASSFLAG_BYVAL; \
 			pass[3].size = sizeof(int); \
 			pass[3].type = PassType_Basic; \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 4))
+			pass[4].flags = PASSFLAG_BYVAL; \
+			pass[4].size = sizeof(bool); \
+			pass[4].type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 5))
 	}
 
 	CBaseEntity *pEntity;
@@ -75,7 +78,7 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *) + sizeof(float)];
+	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *) + sizeof(float) + sizeof(int)];
 	unsigned char *vptr = vstk;
 
 	*(void **)vptr = obj;
@@ -87,6 +90,8 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 	*(float *)vptr = sp_ctof(params[3]);
 	vptr += sizeof(float);
 	*(int *)vptr = 4;
+	vptr += sizeof(int);
+	*(bool *)vptr = false;
 
 	pWrapper->Execute(vstk, NULL);
 
