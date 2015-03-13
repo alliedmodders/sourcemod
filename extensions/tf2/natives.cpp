@@ -41,7 +41,7 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
 
-	// CTFPlayerShared::MakeBleed(CTFPlayer*, CTFWeaponBase*, float, int=4)
+	// CTFPlayerShared::MakeBleed(CTFPlayer*, CTFWeaponBase*, float, int=4, bool=false)
 	if(!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("MakeBleed",
@@ -103,7 +103,7 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
 
-	// CTFPlayerShared::Burn(CTFPlayer*, CTFWeaponBase*)
+	// CTFPlayerShared::Burn(CTFPlayer*, CTFWeaponBase*, float=-1.0)
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("Burn", 
@@ -160,7 +160,7 @@ cell_t TF2_Disguise(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
 
-	//CTFPlayerShared::Disguise(int, int, CTFPlayer *)
+	//CTFPlayerShared::Disguise(int, int, CTFPlayer *. bool=true)
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("Disguise", 
