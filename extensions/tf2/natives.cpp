@@ -160,7 +160,7 @@ cell_t TF2_Disguise(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
 
-	//CTFPlayerShared::Disguise(int, int, CTFPlayer *. bool=true)
+	//CTFPlayerShared::Disguise(int, int, CTFPlayer *, bool=true)
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("Disguise", 
