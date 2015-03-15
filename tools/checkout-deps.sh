@@ -56,7 +56,7 @@ checkout ()
   free -m
   ps aux --sort -rss
   if [ ! -d "$name" ]; then
-    git clone --depth 1 $repo -b $branch $name
+    git clone --shared $repo -b $branch $name
     if [ -n "$origin" ]; then
       cd $name
       git remote rm origin
@@ -91,7 +91,7 @@ fi
 
 # Check out a local copy as a proxy.
 if [ ! -d "hl2sdk-proxy-repo" ]; then
-  git clone --depth 1 --mirror https://github.com/alliedmodders/hl2sdk hl2sdk-proxy-repo
+  git clone --shared --mirror https://github.com/alliedmodders/hl2sdk hl2sdk-proxy-repo
 else
   cd hl2sdk-proxy-repo
   git fetch
