@@ -4,6 +4,7 @@ compiler:
   - clang
 before_install:
 # Turn off local DBI Services started by default (contributes to OOM on weaker machines).
+  - ls /etc/init.d
   - sudo /etc/init.d/mysql stop
   - sudo /etc/init.d/postgresql stop
 # Add external repositories and do system updates
