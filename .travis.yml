@@ -40,6 +40,7 @@ before_script:
   - git clone --mirror "https://github.com/alliedmodders/hl2sdk" hl2sdk-proxy-repo
   - git clone --shared --mirror hl2sdk-proxy-repo -b episode1 hl2sdk-episode1
   - git clone --shared --mirror hl2sdk-proxy-repo -b tf2 hl2sdk-tf2
+  - ls -laR hl2sdk-tf2
   - git clone --shared --mirror hl2sdk-proxy-repo -b l4d2 hl2sdk-l4d2
   - free -m
   - git clone --shared --mirror hl2sdk-proxy-repo -b csgo hl2sdk-csgo
