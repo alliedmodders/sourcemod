@@ -10,7 +10,7 @@ before_install:
   - sudo /etc/init.d/postgresql stop
   - free -m
   - df -h
-  - sudo apt-get purge consolekit policykit-1 mysql-server postgresql-9.1 postgresql-9.2 postgresql-9.3 postgresql-9.4 chromium-browser gcc-4.6-base java-common x11-common
+  - sudo apt-get --force-yes purge consolekit policykit-1 mysql-server postgresql-9.1 postgresql-9.2 postgresql-9.3 postgresql-9.4 chromium-browser gcc-4.6-base
   - sudo apt-get autoremove
   - free -m
   - df -h
