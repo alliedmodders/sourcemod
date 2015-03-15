@@ -11,7 +11,9 @@ before_install:
   - chmod 600 local.swap
   - sudo mkswap local.swap
   - sudo chown root:root local.swap
-  - sudo swapon local.swap
+  - sudo echo `pwd`/local.swap none swap sw 0 0 >> /etc/fstab
+  - sudo cat /etc/fstab
+  - sudo mount -a
   - ulimit -a
   - ps aux
 # Add external repositories and do system updates
