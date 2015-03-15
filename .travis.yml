@@ -1,5 +1,5 @@
 cache: apt
-language: ruby
+language: c
 compiler:
   - clang
 before_install:
