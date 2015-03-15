@@ -6,14 +6,8 @@ before_install:
 # Turn off local DBI Services started by default (contributes to OOM on weaker machines).
   - sudo /etc/init.d/mysql stop
   - sudo /etc/init.d/postgresql stop
-# Create an additional nice little swap file, since Travis has no defined limit on Disk Space.
-  - dd if=/dev/zero of=local.swap bs=1M count=4096
-  - chmod 600 local.swap
-  - sudo mkswap local.swap
-  - sudo chown root:root local.swap
-  - sudo echo `pwd`/local.swap none swap sw 0 0 >> /etc/fstab
-  - sudo cat /etc/fstab
-  - sudo mount -a
+# ugh
+  - sudo sysctl -p
   - ulimit -a
   - ps aux
 # Add external repositories and do system updates
