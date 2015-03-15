@@ -13,6 +13,7 @@ before_install:
   - sudo chown root:root local.swap
   - sudo swapon local.swap
   - ulimit -a
+  - ps aux | grep console
 # Add external repositories and do system updates
   - sudo apt-get update -qq
   - sudo apt-get install -y python-software-properties
