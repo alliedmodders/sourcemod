@@ -53,6 +53,8 @@ fi
 
 checkout ()
 {
+  free -m
+  ps aux --sort -rss
   if [ ! -d "$name" ]; then
     git clone $repo -b $branch $name
     if [ -n "$origin" ]; then
