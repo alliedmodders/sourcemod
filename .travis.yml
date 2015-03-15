@@ -8,6 +8,11 @@ before_install:
   - sudo dpkg-query -l
   - sudo /etc/init.d/mysql stop
   - sudo /etc/init.d/postgresql stop
+  - free -m
+  - df -h
+  - sudo apt-get remove consolekit landscape-client update-notifier-common update-motd policykit-1 mysql-5.5 postgresql-9.1 chromium-browser gcc-4.6-base java-common x11-common
+  - free -m
+  - df -h
 # Add external repositories and do system updates
   - sudo apt-get update -qq
   - sudo apt-get install -y python-software-properties
@@ -23,7 +28,6 @@ install:
   - sudo apt-get update -qq
   - free -m
   - df -h
-  - sudo apt-get remove consolekit landscape-client update-notifier-common update-motd
   - sudo apt-get clean
   - sudo apt-get autoremove
   - free -m
