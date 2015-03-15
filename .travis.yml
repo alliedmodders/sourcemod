@@ -35,8 +35,14 @@ install:
   - df -h
 before_script:
   - sudo rm -Rf /var/ramfs/*
+  - free -m
+  - df -h
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
   - alias git="sync && git"
+  - sudo sync
+  - sudo echo 3 > /proc/sys/vm/drop_caches
+  - free -m
+  - df -h
   - CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh && cd $CHECKOUT_DIR
 script:
   - mkdir build && cd build
