@@ -8,8 +8,6 @@ before_install:
   - sudo /etc/init.d/postgresql stop
   - sudo /etc/init.d/console-setup stop
   - sudo apt-get remove consolekit
-# system limits
-  - sudo ulimit -n 1024
 # Add external repositories and do system updates
   - sudo apt-get update -qq
   - sudo apt-get install -y python-software-properties
