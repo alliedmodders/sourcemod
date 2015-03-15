@@ -4,6 +4,7 @@ compiler:
   - clang
 before_install:
 # Turn off local services started by default (contributes to OOM on weaker machines).
+  - sudo df -h
   - sudo /etc/init.d/mysql stop
   - sudo /etc/init.d/postgresql stop
   - sudo /etc/init.d/console-setup stop
