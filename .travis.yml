@@ -23,9 +23,34 @@ install:
   - sudo apt-get clean
   - sudo apt-get autoremove
 before_script:
+# Clean up RamFS mount.
   - sudo rm -Rf /var/ramfs/*
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
-  - CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh && cd $CHECKOUT_DIR
+
+# Acquire MySQL
+  - wget http://cdn.mysql.com/archives/mysql-5.6/mysql-5.6.15-linux-glibc2.5-i686.tar.gz
+  - tar xzf mysql-5.6.15-linux-glibc2.5-i686.tar.gz
+  - mv mysql-5.6.15-linux-glibc2.5-i686 mysql-5.5
+  - rm mysql-5.6.15-linux-glibc2.5-i686.tar.gz
+
+# MM:S
+  - git clone "https://github.com/alliedmodders/metamod-source" -b 1.10-dev mmsource-1.10
+
+# HL2SDKs
+  - git clone --mirror "https://github.com/alliedmodders/hl2sdk" hl2sdk-proxy-repo
+  - git clone --shared --mirror hl2sdk-proxy-repo -b episode1 hl2sdk-episode1
+  - git clone --shared --mirror hl2sdk-proxy-repo -b tf2 hl2sdk-tf2
+  - git clone --shared --mirror hl2sdk-proxy-repo -b l4d2 hl2sdk-l4d2
+  - git clone --shared --mirror hl2sdk-proxy-repo -b csgo hl2sdk-csgo
+  - git clone --shared --mirror hl2sdk-proxy-repo -b dota hl2sdk-dota
+
+# AMBuild
+  - git clone "https://github.com/alliedmodders/ambuild"
+  - cd ambuild
+  - python setup.py build
+  - sudo python setup.py install
+  - cd ..
+
 script:
   - mkdir build && cd build
   - CC=clang-3.5 CXX=clang-3.5 python ../configure.py --enable-optimize --sdks=episode1,tf2,l4d2,csgo,dota
