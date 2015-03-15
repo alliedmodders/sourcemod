@@ -22,6 +22,8 @@ install:
   - sudo apt-get install -y g++-multilib libc6-dev-i386 lib32stdc++6 lib32z1-dev clang-3.5
   - sudo apt-get update -qq
 before_script:
+  - sudo ls /run/shm
+  - sudo ls /var/ramfs
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
   - CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh && cd $CHECKOUT_DIR
 script:
