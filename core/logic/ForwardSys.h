@@ -112,6 +112,7 @@ public: //IChangeableForward
 	virtual bool AddFunction(IPluginFunction *func);
 	virtual bool AddFunction(IPluginContext *ctx, funcid_t index);
 	virtual bool RemoveFunction(IPluginContext *ctx, funcid_t index);
+	virtual void FunctionsChanged(size_t count);
 public:
 	static CForward *CreateForward(const char *name, 
 								   ExecType et, 
