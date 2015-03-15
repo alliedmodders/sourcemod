@@ -5,9 +5,9 @@ compiler:
 before_install:
 # Turn off local services started by default (contributes to OOM on weaker machines).
   - sudo df -h
+  - sudo dpkg-query -l
   - sudo /etc/init.d/mysql stop
   - sudo /etc/init.d/postgresql stop
-  - sudo /etc/init.d/console-setup stop
 # Add external repositories and do system updates
   - sudo apt-get update -qq
   - sudo apt-get install -y python-software-properties
@@ -23,6 +23,7 @@ install:
   - sudo apt-get update -qq
   - free -m
   - df -h
+  - sudo apt-get remove consolekit landscape-client update-notifier-common update-motd
   - sudo apt-get clean
   - sudo apt-get autoremove
   - free -m
