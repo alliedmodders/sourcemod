@@ -40,9 +40,7 @@ before_script:
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
   - alias git="sync && git"
   - sudo sync
-  - sudo su -
-  - echo 3 > /proc/sys/vm/drop_caches
-  - exit
+  - sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
   - free -m
   - df -h
   - CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh && cd $CHECKOUT_DIR
