@@ -24,6 +24,7 @@ install:
   - sudo apt-get autoremove
 before_script:
   - sudo rm -Rf /var/ramfs/*
+  - sudo umount /var/ramfs
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
   - CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh && cd $CHECKOUT_DIR
 script:
