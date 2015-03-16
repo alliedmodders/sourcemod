@@ -5,6 +5,7 @@ trap "exit" INT
 
 ismac=0
 iswin=0
+isci=0
 
 archive_ext=tar.gz
 decomp="tar zxf"
@@ -16,6 +17,11 @@ elif [ `uname` != "Linux" ] && [ -n "${COMSPEC:+1}" ]; then
   archive_ext=zip
   decomp=unzip
 fi
+
+if [-n "${TRAVIS+1}" -o -n "${CONTINUOUS_INTEGRATION+1}"]; then
+ isci = 1
+fi
+
 
 if [ ! -d "sourcemod" ]; then
   if [ ! -d "sourcemod-1.5" ]; then
@@ -77,16 +83,20 @@ repo="https://github.com/alliedmodders/metamod-source"
 origin=
 checkout
 
-sdks=( csgo hl2dm nucleardawn l4d2 dods l4d css tf2 insurgency sdk2013 dota )
+if [$isci -eq 0]; then
+  sdks=( csgo hl2dm nucleardawn l4d2 dods l4d css tf2 insurgency sdk2013 dota )
 
-if [ $ismac -eq 0 ]; then
-  # Add these SDKs for Windows or Linux
-  sdks+=( orangebox blade episode1 )
+  if [ $ismac -eq 0 ]; then
+    # Add these SDKs for Windows or Linux
+    sdks+=( orangebox blade episode1 )
 
-  # Add more SDKs for Windows only
-  if [ $iswin -eq 1 ]; then
-    sdks+=( darkm swarm bgt eye contagion )
+    # Add more SDKs for Windows only
+    if [ $iswin -eq 1 ]; then
+      sdks+=( darkm swarm bgt eye contagion )
+    fi
   fi
+else
+  sdks=( episode1,tf2,l4d2,csgo,dota )
 fi
 
 # Check out a local copy as a proxy.
