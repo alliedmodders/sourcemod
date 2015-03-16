@@ -1,5 +1,0 @@
-(1) : error 141: natives, forwards, and public functions cannot return arrays
-(2) : error 141: natives, forwards, and public functions cannot return arrays
-(3) : error 143: new-style declarations should not have "new"
-(5) : error 121: cannot specify array dimensions on both type and name
-(11) : error 180: function return type differs from prototype. expected 'void', but got 'int'

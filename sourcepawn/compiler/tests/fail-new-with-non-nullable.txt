@@ -1,1 +1,0 @@
-(9) : error 171: cannot use 'new' with non-object-like methodmap 'Handle'

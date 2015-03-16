@@ -1,3 +1,0 @@
-public OnPluginStart() {
-	return this;
-}

@@ -1,1 +1,0 @@
-cannot use delete, methodmap Handle has no destructor
