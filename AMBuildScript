@@ -499,17 +499,16 @@ if SM.use_auto_versioning():
   )
 
 # Build SourcePawn externally.
-with builder.Context('sourcepawn') as context:
-  SourcePawn = builder.RunScript('sourcepawn/AMBuildScript', {})
-  SP = SourcePawn(
-    root = SM,
-    amtl = os.path.join(builder.sourcePath, 'public', 'amtl'),
-  )
-  SP.BuildCore()
-  SM.spcomp = SP.spcomp
-  SM.binaries += [
-    SP.libsourcepawn
-  ]
+SourcePawn = builder.RunScript('sourcepawn/AMBuildScript', {})
+SP = SourcePawn(
+  root = SM,
+  amtl = os.path.join(builder.sourcePath, 'public', 'amtl'),
+)
+SP.BuildCore()
+SM.spcomp = SP.spcomp
+SM.binaries += [
+  SP.libsourcepawn
+]
 
 BuildScripts = [
   'loader/AMBuilder',
