@@ -60,6 +60,7 @@ fi
 checkout ()
 {
   free -m
+  du -sh /tmp/*
   ps aux --sort -rss
   if [ ! -d "$name" ]; then
     git clone --shared $repo -b $branch $name
