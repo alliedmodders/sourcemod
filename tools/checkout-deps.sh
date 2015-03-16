@@ -18,7 +18,7 @@ elif [ `uname` != "Linux" ] && [ -n "${COMSPEC:+1}" ]; then
   decomp=unzip
 fi
 
-if [-n "${TRAVIS+1}" -o -n "${CONTINUOUS_INTEGRATION+1}"]; then
+if [ -n "${TRAVIS+1}" -o -n "${CONTINUOUS_INTEGRATION+1}" ]; then
  isci = 1
 fi
 
@@ -83,7 +83,7 @@ repo="https://github.com/alliedmodders/metamod-source"
 origin=
 checkout
 
-if [$isci -eq 0]; then
+if [ $isci -eq 0 ]; then
   sdks=( csgo hl2dm nucleardawn l4d2 dods l4d css tf2 insurgency sdk2013 dota )
 
   if [ $ismac -eq 0 ]; then
