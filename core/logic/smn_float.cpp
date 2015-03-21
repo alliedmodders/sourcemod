@@ -336,7 +336,7 @@ static cell_t sm_AddVariable(IPluginContext *pCtx, const cell_t *params)
 		pCtx->ReportError("Variable %s already exists... Sorry.", var);
 		return 0;
 	}
-	else if (!funcs.insert(var))
+	else if (!funcs.insert(var, func))
 		pCtx->ReportError("Unable to insert variable %s.", var);
 }
 
@@ -377,7 +377,7 @@ inline void Operate(float &sum, float v2, Operators &_operator)
 	_operator = Operator_None;
 }
 
-inline void OperateOnString(float &sum, string &sValue, Operators &_operator)
+inline void OperateOnString(float &sum, std::string &sValue, Operators &_operator)
 {
 	if (sValue.length() == 0)
 		return;
@@ -478,7 +478,7 @@ static cell_t sm_ParseFormula(IPluginContext *pCtx, const cell_t *params)
 			sValue.append((formula + i), 1);
 			break;
 		default:
-			char variable = *(formula + i);
+			const char* variable = &(*(formula + i));
 			IPluginFunction *vFunc;
 			if (!funcs.retrieve(variable, &func))
 			{
