@@ -311,13 +311,12 @@ public:
 
 	void OnPluginDestroyed(IPlugin *plugin)
 	{
-		size_t i = 0;
-		while (i < funcs.length)
+		StringHashMap<IPluginFunction*>::iterator iter = funcs.iter();
+		while (!iter.empty())
 		{
-			if (plugin->GetRuntime() == funcs[i]->GetParentRuntime())
-				funcs.remove(i);
-			else
-				i++;
+			if (plugin->GetRuntime() == iter->value->GetParentRuntime())
+				iter.erase();
+			iter.next();
 		}
 	}
 };
@@ -377,7 +376,7 @@ inline void Operate(float &sum, float v2, Operators &_operator)
 	_operator = Operator_None;
 }
 
-inline void OperateOnString(float &sum, std::string &sValue, Operators &_operator)
+inline void OperateOnString(float &sum, std::String &sValue, Operators &_operator)
 {
 	if (sValue.length() == 0)
 		return;
@@ -408,7 +407,7 @@ static cell_t sm_ParseFormula(IPluginContext *pCtx, const cell_t *params)
 	sum.resize(1);
 	ke::Vector<Operators> _operator;
 	_operator.resize(1);
-	std::string sValue = "";
+	std::String sValue = "";
 	pCtx->LocalToString(params[1], &formula);
 	IPluginFunction *func = pCtx->GetFunctionById(static_cast<funcid_t>(params[2]));
 	if (!func)
@@ -483,8 +482,8 @@ static cell_t sm_ParseFormula(IPluginContext *pCtx, const cell_t *params)
 			if (!funcs.retrieve(variable, &func))
 			{
 				char trans[2048];
-				void* ptr = { new string(variable) };
-				phrases->FormatString(trans, sizeof(trans), "Unknown Variable", ptr, 1, nullptr, nullptr);
+				void* ptr = { new std::String(variable) };
+				phrases->FormatString(trans, sizeof(trans), "Unknown Variable", &ptr, 1, nullptr, nullptr);
 				func->PushString(trans);
 				func->Invoke();
 				delete[] ptr;
@@ -500,7 +499,7 @@ static cell_t sm_ParseFormula(IPluginContext *pCtx, const cell_t *params)
 				{
 					char trans[2048];
 					void* ptr = {};
-					phrases->FormatString(trans, sizeof(trans), "Unknown Error", ptr, 0, nullptr, nullptr);
+					phrases->FormatString(trans, sizeof(trans), "Unknown Error", &ptr, 0, nullptr, nullptr);
 					func->PushString(trans);
 					func->Invoke();
 					return 0;
