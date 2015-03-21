@@ -479,7 +479,8 @@ static cell_t sm_ParseFormula(IPluginContext *pCtx, const cell_t *params)
 			sValue.append((formula + i), 1);
 			break;
 		default:
-			const char* variable = &(*(formula + i));
+			char variable[2];
+			g_pSM->Format(var, sizeof(var), "%c", *(formula + i));
 			IPluginFunction *vFunc;
 			if (!funcs.retrieve(variable, &func))
 			{
