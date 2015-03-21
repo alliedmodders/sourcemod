@@ -327,8 +327,8 @@ static cell_t sm_AddVariable(IPluginContext *pCtx, const cell_t *params)
 {
 	char *var;
 	pCtx->LocalToString(params[1], &var);
-	if (strlen(var) != 2)
-		pCtx->ReportError("Variable %s is too long(expected size of 2, got %i)", var, strlen(var));
+	if (strlen(var) != 1)
+		pCtx->ReportError("Variable %s is too long(expected size of 1, got %i)", var, strlen(var));
 	IPluginFunction *func = pCtx->GetFunctionById(static_cast<funcid_t>(params[2]));
 	if (!func)
 		pCtx->ReportError("Unable to find function.");
