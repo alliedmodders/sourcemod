@@ -294,6 +294,34 @@ static cell_t sm_ArcTangent2(IPluginContext *pCtx, const cell_t *params)
 
 StringHashMap<IPluginFunction*> funcs;
 
+class FunctionValidator :
+	public SMGlobalClass,
+	public IPluginsListener
+{
+public:
+	void OnSourceModAllInitialized()
+	{
+		pluginsys->AddPluginsListener(this);
+	}
+
+	void OnSourceModShutdown()
+	{
+		pluginsys->RemovePluginsListener(this);
+	}
+
+	void OnPluginDestroyed(IPlugin *plugin)
+	{
+		size_t i = 0;
+		while (i < funcs.length)
+		{
+			if (plugin->GetRuntime() == funcs[i]->GetParentRuntime())
+				funcs.remove(i);
+			else
+				i++;
+		}
+	}
+};
+
 static cell_t sm_AddVariable(IPluginContext *pCtx, const cell_t *params)
 {
 	char *var;
@@ -305,14 +333,8 @@ static cell_t sm_AddVariable(IPluginContext *pCtx, const cell_t *params)
 		pCtx->ReportError("Unable to find function.");
 	if (funcs.contains(var))
 	{
-		IPluginFunction* eFunc;
-		funcs.retrieve(var, &eFunc);
-		if (eFunc->IsRunnable())
-			pCtx->ReportError("Variable %s already exists... Sorry.", var);
-		else if (!funcs.replace(var, func) || funcs.remove(var)))
-			pCtx->ReportError("Unable to replace or remove dead variable %s!", var);
-		else
-			return 0;
+		pCtx->ReportError("Variable %s already exists... Sorry.", var);
+		return 0;
 	}
 	else if (!funcs.insert(var))
 		pCtx->ReportError("Unable to insert variable %s.", var);
@@ -462,13 +484,13 @@ static cell_t sm_ParseFormula(IPluginContext *pCtx, const cell_t *params)
 			{
 				char trans[2048];
 				void* ptr = { new string(variable) };
-				phrases->FormatString(trans, sizeof(trans), "unknown variable", ptr, 1, nullptr, nullptr);
+				phrases->FormatString(trans, sizeof(trans), "Unknown Variable", ptr, 1, nullptr, nullptr);
 				func->PushString(trans);
 				func->Invoke();
 				delete[] ptr;
 				return 0;
 			}
-			else if (vFunc->IsRunnable())
+			else
 			{
 				cell_t result;
 				vFunc->PushString(variable);
@@ -478,21 +500,11 @@ static cell_t sm_ParseFormula(IPluginContext *pCtx, const cell_t *params)
 				{
 					char trans[2048];
 					void* ptr = {};
-					phrases->FormatString(trans, sizeof(trans), "unknown error", ptr, 0, nullptr, nullptr);
+					phrases->FormatString(trans, sizeof(trans), "Unknown Error", ptr, 0, nullptr, nullptr);
 					func->PushString(trans);
 					func->Invoke();
 					return 0;
 				}
-			}
-			else
-			{
-				char trans[2048];
-				void* ptr = { new string(variable) };
-				phrases->FormatString(trans, sizeof(trans), "unknown variable", ptr, 1, nullptr, nullptr);
-				func->PushString(trans);
-				func->Invoke();
-				delete[] ptr;
-				return 0;
 			}
 		}
 	}
