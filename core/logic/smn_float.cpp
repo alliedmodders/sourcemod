@@ -30,7 +30,7 @@
  */
 
 #include <math.h>
-#include <string.h>
+#include <string>
 #include <stdlib.h>
 #include "common_logic.h"
 #include "MersenneTwister.h"
@@ -338,6 +338,7 @@ static cell_t sm_AddVariable(IPluginContext *pCtx, const cell_t *params)
 	}
 	else if (!funcs.insert(var, func))
 		pCtx->ReportError("Unable to insert variable %s.", var);
+	return 0;
 }
 
 enum Operators {
@@ -377,7 +378,7 @@ inline void Operate(float &sum, float v2, Operators &_operator)
 	_operator = Operator_None;
 }
 
-inline void OperateOnString(float &sum, std::String &sValue, Operators &_operator)
+inline void OperateOnString(float &sum, std::string &sValue, Operators &_operator)
 {
 	if (sValue.length() == 0)
 		return;
@@ -408,7 +409,7 @@ static cell_t sm_ParseFormula(IPluginContext *pCtx, const cell_t *params)
 	sum.resize(1);
 	ke::Vector<Operators> _operator;
 	_operator.resize(1);
-	std::String sValue = "";
+	std::string sValue = "";
 	pCtx->LocalToString(params[1], &formula);
 	IPluginFunction *func = pCtx->GetFunctionById(static_cast<funcid_t>(params[2]));
 	if (!func)
@@ -483,11 +484,12 @@ static cell_t sm_ParseFormula(IPluginContext *pCtx, const cell_t *params)
 			if (!funcs.retrieve(variable, &func))
 			{
 				char trans[2048];
-				void* ptr = { new std::String(variable) };
+				std::string* str = new std::String(variable);
+				void* ptr = { str };
 				phrases->FormatString(trans, sizeof(trans), "Unknown Variable", &ptr, 1, nullptr, nullptr);
 				func->PushString(trans);
 				func->Invoke();
-				delete[] ptr;
+				delete str;
 				return 0;
 			}
 			else
