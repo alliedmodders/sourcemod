@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include "common_logic.h"
 #include "MersenneTwister.h"
+#include <ISourceMod.h>
 #include <IPluginSys.h>
 #include <ITranslator.h>
 #include <am-utility.h>
@@ -480,12 +481,12 @@ static cell_t sm_ParseFormula(IPluginContext *pCtx, const cell_t *params)
 			break;
 		default:
 			char variable[2];
-			g_pSM->Format(var, sizeof(var), "%c", *(formula + i));
+			g_pSM->Format(variable, sizeof(variable), "%c", *(formula + i));
 			IPluginFunction *vFunc;
 			if (!funcs.retrieve(variable, &func))
 			{
 				char trans[2048];
-				std::string* str = new std::String(variable);
+				std::string* str = new std::string(variable);
 				void* ptr = { str };
 				phrases->FormatString(trans, sizeof(trans), "Unknown Variable", &ptr, 1, nullptr, nullptr);
 				func->PushString(trans);
