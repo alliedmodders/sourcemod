@@ -650,6 +650,8 @@ REGISTER_NATIVES(floatnatives)
 	{"ArcCosine",		sm_ArcCosine},
 	{"ArcSine",			sm_ArcSine},
 	{"ArcTangent2",		sm_ArcTangent2},
+	{"AddVariable",		sm_AddVariable},
+	{"ParseFormula",	sm_ParseFormula},
 	{"GetURandomInt",	GetURandomInt},
 	{"GetURandomFloat",	GetURandomFloat},
 	{"SetURandomSeed",	SetURandomSeed},
