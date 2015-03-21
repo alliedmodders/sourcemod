@@ -91,7 +91,7 @@
 	
 	"Unknown Error"
 	{
-		"en"			"Unknown error occurred parsing formula"	
+		"en"			"Unknown error occurred while parsing formula"	
 	}
 	
 	/* This is a special "pass-thru" translation */

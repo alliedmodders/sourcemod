@@ -316,7 +316,8 @@ public:
 		{
 			if (plugin->GetRuntime() == iter->value->GetParentRuntime())
 				iter.erase();
-			iter.next();
+			else
+				iter.next();
 		}
 	}
 };
@@ -393,7 +394,7 @@ IPhraseCollection *GetPhrases(IPluginContext *pCtx)
 		IPluginContext *ctx = plugin->GetBaseContext();
 		if (!ctx)
 			return nullptr;
-		else if (ctx == pCtx)
+		if (ctx == pCtx)
 			return plugin->GetPhrases();
 		iter->NextPlugin();
 	}
