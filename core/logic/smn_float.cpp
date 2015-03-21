@@ -400,6 +400,7 @@ IPhraseCollection *GetPhrases(IPluginContext *pCtx)
 			return plugin->GetPhrases();
 		iter->NextPlugin();
 	}
+	return nullptr;
 }
 
 static cell_t sm_ParseFormula(IPluginContext *pCtx, const cell_t *params)
@@ -482,7 +483,7 @@ static cell_t sm_ParseFormula(IPluginContext *pCtx, const cell_t *params)
 		default:
 			char variable[2];
 			g_pSM->Format(variable, sizeof(variable), "%c", *(formula + i));
-			IPluginFunction *vFunc;
+			IPluginFunction *vFunc = nullptr;
 			if (!funcs.retrieve(variable, &func))
 			{
 				char trans[2048];
