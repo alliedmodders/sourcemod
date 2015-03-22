@@ -333,7 +333,7 @@ native ActivateEntity(entity);
 native SetClientInfo(client, const String:key[], const String:value[]);
 
 /**
- * Something
+ * Changes a client's name.
  *
  * @param client		Player's index.
  * @param name			New name.
