@@ -619,7 +619,7 @@ static cell_t sm_DirExists(IPluginContext *pContext, const cell_t *params)
 
 	if (!name[0])
 	{
-		return pContext->ThrowNativeError("Invalid path. An empty path string is not valid, use "." to refer to the current working directory.");
+		return pContext->ThrowNativeError("Invalid path. An empty path string is not valid, use \".\" to refer to the current working directory.");
 	}
 
 	if (params[0] >= 2 && params[2] == 1)
