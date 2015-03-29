@@ -177,7 +177,7 @@ DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, bDrop
 	g_pCSWeaponDropForward->Execute(&result);
 
 
-	if (result >= Pl_Continue)
+	if (result == Pl_Continue)
 	{
 #if SOURCE_ENGINE == SE_CSGO
 		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, vec, unknown);

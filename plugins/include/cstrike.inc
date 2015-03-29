@@ -144,7 +144,7 @@ forward Action:CS_OnBuyCommand(client, const String:weapon[]);
 /**
  * Called when CSWeaponDrop is called
  * Return Plugin_Continue to allow the call or return a
- * higher action to deny.
+ * higher action to block.
  *
  * @param client	Client index
  * @param weaponIndex	Weapon index
