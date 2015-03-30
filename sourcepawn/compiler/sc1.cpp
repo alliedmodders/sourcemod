@@ -6474,7 +6474,20 @@ static int testsymbols(symbol *root,int level,int testlabs,int testconst)
   int entry=FALSE;
 
   symbol *sym=root->next;
-  while (sym!=NULL && sym->compound>=level) {
+  symbol *parent;
+  while (sym!=NULL) {
+    if (sym->compound < level) {
+      parent = sym->parent;
+      if (parent == NULL || (parent->ident != iARRAY && parent->ident != iREFARRAY))
+        break;
+      /* This is one dimension of a multidimensional array. Find the top symbol. */
+      while (parent->parent != NULL && (parent->parent->ident == iARRAY || parent->parent->ident == iREFARRAY)) {
+        parent = parent->parent;
+      }
+      /* Only the top symbol gets the compound level set. */
+      if (parent->compound < level)
+        break;
+    }
     switch (sym->ident) {
     case iLABEL:
       if (testlabs) {
