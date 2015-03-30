@@ -3478,10 +3478,9 @@ static int reparse_new_decl(declinfo_t *decl, int flags)
     //
     // Reset the fact that we saw an array.
     decl->type.numdim = 0;
-    decl->type.size = 0;
     decl->type.enumroot = NULL;
     decl->type.ident = iVARIABLE;
-    decl->type.size = 0;
+    decl->type.size = 1;
     decl->type.has_postdims = false;
     if (matchtoken('['))
       parse_old_array_dims(decl, flags);
