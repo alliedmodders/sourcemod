@@ -238,6 +238,17 @@
 				"mac"		"58"
 			}
 			/**
+			 * CBaseClient::SetName(char  const*);
+			 * Linux offset straight from VTable dump.
+			 * Has string "(%d)%-0.*s"
+			 */
+			"SetClientName"
+			{
+				"windows"	"17"
+				"linux"		"57"
+				"mac"		"57"
+			}
+			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
 			 * Find CBaseClient::UpdateUserSettings (strings "net_maxroutable", "cl_updaterate" etc) and the offset is set to 0 near the end.
 			 * Linux: 	mov     byte ptr [esi+98h], 0

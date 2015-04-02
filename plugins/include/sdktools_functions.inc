@@ -333,6 +333,15 @@ native ActivateEntity(entity);
 native SetClientInfo(client, const String:key[], const String:value[]);
 
 /**
+ * Changes a client's name.
+ *
+ * @param client		Player's index.
+ * @param name			New name.
+ * @error               Invalid client index, or client not connected.
+ */
+native void SetClientName(int client, const char[] name);
+
+/**
  * Gives ammo of a certain type to a player.
  * This natives obeys the maximum amount of ammo a player can carry per ammo type.
  *

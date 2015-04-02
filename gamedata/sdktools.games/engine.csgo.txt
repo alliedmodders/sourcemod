@@ -220,6 +220,17 @@
 			"SetUserCvar"
 			{
 				/* Not 100% sure on this, why would windows change and not linux - TEST ME */
+				"windows"	"28"
+				"linux"		"65"
+				"mac"		"65"
+			}
+			/**
+			 * CBaseClient::SetName(char  const*);
+			 * Linux offset straight from VTable dump.
+			 * Has string "(%d)%-0.*s"
+			 */
+			"SetClientName"
+			{
 				"windows"	"27"
 				"linux"		"64"
 				"mac"		"64"

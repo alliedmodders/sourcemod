@@ -224,6 +224,15 @@
 			{
 				"windows"	"17"
 			}
+			
+			/**
+			 * CBaseClient::SetName(char  const*);
+			 * Has string "(%d)%-0.*s"
+			 */
+			"SetClientName"
+			{
+				"windows"	"16"
+			}
 
 			"UpdateUserSettings"
 			{
