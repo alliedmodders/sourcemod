@@ -118,7 +118,7 @@ if [ $? -eq 1 ]; then
     python setup.py install
   else
     python setup.py build
-    echo "About to install AMBuild - press Ctrl+C to abort, otherwise enter your password for sudo."
-    sudo python setup.py install
+    echo "Installing AMBuild at the user level. Location can be: ~/.local/bin"
+    python setup.py install --user
   fi
 fi
