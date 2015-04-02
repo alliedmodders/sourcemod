@@ -30,13 +30,17 @@
  */
 
 #include <math.h>
-#include <string.h>
+#include <string>
 #include <stdlib.h>
 #include "common_logic.h"
 #include "MersenneTwister.h"
+#include <ISourceMod.h>
 #include <IPluginSys.h>
+#include <ITranslator.h>
 #include <am-utility.h>
 #include <am-float.h>
+#include <am-vector.h>
+#include <sm_stringhashmap.h>
 
 /****************************************
 *                                       *
@@ -289,6 +293,231 @@ static cell_t sm_ArcTangent2(IPluginContext *pCtx, const cell_t *params)
 	return sp_ftoc(val1);
 }
 
+StringHashMap<IPluginFunction*> funcs;
+
+class FunctionValidator :
+	public SMGlobalClass,
+	public IPluginsListener
+{
+public:
+	void OnSourceModAllInitialized()
+	{
+		pluginsys->AddPluginsListener(this);
+	}
+
+	void OnSourceModShutdown()
+	{
+		pluginsys->RemovePluginsListener(this);
+	}
+
+	void OnPluginDestroyed(IPlugin *plugin)
+	{
+		StringHashMap<IPluginFunction*>::iterator iter = funcs.iter();
+		while (!iter.empty())
+		{
+			if (plugin->GetRuntime() == iter->value->GetParentRuntime())
+				iter.erase();
+			else
+				iter.next();
+		}
+	}
+};
+
+static cell_t sm_AddVariable(IPluginContext *pCtx, const cell_t *params)
+{
+	char *var;
+	pCtx->LocalToString(params[1], &var);
+	if (strlen(var) != 1)
+		pCtx->ReportError("Variable %s is too long(expected size of 1, got %i)", var, strlen(var));
+	IPluginFunction *func = pCtx->GetFunctionById(static_cast<funcid_t>(params[2]));
+	if (!func)
+		pCtx->ReportError("Unable to find function.");
+	if (funcs.contains(var))
+	{
+		pCtx->ReportError("Variable %s already exists... Sorry.", var);
+		return 0;
+	}
+	else if (!funcs.insert(var, func))
+		pCtx->ReportError("Unable to insert variable %s.", var);
+	return 0;
+}
+
+enum Operators {
+	Operator_None = -1,
+	Operator_Add,
+	Operator_Subtract,
+	Operator_Multiply,
+	Operator_Divide,
+	Operator_Exponent,
+};
+
+inline void Operate(float &sum, float v2, Operators &_operator)
+{
+	switch (_operator)
+	{
+	case Operator_Add:
+		sum = sum + v2;
+		break;
+	case Operator_Subtract:
+		sum = sum - v2;
+		break;
+	case Operator_Multiply:
+		sum = sum * v2;
+		break;
+	case Operator_Divide:
+		if (fabs(v2) < 0.000001)
+			return;
+		sum = sum / v2;
+		break;
+	case Operator_Exponent:
+		sum = pow(sum, v2);
+		break;
+	default:
+		sum = v2;
+		break;
+	}
+	_operator = Operator_None;
+}
+
+inline void OperateOnString(float &sum, std::string &sValue, Operators &_operator)
+{
+	if (sValue.length() == 0)
+		return;
+	Operate(sum, stof(sValue), _operator);
+	sValue = "";
+}
+
+IPhraseCollection *GetPhrases(IPluginContext *pCtx)
+{
+	IPluginIterator *iter = pluginsys->GetPluginIterator();
+	while (iter->MorePlugins())
+	{
+		IPlugin *plugin = iter->GetPlugin();
+		IPluginContext *ctx = plugin->GetBaseContext();
+		if (!ctx)
+			return nullptr;
+		if (ctx == pCtx)
+			return plugin->GetPhrases();
+		iter->NextPlugin();
+	}
+	return nullptr;
+}
+
+static cell_t sm_ParseFormula(IPluginContext *pCtx, const cell_t *params)
+{
+	char *formula;
+	size_t bracket = 0;
+	ke::Vector<float> sum;
+	sum.resize(1);
+	ke::Vector<Operators> _operator;
+	_operator.resize(1);
+	std::string sValue = "";
+	pCtx->LocalToString(params[1], &formula);
+	IPluginFunction *func = pCtx->GetFunctionById(static_cast<funcid_t>(params[2]));
+	if (!func)
+		pCtx->ReportError("Unable to find function.");
+	IPhraseCollection *phrases = GetPhrases(pCtx);
+	if (!phrases)
+		pCtx->ReportError("Unable to find phrases.");
+	for (size_t i = 0; i <= strlen(formula); i++)
+	{
+		switch (*(formula + i))
+		{
+		case '(':
+			++bracket;
+			if (bracket + 1 > sum.length())
+			{
+				assert(sum.resize(bracket + 1));
+				assert(_operator.resize(bracket + 1));
+			}
+			sum[bracket] = 0.0f;
+			_operator[bracket] = Operator_None;
+			break;
+		case ')':
+			OperateOnString(sum[bracket], sValue, _operator[bracket]);
+			assert(--bracket >= 0);
+			sum[bracket] = sum[bracket + 1];
+			break;
+		case '\0':
+			if (sValue.length() > 0)
+				OperateOnString(sum[bracket], sValue, _operator[bracket]);
+			break;
+		case '+':
+		case '-':
+		case '*':
+		case '/':
+		case '^':
+			OperateOnString(sum[bracket], sValue, _operator[bracket]);
+			switch (*(formula + i))
+			{
+			case '+':
+				_operator[bracket] = Operator_Add;
+				break;
+			case '-':
+				_operator[bracket] = Operator_Subtract;
+				break;
+			case '*':
+				_operator[bracket] = Operator_Multiply;
+				break;
+			case '/':
+				_operator[bracket] = Operator_Divide;
+				break;
+			case '^':
+				_operator[bracket] = Operator_Exponent;
+				break;
+			}
+			break;
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case '.':
+			sValue.append((formula + i), 1);
+			break;
+		default:
+			char variable[2];
+			g_pSM->Format(variable, sizeof(variable), "%c", *(formula + i));
+			IPluginFunction *vFunc = nullptr;
+			if (!funcs.retrieve(variable, &func))
+			{
+				char trans[2048];
+				std::string* str = new std::string(variable);
+				void* ptr = { str };
+				phrases->FormatString(trans, sizeof(trans), "Unknown Variable", &ptr, 1, nullptr, nullptr);
+				func->PushString(trans);
+				func->Invoke();
+				delete str;
+				return 0;
+			}
+			else
+			{
+				cell_t result;
+				vFunc->PushString(variable);
+				if (!vFunc->Invoke(&result))
+					Operate(sum[bracket], sp_ctof(result), _operator[bracket]);
+				else
+				{
+					char trans[2048];
+					void* ptr = {};
+					phrases->FormatString(trans, sizeof(trans), "Unknown Error", &ptr, 0, nullptr, nullptr);
+					func->PushString(trans);
+					func->Invoke();
+					return 0;
+				}
+			}
+		}
+	}
+	if (sValue.length() > 0)
+		sum[0] = stof(sValue);
+	return sp_ftoc(sum[0]);
+}
+
 #if 0
 static cell_t sm_FloatRound(IPluginContext *pCtx, const cell_t *params)
 {
@@ -421,6 +650,8 @@ REGISTER_NATIVES(floatnatives)
 	{"ArcCosine",		sm_ArcCosine},
 	{"ArcSine",			sm_ArcSine},
 	{"ArcTangent2",		sm_ArcTangent2},
+	{"AddVariable",		sm_AddVariable},
+	{"ParseFormula",	sm_ParseFormula},
 	{"GetURandomInt",	GetURandomInt},
 	{"GetURandomFloat",	GetURandomFloat},
 	{"SetURandomSeed",	SetURandomSeed},

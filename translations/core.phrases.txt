@@ -83,6 +83,17 @@
 		"en"			"Your name is reserved by SourceMod; set your password to use it."
 	}
 	
+	"Unknown Variable"
+	{
+		"#format"		"{1:s}"
+		"en"			"Unknown variable {1}"	
+	}
+	
+	"Unknown Error"
+	{
+		"en"			"Unknown error occurred while parsing formula"	
+	}
+	
 	/* This is a special "pass-thru" translation */
 	"_s"
 	{
