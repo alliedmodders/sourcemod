@@ -50,6 +50,9 @@
  */
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
+#if SOURCE_ENGINE == SE_CSS
+SH_DECL_HOOK1_void_vafmt(IVEngineServer, ClientCommand, SH_NOATTRIB, 0, edict_t *);
+#endif
 
 SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
 IServerGameEnts *gameents = NULL;
@@ -261,10 +264,22 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 #endif
 	GET_V_IFACE_ANY(GetEngineFactory, soundemitterbase, ISoundEmitterSystemBase, SOUNDEMITTERSYSTEM_INTERFACE_VERSION);
 
+#if SOURCE_ENGINE == SE_CSS
+	SH_ADD_HOOK(IVEngineServer, ClientCommand, engine, SH_MEMBER(this, &SDKTools::OnSendClientCommand), false);
+#endif
+
 	gpGlobals = ismm->GetCGlobals();
 	enginePatch = SH_GET_CALLCLASS(engine);
 	enginesoundPatch = SH_GET_CALLCLASS(engsound);
 
+	return true;
+}
+
+bool SDKTools::SDK_OnMetamodUnload(char *error, size_t maxlen)
+{
+#if SOURCE_ENGINE == SE_CSS
+	SH_REMOVE_HOOK(IVEngineServer, ClientCommand, engine, SH_MEMBER(this, &SDKTools::OnSendClientCommand), false);
+#endif
 	return true;
 }
 
@@ -455,6 +470,21 @@ void SDKTools::OnClientPutInServer(int client)
 {
 	g_Hooks.OnClientPutInServer(client);
 }
+
+#if SOURCE_ENGINE == SE_CSS
+void SDKTools::OnSendClientCommand(edict_t *pPlayer, const char *szFormat)
+{
+	// Due to legacy code, CS:S still sends "name \"newname\"" to the client after a
+	// name change. The engine has a change hook on name causing it to reset to the 
+	// player's Steam name. This quashes that to make SetClientName work properly.
+	if (!strncmp(szFormat, "name ", 5))
+	{
+		RETURN_META(MRES_SUPERCEDE);
+	}
+
+	RETURN_META(MRES_IGNORED);
+}
+#endif
 
 class SDKTools_API : public ISDKTools
 {
