@@ -260,6 +260,15 @@ native SetTeamScore(index, value);
 native GetTeamClientCount(index);
 
 /**
+ * Returns the entity index of a team.
+ *
+ * @param teamIndex		Team index.
+ * @return				Entity index of team.
+ * @error				Invalid team index.
+ */
+native int GetTeamEntity(int teamIndex);
+
+/**
  * Sets the model to a given entity.
  *
  * @param entity			Entity index.
