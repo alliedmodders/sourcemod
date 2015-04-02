@@ -309,7 +309,7 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 	
 	if (!path[0])
 	{
-		return pContext->ThrowNativeError("Invalid file path");
+		return pContext->ThrowNativeError("Invalid path. An empty path string is not valid, use \".\" to refer to the current working directory.");
 	}
 	
 	Handle_t handle = 0;
@@ -616,7 +616,12 @@ static cell_t sm_DirExists(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
 	pContext->LocalToString(params[1], &name);
-	
+
+	if (!name[0])
+	{
+		return pContext->ThrowNativeError("Invalid path. An empty path string is not valid, use \".\" to refer to the current working directory.");
+	}
+
 	if (params[0] >= 2 && params[2] == 1)
 	{
 		char *pathID;
