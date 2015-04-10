@@ -35,6 +35,11 @@
 #endif
 #define _float_included
 
+#include <float>
+#include <handles>
+#include <adt_array>
+#include <logging>
+
 #if !defined __sourcepawn2__
 /**
  * Converts an integer into a floating point value.
@@ -244,7 +249,8 @@ stock int RoundFloat(float value)
 
 #define MAX_COMPLEXITY 2147483647
 
-enum Operators{
+enum Operators
+{
 	Operator_None = 0,
 	Operator_Add,
 	Operator_Subtract,
@@ -268,7 +274,7 @@ typedef OnError = function void(const char[] error);
  * @param value			Value to set if variable matches what you need.
  * @return				True if you got a value for variable, false otherwise.
  */
-typedef OnVariable = function bool (const char variable[1], float &value);
+typedef OnVariable = function bool(const char variable[1], float &value);
 
 stock void Operate(ArrayList sumArray, ArrayList operatorArray, int bracket, float value)
 {
