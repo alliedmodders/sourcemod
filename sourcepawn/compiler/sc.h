@@ -248,6 +248,20 @@ typedef struct value_s {
   char boolresult;      /* boolean result for relational operators */
   cell *arrayidx;       /* last used array indices, for checking self assignment */
 
+  // Returns whether the value can be rematerialized based on static
+  // information, or whether it is the result of an expression.
+  bool canRematerialize() const {
+    switch (ident) {
+      case iVARIABLE:
+      case iCONSTEXPR:
+        return true;
+      case iREFERENCE:
+        return sym->vclass == sLOCAL;
+      default:
+        return false;
+    }
+  }
+
   /* when ident == iACCESSOR */
   struct methodmap_method_s *accessor;
 } value;
@@ -256,6 +270,10 @@ typedef struct value_s {
 typedef struct svalue_s {
   value val;
   int lvalue;
+
+  bool canRematerialize() const {
+    return val.canRematerialize();
+  }
 } svalue;
 
 #define DECLFLAG_ARGUMENT        0x02 // The declaration is for an argument.

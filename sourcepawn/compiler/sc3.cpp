@@ -2662,7 +2662,7 @@ enum {
  *  Generates code to call a function. This routine handles default arguments
  *  and positional as well as named parameters.
  */
-static void callfunction(symbol *sym, const svalue *implicitthis, value *lval_result, int matchparanthesis)
+static void callfunction(symbol *sym, const svalue *aImplicitThis, value *lval_result, int matchparanthesis)
 {
 static long nest_stkusage=0L;
 static int nesting=0;
@@ -2680,7 +2680,7 @@ static int nesting=0;
   symbol *symret;
   cell lexval;
   char *lexstr;
-  int pending_this = (implicitthis ? TRUE : FALSE);
+  bool pending_this = !!aImplicitThis;
 
   assert(sym!=NULL);
   lval_result->ident=iEXPRESSION; /* preset, may be changed later */
@@ -2717,6 +2717,77 @@ static int nesting=0;
     const char *ptr= (sym->documentation!=NULL) ? sym->documentation : "";
     error(234,sym->name,ptr);   /* deprecated (probably a native function) */
   } /* if */
+
+  svalue implicit_this;
+  bool has_complex_this = false;
+  if (aImplicitThis) {
+    implicit_this = *aImplicitThis;
+    has_complex_this = !implicit_this.canRematerialize();
+  }
+
+  // If we have an implicit |this|, and it requires evaluating an expression
+  // to compute, then we have to save PRI across each argument. The reason is
+  // that Pawn will evaluate arguments like so:
+  //
+  //    x[5].z(1, 2)
+  //
+  // Resolves to:
+  //
+  //  begin:
+  //    load.s.pri  x
+  //    add.pri.c   5 * sizeof(cell)
+  //  marked:
+  //    push.pri    ; this
+  //    const.pri 1
+  //    push.pri
+  //    const.pri 2
+  //    push.pri 2
+  //  finished:
+  //    push.c 3    ; argc
+  //
+  // The expressions from "marked" to "finished" are reversed, so that
+  // arguments appear in order. Thus the final sequence is:
+  //
+  //  begin:
+  //    load.s.pri  x
+  //    add.pri.c   5 * sizeof(cell)
+  //  marked:
+  //    const.pri 2
+  //    push.pri 2
+  //    const.pri 1
+  //    push.pri
+  //    push.pri    ; this
+  //  finished:
+  //    push.c 3    ; argc
+  //
+  // To account for this, if |this| requires evaluation, we evaluate it ahead
+  // of time and store it on the stack, so we can extract it again later.
+  // Because there is no opcode to do this, we have to play hot potato like so:
+  //
+  //  begin:
+  //    load.s.pri  x
+  //    add.pri.c   5 * sizeof(cell)
+  //  marked:
+  //    const.pri 2
+  //    pop.alt     ; pop |this|
+  //    push.pri 2
+  //    push.alt    ; re-push |this|
+  //    const.pri 1
+  //    pop.alt     ; pop |this|
+  //    push.pri
+  //    push.alt    ; re-push |this|
+  //  finished:
+  //    push.c 3    ; argc
+  //
+  if (has_complex_this) {
+    // Compute an rvalue of |implicit_this|. Note that if it's an accessor,
+    // this reduces it to an iEXPRESSION. That's ok. We don't touch it
+    // otherwise though, so the type checking logic below basically acts the
+    // same. We are careful to not double-evaluate however.
+    rvalue(&implicit_this.val);
+    pushreg(sPRI);
+    nest_stkusage++;
+  }
 
   /* run through the arguments */
   arg=sym->dim.arglist;
@@ -2788,8 +2859,8 @@ static int nesting=0;
         if (arg[argidx].ident!=0 && arg[argidx].numtags==1)     /* set the expected tag, if any */
           lval.cmptag=arg[argidx].tags[0];
         if (pending_this) {
-          lval = implicitthis->val;
-          lvalue = implicitthis->lvalue;
+          lval = implicit_this.val;
+          lvalue = implicit_this.lvalue;
         } else {
           lvalue = hier14(&lval);
           if (lvalue && lval.ident == iACCESSOR) {
@@ -2801,7 +2872,7 @@ static int nesting=0;
         switch (arg[argidx].ident) {
         case 0:
           /* On the first pass, we donm't have all of the parameter info.
-           * Hpwever, use information must be marked anyway, otherwise vars
+           * However, use information must be marked anyway, otherwise vars
            * declared previously will be omitted in the second psas. See
            * SourceMod bug 4643.
            */
@@ -2810,6 +2881,10 @@ static int nesting=0;
             markusage(lval.sym, uREAD);
           break;
         case iVARARGS:
+          // hier13() should filter non-methodmap functions, and |this| is
+          // always an iVARIABLE.
+          assert(!pending_this);
+
           /* always pass by reference */
           if (lval.ident==iVARIABLE || lval.ident==iREFERENCE) {
             assert(lval.sym!=NULL);
@@ -2851,11 +2926,20 @@ static int nesting=0;
           if (lval.ident==iLABEL || lval.ident==iFUNCTN || lval.ident==iREFFUNC
               || lval.ident==iARRAY || lval.ident==iREFARRAY)
             error(35,argidx+1);   /* argument type mismatch */
-          if (lvalue)
-            rvalue(&lval);        /* get value (direct or indirect) */
+
+          if (lvalue) {
+            // Note: do not load anything if the implicit this was pre-evaluted
+            // for being too complex.
+            if (!(pending_this && has_complex_this))
+              rvalue(&lval);        /* get value (direct or indirect) */
+          }
+
           /* otherwise, the expression result is already in PRI */
           assert(arg[argidx].numtags>0);
-          check_userop(NULL,lval.tag,arg[argidx].tags[0],2,NULL,&lval.tag);
+
+          // Do not allow user operators to transform |this|.
+          if (!pending_this)
+            check_userop(NULL,lval.tag,arg[argidx].tags[0],2,NULL,&lval.tag);
           if (!checktags_string(arg[argidx].tags, arg[argidx].numtags, &lval))
             checktag(arg[argidx].tags, arg[argidx].numtags, lval.tag);
           if (lval.tag!=0)
@@ -2863,6 +2947,10 @@ static int nesting=0;
           argidx++;               /* argument done */
           break;
         case iREFERENCE:
+          // hier13() should filter non-methodmap functions, and |this| is
+          // always an iVARIABLE.
+          assert(!pending_this);
+
           if (!lvalue)
             error(35,argidx+1);   /* argument type mismatch */
           if (lval.sym!=NULL && (lval.sym->usage & uCONST)!=0 && (arg[argidx].usage & uCONST)==0)
@@ -2886,6 +2974,10 @@ static int nesting=0;
             markusage(lval.sym,uWRITTEN);
           break;
         case iREFARRAY:
+          // hier13() should filter non-methodmap functions, and |this| is
+          // always an iVARIABLE.
+          assert(!pending_this);
+
           if (lval.ident!=iARRAY && lval.ident!=iREFARRAY
               && lval.ident!=iARRAYCELL && lval.ident!=iARRAYCHAR)
           {
@@ -2971,19 +3063,31 @@ static int nesting=0;
           argidx++;               /* argument done */
           break;
         } /* switch */
-        pushreg(sPRI);            /* store the function argument on the stack */
-        markexpr(sPARM,NULL,0);   /* mark the end of a sub-expression */
-        nest_stkusage++;
+
+        // If we are processing |this| and it's complex, then it was never
+        // actually evaluated as an argument, so don't push it.
+        if (!(pending_this && has_complex_this)) {
+          // If we have a complex |this|, pop it as ALT, push the evaluated
+          // argument, then push |this| again. This makes sure |this| is
+          // always the last argument.
+          if (has_complex_this) {
+            popreg(sALT);
+            pushreg(sPRI);            /* store the function argument on the stack */
+            pushreg(sALT);
+          } else {
+            pushreg(sPRI);            /* store the function argument on the stack */
+          }
+          markexpr(sPARM,NULL,0);   /* mark the end of a sub-expression */
+          nest_stkusage++;
+        }
       } /* if */
       assert(arglist[argpos]!=ARG_UNHANDLED);
       nargs++;
 
-      /**
-       * We can already have decided it was time to close because of pending_this.
-       * If that's the case, then bail out now.
-       */
+      // We can already have decided it was time to close because of pending_this.
+      // If that's the case, then bail out now.
       if (pending_this && close) {
-        pending_this = FALSE;
+        pending_this = false;
         break;
       }
 
@@ -3002,7 +3106,7 @@ static int nesting=0;
         } /* if */
       } /* if */
 
-      pending_this = FALSE;
+      pending_this = false;
     } while (!close && freading && !matchtoken(tENDEXPR)); /* do */
   } /* if */
   /* check remaining function arguments (they may have default values) */
@@ -3057,6 +3161,7 @@ static int nesting=0;
     arglist[argidx]=ARG_DONE;
   } /* for */
   stgmark(sENDREORDER);         /* mark end of reversed evaluation */
+
   pushval((cell)nargs /* *sizeof(cell)*/ );
   nest_stkusage++;
   ffcall(sym,NULL,nargs);
