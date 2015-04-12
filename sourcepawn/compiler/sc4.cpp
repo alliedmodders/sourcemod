@@ -426,6 +426,16 @@ void rvalue(value *lval)
   } /* if */
 }
 
+// Wrapper that automatically markes lvalues as decayed if they are accessors,
+// since it is illegal to evaluate them twice.
+void rvalue(svalue *sval)
+{
+  int ident = sval->val.ident;
+  rvalue(&sval->val);
+  if (ident == iACCESSOR)
+    sval->lvalue = FALSE;
+}
+
 /* Get the address of a symbol into the primary or alternate register (used
  * for arrays, and for passing arguments by reference).
  */

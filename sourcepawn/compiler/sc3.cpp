@@ -2784,7 +2784,8 @@ static int nesting=0;
     // this reduces it to an iEXPRESSION. That's ok. We don't touch it
     // otherwise though, so the type checking logic below basically acts the
     // same. We are careful to not double-evaluate however.
-    rvalue(&implicit_this.val);
+    if (implicit_this.lvalue)
+      rvalue(&implicit_this);
     pushreg(sPRI);
     nest_stkusage++;
   }

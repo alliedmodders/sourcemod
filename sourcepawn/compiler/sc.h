@@ -733,6 +733,7 @@ void startfunc(char *fname);
 void endfunc(void);
 void alignframe(int numbytes);
 void rvalue(value *lval);
+void rvalue(svalue *sval);
 void address(symbol *ptr,regid reg);
 void store(value *lval);
 void loadreg(cell address,regid reg);
