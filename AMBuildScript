@@ -505,6 +505,8 @@ SP = SourcePawn(
   amtl = os.path.join(builder.sourcePath, 'public', 'amtl'),
 )
 SP.BuildCore()
+SP.BuildVM()
+SP.BuildSpcomp()
 SM.spcomp = SP.spcomp
 SM.binaries += [
   SP.libsourcepawn
