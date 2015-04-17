@@ -50,7 +50,7 @@
  */
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
-#if SOURCE_ENGINE == SE_CSS
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 SH_DECL_HOOK1_void_vafmt(IVEngineServer, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
 
@@ -264,7 +264,7 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 #endif
 	GET_V_IFACE_ANY(GetEngineFactory, soundemitterbase, ISoundEmitterSystemBase, SOUNDEMITTERSYSTEM_INTERFACE_VERSION);
 
-#if SOURCE_ENGINE == SE_CSS
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 	SH_ADD_HOOK(IVEngineServer, ClientCommand, engine, SH_MEMBER(this, &SDKTools::OnSendClientCommand), false);
 #endif
 
@@ -277,7 +277,7 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 
 bool SDKTools::SDK_OnMetamodUnload(char *error, size_t maxlen)
 {
-#if SOURCE_ENGINE == SE_CSS
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 	SH_REMOVE_HOOK(IVEngineServer, ClientCommand, engine, SH_MEMBER(this, &SDKTools::OnSendClientCommand), false);
 #endif
 	return true;
@@ -471,12 +471,13 @@ void SDKTools::OnClientPutInServer(int client)
 	g_Hooks.OnClientPutInServer(client);
 }
 
-#if SOURCE_ENGINE == SE_CSS
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 void SDKTools::OnSendClientCommand(edict_t *pPlayer, const char *szFormat)
 {
-	// Due to legacy code, CS:S still sends "name \"newname\"" to the client after a
-	// name change. The engine has a change hook on name causing it to reset to the 
-	// player's Steam name. This quashes that to make SetClientName work properly.
+	// Due to legacy code, CS:S and CS:GO still sends "name \"newname\"" to the
+	// client after aname change. The engine has a change hook on name causing
+	// it to reset to the player's Steam name. This quashes that to make
+	// SetClientName work properly.
 	if (!strncmp(szFormat, "name ", 5))
 	{
 		RETURN_META(MRES_SUPERCEDE);
