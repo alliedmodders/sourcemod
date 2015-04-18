@@ -42,7 +42,7 @@
  * @param squared	If true, the result will be squared (for optimization).
  * @return			Vector length (magnitude).			
  */
-native Float:GetVectorLength(const Float:vec[3], bool:squared=false);
+native float GetVectorLength(const float vec[3], bool squared=false);
 
 /**
  * Calculates the distance between two vectors.
@@ -52,7 +52,7 @@ native Float:GetVectorLength(const Float:vec[3], bool:squared=false);
  * @param squared	If true, the result will be squared (for optimization).
  * @return			Vector distance.
  */
-native Float:GetVectorDistance(const Float:vec1[3], const Float:vec2[3], bool:squared=false);
+native float GetVectorDistance(const float vec1[3], const float vec2[3], bool squared=false);
 
 /**
  * Calculates the dot product of two vectors.
@@ -61,7 +61,7 @@ native Float:GetVectorDistance(const Float:vec1[3], const Float:vec2[3], bool:sq
  * @param vec2		Second vector.
  * @return			Dot product of the two vectors.
  */
-native Float:GetVectorDotProduct(const Float:vec1[3], const Float:vec2[3]);
+native float GetVectorDotProduct(const float vec1[3], const float vec2[3]);
 
 /**
  * Computes the cross product of two vectors.  Any input array can be the same 
@@ -72,7 +72,7 @@ native Float:GetVectorDotProduct(const Float:vec1[3], const Float:vec2[3]);
  * @param result	Resultant vector.
  * @noreturn
  */
-native GetVectorCrossProduct(const Float:vec1[3], const Float:vec2[3], Float:result[3]);
+native void GetVectorCrossProduct(const float vec1[3], const float vec2[3], float result[3]);
 
 /**
  * Normalizes a vector.  The input array can be the same as the output array.
@@ -81,7 +81,7 @@ native GetVectorCrossProduct(const Float:vec1[3], const Float:vec2[3], Float:res
  * @param result	Resultant vector.
  * @return			Vector length.
  */
-native Float:NormalizeVector(const Float:vec[3], Float:result[3]);
+native float NormalizeVector(const float vec[3], float result[3]);
 
 /**
  * Returns vectors in the direction of an angle.
@@ -92,7 +92,7 @@ native Float:NormalizeVector(const Float:vec[3], Float:result[3]);
  * @param up		Up vector buffer or NULL_VECTOR.
  * @noreturn
  */
-native GetAngleVectors(const Float:angle[3], Float:fwd[3], Float:right[3], Float:up[3]);
+native void GetAngleVectors(const float angle[3], float fwd[3], float right[3], float up[3]);
 
 /**
  * Returns angles from a vector.
@@ -101,7 +101,7 @@ native GetAngleVectors(const Float:angle[3], Float:fwd[3], Float:right[3], Float
  * @param angle		Angle buffer.
  * @noreturn
  */
-native GetVectorAngles(const Float:vec[3], Float:angle[3]);
+native void GetVectorAngles(const float vec[3], float angle[3]);
 
 /**
  * Returns direction vectors from a vector.
@@ -111,7 +111,7 @@ native GetVectorAngles(const Float:vec[3], Float:angle[3]);
  * @param up		Up vector buffer or NULL_VECTOR.
  * @noreturn
  */
-native GetVectorVectors(const Float:vec[3], Float:right[3], Float:up[3]);
+native void GetVectorVectors(const float vec[3], float right[3], float up[3]);
 
 /**
  * Adds two vectors.  It is safe to use either input buffer as an output 
@@ -122,7 +122,7 @@ native GetVectorVectors(const Float:vec[3], Float:right[3], Float:up[3]);
  * @param result	Result buffer.
  * @noreturn
  */
-stock AddVectors(const Float:vec1[3], const Float:vec2[3], Float:result[3])
+stock void AddVectors(const float vec1[3], const float vec2[3], float result[3])
 {
 	result[0] = vec1[0] + vec2[0];
 	result[1] = vec1[1] + vec2[1];
@@ -138,7 +138,7 @@ stock AddVectors(const Float:vec1[3], const Float:vec2[3], Float:result[3])
  * @param result	Result buffer.
  * @noreturn
  */
-stock SubtractVectors(const Float:vec1[3], const Float:vec2[3], Float:result[3])
+stock void SubtractVectors(const float vec1[3], const float vec2[3], float result[3])
 {
 	result[0] = vec1[0] - vec2[0];
 	result[1] = vec1[1] - vec2[1];
@@ -152,7 +152,7 @@ stock SubtractVectors(const Float:vec1[3], const Float:vec2[3], Float:result[3])
  * @param scale		Scale value.
  * @noreturn
  */
-stock ScaleVector(Float:vec[3], Float:scale)
+stock void ScaleVector(float vec[3], float scale)
 {
 	vec[0] *= scale;
 	vec[1] *= scale;
@@ -165,7 +165,7 @@ stock ScaleVector(Float:vec[3], Float:scale)
  * @param vec		Vector.
  * @noreturn
  */
-stock NegateVector(Float:vec[3])
+stock void NegateVector(float vec[3])
 {
 	vec[0] = -vec[0];
 	vec[1] = -vec[1];
@@ -180,7 +180,7 @@ stock NegateVector(Float:vec[3])
  * @param output	Output vector buffer.
  * @noreturn
  */
-stock MakeVectorFromPoints(const Float:pt1[3], const Float:pt2[3], Float:output[3])
+stock void MakeVectorFromPoints(const float pt1[3], const float pt2[3], float output[3])
 {
 	output[0] = pt2[0] - pt1[0];
 	output[1] = pt2[1] - pt1[1];

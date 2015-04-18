@@ -85,7 +85,7 @@
  * @param TrailLength		Trail lenght of the sparks.
  * @noreturn
  */
-stock TE_SetupSparks(const Float:pos[3], const Float:dir[3], Magnitude, TrailLength)
+stock void TE_SetupSparks(const float pos[3], const float dir[3], int Magnitude, int TrailLength)
 {
 	TE_Start("Sparks");
 	TE_WriteVector("m_vecOrigin[0]", pos);
@@ -103,7 +103,7 @@ stock TE_SetupSparks(const Float:pos[3], const Float:dir[3], Magnitude, TrailLen
  * @param FrameRate		Frame rate of the smoke.
  * @noreturn
  */
-stock TE_SetupSmoke(const Float:pos[3], Model, Float:Scale, FrameRate)
+stock void TE_SetupSmoke(const float pos[3], int Model, float Scale, int FrameRate)
 {
 	TE_Start("Smoke");
 	TE_WriteVector("m_vecOrigin", pos);
@@ -121,7 +121,7 @@ stock TE_SetupSmoke(const Float:pos[3], Model, Float:Scale, FrameRate)
  * @param Speed			Dust cloud speed.
  * @noreturn
  */
-stock TE_SetupDust(const Float:pos[3], const Float:dir[3], Float:Size, Float:Speed)
+stock void TE_SetupDust(const float pos[3], const float dir[3], float Size, float Speed)
 {
 	TE_Start("Dust");
 	TE_WriteVector("m_vecOrigin[0]", pos);
@@ -139,7 +139,7 @@ stock TE_SetupDust(const Float:pos[3], const Float:dir[3], Float:Size, Float:Spe
  * @param Type			Muzzle flash type to render (Mod specific).
  * @noreturn
  */
-stock TE_SetupMuzzleFlash(const Float:pos[3], const Float:angles[3], Float:Scale, Type)
+stock void TE_SetupMuzzleFlash(const float pos[3], const float angles[3], float Scale, int Type)
 {
 	TE_Start("MuzzleFlash");
 	TE_WriteVector("m_vecOrigin", pos);
@@ -155,7 +155,7 @@ stock TE_SetupMuzzleFlash(const Float:pos[3], const Float:angles[3], Float:Scale
  * @param dir			Direction of the metal sparks.
  * @noreturn
  */
-stock TE_SetupMetalSparks(const Float:pos[3], const Float:dir[3])
+stock void TE_SetupMetalSparks(const float pos[3], const float dir[3])
 {
 	TE_Start("Metal Sparks");
 	TE_WriteVector("m_vecPos", pos);
@@ -170,7 +170,7 @@ stock TE_SetupMetalSparks(const Float:pos[3], const Float:dir[3])
  * @param Explosive		Makes the effect explosive.
  * @noreturn
  */
-stock TE_SetupEnergySplash(const Float:pos[3], const Float:dir[3], bool:Explosive)
+stock void TE_SetupEnergySplash(const float pos[3], const float dir[3], bool Explosive)
 {
 	TE_Start("Energy Splash");
 	TE_WriteVector("m_vecPos", pos);
@@ -185,7 +185,7 @@ stock TE_SetupEnergySplash(const Float:pos[3], const Float:dir[3], bool:Explosiv
  * @param dir			Directon of the armor ricochet.
  * @noreturn
  */
-stock TE_SetupArmorRicochet(const Float:pos[3], const Float:dir[3])
+stock void TE_SetupArmorRicochet(const float pos[3], const float dir[3])
 {
 	TE_Start("Armor Ricochet");
 	TE_WriteVector("m_vecPos", pos);
@@ -202,7 +202,7 @@ stock TE_SetupArmorRicochet(const Float:pos[3], const Float:dir[3])
  * @param Brightness		Sprite brightness.
  * @noreturn
  */
-stock TE_SetupGlowSprite(const Float:pos[3], Model, Float:Life, Float:Size, Brightness)
+stock void TE_SetupGlowSprite(const float pos[3], int Model, float Life, float Size, int Brightness)
 {
 	TE_Start("GlowSprite");
 	TE_WriteVector("m_vecOrigin", pos);
@@ -226,7 +226,7 @@ stock TE_SetupGlowSprite(const Float:pos[3], Model, Float:Life, Float:Size, Brig
  * @param MaterialType		Exploded material type.
  * @noreturn
  */
-stock TE_SetupExplosion(const Float:pos[3], Model, Float:Scale, Framerate, Flags, Radius, Magnitude, const Float:normal[3]={0.0, 0.0, 1.0}, MaterialType='C')
+stock void TE_SetupExplosion(const float pos[3], int Model, float Scale, int Framerate, int Flags, int Radius, int Magnitude, const float normal[3]={0.0, 0.0, 1.0}, int MaterialType='C')
 {
 	TE_Start("Explosion");
 	TE_WriteVector("m_vecOrigin[0]", pos);
@@ -237,7 +237,7 @@ stock TE_SetupExplosion(const Float:pos[3], Model, Float:Scale, Framerate, Flags
 	TE_WriteNum("m_nFlags", Flags);
 	TE_WriteNum("m_nRadius", Radius);
 	TE_WriteNum("m_nMagnitude", Magnitude);
-	TE_WriteNum("m_chMaterialType", MaterialType);
+	TE_WriteNum("m_chMaterialType", view_as<int>MaterialType);
 }
 
 /**
@@ -251,7 +251,7 @@ stock TE_SetupExplosion(const Float:pos[3], Model, Float:Scale, Framerate, Flags
  * @param BloodDropModel	Precached model index.
  * @noreturn
  */
-stock TE_SetupBloodSprite(const Float:pos[3], const Float:dir[3], const color[4], Size, SprayModel, BloodDropModel)
+stock void TE_SetupBloodSprite(const float pos[3], const float dir[3], const color[4], int Size, int SprayModel, int BloodDropModel)
 {
 	TE_Start("Blood Sprite");
 	TE_WriteVector("m_vecOrigin", pos);
@@ -283,8 +283,8 @@ stock TE_SetupBloodSprite(const Float:pos[3], const Float:dir[3], const color[4]
  * @param Flags			Beam flags.
  * @noreturn
  */
-stock TE_SetupBeamRingPoint(const Float:center[3], Float:Start_Radius, Float:End_Radius, ModelIndex, HaloIndex, StartFrame, 
-				FrameRate, Float:Life, Float:Width, Float:Amplitude, const Color[4], Speed, Flags)
+stock void TE_SetupBeamRingPoint(const float center[3], float Start_Radius, float End_Radius, int ModelIndex, int HaloIndex, int StartFrame, 
+				int FrameRate, float Life, float Width, float Amplitude, const Color[4], int Speed, int Flags)
 {
 	TE_Start("BeamRingPoint");
 	TE_WriteVector("m_vecCenter", center);
@@ -325,8 +325,8 @@ stock TE_SetupBeamRingPoint(const Float:center[3], Float:Start_Radius, Float:End
  * @param Speed			Speed of the beam.
  * @noreturn
  */
-stock TE_SetupBeamPoints(const Float:start[3], const Float:end[3], ModelIndex, HaloIndex, StartFrame, FrameRate, Float:Life, 
-				Float:Width, Float:EndWidth, FadeLength, Float:Amplitude, const Color[4], Speed)
+stock void TE_SetupBeamPoints(const float start[3], const float end[3], int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, float Life,
+				float Width, float EndWidth, int FadeLength, float Amplitude, const Color[4], int Speed)
 {
 	TE_Start("BeamPoints");
 	TE_WriteVector("m_vecStartPoint", start);
@@ -365,8 +365,8 @@ stock TE_SetupBeamPoints(const Float:start[3], const Float:end[3], ModelIndex, H
  * @param Speed			Speed of the beam.
  * @noreturn
  */
-stock TE_SetupBeamLaser(StartEntity, EndEntity, ModelIndex, HaloIndex, StartFrame, FrameRate, Float:Life, 
-				Float:Width, Float:EndWidth, FadeLength, Float:Amplitude, const Color[4], Speed)
+stock void TE_SetupBeamLaser(int StartEntity, int EndEntity, int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, float Life,
+				float Width, float EndWidth, int FadeLength, float Amplitude, const int Color[4], int Speed)
 {
 	TE_Start("BeamLaser");
 	TE_WriteEncodedEnt("m_nStartEntity", StartEntity);
@@ -404,7 +404,8 @@ stock TE_SetupBeamLaser(StartEntity, EndEntity, ModelIndex, HaloIndex, StartFram
  * @param Flags			Beam flags.
  * @noreturn
  */
-stock TE_SetupBeamRing(StartEntity, EndEntity, ModelIndex, HaloIndex, StartFrame, FrameRate, Float:Life, Float:Width, Float:Amplitude, const Color[4], Speed, Flags)
+stock void TE_SetupBeamRing(int StartEntity, int EndEntity, int ModelIndex, int HaloIndex, int StartFrame, int FrameRate,
+				float Life, float Width, float Amplitude, const int Color[4], int Speed, int Flags)
 {
 	TE_Start("BeamRing");
 	TE_WriteEncodedEnt("m_nStartEntity", StartEntity);
@@ -439,7 +440,7 @@ stock TE_SetupBeamRing(StartEntity, EndEntity, ModelIndex, HaloIndex, StartFrame
  * @param Color			Color array (r, g, b, a).
  * @noreturn
  */
-stock TE_SetupBeamFollow(EntIndex, ModelIndex, HaloIndex, Float:Life, Float:Width, Float:EndWidth, FadeLength, const Color[4])
+stock void TE_SetupBeamFollow(int EntIndex, int ModelIndex, int HaloIndex, float Life, float Width, float EndWidth, int FadeLength, const int Color[4])
 {
 	TE_Start("BeamFollow");
 	TE_WriteEncodedEnt("m_iEntIndex", EntIndex);

@@ -54,7 +54,7 @@ typedef TEHook = function Action (const char[] te_name, const int[] Players, int
  * @noreturn
  * @error		Temp Entity name not available or invalid function hook.
  */
-native AddTempEntHook(const String:te_name[], TEHook:hook);
+native void AddTempEntHook(const char[] te_name, TEHook hook);
 
 /**
  * Removes a temp entity hook.
@@ -64,7 +64,7 @@ native AddTempEntHook(const String:te_name[], TEHook:hook);
  * @noreturn
  * @error		Temp Entity name not available or invalid function hook.
  */
-native RemoveTempEntHook(const String:te_name[], TEHook:hook);
+native void RemoveTempEntHook(const char[] te_name, TEHook hook);
 
 /**
  * Starts a temp entity transmission.
@@ -73,7 +73,7 @@ native RemoveTempEntHook(const String:te_name[], TEHook:hook);
  * @noreturn
  * @error		Temp Entity name not available.
  */
-native TE_Start(const String:te_name[]);
+native void TE_Start(const char[] te_name);
 
 /**
  * Checks if a certain TE property exists.
@@ -81,7 +81,7 @@ native TE_Start(const String:te_name[]);
  * @param prop		Property to use.
  * @return		True if the property exists, otherwise false.
  */
-native bool:TE_IsValidProp(const String:prop[]);
+native bool TE_IsValidProp(const char[] prop);
 
 /**
  * Sets an integer value in the current temp entity.
@@ -91,7 +91,7 @@ native bool:TE_IsValidProp(const String:prop[]);
  * @noreturn
  * @error		Property not found.
  */
-native TE_WriteNum(const String:prop[], value);
+native void TE_WriteNum(const char[] prop, int value);
 
 /**
  * Reads an integer value in the current temp entity.
@@ -100,7 +100,7 @@ native TE_WriteNum(const String:prop[], value);
  * @return		Property value.
  * @error		Property not found.
  */
-native TE_ReadNum(const String:prop[]);
+native int TE_ReadNum(const char[] prop);
 
 /**
  * Sets a floating point number in the current temp entity.
@@ -110,7 +110,7 @@ native TE_ReadNum(const String:prop[]);
  * @noreturn
  * @error		Property not found.
  */
-native TE_WriteFloat(const String:prop[], Float:value);
+native void TE_WriteFloat(const char[] prop, float value);
 
 /**
  * Reads a floating point number in the current temp entity.
@@ -119,7 +119,7 @@ native TE_WriteFloat(const String:prop[], Float:value);
  * @noreturn		Property value.
  * @error		Property not found.
  */
-native Float:TE_ReadFloat(const String:prop[]);
+native float TE_ReadFloat(const char[] prop);
 
 /**
  * Sets a vector in the current temp entity.
@@ -129,7 +129,7 @@ native Float:TE_ReadFloat(const String:prop[]);
  * @noreturn
  * @error		Property not found.
  */
-native TE_WriteVector(const String:prop[], const Float:vector[3]);
+native void TE_WriteVector(const char[] prop, const float vector[3]);
 
 /**
  * Reads a vector in the current temp entity.
@@ -139,7 +139,7 @@ native TE_WriteVector(const String:prop[], const Float:vector[3]);
  * @noreturn
  * @error		Property not found.
  */
-native TE_ReadVector(const String:prop[], Float:vector[3]);
+native void TE_ReadVector(const char[] prop, float vector[3]);
 
 /**
  * Sets a QAngle in the current temp entity.
@@ -149,7 +149,7 @@ native TE_ReadVector(const String:prop[], Float:vector[3]);
  * @return		True on success, otherwise false.
  * @error		Property not found.
  */
-native TE_WriteAngles(const String:prop[], const Float:angles[3]);
+native bool TE_WriteAngles(const char[] prop, const float angles[3]);
 
 /**
  * Sets an array of floats in the current temp entity.
@@ -160,7 +160,7 @@ native TE_WriteAngles(const String:prop[], const Float:angles[3]);
  * @return		True on success, otherwise false.
  * @error		Property not found.
  */
-native TE_WriteFloatArray(const String:prop[], const Float:array[], arraySize);
+native bool TE_WriteFloatArray(const char[] prop, const float[] array, int arraySize);
 
 /**
  * Sends the current temp entity to one or more clients.
@@ -171,7 +171,7 @@ native TE_WriteFloatArray(const String:prop[], const Float:array[], arraySize);
  * @noreturn
  * @error		Invalid client index or client not in game.
  */
-native TE_Send(const clients[], numClients, Float:delay=0.0);
+native void TE_Send(const int[] clients, int numClients, float delay=0.0);
 
 /**
  * Sets an encoded entity index in the current temp entity.
@@ -182,9 +182,9 @@ native TE_Send(const clients[], numClients, Float:delay=0.0);
  * @noreturn
  * @error		Property not found.
  */
-stock TE_WriteEncodedEnt(const String:prop[], value)
+stock void TE_WriteEncodedEnt(const char[] prop, int value)
 {
-	new encvalue = (value & 0x0FFF) | ((1 & 0xF)<<12);
+	int encvalue = (value & 0x0FFF) | ((1 & 0xF)<<12);
 	return TE_WriteNum(prop, encvalue);
 }
 
@@ -195,11 +195,11 @@ stock TE_WriteEncodedEnt(const String:prop[], value)
  * @param delay		Delay in seconds to send the TE.
  * @noreturn
  */
-stock TE_SendToAll(Float:delay=0.0)
+stock void TE_SendToAll(float delay=0.0)
 {
-	new total = 0;
-	new clients[MaxClients];
-	for (new i=1; i<=MaxClients; i++)
+	int total = 0;
+	int[] clients = new int[MaxClients];
+	for (int i=1; i<=MaxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
@@ -218,9 +218,9 @@ stock TE_SendToAll(Float:delay=0.0)
  * @noreturn
  * @error		Invalid client index or client not in game.
  */
-stock TE_SendToClient(client, Float:delay=0.0)
+stock void TE_SendToClient(int client, float delay=0.0)
 {
-	new players[1];
+	int players[1];
 
 	players[0] = client;
 
@@ -238,7 +238,7 @@ stock TE_SendToClient(client, Float:delay=0.0)
  * @param delay			Delay in seconds to send the TE.
  * @noreturn
  */
-stock TE_SendToAllInRange(float origin[3], ClientRangeType rangeType, float delay=0.0)
+stock void TE_SendToAllInRange(float origin[3], ClientRangeType rangeType, float delay=0.0)
 {
 	int[] clients = new int[MaxClients];
 	int total = GetClientsInRange(origin, rangeType, clients, MaxClients);

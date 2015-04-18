@@ -30,15 +30,15 @@
  * Version: $Id$
  */
 
-static TestNumber = 0;
-static String:TestContext[255];
+static int TestNumber = 0;
+static char TestContext[255];
 
-SetTestContext(const String:context[])
+SetTestContext(const char[] context)
 {
 	strcopy(TestContext, sizeof(TestContext), context);
 }
 
-AssertEq(const String:text[], cell1, cell2)
+AssertEq(const char[] text, any cell1, any cell2)
 {
 	TestNumber++;
 	if (cell1 == cell2) {
@@ -49,7 +49,7 @@ AssertEq(const String:text[], cell1, cell2)
 	}
 }
 
-AssertFalse(const String:text[], bool:value)
+AssertFalse(const char[] text, bool value)
 {
 	TestNumber++;
 	if (!value) {
@@ -60,7 +60,7 @@ AssertFalse(const String:text[], bool:value)
 	}
 }
 
-AssertTrue(const String:text[], bool:value)
+AssertTrue(const char[] text, bool value)
 {
 	TestNumber++;
 	if (value) {

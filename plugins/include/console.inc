@@ -99,7 +99,7 @@ enum ReplySource
  * @param ...			Variable number of format parameters.
  * @noreturn
  */
-native ServerCommand(const String:format[], any:...);
+native void ServerCommand(const char[] format, any ...);
 
 /**
  * Executes a server command as if it were on the server console (or RCON) 
@@ -116,7 +116,7 @@ native ServerCommand(const String:format[], any:...);
  * @param ...			Variable number of format parameters.
  * @noreturn
  */
-native ServerCommandEx(String:buffer[], maxlen, const String:format[], any:...);
+native void ServerCommandEx(char[] buffer, int maxlen, const char[] format, any ...);
 
 /**
  * Inserts a server command at the beginning of the server command buffer.
@@ -125,14 +125,14 @@ native ServerCommandEx(String:buffer[], maxlen, const String:format[], any:...);
  * @param ...			Variable number of format parameters.
  * @noreturn
  */
-native InsertServerCommand(const String:format[], any:...);
+native void InsertServerCommand(const char[] format, any ...);
 
 /**
  * Executes every command in the server's command buffer, rather than once per frame.
  *
  * @noreturn
  */
-native ServerExecute();
+native void ServerExecute();
 
 /**
  * Executes a client command.  Note that this will not work on clients unless
@@ -144,7 +144,7 @@ native ServerExecute();
  * @noreturn
  * @error				Invalid client index, or client not connected.
  */
-native ClientCommand(client, const String:fmt[], any:...);
+native void ClientCommand(int client, const char[] fmt, any ...);
 
 /**
  * Executes a client command on the server without being networked.
@@ -161,7 +161,7 @@ native ClientCommand(client, const String:fmt[], any:...);
  * @noreturn
  * @error				Invalid client index, or client not connected.
  */
-native FakeClientCommand(client, const String:fmt[], any:...);
+native void FakeClientCommand(int client, const char[] fmt, any ...);
 
 /**
  * Executes a client command on the server without being networked.  The 
@@ -174,7 +174,7 @@ native FakeClientCommand(client, const String:fmt[], any:...);
  * @noreturn
  * @error				Invalid client index, or client not connected.
  */
-native FakeClientCommandEx(client, const String:fmt[], any:...);
+native void FakeClientCommandEx(int client, const char[] fmt, any ...);
 
 /**
  * Sends a message to the server console.
@@ -183,7 +183,7 @@ native FakeClientCommandEx(client, const String:fmt[], any:...);
  * @param ...			Variable number of format parameters.
  * @noreturn
  */
-native PrintToServer(const String:format[], any:...);
+native void PrintToServer(const char[] format, any ...);
 
 /**
  * Sends a message to a client's console.
@@ -194,7 +194,7 @@ native PrintToServer(const String:format[], any:...);
  * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
-native PrintToConsole(client, const String:format[], any:...);
+native void PrintToConsole(int client, const char[] format, any ...);
 
 /**
  * Reples to a message in a command.
@@ -209,14 +209,14 @@ native PrintToConsole(client, const String:format[], any:...);
  * @noreturn
  * @error				If the client is not connected or invalid.
  */
-native ReplyToCommand(client, const String:format[], any:...);
+native void ReplyToCommand(int client, const char[] format, any ...);
 
 /**
  * Returns the current reply source of a command.
  *
  * @return				ReplySource value.
  */
-native ReplySource:GetCmdReplySource();
+native ReplySource GetCmdReplySource();
 
 /**
  * Sets the current reply source of a command.
@@ -227,7 +227,7 @@ native ReplySource:GetCmdReplySource();
  * @param source		New ReplySource value.
  * @return				Old ReplySource value.
  */
-native ReplySource:SetCmdReplySource(ReplySource:source);
+native ReplySource SetCmdReplySource(ReplySource source);
 
 /**
  * Returns whether the current say hook is a chat trigger.
@@ -236,7 +236,7 @@ native ReplySource:SetCmdReplySource(ReplySource:source);
  *
  * @return				True if a chat trigger, false otherwise.
  */
-native bool:IsChatTrigger();
+native bool IsChatTrigger();
 
 /**
  * Displays usage of an admin command to users depending on the 
@@ -251,7 +251,7 @@ native bool:IsChatTrigger();
  * @noreturn
  * @error
  */
-native ShowActivity2(client, const String:tag[], const String:format[], any:...);
+native void ShowActivity2(int client, const char[] tag, const char[] format, any ...);
 
 /**
  * Displays usage of an admin command to users depending on the 
@@ -268,7 +268,7 @@ native ShowActivity2(client, const String:tag[], const String:format[], any:...)
  * @noreturn
  * @error
  */
-native ShowActivity(client, const String:format[], any:...);
+native void ShowActivity(int client, const char[] format, any ...);
 
 /**
  * Same as ShowActivity(), except the tag parameter is used instead of
@@ -281,7 +281,7 @@ native ShowActivity(client, const String:format[], any:...);
  * @noreturn
  * @error
  */
-native ShowActivityEx(client, const String:tag[], const String:format[], any:...);
+native void ShowActivityEx(int client, const char[] tag, const char[] format, any ...);
 
 /**
  * Given an originating client and a target client, returns the string 
@@ -299,7 +299,7 @@ native ShowActivityEx(client, const String:tag[], const String:format[], any:...
  *                      sm_show_activity filters.
  * @error               Invalid client index or client not connected.
  */
-native FormatActivitySource(client, target, const String:namebuf[], maxlength);
+native bool FormatActivitySource(int client, int target, const char[] namebuf, int maxlength);
 
 /**
  * Called when a server-only command is invoked.  
@@ -322,7 +322,7 @@ typedef SrvCmd = function Action (int args);
  * @noreturn
  * @error				Command name is the same as an existing convar.
  */
-native RegServerCmd(const String:cmd[], SrvCmd:callback, const String:description[]="", flags=0);
+native RegServerCmd(const char[] cmd, SrvCmd callback, const char[] description="", int flags=0);
 
 /**
  * Called when a generic console command is invoked.
@@ -348,7 +348,7 @@ typedef ConCmd = function Action (int client, int args);
  * @noreturn
  * @error				Command name is the same as an existing convar.
  */
-native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:description[]="", flags=0);
+native void RegConsoleCmd(const char[] cmd, ConCmd callback, const char[] description="", int flags=0);
 
 /**
  * Creates a console command as an administrative command.  If the command does not exist,
@@ -367,12 +367,12 @@ native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:descripti
  * @noreturn
  * @error				Command name is the same as an existing convar.
  */
-native RegAdminCmd(const String:cmd[],
-					ConCmd:callback,
-					adminflags,
-					const String:description[]="",
-					const String:group[]="",
-					flags=0);
+native void RegAdminCmd(const char[] cmd,
+					ConCmd callback,
+					int adminflags,
+					const char[] description="",
+					const char[] group="",
+					int flags=0);
 					
 /**
  * Returns the number of arguments from the current console or server command.
@@ -380,7 +380,7 @@ native RegAdminCmd(const String:cmd[],
  *
  * @return				Number of arguments to the current command.
  */
-native GetCmdArgs();
+native int GetCmdArgs();
 
 /**
  * Retrieves a command argument given its index, from the current console or 
@@ -392,7 +392,7 @@ native GetCmdArgs();
  * @param maxlength		Maximum length of the buffer.
  * @return				Length of string written to buffer.
  */
-native GetCmdArg(argnum, String:buffer[], maxlength);
+native int GetCmdArg(int argnum, char[] buffer, int maxlength);
 
 /**
  * Retrieves the entire command argument string in one lump from the current 
@@ -402,14 +402,14 @@ native GetCmdArg(argnum, String:buffer[], maxlength);
  * @param maxlength		Maximum length of the buffer.
  * @return				Length of string written to buffer.
  */
-native GetCmdArgString(String:buffer[], maxlength);
+native int GetCmdArgString(char[] buffer, int maxlength);
 
 /**
  * Gets a command iterator.  Must be freed with CloseHandle().
  *
  * @return				A new command iterator.
  */
-native Handle:GetCommandIterator();
+native Handle GetCommandIterator();
 
 /**
  * Reads a command iterator, then advances to the next command if any.
@@ -423,12 +423,12 @@ native Handle:GetCommandIterator();
  * @param descLen		Command description buffer size.
  * @return				True on success, false if there are no more commands.
  */
-native bool:ReadCommandIterator(Handle:iter, 
-								String:name[], 
-								nameLen, 
-								&eflags=0, 
-								String:desc[]="", 
-								descLen=0);
+native bool ReadCommandIterator(Handle iter,
+								char[] name, 
+								int nameLen, 
+								int &eflags=0,
+								char[] desc="", 
+								int descLen=0);
 
 /**
  * Returns whether a client has access to a given command string.  The string 
@@ -447,10 +447,10 @@ native bool:ReadCommandIterator(Handle:iter,
  *						there is a matching admin command.
  * @return				True if the client has access, false otherwise.
  */
-native bool:CheckCommandAccess(client, 
-							   const String:command[],
-							   flags,
-							   bool:override_only=false);
+native bool CheckCommandAccess(int client,
+								const char[] command,
+								int flags,
+								bool override_only=false);
 
 /**
  * Returns whether an admin has access to a given command string.  The string 
@@ -469,10 +469,10 @@ native bool:CheckCommandAccess(client,
  *						there is a matching admin command.
  * @return				True if the admin has access, false otherwise.
  */
-native bool:CheckAccess(AdminId:id, 
-							   const String:command[],
-							   flags,
-							   bool:override_only=false);
+native bool CheckAccess(AdminId id,
+							const char[] command,
+							int flags,
+							bool override_only=false);
 
 /**
  * Returns the bitstring of flags of a command.
@@ -481,7 +481,7 @@ native bool:CheckAccess(AdminId:id,
  * @return			A bitstring containing the FCVAR_* flags that are enabled 
  *					or INVALID_FCVAR_FLAGS if command not found.
  */
-native GetCommandFlags(const String:name[]);
+native int GetCommandFlags(const char[] name);
 
 /**
  * Sets the bitstring of flags of a command.
@@ -490,7 +490,7 @@ native GetCommandFlags(const String:name[]);
  * @param flags		A bitstring containing the FCVAR_* flags to enable.
  * @return			True on success, otherwise false.
  */
-native bool:SetCommandFlags(const String:name[], flags);
+native bool SetCommandFlags(const char[] name, int flags);
 
 /**
  * Starts a ConCommandBase search, traversing the list of ConVars and 
@@ -509,10 +509,10 @@ native bool:SetCommandFlags(const String:name[], flags);
  *						closed via CloseHandle().  Additionally, the output 
  *						parameters will be filled with information of the 
  *						first ConCommandBase entry.
- *						On failure, INVALID_HANDLE is returned, and the 
+ *						On failure, null is returned, and the 
  *						contents of outputs is undefined.
  */
-native Handle:FindFirstConCommand(String:buffer[], max_size, &bool:isCommand, &flags=0, String:description[]="", descrmax_size=0);
+native Handle FindFirstConCommand(char[] buffer, int max_size, bool &isCommand, int &flags=0, char[] description="", int descrmax_size=0);
 
 /**
  * Reads the next entry in a ConCommandBase iterator.
@@ -530,7 +530,7 @@ native Handle:FindFirstConCommand(String:buffer[], max_size, &bool:isCommand, &f
  *						If no more entries exist, false is returned, and the 
  *						contents of outputs is undefined.
  */
-native bool:FindNextConCommand(Handle:search, String:buffer[], max_size, &bool:isCommand, &flags=0, String:description[]="", descrmax_size=0);
+native bool FindNextConCommand(Handle search, char[] buffer, int max_size, bool &isCommand, int &flags=0, char[] description="", int descrmax_size=0);
 
 /**
  * Adds an informational string to the server's public "tags".
@@ -542,7 +542,7 @@ native bool:FindNextConCommand(Handle:search, String:buffer[], max_size, &bool:i
  * @param tag			Tag string to append.
  * @noreturn
  */
-native AddServerTag(const String:tag[]);
+native void AddServerTag(const char[] tag);
 
 /**
  * Removes a tag previously added by the calling plugin.
@@ -550,7 +550,7 @@ native AddServerTag(const String:tag[]);
  * @param tag			Tag string to remove.
  * @noreturn
  */
-native RemoveServerTag(const String:tag[]);
+native void RemoveServerTag(const char[] tag);
 
 /**
  * Callback for command listeners. This is invoked whenever any command
@@ -597,7 +597,7 @@ typedef CommandListener = function Action (int client, const char[] command, int
  * @return              True if this feature is available on the current game,
  *                      false otherwise.
  */
-native bool:AddCommandListener(CommandListener:callback, const String:command[]="");
+native bool AddCommandListener(CommandListener callback, const char[] command="");
 
 /**
  * Removes a previously added command listener, in reverse order of being added.
@@ -607,7 +607,7 @@ native bool:AddCommandListener(CommandListener:callback, const String:command[]=
  *                      The command is case insensitive.
  * @error				Callback has no active listeners.
  */
-native RemoveCommandListener(CommandListener:callback, const String:command[]="");
+native void RemoveCommandListener(CommandListener callback, const char[] command="");
 
 /**
  * Returns true if the supplied command exists.
@@ -615,7 +615,7 @@ native RemoveCommandListener(CommandListener:callback, const String:command[]=""
  * @param command	Command to find.
  * @return			True if command is found, false otherwise.
  */
-stock bool:CommandExists(const String:command[])
+stock bool CommandExists(const char[] command)
 {
 	return (GetCommandFlags(command) != INVALID_FCVAR_FLAGS);
 }
@@ -629,7 +629,7 @@ stock bool:CommandExists(const String:command[])
  * @return				An Action value. Returning Plugin_Handled bypasses the game function call.
 							Returning Plugin_Stop bypasses the post hook as well as the game function.
  */
-forward Action:OnClientSayCommand(client, const String:command[], const String:sArgs[]);
+forward Action OnClientSayCommand(int client, const char[] command, const char[] sArgs);
 
 /**
  * Global post listener for the chat commands.

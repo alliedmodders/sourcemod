@@ -83,14 +83,14 @@ enum PropFieldType
  *
  * @return				Maximum number of entities.
  */
-native GetMaxEntities();
+native int GetMaxEntities();
 
 /**
  * Returns the number of entities in the server.
  *
  * @return				Number of entities in the server.
  */
-native GetEntityCount();
+native int GetEntityCount();
 
 /**
  * Returns whether or not an entity is valid.  Returns false
@@ -99,7 +99,7 @@ native GetEntityCount();
  * @param edict			Index of the entity/edict.
  * @return				True if valid, false otherwise.
  */
-native bool:IsValidEntity(edict);
+native bool IsValidEntity(int edict);
 
 /**
  * Returns whether or not an edict index is valid.
@@ -107,7 +107,7 @@ native bool:IsValidEntity(edict);
  * @param edict			Index of the edict.
  * @return				True if valid, false otherwise.
  */
-native bool:IsValidEdict(edict);
+native bool IsValidEdict(int edict);
 
 /**
  * Returns whether or not an entity is a valid networkable edict.
@@ -115,14 +115,14 @@ native bool:IsValidEdict(edict);
  * @param edict			Index of the edict.
  * @return				True if networkable, false if invalid or not networkable.
  */
-native bool:IsEntNetworkable(edict);
+native bool IsEntNetworkable(int edict);
 
 /**
  * Creates a new edict (the basis of a networkable entity)
  *
  * @return				Index of the edict, 0 on failure.
  */
-native CreateEdict();
+native int CreateEdict();
 
 /** 
  * Removes an edict from the world.
@@ -131,7 +131,7 @@ native CreateEdict();
  * @noreturn
  * @error				Invalid edict index.
  */
-native RemoveEdict(edict);
+native void RemoveEdict(int edict);
 
 /**
  * Returns the flags on an edict.  These are not the same as entity flags.
@@ -140,7 +140,7 @@ native RemoveEdict(edict);
  * @return				Edict flags.
  * @error				Invalid edict index.
  */
-native GetEdictFlags(edict);
+native int GetEdictFlags(int edict);
 
 /**
  * Sets the flags on an edict.  These are not the same as entity flags.
@@ -150,7 +150,7 @@ native GetEdictFlags(edict);
  * @noreturn
  * @error				Invalid edict index.
  */
-native SetEdictFlags(edict, flags);
+native void SetEdictFlags(int edict, int flags);
 
 /**
  * Retrieves an edict classname.
@@ -160,7 +160,7 @@ native SetEdictFlags(edict, flags);
  * @param maxlength		Maximum length of the buffer.
  * @return				True on success, false if there is no classname set.
  */
-native bool:GetEdictClassname(edict, String:clsname[], maxlength);
+native bool GetEdictClassname(int edict, char[] clsname, int maxlength);
 
 /**
  * Retrieves an entity's networkable serverclass name.
@@ -172,7 +172,7 @@ native bool:GetEdictClassname(edict, String:clsname[], maxlength);
  * @return				True on success, false if the edict is not networkable.
  * @error				Invalid edict index.
  */
-native bool:GetEntityNetClass(edict, String:clsname[], maxlength);
+native bool GetEntityNetClass(int edict, char[] clsname, int maxlength);
 
 /**
  * @section Entity offset functions
@@ -206,7 +206,7 @@ native bool:GetEntityNetClass(edict, String:clsname[], maxlength);
  * @noreturn
  * @error				Invalid entity or offset out of bounds.
  */
-native ChangeEdictState(edict, offset = 0);
+native void ChangeEdictState(int edict, int offset = 0);
 
 /**
  * Peeks into an entity's object data and retrieves the integer value at 
@@ -218,7 +218,7 @@ native ChangeEdictState(edict, offset = 0);
  * @return				Value at the given memory location.
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-native GetEntData(entity, offset, size=4);
+native int GetEntData(int entity, int offset, int size=4);
 
 /**
  * Peeks into an entity's object data and sets the integer value at 
@@ -233,7 +233,7 @@ native GetEntData(entity, offset, size=4);
  * @error				Invalid entity or offset out of reasonable bounds.
  * @noreturn
  */
-native SetEntData(entity, offset, any:value, size=4, bool:changeState=false);
+native void SetEntData(int entity, int offset, any value, int size=4, bool changeState=false);
 
 /**
  * Peeks into an entity's object data and retrieves the float value at 
@@ -244,7 +244,7 @@ native SetEntData(entity, offset, any:value, size=4, bool:changeState=false);
  * @return				Value at the given memory location.
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-native Float:GetEntDataFloat(entity, offset);
+native float GetEntDataFloat(int entity, int offset);
 
 /**
  * Peeks into an entity's object data and sets the float value at 
@@ -258,7 +258,7 @@ native Float:GetEntDataFloat(entity, offset);
  * @error				Invalid entity or offset out of reasonable bounds.
  * @noreturn
  */
-native SetEntDataFloat(entity, offset, Float:value, bool:changeState=false);
+native void SetEntDataFloat(int entity, int offset, float value, bool changeState=false);
 
 /**
  * This function is deprecated.  Use GetEntDataEnt2 instead, for 
@@ -276,7 +276,7 @@ native SetEntDataFloat(entity, offset, Float:value, bool:changeState=false);
  * @error				Invalid entity or offset out of reasonable bounds.
  */
 #pragma deprecated Use GetEntDataEnt2() instead.
-native GetEntDataEnt(entity, offset);
+native int GetEntDataEnt(int entity, int offset);
 
 /**
  * This function is deprecated.   Use SetEntDataEnt2 instead, for 
@@ -294,7 +294,7 @@ native GetEntDataEnt(entity, offset);
  * @error				Invalid entity or offset out of reasonable bounds.
  */
 #pragma deprecated Use SetEntDataEnt2() instead.
-native SetEntDataEnt(entity, offset, other, bool:changeState=false);
+native void SetEntDataEnt(int entity, int offset, int other, bool changeState=false);
 
 /**
  * Peeks into an entity's object data and retrieves the entity index 
@@ -310,7 +310,7 @@ native SetEntDataEnt(entity, offset, other, bool:changeState=false);
  *						or the stored entity is invalid, then -1 is returned.
  * @error				Invalid input entity, or offset out of reasonable bounds.
  */
-native GetEntDataEnt2(entity, offset);
+native int GetEntDataEnt2(int entity, int offset);
 
 /**
  * Peeks into an entity's object data and sets the entity index at the 
@@ -327,7 +327,7 @@ native GetEntDataEnt2(entity, offset);
  * @noreturn
  * @error				Invalid input entity, or offset out of reasonable bounds.
  */
-native SetEntDataEnt2(entity, offset, other, bool:changeState=false);
+native void SetEntDataEnt2(int entity, int offset, int other, bool changeState=false);
 
 /**
  * Peeks into an entity's object data and retrieves the vector at the 
@@ -341,7 +341,7 @@ native SetEntDataEnt2(entity, offset, other, bool:changeState=false);
  * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-native GetEntDataVector(entity, offset, Float:vec[3]);
+native void GetEntDataVector(int entity, int offset, float vec[3]);
 
 /**
  * Peeks into an entity's object data and sets the vector at the given 
@@ -356,7 +356,7 @@ native GetEntDataVector(entity, offset, Float:vec[3]);
  * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-native SetEntDataVector(entity, offset, const Float:vec[3], bool:changeState=false);
+native void SetEntDataVector(int entity, int offset, const float vec[3], bool changeState=false);
 
 /**
  * Peeks into an entity's object data and retrieves the string at 
@@ -369,7 +369,7 @@ native SetEntDataVector(entity, offset, const Float:vec[3], bool:changeState=fal
  * @return			Number of non-null bytes written.
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-native GetEntDataString(entity, offset, String:buffer[], maxlen);
+native int GetEntDataString(int entity, int offset, char[] buffer, int maxlen);
 
 /**
  * Peeks into an entity's object data and sets the string at 
@@ -383,7 +383,7 @@ native GetEntDataString(entity, offset, String:buffer[], maxlen);
  * @return			Number of non-null bytes written.
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-native SetEntDataString(entity, offset, const String:buffer[], maxlen, bool:changeState=false);
+native int SetEntDataString(int entity, int offset, const char[] buffer, int maxlen, bool changeState=false);
 
 /**
  * @endsection
@@ -403,7 +403,7 @@ native SetEntDataString(entity, offset, const String:buffer[], maxlen, bool:chan
  * @param prop			Property name.
  * @return				An offset, or -1 on failure.
  */
-native FindSendPropOffs(const String:cls[], const String:prop[]);
+native int FindSendPropOffs(const char[] cls, const char[] prop);
 
 /**
  * Given a ServerClass name, finds a networkable send property offset.
@@ -427,11 +427,11 @@ native FindSendPropOffs(const String:cls[], const String:prop[]);
  *						If no offset is available, 0 is returned.
  *						If the property is not found, -1 is returned.
  */
-native FindSendPropInfo(const String:cls[], 
-						const String:prop[], 
-						&PropFieldType:type=PropFieldType:0,
-						&num_bits=0,
-						&local_offset=0);
+native int FindSendPropInfo(const char[] cls,
+						const char[] prop, 
+						PropFieldType &type=view_as<PropFieldType>0,
+						int &num_bits=0,
+						int &local_offset=0);
 
 /**
  * Given an entity, finds a datamap property offset.
@@ -445,10 +445,10 @@ native FindSendPropInfo(const String:cls[],
  *						divisible by 8 (including 0 if unknown).
  * @return				An offset, or -1 on failure.
  */
-native FindDataMapOffs(entity, 
-					   const String:prop[],
-					   &PropFieldType:type=PropFieldType:0,
-					   &num_bits=0);
+native int FindDataMapOffs(int entity,
+						const char[] prop,
+						PropFieldType &type=view_as<PropFieldType>0,
+						int &num_bits=0);
 					   
 /**
  * Given an entity, finds a nested datamap property offset.
@@ -464,11 +464,11 @@ native FindDataMapOffs(entity,
  *						FindDataMapOffs() would return.
  * @return				An offset, or -1 on failure.
  */
-native FindDataMapInfo(entity, 
-					   const String:prop[],
-					   &PropFieldType:type=PropFieldType:0,
-					   &num_bits=0,
-					   &local_offset=0);
+native int FindDataMapInfo(int entity,
+						const char[] prop,
+						PropFieldType &type=view_as<PropFieldType>0,
+						int &num_bits=0,
+						int &local_offset=0);
 
 /**
  * Wrapper function for finding a send property for a particular entity.
@@ -480,9 +480,9 @@ native FindDataMapInfo(entity,
  *						is used instead.
  * @return				An offset, or -1 on failure.
  */
-stock GetEntSendPropOffs(ent, const String:prop[], bool:actual=false)
+stock int GetEntSendPropOffs(int ent, const char[] prop, bool actual=false)
 {
-	decl String:cls[64];
+	char cls[64];
 	
 	if (!GetEntityNetClass(ent, cls, sizeof(cls)))
 	{
@@ -515,7 +515,7 @@ stock GetEntSendPropOffs(ent, const String:prop[], bool:actual=false)
  * @return				Value at the given property offset.
  * @error				Invalid entity or property not found.
  */
-native GetEntProp(entity, PropType:type, const String:prop[], size=4, element=0);
+native int GetEntProp(int entity, PropType type, const char[] prop, int size=4, int element=0);
 
 /**
  * Sets an integer value in an entity's property.
@@ -534,7 +534,7 @@ native GetEntProp(entity, PropType:type, const String:prop[], size=4, element=0)
  * @error				Invalid entity or offset out of reasonable bounds.
  * @noreturn
  */
-native SetEntProp(entity, PropType:type, const String:prop[], any:value, size=4, element=0);
+native void SetEntProp(int entity, PropType type, const char[] prop, any value, int size=4, int element=0);
 
 /**
  * Retrieves a float value from an entity's property.
@@ -549,7 +549,7 @@ native SetEntProp(entity, PropType:type, const String:prop[], any:value, size=4,
  * @return				Value at the given property offset.
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-native Float:GetEntPropFloat(entity, PropType:type, const String:prop[], element=0);
+native float GetEntPropFloat(int entity, PropType type, const char[] prop, int element=0);
 
 /**
  * Sets a float value in an entity's property.
@@ -565,7 +565,7 @@ native Float:GetEntPropFloat(entity, PropType:type, const String:prop[], element
  * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-native SetEntPropFloat(entity, PropType:type, const String:prop[], Float:value, element=0);
+native void SetEntPropFloat(int entity, PropType type, const char[] prop, float value, int element=0);
 
 /**
  * Retrieves an entity index from an entity's property.
@@ -582,7 +582,7 @@ native SetEntPropFloat(entity, PropType:type, const String:prop[], Float:value, 
  *						then -1 is returned.
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-native GetEntPropEnt(entity, PropType:type, const String:prop[], element=0);
+native int GetEntPropEnt(int entity, PropType type, const char[] prop, int element=0);
 
 /**
  * Sets an entity index in an entity's property.
@@ -598,7 +598,7 @@ native GetEntPropEnt(entity, PropType:type, const String:prop[], element=0);
  * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-native SetEntPropEnt(entity, PropType:type, const String:prop[], other, element=0);
+native void SetEntPropEnt(int entity, PropType type, const char[] prop, int other, int element=0);
 
 /**
  * Retrieves a vector of floats from an entity, given a named network property.
@@ -615,7 +615,7 @@ native SetEntPropEnt(entity, PropType:type, const String:prop[], other, element=
  * @error				Invalid entity, property not found, or property not 
  *						actually a vector data type.
  */
-native GetEntPropVector(entity, PropType:type, const String:prop[], Float:vec[3], element=0);
+native void GetEntPropVector(int entity, PropType type, const char[] prop, float vec[3], int element=0);
 
 /**
  * Sets a vector of floats in an entity, given a named network property.
@@ -632,7 +632,7 @@ native GetEntPropVector(entity, PropType:type, const String:prop[], Float:vec[3]
  * @error				Invalid entity, property not found, or property not 
  *						actually a vector data type.
  */
-native SetEntPropVector(entity, PropType:type, const String:prop[], const Float:vec[3], element=0);
+native void SetEntPropVector(int entity, PropType type, const char[] prop, const float vec[3], int element=0);
 
 /**
  * Gets a network property as a string.
@@ -646,7 +646,7 @@ native SetEntPropVector(entity, PropType:type, const String:prop[], const Float:
  * @return				Number of non-null bytes written.
  * @error				Invalid entity, offset out of reasonable bounds, or property is not a valid string.
  */
-native GetEntPropString(entity, PropType:type, const String:prop[], String:buffer[], maxlen, element=0);
+native int GetEntPropString(int entity, PropType type, const char[] prop, char[] buffer, int maxlen, int element=0);
 
 /**
  * Sets a network property as a string.
@@ -661,7 +661,7 @@ native GetEntPropString(entity, PropType:type, const String:prop[], String:buffe
  * @return				Number of non-null bytes written.
  * @error				Invalid entity, offset out of reasonable bounds, or property is not a valid string.
  */
-native SetEntPropString(entity, PropType:type, const String:prop[], const String:buffer[]);
+native int SetEntPropString(int entity, PropType type, const char[] prop, const char[] buffer);
 
 /**
  * Retrieves the count of values that an entity property's array can store.
@@ -672,7 +672,7 @@ native SetEntPropString(entity, PropType:type, const String:prop[], const String
  * @return				Size of array (in elements) or 1 if property is not an array.
  * @error				Invalid entity or property not found.
  */
-native GetEntPropArraySize(entity, PropType:type, const String:prop[]);
+native int GetEntPropArraySize(int entity, PropType type, const char[] prop);
 
 /**
  * Copies an array of cells from an entity at a given offset.
@@ -702,9 +702,9 @@ stock void GetEntDataArray(int entity, int offset, int[] array, int arraySize, i
  * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-stock SetEntDataArray(entity, offset, const array[], arraySize, dataSize=4, bool:changeState=false)
+stock void SetEntDataArray(int entity, int offset, const int[] array, int arraySize, int dataSize=4, bool changeState=false)
 {
-	for (new i=0; i<arraySize; i++)
+	for (int i=0; i<arraySize; i++)
 	{
 		SetEntData(entity, offset + i*dataSize, array[i], dataSize, changeState);
 	}
@@ -717,7 +717,7 @@ stock SetEntDataArray(entity, offset, const array[], arraySize, dataSize=4, bool
  * @return				Address of the entity.
  * @error				Invalid entity.
  */
-native Address:GetEntityAddress(entity);
+native Address GetEntityAddress(int entity);
 
 /**
  * Retrieves the classname of an entity.
@@ -729,7 +729,7 @@ native Address:GetEntityAddress(entity);
  * @param maxlength		Maximum length of the buffer.
  * @return				True on success, false if there is no classname set.
  */
-stock bool:GetEntityClassname(entity, String:clsname[], maxlength)
+stock bool GetEntityClassname(int entity, char[] clsname, int maxlength)
 {
 	return !!GetEntPropString(entity, Prop_Data, "m_iClassname", clsname, maxlength);
 }

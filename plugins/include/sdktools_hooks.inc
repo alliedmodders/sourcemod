@@ -56,4 +56,4 @@
  * @note			To see if all 11 params are avaliable, use FeatureType_Capability and
  *					FEATURECAP_PLAYERRUNCMD_11PARAMS.
  */
-forward Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon, &subtype, &cmdnum, &tickcount, &seed, mouse[2]);
+forward Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2]);

@@ -584,7 +584,7 @@ native bool CreateDirectory(const char[] path, int mode, bool use_valve_fs=false
  * @param mode			Permissions to set.
  * @return				True on success, false otherwise.
  */
-native bool SetFilePermissions(const String:path[], int mode);
+native bool SetFilePermissions(const char[] path, int mode);
 
 /**
  * Returns a file timestamp as a unix timestamp.
@@ -593,7 +593,7 @@ native bool SetFilePermissions(const String:path[], int mode);
  * @param tmode			Time mode.
  * @return				Time value, or -1 on failure.
  */
-native GetFileTime(const char[] file, FileTimeMode tmode);
+native int GetFileTime(const char[] file, FileTimeMode tmode);
 
 /**
  * Same as LogToFile(), except uses an open file Handle.  The file must 

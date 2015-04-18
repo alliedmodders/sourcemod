@@ -306,7 +306,7 @@ native bool PbReadBool(Handle pb, const char[] field, int index = PB_FIELD_NOT_R
  * @param index			Index into repeated field.
  * @error				Invalid or incorrect Handle, non-existent field, or incorrect field type.
  */
-native void PbReadString(Handle pb, const char[] field, String:buffer[], maxlength, int index = PB_FIELD_NOT_REPEATED);
+native void PbReadString(Handle pb, const char[] field, char[] buffer, maxlength, int index = PB_FIELD_NOT_REPEATED);
 
 /**
  * Reads an RGBA color value from a protobuf message.
