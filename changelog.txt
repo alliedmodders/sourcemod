@@ -1,5 +1,32 @@
 SourceMod Changelog
 
+SourceMod 1.7.1 [2015-04-18]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.7.1_Release_Notes
+
+User Changes:
+ - Updated game compatibility for CS:GO, TF2, Dota 2, Insurgency, and Fortress Forever.
+ - Fixed regression causing crash in games that do not support radio menus (PR 286) (Peace-Maker).
+ - Fixed sm_rename not working on some games, including CS:S and CS:GO (PR 313).
+ - Fixed some core.cfg values being ignored on start (PR 322).
+ - Fixed crash when plugins close a menu handle during menu draw (PR 268)
+
+Developer Changes:
+ - Added tagged TF2_SetClientTeam to provide symmetry to TF2_GetClientTeam (PR 267) (Wliu).
+ - Added block parameter to FindValueInArray native (PR 213) (splewis).
+ - Added explicit return types to forwards missing them to avoid future compatibility issues (PR 294).
+ - Added new SetClientName native to reliably change a player's name on any game (PR 313).
+ - Fixed tag mismatch warning when using SQLite_UseDatabase (bug 6310) (PR 262) (VoiDeD).
+ - Fixed not actually being able to block CS_OnCSWeaponDrop (bug 6334) (PR 316).
+ - Fixed DirExists to throw an error when passed empty string (PR 315).
+ - Fixed ReadUint16 on File methodmap throwing "not bound" error (PR 265).
+ - Fixed various include docs (PR 288) (PR 290) (PR 295).
+ - Fixed issues with declaring variable on same line after array (SP PR 7) (Peace-Maker).
+ - Fixed debug info for multidimensional strings not being written to smx (SP PR 8) (Peace-Maker).
+ - Fixed issues with nesting methodmap calls (bug 6329) (SP PR 11) (SP PR 13).
+ - Improved diagnostic given when function prototype doesn't match an existing definition (PR 291) (VoiDeD).
+
+----------------------------------------------------------
 SourceMod 1.7.0 [2015-02-04]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.7.0_Release_Notes
@@ -43,7 +70,6 @@ Developer Changes:
  - Fixed OnPlayerRunCommand forward in SDKTools being unavailable on Dark Messiah.
  - SourceMod now uses some C++11 and has newer compiler requirements.
  - Added --disable-auto-versioning option to ambuild configure script.
-
 
 ----------------------------------------------------------
 SourceMod 1.6.3 [2014-11-25]
