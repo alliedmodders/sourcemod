@@ -378,7 +378,7 @@ stock float Eval(const char[] formula, int size, OnError errorCallback, OnVariab
 			}
 			case '+', '-', '*', '/', '^':
 			{
-				OperateString(sumArray, operatorArray, bracket, strValue);
+				OperateString(sumArray, operatorArray, bracket, strValue, sizeof(strValue));
 				switch (buffer[0])
 				{
 					case '+':
