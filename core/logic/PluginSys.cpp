@@ -1510,7 +1510,7 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 	List<IPluginsListener *>::iterator iter;
 	IPluginsListener *pListener;
 
-	if (pPlugin->GetStatus() <= Plugin_Error)
+	if (pPlugin->GetStatus() <= Plugin_Error || pPlugin->GetStatus() == Plugin_Failed)
 	{
 		/* Notify plugin */
 		pPlugin->Call_OnPluginEnd();
