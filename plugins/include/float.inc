@@ -302,29 +302,29 @@ stock void Operate(ArrayList sumArray, ArrayList operatorArray, int bracket, flo
 	operatorArray.Set(bracket, Operator_None);
 }
 
-stock void OperateString(ArrayList sumArray, ArrayList operatorArray, int bracket, char[] value)
+stock void OperateString(ArrayList sumArray, ArrayList operatorArray, int bracket, char[] value, int size)
 {
 	if (StrEqual(value, ""))
 		return;
 	Operate(sumArray, operatorArray, bracket, StringToFloat(value));
-	strcopy(value, strlen(value)+1, "");
+	strcopy(value, size, "");
 }
 
 /**
  * Parses a formula and return results.
  *
  * @param formula			Formula to parse.
+ * @param size				Size of formula array.
  * @param errorCallback		Function to call incase of an error.
  * @param variableCallback	Function to call when an invalid character is found.
  * @return					Result of operation.
  */
-stock float Eval(const char[] formula, OnError errorCallback, OnVariable variableCallback)
+stock float Eval(const char[] formula, int size, OnError errorCallback, OnVariable variableCallback)
 {
 	int bracket;
 	char buffer[2], strValue[1024];
-	ArrayList sumArray = new ArrayList(.startsize=1);
-	ArrayList operatorArray = new ArrayList(.startsize=1);
-	for (int i = 0; i <= strlen(formula); i++)
+	ArrayList sumArray = new ArrayList(.startsize=1), operatorArray = new ArrayList(.startsize=1);
+	for (int i = 0; i < size; i++)
 	{
 		buffer[0] = formula[i];
 		switch (buffer[0])
@@ -332,7 +332,10 @@ stock float Eval(const char[] formula, OnError errorCallback, OnVariable variabl
 			case ' ': //Ignore whitespace.
 				continue;
 			case '\0':
-				OperateString(sumArray, operatorArray, bracket, strValue);
+			{
+				OperateString(sumArray, operatorArray, bracket, strValue, sizeof(strValue));
+				break //As far as I know of, this doesn't break the switch statement and instead targets the for loop.
+			}
 			case '(':
 			{
 				if (bracket == MAX_COMPLEXITY)
@@ -369,7 +372,7 @@ stock float Eval(const char[] formula, OnError errorCallback, OnVariable variabl
 					Call_Finish(res);
 					return 0.0;
 				}
-				OperateString(sumArray, operatorArray, bracket, strValue);
+				OperateString(sumArray, operatorArray, bracket, strValue, sizeof(strValue));
 				bracket--;
 				Operate(sumArray, operatorArray, bracket, sumArray.Get(bracket+1));
 			}
@@ -444,9 +447,9 @@ public void OnEvalError(const char[] error)
  * A wrapper function to get around a compiler bug.
  * Bug in question: Function params causing compile error when passed a default value. Compile error: <variable> prototype doesn't match.
  */
-stock float eval(const char[] formula)
+stock float eval(const char[] formula, int size)
 {
-	return Eval(formula, OnEvalError, NoVariable);
+	return Eval(formula, size, OnEvalError, NoVariable);
 }
 
 /**
