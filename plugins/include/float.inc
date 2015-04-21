@@ -39,6 +39,8 @@
 #include <handles>
 #include <adt_array>
 #include <logging>
+#include <string>
+#include <functions>
 
 #if !defined __sourcepawn2__
 /**
@@ -334,7 +336,7 @@ stock float Eval(const char[] formula, int size, OnError errorCallback, OnVariab
 			case '\0':
 			{
 				OperateString(sumArray, operatorArray, bracket, strValue, sizeof(strValue));
-				break //As far as I know of, this doesn't break the switch statement and instead targets the for loop.
+				break; //As far as I know of, this doesn't break the switch statement and instead targets the for loop.
 			}
 			case '(':
 			{
