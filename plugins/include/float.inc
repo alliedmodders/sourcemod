@@ -447,9 +447,9 @@ public void OnEvalError(const char[] error)
  * A wrapper function to get around a compiler bug.
  * Bug in question: Function params causing compile error when passed a default value. Compile error: <variable> prototype doesn't match.
  */
-stock float eval(const char[] formula, int size)
+stock float eval(const char[] formula, int size = -1)
 {
-	return Eval(formula, size, OnEvalError, NoVariable);
+	return Eval(formula, size < 0 : strlen(formula) + 1 : size, OnEvalError, NoVariable);
 }
 
 /**
