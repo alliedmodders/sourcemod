@@ -43,13 +43,21 @@
 
 CurlExt curl_ext;		/**< Global singleton for extension's main interface */
 
+HandleType_t WebSessionType;
+HandleType_t WebFormType;
+HandleType_t CallBackType;
+
+IThreadHandle* webThread = nullptr;
+
+void StartWebThread();
+void StopWebThread();
 SMEXT_LINK(&curl_ext);
 
 bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	long flags;
 	CURLcode code;
-
+	HandleError err;
 	flags = CURL_GLOBAL_NOTHING;
 #if defined PLATFORM_WINDOWS
 	flags = CURL_GLOBAL_WIN32;
@@ -67,12 +75,17 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		smutils->Format(error, maxlength, "Could not add IWebternet interface");
 		return false;
 	}
-
+	WebSessionType = handlesys->CreateType("Web Session Handle Type", this, 0, NULL, NULL, myself->GetIdentity(), &err);
+	WebFormType = handlesys->CreateType("Web Form Handle Type", this, 0, NULL, NULL, myself->GetIdentity(), &err);
+	StartWebThread();
 	return true;
 }
 
 void CurlExt::SDK_OnUnload()
 {
+	StopWebThread();
+	handlesys->RemoveType(WebSessionType, myself->GetIdentity());
+	handlesys->RemoveType(WebFormType, myself->GetIdentity());
 	curl_global_cleanup();
 }
 
