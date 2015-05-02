@@ -348,6 +348,7 @@ CopyFiles('plugins/include', 'addons/sourcemod/scripting/include',
     'usermessages.inc',
     'vector.inc',
     'version.inc',
+    'web.inc',
   ]
 )
 CopyFiles('translations', 'addons/sourcemod/translations',
