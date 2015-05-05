@@ -46,7 +46,7 @@ static CBaseEntity *FindEntityByNetClass(int start, const char *classname)
 	for (int i = start; i < maxEntities; i++)
 	{
 		edict_t *current = gamehelpers->EdictOfIndex(i);
-		if (current == NULL)
+		if (current == NULL || current->IsFree())
 			continue;
 
 		IServerNetworkable *network = current->GetNetworkable();
