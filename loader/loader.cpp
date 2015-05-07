@@ -87,6 +87,7 @@
 #define FILENAME_1_6_BLADE			"sourcemod.2.blade" PLATFORM_EXT
 #define FILENAME_1_6_INSURGENCY		"sourcemod.2.insurgency" PLATFORM_EXT
 #define FILENAME_1_6_CONTAGION		"sourcemod.2.contagion" PLATFORM_EXT
+#define FILENAME_1_6_BMS			"sourcemod.2.bms" PLATFORM_EXT
 
 HINSTANCE g_hCore = NULL;
 bool load_attempted = false;
@@ -309,6 +310,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_SDK2013:
 		{
 			filename = FILENAME_1_6_SDK2013;
+			break;
+		}
+	case SOURCE_ENGINE_BMS:
+		{
+			filename = FILENAME_1_6_BMS;
 			break;
 		}
 	case SOURCE_ENGINE_TF2:

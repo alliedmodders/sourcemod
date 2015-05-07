@@ -458,11 +458,12 @@ void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level = 1)
 		pProp = pTable->GetProp(i);
 		if (pProp->GetDataTable())
 		{
-			fprintf(fp, "%*sTable: %s (offset %d) (type %s)\n", 
+			fprintf(fp, "%*sTable: %s (offset %d) (type %s) (unk %d 0x%p)\n", 
 				level, "", 
 				pProp->GetName(), 
 				pProp->GetOffset(), 
-				pProp->GetDataTable()->GetName());
+				pProp->GetDataTable()->GetName(),
+				pProp->m_Unknown1, pProp->m_Unknown1);
 			
 			UTIL_DrawSendTable(fp, pProp->GetDataTable(), level + 1);
 		}
@@ -473,24 +474,26 @@ void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level = 1)
 			if (type != NULL)
 			{
 				fprintf(fp,
-					"%*sMember: %s (offset %d) (type %s) (bits %d) (%s)\n", 
+					"%*sMember: %s (offset %d) (type %s) (bits %d) (%s) (unk %d 0x%p)\n", 
 					level, "", 
 					pProp->GetName(),
 					pProp->GetOffset(),
 					type,
 					pProp->m_nBits,
-					UTIL_SendFlagsToString(pProp->GetFlags(), pProp->GetType()));
+					UTIL_SendFlagsToString(pProp->GetFlags(), pProp->GetType()),
+					pProp->m_Unknown1, pProp->m_Unknown1);
 			}
 			else
 			{
 				fprintf(fp,
-					"%*sMember: %s (offset %d) (type %d) (bits %d) (%s)\n", 
+					"%*sMember: %s (offset %d) (type %d) (bits %d) (%s) (unk %d 0x%p)\n", 
 					level, "", 
 					pProp->GetName(),
 					pProp->GetOffset(),
 					pProp->GetType(),
 					pProp->m_nBits,
-					UTIL_SendFlagsToString(pProp->GetFlags(), pProp->GetType()));
+					UTIL_SendFlagsToString(pProp->GetFlags(), pProp->GetType()),
+					pProp->m_Unknown1, pProp->m_Unknown1);
 			}
 		}
 	}
@@ -597,11 +600,12 @@ CEntityFactoryDictionary *GetEntityFactoryDictionary()
 {
 	static CEntityFactoryDictionary *dict = NULL;
 
-#if SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_CSS \
-	|| SOURCE_ENGINE == SE_DODS \
-	|| SOURCE_ENGINE == SE_HL2DM \
+#if SOURCE_ENGINE == SE_TF2        \
+	|| SOURCE_ENGINE == SE_CSS     \
+	|| SOURCE_ENGINE == SE_DODS    \
+	|| SOURCE_ENGINE == SE_HL2DM   \
 	|| SOURCE_ENGINE == SE_SDK2013 \
+	|| SOURCE_ENGINE == SE_BMS     \
 	|| SOURCE_ENGINE == SE_NUCLEARDAWN
 	dict = (CEntityFactoryDictionary *) servertools->GetEntityFactoryDictionary();
 #else
