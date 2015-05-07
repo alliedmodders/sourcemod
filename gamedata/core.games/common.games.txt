@@ -236,6 +236,7 @@
 			"game"					"berimbau"
 			"game"					"cstrike"
 			"game"					"synergy"
+			"game"					"bms"
 		}
 		
 		"Keys"
