@@ -1,1 +1,0 @@
-(9) : error 170: creating new object 'Handle' requires using 'new' before its constructor

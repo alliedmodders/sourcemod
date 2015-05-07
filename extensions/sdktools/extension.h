@@ -83,7 +83,7 @@ public: //public SDKExtension
 public:
 #if defined SMEXT_CONF_METAMOD
 	virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late);
-	//virtual bool SDK_OnMetamodUnload(char *error, size_t maxlen);
+	virtual bool SDK_OnMetamodUnload(char *error, size_t maxlen);
 	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlen);
 #endif
 public: //IConCommandBaseAccessor
@@ -100,6 +100,9 @@ public: // IVoiceServer
 	void OnClientCommand(edict_t *pEntity, const CCommand &args);
 #else
 	void OnClientCommand(edict_t *pEntity);
+#endif
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
+	void OnSendClientCommand(edict_t *pPlayer, const char *szFormat);
 #endif
 
 public: //ICommandTargetProcessor

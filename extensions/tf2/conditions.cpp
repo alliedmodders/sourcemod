@@ -37,7 +37,7 @@ IForward *g_removeCondForward = NULL;
 
 struct CondChangeData_t
 {
-	CBaseEntity *pPlayer;
+	CBaseHandle hPlayer;
 	PlayerConditionsMgr::CondVar var;
 	int newConds;
 };
@@ -51,10 +51,12 @@ static void HandleCondChange(void *pData)
 
 void PlayerConditionsMgr::ProcessCondChange(CondChangeData_t *pCondData)
 {
-	int client = gamehelpers->EntityToBCompatRef(pCondData->pPlayer);
-	if (!playerhelpers->GetGamePlayer(client)->IsInGame())
+	auto *pEdict = gamehelpers->GetHandleEntity(pCondData->hPlayer);
+	auto *pPlayer = playerhelpers->GetGamePlayer(pEdict);
+	if (!pPlayer || !pPlayer->IsInGame())
 		return;
 
+	int client = pCondData->hPlayer.GetEntryIndex();
 	int newConds = 0;
 	int prevConds = 0;
 	CondVar var = pCondData->var;
@@ -109,7 +111,7 @@ static void OnPlayerCondChange(const SendProp *pProp, const void *pStructBase, c
 void PlayerConditionsMgr::OnConVarChange(CondVar var, const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
 {
 	auto pCondData = new CondChangeData_t;
-	pCondData->pPlayer = (CBaseEntity *)((intp)pData - GetPropOffs(var));
+	pCondData->hPlayer = ((IHandleEntity *)((intp)pData - GetPropOffs(var)))->GetRefEHandle();
 	pCondData->var = var;
 	pCondData->newConds = *(int *)pData;
 

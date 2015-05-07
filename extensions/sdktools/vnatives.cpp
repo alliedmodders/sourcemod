@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
-* Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -1267,6 +1267,61 @@ static cell_t ActivateEntity(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t SetClientName(IPluginContext *pContext, const cell_t *params)
+{
+	if (iserver == NULL)
+	{
+		return pContext->ThrowNativeError("IServer interface not supported, file a bug report.");
+	}
+
+	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
+	IClient *pClient = iserver->GetClient(params[1] - 1);
+
+	if (player == NULL || pClient == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
+	}
+	if (!player->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
+	}
+
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo params[1];
+		InitPass(params[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+
+		if (!CreateBaseCall("SetClientName", ValveCall_Entity, NULL, params, 1, &pCall))
+		{
+			return pContext->ThrowNativeError("\"SetClientName\" not supported by this mod");
+		}
+		else if (!pCall)
+		{
+			return pContext->ThrowNativeError("\"SetClientName\" wrapper failed to initialize");
+		}
+	}
+
+	// The IClient vtable is +4 from the CBaseClient vtable due to multiple inheritance.
+	void *pGameClient = (void *)((intptr_t)pClient - 4);
+
+	// Change the name in the engine.
+	START_CALL();
+	void **ebuf = (void **)vptr;
+	*ebuf = pGameClient;
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	FINISH_CALL_SIMPLE(NULL);
+
+	// Notify the server of the change.
+#if SOURCE_ENGINE == SE_DOTA
+	serverClients->ClientSettingsChanged(player->GetIndex());
+#else
+	serverClients->ClientSettingsChanged(player->GetEdict());
+#endif
+
+	return 1;
+}
+
 static cell_t SetClientInfo(IPluginContext *pContext, const cell_t *params)
 {
 	if (iserver == NULL)
@@ -1418,6 +1473,7 @@ sp_nativeinfo_t g_Natives[] =
 	{"EquipPlayerWeapon",		WeaponEquip},
 	{"ActivateEntity",			ActivateEntity},
 	{"SetClientInfo",			SetClientInfo},
+	{"SetClientName",           SetClientName},
 	{"GetPlayerResourceEntity", GetPlayerResourceEntity},
 	{"GivePlayerAmmo",		GivePlayerAmmo},
 	{NULL,						NULL},

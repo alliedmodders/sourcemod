@@ -79,7 +79,7 @@ for sdk_name in SM.sdks:
       if msvc_ver == 1800:
         vs_year = '2013'
       else:
-        raise Exception('Cannot find libprotobuf for MSVC version "' + compiler.version + '"')
+        raise Exception('Cannot find libprotobuf for MSVC version "' + str(compiler.version) + '"')
 
       if 'DEBUG' in compiler.defines:
         lib_path = os.path.join(sdk.path, 'lib', 'win32', 'debug', 'vs' + vs_year, 'libprotobuf.lib')

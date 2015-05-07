@@ -1,1 +1,0 @@
-(16) : error 174: symbol 'X' is a type and cannot be used as a value

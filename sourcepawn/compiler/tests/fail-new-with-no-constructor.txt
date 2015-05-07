@@ -1,1 +1,0 @@
-(8) : error 172: methodmap 'Handle' does not have a constructor

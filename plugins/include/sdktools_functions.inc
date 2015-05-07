@@ -260,6 +260,15 @@ native SetTeamScore(index, value);
 native GetTeamClientCount(index);
 
 /**
+ * Returns the entity index of a team.
+ *
+ * @param teamIndex		Team index.
+ * @return				Entity index of team.
+ * @error				Invalid team index.
+ */
+native int GetTeamEntity(int teamIndex);
+
+/**
  * Sets the model to a given entity.
  *
  * @param entity			Entity index.
@@ -331,6 +340,15 @@ native ActivateEntity(entity);
  * @error				Invalid client index, or client not connected.
  */
 native SetClientInfo(client, const String:key[], const String:value[]);
+
+/**
+ * Changes a client's name.
+ *
+ * @param client		Player's index.
+ * @param name			New name.
+ * @error               Invalid client index, or client not connected.
+ */
+native void SetClientName(int client, const char[] name);
 
 /**
  * Gives ammo of a certain type to a player.

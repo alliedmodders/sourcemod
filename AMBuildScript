@@ -172,7 +172,7 @@ class SMConfig(object):
         '-m32',
       ]
       cxx.cxxflags += [
-          '-std=c++11',
+        '-std=c++11',
       ]
 
       have_gcc = cxx.vendor == 'gcc'
@@ -226,7 +226,6 @@ class SMConfig(object):
       ]
       cxx.linkflags += [
         '/MACHINE:X86',
-        '/SUBSYSTEM:WINDOWS',
         'kernel32.lib',
         'user32.lib',
         'gdi32.lib',
@@ -286,10 +285,15 @@ class SMConfig(object):
       'SOURCEMOD_BUILD',
       'SM_USE_VERSIONLIB',
     ]
+    cxx.includes += [
+      os.path.join(builder.sourcePath, 'public'),
+    ]
     if self.use_auto_versioning():
       cxx.defines += ['SM_GENERATED_BUILD']
-      cxx.includes += [os.path.join(builder.buildPath, 'includes')]
-      cxx.includes += [os.path.join(builder.sourcePath, 'versionlib')]
+      cxx.includes += [
+        os.path.join(builder.buildPath, 'includes'),
+        os.path.join(builder.sourcePath, 'versionlib'),
+      ]
 
   def AddVersioning(self, binary):
     if builder.target_platform == 'windows':
@@ -313,17 +317,20 @@ class SMConfig(object):
 
   def Library(self, context, name):
     binary = context.compiler.Library(name)
+    if binary.compiler.like('msvc'):
+      binary.compiler.linkflags += ['/SUBSYSTEM:WINDOWS']
     return self.AddVersioning(binary)
 
   def Program(self, context, name):
     binary = context.compiler.Program(name)
+    if binary.compiler.like('msvc'):
+      binary.compiler.linkflags += ['/SUBSYSTEM:CONSOLE']
     return self.AddVersioning(binary)
 
   def ConfigureForExtension(self, context, compiler):
     compiler.cxxincludes += [
       os.path.join(context.currentSourcePath),
       os.path.join(context.currentSourcePath, 'sdk'),
-      os.path.join(builder.sourcePath, 'public'),
       os.path.join(builder.sourcePath, 'public', 'extensions'),
       os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
       os.path.join(builder.sourcePath, 'public', 'amtl', 'include'),
@@ -491,6 +498,18 @@ if SM.use_auto_versioning():
     { 'SM': SM }
   )
 
+# Build SourcePawn externally.
+SourcePawn = builder.RunScript('sourcepawn/AMBuildScript', {})
+SP = SourcePawn(
+  root = SM,
+  amtl = os.path.join(builder.sourcePath, 'public', 'amtl'),
+)
+SP.BuildCore()
+SM.spcomp = SP.spcomp
+SM.binaries += [
+  SP.libsourcepawn
+]
+
 BuildScripts = [
   'loader/AMBuilder',
   'core/AMBuilder',
@@ -508,8 +527,6 @@ BuildScripts = [
   'extensions/tf2/AMBuilder',
   'extensions/topmenus/AMBuilder',
   'extensions/updater/AMBuilder',
-  'sourcepawn/compiler/AMBuilder',
-  'sourcepawn/vm/AMBuilder',
 ]
 
 if builder.backend == 'amb2':
