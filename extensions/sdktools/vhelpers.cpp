@@ -458,12 +458,11 @@ void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level = 1)
 		pProp = pTable->GetProp(i);
 		if (pProp->GetDataTable())
 		{
-			fprintf(fp, "%*sTable: %s (offset %d) (type %s) (unk %d 0x%p)\n", 
+			fprintf(fp, "%*sTable: %s (offset %d) (type %s)\n", 
 				level, "", 
 				pProp->GetName(), 
 				pProp->GetOffset(), 
-				pProp->GetDataTable()->GetName(),
-				pProp->m_Unknown1, pProp->m_Unknown1);
+				pProp->GetDataTable()->GetName());
 			
 			UTIL_DrawSendTable(fp, pProp->GetDataTable(), level + 1);
 		}
@@ -474,26 +473,24 @@ void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level = 1)
 			if (type != NULL)
 			{
 				fprintf(fp,
-					"%*sMember: %s (offset %d) (type %s) (bits %d) (%s) (unk %d 0x%p)\n", 
+					"%*sMember: %s (offset %d) (type %s) (bits %d) (%s)\n", 
 					level, "", 
 					pProp->GetName(),
 					pProp->GetOffset(),
 					type,
 					pProp->m_nBits,
-					UTIL_SendFlagsToString(pProp->GetFlags(), pProp->GetType()),
-					pProp->m_Unknown1, pProp->m_Unknown1);
+					UTIL_SendFlagsToString(pProp->GetFlags(), pProp->GetType()));
 			}
 			else
 			{
 				fprintf(fp,
-					"%*sMember: %s (offset %d) (type %d) (bits %d) (%s) (unk %d 0x%p)\n", 
+					"%*sMember: %s (offset %d) (type %d) (bits %d) (%s)\n", 
 					level, "", 
 					pProp->GetName(),
 					pProp->GetOffset(),
 					pProp->GetType(),
 					pProp->m_nBits,
-					UTIL_SendFlagsToString(pProp->GetFlags(), pProp->GetType()),
-					pProp->m_Unknown1, pProp->m_Unknown1);
+					UTIL_SendFlagsToString(pProp->GetFlags(), pProp->GetType()));
 			}
 		}
 	}
