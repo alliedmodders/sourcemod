@@ -320,7 +320,7 @@ static cell_t PrintToChat(IPluginContext *pContext, const cell_t *params)
 
 	g_SourceMod.SetGlobalTarget(client);
 
-	char buffer[192];
+	char buffer[254];
 
 	{
 		DetectExceptions eh(pContext);

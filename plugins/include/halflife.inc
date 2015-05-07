@@ -323,7 +323,7 @@ native PrintToChat(client, const String:format[], any:...);
  */
 stock PrintToChatAll(const String:format[], any:...)
 {
-	decl String:buffer[192];
+	decl String:buffer[254];
 	
 	for (new i = 1; i <= MaxClients; i++)
 	{
