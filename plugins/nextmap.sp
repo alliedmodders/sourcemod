@@ -64,6 +64,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 			|| StrEqual(game, "garrysmod", false)
 			|| StrEqual(game, "swarm", false)
 			|| StrEqual(game, "dota", false)
+			|| StrEqual(game, "bms", false)
 			|| GetEngineVersion() == Engine_Insurgency)
 	{
 		strcopy(error, err_max, "Nextmap is incompatible with this game");
