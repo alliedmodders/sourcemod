@@ -498,7 +498,7 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 		/* Use SayText user message instead */
 		if (chat_saytext != NULL && strcmp(chat_saytext, "yes") == 0)
 		{
-			char buffer[192];
+			char buffer[253];
 			UTIL_Format(buffer, sizeof(buffer), "%s\1\n", msg);
 
 #if SOURCE_ENGINE == SE_DOTA
