@@ -120,7 +120,7 @@ public:
 	}
 
 	template <typename U>
-	void add(Insert &i, U &&value)
+	bool add(Insert &i, U &&value)
 	{
 		return table_.add(i, ke::Forward<U>(value));
 	}
