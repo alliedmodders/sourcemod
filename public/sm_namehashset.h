@@ -117,12 +117,12 @@ public:
 		return table_.findForAdd(aKey);
 	}
 
-	void add(Insert &i, const T &value)
+	bool add(Insert &i, const T &value)
 	{
 		return table_.add(i, value);
 	}
 
-	void add(Insert &i, ke::Moveable<T> value)
+	bool add(Insert &i, ke::Moveable<T> value)
 	{
 		return table_.add(i, value);
 	}
