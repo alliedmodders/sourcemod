@@ -354,7 +354,7 @@ static cell_t PrintCenterText(IPluginContext *pContext, const cell_t *params)
 
 	g_SourceMod.SetGlobalTarget(client);
 
-	char buffer[192];
+	char buffer[254];
 	
 	{
 		DetectExceptions eh(pContext);
@@ -388,7 +388,7 @@ static cell_t PrintHintText(IPluginContext *pContext, const cell_t *params)
 
 	g_SourceMod.SetGlobalTarget(client);
 
-	char buffer[192];
+	char buffer[254];
 	{
 		DetectExceptions eh(pContext);
 		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
