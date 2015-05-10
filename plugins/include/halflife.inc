@@ -88,6 +88,7 @@ enum EngineVersion
 	Engine_Blade,				/**< Blade Symphony */
 	Engine_Insurgency,			/**< Insurgency (2013 Retail version)*/
 	Engine_Contagion,			/**< Contagion */
+	Engine_BlackMesa,			/**< Black Mesa Multiplayer */
 };
 
 #define INVALID_ENT_REFERENCE 0xFFFFFFFF
