@@ -264,6 +264,7 @@ class SMConfig(object):
     # Platform-specifics
     if builder.target_platform == 'linux':
       cxx.defines += ['_LINUX', 'POSIX']
+	  cxx.linkflags += ['-lm']
       if cxx.vendor == 'gcc':
         cxx.linkflags += ['-static-libgcc']
       elif cxx.vendor == 'clang':
@@ -437,7 +438,6 @@ class SMConfig(object):
 
     dynamic_libs = []
     if builder.target_platform == 'linux':
-      compiler.linkflags[0:0] = ['-lm']
       if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2']:
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
       elif sdk.name in ['l4d', 'blade', 'insurgency', 'csgo', 'dota']:
