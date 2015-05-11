@@ -320,6 +320,8 @@ void SourceModBase::StartSourceMod(bool late)
 static bool g_LevelEndBarrier = false;
 bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 {
+	g_Players.MaxPlayersChanged();
+
 	/* If we're not loaded... */
 	if (!g_Loaded)
 	{

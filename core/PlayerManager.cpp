@@ -138,6 +138,8 @@ PlayerManager::PlayerManager()
 
 	m_UserIdLookUp = new int[USHRT_MAX+1];
 	memset(m_UserIdLookUp, 0, sizeof(int) * (USHRT_MAX+1));
+
+	InitializePlayers();
 }
 
 PlayerManager::~PlayerManager()
@@ -146,6 +148,20 @@ PlayerManager::~PlayerManager()
 
 	delete [] m_AuthQueue;
 	delete [] m_UserIdLookUp;
+}
+
+void PlayerManager::InitializePlayers()
+{
+	/* Initialize all players */
+
+	m_PlayerCount = 0;
+	m_Players = new CPlayer[SM_MAXPLAYERS + 1];
+	m_AuthQueue = new unsigned int[SM_MAXPLAYERS + 1];
+	m_FirstPass = true;
+
+	memset(m_AuthQueue, 0, sizeof(unsigned int) * (SM_MAXPLAYERS + 1));
+
+	g_NumPlayersToAuth = &m_AuthQueue[0];
 }
 
 void PlayerManager::OnSourceModAllInitialized()
@@ -285,9 +301,6 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	static ConVar *replay_enable = icvar->FindVar("replay_enable");
 #endif
 
-	// clientMax will not necessarily be correct here (such as on late SourceTV enable)
-	m_maxClients = gpGlobals->maxClients;
-
 	ICommandLine *commandLine = g_HL2.GetValveCommandLine();
 	m_bIsSourceTVActive = (tv_enable && tv_enable->GetBool() && (!commandLine || commandLine->FindParm("-nohltv") == 0));
 	m_bIsReplayActive = false;
@@ -298,19 +311,8 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	
 	if (!m_FirstPass)
 	{
-		/* Initialize all players */
-
-		m_PlayerCount = 0;
-		m_Players = new CPlayer[SM_MAXPLAYERS + 1];
-		m_AuthQueue = new unsigned int[SM_MAXPLAYERS + 1];
-		m_FirstPass = true;
-
-		memset(m_AuthQueue, 0, sizeof(unsigned int) * (SM_MAXPLAYERS + 1));
-
-		g_NumPlayersToAuth = &m_AuthQueue[0];
+		InitializePlayers();
 	}
-
-	scripts->SyncMaxClients(m_maxClients);
 
 	g_OnMapStarted = true;
 
