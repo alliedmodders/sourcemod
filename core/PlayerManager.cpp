@@ -128,7 +128,7 @@ public:
 PlayerManager::PlayerManager()
 {
 	m_AuthQueue = NULL;
-	m_FirstPass = false;
+	m_bServerActivated = false;
 	m_maxClients = 0;
 
 	m_SourceTVUserId = -1;
@@ -307,7 +307,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	m_PlayersSinceActive = 0;
 	
 	g_OnMapStarted = true;
-	m_FirstPass = true;
+	m_bServerActivated = true;
 
 #if SOURCE_ENGINE == SE_DOTA
 	extsys->CallOnCoreMapStart(gpGlobals->pEdicts, gpGlobals->maxEntities, gpGlobals->maxClients);
@@ -339,7 +339,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 
 bool PlayerManager::IsServerActivated()
 {
-	return m_FirstPass;
+	return m_bServerActivated;
 }
 
 bool PlayerManager::CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id)
