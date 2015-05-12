@@ -138,8 +138,6 @@ PlayerManager::PlayerManager()
 
 	m_UserIdLookUp = new int[USHRT_MAX+1];
 	memset(m_UserIdLookUp, 0, sizeof(int) * (USHRT_MAX+1));
-
-	InitializePlayers();
 }
 
 PlayerManager::~PlayerManager()
@@ -150,14 +148,13 @@ PlayerManager::~PlayerManager()
 	delete [] m_UserIdLookUp;
 }
 
-void PlayerManager::InitializePlayers()
+void PlayerManager::OnSourceModStartup(bool late)
 {
 	/* Initialize all players */
 
 	m_PlayerCount = 0;
 	m_Players = new CPlayer[SM_MAXPLAYERS + 1];
 	m_AuthQueue = new unsigned int[SM_MAXPLAYERS + 1];
-	m_FirstPass = true;
 
 	memset(m_AuthQueue, 0, sizeof(unsigned int) * (SM_MAXPLAYERS + 1));
 
@@ -309,12 +306,8 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 #endif
 	m_PlayersSinceActive = 0;
 	
-	if (!m_FirstPass)
-	{
-		InitializePlayers();
-	}
-
 	g_OnMapStarted = true;
+	m_FirstPass = true;
 
 #if SOURCE_ENGINE == SE_DOTA
 	extsys->CallOnCoreMapStart(gpGlobals->pEdicts, gpGlobals->maxEntities, gpGlobals->maxClients);
@@ -1828,11 +1821,6 @@ void PlayerManager::OnSourceModMaxPlayersChanged( int newvalue )
 
 void PlayerManager::MaxPlayersChanged( int newvalue /*= -1*/ )
 {
-	if (!m_FirstPass)
-	{
-		return;
-	}
-
 	if (newvalue == -1)
 	{
 		newvalue = gpGlobals->maxClients;

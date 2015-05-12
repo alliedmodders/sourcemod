@@ -154,6 +154,7 @@ public:
 	PlayerManager();
 	~PlayerManager();
 public: //SMGlobalClass
+	void OnSourceModStartup(bool late) override;
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 	void OnSourceModLevelEnd();
