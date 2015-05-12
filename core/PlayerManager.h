@@ -235,8 +235,6 @@ private:
 #endif
 	void InvalidatePlayer(CPlayer *pPlayer);
 private:
-	void InitializePlayers();
-private:
 	List<IClientListener *> m_hooks;
 	IForward *m_clconnect;
 	IForward *m_clconnect_post;
