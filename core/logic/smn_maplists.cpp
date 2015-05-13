@@ -91,7 +91,8 @@ public:
 		const char *pMapCycleFileName = m_pMapCycleFile ? smcore.GetCvarString(m_pMapCycleFile) : "mapcycle.txt";
 
 		if (strcmp(pEngineName, "tf2") == 0 || strcmp(pEngineName, "css") == 0
-			|| strcmp(pEngineName, "dods") == 0 || strcmp(pEngineName, "hl2dm") == 0)
+			|| strcmp(pEngineName, "dods") == 0 || strcmp(pEngineName, "hl2dm") == 0
+			|| strcmp(pEngineName, "sdk2013") == 0 || strcmp(pEngineName, "bms") == 0)
 		{
 			// These four games and Source SDK 2013 do a lookup in this order; so shall we.
 			g_pSM->Format(pBuffer, maxlen, "cfg/%s", pMapCycleFileName);
