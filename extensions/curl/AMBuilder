@@ -21,7 +21,10 @@ elif builder.target_platform == 'windows':
 binary.sources += [
   'extension.cpp',
   'curlapi.cpp',
-  '../../public/smsdk_ext.cpp'
+  '../../public/smsdk_ext.cpp',
+  'web_callback.cpp',
+  'web_executer.cpp',
+  'natives.cpp',
 ]
 
 SM.extensions += [builder.Add(binary)]

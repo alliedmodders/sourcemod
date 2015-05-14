@@ -42,6 +42,11 @@
  */
 
 CurlExt curl_ext;		/**< Global singleton for extension's main interface */
+HandleType_t WebSessionType;
+HandleType_t WebFormType;
+
+bool BeginWorker();
+void EndWorker();
 
 SMEXT_LINK(&curl_ext);
 
@@ -67,12 +72,34 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		smutils->Format(error, maxlength, "Could not add IWebternet interface");
 		return false;
 	}
-
+	HandleError err = HandleError_None;
+	WebSessionType = handlesys->CreateType("Web Session", this, 0, NULL, NULL, myself->GetIdentity(), &err);
+	if (err != HandleError_None)
+	{
+		smutils->Format(error, maxlength, "Could not create Web Session type");
+		return false;
+	}
+	err = HandleError_None;
+	WebFormType = handlesys->CreateType("Web Form", this, 0, NULL, NULL, myself->GetIdentity(), &err);
+	if (err != HandleError_None)
+	{
+		smutils->Format(error, maxlength, "Could not create Web Session type");
+		return false;
+	}
+	if (!BeginWorker())
+	{
+		smutils->Format(error, maxlength, "Unable to start web worker pool");
+		return false;
+	}
+	sharesys->RegisterLibrary(myself, "Webternet");
 	return true;
 }
 
 void CurlExt::SDK_OnUnload()
 {
+	EndWorker();
+	handlesys->RemoveType(WebSessionType, myself->GetIdentity());
+	handlesys->RemoveType(WebFormType, myself->GetIdentity());
 	curl_global_cleanup();
 }
 
