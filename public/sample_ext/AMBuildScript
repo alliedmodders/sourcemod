@@ -1,9 +1,7 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os, sys
 
-###############
-# Make sure to edit PackageScript, which copies your files to their appropriate locations
-# Simple extensions do not need to modify past this point.
+# Simple extensions do not need to modify this file.
 
 class SDK(object):
   def __init__(self, sdk, ext, aDef, name, platform, dir):
