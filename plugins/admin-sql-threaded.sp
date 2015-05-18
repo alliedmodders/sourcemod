@@ -350,7 +350,7 @@ public void OnReceiveUser(Database db, DBResultSet rs, const char[] error, any d
 	/**
 	 * Cache user info -- [0] = db id, [1] = cache id, [2] = groups
 	 */
-	char[][] user_lookup = new char[num_accounts][3];
+	int[][] user_lookup = new int[num_accounts][3];
 	int total_users = 0;
 	
 	while (rs.FetchRow())
