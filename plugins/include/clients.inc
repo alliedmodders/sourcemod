@@ -67,9 +67,6 @@ enum AuthIdType
 /**
  * MAXPLAYERS is not the same as MaxClients.
  * MAXPLAYERS is a hardcoded value as an upper limit.  MaxClients changes based on the server.
- *
- * Both GetMaxClients() and MaxClients are only available once the map is loaded, and should 
- * not be used in OnPluginStart().
  */
 
 #define MAXPLAYERS		65	/**< Maximum number of players SourceMod supports */
