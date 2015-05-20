@@ -154,6 +154,7 @@ public:
 	PlayerManager();
 	~PlayerManager();
 public: //SMGlobalClass
+	void OnSourceModStartup(bool late) override;
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 	void OnSourceModLevelEnd();
@@ -250,7 +251,7 @@ private:
 	int m_maxClients;
 	int m_PlayerCount;
 	int m_PlayersSinceActive;
-	bool m_FirstPass;
+	bool m_bServerActivated;
 	unsigned int *m_AuthQueue;
 	String m_PassInfoVar;
 	bool m_QueryLang;
