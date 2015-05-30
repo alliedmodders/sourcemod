@@ -1,5 +1,16 @@
 SourceMod Changelog
 
+SourceMod 1.7.2 [2015-05-30]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.7.2_Release_Notes
+
+User Changes:
+- Updated game compatibility for the latest CS:GO updates.
+- Fixed potential crash when using SDKTools GameRules_* natives. (PR 330) (yed).
+- Fixed regression in v1.7.0 causing admin-sql-threaded plugin to not properly load admins. (bug 6365) (PR 342).
+- Fixed leak in plugin heap memory that could lead to "Not enough space on the heap" error. (bug 6370).
+
+----------------------------------------------------------
 SourceMod 1.7.1 [2015-04-18]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.7.1_Release_Notes
