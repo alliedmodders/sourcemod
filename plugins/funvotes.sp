@@ -283,7 +283,7 @@ VoteSelect(Handle:menu, param1, param2 = 0)
 {
 	if (GetConVarInt(g_Cvar_VoteShow) == 1)
 	{
-		decl String:voter[64], String:junk[64], String:choice[64];
+		decl String:voter[MAX_NAME_LENGTH], String:junk[64], String:choice[64];
 		GetClientName(param1, voter, sizeof(voter));
 		menu.GetItem(param2, junk, sizeof(junk), _, choice, sizeof(choice));
 		PrintToChatAll("[SM] %T", "Vote Select", LANG_SERVER, voter, choice);

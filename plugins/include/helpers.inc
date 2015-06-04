@@ -46,7 +46,7 @@
 stock FormatUserLogText(client, String:buffer[], maxlength)
 {
 	decl String:auth[32];
-	decl String:name[40];
+	decl String:name[MAX_NAME_LENGTH];
 	
 	new userid = GetClientUserId(client);
 	if (!GetClientAuthString(client, auth, sizeof(auth)))
@@ -107,7 +107,7 @@ stock int SearchForClients(const char[] pattern, int[] clients, int maxClients)
 	if (pattern[0] == '#') {
 		int input = StringToInt(pattern[1]);
 		if (!input) {
-			char name[65];
+			char name[MAX_NAME_LENGTH];
 			for (int i=1; i<=MaxClients; i++) {
 				if (!IsClientInGame(i))
 					continue;
@@ -126,7 +126,7 @@ stock int SearchForClients(const char[] pattern, int[] clients, int maxClients)
 		}
 	}
 	
-	char name[65];
+	char name[MAX_NAME_LENGTH];
 	for (int i=1; i<=MaxClients; i++)
 	{
 		if (!IsClientInGame(i))

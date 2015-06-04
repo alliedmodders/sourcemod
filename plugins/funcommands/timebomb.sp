@@ -118,7 +118,7 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 		
 		SetEntityRenderColor(client, 255, 128, color, 255);
 
-		char name[64];
+		char name[MAX_NAME_LENGTH];
 		GetClientName(client, name, sizeof(name));
 		PrintCenterTextAll("%t", "Till Explodes", name, g_TimeBombTime[client]);
 		
@@ -275,7 +275,7 @@ public MenuHandler_TimeBomb(Menu menu, MenuAction action, int param1, int param2
 		}
 		else
 		{
-			new String:name[32];
+			new String:name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			
 			PerformTimeBomb(param1, target);

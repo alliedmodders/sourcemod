@@ -49,7 +49,7 @@ PrepareBan(client, target, time, const String:reason[])
 		return;
 	}
 
-	new String:name[32];
+	new String:name[MAX_NAME_LENGTH];
 	GetClientName(target, name, sizeof(name));
 
 	if (!time)

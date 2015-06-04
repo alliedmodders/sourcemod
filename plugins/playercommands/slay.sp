@@ -103,7 +103,7 @@ public MenuHandler_Slay(Menu menu, MenuAction action, param1, param2)
 		}
 		else
 		{
-			decl String:name[32];
+			decl String:name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			PerformSlay(param1, target);
 			ShowActivity2(param1, "[SM] ", "%t", "Slayed target", "_s", name);

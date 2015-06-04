@@ -210,7 +210,7 @@ AttemptRTV(client)
 		return;
 	}	
 	
-	new String:name[64];
+	new String:name[MAX_NAME_LENGTH];
 	GetClientName(client, name, sizeof(name));
 	
 	g_Votes++;
