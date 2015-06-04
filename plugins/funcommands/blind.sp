@@ -208,7 +208,7 @@ public MenuHandler_Amount(Menu menu, MenuAction action, int param1, int param2)
 		}
 		else
 		{
-			new String:name[32];
+			new String:name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			
 			PerformBlind(param1, target, amount);

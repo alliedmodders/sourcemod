@@ -109,7 +109,7 @@ public MenuHandler_Confirm(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:maps[5][64];
+		decl String:maps[5][PLATFORM_MAX_PATH];
 		new selectedmaps = GetArraySize(g_SelectedMaps);
 		
 		for (new i = 0; i < selectedmaps; i++)
@@ -233,7 +233,7 @@ public Action:Command_Votemap(client, args)
 	decl String:text[256];
 	GetCmdArgString(text, sizeof(text));
 
-	decl String:maps[5][64];
+	decl String:maps[5][PLATFORM_MAX_PATH];
 	new mapCount;	
 	new len, pos;
 	
@@ -283,7 +283,7 @@ int LoadMapList(Menu menu)
 	
 	RemoveAllMenuItems(menu);
 	
-	char map_name[64];
+	char map_name[PLATFORM_MAX_PATH];
 	new map_count = GetArraySize(g_map_array);
 	
 	for (new i = 0; i < map_count; i++)

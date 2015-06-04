@@ -86,8 +86,8 @@ public void OnPluginStart()
 	RegConsoleCmd("listmaps", Command_List);
 
 	// Set to the current map so OnMapStart() will know what to do
-	char currentMap[64];
-	GetCurrentMap(currentMap, 64);
+	char currentMap[PLATFORM_MAX_PATH];
+	GetCurrentMap(currentMap, sizeof(currentMap));
 	SetNextMap(currentMap);
 }
 
@@ -98,9 +98,9 @@ public void OnMapStart()
  
 public void OnConfigsExecuted()
 {
-	char lastMap[64], currentMap[64];
+	char lastMap[PLATFORM_MAX_PATH], currentMap[PLATFORM_MAX_PATH];
 	GetNextMap(lastMap, sizeof(lastMap));
-	GetCurrentMap(currentMap, 64);
+	GetCurrentMap(currentMap, sizeof(currentMap));
 	
 	// Why am I doing this? If we switched to a new map, but it wasn't what we expected (Due to sm_map, sm_votemap, or
 	// some other plugin/command), we don't want to scramble the map cycle. Or for example, admin switches to a custom map
@@ -146,8 +146,8 @@ void FindAndSetNextMap()
 	
 	if (g_MapPos == -1)
 	{
-		char current[64];
-		GetCurrentMap(current, 64);
+		char current[PLATFORM_MAX_PATH];
+		GetCurrentMap(current, sizeof(current));
 
 		for (int i = 0; i < mapCount; i++)
 		{

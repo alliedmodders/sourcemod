@@ -457,8 +457,8 @@ public void OnReceiveUser(Database db, DBResultSet rs, const char[] error, any d
 
 void FetchUser(Database db, int client)
 {
-	char name[65];
-	char safe_name[140];
+	char name[MAX_NAME_LENGTH];
+	char safe_name[(MAX_NAME_LENGTH * 2) - 1];
 	char steamid[32];
 	char steamidalt[32];
 	char ipaddr[24];
