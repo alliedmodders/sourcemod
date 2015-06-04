@@ -123,7 +123,7 @@ public Action Command_Addmap(int client, int args)
 		return Plugin_Handled;
 	}
 	
-	char mapname[64];
+	char mapname[PLATFORM_MAX_PATH];
 	GetCmdArg(1, mapname, sizeof(mapname));
 
 	
@@ -184,7 +184,7 @@ public Action Command_Nominate(int client, int args)
 		return Plugin_Handled;
 	}
 	
-	char mapname[64];
+	char mapname[PLATFORM_MAX_PATH];
 	GetCmdArg(1, mapname, sizeof(mapname));
 	
 	int status;
@@ -257,10 +257,10 @@ void BuildMapMenu()
 	
 	g_MapMenu = new Menu(Handler_MapSelectMenu, MENU_ACTIONS_DEFAULT|MenuAction_DrawItem|MenuAction_DisplayItem);
 
-	char map[64];
+	char map[PLATFORM_MAX_PATH];
 	
 	ArrayList excludeMaps;
-	char currentMap[32];
+	char currentMap[PLATFORM_MAX_PATH];
 	
 	if (g_Cvar_ExcludeOld.BoolValue)
 	{	
@@ -312,7 +312,7 @@ public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int p
 	{
 		case MenuAction_Select:
 		{
-			char map[64], name[64];
+			char map[PLATFORM_MAX_PATH], name[64];
 			menu.GetItem(param2, map, sizeof(map));		
 			
 			GetClientName(param1, name, 64);
@@ -344,7 +344,7 @@ public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int p
 		
 		case MenuAction_DrawItem:
 		{
-			char map[64];
+			char map[PLATFORM_MAX_PATH];
 			menu.GetItem(param2, map, sizeof(map));
 			
 			int status;
@@ -366,7 +366,7 @@ public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int p
 		
 		case MenuAction_DisplayItem:
 		{
-			char map[64];
+			char map[PLATFORM_MAX_PATH];
 			menu.GetItem(param2, map, sizeof(map));
 			
 			int status;
