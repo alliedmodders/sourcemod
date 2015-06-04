@@ -239,7 +239,7 @@ StartRTV()
 	if (EndOfMapVoteEnabled() && HasEndOfMapVoteFinished())
 	{
 		/* Change right now then */
-		new String:map[65];
+		new String:map[PLATFORM_MAX_PATH];
 		if (GetNextMap(map, sizeof(map)))
 		{
 			PrintToChatAll("[SM] %t", "Changing Maps", map);
@@ -281,7 +281,7 @@ public Action:Timer_ChangeMap(Handle:hTimer)
 	
 	LogMessage("RTV changing map manually");
 	
-	new String:map[65];
+	new String:map[PLATFORM_MAX_PATH];
 	if (GetNextMap(map, sizeof(map)))
 	{	
 		ForceChangeLevel(map, "RTV after mapvote");
