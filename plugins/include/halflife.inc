@@ -88,6 +88,7 @@ enum EngineVersion
 	Engine_Blade,				/**< Blade Symphony */
 	Engine_Insurgency,			/**< Insurgency (2013 Retail version)*/
 	Engine_Contagion,			/**< Contagion */
+	Engine_BlackMesa,			/**< Black Mesa Multiplayer */
 };
 
 #define INVALID_ENT_REFERENCE 0xFFFFFFFF
@@ -323,7 +324,7 @@ native PrintToChat(client, const String:format[], any:...);
  */
 stock PrintToChatAll(const String:format[], any:...)
 {
-	decl String:buffer[192];
+	decl String:buffer[254];
 	
 	for (new i = 1; i <= MaxClients; i++)
 	{
@@ -356,7 +357,7 @@ native PrintCenterText(client, const String:format[], any:...);
  */
 stock PrintCenterTextAll(const String:format[], any:...)
 {
-	decl String:buffer[192];
+	decl String:buffer[254];
 
 	for (new i = 1; i <= MaxClients; i++)
 	{
@@ -389,7 +390,7 @@ native PrintHintText(client, const String:format[], any:...);
  */
 stock PrintHintTextToAll(const String:format[], any:...)
 {
-	decl String:buffer[192];
+	decl String:buffer[254];
 	
 	for (new i = 1; i <= MaxClients; i++)
 	{

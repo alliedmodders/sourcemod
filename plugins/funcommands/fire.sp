@@ -125,7 +125,7 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 		
 		SetEntityRenderColor(client, 255, color, color, 255);
 
-		char name[64];
+		char name[MAX_NAME_LENGTH];
 		GetClientName(client, name, sizeof(name));
 		PrintCenterTextAll("%t", "Till Explodes", name, g_FireBombTime[client]);		
 		
@@ -304,7 +304,7 @@ public MenuHandler_Burn(Menu menu, MenuAction action, int param1, int param2)
 		}
 		else
 		{
-			new String:name[32];
+			new String:name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			PerformBurn(param1, target, 20.0);
 			ShowActivity2(param1, "[SM] ", "%t", "Set target on fire", "_s", name);
@@ -349,7 +349,7 @@ public MenuHandler_FireBomb(Menu menu, MenuAction action, int param1, int param2
 		}
 		else
 		{
-			new String:name[32];
+			new String:name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			
 			PerformFireBomb(param1, target);

@@ -32,13 +32,16 @@
  * Version: $Id$
  */
 
-#define OVERRIDE_STATE_NONE			0
-#define OVERRIDE_STATE_LEVELS		1
-#define OVERRIDE_STATE_OVERRIDES	2
+enum OverrideState
+{
+	OverrideState_None,
+	OverrideState_Levels,
+	OverrideState_Overrides,
+}
 
 static SMCParser g_hOldOverrideParser;
 static SMCParser g_hNewOverrideParser;
-static g_OverrideState = OVERRIDE_STATE_NONE;
+static OverrideState g_OverrideState = OverrideState_None;
 
 public SMCResult ReadOldOverrides_NewSection(SMCParser smc, const char[] name, bool opt_quotes)
 {
@@ -48,18 +51,18 @@ public SMCResult ReadOldOverrides_NewSection(SMCParser smc, const char[] name, b
 		return SMCParse_Continue;
 	}
 	
-	if (g_OverrideState == OVERRIDE_STATE_NONE)
+	if (g_OverrideState == OverrideState_None)
 	{
 		if (StrEqual(name, "Levels"))
 		{
-			g_OverrideState = OVERRIDE_STATE_LEVELS;
+			g_OverrideState = OverrideState_Levels;
 		} else {
 			g_IgnoreLevel++;
 		}
-	} else if (g_OverrideState == OVERRIDE_STATE_LEVELS) {
+	} else if (g_OverrideState == OverrideState_Levels) {
 		if (StrEqual(name, "Overrides"))
 		{
-			g_OverrideState = OVERRIDE_STATE_OVERRIDES;
+			g_OverrideState = OverrideState_Overrides;
 		} else {
 			g_IgnoreLevel++;
 		}
@@ -78,11 +81,11 @@ public SMCResult ReadNewOverrides_NewSection(SMCParser smc, const char[] name, b
 		return SMCParse_Continue;
 	}
 	
-	if (g_OverrideState == OVERRIDE_STATE_NONE)
+	if (g_OverrideState == OverrideState_None)
 	{
 		if (StrEqual(name, "Overrides"))
 		{
-			g_OverrideState = OVERRIDE_STATE_OVERRIDES;
+			g_OverrideState = OverrideState_Overrides;
 		} else {
 			g_IgnoreLevel++;
 		}
@@ -99,7 +102,7 @@ public SMCResult ReadOverrides_KeyValue(SMCParser smc,
 										bool key_quotes, 
 										bool value_quotes)
 {
-	if (g_OverrideState != OVERRIDE_STATE_OVERRIDES || g_IgnoreLevel)
+	if (g_OverrideState != OverrideState_Overrides || g_IgnoreLevel)
 	{
 		return SMCParse_Continue;
 	}
@@ -125,12 +128,12 @@ public SMCResult ReadOldOverrides_EndSection(SMCParser smc)
 		return SMCParse_Continue;
 	}
 	
-	if (g_OverrideState == OVERRIDE_STATE_LEVELS)
+	if (g_OverrideState == OverrideState_Levels)
 	{
-		g_OverrideState = OVERRIDE_STATE_NONE;
-	} else if (g_OverrideState == OVERRIDE_STATE_OVERRIDES) {
+		g_OverrideState = OverrideState_None;
+	} else if (g_OverrideState == OverrideState_Overrides) {
 		/* We're totally done parsing */
-		g_OverrideState = OVERRIDE_STATE_LEVELS;
+		g_OverrideState = OverrideState_Levels;
 		return SMCParse_Halt;
 	}
 	
@@ -146,9 +149,9 @@ public SMCResult ReadNewOverrides_EndSection(SMCParser smc)
 		return SMCParse_Continue;
 	}
 	
-	if (g_OverrideState == OVERRIDE_STATE_OVERRIDES)
+	if (g_OverrideState == OverrideState_Overrides)
 	{
-		g_OverrideState = OVERRIDE_STATE_NONE;
+		g_OverrideState = OverrideState_None;
 	}
 	
 	return SMCParse_Continue;
@@ -161,7 +164,7 @@ public SMCResult ReadOverrides_CurrentLine(SMCParser smc, const char[] line, int
 	return SMCParse_Continue;
 }
 
-static InitializeOverrideParsers()
+static void InitializeOverrideParsers()
 {
 	if (!g_hOldOverrideParser)
 	{
@@ -181,13 +184,13 @@ static InitializeOverrideParsers()
 	}
 }
 
-InternalReadOverrides(SMCParser parser, const char[] file)
+void InternalReadOverrides(SMCParser parser, const char[] file)
 {
 	BuildPath(Path_SM, g_Filename, sizeof(g_Filename), file);
 	
 	/* Set states */
 	InitGlobalStates();
-	g_OverrideState = OVERRIDE_STATE_NONE;
+	g_OverrideState = OverrideState_None;
 		
 	SMCError err = parser.ParseFile(g_Filename);
 	if (err != SMCError_Okay)
@@ -202,7 +205,7 @@ InternalReadOverrides(SMCParser parser, const char[] file)
 	}
 }
 
-ReadOverrides()
+void ReadOverrides()
 {
 	InitializeOverrideParsers();
 	InternalReadOverrides(g_hOldOverrideParser, "configs/admin_levels.cfg");

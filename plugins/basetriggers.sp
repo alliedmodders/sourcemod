@@ -201,7 +201,7 @@ public Action:Command_Nextmap(client, args)
 	if (client && !IsClientInGame(client))
 		return Plugin_Handled;
 	
-	decl String:map[64];
+	decl String:map[PLATFORM_MAX_PATH];
 	
 	GetNextMap(map, sizeof(map));
 	
@@ -289,7 +289,7 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 	}
 	else if (strcmp(sArgs, "nextmap", false) == 0)
 	{
-		char map[32];
+		char map[PLATFORM_MAX_PATH];
 		GetNextMap(map, sizeof(map));
 			
 		if (g_Cvar_TriggerShow.IntValue)

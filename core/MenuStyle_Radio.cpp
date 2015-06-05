@@ -83,6 +83,10 @@ void CRadioStyle::OnSourceModLevelChange(const char *mapName)
 	}
 
 	g_bRadioInit = true;
+
+	// Always register the style. Use IsSupported() to check for validity before use.
+	g_Menus.AddStyle(this);
+
 	const char *msg = g_pGameConf->GetKeyValue("HudRadioMenuMsg");
 	if (!msg || msg[0] == '\0')
 	{
@@ -118,7 +122,6 @@ void CRadioStyle::OnSourceModLevelChange(const char *mapName)
 		}
 	}
 
-	g_Menus.AddStyle(this);
 	g_Menus.SetDefaultStyle(this);
 
 	g_UserMsgs.HookUserMessage(g_ShowMenuId, this, false);
@@ -593,6 +596,7 @@ bool CRadioMenu::DisplayAtItem(int client,
 		return false;
 	}
 
+	AutoHandleRooter ahr(this->GetHandle());
 	return g_RadioMenuStyle.DoClientMenu(client,
 		this,
 		start_item,

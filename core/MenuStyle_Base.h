@@ -48,19 +48,19 @@ public:
 		style = 0;
 		access = 0;
 	}
-	CItem(ke::Moveable<CItem> other)
-	: info(ke::Move(other->info)),
-	  display(ke::Move(other->display))
+	CItem(CItem &&other)
+	: info(ke::Move(other.info)),
+	  display(ke::Move(other.display))
 	{
-		style = other->style;
-		access = other->access;
+		style = other.style;
+		access = other.access;
 	}
-	CItem & operator =(ke::Moveable<CItem> other)
+	CItem & operator =(CItem &&other)
 	{
-		info = ke::Move(other->info);
-		display = ke::Move(other->display);
-		style = other->style;
-		access = other->access;
+		info = ke::Move(other.info);
+		display = ke::Move(other.display);
+		style = other.style;
+		access = other.access;
 		return *this;
 	}
 

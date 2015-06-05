@@ -397,11 +397,14 @@ CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle le
 
 	if (strcmp(args.Arg(1), "log") != 0)
 	{
+		char filename[PLATFORM_MAX_PATH];
 		const char *arg = args.Arg(1);
-		FILE *fp = fopen(arg, "wt");
+		g_SourceMod.BuildPath(Path_Game, filename, sizeof(filename), "%s", arg);
+
+		FILE *fp = fopen(filename, "wt");
 		if (!fp)
 		{
-			g_RootMenu.ConsolePrint("Could not find file \"%s\"", arg);
+			g_RootMenu.ConsolePrint("Failed to open \"%s\" for writing", filename);
 			return;
 		}
 

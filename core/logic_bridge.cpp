@@ -373,6 +373,8 @@ static const char *get_source_engine_name()
 	return "dods";
 #elif SOURCE_ENGINE == SE_SDK2013
 	return "sdk2013";
+#elif SOURCE_ENGINE == SE_BMS
+	return "bms";
 #elif SOURCE_ENGINE == SE_TF2
 	return "tf2";
 #elif SOURCE_ENGINE == SE_LEFT4DEAD
@@ -404,6 +406,7 @@ static bool symbols_are_hidden()
 	|| (SOURCE_ENGINE == SE_HL2DM)       \
 	|| (SOURCE_ENGINE == SE_DODS)        \
 	|| (SOURCE_ENGINE == SE_SDK2013)     \
+	|| (SOURCE_ENGINE == SE_BMS)         \
 	|| (SOURCE_ENGINE == SE_TF2)         \
 	|| (SOURCE_ENGINE == SE_LEFT4DEAD)   \
 	|| (SOURCE_ENGINE == SE_NUCLEARDAWN) \
@@ -540,6 +543,8 @@ void do_global_plugin_loads()
 #define GAMEFIX "2.dods"
 #elif SOURCE_ENGINE == SE_SDK2013
 #define GAMEFIX "2.sdk2013"
+#elif SOURCE_ENGINE == SE_BMS
+#define GAMEFIX "2.bms"
 #elif SOURCE_ENGINE == SE_TF2
 #define GAMEFIX "2.tf2"
 #elif SOURCE_ENGINE == SE_DARKMESSIAH

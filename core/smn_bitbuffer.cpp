@@ -194,7 +194,6 @@ static cell_t smn_BfWriteString(IPluginContext *pCtx, const cell_t *params)
 	HandleError herr;
 	HandleSecurity sec;
 	bf_write *pBitBuf;
-	int err;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -206,11 +205,7 @@ static cell_t smn_BfWriteString(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	char *str;
-	if ((err=pCtx->LocalToString(params[2], &str)) != SP_ERROR_NONE)
-	{
-		pCtx->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
+	pCtx->LocalToString(params[2], &str);
 
 	pBitBuf->WriteString(str);
 

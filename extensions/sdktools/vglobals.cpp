@@ -211,13 +211,17 @@ bool UTIL_VerifySignature(const void *addr, const char *sig, size_t len)
 
 void GetIServer()
 {
-#if SOURCE_ENGINE == SE_TF2      \
-	|| SOURCE_ENGINE == SE_DODS  \
-	|| SOURCE_ENGINE == SE_HL2DM \
-	|| SOURCE_ENGINE == SE_CSS   \
-	|| SOURCE_ENGINE == SE_SDK2013
+#if SOURCE_ENGINE == SE_TF2        \
+	|| SOURCE_ENGINE == SE_DODS    \
+	|| SOURCE_ENGINE == SE_HL2DM   \
+	|| SOURCE_ENGINE == SE_CSS     \
+	|| SOURCE_ENGINE == SE_SDK2013 \
+	|| SOURCE_ENGINE == SE_BMS     \
+	|| SOURCE_ENGINE == SE_INSURGENCY
 
+#if SOURCE_ENGINE != SE_INSURGENCY
 	if (g_SMAPI->GetEngineFactory(false)("VEngineServer022", nullptr))
+#endif // !SE_INSURGENCY
 	{
 		iserver = engine->GetIServer();
 		return;

@@ -91,16 +91,15 @@
 #if defined SMEXT_ENABLE_TRANSLATOR
 #include <ITranslator.h>
 #endif
-#if defined SMEXT_ENABLE_NINVOKE
-#include <INativeInvoker.h>
-#endif
 #if defined SMEXT_ENABLE_ROOTCONSOLEMENU
 #include <IRootConsoleMenu.h>
 #endif
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
+#ifndef META_NO_HL2SDK
 #include <eiface.h>
+#endif //META_NO_HL2SDK
 #endif
 
 #if !defined METAMOD_PLAPI_VERSION
@@ -308,17 +307,16 @@ extern IUserMessages *usermsgs;
 #if defined SMEXT_ENABLE_TRANSLATOR
 extern ITranslator *translator;
 #endif
-#if defined SMEXT_ENABLE_NINVOKE
-extern INativeInterface *ninvoke;
-#endif
 #if defined SMEXT_ENABLE_ROOTCONSOLEMENU
 extern IRootConsole *rootconsole;
 #endif
 
 #if defined SMEXT_CONF_METAMOD
 PLUGIN_GLOBALVARS();
+#ifndef META_NO_HL2SDK
 extern IVEngineServer *engine;
 extern IServerGameDLL *gamedll;
+#endif //META_NO_HL2SDK
 #endif
 
 /** Creates a SourceMod interface macro pair */

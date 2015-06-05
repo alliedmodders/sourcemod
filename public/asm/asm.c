@@ -4,6 +4,8 @@
 #define _GNU_SOURCE
 #include <dlfcn.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define REG_EAX			0
 #define REG_ECX			1
@@ -12,8 +14,6 @@
 
 #define IA32_MOV_REG_IMM		0xB8	// encoding is +r <imm32>
 #endif
-
-extern void Msg( const char *, ... );
 
 /**
 * Checks if a call to a fpic thunk has just been written into dest.
@@ -25,9 +25,7 @@ extern void Msg( const char *, ... );
 */
 void check_thunks(unsigned char *dest, unsigned char *pc)
 {
-#if defined WIN32
-	return;
-#else
+#ifndef WIN32
 	/* Step write address back 4 to the start of the function address */
 	unsigned char *writeaddr = dest - 4;
 	unsigned char *calloffset = *(unsigned char **)writeaddr;
@@ -64,7 +62,10 @@ void check_thunks(unsigned char *dest, unsigned char *pc)
 			}
 		default:
 			{
-				Msg("Unknown thunk: %c\n", *(calladdr+1));
+				printf("Unknown thunk: %c\n", *(calladdr+1));
+#ifndef NDEBUG
+				abort();
+#endif
 				break;
 			}
 		}
@@ -81,8 +82,6 @@ void check_thunks(unsigned char *dest, unsigned char *pc)
 		*(void **)writeaddr = (void *)pc;
 		writeaddr += 4;
 	}
-
-	return;
 #endif
 }
 

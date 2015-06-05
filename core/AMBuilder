@@ -59,7 +59,7 @@ for sdk_name in SM.sdks:
     ]
   elif sdk.name == 'dota':
     compiler.cxxincludes += [
-      os.path.join(sdk.path, 'common', 'protobuf-2.5.0', 'src'),
+      os.path.join(sdk.path, 'common', 'protobuf-2.6.1', 'src'),
       os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
       os.path.join(sdk.path, 'public', 'game', 'shared', 'protobuf'),
       os.path.join(sdk.path, 'public', 'game', 'shared', 'dota', 'protobuf')
@@ -78,12 +78,8 @@ for sdk_name in SM.sdks:
       vs_year = ''
       if msvc_ver == 1800:
         vs_year = '2013'
-      elif msvc_ver == 1700:
-        vs_year = '2012'
-      elif msvc_ver == 1600:
-        vs_year = '2010'
       else:
-        raise Exception('Cannot find libprotobuf for MSVC version "' + compiler.version + '"')
+        raise Exception('Cannot find libprotobuf for MSVC version "' + str(compiler.version) + '"')
 
       if 'DEBUG' in compiler.defines:
         lib_path = os.path.join(sdk.path, 'lib', 'win32', 'debug', 'vs' + vs_year, 'libprotobuf.lib')

@@ -126,7 +126,7 @@ public:
 private:
 	ke::PassRef<Native> AddNativeToCache(CNativeOwner *pOwner, const sp_nativeinfo_t *ntv);
 	void ClearNativeFromCache(CNativeOwner *pOwner, const char *name);
-	void BindNativeToPlugin(CPlugin *pPlugin, sp_native_t *ntv,  uint32_t index, const ke::Ref<Native> &pEntry);
+	void BindNativeToPlugin(CPlugin *pPlugin, const sp_native_t *ntv,  uint32_t index, const ke::Ref<Native> &pEntry);
 private:
 	typedef NameHashSet<ke::Ref<Native>, Native> NativeCache;
 

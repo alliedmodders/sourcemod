@@ -150,6 +150,7 @@ CopyFiles('gamedata/sdkhooks.games', 'addons/sourcemod/gamedata/sdkhooks.games',
     'game.ag2.txt',
     'game.alienswarm.txt',
     'game.aoc.txt',
+    'game.bms.txt',
     'game.cspromod.txt',
     'game.cstrike.txt',
     'game.dinodday.txt',
@@ -195,6 +196,7 @@ CopyFiles('gamedata/sdktools.games', 'addons/sourcemod/gamedata/sdktools.games',
     'game.alienswarm.txt',
     'game.aoc.txt',
     'game.bg2.txt',
+    'game.bms.txt',
     'game.cspromod.txt',
     'game.cstrike.txt',
     'game.dinodday.txt',
@@ -232,6 +234,7 @@ CopyFiles('gamedata/core.games', 'addons/sourcemod/gamedata/core.games',
     'common.games.txt',
     'engine.bgt.txt',
     'engine.blade.txt',
+    'engine.bms.txt',
     'engine.contagion.txt',
     'engine.csgo.txt',
     'engine.css.txt',
@@ -465,6 +468,6 @@ CopyFiles('plugins/playercommands', 'addons/sourcemod/scripting/playercommands',
 )
 
 if builder.target_platform == 'windows':
-  CopyFiles('sourcepawn/batchtool', 'addons/sourcemod/scripting', ['compile.exe'])
+  CopyFiles('tools/batchtool', 'addons/sourcemod/scripting', ['compile.exe'])
 else:
   CopyFiles('plugins', 'addons/sourcemod/scripting', ['compile.sh'])

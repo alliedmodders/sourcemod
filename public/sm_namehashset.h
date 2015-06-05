@@ -29,6 +29,8 @@
  * Version: $Id$
  */
 
+#include <am-moveable.h>
+
 #ifndef _include_sourcemod_namehashset_h_
 #define _include_sourcemod_namehashset_h_
 
@@ -117,14 +119,10 @@ public:
 		return table_.findForAdd(aKey);
 	}
 
-	void add(Insert &i, const T &value)
+	template <typename U>
+	bool add(Insert &i, U &&value)
 	{
-		return table_.add(i, value);
-	}
-
-	void add(Insert &i, ke::Moveable<T> value)
-	{
-		return table_.add(i, value);
+		return table_.add(i, ke::Forward<U>(value));
 	}
 
 	bool retrieve(const char *aKey, T *value)
@@ -137,22 +135,14 @@ public:
 		return true;
 	}
 
-	bool insert(const char *aKey, const T &value)
+	template <typename U>
+	bool insert(const char *aKey, U &&value)
 	{
 		CharsAndLength key(aKey);
 		Insert i = table_.findForAdd(key);
 		if (i.found())
 			return false;
-		return table_.add(i, value);
-	}
-
-	bool insert(const char *aKey, ke::Moveable<T> value)
-	{
-		CharsAndLength key(aKey);
-		Insert i = table_.findForAdd(key);
-		if (i.found())
-			return false;
-		return table_.add(i, value);
+		return table_.add(i, ke::Forward<U>(value));
 	}
 
 	bool contains(const char *aKey)

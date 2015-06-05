@@ -243,4 +243,8 @@
 	{
 		"game"		"nmrih"
 	}
+	"game.bms.txt"
+	{
+		"game"		"bms"
+	}
 }

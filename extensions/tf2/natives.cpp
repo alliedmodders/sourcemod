@@ -41,11 +41,11 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
 
-	// CTFPlayerShared::MakeBleed(CTFPlayer*, CTFWeaponBase*, float, int=4)
+	// CTFPlayerShared::MakeBleed(CTFPlayer*, CTFWeaponBase*, float, int=4, bool=false)
 	if(!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("MakeBleed",
-			PassInfo pass[4]; \
+			PassInfo pass[5]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
 			pass[0].size = sizeof(CBaseEntity *); \
 			pass[0].type = PassType_Basic; \
@@ -58,7 +58,10 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 			pass[3].flags = PASSFLAG_BYVAL; \
 			pass[3].size = sizeof(int); \
 			pass[3].type = PassType_Basic; \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 4))
+			pass[4].flags = PASSFLAG_BYVAL; \
+			pass[4].size = sizeof(bool); \
+			pass[4].type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 5))
 	}
 
 	CBaseEntity *pEntity;
@@ -75,7 +78,7 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *) + sizeof(float)];
+	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *) + sizeof(float) + sizeof(int) + sizeof(bool)];
 	unsigned char *vptr = vstk;
 
 	*(void **)vptr = obj;
@@ -87,6 +90,8 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 	*(float *)vptr = sp_ctof(params[3]);
 	vptr += sizeof(float);
 	*(int *)vptr = 4;
+	vptr += sizeof(int);
+	*(bool *)vptr = false;
 
 	pWrapper->Execute(vstk, NULL);
 
@@ -98,7 +103,7 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
 
-	// CTFPlayerShared::Burn(CTFPlayer*, CTFWeaponBase*)
+	// CTFPlayerShared::Burn(CTFPlayer*, CTFWeaponBase*, float=-1.0)
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("Burn", 
@@ -129,7 +134,7 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *)];
+	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *) + sizeof(float)];
 	unsigned char *vptr = vstk;
 
 	*(void **)vptr = obj;
@@ -155,7 +160,7 @@ cell_t TF2_Disguise(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
 
-	//CTFPlayerShared::Disguise(int, int, CTFPlayer *)
+	//CTFPlayerShared::Disguise(int, int, CTFPlayer *, bool=true)
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("Disguise", 
@@ -190,7 +195,7 @@ cell_t TF2_Disguise(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Target client index %d is not valid", params[4]);
 	}
 
-	unsigned char vstk[sizeof(void *) + 2*sizeof(int) + sizeof(bool)];
+	unsigned char vstk[sizeof(void *) + 2*sizeof(int) + sizeof(CBaseEntity *) + sizeof(bool)];
 	unsigned char *vptr = vstk;
 
 

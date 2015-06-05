@@ -39,15 +39,16 @@
 #include "AdminCache.h"
 #include "Translator.h"
 #include "common_logic.h"
+#include "stringutil.h"
 
 #define LEVEL_STATE_NONE		0
 #define LEVEL_STATE_LEVELS		1
 #define LEVEL_STATE_FLAGS		2
 
 AdminCache g_Admins;
-char g_ReverseFlags[26];
+char g_ReverseFlags[AdminFlags_TOTAL];
 AdminFlag g_FlagLetters[26];
-bool g_FlagSet[26];
+bool g_FlagCharSet[26];
 
 /* Default flags */
 AdminFlag g_DefaultFlags[26] = 
@@ -71,9 +72,9 @@ public:
 			memcpy(g_FlagLetters, g_DefaultFlags, sizeof(AdminFlag) * 26);
 			for (unsigned int i=0; i<20; i++)
 			{
-				g_FlagSet[i] = true;
+				g_FlagCharSet[i] = true;
 			}
-			g_FlagSet[25] = true;
+			g_FlagCharSet[25] = true;
 		}
 	}
 private:
@@ -103,7 +104,7 @@ private:
 	{
 		m_LevelState = LEVEL_STATE_NONE;
 		m_IgnoreLevel = 0;
-		memset(g_FlagSet, 0, sizeof(g_FlagSet));
+		memset(g_FlagCharSet, 0, sizeof(g_FlagCharSet));
 	}
 	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name)
 	{
@@ -163,7 +164,7 @@ private:
 			return SMCResult_Continue;
 		}
 
-		g_FlagSet[c] = true;
+		g_FlagCharSet[c] = true;
 
 		return SMCResult_Continue;
 	}
@@ -981,7 +982,6 @@ void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
 {
 	List<IAdminListener *>::iterator iter;
 	IAdminListener *pListener;
-	cell_t result;
 
 	if (part == AdminCache_Overrides)
 	{
@@ -995,7 +995,7 @@ void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
 				pListener->OnRebuildOverrideCache();
 			}
 			m_pCacheFwd->PushCell(part);
-			m_pCacheFwd->Execute(&result);
+			m_pCacheFwd->Execute();
 		}
 	} else if (part == AdminCache_Groups || part == AdminCache_Admins) {
 		if (part == AdminCache_Groups)
@@ -1009,7 +1009,7 @@ void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
 					pListener->OnRebuildGroupCache();
 				}
 				m_pCacheFwd->PushCell(part);
-				m_pCacheFwd->Execute(&result);
+				m_pCacheFwd->Execute();
 			}
 		}
 		InvalidateAdminCache(true);
@@ -1021,7 +1021,7 @@ void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
 				pListener->OnRebuildAdminCache((part == AdminCache_Groups));
 			}
 			m_pCacheFwd->PushCell(AdminCache_Admins);
-			m_pCacheFwd->Execute(&result);
+			m_pCacheFwd->Execute();
 			playerhelpers->RecheckAnyAdmins();
 		}
 	}
@@ -1063,22 +1063,29 @@ bool AdminCache::GetMethodIndex(const char *name, unsigned int *_index)
 bool AdminCache::GetUnifiedSteamIdentity(const char *ident, char *out, size_t maxlen)
 {
 	int len = strlen(ident);
-	/* If the id was a steam id strip off the STEAM_*: part */
-	if (len >= 11 && !strncmp(ident, "STEAM_", 6) && ident[8] != '_')
+	if (!strcmp(ident, "BOT"))
 	{
-		// non-bot/lan Steam2 Id
+		// Bots
+		strncopy(out, ident, maxlen);
+		return true;
+	}
+	else if (len >= 11 && !strncmp(ident, "STEAM_", 6) && ident[8] != '_')
+	{
+		// non-bot/lan Steam2 Id, strip off the STEAM_* part
 		snprintf(out, maxlen, "%s", &ident[8]);
 		return true;
 	}
 	else if (len >= 7 && !strncmp(ident, "[U:", 3) && ident[len-1] == ']')
 	{
-		// Steam3 Id
+		// Steam3 Id, replicate the Steam2 Post-"STEAM_" part
 		uint32_t accountId = strtoul(&ident[5], nullptr, 10);
 		snprintf(out, maxlen, "%u:%u", accountId & 1, accountId >> 1);
 		return true;
 	}
 	else
 	{
+		// 64-bit CSteamID, replicate the Steam2 Post-"STEAM_" part
+
 		// some constants from steamclientpublic.h
 		static const uint32_t k_EAccountTypeIndividual = 1;
 		static const int k_EUniverseInvalid = 0;
@@ -1577,7 +1584,7 @@ bool AdminCache::FindFlag(char c, AdminFlag *pAdmFlag)
 {
 	if (c < 'a' 
 		|| c > 'z'
-		|| !g_FlagSet[(unsigned)c - (unsigned)'a'])
+		|| !g_FlagCharSet[(unsigned)c - (unsigned)'a'])
 	{
 		return false;
 	}
@@ -1592,17 +1599,13 @@ bool AdminCache::FindFlag(char c, AdminFlag *pAdmFlag)
 
 bool AdminCache::FindFlagChar(AdminFlag flag, char *c)
 {
-	if (!g_FlagSet[flag])
-	{
-		return false;
-	}
-
+	char flagchar = g_ReverseFlags[flag];
 	if (c)
 	{
-		*c = g_ReverseFlags[flag];
+		*c = flagchar;
 	}
 
-	return true;
+	return flagchar != '?';
 }
 
 FlagBits AdminCache::ReadFlagString(const char *flags, const char **end)

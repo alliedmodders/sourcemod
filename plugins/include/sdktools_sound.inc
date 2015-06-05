@@ -222,6 +222,48 @@ native EmitSound(const clients[],
 				 any:...);
 
 /**
+ * Emits a sound or game sound to a list of clients using the latest version of the engine sound interface.
+ * This native is only available in engines that are greater than or equal to Portal 2.
+ *
+ * @param clients		Array of client indexes.
+ * @param numClients	Number of clients in the array.
+ * @param soundEntry	Sound entry name.
+ * @param sample		Sound file name relative to the "sounds" folder.
+ * @param entity		Entity to emit from.
+ * @param channel		Channel to emit with.
+ * @param level			Sound level.
+ * @param seed			Sound seed.
+ * @param flags			Sound flags.
+ * @param volume		Sound volume.
+ * @param pitch			Sound pitch.
+ * @param speakerentity	Unknown.
+ * @param origin		Sound origin.
+ * @param dir			Sound direction.
+ * @param updatePos		Unknown (updates positions?)
+ * @param soundtime		Alternate time to play sound for.
+ * @param ...			Optional list of Float[3] arrays to specify additional origins.
+ * @noreturn
+ * @error				Invalid client index.
+ */
+native EmitSoundEntry(const clients[],
+				 numClients,
+				 const String:soundEntry[],
+				 const String:sample[],
+				 entity = SOUND_FROM_PLAYER,
+				 channel = SNDCHAN_AUTO,
+				 level = SNDLEVEL_NORMAL,
+				 seed = 0,
+				 flags = SND_NOFLAGS,
+				 Float:volume = SNDVOL_NORMAL,
+				 pitch = SNDPITCH_NORMAL,
+				 speakerentity = -1,
+				 const Float:origin[3] = NULL_VECTOR,
+				 const Float:dir[3] = NULL_VECTOR,
+				 bool:updatePos = true,
+				 Float:soundtime = 0.0,
+				 any:...);
+
+/**
  * Emits a sentence to a list of clients.
  *
  * @param clients		Array of client indexes.
@@ -307,6 +349,8 @@ typedef AmbientSHook = function Action (
  * @param level			Sound level.
  * @param pitch			Sound pitch.
  * @param flags			Sound flags.
+ * @param soundEntry		Game sound entry name. (Used in engines newer than Portal 2)
+ * @param seed			Sound seed. (Used in engines newer than Portal 2)
  * @return			Plugin_Continue to allow the sound to be played, Plugin_Stop to block it, 
  *				  Plugin_Changed when any parameter has been modified.
  */
@@ -319,7 +363,9 @@ typedef NormalSHook = function Action (
   float &volume,
   int &level,
   int &pitch,
-  int &flags
+  int &flags,
+  char soundEntry[PLATFORM_MAX_PATH],
+  int &seed
 );
 
 /**

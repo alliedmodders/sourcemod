@@ -41,7 +41,7 @@
  * @param	client		Client index
  * @param	muteState	True if client was muted, false otherwise
  */
- forward BaseComm_OnClientMute(client, bool:muteState);
+ forward void BaseComm_OnClientMute(client, bool:muteState);
  
  /**
  * Called when a client is gagged or ungagged
@@ -49,7 +49,7 @@
  * @param	client		Client index
  * @param	gagState	True if client was gaged, false otherwise
  */
- forward BaseComm_OnClientGag(client, bool:gagState);
+ forward void BaseComm_OnClientGag(client, bool:gagState);
  
 /**
  * Returns whether or not a client is gagged

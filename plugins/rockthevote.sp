@@ -211,7 +211,7 @@ void AttemptRTV(int client)
 		return;
 	}	
 	
-	char name[MAX_NAME_LENGTH+1];
+	new String:name[MAX_NAME_LENGTH];
 	GetClientName(client, name, sizeof(name));
 	
 	g_Votes++;

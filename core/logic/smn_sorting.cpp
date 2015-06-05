@@ -232,6 +232,7 @@ static cell_t sm_SortStrings(IPluginContext *pContext, const cell_t *params)
 	if ((err=pContext->HeapAlloc(array_size, &amx_addr, &phys_addr)) != SP_ERROR_NONE)
 	{
 		pContext->ThrowNativeErrorEx(err, "Ran out of memory to sort");
+		return 0;
 	}
 
 	g_CurStringArray = array;
@@ -282,12 +283,16 @@ struct sort_info
 	cell_t array_addr;
 	cell_t *array_base;
 	cell_t *array_remap;
+	ExceptionHandler *eh;
 };
 
 sort_info g_SortInfo;
 
 int sort1d_amx_custom(const void *elem1, const void *elem2)
 {
+	if (g_SortInfo.eh->HasException())
+		return 0;
+
 	cell_t c1 = *(cell_t *)elem1;
 	cell_t c2 = *(cell_t *)elem2;
 
@@ -297,7 +302,7 @@ int sort1d_amx_custom(const void *elem1, const void *elem2)
 	pf->PushCell(c2);
 	pf->PushCell(g_SortInfo.array_addr);
 	pf->PushCell(g_SortInfo.hndl);
-	pf->Execute(&result);
+	pf->Invoke(&result);
 
 	return result;
 }
@@ -317,22 +322,25 @@ static cell_t sm_SortCustom1D(IPluginContext *pContext, const cell_t *params)
 
 	sort_info oldinfo = g_SortInfo;
 
-	
+	DetectExceptions eh(pContext);
 	g_SortInfo.hndl = params[4];
 	g_SortInfo.array_addr = params[1];
 	g_SortInfo.array_remap = NULL;
 	g_SortInfo.array_base = NULL;
 	g_SortInfo.pFunc = pFunction;
+	g_SortInfo.eh = &eh;
 
 	qsort(array, array_size, sizeof(cell_t), sort1d_amx_custom);
 
 	g_SortInfo = oldinfo;
-
 	return 1;
 }
 
 int sort2d_amx_custom(const void *elem1, const void *elem2)
 {
+	if (g_SortInfo.eh->HasException())
+		return 0;
+
 	cell_t c1 = *(cell_t *)elem1;
 	cell_t c2 = *(cell_t *)elem2;
 
@@ -349,7 +357,7 @@ int sort2d_amx_custom(const void *elem1, const void *elem2)
 	g_SortInfo.pFunc->PushCell(c2_addr);
 	g_SortInfo.pFunc->PushCell(g_SortInfo.array_addr);
 	g_SortInfo.pFunc->PushCell(g_SortInfo.hndl);
-	g_SortInfo.pFunc->Execute(&result);
+	g_SortInfo.pFunc->Invoke(&result);
 
 	return result;
 }
@@ -378,9 +386,11 @@ static cell_t sm_SortCustom2D(IPluginContext *pContext, const cell_t *params)
 
 	sort_info oldinfo = g_SortInfo;
 
+	DetectExceptions eh(pContext);
 	g_SortInfo.pFunc = pFunction;
 	g_SortInfo.hndl = params[4];
 	g_SortInfo.array_addr = params[1];
+	g_SortInfo.eh = &eh;
 	
 	/** Same process as in strings, back up the old indices for later fixup */
 	g_SortInfo.array_base = array;
@@ -511,19 +521,23 @@ struct sort_infoADT
 	cell_t array_bsize;
 	Handle_t array_hndl;
 	Handle_t hndl;
+	ExceptionHandler *eh;
 };
 
 sort_infoADT g_SortInfoADT;
 
 int sort_adtarray_custom(const void *elem1, const void *elem2)
 {
+	if (g_SortInfoADT.eh->HasException())
+		return 0;
+
 	cell_t result = 0;
 	IPluginFunction *pf = g_SortInfoADT.pFunc;
 	pf->PushCell(((cell_t) ((cell_t *) elem1 - g_SortInfoADT.array_base)) / g_SortInfoADT.array_bsize);
 	pf->PushCell(((cell_t) ((cell_t *) elem2 - g_SortInfoADT.array_base)) / g_SortInfoADT.array_bsize);
 	pf->PushCell(g_SortInfoADT.array_hndl);
 	pf->PushCell(g_SortInfoADT.hndl);
-	pf->Execute(&result);
+	pf->Invoke(&result);
 
 	return result;
 }
@@ -552,11 +566,13 @@ static cell_t sm_SortADTArrayCustom(IPluginContext *pContext, const cell_t *para
 
 	sort_infoADT oldinfo = g_SortInfoADT;
 
+	DetectExceptions eh(pContext);
 	g_SortInfoADT.pFunc = pFunction;
 	g_SortInfoADT.array_base = array;
 	g_SortInfoADT.array_bsize = (cell_t) blocksize;
 	g_SortInfoADT.array_hndl = params[1];
 	g_SortInfoADT.hndl = params[3];
+	g_SortInfoADT.eh = &eh;
 	
 	qsort(array, arraysize, blocksize * sizeof(cell_t), sort_adtarray_custom);
 

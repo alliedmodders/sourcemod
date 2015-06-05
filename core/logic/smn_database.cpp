@@ -334,9 +334,9 @@ public:
 		{
 			m_pDatabase->Close();
 		}
-		m_pFunction->PushCell(BAD_HANDLE);
 		if (m_ACM == ACM_Old)
 			m_pFunction->PushCell(BAD_HANDLE);
+		m_pFunction->PushCell(BAD_HANDLE);
 		m_pFunction->PushString("Driver is unloading");
 		m_pFunction->PushCell(m_Data);
 		m_pFunction->Execute(NULL);
@@ -355,9 +355,9 @@ public:
 			}
 		}
 
-		m_pFunction->PushCell(m_pDriver->GetHandle());
 		if (m_ACM == ACM_Old)
-			m_pFunction->PushCell(hndl);
+			m_pFunction->PushCell(m_pDriver->GetHandle());
+		m_pFunction->PushCell(hndl);
 		m_pFunction->PushString(hndl == BAD_HANDLE ? error : "");
 		m_pFunction->PushCell(m_Data);
 		m_pFunction->Execute(NULL);

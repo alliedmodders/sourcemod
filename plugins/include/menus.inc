@@ -72,7 +72,7 @@ enum MenuAction
 /** Default menu actions */
 #define MENU_ACTIONS_DEFAULT	MenuAction_Select|MenuAction_Cancel|MenuAction_End
 /** All menu actions */
-#define MENU_ACTIONS_ALL		MenuAction:0xFFFFFFFF
+#define MENU_ACTIONS_ALL		view_as<MenuAction>(0xFFFFFFFF)
 
 #define MENU_NO_PAGINATION		0		/**< Menu should not be paginated (10 items max) */
 #define MENU_TIME_FOREVER		0		/**< Menu should be displayed as long as possible */
@@ -371,7 +371,7 @@ methodmap Menu < Handle
 		int[] players = new int[MaxClients];
 		for (int i = 1; i <= MaxClients; i++) {
 			if (!IsClientInGame(i) || IsFakeClient(i))
-				continue
+				continue;
 			players[total++] = i;
 		}
 		return this.DisplayVote(players, total, time, flags);

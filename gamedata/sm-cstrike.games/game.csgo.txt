@@ -13,6 +13,10 @@
 {
 	"csgo"
 	{
+		"Keys"
+		{
+			"GetWeaponPriceByteCheck"	"E9"
+		}
 		"Offsets"
 		{
 			//Offset of szClassName in CCSWeaponInfo 
@@ -52,7 +56,7 @@
 			//Offset into HandleCommand_Buy_Internal
 			"CCSPlayerInventoryOffset"
 			{
-				"windows"	"285"
+				"windows"	"55"
 				"linux"		"32"
 				"mac"		"109"
 			}
@@ -61,6 +65,15 @@
 				"windows"	"8"
 				"linux"		"9"
 				"mac"		"9"
+			}
+			"GetWeaponPriceFunc"
+			{
+				"windows"	"84"
+			}
+			//This is GetWeaponPriceFunc offset -1 (only used by GDC)
+			"GetWeaponPriceFuncGDC"
+			{
+				"windows"	"83"
 			}
 		}
 		"Signatures"
@@ -82,7 +95,7 @@
 			"HandleCommand_Buy_Internal"//Wildcard first 6 bytes for getting address for weapon price.
 			{
 				"library"		"server"
-				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x83\x3D\x2A\x2A\x2A\x2A\x00\x53\x56\x57\x8B\xF9"
+				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x81\xEC\x64\x01\x00\x00\x53\x56\x57\x6A\x00\x8B\xF9\xE8\x2A\x2A\x2A\x2A\x33\xC9\x84\xC0"
 				"linux"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcib"
 				"mac"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcib"
 			}
@@ -96,7 +109,7 @@
 			"TerminateRound"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\x2A\x2A\x83\x2A\x2A\x53\x56\x57\x8B\xF9\xF3\x0F\x2A\x2A\x2A\x2A\x33\xDB\xC7\x2A\x2A\x2A\x00\x00\x00\x00\x89"
+				"windows"		"\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x3C\x53\x8B\xD9\xF3\x0F\x11\x4C\x24\x18\x56\x57\x89\x2A\x2A\x2A\x83"
 				"linux"			"@_ZN12CCSGameRules14TerminateRoundEfi"
 				"mac"			"@_ZN12CCSGameRules14TerminateRoundEfi"
 			}
@@ -143,13 +156,13 @@
 				"linux"		"@_ZN9CCSPlayer10SetClanTagEPKc"
 				"mac"		"@_ZN9CCSPlayer10SetClanTagEPKc"
 			}
-			//Wild card first 6 bytes since we call it and detour it.
-			"GetAttributeInt"
+			//In windows this is CCSPlayer::GetWeaponPrice NOT CCSWeaponInfo::GetWeaponPrice
+			"GetWeaponPrice"
 			{
 				"library"	"server"
-				"windows"	"\x2A\x2A\x2A\x2A\x2A\x2A\x83\xEC\x1C\x53\x8B\x5D\x0C\xC7\x44\x24\x04\x00\x00\x00\x00\x56\x8B\xF1\x89\x74\x24\x0C\x57\x8B\x7D\x08\x85\xDB\x74\x2A\x80\x7B\x2A\x2A\x74\x2A\xE8\x2A\x2A\x2A\x2A\x57"
-				"linux"		"@_ZNK16FileWeaponInfo_t15GetAttributeIntEPKcPK13CEconItemView"
-				"mac"		"@_ZNK16FileWeaponInfo_t15GetAttributeIntEPKcPK13CEconItemView"
+				"windows"	"\x55\x8B\xEC\x8B\xD1\x8B\x4D\x08\x83\xF9\x33\x75\x2A\x83\xBA"
+				"linux"		"@_ZNK13CCSWeaponInfo14GetWeaponPriceEPK13CEconItemViewif"
+				"mac"		"@_ZNK13CCSWeaponInfo14GetWeaponPriceEPK13CEconItemViewif"
 			}
 			"SetModelFromClass"
 			{

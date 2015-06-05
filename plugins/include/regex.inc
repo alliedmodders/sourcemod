@@ -172,7 +172,7 @@ stock int SimpleRegexMatch(const char[] str, const char[] pattern, int flags = 0
 /**
  * Do not edit below this line!
  */
-public Extension:__ext_regex = 
+public Extension __ext_regex = 
 {
 	name = "Regex Extension",
 	file = "regex.ext",

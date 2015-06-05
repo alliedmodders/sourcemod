@@ -39,6 +39,14 @@
 		}
 	}
 	
+	"fof"
+	{
+		"Keys"
+		{
+			"m_iHealth"		"m_hYFD2"
+		}
+	}
+	
 	/* Original engine specifics */
 	"#default"
 	{
@@ -100,6 +108,7 @@
 			"engine"			"dota"
 			"engine"			"sdk2013"
 			"engine"			"contagion"
+			"engine"			"bms"
 		}
 		
 		"Offsets"
@@ -236,6 +245,7 @@
 			"game"					"berimbau"
 			"game"					"cstrike"
 			"game"					"synergy"
+			"game"					"bms"
 		}
 		
 		"Keys"

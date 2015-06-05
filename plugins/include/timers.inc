@@ -96,6 +96,7 @@ native Handle:CreateTimer(Float:interval, Timer:func, any:data=INVALID_HANDLE, f
  * @param autoClose			If autoClose is true, the data that was passed to CreateTimer() will
  *							be closed as a handle if TIMER_DATA_HNDL_CLOSE was not specified.
  * @noreturn
+ * @error				Invalid handles will cause a run time error.
  */
 native KillTimer(Handle:timer, bool:autoClose=false);
 

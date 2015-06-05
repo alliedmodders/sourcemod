@@ -31,18 +31,26 @@
  * Version: $Id$
  */
 
-#define GROUP_STATE_NONE		0
-#define GROUP_STATE_GROUPS		1
-#define GROUP_STATE_INGROUP		2
-#define GROUP_STATE_OVERRIDES	3
-#define GROUP_PASS_FIRST		1
-#define GROUP_PASS_SECOND		2
+enum GroupState
+{
+	GroupState_None,
+	GroupState_Groups,
+	GroupState_InGroup,
+	GroupState_Overrides,
+}
+
+enum GroupPass
+{
+	GroupPass_Invalid,
+	GroupPass_First,
+	GroupPass_Second,
+}
 
 static SMCParser g_hGroupParser;
-static GroupId:g_CurGrp = INVALID_GROUP_ID;
-static g_GroupState = GROUP_STATE_NONE;
-static g_GroupPass = 0;
-static bool:g_NeedReparse = false;
+static GroupId g_CurGrp = INVALID_GROUP_ID;
+static GroupState g_GroupState = GroupState_None;
+static GroupPass g_GroupPass = GroupPass_Invalid;
+static bool g_NeedReparse = false;
 
 public SMCResult ReadGroups_NewSection(SMCParser smc, const char[] name, bool opt_quotes)
 {
@@ -52,24 +60,24 @@ public SMCResult ReadGroups_NewSection(SMCParser smc, const char[] name, bool op
 		return SMCParse_Continue;
 	}
 	
-	if (g_GroupState == GROUP_STATE_NONE)
+	if (g_GroupState == GroupState_None)
 	{
 		if (StrEqual(name, "Groups"))
 		{
-			g_GroupState = GROUP_STATE_GROUPS;
+			g_GroupState = GroupState_Groups;
 		} else {
 			g_IgnoreLevel++;
 		}
-	} else if (g_GroupState == GROUP_STATE_GROUPS) {
+	} else if (g_GroupState == GroupState_Groups) {
 		if ((g_CurGrp = CreateAdmGroup(name)) == INVALID_GROUP_ID)
 		{
 			g_CurGrp = FindAdmGroup(name);
 		}
-		g_GroupState = GROUP_STATE_INGROUP;
-	} else if (g_GroupState == GROUP_STATE_INGROUP) {
+		g_GroupState = GroupState_InGroup;
+	} else if (g_GroupState == GroupState_InGroup) {
 		if (StrEqual(name, "Overrides"))
 		{
-			g_GroupState = GROUP_STATE_OVERRIDES;
+			g_GroupState = GroupState_Overrides;
 		} else {
 			g_IgnoreLevel++;
 		}
@@ -91,28 +99,28 @@ public SMCResult ReadGroups_KeyValue(SMCParser smc,
 		return SMCParse_Continue;
 	}
 	
-	new AdminFlag:flag;
+	AdminFlag flag;
 	
-	if (g_GroupPass == GROUP_PASS_FIRST)
+	if (g_GroupPass == GroupPass_First)
 	{
-		if (g_GroupState == GROUP_STATE_INGROUP)
+		if (g_GroupState == GroupState_InGroup)
 		{
 			if (StrEqual(key, "flags"))
 			{
-				new len = strlen(value);
-				for (new i=0; i<len; i++)
+				int len = strlen(value);
+				for (int i=0; i<len; i++)
 				{
 					if (!FindFlagByChar(value[i], flag))
 					{
 						continue;
 					}
-					SetAdmGroupAddFlag(g_CurGrp, flag, true);
+					g_CurGrp.SetFlag(flag, true);
 				}
 			} else if (StrEqual(key, "immunity")) {
 				g_NeedReparse = true;
 			}
-		} else if (g_GroupState == GROUP_STATE_OVERRIDES) {
-			new OverrideRule:rule = Command_Deny;
+		} else if (g_GroupState == GroupState_Overrides) {
+			OverrideRule rule = Command_Deny;
 			
 			if (StrEqual(value, "allow", false))
 			{
@@ -121,29 +129,29 @@ public SMCResult ReadGroups_KeyValue(SMCParser smc,
 			
 			if (key[0] == '@')
 			{
-				AddAdmGroupCmdOverride(g_CurGrp, key[1], Override_CommandGroup, rule);
+				g_CurGrp.AddCommandOverride(key[1], Override_CommandGroup, rule);
 			} else {
-				AddAdmGroupCmdOverride(g_CurGrp, key, Override_Command, rule);
+				g_CurGrp.AddCommandOverride(key, Override_Command, rule);
 			}
 		}
-	} else if (g_GroupPass == GROUP_PASS_SECOND
-			   && g_GroupState == GROUP_STATE_INGROUP) {
+	} else if (g_GroupPass == GroupPass_Second
+			   && g_GroupState == GroupState_InGroup) {
 		/* Check for immunity again, core should handle double inserts */
 		if (StrEqual(key, "immunity"))
 		{
 			/* If it's a value we know about, use it */
 			if (StrEqual(value, "*"))
 			{
-				SetAdmGroupImmunityLevel(g_CurGrp, 2);
+				g_CurGrp.ImmunityLevel = 2;
 			} else if (StrEqual(value, "$")) {
-				SetAdmGroupImmunityLevel(g_CurGrp, 1);
+				g_CurGrp.ImmunityLevel = 1;
 			} else {
-				new level;
+				int level;
 				if (StringToIntEx(value, level))
 				{
-					SetAdmGroupImmunityLevel(g_CurGrp, level);
+					g_CurGrp.ImmunityLevel = level;
 				} else {
-					new GroupId:id;
+					GroupId id;
 					if (value[0] == '@')
 					{
 						id = FindAdmGroup(value[1]);
@@ -152,7 +160,7 @@ public SMCResult ReadGroups_KeyValue(SMCParser smc,
 					}
 					if (id != INVALID_GROUP_ID)
 					{
-						SetAdmGroupImmuneFrom(g_CurGrp, id);
+						g_CurGrp.AddGroupImmunity(id);
 					} else {
 						ParseError("Unable to find group: \"%s\"", value);
 					}
@@ -173,14 +181,14 @@ public SMCResult ReadGroups_EndSection(SMCParser smc)
 		return SMCParse_Continue;
 	}
 	
-	if (g_GroupState == GROUP_STATE_OVERRIDES)
+	if (g_GroupState == GroupState_Overrides)
 	{
-		g_GroupState = GROUP_STATE_INGROUP;
-	} else if (g_GroupState == GROUP_STATE_INGROUP) {
-		g_GroupState = GROUP_STATE_GROUPS;
+		g_GroupState = GroupState_InGroup;
+	} else if (g_GroupState == GroupState_InGroup) {
+		g_GroupState = GroupState_Groups;
 		g_CurGrp = INVALID_GROUP_ID;
-	} else if (g_GroupState == GROUP_STATE_GROUPS) {
-		g_GroupState = GROUP_STATE_NONE;
+	} else if (g_GroupState == GroupState_Groups) {
+		g_GroupState = GroupState_None;
 	}
 	
 	return SMCParse_Continue;
@@ -193,7 +201,7 @@ public SMCResult ReadGroups_CurrentLine(SMCParser smc, const char[] line, int li
 	return SMCParse_Continue;
 }
 
-static InitializeGroupParser()
+static void InitializeGroupParser()
 {
 	if (!g_hGroupParser)
 	{
@@ -205,11 +213,11 @@ static InitializeGroupParser()
 	}
 }
 
-static InternalReadGroups(const String:path[], pass)
+static void InternalReadGroups(const char[] path, GroupPass pass)
 {
 	/* Set states */
 	InitGlobalStates();
-	g_GroupState = GROUP_STATE_NONE;
+	g_GroupState = GroupState_None;
 	g_CurGrp = INVALID_GROUP_ID;
 	g_GroupPass = pass;
 	g_NeedReparse = false;
@@ -227,16 +235,16 @@ static InternalReadGroups(const String:path[], pass)
 	}
 }
 
-ReadGroups()
+void ReadGroups()
 {
 	InitializeGroupParser();
 	
 	BuildPath(Path_SM, g_Filename, sizeof(g_Filename), "configs/admin_groups.cfg");
 	
-	InternalReadGroups(g_Filename, GROUP_PASS_FIRST);
+	InternalReadGroups(g_Filename, GroupPass_First);
 	if (g_NeedReparse)
 	{
-		InternalReadGroups(g_Filename, GROUP_PASS_SECOND);
+		InternalReadGroups(g_Filename, GroupPass_Second);
 	}
 }
 

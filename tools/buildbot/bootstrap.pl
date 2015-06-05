@@ -11,8 +11,14 @@ chdir($path);
 
 require 'helpers.pm';
 
+#Go back to tree root.
+my ($result);
+chdir(Build::PathFormat('../..'));
+$result = `git submodule update --init --recursive`;
+print "$result\n";
+
 #Go back above build dir
-chdir(Build::PathFormat('../../..'));
+chdir(Build::PathFormat('..'));
 
 #Get the source path.
 our ($root) = getcwd();
@@ -24,7 +30,7 @@ if (!(-f 'OUTPUT/.ambuild2/graph') || !(-f 'OUTPUT/.ambuild2/vars')) {
 	mkdir('OUTPUT') or die("Failed to create output folder: $!\n");
 }
 chdir('OUTPUT');
-my ($result, $argn);
+my ($argn);
 $argn = $#ARGV + 1;
 
 print "Attempting to reconfigure...\n";

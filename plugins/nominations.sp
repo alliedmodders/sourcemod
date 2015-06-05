@@ -234,7 +234,7 @@ public Action Command_Nominate(int client, int args)
 	
 	g_mapTrie.SetValue(mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
 	
-	char name[MAX_NAME_LENGTH+1];
+	char name[MAX_NAME_LENGTH];
 	GetClientName(client, name, sizeof(name));
 	PrintToChatAll("[SM] %t", "Map Nominated", name, mapname);
 	
@@ -312,8 +312,8 @@ public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int p
 	{
 		case MenuAction_Select:
 		{
-			char map[PLATFORM_MAX_PATH], name[MAX_NAME_LENGTH+1];
-			menu.GetItem(param2, map, sizeof(map));
+			char map[PLATFORM_MAX_PATH], name[MAX_NAME_LENGTH];
+			menu.GetItem(param2, map, sizeof(map));		
 			
 			GetClientName(param1, name, sizeof(name));
 	

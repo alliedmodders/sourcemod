@@ -38,7 +38,7 @@
 #include <am-string.h>
 #include "common_logic.h"
 
-#define HANDLESYS_MAX_HANDLES		(1<<14)
+#define HANDLESYS_MAX_HANDLES		(1<<15)
 #define HANDLESYS_MAX_TYPES			(1<<9)
 #define HANDLESYS_MAX_SUBTYPES		0xF
 #define HANDLESYS_SUBTYPE_MASK		0xF

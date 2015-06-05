@@ -58,6 +58,23 @@ CDetour *CDetourManager::CreateDetour(void *callbackfunction, void **trampoline,
 	return NULL;
 }
 
+CDetour *CDetourManager::CreateDetour(void *callbackfunction, void **trampoline, void *pAddress)
+{
+	CDetour *detour = new CDetour(callbackfunction, trampoline, pAddress);
+	if (detour)
+	{
+		if (!detour->Init(spengine, gameconf))
+		{
+			delete detour;
+			return NULL;
+		}
+
+		return detour;
+	}
+
+	return NULL;
+}
+
 CDetour::CDetour(void *callbackfunction, void **trampoline, const char *signame)
 {
 	enabled = false;
@@ -65,6 +82,19 @@ CDetour::CDetour(void *callbackfunction, void **trampoline, const char *signame)
 	detour_address = NULL;
 	detour_trampoline = NULL;
 	this->signame = signame;
+	this->detour_callback = callbackfunction;
+	spengine = NULL;
+	gameconf = NULL;
+	this->trampoline = trampoline;
+}
+
+CDetour::CDetour(void*callbackfunction, void **trampoline, void *pAddress)
+{
+	enabled = false;
+	detoured = false;
+	detour_address = pAddress;
+	detour_trampoline = NULL;
+	this->signame = NULL;
 	this->detour_callback = callbackfunction;
 	spengine = NULL;
 	gameconf = NULL;
@@ -100,9 +130,14 @@ bool CDetour::IsEnabled()
 
 bool CDetour::CreateDetour()
 {
-	if (!gameconf->GetMemSig(signame, &detour_address))
+	if (signame && !gameconf->GetMemSig(signame, &detour_address))
 	{
 		g_pSM->LogError(myself, "Could not locate %s - Disabling detour", signame);
+		return false;
+	}
+	else if(!detour_address)
+	{
+		g_pSM->LogError(myself, "Invalid detour address passed - Disabling detour to prevent crashes");
 		return false;
 	}
 

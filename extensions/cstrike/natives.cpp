@@ -419,6 +419,7 @@ static cell_t CS_GetTranslatedWeaponAlias(IPluginContext *pContext, const cell_t
 
 static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 {
+
 	if (!IsValidWeaponID(params[2]))
 		return pContext->ThrowNativeError("Invalid WeaponID passed for this game");
 
@@ -426,6 +427,7 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 
 	//Hard code return values for weapons that dont call GetWeaponPrice and always use default value.
 #if SOURCE_ENGINE == SE_CSGO
+
 	if (id == WEAPON_C4 || id == WEAPON_KNIFE || id == WEAPON_KNIFE_GG)
 		return 0;
 #else
@@ -458,23 +460,49 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 #if SOURCE_ENGINE == SE_CSGO
 	static ICallWrapper *pWrapper = NULL;
 
+#if defined(WIN32)
+	if(!pWrapper)
+	{
+		void *pGetWeaponPrice = GetWeaponPriceFunction();
+		if(!pGetWeaponPrice)
+		{
+			return pContext->ThrowNativeError("Failed to locate function");
+		}
+
+		PassInfo pass[2];
+		PassInfo ret;
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].type = PassType_Basic;
+		pass[0].size = sizeof(CEconItemView *);
+		pass[1].flags = PASSFLAG_BYVAL;
+		pass[1].type = PassType_Basic;
+		pass[1].size = sizeof(int);
+		ret.flags = PASSFLAG_BYVAL;
+		ret.type = PassType_Basic;
+		ret.size = sizeof(int);
+		pWrapper = g_pBinTools->CreateCall(pGetWeaponPrice, CallConv_ThisCall, &ret, pass, 2);
+	}
+#else
 	if (!pWrapper)
 	{
-		REGISTER_NATIVE_ADDR("GetAttributeInt",
-		PassInfo pass[2]; \
+		REGISTER_NATIVE_ADDR("GetWeaponPrice",
+		PassInfo pass[3]; \
 		PassInfo ret; \
 		pass[0].flags = PASSFLAG_BYVAL; \
 		pass[0].type = PassType_Basic; \
-		pass[0].size = sizeof(char *); \
+		pass[0].size = sizeof(CEconItemView *); \
 		pass[1].flags = PASSFLAG_BYVAL; \
 		pass[1].type = PassType_Basic; \
-		pass[1].size = sizeof(CEconItemView *); \
+		pass[1].size = sizeof(int); \
+		pass[2].flags = PASSFLAG_BYVAL; \
+		pass[2].type = PassType_Float; \
+		pass[2].size = sizeof(float); \
 		ret.flags = PASSFLAG_BYVAL; \
 		ret.type = PassType_Basic; \
 		ret.size = sizeof(int); \
-		pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &ret, pass, 2))
+		pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &ret, pass, 3))
 	}
-
+#endif
 	// Get a CEconItemView for the m4
 	// Found in CCSPlayer::HandleCommand_Buy_Internal
 	// Linux a1 - CCSPlayer *pEntity, v5 - Player Team, a3 - ItemLoadoutSlot -1 use default loadoutslot:
@@ -552,14 +580,22 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 		pGetView->Execute(vstk_view, &view);
 	}
 
-	unsigned char vstk[sizeof(void *) * 2 + sizeof(char *)];
+#if defined(WIN32)
+	unsigned char vstk[sizeof(void *) * 2 + sizeof(int)];
+#else
+	unsigned char vstk[sizeof(void *) * 2 + sizeof(int) + sizeof(float)];
+#endif
 	unsigned char *vptr = vstk;
 
 	*(void **)vptr = info;
 	vptr += sizeof(void *);
-	*(const char **)vptr = "in game price";
-	vptr += sizeof(const char *);
 	*(CEconItemView **)vptr = view;
+	vptr += sizeof(CEconItemView *);
+	*(int *)vptr = 0;
+#if !defined(WIN32)
+	vptr += sizeof(int);
+	*(float *)vptr = 1.0;
+#endif
 
 	int price = 0;
  	pWrapper->Execute(vstk, &price);

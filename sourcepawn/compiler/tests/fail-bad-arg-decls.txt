@@ -1,3 +1,0 @@
-(1) : error 001: expected token: "-identifier-", but found ")"
-(5) : error 140: new-style array types cannot specify dimension sizes as part of their type
-(9) : warning 238: 'int:' is an illegal cast; use view_as<int>(expression)

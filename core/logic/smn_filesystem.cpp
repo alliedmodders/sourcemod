@@ -309,7 +309,7 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 	
 	if (!path[0])
 	{
-		return pContext->ThrowNativeError("Invalid file path");
+		return pContext->ThrowNativeError("Invalid path. An empty path string is not valid, use \".\" to refer to the current working directory.");
 	}
 	
 	Handle_t handle = 0;
@@ -616,7 +616,12 @@ static cell_t sm_DirExists(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
 	pContext->LocalToString(params[1], &name);
-	
+
+	if (!name[0])
+	{
+		return pContext->ThrowNativeError("Invalid path. An empty path string is not valid, use \".\" to refer to the current working directory.");
+	}
+
 	if (params[0] >= 2 && params[2] == 1)
 	{
 		char *pathID;
@@ -765,9 +770,12 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 
 	int arg = 3;
 	char buffer[2048];
-	smcore.atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
-		return 0;
+	{
+		DetectExceptions eh(pContext);
+		smcore.atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
+		if (eh.HasException())
+			return 0;
+	}
 
 	if (SystemFile *sysfile = file->AsSystemFile()) {
 		fprintf(sysfile->fp(), "%s\n", buffer);
@@ -797,9 +805,12 @@ static cell_t sm_BuildPath(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &buffer);
 	pContext->LocalToString(params[4], &fmt);
 
-	smcore.atcprintf(path, sizeof(path), fmt, pContext, params, &arg);
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
-		return 0;
+	{
+		DetectExceptions eh(pContext);
+		smcore.atcprintf(path, sizeof(path), fmt, pContext, params, &arg);
+		if (eh.HasException())
+			return 0;
+	}
 
 	return g_pSM->BuildPath(Path_SM_Rel, buffer, params[3], "%s", path);
 }
@@ -808,12 +819,13 @@ static cell_t sm_LogToGame(IPluginContext *pContext, const cell_t *params)
 {
 	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
+	size_t len;
 	char buffer[1024];
-	size_t len = g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		len = g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
+		if (eh.HasException())
+			return 0;
 	}
 
 	if (len >= sizeof(buffer)-2)
@@ -835,11 +847,11 @@ static cell_t sm_LogMessage(IPluginContext *pContext, const cell_t *params)
 	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[1024];
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
+		if (eh.HasException())
+			return 0;
 	}
 
 	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
@@ -853,11 +865,11 @@ static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
 	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[1024];
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
-
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
-		return 0;
+		DetectExceptions eh(pContext);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
+		if (eh.HasException())
+			return 0;
 	}
 
 	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
@@ -900,9 +912,12 @@ static cell_t sm_LogToOpenFile(IPluginContext *pContext, const cell_t *params)
 
 	char buffer[2048];
 	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
-		return 0;
+	{
+		DetectExceptions eh(pContext);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		if (eh.HasException())
+			return 0;
+	}
 
 	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
 	g_Logger.LogToOpenFile(sysfile->fp(), "[%s] %s", pPlugin->GetFilename(), buffer);
@@ -922,9 +937,12 @@ static cell_t sm_LogToOpenFileEx(IPluginContext *pContext, const cell_t *params)
 
 	char buffer[2048];
 	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
-		return 0;
+	{
+		DetectExceptions eh(pContext);
+		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		if (eh.HasException())
+			return 0;
+	}
 
 	g_Logger.LogToOpenFile(sysfile->fp(), "%s", buffer);
 	return 1;
@@ -1176,6 +1194,7 @@ REGISTER_NATIVES(filesystem)
 	{"File.ReadInt8",			File_ReadTyped<int8_t>},
 	{"File.ReadUint8",			File_ReadTyped<uint8_t>},
 	{"File.ReadInt16",			File_ReadTyped<int16_t>},
+	{"File.ReadUint16",			File_ReadTyped<uint16_t>},
 	{"File.ReadInt32",			File_ReadTyped<int32_t>},
 	{"File.WriteInt8",			File_WriteTyped<int8_t>},
 	{"File.WriteInt16",			File_WriteTyped<int16_t>},

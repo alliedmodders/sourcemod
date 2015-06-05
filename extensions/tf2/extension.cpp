@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod Team Fortress 2 Extension
- * Copyright (C) 2004-2011 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2015 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -116,7 +116,6 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	plsys->AddPluginsListener(this);
 
 	playerhelpers->RegisterCommandTargetProcessor(this);
-	playerhelpers->AddClientListener(this);
 
 	g_critForward = forwards->CreateForward("TF2_CalcIsAttackCritical", ET_Hook, 4, NULL, Param_Cell, Param_Cell, Param_String, Param_CellByRef);
 	g_addCondForward = forwards->CreateForward("TF2_OnConditionAdded", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
@@ -172,7 +171,6 @@ void TF2Tools::SDK_OnUnload()
 	g_RegNatives.UnregisterAll();
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->UnregisterCommandTargetProcessor(this);
-	playerhelpers->RemoveClientListener(this);
 
 	plsys->RemovePluginsListener(this);
 
@@ -357,7 +355,7 @@ void TF2Tools::OnPluginLoaded(IPlugin *plugin)
 		&& ( g_addCondForward->GetFunctionCount() || g_removeCondForward->GetFunctionCount() )
 		)
 	{
-		m_CondChecksEnabled = InitialiseConditionChecks();
+		m_CondChecksEnabled = g_CondMgr.Init();
 	}
 
 	if (!m_RulesDetoursEnabled
@@ -384,7 +382,7 @@ void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
 	{
 		if (!g_addCondForward->GetFunctionCount() && !g_removeCondForward->GetFunctionCount())
 		{
-			RemoveConditionChecks();
+			g_CondMgr.Shutdown();
 			m_CondChecksEnabled = false;
 		}
 	}
@@ -401,11 +399,6 @@ void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
 		RemoveTeleporterDetour();
 		m_TeleportDetourEnabled = false;
 	}
-}
-
-void TF2Tools::OnClientPutInServer(int client)
-{
-	Conditions_OnClientPutInServer(client);
 }
 
 int FindResourceEntity()
