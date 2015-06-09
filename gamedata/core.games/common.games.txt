@@ -39,14 +39,6 @@
 		}
 	}
 	
-	"fof"
-	{
-		"Keys"
-		{
-			"m_iHealth"		"m_hYFD2"
-		}
-	}
-	
 	/* Original engine specifics */
 	"#default"
 	{
