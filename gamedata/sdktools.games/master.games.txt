@@ -248,4 +248,8 @@
 	{
 		"game"		"nmrih"
 	}
+	"game.modularcombat.txt"
+	{
+		"game"		"modularcombat"
+	}
 }
