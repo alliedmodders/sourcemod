@@ -99,6 +99,7 @@
 			"game"		"fas"
 			"game"		"cspromod"
 			"game"		"ag2"
+			"game"		"modularcombat"
 		}
 		
 		"Offsets"

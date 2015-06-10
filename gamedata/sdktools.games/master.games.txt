@@ -247,4 +247,8 @@
 	{
 		"game"		"bms"
 	}
+	"game.modularcombat.txt"
+	{
+		"game"		"modularcombat"
+	}
 }
