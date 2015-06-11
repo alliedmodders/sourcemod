@@ -383,7 +383,7 @@ public:
 
 				UTIL_StripExtension(fileName, buffer, sizeof(buffer));
 
-				if (!engine->IsMapValid(buffer))
+				if (!gamehelpers->IsMapValid(buffer))
 				{
 					fileName = smcore.filesystem->FindNext(findHandle);
 					continue;

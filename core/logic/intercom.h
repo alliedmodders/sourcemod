@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 29)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 30)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -61,7 +61,6 @@ class IVEngineServer_Logic
 #endif
 {
 public:
-	virtual bool IsMapValid(const char *map) = 0;
 	virtual bool IsDedicatedServer() = 0;
 	virtual void InsertServerCommand(const char *cmd) = 0;
 	virtual void ServerCommand(const char *cmd) = 0;

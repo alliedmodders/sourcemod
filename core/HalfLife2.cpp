@@ -1236,7 +1236,13 @@ bool CHalfLife2::IsMapValid(const char *map)
 	if (!map || !map[0])
 		return false;
 
-	bool ret = engine->IsMapValid(map);
+	bool ret;
+#if SOURCE_ENGINE == SE_TF2
+	char szTmp[PLATFORM_MAX_PATH];
+	strncopy(szTmp, map, sizeof(szTmp));
+	ret = engine->FindMap(szTmp, sizeof(szTmp)) != eFindMap_NotFound;
+#else
+	ret = engine->IsMapValid(map);
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 	if (!ret)
 	{
@@ -1247,5 +1253,6 @@ bool CHalfLife2::IsMapValid(const char *map)
 		}
 	}
 #endif
+#endif // SE_TF2
 	return ret;
 }

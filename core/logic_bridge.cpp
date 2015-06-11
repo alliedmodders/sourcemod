@@ -92,10 +92,6 @@ ILogger *logger;
 class VEngineServer_Logic : public IVEngineServer_Logic
 {
 public:
-	virtual bool IsMapValid(const char *map)
-	{
-		return !!engine->IsMapValid(map);
-	}
 	virtual bool IsDedicatedServer()
 	{
 		return engine->IsDedicatedServer();
