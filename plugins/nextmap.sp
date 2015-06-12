@@ -4,7 +4,7 @@
  * SourceMod Nextmap Plugin
  * Adds sm_nextmap cvar for changing map and nextmap chat trigger.
  *
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2014 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -47,7 +47,7 @@ public Plugin myinfo =
 };
 
 int g_MapPos = -1;
-Handle g_MapList = null;
+ArrayList g_MapList = null;
 int g_MapListSerial = -1;
 
 int g_CurrentMapStartTime;
@@ -80,7 +80,8 @@ public void OnPluginStart()
 	LoadTranslations("common.phrases");
 	LoadTranslations("nextmap.phrases");
 	
-	g_MapList = CreateArray(32);
+	int size = ByteCountToCells(PLATFORM_MAX_PATH);
+	g_MapList = new ArrayList(size);
 
 	RegAdminCmd("sm_maphistory", Command_MapHistory, ADMFLAG_CHANGEMAP, "Shows the most recent maps played");
 	RegConsoleCmd("listmaps", Command_List);
@@ -115,11 +116,11 @@ public Action Command_List(int client, int args)
 {
 	PrintToConsole(client, "Map Cycle:");
 	
-	int mapCount = GetArraySize(g_MapList);
-	char mapName[32];
+	int mapCount = g_MapList.Length;
+	char mapName[PLATFORM_MAX_PATH];
 	for (int i = 0; i < mapCount; i++)
 	{
-		GetArrayString(g_MapList, i, mapName, sizeof(mapName));
+		g_MapList.GetString(i, mapName, sizeof(mapName));
 		PrintToConsole(client, "%s", mapName);
 	}
  
@@ -141,8 +142,8 @@ void FindAndSetNextMap()
 		}
 	}
 	
-	int mapCount = GetArraySize(g_MapList);
-	char mapName[32];
+	int mapCount = g_MapList.Length;
+	char mapName[PLATFORM_MAX_PATH];
 	
 	if (g_MapPos == -1)
 	{
@@ -151,7 +152,7 @@ void FindAndSetNextMap()
 
 		for (int i = 0; i < mapCount; i++)
 		{
-			GetArrayString(g_MapList, i, mapName, sizeof(mapName));
+			g_MapList.GetString(i, mapName, sizeof(mapName));
 			if (strcmp(current, mapName, false) == 0)
 			{
 				g_MapPos = i;
@@ -167,7 +168,7 @@ void FindAndSetNextMap()
 	if (g_MapPos >= mapCount)
 		g_MapPos = 0;	
  
- 	GetArrayString(g_MapList, g_MapPos, mapName, sizeof(mapName));
+ 	g_MapList.GetString(g_MapPos, mapName, sizeof(mapName));
 	SetNextMap(mapName);
 }
 
@@ -175,7 +176,7 @@ public Action Command_MapHistory(int client, int args)
 {
 	int mapCount = GetMapHistorySize();
 	
-	char mapName[32];
+	char mapName[PLATFORM_MAX_PATH];
 	char changeReason[100];
 	char timeString[100];
 	char playedTime[100];

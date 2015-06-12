@@ -4,7 +4,7 @@
  * SourceMod Rock The Vote Plugin
  * Creates a map vote when the required number of players have requested one.
  *
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2014 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -50,7 +50,7 @@ ConVar g_Cvar_ExcludeOld;
 ConVar g_Cvar_ExcludeCurrent;
 
 Menu g_MapMenu = null;
-Handle g_MapList = null;
+ArrayList g_MapList = null;
 int g_mapFileSerial = -1;
 
 #define MAPSTATUS_ENABLED (1<<0)
@@ -66,8 +66,8 @@ public void OnPluginStart()
 	LoadTranslations("common.phrases");
 	LoadTranslations("nominations.phrases");
 	
-	int arraySize = ByteCountToCells(33);
-	g_MapList = CreateArray(arraySize);
+	int arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
+	g_MapList = new ArrayList(arraySize);
 	
 	g_Cvar_ExcludeOld = CreateConVar("sm_nominate_excludeold", "1", "Specifies if the current map should be excluded from the Nominations list", 0, true, 0.00, true, 1.0);
 	g_Cvar_ExcludeCurrent = CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", 0, true, 0.00, true, 1.0);
@@ -264,7 +264,7 @@ void BuildMapMenu()
 	
 	if (g_Cvar_ExcludeOld.BoolValue)
 	{	
-		excludeMaps = new ArrayList(ByteCountToCells(33));
+		excludeMaps = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
 		GetExcludeMapList(excludeMaps);
 	}
 	
@@ -274,11 +274,11 @@ void BuildMapMenu()
 	}
 	
 		
-	for (int i = 0; i < GetArraySize(g_MapList); i++)
+	for (int i = 0; i < g_MapList.Length; i++)
 	{
 		int status = MAPSTATUS_ENABLED;
 		
-		GetArrayString(g_MapList, i, map, sizeof(map));
+		g_MapList.GetString(i, map, sizeof(map));
 		
 		if (g_Cvar_ExcludeCurrent.BoolValue)
 		{
@@ -377,7 +377,7 @@ public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int p
 				return 0;
 			}
 			
-			char display[100];
+			char display[PLATFORM_MAX_PATH + 64];
 			
 			if ((status & MAPSTATUS_DISABLED) == MAPSTATUS_DISABLED)
 			{
