@@ -129,6 +129,22 @@ native Float:GetRandomFloat(Float:fMin=0.0, Float:fMax=1.0);
 native GetRandomInt(nmin, nmax);
 
 /**
+ * Give a map entry name, find its real name
+ * 
+ * Will always return false on games that do not support fuzzy names.
+ *
+ * NOTE: If this function returns false, outFullname is NOT set, so remember to check
+ * the return value!
+ *
+ * @param fuzzyName 			Map entry name
+ * @param outFullname			Full map path, excluding .bsp extension
+ * @param size				Length of outFullname
+ *
+ * @return				True if outFullname is set, false otherwise
+ */
+native bool:ResolveFuzzyMapName(const String:fuzzyName[], String:outFullname[], size);
+
+/**
  * Returns whether a map is valid or not.
  * 
  * @param map 			Map name, excluding .bsp extension.
