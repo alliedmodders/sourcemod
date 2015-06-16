@@ -136,6 +136,82 @@ forward void OnNominationRemoved(const char[] map, int owner);
  */
 forward void OnMapVoteStarted();
 
+/**
+ * Given a map list from ReadMapList, attempt to resolve all fuzzy map names
+ * This is used internally by MapChooser and its children.
+ * 
+ * @param mapList			A maplist produced by ReadMapList
+ * @param resolvedMapList	A maplist of maps whose fuzzy names are resolved
+ * 							If null, will be created
+ */
+stock void ProduceResolvedMapList(ArrayList mapList, ArrayList resolvedMapList)
+{
+	if (mapList == null)
+	{
+		return false;
+	}
+	
+	if (resolvedMapList == null)
+	{
+		resolvedMapList = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
+	}
+	else
+	{
+		resolvedMapList.Clear();
+	}
+	
+	int length = mapList.Length;
+	for (int i = 0; i < length; i++)
+	{
+		char map[PLATFORM_MAX_PATH];
+		char fuzzyMap[PLATFORM_MAX_PATH];
+		
+		mapList.GetString(i, map, sizeof(map));
+		
+		if (ResolveFuzzyMapName(map, fuzzyMap, sizeof(fuzzyMap)))
+		{
+			resolvedMapList.PushString(fuzzyMap);
+		}
+		else
+		{
+			resolvedMapList.PushString(map);
+		}
+	}
+}
+
+/**
+ * This is used to get the Friendly name for a Workshop map.  Used for the display name in a map vote.
+ * 
+ * Note: non-Workshop maps will be ignored.
+ * 
+ * @param resolvedMap		A map name returned from ResolveFuzzyMapName
+ * @param friendlyName		The map name with the extra workshop path bits removed
+ * @param maxlength			The max length of friendlyName
+ * 							(We recommend PLATFORM_MAX_PATH)
+ */
+stock void GetFriendlyMapName(const char[] resolvedMap, char[] friendlyName, int maxlength)
+{
+	EngineVersion version = GetEngineVersion();
+	switch (version)
+	{
+		case Engine_TF2:
+		{
+			int ugcPos;
+			
+			// In TF2, workshop maps show up as workshop/mapname.ugc123456789
+			if (strncmp(resolvedMap, "workshop/", 9) == 0 && (ugcPos = StrContains(resolvedMap, ".ugc")) > -1)
+			{
+				strcopy(friendlyName, maxlength < ugcPos - 8 ? maxlength : ugcPos - 8, resolvedMap[9]);
+				return;
+			}
+			
+		}
+	}
+	
+	// Fallback to just copying the name back to itself
+	strcopy(friendlyName, maxlength, resolvedMap);
+}
+
 public SharedPlugin __pl_mapchooser = 
 {
 	name = "mapchooser",

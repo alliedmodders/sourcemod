@@ -76,6 +76,7 @@ Handle g_RetryTimer = null;
 
 /* Data Handles */
 ArrayList g_MapList;
+ArrayList g_ResolvedMapList;
 ArrayList g_NominateList;
 ArrayList g_NominateOwners;
 ArrayList g_OldMapList;
@@ -110,6 +111,7 @@ public void OnPluginStart()
 	
 	int arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
 	g_MapList = new ArrayList(arraySize);
+	g_ResolvedMapList = new ArrayList(arraySize);
 	g_NominateList = new ArrayList(arraySize);
 	g_NominateOwners = new ArrayList();
 	g_OldMapList = new ArrayList(arraySize);
@@ -210,6 +212,10 @@ public void OnConfigsExecuted()
 			LogError("Unable to create a valid map list.");
 		}
 	}
+	
+	// The workshop can download a new map version and thus resolve to the wrong map
+	// ...therefore, rebuild this every map
+	ProduceResolvedMapList(g_MapList, g_ResolvedMapList);
 	
 	CreateNextVote();
 	SetupTimeleftTimer();
@@ -943,7 +949,7 @@ void CreateNextVote()
 	ClearArray(g_NextMapList);
 	
 	char map[PLATFORM_MAX_PATH];
-	ArrayList tempMaps = g_MapList.Clone();
+	ArrayList tempMaps = g_ResolvedMapList.Clone();
 	
 	GetCurrentMap(map, sizeof(map));
 	RemoveStringFromArray(tempMaps, map);
