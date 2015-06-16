@@ -1210,6 +1210,11 @@ const char *CHalfLife2::GetEntityClassname(CBaseEntity *pEntity)
 
 bool CHalfLife2::ResolveFuzzyMapName(const char *fuzzyName, char *outFullname, int size)
 {
+	if (engine->IsMapValid(fuzzyName))
+	{
+		strncopy(outFullname, fuzzyName, size);
+		return true;
+	}
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 	static ConCommand *pHelperCmd = g_pCVar->FindCommand("changelevel");
 	if (!pHelperCmd || !pHelperCmd->CanAutoComplete())
@@ -1234,7 +1239,7 @@ bool CHalfLife2::ResolveFuzzyMapName(const char *fuzzyName, char *outFullname, i
 	char szTmp[PLATFORM_MAX_PATH];
 	strncopy(szTmp, fuzzyName, sizeof(szTmp));
 
-	if (engine->FindMap(szTmp, sizeof(szTmp)) == eFindMap_NotFound || strcmp(szTmp, fuzzyName) == 0)
+	if (engine->FindMap(szTmp, sizeof(szTmp)) == eFindMap_NotFound)
 		return false;
 
 	strncopy(outFullname, szTmp, size);
