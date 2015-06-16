@@ -1210,11 +1210,14 @@ const char *CHalfLife2::GetEntityClassname(CBaseEntity *pEntity)
 
 bool CHalfLife2::ResolveFuzzyMapName(const char *fuzzyName, char *outFullname, int size)
 {
+#if SOURCE_ENGINE != SE_TF2
+	// TF2's engine->IsMapValid doesn't seem to work at the moment, don't bother trying to call it
 	if (engine->IsMapValid(fuzzyName))
 	{
 		strncopy(outFullname, fuzzyName, size);
 		return true;
 	}
+#endif
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 	static ConCommand *pHelperCmd = g_pCVar->FindCommand("changelevel");
 	if (!pHelperCmd || !pHelperCmd->CanAutoComplete())
