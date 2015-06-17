@@ -141,7 +141,7 @@ native GetRandomInt(nmin, nmax);
  * @param size				Length of outFullname
  *
  * @return				True if this map resolves to a real map, false if 
- *					it doesn't exist or is already the real map path.
+ *						it doesn't exist.
  */
 native bool:ResolveFuzzyMapName(const String:fuzzyName[], String:outFullname[], size);
 
