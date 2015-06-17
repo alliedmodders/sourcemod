@@ -286,7 +286,6 @@ void BuildMapMenu()
 	g_MapMenu = new Menu(Handler_MapSelectMenu, MENU_ACTIONS_DEFAULT|MenuAction_DrawItem|MenuAction_DisplayItem);
 
 	char map[PLATFORM_MAX_PATH];
-	char resolvedMap[PLATFORM_MAX_PATH];
 	
 	ArrayList excludeMaps;
 	char currentMap[PLATFORM_MAX_PATH];
@@ -301,21 +300,19 @@ void BuildMapMenu()
 	{
 		GetCurrentMap(currentMap, sizeof(currentMap));
 	}
-	
 		
-	for (int i = 0; i < g_MapList.Length; i++)
+	for (int i = 0; i < g_ResolvedMapList.Length; i++)
 	{
 		int status = MAPSTATUS_ENABLED;
 		
-		g_MapList.GetString(i, map, sizeof(map));
-		ResolveFuzzyMapName(map, resolvedMap, sizeof(resolvedMap));
+		g_ResolvedMapList.GetString(i, map, sizeof(map));
 		
 		char friendlyName[PLATFORM_MAX_PATH];
-		GetFriendlyMapName(resolvedMap, friendlyName, sizeof(friendlyName));
+		GetFriendlyMapName(map, friendlyName, sizeof(friendlyName));
 
 		if (g_Cvar_ExcludeCurrent.BoolValue)
 		{
-			if (StrEqual(resolvedMap, currentMap))
+			if (StrEqual(map, currentMap))
 			{
 				status = MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_CURRENT;
 			}
@@ -330,8 +327,8 @@ void BuildMapMenu()
 			}
 		}
 		
-		g_MapMenu.AddItem(resolvedMap, friendlyName);
-		g_mapTrie.SetValue(resolvedMap, status);
+		g_MapMenu.AddItem(map, friendlyName);
+		g_mapTrie.SetValue(map, status);
 	}
 
 	g_MapMenu.ExitButton = true;
