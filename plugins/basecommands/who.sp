@@ -54,7 +54,15 @@ PerformWho(client, target, ReplySource:reply, bool:is_admin)
 	{
 		if (!is_admin)
 		{
-			ReplyToCommand(client, "[SM] %t", "Player is an admin", name);
+			new flags = GetUserFlagBits(target);
+			if (flags == ADMFLAG_RESERVATION)
+			{
+				ReplyToCommand(client, "[SM] %t", "Player is not an admin", name);
+			}
+			else
+			{
+				ReplyToCommand(client, "[SM] %t", "Player is an admin", name);
+			}
 		}
 		else
 		{
@@ -227,7 +235,7 @@ public Action:Command_Who(client, args)
 			}
 			else
 			{
-				if (flags == 0)
+				if (flags == 0 || flags == ADMFLAG_RESERVATION)
 				{
 					PrintToConsole(client, "%2d. %-24.23s %t", i, name, "No");
 				}
