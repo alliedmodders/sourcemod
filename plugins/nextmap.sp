@@ -48,6 +48,7 @@ public Plugin myinfo =
 
 int g_MapPos = -1;
 ArrayList g_MapList = null;
+ArrayList g_ResolvedMapList = null;
 int g_MapListSerial = -1;
 
 int g_CurrentMapStartTime;
@@ -82,6 +83,7 @@ public void OnPluginStart()
 	
 	int size = ByteCountToCells(PLATFORM_MAX_PATH);
 	g_MapList = new ArrayList(size);
+	g_ResolvedMapList = new ArrayList(size);
 
 	RegAdminCmd("sm_maphistory", Command_MapHistory, ADMFLAG_CHANGEMAP, "Shows the most recent maps played");
 	RegConsoleCmd("listmaps", Command_List);
@@ -109,6 +111,11 @@ public void OnConfigsExecuted()
 	if (strcmp(lastMap, currentMap) == 0)
 	{
 		FindAndSetNextMap();
+	}
+	
+	if (g_MapList != null)
+	{
+		ProduceResolvedMapList(g_MapList, g_ResolvedMapList);
 	}
 }
 
@@ -142,7 +149,9 @@ void FindAndSetNextMap()
 		}
 	}
 	
-	int mapCount = g_MapList.Length;
+	ProduceResolvedMapList(g_MapList, g_ResolvedMapList);
+	
+	int mapCount = g_ResolvedMapList.Length;
 	char mapName[PLATFORM_MAX_PATH];
 	
 	if (g_MapPos == -1)
@@ -152,7 +161,7 @@ void FindAndSetNextMap()
 
 		for (int i = 0; i < mapCount; i++)
 		{
-			g_MapList.GetString(i, mapName, sizeof(mapName));
+			g_ResolvedMapList.GetString(i, mapName, sizeof(mapName));
 			if (strcmp(current, mapName, false) == 0)
 			{
 				g_MapPos = i;

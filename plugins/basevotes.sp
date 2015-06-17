@@ -116,7 +116,7 @@ public OnPluginStart()
 		OnAdminMenuReady(topmenu);
 	}
 	
-	g_SelectedMaps = CreateArray(33);
+	g_SelectedMaps = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
 	
 	g_MapList = CreateMenu(MenuHandler_Map, MenuAction_DrawItem|MenuAction_Display);
 	g_MapList.SetTitle("%T", "Please select a map", LANG_SERVER);

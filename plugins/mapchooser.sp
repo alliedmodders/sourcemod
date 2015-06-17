@@ -74,6 +74,8 @@ ConVar g_Cvar_RunOffPercent;
 Handle g_VoteTimer = null;
 Handle g_RetryTimer = null;
 
+// g_MapList stores unresolved names so we can resolve them after every map change in the workshop updates.
+// g_OldMapList and g_NextMapList are resolved. g_NominateList depends on the nominations implementation.
 /* Data Handles */
 ArrayList g_MapList;
 ArrayList g_ResolvedMapList;
@@ -591,11 +593,14 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 		/* Smaller of the two - It should be impossible for nominations to exceed the size though (cvar changed mid-map?) */
 		int nominationsToAdd = nominateCount >= voteSize ? voteSize : nominateCount;
 		
-		
+		char friendlyName[PLATFORM_MAX_PATH];
 		for (int i=0; i<nominationsToAdd; i++)
 		{
+			
 			g_NominateList.GetString(i, map, sizeof(map));
-			g_VoteMenu.AddItem(map, map);
+			GetFriendlyMapName(map, friendlyName, sizeof(friendlyName), false);
+			
+			g_VoteMenu.AddItem(map, friendlyName);
 			RemoveStringFromArray(g_NextMapList, map);
 			
 			/* Notify Nominations that this map is now free */
@@ -636,7 +641,8 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 			count++;
 			
 			/* Insert the map and increment our count */
-			g_VoteMenu.AddItem(map, map);
+			GetFriendlyMapName(map, friendlyName, sizeof(friendlyName));			
+			g_VoteMenu.AddItem(map, friendlyName);
 			i++;
 		}
 		
@@ -654,7 +660,9 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 			
 			if (IsMapValid(map))
 			{
-				g_VoteMenu.AddItem(map, map);
+				char friendlyName[PLATFORM_MAX_PATH];
+				GetFriendlyMapName(map, friendlyName, sizeof(friendlyName));
+				g_VoteMenu.AddItem(map, friendlyName);
 			}	
 		}
 	}

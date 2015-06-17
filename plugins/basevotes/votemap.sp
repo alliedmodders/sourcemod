@@ -48,7 +48,9 @@ DisplayVoteMapMenu(client, mapCount, String:maps[5][])
 	
 	if (mapCount == 1)
 	{
-		strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), maps[0]);
+		char friendlyName[PLATFORM_MAX_PATH];
+		GetFriendlyMapName(maps[0], friendlyName, sizeof(friendlyName), false);
+		strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), friendlyName);
 			
 		g_hVoteMenu.SetTitle("Change Map To");
 		g_hVoteMenu.AddItem(maps[0], "Yes");
@@ -61,7 +63,9 @@ DisplayVoteMapMenu(client, mapCount, String:maps[5][])
 		g_hVoteMenu.SetTitle("Map Vote");
 		for (new i = 0; i < mapCount; i++)
 		{
-			g_hVoteMenu.AddItem(maps[i], maps[i]);
+			char friendlyName[PLATFORM_MAX_PATH];
+			GetFriendlyMapName(maps[i], friendlyName, sizeof(friendlyName), false);
+			g_hVoteMenu.AddItem(maps[i], friendlyName);
 		}	
 	}
 	
