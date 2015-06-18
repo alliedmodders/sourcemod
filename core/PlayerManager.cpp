@@ -57,6 +57,8 @@ const unsigned int *g_NumPlayersToAuth = NULL;
 int lifestate_offset = -1;
 List<ICommandTargetProcessor *> target_processors;
 
+ConVar sm_debug_connect("sm_debug_connect", "0", 0, "Log Debug information about potential connection issues.");
+
 #if SOURCE_ENGINE == SE_DOTA
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, CEntityIndex, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, CEntityIndex, const char *);
@@ -496,6 +498,28 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 #endif
 	CPlayer *pPlayer = &m_Players[client];
 	++m_PlayersSinceActive;
+
+	if (pPlayer->IsConnected())
+	{
+		if (sm_debug_connect.GetBool())
+		{
+			const char *pAuth = pPlayer->GetAuthString(false);
+			if (pAuth == NULL)
+			{
+				pAuth = "";
+			}
+
+			logger->LogMessage("\"%s<%d><%s><>\" was already connected to the server.", pPlayer->GetName(), pPlayer->GetUserId(), pAuth);
+		}
+
+#if SOURCE_ENGINE == SE_DOTA
+		OnClientDisconnect(pPlayer->GetIndex(), 0);
+		OnClientDisconnect_Post(pPlayer->GetIndex(), 0);
+#else
+		OnClientDisconnect(pPlayer->GetEdict());
+		OnClientDisconnect_Post(pPlayer->GetEdict());
+#endif
+	}
 
 	pPlayer->Initialize(pszName, pszAddress, pEntity);
 	
