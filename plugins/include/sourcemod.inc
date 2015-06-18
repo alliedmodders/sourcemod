@@ -612,6 +612,17 @@ stock void GetFriendlyMapName(const char[] resolvedMap, char[] friendlyName, int
 				return;
 			}
 		}
+		
+		case Engine_CSGO:
+		{
+			int lastSlashPos;
+			if (strncmp(szTmp, "workshop/", 9) == 0 && (lastSlashPos = FindCharInString(szTmp, '/', true)) > 9)
+			{
+				int newlength = strlen(szTmp) - lastSlashPos;
+				strcopy(friendlyName, maxlength < newlength ? maxlength : newlength, szTmp[lastSlashPos+1]);
+				return;
+			}
+		}
 	}
 	
 	// Fallback to just copying the name back to itself
