@@ -211,7 +211,9 @@ public Action:Command_Nextmap(client, args)
 	}
 	else
 	{
-		ReplyToCommand(client, "[SM] %t", "Next Map", map);
+		decl String:friendlyName[PLATFORM_MAX_PATH];
+		GetFriendlyMapName(map, friendlyName, sizeof(friendlyName));
+		ReplyToCommand(client, "[SM] %t", "Next Map", friendlyName);
 	}
 	
 	return Plugin_Handled;
