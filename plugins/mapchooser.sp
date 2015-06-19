@@ -703,7 +703,8 @@ public void Handler_VoteFinishedGeneric(Menu menu,
 						   const int[][] item_info)
 {
 	char map[PLATFORM_MAX_PATH];
-	menu.GetItem(item_info[0][VOTEINFO_ITEM_INDEX], map, sizeof(map));
+	char friendlyName[PLATFORM_MAX_PATH];
+	menu.GetItem(item_info[0][VOTEINFO_ITEM_INDEX], map, sizeof(map), _, friendlyName, sizeof(friendlyName));
 
 	if (strcmp(map, VOTE_EXTEND, false) == 0)
 	{
@@ -785,7 +786,7 @@ public void Handler_VoteFinishedGeneric(Menu menu,
 		g_HasVoteStarted = false;
 		g_MapVoteCompleted = true;
 		
-		PrintToChatAll("[SM] %t", "Nextmap Voting Finished", map, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		PrintToChatAll("[SM] %t", "Nextmap Voting Finished", friendlyName, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. Nextmap: %s.", map);
 	}	
 }
