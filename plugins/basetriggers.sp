@@ -212,7 +212,7 @@ public Action:Command_Nextmap(client, args)
 	else
 	{
 		decl String:friendlyName[PLATFORM_MAX_PATH];
-		GetFriendlyMapName(map, friendlyName, sizeof(friendlyName), false);
+		GetFriendlyMapName(map, friendlyName, sizeof(friendlyName));
 		ReplyToCommand(client, "[SM] %t", "Next Map", friendlyName);
 	}
 	
