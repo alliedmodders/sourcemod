@@ -264,7 +264,7 @@ public Handler_VoteCallback(Menu menu, MenuAction action, param1, param2)
 	}	
 	else if (action == MenuAction_VoteEnd)
 	{
-		char item[64], display[PLATFORM_MAX_PATH];
+		char item[64], display[64];
 		float percent, limit;
 		int votes, totalVotes;
 
@@ -311,8 +311,11 @@ public Handler_VoteCallback(Menu menu, MenuAction action, param1, param2)
 				
 				case (voteType:map):
 				{
+					// single-vote items don't use the display item
+					char friendlyName[PLATFORM_MAX_PATH];
+					GetFriendlyMapName(item, friendlyName, sizeof(friendlyName), false);
 					LogAction(-1, -1, "Changing map to %s due to vote.", item);
-					PrintToChatAll("[SM] %t", "Changing map", display);
+					PrintToChatAll("[SM] %t", "Changing map", friendlyName);
 					new Handle:dp;
 					CreateDataTimer(5.0, Timer_ChangeMap, dp);
 					WritePackString(dp, item);		
