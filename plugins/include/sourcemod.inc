@@ -531,52 +531,6 @@ native Handle:ReadMapList(Handle:array=INVALID_HANDLE,
 native SetMapListCompatBind(const String:name[], const String:file[]);
 
 /**
- * Given a map list from ReadMapList, attempt to resolve all fuzzy map names
- * and save them in the second list.
- * 
- * Entries from one list will match 1 to 1 with entries in the second list.
- * 
- * @param mapList			A maplist produced by ReadMapList.
- * @param resolvedMapList	An empty ArrayList that will be populated with the
- * 							resolved names of the fuzzy map names in mapList
- * 							If null, a new ArrayList will be created.
- */
-stock void ProduceResolvedMapList(ArrayList mapList, ArrayList resolvedMapList)
-{
-	if (resolvedMapList == null)
-	{
-		resolvedMapList = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
-	}
-	else
-	{
-		resolvedMapList.Clear();
-	}
-	
-	if (mapList == null)
-	{
-		return;
-	}
-	
-	int length = mapList.Length;
-	for (int i = 0; i < length; i++)
-	{
-		char map[PLATFORM_MAX_PATH];
-		char resolvedMap[PLATFORM_MAX_PATH];
-		
-		mapList.GetString(i, map, sizeof(map));
-		
-		if (ResolveFuzzyMapName(map, resolvedMap, sizeof(resolvedMap)))
-		{
-			resolvedMapList.PushString(resolvedMap);
-		}
-		else
-		{
-			resolvedMapList.PushString(map);
-		}
-	}
-}
-
-/**
  * This is used to get the Friendly name for a Workshop map.  Used for the display name in a map vote.
  * 
  * Note: non-Workshop maps will be ignored.

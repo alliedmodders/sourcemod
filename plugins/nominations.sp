@@ -51,7 +51,6 @@ ConVar g_Cvar_ExcludeCurrent;
 
 Menu g_MapMenu = null;
 ArrayList g_MapList = null;
-ArrayList g_ResolvedMapList = null;
 int g_mapFileSerial = -1;
 
 #define MAPSTATUS_ENABLED (1<<0)
@@ -69,7 +68,6 @@ public void OnPluginStart()
 	
 	int arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
 	g_MapList = new ArrayList(arraySize);
-	g_ResolvedMapList = new ArrayList(arraySize);
 	
 	g_Cvar_ExcludeOld = CreateConVar("sm_nominate_excludeold", "1", "Specifies if the current map should be excluded from the Nominations list", 0, true, 0.00, true, 1.0);
 	g_Cvar_ExcludeCurrent = CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", 0, true, 0.00, true, 1.0);
@@ -94,8 +92,6 @@ public void OnConfigsExecuted()
 			SetFailState("Unable to create a valid map list.");
 		}
 	}
-	
-	ProduceResolvedMapList(g_MapList, g_ResolvedMapList);
 	
 	BuildMapMenu();
 }
@@ -301,18 +297,21 @@ void BuildMapMenu()
 		GetCurrentMap(currentMap, sizeof(currentMap));
 	}
 		
-	for (int i = 0; i < g_ResolvedMapList.Length; i++)
+	for (int i = 0; i < g_MapList.Length; i++)
 	{
 		int status = MAPSTATUS_ENABLED;
 		
-		g_ResolvedMapList.GetString(i, map, sizeof(map));
+		g_MapList.GetString(i, map, sizeof(map));
+		
+		char resolvedMap[PLATFORM_MAX_PATH];
+		ResolveFuzzyMapName(map, resolvedMap, sizeof(resolvedMap));
 		
 		char friendlyName[PLATFORM_MAX_PATH];
-		GetFriendlyMapName(map, friendlyName, sizeof(friendlyName));
+		GetFriendlyMapName(resolvedMap, friendlyName, sizeof(friendlyName));
 
 		if (g_Cvar_ExcludeCurrent.BoolValue)
 		{
-			if (StrEqual(map, currentMap))
+			if (StrEqual(resolvedMap, currentMap))
 			{
 				status = MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_CURRENT;
 			}
@@ -321,14 +320,14 @@ void BuildMapMenu()
 		/* Dont bother with this check if the current map check passed */
 		if (g_Cvar_ExcludeOld.BoolValue && status == MAPSTATUS_ENABLED)
 		{
-			if (excludeMaps.FindString(map) != -1)
+			if (excludeMaps.FindString(resolvedMap) != -1)
 			{
 				status = MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_PREVIOUS;
 			}
 		}
 		
-		g_MapMenu.AddItem(map, friendlyName);
-		g_mapTrie.SetValue(map, status);
+		g_MapMenu.AddItem(resolvedMap, friendlyName);
+		g_mapTrie.SetValue(resolvedMap, status);
 	}
 
 	g_MapMenu.ExitButton = true;
