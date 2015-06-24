@@ -949,7 +949,7 @@ bool RemoveStringFromArray(ArrayList array, char[] str)
 
 void CreateNextVote()
 {
-	ClearArray(g_NextMapList);
+	g_NextMapList.Clear();
 	
 	char map[PLATFORM_MAX_PATH];
 	ArrayList tempMaps = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
