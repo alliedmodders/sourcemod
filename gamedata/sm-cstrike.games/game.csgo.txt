@@ -214,7 +214,7 @@
 	{
 		"Keys"
 		{
-			"MVPsBase"		"m_bIsLookingAtWeapon"
+			"MVPsBase"		"m_bIsHoldingLookAtWeapon"
 		}
 		
 		"Offsets"
