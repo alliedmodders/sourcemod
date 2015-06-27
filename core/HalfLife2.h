@@ -133,7 +133,7 @@ public:
 // Not yet in other games, but eventually in others on same branch.
 enum eFindMapResult : int;
 
-class CHalfLife2 :
+class CHalfLife2 : 
 	public SMGlobalClass,
 	public IGameHelpers
 {

@@ -71,9 +71,9 @@ static cell_t FindMap(IPluginContext *pContext, const cell_t *params)
 {
 	char *pMapname;
 	pContext->LocalToString(params[1], &pMapname);
-
+		
 	cell_t size = params[2];
-
+	
 	return g_HL2.FindMap(pMapname, size);
 }
 

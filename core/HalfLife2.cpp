@@ -1232,7 +1232,7 @@ eFindMapResult CHalfLife2::FindMap(char *pMapName, int nMapNameMax)
 	}
 
 	static ConCommand *pHelperCmd = g_pCVar->FindCommand("changelevel");
-
+	
 	// This shouldn't happen.
 	if (!pHelperCmd || !pHelperCmd->CanAutoComplete())
 	{
@@ -1272,8 +1272,7 @@ bool CHalfLife2::IsMapValid(const char *map)
 {
 	if (!map || !map[0])
 		return false;
-
-
+	
 	static char szTmp[PLATFORM_MAX_PATH];
 	strncopy(szTmp, map, sizeof(szTmp));
 
