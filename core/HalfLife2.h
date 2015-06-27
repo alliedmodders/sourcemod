@@ -129,6 +129,10 @@ public:
 #endif
 };
 
+// See TF2 eiface.h for description.
+// Not yet in other games, but eventually in others on same branch.
+enum eFindMapResult : int;
+
 class CHalfLife2 : 
 	public SMGlobalClass,
 	public IGameHelpers
@@ -174,6 +178,7 @@ public: //IGameHelpers
 	const char *GetEntityClassname(edict_t *pEdict);
 	const char *GetEntityClassname(CBaseEntity *pEntity);
 	bool IsMapValid(const char *map);
+	eFindMapResult FindMap(char *pMapName, int nMapNameMax);
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();

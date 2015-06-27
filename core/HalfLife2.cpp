@@ -1208,53 +1208,73 @@ const char *CHalfLife2::GetEntityClassname(CBaseEntity *pEntity)
 	return *(const char **)(((unsigned char *)pEntity) + offset);
 }
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
-static bool ResolveFuzzyMapName(const char *fuzzyName, char *outFullname, int size)
+#if SOURCE_ENGINE != SE_TF2
+enum eFindMapResult {
+	eFindMap_Found,
+	eFindMap_NotFound,
+	eFindMap_FuzzyMatch,
+	eFindMap_NonCanonical,
+	eFindMap_PossiblyAvailable
+};
+#endif
+
+eFindMapResult CHalfLife2::FindMap(char *pMapName, int nMapNameMax)
 {
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+	static char mapNameTmp[PLATFORM_MAX_PATH];
+	g_SourceMod.Format(mapNameTmp, sizeof(mapNameTmp), "maps%c%s.bsp", PLATFORM_SEP_CHAR, pMapName);
+	if (filesystem->FileExists(mapNameTmp, "GAME"))
+	{
+		// If this is already an exact match, don't attempt to autocomplete it further (de_dust -> de_dust2).
+		// ... but still check that map file is actually valid.
+		// We check FileExists first to avoid console message about IsMapValid with invalid map.
+		return engine->IsMapValid(pMapName) == 0 ? eFindMap_NotFound : eFindMap_Found;
+	}
+
 	static ConCommand *pHelperCmd = g_pCVar->FindCommand("changelevel");
+	
+	// This shouldn't happen.
 	if (!pHelperCmd || !pHelperCmd->CanAutoComplete())
-		return false;
+	{
+		return engine->IsMapValid(pMapName) == 0 ? eFindMap_NotFound : eFindMap_Found;
+	}
 
 	static size_t helperCmdLen = strlen(pHelperCmd->GetName());
 
 	CUtlVector<CUtlString> results;
-	pHelperCmd->AutoCompleteSuggest(fuzzyName, results);
+	pHelperCmd->AutoCompleteSuggest(pMapName, results);
 	if (results.Count() == 0)
-		return false;
+		return eFindMap_NotFound;
 
 	// Results come back as you'd see in autocomplete. (ie. "changelevel fullmapnamehere"),
 	// so skip ahead to start of map path/name
 
 	// Like the engine, we're only going to deal with the first match.
 
-	strncopy(outFullname, &results[0][helperCmdLen + 1], size);
-
-	return true;
-}
+	bool bExactMatch = Q_strcmp(pMapName, &results[0][helperCmdLen + 1]) == 0;
+	if (bExactMatch)
+	{
+		return eFindMap_Found;
+	}
+	else
+	{
+		strncopy(pMapName, &results[0][helperCmdLen + 1], nMapNameMax);
+		return eFindMap_FuzzyMatch;
+	}
+#elif SOURCE_ENGINE == SE_TF2
+	return engine->FindMap(pMapName, nMapNameMax);
+#else
+	return engine->IsMapValid(pMapName) == 0 ? eFindMap_NotFound : eFindMap_Found;
 #endif
+}
 
 bool CHalfLife2::IsMapValid(const char *map)
 {
 	if (!map || !map[0])
 		return false;
-
-	bool ret;
-#if SOURCE_ENGINE == SE_TF2
-	char szTmp[PLATFORM_MAX_PATH];
+	
+	static char szTmp[PLATFORM_MAX_PATH];
 	strncopy(szTmp, map, sizeof(szTmp));
-	ret = engine->FindMap(szTmp, sizeof(szTmp)) != eFindMap_NotFound;
-#else
-	ret = engine->IsMapValid(map);
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
-	if (!ret)
-	{
-		static char szFuzzyName[PLATFORM_MAX_PATH];
-		if (ResolveFuzzyMapName(map, szFuzzyName, sizeof(szFuzzyName)))
-		{
-			ret = engine->IsMapValid(szFuzzyName);
-		}
-	}
-#endif
-#endif // SE_TF2
-	return ret;
+
+	return FindMap(szTmp, sizeof(szTmp)) != eFindMap_NotFound;
 }

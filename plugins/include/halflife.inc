@@ -91,6 +91,26 @@ enum EngineVersion
 	Engine_BlackMesa,			/**< Black Mesa Multiplayer */
 };
 
+enum FindMapResult
+{
+	// A direct match for this name was found
+	FindMap_Found,
+	// No match for this map name could be found.
+	FindMap_NotFound,
+	// A fuzzy match for this mapname was found and pMapName was updated to the full name.
+	// Ex: cp_dust -> cp_dustbowl
+	// Supported on many newer games.
+	FindMap_FuzzyMatch,
+	// A match for this map name was found, and the map name was updated to the canonical version of the
+	// name.
+	// Ex: workshop/1234 -> workshop/cp_qualified_name.ugc1234
+	// Only supported on "Orangebox" games with workshop support.
+	FindMap_NonCanonical,
+	// No currently available match for this map name could be found, but it may be possible to load
+	// Only supported on "Orangebox" games with workshop support.
+	FindMap_PossiblyAvailable
+};
+
 #define INVALID_ENT_REFERENCE 0xFFFFFFFF
 
 /**
@@ -135,6 +155,17 @@ native GetRandomInt(nmin, nmax);
  * @return				True if valid, false otherwise.
  */
 native bool:IsMapValid(const String:map[]);
+
+/**
+ * Returns whether a full or partial map name is found or can be resolved
+ * 
+ * @param map 			Map path relative to maps/ folder, excluding .bsp extension.
+ *						If result is FindMap_FuzzyMatch or FindMap_NonCanonical,
+						this will be updated to the full path.
+ * @param maxlen		Maximum length to write to map var.
+ * @return				Result of the find operation. Not all result types are supported on all games.
+ */
+native FindMapResult FindMap(char[] map, int maxlen);
 
 /**
  * Returns whether the server is dedicated.
