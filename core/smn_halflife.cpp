@@ -74,7 +74,7 @@ static cell_t FindMap(IPluginContext *pContext, const cell_t *params)
 		
 	cell_t size = params[2];
 	
-	return g_HL2.FindMap(pMapname, size);
+	return static_cast<cell_t>(g_HL2.FindMap(pMapname, size));
 }
 
 static cell_t IsDedicatedServer(IPluginContext *pContext, const cell_t *params)
