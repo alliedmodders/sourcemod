@@ -203,9 +203,9 @@
 		{
 			"CScore"
 			{
-				"windows"	"55"
-				"linux"		"55"
-				"mac"		"55"
+				"windows"	"59"
+				"linux"		"59"
+				"mac"		"59"
 			}
 		}
 	}
@@ -214,16 +214,16 @@
 	{
 		"Keys"
 		{
-			"MVPsBase"		"m_bIsLookingAtWeapon"
+			"MVPsBase"		"m_bIsHoldingLookAtWeapon"
 		}
 		
 		"Offsets"
 		{
 			"MVPs"
 			{
-				"windows"	"16"
-				"linux"		"16"
-				"mac"		"16"
+				"windows"	"15"
+				"linux"		"15"
+				"mac"		"15"
 			}
 		}
 	}
