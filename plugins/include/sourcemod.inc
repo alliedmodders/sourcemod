@@ -531,11 +531,11 @@ native Handle:ReadMapList(Handle:array=INVALID_HANDLE,
 native SetMapListCompatBind(const String:name[], const String:file[]);
 
 /**
- * This is used to get the Friendly name for a Workshop map.  Used for the display name in a map vote.
+ * Get a "friendly" name for a Workshop map.
  * 
  * Note: non-Workshop maps will be ignored.
  * 
- * @param resolvedMap		A map name returned from ResolveFuzzyMapName
+ * @param resolvedMap		A map name returned from FindMap (or not, see bIsMapResolved)
  * @param friendlyName		The map name with the extra workshop path bits removed
  * @param maxlength			The max length of friendlyName
  * 							(We recommend PLATFORM_MAX_PATH)
@@ -545,10 +545,11 @@ native SetMapListCompatBind(const String:name[], const String:file[]);
 stock void GetFriendlyMapName(const char[] resolvedMap, char[] friendlyName, int maxlength, bool bIsMapResolved=true)
 {
 	char szTmp[PLATFORM_MAX_PATH];
-
-	if (bIsMapResolved || !ResolveFuzzyMapName(resolvedMap, szTmp, sizeof(szTmp)))
+	strcopy(szTmp, sizeof(szTmp), resolvedMap);
+	
+	if (!bIsMapResolved)
 	{
-		strcopy(szTmp, sizeof(szTmp), resolvedMap);
+		FindMap(szTmp, sizeof(szTmp));
 	}
 	
 	EngineVersion version = GetEngineVersion();

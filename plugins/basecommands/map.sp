@@ -88,7 +88,7 @@ public Action:Command_Map(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:map[64];
+	decl String:map[PLATFORM_MAX_PATH];
 	GetCmdArg(1, map, sizeof(map));
 
 	if (!IsMapValid(map))

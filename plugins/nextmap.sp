@@ -154,8 +154,9 @@ void FindAndSetNextMap()
 		for (int i = 0; i < mapCount; i++)
 		{
 			g_MapList.GetString(i, mapName, sizeof(mapName));
-			ResolveFuzzyMapName(mapName, resolvedMap, sizeof(resolvedMap));
-			if (strcmp(current, resolvedMap, false) == 0)
+			strcopy(resolvedMap, sizeof(resolvedMap), mapName);
+			if (FindMap(resolvedMap, sizeof(resolvedMap)) != FindMap_NotFound && 
+				strcmp(current, resolvedMap, false) == 0)
 			{
 				g_MapPos = i;
 				break;

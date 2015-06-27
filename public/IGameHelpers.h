@@ -316,19 +316,6 @@ namespace SourceMod
 		virtual const char *GetEntityClassname(CBaseEntity *pEntity) =0;
 
 		/**
-		 * @brief Resolves a fuzzy map name to its real map name that works
-		 * with the engine's Changelevel functionality.
-		 * Used internally for some games by IsMapValid.
-		 *
-		 * @param fuzzyName		Map entry name
-		 * @param outFullname	Full map path, excluding .bsp extension
-		 * @param size			Length of outFullname
-		 * @return				True if this map resolves to a real map, false if
-		 *						it doesn't exist.
-		 */
-		virtual bool ResolveFuzzyMapName(const char *fuzzyName, char *outFullname, int size) =0;
-
-		/**
 		 * @brief Returns whether or not a map name is valid to use with the
 		 * engine's Changelevel functionality. It need not be an exact filename on
 		 * some engines. For a check on the exact name, use IVEngineServer::IsMapValid.

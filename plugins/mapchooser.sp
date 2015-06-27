@@ -956,12 +956,11 @@ void CreateNextVote()
 	
 	for (int i = 0 ; i < g_MapList.Length; i++)
 	{
-		char tempMap[PLATFORM_MAX_PATH];
-		char resolvedMap[PLATFORM_MAX_PATH];
-		
-		g_MapList.GetString(i, tempMap, sizeof(tempMap));
-		ResolveFuzzyMapName(tempMap, resolvedMap, sizeof(resolvedMap));
-		tempMaps.PushString(resolvedMap);
+		g_MapList.GetString(i, map, sizeof(map));
+		if (FindMap(map, sizeof(map)) != FindMap_NotFound)
+		{
+			tempMaps.PushString(map);
+		}
 	}
 	
 	GetCurrentMap(map, sizeof(map));

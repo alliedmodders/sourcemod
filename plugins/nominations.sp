@@ -101,7 +101,8 @@ public void OnNominationRemoved(const char[] map, int owner)
 	int status;
 	
 	char resolvedMap[PLATFORM_MAX_PATH];
-	ResolveFuzzyMapName(map, resolvedMap, sizeof(resolvedMap));
+	strcopy(resolvedMap, sizeof(resolvedMap), map);
+	FindMap(resolvedMap, sizeof(resolvedMap));
 	
 	/* Is the map in our list? */
 	if (!g_mapTrie.GetValue(resolvedMap, status))
@@ -130,7 +131,8 @@ public Action Command_Addmap(int client, int args)
 	GetCmdArg(1, mapname, sizeof(mapname));
 
 	char resolvedMap[PLATFORM_MAX_PATH];
-	if (!ResolveFuzzyMapName(mapname, resolvedMap, sizeof(resolvedMap)))
+	strcopy(resolvedMap, sizeof(resolvedMap), mapname);
+	if (FindMap(resolvedMap, sizeof(resolvedMap)) == FindMap_NotFound)
 	{
 		// We couldn't resolve the map entry to a filename, so...
 		ReplyToCommand(client, "%t", "Map was not found", mapname);
@@ -201,7 +203,8 @@ public Action Command_Nominate(int client, int args)
 	GetCmdArg(1, mapname, sizeof(mapname));
 	
 	char resolvedMap[PLATFORM_MAX_PATH];
-	if (!ResolveFuzzyMapName(mapname, resolvedMap, sizeof(resolvedMap)))
+	strcopy(resolvedMap, sizeof(resolvedMap), mapname);
+	if (FindMap(resolvedMap, sizeof(resolvedMap)) == FindMap_NotFound)
 	{
 		// We couldn't resolve the map entry to a filename, so...
 		ReplyToCommand(client, "%t", "Map was not found", mapname);
@@ -303,15 +306,14 @@ void BuildMapMenu()
 		
 		g_MapList.GetString(i, map, sizeof(map));
 		
-		char resolvedMap[PLATFORM_MAX_PATH];
-		ResolveFuzzyMapName(map, resolvedMap, sizeof(resolvedMap));
+		FindMap(map, sizeof(map));
 		
 		char friendlyName[PLATFORM_MAX_PATH];
-		GetFriendlyMapName(resolvedMap, friendlyName, sizeof(friendlyName));
+		GetFriendlyMapName(map, friendlyName, sizeof(friendlyName));
 
 		if (g_Cvar_ExcludeCurrent.BoolValue)
 		{
-			if (StrEqual(resolvedMap, currentMap))
+			if (StrEqual(map, currentMap))
 			{
 				status = MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_CURRENT;
 			}
@@ -320,14 +322,14 @@ void BuildMapMenu()
 		/* Dont bother with this check if the current map check passed */
 		if (g_Cvar_ExcludeOld.BoolValue && status == MAPSTATUS_ENABLED)
 		{
-			if (excludeMaps.FindString(resolvedMap) != -1)
+			if (excludeMaps.FindString(map) != -1)
 			{
 				status = MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_PREVIOUS;
 			}
 		}
 		
-		g_MapMenu.AddItem(resolvedMap, friendlyName);
-		g_mapTrie.SetValue(resolvedMap, status);
+		g_MapMenu.AddItem(map, friendlyName);
+		g_mapTrie.SetValue(map, status);
 	}
 
 	g_MapMenu.ExitButton = true;

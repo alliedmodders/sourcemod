@@ -59,28 +59,22 @@ static cell_t GetRandomInt(IPluginContext *pContext, const cell_t *params)
 	return ::RandomInt(params[1], params[2]);
 }
 
-static cell_t ResolveFuzzyMapName(IPluginContext *pContext, const cell_t *params)
-{
-	char *fuzzyName, *outFullname;
-
-	pContext->LocalToString(params[1], &fuzzyName);
-	pContext->LocalToString(params[2], &outFullname);
-
-	if (!g_HL2.ResolveFuzzyMapName(fuzzyName, outFullname, params[3]))
-	{
-		return false;
-	}
-
-	pContext->StringToLocal(params[2], params[3], outFullname);
-	return true;
-}
-
 static cell_t IsMapValid(IPluginContext *pContext, const cell_t *params)
 {
 	char *map;
 	pContext->LocalToString(params[1], &map);
 
 	return g_HL2.IsMapValid(map);
+}
+
+static cell_t FindMap(IPluginContext *pContext, const cell_t *params)
+{
+	char *pMapname;
+	pContext->LocalToString(params[1], &pMapname);
+
+	cell_t size = params[2];
+
+	return g_HL2.FindMap(pMapname, size);
 }
 
 static cell_t IsDedicatedServer(IPluginContext *pContext, const cell_t *params)
@@ -641,8 +635,8 @@ REGISTER_NATIVES(halflifeNatives)
 	{"GetRandomFloat",			GetRandomFloat},
 	{"GetRandomInt",			GetRandomInt},
 	{"IsDedicatedServer",		IsDedicatedServer},
-	{"ResolveFuzzyMapName",		ResolveFuzzyMapName},
 	{"IsMapValid",				IsMapValid},
+	{"FindMap",					FindMap},
 	{"SetFakeClientConVar",		SetFakeClientConVar},
 	{"SetRandomSeed",			SetRandomSeed},
 	{"PrecacheModel",			PrecacheModel},
