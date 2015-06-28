@@ -97,12 +97,11 @@ enum FindMapResult
 	FindMap_Found,
 	// No match for this map name could be found.
 	FindMap_NotFound,
-	// A fuzzy match for this mapname was found and pMapName was updated to the full name.
-	// Ex: cp_dust -> cp_dustbowl
-	// Supported on many newer games.
+	// A fuzzy match for this map name was found.
+	// Ex: cp_dust -> cp_dustbowl, c1m1 -> c1m1_hotel
+	// Only supported for maps that the engine knows about. (This excludes workshop maps on Orangebox).
 	FindMap_FuzzyMatch,
-	// A match for this map name was found, and the map name was updated to the canonical version of the
-	// name.
+	// A non-canonical match for this map name was found.
 	// Ex: workshop/1234 -> workshop/cp_qualified_name.ugc1234
 	// Only supported on "Orangebox" games with workshop support.
 	FindMap_NonCanonical,
@@ -159,9 +158,9 @@ native bool:IsMapValid(const String:map[]);
 /**
  * Returns whether a full or partial map name is found or can be resolved
  * 
- * @param map 			Map path relative to maps/ folder, excluding .bsp extension.
- *						If result is FindMap_FuzzyMatch or FindMap_NonCanonical,
-						this will be updated to the full path.
+ * @param map 			Map name (usually same as map path relative to maps/ dir,
+ *						excluding .bsp extension). If result is FindMap_FuzzyMatch
+ *						or FindMap_NonCanonical, this will be updated to the full path.
  * @param maxlen		Maximum length to write to map var.
  * @return				Result of the find operation. Not all result types are supported on all games.
  */
