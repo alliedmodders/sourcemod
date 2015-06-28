@@ -59,6 +59,22 @@ static cell_t GetRandomInt(IPluginContext *pContext, const cell_t *params)
 	return ::RandomInt(params[1], params[2]);
 }
 
+static cell_t ResolveFuzzyMapName(IPluginContext *pContext, const cell_t *params)
+{
+	char *fuzzyName, *outFullname;
+
+	pContext->LocalToString(params[1], &fuzzyName);
+	pContext->LocalToString(params[2], &outFullname);
+
+	if (!g_HL2.ResolveFuzzyMapName(fuzzyName, outFullname, params[3]))
+	{
+		return false;
+	}
+
+	pContext->StringToLocal(params[2], params[3], outFullname);
+	return true;
+}
+
 static cell_t IsMapValid(IPluginContext *pContext, const cell_t *params)
 {
 	char *map;
@@ -625,6 +641,7 @@ REGISTER_NATIVES(halflifeNatives)
 	{"GetRandomFloat",			GetRandomFloat},
 	{"GetRandomInt",			GetRandomInt},
 	{"IsDedicatedServer",		IsDedicatedServer},
+	{"ResolveFuzzyMapName",		ResolveFuzzyMapName},
 	{"IsMapValid",				IsMapValid},
 	{"SetFakeClientConVar",		SetFakeClientConVar},
 	{"SetRandomSeed",			SetRandomSeed},

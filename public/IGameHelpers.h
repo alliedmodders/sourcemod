@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		10
+#define SMINTERFACE_GAMEHELPERS_VERSION		11
 
 class CBaseEntity;
 class CBaseHandle;
@@ -314,6 +314,19 @@ namespace SourceMod
 		 * @return				Pointer to the string, or NULL if bad pointer.
 		 */
 		virtual const char *GetEntityClassname(CBaseEntity *pEntity) =0;
+
+		/**
+		 * @brief Resolves a fuzzy map name to its real map name that works
+		 * with the engine's Changelevel functionality.
+		 * Used internally for some games by IsMapValid.
+		 *
+		 * @param fuzzyName		Map entry name
+		 * @param outFullname	Full map path, excluding .bsp extension
+		 * @param size			Length of outFullname
+		 * @return				True if this map resolves to a real map, false if
+		 *						it doesn't exist.
+		 */
+		virtual bool ResolveFuzzyMapName(const char *fuzzyName, char *outFullname, int size) =0;
 
 		/**
 		 * @brief Returns whether or not a map name is valid to use with the

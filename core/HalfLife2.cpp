@@ -1208,9 +1208,17 @@ const char *CHalfLife2::GetEntityClassname(CBaseEntity *pEntity)
 	return *(const char **)(((unsigned char *)pEntity) + offset);
 }
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
-static bool ResolveFuzzyMapName(const char *fuzzyName, char *outFullname, int size)
+bool CHalfLife2::ResolveFuzzyMapName(const char *fuzzyName, char *outFullname, int size)
 {
+#if SOURCE_ENGINE != SE_TF2
+	// TF2's engine->IsMapValid doesn't seem to work at the moment, don't bother trying to call it
+	if (engine->IsMapValid(fuzzyName))
+	{
+		strncopy(outFullname, fuzzyName, size);
+		return true;
+	}
+#endif
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 	static ConCommand *pHelperCmd = g_pCVar->FindCommand("changelevel");
 	if (!pHelperCmd || !pHelperCmd->CanAutoComplete())
 		return false;
@@ -1230,8 +1238,20 @@ static bool ResolveFuzzyMapName(const char *fuzzyName, char *outFullname, int si
 	strncopy(outFullname, &results[0][helperCmdLen + 1], size);
 
 	return true;
-}
+#elif SOURCE_ENGINE == SE_TF2
+	char szTmp[PLATFORM_MAX_PATH];
+	strncopy(szTmp, fuzzyName, sizeof(szTmp));
+
+	if (engine->FindMap(szTmp, sizeof(szTmp)) == eFindMap_NotFound)
+		return false;
+
+	strncopy(outFullname, szTmp, size);
+
+	return true;
+#else
+	return false;
 #endif
+}
 
 bool CHalfLife2::IsMapValid(const char *map)
 {
