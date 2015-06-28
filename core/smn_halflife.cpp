@@ -67,6 +67,16 @@ static cell_t IsMapValid(IPluginContext *pContext, const cell_t *params)
 	return g_HL2.IsMapValid(map);
 }
 
+static cell_t FindMap(IPluginContext *pContext, const cell_t *params)
+{
+	char *pMapname;
+	pContext->LocalToString(params[1], &pMapname);
+		
+	cell_t size = params[2];
+	
+	return static_cast<cell_t>(g_HL2.FindMap(pMapname, size));
+}
+
 static cell_t IsDedicatedServer(IPluginContext *pContext, const cell_t *params)
 {
 	return engine->IsDedicatedServer();
@@ -626,6 +636,7 @@ REGISTER_NATIVES(halflifeNatives)
 	{"GetRandomInt",			GetRandomInt},
 	{"IsDedicatedServer",		IsDedicatedServer},
 	{"IsMapValid",				IsMapValid},
+	{"FindMap",					FindMap},
 	{"SetFakeClientConVar",		SetFakeClientConVar},
 	{"SetRandomSeed",			SetRandomSeed},
 	{"PrecacheModel",			PrecacheModel},
