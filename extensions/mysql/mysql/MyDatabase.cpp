@@ -297,5 +297,9 @@ IDBDriver *MyDatabase::GetDriver()
 
 bool MyDatabase::SetCharacterSet(const char *characterset)
 {
-	return mysql_set_character_set(m_mysql, characterset) == 0 ? true : false;
+	bool res;
+	LockForFullAtomicOperation();
+	res = mysql_set_character_set(m_mysql, characterset) == 0 ? true : false;
+	UnlockFromFullAtomicOperation();
+	return res;
 }
