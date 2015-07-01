@@ -83,6 +83,8 @@ native ConVar CreateConVar(
 // @return				A ConVar object if found; null otherwise.
 native ConVar FindConVar(const char[] name);
 
+native ArrayList GetPluginConVars(Handle plugin);
+
 // A ConVar is a configurable, named setting in the srcds console.
 methodmap ConVar < Handle
 {
