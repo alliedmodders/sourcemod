@@ -284,8 +284,7 @@ static cell_t sm_GetPluginConVars(IPluginContext *pContext, const cell_t *params
 	
 	if (!plugin)
 	{
-		logger->LogError("[SM] Plugin was not found! (error %d)", err);
-		return BAD_HANDLE;
+		return pContext->ThrowNativeError("[SM] Plugin was not found! (error %d)", err);
 	}
 
 	if (_htCellArray == 0) {
@@ -297,8 +296,7 @@ static cell_t sm_GetPluginConVars(IPluginContext *pContext, const cell_t *params
 	if (!hArray)
 	{
 		delete array;
-		logger->LogError("[SM] Failed to create array! %d", _htCellArray);
-		return BAD_HANDLE;
+		return pContext->ThrowNativeError("[SM] Failed to create array! %d", _htCellArray);
 	}
 	
 	ConVarList *pConVarList;
