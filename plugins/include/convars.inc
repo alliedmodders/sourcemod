@@ -83,6 +83,11 @@ native ConVar CreateConVar(
 // @return				A ConVar object if found; null otherwise.
 native ConVar FindConVar(const char[] name);
 
+// Searches for console variables created by given plugin
+//
+// @param plugin		Plugin Handle (INVALID_HANDLE uses the calling plugin).
+// @return				Adt array Handle on success, INVALID_HANDLE otherwise.
+// @error				Invalid plugin handle or plugin was not found.
 native ArrayList GetPluginConVars(Handle plugin);
 
 // A ConVar is a configurable, named setting in the srcds console.
