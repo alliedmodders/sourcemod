@@ -1886,7 +1886,6 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	char *prop;
 	int offset;
 	edict_t *pEdict;
-	bool bIsStringIndex;
 
 	int element = 0;
 	if (params[0] >= 6)
@@ -1901,12 +1900,13 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[3], &prop);
 
-	bIsStringIndex = false;
+	const char *src;
 
 	switch (params[2])
 	{
 	case Prop_Data:
 		{
+			bool bIsStringIndex = false;
 			typedescription_t *td;
 			
 			FIND_PROP_DATA(td);
@@ -1942,6 +1942,15 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 			if (bIsStringIndex)
 			{
 				offset += (element * (td->fieldSizeInBytes / td->fieldSize));
+
+				string_t idx;
+
+				idx = *(string_t *) ((uint8_t *) pEntity + offset);
+				src = (idx == NULL_STRING) ? "" : STRING(idx);
+			}
+			else
+			{
+				src = (char *) ((uint8_t *) pEntity + offset);
 			}
 			break;
 		}
@@ -1979,6 +1988,17 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 					prop,
 					element);
  			}
+
+			if (info.prop->GetProxyFn())
+			{
+				DVariant var;
+				info.prop->GetProxyFn()(info.prop, pEntity, (const void *) ((intptr_t) pEntity + offset), &var, element, params[1]);
+				src = var.m_pString;
+			}
+			else
+			{
+				src = (char *) ((uint8_t *) pEntity + offset);
+			}
 			
 			break;
 		}
@@ -1989,22 +2009,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	}
 
 	size_t len;
-	const char *src; 
-	
-	if (!bIsStringIndex)
-	{
-		src = (char *)((uint8_t *)pEntity + offset);
-	}
-	else
-	{
-		string_t idx;
-
-		idx = *(string_t *)((uint8_t *)pEntity + offset);
-		src = (idx == NULL_STRING) ? "" : STRING(idx);
-	}
-
 	pContext->StringToLocalUTF8(params[4], params[5], src, &len);
-
 	return len;
 }
 
