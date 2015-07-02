@@ -715,7 +715,7 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 #endif
 
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = strftime(buffer, sizeof(buffer), "%d/%m/%Y", localtime(&t));
+	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
 
 #if defined SUBPLATFORM_SECURECRT
 	_set_invalid_parameter_handler(handler);
@@ -879,7 +879,7 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 #endif
 
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = strftime(buffer, sizeof(buffer), "%d/%m/%Y", localtime(&t));
+	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
 
 #if defined SUBPLATFORM_SECURECRT
 	_set_invalid_parameter_handler(handler);
