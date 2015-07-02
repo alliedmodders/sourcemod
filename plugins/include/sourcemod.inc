@@ -571,6 +571,8 @@ stock void GetFriendlyMapName(const char[] resolvedMap, char[] friendlyName, int
 		case Engine_CSGO:
 		{
 			int lastSlashPos;
+			
+			// In CSGO, workshop maps show up as workshop/123456789/mapname
 			if (strncmp(szTmp, "workshop/", 9) == 0 && (lastSlashPos = FindCharInString(szTmp, '/', true)) > 9)
 			{
 				int newlength = strlen(szTmp) - lastSlashPos;

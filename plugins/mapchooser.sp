@@ -323,7 +323,7 @@ void SetupTimeleftTimer()
 		int startTime = g_Cvar_StartTime.IntValue * 60;
 		if (time - startTime < 0 && g_Cvar_EndOfMapVote.BoolValue && !g_MapVoteCompleted && !g_HasVoteStarted)
 		{
-			InitiateVote(MapChange_MapEnd, null);		
+			InitiateVote(MapChange_MapEnd, null);
 		}
 		else
 		{
@@ -954,7 +954,7 @@ void CreateNextVote()
 	char map[PLATFORM_MAX_PATH];
 	ArrayList tempMaps = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
 	
-	for (int i = 0 ; i < g_MapList.Length; i++)
+	for (int i = 0; i < g_MapList.Length; i++)
 	{
 		g_MapList.GetString(i, map, sizeof(map));
 		if (FindMap(map, sizeof(map)) != FindMap_NotFound)
@@ -972,7 +972,7 @@ void CreateNextVote()
 		{
 			g_OldMapList.GetString(i, map, sizeof(map));
 			RemoveStringFromArray(tempMaps, map);
-		}	
+		}
 	}
 
 	int limit = (g_Cvar_IncludeMaps.IntValue < tempMaps.Length ? g_Cvar_IncludeMaps.IntValue : tempMaps.Length);
