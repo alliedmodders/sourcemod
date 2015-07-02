@@ -74,6 +74,8 @@ ConVar g_Cvar_RunOffPercent;
 Handle g_VoteTimer = null;
 Handle g_RetryTimer = null;
 
+// g_MapList stores unresolved names so we can resolve them after every map change in the workshop updates.
+// g_OldMapList and g_NextMapList are resolved. g_NominateList depends on the nominations implementation.
 /* Data Handles */
 ArrayList g_MapList;
 ArrayList g_NominateList;
@@ -321,7 +323,7 @@ void SetupTimeleftTimer()
 		int startTime = g_Cvar_StartTime.IntValue * 60;
 		if (time - startTime < 0 && g_Cvar_EndOfMapVote.BoolValue && !g_MapVoteCompleted && !g_HasVoteStarted)
 		{
-			InitiateVote(MapChange_MapEnd, null);		
+			InitiateVote(MapChange_MapEnd, null);
 		}
 		else
 		{
@@ -585,11 +587,14 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 		/* Smaller of the two - It should be impossible for nominations to exceed the size though (cvar changed mid-map?) */
 		int nominationsToAdd = nominateCount >= voteSize ? voteSize : nominateCount;
 		
-		
+		char friendlyName[PLATFORM_MAX_PATH];
 		for (int i=0; i<nominationsToAdd; i++)
 		{
+			
 			g_NominateList.GetString(i, map, sizeof(map));
-			g_VoteMenu.AddItem(map, map);
+			GetFriendlyMapName(map, friendlyName, sizeof(friendlyName), false);
+			
+			g_VoteMenu.AddItem(map, friendlyName);
 			RemoveStringFromArray(g_NextMapList, map);
 			
 			/* Notify Nominations that this map is now free */
@@ -630,7 +635,8 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 			count++;
 			
 			/* Insert the map and increment our count */
-			g_VoteMenu.AddItem(map, map);
+			GetFriendlyMapName(map, friendlyName, sizeof(friendlyName));			
+			g_VoteMenu.AddItem(map, friendlyName);
 			i++;
 		}
 		
@@ -648,7 +654,9 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 			
 			if (IsMapValid(map))
 			{
-				g_VoteMenu.AddItem(map, map);
+				char friendlyName[PLATFORM_MAX_PATH];
+				GetFriendlyMapName(map, friendlyName, sizeof(friendlyName));
+				g_VoteMenu.AddItem(map, friendlyName);
 			}	
 		}
 	}
@@ -689,7 +697,8 @@ public void Handler_VoteFinishedGeneric(Menu menu,
 						   const int[][] item_info)
 {
 	char map[PLATFORM_MAX_PATH];
-	menu.GetItem(item_info[0][VOTEINFO_ITEM_INDEX], map, sizeof(map));
+	char friendlyName[PLATFORM_MAX_PATH];
+	menu.GetItem(item_info[0][VOTEINFO_ITEM_INDEX], map, sizeof(map), _, friendlyName, sizeof(friendlyName));
 
 	if (strcmp(map, VOTE_EXTEND, false) == 0)
 	{
@@ -771,7 +780,7 @@ public void Handler_VoteFinishedGeneric(Menu menu,
 		g_HasVoteStarted = false;
 		g_MapVoteCompleted = true;
 		
-		PrintToChatAll("[SM] %t", "Nextmap Voting Finished", map, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		PrintToChatAll("[SM] %t", "Nextmap Voting Finished", friendlyName, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. Nextmap: %s.", map);
 	}	
 }
@@ -940,10 +949,19 @@ bool RemoveStringFromArray(ArrayList array, char[] str)
 
 void CreateNextVote()
 {
-	ClearArray(g_NextMapList);
+	g_NextMapList.Clear();
 	
 	char map[PLATFORM_MAX_PATH];
-	ArrayList tempMaps = g_MapList.Clone();
+	ArrayList tempMaps = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
+	
+	for (int i = 0; i < g_MapList.Length; i++)
+	{
+		g_MapList.GetString(i, map, sizeof(map));
+		if (FindMap(map, sizeof(map)) != FindMap_NotFound)
+		{
+			tempMaps.PushString(map);
+		}
+	}
 	
 	GetCurrentMap(map, sizeof(map));
 	RemoveStringFromArray(tempMaps, map);
@@ -954,7 +972,7 @@ void CreateNextVote()
 		{
 			g_OldMapList.GetString(i, map, sizeof(map));
 			RemoveStringFromArray(tempMaps, map);
-		}	
+		}
 	}
 
 	int limit = (g_Cvar_IncludeMaps.IntValue < tempMaps.Length ? g_Cvar_IncludeMaps.IntValue : tempMaps.Length);

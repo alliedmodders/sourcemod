@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		10
+#define SMINTERFACE_GAMEHELPERS_VERSION		11
 
 class CBaseEntity;
 class CBaseHandle;

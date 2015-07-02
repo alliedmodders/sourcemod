@@ -116,7 +116,7 @@ public OnPluginStart()
 		OnAdminMenuReady(topmenu);
 	}
 	
-	g_SelectedMaps = CreateArray(33);
+	g_SelectedMaps = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
 	
 	g_MapList = CreateMenu(MenuHandler_Map, MenuAction_DrawItem|MenuAction_Display);
 	g_MapList.SetTitle("%T", "Please select a map", LANG_SERVER);
@@ -311,8 +311,11 @@ public Handler_VoteCallback(Menu menu, MenuAction action, param1, param2)
 				
 				case (voteType:map):
 				{
+					// single-vote items don't use the display item
+					char friendlyName[PLATFORM_MAX_PATH];
+					GetFriendlyMapName(item, friendlyName, sizeof(friendlyName), false);
 					LogAction(-1, -1, "Changing map to %s due to vote.", item);
-					PrintToChatAll("[SM] %t", "Changing map", item);
+					PrintToChatAll("[SM] %t", "Changing map", friendlyName);
 					new Handle:dp;
 					CreateDataTimer(5.0, Timer_ChangeMap, dp);
 					WritePackString(dp, item);		

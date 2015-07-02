@@ -42,11 +42,12 @@ public MenuHandler_ChangeMap(Menu menu, MenuAction action, int param1, int param
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:map[64];
+		decl String:map[PLATFORM_MAX_PATH];
+		decl String:friendly_name[PLATFORM_MAX_PATH];
 		
-		menu.GetItem(param2, map, sizeof(map));
+		menu.GetItem(param2, map, sizeof(map), _, friendly_name, sizeof(friendly_name));
 	
-		ShowActivity2(param1, "[SM] ", "%t", "Changing map", map);
+		ShowActivity2(param1, "[SM] ", "%t", "Changing map", friendly_name);
 
 		LogAction(param1, -1, "\"%L\" changed map to \"%s\"", param1, map);
 
@@ -87,7 +88,7 @@ public Action:Command_Map(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:map[64];
+	decl String:map[PLATFORM_MAX_PATH];
 	GetCmdArg(1, map, sizeof(map));
 
 	if (!IsMapValid(map))
@@ -109,7 +110,7 @@ public Action:Command_Map(client, args)
 
 public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
 {
-	decl String:map[65];
+	decl String:map[PLATFORM_MAX_PATH];
 
 	ResetPack(dp);
 	ReadPackString(dp, map, sizeof(map));
@@ -142,13 +143,16 @@ int LoadMapList(Menu menu)
 	
 	RemoveAllMenuItems(menu);
 	
-	char map_name[64];
+	char map_name[PLATFORM_MAX_PATH];
+	char friendly_name[PLATFORM_MAX_PATH];
+	
 	int map_count = GetArraySize(g_map_array);
 	
 	for (int i = 0; i < map_count; i++)
 	{
 		GetArrayString(g_map_array, i, map_name, sizeof(map_name));
-		menu.AddItem(map_name, map_name);
+		GetFriendlyMapName(map_name, friendly_name, sizeof(friendly_name), false);
+		menu.AddItem(map_name, friendly_name);
 	}
 	
 	return map_count;

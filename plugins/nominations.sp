@@ -100,8 +100,12 @@ public void OnNominationRemoved(const char[] map, int owner)
 {
 	int status;
 	
+	char resolvedMap[PLATFORM_MAX_PATH];
+	strcopy(resolvedMap, sizeof(resolvedMap), map);
+	FindMap(resolvedMap, sizeof(resolvedMap));
+	
 	/* Is the map in our list? */
-	if (!g_mapTrie.GetValue(map, status))
+	if (!g_mapTrie.GetValue(resolvedMap, status))
 	{
 		return;	
 	}
@@ -112,7 +116,7 @@ public void OnNominationRemoved(const char[] map, int owner)
 		return;
 	}
 	
-	g_mapTrie.SetValue(map, MAPSTATUS_ENABLED);
+	g_mapTrie.SetValue(resolvedMap, MAPSTATUS_ENABLED);
 }
 
 public Action Command_Addmap(int client, int args)
@@ -126,30 +130,41 @@ public Action Command_Addmap(int client, int args)
 	char mapname[PLATFORM_MAX_PATH];
 	GetCmdArg(1, mapname, sizeof(mapname));
 
-	
-	int status;
-	if (!g_mapTrie.GetValue(mapname, status))
+	char resolvedMap[PLATFORM_MAX_PATH];
+	strcopy(resolvedMap, sizeof(resolvedMap), mapname);
+	if (FindMap(resolvedMap, sizeof(resolvedMap)) == FindMap_NotFound)
 	{
+		// We couldn't resolve the map entry to a filename, so...
 		ReplyToCommand(client, "%t", "Map was not found", mapname);
 		return Plugin_Handled;		
 	}
 	
-	NominateResult result = NominateMap(mapname, true, 0);
+	char friendlyName[PLATFORM_MAX_PATH];
+	GetFriendlyMapName(resolvedMap, friendlyName, sizeof(friendlyName));
+	
+	int status;
+	if (!g_mapTrie.GetValue(resolvedMap, status))
+	{
+		ReplyToCommand(client, "%t", "Map was not found", friendlyName);
+		return Plugin_Handled;		
+	}
+	
+	NominateResult result = NominateMap(resolvedMap, true, 0);
 	
 	if (result > Nominate_Replaced)
 	{
 		/* We assume already in vote is the casue because the maplist does a Map Validity check and we forced, so it can't be full */
-		ReplyToCommand(client, "%t", "Map Already In Vote", mapname);
+		ReplyToCommand(client, "%t", "Map Already In Vote", friendlyName);
 		
 		return Plugin_Handled;	
 	}
 	
 	
-	g_mapTrie.SetValue(mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
+	g_mapTrie.SetValue(resolvedMap, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
 
 	
-	ReplyToCommand(client, "%t", "Map Inserted", mapname);
-	LogAction(client, -1, "\"%L\" inserted map \"%s\".", client, mapname);
+	ReplyToCommand(client, "%t", "Map Inserted", friendlyName);
+	LogAction(client, -1, "\"%L\" inserted map \"%s\".", client, resolvedMap);
 
 	return Plugin_Handled;		
 }
@@ -187,10 +202,22 @@ public Action Command_Nominate(int client, int args)
 	char mapname[PLATFORM_MAX_PATH];
 	GetCmdArg(1, mapname, sizeof(mapname));
 	
-	int status;
-	if (!g_mapTrie.GetValue(mapname, status))
+	char resolvedMap[PLATFORM_MAX_PATH];
+	strcopy(resolvedMap, sizeof(resolvedMap), mapname);
+	if (FindMap(resolvedMap, sizeof(resolvedMap)) == FindMap_NotFound)
 	{
+		// We couldn't resolve the map entry to a filename, so...
 		ReplyToCommand(client, "%t", "Map was not found", mapname);
+		return Plugin_Handled;		
+	}
+	
+	char friendlyName[PLATFORM_MAX_PATH];
+	GetFriendlyMapName(resolvedMap, friendlyName, sizeof(friendlyName));
+	
+	int status;
+	if (!g_mapTrie.GetValue(resolvedMap, status))
+	{
+		ReplyToCommand(client, "%t", "Map was not found", friendlyName);
 		return Plugin_Handled;		
 	}
 	
@@ -214,13 +241,13 @@ public Action Command_Nominate(int client, int args)
 		return Plugin_Handled;
 	}
 	
-	NominateResult result = NominateMap(mapname, false, client);
+	NominateResult result = NominateMap(resolvedMap, false, client);
 	
 	if (result > Nominate_Replaced)
 	{
 		if (result == Nominate_AlreadyInVote)
 		{
-			ReplyToCommand(client, "%t", "Map Already In Vote", mapname);
+			ReplyToCommand(client, "%t", "Map Already In Vote", friendlyName);
 		}
 		else
 		{
@@ -232,11 +259,11 @@ public Action Command_Nominate(int client, int args)
 	
 	/* Map was nominated! - Disable the menu item and update the trie */
 	
-	g_mapTrie.SetValue(mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
+	g_mapTrie.SetValue(resolvedMap, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
 	
 	char name[MAX_NAME_LENGTH];
 	GetClientName(client, name, sizeof(name));
-	PrintToChatAll("[SM] %t", "Map Nominated", name, mapname);
+	PrintToChatAll("[SM] %t", "Map Nominated", name, friendlyName);
 	
 	return Plugin_Continue;
 }
@@ -272,7 +299,6 @@ void BuildMapMenu()
 	{
 		GetCurrentMap(currentMap, sizeof(currentMap));
 	}
-	
 		
 	for (int i = 0; i < g_MapList.Length; i++)
 	{
@@ -280,6 +306,11 @@ void BuildMapMenu()
 		
 		g_MapList.GetString(i, map, sizeof(map));
 		
+		FindMap(map, sizeof(map));
+		
+		char friendlyName[PLATFORM_MAX_PATH];
+		GetFriendlyMapName(map, friendlyName, sizeof(friendlyName));
+
 		if (g_Cvar_ExcludeCurrent.BoolValue)
 		{
 			if (StrEqual(map, currentMap))
@@ -297,7 +328,7 @@ void BuildMapMenu()
 			}
 		}
 		
-		g_MapMenu.AddItem(map, map);
+		g_MapMenu.AddItem(map, friendlyName);
 		g_mapTrie.SetValue(map, status);
 	}
 
@@ -312,8 +343,8 @@ public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int p
 	{
 		case MenuAction_Select:
 		{
-			char map[PLATFORM_MAX_PATH], name[MAX_NAME_LENGTH];
-			menu.GetItem(param2, map, sizeof(map));		
+			char map[PLATFORM_MAX_PATH], name[MAX_NAME_LENGTH], friendlyName[PLATFORM_MAX_PATH];
+			menu.GetItem(param2, map, sizeof(map), _, friendlyName, sizeof(friendlyName));
 			
 			GetClientName(param1, name, sizeof(name));
 	
@@ -335,11 +366,11 @@ public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int p
 
 			if (result == Nominate_Replaced)
 			{
-				PrintToChatAll("[SM] %t", "Map Nomination Changed", name, map);
+				PrintToChatAll("[SM] %t", "Map Nomination Changed", name, friendlyName);
 				return 0;	
 			}
 			
-			PrintToChatAll("[SM] %t", "Map Nominated", name, map);
+			PrintToChatAll("[SM] %t", "Map Nominated", name, friendlyName);
 		}
 		
 		case MenuAction_DrawItem:
@@ -366,8 +397,8 @@ public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int p
 		
 		case MenuAction_DisplayItem:
 		{
-			char map[PLATFORM_MAX_PATH];
-			menu.GetItem(param2, map, sizeof(map));
+			char map[PLATFORM_MAX_PATH], friendlyName[PLATFORM_MAX_PATH];
+			menu.GetItem(param2, map, sizeof(map), _, friendlyName, sizeof(friendlyName));
 			
 			int status;
 			
@@ -383,19 +414,19 @@ public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int p
 			{
 				if ((status & MAPSTATUS_EXCLUDE_CURRENT) == MAPSTATUS_EXCLUDE_CURRENT)
 				{
-					Format(display, sizeof(display), "%s (%T)", map, "Current Map", param1);
+					Format(display, sizeof(display), "%s (%T)", friendlyName, "Current Map", param1);
 					return RedrawMenuItem(display);
 				}
 				
 				if ((status & MAPSTATUS_EXCLUDE_PREVIOUS) == MAPSTATUS_EXCLUDE_PREVIOUS)
 				{
-					Format(display, sizeof(display), "%s (%T)", map, "Recently Played", param1);
+					Format(display, sizeof(display), "%s (%T)", friendlyName, "Recently Played", param1);
 					return RedrawMenuItem(display);
 				}
 				
 				if ((status & MAPSTATUS_EXCLUDE_NOMINATED) == MAPSTATUS_EXCLUDE_NOMINATED)
 				{
-					Format(display, sizeof(display), "%s (%T)", map, "Nominated", param1);
+					Format(display, sizeof(display), "%s (%T)", friendlyName, "Nominated", param1);
 					return RedrawMenuItem(display);
 				}
 			}

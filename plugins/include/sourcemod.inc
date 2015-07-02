@@ -531,6 +531,62 @@ native Handle:ReadMapList(Handle:array=INVALID_HANDLE,
 native SetMapListCompatBind(const String:name[], const String:file[]);
 
 /**
+ * Get a "friendly" name for a Workshop map.
+ * 
+ * Note: non-Workshop maps will be ignored.
+ * 
+ * @param resolvedMap		A map name returned from FindMap (or not, see bIsMapResolved)
+ * @param friendlyName		The map name with the extra workshop path bits removed
+ * @param maxlength			The max length of friendlyName
+ * 							(We recommend PLATFORM_MAX_PATH)
+ * @param bIsMapResolved	True if map is a resolved Fuzzy Name, false if we need to resolve it first.
+ * 							Convenience field for plugins that don't need the resolved map name.
+ */
+stock void GetFriendlyMapName(const char[] resolvedMap, char[] friendlyName, int maxlength, bool bIsMapResolved=true)
+{
+	char szTmp[PLATFORM_MAX_PATH];
+	strcopy(szTmp, sizeof(szTmp), resolvedMap);
+	
+	if (!bIsMapResolved)
+	{
+		FindMap(szTmp, sizeof(szTmp));
+	}
+	
+	EngineVersion version = GetEngineVersion();
+	switch (version)
+	{
+		case Engine_TF2:
+		{
+			int ugcPos;
+			
+			// In TF2, workshop maps show up as workshop/mapname.ugc123456789
+			if (strncmp(szTmp, "workshop/", 9) == 0 && (ugcPos = StrContains(szTmp, ".ugc")) > -1)
+			{
+				// technically, this is (ugcPos + 1) - 9, but lets just cancel the 1.
+				strcopy(friendlyName, maxlength < ugcPos - 8 ? maxlength : ugcPos - 8, szTmp[9]);
+				return;
+			}
+		}
+		
+		case Engine_CSGO:
+		{
+			int lastSlashPos;
+			
+			// In CSGO, workshop maps show up as workshop/123456789/mapname
+			if (strncmp(szTmp, "workshop/", 9) == 0 && (lastSlashPos = FindCharInString(szTmp, '/', true)) > 9)
+			{
+				int newlength = strlen(szTmp) - lastSlashPos;
+				strcopy(friendlyName, maxlength < newlength ? maxlength : newlength, szTmp[lastSlashPos+1]);
+				return;
+			}
+		}
+	}
+	
+	// Fallback to just copying the name back to itself
+	strcopy(friendlyName, maxlength, szTmp);
+}
+
+/**
  * Called when a client has sent chat text.  This must return either true or 
  * false to indicate that a client is or is not spamming the server.
  *

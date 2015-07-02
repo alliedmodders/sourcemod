@@ -91,11 +91,13 @@ public Action Timer_RandomizeNextmap(Handle timer)
 	
 	int b = GetRandomInt(0, g_MapList.Length - 1);
 	g_MapList.GetString(b, map, sizeof(map));
-
+	FindMap(map, sizeof(map));
+	
 	while (oldMaps && g_OldMapList.FindString(map) != -1)
 	{
 		b = GetRandomInt(0, g_MapList.Length - 1);
 		g_MapList.GetString(b, map, sizeof(map));
+		FindMap(map, sizeof(map));
 	}
 	
 	g_OldMapList.PushString(map);
@@ -106,6 +108,8 @@ public Action Timer_RandomizeNextmap(Handle timer)
 		g_OldMapList.Erase(0);
 	}
 
+	char friendlyName[PLATFORM_MAX_PATH];
+	GetFriendlyMapName(map, friendlyName, sizeof(friendlyName));
 	LogAction(-1, -1, "RandomCycle has chosen %s for the nextmap.", map);	
 
 	return Plugin_Stop;

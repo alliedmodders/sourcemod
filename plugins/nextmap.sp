@@ -144,6 +144,7 @@ void FindAndSetNextMap()
 	
 	int mapCount = g_MapList.Length;
 	char mapName[PLATFORM_MAX_PATH];
+	char resolvedMap[PLATFORM_MAX_PATH];
 	
 	if (g_MapPos == -1)
 	{
@@ -153,7 +154,9 @@ void FindAndSetNextMap()
 		for (int i = 0; i < mapCount; i++)
 		{
 			g_MapList.GetString(i, mapName, sizeof(mapName));
-			if (strcmp(current, mapName, false) == 0)
+			strcopy(resolvedMap, sizeof(resolvedMap), mapName);
+			if (FindMap(resolvedMap, sizeof(resolvedMap)) != FindMap_NotFound && 
+				strcmp(current, resolvedMap, false) == 0)
 			{
 				g_MapPos = i;
 				break;

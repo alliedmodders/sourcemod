@@ -211,7 +211,9 @@ public Action:Command_Nextmap(client, args)
 	}
 	else
 	{
-		ReplyToCommand(client, "[SM] %t", "Next Map", map);
+		decl String:friendlyName[PLATFORM_MAX_PATH];
+		GetFriendlyMapName(map, friendlyName, sizeof(friendlyName), false);
+		ReplyToCommand(client, "[SM] %t", "Next Map", friendlyName);
 	}
 	
 	return Plugin_Handled;
@@ -290,8 +292,10 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 	else if (strcmp(sArgs, "nextmap", false) == 0)
 	{
 		char map[PLATFORM_MAX_PATH];
+		char friendlyName[PLATFORM_MAX_PATH];
 		GetNextMap(map, sizeof(map));
-			
+		GetFriendlyMapName(map, friendlyName, sizeof(friendlyName), false);
+		
 		if (g_Cvar_TriggerShow.IntValue)
 		{
 			if (mapchooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
@@ -300,7 +304,7 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 			}
 			else
 			{
-				PrintToChatAll("[SM] %t", "Next Map", map);
+				PrintToChatAll("[SM] %t", "Next Map", friendlyName);
 			}
 		}
 		else
@@ -311,7 +315,7 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 			}
 			else
 			{
-				PrintToChat(client, "[SM] %t", "Next Map", map);
+				PrintToChat(client, "[SM] %t", "Next Map", friendlyName);
 			}
 		}
 	}
