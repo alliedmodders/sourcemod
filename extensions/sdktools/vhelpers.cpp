@@ -566,8 +566,22 @@ CON_COMMAND(sm_dump_netprops, "Dumps the networkable property table as a text fi
 		META_CONPRINTF("Could not open file \"%s\"\n", path);
 		return;
 	}
+	
+	char buffer[80];
+	buffer[0] = 0;
 
-	fprintf(fp, "// Dump of all network properties for \"%s\" follows\n//\n\n", g_pSM->GetGameFolderName());
+#if defined SUBPLATFORM_SECURECRT
+	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+#endif
+
+	time_t t = g_pSM->GetAdjustedTime();
+	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+
+#if defined SUBPLATFORM_SECURECRT
+	_set_invalid_parameter_handler(handler);
+#endif
+
+	fprintf(fp, "// Dump of all network properties for \"%s\" as at %s\n//\n\n", g_pSM->GetGameFolderName(), buffer);
 
 	ServerClass *pBase = gamedll->GetAllServerClasses();
 	while (pBase != NULL)
