@@ -183,7 +183,9 @@ public: //IGameHelpers
 	const char *GetEntityClassname(CBaseEntity *pEntity);
 	bool IsMapValid(const char *map);
 	SMFindMapResult FindMap(char *pMapName, int nMapNameMax);
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	string_t AllocPooledString(const char *pszValue);
+#endif
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();

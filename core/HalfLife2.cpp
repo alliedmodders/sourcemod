@@ -1278,6 +1278,8 @@ bool CHalfLife2::IsMapValid(const char *map)
 	return FindMap(szTmp, sizeof(szTmp)) != SMFindMapResult::NotFound;
 }
 
+// TODO: Add ep1 support for this. (No IServerTools available there)
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 string_t CHalfLife2::AllocPooledString(const char *pszValue)
 {
 	// This is admittedly a giant hack, but it's a relatively safe method for
@@ -1311,3 +1313,4 @@ string_t CHalfLife2::AllocPooledString(const char *pszValue)
 
 	return newString;
 }
+#endif
