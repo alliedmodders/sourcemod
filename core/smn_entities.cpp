@@ -1886,7 +1886,6 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	char *prop;
 	int offset;
 	edict_t *pEdict;
-	bool bIsStringIndex;
 
 	int element = 0;
 	if (params[0] >= 6)
@@ -1901,12 +1900,13 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[3], &prop);
 
-	bIsStringIndex = false;
+	const char *src;
 
 	switch (params[2])
 	{
 	case Prop_Data:
 		{
+			bool bIsStringIndex = false;
 			typedescription_t *td;
 			
 			FIND_PROP_DATA(td);
@@ -1942,6 +1942,15 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 			if (bIsStringIndex)
 			{
 				offset += (element * (td->fieldSizeInBytes / td->fieldSize));
+
+				string_t idx;
+
+				idx = *(string_t *) ((uint8_t *) pEntity + offset);
+				src = (idx == NULL_STRING) ? "" : STRING(idx);
+			}
+			else
+			{
+				src = (char *) ((uint8_t *) pEntity + offset);
 			}
 			break;
 		}
@@ -1979,6 +1988,17 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 					prop,
 					element);
  			}
+
+			if (info.prop->GetProxyFn())
+			{
+				DVariant var;
+				info.prop->GetProxyFn()(info.prop, pEntity, (const void *) ((intptr_t) pEntity + offset), &var, element, params[1]);
+				src = var.m_pString;
+			}
+			else
+			{
+				src = (char *) ((uint8_t *) pEntity + offset);
+			}
 			
 			break;
 		}
@@ -1989,22 +2009,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	}
 
 	size_t len;
-	const char *src; 
-	
-	if (!bIsStringIndex)
-	{
-		src = (char *)((uint8_t *)pEntity + offset);
-	}
-	else
-	{
-		string_t idx;
-
-		idx = *(string_t *)((uint8_t *)pEntity + offset);
-		src = (idx == NULL_STRING) ? "" : STRING(idx);
-	}
-
 	pContext->StringToLocalUTF8(params[4], params[5], src, &len);
-
 	return len;
 }
 
@@ -2015,6 +2020,13 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 	int offset;
 	int maxlen;
 	edict_t *pEdict;
+	bool bIsStringIndex;
+
+	int element = 0;
+	if (params[0] >= 5)
+	{
+		element = params[5];
+	}
 
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
@@ -2038,17 +2050,31 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 			}
 			
 			typedescription_t *td = info.prop;
-			if (td->fieldType != FIELD_CHARACTER)
+			if (td->fieldType != FIELD_CHARACTER
+				&& td->fieldType != FIELD_STRING
+				&& td->fieldType != FIELD_MODELNAME
+				&& td->fieldType != FIELD_SOUNDNAME)
 			{
 				return pContext->ThrowNativeError("Property \"%s\" is not a valid string", prop);
 			}
+
 			offset = info.actual_offset;
-			maxlen = td->fieldSize;
+
+			bIsStringIndex = (td->fieldType != FIELD_CHARACTER);
+			if (bIsStringIndex)
+			{
+				offset += (element * (td->fieldSizeInBytes / td->fieldSize));
+			}
+			else
+			{
+				maxlen = td->fieldSize;
+			}
+
 			break;
 		}
 	case Prop_Send:
 		{
-			char *prop;
+			sm_sendprop_info_t info;
 			IServerUnknown *pUnk = (IServerUnknown *)pEntity;
 			IServerNetworkable *pNet = pUnk->GetNetworkable();
 			if (!pNet)
@@ -2056,17 +2082,37 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 				return pContext->ThrowNativeError("The edict is not networkable");
 			}
 			pContext->LocalToString(params[3], &prop);
-			SendProp *pSend = g_HL2.FindInSendTable(pNet->GetServerClass()->GetName(), prop);
-			if (!pSend)
+			if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info))
 			{
 				return pContext->ThrowNativeError("Property \"%s\" not found for entity %d", prop, params[1]);
 			}
-			if (pSend->GetType() != DPT_String)
+
+			offset = info.prop->GetOffset();
+
+			if (info.prop->GetType() != DPT_String)
 			{
 				return pContext->ThrowNativeError("Property \"%s\" is not a valid string", prop);
 			}
-			offset = pSend->GetOffset();
-			maxlen = DT_MAX_STRING_BUFFERSIZE;
+			else if (element != 0)
+			{
+				return pContext->ThrowNativeError("SendProp %s is not an array. Element %d is invalid.",
+					prop,
+					element);
+			}
+
+			if (info.prop->GetProxyFn())
+			{
+				DVariant var;
+				info.prop->GetProxyFn()(info.prop, pEntity, (const void *) ((intptr_t) pEntity + offset), &var, element, params[1]);
+				if (var.m_pString == ((string_t *) ((intptr_t) pEntity + offset))->ToCStr())
+				{
+					bIsStringIndex = true;
+				}
+			}
+			else
+			{
+				maxlen = DT_MAX_STRING_BUFFERSIZE;
+			}
 			break;
 		}
 	default:
@@ -2076,10 +2122,23 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char *src;
-	char *dest = (char *)((uint8_t *)pEntity + offset);
-
+	size_t len;
 	pContext->LocalToString(params[4], &src);
-	size_t len = strncopy(dest, src, maxlen);
+
+	if (bIsStringIndex)
+	{
+#if SOURCE_ENGINE < SE_ORANGEBOX
+		return pContext->ThrowNativeError("Cannot set %s. Setting string_t values not supported on this game.", prop);
+#else
+		*(string_t *) ((intptr_t) pEntity + offset) = g_HL2.AllocPooledString(src);
+		len = strlen(src);
+#endif
+	}
+	else
+	{
+		char *dest = (char *) ((uint8_t *) pEntity + offset);
+		len = strncopy(dest, src, maxlen);
+	}
 
 	if (params[2] == Prop_Send && (pEdict != NULL))
 	{
