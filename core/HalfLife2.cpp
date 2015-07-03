@@ -1290,17 +1290,14 @@ string_t CHalfLife2::AllocPooledString(const char *pszValue)
 	// read back the new targetname value, restore the old value, and return the new one.
 
 	CBaseEntity *pEntity = ((IServerUnknown *) servertools->FirstEntity())->GetBaseEntity();
-	auto *pNetworkable = ((IServerUnknown *) pEntity)->GetNetworkable();
-	assert(pNetworkable);
-
-	auto pServerClass = pNetworkable->GetServerClass();
-	assert(pServerClass);
+	auto *pDataMap = GetDataMap(pEntity);
+	assert(pDataMap);
 
 	static int offset = -1;
 	if (offset == -1)
 	{
-		sm_sendprop_info_t info;
-		bool found = UTIL_FindInSendTable(pServerClass->m_pTable, "m_iName", &info, 0);
+		sm_datatable_info_t info;
+		bool found = FindDataMapInfo(pDataMap, "m_iName", &info);
 		assert(found);
 		offset = info.actual_offset;
 	}
