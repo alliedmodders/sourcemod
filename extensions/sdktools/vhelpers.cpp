@@ -496,6 +496,19 @@ void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level = 1)
 	}
 }
 
+#if defined SUBPLATFORM_SECURECRT
+void _ignore_invalid_parameter(
+	const wchar_t * expression,
+	const wchar_t * function, 
+	const wchar_t * file,
+	unsigned int line,
+	uintptr_t pReserved
+	)
+{
+	/* Wow we don't care, thanks Microsoft. */
+}
+#endif
+
 CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XML file")
 {
 #if SOURCE_ENGINE <= SE_DARKMESSIAH
@@ -593,19 +606,6 @@ CON_COMMAND(sm_dump_netprops, "Dumps the networkable property table as a text fi
 
 	fclose(fp);
 }
-
-#if defined SUBPLATFORM_SECURECRT
-void _ignore_invalid_parameter(
-						const wchar_t * expression,
-						const wchar_t * function, 
-						const wchar_t * file, 
-						unsigned int line,
-						uintptr_t pReserved
-						)
-{
-	/* Wow we don't care, thanks Microsoft. */
-}
-#endif
 
 CEntityFactoryDictionary *GetEntityFactoryDictionary()
 {
