@@ -538,8 +538,22 @@ CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XM
 		return;
 	}
 
+	char buffer[80];
+	buffer[0] = 0;
+
+#if defined SUBPLATFORM_SECURECRT
+	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+#endif
+
+	time_t t = g_pSM->GetAdjustedTime();
+	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+
+#if defined SUBPLATFORM_SECURECRT
+	_set_invalid_parameter_handler(handler);
+#endif
+
 	fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n");
-	fprintf(fp, "<!-- Dump of all network properties for \"%s\" follows -->\n\n", g_pSM->GetGameFolderName());
+	fprintf(fp, "<!-- Dump of all network properties for \"%s\" as at %s -->\n\n", g_pSM->GetGameFolderName(), buffer);
 
 	ServerClass *pBase = gamedll->GetAllServerClasses();
 	while (pBase != NULL)
