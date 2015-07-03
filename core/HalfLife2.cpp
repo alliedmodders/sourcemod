@@ -1256,3 +1256,37 @@ bool CHalfLife2::IsMapValid(const char *map)
 #endif // SE_TF2
 	return ret;
 }
+
+// TODO: Add ep1 support for this. (No IServerTools available there)
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+string_t CHalfLife2::AllocPooledString(const char *pszValue)
+{
+	// This is admittedly a giant hack, but it's a relatively safe method for
+	// inserting a string into the game's string pool that isn't likely to break.
+	//
+	// We find the first valid ent (should always be worldspawn), save off it's
+	// current targetname string_t, set it to our string to insert via SetKeyValue,
+	// read back the new targetname value, restore the old value, and return the new one.
+
+	CBaseEntity *pEntity = ((IServerUnknown *) servertools->FirstEntity())->GetBaseEntity();
+	auto *pDataMap = GetDataMap(pEntity);
+	assert(pDataMap);
+
+	static int offset = -1;
+	if (offset == -1)
+	{
+		sm_datatable_info_t info;
+		bool found = FindDataMapInfo(pDataMap, "m_iName", &info);
+		assert(found);
+		offset = info.actual_offset;
+	}
+
+	string_t *pProp = (string_t *) ((intp) pEntity + offset);
+	string_t backup = *pProp;
+	servertools->SetKeyValue(pEntity, "targetname", pszValue);
+	string_t newString = *pProp;
+	*pProp = backup;
+
+	return newString;
+}
+#endif
