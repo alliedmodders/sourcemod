@@ -353,6 +353,8 @@ public:
 	 * Loads all plugins not yet loaded
 	 */
 	void LoadAll_FirstPass(const char *config, const char *basedir);
+	
+	void LoadDisabledPluginsList();
 
 	/**
 	 * Runs the second loading pass for all plugins

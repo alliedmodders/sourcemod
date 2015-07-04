@@ -30,6 +30,7 @@
  */
 
 #include <stdio.h>
+#include <list>
 #include <stdarg.h>
 #include "PluginSys.h"
 #include "ShareSys.h"
@@ -38,6 +39,7 @@
 #include <IHandleSys.h>
 #include <IForwardSys.h>
 #include <IPlayerHelpers.h>
+#include <IGameHelpers.h>
 #include "ExtensionSys.h"
 #include "GameConfigs.h"
 #include "common_logic.h"
@@ -829,7 +831,68 @@ void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 {
 	/* First read in the database of plugin settings */
 	m_AllPluginsLoaded = false;
+	
+	LoadDisabledPluginsList();
+	
 	LoadPluginsFromDir(basedir, NULL);
+}
+
+class DisabledPluginsReader : public ITextListener_SMC
+{
+public:
+	virtual SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
+	{
+		if (strcmp(key, gamehelpers->GetCurrentMap()) == 0)
+		{
+			strcpy(config, value);
+			return SMCResult_Halt;
+		}
+		
+		return SMCResult_Continue;
+	}
+public:
+	std::list<std::string> plugins;
+	char config[PLATFORM_MAX_PATH];
+};
+
+static DisabledPluginsReader g_DisabledPlugins;
+
+void CPluginManager::LoadDisabledPluginsList()
+{
+	g_DisabledPlugins.plugins.clear();
+	strcpy(g_DisabledPlugins.config, "");
+	
+	SMCError err;
+	SMCStates state;
+	
+	char path[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "configs/map_disabled_plugins.cfg");
+	
+	char error[512];
+	err = textparsers->ParseSMCFile(path, &g_DisabledPlugins, &state, error, 512);
+	
+	if (err == SMCError_Okay && g_DisabledPlugins.config[0] != '\0')
+	{
+		FileHandle_t file;
+		char plugin[PLATFORM_MAX_PATH];
+		
+		if ((file = smcore.filesystem->Open(g_DisabledPlugins.config, "rt")) != NULL)
+		{
+			while (!smcore.filesystem->EndOfFile(file) && smcore.filesystem->ReadLine(plugin, sizeof(plugin), file) != NULL)
+			{
+				size_t len = strlen(plugin);
+				char *ptr = smcore.TrimWhitespace(plugin, len);
+				
+				if (*ptr == '\0' || *ptr == ';' || strncmp(ptr, "//", 2) == 0)
+				{
+					continue;
+				}
+				
+				g_DisabledPlugins.plugins.push_back(plugin);
+			}
+			smcore.filesystem->Close(file);
+		}
+	}
 }
 
 void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpath)
@@ -886,7 +949,15 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 				} else {
 					libsys->PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
 				}
-				LoadAutoPlugin(plugin);
+				
+				if (std::find(g_DisabledPlugins.plugins.begin(), g_DisabledPlugins.plugins.end(), plugin) == g_DisabledPlugins.plugins.end())
+				{
+					LoadAutoPlugin(plugin);
+				}
+				else
+				{
+					logger->LogMessage("[SM] Plugin %s prevented from loading.", plugin);
+				}
 			}
 		}
 		dir->NextEntry();
@@ -898,8 +969,6 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 {
 	if (m_LoadingLocked)
 		return LoadRes_NeverLoad;
-
-	int err;
 
 	/**
 	 * Does this plugin already exist?
