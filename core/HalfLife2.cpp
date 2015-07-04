@@ -1252,16 +1252,7 @@ SMFindMapResult CHalfLife2::FindMap(char *pMapName, int nMapNameMax)
 		return SMFindMapResult::FuzzyMatch;
 	}
 #elif SOURCE_ENGINE == SE_TF2
-	// Save off name passed in so that we can compare to output.
-	// There is a bug where eFindMap_FuzzyMap is never returned, even for fuzzy matches.
-	char *pOriginal = sm_strdup(pMapName);
-	SMFindMapResult res = static_cast<SMFindMapResult>(engine->FindMap(pMapName, nMapNameMax));
-	bool bExactMatch = strcmp(pOriginal, pMapName) == 0;
-	delete [] pOriginal;
-	if (res == SMFindMapResult::Found && !bExactMatch)
-		return SMFindMapResult::FuzzyMatch;
-	else
-		return res;
+	return static_cast<SMFindMapResult>(engine->FindMap(pMapName, nMapNameMax));
 #else
 	return engine->IsMapValid(pMapName) == 0 ? SMFindMapResult::NotFound : SMFindMapResult::Found;
 #endif
