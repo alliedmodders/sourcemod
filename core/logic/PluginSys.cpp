@@ -844,13 +844,29 @@ public:
 	{
 		if (strcmp(key, gamehelpers->GetCurrentMap()) == 0)
 		{
-			strcpy(config, value);
+			char path[PLATFORM_MAX_PATH];
+			g_pSM->BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "configs/%s", value);
+			
+			strcpy(config, path);
 			return SMCResult_Halt;
 		}
 		
 		return SMCResult_Continue;
 	}
-public:
+	bool IsPluginDisabled(const char *plugin)
+	{
+		char path[PLATFORM_MAX_PATH];
+		g_pSM->BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/%s", plugin);
+		
+		return (std::find(plugins.begin(), plugins.end(), path) != plugins.end());
+	}
+	void PushPlugin(const char *plugin)
+	{
+		char path[PLATFORM_MAX_PATH];
+		g_pSM->BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/%s", plugin);
+		
+		plugins.push_back(path);
+	}
 	std::list<std::string> plugins;
 	char config[PLATFORM_MAX_PATH];
 };
@@ -873,6 +889,12 @@ void CPluginManager::LoadDisabledPluginsList()
 	
 	if (err == SMCError_Okay && g_DisabledPlugins.config[0] != '\0')
 	{
+		if (!libsys->PathExists(path))
+		{
+			g_Logger.LogError("[SM] Map disabled plugins config %s wasn't found!", path);
+			return;
+		}
+		
 		FileHandle_t file;
 		char plugin[PLATFORM_MAX_PATH];
 		
@@ -888,7 +910,7 @@ void CPluginManager::LoadDisabledPluginsList()
 					continue;
 				}
 				
-				g_DisabledPlugins.plugins.push_back(plugin);
+				g_DisabledPlugins.PushPlugin(plugin);
 			}
 			smcore.filesystem->Close(file);
 		}
@@ -950,7 +972,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 					libsys->PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
 				}
 				
-				if (std::find(g_DisabledPlugins.plugins.begin(), g_DisabledPlugins.plugins.end(), plugin) == g_DisabledPlugins.plugins.end())
+				if (!g_DisabledPlugins.IsPluginDisabled(plugin))
 				{
 					LoadAutoPlugin(plugin);
 				}
