@@ -43,6 +43,7 @@
 #include "ExtensionSys.h"
 #include "GameConfigs.h"
 #include "common_logic.h"
+#include "stringutil.h"
 #include "Translator.h"
 #include "Logger.h"
 
@@ -842,7 +843,11 @@ class DisabledPluginsReader : public ITextListener_SMC
 public:
 	virtual SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
 	{
-		if (strcmp(key, gamehelpers->GetCurrentMap()) == 0)
+		char map[PLATFORM_MAX_PATH];
+		strcpy(map, key);
+		UTIL_ReplaceAll(map, sizeof(map), ".bsp", "", true);
+		
+		if (strcmp(map, gamehelpers->GetCurrentMap()) == 0)
 		{
 			char path[PLATFORM_MAX_PATH];
 			g_pSM->BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "configs/%s", value);
