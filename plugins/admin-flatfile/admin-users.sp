@@ -58,7 +58,7 @@ public SMCResult ReadUsers_NewSection(SMCParser smc, const char[] name, bool opt
 	
 	if (g_UserState == UserState_None)
 	{
-		if (StrEqual(name, "Admins"))
+		if (StrEqual(name, "Admins", false))
 		{
 			g_UserState = UserState_Admins;
 		}
@@ -97,19 +97,19 @@ public SMCResult ReadUsers_KeyValue(SMCParser smc,
 		return SMCParse_Continue;
 	}
 	
-	if (StrEqual(key, "auth"))
+	if (StrEqual(key, "auth", false))
 	{
 		strcopy(g_CurAuth, sizeof(g_CurAuth), value);
 	}
-	else if (StrEqual(key, "identity"))
+	else if (StrEqual(key, "identity", false))
 	{
 		strcopy(g_CurIdent, sizeof(g_CurIdent), value);
 	}
-	else if (StrEqual(key, "password")) 
+	else if (StrEqual(key, "password", false)) 
 	{
 		strcopy(g_CurPass, sizeof(g_CurPass), value);
 	} 
-	else if (StrEqual(key, "group")) 
+	else if (StrEqual(key, "group", false)) 
 	{
 		GroupId id = FindAdmGroup(value);
 		if (id == INVALID_GROUP_ID)
@@ -119,7 +119,7 @@ public SMCResult ReadUsers_KeyValue(SMCParser smc,
 
 		g_GroupArray.Push(id);
 	} 
-	else if (StrEqual(key, "flags")) 
+	else if (StrEqual(key, "flags", false)) 
 	{
 		int len = strlen(value);
 		AdminFlag flag;
@@ -136,7 +136,7 @@ public SMCResult ReadUsers_KeyValue(SMCParser smc,
 			}
 		}
 	} 
-	else if (StrEqual(key, "immunity")) 
+	else if (StrEqual(key, "immunity", false)) 
 	{
 		g_CurImmunity = StringToInt(value);
 	}
