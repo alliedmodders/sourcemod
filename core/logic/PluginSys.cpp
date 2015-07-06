@@ -983,6 +983,20 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 				}
 				else
 				{
+					CPlugin *pl;
+					SourceHook::List<CPlugin *>::iterator iter;
+
+					for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
+					{
+						pl = (*iter);
+						
+						if (strcmp(pl->GetFilename(), plugin) == 0)
+						{
+							UnloadPlugin(pl);
+							break;
+						}
+					}
+					
 					logger->LogMessage("[SM] Plugin %s prevented from loading.", plugin);
 				}
 			}
