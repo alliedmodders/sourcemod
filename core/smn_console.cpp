@@ -28,6 +28,7 @@
  *
  * Version: $Id$
  */
+ 
 #include "sm_globals.h"
 #include "sourcemod.h"
 #include "HalfLife2.h"
@@ -46,8 +47,6 @@
 #include "logic_bridge.h"
 #include <sm_namehashset.h>
 
-#include "logic/CellArray.h"
-
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 #include <netmessages.pb.h>
 #endif
@@ -64,8 +63,6 @@
 #define NET_SETCONVAR	5
 #endif
 
-typedef List<const ConVar *> ConVarList;
-
 enum ConVarBounds
 {
 	ConVarBound_Upper = 0,
@@ -74,7 +71,6 @@ enum ConVarBounds
 
 HandleType_t hCmdIterType = 0;
 HandleType_t htConCmdIter = 0;
-HandleType_t _htCellArray = 0;
 
 struct GlobCmdIter
 {
@@ -267,57 +263,6 @@ static cell_t sm_FindConVar(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[1], &name);
 
 	return g_ConVarManager.FindConVar(name);
-}
-
-static cell_t sm_GetPluginConVars(IPluginContext *pContext, const cell_t *params)
-{
-	HandleError err;
-	IPlugin *plugin;
-
-	if (static_cast<Handle_t>(params[1]) == BAD_HANDLE)
-	{
-		plugin = scripts->FindPluginByContext(pContext->GetContext());
-	} else {
-		plugin = scripts->FindPluginByHandle(static_cast<Handle_t>(params[1]), &err);
-	}
-	
-	if (!plugin)
-	{
-		return pContext->ThrowNativeError("[SM] Plugin was not found! (error %d)", err);
-	}
-
-	if (_htCellArray == 0) {
-		handlesys->FindHandleType("CellArray", &_htCellArray);
-	}
-	
-	CellArray *array = new CellArray(1);	
-	Handle_t hArray = handlesys->CreateHandle(_htCellArray, array, pContext->GetIdentity(), g_pCoreIdent, NULL);
-	if (!hArray)
-	{
-		delete array;
-		return pContext->ThrowNativeError("[SM] Failed to create array! %d", _htCellArray);
-	}
-	
-	ConVarList *pConVarList;
-	if (!plugin->GetProperty("ConVarList", (void **)&pConVarList))
-	{
-		return hArray;
-	}
-	
-	ConVarList::iterator iter;
-	for (iter = pConVarList->begin(); iter != pConVarList->end(); iter++)
-	{
-		Handle_t hndl = g_ConVarManager.FindConVar(const_cast<ConVar *>(*iter)->GetName());		
-		cell_t *blk = array->push();
-		if (!blk)
-		{
-			return pContext->ThrowNativeError("Failed to grow array!");
-		}
-
-		*blk = hndl;
-	}
-	
-	return hArray;
 }
 
 static cell_t sm_HookConVarChange(IPluginContext *pContext, const cell_t *params)
@@ -1350,7 +1295,6 @@ static cell_t ConVar_ReplicateToClient(IPluginContext *pContext, const cell_t *p
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
-	{"GetPluginConVars",	sm_GetPluginConVars},
 	{"FindConVar",			sm_FindConVar},
 	{"HookConVarChange",	sm_HookConVarChange},
 	{"UnhookConVarChange",	sm_UnhookConVarChange},
