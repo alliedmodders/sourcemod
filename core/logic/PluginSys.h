@@ -354,8 +354,6 @@ public:
 	 */
 	void LoadAll_FirstPass(const char *config, const char *basedir);
 	
-	void LoadDisabledPluginsList();
-
 	/**
 	 * Runs the second loading pass for all plugins
 	 */
@@ -427,7 +425,9 @@ public:
 	void ListPluginsToClient(CPlayer *player, const CCommand &args);
 private:
 	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
-
+	
+	void LoadDisabledPluginsList();
+	
 	void LoadAutoPlugin(const char *plugin);
 
 	/**
