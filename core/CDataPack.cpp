@@ -33,7 +33,7 @@
 #include <string.h>
 #include "CDataPack.h"
 
-#define DATAPACK_INITIAL_SIZE		512
+#define DATAPACK_INITIAL_SIZE 64
 
 CDataPack::CDataPack()
 {
@@ -64,9 +64,10 @@ void CDataPack::CheckSize(size_t typesize)
 	do
 	{
 		m_capacity *= 2;
-		m_pBase = (char *)realloc(m_pBase, m_capacity);
-		m_curptr = m_pBase + pos;
-	} while (m_curptr - m_pBase + typesize > m_capacity);
+	} while (pos + typesize > m_capacity);
+	
+	m_pBase = (char *)realloc(m_pBase, m_capacity);
+	m_curptr = m_pBase + pos;
 }
 
 void CDataPack::ResetSize()
