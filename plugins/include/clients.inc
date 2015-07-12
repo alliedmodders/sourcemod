@@ -148,7 +148,8 @@ forward Action:OnClientCommand(client, args);
  *
  * @param client		Client index.
  * @param kv			Editable KeyValues data to be sent as the command.
- *						(This handle cannot be closed.)
+ *						(This handle should not be stored and will be closed
+ *						after this forward completes.)
  * @return				Plugin_Handled blocks the command from being sent,
  *						and Plugin_Continue resumes normal functionality.
  */
@@ -159,7 +160,8 @@ forward Action OnClientCommandKeyValues(int client, KeyValues kv);
  *
  * @param client		Client index.
  * @param kv			KeyValues data sent as the command.
- *						(This handle cannot be closed.)
+ *						(This handle should not be stored and will be closed
+ *						after this forward completes.)
  * @noreturn
  */
 forward void OnClientCommandKeyValues_Post(int client, KeyValues kv);
