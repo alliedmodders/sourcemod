@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2015 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -29,6 +29,8 @@
  * Version: $Id$
  */
 
+#include "smn_keyvalues.h"
+
 #include "sourcemod.h"
 #include "sourcemm_api.h"
 #include "sm_stringutil.h"
@@ -38,12 +40,6 @@
 #include "logic_bridge.h"
 
 HandleType_t g_KeyValueType;
-
-struct KeyValueStack 
-{
-	KeyValues *pBase;
-	CStack<KeyValues *> pCurRoot;
-};
 
 class KeyValueNatives : 
 	public SMGlobalClass,
@@ -62,7 +58,11 @@ public:
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
 		KeyValueStack *pStk = reinterpret_cast<KeyValueStack *>(object);
-		pStk->pBase->deleteThis();
+		if (pStk->m_bDeleteOnDestroy)
+		{
+			pStk->pBase->deleteThis();
+		}
+
 		delete pStk;
 	}
 	int CalcKVSizeR(KeyValues *pv)
