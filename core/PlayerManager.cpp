@@ -1265,6 +1265,8 @@ void PlayerManager::OnClientCommandKeyValues(edict_t *pEntity, KeyValues *pComma
 	m_bInCCKVHook = false;
 
 	HandleSecurity sec(g_pCoreIdent, g_pCoreIdent);
+
+	// Deletes pStk
 	handlesys->FreeHandle(hndl, &sec);
 
 	if (res >= Pl_Handled)
@@ -1308,6 +1310,8 @@ void PlayerManager::OnClientCommandKeyValues_Post(edict_t *pEntity, KeyValues *p
 	m_bInCCKVHook = false;
 
 	HandleSecurity sec(g_pCoreIdent, g_pCoreIdent);
+
+	// Deletes pStk
 	handlesys->FreeHandle(hndl, &sec);
 }
 #endif
