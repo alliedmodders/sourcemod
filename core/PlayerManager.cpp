@@ -1264,6 +1264,9 @@ void PlayerManager::OnClientCommandKeyValues(edict_t *pEntity, KeyValues *pComma
 	m_clcommandkv->Execute(&res);
 	m_bInCCKVHook = false;
 
+	HandleSecurity sec(g_pCoreIdent, g_pCoreIdent);
+	handlesys->FreeHandle(hndl, &sec);
+
 	if (res >= Pl_Handled)
 	{
 		s_LastCCKVAllowed = false;
@@ -1303,6 +1306,9 @@ void PlayerManager::OnClientCommandKeyValues_Post(edict_t *pEntity, KeyValues *p
 	m_clcommandkv_post->PushCell(hndl);
 	m_clcommandkv_post->Execute();
 	m_bInCCKVHook = false;
+
+	HandleSecurity sec(g_pCoreIdent, g_pCoreIdent);
+	handlesys->FreeHandle(hndl, &sec);
 }
 #endif
 
