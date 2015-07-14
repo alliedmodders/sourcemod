@@ -6,6 +6,7 @@ addons:
     - lib32z1-dev
     - libc6-dev-i386
     - linux-libc-dev
+    - gcc-multilib
     sources:
     - llvm-toolchain-precise-3.5
     - ubuntu-toolchain-r-test
