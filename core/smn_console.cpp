@@ -46,6 +46,7 @@
 #include "ConCommandBaseIterator.h"
 #include "logic_bridge.h"
 #include <sm_namehashset.h>
+#include "smn_keyvalues.h"
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 #include <netmessages.pb.h>
@@ -1252,6 +1253,50 @@ static cell_t ConVar_ReplicateToClient(IPluginContext *pContext, const cell_t *p
 	return SendConVarValue(pContext, new_params);
 }
 
+static cell_t FakeClientCommandKeyValues(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE >= SE_EYE && SOURCE_ENGINE != SE_DOTA
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	}
+	else if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected", client);
+	}
+
+	Handle_t hndl = static_cast<Handle_t>(params[2]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr = handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **) &pStk))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+
+	if (g_Players.InClientCommandKeyValuesHook())
+	{
+		SH_CALL(serverClients, &IServerGameClients::ClientCommandKeyValues)(pPlayer->GetEdict(), pStk->pBase);
+	}
+	else
+	{
+		serverClients->ClientCommandKeyValues(pPlayer->GetEdict(), pStk->pBase);
+	}
+
+	return 1;
+#else
+	return pContext->ThrowNativeError("FakeClientCommandKeyValues is not supported on this game.");
+#endif
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -1292,6 +1337,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"SendConVarValue",		SendConVarValue},
 	{"AddCommandListener",	AddCommandListener},
 	{"RemoveCommandListener", RemoveCommandListener},
+	{"FakeClientCommandKeyValues", FakeClientCommandKeyValues},
 
 	// Transitional syntax support.
 	{"ConVar.BoolValue.get",	sm_GetConVarBool},
