@@ -138,9 +138,33 @@ forward void OnClientDisconnect_Post(client);
  *
  * @param client		Client index.
  * @param args			Number of arguments.
- * @noreturn
+ * @return				Plugin_Handled blocks the command from being sent,
+ *						and Plugin_Continue resumes normal functionality.
  */
 forward Action:OnClientCommand(client, args);
+
+/**
+ * Called when a client is sending a KeyValues command.
+ *
+ * @param client		Client index.
+ * @param kv			Editable KeyValues data to be sent as the command.
+ *						(This handle should not be stored and will be closed
+ *						after this forward completes.)
+ * @return				Plugin_Handled blocks the command from being sent,
+ *						and Plugin_Continue resumes normal functionality.
+ */
+forward Action OnClientCommandKeyValues(int client, KeyValues kv);
+
+/**
+ * Called after a client has sent a KeyValues command.
+ *
+ * @param client		Client index.
+ * @param kv			KeyValues data sent as the command.
+ *						(This handle should not be stored and will be closed
+ *						after this forward completes.)
+ * @noreturn
+ */
+forward void OnClientCommandKeyValues_Post(int client, KeyValues kv);
 
 /**
  * Called whenever the client's settings are changed.

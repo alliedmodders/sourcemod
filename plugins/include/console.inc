@@ -191,6 +191,17 @@ native FakeClientCommand(client, const String:fmt[], any:...);
 native FakeClientCommandEx(client, const String:fmt[], any:...);
 
 /**
+ * Executes a KeyValues client command on the server without being networked.
+ *
+ * @param client		Index of the client.
+ * @param kv			KeyValues data to be sent.
+ * @noreturn
+ * @error				Invalid client index, client not connected,
+ *						or unsupported on current game.
+ */
+native void FakeClientCommandKeyValues(int client, KeyValues kv);
+
+/**
  * Sends a message to the server console.
  *
  * @param format		Formatting rules.
