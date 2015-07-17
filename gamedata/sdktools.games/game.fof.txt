@@ -131,9 +131,9 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"402"
-				"linux"		"403"
-				"mac"		"403"
+				"windows"	"401"
+				"linux"		"402"
+				"mac"		"402"
 			}
 			"RemovePlayerItem"
 			{
@@ -167,9 +167,9 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"444"
-				"linux"		"444"
-				"mac"		"444"
+				"windows"	"443"
+				"linux"		"443"
+				"mac"		"443"
 			}
 			"GetVelocity"
 			{
@@ -209,9 +209,9 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"420"
-				"linux"		"421"
-				"mac"		"421"
+				"windows"	"419"
+				"linux"		"420"
+				"mac"		"420"
 			}
 			"GiveAmmo"
 			{
