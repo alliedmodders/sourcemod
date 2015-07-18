@@ -49,9 +49,6 @@ CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
 IdentityType_t g_PluginIdent = 0;
 
-List<String> g_PluginsLoadingList;
-List<String> g_PluginsDisabledLoadingList;
-
 CPlugin::CPlugin(const char *file)
 {
 	static int MySerial = 0;
@@ -451,10 +448,8 @@ bool CPlugin::Call_AskPluginAutoLoad(const char *plugin)
 	
 	if (pFunction->Execute(&res) != SP_ERROR_NONE)
 	{
-		return false;
+		return true;
 	}
-	
-	g_Logger.LogMessage("%s = %d", plugin, res);
 	
 	return (res != 0);
 }
@@ -820,6 +815,9 @@ CPluginManager::CPluginManager()
 	m_LoadingLocked = false;
 	
 	m_bBlockBadPlugins = true;
+	
+	m_pluginsToLoad.clear();
+	m_pluginsDisabledLoad.clear();
 }
 
 CPluginManager::~CPluginManager()
@@ -857,28 +855,30 @@ void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 	/* First read in the database of plugin settings */
 	m_AllPluginsLoaded = false;
 	
-	g_PluginsLoadingList.clear();
-	g_PluginsDisabledLoadingList.clear();
+	m_pluginsToLoad.clear();
+	m_pluginsDisabledLoad.clear();
 	LoadPluginsFromDir(basedir, NULL);
-	
-	List<String>::iterator s_iter;
-	for (s_iter = g_PluginsLoadingList.begin(); s_iter != g_PluginsLoadingList.end(); s_iter++)
-	{
-		LoadAutoPlugin((*s_iter).c_str());
-		logger->LogMessage(">> %s", (*s_iter).c_str());
-	}
+	LoadPluginsFromList();
 }
 
-bool CPluginManager::FindInList(List<String> list, const char *item)
+bool CPluginManager::IsPluginAutoLoadDisabled(const char *plugin)
 {
 	List<String>::iterator s_iter;
-	for (s_iter = list.begin(); s_iter != list.end(); s_iter++)
+	for (s_iter = m_pluginsDisabledLoad.begin(); s_iter != m_pluginsDisabledLoad.end(); s_iter++)
 	{
-		if (strcmp((*s_iter).c_str(), item) == 0)
+		if (strcmp((*s_iter).c_str(), plugin) == 0)
 			return true;
 	}
-	
 	return false;
+}
+
+void CPluginManager::LoadPluginsFromList()
+{
+	List<String>::iterator s_iter;
+	for (s_iter = m_pluginsToLoad.begin(); s_iter != m_pluginsToLoad.end(); s_iter++)
+	{
+		LoadAutoPlugin((*s_iter).c_str());
+	}
 }
 
 void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpath)
@@ -936,7 +936,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 					libsys->PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
 				}
 				
-				g_PluginsLoadingList.push_back(plugin);
+				m_pluginsToLoad.push_back(plugin);
 			}
 		}
 		dir->NextEntry();
@@ -955,10 +955,10 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 	CPlugin *pPlugin;
 	if (m_LoadLookup.retrieve(path, &pPlugin))
 	{
-		if (FindInList(g_PluginsDisabledLoadingList, path))
+		if (IsPluginAutoLoadDisabled(path))
 		{
 			logger->LogMessage("[SM] Plugin %s prevented from loading. (0)", path);
-			g_PluginsDisabledLoadingList.remove(path);
+			m_pluginsDisabledLoad.remove(path);
 			UnloadPlugin(pPlugin);
 			
 			return LoadRes_NeverLoad;
@@ -977,12 +977,11 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 				*aResult = pPlugin;
 			
 			List<String>::iterator s_iter;
-			for (s_iter = g_PluginsLoadingList.begin(); s_iter != g_PluginsLoadingList.end(); s_iter++)
+			for (s_iter = m_pluginsToLoad.begin(); s_iter != m_pluginsToLoad.end(); s_iter++)
 			{
 				if (!pPlugin->Call_AskPluginAutoLoad((*s_iter).c_str()))
 				{
-					g_PluginsDisabledLoadingList.push_back((*s_iter).c_str());
-					logger->LogMessage("\t|> %s", (*s_iter).c_str());
+					m_pluginsDisabledLoad.push_back((*s_iter).c_str());
 				}
 			}
 			
@@ -990,10 +989,10 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 		}
 	}
 
-	if (FindInList(g_PluginsDisabledLoadingList, path))
+	if (IsPluginAutoLoadDisabled(path))
 	{
 		logger->LogMessage("[SM] Plugin %s prevented from loading. (1)", path);		
-		g_PluginsDisabledLoadingList.remove(path);
+		m_pluginsDisabledLoad.remove(path);
 		
 		return LoadRes_NeverLoad;
 	}
@@ -1068,12 +1067,11 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 		pPlugin->InitIdentity();
 		
 		List<String>::iterator s_iter;
-		for (s_iter = g_PluginsLoadingList.begin(); s_iter != g_PluginsLoadingList.end(); s_iter++)
+		for (s_iter = m_pluginsToLoad.begin(); s_iter != m_pluginsToLoad.end(); s_iter++)
 		{
 			if (!pPlugin->Call_AskPluginAutoLoad((*s_iter).c_str()))
 			{
-				g_PluginsDisabledLoadingList.push_back((*s_iter).c_str());
-				logger->LogMessage("\t|> %s", (*s_iter).c_str());
+				m_pluginsDisabledLoad.push_back((*s_iter).c_str());
 			}
 		}
 		
@@ -1204,10 +1202,11 @@ void CPluginManager::LoadAll_SecondPass()
 	{
 		pPlugin = (*iter);
 		
-		if (FindInList(g_PluginsDisabledLoadingList, pPlugin->GetFilename()))
+		if (IsPluginAutoLoadDisabled(pPlugin->GetFilename()))
 		{
-			logger->LogMessage("!! %s", pPlugin->GetFilename());
 			logger->LogMessage("[SM] Plugin %s prevented from loading. (2)", pPlugin->GetFilename());
+			m_pluginsDisabledLoad.remove(pPlugin->GetFilename());
+			
 			UnloadPlugin(pPlugin);
 			continue;
 		}
@@ -1223,8 +1222,8 @@ void CPluginManager::LoadAll_SecondPass()
 		}
 	}
 	
-	g_PluginsLoadingList.clear();
-	g_PluginsDisabledLoadingList.clear();
+	m_pluginsToLoad.clear();
+	m_pluginsDisabledLoad.clear();
 	
 	m_AllPluginsLoaded = true;
 }

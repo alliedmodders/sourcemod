@@ -430,8 +430,6 @@ private:
 
 	void LoadAutoPlugin(const char *plugin);
 
-	bool CPluginManager::FindInList(List<String> list, const char *item);
-	
 	/**
 	 * Recursively loads all plugins in the given directory.
 	 */
@@ -472,6 +470,12 @@ public:
 private:
 	void TryRefreshDependencies(CPlugin *pOther);
 private:
+	List<String> m_pluginsToLoad;
+	List<String> m_pluginsDisabledLoad;
+	
+	bool IsPluginAutoLoadDisabled(const char *plugin);
+	void LoadPluginsFromList();
+private:	
 	List<IPluginsListener *> m_listeners;
 	List<CPlugin *> m_plugins;
 	CStack<CPluginManager::CPluginIterator *> m_iters;
