@@ -957,7 +957,7 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 	{
 		if (IsPluginAutoLoadDisabled(path))
 		{
-			logger->LogMessage("[SM] Plugin %s prevented from loading. (0)", path);
+			logger->LogMessage("[SM] Plugin %s prevented from loading.", path);
 			m_pluginsDisabledLoad.remove(path);
 			UnloadPlugin(pPlugin);
 			
@@ -991,7 +991,7 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 
 	if (IsPluginAutoLoadDisabled(path))
 	{
-		logger->LogMessage("[SM] Plugin %s prevented from loading. (1)", path);		
+		logger->LogMessage("[SM] Plugin %s prevented from loading.", path);		
 		m_pluginsDisabledLoad.remove(path);
 		
 		return LoadRes_NeverLoad;
@@ -1204,7 +1204,7 @@ void CPluginManager::LoadAll_SecondPass()
 		
 		if (IsPluginAutoLoadDisabled(pPlugin->GetFilename()))
 		{
-			logger->LogMessage("[SM] Plugin %s prevented from loading. (2)", pPlugin->GetFilename());
+			logger->LogMessage("[SM] Plugin %s prevented from loading.", pPlugin->GetFilename());
 			m_pluginsDisabledLoad.remove(pPlugin->GetFilename());
 			
 			UnloadPlugin(pPlugin);
