@@ -30,7 +30,6 @@
  */
 
 #include <stdio.h>
-#include <list>
 #include <stdarg.h>
 #include "PluginSys.h"
 #include "ShareSys.h"
@@ -43,13 +42,15 @@
 #include "ExtensionSys.h"
 #include "GameConfigs.h"
 #include "common_logic.h"
-#include "stringutil.h"
 #include "Translator.h"
 #include "Logger.h"
 
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
 IdentityType_t g_PluginIdent = 0;
+
+List<String> g_PluginsLoadingList;
+List<String> g_PluginsDisabledLoadingList;
 
 CPlugin::CPlugin(const char *file)
 {
@@ -434,6 +435,28 @@ APLRes CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 	{
 		return APLRes_Failure;
 	}
+}
+
+bool CPlugin::Call_AskPluginAutoLoad(const char *plugin)
+{
+	cell_t res = 1;
+	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("AskPluginAutoLoad");
+	if (!pFunction)
+	{
+		return true;
+	}
+	
+	pFunction->PushString(plugin);
+	pFunction->PushString(gamehelpers->GetCurrentMap());
+	
+	if (pFunction->Execute(&res) != SP_ERROR_NONE)
+	{
+		return false;
+	}
+	
+	g_Logger.LogMessage("%s = %d", plugin, res);
+	
+	return (res != 0);
 }
 
 void CPlugin::Call_OnLibraryAdded(const char *lib)
@@ -823,6 +846,7 @@ void CPluginManager::LoadAll(const char *config_path, const char *plugins_path)
 {
 	LoadAll_FirstPass(config_path, plugins_path);
 	g_Extensions.MarkAllLoaded();
+	
 	LoadAll_SecondPass();
 	g_Extensions.MarkAllLoaded();
 	AllPluginsLoaded();
@@ -833,93 +857,28 @@ void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 	/* First read in the database of plugin settings */
 	m_AllPluginsLoaded = false;
 	
-	LoadDisabledPluginsList();
-	
+	g_PluginsLoadingList.clear();
+	g_PluginsDisabledLoadingList.clear();
 	LoadPluginsFromDir(basedir, NULL);
+	
+	List<String>::iterator s_iter;
+	for (s_iter = g_PluginsLoadingList.begin(); s_iter != g_PluginsLoadingList.end(); s_iter++)
+	{
+		LoadAutoPlugin((*s_iter).c_str());
+		logger->LogMessage(">> %s", (*s_iter).c_str());
+	}
 }
 
-class DisabledPluginsReader : public ITextListener_SMC
+bool CPluginManager::FindInList(List<String> list, const char *item)
 {
-public:
-	virtual SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
+	List<String>::iterator s_iter;
+	for (s_iter = list.begin(); s_iter != list.end(); s_iter++)
 	{
-		char map[PLATFORM_MAX_PATH];
-		strcpy(map, key);
-		UTIL_ReplaceAll(map, sizeof(map), ".bsp", "", true);
-		
-		if (strcmp(map, gamehelpers->GetCurrentMap()) == 0)
-		{
-			char path[PLATFORM_MAX_PATH];
-			g_pSM->BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "configs/%s", value);
-			
-			strcpy(config, path);
-			return SMCResult_Halt;
-		}
-		
-		return SMCResult_Continue;
+		if (strcmp((*s_iter).c_str(), item) == 0)
+			return true;
 	}
-	bool IsPluginDisabled(const char *plugin)
-	{
-		char path[PLATFORM_MAX_PATH];
-		g_pSM->BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/%s", plugin);
-		
-		return (std::find(plugins.begin(), plugins.end(), path) != plugins.end());
-	}
-	void PushPlugin(const char *plugin)
-	{
-		char path[PLATFORM_MAX_PATH];
-		g_pSM->BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/%s", plugin);
-		
-		plugins.push_back(path);
-	}
-	std::list<std::string> plugins;
-	char config[PLATFORM_MAX_PATH];
-};
-
-static DisabledPluginsReader g_DisabledPlugins;
-
-void CPluginManager::LoadDisabledPluginsList()
-{
-	g_DisabledPlugins.plugins.clear();
-	strcpy(g_DisabledPlugins.config, "");
 	
-	SMCError err;
-	SMCStates state;
-	
-	char path[PLATFORM_MAX_PATH];
-	g_pSM->BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "configs/map_disabled_plugins.cfg");
-	
-	char error[512];
-	err = textparsers->ParseSMCFile(path, &g_DisabledPlugins, &state, error, 512);
-	
-	if (err == SMCError_Okay && g_DisabledPlugins.config[0] != '\0')
-	{
-		if (!libsys->PathExists(path))
-		{
-			g_Logger.LogError("[SM] Map disabled plugins config %s wasn't found!", path);
-			return;
-		}
-		
-		FileHandle_t file;
-		char plugin[PLATFORM_MAX_PATH];
-		
-		if ((file = smcore.filesystem->Open(g_DisabledPlugins.config, "rt")) != NULL)
-		{
-			while (!smcore.filesystem->EndOfFile(file) && smcore.filesystem->ReadLine(plugin, sizeof(plugin), file) != NULL)
-			{
-				size_t len = strlen(plugin);
-				char *ptr = smcore.TrimWhitespace(plugin, len);
-				
-				if (*ptr == '\0' || *ptr == ';' || strncmp(ptr, "//", 2) == 0)
-				{
-					continue;
-				}
-				
-				g_DisabledPlugins.PushPlugin(plugin);
-			}
-			smcore.filesystem->Close(file);
-		}
-	}
+	return false;
 }
 
 void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpath)
@@ -977,28 +936,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 					libsys->PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
 				}
 				
-				if (!g_DisabledPlugins.IsPluginDisabled(plugin))
-				{
-					LoadAutoPlugin(plugin);
-				}
-				else
-				{
-					CPlugin *pl;
-					SourceHook::List<CPlugin *>::iterator iter;
-
-					for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
-					{
-						pl = (*iter);
-						
-						if (strcmp(pl->GetFilename(), plugin) == 0)
-						{
-							UnloadPlugin(pl);
-							break;
-						}
-					}
-					
-					logger->LogMessage("[SM] Plugin %s prevented from loading.", plugin);
-				}
+				g_PluginsLoadingList.push_back(plugin);
 			}
 		}
 		dir->NextEntry();
@@ -1017,6 +955,15 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 	CPlugin *pPlugin;
 	if (m_LoadLookup.retrieve(path, &pPlugin))
 	{
+		if (FindInList(g_PluginsDisabledLoadingList, path))
+		{
+			logger->LogMessage("[SM] Plugin %s prevented from loading. (0)", path);
+			g_PluginsDisabledLoadingList.remove(path);
+			UnloadPlugin(pPlugin);
+			
+			return LoadRes_NeverLoad;
+		}
+		
 		/* Check to see if we should try reloading it */
 		if (pPlugin->GetStatus() == Plugin_BadLoad
 			|| pPlugin->GetStatus() == Plugin_Error
@@ -1028,10 +975,29 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 		{
 			if (aResult)
 				*aResult = pPlugin;
+			
+			List<String>::iterator s_iter;
+			for (s_iter = g_PluginsLoadingList.begin(); s_iter != g_PluginsLoadingList.end(); s_iter++)
+			{
+				if (!pPlugin->Call_AskPluginAutoLoad((*s_iter).c_str()))
+				{
+					g_PluginsDisabledLoadingList.push_back((*s_iter).c_str());
+					logger->LogMessage("\t|> %s", (*s_iter).c_str());
+				}
+			}
+			
 			return LoadRes_AlreadyLoaded;
 		}
 	}
 
+	if (FindInList(g_PluginsDisabledLoadingList, path))
+	{
+		logger->LogMessage("[SM] Plugin %s prevented from loading. (1)", path);		
+		g_PluginsDisabledLoadingList.remove(path);
+		
+		return LoadRes_NeverLoad;
+	}
+	
 	pPlugin = CPlugin::CreatePlugin(path, error, maxlength);
 	assert(pPlugin != NULL);
 
@@ -1100,7 +1066,18 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 		/* First native pass - add anything from Core */
 		g_ShareSys.BindNativesToPlugin(pPlugin, true);
 		pPlugin->InitIdentity();
-		APLRes result = pPlugin->Call_AskPluginLoad(error, maxlength);  
+		
+		List<String>::iterator s_iter;
+		for (s_iter = g_PluginsLoadingList.begin(); s_iter != g_PluginsLoadingList.end(); s_iter++)
+		{
+			if (!pPlugin->Call_AskPluginAutoLoad((*s_iter).c_str()))
+			{
+				g_PluginsDisabledLoadingList.push_back((*s_iter).c_str());
+				logger->LogMessage("\t|> %s", (*s_iter).c_str());
+			}
+		}
+		
+		APLRes result = pPlugin->Call_AskPluginLoad(error, maxlength);
 		switch (result)
 		{
 		case APLRes_Success:
@@ -1226,6 +1203,15 @@ void CPluginManager::LoadAll_SecondPass()
 	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
 	{
 		pPlugin = (*iter);
+		
+		if (FindInList(g_PluginsDisabledLoadingList, pPlugin->GetFilename()))
+		{
+			logger->LogMessage("!! %s", pPlugin->GetFilename());
+			logger->LogMessage("[SM] Plugin %s prevented from loading. (2)", pPlugin->GetFilename());
+			UnloadPlugin(pPlugin);
+			continue;
+		}
+		
 		if (pPlugin->GetStatus() == Plugin_Loaded)
 		{
 			error[0] = '\0';
@@ -1236,7 +1222,10 @@ void CPluginManager::LoadAll_SecondPass()
 			}
 		}
 	}
-
+	
+	g_PluginsLoadingList.clear();
+	g_PluginsDisabledLoadingList.clear();
+	
 	m_AllPluginsLoaded = true;
 }
 
