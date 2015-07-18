@@ -125,6 +125,8 @@ forward bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max);
  */
 forward APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max);
 
+forward bool:AskPluginAutoLoad(const String:plugin[], const String:map[]);
+
 /**
  * Called when the plugin is about to be unloaded.
  *
