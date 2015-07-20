@@ -35,6 +35,13 @@
 #endif
 #define _datapack_included
 
+
+/**
+ * Opaque handle to a datapack position.
+ */
+ enum DataPackPos: {};
+
+
 /**
  * Creates a new data pack.
  *
@@ -137,7 +144,7 @@ native void ResetPack(Handle pack, bool clear=false);
  * @return			Numerical position in the data pack.
  * @error			Invalid handle.
  */
-native int GetPackPosition(Handle pack);
+native DataPackPos GetPackPosition(Handle pack);
 
 /**
  * Sets the read/write position in a data pack.
@@ -147,7 +154,7 @@ native int GetPackPosition(Handle pack);
  * @noreturn
  * @error			Invalid handle, or position is beyond the pack bounds.
  */
-native void SetPackPosition(Handle pack, int position);
+native void SetPackPosition(Handle pack, DataPackPos position);
 
 /**
  * Returns whether or not a specified number of bytes from the data pack
@@ -174,7 +181,7 @@ methodmap DataPack < Handle
 	public Reset() = ResetPack;
 	public IsReadable() = IsPackReadable;
 	
-	property int Position {
+	property DataPackPos Position {
 		public get() = GetPackPosition;
 		public set() = SetPackPosition;
 	}
