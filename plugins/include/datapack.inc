@@ -141,7 +141,7 @@ native void ResetPack(Handle pack, bool clear=false);
  * Returns the read or write position in a data pack.
  *
  * @param pack		Handle to the data pack.
- * @return			Numerical position in the data pack.
+ * @return			Position in the data pack, only usable with calls to SetPackPosition.
  * @error			Invalid handle.
  */
 native DataPackPos GetPackPosition(Handle pack);
@@ -150,7 +150,7 @@ native DataPackPos GetPackPosition(Handle pack);
  * Sets the read/write position in a data pack.
  *
  * @param pack		Handle to the data pack.
- * @param position	New position to set.
+ * @param position	New position to set. Must have been previously retrieved from a call to GetPackPosition.
  * @noreturn
  * @error			Invalid handle, or position is beyond the pack bounds.
  */
