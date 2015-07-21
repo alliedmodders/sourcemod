@@ -321,12 +321,12 @@ stock void OperateString(ArrayList sumArray, ArrayList operatorArray, int bracke
  * @param variableCallback	Function to call when an invalid character is found.
  * @return					Result of operation.
  */
-stock float Eval(const char[] formula, int size, OnError errorCallback, OnVariable variableCallback)
+stock float Eval(const char[] formula, OnError errorCallback, OnVariable variableCallback)
 {
-	int bracket;
+	int bracket = 0, size = strlen(formula);
 	char buffer[2], strValue[1024];
 	ArrayList sumArray = new ArrayList(.startsize=1), operatorArray = new ArrayList(.startsize=1);
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i <= size; i++)
 	{
 		buffer[0] = formula[i];
 		switch (buffer[0])
@@ -435,23 +435,20 @@ stock float Eval(const char[] formula, int size, OnError errorCallback, OnVariab
 	return ret;
 }
 
-public bool NoVariable(const char variable[1], float &value)
-{
-	return false;
-}
-
 public void OnEvalError(const char[] error)
 {
 	LogError(error);
 }
 
-/**
- * A wrapper function to get around a compiler bug.
- * Bug in question: Function params causing compile error when passed a default value. Compile error: <variable> prototype doesn't match.
- */
-stock float eval(const char[] formula, int size = -1)
+public bool NoVariable(const char variable[1], float &value)
 {
-	return Eval(formula, size < 0 : strlen(formula) + 1 : size, OnEvalError, NoVariable);
+	return false;
+}
+
+//This stock exists to get around not being allowed to have default values for function params
+stock float eval(const char[] formula)
+{
+	return Eval(formula, OnEvalError, NoVariable);
 }
 
 /**
