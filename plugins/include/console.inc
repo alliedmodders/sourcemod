@@ -58,35 +58,49 @@ enum ReplySource
  * @section Flags for console commands and console variables.  The descriptions 
  * for each constant come directly from the Source SDK.
  */
-#define FCVAR_NONE				0		/**< The default, no flags at all */
-#define FCVAR_UNREGISTERED		(1<<0)	/**< If this is set, don't add to linked list, etc. */
-#define FCVAR_LAUNCHER			(1<<1)	/**< Defined by launcher. */
-#define FCVAR_GAMEDLL			(1<<2)	/**< Defined by the game DLL. */
-#define FCVAR_CLIENTDLL			(1<<3)	/**< Defined by the client DLL. */
-#define FCVAR_MATERIAL_SYSTEM	(1<<4)	/**< Defined by the material system. */
-#define FCVAR_PROTECTED			(1<<5)	/**< It's a server cvar, but we don't send the data since it's a password, etc. Sends 1 if it's not bland/zero, 0 otherwise as value. */
-#define FCVAR_SPONLY			(1<<6)	/**< This cvar cannot be changed by clients connected to a multiplayer server. */
-#define	FCVAR_ARCHIVE			(1<<7)	/**< Set to cause it to be saved to vars.rc */
-#define	FCVAR_NOTIFY			(1<<8)	/**< Notifies players when changed. */
-#define	FCVAR_USERINFO			(1<<9)	/**< Changes the client's info string. */
-#define FCVAR_PRINTABLEONLY		(1<<10)	/**< This cvar's string cannot contain unprintable characters (e.g., used for player name, etc.) */
-#define FCVAR_UNLOGGED			(1<<11)	/**< If this is a FCVAR_SERVER, don't log changes to the log file / console if we are creating a log */
-#define FCVAR_NEVER_AS_STRING	(1<<12)	/**< Never try to print that cvar. */
-#define FCVAR_REPLICATED		(1<<13)	/**< Server setting enforced on clients. */
-#define FCVAR_CHEAT				(1<<14)	/**< Only useable in singleplayer / debug / multiplayer & sv_cheats */
-#define FCVAR_STUDIORENDER		(1<<15)	/**< Defined by the studiorender system. */
-#define FCVAR_DEMO				(1<<16)	/**< Record this cvar when starting a demo file. */
-#define FCVAR_DONTRECORD		(1<<17)	/**< Don't record these command in demo files. */
-#define FCVAR_PLUGIN			(1<<18)	/**< Defined by a 3rd party plugin. */
-#define FCVAR_DATACACHE			(1<<19)	/**< Defined by the datacache system. */
-#define FCVAR_TOOLSYSTEM		(1<<20)	/**< Defined by an IToolSystem library */
-#define FCVAR_FILESYSTEM		(1<<21)	/**< Defined by the file system. */
-#define FCVAR_NOT_CONNECTED		(1<<22)	/**< Cvar cannot be changed by a client that is connected to a server. */
-#define FCVAR_SOUNDSYSTEM		(1<<23)	/**< Defined by the soundsystem library. */
-#define FCVAR_ARCHIVE_XBOX		(1<<24)	/**< Cvar written to config.cfg on the Xbox. */
-#define FCVAR_INPUTSYSTEM		(1<<25)	/**< Defined by the inputsystem DLL. */
-#define FCVAR_NETWORKSYSTEM		(1<<26)	/**< Defined by the network system. */
-#define FCVAR_VPHYSICS			(1<<27)	/**< Defined by vphysics. */
+
+#pragma deprecated No logic using this flag ever existed in a released game. It only ever appeared in the first hl2sdk.
+#define FCVAR_PLUGIN           0       // Actual value is same as FCVAR_SS_ADDED in Left 4 Dead and later.
+#pragma deprecated Did you mean FCVAR_DEVELOPMENTONLY? (No logic using this flag ever existed in a released game. It only ever appeared in the first hl2sdk.)
+#define FCVAR_LAUNCHER         (1<<1)  // Same value as FCVAR_DEVELOPMENTONLY, which is what most usages of this were intending to use.
+
+
+#define FCVAR_NONE             0       // The default, no flags at all
+#define FCVAR_UNREGISTERED     (1<<0)  // If this is set, don't add to linked list, etc.
+#define FCVAR_DEVELOPMENTONLY  (1<<1)  // Hidden in released products. Flag is removed automatically if ALLOW_DEVELOPMENT_CVARS is defined. (OB+)
+#define FCVAR_GAMEDLL          (1<<2)  // Defined by the game DLL.
+#define FCVAR_CLIENTDLL        (1<<3)  // Defined by the client DLL.
+#define FCVAR_MATERIAL_SYSTEM  (1<<4)  // Defined by the material system. (EP1-only)
+#define FCVAR_HIDDEN           (1<<4)  // Hidden. Doesn't appear in find or autocomplete. Like DEVELOPMENTONLY, but can't be compiled out.1 (OB+)
+#define FCVAR_PROTECTED        (1<<5)  // It's a server cvar, but we don't send the data since it's a password, etc.
+                                       // Sends 1 if it's not bland/zero, 0 otherwise as value.
+#define FCVAR_SPONLY           (1<<6)  // This cvar cannot be changed by clients connected to a multiplayer server.
+#define FCVAR_ARCHIVE          (1<<7)  // Set to cause it to be saved to vars.rc
+#define FCVAR_NOTIFY           (1<<8)  // Notifies players when changed.
+#define FCVAR_USERINFO         (1<<9)  // Changes the client's info string.
+#define FCVAR_PRINTABLEONLY    (1<<10) // This cvar's string cannot contain unprintable characters (e.g., used for player name, etc.)
+#define FCVAR_UNLOGGED         (1<<11) // If this is a FCVAR_SERVER, don't log changes to the log file / console if we are creating a log
+#define FCVAR_NEVER_AS_STRING  (1<<12) // Never try to print that cvar.
+#define FCVAR_REPLICATED       (1<<13) // Server setting enforced on clients.
+#define FCVAR_CHEAT            (1<<14) // Only useable in singleplayer / debug / multiplayer & sv_cheats
+#define FCVAR_SS               (1<<15) // causes varnameN where N  2 through max splitscreen slots for mod to be autogenerated (L4D+)
+#define FCVAR_DEMO                     (1<<16) // Record this cvar when starting a demo file.
+#define FCVAR_DONTRECORD               (1<<17) // Don't record these command in demo files.
+#define FCVAR_SS_ADDED                 (1<<18) // This is one of the "added" FCVAR_SS variables for the splitscreen players (L4D+)
+#define FCVAR_RELEASE                  (1<<19) // Cvars tagged with this are the only cvars avaliable to customers (L4D+)
+#define FCVAR_RELOAD_MATERIALS         (1<<20) // If this cvar changes, it forces a material reload (OB+)
+#define FCVAR_RELOAD_TEXTURES          (1<<21) // If this cvar changes, if forces a texture reload (OB+)
+#define FCVAR_NOT_CONNECTED            (1<<22) // Cvar cannot be changed by a client that is connected to a server.
+#define FCVAR_MATERIAL_SYSTEM_THREAD   (1<<23) // Indicates this cvar is read from the material system thread (OB+)
+#define FCVAR_ARCHIVE_XBOX             (1<<24) // Cvar written to config.cfg on the Xbox.
+#define FCVAR_ARCHIVE_GAMECONSOLE      (1<<24) // Cvar written to config.cfg on the Xbox.
+#define FCVAR_ACCESSIBLE_FROM_THREADS  (1<<25) // used as a debugging tool necessary to check material system thread convars (OB+)
+#define FCVAR_SERVER_CAN_EXECUTE       (1<<28) // the server is allowed to execute this command on clients via
+                                                   // ClientCommand/NET_StringCmd/CBaseClientState::ProcessStringCmd. (OB+)
+#define FCVAR_SERVER_CANNOT_QUERY      (1<<29) // If this is set, then the server is not allowed to query this cvar's value (via
+                                                   // IServerPluginHelpers::StartQueryCvarValue).
+#define FCVAR_CLIENTCMD_CAN_EXECUTE    (1<<30) // IVEngineClient::ClientCmd is allowed to execute this command. 
+                                                   // Note: IVEngineClient::ClientCmd_Unrestricted can run any client command.
 
 /**
  * @endsection
@@ -175,6 +189,17 @@ native FakeClientCommand(client, const String:fmt[], any:...);
  * @error				Invalid client index, or client not connected.
  */
 native FakeClientCommandEx(client, const String:fmt[], any:...);
+
+/**
+ * Executes a KeyValues client command on the server without being networked.
+ *
+ * @param client		Index of the client.
+ * @param kv			KeyValues data to be sent.
+ * @noreturn
+ * @error				Invalid client index, client not connected,
+ *						or unsupported on current game.
+ */
+native void FakeClientCommandKeyValues(int client, KeyValues kv);
 
 /**
  * Sends a message to the server console.

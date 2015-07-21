@@ -61,6 +61,7 @@ public: //IDataPack
 	void PackFunction(cell_t function);
 public:
 	void Initialize();
+	inline size_t GetCapacity() const { return m_capacity; }
 private:
 	void CheckSize(size_t sizetype);
 private:

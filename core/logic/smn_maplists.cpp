@@ -87,28 +87,16 @@ public:
 	}
 	void GetMapCycleFilePath(char *pBuffer, int maxlen)
 	{
-		const char *pEngineName = smcore.GetSourceEngineName();
 		const char *pMapCycleFileName = m_pMapCycleFile ? smcore.GetCvarString(m_pMapCycleFile) : "mapcycle.txt";
 
-		if (strcmp(pEngineName, "tf2") == 0 || strcmp(pEngineName, "css") == 0
-			|| strcmp(pEngineName, "dods") == 0 || strcmp(pEngineName, "hl2dm") == 0)
-		{
-			// These four games and Source SDK 2013 do a lookup in this order; so shall we.
-			g_pSM->Format(pBuffer, maxlen, "cfg/%s", pMapCycleFileName);
-
-			if (!smcore.filesystem->FileExists(pBuffer, "GAME"))
-			{
-				g_pSM->Format(pBuffer, maxlen, "%s", pMapCycleFileName);
-
-				if (!smcore.filesystem->FileExists(pBuffer, "GAME"))
-				{
-					g_pSM->Format(pBuffer, maxlen, "cfg/mapcycle_default.txt");
-				}
-			}
-		}
-		else
+		g_pSM->Format(pBuffer, maxlen, "cfg/%s", pMapCycleFileName);
+		if (!smcore.filesystem->FileExists(pBuffer, "GAME"))
 		{
 			g_pSM->Format(pBuffer, maxlen, "%s", pMapCycleFileName);
+			if (!smcore.filesystem->FileExists(pBuffer, "GAME"))
+			{
+				g_pSM->Format(pBuffer, maxlen, "cfg/mapcycle_default.txt");
+			}
 		}
 	}
 	void AddOrUpdateDefault(const char *name, const char *file)
@@ -383,7 +371,7 @@ public:
 
 				UTIL_StripExtension(fileName, buffer, sizeof(buffer));
 
-				if (!engine->IsMapValid(buffer))
+				if (!gamehelpers->IsMapValid(buffer))
 				{
 					fileName = smcore.filesystem->FindNext(findHandle);
 					continue;

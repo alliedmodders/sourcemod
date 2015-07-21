@@ -1,0 +1,93 @@
+"Games"
+{			
+	"#default"
+	{
+		"Offsets"
+		{
+			"Blocked"
+			{
+				"windows"	"98"
+			}
+			"EndTouch"
+			{
+				"windows"	"96"
+			}
+			"FireBullets"
+			{
+				"windows"	"108"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"62"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"250"
+			}
+			"PreThink"
+			{
+				"windows"	"327"
+			}
+			"PostThink"
+			{
+				"windows"	"328"
+			}
+			"SetTransmit"
+			{
+				"windows"	"20"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"15"
+			}
+			"Spawn"
+			{
+				"windows"	"22"
+			}
+			"StartTouch"
+			{
+				"windows"	"94"
+			}
+			"Think"
+			{
+				"windows"	"46"
+			}
+			"Touch"
+			{
+				"windows"	"95"
+			}
+			"TraceAttack"
+			{
+				"windows"	"60"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"150"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"244"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"238"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"241"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"239"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"242"
+			}
+			"Reload"
+			{
+				"windows"	"254"
+			}
+		}
+	}
+}

@@ -47,9 +47,7 @@
 #include <datamap.h>
 #include <ihandleentity.h>
 #include <tier0/icommandline.h>
-#if SOURCE_ENGINE >= SE_PORTAL2
 #include <string_t.h>
-#endif
 
 class CCommand;
 
@@ -129,6 +127,16 @@ public:
 #endif
 };
 
+// Corresponds to TF2's eFindMapResult in eiface.h
+// Not yet in other games, but eventually in others on same branch.
+enum class SMFindMapResult : cell_t {
+	Found,
+	NotFound,
+	FuzzyMatch,
+	NonCanonical,
+	PossiblyAvailable
+};
+
 class CHalfLife2 : 
 	public SMGlobalClass,
 	public IGameHelpers
@@ -174,6 +182,10 @@ public: //IGameHelpers
 	const char *GetEntityClassname(edict_t *pEdict);
 	const char *GetEntityClassname(CBaseEntity *pEntity);
 	bool IsMapValid(const char *map);
+	SMFindMapResult FindMap(char *pMapName, int nMapNameMax);
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+	string_t AllocPooledString(const char *pszValue);
+#endif
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();

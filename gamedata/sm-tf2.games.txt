@@ -32,7 +32,7 @@
 			"Disguise"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x51\x53\x8B\xD9\x56\x8B\x8B"
+				"windows"	"\x55\x8B\xEC\x51\x56\x57\x8B\xF9\x8B\x8F\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\x97\x2A\x2A\x2A\x2A\x8B\xF0"
 				"linux"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
 				"mac"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
 			}

@@ -496,6 +496,19 @@ void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level = 1)
 	}
 }
 
+#if defined SUBPLATFORM_SECURECRT
+void _ignore_invalid_parameter(
+	const wchar_t * expression,
+	const wchar_t * function, 
+	const wchar_t * file,
+	unsigned int line,
+	uintptr_t pReserved
+	)
+{
+	/* Wow we don't care, thanks Microsoft. */
+}
+#endif
+
 CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XML file")
 {
 #if SOURCE_ENGINE <= SE_DARKMESSIAH
@@ -525,8 +538,22 @@ CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XM
 		return;
 	}
 
+	char buffer[80];
+	buffer[0] = 0;
+
+#if defined SUBPLATFORM_SECURECRT
+	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+#endif
+
+	time_t t = g_pSM->GetAdjustedTime();
+	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+
+#if defined SUBPLATFORM_SECURECRT
+	_set_invalid_parameter_handler(handler);
+#endif
+
 	fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n");
-	fprintf(fp, "<!-- Dump of all network properties for \"%s\" follows -->\n\n", g_pSM->GetGameFolderName());
+	fprintf(fp, "<!-- Dump of all network properties for \"%s\" as at %s -->\n\n", g_pSM->GetGameFolderName(), buffer);
 
 	ServerClass *pBase = gamedll->GetAllServerClasses();
 	while (pBase != NULL)
@@ -566,8 +593,22 @@ CON_COMMAND(sm_dump_netprops, "Dumps the networkable property table as a text fi
 		META_CONPRINTF("Could not open file \"%s\"\n", path);
 		return;
 	}
+	
+	char buffer[80];
+	buffer[0] = 0;
 
-	fprintf(fp, "// Dump of all network properties for \"%s\" follows\n//\n\n", g_pSM->GetGameFolderName());
+#if defined SUBPLATFORM_SECURECRT
+	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+#endif
+
+	time_t t = g_pSM->GetAdjustedTime();
+	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+
+#if defined SUBPLATFORM_SECURECRT
+	_set_invalid_parameter_handler(handler);
+#endif
+
+	fprintf(fp, "// Dump of all network properties for \"%s\" as at %s\n//\n\n", g_pSM->GetGameFolderName(), buffer);
 
 	ServerClass *pBase = gamedll->GetAllServerClasses();
 	while (pBase != NULL)
@@ -580,28 +621,16 @@ CON_COMMAND(sm_dump_netprops, "Dumps the networkable property table as a text fi
 	fclose(fp);
 }
 
-#if defined SUBPLATFORM_SECURECRT
-void _ignore_invalid_parameter(
-						const wchar_t * expression,
-						const wchar_t * function, 
-						const wchar_t * file, 
-						unsigned int line,
-						uintptr_t pReserved
-						)
-{
-	/* Wow we don't care, thanks Microsoft. */
-}
-#endif
-
 CEntityFactoryDictionary *GetEntityFactoryDictionary()
 {
 	static CEntityFactoryDictionary *dict = NULL;
 
-#if SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_CSS \
-	|| SOURCE_ENGINE == SE_DODS \
-	|| SOURCE_ENGINE == SE_HL2DM \
+#if SOURCE_ENGINE == SE_TF2        \
+	|| SOURCE_ENGINE == SE_CSS     \
+	|| SOURCE_ENGINE == SE_DODS    \
+	|| SOURCE_ENGINE == SE_HL2DM   \
 	|| SOURCE_ENGINE == SE_SDK2013 \
+	|| SOURCE_ENGINE == SE_BMS     \
 	|| SOURCE_ENGINE == SE_NUCLEARDAWN
 	dict = (CEntityFactoryDictionary *) servertools->GetEntityFactoryDictionary();
 #else
@@ -714,7 +743,7 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 #endif
 
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = strftime(buffer, sizeof(buffer), "%d/%m/%Y", localtime(&t));
+	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
 
 #if defined SUBPLATFORM_SECURECRT
 	_set_invalid_parameter_handler(handler);
@@ -878,7 +907,7 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 #endif
 
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = strftime(buffer, sizeof(buffer), "%d/%m/%Y", localtime(&t));
+	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
 
 #if defined SUBPLATFORM_SECURECRT
 	_set_invalid_parameter_handler(handler);

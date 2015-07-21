@@ -243,4 +243,12 @@
 	{
 		"game"		"nmrih"
 	}
+	"game.bms.txt"
+	{
+		"game"		"bms"
+	}
+	"game.modularcombat.txt"
+	{
+		"game"		"modularcombat"
+	}
 }

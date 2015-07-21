@@ -149,7 +149,7 @@ public MenuHandler_Slap(Menu menu, MenuAction action, int param1, int param2)
 		}	
 		else
 		{
-			decl String:name[32];
+			decl String:name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			PerformSlap(param1, target, g_SlapDamage[param1]);
 			ShowActivity2(param1, "[SM] ", "%t", "Slapped target", "_s", name);

@@ -1,6 +1,8 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os, sys
 
+# Simple extensions do not need to modify this file.
+
 class SDK(object):
   def __init__(self, sdk, ext, aDef, name, platform, dir):
     self.folder = 'hl2sdk-' + dir
@@ -10,7 +12,7 @@ class SDK(object):
     self.define = name
     self.platform = platform
     self.name = dir
-    self.path = None # Actual path
+    self.path = None
 
 WinOnly = ['windows']
 WinLinux = ['windows', 'linux']
@@ -61,42 +63,20 @@ def ResolveEnvPath(env, folder):
 def Normalize(path):
   return os.path.abspath(os.path.normpath(path))
 
-class SMConfig(object):
+class ExtensionConfig(object):
   def __init__(self):
     self.sdks = {}
     self.binaries = []
     self.extensions = []
     self.generated_headers = None
     self.mms_root = None
-    self.mysql_root = None
-    self.spcomp = None
-    self.smx_files = {}
-    self.versionlib = None
-
-  def use_auto_versioning(self):
-    if builder.backend != 'amb2':
-      return False
-    return not getattr(builder.options, 'disable_auto_versioning', False)
+    self.sm_root = None
 
   @property
   def tag(self):
     if builder.options.debug == '1':
       return 'Debug'
     return 'Release'
-
-  def detectProductVersion(self):
-    builder.AddConfigureFile('product.version')
-
-    # For OS X dylib versioning
-    import re
-    with open(os.path.join(builder.sourcePath, 'product.version'), 'r') as fp:
-      productContents = fp.read()
-    m = re.match('(\d+)\.(\d+)\.(\d+).*', productContents)
-    if m == None:
-      self.productVersion = '1.0.0'
-    else:
-      major, minor, release = m.groups()
-      self.productVersion = '{0}.{1}.{2}'.format(major, minor, release)
 
   def detectSDKs(self):
     sdk_list = builder.options.sdks.split(',')
@@ -121,13 +101,25 @@ class SMConfig(object):
     if len(self.sdks) < 1:
       raise Exception('At least one SDK must be available.')
 
-   
+    if builder.options.sm_path:
+      self.sm_root = builder.options.sm_path
+    else:
+      self.sm_root = ResolveEnvPath('SOURCEMOD18', 'sourcemod-1.8')
+      if not self.sm_root:
+        self.sm_root = ResolveEnvPath('SOURCEMOD', 'sourcemod')
+      if not self.sm_root:
+        self.sm_root = ResolveEnvPath('SOURCEMOD_DEV', 'sourcemod-central')
+
+    if not self.sm_root or not os.path.isdir(self.sm_root):
+      raise Exception('Could not find a source copy of SourceMod')
+    self.sm_root = Normalize(self.sm_root)
+
     if builder.options.mms_path:
       self.mms_root = builder.options.mms_path
     else:
       self.mms_root = ResolveEnvPath('MMSOURCE110', 'mmsource-1.10')
       if not self.mms_root:
-        self.mms_root = ResolveEnvPath('MMSOURCE_DEV', 'metamod-source')
+        self.mms_root = ResolveEnvPath('MMSOURCE', 'metamod-source')
       if not self.mms_root:
         self.mms_root = ResolveEnvPath('MMSOURCE_DEV', 'mmsource-central')
 
@@ -135,21 +127,7 @@ class SMConfig(object):
       raise Exception('Could not find a source copy of Metamod:Source')
     self.mms_root = Normalize(self.mms_root)
 
-    if builder.options.hasMySql:
-      if builder.options.mysql_path:
-        self.mysql_root = builder.options.mysql_path
-      else:
-        for i in range(7):
-          self.mysql_root = ResolveEnvPath('MYSQL5', 'mysql-5.' + str(i))
-          if self.mysql_root:
-            break
-      if not self.mysql_root or not os.path.isdir(self.mysql_root):
-        raise Exception('Could not find a path to MySQL!')
-      self.mysql_root = Normalize(self.mysql_root)
-
   def configure(self):
-    builder.AddConfigureFile('pushbuild.txt')
-
     cxx = builder.DetectCompilers()
 
     if cxx.like('gcc'):
@@ -283,67 +261,10 @@ class SMConfig(object):
       cxx.defines += ['WIN32', '_WINDOWS']
 
     # Finish up.
-    cxx.defines += [
-      'SOURCEMOD_BUILD',
-      'SM_USE_VERSIONLIB',
-    ]
     cxx.includes += [
-      os.path.join(builder.sourcePath, 'public'),
+      os.path.join(self.sm_root, 'public'),
     ]
-    if self.use_auto_versioning():
-      cxx.defines += ['SM_GENERATED_BUILD']
-      cxx.includes += [
-        os.path.join(builder.buildPath, 'includes'),
-        os.path.join(builder.sourcePath, 'versionlib'),
-      ]
-
-  def AddVersioning(self, binary):
-    if builder.target_platform == 'windows':
-      binary.sources += ['version.rc']
-      binary.compiler.rcdefines += [
-        'BINARY_NAME="{0}"'.format(binary.outputFile),
-        'RC_COMPILE',
-      ]
-      if self.use_auto_versioning():
-        binary.compiler.rcdefines += ['SM_GENERATED_BUILD']
-    elif builder.target_platform == 'mac':
-      if binary.type == 'library':
-        binary.compiler.postlink += [
-          '-compatibility_version', '1.0.0',
-          '-current_version', self.productVersion
-        ]
-    if self.use_auto_versioning():
-      binary.compiler.linkflags += [self.versionlib]
-      binary.compiler.sourcedeps += SM.generated_headers
-    return binary
-
-  def Library(self, context, name):
-    binary = context.compiler.Library(name)
-    if binary.compiler.like('msvc'):
-      binary.compiler.linkflags += ['/SUBSYSTEM:WINDOWS']
-    return self.AddVersioning(binary)
-
-  def Program(self, context, name):
-    binary = context.compiler.Program(name)
-    if binary.compiler.like('msvc'):
-      binary.compiler.linkflags += ['/SUBSYSTEM:CONSOLE']
-    return self.AddVersioning(binary)
-
-  def ConfigureForExtension(self, context, compiler):
-    compiler.cxxincludes += [
-      os.path.join(context.currentSourcePath),
-      os.path.join(context.currentSourcePath, 'sdk'),
-      os.path.join(builder.sourcePath, 'public', 'extensions'),
-      os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
-      os.path.join(builder.sourcePath, 'public', 'amtl', 'include'),
-    ]
-    return compiler
-
-  def ExtLibrary(self, context, name):
-    binary = context.compiler.Library(name)
-    self.ConfigureForExtension(context, binary.compiler)
-    return self.AddVersioning(binary)
-
+	
   def ConfigureForHL2(self, binary, sdk):
     compiler = binary.compiler
 
@@ -434,8 +355,6 @@ class SMConfig(object):
       if sdk.name in ['blade', 'insurgency', 'csgo', 'dota']:
         compiler.postlink += [compiler.Dep(os.path.join(lib_folder, 'interfaces_i486.a'))]
 
-    self.AddVersioning(binary)
-
     dynamic_libs = []
     if builder.target_platform == 'linux':
       if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2']:
@@ -470,73 +389,38 @@ class SMConfig(object):
 
     return binary
 
-  def HL2Library(self, context, name, sdk):
-    binary = context.compiler.Library(name)
-    self.ConfigureForExtension(context, binary.compiler)
-    return self.ConfigureForHL2(binary, sdk)
+  def ConfigureForExtension(self, context, compiler):
+    compiler.cxxincludes += [
+      os.path.join(context.currentSourcePath),
+      os.path.join(context.currentSourcePath, 'sdk'),
+      os.path.join(self.sm_root, 'public'),
+      os.path.join(self.sm_root, 'public', 'extensions'),
+      os.path.join(self.sm_root, 'sourcepawn', 'include'),
+      os.path.join(self.sm_root, 'public', 'amtl', 'include'),
+    ]
+    return compiler
 
   def HL2Project(self, context, name):
     project = context.compiler.LibraryProject(name)
     self.ConfigureForExtension(context, project.compiler)
     return project
-
+	
   def HL2Config(self, project, name, sdk):
     binary = project.Configure(name, '{0} - {1}'.format(self.tag, sdk.name))
     return self.ConfigureForHL2(binary, sdk)
 
-SM = SMConfig()
-SM.detectProductVersion()
-SM.detectSDKs()
-SM.configure()
+Extension = ExtensionConfig()
+Extension.detectSDKs()
+Extension.configure()
 
-if SM.use_auto_versioning():
-  SM.generated_headers = builder.RunScript(
-    'tools/buildbot/Versioning',
-    { 'SM': SM }
-  )
-  SM.versionlib = builder.RunScript(
-    'versionlib/AMBuilder',
-    { 'SM': SM }
-  )
-
-# Build SourcePawn externally.
-SourcePawn = builder.RunScript('sourcepawn/AMBuildScript', {})
-SP = SourcePawn(
-  root = SM,
-  amtl = os.path.join(builder.sourcePath, 'public', 'amtl'),
-)
-SP.BuildCore()
-SM.spcomp = SP.spcomp
-SM.binaries += [
-  SP.libsourcepawn
-]
-
+# Add additional buildscripts here
 BuildScripts = [
-  'loader/AMBuilder',
-  'core/AMBuilder',
-  'core/logic/AMBuilder',
-  'extensions/bintools/AMBuilder',
-  'extensions/clientprefs/AMBuilder',
-  'extensions/curl/AMBuilder',
-  'extensions/cstrike/AMBuilder',
-  'extensions/geoip/AMBuilder',
-  'extensions/mysql/AMBuilder',
-  'extensions/regex/AMBuilder',
-  'extensions/sdkhooks/AMBuilder',
-  'extensions/sdktools/AMBuilder',
-  'extensions/sqlite/AMBuilder',
-  'extensions/tf2/AMBuilder',
-  'extensions/topmenus/AMBuilder',
-  'extensions/updater/AMBuilder',
+  'AMBuilder',
 ]
 
 if builder.backend == 'amb2':
   BuildScripts += [
-    'plugins/AMBuilder',
-    'tools/buildbot/PackageScript',
+    'PackageScript',
   ]
 
-builder.RunBuildScripts(BuildScripts, { 'SM': SM })
-
-if builder.options.breakpad_dump:
-  builder.RunScript('tools/buildbot/BreakpadSymbols', { 'SM': SM })
+builder.RunBuildScripts(BuildScripts, { 'Extension': Extension})

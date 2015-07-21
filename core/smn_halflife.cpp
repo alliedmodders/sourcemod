@@ -67,6 +67,16 @@ static cell_t IsMapValid(IPluginContext *pContext, const cell_t *params)
 	return g_HL2.IsMapValid(map);
 }
 
+static cell_t FindMap(IPluginContext *pContext, const cell_t *params)
+{
+	char *pMapname;
+	pContext->LocalToString(params[1], &pMapname);
+		
+	cell_t size = params[2];
+	
+	return static_cast<cell_t>(g_HL2.FindMap(pMapname, size));
+}
+
 static cell_t IsDedicatedServer(IPluginContext *pContext, const cell_t *params)
 {
 	return engine->IsDedicatedServer();
@@ -320,7 +330,7 @@ static cell_t PrintToChat(IPluginContext *pContext, const cell_t *params)
 
 	g_SourceMod.SetGlobalTarget(client);
 
-	char buffer[192];
+	char buffer[254];
 
 	{
 		DetectExceptions eh(pContext);
@@ -354,7 +364,7 @@ static cell_t PrintCenterText(IPluginContext *pContext, const cell_t *params)
 
 	g_SourceMod.SetGlobalTarget(client);
 
-	char buffer[192];
+	char buffer[254];
 	
 	{
 		DetectExceptions eh(pContext);
@@ -388,7 +398,7 @@ static cell_t PrintHintText(IPluginContext *pContext, const cell_t *params)
 
 	g_SourceMod.SetGlobalTarget(client);
 
-	char buffer[192];
+	char buffer[254];
 	{
 		DetectExceptions eh(pContext);
 		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
@@ -498,6 +508,7 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 	case SOURCE_ENGINE_HL2DM:
 	case SOURCE_ENGINE_DODS:
 	case SOURCE_ENGINE_TF2:
+	case SOURCE_ENGINE_BMS:
 	case SOURCE_ENGINE_SDK2013:
 		return 35;
 	case SOURCE_ENGINE_LEFT4DEAD:
@@ -625,6 +636,7 @@ REGISTER_NATIVES(halflifeNatives)
 	{"GetRandomInt",			GetRandomInt},
 	{"IsDedicatedServer",		IsDedicatedServer},
 	{"IsMapValid",				IsMapValid},
+	{"FindMap",					FindMap},
 	{"SetFakeClientConVar",		SetFakeClientConVar},
 	{"SetRandomSeed",			SetRandomSeed},
 	{"PrecacheModel",			PrecacheModel},

@@ -598,7 +598,8 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 			CellRecipientFilter rf;
 			rf.SetToReliable(true);
 			rf.Initialize(player_list, total_players);
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
 			engsound->EmitSound(rf, params[1], CHAN_AUTO, sound_name, VOL_NORM, ATTN_NORM, 0, PITCH_NORM, 0, &pos);
 #elif SOURCE_ENGINE < SE_PORTAL2
 			engsound->EmitSound(rf, params[1], CHAN_AUTO, sound_name, VOL_NORM, ATTN_NORM, 0, PITCH_NORM, &pos);
@@ -797,6 +798,7 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 	|| SOURCE_ENGINE == SE_DODS  \
 	|| SOURCE_ENGINE == SE_HL2DM \
 	|| SOURCE_ENGINE == SE_CSS   \
+	|| SOURCE_ENGINE == SE_BMS   \
 	|| SOURCE_ENGINE == SE_SDK2013
 
 	static bool bHasServerTools3 = !!g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr);

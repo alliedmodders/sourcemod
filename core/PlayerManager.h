@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2015 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -154,6 +154,7 @@ public:
 	PlayerManager();
 	~PlayerManager();
 public: //SMGlobalClass
+	void OnSourceModStartup(bool late) override;
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 	void OnSourceModLevelEnd();
@@ -180,6 +181,10 @@ public:
 	void OnClientDisconnect_Post(edict_t *pEntity);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	void OnClientCommand(edict_t *pEntity, const CCommand &args);
+#if SOURCE_ENGINE >= SE_EYE && SOURCE_ENGINE != SE_DOTA
+	void OnClientCommandKeyValues(edict_t *pEntity, KeyValues *pCommand);
+	void OnClientCommandKeyValues_Post(edict_t *pEntity, KeyValues *pCommand);
+#endif
 #else
 	void OnClientCommand(edict_t *pEntity);
 #endif
@@ -223,6 +228,10 @@ public:
 	unsigned int GetReplyTo();
 	unsigned int SetReplyTo(unsigned int reply);
 	void MaxPlayersChanged(int newvalue = -1);
+	inline bool InClientCommandKeyValuesHook()
+	{
+		return m_bInCCKVHook;
+	}
 #if SOURCE_ENGINE == SE_CSGO
 	bool HandleConVarQuery(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue);
 #endif
@@ -241,6 +250,8 @@ private:
 	IForward *m_cldisconnect_post;
 	IForward *m_clputinserver;
 	IForward *m_clcommand;
+	IForward *m_clcommandkv;
+	IForward *m_clcommandkv_post;
 	IForward *m_clinfochanged;
 	IForward *m_clauth;
 	IForward *m_onActivate;
@@ -250,7 +261,7 @@ private:
 	int m_maxClients;
 	int m_PlayerCount;
 	int m_PlayersSinceActive;
-	bool m_FirstPass;
+	bool m_bServerActivated;
 	unsigned int *m_AuthQueue;
 	String m_PassInfoVar;
 	bool m_QueryLang;
@@ -261,6 +272,7 @@ private:
 	bool m_bIsReplayActive;
 	int m_SourceTVUserId;
 	int m_ReplayUserId;
+	bool m_bInCCKVHook;
 };
 
 #if SOURCE_ENGINE == SE_DOTA

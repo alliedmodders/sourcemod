@@ -142,6 +142,9 @@ public:
 class IEntityListener
 {
 public:
+#if SOURCE_ENGINE == SE_BMS
+	virtual void OnEntityPreSpawned( CBaseEntity *pEntity ) {};
+#endif
 	virtual void OnEntityCreated( CBaseEntity *pEntity ) {};
 	virtual void OnEntitySpawned( CBaseEntity *pEntity ) {};
 	virtual void OnEntityDeleted( CBaseEntity *pEntity ) {};
@@ -313,7 +316,8 @@ public:
 	void Hook_ThinkPost();
 	void Hook_Touch(CBaseEntity *pOther);
 	void Hook_TouchPost(CBaseEntity *pOther);
-#if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_SDK2013
+#if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
 	void Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator);
 	void Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator);
 #else

@@ -50,6 +50,11 @@
 		"engine"	"sdk2013"
 	}
 	
+	"engine.bms.txt"
+	{
+		"engine"	"bms"
+	}
+	
 	"engine.css.txt"
 	{
 		"engine"	"css"

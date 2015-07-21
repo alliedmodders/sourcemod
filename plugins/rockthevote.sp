@@ -36,8 +36,9 @@
 #include <nextmap>
 
 #pragma semicolon 1
+#pragma newdecls required
 
-public Plugin:myinfo =
+public Plugin myinfo =
 {
 	name = "Rock The Vote",
 	author = "AlliedModders LLC",
@@ -53,16 +54,16 @@ ConVar g_Cvar_Interval;
 ConVar g_Cvar_ChangeTime;
 ConVar g_Cvar_RTVPostVoteAction;
 
-new bool:g_CanRTV = false;		// True if RTV loaded maps and is active.
-new bool:g_RTVAllowed = false;	// True if RTV is available to players. Used to delay rtv votes.
-new g_Voters = 0;				// Total voters connected. Doesn't include fake clients.
-new g_Votes = 0;				// Total number of "say rtv" votes
-new g_VotesNeeded = 0;			// Necessary votes before map vote begins. (voters * percent_needed)
-new bool:g_Voted[MAXPLAYERS+1] = {false, ...};
+bool g_CanRTV = false;		// True if RTV loaded maps and is active.
+bool g_RTVAllowed = false;	// True if RTV is available to players. Used to delay rtv votes.
+int g_Voters = 0;				// Total voters connected. Doesn't include fake clients.
+int g_Votes = 0;				// Total number of "say rtv" votes
+int g_VotesNeeded = 0;			// Necessary votes before map vote begins. (voters * percent_needed)
+bool g_Voted[MAXPLAYERS+1] = {false, ...};
 
-new bool:g_InChange = false;
+bool g_InChange = false;
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("rockthevote.phrases");
@@ -79,7 +80,7 @@ public OnPluginStart()
 	AutoExecConfig(true, "rtv");
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
 	g_Voters = 0;
 	g_Votes = 0;
@@ -87,7 +88,7 @@ public OnMapStart()
 	g_InChange = false;
 	
 	/* Handle late load */
-	for (new i=1; i<=MaxClients; i++)
+	for (int i=1; i<=MaxClients; i++)
 	{
 		if (IsClientConnected(i))
 		{
@@ -96,20 +97,20 @@ public OnMapStart()
 	}
 }
 
-public OnMapEnd()
+public void OnMapEnd()
 {
 	g_CanRTV = false;	
 	g_RTVAllowed = false;
 }
 
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {	
 	g_CanRTV = true;
 	g_RTVAllowed = false;
 	CreateTimer(g_Cvar_InitialDelay.FloatValue, Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
-public OnClientConnected(client)
+public void OnClientConnected(int client)
 {
 	if(IsFakeClient(client))
 		return;
@@ -122,7 +123,7 @@ public OnClientConnected(client)
 	return;
 }
 
-public OnClientDisconnect(client)
+public void OnClientDisconnect(int client)
 {
 	if(IsFakeClient(client))
 		return;
@@ -155,7 +156,7 @@ public OnClientDisconnect(client)
 	}	
 }
 
-public OnClientSayCommand_Post(client, const String:command[], const String:sArgs[])
+public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
 	if (!g_CanRTV || !client)
 	{
@@ -164,7 +165,7 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 	
 	if (strcmp(sArgs, "rtv", false) == 0 || strcmp(sArgs, "rockthevote", false) == 0)
 	{
-		new ReplySource:old = SetCmdReplySource(SM_REPLY_TO_CHAT);
+		ReplySource old = SetCmdReplySource(SM_REPLY_TO_CHAT);
 		
 		AttemptRTV(client);
 		
@@ -172,7 +173,7 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 	}
 }
 
-public Action:Command_RTV(client, args)
+public Action Command_RTV(int client, int args)
 {
 	if (!g_CanRTV || !client)
 	{
@@ -184,7 +185,7 @@ public Action:Command_RTV(client, args)
 	return Plugin_Handled;
 }
 
-AttemptRTV(client)
+void AttemptRTV(int client)
 {
 	if (!g_RTVAllowed  || (g_Cvar_RTVPostVoteAction.IntValue == 1 && HasEndOfMapVoteFinished()))
 	{
@@ -210,7 +211,7 @@ AttemptRTV(client)
 		return;
 	}	
 	
-	new String:name[64];
+	char name[MAX_NAME_LENGTH];
 	GetClientName(client, name, sizeof(name));
 	
 	g_Votes++;
@@ -224,12 +225,12 @@ AttemptRTV(client)
 	}	
 }
 
-public Action:Timer_DelayRTV(Handle:timer)
+public Action Timer_DelayRTV(Handle timer)
 {
 	g_RTVAllowed = true;
 }
 
-StartRTV()
+void StartRTV()
 {
 	if (g_InChange)
 	{
@@ -239,7 +240,7 @@ StartRTV()
 	if (EndOfMapVoteEnabled() && HasEndOfMapVoteFinished())
 	{
 		/* Change right now then */
-		new String:map[65];
+		char map[PLATFORM_MAX_PATH];
 		if (GetNextMap(map, sizeof(map)))
 		{
 			PrintToChatAll("[SM] %t", "Changing Maps", map);
@@ -255,7 +256,7 @@ StartRTV()
 	
 	if (CanMapChooserStartVote())
 	{
-		new MapChange:when = MapChange:g_Cvar_ChangeTime.IntValue;
+		MapChange when = view_as<MapChange>(g_Cvar_ChangeTime.IntValue);
 		InitiateMapChooserVote(when);
 		
 		ResetRTV();
@@ -265,23 +266,23 @@ StartRTV()
 	}
 }
 
-ResetRTV()
+void ResetRTV()
 {
 	g_Votes = 0;
 			
-	for (new i=1; i<=MAXPLAYERS; i++)
+	for (int i=1; i<=MAXPLAYERS; i++)
 	{
 		g_Voted[i] = false;
 	}
 }
 
-public Action:Timer_ChangeMap(Handle:hTimer)
+public Action Timer_ChangeMap(Handle hTimer)
 {
 	g_InChange = false;
 	
 	LogMessage("RTV changing map manually");
 	
-	new String:map[65];
+	char map[PLATFORM_MAX_PATH];
 	if (GetNextMap(map, sizeof(map)))
 	{	
 		ForceChangeLevel(map, "RTV after mapvote");

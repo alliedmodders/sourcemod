@@ -79,7 +79,7 @@ sdks=( csgo hl2dm nucleardawn l4d2 dods l4d css tf2 insurgency sdk2013 dota )
 
 if [ $ismac -eq 0 ]; then
   # Add these SDKs for Windows or Linux
-  sdks+=( orangebox blade episode1 )
+  sdks+=( orangebox blade episode1 bms )
 
   # Add more SDKs for Windows only
   if [ $iswin -eq 1 ]; then
@@ -118,7 +118,7 @@ if [ $? -eq 1 ]; then
     python setup.py install
   else
     python setup.py build
-    echo "About to install AMBuild - press Ctrl+C to abort, otherwise enter your password for sudo."
-    sudo python setup.py install
+    echo "Installing AMBuild at the user level. Location can be: ~/.local/bin"
+    python setup.py install --user
   fi
 fi
