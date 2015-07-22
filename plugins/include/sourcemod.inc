@@ -125,6 +125,19 @@ forward bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max);
  */
 forward APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max);
 
+/**
+ * Called for every plugin that is about to auto load (plugins count times called in one plugin).
+ * If one plugin returns false the given plugin is prevented from loading.
+ *
+ * @note Called before OnPluginStart and OnMapStart.
+ * @note Not called when late loading.
+ * @note If you do not return anything, it is treated like returning false. 
+ *
+ * @param plugin	Plugin that is about to auto load.
+ * @param map		Map on which is plugin about to auto load.
+ * @return			True for load success, false otherwise.
+*/
+
 forward bool:AskPluginAutoLoad(const String:plugin[], const String:map[]);
 
 /**
