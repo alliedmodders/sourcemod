@@ -137,7 +137,6 @@ forward APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
  * @param map		Map on which is plugin about to auto load.
  * @return			True for load success, false otherwise.
 */
-
 forward bool:AskPluginAutoLoad(const String:plugin[], const String:map[]);
 
 /**
