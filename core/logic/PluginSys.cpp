@@ -436,7 +436,7 @@ APLRes CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 
 bool CPlugin::Call_AskPluginAutoLoad(const char *plugin)
 {
-	cell_t res = 1;
+	cell_t res;
 	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("AskPluginAutoLoad");
 	if (!pFunction)
 	{
@@ -451,7 +451,7 @@ bool CPlugin::Call_AskPluginAutoLoad(const char *plugin)
 		return true;
 	}
 	
-	return (res != 0);
+	return ((APLRes)res == APLRes_Success);
 }
 
 void CPlugin::Call_OnLibraryAdded(const char *lib)
