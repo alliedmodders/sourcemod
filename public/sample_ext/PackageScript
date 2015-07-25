@@ -19,6 +19,15 @@ for folder in folder_list:
   norm_folder = os.path.normpath(folder)
   folder_map[folder] = builder.AddFolder(norm_folder)
 
+# Do all straight-up file copies from the source tree.
+def CopyFiles(src, dest, files):
+  if not dest:
+    dest = src
+  dest_entry = folder_map[dest]
+  for source_file in files:
+    source_path = os.path.join(builder.sourcePath, src, source_file)
+    builder.AddCopy(source_path, dest_entry)
+
 # Include files 
 #CopyFiles('include', 'addons/sourcemod/scripting/include',
 #  [ 'sample.inc', ]
