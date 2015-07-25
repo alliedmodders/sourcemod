@@ -2109,10 +2109,10 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 					bIsStringIndex = true;
 				}
 			}
-			else
-			{
-				maxlen = DT_MAX_STRING_BUFFERSIZE;
-			}
+
+			// Only used if not string index.
+			maxlen = DT_MAX_STRING_BUFFERSIZE;
+			
 			break;
 		}
 	default:
