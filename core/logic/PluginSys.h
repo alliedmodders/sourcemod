@@ -88,7 +88,7 @@ using namespace SourceHook;
  * PASS ONE: All loadable plugins are found and have the following steps performed:
  *			 1.  Loading and compilation is attempted.
  *			 2.  If successful, all natives from Core are added.
- *			 3.  OnPluginLoad() is called.
+ *			 3.  OnPluginAutoLoad() is called.
  *			 4.  If failed, any user natives are scrapped and the process halts here.
  *			 5.  If successful, the plugin is ready for Pass 2.
  * INTERMEDIATE:
@@ -179,13 +179,15 @@ public:
 	void InitIdentity();
 
 	/**
-	 * Calls the OnPluginLoad function, and sets any failed states if necessary.
+	 * Calls the OnPluginAutoLoad function, and sets any failed states if necessary.
 	 * NOTE: Valid pre-states are: Plugin_Created
 	 * NOTE: If validated, plugin state is changed to Plugin_Loaded
 	 *
 	 * If the error buffer is NULL, the error message is cached locally.
 	 */
 	APLRes Call_AskPluginLoad(char *error, size_t maxlength);
+	
+	bool Call_AskPluginAutoLoad(const char *plugin);
 
 	/**
 	 * Calls the OnPluginStart function.
@@ -468,6 +470,12 @@ public:
 private:
 	void TryRefreshDependencies(CPlugin *pOther);
 private:
+	List<String> m_pluginsToLoad;
+	List<String> m_pluginsDisabledLoad;
+	
+	bool IsPluginAutoLoadDisabled(const char *plugin);
+	void LoadPluginsFromList();
+private:	
 	List<IPluginsListener *> m_listeners;
 	List<CPlugin *> m_plugins;
 	CStack<CPluginManager::CPluginIterator *> m_iters;

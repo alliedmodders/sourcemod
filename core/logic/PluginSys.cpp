@@ -38,6 +38,7 @@
 #include <IHandleSys.h>
 #include <IForwardSys.h>
 #include <IPlayerHelpers.h>
+#include <IGameHelpers.h>
 #include "ExtensionSys.h"
 #include "GameConfigs.h"
 #include "common_logic.h"
@@ -433,6 +434,26 @@ APLRes CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 	}
 }
 
+bool CPlugin::Call_AskPluginAutoLoad(const char *plugin)
+{
+	cell_t res;
+	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("AskPluginAutoLoad");
+	if (!pFunction)
+	{
+		return true;
+	}
+	
+	pFunction->PushString(plugin);
+	pFunction->PushString(gamehelpers->GetCurrentMap());
+	
+	if (pFunction->Execute(&res) != SP_ERROR_NONE)
+	{
+		return true;
+	}
+	
+	return ((APLRes)res == APLRes_Success);
+}
+
 void CPlugin::Call_OnLibraryAdded(const char *lib)
 {
 	if (m_status > Plugin_Paused)
@@ -794,6 +815,9 @@ CPluginManager::CPluginManager()
 	m_LoadingLocked = false;
 	
 	m_bBlockBadPlugins = true;
+	
+	m_pluginsToLoad.clear();
+	m_pluginsDisabledLoad.clear();
 }
 
 CPluginManager::~CPluginManager()
@@ -820,6 +844,7 @@ void CPluginManager::LoadAll(const char *config_path, const char *plugins_path)
 {
 	LoadAll_FirstPass(config_path, plugins_path);
 	g_Extensions.MarkAllLoaded();
+	
 	LoadAll_SecondPass();
 	g_Extensions.MarkAllLoaded();
 	AllPluginsLoaded();
@@ -829,7 +854,31 @@ void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 {
 	/* First read in the database of plugin settings */
 	m_AllPluginsLoaded = false;
+	
+	m_pluginsToLoad.clear();
+	m_pluginsDisabledLoad.clear();
 	LoadPluginsFromDir(basedir, NULL);
+	LoadPluginsFromList();
+}
+
+bool CPluginManager::IsPluginAutoLoadDisabled(const char *plugin)
+{
+	List<String>::iterator s_iter;
+	for (s_iter = m_pluginsDisabledLoad.begin(); s_iter != m_pluginsDisabledLoad.end(); s_iter++)
+	{
+		if (strcmp((*s_iter).c_str(), plugin) == 0)
+			return true;
+	}
+	return false;
+}
+
+void CPluginManager::LoadPluginsFromList()
+{
+	List<String>::iterator s_iter;
+	for (s_iter = m_pluginsToLoad.begin(); s_iter != m_pluginsToLoad.end(); s_iter++)
+	{
+		LoadAutoPlugin((*s_iter).c_str());
+	}
 }
 
 void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpath)
@@ -886,7 +935,8 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 				} else {
 					libsys->PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
 				}
-				LoadAutoPlugin(plugin);
+				
+				m_pluginsToLoad.push_back(plugin);
 			}
 		}
 		dir->NextEntry();
@@ -899,14 +949,21 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 	if (m_LoadingLocked)
 		return LoadRes_NeverLoad;
 
-	int err;
-
 	/**
 	 * Does this plugin already exist?
 	 */
 	CPlugin *pPlugin;
 	if (m_LoadLookup.retrieve(path, &pPlugin))
 	{
+		if (IsPluginAutoLoadDisabled(path))
+		{
+			logger->LogMessage("[SM] Plugin %s prevented from loading.", path);
+			m_pluginsDisabledLoad.remove(path);
+			UnloadPlugin(pPlugin);
+			
+			return LoadRes_NeverLoad;
+		}
+		
 		/* Check to see if we should try reloading it */
 		if (pPlugin->GetStatus() == Plugin_BadLoad
 			|| pPlugin->GetStatus() == Plugin_Error
@@ -918,10 +975,28 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 		{
 			if (aResult)
 				*aResult = pPlugin;
+			
+			List<String>::iterator s_iter;
+			for (s_iter = m_pluginsToLoad.begin(); s_iter != m_pluginsToLoad.end(); s_iter++)
+			{
+				if (!pPlugin->Call_AskPluginAutoLoad((*s_iter).c_str()))
+				{
+					m_pluginsDisabledLoad.push_back((*s_iter).c_str());
+				}
+			}
+			
 			return LoadRes_AlreadyLoaded;
 		}
 	}
 
+	if (IsPluginAutoLoadDisabled(path))
+	{
+		logger->LogMessage("[SM] Plugin %s prevented from loading.", path);		
+		m_pluginsDisabledLoad.remove(path);
+		
+		return LoadRes_NeverLoad;
+	}
+	
 	pPlugin = CPlugin::CreatePlugin(path, error, maxlength);
 	assert(pPlugin != NULL);
 
@@ -990,7 +1065,17 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 		/* First native pass - add anything from Core */
 		g_ShareSys.BindNativesToPlugin(pPlugin, true);
 		pPlugin->InitIdentity();
-		APLRes result = pPlugin->Call_AskPluginLoad(error, maxlength);  
+		
+		List<String>::iterator s_iter;
+		for (s_iter = m_pluginsToLoad.begin(); s_iter != m_pluginsToLoad.end(); s_iter++)
+		{
+			if (!pPlugin->Call_AskPluginAutoLoad((*s_iter).c_str()))
+			{
+				m_pluginsDisabledLoad.push_back((*s_iter).c_str());
+			}
+		}
+		
+		APLRes result = pPlugin->Call_AskPluginLoad(error, maxlength);
 		switch (result)
 		{
 		case APLRes_Success:
@@ -1116,6 +1201,16 @@ void CPluginManager::LoadAll_SecondPass()
 	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
 	{
 		pPlugin = (*iter);
+		
+		if (IsPluginAutoLoadDisabled(pPlugin->GetFilename()))
+		{
+			logger->LogMessage("[SM] Plugin %s prevented from loading.", pPlugin->GetFilename());
+			m_pluginsDisabledLoad.remove(pPlugin->GetFilename());
+			
+			UnloadPlugin(pPlugin);
+			continue;
+		}
+		
 		if (pPlugin->GetStatus() == Plugin_Loaded)
 		{
 			error[0] = '\0';
@@ -1126,7 +1221,10 @@ void CPluginManager::LoadAll_SecondPass()
 			}
 		}
 	}
-
+	
+	m_pluginsToLoad.clear();
+	m_pluginsDisabledLoad.clear();
+	
 	m_AllPluginsLoaded = true;
 }
 
