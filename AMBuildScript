@@ -1,3 +1,4 @@
+# -*- mode: python;-*-
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os, sys
 
