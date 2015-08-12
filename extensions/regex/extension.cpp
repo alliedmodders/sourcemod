@@ -194,5 +194,10 @@ const sp_nativeinfo_t regex_natives[] =
 	{"GetRegexSubString",			GetRegexSubString},
 	{"MatchRegex",					MatchRegex},
 	{"CompileRegex",				CompileRegex},
+
+	// Methodmap versions/
+	{"Regex.GetSubString",		GetRegexSubString},
+	{"Regex.Match",				MatchRegex},
+	{"Regex.Regex",				CompileRegex},
 	{NULL,							NULL},
 };
