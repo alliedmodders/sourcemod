@@ -377,5 +377,20 @@ REGISTER_NATIVES(datapacknatives)
 	{"GetPackPosition",			smn_GetPackPosition},
 	{"SetPackPosition",			smn_SetPackPosition},
 	{"IsPackReadable",			smn_IsPackReadable},
-	{NULL,						NULL}
+
+	// Methodmap versions.
+	{"DataPack.DataPack",			smn_CreateDataPack},
+	{"DataPack.WriteCell",			smn_WritePackCell},
+	{"DataPack.WriteFloat",			smn_WritePackFloat},
+	{"DataPack.WriteString",		smn_WritePackString},
+	{"DataPack.WriteFunction",		smn_WritePackFunction},
+	{"DataPack.ReadCell",			smn_ReadPackCell},
+	{"DataPack.ReadFloat",			smn_ReadPackFloat},
+	{"DataPack.ReadString",			smn_ReadPackString},
+	{"DataPack.ReadFunction",		smn_ReadPackFunction},
+	{"DataPack.Reset",				smn_ResetPack},
+	{"DataPack.Position.get",		smn_GetPackPosition},
+	{"DataPack.Position.set",		smn_SetPackPosition},
+	{"DataPack.IsReadable",			smn_IsPackReadable},
+	{NULL,							NULL}
 };

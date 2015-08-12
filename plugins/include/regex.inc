@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
@@ -92,6 +92,43 @@ enum RegexError
 	REGEX_ERROR_BADLENGTH = -32,
 };
 
+// Regular expression objects are used to match or decompose strings based on
+// patterns.
+methodmap Regex < Handle
+{
+	// Compile a regular expression.
+	// 
+	// @param pattern		The regular expression pattern.
+	// @param flags			General flags for the regular expression.
+	// @param error			Error message encountered, if applicable.
+	// @param maxLen		Maximum string length of the error buffer.
+	// @param errcode		Regex type error code encountered, if applicable.
+	public native Regex(const char[] pattern, int flags = 0, char[] error="", int maxLen = 0, RegexError &errcode = REGEX_ERROR_NONE);
+
+	// Matches a string against a pre-compiled regular expression pattern.
+	// 
+	// @param str			The string to check.
+	// @param regex			Regex Handle from CompileRegex()
+	// @param ret			Error code, if applicable.
+	// @return				Number of substrings found or -1 on failure.
+	// 
+	// @note				Use the regex handle passed to this function to extract
+	// 						matches with GetRegexSubString().
+	public native int Match(const char[] str, RegexError &ret = REGEX_ERROR_NONE);
+
+	// Returns a matched substring from a regex handle.
+    //
+	// Substring ids start at 0 and end at substrings-1, where substrings is the
+	// number returned by Regex.Match.
+	//
+	// @param regex			The regex handle to extract data from.
+	// @param str_id		The index of the expression to get - starts at 0, and ends at substrings - 1.
+	// @param buffer		The buffer to set to the matching substring.
+	// @param maxlen		The maximum string length of the buffer.
+	// @return				True if a substring was found, False on fail/error
+	public native bool GetSubString(int str_id, char[] buffer, int maxlen);
+};
+
 /**
  * Precompile a regular expression.  Use this if you intend on using the 
  * same expression multiple times.  Pass the regex handle returned here to
@@ -131,13 +168,6 @@ native int MatchRegex(Handle regex, const char[] str, RegexError &ret = REGEX_ER
  * @return				True if a substring was found, False on fail/error
  */
 native bool GetRegexSubString(Handle regex, int str_id, char[] buffer, int maxlen);
-
-methodmap Regex < Handle
-{
-	public Regex() = CompileRegex;
-	public Match() = MatchRegex;
-	public GetSubString() = GetRegexSubString;
-};
 
 /**
  * Matches a string against a regular expression pattern.
