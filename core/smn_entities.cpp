@@ -2098,6 +2098,7 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 					element);
 			}
 
+			bIsStringIndex = false;
 			if (info.prop->GetProxyFn())
 			{
 				DVariant var;
