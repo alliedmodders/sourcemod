@@ -551,7 +551,8 @@ static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] >= 2 && params[2] == 1)
 	{
-		char *pathID = "GAME";
+		static char szDefaultPath[] = "GAME";
+		char *pathID = szDefaultPath;
 		if (params[0] >= 3)
 			pContext->LocalToStringNULL(params[3], &pathID);
 		
@@ -664,7 +665,8 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] >= 2 && params[2] == 1)
 	{
-		char *pathID = "GAME";
+		static char szDefaultPath[] = "GAME";
+		char *pathID = szDefaultPath;
 		if (params[0] >= 3)
 			pContext->LocalToStringNULL(params[3], &pathID);
 		
