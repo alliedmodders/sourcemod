@@ -269,19 +269,19 @@ PassRef<Native> ShareSystem::FindNative(const char *name)
 	return *r;
 }
 
+void ShareSystem::BeginBindingFor(CPlugin *pPlugin)
+{
+	g_mark_serial++;
+}
+
 void ShareSystem::BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly)
 {
-	uint32_t i, native_count;
-	IPluginContext *pContext;
+	IPluginContext *pContext = pPlugin->GetBaseContext();
 
-	pContext = pPlugin->GetBaseContext();
+	BeginBindingFor(pPlugin);
 
-	/* Generate a new serial ID, mark our dependencies with it. */
-	g_mark_serial++;
-	pPlugin->PropagateMarkSerial(g_mark_serial);
-
-	native_count = pContext->GetNativesNum();
-	for (i = 0; i < native_count; i++)
+	uint32_t native_count = pContext->GetNativesNum();
+	for (uint32_t i = 0; i < native_count; i++)
 	{
 		const sp_native_t *native = pContext->GetRuntime()->GetNative(i);
 		if (!native)
@@ -349,15 +349,12 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, const sp_native_t *native
 		/* Otherwise, we're a strong dependent and not a weak one */
 		else
 		{
-			/* See if this has already been marked as a dependent.
-			 * If it has, it means this relationship has already occurred, 
-			 * and there is no reason to do it again.
-			 */
-			if (pEntry->owner != pPlugin->ToNativeOwner() 
-				&& pEntry->owner->GetMarkSerial() != g_mark_serial)
+			// If this plugin is not binding to itself, and it hasn't been marked as a
+			// dependency already, then add it now. We use the mark serial to track
+			// which plugins we already consider a dependency.
+			if (pEntry->owner != pPlugin->ToNativeOwner() &&
+			    pEntry->owner->GetMarkSerial() != g_mark_serial)
 			{
-				/* This has not been marked as a dependency yet */
-				//pPlugin->AddDependency(pEntry->owner);
 				pEntry->owner->AddDependent(pPlugin);
 				pEntry->owner->SetMarkSerial(g_mark_serial);
 			}

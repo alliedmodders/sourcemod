@@ -1381,6 +1381,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 					  || pOther->GetStatus() == Plugin_Paused)
 					 && pOther != pPlugin)
 			{
+				g_ShareSys.BeginBindingFor(pPlugin);
 				for (size_t i = 0; i < pPlugin->m_fakes.length(); i++)
 					g_ShareSys.BindNativeToPlugin(pOther, pPlugin->m_fakes[i]);
 			}
