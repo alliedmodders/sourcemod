@@ -629,15 +629,11 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 	if (!m_pRuntime)
 		return;
 
-	List<String>::iterator reqlib_iter;
-	List<String>::iterator lib_iter;
-	for (lib_iter=pOwner->m_Libraries.begin(); lib_iter!=pOwner->m_Libraries.end(); lib_iter++)
-	{
-		for (reqlib_iter=m_RequiredLibs.begin(); reqlib_iter!=m_RequiredLibs.end(); reqlib_iter++)
-		{
-			if ((*reqlib_iter) == (*lib_iter))
-				m_LibraryMissing = true;
-		}	
+	for (auto lib_iter=pOwner->m_Libraries.begin(); lib_iter!=pOwner->m_Libraries.end(); lib_iter++) {
+		if (m_RequiredLibs.find(*lib_iter) != m_RequiredLibs.end()) {
+			m_LibraryMissing = true;
+			break;
+		}
 	}
 
 	unsigned int unbound = 0;
@@ -1146,35 +1142,23 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 	char *name, *file;
 	char pathfile[PLATFORM_MAX_PATH];
 
-	for (uint32_t i=0; i<num; i++)
-	{
+	for (uint32_t i=0; i<num; i++) {
 		if (pBase->GetPubvarByIndex(i, &pubvar) != SP_ERROR_NONE)
-		{
 			continue;
-		}
-		if (strncmp(pubvar->name, "__pl_", 5) == 0)
-		{
+		if (strncmp(pubvar->name, "__pl_", 5) == 0) {
 			pl = (_pl *)pubvar->offs;
 			if (pBase->LocalToString(pl->file, &file) != SP_ERROR_NONE)
-			{
 				continue;
-			}
 			if (pBase->LocalToString(pl->name, &name) != SP_ERROR_NONE)
-			{
 				continue;
-			}
 			libsys->GetFileFromPath(pathfile, sizeof(pathfile), pPlugin->GetFilename());
 			if (strcmp(pathfile, file) == 0)
-			{
 				continue;
-			}
-			if (pl->required == false)
-			{
+			if (pl->required == false) {
 				IPluginFunction *pFunc;
 				char buffer[64];
 				ke::SafeSprintf(buffer, sizeof(buffer), "__pl_%s_SetNTVOptional", &pubvar->name[5]);
-				if ((pFunc=pBase->GetFunctionByName(buffer)))
-				{
+				if ((pFunc=pBase->GetFunctionByName(buffer))) {
 					cell_t res;
 					if (pFunc->Execute(&res) != SP_ERROR_NONE) {
 						if (error)
@@ -1182,38 +1166,28 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 						return false;
 					}
 				}
-			}
-			else
-			{
+			} else {
 				/* Check that we aren't registering the same library twice */
-				if (pPlugin->m_RequiredLibs.find(name) == pPlugin->m_RequiredLibs.end())
-				{
-					pPlugin->m_RequiredLibs.push_back(name);
-				}
-				else
-				{
+				if (pPlugin->m_RequiredLibs.find(name) != pPlugin->m_RequiredLibs.end())
 					continue;
-				}
-				List<CPlugin *>::iterator iter;
-				CPlugin *pl;
-				bool found = false;
-				for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
-				{
-					pl = (*iter);
-					if (pl->m_Libraries.find(name) != pl->m_Libraries.end())
-					{
-						found = true;
+
+				pPlugin->m_RequiredLibs.push_back(name);
+
+				CPlugin *found;
+				for (auto iter=m_plugins.begin(); iter!=m_plugins.end(); iter++) {
+					CPlugin *pl = (*iter);
+					if (pl->m_Libraries.find(name) != pl->m_Libraries.end()) {
+						found = pl;
 						break;
 					}
 				}
-				if (!found)
-				{
+				if (!found) {
 					if (error)
-					{
 						ke::SafeSprintf(error, maxlength, "Could not find required plugin \"%s\"", name);
-					}
 					return false;
 				}
+
+				found->AddDependent(pPlugin);
 			}
 		}
 	}
@@ -1423,29 +1397,21 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 
 	g_ShareSys.BindNativesToPlugin(pPlugin, false);
 
-	List<String>::iterator lib_iter;
-	List<String>::iterator req_iter;
-	List<CPlugin *>::iterator pl_iter;
-	CPlugin *pl;
-	for (req_iter=pPlugin->m_RequiredLibs.begin(); req_iter!=pPlugin->m_RequiredLibs.end(); req_iter++)
-	{
-		bool found = false;
-		for (pl_iter=m_plugins.begin(); pl_iter!=m_plugins.end(); pl_iter++)
-		{
-			pl = (*pl_iter);
-			for (lib_iter=pl->m_Libraries.begin(); lib_iter!=pl->m_Libraries.end(); lib_iter++)
-			{
-				if ((*req_iter) == (*lib_iter))
-				{
-					found = true;
-				}
+	for (auto req_iter=pPlugin->m_RequiredLibs.begin(); req_iter!=pPlugin->m_RequiredLibs.end(); req_iter++) {
+		CPlugin *found = nullptr;
+		for (auto pl_iter=m_plugins.begin(); pl_iter!=m_plugins.end(); pl_iter++) {
+			CPlugin *search = (*pl_iter);
+			if (search->m_Libraries.find(*req_iter) != search->m_Libraries.end()) {
+				found = search;
+				break;
 			}
 		}
-		if (!found)
-		{
+		if (!found) {
 			pPlugin->SetErrorState(Plugin_Error, "Library not found: %s", (*req_iter).c_str());
 			return;
 		}
+
+		found->AddDependent(pPlugin);
 	}
 
 	/* Find any unbound natives
