@@ -181,6 +181,8 @@ class SMConfig(object):
       if have_clang or (have_gcc and cxx.version >= '4'):
         cxx.cflags += ['-fvisibility=hidden']
         cxx.cxxflags += ['-fvisibility-inlines-hidden']
+        if have_clang and cxx.version >= '3.6':
+          cxx.cxxflags += ['-Wno-inconsistent-missing-override']
         if have_clang or (have_gcc and cxx.version >= '4.6'):
           cxx.cflags += ['-Wno-narrowing']
         if (have_gcc and cxx.version >= '4.7') or (have_clang and cxx.version >= '3'):
