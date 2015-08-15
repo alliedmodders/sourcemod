@@ -1478,23 +1478,30 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 
 bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 {
-	CPlugin *pPlugin = (CPlugin *)plugin;
+	return ScheduleUnload((CPlugin *)plugin);
+}
 
-	/* This prevents removal during insertion or anything else weird */
-	if (m_plugins.find(pPlugin) == m_plugins.end())
-	{
-		return false;
-	}
+bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
+{
+	// Should not be recursively removing.
+	assert(m_plugins.find(pPlugin) != m_plugins.end());
 
-	IPluginContext *pContext = plugin->GetBaseContext();
-	if (pContext != NULL && pContext->IsInExec())
+	IPluginContext *pContext = pPlugin->GetBaseContext();
+	if (pContext && pContext->IsInExec())
 	{
 		char buffer[255];
-		ke::SafeSprintf(buffer, sizeof(buffer), "sm plugins unload %s\n", plugin->GetFilename());
+		ke::SafeSprintf(buffer, sizeof(buffer), "sm plugins unload %s\n", pPlugin->GetFilename());
 		engine->ServerCommand(buffer);
 		return false;
 	}
 
+	// No need to schedule an unload, we can unload immediately.
+	UnloadPluginImpl(pPlugin);
+	return true;
+}
+
+void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
+{
 	/* Remove us from the lookup table and linked list */
 	m_plugins.remove(pPlugin);
 	m_LoadLookup.remove(pPlugin->m_filename);
@@ -1535,8 +1542,6 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 	
 	/* Tell the plugin to delete itself */
 	delete pPlugin;
-
-	return true;
 }
 
 IPlugin *CPluginManager::FindPluginByContext(const sp_context_t *ctx)

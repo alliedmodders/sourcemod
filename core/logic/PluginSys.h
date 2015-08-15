@@ -455,6 +455,9 @@ private:
 	bool FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size_t maxlength);
 
 	void _SetPauseState(CPlugin *pPlugin, bool pause);
+
+	bool ScheduleUnload(CPlugin *plugin);
+	void UnloadPluginImpl(CPlugin *plugin);
 protected:
 	/**
 	 * Caching internal objects
