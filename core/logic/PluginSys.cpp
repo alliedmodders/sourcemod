@@ -52,23 +52,26 @@ HandleType_t g_PluginType = 0;
 IdentityType_t g_PluginIdent = 0;
 
 CPlugin::CPlugin(const char *file)
+ : m_serial(0),
+   m_status(Plugin_Uncompiled),
+   m_SilentFailure(false),
+   m_FakeNativesMissing(false),
+   m_LibraryMissing(false),
+   m_pContext(nullptr),
+   m_MaxClientsVar(nullptr),
+   m_ident(nullptr),
+   m_bGotAllLoaded(false),
+   m_FileVersion(0),
+   m_LastAccess(0),
+   m_handle(BAD_HANDLE)
 {
 	static int MySerial = 0;
 
-	m_type = PluginType_Private;
-	m_status = Plugin_Uncompiled;
-	m_bSilentlyFailed = false;
 	m_serial = ++MySerial;
-	m_pRuntime = NULL;
-	m_errormsg[sizeof(m_errormsg) - 1] = '\0';
+	m_errormsg[0] = '\0';
 	ke::SafeSprintf(m_filename, sizeof(m_filename), "%s", file);
-	m_handle = 0;
-	m_ident = NULL;
-	m_FakeNativesMissing = false;
-	m_LibraryMissing = false;
-	m_bGotAllLoaded = false;
+
 	m_pPhrases = g_Translator.CreatePhraseCollection();
-	m_MaxClientsVar = NULL;
 }
 
 CPlugin::~CPlugin()
@@ -83,22 +86,9 @@ CPlugin::~CPlugin()
 		g_ShareSys.DestroyIdentity(m_ident);
 	}
 
-	if (m_pRuntime != NULL)
-	{
-		delete m_pRuntime;
-		m_pRuntime = NULL;
-	}
-
 	for (size_t i=0; i<m_configs.size(); i++)
-	{
 		delete m_configs[i];
-	}
 	m_configs.clear();
-	if (m_pPhrases != NULL)
-	{
-		m_pPhrases->Destroy();
-		m_pPhrases = NULL;
-	}
 }
 
 void CPlugin::InitIdentity()
@@ -120,25 +110,16 @@ unsigned int CPlugin::CalcMemUsage()
 		+ (m_configs.size() * (sizeof(AutoConfig *) + sizeof(AutoConfig)))
 		+ m_Props.mem_usage();
 
-	for (unsigned int i = 0; i < m_configs.size(); i++)
-	{
+	for (unsigned int i = 0; i < m_configs.size(); i++) {
 		base_size += m_configs[i]->autocfg.size();
 		base_size += m_configs[i]->folder.size();
 	}
 
-	for (List<String>::iterator i = m_Libraries.begin();
-		 i != m_Libraries.end();
-		 i++)
-	{
+	for (auto i = m_Libraries.begin(); i != m_Libraries.end(); i++)
 		base_size += (*i).size();
-	}
 
-	for (List<String>::iterator i = m_RequiredLibs.begin();
-		 i != m_RequiredLibs.end();
-		 i++)
-	{
+	for (auto i = m_RequiredLibs.begin(); i != m_RequiredLibs.end(); i++)
 		base_size += (*i).size();
-	}
 
 	return base_size;
 }
@@ -156,12 +137,9 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 
 	CPlugin *pPlugin = new CPlugin(file);
 
-	if (!fp)
-	{
+	if (!fp) {
 		if (error)
-		{
 			ke::SafeSprintf(error, maxlength, "Unable to open file");
-		}
 		pPlugin->m_status = Plugin_BadLoad;
 		return pPlugin;
 	}
@@ -481,7 +459,7 @@ const char *CPlugin::GetFilename()
 
 PluginType CPlugin::GetType()
 {
-	return m_type;
+	return PluginType_MapUpdated;
 }
 
 const sm_plugininfo_t *CPlugin::GetPublicInfo()
@@ -505,7 +483,7 @@ PluginStatus CPlugin::GetStatus()
 
 bool CPlugin::IsSilentlyFailed()
 {
-	return m_bSilentlyFailed;
+	return m_SilentFailure;
 }
 
 bool CPlugin::IsDebugging()
@@ -518,9 +496,9 @@ bool CPlugin::IsDebugging()
 	return true;
 }
 
-void CPlugin::SetSilentlyFailed(bool sf)
+void CPlugin::SetSilentlyFailed()
 {
-	m_bSilentlyFailed = sf;
+	m_SilentFailure = true;
 }
 
 void CPlugin::LibraryActions(LibraryAction action)
@@ -922,8 +900,6 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 	pPlugin = CPlugin::CreatePlugin(path, error, maxlength);
 	assert(pPlugin != NULL);
 
-	pPlugin->m_type = PluginType_MapUpdated;
-
 	if (pPlugin->m_status == Plugin_Uncompiled)
 	{
 		char fullpath[PLATFORM_MAX_PATH];
@@ -1001,7 +977,7 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 		case APLRes_SilentFailure:
 			pPlugin->SetErrorState(Plugin_Failed, "%s", error);
 			loadFailure = LoadRes_SilentFailure;
-			pPlugin->SetSilentlyFailed(true);
+			pPlugin->SetSilentlyFailed();
 			break;
 		default:
 			assert(false);
