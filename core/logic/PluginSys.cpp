@@ -71,6 +71,8 @@ CPlugin::CPlugin(const char *file)
 	m_errormsg[0] = '\0';
 	ke::SafeSprintf(m_filename, sizeof(m_filename), "%s", file);
 
+	memset(&m_info, 0, sizeof(m_info));
+
 	m_pPhrases = g_Translator.CreatePhraseCollection();
 }
 
@@ -208,10 +210,7 @@ bool CPlugin::UpdateInfo()
 	IPluginContext *base = GetBaseContext();
 	int err = base->FindPubvarByName("myinfo", &idx);
 
-	memset(&m_info, 0, sizeof(m_info));
-
-	if (err == SP_ERROR_NONE)
-	{
+	if (err == SP_ERROR_NONE) {
 		struct sm_plugininfo_c_t
 		{
 			cell_t name;
@@ -223,22 +222,24 @@ bool CPlugin::UpdateInfo()
 		sm_plugininfo_c_t *cinfo;
 		cell_t local_addr;
 
+		auto update_field = [base](cell_t addr, ke::AString *dest) {
+			const char* ptr;
+			if (base->LocalToString(addr, (char **)&ptr) == SP_ERROR_NONE)
+				*dest = ptr;
+			else
+				*dest = "";
+		};
+
 		base->GetPubvarAddrs(idx, &local_addr, (cell_t **)&cinfo);
-		base->LocalToString(cinfo->name, (char **)&m_info.name);
-		base->LocalToString(cinfo->description, (char **)&m_info.description);
-		base->LocalToString(cinfo->author, (char **)&m_info.author);
-		base->LocalToString(cinfo->url, (char **)&m_info.url);
-		base->LocalToString(cinfo->version, (char **)&m_info.version);
+		update_field(cinfo->name, &info_name_);
+		update_field(cinfo->description, &info_description_);
+		update_field(cinfo->author, &info_author_);
+		update_field(cinfo->version, &info_version_);
+		update_field(cinfo->url, &info_url_);
 	}
 
-	m_info.author = m_info.author ? m_info.author : "";
-	m_info.description = m_info.description ? m_info.description : "";
-	m_info.name = m_info.name ? m_info.name : "";
-	m_info.url = m_info.url ? m_info.url : "";
-	m_info.version = m_info.version ? m_info.version : "";
-
-	if ((err = base->FindPubvarByName("__version", &idx)) == SP_ERROR_NONE)
-	{
+	ke::SafeStrcpy(m_DateTime, sizeof(m_DateTime), "unknown");
+	if ((err = base->FindPubvarByName("__version", &idx)) == SP_ERROR_NONE) {
 		struct __version_info
 		{
 			cell_t version;
@@ -255,28 +256,24 @@ bool CPlugin::UpdateInfo()
 
 		base->GetPubvarAddrs(idx, &local_addr, (cell_t **)&info);
 		m_FileVersion = info->version;
-		if (m_FileVersion >= 4)
-		{
+		if (m_FileVersion >= 4) {
 			base->LocalToString(info->date, (char **)&pDate);
 			base->LocalToString(info->time, (char **)&pTime);
 			ke::SafeSprintf(m_DateTime, sizeof(m_DateTime), "%s %s", pDate, pTime);
 		}
-		if (m_FileVersion > 5)
-		{
+		if (m_FileVersion > 5) {
 			base->LocalToString(info->filevers, (char **)&pFileVers);
 			SetErrorState(Plugin_Failed, "Newer SourceMod required (%s or higher)", pFileVers);
 			return false;
 		}
-	}
-	else
-	{
+	} else {
 		m_FileVersion = 0;
 	}
 
 	if ((err = base->FindPubvarByName("MaxClients", &idx)) == SP_ERROR_NONE)
-	{
 		base->GetPubvarByIndex(idx, &m_MaxClientsVar);
-	}
+	else
+		m_MaxClientsVar = nullptr;
 
 	return true;
 }
@@ -465,9 +462,13 @@ PluginType CPlugin::GetType()
 const sm_plugininfo_t *CPlugin::GetPublicInfo()
 {
 	if (GetStatus() >= Plugin_Created)
-	{
-		return NULL;
-	}
+		return nullptr;
+
+	m_info.author = info_author_.chars();
+	m_info.description = info_description_.chars();
+	m_info.name = info_name_.chars();
+	m_info.url = info_url_.chars();
+	m_info.version = info_version_.chars();
 	return &m_info;
 }
 

@@ -51,6 +51,7 @@
 #include "NativeOwner.h"
 #include "ShareSys.h"
 #include "PhraseCollection.h"
+#include <am-string.h>
 #include <bridge/include/IScriptManager.h>
 
 class CPlayer;
@@ -286,6 +287,11 @@ private:
 
 	// Cached.
 	sm_plugininfo_t m_info;
+	ke::AString info_name_;
+	ke::AString info_author_;
+	ke::AString info_description_;
+	ke::AString info_version_;
+	ke::AString info_url_;
 };
 
 class CPluginManager : 
