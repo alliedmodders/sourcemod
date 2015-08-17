@@ -552,6 +552,8 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 				addrInBase = smcore.engineFactory;
 			} else if (strcmp(s_TempSig.library, "matchmaking_ds") == 0) {
 				addrInBase = smcore.matchmakingDSFactory;
+			} else if (strcmp(s_TempSig.library, "vphysics") == 0) {
+				addrInBase = smcore.vPhysicsFactory;
 			}
 			void *final_addr = NULL;
 			if (addrInBase == NULL)
