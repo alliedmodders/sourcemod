@@ -222,20 +222,21 @@ public:
 	 */
 	IPhraseCollection *GetPhrases();
 public:
-	/**
-	 * Returns the modification time during last plugin load.
-	 */
+	// Returns the modification time during last plugin load.
 	time_t GetTimeStamp();
 
-	/**
-	 * Returns the current modification time of the plugin file.
-	 */
+	// Returns the current modification time of the plugin file.
 	time_t GetFileTimeStamp();
 
-	/** 
-	 * Returns true if the plugin was running, but is now invalid.
-	 */
+	// Returns true if the plugin was running, but is now invalid.
 	bool WasRunning();
+
+	bool WaitingToUnload() const {
+		return m_WaitingToUnload;
+	}
+	void SetWaitingToUnload() {
+		m_WaitingToUnload = true;
+	}
 
 	Handle_t GetMyHandle();
 
@@ -243,8 +244,7 @@ public:
 	void AddConfig(bool autoCreate, const char *cfg, const char *folder);
 	size_t GetConfigCount();
 	AutoConfig *GetConfig(size_t i);
-	inline void AddLibrary(const char *name)
-	{
+	inline void AddLibrary(const char *name) {
 		m_Libraries.push_back(name);
 	}
 	void LibraryActions(LibraryAction action);
@@ -260,6 +260,7 @@ private:
 	unsigned int m_serial;
 
 	PluginStatus m_status;
+	bool m_WaitingToUnload;
 
 	// Statuses that are set during failure.
 	bool m_SilentFailure;

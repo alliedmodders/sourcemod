@@ -51,6 +51,7 @@
 #include "AdminCache.h"
 #include "ProfileTools.h"
 #include "Logger.h"
+#include "frame_tasks.h"
 #include "sprintf.h"
 #include "LibrarySys.h"
 #include "RootConsoleMenu.h"
@@ -136,6 +137,9 @@ class ProviderCallbackListener : public IProviderCallbacks
 public:
 	bool OnLogPrint(const char *msg) override {
 		return ::OnLogPrint(msg);
+	}
+	void OnThink(bool simulating) override {
+		RunScheduledFrameTasks(simulating);
 	}
 } sProviderCallbackListener;
 
