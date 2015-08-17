@@ -1684,8 +1684,13 @@ static int hier2(value *lval)
     if (tag == pc_tag_void)
       error(144);
 
+    int paren = needtoken('(');
     lval->cmptag = tag;
     lvalue = hier12(lval);
+    if (paren)
+      needtoken(')');
+    else
+      matchtoken(')');
 
     if ((lval->tag & OBJECTTAG) || (tag & OBJECTTAG)) {
       matchtag(tag, lval->tag, MATCHTAG_COERCE);
