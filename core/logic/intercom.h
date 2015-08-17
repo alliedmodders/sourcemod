@@ -329,6 +329,7 @@ struct sm_core_t
 	void *          serverFactory;
 	void *          engineFactory;
 	void *          matchmakingDSFactory;
+	void *          vPhysicsFactory;
 	SMGlobalClass *	listeners;
 };
 
