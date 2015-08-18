@@ -2659,7 +2659,11 @@ static void initials2(int ident,int tag,cell *size,int dim[],int numdim,
         constvalue *ld=lastdim.next;
         int d,match;
         for (d=0; d<dim[numdim-2]; d++) {
-          assert(ld!=NULL);
+          if (!ld) {
+            error(156);
+            err++;
+            break;
+          }
           assert(strtol(ld->name,NULL,16)==d);
           if (d==0)
             match=ld->value;
