@@ -30,6 +30,11 @@
  * Version: $Id$
  */
 
+#if defined _convars_included
+	#endinput
+#endif
+#define _convars_included
+
 /**
  * Console variable bound values used with Get/SetConVarBounds()
  */
