@@ -583,7 +583,6 @@ static sm_core_t core_bridge =
 	&g_pSourcePawn2,
 	/* Functions */
 	find_convar,
-	UTIL_TrimWhitespace,
 	log_to_game,
 	conprint,
 	get_cvar_string,

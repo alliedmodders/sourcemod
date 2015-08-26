@@ -56,7 +56,6 @@ bool gnprintf(char *buffer,
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
 char *sm_strdup(const char *str);
-char *UTIL_TrimWhitespace(char *str, size_t &len);
 char *UTIL_ToLowerCase(const char *str);
 
 #endif // _INCLUDE_SOURCEMOD_STRINGUTIL_H_
