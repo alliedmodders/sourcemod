@@ -718,7 +718,7 @@ ConfigResult Translator::OnSourceModConfigChanged(const char *key,
 
 			m_ServerLang = index;
 		} else {
-			smcore.strncopy(m_InitialLang, value, sizeof(m_InitialLang));
+			strncopy(m_InitialLang, value, sizeof(m_InitialLang));
 		}
 
 		return ConfigResult_Accept;
@@ -840,7 +840,7 @@ void Translator::RebuildLanguageDatabase()
 	{
 		logger->LogError("Server language was set to bad language \"%s\" -- reverting to English", m_InitialLang);
 
-		smcore.strncopy(m_InitialLang, "en", sizeof(m_InitialLang));
+		strncopy(m_InitialLang, "en", sizeof(m_InitialLang));
 		m_ServerLang = SOURCEMOD_LANGUAGE_ENGLISH;
 	}
 

@@ -337,7 +337,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		{
 			/* Get the IP address and strip the port */
 			char ip[24], *ptr;
-			smcore.strncopy(ip, pPlayer->GetIPAddress(), sizeof(ip));
+			strncopy(ip, pPlayer->GetIPAddress(), sizeof(ip));
 			if ((ptr = strchr(ip, ':')) != NULL)
 			{
 				*ptr = '\0';
