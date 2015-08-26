@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -37,6 +37,7 @@
 #include <assert.h>
 #include "TextParsers.h"
 #include <ILibrarySys.h>
+#include <am-string.h>
 
 TextParsers g_TextParser;
 ITextParsers *textparsers = &g_TextParser;
@@ -134,7 +135,7 @@ SMCError TextParsers::ParseSMCFile(const char *file,
 			states->col = 0;
 		}
 		libsys->GetPlatformError(error, sizeof(error));
-		smcore.Format(buffer, maxsize, "File could not be opened: %s", error);
+		ke::SafeSprintf(buffer, maxsize, "File could not be opened: %s", error);
 		return SMCError_StreamOpen;
 	}
 
@@ -143,7 +144,7 @@ SMCError TextParsers::ParseSMCFile(const char *file,
 	fclose(fp);
 
 	errstr = GetSMCErrorString(result);
-	smcore.Format(buffer, maxsize, "%s", errstr != NULL ? errstr : "Unknown error");
+	ke::SafeSprintf(buffer, maxsize, "%s", errstr != NULL ? errstr : "Unknown error");
 
 	return result;
 }
@@ -194,7 +195,7 @@ SMCError TextParsers::ParseSMCStream(const char *stream,
 	result = ParseStream_SMC(&rs, RawStreamReader, smc_listener, states);
 
 	const char *errstr = GetSMCErrorString(result);
-	smcore.Format(buffer, maxsize, "%s", errstr != NULL ? errstr : "Unknown error");
+	ke::SafeSprintf(buffer, maxsize, "%s", errstr != NULL ? errstr : "Unknown error");
 
 	return result;
 }

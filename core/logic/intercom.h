@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 30)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 31)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -299,8 +299,6 @@ struct sm_core_t
 	void			(*ConPrint)(const char *message);
 	const char *	(*GetCvarString)(ConVar*);
 	bool			(*GetCvarBool)(ConVar*);
-	size_t			(*Format)(char*, size_t, const char*, ...);
-	size_t			(*FormatArgs)(char*, size_t, const char*,va_list ap);
 	bool			(*gnprintf)(char *, size_t, const char *, IPhraseCollection *, void **,
 	                            unsigned int, unsigned int &, size_t *, const char **);
 	size_t			(*atcprintf)(char *, size_t, const char *, IPluginContext *, const cell_t *, int *);

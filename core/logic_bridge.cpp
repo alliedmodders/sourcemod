@@ -589,8 +589,6 @@ static sm_core_t core_bridge =
 	conprint,
 	get_cvar_string,
 	get_cvar_bool,
-	UTIL_Format,
-	UTIL_FormatArgs,
 	gnprintf,
 	atcprintf,
 	get_game_name,

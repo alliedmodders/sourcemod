@@ -36,6 +36,7 @@
 #include "common_logic.h"
 #include "PluginSys.h"
 #include <am-utility.h>
+#include <am-string.h>
 
 CExtensionManager g_Extensions;
 IdentityType_t g_ExtType;
@@ -567,7 +568,7 @@ void CExtensionManager::TryAutoload()
 		}
 
 		char file[PLATFORM_MAX_PATH];
-		len = smcore.Format(file, sizeof(file), "%s", lfile);
+		len = ke::SafeSprintf(file, sizeof(file), "%s", lfile);
 		strcpy(&file[len - 9], ".ext");
 
 		LoadAutoExtension(file);
@@ -583,7 +584,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path, bool bErrorOn
 	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
 		char path2[PLATFORM_MAX_PATH];
-		smcore.Format(path2, sizeof(path2), "%s", path);
+		ke::SafeSprintf(path2, sizeof(path2), "%s", path);
 		path2[strlen(path) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
 		return LoadAutoExtension(path2, bErrorOnMissing);
 	}
@@ -675,7 +676,7 @@ IExtension *CExtensionManager::LoadExtension(const char *file, char *error, size
 	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
 		char path2[PLATFORM_MAX_PATH];
-		smcore.Format(path2, sizeof(path2), "%s", file);
+		ke::SafeSprintf(path2, sizeof(path2), "%s", file);
 		path2[strlen(file) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
 		return LoadExtension(path2, error, maxlength);
 	}
@@ -993,7 +994,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 			char path[PLATFORM_MAX_PATH];
 			char error[256];
 
-			smcore.Format(path, sizeof(path), "%s%s%s", filename, !strstr(filename, ".ext") ? ".ext" : "",
+			ke::SafeSprintf(path, sizeof(path), "%s%s%s", filename, !strstr(filename, ".ext") ? ".ext" : "",
 				!strstr(filename, "." PLATFORM_LIB_EXT) ? "." PLATFORM_LIB_EXT : "");
 			
 			if (FindExtensionByFile(path) != NULL)

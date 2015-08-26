@@ -43,6 +43,7 @@
 #include "common_logic.h"
 #include "Translator.h"
 #include "Logger.h"
+#include <am-string.h>
 
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
@@ -58,7 +59,7 @@ CPlugin::CPlugin(const char *file)
 	m_serial = ++MySerial;
 	m_pRuntime = NULL;
 	m_errormsg[sizeof(m_errormsg) - 1] = '\0';
-	smcore.Format(m_filename, sizeof(m_filename), "%s", file);
+	ke::SafeSprintf(m_filename, sizeof(m_filename), "%s", file);
 	m_handle = 0;
 	m_ident = NULL;
 	m_FakeNativesMissing = false;
@@ -157,7 +158,7 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 	{
 		if (error)
 		{
-			smcore.Format(error, maxlength, "Unable to open file");
+			ke::SafeSprintf(error, maxlength, "Unable to open file");
 		}
 		pPlugin->m_status = Plugin_BadLoad;
 		return pPlugin;
@@ -211,7 +212,7 @@ void CPlugin::SetErrorState(PluginStatus status, const char *error_fmt, ...)
 
 	va_list ap;
 	va_start(ap, error_fmt);
-	smcore.FormatArgs(m_errormsg, sizeof(m_errormsg), error_fmt, ap);
+	ke::SafeVsprintf(m_errormsg, sizeof(m_errormsg), error_fmt, ap);
 	va_end(ap);
 
 	if (m_pRuntime != NULL)
@@ -278,7 +279,7 @@ bool CPlugin::UpdateInfo()
 		{
 			base->LocalToString(info->date, (char **)&pDate);
 			base->LocalToString(info->time, (char **)&pTime);
-			smcore.Format(m_DateTime, sizeof(m_DateTime), "%s %s", pDate, pTime);
+			ke::SafeSprintf(m_DateTime, sizeof(m_DateTime), "%s %s", pDate, pTime);
 		}
 		if (m_FileVersion > 5)
 		{
@@ -867,7 +868,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 			if (localpath == NULL)
 			{
 				/* If no path yet, don't add a former slash */
-				smcore.Format(new_local, sizeof(new_local), "%s", dir->GetEntryName());
+				ke::SafeSprintf(new_local, sizeof(new_local), "%s", dir->GetEntryName());
 			} else {
 				libsys->PathFormat(new_local, sizeof(new_local), "%s/%s", localpath, dir->GetEntryName());
 			}
@@ -882,7 +883,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 				char plugin[PLATFORM_MAX_PATH];
 				if (localpath == NULL)
 				{
-					smcore.Format(plugin, sizeof(plugin), "%s", name);
+					ke::SafeSprintf(plugin, sizeof(plugin), "%s", name);
 				} else {
 					libsys->PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
 				}
@@ -936,14 +937,14 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 		pPlugin->m_pRuntime = g_pSourcePawn2->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg));
 		if (!pPlugin->m_pRuntime) {
 			if (error)
-				smcore.Format(error, maxlength, "Unable to load plugin (%s)", loadmsg);
+				ke::SafeSprintf(error, maxlength, "Unable to load plugin (%s)", loadmsg);
 			pPlugin->m_status = Plugin_BadLoad;
 		} else {
 			if (pPlugin->UpdateInfo()) {
 				pPlugin->m_status = Plugin_Created;
 			} else {
 				if (error)
-					smcore.Format(error, maxlength, "%s", pPlugin->m_errormsg);
+					ke::SafeSprintf(error, maxlength, "%s", pPlugin->m_errormsg);
 			}
 		}
 	}
@@ -953,9 +954,9 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 		unsigned char *pCodeHash = pPlugin->m_pRuntime->GetCodeHash();
 		
 		char codeHashBuf[40];
-		smcore.Format(codeHashBuf, 40, "plugin_");
+		ke::SafeSprintf(codeHashBuf, 40, "plugin_");
 		for (int i = 0; i < 16; i++)
-			smcore.Format(codeHashBuf + 7 + (i * 2), 3, "%02x", pCodeHash[i]);
+			ke::SafeSprintf(codeHashBuf + 7 + (i * 2), 3, "%02x", pCodeHash[i]);
 		
 		const char *bulletinUrl = g_pGameConf->GetKeyValue(codeHashBuf);
 		if (bulletinUrl != NULL)
@@ -966,9 +967,9 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 				{
 					if (bulletinUrl[0] != '\0')
 					{
-						smcore.Format(error, maxlength, "Known malware detected and blocked. See %s for more info", bulletinUrl);
+						ke::SafeSprintf(error, maxlength, "Known malware detected and blocked. See %s for more info", bulletinUrl);
 					} else {
-						smcore.Format(error, maxlength, "Possible malware or illegal plugin detected and blocked");
+						ke::SafeSprintf(error, maxlength, "Possible malware or illegal plugin detected and blocked");
 					}
 				}
 				pPlugin->m_status = Plugin_BadLoad;
@@ -1045,11 +1046,11 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 		{
 			if (m_LoadingLocked)
 			{
-				smcore.Format(error, maxlength, "There is a global plugin loading lock in effect");
+				ke::SafeSprintf(error, maxlength, "There is a global plugin loading lock in effect");
 			}
 			else
 			{
-				smcore.Format(error, maxlength, "This plugin is blocked from loading (see plugin_settings.cfg)");
+				ke::SafeSprintf(error, maxlength, "This plugin is blocked from loading (see plugin_settings.cfg)");
 			}
 		}
 		return NULL;
@@ -1171,13 +1172,13 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 			{
 				IPluginFunction *pFunc;
 				char buffer[64];
-				smcore.Format(buffer, sizeof(buffer), "__pl_%s_SetNTVOptional", &pubvar->name[5]);
+				ke::SafeSprintf(buffer, sizeof(buffer), "__pl_%s_SetNTVOptional", &pubvar->name[5]);
 				if ((pFunc=pBase->GetFunctionByName(buffer)))
 				{
 					cell_t res;
 					if (pFunc->Execute(&res) != SP_ERROR_NONE) {
 						if (error)
-							smcore.Format(error, maxlength, "Fatal error during initializing plugin load");
+							ke::SafeSprintf(error, maxlength, "Fatal error during initializing plugin load");
 						return false;
 					}
 				}
@@ -1209,7 +1210,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 				{
 					if (error)
 					{
-						smcore.Format(error, maxlength, "Could not find required plugin \"%s\"", name);
+						ke::SafeSprintf(error, maxlength, "Could not find required plugin \"%s\"", name);
 					}
 					return false;
 				}
@@ -1281,7 +1282,7 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 					{
 						if (error)
 						{
-							smcore.Format(error, maxlength, "Required extension \"%s\" file(\"%s\") not running", name, file);
+							ke::SafeSprintf(error, maxlength, "Required extension \"%s\" file(\"%s\") not running", name, file);
 						}
 						return false;
 					}
@@ -1294,14 +1295,14 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 				{
 					IPluginFunction *pFunc;
 					char buffer[64];
-					smcore.Format(buffer, sizeof(buffer), "__ext_%s_SetNTVOptional", &pubvar->name[6]);
+					ke::SafeSprintf(buffer, sizeof(buffer), "__ext_%s_SetNTVOptional", &pubvar->name[6]);
 
 					if ((pFunc = pBase->GetFunctionByName(buffer)) != NULL)
 					{
 						cell_t res;
 						if (pFunc->Execute(&res) != SP_ERROR_NONE) {
 							if (error)
-								smcore.Format(error, maxlength, "Fatal error during plugin initialization (ext req)");
+								ke::SafeSprintf(error, maxlength, "Fatal error during plugin initialization (ext req)");
 							return false;
 						}
 					}
@@ -1343,7 +1344,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		{
 			if (error)
 			{
-				smcore.Format(error, maxlength, "Native \"%s\" was not found", native->name);
+				ke::SafeSprintf(error, maxlength, "Native \"%s\" was not found", native->name);
 			}
 			return false;
 		}
@@ -1489,7 +1490,7 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 	if (pContext != NULL && pContext->IsInExec())
 	{
 		char buffer[255];
-		smcore.Format(buffer, sizeof(buffer), "sm plugins unload %s\n", plugin->GetFilename());
+		ke::SafeSprintf(buffer, sizeof(buffer), "sm plugins unload %s\n", plugin->GetFilename());
 		engine->ServerCommand(buffer);
 		return false;
 	}
@@ -1853,7 +1854,7 @@ ConfigResult CPluginManager::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "no") == 0) {
 			m_bBlockBadPlugins = false;
 		} else {
-			smcore.Format(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
+			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
 			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
@@ -1974,7 +1975,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
 				if (pl->GetStatus() != Plugin_Running && !pl->IsSilentlyFailed())
 				{
-					len += smcore.Format(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetStatus()));
+					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetStatus()));
 
 					if (pl->GetStatus() <= Plugin_Error)
 					{
@@ -1984,25 +1985,25 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				}
 				else
 				{
-					len += smcore.Format(buffer, sizeof(buffer), "  %02d", id);
+					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d", id);
 				}
 				if (pl->GetStatus() < Plugin_Created)
 				{
 					if (pl->IsSilentlyFailed())
-						len += smcore.Format(&buffer[len], sizeof(buffer)-len, " Disabled:");
-					len += smcore.Format(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+						len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " Disabled:");
+					len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 					if (IS_STR_FILLED(info->version))
 					{
-						len += smcore.Format(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
+						len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
 					}
 					if (IS_STR_FILLED(info->author))
 					{
-						smcore.Format(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
+						ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
 					}
 				}
 				else
 				{
-					smcore.Format(&buffer[len], sizeof(buffer)-len, " %s", pl->m_filename);
+					ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " %s", pl->m_filename);
 				}
 				rootmenu->ConsolePrint("%s", buffer);
 			}
@@ -2099,11 +2100,11 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			if (pl->GetStatus() < Plugin_Created)
 			{
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
-				smcore.Format(name, sizeof(name), (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+				ke::SafeSprintf(name, sizeof(name), (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 			}
 			else
 			{
-				smcore.Format(name, sizeof(name), "%s", pl->GetFilename());
+				ke::SafeSprintf(name, sizeof(name), "%s", pl->GetFilename());
 			}
 
 			if (UnloadPlugin(pl))
@@ -2252,7 +2253,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				
 				char combinedHash[33];
 				for (int i = 0; i < 16; i++)
-					smcore.Format(combinedHash + (i * 2), 3, "%02x", pCodeHash[i] ^ pDataHash[i]);
+					ke::SafeSprintf(combinedHash + (i * 2), 3, "%02x", pCodeHash[i] ^ pDataHash[i]);
 				
 				rootmenu->ConsolePrint("  Hash: %s", combinedHash);
 			}
@@ -2570,7 +2571,7 @@ SMPlugin *CPluginManager::FindPluginByConsoleArg(const char *arg)
 	{
 		char pluginfile[256];
 		const char *ext = libsys->GetFileExtension(arg) ? "" : ".smx";
-		smcore.Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
+		ke::SafeSprintf(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
 		if (!m_LoadLookup.retrieve(pluginfile, &pl))
 			return NULL;

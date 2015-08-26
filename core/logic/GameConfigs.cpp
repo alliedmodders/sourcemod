@@ -42,6 +42,7 @@
 #include "common_logic.h"
 #include "sm_crc32.h"
 #include "MemoryUtils.h"
+#include <am-string.h>
 
 #if defined PLATFORM_POSIX
 #include <dlfcn.h>
@@ -271,7 +272,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			error[0] = '\0';
 			if (strcmp(name, "server") != 0)
 			{
-				smcore.Format(error, sizeof(error), "Unrecognized library \"%s\"", name);
+				ke::SafeSprintf(error, sizeof(error), "Unrecognized library \"%s\"", name);
 			} 
 			else if (!s_ServerBinCRC_Ok)
 			{
@@ -281,7 +282,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 				g_pSM->BuildPath(Path_Game, path, sizeof(path), "bin/" PLATFORM_SERVER_BINARY);
 				if ((fp = fopen(path, "rb")) == NULL)
 				{
-					smcore.Format(error, sizeof(error), "Could not open binary: %s", path);
+					ke::SafeSprintf(error, sizeof(error), "Could not open binary: %s", path);
 				} else {
 					size_t size;
 					void *buffer;
@@ -791,7 +792,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	if (!libsys->PathExists(path))
 	{
 		/* Nope, use the old mechanism. */
-		smcore.Format(path, sizeof(path), "%s.txt", m_File);
+		ke::SafeSprintf(path, sizeof(path), "%s.txt", m_File);
 		if (!EnterFile(path, error, maxlength))
 		{
 			return false;
@@ -801,7 +802,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 		g_pSM->BuildPath(Path_SM, path, sizeof(path), "gamedata/custom/%s.txt", m_File);
 		if (libsys->PathExists(path))
 		{
-			smcore.Format(path, sizeof(path), "custom/%s.txt", m_File);
+			ke::SafeSprintf(path, sizeof(path), "custom/%s.txt", m_File);
 			return EnterFile(path, error, maxlength);
 		}
 		return true;
@@ -841,7 +842,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	List<String>::iterator iter;
 	for (iter = fileList.begin(); iter != fileList.end(); iter++)
 	{
-		smcore.Format(path, sizeof(path), "%s/%s", m_File, (*iter).c_str());
+		ke::SafeSprintf(path, sizeof(path), "%s/%s", m_File, (*iter).c_str());
 		if (!EnterFile(path, error, maxlength))
 		{
 			return false;
@@ -875,7 +876,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 			continue;	
 		}
 
-		smcore.Format(path, sizeof(path), "%s/custom/%s", m_File, curFile);
+		ke::SafeSprintf(path, sizeof(path), "%s/custom/%s", m_File, curFile);
 		if (!EnterFile(path, error, maxlength))
 		{
 			libsys->CloseDirectory(customDir);

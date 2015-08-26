@@ -34,6 +34,7 @@
 #include "Logger.h"
 #include <sourcemod_version.h>
 #include <ISourceMod.h>
+#include <am-string.h>
 
 Logger g_Logger;
 
@@ -57,7 +58,7 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "off") == 0) {
 			state = false;
 		} else {
-			smcore.Format(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
+			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
 			return ConfigResult_Reject;
 		}
 
@@ -78,7 +79,7 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "game") == 0) {
 			m_Mode = LoggingMode_Game;
 		} else {
-			smcore.Format(error, maxlength, "Invalid value: must be [daily|map|game]");
+			ke::SafeSprintf(error, maxlength, "Invalid value: must be [daily|map|game]");
 			return ConfigResult_Reject;
 		}
 
@@ -264,7 +265,7 @@ void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
 	static ConVar *sv_logecho = smcore.FindConVar("sv_logecho");
 
 	char buffer[3072];
-	smcore.FormatArgs(buffer, sizeof(buffer), msg, ap);
+	ke::SafeVsprintf(buffer, sizeof(buffer), msg, ap);
 
 	char date[32];
 	time_t t = g_pSM->GetAdjustedTime();
@@ -276,7 +277,7 @@ void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
 	if (!sv_logecho || smcore.GetCvarBool(sv_logecho))
 	{
 		static char conBuffer[4096];
-		smcore.Format(conBuffer, sizeof(conBuffer), "L %s: %s\n", date, buffer);
+		ke::SafeSprintf(conBuffer, sizeof(conBuffer), "L %s: %s\n", date, buffer);
 		smcore.ConPrint(conBuffer);
 	}
 }
@@ -289,7 +290,7 @@ void Logger::LogToFileOnlyEx(FILE *fp, const char *msg, va_list ap)
 	}
 
 	char buffer[3072];
-	smcore.FormatArgs(buffer, sizeof(buffer), msg, ap);
+	ke::SafeVsprintf(buffer, sizeof(buffer), msg, ap);
 
 	char date[32];
 	time_t t = g_pSM->GetAdjustedTime();
