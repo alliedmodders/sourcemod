@@ -40,6 +40,7 @@
 #include <ITranslator.h>
 #include "common_logic.h"
 #include "Logger.h"
+#include "sprintf.h"
 #include <am-utility.h>
 #include "handle_helpers.h"
 
@@ -774,7 +775,7 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 	char buffer[2048];
 	{
 		DetectExceptions eh(pContext);
-		smcore.atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
+		atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
 		if (eh.HasException())
 			return 0;
 	}
@@ -809,7 +810,7 @@ static cell_t sm_BuildPath(IPluginContext *pContext, const cell_t *params)
 
 	{
 		DetectExceptions eh(pContext);
-		smcore.atcprintf(path, sizeof(path), fmt, pContext, params, &arg);
+		atcprintf(path, sizeof(path), fmt, pContext, params, &arg);
 		if (eh.HasException())
 			return 0;
 	}

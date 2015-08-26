@@ -40,6 +40,7 @@
 #include <ILibrarySys.h>
 #include "PhraseCollection.h"
 #include "stringutil.h"
+#include "sprintf.h"
 #include <am-string.h>
 
 Translator g_Translator;
@@ -1059,7 +1060,7 @@ bool Translator::FormatString(char *buffer,
 	unsigned int arg;
 
 	arg = 0;
-	if (!smcore.gnprintf(buffer, maxlength, format, pPhrases, params, numparams, arg, pOutLength, pFailPhrase))
+	if (!gnprintf(buffer, maxlength, format, pPhrases, params, numparams, arg, pOutLength, pFailPhrase))
 	{
 		return false;
 	}

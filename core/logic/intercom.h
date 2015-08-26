@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 33)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 34)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -297,9 +297,6 @@ struct sm_core_t
 	void			(*ConPrint)(const char *message);
 	const char *	(*GetCvarString)(ConVar*);
 	bool			(*GetCvarBool)(ConVar*);
-	bool			(*gnprintf)(char *, size_t, const char *, IPhraseCollection *, void **,
-	                            unsigned int, unsigned int &, size_t *, const char **);
-	size_t			(*atcprintf)(char *, size_t, const char *, IPluginContext *, const cell_t *, int *);
 	bool            (*GetGameName)(char *buffer, size_t maxlength);
 	const char *    (*GetGameDescription)();
 	const char *    (*GetSourceEngineName)();
@@ -319,6 +316,9 @@ struct sm_core_t
 	int				(*GetImmunityMode)();
 	void			(*UpdateAdminCmdFlags)(const char *cmd, OverrideType type, FlagBits bits, bool remove);
 	bool			(*LookForCommandAdminFlags)(const char *cmd, FlagBits *pFlags);
+	bool            (*DescribePlayer)(int index, const char **namep, const char **authp, int *useridp);
+	int             (*MaxClients)();
+	int             (*GetGlobalTarget)();
 	const char		*gamesuffix;
 	/* Data */
 	ServerGlobals   *serverGlobals;
@@ -334,6 +334,7 @@ struct sm_logic_t
 	IThreader		*threader;
 	ITranslator		*translator;
 	const char      *(*stristr)(const char *, const char *);
+	size_t			(*atcprintf)(char *, size_t, const char *, IPluginContext *, const cell_t *, int *);
 	bool			(*CoreTranslate)(char *,  size_t, const char *, unsigned int, size_t *, ...);
 	void            (*AddCorePhraseFile)(const char *filename);
 	unsigned int	(*ReplaceAll)(char*, size_t, const char *, const char *, bool);

@@ -35,6 +35,7 @@
 #include <IPlayerHelpers.h>
 #include <ISourceMod.h>
 #include <ITranslator.h>
+#include "sprintf.h"
 
 static cell_t CheckCommandAccess(IPluginContext *pContext, const cell_t *params)
 {
@@ -90,7 +91,7 @@ static cell_t sm_PrintToServer(IPluginContext *pCtx, const cell_t *params)
 	int arg = 2;
 
 	pCtx->LocalToString(params[1], &fmt);
-	size_t res = smcore.atcprintf(buffer, sizeof(buffer) - 2, fmt, pCtx, params, &arg);
+	size_t res = atcprintf(buffer, sizeof(buffer) - 2, fmt, pCtx, params, &arg);
 
 	buffer[res++] = '\n';
 	buffer[res] = '\0';
@@ -129,7 +130,7 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 	int arg = 3;
 
 	pCtx->LocalToString(params[2], &fmt);
-	size_t res = smcore.atcprintf(buffer, sizeof(buffer) - 2, fmt, pCtx, params, &arg);
+	size_t res = atcprintf(buffer, sizeof(buffer) - 2, fmt, pCtx, params, &arg);
 
 	buffer[res++] = '\n';
 	buffer[res] = '\0';
