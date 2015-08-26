@@ -40,19 +40,19 @@ public:
 	VProfTool();
 
 	// IProfilingTool
-	const char *Name() KE_OVERRIDE;
-	const char *Description() KE_OVERRIDE;
-	bool Start() KE_OVERRIDE;
-	void Stop(void (*render)(const char *fmt, ...)) KE_OVERRIDE;
-	void Dump() KE_OVERRIDE;
-	bool IsActive() KE_OVERRIDE;
-	bool IsAttached() KE_OVERRIDE;
-	void EnterScope(const char *group, const char *name) KE_OVERRIDE;
-	void LeaveScope() KE_OVERRIDE;
-	void RenderHelp(void (*render)(const char *fmt, ...)) KE_OVERRIDE;
+	const char *Name() override;
+	const char *Description() override;
+	bool Start() override;
+	void Stop(void (*render)(const char *fmt, ...)) override;
+	void Dump() override;
+	bool IsActive() override;
+	bool IsAttached() override;
+	void EnterScope(const char *group, const char *name) override;
+	void LeaveScope() override;
+	void RenderHelp(void (*render)(const char *fmt, ...)) override;
 
 	// SMGlobalClass
-	void OnSourceModAllInitialized() KE_OVERRIDE;
+	void OnSourceModAllInitialized() override;
 
 private:
 	bool active_;
