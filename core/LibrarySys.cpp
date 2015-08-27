@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -39,22 +39,9 @@
 
 LibrarySystem g_LibSys;
 
-CLibrary::~CLibrary()
+CLibrary::CLibrary(ke::Ref<ke::SharedLib> lib)
+ : lib_(lib)
 {
-	if (m_lib)
-	{
-#if defined PLATFORM_WINDOWS
-		FreeLibrary(m_lib);
-#elif defined PLATFORM_POSIX
-		dlclose(m_lib);
-#endif
-		m_lib = NULL;
-	}
-}
-
-CLibrary::CLibrary(LibraryHandle me)
-{
-	m_lib = me;
 }
 
 void CLibrary::CloseLibrary()
@@ -64,11 +51,7 @@ void CLibrary::CloseLibrary()
 
 void *CLibrary::GetSymbolAddress(const char *symname)
 {
-#if defined PLATFORM_WINDOWS
-	return GetProcAddress(m_lib, symname);
-#elif defined PLATFORM_POSIX
-	return dlsym(m_lib, symname);
-#endif
+	return lib_->lookup(symname);
 }
 
 
@@ -307,18 +290,6 @@ void LibrarySystem::GetPlatformErrorEx(int code, char *error, size_t maxlength)
 	}
 }
 
-void LibrarySystem::GetLoaderError(char *buffer, size_t maxlength)
-{
-#if defined PLATFORM_WINDOWS
-	GetPlatformError(buffer, maxlength);
-#elif defined PLATFORM_POSIX
-	if (buffer != NULL && maxlength)
-	{
-		strncopy(buffer, dlerror(), maxlength);
-	}
-#endif
-}
-
 void LibrarySystem::CloseDirectory(IDirectory *dir)
 {
 	delete dir;
@@ -326,19 +297,9 @@ void LibrarySystem::CloseDirectory(IDirectory *dir)
 
 ILibrary *LibrarySystem::OpenLibrary(const char *path, char *error, size_t maxlength)
 {
-	LibraryHandle lib;
-#if defined PLATFORM_WINDOWS
-	lib = LoadLibraryA(path);
-#elif defined PLATFORM_POSIX
-	lib = dlopen(path, RTLD_NOW);
-#endif
-
-	if (lib == NULL)
-	{
-		GetLoaderError(error, maxlength);
-		return NULL;
-	}
-
+	ke::Ref<ke::SharedLib> lib = ke::SharedLib::Open(path, error, maxlength);
+	if (!lib)
+		return nullptr;
 	return new CLibrary(lib);
 }
 
