@@ -42,6 +42,7 @@
 #include <IGameConfigs.h>
 #include "frame_hooks.h"
 #include "logic_bridge.h"
+#include <amtl/os/am-shared-library.h>
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -50,7 +51,7 @@ SH_DECL_HOOK1_void(IVEngineServer, ServerCommand, SH_NOATTRIB, false, const char
 
 SourceModBase g_SourceMod;
 
-ILibrary *g_pJIT = NULL;
+ke::Ref<ke::SharedLib> g_JIT;
 SourceHook::String g_BaseDir;
 ISourcePawnEngine *g_pSourcePawn = NULL;
 ISourcePawnEngine2 *g_pSourcePawn2 = NULL;
@@ -79,8 +80,7 @@ void ShutdownJIT()
 		g_pSourcePawn = NULL;
 	}
 
-	g_pJIT->CloseLibrary();
-	g_pJIT = NULL;
+	g_JIT = nullptr;
 }
 
 SourceModBase::SourceModBase()
@@ -183,8 +183,8 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 		PLATFORM_LIB_EXT
 		);
 
-	g_pJIT = g_LibSys.OpenLibrary(file, myerror, sizeof(myerror));
-	if (!g_pJIT)
+	g_JIT = ke::SharedLib::Open(file, myerror, sizeof(myerror));
+	if (!g_JIT)
 	{
 		if (error && maxlength)
 		{
@@ -196,7 +196,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	}
 
 	GetSourcePawnFactoryFn factoryFn =
-		(GetSourcePawnFactoryFn)g_pJIT->GetSymbolAddress("GetSourcePawnFactory");
+	  g_JIT->get<decltype(factoryFn)>("GetSourcePawnFactory");
 
 	if (!factoryFn) {
 		if (error && maxlength)

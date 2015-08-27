@@ -58,6 +58,7 @@
 #else
 #include "convar_sm.h"
 #endif
+#include <amtl/os/am-shared-library.h>
 
 #if defined _WIN32
 	#define MATCHMAKINGDS_SUFFIX	""
@@ -74,7 +75,7 @@
 	#define MATCHMAKINGDS_EXT	"so"
 #endif
 
-static ILibrary *g_pLogic = NULL;
+static ke::Ref<ke::SharedLib> g_Logic;
 static LogicInitFunction logic_init_fn;
 
 IThreader *g_pThreader;
@@ -650,15 +651,14 @@ void InitLogicBridge()
 	core_bridge.serverFactory = (void *)g_SMAPI->GetServerFactory(false);
 	core_bridge.listeners = SMGlobalClass::head;
 
-	ILibrary *mmlib;
 	char path[PLATFORM_MAX_PATH];
 
 	g_LibSys.PathFormat(path, sizeof(path), "%s/bin/matchmaking_ds%s.%s", g_SMAPI->GetBaseDir(), MATCHMAKINGDS_SUFFIX, MATCHMAKINGDS_EXT);
 
-	if ((mmlib = g_LibSys.OpenLibrary(path, NULL, 0)))
+	if (ke::Ref<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0))
 	{
-		core_bridge.matchmakingDSFactory = mmlib->GetSymbolAddress("CreateInterface");
-		mmlib->CloseLibrary();
+		core_bridge.matchmakingDSFactory =
+		  mmlib->get<decltype(core_bridge.matchmakingDSFactory)>("CreateInterface");
 	}
 	
 	logic_init_fn(&core_bridge, &logicore);
@@ -695,9 +695,8 @@ bool StartLogicBridge(char *error, size_t maxlength)
 		g_SourceMod.GetSourceModPath());
 
 	char myerror[255];
-	g_pLogic = g_LibSys.OpenLibrary(file, myerror, sizeof(myerror));
-
-	if (!g_pLogic)
+	g_Logic = ke::SharedLib::Open(file, myerror, sizeof(myerror));
+	if (!g_Logic)
 	{
 		if (error && maxlength)
 		{
@@ -706,10 +705,10 @@ bool StartLogicBridge(char *error, size_t maxlength)
 		return false;
 	}
 
-	LogicLoadFunction llf = (LogicLoadFunction)g_pLogic->GetSymbolAddress("logic_load");
+	LogicLoadFunction llf = g_Logic->get<decltype(llf)>("logic_load");
 	if (llf == NULL)
 	{
-		g_pLogic->CloseLibrary();
+		g_Logic = nullptr;
 		if (error && maxlength)
 		{
 			UTIL_Format(error, maxlength, "could not find logic_load function");
@@ -717,7 +716,7 @@ bool StartLogicBridge(char *error, size_t maxlength)
 		return false;
 	}
 
-	GetITextParsers getitxt = (GetITextParsers)g_pLogic->GetSymbolAddress("get_textparsers");
+	GetITextParsers getitxt = g_Logic->get<decltype(getitxt)>("get_textparsers");
 	textparsers = getitxt();
 
 	logic_init_fn = llf(SM_LOGIC_MAGIC);
@@ -727,6 +726,6 @@ bool StartLogicBridge(char *error, size_t maxlength)
 
 void ShutdownLogicBridge()
 {
-	g_pLogic->CloseLibrary();
+	g_Logic = nullptr;
 }
 
