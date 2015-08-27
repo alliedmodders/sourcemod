@@ -34,8 +34,8 @@
 #include <stdarg.h>
 #include <string.h>
 #include <sm_platform.h>
-#include "sm_stringutil.h"
 #include "LibrarySys.h"
+#include <amtl/am-string.h>
 #include <amtl/os/am-path.h>
 #include <amtl/os/am-fsutil.h>
 
@@ -220,13 +220,13 @@ void LibrarySystem::GetPlatformErrorEx(int code, char *error, size_t maxlength)
 						   maxlength,
 						   NULL) == 0)
 		{
-			UTIL_Format(error, maxlength, "error code %08x", code);
+			ke::SafeSprintf(error, maxlength, "error code %08x", code);
 		}
 #elif defined PLATFORM_LINUX
 		const char *ae = strerror_r(code, error, maxlength);
 		if (ae != error)
 		{
-			UTIL_Format(error, maxlength, "%s", ae);
+			ke::SafeSprintf(error, maxlength, "%s", ae);
 		}
 #elif defined PLATFORM_POSIX
 		strerror_r(code, error, maxlength);
@@ -305,12 +305,12 @@ size_t LibrarySystem::GetFileFromPath(char *buffer, size_t maxlength, const char
 #endif
 			)
 		{
-			return UTIL_Format(buffer, maxlength, "%s", &path[i+1]);
+			return ke::SafeSprintf(buffer, maxlength, "%s", &path[i+1]);
 		}
 	}
 
 	/* We scanned and found no path separator */
-	return UTIL_Format(buffer, maxlength, "%s", path);
+	return ke::SafeSprintf(buffer, maxlength, "%s", path);
 }
 
 bool LibrarySystem::FileTime(const char *path, FileTimeType type, time_t *pTime)

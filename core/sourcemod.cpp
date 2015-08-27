@@ -32,7 +32,6 @@
 #include <stdio.h>
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include "LibrarySys.h"
 #include <sh_string.h>
 #include "CoreConfig.h"
 #include "Logger.h"

@@ -52,13 +52,14 @@
 #include "ProfileTools.h"
 #include "Logger.h"
 #include "sprintf.h"
+#include "LibrarySys.h"
 
 sm_core_t smcore;
 IHandleSys *handlesys = &g_HandleSys;
 IdentityToken_t *g_pCoreIdent;
 SMGlobalClass *SMGlobalClass::head = NULL;
 ISourceMod *g_pSM;
-ILibrarySys *libsys;
+ILibrarySys *libsys = &g_LibSys;
 ITextParsers *textparser = &g_TextParser;
 IVEngineServer *engine;
 IShareSys *sharesys = &g_ShareSys;
@@ -158,7 +159,6 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 	memcpy(_logic, &logic, sizeof(sm_logic_t));
 	memcpy(&serverGlobals, core->serverGlobals, sizeof(ServerGlobals));
 
-	libsys = core->libsys;
 	engine = core->engine;
 	g_pSM = core->sm;
 	rootmenu = core->rootmenu;

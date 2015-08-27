@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 34)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 35)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -280,7 +280,6 @@ struct sm_core_t
 {
 	/* Objects */
 	ISourceMod		*sm;
-	ILibrarySys		*libsys;
 	IVEngineServer	*engine;
 	IFileSystem		*filesystem;
 	IPlayerInfo_Logic *playerInfo;

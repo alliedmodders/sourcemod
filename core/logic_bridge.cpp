@@ -35,7 +35,6 @@
 #include "sm_globals.h"
 #include "sm_autonatives.h"
 #include "logic/intercom.h"
-#include "LibrarySys.h"
 #include "sm_stringutil.h"
 #include "Logger.h"
 #include "sm_srvcmds.h"
@@ -599,7 +598,6 @@ static sm_core_t core_bridge =
 {
 	/* Objects */
 	&g_SourceMod,
-	&g_LibSys,
 	reinterpret_cast<IVEngineServer*>(&logic_engine),
 	reinterpret_cast<IFileSystem*>(&logic_filesystem),
 	&logic_playerinfo,
