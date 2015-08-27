@@ -59,6 +59,7 @@
 #include "convar_sm.h"
 #endif
 #include <amtl/os/am-shared-library.h>
+#include <amtl/os/am-path.h>
 
 #if defined _WIN32
 	#define MATCHMAKINGDS_SUFFIX	""
@@ -653,7 +654,7 @@ void InitLogicBridge()
 
 	char path[PLATFORM_MAX_PATH];
 
-	g_LibSys.PathFormat(path, sizeof(path), "%s/bin/matchmaking_ds%s.%s", g_SMAPI->GetBaseDir(), MATCHMAKINGDS_SUFFIX, MATCHMAKINGDS_EXT);
+	ke::path::Format(path, sizeof(path), "%s/bin/matchmaking_ds%s.%s", g_SMAPI->GetBaseDir(), MATCHMAKINGDS_SUFFIX, MATCHMAKINGDS_EXT);
 
 	if (ke::Ref<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0))
 	{

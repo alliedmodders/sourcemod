@@ -43,6 +43,7 @@
 #include "frame_hooks.h"
 #include "logic_bridge.h"
 #include <amtl/os/am-shared-library.h>
+#include <amtl/os/am-path.h>
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -106,8 +107,8 @@ ConfigResult SourceModBase::OnSourceModConfigChanged(const char *key,
 
 		if (!m_GotBasePath)
 		{
-			g_LibSys.PathFormat(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/%s", g_BaseDir.c_str(), value);
-			g_LibSys.PathFormat(m_SMRelDir, sizeof(m_SMRelDir), value);
+			ke::path::Format(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/%s", g_BaseDir.c_str(), value);
+			ke::path::Format(m_SMRelDir, sizeof(m_SMRelDir), value);
 
 			m_GotBasePath = true;
 		}
@@ -164,8 +165,8 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 		basepath = sm_basepath.GetDefault();
 	}
 
-	g_LibSys.PathFormat(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/%s", g_BaseDir.c_str(), basepath);
-	g_LibSys.PathFormat(m_SMRelDir, sizeof(m_SMRelDir), "%s", basepath);
+	ke::path::Format(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/%s", g_BaseDir.c_str(), basepath);
+	ke::path::Format(m_SMRelDir, sizeof(m_SMRelDir), "%s", basepath);
 
 	if (!StartLogicBridge(error, maxlength))
 	{
@@ -443,7 +444,7 @@ size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, c
 	 */
 	if (type != Path_SM_Rel && strncmp(_buffer, "file://", 7) == 0)
 	{
-		return g_LibSys.PathFormat(buffer, maxlength, "%s", &_buffer[7]);
+		return ke::path::Format(buffer, maxlength, "%s", &_buffer[7]);
 	}
 
 	const char *base = NULL;
@@ -462,11 +463,11 @@ size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, c
 
 	if (base)
 	{
-		return g_LibSys.PathFormat(buffer, maxlength, "%s/%s", base, _buffer);
+		return ke::path::Format(buffer, maxlength, "%s/%s", base, _buffer);
 	}
 	else
 	{
-		return g_LibSys.PathFormat(buffer, maxlength, "%s", _buffer);
+		return ke::path::Format(buffer, maxlength, "%s", _buffer);
 	}
 }
 

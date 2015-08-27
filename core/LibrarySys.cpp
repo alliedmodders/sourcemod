@@ -36,6 +36,8 @@
 #include <sm_platform.h>
 #include "sm_stringutil.h"
 #include "LibrarySys.h"
+#include <amtl/os/am-path.h>
+#include <amtl/os/am-fsutil.h>
 
 LibrarySystem g_LibSys;
 
@@ -124,7 +126,7 @@ bool CDirectory::IsEntryDirectory()
 #elif defined PLATFORM_POSIX
 	char temppath[PLATFORM_MAX_PATH];
 	snprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
-	return g_LibSys.IsPathDirectory(temppath);
+	return ke::file::IsDirectory(temppath);
 #endif
 }
 
@@ -135,7 +137,7 @@ bool CDirectory::IsEntryFile()
 #elif defined PLATFORM_POSIX
 	char temppath[PLATFORM_MAX_PATH];
 	snprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
-	return g_LibSys.IsPathFile(temppath);
+	return ke::file::IsFile(temppath);
 #endif
 }
 
@@ -170,75 +172,17 @@ bool CDirectory::IsValid()
 
 bool LibrarySystem::PathExists(const char *path)
 {
-#if defined PLATFORM_WINDOWS
-	DWORD attr = GetFileAttributesA(path);
-
-	return (attr != INVALID_FILE_ATTRIBUTES);
-#elif defined PLATFORM_POSIX
-	struct stat s;
-
-	return (stat(path, &s) == 0);
-#endif
+	return ke::file::PathExists(path);
 }
 
 bool LibrarySystem::IsPathFile(const char *path)
 {
-#if defined PLATFORM_WINDOWS
-	DWORD attr = GetFileAttributes(path);
-
-	if (attr == INVALID_FILE_ATTRIBUTES)
-	{
-		return false;
-	}
-
-	if (attr & (FILE_ATTRIBUTE_DIRECTORY|FILE_ATTRIBUTE_DEVICE))
-	{
-		return false;
-	}
-
-	return true;
-#elif defined PLATFORM_POSIX
-	struct stat s;
-
-	if (stat(path, &s) != 0)
-	{
-		return false;
-	}
-
-	return S_ISREG(s.st_mode) ? true : false;
-#endif
+	return ke::file::IsFile(path);
 }
 
 bool LibrarySystem::IsPathDirectory(const char *path)
 {
-#if defined PLATFORM_WINDOWS
-	DWORD attr = GetFileAttributes(path);
-
-	if (attr == INVALID_FILE_ATTRIBUTES)
-	{
-		return false;
-	}
-
-	if (attr & FILE_ATTRIBUTE_DIRECTORY)
-	{
-		return true;
-	}
-
-#elif defined PLATFORM_POSIX
-	struct stat s;
-
-	if (stat(path, &s) != 0)
-	{
-		return false;
-	}
-
-	if (S_ISDIR(s.st_mode))
-	{
-		return true;
-	}
-#endif
-
-	return false;
+	return ke::file::IsDirectory(path);
 }
 
 IDirectory *LibrarySystem::OpenDirectory(const char *path)
@@ -307,23 +251,8 @@ size_t LibrarySystem::PathFormat(char *buffer, size_t len, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	size_t mylen = vsnprintf(buffer, len, fmt, ap);
+	size_t mylen = ke::path::FormatVa(buffer, len, fmt, ap);
 	va_end(ap);
-
-	if (mylen >= len)
-	{
-		mylen = len - 1;
-		buffer[mylen] = '\0';
-	}
-
-	for (size_t i=0; i<mylen; i++)
-	{
-		if (buffer[i] == PLATFORM_SEP_ALTCHAR)
-		{
-			buffer[i] = PLATFORM_SEP_CHAR;
-		}
-	}
-
 	return mylen;
 }
 
@@ -359,11 +288,7 @@ const char *LibrarySystem::GetFileExtension(const char *filename)
 
 bool LibrarySystem::CreateFolder(const char *path)
 {
-#if defined PLATFORM_WINDOWS
-	return (mkdir(path) != -1);
-#elif defined PLATFORM_POSIX
-	return (mkdir(path, 0775) != -1);
-#endif
+	return ke::file::CreateDirectory(path, 0775);
 }
 
 size_t LibrarySystem::GetFileFromPath(char *buffer, size_t maxlength, const char *path)
