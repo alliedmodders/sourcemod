@@ -116,33 +116,33 @@ public:
 		return true;
 	}
 
-	size_t Read(void *pOut, int size) KE_OVERRIDE {
+	size_t Read(void *pOut, int size) override {
 		return (size_t)smcore.filesystem->Read(pOut, size, handle_);
 	}
-	char *ReadLine(char *pOut, int size) KE_OVERRIDE {
+	char *ReadLine(char *pOut, int size) override {
 		return smcore.filesystem->ReadLine(pOut, size, handle_);
 	}
-	size_t Write(const void *pData, int size) KE_OVERRIDE {
+	size_t Write(const void *pData, int size) override {
 		return (size_t)smcore.filesystem->Write(pData, size, handle_);
 	}
-	bool Seek(int pos, int seek_type) KE_OVERRIDE  {
+	bool Seek(int pos, int seek_type) override  {
 		smcore.filesystem->Seek(handle_, pos, seek_type);
 		return !HasError();
 	}
-	int Tell() KE_OVERRIDE {
+	int Tell() override {
 		return smcore.filesystem->Tell(handle_);
 	}
-	bool HasError() KE_OVERRIDE {
+	bool HasError() override {
 		return !handle_ || !smcore.filesystem->IsOk(handle_);
 	}
-	bool Flush() KE_OVERRIDE {
+	bool Flush() override {
 		smcore.filesystem->Flush(handle_);
 		return true;
 	}
-	bool EndOfFile() KE_OVERRIDE {
+	bool EndOfFile() override {
 		return smcore.filesystem->EndOfFile(handle_);
 	}
-	void Close() KE_OVERRIDE {
+	void Close() override {
 		if (!handle_)
 			return;
 		smcore.filesystem->Close(handle_);
@@ -180,31 +180,31 @@ public:
 		return unlink(path) == 0;
 	}
 
-	size_t Read(void *pOut, int size) KE_OVERRIDE {
+	size_t Read(void *pOut, int size) override {
 		return fread(pOut, 1, size, fp_);
 	}
-	char *ReadLine(char *pOut, int size) KE_OVERRIDE {
+	char *ReadLine(char *pOut, int size) override {
 		return fgets(pOut, size, fp_);
 	}
-	size_t Write(const void *pData, int size) KE_OVERRIDE {
+	size_t Write(const void *pData, int size) override {
 		return fwrite(pData, 1, size, fp_);
 	}
-	bool Seek(int pos, int seek_type) KE_OVERRIDE  {
+	bool Seek(int pos, int seek_type) override  {
 		return fseek(fp_, pos, seek_type) == 0;
 	}
-	int Tell() KE_OVERRIDE {
+	int Tell() override {
 		return ftell(fp_);
 	}
-	bool HasError() KE_OVERRIDE {
+	bool HasError() override {
 		return ferror(fp_) != 0;
 	}
-	bool Flush() KE_OVERRIDE {
+	bool Flush() override {
 		return fflush(fp_) == 0;
 	}
-	bool EndOfFile() KE_OVERRIDE {
+	bool EndOfFile() override {
 		return feof(fp_) != 0;
 	}
-	void Close() KE_OVERRIDE {
+	void Close() override {
 		if (!fp_)
 			return;
 		fclose(fp_);
