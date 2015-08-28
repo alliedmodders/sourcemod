@@ -30,7 +30,7 @@
  */
 
 #include "ConCmdManager.h"
-#include "sm_srvcmds.h"
+#include "RootConsoleMenu.h"
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
 #include "HalfLife2.h"
@@ -66,7 +66,7 @@ ConCmdManager::~ConCmdManager()
 void ConCmdManager::OnSourceModAllInitialized()
 {
 	scripts->AddPluginsListener(this);
-	g_RootMenu.AddRootConsoleCommand3("cmds", "List console commands", this);
+	rootmenu->AddRootConsoleCommand3("cmds", "List console commands", this);
 	SH_ADD_HOOK(IServerGameClients, SetCommandClient, serverClients, SH_MEMBER(this, &ConCmdManager::SetCommandClient), false);
 }
 
@@ -75,7 +75,7 @@ void ConCmdManager::OnSourceModShutdown()
 	scripts->RemovePluginsListener(this);
 	/* All commands should already be removed by the time we're done */
 	SH_REMOVE_HOOK(IServerGameClients, SetCommandClient, serverClients, SH_MEMBER(this, &ConCmdManager::SetCommandClient), false);
-	g_RootMenu.RemoveRootConsoleCommand("cmds", this);
+	rootmenu->RemoveRootConsoleCommand("cmds", this);
 }
 
 void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe)
@@ -644,7 +644,7 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 
 		if (!pPlugin)
 		{
-			g_RootMenu.ConsolePrint("[SM] Plugin \"%s\" was not found.", text);
+			rootmenu->ConsolePrint("[SM] Plugin \"%s\" was not found.", text);
 			return;
 		}
 
@@ -654,20 +654,20 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 		PluginHookList *pList;
 		if (!pPlugin->GetProperty("CommandList", (void **)&pList))
 		{
-			g_RootMenu.ConsolePrint("[SM] No commands found for: %s", plname);
+			rootmenu->ConsolePrint("[SM] No commands found for: %s", plname);
 			return;
 		}
 		if (pList->empty())
 		{
-			g_RootMenu.ConsolePrint("[SM] No commands found for: %s", plname);
+			rootmenu->ConsolePrint("[SM] No commands found for: %s", plname);
 			return;
 		}
 
 		const char *type = NULL;
 		const char *name;
 		const char *help;
-		g_RootMenu.ConsolePrint("[SM] Listing commands for: %s", plname);
-		g_RootMenu.ConsolePrint("  %-17.16s %-8.7s %s", "[Name]", "[Type]", "[Help]");
+		rootmenu->ConsolePrint("[SM] Listing commands for: %s", plname);
+		rootmenu->ConsolePrint("  %-17.16s %-8.7s %s", "[Name]", "[Type]", "[Help]");
 		for (PluginHookList::iterator iter = pList->begin(); iter != pList->end(); iter++)
 		{
 			CmdHook *hook = *iter;
@@ -681,11 +681,11 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 				help = hook->helptext.chars();
 			else
 				help = hook->info->pCmd->GetHelpText();
-			g_RootMenu.ConsolePrint("  %-17.16s %-12.11s %s", name, type, help);		
+			rootmenu->ConsolePrint("  %-17.16s %-12.11s %s", name, type, help);		
 		}
 
 		return;
 	}
 
-	g_RootMenu.ConsolePrint("[SM] Usage: sm cmds <plugin #>");
+	rootmenu->ConsolePrint("[SM] Usage: sm cmds <plugin #>");
 }

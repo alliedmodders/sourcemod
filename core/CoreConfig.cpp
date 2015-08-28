@@ -33,7 +33,7 @@
 #include "CoreConfig.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include "sm_srvcmds.h"
+#include "RootConsoleMenu.h"
 #include "sm_stringutil.h"
 #include "Logger.h"
 #include "frame_hooks.h"
@@ -118,7 +118,7 @@ void CheckAndFinalizeConfigs()
 
 void CoreConfig::OnSourceModAllInitialized()
 {
-	g_RootMenu.AddRootConsoleCommand3("config", "Set core configuration options", this);
+	rootmenu->AddRootConsoleCommand3("config", "Set core configuration options", this);
 	g_pOnServerCfg = forwardsys->CreateForward("OnServerCfg", ET_Ignore, 0, NULL);
 	g_pOnConfigsExecuted = forwardsys->CreateForward("OnConfigsExecuted", ET_Ignore, 0, NULL);
 	g_pOnAutoConfigsBuffered = forwardsys->CreateForward("OnAutoConfigsBuffered", ET_Ignore, 0, NULL);
@@ -134,7 +134,7 @@ CoreConfig::~CoreConfig()
 
 void CoreConfig::OnSourceModShutdown()
 {
-	g_RootMenu.RemoveRootConsoleCommand("config", this);
+	rootmenu->RemoveRootConsoleCommand("config", this);
 	forwardsys->ReleaseForward(g_pOnServerCfg);
 	forwardsys->ReleaseForward(g_pOnConfigsExecuted);
 	forwardsys->ReleaseForward(g_pOnAutoConfigsBuffered);
@@ -198,11 +198,11 @@ void CoreConfig::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *c
 
 		if (res == ConfigResult_Reject)
 		{
-			g_RootMenu.ConsolePrint("[SM] Could not set config option \"%s\" to \"%s\". (%s)", option, value, error);
+			rootmenu->ConsolePrint("[SM] Could not set config option \"%s\" to \"%s\". (%s)", option, value, error);
 		} else if (res == ConfigResult_Ignore) {
-			g_RootMenu.ConsolePrint("[SM] No such config option \"%s\" exists.", option);
+			rootmenu->ConsolePrint("[SM] No such config option \"%s\" exists.", option);
 		} else {
-			g_RootMenu.ConsolePrint("[SM] Config option \"%s\" successfully set to \"%s\".", option, value);
+			rootmenu->ConsolePrint("[SM] Config option \"%s\" successfully set to \"%s\".", option, value);
 		}
 
 		return;
@@ -213,15 +213,15 @@ void CoreConfig::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *c
 		
 		if (value == NULL)
 		{
-			g_RootMenu.ConsolePrint("[SM] No such config option \"%s\" exists.", option);
+			rootmenu->ConsolePrint("[SM] No such config option \"%s\" exists.", option);
 		} else {
-			g_RootMenu.ConsolePrint("[SM] Config option \"%s\" is set to \"%s\".", option, value);
+			rootmenu->ConsolePrint("[SM] Config option \"%s\" is set to \"%s\".", option, value);
 		}
 		
 		return;
 	}
 
-	g_RootMenu.ConsolePrint("[SM] Usage: sm config <option> [value]");
+	rootmenu->ConsolePrint("[SM] Usage: sm config <option> [value]");
 }
 
 void CoreConfig::Initialize()

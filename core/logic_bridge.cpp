@@ -37,7 +37,7 @@
 #include "logic/intercom.h"
 #include "sm_stringutil.h"
 #include "Logger.h"
-#include "sm_srvcmds.h"
+#include "RootConsoleMenu.h"
 #include "TimerSys.h"
 #include "logic_bridge.h"
 #include "PlayerManager.h"

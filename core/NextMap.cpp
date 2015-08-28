@@ -35,8 +35,8 @@
 #include "sourcemm_api.h"
 #include "sm_stringutil.h"
 #include "sourcehook.h"
-#include "sm_srvcmds.h"
 #include "logic_bridge.h"
+#include "compat_wrappers.h"
 
 NextMapManager g_NextMap;
 
