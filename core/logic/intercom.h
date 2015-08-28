@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 38)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 39)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -275,8 +275,6 @@ private:
 	const CVector<IExtension *> *list_;
 };
 
-class CCommand;
-
 struct sm_core_t
 {
 	/* Objects */
@@ -303,8 +301,6 @@ struct sm_core_t
 	const char *	(*GetCoreConfigValue)(const char*);
 	bool			(*IsMapLoading)();
 	bool			(*IsMapRunning)();
-	int				(*Argc)(const CCommand &args);
-	const char *	(*Arg)(const CCommand &args, int arg);
 	int				(*LoadMMSPlugin)(const char *file, bool *ok, char *error, size_t maxlength);
 	void			(*UnloadMMSPlugin)(int id);
 	void			(*DoGlobalPluginLoads)();

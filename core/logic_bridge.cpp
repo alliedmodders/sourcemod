@@ -466,16 +466,6 @@ static bool look_for_cmd_admin_flags(const char *cmd, FlagBits *pFlags)
 	return g_ConCmds.LookForCommandAdminFlags(cmd, pFlags);
 }
 
-int read_cmd_argc(const CCommand &args)
-{
-	return args.ArgC();
-}
-
-static const char *read_cmd_arg(const CCommand &args, int arg)
-{
-	return args.Arg(arg);
-}
-
 static int load_mms_plugin(const char *file, bool *ok, char *error, size_t maxlength)
 {
 	bool ignore_already;
@@ -644,8 +634,6 @@ static sm_core_t core_bridge =
 	get_core_config_value,
 	is_map_loading,
 	is_map_running,
-	read_cmd_argc,
-	read_cmd_arg,
 	load_mms_plugin,
 	unload_mms_plugin,
 	do_global_plugin_loads,
