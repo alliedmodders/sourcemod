@@ -118,7 +118,7 @@ void CheckAndFinalizeConfigs()
 
 void CoreConfig::OnSourceModAllInitialized()
 {
-	g_RootMenu.AddRootConsoleCommand("config", "Set core configuration options", this);
+	g_RootMenu.AddRootConsoleCommand3("config", "Set core configuration options", this);
 	g_pOnServerCfg = forwardsys->CreateForward("OnServerCfg", ET_Ignore, 0, NULL);
 	g_pOnConfigsExecuted = forwardsys->CreateForward("OnConfigsExecuted", ET_Ignore, 0, NULL);
 	g_pOnAutoConfigsBuffered = forwardsys->CreateForward("OnAutoConfigsBuffered", ET_Ignore, 0, NULL);
@@ -184,13 +184,13 @@ void CoreConfig::OnSourceModLevelChange(const char *mapName)
 	g_bGotTrigger = false;
 }
 
-void CoreConfig::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
+void CoreConfig::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command)
 {
-	int argcount = command.ArgC();
+	int argcount = command->ArgC();
 	if (argcount >= 4)
 	{
-		const char *option = command.Arg(2);
-		const char *value = command.Arg(3);
+		const char *option = command->Arg(2);
+		const char *value = command->Arg(3);
 
 		char error[255];
 
@@ -207,7 +207,7 @@ void CoreConfig::OnRootConsoleCommand(const char *cmdname, const CCommand &comma
 
 		return;
 	} else if (argcount >= 3) {
-		const char *option = command.Arg(2);
+		const char *option = command->Arg(2);
 		
 		const char *value = GetCoreConfigValue(option);
 		

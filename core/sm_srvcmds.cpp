@@ -54,8 +54,8 @@ RootConsoleMenu::~RootConsoleMenu()
 
 void RootConsoleMenu::OnSourceModStartup(bool late)
 {
-	AddRootConsoleCommand("version", "Display version information", this);
-	AddRootConsoleCommand("credits", "Display credits listing", this);
+	AddRootConsoleCommand3("version", "Display version information", this);
+	AddRootConsoleCommand3("credits", "Display credits listing", this);
 }
 
 void RootConsoleMenu::OnSourceModAllInitialized()
@@ -92,18 +92,17 @@ void RootConsoleMenu::ConsolePrint(const char *fmt, ...)
 
 bool RootConsoleMenu::AddRootConsoleCommand(const char *cmd, const char *text, IRootConsoleCommand *pHandler)
 {
-	return _AddRootConsoleCommand(cmd, text, pHandler, false);
+	return false;
 }
 
 bool RootConsoleMenu::AddRootConsoleCommand2(const char *cmd, const char *text, IRootConsoleCommand *pHandler)
 {
-	return _AddRootConsoleCommand(cmd, text, pHandler, true);
+	return false;
 }
 
-bool RootConsoleMenu::_AddRootConsoleCommand(const char *cmd,
+bool RootConsoleMenu::AddRootConsoleCommand3(const char *cmd,
 											 const char *text,
-											 IRootConsoleCommand *pHandler,
-											 bool version2)
+											 IRootConsoleCommand *pHandler)
 {
 	if (m_Commands.contains(cmd))
 		return false;
@@ -120,7 +119,6 @@ bool RootConsoleMenu::_AddRootConsoleCommand(const char *cmd,
 			ConsoleEntry *pNew = new ConsoleEntry;
 			pNew->command.assign(cmd);
 			pNew->description.assign(text);
-			pNew->version2 = version2;
 			pNew->cmd = pHandler;
 			m_Commands.insert(cmd, pNew);
 			m_Menu.insert(iter, pNew);
@@ -135,7 +133,6 @@ bool RootConsoleMenu::_AddRootConsoleCommand(const char *cmd,
 		ConsoleEntry *pNew = new ConsoleEntry;
 		pNew->command.assign(cmd);
 		pNew->description.assign(text);
-		pNew->version2 = version2;
 		pNew->cmd = pHandler;
 		m_Commands.insert(cmd, pNew);
 		m_Menu.push_back(pNew);
@@ -235,18 +232,18 @@ public:
 };
 #endif
 
-void RootConsoleMenu::GotRootCmd(const CCommand &cmd)
+void RootConsoleMenu::GotRootCmd(const ICommandArgs *cmd)
 {
-	unsigned int argnum = cmd.ArgC();
+	unsigned int argnum = cmd->ArgC();
 
 	if (argnum >= 2)
 	{
-		const char *cmdname = cmd.Arg(1);
+		const char *cmdname = cmd->Arg(1);
 		if (strcmp(cmdname, "internal") == 0)
 		{
 			if (argnum >= 3)
 			{
-				const char *arg = cmd.Arg(2);
+				const char *arg = cmd->Arg(2);
 				if (strcmp(arg, "1") == 0)
 				{
 					SM_ConfigsExecuted_Global();
@@ -255,26 +252,17 @@ void RootConsoleMenu::GotRootCmd(const CCommand &cmd)
 				{
 					if (argnum >= 4)
 					{
-						SM_ConfigsExecuted_Plugin(atoi(cmd.Arg(3)));
+						SM_ConfigsExecuted_Plugin(atoi(cmd->Arg(3)));
 					}
 				}
 			}
 			return;
 		}
 
-		CCommandArgs ocmd(cmd);
-
 		ConsoleEntry *entry;
 		if (m_Commands.retrieve(cmdname, &entry))
 		{
-			if (entry->version2)
-			{
-				entry->cmd->OnRootConsoleCommand2(cmdname, &ocmd);
-			}
-			else
-			{
-				entry->cmd->OnRootConsoleCommand(cmdname, cmd);
-			}
+			entry->cmd->OnRootConsoleCommand(cmdname, cmd);
 			return;
 		}
 	}
@@ -291,7 +279,7 @@ void RootConsoleMenu::GotRootCmd(const CCommand &cmd)
 	}
 }
 
-void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
+void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command)
 {
 	if (strcmp(cmdname, "credits") == 0)
 	{
@@ -332,7 +320,8 @@ CON_COMMAND(sm, "SourceMod Menu")
 #if SOURCE_ENGINE <= SE_DARKMESSIAH
 	CCommand args;
 #endif
-	g_RootMenu.GotRootCmd(args);
+	CCommandArgs cargs(args);
+	g_RootMenu.GotRootCmd(&cargs);
 }
 
 FILE *g_pHndlLog = NULL;

@@ -512,7 +512,7 @@ void CExtensionManager::OnSourceModAllInitialized()
 {
 	g_ExtType = g_ShareSys.CreateIdentType("EXTENSION");
 	pluginsys->AddPluginsListener(this);
-	rootmenu->AddRootConsoleCommand("exts", "Manage extensions", this);
+	rootmenu->AddRootConsoleCommand3("exts", "Manage extensions", this);
 	g_ShareSys.AddInterface(NULL, this);
 }
 
@@ -929,12 +929,12 @@ void CExtensionManager::AddDependency(IExtension *pSource, const char *file, boo
 	}
 }
 
-void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
+void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command)
 {
-	int argcount = smcore.Argc(command);
+	int argcount = command->ArgC();
 	if (argcount >= 3)
 	{
-		const char *cmd = smcore.Arg(command, 2);
+		const char *cmd = command->Arg(2);
 		if (strcmp(cmd, "list") == 0)
 		{
 			List<CExtension *>::iterator iter;
@@ -990,7 +990,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				return;
 			}
 
-			const char *filename = smcore.Arg(command, 3);
+			const char *filename = command->Arg(3);
 			char path[PLATFORM_MAX_PATH];
 			char error[256];
 
@@ -1021,7 +1021,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				return;
 			}
 
-			const char *sId = smcore.Arg(command, 3);
+			const char *sId = command->Arg(3);
 			unsigned int id = atoi(sId);
 			if (id <= 0)
 			{
@@ -1106,7 +1106,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				return;
 			}
 
-			const char *arg = smcore.Arg(command, 3);
+			const char *arg = command->Arg(3);
 			unsigned int num = atoi(arg);
 			CExtension *pExt = FindByOrder(num);
 
@@ -1118,7 +1118,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 
 			if (argcount > 4 && pExt->unload_code)
 			{
-				const char *unload = smcore.Arg(command, 4);
+				const char *unload = command->Arg(4);
 				if (pExt->unload_code == (unsigned)atoi(unload))
 				{
 					char filename[PLATFORM_MAX_PATH];
@@ -1223,7 +1223,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				return;
 			}
 			
-			const char *arg = smcore.Arg(command, 3);
+			const char *arg = command->Arg(3);
 			unsigned int num = atoi(arg);
 			CExtension *pExt = FindByOrder(num);
 

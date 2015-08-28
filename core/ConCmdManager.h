@@ -131,7 +131,7 @@ public: //SMGlobalClass
 public: //IPluginsListener
 	void OnPluginDestroyed(IPlugin *plugin);
 public: //IRootConsoleCommand
-	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
+	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command) override;
 public: //IConCommandTracker
 	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe);
 public:

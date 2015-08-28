@@ -347,7 +347,7 @@ public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);
 public: //IRootConsoleCommand
-	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
+	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command) override;
 public:
 	/**
 	 * Loads all plugins not yet loaded

@@ -134,7 +134,7 @@ void ConVarManager::OnSourceModAllInitialized()
 	scripts->AddPluginsListener(this);
 
 	/* Add the 'convars' option to the 'sm' console command */
-	g_RootMenu.AddRootConsoleCommand("cvars", "View convars created by a plugin", this);
+	g_RootMenu.AddRootConsoleCommand3("cvars", "View convars created by a plugin", this);
 }
 
 void ConVarManager::OnSourceModShutdown()
@@ -340,19 +340,19 @@ bool ConVarManager::GetHandleApproxSize(HandleType_t type, void *object, unsigne
 	return true;
 }
 
-void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
+void ConVarManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command)
 {
-	int argcount = command.ArgC();
+	int argcount = command->ArgC();
 	if (argcount >= 3)
 	{
 		bool wantReset = false;
 		
 		/* Get plugin index that was passed */
-		const char *arg = command.Arg(2);
+		const char *arg = command->Arg(2);
 		if (argcount >= 4 && strcmp(arg, "reset") == 0)
 		{
 			wantReset = true;
-			arg = command.Arg(3);
+			arg = command->Arg(3);
 		}
 		
 		/* Get plugin object */

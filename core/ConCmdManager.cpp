@@ -66,7 +66,7 @@ ConCmdManager::~ConCmdManager()
 void ConCmdManager::OnSourceModAllInitialized()
 {
 	scripts->AddPluginsListener(this);
-	g_RootMenu.AddRootConsoleCommand("cmds", "List console commands", this);
+	g_RootMenu.AddRootConsoleCommand3("cmds", "List console commands", this);
 	SH_ADD_HOOK(IServerGameClients, SetCommandClient, serverClients, SH_MEMBER(this, &ConCmdManager::SetCommandClient), false);
 }
 
@@ -634,11 +634,11 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 	return pInfo;
 }
 
-void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
+void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command)
 {
-	if (command.ArgC() >= 3)
+	if (command->ArgC() >= 3)
 	{
-		const char *text = command.Arg(2);
+		const char *text = command->Arg(2);
 
 		IPlugin *pPlugin = scripts->FindPluginByConsoleArg(text);
 

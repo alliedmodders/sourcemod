@@ -55,7 +55,7 @@ public: // SMGlobalClass
 public: // ITextListener_SMC
 	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
 public: // IRootConsoleCommand
-	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
+	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command) override;
 public:
 	/**
 	 * Initializes CoreConfig by reading from core.cfg file

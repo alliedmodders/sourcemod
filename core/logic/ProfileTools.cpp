@@ -40,7 +40,7 @@ ProfileToolManager::ProfileToolManager()
 void
 ProfileToolManager::OnSourceModAllInitialized()
 {
-	rootmenu->AddRootConsoleCommand2("prof", "Profiling", this);
+	rootmenu->AddRootConsoleCommand3("prof", "Profiling", this);
 }
 
 void
@@ -95,7 +95,7 @@ ProfileToolManager::StartFromConsole(IProfilingTool *tool)
 }
 
 void
-ProfileToolManager::OnRootConsoleCommand2(const char *cmdname, const ICommandArgs *args)
+ProfileToolManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *args)
 {
 	if (tools_.length() == 0) {
 		rootmenu->ConsolePrint("No profiling tools are enabled.");

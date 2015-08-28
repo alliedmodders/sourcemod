@@ -47,7 +47,6 @@ struct ConsoleEntry
 {
 	String command;
 	String description;
-	bool   version2;
 	IRootConsoleCommand *cmd;
 
 	static inline bool matches(const char *name, const ConsoleEntry *entry)
@@ -72,7 +71,7 @@ public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 public: //IRootConsoleCommand
-	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
+	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command);
 public: //IRootConsole
 	bool AddRootConsoleCommand(const char *cmd, const char *text, IRootConsoleCommand *pHandler);
 	bool RemoveRootConsoleCommand(const char *cmd, IRootConsoleCommand *pHandler);
@@ -81,12 +80,11 @@ public: //IRootConsole
 	bool AddRootConsoleCommand2(const char *cmd,
 								const char *text,
 								IRootConsoleCommand *pHandler);
-	bool _AddRootConsoleCommand(const char *cmd,
+	bool AddRootConsoleCommand3(const char *cmd,
 								const char *text,
-								IRootConsoleCommand *pHandler,
-								bool version2);
+								IRootConsoleCommand *pHandler);
 public:
-	void GotRootCmd(const CCommand &cmd);
+	void GotRootCmd(const ICommandArgs *cmd);
 private:
 	NameHashSet<ConsoleEntry *> m_Commands;
 	List<ConsoleEntry *> m_Menu;
