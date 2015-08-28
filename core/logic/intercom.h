@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 36)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 37)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -318,6 +318,7 @@ struct sm_core_t
 	bool            (*DescribePlayer)(int index, const char **namep, const char **authp, int *useridp);
 	int             (*MaxClients)();
 	int             (*GetGlobalTarget)();
+	void            (*ConsolePrintVa)(const char *fmt, va_list ap);
 	const char		*gamesuffix;
 	/* Data */
 	ServerGlobals   *serverGlobals;

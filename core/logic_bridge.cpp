@@ -544,6 +544,30 @@ static int get_global_target()
 	return g_SourceMod.GetGlobalTarget();
 }
 
+void UTIL_ConsolePrintVa(const char *fmt, va_list ap)
+{
+	char buffer[512];
+	size_t len = ke::SafeVsprintf(buffer, sizeof(buffer), fmt, ap);
+
+	if (len >= sizeof(buffer) - 1)
+	{
+		buffer[510] = '\n';
+		buffer[511] = '\0';
+	} else {
+		buffer[len++] = '\n';
+		buffer[len] = '\0';
+	}
+	META_CONPRINT(buffer);
+}
+
+void UTIL_ConsolePrint(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	UTIL_ConsolePrintVa(fmt, ap);
+	va_end(ap);
+}
+
 #if defined METAMOD_PLAPI_VERSION
 #if SOURCE_ENGINE == SE_LEFT4DEAD
 #define GAMEFIX "2.l4d"
@@ -636,6 +660,7 @@ static sm_core_t core_bridge =
 	describe_player,
 	get_max_clients,
 	get_global_target,
+	UTIL_ConsolePrintVa,
 	GAMEFIX,
 	&serverGlobals,
 };

@@ -67,23 +67,10 @@ void RootConsoleMenu::OnSourceModShutdown()
 
 void RootConsoleMenu::ConsolePrint(const char *fmt, ...)
 {
-	char buffer[512];
-
 	va_list ap;
 	va_start(ap, fmt);
-	size_t len = vsnprintf(buffer, sizeof(buffer), fmt, ap);
+	UTIL_ConsolePrintVa(fmt, ap);
 	va_end(ap);
-
-	if (len >= sizeof(buffer) - 1)
-	{
-		buffer[510] = '\n';
-		buffer[511] = '\0';
-	} else {
-		buffer[len++] = '\n';
-		buffer[len] = '\0';
-	}
-	
-	META_CONPRINT(buffer);
 }
 
 bool RootConsoleMenu::AddRootConsoleCommand(const char *cmd, const char *text, IRootConsoleCommand *pHandler)
