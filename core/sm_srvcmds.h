@@ -57,7 +57,6 @@ struct ConsoleEntry
 };
 
 class RootConsoleMenu : 
-	public IConCommandBaseAccessor,
 	public SMGlobalClass,
 	public IRootConsoleCommand,
 	public IRootConsole
@@ -68,8 +67,6 @@ public:
 public:
 	const char *GetInterfaceName();
 	unsigned int GetInterfaceVersion();
-public: //IConCommandBaseAccessor
-	bool RegisterConCommandBase(ConCommandBase *pCommand);
 public: //SMGlobalClass
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
@@ -91,7 +88,6 @@ public: //IRootConsole
 public:
 	void GotRootCmd(const CCommand &cmd);
 private:
-	bool m_CfgExecDone;
 	NameHashSet<ConsoleEntry *> m_Commands;
 	List<ConsoleEntry *> m_Menu;
 };

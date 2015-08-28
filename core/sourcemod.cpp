@@ -62,6 +62,7 @@ IGameConfig *g_pGameConf = NULL;
 bool g_Loaded = false;
 bool sm_show_debug_spew = false;
 bool sm_disable_jit = false;
+SMGlobalClass *SMGlobalClass::head = nullptr;
 
 #ifdef PLATFORM_WINDOWS
 ConVar sm_basepath("sm_basepath", "addons\\sourcemod", 0, "SourceMod base path (set via command line)");
@@ -751,5 +752,29 @@ bool SourceModBase::IsMapRunning()
 	return g_OnMapStarted;
 }
 
-SMGlobalClass *SMGlobalClass::head = NULL;
+class ConVarRegistrar :
+	public IConCommandBaseAccessor,
+	public SMGlobalClass
+{
+public:
+	void OnSourceModStartup(bool late) override
+	{
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+		g_pCVar = icvar;
+#endif
+		CONVAR_REGISTER(this);
+	}
 
+	bool RegisterConCommandBase(ConCommandBase *pCommand) override
+	{
+		META_REGCVAR(pCommand);
+
+		// Override values of convars created by SourceMod convar manager if
+		// specified on command line.
+		const char *cmdLineValue = icvar->GetCommandLineValue(pCommand->GetName());
+		if (cmdLineValue && !pCommand->IsCommand())
+			static_cast<ConVar *>(pCommand)->SetValue(cmdLineValue);
+
+		return true;
+	}
+} sConVarRegistrar;
