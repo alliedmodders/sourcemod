@@ -38,8 +38,6 @@
 
 RootConsoleMenu g_RootMenu;
 
-ConVar sourcemod_version("sourcemod_version", SOURCEMOD_VERSION, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY, "SourceMod Version");
-
 RootConsoleMenu::RootConsoleMenu()
 {
 	m_CfgExecDone = false;
