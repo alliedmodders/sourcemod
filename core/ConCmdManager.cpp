@@ -30,12 +30,12 @@
  */
 
 #include "ConCmdManager.h"
-#include "RootConsoleMenu.h"
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
 #include "HalfLife2.h"
 #include "ChatTriggers.h"
 #include "logic_bridge.h"
+#include "sourcemod.h"
 
 using namespace ke;
 
@@ -644,7 +644,7 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 
 		if (!pPlugin)
 		{
-			rootmenu->ConsolePrint("[SM] Plugin \"%s\" was not found.", text);
+			UTIL_ConsolePrint("[SM] Plugin \"%s\" was not found.", text);
 			return;
 		}
 
@@ -654,20 +654,20 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 		PluginHookList *pList;
 		if (!pPlugin->GetProperty("CommandList", (void **)&pList))
 		{
-			rootmenu->ConsolePrint("[SM] No commands found for: %s", plname);
+			UTIL_ConsolePrint("[SM] No commands found for: %s", plname);
 			return;
 		}
 		if (pList->empty())
 		{
-			rootmenu->ConsolePrint("[SM] No commands found for: %s", plname);
+			UTIL_ConsolePrint("[SM] No commands found for: %s", plname);
 			return;
 		}
 
 		const char *type = NULL;
 		const char *name;
 		const char *help;
-		rootmenu->ConsolePrint("[SM] Listing commands for: %s", plname);
-		rootmenu->ConsolePrint("  %-17.16s %-8.7s %s", "[Name]", "[Type]", "[Help]");
+		UTIL_ConsolePrint("[SM] Listing commands for: %s", plname);
+		UTIL_ConsolePrint("  %-17.16s %-8.7s %s", "[Name]", "[Type]", "[Help]");
 		for (PluginHookList::iterator iter = pList->begin(); iter != pList->end(); iter++)
 		{
 			CmdHook *hook = *iter;
@@ -681,11 +681,11 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 				help = hook->helptext.chars();
 			else
 				help = hook->info->pCmd->GetHelpText();
-			rootmenu->ConsolePrint("  %-17.16s %-12.11s %s", name, type, help);		
+			UTIL_ConsolePrint("  %-17.16s %-12.11s %s", name, type, help);		
 		}
 
 		return;
 	}
 
-	rootmenu->ConsolePrint("[SM] Usage: sm cmds <plugin #>");
+	UTIL_ConsolePrint("[SM] Usage: sm cmds <plugin #>");
 }

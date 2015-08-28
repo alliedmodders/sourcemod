@@ -32,7 +32,6 @@
 #include "sourcemm_api.h"
 #include "logic_bridge.h"
 #include "sm_globals.h"
-#include "RootConsoleMenu.h"
 #include "CoreConfig.h"
 #include <compat_wrappers.h>
 #include <ITranslator.h>
@@ -112,7 +111,7 @@ CON_COMMAND(sm, "SourceMod Menu")
 
 	}
 
-	g_RootMenu.GotRootCmd(&cargs);
+	logicore.OnRootCommand(&cargs);
 }
 
 FILE *g_pHndlLog = NULL;
@@ -150,7 +149,7 @@ CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle le
 #endif
 	if (args.ArgC() < 2)
 	{
-		rootmenu->ConsolePrint("Usage: sm_dump_handles <file> or <log> for game logs");
+		UTIL_ConsolePrint("Usage: sm_dump_handles <file> or <log> for game logs");
 		return;
 	}
 
@@ -163,7 +162,7 @@ CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle le
 		FILE *fp = fopen(filename, "wt");
 		if (!fp)
 		{
-			rootmenu->ConsolePrint("Failed to open \"%s\" for writing", filename);
+			UTIL_ConsolePrint("Failed to open \"%s\" for writing", filename);
 			return;
 		}
 
@@ -191,10 +190,10 @@ CON_COMMAND(sm_dump_admcache, "Dumps the admin cache for debugging")
 
 	if (!logicore.DumpAdminCache(buffer))
 	{
-		rootmenu->ConsolePrint("Could not open file for writing: %s", buffer);
+		UTIL_ConsolePrint("Could not open file for writing: %s", buffer);
 		return;
 	}
 
-	rootmenu->ConsolePrint("Admin cache dumped to: %s", buffer);
+	UTIL_ConsolePrint("Admin cache dumped to: %s", buffer);
 }
 

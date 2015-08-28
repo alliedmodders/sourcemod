@@ -27,12 +27,10 @@
 #ifndef _INCLUDE_SOURCEMOD_ROOT_CONSOLE_MENU_IMPL_H_
 #define _INCLUDE_SOURCEMOD_ROOT_CONSOLE_MENU_IMPL_H_
 
-#include "sourcemod.h"
+#include "common_logic.h"
 #include <IRootConsoleMenu.h>
-#include "sourcemm_api.h"
 #include <sh_list.h>
 #include <sh_string.h>
-#include <compat_wrappers.h>
 #include <sm_namehashset.h>
 
 using namespace SourceMod;
@@ -86,6 +84,5 @@ private:
 };
 
 extern RootConsoleMenu g_RootMenu;
-extern IRootConsole *rootmenu;
 
 #endif // _INCLUDE_SOURCEMOD_ROOT_CONSOLE_MENU_IMPL_H_

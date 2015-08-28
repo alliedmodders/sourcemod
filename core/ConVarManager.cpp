@@ -33,7 +33,7 @@
 #include <sh_vector.h>
 #include <sm_namehashset.h>
 #include "logic_bridge.h"
-#include "RootConsoleMenu.h"
+#include "sourcemod.h"
 
 ConVarManager g_ConVarManager;
 
@@ -360,7 +360,7 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 
 		if (!plugin)
 		{
-			rootmenu->ConsolePrint("[SM] Plugin \"%s\" was not found.", arg);
+			UTIL_ConsolePrint("[SM] Plugin \"%s\" was not found.", arg);
 			return;
 		}
 
@@ -374,14 +374,14 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 		/* If no convar list... */
 		if (!plugin->GetProperty("ConVarList", (void **)&pConVarList))
 		{
-			rootmenu->ConsolePrint("[SM] No convars found for: %s", plname);
+			UTIL_ConsolePrint("[SM] No convars found for: %s", plname);
 			return;
 		}
 
 		if (!wantReset)
 		{
-			rootmenu->ConsolePrint("[SM] Listing %d convars for: %s", pConVarList->size(), plname);
-			rootmenu->ConsolePrint("  %-32.31s %s", "[Name]", "[Value]");
+			UTIL_ConsolePrint("[SM] Listing %d convars for: %s", pConVarList->size(), plname);
+			UTIL_ConsolePrint("  %-32.31s %s", "[Name]", "[Value]");
 		}
 		
 		/* Iterate convar list and display/reset each one */
@@ -390,7 +390,7 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 			/*const */ConVar *pConVar = const_cast<ConVar *>(*iter);
 			if (!wantReset)
 			{
-				rootmenu->ConsolePrint("  %-32.31s %s", pConVar->GetName(), pConVar->GetString()); 
+				UTIL_ConsolePrint("  %-32.31s %s", pConVar->GetName(), pConVar->GetString()); 
 			} else {
 				pConVar->Revert();
 			}
@@ -398,14 +398,14 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 		
 		if (wantReset)
 		{
-			rootmenu->ConsolePrint("[SM] Reset %d convars for: %s", pConVarList->size(), plname);
+			UTIL_ConsolePrint("[SM] Reset %d convars for: %s", pConVarList->size(), plname);
 		}
 
 		return;
 	}
 
 	/* Display usage of subcommand */
-	rootmenu->ConsolePrint("[SM] Usage: sm cvars [reset] <plugin #>");
+	UTIL_ConsolePrint("[SM] Usage: sm cvars [reset] <plugin #>");
 }
 
 Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name, const char *defaultVal, const char *description, int flags, bool hasMin, float min, bool hasMax, float max)

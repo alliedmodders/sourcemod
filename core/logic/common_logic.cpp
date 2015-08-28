@@ -53,6 +53,7 @@
 #include "Logger.h"
 #include "sprintf.h"
 #include "LibrarySys.h"
+#include "RootConsoleMenu.h"
 
 sm_core_t smcore;
 IHandleSys *handlesys = &g_HandleSys;
@@ -63,7 +64,7 @@ ILibrarySys *libsys = &g_LibSys;
 ITextParsers *textparser = &g_TextParser;
 IVEngineServer *engine;
 IShareSys *sharesys = &g_ShareSys;
-IRootConsole *rootmenu;
+IRootConsole *rootmenu = &g_RootMenu;
 IPluginManager *pluginsys = g_PluginSys.GetOldAPI();
 IForwardManager *forwardsys = &g_Forwards;
 ITimerSystem *timersys;
@@ -120,6 +121,11 @@ static void RegisterProfiler(IProfilingTool *tool)
 	g_ProfileToolManager.RegisterTool(tool);
 }
 
+static void OnRootCommand(const ICommandArgs *args)
+{
+	g_RootMenu.GotRootCmd(args);
+}
+
 static sm_logic_t logic =
 {
 	NULL,
@@ -140,6 +146,7 @@ static sm_logic_t logic =
 	DumpHandles,
 	DumpAdminCache,
 	RegisterProfiler,
+	OnRootCommand,
 	&g_PluginSys,
 	&g_ShareSys,
 	&g_Extensions,
@@ -148,6 +155,7 @@ static sm_logic_t logic =
 	&g_Admins,
 	NULL,
 	&g_Logger,
+	&g_RootMenu,
 	-1.0f
 };
 
@@ -161,7 +169,6 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 
 	engine = core->engine;
 	g_pSM = core->sm;
-	rootmenu = core->rootmenu;
 	timersys = core->timersys;
 	playerhelpers = core->playerhelpers;
 	gamehelpers = core->gamehelpers;

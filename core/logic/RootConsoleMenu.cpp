@@ -25,14 +25,10 @@
 // exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
 // or <http://www.sourcemod.net/license.php>.
 #include "RootConsoleMenu.h"
-#include "sm_stringutil.h"
-#include "CoreConfig.h"
-#include "ConVarManager.h"
-#include "logic_bridge.h"
+#include <amtl/am-string.h>
 #include <sourcemod_version.h>
 
 RootConsoleMenu g_RootMenu;
-IRootConsole *rootmenu = &g_RootMenu;
 
 RootConsoleMenu::RootConsoleMenu()
 {
@@ -69,7 +65,7 @@ void RootConsoleMenu::ConsolePrint(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	UTIL_ConsolePrintVa(fmt, ap);
+	smcore.ConsolePrintVa(fmt, ap);
 	va_end(ap);
 }
 
@@ -149,7 +145,7 @@ void RootConsoleMenu::DrawGenericOption(const char *cmd, const char *text)
 	char buffer[255];
 	size_t len, cmdlen = strlen(cmd);
 
-	len = UTIL_Format(buffer, sizeof(buffer), "    %s", cmd);
+	len = ke::SafeSprintf(buffer, sizeof(buffer), "    %s", cmd);
 	if (cmdlen < 16)
 	{
 		size_t num = 16 - cmdlen;

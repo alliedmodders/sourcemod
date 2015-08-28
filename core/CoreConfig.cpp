@@ -33,14 +33,17 @@
 #include "CoreConfig.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include "RootConsoleMenu.h"
 #include "sm_stringutil.h"
 #include "Logger.h"
 #include "frame_hooks.h"
 #include "logic_bridge.h"
+#include "compat_wrappers.h"
 #include <sourcemod_version.h>
 #include <amtl/os/am-path.h>
 #include <amtl/os/am-fsutil.h>
+#include <sh_list.h>
+
+using namespace SourceHook;
 
 #ifdef PLATFORM_WINDOWS
 ConVar sm_corecfgfile("sm_corecfgfile", "addons\\sourcemod\\configs\\core.cfg", 0, "SourceMod core configuration file");
@@ -198,11 +201,11 @@ void CoreConfig::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *c
 
 		if (res == ConfigResult_Reject)
 		{
-			rootmenu->ConsolePrint("[SM] Could not set config option \"%s\" to \"%s\". (%s)", option, value, error);
+			UTIL_ConsolePrint("[SM] Could not set config option \"%s\" to \"%s\". (%s)", option, value, error);
 		} else if (res == ConfigResult_Ignore) {
-			rootmenu->ConsolePrint("[SM] No such config option \"%s\" exists.", option);
+			UTIL_ConsolePrint("[SM] No such config option \"%s\" exists.", option);
 		} else {
-			rootmenu->ConsolePrint("[SM] Config option \"%s\" successfully set to \"%s\".", option, value);
+			UTIL_ConsolePrint("[SM] Config option \"%s\" successfully set to \"%s\".", option, value);
 		}
 
 		return;
@@ -213,15 +216,15 @@ void CoreConfig::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *c
 		
 		if (value == NULL)
 		{
-			rootmenu->ConsolePrint("[SM] No such config option \"%s\" exists.", option);
+			UTIL_ConsolePrint("[SM] No such config option \"%s\" exists.", option);
 		} else {
-			rootmenu->ConsolePrint("[SM] Config option \"%s\" is set to \"%s\".", option, value);
+			UTIL_ConsolePrint("[SM] Config option \"%s\" is set to \"%s\".", option, value);
 		}
 		
 		return;
 	}
 
-	rootmenu->ConsolePrint("[SM] Usage: sm config <option> [value]");
+	UTIL_ConsolePrint("[SM] Usage: sm config <option> [value]");
 }
 
 void CoreConfig::Initialize()

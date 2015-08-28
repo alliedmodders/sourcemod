@@ -37,7 +37,6 @@
 #include "logic/intercom.h"
 #include "sm_stringutil.h"
 #include "Logger.h"
-#include "RootConsoleMenu.h"
 #include "TimerSys.h"
 #include "logic_bridge.h"
 #include "PlayerManager.h"
@@ -89,6 +88,7 @@ IHandleSys *handlesys;
 IForwardManager *forwardsys;
 IAdminSystem *adminsys;
 ILogger *logger;
+IRootConsole *rootmenu;
 
 class VEngineServer_Logic : public IVEngineServer_Logic
 {
@@ -625,7 +625,6 @@ static sm_core_t core_bridge =
 	reinterpret_cast<IVEngineServer*>(&logic_engine),
 	reinterpret_cast<IFileSystem*>(&logic_filesystem),
 	&logic_playerinfo,
-	&g_RootMenu,
 	&g_Timers,
 	&g_Players,
 	&g_HL2,
@@ -706,6 +705,7 @@ void InitLogicBridge()
 	forwardsys = logicore.forwardsys;
 	adminsys = logicore.adminsys;
 	logger = logicore.logger;
+	rootmenu = logicore.rootmenu;
 }
 
 bool StartLogicBridge(char *error, size_t maxlength)

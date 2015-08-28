@@ -41,7 +41,6 @@ project.sources += [
   'ConsoleDetours.cpp',
   'vprof_tool.cpp',
   'smn_commandline.cpp',
-  'RootConsoleMenu.cpp',
 ]
 
 for sdk_name in SM.sdks:
