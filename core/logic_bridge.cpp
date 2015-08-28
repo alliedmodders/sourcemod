@@ -624,6 +624,7 @@ void InitLogicBridge()
 
 	core_bridge.engineFactory = (void *)g_SMAPI->GetEngineFactory(false);
 	core_bridge.serverFactory = (void *)g_SMAPI->GetServerFactory(false);
+	core_bridge.vPhysicsFactory = (void *)g_SMAPI->GetPhysicsFactory(false);
 	core_bridge.listeners = SMGlobalClass::head;
 
 	ILibrary *mmlib;
