@@ -374,7 +374,7 @@ void CPlugin::Call_OnAllPluginsLoaded()
 		pFunction->Execute(&result);
 	}
 
-	if (smcore.IsMapRunning())
+	if (bridge->IsMapRunning())
 	{
 		if ((pFunction = m_pRuntime->GetFunctionByName("OnMapStart")) != NULL)
 		{
@@ -382,9 +382,9 @@ void CPlugin::Call_OnAllPluginsLoaded()
 		}
 	}
 
-	if (smcore.AreConfigsExecuted())
+	if (bridge->AreConfigsExecuted())
 	{
-		smcore.ExecuteConfigs(GetBaseContext());
+		bridge->ExecuteConfigs(GetBaseContext());
 	}
 }
 
@@ -1801,7 +1801,7 @@ bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)
 
 bool CPluginManager::IsLateLoadTime() const
 {
-	return (m_AllPluginsLoaded || !smcore.IsMapLoading());
+	return (m_AllPluginsLoaded || !bridge->IsMapLoading());
 }
 
 void CPluginManager::OnSourceModAllInitialized()
@@ -2275,7 +2275,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 		else if (strcmp(cmd, "refresh") == 0)
 		{
 			RefreshAll();
-			smcore.DoGlobalPluginLoads();
+			bridge->DoGlobalPluginLoads();
 			rootmenu->ConsolePrint("[SM] The plugin list has been refreshed and reloaded.");
 			return;
 		}

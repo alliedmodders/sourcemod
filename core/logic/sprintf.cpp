@@ -78,7 +78,7 @@ try_serverlang:
 	{
 		langid = g_Translator.GetServerLanguage();
  	}
-	else if ((target >= 1) && (target <= smcore.MaxClients()))
+	else if ((target >= 1) && (target <= bridge->MaxClients()))
 	{
 		langid = g_Translator.GetClientLanguage(target);
 	}
@@ -794,7 +794,7 @@ try_again:
 				{
 					lang_id = g_Translator.GetServerLanguage();
 				}
-				else if (target >= 1 && target <= smcore.MaxClients())
+				else if (target >= 1 && target <= bridge->MaxClients())
 				{
 					lang_id = g_Translator.GetClientLanguage(target);
 				}
@@ -1123,7 +1123,7 @@ reswitch:
 					const char *name;
 					const char *auth;
 					int userid;
-					if (!smcore.DescribePlayer(*value, &name, &auth, &userid))
+					if (!bridge->DescribePlayer(*value, &name, &auth, &userid))
 						return pCtx->ThrowNativeError("Client index %d is invalid", *value);
 					ke::SafeSprintf(buffer, 
 						sizeof(buffer), 
@@ -1150,7 +1150,7 @@ reswitch:
 
 				const char *name = "Console";
 				if (*value) {
-					if (!smcore.DescribePlayer(*value, &name, nullptr, nullptr))
+					if (!bridge->DescribePlayer(*value, &name, nullptr, nullptr))
 						return pCtx->ThrowNativeError("Client index %d is invalid", *value);
 				}
 				AddString(&buf_p, llen, name, width, prec);
@@ -1190,7 +1190,7 @@ reswitch:
 				char *key;
 				bool error;
 				size_t res;
-				cell_t target = smcore.GetGlobalTarget();
+				cell_t target = bridge->GetGlobalTarget();
 				pCtx->LocalToString(params[arg++], &key);
 				res = Translate(buf_p, llen, pCtx, key, target, params, &arg, &error);
 				if (error)

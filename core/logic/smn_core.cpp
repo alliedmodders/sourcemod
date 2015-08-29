@@ -78,7 +78,7 @@ public:
 			Param_Cell,
 			Param_String);
 		
-		sm_datetime_format = smcore.FindConVar("sm_datetime_format");
+		sm_datetime_format = bridge->FindConVar("sm_datetime_format");
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
@@ -173,7 +173,7 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 
 	if (format == NULL)
 	{
-		format = const_cast<char *>(smcore.GetCvarString(sm_datetime_format));
+		format = const_cast<char *>(bridge->GetCvarString(sm_datetime_format));
 	}
 
 #if defined SUBPLATFORM_SECURECRT

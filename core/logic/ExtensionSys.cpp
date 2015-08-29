@@ -79,7 +79,7 @@ CLocalExtension::CLocalExtension(const char *filename)
 		PLATFORM_MAX_PATH,
 		"extensions/%s.%s." PLATFORM_LIB_EXT,
 		filename,
-		smcore.gamesuffix);
+		bridge->gamesuffix);
 
 	if (libsys->IsPathFile(path))
 	{
@@ -87,9 +87,9 @@ CLocalExtension::CLocalExtension(const char *filename)
 	}
 
 	/* COMPAT HACK: One-halfth, if ep2v, see if there is an engine specific build in the new place with old naming */
-	if (strcmp(smcore.gamesuffix, "2.tf2") == 0
-		|| strcmp(smcore.gamesuffix, "2.dods") == 0
-		|| strcmp(smcore.gamesuffix, "2.hl2dm") == 0
+	if (strcmp(bridge->gamesuffix, "2.tf2") == 0
+		|| strcmp(bridge->gamesuffix, "2.dods") == 0
+		|| strcmp(bridge->gamesuffix, "2.hl2dm") == 0
 		)
 	{
 		g_pSM->BuildPath(Path_SM,
@@ -103,7 +103,7 @@ CLocalExtension::CLocalExtension(const char *filename)
 			goto found;
 		}
 	}
-	else if (strcmp(smcore.gamesuffix, "2.nd") == 0)
+	else if (strcmp(bridge->gamesuffix, "2.nd") == 0)
 	{
 		g_pSM->BuildPath(Path_SM,
 			path,
@@ -123,7 +123,7 @@ CLocalExtension::CLocalExtension(const char *filename)
 		PLATFORM_MAX_PATH,
 		"extensions/auto.%s/%s." PLATFORM_LIB_EXT,
 		filename,
-		smcore.gamesuffix);
+		bridge->gamesuffix);
 
 	/* Try the "normal" version */
 	if (!libsys->IsPathFile(path))
@@ -192,7 +192,7 @@ bool CLocalExtension::Load(char *error, size_t maxlength)
 	if (m_pAPI->IsMetamodExtension())
 	{
 		bool ok;
-		m_PlId = smcore.LoadMMSPlugin(m_Path.c_str(), &ok, error, maxlength);
+		m_PlId = bridge->LoadMMSPlugin(m_Path.c_str(), &ok, error, maxlength);
 
 		if (!m_PlId || !ok)
 		{
@@ -209,7 +209,7 @@ bool CLocalExtension::Load(char *error, size_t maxlength)
 		{
 			if (m_PlId)
 			{
-				smcore.UnloadMMSPlugin(m_PlId);
+				bridge->UnloadMMSPlugin(m_PlId);
 				m_PlId = 0;
 			}
 		}
@@ -230,7 +230,7 @@ void CLocalExtension::Unload()
 {
 	if (m_pAPI != NULL && m_PlId)
 	{
-		smcore.UnloadMMSPlugin(m_PlId);
+		bridge->UnloadMMSPlugin(m_PlId);
 		m_PlId = 0;
 	}
 
@@ -293,7 +293,7 @@ bool CExtension::PerformAPICheck(char *error, size_t maxlength)
 bool CExtension::Load(char *error, size_t maxlength)
 {
 	CreateIdentity();
-	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, maxlength, !smcore.IsMapLoading()))
+	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, maxlength, !bridge->IsMapLoading()))
 	{
 		DestroyIdentity();
 		return false;
@@ -301,7 +301,7 @@ bool CExtension::Load(char *error, size_t maxlength)
 	else
 	{
 		/* Check if we're past load time */
-		if (!smcore.IsMapLoading())
+		if (!bridge->IsMapLoading())
 		{
 			m_pAPI->OnExtensionsAllLoaded();
 		}

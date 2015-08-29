@@ -37,7 +37,7 @@
 #include "../sm_globals.h"
 #include "intercom.h"
 
-extern sm_core_t smcore;
+extern CoreProvider *bridge;
 extern IHandleSys *handlesys;
 extern ISourceMod *g_pSM;
 extern ILibrarySys *libsys;

@@ -608,7 +608,7 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 
 static ServerGlobals serverGlobals;
 
-static sm_core_t core_bridge =
+static CoreProvider core_bridge =
 {
 	/* Objects */
 	&g_SourceMod,

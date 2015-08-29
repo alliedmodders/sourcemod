@@ -262,7 +262,7 @@ void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
 		return;
 	}
 
-	static ConVar *sv_logecho = smcore.FindConVar("sv_logecho");
+	static ConVar *sv_logecho = bridge->FindConVar("sv_logecho");
 
 	char buffer[3072];
 	ke::SafeVsprintf(buffer, sizeof(buffer), msg, ap);
@@ -274,11 +274,11 @@ void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
 
 	fprintf(fp, "L %s: %s\n", date, buffer);
 
-	if (!sv_logecho || smcore.GetCvarBool(sv_logecho))
+	if (!sv_logecho || bridge->GetCvarBool(sv_logecho))
 	{
 		static char conBuffer[4096];
 		ke::SafeSprintf(conBuffer, sizeof(conBuffer), "L %s: %s\n", date, buffer);
-		smcore.ConPrint(conBuffer);
+		bridge->ConPrint(conBuffer);
 	}
 }
 
@@ -475,7 +475,7 @@ void Logger::_PrintToGameLog(const char *fmt, va_list ap)
 	msg[len++] = '\n';
 	msg[len] = '\0';
 
-	smcore.LogToGame(msg);
+	bridge->LogToGame(msg);
 }
 
 const char *Logger::GetLogFileName(LogType type) const

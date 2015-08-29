@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 39)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 40)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -275,8 +275,9 @@ private:
 	const CVector<IExtension *> *list_;
 };
 
-struct sm_core_t
+class CoreProvider
 {
+public:
 	/* Objects */
 	ISourceMod		*sm;
 	IVEngineServer	*engine;
@@ -357,7 +358,7 @@ struct sm_logic_t
 	float			sentinel;
 };
 
-typedef void (*LogicInitFunction)(const sm_core_t *core, sm_logic_t *logic);
+typedef void (*LogicInitFunction)(CoreProvider *core, sm_logic_t *logic);
 typedef LogicInitFunction (*LogicLoadFunction)(uint32_t magic);
 typedef ITextParsers *(*GetITextParsers)();
 

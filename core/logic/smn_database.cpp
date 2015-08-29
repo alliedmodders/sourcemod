@@ -1405,7 +1405,7 @@ static cell_t SQL_ConnectCustom(IPluginContext *pContext, const cell_t *params)
 										  err);
 	}
 
-	DatabaseInfo info = smcore.GetDBInfoFromKeyValues(kv);
+	DatabaseInfo info = bridge->GetDBInfoFromKeyValues(kv);
 
 	IDBDriver *driver;
 	if (info.driver[0] == '\0' || strcmp(info.driver, "default") == 0)
