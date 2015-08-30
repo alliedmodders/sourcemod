@@ -45,6 +45,7 @@
 #include "CoreConfig.h"
 #include "ConCmdManager.h"
 #include "IDBDriver.h"
+#include "provider.h"
 #if SOURCE_ENGINE == SE_DOTA
 # include "convar_sm_dota.h"
 #elif SOURCE_ENGINE >= SE_ALIENSWARM
@@ -127,7 +128,7 @@ public:
 		serverpluginhelpers->ClientCommand(pEdict, szCommand);
 #endif
 	}
-};
+} engine_wrapper;
 
 class VFileSystem_Logic : public IFileSystem_Logic
 {
@@ -216,7 +217,7 @@ public:
 	{
 		filesystem->CreateDirHierarchy(path, pathID);
 	}
-};
+} fs_wrapper;
 
 class VPlayerInfo_Logic : public IPlayerInfo_Logic
 {
@@ -285,7 +286,7 @@ public:
 	{
 		pInfo->ChangeTeam(iTeamNum);
 	}
-};
+} playerinfo_wrapper;
 
 static ConVar sm_show_activity("sm_show_activity", "13", FCVAR_SPONLY, "Activity display setting (see sourcemod.cfg)");
 static ConVar sm_immunity_mode("sm_immunity_mode", "1", FCVAR_SPONLY, "Mode for deciding immunity protection");
@@ -413,69 +414,37 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 
 static ServerGlobals serverGlobals;
 
-class CoreProviderImpl : public CoreProvider
+CoreProviderImpl sCoreProviderImpl;
+
+CoreProviderImpl::CoreProviderImpl()
 {
-public:
-	CoreProviderImpl()
-	{
-		this->sm = &g_SourceMod;
-		this->engine = &engine_wrapper_;
-		this->filesystem = &fs_wrapper_;
-		this->playerInfo = &playerinfo_wrapper_;
-		this->timersys = &g_Timers;
-		this->playerhelpers = &g_Players;
-		this->gamehelpers = &g_HL2;
-		this->menus = &g_Menus;
-		this->spe1 = &g_pSourcePawn;
-		this->spe2 = &g_pSourcePawn2;
-		this->GetCoreConfigValue = get_core_config_value;
-		this->DoGlobalPluginLoads = do_global_plugin_loads;
-		this->AreConfigsExecuted = SM_AreConfigsExecuted;
-		this->ExecuteConfigs = SM_ExecuteForPlugin;
-		this->GetDBInfoFromKeyValues = keyvalues_to_dbinfo;
-		this->GetActivityFlags = get_activity_flags;
-		this->GetImmunityMode = get_immunity_mode;
-		this->UpdateAdminCmdFlags = update_admin_cmd_flags;
-		this->LookForCommandAdminFlags = look_for_cmd_admin_flags;
-		this->GetGlobalTarget = get_global_target;
-		this->gamesuffix = GAMEFIX;
-		this->serverGlobals = &::serverGlobals;
-		this->serverFactory = nullptr;
-		this->engineFactory = nullptr;
-		this->matchmakingDSFactory = nullptr;
-		this->listeners = nullptr;
-	}
-
-	// Local functions.
-	void InitializeBridge();
-	bool LoadBridge(char *error, size_t maxlength);
-	void ShutdownBridge();
-
-	// Provider implementation.
-	ConVar *FindConVar(const char *name) override;
-	const char *GetCvarString(ConVar *cvar) override;
-	bool GetCvarBool(ConVar* cvar) override;
-	bool GetGameName(char *buffer, size_t maxlength) override;
-	const char *GetGameDescription() override;
-	const char *GetSourceEngineName() override;
-	bool SymbolsAreHidden() override;
-	bool IsMapLoading() override;
-	bool IsMapRunning() override;
-	int MaxClients() override;
-	bool DescribePlayer(int index, const char **namep, const char **authp, int *useridp) override;
-	void LogToGame(const char *message) override;
-	void ConPrint(const char *message) override;
-	void ConsolePrintVa(const char *fmt, va_list ap) override;
-	int LoadMMSPlugin(const char *file, bool *ok, char *error, size_t maxlength) override;
-	void UnloadMMSPlugin(int id) override;
-
-private:
-	ke::Ref<ke::SharedLib> logic_;
-	LogicInitFunction logic_init_;
-	VEngineServer_Logic engine_wrapper_;
-	VFileSystem_Logic fs_wrapper_;
-	VPlayerInfo_Logic playerinfo_wrapper_;
-} sCoreProviderImpl;
+	this->sm = &g_SourceMod;
+	this->engine = &engine_wrapper;
+	this->filesystem = &fs_wrapper;
+	this->playerInfo = &playerinfo_wrapper;
+	this->timersys = &g_Timers;
+	this->playerhelpers = &g_Players;
+	this->gamehelpers = &g_HL2;
+	this->menus = &g_Menus;
+	this->spe1 = &g_pSourcePawn;
+	this->spe2 = &g_pSourcePawn2;
+	this->GetCoreConfigValue = get_core_config_value;
+	this->DoGlobalPluginLoads = do_global_plugin_loads;
+	this->AreConfigsExecuted = SM_AreConfigsExecuted;
+	this->ExecuteConfigs = SM_ExecuteForPlugin;
+	this->GetDBInfoFromKeyValues = keyvalues_to_dbinfo;
+	this->GetActivityFlags = get_activity_flags;
+	this->GetImmunityMode = get_immunity_mode;
+	this->UpdateAdminCmdFlags = update_admin_cmd_flags;
+	this->LookForCommandAdminFlags = look_for_cmd_admin_flags;
+	this->GetGlobalTarget = get_global_target;
+	this->gamesuffix = GAMEFIX;
+	this->serverGlobals = &::serverGlobals;
+	this->serverFactory = nullptr;
+	this->engineFactory = nullptr;
+	this->matchmakingDSFactory = nullptr;
+	this->listeners = nullptr;
+}
 
 ConVar *CoreProviderImpl::FindConVar(const char *name)
 {
