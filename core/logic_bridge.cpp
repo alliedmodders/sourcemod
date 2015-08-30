@@ -608,49 +608,55 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 
 static ServerGlobals serverGlobals;
 
-static CoreProvider core_bridge =
+class CoreProviderImpl : public CoreProvider
 {
-	/* Objects */
-	&g_SourceMod,
-	reinterpret_cast<IVEngineServer*>(&logic_engine),
-	reinterpret_cast<IFileSystem*>(&logic_filesystem),
-	&logic_playerinfo,
-	&g_Timers,
-	&g_Players,
-	&g_HL2,
-	&g_Menus,
-	&g_pSourcePawn,
-	&g_pSourcePawn2,
-	/* Functions */
-	find_convar,
-	log_to_game,
-	conprint,
-	get_cvar_string,
-	get_cvar_bool,
-	get_game_name,
-	get_game_description,
-	get_source_engine_name,
-	symbols_are_hidden,
-	get_core_config_value,
-	is_map_loading,
-	is_map_running,
-	load_mms_plugin,
-	unload_mms_plugin,
-	do_global_plugin_loads,
-	SM_AreConfigsExecuted,
-	SM_ExecuteForPlugin,
-	keyvalues_to_dbinfo,
-	get_activity_flags,
-	get_immunity_mode,
-	update_admin_cmd_flags,
-	look_for_cmd_admin_flags,
-	describe_player,
-	get_max_clients,
-	get_global_target,
-	UTIL_ConsolePrintVa,
-	GAMEFIX,
-	&serverGlobals,
-};
+public:
+	CoreProviderImpl()
+	{
+		this->sm = &g_SourceMod;
+		this->engine = reinterpret_cast<IVEngineServer*>(&logic_engine);
+		this->filesystem = reinterpret_cast<IFileSystem*>(&logic_filesystem);
+		this->playerInfo = &logic_playerinfo;
+		this->timersys = &g_Timers;
+		this->playerhelpers = &g_Players;
+		this->gamehelpers = &g_HL2;
+		this->menus = &g_Menus;
+		this->spe1 = &g_pSourcePawn;
+		this->spe2 = &g_pSourcePawn2;
+		this->FindConVar = find_convar;
+		this->LogToGame = log_to_game;
+		this->ConPrint = conprint;
+		this->GetCvarString = get_cvar_string;
+		this->GetCvarBool = get_cvar_bool;
+		this->GetGameName = get_game_name;
+		this->GetGameDescription = get_game_description;
+		this->GetSourceEngineName = get_source_engine_name;
+		this->SymbolsAreHidden = symbols_are_hidden;
+		this->GetCoreConfigValue = get_core_config_value;
+		this->IsMapLoading = is_map_loading;
+		this->IsMapRunning = is_map_running;
+		this->LoadMMSPlugin = load_mms_plugin;
+		this->UnloadMMSPlugin = unload_mms_plugin;
+		this->DoGlobalPluginLoads = do_global_plugin_loads;
+		this->AreConfigsExecuted = SM_AreConfigsExecuted;
+		this->ExecuteConfigs = SM_ExecuteForPlugin;
+		this->GetDBInfoFromKeyValues = keyvalues_to_dbinfo;
+		this->GetActivityFlags = get_activity_flags;
+		this->GetImmunityMode = get_immunity_mode;
+		this->UpdateAdminCmdFlags = update_admin_cmd_flags;
+		this->LookForCommandAdminFlags = look_for_cmd_admin_flags;
+		this->DescribePlayer = describe_player;
+		this->MaxClients = get_max_clients;
+		this->GetGlobalTarget = get_global_target;
+		this->ConsolePrintVa = UTIL_ConsolePrintVa;
+		this->gamesuffix = GAMEFIX;
+		this->serverGlobals = &::serverGlobals;
+		this->serverFactory = nullptr;
+		this->engineFactory = nullptr;
+		this->matchmakingDSFactory = nullptr;
+		this->listeners = nullptr;
+	}
+} sCoreProviderImpl;
 
 void InitLogicBridge()
 {
@@ -658,9 +664,9 @@ void InitLogicBridge()
 	serverGlobals.frametime = &gpGlobals->frametime;
 	serverGlobals.interval_per_tick = &gpGlobals->interval_per_tick;
 
-	core_bridge.engineFactory = (void *)g_SMAPI->GetEngineFactory(false);
-	core_bridge.serverFactory = (void *)g_SMAPI->GetServerFactory(false);
-	core_bridge.listeners = SMGlobalClass::head;
+	sCoreProviderImpl.engineFactory = (void *)g_SMAPI->GetEngineFactory(false);
+	sCoreProviderImpl.serverFactory = (void *)g_SMAPI->GetServerFactory(false);
+	sCoreProviderImpl.listeners = SMGlobalClass::head;
 
 	char path[PLATFORM_MAX_PATH];
 
@@ -668,11 +674,11 @@ void InitLogicBridge()
 
 	if (ke::Ref<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0))
 	{
-		core_bridge.matchmakingDSFactory =
-		  mmlib->get<decltype(core_bridge.matchmakingDSFactory)>("CreateInterface");
+		sCoreProviderImpl.matchmakingDSFactory =
+		  mmlib->get<decltype(sCoreProviderImpl.matchmakingDSFactory)>("CreateInterface");
 	}
 	
-	logic_init_fn(&core_bridge, &logicore);
+	logic_init_fn(&sCoreProviderImpl, &logicore);
 
 	/* Add SMGlobalClass instances */
 	SMGlobalClass* glob = SMGlobalClass::head;
