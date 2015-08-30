@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 42)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 43)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -302,12 +302,14 @@ public:
 	virtual const char *GetCvarString(ConVar *cvar) = 0;
 	virtual bool GetCvarBool(ConVar* cvar) = 0;
 
+	// Game description functions.
+	virtual bool GetGameName(char *buffer, size_t maxlength) = 0;
+	virtual const char *GetGameDescription() = 0;
+	virtual const char *GetSourceEngineName() = 0;
+	virtual bool SymbolsAreHidden() = 0;
+
 	void			(*LogToGame)(const char *message);
 	void			(*ConPrint)(const char *message);
-	bool            (*GetGameName)(char *buffer, size_t maxlength);
-	const char *    (*GetGameDescription)();
-	const char *    (*GetSourceEngineName)();
-	bool            (*SymbolsAreHidden)();
 	const char *	(*GetCoreConfigValue)(const char*);
 	bool			(*IsMapLoading)();
 	bool			(*IsMapRunning)();

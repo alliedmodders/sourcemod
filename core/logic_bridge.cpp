@@ -310,99 +310,6 @@ static void conprint(const char *message)
 	META_CONPRINT(message);
 }
 
-static bool get_game_name(char *buffer, size_t maxlength)
-{
-	KeyValues *pGameInfo = new KeyValues("GameInfo");
-	if (g_HL2.KVLoadFromFile(pGameInfo, basefilesystem, "gameinfo.txt"))
-	{
-		const char *str;
-		if ((str = pGameInfo->GetString("game", NULL)) != NULL)
-		{
-			strncopy(buffer, str, maxlength);
-			pGameInfo->deleteThis();
-			return true;
-		}
-	}
-	pGameInfo->deleteThis();
-	return false;
-}
-
-static const char *get_game_description()
-{
-	return SERVER_CALL(GetGameDescription)();
-}
-
-static const char *get_source_engine_name()
-{
-#if !defined SOURCE_ENGINE
-# error "Unknown engine type"
-#endif
-#if SOURCE_ENGINE == SE_EPISODEONE
-	return "original";
-#elif SOURCE_ENGINE == SE_DARKMESSIAH
-	return "darkmessiah";
-#elif SOURCE_ENGINE == SE_ORANGEBOX
-	return "orangebox";
-#elif SOURCE_ENGINE == SE_BLOODYGOODTIME
-	return "bloodygoodtime";
-#elif SOURCE_ENGINE == SE_EYE
-	return "eye";
-#elif SOURCE_ENGINE == SE_CSS
-	return "css";
-#elif SOURCE_ENGINE == SE_HL2DM
-	return "hl2dm";
-#elif SOURCE_ENGINE == SE_DODS
-	return "dods";
-#elif SOURCE_ENGINE == SE_SDK2013
-	return "sdk2013";
-#elif SOURCE_ENGINE == SE_BMS
-	return "bms";
-#elif SOURCE_ENGINE == SE_TF2
-	return "tf2";
-#elif SOURCE_ENGINE == SE_LEFT4DEAD
-	return "left4dead";
-#elif SOURCE_ENGINE == SE_NUCLEARDAWN
-	return "nucleardawn";
-#elif SOURCE_ENGINE == SE_CONTAGION
-	return "contagion";
-#elif SOURCE_ENGINE == SE_LEFT4DEAD2
-	return "left4dead2";
-#elif SOURCE_ENGINE == SE_ALIENSWARM
-	return "alienswarm";
-#elif SOURCE_ENGINE == SE_PORTAL2
-	return "portal2";
-#elif SOURCE_ENGINE == SE_BLADE
-	return "blade";
-#elif SOURCE_ENGINE == SE_INSURGENCY
-	return "insurgency";
-#elif SOURCE_ENGINE == SE_CSGO
-	return "csgo";
-#elif SOURCE_ENGINE == SE_DOTA
-	return "dota";
-#endif
-}
-
-static bool symbols_are_hidden()
-{
-#if (SOURCE_ENGINE == SE_CSS)            \
-	|| (SOURCE_ENGINE == SE_HL2DM)       \
-	|| (SOURCE_ENGINE == SE_DODS)        \
-	|| (SOURCE_ENGINE == SE_SDK2013)     \
-	|| (SOURCE_ENGINE == SE_BMS)         \
-	|| (SOURCE_ENGINE == SE_TF2)         \
-	|| (SOURCE_ENGINE == SE_LEFT4DEAD)   \
-	|| (SOURCE_ENGINE == SE_NUCLEARDAWN) \
-	|| (SOURCE_ENGINE == SE_LEFT4DEAD2)  \
-	|| (SOURCE_ENGINE == SE_INSURGENCY)  \
-	|| (SOURCE_ENGINE == SE_BLADE)       \
-	|| (SOURCE_ENGINE == SE_CSGO)        \
-	|| (SOURCE_ENGINE == SE_DOTA)
-	return true;
-#else
-	return false;
-#endif
-}
-
 static const char* get_core_config_value(const char* key)
 {
 	return g_CoreConfig.GetCoreConfigValue(key);
@@ -610,10 +517,6 @@ public:
 		this->spe2 = &g_pSourcePawn2;
 		this->LogToGame = log_to_game;
 		this->ConPrint = conprint;
-		this->GetGameName = get_game_name;
-		this->GetGameDescription = get_game_description;
-		this->GetSourceEngineName = get_source_engine_name;
-		this->SymbolsAreHidden = symbols_are_hidden;
 		this->GetCoreConfigValue = get_core_config_value;
 		this->IsMapLoading = is_map_loading;
 		this->IsMapRunning = is_map_running;
@@ -642,6 +545,10 @@ public:
 	ConVar *FindConVar(const char *name) override;
 	const char *GetCvarString(ConVar *cvar) override;
 	bool GetCvarBool(ConVar* cvar) override;
+	bool GetGameName(char *buffer, size_t maxlength) override;
+	const char *GetGameDescription() override;
+	const char *GetSourceEngineName() override;
+	bool SymbolsAreHidden() override;
 } sCoreProviderImpl;
 
 ConVar *CoreProviderImpl::FindConVar(const char *name)
@@ -657,6 +564,99 @@ const char *CoreProviderImpl::GetCvarString(ConVar* cvar)
 bool CoreProviderImpl::GetCvarBool(ConVar* cvar)
 {
 	return cvar->GetBool();
+}
+
+bool CoreProviderImpl::GetGameName(char *buffer, size_t maxlength)
+{
+	KeyValues *pGameInfo = new KeyValues("GameInfo");
+	if (g_HL2.KVLoadFromFile(pGameInfo, basefilesystem, "gameinfo.txt"))
+	{
+		const char *str;
+		if ((str = pGameInfo->GetString("game", NULL)) != NULL)
+		{
+			strncopy(buffer, str, maxlength);
+			pGameInfo->deleteThis();
+			return true;
+		}
+	}
+	pGameInfo->deleteThis();
+	return false;
+}
+
+const char *CoreProviderImpl::GetGameDescription()
+{
+	return SERVER_CALL(GetGameDescription)();
+}
+
+const char *CoreProviderImpl::GetSourceEngineName()
+{
+#if !defined SOURCE_ENGINE
+# error "Unknown engine type"
+#endif
+#if SOURCE_ENGINE == SE_EPISODEONE
+	return "original";
+#elif SOURCE_ENGINE == SE_DARKMESSIAH
+	return "darkmessiah";
+#elif SOURCE_ENGINE == SE_ORANGEBOX
+	return "orangebox";
+#elif SOURCE_ENGINE == SE_BLOODYGOODTIME
+	return "bloodygoodtime";
+#elif SOURCE_ENGINE == SE_EYE
+	return "eye";
+#elif SOURCE_ENGINE == SE_CSS
+	return "css";
+#elif SOURCE_ENGINE == SE_HL2DM
+	return "hl2dm";
+#elif SOURCE_ENGINE == SE_DODS
+	return "dods";
+#elif SOURCE_ENGINE == SE_SDK2013
+	return "sdk2013";
+#elif SOURCE_ENGINE == SE_BMS
+	return "bms";
+#elif SOURCE_ENGINE == SE_TF2
+	return "tf2";
+#elif SOURCE_ENGINE == SE_LEFT4DEAD
+	return "left4dead";
+#elif SOURCE_ENGINE == SE_NUCLEARDAWN
+	return "nucleardawn";
+#elif SOURCE_ENGINE == SE_CONTAGION
+	return "contagion";
+#elif SOURCE_ENGINE == SE_LEFT4DEAD2
+	return "left4dead2";
+#elif SOURCE_ENGINE == SE_ALIENSWARM
+	return "alienswarm";
+#elif SOURCE_ENGINE == SE_PORTAL2
+	return "portal2";
+#elif SOURCE_ENGINE == SE_BLADE
+	return "blade";
+#elif SOURCE_ENGINE == SE_INSURGENCY
+	return "insurgency";
+#elif SOURCE_ENGINE == SE_CSGO
+	return "csgo";
+#elif SOURCE_ENGINE == SE_DOTA
+	return "dota";
+#endif
+}
+
+bool CoreProviderImpl::SymbolsAreHidden()
+{
+#if (SOURCE_ENGINE == SE_CSS)            \
+	|| (SOURCE_ENGINE == SE_HL2DM)       \
+	|| (SOURCE_ENGINE == SE_DODS)        \
+	|| (SOURCE_ENGINE == SE_SDK2013)     \
+	|| (SOURCE_ENGINE == SE_BMS)         \
+	|| (SOURCE_ENGINE == SE_TF2)         \
+	|| (SOURCE_ENGINE == SE_LEFT4DEAD)   \
+	|| (SOURCE_ENGINE == SE_NUCLEARDAWN) \
+	|| (SOURCE_ENGINE == SE_LEFT4DEAD2)  \
+	|| (SOURCE_ENGINE == SE_INSURGENCY)  \
+	|| (SOURCE_ENGINE == SE_BLADE)       \
+	|| (SOURCE_ENGINE == SE_CSGO)        \
+	|| (SOURCE_ENGINE == SE_DOTA)
+	return true;
+#else
+	return false;
+#endif
 }
 
 void InitLogicBridge()
