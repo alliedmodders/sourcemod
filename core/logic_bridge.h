@@ -33,10 +33,6 @@
 
 #include "logic/intercom.h"
 
-void InitLogicBridge();
-bool StartLogicBridge(char *error, size_t maxlength);
-void ShutdownLogicBridge();
-
 struct sm_logic_t;
 
 extern sm_logic_t logicore;
