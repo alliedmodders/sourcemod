@@ -300,11 +300,6 @@ static ConVar sm_show_activity("sm_show_activity", "13", FCVAR_SPONLY, "Activity
 static ConVar sm_immunity_mode("sm_immunity_mode", "1", FCVAR_SPONLY, "Mode for deciding immunity protection");
 static ConVar sm_datetime_format("sm_datetime_format", "%m/%d/%Y - %H:%M:%S", 0, "Default formatting time rules");
 
-static ConVar *find_convar(const char *name)
-{
-	return icvar->FindVar(name);
-}
-
 static void log_to_game(const char *message)
 {
 	Engine_LogPrintWrapper(message);
@@ -313,16 +308,6 @@ static void log_to_game(const char *message)
 static void conprint(const char *message)
 {
 	META_CONPRINT(message);
-}
-
-static const char *get_cvar_string(ConVar* cvar)
-{
-	return cvar->GetString();
-}
-
-static bool get_cvar_bool(ConVar* cvar)
-{
-	return cvar->GetBool();
 }
 
 static bool get_game_name(char *buffer, size_t maxlength)
@@ -623,11 +608,8 @@ public:
 		this->menus = &g_Menus;
 		this->spe1 = &g_pSourcePawn;
 		this->spe2 = &g_pSourcePawn2;
-		this->FindConVar = find_convar;
 		this->LogToGame = log_to_game;
 		this->ConPrint = conprint;
-		this->GetCvarString = get_cvar_string;
-		this->GetCvarBool = get_cvar_bool;
 		this->GetGameName = get_game_name;
 		this->GetGameDescription = get_game_description;
 		this->GetSourceEngineName = get_source_engine_name;
@@ -656,7 +638,26 @@ public:
 		this->matchmakingDSFactory = nullptr;
 		this->listeners = nullptr;
 	}
+
+	ConVar *FindConVar(const char *name) override;
+	const char *GetCvarString(ConVar *cvar) override;
+	bool GetCvarBool(ConVar* cvar) override;
 } sCoreProviderImpl;
+
+ConVar *CoreProviderImpl::FindConVar(const char *name)
+{
+	return icvar->FindVar(name);
+}
+
+const char *CoreProviderImpl::GetCvarString(ConVar* cvar)
+{
+	return cvar->GetString();
+}
+
+bool CoreProviderImpl::GetCvarBool(ConVar* cvar)
+{
+	return cvar->GetBool();
+}
 
 void InitLogicBridge()
 {

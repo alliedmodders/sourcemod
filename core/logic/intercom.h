@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 41)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 42)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -289,12 +289,21 @@ public:
 	IMenuManager	*menus;
 	ISourcePawnEngine **spe1;
 	ISourcePawnEngine2 **spe2;
-	/* Functions */
-	ConVar *		(*FindConVar)(const char*);
+	const char		*gamesuffix;
+	/* Data */
+	ServerGlobals   *serverGlobals;
+	void *          serverFactory;
+	void *          engineFactory;
+	void *          matchmakingDSFactory;
+	SMGlobalClass *	listeners;
+
+	// ConVar functions.
+	virtual ConVar *FindConVar(const char *name) = 0;
+	virtual const char *GetCvarString(ConVar *cvar) = 0;
+	virtual bool GetCvarBool(ConVar* cvar) = 0;
+
 	void			(*LogToGame)(const char *message);
 	void			(*ConPrint)(const char *message);
-	const char *	(*GetCvarString)(ConVar*);
-	bool			(*GetCvarBool)(ConVar*);
 	bool            (*GetGameName)(char *buffer, size_t maxlength);
 	const char *    (*GetGameDescription)();
 	const char *    (*GetSourceEngineName)();
@@ -316,13 +325,6 @@ public:
 	int             (*MaxClients)();
 	int             (*GetGlobalTarget)();
 	void            (*ConsolePrintVa)(const char *fmt, va_list ap);
-	const char		*gamesuffix;
-	/* Data */
-	ServerGlobals   *serverGlobals;
-	void *          serverFactory;
-	void *          engineFactory;
-	void *          matchmakingDSFactory;
-	SMGlobalClass *	listeners;
 };
 
 struct sm_logic_t
