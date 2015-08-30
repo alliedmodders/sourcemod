@@ -300,29 +300,9 @@ static ConVar sm_show_activity("sm_show_activity", "13", FCVAR_SPONLY, "Activity
 static ConVar sm_immunity_mode("sm_immunity_mode", "1", FCVAR_SPONLY, "Mode for deciding immunity protection");
 static ConVar sm_datetime_format("sm_datetime_format", "%m/%d/%Y - %H:%M:%S", 0, "Default formatting time rules");
 
-static void log_to_game(const char *message)
-{
-	Engine_LogPrintWrapper(message);
-}
-
-static void conprint(const char *message)
-{
-	META_CONPRINT(message);
-}
-
 static const char* get_core_config_value(const char* key)
 {
 	return g_CoreConfig.GetCoreConfigValue(key);
-}
-
-static bool is_map_loading()
-{
-	return g_SourceMod.IsMapLoading();
-}
-
-static bool is_map_running()
-{
-	return g_SourceMod.IsMapRunning();
 }
 
 static DatabaseInfo keyvalues_to_dbinfo(KeyValues *kv)
@@ -397,28 +377,6 @@ static void unload_mms_plugin(int id)
 void do_global_plugin_loads()
 {
 	g_SourceMod.DoGlobalPluginLoads();
-}
-
-static bool describe_player(int index, const char **namep, const char **authp, int *useridp)
-{
-	CPlayer *player = g_Players.GetPlayerByIndex(index);
-	if (!player || !player->IsConnected())
-		return false;
-
-	if (namep)
-		*namep = player->GetName();
-	if (authp) {
-		const char *auth = player->GetAuthString();
-		*authp = (auth && *auth) ? auth : "STEAM_ID_PENDING";
-	}
-	if (useridp)
-		*useridp = GetPlayerUserId(player->GetEdict());
-	return true;
-}
-
-static int get_max_clients()
-{
-	return g_Players.MaxClients();
 }
 
 static int get_global_target()
@@ -515,11 +473,7 @@ public:
 		this->menus = &g_Menus;
 		this->spe1 = &g_pSourcePawn;
 		this->spe2 = &g_pSourcePawn2;
-		this->LogToGame = log_to_game;
-		this->ConPrint = conprint;
 		this->GetCoreConfigValue = get_core_config_value;
-		this->IsMapLoading = is_map_loading;
-		this->IsMapRunning = is_map_running;
 		this->LoadMMSPlugin = load_mms_plugin;
 		this->UnloadMMSPlugin = unload_mms_plugin;
 		this->DoGlobalPluginLoads = do_global_plugin_loads;
@@ -530,10 +484,7 @@ public:
 		this->GetImmunityMode = get_immunity_mode;
 		this->UpdateAdminCmdFlags = update_admin_cmd_flags;
 		this->LookForCommandAdminFlags = look_for_cmd_admin_flags;
-		this->DescribePlayer = describe_player;
-		this->MaxClients = get_max_clients;
 		this->GetGlobalTarget = get_global_target;
-		this->ConsolePrintVa = UTIL_ConsolePrintVa;
 		this->gamesuffix = GAMEFIX;
 		this->serverGlobals = &::serverGlobals;
 		this->serverFactory = nullptr;
@@ -549,6 +500,13 @@ public:
 	const char *GetGameDescription() override;
 	const char *GetSourceEngineName() override;
 	bool SymbolsAreHidden() override;
+	bool IsMapLoading() override;
+	bool IsMapRunning() override;
+	int MaxClients() override;
+	bool DescribePlayer(int index, const char **namep, const char **authp, int *useridp) override;
+	void LogToGame(const char *message) override;
+	void ConPrint(const char *message) override;
+	void ConsolePrintVa(const char *fmt, va_list ap) override;
 } sCoreProviderImpl;
 
 ConVar *CoreProviderImpl::FindConVar(const char *name)
@@ -657,6 +615,53 @@ bool CoreProviderImpl::SymbolsAreHidden()
 #else
 	return false;
 #endif
+}
+
+void CoreProviderImpl::LogToGame(const char *message)
+{
+	Engine_LogPrintWrapper(message);
+}
+
+void CoreProviderImpl::ConPrint(const char *message)
+{
+	META_CONPRINT(message);
+}
+
+void CoreProviderImpl::ConsolePrintVa(const char *message, va_list ap)
+{
+	UTIL_ConsolePrintVa(message, ap);
+}
+
+bool CoreProviderImpl::IsMapLoading()
+{
+	return g_SourceMod.IsMapLoading();
+}
+
+bool CoreProviderImpl::IsMapRunning()
+{
+	return g_SourceMod.IsMapRunning();
+}
+
+int CoreProviderImpl::MaxClients()
+{
+	return g_Players.MaxClients();
+}
+
+bool CoreProviderImpl::DescribePlayer(int index, const char **namep, const char **authp, int *useridp)
+{
+	CPlayer *player = g_Players.GetPlayerByIndex(index);
+	if (!player || !player->IsConnected())
+		return false;
+
+	if (namep)
+		*namep = player->GetName();
+	if (authp) {
+		const char *auth = player->GetAuthString();
+		*authp = (auth && *auth) ? auth : "STEAM_ID_PENDING";
+	}
+	if (useridp)
+		*useridp = GetPlayerUserId(player->GetEdict());
+	return true;
 }
 
 void InitLogicBridge()

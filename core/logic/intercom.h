@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 43)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 44)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -308,11 +308,16 @@ public:
 	virtual const char *GetSourceEngineName() = 0;
 	virtual bool SymbolsAreHidden() = 0;
 
-	void			(*LogToGame)(const char *message);
-	void			(*ConPrint)(const char *message);
+	// Game state and helper functions.
+	virtual bool IsMapLoading() = 0;
+	virtual bool IsMapRunning() = 0;
+	virtual int MaxClients() = 0;
+	virtual bool DescribePlayer(int index, const char **namep, const char **authp, int *useridp) = 0;
+	virtual void LogToGame(const char *message) = 0;
+	virtual void ConPrint(const char *message) = 0;
+	virtual void ConsolePrintVa(const char *fmt, va_list ap) = 0;
+
 	const char *	(*GetCoreConfigValue)(const char*);
-	bool			(*IsMapLoading)();
-	bool			(*IsMapRunning)();
 	int				(*LoadMMSPlugin)(const char *file, bool *ok, char *error, size_t maxlength);
 	void			(*UnloadMMSPlugin)(int id);
 	void			(*DoGlobalPluginLoads)();
@@ -323,10 +328,7 @@ public:
 	int				(*GetImmunityMode)();
 	void			(*UpdateAdminCmdFlags)(const char *cmd, OverrideType type, FlagBits bits, bool remove);
 	bool			(*LookForCommandAdminFlags)(const char *cmd, FlagBits *pFlags);
-	bool            (*DescribePlayer)(int index, const char **namep, const char **authp, int *useridp);
-	int             (*MaxClients)();
 	int             (*GetGlobalTarget)();
-	void            (*ConsolePrintVa)(const char *fmt, va_list ap);
 };
 
 struct sm_logic_t
