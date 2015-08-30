@@ -52,13 +52,17 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 45)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 46)
 
 #if defined SM_LOGIC
-class IVEngineServer
+# define IVEngineClass IVEngineServer
+# define IFileSystemClass IFileSystem
 #else
-class IVEngineServer_Logic
+# define IVEngineClass IVEngineServer_Logic
+# define IFileSystemClass IFileSystem_Logic
 #endif
+
+class IVEngineClass
 {
 public:
 	virtual bool IsDedicatedServer() = 0;
@@ -73,11 +77,7 @@ public:
 typedef void * FileHandle_t;
 typedef int FileFindHandle_t; 
 
-#if defined SM_LOGIC
-class IFileSystem
-#else
-class IFileSystem_Logic
-#endif
+class IFileSystemClass
 {
 public:
 	virtual const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle) = 0;
@@ -123,8 +123,6 @@ namespace SourceMod
 	class ICommandArgs;
 }
 
-class IVEngineServer;
-class IFileSystem;
 class ConVar;
 class KeyValues;
 class SMGlobalClass;
@@ -280,8 +278,8 @@ class CoreProvider
 public:
 	/* Objects */
 	ISourceMod		*sm;
-	IVEngineServer	*engine;
-	IFileSystem		*filesystem;
+	IVEngineClass	*engine;
+	IFileSystemClass *filesystem;
 	IPlayerInfo_Logic *playerInfo;
 	ITimerSystem    *timersys;
 	IPlayerManager  *playerhelpers;

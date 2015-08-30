@@ -46,49 +46,47 @@
 #include "ConCmdManager.h"
 #include "IDBDriver.h"
 #if SOURCE_ENGINE == SE_DOTA
-#include "convar_sm_dota.h"
+# include "convar_sm_dota.h"
 #elif SOURCE_ENGINE >= SE_ALIENSWARM
-#include "convar_sm_swarm.h"
+# include "convar_sm_swarm.h"
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD
-#include "convar_sm_l4d.h"
+# include "convar_sm_l4d.h"
 #elif SOURCE_ENGINE >= SE_ORANGEBOX
-#include "convar_sm_ob.h"
+# include "convar_sm_ob.h"
 #else
-#include "convar_sm.h"
+# include "convar_sm.h"
 #endif
 #include <amtl/os/am-shared-library.h>
 #include <amtl/os/am-path.h>
 
 #if defined _WIN32
-	#define MATCHMAKINGDS_SUFFIX	""
-	#define MATCHMAKINGDS_EXT	"dll"
+# define MATCHMAKINGDS_SUFFIX	""
+# define MATCHMAKINGDS_EXT	"dll"
 #elif defined __APPLE__
-	#define MATCHMAKINGDS_SUFFIX	""
-	#define MATCHMAKINGDS_EXT	"dylib"
+# define MATCHMAKINGDS_SUFFIX	""
+# define MATCHMAKINGDS_EXT	"dylib"
 #elif defined __linux__
 #if SOURCE_ENGINE < SE_LEFT4DEAD2
-	#define MATCHMAKINGDS_SUFFIX	"_i486"
+# define MATCHMAKINGDS_SUFFIX	"_i486"
 #else
-	#define MATCHMAKINGDS_SUFFIX	""
+# define MATCHMAKINGDS_SUFFIX	""
 #endif
-	#define MATCHMAKINGDS_EXT	"so"
+# define MATCHMAKINGDS_EXT	"so"
 #endif
 
-static ke::Ref<ke::SharedLib> g_Logic;
-static LogicInitFunction logic_init_fn;
-
-IThreader *g_pThreader;
-ITextParsers *textparsers;
 sm_logic_t logicore;
-ITranslator *translator;
-IScriptManager *scripts;
-IShareSys *sharesys;
-IExtensionSys *extsys;
-IHandleSys *handlesys;
-IForwardManager *forwardsys;
-IAdminSystem *adminsys;
-ILogger *logger;
-IRootConsole *rootmenu;
+
+IThreader *g_pThreader = nullptr;
+ITextParsers *textparsers = nullptr;
+ITranslator *translator = nullptr;
+IScriptManager *scripts = nullptr;
+IShareSys *sharesys = nullptr;
+IExtensionSys *extsys = nullptr;
+IHandleSys *handlesys = nullptr;
+IForwardManager *forwardsys = nullptr;
+IAdminSystem *adminsys = nullptr;
+ILogger *logger = nullptr;
+IRootConsole *rootmenu = nullptr;
 
 class VEngineServer_Logic : public IVEngineServer_Logic
 {
@@ -130,9 +128,6 @@ public:
 #endif
 	}
 };
-
-static VEngineServer_Logic logic_engine;
-
 
 class VFileSystem_Logic : public IFileSystem_Logic
 {
@@ -223,8 +218,6 @@ public:
 	}
 };
 
-static VFileSystem_Logic logic_filesystem;
-
 class VPlayerInfo_Logic : public IPlayerInfo_Logic
 {
 public:
@@ -293,8 +286,6 @@ public:
 		pInfo->ChangeTeam(iTeamNum);
 	}
 };
-
-static VPlayerInfo_Logic logic_playerinfo;
 
 static ConVar sm_show_activity("sm_show_activity", "13", FCVAR_SPONLY, "Activity display setting (see sourcemod.cfg)");
 static ConVar sm_immunity_mode("sm_immunity_mode", "1", FCVAR_SPONLY, "Mode for deciding immunity protection");
@@ -428,9 +419,9 @@ public:
 	CoreProviderImpl()
 	{
 		this->sm = &g_SourceMod;
-		this->engine = reinterpret_cast<IVEngineServer*>(&logic_engine);
-		this->filesystem = reinterpret_cast<IFileSystem*>(&logic_filesystem);
-		this->playerInfo = &logic_playerinfo;
+		this->engine = &engine_wrapper_;
+		this->filesystem = &fs_wrapper_;
+		this->playerInfo = &playerinfo_wrapper_;
 		this->timersys = &g_Timers;
 		this->playerhelpers = &g_Players;
 		this->gamehelpers = &g_HL2;
@@ -455,6 +446,12 @@ public:
 		this->listeners = nullptr;
 	}
 
+	// Local functions.
+	void InitializeBridge();
+	bool LoadBridge(char *error, size_t maxlength);
+	void ShutdownBridge();
+
+	// Provider implementation.
 	ConVar *FindConVar(const char *name) override;
 	const char *GetCvarString(ConVar *cvar) override;
 	bool GetCvarBool(ConVar* cvar) override;
@@ -471,6 +468,13 @@ public:
 	void ConsolePrintVa(const char *fmt, va_list ap) override;
 	int LoadMMSPlugin(const char *file, bool *ok, char *error, size_t maxlength) override;
 	void UnloadMMSPlugin(int id) override;
+
+private:
+	ke::Ref<ke::SharedLib> logic_;
+	LogicInitFunction logic_init_;
+	VEngineServer_Logic engine_wrapper_;
+	VFileSystem_Logic fs_wrapper_;
+	VPlayerInfo_Logic playerinfo_wrapper_;
 } sCoreProviderImpl;
 
 ConVar *CoreProviderImpl::FindConVar(const char *name)
@@ -664,35 +668,35 @@ void CoreProviderImpl::UnloadMMSPlugin(int id)
 	g_pMMPlugins->Unload(id, true, ignore, sizeof(ignore));
 }
 
-void InitLogicBridge()
+void CoreProviderImpl::InitializeBridge()
 {
-	serverGlobals.universalTime = g_pUniversalTime;
-	serverGlobals.frametime = &gpGlobals->frametime;
-	serverGlobals.interval_per_tick = &gpGlobals->interval_per_tick;
+	::serverGlobals.universalTime = g_pUniversalTime;
+	::serverGlobals.frametime = &gpGlobals->frametime;
+	::serverGlobals.interval_per_tick = &gpGlobals->interval_per_tick;
 
-	sCoreProviderImpl.engineFactory = (void *)g_SMAPI->GetEngineFactory(false);
-	sCoreProviderImpl.serverFactory = (void *)g_SMAPI->GetServerFactory(false);
-	sCoreProviderImpl.listeners = SMGlobalClass::head;
+	this->engineFactory = (void *)g_SMAPI->GetEngineFactory(false);
+	this->serverFactory = (void *)g_SMAPI->GetServerFactory(false);
+	this->listeners = SMGlobalClass::head;
 
 	char path[PLATFORM_MAX_PATH];
 
-	ke::path::Format(path, sizeof(path), "%s/bin/matchmaking_ds%s.%s", g_SMAPI->GetBaseDir(), MATCHMAKINGDS_SUFFIX, MATCHMAKINGDS_EXT);
+	ke::path::Format(path, sizeof(path),
+	                 "%s/bin/matchmaking_ds%s.%s",
+                     g_SMAPI->GetBaseDir(),
+                     MATCHMAKINGDS_SUFFIX,
+                     MATCHMAKINGDS_EXT);
 
-	if (ke::Ref<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0))
-	{
-		sCoreProviderImpl.matchmakingDSFactory =
+	if (ke::Ref<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0)) {
+		this->matchmakingDSFactory =
 		  mmlib->get<decltype(sCoreProviderImpl.matchmakingDSFactory)>("CreateInterface");
 	}
 	
-	logic_init_fn(&sCoreProviderImpl, &logicore);
+	logic_init_(this, &logicore);
 
-	/* Add SMGlobalClass instances */
+	// Join logic's SMGlobalClass instances.
 	SMGlobalClass* glob = SMGlobalClass::head;
-	while (glob->m_pGlobalClassNext != NULL)
-	{
+	while (glob->m_pGlobalClassNext)
 		glob = glob->m_pGlobalClassNext;
-	}
-	assert(glob->m_pGlobalClassNext == NULL);
 	glob->m_pGlobalClassNext = logicore.head;
 
 	g_pThreader = logicore.threader;
@@ -708,7 +712,7 @@ void InitLogicBridge()
 	rootmenu = logicore.rootmenu;
 }
 
-bool StartLogicBridge(char *error, size_t maxlength)
+bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 {
 	char file[PLATFORM_MAX_PATH];
 
@@ -719,37 +723,46 @@ bool StartLogicBridge(char *error, size_t maxlength)
 		g_SourceMod.GetSourceModPath());
 
 	char myerror[255];
-	g_Logic = ke::SharedLib::Open(file, myerror, sizeof(myerror));
-	if (!g_Logic)
-	{
-		if (error && maxlength)
-		{
-			UTIL_Format(error, maxlength, "failed to load %s: %s", file, myerror);
-		}
+	logic_ = ke::SharedLib::Open(file, myerror, sizeof(myerror));
+	if (!logic_) {
+		ke::SafeSprintf(error, maxlength, "failed to load %s: %s", file, myerror);
 		return false;
 	}
 
-	LogicLoadFunction llf = g_Logic->get<decltype(llf)>("logic_load");
-	if (llf == NULL)
-	{
-		g_Logic = nullptr;
-		if (error && maxlength)
-		{
-			UTIL_Format(error, maxlength, "could not find logic_load function");
-		}
+	LogicLoadFunction llf = logic_->get<decltype(llf)>("logic_load");
+	if (!llf) {
+		logic_ = nullptr;
+		ke::SafeSprintf(error, maxlength, "could not find logic_load function");
 		return false;
 	}
 
-	GetITextParsers getitxt = g_Logic->get<decltype(getitxt)>("get_textparsers");
+	GetITextParsers getitxt = logic_->get<decltype(getitxt)>("get_textparsers");
 	textparsers = getitxt();
 
-	logic_init_fn = llf(SM_LOGIC_MAGIC);
-
+	logic_init_ = llf(SM_LOGIC_MAGIC);
+	if (!logic_init_) {
+		ke::SafeSprintf(error, maxlength, "component version mismatch");
+		return false;
+	}
 	return true;
+}
+
+void CoreProviderImpl::ShutdownBridge()
+{
+	logic_ = nullptr;
+}
+
+void InitLogicBridge()
+{
+	sCoreProviderImpl.InitializeBridge();
+}
+
+bool StartLogicBridge(char *error, size_t maxlength)
+{
+	return sCoreProviderImpl.LoadBridge(error, maxlength);
 }
 
 void ShutdownLogicBridge()
 {
-	g_Logic = nullptr;
+	sCoreProviderImpl.ShutdownBridge();
 }
-
