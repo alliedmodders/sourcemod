@@ -147,20 +147,14 @@ public:
 
 	HandleError ReadConVarHandle(Handle_t hndl, ConVar **pVar);
 
+	// Called via game hooks.
+	void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
+
 private:
 	/**
 	 * Adds a convar to a plugin's list.
 	 */
 	static void AddConVarToPluginList(IPluginContext *pContext, const ConVar *pConVar);
-
-	/**
-	 * Static callback that Valve's ConVar object executes when the convar's value changes.
-	 */
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-	static void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
-#else
-	static void OnConVarChanged(ConVar *pConVar, const char *oldValue);
-#endif
 
 	/**
 	 * Callback for when StartQueryCvarValue() has finished.

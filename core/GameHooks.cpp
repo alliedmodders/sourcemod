@@ -24,50 +24,45 @@
 // this exception to all derivative works.  AlliedModders LLC defines further
 // exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
 // or <http://www.sourcemod.net/license.php>.
-#ifndef _INCLUDE_SOURCEMOD_CORE_PROVIDER_IMPL_H_
-#define _INCLUDE_SOURCEMOD_CORE_PROVIDER_IMPL_H_
-
-#include "logic/intercom.h"
 #include "GameHooks.h"
-#include <amtl/os/am-shared-library.h>
+#include "sourcemod.h"
+#include "ConVarManager.h"
 
-class CoreProviderImpl : public CoreProvider
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *, float);
+#else
+SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallback, SH_NOATTRIB, false, ConVar *, const char *);
+#endif
+
+GameHooks::GameHooks()
 {
-public:
-	CoreProviderImpl();
+}
 
-	// Local functions.
-	void InitializeBridge();
-	bool LoadBridge(char *error, size_t maxlength);
-	void ShutdownBridge();
+void GameHooks::Start()
+{
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+	SH_ADD_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
+#else
+	SH_ADD_HOOK(ICvar, CallGlobalChangeCallback, icvar, SH_STATIC(OnConVarChanged), false);
+#endif
+}
 
-	void InitializeHooks();
-	void ShutdownHooks();
+void GameHooks::Shutdown()
+{
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+	SH_REMOVE_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
+#else
+	SH_REMOVE_HOOK(ICvar, CallGlobalChangeCallback, icvar, SH_STATIC(OnConVarChanged), false);
+#endif
+}
 
-	// Provider implementation.
-	ConVar *FindConVar(const char *name) override;
-	const char *GetCvarString(ConVar *cvar) override;
-	bool GetCvarBool(ConVar* cvar) override;
-	bool GetGameName(char *buffer, size_t maxlength) override;
-	const char *GetGameDescription() override;
-	const char *GetSourceEngineName() override;
-	bool SymbolsAreHidden() override;
-	bool IsMapLoading() override;
-	bool IsMapRunning() override;
-	int MaxClients() override;
-	bool DescribePlayer(int index, const char **namep, const char **authp, int *useridp) override;
-	void LogToGame(const char *message) override;
-	void ConPrint(const char *message) override;
-	void ConsolePrintVa(const char *fmt, va_list ap) override;
-	int LoadMMSPlugin(const char *file, bool *ok, char *error, size_t maxlength) override;
-	void UnloadMMSPlugin(int id) override;
-
-private:
-	ke::Ref<ke::SharedLib> logic_;
-	LogicInitFunction logic_init_;
-	GameHooks hooks_;
-};
-
-extern CoreProviderImpl sCoreProviderImpl;
-
-#endif // _INCLUDE_SOURCEMOD_CORE_PROVIDER_IMPL_H_
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+void GameHooks::OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
+{
+#else
+void GameHooks::OnConVarChanged(ConVar *pConVar, const char *oldValue)
+{
+  float flOldValue = atof(oldValue);
+#endif
+  g_ConVarManager.OnConVarChanged(pConVar, oldValue, flOldValue);
+}

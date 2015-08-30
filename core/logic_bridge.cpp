@@ -716,6 +716,16 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 	return true;
 }
 
+void CoreProviderImpl::InitializeHooks()
+{
+	hooks_.Start();
+}
+
+void CoreProviderImpl::ShutdownHooks()
+{
+	hooks_.Shutdown();
+}
+
 void CoreProviderImpl::ShutdownBridge()
 {
 	logic_ = nullptr;

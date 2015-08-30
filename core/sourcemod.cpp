@@ -267,6 +267,8 @@ void SourceModBase::StartSourceMod(bool late)
 	}
 	g_pGameConf = logicore.GetCoreGameConfig();
 
+	sCoreProviderImpl.InitializeHooks();
+
 	/* Notify! */
 	pBase = SMGlobalClass::head;
 	while (pBase)
@@ -519,6 +521,8 @@ void SourceModBase::ShutdownServices()
 		delete pd;
 	}
 	m_freepacks.popall();
+
+	sCoreProviderImpl.ShutdownHooks();
 
 	/* Notify! */
 	pBase = SMGlobalClass::head;

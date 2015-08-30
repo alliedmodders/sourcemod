@@ -37,12 +37,6 @@
 
 ConVarManager g_ConVarManager;
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *, float);
-#else
-SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallback, SH_NOATTRIB, false, ConVar *, const char *);
-#endif
-
 #if SOURCE_ENGINE == SE_DOTA
 SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, CEntityIndex, EQueryCvarValueStatus, const char *, const char *);
 SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, CEntityIndex, EQueryCvarValueStatus, const char *, const char *);
@@ -125,12 +119,6 @@ void ConVarManager::OnSourceModAllInitialized()
 
 	g_Players.AddClientListener(this);
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-	SH_ADD_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
-#else
-	SH_ADD_HOOK(ICvar, CallGlobalChangeCallback, icvar, SH_STATIC(OnConVarChanged), false);
-#endif
-
 	scripts->AddPluginsListener(this);
 
 	/* Add the 'convars' option to the 'sm' console command */
@@ -197,12 +185,6 @@ void ConVarManager::OnSourceModShutdown()
 #endif
 
 	g_Players.RemoveClientListener(this);
-
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-	SH_REMOVE_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
-#else
-	SH_REMOVE_HOOK(ICvar, CallGlobalChangeCallback, icvar, SH_STATIC(OnConVarChanged), false);
-#endif
 
 	/* Remove the 'convars' option from the 'sm' console command */
 	rootmenu->RemoveRootConsoleCommand("cvars", this);
@@ -696,11 +678,7 @@ void ConVarManager::AddConVarToPluginList(IPluginContext *pContext, const ConVar
 	}
 }
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
 void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
-#else
-void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
-#endif
 {
 	/* If the values are the same, exit early in order to not trigger callbacks */
 	if (strcmp(pConVar->GetString(), oldValue) == 0)
@@ -720,16 +698,8 @@ void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 
 	if (pInfo->changeListeners.size() != 0)
 	{
-		for (List<IConVarChangeListener *>::iterator i = pInfo->changeListeners.begin();
-			 i != pInfo->changeListeners.end();
-			 i++)
-		{
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+		for (auto i = pInfo->changeListeners.begin(); i != pInfo->changeListeners.end(); i++)
 			(*i)->OnConVarChanged(pConVar, oldValue, flOldValue);
-#else
-			(*i)->OnConVarChanged(pConVar, oldValue, atof(oldValue));
-#endif
-		}
 	}
 
 	if (pForward != NULL)
