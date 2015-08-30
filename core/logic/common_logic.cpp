@@ -92,9 +92,6 @@ static IGameConfig *GetCoreGameConfig()
 	return g_pGameConf;
 }
 
-// Defined in smn_filesystem.cpp.
-extern bool OnLogPrint(const char *msg);
-
 static void GenerateError(IPluginContext *ctx, cell_t idx, int err, const char *msg, ...)
 {
 	va_list ap;
@@ -128,6 +125,17 @@ static void OnRootCommand(const ICommandArgs *args)
 	g_RootMenu.GotRootCmd(args);
 }
 
+// Defined in smn_filesystem.cpp.
+extern bool OnLogPrint(const char *msg);
+
+class ProviderCallbackListener : public IProviderCallbacks
+{
+public:
+	bool OnLogPrint(const char *msg) override {
+		return ::OnLogPrint(msg);
+	}
+} sProviderCallbackListener;
+
 static sm_logic_t logic =
 {
 	NULL,
@@ -141,7 +149,6 @@ static sm_logic_t logic =
 	UTIL_ReplaceEx,
 	UTIL_DecodeHexString,
 	GetCoreGameConfig,
-	OnLogPrint,
 	&g_DbgReporter,
 	GenerateError,
 	AddNatives,
@@ -158,6 +165,7 @@ static sm_logic_t logic =
 	NULL,
 	&g_Logger,
 	&g_RootMenu,
+	&sProviderCallbackListener,
 	-1.0f
 };
 
