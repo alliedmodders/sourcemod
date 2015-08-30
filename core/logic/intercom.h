@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 44)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 45)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -317,9 +317,11 @@ public:
 	virtual void ConPrint(const char *message) = 0;
 	virtual void ConsolePrintVa(const char *fmt, va_list ap) = 0;
 
+	// Metamod:Source functions.
+	virtual int LoadMMSPlugin(const char *file, bool *ok, char *error, size_t maxlength) = 0;
+	virtual void UnloadMMSPlugin(int id) = 0;
+
 	const char *	(*GetCoreConfigValue)(const char*);
-	int				(*LoadMMSPlugin)(const char *file, bool *ok, char *error, size_t maxlength);
-	void			(*UnloadMMSPlugin)(int id);
 	void			(*DoGlobalPluginLoads)();
 	bool			(*AreConfigsExecuted)();
 	void			(*ExecuteConfigs)(IPluginContext *ctx);

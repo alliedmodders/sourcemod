@@ -338,42 +338,6 @@ static bool look_for_cmd_admin_flags(const char *cmd, FlagBits *pFlags)
 	return g_ConCmds.LookForCommandAdminFlags(cmd, pFlags);
 }
 
-static int load_mms_plugin(const char *file, bool *ok, char *error, size_t maxlength)
-{
-	bool ignore_already;
-	PluginId id = g_pMMPlugins->Load(file, g_PLID, ignore_already, error, maxlength);
-
-	Pl_Status status;
-
-#ifndef METAMOD_PLAPI_VERSION
-	const char *filep;
-	PluginId source;
-#endif
-
-	if (!id || (
-#ifndef METAMOD_PLAPI_VERSION
-		g_pMMPlugins->Query(id, filep, status, source)
-#else
-		g_pMMPlugins->Query(id, NULL, &status, NULL)
-#endif
-		&& status < Pl_Paused))
-	{
-		*ok = false;
-	}
-	else
-	{
-		*ok = true;
-	}
-
-	return id;
-}
-
-static void unload_mms_plugin(int id)
-{
-	char ignore[255];
-	g_pMMPlugins->Unload(id, true, ignore, sizeof(ignore));
-}
-
 void do_global_plugin_loads()
 {
 	g_SourceMod.DoGlobalPluginLoads();
@@ -474,8 +438,6 @@ public:
 		this->spe1 = &g_pSourcePawn;
 		this->spe2 = &g_pSourcePawn2;
 		this->GetCoreConfigValue = get_core_config_value;
-		this->LoadMMSPlugin = load_mms_plugin;
-		this->UnloadMMSPlugin = unload_mms_plugin;
 		this->DoGlobalPluginLoads = do_global_plugin_loads;
 		this->AreConfigsExecuted = SM_AreConfigsExecuted;
 		this->ExecuteConfigs = SM_ExecuteForPlugin;
@@ -507,6 +469,8 @@ public:
 	void LogToGame(const char *message) override;
 	void ConPrint(const char *message) override;
 	void ConsolePrintVa(const char *fmt, va_list ap) override;
+	int LoadMMSPlugin(const char *file, bool *ok, char *error, size_t maxlength) override;
+	void UnloadMMSPlugin(int id) override;
 } sCoreProviderImpl;
 
 ConVar *CoreProviderImpl::FindConVar(const char *name)
@@ -662,6 +626,42 @@ bool CoreProviderImpl::DescribePlayer(int index, const char **namep, const char 
 	if (useridp)
 		*useridp = GetPlayerUserId(player->GetEdict());
 	return true;
+}
+
+int CoreProviderImpl::LoadMMSPlugin(const char *file, bool *ok, char *error, size_t maxlength)
+{
+	bool ignore_already;
+	PluginId id = g_pMMPlugins->Load(file, g_PLID, ignore_already, error, maxlength);
+
+	Pl_Status status;
+
+#ifndef METAMOD_PLAPI_VERSION
+	const char *filep;
+	PluginId source;
+#endif
+
+	if (!id || (
+#ifndef METAMOD_PLAPI_VERSION
+		g_pMMPlugins->Query(id, filep, status, source)
+#else
+		g_pMMPlugins->Query(id, NULL, &status, NULL)
+#endif
+		&& status < Pl_Paused))
+	{
+		*ok = false;
+	}
+	else
+	{
+		*ok = true;
+	}
+
+	return id;
+}
+
+void CoreProviderImpl::UnloadMMSPlugin(int id)
+{
+	char ignore[255];
+	g_pMMPlugins->Unload(id, true, ignore, sizeof(ignore));
 }
 
 void InitLogicBridge()
