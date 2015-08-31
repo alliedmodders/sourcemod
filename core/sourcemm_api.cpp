@@ -60,6 +60,8 @@ int vsp_version = 0;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
+ConVar sourcemod_version("sourcemod_version", SOURCEMOD_VERSION, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY, "SourceMod Version");
+
 bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
 {
 	PLUGIN_SAVEVARS();

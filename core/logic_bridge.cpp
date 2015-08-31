@@ -37,7 +37,6 @@
 #include "logic/intercom.h"
 #include "sm_stringutil.h"
 #include "Logger.h"
-#include "sm_srvcmds.h"
 #include "TimerSys.h"
 #include "logic_bridge.h"
 #include "PlayerManager.h"
@@ -89,6 +88,7 @@ IHandleSys *handlesys;
 IForwardManager *forwardsys;
 IAdminSystem *adminsys;
 ILogger *logger;
+IRootConsole *rootmenu;
 
 class VEngineServer_Logic : public IVEngineServer_Logic
 {
@@ -466,16 +466,6 @@ static bool look_for_cmd_admin_flags(const char *cmd, FlagBits *pFlags)
 	return g_ConCmds.LookForCommandAdminFlags(cmd, pFlags);
 }
 
-int read_cmd_argc(const CCommand &args)
-{
-	return args.ArgC();
-}
-
-static const char *read_cmd_arg(const CCommand &args, int arg)
-{
-	return args.Arg(arg);
-}
-
 static int load_mms_plugin(const char *file, bool *ok, char *error, size_t maxlength)
 {
 	bool ignore_already;
@@ -544,6 +534,30 @@ static int get_global_target()
 	return g_SourceMod.GetGlobalTarget();
 }
 
+void UTIL_ConsolePrintVa(const char *fmt, va_list ap)
+{
+	char buffer[512];
+	size_t len = ke::SafeVsprintf(buffer, sizeof(buffer), fmt, ap);
+
+	if (len >= sizeof(buffer) - 1)
+	{
+		buffer[510] = '\n';
+		buffer[511] = '\0';
+	} else {
+		buffer[len++] = '\n';
+		buffer[len] = '\0';
+	}
+	META_CONPRINT(buffer);
+}
+
+void UTIL_ConsolePrint(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	UTIL_ConsolePrintVa(fmt, ap);
+	va_end(ap);
+}
+
 #if defined METAMOD_PLAPI_VERSION
 #if SOURCE_ENGINE == SE_LEFT4DEAD
 #define GAMEFIX "2.l4d"
@@ -601,7 +615,6 @@ static sm_core_t core_bridge =
 	reinterpret_cast<IVEngineServer*>(&logic_engine),
 	reinterpret_cast<IFileSystem*>(&logic_filesystem),
 	&logic_playerinfo,
-	&g_RootMenu,
 	&g_Timers,
 	&g_Players,
 	&g_HL2,
@@ -621,8 +634,6 @@ static sm_core_t core_bridge =
 	get_core_config_value,
 	is_map_loading,
 	is_map_running,
-	read_cmd_argc,
-	read_cmd_arg,
 	load_mms_plugin,
 	unload_mms_plugin,
 	do_global_plugin_loads,
@@ -636,6 +647,7 @@ static sm_core_t core_bridge =
 	describe_player,
 	get_max_clients,
 	get_global_target,
+	UTIL_ConsolePrintVa,
 	GAMEFIX,
 	&serverGlobals,
 };
@@ -681,6 +693,7 @@ void InitLogicBridge()
 	forwardsys = logicore.forwardsys;
 	adminsys = logicore.adminsys;
 	logger = logicore.logger;
+	rootmenu = logicore.rootmenu;
 }
 
 bool StartLogicBridge(char *error, size_t maxlength)

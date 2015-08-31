@@ -900,8 +900,6 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 	if (m_LoadingLocked)
 		return LoadRes_NeverLoad;
 
-	int err;
-
 	/**
 	 * Does this plugin already exist?
 	 */
@@ -1819,7 +1817,7 @@ void CPluginManager::OnSourceModAllInitialized()
 	g_PluginType = handlesys->CreateType("Plugin", this, 0, NULL, &sec, m_MyIdent, NULL);
 	g_PluginIdent = g_ShareSys.CreateIdentType("PLUGIN");
 
-	rootmenu->AddRootConsoleCommand("plugins", "Manage Plugins", this);
+	rootmenu->AddRootConsoleCommand3("plugins", "Manage Plugins", this);
 
 	g_ShareSys.AddInterface(NULL, GetOldAPI());
 	
@@ -1941,12 +1939,12 @@ static inline bool IS_STR_FILLED(const char *text)
 	return text[0] != '\0';
 }
 
-void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
+void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command)
 {
-	int argcount = smcore.Argc(command);
+	int argcount = command->ArgC();
 	if (argcount >= 3)
 	{
-		const char *cmd = smcore.Arg(command, 2);
+		const char *cmd = command->Arg(2);
 		if (strcmp(cmd, "list") == 0)
 		{
 			char buffer[256];
@@ -2035,7 +2033,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 
 			char error[128];
 			bool wasloaded;
-			const char *filename = smcore.Arg(command, 3);
+			const char *filename = command->Arg(3);
 
 			char pluginfile[256];
 			const char *ext = libsys->GetFileExtension(filename) ? "" : ".smx";
@@ -2070,7 +2068,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 
 			CPlugin *pl;
 			char *end;
-			const char *arg = smcore.Arg(command, 3);
+			const char *arg = command->Arg(3);
 			int id = strtol(arg, &end, 10);
 
 			if (*end == '\0')
@@ -2160,7 +2158,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 
 			CPlugin *pl;
 			char *end;
-			const char *arg = smcore.Arg(command, 3);
+			const char *arg = command->Arg(3);
 			int id = strtol(arg, &end, 10);
 
 			if (*end == '\0')
@@ -2291,7 +2289,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 
 			CPlugin *pl;
 			char *end;
-			const char *arg = smcore.Arg(command, 3);
+			const char *arg = command->Arg(3);
 			int id = strtol(arg, &end, 10);
 
 			if (*end == '\0')

@@ -29,11 +29,11 @@
 
 #include "ConVarManager.h"
 #include "HalfLife2.h"
-#include "sm_srvcmds.h"
 #include "sm_stringutil.h"
 #include <sh_vector.h>
 #include <sm_namehashset.h>
 #include "logic_bridge.h"
+#include "sourcemod.h"
 
 ConVarManager g_ConVarManager;
 
@@ -134,7 +134,7 @@ void ConVarManager::OnSourceModAllInitialized()
 	scripts->AddPluginsListener(this);
 
 	/* Add the 'convars' option to the 'sm' console command */
-	g_RootMenu.AddRootConsoleCommand("cvars", "View convars created by a plugin", this);
+	rootmenu->AddRootConsoleCommand3("cvars", "View convars created by a plugin", this);
 }
 
 void ConVarManager::OnSourceModShutdown()
@@ -205,7 +205,7 @@ void ConVarManager::OnSourceModShutdown()
 #endif
 
 	/* Remove the 'convars' option from the 'sm' console command */
-	g_RootMenu.RemoveRootConsoleCommand("cvars", this);
+	rootmenu->RemoveRootConsoleCommand("cvars", this);
 
 	scripts->RemovePluginsListener(this);
 
@@ -340,19 +340,19 @@ bool ConVarManager::GetHandleApproxSize(HandleType_t type, void *object, unsigne
 	return true;
 }
 
-void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
+void ConVarManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command)
 {
-	int argcount = command.ArgC();
+	int argcount = command->ArgC();
 	if (argcount >= 3)
 	{
 		bool wantReset = false;
 		
 		/* Get plugin index that was passed */
-		const char *arg = command.Arg(2);
+		const char *arg = command->Arg(2);
 		if (argcount >= 4 && strcmp(arg, "reset") == 0)
 		{
 			wantReset = true;
-			arg = command.Arg(3);
+			arg = command->Arg(3);
 		}
 		
 		/* Get plugin object */
@@ -360,7 +360,7 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 
 		if (!plugin)
 		{
-			g_RootMenu.ConsolePrint("[SM] Plugin \"%s\" was not found.", arg);
+			UTIL_ConsolePrint("[SM] Plugin \"%s\" was not found.", arg);
 			return;
 		}
 
@@ -374,14 +374,14 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 		/* If no convar list... */
 		if (!plugin->GetProperty("ConVarList", (void **)&pConVarList))
 		{
-			g_RootMenu.ConsolePrint("[SM] No convars found for: %s", plname);
+			UTIL_ConsolePrint("[SM] No convars found for: %s", plname);
 			return;
 		}
 
 		if (!wantReset)
 		{
-			g_RootMenu.ConsolePrint("[SM] Listing %d convars for: %s", pConVarList->size(), plname);
-			g_RootMenu.ConsolePrint("  %-32.31s %s", "[Name]", "[Value]");
+			UTIL_ConsolePrint("[SM] Listing %d convars for: %s", pConVarList->size(), plname);
+			UTIL_ConsolePrint("  %-32.31s %s", "[Name]", "[Value]");
 		}
 		
 		/* Iterate convar list and display/reset each one */
@@ -390,7 +390,7 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 			/*const */ConVar *pConVar = const_cast<ConVar *>(*iter);
 			if (!wantReset)
 			{
-				g_RootMenu.ConsolePrint("  %-32.31s %s", pConVar->GetName(), pConVar->GetString()); 
+				UTIL_ConsolePrint("  %-32.31s %s", pConVar->GetName(), pConVar->GetString()); 
 			} else {
 				pConVar->Revert();
 			}
@@ -398,14 +398,14 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 		
 		if (wantReset)
 		{
-			g_RootMenu.ConsolePrint("[SM] Reset %d convars for: %s", pConVarList->size(), plname);
+			UTIL_ConsolePrint("[SM] Reset %d convars for: %s", pConVarList->size(), plname);
 		}
 
 		return;
 	}
 
 	/* Display usage of subcommand */
-	g_RootMenu.ConsolePrint("[SM] Usage: sm cvars [reset] <plugin #>");
+	UTIL_ConsolePrint("[SM] Usage: sm cvars [reset] <plugin #>");
 }
 
 Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name, const char *defaultVal, const char *description, int flags, bool hasMin, float min, bool hasMax, float max)

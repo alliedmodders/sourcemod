@@ -41,7 +41,7 @@
  */
 
 #define SMINTERFACE_ROOTCONSOLE_NAME			"IRootConsole"
-#define SMINTERFACE_ROOTCONSOLE_VERSION			2
+#define SMINTERFACE_ROOTCONSOLE_VERSION			3
 
 class CCommand;
 
@@ -82,13 +82,11 @@ namespace SourceMod
 	class IRootConsoleCommand
 	{
 	public:
-		virtual void OnRootConsoleCommand(const char *cmdname, const CCommand &command)
-		{
-		}
+		virtual unsigned int GetApiVersion() const {
+            return SMINTERFACE_ROOTCONSOLE_VERSION;
+        }
 
-		virtual void OnRootConsoleCommand2(const char *cmdname, const ICommandArgs *args)
-		{
-		}
+		virtual void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *args) = 0;
 	};
 
 	/**
@@ -98,12 +96,12 @@ namespace SourceMod
 	{
 	public:
 		/**
-		 * @brief Adds a root console command handler.  The command must be unique.
+		 * @brief Removed.
 		 *
-		 * @param cmd			String containing the console command.
-		 * @param text			Description text.
-		 * @param pHandler		An IRootConsoleCommand pointer to handle the command.
-		 * @return				True on success, false on too many commands or duplicate command.
+		 * @param cmd			Unused.
+		 * @param text			Unused.
+		 * @param pHandler		Unused.
+		 * @return				False.
 		 */
 		virtual bool AddRootConsoleCommand(const char *cmd, const char *text, IRootConsoleCommand *pHandler) =0;
 
@@ -136,16 +134,26 @@ namespace SourceMod
 		virtual void DrawGenericOption(const char *cmd, const char *text) =0;
 
 		/**
-		 * @brief Adds a root console command handler.  The command must be unique.
+		 * @brief Removed.
 		 *
-		 * This version of the function uses the OnRootConsoleCommand2 callback.
+		 * @param cmd			Unused.
+		 * @param text			Unused.
+		 * @param pHandler		Unused.
+		 * @return				False.
+		 */
+		virtual bool AddRootConsoleCommand2(const char *cmd,
+											const char *text,
+											IRootConsoleCommand *pHandler) =0;
+
+		/**
+		 * @brief Adds a root console command handler.  The command must be unique.
 		 *
 		 * @param cmd			String containing the console command.
 		 * @param text			Description text.
 		 * @param pHandler		An IRootConsoleCommand pointer to handle the command.
 		 * @return				True on success, false on too many commands or duplicate command.
 		 */
-		virtual bool AddRootConsoleCommand2(const char *cmd,
+		virtual bool AddRootConsoleCommand3(const char *cmd,
 											const char *text,
 											IRootConsoleCommand *pHandler) =0;
 	};

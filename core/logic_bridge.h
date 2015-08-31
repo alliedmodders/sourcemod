@@ -49,5 +49,6 @@ extern IHandleSys *handlesys;
 extern IForwardManager *forwardsys;
 extern IAdminSystem *adminsys;
 extern ILogger *logger;
+extern IRootConsole *rootmenu;
 
 #endif /* _INCLUDE_SOURCEMOD_LOGIC_BRIDGE_H_ */

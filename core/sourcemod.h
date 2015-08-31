@@ -151,6 +151,9 @@ private:
 	CVector<GAME_FRAME_HOOK> m_frame_hooks;
 };
 
+void UTIL_ConsolePrintVa(const char *fmt, va_list ap);
+void UTIL_ConsolePrint(const char *fmt, ...);
+
 extern bool g_Loaded;
 extern bool sm_show_debug_spew;
 extern SourceModBase g_SourceMod;

@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 35)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 39)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -120,6 +120,7 @@ namespace SourceMod
 	class ITranslator;
 	class IGameConfig;
 	class IMenuManager;
+	class ICommandArgs;
 }
 
 class IVEngineServer;
@@ -274,8 +275,6 @@ private:
 	const CVector<IExtension *> *list_;
 };
 
-class CCommand;
-
 struct sm_core_t
 {
 	/* Objects */
@@ -283,7 +282,6 @@ struct sm_core_t
 	IVEngineServer	*engine;
 	IFileSystem		*filesystem;
 	IPlayerInfo_Logic *playerInfo;
-	IRootConsole	*rootmenu;
 	ITimerSystem    *timersys;
 	IPlayerManager  *playerhelpers;
 	IGameHelpers    *gamehelpers;
@@ -303,8 +301,6 @@ struct sm_core_t
 	const char *	(*GetCoreConfigValue)(const char*);
 	bool			(*IsMapLoading)();
 	bool			(*IsMapRunning)();
-	int				(*Argc)(const CCommand &args);
-	const char *	(*Arg)(const CCommand &args, int arg);
 	int				(*LoadMMSPlugin)(const char *file, bool *ok, char *error, size_t maxlength);
 	void			(*UnloadMMSPlugin)(int id);
 	void			(*DoGlobalPluginLoads)();
@@ -318,6 +314,7 @@ struct sm_core_t
 	bool            (*DescribePlayer)(int index, const char **namep, const char **authp, int *useridp);
 	int             (*MaxClients)();
 	int             (*GetGlobalTarget)();
+	void            (*ConsolePrintVa)(const char *fmt, va_list ap);
 	const char		*gamesuffix;
 	/* Data */
 	ServerGlobals   *serverGlobals;
@@ -347,6 +344,7 @@ struct sm_logic_t
 	void			(*DumpHandles)(void (*dumpfn)(const char *fmt, ...));
 	bool			(*DumpAdminCache)(const char *filename);
 	void            (*RegisterProfiler)(IProfilingTool *tool);
+	void            (*OnRootCommand)(const ICommandArgs *args);
 	IScriptManager	*scripts;
 	IShareSys		*sharesys;
 	IExtensionSys	*extsys;
@@ -355,6 +353,7 @@ struct sm_logic_t
 	IAdminSystem	*adminsys;
 	IdentityToken_t *core_ident;
 	ILogger			*logger;
+	IRootConsole	*rootmenu;
 	float			sentinel;
 };
 

@@ -48,7 +48,7 @@ public:
 	void OnSourceModShutdown() override;
 
 	// IRootConsoleCommand
-	void OnRootConsoleCommand2(const char *cmdname, const ICommandArgs *args) override;
+	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *args) override;
 
 	void RegisterTool(IProfilingTool *tool) {
 		tools_.append(tool);
