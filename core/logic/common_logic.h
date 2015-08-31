@@ -42,7 +42,6 @@ extern IHandleSys *handlesys;
 extern ISourceMod *g_pSM;
 extern ILibrarySys *libsys;
 extern ITextParsers *textparser;
-extern IVEngineServer *engine;
 extern IShareSys *sharesys;
 extern IRootConsole *rootmenu;
 extern IPluginManager *pluginsys;
@@ -56,6 +55,12 @@ extern IScriptManager *scripts;
 extern IExtensionSys *extsys;
 extern ILogger *logger;
 extern IMenuManager *menus;
+
+#if defined SM_LOGIC
+extern IVEngineServerBridge *engine;
+#else
+extern IVEngineServer *engine;
+#endif
 
 #endif /* _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_ */
 

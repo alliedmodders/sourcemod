@@ -54,15 +54,7 @@ using namespace SourceHook;
  */
 #define SM_LOGIC_MAGIC		(0x0F47C0DE - 48)
 
-#if defined SM_LOGIC
-# define IVEngineClass IVEngineServer
-# define IFileSystemClass IFileSystem
-#else
-# define IVEngineClass IVEngineServer_Logic
-# define IFileSystemClass IFileSystem_Logic
-#endif
-
-class IVEngineClass
+class IVEngineServerBridge
 {
 public:
 	virtual bool IsDedicatedServer() = 0;
@@ -77,7 +69,7 @@ public:
 typedef void * FileHandle_t;
 typedef int FileFindHandle_t; 
 
-class IFileSystemClass
+class IFileSystemBridge
 {
 public:
 	virtual const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle) = 0;
@@ -128,7 +120,7 @@ class KeyValues;
 class SMGlobalClass;
 class IPlayerInfo;
 
-class IPlayerInfo_Logic
+class IPlayerInfoBridge
 {
 public:
 	virtual bool IsObserver(IPlayerInfo *pInfo) = 0;
@@ -278,9 +270,9 @@ class CoreProvider
 public:
 	/* Objects */
 	ISourceMod		*sm;
-	IVEngineClass	*engine;
-	IFileSystemClass *filesystem;
-	IPlayerInfo_Logic *playerInfo;
+	IVEngineServerBridge *engine;
+	IFileSystemBridge *filesystem;
+	IPlayerInfoBridge *playerInfo;
 	ITimerSystem    *timersys;
 	IPlayerManager  *playerhelpers;
 	IGameHelpers    *gamehelpers;

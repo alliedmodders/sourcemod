@@ -59,7 +59,7 @@ SMGlobalClass *SMGlobalClass::head = NULL;
 
 CoreProvider *bridge = nullptr;
 ISourceMod *g_pSM = nullptr;
-IVEngineServer *engine = nullptr;
+IVEngineServerBridge *engine = nullptr;
 IdentityToken_t *g_pCoreIdent = nullptr;
 ITimerSystem *timersys = nullptr;
 IGameHelpers *gamehelpers = nullptr;

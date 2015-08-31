@@ -89,7 +89,7 @@ IAdminSystem *adminsys = nullptr;
 ILogger *logger = nullptr;
 IRootConsole *rootmenu = nullptr;
 
-class VEngineServer_Logic : public IVEngineServer_Logic
+class VEngineServer_Logic : public IVEngineServerBridge
 {
 public:
 	virtual bool IsDedicatedServer()
@@ -130,7 +130,7 @@ public:
 	}
 } engine_wrapper;
 
-class VFileSystem_Logic : public IFileSystem_Logic
+class VFileSystem_Logic : public IFileSystemBridge
 {
 public:
 	const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle)
@@ -219,7 +219,7 @@ public:
 	}
 } fs_wrapper;
 
-class VPlayerInfo_Logic : public IPlayerInfo_Logic
+class VPlayerInfo_Logic : public IPlayerInfoBridge
 {
 public:
 	bool IsObserver(IPlayerInfo *pInfo)
