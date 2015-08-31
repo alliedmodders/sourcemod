@@ -151,7 +151,7 @@ CGameConfig::CGameConfig(const char *file, const char *engine)
 	m_CustomHandler = NULL;
 
 	if (!engine)
-		m_pEngine = smcore.GetSourceEngineName();
+		m_pEngine = bridge->GetSourceEngineName();
 	else
 		m_pEngine = engine;
 
@@ -548,11 +548,11 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 			void *addrInBase = NULL;
 			if (strcmp(s_TempSig.library, "server") == 0)
 			{
-				addrInBase = smcore.serverFactory;
+				addrInBase = bridge->serverFactory;
 			} else if (strcmp(s_TempSig.library, "engine") == 0) {
-				addrInBase = smcore.engineFactory;
+				addrInBase = bridge->engineFactory;
 			} else if (strcmp(s_TempSig.library, "matchmaking_ds") == 0) {
-				addrInBase = smcore.matchmakingDSFactory;
+				addrInBase = bridge->matchmakingDSFactory;
 			}
 			void *final_addr = NULL;
 			if (addrInBase == NULL)
@@ -580,7 +580,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 						void *handle = dlopen(info.dli_fname, RTLD_NOW);
 						if (handle)
 						{
-							if (smcore.SymbolsAreHidden())
+							if (bridge->SymbolsAreHidden())
 								final_addr = g_MemUtils.ResolveSymbol(handle, &s_TempSig.sig[1]);
 							else
 								final_addr = dlsym(handle, &s_TempSig.sig[1]);
@@ -1039,8 +1039,8 @@ void GameConfigManager::OnSourceModStartup(bool late)
 	LoadGameConfigFile("core.games", &g_pGameConf, NULL, 0);
 
 	strncopy(g_Game, g_pSM->GetGameFolderName(), sizeof(g_Game));
-	strncopy(g_GameDesc + 1, smcore.GetGameDescription(), sizeof(g_GameDesc) - 1);
-	smcore.GetGameName(g_GameName + 1, sizeof(g_GameName) - 1);
+	strncopy(g_GameDesc + 1, bridge->GetGameDescription(), sizeof(g_GameDesc) - 1);
+	bridge->GetGameName(g_GameName + 1, sizeof(g_GameName) - 1);
 }
 
 void GameConfigManager::OnSourceModAllInitialized()

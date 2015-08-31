@@ -87,13 +87,13 @@ public:
 	}
 	void GetMapCycleFilePath(char *pBuffer, int maxlen)
 	{
-		const char *pMapCycleFileName = m_pMapCycleFile ? smcore.GetCvarString(m_pMapCycleFile) : "mapcycle.txt";
+		const char *pMapCycleFileName = m_pMapCycleFile ? bridge->GetCvarString(m_pMapCycleFile) : "mapcycle.txt";
 
 		g_pSM->Format(pBuffer, maxlen, "cfg/%s", pMapCycleFileName);
-		if (!smcore.filesystem->FileExists(pBuffer, "GAME"))
+		if (!bridge->filesystem->FileExists(pBuffer, "GAME"))
 		{
 			g_pSM->Format(pBuffer, maxlen, "%s", pMapCycleFileName);
-			if (!smcore.filesystem->FileExists(pBuffer, "GAME"))
+			if (!bridge->filesystem->FileExists(pBuffer, "GAME"))
 			{
 				g_pSM->Format(pBuffer, maxlen, "cfg/mapcycle_default.txt");
 			}
@@ -158,7 +158,7 @@ public:
 			return;
 		}
 
-		m_pMapCycleFile = smcore.FindConVar("mapcyclefile");
+		m_pMapCycleFile = bridge->FindConVar("mapcyclefile");
 
 		/* Dump everything we know about. */
 		List<maplist_info_t *> compat;
@@ -363,7 +363,7 @@ public:
 			cell_t *blk;
 
 			FileFindHandle_t findHandle;
-			const char *fileName = smcore.filesystem->FindFirstEx("maps/*.bsp", "GAME", &findHandle);
+			const char *fileName = bridge->filesystem->FindFirstEx("maps/*.bsp", "GAME", &findHandle);
 
 			while (fileName)
 			{
@@ -373,22 +373,22 @@ public:
 
 				if (!gamehelpers->IsMapValid(buffer))
 				{
-					fileName = smcore.filesystem->FindNext(findHandle);
+					fileName = bridge->filesystem->FindNext(findHandle);
 					continue;
 				}
 
 				if ((blk = pNewArray->push()) == NULL)
 				{
-					fileName = smcore.filesystem->FindNext(findHandle);
+					fileName = bridge->filesystem->FindNext(findHandle);
 					continue;
 				}
 
 				strncopy((char *)blk, buffer, 255);
 
-				fileName = smcore.filesystem->FindNext(findHandle);
+				fileName = bridge->filesystem->FindNext(findHandle);
 			}
 
-			smcore.filesystem->FindClose(findHandle);
+			bridge->filesystem->FindClose(findHandle);
 
 			/* Remove the array if there were no items. */
 			if (pNewArray->size() == 0)
@@ -493,7 +493,7 @@ private:
 			cell_t *blk;
 			char buffer[255];
 
-			if ((fp = smcore.filesystem->Open(pMapList->path, "rt", "GAME")) == NULL)
+			if ((fp = bridge->filesystem->Open(pMapList->path, "rt", "GAME")) == NULL)
 			{
 				return false;
 			}
@@ -501,7 +501,7 @@ private:
 			delete pMapList->pArray;
 			pMapList->pArray = new CellArray(64);
 
-			while (!smcore.filesystem->EndOfFile(fp) && smcore.filesystem->ReadLine(buffer, sizeof(buffer), fp) != NULL)
+			while (!bridge->filesystem->EndOfFile(fp) && bridge->filesystem->ReadLine(buffer, sizeof(buffer), fp) != NULL)
 			{
 				size_t len = strlen(buffer);
 				char *ptr = UTIL_TrimWhitespace(buffer, len);
@@ -512,7 +512,7 @@ private:
 					continue;
 				}
 				
-				if (strcmp(smcore.GetSourceEngineName(), "insurgency") == 0)
+				if (strcmp(bridge->GetSourceEngineName(), "insurgency") == 0)
 				{
 					// Insurgency (presumably?) doesn't allow spaces in map names
 					// and does use a space to delimit the map name from the map mode
@@ -539,7 +539,7 @@ private:
 				}
 			}
 
-			smcore.filesystem->Close(fp);
+			bridge->filesystem->Close(fp);
 
 			pMapList->last_modified_time = last_time;
 			pMapList->serial = ++m_nSerialChange;

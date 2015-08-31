@@ -737,7 +737,7 @@ void Translator::OnSourceModAllInitialized()
 {
 	AddLanguage("en", "English");
 
-	const char* lang = smcore.GetCoreConfigValue("ServerLang");
+	const char* lang = bridge->GetCoreConfigValue("ServerLang");
 	if (lang)
 	{
 		strncpy(m_InitialLang, lang, sizeof(m_InitialLang));

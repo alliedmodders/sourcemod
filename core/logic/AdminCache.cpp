@@ -328,7 +328,7 @@ void AdminCache::AddCommandOverride(const char *cmd, OverrideType type, FlagBits
 		return;
 
 	map->insert(cmd, flags);
-	smcore.UpdateAdminCmdFlags(cmd, type, flags, false);
+	bridge->UpdateAdminCmdFlags(cmd, type, flags, false);
 }
 
 bool AdminCache::GetCommandOverride(const char *cmd, OverrideType type, FlagBits *pFlags)
@@ -357,13 +357,13 @@ void AdminCache::UnsetCommandOverride(const char *cmd, OverrideType type)
 void AdminCache::_UnsetCommandGroupOverride(const char *group)
 {
 	m_CmdGrpOverrides.remove(group);
-	smcore.UpdateAdminCmdFlags(group, Override_CommandGroup, 0, true);
+	bridge->UpdateAdminCmdFlags(group, Override_CommandGroup, 0, true);
 }
 
 void AdminCache::_UnsetCommandOverride(const char *cmd)
 {
 	m_CmdOverrides.remove(cmd);
-	smcore.UpdateAdminCmdFlags(cmd, Override_Command, 0, true);
+	bridge->UpdateAdminCmdFlags(cmd, Override_Command, 0, true);
 }
 
 void AdminCache::DumpCommandOverrideCache(OverrideType type)
@@ -1516,7 +1516,7 @@ bool AdminCache::CanAdminTarget(AdminId id, AdminId target)
 	}
 
 	/** Fourth, if the targeted admin is immune from targeting admin. */
-	int mode = smcore.GetImmunityMode();
+	int mode = bridge->GetImmunityMode();
 	switch (mode)
 	{
 		case 1:
@@ -1653,7 +1653,7 @@ bool AdminCache::CanAdminUseCommand(int client, const char *cmd)
 		cmd++;
 	}
 
-	if (!smcore.LookForCommandAdminFlags(cmd, &bits))
+	if (!bridge->LookForCommandAdminFlags(cmd, &bits))
 	{
 		if (!GetCommandOverride(cmd, otype, &bits))
 		{
@@ -1728,7 +1728,7 @@ bool AdminCache::CheckAccess(int client, const char *cmd, FlagBits flags, bool o
 	bool found_command = false;
 	if (!override_only)
 	{
-		found_command = smcore.LookForCommandAdminFlags(cmd, &bits);
+		found_command = bridge->LookForCommandAdminFlags(cmd, &bits);
 	}
 
 	if (!found_command)

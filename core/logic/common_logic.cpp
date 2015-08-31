@@ -55,30 +55,32 @@
 #include "LibrarySys.h"
 #include "RootConsoleMenu.h"
 
-sm_core_t smcore;
-IHandleSys *handlesys = &g_HandleSys;
-IdentityToken_t *g_pCoreIdent;
 SMGlobalClass *SMGlobalClass::head = NULL;
-ISourceMod *g_pSM;
+
+CoreProvider *bridge = nullptr;
+ISourceMod *g_pSM = nullptr;
+IVEngineServer *engine = nullptr;
+IdentityToken_t *g_pCoreIdent = nullptr;
+ITimerSystem *timersys = nullptr;
+IGameHelpers *gamehelpers = nullptr;
+IMenuManager *menus = nullptr;
+IPlayerManager *playerhelpers = nullptr;
+
+IHandleSys *handlesys = &g_HandleSys;
 ILibrarySys *libsys = &g_LibSys;
 ITextParsers *textparser = &g_TextParser;
-IVEngineServer *engine;
 IShareSys *sharesys = &g_ShareSys;
 IRootConsole *rootmenu = &g_RootMenu;
 IPluginManager *pluginsys = g_PluginSys.GetOldAPI();
 IForwardManager *forwardsys = &g_Forwards;
-ITimerSystem *timersys;
 ServerGlobals serverGlobals;
-IPlayerManager *playerhelpers;
 IAdminSystem *adminsys = &g_Admins;
-IGameHelpers *gamehelpers;
 ISourcePawnEngine *g_pSourcePawn;
 ISourcePawnEngine2 *g_pSourcePawn2;
-CNativeOwner g_CoreNatives;
 IScriptManager *scripts = &g_PluginSys;
 IExtensionSys *extsys = &g_Extensions;
 ILogger *logger = &g_Logger;
-IMenuManager *menus;
+CNativeOwner g_CoreNatives;
 
 static void AddCorePhraseFile(const char *filename)
 {
@@ -159,11 +161,11 @@ static sm_logic_t logic =
 	-1.0f
 };
 
-static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
+static void logic_init(CoreProvider* core, sm_logic_t* _logic)
 {
 	logic.head = SMGlobalClass::head;
 
-	memcpy(&smcore, core, sizeof(sm_core_t));
+	bridge = core;
 	memcpy(_logic, &logic, sizeof(sm_logic_t));
 	memcpy(&serverGlobals, core->serverGlobals, sizeof(ServerGlobals));
 

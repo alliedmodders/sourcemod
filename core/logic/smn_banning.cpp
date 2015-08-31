@@ -271,7 +271,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 	ban_source = params[7];
 
 	/* Check how we should ban the player */
-	if (!strcmp(smcore.GetSourceEngineName(), "darkmessiah"))
+	if (!strcmp(bridge->GetSourceEngineName(), "darkmessiah"))
 	{
 		/* Dark Messiah doesn't have Steam IDs so there is only one ban method to choose */
 		ban_flags |= BANFLAG_IP;

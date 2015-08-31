@@ -65,7 +65,7 @@ void RootConsoleMenu::ConsolePrint(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	smcore.ConsolePrintVa(fmt, ap);
+	bridge->ConsolePrintVa(fmt, ap);
 	va_end(ap);
 }
 

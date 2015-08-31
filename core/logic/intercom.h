@@ -52,13 +52,17 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 39)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 46)
 
 #if defined SM_LOGIC
-class IVEngineServer
+# define IVEngineClass IVEngineServer
+# define IFileSystemClass IFileSystem
 #else
-class IVEngineServer_Logic
+# define IVEngineClass IVEngineServer_Logic
+# define IFileSystemClass IFileSystem_Logic
 #endif
+
+class IVEngineClass
 {
 public:
 	virtual bool IsDedicatedServer() = 0;
@@ -73,11 +77,7 @@ public:
 typedef void * FileHandle_t;
 typedef int FileFindHandle_t; 
 
-#if defined SM_LOGIC
-class IFileSystem
-#else
-class IFileSystem_Logic
-#endif
+class IFileSystemClass
 {
 public:
 	virtual const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle) = 0;
@@ -123,8 +123,6 @@ namespace SourceMod
 	class ICommandArgs;
 }
 
-class IVEngineServer;
-class IFileSystem;
 class ConVar;
 class KeyValues;
 class SMGlobalClass;
@@ -275,12 +273,13 @@ private:
 	const CVector<IExtension *> *list_;
 };
 
-struct sm_core_t
+class CoreProvider
 {
+public:
 	/* Objects */
 	ISourceMod		*sm;
-	IVEngineServer	*engine;
-	IFileSystem		*filesystem;
+	IVEngineClass	*engine;
+	IFileSystemClass *filesystem;
 	IPlayerInfo_Logic *playerInfo;
 	ITimerSystem    *timersys;
 	IPlayerManager  *playerhelpers;
@@ -288,21 +287,39 @@ struct sm_core_t
 	IMenuManager	*menus;
 	ISourcePawnEngine **spe1;
 	ISourcePawnEngine2 **spe2;
-	/* Functions */
-	ConVar *		(*FindConVar)(const char*);
-	void			(*LogToGame)(const char *message);
-	void			(*ConPrint)(const char *message);
-	const char *	(*GetCvarString)(ConVar*);
-	bool			(*GetCvarBool)(ConVar*);
-	bool            (*GetGameName)(char *buffer, size_t maxlength);
-	const char *    (*GetGameDescription)();
-	const char *    (*GetSourceEngineName)();
-	bool            (*SymbolsAreHidden)();
+	const char		*gamesuffix;
+	/* Data */
+	ServerGlobals   *serverGlobals;
+	void *          serverFactory;
+	void *          engineFactory;
+	void *          matchmakingDSFactory;
+	SMGlobalClass *	listeners;
+
+	// ConVar functions.
+	virtual ConVar *FindConVar(const char *name) = 0;
+	virtual const char *GetCvarString(ConVar *cvar) = 0;
+	virtual bool GetCvarBool(ConVar* cvar) = 0;
+
+	// Game description functions.
+	virtual bool GetGameName(char *buffer, size_t maxlength) = 0;
+	virtual const char *GetGameDescription() = 0;
+	virtual const char *GetSourceEngineName() = 0;
+	virtual bool SymbolsAreHidden() = 0;
+
+	// Game state and helper functions.
+	virtual bool IsMapLoading() = 0;
+	virtual bool IsMapRunning() = 0;
+	virtual int MaxClients() = 0;
+	virtual bool DescribePlayer(int index, const char **namep, const char **authp, int *useridp) = 0;
+	virtual void LogToGame(const char *message) = 0;
+	virtual void ConPrint(const char *message) = 0;
+	virtual void ConsolePrintVa(const char *fmt, va_list ap) = 0;
+
+	// Metamod:Source functions.
+	virtual int LoadMMSPlugin(const char *file, bool *ok, char *error, size_t maxlength) = 0;
+	virtual void UnloadMMSPlugin(int id) = 0;
+
 	const char *	(*GetCoreConfigValue)(const char*);
-	bool			(*IsMapLoading)();
-	bool			(*IsMapRunning)();
-	int				(*LoadMMSPlugin)(const char *file, bool *ok, char *error, size_t maxlength);
-	void			(*UnloadMMSPlugin)(int id);
 	void			(*DoGlobalPluginLoads)();
 	bool			(*AreConfigsExecuted)();
 	void			(*ExecuteConfigs)(IPluginContext *ctx);
@@ -311,17 +328,7 @@ struct sm_core_t
 	int				(*GetImmunityMode)();
 	void			(*UpdateAdminCmdFlags)(const char *cmd, OverrideType type, FlagBits bits, bool remove);
 	bool			(*LookForCommandAdminFlags)(const char *cmd, FlagBits *pFlags);
-	bool            (*DescribePlayer)(int index, const char **namep, const char **authp, int *useridp);
-	int             (*MaxClients)();
 	int             (*GetGlobalTarget)();
-	void            (*ConsolePrintVa)(const char *fmt, va_list ap);
-	const char		*gamesuffix;
-	/* Data */
-	ServerGlobals   *serverGlobals;
-	void *          serverFactory;
-	void *          engineFactory;
-	void *          matchmakingDSFactory;
-	SMGlobalClass *	listeners;
 };
 
 struct sm_logic_t
@@ -357,7 +364,7 @@ struct sm_logic_t
 	float			sentinel;
 };
 
-typedef void (*LogicInitFunction)(const sm_core_t *core, sm_logic_t *logic);
+typedef void (*LogicInitFunction)(CoreProvider *core, sm_logic_t *logic);
 typedef LogicInitFunction (*LogicLoadFunction)(uint32_t magic);
 typedef ITextParsers *(*GetITextParsers)();
 

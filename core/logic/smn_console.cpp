@@ -52,7 +52,7 @@ static cell_t CheckCommandAccess(IPluginContext *pContext, const cell_t *params)
 	bool found_command = false;
 	if (params[0] < 4 || !params[4])
 	{
-		found_command = smcore.LookForCommandAdminFlags(cmd, &bits);
+		found_command = bridge->LookForCommandAdminFlags(cmd, &bits);
 	}
 
 	if (!found_command)
@@ -73,7 +73,7 @@ static cell_t CheckAccess(IPluginContext *pContext, const cell_t *params)
 	bool found_command = false;
 	if (params[0] < 4 || !params[4])
 	{
-		found_command = smcore.LookForCommandAdminFlags(cmd, &bits);
+		found_command = bridge->LookForCommandAdminFlags(cmd, &bits);
 	}
 
 	if (!found_command)
@@ -96,7 +96,7 @@ static cell_t sm_PrintToServer(IPluginContext *pCtx, const cell_t *params)
 	buffer[res++] = '\n';
 	buffer[res] = '\0';
 
-	smcore.ConPrint(buffer);
+	bridge->ConPrint(buffer);
 
 	return 1;
 }
@@ -140,7 +140,7 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 		pPlayer->PrintToConsole(buffer);
 	}
 	else {
-		smcore.ConPrint(buffer);
+		bridge->ConPrint(buffer);
 	}
 
 	return 1;
@@ -277,7 +277,7 @@ static cell_t ReplyToCommand(IPluginContext *pContext, const cell_t *params)
 		/* Print */
 		buffer[len++] = '\n';
 		buffer[len] = '\0';
-		smcore.ConPrint(buffer);
+		bridge->ConPrint(buffer);
 		return 1;
 	}
 
