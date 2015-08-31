@@ -110,9 +110,9 @@ public:
 			pMapList->bIsCompat = true;
 			pMapList->bIsPath = true;
 			pMapList->last_modified_time = 0;
-			smcore.strncopy(pMapList->name, name, sizeof(pMapList->name));
+			strncopy(pMapList->name, name, sizeof(pMapList->name));
 			pMapList->pArray = NULL;
-			smcore.strncopy(pMapList->path, file, sizeof(pMapList->path));
+			strncopy(pMapList->path, file, sizeof(pMapList->path));
 			pMapList->serial = 0;
 			m_ListLookup.insert(name, pMapList);
 			m_MapLists.push_back(pMapList);
@@ -123,13 +123,13 @@ public:
 		if (!pMapList->bIsCompat)
 			return;
 
-		smcore.strncopy(path, file, sizeof(path));
+		strncopy(path, file, sizeof(path));
 
 		/* If the path matches, don't reset the serial/time */
 		if (strcmp(path, pMapList->path) == 0)
 			return;
 
-		smcore.strncopy(pMapList->path, path, sizeof(pMapList->path));
+		strncopy(pMapList->path, path, sizeof(pMapList->path));
 		pMapList->bIsPath = true;
 		pMapList->last_modified_time = 0;
 		pMapList->serial = 0;
@@ -168,7 +168,7 @@ public:
 		maplist_info_t *pDefList = new maplist_info_t;
 
 		pDefList->bIsPath = true;
-		smcore.strncopy(pDefList->name, "mapcyclefile", sizeof(pDefList->name));
+		strncopy(pDefList->name, "mapcyclefile", sizeof(pDefList->name));
 
 		GetMapCycleFilePath(pDefList->path, sizeof(pDefList->path));
 		
@@ -246,7 +246,7 @@ public:
 			m_pCurMapList = new maplist_info_t;
 
 			memset(m_pCurMapList, 0, sizeof(maplist_info_t));
-			smcore.strncopy(m_pCurMapList->name, name, sizeof(m_pCurMapList->name));
+			strncopy(m_pCurMapList->name, name, sizeof(m_pCurMapList->name));
 
 			m_CurState = MPS_MAPLIST;
 		}
@@ -266,12 +266,12 @@ public:
 
 		if (strcmp(key, "file") == 0)
 		{
-			smcore.strncopy(m_pCurMapList->path, value, sizeof(m_pCurMapList->path));
+			strncopy(m_pCurMapList->path, value, sizeof(m_pCurMapList->path));
 			m_pCurMapList->bIsPath = true;
 		}
 		else if (strcmp(key, "target") == 0)
 		{
-			smcore.strncopy(m_pCurMapList->path, value, sizeof(m_pCurMapList->path));
+			strncopy(m_pCurMapList->path, value, sizeof(m_pCurMapList->path));
 			m_pCurMapList->bIsPath = false;
 		}
 
@@ -383,7 +383,7 @@ public:
 					continue;
 				}
 
-				smcore.strncopy((char *)blk, buffer, 255);
+				strncopy((char *)blk, buffer, 255);
 
 				fileName = smcore.filesystem->FindNext(findHandle);
 			}
@@ -442,7 +442,7 @@ public:
 		{
 			blk_dst = pUseArray->push();
 			blk_src = pNewArray->at(i);
-			smcore.strncopy((char *)blk_dst, (char *)blk_src, pUseArray->blocksize() * sizeof(cell_t));
+			strncopy((char *)blk_dst, (char *)blk_src, pUseArray->blocksize() * sizeof(cell_t));
 		}
 
 		/* Free resources if necessary. */
@@ -480,7 +480,7 @@ private:
 
 			if (strcmp(path, pMapList->path) != 0)
 			{
-				smcore.strncopy(pMapList->path, path, sizeof(pMapList->path));
+				strncopy(pMapList->path, path, sizeof(pMapList->path));
 				pMapList->last_modified_time = 0;
 			}
 		}
@@ -535,7 +535,7 @@ private:
 
 				if ((blk = pMapList->pArray->push()) != NULL)
 				{
-					smcore.strncopy((char *)blk, ptr, 255);
+					strncopy((char *)blk, ptr, 255);
 				}
 			}
 

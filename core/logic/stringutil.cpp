@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 sw=4 tw=99 et :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
@@ -34,6 +34,7 @@
 #include <ctype.h>
 #include <sm_platform.h>
 #include "stringutil.h"
+#include <am-string.h>
 
 // We're in logic so we don't have this from the SDK.
 #ifndef MIN
@@ -73,19 +74,7 @@ const char *stristr(const char *str, const char *substr)
 
 unsigned int strncopy(char *dest, const char *src, size_t count)
 {
-	if (!count)
-	{
-		return 0;
-	}
-
-	char *start = dest;
-	while ((*src) && (--count))
-	{
-		*dest++ = *src++;
-	}
-	*dest = '\0';
-
-	return (dest - start);
+	return ke::SafeStrcpy(dest, count, src);
 }
 
 unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search, const char *replace, bool caseSensitive)
