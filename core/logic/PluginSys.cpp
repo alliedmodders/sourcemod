@@ -44,6 +44,8 @@
 #include "Translator.h"
 #include "Logger.h"
 #include <am-string.h>
+#include <bridge/include/IVEngineServerBridge.h>
+#include <bridge/include/CoreProvider.h>
 
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;

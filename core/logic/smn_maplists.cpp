@@ -38,6 +38,9 @@
 #include <ITextParsers.h>
 #include <ISourceMod.h>
 #include "stringutil.h"
+#include <bridge/include/CoreProvider.h>
+#include <bridge/include/ILogger.h>
+#include <bridge/include/IFileSystemBridge.h>
 
 using namespace SourceHook;
 

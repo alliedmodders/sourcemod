@@ -1,4 +1,4 @@
-// vim: set ts=4 sw=4 tw=99 noet :
+// vim: set ts=4 sw=4 tw=99 noet:
 // =============================================================================
 // SourceMod
 // Copyright (C) 2004-2015 AlliedModders LLC.  All rights reserved.
@@ -24,37 +24,23 @@
 // this exception to all derivative works.  AlliedModders LLC defines further
 // exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
 // or <http://www.sourcemod.net/license.php>.
-#ifndef _include_sourcemod_core_logic_sprintf_h_
-#define _include_sourcemod_core_logic_sprintf_h_
+#ifndef _INCLUDE_SOURCEMOD_BRIDGE_API_H_
+#define _INCLUDE_SOURCEMOD_BRIDGE_API_H_
 
-#include <sp_vm_api.h>
+#include <bridge/include/CoreProvider.h>
+#include <bridge/include/LogicProvider.h>
+#include <stdint.h>
 
 namespace SourceMod {
-class IPhraseCollection;
-}
 
-// "AMX Templated Cell Printf", originally. SourceMod doesn't have cell-strings
-// so this is a normal sprintf(), except that its variadic arguments are
-// derived from scripted arguments.
-size_t atcprintf(char *buffer,
-                 size_t maxlen,
-                 const char *format,
-                 SourcePawn::IPluginContext *pCtx,
-                 const cell_t *params,
-                 int *param);
+// Add 1 to the RHS of this expression to bump the intercom file
+// This is to prevent mismatching core/logic binaries
+static const uint32_t SM_LOGIC_MAGIC = 0x0F47C0DE - 50;
 
-// "Generic Printf", originally. This is similar to atcprintf, except arguments
-// are provided as an array of opaque pointers, rather than scripted arguments
-// or C++ va_lists. This is essentially what Core uses to translate and format
-// phrases internally.
-bool gnprintf(char *buffer,
-              size_t maxlen,
-              const char *format,
-              SourceMod::IPhraseCollection *pPhrases,
-              void **params,
-              unsigned int numparams,
-              unsigned int &curparam,
-              size_t *pOutLength,
-              const char **pFailPhrase);
+} // namespace SourceMod
 
-#endif // _include_sourcemod_core_logic_sprintf_h_
+typedef void (*LogicInitFunction)(SourceMod::CoreProvider *core, SourceMod::sm_logic_t *logic);
+typedef LogicInitFunction (*LogicLoadFunction)(uint32_t magic);
+typedef SourceMod::ITextParsers *(*GetITextParsers)();
+
+#endif // _INCLUDE_SOURCEMOD_BRIDGE_API_H_

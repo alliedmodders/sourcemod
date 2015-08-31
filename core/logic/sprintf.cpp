@@ -30,6 +30,9 @@
 #include "sprintf.h"
 #include <am-float.h>
 #include <am-string.h>
+#include <ITranslator.h>
+#include <bridge/include/IScriptManager.h>
+#include <bridge/include/CoreProvider.h>
 
 using namespace SourceMod;
 

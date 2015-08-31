@@ -35,6 +35,7 @@
 #include <am-refcounting.h>
 #include <sm_stringhashmap.h>
 #include "sm_memtable.h"
+#include <IHandleSys.h>
 
 HandleType_t htCellTrie;
 HandleType_t htSnapshot;

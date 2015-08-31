@@ -42,6 +42,8 @@
 #include "stringutil.h"
 #include "sprintf.h"
 #include <am-string.h>
+#include <bridge/include/ILogger.h>
+#include <bridge/include/CoreProvider.h>
 
 Translator g_Translator;
 IPhraseCollection *g_pCorePhrases = NULL;

@@ -35,6 +35,8 @@
 #include <sourcemod_version.h>
 #include <ISourceMod.h>
 #include <am-string.h>
+#include <ILibrarySys.h>
+#include <bridge/include/CoreProvider.h>
 
 Logger g_Logger;
 

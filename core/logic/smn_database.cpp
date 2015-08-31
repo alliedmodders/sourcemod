@@ -35,9 +35,12 @@
 #include "stringutil.h"
 #include "ISourceMod.h"
 #include "AutoHandleRooter.h"
-#include "am-string.h"
-#include "am-vector.h"
-#include "am-refcounting.h"
+#include "common_logic.h"
+#include <amtl/am-string.h>
+#include <amtl/am-vector.h>
+#include <amtl/am-refcounting.h>
+#include <bridge/include/IScriptManager.h>
+#include <bridge/include/CoreProvider.h>
 
 HandleType_t hStmtType;
 HandleType_t hCombinedQueryType;
@@ -1405,7 +1408,8 @@ static cell_t SQL_ConnectCustom(IPluginContext *pContext, const cell_t *params)
 										  err);
 	}
 
-	DatabaseInfo info = bridge->GetDBInfoFromKeyValues(kv);
+	DatabaseInfo info;
+	bridge->GetDBInfoFromKeyValues(kv, &info);
 
 	IDBDriver *driver;
 	if (info.driver[0] == '\0' || strcmp(info.driver, "default") == 0)

@@ -1,4 +1,4 @@
-// vim: set ts=4 sw=4 tw=99 noet :
+// vim: set ts=4 sw=4 tw=99 noet:
 // =============================================================================
 // SourceMod
 // Copyright (C) 2004-2015 AlliedModders LLC.  All rights reserved.
@@ -24,37 +24,20 @@
 // this exception to all derivative works.  AlliedModders LLC defines further
 // exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
 // or <http://www.sourcemod.net/license.php>.
-#ifndef _include_sourcemod_core_logic_sprintf_h_
-#define _include_sourcemod_core_logic_sprintf_h_
-
-#include <sp_vm_api.h>
+#ifndef _INCLUDE_SOURCEMOD_BRIDGE_LOGGER_H_
+#define _INCLUDE_SOURCEMOD_BRIDGE_LOGGER_H_
 
 namespace SourceMod {
-class IPhraseCollection;
-}
 
-// "AMX Templated Cell Printf", originally. SourceMod doesn't have cell-strings
-// so this is a normal sprintf(), except that its variadic arguments are
-// derived from scripted arguments.
-size_t atcprintf(char *buffer,
-                 size_t maxlen,
-                 const char *format,
-                 SourcePawn::IPluginContext *pCtx,
-                 const cell_t *params,
-                 int *param);
+class ILogger
+{
+public:
+	virtual void LogMessage(const char *msg, ...) = 0;
+	virtual void LogError(const char *msg, ...) = 0;
+	virtual void LogFatal(const char *msg, ...) = 0;
+};
 
-// "Generic Printf", originally. This is similar to atcprintf, except arguments
-// are provided as an array of opaque pointers, rather than scripted arguments
-// or C++ va_lists. This is essentially what Core uses to translate and format
-// phrases internally.
-bool gnprintf(char *buffer,
-              size_t maxlen,
-              const char *format,
-              SourceMod::IPhraseCollection *pPhrases,
-              void **params,
-              unsigned int numparams,
-              unsigned int &curparam,
-              size_t *pOutLength,
-              const char **pFailPhrase);
+} // namespace SourceMod
 
-#endif // _include_sourcemod_core_logic_sprintf_h_
+#endif // _INCLUDE_SOURCEMOD_BRIDGE_LOGGER_H_
+

@@ -36,6 +36,8 @@
 #include <ISourceMod.h>
 #include <ITranslator.h>
 #include "sprintf.h"
+#include <bridge/include/CoreProvider.h>
+#include <bridge/include/IVEngineServerBridge.h>
 
 static cell_t CheckCommandAccess(IPluginContext *pContext, const cell_t *params)
 {

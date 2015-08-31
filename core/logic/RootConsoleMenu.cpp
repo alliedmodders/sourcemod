@@ -27,6 +27,7 @@
 #include "RootConsoleMenu.h"
 #include <amtl/am-string.h>
 #include <sourcemod_version.h>
+#include <bridge/include/CoreProvider.h>
 
 RootConsoleMenu g_RootMenu;
 

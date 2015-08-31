@@ -35,6 +35,7 @@
 #include "logic_bridge.h"
 #include "sourcemod.h"
 #include "provider.h"
+#include <bridge/include/IScriptManager.h>
 
 ConVarManager g_ConVarManager;
 

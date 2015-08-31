@@ -33,6 +33,7 @@
 #include "common_logic.h"
 #include "CellArray.h"
 #include "stringutil.h"
+#include <IHandleSys.h>
 
 HandleType_t htCellArray;
 

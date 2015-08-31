@@ -48,6 +48,15 @@
 #include <unistd.h>
 #include <sys/times.h>
 #endif
+#include <IForwardSys.h>
+#include <ILibrarySys.h>
+#include <bridge/include/CoreProvider.h>
+#include <bridge/include/IScriptManager.h>
+#include <bridge/include/IExtensionBridge.h>
+
+using namespace SourceMod;
+using namespace SourcePawn;
+
 
 HandleType_t g_PlIter;
 

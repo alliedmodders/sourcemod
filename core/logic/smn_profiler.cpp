@@ -37,6 +37,7 @@
 #include <sys/time.h>
 #endif
 #include "ProfileTools.h"
+#include <string.h>
 
 struct Profiler
 {

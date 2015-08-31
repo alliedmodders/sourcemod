@@ -36,6 +36,8 @@
 #include <IForwardSys.h>
 #include "stringutil.h"
 #include <am-string.h>
+#include <bridge/include/IVEngineServerBridge.h>
+#include <bridge/include/CoreProvider.h>
 
 #define BANFLAG_AUTO	(1<<0)	/**< Auto-detects whether to ban by steamid or IP */
 #define BANFLAG_IP   	(1<<1)	/**< Always ban by IP address */

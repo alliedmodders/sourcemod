@@ -41,6 +41,7 @@
 #include <IRootConsoleMenu.h>
 #include "NativeOwner.h"
 #include "ShareSys.h"
+#include <bridge/include/IExtensionBridge.h>
 
 class CPlayer;
 

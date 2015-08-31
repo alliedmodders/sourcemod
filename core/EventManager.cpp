@@ -32,6 +32,7 @@
 #include "EventManager.h"
 #include "sm_stringutil.h"
 #include "logic_bridge.h"
+#include <bridge/include/IScriptManager.h>
 
 EventManager g_EventManager;
 

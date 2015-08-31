@@ -34,6 +34,7 @@
 #include "CellArray.h"
 #include "handle_helpers.h"
 #include "stringutil.h"
+#include <IHandleSys.h>
 
 HandleType_t htCellStack;
 

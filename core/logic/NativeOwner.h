@@ -37,6 +37,7 @@
 #include <am-vector.h>
 #include "common_logic.h"
 #include "Native.h"
+#include <bridge/include/IScriptManager.h>
 
 struct Native;
 class CPlugin;

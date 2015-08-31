@@ -54,12 +54,14 @@
 #include "sprintf.h"
 #include "LibrarySys.h"
 #include "RootConsoleMenu.h"
+#include <bridge/include/BridgeAPI.h>
+#include <bridge/include/IProviderCallbacks.h>
 
 SMGlobalClass *SMGlobalClass::head = NULL;
 
 CoreProvider *bridge = nullptr;
 ISourceMod *g_pSM = nullptr;
-IVEngineServer *engine = nullptr;
+IVEngineServerBridge *engine = nullptr;
 IdentityToken_t *g_pCoreIdent = nullptr;
 ITimerSystem *timersys = nullptr;
 IGameHelpers *gamehelpers = nullptr;

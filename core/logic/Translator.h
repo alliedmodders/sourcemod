@@ -42,6 +42,7 @@
 
 /* :TODO: write a templatized version of tries? */
 
+using namespace SourceMod;
 using namespace SourceHook;
 class Translator;
 

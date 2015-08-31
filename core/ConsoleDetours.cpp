@@ -51,6 +51,7 @@
 #include "ConCommandBaseIterator.h"
 #include "logic_bridge.h"
 #include <am-utility.h>
+#include <bridge/include/ILogger.h>
 
 #if defined PLATFORM_POSIX
 # include <dlfcn.h>

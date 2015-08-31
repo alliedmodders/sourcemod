@@ -35,6 +35,7 @@
 #include "ForwardSys.h"
 #include "DebugReporter.h"
 #include "common_logic.h"
+#include <bridge/include/IScriptManager.h>
 
 CForwardManager g_Forwards;
 

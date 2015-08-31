@@ -43,6 +43,8 @@
 #include "sprintf.h"
 #include <am-utility.h>
 #include "handle_helpers.h"
+#include <bridge/include/IFileSystemBridge.h>
+#include <bridge/include/CoreProvider.h>
 
 #if defined PLATFORM_WINDOWS
 #include <io.h>

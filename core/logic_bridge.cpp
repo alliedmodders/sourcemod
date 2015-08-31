@@ -34,7 +34,6 @@
 #include "sourcemm_api.h"
 #include "sm_globals.h"
 #include "sm_autonatives.h"
-#include "logic/intercom.h"
 #include "sm_stringutil.h"
 #include "Logger.h"
 #include "TimerSys.h"
@@ -59,6 +58,9 @@
 #endif
 #include <amtl/os/am-shared-library.h>
 #include <amtl/os/am-path.h>
+#include <bridge/include/IVEngineServerBridge.h>
+#include <bridge/include/IPlayerInfoBridge.h>
+#include <bridge/include/IFileSystemBridge.h>
 
 #if defined _WIN32
 # define MATCHMAKINGDS_SUFFIX	""
@@ -89,7 +91,7 @@ IAdminSystem *adminsys = nullptr;
 ILogger *logger = nullptr;
 IRootConsole *rootmenu = nullptr;
 
-class VEngineServer_Logic : public IVEngineServer_Logic
+class VEngineServer_Logic : public IVEngineServerBridge
 {
 public:
 	virtual bool IsDedicatedServer()
@@ -130,7 +132,7 @@ public:
 	}
 } engine_wrapper;
 
-class VFileSystem_Logic : public IFileSystem_Logic
+class VFileSystem_Logic : public IFileSystemBridge
 {
 public:
 	const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle)
@@ -219,7 +221,7 @@ public:
 	}
 } fs_wrapper;
 
-class VPlayerInfo_Logic : public IPlayerInfo_Logic
+class VPlayerInfo_Logic : public IPlayerInfoBridge
 {
 public:
 	bool IsObserver(IPlayerInfo *pInfo)
@@ -297,17 +299,15 @@ static const char* get_core_config_value(const char* key)
 	return g_CoreConfig.GetCoreConfigValue(key);
 }
 
-static DatabaseInfo keyvalues_to_dbinfo(KeyValues *kv)
+static void keyvalues_to_dbinfo(KeyValues *kv, DatabaseInfo *out)
 {
-	DatabaseInfo info;
-	info.database = kv->GetString("database", "");
-	info.driver = kv->GetString("driver", "default");
-	info.host = kv->GetString("host", "");
-	info.maxTimeout = kv->GetInt("timeout", 0);
-	info.pass = kv->GetString("pass", "");
-	info.port = kv->GetInt("port", 0);
-	info.user = kv->GetString("user", "");
-	return info;
+	out->database = kv->GetString("database", "");
+	out->driver = kv->GetString("driver", "default");
+	out->host = kv->GetString("host", "");
+	out->maxTimeout = kv->GetInt("timeout", 0);
+	out->pass = kv->GetString("pass", "");
+	out->port = kv->GetInt("port", 0);
+	out->user = kv->GetString("user", "");
 }
 
 static int get_activity_flags()
