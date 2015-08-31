@@ -35,6 +35,7 @@
 #include <IPlayerHelpers.h>
 #include <IForwardSys.h>
 #include "stringutil.h"
+#include <am-string.h>
 
 #define BANFLAG_AUTO	(1<<0)	/**< Auto-detects whether to ban by steamid or IP */
 #define BANFLAG_IP   	(1<<1)	/**< Always ban by IP address */
@@ -140,7 +141,7 @@ static cell_t BanIdentity(IPluginContext *pContext, const cell_t *params)
 		char command[256];
 		if (ban_by_ip)
 		{
-			smcore.Format(
+			ke::SafeSprintf(
 				command,
 				sizeof(command),
 				"addip %d %s\n",
@@ -155,7 +156,7 @@ static cell_t BanIdentity(IPluginContext *pContext, const cell_t *params)
 		}
 		else if (!gamehelpers->IsLANServer())
 		{
-			smcore.Format(
+			ke::SafeSprintf(
 				command,
 				sizeof(command),
 				"banid %d %s\n",
@@ -213,7 +214,7 @@ static cell_t RemoveBan(IPluginContext *pContext, const cell_t *params)
 	{
 		if (!handled)
 		{
-			smcore.Format(
+			ke::SafeSprintf(
 				command,
 				sizeof(command),
 				"removeip %s\n",
@@ -226,7 +227,7 @@ static cell_t RemoveBan(IPluginContext *pContext, const cell_t *params)
 	{
 		if (!handled)
 		{
-			smcore.Format(
+			ke::SafeSprintf(
 				command,
 				sizeof(command),
 				"removeid %s\n",
@@ -344,7 +345,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		
 			/* Tell the server to ban the ip */
 			char command[256];
-			smcore.Format(
+			ke::SafeSprintf(
 				command,
 				sizeof(command),
 				"addip %d %s\n",
@@ -368,7 +369,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		{
 			/* Tell the server to ban the auth string */
 			char command[256];
-			smcore.Format(
+			ke::SafeSprintf(
 				command, 
 				sizeof(command), 
 				"banid %d %s\n", 

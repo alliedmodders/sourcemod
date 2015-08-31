@@ -36,6 +36,7 @@
 #include "ShareSys.h"
 #include "ExtensionSys.h"
 #include "PluginSys.h"
+#include <am-string.h>
 
 HandleSystem g_HandleSys;
 
@@ -1144,7 +1145,7 @@ void HandleSystem::Dump(HANDLE_REPORTER rep)
 		else
 		{
 			char buffer[32];
-			smcore.Format(buffer, sizeof(buffer), "%d", size);
+			ke::SafeSprintf(buffer, sizeof(buffer), "%d", size);
 			rep("0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, buffer);
 			total_size += size;
 		}

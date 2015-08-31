@@ -40,6 +40,7 @@
 #include <ILibrarySys.h>
 #include "PhraseCollection.h"
 #include "stringutil.h"
+#include <am-string.h>
 
 Translator g_Translator;
 IPhraseCollection *g_pCorePhrases = NULL;
@@ -711,7 +712,7 @@ ConfigResult Translator::OnSourceModConfigChanged(const char *key,
 			unsigned int index;
 			if (!GetLanguageByCode(value, &index))
 			{
-				smcore.Format(error, maxlength, "Language code \"%s\" is not registered", value);
+				ke::SafeSprintf(error, maxlength, "Language code \"%s\" is not registered", value);
 				return ConfigResult_Reject;
 			}
 
@@ -923,7 +924,7 @@ bool Translator::AddLanguage(const char *langcode, const char *description)
 		Language *pLanguage = new Language;
 		idx = m_Languages.size();
 
-		smcore.Format(pLanguage->m_code2, sizeof(pLanguage->m_code2), "%s", langcode);
+		ke::SafeSprintf(pLanguage->m_code2, sizeof(pLanguage->m_code2), "%s", langcode);
 		pLanguage->m_CanonicalName = m_pStringTab->AddString(lower);
 
 		m_LCodeLookup.insert(langcode, idx);

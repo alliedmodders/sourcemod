@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -1299,33 +1299,14 @@ size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	size_t len = vsnprintf(buffer, maxlength, fmt, ap);
+	size_t len = ke::SafeVsprintf(buffer, maxlength, fmt, ap);
 	va_end(ap);
-
-	if (len >= maxlength)
-	{
-		buffer[maxlength - 1] = '\0';
-		return (maxlength - 1);
-	}
-	else
-	{
-		return len;
-	}
+	return len;
 }
 
 size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap)
 {
-	size_t len = vsnprintf(buffer, maxlength, fmt, ap);
-
-	if (len >= maxlength)
-	{
-		buffer[maxlength - 1] = '\0';
-		return (maxlength - 1);
-	}
-	else
-	{
-		return len;
-	}
+	return ke::SafeVsprintf(buffer, maxlength, fmt, ap);
 }
 
 char *sm_strdup(const char *str)

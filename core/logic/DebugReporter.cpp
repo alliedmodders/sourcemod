@@ -33,6 +33,7 @@
 #include <stdarg.h>
 #include "DebugReporter.h"
 #include "Logger.h"
+#include <am-string.h>
 
 DebugReport g_DbgReporter;
 
@@ -47,7 +48,7 @@ void DebugReport::OnDebugSpew(const char *msg, ...)
 	char buffer[512];
 
 	va_start(ap, msg);
-	smcore.FormatArgs(buffer, sizeof(buffer), msg, ap);
+	ke::SafeVsprintf(buffer, sizeof(buffer), msg, ap);
 	va_end(ap);
 
 	g_Logger.LogMessage("[SM] %s", buffer);
@@ -65,7 +66,7 @@ void DebugReport::GenerateError(IPluginContext *ctx, cell_t func_idx, int err, c
 void DebugReport::GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err, const char *message, va_list ap)
 {
 	char buffer[512];
-	smcore.FormatArgs(buffer, sizeof(buffer), message, ap);
+	ke::SafeVsprintf(buffer, sizeof(buffer), message, ap);
 
 	const char *plname = pluginsys->FindPluginByContext(ctx->GetContext())->GetFilename();
 	const char *error = g_pSourcePawn2->GetErrorString(err);
@@ -99,7 +100,7 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 	char buffer[512];
 
 	va_start(ap, message);
-	smcore.FormatArgs(buffer, sizeof(buffer), message, ap);
+	ke::SafeVsprintf(buffer, sizeof(buffer), message, ap);
 	va_end(ap);
 
 	const char *plname = pluginsys->FindPluginByContext(pContext->GetContext())->GetFilename();
