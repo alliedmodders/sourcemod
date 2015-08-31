@@ -21,7 +21,6 @@ project.sources += [
   'NextMap.cpp',
   'ConCmdManager.cpp',
   'ConVarManager.cpp',
-  'LibrarySys.cpp',
   'PlayerManager.cpp',
   'TimerSys.cpp',
   'CoreConfig.cpp',

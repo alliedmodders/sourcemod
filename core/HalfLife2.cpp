@@ -38,7 +38,7 @@
 #include <IGameConfigs.h>
 #include <compat_wrappers.h>
 #include <Logger.h>
-#include "LibrarySys.h"
+#include <amtl/os/am-shared-library.h>
 #include "logic_bridge.h"
 #include <tier0/mem.h>
 
@@ -239,32 +239,30 @@ void CHalfLife2::InitCommandLine()
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 	if (!is_original_engine)
 	{
-		ke::AutoPtr<ILibrary> lib(g_LibSys.OpenLibrary(TIER0_NAME, error, sizeof(error)));
-		if (lib == NULL)
-		{
+		ke::Ref<ke::SharedLib> lib = ke::SharedLib::Open(TIER0_NAME, error, sizeof(error));
+		if (!lib) {
 			logger->LogError("Could not load %s: %s", TIER0_NAME, error);
 			return;
 		}
 		
-		m_pGetCommandLine = lib->GetSymbolAddress("CommandLine_Tier0");
+		m_pGetCommandLine = lib->get<decltype(m_pGetCommandLine)>("CommandLine_Tier0");
 
 		/* '_Tier0' dropped on Alien Swarm version */
 		if (m_pGetCommandLine == NULL)
 		{
-			m_pGetCommandLine = lib->GetSymbolAddress("CommandLine");
+			m_pGetCommandLine = lib->get<decltype(m_pGetCommandLine)>("CommandLine");
 		}
 	}
 	else
 #endif
 	{
-		ke::AutoPtr<ILibrary> lib(g_LibSys.OpenLibrary(VSTDLIB_NAME, error, sizeof(error)));
-		if (lib == NULL)
-		{
+		ke::Ref<ke::SharedLib> lib = ke::SharedLib::Open(VSTDLIB_NAME, error, sizeof(error));
+		if (!lib) {
 			logger->LogError("Could not load %s: %s", VSTDLIB_NAME, error);
 			return;
 		}
 
-		m_pGetCommandLine = lib->GetSymbolAddress("CommandLine");
+		m_pGetCommandLine = lib->get<decltype(m_pGetCommandLine)>("CommandLine");
 	}
 	
 	if (m_pGetCommandLine == NULL)

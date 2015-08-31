@@ -76,6 +76,7 @@ binary.sources += [
   'smn_core.cpp',
   'smn_menus.cpp',
   'sprintf.cpp',
+  'LibrarySys.cpp',
 ]
 if builder.target_platform == 'windows':
   binary.sources += ['thread/WinThreads.cpp']

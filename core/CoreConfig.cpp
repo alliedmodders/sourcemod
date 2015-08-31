@@ -35,11 +35,12 @@
 #include "sourcemm_api.h"
 #include "sm_srvcmds.h"
 #include "sm_stringutil.h"
-#include "LibrarySys.h"
 #include "Logger.h"
 #include "frame_hooks.h"
 #include "logic_bridge.h"
 #include <sourcemod_version.h>
+#include <amtl/os/am-path.h>
+#include <amtl/os/am-fsutil.h>
 
 #ifdef PLATFORM_WINDOWS
 ConVar sm_corecfgfile("sm_corecfgfile", "addons\\sourcemod\\configs\\core.cfg", 0, "SourceMod core configuration file");
@@ -237,7 +238,7 @@ void CoreConfig::Initialize()
 	 */
 	if (corecfg)
 	{
-		g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), corecfg);
+		ke::path::Format(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), corecfg);
 	}
 	else
 	{
@@ -246,11 +247,11 @@ void CoreConfig::Initialize()
 		/* Format path to config file */
 		if (basepath)
 		{
-			g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s/%s", g_SourceMod.GetGamePath(), basepath, "configs/core.cfg");
+			ke::path::Format(filePath, sizeof(filePath), "%s/%s/%s", g_SourceMod.GetGamePath(), basepath, "configs/core.cfg");
 		}
 		else
 		{
-			g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), sm_corecfgfile.GetDefault());
+			ke::path::Format(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), sm_corecfgfile.GetDefault());
 		}
 	}
 
@@ -341,12 +342,12 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 
 		g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "cfg/%s", folder);
 
-		if (!g_LibSys.IsPathDirectory(path))
+		if (!ke::file::IsDirectory(path))
 		{
 			char *cur_ptr = path;
 			size_t len;
 			
-			g_LibSys.PathFormat(path, sizeof(path), "%s", folder);
+			ke::path::Format(path, sizeof(path), "%s", folder);
 			len = g_SourceMod.BuildPath(Path_Game, build, sizeof(build), "cfg");
 
 			do
@@ -367,14 +368,12 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 				{
 					next_ptr = NULL;
 				}
-				len += g_LibSys.PathFormat(&build[len], 
+				len += ke::path::Format(&build[len],
 					sizeof(build)-len,
 					"/%s",
 					cur_ptr);
-				if (!g_LibSys.CreateFolder(build))
-				{
+				if (!ke::file::CreateDirectory(build))
 					break;
-				}
 				cur_ptr = next_ptr;
 			} while (cur_ptr);
 		}
@@ -386,13 +385,13 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 
 	if (cfg->folder.size())
 	{
-		g_LibSys.PathFormat(local, 
-			sizeof(local), 
+		ke::path::Format(local,
+			sizeof(local),
 			"%s/%s.cfg",
 			cfg->folder.c_str(),
 			cfg->autocfg.c_str());
 	} else {
-		g_LibSys.PathFormat(local,
+		ke::path::Format(local,
 			sizeof(local),
 			"%s.cfg",
 			cfg->autocfg.c_str());
@@ -400,7 +399,7 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 	
 	g_SourceMod.BuildPath(Path_Game, file, sizeof(file), "cfg/%s", local);
 
-	bool file_exists = g_LibSys.IsPathFile(file);
+	bool file_exists = ke::file::IsFile(file);
 	if (!file_exists && will_create)
 	{
 		List<const ConVar *> *convars = NULL;

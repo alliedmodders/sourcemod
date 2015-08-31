@@ -34,7 +34,6 @@
 #include "sourcemm_api.h"
 #include "sm_stringutil.h"
 #include "Logger.h"
-#include "LibrarySys.h"
 #include "TimerSys.h"
 #include "logic_bridge.h"
 #include <sourcemod_version.h>
