@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 47)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 48)
 
 #if defined SM_LOGIC
 # define IVEngineClass IVEngineServer
@@ -314,6 +314,10 @@ public:
 	virtual void LogToGame(const char *message) = 0;
 	virtual void ConPrint(const char *message) = 0;
 	virtual void ConsolePrintVa(const char *fmt, va_list ap) = 0;
+
+	// Game engine helper functions.
+	virtual bool IsClientConVarQueryingSupported() = 0;
+	virtual int QueryClientConVar(int client, const char *cvar) = 0;
 
 	// Metamod:Source functions.
 	virtual int LoadMMSPlugin(const char *file, bool *ok, char *error, size_t maxlength) = 0;

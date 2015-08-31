@@ -44,11 +44,6 @@
 #include "concmd_cleaner.h"
 #include "PlayerManager.h"
 
-#if SOURCE_ENGINE == SE_DARKMESSIAH
-class EQueryCvarValueStatus;
-typedef int QueryCvarCookie_t;
-#endif
-
 using namespace SourceHook;
 
 class IConVarChangeListener
@@ -100,7 +95,6 @@ public: // SMGlobalClass
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
-	void OnSourceModVSPReceived();
 public: // IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);
@@ -149,29 +143,24 @@ public:
 
 	// Called via game hooks.
 	void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
+#if SOURCE_ENGINE != SE_DARKMESSIAH
+	void OnClientQueryFinished(
+	  QueryCvarCookie_t cookie,
+	  int client,
+	  EQueryCvarValueStatus result,
+	  const char *cvarName,
+	  const char *cvarValue);
+#endif
 
 private:
 	/**
 	 * Adds a convar to a plugin's list.
 	 */
 	static void AddConVarToPluginList(IPluginContext *pContext, const ConVar *pConVar);
-
-	/**
-	 * Callback for when StartQueryCvarValue() has finished.
-	 */
-#if SOURCE_ENGINE == SE_DOTA
-	void OnQueryCvarValueFinished(QueryCvarCookie_t cookie, CEntityIndex player, EQueryCvarValueStatus result,
-	                              const char *cvarName, const char *cvarValue);
-#elif SOURCE_ENGINE != SE_DARKMESSIAH
-	void OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result,
-	                              const char *cvarName, const char *cvarValue);
-#endif
 private:
 	HandleType_t m_ConVarType;
 	List<ConVarInfo *> m_ConVars;
 	List<ConVarQuery> m_ConVarQueries;
-	bool m_bIsDLLQueryHooked;
-	bool m_bIsVSPQueryHooked;
 };
 
 extern ConVarManager g_ConVarManager;

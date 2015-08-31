@@ -43,6 +43,7 @@ public:
 
 	void InitializeHooks();
 	void ShutdownHooks();
+	void OnVSPReceived();
 
 	// Provider implementation.
 	ConVar *FindConVar(const char *name) override;
@@ -61,6 +62,8 @@ public:
 	void ConsolePrintVa(const char *fmt, va_list ap) override;
 	int LoadMMSPlugin(const char *file, bool *ok, char *error, size_t maxlength) override;
 	void UnloadMMSPlugin(int id) override;
+	int QueryClientConVar(int client, const char *cvar) override;
+	bool IsClientConVarQueryingSupported() override;
 
 private:
 	ke::Ref<ke::SharedLib> logic_;

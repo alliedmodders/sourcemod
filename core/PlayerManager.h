@@ -233,7 +233,7 @@ public:
 		return m_bInCCKVHook;
 	}
 #if SOURCE_ENGINE == SE_CSGO
-	bool HandleConVarQuery(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue);
+	bool HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue);
 #endif
 private:
 #if SOURCE_ENGINE == SE_DOTA

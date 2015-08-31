@@ -2010,7 +2010,7 @@ void CmdMaxplayersCallback()
 }
 
 #if SOURCE_ENGINE == SE_CSGO
-bool PlayerManager::HandleConVarQuery(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
+bool PlayerManager::HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
 {
 	for (int i = 1; i <= m_maxClients; i++)
 	{

@@ -36,6 +36,7 @@
 #include "compat_wrappers.h"
 #include "logic_bridge.h"
 #include <sourcemod_version.h>
+#include "provider.h"
 
 SourceMod_Core g_SourceMod_Core;
 IVEngineServer *engine = NULL;
@@ -207,12 +208,7 @@ void SourceMod_Core::OnVSPListening(IServerPluginCallbacks *iface)
 #endif
 
 	/* Notify! */
-	SMGlobalClass *pBase = SMGlobalClass::head;
-	while (pBase)
-	{
-		pBase->OnSourceModVSPReceived();
-		pBase = pBase->m_pGlobalClassNext;
-	}
+    sCoreProviderImpl.OnVSPReceived();
 }
 
 #if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11

@@ -34,35 +34,97 @@ SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar 
 SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallback, SH_NOATTRIB, false, ConVar *, const char *);
 #endif
 
+#if SOURCE_ENGINE == SE_DOTA
+SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, CEntityIndex, EQueryCvarValueStatus, const char *, const char *);
+SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, CEntityIndex, EQueryCvarValueStatus, const char *, const char *);
+#elif SOURCE_ENGINE != SE_DARKMESSIAH
+SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
+SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
+#endif
+
 GameHooks::GameHooks()
+	: query_hook_mode_(QueryHookMode::Unavailable)
 {
 }
 
 void GameHooks::Start()
 {
+	// Hook ICvar::CallGlobalChangeCallbacks.
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-	SH_ADD_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
+	hooks_ += SH_ADD_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
 #else
-	SH_ADD_HOOK(ICvar, CallGlobalChangeCallback, icvar, SH_STATIC(OnConVarChanged), false);
+	hooks_ += SH_ADD_HOOK(ICvar, CallGlobalChangeCallback, icvar, SH_STATIC(OnConVarChanged), false);
+#endif
+
+	// Episode 2 has this function by default, but the older versions do not.
+#if SOURCE_ENGINE == SE_EPISODEONE
+	if (g_SMAPI->GetGameDLLVersion() >= 6) {
+		hooks_ += SH_ADD_HOOK(IServerGameDLL, OnQueryCvarValueFinished, gamedll, SH_MEMBER(this, &GameHooks::OnQueryCvarValueFinished), false);
+		query_hook_mode_ = QueryHookMode::DLL;
+	}
+#endif
+}
+
+void GameHooks::OnVSPReceived()
+{
+	if (query_hook_mode_ != QueryHookMode::Unavailable)
+		return;
+
+	// For later MM:S versions, use the updated API, since it's cleaner.
+#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
+	if (g_SMAPI->GetSourceEngineBuild() == SOURCE_ENGINE_ORIGINAL || vsp_version < 2)
+		return;
+#else
+	if (g_HL2.IsOriginalEngine() || vsp_version < 2)
+		return;
+#endif
+
+#if SOURCE_ENGINE != SE_DARKMESSIAH && SOURCE_ENGINE != SE_DOTA
+	hooks_ += SH_ADD_HOOK(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, SH_MEMBER(this, &GameHooks::OnQueryCvarValueFinished), false);
+	query_hook_mode_ = QueryHookMode::VSP;
 #endif
 }
 
 void GameHooks::Shutdown()
 {
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-	SH_REMOVE_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
-#else
-	SH_REMOVE_HOOK(ICvar, CallGlobalChangeCallback, icvar, SH_STATIC(OnConVarChanged), false);
-#endif
+	for (size_t i = 0; i < hooks_.length(); i++)
+		SH_REMOVE_HOOK_ID(hooks_[i]);
+	hooks_.clear();
+
+	query_hook_mode_ = QueryHookMode::Unavailable;
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 void GameHooks::OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
-{
 #else
 void GameHooks::OnConVarChanged(ConVar *pConVar, const char *oldValue)
+#endif
 {
+#if SOURCE_ENGINE < SE_ORANGEBOX
   float flOldValue = atof(oldValue);
 #endif
   g_ConVarManager.OnConVarChanged(pConVar, oldValue, flOldValue);
 }
+
+#if SOURCE_ENGINE != SE_DARKMESSIAH
+# if SOURCE_ENGINE == SE_DOTA
+void GameHooks::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, CEntityIndex player, EQueryCvarValueStatus result,
+                                         const char *cvarName, const char *cvarValue)
+# else
+void GameHooks::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result,
+                                         const char *cvarName, const char *cvarValue)
+# endif
+{
+# if SOURCE_ENGINE == SE_DOTA
+	int client = player.Get();
+# else
+	int client = IndexOfEdict(pPlayer);
+# endif
+
+# if SOURCE_ENGINE == SE_CSGO
+	if (g_Players.HandleConVarQuery(cookie, client, result, cvarName, cvarValue))
+		return;
+# endif
+	g_ConVarManager.OnClientQueryFinished(cookie, client, result, cvarName, cvarValue);
+}
+#endif

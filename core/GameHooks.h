@@ -27,9 +27,22 @@
 #ifndef _INCLUDE_SOURCEMOD_PROVIDER_GAME_HOOKS_H_
 #define _INCLUDE_SOURCEMOD_PROVIDER_GAME_HOOKS_H_
 
+// Needed for CEntityIndex, edict_t, etc.
+#include <stdint.h>
+#include <stddef.h>
+#include <eiface.h>
+#include <iserverplugin.h>
+#include <amtl/am-vector.h>
+
 class ConVar;
 
 namespace SourceMod {
+
+enum class QueryHookMode {
+	Unavailable,
+	DLL,
+	VSP
+};
 
 class GameHooks
 {
@@ -38,13 +51,41 @@ public:
 
 	void Start();
 	void Shutdown();
+	void OnVSPReceived();
 
+	QueryHookMode GetQueryHookMode() const {
+		return query_hook_mode_;
+	}
+
+private:
 	// Static callback that Valve's ConVar object executes when the convar's value changes.
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	static void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
 #else
 	static void OnConVarChanged(ConVar *pConVar, const char *oldValue);
 #endif
+
+	// Callback for when StartQueryCvarValue() has finished.
+#if SOURCE_ENGINE == SE_DOTA
+	void OnQueryCvarValueFinished(QueryCvarCookie_t cookie, CEntityIndex player, EQueryCvarValueStatus result,
+	                              const char *cvarName, const char *cvarValue);
+#elif SOURCE_ENGINE != SE_DARKMESSIAH
+	void OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result,
+	                              const char *cvarName, const char *cvarValue);
+#endif
+
+private:
+	class HookList : public ke::Vector<int>
+	{
+	public:
+		HookList &operator += (int hook_id) {
+			this->append(hook_id);
+			return *this;
+		}
+	};
+	HookList hooks_;
+
+	QueryHookMode query_hook_mode_;
 };
 
 } // namespace SourceMod
