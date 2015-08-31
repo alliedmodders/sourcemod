@@ -504,7 +504,7 @@ private:
 			while (!smcore.filesystem->EndOfFile(fp) && smcore.filesystem->ReadLine(buffer, sizeof(buffer), fp) != NULL)
 			{
 				size_t len = strlen(buffer);
-				char *ptr = smcore.TrimWhitespace(buffer, len);
+				char *ptr = UTIL_TrimWhitespace(buffer, len);
 				if (*ptr == '\0'
 					|| *ptr == ';'
 					|| strncmp(ptr, "//", 2) == 0)

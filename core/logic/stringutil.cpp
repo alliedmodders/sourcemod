@@ -35,6 +35,7 @@
 #include <sm_platform.h>
 #include "stringutil.h"
 #include <am-string.h>
+#include "TextParsers.h"
 
 // We're in logic so we don't have this from the SDK.
 #ifndef MIN
@@ -329,3 +330,34 @@ void UTIL_StripExtension(const char *in, char *out, int outSize)
 		}
 	}
 }
+
+char *UTIL_TrimWhitespace(char *str, size_t &len)
+{
+	char *end = str + len - 1;
+
+	if (!len)
+	{
+		return str;
+	}
+
+	/* Iterate backwards through string until we reach first non-whitespace char */
+	while (end >= str && g_TextParser.IsWhitespace(end))
+	{
+		end--;
+		len--;
+	}
+
+	/* Replace first whitespace char (at the end) with null terminator.
+	 * If there is none, we're just replacing the null terminator. 
+	 */
+	*(end + 1) = '\0';
+
+	while (*str != '\0' && g_TextParser.IsWhitespace(str))
+	{
+		str++;
+		len--;
+	}
+
+	return str;
+}
+
