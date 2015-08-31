@@ -42,17 +42,7 @@ using namespace SourceMod;
 
 #define IS_STR_FILLED(var) (var[0] != '\0')
 
-size_t atcprintf(char *buffer, size_t maxlen, const char *format, IPluginContext *pCtx, const cell_t *params, int *param);
 unsigned int strncopy(char *dest, const char *src, size_t count);
-bool gnprintf(char *buffer,
-			  size_t maxlen,
-			  const char *format,
-			  IPhraseCollection *pPhrases,
-			  void **params,
-			  unsigned int numparams,
-			  unsigned int &curparam,
-			  size_t *pOutLength,
-			  const char **pFailPhrase);
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
 char *sm_strdup(const char *str);

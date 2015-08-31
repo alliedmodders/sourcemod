@@ -51,6 +51,7 @@
 #include "AdminCache.h"
 #include "ProfileTools.h"
 #include "Logger.h"
+#include "sprintf.h"
 
 sm_core_t smcore;
 IHandleSys *handlesys = &g_HandleSys;
@@ -124,6 +125,7 @@ static sm_logic_t logic =
 	g_pThreader,
 	&g_Translator,
 	stristr,
+	atcprintf,
 	CoreTranslate,
 	AddCorePhraseFile,
 	UTIL_ReplaceAll,

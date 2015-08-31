@@ -516,6 +516,33 @@ void do_global_plugin_loads()
 	g_SourceMod.DoGlobalPluginLoads();
 }
 
+static bool describe_player(int index, const char **namep, const char **authp, int *useridp)
+{
+	CPlayer *player = g_Players.GetPlayerByIndex(index);
+	if (!player || !player->IsConnected())
+		return false;
+
+	if (namep)
+		*namep = player->GetName();
+	if (authp) {
+		const char *auth = player->GetAuthString();
+		*authp = (auth && *auth) ? auth : "STEAM_ID_PENDING";
+	}
+	if (useridp)
+		*useridp = GetPlayerUserId(player->GetEdict());
+	return true;
+}
+
+static int get_max_clients()
+{
+	return g_Players.MaxClients();
+}
+
+static int get_global_target()
+{
+	return g_SourceMod.GetGlobalTarget();
+}
+
 #if defined METAMOD_PLAPI_VERSION
 #if SOURCE_ENGINE == SE_LEFT4DEAD
 #define GAMEFIX "2.l4d"
@@ -587,8 +614,6 @@ static sm_core_t core_bridge =
 	conprint,
 	get_cvar_string,
 	get_cvar_bool,
-	gnprintf,
-	atcprintf,
 	get_game_name,
 	get_game_description,
 	get_source_engine_name,
@@ -608,6 +633,9 @@ static sm_core_t core_bridge =
 	get_immunity_mode,
 	update_admin_cmd_flags,
 	look_for_cmd_admin_flags,
+	describe_player,
+	get_max_clients,
+	get_global_target,
 	GAMEFIX,
 	&serverGlobals,
 };

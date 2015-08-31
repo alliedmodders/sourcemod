@@ -588,7 +588,7 @@ size_t SourceModBase::FormatString(char *buffer, size_t maxlength, IPluginContex
 
 	int lparam = ++param;
 
-	return atcprintf(buffer, maxlength, fmt, pContext, params, &lparam);
+	return logicore.atcprintf(buffer, maxlength, fmt, pContext, params, &lparam);
 }
 
 const char *SourceModBase::GetSourceModPath() const
