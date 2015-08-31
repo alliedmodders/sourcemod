@@ -637,6 +637,32 @@ void CoreProviderImpl::UnloadMMSPlugin(int id)
 	g_pMMPlugins->Unload(id, true, ignore, sizeof(ignore));
 }
 
+bool CoreProviderImpl::IsClientConVarQueryingSupported()
+{
+	return hooks_.GetQueryHookMode() != QueryHookMode::Unavailable;
+}
+
+int CoreProviderImpl::QueryClientConVar(int client, const char *cvar)
+{
+#if SOURCE_ENGINE != SE_DARKMESSIAH
+	switch (hooks_.GetQueryHookMode()) {
+	case QueryHookMode::DLL:
+# if SOURCE_ENGINE == SE_DOTA
+		return ::engine->StartQueryCvarValue(CEntityIndex(client), cvar);
+# else
+		return ::engine->StartQueryCvarValue(PEntityOfEntIndex(client), cvar);
+# endif
+	case QueryHookMode::VSP:
+# if SOURCE_ENGINE != SE_DOTA
+		return serverpluginhelpers->StartQueryCvarValue(PEntityOfEntIndex(client), cvar);
+# endif
+	default:
+		return InvalidQueryCvarCookie;
+	}
+#endif
+	return -1;
+}
+
 void CoreProviderImpl::InitializeBridge()
 {
 	::serverGlobals.universalTime = g_pUniversalTime;
@@ -714,6 +740,21 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 		return false;
 	}
 	return true;
+}
+
+void CoreProviderImpl::InitializeHooks()
+{
+	hooks_.Start();
+}
+
+void CoreProviderImpl::OnVSPReceived()
+{
+	hooks_.OnVSPReceived();
+}
+
+void CoreProviderImpl::ShutdownHooks()
+{
+	hooks_.Shutdown();
 }
 
 void CoreProviderImpl::ShutdownBridge()

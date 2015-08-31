@@ -28,6 +28,7 @@
 #define _INCLUDE_SOURCEMOD_CORE_PROVIDER_IMPL_H_
 
 #include "logic/intercom.h"
+#include "GameHooks.h"
 #include <amtl/os/am-shared-library.h>
 
 class CoreProviderImpl : public CoreProvider
@@ -39,6 +40,10 @@ public:
 	void InitializeBridge();
 	bool LoadBridge(char *error, size_t maxlength);
 	void ShutdownBridge();
+
+	void InitializeHooks();
+	void ShutdownHooks();
+	void OnVSPReceived();
 
 	// Provider implementation.
 	ConVar *FindConVar(const char *name) override;
@@ -57,10 +62,13 @@ public:
 	void ConsolePrintVa(const char *fmt, va_list ap) override;
 	int LoadMMSPlugin(const char *file, bool *ok, char *error, size_t maxlength) override;
 	void UnloadMMSPlugin(int id) override;
+	int QueryClientConVar(int client, const char *cvar) override;
+	bool IsClientConVarQueryingSupported() override;
 
 private:
 	ke::Ref<ke::SharedLib> logic_;
 	LogicInitFunction logic_init_;
+	GameHooks hooks_;
 };
 
 extern CoreProviderImpl sCoreProviderImpl;

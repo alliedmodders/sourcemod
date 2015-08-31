@@ -160,13 +160,6 @@ public:
 	}
 
 	/**
-	 * @brief Called when SourceMod receives a pointer to IServerPluginCallbacks from SourceMM
-	 */
-	virtual void OnSourceModVSPReceived()
-	{
-	}
-
-	/**
 	 * @brief Called once all MM:S plugins are loaded.
 	 */
 	virtual void OnSourceModGameInitialized()
