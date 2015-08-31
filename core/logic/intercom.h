@@ -52,7 +52,7 @@ using namespace SourceHook;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 46)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 47)
 
 #if defined SM_LOGIC
 # define IVEngineClass IVEngineServer
@@ -331,6 +331,13 @@ public:
 	int             (*GetGlobalTarget)();
 };
 
+class IProviderCallbacks
+{
+public:
+	// Called when a log message is printed. Return true to supercede.
+	virtual bool OnLogPrint(const char *msg) = 0;
+};
+
 struct sm_logic_t
 {
 	SMGlobalClass	*head;
@@ -344,14 +351,13 @@ struct sm_logic_t
 	char            *(*ReplaceEx)(char *, size_t, const char *, size_t, const char *, size_t, bool);
 	size_t          (*DecodeHexString)(unsigned char *, size_t, const char *);
 	IGameConfig *   (*GetCoreGameConfig)();
-	bool			(*OnLogPrint)(const char *msg);	// true to supersede
 	IDebugListener   *debugger;
 	void			(*GenerateError)(IPluginContext *, cell_t, int, const char *, ...);
 	void			(*AddNatives)(sp_nativeinfo_t *natives);
 	void			(*DumpHandles)(void (*dumpfn)(const char *fmt, ...));
 	bool			(*DumpAdminCache)(const char *filename);
 	void            (*RegisterProfiler)(IProfilingTool *tool);
-	void            (*OnRootCommand)(const ICommandArgs *args);
+	void			(*OnRootCommand)(const ICommandArgs *args);
 	IScriptManager	*scripts;
 	IShareSys		*sharesys;
 	IExtensionSys	*extsys;
@@ -361,6 +367,7 @@ struct sm_logic_t
 	IdentityToken_t *core_ident;
 	ILogger			*logger;
 	IRootConsole	*rootmenu;
+	IProviderCallbacks *callbacks;
 	float			sentinel;
 };
 

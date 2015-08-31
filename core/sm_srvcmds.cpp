@@ -33,59 +33,16 @@
 #include "logic_bridge.h"
 #include "sm_globals.h"
 #include "CoreConfig.h"
-#include <compat_wrappers.h>
+#include "command_args.h"
 #include <ITranslator.h>
 #include <amtl/am-string.h>
-
-#if SOURCE_ENGINE==SE_EPISODEONE || SOURCE_ENGINE==SE_DARKMESSIAH
-class CCommandArgs : public ICommandArgs
-{
-public:
-	CCommandArgs(const CCommand& _cmd)
-	{
-	}
-	const char *Arg(int n) const
-	{
-		return engine->Cmd_Argv(n);
-	}
-	int ArgC() const
-	{
-		return engine->Cmd_Argc();
-	}
-	const char *ArgS() const
-	{
-		return engine->Cmd_Args();
-	}
-};
-#else
-class CCommandArgs : public ICommandArgs
-{
-	const CCommand *cmd;
-public:
-	CCommandArgs(const CCommand& _cmd) : cmd(&_cmd)
-	{
-	}
-	const char *Arg(int n) const
-	{
-		return cmd->Arg(n);
-	}
-	int ArgC() const
-	{
-		return cmd->ArgC();
-	}
-	const char *ArgS() const
-	{
-		return cmd->ArgS();
-	}
-};
-#endif
 
 CON_COMMAND(sm, "SourceMod Menu")
 {
 #if SOURCE_ENGINE <= SE_DARKMESSIAH
 	CCommand args;
 #endif
-	CCommandArgs cargs(args);
+	EngineArgs cargs(args);
 
 	if (cargs.ArgC() >= 2) {
 		const char *cmdname = cargs.Arg(1);

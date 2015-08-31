@@ -47,7 +47,7 @@ SH_DECL_HOOK1_void(IVEngineServer, LogPrint, SH_NOATTRIB, false, const char *);
 static void HookLogPrint(const char *message)
 {
 	g_in_game_log_hook = true;
-	bool stopped = logicore.OnLogPrint(message);
+	bool stopped = logicore.callbacks->OnLogPrint(message);
 	g_in_game_log_hook = false;
 
 	if (stopped)

@@ -41,6 +41,7 @@
 #include <IGameConfigs.h>
 #include "frame_hooks.h"
 #include "logic_bridge.h"
+#include "provider.h"
 #include <amtl/os/am-shared-library.h>
 #include <amtl/os/am-path.h>
 
@@ -168,7 +169,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	ke::path::Format(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/%s", g_BaseDir.c_str(), basepath);
 	ke::path::Format(m_SMRelDir, sizeof(m_SMRelDir), "%s", basepath);
 
-	if (!StartLogicBridge(error, maxlength))
+	if (!sCoreProviderImpl.LoadBridge(error, maxlength))
 	{
 		return false;
 	}
@@ -252,7 +253,7 @@ void SourceModBase::StartSourceMod(bool late)
 	enginePatch = SH_GET_CALLCLASS(engine);
 	gamedllPatch = SH_GET_CALLCLASS(gamedll);
 
-	InitLogicBridge();
+	sCoreProviderImpl.InitializeBridge();
 
 	/* Initialize CoreConfig to get the SourceMod base path properly - this parses core.cfg */
 	g_CoreConfig.Initialize();
@@ -486,7 +487,7 @@ void SourceModBase::CloseSourceMod()
 	}
 
 	/* Rest In Peace */
-	ShutdownLogicBridge();
+	sCoreProviderImpl.ShutdownBridge();
 	ShutdownJIT();
 }
 
