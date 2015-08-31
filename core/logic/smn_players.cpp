@@ -40,6 +40,7 @@
 #include "GameConfigs.h"
 #include "CellArray.h"
 #include "AutoHandleRooter.h"
+#include "stringutil.h"
 
 using namespace SourceHook;
 using namespace SourceMod;
@@ -163,7 +164,7 @@ public: //ICommandTargetProcessor
 				               ? COMMAND_TARGET_VALID
 				               : COMMAND_TARGET_EMPTY_FILTER;
 				if (info->num_targets) {
-					smcore.strncopy(info->target_name, smtf->phrase.c_str(), info->target_name_maxlength);
+					strncopy(info->target_name, smtf->phrase.c_str(), info->target_name_maxlength);
 					info->target_name_style = smtf->phraseIsML
 					                          ? COMMAND_TARGETNAME_ML
 					                          : COMMAND_TARGETNAME_RAW;
