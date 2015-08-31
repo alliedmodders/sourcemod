@@ -42,6 +42,9 @@
 #include <amtl/os/am-path.h>
 #include <amtl/os/am-fsutil.h>
 #include <sh_list.h>
+#include <IForwardSys.h>
+#include <bridge/include/IScriptManager.h>
+#include <bridge/include/ILogger.h>
 
 using namespace SourceHook;
 

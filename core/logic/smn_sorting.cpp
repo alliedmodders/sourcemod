@@ -34,6 +34,7 @@
 #include <time.h>
 #include "common_logic.h"
 #include "CellArray.h"
+#include <IHandleSys.h>
 
 /***********************************
  *   About the double array hack   *

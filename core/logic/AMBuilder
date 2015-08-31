@@ -3,6 +3,7 @@ import os
 
 binary = SM.Library(builder, 'sourcemod.logic')
 binary.compiler.cxxincludes += [
+  builder.sourcePath,
   os.path.join(builder.sourcePath, 'core', 'logic'),
   os.path.join(builder.sourcePath, 'public'),
   os.path.join(builder.sourcePath, 'sourcepawn', 'include'),

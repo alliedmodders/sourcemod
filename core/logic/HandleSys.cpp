@@ -37,6 +37,7 @@
 #include "ExtensionSys.h"
 #include "PluginSys.h"
 #include <am-string.h>
+#include <bridge/include/ILogger.h>
 
 HandleSystem g_HandleSys;
 

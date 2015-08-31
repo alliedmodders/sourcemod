@@ -33,8 +33,9 @@
 #include "smn_usermsgs.h"
 #include "logic_bridge.h"
 #ifdef USE_PROTOBUF_USERMESSAGES
-#include "UserMessagePBHelpers.h"
+# include "UserMessagePBHelpers.h"
 #endif
+#include <bridge/include/IScriptManager.h>
 
 HandleType_t g_ProtobufType = NO_HANDLE_TYPE;
 HandleType_t g_WrBitBufType = NO_HANDLE_TYPE;

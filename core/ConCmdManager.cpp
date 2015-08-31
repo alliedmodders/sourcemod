@@ -36,6 +36,7 @@
 #include "ChatTriggers.h"
 #include "logic_bridge.h"
 #include "sourcemod.h"
+#include <bridge/include/IScriptManager.h>
 
 using namespace ke;
 

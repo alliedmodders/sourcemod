@@ -51,6 +51,10 @@ for sdk_name in SM.sdks:
   binary = SM.HL2Config(project, binary_name, sdk)
   compiler = binary.compiler
 
+  compiler.cxxincludes += [
+    builder.sourcePath
+  ]
+
   if sdk.name == 'csgo':
     compiler.cxxincludes += [
       os.path.join(sdk.path, 'common', 'protobuf-2.5.0', 'src'),

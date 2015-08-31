@@ -38,6 +38,8 @@
 #include <am-refcounting.h>
 #include "common_logic.h"
 
+class CNativeOwner;
+
 struct FakeNative
 {
 	FakeNative(const char *name, IPluginFunction *fun)

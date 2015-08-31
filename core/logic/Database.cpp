@@ -36,6 +36,7 @@
 #include "PluginSys.h"
 #include <stdlib.h>
 #include <IThreader.h>
+#include <bridge/include/ILogger.h>
 
 #define DBPARSE_LEVEL_NONE		0
 #define DBPARSE_LEVEL_MAIN		1

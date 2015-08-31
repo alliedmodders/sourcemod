@@ -37,6 +37,7 @@
 #include "TimerSys.h"
 #include "logic_bridge.h"
 #include <sourcemod_version.h>
+#include <bridge/include/IProviderCallbacks.h>
 
 bool g_in_game_log_hook = false;
 

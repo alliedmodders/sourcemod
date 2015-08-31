@@ -27,9 +27,9 @@
 #ifndef _INCLUDE_SOURCEMOD_CORE_PROVIDER_IMPL_H_
 #define _INCLUDE_SOURCEMOD_CORE_PROVIDER_IMPL_H_
 
-#include "logic/intercom.h"
-#include "GameHooks.h"
 #include <amtl/os/am-shared-library.h>
+#include <bridge/include/BridgeAPI.h>
+#include "GameHooks.h"
 
 class CoreProviderImpl : public CoreProvider
 {

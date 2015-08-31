@@ -50,6 +50,7 @@
 #include "IGameConfigs.h"
 #include "NativeOwner.h"
 #include "ShareSys.h"
+#include <bridge/include/IScriptManager.h>
 
 class CPlayer;
 

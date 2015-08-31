@@ -37,6 +37,8 @@
 #include "sourcehook.h"
 #include "logic_bridge.h"
 #include "compat_wrappers.h"
+#include <time.h>
+#include <bridge/include/ILogger.h>
 
 NextMapManager g_NextMap;
 

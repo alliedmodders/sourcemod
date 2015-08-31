@@ -37,6 +37,8 @@
 #include "PluginSys.h"
 #include <am-utility.h>
 #include <am-string.h>
+#include <bridge/include/CoreProvider.h>
+#include <bridge/include/ILogger.h>
 
 CExtensionManager g_Extensions;
 IdentityType_t g_ExtType;

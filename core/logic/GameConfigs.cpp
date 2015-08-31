@@ -43,6 +43,8 @@
 #include "sm_crc32.h"
 #include "MemoryUtils.h"
 #include <am-string.h>
+#include <bridge/include/ILogger.h>
+#include <bridge/include/CoreProvider.h>
 
 #if defined PLATFORM_POSIX
 #include <dlfcn.h>

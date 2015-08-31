@@ -33,6 +33,7 @@
 #include "UserMessages.h"
 #include "UserMessagePBHelpers.h"
 #include "smn_usermsgs.h"
+#include <IHandleSys.h>
 
 // Assumes pbuf message handle is param 1, gets message as msg
 #define GET_MSG_FROM_HANDLE_OR_ERR()                  \

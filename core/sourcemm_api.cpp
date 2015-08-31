@@ -37,6 +37,8 @@
 #include "logic_bridge.h"
 #include <sourcemod_version.h>
 #include "provider.h"
+#include <IExtensionSys.h>
+#include <bridge/include/ILogger.h>
 
 SourceMod_Core g_SourceMod_Core;
 IVEngineServer *engine = NULL;

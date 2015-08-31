@@ -41,6 +41,10 @@
 #include "CellArray.h"
 #include "AutoHandleRooter.h"
 #include "stringutil.h"
+#include <bridge/include/IPlayerInfoBridge.h>
+#include <bridge/include/ILogger.h>
+#include <bridge/include/CoreProvider.h>
+#include <bridge/include/IVEngineServerBridge.h>
 
 using namespace SourceHook;
 using namespace SourceMod;

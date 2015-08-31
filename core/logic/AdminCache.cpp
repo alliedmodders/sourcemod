@@ -40,6 +40,9 @@
 #include "Translator.h"
 #include "common_logic.h"
 #include "stringutil.h"
+#include <bridge/include/ILogger.h>
+#include <bridge/include/CoreProvider.h>
+#include <bridge/include/IVEngineServerBridge.h>
 
 #define LEVEL_STATE_NONE		0
 #define LEVEL_STATE_LEVELS		1
