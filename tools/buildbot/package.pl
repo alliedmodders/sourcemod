@@ -3,7 +3,9 @@
 use strict;
 use Cwd;
 use File::Basename;
+use File::stat;
 use Net::FTP;
+use Time::localtime;
 
 my ($ftp_file, $ftp_host, $ftp_user, $ftp_pass, $ftp_path, $tag);
 
@@ -29,6 +31,53 @@ require 'helpers.pm';
 
 #Switch to the output folder.
 chdir(Build::PathFormat('../../../OUTPUT/package'));
+
+print "Downloading languages.cfg...\n";
+system('wget -q -O addons/sourcemod/configs/languages.cfg "https://sm.alliedmods.net/translator/index.php?go=translate&op=export_langs"');
+open(my $fh, '<', 'addons/sourcemod/configs/languages.cfg')
+    or die "Could not open languages.cfg' $!";
+ 
+while (my $ln = <$fh>) {
+    if ($ln =~ /"([^"]+)"\s*"[^"]+.*\((\d+)\) /)
+    {
+	my $abbr = $1;
+	my $id = $2;
+
+	print "Downloading language pack $abbr.zip...\n";
+        system("wget -q -O $abbr.zip \"https://sm.alliedmods.net/translator/index.php?go=translate&op=export&lang_id=$id\"");
+        system("unzip -qo $abbr.zip -d addons/sourcemod/translations/");
+        system("rm $abbr.zip");
+    }
+}
+close($fh);
+
+my $needNewGeoIP = 1;
+if (-e '../GeoIP.dat.gz')
+{
+    my $fileModifiedTime = stat('../GeoIP.dat.gz')->mtime;
+    my $fileModifiedMonth = localtime($fileModifiedTime)->mon;
+    my $currentMonth = localtime->mon;
+    my $thirtyOneDays = 60 * 60 * 24 * 31;
+
+    # GeoIP file only updates once per month
+    if ($currentMonth == $fileModifiedMonth || (time() - $fileModifiedTime) < $thirtyOneDays)
+    {
+        $needNewGeoIP = 0;
+    }
+}
+
+if ($needNewGeoIP)
+{
+    print "Downloading GeoIP.dat...\n";
+    system('wget -q -O ../GeoIP.dat.gz http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz');
+}
+else
+{
+    print "Reusing existing GeoIP.dat\n";
+}
+
+system('gunzip -c ../GeoIP.dat.gz >  addons/sourcemod/configs/geoip/GeoIP.dat');
+
 
 my ($version);
 
