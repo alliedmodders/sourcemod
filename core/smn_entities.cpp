@@ -1924,18 +1924,24 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 
 			bIsStringIndex = (td->fieldType != FIELD_CHARACTER);
 
-			if (bIsStringIndex && (element < 0 || element >= td->fieldSize))
+			if (element != 0)
 			{
-				return pContext->ThrowNativeError("Element %d is out of bounds (Prop %s has %d elements).",
-					element,
-					prop,
-					td->fieldSize);
-			}
-			else if (element != 0)
-			{
-				return pContext->ThrowNativeError("Prop %s is not an array. Element %d is invalid.",
-					prop,
-					element);
+				if (bIsStringIndex)
+				{
+					if (element < 0 || element >= td->fieldSize)
+					{
+						return pContext->ThrowNativeError("Element %d is out of bounds (Prop %s has %d elements).",
+							element,
+							prop,
+							td->fieldSize);
+					}
+				}
+				else
+				{
+					return pContext->ThrowNativeError("Prop %s is not an array. Element %d is invalid.",
+						prop,
+						element);
+				}
 			}
 
 			offset = info.actual_offset;
