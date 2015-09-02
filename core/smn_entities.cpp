@@ -2067,6 +2067,27 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 			offset = info.actual_offset;
 
 			bIsStringIndex = (td->fieldType != FIELD_CHARACTER);
+
+			if (element != 0)
+			{
+				if (bIsStringIndex)
+				{
+					if (element < 0 || element >= td->fieldSize)
+					{
+						return pContext->ThrowNativeError("Element %d is out of bounds (Prop %s has %d elements).",
+							element,
+							prop,
+							td->fieldSize);
+					}
+				}
+				else
+				{
+					return pContext->ThrowNativeError("Prop %s is not an array. Element %d is invalid.",
+						prop,
+						element);
+				}
+			}
+
 			if (bIsStringIndex)
 			{
 				offset += (element * (td->fieldSizeInBytes / td->fieldSize));
