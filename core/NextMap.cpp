@@ -66,6 +66,7 @@ extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelega
 ConCommand *changeLevelCmd = NULL;
 
 ConVar sm_nextmap("sm_nextmap", "", FCVAR_NOTIFY);
+ConVar sm_maphistory_size("sm_maphistory_size", "20");
 
 bool g_forcedChange = false;
 
@@ -174,15 +175,18 @@ void NextMapManager::OnSourceModLevelChange( const char *mapName )
 			m_mapHistory.push_back(new MapChangeData(lastMap, newReason, m_tempChangeInfo.startTime));
 		}
 
-		/* TODO: Should this be customizable? */
-		if (m_mapHistory.size() > 20)
+		int historydiff = sm_maphistory_size.GetInt();
+		if (historydiff > 0)
 		{
-			SourceHook::List<MapChangeData *>::iterator iter;
-			iter = m_mapHistory.begin();
+			historydiff -= m_mapHistory.size();
+		} else if (historydiff < 0)
+		{
+			historydiff = (m_mapHistory.size() * -1);
+		}
 
+		for (SourceHook::List<MapChangeData *>::iterator iter = m_mapHistory.begin(); historydiff++ < 0; iter = m_mapHistory.erase(iter))
+		{
 			delete (MapChangeData *)*iter;
-
-			m_mapHistory.erase(iter);
 		}
 	}
 
