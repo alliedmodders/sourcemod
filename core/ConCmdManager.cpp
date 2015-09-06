@@ -348,20 +348,20 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 	char buffer[128];
 	if (!logicore.CoreTranslate(buffer, sizeof(buffer), "%T", 2, NULL, "No Access", &client))
 	{
-		UTIL_Format(buffer, sizeof(buffer), "You do not have access to this command");
+		ke::SafeSprintf(buffer, sizeof(buffer), "You do not have access to this command");
 	}
 
 	unsigned int replyto = g_ChatTriggers.GetReplyTo();
 	if (replyto == SM_REPLY_CONSOLE)
 	{
 		char fullbuffer[192];
-		UTIL_Format(fullbuffer, sizeof(fullbuffer), "[SM] %s.\n", buffer);
+		ke::SafeSprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s.\n", buffer);
 		pPlayer->PrintToConsole(fullbuffer);
 	}
 	else if (replyto == SM_REPLY_CHAT)
 	{
 		char fullbuffer[192];
-		UTIL_Format(fullbuffer, sizeof(fullbuffer), "[SM] %s.", buffer);
+		ke::SafeSprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s.", buffer);
 		g_HL2.TextMsg(client, HUD_PRINTTALK, fullbuffer);
 	}
 	

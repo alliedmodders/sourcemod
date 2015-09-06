@@ -483,7 +483,7 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 	if (file_exists)
 	{
 		char cmd[255];
-		UTIL_Format(cmd, sizeof(cmd), "exec %s\n", local);
+		ke::SafeSprintf(cmd, sizeof(cmd), "exec %s\n", local);
 		engine->ServerCommand(cmd);
 	}
 
@@ -538,7 +538,7 @@ void SM_ExecuteForPlugin(IPluginContext *ctx)
 			can_create = SM_ExecuteConfig(plugin, plugin->GetConfig(i), can_create);
 		}
 		char cmd[255];
-		UTIL_Format(cmd, sizeof(cmd), "sm internal 2 %d\n", plugin->GetSerial());
+		ke::SafeSprintf(cmd, sizeof(cmd), "sm internal 2 %d\n", plugin->GetSerial());
 		engine->ServerCommand(cmd);
 	}
 }

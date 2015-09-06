@@ -290,7 +290,7 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "off") == 0) {
 			m_QueryLang = false;
 		} else {
-			UTIL_Format(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
+			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
 			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
@@ -301,7 +301,7 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 		} else if ( strcasecmp(value, "no") == 0) {
 			m_bAuthstringValidation = false;
 		} else {
-			UTIL_Format(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
+			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
 			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
@@ -1001,21 +1001,21 @@ void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 		const char *author = api->GetExtensionAuthor();
 		const char *description = api->GetExtensionDescription();
 
-		size_t len = UTIL_Format(buffer, sizeof(buffer), " \"%s\"", name);
+		size_t len = ke::SafeSprintf(buffer, sizeof(buffer), " \"%s\"", name);
 
 		if (version != NULL && version[0])
 		{
-			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", version);
+			len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " (%s)", version);
 		}
 
 		if (author != NULL && author[0])
 		{
-			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", author);
+			len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " by %s", author);
 		}
 
 		if (description != NULL && description[0])
 		{
-			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, ": %s", description);
+			len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, ": %s", description);
 		}
 
 
@@ -1082,18 +1082,18 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 
 		size_t len;
 		const sm_plugininfo_t *info = pl->GetPublicInfo();
-		len = UTIL_Format(buffer, sizeof(buffer), " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+		len = ke::SafeSprintf(buffer, sizeof(buffer), " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 		if (IS_STR_FILLED(info->version))
 		{
-			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
+			len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
 		}
 		if (IS_STR_FILLED(info->author))
 		{
-			UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
+			ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
 		}
 		else
 		{
-			UTIL_Format(&buffer[len], sizeof(buffer)-len, " %s", pl->GetFilename());
+			ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " %s", pl->GetFilename());
 		}
 		ClientConsolePrint(e, "%s", buffer);
 	}
@@ -2434,7 +2434,7 @@ void CPlayer::Kick(const char *str)
 		if (userid > 0)
 		{
 			char buffer[255];
-			UTIL_Format(buffer, sizeof(buffer), "kickid %d %s\n", userid, str);
+			ke::SafeSprintf(buffer, sizeof(buffer), "kickid %d %s\n", userid, str);
 			engine->ServerCommand(buffer);
 		}
 	}

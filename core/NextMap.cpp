@@ -147,8 +147,8 @@ void NextMapManager::HookChangeLevel(const char *map, const char *unknown, const
 
 	logger->LogMessage("[SM] Changed map to \"%s\"", newmap);
 
-	UTIL_Format(m_tempChangeInfo.m_mapName, sizeof(m_tempChangeInfo.m_mapName), newmap);
-	UTIL_Format(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), "Normal level change");
+	ke::SafeSprintf(m_tempChangeInfo.m_mapName, sizeof(m_tempChangeInfo.m_mapName), newmap);
+	ke::SafeSprintf(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), "Normal level change");
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 	RETURN_META_NEWPARAMS(MRES_IGNORED, &IVEngineServer::ChangeLevel, (newmap, unknown));
@@ -171,7 +171,7 @@ void NextMapManager::OnSourceModLevelChange( const char *mapName )
 		{
 			/* Something intercepted the mapchange */
 			char newReason[255];
-			UTIL_Format(newReason, sizeof(newReason), "%s (Map overridden)", m_tempChangeInfo.m_changeReason);
+			ke::SafeSprintf(newReason, sizeof(newReason), "%s (Map overridden)", m_tempChangeInfo.m_changeReason);
 			m_mapHistory.push_back(new MapChangeData(lastMap, newReason, m_tempChangeInfo.startTime));
 		}
 
@@ -193,14 +193,14 @@ void NextMapManager::OnSourceModLevelChange( const char *mapName )
 	m_tempChangeInfo.m_mapName[0] ='\0';
 	m_tempChangeInfo.m_changeReason[0] = '\0';
 	m_tempChangeInfo.startTime = time(NULL);
-	UTIL_Format(lastMap, sizeof(lastMap), "%s", mapName);
+	ke::SafeSprintf(lastMap, sizeof(lastMap), "%s", mapName);
 }
 
 void NextMapManager::ForceChangeLevel( const char *mapName, const char* changeReason )
 {
 	/* Store the mapname and reason */
-	UTIL_Format(m_tempChangeInfo.m_mapName, sizeof(m_tempChangeInfo.m_mapName), "%s", mapName);
-	UTIL_Format(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), "%s", changeReason);
+	ke::SafeSprintf(m_tempChangeInfo.m_mapName, sizeof(m_tempChangeInfo.m_mapName), "%s", mapName);
+	ke::SafeSprintf(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), "%s", changeReason);
 
 	/* Change level and skip our hook */
 	g_forcedChange = true;
@@ -233,7 +233,7 @@ void CmdChangeLevelCallback()
 
 	if (g_NextMap.m_tempChangeInfo.m_mapName[0] == '\0')
 	{
-		UTIL_Format(g_NextMap.m_tempChangeInfo.m_mapName, sizeof(g_NextMap.m_tempChangeInfo.m_mapName), command.Arg(1));
-		UTIL_Format(g_NextMap.m_tempChangeInfo.m_changeReason, sizeof(g_NextMap.m_tempChangeInfo.m_changeReason), "changelevel Command");
+		ke::SafeSprintf(g_NextMap.m_tempChangeInfo.m_mapName, sizeof(g_NextMap.m_tempChangeInfo.m_mapName), command.Arg(1));
+		ke::SafeSprintf(g_NextMap.m_tempChangeInfo.m_changeReason, sizeof(g_NextMap.m_tempChangeInfo.m_changeReason), "changelevel Command");
 	}
 }

@@ -105,7 +105,7 @@ ConfigResult SourceModBase::OnSourceModConfigChanged(const char *key,
 	{
 		if (source == ConfigSource_Console)
 		{
-			UTIL_Format(error, maxlength, "Cannot be set at runtime");
+			ke::SafeSprintf(error, maxlength, "Cannot be set at runtime");
 			return ConfigResult_Reject;
 		}
 
@@ -193,7 +193,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	{
 		if (error && maxlength)
 		{
-			UTIL_Format(error, maxlength, "%s (failed to load bin/sourcepawn.jit.x86.%s)", 
+			ke::SafeSprintf(error, maxlength, "%s (failed to load bin/sourcepawn.jit.x86.%s)", 
 				myerror,
 				PLATFORM_LIB_EXT);
 		}
@@ -428,7 +428,7 @@ void SourceModBase::DoGlobalPluginLoads()
 	if ((game_ext = g_pGameConf->GetKeyValue("GameExtension")) != NULL)
 	{
 		char path[PLATFORM_MAX_PATH];
-		UTIL_Format(path, sizeof(path), "%s.ext." PLATFORM_LIB_EXT, game_ext);
+		ke::SafeSprintf(path, sizeof(path), "%s.ext." PLATFORM_LIB_EXT, game_ext);
 		extsys->LoadAutoExtension(path);
 	}
 
@@ -709,7 +709,7 @@ size_t SourceModBase::FormatArgs(char *buffer,
 								 const char *fmt,
 								 va_list ap)
 {
-	return UTIL_FormatArgs(buffer, maxlength, fmt, ap);
+	return ke::SafeVsprintf(buffer, maxlength, fmt, ap);
 }
 
 void SourceModBase::AddFrameAction(FRAMEACTION fn, void *data)

@@ -297,7 +297,7 @@ unsigned int CValveMenuDisplay::DrawItem(const ItemDrawInfo &item)
 	}
 
 	char buffer[255];
-	UTIL_Format(buffer, sizeof(buffer), "%d. %s", m_NextPos, item.display);
+	ke::SafeSprintf(buffer, sizeof(buffer), "%d. %s", m_NextPos, item.display);
 
 	KeyValues *ki = m_pKv->FindKey(g_OptionNumTable[m_NextPos], true);
 	ki->SetString("command", g_OptionCmdTable[m_NextPos]);

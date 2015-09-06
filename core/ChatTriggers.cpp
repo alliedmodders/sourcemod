@@ -306,12 +306,12 @@ void ChatTriggers::OnSayCommand_Pre()
 		char buffer[128];
 
 		if (!logicore.CoreTranslate(buffer, sizeof(buffer), "%T", 2, NULL, "Flooding the server", &client))
-			UTIL_Format(buffer, sizeof(buffer), "You are flooding the server!");
+			ke::SafeSprintf(buffer, sizeof(buffer), "You are flooding the server!");
 
 		/* :TODO: we should probably kick people who spam too much. */
 
 		char fullbuffer[192];
-		UTIL_Format(fullbuffer, sizeof(fullbuffer), "[SM] %s", buffer);
+		ke::SafeSprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s", buffer);
 		g_HL2.TextMsg(client, HUD_PRINTTALK, fullbuffer);
 
 		m_bWasFloodedMessage = true;
@@ -453,7 +453,7 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args)
 		/* Check if we need to prepend sm_ */
 		if (prepended)
 		{
-			len = UTIL_Format(m_ToExecute, sizeof(m_ToExecute), "sm_%s", args);
+			len = ke::SafeSprintf(m_ToExecute, sizeof(m_ToExecute), "sm_%s", args);
 		} else {
 			len = ke::SafeStrcpy(m_ToExecute, sizeof(m_ToExecute), args);
 		}

@@ -266,7 +266,7 @@ static cell_t smn_KvSetVector(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToStringNULL(params[2], &key);
 	pCtx->LocalToPhysAddr(params[3], &vector);
 
-	UTIL_Format(buffer, sizeof(buffer), "%f %f %f", sp_ctof(vector[0]), sp_ctof(vector[1]), sp_ctof(vector[2]));
+	ke::SafeSprintf(buffer, sizeof(buffer), "%f %f %f", sp_ctof(vector[0]), sp_ctof(vector[1]), sp_ctof(vector[2]));
 
 	pStk->pCurRoot.front()->SetString(key, buffer);
 
@@ -437,7 +437,7 @@ static cell_t smn_KvGetVector(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToPhysAddr(params[3], &outvector);
 	pCtx->LocalToPhysAddr(params[4], &defvector);
 
-	UTIL_Format(buffer, sizeof(buffer), "%f %f %f", sp_ctof(defvector[0]), sp_ctof(defvector[1]), sp_ctof(defvector[2]));
+	ke::SafeSprintf(buffer, sizeof(buffer), "%f %f %f", sp_ctof(defvector[0]), sp_ctof(defvector[1]), sp_ctof(defvector[2]));
 
 	value = pStk->pCurRoot.front()->GetString(key, buffer);
 

@@ -500,7 +500,7 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 		if (chat_saytext != NULL && strcmp(chat_saytext, "yes") == 0)
 		{
 			char buffer[253];
-			UTIL_Format(buffer, sizeof(buffer), "%s\1\n", msg);
+			ke::SafeSprintf(buffer, sizeof(buffer), "%s\1\n", msg);
 
 #if SOURCE_ENGINE == SE_DOTA
 			CUserMsg_SayText *pMsg;
@@ -875,7 +875,7 @@ void CHalfLife2::AddDelayedKick(int client, int userid, const char *msg)
 
 	kick.client = client;
 	kick.userid = userid;
-	UTIL_Format(kick.buffer, sizeof(kick.buffer), "%s", msg);
+	ke::SafeSprintf(kick.buffer, sizeof(kick.buffer), "%s", msg);
 
 	m_DelayedKicks.push(kick);
 }

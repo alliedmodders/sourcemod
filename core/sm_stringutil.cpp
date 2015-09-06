@@ -41,20 +41,6 @@
 #include <am-utility.h>
 #include <am-float.h>
 
-size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	size_t len = ke::SafeVsprintf(buffer, maxlength, fmt, ap);
-	va_end(ap);
-	return len;
-}
-
-size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap)
-{
-	return ke::SafeVsprintf(buffer, maxlength, fmt, ap);
-}
-
 char *sm_strdup(const char *str)
 {
 	char *ptr = new char[strlen(str)+1];
