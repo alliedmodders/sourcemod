@@ -32,18 +32,9 @@
 #ifndef _INCLUDE_SOURCEMOD_STRINGUTIL_H_
 #define _INCLUDE_SOURCEMOD_STRINGUTIL_H_
 
-#include <math.h>
-#include <sp_vm_api.h>
-#include <sp_typeutil.h>
-#include <ITranslator.h>
-
-using namespace SourcePawn;
-using namespace SourceMod;
-
 #define IS_STR_FILLED(var) (var[0] != '\0')
 
 char *sm_strdup(const char *str);
 char *UTIL_ToLowerCase(const char *str);
 
 #endif // _INCLUDE_SOURCEMOD_STRINGUTIL_H_
-

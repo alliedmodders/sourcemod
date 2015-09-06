@@ -29,17 +29,10 @@
  * Version: $Id$
  */
 
-#include <stdlib.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <ITextParsers.h>
 #include "sm_stringutil.h"
-#include "Logger.h"
-#include "PlayerManager.h"
-#include "logic_bridge.h"
-#include "sourcemod.h"
-#include <am-utility.h>
-#include <am-float.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
 
 char *sm_strdup(const char *str)
 {
@@ -62,4 +55,3 @@ char *UTIL_ToLowerCase(const char *str)
 	buffer[len] = '\0';
 	return buffer;
 }
-

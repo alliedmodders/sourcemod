@@ -49,6 +49,7 @@
 #include "smn_keyvalues.h"
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/ILogger.h>
+#include <ITranslator.h>
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
 #include <netmessages.pb.h>

@@ -47,6 +47,7 @@
 #include "logic_bridge.h"
 #include <sourcemod_version.h>
 #include "smn_keyvalues.h"
+#include <ITranslator.h>
 #include <bridge/include/IExtensionBridge.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/ILogger.h>
