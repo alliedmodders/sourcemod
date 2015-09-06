@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -37,6 +37,7 @@
 #include "HalfLife2.h"
 #include "logic_bridge.h"
 #include "sourcemod.h"
+#include <amtl/am-string.h>
 
 #if SOURCE_ENGINE == SE_DOTA
 SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
@@ -433,7 +434,7 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args)
 		 */
 		char new_buf[80];
 		strcpy(new_buf, "sm_");
-		strncopy(&new_buf[3], cmd_buf, sizeof(new_buf)-3);
+		ke::SafeStrcpy(&new_buf[3], sizeof(new_buf)-3, cmd_buf);
 
 		/* Recheck */
 		if (!g_ConCmds.LookForSourceModCommand(new_buf))
@@ -454,10 +455,10 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args)
 		{
 			len = UTIL_Format(m_ToExecute, sizeof(m_ToExecute), "sm_%s", args);
 		} else {
-			len = strncopy(m_ToExecute, args, sizeof(m_ToExecute));
+			len = ke::SafeStrcpy(m_ToExecute, sizeof(m_ToExecute), args);
 		}
 	} else {
-		strncopy(m_ToExecute, args, sizeof(m_ToExecute));
+		ke::SafeStrcpy(m_ToExecute, sizeof(m_ToExecute), args);
 	}
 
 	return true;

@@ -42,7 +42,6 @@ using namespace SourceMod;
 
 #define IS_STR_FILLED(var) (var[0] != '\0')
 
-unsigned int strncopy(char *dest, const char *src, size_t count);
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
 char *sm_strdup(const char *str);

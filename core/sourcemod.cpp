@@ -152,7 +152,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	{
 		if (gamepath[i] == PLATFORM_SEP_CHAR)
 		{
-			strncopy(m_ModDir, &gamepath[++i], sizeof(m_ModDir));
+			ke::SafeStrcpy(m_ModDir, sizeof(m_ModDir), &gamepath[++i]);
 			break;
 		}
 	}

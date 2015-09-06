@@ -38,6 +38,7 @@
 #elif SOURCE_ENGINE == SE_CSGO
 #include <cstrike15_usermessage_helpers.h>
 #endif
+#include <amtl/am-string.h>
 
 UserMessages g_UserMsgs;
 
@@ -158,7 +159,7 @@ bool UserMessages::GetMessageName(int msgid, char *buffer, size_t maxlength) con
 	if (!pszName)
 		return false;
 
-	strncopy(buffer, pszName, maxlength);
+	ke::SafeStrcpy(buffer, maxlength, pszName);
 	return true;
 #else
 	if (m_FallbackSearch)
@@ -171,7 +172,7 @@ bool UserMessages::GetMessageName(int msgid, char *buffer, size_t maxlength) con
 
 	if (msg)
 	{
-		strncopy(buffer, msg, maxlength);
+		ke::SafeStrcpy(buffer, maxlength, msg);
 		return true;
 	}
 

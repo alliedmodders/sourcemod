@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2013 AlliedModders LLC.  All rights reserved.
@@ -34,6 +34,7 @@
 
 #include <sh_list.h>
 #include <google/protobuf/descriptor.h>
+#include <amtl/am-string.h>
 
 #define GETCHECK_FIELD() \
 	const protobuf::FieldDescriptor *field = msg->GetDescriptor()->FindFieldByName(pszFieldName); \
@@ -672,7 +673,7 @@ public:
 		CHECK_FIELD_NOT_REPEATED();
 
 		std::string scratch;
-		strncopy(out, msg->GetReflection()->GetStringReference(*msg, field, &scratch).c_str(), size);
+		ke::SafeStrcpy(out, size, msg->GetReflection()->GetStringReference(*msg, field, &scratch).c_str());
 
 		return true;	
 	}
@@ -695,7 +696,7 @@ public:
 		CHECK_REPEATED_ELEMENT(index);
 		
 		std::string scratch;
-		strncopy(out, msg->GetReflection()->GetRepeatedStringReference(*msg, field, index, &scratch).c_str(), size);
+		ke::SafeStrcpy(out, size, msg->GetReflection()->GetRepeatedStringReference(*msg, field, index, &scratch).c_str());
 
 		return true;
 	}

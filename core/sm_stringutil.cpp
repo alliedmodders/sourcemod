@@ -41,11 +41,6 @@
 #include <am-utility.h>
 #include <am-float.h>
 
-unsigned int strncopy(char *dest, const char *src, size_t count)
-{
-	return ke::SafeStrcpy(dest, count, src);
-}
-
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
 {
 	va_list ap;

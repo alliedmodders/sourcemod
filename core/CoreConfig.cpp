@@ -434,7 +434,7 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 					char *dptr = descr;
 
 					/* Print comments until there is no more */
-					strncopy(descr, cvar->GetHelpText(), sizeof(descr));
+					ke::SafeStrcpy(descr, sizeof(descr), cvar->GetHelpText());
 					while (*dptr != '\0')
 					{
 						/* Find the next line */

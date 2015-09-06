@@ -831,7 +831,7 @@ void CHalfLife2::PushCommandStack(const CCommand *cmd)
 
 	info.args = cmd;
 #if SOURCE_ENGINE <= SE_DARKMESSIAH
-	strncopy(info.cmd, cmd->Arg(0), sizeof(info.cmd));
+	ke::SafeStrcpy(info.cmd, sizeof(info.cmd), cmd->Arg(0));
 #endif
 
 	m_CommandStack.push(info);
@@ -1247,7 +1247,7 @@ SMFindMapResult CHalfLife2::FindMap(char *pMapName, int nMapNameMax)
 	}
 	else
 	{
-		strncopy(pMapName, &results[0][helperCmdLen + 1], nMapNameMax);
+		ke::SafeStrcpy(pMapName, nMapNameMax, &results[0][helperCmdLen + 1]);
 		return SMFindMapResult::FuzzyMatch;
 	}
 #elif SOURCE_ENGINE == SE_TF2
@@ -1263,7 +1263,7 @@ bool CHalfLife2::IsMapValid(const char *map)
 		return false;
 	
 	static char szTmp[PLATFORM_MAX_PATH];
-	strncopy(szTmp, map, sizeof(szTmp));
+	ke::SafeStrcpy(szTmp, sizeof(szTmp), map);
 
 	return FindMap(szTmp, sizeof(szTmp)) != SMFindMapResult::NotFound;
 }

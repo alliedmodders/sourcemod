@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -36,6 +36,7 @@
 #include "sm_stringutil.h"
 #include "sourcemm_api.h"
 #include "compat_wrappers.h"
+#include <amtl/am-string.h>
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK1_void(ICvar, UnregisterConCommand, SH_NOATTRIB, 0, ConCommandBase *);
@@ -146,7 +147,7 @@ public:
 
 		info->pBase = pBase;
 		info->cls = cls;
-		strncopy(info->name, pBase->GetName(), sizeof(info->name));
+		ke::SafeStrcpy(info->name, sizeof(info->name), pBase->GetName());
 
 		tracked_bases.push_back(info);
 	}

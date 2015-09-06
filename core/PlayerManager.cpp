@@ -1657,7 +1657,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				{
 					info->targets[0] = client;
 					info->num_targets = 1;
-					strncopy(info->target_name, pTarget->GetName(), info->target_name_maxlength);
+					ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pTarget->GetName());
 					info->target_name_style = COMMAND_TARGETNAME_RAW;
 				}
 				else
@@ -1731,7 +1731,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 					{
 						info->targets[0] = i;
 						info->num_targets = 1;
-						strncopy(info->target_name, pTarget->GetName(), info->target_name_maxlength);
+						ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pTarget->GetName());
 						info->target_name_style = COMMAND_TARGETNAME_RAW;
 					}
 					else
@@ -1761,7 +1761,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				{
 					info->targets[0] = i;
 					info->num_targets = 1;
-					strncopy(info->target_name, pTarget->GetName(), info->target_name_maxlength);
+					ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pTarget->GetName());
 					info->target_name_style = COMMAND_TARGETNAME_RAW;
 				}
 				else
@@ -1780,7 +1780,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 		{
 			info->targets[0] = info->admin;
 			info->num_targets = 1;
-			strncopy(info->target_name, pAdmin->GetName(), info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pAdmin->GetName());
 			info->target_name_style = COMMAND_TARGETNAME_RAW;
 		}
 		else
@@ -1799,7 +1799,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 		if (strcmp(info->pattern, "@all") == 0)
 		{
 			is_multi = true;
-			strncopy(info->target_name, "all players", info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all players");
 			info->target_name_style = COMMAND_TARGETNAME_ML;
 		}
 		else if (strcmp(info->pattern, "@dead") == 0)
@@ -1812,7 +1812,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				return;
 			}
 			info->flags |= COMMAND_FILTER_DEAD;
-			strncopy(info->target_name, "all dead players", info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all dead players");
 			info->target_name_style = COMMAND_TARGETNAME_ML;
 		}
 		else if (strcmp(info->pattern, "@alive") == 0)
@@ -1824,7 +1824,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				info->reason = COMMAND_TARGET_NOT_DEAD;
 				return;
 			}
-			strncopy(info->target_name, "all alive players", info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all alive players");
 			info->target_name_style = COMMAND_TARGETNAME_ML;
 			info->flags |= COMMAND_FILTER_ALIVE;
 		}
@@ -1837,21 +1837,21 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				info->reason = COMMAND_TARGET_NOT_HUMAN;
 				return;
 			}
-			strncopy(info->target_name, "all bots", info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all bots");
 			info->target_name_style = COMMAND_TARGETNAME_ML;
 			bots_only = true;
 		}
 		else if (strcmp(info->pattern, "@humans") == 0)
 		{
 			is_multi = true;
-			strncopy(info->target_name, "all humans", info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all humans");
 			info->target_name_style = COMMAND_TARGETNAME_ML;
 			info->flags |= COMMAND_FILTER_NO_BOTS;
 		}
 		else if (strcmp(info->pattern, "@!me") == 0)
 		{
 			is_multi = true;
-			strncopy(info->target_name, "all players", info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all players");
 			info->target_name_style = COMMAND_TARGETNAME_ML;
 			skip_client = info->admin;
 		}
@@ -1923,7 +1923,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 		{
 			info->targets[0] = found_client;
 			info->num_targets = 1;
-			strncopy(info->target_name, pFoundClient->GetName(), info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pFoundClient->GetName());
 			info->target_name_style = COMMAND_TARGETNAME_RAW;
 		}
 		else
@@ -2071,7 +2071,7 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	m_Serial.bits.serial = g_PlayerSerialCount++;
 
 	char ip2[24], *ptr;
-	strncopy(ip2, ip, sizeof(ip2));
+	ke::SafeStrcpy(ip2, sizeof(ip2), ip);
 	if ((ptr = strchr(ip2, ':')) != NULL)
 	{
 		*ptr = '\0';
