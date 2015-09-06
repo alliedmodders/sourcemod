@@ -38,7 +38,7 @@ class ConVar;
 
 namespace SourceMod {
 
-enum class QueryHookMode {
+enum class ClientCvarQueryMode {
 	Unavailable,
 	DLL,
 	VSP
@@ -53,8 +53,8 @@ public:
 	void Shutdown();
 	void OnVSPReceived();
 
-	QueryHookMode GetQueryHookMode() const {
-		return query_hook_mode_;
+	ClientCvarQueryMode GetClientCvarQueryMode() const {
+		return client_cvar_query_mode_;
 	}
 
 private:
@@ -85,7 +85,7 @@ private:
 	};
 	HookList hooks_;
 
-	QueryHookMode query_hook_mode_;
+	ClientCvarQueryMode client_cvar_query_mode_;
 };
 
 } // namespace SourceMod

@@ -43,7 +43,7 @@ SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB
 #endif
 
 GameHooks::GameHooks()
-	: query_hook_mode_(QueryHookMode::Unavailable)
+	: client_cvar_query_mode_(ClientCvarQueryMode::Unavailable)
 {
 }
 
@@ -60,14 +60,14 @@ void GameHooks::Start()
 #if SOURCE_ENGINE == SE_EPISODEONE
 	if (g_SMAPI->GetGameDLLVersion() >= 6) {
 		hooks_ += SH_ADD_HOOK(IServerGameDLL, OnQueryCvarValueFinished, gamedll, SH_MEMBER(this, &GameHooks::OnQueryCvarValueFinished), false);
-		query_hook_mode_ = QueryHookMode::DLL;
+		client_cvar_query_mode_ = ClientCvarQueryMode::DLL;
 	}
 #endif
 }
 
 void GameHooks::OnVSPReceived()
 {
-	if (query_hook_mode_ != QueryHookMode::Unavailable)
+	if (client_cvar_query_mode_ != ClientCvarQueryMode::Unavailable)
 		return;
 
 	// For later MM:S versions, use the updated API, since it's cleaner.
@@ -81,7 +81,7 @@ void GameHooks::OnVSPReceived()
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH && SOURCE_ENGINE != SE_DOTA
 	hooks_ += SH_ADD_HOOK(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, SH_MEMBER(this, &GameHooks::OnQueryCvarValueFinished), false);
-	query_hook_mode_ = QueryHookMode::VSP;
+	client_cvar_query_mode_ = ClientCvarQueryMode::VSP;
 #endif
 }
 
@@ -91,7 +91,7 @@ void GameHooks::Shutdown()
 		SH_REMOVE_HOOK_ID(hooks_[i]);
 	hooks_.clear();
 
-	query_hook_mode_ = QueryHookMode::Unavailable;
+	client_cvar_query_mode_ = ClientCvarQueryMode::Unavailable;
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
