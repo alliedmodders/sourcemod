@@ -66,7 +66,7 @@ class CommandHook : public ke::Refcounted<CommandHook>
 {
 public:
 	// return false to RETURN_META(MRES_IGNORED), or true to SUPERCEDE.
-	typedef ke::Lambda<bool(const ICommandArgs *)> Callback;
+	typedef ke::Lambda<bool(int, const ICommandArgs *)> Callback;
 
 public:
 	CommandHook(ConCommand *cmd, const Callback &callback, bool post);
@@ -96,6 +96,10 @@ public:
 	ke::PassRef<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 	ke::PassRef<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 
+	int CommandClient() const {
+		return last_command_client_;
+	}
+
 private:
 	// Static callback that Valve's ConVar object executes when the convar's value changes.
 #if SOURCE_ENGINE >= SE_ORANGEBOX
@@ -113,6 +117,8 @@ private:
 	                              const char *cvarName, const char *cvarValue);
 #endif
 
+	void SetCommandClient(int client);
+
 private:
 	class HookList : public ke::Vector<int>
 	{
@@ -125,6 +131,7 @@ private:
 	HookList hooks_;
 
 	ClientCvarQueryMode client_cvar_query_mode_;
+	int last_command_client_;
 };
 
 } // namespace SourceMod

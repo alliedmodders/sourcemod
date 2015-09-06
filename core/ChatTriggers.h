@@ -56,8 +56,8 @@ public: //SMGlobalClass
 		char *error, 
 		size_t maxlength);
 private: //ConCommand
-	bool OnSayCommand_Pre(const ICommandArgs *args);
-	bool OnSayCommand_Post(const ICommandArgs *args);
+	bool OnSayCommand_Pre(int client, const ICommandArgs *args);
+	bool OnSayCommand_Post(int client, const ICommandArgs *args);
 public:
 	unsigned int GetReplyTo();
 	unsigned int SetReplyTo(unsigned int reply);
