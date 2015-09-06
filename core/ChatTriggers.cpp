@@ -60,10 +60,8 @@ bool g_bSupressSilentFails = false;
 ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false), 
 	m_ReplyTo(SM_REPLY_CONSOLE), m_ArgSBackup(NULL)
 {
-	m_PubTrigger = sm_strdup("!");
-	m_PrivTrigger = sm_strdup("/");
-	m_PubTriggerSize = 1;
-	m_PrivTriggerSize = 1;
+	m_PubTrigger = "!";
+	m_PrivTrigger = "/";
 	m_bIsChatTrigger = false;
 	m_bPluginIgnored = true;
 #if SOURCE_ENGINE == SE_EPISODEONE
@@ -73,10 +71,6 @@ ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false),
 
 ChatTriggers::~ChatTriggers()
 {
-	delete [] m_PubTrigger;
-	m_PubTrigger = NULL;
-	delete [] m_PrivTrigger;
-	m_PrivTrigger = NULL;
 	delete [] m_ArgSBackup;
 	m_ArgSBackup = NULL;
 }
@@ -89,16 +83,12 @@ ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key,
 {
 	if (strcmp(key, "PublicChatTrigger") == 0)
 	{
-		delete [] m_PubTrigger;
-		m_PubTrigger = sm_strdup(value);
-		m_PubTriggerSize = strlen(m_PubTrigger);
+		m_PubTrigger = value;
 		return ConfigResult_Accept;
 	}
 	else if (strcmp(key, "SilentChatTrigger") == 0)
 	{
-		delete [] m_PrivTrigger;
-		m_PrivTrigger = sm_strdup(value);
-		m_PrivTriggerSize = strlen(m_PrivTrigger);
+		m_PrivTrigger = value;
 		return ConfigResult_Accept;
 	}
 	else if (strcmp(key, "SilentFailSuppress") == 0)
@@ -323,16 +313,16 @@ void ChatTriggers::OnSayCommand_Pre()
 	bool is_silent = false;
 
 	/* Check for either trigger */
-	if (m_PubTriggerSize && strncmp(m_ArgSBackup, m_PubTrigger, m_PubTriggerSize) == 0)
+	if (m_PubTrigger.length() && strncmp(m_ArgSBackup, m_PubTrigger.chars(), m_PubTrigger.length()) == 0)
 	{
 		is_trigger = true;
-		args = &m_ArgSBackup[m_PubTriggerSize];
+		args = &m_ArgSBackup[m_PubTrigger.length()];
 	} 
-	else if (m_PrivTriggerSize && strncmp(m_ArgSBackup, m_PrivTrigger, m_PrivTriggerSize) == 0) 
+	else if (m_PrivTrigger.length() && strncmp(m_ArgSBackup, m_PrivTrigger.chars(), m_PrivTrigger.length()) == 0) 
 	{
 		is_trigger = true;
 		is_silent = true;
-		args = &m_ArgSBackup[m_PrivTriggerSize];
+		args = &m_ArgSBackup[m_PrivTrigger.length()];
 	}
 
 	/**
