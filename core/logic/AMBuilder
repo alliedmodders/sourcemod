@@ -79,6 +79,7 @@ binary.sources += [
   'sprintf.cpp',
   'LibrarySys.cpp',
   'RootConsoleMenu.cpp',
+  'CDataPack.cpp',
 ]
 if builder.target_platform == 'windows':
   binary.sources += ['thread/WinThreads.cpp']

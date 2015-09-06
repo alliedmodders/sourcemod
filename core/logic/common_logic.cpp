@@ -54,6 +54,7 @@
 #include "sprintf.h"
 #include "LibrarySys.h"
 #include "RootConsoleMenu.h"
+#include "CDataPack.h"
 #include <bridge/include/BridgeAPI.h>
 #include <bridge/include/IProviderCallbacks.h>
 
@@ -158,6 +159,8 @@ static sm_logic_t logic =
 	DumpAdminCache,
 	RegisterProfiler,
 	OnRootCommand,
+	CDataPack::New,
+	CDataPack::Free,
 	&g_PluginSys,
 	&g_ShareSys,
 	&g_Extensions,
