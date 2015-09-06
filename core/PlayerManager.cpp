@@ -47,6 +47,7 @@
 #include "logic_bridge.h"
 #include <sourcemod_version.h>
 #include "smn_keyvalues.h"
+#include "command_args.h"
 #include <ITranslator.h>
 #include <bridge/include/IExtensionBridge.h>
 #include <bridge/include/IScriptManager.h>
@@ -1180,7 +1181,8 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		RETURN_META(MRES_SUPERCEDE);
 	}
 
-	g_HL2.PushCommandStack(&args);
+	EngineArgs cargs(args);
+	AutoEnterCommand autoEnterCommand(&cargs);
 
 	int argcount = args.ArgC() - 1;
 	const char *cmd = g_HL2.CurrentCommandName();
@@ -1199,10 +1201,9 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 
 	if (g_ConsoleDetours.IsEnabled())
 	{
-		cell_t res2 = g_ConsoleDetours.InternalDispatch(client, args);
+		cell_t res2 = g_ConsoleDetours.InternalDispatch(client, &cargs);
 		if (res2 >= Pl_Stop)
 		{
-			g_HL2.PopCommandStack();
 			RETURN_META(MRES_SUPERCEDE);
 		}
 		else if (res2 > res)
@@ -1226,13 +1227,10 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 
 	if (res >= Pl_Stop)
 	{
-		g_HL2.PopCommandStack();
 		RETURN_META(MRES_SUPERCEDE);
 	}
 
 	res = g_ConCmds.DispatchClientCommand(client, cmd, argcount, (ResultType)res);
-
-	g_HL2.PopCommandStack();
 
 	if (res >= Pl_Handled)
 	{

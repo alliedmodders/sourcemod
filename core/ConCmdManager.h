@@ -40,6 +40,7 @@
 #include <IRootConsoleMenu.h>
 #include <IAdminSystem.h>
 #include "concmd_cleaner.h"
+#include "GameHooks.h"
 #include <sm_stringhashmap.h>
 #include <am-utility.h>
 #include <am-inlinelist.h>
@@ -105,6 +106,7 @@ struct ConCmdInfo
 	ConCommand *pCmd;				/**< Pointer to the command itself */
 	CmdHookList hooks;				/**< Hook list */
 	FlagBits eflags;				/**< Effective admin flags */
+	ke::Ref<CommandHook> sh_hook;   /**< SourceHook hook, if any. */
 };
 
 typedef List<ConCmdInfo *> ConCmdList;
@@ -115,13 +117,7 @@ class ConCmdManager :
 	public IPluginsListener,
 	public IConCommandTracker
 {
-#if SOURCE_ENGINE == SE_DOTA
-	friend void CommandCallback(const CCommandContext &context, const CCommand &command);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
-	friend void CommandCallback(const CCommand &command);
-#else
-	friend void CommandCallback();
-#endif
+	friend void CommandCallback(DISPATCH_ARGS);
 public:
 	ConCmdManager();
 	~ConCmdManager();
@@ -147,7 +143,7 @@ public:
 	bool LookForSourceModCommand(const char *cmd);
 	bool LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags);
 private:
-	void InternalDispatch(const CCommand &command);
+	void InternalDispatch(const ICommandArgs *args);
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
 	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags);
 	void SetCommandClient(int client);

@@ -65,6 +65,9 @@ public:
 	int QueryClientConVar(int client, const char *cvar) override;
 	bool IsClientConVarQueryingSupported() override;
 
+	ke::PassRef<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
+	ke::PassRef<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
+
 private:
 	ke::Ref<ke::SharedLib> logic_;
 	LogicInitFunction logic_init_;

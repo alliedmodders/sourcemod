@@ -784,7 +784,7 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_GetCmdArgs(IPluginContext *pContext, const cell_t *params)
 {
-	const CCommand *pCmd = g_HL2.PeekCommandStack();
+	const ICommandArgs *pCmd = g_HL2.PeekCommandStack();
 
 	if (!pCmd)
 	{
@@ -796,7 +796,7 @@ static cell_t sm_GetCmdArgs(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_GetCmdArg(IPluginContext *pContext, const cell_t *params)
 {
-	const CCommand *pCmd = g_HL2.PeekCommandStack();
+	const ICommandArgs *pCmd = g_HL2.PeekCommandStack();
 
 	if (!pCmd)
 	{
@@ -814,7 +814,7 @@ static cell_t sm_GetCmdArg(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_GetCmdArgString(IPluginContext *pContext, const cell_t *params)
 {
-	const CCommand *pCmd = g_HL2.PeekCommandStack();
+	const ICommandArgs *pCmd = g_HL2.PeekCommandStack();
 
 	if (!pCmd)
 	{

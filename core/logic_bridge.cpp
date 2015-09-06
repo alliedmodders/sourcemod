@@ -742,6 +742,18 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 	return true;
 }
 
+ke::PassRef<CommandHook>
+CoreProviderImpl::AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback)
+{
+	return hooks_.AddCommandHook(cmd, callback);
+}
+
+ke::PassRef<CommandHook>
+CoreProviderImpl::AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback)
+{
+	return hooks_.AddPostCommandHook(cmd, callback);
+}
+
 void CoreProviderImpl::InitializeHooks()
 {
 	hooks_.Start();
