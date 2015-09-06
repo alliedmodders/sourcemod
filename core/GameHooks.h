@@ -65,7 +65,8 @@ class ICommandArgs;
 class CommandHook : public ke::Refcounted<CommandHook>
 {
 public:
-	typedef ke::Lambda<void(const ICommandArgs *)> Callback;
+	// return false to RETURN_META(MRES_IGNORED), or true to SUPERCEDE.
+	typedef ke::Lambda<bool(const ICommandArgs *)> Callback;
 
 public:
 	CommandHook(ConCommand *cmd, const Callback &callback, bool post);

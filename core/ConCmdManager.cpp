@@ -142,7 +142,9 @@ void CommandCallback(DISPATCH_ARGS)
 	EngineArgs args(command);
 
 	AutoEnterCommand autoEnterCommand(&args);
-	g_ConCmds.InternalDispatch(&args);
+	if (g_ConCmds.InternalDispatch(&args))
+		RETURN_META(MRES_SUPERCEDE);
+	RETURN_META(MRES_IGNORED);
 }
 
 void ConCmdManager::SetCommandClient(int client)
@@ -216,7 +218,7 @@ ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int
 	return (ResultType)result;
 }
 
-void ConCmdManager::InternalDispatch(const ICommandArgs *args)
+bool ConCmdManager::InternalDispatch(const ICommandArgs *args)
 {
 	int client = m_CmdClient;
 
@@ -224,7 +226,7 @@ void ConCmdManager::InternalDispatch(const ICommandArgs *args)
 	{
 		CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 		if (!pPlayer || !pPlayer->IsConnected())
-			return;
+			return false;
 	}
 
 	/**
@@ -242,11 +244,11 @@ void ConCmdManager::InternalDispatch(const ICommandArgs *args)
          * case-insensitive.  We can't even use our sortedness.
          */
         if (client == 0 && !engine->IsDedicatedServer())
-            return;
+            return false;
 
 		ConCmdList::iterator item = FindInList(cmd);
 		if (item == m_CmdList.end())
-			return;
+			return false;
 
 		pInfo = *item;
 	}
@@ -256,7 +258,7 @@ void ConCmdManager::InternalDispatch(const ICommandArgs *args)
 	 * "nicer" when we expose explicit say hooks.
 	 */
 	if (g_ChatTriggers.WasFloodedMessage())
-		return;
+		return false;
 
 	cell_t result = Pl_Continue;
 	int argc = args->ArgC() - 1;
@@ -308,11 +310,9 @@ void ConCmdManager::InternalDispatch(const ICommandArgs *args)
 	}
 
 	if (result >= Pl_Handled)
-	{
-		if (!pInfo->sourceMod)
-			RETURN_META(MRES_SUPERCEDE);
-		return;
-	}
+		return !pInfo->sourceMod;
+
+	return false;
 }
 
 bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin)
@@ -604,9 +604,9 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 		else
 		{
 			TrackConCommandBase(pCmd, this);
-			CommandHook::Callback callback = [this] (const ICommandArgs *args) {
+			CommandHook::Callback callback = [this] (const ICommandArgs *args) -> bool {
 				AutoEnterCommand autoEnterCommand(args);
-				this->InternalDispatch(args);
+				return this->InternalDispatch(args);
 			};
 			pInfo->sh_hook = sCoreProviderImpl.AddCommandHook(pCmd, callback);
 		}

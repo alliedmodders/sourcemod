@@ -143,7 +143,7 @@ public:
 	bool LookForSourceModCommand(const char *cmd);
 	bool LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags);
 private:
-	void InternalDispatch(const ICommandArgs *args);
+	bool InternalDispatch(const ICommandArgs *args);
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
 	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags);
 	void SetCommandClient(int client);

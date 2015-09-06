@@ -169,8 +169,10 @@ void CommandHook::Dispatch(DISPATCH_ARGS)
 	EngineArgs args(command);
 
 	AddRef();
-	callback_(&args);
+	bool rval = callback_(&args);
 	Release();
+	if (rval)
+		RETURN_META(MRES_SUPERCEDE);
 }
 
 void CommandHook::Zap()
