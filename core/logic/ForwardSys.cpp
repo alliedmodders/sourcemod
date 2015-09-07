@@ -663,6 +663,26 @@ void CForward::Cancel()
 	m_errstate = SP_ERROR_NONE;
 }
 
+class CForwardChanged
+{
+public:
+	CForwardChanged(CForward *forward) : pForward(forward)
+	{
+		this->count = pForward->GetFunctionCount();
+	};
+
+	~CForwardChanged()
+	{
+		size_t current = pForward->GetFunctionCount();
+		if (current != count)
+			pForward->FunctionsChanged(current);
+	}
+
+private:
+	CForward *pForward;
+	size_t count;
+};
+
 bool CForward::AddFunction(IPluginContext *pContext, funcid_t index)
 {
 	IPluginFunction *pFunc = pContext->GetFunctionById(index);
@@ -692,6 +712,7 @@ bool CForward::RemoveFunction(IPluginFunction *func)
 	bool found = false;
 	FuncIter iter;
 	List<IPluginFunction *> *lst;
+	CForwardChanged changed(this);
 
 	if (func->IsRunnable())
 	{
@@ -726,6 +747,7 @@ unsigned int CForward::RemoveFunctionsOfPlugin(IPlugin *plugin)
 	IPluginFunction *func;
 	unsigned int removed = 0;
 	IPluginContext *pContext = plugin->GetBaseContext();
+	CForwardChanged changed(this);
 	for (iter=m_functions.begin(); iter!=m_functions.end();)
 	{
 		func = (*iter);
@@ -741,12 +763,18 @@ unsigned int CForward::RemoveFunctionsOfPlugin(IPlugin *plugin)
 	return removed;
 }
 
+void CForward::FunctionsChanged(size_t count)
+{
+}
+
 bool CForward::AddFunction(IPluginFunction *func)
 {
 	if (m_curparam)
 	{
 		return false;
 	}
+
+	CForwardChanged changed(this);
 
 	if (func->IsRunnable())
 	{

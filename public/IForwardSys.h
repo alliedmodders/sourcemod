@@ -50,7 +50,7 @@
 using namespace SourcePawn;
 
 #define SMINTERFACE_FORWARDMANAGER_NAME		"IForwardManager"
-#define SMINTERFACE_FORWARDMANAGER_VERSION	3
+#define SMINTERFACE_FORWARDMANAGER_VERSION	4
 
 /*
  * There is some very important documentation at the bottom of this file.
@@ -183,6 +183,14 @@ namespace SourceMod
 		 * @return			Error code, if any.
 		 */
 		virtual int PushArray(cell_t *inarray, unsigned int cells, int flags=0) =0;
+
+		/**
+		 * @brief Callback for when the forward's listeners are modified.
+		 *
+		 * @param count	Number of Callbacks attached to the forward.
+		 * @noreturn
+		 */
+		virtual void FunctionsChanged(size_t count) =0;
 	};
 
 	/**
