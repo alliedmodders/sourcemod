@@ -515,16 +515,6 @@ void SourceModBase::ShutdownServices()
 		pBase = pBase->m_pGlobalClassNext;
 	}
 
-	/* Delete all data packs */
-	CStack<CDataPack *>::iterator iter;
-	CDataPack *pd;
-	for (iter=m_freepacks.begin(); iter!=m_freepacks.end(); iter++)
-	{
-		pd = (*iter);
-		delete pd;
-	}
-	m_freepacks.popall();
-
 	sCoreProviderImpl.ShutdownHooks();
 
 	/* Notify! */
@@ -624,26 +614,16 @@ unsigned int SourceModBase::GetGlobalTarget() const
 
 IDataPack *SourceModBase::CreateDataPack()
 {
-	CDataPack *pack;
-	if (m_freepacks.empty())
-	{
-		pack = new CDataPack;
-	} else {
-		pack = m_freepacks.front();
-		m_freepacks.pop();
-		pack->Initialize();
-	}
-	return pack;
+	return logicore.CreateDataPack();
 }
 
 void SourceModBase::FreeDataPack(IDataPack *pack)
 {
-	m_freepacks.push(static_cast<CDataPack *>(pack));
+	logicore.FreeDataPack(pack);
 }
 
 Handle_t SourceModBase::GetDataPackHandleType(bool readonly)
 {
-	//:TODO:
 	return 0;
 }
 

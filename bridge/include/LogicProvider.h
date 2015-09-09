@@ -50,6 +50,7 @@ class IProviderCallbacks;
 class IExtensionSys;
 class ITextParsers;
 class ILogger;
+class IDataPack;
 
 struct sm_logic_t
 {
@@ -71,6 +72,8 @@ struct sm_logic_t
 	bool			(*DumpAdminCache)(const char *filename);
 	void            (*RegisterProfiler)(IProfilingTool *tool);
 	void			(*OnRootCommand)(const ICommandArgs *args);
+	IDataPack *     (*CreateDataPack)();
+	void            (*FreeDataPack)(IDataPack *pack);
 	IScriptManager	*scripts;
 	IShareSys		*sharesys;
 	IExtensionSys	*extsys;
