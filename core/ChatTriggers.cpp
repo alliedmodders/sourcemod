@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -37,6 +37,7 @@
 #include "HalfLife2.h"
 #include "logic_bridge.h"
 #include "sourcemod.h"
+#include <amtl/am-string.h>
 
 #if SOURCE_ENGINE == SE_DOTA
 SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
@@ -59,10 +60,8 @@ bool g_bSupressSilentFails = false;
 ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false), 
 	m_ReplyTo(SM_REPLY_CONSOLE), m_ArgSBackup(NULL)
 {
-	m_PubTrigger = sm_strdup("!");
-	m_PrivTrigger = sm_strdup("/");
-	m_PubTriggerSize = 1;
-	m_PrivTriggerSize = 1;
+	m_PubTrigger = "!";
+	m_PrivTrigger = "/";
 	m_bIsChatTrigger = false;
 	m_bPluginIgnored = true;
 #if SOURCE_ENGINE == SE_EPISODEONE
@@ -72,10 +71,6 @@ ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false),
 
 ChatTriggers::~ChatTriggers()
 {
-	delete [] m_PubTrigger;
-	m_PubTrigger = NULL;
-	delete [] m_PrivTrigger;
-	m_PrivTrigger = NULL;
 	delete [] m_ArgSBackup;
 	m_ArgSBackup = NULL;
 }
@@ -88,16 +83,12 @@ ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key,
 {
 	if (strcmp(key, "PublicChatTrigger") == 0)
 	{
-		delete [] m_PubTrigger;
-		m_PubTrigger = sm_strdup(value);
-		m_PubTriggerSize = strlen(m_PubTrigger);
+		m_PubTrigger = value;
 		return ConfigResult_Accept;
 	}
 	else if (strcmp(key, "SilentChatTrigger") == 0)
 	{
-		delete [] m_PrivTrigger;
-		m_PrivTrigger = sm_strdup(value);
-		m_PrivTriggerSize = strlen(m_PrivTrigger);
+		m_PrivTrigger = value;
 		return ConfigResult_Accept;
 	}
 	else if (strcmp(key, "SilentFailSuppress") == 0)
@@ -305,12 +296,12 @@ void ChatTriggers::OnSayCommand_Pre()
 		char buffer[128];
 
 		if (!logicore.CoreTranslate(buffer, sizeof(buffer), "%T", 2, NULL, "Flooding the server", &client))
-			UTIL_Format(buffer, sizeof(buffer), "You are flooding the server!");
+			ke::SafeSprintf(buffer, sizeof(buffer), "You are flooding the server!");
 
 		/* :TODO: we should probably kick people who spam too much. */
 
 		char fullbuffer[192];
-		UTIL_Format(fullbuffer, sizeof(fullbuffer), "[SM] %s", buffer);
+		ke::SafeSprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s", buffer);
 		g_HL2.TextMsg(client, HUD_PRINTTALK, fullbuffer);
 
 		m_bWasFloodedMessage = true;
@@ -322,16 +313,16 @@ void ChatTriggers::OnSayCommand_Pre()
 	bool is_silent = false;
 
 	/* Check for either trigger */
-	if (m_PubTriggerSize && strncmp(m_ArgSBackup, m_PubTrigger, m_PubTriggerSize) == 0)
+	if (m_PubTrigger.length() && strncmp(m_ArgSBackup, m_PubTrigger.chars(), m_PubTrigger.length()) == 0)
 	{
 		is_trigger = true;
-		args = &m_ArgSBackup[m_PubTriggerSize];
+		args = &m_ArgSBackup[m_PubTrigger.length()];
 	} 
-	else if (m_PrivTriggerSize && strncmp(m_ArgSBackup, m_PrivTrigger, m_PrivTriggerSize) == 0) 
+	else if (m_PrivTrigger.length() && strncmp(m_ArgSBackup, m_PrivTrigger.chars(), m_PrivTrigger.length()) == 0) 
 	{
 		is_trigger = true;
 		is_silent = true;
-		args = &m_ArgSBackup[m_PrivTriggerSize];
+		args = &m_ArgSBackup[m_PrivTrigger.length()];
 	}
 
 	/**
@@ -433,7 +424,7 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args)
 		 */
 		char new_buf[80];
 		strcpy(new_buf, "sm_");
-		strncopy(&new_buf[3], cmd_buf, sizeof(new_buf)-3);
+		ke::SafeStrcpy(&new_buf[3], sizeof(new_buf)-3, cmd_buf);
 
 		/* Recheck */
 		if (!g_ConCmds.LookForSourceModCommand(new_buf))
@@ -452,12 +443,12 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args)
 		/* Check if we need to prepend sm_ */
 		if (prepended)
 		{
-			len = UTIL_Format(m_ToExecute, sizeof(m_ToExecute), "sm_%s", args);
+			len = ke::SafeSprintf(m_ToExecute, sizeof(m_ToExecute), "sm_%s", args);
 		} else {
-			len = strncopy(m_ToExecute, args, sizeof(m_ToExecute));
+			len = ke::SafeStrcpy(m_ToExecute, sizeof(m_ToExecute), args);
 		}
 	} else {
-		strncopy(m_ToExecute, args, sizeof(m_ToExecute));
+		ke::SafeStrcpy(m_ToExecute, sizeof(m_ToExecute), args);
 	}
 
 	return true;

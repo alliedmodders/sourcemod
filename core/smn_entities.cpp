@@ -1003,7 +1003,7 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	char *dest = (char *)((uint8_t *)pEntity + offset);
 
 	pContext->LocalToString(params[3], &src);
-	size_t len = strncopy(dest, src, params[4]);
+	size_t len = ke::SafeStrcpy(dest, params[4], src);
 
 	if (params[5] && (pEdict != NULL))
 	{
@@ -2165,7 +2165,7 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 	else
 	{
 		char *dest = (char *) ((uint8_t *) pEntity + offset);
-		len = strncopy(dest, src, maxlen);
+		len = ke::SafeStrcpy(dest, maxlen, src);
 	}
 
 	if (params[2] == Prop_Send && (pEdict != NULL))

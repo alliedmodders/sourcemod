@@ -456,7 +456,7 @@ void CRadioMenuPlayer::Radio_Init(int keys, const char *title, const char *text)
 {
 	if (title[0] != '\0')
 	{
-		display_len = UTIL_Format(display_pkt, 
+		display_len = ke::SafeSprintf(display_pkt, 
 			sizeof(display_pkt), 
 			"%s\n%s", 
 			title,
@@ -464,7 +464,7 @@ void CRadioMenuPlayer::Radio_Init(int keys, const char *title, const char *text)
 	}
 	else
 	{
-		display_len = UTIL_Format(display_pkt, 
+		display_len = ke::SafeSprintf(display_pkt, 
 			sizeof(display_pkt), 
 			"%s", 
 			text);

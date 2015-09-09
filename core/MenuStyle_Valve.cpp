@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -297,7 +297,7 @@ unsigned int CValveMenuDisplay::DrawItem(const ItemDrawInfo &item)
 	}
 
 	char buffer[255];
-	UTIL_Format(buffer, sizeof(buffer), "%d. %s", m_NextPos, item.display);
+	ke::SafeSprintf(buffer, sizeof(buffer), "%d. %s", m_NextPos, item.display);
 
 	KeyValues *ki = m_pKv->FindKey(g_OptionNumTable[m_NextPos], true);
 	ki->SetString("command", g_OptionCmdTable[m_NextPos]);
@@ -382,7 +382,7 @@ bool CValveMenu::SetExtOption(MenuOption option, const void *valuePtr)
 {
 	if (option == MenuOption_IntroMessage)
 	{
-		strncopy(m_IntroMsg, (const char *)valuePtr, sizeof(m_IntroMsg));
+		ke::SafeStrcpy(m_IntroMsg, sizeof(m_IntroMsg), (const char *)valuePtr);
 		return true;
 	} else if (option == MenuOption_IntroColor) {
 		unsigned int *array = (unsigned int *)valuePtr;

@@ -469,7 +469,7 @@ bool CoreProviderImpl::GetGameName(char *buffer, size_t maxlength)
 		const char *str;
 		if ((str = pGameInfo->GetString("game", NULL)) != NULL)
 		{
-			strncopy(buffer, str, maxlength);
+			ke::SafeStrcpy(buffer, maxlength, str);
 			pGameInfo->deleteThis();
 			return true;
 		}

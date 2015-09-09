@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -37,6 +37,7 @@
 #include <IGameHelpers.h>
 #include <compat_wrappers.h>
 #include <IForwardSys.h>
+#include <amtl/am-string.h>
 
 class ChatTriggers : public SMGlobalClass
 {
@@ -81,10 +82,8 @@ private:
 #elif SOURCE_ENGINE == SE_NUCLEARDAWN
 	ConCommand *m_pSaySquadCmd;
 #endif
-	char *m_PubTrigger;
-	size_t m_PubTriggerSize;
-	char *m_PrivTrigger;
-	size_t m_PrivTriggerSize;
+	ke::AString m_PubTrigger;
+	ke::AString m_PrivTrigger;
 	bool m_bWillProcessInPost;
 	bool m_bIsChatTrigger;
 	bool m_bWasFloodedMessage;

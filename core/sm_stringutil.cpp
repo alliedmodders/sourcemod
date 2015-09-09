@@ -29,36 +29,10 @@
  * Version: $Id$
  */
 
-#include <stdlib.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <ITextParsers.h>
 #include "sm_stringutil.h"
-#include "Logger.h"
-#include "PlayerManager.h"
-#include "logic_bridge.h"
-#include "sourcemod.h"
-#include <am-utility.h>
-#include <am-float.h>
-
-unsigned int strncopy(char *dest, const char *src, size_t count)
-{
-	return ke::SafeStrcpy(dest, count, src);
-}
-
-size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	size_t len = ke::SafeVsprintf(buffer, maxlength, fmt, ap);
-	va_end(ap);
-	return len;
-}
-
-size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap)
-{
-	return ke::SafeVsprintf(buffer, maxlength, fmt, ap);
-}
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
 
 char *sm_strdup(const char *str)
 {
@@ -81,4 +55,3 @@ char *UTIL_ToLowerCase(const char *str)
 	buffer[len] = '\0';
 	return buffer;
 }
-

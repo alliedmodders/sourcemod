@@ -32,21 +32,9 @@
 #ifndef _INCLUDE_SOURCEMOD_STRINGUTIL_H_
 #define _INCLUDE_SOURCEMOD_STRINGUTIL_H_
 
-#include <math.h>
-#include <sp_vm_api.h>
-#include <sp_typeutil.h>
-#include <ITranslator.h>
-
-using namespace SourcePawn;
-using namespace SourceMod;
-
 #define IS_STR_FILLED(var) (var[0] != '\0')
 
-unsigned int strncopy(char *dest, const char *src, size_t count);
-size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
-size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
 char *sm_strdup(const char *str);
 char *UTIL_ToLowerCase(const char *str);
 
 #endif // _INCLUDE_SOURCEMOD_STRINGUTIL_H_
-

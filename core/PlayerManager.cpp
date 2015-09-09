@@ -47,6 +47,7 @@
 #include "logic_bridge.h"
 #include <sourcemod_version.h>
 #include "smn_keyvalues.h"
+#include <ITranslator.h>
 #include <bridge/include/IExtensionBridge.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/ILogger.h>
@@ -290,7 +291,7 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "off") == 0) {
 			m_QueryLang = false;
 		} else {
-			UTIL_Format(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
+			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
 			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
@@ -301,7 +302,7 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 		} else if ( strcasecmp(value, "no") == 0) {
 			m_bAuthstringValidation = false;
 		} else {
-			UTIL_Format(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
+			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
 			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
@@ -1001,21 +1002,21 @@ void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 		const char *author = api->GetExtensionAuthor();
 		const char *description = api->GetExtensionDescription();
 
-		size_t len = UTIL_Format(buffer, sizeof(buffer), " \"%s\"", name);
+		size_t len = ke::SafeSprintf(buffer, sizeof(buffer), " \"%s\"", name);
 
 		if (version != NULL && version[0])
 		{
-			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", version);
+			len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " (%s)", version);
 		}
 
 		if (author != NULL && author[0])
 		{
-			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", author);
+			len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " by %s", author);
 		}
 
 		if (description != NULL && description[0])
 		{
-			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, ": %s", description);
+			len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, ": %s", description);
 		}
 
 
@@ -1082,18 +1083,18 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 
 		size_t len;
 		const sm_plugininfo_t *info = pl->GetPublicInfo();
-		len = UTIL_Format(buffer, sizeof(buffer), " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+		len = ke::SafeSprintf(buffer, sizeof(buffer), " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 		if (IS_STR_FILLED(info->version))
 		{
-			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
+			len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
 		}
 		if (IS_STR_FILLED(info->author))
 		{
-			UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
+			ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
 		}
 		else
 		{
-			UTIL_Format(&buffer[len], sizeof(buffer)-len, " %s", pl->GetFilename());
+			ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " %s", pl->GetFilename());
 		}
 		ClientConsolePrint(e, "%s", buffer);
 	}
@@ -1657,7 +1658,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				{
 					info->targets[0] = client;
 					info->num_targets = 1;
-					strncopy(info->target_name, pTarget->GetName(), info->target_name_maxlength);
+					ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pTarget->GetName());
 					info->target_name_style = COMMAND_TARGETNAME_RAW;
 				}
 				else
@@ -1731,7 +1732,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 					{
 						info->targets[0] = i;
 						info->num_targets = 1;
-						strncopy(info->target_name, pTarget->GetName(), info->target_name_maxlength);
+						ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pTarget->GetName());
 						info->target_name_style = COMMAND_TARGETNAME_RAW;
 					}
 					else
@@ -1761,7 +1762,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				{
 					info->targets[0] = i;
 					info->num_targets = 1;
-					strncopy(info->target_name, pTarget->GetName(), info->target_name_maxlength);
+					ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pTarget->GetName());
 					info->target_name_style = COMMAND_TARGETNAME_RAW;
 				}
 				else
@@ -1780,7 +1781,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 		{
 			info->targets[0] = info->admin;
 			info->num_targets = 1;
-			strncopy(info->target_name, pAdmin->GetName(), info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pAdmin->GetName());
 			info->target_name_style = COMMAND_TARGETNAME_RAW;
 		}
 		else
@@ -1799,7 +1800,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 		if (strcmp(info->pattern, "@all") == 0)
 		{
 			is_multi = true;
-			strncopy(info->target_name, "all players", info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all players");
 			info->target_name_style = COMMAND_TARGETNAME_ML;
 		}
 		else if (strcmp(info->pattern, "@dead") == 0)
@@ -1812,7 +1813,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				return;
 			}
 			info->flags |= COMMAND_FILTER_DEAD;
-			strncopy(info->target_name, "all dead players", info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all dead players");
 			info->target_name_style = COMMAND_TARGETNAME_ML;
 		}
 		else if (strcmp(info->pattern, "@alive") == 0)
@@ -1824,7 +1825,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				info->reason = COMMAND_TARGET_NOT_DEAD;
 				return;
 			}
-			strncopy(info->target_name, "all alive players", info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all alive players");
 			info->target_name_style = COMMAND_TARGETNAME_ML;
 			info->flags |= COMMAND_FILTER_ALIVE;
 		}
@@ -1837,21 +1838,21 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				info->reason = COMMAND_TARGET_NOT_HUMAN;
 				return;
 			}
-			strncopy(info->target_name, "all bots", info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all bots");
 			info->target_name_style = COMMAND_TARGETNAME_ML;
 			bots_only = true;
 		}
 		else if (strcmp(info->pattern, "@humans") == 0)
 		{
 			is_multi = true;
-			strncopy(info->target_name, "all humans", info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all humans");
 			info->target_name_style = COMMAND_TARGETNAME_ML;
 			info->flags |= COMMAND_FILTER_NO_BOTS;
 		}
 		else if (strcmp(info->pattern, "@!me") == 0)
 		{
 			is_multi = true;
-			strncopy(info->target_name, "all players", info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all players");
 			info->target_name_style = COMMAND_TARGETNAME_ML;
 			skip_client = info->admin;
 		}
@@ -1923,7 +1924,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 		{
 			info->targets[0] = found_client;
 			info->num_targets = 1;
-			strncopy(info->target_name, pFoundClient->GetName(), info->target_name_maxlength);
+			ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pFoundClient->GetName());
 			info->target_name_style = COMMAND_TARGETNAME_RAW;
 		}
 		else
@@ -2071,7 +2072,7 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	m_Serial.bits.serial = g_PlayerSerialCount++;
 
 	char ip2[24], *ptr;
-	strncopy(ip2, ip, sizeof(ip2));
+	ke::SafeStrcpy(ip2, sizeof(ip2), ip);
 	if ((ptr = strchr(ip2, ':')) != NULL)
 	{
 		*ptr = '\0';
@@ -2434,7 +2435,7 @@ void CPlayer::Kick(const char *str)
 		if (userid > 0)
 		{
 			char buffer[255];
-			UTIL_Format(buffer, sizeof(buffer), "kickid %d %s\n", userid, str);
+			ke::SafeSprintf(buffer, sizeof(buffer), "kickid %d %s\n", userid, str);
 			engine->ServerCommand(buffer);
 		}
 	}
