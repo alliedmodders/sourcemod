@@ -131,7 +131,7 @@ public:
 class CommandFlagsHelper : public IConCommandTracker
 {
 public:
-	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe)
+	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name) override
 	{
 		m_CmdFlags.remove(name);
 	}

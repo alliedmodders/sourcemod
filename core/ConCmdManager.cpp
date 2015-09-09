@@ -73,7 +73,7 @@ void ConCmdManager::OnSourceModShutdown()
 	rootmenu->RemoveRootConsoleCommand("cmds", this);
 }
 
-void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe)
+void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name)
 {
 	/* Whoa, first get its information struct */
 	ConCmdInfo *pInfo;
@@ -108,7 +108,7 @@ void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *na
 		delete hook;
 	}
 
-	RemoveConCmd(pInfo, name, is_read_safe, false);
+	RemoveConCmd(pInfo, name, false);
 }
 
 void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
@@ -127,7 +127,7 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 			hook->admin->group->hooks.remove(hook);
 
 		if (hook->info->hooks.empty())
-			RemoveConCmd(hook->info, hook->info->pCmd->GetName(), true, true);
+			RemoveConCmd(hook->info, hook->info->pCmd->GetName(), true);
 
 		iter = pList->erase(iter);
 		delete hook;
@@ -517,7 +517,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 	}
 }
 
-void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool is_read_safe, bool untrack)
+void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool untrack)
 {
 	/* Remove from the trie */
 	m_Cmds.remove(name);
@@ -540,10 +540,6 @@ void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool is_rea
 		}
 		else
 		{
-			// If it's not safe to read the pointer, we zap the SourceHook hook so it
-			// doesn't attempt to access the pointer's vtable.
-			if (!is_read_safe)
-				info->sh_hook->Zap();
 			if (untrack)
 				UntrackConCommandBase(info->pCmd, this);
 		}
