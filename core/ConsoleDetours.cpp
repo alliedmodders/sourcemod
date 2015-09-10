@@ -50,6 +50,7 @@
 #include "HalfLife2.h"
 #include "ConCommandBaseIterator.h"
 #include "logic_bridge.h"
+#include "command_args.h"
 #include <am-utility.h>
 #include <bridge/include/ILogger.h>
 
@@ -653,10 +654,10 @@ bool ConsoleDetours::RemoveListener(IPluginFunction *fun, const char *command)
 	}
 }
 
-cell_t ConsoleDetours::InternalDispatch(int client, const CCommand& args)
+cell_t ConsoleDetours::InternalDispatch(int client, const ICommandArgs *args)
 {
 	char name[255];
-	const char *realname = args.Arg(0);
+	const char *realname = args->Arg(0);
 	size_t len = strlen(realname);
 
 	// Disallow command strings that are too long, for now.
@@ -675,7 +676,7 @@ cell_t ConsoleDetours::InternalDispatch(int client, const CCommand& args)
 	cell_t result = Pl_Continue;
 	m_pForward->PushCell(client);
 	m_pForward->PushString(name);
-	m_pForward->PushCell(args.ArgC() - 1);
+	m_pForward->PushCell(args->ArgC() - 1);
 	m_pForward->Execute(&result, NULL);
 
 	/* Don't let plugins block this. */
@@ -694,7 +695,7 @@ cell_t ConsoleDetours::InternalDispatch(int client, const CCommand& args)
 	cell_t result2 = Pl_Continue;
 	forward->PushCell(client);
 	forward->PushString(name);
-	forward->PushCell(args.ArgC() - 1);
+	forward->PushCell(args->ArgC() - 1);
 	forward->Execute(&result2, NULL);
 
 	if (result2 > result)
@@ -714,9 +715,12 @@ cell_t ConsoleDetours::Dispatch(ConCommand *pBase)
 {
 	CCommand args;
 #endif
-	g_HL2.PushCommandStack(&args);
-	cell_t res = g_ConsoleDetours.InternalDispatch(g_ConCmds.GetCommandClient(), args);
-	g_HL2.PopCommandStack();
+	EngineArgs cargs(args);
+	cell_t res;
+	{
+		AutoEnterCommand autoEnterCommand(&cargs);
+		res = g_ConsoleDetours.InternalDispatch(g_ConCmds.GetCommandClient(), &cargs);
+	}
 
 #if SH_IMPL_VERSION < 4
 	if (res >= Pl_Handled)

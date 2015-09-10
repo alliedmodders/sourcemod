@@ -36,19 +36,13 @@
 #include "ChatTriggers.h"
 #include "logic_bridge.h"
 #include "sourcemod.h"
+#include "provider.h"
+#include "command_args.h"
 #include <bridge/include/IScriptManager.h>
 
 using namespace ke;
 
 ConCmdManager g_ConCmds;
-
-#if SOURCE_ENGINE == SE_DOTA
-	SH_DECL_HOOK2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
-	SH_DECL_HOOK1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
-#else
-	SH_DECL_HOOK0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
-#endif
 
 SH_DECL_HOOK1_void(IServerGameClients, SetCommandClient, SH_NOATTRIB, false, int);
 
@@ -142,23 +136,15 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 	delete pList;
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void CommandCallback(const CCommandContext &context, const CCommand &command)
+void CommandCallback(DISPATCH_ARGS)
 {
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
-void CommandCallback(const CCommand &command)
-{
-#else
-void CommandCallback()
-{
-	CCommand command;
-#endif
+	DISPATCH_PROLOGUE;
+	EngineArgs args(command);
 
-	g_HL2.PushCommandStack(&command);
-
-	g_ConCmds.InternalDispatch(command);
-
-	g_HL2.PopCommandStack();
+	AutoEnterCommand autoEnterCommand(&args);
+	if (g_ConCmds.InternalDispatch(&args))
+		RETURN_META(MRES_SUPERCEDE);
+	RETURN_META(MRES_IGNORED);
 }
 
 void ConCmdManager::SetCommandClient(int client)
@@ -232,7 +218,7 @@ ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int
 	return (ResultType)result;
 }
 
-void ConCmdManager::InternalDispatch(const CCommand &command)
+bool ConCmdManager::InternalDispatch(const ICommandArgs *args)
 {
 	int client = m_CmdClient;
 
@@ -240,7 +226,7 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 	{
 		CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 		if (!pPlayer || !pPlayer->IsConnected())
-			return;
+			return false;
 	}
 
 	/**
@@ -258,11 +244,11 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
          * case-insensitive.  We can't even use our sortedness.
          */
         if (client == 0 && !engine->IsDedicatedServer())
-            return;
+            return false;
 
 		ConCmdList::iterator item = FindInList(cmd);
 		if (item == m_CmdList.end())
-			return;
+			return false;
 
 		pInfo = *item;
 	}
@@ -272,10 +258,10 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 	 * "nicer" when we expose explicit say hooks.
 	 */
 	if (g_ChatTriggers.WasFloodedMessage())
-		return;
+		return false;
 
 	cell_t result = Pl_Continue;
-	int args = command.ArgC() - 1;
+	int argc = args->ArgC() - 1;
 
 	// On a listen server, sometimes the server host's client index can be set
 	// as 0. So index 1 is passed to the command callback to correct this
@@ -311,7 +297,7 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 			hook->pf->PushCell(realClient);
 		}
 
-		hook->pf->PushCell(args);
+		hook->pf->PushCell(argc);
 
 		cell_t tempres = result;
 		if (hook->pf->Execute(&tempres) == SP_ERROR_NONE)
@@ -324,11 +310,9 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 	}
 
 	if (result >= Pl_Handled)
-	{
-		if (!pInfo->sourceMod)
-			RETURN_META(MRES_SUPERCEDE);
-		return;
-	}
+		return !pInfo->sourceMod;
+
+	return false;
 }
 
 bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin)
@@ -556,15 +540,12 @@ void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool is_rea
 		}
 		else
 		{
-			if (is_read_safe)
-			{
-				/* Remove the external hook */
-				SH_REMOVE_HOOK(ConCommand, Dispatch, info->pCmd, SH_STATIC(CommandCallback), false);
-			}
+			// If it's not safe to read the pointer, we zap the SourceHook hook so it
+			// doesn't attempt to access the pointer's vtable.
+			if (!is_read_safe)
+				info->sh_hook->Zap();
 			if (untrack)
-			{
 				UntrackConCommandBase(info->pCmd, this);
-			}
 		}
 	}
 	
@@ -623,7 +604,11 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 		else
 		{
 			TrackConCommandBase(pCmd, this);
-			SH_ADD_HOOK(ConCommand, Dispatch, pCmd, SH_STATIC(CommandCallback), false);
+			CommandHook::Callback callback = [this] (const ICommandArgs *args) -> bool {
+				AutoEnterCommand autoEnterCommand(args);
+				return this->InternalDispatch(args);
+			};
+			pInfo->sh_hook = sCoreProviderImpl.AddCommandHook(pCmd, callback);
 		}
 
 		pInfo->pCmd = pCmd;

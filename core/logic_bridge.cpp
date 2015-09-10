@@ -639,20 +639,20 @@ void CoreProviderImpl::UnloadMMSPlugin(int id)
 
 bool CoreProviderImpl::IsClientConVarQueryingSupported()
 {
-	return hooks_.GetQueryHookMode() != QueryHookMode::Unavailable;
+	return hooks_.GetClientCvarQueryMode() != ClientCvarQueryMode::Unavailable;
 }
 
 int CoreProviderImpl::QueryClientConVar(int client, const char *cvar)
 {
 #if SOURCE_ENGINE != SE_DARKMESSIAH
-	switch (hooks_.GetQueryHookMode()) {
-	case QueryHookMode::DLL:
+	switch (hooks_.GetClientCvarQueryMode()) {
+	case ClientCvarQueryMode::DLL:
 # if SOURCE_ENGINE == SE_DOTA
 		return ::engine->StartQueryCvarValue(CEntityIndex(client), cvar);
 # else
 		return ::engine->StartQueryCvarValue(PEntityOfEntIndex(client), cvar);
 # endif
-	case QueryHookMode::VSP:
+	case ClientCvarQueryMode::VSP:
 # if SOURCE_ENGINE != SE_DOTA
 		return serverpluginhelpers->StartQueryCvarValue(PEntityOfEntIndex(client), cvar);
 # endif
@@ -740,6 +740,18 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 		return false;
 	}
 	return true;
+}
+
+ke::PassRef<CommandHook>
+CoreProviderImpl::AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback)
+{
+	return hooks_.AddCommandHook(cmd, callback);
+}
+
+ke::PassRef<CommandHook>
+CoreProviderImpl::AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback)
+{
+	return hooks_.AddPostCommandHook(cmd, callback);
 }
 
 void CoreProviderImpl::InitializeHooks()

@@ -34,6 +34,7 @@
 
 #include "sm_globals.h"
 #include "sourcemm_api.h"
+#include "GameHooks.h"
 #include <IGameHelpers.h>
 #include <compat_wrappers.h>
 #include <IForwardSys.h>
@@ -55,16 +56,8 @@ public: //SMGlobalClass
 		char *error, 
 		size_t maxlength);
 private: //ConCommand
-#if SOURCE_ENGINE == SE_DOTA
-	void OnSayCommand_Pre(const CCommandContext &, const CCommand &command);
-	void OnSayCommand_Post(const CCommandContext &, const CCommand &command);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
-	void OnSayCommand_Pre(const CCommand &command);
-	void OnSayCommand_Post(const CCommand &command);
-#else
-	void OnSayCommand_Pre();
-	void OnSayCommand_Post();
-#endif
+	bool OnSayCommand_Pre(const ICommandArgs *args);
+	bool OnSayCommand_Post(const ICommandArgs *args);
 public:
 	unsigned int GetReplyTo();
 	unsigned int SetReplyTo(unsigned int reply);
@@ -75,13 +68,7 @@ private:
 	bool ClientIsFlooding(int client);
 	cell_t CallOnClientSayCommand(int client);
 private:
-	ConCommand *m_pSayCmd;
-	ConCommand *m_pSayTeamCmd;
-#if SOURCE_ENGINE == SE_EPISODEONE
-	ConCommand *m_pSay2Cmd;
-#elif SOURCE_ENGINE == SE_NUCLEARDAWN
-	ConCommand *m_pSaySquadCmd;
-#endif
+	ke::Vector<ke::Ref<CommandHook>> hooks_;
 	ke::AString m_PubTrigger;
 	ke::AString m_PrivTrigger;
 	bool m_bWillProcessInPost;

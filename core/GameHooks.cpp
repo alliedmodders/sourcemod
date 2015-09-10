@@ -27,6 +27,7 @@
 #include "GameHooks.h"
 #include "sourcemod.h"
 #include "ConVarManager.h"
+#include "command_args.h"
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *, float);
@@ -42,8 +43,16 @@ SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, Que
 SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
 #endif
 
+#if SOURCE_ENGINE == SE_DOTA
+SH_DECL_HOOK2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
+SH_DECL_HOOK1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
+#else
+SH_DECL_HOOK0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
+#endif
+
 GameHooks::GameHooks()
-	: query_hook_mode_(QueryHookMode::Unavailable)
+	: client_cvar_query_mode_(ClientCvarQueryMode::Unavailable)
 {
 }
 
@@ -60,14 +69,14 @@ void GameHooks::Start()
 #if SOURCE_ENGINE == SE_EPISODEONE
 	if (g_SMAPI->GetGameDLLVersion() >= 6) {
 		hooks_ += SH_ADD_HOOK(IServerGameDLL, OnQueryCvarValueFinished, gamedll, SH_MEMBER(this, &GameHooks::OnQueryCvarValueFinished), false);
-		query_hook_mode_ = QueryHookMode::DLL;
+		client_cvar_query_mode_ = ClientCvarQueryMode::DLL;
 	}
 #endif
 }
 
 void GameHooks::OnVSPReceived()
 {
-	if (query_hook_mode_ != QueryHookMode::Unavailable)
+	if (client_cvar_query_mode_ != ClientCvarQueryMode::Unavailable)
 		return;
 
 	// For later MM:S versions, use the updated API, since it's cleaner.
@@ -81,7 +90,7 @@ void GameHooks::OnVSPReceived()
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH && SOURCE_ENGINE != SE_DOTA
 	hooks_ += SH_ADD_HOOK(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, SH_MEMBER(this, &GameHooks::OnQueryCvarValueFinished), false);
-	query_hook_mode_ = QueryHookMode::VSP;
+	client_cvar_query_mode_ = ClientCvarQueryMode::VSP;
 #endif
 }
 
@@ -91,7 +100,7 @@ void GameHooks::Shutdown()
 		SH_REMOVE_HOOK_ID(hooks_[i]);
 	hooks_.clear();
 
-	query_hook_mode_ = QueryHookMode::Unavailable;
+	client_cvar_query_mode_ = ClientCvarQueryMode::Unavailable;
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
@@ -128,3 +137,45 @@ void GameHooks::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPla
 	g_ConVarManager.OnClientQueryFinished(cookie, client, result, cvarName, cvarValue);
 }
 #endif
+
+ke::PassRef<CommandHook>
+GameHooks::AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback)
+{
+	return new CommandHook(cmd, callback, false);
+}
+
+ke::PassRef<CommandHook>
+GameHooks::AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback)
+{
+	return new CommandHook(cmd, callback, true);
+}
+
+CommandHook::CommandHook(ConCommand *cmd, const Callback &callback, bool post)
+ : hook_id_(0),
+   callback_(callback)
+{
+	hook_id_ = SH_ADD_HOOK(ConCommand, Dispatch, cmd, SH_MEMBER(this, &CommandHook::Dispatch), post);
+}
+
+CommandHook::~CommandHook()
+{
+	if (hook_id_)
+	  SH_REMOVE_HOOK_ID(hook_id_);
+}
+
+void CommandHook::Dispatch(DISPATCH_ARGS)
+{
+	DISPATCH_PROLOGUE;
+	EngineArgs args(command);
+
+	AddRef();
+	bool rval = callback_(&args);
+	Release();
+	if (rval)
+		RETURN_META(MRES_SUPERCEDE);
+}
+
+void CommandHook::Zap()
+{
+	hook_id_ = 0;
+}

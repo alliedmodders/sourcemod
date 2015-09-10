@@ -32,16 +32,51 @@
 #include <stddef.h>
 #include <eiface.h>
 #include <iserverplugin.h>
+#include <amtl/am-refcounting.h>
 #include <amtl/am-vector.h>
+#include <amtl/am-function.h>
 
 class ConVar;
+class CCommand;
+struct CCommandContext;
+
+#if SOURCE_ENGINE == SE_DOTA
+# define DISPATCH_ARGS      const CCommandContext &context, const CCommand &command
+# define DISPATCH_PROLOGUE
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
+# define DISPATCH_ARGS      const CCommand &command
+# define DISPATCH_PROLOGUE
+#else
+# define DISPATCH_ARGS
+# define DISPATCH_PROLOGUE  CCommand command
+#endif
 
 namespace SourceMod {
 
-enum class QueryHookMode {
+// Describes the mechanism in which client cvar queries are implemented.
+enum class ClientCvarQueryMode {
 	Unavailable,
 	DLL,
 	VSP
+};
+
+class ICommandArgs;
+
+class CommandHook : public ke::Refcounted<CommandHook>
+{
+public:
+	// return false to RETURN_META(MRES_IGNORED), or true to SUPERCEDE.
+	typedef ke::Lambda<bool(const ICommandArgs *)> Callback;
+
+public:
+	CommandHook(ConCommand *cmd, const Callback &callback, bool post);
+	~CommandHook();
+	void Dispatch(DISPATCH_ARGS);
+	void Zap();
+
+private:
+	int hook_id_;
+	Callback callback_;
 };
 
 class GameHooks
@@ -53,9 +88,13 @@ public:
 	void Shutdown();
 	void OnVSPReceived();
 
-	QueryHookMode GetQueryHookMode() const {
-		return query_hook_mode_;
+	ClientCvarQueryMode GetClientCvarQueryMode() const {
+		return client_cvar_query_mode_;
 	}
+
+public:
+	ke::PassRef<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
+	ke::PassRef<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 
 private:
 	// Static callback that Valve's ConVar object executes when the convar's value changes.
@@ -85,7 +124,7 @@ private:
 	};
 	HookList hooks_;
 
-	QueryHookMode query_hook_mode_;
+	ClientCvarQueryMode client_cvar_query_mode_;
 };
 
 } // namespace SourceMod

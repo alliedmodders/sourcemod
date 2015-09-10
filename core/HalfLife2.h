@@ -49,7 +49,9 @@
 #include <tier0/icommandline.h>
 #include <string_t.h>
 
-class CCommand;
+namespace SourceMod {
+class ICommandArgs;
+} // namespace SourceMod
 
 using namespace SourceHook;
 using namespace SourceMod;
@@ -100,7 +102,7 @@ struct DelayedFakeCliCmd
 
 struct CachedCommandInfo
 {
-	const CCommand *args;
+	const ICommandArgs *args;
 #if SOURCE_ENGINE <= SE_DARKMESSIAH
 	char cmd[300];
 #endif
@@ -141,6 +143,7 @@ class CHalfLife2 :
 	public SMGlobalClass,
 	public IGameHelpers
 {
+	friend class AutoEnterCommand;
 public:
 	CHalfLife2();
 	~CHalfLife2();
@@ -190,9 +193,7 @@ public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();
 public:
-	void PushCommandStack(const CCommand *cmd);
-	void PopCommandStack();
-	const CCommand *PeekCommandStack();
+	const ICommandArgs *PeekCommandStack();
 	const char *CurrentCommandName();
 	void AddDelayedKick(int client, int userid, const char *msg);
 	void ProcessDelayedKicks();
@@ -200,6 +201,8 @@ public:
 	bool IsOriginalEngine();
 #endif
 private:
+	void PushCommandStack(const ICommandArgs *cmd);
+	void PopCommandStack();
 	DataTableInfo *_FindServerClass(const char *classname);
 private:
 	void InitLogicalEntData();
@@ -223,5 +226,16 @@ private:
 extern CHalfLife2 g_HL2;
 
 bool IndexToAThings(cell_t, CBaseEntity **pEntData, edict_t **pEdictData);
+
+class AutoEnterCommand
+{
+public:
+	AutoEnterCommand(const ICommandArgs *args) {
+		g_HL2.PushCommandStack(args);
+	}
+	~AutoEnterCommand() {
+		g_HL2.PopCommandStack();
+	}
+};
 
 #endif //_INCLUDE_SOURCEMOD_CHALFLIFE2_H_

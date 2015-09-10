@@ -825,7 +825,7 @@ bool CHalfLife2::KVLoadFromFile(KeyValues *kv, IBaseFileSystem *filesystem, cons
 	}
 }
 
-void CHalfLife2::PushCommandStack(const CCommand *cmd)
+void CHalfLife2::PushCommandStack(const ICommandArgs *cmd)
 {
 	CachedCommandInfo info;
 
@@ -837,7 +837,7 @@ void CHalfLife2::PushCommandStack(const CCommand *cmd)
 	m_CommandStack.push(info);
 }
 
-const CCommand *CHalfLife2::PeekCommandStack()
+const ICommandArgs *CHalfLife2::PeekCommandStack()
 {
 	if (m_CommandStack.empty())
 	{
