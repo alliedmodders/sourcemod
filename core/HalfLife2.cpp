@@ -1207,8 +1207,15 @@ const char *CHalfLife2::GetEntityClassname(CBaseEntity *pEntity)
 	return *(const char **)(((unsigned char *)pEntity) + offset);
 }
 
-SMFindMapResult CHalfLife2::FindMap(char *pMapName, int nMapNameMax)
+SMFindMapResult CHalfLife2::FindMap(char *pMapName, size_t nMapNameMax)
 {
+	return this->FindMap(pMapName, pMapName, nMapNameMax);
+}
+
+SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_t nMapNameMax)
+{
+	ke::SafeStrcpy(pFoundMap, nMapNameMax, pMapName);
+
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 	static char mapNameTmp[PLATFORM_MAX_PATH];
 	g_SourceMod.Format(mapNameTmp, sizeof(mapNameTmp), "maps%c%s.bsp", PLATFORM_SEP_CHAR, pMapName);
@@ -1247,11 +1254,20 @@ SMFindMapResult CHalfLife2::FindMap(char *pMapName, int nMapNameMax)
 	}
 	else
 	{
-		ke::SafeStrcpy(pMapName, nMapNameMax, &results[0][helperCmdLen + 1]);
+		ke::SafeStrcpy(pFoundMap, nMapNameMax, &results[0][helperCmdLen + 1]);
 		return SMFindMapResult::FuzzyMatch;
 	}
+
 #elif SOURCE_ENGINE == SE_TF2
-	return static_cast<SMFindMapResult>(engine->FindMap(pMapName, nMapNameMax));
+	static char szTemp[PLATFORM_MAX_PATH];
+	if (pFoundMap == NULL)
+	{
+		ke::SafeStrcpy(szTemp, SM_ARRAYSIZE(szTemp), pMapName);
+		pFoundMap = szTemp;
+		nMapNameMax = 0;
+	}
+
+	return static_cast<SMFindMapResult>(engine->FindMap(pFoundMap, static_cast<int>(nMapNameMax)));
 #else
 	return engine->IsMapValid(pMapName) == 0 ? SMFindMapResult::NotFound : SMFindMapResult::Found;
 #endif
@@ -1262,10 +1278,7 @@ bool CHalfLife2::IsMapValid(const char *map)
 	if (!map || !map[0])
 		return false;
 	
-	static char szTmp[PLATFORM_MAX_PATH];
-	ke::SafeStrcpy(szTmp, sizeof(szTmp), map);
-
-	return FindMap(szTmp, sizeof(szTmp)) != SMFindMapResult::NotFound;
+	return FindMap(map) != SMFindMapResult::NotFound;
 }
 
 // TODO: Add ep1 support for this. (No IServerTools available there)

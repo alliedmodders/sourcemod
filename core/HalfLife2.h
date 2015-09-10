@@ -185,7 +185,8 @@ public: //IGameHelpers
 	const char *GetEntityClassname(edict_t *pEdict);
 	const char *GetEntityClassname(CBaseEntity *pEntity);
 	bool IsMapValid(const char *map);
-	SMFindMapResult FindMap(char *pMapName, int nMapNameMax);
+	SMFindMapResult FindMap(char *pMapName, size_t nMapNameMax);
+	SMFindMapResult FindMap(const char *pMapName, char *pFoundMap = NULL, size_t nMapNameMax = 0);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	string_t AllocPooledString(const char *pszValue);
 #endif
