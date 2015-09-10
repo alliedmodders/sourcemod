@@ -51,6 +51,7 @@
 #include "ConCommandBaseIterator.h"
 #include "logic_bridge.h"
 #include "command_args.h"
+#include "provider.h"
 #include <am-utility.h>
 #include <bridge/include/ILogger.h>
 
@@ -719,7 +720,7 @@ cell_t ConsoleDetours::Dispatch(ConCommand *pBase)
 	cell_t res;
 	{
 		AutoEnterCommand autoEnterCommand(&cargs);
-		res = g_ConsoleDetours.InternalDispatch(g_ConCmds.GetCommandClient(), &cargs);
+		res = g_ConsoleDetours.InternalDispatch(sCoreProviderImpl.CommandClient(), &cargs);
 	}
 
 #if SH_IMPL_VERSION < 4

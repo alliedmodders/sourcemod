@@ -44,14 +44,11 @@ using namespace ke;
 
 ConCmdManager g_ConCmds;
 
-SH_DECL_HOOK1_void(IServerGameClients, SetCommandClient, SH_NOATTRIB, false, int);
-
 typedef ke::LinkedList<CmdHook *> PluginHookList;
 void RegisterInPlugin(CmdHook *hook);
 
 ConCmdManager::ConCmdManager()
 {
-	m_CmdClient = 0;
 }
 
 ConCmdManager::~ConCmdManager()
@@ -62,14 +59,11 @@ void ConCmdManager::OnSourceModAllInitialized()
 {
 	scripts->AddPluginsListener(this);
 	rootmenu->AddRootConsoleCommand3("cmds", "List console commands", this);
-	SH_ADD_HOOK(IServerGameClients, SetCommandClient, serverClients, SH_MEMBER(this, &ConCmdManager::SetCommandClient), false);
 }
 
 void ConCmdManager::OnSourceModShutdown()
 {
 	scripts->RemovePluginsListener(this);
-	/* All commands should already be removed by the time we're done */
-	SH_REMOVE_HOOK(IServerGameClients, SetCommandClient, serverClients, SH_MEMBER(this, &ConCmdManager::SetCommandClient), false);
 	rootmenu->RemoveRootConsoleCommand("cmds", this);
 }
 
@@ -142,14 +136,9 @@ void CommandCallback(DISPATCH_ARGS)
 	EngineArgs args(command);
 
 	AutoEnterCommand autoEnterCommand(&args);
-	if (g_ConCmds.InternalDispatch(&args))
+	if (g_ConCmds.InternalDispatch(sCoreProviderImpl.CommandClient(), &args))
 		RETURN_META(MRES_SUPERCEDE);
 	RETURN_META(MRES_IGNORED);
-}
-
-void ConCmdManager::SetCommandClient(int client)
-{
-	m_CmdClient = client + 1;
 }
 
 ConCmdInfo *ConCmdManager::FindInTrie(const char *name)
@@ -218,10 +207,8 @@ ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int
 	return (ResultType)result;
 }
 
-bool ConCmdManager::InternalDispatch(const ICommandArgs *args)
+bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 {
-	int client = m_CmdClient;
-
 	if (client)
 	{
 		CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
@@ -604,9 +591,9 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 		else
 		{
 			TrackConCommandBase(pCmd, this);
-			CommandHook::Callback callback = [this] (const ICommandArgs *args) -> bool {
+			CommandHook::Callback callback = [this] (int client, const ICommandArgs *args) -> bool {
 				AutoEnterCommand autoEnterCommand(args);
-				return this->InternalDispatch(args);
+				return this->InternalDispatch(client, args);
 			};
 			pInfo->sh_hook = sCoreProviderImpl.AddCommandHook(pCmd, callback);
 		}

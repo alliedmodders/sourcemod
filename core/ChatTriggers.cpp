@@ -103,11 +103,11 @@ void ChatTriggers::OnSourceModGameInitialized()
 {
 	ConCommand *say_team = FindCommand("say_team");
 
-	CommandHook::Callback pre_hook = [this] (const ICommandArgs *args) -> bool {
-		return this->OnSayCommand_Pre(args);
+	CommandHook::Callback pre_hook = [this] (int client, const ICommandArgs *args) -> bool {
+		return this->OnSayCommand_Pre(client, args);
 	};
-	CommandHook::Callback post_hook = [this] (const ICommandArgs *args) -> bool {
-		return this->OnSayCommand_Post(args);
+	CommandHook::Callback post_hook = [this] (int client, const ICommandArgs *args) -> bool {
+		return this->OnSayCommand_Post(client, args);
 	};
 
 	if (ConCommand *say = FindCommand("say")) {
@@ -145,9 +145,8 @@ void ChatTriggers::OnSourceModShutdown()
 	forwardsys->ReleaseForward(m_pOnClientSayCmd_Post);
 }
 
-bool ChatTriggers::OnSayCommand_Pre(const ICommandArgs *command)
+bool ChatTriggers::OnSayCommand_Pre(int client, const ICommandArgs *command)
 {
-	int client = g_ConCmds.GetCommandClient();
 	m_bIsChatTrigger = false;
 	m_bWasFloodedMessage = false;
 	m_bPluginIgnored = true;
@@ -287,10 +286,8 @@ bool ChatTriggers::OnSayCommand_Pre(const ICommandArgs *command)
 	return false;
 }
 
-bool ChatTriggers::OnSayCommand_Post(const ICommandArgs *command)
+bool ChatTriggers::OnSayCommand_Post(int client, const ICommandArgs *command)
 {
-	int client = g_ConCmds.GetCommandClient();
-
 	if (m_bWillProcessInPost)
 	{
 		/* Reset this for re-entrancy */

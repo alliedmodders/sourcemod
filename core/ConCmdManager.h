@@ -143,10 +143,9 @@ public:
 	bool LookForSourceModCommand(const char *cmd);
 	bool LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags);
 private:
-	bool InternalDispatch(const ICommandArgs *args);
+	bool InternalDispatch(int client, const ICommandArgs *args);
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
 	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags);
-	void SetCommandClient(int client);
 	void AddToCmdList(ConCmdInfo *info);
 	void RemoveConCmd(ConCmdInfo *info, const char *cmd, bool is_read_safe, bool untrack);
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);
@@ -157,10 +156,6 @@ private:
 	// Case sensitive
 	ConCmdInfo *FindInTrie(const char *name);
 public:
-	inline int GetCommandClient()
-	{
-		return m_CmdClient;
-	}
 	inline const List<ConCmdInfo *> & GetCommandList()
 	{
 		return m_CmdList;
@@ -171,7 +166,6 @@ private:
 	StringHashMap<ConCmdInfo *> m_Cmds; /* command lookup */
 	GroupMap m_CmdGrps;				/* command group map */
 	ConCmdList m_CmdList;			/* command list */
-	int m_CmdClient;				/* current client */
 };
 
 extern ConCmdManager g_ConCmds;

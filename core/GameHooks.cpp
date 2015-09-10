@@ -28,6 +28,7 @@
 #include "sourcemod.h"
 #include "ConVarManager.h"
 #include "command_args.h"
+#include "provider.h"
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *, float);
@@ -51,8 +52,11 @@ SH_DECL_HOOK1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 SH_DECL_HOOK0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 #endif
 
+SH_DECL_HOOK1_void(IServerGameClients, SetCommandClient, SH_NOATTRIB, false, int);
+
 GameHooks::GameHooks()
-	: client_cvar_query_mode_(ClientCvarQueryMode::Unavailable)
+	: client_cvar_query_mode_(ClientCvarQueryMode::Unavailable),
+	  last_command_client_(-1)
 {
 }
 
@@ -72,6 +76,8 @@ void GameHooks::Start()
 		client_cvar_query_mode_ = ClientCvarQueryMode::DLL;
 	}
 #endif
+
+	hooks_ += SH_ADD_HOOK(IServerGameClients, SetCommandClient, serverClients, SH_MEMBER(this, &GameHooks::SetCommandClient), false);
 }
 
 void GameHooks::OnVSPReceived()
@@ -150,6 +156,11 @@ GameHooks::AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &call
 	return new CommandHook(cmd, callback, true);
 }
 
+void GameHooks::SetCommandClient(int client)
+{
+	last_command_client_ = client + 1;
+}
+
 CommandHook::CommandHook(ConCommand *cmd, const Callback &callback, bool post)
  : hook_id_(0),
    callback_(callback)
@@ -169,7 +180,7 @@ void CommandHook::Dispatch(DISPATCH_ARGS)
 	EngineArgs args(command);
 
 	AddRef();
-	bool rval = callback_(&args);
+	bool rval = callback_(sCoreProviderImpl.CommandClient(), &args);
 	Release();
 	if (rval)
 		RETURN_META(MRES_SUPERCEDE);

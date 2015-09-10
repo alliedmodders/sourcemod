@@ -68,6 +68,10 @@ public:
 	ke::PassRef<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 	ke::PassRef<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 
+	int CommandClient() const {
+		return hooks_.CommandClient();
+	}
+
 private:
 	ke::Ref<ke::SharedLib> logic_;
 	LogicInitFunction logic_init_;
