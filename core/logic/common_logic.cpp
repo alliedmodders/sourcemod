@@ -109,11 +109,6 @@ static void AddNatives(sp_nativeinfo_t *natives)
 	g_CoreNatives.AddNatives(natives);
 }
 
-static void DumpHandles(void (*dumpfn)(const char *fmt, ...))
-{
-	g_HandleSys.Dump(dumpfn);
-}
-
 static void RegisterProfiler(IProfilingTool *tool)
 {
 	g_ProfileToolManager.RegisterTool(tool);
@@ -154,7 +149,6 @@ static sm_logic_t logic =
 	&g_DbgReporter,
 	GenerateError,
 	AddNatives,
-	DumpHandles,
 	RegisterProfiler,
 	OnRootCommand,
 	CDataPack::New,

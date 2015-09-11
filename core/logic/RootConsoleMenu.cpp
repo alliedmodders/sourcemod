@@ -27,9 +27,14 @@
 #include "RootConsoleMenu.h"
 #include <amtl/am-string.h>
 #include <sourcemod_version.h>
+#include <ISourceMod.h>
 #include <bridge/include/CoreProvider.h>
+#include "HandleSys.h"
 
 RootConsoleMenu g_RootMenu;
+
+// Some top-level commands that are just thrown in here.
+static bool sm_dump_handles(int client, const ICommandArgs *args);
 
 RootConsoleMenu::RootConsoleMenu()
 {
@@ -49,6 +54,9 @@ void RootConsoleMenu::OnSourceModStartup(bool late)
 {
 	AddRootConsoleCommand3("version", "Display version information", this);
 	AddRootConsoleCommand3("credits", "Display credits listing", this);
+
+	bridge->DefineCommand("sm_dump_handles", "Dumps Handle usage to a file for finding Handle leaks",
+	                      sm_dump_handles);
 }
 
 void RootConsoleMenu::OnSourceModAllInitialized()
@@ -231,4 +239,46 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const ICommandAr
 #endif
 		ConsolePrint("    http://www.sourcemod.net/");
 	}
+}
+
+static bool sm_dump_handles(int client, const ICommandArgs *args)
+{
+	if (args->ArgC() < 2) {
+		bridge->ConsolePrint("Usage: sm_dump_handles <file> or <log> for game logs");
+		return true;
+	}
+
+	if (strcmp(args->Arg(1), "log") == 0) {
+		auto write_handles_to_game = [] (const char *str) -> void
+		{
+			char buffer[1024];
+			size_t len = ke::SafeSprintf(buffer, sizeof(buffer)-2, "%s", str);
+
+			buffer[len] = '\n';
+			buffer[len+1] = '\0';
+
+			bridge->LogToGame(buffer);
+		};
+		g_HandleSys.Dump(write_handles_to_game);
+		return true;
+	}
+
+	FILE *fp = nullptr;
+	auto write_handles_to_log = [&fp] (const char *str) -> void
+	{
+		fprintf(fp, "%s\n", str);
+	};
+
+	char filename[PLATFORM_MAX_PATH];
+	const char *arg = args->Arg(1);
+	g_pSM->BuildPath(Path_Game, filename, sizeof(filename), "%s", arg);
+
+	fp = fopen(filename, "wt");
+	if (!fp) {
+		bridge->ConsolePrint("Failed to open \"%s\" for writing", filename);
+		return true;
+	}
+
+	g_HandleSys.Dump(write_handles_to_log);
+	fclose(fp);
 }

@@ -68,7 +68,6 @@ struct sm_logic_t
 	IDebugListener   *debugger;
 	void			(*GenerateError)(IPluginContext *, cell_t, int, const char *, ...);
 	void			(*AddNatives)(sp_nativeinfo_t *natives);
-	void			(*DumpHandles)(void (*dumpfn)(const char *fmt, ...));
 	void            (*RegisterProfiler)(IProfilingTool *tool);
 	void			(*OnRootCommand)(const ICommandArgs *args);
 	IDataPack *     (*CreateDataPack)();
