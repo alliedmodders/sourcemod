@@ -749,6 +749,13 @@ void Translator::OnSourceModAllInitialized()
 	g_pCorePhrases->AddPhraseFile("core.phrases");
 
 	sharesys->AddInterface(NULL, this);
+
+	auto sm_reload_translations = [this] (int client, const ICommandArgs *args) -> bool {
+		RebuildLanguageDatabase();
+		return true;
+	};
+	bridge->DefineCommand("sm_reload_translations", "Reparses all loaded translation files",
+	                      sm_reload_translations);
 }
 
 void Translator::OnSourceModShutdown()

@@ -134,8 +134,3 @@ CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle le
 		logicore.DumpHandles(write_handles_to_game);
 	}
 }
-
-CON_COMMAND(sm_reload_translations, "Reparses all loaded translation files")
-{
-	translator->RebuildLanguageDatabase();
-}
