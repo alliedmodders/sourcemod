@@ -44,29 +44,5 @@ CON_COMMAND(sm, "SourceMod Menu")
 #endif
 	EngineArgs cargs(args);
 
-	if (cargs.ArgC() >= 2) {
-		const char *cmdname = cargs.Arg(1);
-		if (strcmp(cmdname, "internal") == 0)
-		{
-			if (cargs.ArgC() >= 3)
-			{
-				const char *arg = cargs.Arg(2);
-				if (strcmp(arg, "1") == 0)
-				{
-					SM_ConfigsExecuted_Global();
-				}
-				else if (strcmp(arg, "2") == 0)
-				{
-					if (cargs.ArgC() >= 4)
-					{
-						SM_ConfigsExecuted_Plugin(atoi(cargs.Arg(3)));
-					}
-				}
-			}
-			return;
-		}
-
-	}
-
 	logicore.OnRootCommand(&cargs);
 }

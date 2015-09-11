@@ -538,7 +538,7 @@ void SM_ExecuteForPlugin(IPluginContext *ctx)
 			can_create = SM_ExecuteConfig(plugin, plugin->GetConfig(i), can_create);
 		}
 		char cmd[255];
-		ke::SafeSprintf(cmd, sizeof(cmd), "sm internal 2 %d\n", plugin->GetSerial());
+		ke::SafeSprintf(cmd, sizeof(cmd), "sm_internal 2 %d\n", plugin->GetSerial());
 		engine->ServerCommand(cmd);
 	}
 }
@@ -585,7 +585,24 @@ void SM_InternalCmdTrigger()
 {
 	/* Order is important here.  We need to buffer things before we send the command out. */
 	g_pOnAutoConfigsBuffered->Execute(NULL);
-	engine->ServerCommand("sm internal 1\n");
+	engine->ServerCommand("sm_internal 1\n");
     g_PendingInternalPush = false;
 }
 
+CON_COMMAND(sm_internal, "")
+{
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
+	CCommand args;
+#endif
+
+	if (args.ArgC() < 1)
+		return;
+
+	const char *arg = args.Arg(1);
+	if (strcmp(arg, "1") == 0) {
+		SM_ConfigsExecuted_Global();
+	} else if (strcmp(arg, "2") == 0) {
+		if (args.ArgC() >= 3)
+			SM_ConfigsExecuted_Plugin(atoi(args.Arg(2)));
+	}
+}
