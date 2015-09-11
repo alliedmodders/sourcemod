@@ -114,11 +114,6 @@ static void RegisterProfiler(IProfilingTool *tool)
 	g_ProfileToolManager.RegisterTool(tool);
 }
 
-static void OnRootCommand(const ICommandArgs *args)
-{
-	g_RootMenu.GotRootCmd(args);
-}
-
 // Defined in smn_filesystem.cpp.
 extern bool OnLogPrint(const char *msg);
 
@@ -150,7 +145,6 @@ static sm_logic_t logic =
 	GenerateError,
 	AddNatives,
 	RegisterProfiler,
-	OnRootCommand,
 	CDataPack::New,
 	CDataPack::Free,
 	&g_PluginSys,

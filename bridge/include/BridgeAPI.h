@@ -35,7 +35,7 @@ namespace SourceMod {
 
 // Add 1 to the RHS of this expression to bump the intercom file
 // This is to prevent mismatching core/logic binaries
-static const uint32_t SM_LOGIC_MAGIC = 0x0F47C0DE - 53;
+static const uint32_t SM_LOGIC_MAGIC = 0x0F47C0DE - 54;
 
 } // namespace SourceMod
 

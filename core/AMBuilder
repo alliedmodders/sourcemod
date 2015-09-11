@@ -36,7 +36,6 @@ project.sources += [
   'EventManager.cpp',
   'MenuStyle_Radio.cpp',
   'sm_autonatives.cpp',
-  'sm_srvcmds.cpp',
   'ConsoleDetours.cpp',
   'vprof_tool.cpp',
   'smn_commandline.cpp',

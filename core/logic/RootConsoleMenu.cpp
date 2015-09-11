@@ -57,6 +57,10 @@ void RootConsoleMenu::OnSourceModStartup(bool late)
 
 	bridge->DefineCommand("sm_dump_handles", "Dumps Handle usage to a file for finding Handle leaks",
 	                      sm_dump_handles);
+	bridge->DefineCommand("sm", "SourceMod Menu", [this] (int client, const ICommandArgs *args) -> bool {
+		GotRootCmd(args);
+		return true;
+	});
 }
 
 void RootConsoleMenu::OnSourceModAllInitialized()
@@ -281,4 +285,5 @@ static bool sm_dump_handles(int client, const ICommandArgs *args)
 
 	g_HandleSys.Dump(write_handles_to_log);
 	fclose(fp);
+	return true;
 }
