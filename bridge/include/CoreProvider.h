@@ -30,6 +30,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <IAdminSystem.h>
+#include <amtl/am-function.h>
 
 namespace SourcePawn {
 class ISourcePawnEngine;
@@ -64,6 +65,9 @@ class IGameHelpers;
 class IMenuManager;
 struct DatabaseInfo;
 class IPlayerInfoBridge;
+class ICommandArgs;
+
+typedef ke::Lambda<bool(int client, const ICommandArgs*)> CommandFunc;
 
 class CoreProvider
 {
@@ -92,6 +96,9 @@ public:
 	virtual const char *GetCvarString(ConVar *cvar) = 0;
 	virtual bool GetCvarBool(ConVar* cvar) = 0;
 
+	// Command functions.
+	virtual void DefineCommand(const char *cmd, const char *help, const CommandFunc &callback) = 0;
+
 	// Game description functions.
 	virtual bool GetGameName(char *buffer, size_t maxlength) = 0;
 	virtual const char *GetGameDescription() = 0;
@@ -105,6 +112,7 @@ public:
 	virtual bool DescribePlayer(int index, const char **namep, const char **authp, int *useridp) = 0;
 	virtual void LogToGame(const char *message) = 0;
 	virtual void ConPrint(const char *message) = 0;
+	virtual void ConsolePrint(const char *fmt, ...) = 0;
 	virtual void ConsolePrintVa(const char *fmt, va_list ap) = 0;
 
 	// Game engine helper functions.

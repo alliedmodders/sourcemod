@@ -564,6 +564,14 @@ void CoreProviderImpl::ConPrint(const char *message)
 	META_CONPRINT(message);
 }
 
+void CoreProviderImpl::ConsolePrint(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	UTIL_ConsolePrintVa(fmt, ap);
+	va_end(ap);
+}
+
 void CoreProviderImpl::ConsolePrintVa(const char *message, va_list ap)
 {
 	UTIL_ConsolePrintVa(message, ap);
@@ -754,6 +762,39 @@ CoreProviderImpl::AddPostCommandHook(ConCommand *cmd, const CommandHook::Callbac
 	return hooks_.AddPostCommandHook(cmd, callback);
 }
 
+CoreProviderImpl::CommandImpl::CommandImpl(ConCommand *cmd, CommandHook *hook)
+: cmd_(cmd),
+  hook_(hook)
+{
+}
+
+CoreProviderImpl::CommandImpl::~CommandImpl()
+{
+	hook_ = nullptr;
+
+	g_SMAPI->UnregisterConCommandBase(g_PLAPI, cmd_);
+	delete [] const_cast<char *>(cmd_->GetHelpText());
+	delete [] const_cast<char *>(cmd_->GetName());
+	delete cmd_;
+}
+
+void
+CoreProviderImpl::DefineCommand(const char *name, const char *help, const CommandFunc &callback)
+{
+	char *new_name = sm_strdup(name);
+	char *new_help = sm_strdup(help);
+	int flags = 0;
+
+	auto ignore_callback = [] (DISPATCH_ARGS) -> void {
+	};
+
+	ConCommand *cmd = new ConCommand(new_name, ignore_callback, new_help, flags);
+	ke::Ref<CommandHook> hook = AddCommandHook(cmd, callback);
+
+	ke::Ref<CommandImpl> impl = new CommandImpl(cmd, hook);
+	commands_.append(impl);
+}
+
 void CoreProviderImpl::InitializeHooks()
 {
 	hooks_.Start();
@@ -766,6 +807,7 @@ void CoreProviderImpl::OnVSPReceived()
 
 void CoreProviderImpl::ShutdownHooks()
 {
+	commands_.clear();
 	hooks_.Shutdown();
 }
 

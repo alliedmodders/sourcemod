@@ -59,11 +59,13 @@ public:
 	bool DescribePlayer(int index, const char **namep, const char **authp, int *useridp) override;
 	void LogToGame(const char *message) override;
 	void ConPrint(const char *message) override;
+	void ConsolePrint(const char *fmt, ...) override;
 	void ConsolePrintVa(const char *fmt, va_list ap) override;
 	int LoadMMSPlugin(const char *file, bool *ok, char *error, size_t maxlength) override;
 	void UnloadMMSPlugin(int id) override;
 	int QueryClientConVar(int client, const char *cvar) override;
 	bool IsClientConVarQueryingSupported() override;
+	void DefineCommand(const char *cmd, const char *help, const SourceMod::CommandFunc &callback) override;
 
 	ke::PassRef<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 	ke::PassRef<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
@@ -76,6 +78,18 @@ private:
 	ke::Ref<ke::SharedLib> logic_;
 	LogicInitFunction logic_init_;
 	GameHooks hooks_;
+
+	struct CommandImpl : public ke::Refcounted<CommandImpl>
+	{
+	public:
+		CommandImpl(ConCommand *cmd, CommandHook *hook);
+		~CommandImpl();
+
+	private:
+		ConCommand *cmd_;
+		ke::Ref<CommandHook> hook_;
+	};
+	ke::Vector<ke::Ref<CommandImpl>> commands_;
 };
 
 extern CoreProviderImpl sCoreProviderImpl;
