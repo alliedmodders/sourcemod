@@ -114,11 +114,6 @@ static void DumpHandles(void (*dumpfn)(const char *fmt, ...))
 	g_HandleSys.Dump(dumpfn);
 }
 
-static bool DumpAdminCache(const char *filename)
-{
-	return g_Admins.DumpCache(filename);
-}
-
 static void RegisterProfiler(IProfilingTool *tool)
 {
 	g_ProfileToolManager.RegisterTool(tool);
@@ -160,7 +155,6 @@ static sm_logic_t logic =
 	GenerateError,
 	AddNatives,
 	DumpHandles,
-	DumpAdminCache,
 	RegisterProfiler,
 	OnRootCommand,
 	CDataPack::New,

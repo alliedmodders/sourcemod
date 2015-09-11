@@ -271,6 +271,21 @@ void AdminCache::OnSourceModStartup(bool late)
 	NameFlag("custom4", Admin_Custom4);
 	NameFlag("custom5", Admin_Custom5);
 	NameFlag("custom6", Admin_Custom6);
+
+	auto sm_dump_admcache = [this] (int client, const ICommandArgs *args) -> bool {
+		char buffer[PLATFORM_MAX_PATH];
+		g_pSM->BuildPath(Path_SM, buffer, sizeof(buffer), "data/admin_cache_dump.txt");
+
+		if (!DumpCache(buffer)) {
+			bridge->ConsolePrint("Could not open file for writing: %s", buffer);
+			return true;
+		}
+
+		bridge->ConsolePrint("Admin cache dumped to: %s", buffer);
+		return true;
+	};
+
+	bridge->DefineCommand("sm_dump_admcache", "Dumps the admin cache for debugging", sm_dump_admcache);
 }
 
 void AdminCache::OnSourceModAllInitialized()
