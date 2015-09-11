@@ -76,11 +76,14 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	if (!engine)
 	{
 		engine = (IVEngineServer *)ismm->VInterfaceMatch(ismm->GetEngineFactory(), "VEngineServer022");
-		if (error && maxlen)
+		if (!engine)
 		{
-			ismm->Format(error, maxlen, "Could not find interface: VEngineServer023 or VEngineServer022");
+			if (error && maxlen)
+			{
+				ismm->Format(error, maxlen, "Could not find interface: VEngineServer023 or VEngineServer022");
+			}
+			return false;
 		}
-		return false;
 	}
 #else
 	GET_V_IFACE_CURRENT(GetEngineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
