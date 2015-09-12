@@ -44,6 +44,7 @@
 #include <ISDKTools.h>
 #include "clientnatives.h"
 #include "teamnatives.h"
+#include "filesystem.h"
 /**
  * @file extension.cpp
  * @brief Implements SDK Tools extension code.
@@ -68,6 +69,7 @@ IVoiceServer *voiceserver = NULL;
 IPlayerInfoManager *playerinfomngr = NULL;
 ICvar *icvar = NULL;
 IServer *iserver = NULL;
+IBaseFileSystem *basefilesystem = NULL;
 CGlobalVars *gpGlobals;
 ISoundEmitterSystemBase *soundemitterbase = NULL;
 
@@ -258,6 +260,7 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 	GET_V_IFACE_ANY(GetEngineFactory, voiceserver, IVoiceServer, INTERFACEVERSION_VOICESERVER);
 	GET_V_IFACE_ANY(GetServerFactory, playerinfomngr, IPlayerInfoManager, INTERFACEVERSION_PLAYERINFOMANAGER);
 	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
+	GET_V_IFACE_CURRENT(GetFileSystemFactory, basefilesystem, IBaseFileSystem, BASEFILESYSTEM_INTERFACE_VERSION);
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	GET_V_IFACE_ANY(GetServerFactory, servertools, IServerTools, VSERVERTOOLS_INTERFACE_VERSION);
@@ -466,9 +469,10 @@ const char *SDKTools::GetExtensionDateString()
 	return SOURCEMOD_BUILD_TIME;
 }
 
-void SDKTools::OnClientPutInServer(int client)
+bool SDKTools::InterceptClientConnect(int client, char *error, size_t maxlength)
 {
-	g_Hooks.OnClientPutInServer(client);
+	g_Hooks.OnClientConnect(client);
+	return true;
 }
 
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
@@ -486,6 +490,11 @@ void SDKTools::OnSendClientCommand(edict_t *pPlayer, const char *szFormat)
 	RETURN_META(MRES_IGNORED);
 }
 #endif
+
+void SDKTools::OnClientPutInServer(int client)
+{
+	g_Hooks.OnClientPutInServer(client);
+}
 
 class SDKTools_API : public ISDKTools
 {
