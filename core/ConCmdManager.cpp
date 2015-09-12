@@ -136,9 +136,7 @@ void CommandCallback(DISPATCH_ARGS)
 	EngineArgs args(command);
 
 	AutoEnterCommand autoEnterCommand(&args);
-	if (g_ConCmds.InternalDispatch(sCoreProviderImpl.CommandClient(), &args))
-		RETURN_META(MRES_SUPERCEDE);
-	RETURN_META(MRES_IGNORED);
+	g_ConCmds.InternalDispatch(sCoreProviderImpl.CommandClient(), &args);
 }
 
 ConCmdInfo *ConCmdManager::FindInTrie(const char *name)
