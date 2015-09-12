@@ -158,12 +158,13 @@ native bool:IsMapValid(const String:map[]);
  * Returns whether a full or partial map name is found or can be resolved
  * 
  * @param map 			Map name (usually same as map path relative to maps/ dir,
- *						excluding .bsp extension). If result is FindMap_FuzzyMatch
- *						or FindMap_NonCanonical, this will be updated to the full path.
+ *						excluding .bsp extension).
+ * @param foundmap		Resolved map name. If the return is FindMap_FuzzyMatch
+ *						or FindMap_NonCanonical the buffer will be the full path.
  * @param maxlen		Maximum length to write to map var.
  * @return				Result of the find operation. Not all result types are supported on all games.
  */
-native FindMapResult FindMap(char[] map, int maxlen);
+native FindMapResult FindMap(const char[] map, char[] foundmap, int maxlen);
 
 /**
  * Returns whether the server is dedicated.
