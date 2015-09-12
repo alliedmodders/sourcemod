@@ -48,7 +48,7 @@ while (my $ln = <$fh>) {
         # Don't check certificate. It will fail on the slaves and we're resolving to internal addressing anyway
         system("wget --no-check-certificate -q -O $abbr.zip \"https://sm.alliedmods.net/translator/index.php?go=translate&op=export&lang_id=$id\"");
         system("unzip -qo $abbr.zip -d addons/sourcemod/translations/");
-        system("rm $abbr.zip");
+        unlink("$abbr.zip");
     }
 }
 close($fh);
