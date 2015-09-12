@@ -71,10 +71,23 @@ static cell_t FindMap(IPluginContext *pContext, const cell_t *params)
 {
 	char *pMapname;
 	pContext->LocalToString(params[1], &pMapname);
-		
-	cell_t size = params[2];
-	
-	return static_cast<cell_t>(g_HL2.FindMap(pMapname, size));
+
+	cell_t len;
+	if (params[0] > 2)
+	{
+		len = params[3];
+
+		char *pDestMap;
+		pContext->LocalToString(params[2], &pDestMap);
+		strncpy(pDestMap, len, pMapname);
+		pMapname = pDestmap;
+	}
+	else
+	{
+		len = params[2];
+	}
+
+	return static_cast<cell_t>(g_HL2.FindMap(pMapname, len));
 }
 
 static cell_t IsDedicatedServer(IPluginContext *pContext, const cell_t *params)
