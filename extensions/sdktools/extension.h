@@ -89,6 +89,7 @@ public:
 public: //IConCommandBaseAccessor
 	bool RegisterConCommandBase(ConCommandBase *pVar);
 public: //IClientListner
+	bool InterceptClientConnect(int client, char *error, size_t maxlength);
 	void OnClientPutInServer(int client);
 	void OnClientDisconnecting(int client);
 public: // IVoiceServer
@@ -129,6 +130,7 @@ extern IVoiceServer *voiceserver;
 extern IPlayerInfoManager *playerinfomngr;
 extern ICvar *icvar;
 extern IServer *iserver;
+extern IBaseFileSystem *basefilesystem;
 extern CGlobalVars *gpGlobals;
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 extern IServerTools *servertools;
