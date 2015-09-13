@@ -22,12 +22,12 @@ BINARY = gdc
 
 LINK += -L. -lstdc++ -ldl -lm
 
-INCLUDE += -I. -I../../public -I../../public/sourcepawn -I../../core -I../../core/logic
+INCLUDE += -I. -I../../public -I../../core -I../../core/logic  -I../../sourcepawn/include
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror \
 	-Wno-uninitialized -mfpmath=sse -msse -DHAVE_STDINT_H -DSM_DEFAULT_THREADER -DPLATFORM_LINUX -m32
-CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
+CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti -std=c++11 -Wno-unused
 
 ################################################
 ### DO NOT EDIT BELOW HERE FOR MOST PROJECTS ###

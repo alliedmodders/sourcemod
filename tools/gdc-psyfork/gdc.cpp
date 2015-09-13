@@ -410,14 +410,15 @@ void CheckWindowsSigOffset(char* name, const char* symbol, int file)
 			if(sigOffset != -1 && sigOffsetByte != NULL)//Got the offset in the function
 			{
 				uint8_t iByte = strtoul(sigOffsetByte, NULL, 16);
+				uint8_t iCompare = *(uint8_t *)((intptr_t)ptr + sigOffset);
 
-				if(iByte == *(uint8_t *)((intptr_t)ptr + sigOffset))
+				if(iByte == iCompare)
 				{
-					printf("     w: %s -> %s (%4d) == \\x%s GOOD\n", name, sigOffsetKey, sigOffset, sigOffsetByte);
+					printf("     w: %s -> %s (%4d) \\x%02X == \\x%02X GOOD\n", name, sigOffsetKey, sigOffset, iCompare, iByte);
 				}
 				else
 				{
-					printf("!    w: %s -> %s (%4d) != \\x%s BAD\n", name, sigOffsetKey, sigOffset, sigOffsetByte);
+					printf("!    w: %s -> %s (%4d) \\x%02X != \\x%02X BAD\n", name, sigOffsetKey, sigOffset, iCompare, iByte);
 				}
 			}
 		}
