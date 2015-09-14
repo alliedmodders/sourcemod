@@ -1273,6 +1273,38 @@ SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_
 #endif
 }
 
+bool CHalfLife2::GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax)
+{
+	SMFindMapResult result = FindMap(pMapName, pDisplayname, nMapNameMax);
+
+	if (result == SMFindMapResult::NotFound)
+	{
+		return false;
+	}
+
+#if SOURCE_ENGINE == SE_CSGO
+	char *lastSlashPos;
+	// In CSGO, workshop maps show up as workshop/123456789/mapname
+	if (strncmp(pDisplayname, "workshop/", 9) == 0 && (lastSlashPos = strrchr(pDisplayname, '/')) != NULL)
+	{
+		ke::SafeSprintf(pDisplayname, nMapNameMax, "%s", &lastSlashPos[1]);
+		return true;
+	}
+#elif SOURCE_ENGINE == SE_TF2
+	char *ugcPos;
+	// In TF2, workshop maps show up as workshop/mapname.ugc123456789
+	if (strncmp(pDisplayname, "workshop/", 9) == 0 && (ugcPos = strstr(pDisplayname, ".ugc")) != NULL)
+	{
+		// Overwrite the . with a nul and SafeSprintf will handle the rest
+		ugcPos[0] = '\0';
+		ke::SafeSprintf(pDisplayname, nMapNameMax, "%s", &pDisplayname[9]);
+		return true;
+	}
+#endif
+
+	return true;
+}
+
 bool CHalfLife2::IsMapValid(const char *map)
 {
 	if (!map || !map[0])

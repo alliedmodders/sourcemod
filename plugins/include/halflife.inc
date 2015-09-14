@@ -168,6 +168,24 @@ native bool:IsMapValid(const String:map[]);
 native FindMapResult FindMap(const char[] map, char[] foundmap, int maxlen);
 
 /**
+ * Get the display name of a workshop map.
+ * 
+ * Note: You do not need to call FindMap first.  This native will call FindMap internally.
+ * 
+ * @param map 			Map name (usually same as map path relative to maps/ dir,
+ *						excluding .bsp extension).
+ * @param displayName	Map's display name, i.e. cp_mymapname or de_mymapname.
+ *						If FindMap returns FindMap_PossiblyAvailable or FindMap_NotFound,
+ *						the map cannot be resolved and this native will return false,
+ *						but displayName will be a copy of map.
+ * @param maxlen		Maximum length to write to displayName var.
+ * @return				true if FindMap returns FindMap_Found, FindMap_FuzzyMatch, or
+ * 						FindMap_NonCanonical.
+ * 						false if FindMap returns FindMap_PossiblyAvailable or FindMap_NotFound.
+ */
+native bool GetMapDisplayName(const char[] map, char[] displayName, int maxlen);
+
+/**
  * Returns whether the server is dedicated.
  *
  * @return				True if dedicated, false otherwise.

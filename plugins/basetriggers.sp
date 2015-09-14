@@ -211,6 +211,7 @@ public Action:Command_Nextmap(client, args)
 	}
 	else
 	{
+		GetMapDisplayName(map, map, sizeof(map));
 		ReplyToCommand(client, "[SM] %t", "Next Map", map);
 	}
 	
@@ -291,7 +292,8 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 	{
 		char map[PLATFORM_MAX_PATH];
 		GetNextMap(map, sizeof(map));
-			
+		GetMapDisplayName(map, map, sizeof(map));
+		
 		if (g_Cvar_TriggerShow.IntValue)
 		{
 			if (mapchooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
