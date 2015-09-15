@@ -360,13 +360,13 @@ static cell_t sm_SetConVarNum(IPluginContext *pContext, const cell_t *params)
 
 #if SOURCE_ENGINE < SE_ORANGEBOX
 	/* Should we replicate it? */
-	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
+	if (params[0] >= 3 && params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
 		ReplicateConVar(pConVar);
 	}
 
 	/* Should we notify clients? */
-	if (params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
+	if (params[0] >= 4 && params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
 	{
 		NotifyConVar(pConVar);
 	}
@@ -409,13 +409,13 @@ static cell_t sm_SetConVarFloat(IPluginContext *pContext, const cell_t *params)
 
 #if SOURCE_ENGINE < SE_ORANGEBOX
 	/* Should we replicate it? */
-	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
+	if (params[0] >= 3 && params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
 		ReplicateConVar(pConVar);
 	}
 
 	/* Should we notify clients? */
-	if (params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
+	if (params[0] >= 4 && params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
 	{
 		NotifyConVar(pConVar);
 	}
@@ -460,13 +460,13 @@ static cell_t sm_SetConVarString(IPluginContext *pContext, const cell_t *params)
 
 #if SOURCE_ENGINE < SE_ORANGEBOX
 	/* Should we replicate it? */
-	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
+	if (params[0] >= 3 && params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
 		ReplicateConVar(pConVar);
 	}
 
 	/* Should we notify clients? */
-	if (params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
+	if (params[0] >= 4 && params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
 	{
 		NotifyConVar(pConVar);
 	}
@@ -1238,45 +1238,6 @@ static cell_t RemoveCommandListener(IPluginContext *pContext, const cell_t *para
 	return 1;
 }
 
-static cell_t ConVar_BoolValue_set(IPluginContext *pContext, const cell_t *params)
-{
-	static cell_t new_params[5] = {
-		4,
-		params[1],
-		params[2],
-		0, /* Default replicate setting. */
-		0, /* Default replicate setting. */
-	};
-
-	return sm_SetConVarNum(pContext, new_params);
-}
-
-static cell_t ConVar_IntValue_set(IPluginContext *pContext, const cell_t *params)
-{
-	static cell_t new_params[5] = {
-		4,
-		params[1],
-		params[2],
-		0, /* Default replicate setting. */
-		0, /* Default replicate setting. */
-	};
-
-	return sm_SetConVarNum(pContext, new_params);
-}
-
-static cell_t ConVar_FloatValue_set(IPluginContext *pContext, const cell_t *params)
-{
-	static cell_t new_params[5] = {
-		4,
-		params[1],
-		params[2],
-		0, /* Default replicate setting. */
-		0, /* Default replicate setting. */
-	};
-
-	return sm_SetConVarFloat(pContext, new_params);
-}
-
 static cell_t ConVar_ReplicateToClient(IPluginContext *pContext, const cell_t *params)
 {
 	// Old version is (client, handle, value).
@@ -1334,11 +1295,11 @@ REGISTER_NATIVES(consoleNatives)
 
 	// Transitional syntax support.
 	{"ConVar.BoolValue.get",	sm_GetConVarBool},
-	{"ConVar.BoolValue.set",	ConVar_BoolValue_set},
+	{"ConVar.BoolValue.set",	sm_SetConVarNum},
 	{"ConVar.FloatValue.get",	sm_GetConVarFloat},
-	{"ConVar.FloatValue.set",	ConVar_FloatValue_set},
+	{"ConVar.FloatValue.set",	sm_SetConVarFloat},
 	{"ConVar.IntValue.get",		sm_GetConVarInt},
-	{"ConVar.IntValue.set",		ConVar_IntValue_set},
+	{"ConVar.IntValue.set",		sm_SetConVarNum},
 	{"ConVar.Flags.get",		sm_GetConVarFlags},
 	{"ConVar.Flags.set",		sm_SetConVarFlags},
 	{"ConVar.SetBool",			sm_SetConVarNum},
