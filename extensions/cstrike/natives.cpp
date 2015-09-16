@@ -330,6 +330,12 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("GameRules not available. TerminateRound native disabled.");
 	}
 
+	int reason = params[2];
+	
+#if SOURCE_ENGINE == SE_CSGO
+	reason++;
+#endif
+	
 #if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 	static ICallWrapper *pWrapper = NULL;
 
@@ -356,7 +362,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	vptr += sizeof(void *);
 	*(float *)vptr = sp_ctof(params[1]);
 	vptr += sizeof(float);
-	*(int*)vptr = params[2];
+	*(int*)vptr = reason;
 
 	pWrapper->Execute(vstk, NULL);
 #else
@@ -371,7 +377,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 		g_pIgnoreTerminateDetour = true;
 
 	float delay = sp_ctof(params[1]);
-	int reason = params[2];
+	
 	__asm
 	{
 		push reason

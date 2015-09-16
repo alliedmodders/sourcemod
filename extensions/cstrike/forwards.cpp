@@ -122,6 +122,10 @@ DETOUR_DECL_MEMBER1(DetourTerminateRound, void, int, reason)
 
 	cell_t result = Pl_Continue;
 
+	#if SOURCE_ENGINE == SE_CSGO
+	reason--;
+	#endif
+	
 	g_pTerminateRoundForward->PushFloatByRef(&delay);
 	g_pTerminateRoundForward->PushCellByRef(&reason);
 	g_pTerminateRoundForward->Execute(&result);
@@ -129,6 +133,10 @@ DETOUR_DECL_MEMBER1(DetourTerminateRound, void, int, reason)
 	if (result >= Pl_Handled)
 		return;
 
+	#if SOURCE_ENGINE == SE_CSGO
+	reason++;
+	#endif
+	
 #if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 	if (result == Pl_Changed)
 		return DETOUR_MEMBER_CALL(DetourTerminateRound)(delay, reason);

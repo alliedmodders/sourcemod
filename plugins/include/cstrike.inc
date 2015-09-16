@@ -70,6 +70,8 @@ enum CSRoundEndReason
 	// The below only exist on CS:GO
 	CSRoundEnd_TerroristsSurrender,        /**< Terrorists Surrender */
 	CSRoundEnd_CTSurrender,                /**< CTs Surrender */
+	CSRoundEnd_TerroristsPlaned,		   /**< Terrorists Planted the bomb */
+	CSRoundEnd_CTsReachedHostage,		   /**< CTs Reached the hostage */
 };
 
 enum CSWeaponID
