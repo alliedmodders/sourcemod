@@ -1,33 +1,29 @@
-/**
- * vim: set ts=4 sw=4 :
- * =============================================================================
- * SourceMod
- * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
- * =============================================================================
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, version 3.0, as published by the
- * Free Software Foundation.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * As a special exception, AlliedModders LLC gives you permission to link the
- * code of this program (as well as its derivative works) to "Half-Life 2," the
- * "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
- * by the Valve Corporation.  You must obey the GNU General Public License in
- * all respects for all other code used.  Additionally, AlliedModders LLC grants
- * this exception to all derivative works.  AlliedModders LLC defines further
- * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
- * or <http://www.sourcemod.net/license.php>.
- *
- * Version: $Id$
- */
+// vim: set ts=4 sw=4 sw=4 tw=99 noet :
+// =============================================================================
+// SourceMod
+// Copyright (C) 2004-2015 AlliedModders LLC.  All rights reserved.
+// =============================================================================
+//
+// This program is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License, version 3.0, as published by the
+// Free Software Foundation.
+// 
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+// details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// As a special exception, AlliedModders LLC gives you permission to link the
+// code of this program (as well as its derivative works) to "Half-Life 2," the
+// "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
+// by the Valve Corporation.  You must obey the GNU General Public License in
+// all respects for all other code used.  Additionally, AlliedModders LLC grants
+// this exception to all derivative works.  AlliedModders LLC defines further
+// exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
+// or <http://www.sourcemod.net/license.php>.
 
 #ifndef _INCLUDE_SOURCEMOD_PLUGINMNGR_INTERFACE_H_
 #define _INCLUDE_SOURCEMOD_PLUGINMNGR_INTERFACE_H_
@@ -87,10 +83,10 @@ namespace SourceMod
 	 */
 	enum PluginType
 	{
-		PluginType_Private,			/**< Plugin is privately managed and receives no forwards */
+		PluginType_Private_Unused,	/**< Unused. */
 		PluginType_MapUpdated,		/**< Plugin will never be unloaded unless for updates on mapchange */
-		PluginType_MapOnly,			/**< Plugin will be removed at mapchange */
-		PluginType_Global,			/**< Plugin will never be unloaded or updated */
+		PluginType_MapOnly_Unused,	/**< Unused. */
+		PluginType_Global_Unused,	/**< Unused. */
 	};
 
 	class IPhraseCollection;
@@ -107,7 +103,7 @@ namespace SourceMod
 		}
 
 		/**
-		 * @brief Returns the lifetime of a plugin.
+		 * @brief Always returns PluginType_MapUpdated.
 		 */
 		virtual PluginType GetType() =0;
 
@@ -146,6 +142,8 @@ namespace SourceMod
 
 		/**
 		 * @brief Returns true if a plugin is in debug mode, false otherwise.
+		 *
+		 * On SourceMod 1.1 or higher, this always returns true for loaded plugins.
 		 */
 		virtual bool IsDebugging() =0;
 
@@ -314,7 +312,7 @@ namespace SourceMod
 		 *
 		 * @param path		Path and filename of plugin, relative to plugins folder.
 		 * @param debug		Deprecated, must be false.
-		 * @param type		Lifetime of the plugin.
+		 * @param type		Plugin type. Values other than PluginType_MapUpdated are ignored.
 		 * @param error		Buffer to hold any error message.
 		 * @param maxlength	Maximum length of error message buffer.
 		 * @param wasloaded	Stores if the plugin is already loaded.
