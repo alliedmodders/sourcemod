@@ -1247,7 +1247,7 @@ static cell_t ConVar_ReplicateToClient(IPluginContext *pContext, const cell_t *p
 {
 	// Old version is (client, handle, value).
 	// New version is (handle, client, value).
-	static cell_t new_params[4] = {
+	cell_t new_params[4] = {
 		3,
 		params[2],
 		params[1],
