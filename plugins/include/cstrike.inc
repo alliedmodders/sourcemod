@@ -51,8 +51,8 @@
 enum CSRoundEndReason
 {
 	CSRoundEnd_TargetBombed = 0,           /**< Target Successfully Bombed! */
-	CSRoundEnd_VIPEscaped,                 /**< The VIP has escaped! */
-	CSRoundEnd_VIPKilled,                  /**< VIP has been assassinated! */
+	CSRoundEnd_VIPEscaped,                 /**< The VIP has escaped! - Doesn't exist on CS:GO */
+	CSRoundEnd_VIPKilled,                  /**< VIP has been assassinated! - Doesn't exist on CS:GO */
 	CSRoundEnd_TerroristsEscaped,          /**< The terrorists have escaped! */
 	CSRoundEnd_CTStoppedEscape,            /**< The CTs have prevented most of the terrorists from escaping! */
 	CSRoundEnd_TerroristsStopped,          /**< Escaping terrorists have all been neutralized! */
@@ -64,12 +64,14 @@ enum CSRoundEndReason
 	CSRoundEnd_TargetSaved,                /**< Target has been saved! */
 	CSRoundEnd_HostagesNotRescued,         /**< Hostages have not been rescued! */
 	CSRoundEnd_TerroristsNotEscaped,       /**< Terrorists have not escaped! */
-	CSRoundEnd_VIPNotEscaped,              /**< VIP has not escaped! */
+	CSRoundEnd_VIPNotEscaped,              /**< VIP has not escaped! - Doesn't exist on CS:GO */
 	CSRoundEnd_GameStart,                  /**< Game Commencing! */
 	
 	// The below only exist on CS:GO
 	CSRoundEnd_TerroristsSurrender,        /**< Terrorists Surrender */
 	CSRoundEnd_CTSurrender,                /**< CTs Surrender */
+	CSRoundEnd_TerroristsPlanted,		   /**< Terrorists Planted the bomb */
+	CSRoundEnd_CTsReachedHostage,		   /**< CTs Reached the hostage */
 };
 
 enum CSWeaponID
