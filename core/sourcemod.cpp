@@ -46,11 +46,13 @@
 #include <amtl/os/am-path.h>
 #include <bridge/include/IExtensionBridge.h>
 #include <bridge/include/IScriptManager.h>
+#include <bridge/include/IProviderCallbacks.h>
 #include <bridge/include/ILogger.h>
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
 SH_DECL_HOOK1_void(IServerGameDLL, GameFrame, SH_NOATTRIB, false, bool);
+SH_DECL_HOOK1_void(IServerGameDLL, Think, SH_NOATTRIB, false, bool);
 SH_DECL_HOOK1_void(IVEngineServer, ServerCommand, SH_NOATTRIB, false, const char *);
 
 SourceModBase g_SourceMod;
@@ -322,6 +324,8 @@ void SourceModBase::StartSourceMod(bool late)
 	{
 		g_pSourcePawn2->InstallWatchdogTimer(atoi(timeout) * 1000);
 	}
+
+	SH_ADD_HOOK(IServerGameDLL, Think, gamedll, SH_MEMBER(logicore.callbacks, &IProviderCallbacks::OnThink), false);
 }
 
 static bool g_LevelEndBarrier = false;
@@ -539,6 +543,7 @@ void SourceModBase::ShutdownServices()
 
 	SH_REMOVE_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &SourceModBase::LevelShutdown), false);
 	SH_REMOVE_HOOK(IServerGameDLL, GameFrame, gamedll, SH_MEMBER(&g_Timers, &TimerSystem::GameFrame), false);
+	SH_REMOVE_HOOK(IServerGameDLL, Think, gamedll, SH_MEMBER(logicore.callbacks, &IProviderCallbacks::OnThink), false);
 }
 
 void SourceModBase::LogMessage(IExtension *pExt, const char *format, ...)

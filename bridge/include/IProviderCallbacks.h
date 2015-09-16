@@ -35,6 +35,9 @@ class IProviderCallbacks
 public:
 	// Called when a log message is printed. Return true to supercede.
 	virtual bool OnLogPrint(const char *msg) = 0;
+
+	// Called each frame tick.
+	virtual void OnThink(bool simulating) = 0;
 };
 
 } // namespace SourceMod
