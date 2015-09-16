@@ -69,7 +69,6 @@ public:
 public:
 	void SetMarkSerial(unsigned int serial);
 	unsigned int GetMarkSerial();
-	void PropagateMarkSerial(unsigned int serial);
 public:
 	void AddDependent(CPlugin *pPlugin);
 	void AddWeakRef(const WeakNative & ref);

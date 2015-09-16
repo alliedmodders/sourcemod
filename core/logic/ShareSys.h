@@ -119,6 +119,7 @@ public:
 		return &m_IdentRoot;
 	}
 public:
+	void BeginBindingFor(CPlugin *pPlugin);
 	void BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly);
 	void BindNativeToPlugin(CPlugin *pPlugin, const ke::Ref<Native> &pEntry);
 	ke::PassRef<Native> AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func);

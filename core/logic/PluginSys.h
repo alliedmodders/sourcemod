@@ -50,6 +50,8 @@
 #include "IGameConfigs.h"
 #include "NativeOwner.h"
 #include "ShareSys.h"
+#include "PhraseCollection.h"
+#include <am-string.h>
 #include <bridge/include/IScriptManager.h>
 
 class CPlayer;
@@ -140,7 +142,7 @@ public:
 	bool IsDebugging();
 	PluginStatus GetStatus();
 	bool IsSilentlyFailed();
-	void SetSilentlyFailed(bool sf);
+	void SetSilentlyFailed();
 	const sm_plugininfo_t *GetPublicInfo();
 	bool SetPauseState(bool paused);
 	unsigned int GetSerial();
@@ -251,31 +253,45 @@ protected:
 	bool UpdateInfo();
 	void SetTimeStamp(time_t t);
 	void DependencyDropped(CPlugin *pOwner);
+
 private:
-	PluginType m_type;
+	// This information is static for the lifetime of the plugin.
 	char m_filename[PLATFORM_MAX_PATH];
-	PluginStatus m_status;
-	bool m_bSilentlyFailed;
 	unsigned int m_serial;
-	sm_plugininfo_t m_info;
-	char m_errormsg[256];
-	time_t m_LastAccess;
-	IdentityToken_t *m_ident;
-	Handle_t m_handle;
-	bool m_WasRunning;
-	IPhraseCollection *m_pPhrases;
-	List<String> m_RequiredLibs;
-	List<String> m_Libraries;
-	StringHashMap<void *> m_Props;
+
+	PluginStatus m_status;
+
+	// Statuses that are set during failure.
+	bool m_SilentFailure;
 	bool m_FakeNativesMissing;
 	bool m_LibraryMissing;
-	CVector<AutoConfig *> m_configs;
-	bool m_bGotAllLoaded;
-	int m_FileVersion;
-	char m_DateTime[256];
-	IPluginRuntime *m_pRuntime;
+	char m_errormsg[256];
+
+	// Internal properties that must by reset if the runtime is evicted.
+	ke::AutoPtr<IPluginRuntime> m_pRuntime;
+	ke::AutoPtr<CPhraseCollection> m_pPhrases;
 	IPluginContext *m_pContext;
 	sp_pubvar_t *m_MaxClientsVar;
+	StringHashMap<void *> m_Props;
+	CVector<AutoConfig *> m_configs;
+	IdentityToken_t *m_ident;
+	bool m_bGotAllLoaded;
+	int m_FileVersion;
+
+	// Information that survives past eviction.
+	List<String> m_RequiredLibs;
+	List<String> m_Libraries;
+	time_t m_LastAccess;
+	Handle_t m_handle;
+	char m_DateTime[256];
+
+	// Cached.
+	sm_plugininfo_t m_info;
+	ke::AString info_name_;
+	ke::AString info_author_;
+	ke::AString info_description_;
+	ke::AString info_version_;
+	ke::AString info_url_;
 };
 
 class CPluginManager : 
@@ -455,6 +471,9 @@ private:
 	bool FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size_t maxlength);
 
 	void _SetPauseState(CPlugin *pPlugin, bool pause);
+
+	bool ScheduleUnload(CPlugin *plugin);
+	void UnloadPluginImpl(CPlugin *plugin);
 protected:
 	/**
 	 * Caching internal objects

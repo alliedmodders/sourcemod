@@ -991,7 +991,7 @@ unsigned int Translator::GetInterfaceVersion()
 	return SMINTERFACE_TRANSLATOR_VERSION;
 }
 
-IPhraseCollection *Translator::CreatePhraseCollection()
+CPhraseCollection *Translator::CreatePhraseCollection()
 {
 	return new CPhraseCollection();
 }

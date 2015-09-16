@@ -52,23 +52,28 @@ HandleType_t g_PluginType = 0;
 IdentityType_t g_PluginIdent = 0;
 
 CPlugin::CPlugin(const char *file)
+ : m_serial(0),
+   m_status(Plugin_Uncompiled),
+   m_SilentFailure(false),
+   m_FakeNativesMissing(false),
+   m_LibraryMissing(false),
+   m_pContext(nullptr),
+   m_MaxClientsVar(nullptr),
+   m_ident(nullptr),
+   m_bGotAllLoaded(false),
+   m_FileVersion(0),
+   m_LastAccess(0),
+   m_handle(BAD_HANDLE)
 {
 	static int MySerial = 0;
 
-	m_type = PluginType_Private;
-	m_status = Plugin_Uncompiled;
-	m_bSilentlyFailed = false;
 	m_serial = ++MySerial;
-	m_pRuntime = NULL;
-	m_errormsg[sizeof(m_errormsg) - 1] = '\0';
+	m_errormsg[0] = '\0';
 	ke::SafeSprintf(m_filename, sizeof(m_filename), "%s", file);
-	m_handle = 0;
-	m_ident = NULL;
-	m_FakeNativesMissing = false;
-	m_LibraryMissing = false;
-	m_bGotAllLoaded = false;
+
+	memset(&m_info, 0, sizeof(m_info));
+
 	m_pPhrases = g_Translator.CreatePhraseCollection();
-	m_MaxClientsVar = NULL;
 }
 
 CPlugin::~CPlugin()
@@ -83,22 +88,9 @@ CPlugin::~CPlugin()
 		g_ShareSys.DestroyIdentity(m_ident);
 	}
 
-	if (m_pRuntime != NULL)
-	{
-		delete m_pRuntime;
-		m_pRuntime = NULL;
-	}
-
 	for (size_t i=0; i<m_configs.size(); i++)
-	{
 		delete m_configs[i];
-	}
 	m_configs.clear();
-	if (m_pPhrases != NULL)
-	{
-		m_pPhrases->Destroy();
-		m_pPhrases = NULL;
-	}
 }
 
 void CPlugin::InitIdentity()
@@ -120,25 +112,16 @@ unsigned int CPlugin::CalcMemUsage()
 		+ (m_configs.size() * (sizeof(AutoConfig *) + sizeof(AutoConfig)))
 		+ m_Props.mem_usage();
 
-	for (unsigned int i = 0; i < m_configs.size(); i++)
-	{
+	for (unsigned int i = 0; i < m_configs.size(); i++) {
 		base_size += m_configs[i]->autocfg.size();
 		base_size += m_configs[i]->folder.size();
 	}
 
-	for (List<String>::iterator i = m_Libraries.begin();
-		 i != m_Libraries.end();
-		 i++)
-	{
+	for (auto i = m_Libraries.begin(); i != m_Libraries.end(); i++)
 		base_size += (*i).size();
-	}
 
-	for (List<String>::iterator i = m_RequiredLibs.begin();
-		 i != m_RequiredLibs.end();
-		 i++)
-	{
+	for (auto i = m_RequiredLibs.begin(); i != m_RequiredLibs.end(); i++)
 		base_size += (*i).size();
-	}
 
 	return base_size;
 }
@@ -156,12 +139,9 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 
 	CPlugin *pPlugin = new CPlugin(file);
 
-	if (!fp)
-	{
+	if (!fp) {
 		if (error)
-		{
 			ke::SafeSprintf(error, maxlength, "Unable to open file");
-		}
 		pPlugin->m_status = Plugin_BadLoad;
 		return pPlugin;
 	}
@@ -230,10 +210,7 @@ bool CPlugin::UpdateInfo()
 	IPluginContext *base = GetBaseContext();
 	int err = base->FindPubvarByName("myinfo", &idx);
 
-	memset(&m_info, 0, sizeof(m_info));
-
-	if (err == SP_ERROR_NONE)
-	{
+	if (err == SP_ERROR_NONE) {
 		struct sm_plugininfo_c_t
 		{
 			cell_t name;
@@ -245,22 +222,24 @@ bool CPlugin::UpdateInfo()
 		sm_plugininfo_c_t *cinfo;
 		cell_t local_addr;
 
+		auto update_field = [base](cell_t addr, ke::AString *dest) {
+			const char* ptr;
+			if (base->LocalToString(addr, (char **)&ptr) == SP_ERROR_NONE)
+				*dest = ptr;
+			else
+				*dest = "";
+		};
+
 		base->GetPubvarAddrs(idx, &local_addr, (cell_t **)&cinfo);
-		base->LocalToString(cinfo->name, (char **)&m_info.name);
-		base->LocalToString(cinfo->description, (char **)&m_info.description);
-		base->LocalToString(cinfo->author, (char **)&m_info.author);
-		base->LocalToString(cinfo->url, (char **)&m_info.url);
-		base->LocalToString(cinfo->version, (char **)&m_info.version);
+		update_field(cinfo->name, &info_name_);
+		update_field(cinfo->description, &info_description_);
+		update_field(cinfo->author, &info_author_);
+		update_field(cinfo->version, &info_version_);
+		update_field(cinfo->url, &info_url_);
 	}
 
-	m_info.author = m_info.author ? m_info.author : "";
-	m_info.description = m_info.description ? m_info.description : "";
-	m_info.name = m_info.name ? m_info.name : "";
-	m_info.url = m_info.url ? m_info.url : "";
-	m_info.version = m_info.version ? m_info.version : "";
-
-	if ((err = base->FindPubvarByName("__version", &idx)) == SP_ERROR_NONE)
-	{
+	ke::SafeStrcpy(m_DateTime, sizeof(m_DateTime), "unknown");
+	if ((err = base->FindPubvarByName("__version", &idx)) == SP_ERROR_NONE) {
 		struct __version_info
 		{
 			cell_t version;
@@ -277,28 +256,24 @@ bool CPlugin::UpdateInfo()
 
 		base->GetPubvarAddrs(idx, &local_addr, (cell_t **)&info);
 		m_FileVersion = info->version;
-		if (m_FileVersion >= 4)
-		{
+		if (m_FileVersion >= 4) {
 			base->LocalToString(info->date, (char **)&pDate);
 			base->LocalToString(info->time, (char **)&pTime);
 			ke::SafeSprintf(m_DateTime, sizeof(m_DateTime), "%s %s", pDate, pTime);
 		}
-		if (m_FileVersion > 5)
-		{
+		if (m_FileVersion > 5) {
 			base->LocalToString(info->filevers, (char **)&pFileVers);
 			SetErrorState(Plugin_Failed, "Newer SourceMod required (%s or higher)", pFileVers);
 			return false;
 		}
-	}
-	else
-	{
+	} else {
 		m_FileVersion = 0;
 	}
 
 	if ((err = base->FindPubvarByName("MaxClients", &idx)) == SP_ERROR_NONE)
-	{
 		base->GetPubvarByIndex(idx, &m_MaxClientsVar);
-	}
+	else
+		m_MaxClientsVar = nullptr;
 
 	return true;
 }
@@ -481,15 +456,19 @@ const char *CPlugin::GetFilename()
 
 PluginType CPlugin::GetType()
 {
-	return m_type;
+	return PluginType_MapUpdated;
 }
 
 const sm_plugininfo_t *CPlugin::GetPublicInfo()
 {
 	if (GetStatus() >= Plugin_Created)
-	{
-		return NULL;
-	}
+		return nullptr;
+
+	m_info.author = info_author_.chars();
+	m_info.description = info_description_.chars();
+	m_info.name = info_name_.chars();
+	m_info.url = info_url_.chars();
+	m_info.version = info_version_.chars();
 	return &m_info;
 }
 
@@ -505,7 +484,7 @@ PluginStatus CPlugin::GetStatus()
 
 bool CPlugin::IsSilentlyFailed()
 {
-	return m_bSilentlyFailed;
+	return m_SilentFailure;
 }
 
 bool CPlugin::IsDebugging()
@@ -518,9 +497,9 @@ bool CPlugin::IsDebugging()
 	return true;
 }
 
-void CPlugin::SetSilentlyFailed(bool sf)
+void CPlugin::SetSilentlyFailed()
 {
-	m_bSilentlyFailed = sf;
+	m_SilentFailure = true;
 }
 
 void CPlugin::LibraryActions(LibraryAction action)
@@ -629,15 +608,11 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 	if (!m_pRuntime)
 		return;
 
-	List<String>::iterator reqlib_iter;
-	List<String>::iterator lib_iter;
-	for (lib_iter=pOwner->m_Libraries.begin(); lib_iter!=pOwner->m_Libraries.end(); lib_iter++)
-	{
-		for (reqlib_iter=m_RequiredLibs.begin(); reqlib_iter!=m_RequiredLibs.end(); reqlib_iter++)
-		{
-			if ((*reqlib_iter) == (*lib_iter))
-				m_LibraryMissing = true;
-		}	
+	for (auto lib_iter=pOwner->m_Libraries.begin(); lib_iter!=pOwner->m_Libraries.end(); lib_iter++) {
+		if (m_RequiredLibs.find(*lib_iter) != m_RequiredLibs.end()) {
+			m_LibraryMissing = true;
+			break;
+		}
 	}
 
 	unsigned int unbound = 0;
@@ -926,8 +901,6 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 	pPlugin = CPlugin::CreatePlugin(path, error, maxlength);
 	assert(pPlugin != NULL);
 
-	pPlugin->m_type = PluginType_MapUpdated;
-
 	if (pPlugin->m_status == Plugin_Uncompiled)
 	{
 		char fullpath[PLATFORM_MAX_PATH];
@@ -1005,7 +978,7 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 		case APLRes_SilentFailure:
 			pPlugin->SetErrorState(Plugin_Failed, "%s", error);
 			loadFailure = LoadRes_SilentFailure;
-			pPlugin->SetSilentlyFailed(true);
+			pPlugin->SetSilentlyFailed();
 			break;
 		default:
 			assert(false);
@@ -1146,35 +1119,23 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 	char *name, *file;
 	char pathfile[PLATFORM_MAX_PATH];
 
-	for (uint32_t i=0; i<num; i++)
-	{
+	for (uint32_t i=0; i<num; i++) {
 		if (pBase->GetPubvarByIndex(i, &pubvar) != SP_ERROR_NONE)
-		{
 			continue;
-		}
-		if (strncmp(pubvar->name, "__pl_", 5) == 0)
-		{
+		if (strncmp(pubvar->name, "__pl_", 5) == 0) {
 			pl = (_pl *)pubvar->offs;
 			if (pBase->LocalToString(pl->file, &file) != SP_ERROR_NONE)
-			{
 				continue;
-			}
 			if (pBase->LocalToString(pl->name, &name) != SP_ERROR_NONE)
-			{
 				continue;
-			}
 			libsys->GetFileFromPath(pathfile, sizeof(pathfile), pPlugin->GetFilename());
 			if (strcmp(pathfile, file) == 0)
-			{
 				continue;
-			}
-			if (pl->required == false)
-			{
+			if (pl->required == false) {
 				IPluginFunction *pFunc;
 				char buffer[64];
 				ke::SafeSprintf(buffer, sizeof(buffer), "__pl_%s_SetNTVOptional", &pubvar->name[5]);
-				if ((pFunc=pBase->GetFunctionByName(buffer)))
-				{
+				if ((pFunc=pBase->GetFunctionByName(buffer))) {
 					cell_t res;
 					if (pFunc->Execute(&res) != SP_ERROR_NONE) {
 						if (error)
@@ -1182,38 +1143,28 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 						return false;
 					}
 				}
-			}
-			else
-			{
+			} else {
 				/* Check that we aren't registering the same library twice */
-				if (pPlugin->m_RequiredLibs.find(name) == pPlugin->m_RequiredLibs.end())
-				{
-					pPlugin->m_RequiredLibs.push_back(name);
-				}
-				else
-				{
+				if (pPlugin->m_RequiredLibs.find(name) != pPlugin->m_RequiredLibs.end())
 					continue;
-				}
-				List<CPlugin *>::iterator iter;
-				CPlugin *pl;
-				bool found = false;
-				for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
-				{
-					pl = (*iter);
-					if (pl->m_Libraries.find(name) != pl->m_Libraries.end())
-					{
-						found = true;
+
+				pPlugin->m_RequiredLibs.push_back(name);
+
+				CPlugin *found;
+				for (auto iter=m_plugins.begin(); iter!=m_plugins.end(); iter++) {
+					CPlugin *pl = (*iter);
+					if (pl->m_Libraries.find(name) != pl->m_Libraries.end()) {
+						found = pl;
 						break;
 					}
 				}
-				if (!found)
-				{
+				if (!found) {
 					if (error)
-					{
 						ke::SafeSprintf(error, maxlength, "Could not find required plugin \"%s\"", name);
-					}
 					return false;
 				}
+
+				found->AddDependent(pPlugin);
 			}
 		}
 	}
@@ -1381,6 +1332,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 					  || pOther->GetStatus() == Plugin_Paused)
 					 && pOther != pPlugin)
 			{
+				g_ShareSys.BeginBindingFor(pPlugin);
 				for (size_t i = 0; i < pPlugin->m_fakes.length(); i++)
 					g_ShareSys.BindNativeToPlugin(pOther, pPlugin->m_fakes[i]);
 			}
@@ -1422,29 +1374,21 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 
 	g_ShareSys.BindNativesToPlugin(pPlugin, false);
 
-	List<String>::iterator lib_iter;
-	List<String>::iterator req_iter;
-	List<CPlugin *>::iterator pl_iter;
-	CPlugin *pl;
-	for (req_iter=pPlugin->m_RequiredLibs.begin(); req_iter!=pPlugin->m_RequiredLibs.end(); req_iter++)
-	{
-		bool found = false;
-		for (pl_iter=m_plugins.begin(); pl_iter!=m_plugins.end(); pl_iter++)
-		{
-			pl = (*pl_iter);
-			for (lib_iter=pl->m_Libraries.begin(); lib_iter!=pl->m_Libraries.end(); lib_iter++)
-			{
-				if ((*req_iter) == (*lib_iter))
-				{
-					found = true;
-				}
+	for (auto req_iter=pPlugin->m_RequiredLibs.begin(); req_iter!=pPlugin->m_RequiredLibs.end(); req_iter++) {
+		CPlugin *found = nullptr;
+		for (auto pl_iter=m_plugins.begin(); pl_iter!=m_plugins.end(); pl_iter++) {
+			CPlugin *search = (*pl_iter);
+			if (search->m_Libraries.find(*req_iter) != search->m_Libraries.end()) {
+				found = search;
+				break;
 			}
 		}
-		if (!found)
-		{
+		if (!found) {
 			pPlugin->SetErrorState(Plugin_Error, "Library not found: %s", (*req_iter).c_str());
 			return;
 		}
+
+		found->AddDependent(pPlugin);
 	}
 
 	/* Find any unbound natives
@@ -1478,23 +1422,30 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 
 bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 {
-	CPlugin *pPlugin = (CPlugin *)plugin;
+	return ScheduleUnload((CPlugin *)plugin);
+}
 
-	/* This prevents removal during insertion or anything else weird */
-	if (m_plugins.find(pPlugin) == m_plugins.end())
-	{
-		return false;
-	}
+bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
+{
+	// Should not be recursively removing.
+	assert(m_plugins.find(pPlugin) != m_plugins.end());
 
-	IPluginContext *pContext = plugin->GetBaseContext();
-	if (pContext != NULL && pContext->IsInExec())
+	IPluginContext *pContext = pPlugin->GetBaseContext();
+	if (pContext && pContext->IsInExec())
 	{
 		char buffer[255];
-		ke::SafeSprintf(buffer, sizeof(buffer), "sm plugins unload %s\n", plugin->GetFilename());
+		ke::SafeSprintf(buffer, sizeof(buffer), "sm plugins unload %s\n", pPlugin->GetFilename());
 		engine->ServerCommand(buffer);
 		return false;
 	}
 
+	// No need to schedule an unload, we can unload immediately.
+	UnloadPluginImpl(pPlugin);
+	return true;
+}
+
+void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
+{
 	/* Remove us from the lookup table and linked list */
 	m_plugins.remove(pPlugin);
 	m_LoadLookup.remove(pPlugin->m_filename);
@@ -1535,8 +1486,6 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 	
 	/* Tell the plugin to delete itself */
 	delete pPlugin;
-
-	return true;
 }
 
 IPlugin *CPluginManager::FindPluginByContext(const sp_context_t *ctx)

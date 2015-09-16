@@ -392,7 +392,6 @@ static cell_t FormatNativeString(IPluginContext *pContext, const cell_t *params)
 	}
 
 	/* Get buffer information */
-	int err;
 	char *output_buffer;
 	char *format_buffer;
 
