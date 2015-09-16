@@ -33,10 +33,23 @@
 
 /* We like semicolons */
 #pragma semicolon 1
-
 #include <sourcemod>
 
-public Plugin myinfo = 
+StringMap g_htAdmins = null;
+Database g_hSQLConnection = null;
+bool g_bConnecting = false;
+
+enum QueryType
+{
+	eAdminCache_Overrides = view_as<int>(AdminCache_Overrides),
+	eAdminCache_Groups = view_as<int>(AdminCache_Groups),
+	eAdminCache_Admins = view_as<int>(AdminCache_Admins),
+	eAdminUserGroups = eAdminCache_Overrides+eAdminCache_Groups+eAdminCache_Admins,
+	eAdminUserImmunity,
+	eAdminUserOverrides
+}
+
+public Plugin:myinfo = 
 {
 	name = "SQL Admins (Prefetch)",
 	author = "AlliedModders LLC",
@@ -45,51 +58,138 @@ public Plugin myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-public void OnRebuildAdminCache(AdminCachePart part)
+public OnPluginStart()
 {
-	/* First try to get a database connection */
-	char error[255];
-	Database db;
-	
-	if (SQL_CheckConfig("admins"))
+	g_htAdmins = new StringMap();
+}
+
+public OnRebuildAdminCache(AdminCachePart part)
+{
+	PerformSQLQuery(view_as<QueryType>(part));
+}
+
+static void PerformSQLQuery(QueryType queryval)
+{
+	if (!g_hSQLConnection && !g_bConnecting)
 	{
-		db = SQL_Connect("admins", true, error, sizeof(error));
-	} else {
-		db = SQL_Connect("default", true, error, sizeof(error));
+		char dbname[24];
+		if (SQL_CheckConfig("admins"))
+			strcopy(dbname, sizeof(dbname), "admins");
+		else
+			strcopy(dbname, sizeof(dbname), "default");
+
+		g_bConnecting = true;
+		Database.Connect(SQL_OnDatabaseConnected, dbname, queryval);
+		return;
 	}
-	
-	if (db == null)
+
+	char query[256];
+	switch (queryval)
+	{
+		case eAdminCache_Overrides:
+		{
+			strcopy(query, sizeof(query), "SELECT type, name, flags FROM sm_overrides");
+		}
+
+		case eAdminCache_Groups:
+		{
+			strcopy(query, sizeof(query), "SELECT flags, name, immunity_level FROM sm_groups");
+		}
+
+		case eAdminCache_Admins:
+		{
+			strcopy(query, sizeof(query), "SELECT id, authtype, identity, password, flags, name, immunity FROM sm_admins");
+		}
+
+		case eAdminUserGroups:
+		{
+			strcopy(query, sizeof(query), "SELECT ag.admin_id AS id, g.name FROM sm_admins_groups ag JOIN sm_groups g ON ag.group_id = g.id  ORDER BY id, inherit_order ASC");
+		}
+
+		case eAdminUserImmunity:
+		{
+			strcopy(query, sizeof(query), "SELECT g1.name, g2.name FROM sm_group_immunity gi\
+												  LEFT JOIN sm_groups g1 ON g1.id = gi.group_id\
+												  LEFT JOIN sm_groups g2 ON g2.id = gi.other_id");
+		}
+
+		case eAdminUserOverrides:
+		{
+			strcopy(query, sizeof(query), "SELECT g.name, go.type, go.name, go.access FROM sm_group_overrides go LEFT JOIN sm_groups g ON go.group_id = g.id");
+		}
+
+		default:
+		{
+			ThrowError("Undefined enum type: %u", queryval);
+		}
+	}
+
+	g_hSQLConnection.Query(SQL_OnQueryCompleted, query, queryval);
+}
+
+public SQL_OnDatabaseConnected(Database db, const char[] error, any data)
+{
+	g_bConnecting = false;
+	if (!db)
 	{
 		LogError("Could not connect to database \"default\": %s", error);
 		return;
 	}
-	
-	if (part == AdminCache_Overrides)
-	{
-		FetchOverrides(db);
-	} else if (part == AdminCache_Groups) {
-		FetchGroups(db);
-	} else if (part == AdminCache_Admins) {
-		FetchUsers(db);
-	}
-	
-	delete db;
+
+	delete g_hSQLConnection;
+	g_hSQLConnection = db;
+	PerformSQLQuery(eAdminCache_Overrides);
+	PerformSQLQuery(eAdminCache_Groups);
+	PerformSQLQuery(eAdminCache_Admins);
 }
 
-void FetchUsers(Database db)
+public SQL_OnQueryCompleted(Database db, DBResultSet results, const char[] error, any data)
 {
-	char query[255], error[255];
-	DBResultSet rs;
-
-	Format(query, sizeof(query), "SELECT id, authtype, identity, password, flags, name, immunity FROM sm_admins");
-	if ((rs = SQL_Query(db, query)) == null)
+	if (!results || error[0] != '\0')
 	{
-		SQL_GetError(db, error, sizeof(error));
-		LogError("FetchUsers() query failed: %s", query);
-		LogError("Query error: %s", error);
+		LogError("Query Error: %s", error);
 		return;
 	}
 
+	switch (view_as<QueryType>(data))
+	{
+		case eAdminCache_Overrides:
+		{
+			FetchOverrides(results);
+		}
+
+		case eAdminCache_Groups:
+		{
+			PerformSQLQuery(eAdminUserImmunity);
+			PerformSQLQuery(eAdminUserOverrides);
+			FetchGroups(results);
+		}
+
+		case eAdminCache_Admins:
+		{
+			PerformSQLQuery(eAdminUserGroups);
+			FetchUsers(results);
+		}
+
+		case eAdminUserGroups:
+		{
+			FetchUserGroups(results);
+		}
+
+		case eAdminUserImmunity:
+		{
+			FetchUserImmunity(results);
+		}
+
+		case eAdminUserOverrides:
+		{
+			FetchUserOverrides(results);
+		}
+	}
+}
+
+void FetchUsers(DBResultSet rs)
+{
 	char authtype[16];
 	char identity[80];
 	char password[80];
@@ -97,12 +197,11 @@ void FetchUsers(Database db)
 	char name[80];
 	int immunity;
 	AdminId adm;
-	GroupId grp;
 	int id;
 
 	/* Keep track of a mapping from admin DB IDs to internal AdminIds to
 	 * enable group lookups en masse */
-	StringMap htAdmins = new StringMap();
+	g_htAdmins.Clear();
 	char key[16];
 	
 	while (rs.FetchRow())
@@ -127,7 +226,7 @@ void FetchUsers(Database db)
 			}
 		}
 
-		htAdmins.SetValue(key, adm);
+		g_htAdmins.SetValue(key, adm);
 		
 #if defined _DEBUG
 		PrintToServer("Found SQL admin (%d,%s,%s,%s,%s,%s,%d):%d", id, authtype, identity, password, flags, name, immunity, adm);
@@ -154,24 +253,18 @@ void FetchUsers(Database db)
 		adm.ImmunityLevel = immunity;
 	}
 
-	delete rs;
+void FetchUserGroups(DBResultSet rs)
+{
+	char group[80], key[16];
+	GroupId grp;
+	AdminId adm;
 
-	Format(query, sizeof(query), "SELECT ag.admin_id AS id, g.name FROM sm_admins_groups ag JOIN sm_groups g ON ag.group_id = g.id  ORDER BY id, inherit_order ASC");
-	if ((rs = SQL_Query(db, query)) == null)
-	{
-		SQL_GetError(db, error, sizeof(error));
-		LogError("FetchUsers() query failed: %s", query);
-		LogError("Query error: %s", error);
-		return;
-	}
-
-	char group[80];
 	while (rs.FetchRow())
 	{
 		IntToString(rs.FetchInt(0), key, sizeof(key));
 		rs.FetchString(1, group, sizeof(group));
 
-		if (htAdmins.GetValue(key, adm))
+		if (g_htAdmins.GetValue(key, adm))
 		{
 			if ((grp = FindAdmGroup(group)) == INVALID_GROUP_ID)
 			{
@@ -182,27 +275,10 @@ void FetchUsers(Database db)
 			adm.InheritGroup(grp);
 		}
 	}
-	
-	delete rs;
-	delete htAdmins;
 }
 
-void FetchGroups(Database db)
+void FetchGroups(DBResultSet rs)
 {
-	char query[255];
-	DBResultSet rs;
-	
-	Format(query, sizeof(query), "SELECT flags, name, immunity_level FROM sm_groups");
-
-	if ((rs = SQL_Query(db, query)) == null)
-	{
-		char error[255];
-		SQL_GetError(db, error, sizeof(error));
-		LogError("FetchGroups() query failed: %s", query);
-		LogError("Query error: %s", error);
-		return;
-	}
-	
 	/* Now start fetching groups */
 	char flags[32];
 	char name[128];
@@ -239,26 +315,10 @@ void FetchGroups(Database db)
 		/* Set the immunity level this group has */
 		grp.ImmunityLevel = immunity;
 	}
-	
-	delete rs;
-	
-	/** 
-	 * Get immunity in a big lump.  This is a nasty query but it gets the job done.
-	 */
-	int len = 0;
-	len += Format(query[len], sizeof(query)-len, "SELECT g1.name, g2.name FROM sm_group_immunity gi");
-	len += Format(query[len], sizeof(query)-len, " LEFT JOIN sm_groups g1 ON g1.id = gi.group_id ");
-	len += Format(query[len], sizeof(query)-len, " LEFT JOIN sm_groups g2 ON g2.id = gi.other_id");
-	
-	if ((rs = SQL_Query(db, query)) == null)
-	{
-		char error[255];
-		SQL_GetError(db, error, sizeof(error));
-		LogError("FetchGroups() query failed: %s", query);
-		LogError("Query error: %s", error);
-		return;
-	}
-	
+}
+
+void FetchUserImmunity(DBResultSet rs)
+{	
 	while (rs.FetchRow())
 	{
 		char group1[80];
@@ -279,26 +339,14 @@ void FetchGroups(Database db)
 		PrintToServer("SetAdmGroupImmuneFrom(%d, %d)", grp, other);
 #endif
 	}
-	
-	delete rs;
-	
-	/**
-	 * Fetch overrides in a lump query.
-	 */
-	Format(query, sizeof(query), "SELECT g.name, go.type, go.name, go.access FROM sm_group_overrides go LEFT JOIN sm_groups g ON go.group_id = g.id");
-	
-	if ((rs = SQL_Query(db, query)) == null)
-	{
-		char error[255];
-		SQL_GetError(db, error, sizeof(error));
-		LogError("FetchGroups() query failed: %s", query);
-		LogError("Query error: %s", error);
-		return;
-	}
-	
+}
+
+FetchUserOverrides(DBResultSet rs)
+{	
 	char type[16];
 	char cmd[64];
 	char access[16];
+	char name[64];
 	while (rs.FetchRow())
 	{
 		rs.FetchString(0, name, sizeof(name));
@@ -330,26 +378,10 @@ void FetchGroups(Database db)
 		
 		grp.AddCommandOverride(cmd, o_type, o_rule);
 	}
-	
-	delete rs;
 }
 
-void FetchOverrides(Database db)
+void FetchOverrides(DBResultSet rs)
 {
-	char query[255];
-	DBResultSet rs;
-	
-	Format(query, sizeof(query), "SELECT type, name, flags FROM sm_overrides");
-
-	if ((rs = SQL_Query(db, query)) == null)
-	{
-		char error[255];
-		SQL_GetError(db, error, sizeof(error));
-		LogError("FetchOverrides() query failed: %s", query);
-		LogError("Query error: %s", error);
-		return;
-	}
-	
 	char type[64];
 	char name[64];
 	char flags[32];
@@ -372,7 +404,4 @@ void FetchOverrides(Database db)
 			AddCommandOverride(name, Override_CommandGroup, flag_bits);
 		}
 	}
-	
-	delete rs;
 }
-
