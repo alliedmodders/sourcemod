@@ -20,7 +20,6 @@ files = [
   'funvotes.sp',
   'playercommands.sp',
   'sounds.sp',
-  'admin-sql-threaded.sp',
   'basecommands.sp',
   'mapchooser.sp',
   'randomcycle.sp',
