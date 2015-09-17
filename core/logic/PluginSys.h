@@ -114,7 +114,6 @@ enum LoadRes
 	LoadRes_Successful,
 	LoadRes_AlreadyLoaded,
 	LoadRes_Failure,
-	LoadRes_SilentFailure,
 	LoadRes_NeverLoad
 };
 
@@ -143,7 +142,6 @@ public:
 	bool IsDebugging();
 	PluginStatus GetStatus();
 	bool IsSilentlyFailed();
-	void SetSilentlyFailed();
 	const sm_plugininfo_t *GetPublicInfo();
 	bool SetPauseState(bool paused);
 	unsigned int GetSerial();
@@ -194,12 +192,9 @@ public:
 
 	/**
 	 * Calls the OnPluginLoad function, and sets any failed states if necessary.
-	 * NOTE: Valid pre-states are: Plugin_Created
-	 * NOTE: If validated, plugin state is changed to Plugin_Loaded
-	 *
-	 * If the error buffer is NULL, the error message is cached locally.
+	 * After invoking AskPluginLoad, its state is either Running or Failed.
 	 */
-	APLRes Call_AskPluginLoad(char *error, size_t maxlength);
+	APLRes AskPluginLoad();
 
 	/**
 	 * Calls the OnPluginStart function.
