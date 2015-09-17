@@ -368,50 +368,40 @@ void CPlugin::Call_OnAllPluginsLoaded()
 	}
 }
 
-APLRes CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
+APLRes CPlugin::AskPluginLoad()
 {
-	if (m_status != Plugin_Created)
-	{
-		return APLRes_Failure;
-	}
-
+	assert(m_status == Plugin_Created);
 	m_status = Plugin_Loaded;
+
+	bool haveNewAPL = true;
+	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("AskPluginLoad2");
+	if (!pFunction) {
+		pFunction = m_pRuntime->GetFunctionByName("AskPluginLoad");
+		if (!pFunction)
+			return APLRes_Success;
+		haveNewAPL = false;
+	}
 
 	int err;
 	cell_t result;
-	bool haveNewAPL = false;
-	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("AskPluginLoad2");
-
-	if (pFunction)
-	{
-		haveNewAPL = true;
-	}
-	else if (!(pFunction = m_pRuntime->GetFunctionByName("AskPluginLoad")))
-	{
-		return APLRes_Success;
-	}
-
 	pFunction->PushCell(m_handle);
 	pFunction->PushCell(g_PluginSys.IsLateLoadTime() ? 1 : 0);
-	pFunction->PushStringEx(error, maxlength, 0, SM_PARAM_COPYBACK);
-	pFunction->PushCell(maxlength);
-	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
-	{
+	pFunction->PushStringEx(m_errormsg, sizeof(m_errormsg), 0, SM_PARAM_COPYBACK);
+	pFunction->PushCell(sizeof(m_errormsg));
+	if ((err = pFunction->Execute(&result)) != SP_ERROR_NONE) {
+		SetErrorState(Plugin_Failed, "unexpected error %d in AskPluginLoad callback", err);
 		return APLRes_Failure;
 	}
 
-	if (haveNewAPL)
-	{
-		return (APLRes)result;
+	APLRes res = haveNewAPL
+		         ? (APLRes)result
+				 : (result ? APLRes_Success : APLRes_Failure);
+	if (res != APLRes_Success) {
+		m_status = Plugin_Failed;
+		if (res == APLRes_SilentFailure)
+			m_SilentFailure = true;
 	}
-	else if (result)
-	{
-		return APLRes_Success;
-	}
-	else
-	{
-		return APLRes_Failure;
-	}
+	return res;
 }
 
 void CPlugin::Call_OnLibraryAdded(const char *lib)
@@ -522,11 +512,6 @@ bool CPlugin::IsDebugging()
 	}
 
 	return true;
-}
-
-void CPlugin::SetSilentlyFailed()
-{
-	m_SilentFailure = true;
 }
 
 void CPlugin::LibraryActions(LibraryAction action)
@@ -923,25 +908,11 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 	if (plugin->GetStatus() != Plugin_Created)
 		return LoadRes_Failure;
 
-	APLRes result = plugin->Call_AskPluginLoad(error, maxlength);
-	switch (result)
-	{
-	case APLRes_Success:
-		LoadExtensions(plugin);
-		return LoadRes_Successful;
-
-	case APLRes_Failure:
-		plugin->SetErrorState(Plugin_Failed, "%s", error);
+	if (plugin->AskPluginLoad() != APLRes_Success)
 		return LoadRes_Failure;
 
-	case APLRes_SilentFailure:
-		plugin->SetErrorState(Plugin_Failed, "%s", error);
-		plugin->SetSilentlyFailed();
-		return LoadRes_SilentFailure;
-
-	default:
-		return LoadRes_Failure;
-	}
+	LoadExtensions(plugin);
+	return LoadRes_Successful;
 }
 
 IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType type, char error[], size_t maxlength, bool *wasloaded)
@@ -1009,7 +980,7 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 			error);
 	}
 
-	if (res == LoadRes_Successful || res == LoadRes_Failure || res == LoadRes_SilentFailure)
+	if (res == LoadRes_Successful || res == LoadRes_Failure)
 	{
 		AddPlugin(pl);
 	}
