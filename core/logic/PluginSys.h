@@ -462,6 +462,7 @@ private:
 	/**
 	 * First pass for loading a plugin, and its helpers.
 	 */
+	CPlugin *CompileAndPrep(const char *path, char *error, size_t maxlength);
 	bool MalwareCheckPass(CPlugin *pPlugin, char *error, size_t maxlength);
 
 	/**

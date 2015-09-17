@@ -924,23 +924,11 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 		}
 	}
 
-	pPlugin = CPlugin::CreatePlugin(path, error, maxlength);
-	assert(pPlugin != NULL);
+	CPlugin *plugin = CompileAndPrep(path, error, maxlength);
 
-	if (pPlugin->m_status == Plugin_Uncompiled) {
-		pPlugin->TryCompile(error, maxlength);
-	}
-	if (pPlugin->m_status == Plugin_Created) {
-		MalwareCheckPass(pPlugin, error, maxlength);
-	}
-	
 	LoadRes loadFailure = LoadRes_Failure;
 	/* Get the status */
-	if (pPlugin->GetStatus() == Plugin_Created)
-	{
-		/* First native pass - add anything from Core */
-		g_ShareSys.BindNativesToPlugin(pPlugin, true);
-		pPlugin->InitIdentity();
+	if (pPlugin->GetStatus() == Plugin_Created) {
 		APLRes result = pPlugin->Call_AskPluginLoad(error, maxlength);  
 		switch (result)
 		{
@@ -1241,6 +1229,28 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 
 	return true;
 }
+
+CPlugin *CPluginManager::CompileAndPrep(const char *path, char *error, size_t maxlength)
+{
+	CPlugin *plugin = CPlugin::CreatePlugin(path, error, maxlength);
+	if (plugin->GetStatus() != Plugin_Uncompiled) {
+		assert(plugin->GetStatus() == Plugin_BadLoad);
+		return plugin;
+	}
+
+	if (!plugin->TryCompile(error, maxlength))
+		return plugin;
+	assert(plugin->GetStatus() == Plugin_Created);
+
+	if (!MalwareCheckPass(plugin, error, maxlength))
+		return false;
+	assert(plugin->GetStatus() == Plugin_Created);
+
+	g_ShareSys.BindNativesToPlugin(plugin, true);
+	plugin->InitIdentity();
+	return plugin;
+}
+
 
 bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin, char *error, size_t maxlength)
 {
