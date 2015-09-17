@@ -48,7 +48,7 @@ DisplayVoteMapMenu(client, mapCount, String:maps[5][])
 	
 	if (mapCount == 1)
 	{
-		strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), maps[0]);
+		GetMapDisplayName(maps[0], g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 			
 		g_hVoteMenu.SetTitle("Change Map To");
 		g_hVoteMenu.AddItem(maps[0], "Yes");
@@ -61,7 +61,9 @@ DisplayVoteMapMenu(client, mapCount, String:maps[5][])
 		g_hVoteMenu.SetTitle("Map Vote");
 		for (new i = 0; i < mapCount; i++)
 		{
-			g_hVoteMenu.AddItem(maps[i], maps[i]);
+			decl String:displayName[PLATFORM_MAX_PATH];
+			GetMapDisplayName(maps[i], displayName, sizeof(displayName));
+			g_hVoteMenu.AddItem(maps[i], displayName);
 		}	
 	}
 	
@@ -288,8 +290,10 @@ int LoadMapList(Menu menu)
 	
 	for (new i = 0; i < map_count; i++)
 	{
+		decl String:displayName[PLATFORM_MAX_PATH];
 		GetArrayString(g_map_array, i, map_name, sizeof(map_name));
-		menu.AddItem(map_name, map_name);
+		GetMapDisplayName(map_name, displayName, sizeof(displayName));
+		menu.AddItem(map_name, displayName);
 	}
 	
 	return map_count;

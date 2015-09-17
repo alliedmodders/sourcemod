@@ -187,6 +187,7 @@ public: //IGameHelpers
 	bool IsMapValid(const char *map);
 	SMFindMapResult FindMap(char *pMapName, size_t nMapNameMax);
 	SMFindMapResult FindMap(const char *pMapName, char *pFoundMap = NULL, size_t nMapNameMax = 0);
+	bool GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	string_t AllocPooledString(const char *pszValue);
 #endif

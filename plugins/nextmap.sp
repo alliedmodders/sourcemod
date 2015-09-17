@@ -153,7 +153,8 @@ void FindAndSetNextMap()
 		for (int i = 0; i < mapCount; i++)
 		{
 			g_MapList.GetString(i, mapName, sizeof(mapName));
-			if (strcmp(current, mapName, false) == 0)
+			if (FindMap(mapName, mapName, sizeof(mapName)) != FindMap_NotFound && 
+				strcmp(current, mapName, false) == 0)
 			{
 				g_MapPos = i;
 				break;
