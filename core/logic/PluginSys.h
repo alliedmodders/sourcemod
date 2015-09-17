@@ -485,7 +485,7 @@ private:
 	/**
 	 * Runs an extension pass on a plugin.
 	 */
-	bool LoadExtensions(CPlugin *pPlugin, char *error, size_t maxlength);
+	void LoadExtensions(CPlugin *pPlugin);
 	bool RequireExtensions(CPlugin *pPlugin, char *error, size_t maxlength);
 
 	/**
