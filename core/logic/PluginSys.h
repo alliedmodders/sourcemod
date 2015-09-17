@@ -53,6 +53,7 @@
 #include "PhraseCollection.h"
 #include <am-string.h>
 #include <bridge/include/IScriptManager.h>
+#include <am-function.h>
 
 class CPlayer;
 
@@ -155,6 +156,16 @@ public:
 	CNativeOwner *ToNativeOwner() {
 		return this;
 	}
+
+	struct ExtVar {
+		char *name;
+		char *file;
+		bool autoload;
+		bool required;
+	};
+
+	typedef ke::Lambda<bool(const sp_pubvar_t *, const ExtVar& ext)> ExtVarCallback;
+	bool ForEachExtVar(const ExtVarCallback& callback);
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -474,7 +485,8 @@ private:
 	/**
 	 * Runs an extension pass on a plugin.
 	 */
-	bool LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass, char *error, size_t maxlength);
+	bool LoadExtensions(CPlugin *pPlugin, char *error, size_t maxlength);
+	bool RequireExtensions(CPlugin *pPlugin, char *error, size_t maxlength);
 
 	/**
 	* Manages required natives.
