@@ -64,7 +64,7 @@ CPlugin::CPlugin(const char *file)
    m_ident(nullptr),
    m_bGotAllLoaded(false),
    m_FileVersion(0),
-   m_LastAccess(0),
+   m_LastFileModTime(0),
    m_handle(BAD_HANDLE)
 {
 	static int MySerial = 0;
@@ -150,6 +150,7 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 
 	fclose(fp);
 
+	pPlugin->m_LastFileModTime = pPlugin->GetFileTimeStamp();
 	return pPlugin;
 }
 
@@ -614,16 +615,6 @@ time_t CPlugin::GetFileTimeStamp()
 	}
 }
 
-time_t CPlugin::GetTimeStamp()
-{
-	return m_LastAccess;
-}
-
-void CPlugin::SetTimeStamp(time_t t)
-{
-	m_LastAccess = t;
-}
-
 IPhraseCollection *CPlugin::GetPhrases()
 {
 	return m_pPhrases;
@@ -898,7 +889,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 	libsys->CloseDirectory(dir);
 }
 
-LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool debug, PluginType type, char error[], size_t maxlength)
+LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool debug, PluginType type, char error[], size_t maxlength)
 {
 	if (m_LoadingLocked)
 		return LoadRes_NeverLoad;
@@ -950,10 +941,6 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 		}
 	}
 
-	/* Save the time stamp */
-	time_t t = pPlugin->GetFileTimeStamp();
-	pPlugin->SetTimeStamp(t);
-
 	if (aResult)
 		*aResult = pPlugin;
 
@@ -966,7 +953,7 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	LoadRes res;
 
 	*wasloaded = false;
-	if ((res=_LoadPlugin(&pl, path, true, PluginType_MapUpdated, error, maxlength)) == LoadRes_Failure)
+	if ((res=LoadPlugin(&pl, path, true, PluginType_MapUpdated, error, maxlength)) == LoadRes_Failure)
 	{
 		delete pl;
 		return NULL;
@@ -1016,7 +1003,7 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 	LoadRes res;
 	char error[255] = "Unknown error";
 
-	if ((res=_LoadPlugin(&pl, plugin, false, PluginType_MapUpdated, error, sizeof(error))) == LoadRes_Failure)
+	if ((res=LoadPlugin(&pl, plugin, false, PluginType_MapUpdated, error, sizeof(error))) == LoadRes_Failure)
 	{
 		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s.", plugin, error);
 		pl->SetErrorState(
@@ -2367,12 +2354,19 @@ void CPluginManager::RefreshAll()
 	for (auto iter = tmp_list.begin(); iter != tmp_list.end(); iter++)
 	{
 		CPlugin *pl = (*iter);
-		time_t t = pl->GetFileTimeStamp();
-		if (!t || t > pl->GetTimeStamp()) {
-			pl->SetTimeStamp(t);
+		if (pl->HasUpdatedFile())
 			UnloadPlugin(pl);
-		}
 	}
+}
+
+bool CPlugin::HasUpdatedFile()
+{
+	time_t t = GetFileTimeStamp();
+	if (!t || t > m_LastFileModTime) {
+		m_LastFileModTime = t;
+		return true;
+	}
+	return false;
 }
 
 void CPluginManager::_SetPauseState(CPlugin *pl, bool paused)
