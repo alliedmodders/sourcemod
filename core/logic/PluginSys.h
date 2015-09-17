@@ -172,7 +172,7 @@ public:
 	 *   If an error buffer is not specified, the error will be copied to an internal buffer and 
 	 * a valid (but error-stated) CPlugin will be returned.
 	 */
-	static CPlugin *CreatePlugin(const char *file, char *error, size_t maxlength);
+	static CPlugin *Create(const char *file);
 
 	static inline bool matches(const char *file, const CPlugin *plugin)
 	{
@@ -259,7 +259,7 @@ public:
 protected:
 	bool ReadInfo();
 	void DependencyDropped(CPlugin *pOwner);
-	bool TryCompile(char *error, size_t maxlength);
+	bool TryCompile();
 
 private:
 	time_t GetFileTimeStamp();
@@ -452,7 +452,7 @@ public:
 
 	void ListPluginsToClient(CPlayer *player, const CCommand &args);
 private:
-	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
+	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type);
 
 	void LoadAutoPlugin(const char *plugin);
 
@@ -469,8 +469,8 @@ private:
 	/**
 	 * First pass for loading a plugin, and its helpers.
 	 */
-	CPlugin *CompileAndPrep(const char *path, char *error, size_t maxlength);
-	bool MalwareCheckPass(CPlugin *pPlugin, char *error, size_t maxlength);
+	CPlugin *CompileAndPrep(const char *path);
+	bool MalwareCheckPass(CPlugin *pPlugin);
 
 	/**
 	 * Runs the second loading pass on a plugin.
