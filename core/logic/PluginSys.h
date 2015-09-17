@@ -460,6 +460,11 @@ private:
 	void AddPlugin(CPlugin *pPlugin);
 
 	/**
+	 * First pass for loading a plugin, and its helpers.
+	 */
+	bool MalwareCheckPass(CPlugin *pPlugin, char *error, size_t maxlength);
+
+	/**
 	 * Runs the second loading pass on a plugin.
 	 */
 	bool RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength);

@@ -930,42 +930,10 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 	if (pPlugin->m_status == Plugin_Uncompiled) {
 		pPlugin->TryCompile(error, maxlength);
 	}
-	
-	if (pPlugin->GetStatus() == Plugin_Created)
-	{
-		unsigned char *pCodeHash = pPlugin->m_pRuntime->GetCodeHash();
-		
-		char codeHashBuf[40];
-		ke::SafeSprintf(codeHashBuf, 40, "plugin_");
-		for (int i = 0; i < 16; i++)
-			ke::SafeSprintf(codeHashBuf + 7 + (i * 2), 3, "%02x", pCodeHash[i]);
-		
-		const char *bulletinUrl = g_pGameConf->GetKeyValue(codeHashBuf);
-		if (bulletinUrl != NULL)
-		{
-			if (m_bBlockBadPlugins)
-			{
-				if (error)
-				{
-					if (bulletinUrl[0] != '\0')
-					{
-						ke::SafeSprintf(error, maxlength, "Known malware detected and blocked. See %s for more info", bulletinUrl);
-					} else {
-						ke::SafeSprintf(error, maxlength, "Possible malware or illegal plugin detected and blocked");
-					}
-				}
-				pPlugin->m_status = Plugin_BadLoad;
-			} else {
-				if (bulletinUrl[0] != '\0')
-				{
-					g_Logger.LogMessage("%s: Known malware detected. See %s for more info, blocking disabled in core.cfg", pPlugin->GetFilename(), bulletinUrl);
-				} else {
-					g_Logger.LogMessage("%s: Possible malware or illegal plugin detected, blocking disabled in core.cfg", pPlugin->GetFilename());
-				}
-			}
-		}
+	if (pPlugin->m_status == Plugin_Created) {
+		MalwareCheckPass(pPlugin, error, maxlength);
 	}
-
+	
 	LoadRes loadFailure = LoadRes_Failure;
 	/* Get the status */
 	if (pPlugin->GetStatus() == Plugin_Created)
@@ -1271,6 +1239,37 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 		}
 	}
 
+	return true;
+}
+
+bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin, char *error, size_t maxlength)
+{
+	unsigned char *pCodeHash = pPlugin->GetRuntime()->GetCodeHash();
+	
+	char codeHashBuf[40];
+	ke::SafeSprintf(codeHashBuf, 40, "plugin_");
+	for (int i = 0; i < 16; i++)
+		ke::SafeSprintf(codeHashBuf + 7 + (i * 2), 3, "%02x", pCodeHash[i]);
+	
+	const char *bulletinUrl = g_pGameConf->GetKeyValue(codeHashBuf);
+	if (!bulletinUrl)
+		return true;
+
+	if (m_bBlockBadPlugins) {
+		if (bulletinUrl[0] != '\0') {
+			ke::SafeSprintf(error, maxlength, "Known malware detected and blocked. See %s for more info", bulletinUrl);
+		} else {
+			ke::SafeSprintf(error, maxlength, "Possible malware or illegal plugin detected and blocked");
+		}
+		pPlugin->m_status = Plugin_BadLoad;
+		return false;
+	}
+
+	if (bulletinUrl[0] != '\0') {
+		g_Logger.LogMessage("%s: Known malware detected. See %s for more info, blocking disabled in core.cfg", pPlugin->GetFilename(), bulletinUrl);
+	} else {
+		g_Logger.LogMessage("%s: Possible malware or illegal plugin detected, blocking disabled in core.cfg", pPlugin->GetFilename());
+	}
 	return true;
 }
 
