@@ -927,7 +927,7 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 	switch (result)
 	{
 	case APLRes_Success:
-		if (!LoadOrRequireExtensions(plugin, 1, error, maxlength))
+		if (!LoadExtensions(plugin, error, maxlength))
 			return LoadRes_Failure;
 		return LoadRes_Successful;
 
@@ -1158,44 +1158,53 @@ bool CPlugin::ForEachExtVar(const ExtVarCallback& callback)
 	return true;
 }
 
-bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass, char *error, size_t maxlength)
+bool CPluginManager::LoadExtensions(CPlugin *pPlugin, char *error, size_t maxlength)
 {
-	auto callback = [pPlugin, pass, error, maxlength]
+	auto callback = [pPlugin, error, maxlength]
                     (const sp_pubvar_t *pubvar, const CPlugin::ExtVar& ext) -> bool
 	{
 		char path[PLATFORM_MAX_PATH];
-		if (pass == 1) {
-			/* Attempt to auto-load if necessary */
-			if (ext.autoload) {
-				libsys->PathFormat(path, PLATFORM_MAX_PATH, "%s", ext.file);
-				g_Extensions.LoadAutoExtension(path, ext.required);
+		/* Attempt to auto-load if necessary */
+		if (ext.autoload) {
+			libsys->PathFormat(path, PLATFORM_MAX_PATH, "%s", ext.file);
+			g_Extensions.LoadAutoExtension(path, ext.required);
+		}
+		return true;
+	};
+	return pPlugin->ForEachExtVar(ke::Move(callback));
+}
+
+bool CPluginManager::RequireExtensions(CPlugin *pPlugin, char *error, size_t maxlength)
+{
+	auto callback = [pPlugin, error, maxlength]
+                    (const sp_pubvar_t *pubvar, const CPlugin::ExtVar& ext) -> bool
+	{
+		/* Is this required? */
+		if (ext.required) {
+			char path[PLATFORM_MAX_PATH];
+			libsys->PathFormat(path, PLATFORM_MAX_PATH, "%s", ext.file);
+			IExtension *pExt = g_Extensions.FindExtensionByFile(path);
+			if (!pExt)
+				pExt = g_Extensions.FindExtensionByName(ext.name);
+
+			if (!pExt || !pExt->IsRunning(nullptr, 0)) {
+				ke::SafeSprintf(error, maxlength, "Required extension \"%s\" file(\"%s\") not running", ext.name, ext.file);
+				return false;
 			}
-		} else if (pass == 2) {
-			/* Is this required? */
-			if (ext.required) {
-				libsys->PathFormat(path, PLATFORM_MAX_PATH, "%s", ext.file);
-				IExtension *pExt = g_Extensions.FindExtensionByFile(path);
-				if (!pExt)
-					pExt = g_Extensions.FindExtensionByName(ext.name);
+			g_Extensions.BindChildPlugin(pExt, pPlugin);
+		} else {
+			char buffer[64];
+			ke::SafeSprintf(buffer, sizeof(buffer), "__ext_%s_SetNTVOptional", &pubvar->name[6]);
 
-				if (!pExt || !pExt->IsRunning(nullptr, 0)) {
-					ke::SafeSprintf(error, maxlength, "Required extension \"%s\" file(\"%s\") not running", ext.name, ext.file);
+			if (IPluginFunction *pFunc = pPlugin->GetBaseContext()->GetFunctionByName(buffer)) {
+				cell_t res;
+				if (pFunc->Execute(&res) != SP_ERROR_NONE) {
+					ke::SafeSprintf(error, maxlength, "Fatal error during plugin initialization (ext req)");
 					return false;
-				}
-				g_Extensions.BindChildPlugin(pExt, pPlugin);
-			} else {
-				char buffer[64];
-				ke::SafeSprintf(buffer, sizeof(buffer), "__ext_%s_SetNTVOptional", &pubvar->name[6]);
-
-				if (IPluginFunction *pFunc = pPlugin->GetBaseContext()->GetFunctionByName(buffer)) {
-					cell_t res;
-					if (pFunc->Execute(&res) != SP_ERROR_NONE) {
-						ke::SafeSprintf(error, maxlength, "Fatal error during plugin initialization (ext req)");
-						return false;
-					}
 				}
 			}
 		}
+		return true;
 	};
 
 	return pPlugin->ForEachExtVar(ke::Move(callback));
@@ -1257,15 +1266,11 @@ bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin, char *error, size_t maxl
 bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength)
 {
 	/* Second pass for extension requirements */
-	if (!LoadOrRequireExtensions(pPlugin, 2, error, maxlength))
-	{
+	if (!RequireExtensions(pPlugin, error, maxlength))
 		return false;
-	}
 
 	if (!FindOrRequirePluginDeps(pPlugin, error, maxlength))
-	{
 		return false;
-	}
 
 	/* Run another binding pass */
 	g_ShareSys.BindNativesToPlugin(pPlugin, false);
