@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -64,7 +64,7 @@ CPlugin::CPlugin(const char *file)
    m_ident(nullptr),
    m_bGotAllLoaded(false),
    m_FileVersion(0),
-   m_LastAccess(0),
+   m_LastFileModTime(0),
    m_handle(BAD_HANDLE)
 {
 	static int MySerial = 0;
@@ -108,8 +108,8 @@ void CPlugin::InitIdentity()
 
 unsigned int CPlugin::CalcMemUsage()
 {
-	unsigned int base_size = 
-		sizeof(CPlugin) 
+	unsigned int base_size =
+		sizeof(CPlugin)
 		+ sizeof(IdentityToken_t)
 		+ (m_configs.size() * (sizeof(AutoConfig *) + sizeof(AutoConfig)))
 		+ m_Props.mem_usage();
@@ -150,6 +150,7 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 
 	fclose(fp);
 
+	pPlugin->m_LastFileModTime = pPlugin->GetFileTimeStamp();
 	return pPlugin;
 }
 
@@ -205,7 +206,7 @@ void CPlugin::SetErrorState(PluginStatus status, const char *error_fmt, ...)
 	}
 }
 
-bool CPlugin::UpdateInfo()
+bool CPlugin::ReadInfo()
 {
 	/* Now grab the info */
 	uint32_t idx;
@@ -381,7 +382,7 @@ APLRes CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 	bool haveNewAPL = false;
 	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("AskPluginLoad2");
 
-	if (pFunction) 
+	if (pFunction)
 	{
 		haveNewAPL = true;
 	}
@@ -399,7 +400,7 @@ APLRes CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 		return APLRes_Failure;
 	}
 
-	if (haveNewAPL) 
+	if (haveNewAPL)
 	{
 		return (APLRes)result;
 	}
@@ -434,6 +435,30 @@ void CPlugin::Call_OnLibraryAdded(const char *lib)
 void *CPlugin::GetPluginStructure()
 {
 	return NULL;
+}
+
+// Only called during plugin construction.
+bool CPlugin::TryCompile(char *error, size_t maxlength)
+{
+	char fullpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", m_filename);
+
+	char loadmsg[255];
+	m_pRuntime = g_pSourcePawn2->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg));
+	if (!m_pRuntime) {
+		ke::SafeSprintf(error, maxlength, "Unable to load plugin (%s)", loadmsg);
+		m_status = Plugin_BadLoad;
+		return false;
+	}
+
+	// ReadInfo() sets its own error state.
+	if (!ReadInfo()) {
+		ke::SafeSprintf(error, maxlength, "%s", m_errormsg);
+		return false;
+	}
+
+	m_status = Plugin_Created;
+	return true;
 }
 
 IPluginContext *CPlugin::GetBaseContext()
@@ -590,16 +615,6 @@ time_t CPlugin::GetFileTimeStamp()
 	}
 }
 
-time_t CPlugin::GetTimeStamp()
-{
-	return m_LastAccess;
-}
-
-void CPlugin::SetTimeStamp(time_t t)
-{
-	m_LastAccess = t;
-}
-
 IPhraseCollection *CPlugin::GetPhrases()
 {
 	return m_pPhrases;
@@ -686,21 +701,21 @@ void CPlugin::DropEverything()
 
 	/* Tell everyone that depends on us that we're about to drop */
 	for (List<CPlugin *>::iterator iter = m_Dependents.begin();
-		 iter != m_Dependents.end(); 
+		 iter != m_Dependents.end();
 		 iter++)
 	{
 		pOther = static_cast<CPlugin *>(*iter);
 		pOther->DependencyDropped(this);
 	}
 
-	/* Note: we don't care about things we depend on. 
-	 * The reason is that extensions have their own cleanup 
-	 * code for plugins.  Although the "right" design would be 
-	 * to centralize that here, i'm omitting it for now.  Thus, 
+	/* Note: we don't care about things we depend on.
+	 * The reason is that extensions have their own cleanup
+	 * code for plugins.  Although the "right" design would be
+	 * to centralize that here, i'm omitting it for now.  Thus,
 	 * the code below to walk the plugins list will suffice.
 	 */
 	
-	/* Other plugins could be holding weak references that were 
+	/* Other plugins could be holding weak references that were
 	 * added by us.  We need to clean all of those up now.
 	 */
 	for (List<CPlugin *>::iterator iter = g_PluginSys.m_plugins.begin();
@@ -837,7 +852,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 
 	while (dir->MoreFiles())
 	{
-		if (dir->IsEntryDirectory() 
+		if (dir->IsEntryDirectory()
 			&& (strcmp(dir->GetEntryName(), ".") != 0)
 			&& (strcmp(dir->GetEntryName(), "..") != 0)
 			&& (strcmp(dir->GetEntryName(), "disabled") != 0)
@@ -874,7 +889,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 	libsys->CloseDirectory(dir);
 }
 
-LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool debug, PluginType type, char error[], size_t maxlength)
+LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool debug, PluginType type, char error[], size_t maxlength)
 {
 	if (m_LoadingLocked)
 		return LoadRes_NeverLoad;
@@ -900,101 +915,34 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 		}
 	}
 
-	pPlugin = CPlugin::CreatePlugin(path, error, maxlength);
-	assert(pPlugin != NULL);
+	CPlugin *plugin = CompileAndPrep(path, error, maxlength);
 
-	if (pPlugin->m_status == Plugin_Uncompiled)
+	// Assign our outparam so we can return early. It must be set.
+	*aResult = plugin;
+
+	if (plugin->GetStatus() != Plugin_Created)
+		return LoadRes_Failure;
+
+	APLRes result = plugin->Call_AskPluginLoad(error, maxlength);
+	switch (result)
 	{
-		char fullpath[PLATFORM_MAX_PATH];
-		g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", pPlugin->m_filename);
+	case APLRes_Success:
+		if (!LoadOrRequireExtensions(plugin, 1, error, maxlength))
+			return LoadRes_Failure;
+		return LoadRes_Successful;
 
-		char loadmsg[255];
-		pPlugin->m_pRuntime = g_pSourcePawn2->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg));
-		if (!pPlugin->m_pRuntime) {
-			if (error)
-				ke::SafeSprintf(error, maxlength, "Unable to load plugin (%s)", loadmsg);
-			pPlugin->m_status = Plugin_BadLoad;
-		} else {
-			if (pPlugin->UpdateInfo()) {
-				pPlugin->m_status = Plugin_Created;
-			} else {
-				if (error)
-					ke::SafeSprintf(error, maxlength, "%s", pPlugin->m_errormsg);
-			}
-		}
+	case APLRes_Failure:
+		plugin->SetErrorState(Plugin_Failed, "%s", error);
+		return LoadRes_Failure;
+
+	case APLRes_SilentFailure:
+		plugin->SetErrorState(Plugin_Failed, "%s", error);
+		plugin->SetSilentlyFailed();
+		return LoadRes_SilentFailure;
+
+	default:
+		return LoadRes_Failure;
 	}
-	
-	if (pPlugin->GetStatus() == Plugin_Created)
-	{
-		unsigned char *pCodeHash = pPlugin->m_pRuntime->GetCodeHash();
-		
-		char codeHashBuf[40];
-		ke::SafeSprintf(codeHashBuf, 40, "plugin_");
-		for (int i = 0; i < 16; i++)
-			ke::SafeSprintf(codeHashBuf + 7 + (i * 2), 3, "%02x", pCodeHash[i]);
-		
-		const char *bulletinUrl = g_pGameConf->GetKeyValue(codeHashBuf);
-		if (bulletinUrl != NULL)
-		{
-			if (m_bBlockBadPlugins)
-			{
-				if (error)
-				{
-					if (bulletinUrl[0] != '\0')
-					{
-						ke::SafeSprintf(error, maxlength, "Known malware detected and blocked. See %s for more info", bulletinUrl);
-					} else {
-						ke::SafeSprintf(error, maxlength, "Possible malware or illegal plugin detected and blocked");
-					}
-				}
-				pPlugin->m_status = Plugin_BadLoad;
-			} else {
-				if (bulletinUrl[0] != '\0')
-				{
-					g_Logger.LogMessage("%s: Known malware detected. See %s for more info, blocking disabled in core.cfg", pPlugin->GetFilename(), bulletinUrl);
-				} else {
-					g_Logger.LogMessage("%s: Possible malware or illegal plugin detected, blocking disabled in core.cfg", pPlugin->GetFilename());
-				}
-			}
-		}
-	}
-
-	LoadRes loadFailure = LoadRes_Failure;
-	/* Get the status */
-	if (pPlugin->GetStatus() == Plugin_Created)
-	{
-		/* First native pass - add anything from Core */
-		g_ShareSys.BindNativesToPlugin(pPlugin, true);
-		pPlugin->InitIdentity();
-		APLRes result = pPlugin->Call_AskPluginLoad(error, maxlength);  
-		switch (result)
-		{
-		case APLRes_Success:
-			/* Autoload any modules */
-			LoadOrRequireExtensions(pPlugin, 1, error, maxlength);
-			break;
-		case APLRes_Failure:
-			pPlugin->SetErrorState(Plugin_Failed, "%s", error);
-			loadFailure = LoadRes_Failure;
-			break;
-		case APLRes_SilentFailure:
-			pPlugin->SetErrorState(Plugin_Failed, "%s", error);
-			loadFailure = LoadRes_SilentFailure;
-			pPlugin->SetSilentlyFailed();
-			break;
-		default:
-			assert(false);
-		}
-	}
-
-	/* Save the time stamp */
-	time_t t = pPlugin->GetFileTimeStamp();
-	pPlugin->SetTimeStamp(t);
-
-	if (aResult)
-		*aResult = pPlugin;
-
-	return (pPlugin->GetStatus() == Plugin_Loaded) ? LoadRes_Successful : loadFailure;
 }
 
 IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType type, char error[], size_t maxlength, bool *wasloaded)
@@ -1003,7 +951,7 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	LoadRes res;
 
 	*wasloaded = false;
-	if ((res=_LoadPlugin(&pl, path, true, PluginType_MapUpdated, error, maxlength)) == LoadRes_Failure)
+	if ((res=LoadPlugin(&pl, path, true, PluginType_MapUpdated, error, maxlength)) == LoadRes_Failure)
 	{
 		delete pl;
 		return NULL;
@@ -1053,11 +1001,11 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 	LoadRes res;
 	char error[255] = "Unknown error";
 
-	if ((res=_LoadPlugin(&pl, plugin, false, PluginType_MapUpdated, error, sizeof(error))) == LoadRes_Failure)
+	if ((res=LoadPlugin(&pl, plugin, false, PluginType_MapUpdated, error, sizeof(error))) == LoadRes_Failure)
 	{
 		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s.", plugin, error);
 		pl->SetErrorState(
-			pl->GetStatus() <= Plugin_Created ? Plugin_BadLoad : pl->GetStatus(), 
+			pl->GetStatus() <= Plugin_Created ? Plugin_BadLoad : pl->GetStatus(),
 			"%s",
 			error);
 	}
@@ -1264,6 +1212,59 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 		}
 	}
 
+	return true;
+}
+
+CPlugin *CPluginManager::CompileAndPrep(const char *path, char *error, size_t maxlength)
+{
+	CPlugin *plugin = CPlugin::CreatePlugin(path, error, maxlength);
+	if (plugin->GetStatus() != Plugin_Uncompiled) {
+		assert(plugin->GetStatus() == Plugin_BadLoad);
+		return plugin;
+	}
+
+	if (!plugin->TryCompile(error, maxlength))
+		return plugin;
+	assert(plugin->GetStatus() == Plugin_Created);
+
+	if (!MalwareCheckPass(plugin, error, maxlength))
+		return plugin;
+	assert(plugin->GetStatus() == Plugin_Created);
+
+	g_ShareSys.BindNativesToPlugin(plugin, true);
+	plugin->InitIdentity();
+	return plugin;
+}
+
+
+bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin, char *error, size_t maxlength)
+{
+	unsigned char *pCodeHash = pPlugin->GetRuntime()->GetCodeHash();
+	
+	char codeHashBuf[40];
+	ke::SafeSprintf(codeHashBuf, 40, "plugin_");
+	for (int i = 0; i < 16; i++)
+		ke::SafeSprintf(codeHashBuf + 7 + (i * 2), 3, "%02x", pCodeHash[i]);
+	
+	const char *bulletinUrl = g_pGameConf->GetKeyValue(codeHashBuf);
+	if (!bulletinUrl)
+		return true;
+
+	if (m_bBlockBadPlugins) {
+		if (bulletinUrl[0] != '\0') {
+			ke::SafeSprintf(error, maxlength, "Known malware detected and blocked. See %s for more info", bulletinUrl);
+		} else {
+			ke::SafeSprintf(error, maxlength, "Possible malware or illegal plugin detected and blocked");
+		}
+		pPlugin->m_status = Plugin_BadLoad;
+		return false;
+	}
+
+	if (bulletinUrl[0] != '\0') {
+		g_Logger.LogMessage("%s: Known malware detected. See %s for more info, blocking disabled in core.cfg", pPlugin->GetFilename(), bulletinUrl);
+	} else {
+		g_Logger.LogMessage("%s: Possible malware or illegal plugin detected, blocking disabled in core.cfg", pPlugin->GetFilename());
+	}
 	return true;
 }
 
@@ -1627,7 +1628,7 @@ bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)
 					localptr++;
 				}
 				/* Check if we hit the end of our searchable area.
-				 * This probably isn't possible because of the path 
+				 * This probably isn't possible because of the path
 				 * count check, but it's a good idea anyway.
 				 */
 				if ((localptr - localpath) >= (int)local_path_end)
@@ -1799,10 +1800,10 @@ void CPluginManager::OnSourceModShutdown()
 	forwardsys->ReleaseForward(m_pOnLibraryRemoved);
 }
 
-ConfigResult CPluginManager::OnSourceModConfigChanged(const char *key, 
-												 const char *value, 
-												 ConfigSource source, 
-												 char *error, 
+ConfigResult CPluginManager::OnSourceModConfigChanged(const char *key,
+												 const char *value,
+												 ConfigSource source,
+												 char *error,
 												 size_t maxlength)
 {
 	if (strcmp(key, "BlockBadPlugins") == 0) {
@@ -2203,7 +2204,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				rootmenu->ConsolePrint("  Load error: %s", pl->m_errormsg);
 				if (pl->GetStatus() < Plugin_Created)
 				{
-					rootmenu->ConsolePrint("  File info: (title \"%s\") (version \"%s\")", 
+					rootmenu->ConsolePrint("  File info: (title \"%s\") (version \"%s\")",
 											info->name ? info->name : "<none>",
 											info->version ? info->version : "<none>");
 					if (IS_STR_FILLED(info->url))
@@ -2259,7 +2260,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 
 			char name[PLATFORM_MAX_PATH];
 			const sm_plugininfo_t *info = pl->GetPublicInfo();
-			if (pl->GetStatus() <= Plugin_Paused) 
+			if (pl->GetStatus() <= Plugin_Paused)
 				strcpy(name, (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 			else
 				strcpy(name, pl->GetFilename());
@@ -2351,12 +2352,19 @@ void CPluginManager::RefreshAll()
 	for (auto iter = tmp_list.begin(); iter != tmp_list.end(); iter++)
 	{
 		CPlugin *pl = (*iter);
-		time_t t = pl->GetFileTimeStamp();
-		if (!t || t > pl->GetTimeStamp()) {
-			pl->SetTimeStamp(t);
+		if (pl->HasUpdatedFile())
 			UnloadPlugin(pl);
-		}
 	}
+}
+
+bool CPlugin::HasUpdatedFile()
+{
+	time_t t = GetFileTimeStamp();
+	if (!t || t > m_LastFileModTime) {
+		m_LastFileModTime = t;
+		return true;
+	}
+	return false;
 }
 
 void CPluginManager::_SetPauseState(CPlugin *pl, bool paused)
@@ -2544,7 +2552,7 @@ void CPluginManager::FreePluginList(const CVector<SMPlugin *> *list)
 class OldPluginAPI : public IPluginManager
 {
 public:
-	IPlugin *LoadPlugin(const char *path, 
+	IPlugin *LoadPlugin(const char *path,
 						bool debug,
 						PluginType type,
 						char error[],
