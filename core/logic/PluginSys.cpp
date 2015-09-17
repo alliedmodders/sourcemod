@@ -917,34 +917,32 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 
 	CPlugin *plugin = CompileAndPrep(path, error, maxlength);
 
-	LoadRes loadFailure = LoadRes_Failure;
-	/* Get the status */
-	if (pPlugin->GetStatus() == Plugin_Created) {
-		APLRes result = pPlugin->Call_AskPluginLoad(error, maxlength);  
-		switch (result)
-		{
-		case APLRes_Success:
-			/* Autoload any modules */
-			LoadOrRequireExtensions(pPlugin, 1, error, maxlength);
-			break;
-		case APLRes_Failure:
-			pPlugin->SetErrorState(Plugin_Failed, "%s", error);
-			loadFailure = LoadRes_Failure;
-			break;
-		case APLRes_SilentFailure:
-			pPlugin->SetErrorState(Plugin_Failed, "%s", error);
-			loadFailure = LoadRes_SilentFailure;
-			pPlugin->SetSilentlyFailed();
-			break;
-		default:
-			assert(false);
-		}
+	// Assign our outparam so we can return early. It must be set.
+	*aResult = plugin;
+
+	if (plugin->GetStatus() != Plugin_Created)
+		return LoadRes_Failure;
+
+	APLRes result = plugin->Call_AskPluginLoad(error, maxlength);  
+	switch (result)
+	{
+	case APLRes_Success:
+		if (!LoadOrRequireExtensions(plugin, 1, error, maxlength))
+			return LoadRes_Failure;
+		return LoadRes_Successful;
+
+	case APLRes_Failure:
+		plugin->SetErrorState(Plugin_Failed, "%s", error);
+		return LoadRes_Failure;
+
+	case APLRes_SilentFailure:
+		plugin->SetErrorState(Plugin_Failed, "%s", error);
+		plugin->SetSilentlyFailed();
+		return LoadRes_SilentFailure;
+
+	default:
+		return LoadRes_Failure;
 	}
-
-	if (aResult)
-		*aResult = pPlugin;
-
-	return (pPlugin->GetStatus() == Plugin_Loaded) ? LoadRes_Successful : loadFailure;
 }
 
 IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType type, char error[], size_t maxlength, bool *wasloaded)
