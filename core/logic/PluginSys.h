@@ -114,7 +114,6 @@ enum LoadRes
 	LoadRes_Successful,
 	LoadRes_AlreadyLoaded,
 	LoadRes_Failure,
-	LoadRes_SilentFailure,
 	LoadRes_NeverLoad
 };
 
@@ -143,7 +142,6 @@ public:
 	bool IsDebugging();
 	PluginStatus GetStatus();
 	bool IsSilentlyFailed();
-	void SetSilentlyFailed();
 	const sm_plugininfo_t *GetPublicInfo();
 	bool SetPauseState(bool paused);
 	unsigned int GetSerial();
@@ -174,7 +172,7 @@ public:
 	 *   If an error buffer is not specified, the error will be copied to an internal buffer and 
 	 * a valid (but error-stated) CPlugin will be returned.
 	 */
-	static CPlugin *CreatePlugin(const char *file, char *error, size_t maxlength);
+	static CPlugin *Create(const char *file);
 
 	static inline bool matches(const char *file, const CPlugin *plugin)
 	{
@@ -194,12 +192,9 @@ public:
 
 	/**
 	 * Calls the OnPluginLoad function, and sets any failed states if necessary.
-	 * NOTE: Valid pre-states are: Plugin_Created
-	 * NOTE: If validated, plugin state is changed to Plugin_Loaded
-	 *
-	 * If the error buffer is NULL, the error message is cached locally.
+	 * After invoking AskPluginLoad, its state is either Running or Failed.
 	 */
-	APLRes Call_AskPluginLoad(char *error, size_t maxlength);
+	APLRes AskPluginLoad();
 
 	/**
 	 * Calls the OnPluginStart function.
@@ -264,7 +259,7 @@ public:
 protected:
 	bool ReadInfo();
 	void DependencyDropped(CPlugin *pOwner);
-	bool TryCompile(char *error, size_t maxlength);
+	bool TryCompile();
 
 private:
 	time_t GetFileTimeStamp();
@@ -457,7 +452,7 @@ public:
 
 	void ListPluginsToClient(CPlayer *player, const CCommand &args);
 private:
-	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
+	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type);
 
 	void LoadAutoPlugin(const char *plugin);
 
@@ -474,8 +469,8 @@ private:
 	/**
 	 * First pass for loading a plugin, and its helpers.
 	 */
-	CPlugin *CompileAndPrep(const char *path, char *error, size_t maxlength);
-	bool MalwareCheckPass(CPlugin *pPlugin, char *error, size_t maxlength);
+	CPlugin *CompileAndPrep(const char *path);
+	bool MalwareCheckPass(CPlugin *pPlugin);
 
 	/**
 	 * Runs the second loading pass on a plugin.
@@ -485,7 +480,7 @@ private:
 	/**
 	 * Runs an extension pass on a plugin.
 	 */
-	bool LoadExtensions(CPlugin *pPlugin, char *error, size_t maxlength);
+	void LoadExtensions(CPlugin *pPlugin);
 	bool RequireExtensions(CPlugin *pPlugin, char *error, size_t maxlength);
 
 	/**
