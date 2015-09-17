@@ -927,8 +927,7 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 	switch (result)
 	{
 	case APLRes_Success:
-		if (!LoadExtensions(plugin, error, maxlength))
-			return LoadRes_Failure;
+		LoadExtensions(plugin);
 		return LoadRes_Successful;
 
 	case APLRes_Failure:
@@ -1158,10 +1157,9 @@ bool CPlugin::ForEachExtVar(const ExtVarCallback& callback)
 	return true;
 }
 
-bool CPluginManager::LoadExtensions(CPlugin *pPlugin, char *error, size_t maxlength)
+void CPluginManager::LoadExtensions(CPlugin *pPlugin)
 {
-	auto callback = [pPlugin, error, maxlength]
-                    (const sp_pubvar_t *pubvar, const CPlugin::ExtVar& ext) -> bool
+	auto callback = [pPlugin] (const sp_pubvar_t *pubvar, const CPlugin::ExtVar& ext) -> bool
 	{
 		char path[PLATFORM_MAX_PATH];
 		/* Attempt to auto-load if necessary */
@@ -1171,7 +1169,7 @@ bool CPluginManager::LoadExtensions(CPlugin *pPlugin, char *error, size_t maxlen
 		}
 		return true;
 	};
-	return pPlugin->ForEachExtVar(ke::Move(callback));
+	pPlugin->ForEachExtVar(ke::Move(callback));
 }
 
 bool CPluginManager::RequireExtensions(CPlugin *pPlugin, char *error, size_t maxlength)
