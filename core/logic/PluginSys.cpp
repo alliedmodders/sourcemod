@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -108,8 +108,8 @@ void CPlugin::InitIdentity()
 
 unsigned int CPlugin::CalcMemUsage()
 {
-	unsigned int base_size = 
-		sizeof(CPlugin) 
+	unsigned int base_size =
+		sizeof(CPlugin)
 		+ sizeof(IdentityToken_t)
 		+ (m_configs.size() * (sizeof(AutoConfig *) + sizeof(AutoConfig)))
 		+ m_Props.mem_usage();
@@ -382,7 +382,7 @@ APLRes CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 	bool haveNewAPL = false;
 	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("AskPluginLoad2");
 
-	if (pFunction) 
+	if (pFunction)
 	{
 		haveNewAPL = true;
 	}
@@ -400,7 +400,7 @@ APLRes CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 		return APLRes_Failure;
 	}
 
-	if (haveNewAPL) 
+	if (haveNewAPL)
 	{
 		return (APLRes)result;
 	}
@@ -701,21 +701,21 @@ void CPlugin::DropEverything()
 
 	/* Tell everyone that depends on us that we're about to drop */
 	for (List<CPlugin *>::iterator iter = m_Dependents.begin();
-		 iter != m_Dependents.end(); 
+		 iter != m_Dependents.end();
 		 iter++)
 	{
 		pOther = static_cast<CPlugin *>(*iter);
 		pOther->DependencyDropped(this);
 	}
 
-	/* Note: we don't care about things we depend on. 
-	 * The reason is that extensions have their own cleanup 
-	 * code for plugins.  Although the "right" design would be 
-	 * to centralize that here, i'm omitting it for now.  Thus, 
+	/* Note: we don't care about things we depend on.
+	 * The reason is that extensions have their own cleanup
+	 * code for plugins.  Although the "right" design would be
+	 * to centralize that here, i'm omitting it for now.  Thus,
 	 * the code below to walk the plugins list will suffice.
 	 */
 	
-	/* Other plugins could be holding weak references that were 
+	/* Other plugins could be holding weak references that were
 	 * added by us.  We need to clean all of those up now.
 	 */
 	for (List<CPlugin *>::iterator iter = g_PluginSys.m_plugins.begin();
@@ -852,7 +852,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 
 	while (dir->MoreFiles())
 	{
-		if (dir->IsEntryDirectory() 
+		if (dir->IsEntryDirectory()
 			&& (strcmp(dir->GetEntryName(), ".") != 0)
 			&& (strcmp(dir->GetEntryName(), "..") != 0)
 			&& (strcmp(dir->GetEntryName(), "disabled") != 0)
@@ -923,7 +923,7 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 	if (plugin->GetStatus() != Plugin_Created)
 		return LoadRes_Failure;
 
-	APLRes result = plugin->Call_AskPluginLoad(error, maxlength);  
+	APLRes result = plugin->Call_AskPluginLoad(error, maxlength);
 	switch (result)
 	{
 	case APLRes_Success:
@@ -1005,7 +1005,7 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 	{
 		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s.", plugin, error);
 		pl->SetErrorState(
-			pl->GetStatus() <= Plugin_Created ? Plugin_BadLoad : pl->GetStatus(), 
+			pl->GetStatus() <= Plugin_Created ? Plugin_BadLoad : pl->GetStatus(),
 			"%s",
 			error);
 	}
@@ -1628,7 +1628,7 @@ bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)
 					localptr++;
 				}
 				/* Check if we hit the end of our searchable area.
-				 * This probably isn't possible because of the path 
+				 * This probably isn't possible because of the path
 				 * count check, but it's a good idea anyway.
 				 */
 				if ((localptr - localpath) >= (int)local_path_end)
@@ -1800,10 +1800,10 @@ void CPluginManager::OnSourceModShutdown()
 	forwardsys->ReleaseForward(m_pOnLibraryRemoved);
 }
 
-ConfigResult CPluginManager::OnSourceModConfigChanged(const char *key, 
-												 const char *value, 
-												 ConfigSource source, 
-												 char *error, 
+ConfigResult CPluginManager::OnSourceModConfigChanged(const char *key,
+												 const char *value,
+												 ConfigSource source,
+												 char *error,
 												 size_t maxlength)
 {
 	if (strcmp(key, "BlockBadPlugins") == 0) {
@@ -2204,7 +2204,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				rootmenu->ConsolePrint("  Load error: %s", pl->m_errormsg);
 				if (pl->GetStatus() < Plugin_Created)
 				{
-					rootmenu->ConsolePrint("  File info: (title \"%s\") (version \"%s\")", 
+					rootmenu->ConsolePrint("  File info: (title \"%s\") (version \"%s\")",
 											info->name ? info->name : "<none>",
 											info->version ? info->version : "<none>");
 					if (IS_STR_FILLED(info->url))
@@ -2260,7 +2260,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 
 			char name[PLATFORM_MAX_PATH];
 			const sm_plugininfo_t *info = pl->GetPublicInfo();
-			if (pl->GetStatus() <= Plugin_Paused) 
+			if (pl->GetStatus() <= Plugin_Paused)
 				strcpy(name, (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 			else
 				strcpy(name, pl->GetFilename());
@@ -2552,7 +2552,7 @@ void CPluginManager::FreePluginList(const CVector<SMPlugin *> *list)
 class OldPluginAPI : public IPluginManager
 {
 public:
-	IPlugin *LoadPlugin(const char *path, 
+	IPlugin *LoadPlugin(const char *path,
 						bool debug,
 						PluginType type,
 						char error[],
