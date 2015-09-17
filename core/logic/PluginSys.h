@@ -249,10 +249,13 @@ public:
 	}
 	void LibraryActions(LibraryAction action);
 	void SyncMaxClients(int max_clients);
+
 protected:
-	bool UpdateInfo();
+	bool ReadInfo();
 	void SetTimeStamp(time_t t);
 	void DependencyDropped(CPlugin *pOwner);
+
+	bool TryCompile(char *error, size_t maxlength);
 
 private:
 	// This information is static for the lifetime of the plugin.

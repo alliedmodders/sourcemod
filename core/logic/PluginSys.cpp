@@ -205,7 +205,7 @@ void CPlugin::SetErrorState(PluginStatus status, const char *error_fmt, ...)
 	}
 }
 
-bool CPlugin::UpdateInfo()
+bool CPlugin::ReadInfo()
 {
 	/* Now grab the info */
 	uint32_t idx;
@@ -434,6 +434,30 @@ void CPlugin::Call_OnLibraryAdded(const char *lib)
 void *CPlugin::GetPluginStructure()
 {
 	return NULL;
+}
+
+// Only called during plugin construction.
+bool CPlugin::TryCompile(char *error, size_t maxlength)
+{
+	char fullpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", m_filename);
+
+	char loadmsg[255];
+	m_pRuntime = g_pSourcePawn2->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg));
+	if (!m_pRuntime) {
+		ke::SafeSprintf(error, maxlength, "Unable to load plugin (%s)", loadmsg);
+		m_status = Plugin_BadLoad;
+		return false;
+	}
+
+	// ReadInfo() sets its own error state.
+	if (!ReadInfo()) {
+		ke::SafeSprintf(error, maxlength, "%s", m_errormsg);
+		return false;
+	}
+
+	m_status = Plugin_Created;
+	return true;
 }
 
 IPluginContext *CPlugin::GetBaseContext()
@@ -903,25 +927,8 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **aResult, const char *path, bool de
 	pPlugin = CPlugin::CreatePlugin(path, error, maxlength);
 	assert(pPlugin != NULL);
 
-	if (pPlugin->m_status == Plugin_Uncompiled)
-	{
-		char fullpath[PLATFORM_MAX_PATH];
-		g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", pPlugin->m_filename);
-
-		char loadmsg[255];
-		pPlugin->m_pRuntime = g_pSourcePawn2->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg));
-		if (!pPlugin->m_pRuntime) {
-			if (error)
-				ke::SafeSprintf(error, maxlength, "Unable to load plugin (%s)", loadmsg);
-			pPlugin->m_status = Plugin_BadLoad;
-		} else {
-			if (pPlugin->UpdateInfo()) {
-				pPlugin->m_status = Plugin_Created;
-			} else {
-				if (error)
-					ke::SafeSprintf(error, maxlength, "%s", pPlugin->m_errormsg);
-			}
-		}
+	if (pPlugin->m_status == Plugin_Uncompiled) {
+		pPlugin->TryCompile(error, maxlength);
 	}
 	
 	if (pPlugin->GetStatus() == Plugin_Created)
