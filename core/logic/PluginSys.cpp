@@ -1142,70 +1142,69 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 	for (uint32_t i=0; i<num; i++)
 	{
 		if (pBase->GetPubvarByIndex(i, &pubvar) != SP_ERROR_NONE)
+			continue;
+
+		if (strncmp(pubvar->name, "__ext_", 6) != 0)
+			continue;
+
+		ext = (_ext *)pubvar->offs;
+		if (pBase->LocalToString(ext->file, &file) != SP_ERROR_NONE)
 		{
 			continue;
 		}
-		if (strncmp(pubvar->name, "__ext_", 6) == 0)
+		if (pBase->LocalToString(ext->name, &name) != SP_ERROR_NONE)
 		{
-			ext = (_ext *)pubvar->offs;
-			if (pBase->LocalToString(ext->file, &file) != SP_ERROR_NONE)
+			continue;
+		}
+		if (pass == 1)
+		{
+			/* Attempt to auto-load if necessary */
+			if (ext->autoload)
 			{
-				continue;
+				libsys->PathFormat(path, PLATFORM_MAX_PATH, "%s", file);
+				bool bErrorOnMissing = ext->required ? true : false;
+				g_Extensions.LoadAutoExtension(path, bErrorOnMissing);
 			}
-			if (pBase->LocalToString(ext->name, &name) != SP_ERROR_NONE)
+		}
+		else if (pass == 2)
+		{
+			/* Is this required? */
+			if (ext->required)
 			{
-				continue;
-			}
-			if (pass == 1)
-			{
-				/* Attempt to auto-load if necessary */
-				if (ext->autoload)
+				libsys->PathFormat(path, PLATFORM_MAX_PATH, "%s", file);
+				if ((pExt = g_Extensions.FindExtensionByFile(path)) == NULL)
 				{
-					libsys->PathFormat(path, PLATFORM_MAX_PATH, "%s", file);
-					bool bErrorOnMissing = ext->required ? true : false;
-					g_Extensions.LoadAutoExtension(path, bErrorOnMissing);
+					pExt = g_Extensions.FindExtensionByName(name);
 				}
-			}
-			else if (pass == 2)
-			{
-				/* Is this required? */
-				if (ext->required)
+				/* :TODO: should we bind to unloaded extensions?
+				 * Currently the extension manager will ignore this.
+				 */
+				if (!pExt || !pExt->IsRunning(NULL, 0))
 				{
-					libsys->PathFormat(path, PLATFORM_MAX_PATH, "%s", file);
-					if ((pExt = g_Extensions.FindExtensionByFile(path)) == NULL)
+					if (error)
 					{
-						pExt = g_Extensions.FindExtensionByName(name);
+						ke::SafeSprintf(error, maxlength, "Required extension \"%s\" file(\"%s\") not running", name, file);
 					}
-					/* :TODO: should we bind to unloaded extensions?
-					 * Currently the extension manager will ignore this.
-					 */
-					if (!pExt || !pExt->IsRunning(NULL, 0))
-					{
-						if (error)
-						{
-							ke::SafeSprintf(error, maxlength, "Required extension \"%s\" file(\"%s\") not running", name, file);
-						}
-						return false;
-					}
-					else
-					{
-						g_Extensions.BindChildPlugin(pExt, pPlugin);
-					}
+					return false;
 				}
 				else
 				{
-					IPluginFunction *pFunc;
-					char buffer[64];
-					ke::SafeSprintf(buffer, sizeof(buffer), "__ext_%s_SetNTVOptional", &pubvar->name[6]);
+					g_Extensions.BindChildPlugin(pExt, pPlugin);
+				}
+			}
+			else
+			{
+				IPluginFunction *pFunc;
+				char buffer[64];
+				ke::SafeSprintf(buffer, sizeof(buffer), "__ext_%s_SetNTVOptional", &pubvar->name[6]);
 
-					if ((pFunc = pBase->GetFunctionByName(buffer)) != NULL)
-					{
-						cell_t res;
-						if (pFunc->Execute(&res) != SP_ERROR_NONE) {
-							if (error)
-								ke::SafeSprintf(error, maxlength, "Fatal error during plugin initialization (ext req)");
-							return false;
-						}
+				if ((pFunc = pBase->GetFunctionByName(buffer)) != NULL)
+				{
+					cell_t res;
+					if (pFunc->Execute(&res) != SP_ERROR_NONE) {
+						if (error)
+							ke::SafeSprintf(error, maxlength, "Fatal error during plugin initialization (ext req)");
+						return false;
 					}
 				}
 			}
