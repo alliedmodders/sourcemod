@@ -169,8 +169,8 @@ public:
 	{
 		return strcmp(plugin->m_filename, file) == 0;
 	}
-public:
 
+public:
 	/**
 	 * Sets an error state on the plugin
 	 */
@@ -221,13 +221,8 @@ public:
 	 * Get languages info.
 	 */
 	IPhraseCollection *GetPhrases();
+
 public:
-	// Returns the modification time during last plugin load.
-	time_t GetTimeStamp();
-
-	// Returns the current modification time of the plugin file.
-	time_t GetFileTimeStamp();
-
 	// Returns true if the plugin was running, but is now invalid.
 	bool WasRunning();
 
@@ -250,12 +245,18 @@ public:
 	void LibraryActions(LibraryAction action);
 	void SyncMaxClients(int max_clients);
 
+	// Returns true if the plugin's underlying file structure has a newer
+	// modification time than either when it was first instantiated or
+	// since the last call to HasUpdatedFile().
+	bool HasUpdatedFile();
+
 protected:
 	bool ReadInfo();
-	void SetTimeStamp(time_t t);
 	void DependencyDropped(CPlugin *pOwner);
-
 	bool TryCompile(char *error, size_t maxlength);
+
+private:
+	time_t GetFileTimeStamp();
 
 private:
 	// This information is static for the lifetime of the plugin.
@@ -285,7 +286,7 @@ private:
 	// Information that survives past eviction.
 	List<String> m_RequiredLibs;
 	List<String> m_Libraries;
-	time_t m_LastAccess;
+	time_t m_LastFileModTime;
 	Handle_t m_handle;
 	char m_DateTime[256];
 
@@ -445,7 +446,7 @@ public:
 
 	void ListPluginsToClient(CPlayer *player, const CCommand &args);
 private:
-	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
+	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
 
 	void LoadAutoPlugin(const char *plugin);
 
