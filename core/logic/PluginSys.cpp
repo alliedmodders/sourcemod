@@ -1134,13 +1134,9 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 	} *ext;
 
 	IPluginContext *pBase = pPlugin->GetBaseContext();
-	uint32_t num = pBase->GetPubVarsNum();
-	sp_pubvar_t *pubvar;
-	IExtension *pExt;
-	char path[PLATFORM_MAX_PATH];
-	char *file, *name;
-	for (uint32_t i=0; i<num; i++)
+	for (uint32_t i = 0; i < pBase->GetPubVarsNum(); i++)
 	{
+		sp_pubvar_t *pubvar;
 		if (pBase->GetPubvarByIndex(i, &pubvar) != SP_ERROR_NONE)
 			continue;
 
@@ -1148,30 +1144,26 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 			continue;
 
 		ext = (_ext *)pubvar->offs;
+
+		char *file, *name;
 		if (pBase->LocalToString(ext->file, &file) != SP_ERROR_NONE)
-		{
 			continue;
-		}
 		if (pBase->LocalToString(ext->name, &name) != SP_ERROR_NONE)
-		{
 			continue;
-		}
-		if (pass == 1)
-		{
+
+		char path[PLATFORM_MAX_PATH];
+		if (pass == 1) {
 			/* Attempt to auto-load if necessary */
-			if (ext->autoload)
-			{
+			if (ext->autoload) {
 				libsys->PathFormat(path, PLATFORM_MAX_PATH, "%s", file);
-				bool bErrorOnMissing = ext->required ? true : false;
-				g_Extensions.LoadAutoExtension(path, bErrorOnMissing);
+				g_Extensions.LoadAutoExtension(path, !!ext->required);
 			}
-		}
-		else if (pass == 2)
-		{
+		} else if (pass == 2) {
 			/* Is this required? */
 			if (ext->required)
 			{
 				libsys->PathFormat(path, PLATFORM_MAX_PATH, "%s", file);
+				IExtension *pExt;
 				if ((pExt = g_Extensions.FindExtensionByFile(path)) == NULL)
 				{
 					pExt = g_Extensions.FindExtensionByName(name);
