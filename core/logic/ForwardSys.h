@@ -32,7 +32,6 @@
 #include <IPluginSys.h>
 #include "common_logic.h"
 #include <sh_list.h>
-#include <sh_stack.h>
 #include "ISourceMod.h"
 
 using namespace SourceHook;
@@ -116,6 +115,9 @@ public:
 								   va_list ap);
 	bool IsFunctionRegistered(IPluginFunction *func);
 private:
+	CForward(ExecType et, const char *name,
+	         const ParamType *types, unsigned num_params);
+
 	void _Int_PushArray(cell_t *inarray, unsigned int cells, int flags);
 	void _Int_PushString(cell_t *inarray, unsigned int cells, int sz_flags, int cp_flags);
 	inline int SetError(int err)
@@ -150,8 +152,6 @@ class CForwardManager :
 	public SMGlobalClass
 {
 	friend class CForward;
-public:
-	~CForwardManager();
 public: //IForwardManager
 	IForward *CreateForward(const char *name, 
 		ExecType et, 
@@ -171,11 +171,7 @@ public: //IPluginsListener
 	void OnPluginPauseChange(IPlugin *plugin, bool paused);
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
-protected:
-	CForward *ForwardMake();
-	void ForwardFree(CForward *fwd);
 private:
-	CStack<CForward *> m_FreeForwards;
 	List<CForward *> m_managed;
 	List<CForward *> m_unmanaged;
 };
