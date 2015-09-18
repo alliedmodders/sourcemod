@@ -85,14 +85,8 @@ void GameHooks::OnVSPReceived()
 	if (client_cvar_query_mode_ != ClientCvarQueryMode::Unavailable)
 		return;
 
-	// For later MM:S versions, use the updated API, since it's cleaner.
-#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	if (g_SMAPI->GetSourceEngineBuild() == SOURCE_ENGINE_ORIGINAL || vsp_version < 2)
 		return;
-#else
-	if (g_HL2.IsOriginalEngine() || vsp_version < 2)
-		return;
-#endif
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH && SOURCE_ENGINE != SE_DOTA
 	hooks_ += SH_ADD_HOOK(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, SH_MEMBER(this, &GameHooks::OnQueryCvarValueFinished), false);

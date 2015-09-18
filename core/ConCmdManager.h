@@ -129,7 +129,7 @@ public: //IPluginsListener
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command) override;
 public: //IConCommandTracker
-	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe);
+	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name) override;
 public:
 	bool AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
 	bool AddAdminCommand(IPluginFunction *pFunction, 
@@ -147,7 +147,7 @@ private:
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
 	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags);
 	void AddToCmdList(ConCmdInfo *info);
-	void RemoveConCmd(ConCmdInfo *info, const char *cmd, bool is_read_safe, bool untrack);
+	void RemoveConCmd(ConCmdInfo *info, const char *cmd, bool untrack);
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);
 
 	// Case insensitive

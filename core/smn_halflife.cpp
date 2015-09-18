@@ -495,7 +495,6 @@ static cell_t smn_IsPlayerAlive(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 {
-#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	int version = g_SMAPI->GetSourceEngineBuild();
 
 	switch (version)
@@ -505,7 +504,7 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 	case SOURCE_ENGINE_EPISODEONE:
 		return 20;
 
-# if defined METAMOD_PLAPI_VERSION
+#if defined METAMOD_PLAPI_VERSION
 	/* Newer games. */
 	case SOURCE_ENGINE_DARKMESSIAH:
 		return 15;
@@ -538,18 +537,8 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 		return 80;
 	case SOURCE_ENGINE_DOTA:
 		return 90;
-# endif
-	}
-#else
-	if (g_HL2.IsOriginalEngine())
-	{
-		return 10;
-	}
-	else
-	{
-		return 20;
-	}
 #endif
+	}
 
 	return 0;
 }

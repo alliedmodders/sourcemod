@@ -35,7 +35,7 @@
 class IConCommandTracker
 {
 public:
-	virtual void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe) = 0;
+	virtual void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name) = 0;
 };
 
 void TrackConCommandBase(ConCommandBase *pBase, IConCommandTracker *me);

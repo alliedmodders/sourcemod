@@ -242,24 +242,11 @@ void GetIServer()
 		return;
 	}
 
-#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	/* Get the CreateFakeClient function pointer */
 	if (!(vfunc=SH_GET_ORIG_VFNPTR_ENTRY(engine, &IVEngineServer::CreateFakeClient)))
 	{
 		return;
 	}
-#else
-	/* Get the interface manually */
-	SourceHook::MemFuncInfo info = {true, -1, 0, 0};
-	SourceHook::GetFuncInfo(&IVEngineServer::CreateFakeClient, info);
-
-	vfunc = enginePatch->GetOrigFunc(info.vtbloffs, info.vtblindex);
-	if (!vfunc)
-	{
-		void **vtable = *reinterpret_cast<void ***>(enginePatch->GetThisPtr() + info.thisptroffs + info.vtbloffs);
-		vfunc = vtable[info.vtblindex];
-	}
-#endif
 
 	/* Get signature string for IVEngineServer::CreateFakeClient() */
 	sigstr = g_pGameConf->GetKeyValue(FAKECLIENT_KEY);

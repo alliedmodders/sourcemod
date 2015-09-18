@@ -167,7 +167,7 @@ bool convar_cache_lookup(const char *name, ConVarInfo **pVar)
 	return convar_cache.retrieve(name, pVar);
 }
 
-void ConVarManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe)
+void ConVarManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name)
 {
 	/* Only check convars that have not been created by SourceMod's core */
 	ConVarInfo *pInfo;

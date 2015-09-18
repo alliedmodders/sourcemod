@@ -114,24 +114,10 @@ CHalfLife2::~CHalfLife2()
 CSharedEdictChangeInfo *g_pSharedChangeInfo = NULL;
 #endif
 
-#if !defined METAMOD_PLAPI_VERSION || PLAPI_VERSION < 11
-bool is_original_engine = false;
-#endif
-
 void CHalfLife2::OnSourceModStartup(bool late)
 {
 #if SOURCE_ENGINE != SE_DARKMESSIAH
-
-	/* The Ship currently is the only known game to use an older version of the engine */
-#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
-	if (g_SMAPI->GetSourceEngineBuild() == SOURCE_ENGINE_ORIGINAL)
-#else
-	if (strcasecmp(g_SourceMod.GetGameFolderName(), "ship") == 0)
-#endif
-	{
-		is_original_engine = true;
-	}
-	else if (g_pSharedChangeInfo == NULL)
+	if (g_SMAPI->GetSourceEngineBuild() != SOURCE_ENGINE_ORIGINAL && !g_pSharedChangeInfo)
 	{
 		g_pSharedChangeInfo = engine->GetSharedEdictChangeInfo();
 	}
@@ -238,7 +224,7 @@ void CHalfLife2::InitCommandLine()
 {
 	char error[256];
 #if SOURCE_ENGINE != SE_DARKMESSIAH
-	if (!is_original_engine)
+	if (g_SMAPI->GetSourceEngineBuild() != SOURCE_ENGINE_ORIGINAL)
 	{
 		ke::Ref<ke::SharedLib> lib = ke::SharedLib::Open(TIER0_NAME, error, sizeof(error));
 		if (!lib) {
@@ -279,13 +265,6 @@ ICommandLine *CHalfLife2::GetValveCommandLine()
 
 	return ((FakeGetCommandLine)((FakeGetCommandLine *)m_pGetCommandLine))();
 }
-
-#if !defined METAMOD_PLAPI_VERSION || PLAPI_VERSION < 11
-bool CHalfLife2::IsOriginalEngine()
-{
-	return is_original_engine;
-}
-#endif
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
@@ -786,11 +765,7 @@ bool CHalfLife2::IsLANServer()
 
 bool CHalfLife2::KVLoadFromFile(KeyValues *kv, IBaseFileSystem *filesystem, const char *resourceName, const char *pathID)
 {
-#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	if (g_SMAPI->GetSourceEngineBuild() == SOURCE_ENGINE_ORIGINAL)
-#else
-	if (strcasecmp(g_SourceMod.GetGameFolderName(), "ship") == 0)
-#endif
 	{
 		Assert(filesystem);
 #ifdef _MSC_VER

@@ -103,7 +103,7 @@ public: // IPluginsListener
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command) override;
 public: //IConCommandTracker
-	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe);
+	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name) override;
 public: //IClientListener
 	void OnClientDisconnected(int client);
 public:

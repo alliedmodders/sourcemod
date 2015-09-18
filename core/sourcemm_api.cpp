@@ -63,6 +63,13 @@ int vsp_version = 0;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
+#if !defined(METAMOD_PLAPI_VERSION) && PLAPI_VERSION < 11
+# error "SourceMod requires Metamod:Source 1.8 or higher."
+#endif
+#if SH_IMPL_VERSION < 4
+# error "SourceMod requires a newer version of SourceHook."
+#endif
+
 ConVar sourcemod_version("sourcemod_version", SOURCEMOD_VERSION, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY, "SourceMod Version");
 
 bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
@@ -121,9 +128,7 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	
 	ismm->AddListener(this, this);
 
-#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	if ((vsp_interface = g_SMAPI->GetVSPInfo(&vsp_version)) == NULL)
-#endif
 	{
 		g_SMAPI->EnableVSPListener();
 	}
@@ -211,30 +216,14 @@ void SourceMod_Core::OnVSPListening(IServerPluginCallbacks *iface)
 		return;
 	}
 
-#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	if (vsp_version == 0)
 	{
 		g_SMAPI->GetVSPInfo(&vsp_version);
 	}
-#else
-	if (vsp_version == 0)
-	{
-		if (strcmp(g_SourceMod.GetGameFolderName(), "ship") == 0)
-		{
-			vsp_version = 1;
-		}
-		else
-		{
-			vsp_version = 2;
-		}
-	}
-#endif
 
 	/* Notify! */
     sCoreProviderImpl.OnVSPReceived();
 }
-
-#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 
 void SourceMod_Core::OnUnlinkConCommandBase(PluginId id, ConCommandBase *pCommand)
 {
@@ -242,15 +231,6 @@ void SourceMod_Core::OnUnlinkConCommandBase(PluginId id, ConCommandBase *pComman
 	Global_OnUnlinkConCommandBase(pCommand);
 #endif
 }
-
-#else
-
-void SourceMod_Core::OnPluginUnload(PluginId id)
-{
-	Global_OnUnlinkConCommandBase(NULL);
-}
-
-#endif
 
 void *SourceMod_Core::OnMetamodQuery(const char *iface, int *ret)
 {
