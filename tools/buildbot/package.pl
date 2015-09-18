@@ -83,8 +83,13 @@ my $geoIPfile = 'addons/sourcemod/configs/geoip/GeoIP.dat';
 if (-e $geoIPfile) {
 	unlink($geoIPfile);
 }
-gunzip '../GeoIP.dat.gz' => $geoIPfile
+
+open(my $fh, ">", $geoIPfile) 
+    	or die "cannot open $geoIPfile for writing: $!";
+binmode($fh);
+gunzip '../GeoIP.dat.gz' => $fh
         or die "gunzip failed: $GunzipError\n";
+close($fh);
 
 my ($version);
 
