@@ -32,21 +32,12 @@
 #include "DebugReporter.h"
 #include "common_logic.h"
 #include <bridge/include/IScriptManager.h>
+#include <amtl/am-string.h>
 
 CForwardManager g_Forwards;
 
 // Genesis turns to its source, reduction occurs stepwise although the essence
 // is all one. End of line.  FTL system check.
-
-CForwardManager::~CForwardManager()
-{
-	CStack<CForward *>::iterator iter;
-	for (iter=m_FreeForwards.begin(); iter!=m_FreeForwards.end(); iter++)
-	{
-		delete (*iter);
-	}
-	m_FreeForwards.popall();
-}
 
 void CForwardManager::OnSourceModAllInitialized()
 {
@@ -166,34 +157,12 @@ IForward *CForwardManager::FindForward(const char *name, IChangeableForward **if
 	return NULL;
 }
 
-void CForwardManager::ReleaseForward(IForward *forward)
+void CForwardManager::ReleaseForward(IForward *aForward)
 {
-	ForwardFree(static_cast<CForward *>(forward));
-}
-
-void CForwardManager::ForwardFree(CForward *fwd)
-{
-    if (fwd == NULL)
-    {
-        return;
-    }
-
-	m_FreeForwards.push(fwd);
+	CForward *fwd = static_cast<CForward *>(aForward);
 	m_managed.remove(fwd);
 	m_unmanaged.remove(fwd);
-}
-
-CForward *CForwardManager::ForwardMake()
-{
-	CForward *fwd;
-	if (m_FreeForwards.empty())
-	{
-		fwd = new CForward;
-	} else {
-		fwd = m_FreeForwards.front();
-		m_FreeForwards.pop();
-	}
-	return fwd;
+	delete fwd;
 }
 
 void CForwardManager::OnPluginPauseChange(IPlugin *plugin, bool paused)
@@ -220,6 +189,28 @@ void CForwardManager::OnPluginPauseChange(IPlugin *plugin, bool paused)
 /*************************************
  * ACTUAL FORWARD API IMPLEMENTATION *
  *************************************/
+
+CForward::CForward(ExecType et, const char *name, const ParamType *types, unsigned num_params)
+	: m_IterGuard(nullptr),
+	  m_numparams(0),
+	  m_varargs(0),
+	  m_ExecType(et),
+	  m_curparam(0),
+	  m_errstate(SP_ERROR_NONE)
+{
+	ke::SafeStrcpy(m_name, sizeof(m_name), name ? name : "");
+
+	for (unsigned i = 0; i < num_params; i++)
+		m_types[i] = types[i];
+
+	if (num_params && types[num_params - 1] == Param_VarArgs) {
+		m_varargs = num_params;
+		m_numparams = num_params - 1;
+	} else {
+		m_varargs = 0;
+		m_numparams = num_params;
+	}
+}
 
 CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int num_params, const ParamType *types, va_list ap)
 {
@@ -258,30 +249,7 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 		return NULL;
 	}
 
-	CForward *pForward = g_Forwards.ForwardMake();
-	pForward->m_IterGuard = NULL;
-	pForward->m_curparam = 0;
-	pForward->m_ExecType = et;
-	snprintf(pForward->m_name, FORWARDS_NAME_MAX, "%s", name ? name : "");
-	
-	for (unsigned int i=0; i<num_params; i++)
-	{
-		pForward->m_types[i] = _types[i];
-	}
-
-	if (num_params && _types[num_params-1] == Param_VarArgs)
-	{
-		pForward->m_varargs = num_params--;
-	} else {
-		pForward->m_varargs = false;
-	}
-
-	pForward->m_numparams = num_params;
-	pForward->m_errstate = SP_ERROR_NONE;
-
-	pForward->m_functions.clear();
-
-	return pForward;
+	return new CForward(et, name, _types, num_params);
 }
 
 int CForward::Execute(cell_t *result, IForwardFilter *filter)
