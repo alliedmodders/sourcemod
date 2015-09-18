@@ -5,6 +5,7 @@ use Cwd;
 use File::Basename;
 use File::stat;
 use Net::FTP;
+use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 use Time::localtime;
 
 my ($ftp_file, $ftp_host, $ftp_user, $ftp_pass, $ftp_path, $tag);
@@ -78,8 +79,12 @@ else
     print "Reusing existing GeoIP.dat\n";
 }
 
-system('gunzip -c ../GeoIP.dat.gz >  addons/sourcemod/configs/geoip/GeoIP.dat');
-
+my $geoIPfile = 'addons/sourcemod/configs/geoip/GeoIP.dat';
+if (-e $geoIPfile) {
+	unlink($geoIPfile);
+}
+gunzip '../GeoIP.dat.gz' => $geoIPfile
+        or die "gunzip failed: $GunzipError\n";
 
 my ($version);
 
