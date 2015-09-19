@@ -31,12 +31,10 @@
 #include <IForwardSys.h>
 #include <IPluginSys.h>
 #include "common_logic.h"
-#include <sh_list.h>
+#include <amtl/am-linkedlist.h>
 #include "ISourceMod.h"
 
-using namespace SourceHook;
-
-typedef List<IPluginFunction *>::iterator FuncIter;
+typedef ke::LinkedList<IPluginFunction *>::iterator FuncIter;
 
 /* :TODO: a global name max define for sourcepawn, should mirror compiler's sNAMEMAX */
 #define FORWARDS_NAME_MAX		64
@@ -129,8 +127,8 @@ protected:
 	/* :TODO: I want a caching list type here.
 	 * Destroying these things and using new/delete for their members feels bad.
 	 */
-	mutable List<IPluginFunction *> m_functions;
-	mutable List<IPluginFunction *> m_paused;
+	mutable ke::LinkedList<IPluginFunction *> m_functions;
+	mutable ke::LinkedList<IPluginFunction *> m_paused;
 	FuncIteratorGuard *m_IterGuard;
 
 	/* Type and name information */
@@ -172,8 +170,8 @@ public: //IPluginsListener
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 private:
-	List<CForward *> m_managed;
-	List<CForward *> m_unmanaged;
+	ke::LinkedList<CForward *> m_managed;
+	ke::LinkedList<CForward *> m_unmanaged;
 };
 
 extern CForwardManager g_Forwards;
