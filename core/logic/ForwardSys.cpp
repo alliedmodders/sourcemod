@@ -33,6 +33,7 @@
 #include "common_logic.h"
 #include <bridge/include/IScriptManager.h>
 #include <amtl/am-string.h>
+#include <ReentrantList.h>
 
 using namespace ke;
 
@@ -86,27 +87,22 @@ IChangeableForward *CForwardManager::CreateForwardEx(const char *name, ExecType 
 void CForwardManager::OnPluginLoaded(IPlugin *plugin)
 {
 	/* Attach any globally managed forwards */
-	for (auto iter=m_managed.begin(); iter!=m_managed.end(); iter++)
-	{
+	for (ForwardIter iter(m_managed); !iter.done(); iter.next()) {
 		CForward *fwd = (*iter);
 		IPluginFunction *pFunc = plugin->GetBaseContext()->GetFunctionByName(fwd->GetForwardName());
 		if (pFunc)
-		{
 			fwd->AddFunction(pFunc);
-		}
 	}
 }
 
 void CForwardManager::OnPluginUnloaded(IPlugin *plugin)
 {
-	for (auto iter=m_managed.begin(); iter!=m_managed.end(); iter++)
-	{
+	for (ForwardIter iter(m_managed); !iter.done(); iter.next()) {
 		CForward *fwd = (*iter);
 		fwd->RemoveFunctionsOfPlugin(plugin);
 	}
 
-	for (auto iter=m_unmanaged.begin(); iter!=m_unmanaged.end(); iter++)
-	{
+	for (ForwardIter iter(m_unmanaged); !iter.done(); iter.next()) {
 		CForward *fwd = (*iter);
 		fwd->RemoveFunctionsOfPlugin(plugin);
 	}
@@ -114,7 +110,7 @@ void CForwardManager::OnPluginUnloaded(IPlugin *plugin)
 
 IForward *CForwardManager::FindForward(const char *name, IChangeableForward **ifchng)
 {
-	for (auto iter=m_managed.begin(); iter!=m_managed.end(); iter++) {
+	for (ForwardIter iter(m_managed); !iter.done(); iter.next()) {
 		CForward *fwd = (*iter);
 		if (strcmp(fwd->GetForwardName(), name) == 0) {
 			if (ifchng)
@@ -123,7 +119,7 @@ IForward *CForwardManager::FindForward(const char *name, IChangeableForward **if
 		}
 	}
 
-	for (auto iter=m_unmanaged.begin(); iter!=m_unmanaged.end(); iter++) {
+	for (ForwardIter iter(m_unmanaged); !iter.done(); iter.next()) {
 		CForward *fwd = (*iter);
 		if (strcmp(fwd->GetForwardName(), name) == 0) {
 			if (ifchng)
@@ -152,8 +148,7 @@ void CForwardManager::OnPluginPauseChange(IPlugin *plugin, bool paused)
 		return;
 
 	/* Attach any globally managed forwards */
-	for (auto iter=m_managed.begin(); iter!=m_managed.end(); iter++)
-	{
+	for (ForwardIter iter(m_managed); !iter.done(); iter.next()) {
 		CForward *fwd = (*iter);
 		IPluginFunction *pFunc = plugin->GetBaseContext()->GetFunctionByName(fwd->GetForwardName());
 		// Only add functions, if they aren't registered yet!
@@ -169,8 +164,7 @@ void CForwardManager::OnPluginPauseChange(IPlugin *plugin, bool paused)
  *************************************/
 
 CForward::CForward(ExecType et, const char *name, const ParamType *types, unsigned num_params)
-	: m_IterGuard(nullptr),
-	  m_numparams(0),
+	: m_numparams(0),
 	  m_varargs(0),
 	  m_ExecType(et),
 	  m_curparam(0),
@@ -239,7 +233,6 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 		return err;
 	}
 
-	FuncIter iter = m_functions.begin();
 	cell_t cur_result = 0;
 	cell_t high_result = 0;
 	cell_t low_result = 0;
@@ -252,9 +245,7 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 	memcpy(temp_info, m_params, sizeof(m_params));
 	m_curparam = 0;
 
-	FuncIteratorGuard guard(&m_IterGuard, &iter);
-
-	while (iter != m_functions.end())
+	for (FuncIter iter(m_functions); !iter.done(); iter.next())
 	{
 		IPluginFunction *func = (*iter);
 
@@ -349,9 +340,6 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 				}
 			}
 		}
-
-		if (!guard.Triggered())
-			iter++;
 	}
 
 done:
@@ -616,30 +604,24 @@ bool CForward::RemoveFunction(IPluginContext *pContext, funcid_t index)
 
 bool CForward::RemoveFunction(IPluginFunction *func)
 {
-	bool found = false;
-	LinkedList<IPluginFunction *> *lst;
-
+	ReentrantList<IPluginFunction *> *lst;
 	if (func->IsRunnable())
 		lst = &m_functions;
 	else
 		lst = &m_paused;
 
-	for (auto iter = lst->begin(); iter != lst->end(); iter++)
-	{
-		if ((*iter) == func)
-		{
-			m_IterGuard->FixIteratorChain(iter);
+	bool found = false;
+	for (FuncIter iter(lst); !iter.done(); iter.next()) {
+		if (*iter == func) {
+			iter.remove();
 			found = true;
-			lst->erase(iter);
 			break;
 		}
 	}
 
 	/* Cancel a call, if any */
 	if (found || m_curparam)
-	{
 		func->Cancel();
-	}
 
 	return found;
 }
@@ -647,19 +629,13 @@ bool CForward::RemoveFunction(IPluginFunction *func)
 unsigned int CForward::RemoveFunctionsOfPlugin(IPlugin *plugin)
 {
 	unsigned int removed = 0;
-	IPluginContext *pContext = plugin->GetBaseContext();
-	for (auto iter=m_functions.begin(); iter!=m_functions.end();)
-	{
-		IPluginFunction *func = (*iter);
-		if (func->GetParentContext() == pContext)
-		{
-			iter = m_functions.erase(iter);
+	for (FuncIter iter(m_functions); !iter.done(); iter.next()) {
+		IPluginFunction *func = *iter;
+		if (func->GetParentContext() == plugin->GetBaseContext()) {
+			iter.remove();
 			removed++;
-		} else {
-			iter++;
 		}
 	}
-
 	return removed;
 }
 
@@ -678,13 +654,13 @@ bool CForward::AddFunction(IPluginFunction *func)
 
 bool CForward::IsFunctionRegistered(IPluginFunction *func)
 {
-	LinkedList<IPluginFunction *> *lst;
+	ReentrantList<IPluginFunction *> *lst;
 	if (func->IsRunnable())
 		lst = &m_functions;
 	else
 		lst = &m_paused;
 
-	for (auto iter = lst->begin(); iter != lst->end(); iter++) {
+	for (FuncIter iter(lst); !iter.done(); iter.next()) {
 		if ((*iter) == func)
 			return true;
 	}

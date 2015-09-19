@@ -31,57 +31,13 @@
 #include <IForwardSys.h>
 #include <IPluginSys.h>
 #include "common_logic.h"
-#include <amtl/am-linkedlist.h>
 #include "ISourceMod.h"
+#include "ReentrantList.h"
 
-typedef ke::LinkedList<IPluginFunction *>::iterator FuncIter;
+typedef ReentrantList<IPluginFunction *>::iterator FuncIter;
 
 /* :TODO: a global name max define for sourcepawn, should mirror compiler's sNAMEMAX */
 #define FORWARDS_NAME_MAX		64
-
-class FuncIteratorGuard
-{
-	bool triggered;
-	FuncIteratorGuard **pprev;
-	FuncIter *iter;
-	FuncIteratorGuard *next;
-public:
-	FuncIteratorGuard(FuncIteratorGuard **pprev, FuncIter *iter)
-		: triggered(false), pprev(pprev), iter(iter), next(*pprev)
-	{
-		*pprev = this;
-	}
-
-	~FuncIteratorGuard()
-	{
-		*pprev = next;
-	}
-
-	inline bool Triggered()
-	{
-		bool t = triggered;
-		triggered = false;
-		return t;
-	}
-
-	/**
-	 * This should not read from |this| before the NULL check, because FwdSys
-	 * can call (NULL)->FixIteratorChain().
-	 */
-	void FixIteratorChain(FuncIter &other)
-	{
-		FuncIteratorGuard *guard = this;
-		while (guard != NULL)
-		{
-			if (*guard->iter == other)
-			{
-				*(guard->iter) = ++(*(guard->iter));
-				guard->triggered = true;
-			}
-			guard = guard->next;
-		}
-	}
-};
 
 class CForward : public IChangeableForward
 {
@@ -124,12 +80,8 @@ private:
 		return err;
 	}
 protected:
-	/* :TODO: I want a caching list type here.
-	 * Destroying these things and using new/delete for their members feels bad.
-	 */
-	mutable ke::LinkedList<IPluginFunction *> m_functions;
-	mutable ke::LinkedList<IPluginFunction *> m_paused;
-	FuncIteratorGuard *m_IterGuard;
+	mutable ReentrantList<IPluginFunction *> m_functions;
+	mutable ReentrantList<IPluginFunction *> m_paused;
 
 	/* Type and name information */
 	FwdParamInfo m_params[SP_MAX_EXEC_PARAMS];
@@ -170,8 +122,10 @@ public: //IPluginsListener
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 private:
-	ke::LinkedList<CForward *> m_managed;
-	ke::LinkedList<CForward *> m_unmanaged;
+	ReentrantList<CForward *> m_managed;
+	ReentrantList<CForward *> m_unmanaged;
+
+	typedef ReentrantList<CForward *>::iterator ForwardIter;
 };
 
 extern CForwardManager g_Forwards;
