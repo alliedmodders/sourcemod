@@ -34,6 +34,8 @@
 #include <bridge/include/IScriptManager.h>
 #include <amtl/am-string.h>
 
+using namespace ke;
+
 CForwardManager g_Forwards;
 
 // Genesis turns to its source, reduction occurs stepwise although the essence
@@ -58,7 +60,7 @@ IForward *CForwardManager::CreateForward(const char *name, ExecType et, unsigned
 	{
 		scripts->AddFunctionsToForward(name, fwd);
 
-		m_managed.push_back(fwd);
+		m_managed.append(fwd);
 	}
 
 	return fwd;
@@ -75,7 +77,7 @@ IChangeableForward *CForwardManager::CreateForwardEx(const char *name, ExecType 
 
 	if (fwd)
 	{
-		m_unmanaged.push_back(fwd);
+		m_unmanaged.append(fwd);
 	}
 
 	return fwd;
@@ -615,7 +617,7 @@ bool CForward::RemoveFunction(IPluginContext *pContext, funcid_t index)
 bool CForward::RemoveFunction(IPluginFunction *func)
 {
 	bool found = false;
-	List<IPluginFunction *> *lst;
+	LinkedList<IPluginFunction *> *lst;
 
 	if (func->IsRunnable())
 		lst = &m_functions;
@@ -667,16 +669,16 @@ bool CForward::AddFunction(IPluginFunction *func)
 		return false;
 
 	if (func->IsRunnable())
-		m_functions.push_back(func);
+		m_functions.append(func);
 	else
-		m_paused.push_back(func);
+		m_paused.append(func);
 
 	return true;
 }
 
 bool CForward::IsFunctionRegistered(IPluginFunction *func)
 {
-	List<IPluginFunction *> *lst;
+	LinkedList<IPluginFunction *> *lst;
 	if (func->IsRunnable())
 		lst = &m_functions;
 	else
@@ -696,7 +698,7 @@ const char *CForward::GetForwardName()
 
 unsigned int CForward::GetFunctionCount()
 {
-	return m_functions.size();
+	return m_functions.length();
 }
 
 ExecType CForward::GetExecType()
