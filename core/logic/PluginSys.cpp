@@ -63,9 +63,9 @@ CPlugin::CPlugin(const char *file)
    m_LibraryMissing(false),
    m_pContext(nullptr),
    m_MaxClientsVar(nullptr),
-   m_ident(nullptr),
    m_bGotAllLoaded(false),
    m_FileVersion(0),
+   m_ident(nullptr),
    m_LastFileModTime(0),
    m_handle(BAD_HANDLE)
 {
@@ -83,16 +83,7 @@ CPlugin::CPlugin(const char *file)
 
 CPlugin::~CPlugin()
 {
-	if (m_handle)
-	{
-		HandleSecurity sec;
-		sec.pOwner = g_PluginSys.GetIdentity();
-		sec.pIdentity = sec.pOwner;
-
-		handlesys->FreeHandle(m_handle, &sec);
-		g_ShareSys.DestroyIdentity(m_ident);
-	}
-
+	DestroyIdentity();
 	for (size_t i=0; i<m_configs.size(); i++)
 		delete m_configs[i];
 	m_configs.clear();
@@ -100,13 +91,71 @@ CPlugin::~CPlugin()
 
 void CPlugin::InitIdentity()
 {
-	if (!m_handle)
-	{
-		m_ident = g_ShareSys.CreateIdentity(g_PluginIdent, this);
-		m_handle = handlesys->CreateHandle(g_PluginType, this, g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity(), NULL);
-		m_pRuntime->GetDefaultContext()->SetKey(1, m_ident);
-		m_pRuntime->GetDefaultContext()->SetKey(2, (IPlugin *)this);
+	if (m_handle)
+		return;
+
+	m_ident = g_ShareSys.CreateIdentity(g_PluginIdent, this);
+	m_handle = handlesys->CreateHandle(g_PluginType, this, g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity(), NULL);
+	m_pRuntime->GetDefaultContext()->SetKey(1, m_ident);
+	m_pRuntime->GetDefaultContext()->SetKey(2, (IPlugin *)this);
+}
+
+void CPlugin::DestroyIdentity()
+{
+	if (m_handle) {
+		HandleSecurity sec(g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity());
+		handlesys->FreeHandle(m_handle, &sec);
+		m_handle = BAD_HANDLE;
 	}
+	if (m_ident) {
+		g_ShareSys.DestroyIdentity(m_ident);
+		m_ident = nullptr;
+	}
+}
+
+bool CPlugin::IsEvictionCandidate() const
+{
+	switch (Status()) {
+		case Plugin_Running:
+		case Plugin_Loaded:
+			// These states are valid, we should never evict.
+			return false;
+		case Plugin_BadLoad:
+		case Plugin_Uncompiled:
+			// These states imply that the plugin never loaded to begin with,
+			// so we have nothing to evict.
+			return false;
+		case Plugin_Evicted:
+			// We cannot be evicted twice.
+			return false;
+		default:
+			return true;
+	}
+}
+
+void CPlugin::FinishEviction()
+{
+	assert(IsEvictionCandidate());
+
+	// Revoke our identity and handle. This could maybe be seen as bad faith,
+	// since other plugins could be holding the handle and will now error. But
+	// this was already an existing problem. We need a listener API to solve
+	// it.
+	DestroyIdentity();
+
+	// Note that we do not set our status to Plugin_Evicted. This is a pseudo-status
+	// so consumers won't attempt to read the context or runtime. The real state
+	// is reflected here.
+	m_state = PluginState::Evicted;
+	m_pRuntime = nullptr;
+	m_pPhrases = nullptr;
+	m_pContext = nullptr;
+	m_MaxClientsVar = nullptr;
+	m_Props.clear();
+	m_configs.clear();
+	m_Libraries.clear();
+	m_bGotAllLoaded = false;
+	m_FileVersion = 0;
 }
 
 unsigned int CPlugin::CalcMemUsage()
@@ -489,6 +538,15 @@ unsigned int CPlugin::GetSerial()
 
 PluginStatus CPlugin::GetStatus()
 {
+	return Status();
+}
+
+PluginStatus CPlugin::Status() const
+{
+	// Even though we're evicted, we previously guaranteed a valid runtime
+	// for error/fail states. A new failure case above BadLoad solves this.
+	if (m_state == PluginState::Evicted)
+		return Plugin_Evicted;
 	return m_status;
 }
 
@@ -696,7 +754,7 @@ void CPlugin::DropEverything()
 	 * to centralize that here, i'm omitting it for now.  Thus,
 	 * the code below to walk the plugins list will suffice.
 	 */
-	
+
 	/* Other plugins could be holding weak references that were
 	 * added by us.  We need to clean all of those up now.
 	 */
@@ -778,7 +836,7 @@ CPluginManager::CPluginManager()
 	m_AllPluginsLoaded = false;
 	m_MyIdent = NULL;
 	m_LoadingLocked = false;
-	
+
 	m_bBlockBadPlugins = true;
 }
 
@@ -981,6 +1039,13 @@ void CPluginManager::AddPlugin(CPlugin *pPlugin)
 
 	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
 		(*iter)->OnPluginCreated(pPlugin);
+
+	if (pPlugin->IsEvictionCandidate()) {
+		// If we get here, and the plugin isn't running, we evict it. This
+		// should be safe since our call stack should be empty.
+		Purge(pPlugin);
+		pPlugin->FinishEviction();
+	}
 }
 
 void CPluginManager::LoadAll_SecondPass()
@@ -991,7 +1056,8 @@ void CPluginManager::LoadAll_SecondPass()
 			char error[256] = {0};
 			if (!RunSecondPass(pPlugin)) {
 				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), pPlugin->GetErrorMsg());
-				pPlugin->EvictWithError(Plugin_BadLoad, "%s", error);
+				Purge(pPlugin);
+				pPlugin->FinishEviction();
 			}
 		}
 	}
@@ -1207,12 +1273,12 @@ CPlugin *CPluginManager::CompileAndPrep(const char *path)
 bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 {
 	unsigned char *pCodeHash = pPlugin->GetRuntime()->GetCodeHash();
-	
+
 	char codeHashBuf[40];
 	ke::SafeSprintf(codeHashBuf, 40, "plugin_");
 	for (int i = 0; i < 16; i++)
 		ke::SafeSprintf(codeHashBuf + 7 + (i * 2), 3, "%02x", pCodeHash[i]);
-	
+
 	const char *bulletinUrl = g_pGameConf->GetKeyValue(codeHashBuf);
 	if (!bulletinUrl)
 		return true;
@@ -1265,7 +1331,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin)
 	// Finish by telling all listeners.
 	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
 		(*iter)->OnPluginLoaded(pPlugin);
-	
+
 	// Tell this plugin to finish initializing itself.
 	if (!pPlugin->OnPluginStart())
 		return false;
@@ -1295,7 +1361,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin)
 
 	// Add the core phrase file.
 	pPlugin->GetPhrases()->AddPhraseFile("core.phrases");
-	
+
 	// Go through all other already loaded plugins and tell this plugin, that their libraries are loaded.
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		CPlugin *pl = (*iter);
@@ -1397,7 +1463,6 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 
 void CPluginManager::Purge(CPlugin *plugin)
 {
-	assert(plugin->State() != PluginState::Unregistered);
 
 	// Go through our libraries and tell other plugins they're gone.
 	plugin->LibraryActions(LibraryAction_Removed);
@@ -1424,7 +1489,11 @@ void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
 {
 	m_plugins.remove(pPlugin);
 	m_LoadLookup.remove(pPlugin->GetFilename());
-	Purge(pPlugin);
+
+	// Evicted plugins were already purged from external systems.
+	if (pPlugin->State() != PluginState::Evicted)
+		Purge(pPlugin);
+
 	delete pPlugin;
 }
 
@@ -1489,7 +1558,7 @@ void CPluginManager::OnSourceModAllInitialized()
 	rootmenu->AddRootConsoleCommand3("plugins", "Manage Plugins", this);
 
 	g_ShareSys.AddInterface(NULL, GetOldAPI());
-	
+
 	m_pOnLibraryAdded = forwardsys->CreateForward("OnLibraryAdded", ET_Ignore, 1, NULL, Param_String);
 	m_pOnLibraryRemoved = forwardsys->CreateForward("OnLibraryRemoved", ET_Ignore, 1, NULL, Param_String);
 }
@@ -1503,7 +1572,7 @@ void CPluginManager::OnSourceModShutdown()
 	handlesys->RemoveType(g_PluginType, m_MyIdent);
 	g_ShareSys.DestroyIdentType(g_PluginIdent);
 	g_ShareSys.DestroyIdentity(m_MyIdent);
-	
+
 	forwardsys->ReleaseForward(m_pOnLibraryAdded);
 	forwardsys->ReleaseForward(m_pOnLibraryRemoved);
 }
@@ -1635,7 +1704,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
 				if (pl->GetStatus() != Plugin_Running && !pl->IsSilentlyFailed())
 				{
-					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetStatus()));
+					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetDisplayStatus()));
 
 					/* Plugin has failed to load. */
 					fail_list.append(pl);
@@ -1644,7 +1713,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				{
 					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d", id);
 				}
-				if (pl->GetStatus() < Plugin_Created)
+				if (pl->GetStatus() < Plugin_Created || pl->GetStatus() == Plugin_Evicted)
 				{
 					if (pl->IsSilentlyFailed())
 						len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " Disabled:");
@@ -1844,73 +1913,44 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			const sm_plugininfo_t *info = pl->GetPublicInfo();
 
 			rootmenu->ConsolePrint("  Filename: %s", pl->GetFilename());
-			if (pl->GetStatus() <= Plugin_Error || pl->GetStatus() == Plugin_Failed)
-			{
-				if (IS_STR_FILLED(info->name))
-				{
+			if (pl->GetStatus() != Plugin_BadLoad) {
+				if (IS_STR_FILLED(info->name)) {
 					if (IS_STR_FILLED(info->description))
-					{
 						rootmenu->ConsolePrint("  Title: %s (%s)", info->name, info->description);
-					} else {
+					else
 						rootmenu->ConsolePrint("  Title: %s", info->name);
-					}
 				}
-				if (IS_STR_FILLED(info->author))
-				{
+				if (IS_STR_FILLED(info->author)) {
 					rootmenu->ConsolePrint("  Author: %s", info->author);
 				}
-				if (IS_STR_FILLED(info->version))
-				{
+				if (IS_STR_FILLED(info->version)) {
 					rootmenu->ConsolePrint("  Version: %s", info->version);
 				}
-				if (IS_STR_FILLED(info->url))
-				{
+				if (IS_STR_FILLED(info->url)) {
 					rootmenu->ConsolePrint("  URL: %s", info->url);
 				}
-				if (pl->GetStatus() == Plugin_Error || pl->GetStatus() == Plugin_Failed)
-				{
+				if (pl->IsInErrorState()) {
 					rootmenu->ConsolePrint("  Error: %s", pl->GetErrorMsg());
+				} else {
+					rootmenu->ConsolePrint("  Status: running");
 				}
-				else
-				{
-					if (pl->GetStatus() == Plugin_Running)
-					{
-						rootmenu->ConsolePrint("  Status: running");
-					}
-					else
-					{
-						rootmenu->ConsolePrint("  Status: not running");
-					}
-				}
-				if (pl->GetFileVersion() >= 3)
-				{
+				if (pl->GetFileVersion() >= 3) {
 					rootmenu->ConsolePrint("  Timestamp: %s", pl->GetDateTime());
 				}
-				
-				unsigned char *pCodeHash = pl->GetRuntime()->GetCodeHash();
-				unsigned char *pDataHash = pl->GetRuntime()->GetDataHash();
-				
-				char combinedHash[33];
-				for (int i = 0; i < 16; i++)
-					ke::SafeSprintf(combinedHash + (i * 2), 3, "%02x", pCodeHash[i] ^ pDataHash[i]);
-				
-				rootmenu->ConsolePrint("  Hash: %s", combinedHash);
-			}
-			else
-			{
-				rootmenu->ConsolePrint("  Load error: %s", pl->GetErrorMsg());
-				if (pl->GetStatus() < Plugin_Created)
-				{
-					rootmenu->ConsolePrint("  File info: (title \"%s\") (version \"%s\")",
-											info->name ? info->name : "<none>",
-											info->version ? info->version : "<none>");
-					if (IS_STR_FILLED(info->url))
-					{
-						rootmenu->ConsolePrint("  File URL: %s", info->url);
-					}
-				}
-			}
 
+				if (IPluginRuntime *runtime = pl->GetRuntime()) {
+				  unsigned char *pCodeHash = runtime->GetCodeHash();
+				  unsigned char *pDataHash = runtime->GetDataHash();
+				  
+				  char combinedHash[33];
+				  for (int i = 0; i < 16; i++)
+				  	ke::SafeSprintf(combinedHash + (i * 2), 3, "%02x", pCodeHash[i] ^ pDataHash[i]);
+				  
+				  rootmenu->ConsolePrint("  Hash: %s", combinedHash);
+				}
+			} else {
+				rootmenu->ConsolePrint("  Load error: %s", pl->GetErrorMsg());
+			}
 			return;
 		}
 		else if (strcmp(cmd, "refresh") == 0)
@@ -2136,7 +2176,7 @@ SMPlugin *CPluginManager::FindPluginByConsoleArg(const char *arg)
 	int id;
 	char *end;
 	CPlugin *pl;
-	
+
 	id = strtol(arg, &end, 10);
 
 	if (*end == '\0')
