@@ -54,6 +54,7 @@
 #include <am-string.h>
 #include <bridge/include/IScriptManager.h>
 #include <am-function.h>
+#include <ReentrantList.h>
 
 class CPlayer;
 
@@ -344,20 +345,21 @@ public:
 	~CPluginManager();
 public:
 	/* Implements iterator class */
-	class CPluginIterator : public IPluginIterator
+	class CPluginIterator
+		: public IPluginIterator,
+		  public IPluginsListener
 	{
 	public:
-		CPluginIterator(List<CPlugin *> *mylist);
+		CPluginIterator(ReentrantList<CPlugin *>& in);
 		virtual ~CPluginIterator();
 		virtual bool MorePlugins();
 		virtual IPlugin *GetPlugin();
 		virtual void NextPlugin();
 		void Release();
-	public:
-		void Reset();
+		void OnPluginDestroyed(IPlugin *plugin) override;
 	private:
-		List<CPlugin *> *mylist;
-		List<CPlugin *>::iterator current;
+		ke::LinkedList<CPlugin *> mylist;
+		ke::LinkedList<CPlugin *>::iterator current;
 	};
 	friend class CPluginManager::CPluginIterator;
 public: //IScriptManager
@@ -393,6 +395,7 @@ public: //IScriptManager
 	}
 	const CVector<SMPlugin *> *ListPlugins();
 	void FreePluginList(const CVector<SMPlugin *> *plugins);
+
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
@@ -521,11 +524,6 @@ private:
 
 	bool ScheduleUnload(CPlugin *plugin);
 	void UnloadPluginImpl(CPlugin *plugin);
-protected:
-	/**
-	 * Caching internal objects
-	 */
-	void ReleaseIterator(CPluginIterator *iter);
 public:
 	inline IdentityToken_t *GetIdentity()
 	{
@@ -535,9 +533,13 @@ public:
 private:
 	void TryRefreshDependencies(CPlugin *pOther);
 private:
-	List<IPluginsListener *> m_listeners;
-	List<CPlugin *> m_plugins;
-	CStack<CPluginManager::CPluginIterator *> m_iters;
+	ReentrantList<IPluginsListener *> m_listeners;
+	ReentrantList<CPlugin *> m_plugins;
+	ke::LinkedList<CPluginIterator *> m_iterators;
+
+	typedef decltype(m_listeners)::iterator ListenerIter;
+	typedef decltype(m_plugins)::iterator PluginIter;
+
 	NameHashSet<CPlugin *> m_LoadLookup;
 	bool m_AllPluginsLoaded;
 	IdentityToken_t *m_MyIdent;

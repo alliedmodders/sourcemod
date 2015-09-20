@@ -60,6 +60,7 @@ public:
 
 	class iterator
 	{
+		friend class ReentrantList;
 	public:
 		iterator(ReentrantList& list)
 			: iterator(&list)
@@ -143,6 +144,16 @@ public:
 				break;
 			}
 		}
+	}
+
+	template <typename U>
+	void insertBefore(iterator& where, U &&obj) {
+		BaseType::insertBefore(where.impl_, ke::Forward<U>(obj));
+	}
+
+	template <typename U>
+	bool contains(const U &obj) {
+		return BaseType::find(obj) != BaseType::end();
 	}
 
 private:
