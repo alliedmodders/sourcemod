@@ -474,9 +474,6 @@ PluginType CPlugin::GetType()
 
 const sm_plugininfo_t *CPlugin::GetPublicInfo()
 {
-	if (GetStatus() >= Plugin_Created)
-		return nullptr;
-
 	m_info.author = info_author_.chars();
 	m_info.description = info_description_.chars();
 	m_info.name = info_name_.chars();
@@ -1640,11 +1637,8 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				{
 					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetStatus()));
 
-					if (pl->GetStatus() <= Plugin_Error)
-					{
-						/* Plugin has failed to load. */
-						fail_list.append(pl);
-					}
+					/* Plugin has failed to load. */
+					fail_list.append(pl);
 				}
 				else
 				{
@@ -1672,12 +1666,16 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			}
 
 			if (!fail_list.empty()) {
-				rootmenu->ConsolePrint("Load Errors:");
+				rootmenu->ConsolePrint("Errors:");
 
 				for (auto iter = fail_list.begin(); iter != fail_list.end(); iter++) {
 					CPlugin *pl = (*iter);
-					rootmenu->ConsolePrint("%s: %s", (IS_STR_FILLED(pl->GetPublicInfo()->name)) ? pl->GetPublicInfo()->name : pl->GetFilename(),
-					                       pl->GetErrorMsg());
+					const sm_plugininfo_t *info = pl->GetPublicInfo();
+					if (IS_STR_FILLED(info->name)) {
+						rootmenu->ConsolePrint("%s (%s): %s", pl->GetFilename(), info->name, pl->GetErrorMsg());
+					} else {
+						rootmenu->ConsolePrint("%s: %s", pl->GetFilename(), pl->GetErrorMsg());
+					}
 				}
 			}
 
