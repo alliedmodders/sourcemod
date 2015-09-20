@@ -777,12 +777,6 @@ CPluginManager::CPluginManager()
 
 CPluginManager::~CPluginManager()
 {
-	CStack<CPluginManager::CPluginIterator *>::iterator iter;
-	for (iter=m_iters.begin(); iter!=m_iters.end(); iter++)
-	{
-		delete (*iter);
-	}
-	m_iters.popall();
 }
 
 void CPluginManager::Shutdown()
@@ -1490,20 +1484,12 @@ void CPluginManager::RemovePluginsListener(IPluginsListener *listener)
 
 IPluginIterator *CPluginManager::GetPluginIterator()
 {
-	if (m_iters.empty())
-	{
-		return new CPluginIterator(&m_plugins);
-	} else {
-		CPluginIterator *iter = m_iters.front();
-		m_iters.pop();
-		iter->Reset();
-		return iter;
-	}
+	return new CPluginIterator(&m_plugins);
 }
 
 void CPluginManager::ReleaseIterator(CPluginIterator *iter)
 {
-	m_iters.push(iter);
+	delete iter;
 }
 
 bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)
