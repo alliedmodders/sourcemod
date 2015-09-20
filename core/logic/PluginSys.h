@@ -248,6 +248,7 @@ private:
 
 	PluginStatus m_status;
 	bool m_WaitingToUnload;
+	bool m_AddedLibraries;
 
 	// Statuses that are set during failure.
 	bool m_SilentFailure;
@@ -461,6 +462,8 @@ private:
 
 	bool ScheduleUnload(CPlugin *plugin);
 	void UnloadPluginImpl(CPlugin *plugin);
+
+	void Purge(CPlugin *plugin);
 public:
 	inline IdentityToken_t *GetIdentity()
 	{
