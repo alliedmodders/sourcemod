@@ -1045,10 +1045,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 				}
 			} else {
 				/* Check that we aren't registering the same library twice */
-				if (pPlugin->m_RequiredLibs.find(name) != pPlugin->m_RequiredLibs.end())
-					continue;
-
-				pPlugin->m_RequiredLibs.push_back(name);
+				pPlugin->AddRequiredLib(name);
 
 				CPlugin *found;
 				for (auto iter=m_plugins.begin(); iter!=m_plugins.end(); iter++) {
@@ -1112,6 +1109,21 @@ void CPlugin::ForEachLibrary(ke::Lambda<void(const char *)> callback)
 {
 	for (auto iter = m_Libraries.begin(); iter != m_Libraries.end(); iter++)
 		callback((*iter).c_str());
+}
+
+void CPlugin::AddRequiredLib(const char *name)
+{
+	if (m_RequiredLibs.find(name) == m_RequiredLibs.end())
+		m_RequiredLibs.push_back(name);
+}
+
+bool CPlugin::ForEachRequiredLib(ke::Lambda<bool(const char *)> callback)
+{
+	for (auto iter = m_RequiredLibs.begin(); iter != m_RequiredLibs.end(); iter++) {
+		if (!callback((*iter).c_str()))
+			return false;
+	}
+	return true;
 }
 
 void CPluginManager::LoadExtensions(CPlugin *pPlugin)
@@ -1317,22 +1329,24 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 
 	g_ShareSys.BindNativesToPlugin(pPlugin, false);
 
-	for (auto req_iter=pPlugin->m_RequiredLibs.begin(); req_iter!=pPlugin->m_RequiredLibs.end(); req_iter++) {
+	bool all_found = pPlugin->ForEachRequiredLib([this, pPlugin] (const char *lib) -> bool {
 		CPlugin *found = nullptr;
 		for (auto pl_iter=m_plugins.begin(); pl_iter!=m_plugins.end(); pl_iter++) {
 			CPlugin *search = (*pl_iter);
-			if (search->HasLibrary((*req_iter).c_str())) {
+			if (search->HasLibrary(lib)) {
 				found = search;
 				break;
 			}
 		}
 		if (!found) {
-			pPlugin->SetErrorState(Plugin_Error, "Library not found: %s", (*req_iter).c_str());
-			return;
+			pPlugin->SetErrorState(Plugin_Error, "Library not found: %s", lib);
+			return false;
 		}
-
 		found->AddDependent(pPlugin);
-	}
+		return true;
+	});
+	if (!all_found)
+		return;
 
 	/* Find any unbound natives
 	 * Right now, these are not allowed
