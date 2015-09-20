@@ -129,7 +129,6 @@ class CPlugin :
 	public CNativeOwner
 {
 	friend class CPluginManager;
-	friend class CFunction;
 public:
 	CPlugin(const char *file);
 	~CPlugin();
@@ -164,6 +163,8 @@ public:
 
 	typedef ke::Lambda<bool(const sp_pubvar_t *, const ExtVar& ext)> ExtVarCallback;
 	bool ForEachExtVar(const ExtVarCallback& callback);
+
+	void ForEachLibrary(ke::Lambda<void(const char *)> callback);
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -247,6 +248,9 @@ public:
 	AutoConfig *GetConfig(size_t i);
 	inline void AddLibrary(const char *name) {
 		m_Libraries.push_back(name);
+	}
+	inline bool HasLibrary(const char *name) {
+		return m_Libraries.find(name) != m_Libraries.end();
 	}
 	void LibraryActions(LibraryAction action);
 	void SyncMaxClients(int max_clients);

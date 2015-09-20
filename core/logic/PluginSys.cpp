@@ -1052,7 +1052,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 				CPlugin *found;
 				for (auto iter=m_plugins.begin(); iter!=m_plugins.end(); iter++) {
 					CPlugin *pl = (*iter);
-					if (pl->m_Libraries.find(name) != pl->m_Libraries.end()) {
+					if (pl->HasLibrary(name)) {
 						found = pl;
 						break;
 					}
@@ -1105,6 +1105,12 @@ bool CPlugin::ForEachExtVar(const ExtVarCallback& callback)
 			return false;
 	}
 	return true;
+}
+
+void CPlugin::ForEachLibrary(ke::Lambda<void(const char *)> callback)
+{
+	for (auto iter = m_Libraries.begin(); iter != m_Libraries.end(); iter++)
+		callback((*iter).c_str());
 }
 
 void CPluginManager::LoadExtensions(CPlugin *pPlugin)
@@ -1281,13 +1287,9 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	}
 
 	/* Go through our libraries and tell other plugins they're added */
-	List<String>::iterator s_iter;
-	for (s_iter = pPlugin->m_Libraries.begin();
-		s_iter != pPlugin->m_Libraries.end();
-		s_iter++)
-	{
-		OnLibraryAction((*s_iter).c_str(), LibraryAction_Added);
-	}
+	pPlugin->ForEachLibrary([this] (const char *lib) -> void {
+		OnLibraryAction(lib, LibraryAction_Added);
+	});
 
 	/* :TODO: optimize? does this even matter? */
 	pPlugin->GetPhrases()->AddPhraseFile("core.phrases");
@@ -1300,10 +1302,9 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		if (pl == pPlugin || pl->GetStatus() != Plugin_Running)
 			continue;
 
-		for (s_iter=pl->m_Libraries.begin(); s_iter!=pl->m_Libraries.end(); s_iter++)
-		{
-			pPlugin->Call_OnLibraryAdded((*s_iter).c_str());
-		}
+		pl->ForEachLibrary([pPlugin] (const char *lib) -> void {
+			pPlugin->Call_OnLibraryAdded(lib);
+		});
 	}
 
 	return true;
@@ -1319,7 +1320,7 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 		CPlugin *found = nullptr;
 		for (auto pl_iter=m_plugins.begin(); pl_iter!=m_plugins.end(); pl_iter++) {
 			CPlugin *search = (*pl_iter);
-			if (search->m_Libraries.find(*req_iter) != search->m_Libraries.end()) {
+			if (search->HasLibrary((*req_iter).c_str())) {
 				found = search;
 				break;
 			}
@@ -1399,13 +1400,9 @@ void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
 	m_LoadLookup.remove(pPlugin->m_filename);
 
 	/* Go through our libraries and tell other plugins they're gone */
-	List<String>::iterator s_iter;
-	for (s_iter = pPlugin->m_Libraries.begin();
-		 s_iter != pPlugin->m_Libraries.end();
-		 s_iter++)
-	{
-		OnLibraryAction((*s_iter).c_str(), LibraryAction_Removed);
-	}
+	pPlugin->ForEachLibrary([this] (const char *lib) -> void {
+		OnLibraryAction(lib, LibraryAction_Removed);
+	});
 
 	List<IPluginsListener *>::iterator iter;
 	IPluginsListener *pListener;
@@ -2376,16 +2373,8 @@ bool CPluginManager::LibraryExists(const char *lib)
 		{
 			continue;
 		}
-		List<String>::iterator s_iter;
-		for (s_iter = pl->m_Libraries.begin();
-			 s_iter != pl->m_Libraries.end();
-			 s_iter++)
-		{
-			if ((*s_iter).compare(lib) == 0)
-			{
-				return true;
-			}
-		}
+		if (pl->HasLibrary(lib))
+			return true;
 	}
 
 	return false;
