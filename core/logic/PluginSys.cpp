@@ -143,7 +143,7 @@ CPlugin *CPlugin::Create(const char *file)
 	CPlugin *pPlugin = new CPlugin(file);
 
 	if (!fp) {
-		pPlugin->SetErrorState(Plugin_BadLoad, "Unable to open file");
+		pPlugin->EvictWithError(Plugin_BadLoad, "Unable to open file");
 		return pPlugin;
 	}
 
@@ -178,7 +178,7 @@ IPluginRuntime *CPlugin::GetRuntime()
 	return m_pRuntime;
 }
 
-void CPlugin::SetErrorState(PluginStatus status, const char *error_fmt, ...)
+void CPlugin::EvictWithError(PluginStatus status, const char *error_fmt, ...)
 {
 	if (m_status == Plugin_Running)
 	{
@@ -265,7 +265,7 @@ bool CPlugin::ReadInfo()
 		}
 		if (m_FileVersion > 5) {
 			base->LocalToString(info->filevers, (char **)&pFileVers);
-			SetErrorState(Plugin_Failed, "Newer SourceMod required (%s or higher)", pFileVers);
+			EvictWithError(Plugin_Failed, "Newer SourceMod required (%s or higher)", pFileVers);
 			return false;
 		}
 	} else {
@@ -311,7 +311,7 @@ void CPlugin::Call_OnPluginStart()
 	int err;
 	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
 	{
-		SetErrorState(Plugin_Error, "Error detected in plugin startup (see error logs)");
+		EvictWithError(Plugin_Error, "Error detected in plugin startup (see error logs)");
 	}
 }
 
@@ -388,7 +388,7 @@ APLRes CPlugin::AskPluginLoad()
 	pFunction->PushStringEx(m_errormsg, sizeof(m_errormsg), 0, SM_PARAM_COPYBACK);
 	pFunction->PushCell(sizeof(m_errormsg));
 	if ((err = pFunction->Execute(&result)) != SP_ERROR_NONE) {
-		SetErrorState(Plugin_Failed, "unexpected error %d in AskPluginLoad callback", err);
+		EvictWithError(Plugin_Failed, "unexpected error %d in AskPluginLoad callback", err);
 		return APLRes_Failure;
 	}
 
@@ -435,7 +435,7 @@ bool CPlugin::TryCompile()
 	char loadmsg[255];
 	m_pRuntime = g_pSourcePawn2->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg));
 	if (!m_pRuntime) {
-		SetErrorState(Plugin_BadLoad, "Unable to load plugin (%s)", loadmsg);
+		EvictWithError(Plugin_BadLoad, "Unable to load plugin (%s)", loadmsg);
 		return false;
 	}
 
@@ -634,7 +634,7 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 	/* :IDEA: in the future, add native trapping? */
 	if (m_FakeNativesMissing || m_LibraryMissing)
 	{
-		SetErrorState(Plugin_Error, "Depends on plugin: %s", pOwner->GetFilename());
+		EvictWithError(Plugin_Error, "Depends on plugin: %s", pOwner->GetFilename());
 	}
 }
 
@@ -990,7 +990,7 @@ void CPluginManager::LoadAll_SecondPass()
 			if (!RunSecondPass(pPlugin, error, sizeof(error)))
 			{
 				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), error);
-				pPlugin->SetErrorState(Plugin_BadLoad, "%s", error);
+				pPlugin->EvictWithError(Plugin_BadLoad, "%s", error);
 			}
 		}
 	}
@@ -1208,9 +1208,9 @@ bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 
 	if (m_bBlockBadPlugins) {
 		if (bulletinUrl[0] != '\0') {
-			pPlugin->SetErrorState(Plugin_BadLoad, "Known malware detected and blocked. See %s for more info", bulletinUrl);
+			pPlugin->EvictWithError(Plugin_BadLoad, "Known malware detected and blocked. See %s for more info", bulletinUrl);
 		} else {
-			pPlugin->SetErrorState(Plugin_BadLoad, "Possible malware or illegal plugin detected and blocked");
+			pPlugin->EvictWithError(Plugin_BadLoad, "Possible malware or illegal plugin detected and blocked");
 		}
 		return false;
 	}
@@ -1322,7 +1322,7 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 			}
 		}
 		if (!found) {
-			pPlugin->SetErrorState(Plugin_Error, "Library not found: %s", lib);
+			pPlugin->EvictWithError(Plugin_Error, "Library not found: %s", lib);
 			return false;
 		}
 		found->AddDependent(pPlugin);
@@ -1345,7 +1345,7 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 			native->name[0] != '@' &&
 			!(native->flags & SP_NTVFLAG_OPTIONAL))
 		{
-			pPlugin->SetErrorState(Plugin_Error, "Native not found: %s", native->name);
+			pPlugin->EvictWithError(Plugin_Error, "Native not found: %s", native->name);
 			return;
 		}
 	}

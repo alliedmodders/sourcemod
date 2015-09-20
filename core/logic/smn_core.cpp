@@ -390,7 +390,7 @@ static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] == 1)
 	{
-		pPlugin->SetErrorState(Plugin_Failed, "%s", str);
+		pPlugin->EvictWithError(Plugin_Failed, "%s", str);
 
 		return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", str);
 	}
@@ -402,10 +402,10 @@ static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
 			DetectExceptions eh(pContext);
 			g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
 			if (eh.HasException()) {
-				pPlugin->SetErrorState(Plugin_Failed, "%s", str);
+				pPlugin->EvictWithError(Plugin_Failed, "%s", str);
 				return 0;
 			}
-			pPlugin->SetErrorState(Plugin_Failed, "%s", buffer);
+			pPlugin->EvictWithError(Plugin_Failed, "%s", buffer);
 			pContext->ReportFatalError("%s", buffer);
 			return 0;
 		}
@@ -674,7 +674,7 @@ static cell_t RequireFeature(IPluginContext *pContext, const cell_t *params)
 			g_pSM->Format(default_message, sizeof(default_message), "Feature \"%s\" not available", name);
 			msg = default_message;
 		}
-		pPlugin->SetErrorState(Plugin_Error, "%s", msg);
+		pPlugin->EvictWithError(Plugin_Error, "%s", msg);
 
 		if (!eh.HasException())
 			pContext->ReportFatalError("%s", msg);
