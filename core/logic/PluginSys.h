@@ -537,7 +537,6 @@ private:
 private:
 	List<IPluginsListener *> m_listeners;
 	List<CPlugin *> m_plugins;
-	CStack<CPluginManager::CPluginIterator *> m_iters;
 	NameHashSet<CPlugin *> m_LoadLookup;
 	bool m_AllPluginsLoaded;
 	IdentityToken_t *m_MyIdent;
