@@ -270,6 +270,9 @@ public:
 		return m_errormsg;
 	}
 
+	void AddRequiredLib(const char *name);
+	bool ForEachRequiredLib(ke::Lambda<bool(const char *)> callback);
+
 protected:
 	bool ReadInfo();
 	void DependencyDropped(CPlugin *pOwner);
