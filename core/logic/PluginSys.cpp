@@ -71,6 +71,7 @@ CPlugin::CPlugin(const char *file)
 
 	m_serial = ++MySerial;
 	m_errormsg[0] = '\0';
+	m_DateTime[0] = '\0';
 	ke::SafeSprintf(m_filename, sizeof(m_filename), "%s", file);
 
 	memset(&m_info, 0, sizeof(m_info));
@@ -2122,7 +2123,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				}
 				if (pl->m_FileVersion >= 3)
 				{
-					rootmenu->ConsolePrint("  Timestamp: %s", pl->m_DateTime);
+					rootmenu->ConsolePrint("  Timestamp: %s", pl->GetDateTime());
 				}
 				
 				unsigned char *pCodeHash = pl->GetRuntime()->GetCodeHash();

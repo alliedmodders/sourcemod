@@ -260,6 +260,10 @@ public:
 	// since the last call to HasUpdatedFile().
 	bool HasUpdatedFile();
 
+	const char *GetDateTime() {
+		return m_DateTime;
+	}
+
 protected:
 	bool ReadInfo();
 	void DependencyDropped(CPlugin *pOwner);
