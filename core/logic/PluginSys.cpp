@@ -1355,7 +1355,7 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 	if (pPlugin->GetStatus() == Plugin_Error)
 	{
 		/* If we got here, all natives are okay again! */
-		if (pPlugin->m_pRuntime->IsPaused())
+		if (pPlugin->GetRuntime()->IsPaused())
 		{
 			pPlugin->SetPauseState(false);
 		}
@@ -2125,8 +2125,8 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 					rootmenu->ConsolePrint("  Timestamp: %s", pl->m_DateTime);
 				}
 				
-				unsigned char *pCodeHash = pl->m_pRuntime->GetCodeHash();
-				unsigned char *pDataHash = pl->m_pRuntime->GetDataHash();
+				unsigned char *pCodeHash = pl->GetRuntime()->GetCodeHash();
+				unsigned char *pDataHash = pl->GetRuntime()->GetDataHash();
 				
 				char combinedHash[33];
 				for (int i = 0; i < 16; i++)
