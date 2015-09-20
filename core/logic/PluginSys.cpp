@@ -698,12 +698,9 @@ void CPlugin::DropEverything()
 	/* Other plugins could be holding weak references that were
 	 * added by us.  We need to clean all of those up now.
 	 */
-	for (List<CPlugin *>::iterator iter = g_PluginSys.m_plugins.begin();
-		 iter != g_PluginSys.m_plugins.end();
-		 iter++)
-	{
-		(*iter)->ToNativeOwner()->DropRefsTo(this);
-	}
+	g_PluginSys.ForEachPlugin([this] (CPlugin *other) -> void {
+		other->ToNativeOwner()->DropRefsTo(this);
+	});
 
 	/* Proceed with the rest of the necessities. */
 	CNativeOwner::DropEverything();
@@ -2488,6 +2485,12 @@ const CVector<SMPlugin *> *CPluginManager::ListPlugins()
 void CPluginManager::FreePluginList(const CVector<SMPlugin *> *list)
 {
 	delete const_cast<CVector<SMPlugin *> *>(list);
+}
+
+void CPluginManager::ForEachPlugin(ke::Lambda<void(CPlugin *)> callback)
+{
+	for (auto iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
+		callback(*iter);
 }
 
 class OldPluginAPI : public IPluginManager

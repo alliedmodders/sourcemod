@@ -311,7 +311,6 @@ class CPluginManager :
 	public IHandleTypeDispatch,
 	public IRootConsoleCommand
 {
-	friend class CPlugin;
 public:
 	CPluginManager();
 	~CPluginManager();
@@ -451,6 +450,10 @@ public:
 	void SyncMaxClients(int max_clients);
 
 	void ListPluginsToClient(CPlayer *player, const CCommand &args);
+
+	void _SetPauseState(CPlugin *pPlugin, bool pause);
+
+	void ForEachPlugin(ke::Lambda<void(CPlugin *)> callback);
 private:
 	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type);
 
@@ -487,8 +490,6 @@ private:
 	* Manages required natives.
 	*/
 	bool FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size_t maxlength);
-
-	void _SetPauseState(CPlugin *pPlugin, bool pause);
 
 	bool ScheduleUnload(CPlugin *plugin);
 	void UnloadPluginImpl(CPlugin *plugin);
