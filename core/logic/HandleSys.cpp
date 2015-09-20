@@ -1066,11 +1066,23 @@ bool HandleSystem::TryAndFreeSomeHandles()
 	return scripts->UnloadPlugin(highest_owner);
 }
 
-void HandleSystem::Dump(HANDLE_REPORTER rep)
+static void rep(const HandleReporter &fn, const char *fmt, ...)
+{
+	va_list ap;
+	char buffer[1024];
+
+	va_start(ap, fmt);
+	ke::SafeVsprintf(buffer, sizeof(buffer), fmt, ap);
+	va_end(ap);
+
+	fn(buffer);
+}
+
+void HandleSystem::Dump(const HandleReporter &fn)
 {
 	unsigned int total_size = 0;
-	rep("%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s", "Handle", "Owner", "Type", "Memory");
-	rep("--------------------------------------------------------------------------");
+	rep(fn, "%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s", "Handle", "Owner", "Type", "Memory");
+	rep(fn, "--------------------------------------------------------------------------");
 	for (unsigned int i = 1; i <= m_HandleTail; i++)
 	{
 		if (m_Handles[i].set != HandleSet_Used)
@@ -1141,16 +1153,16 @@ void HandleSystem::Dump(HANDLE_REPORTER rep)
 		if (pType->dispatch->GetDispatchVersion() < HANDLESYS_MEMUSAGE_MIN_VERSION
 			|| !bresult)
 		{
-			rep("0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, "-1");
+			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, "-1");
 		}
 		else
 		{
 			char buffer[32];
 			ke::SafeSprintf(buffer, sizeof(buffer), "%d", size);
-			rep("0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, buffer);
+			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, buffer);
 			total_size += size;
 		}
 	}
-	rep("-- Approximately %d bytes of memory are in use by Handles.\n", total_size);
+	rep(fn, "-- Approximately %d bytes of memory are in use by Handles.\n", total_size);
 }
 

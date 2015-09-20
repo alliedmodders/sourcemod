@@ -109,24 +109,9 @@ static void AddNatives(sp_nativeinfo_t *natives)
 	g_CoreNatives.AddNatives(natives);
 }
 
-static void DumpHandles(void (*dumpfn)(const char *fmt, ...))
-{
-	g_HandleSys.Dump(dumpfn);
-}
-
-static bool DumpAdminCache(const char *filename)
-{
-	return g_Admins.DumpCache(filename);
-}
-
 static void RegisterProfiler(IProfilingTool *tool)
 {
 	g_ProfileToolManager.RegisterTool(tool);
-}
-
-static void OnRootCommand(const ICommandArgs *args)
-{
-	g_RootMenu.GotRootCmd(args);
 }
 
 // Defined in smn_filesystem.cpp.
@@ -159,10 +144,7 @@ static sm_logic_t logic =
 	&g_DbgReporter,
 	GenerateError,
 	AddNatives,
-	DumpHandles,
-	DumpAdminCache,
 	RegisterProfiler,
-	OnRootCommand,
 	CDataPack::New,
 	CDataPack::Free,
 	&g_PluginSys,
