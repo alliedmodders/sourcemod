@@ -75,6 +75,19 @@ enum APLRes
 	APLRes_SilentFailure
 };
 
+// Plugin membership state.
+enum class PluginState
+{
+	// The plugin has not yet been added to the global plugin list.
+	Unregistered,
+
+	// The plugin is a member of the global plugin list.
+	Registered,
+
+	// The plugin is waiting to be unloaded.
+	WaitingToUnload
+};
+
 class CPlugin : 
 	public SMPlugin,
 	public CNativeOwner
@@ -134,59 +147,36 @@ public:
 	// Evicts the plugin from memory and sets an error state.
 	void EvictWithError(PluginStatus status, const char *error_fmt, ...);
 
-	/**
-	 * Initializes the plugin's identity information
-	 */
+	// Initializes the plugin's identity information
 	void InitIdentity();
 
-	/**
-	 * Calls the OnPluginLoad function, and sets any failed states if necessary.
-	 * After invoking AskPluginLoad, its state is either Running or Failed.
-	 */
+	// Calls the OnPluginLoad function, and sets any failed states if necessary.
+	// After invoking AskPluginLoad, its state is either Running or Failed.
 	APLRes AskPluginLoad();
 
-	/**
-	 * Calls the OnPluginStart function.
-	 * NOTE: Valid pre-states are: Plugin_Created
-	 * NOTE: Post-state will be Plugin_Running
-	 */
+	// Calls the OnPluginStart function.
+	// NOTE: Valid pre-states are: Plugin_Created
+	// NOTE: Post-state will be Plugin_Running
 	void Call_OnPluginStart();
-
-	/**
-	 * Calls the OnPluginEnd function.
-	 */
 	void Call_OnPluginEnd();
-
-	/**
-	 * Calls the OnAllPluginsLoaded function.
-	 */
 	void Call_OnAllPluginsLoaded();
-
-	/**
-	 * Calls the OnLibraryAdded function.
-	 */
 	void Call_OnLibraryAdded(const char *lib);
 
-	/**
-	 * Returns true if a plugin is usable.
-	 */
+	// Returns true if a plugin is usable.
 	bool IsRunnable();
 
-	/**
-	 * Get languages info.
-	 */
+	// Get languages info.
 	IPhraseCollection *GetPhrases();
+
+	PluginState State() const {
+		return m_state;
+	}
+	void SetRegistered();
+	void SetWaitingToUnload();
 
 public:
 	// Returns true if the plugin was running, but is now invalid.
 	bool WasRunning();
-
-	bool WaitingToUnload() const {
-		return m_WaitingToUnload;
-	}
-	void SetWaitingToUnload() {
-		m_WaitingToUnload = true;
-	}
 
 	Handle_t GetMyHandle();
 
@@ -247,7 +237,7 @@ private:
 	unsigned int m_serial;
 
 	PluginStatus m_status;
-	bool m_WaitingToUnload;
+	PluginState m_state;
 	bool m_AddedLibraries;
 
 	// Statuses that are set during failure.
