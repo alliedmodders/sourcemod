@@ -227,6 +227,10 @@ public:
 		return m_EnteredSecondPass;
 	}
 
+	bool HasErrorOrFail() const {
+		return m_status == Plugin_Error || m_status == Plugin_Failed;
+	}
+
 	bool TryCompile();
 	void BindFakeNativesTo(CPlugin *other);
 
