@@ -367,17 +367,6 @@ public:
 	 */
 	void LoadAll_SecondPass();
 
-	/**
-	 * Tests a plugin file mask against a local folder.
-	 * The alias is searched backwards from localdir - i.e., given this input:
-	 *   csdm/ban        csdm/ban
-	 *   ban             csdm/ban
-	 *   csdm/ban        optional/csdm/ban
-	 * All of these will return true for an alias match.  
-	 * Wildcards are allowed in the filename.
-	 */
-	bool TestAliasMatch(const char *alias, const char *localdir);
-
 	/** 
 	 * Returns whether anything loaded will be a late load.
 	 */
