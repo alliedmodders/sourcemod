@@ -38,7 +38,7 @@
 #include <sp_vm_api.h>
 
 #define SMINTERFACE_PLUGINSYSTEM_NAME		"IPluginManager"
-#define SMINTERFACE_PLUGINSYSTEM_VERSION	5
+#define SMINTERFACE_PLUGINSYSTEM_VERSION	6
 
 /** Context user slot 3 is used Core for holding an IPluginContext pointer. */
 #define SM_CONTEXTVAR_USER		3
@@ -96,7 +96,13 @@ namespace SourceMod
 		// @brief The plugin could not be loaded. Either its file was missing
 		// or could not be recognized as a valid SourcePawn binary. Plugins
 		// in this state do not have a context or runtime.
-		Plugin_BadLoad
+		Plugin_BadLoad,
+
+		// @brief The plugin was once in a state <= Created, but has since
+		// been destroyed. We have left its IPlugin instance around for
+		// informational purposes. Plugins in this state do not have a
+		// context or runtime.
+		Plugin_Evicted
 	};
 
 
@@ -173,7 +179,7 @@ namespace SourceMod
 		 * @brief Returns the plugin status.
 		 */
 		virtual PluginStatus GetStatus() =0;
-		
+
 		/**
 		 * @brief Sets whether the plugin is paused or not.
 		 *
@@ -275,38 +281,35 @@ namespace SourceMod
 	class IPluginsListener
 	{
 	public:
-		/**
-		 * @brief Called when a plugin is created/mapped into memory.
-		 */
-		virtual void OnPluginCreated(IPlugin *plugin)
+		// @brief This callback should not be used since plugins may be in
+		// an unusable state.
+		virtual void OnPluginCreated(IPlugin *plugin) final
 		{
 		}
 
-		/**
-		 * @brief Called when a plugin is fully loaded successfully.
-		 */
+		// @brief Called when a plugin's required dependencies and natives have
+		// been bound. Plugins at this phase may be in any state Failed or
+		// lower. This is invoked immediately before OnPluginStart, and sometime
+		// after OnPluginCreated.
 		virtual void OnPluginLoaded(IPlugin *plugin)
 		{
 		}
 
-		/**
-		* @brief Called when a plugin is paused or unpaused.
-		*/
+		// @brief Called when a plugin is paused or unpaused.
 		virtual void OnPluginPauseChange(IPlugin *plugin, bool paused)
 		{
 		}
 
-		/**
-		 * @brief Called when a plugin is unloaded (only if fully loaded).
-		 */
+		// @brief Called when a plugin is about to be unloaded. This is called for
+		// any plugin for which OnPluginLoaded was called, and is invoked
+		// immediately after OnPluginEnd(). The plugin may be in any state Failed
+		// or lower.
 		virtual void OnPluginUnloaded(IPlugin *plugin)
 		{
 		}
 
-		/**
-		 * @brief Called when a plugin is destroyed.
-		 * NOTE: Always called if Created, even if load failed.
-		 */
+		// @brief Called when a plugin is destroyed. This is called on all plugins for
+		// which OnPluginCreated was called. The plugin may be in any state.
 		virtual void OnPluginDestroyed(IPlugin *plugin)
 		{
 		}

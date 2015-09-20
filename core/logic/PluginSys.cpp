@@ -63,9 +63,9 @@ CPlugin::CPlugin(const char *file)
    m_LibraryMissing(false),
    m_pContext(nullptr),
    m_MaxClientsVar(nullptr),
-   m_ident(nullptr),
    m_bGotAllLoaded(false),
    m_FileVersion(0),
+   m_ident(nullptr),
    m_LastFileModTime(0),
    m_handle(BAD_HANDLE)
 {
@@ -83,16 +83,7 @@ CPlugin::CPlugin(const char *file)
 
 CPlugin::~CPlugin()
 {
-	if (m_handle)
-	{
-		HandleSecurity sec;
-		sec.pOwner = g_PluginSys.GetIdentity();
-		sec.pIdentity = sec.pOwner;
-
-		handlesys->FreeHandle(m_handle, &sec);
-		g_ShareSys.DestroyIdentity(m_ident);
-	}
-
+	DestroyIdentity();
 	for (size_t i=0; i<m_configs.size(); i++)
 		delete m_configs[i];
 	m_configs.clear();
@@ -100,13 +91,71 @@ CPlugin::~CPlugin()
 
 void CPlugin::InitIdentity()
 {
-	if (!m_handle)
-	{
-		m_ident = g_ShareSys.CreateIdentity(g_PluginIdent, this);
-		m_handle = handlesys->CreateHandle(g_PluginType, this, g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity(), NULL);
-		m_pRuntime->GetDefaultContext()->SetKey(1, m_ident);
-		m_pRuntime->GetDefaultContext()->SetKey(2, (IPlugin *)this);
+	if (m_handle)
+		return;
+
+	m_ident = g_ShareSys.CreateIdentity(g_PluginIdent, this);
+	m_handle = handlesys->CreateHandle(g_PluginType, this, g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity(), NULL);
+	m_pRuntime->GetDefaultContext()->SetKey(1, m_ident);
+	m_pRuntime->GetDefaultContext()->SetKey(2, (IPlugin *)this);
+}
+
+void CPlugin::DestroyIdentity()
+{
+	if (m_handle) {
+		HandleSecurity sec(g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity());
+		handlesys->FreeHandle(m_handle, &sec);
+		m_handle = BAD_HANDLE;
 	}
+	if (m_ident) {
+		g_ShareSys.DestroyIdentity(m_ident);
+		m_ident = nullptr;
+	}
+}
+
+bool CPlugin::IsEvictionCandidate() const
+{
+	switch (Status()) {
+		case Plugin_Running:
+		case Plugin_Loaded:
+			// These states are valid, we should never evict.
+			return false;
+		case Plugin_BadLoad:
+		case Plugin_Uncompiled:
+			// These states imply that the plugin never loaded to begin with,
+			// so we have nothing to evict.
+			return false;
+		case Plugin_Evicted:
+			// We cannot be evicted twice.
+			return false;
+		default:
+			return true;
+	}
+}
+
+void CPlugin::FinishEviction()
+{
+	assert(IsEvictionCandidate());
+
+	// Revoke our identity and handle. This could maybe be seen as bad faith,
+	// since other plugins could be holding the handle and will now error. But
+	// this was already an existing problem. We need a listener API to solve
+	// it.
+	DestroyIdentity();
+
+	// Note that we do not set our status to Plugin_Evicted. This is a pseudo-status
+	// so consumers won't attempt to read the context or runtime. The real state
+	// is reflected here.
+	m_state = PluginState::Evicted;
+	m_pRuntime = nullptr;
+	m_pPhrases = nullptr;
+	m_pContext = nullptr;
+	m_MaxClientsVar = nullptr;
+	m_Props.clear();
+	m_configs.clear();
+	m_Libraries.clear();
+	m_bGotAllLoaded = false;
+	m_FileVersion = 0;
 }
 
 unsigned int CPlugin::CalcMemUsage()
@@ -489,6 +538,15 @@ unsigned int CPlugin::GetSerial()
 
 PluginStatus CPlugin::GetStatus()
 {
+	return Status();
+}
+
+PluginStatus CPlugin::Status() const
+{
+	// Even though we're evicted, we previously guaranteed a valid runtime
+	// for error/fail states. A new failure case above BadLoad solves this.
+	if (m_state == PluginState::Evicted)
+		return Plugin_Evicted;
 	return m_status;
 }
 
@@ -981,6 +1039,13 @@ void CPluginManager::AddPlugin(CPlugin *pPlugin)
 
 	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
 		(*iter)->OnPluginCreated(pPlugin);
+
+	if (pPlugin->IsEvictionCandidate()) {
+		// If we get here, and the plugin isn't running, we evict it. This
+		// should be safe since our call stack should be empty.
+		Purge(pPlugin);
+		pPlugin->FinishEviction();
+	}
 }
 
 void CPluginManager::LoadAll_SecondPass()
@@ -991,7 +1056,8 @@ void CPluginManager::LoadAll_SecondPass()
 			char error[256] = {0};
 			if (!RunSecondPass(pPlugin)) {
 				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), pPlugin->GetErrorMsg());
-				pPlugin->EvictWithError(Plugin_BadLoad, "%s", error);
+				Purge(pPlugin);
+				pPlugin->FinishEviction();
 			}
 		}
 	}
@@ -1397,7 +1463,6 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 
 void CPluginManager::Purge(CPlugin *plugin)
 {
-	assert(plugin->State() != PluginState::Unregistered);
 
 	// Go through our libraries and tell other plugins they're gone.
 	plugin->LibraryActions(LibraryAction_Removed);
@@ -1424,7 +1489,11 @@ void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
 {
 	m_plugins.remove(pPlugin);
 	m_LoadLookup.remove(pPlugin->GetFilename());
-	Purge(pPlugin);
+
+	// Evicted plugins were already purged from external systems.
+	if (pPlugin->State() != PluginState::Evicted)
+		Purge(pPlugin);
+
 	delete pPlugin;
 }
 
@@ -1635,7 +1704,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
 				if (pl->GetStatus() != Plugin_Running && !pl->IsSilentlyFailed())
 				{
-					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetStatus()));
+					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetDisplayStatus()));
 
 					/* Plugin has failed to load. */
 					fail_list.append(pl);
@@ -1644,7 +1713,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				{
 					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d", id);
 				}
-				if (pl->GetStatus() < Plugin_Created)
+				if (pl->GetStatus() < Plugin_Created || pl->GetStatus() == Plugin_Evicted)
 				{
 					if (pl->IsSilentlyFailed())
 						len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " Disabled:");
