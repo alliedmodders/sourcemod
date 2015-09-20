@@ -237,8 +237,10 @@ public:
 		return m_EnteredSecondPass;
 	}
 
-	bool HasErrorOrFail() const {
-		return m_status == Plugin_Error || m_status == Plugin_Failed;
+	bool IsInErrorState() const {
+		if (m_status == Plugin_Running || m_status == Plugin_Loaded)
+			return false;
+		return true;
 	}
 
 	bool TryCompile();
