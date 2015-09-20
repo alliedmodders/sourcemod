@@ -65,16 +65,38 @@ namespace SourceMod
 	 */
 	enum PluginStatus
 	{
-		Plugin_Running=0,		/**< Plugin is running */
-		/* All states below are unexecutable */
-		Plugin_Paused,			/**< Plugin is loaded but paused */
-		Plugin_Error,			/**< Plugin is loaded but errored/locked */
-		/* All states below do not have all natives */
-		Plugin_Loaded,			/**< Plugin has passed loading and can be finalized */
-		Plugin_Failed,			/**< Plugin has a fatal failure */
-		Plugin_Created,			/**< Plugin is created but not initialized */
-		Plugin_Uncompiled,		/**< Plugin is not yet compiled by the JIT */
-		Plugin_BadLoad,			/**< Plugin failed to load */
+		// @brief The plugin is running normally.
+		Plugin_Running=0,
+
+		// @brief The plugin is paused and no code may be executed until it
+		// is resumed.
+		Plugin_Paused,
+
+		// @brief The plugin encountered a fatal error, but it may be loaded
+		// again later.
+		Plugin_Error,
+
+		// @brief The plugin loaded, but has not yet been linked into the
+		// dependency system. It may not have all its natives bound yet.
+		Plugin_Loaded,
+
+		// @brief The plugin encountered a fatal, unrecoverable error.
+		Plugin_Failed,
+
+		// @brief The plugin successfully compiled, but we have not yet begun
+		// the loading and initialization process. This state should not be
+		// observable.
+		Plugin_Created,
+
+		// @brief The plugin has not yet been compiled. This state should not
+		// be observable. Plugins in this state do not have a context or
+		// runtime.
+		Plugin_Uncompiled,
+
+		// @brief The plugin could not be loaded. Either its file was missing
+		// or could not be recognized as a valid SourcePawn binary. Plugins
+		// in this state do not have a context or runtime.
+		Plugin_BadLoad
 	};
 
 
