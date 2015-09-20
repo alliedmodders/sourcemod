@@ -154,10 +154,9 @@ public:
 	// After invoking AskPluginLoad, its state is either Running or Failed.
 	APLRes AskPluginLoad();
 
-	// Calls the OnPluginStart function.
-	// NOTE: Valid pre-states are: Plugin_Created
-	// NOTE: Post-state will be Plugin_Running
-	void Call_OnPluginStart();
+	// Transition to the fully running state, if possible.
+	bool OnPluginStart();
+
 	void Call_OnPluginEnd();
 	void Call_OnAllPluginsLoaded();
 	void Call_OnLibraryAdded(const char *lib);
@@ -205,6 +204,7 @@ public:
 		return m_FileVersion;
 	}
 	const char *GetErrorMsg() const {
+		assert(m_status != Plugin_Running && m_status != Plugin_Loaded);
 		return m_errormsg;
 	}
 
@@ -219,6 +219,12 @@ public:
 	}
 	bool HasFakeNatives() const {
 		return m_fakes.length() > 0;
+	}
+
+	// True if we got far enough into the second pass to call OnPluginLoaded
+	// in the listener list.
+	bool EnteredSecondPass() const {
+		return m_EnteredSecondPass;
 	}
 
 	bool TryCompile();
@@ -239,6 +245,7 @@ private:
 	PluginStatus m_status;
 	PluginState m_state;
 	bool m_AddedLibraries;
+	bool m_EnteredSecondPass;
 
 	// Statuses that are set during failure.
 	bool m_SilentFailure;
@@ -428,27 +435,15 @@ private:
 	 */
 	void AddPlugin(CPlugin *pPlugin);
 
-	/**
-	 * First pass for loading a plugin, and its helpers.
-	 */
+	// First pass for loading a plugin, and its helpers.
 	CPlugin *CompileAndPrep(const char *path);
 	bool MalwareCheckPass(CPlugin *pPlugin);
 
-	/**
-	 * Runs the second loading pass on a plugin.
-	 */
-	bool RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength);
-
-	/**
-	 * Runs an extension pass on a plugin.
-	 */
+	// Runs the second loading pass on a plugin.
+	bool RunSecondPass(CPlugin *pPlugin);
 	void LoadExtensions(CPlugin *pPlugin);
-	bool RequireExtensions(CPlugin *pPlugin, char *error, size_t maxlength);
-
-	/**
-	* Manages required natives.
-	*/
-	bool FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size_t maxlength);
+	bool RequireExtensions(CPlugin *pPlugin);
+	bool FindOrRequirePluginDeps(CPlugin *pPlugin);
 
 	bool ScheduleUnload(CPlugin *plugin);
 	void UnloadPluginImpl(CPlugin *plugin);

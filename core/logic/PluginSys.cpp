@@ -57,6 +57,7 @@ CPlugin::CPlugin(const char *file)
    m_status(Plugin_Uncompiled),
    m_state(PluginState::Unregistered),
    m_AddedLibraries(false),
+   m_EnteredSecondPass(false),
    m_SilentFailure(false),
    m_FakeNativesMissing(false),
    m_LibraryMissing(false),
@@ -291,13 +292,12 @@ void CPlugin::SyncMaxClients(int max_clients)
 	*m_MaxClientsVar->offs = max_clients;
 }
 
-void CPlugin::Call_OnPluginStart()
+bool CPlugin::OnPluginStart()
 {
-	if (m_status != Plugin_Loaded)
-	{
-		return;
-	}
+	m_EnteredSecondPass = true;
 
+	if (m_status != Plugin_Loaded)
+		return false;
 	m_status = Plugin_Running;
 
 	SyncMaxClients(playerhelpers->GetMaxClients());
@@ -305,15 +305,14 @@ void CPlugin::Call_OnPluginStart()
 	cell_t result;
 	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("OnPluginStart");
 	if (!pFunction)
-	{
-		return;
-	}
+		return true;
 
 	int err;
-	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
-	{
+	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE) {
 		EvictWithError(Plugin_Error, "Error detected in plugin startup (see error logs)");
+		return false;
 	}
+	return true;
 }
 
 void CPlugin::Call_OnPluginEnd()
@@ -950,8 +949,8 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	/* Run second pass if we need to */
 	if (IsLateLoadTime() && pl->GetStatus() == Plugin_Loaded)
 	{
-		if (!RunSecondPass(pl, error, maxlength))
-		{
+		if (!RunSecondPass(pl)) {
+			ke::SafeStrcpy(error, maxlength, pl->GetErrorMsg());
 			UnloadPlugin(pl);
 			return NULL;
 		}
@@ -991,12 +990,10 @@ void CPluginManager::LoadAll_SecondPass()
 {
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		CPlugin *pPlugin = (*iter);
-		if (pPlugin->GetStatus() == Plugin_Loaded)
-		{
+		if (pPlugin->GetStatus() == Plugin_Loaded) {
 			char error[256] = {0};
-			if (!RunSecondPass(pPlugin, error, sizeof(error)))
-			{
-				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), error);
+			if (!RunSecondPass(pPlugin)) {
+				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), pPlugin->GetErrorMsg());
 				pPlugin->EvictWithError(Plugin_BadLoad, "%s", error);
 			}
 		}
@@ -1005,7 +1002,7 @@ void CPluginManager::LoadAll_SecondPass()
 	m_AllPluginsLoaded = true;
 }
 
-bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size_t maxlength)
+bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin)
 {
 	struct _pl
 	{
@@ -1039,8 +1036,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 				if ((pFunc=pBase->GetFunctionByName(buffer))) {
 					cell_t res;
 					if (pFunc->Execute(&res) != SP_ERROR_NONE) {
-						if (error)
-							ke::SafeSprintf(error, maxlength, "Fatal error during initializing plugin load");
+						pPlugin->EvictWithError(Plugin_Failed, "Fatal error during initializing plugin load");
 						return false;
 					}
 				}
@@ -1057,8 +1053,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 					}
 				}
 				if (!found) {
-					if (error)
-						ke::SafeSprintf(error, maxlength, "Could not find required plugin \"%s\"", name);
+					pPlugin->EvictWithError(Plugin_Failed, "Could not find required plugin \"%s\"", name);
 					return false;
 				}
 
@@ -1154,9 +1149,9 @@ void CPluginManager::LoadExtensions(CPlugin *pPlugin)
 	pPlugin->ForEachExtVar(ke::Move(callback));
 }
 
-bool CPluginManager::RequireExtensions(CPlugin *pPlugin, char *error, size_t maxlength)
+bool CPluginManager::RequireExtensions(CPlugin *pPlugin)
 {
-	auto callback = [pPlugin, error, maxlength]
+	auto callback = [pPlugin]
                     (const sp_pubvar_t *pubvar, const CPlugin::ExtVar& ext) -> bool
 	{
 		/* Is this required? */
@@ -1168,7 +1163,7 @@ bool CPluginManager::RequireExtensions(CPlugin *pPlugin, char *error, size_t max
 				pExt = g_Extensions.FindExtensionByName(ext.name);
 
 			if (!pExt || !pExt->IsRunning(nullptr, 0)) {
-				ke::SafeSprintf(error, maxlength, "Required extension \"%s\" file(\"%s\") not running", ext.name, ext.file);
+				pPlugin->EvictWithError(Plugin_Failed, "Required extension \"%s\" file(\"%s\") not running", ext.name, ext.file);
 				return false;
 			}
 			g_Extensions.BindChildPlugin(pExt, pPlugin);
@@ -1179,7 +1174,7 @@ bool CPluginManager::RequireExtensions(CPlugin *pPlugin, char *error, size_t max
 			if (IPluginFunction *pFunc = pPlugin->GetBaseContext()->GetFunctionByName(buffer)) {
 				cell_t res;
 				if (pFunc->Execute(&res) != SP_ERROR_NONE) {
-					ke::SafeSprintf(error, maxlength, "Fatal error during plugin initialization (ext req)");
+					pPlugin->EvictWithError(Plugin_Failed, "Fatal error during plugin initialization (ext req)");
 					return false;
 				}
 			}
@@ -1242,19 +1237,18 @@ bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 	return true;
 }
 
-bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength)
+bool CPluginManager::RunSecondPass(CPlugin *pPlugin)
 {
-	/* Second pass for extension requirements */
-	if (!RequireExtensions(pPlugin, error, maxlength))
+	// Make sure external dependencies are around.
+	if (!RequireExtensions(pPlugin))
+		return false;
+	if (!FindOrRequirePluginDeps(pPlugin))
 		return false;
 
-	if (!FindOrRequirePluginDeps(pPlugin, error, maxlength))
-		return false;
-
-	/* Run another binding pass */
+	// Run another binding pass.
 	g_ShareSys.BindNativesToPlugin(pPlugin, false);
 
-	/* Find any unbound natives. Right now, these are not allowed. */
+	// Find any unbound natives. Right now, these are not allowed.
 	IPluginContext *pContext = pPlugin->GetBaseContext();
 	uint32_t num = pContext->GetNativesNum();
 	for (unsigned int i=0; i<num; i++)
@@ -1266,24 +1260,21 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 			native->name[0] != '@' &&
 			!(native->flags & SP_NTVFLAG_OPTIONAL))
 		{
-			if (error)
-			{
-				ke::SafeSprintf(error, maxlength, "Native \"%s\" was not found", native->name);
-			}
+			pPlugin->EvictWithError(Plugin_Failed, "Native \"%s\" was not found", native->name);
 			return false;
 		}
 	}
 
-	/* Finish by telling all listeners */
+	// Finish by telling all listeners.
 	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
 		(*iter)->OnPluginLoaded(pPlugin);
 	
-	/* Tell this plugin to finish initializing itself */
-	pPlugin->Call_OnPluginStart();
+	// Tell this plugin to finish initializing itself.
+	if (!pPlugin->OnPluginStart())
+		return false;
 
-	/* Now, if we have fake natives, go through all plugins that might need rebinding */
-	if (pPlugin->GetStatus() <= Plugin_Paused && pPlugin->HasFakeNatives())
-	{
+	// Now, if we have fake natives, go through all plugins that might need rebinding.
+	if (pPlugin->HasFakeNatives()) {
 		for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 			CPlugin *pOther = (*iter);
 			if ((pOther->GetStatus() == Plugin_Error
@@ -1302,13 +1293,13 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		}
 	}
 
-	/* Go through our libraries and tell other plugins they're added */
+	// Go through our libraries and tell other plugins they're added.
 	pPlugin->LibraryActions(LibraryAction_Added);
 
-	/* :TODO: optimize? does this even matter? */
+	// Add the core phrase file.
 	pPlugin->GetPhrases()->AddPhraseFile("core.phrases");
 	
-	/* Go through all other already loaded plugins and tell this plugin, that their libraries are loaded */
+	// Go through all other already loaded plugins and tell this plugin, that their libraries are loaded.
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		CPlugin *pl = (*iter);
 		/* Don't call our own libraries again and only care for already loaded plugins */
@@ -1409,15 +1400,19 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 
 void CPluginManager::Purge(CPlugin *plugin)
 {
+	assert(plugin->State() != PluginState::Unregistered);
+
 	// Go through our libraries and tell other plugins they're gone.
 	plugin->LibraryActions(LibraryAction_Removed);
 
-	if (plugin->GetStatus() <= Plugin_Error || plugin->GetStatus() == Plugin_Failed)
-	{
-		// Notify plugin.
+	// We only pair OnPluginEnd with OnPluginStart if we would have
+	// successfully called OnPluginStart, *and* SetFailState() wasn't called,
+	// which guarantees no further code will execute.
+	if (plugin->GetStatus() == Plugin_Running)
 		plugin->Call_OnPluginEnd();
 
-		// Notify listeners of unloading.
+	// Notify listeners of unloading.
+	if (plugin->EnteredSecondPass()) {
 		for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
 			(*iter)->OnPluginUnloaded(plugin);
 	}
