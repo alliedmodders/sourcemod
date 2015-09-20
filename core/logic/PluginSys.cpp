@@ -56,6 +56,7 @@ CPlugin::CPlugin(const char *file)
  : m_serial(0),
    m_status(Plugin_Uncompiled),
    m_WaitingToUnload(false),
+   m_AddedLibraries(false),
    m_SilentFailure(false),
    m_FakeNativesMissing(false),
    m_LibraryMissing(false),
@@ -512,13 +513,17 @@ bool CPlugin::IsDebugging()
 
 void CPlugin::LibraryActions(LibraryAction action)
 {
-	List<String>::iterator iter;
-	for (iter = m_Libraries.begin();
-		iter != m_Libraries.end();
-		iter++)
-	{
-		g_PluginSys.OnLibraryAction((*iter).c_str(), action);
+	if (action == LibraryAction_Removed) {
+		if (!m_AddedLibraries)
+			return;
+		m_AddedLibraries = false;
 	}
+
+	for (auto iter = m_Libraries.begin(); iter != m_Libraries.end(); iter++)
+		g_PluginSys.OnLibraryAction((*iter).c_str(), action);
+
+	if (action == LibraryAction_Added)
+		m_AddedLibraries = true;
 }
 
 bool CPlugin::SetPauseState(bool paused)
@@ -1284,9 +1289,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	}
 
 	/* Go through our libraries and tell other plugins they're added */
-	pPlugin->ForEachLibrary([this] (const char *lib) -> void {
-		OnLibraryAction(lib, LibraryAction_Added);
-	});
+	pPlugin->LibraryActions(LibraryAction_Added);
 
 	/* :TODO: optimize? does this even matter? */
 	pPlugin->GetPhrases()->AddPhraseFile("core.phrases");
@@ -1391,33 +1394,32 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 	return true;
 }
 
-void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
+void CPluginManager::Purge(CPlugin *plugin)
 {
-	/* Remove us from the lookup table and linked list */
-	m_plugins.remove(pPlugin);
-	m_LoadLookup.remove(pPlugin->GetFilename());
+	// Go through our libraries and tell other plugins they're gone.
+	plugin->LibraryActions(LibraryAction_Removed);
 
-	/* Go through our libraries and tell other plugins they're gone */
-	pPlugin->ForEachLibrary([this] (const char *lib) -> void {
-		OnLibraryAction(lib, LibraryAction_Removed);
-	});
-
-	if (pPlugin->GetStatus() <= Plugin_Error || pPlugin->GetStatus() == Plugin_Failed)
+	if (plugin->GetStatus() <= Plugin_Error || plugin->GetStatus() == Plugin_Failed)
 	{
-		/* Notify plugin */
-		pPlugin->Call_OnPluginEnd();
+		// Notify plugin.
+		plugin->Call_OnPluginEnd();
 
-		/* Notify listeners of unloading */
+		// Notify listeners of unloading.
 		for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
-			(*iter)->OnPluginUnloaded(pPlugin);
+			(*iter)->OnPluginUnloaded(plugin);
 	}
 
-	pPlugin->DropEverything();
+	plugin->DropEverything();
 
 	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
-		(*iter)->OnPluginDestroyed(pPlugin);
-	
-	/* Tell the plugin to delete itself */
+		(*iter)->OnPluginDestroyed(plugin);
+}
+
+void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
+{
+	m_plugins.remove(pPlugin);
+	m_LoadLookup.remove(pPlugin->GetFilename());
+	Purge(pPlugin);
 	delete pPlugin;
 }
 
