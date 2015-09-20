@@ -71,6 +71,7 @@ CPlugin::CPlugin(const char *file)
 
 	m_serial = ++MySerial;
 	m_errormsg[0] = '\0';
+	m_DateTime[0] = '\0';
 	ke::SafeSprintf(m_filename, sizeof(m_filename), "%s", file);
 
 	memset(&m_info, 0, sizeof(m_info));
@@ -698,12 +699,9 @@ void CPlugin::DropEverything()
 	/* Other plugins could be holding weak references that were
 	 * added by us.  We need to clean all of those up now.
 	 */
-	for (List<CPlugin *>::iterator iter = g_PluginSys.m_plugins.begin();
-		 iter != g_PluginSys.m_plugins.end();
-		 iter++)
-	{
-		(*iter)->ToNativeOwner()->DropRefsTo(this);
-	}
+	g_PluginSys.ForEachPlugin([this] (CPlugin *other) -> void {
+		other->ToNativeOwner()->DropRefsTo(this);
+	});
 
 	/* Proceed with the rest of the necessities. */
 	CNativeOwner::DropEverything();
@@ -717,6 +715,12 @@ bool CPlugin::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKEN
 
 	m_fakes.append(entry);
 	return true;
+}
+
+void CPlugin::BindFakeNativesTo(CPlugin *other)
+{
+	for (size_t i = 0; i < m_fakes.length(); i++)
+		g_ShareSys.BindNativeToPlugin(other, m_fakes[i]);
 }
 
 /*******************
@@ -918,7 +922,7 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	*wasloaded = false;
 	if ((res=LoadPlugin(&pl, path, true, PluginType_MapUpdated)) == LoadRes_Failure)
 	{
-		ke::SafeStrcpy(error, maxlength, pl->m_errormsg);
+		ke::SafeStrcpy(error, maxlength, pl->GetErrorMsg());
 		delete pl;
 		return NULL;
 	}
@@ -959,7 +963,7 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 	LoadRes res;
 	if ((res=LoadPlugin(&pl, plugin, false, PluginType_MapUpdated)) == LoadRes_Failure)
 	{
-		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s.", plugin, pl->m_errormsg);
+		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s.", plugin, pl->GetErrorMsg());
 	}
 
 	if (res == LoadRes_Successful || res == LoadRes_Failure)
@@ -980,7 +984,7 @@ void CPluginManager::AddPlugin(CPlugin *pPlugin)
 	}
 
 	m_plugins.push_back(pPlugin);
-	m_LoadLookup.insert(pPlugin->m_filename, pPlugin);
+	m_LoadLookup.insert(pPlugin->GetFilename(), pPlugin);
 }
 
 void CPluginManager::LoadAll_SecondPass()
@@ -1047,15 +1051,12 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 				}
 			} else {
 				/* Check that we aren't registering the same library twice */
-				if (pPlugin->m_RequiredLibs.find(name) != pPlugin->m_RequiredLibs.end())
-					continue;
-
-				pPlugin->m_RequiredLibs.push_back(name);
+				pPlugin->AddRequiredLib(name);
 
 				CPlugin *found;
 				for (auto iter=m_plugins.begin(); iter!=m_plugins.end(); iter++) {
 					CPlugin *pl = (*iter);
-					if (pl->m_Libraries.find(name) != pl->m_Libraries.end()) {
+					if (pl->HasLibrary(name)) {
 						found = pl;
 						break;
 					}
@@ -1105,6 +1106,27 @@ bool CPlugin::ForEachExtVar(const ExtVarCallback& callback)
 		var.required = !!ext->required;
 
 		if (!callback(pubvar, var))
+			return false;
+	}
+	return true;
+}
+
+void CPlugin::ForEachLibrary(ke::Lambda<void(const char *)> callback)
+{
+	for (auto iter = m_Libraries.begin(); iter != m_Libraries.end(); iter++)
+		callback((*iter).c_str());
+}
+
+void CPlugin::AddRequiredLib(const char *name)
+{
+	if (m_RequiredLibs.find(name) == m_RequiredLibs.end())
+		m_RequiredLibs.push_back(name);
+}
+
+bool CPlugin::ForEachRequiredLib(ke::Lambda<bool(const char *)> callback)
+{
+	for (auto iter = m_RequiredLibs.begin(); iter != m_RequiredLibs.end(); iter++) {
+		if (!callback((*iter).c_str()))
 			return false;
 	}
 	return true;
@@ -1258,7 +1280,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	pPlugin->Call_OnPluginStart();
 
 	/* Now, if we have fake natives, go through all plugins that might need rebinding */
-	if (pPlugin->GetStatus() <= Plugin_Paused && pPlugin->m_fakes.length())
+	if (pPlugin->GetStatus() <= Plugin_Paused && pPlugin->HasFakeNatives())
 	{
 		List<CPlugin *>::iterator pl_iter;
 		for (pl_iter = m_plugins.begin();
@@ -1267,8 +1289,8 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		{
 			CPlugin *pOther = (*pl_iter);
 			if ((pOther->GetStatus() == Plugin_Error
-				&& (pOther->m_FakeNativesMissing || pOther->m_LibraryMissing))
-				|| pOther->m_FakeNativesMissing)
+				&& (pOther->HasMissingFakeNatives() || pOther->HasMissingLibrary()))
+				|| pOther->HasMissingFakeNatives())
 			{
 				TryRefreshDependencies(pOther);
 			}
@@ -1277,20 +1299,15 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 					 && pOther != pPlugin)
 			{
 				g_ShareSys.BeginBindingFor(pPlugin);
-				for (size_t i = 0; i < pPlugin->m_fakes.length(); i++)
-					g_ShareSys.BindNativeToPlugin(pOther, pPlugin->m_fakes[i]);
+				pPlugin->BindFakeNativesTo(pOther);
 			}
 		}
 	}
 
 	/* Go through our libraries and tell other plugins they're added */
-	List<String>::iterator s_iter;
-	for (s_iter = pPlugin->m_Libraries.begin();
-		s_iter != pPlugin->m_Libraries.end();
-		s_iter++)
-	{
-		OnLibraryAction((*s_iter).c_str(), LibraryAction_Added);
-	}
+	pPlugin->ForEachLibrary([this] (const char *lib) -> void {
+		OnLibraryAction(lib, LibraryAction_Added);
+	});
 
 	/* :TODO: optimize? does this even matter? */
 	pPlugin->GetPhrases()->AddPhraseFile("core.phrases");
@@ -1303,10 +1320,9 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		if (pl == pPlugin || pl->GetStatus() != Plugin_Running)
 			continue;
 
-		for (s_iter=pl->m_Libraries.begin(); s_iter!=pl->m_Libraries.end(); s_iter++)
-		{
-			pPlugin->Call_OnLibraryAdded((*s_iter).c_str());
-		}
+		pl->ForEachLibrary([pPlugin] (const char *lib) -> void {
+			pPlugin->Call_OnLibraryAdded(lib);
+		});
 	}
 
 	return true;
@@ -1318,22 +1334,24 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 
 	g_ShareSys.BindNativesToPlugin(pPlugin, false);
 
-	for (auto req_iter=pPlugin->m_RequiredLibs.begin(); req_iter!=pPlugin->m_RequiredLibs.end(); req_iter++) {
+	bool all_found = pPlugin->ForEachRequiredLib([this, pPlugin] (const char *lib) -> bool {
 		CPlugin *found = nullptr;
 		for (auto pl_iter=m_plugins.begin(); pl_iter!=m_plugins.end(); pl_iter++) {
 			CPlugin *search = (*pl_iter);
-			if (search->m_Libraries.find(*req_iter) != search->m_Libraries.end()) {
+			if (search->HasLibrary(lib)) {
 				found = search;
 				break;
 			}
 		}
 		if (!found) {
-			pPlugin->SetErrorState(Plugin_Error, "Library not found: %s", (*req_iter).c_str());
-			return;
+			pPlugin->SetErrorState(Plugin_Error, "Library not found: %s", lib);
+			return false;
 		}
-
 		found->AddDependent(pPlugin);
-	}
+		return true;
+	});
+	if (!all_found)
+		return;
 
 	/* Find any unbound natives
 	 * Right now, these are not allowed
@@ -1357,7 +1375,7 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 	if (pPlugin->GetStatus() == Plugin_Error)
 	{
 		/* If we got here, all natives are okay again! */
-		if (pPlugin->m_pRuntime->IsPaused())
+		if (pPlugin->GetRuntime()->IsPaused())
 		{
 			pPlugin->SetPauseState(false);
 		}
@@ -1399,16 +1417,12 @@ void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
 {
 	/* Remove us from the lookup table and linked list */
 	m_plugins.remove(pPlugin);
-	m_LoadLookup.remove(pPlugin->m_filename);
+	m_LoadLookup.remove(pPlugin->GetFilename());
 
 	/* Go through our libraries and tell other plugins they're gone */
-	List<String>::iterator s_iter;
-	for (s_iter = pPlugin->m_Libraries.begin();
-		 s_iter != pPlugin->m_Libraries.end();
-		 s_iter++)
-	{
-		OnLibraryAction((*s_iter).c_str(), LibraryAction_Removed);
-	}
+	pPlugin->ForEachLibrary([this] (const char *lib) -> void {
+		OnLibraryAction(lib, LibraryAction_Removed);
+	});
 
 	List<IPluginsListener *>::iterator iter;
 	IPluginsListener *pListener;
@@ -1903,7 +1917,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				}
 				else
 				{
-					ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " %s", pl->m_filename);
+					ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " %s", pl->GetFilename());
 				}
 				rootmenu->ConsolePrint("%s", buffer);
 			}
@@ -1919,7 +1933,8 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				for (_iter=m_FailList.begin(); _iter!=m_FailList.end(); _iter++)
 				{
 					pl = (CPlugin *)*_iter;
-					rootmenu->ConsolePrint("%s: %s",(IS_STR_FILLED(pl->GetPublicInfo()->name)) ? pl->GetPublicInfo()->name : pl->GetFilename(), pl->m_errormsg);
+					rootmenu->ConsolePrint("%s: %s", (IS_STR_FILLED(pl->GetPublicInfo()->name)) ? pl->GetPublicInfo()->name : pl->GetFilename(),
+					                       pl->GetErrorMsg());
 				}
 			}
 
@@ -2113,7 +2128,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				}
 				if (pl->GetStatus() == Plugin_Error || pl->GetStatus() == Plugin_Failed)
 				{
-					rootmenu->ConsolePrint("  Error: %s", pl->m_errormsg);
+					rootmenu->ConsolePrint("  Error: %s", pl->GetErrorMsg());
 				}
 				else
 				{
@@ -2126,13 +2141,13 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 						rootmenu->ConsolePrint("  Status: not running");
 					}
 				}
-				if (pl->m_FileVersion >= 3)
+				if (pl->GetFileVersion() >= 3)
 				{
-					rootmenu->ConsolePrint("  Timestamp: %s", pl->m_DateTime);
+					rootmenu->ConsolePrint("  Timestamp: %s", pl->GetDateTime());
 				}
 				
-				unsigned char *pCodeHash = pl->m_pRuntime->GetCodeHash();
-				unsigned char *pDataHash = pl->m_pRuntime->GetDataHash();
+				unsigned char *pCodeHash = pl->GetRuntime()->GetCodeHash();
+				unsigned char *pDataHash = pl->GetRuntime()->GetDataHash();
 				
 				char combinedHash[33];
 				for (int i = 0; i < 16; i++)
@@ -2142,7 +2157,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			}
 			else
 			{
-				rootmenu->ConsolePrint("  Load error: %s", pl->m_errormsg);
+				rootmenu->ConsolePrint("  Load error: %s", pl->GetErrorMsg());
 				if (pl->GetStatus() < Plugin_Created)
 				{
 					rootmenu->ConsolePrint("  File info: (title \"%s\") (version \"%s\")",
@@ -2241,7 +2256,7 @@ bool CPluginManager::ReloadPlugin(CPlugin *pl)
 	IPlugin *newpl;
 	int id = 1;
 
-	strcpy(filename, pl->m_filename);
+	strcpy(filename, pl->GetFilename());
 	ptype = pl->GetType();
 
 	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++, id++)
@@ -2379,16 +2394,8 @@ bool CPluginManager::LibraryExists(const char *lib)
 		{
 			continue;
 		}
-		List<String>::iterator s_iter;
-		for (s_iter = pl->m_Libraries.begin();
-			 s_iter != pl->m_Libraries.end();
-			 s_iter++)
-		{
-			if ((*s_iter).compare(lib) == 0)
-			{
-				return true;
-			}
-		}
+		if (pl->HasLibrary(lib))
+			return true;
 	}
 
 	return false;
@@ -2488,6 +2495,12 @@ const CVector<SMPlugin *> *CPluginManager::ListPlugins()
 void CPluginManager::FreePluginList(const CVector<SMPlugin *> *list)
 {
 	delete const_cast<CVector<SMPlugin *> *>(list);
+}
+
+void CPluginManager::ForEachPlugin(ke::Lambda<void(CPlugin *)> callback)
+{
+	for (auto iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
+		callback(*iter);
 }
 
 class OldPluginAPI : public IPluginManager

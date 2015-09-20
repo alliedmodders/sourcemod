@@ -128,8 +128,6 @@ class CPlugin :
 	public SMPlugin,
 	public CNativeOwner
 {
-	friend class CPluginManager;
-	friend class CFunction;
 public:
 	CPlugin(const char *file);
 	~CPlugin();
@@ -164,6 +162,8 @@ public:
 
 	typedef ke::Lambda<bool(const sp_pubvar_t *, const ExtVar& ext)> ExtVarCallback;
 	bool ForEachExtVar(const ExtVarCallback& callback);
+
+	void ForEachLibrary(ke::Lambda<void(const char *)> callback);
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -248,6 +248,9 @@ public:
 	inline void AddLibrary(const char *name) {
 		m_Libraries.push_back(name);
 	}
+	inline bool HasLibrary(const char *name) {
+		return m_Libraries.find(name) != m_Libraries.end();
+	}
 	void LibraryActions(LibraryAction action);
 	void SyncMaxClients(int max_clients);
 
@@ -256,10 +259,35 @@ public:
 	// since the last call to HasUpdatedFile().
 	bool HasUpdatedFile();
 
+	const char *GetDateTime() const {
+		return m_DateTime;
+	}
+	int GetFileVersion() const {
+		return m_FileVersion;
+	}
+	const char *GetErrorMsg() const {
+		return m_errormsg;
+	}
+
+	void AddRequiredLib(const char *name);
+	bool ForEachRequiredLib(ke::Lambda<bool(const char *)> callback);
+
+	bool HasMissingFakeNatives() const {
+		return m_FakeNativesMissing;
+	}
+	bool HasMissingLibrary() const {
+		return m_LibraryMissing;
+	}
+	bool HasFakeNatives() const {
+		return m_fakes.length() > 0;
+	}
+
+	bool TryCompile();
+	void BindFakeNativesTo(CPlugin *other);
+
 protected:
 	bool ReadInfo();
 	void DependencyDropped(CPlugin *pOwner);
-	bool TryCompile();
 
 private:
 	time_t GetFileTimeStamp();
@@ -311,7 +339,6 @@ class CPluginManager :
 	public IHandleTypeDispatch,
 	public IRootConsoleCommand
 {
-	friend class CPlugin;
 public:
 	CPluginManager();
 	~CPluginManager();
@@ -451,6 +478,10 @@ public:
 	void SyncMaxClients(int max_clients);
 
 	void ListPluginsToClient(CPlayer *player, const CCommand &args);
+
+	void _SetPauseState(CPlugin *pPlugin, bool pause);
+
+	void ForEachPlugin(ke::Lambda<void(CPlugin *)> callback);
 private:
 	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type);
 
@@ -487,8 +518,6 @@ private:
 	* Manages required natives.
 	*/
 	bool FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size_t maxlength);
-
-	void _SetPauseState(CPlugin *pPlugin, bool pause);
 
 	bool ScheduleUnload(CPlugin *plugin);
 	void UnloadPluginImpl(CPlugin *plugin);
