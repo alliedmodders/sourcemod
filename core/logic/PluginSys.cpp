@@ -55,7 +55,9 @@ IdentityType_t g_PluginIdent = 0;
 CPlugin::CPlugin(const char *file)
  : m_serial(0),
    m_status(Plugin_Uncompiled),
-   m_WaitingToUnload(false),
+   m_state(PluginState::Unregistered),
+   m_AddedLibraries(false),
+   m_EnteredSecondPass(false),
    m_SilentFailure(false),
    m_FakeNativesMissing(false),
    m_LibraryMissing(false),
@@ -143,7 +145,7 @@ CPlugin *CPlugin::Create(const char *file)
 	CPlugin *pPlugin = new CPlugin(file);
 
 	if (!fp) {
-		pPlugin->SetErrorState(Plugin_BadLoad, "Unable to open file");
+		pPlugin->EvictWithError(Plugin_BadLoad, "Unable to open file");
 		return pPlugin;
 	}
 
@@ -178,7 +180,7 @@ IPluginRuntime *CPlugin::GetRuntime()
 	return m_pRuntime;
 }
 
-void CPlugin::SetErrorState(PluginStatus status, const char *error_fmt, ...)
+void CPlugin::EvictWithError(PluginStatus status, const char *error_fmt, ...)
 {
 	if (m_status == Plugin_Running)
 	{
@@ -265,7 +267,7 @@ bool CPlugin::ReadInfo()
 		}
 		if (m_FileVersion > 5) {
 			base->LocalToString(info->filevers, (char **)&pFileVers);
-			SetErrorState(Plugin_Failed, "Newer SourceMod required (%s or higher)", pFileVers);
+			EvictWithError(Plugin_Failed, "Newer SourceMod required (%s or higher)", pFileVers);
 			return false;
 		}
 	} else {
@@ -290,13 +292,12 @@ void CPlugin::SyncMaxClients(int max_clients)
 	*m_MaxClientsVar->offs = max_clients;
 }
 
-void CPlugin::Call_OnPluginStart()
+bool CPlugin::OnPluginStart()
 {
-	if (m_status != Plugin_Loaded)
-	{
-		return;
-	}
+	m_EnteredSecondPass = true;
 
+	if (m_status != Plugin_Loaded)
+		return false;
 	m_status = Plugin_Running;
 
 	SyncMaxClients(playerhelpers->GetMaxClients());
@@ -304,15 +305,14 @@ void CPlugin::Call_OnPluginStart()
 	cell_t result;
 	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("OnPluginStart");
 	if (!pFunction)
-	{
-		return;
-	}
+		return true;
 
 	int err;
-	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
-	{
-		SetErrorState(Plugin_Error, "Error detected in plugin startup (see error logs)");
+	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE) {
+		EvictWithError(Plugin_Error, "Error detected in plugin startup (see error logs)");
+		return false;
 	}
+	return true;
 }
 
 void CPlugin::Call_OnPluginEnd()
@@ -388,7 +388,7 @@ APLRes CPlugin::AskPluginLoad()
 	pFunction->PushStringEx(m_errormsg, sizeof(m_errormsg), 0, SM_PARAM_COPYBACK);
 	pFunction->PushCell(sizeof(m_errormsg));
 	if ((err = pFunction->Execute(&result)) != SP_ERROR_NONE) {
-		SetErrorState(Plugin_Failed, "unexpected error %d in AskPluginLoad callback", err);
+		EvictWithError(Plugin_Failed, "unexpected error %d in AskPluginLoad callback", err);
 		return APLRes_Failure;
 	}
 
@@ -435,7 +435,7 @@ bool CPlugin::TryCompile()
 	char loadmsg[255];
 	m_pRuntime = g_pSourcePawn2->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg));
 	if (!m_pRuntime) {
-		SetErrorState(Plugin_BadLoad, "Unable to load plugin (%s)", loadmsg);
+		EvictWithError(Plugin_BadLoad, "Unable to load plugin (%s)", loadmsg);
 		return false;
 	}
 
@@ -474,9 +474,6 @@ PluginType CPlugin::GetType()
 
 const sm_plugininfo_t *CPlugin::GetPublicInfo()
 {
-	if (GetStatus() >= Plugin_Created)
-		return nullptr;
-
 	m_info.author = info_author_.chars();
 	m_info.description = info_description_.chars();
 	m_info.name = info_name_.chars();
@@ -512,13 +509,17 @@ bool CPlugin::IsDebugging()
 
 void CPlugin::LibraryActions(LibraryAction action)
 {
-	List<String>::iterator iter;
-	for (iter = m_Libraries.begin();
-		iter != m_Libraries.end();
-		iter++)
-	{
-		g_PluginSys.OnLibraryAction((*iter).c_str(), action);
+	if (action == LibraryAction_Removed) {
+		if (!m_AddedLibraries)
+			return;
+		m_AddedLibraries = false;
 	}
+
+	for (auto iter = m_Libraries.begin(); iter != m_Libraries.end(); iter++)
+		g_PluginSys.OnLibraryAction((*iter).c_str(), action);
+
+	if (action == LibraryAction_Added)
+		m_AddedLibraries = true;
 }
 
 bool CPlugin::SetPauseState(bool paused)
@@ -634,7 +635,7 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 	/* :IDEA: in the future, add native trapping? */
 	if (m_FakeNativesMissing || m_LibraryMissing)
 	{
-		SetErrorState(Plugin_Error, "Depends on plugin: %s", pOwner->GetFilename());
+		EvictWithError(Plugin_Error, "Depends on plugin: %s", pOwner->GetFilename());
 	}
 }
 
@@ -945,8 +946,8 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	/* Run second pass if we need to */
 	if (IsLateLoadTime() && pl->GetStatus() == Plugin_Loaded)
 	{
-		if (!RunSecondPass(pl, error, maxlength))
-		{
+		if (!RunSecondPass(pl)) {
+			ke::SafeStrcpy(error, maxlength, pl->GetErrorMsg());
 			UnloadPlugin(pl);
 			return NULL;
 		}
@@ -973,24 +974,24 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 
 void CPluginManager::AddPlugin(CPlugin *pPlugin)
 {
-	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
-		(*iter)->OnPluginCreated(pPlugin);
-
 	m_plugins.append(pPlugin);
 	m_LoadLookup.insert(pPlugin->GetFilename(), pPlugin);
+
+	pPlugin->SetRegistered();
+
+	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
+		(*iter)->OnPluginCreated(pPlugin);
 }
 
 void CPluginManager::LoadAll_SecondPass()
 {
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		CPlugin *pPlugin = (*iter);
-		if (pPlugin->GetStatus() == Plugin_Loaded)
-		{
+		if (pPlugin->GetStatus() == Plugin_Loaded) {
 			char error[256] = {0};
-			if (!RunSecondPass(pPlugin, error, sizeof(error)))
-			{
-				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), error);
-				pPlugin->SetErrorState(Plugin_BadLoad, "%s", error);
+			if (!RunSecondPass(pPlugin)) {
+				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), pPlugin->GetErrorMsg());
+				pPlugin->EvictWithError(Plugin_BadLoad, "%s", error);
 			}
 		}
 	}
@@ -998,7 +999,7 @@ void CPluginManager::LoadAll_SecondPass()
 	m_AllPluginsLoaded = true;
 }
 
-bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size_t maxlength)
+bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin)
 {
 	struct _pl
 	{
@@ -1032,8 +1033,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 				if ((pFunc=pBase->GetFunctionByName(buffer))) {
 					cell_t res;
 					if (pFunc->Execute(&res) != SP_ERROR_NONE) {
-						if (error)
-							ke::SafeSprintf(error, maxlength, "Fatal error during initializing plugin load");
+						pPlugin->EvictWithError(Plugin_Failed, "Fatal error during initializing plugin load");
 						return false;
 					}
 				}
@@ -1050,8 +1050,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 					}
 				}
 				if (!found) {
-					if (error)
-						ke::SafeSprintf(error, maxlength, "Could not find required plugin \"%s\"", name);
+					pPlugin->EvictWithError(Plugin_Failed, "Could not find required plugin \"%s\"", name);
 					return false;
 				}
 
@@ -1120,6 +1119,18 @@ bool CPlugin::ForEachRequiredLib(ke::Lambda<bool(const char *)> callback)
 	return true;
 }
 
+void CPlugin::SetRegistered()
+{
+	assert(m_state == PluginState::Unregistered);
+	m_state = PluginState::Registered;
+}
+
+void CPlugin::SetWaitingToUnload()
+{
+	assert(m_state == PluginState::Registered);
+	m_state = PluginState::WaitingToUnload;
+}
+
 void CPluginManager::LoadExtensions(CPlugin *pPlugin)
 {
 	auto callback = [pPlugin] (const sp_pubvar_t *pubvar, const CPlugin::ExtVar& ext) -> bool
@@ -1135,9 +1146,9 @@ void CPluginManager::LoadExtensions(CPlugin *pPlugin)
 	pPlugin->ForEachExtVar(ke::Move(callback));
 }
 
-bool CPluginManager::RequireExtensions(CPlugin *pPlugin, char *error, size_t maxlength)
+bool CPluginManager::RequireExtensions(CPlugin *pPlugin)
 {
-	auto callback = [pPlugin, error, maxlength]
+	auto callback = [pPlugin]
                     (const sp_pubvar_t *pubvar, const CPlugin::ExtVar& ext) -> bool
 	{
 		/* Is this required? */
@@ -1149,7 +1160,7 @@ bool CPluginManager::RequireExtensions(CPlugin *pPlugin, char *error, size_t max
 				pExt = g_Extensions.FindExtensionByName(ext.name);
 
 			if (!pExt || !pExt->IsRunning(nullptr, 0)) {
-				ke::SafeSprintf(error, maxlength, "Required extension \"%s\" file(\"%s\") not running", ext.name, ext.file);
+				pPlugin->EvictWithError(Plugin_Failed, "Required extension \"%s\" file(\"%s\") not running", ext.name, ext.file);
 				return false;
 			}
 			g_Extensions.BindChildPlugin(pExt, pPlugin);
@@ -1160,7 +1171,7 @@ bool CPluginManager::RequireExtensions(CPlugin *pPlugin, char *error, size_t max
 			if (IPluginFunction *pFunc = pPlugin->GetBaseContext()->GetFunctionByName(buffer)) {
 				cell_t res;
 				if (pFunc->Execute(&res) != SP_ERROR_NONE) {
-					ke::SafeSprintf(error, maxlength, "Fatal error during plugin initialization (ext req)");
+					pPlugin->EvictWithError(Plugin_Failed, "Fatal error during plugin initialization (ext req)");
 					return false;
 				}
 			}
@@ -1208,9 +1219,9 @@ bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 
 	if (m_bBlockBadPlugins) {
 		if (bulletinUrl[0] != '\0') {
-			pPlugin->SetErrorState(Plugin_BadLoad, "Known malware detected and blocked. See %s for more info", bulletinUrl);
+			pPlugin->EvictWithError(Plugin_BadLoad, "Known malware detected and blocked. See %s for more info", bulletinUrl);
 		} else {
-			pPlugin->SetErrorState(Plugin_BadLoad, "Possible malware or illegal plugin detected and blocked");
+			pPlugin->EvictWithError(Plugin_BadLoad, "Possible malware or illegal plugin detected and blocked");
 		}
 		return false;
 	}
@@ -1223,19 +1234,18 @@ bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 	return true;
 }
 
-bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength)
+bool CPluginManager::RunSecondPass(CPlugin *pPlugin)
 {
-	/* Second pass for extension requirements */
-	if (!RequireExtensions(pPlugin, error, maxlength))
+	// Make sure external dependencies are around.
+	if (!RequireExtensions(pPlugin))
+		return false;
+	if (!FindOrRequirePluginDeps(pPlugin))
 		return false;
 
-	if (!FindOrRequirePluginDeps(pPlugin, error, maxlength))
-		return false;
-
-	/* Run another binding pass */
+	// Run another binding pass.
 	g_ShareSys.BindNativesToPlugin(pPlugin, false);
 
-	/* Find any unbound natives. Right now, these are not allowed. */
+	// Find any unbound natives. Right now, these are not allowed.
 	IPluginContext *pContext = pPlugin->GetBaseContext();
 	uint32_t num = pContext->GetNativesNum();
 	for (unsigned int i=0; i<num; i++)
@@ -1247,24 +1257,21 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 			native->name[0] != '@' &&
 			!(native->flags & SP_NTVFLAG_OPTIONAL))
 		{
-			if (error)
-			{
-				ke::SafeSprintf(error, maxlength, "Native \"%s\" was not found", native->name);
-			}
+			pPlugin->EvictWithError(Plugin_Failed, "Native \"%s\" was not found", native->name);
 			return false;
 		}
 	}
 
-	/* Finish by telling all listeners */
+	// Finish by telling all listeners.
 	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
 		(*iter)->OnPluginLoaded(pPlugin);
 	
-	/* Tell this plugin to finish initializing itself */
-	pPlugin->Call_OnPluginStart();
+	// Tell this plugin to finish initializing itself.
+	if (!pPlugin->OnPluginStart())
+		return false;
 
-	/* Now, if we have fake natives, go through all plugins that might need rebinding */
-	if (pPlugin->GetStatus() <= Plugin_Paused && pPlugin->HasFakeNatives())
-	{
+	// Now, if we have fake natives, go through all plugins that might need rebinding.
+	if (pPlugin->HasFakeNatives()) {
 		for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 			CPlugin *pOther = (*iter);
 			if ((pOther->GetStatus() == Plugin_Error
@@ -1283,15 +1290,13 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		}
 	}
 
-	/* Go through our libraries and tell other plugins they're added */
-	pPlugin->ForEachLibrary([this] (const char *lib) -> void {
-		OnLibraryAction(lib, LibraryAction_Added);
-	});
+	// Go through our libraries and tell other plugins they're added.
+	pPlugin->LibraryActions(LibraryAction_Added);
 
-	/* :TODO: optimize? does this even matter? */
+	// Add the core phrase file.
 	pPlugin->GetPhrases()->AddPhraseFile("core.phrases");
 	
-	/* Go through all other already loaded plugins and tell this plugin, that their libraries are loaded */
+	// Go through all other already loaded plugins and tell this plugin, that their libraries are loaded.
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		CPlugin *pl = (*iter);
 		/* Don't call our own libraries again and only care for already loaded plugins */
@@ -1322,7 +1327,7 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 			}
 		}
 		if (!found) {
-			pPlugin->SetErrorState(Plugin_Error, "Library not found: %s", lib);
+			pPlugin->EvictWithError(Plugin_Error, "Library not found: %s", lib);
 			return false;
 		}
 		found->AddDependent(pPlugin);
@@ -1345,7 +1350,7 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 			native->name[0] != '@' &&
 			!(native->flags & SP_NTVFLAG_OPTIONAL))
 		{
-			pPlugin->SetErrorState(Plugin_Error, "Native not found: %s", native->name);
+			pPlugin->EvictWithError(Plugin_Error, "Native not found: %s", native->name);
 			return;
 		}
 	}
@@ -1363,11 +1368,6 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 {
 	CPlugin *pPlugin = (CPlugin *)plugin;
-
-	// If we're already in the unload queue, just wait.
-	if (pPlugin->WaitingToUnload())
-		return false;
-
 	return ScheduleUnload(pPlugin);
 }
 
@@ -1375,6 +1375,10 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 {
 	// Should not be recursively removing.
 	assert(m_plugins.contains(pPlugin));
+
+	// If we're already in the unload queue, just wait.
+	if (pPlugin->State() == PluginState::WaitingToUnload)
+		return false;
 
 	IPluginContext *pContext = pPlugin->GetBaseContext();
 	if (pContext && pContext->IsInExec()) {
@@ -1391,33 +1395,36 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 	return true;
 }
 
-void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
+void CPluginManager::Purge(CPlugin *plugin)
 {
-	/* Remove us from the lookup table and linked list */
-	m_plugins.remove(pPlugin);
-	m_LoadLookup.remove(pPlugin->GetFilename());
+	assert(plugin->State() != PluginState::Unregistered);
 
-	/* Go through our libraries and tell other plugins they're gone */
-	pPlugin->ForEachLibrary([this] (const char *lib) -> void {
-		OnLibraryAction(lib, LibraryAction_Removed);
-	});
+	// Go through our libraries and tell other plugins they're gone.
+	plugin->LibraryActions(LibraryAction_Removed);
 
-	if (pPlugin->GetStatus() <= Plugin_Error || pPlugin->GetStatus() == Plugin_Failed)
-	{
-		/* Notify plugin */
-		pPlugin->Call_OnPluginEnd();
+	// We only pair OnPluginEnd with OnPluginStart if we would have
+	// successfully called OnPluginStart, *and* SetFailState() wasn't called,
+	// which guarantees no further code will execute.
+	if (plugin->GetStatus() == Plugin_Running)
+		plugin->Call_OnPluginEnd();
 
-		/* Notify listeners of unloading */
+	// Notify listeners of unloading.
+	if (plugin->EnteredSecondPass()) {
 		for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
-			(*iter)->OnPluginUnloaded(pPlugin);
+			(*iter)->OnPluginUnloaded(plugin);
 	}
 
-	pPlugin->DropEverything();
+	plugin->DropEverything();
 
 	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
-		(*iter)->OnPluginDestroyed(pPlugin);
-	
-	/* Tell the plugin to delete itself */
+		(*iter)->OnPluginDestroyed(plugin);
+}
+
+void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
+{
+	m_plugins.remove(pPlugin);
+	m_LoadLookup.remove(pPlugin->GetFilename());
+	Purge(pPlugin);
 	delete pPlugin;
 }
 
@@ -1459,215 +1466,6 @@ void CPluginManager::RemovePluginsListener(IPluginsListener *listener)
 IPluginIterator *CPluginManager::GetPluginIterator()
 {
 	return new CPluginIterator(m_plugins);
-}
-
-bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)
-{
-	/* As an optimization, we do not call strlen, but compute the length in the first pass */
-	size_t alias_len = 0;
-	size_t local_len = 0;
-
-	const char *ptr = alias;
-	unsigned int alias_explicit_paths = 0;
-	unsigned int alias_path_end = 0;
-	while (*ptr != '\0')
-	{
-		if (*ptr == '\\' || *ptr == '/')
-		{
-			alias_explicit_paths++;
-			alias_path_end = alias_len;
-		}
-		alias_len++;
-		ptr++;
-	}
-
-	if (alias_explicit_paths && alias_path_end == alias_len - 1)
-	{
-		/* Trailing slash is totally invalid here */
-		return false;
-	}
-
-	ptr = localpath;
-	unsigned int local_explicit_paths = 0;
-	unsigned int local_path_end = 0;
-	while (*ptr != '\0')
-	{
-		if (*ptr == '\\' || *ptr == '/')
-		{
-			local_explicit_paths++;
-			local_path_end = local_len;
-		}
-		local_len++;
-		ptr++;
-	}
-
-	/* If the alias has more explicit paths than the real path,
-	 * no match will be possible.
-	 */
-	if (alias_explicit_paths > local_explicit_paths)
-	{
-		return false;
-	}
-
-	if (alias_explicit_paths)
-	{
-		/* We need to find if the paths match now.  For example, these should all match:
-		 * csdm     csdm
-		 * csdm     optional/csdm
-		 * csdm/ban optional/crab/csdm/ban
-		*/
-		const char *aliasptr = alias;
-		const char *localptr = localpath;
-		bool match = true;
-		do
-		{
-			if (*aliasptr != *localptr)
-			{
-				/* We have to knock one path off */
-				local_explicit_paths--;
-				if (alias_explicit_paths > local_explicit_paths)
-				{
-					/* Skip out if we're gonna have an impossible match */
-					return false;
-				}
-				/* Eat up localptr tokens until we get a result */
-				while (((localptr - localpath) < (int)local_path_end)
-					&& *localptr != '/'
-					&& *localptr != '\\')
-				{
-					localptr++;
-				}
-				/* Check if we hit the end of our searchable area.
-				 * This probably isn't possible because of the path
-				 * count check, but it's a good idea anyway.
-				 */
-				if ((localptr - localpath) >= (int)local_path_end)
-				{
-					return false;
-				} else {
-					/* Consume the slash token */
-					localptr++;
-				}
-				/* Reset the alias pointer so we can continue consuming */
-				aliasptr = alias;
-				match = false;
-				continue;
-			}
-			/* Note:
-			 * This is safe because if localptr terminates early, aliasptr will too
-			 */
-			do
-			{
-				/* We should never reach the end of the string because of this check. */
-				bool aliasend = (aliasptr - alias) > (int)alias_path_end;
-				bool localend = (localptr - localpath) > (int)local_path_end;
-				if (aliasend || localend)
-				{
-					if (aliasend && localend)
-					{
-						/* we matched, and we can break out now */
-						match = true;
-						break;
-					}
-					/* Otherwise, we've hit the end somehow and rest won't match up.  Break out. */
-					match = false;
-					break;
-				}
-
-				/* If we got here, it's safe to compare the next two tokens */
-				if (*localptr != *aliasptr)
-				{
-					match = false;
-					break;
-				}
-				localptr++;
-				aliasptr++;
-			} while (true);
-		} while (!match);
-	}
-
-	/* If we got here, it's time to compare filenames */
-	const char *aliasptr = alias;
-	const char *localptr = localpath;
-
-	if (alias_explicit_paths)
-	{
-		aliasptr = &alias[alias_path_end + 1];
-	}
-
-	if (local_explicit_paths)
-	{
-		localptr = &localpath[local_path_end + 1];
-	}
-
-	while (true)
-	{
-		if (*aliasptr == '*')
-		{
-			/* First, see if this is the last character */
-			if ((unsigned)(aliasptr - alias) == alias_len - 1)
-			{
-				/* If so, there's no need to match anything else */
-				return true;
-			}
-			/* Otherwise, we need to search for an appropriate matching sequence in local.
-			 * Note that we only need to search up to the next asterisk.
-			 */
-			aliasptr++;
-			bool match = true;
-			const char *local_orig = localptr;
-			do
-			{
-				match = true;
-				while (*aliasptr != '\0' && *aliasptr != '*')
-				{
-					/* Since aliasptr is never '\0', localptr hitting the end will fail */
-					if (*aliasptr != *localptr)
-					{
-						match = false;
-						break;
-					}
-					aliasptr++;
-					localptr++;
-				}
-				if (!match)
-				{
-					/* If we didn't get a match, we need to advance the search stream.
-					 * This will let us skip tokens while still searching for another match.
-					 */
-					localptr = ++local_orig;
-					/* Make sure we don't go out of bounds */
-					if (*localptr == '\0')
-					{
-						break;
-					}
-				}
-			} while (!match);
-
-			if (!match)
-			{
-				return false;
-			} else {
-				/* If we got a match, move on to the next token */
-				continue;
-			}
-		} else if (*aliasptr == '\0') {
-			if (*localptr == '\0'
-				||
-				strcmp(localptr, ".smx") == 0)
-			{
-				return true;
-			} else {
-				return false;
-			}
-		} else if (*aliasptr != *localptr) {
-			return false;
-		}
-		aliasptr++;
-		localptr++;
-	}
-
-	return true;
 }
 
 bool CPluginManager::IsLateLoadTime() const
@@ -1839,11 +1637,8 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				{
 					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetStatus()));
 
-					if (pl->GetStatus() <= Plugin_Error)
-					{
-						/* Plugin has failed to load. */
-						fail_list.append(pl);
-					}
+					/* Plugin has failed to load. */
+					fail_list.append(pl);
 				}
 				else
 				{
@@ -1871,12 +1666,16 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			}
 
 			if (!fail_list.empty()) {
-				rootmenu->ConsolePrint("Load Errors:");
+				rootmenu->ConsolePrint("Errors:");
 
 				for (auto iter = fail_list.begin(); iter != fail_list.end(); iter++) {
 					CPlugin *pl = (*iter);
-					rootmenu->ConsolePrint("%s: %s", (IS_STR_FILLED(pl->GetPublicInfo()->name)) ? pl->GetPublicInfo()->name : pl->GetFilename(),
-					                       pl->GetErrorMsg());
+					const sm_plugininfo_t *info = pl->GetPublicInfo();
+					if (IS_STR_FILLED(info->name)) {
+						rootmenu->ConsolePrint("%s (%s): %s", pl->GetFilename(), info->name, pl->GetErrorMsg());
+					} else {
+						rootmenu->ConsolePrint("%s: %s", pl->GetFilename(), pl->GetErrorMsg());
+					}
 				}
 			}
 

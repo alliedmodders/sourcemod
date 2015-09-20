@@ -60,56 +60,6 @@ class CPlayer;
 
 using namespace SourceHook;
 
-/**
- * NOTES:
- *
- * UPDATE 2008-03-11: These comments are horribly out of date.  They paint a good overall 
- * picture of how PluginSys works, but things like dependencies and fake natives have 
- * complicated things quite a bit.
- *
- *  Currently this system needs a lot of work but it's good skeletally.  Plugin creation 
- * is done without actually compiling anything.  This is done by Load functions in the 
- * manager.  This will need a rewrite when we add context switching.
- *
- *  The plugin object itself has a few things to note.  The most important is that it stores
- * a table of function objects.  The manager marshals allocation and freeing of these objects.
- * The plugin object can be in erroneous states, they are:
- *   Plugin_Error   --> Some error occurred any time during or after compilation.
- *						This error can be cleared since the plugin itself is valid.
- *						However, the state itself being set prevents any runtime action.
- *   Plugin_BadLoad	--> The plugin failed to load entirely and nothing can be done to save it.
- *
- *  If a plugin fails to load externally, it is never added to the internal tracker.  However, 
- * plugins that failed to load from the internal loading mechanism are always tracked.  This 
- * allows users to see which automatically loaded plugins failed, and makes the interface a bit
- * more flexible.
- *
- *  Once a plugin is compiled, it sets its own state to Plugin_Created.  This state is still invalid
- * for execution.  SourceMod is a two pass system, and even though the second pass is not implemented
- * yet, it is structured so Plugin_Created must be switched to Plugin_Running in the second pass.  When
- * implemented, a Created plugin will be switched to Error in the second pass if it not loadable.
- *
- *  The two pass loading mechanism is described below.  Modules/natives are not implemented yet.
- * PASS ONE: All loadable plugins are found and have the following steps performed:
- *			 1.  Loading and compilation is attempted.
- *			 2.  If successful, all natives from Core are added.
- *			 3.  OnPluginLoad() is called.
- *			 4.  If failed, any user natives are scrapped and the process halts here.
- *			 5.  If successful, the plugin is ready for Pass 2.
- * INTERMEDIATE:
- *			 1.  All forced modules are loaded.
- * PASS TWO: All loaded plugins are found and have these steps performed:
- *			 1. Any modules referenced in the plugin that are not already loaded, are loaded.
- *			 2. If any module fails to load and the plugin requires it, load fails and jump to step 6.
- *			 3. If any natives are unresolved, check if they are found in the user-natives pool.
- *			 4. If yes, load succeeds.  If not, natives are passed through a native acceptance filter.
- *			 5. If the filter fails, the plugin is marked as failed.
- *			 6. If the plugin has failed to load at this point, any dynamic natives it has added are scrapped.
- *			    Furthermore, any plugin that referenced these natives must now have pass 2 re-ran.
- * PASS THREE (not a real pass):
- *			 7. Once all plugins are deemed to be loaded, OnPluginStart() is called
- */
-
 enum LoadRes
 {
 	LoadRes_Successful,
@@ -123,6 +73,19 @@ enum APLRes
 	APLRes_Success,
 	APLRes_Failure,
 	APLRes_SilentFailure
+};
+
+// Plugin membership state.
+enum class PluginState
+{
+	// The plugin has not yet been added to the global plugin list.
+	Unregistered,
+
+	// The plugin is a member of the global plugin list.
+	Registered,
+
+	// The plugin is waiting to be unloaded.
+	WaitingToUnload
 };
 
 class CPlugin : 
@@ -181,64 +144,38 @@ public:
 	}
 
 public:
-	/**
-	 * Sets an error state on the plugin
-	 */
-	void SetErrorState(PluginStatus status, const char *error_fmt, ...);
+	// Evicts the plugin from memory and sets an error state.
+	void EvictWithError(PluginStatus status, const char *error_fmt, ...);
 
-	/**
-	 * Initializes the plugin's identity information
-	 */
+	// Initializes the plugin's identity information
 	void InitIdentity();
 
-	/**
-	 * Calls the OnPluginLoad function, and sets any failed states if necessary.
-	 * After invoking AskPluginLoad, its state is either Running or Failed.
-	 */
+	// Calls the OnPluginLoad function, and sets any failed states if necessary.
+	// After invoking AskPluginLoad, its state is either Running or Failed.
 	APLRes AskPluginLoad();
 
-	/**
-	 * Calls the OnPluginStart function.
-	 * NOTE: Valid pre-states are: Plugin_Created
-	 * NOTE: Post-state will be Plugin_Running
-	 */
-	void Call_OnPluginStart();
+	// Transition to the fully running state, if possible.
+	bool OnPluginStart();
 
-	/**
-	 * Calls the OnPluginEnd function.
-	 */
 	void Call_OnPluginEnd();
-
-	/**
-	 * Calls the OnAllPluginsLoaded function.
-	 */
 	void Call_OnAllPluginsLoaded();
-
-	/**
-	 * Calls the OnLibraryAdded function.
-	 */
 	void Call_OnLibraryAdded(const char *lib);
 
-	/**
-	 * Returns true if a plugin is usable.
-	 */
+	// Returns true if a plugin is usable.
 	bool IsRunnable();
 
-	/**
-	 * Get languages info.
-	 */
+	// Get languages info.
 	IPhraseCollection *GetPhrases();
+
+	PluginState State() const {
+		return m_state;
+	}
+	void SetRegistered();
+	void SetWaitingToUnload();
 
 public:
 	// Returns true if the plugin was running, but is now invalid.
 	bool WasRunning();
-
-	bool WaitingToUnload() const {
-		return m_WaitingToUnload;
-	}
-	void SetWaitingToUnload() {
-		m_WaitingToUnload = true;
-	}
 
 	Handle_t GetMyHandle();
 
@@ -267,6 +204,7 @@ public:
 		return m_FileVersion;
 	}
 	const char *GetErrorMsg() const {
+		assert(m_status != Plugin_Running && m_status != Plugin_Loaded);
 		return m_errormsg;
 	}
 
@@ -281,6 +219,16 @@ public:
 	}
 	bool HasFakeNatives() const {
 		return m_fakes.length() > 0;
+	}
+
+	// True if we got far enough into the second pass to call OnPluginLoaded
+	// in the listener list.
+	bool EnteredSecondPass() const {
+		return m_EnteredSecondPass;
+	}
+
+	bool HasErrorOrFail() const {
+		return m_status == Plugin_Error || m_status == Plugin_Failed;
 	}
 
 	bool TryCompile();
@@ -299,7 +247,9 @@ private:
 	unsigned int m_serial;
 
 	PluginStatus m_status;
-	bool m_WaitingToUnload;
+	PluginState m_state;
+	bool m_AddedLibraries;
+	bool m_EnteredSecondPass;
 
 	// Statuses that are set during failure.
 	bool m_SilentFailure;
@@ -417,17 +367,6 @@ public:
 	 */
 	void LoadAll_SecondPass();
 
-	/**
-	 * Tests a plugin file mask against a local folder.
-	 * The alias is searched backwards from localdir - i.e., given this input:
-	 *   csdm/ban        csdm/ban
-	 *   ban             csdm/ban
-	 *   csdm/ban        optional/csdm/ban
-	 * All of these will return true for an alias match.  
-	 * Wildcards are allowed in the filename.
-	 */
-	bool TestAliasMatch(const char *alias, const char *localdir);
-
 	/** 
 	 * Returns whether anything loaded will be a late load.
 	 */
@@ -500,30 +439,20 @@ private:
 	 */
 	void AddPlugin(CPlugin *pPlugin);
 
-	/**
-	 * First pass for loading a plugin, and its helpers.
-	 */
+	// First pass for loading a plugin, and its helpers.
 	CPlugin *CompileAndPrep(const char *path);
 	bool MalwareCheckPass(CPlugin *pPlugin);
 
-	/**
-	 * Runs the second loading pass on a plugin.
-	 */
-	bool RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength);
-
-	/**
-	 * Runs an extension pass on a plugin.
-	 */
+	// Runs the second loading pass on a plugin.
+	bool RunSecondPass(CPlugin *pPlugin);
 	void LoadExtensions(CPlugin *pPlugin);
-	bool RequireExtensions(CPlugin *pPlugin, char *error, size_t maxlength);
-
-	/**
-	* Manages required natives.
-	*/
-	bool FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size_t maxlength);
+	bool RequireExtensions(CPlugin *pPlugin);
+	bool FindOrRequirePluginDeps(CPlugin *pPlugin);
 
 	bool ScheduleUnload(CPlugin *plugin);
 	void UnloadPluginImpl(CPlugin *plugin);
+
+	void Purge(CPlugin *plugin);
 public:
 	inline IdentityToken_t *GetIdentity()
 	{

@@ -59,7 +59,7 @@ public:
 	virtual AutoConfig *GetConfig(size_t i) = 0;
 	virtual void AddLibrary(const char *name) = 0;
 	virtual void AddConfig(bool create, const char *cfg, const char *folder) = 0;
-	virtual void SetErrorState(PluginStatus status, const char *fmt, ...) = 0;
+	virtual void EvictWithError(PluginStatus status, const char *fmt, ...) = 0;
 };
 
 class IScriptManager
