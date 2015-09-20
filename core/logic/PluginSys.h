@@ -266,6 +266,9 @@ public:
 	int GetFileVersion() const {
 		return m_FileVersion;
 	}
+	const char *GetErrorMsg() const {
+		return m_errormsg;
+	}
 
 protected:
 	bool ReadInfo();

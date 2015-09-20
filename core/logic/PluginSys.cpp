@@ -916,7 +916,7 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	*wasloaded = false;
 	if ((res=LoadPlugin(&pl, path, true, PluginType_MapUpdated)) == LoadRes_Failure)
 	{
-		ke::SafeStrcpy(error, maxlength, pl->m_errormsg);
+		ke::SafeStrcpy(error, maxlength, pl->GetErrorMsg());
 		delete pl;
 		return NULL;
 	}
@@ -957,7 +957,7 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 	LoadRes res;
 	if ((res=LoadPlugin(&pl, plugin, false, PluginType_MapUpdated)) == LoadRes_Failure)
 	{
-		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s.", plugin, pl->m_errormsg);
+		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s.", plugin, pl->GetErrorMsg());
 	}
 
 	if (res == LoadRes_Successful || res == LoadRes_Failure)
@@ -1914,7 +1914,8 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				for (_iter=m_FailList.begin(); _iter!=m_FailList.end(); _iter++)
 				{
 					pl = (CPlugin *)*_iter;
-					rootmenu->ConsolePrint("%s: %s",(IS_STR_FILLED(pl->GetPublicInfo()->name)) ? pl->GetPublicInfo()->name : pl->GetFilename(), pl->m_errormsg);
+					rootmenu->ConsolePrint("%s: %s", (IS_STR_FILLED(pl->GetPublicInfo()->name)) ? pl->GetPublicInfo()->name : pl->GetFilename(),
+					                       pl->GetErrorMsg());
 				}
 			}
 
@@ -2108,7 +2109,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				}
 				if (pl->GetStatus() == Plugin_Error || pl->GetStatus() == Plugin_Failed)
 				{
-					rootmenu->ConsolePrint("  Error: %s", pl->m_errormsg);
+					rootmenu->ConsolePrint("  Error: %s", pl->GetErrorMsg());
 				}
 				else
 				{
@@ -2137,7 +2138,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			}
 			else
 			{
-				rootmenu->ConsolePrint("  Load error: %s", pl->m_errormsg);
+				rootmenu->ConsolePrint("  Load error: %s", pl->GetErrorMsg());
 				if (pl->GetStatus() < Plugin_Created)
 				{
 					rootmenu->ConsolePrint("  File info: (title \"%s\") (version \"%s\")",
