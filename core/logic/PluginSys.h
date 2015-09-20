@@ -279,11 +279,16 @@ public:
 	bool HasMissingLibrary() const {
 		return m_LibraryMissing;
 	}
+	bool HasFakeNatives() const {
+		return m_fakes.length() > 0;
+	}
+
+	bool TryCompile();
+	void BindFakeNativesTo(CPlugin *other);
 
 protected:
 	bool ReadInfo();
 	void DependencyDropped(CPlugin *pOwner);
-	bool TryCompile();
 
 private:
 	time_t GetFileTimeStamp();

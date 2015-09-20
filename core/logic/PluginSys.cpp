@@ -717,6 +717,12 @@ bool CPlugin::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKEN
 	return true;
 }
 
+void CPlugin::BindFakeNativesTo(CPlugin *other)
+{
+	for (size_t i = 0; i < m_fakes.length(); i++)
+		g_ShareSys.BindNativeToPlugin(other, m_fakes[i]);
+}
+
 /*******************
  * PLUGIN ITERATOR *
  *******************/
@@ -1274,7 +1280,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	pPlugin->Call_OnPluginStart();
 
 	/* Now, if we have fake natives, go through all plugins that might need rebinding */
-	if (pPlugin->GetStatus() <= Plugin_Paused && pPlugin->m_fakes.length())
+	if (pPlugin->GetStatus() <= Plugin_Paused && pPlugin->HasFakeNatives())
 	{
 		List<CPlugin *>::iterator pl_iter;
 		for (pl_iter = m_plugins.begin();
@@ -1293,8 +1299,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 					 && pOther != pPlugin)
 			{
 				g_ShareSys.BeginBindingFor(pPlugin);
-				for (size_t i = 0; i < pPlugin->m_fakes.length(); i++)
-					g_ShareSys.BindNativeToPlugin(pOther, pPlugin->m_fakes[i]);
+				pPlugin->BindFakeNativesTo(pOther);
 			}
 		}
 	}
