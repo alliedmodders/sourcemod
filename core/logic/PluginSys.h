@@ -128,7 +128,6 @@ class CPlugin :
 	public SMPlugin,
 	public CNativeOwner
 {
-	friend class CPluginManager;
 public:
 	CPlugin(const char *file);
 	~CPlugin();
