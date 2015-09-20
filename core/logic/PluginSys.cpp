@@ -55,7 +55,7 @@ IdentityType_t g_PluginIdent = 0;
 CPlugin::CPlugin(const char *file)
  : m_serial(0),
    m_status(Plugin_Uncompiled),
-   m_WaitingToUnload(false),
+   m_state(PluginState::Unregistered),
    m_AddedLibraries(false),
    m_SilentFailure(false),
    m_FakeNativesMissing(false),
@@ -978,11 +978,13 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 
 void CPluginManager::AddPlugin(CPlugin *pPlugin)
 {
-	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
-		(*iter)->OnPluginCreated(pPlugin);
-
 	m_plugins.append(pPlugin);
 	m_LoadLookup.insert(pPlugin->GetFilename(), pPlugin);
+
+	pPlugin->SetRegistered();
+
+	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
+		(*iter)->OnPluginCreated(pPlugin);
 }
 
 void CPluginManager::LoadAll_SecondPass()
@@ -1123,6 +1125,18 @@ bool CPlugin::ForEachRequiredLib(ke::Lambda<bool(const char *)> callback)
 			return false;
 	}
 	return true;
+}
+
+void CPlugin::SetRegistered()
+{
+	assert(m_state == PluginState::Unregistered);
+	m_state = PluginState::Registered;
+}
+
+void CPlugin::SetWaitingToUnload()
+{
+	assert(m_state == PluginState::Registered);
+	m_state = PluginState::WaitingToUnload;
 }
 
 void CPluginManager::LoadExtensions(CPlugin *pPlugin)
@@ -1366,11 +1380,6 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 {
 	CPlugin *pPlugin = (CPlugin *)plugin;
-
-	// If we're already in the unload queue, just wait.
-	if (pPlugin->WaitingToUnload())
-		return false;
-
 	return ScheduleUnload(pPlugin);
 }
 
@@ -1378,6 +1387,10 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 {
 	// Should not be recursively removing.
 	assert(m_plugins.contains(pPlugin));
+
+	// If we're already in the unload queue, just wait.
+	if (pPlugin->State() == PluginState::WaitingToUnload)
+		return false;
 
 	IPluginContext *pContext = pPlugin->GetBaseContext();
 	if (pContext && pContext->IsInExec()) {
