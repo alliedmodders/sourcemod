@@ -273,6 +273,10 @@ public:
 	void AddRequiredLib(const char *name);
 	bool ForEachRequiredLib(ke::Lambda<bool(const char *)> callback);
 
+	bool HasMissingFakeNatives() const {
+		return m_FakeNativesMissing;
+	}
+
 protected:
 	bool ReadInfo();
 	void DependencyDropped(CPlugin *pOwner);
