@@ -2121,7 +2121,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 						rootmenu->ConsolePrint("  Status: not running");
 					}
 				}
-				if (pl->m_FileVersion >= 3)
+				if (pl->GetFileVersion() >= 3)
 				{
 					rootmenu->ConsolePrint("  Timestamp: %s", pl->GetDateTime());
 				}

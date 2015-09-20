@@ -260,8 +260,11 @@ public:
 	// since the last call to HasUpdatedFile().
 	bool HasUpdatedFile();
 
-	const char *GetDateTime() {
+	const char *GetDateTime() const {
 		return m_DateTime;
+	}
+	int GetFileVersion() const {
+		return m_FileVersion;
 	}
 
 protected:
