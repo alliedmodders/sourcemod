@@ -131,10 +131,8 @@ public:
 	}
 
 public:
-	/**
-	 * Sets an error state on the plugin
-	 */
-	void SetErrorState(PluginStatus status, const char *error_fmt, ...);
+	// Evicts the plugin from memory and sets an error state.
+	void EvictWithError(PluginStatus status, const char *error_fmt, ...);
 
 	/**
 	 * Initializes the plugin's identity information
