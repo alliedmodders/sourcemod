@@ -276,6 +276,9 @@ public:
 	bool HasMissingFakeNatives() const {
 		return m_FakeNativesMissing;
 	}
+	bool HasMissingLibrary() const {
+		return m_LibraryMissing;
+	}
 
 protected:
 	bool ReadInfo();

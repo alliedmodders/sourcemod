@@ -1283,7 +1283,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		{
 			CPlugin *pOther = (*pl_iter);
 			if ((pOther->GetStatus() == Plugin_Error
-				&& (pOther->HasMissingFakeNatives() || pOther->m_LibraryMissing))
+				&& (pOther->HasMissingFakeNatives() || pOther->HasMissingLibrary()))
 				|| pOther->HasMissingFakeNatives())
 			{
 				TryRefreshDependencies(pOther);
