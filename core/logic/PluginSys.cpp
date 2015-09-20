@@ -727,10 +727,12 @@ void CPlugin::BindFakeNativesTo(CPlugin *other)
  * PLUGIN ITERATOR *
  *******************/
 
-CPluginManager::CPluginIterator::CPluginIterator(List<CPlugin *> *_mylist)
+CPluginManager::CPluginIterator::CPluginIterator(ReentrantList<CPlugin *>& in)
 {
-	mylist = _mylist;
-	Reset();
+	for (PluginIter iter(in); !iter.done(); iter.next())
+		mylist.append(*iter);
+	current = mylist.begin();
+	g_PluginSys.AddPluginsListener(this);
 }
 
 IPlugin *CPluginManager::CPluginIterator::GetPlugin()
@@ -740,7 +742,7 @@ IPlugin *CPluginManager::CPluginIterator::GetPlugin()
 
 bool CPluginManager::CPluginIterator::MorePlugins()
 {
-	return (current != mylist->end());
+	return (current != mylist.end());
 }
 
 void CPluginManager::CPluginIterator::NextPlugin()
@@ -750,16 +752,20 @@ void CPluginManager::CPluginIterator::NextPlugin()
 
 void CPluginManager::CPluginIterator::Release()
 {
-	g_PluginSys.ReleaseIterator(this);
+	delete this;
 }
 
 CPluginManager::CPluginIterator::~CPluginIterator()
 {
+	g_PluginSys.RemovePluginsListener(this);
 }
 
-void CPluginManager::CPluginIterator::Reset()
+void CPluginManager::CPluginIterator::OnPluginDestroyed(IPlugin *plugin)
 {
-	current = mylist->begin();
+	if (*current == plugin)
+		current = mylist.erase(current);
+	else
+		mylist.remove(static_cast<CPlugin *>(plugin));
 }
 
 /******************
@@ -783,8 +789,7 @@ void CPluginManager::Shutdown()
 {
 	List<CPlugin *>::iterator iter;
 
-	while ((iter = m_plugins.begin()) != m_plugins.end())
-	{
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		UnloadPlugin(*iter);
 	}
 }
@@ -968,31 +973,20 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 
 void CPluginManager::AddPlugin(CPlugin *pPlugin)
 {
-	List<IPluginsListener *>::iterator iter;
-	IPluginsListener *pListener;
+	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
+		(*iter)->OnPluginCreated(pPlugin);
 
-	for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)
-	{
-		pListener = (*iter);
-		pListener->OnPluginCreated(pPlugin);
-	}
-
-	m_plugins.push_back(pPlugin);
+	m_plugins.append(pPlugin);
 	m_LoadLookup.insert(pPlugin->GetFilename(), pPlugin);
 }
 
 void CPluginManager::LoadAll_SecondPass()
 {
-	List<CPlugin *>::iterator iter;
-	CPlugin *pPlugin;
-
-	char error[256];
-	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
-	{
-		pPlugin = (*iter);
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
+		CPlugin *pPlugin = (*iter);
 		if (pPlugin->GetStatus() == Plugin_Loaded)
 		{
-			error[0] = '\0';
+			char error[256] = {0};
 			if (!RunSecondPass(pPlugin, error, sizeof(error)))
 			{
 				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), error);
@@ -1048,7 +1042,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 				pPlugin->AddRequiredLib(name);
 
 				CPlugin *found;
-				for (auto iter=m_plugins.begin(); iter!=m_plugins.end(); iter++) {
+				for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 					CPlugin *pl = (*iter);
 					if (pl->HasLibrary(name)) {
 						found = pl;
@@ -1262,13 +1256,8 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	}
 
 	/* Finish by telling all listeners */
-	List<IPluginsListener *>::iterator iter;
-	IPluginsListener *pListener;
-	for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)
-	{
-		pListener = (*iter);
-		pListener->OnPluginLoaded(pPlugin);
-	}
+	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
+		(*iter)->OnPluginLoaded(pPlugin);
 	
 	/* Tell this plugin to finish initializing itself */
 	pPlugin->Call_OnPluginStart();
@@ -1276,12 +1265,8 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	/* Now, if we have fake natives, go through all plugins that might need rebinding */
 	if (pPlugin->GetStatus() <= Plugin_Paused && pPlugin->HasFakeNatives())
 	{
-		List<CPlugin *>::iterator pl_iter;
-		for (pl_iter = m_plugins.begin();
-			 pl_iter != m_plugins.end();
-			 pl_iter++)
-		{
-			CPlugin *pOther = (*pl_iter);
+		for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
+			CPlugin *pOther = (*iter);
 			if ((pOther->GetStatus() == Plugin_Error
 				&& (pOther->HasMissingFakeNatives() || pOther->HasMissingLibrary()))
 				|| pOther->HasMissingFakeNatives())
@@ -1307,9 +1292,8 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	pPlugin->GetPhrases()->AddPhraseFile("core.phrases");
 	
 	/* Go through all other already loaded plugins and tell this plugin, that their libraries are loaded */
-	for (List<CPlugin *>::iterator pl_iter = m_plugins.begin(); pl_iter != m_plugins.end(); pl_iter++)
-	{
-		CPlugin *pl = (*pl_iter);
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
+		CPlugin *pl = (*iter);
 		/* Don't call our own libraries again and only care for already loaded plugins */
 		if (pl == pPlugin || pl->GetStatus() != Plugin_Running)
 			continue;
@@ -1330,8 +1314,8 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 
 	bool all_found = pPlugin->ForEachRequiredLib([this, pPlugin] (const char *lib) -> bool {
 		CPlugin *found = nullptr;
-		for (auto pl_iter=m_plugins.begin(); pl_iter!=m_plugins.end(); pl_iter++) {
-			CPlugin *search = (*pl_iter);
+		for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
+			CPlugin *search = (*iter);
 			if (search->HasLibrary(lib)) {
 				found = search;
 				break;
@@ -1390,7 +1374,7 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 {
 	// Should not be recursively removing.
-	assert(m_plugins.find(pPlugin) != m_plugins.end());
+	assert(m_plugins.contains(pPlugin));
 
 	IPluginContext *pContext = pPlugin->GetBaseContext();
 	if (pContext && pContext->IsInExec()) {
@@ -1418,30 +1402,20 @@ void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
 		OnLibraryAction(lib, LibraryAction_Removed);
 	});
 
-	List<IPluginsListener *>::iterator iter;
-	IPluginsListener *pListener;
-
 	if (pPlugin->GetStatus() <= Plugin_Error || pPlugin->GetStatus() == Plugin_Failed)
 	{
 		/* Notify plugin */
 		pPlugin->Call_OnPluginEnd();
 
 		/* Notify listeners of unloading */
-		for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)
-		{
-			pListener = (*iter);
-			pListener->OnPluginUnloaded(pPlugin);
-		}
+		for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
+			(*iter)->OnPluginUnloaded(pPlugin);
 	}
 
 	pPlugin->DropEverything();
 
-	for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)
-	{
-		/* Notify listeners of destruction */
-		pListener = (*iter);
-		pListener->OnPluginDestroyed(pPlugin);
-	}
+	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
+		(*iter)->OnPluginDestroyed(pPlugin);
 	
 	/* Tell the plugin to delete itself */
 	delete pPlugin;
@@ -1469,12 +1443,12 @@ CPlugin *CPluginManager::GetPluginByCtx(const sp_context_t *ctx)
 
 unsigned int CPluginManager::GetPluginCount()
 {
-	return m_plugins.size();
+	return m_plugins.length();
 }
 
 void CPluginManager::AddPluginsListener(IPluginsListener *listener)
 {
-	m_listeners.push_back(listener);
+	m_listeners.append(listener);
 }
 
 void CPluginManager::RemovePluginsListener(IPluginsListener *listener)
@@ -1484,12 +1458,7 @@ void CPluginManager::RemovePluginsListener(IPluginsListener *listener)
 
 IPluginIterator *CPluginManager::GetPluginIterator()
 {
-	return new CPluginIterator(&m_plugins);
-}
-
-void CPluginManager::ReleaseIterator(CPluginIterator *iter)
-{
-	delete iter;
+	return new CPluginIterator(m_plugins);
 }
 
 bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)
@@ -1803,15 +1772,11 @@ CPlugin *CPluginManager::GetPluginByOrder(int num)
 		return NULL;
 	}
 
-	CPlugin *pl;
-	int id = 1;
-
-	SourceHook::List<CPlugin *>::iterator iter;
-	for (iter = m_plugins.begin(); iter != m_plugins.end() && id < num; iter++, id++) {}
-
-	pl = *iter;
-
-	return pl;
+	PluginIter iter(m_plugins);
+	for (int id = 1; !iter.done() && id < num; iter.next(), id++) {
+		// Empty loop.
+	}
+	return *iter;
 }
 
 const char *CPluginManager::GetStatusText(PluginStatus st)
@@ -1863,13 +1828,10 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				rootmenu->ConsolePrint("[SM] Listing %d plugin%s:", GetPluginCount(), (plnum > 1) ? "s" : "");
 			}
 
-			CPlugin *pl;
-			SourceHook::List<CPlugin *>::iterator iter;
-			SourceHook::List<CPlugin *> m_FailList;
+			ke::LinkedList<CPlugin *> fail_list;
 
-			for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++, id++)
-			{
-				pl = (*iter);
+			for (PluginIter iter(m_plugins); !iter.done(); iter.next(), id++) {
+				CPlugin *pl = (*iter);
 				assert(pl->GetStatus() != Plugin_Created);
 				int len = 0;
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
@@ -1880,7 +1842,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 					if (pl->GetStatus() <= Plugin_Error)
 					{
 						/* Plugin has failed to load. */
-						m_FailList.push_back(pl);
+						fail_list.append(pl);
 					}
 				}
 				else
@@ -1908,17 +1870,11 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				rootmenu->ConsolePrint("%s", buffer);
 			}
 
-			if (!m_FailList.empty())
-			{
+			if (!fail_list.empty()) {
 				rootmenu->ConsolePrint("Load Errors:");
 
-				SourceHook::List<CPlugin *>::iterator _iter;
-
-				CPlugin *pl;
-
-				for (_iter=m_FailList.begin(); _iter!=m_FailList.end(); _iter++)
-				{
-					pl = (CPlugin *)*_iter;
+				for (auto iter = fail_list.begin(); iter != fail_list.end(); iter++) {
+					CPlugin *pl = (*iter);
 					rootmenu->ConsolePrint("%s: %s", (IS_STR_FILLED(pl->GetPublicInfo()->name)) ? pl->GetPublicInfo()->name : pl->GetFilename(),
 					                       pl->GetErrorMsg());
 				}
@@ -2235,22 +2191,18 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 
 bool CPluginManager::ReloadPlugin(CPlugin *pl)
 {
-	List<CPlugin *>::iterator iter;
 	char filename[PLATFORM_MAX_PATH];
 	bool wasloaded;
 	PluginType ptype;
 	IPlugin *newpl;
-	int id = 1;
 
 	strcpy(filename, pl->GetFilename());
 	ptype = pl->GetType();
 
-	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++, id++)
-	{
+	int id = 1;
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next(), id++) {
 		if ((*iter) == pl)
-		{
 			break;
-		}
 	}
 
 	if (!UnloadPlugin(pl))
@@ -2262,20 +2214,13 @@ bool CPluginManager::ReloadPlugin(CPlugin *pl)
 		return false;
 	}
 
-	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
-	{
-		if ((*iter) == (CPlugin *)newpl)
-		{
-			m_plugins.erase(iter);
-			break;
-		}
-	}
+	m_plugins.remove(static_cast<CPlugin *>(newpl));
 
-	int i;
-	for (i=1, iter=m_plugins.begin(); iter!=m_plugins.end() && i<id; iter++, i++)
-	{
+	PluginIter iter(m_plugins);
+	for (int i = 1; !iter.done() && i < id; iter.next(), i++) {
+		// Empty loop.
 	}
-	m_plugins.insert(iter, (CPlugin *)newpl);
+	m_plugins.insertBefore(iter, static_cast<CPlugin *>(newpl));
 
 	return true;
 }
@@ -2288,11 +2233,7 @@ void CPluginManager::RefreshAll()
 		return;
 	}
 
-	List<CPlugin *>::iterator iter;
-	List<CPlugin *> tmp_list = m_plugins;
-
-	for (auto iter = tmp_list.begin(); iter != tmp_list.end(); iter++)
-	{
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		CPlugin *pl = (*iter);
 		if (pl->HasUpdatedFile())
 			UnloadPlugin(pl);
@@ -2311,33 +2252,18 @@ bool CPlugin::HasUpdatedFile()
 
 void CPluginManager::_SetPauseState(CPlugin *pl, bool paused)
 {
-	List<IPluginsListener *>::iterator iter;
-	IPluginsListener *pListener;
-	for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)
-	{
-		pListener = (*iter);
-		pListener->OnPluginPauseChange(pl, paused);
-	}	
+	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
+		(*iter)->OnPluginPauseChange(pl, paused);
 }
 
 void CPluginManager::AddFunctionsToForward(const char *name, IChangeableForward *pForward)
 {
-	List<CPlugin *>::iterator iter;
-	CPlugin *pPlugin;
-	IPluginFunction *pFunction;
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
+		CPlugin *pPlugin = (*iter);
 
-	for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
-	{
-		pPlugin = (*iter);
-
-		if (pPlugin->GetStatus() <= Plugin_Paused)
-		{
-			pFunction = pPlugin->GetBaseContext()->GetFunctionByName(name);
-
-			if (pFunction)
-			{
+		if (pPlugin->GetStatus() <= Plugin_Paused) {
+			if (IPluginFunction *pFunction = pPlugin->GetBaseContext()->GetFunctionByName(name))
 				pForward->AddFunction(pFunction);
-			}
 		}
 	}
 }
@@ -2369,17 +2295,10 @@ void CPluginManager::OnLibraryAction(const char *lib, LibraryAction action)
 
 bool CPluginManager::LibraryExists(const char *lib)
 {
-	List<CPlugin *>::iterator iter;
-
-	for (iter=m_plugins.begin();
-		 iter!=m_plugins.end();
-		 iter++)
-	{
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		CPlugin *pl = (*iter);
 		if (pl->GetStatus() != Plugin_Running)
-		{
 			continue;
-		}
 		if (pl->HasLibrary(lib))
 			return true;
 	}
@@ -2389,21 +2308,13 @@ bool CPluginManager::LibraryExists(const char *lib)
 
 void CPluginManager::AllPluginsLoaded()
 {
-	List<CPlugin *>::iterator iter;
-	CPlugin *pl;
-
-	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
-	{
-		pl = (*iter);
-		pl->Call_OnAllPluginsLoaded();
-	}
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next())
+		(*iter)->Call_OnAllPluginsLoaded();
 }
 
 void CPluginManager::UnloadAll()
 {
-	List<CPlugin *>::iterator iter;
-	while ( (iter = m_plugins.begin()) != m_plugins.end() )
-	{
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		UnloadPlugin((*iter));
 	}
 }
@@ -2413,12 +2324,9 @@ int CPluginManager::GetOrderOfPlugin(IPlugin *pl)
 	int id = 1;
 	List<CPlugin *>::iterator iter;
 
-	for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++, id++)
-	{
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		if ((*iter) == pl)
-		{
 			return id;
-		}
 	}
 
 	return -1;
@@ -2460,19 +2368,15 @@ void CPluginManager::OnSourceModMaxPlayersChanged(int newvalue)
 
 void CPluginManager::SyncMaxClients(int max_clients)
 {
-	List<CPlugin *>::iterator iter;
-
-	for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
-	{
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next())
 		(*iter)->SyncMaxClients(max_clients);
-	}
 }
 
 const CVector<SMPlugin *> *CPluginManager::ListPlugins()
 {
 	CVector<SMPlugin *> *list = new CVector<SMPlugin *>();
 
-	for (List<CPlugin *>::iterator iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next())
 		list->push_back((*iter));
 
 	return list;
@@ -2485,7 +2389,7 @@ void CPluginManager::FreePluginList(const CVector<SMPlugin *> *list)
 
 void CPluginManager::ForEachPlugin(ke::Lambda<void(CPlugin *)> callback)
 {
-	for (auto iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next())
 		callback(*iter);
 }
 
