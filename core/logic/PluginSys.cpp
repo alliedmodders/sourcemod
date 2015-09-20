@@ -754,7 +754,7 @@ void CPlugin::DropEverything()
 	 * to centralize that here, i'm omitting it for now.  Thus,
 	 * the code below to walk the plugins list will suffice.
 	 */
-	
+
 	/* Other plugins could be holding weak references that were
 	 * added by us.  We need to clean all of those up now.
 	 */
@@ -836,7 +836,7 @@ CPluginManager::CPluginManager()
 	m_AllPluginsLoaded = false;
 	m_MyIdent = NULL;
 	m_LoadingLocked = false;
-	
+
 	m_bBlockBadPlugins = true;
 }
 
@@ -1273,12 +1273,12 @@ CPlugin *CPluginManager::CompileAndPrep(const char *path)
 bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 {
 	unsigned char *pCodeHash = pPlugin->GetRuntime()->GetCodeHash();
-	
+
 	char codeHashBuf[40];
 	ke::SafeSprintf(codeHashBuf, 40, "plugin_");
 	for (int i = 0; i < 16; i++)
 		ke::SafeSprintf(codeHashBuf + 7 + (i * 2), 3, "%02x", pCodeHash[i]);
-	
+
 	const char *bulletinUrl = g_pGameConf->GetKeyValue(codeHashBuf);
 	if (!bulletinUrl)
 		return true;
@@ -1331,7 +1331,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin)
 	// Finish by telling all listeners.
 	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
 		(*iter)->OnPluginLoaded(pPlugin);
-	
+
 	// Tell this plugin to finish initializing itself.
 	if (!pPlugin->OnPluginStart())
 		return false;
@@ -1361,7 +1361,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin)
 
 	// Add the core phrase file.
 	pPlugin->GetPhrases()->AddPhraseFile("core.phrases");
-	
+
 	// Go through all other already loaded plugins and tell this plugin, that their libraries are loaded.
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		CPlugin *pl = (*iter);
@@ -1558,7 +1558,7 @@ void CPluginManager::OnSourceModAllInitialized()
 	rootmenu->AddRootConsoleCommand3("plugins", "Manage Plugins", this);
 
 	g_ShareSys.AddInterface(NULL, GetOldAPI());
-	
+
 	m_pOnLibraryAdded = forwardsys->CreateForward("OnLibraryAdded", ET_Ignore, 1, NULL, Param_String);
 	m_pOnLibraryRemoved = forwardsys->CreateForward("OnLibraryRemoved", ET_Ignore, 1, NULL, Param_String);
 }
@@ -1572,7 +1572,7 @@ void CPluginManager::OnSourceModShutdown()
 	handlesys->RemoveType(g_PluginType, m_MyIdent);
 	g_ShareSys.DestroyIdentType(g_PluginIdent);
 	g_ShareSys.DestroyIdentity(m_MyIdent);
-	
+
 	forwardsys->ReleaseForward(m_pOnLibraryAdded);
 	forwardsys->ReleaseForward(m_pOnLibraryRemoved);
 }
@@ -1913,73 +1913,44 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			const sm_plugininfo_t *info = pl->GetPublicInfo();
 
 			rootmenu->ConsolePrint("  Filename: %s", pl->GetFilename());
-			if (pl->GetStatus() <= Plugin_Error || pl->GetStatus() == Plugin_Failed)
-			{
-				if (IS_STR_FILLED(info->name))
-				{
+			if (pl->GetStatus() != Plugin_BadLoad) {
+				if (IS_STR_FILLED(info->name)) {
 					if (IS_STR_FILLED(info->description))
-					{
 						rootmenu->ConsolePrint("  Title: %s (%s)", info->name, info->description);
-					} else {
+					else
 						rootmenu->ConsolePrint("  Title: %s", info->name);
-					}
 				}
-				if (IS_STR_FILLED(info->author))
-				{
+				if (IS_STR_FILLED(info->author)) {
 					rootmenu->ConsolePrint("  Author: %s", info->author);
 				}
-				if (IS_STR_FILLED(info->version))
-				{
+				if (IS_STR_FILLED(info->version)) {
 					rootmenu->ConsolePrint("  Version: %s", info->version);
 				}
-				if (IS_STR_FILLED(info->url))
-				{
+				if (IS_STR_FILLED(info->url)) {
 					rootmenu->ConsolePrint("  URL: %s", info->url);
 				}
-				if (pl->GetStatus() == Plugin_Error || pl->GetStatus() == Plugin_Failed)
-				{
+				if (pl->IsInErrorState()) {
 					rootmenu->ConsolePrint("  Error: %s", pl->GetErrorMsg());
+				} else {
+					rootmenu->ConsolePrint("  Status: running");
 				}
-				else
-				{
-					if (pl->GetStatus() == Plugin_Running)
-					{
-						rootmenu->ConsolePrint("  Status: running");
-					}
-					else
-					{
-						rootmenu->ConsolePrint("  Status: not running");
-					}
-				}
-				if (pl->GetFileVersion() >= 3)
-				{
+				if (pl->GetFileVersion() >= 3) {
 					rootmenu->ConsolePrint("  Timestamp: %s", pl->GetDateTime());
 				}
-				
-				unsigned char *pCodeHash = pl->GetRuntime()->GetCodeHash();
-				unsigned char *pDataHash = pl->GetRuntime()->GetDataHash();
-				
-				char combinedHash[33];
-				for (int i = 0; i < 16; i++)
-					ke::SafeSprintf(combinedHash + (i * 2), 3, "%02x", pCodeHash[i] ^ pDataHash[i]);
-				
-				rootmenu->ConsolePrint("  Hash: %s", combinedHash);
-			}
-			else
-			{
-				rootmenu->ConsolePrint("  Load error: %s", pl->GetErrorMsg());
-				if (pl->GetStatus() < Plugin_Created)
-				{
-					rootmenu->ConsolePrint("  File info: (title \"%s\") (version \"%s\")",
-											info->name ? info->name : "<none>",
-											info->version ? info->version : "<none>");
-					if (IS_STR_FILLED(info->url))
-					{
-						rootmenu->ConsolePrint("  File URL: %s", info->url);
-					}
-				}
-			}
 
+				if (IPluginRuntime *runtime = pl->GetRuntime()) {
+				  unsigned char *pCodeHash = runtime->GetCodeHash();
+				  unsigned char *pDataHash = runtime->GetDataHash();
+				  
+				  char combinedHash[33];
+				  for (int i = 0; i < 16; i++)
+				  	ke::SafeSprintf(combinedHash + (i * 2), 3, "%02x", pCodeHash[i] ^ pDataHash[i]);
+				  
+				  rootmenu->ConsolePrint("  Hash: %s", combinedHash);
+				}
+			} else {
+				rootmenu->ConsolePrint("  Load error: %s", pl->GetErrorMsg());
+			}
 			return;
 		}
 		else if (strcmp(cmd, "refresh") == 0)
@@ -2205,7 +2176,7 @@ SMPlugin *CPluginManager::FindPluginByConsoleArg(const char *arg)
 	int id;
 	char *end;
 	CPlugin *pl;
-	
+
 	id = strtol(arg, &end, 10);
 
 	if (*end == '\0')
