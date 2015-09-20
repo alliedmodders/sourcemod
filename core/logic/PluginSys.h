@@ -84,6 +84,9 @@ enum class PluginState
 	// The plugin is a member of the global plugin list.
 	Registered,
 
+	// The plugin has been evicted.
+	Evicted,
+
 	// The plugin is waiting to be unloaded.
 	WaitingToUnload
 };
@@ -103,6 +106,7 @@ public:
 	const char *GetFilename();
 	bool IsDebugging();
 	PluginStatus GetStatus();
+	PluginStatus Status() const;
 	bool IsSilentlyFailed();
 	const sm_plugininfo_t *GetPublicInfo();
 	bool SetPauseState(bool paused);
@@ -146,6 +150,7 @@ public:
 public:
 	// Evicts the plugin from memory and sets an error state.
 	void EvictWithError(PluginStatus status, const char *error_fmt, ...);
+	void FinishEviction();
 
 	// Initializes the plugin's identity information
 	void InitIdentity();
@@ -172,6 +177,11 @@ public:
 	}
 	void SetRegistered();
 	void SetWaitingToUnload();
+
+	PluginStatus GetDisplayStatus() const {
+		return m_status;
+	}
+	bool IsEvictionCandidate() const;
 
 public:
 	// Returns true if the plugin was running, but is now invalid.
@@ -235,11 +245,12 @@ public:
 	void BindFakeNativesTo(CPlugin *other);
 
 protected:
-	bool ReadInfo();
 	void DependencyDropped(CPlugin *pOwner);
 
 private:
 	time_t GetFileTimeStamp();
+	bool ReadInfo();
+	void DestroyIdentity();
 
 private:
 	// This information is static for the lifetime of the plugin.
@@ -264,13 +275,13 @@ private:
 	sp_pubvar_t *m_MaxClientsVar;
 	StringHashMap<void *> m_Props;
 	CVector<AutoConfig *> m_configs;
-	IdentityToken_t *m_ident;
+	List<String> m_Libraries;
 	bool m_bGotAllLoaded;
 	int m_FileVersion;
 
 	// Information that survives past eviction.
 	List<String> m_RequiredLibs;
-	List<String> m_Libraries;
+	IdentityToken_t *m_ident;
 	time_t m_LastFileModTime;
 	Handle_t m_handle;
 	char m_DateTime[256];
