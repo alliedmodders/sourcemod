@@ -977,7 +977,7 @@ void CPluginManager::AddPlugin(CPlugin *pPlugin)
 	}
 
 	m_plugins.push_back(pPlugin);
-	m_LoadLookup.insert(pPlugin->m_filename, pPlugin);
+	m_LoadLookup.insert(pPlugin->GetFilename(), pPlugin);
 }
 
 void CPluginManager::LoadAll_SecondPass()
@@ -1397,7 +1397,7 @@ void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
 {
 	/* Remove us from the lookup table and linked list */
 	m_plugins.remove(pPlugin);
-	m_LoadLookup.remove(pPlugin->m_filename);
+	m_LoadLookup.remove(pPlugin->GetFilename());
 
 	/* Go through our libraries and tell other plugins they're gone */
 	pPlugin->ForEachLibrary([this] (const char *lib) -> void {
@@ -1897,7 +1897,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				}
 				else
 				{
-					ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " %s", pl->m_filename);
+					ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " %s", pl->GetFilename());
 				}
 				rootmenu->ConsolePrint("%s", buffer);
 			}
@@ -2235,7 +2235,7 @@ bool CPluginManager::ReloadPlugin(CPlugin *pl)
 	IPlugin *newpl;
 	int id = 1;
 
-	strcpy(filename, pl->m_filename);
+	strcpy(filename, pl->GetFilename());
 	ptype = pl->GetType();
 
 	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++, id++)
