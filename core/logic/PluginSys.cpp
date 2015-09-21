@@ -1003,7 +1003,7 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	LoadRes res;
 
 	*wasloaded = false;
-	if ((res=_LoadPlugin(&pl, path, true, type, error, maxlength)) == LoadRes_Failure)
+	if ((res=_LoadPlugin(&pl, path, true, PluginType_MapUpdated, error, maxlength)) == LoadRes_Failure)
 	{
 		delete pl;
 		return NULL;
@@ -2183,23 +2183,6 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 					{
 						rootmenu->ConsolePrint("  Status: not running");
 					}
-
-					const char *typestr = "";
-					switch (pl->GetType())
-					{
-					case PluginType_MapUpdated:
-						typestr = "Map Change if Updated";
-						break;
-					case PluginType_MapOnly:
-						typestr = "Map Change";
-						break;
-					case PluginType_Private:
-					case PluginType_Global:
-						typestr = "Never";
-						break;
-					}
-
-					rootmenu->ConsolePrint("  Reloads: %s", typestr);
 				}
 				if (pl->m_FileVersion >= 3)
 				{
@@ -2364,24 +2347,14 @@ void CPluginManager::RefreshAll()
 
 	List<CPlugin *>::iterator iter;
 	List<CPlugin *> tmp_list = m_plugins;
-	CPlugin *pl;
-	time_t t;
 
-	for (iter=tmp_list.begin(); iter!=tmp_list.end(); iter++)
+	for (auto iter = tmp_list.begin(); iter != tmp_list.end(); iter++)
 	{
-		pl = (*iter);
-		if (pl->GetType() ==  PluginType_MapOnly)
-		{
-			UnloadPlugin((IPlugin *)pl);
-		}
-		else if (pl->GetType() == PluginType_MapUpdated)
-		{
-			t = pl->GetFileTimeStamp();
-			if (!t || t > pl->GetTimeStamp())
-			{
-				pl->SetTimeStamp(t);
-				UnloadPlugin((IPlugin *)pl);
-			}
+		CPlugin *pl = (*iter);
+		time_t t = pl->GetFileTimeStamp();
+		if (!t || t > pl->GetTimeStamp()) {
+			pl->SetTimeStamp(t);
+			UnloadPlugin(pl);
 		}
 	}
 }
