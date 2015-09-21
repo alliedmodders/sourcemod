@@ -1228,7 +1228,7 @@ CPlugin *CPluginManager::CompileAndPrep(const char *path, char *error, size_t ma
 	assert(plugin->GetStatus() == Plugin_Created);
 
 	if (!MalwareCheckPass(plugin, error, maxlength))
-		return false;
+		return plugin;
 	assert(plugin->GetStatus() == Plugin_Created);
 
 	g_ShareSys.BindNativesToPlugin(plugin, true);
