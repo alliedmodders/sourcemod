@@ -252,4 +252,8 @@
 	{
 		"game"		"modularcombat"
 	}
+	"game.kz.txt"
+	{
+		"game"		"KreedzClimbing"
+	}
 }

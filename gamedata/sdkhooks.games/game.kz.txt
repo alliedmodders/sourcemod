@@ -1,0 +1,101 @@
+"Games"
+{
+	"KreedzClimbing"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"106"
+			}
+			"FireBullets"
+			{
+				"windows"	"118"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"123"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"183"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"68"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"279"
+			}
+			"PreThink"
+			{
+				"windows"	"339"
+			}
+			"PostThink"
+			{
+				"windows"	"340"
+			}
+			"SetTransmit"
+			{
+				"windows"	"26"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"22"
+			}
+			"Spawn"
+			{
+				"windows"	"28"
+			}
+			"StartTouch"
+			{
+				"windows"	"104"
+			}
+			"Think"
+			{
+				"windows"	"53"
+			}
+			"Touch"
+			{
+				"windows"	"105"
+			}
+			"TraceAttack"
+			{
+				"windows"	"66"
+			}
+			"Use"
+			{
+				"windows"	"103"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"163"
+			}
+			"Blocked"
+			{
+				"windows"	"108"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"273"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"267"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"270"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"268"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"271"
+			}
+		}
+	}
+}
