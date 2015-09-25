@@ -223,7 +223,7 @@ methodmap DBResultSet < Handle
 	// @param field        The field index (starting from 0).
 	// @return             True if data is NULL, false otherwise.
 	// @error              Invalid field index, or no current result set.
-	public native bool IsFieldNull(Handle query, int field);
+	public native bool IsFieldNull(int field);
 
 	// Returns the length of a field's data in the current row of a result
 	// set.  This only needs to be called for strings to determine how many
