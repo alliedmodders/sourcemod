@@ -57,7 +57,7 @@
 			"CCSPlayerInventoryOffset"
 			{
 				"windows"	"55"
-				"linux"		"32"
+				"linux"		"70"
 				"mac"		"109"
 			}
 			"GetItemInLoadout"
