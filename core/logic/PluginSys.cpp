@@ -957,15 +957,6 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 
 			AskPluginAutoLoad(pPlugin, gamehelpers->GetCurrentMap());
 
-			// List<String>::iterator s_iter;
-			// for (s_iter = m_pluginsToLoad.begin(); s_iter != m_pluginsToLoad.end(); s_iter++)
-			// {
-				// if (!pPlugin->Call_AskPluginAutoLoad((*s_iter).c_str()))
-				// {
-					// m_pluginsDisabledLoad.push_back((*s_iter).c_str());
-				// }
-			// }
-
 			return LoadRes_AlreadyLoaded;
 		}
 	}
@@ -987,15 +978,6 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 	}
 	else
 	{
-		// List<String>::iterator s_iter;
-		// for (s_iter = m_pluginsToLoad.begin(); s_iter != m_pluginsToLoad.end(); s_iter++)
-		// {
-			// if (!plugin->Call_AskPluginAutoLoad((*s_iter).c_str()))
-			// {
-				// m_pluginsDisabledLoad.push_back((*s_iter).c_str());
-			// }
-		// }
-
 		AskPluginAutoLoad(plugin, gamehelpers->GetCurrentMap());
 	}
 
