@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -62,12 +62,12 @@ using namespace SourceHook;
 /**
  * NOTES:
  *
- * UPDATE 2008-03-11: These comments are horribly out of date.  They paint a good overall 
- * picture of how PluginSys works, but things like dependencies and fake natives have 
+ * UPDATE 2008-03-11: These comments are horribly out of date.  They paint a good overall
+ * picture of how PluginSys works, but things like dependencies and fake natives have
  * complicated things quite a bit.
  *
- *  Currently this system needs a lot of work but it's good skeletally.  Plugin creation 
- * is done without actually compiling anything.  This is done by Load functions in the 
+ *  Currently this system needs a lot of work but it's good skeletally.  Plugin creation
+ * is done without actually compiling anything.  This is done by Load functions in the
  * manager.  This will need a rewrite when we add context switching.
  *
  *  The plugin object itself has a few things to note.  The most important is that it stores
@@ -78,8 +78,8 @@ using namespace SourceHook;
  *						However, the state itself being set prevents any runtime action.
  *   Plugin_BadLoad	--> The plugin failed to load entirely and nothing can be done to save it.
  *
- *  If a plugin fails to load externally, it is never added to the internal tracker.  However, 
- * plugins that failed to load from the internal loading mechanism are always tracked.  This 
+ *  If a plugin fails to load externally, it is never added to the internal tracker.  However,
+ * plugins that failed to load from the internal loading mechanism are always tracked.  This
  * allows users to see which automatically loaded plugins failed, and makes the interface a bit
  * more flexible.
  *
@@ -124,7 +124,7 @@ enum APLRes
 	APLRes_SilentFailure
 };
 
-class CPlugin : 
+class CPlugin :
 	public SMPlugin,
 	public CNativeOwner
 {
@@ -169,7 +169,7 @@ public:
 	 * Creates a plugin object with default values.
 	 *   If an error buffer is specified, and an error occurs, the error will be copied to the buffer
 	 * and NULL will be returned.
-	 *   If an error buffer is not specified, the error will be copied to an internal buffer and 
+	 *   If an error buffer is not specified, the error will be copied to an internal buffer and
 	 * a valid (but error-stated) CPlugin will be returned.
 	 */
 	static CPlugin *Create(const char *file);
@@ -195,6 +195,8 @@ public:
 	 * After invoking AskPluginLoad, its state is either Running or Failed.
 	 */
 	APLRes AskPluginLoad();
+
+	bool Call_AskPluginAutoLoad(const char *plugin, const char *map);
 
 	/**
 	 * Calls the OnPluginStart function.
@@ -305,7 +307,7 @@ private:
 	ke::AString info_url_;
 };
 
-class CPluginManager : 
+class CPluginManager :
 	public IScriptManager,
 	public SMGlobalClass,
 	public IHandleTypeDispatch,
@@ -334,7 +336,7 @@ public:
 	};
 	friend class CPluginManager::CPluginIterator;
 public: //IScriptManager
-	IPlugin *LoadPlugin(const char *path, 
+	IPlugin *LoadPlugin(const char *path,
 								bool debug,
 								PluginType type,
 								char error[],
@@ -382,10 +384,12 @@ public:
 	 */
 	void LoadAll_FirstPass(const char *config, const char *basedir);
 
-	/**
-	 * Runs the second loading pass for all plugins
-	 */
 	void LoadAll_SecondPass();
+
+	/**
+	 * Runs the third loading pass for all plugins
+	 */
+	void LoadAll_ThirdPass();
 
 	/**
 	 * Tests a plugin file mask against a local folder.
@@ -393,12 +397,12 @@ public:
 	 *   csdm/ban        csdm/ban
 	 *   ban             csdm/ban
 	 *   csdm/ban        optional/csdm/ban
-	 * All of these will return true for an alias match.  
+	 * All of these will return true for an alias match.
 	 * Wildcards are allowed in the filename.
 	 */
 	bool TestAliasMatch(const char *alias, const char *localdir);
 
-	/** 
+	/**
 	 * Returns whether anything loaded will be a late load.
 	 */
 	bool IsLateLoadTime() const;
@@ -415,13 +419,13 @@ public:
 
 	int GetOrderOfPlugin(IPlugin *pl);
 
-	/** 
+	/**
 	 * Internal version of FindPluginByContext()
 	 */
 	CPlugin *GetPluginByCtx(const sp_context_t *ctx);
 
 	/**
-	 * Gets status text for a status code 
+	 * Gets status text for a status code
 	 */
 	const char *GetStatusText(PluginStatus status);
 
@@ -452,7 +456,7 @@ public:
 
 	void ListPluginsToClient(CPlayer *player, const CCommand &args);
 private:
-	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type);
+	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, bool autoload);
 
 	void LoadAutoPlugin(const char *plugin);
 
@@ -473,9 +477,9 @@ private:
 	bool MalwareCheckPass(CPlugin *pPlugin);
 
 	/**
-	 * Runs the second loading pass on a plugin.
+	 * Runs the third loading pass on a plugin.
 	 */
-	bool RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength);
+	bool RunThirdPass(CPlugin *pPlugin, char *error, size_t maxlength);
 
 	/**
 	 * Runs an extension pass on a plugin.
@@ -506,6 +510,14 @@ public:
 private:
 	void TryRefreshDependencies(CPlugin *pOther);
 private:
+	List<String> m_pluginsToLoad;
+	List<String> m_pluginsDisabledLoad;
+
+	bool IsPluginAutoLoadDisabled(const char *plugin);
+	void LoadPluginsFromList();
+
+	void AskPluginAutoLoad(CPlugin *plugin, const char *map);
+private:
 	List<IPluginsListener *> m_listeners;
 	List<CPlugin *> m_plugins;
 	CStack<CPluginManager::CPluginIterator *> m_iters;
@@ -517,10 +529,10 @@ private:
 	List<FakeNative *> m_Natives;
 
 	bool m_LoadingLocked;
-	
+
 	// Config
 	bool m_bBlockBadPlugins;
-	
+
 	// Forwards
 	IForward *m_pOnLibraryAdded;
 	IForward *m_pOnLibraryRemoved;

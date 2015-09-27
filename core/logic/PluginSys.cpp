@@ -38,6 +38,7 @@
 #include <IHandleSys.h>
 #include <IForwardSys.h>
 #include <IPlayerHelpers.h>
+#include <IGameHelpers.h>
 #include "ExtensionSys.h"
 #include "GameConfigs.h"
 #include "common_logic.h"
@@ -402,6 +403,38 @@ APLRes CPlugin::AskPluginLoad()
 	return res;
 }
 
+bool CPlugin::Call_AskPluginAutoLoad(const char *plugin, const char *map)
+{
+	cell_t res;
+	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("AskPluginAutoLoad");
+	if (!pFunction)
+	{
+		return true;
+	}
+
+	pFunction->PushString(plugin);
+	pFunction->PushString(map);
+
+	if (pFunction->Execute(&res) != SP_ERROR_NONE)
+	{
+		return true;
+	}
+
+	return ((APLRes)res == APLRes_Success);
+}
+
+void CPluginManager::AskPluginAutoLoad(CPlugin *plugin, const char *map)
+{
+	List<String>::iterator s_iter;
+	for (s_iter = m_pluginsToLoad.begin(); s_iter != m_pluginsToLoad.end(); s_iter++)
+	{
+		if (strcmp(plugin->GetFilename(), (*s_iter).c_str()) != 0 && !plugin->Call_AskPluginAutoLoad((*s_iter).c_str(), map))
+		{
+			m_pluginsDisabledLoad.push_back((*s_iter).c_str());
+		}
+	}
+}
+
 void CPlugin::Call_OnLibraryAdded(const char *lib)
 {
 	if (m_status > Plugin_Paused)
@@ -694,7 +727,7 @@ void CPlugin::DropEverything()
 	 * to centralize that here, i'm omitting it for now.  Thus,
 	 * the code below to walk the plugins list will suffice.
 	 */
-	
+
 	/* Other plugins could be holding weak references that were
 	 * added by us.  We need to clean all of those up now.
 	 */
@@ -767,7 +800,7 @@ CPluginManager::CPluginManager()
 	m_AllPluginsLoaded = false;
 	m_MyIdent = NULL;
 	m_LoadingLocked = false;
-	
+
 	m_bBlockBadPlugins = true;
 }
 
@@ -795,8 +828,12 @@ void CPluginManager::LoadAll(const char *config_path, const char *plugins_path)
 {
 	LoadAll_FirstPass(config_path, plugins_path);
 	g_Extensions.MarkAllLoaded();
+
 	LoadAll_SecondPass();
+
+	LoadAll_ThirdPass();
 	g_Extensions.MarkAllLoaded();
+
 	AllPluginsLoaded();
 }
 
@@ -804,7 +841,32 @@ void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 {
 	/* First read in the database of plugin settings */
 	m_AllPluginsLoaded = false;
+
+	m_pluginsToLoad.clear();
+	m_pluginsDisabledLoad.clear();
+
 	LoadPluginsFromDir(basedir, NULL);
+	LoadPluginsFromList();
+}
+
+bool CPluginManager::IsPluginAutoLoadDisabled(const char *plugin)
+{
+	List<String>::iterator s_iter;
+	for (s_iter = m_pluginsDisabledLoad.begin(); s_iter != m_pluginsDisabledLoad.end(); s_iter++)
+	{
+		if (strcmp((*s_iter).c_str(), plugin) == 0)
+			return true;
+	}
+	return false;
+}
+
+void CPluginManager::LoadPluginsFromList()
+{
+	List<String>::iterator s_iter;
+	for (s_iter = m_pluginsToLoad.begin(); s_iter != m_pluginsToLoad.end(); s_iter++)
+	{
+		LoadAutoPlugin((*s_iter).c_str());
+	}
 }
 
 void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpath)
@@ -861,7 +923,8 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 				} else {
 					libsys->PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
 				}
-				LoadAutoPlugin(plugin);
+
+				m_pluginsToLoad.push_back(plugin);
 			}
 		}
 		dir->NextEntry();
@@ -869,7 +932,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 	libsys->CloseDirectory(dir);
 }
 
-LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool debug, PluginType type)
+LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool debug, PluginType type, bool autoload)
 {
 	if (m_LoadingLocked)
 		return LoadRes_NeverLoad;
@@ -891,6 +954,18 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 		{
 			if (aResult)
 				*aResult = pPlugin;
+
+			AskPluginAutoLoad(pPlugin, gamehelpers->GetCurrentMap());
+
+			// List<String>::iterator s_iter;
+			// for (s_iter = m_pluginsToLoad.begin(); s_iter != m_pluginsToLoad.end(); s_iter++)
+			// {
+				// if (!pPlugin->Call_AskPluginAutoLoad((*s_iter).c_str()))
+				// {
+					// m_pluginsDisabledLoad.push_back((*s_iter).c_str());
+				// }
+			// }
+
 			return LoadRes_AlreadyLoaded;
 		}
 	}
@@ -903,10 +978,27 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 	if (plugin->GetStatus() != Plugin_Created)
 		return LoadRes_Failure;
 
-	if (plugin->AskPluginLoad() != APLRes_Success)
-		return LoadRes_Failure;
+	if (!autoload)
+	{
+		if (plugin->AskPluginLoad() != APLRes_Success)
+			return LoadRes_Failure;
 
-	LoadExtensions(plugin);
+		LoadExtensions(plugin);
+	}
+	else
+	{
+		// List<String>::iterator s_iter;
+		// for (s_iter = m_pluginsToLoad.begin(); s_iter != m_pluginsToLoad.end(); s_iter++)
+		// {
+			// if (!plugin->Call_AskPluginAutoLoad((*s_iter).c_str()))
+			// {
+				// m_pluginsDisabledLoad.push_back((*s_iter).c_str());
+			// }
+		// }
+
+		AskPluginAutoLoad(plugin, gamehelpers->GetCurrentMap());
+	}
+
 	return LoadRes_Successful;
 }
 
@@ -916,7 +1008,7 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	LoadRes res;
 
 	*wasloaded = false;
-	if ((res=LoadPlugin(&pl, path, true, PluginType_MapUpdated)) == LoadRes_Failure)
+	if ((res=LoadPlugin(&pl, path, true, PluginType_MapUpdated, false)) == LoadRes_Failure)
 	{
 		ke::SafeStrcpy(error, maxlength, pl->m_errormsg);
 		delete pl;
@@ -942,7 +1034,7 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	/* Run second pass if we need to */
 	if (IsLateLoadTime() && pl->GetStatus() == Plugin_Loaded)
 	{
-		if (!RunSecondPass(pl, error, maxlength))
+		if (!RunThirdPass(pl, error, maxlength))
 		{
 			UnloadPlugin(pl);
 			return NULL;
@@ -957,7 +1049,7 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 {
 	CPlugin *pl = NULL;
 	LoadRes res;
-	if ((res=LoadPlugin(&pl, plugin, false, PluginType_MapUpdated)) == LoadRes_Failure)
+	if ((res=LoadPlugin(&pl, plugin, false, PluginType_MapUpdated, true)) == LoadRes_Failure)
 	{
 		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s.", plugin, pl->m_errormsg);
 	}
@@ -988,6 +1080,39 @@ void CPluginManager::LoadAll_SecondPass()
 	List<CPlugin *>::iterator iter;
 	CPlugin *pPlugin;
 
+	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
+	{
+		pPlugin = (*iter);
+
+		if (IsPluginAutoLoadDisabled(pPlugin->GetFilename()))
+		{
+			logger->LogMessage("[SM] Plugin %s prevented from loading.", pPlugin->GetFilename());
+			m_pluginsDisabledLoad.remove(pPlugin->GetFilename());
+			UnloadPlugin(pPlugin);
+			continue;
+		}
+
+		if (pPlugin->GetStatus() == Plugin_Created)
+		{
+			if (pPlugin->AskPluginLoad() != APLRes_Success)
+			{
+				UnloadPlugin(pPlugin);
+				continue;
+			}
+
+			LoadExtensions(pPlugin);
+		}
+	}
+
+	m_pluginsToLoad.clear();
+	m_pluginsDisabledLoad.clear();
+}
+
+void CPluginManager::LoadAll_ThirdPass()
+{
+	List<CPlugin *>::iterator iter;
+	CPlugin *pPlugin;
+
 	char error[256];
 	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
 	{
@@ -995,7 +1120,7 @@ void CPluginManager::LoadAll_SecondPass()
 		if (pPlugin->GetStatus() == Plugin_Loaded)
 		{
 			error[0] = '\0';
-			if (!RunSecondPass(pPlugin, error, sizeof(error)))
+			if (!RunThirdPass(pPlugin, error, sizeof(error)))
 			{
 				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), error);
 				pPlugin->SetErrorState(Plugin_BadLoad, "%s", error);
@@ -1186,12 +1311,12 @@ CPlugin *CPluginManager::CompileAndPrep(const char *path)
 bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 {
 	unsigned char *pCodeHash = pPlugin->GetRuntime()->GetCodeHash();
-	
+
 	char codeHashBuf[40];
 	ke::SafeSprintf(codeHashBuf, 40, "plugin_");
 	for (int i = 0; i < 16; i++)
 		ke::SafeSprintf(codeHashBuf + 7 + (i * 2), 3, "%02x", pCodeHash[i]);
-	
+
 	const char *bulletinUrl = g_pGameConf->GetKeyValue(codeHashBuf);
 	if (!bulletinUrl)
 		return true;
@@ -1213,7 +1338,7 @@ bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 	return true;
 }
 
-bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength)
+bool CPluginManager::RunThirdPass(CPlugin *pPlugin, char *error, size_t maxlength)
 {
 	/* Second pass for extension requirements */
 	if (!RequireExtensions(pPlugin, error, maxlength))
@@ -1253,7 +1378,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		pListener = (*iter);
 		pListener->OnPluginLoaded(pPlugin);
 	}
-	
+
 	/* Tell this plugin to finish initializing itself */
 	pPlugin->Call_OnPluginStart();
 
@@ -1294,7 +1419,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 
 	/* :TODO: optimize? does this even matter? */
 	pPlugin->GetPhrases()->AddPhraseFile("core.phrases");
-	
+
 	/* Go through all other already loaded plugins and tell this plugin, that their libraries are loaded */
 	for (List<CPlugin *>::iterator pl_iter = m_plugins.begin(); pl_iter != m_plugins.end(); pl_iter++)
 	{
@@ -1434,7 +1559,7 @@ void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
 		pListener = (*iter);
 		pListener->OnPluginDestroyed(pPlugin);
 	}
-	
+
 	/* Tell the plugin to delete itself */
 	delete pPlugin;
 }
@@ -1722,7 +1847,7 @@ void CPluginManager::OnSourceModAllInitialized()
 	rootmenu->AddRootConsoleCommand3("plugins", "Manage Plugins", this);
 
 	g_ShareSys.AddInterface(NULL, GetOldAPI());
-	
+
 	m_pOnLibraryAdded = forwardsys->CreateForward("OnLibraryAdded", ET_Ignore, 1, NULL, Param_String);
 	m_pOnLibraryRemoved = forwardsys->CreateForward("OnLibraryRemoved", ET_Ignore, 1, NULL, Param_String);
 }
@@ -1736,7 +1861,7 @@ void CPluginManager::OnSourceModShutdown()
 	handlesys->RemoveType(g_PluginType, m_MyIdent);
 	g_ShareSys.DestroyIdentType(g_PluginIdent);
 	g_ShareSys.DestroyIdentity(m_MyIdent);
-	
+
 	forwardsys->ReleaseForward(m_pOnLibraryAdded);
 	forwardsys->ReleaseForward(m_pOnLibraryRemoved);
 }
@@ -2130,14 +2255,14 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				{
 					rootmenu->ConsolePrint("  Timestamp: %s", pl->m_DateTime);
 				}
-				
+
 				unsigned char *pCodeHash = pl->m_pRuntime->GetCodeHash();
 				unsigned char *pDataHash = pl->m_pRuntime->GetDataHash();
-				
+
 				char combinedHash[33];
 				for (int i = 0; i < 16; i++)
 					ke::SafeSprintf(combinedHash + (i * 2), 3, "%02x", pCodeHash[i] ^ pDataHash[i]);
-				
+
 				rootmenu->ConsolePrint("  Hash: %s", combinedHash);
 			}
 			else
@@ -2314,7 +2439,7 @@ void CPluginManager::_SetPauseState(CPlugin *pl, bool paused)
 	{
 		pListener = (*iter);
 		pListener->OnPluginPauseChange(pl, paused);
-	}	
+	}
 }
 
 void CPluginManager::AddFunctionsToForward(const char *name, IChangeableForward *pForward)
@@ -2434,7 +2559,7 @@ SMPlugin *CPluginManager::FindPluginByConsoleArg(const char *arg)
 	int id;
 	char *end;
 	CPlugin *pl;
-	
+
 	id = strtol(arg, &end, 10);
 
 	if (*end == '\0')
