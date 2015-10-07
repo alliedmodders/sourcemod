@@ -153,6 +153,7 @@ void HolidayManager::OnPluginLoaded(IPlugin *plugin)
 	PopulateHolidayVar(pRuntime, "TFHoliday_Halloween");
 	PopulateHolidayVar(pRuntime, "TFHoliday_Christmas");
 	PopulateHolidayVar(pRuntime, "TFHoliday_EndOfTheLine");
+	PopulateHolidayVar(pRuntime, "TFHoliday_CommunityUpdate");
 	PopulateHolidayVar(pRuntime, "TFHoliday_ValentinesDay");
 	PopulateHolidayVar(pRuntime, "TFHoliday_MeetThePyro");
 	PopulateHolidayVar(pRuntime, "TFHoliday_SpyVsEngyWar");
