@@ -157,14 +157,15 @@
 			"TFHoliday_Birthday"		"1"
 			"TFHoliday_Halloween"		"2"
 			"TFHoliday_Christmas"		"3"
-			"TFHoliday_EndOfTheLine"	"4"
-			"TFHoliday_ValentinesDay"	"5"
-			"TFHoliday_MeetThePyro"		"6"
-			"TFHoliday_SpyVsEngyWar"	"7"
-			"TFHoliday_FullMoon"		"8"
-			"TFHoliday_HalloweenOrFullMoon"				"9"
-			"TFHoliday_HalloweenOrFullMoonOrValentines"	"10"
-			"TFHoliday_AprilFools"		"11"
+			"TFHoliday_CommunityUpdate"	"4"
+			"TFHoliday_EndOfTheLine"	"5"
+			"TFHoliday_ValentinesDay"	"6"
+			"TFHoliday_MeetThePyro"		"7"
+			"TFHoliday_SpyVsEngyWar"	"8"
+			"TFHoliday_FullMoon"		"9"
+			"TFHoliday_HalloweenOrFullMoon"				"10"
+			"TFHoliday_HalloweenOrFullMoonOrValentines"	"11"
+			"TFHoliday_AprilFools"		"12"
 		}
 	}
 }

@@ -186,6 +186,7 @@ public const TFHoliday:TFHoliday_Birthday;
 public const TFHoliday:TFHoliday_Halloween;
 public const TFHoliday:TFHoliday_Christmas;
 public const TFHoliday:TFHoliday_EndOfTheLine;
+public const TFHoliday:TFHoliday_CommunityUpdate;
 public const TFHoliday:TFHoliday_ValentinesDay;
 public const TFHoliday:TFHoliday_MeetThePyro;
 public const TFHoliday:TFHoliday_SpyVsEngyWar;
