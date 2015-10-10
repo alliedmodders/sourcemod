@@ -76,7 +76,6 @@
 			"game"		"sourceforts"
 			"game"		"FortressForever"
 			"game"		"hidden"
-			"game"		"NeotokyoSource"
 			"game"		"ios"
 			"game"		"hl2ctf"
 		}
@@ -123,7 +122,6 @@
 			"game"		"FortressForever"
 			"game"		"hidden"
 			"game"		"zombie_master"
-			"game"		"NeotokyoSource"
 			"game"		"ios"
 			"game"		"hl2ctf"
 		}
@@ -148,7 +146,6 @@
 			"game"		"sourceforts"
 			"game"		"hidden"
 			"game"		"FortressForever"
-			"game"		"NeotokyoSource"
 			"game"		"ios"
 		}
 
@@ -223,7 +220,6 @@
 	{
 		"#supported"
 		{
-			"game"		"NeotokyoSource"
 			"game"		"zombie_master"
 			"game"		"ios"
 		}
