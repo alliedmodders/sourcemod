@@ -108,7 +108,7 @@ IThreadHandle *WinThreader::MakeThread(IThread *pThread, const ThreadParams *par
 
 	ke::AutoPtr<ThreadHandle> pHandle(new ThreadHandle(this, pThread, params));
 
-	pHandle->m_thread = new ke::Thread(pHandle, "SourceMod");
+	pHandle->m_thread = new ke::Thread(pHandle.get(), "SourceMod");
 	if (!pHandle->m_thread->Succeeded())
 		return NULL;
 
