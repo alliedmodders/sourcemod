@@ -1291,6 +1291,78 @@ bool CHalfLife2::IsMapValid(const char *map)
 	return FindMap(map) != SMFindMapResult::NotFound;
 }
 
+const ISMConVar *CHalfLife2::FindConVar(const char *name)
+{
+	const ConVar *cvar = icvar->FindVar(name);
+
+	if (cvar == NULL || cvar->IsCommand())
+	{
+		return NULL;
+	}
+
+	return new SMConVar(cvar);
+}
+
+bool SMConVar::IsFlagSet(int flag) const
+{
+	return m_wrapped->IsFlagSet(flag);
+}
+
+const char *SMConVar::GetName() const
+{
+	return m_wrapped->GetName();
+}
+
+const char *SMConVar::GetHelpText() const
+{
+	return m_wrapped->GetHelpText();
+}
+
+const char *SMConVar::GetString() const
+{
+	return m_wrapped->GetString();
+}
+
+float SMConVar::GetFloat() const
+{
+	return m_wrapped->GetFloat();
+}
+
+int SMConVar::GetInt() const
+{
+	return m_wrapped->GetInt();
+}
+
+bool SMConVar::GetBool() const
+{
+	return m_wrapped->GetBool();
+}
+
+bool SMConVar::GetMin(float &minVal) const
+{
+	return m_wrapped->GetMin(minVal);
+}
+
+bool SMConVar::GetMax(float &maxVal) const
+{
+	return m_wrapped->GetMax(maxVal);
+}
+
+const char *SMConVar::GetDefault() const
+{
+	return m_wrapped->GetDefault();
+}
+
+void SMConVar::Release() const
+{
+	delete this;
+}
+
+SMConVar::SMConVar(const ConVar *wrap)
+{
+	m_wrapped = wrap;
+}
+
 // TODO: Add ep1 support for this. (No IServerTools available there)
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 string_t CHalfLife2::AllocPooledString(const char *pszValue)

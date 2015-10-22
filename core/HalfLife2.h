@@ -49,6 +49,8 @@
 #include <tier0/icommandline.h>
 #include <string_t.h>
 
+class ConVar;
+
 namespace SourceMod {
 class ICommandArgs;
 } // namespace SourceMod
@@ -139,7 +141,35 @@ enum class SMFindMapResult : cell_t {
 	PossiblyAvailable
 };
 
-class CHalfLife2 : 
+class SMConVar : public ISMConVar
+{
+	friend class CHalfLife2;
+
+public:
+	bool IsFlagSet(int flag) const;
+
+	const char *GetName() const;
+	const char *GetHelpText() const;
+
+	const char *GetString() const;
+	float GetFloat() const;
+	int GetInt() const;
+	bool GetBool() const;
+
+	bool GetMin(float &minVal) const;
+	bool GetMax(float &maxVal) const;
+
+	const char *GetDefault() const;
+
+	void Release() const;
+
+protected:
+	SMConVar(const ConVar *wrap);
+
+	const ConVar *m_wrapped;
+};
+
+class CHalfLife2 :
 	public SMGlobalClass,
 	public IGameHelpers
 {
@@ -188,6 +218,7 @@ public: //IGameHelpers
 	SMFindMapResult FindMap(char *pMapName, size_t nMapNameMax);
 	SMFindMapResult FindMap(const char *pMapName, char *pFoundMap = NULL, size_t nMapNameMax = 0);
 	bool GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax);
+    const ISMConVar *FindConVar(const char *name);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	string_t AllocPooledString(const char *pszValue);
 #endif

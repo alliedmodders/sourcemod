@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		10
+#define SMINTERFACE_GAMEHELPERS_VERSION		11
 
 class CBaseEntity;
 class CBaseHandle;
@@ -71,6 +71,67 @@ namespace SourceMod
 	{
 		typedescription_t *prop;			/**< Property instance. */
 		unsigned int actual_offset;		/**< Actual computed offset. */
+	};
+
+	/**
+	 * @brief Wrapper class for console variables.
+	 *        It is currently only possible to get read-only access to existing ones.
+	 *        File a bug if you want setters as well (or to create your own convars).
+	 *
+	 *        If you're including the HL2SDK, you should use it's ConVar headers over this class.
+	 */
+	class ISMConVar
+	{
+	protected:
+		ISMConVar() {};
+		virtual ~ISMConVar() {};
+
+	public:
+		/**
+		 * @brief Check if a flag is set on a console variable.
+		 *        These values are engine specific, but are generally the same across engines.
+		 *        Look in the SDK for the FCVAR_* defines for possible values.
+		 */
+		virtual bool IsFlagSet(int flag) const =0;
+
+		virtual const char *GetName() const =0;
+		virtual const char *GetHelpText() const =0;
+
+        /**
+         * @brief Various accessors for console variable values.
+         *        GetString is the definitive source.
+         */
+		virtual const char *GetString() const =0;
+		virtual float GetFloat() const =0;
+		virtual int GetInt() const =0;
+		virtual bool GetBool() const =0;
+
+		/**
+		 * @brief Get the minimum value allowed to be set via the console.
+		 *        Note that this is only a suggestion and the value can be outside this bound.
+		 *
+		 * @return true if a minimum is configured.
+		 */
+		virtual bool GetMin(float &minVal) const =0;
+
+		/**
+		 * @brief Get the maximum value allowed to be set via the console.
+		 *        Note that this is only a suggestion and the value can be outside this bound.
+		 *
+		 * @return true if a maximum is configured.
+		 */
+		virtual bool GetMax(float &maxVal) const =0;
+
+		/**
+		 * @brief Get the default value the console variable was created with.
+		 */
+		virtual const char *GetDefault() const =0;
+
+		/**
+		 * @brief Release the console variable wrapper.
+		 *        This MUST be called when you're done.
+		 */
+		virtual void Release() const =0;
 	};
 
 	class IGameHelpers : public SMInterface
@@ -335,6 +396,14 @@ namespace SourceMod
 		 *						on failure.
 		 */
 		virtual bool FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatable_info_t *pDataTable) =0;
+
+		/**
+		 * @brief Find a console variable by name. You MUST call ISMConVar::Release when you're done.
+		 *
+		 * @param convar	Name of console varaible.
+		 * @return			Pointer to console varaible wrapper, NULL if it doesn't exist.
+		 */
+		virtual const ISMConVar *FindConVar(const char *name) =0;
 	};
 }
 
