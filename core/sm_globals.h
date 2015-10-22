@@ -38,6 +38,7 @@
 
 #include <sp_vm_types.h>
 #include <sp_vm_api.h>
+#include <sp_vm_debug_api.h>
 #include "sm_platform.h"
 #include <IShareSys.h>
 
@@ -207,6 +208,8 @@ namespace SourceMod
 
 extern IThreader *g_pThreader;
 extern ITextParsers *textparsers;
+
+extern IConsoleDebugger *g_pConsoleDebugger;
 
 #include "sm_autonatives.h"
 

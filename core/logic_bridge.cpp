@@ -414,6 +414,7 @@ CoreProviderImpl::CoreProviderImpl()
 	this->menus = &g_Menus;
 	this->spe1 = &g_pSourcePawn;
 	this->spe2 = &g_pSourcePawn2;
+	this->consoledebugger = &g_pConsoleDebugger;
 	this->GetCoreConfigValue = get_core_config_value;
 	this->DoGlobalPluginLoads = do_global_plugin_loads;
 	this->AreConfigsExecuted = SM_AreConfigsExecuted;

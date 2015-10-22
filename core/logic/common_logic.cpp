@@ -82,6 +82,7 @@ ServerGlobals serverGlobals;
 IAdminSystem *adminsys = &g_Admins;
 ISourcePawnEngine *g_pSourcePawn;
 ISourcePawnEngine2 *g_pSourcePawn2;
+IConsoleDebugger *g_pConsoleDebugger;
 IScriptManager *scripts = &g_PluginSys;
 IExtensionSys *extsys = &g_Extensions;
 ILogger *logger = &g_Logger;
@@ -202,6 +203,7 @@ static void logic_init(CoreProvider* core, sm_logic_t* _logic)
 	menus = core->menus;
 	g_pSourcePawn = *core->spe1;
 	g_pSourcePawn2 = *core->spe2;
+	g_pConsoleDebugger = *core->consoledebugger;
 	SMGlobalClass::head = core->listeners;
 
 	g_ShareSys.Initialize();

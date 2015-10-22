@@ -35,6 +35,7 @@
 namespace SourcePawn {
 class ISourcePawnEngine;
 class ISourcePawnEngine2;
+class IConsoleDebugger;
 } // namespace SourcePawn
 
 // SDK types.
@@ -83,6 +84,7 @@ public:
 	IMenuManager	*menus;
 	SourcePawn::ISourcePawnEngine **spe1;
 	SourcePawn::ISourcePawnEngine2 **spe2;
+	SourcePawn::IConsoleDebugger **consoledebugger;
 	const char		*gamesuffix;
 	/* Data */
 	ServerGlobals   *serverGlobals;

@@ -34,12 +34,21 @@
 #include "DebugReporter.h"
 #include "Logger.h"
 #include <am-string.h>
+#include <am-vector.h>
+#include "PluginSys.h"
 
 DebugReport g_DbgReporter;
 
 void DebugReport::OnSourceModAllInitialized()
 {
 	g_pSourcePawn->SetDebugListener(this);
+
+	rootmenu->AddRootConsoleCommand3("debug", "Debug Plugins", this);
+}
+
+void DebugReport::OnSourceModShutdown()
+{
+	rootmenu->RemoveRootConsoleCommand("debug", this);
 }
 
 void DebugReport::OnDebugSpew(const char *msg, ...)
@@ -225,4 +234,138 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 			}
 		}
 	}
+}
+
+void DebugReport::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command)
+{
+	int argcount = command->ArgC();
+	if (argcount >= 3) {
+		const char *cmd = command->Arg(2);
+		if (strcmp(cmd, "start") == 0) {
+			if (argcount < 4) {
+				rootmenu->ConsolePrint("[SM] Usage: sm debug start <#|file>");
+				return;
+			}
+
+			const char *arg = command->Arg(3);
+			CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByConsoleArg(arg);
+
+			if (!pl) {
+				rootmenu->ConsolePrint("[SM] Plugin %s is not loaded.", arg);
+				return;
+			}
+
+			char name[PLATFORM_MAX_PATH];
+			const sm_plugininfo_t *info = pl->GetPublicInfo();
+			if (pl->GetStatus() <= Plugin_Paused)
+				strcpy(name, (info->name[0] != '\0') ? info->name : pl->GetFilename());
+			else
+				strcpy(name, pl->GetFilename());
+
+			if (g_pConsoleDebugger->StartDebugger(pl->GetBaseContext()))
+				rootmenu->ConsolePrint("[SM] Pausing Plugin %s for debugging. Will halt on next instruction.", name);
+			else
+				rootmenu->ConsolePrint("[SM] Failed to pause plugin %s for debugging.", name);
+
+			return;
+		}
+		else if (strcmp(cmd, "next") == 0) {
+			// TODO
+			rootmenu->ConsolePrint("[SM] Not implemented yet.");
+			return;
+		}
+		else if (strcmp(cmd, "bp") == 0) {
+
+			if (argcount >= 5) {
+				const char *plugin = command->Arg(3);
+				CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByConsoleArg(plugin);
+
+				if (!pl) {
+					rootmenu->ConsolePrint("[SM] Plugin %s is not loaded.", plugin);
+					return;
+				}
+
+				const char *arg = command->Arg(4);
+				if (strcmp(arg, "list") == 0) {
+					ke::Vector<IBreakpoint *> *breakpoints;
+					breakpoints = g_pConsoleDebugger->GetBreakpoints(pl->GetBaseContext());
+
+					if (!breakpoints) {
+						rootmenu->ConsolePrint("[SM] Debugger is not active on plugin %s.", plugin);
+						return;
+					}
+
+					rootmenu->ConsolePrint("[SM] Listing %d breakpoints for plugin %s:", breakpoints->length(), pl->GetFilename());
+
+					char line[256];
+					IBreakpoint *bp;
+					for (unsigned int i = 0; i < breakpoints->length(); i++) {
+						bp = breakpoints->at(i);
+						ke::SafeSprintf(line, sizeof(line), "[SM] %2d  ", i + 1);
+
+						if (bp->line() > 0)
+							ke::SafeSprintf(line, sizeof(line), "%sline: %d", line, bp->line());
+
+						if (bp->temporary())
+							ke::SafeSprintf(line, sizeof(line), "%s  (TEMP)", line);
+
+						if (bp->filename() != nullptr)
+							ke::SafeSprintf(line, sizeof(line), "%s\tfile: %s", line, bp->filename());
+
+						if (bp->name() != nullptr)
+							ke::SafeSprintf(line, sizeof(line), "%s\tfunc: %s", line, bp->name());
+
+						rootmenu->ConsolePrint("%s", line);
+					}
+
+					return;
+				}
+				else if (strcmp(arg, "add") == 0) {
+					if (argcount < 6) {
+						rootmenu->ConsolePrint("[SM] Usage: sm debug bp <#|file> add <file:line | file:function>");
+						return;
+					}
+
+					const char *bpline = command->Arg(5);
+					IBreakpoint *bp = g_pConsoleDebugger->AddBreakpoint(pl->GetBaseContext(), bpline, false);
+					if (bp == nullptr) {
+						rootmenu->ConsolePrint("[SM] Invalid breakpoint address specification.");
+					}
+					else {
+						rootmenu->ConsolePrint("[SM] Added breakpoint in file %s on line %d", bp->filename(), bp->line());
+					}
+					return;
+				}
+				else if (strcmp(arg, "clear") == 0) {
+					if (argcount < 6) {
+						rootmenu->ConsolePrint("[SM] Usage: sm debug bp <#|file> clear <#>");
+						return;
+					}
+
+					const char *bpstr = command->Arg(5);
+					int bpnum = strtoul(bpstr, NULL, 10);
+					if (g_pConsoleDebugger->ClearBreakpoint(pl->GetBaseContext(), bpnum)) {
+						rootmenu->ConsolePrint("[SM] Breakpoint cleared.");
+					}
+					else {
+						rootmenu->ConsolePrint("[SM] Failed to clear breakpoint.");
+					}
+					return;
+				}
+			}
+
+			/* Draw the sub menu */
+			rootmenu->ConsolePrint("[SM] Usage: sm debug bp <#|file> <option>");
+			rootmenu->DrawGenericOption("list", "List breakpoints");
+			rootmenu->DrawGenericOption("add", "Add a breakpoint");
+			rootmenu->DrawGenericOption("clear", "Remove a breakpoint");
+			return;
+		}
+	}
+
+	/* Draw the main menu */
+	rootmenu->ConsolePrint("SourceMod Debug Menu:");
+	rootmenu->DrawGenericOption("start", "Start debugging a plugin");
+	rootmenu->DrawGenericOption("next", "Start debugging the plugin which is loaded next");
+	rootmenu->DrawGenericOption("bp", "Handle breakpoints in a plugin");
 }

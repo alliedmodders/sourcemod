@@ -62,6 +62,7 @@ SourceHook::String g_BaseDir;
 ISourcePawnEngine *g_pSourcePawn = NULL;
 ISourcePawnEngine2 *g_pSourcePawn2 = NULL;
 ISourcePawnEnvironment *g_pPawnEnv = NULL;
+IConsoleDebugger *g_pConsoleDebugger = NULL;
 IdentityToken_t *g_pCoreIdent = NULL;
 IForward *g_pOnMapEnd = NULL;
 IGameConfig *g_pGameConf = NULL;
@@ -85,6 +86,7 @@ void ShutdownJIT()
 		g_pPawnEnv = NULL;
 		g_pSourcePawn2 = NULL;
 		g_pSourcePawn = NULL;
+		g_pConsoleDebugger = NULL;
 	}
 
 	g_JIT = nullptr;
@@ -236,6 +238,8 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	if (sm_disable_jit)
 		g_pSourcePawn2->SetJitEnabled(!sm_disable_jit);
 
+	LoadSourcePawnDebugger();
+
 	sSourceModInitialized = true;
 
 	/* Hook this now so we can detect startup without calling StartSourceMod() */
@@ -247,6 +251,24 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 		StartSourceMod(false);
 	}
 
+	return true;
+}
+
+bool SourceModBase::LoadSourcePawnDebugger()
+{
+	GetConsoleDebuggerFn debuggerFn =
+		g_JIT->get<decltype(debuggerFn)>("GetConsoleDebugger");
+
+	if (!debuggerFn) {
+		return false;
+	}
+
+	IConsoleDebugger *debugger = debuggerFn();
+	if (!debugger) {
+		return false;
+	}
+
+	g_pConsoleDebugger = debugger;
 	return true;
 }
 

@@ -34,16 +34,21 @@
 
 #include "sp_vm_api.h"
 #include "common_logic.h"
+#include <IRootConsoleMenu.h>
 
 class DebugReport : 
 	public SMGlobalClass, 
-	public IDebugListener
+	public IDebugListener,
+	public IRootConsoleCommand
 {
 public: // SMGlobalClass
 	void OnSourceModAllInitialized();
+	void OnSourceModShutdown();
 public: // IDebugListener
 	void ReportError(const IErrorReport &report, IFrameIterator &iter);
 	void OnDebugSpew(const char *msg, ...);
+public: //IRootConsoleCommand
+	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command) override;
 public:
 	void GenerateError(IPluginContext *ctx, cell_t func_idx, int err, const char *message, ...);
 	void GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err, const char *message, va_list ap); 
