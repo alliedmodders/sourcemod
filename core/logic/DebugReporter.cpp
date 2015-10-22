@@ -36,8 +36,21 @@
 #include <am-string.h>
 #include <am-vector.h>
 #include "PluginSys.h"
+#include "common_logic.h"
+#include <bridge/include/CoreProvider.h>
 
 DebugReport g_DbgReporter;
+
+void DebugReport::OnSourceModStartup(bool late)
+{
+	if (!g_pConsoleDebugger)
+		return;
+
+	const char *enabled = bridge->GetCoreConfigValue("EnableConsoleDebugger");
+	if (enabled != nullptr && !strcasecmp(enabled, "yes")) {
+		g_pConsoleDebugger->SetEnabled(true);
+	}
+}
 
 void DebugReport::OnSourceModAllInitialized()
 {
@@ -238,6 +251,11 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 
 void DebugReport::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command)
 {
+	if (!g_pConsoleDebugger || !g_pConsoleDebugger->IsEnabled()) {
+		rootmenu->ConsolePrint("[SM] Console debugger not available.");
+		return;
+	}
+
 	int argcount = command->ArgC();
 	if (argcount >= 3) {
 		const char *cmd = command->Arg(2);
@@ -295,7 +313,7 @@ void DebugReport::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *
 						return;
 					}
 
-					rootmenu->ConsolePrint("[SM] Listing %d breakpoints for plugin %s:", breakpoints->length(), pl->GetFilename());
+					rootmenu->ConsolePrint("[SM] Listing %d breakpoint(s) for plugin %s:", breakpoints->length(), pl->GetFilename());
 
 					char line[256];
 					IBreakpoint *bp;

@@ -42,6 +42,7 @@ class DebugReport :
 	public IRootConsoleCommand
 {
 public: // SMGlobalClass
+	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 public: // IDebugListener
