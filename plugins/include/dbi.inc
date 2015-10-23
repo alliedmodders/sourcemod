@@ -236,14 +236,26 @@ methodmap DBResultSet < Handle
 	public native int FetchSize(int field);
 };
 
-// Callback for a successful transaction.
-// 
-// @param db            Database handle.
-// @param data          Data value passed to SQL_ExecuteTransaction().
-// @param numQueries    Number of queries executed in the transaction.
-// @param results       An array of Query handle results, one for each of numQueries. They are closed automatically.
-// @param queryData     An array of each data value passed to SQL_AddQuery().
-typedef SQLTxnSuccess = function void (Database db, any data, int numQueries, Handle[] results, any[] queryData);
+typeset SQLTxnSuccess
+{
+	// Callback for a successful transaction.
+	// 
+	// @param db            Database handle.
+	// @param data          Data value passed to SQL_ExecuteTransaction().
+	// @param numQueries    Number of queries executed in the transaction.
+	// @param results       An array of Query handle results, one for each of numQueries. They are closed automatically.
+	// @param queryData     An array of each data value passed to SQL_AddQuery().
+	function void (Database db, any data, int numQueries, Handle[] results, any[] queryData);
+	
+	// Callback for a successful transaction.
+	// 
+	// @param db            Database handle.
+	// @param data          Data value passed to SQL_ExecuteTransaction().
+	// @param numQueries    Number of queries executed in the transaction.
+	// @param results       An array of DBResultSet results, one for each of numQueries. They are closed automatically.
+	// @param queryData     An array of each data value passed to SQL_AddQuery().
+	function void (Database db, any data, int numQueries, DBResultSet[] results, any[] queryData);	
+}
 
 // Callback for a failed transaction.
 //
