@@ -203,9 +203,9 @@
 		{
 			"CScore"
 			{
-				"windows"	"71"
-				"linux"		"71"
-				"mac"		"71"
+				"windows"	"75"
+				"linux"		"75"
+				"mac"		"75"
 			}
 		}
 	}
