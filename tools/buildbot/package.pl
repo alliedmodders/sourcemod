@@ -4,6 +4,7 @@ use strict;
 use Cwd;
 use File::Basename;
 use File::stat;
+use File::Temp qw/ tempfile :seekable/;
 use Net::FTP;
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 use Time::localtime;
@@ -131,6 +132,20 @@ else
     system("zip -r $filename addons cfg");
 }
 
+my ($tmpfh, $tmpfile) = tempfile();
+print $tmpfh $filename;
+$tmpfh->seek( 0, SEEK_END );
+my $latest = "sourcemod-latest-";
+if ($^O eq "darwin") {
+	$latest .= "mac";
+}
+elsif ($^O =~ /MSWin/) {
+	$latest .= "windows";
+}
+else {
+	$latest .= $^O;
+}
+
 my ($major,$minor) = ($version =~ /^(\d+)\.(\d+)/);
 $ftp_path .= "/$major.$minor";
 
@@ -151,6 +166,8 @@ if ($ftp_path ne '')
 $ftp->binary();
 $ftp->put($filename)
     or die "Cannot drop file $filename ($ftp_path): " . $ftp->message . "\n";
+$ftp->put($tmpfile, $latest)
+    or die "Cannot drop file $latest ($ftp_path): " . $ftp->message . "\n";
 
 $ftp->close();
 
