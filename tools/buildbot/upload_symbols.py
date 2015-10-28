@@ -73,7 +73,7 @@ while lines[index].split(None, 1)[0] == 'INFO':
   index += 1;
 
 for root, info in roots.items():
-  lines.insert(index, 'INFO REPO ' + ' '.join([root, info[0], info[1]]))
+  lines.insert(index, 'INFO REPO ' + ' '.join([info[1], info[0], root]))
   index += 1;
 
 out = os.linesep.join(lines)
