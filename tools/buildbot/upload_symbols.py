@@ -57,6 +57,7 @@ for line in lines:
   with open(os.devnull, 'w') as devnull:
     try:
       root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], stderr=devnull, cwd=path, universal_newlines=True).strip()
+      root = os.path.normcase(root)
 
       if root in roots:
         continue
