@@ -336,7 +336,7 @@ native FormatActivitySource(client, target, const String:namebuf[], maxlength);
 typedef SrvCmd = function Action (int args);
 
 /**
- * Creates a server-only console command, or hooks an already existing one.  
+ * Creates a server-only console command. Use AddCommandListener to hook an existing command.
  *
  * Server commands are case sensitive.
  *
@@ -360,11 +360,10 @@ native RegServerCmd(const String:cmd[], SrvCmd:callback, const String:descriptio
 typedef ConCmd = function Action (int client, int args);
 
 /**
- * Creates a console command, or hooks an already existing one.
+ * Creates a console command. Use AddCommandListener to hook existing commands.
  *
- * Console commands are case sensitive.  However, if the command already exists in the game, 
- * a client may enter the command in any case.  SourceMod corrects for this automatically, 
- * and you should only hook the "real" version of the command.
+ * Console commands are case sensitive from both the client and server.
+ * A chat trigger is automatically registered, without the "sm_" prefix if present.
  *
  * @param cmd			Name of the command to hook or create.
  * @param callback		A function to use as a callback for when the command is invoked.
@@ -376,11 +375,11 @@ typedef ConCmd = function Action (int client, int args);
 native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:description[]="", flags=0);
 
 /**
- * Creates a console command as an administrative command.  If the command does not exist,
- * it is created.  When this command is invoked, the access rights of the player are 
- * automatically checked before allowing it to continue.
+ * Creates a console command as an administrative command. When this command is invoked,
+ * the access rights of the player are automatically checked before allowing it to continue.
  *
  * Admin commands are case sensitive from both the client and server.
+ * A chat trigger is automatically registered, without the "sm_" prefix if present.
  *
  * @param cmd			String containing command to register.
  * @param callback		A function to use as a callback for when the command is invoked.
@@ -652,7 +651,7 @@ stock bool:CommandExists(const String:command[])
  * @param sArgs			Chat argument string.
  * 
  * @return				An Action value. Returning Plugin_Handled bypasses the game function call.
-							Returning Plugin_Stop bypasses the post hook as well as the game function.
+ *						Returning Plugin_Stop bypasses the post hook as well as the game function.
  */
 forward Action:OnClientSayCommand(client, const String:command[], const String:sArgs[]);
 
