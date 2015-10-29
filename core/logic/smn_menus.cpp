@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -33,9 +33,9 @@
 #include <sh_stack.h>
 #include <IMenuManager.h>
 #include <IPlayerHelpers.h>
-#include "DebugReporter.h"
+#include "debugreporter.h"
 #if defined MENU_DEBUG
-#include "Logger.h"
+#include "logger.h"
 #endif
 #include <ISourceMod.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@
 #endif
 
 /**
- * And God said, "let there be menus," and behold, there were menus.  
+ * And God said, "let there be menus," and behold, there were menus.
  * God saw the menus and they were good.  And the evening and the morning
  * were the third day.
  */
@@ -158,7 +158,7 @@ private:
  * GLOBAL CLASS FOR HELPERS
  */
 
-class MenuNativeHelpers : 
+class MenuNativeHelpers :
 	public SMGlobalClass,
 	public IHandleTypeDispatch,
 	public IPluginsListener
@@ -211,7 +211,7 @@ public:
 	 * It is extremely important that unloaded plugins don't crash.
 	 * Thus, if a plugin unloads, we run through every handler we have.
 	 * This means we do almost no runtime work for keeping track of
-	 * our panel handlers (we don't have to store a list of the running 
+	 * our panel handlers (we don't have to store a list of the running
 	 * ones), but when push comes to shove, we have to scan them all
 	 * in case any of them are active.
 	 */
@@ -329,7 +329,7 @@ static unsigned int *s_CurSelectPosition = NULL;
 /**
  * MENU HANDLER WRAPPER
  */
-CMenuHandler::CMenuHandler(IPluginFunction *pBasic, int flags) : 
+CMenuHandler::CMenuHandler(IPluginFunction *pBasic, int flags) :
 	m_pBasic(pBasic), m_Flags(flags), m_pVoteResults(NULL)
 {
 	/* :TODO: We can probably cache the handle ahead of time */
@@ -350,7 +350,7 @@ void CMenuHandler::OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *panel)
 		HandleSecurity sec;
 		sec.pIdentity = g_pCoreIdent;
 		sec.pOwner = m_pBasic->GetParentContext()->GetIdentity();
-	
+
 		HandleAccess access;
 		handlesys->InitAccessDefaults(NULL, &access);
 		access.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;

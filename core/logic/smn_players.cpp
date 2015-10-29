@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -37,9 +37,9 @@
 #include <ITranslator.h>
 #include <sh_string.h>
 #include <sh_list.h>
-#include "GameConfigs.h"
-#include "CellArray.h"
-#include "AutoHandleRooter.h"
+#include "gameconfigs.h"
+#include "cellarray.h"
+#include <AutoHandleRooter.h>
 #include "stringutil.h"
 #include <bridge/include/IPlayerInfoBridge.h>
 #include <bridge/include/ILogger.h>
@@ -64,7 +64,7 @@ static const int kActivityAdmins = 4;			// Show admin activity to admins anonymo
 static const int kActivityAdminsNames = 8;		// If 4 is specified, admin names will be shown.
 static const int kActivityRootNames = 16;		// Always show admin names to root users.
 
-class PlayerLogicHelpers : 
+class PlayerLogicHelpers :
 	public SMGlobalClass,
 	public IPluginsListener,
 	public ICommandTargetProcessor
@@ -357,9 +357,9 @@ static cell_t SteamIdToLocal(IPluginContext *pCtx, int index, AuthIdType authTyp
 	{
 		return pCtx->ThrowNativeError("Client %d is not connected", index);
 	}
-	
+
 	const char *authstr;
-	
+
 	switch (authType)
 	{
 	case AuthIdType::Engine:
@@ -377,7 +377,7 @@ static cell_t SteamIdToLocal(IPluginContext *pCtx, int index, AuthIdType authTyp
 		{
 			return 0;
 		}
-			
+
 		pCtx->StringToLocal(local_addr, bytes, authstr);
 		break;
 	case AuthIdType::Steam3:
@@ -386,30 +386,30 @@ static cell_t SteamIdToLocal(IPluginContext *pCtx, int index, AuthIdType authTyp
 		{
 			return 0;
 		}
-			
+
 		pCtx->StringToLocal(local_addr, bytes, authstr);
 		break;
-	
+
 	case AuthIdType::SteamId64:
 		{
 			if (pPlayer->IsFakeClient() || gamehelpers->IsLANServer())
 			{
 				return 0;
 			}
-			
+
 			uint64_t steamId = pPlayer->GetSteamId64(validate);
 			if (steamId == 0)
 			{
 				return 0;
 			}
-			
+
 			char szAuth[64];
 			snprintf(szAuth, sizeof(szAuth), "%" PRIu64, steamId);
-			
+
 			pCtx->StringToLocal(local_addr, bytes, szAuth);
 		}
 		break;
-	}	
+	}
 
 	return 1;
 }
@@ -421,7 +421,7 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 	{
 		validate = !!params[4];
 	}
-	
+
 	return SteamIdToLocal(pCtx, params[1], AuthIdType::Steam2, params[2], (size_t)params[3], validate);
 }
 

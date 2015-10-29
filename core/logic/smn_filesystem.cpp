@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -39,7 +39,7 @@
 #include <ISourceMod.h>
 #include <ITranslator.h>
 #include "common_logic.h"
-#include "Logger.h"
+#include "logger.h"
 #include "sprintf.h"
 #include <am-utility.h>
 #include "handle_helpers.h"
@@ -231,7 +231,7 @@ struct ValveDirectory
 	bool bHandledFirstPath;
 };
 
-class FileNatives : 
+class FileNatives :
 	public SMGlobalClass,
 	public IHandleTypeDispatch,
 	public IPluginsListener
@@ -309,29 +309,29 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 		pContext->ThrowNativeErrorEx(err, NULL);
 		return 0;
 	}
-	
+
 	if (!path[0])
 	{
 		return pContext->ThrowNativeError("Invalid path. An empty path string is not valid, use \".\" to refer to the current working directory.");
 	}
-	
+
 	Handle_t handle = 0;
-	
+
 	if (params[0] >= 2 && params[2])
 	{
 		size_t len = strlen(path);
 		char wildcardedPath[PLATFORM_MAX_PATH];
 		snprintf(wildcardedPath, sizeof(wildcardedPath), "%s%s*", path, (path[len-1] != '/' && path[len-1] != '\\') ? "/" : "");
-		
+
 		char *pathID;
 		if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)
 		{
 			pContext->ThrowNativeErrorEx(err, NULL);
 			return 0;
 		}
-		
+
 		ValveDirectory *valveDir = new ValveDirectory;
-		
+
 		const char *pFirst = bridge->filesystem->FindFirstEx(wildcardedPath, pathID, &valveDir->hndl);
 		if (!pFirst)
 		{
@@ -343,7 +343,7 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 			valveDir->bHandledFirstPath = false;
 			strncpy(valveDir->szFirstPath, pFirst, sizeof(valveDir->szFirstPath));
 		}
-		
+
 		handle = handlesys->CreateHandle(g_ValveDirType, valveDir, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	}
 	else
@@ -359,7 +359,7 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 
 		handle = handlesys->CreateHandle(g_DirType, pDir, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	}
-	
+
 	return handle;
 }
 
@@ -410,7 +410,7 @@ static cell_t sm_ReadDirEntry(IPluginContext *pContext, const cell_t *params)
 	else if ((herr=handlesys->ReadHandle(hndl, g_ValveDirType, &sec, &pTempDir)) == HandleError_None)
 	{
 		ValveDirectory *valveDir = (ValveDirectory *)pTempDir;
-		
+
 		const char *pEntry = NULL;
 		if (!valveDir->bHandledFirstPath)
 		{
@@ -423,15 +423,15 @@ static cell_t sm_ReadDirEntry(IPluginContext *pContext, const cell_t *params)
 		{
 			pEntry = bridge->filesystem->FindNext(valveDir->hndl);
 		}
-		
+
 		valveDir->bHandledFirstPath = true;
-		
+
 		// No more entries
 		if (!pEntry)
 		{
 			return 0;
 		}
-		
+
 		if ((err=pContext->StringToLocalUTF8(params[2], params[3], pEntry, NULL))
 			!= SP_ERROR_NONE)
 		{
@@ -450,7 +450,7 @@ static cell_t sm_ReadDirEntry(IPluginContext *pContext, const cell_t *params)
 			*filetype = 1;
 		} else {
 			*filetype = 2;
-		}		
+		}
 	}
 	else
 	{
@@ -558,7 +558,7 @@ static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
 		char *pathID = szDefaultPath;
 		if (params[0] >= 3)
 			pContext->LocalToStringNULL(params[3], &pathID);
-		
+
 		return bridge->filesystem->FileExists(name, pathID) ? 1 : 0;
 	}
 
@@ -594,12 +594,12 @@ static cell_t sm_RenameFile(IPluginContext *pContext, const cell_t *params)
 	char *newpath, *oldpath;
 	pContext->LocalToString(params[1], &newpath);
 	pContext->LocalToString(params[2], &oldpath);
-	
+
 	if (params[0] >= 3 && params[3] == 1)
 	{
 		char *pathID;
 		pContext->LocalToStringNULL(params[4], &pathID);
-		
+
 		bridge->filesystem->RenameFile(oldpath, newpath, pathID);
 		return 1;
 	}
@@ -630,7 +630,7 @@ static cell_t sm_DirExists(IPluginContext *pContext, const cell_t *params)
 	{
 		char *pathID;
 		pContext->LocalToStringNULL(params[3], &pathID);
-		
+
 		return bridge->filesystem->IsDirectory(name, pathID) ? 1 : 0;
 	}
 
@@ -672,7 +672,7 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 		char *pathID = szDefaultPath;
 		if (params[0] >= 3)
 			pContext->LocalToStringNULL(params[3], &pathID);
-		
+
 		if (!bridge->filesystem->FileExists(name, pathID))
 			return -1;
 		return bridge->filesystem->Size(name, pathID);
@@ -726,23 +726,23 @@ static cell_t sm_CreateDirectory(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
 	pContext->LocalToString(params[1], &name);
-	
+
 	if (params[0] >= 3 && params[3] == 1)
 	{
 		char *pathID;
 		pContext->LocalToStringNULL(params[4], &pathID);
-		
+
 		if (bridge->filesystem->IsDirectory(name, pathID))
 			return 0;
-		
+
 		bridge->filesystem->CreateDirHierarchy(name, pathID);
-		
+
 		if (bridge->filesystem->IsDirectory(name, pathID))
 			return 1;
-		
+
 		return 0;
 	}
-	
+
 	char realpath[PLATFORM_MAX_PATH];
 	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 
@@ -961,7 +961,7 @@ static cell_t sm_ReadFile(IPluginContext *pContext, const cell_t *params)
 
 	cell_t *data;
 	pContext->LocalToPhysAddr(params[2], &data);
-		
+
 	size_t read = 0;
 	switch (params[4]) {
 		case 4:
@@ -1006,7 +1006,7 @@ static cell_t sm_ReadFileString(IPluginContext *pContext, const cell_t *params)
 
 	char *buffer;
 	pContext->LocalToString(params[2], &buffer);
-	
+
 	cell_t num_read = 0;
 	if (params[4] != -1) {
 		if (size_t(params[4]) > size_t(params[3])) {
@@ -1107,7 +1107,7 @@ static cell_t sm_AddGameLogHook(IPluginContext *pContext, const cell_t *params)
 	}
 
 	s_FileNatives.AddLogHook(pFunction);
-	
+
 	return 1;
 }
 

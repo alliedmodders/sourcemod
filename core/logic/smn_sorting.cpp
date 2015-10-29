@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -33,26 +33,26 @@
 #include <string.h>
 #include <time.h>
 #include "common_logic.h"
-#include "CellArray.h"
+#include "cellarray.h"
 #include <IHandleSys.h>
 
 /***********************************
  *   About the double array hack   *
-     ***************************   
+     ***************************
 
  Double arrays in Pawn are vectors offset by the current offset.  For example:
 
  new array[2][2]
 
    In this array, index 0 contains the offset from the current offset which
- results in the final vector [2] (at [0][2]).  Meaning, to dereference [1][2], 
+ results in the final vector [2] (at [0][2]).  Meaning, to dereference [1][2],
  it is equivalent to:
 
  address = &array[1] + array[1] + 2 * sizeof(cell)
 
    The fact that each offset is from the _current_ position rather than the _base_
  position is very important.  It means that if you to try to swap vector positions,
- the offsets will no longer match, because their current position has changed.  A 
+ the offsets will no longer match, because their current position has changed.  A
  simple and ingenious way around this is to back up the positions in a separate array,
  then to overwrite each position in the old array with absolute indices.  Pseudo C++ code:
 
@@ -72,7 +72,7 @@
  for (int i=0; i<2; i++)
  {
 	//get the # of the vector we want to relocate in
-	cell vector_index = array[i];			
+	cell vector_index = array[i];
 	//get the real address of this vector
 	char *real_address = (char *)array + (vector_index * sizeof(cell)) + old_offsets[vector_index];
 	//calc and store the new distance offset
@@ -97,7 +97,7 @@ void sort_random(cell_t *array, cell_t size)
 	{
         int n = rand() % (i + 1);
 
-		if (array[i] != array[n]) 
+		if (array[i] != array[n])
 		{
 			array[i] ^= array[n];
 			array[n] ^= array[i];
@@ -127,7 +127,7 @@ static cell_t sm_SortIntegers(IPluginContext *pContext, const cell_t *params)
 	if (type == Sort_Ascending)
 	{
 		qsort(array, array_size, sizeof(cell_t), sort_ints_asc);
-	} 
+	}
 	else if (type == Sort_Descending)
 	{
 		qsort(array, array_size, sizeof(cell_t), sort_ints_desc);
@@ -144,7 +144,7 @@ int sort_floats_asc(const void *float1, const void *float2)
 {
 	float r1 = *(float *)float1;
 	float r2 = *(float *)float2;
-	
+
 	if (r1 < r2)
 	{
 		return -1;
@@ -201,7 +201,7 @@ int sort_strings_asc(const void *blk1, const void *blk2)
 {
 	cell_t reloc1 = *(cell_t *)blk1;
 	cell_t reloc2 = *(cell_t *)blk2;
-	
+
 	char *str1 = ((char *)(&g_CurStringArray[reloc1]) + g_CurRebaseMap[reloc1]);
 	char *str2 = ((char *)(&g_CurStringArray[reloc2]) + g_CurRebaseMap[reloc2]);
 
@@ -248,7 +248,7 @@ static cell_t sm_SortStrings(IPluginContext *pContext, const cell_t *params)
 	if (type == Sort_Ascending)
 	{
 		qsort(array, array_size, sizeof(cell_t), sort_strings_asc);
-	} 
+	}
 	else if (type == Sort_Descending)
 	{
 		qsort(array, array_size, sizeof(cell_t), sort_strings_desc);
@@ -392,11 +392,11 @@ static cell_t sm_SortCustom2D(IPluginContext *pContext, const cell_t *params)
 	g_SortInfo.hndl = params[4];
 	g_SortInfo.array_addr = params[1];
 	g_SortInfo.eh = &eh;
-	
+
 	/** Same process as in strings, back up the old indices for later fixup */
 	g_SortInfo.array_base = array;
 	g_SortInfo.array_remap = phys_addr;
-	
+
 	for (int i=0; i<array_size; i++)
 	{
 		phys_addr[i] = array[i];
@@ -417,7 +417,7 @@ static cell_t sm_SortCustom2D(IPluginContext *pContext, const cell_t *params)
 	pContext->HeapPop(amx_addr);
 
 	g_SortInfo = oldinfo;
-	
+
 	return 1;
 }
 
@@ -458,14 +458,14 @@ static cell_t sm_SortADTArray(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void **)&cArray)) 
+	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void **)&cArray))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
 	}
 
 	cell_t order = params[2];
-	
+
 	if (order == Sort_Random)
 	{
 		sort_adt_random(cArray);
@@ -495,7 +495,7 @@ static cell_t sm_SortADTArray(IPluginContext *pContext, const cell_t *params)
 		{
 			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_floats_asc);
 		}
-		else 
+		else
 		{
 			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_floats_desc);
 		}
@@ -506,7 +506,7 @@ static cell_t sm_SortADTArray(IPluginContext *pContext, const cell_t *params)
 		{
 			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_adtarray_strings_asc);
 		}
-		else 
+		else
 		{
 			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_adtarray_strings_desc);
 		}
@@ -549,7 +549,7 @@ static cell_t sm_SortADTArrayCustom(IPluginContext *pContext, const cell_t *para
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void **)&cArray)) 
+	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void **)&cArray))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
@@ -574,7 +574,7 @@ static cell_t sm_SortADTArrayCustom(IPluginContext *pContext, const cell_t *para
 	g_SortInfoADT.array_hndl = params[1];
 	g_SortInfoADT.hndl = params[3];
 	g_SortInfoADT.eh = &eh;
-	
+
 	qsort(array, arraysize, blocksize * sizeof(cell_t), sort_adtarray_custom);
 
 	g_SortInfoADT = oldinfo;

@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -32,7 +32,7 @@
 #include <sh_list.h>
 #include <sm_namehashset.h>
 #include "common_logic.h"
-#include "CellArray.h"
+#include "cellarray.h"
 #include <IGameHelpers.h>
 #include <ILibrarySys.h>
 #include <ITextParsers.h>
@@ -143,7 +143,7 @@ public:
 		SMCError error;
 		time_t fileTime;
 		SMCStates states = {0, 0};
-		
+
 		fileFound = libsys->FileTime(m_ConfigFile, FileTime_LastChange, &fileTime);
 
 		/* If the file is found and hasn't changed, bail out now. */
@@ -152,8 +152,8 @@ public:
 			return;
 		}
 
-		/* If the file wasn't found, and we already have entries, we bail out too. 
-		 * This case lets us optimize when a user deletes the config file, so we 
+		/* If the file wasn't found, and we already have entries, we bail out too.
+		 * This case lets us optimize when a user deletes the config file, so we
 		 * don't reparse every single time the function is called.
 		 */
 		if (!fileFound && m_MapLists.size() > 0)
@@ -174,7 +174,7 @@ public:
 		strncopy(pDefList->name, "mapcyclefile", sizeof(pDefList->name));
 
 		GetMapCycleFilePath(pDefList->path, sizeof(pDefList->path));
-		
+
 		pDefList->last_modified_time = 0;
 		pDefList->pArray = NULL;
 		pDefList->serial = 0;
@@ -328,12 +328,12 @@ public:
 		bool success, free_new_array;
 
 		free_new_array = false;
-		
+
 		if ((success = GetMapList(&pNewArray, name, &change_serial)) == false)
 		{
 			if ((flags & MAPLIST_FLAG_NO_DEFAULT) != MAPLIST_FLAG_NO_DEFAULT)
 			{
-				/* If this list failed, and it's not the default, try the default. 
+				/* If this list failed, and it's not the default, try the default.
 				 */
 				if (strcmp(name, "default") != 0)
 				{
@@ -401,9 +401,9 @@ public:
 			}
 			else
 			{
-				qsort(pNewArray->base(), 
-					pNewArray->size(), 
-					pNewArray->blocksize() * sizeof(cell_t), 
+				qsort(pNewArray->base(),
+					pNewArray->size(),
+					pNewArray->blocksize() * sizeof(cell_t),
 					sort_maps_in_adt_array);
 			}
 
@@ -514,7 +514,7 @@ private:
 				{
 					continue;
 				}
-				
+
 				if (strcmp(bridge->GetSourceEngineName(), "insurgency") == 0)
 				{
 					// Insurgency (presumably?) doesn't allow spaces in map names

@@ -8,7 +8,7 @@
 * This program is free software; you can redistribute it and/or modify it under
 * the terms of the GNU General Public License, version 3.0, as published by the
 * Free Software Foundation.
-* 
+*
 * This program is distributed in the hope that it will be useful, but WITHOUT
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -31,14 +31,14 @@
 
 #include <stdlib.h>
 #include "common_logic.h"
-#include "CellArray.h"
+#include "cellarray.h"
 #include "handle_helpers.h"
 #include "stringutil.h"
 #include <IHandleSys.h>
 
 HandleType_t htCellStack;
 
-class CellStackHelpers : 
+class CellStackHelpers :
 	public SMGlobalClass,
 	public IHandleTypeDispatch
 {
@@ -89,7 +89,7 @@ static cell_t PushStackCell(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array)) 
+	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
@@ -112,7 +112,7 @@ static cell_t PushStackString(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array)) 
+	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
@@ -138,7 +138,7 @@ static cell_t PushStackArray(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array)) 
+	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
@@ -172,7 +172,7 @@ static cell_t PopStackCell(IPluginContext *pContext, const cell_t *params)
 	cell_t *blk, *buffer;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array)) 
+	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
@@ -218,7 +218,7 @@ static cell_t PopStackString(IPluginContext *pContext, const cell_t *params)
 	cell_t *blk, *pWritten;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array)) 
+	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
@@ -249,7 +249,7 @@ static cell_t PopStackArray(IPluginContext *pContext, const cell_t *params)
 	CellArray *array;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array)) 
+	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
@@ -282,7 +282,7 @@ static cell_t IsStackEmpty(IPluginContext *pContext, const cell_t *params)
 	CellArray *array;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array)) 
+	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
@@ -298,7 +298,7 @@ static cell_t IsStackEmpty(IPluginContext *pContext, const cell_t *params)
 
 static cell_t ArrayStack_Pop(IPluginContext *pContext, const cell_t *params)
 {
-	OpenHandle<CellArray> array(pContext, params[1], htCellStack); 
+	OpenHandle<CellArray> array(pContext, params[1], htCellStack);
 	if (!array.Ok())
 		return 0;
 
@@ -325,7 +325,7 @@ static cell_t ArrayStack_Pop(IPluginContext *pContext, const cell_t *params)
 
 static cell_t ArrayStack_PopString(IPluginContext *pContext, const cell_t *params)
 {
-	OpenHandle<CellArray> array(pContext, params[1], htCellStack); 
+	OpenHandle<CellArray> array(pContext, params[1], htCellStack);
 	if (!array.Ok())
 		return 0;
 
@@ -347,7 +347,7 @@ static cell_t ArrayStack_PopString(IPluginContext *pContext, const cell_t *param
 
 static cell_t ArrayStack_PopArray(IPluginContext *pContext, const cell_t *params)
 {
-	OpenHandle<CellArray> array(pContext, params[1], htCellStack); 
+	OpenHandle<CellArray> array(pContext, params[1], htCellStack);
 	if (!array.Ok())
 		return 0;
 

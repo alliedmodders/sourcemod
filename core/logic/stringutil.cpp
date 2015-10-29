@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -35,7 +35,7 @@
 #include <sm_platform.h>
 #include "stringutil.h"
 #include <am-string.h>
-#include "TextParsers.h"
+#include "textparsers.h"
 
 // We're in logic so we don't have this from the SDK.
 #ifndef MIN
@@ -98,7 +98,7 @@ unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search
 }
 
 /**
- * NOTE: Do not edit this for the love of god unless you have 
+ * NOTE: Do not edit this for the love of god unless you have
  * read the test cases and understand the code behind each one.
  * While I don't guarantee there aren't mistakes, I do guarantee
  * that plugins will end up relying on tiny idiosyncrasies of this
@@ -107,7 +107,7 @@ unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search
  * There are explicitly more cases than the AMX Mod X version because
  * we're not doing a blind copy.  Each case is specifically optimized
  * for what needs to be done.  Even better, we don't have to error on
- * bad buffer sizes.  Instead, this function will smartly cut off the 
+ * bad buffer sizes.  Instead, this function will smartly cut off the
  * string in a way that pushes old data out.
  */
 char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t searchLen, const char *replace, size_t replaceLen, bool caseSensitive)
@@ -127,7 +127,7 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
 	 */
 	if (maxLen == 1)
 	{
-		/* If the search matches and the replace length is 0, 
+		/* If the search matches and the replace length is 0,
 		 * we can just terminate the string and be done.
 		 */
 		if ((caseSensitive ? strcmp(subject, search) : strcasecmp(subject, search)) == 0 && replaceLen == 0)
@@ -302,7 +302,7 @@ size_t UTIL_DecodeHexString(unsigned char *buffer, size_t maxlength, const char 
 
 void UTIL_StripExtension(const char *in, char *out, int outSize)
 {
-	// Find the last dot. If it's followed by a dot or a slash, then it's part of a 
+	// Find the last dot. If it's followed by a dot or a slash, then it's part of a
 	// directory specifier like ../../somedir/./blah.
 
 	// scan backward for '.'
@@ -348,7 +348,7 @@ char *UTIL_TrimWhitespace(char *str, size_t &len)
 	}
 
 	/* Replace first whitespace char (at the end) with null terminator.
-	 * If there is none, we're just replacing the null terminator. 
+	 * If there is none, we're just replacing the null terminator.
 	 */
 	*(end + 1) = '\0';
 

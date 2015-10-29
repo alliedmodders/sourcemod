@@ -31,7 +31,7 @@
 
 #include <stdlib.h>
 #include "common_logic.h"
-#include "CellArray.h"
+#include "cellarray.h"
 #include "stringutil.h"
 #include <IHandleSys.h>
 

@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -36,7 +36,7 @@
 #include <stdint.h>
 #include <sys/time.h>
 #endif
-#include "ProfileTools.h"
+#include "profiletools.h"
 #include <string.h>
 
 struct Profiler
@@ -60,7 +60,7 @@ struct Profiler
 
 HandleType_t g_ProfilerType = 0;
 
-class ProfilerHelpers : 
+class ProfilerHelpers :
 	public SMGlobalClass,
 	public IHandleTypeDispatch
 {

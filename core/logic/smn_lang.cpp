@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,7 +30,7 @@
  */
 
 #include "common_logic.h"
-#include "Translator.h"
+#include "translator.h"
 #include <IPlayerHelpers.h>
 #include <IPluginSys.h>
 #include <ISourceMod.h>
@@ -108,12 +108,12 @@ static cell_t sm_GetLanguageInfo(IPluginContext *pContext, const cell_t *params)
 static cell_t sm_SetClientLanguage(IPluginContext *pContext, const cell_t *params)
 {
 	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
-	
+
 	if (!player || !player->IsConnected())
 	{
 		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
 	}
-	
+
 	player->SetLanguageId(params[2]);
 
 	return 1;
