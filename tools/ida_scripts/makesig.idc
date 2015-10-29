@@ -46,7 +46,7 @@ static main()
 		
 		if (pInfo.n == 1 && (pInfo.Op0.type == o_near || pInfo.Op0.type == o_far)) {
 			if (Byte(pAddress) == 0x0F) { // Two-byte instruction
-				sig = sig + sprintf("0x0F %02X ", Byte(pAddress + 1)) + PrintWildcards(GetDTSize(pInfo.Op0.dtyp));
+				sig = sig + sprintf("0F %02X ", Byte(pAddress + 1)) + PrintWildcards(GetDTSize(pInfo.Op0.dtyp));
 			} else {
 				sig = sig + sprintf("%02X ", Byte(pAddress)) + PrintWildcards(GetDTSize(pInfo.Op0.dtyp));
 			}
