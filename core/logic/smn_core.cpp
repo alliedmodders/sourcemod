@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -33,7 +33,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "common_logic.h"
-#include "Logger.h"
+#include "logger.h"
 
 #include <ISourceMod.h>
 #include <ITranslator.h>
@@ -64,7 +64,7 @@ IForward *g_OnLogAction = NULL;
 
 static ConVar *sm_datetime_format = NULL;
 
-class CoreNativeHelpers : 
+class CoreNativeHelpers :
 	public SMGlobalClass,
 	public IHandleTypeDispatch
 {
@@ -77,16 +77,16 @@ public:
 
 		g_PlIter = handlesys->CreateType("PluginIterator", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 
-		g_OnLogAction = forwardsys->CreateForward("OnLogAction", 
-			ET_Hook, 
-			5, 
+		g_OnLogAction = forwardsys->CreateForward("OnLogAction",
+			ET_Hook,
+			5,
 			NULL,
 			Param_Cell,
 			Param_Cell,
 			Param_Cell,
 			Param_Cell,
 			Param_String);
-		
+
 		sm_datetime_format = bridge->FindConVar("sm_datetime_format");
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
@@ -132,7 +132,7 @@ void LogAction(Handle_t hndl, int type, int client, int target, const char *mess
 
 	g_Logger.LogMessage("[%s] %s", logtag, message);
 }
- 
+
  static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
 {
 	char buffer[512];
@@ -164,8 +164,8 @@ static cell_t GetTime(IPluginContext *pContext, const cell_t *params)
 #if defined SUBPLATFORM_SECURECRT
 void _ignore_invalid_parameter(
 						const wchar_t * expression,
-						const wchar_t * function, 
-						const wchar_t * file, 
+						const wchar_t * function,
+						const wchar_t * file,
 						unsigned int line,
 						uintptr_t pReserved
 						)
@@ -603,12 +603,12 @@ static cell_t GetExtensionFileStatus(IPluginContext *pContext, const cell_t *par
 	pContext->LocalToString(params[1], &str);
 
 	IExtension *pExtension = extsys->FindExtensionByFile(str);
-	
+
 	if (!pExtension)
 	{
 		return -2;
 	}
-	
+
 	if (!pExtension->IsLoaded())
 	{
 		return -1;
@@ -627,7 +627,7 @@ static cell_t GetExtensionFileStatus(IPluginContext *pContext, const cell_t *par
 static cell_t FindPluginByNumber(IPluginContext *pContext, const cell_t *params)
 {
 	IPlugin *pPlugin = scripts->FindPluginByOrder(params[1]);
-	
+
 	if (pPlugin == NULL)
 	{
 		return BAD_HANDLE;

@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -35,7 +35,7 @@
 #include <ITimerSystem.h>
 #include <IPluginSys.h>
 #include <sh_stack.h>
-#include "DebugReporter.h"
+#include "debugreporter.h"
 #include <bridge/include/CoreProvider.h>
 
 using namespace SourceHook;
@@ -45,7 +45,7 @@ using namespace SourceHook;
 
 HandleType_t g_TimerType;
 
-struct TimerInfo 
+struct TimerInfo
 {
 	ITimer *Timer;
 	IPluginFunction *Hook;
@@ -160,8 +160,8 @@ void TimerNatives::OnTimerEnd(ITimer *pTimer, void *pData)
 	{
 		if ((herr=handlesys->FreeHandle(usrhndl, &sec)) != HandleError_None)
 		{
-			g_DbgReporter.GenerateError(pInfo->pContext, pInfo->Hook->GetFunctionID(), 
-							  	 SP_ERROR_NATIVE, 
+			g_DbgReporter.GenerateError(pInfo->pContext, pInfo->Hook->GetFunctionID(),
+							  	 SP_ERROR_NATIVE,
 							  	 "Invalid data handle %x (error %d) passed during timer end with TIMER_DATA_HNDL_CLOSE",
 							  	 usrhndl, herr);
 		}
@@ -171,9 +171,9 @@ void TimerNatives::OnTimerEnd(ITimer *pTimer, void *pData)
 	{
 		if ((herr=handlesys->FreeHandle(pInfo->TimerHandle, &sec)) != HandleError_None)
 		{
-			g_DbgReporter.GenerateError(pInfo->pContext, pInfo->Hook->GetFunctionID(), 
-				SP_ERROR_NATIVE, 
-				"Invalid timer handle %x (error %d) during timer end, displayed function is timer callback, not the stack trace", 
+			g_DbgReporter.GenerateError(pInfo->pContext, pInfo->Hook->GetFunctionID(),
+				SP_ERROR_NATIVE,
+				"Invalid timer handle %x (error %d) during timer end, displayed function is timer callback, not the stack trace",
 				pInfo->TimerHandle, herr);
 		}
 	}
@@ -220,7 +220,7 @@ static cell_t smn_CreateTimer(IPluginContext *pCtx, const cell_t *params)
 
 	hndl = handlesys->CreateHandle(g_TimerType, pInfo, pCtx->GetIdentity(), g_pCoreIdent, NULL);
 
-	/* If we can't get a handle, the timer isn't refcounted against the plugin and 
+	/* If we can't get a handle, the timer isn't refcounted against the plugin and
 	 * we need to bail out to prevent a crash.
 	 */
 	if (hndl == BAD_HANDLE)

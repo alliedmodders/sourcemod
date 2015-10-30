@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -33,7 +33,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "common_logic.h"
-#include "MersenneTwister.h"
+#include "mersennetwister.h"
 #include <IPluginSys.h>
 #include <am-utility.h>
 #include <am-float.h>
@@ -350,11 +350,11 @@ public:
 			delete mtrand;
 		}
 	}
-	
+
 	MTRand *RandObjForPlugin(IPluginContext *ctx)
 	{
 		IPlugin *plugin = pluginsys->FindPluginByContext(ctx->GetContext());
-		MTRand *mtrand;	
+		MTRand *mtrand;
 		if (!plugin->GetProperty("core.logic.mtrand", (void**)&mtrand))
 		{
 			mtrand = new MTRand();

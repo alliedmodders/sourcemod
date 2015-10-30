@@ -7,7 +7,7 @@
 // This program is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License, version 3.0, as published by the
 // Free Software Foundation.
-// 
+//
 // This program is distributed in the hope that it will be useful, but WITHOUT
 // ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 // FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -26,7 +26,7 @@
 // or <http://www.sourcemod.net/license.php>.
 
 #include "common_logic.h"
-#include "Translator.h"
+#include "translator.h"
 #include "sprintf.h"
 #include <am-float.h>
 #include <am-string.h>
@@ -122,8 +122,8 @@ try_serverlang:
 		/* Check if we're going to over the limit */
 		if ((*arg) + (max_params - 1) > (size_t)params[0])
 		{
-			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, 
-				"Translation string formatted incorrectly - missing at least %d parameters", 
+			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX,
+				"Translation string formatted incorrectly - missing at least %d parameters",
 				((*arg + (max_params - 1)) - params[0])
 				);
 			goto error_out;
@@ -141,7 +141,7 @@ try_serverlang:
 	{
 		return atcprintf(buffer, maxlen, pTrans.szPhrase, pCtx, params, arg);
 	}
-	
+
 error_out:
 	*error = true;
 	return 0;
@@ -163,7 +163,7 @@ void AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 
 	if (prec >= 0)
 	{
-		for (size = 0; size < prec; size++) 
+		for (size = 0; size < prec; size++)
 		{
 			if (string[size] == '\0')
 			{
@@ -501,7 +501,7 @@ void AddHex(char **buf_p, size_t &maxlen, unsigned int val, int width, int flags
 	}
 
 	digits = 0;
-	do 
+	do
 	{
 		digit = ('0' + val % 16);
 		if (digit > '9')
@@ -1128,9 +1128,9 @@ reswitch:
 					int userid;
 					if (!bridge->DescribePlayer(*value, &name, &auth, &userid))
 						return pCtx->ThrowNativeError("Client index %d is invalid", *value);
-					ke::SafeSprintf(buffer, 
-						sizeof(buffer), 
-						"%s<%d><%s><>", 
+					ke::SafeSprintf(buffer,
+						sizeof(buffer),
+						"%s<%d><%s><>",
 						name,
 						userid,
 						auth);

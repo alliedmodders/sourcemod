@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -34,28 +34,28 @@
 #include <string.h>
 #include <stdarg.h>
 #include "common_logic.h"
-#include "TextParsers.h"
+#include "textparsers.h"
 #include "sm_crc32.h"
-#include "MemoryUtils.h"
+#include "memoryutils.h"
 #include "stringutil.h"
-#include "ThreadSupport.h"
-#include "Translator.h"
-#include "GameConfigs.h"
-#include "DebugReporter.h"
-#include "PluginSys.h"
-#include "ShareSys.h"
-#include "NativeOwner.h"
-#include "HandleSys.h"
-#include "ExtensionSys.h"
-#include "ForwardSys.h"
-#include "AdminCache.h"
-#include "ProfileTools.h"
-#include "Logger.h"
+#include "threadsupport.h"
+#include "translator.h"
+#include "gameconfigs.h"
+#include "debugreporter.h"
+#include "pluginsys.h"
+#include "sharesys.h"
+#include "nativeowner.h"
+#include "handlesys.h"
+#include "extensionsys.h"
+#include "forwardsys.h"
+#include "admincache.h"
+#include "profiletools.h"
+#include "logger.h"
 #include "frame_tasks.h"
 #include "sprintf.h"
-#include "LibrarySys.h"
-#include "RootConsoleMenu.h"
-#include "CDataPack.h"
+#include "librarysys.h"
+#include "rootconsolemenu.h"
+#include "cdatapack.h"
 #include <bridge/include/BridgeAPI.h>
 #include <bridge/include/IProviderCallbacks.h>
 
@@ -180,7 +180,7 @@ static void logic_init(CoreProvider* core, sm_logic_t* _logic)
 
 	g_ShareSys.Initialize();
 	g_pCoreIdent = g_ShareSys.CreateCoreIdentity();
-	
+
 	_logic->core_ident = g_pCoreIdent;
 }
 
@@ -215,12 +215,12 @@ void *operator new(size_t size)
 	return malloc(size);
 }
 
-void *operator new[](size_t size) 
+void *operator new[](size_t size)
 {
 	return malloc(size);
 }
 
-void operator delete(void *ptr) 
+void operator delete(void *ptr)
 {
 	free(ptr);
 }

@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,11 +30,11 @@
  */
 
 #include "common_logic.h"
-#include "Database.h"
-#include "ExtensionSys.h"
+#include "database.h"
+#include "extensionsys.h"
 #include "stringutil.h"
-#include "ISourceMod.h"
-#include "AutoHandleRooter.h"
+#include <ISourceMod.h>
+#include <AutoHandleRooter.h>
 #include "common_logic.h"
 #include <amtl/am-string.h>
 #include <amtl/am-vector.h>
@@ -68,7 +68,7 @@ struct Transaction
 	ke::Vector<Entry> entries;
 };
 
-class DatabaseHelpers : 
+class DatabaseHelpers :
 	public SMGlobalClass,
 	public IHandleTypeDispatch
 {
@@ -134,7 +134,7 @@ inline HandleError ReadQueryHndl(Handle_t hndl, IPluginContext *pContext, IQuery
 	sec.pIdentity = g_pCoreIdent;
 
 	HandleError ret;
-	
+
 	if ((ret = handlesys->ReadHandle(hndl, hStmtType, &sec, (void **)query)) != HandleError_None)
 	{
 		ret = handlesys->ReadHandle(hndl, hCombinedQueryType, &sec, (void **)&c);
@@ -185,13 +185,13 @@ inline HandleError ReadDbOrStmtHndl(Handle_t hndl, IPluginContext *pContext, IDa
 class TQueryOp : public IDBThreadOperation
 {
 public:
-	TQueryOp(IDatabase *db, IPluginFunction *pf, const char *query, cell_t data) : 
+	TQueryOp(IDatabase *db, IPluginFunction *pf, const char *query, cell_t data) :
 	  m_pDatabase(db), m_pFunction(pf), m_Query(query), m_Data(data),
 	  me(scripts->FindPluginByContext(pf->GetParentContext()->GetContext())),
 	  m_pQuery(NULL)
 	{
 		/* We always increase the reference count because this is potentially
-		 * asynchronous.  Otherwise the original handle could be closed while 
+		 * asynchronous.  Otherwise the original handle could be closed while
 		 * we're still latched onto it.
 		 */
 		m_pDatabase->IncReferenceCount();
@@ -251,11 +251,11 @@ public:
 		access.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
 
 		Handle_t qh = BAD_HANDLE;
-		
+
 		if (m_pQuery)
 		{
 			CombinedQuery *c = new CombinedQuery(m_pQuery, m_pDatabase);
-			
+
 			qh = handlesys->CreateHandle(hCombinedQueryType, c, me->GetIdentity(), g_pCoreIdent, NULL);
 			if (qh != BAD_HANDLE)
 			{
@@ -347,7 +347,7 @@ public:
 	void RunThinkPart()
 	{
 		Handle_t hndl = BAD_HANDLE;
-		
+
 		if (m_pDatabase)
 		{
 			if ((hndl = g_DBMan.CreateHandle(DBHandle_Database, m_pDatabase, me->GetIdentity()))
@@ -388,7 +388,7 @@ static cell_t SQL_Connect(IPluginContext *pContext, const cell_t *params)
 	bool persistent = params[2] ? true : false;
 	pContext->LocalToString(params[1], &conf);
 	pContext->LocalToString(params[3], &err);
-	
+
 	IDBDriver *driver;
 	IDatabase *db;
 	if (!g_DBMan.Connect(conf, &driver, &db, persistent, err, maxlength))
@@ -437,9 +437,9 @@ static cell_t ConnectToDbAsync(IPluginContext *pContext, const cell_t *params, A
 		}
 		if (!driver)
 		{
-			g_pSM->Format(error, 
-				sizeof(error), 
-				"Could not find driver \"%s\"", 
+			g_pSM->Format(error,
+				sizeof(error),
+				"Could not find driver \"%s\"",
 				pInfo->driver[0] == '\0' ? g_DBMan.GetDefaultDriverName() : pInfo->driver);
 		} else if (!driver->IsThreadSafe()) {
 			g_pSM->Format(error,
@@ -511,7 +511,7 @@ static cell_t SQL_ConnectEx(IPluginContext *pContext, const cell_t *params)
 			return pContext->ThrowNativeError("Invalid driver Handle %x (error: %d)", params[1], err);
 		}
 	}
- 
+
 	char *host, *user, *pass, *database, *error;
 	size_t maxlength = (size_t)params[7];
 	bool persistent = params[8] ? true : false;
@@ -531,7 +531,7 @@ static cell_t SQL_ConnectEx(IPluginContext *pContext, const cell_t *params)
 	info.pass = pass;
 	info.port = port;
 	info.user = user;
-	
+
 	IDatabase *db = driver->Connect(&info, persistent, error, maxlength);
 
 	if (db)
@@ -552,7 +552,7 @@ static cell_t SQL_ConnectEx(IPluginContext *pContext, const cell_t *params)
 
 		return hndl;
 	}
-	
+
 	return BAD_HANDLE;
 }
 
@@ -769,7 +769,7 @@ static cell_t SQL_Query(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &query);
 
 	IQuery *qr;
-	
+
 	if (params[0] >= 3 && params[3] != -1)
 	{
 		qr = db->DoQueryEx(query, params[3]);
@@ -1435,7 +1435,7 @@ static cell_t SQL_ConnectCustom(IPluginContext *pContext, const cell_t *params)
 	IDatabase *db;
 
 	pContext->LocalToString(params[2], &buffer);
-	
+
 	db = driver->Connect(&info, params[4] ? true : false, buffer, params[3]);
 	if (db == NULL)
 	{
@@ -1515,7 +1515,7 @@ class TTransactOp : public IDBThreadOperation
 public:
 	TTransactOp(IDatabase *db, Transaction *txn, Handle_t txnHandle, IdentityToken_t *ident,
                 IPluginFunction *onSuccess, IPluginFunction *onError, cell_t data)
-	: 
+	:
 		db_(db),
 		txn_(txn),
 		ident_(ident),
