@@ -104,7 +104,7 @@ namespace SourceMod
 		 */
 		virtual void OnTimerEnd(ITimer *pTimer, void *pData) =0;
 
-        /**
+		/**
 		 * @brief Is timer paused?
 		 * Note: Only called if timer isn't a repeating timer.
 		 *
