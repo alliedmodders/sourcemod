@@ -195,16 +195,17 @@ void CoreConfig::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *c
 		const char *value = command->Arg(3);
 
 		char error[255];
-
 		ConfigResult res = SetConfigOption(option, value, ConfigSource_Console, error, sizeof(error));
 
 		if (res == ConfigResult_Reject)
 		{
 			UTIL_ConsolePrint("[SM] Could not set config option \"%s\" to \"%s\". (%s)", option, value, error);
-		} else if (res == ConfigResult_Ignore) {
-			UTIL_ConsolePrint("[SM] No such config option \"%s\" exists.", option);
 		} else {
-			UTIL_ConsolePrint("[SM] Config option \"%s\" successfully set to \"%s\".", option, value);
+			if (res == ConfigResult_Ignore) {
+				UTIL_ConsolePrint("[SM] WARNING: Config option \"%s\" is not registered.", option);
+			}
+
+			UTIL_ConsolePrint("[SM] Config option \"%s\" set to \"%s\".", option, value);
 		}
 
 		return;
