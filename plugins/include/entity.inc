@@ -168,7 +168,7 @@ native bool:GetEdictClassname(edict, String:clsname[], maxlength);
  *
  * @param edict			Index of the entity.
  * @param clsname		Buffer to store the serverclass name.
- * @param maxlength		Maximum lnegth of the buffer.
+ * @param maxlength		Maximum length of the buffer.
  * @return				True on success, false if the edict is not networkable.
  * @error				Invalid edict index.
  */
@@ -192,7 +192,7 @@ native bool:GetEntityNetClass(edict, String:clsname[], maxlength);
  * below 32768.  Offsets out of these bounds will throw an error.  However,
  * this does not represent any real range, it is simply a sanity check for
  * illegal values.  Any range outside of the CBaseEntity structure's private
- * size will cause undefined behaviour or even crash.
+ * size will cause undefined behavior or even crash.
  */
  
 /**

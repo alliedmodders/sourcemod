@@ -331,7 +331,7 @@ native ActivateEntity(entity);
 
 /**
  * Sets values to client info buffer keys and notifies the engine of the change.
- * The change does not get propogated to mods until the next frame.
+ * The change does not get propagated to mods until the next frame.
  *
  * @param client		Player's index.
  * @param key			Key string.

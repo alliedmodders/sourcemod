@@ -379,7 +379,7 @@ methodmap Menu < Handle
 
 	// Get or set the menu's pagination.
 	//  
-	// If pgination is MENU_NO_PAGINATION, and the exit button flag is set, 
+	// If pagination is MENU_NO_PAGINATION, and the exit button flag is set, 
 	// then the exit button flag is removed. It can be re-applied if desired.
 	property int Pagination {
 		public native get();

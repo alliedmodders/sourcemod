@@ -388,7 +388,7 @@ methodmap Database < Handle
 	//
 	// The database handle returned through the callback is always a new Handle,
 	// and if necessary, IsSameConnection() should be used to test against other
-	// conenctions.
+	// connections.
 	//
 	// The result handle returned through the callback is temporary and destroyed 
 	// at the end of the callback.
@@ -448,7 +448,7 @@ stock Database SQL_DefConnect(char[] error, int maxlength, bool persistent=true)
  * Connects to a database using key value pairs containing the database info.
  * The key/value pairs should match what would be in databases.cfg.
  *
- * I.e. "driver" should be "default" or a driver name (or ommitted for 
+ * I.e. "driver" should be "default" or a driver name (or omitted for 
  * the default).  For SQLite, only the "database" parameter is needed in addition.
  * For drivers which require external connections, more of the parameters may be 
  * needed.
@@ -989,7 +989,7 @@ native void SQL_TConnect(SQLTCallback callback, const char[] name="default", any
  *
  * The database Handle returned through the callback is always a new Handle,
  * and if necessary, SQL_IsSameConnection() should be used to test against
- * other conenctions.
+ * other connections.
  *
  * The query Handle returned through the callback is temporary and destroyed 
  * at the end of the callback.  If you need to hold onto it, use CloneHandle().

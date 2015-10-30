@@ -71,7 +71,7 @@
  * @endsection
  */
 
-#define	CONTENTS_ORIGIN			0x1000000	/**< removed before bsping an entity. */
+#define	CONTENTS_ORIGIN			0x1000000	/**< removed before bsp-ing an entity. */
 #define	CONTENTS_MONSTER		0x2000000	/**< should never be on a brush, only in game. */
 #define	CONTENTS_DEBRIS			0x4000000
 #define	CONTENTS_DETAIL			0x8000000	/**< brushes to be added after vis leafs. */
@@ -356,7 +356,7 @@ native bool:TR_DidHit(Handle:hndl=INVALID_HANDLE);
 native TR_GetHitGroup(Handle:hndl=INVALID_HANDLE);
 
 /**
- * Find the normal vector to the collison plane of a trace.
+ * Find the normal vector to the collision plane of a trace.
  *
  * @param hndl		A trace Handle, or INVALID_HANDLE to use a global trace result.
  * @param normal	Vector buffer to store the vector normal to the collision plane

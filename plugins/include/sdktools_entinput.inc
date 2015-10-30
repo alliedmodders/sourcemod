@@ -38,7 +38,7 @@
 /**
  * Invokes a named input method on an entity.  
  *
- * After completion (successful or not), the current global variant is re-initalized.
+ * After completion (successful or not), the current global variant is re-initialized.
  *
  * @param dest		Destination entity index.
  * @param input		Input action.

@@ -392,7 +392,7 @@ native bool WriteFile(Handle hndl, const int[] items, int num_items, int size);
 /**
  * Writes a binary string to a file.
  *
- * @param hndl			Handle to th efile.
+ * @param hndl			Handle to the file.
  * @param buffer		String to write.
  * @param term			True to append NUL terminator, false otherwise.
  * @return				True on success, false on error.

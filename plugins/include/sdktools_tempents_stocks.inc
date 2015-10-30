@@ -182,7 +182,7 @@ stock TE_SetupEnergySplash(const Float:pos[3], const Float:dir[3], bool:Explosiv
  * Sets up an armor ricochet effect.
  *
  * @param pos			Position of the armor ricochet.
- * @param dir			Directon of the armor ricochet.
+ * @param dir			Direction of the armor ricochet.
  * @noreturn
  */
 stock TE_SetupArmorRicochet(const Float:pos[3], const Float:dir[3])
@@ -273,7 +273,7 @@ stock TE_SetupBloodSprite(const Float:pos[3], const Float:dir[3], const color[4]
  * @param End_Radius		Final ring radius.
  * @param ModelIndex		Precached model index.
  * @param HaloIndex		Precached model index.
- * @param StartFrame		Initital frame to render.
+ * @param StartFrame		Initial frame to render.
  * @param FrameRate		Ring frame rate.
  * @param Life			Time duration of the ring.
  * @param Width			Beam width.
@@ -314,7 +314,7 @@ stock TE_SetupBeamRingPoint(const Float:center[3], Float:Start_Radius, Float:End
  * @param end			End position of the beam.
  * @param ModelIndex		Precached model index.
  * @param HaloIndex		Precached model index.
- * @param StartFrame		Initital frame to render.
+ * @param StartFrame		Initial frame to render.
  * @param FrameRate		Beam frame rate.
  * @param Life			Time duration of the beam.
  * @param Width			Initial beam width.
@@ -354,7 +354,7 @@ stock TE_SetupBeamPoints(const Float:start[3], const Float:end[3], ModelIndex, H
  * @param EndEntity		Entity index from where the beam ends.
  * @param ModelIndex		Precached model index.
  * @param HaloIndex		Precached model index.
- * @param StartFrame		Initital frame to render.
+ * @param StartFrame		Initial frame to render.
  * @param FrameRate		Beam frame rate.
  * @param Life			Time duration of the beam.
  * @param Width			Initial beam width.
@@ -394,7 +394,7 @@ stock TE_SetupBeamLaser(StartEntity, EndEntity, ModelIndex, HaloIndex, StartFram
  * @param EndEntity		Entity index from where the ring ends.
  * @param ModelIndex		Precached model index.
  * @param HaloIndex		Precached model index.
- * @param StartFrame		Initital frame to render.
+ * @param StartFrame		Initial frame to render.
  * @param FrameRate		Ring frame rate.
  * @param Life			Time duration of the ring.
  * @param Width			Beam width.

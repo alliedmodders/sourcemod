@@ -88,7 +88,7 @@ enum ExecType
 #define SP_ERROR_INVALID_ADDRESS		5	/**< A memory address was not valid */
 #define SP_ERROR_NOT_FOUND				6	/**< The object in question was not found */
 #define SP_ERROR_INDEX					7	/**< Invalid index parameter */
-#define SP_ERROR_STACKLOW				8	/**< Nnot enough space left on the stack */
+#define SP_ERROR_STACKLOW				8	/**< Not enough space left on the stack */
 #define SP_ERROR_NOTDEBUGGING			9	/**< Debug mode was not on or debug section not found */
 #define SP_ERROR_INVALID_INSTRUCTION	10	/**< Invalid instruction was encountered */
 #define SP_ERROR_MEMACCESS				11	/**< Invalid memory access */
@@ -164,7 +164,7 @@ native GetForwardFunctionCount(Handle:fwd);
 /**
  * Adds a function to a private forward's call list.
  *
- * @note Cannot be used during an incompleted call.
+ * @note Cannot be used during an incomplete call.
  *
  * @param fwd				Handle to private forward.
  * @param plugin			Handle of the plugin that contains the function.
@@ -206,7 +206,7 @@ native RemoveAllFromForward(Handle:fwd, Handle:plugin);
 /**
  * Starts a call to functions in a forward's call list.
  *
- * @note Cannot be used during an incompleted call.
+ * @note Cannot be used during an incomplete call.
  *
  * @param fwd				Handle to global or private forward.
  * @noreturn
@@ -217,7 +217,7 @@ native Call_StartForward(Handle:fwd);
 /**
  * Starts a call to a function.
  *
- * @note Cannot be used during an incompleted call.
+ * @note Cannot be used during an incomplete call.
  *
  * @param plugin			Handle of the plugin that contains the function.
  *							Pass INVALID_HANDLE to specify the calling plugin.
@@ -363,7 +363,7 @@ typedef NativeCall = function int (Handle plugin, int numParams);
  * Creates a dynamic native.  This should only be called in AskPluginLoad(), or 
  * else you risk not having your native shared with other plugins.
  *
- * @param name				Name of the dynamic native; must be unique amongst
+ * @param name				Name of the dynamic native; must be unique among
  *							all other registered dynamic natives.
  * @param func				Function to use as the dynamic native.
  * @noreturn

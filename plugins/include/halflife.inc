@@ -53,7 +53,7 @@
 #define MOTDPANEL_TYPE_TEXT		0	/**< Treat msg as plain text */
 #define MOTDPANEL_TYPE_INDEX	1	/**< Msg is auto determined by the engine */
 #define MOTDPANEL_TYPE_URL		2	/**< Treat msg as an URL link */
-#define MOTDPANEL_TYPE_FILE		3	/**< Treat msg as a filename to be openned */
+#define MOTDPANEL_TYPE_FILE		3	/**< Treat msg as a filename to be opened */
 
 enum DialogType
 {

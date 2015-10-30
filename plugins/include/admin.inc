@@ -662,7 +662,7 @@ native bool FindFlagByName(const char[] name, AdminFlag &flag);
 native bool FindFlagByChar(int c, AdminFlag &flag);
 
 /**
- * Finds a flag char by a gived admin flag.
+ * Finds the flag char for a given admin flag.
  *
  * @param flag                 Flag to look up.
  * @param c                    Variable to store flag char.
