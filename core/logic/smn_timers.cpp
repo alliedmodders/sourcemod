@@ -65,7 +65,7 @@ public:
 public: //ITimedEvent
 	ResultType OnTimer(ITimer *pTimer, void *pData);
 	void OnTimerEnd(ITimer *pTimer, void *pData);
-    bool IsPaused(ITimer *pTimer, void *pData);
+	bool IsPaused(ITimer *pTimer, void *pData);
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 public: //SMGlobalClass
@@ -184,9 +184,9 @@ void TimerNatives::OnTimerEnd(ITimer *pTimer, void *pData)
 
 bool TimerNatives::IsPaused(ITimer *pTimer, void *pData)
 {
-    TimerInfo *pInfo = reinterpret_cast<TimerInfo *>(pData);
-    IPluginFunction *pFunc = pInfo->Hook;
-    return !pFunc->IsRunnable();
+	TimerInfo *pInfo = reinterpret_cast<TimerInfo *>(pData);
+	IPluginFunction *pFunc = pInfo->Hook;
+	return !pFunc->IsRunnable();
 }
 
 /*******************************

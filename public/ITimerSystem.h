@@ -105,14 +105,14 @@ namespace SourceMod
 		virtual void OnTimerEnd(ITimer *pTimer, void *pData) =0;
 
         /**
-         * @brief Is timer paused?
-         * Note: Only called if timer isn't a repeating timer.
-         *
+		 * @brief Is timer paused?
+		 * Note: Only called if timer isn't a repeating timer.
+		 *
 		 * @param pTimer		Pointer to the timer instance.
 		 * @param pData			Private data pointer passed from host.
-         * @return              True if timer is paused, otherwise false to allow OnTimer() to be called.
-         */
-        virtual bool IsPaused(ITimer *pTimer, void *pData) { return false; }
+		 * @return              True if timer is paused, otherwise false to allow OnTimer() to be called.
+		 */
+		virtual bool IsPaused(ITimer *pTimer, void *pData) { return false; }
 	};
 
 	#define TIMER_FLAG_REPEAT			(1<<0)		/**< Timer will repeat until stopped */
