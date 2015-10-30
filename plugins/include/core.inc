@@ -114,7 +114,7 @@ enum PluginInfo
 	PlInfo_Name,			/**< Plugin name */
 	PlInfo_Author,			/**< Plugin author */
 	PlInfo_Description,		/**< Plugin description */
-	PlInfo_Version,			/**< Plugin verison */
+	PlInfo_Version,			/**< Plugin version */
 	PlInfo_URL,				/**< Plugin URL */
 };
 

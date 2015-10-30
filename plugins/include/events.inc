@@ -88,7 +88,7 @@ methodmap Event < Handle
 	//
 	// @param key          Name of event key.
 	// @param defValue     Optional default value to use if the key is not found.
-	// @return             The boolean value of the specfied event key.
+	// @return             The boolean value of the specified event key.
 	public native bool GetBool(const char[] key, bool defValue=false);
 
 	// Sets the boolean value of a game event's key.
@@ -101,7 +101,7 @@ methodmap Event < Handle
 	//
 	// @param key          Name of event key.
 	// @param defValue     Optional default value to use if the key is not found.
-	// @return             The integer value of the specfied event key.
+	// @return             The integer value of the specified event key.
 	public native int GetInt(const char[] key, int defValue=0);
 
 	// Sets the integer value of a game event's key.
@@ -119,7 +119,7 @@ methodmap Event < Handle
 	//
 	// @param key          Name of event key.
 	// @param defValue     Optional default value to use if the key is not found.
-	// @return             The floating point value of the specfied event key.
+	// @return             The floating point value of the specified event key.
 	public native float GetFloat(const char[] key, float defValue=0.0);
 
 	// Sets the floating point value of a game event's key.
@@ -231,7 +231,7 @@ native void CancelCreatedEvent(Handle event);
  * @param event			Handle to the event.
  * @param key			Name of event key.
  * @param defValue		Optional default value to use if the key is not found.
- * @return				The boolean value of the specfied event key.
+ * @return				The boolean value of the specified event key.
  * @error				Invalid or corrupt Handle.
  */
 native bool GetEventBool(Handle event, const char[] key, bool defValue=false);
@@ -253,7 +253,7 @@ native void SetEventBool(Handle event, const char[] key, bool value);
  * @param event			Handle to the event.
  * @param key			Name of event key.
  * @param defValue		Optional default value to use if the key is not found.
- * @return				The integer value of the specfied event key.
+ * @return				The integer value of the specified event key.
  * @error				Invalid or corrupt Handle.
  */
 native int GetEventInt(Handle event, const char[] key, int defValue=0);
@@ -280,7 +280,7 @@ native void SetEventInt(Handle event, const char[] key, int value);
  * @param event			Handle to the event.
  * @param key			Name of event key.
  * @param defValue		Optional default value to use if the key is not found.
- * @return				The floating point value of the specfied event key.
+ * @return				The floating point value of the specified event key.
  * @error				Invalid or corrupt Handle.
  */
 native float GetEventFloat(Handle event, const char[] key, float defValue=0.0);

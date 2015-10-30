@@ -169,7 +169,7 @@ typedef SortFuncADTArray = function int (int index1, int index2, Handle array, H
  * Custom sorts an ADT Array. You must pass in a comparison function.
  *
  * @param array			Array Handle to sort
- * @param sortfunc		Sort comparision function to use
+ * @param sortfunc		Sort comparison function to use
  * @param hndl			Optional Handle to pass through the comparison calls.
  * @noreturn
  */

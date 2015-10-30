@@ -62,7 +62,7 @@ methodmap ArrayList < Handle {
 	//                      hold.  For example, 32 cells is equivalent to:
 	//                      new Array[X][32]
 	// @param startsize     Initial size of the array.  Note that data will
-	//                      NOT be auto-intialized.
+	//                      NOT be auto-initialized.
 	// @return              New Handle to the array object.
 	public native ArrayList(int blocksize=1, int startsize=0);
 
@@ -191,14 +191,14 @@ methodmap ArrayList < Handle {
 	// @error               Invalid index.
 	public native void SwapAt(int index1, int index2);
 
-	// Returns the index for the first occurance of the provided string. If
+	// Returns the index for the first occurrence of the provided string. If
 	// the string cannot be located, -1 will be returned.
 	//
 	// @param item          String to search for
 	// @return              Array index, or -1 on failure
 	public native int FindString(const char[] item);
 
-	// Returns the index for the first occurance of the provided value. If the
+	// Returns the index for the first occurrence of the provided value. If the
 	// value cannot be located, -1 will be returned.
 	//
 	// @param item          Value to search for
@@ -226,7 +226,7 @@ methodmap ArrayList < Handle {
  *						hold.  For example, 32 cells is equivalent to:
  *						new Array[X][32]
  * @param startsize		Initial size of the array.  Note that data will
- *						NOT be auto-intialized.
+ *						NOT be auto-initialized.
  * @return				New Handle to the array object.
  */
 native ArrayList CreateArray(int blocksize=1, int startsize=0);
@@ -417,7 +417,7 @@ native void RemoveFromArray(Handle array, int index);
 native void SwapArrayItems(Handle array, int index1, int index2);
 
 /**
- * Returns the index for the first occurance of the provided string. If the string
+ * Returns the index for the first occurrence of the provided string. If the string
  * cannot be located, -1 will be returned.
  *
  * @param array			Array Handle.
@@ -428,7 +428,7 @@ native void SwapArrayItems(Handle array, int index1, int index2);
 native int FindStringInArray(Handle array, const char[] item);
 
 /**
- * Returns the index for the first occurance of the provided value. If the value
+ * Returns the index for the first occurrence of the provided value. If the value
  * cannot be located, -1 will be returned.
  *
  * @param array			Array Handle.

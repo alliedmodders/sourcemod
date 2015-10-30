@@ -246,7 +246,7 @@ methodmap TopMenu < Handle
 	//                     INVALID_TOPMENUOBJECT on failure.
 	public native TopMenuObject FindCategory(const char[] name);
 	
-	// Set the menu title caching behaviour of the TopMenu. By default titles
+	// Set the menu title caching behavior of the TopMenu. By default titles
 	// are cached to reduce overhead. If you need dynamic menu titles which
 	// change each time the menu is displayed to a user, set this to false.
 	property bool CacheTitles {
@@ -390,7 +390,7 @@ native bool DisplayTopMenuCategory(Handle topmenu, TopMenuObject category, int c
 native TopMenuObject FindTopMenuCategory(Handle topmenu, const char[] name);
 
 /**
- * Change the menu title caching behaviour of the TopMenu. By default the
+ * Change the menu title caching behavior of the TopMenu. By default the
  * titles are cached to reduce overhead. If you need dynamic menu titles, which
  * can change everytime the menu is displayed to a user, set this to false.
  *

@@ -39,7 +39,7 @@ enum NominateResult
 	Nominate_Added,			/** The map was added to the nominate list */
 	Nominate_Replaced,		/** A clients existing nomination was replaced */
 	Nominate_AlreadyInVote,	/** Specified map was already in the vote */
-	Nominate_InvalidMap,	/** Mapname specifed wasn't a valid map */
+	Nominate_InvalidMap,	/** Mapname specified wasn't a valid map */
 	Nominate_VoteFull,		/** This will only occur if force was set to false */
 };
 
@@ -55,7 +55,7 @@ enum MapChange
  *
  * @param map		Map to add.
  * @param force		Should we force the map in even if it requires overwriting an existing nomination?
- * @param owner		Client index of the nominater. If the client disconnects the nomination will be removed. Use 0 for constant nominations
+ * @param owner		Client index of the nominator. If the client disconnects the nomination will be removed. Use 0 for constant nominations
  * @return			Nominate Result of the outcome
  */
 native NominateResult NominateMap(const char[] map, bool force, int owner);
@@ -71,7 +71,7 @@ native bool RemoveNominationByMap(const char[] map);
 /**
  * Attempt to remove a map from the mapchooser map list.
  *
- * @param owner		Client index of the nominater.
+ * @param owner		Client index of the nominator.
  * @return			True if the nomination was found and removed, or false if the nomination was not found.
  */
 native bool RemoveNominationByOwner(int owner);

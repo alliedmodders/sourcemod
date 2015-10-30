@@ -92,7 +92,7 @@ enum
 	SNDLEVEL_RUSTLE = 20,		/**< Rustling leaves */
 	SNDLEVEL_WHISPER = 25,		/**< Whispering */
 	SNDLEVEL_LIBRARY = 30,		/**< In a library */
-	SNDLEVEL_FRIDGE = 45,		/**< Refridgerator */
+	SNDLEVEL_FRIDGE = 45,		/**< Refrigerator */
 	SNDLEVEL_HOME = 50,			/**< Average home (3.9 attn) */
 	SNDLEVEL_CONVO = 60,		/**< Normal conversation (2.0 attn) */
 	SNDLEVEL_DRYER = 60,		/**< Clothes dryer */
@@ -268,7 +268,7 @@ native EmitSoundEntry(const clients[],
  *
  * @param clients		Array of client indexes.
  * @param numClients	Number of clients in the array.
- * @param sentence		Sentence index (from PrecacheSenteFile).
+ * @param sentence		Sentence index (from PrecacheSentenceFile).
  * @param entity		Entity to emit from.
  * @param channel		Channel to emit with.
  * @param level			Sound level.
@@ -338,7 +338,7 @@ typedef AmbientSHook = function Action (
 
 /**
  * Called when a sound is going to be emitted to one or more clients.
- * NOTICE: all params can be overwritten to modify the default behaviour.
+ * NOTICE: all params can be overwritten to modify the default behavior.
  *
  * @param clients		Array of client indexes.
  * @param numClients		Number of clients in the array (modify this value if you add/remove elements from the client array).

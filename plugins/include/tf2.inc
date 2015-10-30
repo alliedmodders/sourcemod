@@ -410,7 +410,7 @@ native TF2_RemoveWearable(client, wearable);
 /**
  * Called after a condition is added to a player
  *
- * @param client		Index of the client to which the conditon is being added.
+ * @param client		Index of the client to which the condition is being added.
  * @param condition     Condition that is being added.
  */
 forward void TF2_OnConditionAdded(client, TFCond:condition);

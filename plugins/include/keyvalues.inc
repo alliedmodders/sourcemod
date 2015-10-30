@@ -169,7 +169,7 @@ methodmap KeyValues < Handle
 	// @param a             Alpha value, set by reference. 
 	public native void GetColor(const char[] key, &r, &g, &b, &a);
 
-	// Retrives a set of color values from a KeyValues key.
+	// Retrieves a set of color values from a KeyValues key.
 	//
 	// @param key           Name of the key, or NULL_STRING.
 	// @param color         Red, green, blue, and alpha channels.

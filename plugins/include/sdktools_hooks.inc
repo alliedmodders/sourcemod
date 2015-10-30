@@ -53,7 +53,7 @@
  * @param mouse		Mouse direction (x, y).
  * @return 			Plugin_Handled to block the commands from being processed, Plugin_Continue otherwise.
  *
- * @note			To see if all 11 params are avaliable, use FeatureType_Capability and
+ * @note			To see if all 11 params are available, use FeatureType_Capability and
  *					FEATURECAP_PLAYERRUNCMD_11PARAMS.
  */
 forward Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon, &subtype, &cmdnum, &tickcount, &seed, mouse[2]);
