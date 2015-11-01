@@ -38,7 +38,7 @@
 #include <sp_vm_api.h>
 
 #define SMINTERFACE_PLUGINSYSTEM_NAME		"IPluginManager"
-#define SMINTERFACE_PLUGINSYSTEM_VERSION	7
+#define SMINTERFACE_PLUGINSYSTEM_VERSION	8
 
 /** Context user slot 3 is used Core for holding an IPluginContext pointer. */
 #define SM_CONTEXTVAR_USER		3
@@ -304,6 +304,11 @@ namespace SourceMod
 		// any plugin for which OnPluginLoaded was called, and is invoked
 		// immediately after OnPluginEnd(). The plugin may be in any state Failed
 		// or lower.
+		//
+		// This function must not cause the plugin to re-enter script code. If
+		// you wish to be notified of when a plugin is unloading, and to forbid
+		// future calls on that plugin, use OnPluginWillUnload and use a
+		// plugin property to block future calls.
 		virtual void OnPluginUnloaded(IPlugin *plugin)
 		{
 		}
@@ -322,7 +327,20 @@ namespace SourceMod
 		virtual unsigned int GetApiVersion() const {
 			return SMINTERFACE_PLUGINSYSTEM_VERSION;
 		}
+
+		// @brief Called when a plugin is about to be unloaded, before its
+		// OnPluginEnd callback is fired. This can be used to ensure that any
+		// asynchronous operations are flushed and no further operations can
+		// be started (via SetProperty).
+		//
+		// Like OnPluginUnloaded, this is only called for plugins which
+		// OnPluginLoaded was called.
+		virtual void OnPluginWillUnload(IPlugin *plugin)
+		{
+		}
 	};
+
+	static const unsigned int kMinPluginSysApiWithWillUnloadCallback = 8;
 
 	/**
 	 * @brief Manages the runtime loading and unloading of plugins.

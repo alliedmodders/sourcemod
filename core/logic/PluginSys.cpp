@@ -1476,6 +1476,14 @@ void CPluginManager::Purge(CPlugin *plugin)
 	// Go through our libraries and tell other plugins they're gone.
 	plugin->LibraryActions(LibraryAction_Removed);
 
+	// Notify listeners of unloading.
+	if (plugin->EnteredSecondPass()) {
+		for (ListenerIter iter(m_listeners); !iter.done(); iter.next()) {
+			if ((*iter)->GetApiVersion() >= kMinPluginSysApiWithWillUnloadCallback)
+				(*iter)->OnPluginWillUnload(plugin);
+		}
+	}
+
 	// We only pair OnPluginEnd with OnPluginStart if we would have
 	// successfully called OnPluginStart, *and* SetFailState() wasn't called,
 	// which guarantees no further code will execute.
