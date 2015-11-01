@@ -1446,13 +1446,22 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 	if (pPlugin->State() == PluginState::WaitingToUnload)
 		return false;
 
-	IPluginContext *pContext = pPlugin->GetBaseContext();
-	if (pContext && pContext->IsInExec()) {
-		ke::Lambda<void()> callback = [this, pPlugin]() {
-			this->ScheduleUnload(pPlugin);
-		};
+	// It is not safe to unload any plugin while another is on the callstack.
+	bool any_active = false;
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
+		if (IPluginContext *context = (*iter)->GetBaseContext()) {
+			if (context->IsInExec()) {
+				any_active = true;
+				break;
+			}
+		}
+	}
+
+	if (any_active) {
 		pPlugin->SetWaitingToUnload();
-		ScheduleTaskForNextFrame(ke::Move(callback));
+		ScheduleTaskForNextFrame([this, pPlugin] () -> void {
+			ScheduleUnload(pPlugin);
+		});
 		return false;
 	}
 
@@ -1463,7 +1472,6 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 
 void CPluginManager::Purge(CPlugin *plugin)
 {
-
 	// Go through our libraries and tell other plugins they're gone.
 	plugin->LibraryActions(LibraryAction_Removed);
 
