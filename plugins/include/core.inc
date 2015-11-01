@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
@@ -92,6 +92,7 @@ enum PluginStatus
 	Plugin_Created,			/**< Plugin is created but not initialized */
 	Plugin_Uncompiled,		/**< Plugin is not yet compiled by the JIT */
 	Plugin_BadLoad,			/**< Plugin failed to load */
+	Plugin_Evicted			/**< Plugin was unloaded due to an error */
 };
 
 /**

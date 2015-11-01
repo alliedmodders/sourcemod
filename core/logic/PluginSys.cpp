@@ -44,7 +44,8 @@
 #include "Translator.h"
 #include "Logger.h"
 #include "frame_tasks.h"
-#include <am-string.h>
+#include <amtl/am-string.h>
+#include <amtl/am-linkedlist.h>
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/CoreProvider.h>
 
@@ -1446,13 +1447,22 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 	if (pPlugin->State() == PluginState::WaitingToUnload)
 		return false;
 
-	IPluginContext *pContext = pPlugin->GetBaseContext();
-	if (pContext && pContext->IsInExec()) {
-		ke::Lambda<void()> callback = [this, pPlugin]() {
-			this->ScheduleUnload(pPlugin);
-		};
+	// It is not safe to unload any plugin while another is on the callstack.
+	bool any_active = false;
+	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
+		if (IPluginContext *context = (*iter)->GetBaseContext()) {
+			if (context->IsInExec()) {
+				any_active = true;
+				break;
+			}
+		}
+	}
+
+	if (any_active) {
 		pPlugin->SetWaitingToUnload();
-		ScheduleTaskForNextFrame(ke::Move(callback));
+		ScheduleTaskForNextFrame([this, pPlugin] () -> void {
+			ScheduleUnload(pPlugin);
+		});
 		return false;
 	}
 
@@ -1463,9 +1473,16 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 
 void CPluginManager::Purge(CPlugin *plugin)
 {
-
 	// Go through our libraries and tell other plugins they're gone.
 	plugin->LibraryActions(LibraryAction_Removed);
+
+	// Notify listeners of unloading.
+	if (plugin->EnteredSecondPass()) {
+		for (ListenerIter iter(m_listeners); !iter.done(); iter.next()) {
+			if ((*iter)->GetApiVersion() >= kMinPluginSysApiWithWillUnloadCallback)
+				(*iter)->OnPluginWillUnload(plugin);
+		}
+	}
 
 	// We only pair OnPluginEnd with OnPluginStart if we would have
 	// successfully called OnPluginStart, *and* SetFailState() wasn't called,
@@ -2232,7 +2249,42 @@ void CPluginManager::ForEachPlugin(ke::Lambda<void(CPlugin *)> callback)
 		callback(*iter);
 }
 
-class OldPluginAPI : public IPluginManager
+class PluginsListenerV1Wrapper final
+	: public IPluginsListener,
+	  public ke::Refcounted<PluginsListenerV1Wrapper>
+{
+public:
+	PluginsListenerV1Wrapper(IPluginsListener_V1 *impl)
+		: impl_(impl)
+	{}
+
+	// The v2 listener was added with API v7, so we pin these wrappers to v6.
+	unsigned int GetApiVersion() const override {
+		return 6;
+	}
+
+	void OnPluginLoaded(IPlugin *plugin) override {
+		impl_->OnPluginLoaded(plugin);
+	}
+	void OnPluginPauseChange(IPlugin *plugin, bool paused) override {
+		impl_->OnPluginPauseChange(plugin, paused);
+	}
+	void OnPluginUnloaded(IPlugin *plugin) override {
+		impl_->OnPluginUnloaded(plugin);
+	}
+	void OnPluginDestroyed(IPlugin *plugin) override {
+		impl_->OnPluginDestroyed(plugin);
+	}
+
+	bool matches(IPluginsListener_V1 *impl) const {
+		return impl_ == impl;
+	}
+
+private:
+	IPluginsListener_V1 *impl_;
+};
+
+class OldPluginAPI final : public IPluginManager
 {
 public:
 	IPlugin *LoadPlugin(const char *path,
@@ -2240,45 +2292,71 @@ public:
 						PluginType type,
 						char error[],
 						size_t maxlength,
-						bool *wasloaded)
+						bool *wasloaded) override
 	{
 		return g_PluginSys.LoadPlugin(path, debug, type, error, maxlength, wasloaded);
 	}
 
-	bool UnloadPlugin(IPlugin *plugin)
+	bool UnloadPlugin(IPlugin *plugin) override
 	{
 		return g_PluginSys.UnloadPlugin(plugin);
 	}
 
-	IPlugin *FindPluginByContext(const sp_context_t *ctx)
+	IPlugin *FindPluginByContext(const sp_context_t *ctx) override
 	{
 		return g_PluginSys.FindPluginByContext(ctx);
 	}
 
-	unsigned int GetPluginCount()
+	unsigned int GetPluginCount() override
 	{
 		return g_PluginSys.GetPluginCount();
 	}
 
-	IPluginIterator *GetPluginIterator()
+	IPluginIterator *GetPluginIterator() override
 	{
 		return g_PluginSys.GetPluginIterator();
 	}
 
-	void AddPluginsListener(IPluginsListener *listener)
+	void AddPluginsListener_V1(IPluginsListener_V1 *listener) override
+	{
+		ke::Ref<PluginsListenerV1Wrapper> wrapper = new PluginsListenerV1Wrapper(listener);
+
+		v1_wrappers_.append(wrapper);
+		g_PluginSys.AddPluginsListener(wrapper);
+	}
+
+	void RemovePluginsListener_V1(IPluginsListener_V1 *listener) override
+	{
+		ke::Ref<PluginsListenerV1Wrapper> wrapper;
+
+		// Find which wrapper has this listener.
+		for (decltype(v1_wrappers_)::iterator iter(v1_wrappers_); !iter.done(); iter.next()) {
+			if ((*iter)->matches(listener)) {
+				wrapper = *iter;
+				iter.remove();
+				break;
+			}
+		}
+		g_PluginSys.RemovePluginsListener(wrapper);
+	}
+
+	IPlugin *PluginFromHandle(Handle_t handle, HandleError *err) override
+	{
+		return g_PluginSys.PluginFromHandle(handle, err);
+	}
+
+	void AddPluginsListener(IPluginsListener *listener) override
 	{
 		g_PluginSys.AddPluginsListener(listener);
 	}
 
-	void RemovePluginsListener(IPluginsListener *listener)
+	void RemovePluginsListener(IPluginsListener *listener) override
 	{
 		g_PluginSys.RemovePluginsListener(listener);
 	}
 
-	IPlugin *PluginFromHandle(Handle_t handle, HandleError *err)
-	{
-		return g_PluginSys.PluginFromHandle(handle, err);
-	}
+private:
+	ReentrantList<ke::Ref<PluginsListenerV1Wrapper>> v1_wrappers_;
 };
 
 static OldPluginAPI sOldPluginAPI;

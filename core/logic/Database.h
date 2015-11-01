@@ -101,7 +101,7 @@ public: //ke::IRunnable
 	void Run();
 	void ThreadMain();
 public: //IPluginsListener
-	void OnPluginUnloaded(IPlugin *plugin);
+	void OnPluginWillUnload(IPlugin *plugin);
 public:
 	ConfDbInfo *GetDatabaseConf(const char *name);
 	IDBDriver *FindOrLoadDriver(const char *name);
