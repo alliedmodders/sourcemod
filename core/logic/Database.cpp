@@ -693,7 +693,7 @@ void DBManager::OnSourceModIdentityDropped(IdentityToken_t *pToken)
 	s_pAddBlock = NULL;
 }
 
-void DBManager::OnPluginUnloaded(IPlugin *plugin)
+void DBManager::OnPluginWillUnload(IPlugin *plugin)
 {
 	/* Kill the thread so we can flush everything into the think queue... */
 	KillWorkerThread();
@@ -719,9 +719,7 @@ void DBManager::OnPluginUnloaded(IPlugin *plugin)
 		}
 	}
 
-	for (iter = templist.begin();
-		 iter != templist.end();
-		 iter++)
+	for (iter = templist.begin(); iter != templist.end(); iter++)
 	{
 		IDBThreadOperation *op = (*iter);
 		op->RunThinkPart();
