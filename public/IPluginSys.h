@@ -38,7 +38,7 @@
 #include <sp_vm_api.h>
 
 #define SMINTERFACE_PLUGINSYSTEM_NAME		"IPluginManager"
-#define SMINTERFACE_PLUGINSYSTEM_VERSION	6
+#define SMINTERFACE_PLUGINSYSTEM_VERSION	7
 
 /** Context user slot 3 is used Core for holding an IPluginContext pointer. */
 #define SM_CONTEXTVAR_USER		3
@@ -278,7 +278,7 @@ namespace SourceMod
 	/**
 	 * @brief Listens for plugin-oriented events.
 	 */
-	class IPluginsListener
+	class IPluginsListener_V1
 	{
 	public:
 		// @brief This callback should not be used since plugins may be in
@@ -315,6 +315,14 @@ namespace SourceMod
 		}
 	};
 
+	// @brief Listens for plugin-oriented events. Extends the V1 listener class.
+	class IPluginsListener : public IPluginsListener_V1
+	{
+	public:
+		virtual unsigned int GetApiVersion() const {
+			return SMINTERFACE_PLUGINSYSTEM_VERSION;
+		}
+	};
 
 	/**
 	 * @brief Manages the runtime loading and unloading of plugins.
@@ -381,6 +389,29 @@ namespace SourceMod
 		virtual IPluginIterator *GetPluginIterator() =0;
 
 		/** 
+		 * @brief Adds a V1 plugin manager listener.
+		 *
+		 * @param listener	Pointer to a listener.
+		 */
+		virtual void AddPluginsListener_V1(IPluginsListener_V1 *listener) =0;
+
+		/**
+		 * @brief Removes a V1 plugin listener.
+		 * 
+		 * @param listener	Pointer to a listener.
+		 */
+		virtual void RemovePluginsListener_V1(IPluginsListener_V1 *listener) =0;
+
+		/**
+		 * @brief Converts a Handle to an IPlugin if possible.
+		 *
+		 * @param handle	Handle.
+		 * @param err		Error, set on failure (otherwise undefined).
+		 * @return			IPlugin pointer, or NULL on failure.
+		 */
+		virtual IPlugin *PluginFromHandle(Handle_t handle, HandleError *err) =0;
+
+		/** 
 		 * @brief Adds a plugin manager listener.
 		 *
 		 * @param listener	Pointer to a listener.
@@ -393,15 +424,6 @@ namespace SourceMod
 		 * @param listener	Pointer to a listener.
 		 */
 		virtual void RemovePluginsListener(IPluginsListener *listener) =0;
-
-		/**
-		 * @brief Converts a Handle to an IPlugin if possible.
-		 *
-		 * @param handle	Handle.
-		 * @param err		Error, set on failure (otherwise undefined).
-		 * @return			IPlugin pointer, or NULL on failure.
-		 */
-		virtual IPlugin *PluginFromHandle(Handle_t handle, HandleError *err) =0;
 	};
 }
 
