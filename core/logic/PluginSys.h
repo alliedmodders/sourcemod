@@ -150,6 +150,11 @@ public:
 public:
 	// Evicts the plugin from memory and sets an error state.
 	void EvictWithError(PluginStatus status, const char *error_fmt, ...);
+
+	// Sets an error state during the loading process. The plugin must not have
+	// gone through secondary binding.
+	void LoadingError(PluginStatus status, const char *error_fmt, ...);
+
 	void FinishEviction();
 
 	// Initializes the plugin's identity information

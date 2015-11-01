@@ -195,7 +195,7 @@ CPlugin *CPlugin::Create(const char *file)
 	CPlugin *pPlugin = new CPlugin(file);
 
 	if (!fp) {
-		pPlugin->EvictWithError(Plugin_BadLoad, "Unable to open file");
+		pPlugin->LoadingError(Plugin_BadLoad, "Unable to open file");
 		return pPlugin;
 	}
 
@@ -228,6 +228,21 @@ bool CPlugin::SetProperty(const char *prop, void *ptr)
 IPluginRuntime *CPlugin::GetRuntime()
 {
 	return m_pRuntime;
+}
+
+void CPlugin::LoadingError(PluginStatus status, const char *error_fmt, ...)
+{
+	assert(m_status != Plugin_Running && m_status != Plugin_Paused);
+
+	m_status = status;
+
+	va_list ap;
+	va_start(ap, error_fmt);
+	ke::SafeVsprintf(m_errormsg, sizeof(m_errormsg), error_fmt, ap);
+	va_end(ap);
+
+	if (m_pRuntime)
+		m_pRuntime->SetPauseState(true);
 }
 
 void CPlugin::EvictWithError(PluginStatus status, const char *error_fmt, ...)
@@ -317,7 +332,7 @@ bool CPlugin::ReadInfo()
 		}
 		if (m_FileVersion > 5) {
 			base->LocalToString(info->filevers, (char **)&pFileVers);
-			EvictWithError(Plugin_Failed, "Newer SourceMod required (%s or higher)", pFileVers);
+			LoadingError(Plugin_Failed, "Newer SourceMod required (%s or higher)", pFileVers);
 			return false;
 		}
 	} else {
@@ -438,7 +453,7 @@ APLRes CPlugin::AskPluginLoad()
 	pFunction->PushStringEx(m_errormsg, sizeof(m_errormsg), 0, SM_PARAM_COPYBACK);
 	pFunction->PushCell(sizeof(m_errormsg));
 	if ((err = pFunction->Execute(&result)) != SP_ERROR_NONE) {
-		EvictWithError(Plugin_Failed, "unexpected error %d in AskPluginLoad callback", err);
+		LoadingError(Plugin_Failed, "unexpected error %d in AskPluginLoad callback", err);
 		return APLRes_Failure;
 	}
 
@@ -485,7 +500,7 @@ bool CPlugin::TryCompile()
 	char loadmsg[255];
 	m_pRuntime = g_pSourcePawn2->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg));
 	if (!m_pRuntime) {
-		EvictWithError(Plugin_BadLoad, "Unable to load plugin (%s)", loadmsg);
+		LoadingError(Plugin_BadLoad, "Unable to load plugin (%s)", loadmsg);
 		return false;
 	}
 
@@ -1286,9 +1301,9 @@ bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 
 	if (m_bBlockBadPlugins) {
 		if (bulletinUrl[0] != '\0') {
-			pPlugin->EvictWithError(Plugin_BadLoad, "Known malware detected and blocked. See %s for more info", bulletinUrl);
+			pPlugin->LoadingError(Plugin_BadLoad, "Known malware detected and blocked. See %s for more info", bulletinUrl);
 		} else {
-			pPlugin->EvictWithError(Plugin_BadLoad, "Possible malware or illegal plugin detected and blocked");
+			pPlugin->LoadingError(Plugin_BadLoad, "Possible malware or illegal plugin detected and blocked");
 		}
 		return false;
 	}
