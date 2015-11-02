@@ -87,11 +87,14 @@ enum class PluginState
 	// The plugin has been evicted.
 	Evicted,
 
+	// The plugin is waiting to be evicted.
+	WaitingToEvict,
+
 	// The plugin is waiting to be unloaded.
 	WaitingToUnload
 };
 
-class CPlugin : 
+class CPlugin final : 
 	public SMPlugin,
 	public CNativeOwner
 {
@@ -99,27 +102,32 @@ public:
 	CPlugin(const char *file);
 	~CPlugin();
 public:
-	PluginType GetType();
-	SourcePawn::IPluginContext *GetBaseContext();
-	sp_context_t *GetContext();
-	void *GetPluginStructure();
-	const char *GetFilename();
-	bool IsDebugging();
-	PluginStatus GetStatus();
-	PluginStatus Status() const;
+	PluginType GetType() override;
+	SourcePawn::IPluginContext *GetBaseContext() override;
+	sp_context_t *GetContext() override;
+	void *GetPluginStructure() override;
+	const char *GetFilename() override;
+	bool IsDebugging() override;
+	PluginStatus GetStatus() override;
+	bool SetPauseState_OBSOLETE(bool) override {
+		return false;
+	}
+	unsigned int GetSerial() override;
+	bool SetProperty(const char *prop, void *ptr) override;
+	bool GetProperty(const char *prop, void **ptr, bool remove=false) override;
+	IdentityToken_t *GetIdentity() override;
+	const sm_plugininfo_t *GetPublicInfo() override;
+	SourcePawn::IPluginRuntime *GetRuntime() override;
+	Handle_t GetMyHandle() override;
+	IPhraseCollection *GetPhrases() override;
+
 	bool IsSilentlyFailed();
-	const sm_plugininfo_t *GetPublicInfo();
-	bool SetPauseState(bool paused);
-	unsigned int GetSerial();
-	IdentityToken_t *GetIdentity();
+	void SetPaused();
 	unsigned int CalcMemUsage();
-	bool SetProperty(const char *prop, void *ptr);
-	bool GetProperty(const char *prop, void **ptr, bool remove=false);
-	void DropEverything();
-	SourcePawn::IPluginRuntime *GetRuntime();
 	CNativeOwner *ToNativeOwner() {
 		return this;
 	}
+	PluginStatus Status() const;
 
 	struct ExtVar {
 		char *name;
@@ -130,8 +138,13 @@ public:
 
 	typedef ke::Lambda<bool(const sp_pubvar_t *, const ExtVar& ext)> ExtVarCallback;
 	bool ForEachExtVar(const ExtVarCallback& callback);
-
 	void ForEachLibrary(ke::Lambda<void(const char *)> callback);
+
+	// True if the plugin requires the other plugin to keep running.
+	bool IsStronglyDependentOn(CPlugin *other) const;
+
+	// Unlink any fake natives from a parent plugin.
+	void UnlinkNativesOwnedBy(CPlugin *other);
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -155,6 +168,9 @@ public:
 	// gone through secondary binding.
 	void LoadingError(PluginStatus status, const char *error_fmt, ...);
 
+	// Sets an error state during the unloading/eviction process.
+	void DependencyError(PluginStatus status, const char *error_fmt, ...);
+
 	void FinishEviction();
 
 	// Initializes the plugin's identity information
@@ -174,14 +190,12 @@ public:
 	// Returns true if a plugin is usable.
 	bool IsRunnable();
 
-	// Get languages info.
-	IPhraseCollection *GetPhrases();
-
 	PluginState State() const {
 		return m_state;
 	}
 	void SetRegistered();
 	void SetWaitingToUnload();
+	void SetWaitingToEvict();
 
 	PluginStatus GetDisplayStatus() const {
 		return m_status;
@@ -192,20 +206,22 @@ public:
 	// Returns true if the plugin was running, but is now invalid.
 	bool WasRunning();
 
-	Handle_t GetMyHandle();
-
 	bool AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func);
 	void AddConfig(bool autoCreate, const char *cfg, const char *folder);
 	size_t GetConfigCount();
 	AutoConfig *GetConfig(size_t i);
-	inline void AddLibrary(const char *name) {
+	void AddLibrary(const char *name) {
 		m_Libraries.push_back(name);
 	}
-	inline bool HasLibrary(const char *name) {
+	bool HasLibrary(const char *name) {
 		return m_Libraries.find(name) != m_Libraries.end();
 	}
 	void LibraryActions(LibraryAction action);
 	void SyncMaxClients(int max_clients);
+
+	bool HasMissingDependencies() const {
+		return m_DependencyMissing;
+	}
 
 	// Returns true if the plugin's underlying file structure has a newer
 	// modification time than either when it was first instantiated or
@@ -226,12 +242,6 @@ public:
 	void AddRequiredLib(const char *name);
 	bool ForEachRequiredLib(ke::Lambda<bool(const char *)> callback);
 
-	bool HasMissingFakeNatives() const {
-		return m_FakeNativesMissing;
-	}
-	bool HasMissingLibrary() const {
-		return m_LibraryMissing;
-	}
 	bool HasFakeNatives() const {
 		return m_fakes.length() > 0;
 	}
@@ -251,9 +261,6 @@ public:
 	bool TryCompile();
 	void BindFakeNativesTo(CPlugin *other);
 
-protected:
-	void DependencyDropped(CPlugin *pOwner);
-
 private:
 	time_t GetFileTimeStamp();
 	bool ReadInfo();
@@ -271,8 +278,7 @@ private:
 
 	// Statuses that are set during failure.
 	bool m_SilentFailure;
-	bool m_FakeNativesMissing;
-	bool m_LibraryMissing;
+	bool m_DependencyMissing;
 	char m_errormsg[256];
 
 	// Internal properties that must by reset if the runtime is evicted.
@@ -308,9 +314,11 @@ class CPluginManager :
 	public IHandleTypeDispatch,
 	public IRootConsoleCommand
 {
+	friend class PluginUnloader;
 public:
 	CPluginManager();
 	~CPluginManager();
+
 public:
 	/* Implements iterator class */
 	class CPluginIterator
@@ -363,6 +371,9 @@ public: //IScriptManager
 	}
 	const CVector<SMPlugin *> *ListPlugins();
 	void FreePluginList(const CVector<SMPlugin *> *plugins);
+
+	void Evict(CPlugin *plugin);
+	void DoEvict(CPlugin *plugin);
 
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
@@ -468,17 +479,23 @@ private:
 	bool FindOrRequirePluginDeps(CPlugin *pPlugin);
 
 	bool ScheduleUnload(CPlugin *plugin);
+
+	void DoUnload(CPlugin *plugin);
 	void UnloadPluginImpl(CPlugin *plugin);
 
 	void Purge(CPlugin *plugin);
+
 public:
 	inline IdentityToken_t *GetIdentity()
 	{
 		return m_MyIdent;
 	}
 	IPluginManager *GetOldAPI();
+
 private:
 	void TryRefreshDependencies(CPlugin *pOther);
+	void ForEachListener(const ke::Lambda<void(IPluginsListener*)> &callback);
+
 private:
 	ReentrantList<IPluginsListener *> m_listeners;
 	ReentrantList<CPlugin *> m_plugins;
@@ -498,6 +515,8 @@ private:
 	
 	// Config
 	bool m_bBlockBadPlugins;
+
+	bool m_CanEvictImmediately;
 	
 	// Forwards
 	IForward *m_pOnLibraryAdded;

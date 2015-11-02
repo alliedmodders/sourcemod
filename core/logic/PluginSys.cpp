@@ -44,6 +44,7 @@
 #include "Translator.h"
 #include "Logger.h"
 #include "frame_tasks.h"
+#include "PluginGraph.h"
 #include <amtl/am-string.h>
 #include <amtl/am-linkedlist.h>
 #include <bridge/include/IVEngineServerBridge.h>
@@ -60,8 +61,7 @@ CPlugin::CPlugin(const char *file)
    m_AddedLibraries(false),
    m_EnteredSecondPass(false),
    m_SilentFailure(false),
-   m_FakeNativesMissing(false),
-   m_LibraryMissing(false),
+   m_DependencyMissing(false),
    m_pContext(nullptr),
    m_MaxClientsVar(nullptr),
    m_bGotAllLoaded(false),
@@ -245,31 +245,15 @@ void CPlugin::LoadingError(PluginStatus status, const char *error_fmt, ...)
 		m_pRuntime->SetPauseState(true);
 }
 
-void CPlugin::EvictWithError(PluginStatus status, const char *error_fmt, ...)
+void CPlugin::DependencyError(PluginStatus status, const char *error_fmt, ...)
 {
-	if (m_status == Plugin_Running)
-	{
-		/* Tell everyone we're now paused */
-		SetPauseState(true);
-		/* If we won't recover from this error, drop everything and pause dependent plugins too! */
-		if (status == Plugin_Failed)
-		{
-			DropEverything();
-		}
-	}
-
-	/* SetPauseState sets the status to Plugin_Paused, but we might want to see some other status set. */
 	m_status = status;
+	m_DependencyMissing = true;
 
 	va_list ap;
 	va_start(ap, error_fmt);
 	ke::SafeVsprintf(m_errormsg, sizeof(m_errormsg), error_fmt, ap);
 	va_end(ap);
-
-	if (m_pRuntime != NULL)
-	{
-		m_pRuntime->SetPauseState(true);
-	}
 }
 
 bool CPlugin::ReadInfo()
@@ -596,49 +580,38 @@ void CPlugin::LibraryActions(LibraryAction action)
 		m_AddedLibraries = true;
 }
 
-bool CPlugin::SetPauseState(bool paused)
+// Sets the plugin in a temporary state (this should only be called when the
+// plugin is going to enter the eviction queue).
+void CPlugin::SetPaused()
 {
-	if (paused && GetStatus() != Plugin_Running)
-	{
-		return false;
-	}
-	else if (!paused && GetStatus() != Plugin_Paused && GetStatus() != Plugin_Error) {
-		return false;
-	}
-
-	if (paused)
-	{
-		LibraryActions(LibraryAction_Removed);
-	}
-	else
-	{
-		// Set to running again BEFORE trying to call OnPluginPauseChange ;)
-		m_status = Plugin_Running;
-		m_pRuntime->SetPauseState(false);
-	}
-
-	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("OnPluginPauseChange");
-	if (pFunction)
-	{
-		cell_t result;
-		pFunction->PushCell(paused ? 1 : 0);
-		pFunction->Execute(&result);
-	}
-
-	if (paused)
-	{
+	if (GetStatus() != Plugin_Running && GetStatus() != Plugin_Loaded)
 		m_status = Plugin_Paused;
+
+	if (m_pRuntime)
 		m_pRuntime->SetPauseState(true);
-	}
+}
 
-	g_PluginSys._SetPauseState(this, paused);
+void CPlugin::EvictWithError(PluginStatus status, const char *error_fmt, ...)
+{
+	// Notify others that our libraries will get removed.
+	LibraryActions(LibraryAction_Removed);
 
-	if (!paused)
-	{
-		LibraryActions(LibraryAction_Added);
-	}
+	// Enter a paused state.
+	SetPaused();
 
-	return true;
+	// Set our desired error message and status.
+	va_list ap;
+	va_start(ap, error_fmt);
+	ke::SafeVsprintf(m_errormsg, sizeof(m_errormsg), error_fmt, ap);
+	va_end(ap);
+
+	m_status = status;
+
+	// Evict dependenccies.
+	PluginEvictionGraph graph(this);
+	graph.DoEviction();
+
+	g_PluginSys.Evict(this);
 }
 
 IdentityToken_t *CPlugin::GetIdentity()
@@ -676,40 +649,19 @@ IPhraseCollection *CPlugin::GetPhrases()
 	return m_pPhrases;
 }
 
-void CPlugin::DependencyDropped(CPlugin *pOwner)
+void CPlugin::UnlinkNativesOwnedBy(CPlugin *other)
 {
 	if (!m_pRuntime)
 		return;
 
-	for (auto lib_iter=pOwner->m_Libraries.begin(); lib_iter!=pOwner->m_Libraries.end(); lib_iter++) {
-		if (m_RequiredLibs.find(*lib_iter) != m_RequiredLibs.end()) {
-			m_LibraryMissing = true;
-			break;
-		}
-	}
-
-	unsigned int unbound = 0;
-	for (size_t i = 0; i < pOwner->m_fakes.length(); i++)
+	for (size_t i = 0; i < other->m_fakes.length(); i++)
 	{
-		ke::Ref<Native> entry(pOwner->m_fakes[i]);
-
+		ke::Ref<Native> entry(other->m_fakes[i]);
 		uint32_t idx;
 		if (m_pRuntime->FindNativeByName(entry->name(), &idx) != SP_ERROR_NONE)
 			continue;
 
 		m_pRuntime->UpdateNativeBinding(idx, nullptr, 0, nullptr);
-		unbound++;
-	}
-
-	if (unbound)
-	{
-		m_FakeNativesMissing = true;
-	}
-
-	/* :IDEA: in the future, add native trapping? */
-	if (m_FakeNativesMissing || m_LibraryMissing)
-	{
-		EvictWithError(Plugin_Error, "Depends on plugin: %s", pOwner->GetFilename());
 	}
 }
 
@@ -750,38 +702,6 @@ void CPlugin::AddConfig(bool autoCreate, const char *cfg, const char *folder)
 	m_configs.push_back(c);
 }
 
-void CPlugin::DropEverything()
-{
-	CPlugin *pOther;
-	List<WeakNative>::iterator wk_iter;
-
-	/* Tell everyone that depends on us that we're about to drop */
-	for (List<CPlugin *>::iterator iter = m_Dependents.begin();
-		 iter != m_Dependents.end();
-		 iter++)
-	{
-		pOther = static_cast<CPlugin *>(*iter);
-		pOther->DependencyDropped(this);
-	}
-
-	/* Note: we don't care about things we depend on.
-	 * The reason is that extensions have their own cleanup
-	 * code for plugins.  Although the "right" design would be
-	 * to centralize that here, i'm omitting it for now.  Thus,
-	 * the code below to walk the plugins list will suffice.
-	 */
-
-	/* Other plugins could be holding weak references that were
-	 * added by us.  We need to clean all of those up now.
-	 */
-	g_PluginSys.ForEachPlugin([this] (CPlugin *other) -> void {
-		other->ToNativeOwner()->DropRefsTo(this);
-	});
-
-	/* Proceed with the rest of the necessities. */
-	CNativeOwner::DropEverything();
-}
-
 bool CPlugin::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
 {
 	ke::Ref<Native> entry = g_ShareSys.AddFakeNative(pFunc, name, func);
@@ -796,6 +716,25 @@ void CPlugin::BindFakeNativesTo(CPlugin *other)
 {
 	for (size_t i = 0; i < m_fakes.length(); i++)
 		g_ShareSys.BindNativeToPlugin(other, m_fakes[i]);
+}
+
+bool CPlugin::IsStronglyDependentOn(CPlugin *other) const
+{
+	if (!m_pRuntime)
+		return false;
+
+	for (auto iter = other->m_Libraries.begin(); iter != other->m_Libraries.end(); iter++) {
+		if (m_RequiredLibs.find(*iter) != m_RequiredLibs.end())
+			return true;
+	}
+
+	for (size_t i = 0; i < other->m_fakes.length(); i++) {
+		uint32_t idx;
+		if (m_pRuntime->FindNativeByName(other->m_fakes[i]->name(), &idx) != SP_ERROR_NONE)
+			return true;
+	}
+
+	return false;
 }
 
 /*******************
@@ -854,6 +793,7 @@ CPluginManager::CPluginManager()
 	m_LoadingLocked = false;
 
 	m_bBlockBadPlugins = true;
+	m_CanEvictImmediately = false;
 }
 
 CPluginManager::~CPluginManager()
@@ -1059,7 +999,7 @@ void CPluginManager::AddPlugin(CPlugin *pPlugin)
 	if (pPlugin->IsEvictionCandidate()) {
 		// If we get here, and the plugin isn't running, we evict it. This
 		// should be safe since our call stack should be empty.
-		Purge(pPlugin);
+		UnloadPluginImpl(pPlugin);
 		pPlugin->FinishEviction();
 	}
 }
@@ -1072,7 +1012,7 @@ void CPluginManager::LoadAll_SecondPass()
 			char error[256] = {0};
 			if (!RunSecondPass(pPlugin)) {
 				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), pPlugin->GetErrorMsg());
-				Purge(pPlugin);
+				UnloadPluginImpl(pPlugin);
 				pPlugin->FinishEviction();
 			}
 		}
@@ -1209,8 +1149,14 @@ void CPlugin::SetRegistered()
 
 void CPlugin::SetWaitingToUnload()
 {
-	assert(m_state == PluginState::Registered);
+	assert(m_state == PluginState::Registered || m_state == PluginState::WaitingToEvict);
 	m_state = PluginState::WaitingToUnload;
+}
+
+void CPlugin::SetWaitingToEvict()
+{
+	assert(m_state == PluginState::Registered);
+	m_state = PluginState::WaitingToEvict;
 }
 
 void CPluginManager::LoadExtensions(CPlugin *pPlugin)
@@ -1356,15 +1302,13 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin)
 	if (pPlugin->HasFakeNatives()) {
 		for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 			CPlugin *pOther = (*iter);
-			if ((pOther->GetStatus() == Plugin_Error
-				&& (pOther->HasMissingFakeNatives() || pOther->HasMissingLibrary()))
-				|| pOther->HasMissingFakeNatives())
+			if (pOther->State() == PluginState::Evicted &&
+			    pOther->HasMissingDependencies() &&
+			    pOther->GetStatus() == Plugin_Error)
 			{
 				TryRefreshDependencies(pOther);
-			}
-			else if ((pOther->GetStatus() == Plugin_Running
-					  || pOther->GetStatus() == Plugin_Paused)
-					 && pOther != pPlugin)
+			} else if ((pOther->GetStatus() == Plugin_Running || pOther->GetStatus() == Plugin_Paused) &&
+			           pOther != pPlugin)
 			{
 				g_ShareSys.BeginBindingFor(pPlugin);
 				pPlugin->BindFakeNativesTo(pOther);
@@ -1395,62 +1339,57 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin)
 
 void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 {
-	assert(pPlugin->GetBaseContext() != NULL);
-
-	g_ShareSys.BindNativesToPlugin(pPlugin, false);
-
 	bool all_found = pPlugin->ForEachRequiredLib([this, pPlugin] (const char *lib) -> bool {
-		CPlugin *found = nullptr;
 		for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 			CPlugin *search = (*iter);
-			if (search->HasLibrary(lib)) {
-				found = search;
-				break;
-			}
+			if (search->HasLibrary(lib))
+				return true;
 		}
-		if (!found) {
-			pPlugin->EvictWithError(Plugin_Error, "Library not found: %s", lib);
-			return false;
-		}
-		found->AddDependent(pPlugin);
-		return true;
+		return false;
 	});
 	if (!all_found)
 		return;
 
-	/* Find any unbound natives
-	 * Right now, these are not allowed
-	 */
-	IPluginContext *pContext = pPlugin->GetBaseContext();
-	uint32_t num = pContext->GetNativesNum();
-	for (unsigned int i=0; i<num; i++)
-	{
-		const sp_native_t *native = pContext->GetRuntime()->GetNative(i);
-		if (!native)
-			break;
-		if (native->status == SP_NATIVE_UNBOUND &&
-			native->name[0] != '@' &&
-			!(native->flags & SP_NTVFLAG_OPTIONAL))
-		{
-			pPlugin->EvictWithError(Plugin_Error, "Native not found: %s", native->name);
-			return;
-		}
-	}
-
-	if (pPlugin->GetStatus() == Plugin_Error)
-	{
-		/* If we got here, all natives are okay again! */
-		if (pPlugin->GetRuntime()->IsPaused())
-		{
-			pPlugin->SetPauseState(false);
-		}
-	}
+	// :XXX:
+	assert(false);
 }
 
 bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 {
 	CPlugin *pPlugin = (CPlugin *)plugin;
 	return ScheduleUnload(pPlugin);
+}
+
+void CPluginManager::Evict(CPlugin *plugin)
+{
+	if (plugin->State() == PluginState::WaitingToUnload)
+		return;
+
+	if (!m_CanEvictImmediately) {
+		plugin->SetWaitingToEvict();
+		ScheduleTaskForNextFrame([this, plugin] () -> void {
+			ke::SaveAndSet<bool> autoAllowEvict(&m_CanEvictImmediately, true);
+			DoEvict(plugin);
+		});
+		return;
+	}
+
+	DoEvict(plugin);
+}
+
+void CPluginManager::DoEvict(CPlugin *plugin)
+{
+	assert(m_CanEvictImmediately);
+
+	if (plugin->State() == PluginState::WaitingToUnload) {
+		// We could have gotten here if someone requested an unload while we
+		// were waiting to be evicted. Just do an unload now.
+		DoUnload(plugin);
+		return;
+	}
+
+	UnloadPluginImpl(plugin);
+	plugin->FinishEviction();
 }
 
 bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
@@ -1461,6 +1400,14 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 	// If we're already in the unload queue, just wait.
 	if (pPlugin->State() == PluginState::WaitingToUnload)
 		return false;
+
+	// If we're waiting to be evicted, change the state and wait for the
+	// eviction to occur. The evict callback will recognize this change and
+	// unload the plugin instead.
+	if (pPlugin->State() == PluginState::WaitingToEvict) {
+		pPlugin->SetWaitingToUnload();
+		return false;
+	}
 
 	// It is not safe to unload any plugin while another is on the callstack.
 	bool any_active = false;
@@ -1481,17 +1428,28 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 		return false;
 	}
 
-	// No need to schedule an unload, we can unload immediately.
-	UnloadPluginImpl(pPlugin);
+	ke::SaveAndSet<bool> autoAllowEvict(&m_CanEvictImmediately, true);
+	DoUnload(pPlugin);
 	return true;
 }
 
-void CPluginManager::Purge(CPlugin *plugin)
+void CPluginManager::DoUnload(CPlugin *plugin)
 {
-	// Go through our libraries and tell other plugins they're gone.
+	UnloadPluginImpl(plugin);
+
+	// Remove the plugin from our cache.
+	m_plugins.remove(plugin);
+	m_LoadLookup.remove(plugin->GetFilename());
+	delete plugin;
+}
+
+void CPluginManager::UnloadPluginImpl(CPlugin *plugin)
+{
+	// Drop our libraries. Note, we may have done this before during eviction,
+	// but it's okay to double-call this.
 	plugin->LibraryActions(LibraryAction_Removed);
 
-	// Notify listeners of unloading.
+	// Notify listeners of unloading that we're about to call OnPluginEnd.
 	if (plugin->EnteredSecondPass()) {
 		for (ListenerIter iter(m_listeners); !iter.done(); iter.next()) {
 			if ((*iter)->GetApiVersion() >= kMinPluginSysApiWithWillUnloadCallback)
@@ -1501,32 +1459,32 @@ void CPluginManager::Purge(CPlugin *plugin)
 
 	// We only pair OnPluginEnd with OnPluginStart if we would have
 	// successfully called OnPluginStart, *and* SetFailState() wasn't called,
-	// which guarantees no further code will execute.
+	// which guarantees no further code will execute if OnPluginStart fails.
 	if (plugin->GetStatus() == Plugin_Running)
 		plugin->Call_OnPluginEnd();
 
-	// Notify listeners of unloading.
+	// Mark the root as paused so we don't re-enter the plugin.
+	plugin->SetPaused();
+
+    // Evicted plugins were already purged from external systems.
+    if (plugin->State() != PluginState::Evicted) {
+		// If the plugin is being unloaded because of a call to EvictWithError,
+		// then we may have already done a full graph eviction. It's okay to do
+		// it again though, since if there were any links they should have been
+		// broken, therefore the effective result set should be empty.
+		PluginEvictionGraph graph(plugin);
+		graph.DoEviction();
+	}
+
+	// Notify listeners that OnPluginEnd was called.
 	if (plugin->EnteredSecondPass()) {
 		for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
 			(*iter)->OnPluginUnloaded(plugin);
 	}
 
-	plugin->DropEverything();
-
+	// Final callback.
 	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
 		(*iter)->OnPluginDestroyed(plugin);
-}
-
-void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
-{
-	m_plugins.remove(pPlugin);
-	m_LoadLookup.remove(pPlugin->GetFilename());
-
-	// Evicted plugins were already purged from external systems.
-	if (pPlugin->State() != PluginState::Evicted)
-		Purge(pPlugin);
-
-	delete pPlugin;
 }
 
 IPlugin *CPluginManager::FindPluginByContext(const sp_context_t *ctx)
@@ -2121,12 +2079,6 @@ bool CPlugin::HasUpdatedFile()
 	return false;
 }
 
-void CPluginManager::_SetPauseState(CPlugin *pl, bool paused)
-{
-	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
-		(*iter)->OnPluginPauseChange(pl, paused);
-}
-
 void CPluginManager::AddFunctionsToForward(const char *name, IChangeableForward *pForward)
 {
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
@@ -2264,6 +2216,12 @@ void CPluginManager::ForEachPlugin(ke::Lambda<void(CPlugin *)> callback)
 		callback(*iter);
 }
 
+void CPluginManager::ForEachListener(const ke::Lambda<void(IPluginsListener*)> &callback)
+{
+	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
+		callback(*iter);
+}
+
 class PluginsListenerV1Wrapper final
 	: public IPluginsListener,
 	  public ke::Refcounted<PluginsListenerV1Wrapper>
@@ -2280,9 +2238,6 @@ public:
 
 	void OnPluginLoaded(IPlugin *plugin) override {
 		impl_->OnPluginLoaded(plugin);
-	}
-	void OnPluginPauseChange(IPlugin *plugin, bool paused) override {
-		impl_->OnPluginPauseChange(plugin, paused);
 	}
 	void OnPluginUnloaded(IPlugin *plugin) override {
 		impl_->OnPluginUnloaded(plugin);

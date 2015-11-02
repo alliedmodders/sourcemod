@@ -181,11 +181,11 @@ namespace SourceMod
 		virtual PluginStatus GetStatus() =0;
 
 		/**
-		 * @brief Sets whether the plugin is paused or not.
+		 * @brief Deprecated; does nothing/
 		 *
-		 * @return			True on successful state change, false otherwise.
+		 * @return			Returns false.
 		 */
-		virtual bool SetPauseState(bool paused) =0;
+		virtual bool SetPauseState_OBSOLETE(bool) =0;
 
 		/**
 		 * @brief Returns the unique serial number of a plugin.
@@ -295,8 +295,8 @@ namespace SourceMod
 		{
 		}
 
-		// @brief Called when a plugin is paused or unpaused.
-		virtual void OnPluginPauseChange(IPlugin *plugin, bool paused)
+		// @brief Removed. This callback no longer fires.
+		virtual void OnPluginPauseChange(IPlugin *plugin, bool paused) final
 		{
 		}
 
@@ -309,6 +309,10 @@ namespace SourceMod
 		// you wish to be notified of when a plugin is unloading, and to forbid
 		// future calls on that plugin, use OnPluginWillUnload and use a
 		// plugin property to block future calls.
+		//
+		// Furthermore, when this callback fires, plugins may be in a paused
+		// state, and callbacks fired may report an error. Take care to check
+		// whether functions are runnable beforehand.
 		virtual void OnPluginUnloaded(IPlugin *plugin)
 		{
 		}

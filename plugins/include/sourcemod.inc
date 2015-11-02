@@ -137,14 +137,6 @@ forward APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 forward void OnPluginEnd();
 
 /**
- * Called when the plugin's pause status is changing.
- *
- * @param pause			True if the plugin is being paused, false otherwise.
- * @noreturn
- */
-forward void OnPluginPauseChange(bool:pause);
-
-/**
  * Called before every server frame.  Note that you should avoid
  * doing expensive computations or declaring large local arrays.
  */

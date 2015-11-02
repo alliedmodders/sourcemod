@@ -142,23 +142,6 @@ void CForwardManager::ReleaseForward(IForward *aForward)
 	delete fwd;
 }
 
-void CForwardManager::OnPluginPauseChange(IPlugin *plugin, bool paused)
-{
-	if (paused)
-		return;
-
-	/* Attach any globally managed forwards */
-	for (ForwardIter iter(m_managed); !iter.done(); iter.next()) {
-		CForward *fwd = (*iter);
-		IPluginFunction *pFunc = plugin->GetBaseContext()->GetFunctionByName(fwd->GetForwardName());
-		// Only add functions, if they aren't registered yet!
-		if (pFunc && !fwd->IsFunctionRegistered(pFunc))
-		{
-			fwd->AddFunction(pFunc);
-		}
-	}
-}
-
 /*************************************
  * ACTUAL FORWARD API IMPLEMENTATION *
  *************************************/
@@ -251,6 +234,9 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 
 		if (filter)
 			filter->Preprocess(func, temp_info);
+
+		if (func->GetParentRuntime()->IsPaused())
+			continue;
 
 		for (unsigned int i=0; i<num_params; i++)
 		{
@@ -604,14 +590,8 @@ bool CForward::RemoveFunction(IPluginContext *pContext, funcid_t index)
 
 bool CForward::RemoveFunction(IPluginFunction *func)
 {
-	ReentrantList<IPluginFunction *> *lst;
-	if (func->IsRunnable())
-		lst = &m_functions;
-	else
-		lst = &m_paused;
-
 	bool found = false;
-	for (FuncIter iter(lst); !iter.done(); iter.next()) {
+	for (FuncIter iter(m_functions); !iter.done(); iter.next()) {
 		if (*iter == func) {
 			iter.remove();
 			found = true;
@@ -644,23 +624,13 @@ bool CForward::AddFunction(IPluginFunction *func)
 	if (m_curparam)
 		return false;
 
-	if (func->IsRunnable())
-		m_functions.append(func);
-	else
-		m_paused.append(func);
-
+	m_functions.append(func);
 	return true;
 }
 
 bool CForward::IsFunctionRegistered(IPluginFunction *func)
 {
-	ReentrantList<IPluginFunction *> *lst;
-	if (func->IsRunnable())
-		lst = &m_functions;
-	else
-		lst = &m_paused;
-
-	for (FuncIter iter(lst); !iter.done(); iter.next()) {
+	for (FuncIter iter(m_functions); !iter.done(); iter.next()) {
 		if ((*iter) == func)
 			return true;
 	}

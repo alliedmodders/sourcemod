@@ -81,7 +81,6 @@ private:
 	}
 protected:
 	mutable ReentrantList<IPluginFunction *> m_functions;
-	mutable ReentrantList<IPluginFunction *> m_paused;
 
 	/* Type and name information */
 	FwdParamInfo m_params[SP_MAX_EXEC_PARAMS];
@@ -118,7 +117,6 @@ public: //IForwardManager
 public: //IPluginsListener
 	void OnPluginLoaded(IPlugin *plugin);
 	void OnPluginUnloaded(IPlugin *plugin);
-	void OnPluginPauseChange(IPlugin *plugin, bool paused);
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 private:

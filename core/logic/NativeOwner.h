@@ -33,11 +33,12 @@
 
 #include <sp_vm_types.h>
 #include <sh_list.h>
-#include <am-linkedlist.h>
-#include <am-vector.h>
+#include <amtl/am-linkedlist.h>
+#include <amtl/am-vector.h>
 #include "common_logic.h"
 #include "Native.h"
 #include <bridge/include/IScriptManager.h>
+#include <amtl/am-function.h>
 
 struct Native;
 class CPlugin;
@@ -63,7 +64,7 @@ class CNativeOwner
 public:
 	CNativeOwner();
 public:
-	virtual void DropEverything();
+	void DropEverything();
 public:
 	void AddNatives(const sp_nativeinfo_t *info);
 public:
@@ -73,6 +74,7 @@ public:
 	void AddDependent(CPlugin *pPlugin);
 	void AddWeakRef(const WeakNative & ref);
 	void DropRefsTo(CPlugin *pPlugin);
+	void ForEachDependent(const ke::Lambda<void(CPlugin*)> &callback);
 private:
 	void DropWeakRefsTo(CPlugin *pPlugin);
 	void UnbindWeakRef(const WeakNative & ref);

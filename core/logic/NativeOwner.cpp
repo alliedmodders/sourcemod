@@ -79,10 +79,8 @@ void CNativeOwner::UnbindWeakRef(const WeakNative &ref)
 
 void CNativeOwner::DropEverything()
 {
-	List<WeakNative>::iterator iter;
-
-	/* Unbind and remove all weak references to us */
-	iter = m_WeakRefs.begin();
+	// Unbind and remove all weak references to us.
+	auto iter = m_WeakRefs.begin();
 	while (iter != m_WeakRefs.end())
 	{
 		UnbindWeakRef((*iter));
@@ -100,6 +98,9 @@ void CNativeOwner::DropEverything()
 	for (size_t i = 0; i < m_fakes.length(); i++)
 		g_ShareSys.ClearNativeFromCache(this, m_fakes[i]->name());
 	m_fakes.clear();
+
+	// At this point, we should have no more dependents.
+	m_Dependents.clear();
 }
 
 void CNativeOwner::DropWeakRefsTo(CPlugin *pPlugin)
@@ -126,4 +127,10 @@ void CNativeOwner::DropRefsTo(CPlugin *pPlugin)
 {
 	m_Dependents.remove(pPlugin);
 	DropWeakRefsTo(pPlugin);
+}
+
+void CNativeOwner::ForEachDependent(const ke::Lambda<void(CPlugin*)> &callback)
+{
+	for (auto iter = m_Dependents.begin(); iter != m_Dependents.end(); iter++)
+		callback(*iter);
 }
