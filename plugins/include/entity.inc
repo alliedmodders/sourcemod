@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -29,7 +29,7 @@
  *
  * Version: $Id$
  */
- 
+
 #if defined _entity_included
  #endinput
 #endif
@@ -67,9 +67,9 @@ enum PropFieldType
 	PropField_Entity,			/**< Valid for Data fields only (SendProp shows as int) */
 	PropField_Vector,			/**< Valid for SendProp and Data fields */
 	PropField_String,			/**< Valid for SendProp and Data fields */
-	PropField_String_T,			/**< Valid for Data fields.  Read only.  
-									 Note that the size of a string_t is dynamic, and 
-									 thus FindDataMapOffs() will return the constant size 
+	PropField_String_T,			/**< Valid for Data fields.  Read only.
+									 Note that the size of a string_t is dynamic, and
+									 thus FindDataMapOffs() will return the constant size
 									 of the string_t container (which is 32 bits right now).
 								 */
 };
@@ -124,7 +124,7 @@ native bool:IsEntNetworkable(edict);
  */
 native CreateEdict();
 
-/** 
+/**
  * Removes an edict from the world.
  *
  * @param edict			Index of the edict.
@@ -177,31 +177,31 @@ native bool:GetEntityNetClass(edict, String:clsname[], maxlength);
 /**
  * @section Entity offset functions
  *
- * Offsets should be specified in byte distance from the CBaseEntity 
- * structure, not short (double byte) or integer (four byte) multiples.  
- * It is somewhat common practice to use offsets aligned to their final 
+ * Offsets should be specified in byte distance from the CBaseEntity
+ * structure, not short (double byte) or integer (four byte) multiples.
+ * It is somewhat common practice to use offsets aligned to their final
  * type, and thus make sure you are not falling to this error in SourceMod.
  * For example, if your "integer-aligned" offset was 119, your byte-aligned
  * offset is 119*4, or 476.
- 
+
  * Specifying incorrect offsets or the incorrect data type for an offset
- * can have fatal consequences.  If you are hardcoding offsets, and the 
+ * can have fatal consequences.  If you are hardcoding offsets, and the
  * layout of CBaseEntity does not match, you can easily crash the server.
  *
- * The reasonable bounds for offsets is greater than or equal to 0 and 
+ * The reasonable bounds for offsets is greater than or equal to 0 and
  * below 32768.  Offsets out of these bounds will throw an error.  However,
  * this does not represent any real range, it is simply a sanity check for
  * illegal values.  Any range outside of the CBaseEntity structure's private
  * size will cause undefined behavior or even crash.
  */
- 
+
 /**
- * Marks an entity as state changed.  This can be useful if you set an offset 
- * and wish for it to be immediately changed over the network.  By default this 
- * is not done for offset setting functions.  
+ * Marks an entity as state changed.  This can be useful if you set an offset
+ * and wish for it to be immediately changed over the network.  By default this
+ * is not done for offset setting functions.
  *
  * @param edict			Index to the edict.
- * @param offset		Offset to mark as changed.  If 0, 
+ * @param offset		Offset to mark as changed.  If 0,
  *						the entire edict is marked as changed.
  * @noreturn
  * @error				Invalid entity or offset out of bounds.
@@ -209,9 +209,9 @@ native bool:GetEntityNetClass(edict, String:clsname[], maxlength);
 native ChangeEdictState(edict, offset = 0);
 
 /**
- * Peeks into an entity's object data and retrieves the integer value at 
+ * Peeks into an entity's object data and retrieves the integer value at
  * the given offset.
- * 
+ *
  * @param entity		Edict index.
  * @param offset		Offset to use.
  * @param size			Number of bytes to read (valid values are 1, 2, or 4).
@@ -221,7 +221,7 @@ native ChangeEdictState(edict, offset = 0);
 native GetEntData(entity, offset, size=4);
 
 /**
- * Peeks into an entity's object data and sets the integer value at 
+ * Peeks into an entity's object data and sets the integer value at
  * the given offset.
  *
  * @param entity		Edict index.
@@ -236,9 +236,9 @@ native GetEntData(entity, offset, size=4);
 native SetEntData(entity, offset, any:value, size=4, bool:changeState=false);
 
 /**
- * Peeks into an entity's object data and retrieves the float value at 
+ * Peeks into an entity's object data and retrieves the float value at
  * the given offset.
- * 
+ *
  * @param entity		Edict index.
  * @param offset		Offset to use.
  * @return				Value at the given memory location.
@@ -247,7 +247,7 @@ native SetEntData(entity, offset, any:value, size=4, bool:changeState=false);
 native Float:GetEntDataFloat(entity, offset);
 
 /**
- * Peeks into an entity's object data and sets the float value at 
+ * Peeks into an entity's object data and sets the float value at
  * the given offset.
  *
  * @param entity		Edict index.
@@ -261,15 +261,15 @@ native Float:GetEntDataFloat(entity, offset);
 native SetEntDataFloat(entity, offset, Float:value, bool:changeState=false);
 
 /**
- * This function is deprecated.  Use GetEntDataEnt2 instead, for 
+ * This function is deprecated.  Use GetEntDataEnt2 instead, for
  * reasons explained in the notes.
  *
- * Note: This function returns 0 on failure, which may be misleading, 
+ * Note: This function returns 0 on failure, which may be misleading,
  * as the number 0 is also used for the world entity index.
  *
- * Note: This function makes no attempt to validate the returned 
+ * Note: This function makes no attempt to validate the returned
  * entity, and in fact, it could be garbage or completely unexpected.
- * 
+ *
  * @param entity		Edict index.
  * @param offset		Offset to use.
  * @return				Entity index at the given location, or 0 if none.
@@ -279,13 +279,13 @@ native SetEntDataFloat(entity, offset, Float:value, bool:changeState=false);
 native GetEntDataEnt(entity, offset);
 
 /**
- * This function is deprecated.   Use SetEntDataEnt2 instead, for 
+ * This function is deprecated.   Use SetEntDataEnt2 instead, for
  * reasons explained in the notes.
  *
- * Note: This function uses 0 as an indicator to unset data, but 
- * 0 is also the world entity index.  Thus, a property cannot 
+ * Note: This function uses 0 as an indicator to unset data, but
+ * 0 is also the world entity index.  Thus, a property cannot
  * be set to the world entity using this native.
- * 
+ *
  * @param entity		Edict index.
  * @param offset		Offset to use.
  * @param other			Entity index to set, or 0 to clear.
@@ -297,29 +297,29 @@ native GetEntDataEnt(entity, offset);
 native SetEntDataEnt(entity, offset, other, bool:changeState=false);
 
 /**
- * Peeks into an entity's object data and retrieves the entity index 
+ * Peeks into an entity's object data and retrieves the entity index
  * at the given offset.
  *
- * Note: This will only work on offsets that are stored as "entity 
- * handles" (which usually looks like m_h* in properties).  These 
+ * Note: This will only work on offsets that are stored as "entity
+ * handles" (which usually looks like m_h* in properties).  These
  * are not SourceMod Handles, but internal Source structures.
- * 
+ *
  * @param entity		Edict index.
  * @param offset		Offset to use.
- * @return				Entity index at the given location.  If there is no entity, 
+ * @return				Entity index at the given location.  If there is no entity,
  *						or the stored entity is invalid, then -1 is returned.
  * @error				Invalid input entity, or offset out of reasonable bounds.
  */
 native GetEntDataEnt2(entity, offset);
 
 /**
- * Peeks into an entity's object data and sets the entity index at the 
+ * Peeks into an entity's object data and sets the entity index at the
  * given offset.
  *
- * Note: This will only work on offsets that are stored as "entity 
- * handles" (which usually looks like m_h* in properties).  These 
+ * Note: This will only work on offsets that are stored as "entity
+ * handles" (which usually looks like m_h* in properties).  These
  * are not SourceMod Handles, but internal Source structures.
- * 
+ *
  * @param entity		Edict index.
  * @param offset		Offset to use.
  * @param other			Entity index to set, or -1 to clear.
@@ -330,11 +330,11 @@ native GetEntDataEnt2(entity, offset);
 native SetEntDataEnt2(entity, offset, other, bool:changeState=false);
 
 /**
- * Peeks into an entity's object data and retrieves the vector at the 
+ * Peeks into an entity's object data and retrieves the vector at the
  * given offset.
- * @note Both a Vector and a QAngle are three floats.  This is a 
+ * @note Both a Vector and a QAngle are three floats.  This is a
  * convenience function and will work with both types.
- * 
+ *
  * @param entity		Edict index.
  * @param offset		Offset to use.
  * @param vec			Vector buffer to store data in.
@@ -344,11 +344,11 @@ native SetEntDataEnt2(entity, offset, other, bool:changeState=false);
 native GetEntDataVector(entity, offset, Float:vec[3]);
 
 /**
- * Peeks into an entity's object data and sets the vector at the given 
+ * Peeks into an entity's object data and sets the vector at the given
  * offset.
- * @note Both a Vector and a QAngle are three floats.  This is a 
+ * @note Both a Vector and a QAngle are three floats.  This is a
  * convenience function and will work with both types.
- * 
+ *
  * @param entity		Edict index.
  * @param offset		Offset to use.
  * @param vec			Vector to set.
@@ -359,9 +359,9 @@ native GetEntDataVector(entity, offset, Float:vec[3]);
 native SetEntDataVector(entity, offset, const Float:vec[3], bool:changeState=false);
 
 /**
- * Peeks into an entity's object data and retrieves the string at 
+ * Peeks into an entity's object data and retrieves the string at
  * the given offset.
- * 
+ *
  * @param entity		Edict index.
  * @param offset		Offset to use.
  * @param buffer		Destination string buffer.
@@ -372,9 +372,9 @@ native SetEntDataVector(entity, offset, const Float:vec[3], bool:changeState=fal
 native GetEntDataString(entity, offset, String:buffer[], maxlen);
 
 /**
- * Peeks into an entity's object data and sets the string at 
+ * Peeks into an entity's object data and sets the string at
  * the given offset.
- * 
+ *
  * @param entity		Edict index.
  * @param offset		Offset to use.
  * @param buffer		String to set.
@@ -394,41 +394,37 @@ native SetEntDataString(entity, offset, const String:buffer[], maxlen, bool:chan
  * This information is cached for future calls.
  *
  * Note, this function may return offsets that do not work!
- * If a property is nested beneath a parent object, the resulting offset 
- * will be invalid for direct use with data functions.  Therefore, you 
- * should use FindSendPropInfo() instead.  An example of such a property is 
+ * If a property is nested beneath a parent object, the resulting offset
+ * will be invalid for direct use with data functions.  Therefore, you
+ * should use FindSendPropInfo() instead.  An example of such a property is
  * CTFPlayer::DT_LocalPlayer.m_nDisguiseClass on Team Fortress.
  *
  * @param cls			Classname.
  * @param prop			Property name.
  * @return				An offset, or -1 on failure.
  */
+#pragma deprecated Use FindSendPropInfo instead, or HasEntProp if you just want to check for existence.
 native FindSendPropOffs(const String:cls[], const String:prop[]);
 
 /**
  * Given a ServerClass name, finds a networkable send property offset.
  * This information is cached for future calls.
- * 
- * Note: This function will correctly compute nested offsets, unlike 
- * FindSendPropOffs().  YOU SHOULD NOT use this function to self-compute 
- * nested offsets.  For example, it is okay to add indexes for arrays, 
- * but not to add DT_LocalPlayer to m_nDisguiseClass.
  *
  * @param cls			Classname.
  * @param prop			Property name.
  * @param type			Optional parameter to store the type.
- * @param num_bits		Optional parameter to store the number of bits the field 
- *						uses, if applicable (otherwise 0 is stored).  The number 
- *						of bits varies for integers and floats, and is always 0 
+ * @param num_bits		Optional parameter to store the number of bits the field
+ *						uses, if applicable (otherwise 0 is stored).  The number
+ *						of bits varies for integers and floats, and is always 0
  * 						for strings.
- * @param local_offset	Optional parameter to store the local offset, as 
+ * @param local_offset	Optional parameter to store the local offset, as
  *						FindSendPropOffs() would return.
  * @return				On success, returns an absolutely computed offset.
  *						If no offset is available, 0 is returned.
  *						If the property is not found, -1 is returned.
  */
-native FindSendPropInfo(const String:cls[], 
-						const String:prop[], 
+native FindSendPropInfo(const String:cls[],
+						const String:prop[],
 						&PropFieldType:type=PropFieldType:0,
 						&num_bits=0,
 						&local_offset=0);
@@ -440,16 +436,17 @@ native FindSendPropInfo(const String:cls[],
  * @param entity		Entity index.
  * @param prop			Property name.
  * @param type			Optional parameter to store the type.
- * @param num_bits		Optional parameter to store the number of bits the field 
- *						uses.  The bit count will either be 1 (for boolean) or 
+ * @param num_bits		Optional parameter to store the number of bits the field
+ *						uses.  The bit count will either be 1 (for boolean) or
  *						divisible by 8 (including 0 if unknown).
  * @return				An offset, or -1 on failure.
  */
-native FindDataMapOffs(entity, 
+#pragma deprecated Use FindDataMapInfo instead, or HasEntProp if you just want to check for existence.
+native FindDataMapOffs(entity,
 					   const String:prop[],
 					   &PropFieldType:type=PropFieldType:0,
 					   &num_bits=0);
-					   
+
 /**
  * Given an entity, finds a nested datamap property offset.
  * This information is cached for future calls.
@@ -457,14 +454,14 @@ native FindDataMapOffs(entity,
  * @param entity		Entity index.
  * @param prop			Property name.
  * @param type			Optional parameter to store the type.
- * @param num_bits		Optional parameter to store the number of bits the field 
- *						uses.  The bit count will either be 1 (for boolean) or 
+ * @param num_bits		Optional parameter to store the number of bits the field
+ *						uses.  The bit count will either be 1 (for boolean) or
  *						divisible by 8 (including 0 if unknown).
- * @param local_offset	Optional parameter to store the local offset, as 
+ * @param local_offset	Optional parameter to store the local offset, as
  *						FindDataMapOffs() would return.
  * @return				An offset, or -1 on failure.
  */
-native FindDataMapInfo(entity, 
+native FindDataMapInfo(entity,
 					   const String:prop[],
 					   &PropFieldType:type=PropFieldType:0,
 					   &num_bits=0,
@@ -476,40 +473,68 @@ native FindDataMapInfo(entity,
  * @param ent			Entity index.
  * @param prop			Property name.
  * @param actual		Defaults to false for backwards compatibility.
- *						If true, the newer FindSendPropInfo() function 
+ *						If true, the newer FindSendPropInfo() function
  *						is used instead.
  * @return				An offset, or -1 on failure.
  */
 stock GetEntSendPropOffs(ent, const String:prop[], bool:actual=false)
 {
-	decl String:cls[64];
-	
+	new String:cls[64];
+
 	if (!GetEntityNetClass(ent, cls, sizeof(cls)))
 	{
 		return -1;
 	}
-	
+
+	new local;
+	new offset = FindSendPropInfo(cls, prop, _, _, local);
+
 	if (actual)
 	{
-		return FindSendPropInfo(cls, prop);
+		return offset;
+	} else {
+		return local;
 	}
-	else
-	{
-		return FindSendPropOffs(cls, prop);
+}
+
+/**
+ * Checks if an entity property exists on an entity.
+ *
+ * @param entity		Entity/edict index.
+ * @param type			Property type.
+ * @param prop			Property name.
+ * @return				Whether the property exists on the entity.
+ * @error				Invalid entity.
+ */
+stock bool:HasEntProp(entity, PropType:type, const String:prop[])
+{
+	if (type == Prop_Data) {
+		return (FindDataMapInfo(entity, prop) != -1);
 	}
+
+	if (type != Prop_Send) {
+		return false;
+	}
+
+	new String:cls[64];
+	if (!GetEntityNetClass(entity, cls, sizeof(cls))) {
+		return false;
+	}
+
+	return (FindSendPropInfo(cls, prop) != -1);
 }
 
 /**
  * Retrieves an integer value from an entity's property.
  *
- * This function is considered safer and more robust over GetEntData, 
+ * This function is considered safer and more robust over GetEntData,
  * because it performs strict offset checking and typing rules.
- * 
+ *
  * @param entity		Entity/edict index.
  * @param type			Property type.
  * @param prop			Property name.
  * @param size			Number of bytes to write (valid values are 1, 2, or 4).
- *						This value is auto-detected, and the size parameter is 
+ *						This value is auto-detected, and the size parameter is
  *						only used as a fallback in case detection fails.
  * @param element		Element # (starting from 0) if property is an array.
  * @return				Value at the given property offset.
@@ -520,15 +545,15 @@ native GetEntProp(entity, PropType:type, const String:prop[], size=4, element=0)
 /**
  * Sets an integer value in an entity's property.
  *
- * This function is considered safer and more robust over SetEntData, 
+ * This function is considered safer and more robust over SetEntData,
  * because it performs strict offset checking and typing rules.
- * 
+ *
  * @param entity		Entity/edict index.
  * @param type			Property type.
  * @param prop			Property name.
  * @param value			Value to set.
  * @param size			Number of bytes to write (valid values are 1, 2, or 4).
- *						This value is auto-detected, and the size parameter is 
+ *						This value is auto-detected, and the size parameter is
  *						only used as a fallback in case detection fails.
  * @param element		Element # (starting from 0) if property is an array.
  * @error				Invalid entity or offset out of reasonable bounds.
@@ -539,9 +564,9 @@ native SetEntProp(entity, PropType:type, const String:prop[], any:value, size=4,
 /**
  * Retrieves a float value from an entity's property.
  *
- * This function is considered safer and more robust over GetEntDataFloat, 
+ * This function is considered safer and more robust over GetEntDataFloat,
  * because it performs strict offset checking and typing rules.
- * 
+ *
  * @param entity		Entity/edict index.
  * @param type			Property type.
  * @param prop			Property name.
@@ -554,9 +579,9 @@ native Float:GetEntPropFloat(entity, PropType:type, const String:prop[], element
 /**
  * Sets a float value in an entity's property.
  *
- * This function is considered safer and more robust over SetEntDataFloat, 
+ * This function is considered safer and more robust over SetEntDataFloat,
  * because it performs strict offset checking and typing rules.
- * 
+ *
  * @param entity		Entity/edict index.
  * @param type			Property type.
  * @param prop			Property name.
@@ -570,15 +595,15 @@ native SetEntPropFloat(entity, PropType:type, const String:prop[], Float:value, 
 /**
  * Retrieves an entity index from an entity's property.
  *
- * This function is considered safer and more robust over GetEntDataEnt*, 
+ * This function is considered safer and more robust over GetEntDataEnt*,
  * because it performs strict offset checking and typing rules.
- * 
+ *
  * @param entity		Entity/edict index.
  * @param type			Property type.
  * @param prop			Property name.
  * @param element		Element # (starting from 0) if property is an array.
  * @return				Entity index at the given property.
- *						If there is no entity, or the entity is not valid, 
+ *						If there is no entity, or the entity is not valid,
  *						then -1 is returned.
  * @error				Invalid entity or offset out of reasonable bounds.
  */
@@ -587,9 +612,9 @@ native GetEntPropEnt(entity, PropType:type, const String:prop[], element=0);
 /**
  * Sets an entity index in an entity's property.
  *
- * This function is considered safer and more robust over SetEntDataEnt*, 
+ * This function is considered safer and more robust over SetEntDataEnt*,
  * because it performs strict offset checking and typing rules.
- * 
+ *
  * @param entity		Entity/edict index.
  * @param type			Property type.
  * @param prop			Property name.
@@ -603,16 +628,16 @@ native SetEntPropEnt(entity, PropType:type, const String:prop[], other, element=
 /**
  * Retrieves a vector of floats from an entity, given a named network property.
  *
- * This function is considered safer and more robust over GetEntDataVector, 
+ * This function is considered safer and more robust over GetEntDataVector,
  * because it performs strict offset checking and typing rules.
- * 
+ *
  * @param entity		Entity/edict index.
  * @param type			Property type.
  * @param prop			Property name.
  * @param vec			Vector buffer to store data in.
  * @param element		Element # (starting from 0) if property is an array.
  * @noreturn
- * @error				Invalid entity, property not found, or property not 
+ * @error				Invalid entity, property not found, or property not
  *						actually a vector data type.
  */
 native GetEntPropVector(entity, PropType:type, const String:prop[], Float:vec[3], element=0);
@@ -620,28 +645,28 @@ native GetEntPropVector(entity, PropType:type, const String:prop[], Float:vec[3]
 /**
  * Sets a vector of floats in an entity, given a named network property.
  *
- * This function is considered safer and more robust over SetEntDataVector, 
+ * This function is considered safer and more robust over SetEntDataVector,
  * because it performs strict offset checking and typing rules.
- * 
+ *
  * @param entity		Entity/edict index.
  * @param type			Property type.
  * @param prop			Property name.
  * @param vec			Vector to set.
  * @param element		Element # (starting from 0) if property is an array.
  * @noreturn
- * @error				Invalid entity, property not found, or property not 
+ * @error				Invalid entity, property not found, or property not
  *						actually a vector data type.
  */
 native SetEntPropVector(entity, PropType:type, const String:prop[], const Float:vec[3], element=0);
 
 /**
  * Gets a network property as a string.
- * 
+ *
  * @param entity		Edict index.
  * @param type			Property type.
  * @param prop			Property to use.
  * @param buffer		Destination string buffer.
- * @param maxlen		Maximum length of output string buffer.		
+ * @param maxlen		Maximum length of output string buffer.
  * @param element		Element # (starting from 0) if property is an array.
  * @return				Number of non-null bytes written.
  * @error				Invalid entity, offset out of reasonable bounds, or property is not a valid string.
@@ -650,11 +675,11 @@ native GetEntPropString(entity, PropType:type, const String:prop[], String:buffe
 
 /**
  * Sets a network property as a string.
- * 
+ *
  * @param entity		Edict index.
  * @param type			Property type.
  * @param prop			Property to use.
- * @param buffer		String to set.		
+ * @param buffer		String to set.
  * @param element		Element # (starting from 0) if property is an array.
  * @return				Number of non-null bytes written.
  * @error				Invalid entity, offset out of reasonable bounds, or property is not a valid string.
@@ -663,7 +688,7 @@ native SetEntPropString(entity, PropType:type, const String:prop[], const String
 
 /**
  * Retrieves the count of values that an entity property's array can store.
- * 
+ *
  * @param entity		Entity/edict index.
  * @param type			Property type.
  * @param prop			Property name.
@@ -710,7 +735,7 @@ stock SetEntDataArray(entity, offset, const array[], arraySize, dataSize=4, bool
 
 /**
  * Gets the memory address of an entity.
- * 
+ *
  * @param entity		Entity index.
  * @return				Address of the entity.
  * @error				Invalid entity.
