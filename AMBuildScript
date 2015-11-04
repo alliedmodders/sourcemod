@@ -201,8 +201,6 @@ class SMConfig(object):
       '-Wall',
       '-Werror',
       '-Wno-unused',
-      '-Wno-switch',
-      '-Wno-array-bounds',
       '-msse',
       '-m32',
       '-fvisibility=hidden',

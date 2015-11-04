@@ -273,9 +273,9 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 
 			return Data_Okay;
 		}
+	default:
+		return Data_Fail;
 	}
-
-	return Data_Fail;
 }
 
 DataStatus DecodeValveParam(IPluginContext *pContext,

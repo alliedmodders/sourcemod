@@ -364,6 +364,9 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				startparam++;
 			}
 			break;
+		case ValveCall_Static:
+			// This should never happen as we require a thisptr to get here.
+			return pContext->ThrowNativeError("Internal consistency error: static call with thisptr");
 		}
 	}
 

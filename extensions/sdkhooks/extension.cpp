@@ -724,6 +724,9 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 			case SDKHook_CanBeAutobalanced:
 				hookid = SH_ADD_MANUALVPHOOK(CanBeAutobalanced, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_CanBeAutobalanced), false);
 				break;
+			case SDKHook_MAXHOOKS:
+				// This is checked up above.
+				break;
 		}
 
 		vhook.SetHookID(hookid);
