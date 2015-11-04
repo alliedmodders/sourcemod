@@ -41,7 +41,4 @@ for sdk_name in SM.sdks:
   if sdk.name != 'episode1':
     binary.compiler.defines += ['HOOKING_ENABLED']
 
-  if binary.compiler.cxx.behavior == 'gcc':
-    binary.compiler.cxxflags += ['-Wno-invalid-offsetof']
-
 SM.extensions += builder.Add(project)
