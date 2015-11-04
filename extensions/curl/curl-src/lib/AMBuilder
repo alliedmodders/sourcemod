@@ -25,7 +25,7 @@ elif builder.target_platform == 'linux':
 
 if binary.compiler.vendor == 'clang':
   # https://llvm.org/bugs/show_bug.cgi?id=16428
-  binary.compiler.cflags += ['-Wno-unknown-attributes']
+  binary.compiler.cflags += ['-Wno-attributes']
 
 binary.sources += [
   'base64.c',
