@@ -221,12 +221,8 @@ class SMConfig(object):
     have_clang = cxx.vendor == 'clang'
     if cxx.version >= 'clang-3.6':
       cxx.cxxflags += ['-Wno-inconsistent-missing-override']
-    if have_clang or (cxx.version >= 'gcc-4.6'):
-      cxx.cflags += ['-Wno-narrowing']
     if have_clang or (cxx.version >= 'gcc-4.7'):
       cxx.cxxflags += ['-Wno-delete-non-virtual-dtor']
-    if cxx.version >= 'gcc-4.8':
-      cxx.cflags += ['-Wno-unused-result']
 
     if have_clang:
       cxx.cxxflags += ['-Wno-implicit-exception-spec-mismatch']
@@ -234,7 +230,6 @@ class SMConfig(object):
         cxx.cxxflags += ['-Wno-deprecated-register']
       else:
         cxx.cxxflags += ['-Wno-deprecated']
-      cxx.cflags += ['-Wno-sometimes-uninitialized']
 
     if have_gcc:
       cxx.cflags += ['-mfpmath=sse']
