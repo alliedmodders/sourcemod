@@ -125,8 +125,6 @@ void ChatTriggers::OnSourceModAllInitialized_Post()
 
 void ChatTriggers::OnSourceModGameInitialized()
 {
-	ConCommand *say_team = FindCommand("say_team");
-
 	CommandHook::Callback pre_hook = [this] (int client, const ICommandArgs *args) -> bool {
 		return this->OnSayCommand_Pre(client, args);
 	};

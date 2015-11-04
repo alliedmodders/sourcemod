@@ -200,7 +200,7 @@ class SMConfig(object):
       '-fno-strict-aliasing',
       '-Wall',
       '-Werror',
-      '-Wno-unused',
+      '-Wno-error=unused-function',
       '-msse',
       '-m32',
       '-fvisibility=hidden',

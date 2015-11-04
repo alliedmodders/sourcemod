@@ -1191,7 +1191,6 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 	char message[255];
 	char buffer[255];
 	int value = bridge->GetActivityFlags();
-	unsigned int replyto = playerhelpers->GetReplyTo();
 	int client = params[1];
 
 	const char *name = "Console";

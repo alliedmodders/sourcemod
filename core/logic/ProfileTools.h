@@ -79,7 +79,6 @@ private:
 	ke::Vector<IProfilingTool *> tools_;
 	IProfilingTool *active_;
 	IProfilingTool *default_;
-	bool enabled_;
 };
 
 extern ProfileToolManager g_ProfileToolManager;

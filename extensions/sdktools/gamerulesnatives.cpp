@@ -170,8 +170,6 @@ static cell_t GameRules_GetProp(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[1], &prop);
 
-	int elementCount = 1;
-
 	FIND_PROP_SEND(DPT_Int, "integer");
 	is_unsigned = ((pProp->GetFlags() & SPROP_UNSIGNED) == SPROP_UNSIGNED);
 

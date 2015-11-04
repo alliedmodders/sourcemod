@@ -17,6 +17,7 @@ binary.compiler.defines += [
   'SQLITE_ALLOW_URI_AUTHORITY',
 ]
 if builder.target_platform == 'linux':
+  binary.compiler.cflags += ['-Wno-error=unused-const-variable']
   binary.compiler.postlink += ['-ldl', '-lpthread']
 
 binary.sources += [

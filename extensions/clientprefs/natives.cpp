@@ -86,7 +86,6 @@ cell_t FindClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 size_t IsAuthIdConnected(char *authID)
 {
 	IGamePlayer *player;
-	const char *authString;
 	
 	for (int playerIndex = playerhelpers->GetMaxClients()+1; --playerIndex > 0;)
 	{

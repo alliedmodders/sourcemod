@@ -53,9 +53,6 @@ public:
 
 	// SMGlobalClass
 	void OnSourceModAllInitialized() override;
-
-private:
-	bool active_;
 };
 
 #endif // _include_sourcemod_core_vprof_bridge_h_

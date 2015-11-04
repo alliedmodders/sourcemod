@@ -31,7 +31,6 @@
 
 
 #include "extension.h"
-#include "clientnatives.h"
 #include "iserver.h"
 #include "iclient.h"
 

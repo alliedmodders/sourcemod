@@ -36,11 +36,6 @@
 
 VProfTool sVProfTool;
 
-VProfTool::VProfTool()
-	: active_(false)
-{
-}
-
 void
 VProfTool::OnSourceModAllInitialized()
 {

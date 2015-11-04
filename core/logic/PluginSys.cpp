@@ -1054,7 +1054,6 @@ void CPluginManager::LoadAll_SecondPass()
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		CPlugin *pPlugin = (*iter);
 		if (pPlugin->GetStatus() == Plugin_Loaded) {
-			char error[256] = {0};
 			if (!RunSecondPass(pPlugin)) {
 				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), pPlugin->GetErrorMsg());
 				Purge(pPlugin);
