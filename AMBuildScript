@@ -227,9 +227,9 @@ class SMConfig(object):
     if have_clang:
       cxx.cxxflags += ['-Wno-implicit-exception-spec-mismatch']
       if cxx.version >= 'apple-clang-5.1' or cxx.version >= 'clang-3.4':
-        cxx.cxxflags += ['-Wno-deprecated-register']
+        cxx.cxxflags += ['-Wno-error=deprecated-register']
       else:
-        cxx.cxxflags += ['-Wno-deprecated']
+        cxx.cxxflags += ['-Wno-error=deprecated']
 
     if have_gcc:
       cxx.cflags += ['-mfpmath=sse']
