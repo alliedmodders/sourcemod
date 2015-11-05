@@ -10,8 +10,8 @@ public Action test_findmap( int argc )
 	char mapName[PLATFORM_MAX_PATH];
 	GetCmdArg(1, mapName, sizeof(mapName));
 	
-	char resultName[16];
-	switch (FindMap(mapName, sizeof(mapName)))
+	char resultName[18];
+	switch (FindMap(mapName, mapName, sizeof(mapName)))
 	{
 	case FindMap_Found:
 		strcopy(resultName, sizeof(resultName), "Found");
