@@ -72,7 +72,7 @@ for line in lines:
       url = runCommand(['git', 'ls-remote', '--get-url', 'origin'])
       rev = runCommand(['git', 'log', '--pretty=format:%H', '-n', '1'])
     except (OSError, RuntimeError) as e:
-      sys.stderr.write(str(e) + '\n')
+      #sys.stderr.write(str(e) + '\n')
       continue
 
   roots[root] = (url, rev)
