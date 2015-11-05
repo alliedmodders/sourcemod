@@ -37,14 +37,31 @@ lines = out.splitlines()
 paths = set()
 roots = {}
 
-for line in lines:
+# Lets not even talk about this.
+def fixWindowsPath(path):
+  import ctypes
+  GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
+  buffer = ctypes.create_unicode_buffer(260)
+  rv = GetLongPathName(path.capitalize(), buffer, 260)
+  print(rv, buffer.value)
+  if rv == 0 or rv > 260:
+    return path
+  return buffer.value
+
+for i, line in enumerate(lines):
   line = line.strip().split(None, 2)
 
   if line[0] != 'FILE':
     continue
 
-  path = os.path.dirname(line[2])
+  path = line[2]
 
+  if os.name == 'nt' and os.path.exists(path):
+    path = fixWindowsPath(path)
+    line = ' '.join('FILE', line[1], path)
+    lines[i] = line
+
+  path = os.path.dirname(path)
   if path in paths:
     continue
 
@@ -64,7 +81,9 @@ for line in lines:
 
     try:
       root = runCommand(['git', 'rev-parse', '--show-toplevel'])
-      root = os.path.normcase(root)
+
+      if os.name == 'nt':
+        root = fixWindowsPath(os.path.normcase(root))
 
       if root in roots:
         continue
