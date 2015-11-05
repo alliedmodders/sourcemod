@@ -59,7 +59,7 @@ for line in lines:
       proc = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=devnull, cwd=path, universal_newlines=True)
       procout, procerr = proc.communicate()
       if proc.returncode:
-        raise RuntimeError('Failed to execute \'' + ' '.join(argv) + '\' = ' + proc.returncode)
+        raise RuntimeError('Failed to execute \'' + ' '.join(argv) + '\' = ' + str(proc.returncode))
       return procout.strip()
 
     try:
@@ -71,7 +71,8 @@ for line in lines:
 
       url = runCommand(['git', 'ls-remote', '--get-url', 'origin'])
       rev = runCommand(['git', 'log', '--pretty=format:%H', '-n', '1'])
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError) as e:
+      sys.stderr.write(str(e) + '\n')
       continue
 
   roots[root] = (url, rev)
