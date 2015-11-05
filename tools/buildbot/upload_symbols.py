@@ -29,8 +29,8 @@ out = stdout.decode('utf8')
 err = stdout.decode('utf8')
 
 with open(symbol_file, 'w') as fp:
-  fp.write(stdout)
-  fp.write(stderr)
+  fp.write(out)
+  fp.write(err)
 
 lines = out.splitlines()
 
@@ -55,16 +55,23 @@ for line in lines:
   rev = None
 
   with open(os.devnull, 'w') as devnull:
+    def runCommand(argv):
+      proc = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=devnull, cwd=path, universal_newlines=True)
+      procout, procerr = proc.communicate()
+      if proc.returncode:
+        raise RuntimeError('Failed to execute \'' + ' '.join(argv) + '\' = ' + proc.returncode)
+      return procout.strip()
+
     try:
-      root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], stderr=devnull, cwd=path, universal_newlines=True).strip()
+      root = runCommand(['git', 'rev-parse', '--show-toplevel'])
       root = os.path.normcase(root)
 
       if root in roots:
         continue
 
-      url = subprocess.check_output(['git', 'ls-remote', '--get-url', 'origin'], stderr=devnull, cwd=path, universal_newlines=True).strip()
-      rev = subprocess.check_output(['git', 'log', '--pretty=format:%H', '-n', '1'], stderr=devnull, cwd=path, universal_newlines=True).strip()
-    except (OSError, subprocess.CalledProcessError):
+      url = runCommand(['git', 'ls-remote', '--get-url', 'origin'])
+      rev = runCommand(['git', 'log', '--pretty=format:%H', '-n', '1'])
+    except (OSError, RuntimeError):
       continue
 
   roots[root] = (url, rev)
@@ -77,7 +84,7 @@ for root, info in roots.items():
   lines.insert(index, 'INFO REPO ' + ' '.join([info[1], info[0], root]))
   index += 1;
 
-out = os.linesep.join(lines)
+out = os.linesep.join(lines).encode('utf8')
 
 request = urllib.Request(SYMBOL_SERVER, out)
 request.add_header('Content-Type', 'text/plain')
