@@ -40,12 +40,17 @@ roots = {}
 # Lets not even talk about this.
 def fixWindowsPath(path):
   import ctypes
-  GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
-  buffer = ctypes.create_unicode_buffer(260)
-  rv = GetLongPathName(path.capitalize(), buffer, 260)
+  GetShortPathName = ctypes.windll.kernel32.GetShortPathNameW
+  shortp = ctypes.create_unicode_buffer(260)
+  rv = GetShortPathName(path.capitalize(), shortp, 260)
   if rv == 0 or rv > 260:
     return path
-  return buffer.value
+  GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
+  longp = ctypes.create_unicode_buffer(260)
+  rv = GetLongPathName(shortp, longp, 260)
+  if rv == 0 or rv > 260:
+    return path
+  return longp.value
 
 for i, line in enumerate(lines):
   line = line.strip().split(None, 2)
@@ -80,9 +85,6 @@ for i, line in enumerate(lines):
 
     try:
       root = runCommand(['git', 'rev-parse', '--show-toplevel'])
-
-      if os.name == 'nt':
-        root = fixWindowsPath(os.path.normcase(root))
 
       if root in roots:
         continue
