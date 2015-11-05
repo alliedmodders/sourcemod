@@ -85,6 +85,7 @@ for i, line in enumerate(lines):
 
     try:
       root = runCommand(['git', 'rev-parse', '--show-toplevel'])
+      root = os.path.normpath(root)
 
       if root in roots:
         continue
