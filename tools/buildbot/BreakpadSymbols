@@ -16,7 +16,7 @@ for cxx_task in cxx_tasks:
 	if builder.target_platform == 'linux':
 		argv = ['dump_syms', debug_file, os.path.dirname(debug_file)]
 	elif builder.target_platform == 'mac':
-		argv = ['dump_syms', debug_file]
+		argv = ['dump_syms', '-g', debug_file + '.dSYM', debug_file]
 	elif builder.target_platform == 'windows':
 		argv = ['dump_syms.exe', debug_file]
 
