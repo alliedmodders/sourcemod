@@ -43,7 +43,6 @@ def fixWindowsPath(path):
   GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
   buffer = ctypes.create_unicode_buffer(260)
   rv = GetLongPathName(path.capitalize(), buffer, 260)
-  print(rv, buffer.value)
   if rv == 0 or rv > 260:
     return path
   return buffer.value
@@ -58,7 +57,7 @@ for i, line in enumerate(lines):
 
   if os.name == 'nt' and os.path.exists(path):
     path = fixWindowsPath(path)
-    line = ' '.join('FILE', line[1], path)
+    line = ' '.join(['FILE', line[1], path])
     lines[i] = line
 
   path = os.path.dirname(path)
