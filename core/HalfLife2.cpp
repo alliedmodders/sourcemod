@@ -1261,21 +1261,25 @@ bool CHalfLife2::GetMapDisplayName(const char *pMapName, char *pDisplayname, siz
 	}
 
 #if SOURCE_ENGINE == SE_CSGO
+	// In CSGO, the path separator is used in workshop maps.
+	char workshop[10];
+	ke::SafeSprintf(workshop, SM_ARRAYSIZE(workshop), "%s%c", "workshop", PLATFORM_SEP_CHAR);
+
 	char *lastSlashPos;
-	// In CSGO, workshop maps show up as workshop/123456789/mapname
-	if (strncmp(pDisplayname, "workshop/", 9) == 0 && (lastSlashPos = strrchr(pDisplayname, '/')) != NULL)
+	// In CSGO, workshop maps show up as workshop/123456789/mapname or workshop\123456789\mapname depending on OS
+	if (strncmp(pDisplayname, workshop, 9) == 0 && (lastSlashPos = strrchr(pDisplayname, PLATFORM_SEP_CHAR)) != NULL)
 	{
-		ke::SafeSprintf(pDisplayname, nMapNameMax, "%s", &lastSlashPos[1]);
+		ke::SafeStrcpy(pDisplayname, nMapNameMax, &lastSlashPos[1]);
 		return true;
 	}
 #elif SOURCE_ENGINE == SE_TF2
 	char *ugcPos;
-	// In TF2, workshop maps show up as workshop/mapname.ugc123456789
+	// In TF2, workshop maps show up as workshop/mapname.ugc123456789 regardless of OS
 	if (strncmp(pDisplayname, "workshop/", 9) == 0 && (ugcPos = strstr(pDisplayname, ".ugc")) != NULL)
 	{
-		// Overwrite the . with a nul and SafeSprintf will handle the rest
+		// Overwrite the . with a nul and SafeStrcpy will handle the rest
 		ugcPos[0] = '\0';
-		ke::SafeSprintf(pDisplayname, nMapNameMax, "%s", &pDisplayname[9]);
+		ke::SafeStrcpy(pDisplayname, nMapNameMax, &pDisplayname[9]);
 		return true;
 	}
 #endif
