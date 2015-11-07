@@ -332,7 +332,7 @@ bool CHookManager::SendFile(const char *filename, unsigned int transferID)
 	}
 
 	int userid = 0;
-	IClient *pClient = (IClient *)m_pActiveNetChannel->GetMsgHandler();
+	IClient *pClient = (IClient *)pNetChannel->GetMsgHandler();
 	if (pClient != NULL)
 	{
 		userid = pClient->GetUserID();
