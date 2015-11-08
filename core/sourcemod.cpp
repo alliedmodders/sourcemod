@@ -57,7 +57,7 @@ SH_DECL_HOOK1_void(IVEngineServer, ServerCommand, SH_NOATTRIB, false, const char
 
 SourceModBase g_SourceMod;
 
-ke::Ref<ke::SharedLib> g_JIT;
+ke::RefPtr<ke::SharedLib> g_JIT;
 SourceHook::String g_BaseDir;
 ISourcePawnEngine *g_pSourcePawn = NULL;
 ISourcePawnEngine2 *g_pSourcePawn2 = NULL;

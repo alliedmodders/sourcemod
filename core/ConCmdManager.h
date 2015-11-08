@@ -59,13 +59,13 @@ struct CommandGroup : public ke::Refcounted<CommandGroup>
 
 struct AdminCmdInfo
 {
-	AdminCmdInfo(const ke::Ref<CommandGroup> &group, FlagBits flags)
+	AdminCmdInfo(const ke::RefPtr<CommandGroup> &group, FlagBits flags)
 		: group(group),
 		  flags(flags),
 		  eflags(0)
 	{
 	}
-	ke::Ref<CommandGroup> group;
+	ke::RefPtr<CommandGroup> group;
 	FlagBits flags;			/* default flags */
 	FlagBits eflags;		/* effective flags */
 };
@@ -106,7 +106,7 @@ struct ConCmdInfo
 	ConCommand *pCmd;				/**< Pointer to the command itself */
 	CmdHookList hooks;				/**< Hook list */
 	FlagBits eflags;				/**< Effective admin flags */
-	ke::Ref<CommandHook> sh_hook;   /**< SourceHook hook, if any. */
+	ke::RefPtr<CommandHook> sh_hook;   /**< SourceHook hook, if any. */
 };
 
 typedef List<ConCmdInfo *> ConCmdList;
@@ -161,7 +161,7 @@ public:
 		return m_CmdList;
 	}
 private:
-	typedef StringHashMap<ke::Ref<CommandGroup> > GroupMap;
+	typedef StringHashMap<ke::RefPtr<CommandGroup> > GroupMap;
 
 	StringHashMap<ConCmdInfo *> m_Cmds; /* command lookup */
 	GroupMap m_CmdGrps;				/* command group map */

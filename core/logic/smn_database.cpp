@@ -1716,7 +1716,7 @@ public:
 	}
 
 private:
-	ke::Ref<IDatabase> db_;
+	ke::RefPtr<IDatabase> db_;
 	Transaction *txn_;
 	IdentityToken_t *ident_;
 	IPluginFunction *success_;

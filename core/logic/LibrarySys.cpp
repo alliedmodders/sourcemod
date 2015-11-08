@@ -41,7 +41,7 @@
 
 LibrarySystem g_LibSys;
 
-CLibrary::CLibrary(ke::Ref<ke::SharedLib> lib)
+CLibrary::CLibrary(ke::RefPtr<ke::SharedLib> lib)
  : lib_(lib)
 {
 }
@@ -241,7 +241,7 @@ void LibrarySystem::CloseDirectory(IDirectory *dir)
 
 ILibrary *LibrarySystem::OpenLibrary(const char *path, char *error, size_t maxlength)
 {
-	ke::Ref<ke::SharedLib> lib = ke::SharedLib::Open(path, error, maxlength);
+	ke::RefPtr<ke::SharedLib> lib = ke::SharedLib::Open(path, error, maxlength);
 	if (!lib)
 		return nullptr;
 	return new CLibrary(lib);

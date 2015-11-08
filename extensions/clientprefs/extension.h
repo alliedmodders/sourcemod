@@ -151,7 +151,7 @@ public:
 	IdentityToken_t *GetIdentity() const;
 public:
 	IDBDriver *Driver;
-	ke::Ref<IDatabase> Database;
+	ke::RefPtr<IDatabase> Database;
 	IPhraseCollection *phrases;
 	const DatabaseInfo *DBInfo;
 

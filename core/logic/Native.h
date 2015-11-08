@@ -89,7 +89,7 @@ struct Native : public ke::Refcounted<Native>
 		return fake->name.chars();
 	}
 
-	static inline bool matches(const char *name, const ke::Ref<Native> &entry)
+	static inline bool matches(const char *name, const ke::RefPtr<Native> &entry)
 	{
 		return strcmp(name, entry->name()) == 0;
 	}

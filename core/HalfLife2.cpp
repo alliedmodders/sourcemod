@@ -226,7 +226,7 @@ void CHalfLife2::InitCommandLine()
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 	if (g_SMAPI->GetSourceEngineBuild() != SOURCE_ENGINE_ORIGINAL)
 	{
-		ke::Ref<ke::SharedLib> lib = ke::SharedLib::Open(TIER0_NAME, error, sizeof(error));
+		ke::RefPtr<ke::SharedLib> lib = ke::SharedLib::Open(TIER0_NAME, error, sizeof(error));
 		if (!lib) {
 			logger->LogError("Could not load %s: %s", TIER0_NAME, error);
 			return;
@@ -243,7 +243,7 @@ void CHalfLife2::InitCommandLine()
 	else
 #endif
 	{
-		ke::Ref<ke::SharedLib> lib = ke::SharedLib::Open(VSTDLIB_NAME, error, sizeof(error));
+		ke::RefPtr<ke::SharedLib> lib = ke::SharedLib::Open(VSTDLIB_NAME, error, sizeof(error));
 		if (!lib) {
 			logger->LogError("Could not load %s: %s", VSTDLIB_NAME, error);
 			return;

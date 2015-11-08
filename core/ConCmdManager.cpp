@@ -356,7 +356,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 			return false;
 		i->value = new CommandGroup();
 	}
-	Ref<CommandGroup> cmdgroup = i->value;
+	RefPtr<CommandGroup> cmdgroup = i->value;
 
 	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description);
 	pHook->admin = new AdminCmdInfo(cmdgroup, adminflags);
@@ -488,7 +488,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 		if (!r.found())
 			return;
 
-		Ref<CommandGroup> group(r->value);
+		RefPtr<CommandGroup> group(r->value);
 
 		for (PluginHookList::iterator iter = group->hooks.begin(); iter != group->hooks.end(); iter++)
 		{

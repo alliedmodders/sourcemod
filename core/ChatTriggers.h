@@ -68,7 +68,7 @@ private:
 	bool ClientIsFlooding(int client);
 	cell_t CallOnClientSayCommand(int client);
 private:
-	ke::Vector<ke::Ref<CommandHook>> hooks_;
+	ke::Vector<ke::RefPtr<CommandHook>> hooks_;
 	ke::AString m_PubTrigger;
 	ke::AString m_PrivTrigger;
 	bool m_bWillProcessInPost;

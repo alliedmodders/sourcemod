@@ -676,7 +676,7 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 	unsigned int unbound = 0;
 	for (size_t i = 0; i < pOwner->m_fakes.length(); i++)
 	{
-		ke::Ref<Native> entry(pOwner->m_fakes[i]);
+		ke::RefPtr<Native> entry(pOwner->m_fakes[i]);
 
 		uint32_t idx;
 		if (m_pRuntime->FindNativeByName(entry->name(), &idx) != SP_ERROR_NONE)
@@ -769,7 +769,7 @@ void CPlugin::DropEverything()
 
 bool CPlugin::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
 {
-	ke::Ref<Native> entry = g_ShareSys.AddFakeNative(pFunc, name, func);
+	ke::RefPtr<Native> entry = g_ShareSys.AddFakeNative(pFunc, name, func);
 	if (!entry)
 		return false;
 
@@ -2319,7 +2319,7 @@ public:
 
 	void AddPluginsListener_V1(IPluginsListener_V1 *listener) override
 	{
-		ke::Ref<PluginsListenerV1Wrapper> wrapper = new PluginsListenerV1Wrapper(listener);
+		ke::RefPtr<PluginsListenerV1Wrapper> wrapper = new PluginsListenerV1Wrapper(listener);
 
 		v1_wrappers_.append(wrapper);
 		g_PluginSys.AddPluginsListener(wrapper);
@@ -2327,7 +2327,7 @@ public:
 
 	void RemovePluginsListener_V1(IPluginsListener_V1 *listener) override
 	{
-		ke::Ref<PluginsListenerV1Wrapper> wrapper;
+		ke::RefPtr<PluginsListenerV1Wrapper> wrapper;
 
 		// Find which wrapper has this listener.
 		for (decltype(v1_wrappers_)::iterator iter(v1_wrappers_); !iter.done(); iter.next()) {
@@ -2356,7 +2356,7 @@ public:
 	}
 
 private:
-	ReentrantList<ke::Ref<PluginsListenerV1Wrapper>> v1_wrappers_;
+	ReentrantList<ke::RefPtr<PluginsListenerV1Wrapper>> v1_wrappers_;
 };
 
 static OldPluginAPI sOldPluginAPI;

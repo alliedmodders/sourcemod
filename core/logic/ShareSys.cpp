@@ -292,7 +292,7 @@ void ShareSystem::BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly)
 			continue;
 
 		/* Otherwise, the native must be in our cache. */
-		Ref<Native> pEntry = FindNative(native->name);
+		RefPtr<Native> pEntry = FindNative(native->name);
 		if (!pEntry)
 			continue;
 
@@ -303,7 +303,7 @@ void ShareSystem::BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly)
 	}
 }
 
-void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, const Ref<Native> &entry)
+void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, const RefPtr<Native> &entry)
 {
 	if (!entry->owner)
 		return;
@@ -325,7 +325,7 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, const Ref<Native> &entry)
 }
 
 void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, const sp_native_t *native, uint32_t index,
-                                     const Ref<Native> &pEntry)
+                                     const RefPtr<Native> &pEntry)
 {
 	uint32_t flags = 0;
 	if (pEntry->fake)
@@ -374,7 +374,7 @@ PassRef<Native> ShareSystem::AddNativeToCache(CNativeOwner *pOwner, const sp_nat
 	if (i.found())
 		return NULL;
 
-	Ref<Native> entry = new Native(pOwner, ntv);
+	RefPtr<Native> entry = new Native(pOwner, ntv);
 	m_NtvCache.insert(ntv->name, entry);
 	return entry;
 }
@@ -390,7 +390,7 @@ void ShareSystem::ClearNativeFromCache(CNativeOwner *pOwner, const char *name)
 	if (!r.found())
 		return;
 
-	Ref<Native> entry(*r);
+	RefPtr<Native> entry(*r);
 	if (entry->owner != pOwner)
 		return;
 
@@ -402,7 +402,7 @@ void ShareSystem::ClearNativeFromCache(CNativeOwner *pOwner, const char *name)
 
 PassRef<Native> ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
 {
-	Ref<Native> entry(FindNative(name));
+	RefPtr<Native> entry(FindNative(name));
 	if (entry)
 		return NULL;
 
@@ -475,7 +475,7 @@ FeatureStatus ShareSystem::TestNative(IPluginRuntime *pRuntime, const char *name
 		}
 	}
 
-	Ref<Native> entry = FindNative(name);
+	RefPtr<Native> entry = FindNative(name);
 	if (!entry)
 		return FeatureStatus_Unknown;
 

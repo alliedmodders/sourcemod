@@ -689,7 +689,7 @@ void CoreProviderImpl::InitializeBridge()
                      MATCHMAKINGDS_SUFFIX,
                      MATCHMAKINGDS_EXT);
 
-	if (ke::Ref<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0)) {
+	if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0)) {
 		this->matchmakingDSFactory =
 		  mmlib->get<decltype(sCoreProviderImpl.matchmakingDSFactory)>("CreateInterface");
 	}
@@ -789,9 +789,9 @@ CoreProviderImpl::DefineCommand(const char *name, const char *help, const Comman
 	};
 
 	ConCommand *cmd = new ConCommand(new_name, ignore_callback, new_help, flags);
-	ke::Ref<CommandHook> hook = AddCommandHook(cmd, callback);
+	ke::RefPtr<CommandHook> hook = AddCommandHook(cmd, callback);
 
-	ke::Ref<CommandImpl> impl = new CommandImpl(cmd, hook);
+	ke::RefPtr<CommandImpl> impl = new CommandImpl(cmd, hook);
 	commands_.append(impl);
 }
 

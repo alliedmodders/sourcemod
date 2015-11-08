@@ -75,7 +75,7 @@ public:
 	}
 
 private:
-	ke::Ref<ke::SharedLib> logic_;
+	ke::RefPtr<ke::SharedLib> logic_;
 	LogicInitFunction logic_init_;
 	GameHooks hooks_;
 
@@ -87,9 +87,9 @@ private:
 
 	private:
 		ConCommand *cmd_;
-		ke::Ref<CommandHook> hook_;
+		ke::RefPtr<CommandHook> hook_;
 	};
-	ke::Vector<ke::Ref<CommandImpl>> commands_;
+	ke::Vector<ke::RefPtr<CommandImpl>> commands_;
 };
 
 extern CoreProviderImpl sCoreProviderImpl;
