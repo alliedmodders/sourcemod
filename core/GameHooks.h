@@ -93,8 +93,8 @@ public:
 	}
 
 public:
-	ke::PassRef<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
-	ke::PassRef<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
+	ke::RefPtr<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
+	ke::RefPtr<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 
 	int CommandClient() const {
 		return last_command_client_;

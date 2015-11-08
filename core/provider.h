@@ -67,8 +67,8 @@ public:
 	bool IsClientConVarQueryingSupported() override;
 	void DefineCommand(const char *cmd, const char *help, const SourceMod::CommandFunc &callback) override;
 
-	ke::PassRef<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
-	ke::PassRef<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
+	ke::RefPtr<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
+	ke::RefPtr<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 
 	int CommandClient() const {
 		return hooks_.CommandClient();

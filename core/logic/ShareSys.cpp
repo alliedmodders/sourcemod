@@ -261,11 +261,11 @@ void ShareSystem::OverrideNatives(IExtension *myself, const sp_nativeinfo_t *nat
 	assert(false);
 }
 
-PassRef<Native> ShareSystem::FindNative(const char *name)
+RefPtr<Native> ShareSystem::FindNative(const char *name)
 {
 	NativeCache::Result r = m_NtvCache.find(name);
 	if (!r.found())
-		return NULL;
+		return nullptr;
 	return *r;
 }
 
@@ -368,15 +368,15 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, const sp_native_t *native
 	  nullptr);
 }
 
-PassRef<Native> ShareSystem::AddNativeToCache(CNativeOwner *pOwner, const sp_nativeinfo_t *ntv)
+AlreadyRefed<Native> ShareSystem::AddNativeToCache(CNativeOwner *pOwner, const sp_nativeinfo_t *ntv)
 {
 	NativeCache::Insert i = m_NtvCache.findForAdd(ntv->name);
 	if (i.found())
-		return NULL;
+		return nullptr;
 
 	RefPtr<Native> entry = new Native(pOwner, ntv);
 	m_NtvCache.insert(ntv->name, entry);
-	return entry;
+	return entry.forget();
 }
 
 FakeNative::~FakeNative()
@@ -400,24 +400,24 @@ void ShareSystem::ClearNativeFromCache(CNativeOwner *pOwner, const char *name)
 	m_NtvCache.remove(r);
 }
 
-PassRef<Native> ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
+AlreadyRefed<Native> ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
 {
 	RefPtr<Native> entry(FindNative(name));
 	if (entry)
-		return NULL;
+		return nullptr;
 
 	AutoPtr<FakeNative> fake(new FakeNative(name, pFunc));
 
 	fake->gate = g_pSourcePawn2->CreateFakeNative(func, fake);
 	if (!fake->gate)
-		return NULL;
+		return nullptr;
 
 	CNativeOwner *owner = g_PluginSys.GetPluginByCtx(fake->ctx->GetContext());
 
 	entry = new Native(owner, fake.take());
 	m_NtvCache.insert(name, entry);
 
-	return entry;
+	return entry.forget();
 }
 
 void ShareSystem::AddCapabilityProvider(IExtension *myself, IFeatureProvider *provider,
