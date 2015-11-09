@@ -297,16 +297,15 @@ bool CExtension::Load(char *error, size_t maxlength)
 	CreateIdentity();
 	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, maxlength, !bridge->IsMapLoading()))
 	{
+		g_ShareSys.RemoveInterfaces(this);
 		DestroyIdentity();
 		return false;
 	}
-	else
+
+	/* Check if we're past load time */
+	if (!bridge->IsMapLoading())
 	{
-		/* Check if we're past load time */
-		if (!bridge->IsMapLoading())
-		{
-			m_pAPI->OnExtensionsAllLoaded();
-		}
+		m_pAPI->OnExtensionsAllLoaded();
 	}
 
 	return true;
