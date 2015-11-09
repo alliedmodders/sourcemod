@@ -263,7 +263,7 @@ bool SourceModBase::LoadSourcePawnDebugger()
 		return false;
 	}
 
-	IConsoleDebugger *debugger = debuggerFn();
+	IConsoleDebugger *debugger = debuggerFn(SOURCEPAWN_CONSOLE_DEBUGGER_API_VERSION);
 	if (!debugger) {
 		return false;
 	}
