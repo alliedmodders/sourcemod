@@ -347,6 +347,8 @@ enum class AuthIdType
 
 static cell_t SteamIdToLocal(IPluginContext *pCtx, int index, AuthIdType authType, cell_t local_addr, size_t bytes, bool validate)
 {
+	pCtx->StringToLocal(local_addr, bytes, "STEAM_ID_STOP_IGNORING_RETVALS");
+
 	if ((index < 1) || (index > playerhelpers->GetMaxClients()))
 	{
 		return pCtx->ThrowNativeError("Client index %d is invalid", index);
