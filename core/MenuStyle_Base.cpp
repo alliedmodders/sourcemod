@@ -311,9 +311,8 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 			clients[0] = client;
 			filter.Initialize(clients, 1);
 
-			const char *sound = g_Menus.GetMenuSound(type);
-
-			if (sound != NULL)
+			char sound[PLATFORM_MAX_PATH];
+			if (g_Menus.GetMenuSound(type, sound, sizeof(sound)) && sound[0])
 			{
 				edict_t *pEdict = PEntityOfEntIndex(client);
 				if (pEdict)
