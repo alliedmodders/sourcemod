@@ -281,15 +281,18 @@ void DebugReport::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *
 				strcpy(name, pl->GetFilename());
 
 			if (g_pConsoleDebugger->StartDebugger(pl->GetBaseContext()))
-				rootmenu->ConsolePrint("[SM] Pausing Plugin %s for debugging. Will halt on next instruction.", name);
+				rootmenu->ConsolePrint("[SM] Pausing plugin %s for debugging. Will halt on next instruction.", name);
 			else
 				rootmenu->ConsolePrint("[SM] Failed to pause plugin %s for debugging.", name);
 
 			return;
 		}
 		else if (strcmp(cmd, "next") == 0) {
-			// TODO
-			rootmenu->ConsolePrint("[SM] Not implemented yet.");
+			
+			if (g_pConsoleDebugger->DebugNextLoadedPlugin())
+				rootmenu->ConsolePrint("[SM] Will halt on the first instruction of the next loaded plugin.");
+			else
+				rootmenu->ConsolePrint("[SM] Failed to mark next loaded plugin for debugging.");
 			return;
 		}
 		else if (strcmp(cmd, "bp") == 0) {
