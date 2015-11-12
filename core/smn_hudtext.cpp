@@ -319,7 +319,7 @@ void UTIL_SendHudText(int client, const hud_text_parms &textparms, const char *p
 	players[0] = client;
 
 #if SOURCE_ENGINE == SE_DOTA
-	CUserMsg_HudMsg *msg = (CUserMsg_HudMsg *)g_UserMsgs.StartProtobufMessage(g_HudMsgNum, players, 1, 0);
+	CUserMsg_HudMsg *msg = (CUserMsg_HudMsg *)g_UserMsgs.StartProtobufMessage(g_HudMsgNum, players, 1, USERMSG_RELIABLE);
 	msg->set_channel(textparms.channel & 0xFF);
 
 	msg->set_x(textparms.x);
@@ -338,7 +338,7 @@ void UTIL_SendHudText(int client, const hud_text_parms &textparms, const char *p
 	msg->set_fx_time(textparms.fxTime);
 	msg->set_message(pMessage);
 #elif SOURCE_ENGINE == SE_CSGO
-	CCSUsrMsg_HudMsg *msg = (CCSUsrMsg_HudMsg *)g_UserMsgs.StartProtobufMessage(g_HudMsgNum, players, 1, 0);
+	CCSUsrMsg_HudMsg *msg = (CCSUsrMsg_HudMsg *)g_UserMsgs.StartProtobufMessage(g_HudMsgNum, players, 1, USERMSG_RELIABLE);
 	msg->set_channel(textparms.channel & 0xFF);
 
 	CMsgVector2D *pos = msg->mutable_pos();
@@ -364,7 +364,7 @@ void UTIL_SendHudText(int client, const hud_text_parms &textparms, const char *p
 	msg->set_fx_time(textparms.fxTime);
 	msg->set_text(pMessage);
 #else
-	bf_write *bf = g_UserMsgs.StartBitBufMessage(g_HudMsgNum, players, 1, 0);
+	bf_write *bf = g_UserMsgs.StartBitBufMessage(g_HudMsgNum, players, 1, USERMSG_RELIABLE);
 	bf->WriteByte(textparms.channel & 0xFF );
 	bf->WriteFloat(textparms.x);
 	bf->WriteFloat(textparms.y);
