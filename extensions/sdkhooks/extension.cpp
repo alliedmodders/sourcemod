@@ -1059,13 +1059,13 @@ int SDKHooks::HandleOnTakeDamageHook(CTakeDamageInfoHack &info, SDKHookType hook
 					CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
 					if (!pEntAttacker)
 					{
-						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for attacker is invalid", attacker);
+						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for attacker is invalid", attacker);
 						RETURN_META_VALUE(MRES_IGNORED, 0);
 					}
 					CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
 					if (!pEntInflictor)
 					{
-						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for inflictor is invalid", inflictor);
+						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for inflictor is invalid", inflictor);
 						RETURN_META_VALUE(MRES_IGNORED, 0);
 					}
 
@@ -1442,13 +1442,13 @@ void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir,
 					CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
 					if(!pEntAttacker)
 					{
-						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for attacker is invalid", attacker);
+						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for attacker is invalid", attacker);
 						RETURN_META(MRES_IGNORED);
 					}
 					CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
 					if(!pEntInflictor)
 					{
-						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for inflictor is invalid", inflictor);
+						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for inflictor is invalid", inflictor);
 						RETURN_META(MRES_IGNORED);
 					}
 					

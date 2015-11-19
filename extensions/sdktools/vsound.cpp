@@ -410,9 +410,9 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 
 					if (!pPlayer)
 					{
-						pFunc->GetParentContext()->ThrowNativeError("Client index %d is invalid", client);
+						pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided client index %d is invalid", client);
 					} else if (!pPlayer->IsInGame()) {
-						pFunc->GetParentContext()->ThrowNativeError("Client %d is not connected", client);
+						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client %d is not connected", client);
 					} else {
 						continue;
 					}
@@ -548,9 +548,9 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 
 					if (!pPlayer)
 					{
-						pFunc->GetParentContext()->ThrowNativeError("Client index %d is invalid", client);
+						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client index %d is invalid", client);
 					} else if (!pPlayer->IsInGame()) {
-						pFunc->GetParentContext()->ThrowNativeError("Client %d is not connected", client);
+						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client %d is not connected", client);
 					} else {
 						continue;
 					}
