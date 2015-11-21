@@ -486,7 +486,7 @@ stock GetEntSendPropOffs(ent, const String:prop[], bool:actual=false)
 		return -1;
 	}
 
-	new local;
+	new local = -1;
 	new offset = FindSendPropInfo(cls, prop, _, _, local);
 
 	if (actual)
