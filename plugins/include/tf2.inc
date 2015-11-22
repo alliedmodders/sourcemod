@@ -74,27 +74,38 @@ enum TFTeam
 enum TFCond
 {
 	TFCond_Slowed = 0,
+	TFCond_Aiming = 0,
 	TFCond_Zoomed,
 	TFCond_Disguising,
 	TFCond_Disguised,
 	TFCond_Cloaked,
-	TFCond_Ubercharged,
+	TFCond_Ubercharged, //5
+	TFCond_Invulnerable = 5,
 	TFCond_TeleportedGlow,
 	TFCond_Taunting,
-	TFCond_UberchargeFading,
+	TFCond_UberchargeFading, //8
+	TFCond_InvulnerableWearingOff = 8,
 	TFCond_Unknown1, //9
 	TFCond_CloakFlicker = 9,
-	TFCond_Teleporting,
-	TFCond_Kritzkrieged,
+	TFCond_Teleporting, //10
+	TFCond_SelectedToTeleport = 10,
+	TFCond_Kritzkrieged, //11
+	TFCond_CritBoosted = 11,
 	TFCond_Unknown2, //12
 	TFCond_TmpDamageBonus = 12,
-	TFCond_DeadRingered,
-	TFCond_Bonked,
-	TFCond_Dazed,
-	TFCond_Buffed,
-	TFCond_Charging,
+	TFCond_DeadRingered, //13
+	TFCond_FeignDeath = 13,
+	TFCond_Bonked, //14
+	TFCond_Phase = 14,
+	TFCond_Dazed, //15
+	TFCond_Stunned = 15,
+	TFCond_Buffed, //16
+	TFCond_OffenseBuff = 16,
+	TFCond_Charging, //17
+	TFCond_ShieldCharge = 17,
 	TFCond_DemoBuff,
-	TFCond_CritCola,
+	TFCond_CritCola, //19
+	TFCond_EnergyBuff = 19,
 	TFCond_InHealRadius,
 	TFCond_Healing,
 	TFCond_OnFire,
@@ -108,10 +119,12 @@ enum TFCond
 	TFCond_MarkedForDeath,
 	TFCond_NoHealingDamageBuff,
 	TFCond_SpeedBuffAlly, // 32
+	TFCond_SpeedBoost = 32,
 	TFCond_HalloweenCritCandy,
 	TFCond_CritCanteen,
 	TFCond_CritDemoCharge,
-	TFCond_CritHype,
+	TFCond_CritHype, //36
+	TFCond_SodaPopperHype = 36,
 	TFCond_CritOnFirstBlood,
 	TFCond_CritOnWin,
 	TFCond_CritOnFlagCapture,
@@ -126,7 +139,8 @@ enum TFCond
 	TFCond_MarkedForDeathSilent,
 	TFCond_DisguisedAsDispenser,
 	TFCond_Sapped,
-	TFCond_UberchargedHidden,
+	TFCond_UberchargedHidden, //51
+	TFCond_InvulnerableHideUnlessDamaged = 51,
 	TFCond_UberchargedCanteen,
 	TFCond_HalloweenBombHead,
 	TFCond_HalloweenThriller,
@@ -166,13 +180,15 @@ enum TFCond
 	TFCond_HalloweenKartNoTurn, //87
 	TFCond_FreezeInput = 87,
 	TFCond_HalloweenKartCage,
-	TFCond_HasRune,
+	TFCond_HasRune, //89
+	TFCond_DoNotUse0 = 89,
 	TFCond_RuneStrength,
 	TFCond_RuneHaste,
 	TFCond_RuneRegen,
 	TFCond_RuneResist,
 	TFCond_RuneVampire,
-	TFCond_RuneWarlock,
+	TFCond_RuneWarlock, //95
+	TFCond_RuneReflect = 95,
 	TFCond_RunePrecision, // 96
 	TFCond_RuneAgility,
 	TFCond_GrapplingHook,
