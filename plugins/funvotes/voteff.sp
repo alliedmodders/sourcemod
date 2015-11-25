@@ -51,15 +51,7 @@ DisplayVoteFFMenu(client)
 	g_voteInfo[VOTE_NAME][0] = '\0';
 	
 	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	
-	if (g_Cvar_FF.BoolValue)
-	{
-		g_hVoteMenu.SetTitle("Voteff Off");
-	}
-	else
-	{
-		g_hVoteMenu.SetTitle("Voteff On");
-	}
+	g_hVoteMenu.SetTitle(g_Cvar_FF.BoolValue ? "Voteff Off" : "Voteff On");
 	
 	g_hVoteMenu.AddItem(VOTE_YES, "Yes");
 	g_hVoteMenu.AddItem(VOTE_NO, "No");
