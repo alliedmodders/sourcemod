@@ -92,6 +92,7 @@ enum SDKHookType
 	SDKHook_BlockedPost,
 	SDKHook_OnTakeDamage_Alive,
 	SDKHook_OnTakeDamage_AlivePost,
+	SDKHook_CanBeAutobalanced,
 	SDKHook_MAXHOOKS
 };
 
@@ -284,6 +285,7 @@ public:
 	/**
 	 * CBaseEntity Hook Handlers
 	 */
+	bool Hook_CanBeAutobalanced();
 	void Hook_EndTouch(CBaseEntity *pOther);
 	void Hook_EndTouchPost(CBaseEntity *pOther);
 	void Hook_FireBulletsPost(const FireBulletsInfo_t &info);
