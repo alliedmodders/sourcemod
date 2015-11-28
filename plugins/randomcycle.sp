@@ -84,11 +84,7 @@ public Action Timer_RandomizeNextmap(Handle timer)
 	char map[PLATFORM_MAX_PATH];
 	char resolvedMap[PLATFORM_MAX_PATH];
 
-	bool oldMaps = false;
-	if (g_Cvar_ExcludeMaps.IntValue && g_MapList.Length > g_Cvar_ExcludeMaps.IntValue)
-	{
-		oldMaps = true;
-	}
+	bool oldMaps = g_Cvar_ExcludeMaps.IntValue && g_MapList.Length > g_Cvar_ExcludeMaps.IntValue;
 	
 	do
 	{
