@@ -419,7 +419,7 @@ static cell_t BlamePluginError(IPluginContext *pContext, const cell_t *params)
 {
 	if (!params[1])
 	{
-		return 0;
+		return pContext->ThrowNativeError("No handle passed.");
 	}
 	HandleError err;
 	IPlugin *pPlugin = scripts->FindPluginByHandle(params[1], &err);
@@ -430,19 +430,19 @@ static cell_t BlamePluginError(IPluginContext *pContext, const cell_t *params)
 	IPluginContext *plContext = pPlugin->GetBaseContext();
 	if (!plContext)
 	{
-		return 0;
+		return pContext->ThrowNativeError("Unable to get plugin context for %x", params[1]);
 	}
 	IPluginFunction *plFunction = plContext->GetFunctionById(params[2]);
 	if (!plFunction)
 	{
-		return 0;
+		return pContext->ThrowNativeError("Unable to plugin function %d", params[2]);
 	}
 	char buffer[1024];
 	char *fmt;
 	int arg = 4;
 	pContext->LocalToString(params[3], &fmt);
 	size_t res = atcprintf(buffer, sizeof(buffer) - 1, fmt, pContext, params, &arg);
-	buffer[res++] = '\n';
+	buffer[res++] = '\0';
 	return plContext->BlamePluginError(plFunction, buffer);
 }
 
