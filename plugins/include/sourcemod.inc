@@ -317,10 +317,10 @@ native SetFailState(const String:string[], any:...);
  * This blames another plugin for a function error.
  * @Note: Currently doesn't allow INVALID_HANDLE to be passed for plugin param.
  *
- * @param plugin        Plugin owning function your blaming error for.
- * @param blame         Method your blaming error for.
- * @param string		Format specifier string.
- * @param ...			Formatting arguments.
+ * @param plugin        Plugin owning function you're blaming error for.
+ * @param blame         Method you're blaming error for.
+ * @param format        Format specifier string.
+ * @param ...           Formatting arguments.
  * @noreturn
  * @error               Throws if plugin handle couldn't be read.
  */
