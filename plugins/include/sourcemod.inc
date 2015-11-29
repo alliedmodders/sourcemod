@@ -314,6 +314,19 @@ native Handle:FindPluginByNumber(order_num);
 native SetFailState(const String:string[], any:...);
 
 /**
+ * This blames another plugin for a function error.
+ * @Note: Currently doesn't allow INVALID_HANDLE to be passed for plugin param.
+ *
+ * @param plugin        Plugin owning function your blaming error for.
+ * @param blame         Method your blaming error for.
+ * @param string		Format specifier string.
+ * @param ...			Formatting arguments.
+ * @noreturn
+ * @error               Throws if plugin handle couldn't be read.
+ */
+native void BlamePluginError(Handle plugin, Function blame, const char[] format, any ...);
+
+/**
  * Aborts the current callback and throws an error.  This function
  * does not return in that no code is executed following it.
  *
