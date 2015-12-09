@@ -139,7 +139,7 @@
 			 * the expected code. A pointer to sv (IServer interface) is used
 			 * here.
 			 */
-			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x56\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B"
+			"CreateFakeClient_Windows"	"\x55\x89\xE5\x53\x83\xEC\x14\x8B\x45\x0C\xC7\x04\x24"
 		}
 		
 		"Offsets"
@@ -147,7 +147,7 @@
 			/* Offset into IVEngineServer::CreateFakeClient */
 			"sv"
 			{
-				"windows"	"8"
+				"windows"	"13"
 			}
 		}
 		
@@ -220,9 +220,9 @@
 			"SetUserCvar"
 			{
 				/* Not 100% sure on this, why would windows change and not linux - TEST ME */
-				"windows"	"28"
-				"linux"		"65"
-				"mac"		"65"
+				"windows"	"29"
+				"linux"		"67"
+				"mac"		"67"
 			}
 			/**
 			 * CBaseClient::SetName(char  const*);
@@ -231,9 +231,9 @@
 			 */
 			"SetClientName"
 			{
-				"windows"	"27"
-				"linux"		"64"
-				"mac"		"64"
+				"windows"	"28"
+				"linux"		"66"
+				"mac"		"66"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
@@ -245,9 +245,9 @@
 			 */
 			"InfoChanged"
 			{
-				"windows"	"412"
-				"linux"		"412"
-				"mac"		"412"
+				"windows"	"476"
+				"linux"		"456"
+				"mac"		"456"
 			}
 		}
 	}
