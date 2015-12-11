@@ -95,7 +95,7 @@ enum CookieMenuAction
  *                      exists, a handle to it will still be returned.
  * @error				Cookie name is blank.
  */
-native Handle:RegClientCookie(const String:name[], const String:description[], CookieAccess:access);
+native Handle RegClientCookie(char[] name, char[] description, CookieAccess access);
 
 /**
  * Searches for a Client preference cookie.
@@ -106,7 +106,7 @@ native Handle:RegClientCookie(const String:name[], const String:description[], C
  * @param name			Name of cookie to find.
  * @return				A handle to the cookie if it is found. INVALID_HANDLE otherwise.
  */
-native Handle:FindClientCookie(const String:name[]);
+native Handle FindClientCookie(char[] name);
 
 /**
  * Set the value of a Client preference cookie.
@@ -117,7 +117,7 @@ native Handle:FindClientCookie(const String:name[]);
  * @noreturn			
  * @error				Invalid cookie handle or invalid client index.
  */
-native SetClientCookie(client, Handle:cookie, const String:value[]);
+native void SetClientCookie(int client, Handle cookie, char[] value);
 
 /**
  * Retrieve the value of a Client preference cookie.
@@ -129,7 +129,7 @@ native SetClientCookie(client, Handle:cookie, const String:value[]);
  * @noreturn
  * @error				Invalid cookie handle or invalid client index.
  */
-native GetClientCookie(client, Handle:cookie, String:buffer[], maxlen);
+native void GetClientCookie(int client, Handle cookie, char[] buffer, int maxlen);
 
 /**
  * Sets the value of a Client preference cookie based on an authID string.
@@ -140,7 +140,7 @@ native GetClientCookie(client, Handle:cookie, String:buffer[], maxlen);
  * @noreturn
  * @error			Invalid cookie handle.
  */
-native SetAuthIdCookie(const String:authID[], Handle:cookie, const String:value[]);
+native void SetAuthIdCookie(char[] authID, Handle cookie, char[] value);
 
 /**
  * Checks if a clients cookies have been loaded from the database.
@@ -149,14 +149,14 @@ native SetAuthIdCookie(const String:authID[], Handle:cookie, const String:value[
  * @return 				True if loaded, false otherwise.
  * @error				Invalid client index.
  */
-native bool:AreClientCookiesCached(client);
+native bool AreClientCookiesCached(int client);
 
 /**
  * Called once a client's saved cookies have been loaded from the database.
  *
  * @param client		Client index.
  */
-forward void OnClientCookiesCached(client);
+forward void OnClientCookiesCached(int client);
 
 /**
  * Cookie Menu Callback prototype
@@ -189,7 +189,7 @@ typedef CookieMenuHandler = function void (
  * @noreturn
  * @error				Invalid cookie handle.
  */
-native SetCookiePrefabMenu(Handle:cookie, CookieMenu:type, const String:display[], CookieMenuHandler:handler=INVALID_FUNCTION, info=0);
+native void SetCookiePrefabMenu(Handle cookie, CookieMenu type, char[] display, CookieMenuHandler handler=INVALID_FUNCTION, int info=0);
 
 /**
  * Adds a new item to the client cookie settings menu.
@@ -202,7 +202,7 @@ native SetCookiePrefabMenu(Handle:cookie, CookieMenu:type, const String:display[
  * @noreturn
  * @error				Invalid cookie handle.
  */
-native SetCookieMenuItem(CookieMenuHandler:handler, any:info, const String:display[]);
+native void SetCookieMenuItem(CookieMenuHandler handler, any info, char[] display);
 
 /**
  * Displays the settings menu to a client.
@@ -210,14 +210,14 @@ native SetCookieMenuItem(CookieMenuHandler:handler, any:info, const String:displ
  * @param client		Client index.
  * @noreturn
  */
-native ShowCookieMenu(client);
+native void ShowCookieMenu(int client);
 
 /**
  * Gets a cookie iterator.  Must be freed with CloseHandle().
  *
  * @return				A new cookie iterator.
  */
-native Handle:GetCookieIterator();
+native Handle GetCookieIterator();
 
 /**
  * Reads a cookie iterator, then advances to the next cookie if any.
@@ -230,12 +230,12 @@ native Handle:GetCookieIterator();
  * @param descLen		Cookie description buffer size.
  * @return				True on success, false if there are no more commands.
  */
-native bool:ReadCookieIterator(Handle:iter, 
-								String:name[], 
-								nameLen,
-								&CookieAccess:access, 
-								String:desc[]="", 
-								descLen=0);
+native bool ReadCookieIterator(Handle iter, 
+								char[] name, 
+								int nameLen,
+								CookieAccess &access, 
+								char[] desc="", 
+								int descLen=0);
 								
 /**
  * Returns the access level of a cookie
@@ -244,7 +244,7 @@ native bool:ReadCookieIterator(Handle:iter,
  * @return				CookieAccess access level.
  * @error				Invalid cookie handle.	
  */
-native CookieAccess:GetCookieAccess(Handle:cookie);
+native CookieAccess GetCookieAccess(Handle cookie);
 
 /**
  * Returns the last updated timestamp for a client cookie
@@ -253,12 +253,12 @@ native CookieAccess:GetCookieAccess(Handle:cookie);
  * @param cookie		Cookie handle.
  * @return			Last updated timestamp.
  */
-native GetClientCookieTime(client, Handle:cookie);
+native int GetClientCookieTime(int client, Handle cookie);
 
 /**
  * Do not edit below this line!
  */
-public Extension:__ext_cprefs = 
+public Extension __ext_cprefs = 
 {
 	name = "Client Preferences",
 	file = "clientprefs.ext",
