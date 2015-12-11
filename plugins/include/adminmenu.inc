@@ -109,7 +109,7 @@ native int AddTargetsToMenu(Handle menu,
  * @param flags			COMMAND_FILTER flags from commandfilters.inc.
  * @return				Number of clients added.
  */
-native int AddTargetsToMenu2(Handle menu, int source_client, int flags);
+native int AddTargetsToMenu2(Handle menu, int source_client, flags);
 
 /**
  * Re-displays the admin menu to a client after selecting an item.
