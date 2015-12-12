@@ -42,8 +42,8 @@ innerclass = ""
 classname = None
 offsetdata = {}
 
-# Detect address size based on ScreenEA object
-adr_size = (sys.getsizeof(ScreenEA()) - 8)
+# Detect address size
+adr_size = 8 if __EA64__ else 4
 
 def ExtractTypeInfo(ea, level = 0):
 	global catchclass
