@@ -42,17 +42,9 @@ public MenuHandler_ChangeMap(Menu menu, MenuAction action, int param1, int param
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:map[64];
-		
+		char map[64];
 		menu.GetItem(param2, map, sizeof(map));
-	
-		ShowActivity2(param1, "[SM] ", "%t", "Changing map", map);
-
-		LogAction(param1, -1, "\"%L\" changed map to \"%s\"", param1, map);
-
-		new Handle:dp;
-		CreateDataTimer(3.0, Timer_ChangeMap, dp);
-		WritePackString(dp, map);
+		ChangeMap(param1, map);
 	}
 	else if (action == MenuAction_Display)
 	{
@@ -87,36 +79,27 @@ public Action:Command_Map(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:map[64];
+	char map[64];
 	GetCmdArg(1, map, sizeof(map));
 
-	if (!IsMapValid(map))
+	if (IsMapValid(map))
+	{
+		ChangeMap(client, map);
+	}
+	
+	else
 	{
 		ReplyToCommand(client, "[SM] %t", "Map was not found", map);
-		return Plugin_Handled;
 	}
-
-	ShowActivity2(client, "[SM] ", "%t", "Changing map", map);
-
-	LogAction(client, -1, "\"%L\" changed map to \"%s\"", client, map);
-
-	new Handle:dp;
-	CreateDataTimer(3.0, Timer_ChangeMap, dp);
-	WritePackString(dp, map);
 
 	return Plugin_Handled;
 }
 
-public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
+ChangeMap(client, char[] map)
 {
-	decl String:map[65];
-
-	ResetPack(dp);
-	ReadPackString(dp, map, sizeof(map));
-
+	ShowActivity2(client, "[SM] ", "%t", "Changing map", map);
+	LogAction(client, -1, "\"%L\" changed map to \"%s\"", client, map);		
 	ForceChangeLevel(map, "sm_map Command");
-
-	return Plugin_Stop;
 }
 
 new Handle:g_map_array = null;
