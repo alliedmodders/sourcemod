@@ -42,17 +42,9 @@ public MenuHandler_ChangeMap(Menu menu, MenuAction action, int param1, int param
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:map[64];
-		
+		char map[64];
 		menu.GetItem(param2, map, sizeof(map));
-	
-		ShowActivity2(param1, "[SM] ", "%t", "Changing map", map);
-
-		LogAction(param1, -1, "\"%L\" changed map to \"%s\"", param1, map);
-
-		new Handle:dp;
-		CreateDataTimer(3.0, Timer_ChangeMap, dp);
-		WritePackString(dp, map);
+		ChangeMap(param1, map);
 	}
 	else if (action == MenuAction_Display)
 	{
