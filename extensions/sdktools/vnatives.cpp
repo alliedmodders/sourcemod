@@ -172,7 +172,7 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
-#else if SOURCE_ENGINE == SE_BMS
+#elseif SOURCE_ENGINE == SE_BMS
 // CBaseEntity	*GiveNamedItem( const char *szName, int iSubType = 0, int iPrimaryAmmo = -1, int iSecondaryAmmo = -1 )
 static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 {
