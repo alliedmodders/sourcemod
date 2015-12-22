@@ -530,7 +530,7 @@ static cell_t smn_TRGetPointContents(IPluginContext *pContext, const cell_t *par
 	{
 		mask = enginetrace->GetPointContents(pos);
 	} else {
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
+#if SOURCE_ENGINE >= SE_LEFT4DEAD || SOURCE_ENGINE == SE_BMS
 		mask = enginetrace->GetPointContents(pos, MASK_ALL, &hentity);
 #else
 		mask = enginetrace->GetPointContents(pos, &hentity);

@@ -1233,7 +1233,7 @@ SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_
 		return SMFindMapResult::FuzzyMatch;
 	}
 
-#elif SOURCE_ENGINE == SE_TF2
+#elif SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_BMS
 	static char szTemp[PLATFORM_MAX_PATH];
 	if (pFoundMap == NULL)
 	{
@@ -1272,12 +1272,12 @@ bool CHalfLife2::GetMapDisplayName(const char *pMapName, char *pDisplayname, siz
 		ke::SafeStrcpy(pDisplayname, nMapNameMax, &lastSlashPos[1]);
 		return true;
 	}
-#elif SOURCE_ENGINE == SE_TF2
+#elif SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_BMS
 	char *ugcPos;
-	// In TF2, workshop maps show up as workshop/mapname.ugc123456789 regardless of OS
+	// In TF2 and BMS, workshop maps show up as workshop/mapname.ugc123456789 regardless of OS
 	if (strncmp(pDisplayname, "workshop/", 9) == 0 && (ugcPos = strstr(pDisplayname, ".ugc")) != NULL)
 	{
-		// Overwrite the . with a nul and SafeStrcpy will handle the rest
+		// Overwrite the . with a null and SafeStrcpy will handle the rest
 		ugcPos[0] = '\0';
 		ke::SafeStrcpy(pDisplayname, nMapNameMax, &pDisplayname[9]);
 		return true;
