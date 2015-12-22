@@ -193,8 +193,8 @@
 		
 		"Keys"
 		{
-			"GameRulesProxy"	"CTFGameRulesProxy"
-			"GameRulesDataTable" "tf_gamerules_data"
+			"GameRulesProxy"	"CBM_MP_GameRulesProxy"
+			"GameRulesDataTable" "blackmesa_mp_gamerules_data"
 		}
 	}
 }
