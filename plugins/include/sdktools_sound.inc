@@ -336,37 +336,37 @@ typedef AmbientSHook = function Action (
   float &delay
 );
 
-/**
- * Called when a sound is going to be emitted to one or more clients.
- * NOTICE: all params can be overwritten to modify the default behavior.
- *
- * @param clients		Array of client indexes.
- * @param numClients		Number of clients in the array (modify this value if you add/remove elements from the client array).
- * @param sample		Sound file name relative to the "sounds" folder.
- * @param entity		Entity emitting the sound.
- * @param channel		Channel emitting the sound.
- * @param volume		Sound volume.
- * @param level			Sound level.
- * @param pitch			Sound pitch.
- * @param flags			Sound flags.
- * @param soundEntry		Game sound entry name. (Used in engines newer than Portal 2)
- * @param seed			Sound seed. (Used in engines newer than Portal 2)
- * @return			Plugin_Continue to allow the sound to be played, Plugin_Stop to block it, 
- *				  Plugin_Changed when any parameter has been modified.
- */
-typedef NormalSHook = function Action (
-  int clients[64],
-  int &numClients,
-  char sample[PLATFORM_MAX_PATH],
-  int &entity,
-  int &channel,
-  float &volume,
-  int &level,
-  int &pitch,
-  int &flags,
-  char soundEntry[PLATFORM_MAX_PATH],
-  int &seed
-);
+typeset NormalSHook
+{
+	// Called when a sound is going to be emitted to one or more clients.
+	// NOTICE: all params can be overwritten to modify the default behavior.
+	//
+	// @param clients       Array of client indexes.
+	// @param numClients    Number of clients in the array (modify this value if you add/remove elements from the client array).
+	// @param sample        Sound file name relative to the "sounds" folder.
+	// @param entity        Entity emitting the sound.
+	// @param channel       Channel emitting the sound.
+	// @param volume        Sound volume.
+	// @param level         Sound level.
+	// @param pitch         Sound pitch.
+	// @param flags         Sound flags.
+	// @param soundEntry    Game sound entry name. (Used in engines newer than Portal 2)
+	// @param seed          Sound seed. (Used in engines newer than Portal 2)
+	// @return              Plugin_Continue to allow the sound to be played, Plugin_Stop to block it, 
+	//                      Plugin_Changed when any parameter has been modified.
+	function Action (int clients[MAXPLAYERS], int &numClients, char sample[PLATFORM_MAX_PATH],
+	  int &entity, int &channel, float &volume, int &level, int &pitch, int &flags,
+	  char soundEntry[PLATFORM_MAX_PATH], int &seed);
+	
+	// Deprecated. Use other prototype.
+	function Action (int clients[64], int &numClients, char sample[PLATFORM_MAX_PATH],
+	  int &entity, int &channel, float &volume, int &level, int &pitch, int &flags,
+	  char soundEntry[PLATFORM_MAX_PATH], int &seed);
+	
+	// Deprecated. Use other prototype.
+	function Action (int clients[64], int &numClients, char sample[PLATFORM_MAX_PATH],
+	  int &entity, int &channel, float &volume, int &level, int &pitch, int &flags);
+};
 
 /**
  * Hooks all played ambient sounds.
