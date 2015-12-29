@@ -916,10 +916,6 @@ bool SDKHooks::Hook_LevelInit(char const *pMapName, char const *pMapEntities, ch
 bool SDKHooks::Hook_CanBeAutobalanced()
 {
 	CBaseEntity *pPlayer = META_IFACEPTR(CBaseEntity);
-	int entity = gamehelpers->EntityToBCompatRef(pPlayer);
-
-	bool origRet = SH_MCALL(pPlayer, CanBeAutobalanced)();
-	bool newRet = origRet;
 
 	CVTableHook vhook(pPlayer);
 	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_CanBeAutobalanced];
@@ -930,11 +926,16 @@ bool SDKHooks::Hook_CanBeAutobalanced()
 			continue;
 		}
 
+		int entity = gamehelpers->EntityToBCompatRef(pPlayer);
+
+		bool origRet = SH_MCALL(pPlayer, CanBeAutobalanced)();
+		bool newRet = origRet;
+
 		ke::Vector<IPluginFunction *> callbackList;
 		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
 		for (entry = 0; entry < callbackList.length(); ++entry)
 		{
-			cell_t res;
+			cell_t res = origRet;
 			IPluginFunction *callback = callbackList[entry];
 			callback->PushCell(entity);
 			callback->PushCell(origRet);
@@ -943,14 +944,17 @@ bool SDKHooks::Hook_CanBeAutobalanced()
 			// Only update our new ret if different from original
 			// (so if multiple plugins returning different answers,
 			//  the one(s) that changed it win)
-			if ((res != 0) != origRet)
+			if (res != origRet)
 				newRet = !origRet;
 		}
+
+		if (newRet != origRet)
+			RETURN_META_VALUE(MRES_SUPERCEDE, newRet);
 
 		break;
 	}
 
-	RETURN_META_VALUE(MRES_SUPERCEDE, newRet);
+	RETURN_META_VALUE(MRES_IGNORED, false);
 }
 
 void SDKHooks::Hook_EndTouch(CBaseEntity *pOther)
