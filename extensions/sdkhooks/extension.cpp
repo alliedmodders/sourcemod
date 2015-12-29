@@ -92,6 +92,9 @@ HookTypeData g_HookTypes[SDKHook_MAXHOOKS] =
 	{"BlockedPost",           "",                       false},
 	{"OnTakeDamageAlive",     "DT_BaseCombatCharacter", false},
 	{"OnTakeDamageAlivePost", "DT_BaseCombatCharacter", false},
+
+	// There is no DT for CBaseMultiplayerPlayer. Going up a level
+	{"CanBeAutobalanced",     "DT_BasePlayer",          false},
 };
 
 SDKHooks g_Interface;
@@ -198,6 +201,7 @@ SH_DECL_MANUALHOOK3_void(Weapon_Drop, 0, 0, 0, CBaseCombatWeapon *, const Vector
 SH_DECL_MANUALHOOK1_void(Weapon_Equip, 0, 0, 0, CBaseCombatWeapon *);
 SH_DECL_MANUALHOOK2(Weapon_Switch, 0, 0, 0, bool, CBaseCombatWeapon *, int);
 SH_DECL_MANUALHOOK1_void(Blocked, 0, 0, 0, CBaseEntity *);
+SH_DECL_MANUALHOOK0(CanBeAutobalanced, 0, 0, 0, bool);
 
 
 /**
@@ -538,6 +542,7 @@ void SDKHooks::SetupHooks()
 	CHECKOFFSET_W(Switch,         true,  true);
 	CHECKOFFSET(VPhysicsUpdate,   true,  true);
 	CHECKOFFSET(Blocked,          true,  true);
+	CHECKOFFSET(CanBeAutobalanced, true, false);
 
 	// this one is in a class all its own -_-
 	offset = 0;
@@ -719,6 +724,9 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 				break;
 			case SDKHook_BlockedPost:
 				hookid = SH_ADD_MANUALVPHOOK(Blocked, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_BlockedPost), true);
+				break;
+			case SDKHook_CanBeAutobalanced:
+				hookid = SH_ADD_MANUALVPHOOK(CanBeAutobalanced, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_CanBeAutobalanced), false);
 				break;
 		}
 
@@ -905,6 +913,50 @@ bool SDKHooks::Hook_LevelInit(char const *pMapName, char const *pMapEntities, ch
 /**
  * CBaseEntity Hook Handlers
  */
+bool SDKHooks::Hook_CanBeAutobalanced()
+{
+	CBaseEntity *pPlayer = META_IFACEPTR(CBaseEntity);
+
+	CVTableHook vhook(pPlayer);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_CanBeAutobalanced];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
+	{
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
+			continue;
+		}
+
+		int entity = gamehelpers->EntityToBCompatRef(pPlayer);
+
+		bool origRet = SH_MCALL(pPlayer, CanBeAutobalanced)();
+		bool newRet = origRet;
+
+		ke::Vector<IPluginFunction *> callbackList;
+		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
+		for (entry = 0; entry < callbackList.length(); ++entry)
+		{
+			cell_t res = origRet;
+			IPluginFunction *callback = callbackList[entry];
+			callback->PushCell(entity);
+			callback->PushCell(origRet);
+			callback->Execute(&res);
+
+			// Only update our new ret if different from original
+			// (so if multiple plugins returning different answers,
+			//  the one(s) that changed it win)
+			if (res != origRet)
+				newRet = !origRet;
+		}
+
+		if (newRet != origRet)
+			RETURN_META_VALUE(MRES_SUPERCEDE, newRet);
+
+		break;
+	}
+
+	RETURN_META_VALUE(MRES_IGNORED, false);
+}
+
 void SDKHooks::Hook_EndTouch(CBaseEntity *pOther)
 {
 	cell_t result = Call(META_IFACEPTR(CBaseEntity), SDKHook_EndTouch, pOther);
