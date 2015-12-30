@@ -95,7 +95,7 @@ public:
 	void Shutdown();
 	bool IsEnabled();
 
-	void FireEventDetour(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay);
+	bool FireEventDetour(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay);
 
 	void OnPluginDestroyed(IPlugin *plugin);
 

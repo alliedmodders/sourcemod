@@ -42,9 +42,15 @@
  * @param caller		Entity index of the caller.
  * @param activator		Entity index of the activator.
  * @param delay			Delay in seconds? before the event gets fired.
- * @noreturn
+ * @return					Anything other than Plugin_Continue will supress this event,
+ *								returning Plugin_Continue will allow it to propagate the results
+ *								of this output to any entity inputs.
  */
-typedef EntityOutput = function void (const char[] output, int caller, int activator, float delay);
+typeset EntityOutput
+{
+	function void (const char[] output, int caller, int activator, float delay);
+	function Action (const char[] output, int caller, int activator, float delay);
+};
 
 /**
  * Add an entity output hook on a entity classname
