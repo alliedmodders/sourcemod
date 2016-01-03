@@ -39,6 +39,7 @@
 #include <IHandleSys.h>
 #include <IMemoryUtils.h>
 #include <ISourceMod.h>
+#include <IRootConsoleMenu.h>
 #include "common_logic.h"
 #include "sm_crc32.h"
 #include "MemoryUtils.h"
@@ -805,7 +806,12 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 		if (libsys->PathExists(path))
 		{
 			ke::SafeSprintf(path, sizeof(path), "custom/%s.txt", m_File);
-			return EnterFile(path, error, maxlength);
+			bool success = EnterFile(path, error, maxlength);
+			if (success)
+			{
+				rootmenu->ConsolePrint("[SM] Parsed custom gamedata override file: %s", path);
+			}
+			return success;
 		}
 		return true;
 	}
@@ -884,6 +890,8 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 			libsys->CloseDirectory(customDir);
 			return false;
 		}
+
+		rootmenu->ConsolePrint("[SM] Parsed custom gamedata override file: %s", path);
 
 		customDir->NextEntry();
 	}
