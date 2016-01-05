@@ -253,7 +253,7 @@ native bool GetTrieString(Handle map, const char[] key, char[] value, int max_si
  * @return			True on success, false if the value was never set.
  * @error			Invalid Handle.
  */
-native RemoveFromTrie(Handle map, const char[] key);
+native bool RemoveFromTrie(Handle map, const char[] key);
 
 /**
  * Clears all entries from a Map.
