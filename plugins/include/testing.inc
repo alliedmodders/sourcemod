@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,15 +30,15 @@
  * Version: $Id$
  */
 
-static TestNumber = 0;
-static String:TestContext[255];
+static int TestNumber = 0;
+static char TestContext[255];
 
-SetTestContext(const String:context[])
+stock void SetTestContext(const char[] context)
 {
 	strcopy(TestContext, sizeof(TestContext), context);
 }
 
-AssertEq(const String:text[], cell1, cell2)
+stock void AssertEq(const char[] text, int cell1, int cell2)
 {
 	TestNumber++;
 	if (cell1 == cell2) {
@@ -49,7 +49,7 @@ AssertEq(const String:text[], cell1, cell2)
 	}
 }
 
-AssertFalse(const String:text[], bool:value)
+stock void AssertFalse(const char[] text, bool value)
 {
 	TestNumber++;
 	if (!value) {
@@ -60,7 +60,7 @@ AssertFalse(const String:text[], bool:value)
 	}
 }
 
-AssertTrue(const String:text[], bool:value)
+stock void AssertTrue(const char[] text, bool value)
 {
 	TestNumber++;
 	if (value) {
