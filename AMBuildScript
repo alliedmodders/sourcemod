@@ -216,7 +216,7 @@ class SMConfig(object):
       '-Wno-overloaded-virtual',
       '-fvisibility-inlines-hidden',
     ]
-    cxx.linkflags += ['-m32']
+    cxx.linkflags += ['-m32', '-Wl,--exclude-libs,ALL']
 
     have_gcc = cxx.vendor == 'gcc'
     have_clang = cxx.vendor == 'clang'
