@@ -76,6 +76,7 @@ class HashSet : public AllocPolicy
 
   typedef typename Internal::Result Result;
   typedef typename Internal::Insert Insert;
+  typedef typename Internal::iterator iterator;
 
   template <typename Lookup>
   Result find(const Lookup &key) {
@@ -118,6 +119,10 @@ class HashSet : public AllocPolicy
 
   size_t estimateMemoryUse() const {
     return table_.estimateMemoryUse();
+  }
+
+  iterator iter() {
+    return iterator(&table_);
   }
 
  private:
