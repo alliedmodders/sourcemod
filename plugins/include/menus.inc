@@ -176,7 +176,7 @@ methodmap Panel < Handle
 	//                      No numbering or newlines are needed.
 	// @param style         ITEMDRAW style flags.
 	// @return              A slot position, or 0 if item was a rawline or could not be drawn.
-	public native void DrawItem(const char[] text, style=ITEMDRAW_DEFAULT);
+	public native int DrawItem(const char[] text, style=ITEMDRAW_DEFAULT);
 
 	// Draws a raw line of text on a panel, without any markup other than a
 	// newline.
