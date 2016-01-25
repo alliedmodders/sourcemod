@@ -90,9 +90,9 @@
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"156"
-				"linux"		"157"
-				"mac"		"157"
+				"windows"	"166"
+				"linux"		"167"
+				"mac"		"167"
 			}
 			"Weapon_CanSwitchTo"
 			{
@@ -103,7 +103,7 @@
 			"Weapon_CanUse"
 			{
 				"windows"	"276"
-				"linux"		"277
+				"linux"		"277"
 				"mac"		"277"
 			}
 			"Weapon_Drop"
