@@ -185,6 +185,13 @@ enum TFCond
 	TFCond_CritRuneTemp,
 	TFCond_PasstimeInterception,
 	TFCond_SwimmingNoEffects,
+	TFCond_EyeaductUnderworld,
+	TFCond_KingRune,
+	TFCond_PlagueRune,
+	TFCond_SupernovaRune,
+	TFCond_Plague,
+	TFCond_KingAura,
+	TFCond_SpawnOutline, //114
 };
 
 const Float:TFCondDuration_Infinite = -1.0;
