@@ -12,7 +12,8 @@ elif binary.compiler.vendor == 'msvc':
 
 binary.compiler.defines += [
   'SQLITE_OMIT_LOAD_EXTENSION',
-  'SQLITE_THREADSAFE'
+  'SQLITE_THREADSAFE',
+  'SQLITE_ENABLE_UPDATE_DELETE_LIMIT'
 ]
 if builder.target_platform == 'linux':
   binary.compiler.postlink += ['-ldl', '-lpthread']
