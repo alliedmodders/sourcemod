@@ -185,6 +185,7 @@ enum TFCond
 	TFCond_CritRuneTemp,
 	TFCond_PasstimeInterception,
 	TFCond_SwimmingNoEffects,
+	TFCond_SpawnOutline = 114,
 };
 
 const Float:TFCondDuration_Infinite = -1.0;
