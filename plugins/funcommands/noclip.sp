@@ -34,16 +34,8 @@
 PerformNoClip(client, target)
 {
 	new MoveType:movetype = GetEntityMoveType(target);
+	SetEntityMoveType(target, movetype != MOVETYPE_NOCLIP ? MOVETYPE_NOCLIP : MOVETYPE_WALK);
 
-	if (movetype != MOVETYPE_NOCLIP)
-	{
-		SetEntityMoveType(target, MOVETYPE_NOCLIP);
-	}
-	else
-	{
-		SetEntityMoveType(target, MOVETYPE_WALK);
-	}
-	
 	LogAction(client, target, "\"%L\" toggled noclip on \"%L\"", client, target);
 }
 

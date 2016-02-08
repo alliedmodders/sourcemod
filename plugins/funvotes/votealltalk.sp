@@ -51,15 +51,7 @@ DisplayVoteAllTalkMenu(client)
 	g_voteInfo[VOTE_NAME][0] = '\0';
 
 	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	
-	if (g_Cvar_Alltalk.BoolValue)
-	{
-		g_hVoteMenu.SetTitle("Votealltalk Off");
-	}
-	else
-	{
-		g_hVoteMenu.SetTitle("Votealltalk On");
-	}
+	g_hVoteMenu.SetTitle(g_Cvar_Alltalk.BoolValue ? "Votealltalk Off" : "Votealltalk On");
 	
 	g_hVoteMenu.AddItem(VOTE_YES, "Yes");
 	g_hVoteMenu.AddItem(VOTE_NO, "No");
