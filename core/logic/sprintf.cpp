@@ -147,7 +147,7 @@ error_out:
 	return 0;
 }
 
-void AddString(char **buf_p, size_t &maxlen, const char *string, int width, int prec)
+void AddString(char **buf_p, size_t &maxlen, const char *string, int width, int prec, int flags)
 {
 	int size = 0;
 	char *buf;
@@ -212,7 +212,7 @@ void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, in
 
 	if (ke::IsNaN(fval))
 	{
-		AddString(buf_p, maxlen, "NaN", width, prec);
+		AddString(buf_p, maxlen, "NaN", width, prec, flags);
 		return;
 	}
 
@@ -750,7 +750,7 @@ reswitch:
 				}
 				const char *str = (const char *)params[curparam];
 				curparam++;
-				AddString(&buf_p, llen, str, width, prec);
+				AddString(&buf_p, llen, str, width, prec, flags);
 				arg++;
 				break;
 			}
@@ -1141,7 +1141,7 @@ reswitch:
 						sizeof(buffer),
 						"Console<0><Console><Console>");
 				}
-				AddString(&buf_p, llen, buffer, width, prec);
+				AddString(&buf_p, llen, buffer, width, prec, flags);
 				arg++;
 				break;
 			}
@@ -1156,7 +1156,7 @@ reswitch:
 					if (!bridge->DescribePlayer(*value, &name, nullptr, nullptr))
 						return pCtx->ThrowNativeError("Client index %d is invalid", *value);
 				}
-				AddString(&buf_p, llen, name, width, prec);
+				AddString(&buf_p, llen, name, width, prec, flags);
 				arg++;
 				break;
 			}
@@ -1165,7 +1165,7 @@ reswitch:
 				CHECK_ARGS(0);
 				char *str;
 				pCtx->LocalToString(params[arg], &str);
-				AddString(&buf_p, llen, str, width, prec);
+				AddString(&buf_p, llen, str, width, prec, flags);
 				arg++;
 				break;
 			}
