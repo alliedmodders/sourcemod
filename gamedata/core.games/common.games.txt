@@ -161,6 +161,7 @@
 			"game"					"csgo"
 			"game"					"berimbau"
 			"game"					"nmrih"
+			"game"					"KreedzClimbing"
 		}
 
 		"Keys"
@@ -195,6 +196,7 @@
 			"game"					"berimbau"
 			"game"					"$INSURGENCY" // retail game
 			"game"					"nmrih"
+			"game"					"KreedzClimbing"
 		}
 		
 		"Keys"
@@ -238,6 +240,7 @@
 			"game"					"cstrike"
 			"game"					"synergy"
 			"game"					"bms"
+			"game"					"KreedzClimbing"
 		}
 		
 		"Keys"
