@@ -40,15 +40,7 @@ PerformBlind(client, target, amount)
 	
 	new duration = 1536;
 	new holdtime = 1536;
-	new flags;
-	if (amount == 0)
-	{
-		flags = (0x0001 | 0x0010);
-	}
-	else
-	{
-		flags = (0x0002 | 0x0008);
-	}
+	new flags = ((amount == 0) ? (0x0001 | 0x0010) : (0x0002 | 0x0008));
 	
 	new color[4] = { 0, 0, 0, 0 };
 	color[3] = amount;
