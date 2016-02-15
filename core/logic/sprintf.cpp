@@ -87,7 +87,7 @@ try_serverlang:
 	}
 	else
 	{
-		pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Translation failed: invalid client index %d", target);
+		pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Translation failed: invalid client index %d (arg %d)", target, *arg);
 		goto error_out;
 	}
 
@@ -102,13 +102,13 @@ try_serverlang:
 		{
 			if (pPhrases->FindTranslation(key, SOURCEMOD_LANGUAGE_ENGLISH, &pTrans) != Trans_Okay)
 			{
-				pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found", key);
+				pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found (arg %d)", key, *arg);
 				goto error_out;
 			}
 		}
 		else
 		{
-			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found", key);
+			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found (arg %d)", key, *arg);
 			goto error_out;
 		}
 	}
@@ -123,9 +123,8 @@ try_serverlang:
 		if ((*arg) + (max_params - 1) > (size_t)params[0])
 		{
 			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, 
-				"Translation string formatted incorrectly - missing at least %d parameters", 
-				((*arg + (max_params - 1)) - params[0])
-				);
+				"Translation string formatted incorrectly - missing at least %d parameters (arg %d)", 
+				((*arg + (max_params - 1)) - params[0]), *arg);
 			goto error_out;
 		}
 
@@ -1127,7 +1126,7 @@ reswitch:
 					const char *auth;
 					int userid;
 					if (!bridge->DescribePlayer(*value, &name, &auth, &userid))
-						return pCtx->ThrowNativeError("Client index %d is invalid", *value);
+						return pCtx->ThrowNativeError("Client index %d is invalid (arg %d)", *value, arg);
 					ke::SafeSprintf(buffer, 
 						sizeof(buffer), 
 						"%s<%d><%s><>", 
@@ -1154,7 +1153,7 @@ reswitch:
 				const char *name = "Console";
 				if (*value) {
 					if (!bridge->DescribePlayer(*value, &name, nullptr, nullptr))
-						return pCtx->ThrowNativeError("Client index %d is invalid", *value);
+						return pCtx->ThrowNativeError("Client index %d is invalid (arg %d)", *value, arg);
 				}
 				AddString(&buf_p, llen, name, width, prec, flags);
 				arg++;
