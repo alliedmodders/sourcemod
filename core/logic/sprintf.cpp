@@ -146,7 +146,7 @@ error_out:
 	return 0;
 }
 
-void AddString(char **buf_p, size_t &maxlen, const char *string, int width, int prec, int flags)
+bool AddString(char **buf_p, size_t &maxlen, const char *string, int width, int prec, int flags)
 {
 	int size = 0;
 	char *buf;
@@ -196,6 +196,8 @@ void AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 	}
 
 	*buf_p = buf;
+
+	return true;
 }
 
 void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, int flags)
@@ -1140,7 +1142,8 @@ reswitch:
 						sizeof(buffer),
 						"Console<0><Console><Console>");
 				}
-				AddString(&buf_p, llen, buffer, width, prec, flags);
+				if (!AddString(&buf_p, llen, buffer, width, prec, flags))
+					return pCtx->ThrowNativeError("Escaped string would be truncated (arg %d)", arg);
 				arg++;
 				break;
 			}
@@ -1155,7 +1158,8 @@ reswitch:
 					if (!bridge->DescribePlayer(*value, &name, nullptr, nullptr))
 						return pCtx->ThrowNativeError("Client index %d is invalid (arg %d)", *value, arg);
 				}
-				AddString(&buf_p, llen, name, width, prec, flags);
+				if (!AddString(&buf_p, llen, name, width, prec, flags))
+					return pCtx->ThrowNativeError("Escaped string would be truncated (arg %d)", arg);
 				arg++;
 				break;
 			}
@@ -1164,7 +1168,8 @@ reswitch:
 				CHECK_ARGS(0);
 				char *str;
 				pCtx->LocalToString(params[arg], &str);
-				AddString(&buf_p, llen, str, width, prec, flags);
+				if (!AddString(&buf_p, llen, str, width, prec, flags))
+					return pCtx->ThrowNativeError("Escaped string would be truncated (arg %d)", arg);
 				arg++;
 				break;
 			}
