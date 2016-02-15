@@ -32,6 +32,7 @@
 #include "common_logic.h"
 #include "Database.h"
 #include "ExtensionSys.h"
+#include "sprintf.h"
 #include "stringutil.h"
 #include "ISourceMod.h"
 #include "AutoHandleRooter.h"
@@ -730,6 +731,24 @@ static cell_t SQL_QuoteString(IPluginContext *pContext, const cell_t *params)
 	*addr = (cell_t)written;
 
 	return s ? 1 : 0;
+}
+
+static cell_t SQL_FormatQuery(IPluginContext *pContext, const cell_t *params)
+{
+	IDatabase *db = NULL;
+	HandleError err;
+
+	if ((err = g_DBMan.ReadHandle(params[1], DBHandle_Database, (void **)&db))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid database Handle %x (error: %d)", params[1], err);
+	}
+
+	g_FormatEscapeDatabase = db;
+	cell_t result = InternalFormat(pContext, params, 1);
+	g_FormatEscapeDatabase = NULL;
+
+	return result;
 }
 
 static cell_t SQL_FastQuery(IPluginContext *pContext, const cell_t *params)
@@ -1814,6 +1833,7 @@ REGISTER_NATIVES(dbNatives)
 	{"Database.Driver.get",				Database_Driver_get},
 	{"Database.SetCharset",				SQL_SetCharset},
 	{"Database.Escape",					SQL_QuoteString},
+	{"Database.Format",					SQL_FormatQuery},
 	{"Database.IsSameConnection",		SQL_IsSameConnection},
 	{"Database.Execute",				SQL_ExecuteTransaction},
 
@@ -1827,6 +1847,7 @@ REGISTER_NATIVES(dbNatives)
 	{"SQL_Connect",				SQL_Connect},
 	{"SQL_ConnectEx",			SQL_ConnectEx},
 	{"SQL_EscapeString",		SQL_QuoteString},
+	{"SQL_FormatQuery",			SQL_FormatQuery},
 	{"SQL_Execute",				SQL_Execute},
 	{"SQL_FastQuery",			SQL_FastQuery},
 	{"SQL_FetchFloat",			SQL_FetchFloat},

@@ -30,15 +30,19 @@
 #include "sprintf.h"
 #include <am-float.h>
 #include <am-string.h>
+#include <IDBDriver.h>
 #include <ITranslator.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/CoreProvider.h>
 
 using namespace SourceMod;
 
+IDatabase *g_FormatEscapeDatabase = NULL;
+
 #define LADJUST			0x00000001		/* left adjustment */
 #define ZEROPAD			0x00000002		/* zero (as opposed to blank) pad */
 #define UPPERDIGITS		0x00000004		/* make alpha digits uppercase */
+#define NOESCAPE		0x00000008		/* do not escape strings (they are only escaped if a database connection is provided) */
 #define to_digit(c)		((c) - '0')
 #define is_digit(c)		((unsigned)to_digit(c) <= 9)
 
@@ -158,6 +162,7 @@ bool AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 	{
 		string = nlstr;
 		prec = -1;
+		flags |= NOESCAPE;
 	}
 
 	if (prec >= 0)
@@ -181,12 +186,44 @@ bool AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 		size = maxlen;
 	}
 
-	maxlen -= size;
 	width -= size;
 
-	while (size--)
+	if (g_FormatEscapeDatabase && (flags & NOESCAPE) == 0)
 	{
-		*buf++ = *string++;
+		char *tempBuffer = NULL;
+		if (prec != -1)
+		{
+			// I doubt anyone will ever do this, so just allocate.
+			tempBuffer = new char[maxlen + 1];
+			memcpy(tempBuffer, string, size);
+			tempBuffer[size] = '\0';
+		}
+
+		size_t newSize;
+		bool ret = g_FormatEscapeDatabase->QuoteString(tempBuffer ? tempBuffer : string, buf, maxlen + 1, &newSize);
+
+		if (tempBuffer)
+		{
+			delete[] tempBuffer;
+		}
+
+		if (!ret)
+		{
+			return false;
+		}
+
+		maxlen -= newSize;
+		buf += newSize;
+		size = 0; // Consistency.
+	}
+	else
+	{
+		maxlen -= size;
+
+		while (size--)
+		{
+			*buf++ = *string++;
+		}
 	}
 
 	while ((width-- > 0) && maxlen)
@@ -213,7 +250,7 @@ void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, in
 
 	if (ke::IsNaN(fval))
 	{
-		AddString(buf_p, maxlen, "NaN", width, prec, flags);
+		AddString(buf_p, maxlen, "NaN", width, prec, flags | NOESCAPE);
 		return;
 	}
 
@@ -1029,6 +1066,11 @@ reswitch:
 		case '-':
 			{
 				flags |= LADJUST;
+				goto rflag;
+			}
+		case '!':
+			{
+				flags |= NOESCAPE;
 				goto rflag;
 			}
 		case '.':
