@@ -85,18 +85,12 @@ public OnPluginEnd()
 
 public OnMapStart()
 {
-	if (sm_hide_slots.BoolValue)
-	{
-		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - sm_reserved_slots.IntValue);
-	}
+	CheckHiddenSlots();
 }
 
 public OnConfigsExecuted()
 {
-	if (sm_hide_slots.BoolValue)
-	{
-		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - sm_reserved_slots.IntValue);
-	}	
+	CheckHiddenSlots();	
 }
 
 public Action:OnTimedKick(Handle:timer, any:client)
@@ -108,10 +102,7 @@ public Action:OnTimedKick(Handle:timer, any:client)
 	
 	KickClient(client, "%T", "Slot reserved", client);
 	
-	if (sm_hide_slots.BoolValue)
-	{				
-		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - sm_reserved_slots.IntValue);
-	}
+	CheckHiddenSlots();
 	
 	return Plugin_Handled;
 }
@@ -198,10 +189,7 @@ public OnClientPostAdminCheck(client)
 
 public OnClientDisconnect_Post(client)
 {
-	if (sm_hide_slots.BoolValue)
-	{		
-		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - sm_reserved_slots.IntValue);
-	}
+	CheckHiddenSlots();
 	
 	if (g_isAdmin[client])
 	{
@@ -233,6 +221,14 @@ public SlotHideChanged(ConVar convar, const String:oldValue[], const String:newV
 	}
 	else
 	{
+		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - sm_reserved_slots.IntValue);
+	}
+}
+
+CheckHiddenSlots()
+{
+	if (sm_hide_slots.BoolValue)
+	{		
 		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - sm_reserved_slots.IntValue);
 	}
 }
