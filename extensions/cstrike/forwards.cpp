@@ -95,11 +95,10 @@ DETOUR_DECL_MEMBER2(DetourTerminateRound, void, float, delay, int, reason)
 	}
 #else
 //Windows CSGO
-//char __userpurge TerminateRound<al>(unsigned int a1<ecx>, signed int a2<edi>, unsigned int a3<xmm1>, int a4)
+//char __userpurge TerminateRound(int a1@<ecx>, float a2@<xmm1>, int *a3)
 // a1 - this
-// a2 - unknown
-// a3 - delay
-// a4 - reason
+// a2 - delay
+// a3 - reason
 DETOUR_DECL_MEMBER1(DetourTerminateRound, void, int, reason)
 {
 	float delay;
