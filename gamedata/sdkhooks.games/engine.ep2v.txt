@@ -7,9 +7,9 @@
 		{
 			"CanBeAutobalanced"
 			{
-				"windows"	"458"
-				"linux"		"459"
-				"mac"		"459"
+				"windows"	"459"
+				"linux"		"460"
+				"mac"		"460"
 			}
 			"EndTouch"
 			{
