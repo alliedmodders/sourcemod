@@ -477,7 +477,7 @@ static cell_t HTTP_Download(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t HTTP_GetBodySize(IPluginContext *pCtx, const cell_t *params)
 {
-	// 1st param: session handle
+	// 1st param: downloader handle
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 
 	HandleError err;
@@ -505,7 +505,7 @@ static cell_t HTTP_GetBodySize(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t HTTP_GetBodyContent(IPluginContext *pCtx, const cell_t *params)
 {
-	// 1st param: session handle
+	// 1st param: downloader handle
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 
 	HandleError err;
@@ -589,6 +589,22 @@ const sp_nativeinfo_t curlext_natives[] =
 	{"HTTP_AddFileToWebForm",		HTTP_AddFileToWebForm},
 	{"HTTP_GetBodySize",			HTTP_GetBodySize},
 	{"HTTP_GetBodyContent",			HTTP_GetBodyContent},
+
+	// Methodmap versions
+	{"HTTPFileDownloader.BodySize.get",	HTTP_GetBodySize},
+	{"HTTPFileDownloader.GetBodyContent",	HTTP_GetBodyContent},
+	{"HTTPMemoryDownloader.BodySize.get",	HTTP_GetBodySize},
+	{"HTTPMemoryDownloader.GetBodyContent",	HTTP_GetBodyContent},
+	{"HTTPSession.SetFailOnHTTPError",		HTTP_SetFailOnHTTPError},
+	{"HTTPSession.GetLastError",			HTTP_GetLastError},
+	{"HTTPSession.Download",				HTTP_Download},
+	{"HTTPSession.PostAndDownload",		HTTP_PostAndDownload},
+	{"HTTPWebForm.AddString",		HTTP_AddStringToWebForm},
+	{"HTTPWebForm.AddFile",		HTTP_AddFileToWebForm},
+	{"HTTPFileDownloader.HTTPFileDownloader",				HTTP_CreateFileDownloader},
+	{"HTTPMemoryDownloader.HTTPMemoryDownloader",		HTTP_CreateMemoryDownloader},
+	{"HTTPSession.HTTPSession",		HTTP_CreateSession},
+	{"HTTPWebForm.HTTPWebForm",		HTTP_CreateWebForm},
 	{NULL,							NULL},
 };
 
