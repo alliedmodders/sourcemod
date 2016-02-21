@@ -75,14 +75,14 @@
  *						if one valid client is found.  Otherwise, a COMMAND_TARGET reason 
  *						for failure is returned.
  */
-native ProcessTargetString(const String:pattern[],
-						   admin, 
-						   targets[],
-						   max_targets,
-						   filter_flags,
-						   String:target_name[],
-						   tn_maxlength,
-						   &bool:tn_is_ml);
+native int ProcessTargetString(const char[] pattern,
+						   int admin, 
+						   int[] targets,
+						   int max_targets,
+						   int filter_flags,
+						   char[] target_name,
+						   int tn_maxlength,
+						   bool &tn_is_ml);
 
 /**
  * Replies to a client with a given message describing a targetting 
@@ -94,7 +94,7 @@ native ProcessTargetString(const String:pattern[],
  * @param reason		COMMAND_TARGET reason.
  * @noreturn
  */
-stock ReplyToTargetError(client, reason)
+stock void ReplyToTargetError(int client, int reason)
 {
 	switch (reason)
 	{
@@ -143,6 +143,15 @@ stock ReplyToTargetError(client, reason)
 typedef MultiTargetFilter = function bool (const char[] pattern, Handle clients);
 
 /**
+ * Same as MultiTargetFilter except for the triggered client index.
+ *
+ * @param pattern       Pattern name.
+ * @param clients       Array to fill with unique, valid client indexes.
+ * @return              True if pattern was recognized, false otherwise.
+ */
+typedef MultiTargetFilter2 = function bool (const char[] pattern, Handle clients, int client);
+
+/**
  * Adds a multi-target filter function for ProcessTargetString().
  *
  * @param pattern       Pattern to match (case sensitive).
@@ -151,8 +160,8 @@ typedef MultiTargetFilter = function bool (const char[] pattern, Handle clients)
  * @param phraseIsML    True if phrase is multi-lingual, false otherwise.
  * @noreturn
  */
-native AddMultiTargetFilter(const String:pattern[], MultiTargetFilter:filter,
-                            const String:phrase[], bool:phraseIsML);
+native void AddMultiTargetFilter(const char[] pattern, MultiTargetFilter filter,
+                            const char[] phrase, bool phraseIsML);
 
 /**
  * Removes a multi-target filter function from ProcessTargetString().
@@ -161,5 +170,26 @@ native AddMultiTargetFilter(const String:pattern[], MultiTargetFilter:filter,
  * @param filter        Filter function.
  * @noreturn
  */
-native RemoveMultiTargetFilter(const String:pattern[], MultiTargetFilter:filter);
+native void RemoveMultiTargetFilter(const char[] pattern, MultiTargetFilter filter);
+
+/**
+ * Same as AddMultiTargetFilter except for the callback with triggered client index (MultiTargetFilter2).
+ *
+ * @param pattern       Pattern to match (case sensitive).
+ * @param filter        Filter function.
+ * @param phrase        Descriptive phrase to display on successful match.
+ * @param phraseIsML    True if phrase is multi-lingual, false otherwise.
+ * @noreturn
+ */
+native void AddMultiTargetFilter2(const char[] pattern, MultiTargetFilter2 filter,
+                            const char[] phrase, bool phraseIsML);
+
+/**
+ * Same as RemoveMultiTargetFilter except for the callback with triggered client index (MultiTargetFilter2).
+ *
+ * @param pattern       Pattern to match (case sensitive).
+ * @param filter        Filter function.
+ * @noreturn
+ */
+native void RemoveMultiTargetFilter2(const char[] pattern, MultiTargetFilter2 filter);
 
