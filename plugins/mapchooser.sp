@@ -157,7 +157,8 @@ public void OnPluginStart()
 		{
 			HookEvent("round_win", Event_RoundEnd);
 		}
-		else if (strcmp(folder, "empires") == 0) {
+		else if (strcmp(folder, "empires") == 0)
+		{
 			HookEvent("game_end", Event_RoundEnd);
 		}
 		else
