@@ -821,6 +821,7 @@ native ChangeClientTeam(client, team);
  *
  * @param client		Client index.
  * @return	Serial number.
+ * @error				Invalid client index, or client not connected.
  */
 native GetClientSerial(client);
 
