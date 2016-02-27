@@ -1173,7 +1173,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 							/* Will our dependent care? */
 							if (!pExt->GetAPI()->QueryInterfaceDrop((*i_iter).iface))
 							{
-								rootmenu->ConsolePrint(" -> %s", pExt->GetFilename());
+								rootmenu->ConsolePrint(" -> %s", pOther->GetFilename());
 								/* Add to plugin unload list */
 								List<CPlugin *>::iterator p_iter;
 								for (p_iter=pOther->m_Dependents.begin();
