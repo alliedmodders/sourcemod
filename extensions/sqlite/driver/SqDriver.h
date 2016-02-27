@@ -56,6 +56,7 @@ class SqDriver : public IDBDriver
 {
 public:
 	SqDriver();
+	~SqDriver();
 	void Initialize();
 	void Shutdown();
 public:
@@ -74,6 +75,7 @@ private:
 	ke::Mutex m_OpenLock;
 	List<SqDbInfo> m_Cache;
 	bool m_bThreadSafe;
+	bool m_bShutdown;
 };
 
 extern SqDriver g_SqDriver;

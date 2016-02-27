@@ -64,6 +64,10 @@ public:
 	bool SetCharacterSet(const char *characterset);
 public:
 	sqlite3 *GetDb();
+	void PrepareForForcedShutdown()
+	{
+		m_Persistent = false;
+	}
 private:
 	sqlite3 *m_sq3;
 	ke::AutoPtr<ke::Mutex> m_FullLock;
