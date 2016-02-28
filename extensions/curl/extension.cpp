@@ -591,10 +591,8 @@ const sp_nativeinfo_t curlext_natives[] =
 	{"HTTP_GetBodyContent",			HTTP_GetBodyContent},
 
 	// Methodmap versions
-	{"HTTPFileDownloader.BodySize.get",	HTTP_GetBodySize},
-	{"HTTPFileDownloader.GetBodyContent",	HTTP_GetBodyContent},
-	{"HTTPMemoryDownloader.BodySize.get",	HTTP_GetBodySize},
-	{"HTTPMemoryDownloader.GetBodyContent",	HTTP_GetBodyContent},
+	{"HTTPDownloader.BodySize.get",	HTTP_GetBodySize},
+	{"HTTPDownloader.GetBodyContent",	HTTP_GetBodyContent},
 	{"HTTPSession.SetFailOnHTTPError",		HTTP_SetFailOnHTTPError},
 	{"HTTPSession.GetLastError",			HTTP_GetLastError},
 	{"HTTPSession.Download",				HTTP_Download},
@@ -835,7 +833,8 @@ void HTTPHandleDispatcher::OnHandleDestroy(HandleType_t type, void *object)
 	}
 }
 
-IPlugin *FindPluginByContext(IPluginContext *pContext) {
+IPlugin *FindPluginByContext(IPluginContext *pContext)
+{
 	IPlugin *pFoundPlugin;
 
 	IPluginIterator *pPluginIterator = plsys->GetPluginIterator();

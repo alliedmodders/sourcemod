@@ -33,14 +33,14 @@
 
 using namespace SourceMod;
 
-FileDownloader::FileDownloader( const char *file )
+FileDownloader::FileDownloader(const char *file)
 {
 	fpLocal = fopen(file, "wb");
 }
 
 FileDownloader::~FileDownloader(void)
 {
-	if(this->fpLocal != NULL)
+	if (this->fpLocal != NULL)
 	{
 		fclose(this->fpLocal);
 	}
