@@ -462,7 +462,6 @@ private:
 	bool RequireExtensions(CPlugin *pPlugin);
 	bool FindOrRequirePluginDeps(CPlugin *pPlugin);
 
-	bool ScheduleUnload(CPlugin *plugin);
 	void UnloadPluginImpl(CPlugin *plugin);
 
 	void Purge(CPlugin *plugin);

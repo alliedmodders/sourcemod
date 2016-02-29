@@ -1435,11 +1435,7 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 {
 	CPlugin *pPlugin = (CPlugin *)plugin;
-	return ScheduleUnload(pPlugin);
-}
 
-bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
-{
 	// Should not be recursively removing.
 	assert(m_plugins.contains(pPlugin));
 
@@ -1460,8 +1456,8 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 
 	if (any_active) {
 		pPlugin->SetWaitingToUnload();
-		ScheduleTaskForNextFrame([this, pPlugin] () -> void {
-			ScheduleUnload(pPlugin);
+		ScheduleTaskForNextFrame([this, pPlugin]() -> void {
+			UnloadPluginImpl(pPlugin);
 		});
 		return false;
 	}
@@ -1855,7 +1851,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			}
 			else
 			{
-				rootmenu->ConsolePrint("[SM] Failed to unload plugin %s.", name);
+				rootmenu->ConsolePrint("[SM] Plugin %s will be unloaded on the next frame.", name);
 			}
 
 			return;
