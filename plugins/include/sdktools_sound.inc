@@ -92,7 +92,7 @@ enum
 	SNDLEVEL_RUSTLE = 20,		/**< Rustling leaves */
 	SNDLEVEL_WHISPER = 25,		/**< Whispering */
 	SNDLEVEL_LIBRARY = 30,		/**< In a library */
-	SNDLEVEL_FRIDGE = 45,		/**< Refrigerator */
+	SNDLEVEL_FRIDGE = 45,		/**< Refridgerator */
 	SNDLEVEL_HOME = 50,			/**< Average home (3.9 attn) */
 	SNDLEVEL_CONVO = 60,		/**< Normal conversation (2.0 attn) */
 	SNDLEVEL_DRYER = 60,		/**< Clothes dryer */
@@ -127,7 +127,7 @@ enum
  * @param name		Sound file name relative to the "sounds" folder.
  * @noreturn
  */
-native PrefetchSound(const String:name[]);
+native void PrefetchSound(const char[] name);
 
 /**
  * This function is not known to work, and may crash.  You should 
@@ -137,7 +137,7 @@ native PrefetchSound(const String:name[]);
  * @return			Duration in seconds.
  */
 #pragma deprecated Does not work, may crash.
-native Float:GetSoundDuration(const String:name[]);
+native float GetSoundDuration(const char[] name);
 
 /**
  * Emits an ambient sound.
@@ -152,14 +152,14 @@ native Float:GetSoundDuration(const String:name[]);
  * @param delay		Play delay.
  * @noreturn
  */
-native EmitAmbientSound(const String:name[],
-						const Float:pos[3],
-						entity = SOUND_FROM_WORLD,
-						level = SNDLEVEL_NORMAL,
-						flags = SND_NOFLAGS,
-						Float:vol = SNDVOL_NORMAL,
-						pitch = SNDPITCH_NORMAL,
-						Float:delay = 0.0);
+native void EmitAmbientSound(const char[] name,
+						const float pos[3],
+						int entity = SOUND_FROM_WORLD,
+						int level = SNDLEVEL_NORMAL,
+						int flags = SND_NOFLAGS,
+						float vol = SNDVOL_NORMAL,
+						int pitch = SNDPITCH_NORMAL,
+						float delay = 0.0);
 
 /**
  * Fades a client's volume level toward silence or a given percentage.
@@ -172,7 +172,7 @@ native EmitAmbientSound(const String:name[],
  * @noreturn
  * @error			Invalid client index or client not in game.
  */
-native FadeClientVolume(client, Float:percent, Float:outtime, Float:holdtime, Float:intime);
+native void FadeClientVolume(int client, float percent, float outtime, float holdtime, float intime);
 
 /**
  * Stops a sound.
@@ -182,7 +182,7 @@ native FadeClientVolume(client, Float:percent, Float:outtime, Float:holdtime, Fl
  * @param name		Sound file name relative to the "sounds" folder.
  * @noreturn
  */
-native StopSound(entity, channel, const String:name[]);
+native void StopSound(int entity, int channel, const char[] name);
 
 /**
  * Emits a sound to a list of clients.
@@ -205,21 +205,21 @@ native StopSound(entity, channel, const String:name[]);
  * @noreturn
  * @error				Invalid client index.
  */
-native EmitSound(const clients[],
-				 numClients,
-				 const String:sample[],
-				 entity = SOUND_FROM_PLAYER,
-				 channel = SNDCHAN_AUTO,
-				 level = SNDLEVEL_NORMAL,
-				 flags = SND_NOFLAGS,
-				 Float:volume = SNDVOL_NORMAL,
-				 pitch = SNDPITCH_NORMAL,
-				 speakerentity = -1,
-				 const Float:origin[3] = NULL_VECTOR,
-				 const Float:dir[3] = NULL_VECTOR,
-				 bool:updatePos = true,
-				 Float:soundtime = 0.0,
-				 any:...);
+native void EmitSound(const int[] clients,
+				 int numClients,
+				 const char[] sample,
+				 int entity = SOUND_FROM_PLAYER,
+				 int channel = SNDCHAN_AUTO,
+				 int level = SNDLEVEL_NORMAL,
+				 int flags = SND_NOFLAGS,
+				 float volume = SNDVOL_NORMAL,
+				 int pitch = SNDPITCH_NORMAL,
+				 int speakerentity = -1,
+				 const float origin[3] = NULL_VECTOR,
+				 const float dir[3] = NULL_VECTOR,
+				 bool updatePos = true,
+				 float soundtime = 0.0,
+				 any ...);
 
 /**
  * Emits a sound or game sound to a list of clients using the latest version of the engine sound interface.
@@ -245,23 +245,23 @@ native EmitSound(const clients[],
  * @noreturn
  * @error				Invalid client index.
  */
-native EmitSoundEntry(const clients[],
-				 numClients,
-				 const String:soundEntry[],
-				 const String:sample[],
-				 entity = SOUND_FROM_PLAYER,
-				 channel = SNDCHAN_AUTO,
-				 level = SNDLEVEL_NORMAL,
-				 seed = 0,
-				 flags = SND_NOFLAGS,
-				 Float:volume = SNDVOL_NORMAL,
-				 pitch = SNDPITCH_NORMAL,
-				 speakerentity = -1,
-				 const Float:origin[3] = NULL_VECTOR,
-				 const Float:dir[3] = NULL_VECTOR,
-				 bool:updatePos = true,
-				 Float:soundtime = 0.0,
-				 any:...);
+native void EmitSoundEntry(const int[] clients,
+				 int numClients,
+				 const char[] soundEntry,
+				 const char[] sample,
+				 int entity = SOUND_FROM_PLAYER,
+				 int channel = SNDCHAN_AUTO,
+				 int level = SNDLEVEL_NORMAL,
+				 int seed = 0,
+				 int flags = SND_NOFLAGS,
+				 float volume = SNDVOL_NORMAL,
+				 int pitch = SNDPITCH_NORMAL,
+				 int speakerentity = -1,
+				 const float origin[3] = NULL_VECTOR,
+				 const float dir[3] = NULL_VECTOR,
+				 bool updatePos = true,
+				 float soundtime = 0.0,
+				 any ...);
 
 /**
  * Emits a sentence to a list of clients.
@@ -284,21 +284,21 @@ native EmitSoundEntry(const clients[],
  * @noreturn
  * @error				Invalid client index.
  */
-native EmitSentence(const clients[],
-				 numClients,
-				 sentence,
-				 entity,
-				 channel = SNDCHAN_AUTO,
-				 level = SNDLEVEL_NORMAL,
-				 flags = SND_NOFLAGS,
-				 Float:volume = SNDVOL_NORMAL,
-				 pitch = SNDPITCH_NORMAL,
-				 speakerentity = -1,
-				 const Float:origin[3] = NULL_VECTOR,
-				 const Float:dir[3] = NULL_VECTOR,
-				 bool:updatePos = true,
-				 Float:soundtime = 0.0,
-				 any:...);
+native void EmitSentence(const int[] clients,
+				 int numClients,
+				 int sentence,
+				 int entity,
+				 int channel = SNDCHAN_AUTO,
+				 int level = SNDLEVEL_NORMAL,
+				 int flags = SND_NOFLAGS,
+				 float volume = SNDVOL_NORMAL,
+				 int pitch = SNDPITCH_NORMAL,
+				 int speakerentity = -1,
+				 const float origin[3] = NULL_VECTOR,
+				 const float dir[3] = NULL_VECTOR,
+				 bool updatePos = true,
+				 float soundtime = 0.0,
+				 any ...);
 				 
 /**
  *Calculates gain of sound on given distance with given sound level in decibel
@@ -307,7 +307,7 @@ native EmitSentence(const clients[],
  * @param distance	distance of sound to calculate, not meter or feet, but Source Engine`s normal Coordinate unit
  * @return			gain of sound. you can multiply this with original sound`s volume to calculate volume on given distance
  */
-native Float:GetDistGainFromSoundLevel(soundlevel, Float:distance);
+native float GetDistGainFromSoundLevel(int soundlevel, float distance);
 
 /**
  * Called when an ambient sound is about to be emitted to one or more clients.
@@ -375,7 +375,7 @@ typeset NormalSHook
  * @noreturn
  * @error		Invalid function hook.
  */
-native AddAmbientSoundHook(AmbientSHook:hook);
+native void AddAmbientSoundHook(AmbientSHook hook);
 
 /**
  * Hooks all played normal sounds.
@@ -384,7 +384,7 @@ native AddAmbientSoundHook(AmbientSHook:hook);
  * @noreturn
  * @error		Invalid function hook.
  */
-native AddNormalSoundHook(NormalSHook:hook);
+native void AddNormalSoundHook(NormalSHook hook);
 
 /**
  * Unhooks all played ambient sounds.
@@ -393,7 +393,7 @@ native AddNormalSoundHook(NormalSHook:hook);
  * @noreturn
  * @error		Invalid function hook.
  */
-native RemoveAmbientSoundHook(AmbientSHook:hook);
+native void RemoveAmbientSoundHook(AmbientSHook hook);
 
 /**
  * Unhooks all played normal sounds.
@@ -402,7 +402,7 @@ native RemoveAmbientSoundHook(AmbientSHook:hook);
  * @noreturn
  * @error		Invalid function hook.
  */
-native RemoveNormalSoundHook(NormalSHook:hook);
+native void RemoveNormalSoundHook(NormalSHook hook);
 				 
 /**
  * Wrapper to emit sound to one client.
@@ -423,21 +423,21 @@ native RemoveNormalSoundHook(NormalSHook:hook);
  * @noreturn
  * @error				Invalid client index.
  */
-stock EmitSoundToClient(client,
-				 const String:sample[],
-				 entity = SOUND_FROM_PLAYER,
-				 channel = SNDCHAN_AUTO,
-				 level = SNDLEVEL_NORMAL,
-				 flags = SND_NOFLAGS,
-				 Float:volume = SNDVOL_NORMAL,
-				 pitch = SNDPITCH_NORMAL,
-				 speakerentity = -1,
-				 const Float:origin[3] = NULL_VECTOR,
-				 const Float:dir[3] = NULL_VECTOR,
-				 bool:updatePos = true,
-				 Float:soundtime = 0.0)
+stock void EmitSoundToClient(int client,
+				 const char[] sample,
+				 int entity = SOUND_FROM_PLAYER,
+				 int channel = SNDCHAN_AUTO,
+				 int level = SNDLEVEL_NORMAL,
+				 int flags = SND_NOFLAGS,
+				 float volume = SNDVOL_NORMAL,
+				 int pitch = SNDPITCH_NORMAL,
+				 int speakerentity = -1,
+				 const float origin[3] = NULL_VECTOR,
+				 const float dir[3] = NULL_VECTOR,
+				 bool updatePos = true,
+				 float soundtime = 0.0)
 {
-	new clients[1];
+	int clients[1];
 	clients[0] = client;
 	/* Save some work for SDKTools and remove SOUND_FROM_PLAYER references */
 	entity = (entity == SOUND_FROM_PLAYER) ? client : entity;
@@ -464,23 +464,23 @@ stock EmitSoundToClient(client,
  * @noreturn
  * @error				Invalid client index.
  */
-stock EmitSoundToAll(const String:sample[],
-				 entity = SOUND_FROM_PLAYER,
-				 channel = SNDCHAN_AUTO,
-				 level = SNDLEVEL_NORMAL,
-				 flags = SND_NOFLAGS,
-				 Float:volume = SNDVOL_NORMAL,
-				 pitch = SNDPITCH_NORMAL,
-				 speakerentity = -1,
-				 const Float:origin[3] = NULL_VECTOR,
-				 const Float:dir[3] = NULL_VECTOR,
-				 bool:updatePos = true,
-				 Float:soundtime = 0.0)
+stock void EmitSoundToAll(const char[] sample,
+				 int entity = SOUND_FROM_PLAYER,
+				 int channel = SNDCHAN_AUTO,
+				 int level = SNDLEVEL_NORMAL,
+				 int flags = SND_NOFLAGS,
+				 float volume = SNDVOL_NORMAL,
+				 int pitch = SNDPITCH_NORMAL,
+				 int speakerentity = -1,
+				 const float origin[3] = NULL_VECTOR,
+				 const float dir[3] = NULL_VECTOR,
+				 bool updatePos = true,
+				 float soundtime = 0.0)
 {
-	new clients[MaxClients];
-	new total = 0;
+	int clients[MaxClients];
+	int total = 0;
 	
-	for (new i=1; i<=MaxClients; i++)
+	for (int i=1; i<=MaxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
@@ -505,7 +505,7 @@ stock EmitSoundToAll(const String:sample[],
  * @param attn		Attenuation value.
  * @return			Integer sound level.
  */
-stock ATTN_TO_SNDLEVEL(Float:attn)
+stock int ATTN_TO_SNDLEVEL(float attn)
 {
 	if (attn > 0.0)
 	{
@@ -534,14 +534,14 @@ stock ATTN_TO_SNDLEVEL(Float:attn)
  * @return				True if the sound was successfully retrieved, false if it
  *						was not found
  */
-native bool:GetGameSoundParams(const String:gameSound[],
-				&channel,
-				&soundLevel,
-				&Float:volume,
-				&pitch,
-				String:sample[],
-				maxlength,
-				entity=SOUND_FROM_PLAYER);
+native bool GetGameSoundParams(const char[] gameSound,
+				int channel,
+				int &soundLevel,
+				float &volume,
+				int &pitch,
+				char[] sample,
+				int maxlength,
+				int entity=SOUND_FROM_PLAYER);
 
 /**
  * Emits a game sound to a list of clients.
@@ -553,34 +553,34 @@ native bool:GetGameSoundParams(const String:gameSound[],
  * at random.
  *
  * @param clients              Array of client indexes.
- * @param numClients   Number of clients in the array.
+ * @param numClients           Number of clients in the array.
  * @param gameSound            Name of game sound.
  * @param entity               Entity to emit from.
- * @param flags                        Sound flags.
+ * @param flags                Sound flags.
  * @param speakerentity        Unknown.
  * @param origin               Sound origin.
  * @param dir                  Sound direction.
  * @param updatePos            Unknown (updates positions?)
  * @param soundtime            Alternate time to play sound for.
- * @return                             True if the sound was played successfully, false if it failed
- * @error                              Invalid client index.
+ * @return                     True if the sound was played successfully, false if it failed
+ * @error                      Invalid client index.
  */
-stock bool:EmitGameSound(const clients[],
-				numClients,
-				const String:gameSound[],
-				entity = SOUND_FROM_PLAYER,
-				flags = SND_NOFLAGS,
-				speakerentity = -1,
-				const Float:origin[3] = NULL_VECTOR,
-				const Float:dir[3] = NULL_VECTOR,
-				bool:updatePos = true,
-				Float:soundtime = 0.0)
+stock bool EmitGameSound(const int[] clients,
+				int numClients,
+				const char[] gameSound,
+				int entity = SOUND_FROM_PLAYER,
+				int flags = SND_NOFLAGS,
+				int speakerentity = -1,
+				const float origin[3] = NULL_VECTOR,
+				const float dir[3] = NULL_VECTOR,
+				bool updatePos = true,
+				float soundtime = 0.0)
 {
-	new channel;
-	new level;
-	new Float:volume;
-	new pitch;
-	new String:sample[PLATFORM_MAX_PATH];
+	int channel;
+	int level;
+	float volume;
+	int pitch;
+	char sample[PLATFORM_MAX_PATH];
 	
 	if (GetGameSoundParams(gameSound, channel, level, volume, pitch, sample, sizeof(sample), entity))
 	{
@@ -605,21 +605,21 @@ stock bool:EmitGameSound(const clients[],
  * @param gameSound            Name of game sound.
  * @param pos                  Origin of sound.
  * @param entity               Entity index to associate sound with.
- * @param flags                        Sound flags.
- * @param delay                        Play delay.
- * @noreturn
+ * @param flags                Sound flags.
+ * @param delay                Play delay.
+ * @return                     True if the sound was played successfully, false if it failed
  */
-stock bool:EmitAmbientGameSound(const String:gameSound[],
-				const Float:pos[3],
-				entity = SOUND_FROM_WORLD,
-				flags = SND_NOFLAGS,
-				Float:delay = 0.0)
+stock bool EmitAmbientGameSound(const char[] gameSound,
+				const float pos[3],
+				int entity = SOUND_FROM_WORLD,
+				int flags = SND_NOFLAGS,
+				float delay = 0.0)
 {
-	new channel; // This is never actually used for Ambients, but it's a mandatory field to GetGameSoundParams
-	new level;
-	new Float:volume;
-	new pitch;
-	new String:sample[PLATFORM_MAX_PATH];
+	int channel; // This is never actually used for Ambients, but it's a mandatory field to GetGameSoundParams
+	int level;
+	float volume;
+	int pitch;
+	char sample[PLATFORM_MAX_PATH];
 	
 	if (GetGameSoundParams(gameSound, channel, level, volume, pitch, sample, sizeof(sample), entity))
 	{
@@ -644,26 +644,26 @@ stock bool:EmitAmbientGameSound(const String:gameSound[],
  * @param client               Client index.
  * @param gameSound            Name of game sound.
  * @param entity               Entity to emit from.
- * @param flags                        Sound flags.
+ * @param flags                Sound flags.
  * @param speakerentity        Unknown.
  * @param origin               Sound origin.
  * @param dir                  Sound direction.
  * @param updatePos            Unknown (updates positions?)
  * @param soundtime            Alternate time to play sound for.
- * @noreturn
- * @error                              Invalid client index.
+ * @return                     True if the sound was played successfully, false if it failed
+ * @error                      Invalid client index.
  */
-stock bool:EmitGameSoundToClient(client,
-				const String:gameSound[],
-				entity = SOUND_FROM_PLAYER,
-				flags = SND_NOFLAGS,
-				speakerentity = -1,
-				const Float:origin[3] = NULL_VECTOR,
-				const Float:dir[3] = NULL_VECTOR,
-				bool:updatePos = true,
-				Float:soundtime = 0.0)
+stock bool EmitGameSoundToClient(int client,
+				const char[] gameSound,
+				int entity = SOUND_FROM_PLAYER,
+				int flags = SND_NOFLAGS,
+				int speakerentity = -1,
+				const float origin[3] = NULL_VECTOR,
+				const float dir[3] = NULL_VECTOR,
+				bool updatePos = true,
+				float soundtime = 0.0)
 {
-	new clients[1];
+	int clients[1];
 	clients[0] = client;
 	/* Save some work for SDKTools and remove SOUND_FROM_PLAYER references */
 	entity = (entity == SOUND_FROM_PLAYER) ? client : entity;
@@ -682,28 +682,28 @@ stock bool:EmitGameSoundToClient(client,
  *
  * @param gameSound            Name of game sound.
  * @param entity               Entity to emit from.
- * @param flags                        Sound flags.
+ * @param flags                Sound flags.
  * @param speakerentity        Unknown.
  * @param origin               Sound origin.
  * @param dir                  Sound direction.
  * @param updatePos            Unknown (updates positions?)
  * @param soundtime            Alternate time to play sound for.
- * @noreturn
+ * @return                     True if the sound was played successfully, false if it failed
  * @error                      Invalid client index.
  */
-stock bool:EmitGameSoundToAll(const String:gameSound[],
-				entity = SOUND_FROM_PLAYER,
-				flags = SND_NOFLAGS,
-				speakerentity = -1,
-				const Float:origin[3] = NULL_VECTOR,
-				const Float:dir[3] = NULL_VECTOR,
-				bool:updatePos = true,
-				Float:soundtime = 0.0)
+stock bool EmitGameSoundToAll(const char[] gameSound,
+				int entity = SOUND_FROM_PLAYER,
+				int flags = SND_NOFLAGS,
+				int speakerentity = -1,
+				const float origin[3] = NULL_VECTOR,
+				const float dir[3] = NULL_VECTOR,
+				bool updatePos = true,
+				float soundtime = 0.0)
 {
-	new clients[MaxClients];
-	new total = 0;
+	int clients[MaxClients];
+	int total = 0;
 	
-	for (new i=1; i<=MaxClients; i++)
+	for (int i=1; i<=MaxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
@@ -738,4 +738,4 @@ stock bool:EmitGameSoundToAll(const String:gameSound[],
  * @return 			True if the game sound was found, false if sound did not exist
  *					or had no files
  */
-native bool:PrecacheScriptSound(const String:soundname[]);
+native bool PrecacheScriptSound(const char[] soundname);

@@ -167,7 +167,7 @@ methodmap File < Handle
 	// @param format          Formatting rules.
 	// @param ...             Variable number of format parameters.
 	// @return                True on success, false otherwise.
-	public native bool WriteLine(const char[] format, any:...);
+	public native bool WriteLine(const char[] format, any ...);
 
 	// Reads a single int8 (byte) from a file. The returned value is sign-
 	// extended to an int32.
@@ -251,7 +251,7 @@ methodmap File < Handle
  * @param ...			Format arguments.
  * @return				Number of bytes written to buffer (not including null terminator).
  */
-native int BuildPath(PathType type, char[] buffer, int maxlength, const char[] fmt, any:...);
+native int BuildPath(PathType type, char[] buffer, int maxlength, const char[] fmt, any ...);
 
 /**
  * Opens a directory/folder for contents enumeration.
@@ -409,7 +409,7 @@ native bool WriteFileString(Handle hndl, const char[] buffer, bool term);
  * @return				True on success, false otherwise.
  * @error				Invalid Handle.
  */
-native bool WriteFileLine(Handle hndl, const char[] format, any:...);
+native bool WriteFileLine(Handle hndl, const char[] format, any ...);
 
 /**
  * Reads a single binary cell from a file.
@@ -584,7 +584,7 @@ native bool CreateDirectory(const char[] path, int mode, bool use_valve_fs=false
  * @param mode			Permissions to set.
  * @return				True on success, false otherwise.
  */
-native bool SetFilePermissions(const String:path[], int mode);
+native bool SetFilePermissions(const char[] path, int mode);
 
 /**
  * Returns a file timestamp as a unix timestamp.
@@ -604,7 +604,7 @@ native GetFileTime(const char[] file, FileTimeMode tmode);
  * @param ...			Message format parameters.
  * @error				Invalid Handle.
  */
-native void LogToOpenFile(Handle hndl, const char[] message, any:...);
+native void LogToOpenFile(Handle hndl, const char[] message, any ...);
 
 /**
  * Same as LogToFileEx(), except uses an open file Handle.  The file must 
@@ -615,5 +615,5 @@ native void LogToOpenFile(Handle hndl, const char[] message, any:...);
  * @param ...			Message format parameters.
  * @error				Invalid Handle.
  */
-native void LogToOpenFileEx(Handle hndl, const char[] message, any:...);
+native void LogToOpenFileEx(Handle hndl, const char[] message, any ...);
 

@@ -194,7 +194,7 @@ enum TFCond
 	TFCond_SpawnOutline, //114
 };
 
-const Float:TFCondDuration_Infinite = -1.0;
+const float TFCondDuration_Infinite = -1.0;
 
 enum TFHoliday
 {
@@ -238,7 +238,7 @@ enum TFObjectMode
  * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
-native TF2_IgnitePlayer(client, attacker);
+native void TF2_IgnitePlayer(int client, int attacker);
 
 /**
  * Respawns a client
@@ -247,7 +247,7 @@ native TF2_IgnitePlayer(client, attacker);
  * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
-native TF2_RespawnPlayer(client);
+native void TF2_RespawnPlayer(int client);
 
 /**
  * Regenerates a client's health and ammunition
@@ -256,7 +256,7 @@ native TF2_RespawnPlayer(client);
  * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
-native TF2_RegeneratePlayer(client);
+native void TF2_RegeneratePlayer(int client);
 
 /**
  * Adds a condition to a player
@@ -269,7 +269,7 @@ native TF2_RegeneratePlayer(client);
  * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
-native TF2_AddCondition(client, TFCond:condition, Float:duration=TFCondDuration_Infinite, inflictor=0);
+native void TF2_AddCondition(int client, TFCond condition, float duration=TFCondDuration_Infinite, int inflictor=0);
 
 /**
  * Removes a condition from a player
@@ -279,7 +279,7 @@ native TF2_AddCondition(client, TFCond:condition, Float:duration=TFCondDuration_
  * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
-native TF2_RemoveCondition(client, TFCond:condition);
+native void TF2_RemoveCondition(int client, TFCond condition);
 
 /**
  * Enables/disables PowerPlay mode on a player.
@@ -289,7 +289,7 @@ native TF2_RemoveCondition(client, TFCond:condition);
  * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
-native TF2_SetPlayerPowerPlay(client, bool:enabled);
+native void TF2_SetPlayerPowerPlay(int client, bool enabled);
 
 /**
  * Disguises a client to the given model and team. Only has an effect on spies.
@@ -303,7 +303,7 @@ native TF2_SetPlayerPowerPlay(client, bool:enabled);
  * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
-native TF2_DisguisePlayer(client, TFTeam:team, TFClassType:classType, target=0);
+native void TF2_DisguisePlayer(int client, TFTeam team, TFClassType classType, int target=0);
 
 /**
  * Removes the current disguise from a client. Only has an effect on spies.
@@ -312,7 +312,7 @@ native TF2_DisguisePlayer(client, TFTeam:team, TFClassType:classType, target=0);
  * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
-native TF2_RemovePlayerDisguise(client);
+native void TF2_RemovePlayerDisguise(int client);
 
 /**
  * Stuns a client
@@ -325,7 +325,7 @@ native TF2_RemovePlayerDisguise(client);
  * @param attacker		Attacker's index (0 is allowed for world).
  * @noreturn
  */
-native TF2_StunPlayer(client, Float:duration, Float:slowdown=0.0, stunflags, attacker=0);
+native void TF2_StunPlayer(int client, float duration, float slowdown=0.0, int stunflags, int attacker=0);
 
 /**
  * Induces the bleed effect on a client
@@ -335,7 +335,7 @@ native TF2_StunPlayer(client, Float:duration, Float:slowdown=0.0, stunflags, att
  * @param duration		Duration of bleeding (in seconds).
  * @noreturn
  */
-native TF2_MakeBleed(client, attacker, Float:duration);
+native void TF2_MakeBleed(int client, int attacker, float duration);
 
 /**
  * Retrieves the entity index of the CPlayerResource entity
@@ -343,7 +343,7 @@ native TF2_MakeBleed(client, attacker, Float:duration);
  * @return				The current resource entity index.
  */
 #pragma deprecated Use GetPlayerResourceEntity instead
-native TF2_GetResourceEntity();
+native int TF2_GetResourceEntity();
 
 /**
  * Finds the TFClassType for a given class name.
@@ -351,7 +351,7 @@ native TF2_GetResourceEntity();
  * @param classname		A classname string such as "sniper" or "demoman"
  * @return				A TFClassType constant.
  */
-native TFClassType:TF2_GetClass(const String:classname[]);
+native TFClassType TF2_GetClass(const char[] classname);
 
 /**
  * Called on weapon fire to decide if the current shot should be critical.
@@ -368,13 +368,13 @@ native TFClassType:TF2_GetClass(const String:classname[]);
  * @param weaponname	Classname of the weapon.
  * @param result		Buffer param for the result of the decision.
  */
-forward Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result);
+forward Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname, bool &result);
 
 /**
  * @deprecated		No longer called. Use TF2_OnIsHolidayActive.
  */
 #pragma deprecated No longer called. Use TF2_OnIsHolidayActive.
-forward Action:TF2_OnGetHoliday(&TFHoliday:holiday);
+forward Action TF2_OnGetHoliday(TFHoliday &holiday);
 
 /**
  * Called at various times when the game checks to see if the given holiday is active.
@@ -385,7 +385,7 @@ forward Action:TF2_OnGetHoliday(&TFHoliday:holiday);
  * @param result		Buffer param for the result of the decision.
  * @return				Plugin_Continue for original calculation, higher value to use 'result'.
  */
-forward Action:TF2_OnIsHolidayActive(TFHoliday:holiday, &bool:result);
+forward Action TF2_OnIsHolidayActive(TFHoliday holiday, bool &result);
 
 /**
  * Returns whether or not a holiday is active
@@ -393,7 +393,7 @@ forward Action:TF2_OnIsHolidayActive(TFHoliday:holiday, &bool:result);
  * @param holiday		Holiday being checked.
  * @return				Boolean of whether or not the holiday is active.
  */
-native bool:TF2_IsHolidayActive(TFHoliday:holiday);
+native bool TF2_IsHolidayActive(TFHoliday holiday);
 
 /**
  * Returns whether or not a client (Player) is in a duel.
@@ -401,7 +401,7 @@ native bool:TF2_IsHolidayActive(TFHoliday:holiday);
  * @param client    Client Index.
  * @return          Boolean of whether or not the client/player is dueling.
  */
-native bool:TF2_IsPlayerInDuel(client);
+native bool TF2_IsPlayerInDuel(int client);
 
 /**
  * Removes an econ wearable (hat, misc, etc) from a player.
@@ -412,7 +412,7 @@ native bool:TF2_IsPlayerInDuel(client);
  * @noreturn
  * @error			Invalid client index, client not in game, invalid wearable entity, or no mod support.
 */
-native TF2_RemoveWearable(client, wearable);
+native void TF2_RemoveWearable(int client, int wearable);
 
 /**
  * Called after a condition is added to a player
@@ -420,7 +420,7 @@ native TF2_RemoveWearable(client, wearable);
  * @param client		Index of the client to which the condition is being added.
  * @param condition     Condition that is being added.
  */
-forward void TF2_OnConditionAdded(client, TFCond:condition);
+forward void TF2_OnConditionAdded(int client, TFCond condition);
 
 /**
  * Called after a condition is removed from a player
@@ -428,7 +428,7 @@ forward void TF2_OnConditionAdded(client, TFCond:condition);
  * @param client		Index of the client to which the condition is being removed.
  * @param condition		Condition that is being removed.
  */
-forward void TF2_OnConditionRemoved(client, TFCond:condition);
+forward void TF2_OnConditionRemoved(int client, TFCond condition);
 
 /**
  * Called when the server enters the Waiting for Players round state
@@ -451,12 +451,12 @@ forward void TF2_OnWaitingForPlayersEnd();
  *						This is prepopulated with the game's original decision to let a player teleport.
  * @return				Plugin_Continue for original calculation, higher value to use 'result'.
  */
-forward Action:TF2_OnPlayerTeleport(client, teleporter, &bool:result);
+forward Action TF2_OnPlayerTeleport(int client, int teleporter, bool &result);
  
 /**
  * Do not edit below this line!
  */
-public Extension:__ext_tf2 = 
+public Extension __ext_tf2 = 
 {
 	name = "TF2 Tools",
 	file = "game.tf2.ext",
@@ -469,7 +469,7 @@ public Extension:__ext_tf2 =
 };
 
 #if !defined REQUIRE_EXTENSIONS
-public __ext_tf2_SetNTVOptional()
+public void __ext_tf2_SetNTVOptional()
 {
 	MarkNativeAsOptional("TF2_IgnitePlayer");
 	MarkNativeAsOptional("TF2_RespawnPlayer");

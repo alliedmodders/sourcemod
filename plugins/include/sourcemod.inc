@@ -102,7 +102,7 @@ forward void OnPluginStart();
  * not be called, but old plugins with only AskPluginLoad() will work.
  */
 #pragma deprecated Use AskPluginLoad2() instead
-forward bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max);
+forward bool AskPluginLoad(Handle myself, bool late, char[] error, int err_max);
 
 /**
  * Called before OnPluginStart, in case the plugin wants to check for load failure.
@@ -123,7 +123,7 @@ forward bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max);
  * @param err_max	Maximum number of characters for error message buffer.
  * @return			APLRes_Success for load success, APLRes_Failure or APLRes_SilentFailure otherwise
  */
-forward APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max);
+forward APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max);
 
 /**
  * Called when the plugin is about to be unloaded.
@@ -142,7 +142,7 @@ forward void OnPluginEnd();
  * @param pause			True if the plugin is being paused, false otherwise.
  * @noreturn
  */
-forward void OnPluginPauseChange(bool:pause);
+forward void OnPluginPauseChange(bool pause);
 
 /**
  * Called before every server frame.  Note that you should avoid
@@ -210,7 +210,7 @@ forward void OnAllPluginsLoaded();
  *
  * @return				Handle of the calling plugin.
  */
-native Handle:GetMyHandle();
+native Handle GetMyHandle();
 
 /**
  * Returns an iterator that can be used to search through plugins.
@@ -219,7 +219,7 @@ native Handle:GetMyHandle();
  * 						CloseHandle().
  * @error				Invalid Handle.
  */
-native Handle:GetPluginIterator();
+native Handle GetPluginIterator();
 
 /**
  * Returns whether there are more plugins available in the iterator.
@@ -228,7 +228,7 @@ native Handle:GetPluginIterator();
  * @return				True on more plugins, false otherwise.
  * @error				Invalid Handle.
  */
-native bool:MorePlugins(Handle:iter);
+native bool MorePlugins(Handle iter);
 
 /**
  * Returns the current plugin in the iterator and advances the iterator.
@@ -238,7 +238,7 @@ native bool:MorePlugins(Handle:iter);
  *						the iterator is advanced.
  * @error				Invalid Handle.
  */
-native Handle:ReadPlugin(Handle:iter);
+native Handle ReadPlugin(Handle iter);
 
 /**
  * Returns a plugin's status.
@@ -247,7 +247,7 @@ native Handle:ReadPlugin(Handle:iter);
  * @return				Status code for the plugin.
  * @error				Invalid Handle.
  */
-native PluginStatus:GetPluginStatus(Handle:plugin);
+native PluginStatus GetPluginStatus(Handle plugin);
 
 /**
  * Retrieves a plugin's file name relative to the plugins folder.
@@ -258,7 +258,7 @@ native PluginStatus:GetPluginStatus(Handle:plugin);
  * @noreturn
  * @error				Invalid Handle.
  */
-native GetPluginFilename(Handle:plugin, String:buffer[], maxlength);
+native void GetPluginFilename(Handle plugin, char[] buffer, int maxlength);
 
 /**
  * Retrieves whether or not a plugin is being debugged.
@@ -267,7 +267,7 @@ native GetPluginFilename(Handle:plugin, String:buffer[], maxlength);
  * @return				True if being debugged, false otherwise.
  * @error				Invalid Handle.
  */
-native bool:IsPluginDebugging(Handle:plugin);
+native bool IsPluginDebugging(Handle plugin);
 
 /**
  * Retrieves a plugin's public info.
@@ -279,7 +279,7 @@ native bool:IsPluginDebugging(Handle:plugin);
  * @return				True on success, false if property is not available.
  * @error				Invalid Handle.
  */
-native bool:GetPluginInfo(Handle:plugin, PluginInfo:info, String:buffer[], maxlength);
+native bool GetPluginInfo(Handle plugin, PluginInfo info, char[] buffer, int maxlength);
 
 /**
  * Finds a plugin by its order in the list from the "plugins list" server 
@@ -291,7 +291,7 @@ native bool:GetPluginInfo(Handle:plugin, PluginInfo:info, String:buffer[], maxle
  * @return				Plugin Handle on success, INVALID_HANDLE if no plugin 
  *						matches the given number.
  */
-native Handle:FindPluginByNumber(order_num);
+native Handle FindPluginByNumber(int order_num);
 
 /**
  * Causes the plugin to enter a failed state.  An error will be thrown and
@@ -311,7 +311,7 @@ native Handle:FindPluginByNumber(order_num);
  * @noreturn
  * @error				Always throws SP_ERROR_ABORT.
  */
-native SetFailState(const String:string[], any:...);
+native void SetFailState(const char[] string, any ...);
 
 /**
  * Aborts the current callback and throws an error.  This function
@@ -322,7 +322,7 @@ native SetFailState(const String:string[], any:...);
  * @noreturn
  * @error				Always!
  */
-native ThrowError(const String:fmt[], any:...);
+native void ThrowError(const char[] fmt, any ...);
 
 /**
  * Gets the system time as a unix timestamp.
@@ -330,7 +330,7 @@ native ThrowError(const String:fmt[], any:...);
  * @param bigStamp		Optional array to store the 64bit timestamp in.
  * @return				32bit timestamp (number of seconds since unix epoch).
  */
-native GetTime(bigStamp[2]={0,0});
+native int GetTime(int bigStamp[2]={0,0});
 
 /**
  * Produces a date and/or time string value for a timestamp.
@@ -345,7 +345,7 @@ native GetTime(bigStamp[2]={0,0});
  * @noreturn
  * @error			Buffer too small or invalid time format.
  */
-native FormatTime(String:buffer[], maxlength, const String:format[], stamp=-1);
+native void FormatTime(char[] buffer, int maxlength, const char[] format, int stamp=-1);
 
 /**
  * Loads a game config file.
@@ -354,7 +354,7 @@ native FormatTime(String:buffer[], maxlength, const String:format[], stamp=-1);
  *					and the extension should be omitted.
  * @return			A handle to the game config file or INVALID_HANDLE in failure.
  */
-native Handle:LoadGameConfigFile(const String:file[]);
+native Handle LoadGameConfigFile(const char[] file);
 
 /**
  * Returns an offset value.
@@ -363,7 +363,7 @@ native Handle:LoadGameConfigFile(const String:file[]);
  * @param key			Key to retrieve from the offset section.
  * @return			An offset, or -1 on failure.
  */
-native GameConfGetOffset(Handle:gc, const String:key[]);
+native int GameConfGetOffset(Handle gc, const char[] key);
 
 /**
  * Gets the value of a key from the "Keys" section.
@@ -374,7 +374,7 @@ native GameConfGetOffset(Handle:gc, const String:key[]);
  * @param maxlen		Maximum length of output string buffer.
  * @return				True if key existed, false otherwise.
  */
-native bool:GameConfGetKeyValue(Handle:gc, const String:key[], String:buffer[], maxlen);
+native bool GameConfGetKeyValue(Handle gc, const char[] key, char[] buffer, int maxlen);
 
 /**
  * Finds an address calculation in a GameConfig file,
@@ -384,7 +384,7 @@ native bool:GameConfGetKeyValue(Handle:gc, const String:key[], String:buffer[], 
  * @param name          Name of the property to find.
  * @return              An address calculated on success, or 0 on failure.
  */
-native Address:GameConfGetAddress(Handle:gameconf, const String:name[]);
+native Address GameConfGetAddress(Handle gameconf, const char[] name);
 
 /**
  * Returns the operating system's "tick count," which is a number of 
@@ -393,7 +393,7 @@ native Address:GameConfGetAddress(Handle:gameconf, const String:name[]);
  *
  * @return				Tick count in milliseconds.
  */
-native GetSysTickCount();
+native int GetSysTickCount();
 
 /**
  * Specifies that the given config file should be executed after plugin load.
@@ -408,7 +408,7 @@ native GetSysTickCount();
  * @param folder		Folder under cfg/ to use.  By default this is "sourcemod."
  * @noreturn
  */
-native AutoExecConfig(bool:autoCreate=true, const String:name[]="", const String:folder[]="sourcemod");
+native void AutoExecConfig(bool autoCreate=true, const char[] name="", const char[] folder="sourcemod");
 
 /**
  * Registers a library name for identifying as a dependency to 
@@ -417,7 +417,7 @@ native AutoExecConfig(bool:autoCreate=true, const String:name[]="", const String
  * @param name			Library name.
  * @noreturn
  */
-native RegPluginLibrary(const String:name[]);
+native void RegPluginLibrary(const char[] name);
 
 /**
  * Returns whether a library exists.  This function should be considered 
@@ -428,7 +428,7 @@ native RegPluginLibrary(const String:name[]);
  * @param name			Library name of a plugin or extension.
  * @return				True if exists, false otherwise.
  */
-native bool:LibraryExists(const String:name[]);
+native bool LibraryExists(const char[] name);
 
 /**
  * Returns the status of an extension, by filename.
@@ -441,7 +441,7 @@ native bool:LibraryExists(const String:name[]);
  * 						 0 if the extension loaded but reported an error.
  * 						 1 if the extension is running without error.
  */
-native GetExtensionFileStatus(const String:name[], String:error[]="", maxlength=0);
+native int GetExtensionFileStatus(const char[] name, char[] error="", int maxlength=0);
 
 /**
  * Called after a library is added that the current plugin references 
@@ -450,7 +450,7 @@ native GetExtensionFileStatus(const String:name[], String:error[]="", maxlength=
  *
  * @param name			Library name.
  */
-forward void OnLibraryAdded(const String:name[]);
+forward void OnLibraryAdded(const char[] name);
 
 /**
  * Called right before a library is removed that the current plugin references 
@@ -459,7 +459,7 @@ forward void OnLibraryAdded(const String:name[]);
  *
  * @param name			Library name.
  */
-forward void OnLibraryRemoved(const String:name[]);
+forward void OnLibraryRemoved(const char[] name);
 
 #define MAPLIST_FLAG_MAPSFOLDER		(1<<0)		/**< On failure, use all maps in the maps folder. */
 #define MAPLIST_FLAG_CLEARARRAY		(1<<1)		/**< If an input array is specified, clear it before adding. */
@@ -513,10 +513,10 @@ forward void OnLibraryRemoved(const String:name[]);
  *						 least one item.  The serial number is updated to a positive number.
  * @error				Invalid array Handle that is not INVALID_HANDLE.
  */
-native Handle:ReadMapList(Handle:array=INVALID_HANDLE,
-						  &serial=-1,
-						  const String:str[]="default",
-						  flags=MAPLIST_FLAG_CLEARARRAY);
+native Handle ReadMapList(Handle array=INVALID_HANDLE,
+						  int &serial=-1,
+						  const char[] str="default",
+						  int flags=MAPLIST_FLAG_CLEARARRAY);
 						  
 /**
  * Makes a compatibility binding for map lists.  For example, if a function previously used 
@@ -527,7 +527,7 @@ native Handle:ReadMapList(Handle:array=INVALID_HANDLE,
  * @param file			Default file to use.
  * @noreturn
  */
-native SetMapListCompatBind(const String:name[], const String:file[]);
+native void SetMapListCompatBind(const char[] name, const char[] file);
 
 /**
  * Called when a client has sent chat text.  This must return either true or 
@@ -539,7 +539,7 @@ native SetMapListCompatBind(const String:name[], const String:file[]);
  * @param client		Client index.  The server (0) will never be passed.
  * @return				True if client is spamming the server, false otherwise.
  */
-forward bool:OnClientFloodCheck(client);
+forward bool OnClientFloodCheck(int client);
 
 /**
  * Called after a client's flood check has been computed.  This can be used 
@@ -553,7 +553,7 @@ forward bool:OnClientFloodCheck(client);
  * @param blocked		True if client flooded last "say", false otherwise.
  * @noreturn
  */
-forward void OnClientFloodResult(client, bool:blocked);
+forward void OnClientFloodResult(int client, bool blocked);
 
 /**
  * Feature types.
@@ -603,7 +603,7 @@ enum FeatureStatus
  *
  * @return              True if GetFeatureStatus will work, false otherwise.
  */
-stock bool:CanTestFeatures()
+stock bool CanTestFeatures()
 {
 	return LibraryExists("__CanTestFeatures__");
 }
@@ -615,7 +615,7 @@ stock bool:CanTestFeatures()
  * @param name          Feature name.
  * @return              Feature status.
  */
-native FeatureStatus:GetFeatureStatus(FeatureType:type, const String:name[]);
+native FeatureStatus GetFeatureStatus(FeatureType type, const char[] name);
 
 /**
  * Requires that a given feature is available. If it is not, SetFailState()
@@ -627,8 +627,8 @@ native FeatureStatus:GetFeatureStatus(FeatureType:type, const String:name[]);
  * @param ...           Message format parameters, if any.
  * @noreturn
  */
-native RequireFeature(FeatureType:type, const String:name[],
-                      const String:fmt[]="", any:...);
+native void RequireFeature(FeatureType type, const char[] name,
+                      const char[] fmt="", any ...);
 
 /**
  * Represents how many bytes we can read from an address with one load
@@ -652,7 +652,7 @@ enum Address
  * @param size          How many bytes should be read.
  * @return              The value that is stored at that address.
  */
-native LoadFromAddress(Address:addr, NumberType:size);
+native int LoadFromAddress(Address addr, NumberType size);
 
 /**
  * Store up to 4 bytes to a memory address.
@@ -662,7 +662,7 @@ native LoadFromAddress(Address:addr, NumberType:size);
  * @param size          How many bytes should be written.
  * @noreturn
  */
-native StoreToAddress(Address:addr, data, NumberType:size); 
+native void StoreToAddress(Address addr, int data, NumberType size); 
 
 #include <helpers>
 #include <entity>

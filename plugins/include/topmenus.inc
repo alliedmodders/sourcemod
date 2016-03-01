@@ -423,7 +423,7 @@ public Extension __ext_topmenus =
 };
 
 #if !defined REQUIRE_EXTENSIONS
-public __ext_topmenus_SetNTVOptional()
+public void __ext_topmenus_SetNTVOptional()
 {
 	MarkNativeAsOptional("CreateTopMenu");
 	MarkNativeAsOptional("LoadTopMenuConfig");

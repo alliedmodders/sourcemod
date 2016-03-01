@@ -69,7 +69,7 @@ enum Identity
 	Identity_Plugin = 2
 };
 
-public PlVers:__version = 
+public PlVers __version = 
 {
 	version = SOURCEMOD_PLUGINAPI_VERSION,
 	filevers = SOURCEMOD_VERSION,
@@ -140,13 +140,13 @@ struct SharedPlugin
 	public bool required;		/**< Whether or not to require */
 };
 
-public Float:NULL_VECTOR[3];		/**< Pass this into certain functions to act as a C++ NULL */
-public const String:NULL_STRING[1];	/**< pass this into certain functions to act as a C++ NULL */
+public float NULL_VECTOR[3];		/**< Pass this into certain functions to act as a C++ NULL */
+public const char NULL_STRING[1];	/**< pass this into certain functions to act as a C++ NULL */
 
 /**
  * Horrible compatibility shim.
  */
-public Extension:__ext_core = 
+public Extension __ext_core = 
 {
 	name = "Core",
 	file = "core",
@@ -164,9 +164,9 @@ native VerifyCoreVersion();
  * @param name			Native name.
  * @noreturn
  */
-native MarkNativeAsOptional(const String:name[]);
+native void MarkNativeAsOptional(const char[] name);
 
-public __ext_core_SetNTVOptional()
+public void __ext_core_SetNTVOptional()
 {
 	MarkNativeAsOptional("GetFeatureStatus");
 	MarkNativeAsOptional("RequireFeature");

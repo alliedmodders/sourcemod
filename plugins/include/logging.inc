@@ -43,7 +43,7 @@
  * @param ...			Format arguments.
  * @noreturn
  */
-native LogMessage(const String:format[], any:...);
+native void LogMessage(const char[] format, any ...);
 
 /**
  * Logs a message to any file.  The log message will be in the normal 
@@ -55,7 +55,7 @@ native LogMessage(const String:format[], any:...);
  * @noreturn
  * @error				File could not be opened/written.
  */
-native LogToFile(const String:file[], const String:format[], any:...);
+native void LogToFile(const char[] file, const char[] format, any ...);
 
 /**
  * Same as LogToFile(), except no plugin logtag is prepended.
@@ -66,7 +66,7 @@ native LogToFile(const String:file[], const String:format[], any:...);
  * @noreturn
  * @error				File could not be opened/written.
  */
-native LogToFileEx(const String:file[], const String:format[], any:...);
+native void LogToFileEx(const char[] file, const char[] format, any ...);
 
 /**
  * Logs an action from a command or event whereby interception and routing may 
@@ -79,7 +79,7 @@ native LogToFileEx(const String:file[], const String:format[], any:...);
  * @param ...			Message formatting parameters.
  * @noreturn
  */
-native LogAction(client, target, const String:message[], any:...);
+native void LogAction(int client, target, const char[] message, any ...);
 
 /**
  * Logs a plugin error message to the SourceMod logs.
@@ -88,7 +88,7 @@ native LogAction(client, target, const String:message[], any:...);
  * @param ...			Format arguments.
  * @noreturn
  */
-native LogError(const String:format[], any:...);
+native void LogError(const char[] format, any ...);
 
 /**
  * Called when an action is going to be logged.
@@ -104,11 +104,11 @@ native LogError(const String:format[], any:...);
  * 						Plugin_Stop is the same as Handled, but prevents any other 
  *						plugins from handling the message.
  */
-forward Action:OnLogAction(Handle:source, 
-						   Identity:ident,
-						   client,
-						   target,
-						   const String:message[]);
+forward Action OnLogAction(Handle source, 
+						   Identity ident,
+						   int client,
+						   int target,
+						   const char[] message);
 
 /**
  * Called when a game log message is received.
@@ -131,7 +131,7 @@ typedef GameLogHook = function Action (const char[] message);
  * @param hook			Hook function.
  * @noreturn
  */
-native AddGameLogHook(GameLogHook:hook);
+native void AddGameLogHook(GameLogHook hook);
 
 /**
  * Removes a game log hook.
@@ -139,4 +139,4 @@ native AddGameLogHook(GameLogHook:hook);
  * @param hook			Hook function.
  * @noreturn
  */
-native RemoveGameLogHook(GameLogHook:hook);
+native void RemoveGameLogHook(GameLogHook hook);
