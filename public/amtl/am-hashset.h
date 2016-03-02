@@ -27,8 +27,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef _include_amtl_hashmap_h_
-#define _include_amtl_hashmap_h_
+#ifndef _include_amtl_hashset_h_
+#define _include_amtl_hashset_h_
 
 #include <am-hashtable.h>
 
