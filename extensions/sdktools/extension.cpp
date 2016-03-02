@@ -170,6 +170,15 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	InitSDKToolsAPI();
 
+#if SOURCE_ENGINE == SE_CSGO
+	m_bFollowCSGOServerGuidelines = true;
+	const char *pszValue = g_pSM->GetCoreConfigValue("FollowCSGOServerGuidelines");
+	if (pszValue && strcasecmp(pszValue, "no") == 0)
+	{
+		m_bFollowCSGOServerGuidelines = false;
+	}
+#endif
+
 	return true;
 }
 

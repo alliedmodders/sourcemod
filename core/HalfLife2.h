@@ -36,6 +36,7 @@
 #include <sh_string.h>
 #include <sh_tinyhash.h>
 #include <am-utility.h>
+#include <am-hashset.h>
 #include <am-hashmap.h>
 #include <sm_stringhashmap.h>
 #include <sm_namehashset.h>
@@ -152,6 +153,8 @@ public:
 	void OnSourceModAllInitialized();
 	void OnSourceModAllInitialized_Post();
 	/*void OnSourceModAllShutdown();*/
+	ConfigResult OnSourceModConfigChanged(const char *key, const char *value,
+		ConfigSource source, char *error, size_t maxlength) override;
 public: //IGameHelpers
 	SendProp *FindInSendTable(const char *classname, const char *offset);
 	bool FindSendPropInfo(const char *classname, const char *offset, sm_sendprop_info_t *info);
@@ -220,6 +223,16 @@ private:
 	CStack<CachedCommandInfo> m_CommandStack;
 	Queue<DelayedKickInfo> m_DelayedKicks;
 	void *m_pGetCommandLine;
+#if SOURCE_ENGINE == SE_CSGO
+public:
+	bool CanSetCSGOEntProp(const char *pszPropName)
+	{
+		return !m_bFollowCSGOServerGuidelines || !m_CSGOBadList.has(pszPropName);
+	}
+private:
+	ke::HashSet<ke::AString, detail::StringHashMapPolicy> m_CSGOBadList;
+	bool m_bFollowCSGOServerGuidelines = true;
+#endif
 };
 
 extern CHalfLife2 g_HL2;

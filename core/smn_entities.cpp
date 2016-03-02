@@ -93,6 +93,15 @@ enum PropFieldType
 	PropField_String_T,			/**< Valid for Data fields.  Read only! */
 };
 
+inline bool CanSetPropName(const char *pszPropName)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return g_HL2.CanSetCSGOEntProp(pszPropName);
+#else
+	return true;
+#endif
+}
+
 inline edict_t *BaseEntityToEdict(CBaseEntity *pEntity)
 {
 	IServerUnknown *pUnk = (IServerUnknown *)pEntity;
@@ -1351,6 +1360,10 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 	case Prop_Send:
 		{
 			FIND_PROP_SEND(DPT_Int, "integer");
+			if (!CanSetPropName(prop))
+			{
+				return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
+			}
 
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
@@ -1503,6 +1516,10 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 	case Prop_Send:
 		{
 			FIND_PROP_SEND(DPT_Float, "float");
+			if (!CanSetPropName(prop))
+			{
+				return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
+			}
 			break;
 		}
 	default:
@@ -2086,6 +2103,11 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 						prop,
 						element);
 				}
+			}
+
+			if (!CanSetPropName(prop))
+			{
+				return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
 			}
 
 			if (bIsStringIndex)
