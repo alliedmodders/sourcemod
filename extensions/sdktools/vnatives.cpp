@@ -144,6 +144,20 @@ static cell_t RemovePlayerItem(IPluginContext *pContext, const cell_t *params)
 class CEconItemView;
 static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 {
+	if (g_SdkTools.ShouldFollowCSGOServerGuidelines())
+	{
+		char *pWeaponName;
+		pContext->LocalToString(params[2], &pWeaponName);
+
+		// Don't allow knives other than weapon_knife,  weapon_knifegg, and wewapon_knife_t.
+		// Others follow pattern weapon_knife_*
+		size_t len = strlen(pWeaponName);
+		if (len >= 14 && strnicmp(pWeaponName, "weapon_knife_", 13) == 0 && !(pWeaponName[13] == 't' && pWeaponName[14] == '\0'))
+		{
+			return pContext->ThrowNativeError("Blocked giving of %s due to core.cfg option FollowCSGOServerGuidelines", pWeaponName);
+		}
+	}
+
 	static ValveCall *pCall = NULL;
 	if (!pCall)
 	{
