@@ -113,8 +113,10 @@ public:
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 public:
 	bool HasAnyLevelInited() { return m_bAnyLevelInited; }
+	bool ShouldFollowCSGOServerGuidelines() const { return m_bFollowCSGOServerGuidelines; }
 
 private:
+	bool m_bFollowCSGOServerGuidelines = false;
 	bool m_bAnyLevelInited = false;
 };
 

@@ -137,6 +137,57 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 {
 	InitLogicalEntData();
 	InitCommandLine();
+#if SOURCE_ENGINE == SE_CSGO
+	m_CSGOBadList.init();
+	m_CSGOBadList.add("m_iItemDefinitionIndex");
+	m_CSGOBadList.add("m_iEntityLevel");
+	m_CSGOBadList.add("m_iItemIDHigh");
+	m_CSGOBadList.add("m_iItemIDLow");
+	m_CSGOBadList.add("m_iAccountID");
+	m_CSGOBadList.add("m_iEntityQuality");
+	m_CSGOBadList.add("m_bInitialized");
+	m_CSGOBadList.add("m_szCustomName");
+	m_CSGOBadList.add("m_iAttributeDefinitionIndex");
+	m_CSGOBadList.add("m_iRawValue32");
+	m_CSGOBadList.add("m_iRawInitialValue32");
+	m_CSGOBadList.add("m_nRefundableCurrency");
+	m_CSGOBadList.add("m_bSetBonus");
+	m_CSGOBadList.add("m_OriginalOwnerXuidLow");
+	m_CSGOBadList.add("m_OriginalOwnerXuidHigh");
+	m_CSGOBadList.add("m_nFallbackPaintKit");
+	m_CSGOBadList.add("m_nFallbackSeed");
+	m_CSGOBadList.add("m_flFallbackWear");
+	m_CSGOBadList.add("m_nFallbackStatTrak");
+	m_CSGOBadList.add("m_iCompetitiveRanking");
+	m_CSGOBadList.add("m_nActiveCoinRank");
+	m_CSGOBadList.add("m_nMusicID");
+#endif
+}
+
+ConfigResult CHalfLife2::OnSourceModConfigChanged(const char *key, const char *value,
+	ConfigSource source, char *error, size_t maxlength)
+{
+	if (strcasecmp(key, "FollowCSGOServerGuidelines") == 0)
+	{
+#if SOURCE_ENGINE == SE_CSGO
+		if (strcasecmp(value, "no") == 0)
+		{
+			m_bFollowCSGOServerGuidelines = false;
+			return ConfigResult_Accept;
+		}
+		else if (strcasecmp(value, "yes") == 0)
+		{
+			m_bFollowCSGOServerGuidelines = true;
+			return ConfigResult_Accept;
+		}
+
+		return ConfigResult_Reject;
+#else
+		return ConfigResult_Accept;
+#endif
+	}
+
+	return ConfigResult_Ignore;
 }
 
 void CHalfLife2::InitLogicalEntData()
