@@ -145,34 +145,42 @@ void CHalfLife2::OnSourceModAllInitialized()
 	sharesys->AddInterface(NULL, this);
 }
 
+#if SOURCE_ENGINE == SE_CSGO
+#define CSGOAddBad(prop)                           \
+	{                                              \
+		auto ins = m_CSGOBadList.findForAdd(prop); \
+		m_CSGOBadList.add(ins, ke::AString(prop)); \
+	}
+#endif
+
 void CHalfLife2::OnSourceModAllInitialized_Post()
 {
 	InitLogicalEntData();
 	InitCommandLine();
 #if SOURCE_ENGINE == SE_CSGO
 	m_CSGOBadList.init();
-	m_CSGOBadList.add("m_iItemDefinitionIndex");
-	m_CSGOBadList.add("m_iEntityLevel");
-	m_CSGOBadList.add("m_iItemIDHigh");
-	m_CSGOBadList.add("m_iItemIDLow");
-	m_CSGOBadList.add("m_iAccountID");
-	m_CSGOBadList.add("m_iEntityQuality");
-	m_CSGOBadList.add("m_bInitialized");
-	m_CSGOBadList.add("m_szCustomName");
-	m_CSGOBadList.add("m_iAttributeDefinitionIndex");
-	m_CSGOBadList.add("m_iRawValue32");
-	m_CSGOBadList.add("m_iRawInitialValue32");
-	m_CSGOBadList.add("m_nRefundableCurrency");
-	m_CSGOBadList.add("m_bSetBonus");
-	m_CSGOBadList.add("m_OriginalOwnerXuidLow");
-	m_CSGOBadList.add("m_OriginalOwnerXuidHigh");
-	m_CSGOBadList.add("m_nFallbackPaintKit");
-	m_CSGOBadList.add("m_nFallbackSeed");
-	m_CSGOBadList.add("m_flFallbackWear");
-	m_CSGOBadList.add("m_nFallbackStatTrak");
-	m_CSGOBadList.add("m_iCompetitiveRanking");
-	m_CSGOBadList.add("m_nActiveCoinRank");
-	m_CSGOBadList.add("m_nMusicID");
+	CSGOAddBad("m_iItemDefinitionIndex");
+	CSGOAddBad("m_iEntityLevel");
+	CSGOAddBad("m_iItemIDHigh");
+	CSGOAddBad("m_iItemIDLow");
+	CSGOAddBad("m_iAccountID");
+	CSGOAddBad("m_iEntityQuality");
+	CSGOAddBad("m_bInitialized");
+	CSGOAddBad("m_szCustomName");
+	CSGOAddBad("m_iAttributeDefinitionIndex");
+	CSGOAddBad("m_iRawValue32");
+	CSGOAddBad("m_iRawInitialValue32");
+	CSGOAddBad("m_nRefundableCurrency");
+	CSGOAddBad("m_bSetBonus");
+	CSGOAddBad("m_OriginalOwnerXuidLow");
+	CSGOAddBad("m_OriginalOwnerXuidHigh");
+	CSGOAddBad("m_nFallbackPaintKit");
+	CSGOAddBad("m_nFallbackSeed");
+	CSGOAddBad("m_flFallbackWear");
+	CSGOAddBad("m_nFallbackStatTrak");
+	CSGOAddBad("m_iCompetitiveRanking");
+	CSGOAddBad("m_nActiveCoinRank");
+	CSGOAddBad("m_nMusicID");
 #endif
 }
 

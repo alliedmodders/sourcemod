@@ -225,7 +225,7 @@ private:
 public:
 	bool CanSetCSGOEntProp(const char *pszPropName)
 	{
-		return !m_bFollowCSGOServerGuidelines || !m_CSGOBadList.has(pszPropName);
+		return !m_bFollowCSGOServerGuidelines || !m_CSGOBadList.find(pszPropName).found();
 	}
 private:
 	ke::HashSet<ke::AString, detail::StringHashMapPolicy> m_CSGOBadList;
