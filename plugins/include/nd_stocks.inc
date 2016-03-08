@@ -55,11 +55,11 @@ stock String:ND_GetTeamName(team)
 	
 	switch(team)
 	{
-		case 3: 	TeamName = "Empire";
-		case 2: 	TeamName = "Consortium";
-		case 1:		TeamName = "Spectate";
-		case 0:		TeamName = "Unassigned";
-		default: 	TeamName = "Unknown";
+		case TEAM_EMPIRE: 	TeamName = "Empire";
+		case TEAM_CONSORT: 	TeamName = "Consortium";
+		case TEAM_SPEC:		TeamName = "Spectate";
+		case TEAM_UNASSIGNED:	TeamName = "Unassigned";
+		default: 		TeamName = "Unknown";
 	}
 	
 	return TeamName;
