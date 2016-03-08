@@ -36,17 +36,17 @@
 #define _nd_stocks_included_
 
 /* The team name constants */
-#define TEAM_UNASSIGNED	0
+#define TEAM_UNASSIGNED		0
 #define TEAM_SPEC		1
-#define TEAM_CONSORT	2
+#define TEAM_CONSORT		2
 #define TEAM_EMPIRE		3
 
 /**
  * Gets the name of a given team index
  *
  * @param team			Team index.
- * @return				The name of the team or "Unknown" on invalid team index
- * @error				Invalid team index.
+ * @return			The name of the team or "Unknown" on invalid team index
+ * @error			Invalid team index.
  */
 
 stock String:ND_GetTeamName(team)
@@ -72,9 +72,9 @@ stock String:ND_GetTeamName(team)
  * Retreives the level of a given client index
  *
  * @param client		Client index.
- * @pram PlayerManEnt	FindEntityByClassname(-1, "nd_player_manager") or -1
- * @return				The level of the client or some value less than 2
- * @error				Unloaded level or level less than 2.
+ * @pram PlayerManEnt		FindEntityByClassname(-1, "nd_player_manager") or -1
+ * @return			The level of the client or some value less than 2
+ * @error			Unloaded level or level less than 2.
  */
  
 stock ND_RetreiveLevel(client, PlayerManEnt = -1)
@@ -90,8 +90,8 @@ stock ND_RetreiveLevel(client, PlayerManEnt = -1)
  * Retreives the current score of a given client index
  *
  * @param client		Client index.
- * @pram PlayerManEnt	FindEntityByClassname(-1, "nd_player_manager") or -1
- * @return				The current score of the client
+ * @pram PlayerManEnt		FindEntityByClassname(-1, "nd_player_manager") or -1
+ * @return			The current score of the client
  */
 
 stock ND_RetrieveScore(client, PlayerManEnt = -1)
