@@ -66,9 +66,6 @@ stock String:ND_GetTeamName(team)
 }
 
 /** 
- * Cache 'FindEntityByClassname(-1, "nd_player_manager")' to varriable and input arg when calling in a loop
- * This is a very intensive task, repeating will hinder server performance 
- *
  * Retreives the level of a given client index
  *
  * @param client		Client index.
@@ -79,14 +76,10 @@ stock String:ND_GetTeamName(team)
  
 stock ND_RetreiveLevel(client, PlayerManEnt = -1)
 {
-	new PlayerManager = PlayerManEnt != -1 ? PlayerManEnt : FindEntityByClassname(-1, "nd_player_manager");	
-	return GetEntProp(PlayerManager, Prop_Send, "m_iPlayerRank", 1, client);
+	return GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iPlayerRank", 1, client);
 }
 
 /** 
- * Cache 'FindEntityByClassname(-1, "nd_player_manager")' to varriable and input arg when calling in a loop
- * This is a very intensive task, repeating will hinder server performance 
- *
  * Retreives the current score of a given client index
  *
  * @param client		Client index.
@@ -96,6 +89,5 @@ stock ND_RetreiveLevel(client, PlayerManEnt = -1)
 
 stock ND_RetrieveScore(client, PlayerManEnt = -1)
 {
-	new PlayerManager = PlayerManEnt != -1 ? PlayerManEnt : FindEntityByClassname(-1, "nd_player_manager");	
-	return GetEntProp(PlayerManager, Prop_Send, "m_iScore", 1, client);
+	return GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iScore", 1, client);
 }
