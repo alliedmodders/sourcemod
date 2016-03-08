@@ -69,12 +69,11 @@ stock String:ND_GetTeamName(team)
  * Retreives the level of a given client index
  *
  * @param client		Client index.
- * @pram PlayerManEnt		FindEntityByClassname(-1, "nd_player_manager") or -1
  * @return			The level of the client or some value less than 2
  * @error			Unloaded level or level less than 2.
  */
  
-stock ND_RetreiveLevel(client, PlayerManEnt = -1)
+stock ND_RetreiveLevel(client)
 {
 	return GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iPlayerRank", 1, client);
 }
@@ -83,11 +82,10 @@ stock ND_RetreiveLevel(client, PlayerManEnt = -1)
  * Retreives the current score of a given client index
  *
  * @param client		Client index.
- * @pram PlayerManEnt		FindEntityByClassname(-1, "nd_player_manager") or -1
  * @return			The current score of the client
  */
 
-stock ND_RetrieveScore(client, PlayerManEnt = -1)
+stock ND_RetrieveScore(client)
 {
 	return GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iScore", 1, client);
 }
