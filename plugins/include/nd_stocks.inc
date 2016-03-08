@@ -89,3 +89,61 @@ stock ND_RetrieveScore(client)
 {
 	return GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iScore", 1, client);
 }
+
+
+/* Player Class Functions */
+
+enum ND_MainClasses
+{
+	ND_MainClass_Assault = 0,
+	ND_MainClass_Exo,
+	ND_MainClass_Stealth,
+	ND_MainClass_Support
+};
+
+enum ND_AssaultClasses
+{
+	ND_AssaultClass_Infantry = 0,
+	ND_AssaultClass_Grendier,
+	ND_AssaultClass_Sniper
+};
+
+enum ND_ExoClasses
+{
+	ND_ExoClass_Supression = 0,
+	ND_ExoClass_SeigeKit
+};
+
+enum ND_StealthClasses
+{
+	ND_StealthClass_Assassin = 0,
+	ND_StealthClass_Sniper,
+	ND_StealthClass_Sabatuer
+};
+
+enum ND_SupportClasses
+{
+	ND_SupportClass_Medic = 0,
+	ND_SupportClass_Engineer,
+	ND_SupportClass_BBQ
+};
+
+#define GIZMO_NONE 0
+
+/** 
+ * Sets the class of a player
+ *
+ * @param client		Client index.
+ * @parm2 MainClass		The main class to set to
+ * @parm3 SubClass		The sub class to set to
+ * @parm4 Gizmo			The gizmo to change to
+ */
+
+stock ND_SetPlayerClass(client, MainClass, SubClass, gizmo = GIZMO_NONE)
+{
+	SetEntProp(client, Prop_Send, "m_iPlayerClass", MainClass);
+    	SetEntProp(client, Prop_Send, "m_iPlayerSubclass", SubClass);
+	SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", MainClass);
+	SetEntProp(client, Prop_Send, "m_iDesiredPlayerSubclass", SubClass);
+	SetEntProp(client, Prop_Send, "m_iDesiredGizmo", gizmo);
+}
