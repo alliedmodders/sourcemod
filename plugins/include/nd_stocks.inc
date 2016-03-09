@@ -201,10 +201,22 @@ stock ND_GetStructureFlags(entity)
  * Give a structure a specific property
  *
  * @param entity		Entity index of the structure.
- * @parm2 flag			The flags to give the structure
+ * @parm2 flag			The flag to give the structure
  */
 
 stock ND_AddStructureFlag(entity, flag)
 {
 	SetEntProp(entity, Prop_Send, "m_iStructFlags", ND_GetStructureFlags(entity) | flag);
+}
+
+/** 
+ * Remove specific property from a structure
+ *
+ * @param entity		Entity index of the structure.
+ * @parm2 flag			The flag to remove from the structure
+ */
+
+stock ND_RemoveStructureFlag(entity, flag)
+{
+	SetEntProp(entity, Prop_Send, "m_iStructFlags", ND_GetStructureFlags(entity) ~ flag);
 }
