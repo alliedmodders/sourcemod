@@ -172,6 +172,7 @@ stock ND_GetPlayerSubClass(client)
 	return GetEntProp(client, Prop_Send, "m_iPlayerSubclass");
 }
 
+
 /* Structure Functions */
 
 enum eNDStructFlags
