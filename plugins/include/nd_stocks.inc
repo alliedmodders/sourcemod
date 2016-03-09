@@ -171,3 +171,39 @@ stock ND_GetPlayerSubClass(client)
 {
 	return GetEntProp(client, Prop_Send, "m_iPlayerSubclass");
 }
+
+/* Structure Functions */
+
+enum eNDStructFlags
+{
+	NDFLAG_EXPLODE_ON_REMOVE= (1 << 1),
+	NDFLAG_CANT_SELL= (1 << 2),
+	NDFLAG_ALWAYS_OPERATIONAL= (1 << 3),
+	NDFLAG_POWER_CONNECTED= (1 << 4),
+	NDFLAG_HAS_FULL_POWER= (1 << 5),
+	NDFLAG_REMOVED= (1 << 6)
+};
+
+/** 
+ * Get the properties which belong to a structure
+ *
+ * @param entity		Entity index of the structure.
+ * @return			The flags that structure has
+ */
+
+stock ND_GetStructureFlags(entity)
+{
+	return GetEntProp(entity, Prop_Send, "m_iStructFlags");
+}
+
+/** 
+ * Give a structure a specific property
+ *
+ * @param entity		Entity index of the structure.
+ * @parm2 flag			The flags to give the structure
+ */
+
+stock ND_AddStructureFlag(entity, flag)
+{
+	SetEntProp(entity, Prop_Send, "m_iStructFlags", ND_GetStructureFlags(entity) | flag);
+}
