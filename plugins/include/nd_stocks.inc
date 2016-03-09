@@ -131,7 +131,7 @@ enum ND_SupportClasses
 #define GIZMO_NONE 0
 
 /** 
- * Sets the class of a player
+ * Sets the class of a client index
  *
  * @param client		Client index.
  * @parm2 MainClass		The main class to set to
@@ -146,4 +146,28 @@ stock ND_SetPlayerClass(client, MainClass, SubClass, gizmo = GIZMO_NONE)
 	SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", MainClass);
 	SetEntProp(client, Prop_Send, "m_iDesiredPlayerSubclass", SubClass);
 	SetEntProp(client, Prop_Send, "m_iDesiredGizmo", gizmo);
+}
+
+/** 
+ * Get the main class of a client index
+ *
+ * @param client		Client index.
+ * @return			The main class of the client
+ */
+
+stock ND_GetPlayerMainClass(client)
+{
+	return GetEntProp(client, Prop_Send, "m_iPlayerClass")
+}
+
+/** 
+ * Get the sub class of a client index
+ *
+ * @param client		Client index.
+ * @return			The sub class of the client
+ */
+
+stock ND_GetPlayerSubClass(client)
+{
+	return GetEntProp(client, Prop_Send, "m_iPlayerSubclass");
 }
