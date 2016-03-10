@@ -36,10 +36,15 @@
 #define _nd_stocks_included_
 
 /* The team name constants */
-#define TEAM_UNASSIGNED		0
-#define TEAM_SPEC		1
-#define TEAM_CONSORT		2
-#define TEAM_EMPIRE		3
+enum NDTeam 
+{
+	NDTeam_Unassigned = 0,
+    	NDTeam_Spec,
+    	NDTeam_Consort,
+    	NDTeam_Empire
+};
+
+stock NDTeam GetClientNDTeam(int client) { return view_as<NDTeam>(GetClientTeam(client)); }
 
 /**
  * Gets the name of a given team index
@@ -49,16 +54,16 @@
  * @error			Invalid team index.
  */
 
-stock String:ND_GetTeamName(team)
+stock String:ND_GetTeamName(int team)
 {
 	new String:TeamName[12];
 	
 	switch(team)
 	{
-		case TEAM_EMPIRE: 	TeamName = "Empire";
-		case TEAM_CONSORT: 	TeamName = "Consortium";
-		case TEAM_SPEC:		TeamName = "Spectate";
-		case TEAM_UNASSIGNED:	TeamName = "Unassigned";
+		case NDTeam_Empire: 	TeamName = "Empire";
+		case NDTeam_Consort: 	TeamName = "Consortium";
+		case NDTeam_Spec:	TeamName = "Spectate";
+		case NDTeam_Unassigned:	TeamName = "Unassigned";
 		default: 		TeamName = "Unknown";
 	}
 	
@@ -73,7 +78,7 @@ stock String:ND_GetTeamName(team)
  * @error			Unloaded level or level less than 2.
  */
  
-stock ND_RetreiveLevel(client)
+stock int ND_GetPlayerRank(int client)
 {
 	return GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iPlayerRank", 1, client);
 }
@@ -85,7 +90,7 @@ stock ND_RetreiveLevel(client)
  * @return			The current score of the client
  */
 
-stock ND_RetrieveScore(client)
+stock int ND_GetPlayerScore(int client)
 {
 	return GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iScore", 1, client);
 }
@@ -93,6 +98,7 @@ stock ND_RetrieveScore(client)
 
 /* Player Class Functions */
 
+//main player class enum
 enum ND_MainClasses
 {
 	ND_MainClass_Assault = 0,
@@ -101,26 +107,24 @@ enum ND_MainClasses
 	ND_MainClass_Support
 };
 
+/* Sub Class Enums */
 enum ND_AssaultClasses
 {
 	ND_AssaultClass_Infantry = 0,
 	ND_AssaultClass_Grendier,
 	ND_AssaultClass_Sniper
 };
-
 enum ND_ExoClasses
 {
 	ND_ExoClass_Supression = 0,
 	ND_ExoClass_SeigeKit
 };
-
 enum ND_StealthClasses
 {
 	ND_StealthClass_Assassin = 0,
 	ND_StealthClass_Sniper,
 	ND_StealthClass_Sabatuer
 };
-
 enum ND_SupportClasses
 {
 	ND_SupportClass_Medic = 0,
@@ -128,18 +132,18 @@ enum ND_SupportClasses
 	ND_SupportClass_BBQ
 };
 
-#define GIZMO_NONE 0
+#define ND_GIZMO_NONE 0
 
 /** 
  * Sets the class of a client index
  *
  * @param client		Client index.
- * @parm2 MainClass		The main class to set to
- * @parm3 SubClass		The sub class to set to
+ * @parm2 MainClass		The main class to set, see mainclass enum
+ * @parm3 SubClass		The sub class to set, see subclass enums
  * @parm4 Gizmo			The gizmo to change to
  */
 
-stock ND_SetPlayerClass(client, MainClass, SubClass, gizmo = GIZMO_NONE)
+stock ND_SetPlayerClass(int client, int MainClass, int SubClass, int gizmo = ND_GIZMO_NONE)
 {
 	SetEntProp(client, Prop_Send, "m_iPlayerClass", MainClass);
     	SetEntProp(client, Prop_Send, "m_iPlayerSubclass", SubClass);
@@ -152,22 +156,22 @@ stock ND_SetPlayerClass(client, MainClass, SubClass, gizmo = GIZMO_NONE)
  * Get the main class of a client index
  *
  * @param client		Client index.
- * @return			The main class of the client
+ * @return			The main class of the client, see mainclass enum
  */
 
-stock ND_GetPlayerMainClass(client)
+stock int ND_GetPlayerMainClass(int client)
 {
-	return GetEntProp(client, Prop_Send, "m_iPlayerClass")
+	return GetEntProp(client, Prop_Send, "m_iPlayerClass");
 }
 
 /** 
  * Get the sub class of a client index
  *
  * @param client		Client index.
- * @return			The sub class of the client
+ * @return			The sub class of the client, see subclass enums
  */
 
-stock ND_GetPlayerSubClass(client)
+stock ND_GetPlayerSubClass(int client)
 {
 	return GetEntProp(client, Prop_Send, "m_iPlayerSubclass");
 }
@@ -175,7 +179,7 @@ stock ND_GetPlayerSubClass(client)
 
 /* Structure Functions */
 
-enum eNDStructFlags
+enum NDStructFlags
 {
 	NDFLAG_EXPLODE_ON_REMOVE= (1 << 1),
 	NDFLAG_CANT_SELL= (1 << 2),
@@ -192,7 +196,7 @@ enum eNDStructFlags
  * @return			The flags that structure has
  */
 
-stock ND_GetStructureFlags(entity)
+stock ND_GetStructureFlags(int entity)
 {
 	return GetEntProp(entity, Prop_Send, "m_iStructFlags");
 }
@@ -201,22 +205,22 @@ stock ND_GetStructureFlags(entity)
  * Give a structure a specific property
  *
  * @param entity		Entity index of the structure.
- * @parm2 flag			The flag to give the structure
+ * @parm2 flag			Flag to give the structure, see enum above
  */
 
-stock ND_AddStructureFlag(entity, flag)
+stock ND_AddStructureFlag(int entity, NDStructFlags flag)
 {
-	SetEntProp(entity, Prop_Send, "m_iStructFlags", ND_GetStructureFlags(entity) | flag);
+	SetEntProp(entity, Prop_Send, "m_iStructFlags", ND_GetStructureFlags(entity) | view_as<int>flag);
 }
 
 /** 
  * Remove specific property from a structure
  *
  * @param entity		Entity index of the structure.
- * @parm2 flag			The flag to remove from the structure
+ * @parm2 flag			Flag to remove from structure, see enum above
  */
 
-stock ND_RemoveStructureFlag(entity, flag)
+stock ND_RemoveStructureFlag(int entity, NDStructFlags flag)
 {
-	SetEntProp(entity, Prop_Send, "m_iStructFlags", ND_GetStructureFlags(entity) ~ flag);
+	SetEntProp(entity, Prop_Send, "m_iStructFlags", ND_GetStructureFlags(entity) &~ view_as<int>flag);
 }
