@@ -176,6 +176,48 @@ stock int ND_GetPlayerSubClass(int client)
 }
 
 
+/* Commander Functions */
+
+/** 
+ * Get wetheir or not a client is commander
+ *
+ * @param client		Client index.
+ * @return			True if commander otherwise false
+ * @error			Invalid client index or client not ingame
+ */
+stock bool ND_IsCommander(client)
+{
+	return ND_GetTeamCommander(GetClientNDTeam(client)) == client;
+}
+
+/** 
+ * Get the commander belonging to a particular team
+ *
+ * @param team			NDTeam enum.
+ * @return			The client index
+ * @error			Invalid team or -1 if no commander
+ */
+stock int ND_GetTeamCommander(NDTeam team)
+{
+	return GameRules_GetPropEnt("m_hCommanders", view_as<int>team);
+}
+
+/** 
+ * Demote a commander on a specified team
+ *
+ * @param team			NDTeam enum.
+ * @error			Invalid team or no commander
+ */
+
+stock void ND_DemoteTeamCommander(NDTeam team)
+{
+	int commander = ND_GetTeamCommander(team);
+	
+	FakeClientCommand(commander, "startmutiny");
+	FakeClientCommand(commander, "rtsview");
+}
+
+
 /* Structure Functions */
 
 enum NDStructFlags
