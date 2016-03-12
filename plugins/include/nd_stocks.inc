@@ -160,7 +160,7 @@ stock void ND_SetPlayerClass(int client, ND_MainClasses MainClass, int SubClass,
 
 stock ND_MainClasses ND_GetPlayerMainClass(int client)
 {
-	return view_as<ND_MainClasses>GetEntProp(client, Prop_Send, "m_iPlayerClass");
+	return view_as<ND_MainClasses>(GetEntProp(client, Prop_Send, "m_iPlayerClass"));
 }
 
 /** 
