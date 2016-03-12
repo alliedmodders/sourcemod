@@ -199,7 +199,7 @@ stock bool ND_IsCommander(client)
  */
 stock int ND_GetTeamCommander(NDTeam team)
 {
-	return GameRules_GetPropEnt("m_hCommanders", view_as<int>team);
+	return GameRules_GetPropEnt("m_hCommanders", view_as<int>team - 2);
 }
 
 /** 
