@@ -44,6 +44,14 @@ enum NDTeam
     	NDTeam_Empire
 };
 
+/**
+ * Gets the team of a given player
+ *
+ * @param client		Client index.
+ * @return			The client's team as a NDTeam enum
+ * @error			Invalid client index or client not ingame.
+ */
+
 stock NDTeam GetClientNDTeam(int client) { return view_as<NDTeam>(GetClientTeam(client)); }
 
 /**
@@ -54,9 +62,9 @@ stock NDTeam GetClientNDTeam(int client) { return view_as<NDTeam>(GetClientTeam(
  * @error			Invalid team index.
  */
 
-stock String:ND_GetTeamName(int team)
+stock String ND_GetTeamName(int team)
 {
-	new String:TeamName[12];
+	String TeamName[12];
 	
 	switch(team)
 	{
@@ -95,7 +103,6 @@ stock int ND_GetPlayerScore(int client)
 	return GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iScore", 1, client);
 }
 
-
 /* Player Class Functions */
 
 //main player class enum
@@ -107,47 +114,39 @@ enum ND_MainClasses
 	ND_MainClass_Support
 };
 
-/* Sub Class Enums */
-enum ND_AssaultClasses
-{
-	ND_AssaultClass_Infantry = 0,
-	ND_AssaultClass_Grendier,
-	ND_AssaultClass_Sniper
-};
-enum ND_ExoClasses
-{
-	ND_ExoClass_Supression = 0,
-	ND_ExoClass_SeigeKit
-};
-enum ND_StealthClasses
-{
-	ND_StealthClass_Assassin = 0,
-	ND_StealthClass_Sniper,
-	ND_StealthClass_Sabatuer
-};
-enum ND_SupportClasses
-{
-	ND_SupportClass_Medic = 0,
-	ND_SupportClass_Engineer,
-	ND_SupportClass_BBQ
-};
+/* Sub Classes */
+#define ND_ASSAULT_CLASS_INFANTRY 	0
+#define ND_ASSAULT_CLASS_GRENDIER 	1
+#define ND_ASSAULT_CLASS_SNIPER 	2
 
-#define ND_GIZMO_NONE 0
+#define ND_EXO_CLASS_SUPRESSION		0
+#define ND_EXO_CLASS_SEIGEKIT 		1
+
+#define ND_STEALTH_CLASS_ASSASSIN	0
+#define ND_STEALTH_CLASS_SNIPER 	1
+#define ND_STEALTH_CLASS_SABATUER 	2
+
+#define ND_SUPPORT_CLASS_MEDIC 		0
+#define ND_SUPPORT_CLASS_ENGINEER 	1
+#define ND_SUPPORT_CLASS_BBQ	 	2
+
+/* Gizmo(s) */
+#define ND_GIZMO_NONE 			0
 
 /** 
  * Sets the class of a client index
  *
  * @param client		Client index.
  * @parm2 MainClass		The main class to set, see mainclass enum
- * @parm3 SubClass		The sub class to set, see subclass enums
+ * @parm3 SubClass		The sub class to set, see subclass consants
  * @parm4 Gizmo			The gizmo to change to
  */
 
-stock ND_SetPlayerClass(int client, int MainClass, int SubClass, int gizmo = ND_GIZMO_NONE)
+stock void ND_SetPlayerClass(int client, ND_MainClasses MainClass, int SubClass, int gizmo = ND_GIZMO_NONE)
 {
-	SetEntProp(client, Prop_Send, "m_iPlayerClass", MainClass);
+	SetEntProp(client, Prop_Send, "m_iPlayerClass", view_as<int>MainClass);
     	SetEntProp(client, Prop_Send, "m_iPlayerSubclass", SubClass);
-	SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", MainClass);
+	SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", view_as<int>MainClass);
 	SetEntProp(client, Prop_Send, "m_iDesiredPlayerSubclass", SubClass);
 	SetEntProp(client, Prop_Send, "m_iDesiredGizmo", gizmo);
 }
@@ -159,19 +158,19 @@ stock ND_SetPlayerClass(int client, int MainClass, int SubClass, int gizmo = ND_
  * @return			The main class of the client, see mainclass enum
  */
 
-stock int ND_GetPlayerMainClass(int client)
+stock ND_MainClasses ND_GetPlayerMainClass(int client)
 {
-	return GetEntProp(client, Prop_Send, "m_iPlayerClass");
+	return view_as<ND_MainClasses>GetEntProp(client, Prop_Send, "m_iPlayerClass");
 }
 
 /** 
  * Get the sub class of a client index
  *
  * @param client		Client index.
- * @return			The sub class of the client, see subclass enums
+ * @return			The sub class of the client, see subclass consants
  */
 
-stock ND_GetPlayerSubClass(int client)
+stock int ND_GetPlayerSubClass(int client)
 {
 	return GetEntProp(client, Prop_Send, "m_iPlayerSubclass");
 }
@@ -208,7 +207,7 @@ stock ND_GetStructureFlags(int entity)
  * @parm2 flag			Flag to give the structure, see enum above
  */
 
-stock ND_AddStructureFlag(int entity, NDStructFlags flag)
+stock void ND_AddStructureFlag(int entity, NDStructFlags flag)
 {
 	SetEntProp(entity, Prop_Send, "m_iStructFlags", ND_GetStructureFlags(entity) | view_as<int>flag);
 }
@@ -220,7 +219,7 @@ stock ND_AddStructureFlag(int entity, NDStructFlags flag)
  * @parm2 flag			Flag to remove from structure, see enum above
  */
 
-stock ND_RemoveStructureFlag(int entity, NDStructFlags flag)
+stock void ND_RemoveStructureFlag(int entity, NDStructFlags flag)
 {
 	SetEntProp(entity, Prop_Send, "m_iStructFlags", ND_GetStructureFlags(entity) &~ view_as<int>flag);
 }
