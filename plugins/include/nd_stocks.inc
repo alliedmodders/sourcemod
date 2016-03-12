@@ -62,9 +62,9 @@ stock NDTeam GetClientNDTeam(int client) { return view_as<NDTeam>(GetClientTeam(
  * @error			Invalid team index.
  */
 
-stock String:ND_GetTeamName(int team)
+stock char ND_GetTeamName(int team)
 {
-	new String:TeamName[12];
+	char TeamName[12];
 	
 	switch(team)
 	{
