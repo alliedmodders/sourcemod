@@ -537,7 +537,9 @@ bool DBManager::AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio)
 
 	if (!m_Worker)
 	{
-		m_Worker = new ke::Thread(this, "SM SQL Worker");
+		m_Worker = new ke::Thread([this]() -> void {
+			Run();
+		}, "SM SQL Worker");
 		if (!m_Worker->Succeeded())
 		{
 			if (!s_OneTimeThreaderErrorMsg)

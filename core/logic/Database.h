@@ -65,8 +65,7 @@ class DBManager :
 	public SMGlobalClass,
 	public IHandleTypeDispatch,
 	public ITextListener_SMC,
-	public IPluginsListener,
-	public ke::IRunnable
+	public IPluginsListener
 {
 public:
 	DBManager();
