@@ -236,6 +236,9 @@ public:
 	}
 	void CancelThinkPart()
 	{
+		if (!m_pFunction->IsRunnable())
+			return;
+
 		m_pFunction->PushCell(BAD_HANDLE);
 		m_pFunction->PushCell(BAD_HANDLE);
 		m_pFunction->PushString("Driver is unloading");
@@ -266,11 +269,14 @@ public:
 			}
 		}
 
-		m_pFunction->PushCell(m_MyHandle);
-		m_pFunction->PushCell(qh);
-		m_pFunction->PushString(qh == BAD_HANDLE ? error : "");
-		m_pFunction->PushCell(m_Data);
-		m_pFunction->Execute(NULL);
+		if (m_pFunction->IsRunnable())
+		{
+			m_pFunction->PushCell(m_MyHandle);
+			m_pFunction->PushCell(qh);
+			m_pFunction->PushString(qh == BAD_HANDLE ? error : "");
+			m_pFunction->PushCell(m_Data);
+			m_pFunction->Execute(NULL);
+		}
 
 		if (qh != BAD_HANDLE)
 		{
@@ -334,9 +340,11 @@ public:
 	void CancelThinkPart()
 	{
 		if (m_pDatabase)
-		{
 			m_pDatabase->Close();
-		}
+		
+		if (!m_pFunction->IsRunnable())
+			return;
+
 		if (m_ACM == ACM_Old)
 			m_pFunction->PushCell(BAD_HANDLE);
 		m_pFunction->PushCell(BAD_HANDLE);
@@ -348,6 +356,13 @@ public:
 	{
 		Handle_t hndl = BAD_HANDLE;
 		
+		if (!m_pFunction->IsRunnable())
+		{
+			if (m_pDatabase)
+				m_pDatabase->Close();
+			return;
+		}
+
 		if (m_pDatabase)
 		{
 			if ((hndl = g_DBMan.CreateHandle(DBHandle_Database, m_pDatabase, me->GetIdentity()))
@@ -1659,12 +1674,15 @@ private:
 			data[i] = txn_->entries[i].data;
 		}
 
-		success_->PushCell(dbh);
-		success_->PushCell(data_);
-		success_->PushCell(txn_->entries.length());
-		success_->PushArray(handles, results_.length());
-		success_->PushArray(data, results_.length());
-		success_->Execute(NULL);
+		if (success_->IsRunnable())
+		{
+			success_->PushCell(dbh);
+			success_->PushCell(data_);
+			success_->PushCell(txn_->entries.length());
+			success_->PushArray(handles, results_.length());
+			success_->PushArray(data, results_.length());
+			success_->Execute(NULL);
+		}
 
 		// Cleanup. Note we clear results_, since freeing their handles will
 		// call Destroy(), and we don't want to double-free in ~TTransactOp.
@@ -1703,13 +1721,16 @@ public:
 				db_->AddRef();
 			}
 
-			failure_->PushCell(dbh);
-			failure_->PushCell(data_);
-			failure_->PushCell(txn_->entries.length());
-			failure_->PushString(error_.chars());
-			failure_->PushCell(failIndex_);
-			failure_->PushArray(data, txn_->entries.length());
-			failure_->Execute(NULL);
+			if (failure_->IsRunnable())
+			{
+				failure_->PushCell(dbh);
+				failure_->PushCell(data_);
+				failure_->PushCell(txn_->entries.length());
+				failure_->PushString(error_.chars());
+				failure_->PushCell(failIndex_);
+				failure_->PushArray(data, txn_->entries.length());
+				failure_->Execute(NULL);
+			}
 
 			handlesys->FreeHandle(dbh, &sec);
 		}
