@@ -78,8 +78,6 @@ void CHookManager::Initialize()
 		g_pSM->LogError(myself, "Failed to find PlayerRunCmd offset - OnPlayerRunCmd forward disabled.");
 		PRCH_enabled = false;
 	}
-	
-	SH_ADD_HOOK(IBaseFileSystem, FileExists, basefilesystem, SH_MEMBER(this, &CHookManager::FileExists), false);
 
 	basefilesystemPatch = SH_GET_CALLCLASS(basefilesystem);
 
@@ -236,12 +234,22 @@ void CHookManager::NetChannelHook(int client)
 
 	/* Normal NetChannel Hooks. */
 	{
-		CVTableHook hook(pNetChannel);
+		CVTableHook nethook(pNetChannel);
 		size_t iter;
+
+		/* Initial Hook */
+		if (!m_netChannelHooks.length())
+		{
+			CVTableHook filehook(basefilesystem);
+
+			int hookid = SH_ADD_VPHOOK(IBaseFileSystem, FileExists, basefilesystem, SH_MEMBER(this, &CHookManager::FileExists), false);
+			filehook.SetHookID(hookid);
+			m_netChannelHooks.append(new CVTableHook(filehook));
+		}
+
 		for (iter = 0; iter < m_netChannelHooks.length(); ++iter)
 		{
-			/* We can technically skip 2; even technical-ier, this could be a bool; but Valve. */
-			if (hook == m_netChannelHooks[iter])
+			if (nethook == m_netChannelHooks[iter])
 			{
 				break;
 			}
@@ -250,16 +258,16 @@ void CHookManager::NetChannelHook(int client)
 		if (iter == m_netChannelHooks.length())
 		{
 			int hookid = SH_ADD_VPHOOK(INetChannel, SendFile, pNetChannel, SH_MEMBER(this, &CHookManager::SendFile), false);
-			hook.SetHookID(hookid);
-			m_netChannelHooks.append(new CVTableHook(hook));
+			nethook.SetHookID(hookid);
+			m_netChannelHooks.append(new CVTableHook(nethook));
 			
 			hookid = SH_ADD_VPHOOK(INetChannel, ProcessPacket, pNetChannel, SH_MEMBER(this, &CHookManager::ProcessPacket), false);
-			hook.SetHookID(hookid);
-			m_netChannelHooks.append(new CVTableHook(hook));
+			nethook.SetHookID(hookid);
+			m_netChannelHooks.append(new CVTableHook(nethook));
 			
 			hookid = SH_ADD_VPHOOK(INetChannel, ProcessPacket, pNetChannel, SH_MEMBER(this, &CHookManager::ProcessPacket_Post), true);
-			hook.SetHookID(hookid);
-			m_netChannelHooks.append(new CVTableHook(hook));
+			nethook.SetHookID(hookid);
+			m_netChannelHooks.append(new CVTableHook(nethook));
 		}
 	}
 }
