@@ -193,17 +193,13 @@ ConfigResult CHalfLife2::OnSourceModConfigChanged(const char *key, const char *v
 		if (strcasecmp(value, "no") == 0)
 		{
 			m_bFollowCSGOServerGuidelines = false;
-			return ConfigResult_Accept;
 		}
 		else if (strcasecmp(value, "yes") == 0)
 		{
 			m_bFollowCSGOServerGuidelines = true;
-			return ConfigResult_Accept;
 		}
 
 		return ConfigResult_Reject;
-#else
-		return ConfigResult_Accept;
 #endif
 	}
 
