@@ -93,7 +93,7 @@ native GameRules_GetProp(const String:prop[], size=4, element=0);
  *						This value is auto-detected, and the size parameter is 
  *						only used as a fallback in case detection fails.
  * @param element		Element # (starting from 0) if property is an array.
- * @param changeState	If true, change will be sent over the network.
+ * @param changeState	This parameter is ignored.
  * @error				Not supported.
  * @noreturn
  */
@@ -115,7 +115,7 @@ native Float:GameRules_GetPropFloat(const String:prop[], element=0);
  * @param prop			Property name.
  * @param value			Value to set.
  * @param element		Element # (starting from 0) if property is an array.
- * @param changeState	If true, change will be sent over the network.
+ * @param changeState	This parameter is ignored.
  * @noreturn
  * @error				Not supported.
  */
@@ -139,7 +139,7 @@ native GameRules_GetPropEnt(const String:prop[], element=0);
  * @param prop			Property name.
  * @param other			Entity index to set, or -1 to unset.
  * @param element		Element # (starting from 0) if property is an array.
- * @param changeState	If true, change will be sent over the network.
+ * @param changeState	This parameter is ignored.
  * @noreturn
  * @error				Not supported.
  */
@@ -162,7 +162,7 @@ native GameRules_GetPropVector(const String:prop[], Float:vec[3], element=0);
  * @param prop			Property name.
  * @param vec			Vector to set.
  * @param element		Element # (starting from 0) if property is an array.
- * @param changeState	If true, change will be sent over the network.
+ * @param changeState	This parameter is ignored.
  * @noreturn
  * @error				Not supported.
  */
@@ -184,7 +184,7 @@ native GameRules_GetPropString(const String:prop[], String:buffer[], maxlen);
  *
  * @param prop			Property to use.
  * @param buffer		String to set.		
- * @param changeState	If true, change will be sent over the network.
+ * @param changeState	This parameter is ignored.
  * @return				Number of non-null bytes written.
  * @error				Not supported.
  */
