@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2016 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -194,6 +194,8 @@ public: //IGameHelpers
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	string_t AllocPooledString(const char *pszValue);
 #endif
+	bool GetServerSteam3Id(char *pszOut, size_t len) const override;
+	uint64_t GetServerSteamId64() const override;
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();

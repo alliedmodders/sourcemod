@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2016 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -335,15 +335,6 @@ static cell_t sm_GetClientIP(IPluginContext *pCtx, const cell_t *params)
 	pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), buf);
 	return 1;
 }
-
-// Must match clients.inc
-enum class AuthIdType
-{
-	Engine = 0,
-	Steam2,
-	Steam3,
-	SteamId64,
-};
 
 static cell_t SteamIdToLocal(IPluginContext *pCtx, int index, AuthIdType authType, cell_t local_addr, size_t bytes, bool validate)
 {
