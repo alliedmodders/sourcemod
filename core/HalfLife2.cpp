@@ -178,8 +178,10 @@ ConfigResult CHalfLife2::OnSourceModConfigChanged(const char *key, const char *v
 		{
 			m_bFollowCSGOServerGuidelines = true;
 		}
-
-		return ConfigResult_Reject;
+		else
+		{
+			return ConfigResult_Reject;
+		}
 #endif
 	}
 
