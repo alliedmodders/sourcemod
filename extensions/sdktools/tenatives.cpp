@@ -138,13 +138,7 @@ size_t TempEntHooks::_FillInPlayers(int *pl_array, IRecipientFilter *pFilter)
 
 	for (size_t i=0; i<size; i++)
 	{
-		int index;
-#if SOURCE_ENGINE == SE_DOTA
-		index = pFilter->GetRecipientIndex(i).Get();
-#else
-		index = pFilter->GetRecipientIndex(i);
-#endif
-		pl_array[i] = index;
+		pl_array[i] = pFilter->GetRecipientIndex(i);
 	}
 
 	return size;

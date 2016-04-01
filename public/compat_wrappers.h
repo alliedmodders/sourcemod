@@ -153,26 +153,4 @@ typedef int QueryCvarCookie_t;
 	}
 #endif //SOURCE_ENGINE >= SE_LEFT4DEAD
 
-#if SOURCE_ENGINE == SE_DOTA
-	inline int GetPlayerUserId(edict_t *pEdict)
-	{
-		return engine->GetPlayerUserId(IndexOfEdict(pEdict) - 1);
-	}
-
-	inline int GetPlayerUserId(int client)
-	{
-		return engine->GetPlayerUserId(client - 1);
-	}
-#else
-	inline int GetPlayerUserId(edict_t *pEdict)
-	{
-		return engine->GetPlayerUserId(pEdict);
-	}
-
-	inline int GetPlayerUserId(int client)
-	{
-		return engine->GetPlayerUserId(PEntityOfEntIndex(client));
-	}
-#endif //SOURCE_ENGINE >= SE_DOTA
-
 #endif //_INCLUDE_SOURCEMOD_COMPAT_WRAPPERS_H_

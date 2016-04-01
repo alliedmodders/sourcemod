@@ -127,16 +127,6 @@ static cell_t CreateFakeClient(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[1], &netname);
 
-#if SOURCE_ENGINE == SE_DOTA
-	int index = engine->CreateFakeClient(netname).Get();
-	
-	if (index == -1)
-	{
-		return 0;
-	}
-
-	return index;
-#else
 	edict_t *pEdict = engine->CreateFakeClient(netname);
 
 	/* :TODO: does the engine fire forwards for us and whatnot? no idea... */
@@ -147,7 +137,6 @@ static cell_t CreateFakeClient(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return IndexOfEdict(pEdict);
-#endif
 }
 
 static cell_t SetFakeClientConVar(IPluginContext *pContext, const cell_t *params)
@@ -174,11 +163,7 @@ static cell_t SetFakeClientConVar(IPluginContext *pContext, const cell_t *params
 	pContext->LocalToString(params[2], &cvar);
 	pContext->LocalToString(params[3], &value);
 
-#if SOURCE_ENGINE == SE_DOTA
-	engine->SetFakeClientConVarValue(pPlayer->GetIndex(), cvar, value);
-#else
 	engine->SetFakeClientConVarValue(pPlayer->GetEdict(), cvar, value);
-#endif
 
 	return 1;
 }
@@ -293,9 +278,6 @@ static cell_t IsSoundPrecached(IPluginContext *pContext, const cell_t *params)
 
 static cell_t smn_CreateDialog(IPluginContext *pContext, const cell_t *params)
 {
-#if SOURCE_ENGINE == SE_DOTA
-	return pContext->ThrowNativeError("CreateDialog is not supported on this game");
-#else
 	KeyValues *pKV;
 	HandleError herr;
 	Handle_t hndl = static_cast<Handle_t>(params[2]);
@@ -323,7 +305,6 @@ static cell_t smn_CreateDialog(IPluginContext *pContext, const cell_t *params)
 		vsp_interface);
 
 	return 1;
-#endif // DOTA
 }
 
 static cell_t PrintToChat(IPluginContext *pContext, const cell_t *params)
@@ -535,8 +516,6 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 		return 70;
 	case SOURCE_ENGINE_CSGO:
 		return 80;
-	case SOURCE_ENGINE_DOTA:
-		return 90;
 #endif
 	}
 

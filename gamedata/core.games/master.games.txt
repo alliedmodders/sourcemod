@@ -85,11 +85,6 @@
 		"engine"	"csgo"
 	}
 	
-	"engine.dota.txt"
-	{
-		"engine"	"dota"
-	}
-	
 	"engine.blade.txt"
 	{
 		"engine"	"blade"

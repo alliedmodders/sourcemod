@@ -32,7 +32,6 @@ PossibleSDKs = {
   'bgt':  SDK('HL2SDK-BGT', '2.bgt', '4', 'BLOODYGOODTIME', WinOnly, 'bgt'),
   'eye':  SDK('HL2SDK-EYE', '2.eye', '5', 'EYE', WinOnly, 'eye'),
   'csgo': SDK('HL2SDKCSGO', '2.csgo', '20', 'CSGO', WinLinuxMac, 'csgo'),
-  'dota': SDK('HL2SDKDOTA', '2.dota', '21', 'DOTA', [], 'dota'),
   'portal2':  SDK('HL2SDKPORTAL2', '2.portal2', '17', 'PORTAL2', [], 'portal2'),
   'blade':  SDK('HL2SDKBLADE', '2.blade', '18', 'BLADE', WinLinux, 'blade'),
   'insurgency':  SDK('HL2SDKINSURGENCY', '2.insurgency', '19', 'INSURGENCY', WinLinuxMac, 'insurgency'),
@@ -409,10 +408,10 @@ class SMConfig(object):
 
     # For everything after Swarm, this needs to be defined for entity networking
     # to work properly with sendprop value changes.
-    if sdk.name in ['blade', 'insurgency', 'csgo', 'dota']:
+    if sdk.name in ['blade', 'insurgency', 'csgo']:
       compiler.defines += ['NETWORK_VARS_ENABLED']
 
-    if sdk.name in ['css', 'hl2dm', 'dods', 'sdk2013', 'bms', 'tf2', 'l4d', 'nucleardawn', 'l4d2', 'dota']:
+    if sdk.name in ['css', 'hl2dm', 'dods', 'sdk2013', 'bms', 'tf2', 'l4d', 'nucleardawn', 'l4d2']:
       if builder.target_platform in ['linux', 'mac']:
         compiler.defines += ['NO_HOOK_MALLOC', 'NO_MALLOC_OVERRIDE']
 
@@ -447,7 +446,7 @@ class SMConfig(object):
           compiler.Dep(os.path.join(lib_folder, 'mathlib_i486.a'))
         ]
 
-      if sdk.name in ['blade', 'insurgency', 'csgo', 'dota']:
+      if sdk.name in ['blade', 'insurgency', 'csgo']:
         compiler.postlink += [compiler.Dep(os.path.join(lib_folder, 'interfaces_i486.a'))]
 
     self.AddVersioning(binary)
@@ -456,7 +455,7 @@ class SMConfig(object):
     if builder.target_platform == 'linux':
       if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency']:
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
-      elif sdk.name in ['l4d', 'blade', 'insurgency', 'csgo', 'dota']:
+      elif sdk.name in ['l4d', 'blade', 'insurgency', 'csgo']:
         dynamic_libs = ['libtier0.so', 'libvstdlib.so']
       else:
         dynamic_libs = ['tier0_i486.so', 'vstdlib_i486.so']
@@ -465,7 +464,7 @@ class SMConfig(object):
       dynamic_libs = ['libtier0.dylib', 'libvstdlib.dylib']
     elif builder.target_platform == 'windows':
       libs = ['tier0', 'tier1', 'vstdlib', 'mathlib']
-      if sdk.name in ['swarm', 'blade', 'insurgency', 'csgo', 'dota']:
+      if sdk.name in ['swarm', 'blade', 'insurgency', 'csgo']:
         libs.append('interfaces')
       for lib in libs:
         lib_path = os.path.join(sdk.path, 'lib', 'public', lib) + '.lib'

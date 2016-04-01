@@ -48,9 +48,7 @@ SH_DECL_HOOK2_void(IVEngineServer, ChangeLevel, SH_NOATTRIB, 0, const char *, co
 SH_DECL_HOOK4_void(IVEngineServer, ChangeLevel, SH_NOATTRIB, 0, const char *, const char *, const char *, bool);
 #endif
 
-#if SOURCE_ENGINE == SE_DOTA
-SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 #elif SOURCE_ENGINE == SE_DARKMESSIAH
 SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
@@ -210,10 +208,7 @@ NextMapManager::NextMapManager()
 	m_mapHistory = SourceHook::List<MapChangeData *>();
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void CmdChangeLevelCallback(const CCommandContext &context, const CCommand &command)
-{
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdChangeLevelCallback(const CCommand &command)
 {
 #else

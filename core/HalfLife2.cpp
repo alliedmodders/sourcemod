@@ -43,9 +43,7 @@
 #include <tier0/mem.h>
 #include <bridge/include/ILogger.h>
 
-#if SOURCE_ENGINE == SE_DOTA
-#include <game/shared/protobuf/usermessages.pb.h>
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 #include <cstrike15_usermessages.pb.h>
 #endif
 
@@ -318,11 +316,7 @@ ICommandLine *CHalfLife2::GetValveCommandLine()
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
 {
-#if SOURCE_ENGINE == SE_DOTA
-	return engine->GetChangeAccessor( IndexOfEdict((const edict_t *)this) );
-#else
 	return engine->GetChangeAccessor( (const edict_t *)this );
-#endif
 }
 #endif
 
@@ -530,17 +524,7 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 			char buffer[253];
 			ke::SafeSprintf(buffer, sizeof(buffer), "%s\1\n", msg);
 
-#if SOURCE_ENGINE == SE_DOTA
-			CUserMsg_SayText *pMsg;
-			if ((pMsg = (CUserMsg_SayText *)g_UserMsgs.StartProtobufMessage(m_SayTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
-			{
-				return false;
-			}
-
-			pMsg->set_client(0);
-			pMsg->set_text(buffer);
-			pMsg->set_chat(false);
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 			CCSUsrMsg_SayText *pMsg;
 			if ((pMsg = (CCSUsrMsg_SayText *)g_UserMsgs.StartProtobufMessage(m_SayTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 			{
@@ -567,16 +551,7 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 		}
 	}
 
-#if SOURCE_ENGINE == SE_DOTA
-	CUserMsg_TextMsg *pMsg;
-	if ((pMsg = (CUserMsg_TextMsg *)g_UserMsgs.StartProtobufMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
-	{
-		return false;
-	}
-
-	pMsg->set_dest(dest);
-	pMsg->add_param(msg);
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 	CCSUsrMsg_TextMsg *pMsg;
 	if ((pMsg = (CCSUsrMsg_TextMsg *)g_UserMsgs.StartProtobufMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
@@ -609,15 +584,7 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 {
 	cell_t players[] = {client};
 
-#if SOURCE_ENGINE == SE_DOTA
-	CUserMsg_HintText *pMsg;
-	if ((pMsg = (CUserMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
-	{
-		return false;
-	}
-
-	pMsg->set_message(msg);
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 	CCSUsrMsg_HintText *pMsg;
 	if ((pMsg = (CCSUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
@@ -647,15 +614,7 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 
 bool CHalfLife2::HintTextMsg(cell_t *players, int count, const char *msg)
 {
-#if SOURCE_ENGINE == SE_DOTA
-	CUserMsg_HintText *pMsg;
-	if ((pMsg = (CUserMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, count, USERMSG_RELIABLE)) == NULL)
-	{
-		return false;
-	}
-
-	pMsg->set_message(msg);
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 	CCSUsrMsg_HintText *pMsg;
 	if ((pMsg = (CCSUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, count, USERMSG_RELIABLE)) == NULL)
 	{
@@ -690,13 +649,7 @@ bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, boo
 	int count = 0;
 	cell_t players[] = {client};
 
-#if SOURCE_ENGINE == SE_DOTA
-	CUserMsg_VGUIMenu *pMsg;
-	if ((pMsg = (CUserMsg_VGUIMenu *)g_UserMsgs.StartProtobufMessage(m_VGUIMenu, players, 1, USERMSG_RELIABLE)) == NULL)
-	{
-		return false;
-	}
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 	CCSUsrMsg_VGUIMenu *pMsg;
 	if ((pMsg = (CCSUsrMsg_VGUIMenu *)g_UserMsgs.StartProtobufMessage(m_VGUIMenu, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
@@ -721,18 +674,7 @@ bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, boo
 		SubKey = data->GetFirstSubKey();
 	}
 
-#if SOURCE_ENGINE == SE_DOTA
-	pMsg->set_name(name);
-	pMsg->set_show(show);
-
-	while (SubKey)
-	{
-		CUserMsg_VGUIMenu_Keys *key = pMsg->add_keys();
-		key->set_name(SubKey->GetName());
-		key->set_value(SubKey->GetString());
-		SubKey = SubKey->GetNextKey();
-	}
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 	pMsg->set_name(name);
 	pMsg->set_show(show);
 
@@ -788,11 +730,7 @@ void CHalfLife2::ProcessFakeCliCmdQueue()
 		if (g_Players.GetClientOfUserId(pFake->userid) == pFake->client)
 		{
 			CPlayer *pPlayer = g_Players.GetPlayerByIndex(pFake->client);
-#if SOURCE_ENGINE == SE_DOTA
-			engine->ClientCommand(pPlayer->GetIndex(), "%s", pFake->cmd.c_str());
-#else
 			serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), pFake->cmd.c_str());
-#endif
 		}
 
 		m_CmdQueue.pop();
