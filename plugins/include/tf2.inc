@@ -240,7 +240,7 @@ enum TFCond
 	TFCond_KingRune,
 	TFCond_PlagueRune,
 	TFCond_SupernovaRune,
-	TFCond_KingAura,
+	TFCond_KingAura = 113,
 	TFCond_SpawnOutline,
 };
 
