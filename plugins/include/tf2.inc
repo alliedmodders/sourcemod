@@ -192,6 +192,10 @@ enum TFCond
 	TFCond_Plague,
 	TFCond_KingAura,
 	TFCond_SpawnOutline, //114
+	TFCond_KnockedIntoAir,
+	TFCond_CompetitiveWinner,
+	TFCond_CompetitiveLoser,
+	TFCond_NoTaunting,
 };
 
 const Float:TFCondDuration_Infinite = -1.0;
