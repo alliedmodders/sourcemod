@@ -152,13 +152,17 @@ void LogAction(Handle_t hndl, int type, int client, int target, const char *mess
 
 static cell_t GetTime(IPluginContext *pContext, const cell_t *params)
 {
-	time_t t = g_pSM->GetAdjustedTime();
+	time_t seconds = g_pSM->GetAdjustedTime();
+	struct timeval timev;
+	gettimeofday(&timev, NULL);
+	long long millis = (long long)seconds * 1000 + timev.tv_usec / 1000;
+
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[1], &addr);
+	addr[0] = (time_t)(millis >> 31); // Shift left by the length of an int to get the first half.
+	addr[1] = (time_t)(millis - addr[0]); // Subtract the first half to get the second half.
 
-	*(time_t *)addr = t;
-
-	return static_cast<cell_t>(t);
+	return static_cast<cell_t>(seconds);
 }
 
 #if defined SUBPLATFORM_SECURECRT
