@@ -47,6 +47,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <sys/times.h>
+#include <sys/time.h>
 #endif
 #include <IForwardSys.h>
 #include <ILibrarySys.h>
