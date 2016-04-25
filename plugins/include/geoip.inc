@@ -48,7 +48,7 @@
  * @param ccode			Destination string buffer to store the code.
  * @return				True on success, false if no country found.
  */
-native bool:GeoipCode2(const String:ip[], String:ccode[3]);
+native bool GeoipCode2(const char[] ip, char ccode[3]);
 
 /**
  * Gets the three character country code from an IP address. (USA, CAN, etc)
@@ -57,7 +57,7 @@ native bool:GeoipCode2(const String:ip[], String:ccode[3]);
  * @param ccode			Destination string buffer to store the code.
  * @return				True on success, false if no country found.
  */
-native bool:GeoipCode3(const String:ip[], String:ccode[4]);
+native bool GeoipCode3(const char[] ip, char ccode[4]);
 
 /**
  * Gets the full country name. (max length of output string is 45)
@@ -67,7 +67,7 @@ native bool:GeoipCode3(const String:ip[], String:ccode[4]);
  * @param maxlength			Maximum length of output string buffer.
  * @return				True on success, false if no country found.
  */
-native bool:GeoipCountry(const String:ip[], String:name[], maxlength);
+native bool GeoipCountry(const char[] ip, char[] name, int maxlength);
 
 /**
  * @endsection
@@ -76,7 +76,7 @@ native bool:GeoipCountry(const String:ip[], String:name[], maxlength);
 /**
  * Do not edit below this line!
  */
-public Extension:__ext_geoip = 
+public Extension __ext_geoip = 
 {
 	name = "GeoIP",
 	file = "geoip.ext",
@@ -93,7 +93,7 @@ public Extension:__ext_geoip =
 };
 
 #if !defined REQUIRE_EXTENSIONS
-public __ext_geoip_SetNTVOptional()
+public void __ext_geoip_SetNTVOptional()
 {
 	MarkNativeAsOptional("GeoipCode2");
 	MarkNativeAsOptional("GeoipCode3");

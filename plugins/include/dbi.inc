@@ -467,7 +467,7 @@ stock Database SQL_DefConnect(char[] error, int maxlength, bool persistent=true)
  */
 native Database SQL_ConnectCustom(Handle keyvalues,
 			  					  char[] error,
-			  					  maxlength,
+			  					  int maxlength,
 			  					  bool persistent);
 
 /**
@@ -487,7 +487,7 @@ native Database SQL_ConnectCustom(Handle keyvalues,
  */
 stock Database SQLite_UseDatabase(const char[] database,
 			  					  char[] error, 
-			  					  maxlength)
+			  					  int maxlength)
 {
 	KeyValues kv = CreateKeyValues("");
 	kv.SetString("driver", "sqlite");
@@ -505,15 +505,15 @@ stock Database SQLite_UseDatabase(const char[] database,
  */
 #pragma deprecated Use SQL_ConnectCustom instead.
 native Handle SQL_ConnectEx(Handle driver, 
-							const String:host[],
-							const String:user[], 
-							const String:pass[],
-							const String:database[],
+							const char[] host,
+							const char[] user, 
+							const char[] pass,
+							const char[] database,
 							char[] error,
-							maxlength,
+							int maxlength,
 							bool persistent=true,
-							port=0,
-							maxTimeout=0);
+							int port=0,
+							int maxTimeout=0);
 							
 /**
  * Returns if a named configuration is present in databases.cfg.
@@ -543,7 +543,7 @@ native Handle SQL_GetDriver(const char[] name="");
  * @param ident_length	Maximum length of the buffer.
  * @return				Driver Handle.
  */
-native Handle SQL_ReadDriver(Handle database, char[] ident="", ident_length=0);
+native Handle SQL_ReadDriver(Handle database, char[] ident="", int ident_length=0);
 
 /**
  * Retrieves a driver's identification string.
@@ -648,8 +648,8 @@ native bool SQL_EscapeString(Handle database,
 stock bool SQL_QuoteString(Handle database,
 						   const char[] string,
 						   char[] buffer,
-						   maxlength,
-						   &written=0)
+						   int maxlength,
+						   int &written=0)
 {
 	return SQL_EscapeString(database, string, buffer, maxlength, written);
 }
@@ -754,7 +754,7 @@ native int SQL_GetFieldCount(Handle query);
  * @error				Invalid query Handle, invalid field index, or
  *						no current result set.
  */
-native void SQL_FieldNumToName(Handle query, int field, String:name[], int maxlength);
+native void SQL_FieldNumToName(Handle query, int field, char[] name, int maxlength);
 
 /**
  * Retrieves a field index by name.
@@ -765,7 +765,7 @@ native void SQL_FieldNumToName(Handle query, int field, String:name[], int maxle
  * @return				True if found, false if not found.
  * @error				Invalid query Handle or no current result set.
  */
-native bool SQL_FieldNameToNum(Handle query, const char[] name, &field);
+native bool SQL_FieldNameToNum(Handle query, const char[] name, int &field);
 
 /**
  * Fetches a row from the current result set.  This must be 

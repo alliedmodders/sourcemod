@@ -68,7 +68,7 @@ enum UserMessageType
  *
  * @return				The supported usermessage type.
  */
-native UserMessageType:GetUserMessageType();
+native UserMessageType GetUserMessageType();
 
 stock Protobuf UserMessageToProtobuf(Handle msg)
 {
@@ -99,7 +99,7 @@ stock BfWrite UserMessageToBfRead(Handle msg)
  * @param msg			String containing message name (case sensitive).
  * @return				A message index, or INVALID_MESSAGE_ID on failure.
  */
-native UserMsg:GetUserMessageId(const String:msg[]);
+native UserMsg GetUserMessageId(const char[] msg);
 
 /**
  * Retrieves the name of a message by ID.
@@ -109,7 +109,7 @@ native UserMsg:GetUserMessageId(const String:msg[]);
  * @param maxlength		Maximum length of string buffer.
  * @return				True if message index is valid, false otherwise.
  */
-native bool:GetUserMessageName(UserMsg:msg_id, String:msg[], maxlength);
+native bool GetUserMessageName(UserMsg msg_id, char[] msg, int maxlength);
 
 /**
  * Starts a usermessage (network message).
@@ -125,7 +125,7 @@ native bool:GetUserMessageName(UserMsg:msg_id, String:msg[], maxlength);
  * @error				Invalid message name, unable to start a message, invalid client,
  *						or client not connected.
  */
-native Handle:StartMessage(String:msgname[], clients[], numClients, flags=0);
+native Handle StartMessage(char[] msgname, int[] clients, int numClients, int flags=0);
 
 /**
  * Starts a usermessage (network message).
@@ -141,14 +141,14 @@ native Handle:StartMessage(String:msgname[], clients[], numClients, flags=0);
  * @error				Invalid message name, unable to start a message, invalid client,
  *						or client not connected.
  */
-native Handle:StartMessageEx(UserMsg:msg, clients[], numClients, flags=0);
+native Handle StartMessageEx(UserMsg msg, int[] clients, int numClients, int flags=0);
 
 /**
  * Ends a previously started user message (network message).
  *
  * @noreturn
  */
-native EndMessage();
+native void EndMessage();
 
 /**
  * Hook function types for user messages.
@@ -206,7 +206,7 @@ typedef MsgPostHook = function void (UserMsg msg_id, bool sent);
  * @noreturn
  * @error				Invalid message index.
  */
-native HookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false, MsgPostHook:post=INVALID_FUNCTION);
+native void HookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false, MsgPostHook:post=INVALID_FUNCTION);
 
 /**
  * Removes one usermessage hook.
@@ -217,7 +217,7 @@ native HookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false, MsgPo
  * @noreturn
  * @error				Invalid message index.
  */
-native UnhookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false);
+native void UnhookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false);
 
 /**
  * Starts a usermessage (network message) that broadcasts to all clients.
@@ -228,11 +228,11 @@ native UnhookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false);
  * @return				A handle to a bf_write bit packing structure, or
  *						INVALID_HANDLE on failure.
  */
-stock Handle:StartMessageAll(String:msgname[], flags=0)
+stock Handle StartMessageAll(char[] msgname, int flags=0)
 {
-	new total = 0;
-	new clients[MaxClients];
-	for (new i=1; i<=MaxClients; i++)
+	int total = 0;
+	int clients[MaxClients];
+	for (int i=1; i<=MaxClients; i++)
 	{
 		if (IsClientConnected(i))
 		{
@@ -252,9 +252,9 @@ stock Handle:StartMessageAll(String:msgname[], flags=0)
  * @return				A handle to a bf_write bit packing structure, or
  *						INVALID_HANDLE on failure.
  */
-stock Handle:StartMessageOne(String:msgname[], client, flags=0)
+stock Handle StartMessageOne(char[] msgname, int client, int flags=0)
 {
-	new players[1];
+	int players[1];
 	
 	players[0] = client;
 	

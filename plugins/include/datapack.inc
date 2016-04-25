@@ -81,7 +81,7 @@ methodmap DataPack < Handle
 	//
 	// @param buffer	Destination string buffer.
 	// @param maxlen	Maximum length of output string buffer.
-	public native void ReadString(char[] buffer, maxlen);
+	public native void ReadString(char[] buffer, int maxlen);
 
 	// Reads a function pointer from a data pack.
 	//
@@ -180,7 +180,7 @@ native float ReadPackFloat(Handle pack);
  * @noreturn
  * @error			Invalid handle, or bounds error.
  */
-native void ReadPackString(Handle pack, char[] buffer, maxlen);
+native void ReadPackString(Handle pack, char[] buffer, int maxlen);
 
 /**
  * Reads a function pointer from a data pack.

@@ -42,7 +42,7 @@
  * @param size			Number of bytes.
  * @return				Minimum number of cells required to fit the byte count.
  */
-stock ByteCountToCells(size)
+stock int ByteCountToCells(int size)
 {
 	if (!size)
 		return 1;
@@ -259,7 +259,7 @@ native Handle CloneArray(Handle array);
  * @noreturn
  * @error				Invalid Handle or out of memory.
  */
-native bool ResizeArray(Handle array, int newsize);
+native void ResizeArray(Handle array, int newsize);
 
 /**
  * Returns the array size.
@@ -356,6 +356,7 @@ native int GetArrayArray(Handle array, int index, any[] buffer, int size=-1);
  * @param block			Optionally specify which block to write to
  *						(useful if the blocksize > 0).
  * @param asChar		Optionally set as a byte instead of a cell.
+ * @noreturn
  * @error				Invalid Handle, invalid index, or invalid block.
  */
 native void SetArrayCell(Handle array, int index, any value, int block=0, bool asChar=false);
@@ -391,6 +392,7 @@ native int SetArrayArray(Handle array, int index, const any[] values, int size=-
  *
  * @param array			Array Handle.
  * @param index			Index in the array to shift up from.
+ * @noreturn
  * @error				Invalid Handle or invalid index.
  */
 native void ShiftArrayUp(Handle array, int index);
@@ -402,6 +404,7 @@ native void ShiftArrayUp(Handle array, int index);
  *
  * @param array			Array Handle.
  * @param index			Index in the array to remove at.
+ * @noreturn
  * @error				Invalid Handle or invalid index.
  */
 native void RemoveFromArray(Handle array, int index);
@@ -412,6 +415,7 @@ native void RemoveFromArray(Handle array, int index);
  * @param array			Array Handle.
  * @param index1		First index.
  * @param index2		Second index.
+ * @noreturn
  * @error				Invalid Handle or invalid index.
  */
 native void SwapArrayItems(Handle array, int index1, int index2);
