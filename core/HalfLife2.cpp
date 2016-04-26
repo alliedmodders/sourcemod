@@ -1398,6 +1398,17 @@ bool CHalfLife2::GetServerSteam3Id(char *pszOut, size_t len) const
 	return true;
 }
 
+#if defined( PLATFORM_WINDOWS )
+#define STEAM_LIB_PREFIX
+#define STEAM_LIB_SUFFIX
+#elif defined( PLATFORM_LINUX )
+#define STEAM_LIB_PREFIX "lib"
+#define STEAM_LIB_SUFFIX ".so"
+#elif defined( PLATFORM_APPLE )
+#define STEAM_LIB_PREFIX "lib"
+#define STEAM_LIB_SUFFIX ".dylib"
+#endif
+
 uint64_t CHalfLife2::GetServerSteamId64() const
 {
 #if SOURCE_ENGINE == SE_BLADE          \
@@ -1421,7 +1432,7 @@ uint64_t CHalfLife2::GetServerSteamId64() const
 	static GetServerSteamIdFn fn = nullptr;
 	if (!fn)
 	{
-		ke::SharedLib steam_api("steam_api");
+		ke::SharedLib steam_api(STEAM_LIB_PREFIX "steam_api" STEAM_LIB_SUFFIX);
 		if (steam_api.valid())
 		{
 			fn = (GetServerSteamIdFn)steam_api.lookup("SteamGameServer_GetSteamID");
