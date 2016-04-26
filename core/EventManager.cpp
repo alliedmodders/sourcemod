@@ -424,7 +424,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 			m_EventCopies.push(gameevents->DuplicateEvent(pEvent));
 		}
 
-		if (res)
+		if (res >= Pl_Handled)
 		{
 			gameevents->FreeEvent(pEvent);
 			RETURN_META_VALUE(MRES_SUPERCEDE, false);
