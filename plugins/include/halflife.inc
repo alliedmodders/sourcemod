@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2016 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -692,3 +692,23 @@ enum ClientRangeType
  */
 native int GetClientsInRange(float origin[3], ClientRangeType rangeType, int[] clients, int size);
 
+/**
+ * Retrieves the server's authentication string (SteamID).
+ *
+ * Note: If called before server is connected to Steam, auth id
+ * will be invalid ([I:0:1], 1, etc.)
+ *
+ * @param authType		Auth id type and format to use.
+ * 						(Only AuthId_Steam3 and AuthId_SteamID64 are supported)
+ * @param auth			Buffer to store the server's auth id.
+ * @param maxlen		Maximum length of string buffer (includes NULL terminator).
+ * @error				Invalid AuthIdType given.
+ */
+native void GetServerAuthId(AuthIdType authType, char[] auth, int maxlen);
+
+/**
+ * Returns the server's Steam account ID.
+ *
+ * @return				Steam account ID or 0 if not available.
+ */
+native int GetServerSteamAccountId();

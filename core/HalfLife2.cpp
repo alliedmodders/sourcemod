@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2016 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -1377,3 +1377,75 @@ string_t CHalfLife2::AllocPooledString(const char *pszValue)
 	return newString;
 }
 #endif
+
+bool CHalfLife2::GetServerSteam3Id(char *pszOut, size_t len) const
+{
+	CSteamID sid(GetServerSteamId64());
+
+	switch (sid.GetEAccountType())
+	{
+	case k_EAccountTypeAnonGameServer:
+		ke::SafeSprintf(pszOut, len, "[A:%u:%u:%u]", sid.GetEUniverse(), sid.GetAccountID(), sid.GetUnAccountInstance());
+		break;
+	case k_EAccountTypeGameServer:
+		ke::SafeSprintf(pszOut, len, "[G:%u:%u]", sid.GetEUniverse(), sid.GetAccountID());
+		break;
+	case k_EAccountTypeInvalid:
+		ke::SafeSprintf(pszOut, len, "[I:%u:%u]", sid.GetEUniverse(), sid.GetAccountID());
+		break;
+	default:
+		return false;
+	}
+
+	return true;
+}
+
+#if defined( PLATFORM_WINDOWS )
+#define STEAM_LIB_PREFIX
+#define STEAM_LIB_SUFFIX
+#elif defined( PLATFORM_LINUX )
+#define STEAM_LIB_PREFIX "lib"
+#define STEAM_LIB_SUFFIX ".so"
+#elif defined( PLATFORM_APPLE )
+#define STEAM_LIB_PREFIX "lib"
+#define STEAM_LIB_SUFFIX ".dylib"
+#endif
+
+uint64_t CHalfLife2::GetServerSteamId64() const
+{
+#if SOURCE_ENGINE == SE_BLADE          \
+	|| SOURCE_ENGINE == SE_BMS         \
+	|| SOURCE_ENGINE == SE_CSGO        \
+	|| SOURCE_ENGINE == SE_CSS         \
+	|| SOURCE_ENGINE == SE_DODS        \
+	|| SOURCE_ENGINE == SE_EYE         \
+	|| SOURCE_ENGINE == SE_HL2DM       \
+	|| SOURCE_ENGINE == SE_INSURGENCY  \
+	|| SOURCE_ENGINE == SE_SDK2013     \
+	|| SOURCE_ENGINE == SE_ALIENSWARM  \
+	|| SOURCE_ENGINE == SE_TF2
+	const CSteamID *sid = engine->GetGameServerSteamID();
+	if (sid)
+	{
+		return sid->ConvertToUint64();
+	}
+#else
+	typedef uint64_t(* GetServerSteamIdFn)(void);
+	static GetServerSteamIdFn fn = nullptr;
+	if (!fn)
+	{
+		ke::SharedLib steam_api(STEAM_LIB_PREFIX "steam_api" STEAM_LIB_SUFFIX);
+		if (steam_api.valid())
+		{
+			fn = (GetServerSteamIdFn)steam_api.lookup("SteamGameServer_GetSteamID");
+		}
+	}
+
+	if (fn)
+	{
+		return fn();
+	}
+#endif
+
+	return 1ULL;
+}
