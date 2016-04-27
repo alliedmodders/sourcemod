@@ -279,7 +279,7 @@ public Action:Command_SmPsay(client, args)
 	GetCmdArgString(text, sizeof(text));
 
 	new len = BreakString(text, arg, sizeof(arg));
-	BreakString(text[len], message, sizeof(message));
+	Format(message,sizeof(message),"%s",text[len]);
 	
 	new target = FindTarget(client, arg, true, false);
 		
