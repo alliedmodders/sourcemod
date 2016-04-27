@@ -1108,7 +1108,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin)
 				/* Check that we aren't registering the same library twice */
 				pPlugin->AddRequiredLib(name);
 
-				CPlugin *found;
+				CPlugin *found = nullptr;
 				for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 					CPlugin *pl = (*iter);
 					if (pl->HasLibrary(name)) {
