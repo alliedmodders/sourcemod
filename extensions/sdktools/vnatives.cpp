@@ -486,11 +486,7 @@ static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Entity %d is not valid", params[2]);
 	}
 
-#if SOURCE_ENGINE == SE_DOTA
-	engine->SetView(params[1], params[2]);
-#else
 	engine->SetView(player->GetEdict(), pEdict);
-#endif
 
 	return 1;
 }
@@ -683,11 +679,7 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 	/* Force suicide */
 	if (should_slay)
 	{
-#if SOURCE_ENGINE == SE_DOTA
-		engine->ClientCommand(params[1], "kill\n");
-#else
 		pluginhelpers->ClientCommand(pEdict, "kill\n");
-#endif
 	}
 
 	if (s_frag_offs > 0)
@@ -711,11 +703,7 @@ static cell_t GetClientEyePosition(IPluginContext *pContext, const cell_t *param
 	}
 
 	Vector pos;
-#if SOURCE_ENGINE == SE_DOTA
-	serverClients->ClientEarPosition(params[1], &pos);
-#else
 	serverClients->ClientEarPosition(player->GetEdict(), &pos);
-#endif
 
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[2], &addr);
@@ -1362,11 +1350,7 @@ static cell_t SetClientName(IPluginContext *pContext, const cell_t *params)
 	FINISH_CALL_SIMPLE(NULL);
 
 	// Notify the server of the change.
-#if SOURCE_ENGINE == SE_DOTA
-	serverClients->ClientSettingsChanged(player->GetIndex());
-#else
 	serverClients->ClientSettingsChanged(player->GetEdict());
-#endif
 
 	return 1;
 }

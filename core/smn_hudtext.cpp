@@ -37,9 +37,7 @@
 #include "logic_bridge.h"
 #include "sourcemod.h"
 
-#if SOURCE_ENGINE == SE_DOTA
-#include <game/shared/protobuf/usermessages.pb.h>
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 #include <game/shared/csgo/protobuf/cstrike15_usermessages.pb.h>
 #endif
 
@@ -318,26 +316,7 @@ void UTIL_SendHudText(int client, const hud_text_parms &textparms, const char *p
 
 	players[0] = client;
 
-#if SOURCE_ENGINE == SE_DOTA
-	CUserMsg_HudMsg *msg = (CUserMsg_HudMsg *)g_UserMsgs.StartProtobufMessage(g_HudMsgNum, players, 1, 0);
-	msg->set_channel(textparms.channel & 0xFF);
-
-	msg->set_x(textparms.x);
-	msg->set_y(textparms.y);
-
-	Color c1(textparms.r1, textparms.g1, textparms.b1, textparms.a1);
-	msg->set_color1(c1.GetRawColor());
-
-	Color c2(textparms.r2, textparms.g2, textparms.b2, textparms.a2);
-	msg->set_color2(c2.GetRawColor());
-
-	msg->set_effect(textparms.effect);
-	msg->set_fade_in_time(textparms.fadeinTime);
-	msg->set_fade_out_time(textparms.fadeoutTime);
-	msg->set_hold_time(textparms.holdTime);
-	msg->set_fx_time(textparms.fxTime);
-	msg->set_message(pMessage);
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 	CCSUsrMsg_HudMsg *msg = (CCSUsrMsg_HudMsg *)g_UserMsgs.StartProtobufMessage(g_HudMsgNum, players, 1, 0);
 	msg->set_channel(textparms.channel & 0xFF);
 

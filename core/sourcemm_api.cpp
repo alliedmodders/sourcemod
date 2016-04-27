@@ -108,9 +108,7 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	GET_V_IFACE_CURRENT(GetServerFactory, servertools, IServerTools, VSERVERTOOLS_INTERFACE_VERSION);
 #endif
-#if SOURCE_ENGINE != SE_DOTA
 	GET_V_IFACE_CURRENT(GetEngineFactory, serverpluginhelpers, IServerPluginHelpers, INTERFACEVERSION_ISERVERPLUGINHELPERS);
-#endif
 
 	/* :TODO: Make this optional and... make it find earlier versions [?] */
 	GET_V_IFACE_CURRENT(GetServerFactory, playerinfo, IPlayerInfoManager, INTERFACEVERSION_PLAYERINFOMANAGER);

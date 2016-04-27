@@ -51,7 +51,7 @@
 #include <bridge/include/ILogger.h>
 #include <ITranslator.h>
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
+#if SOURCE_ENGINE == SE_CSGO
 #include <netmessages.pb.h>
 #endif
 
@@ -977,7 +977,7 @@ static cell_t FakeClientCommandEx(IPluginContext *pContext, const cell_t *params
 			return 0;
 	}
 
-	g_HL2.AddToFakeCliCmdQueue(params[1], GetPlayerUserId(pPlayer->GetEdict()), buffer);
+	g_HL2.AddToFakeCliCmdQueue(params[1], engine->GetPlayerUserId(pPlayer->GetEdict()), buffer);
 
 	return 1;
 }
@@ -1164,7 +1164,7 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 	char data[256];
 	bf_write buffer(data, sizeof(data));
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
+#if SOURCE_ENGINE == SE_CSGO
 	CNETMsg_SetConVar msg;
 	CMsg_CVars_CVar *cvar = msg.mutable_convars()->add_cvars();
 
@@ -1259,7 +1259,7 @@ static cell_t ConVar_ReplicateToClient(IPluginContext *pContext, const cell_t *p
 
 static cell_t FakeClientCommandKeyValues(IPluginContext *pContext, const cell_t *params)
 {
-#if SOURCE_ENGINE >= SE_EYE && SOURCE_ENGINE != SE_DOTA
+#if SOURCE_ENGINE >= SE_EYE
 	int client = params[1];
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);

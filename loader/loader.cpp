@@ -83,7 +83,6 @@
 #define FILENAME_1_6_SDK2013		"sourcemod.2.sdk2013" PLATFORM_EXT
 #define FILENAME_1_6_TF2			"sourcemod.2.tf2" PLATFORM_EXT
 #define FILENAME_1_6_ND				"sourcemod.2.nd" PLATFORM_EXT
-#define FILENAME_1_6_DOTA			"sourcemod.2.dota" PLATFORM_EXT
 #define FILENAME_1_6_BLADE			"sourcemod.2.blade" PLATFORM_EXT
 #define FILENAME_1_6_INSURGENCY		"sourcemod.2.insurgency" PLATFORM_EXT
 #define FILENAME_1_6_CONTAGION		"sourcemod.2.contagion" PLATFORM_EXT
@@ -341,11 +340,6 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 			{
 				return NULL;
 			}
-			break;
-		}
-	case SOURCE_ENGINE_DOTA:
-		{
-			filename = FILENAME_1_6_DOTA;
 			break;
 		}
 	case SOURCE_ENGINE_BLADE:
