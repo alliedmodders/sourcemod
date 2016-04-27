@@ -291,7 +291,7 @@ class SMConfig(object):
     cxx.cflags += ['/Oy-']
 
   def configure_linux(self, cxx):
-    cxx.defines += ['_LINUX', 'POSIX']
+    cxx.defines += ['_LINUX', 'POSIX', '_FILE_OFFSET_BITS=64']
     cxx.linkflags += ['-Wl,--exclude-libs,ALL', '-lm']
     if cxx.vendor == 'gcc':
       cxx.linkflags += ['-static-libgcc']
