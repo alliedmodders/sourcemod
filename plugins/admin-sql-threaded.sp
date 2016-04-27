@@ -36,6 +36,8 @@
 
 #include <sourcemod>
 
+#pragma newdecls required
+
 public Plugin myinfo = 
 {
 	name = "SQL Admins (Threaded)",
