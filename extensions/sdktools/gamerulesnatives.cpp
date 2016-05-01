@@ -32,12 +32,22 @@
 #include "extension.h"
 #include "gamerulesnatives.h"
 #include "vglobals.h"
+#include "../../core/HalfLife2.h"
 
 const char *g_szGameRulesProxy;
 
 void GameRulesNativesInit()
 {
 	g_szGameRulesProxy = g_pGameConf->GetKeyValue("GameRulesProxy");
+}
+
+inline bool CanSetPropName(const char *pszPropName)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return g_HL2.CanSetCSGOEntProp(pszPropName);
+#else
+	return true;
+#endif
 }
 
 static CBaseEntity *FindEntityByNetClass(int start, const char *classname)
@@ -183,7 +193,8 @@ static cell_t GameRules_GetProp(IPluginContext *pContext, const cell_t *params)
 		bit_count = sizeof(int) * 8;
 	}
 #endif
-	if (bit_count < 1)
+
+	if (bit_count < 1)
 	{
 		bit_count = params[2] * 8;
 	}
@@ -241,6 +252,10 @@ static cell_t GameRules_SetProp(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[1], &prop);
 
 	FIND_PROP_SEND(DPT_Int, "integer");
+	if (!CanSetPropName(prop))
+	{
+		return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
+	}
 
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 \
 	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS
@@ -319,6 +334,10 @@ static cell_t GameRules_SetPropFloat(IPluginContext *pContext, const cell_t *par
 	pContext->LocalToString(params[1], &prop);
 
 	FIND_PROP_SEND(DPT_Float, "float");
+	if (!CanSetPropName(prop))
+	{
+		return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
+	}
 
 	float newVal = sp_ctof(params[2]);
 
@@ -377,6 +396,10 @@ static cell_t GameRules_SetPropEnt(IPluginContext *pContext, const cell_t *param
 	pContext->LocalToString(params[1], &prop);
 
 	FIND_PROP_SEND(DPT_Int, "integer");
+	if (!CanSetPropName(prop))
+	{
+		return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
+	}
 
 	CBaseHandle &hndl = *(CBaseHandle *)((intptr_t)pGameRules + offset);
 	CBaseEntity *pOther;
@@ -452,6 +475,10 @@ static cell_t GameRules_SetPropVector(IPluginContext *pContext, const cell_t *pa
 	pContext->LocalToString(params[1], &prop);
 
 	FIND_PROP_SEND(DPT_Vector, "vector");
+	if (!CanSetPropName(prop))
+	{
+		return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
+	}
 
 	Vector *v = (Vector *)((intptr_t)pGameRules + offset);
 
