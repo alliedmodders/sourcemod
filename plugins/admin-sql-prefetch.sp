@@ -377,4 +377,3 @@ void FetchOverrides(Database db)
 	
 	delete rs;
 }
-

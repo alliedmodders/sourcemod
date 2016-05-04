@@ -247,4 +247,3 @@ void ReadGroups()
 		InternalReadGroups(g_Filename, GroupPass_Second);
 	}
 }
-
