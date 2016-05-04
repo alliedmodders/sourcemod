@@ -31,7 +31,7 @@
  * Version: $Id$
  */
 
-DisplayVoteFFMenu(client)
+void DisplayVoteFFMenu(int client)
 {
 	if (IsVoteInProgress())
 	{
@@ -47,10 +47,10 @@ DisplayVoteFFMenu(client)
 	LogAction(client, -1, "\"%L\" initiated a friendly fire vote.", client);
 	ShowActivity2(client, "[SM] ", "%t", "Initiated Vote FF");
 	
-	g_voteType = voteType:ff;
+	g_voteType = ff;
 	g_voteInfo[VOTE_NAME][0] = '\0';
 	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 	
 	if (g_Cvar_FF.BoolValue)
 	{
@@ -67,12 +67,12 @@ DisplayVoteFFMenu(client)
 	g_hVoteMenu.DisplayVoteToAll(20);
 }
 
-public AdminMenu_VoteFF(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public void AdminMenu_VoteFF(TopMenu topmenu, 
+							  TopMenuAction action,
+							  TopMenuObject object_id,
+							  int param,
+							  char[] buffer,
+							  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -89,7 +89,7 @@ public AdminMenu_VoteFF(Handle:topmenu,
 	}
 }
 
-public Action:Command_VoteFF(client, args)
+public Action Command_VoteFF(int client, int args)
 {
 	if (args > 0)
 	{

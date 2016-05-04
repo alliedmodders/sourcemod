@@ -39,7 +39,9 @@
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 
-public Plugin:myinfo =
+#pragma newdecls required
+
+public Plugin myinfo =
 {
 	name = "Fun Votes",
 	author = "AlliedModders LLC",
@@ -58,7 +60,7 @@ ConVar g_Cvar_Gravity;
 ConVar g_Cvar_Alltalk;
 ConVar g_Cvar_FF;
 
-// new Handle:g_Cvar_Show = null;
+// ConVar g_Cvar_Show = null;
 
 enum voteType
 {
@@ -69,19 +71,19 @@ enum voteType
 	ff
 };
 
-new voteType:g_voteType = voteType:gravity;
+voteType g_voteType = gravity;
 
 // Menu API does not provide us with a way to pass multiple peices of data with a single
 // choice, so some globals are used to hold stuff.
 //
 #define VOTE_CLIENTID	0
 #define VOTE_USERID	1
-new g_voteClient[2];		/* Holds the target's client id and user id */
+int g_voteClient[2];		/* Holds the target's client id and user id */
 
 #define VOTE_NAME	0
 #define VOTE_AUTHID	1
 #define	VOTE_IP		2
-new String:g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
+char g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
 
 TopMenu hTopMenu;
 
@@ -91,7 +93,7 @@ TopMenu hTopMenu;
 #include "funvotes/votealltalk.sp"
 #include "funvotes/voteff.sp"
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	if (FindPluginByFile("basefunvotes.smx") != null)
 	{
@@ -135,7 +137,7 @@ public OnPluginStart()
 	}
 }
 
-public OnAdminMenuReady(Handle aTopMenu)
+public void OnAdminMenuReady(Handle aTopMenu)
 {
 	TopMenu topmenu = TopMenu.FromHandle(aTopMenu);
 
@@ -149,7 +151,7 @@ public OnAdminMenuReady(Handle aTopMenu)
 	hTopMenu = topmenu;
 	
 	/* Build the "Voting Commands" category */
-	new TopMenuObject:voting_commands = hTopMenu.FindCategory(ADMINMENU_VOTINGCOMMANDS);
+	TopMenuObject voting_commands = hTopMenu.FindCategory(ADMINMENU_VOTINGCOMMANDS);
 
 	if (voting_commands != INVALID_TOPMENUOBJECT)
 	{
@@ -161,7 +163,7 @@ public OnAdminMenuReady(Handle aTopMenu)
 	}
 }
 
-public Handler_VoteCallback(Menu menu, MenuAction action, int param1, int param2)
+public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -175,7 +177,7 @@ public Handler_VoteCallback(Menu menu, MenuAction action, int param1, int param2
 	 	char buffer[255];
 		Format(buffer, sizeof(buffer), "%T", title, param1, g_voteInfo[VOTE_NAME]);
 
-		Panel panel = Panel:param2;
+		Panel panel = view_as<Panel>(param2);
 		panel.SetTitle(buffer);
 	}
 	else if (action == MenuAction_DisplayItem)
@@ -234,14 +236,14 @@ public Handler_VoteCallback(Menu menu, MenuAction action, int param1, int param2
 			
 			switch (g_voteType)
 			{
-				case (voteType:gravity):
+				case (gravity):
 				{
 					PrintToChatAll("[SM] %t", "Cvar changed", "sv_gravity", item);					
 					LogAction(-1, -1, "Changing gravity to %s due to vote.", item);
 					g_Cvar_Gravity.IntValue = StringToInt(item);
 				}
 				
-				case (voteType:burn):
+				case (burn):
 				{
 					PrintToChatAll("[SM] %t", "Set target on fire", "_s", g_voteInfo[VOTE_NAME]);					
 					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote burn successful, igniting \"%L\"", g_voteClient[VOTE_CLIENTID]);
@@ -249,7 +251,7 @@ public Handler_VoteCallback(Menu menu, MenuAction action, int param1, int param2
 					IgniteEntity(g_voteClient[VOTE_CLIENTID], 19.8);	
 				}
 				
-				case (voteType:slay):
+				case (slay):
 				{
 					PrintToChatAll("[SM] %t", "Slayed player", g_voteInfo[VOTE_NAME]);					
 					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote slay successful, slaying \"%L\"", g_voteClient[VOTE_CLIENTID]);
@@ -258,14 +260,14 @@ public Handler_VoteCallback(Menu menu, MenuAction action, int param1, int param2
 					ForcePlayerSuicide(g_voteClient[VOTE_CLIENTID]);
 				}
 				
-				case (voteType:alltalk):
+				case (alltalk):
 				{
 					PrintToChatAll("[SM] %t", "Cvar changed", "sv_alltalk", (g_Cvar_Alltalk.BoolValue ? "0" : "1"));
 					LogAction(-1, -1, "Changing alltalk to %s due to vote.", (g_Cvar_Alltalk.BoolValue ? "0" : "1"));
 					g_Cvar_Alltalk.BoolValue = !g_Cvar_Alltalk.BoolValue;
 				}
 				
-				case (voteType:ff):
+				case (ff):
 				{
 					PrintToChatAll("[SM] %t", "Cvar changed", "mp_friendlyfire", (g_Cvar_FF.BoolValue ? "0" : "1"));
 					LogAction(-1, -1, "Changing friendly fire to %s due to vote.", (g_Cvar_FF.BoolValue ? "0" : "1"));
@@ -279,11 +281,11 @@ public Handler_VoteCallback(Menu menu, MenuAction action, int param1, int param2
 }
 
 /*
-VoteSelect(Handle:menu, param1, param2 = 0)
+void VoteSelect(Menu menu, int param1, int param2 = 0)
 {
-	if (GetConVarInt(g_Cvar_VoteShow) == 1)
+	if (g_Cvar_VoteShow.IntValue == 1)
 	{
-		decl String:voter[MAX_NAME_LENGTH], String:junk[64], String:choice[64];
+		char voter[MAX_NAME_LENGTH], junk[64], choice[64];
 		GetClientName(param1, voter, sizeof(voter));
 		menu.GetItem(param2, junk, sizeof(junk), _, choice, sizeof(choice));
 		PrintToChatAll("[SM] %T", "Vote Select", LANG_SERVER, voter, choice);
@@ -291,20 +293,20 @@ VoteSelect(Handle:menu, param1, param2 = 0)
 }
 */
 
-VoteMenuClose()
+void VoteMenuClose()
 {
 	delete g_hVoteMenu;
 	g_hVoteMenu = null;
 }
 
-Float:GetVotePercent(votes, totalVotes)
+float GetVotePercent(int votes, int totalVotes)
 {
 	return FloatDiv(float(votes),float(totalVotes));
 }
 
-bool:TestVoteDelay(client)
+bool TestVoteDelay(int client)
 {
- 	new delay = CheckVoteDelay();
+ 	int delay = CheckVoteDelay();
  	
  	if (delay > 0)
  	{
