@@ -159,8 +159,6 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 	m_CSGOBadList.add("m_iCompetitiveRanking");
 	m_CSGOBadList.add("m_nActiveCoinRank");
 	m_CSGOBadList.add("m_nMusicID");
-	m_CSGOBadList.add("m_bIsValveDS");
-	m_CSGOBadList.add("m_bIsQuestEligible");
 #endif
 }
 
