@@ -187,7 +187,7 @@ static cell_t sm_FireEventToClient(IPluginContext *pContext, const cell_t *param
 	IClient *pClient = pPlayer->GetIClient();
 	if (!pClient)
 	{
-		return pContext->ThrowNativeError("Sending events to fakeclints is not supported on this game (client %d)", client);
+		return pContext->ThrowNativeError("Sending events to fakeclients is not supported on this game (client %d)", client);
 	}
 
 	g_EventManager.FireEventToClient(pInfo, pClient);
