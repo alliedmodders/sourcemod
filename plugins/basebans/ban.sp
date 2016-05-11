@@ -149,7 +149,7 @@ void DisplayBanReasonMenu(int client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public void AdminMenu_Ban(Handle topmenu,
+public void AdminMenu_Ban(TopMenu topmenu,
 							  TopMenuAction action,
 							  TopMenuObject object_id,
 							  int param,
@@ -262,7 +262,6 @@ public int MenuHandler_BanTimeList(Menu menu, MenuAction action, int param1, int
 		DisplayBanReasonMenu(param1);
 	}
 }
-
 
 public Action Command_Ban(int client, int args)
 {
