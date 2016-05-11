@@ -88,8 +88,6 @@ public void ReadSimpleUsers()
 	file.Close();
 }
 
-
-
 void DecodeAuthMethod(const char[] auth, char method[32], int &offset)
 {
 	if ((StrContains(auth, "STEAM_") == 0) || (strncmp("0:", auth, 2) == 0) || (strncmp("1:", auth, 2) == 0))
@@ -224,4 +222,3 @@ void ReadAdminLine(const char[] line)
 		}
 	}
 }
-

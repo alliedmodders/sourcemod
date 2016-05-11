@@ -224,7 +224,6 @@ bool GetUpdateVersion(int client, Database db, int versions[4])
 		return false;
 	}
 
-
 	return true;
 }
 

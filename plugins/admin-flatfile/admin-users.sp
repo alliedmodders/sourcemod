@@ -164,7 +164,7 @@ public SMCResult ReadUsers_EndSection(SMCParser smc)
 			if ((id = FindAdminByIdentity(g_CurAuth, g_CurIdent)) == INVALID_ADMIN_ID)
 			{
 				id = CreateAdmin(g_CurName);
-				if (!BindAdminIdentity(id, g_CurAuth, g_CurIdent))
+				if (!id.BindIdentity(g_CurAuth, g_CurIdent))
 				{
 					RemoveAdmin(id);
 					ParseError("Failed to bind auth \"%s\" to identity \"%s\"", g_CurAuth, g_CurIdent);
@@ -175,19 +175,19 @@ public SMCResult ReadUsers_EndSection(SMCParser smc)
 			num_groups = g_GroupArray.Length;
 			for (i = 0; i < num_groups; i++)
 			{
-				AdminInheritGroup(id, g_GroupArray.Get(i));
+				id.InheritGroup(g_GroupArray.Get(i));
 			}
 			
-			SetAdminPassword(id, g_CurPass);
-			if (GetAdminImmunityLevel(id) < g_CurImmunity)
+			id.SetPassword(g_CurPass);
+			if (id.ImmunityLevel < g_CurImmunity)
 			{
-				SetAdminImmunityLevel(id, g_CurImmunity);
+				id.ImmunityLevel = g_CurImmunity;
 			}
 			
 			num_flags = FlagBitsToArray(g_CurFlags, flags, sizeof(flags));
 			for (i = 0; i < num_flags; i++)
 			{
-				SetAdminFlag(id, flags[i], true);
+				id.SetFlag(flags[i], true);
 			}
 		}
 		else
@@ -222,7 +222,7 @@ static void InitializeUserParser()
 		g_hUserParser.OnLeaveSection = ReadUsers_EndSection;
 		g_hUserParser.OnRawLine = ReadUsers_CurrentLine;
 		
-		g_GroupArray = CreateArray();
+		g_GroupArray = new ArrayList();
 	}
 }
 
