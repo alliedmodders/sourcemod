@@ -31,16 +31,16 @@
  * Version: $Id$
  */
 
-new g_BlindTarget[MAXPLAYERS+1];
+int g_BlindTarget[MAXPLAYERS+1];
 
-PerformBlind(client, target, amount)
+void PerformBlind(int client, int target, int amount)
 {
-	new targets[2];
+	int targets[2];
 	targets[0] = target;
 	
-	new duration = 1536;
-	new holdtime = 1536;
-	new flags;
+	int duration = 1536;
+	int holdtime = 1536;
+	int flags;
 	if (amount == 0)
 	{
 		flags = (0x0001 | 0x0010);
@@ -50,7 +50,7 @@ PerformBlind(client, target, amount)
 		flags = (0x0002 | 0x0008);
 	}
 	
-	new color[4] = { 0, 0, 0, 0 };
+	int color[4] = { 0, 0, 0, 0 };
 	color[3] = amount;
 	
 	Handle message = StartMessageEx(g_FadeUserMsgId, targets, 1);
@@ -79,12 +79,12 @@ PerformBlind(client, target, amount)
 	LogAction(client, target, "\"%L\" set blind on \"%L\", amount %d.", client, target, amount);
 }
 
-public AdminMenu_Blind(Handle:topmenu, 
-					  TopMenuAction:action,
-					  TopMenuObject:object_id,
-					  param,
-					  String:buffer[],
-					  maxlength)
+public void AdminMenu_Blind(TopMenu topmenu, 
+					  TopMenuAction action,
+					  TopMenuObject object_id,
+					  int param,
+					  char[] buffer,
+					  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -101,11 +101,11 @@ public AdminMenu_Blind(Handle:topmenu,
 	}	
 }
 
-DisplayBlindMenu(client)
+void DisplayBlindMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_Blind);
+	Menu menu = new Menu(MenuHandler_Blind);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "Blind player", client);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
@@ -115,11 +115,11 @@ DisplayBlindMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-DisplayAmountMenu(client)
+void DisplayAmountMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_Amount);
+	Menu menu = new Menu(MenuHandler_Amount);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T: %N", "Blind amount", client, GetClientOfUserId(g_BlindTarget[client]));
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
@@ -131,7 +131,7 @@ DisplayAmountMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_Blind(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_Blind(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -146,8 +146,8 @@ public MenuHandler_Blind(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32];
-		new userid, target;
+		char info[32];
+		int userid, target;
 		
 		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
@@ -177,7 +177,7 @@ public MenuHandler_Blind(Menu menu, MenuAction action, int param1, int param2)
 	return;
 }
 
-public MenuHandler_Amount(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_Amount(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -192,8 +192,8 @@ public MenuHandler_Amount(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32];
-		new amount, target;
+		char info[32];
+		int amount, target;
 		
 		menu.GetItem(param2, info, sizeof(info));
 		amount = StringToInt(info);
@@ -208,7 +208,7 @@ public MenuHandler_Amount(Menu menu, MenuAction action, int param1, int param2)
 		}
 		else
 		{
-			new String:name[MAX_NAME_LENGTH];
+			char name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			
 			PerformBlind(param1, target, amount);
@@ -223,8 +223,7 @@ public MenuHandler_Amount(Menu menu, MenuAction action, int param1, int param2)
 	}
 }
 
-
-public Action:Command_Blind(client, args)
+public Action Command_Blind(int client, int args)
 {
 	if (args < 1)
 	{
@@ -232,13 +231,13 @@ public Action:Command_Blind(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:arg[65];
+	char arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 	
-	new amount = 0;
+	int amount = 0;
 	if (args > 1)
 	{
-		decl String:arg2[20];
+		char arg2[20];
 		GetCmdArg(2, arg2, sizeof(arg2));
 		if (StringToIntEx(arg2, amount) == 0)
 		{
@@ -257,8 +256,9 @@ public Action:Command_Blind(client, args)
 		}
 	}
 
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(
 			arg,
@@ -274,7 +274,7 @@ public Action:Command_Blind(client, args)
 		return Plugin_Handled;
 	}
 	
-	for (new i = 0; i < target_count; i++)
+	for (int i = 0; i < target_count; i++)
 	{
 		PerformBlind(client, target_list[i], amount);
 	}

@@ -31,17 +31,17 @@
  * Version: $Id$
  */
 
-new g_BeaconSerial[MAXPLAYERS+1] = { 0, ... };
+int g_BeaconSerial[MAXPLAYERS+1] = { 0, ... };
 
 ConVar g_Cvar_BeaconRadius;
 
-CreateBeacon(client)
+void CreateBeacon(int client)
 {
 	g_BeaconSerial[client] = ++g_Serial_Gen;
 	CreateTimer(1.0, Timer_Beacon, client | (g_Serial_Gen << 7), DEFAULT_TIMER_FLAGS);	
 }
 
-KillBeacon(client)
+void KillBeacon(int client)
 {
 	g_BeaconSerial[client] = 0;
 
@@ -51,15 +51,15 @@ KillBeacon(client)
 	}
 }
 
-KillAllBeacons()
+void KillAllBeacons()
 {
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		KillBeacon(i);
 	}
 }
 
-PerformBeacon(client, target)
+void PerformBeacon(int client, int target)
 {
 	if (g_BeaconSerial[target] == 0)
 	{
@@ -73,10 +73,10 @@ PerformBeacon(client, target)
 	}
 }
 
-public Action:Timer_Beacon(Handle:timer, any:value)
+public Action Timer_Beacon(Handle timer, any value)
 {
-	new client = value & 0x7f;
-	new serial = value >> 7;
+	int client = value & 0x7f;
+	int serial = value >> 7;
 
 	if (!IsClientInGame(client)
 		|| !IsPlayerAlive(client)
@@ -122,12 +122,12 @@ public Action:Timer_Beacon(Handle:timer, any:value)
 	return Plugin_Continue;
 }
 
-public AdminMenu_Beacon(Handle:topmenu, 
-					  TopMenuAction:action,
-					  TopMenuObject:object_id,
-					  param,
-					  String:buffer[],
-					  maxlength)
+public void AdminMenu_Beacon(TopMenu topmenu, 
+					  TopMenuAction action,
+					  TopMenuObject object_id,
+					  int param,
+					  char[] buffer,
+					  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -139,11 +139,11 @@ public AdminMenu_Beacon(Handle:topmenu,
 	}
 }
 
-DisplayBeaconMenu(client)
+void DisplayBeaconMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_Beacon);
+	Menu menu = new Menu(MenuHandler_Beacon);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "Beacon player", client);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
@@ -153,7 +153,7 @@ DisplayBeaconMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_Beacon(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_Beacon(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -168,8 +168,8 @@ public MenuHandler_Beacon(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32];
-		new userid, target;
+		char info[32];
+		int userid, target;
 		
 		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
@@ -184,7 +184,7 @@ public MenuHandler_Beacon(Menu menu, MenuAction action, int param1, int param2)
 		}
 		else
 		{
-			new String:name[MAX_NAME_LENGTH];
+			char name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			
 			PerformBeacon(param1, target);
@@ -199,7 +199,7 @@ public MenuHandler_Beacon(Menu menu, MenuAction action, int param1, int param2)
 	}
 }
 
-public Action:Command_Beacon(client, args)
+public Action Command_Beacon(int client, int args)
 {
 	if (args < 1)
 	{
@@ -207,11 +207,12 @@ public Action:Command_Beacon(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:arg[65];
+	char arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(
 			arg,
@@ -227,7 +228,7 @@ public Action:Command_Beacon(client, args)
 		return Plugin_Handled;
 	}
 	
-	for (new i = 0; i < target_count; i++)
+	for (int i = 0; i < target_count; i++)
 	{
 		PerformBeacon(client, target_list[i]);
 	}
