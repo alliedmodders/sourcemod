@@ -75,7 +75,6 @@ native int GetPlayerWeaponSlot(int client, int slot);
  * @param npc			True to only affect NPCs.
  * @param size			Unknown.
  * @param level			Unknown.
- * @noreturn
  * @error				Invalid entity or client not in game, or lack of mod support.
  */
 native void IgniteEntity(int entity, float time, bool npc=false, float size=0.0, bool level=false);
@@ -84,7 +83,6 @@ native void IgniteEntity(int entity, float time, bool npc=false, float size=0.0,
  * Extinguishes an entity that is on fire.
  *
  * @param entity		Entity index.
- * @noreturn
  * @error				Invalid entity or client not in game, or lack of mod support.
  */
 native void ExtinguishEntity(int entity);
@@ -96,7 +94,6 @@ native void ExtinguishEntity(int entity);
  * @param origin		New origin, or NULL_VECTOR for no change.
  * @param angles		New angles, or NULL_VECTOR for no change.
  * @param velocity		New velocity, or NULL_VECTOR for no change.
- * @noreturn
  * @error				Invalid entity or client not in game, or lack of mod support.
  */
 native void TeleportEntity(int entity, const float origin[3], const float angles[3], const float velocity[3]);
@@ -105,7 +102,6 @@ native void TeleportEntity(int entity, const float origin[3], const float angles
  * Forces a player to commit suicide.
  *
  * @param client		Client index.
- * @noreturn
  * @error				Invalid client or client not in game, or lack of mod support.
  */
 native void ForcePlayerSuicide(int client);
@@ -116,7 +112,6 @@ native void ForcePlayerSuicide(int client);
  * @param client		Client index.
  * @param health		Health to subtract.
  * @param sound			False to disable the sound effects.
- * @noreturn
  * @error				Invalid client or client not in game, or lack of mod support.
  */
 native void SlapPlayer(int client, int health=5, bool sound=true);
@@ -223,7 +218,6 @@ native int GetTeamCount();
  * @param index				Team index.
  * @param name				Buffer to store string in.
  * @param maxlength			Maximum length of string buffer.
- * @noreturn
  * @error				Invalid team index.
  */
 native void GetTeamName(int index, char[] name, int maxlength);
@@ -272,7 +266,6 @@ native int GetTeamEntity(int teamIndex);
  *
  * @param entity			Entity index.
  * @param model				Model name.
- * @noreturn
  * @error				Invalid entity index, or no mod support.
  */
 native void SetEntityModel(int entity, const char[] model);
@@ -304,7 +297,6 @@ native bool GetPlayerJingleFile(int client, char[] hex, int maxlength);
  *
  * @param in				Buffer to store the input traffic velocity.
  * @param out				Buffer to store the output traffic velocity.
- * @noreturn
  */
 native void GetServerNetStats(float &inAmount, float &outAmout);
 
@@ -313,7 +305,6 @@ native void GetServerNetStats(float &inAmount, float &outAmout);
  *
  * @param client		Client index.
  * @param weapon			CBaseCombatWeapon entity index.
- * @noreturn
  * @error				Invalid client or entity, lack of mod support, or client not in 
  *						game.
  */
@@ -323,7 +314,6 @@ native void EquipPlayerWeapon(int client, int weapon);
  * Activates an entity (CBaseAnimating::Activate)
  *
  * @param entity		Entity index.
- * @noreturn
  * @error				Invalid entity or lack of mod support.
  */
 native void ActivateEntity(int entity);
@@ -335,7 +325,6 @@ native void ActivateEntity(int entity);
  * @param client		Player's index.
  * @param key			Key string.
  * @param value			Value string.
- * @noreturn
  * @error				Invalid client index, or client not connected.
  */
 native void SetClientInfo(int client, const char[] key, const char[] value);

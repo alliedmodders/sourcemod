@@ -239,7 +239,6 @@ enum TFObjectMode
  *
  * @param client		Player's index.
  * @param attacker		Attacker's index.
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void TF2_IgnitePlayer(int client, int attacker);
@@ -248,7 +247,6 @@ native void TF2_IgnitePlayer(int client, int attacker);
  * Respawns a client
  *
  * @param client		Player's index.
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void TF2_RespawnPlayer(int client);
@@ -257,7 +255,6 @@ native void TF2_RespawnPlayer(int client);
  * Regenerates a client's health and ammunition
  *
  * @param client		Player's index.
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void TF2_RegeneratePlayer(int client);
@@ -270,7 +267,6 @@ native void TF2_RegeneratePlayer(int client);
  * @param duration		Duration of condition (does not apply to all conditions).
  *                      Pass TFCondDuration_Infinite to apply until manually removed.
  * @param inflictor		Condition inflictor's index (0 for no inflictor).
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void TF2_AddCondition(int client, TFCond condition, float duration=TFCondDuration_Infinite, int inflictor=0);
@@ -280,7 +276,6 @@ native void TF2_AddCondition(int client, TFCond condition, float duration=TFCond
  *
  * @param client		Player's index.
  * @param condition		Integer identifier of condition to remove.
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void TF2_RemoveCondition(int client, TFCond condition);
@@ -290,7 +285,6 @@ native void TF2_RemoveCondition(int client, TFCond condition);
  *
  * @param client		Player's index.
  * @param enabled		Whether to enable or disable PowerPlay on player.
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void TF2_SetPlayerPowerPlay(int client, bool enabled);
@@ -304,7 +298,6 @@ native void TF2_SetPlayerPowerPlay(int client, bool enabled);
  * @param team			Team to disguise the player as (only TFTeam_Red and TFTeam_Blue have an effect)
  * @param classType		TFClassType class to disguise the player as
  * @param target		Specific target player to disguise as (0 for any)
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void TF2_DisguisePlayer(int client, TFTeam team, TFClassType classType, int target=0);
@@ -313,7 +306,6 @@ native void TF2_DisguisePlayer(int client, TFTeam team, TFClassType classType, i
  * Removes the current disguise from a client. Only has an effect on spies.
  *
  * @param client		Player's index.
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void TF2_RemovePlayerDisguise(int client);
@@ -327,7 +319,6 @@ native void TF2_RemovePlayerDisguise(int client);
  *						Ignored if TF_STUNFLAG_SLOWDOWN is not set.
  * @param stunflags		Stun flags.
  * @param attacker		Attacker's index (0 is allowed for world).
- * @noreturn
  */
 native void TF2_StunPlayer(int client, float duration, float slowdown=0.0, int stunflags, int attacker=0);
 
@@ -337,7 +328,6 @@ native void TF2_StunPlayer(int client, float duration, float slowdown=0.0, int s
  * @param client		Player's index.
  * @param attacker		Attacker's index.
  * @param duration		Duration of bleeding (in seconds).
- * @noreturn
  */
 native void TF2_MakeBleed(int client, int attacker, float duration);
 
@@ -413,7 +403,6 @@ native bool TF2_IsPlayerInDuel(int client);
  *
  * @param client	Client index.
  * @param wearable	Index of the wearable entity.
- * @noreturn
  * @error			Invalid client index, client not in game, invalid wearable entity, or no mod support.
 */
 native void TF2_RemoveWearable(int client, int wearable);

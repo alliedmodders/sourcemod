@@ -51,7 +51,6 @@ typedef TEHook = function Action (const char[] te_name, const int[] Players, int
  *
  * @param te_name	TE name to hook.
  * @param hook		Function to use as a hook.
- * @noreturn
  * @error		Temp Entity name not available or invalid function hook.
  */
 native void AddTempEntHook(const char[] te_name, TEHook hook);
@@ -61,7 +60,6 @@ native void AddTempEntHook(const char[] te_name, TEHook hook);
  *
  * @param te_name	TE name to unhook.
  * @param hook		Function used for the hook.
- * @noreturn
  * @error		Temp Entity name not available or invalid function hook.
  */
 native void RemoveTempEntHook(const char[] te_name, TEHook hook);
@@ -70,7 +68,6 @@ native void RemoveTempEntHook(const char[] te_name, TEHook hook);
  * Starts a temp entity transmission.
  *
  * @param te_name	TE name.
- * @noreturn
  * @error		Temp Entity name not available.
  */
 native void TE_Start(const char[] te_name);
@@ -88,7 +85,6 @@ native bool TE_IsValidProp(const char[] prop);
  *
  * @param prop		Property to use.
  * @param value		Integer value to set.
- * @noreturn
  * @error		Property not found.
  */
 native void TE_WriteNum(const char[] prop, int value);
@@ -107,7 +103,6 @@ native int TE_ReadNum(const char[] prop);
  *
  * @param prop		Property to use.
  * @param value		Floating point number to set.
- * @noreturn
  * @error		Property not found.
  */
 native void TE_WriteFloat(const char[] prop, float value);
@@ -126,7 +121,6 @@ native float TE_ReadFloat(const char[] prop);
  *
  * @param prop		Property to use.
  * @param vector	Vector to set.
- * @noreturn
  * @error		Property not found.
  */
 native void TE_WriteVector(const char[] prop, const float vector[3]);
@@ -136,7 +130,6 @@ native void TE_WriteVector(const char[] prop, const float vector[3]);
  *
  * @param prop		Property to use.
  * @param vector	Vector to read.
- * @noreturn
  * @error		Property not found.
  */
 native void TE_ReadVector(const char[] prop, float vector[3]);
@@ -166,7 +159,6 @@ native void TE_WriteFloatArray(const char[] prop, const float[] array, int array
  * @param clients	Array containing player indexes to broadcast to.
  * @param numClients	Number of players in the array.
  * @param delay		Delay in seconds to send the TE.
- * @noreturn
  * @error		Invalid client index or client not in game.
  */
 native void TE_Send(const int[] clients, int numClients, float delay=0.0);
@@ -177,7 +169,6 @@ native void TE_Send(const int[] clients, int numClients, float delay=0.0);
  *
  * @param prop		Property to use.
  * @param value		Value to set.
- * @noreturn
  * @error		Property not found.
  */
 stock void TE_WriteEncodedEnt(const char[] prop, int value)
@@ -191,7 +182,6 @@ stock void TE_WriteEncodedEnt(const char[] prop, int value)
  * @note See TE_Start().
  *
  * @param delay		Delay in seconds to send the TE.
- * @noreturn
  */
 stock void TE_SendToAll(float delay=0.0)
 {
@@ -213,7 +203,6 @@ stock void TE_SendToAll(float delay=0.0)
  *
  * @param client	Client to send to.
  * @param delay		Delay in seconds to send the TE.
- * @noreturn
  * @error		Invalid client index or client not in game.
  */
 stock void TE_SendToClient(int client, float delay=0.0)
@@ -234,7 +223,6 @@ stock void TE_SendToClient(int client, float delay=0.0)
  * @param origin		Coordinates from which to test range.
  * @param rangeType		Range type to use for filtering clients.
  * @param delay			Delay in seconds to send the TE.
- * @noreturn
  */
 stock void TE_SendToAllInRange(float origin[3], ClientRangeType rangeType, float delay=0.0)
 {

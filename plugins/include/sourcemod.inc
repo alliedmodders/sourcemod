@@ -92,7 +92,6 @@ enum APLRes
  * If any run-time error is thrown during this callback, the plugin will be marked 
  * as failed.
  *
- * @noreturn
  */
 forward void OnPluginStart();
 
@@ -132,7 +131,6 @@ forward APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_ma
  * SourceMod guarantees that plugin shutdown automatically and correctly releases 
  * all resources.
  *
- * @noreturn
  */
 forward void OnPluginEnd();
 
@@ -140,7 +138,6 @@ forward void OnPluginEnd();
  * Called when the plugin's pause status is changing.
  *
  * @param pause			True if the plugin is being paused, false otherwise.
- * @noreturn
  */
 forward void OnPluginPauseChange(bool pause);
 
@@ -171,7 +168,6 @@ forward void OnMapEnd();
  * @note This will always be called once and only once per map.  It will be 
  * called after OnMapStart().
  *
- * @noreturn
  */
 forward void OnConfigsExecuted();
 
@@ -188,7 +184,6 @@ forward void OnConfigsExecuted();
  * Unlike OnMapStart() and OnConfigsExecuted(), this is not called on 
  * late loads that occur after OnMapStart().
  *
- * @noreturn
  */
 forward void OnAutoConfigsBuffered();
 
@@ -255,7 +250,6 @@ native PluginStatus GetPluginStatus(Handle plugin);
  * @param plugin		Plugin Handle (INVALID_HANDLE uses the calling plugin).
  * @param buffer		Buffer to the store the file name.
  * @param maxlength		Maximum length of the name buffer.
- * @noreturn
  * @error				Invalid Handle.
  */
 native void GetPluginFilename(Handle plugin, char[] buffer, int maxlength);
@@ -308,7 +302,6 @@ native Handle FindPluginByNumber(int order_num);
  *
  * @param string		Format specifier string.
  * @param ...			Formatting arguments.
- * @noreturn
  * @error				Always throws SP_ERROR_ABORT.
  */
 native void SetFailState(const char[] string, any ...);
@@ -319,7 +312,6 @@ native void SetFailState(const char[] string, any ...);
  *
  * @param fmt		String format.
  * @param ...			Format arguments.
- * @noreturn
  * @error				Always!
  */
 native void ThrowError(const char[] fmt, any ...);
@@ -342,7 +334,6 @@ native int GetTime(int bigStamp[2]={0,0});
  * @param maxlength		Maximum length of output string buffer.
  * @param format		Formatting rules (passing NULL_STRING will use the rules defined in sm_datetime_format).
  * @param stamp			Optional time stamp.
- * @noreturn
  * @error			Buffer too small or invalid time format.
  */
 native void FormatTime(char[] buffer, int maxlength, const char[] format, int stamp=-1);
@@ -406,7 +397,6 @@ native int GetSysTickCount();
  * @param name			Name of the config file, excluding the .cfg extension.
  *						If empty, <plugin.filename.cfg> is assumed.
  * @param folder		Folder under cfg/ to use.  By default this is "sourcemod."
- * @noreturn
  */
 native void AutoExecConfig(bool autoCreate=true, const char[] name="", const char[] folder="sourcemod");
 
@@ -415,7 +405,6 @@ native void AutoExecConfig(bool autoCreate=true, const char[] name="", const cha
  * other plugins.
  *
  * @param name			Library name.
- * @noreturn
  */
 native void RegPluginLibrary(const char[] name);
 
@@ -525,7 +514,6 @@ native Handle ReadMapList(Handle array=INVALID_HANDLE,
  *
  * @param name			Configuration name that would be used with ReadMapList().
  * @param file			Default file to use.
- * @noreturn
  */
 native void SetMapListCompatBind(const char[] name, const char[] file);
 
@@ -551,7 +539,6 @@ forward bool OnClientFloodCheck(int client);
  *
  * @param client		Client index.  The server (0) will never be passed.
  * @param blocked		True if client flooded last "say", false otherwise.
- * @noreturn
  */
 forward void OnClientFloodResult(int client, bool blocked);
 
@@ -625,7 +612,6 @@ native FeatureStatus GetFeatureStatus(FeatureType type, const char[] name);
  * @param name          Feature name.
  * @param fmt           Message format string, or empty to use default.
  * @param ...           Message format parameters, if any.
- * @noreturn
  */
 native void RequireFeature(FeatureType type, const char[] name,
                            const char[] fmt="", any ...);
@@ -660,7 +646,6 @@ native int LoadFromAddress(Address addr, NumberType size);
  * @param addr          Address to a memory location.
  * @param data          Value to store at the address.
  * @param size          How many bytes should be written.
- * @noreturn
  */
 native void StoreToAddress(Address addr, int data, NumberType size); 
 

@@ -125,7 +125,6 @@ enum
  * Prefetches a sound.
  *
  * @param name		Sound file name relative to the "sounds" folder.
- * @noreturn
  */
 native void PrefetchSound(const char[] name);
 
@@ -150,7 +149,6 @@ native float GetSoundDuration(const char[] name);
  * @param vol		Volume (from 0.0 to 1.0).
  * @param pitch		Pitch (from 0 to 255).
  * @param delay		Play delay.
- * @noreturn
  */
 native void EmitAmbientSound(const char[] name,
 						const float pos[3],
@@ -169,7 +167,6 @@ native void EmitAmbientSound(const char[] name,
  * @param outtime	Fade out time, in seconds.
  * @param holdtime	Hold time, in seconds.
  * @param intime	Fade in time, in seconds.
- * @noreturn
  * @error			Invalid client index or client not in game.
  */
 native void FadeClientVolume(int client, float percent, float outtime, float holdtime, float intime);
@@ -180,7 +177,6 @@ native void FadeClientVolume(int client, float percent, float outtime, float hol
  * @param entity	Entity index.
  * @param channel	Channel number.
  * @param name		Sound file name relative to the "sounds" folder.
- * @noreturn
  */
 native void StopSound(int entity, int channel, const char[] name);
 
@@ -202,7 +198,6 @@ native void StopSound(int entity, int channel, const char[] name);
  * @param updatePos		Unknown (updates positions?)
  * @param soundtime		Alternate time to play sound for.
  * @param ...			Optional list of Float[3] arrays to specify additional origins.
- * @noreturn
  * @error				Invalid client index.
  */
 native void EmitSound(const int[] clients,
@@ -242,7 +237,6 @@ native void EmitSound(const int[] clients,
  * @param updatePos		Unknown (updates positions?)
  * @param soundtime		Alternate time to play sound for.
  * @param ...			Optional list of Float[3] arrays to specify additional origins.
- * @noreturn
  * @error				Invalid client index.
  */
 native void EmitSoundEntry(const int[] clients,
@@ -281,7 +275,6 @@ native void EmitSoundEntry(const int[] clients,
  * @param updatePos		Unknown (updates positions?)
  * @param soundtime		Alternate time to play sound for.
  * @param ...			Optional list of Float[3] arrays to specify additional origins.
- * @noreturn
  * @error				Invalid client index.
  */
 native void EmitSentence(const int[] clients,
@@ -372,7 +365,6 @@ typeset NormalSHook
  * Hooks all played ambient sounds.
  *
  * @param hook		Function to use as a hook.
- * @noreturn
  * @error		Invalid function hook.
  */
 native void AddAmbientSoundHook(AmbientSHook hook);
@@ -381,7 +373,6 @@ native void AddAmbientSoundHook(AmbientSHook hook);
  * Hooks all played normal sounds.
  *
  * @param hook		Function to use as a hook.
- * @noreturn
  * @error		Invalid function hook.
  */
 native void AddNormalSoundHook(NormalSHook hook);
@@ -390,7 +381,6 @@ native void AddNormalSoundHook(NormalSHook hook);
  * Unhooks all played ambient sounds.
  *
  * @param hook		Function used for the hook.
- * @noreturn
  * @error		Invalid function hook.
  */
 native void RemoveAmbientSoundHook(AmbientSHook hook);
@@ -399,7 +389,6 @@ native void RemoveAmbientSoundHook(AmbientSHook hook);
  * Unhooks all played normal sounds.
  *
  * @param hook		Function used for the hook.
- * @noreturn
  * @error		Invalid function hook.
  */
 native void RemoveNormalSoundHook(NormalSHook hook);
@@ -420,7 +409,6 @@ native void RemoveNormalSoundHook(NormalSHook hook);
  * @param dir			Sound direction.
  * @param updatePos		Unknown (updates positions?)
  * @param soundtime		Alternate time to play sound for.
- * @noreturn
  * @error				Invalid client index.
  */
 stock void EmitSoundToClient(int client,
@@ -461,7 +449,6 @@ stock void EmitSoundToClient(int client,
  * @param dir			Sound direction.
  * @param updatePos		Unknown (updates positions?)
  * @param soundtime		Alternate time to play sound for.
- * @noreturn
  * @error				Invalid client index.
  */
 stock void EmitSoundToAll(const char[] sample,
@@ -607,7 +594,6 @@ stock bool EmitGameSound(const int[] clients,
  * @param entity               Entity index to associate sound with.
  * @param flags                        Sound flags.
  * @param delay                        Play delay.
- * @noreturn
  */
 stock bool EmitAmbientGameSound(const char[] gameSound,
 				const float pos[3],
@@ -650,7 +636,6 @@ stock bool EmitAmbientGameSound(const char[] gameSound,
  * @param dir                  Sound direction.
  * @param updatePos            Unknown (updates positions?)
  * @param soundtime            Alternate time to play sound for.
- * @noreturn
  * @error                              Invalid client index.
  */
 stock bool EmitGameSoundToClient(int client,
@@ -688,7 +673,6 @@ stock bool EmitGameSoundToClient(int client,
  * @param dir                  Sound direction.
  * @param updatePos            Unknown (updates positions?)
  * @param soundtime            Alternate time to play sound for.
- * @noreturn
  * @error                      Invalid client index.
  */
 stock bool EmitGameSoundToAll(const char[] gameSound,

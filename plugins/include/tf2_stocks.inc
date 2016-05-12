@@ -353,7 +353,6 @@ stock TFTeam TF2_GetClientTeam(int client)
  *
  * @param client        Client index.
  * @param team          TFTeam team symbol.
- * @noreturn
  * @error               Invalid client index.
  */
 stock void TF2_ChangeClientTeam(int client, TFTeam team)
@@ -382,7 +381,6 @@ stock TFClassType TF2_GetPlayerClass(int client)
  * @param classType		TFClassType class symbol.
  * @param weapons		This parameter is ignored.
  * @param persistent	If true, changes the player's desired class so the change stays after death.
- * @noreturn
  * @error				Invalid client index.
  */
 stock void TF2_SetPlayerClass(int client, TFClassType classType, bool weapons=true, bool persistent=true)
@@ -471,7 +469,6 @@ stock bool TF2_SetPlayerResourceData(int client, TFResourceType type, any value)
  *
  * @param client		Player's index.
  * @param slot			Slot index (0-5)
- * @noreturn
  * @error				Invalid client, invalid slot or lack of mod support
  */
 stock void TF2_RemoveWeaponSlot(int client, int slot)
@@ -502,7 +499,6 @@ stock void TF2_RemoveWeaponSlot(int client, int slot)
  * Removes all weapons from a client
  *
  * @param client		Player's index.
- * @noreturn
  */
 stock void TF2_RemoveAllWeapons(int client)
 {

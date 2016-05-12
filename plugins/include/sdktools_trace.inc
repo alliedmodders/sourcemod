@@ -158,7 +158,6 @@ native int TR_GetPointContentsEnt(int entindex, const float pos[3]);
  *						ending point, or the direction angle.
  * @param flags			Trace flags.
  * @param rtype			Method to calculate the ray direction.
- * @noreturn
  */
 native void TR_TraceRay(const float pos[3],
 						const float vec[3],
@@ -173,7 +172,6 @@ native void TR_TraceRay(const float pos[3],
  * @param mins			Hull minimum size.
  * @param maxs			Hull maximum size.
  * @param flags			Trace flags.
- * @noreturn
  */
 native void TR_TraceHull(const float pos[3],
 						 const float vec[3],
@@ -196,7 +194,6 @@ native void TR_TraceHull(const float pos[3],
  * @param filter		Function to use as a filter.
  * @param data			Arbitrary data value to pass through to the filter 
  *						function.
- * @noreturn
  */
 native void TR_TraceRayFilter(const float pos[3],
 							  const float vec[3],
@@ -221,7 +218,6 @@ native void TR_TraceRayFilter(const float pos[3],
  * @param filter		Function to use as a filter.
  * @param data			Arbitrary data value to pass through to the filter 
  *						function.
- * @noreturn
  */
 native void TR_TraceHullFilter(const float pos[3],
 							   const float vec[3],
@@ -323,7 +319,6 @@ native float TR_GetFraction(Handle hndl=INVALID_HANDLE);
  *
  * @param pos			Vector buffer to store data in.
  * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
- * @noreturn
  * @error				Invalid Handle.
  */
 native void TR_GetEndPosition(float pos[3], Handle hndl=INVALID_HANDLE);
@@ -360,7 +355,6 @@ native int TR_GetHitGroup(Handle hndl=INVALID_HANDLE);
  *
  * @param hndl		A trace Handle, or INVALID_HANDLE to use a global trace result.
  * @param normal	Vector buffer to store the vector normal to the collision plane
- * @noreturn
  * @error			Invalid Handle
  */
 native void TR_GetPlaneNormal(Handle hndl, float normal[3]);
