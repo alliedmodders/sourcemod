@@ -221,6 +221,6 @@ native bool IsStackEmpty(Handle stack);
  */
 stock bool PopStack(Handle stack)
 {
-	new value;
+	int value;
 	return PopStackCell(stack, value);
 }

@@ -61,7 +61,7 @@ typeset EntityOutput
  * @noreturn
  * @error				Entity Outputs disabled.
  */
-native HookEntityOutput(const String:classname[], const String:output[], EntityOutput:callback);
+native void HookEntityOutput(const char[] classname, const char[] output, EntityOutput callback);
 
 /**
  * Remove an entity output hook.
@@ -71,7 +71,7 @@ native HookEntityOutput(const String:classname[], const String:output[], EntityO
  * @return				True on success, false if no valid hook was found.
  * @error				Entity Outputs disabled.
  */
-native bool:UnhookEntityOutput(const String:classname[], const String:output[], EntityOutput:callback);
+native bool UnhookEntityOutput(const char[] classname, const char[] output, EntityOutput callback);
 
 /**
  * Add an entity output hook on a single entity instance	
@@ -83,7 +83,7 @@ native bool:UnhookEntityOutput(const String:classname[], const String:output[], 
  * @noreturn			
  * @error				Entity Outputs disabled	or Invalid Entity index.
  */
-native HookSingleEntityOutput(entity, const String:output[], EntityOutput:callback , bool:once=false);
+native void HookSingleEntityOutput(int entity, const char[] output, EntityOutput callback, bool once=false);
 
 /**
  * Remove a single entity output hook.	
@@ -94,5 +94,4 @@ native HookSingleEntityOutput(entity, const String:output[], EntityOutput:callba
  * @return				True on success, false if no valid hook was found.
  * @error				Entity Outputs disabled	or Invalid Entity index.	
  */
-native bool:UnhookSingleEntityOutput(entity, const String:output[], EntityOutput:callback);
-
+native bool UnhookSingleEntityOutput(int entity, const char[] output, EntityOutput callback);

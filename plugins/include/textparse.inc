@@ -45,7 +45,7 @@
 /**
  * Parse result directive.
  */
-enum SMCResult:
+enum SMCResult
 {
 	SMCParse_Continue,			/**< Continue parsing */
 	SMCParse_Halt,				/**< Stop parsing here */
@@ -55,7 +55,7 @@ enum SMCResult:
 /**
  * Parse error codes.
  */
-enum SMCError:
+enum SMCError
 {
 	SMCError_Okay = 0,			/**< No error */
 	SMCError_StreamOpen,		/**< Stream failed to open */

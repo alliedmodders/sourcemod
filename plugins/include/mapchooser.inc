@@ -159,4 +159,3 @@ public void __pl_mapchooser_SetNTVOptional()
 	MarkNativeAsOptional("HasEndOfMapVoteFinished");
 	MarkNativeAsOptional("EndOfMapVoteEnabled");
 }
-
