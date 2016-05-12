@@ -117,7 +117,6 @@ enum FindMapResult
  *
  * @param format		String format.
  * @param ...			Format arguments.
- * @noreturn
  */
 native void LogToGame(const char[] format, any ...);
 
@@ -125,7 +124,6 @@ native void LogToGame(const char[] format, any ...);
  * Sets the seed value for the global Half-Life 2 Random Stream.
  *
  * @param seed			Seed value.
- * @noreturn	
  */
 native void SetRandomSeed(int seed);
 
@@ -326,7 +324,6 @@ native bool IsSoundPrecached(const char[] sound);
  * @param client		Index of the client.
  * @param kv			KeyValues handle to set the menu keys and options. (Check iserverplugin.h for more information).
  * @param type			Message type to display ingame.
- * @noreturn
  * @error				Invalid client index, or client not connected.
  */
 native void CreateDialog(int client, Handle kv, DialogType type);
@@ -359,7 +356,6 @@ native EngineVersion GetEngineVersion();
  * @param client		Client index.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
 native void PrintToChat(int client, const char[] format, any ...);
@@ -369,7 +365,6 @@ native void PrintToChat(int client, const char[] format, any ...);
  *
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  */
 stock void PrintToChatAll(const char[] format, any ...)
 {
@@ -392,7 +387,6 @@ stock void PrintToChatAll(const char[] format, any ...)
  * @param client		Client index.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
 native void PrintCenterText(int client, const char[] format, any ...);
@@ -402,7 +396,6 @@ native void PrintCenterText(int client, const char[] format, any ...);
  *
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  */
 stock void PrintCenterTextAll(const char[] format, any ...)
 {
@@ -425,7 +418,6 @@ stock void PrintCenterTextAll(const char[] format, any ...)
  * @param client		Client index.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
 native void PrintHintText(int client, const char[] format, any ...);
@@ -435,7 +427,6 @@ native void PrintHintText(int client, const char[] format, any ...);
  *
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  */
 stock void PrintHintTextToAll(const char[] format, any ...)
 {
@@ -461,7 +452,6 @@ stock void PrintHintTextToAll(const char[] format, any ...)
  * @param Kv			KeyValues handle with all the data for the panel setup (Depends 
  *						on the panel type and may be unused).
  * @param show			True to show the panel, or false to remove it from the client screen.
- * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
 native void ShowVGUIPanel(int client, const char[] name, Handle Kv=INVALID_HANDLE, bool show=true);
@@ -523,7 +513,6 @@ native Handle CreateHudSynchronizer();
  * @param fxTime		Duration of chosen effect (may not apply to all effects).
  * @param fadeIn		Number of seconds to spend fading in.
  * @param fadeOut		Number of seconds to spend fading out.
- * @noreturn
  */
 native void SetHudTextParams(float x, float y, float holdTime, int r, int g, int b, int a, int effect = 0,
 						float fxTime=6.0, float fadeIn=0.1, float fadeOut=0.2);
@@ -546,7 +535,6 @@ native void SetHudTextParams(float x, float y, float holdTime, int r, int g, int
  * @param fxTime		Duration of chosen effect (may not apply to all effects).
  * @param fadeIn		Number of seconds to spend fading in.
  * @param fadeOut		Number of seconds to spend fading out.
- * @noreturn
  */
 native void SetHudTextParamsEx(float x, float y, float holdTime, int color1[4], 
 						  int color2[4]={255,255,255,0}, int effect = 0, float fxTime=6.0, 
@@ -581,7 +569,6 @@ native int ShowSyncHudText(int client, Handle sync, const char[] message, any ..
  *
  * @param client		Client index to send the message to.
  * @param sync			Synchronization object.
- * @noreturn
  * @error				Client not in-game, or sync object not valid.
  */
 native void ClearSyncHud(int client, Handle sync);
@@ -613,7 +600,6 @@ native int ShowHudText(int client, int channel, const char[] message, any ...);
  * @param msg			Contents of the panel, it can be treated as an url, filename or plain text
  *				 		depending on the type parameter (WARNING: msg has to be 192 bytes maximum!)
  * @param type			Determines the way to treat the message body of the panel.
- * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
 stock void ShowMOTDPanel(int client, const char[] title, const char[] msg, int type=MOTDPANEL_TYPE_INDEX)
@@ -636,7 +622,6 @@ stock void ShowMOTDPanel(int client, const char[] title, const char[] msg, int t
  * @param time			Duration to hold the panel on the client's screen.
  * @param ip			Destination IP.
  * @param password		Password to connect to the destination IP. The client will be able to see this.
- * @noreturn
  */
 stock void DisplayAskConnectBox(int client, float time, const char[] ip, const char[] password = "")
 {

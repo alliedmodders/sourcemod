@@ -128,7 +128,6 @@ native int CreateEdict();
  * Removes an edict from the world.
  *
  * @param edict			Index of the edict.
- * @noreturn
  * @error				Invalid edict index.
  */
 native void RemoveEdict(int edict);
@@ -147,7 +146,6 @@ native int GetEdictFlags(int edict);
  *
  * @param edict			Index of the entity.
  * @param flags			Flags to set.
- * @noreturn
  * @error				Invalid edict index.
  */
 native void SetEdictFlags(int edict, int flags);
@@ -203,7 +201,6 @@ native bool GetEntityNetClass(int edict, char[] clsname, int maxlength);
  * @param edict			Index to the edict.
  * @param offset		Offset to mark as changed.  If 0,
  *						the entire edict is marked as changed.
- * @noreturn
  * @error				Invalid entity or offset out of bounds.
  */
 native void ChangeEdictState(int edict, int offset = 0);
@@ -230,7 +227,6 @@ native int GetEntData(int entity, int offset, int size=4);
  * @param size			Number of bytes to write (valid values are 1, 2, or 4).
  * @param changeState	If true, change will be sent over the network.
  * @error				Invalid entity or offset out of reasonable bounds.
- * @noreturn
  */
 native void SetEntData(int entity, int offset, any value, int size=4, bool changeState=false);
 
@@ -254,7 +250,6 @@ native float GetEntDataFloat(int entity, int offset);
  * @param value			Value to set.
  * @param changeState	If true, change will be sent over the network.
  * @error				Invalid entity or offset out of reasonable bounds.
- * @noreturn
  */
 native void SetEntDataFloat(int entity, int offset, float value, bool changeState=false);
 
@@ -288,7 +283,6 @@ native int GetEntDataEnt(int entity, int offset);
  * @param offset		Offset to use.
  * @param other			Entity index to set, or 0 to clear.
  * @param changeState	If true, change will be sent over the network.
- * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
 #pragma deprecated Use SetEntDataEnt2() instead.
@@ -322,7 +316,6 @@ native int GetEntDataEnt2(int entity, int offset);
  * @param offset		Offset to use.
  * @param other			Entity index to set, or -1 to clear.
  * @param changeState	If true, change will be sent over the network.
- * @noreturn
  * @error				Invalid input entity, or offset out of reasonable bounds.
  */
 native void SetEntDataEnt2(int entity, int offset, int other, bool changeState=false);
@@ -336,7 +329,6 @@ native void SetEntDataEnt2(int entity, int offset, int other, bool changeState=f
  * @param entity		Edict index.
  * @param offset		Offset to use.
  * @param vec			Vector buffer to store data in.
- * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
 native void GetEntDataVector(int entity, int offset, float vec[3]);
@@ -351,7 +343,6 @@ native void GetEntDataVector(int entity, int offset, float vec[3]);
  * @param offset		Offset to use.
  * @param vec			Vector to set.
  * @param changeState	If true, change will be sent over the network.
- * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
 native void SetEntDataVector(int entity, int offset, const float vec[3], bool changeState=false);
@@ -555,7 +546,6 @@ native int GetEntProp(int entity, PropType type, const char[] prop, int size=4, 
  *						only used as a fallback in case detection fails.
  * @param element		Element # (starting from 0) if property is an array.
  * @error				Invalid entity or offset out of reasonable bounds.
- * @noreturn
  */
 native void SetEntProp(int entity, PropType type, const char[] prop, any value, int size=4, int element=0);
 
@@ -585,7 +575,6 @@ native float GetEntPropFloat(int entity, PropType type, const char[] prop, int e
  * @param prop			Property name.
  * @param value			Value to set.
  * @param element		Element # (starting from 0) if property is an array.
- * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
 native void SetEntPropFloat(int entity, PropType type, const char[] prop, float value, int element=0);
@@ -618,7 +607,6 @@ native int GetEntPropEnt(int entity, PropType type, const char[] prop, int eleme
  * @param prop			Property name.
  * @param other			Entity index to set, or -1 to unset.
  * @param element		Element # (starting from 0) if property is an array.
- * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
 native void SetEntPropEnt(int entity, PropType type, const char[] prop, int other, int element=0);
@@ -634,7 +622,6 @@ native void SetEntPropEnt(int entity, PropType type, const char[] prop, int othe
  * @param prop			Property name.
  * @param vec			Vector buffer to store data in.
  * @param element		Element # (starting from 0) if property is an array.
- * @noreturn
  * @error				Invalid entity, property not found, or property not
  *						actually a vector data type.
  */
@@ -651,7 +638,6 @@ native void GetEntPropVector(int entity, PropType type, const char[] prop, float
  * @param prop			Property name.
  * @param vec			Vector to set.
  * @param element		Element # (starting from 0) if property is an array.
- * @noreturn
  * @error				Invalid entity, property not found, or property not
  *						actually a vector data type.
  */
@@ -720,7 +706,6 @@ stock void GetEntDataArray(int entity, int offset, int[] array, int arraySize, i
  * @param arraySize		Number of values to copy.
  * @param dataSize		Size of each value in bytes (1, 2, or 4).
  * @param changeState	True to set the network state as changed; false otherwise.
- * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
 stock void SetEntDataArray(int entity, int offset, const int[] array, int arraySize, int dataSize=4, bool changeState=false)

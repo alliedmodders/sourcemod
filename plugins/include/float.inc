@@ -421,7 +421,6 @@ native float GetURandomFloat();
  *
  * @param seeds		Array of numbers to use as seeding data.
  * @param numSeeds	Number of seeds in the seeds array.
- * @noreturn
  */
 native void SetURandomSeed(const int[] seeds, int numSeeds);
 
@@ -430,7 +429,6 @@ native void SetURandomSeed(const int[] seeds, int numSeeds);
  * so normally it is totally unnecessary to call this.
  *
  * @param seed      Single seed value.
- * @noreturn
  */
 stock void SetURandomSeedSimple(int seed)
 {

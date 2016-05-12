@@ -111,7 +111,6 @@ enum ReplySource
  *
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  */
 native void ServerCommand(const char[] format, any ...);
 
@@ -128,7 +127,6 @@ native void ServerCommand(const char[] format, any ...);
  * @param maxlen		Length of buffer.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  */
 native void ServerCommandEx(char[] buffer, int maxlen, const char[] format, any ...);
 
@@ -137,14 +135,12 @@ native void ServerCommandEx(char[] buffer, int maxlen, const char[] format, any 
  *
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  */
 native void InsertServerCommand(const char[] format, any ...);
 
 /**
  * Executes every command in the server's command buffer, rather than once per frame.
  *
- * @noreturn
  */
 native void ServerExecute();
 
@@ -155,7 +151,6 @@ native void ServerExecute();
  * @param client		Index of the client.
  * @param fmt			Format of the client command.
  * @param ...			Format parameters
- * @noreturn
  * @error				Invalid client index, or client not connected.
  */
 native void ClientCommand(int client, const char[] fmt, any ...);
@@ -172,7 +167,6 @@ native void ClientCommand(int client, const char[] fmt, any ...);
  * @param client		Index of the client.
  * @param fmt			Format of the client command.
  * @param ...			Format parameters
- * @noreturn
  * @error				Invalid client index, or client not connected.
  */
 native void FakeClientCommand(int client, const char[] fmt, any ...);
@@ -185,7 +179,6 @@ native void FakeClientCommand(int client, const char[] fmt, any ...);
  * @param client		Index of the client.
  * @param fmt			Format of the client command.
  * @param ...			Format parameters
- * @noreturn
  * @error				Invalid client index, or client not connected.
  */
 native void FakeClientCommandEx(int client, const char[] fmt, any ...);
@@ -195,7 +188,6 @@ native void FakeClientCommandEx(int client, const char[] fmt, any ...);
  *
  * @param client		Index of the client.
  * @param kv			KeyValues data to be sent.
- * @noreturn
  * @error				Invalid client index, client not connected,
  *						or unsupported on current game.
  */
@@ -206,7 +198,6 @@ native void FakeClientCommandKeyValues(int client, KeyValues kv);
  *
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  */
 native void PrintToServer(const char[] format, any ...);
 
@@ -216,7 +207,6 @@ native void PrintToServer(const char[] format, any ...);
  * @param client		Client index.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
 native void PrintToConsole(int client, const char[] format, any ...);
@@ -231,7 +221,6 @@ native void PrintToConsole(int client, const char[] format, any ...);
  * @param client		Client index, or 0 for server.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  * @error				If the client is not connected or invalid.
  */
 native void ReplyToCommand(int client, const char[] format, any ...);
@@ -273,7 +262,6 @@ native bool IsChatTrigger();
  * @param tag			Tag to prepend to the message.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  * @error
  */
 native void ShowActivity2(int client, const char[] tag, const char[] format, any ...);
@@ -290,7 +278,6 @@ native void ShowActivity2(int client, const char[] tag, const char[] format, any
  * @param client		Client index doing the action, or 0 for server.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  * @error
  */
 native void ShowActivity(int client, const char[] format, any ...);
@@ -303,7 +290,6 @@ native void ShowActivity(int client, const char[] format, any ...);
  * @param tag			Tag to display with.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  * @error
  */
 native void ShowActivityEx(int client, const char[] tag, const char[] format, any ...);
@@ -344,7 +330,6 @@ typedef SrvCmd = function Action (int args);
  * @param callback		A function to use as a callback for when the command is invoked.
  * @param description	Optional description to use for command creation.
  * @param flags			Optional flags to use for command creation.
- * @noreturn
  * @error				Command name is the same as an existing convar.
  */
 native void RegServerCmd(const char[] cmd, SrvCmd callback, const char[] description="", int flags=0);
@@ -370,7 +355,6 @@ typedef ConCmd = function Action (int client, int args);
  * @param callback		A function to use as a callback for when the command is invoked.
  * @param description	Optional description to use for command creation.
  * @param flags			Optional flags to use for command creation.
- * @noreturn
  * @error				Command name is the same as an existing convar.
  */
 native void RegConsoleCmd(const char[] cmd, ConCmd callback, const char[] description="", int flags=0);
@@ -389,7 +373,6 @@ native void RegConsoleCmd(const char[] cmd, ConCmd callback, const char[] descri
  * @param group			String containing the command group to use.  If empty,
  * 						the plugin's filename will be used instead.
  * @param flags			Optional console flags.
- * @noreturn
  * @error				Command name is the same as an existing convar.
  */
 native void RegAdminCmd(const char[] cmd,
@@ -565,7 +548,6 @@ native bool FindNextConCommand(Handle search, char[] buffer, int max_size, bool 
  * Note: Currently, this function does nothing because of bugs in the Valve master.
  *
  * @param tag			Tag string to append.
- * @noreturn
  */
 native void AddServerTag(const char[] tag);
 
@@ -573,7 +555,6 @@ native void AddServerTag(const char[] tag);
  * Removes a tag previously added by the calling plugin.
  *
  * @param tag			Tag string to remove.
- * @noreturn
  */
 native void RemoveServerTag(const char[] tag);
 

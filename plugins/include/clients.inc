@@ -94,7 +94,6 @@ forward bool OnClientConnect(int client, char[] rejectmsg, int maxlen);
  * Called once a client successfully connects.  This callback is paired with OnClientDisconnect.
  *
  * @param client		Client index.
- * @noreturn
  */
 forward void OnClientConnected(int client);
 
@@ -110,7 +109,6 @@ forward void OnClientConnected(int client);
  * function, as clients are already in game at this point.
  *
  * @param client		Client index.
- * @noreturn
  */
 forward void OnClientPutInServer(int client);
 
@@ -118,7 +116,6 @@ forward void OnClientPutInServer(int client);
  * Called when a client is disconnecting from the server.
  *
  * @param client		Client index.
- * @noreturn
  */
 forward void OnClientDisconnect(int client);
 
@@ -126,7 +123,6 @@ forward void OnClientDisconnect(int client);
  * Called when a client is disconnected from the server.
  *
  * @param client		Client index.
- * @noreturn
  */
 forward void OnClientDisconnect_Post(int client);
 
@@ -162,7 +158,6 @@ forward Action OnClientCommandKeyValues(int client, KeyValues kv);
  * @param kv			KeyValues data sent as the command.
  *						(This handle should not be stored and will be closed
  *						after this forward completes.)
- * @noreturn
  */
 forward void OnClientCommandKeyValues_Post(int client, KeyValues kv);
 
@@ -170,7 +165,6 @@ forward void OnClientCommandKeyValues_Post(int client, KeyValues kv);
  * Called whenever the client's settings are changed.
  *
  * @param client		Client index.
- * @noreturn
  */
 forward void OnClientSettingsChanged(int client);
 
@@ -183,7 +177,6 @@ forward void OnClientSettingsChanged(int client);
  *
  * @param client		Client index.
  * @param auth			Client Steam2 id, if available, else engine auth id.
- * @noreturn
  */
 forward void OnClientAuthorized(int client, const char[] auth);
 
@@ -218,7 +211,6 @@ forward Action OnClientPreAdminCheck(int client);
  * See OnClientPostAdminCheck() for more information.
  *
  * @param client		Client index.
- * @noreturn
  */
 forward void OnClientPostAdminFilter(int client);
 
@@ -230,7 +222,6 @@ forward void OnClientPostAdminFilter(int client);
  * after each OnClientPutInServer() call.
  *
  * @param client		Client index.
- * @noreturn
  */
 forward void OnClientPostAdminCheck(int client);
 
@@ -462,7 +453,6 @@ native int GetClientTeam(int client);
  * @param client		Player's index.
  * @param id			AdminId to set.  INVALID_ADMIN_ID removes admin permissions.
  * @param temp			True if the id should be freed on disconnect.
- * @noreturn
  * @error				Invalid client index, client not connected, or bogus AdminId.
  */
 native void SetUserAdmin(int client, AdminId id, bool temp=false);
@@ -482,7 +472,6 @@ native AdminId GetUserAdmin(int client);
  *
  * @param client		Player's index.
  * @param ...			Flags to set on the client.
- * @noreturn
  * @error				Invalid client index, or client not connected.
  */
 native void AddUserFlags(int client, AdminFlag ...);
@@ -493,7 +482,6 @@ native void AddUserFlags(int client, AdminFlag ...);
  *
  * @param client		Player's index.
  * @param ...			Flags to remove from the client.
- * @noreturn
  * @error				Invalid client index, or client not connected.
  */
 native void RemoveUserFlags(int client, AdminFlag ...);
@@ -504,7 +492,6 @@ native void RemoveUserFlags(int client, AdminFlag ...);
  *
  * @param client		Player's index.
  * @param flags			Bitstring of flags to set on client.
- * @noreturn
  */
 native void SetUserFlagBits(int client, int flags);
 
@@ -548,7 +535,6 @@ native bool RunAdminCacheChecks(int client);
  * Note: This must be sent even if no admin id was assigned.
  *
  * @param client		Client index.
- * @noreturn
  * @error				Invalid client index or client not in-game AND authorized.
  */
 native void NotifyPostAdminCheck(int client);
@@ -567,7 +553,6 @@ native int CreateFakeClient(const char[] name);
  * @param client		Client index.
  * @param cvar			ConVar name.
  * @param value			ConVar value.
- * @noreturn
  * @error				Invalid client index, client not connected,
  *						or client not a fake client.
  */
@@ -588,7 +573,6 @@ native int GetClientHealth(int client);
  * @param client		Player's index.
  * @param model			Buffer to store the client's model name.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void GetClientModel(int client, char[] model, int maxlen);
@@ -599,7 +583,6 @@ native void GetClientModel(int client, char[] model, int maxlen);
  * @param client		Player's index.
  * @param weapon		Buffer to store the client's weapon name.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void GetClientWeapon(int client, char[] weapon, int maxlen);
@@ -609,7 +592,6 @@ native void GetClientWeapon(int client, char[] weapon, int maxlen);
  *
  * @param client		Player's index.
  * @param vec			Destination vector to store the client's max size.
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void GetClientMaxs(int client, float vec[3]);
@@ -619,7 +601,6 @@ native void GetClientMaxs(int client, float vec[3]);
  *
  * @param client		Player's index.
  * @param vec			Destination vector to store the client's min size.
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void GetClientMins(int client, float vec[3]);
@@ -629,7 +610,6 @@ native void GetClientMins(int client, float vec[3]);
  *
  * @param client		Player's index.
  * @param ang			Destination vector to store the client's position angle.
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void GetClientAbsAngles(int client, float ang[3]);
@@ -639,7 +619,6 @@ native void GetClientAbsAngles(int client, float ang[3]);
  *
  * @param client		Player's index.
  * @param vec			Destination vector to store the client's origin vector.
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void GetClientAbsOrigin(int client, float vec[3]);
@@ -783,7 +762,6 @@ native int GetClientOfUserId(int userid);
  * @param format		Optional formatting rules for disconnect reason.
  *                      Note that a period is automatically appended to the string by the engine.
  * @param ...			Variable number of format parameters.
- * @noreturn
  * @error				Invalid client index, or client not connected.
  */
 native void KickClient(int client, const char[] format="", any ...);
@@ -799,7 +777,6 @@ native void KickClient(int client, const char[] format="", any ...);
  * @param format		Optional formatting rules for disconnect reason.
  *                      Note that a period is automatically appended to the string by the engine.
  * @param ...			Variable number of format parameters.
- * @noreturn
  * @error				Invalid client index, or client not connected.
  */
 native void KickClientEx(int client, const char[] format="", any ...);
@@ -810,7 +787,6 @@ native void KickClientEx(int client, const char[] format="", any ...);
  *
  * @param client		Client index.
  * @param team			Mod-specific team index.
- * @noreturn
  * @error				Invalid client index, client not connected, or lack of 
  *						mod support.
  */

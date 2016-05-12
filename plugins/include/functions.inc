@@ -209,7 +209,6 @@ native int RemoveAllFromForward(Handle fwd, Handle plugin);
  * @note Cannot be used during an incomplete call.
  *
  * @param fwd				Handle to global or private forward.
- * @noreturn
  * @error					Invalid or corrupt forward handle or called before another call has completed.
  */
 native void Call_StartForward(Handle fwd);
@@ -222,7 +221,6 @@ native void Call_StartForward(Handle fwd);
  * @param plugin			Handle of the plugin that contains the function.
  *							Pass INVALID_HANDLE to specify the calling plugin.
  * @param func				Function to call.
- * @noreturn
  * @error					Invalid or corrupt plugin handle, invalid function, or called before another call has completed.
  */
 native void Call_StartFunction(Handle plugin, Function func);
@@ -233,7 +231,6 @@ native void Call_StartFunction(Handle plugin, Function func);
  * @note Cannot be used before a call has been started.
  *
  * @param value				Cell value to push.
- * @noreturn
  * @error					Called before a call has been started.
  */
 native void Call_PushCell(any value);
@@ -244,7 +241,6 @@ native void Call_PushCell(any value);
  * @note Cannot be used before a call has been started.
  *
  * @param value				Cell reference to push.
- * @noreturn
  * @error					Called before a call has been started.
  */
 native void Call_PushCellRef(any &value);
@@ -255,7 +251,6 @@ native void Call_PushCellRef(any &value);
  * @note Cannot be used before a call has been started.
  *
  * @param value				Floating point value to push.
- * @noreturn
  * @error					Called before a call has been started.
  */
 native void Call_PushFloat(float value);
@@ -266,7 +261,6 @@ native void Call_PushFloat(float value);
  * @note Cannot be used before a call has been started.
  *
  * @param value				Floating point reference to push.
- * @noreturn
  * @error					Called before a call has been started.
  */
 native void Call_PushFloatRef(float &value);
@@ -279,7 +273,6 @@ native void Call_PushFloatRef(float &value);
  *
  * @param value				Array to push.
  * @param size				Size of array.
- * @noreturn
  * @error					Called before a call has been started.
  */
 native void Call_PushArray(const any[] value, int size);
@@ -293,7 +286,6 @@ native void Call_PushArray(const any[] value, int size);
  * @param size				Size of array.
  * @param cpflags			Whether or not changes should be copied back to the input array.
  *							See SP_PARAM_* constants for details.
- * @noreturn
  * @error					Called before a call has been started.
  */
 native void Call_PushArrayEx(any[] value, int size, int cpflags);
@@ -305,7 +297,6 @@ native void Call_PushArrayEx(any[] value, int size, int cpflags);
  * @note Cannot be used before a call has been started.
  *
  * @param value				String to push.
- * @noreturn
  * @error					Called before a call has been started.
  */
 native void Call_PushString(const char[] value);
@@ -322,7 +313,6 @@ native void Call_PushString(const char[] value);
  *							The default (0) is to push ASCII.
  * @param cpflags			Whether or not changes should be copied back to the input array.
  *							See SM_PARAM_* constants for details.		
- * @noreturn
  * @error					Called before a call has been started.
  */
 native void Call_PushStringEx(char[] value, int length, int szflags, int cpflags);
@@ -343,7 +333,6 @@ native int Call_Finish(any &result=0);
  *
  * @note Cannot be used before a call has been started.
  *		
- * @noreturn
  * @error					Called before a call has been started.
  */
 native void Call_Cancel();
@@ -366,7 +355,6 @@ typedef NativeCall = function int (Handle plugin, int numParams);
  * @param name				Name of the dynamic native; must be unique among
  *							all other registered dynamic natives.
  * @param func				Function to use as the dynamic native.
- * @noreturn
  */
 native void CreateNative(const char[] name, NativeCall func);
 
@@ -451,7 +439,6 @@ native any GetNativeCellRef(int param);
  *
  * @param param				Parameter number, starting from 1.
  * @param value				Cell value at the parameter number to set by reference.
- * @noreturn
  * @error					Invalid parameter number or calling from a non-native function.
  */
 native void SetNativeCellRef(int param, any value);
@@ -506,7 +493,6 @@ native int FormatNativeString(int out_param,
  * Defines a RequestFrame Callback.
  *
  * @param data			Data passed to the RequestFrame native.
- * @noreturn
  */
 typedef RequestFrameCallback = function void (any data);
 
@@ -515,6 +501,5 @@ typedef RequestFrameCallback = function void (any data);
  *
  * @param Function	Function to call on the next frame.
  * @param data			Value to be passed on the invocation of the Function.
- * @noreturn
  */
 native void RequestFrame(RequestFrameCallback Function, any data=0);

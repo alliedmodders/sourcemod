@@ -183,7 +183,6 @@ forward Action CS_OnTerminateRound(float &delay, CSRoundEndReason &reason);
  * Respawns a player.
  *
  * @param client		Player's index.
- * @noreturn
  * @error			Invalid client index, client not in game.
  */
 native void CS_RespawnPlayer(int client);
@@ -193,7 +192,6 @@ native void CS_RespawnPlayer(int client);
  *
  * @param client		Player's index.
  * @param team			Team index.
- * @noreturn
  * @error			Invalid client index, client not in game.
  */
 native void CS_SwitchTeam(int client, int team);
@@ -206,7 +204,6 @@ native void CS_SwitchTeam(int client, int team);
  * @param toss			True to toss weapon (with velocity) or false to just drop weapon
  * @param blockhook		Set to true to stop the corresponding CS_OnCSWeaponDrop
  * 
- * @noreturn
  * @error				Invalid client index, client not in game, or invalid weapon index.
  */
 native void CS_DropWeapon(int client, int weaponIndex, bool toss, bool blockhook = false);
@@ -218,7 +215,6 @@ native void CS_DropWeapon(int client, int weaponIndex, bool toss, bool blockhook
  * @param reason		Reason for the round ending
  * @param blockhook		Set to true to stop the corresponding CS_OnTerminateRound
  *						forward from being called.
- * @noreturn
  */
 native void CS_TerminateRound(float delay, CSRoundEndReason reason, bool blockhook = false);
  
@@ -228,7 +224,6 @@ native void CS_TerminateRound(float delay, CSRoundEndReason reason, bool blockho
  * @param alias			Weapons alias to get weapon name for.
  * @param weapon		Buffer to store weapons name
  * @param size			Size of buffer to store the weapons name.
- * @noreturn
  *
  * @note				Will set the buffer to the original alias if it is not an alias to a weapon.
  */
@@ -262,7 +257,6 @@ native int CS_GetClientClanTag(int client, char[] buffer, int size);
  * Sets a clients clan tag
  * @param client		Client index to set clan tag for.
  * @param tag			Tag to set clients clan tag as.
- * @noreturn
  *
  * @error				Invalid client.
  */
@@ -281,7 +275,6 @@ native int CS_GetTeamScore(int team);
  * Sets a team's score
  * @param team			Team index to set score for.
  * @param value			Value to set teams score as.
- * @noreturn
  *
  * @error				Invalid team index.
  * @note				This will update the scoreboard only after the scoreboard update function is called. Use SetTeamScore plus this to update the scoreboard instantly and save values correctly.
@@ -301,7 +294,6 @@ native int CS_GetMVPCount(int client);
  * Sets a client's mvp count
  * @param client		Client index to set mvp count for.
  * @param value			Value to set client's mvp count as.
- * @noreturn
  *
  * @error				Invalid client.
  */
@@ -320,7 +312,6 @@ native int CS_GetClientContributionScore(int client);
  * Sets a client's contribution score (CS:GO only)
  * @param client		Client index to set score for.
  * @param value			Value to set client's score as.
- * @noreturn
  *
  * @error				Invalid client.
  */
@@ -339,7 +330,6 @@ native int CS_GetClientAssists(int client);
  * Sets a client's assists (CS:GO only)
  * @param client		Client index to set assists for.
  * @param value			Value to set client's assists as.
- * @noreturn
  *
  * @error				Invalid client.
  */
@@ -376,7 +366,6 @@ native bool CS_IsValidWeaponID(CSWeaponID id);
  * Sets a player's model based on their current class
  *
  * @param client		Player's index.
- * @noreturn
  * @error			Invalid client index, client not in game.
  */
 native void CS_UpdateClientModel(int client);

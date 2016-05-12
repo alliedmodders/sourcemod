@@ -187,7 +187,6 @@ native int GetEntityFlags(int entity);
  *
  * @param entity	Entity index.
  * @param flags		Entity flags, see entity flag defines above.
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
 native void SetEntityFlags(int entity, int flags);
@@ -227,7 +226,6 @@ stock MoveType GetEntityMoveType(int entity)
  *
  * @param entity	Entity index.
  * @param mt		Movetype, see enum above.
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
 stock void SetEntityMoveType(int entity, MoveType mt)
@@ -286,7 +284,6 @@ stock RenderMode GetEntityRenderMode(int entity)
  *
  * @param entity	Entity index.
  * @param mode		RenderMode value.
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
 stock void SetEntityRenderMode(int entity, RenderMode mode)
@@ -345,7 +342,6 @@ stock RenderFx GetEntityRenderFx(int entity)
  *
  * @param entity	Entity index.
  * @param fx		RenderFx value.
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
 stock void SetEntityRenderFx(int entity, RenderFx fx)
@@ -378,7 +374,6 @@ stock void SetEntityRenderFx(int entity, RenderFx fx)
  * @param g 		Amount of green (0-255)
  * @param b 		Amount of blue (0-255)
  * @param a 		Amount of alpha (0-255)
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
 stock void GetEntityRenderColor(int entity, int &r, int &g, int &b, int &a)
@@ -421,7 +416,6 @@ stock void GetEntityRenderColor(int entity, int &r, int &g, int &b, int &a)
  * @param g 		Amount of green (0-255)
  * @param b 		Amount of blue (0-255)
  * @param a 		Amount of alpha (0-255)
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
 stock void SetEntityRenderColor(int entity, int r=255, int g=255, int b=255, int a=255)
@@ -490,7 +484,6 @@ stock float GetEntityGravity(int entity)
  *
  * @param entity	Entity index.
  * @param amount	Gravity to set (default = 1.0, half = 0.5, double = 2.0).
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
 stock void SetEntityGravity(int entity, float amount)
@@ -520,7 +513,6 @@ stock void SetEntityGravity(int entity, float amount)
  *
  * @param entity	Entity index.
  * @param amount	Health amount.
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
 stock void SetEntityHealth(int entity, int amount)
