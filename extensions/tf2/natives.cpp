@@ -36,6 +36,8 @@
 
 #include <ISDKTools.h>
 
+const int TFCond_TmpDamageBonus = 12;
+
 // native TF2_MakeBleed(client, attacker, Float:duration)
 cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 {
@@ -244,38 +246,33 @@ cell_t TF2_RemoveDisguise(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
+bool TF2_AddCond(CBaseEntity *pEntity, int condition, float duration, CBaseEntity *pProvider)
 {
+	// Calling function is responsible for making sure inputs are valid
+
 	static ICallWrapper *pWrapper = NULL;
 
 	// CTFPlayerShared::AddCond(int, float, CBaseEntity *)
 	if (!pWrapper)
 	{
-		REGISTER_NATIVE_ADDR("AddCondition", 
-			PassInfo pass[3]; \
-			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].size = sizeof(int); \
-			pass[0].type = PassType_Basic; \
-			pass[1].flags = PASSFLAG_BYVAL; \
-			pass[1].size = sizeof(float); \
-			pass[1].type = PassType_Basic; \
-			pass[2].flags = PASSFLAG_BYVAL; \
-			pass[2].size = sizeof(CBaseEntity *); \
-			pass[2].type = PassType_Basic; \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3))
-	}
-
-	CBaseEntity *pEntity;
-	if (!(pEntity = UTIL_GetCBaseEntity(params[1], true)))
-	{
-		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
-	}
-
-	CBaseEntity *pInflictor = NULL;
-	// Compatibility fix for the new inflictor parameter; TF2 seems to only use player entities in it
-	if (params[0] >= 4 && params[4] > 0 && !(pInflictor = UTIL_GetCBaseEntity(params[4], true)))
-	{
-		return pContext->ThrowNativeError("Inflictor index %d is not valid", params[4]);
+		void *addr;
+		if (!g_pGameConf->GetMemSig("AddCondition", &addr) || !addr)
+		{
+			g_pSM->LogError(myself, "Failed to locate AddCondition");
+			return false;
+		}
+		PassInfo pass[3];
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].size = sizeof(int);
+		pass[0].type = PassType_Basic;
+		pass[1].flags = PASSFLAG_BYVAL;
+		pass[1].size = sizeof(float);
+		pass[1].type = PassType_Basic;
+		pass[2].flags = PASSFLAG_BYVAL;
+		pass[2].size = sizeof(CBaseEntity *);
+		pass[2].type = PassType_Basic;
+		pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3);
+		g_RegNatives.Register(pWrapper);
 	}
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
@@ -285,14 +282,36 @@ cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
 
 	*(void **)vptr = obj;
 	vptr += sizeof(void *);
-	*(int *)vptr = params[2];
+	*(int *)vptr = condition;
 	vptr += sizeof(int);
-	*(float *)vptr = *(float *)&params[3];
+	*(float *)vptr = duration;
 	vptr += sizeof(float);
-	*(CBaseEntity **)vptr = pInflictor;
+	*(CBaseEntity **)vptr = pProvider;
 
 	pWrapper->Execute(vstk, NULL);
+	return true;
+}
 
+cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	if (!(pEntity = UTIL_GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	CBaseEntity *pProvider = NULL;
+	// Compatibility fix for the new provider parameter; can be any entity (e.g. dispensers)
+	if (params[0] >= 4 && params[4] > 0 && !(pProvider = UTIL_GetCBaseEntity(params[4], false)))
+	{
+		return pContext->ThrowNativeError("Provider index %d is not valid", params[4]);
+	}
+
+	bool success = TF2_AddCond(pEntity, params[2], sp_ctof(params[3]), pProvider);
+	if (!success)
+	{
+		return pContext->ThrowNativeError("Failed to locate function");
+	}
 	return 1;
 }
 
@@ -653,6 +672,114 @@ cell_t TF2_RemoveWearable(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+int GetTmpDamageBonusOffset()
+{
+	static int offset = -1;
+	static bool found = false;
+
+	if (!found)
+	{
+		if (!g_pGameConf->GetOffset("TmpDamageBonusOffset", &offset))
+		{
+			g_pSM->LogError(myself, "Failed to locate TmpDamageBonusOffset");
+			return -1;
+		}
+		int propoffset;
+		if (!g_pGameConf->GetOffset("TmpDamageBonusProp", &propoffset))
+		{
+			g_pSM->LogError(myself, "Failed to find TmpDamageBonusProp property offset");
+			return -1;
+		}
+		offset += propoffset;
+		found = true;
+	}
+	return offset;
+}
+
+cell_t TF2_AddTmpDamageBonus(IPluginContext *pContext, const cell_t *params)
+{
+	int offset = GetTmpDamageBonusOffset();
+	if (offset == -1)
+	{
+		return pContext->ThrowNativeError("Could not obtain TmpDamageBonus offset");
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = UTIL_GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	CBaseEntity *pProvider = NULL;
+	if (params[4] > 0 && !(pProvider = UTIL_GetCBaseEntity(params[4], false)))
+	{
+		return pContext->ThrowNativeError("Provider index %d is not valid", params[4]);
+	}
+
+	float multiplier = sp_ctof(params[2]);
+	float duration = sp_ctof(params[3]);
+
+	float dmgBonus = *(float *)((intptr_t)pEntity + offset);
+
+	bool success = TF2_AddCond(pEntity, TFCond_TmpDamageBonus, duration, pProvider);
+	if (!success)
+	{
+		return pContext->ThrowNativeError("Failed to locate function for TF2 AddCondition");
+	}
+	*(float *)((intptr_t)pEntity + offset) = dmgBonus + multiplier;
+	return (cell_t)(dmgBonus + multiplier);
+}
+
+cell_t TF2_SetTmpDamageBonus(IPluginContext *pContext, const cell_t *params)
+{
+	int offset = GetTmpDamageBonusOffset();
+	if (offset == -1)
+	{
+		return pContext->ThrowNativeError("Could not obtain TmpDamageBonus offset");
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = UTIL_GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	CBaseEntity *pProvider = NULL;
+	if (params[4] > 0 && !(pProvider = UTIL_GetCBaseEntity(params[4], false)))
+	{
+		return pContext->ThrowNativeError("Provider index %d is not valid", params[4]);
+	}
+
+	float multiplier = sp_ctof(params[2]);
+	float duration = sp_ctof(params[3]);
+
+	bool success = TF2_AddCond(pEntity, TFCond_TmpDamageBonus, duration, pProvider);
+	if (!success)
+	{
+		return pContext->ThrowNativeError("Failed to locate function for TF2 AddCondition");
+	}
+	*(float *)((intptr_t)pEntity + offset) = multiplier;
+	return 1;
+}
+
+cell_t TF2_GetTmpDamageBonus(IPluginContext *pContext, const cell_t *params)
+{
+	int offset = GetTmpDamageBonusOffset();
+	if (offset == -1)
+	{
+		return pContext->ThrowNativeError("Could not obtain TmpDamageBonus offset");
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = UTIL_GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	float dmgBonus = *(float *)((intptr_t)pEntity + offset);
+	return (cell_t)dmgBonus;
+}
+
 sp_nativeinfo_t g_TFNatives[] = 
 {
 	{"TF2_IgnitePlayer",			TF2_Burn},
@@ -668,8 +795,11 @@ sp_nativeinfo_t g_TFNatives[] =
 	{"TF2_SetPlayerPowerPlay",		TF2_SetPowerplayEnabled},
 	{"TF2_StunPlayer",				TF2_StunPlayer},
 	{"TF2_MakeBleed",				TF2_MakeBleed},
-	{"TF2_IsPlayerInDuel",				TF2_IsPlayerInDuel},
-	{"TF2_IsHolidayActive",				TF2_IsHolidayActive},
+	{"TF2_IsPlayerInDuel",			TF2_IsPlayerInDuel},
+	{"TF2_IsHolidayActive",			TF2_IsHolidayActive},
 	{"TF2_RemoveWearable",			TF2_RemoveWearable},
+	{"TF2_AddTmpDamageBonus",		TF2_AddTmpDamageBonus},
+	{"TF2_SetTmpDamageBonus",		TF2_SetTmpDamageBonus},
+	{"TF2_GetTmpDamageBonus",		TF2_GetTmpDamageBonus},
 	{NULL,							NULL}
 };
