@@ -54,7 +54,6 @@ native bool AcceptEntityInput(int dest, const char[] input, int activator=-1, in
  * Sets a bool value in the global variant object.
  *
  * @param val		Input value.
- * @noreturn
  */
 native void SetVariantBool(bool val);
 
@@ -62,7 +61,6 @@ native void SetVariantBool(bool val);
  * Sets a string in the global variant object.
  *
  * @param str		Input string.
- * @noreturn
  */
 native void SetVariantString(const char[] str);
 
@@ -70,7 +68,6 @@ native void SetVariantString(const char[] str);
  * Sets an integer value in the global variant object.
  *
  * @param val		Input value.
- * @noreturn
  */
 native void SetVariantInt(int val);
 
@@ -78,7 +75,6 @@ native void SetVariantInt(int val);
  * Sets a floating point value in the global variant object.
  *
  * @param val		Input value.
- * @noreturn
  */
 native void SetVariantFloat(float val);
 
@@ -86,7 +82,6 @@ native void SetVariantFloat(float val);
  * Sets a 3D vector in the global variant object.
  *
  * @param vec		Input vector.
- * @noreturn
  */
 native void SetVariantVector3D(const float vec[3]);
 
@@ -94,7 +89,6 @@ native void SetVariantVector3D(const float vec[3]);
  * Sets a 3D position vector in the global variant object.
  *
  * @param vec		Input position vector.
- * @noreturn
  */
 native void SetVariantPosVector3D(const float vec[3]);
 
@@ -102,7 +96,6 @@ native void SetVariantPosVector3D(const float vec[3]);
  * Sets a color in the global variant object.
  *
  * @param color		Input color.
- * @noreturn
  */
 native void SetVariantColor(const int color[4]);
 
@@ -110,7 +103,6 @@ native void SetVariantColor(const int color[4]);
  * Sets an entity in the global variant object.
  *
  * @param entity	Entity index.
- * @noreturn
  * @error		Invalid entity index.
  */
 native void SetVariantEntity(int entity);

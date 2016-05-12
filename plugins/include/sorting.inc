@@ -62,7 +62,6 @@ enum SortType
  * @param array			Array of integers to sort in-place.
  * @param array_size	Size of the array.
  * @param order			Sorting order to use.
- * @noreturn
  */
 native void SortIntegers(int[] array, int array_size, SortOrder order = Sort_Ascending);
 
@@ -72,7 +71,6 @@ native void SortIntegers(int[] array, int array_size, SortOrder order = Sort_Asc
  * @param array			Array of floating point numbers to sort in-place.
  * @param array_size	Size of the array.
  * @param order			Sorting order to use.
- * @noreturn
  */
 native void SortFloats(float[] array, int array_size, SortOrder order = Sort_Ascending);
 
@@ -82,7 +80,6 @@ native void SortFloats(float[] array, int array_size, SortOrder order = Sort_Asc
  * @param array			Array of strings to sort in-place.
  * @param array_size	Size of the array.
  * @param order			Sorting order to use.
- * @noreturn
  */
 native void SortStrings(char[][] array, int array_size, SortOrder order = Sort_Ascending);
 
@@ -107,7 +104,6 @@ typedef SortFunc1D = function int (int elem1, int elem2, const int[] array, Hand
  * @param array_size	Size of the array to sort.
  * @param sortfunc		Sort function.
  * @param hndl			Optional Handle to pass through the comparison calls.
- * @noreturn
  */
 native void SortCustom1D(int[] array, int array_size, SortFunc1D sortfunc, Handle hndl=INVALID_HANDLE);
 
@@ -136,7 +132,6 @@ typeset SortFunc2D
  * @param array_size	Size of the major array to sort (first index, outermost).
  * @param sortfunc		Sort comparison function to use.
  * @param hndl			Optional Handle to pass through the comparison calls.
- * @noreturn
  */
 native void SortCustom2D(any[][] array, int array_size, SortFunc2D sortfunc, Handle hndl=INVALID_HANDLE);
 
@@ -146,7 +141,6 @@ native void SortCustom2D(any[][] array, int array_size, SortFunc2D sortfunc, Han
  * @param array			Array Handle to sort
  * @param order			Sort order to use, same as other sorts.
  * @param type			Data type stored in the ADT Array
- * @noreturn
  */
 native void SortADTArray(Handle array, SortOrder order, SortType type);
 
@@ -171,6 +165,5 @@ typedef SortFuncADTArray = function int (int index1, int index2, Handle array, H
  * @param array			Array Handle to sort
  * @param sortfunc		Sort comparison function to use
  * @param hndl			Optional Handle to pass through the comparison calls.
- * @noreturn
  */
 native void SortADTArrayCustom(Handle array, SortFuncADTArray sortfunc, Handle hndl=INVALID_HANDLE); 

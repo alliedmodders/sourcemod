@@ -83,7 +83,6 @@
  * @param dir			Direction of the sparks.
  * @param Magnitude		Sparks size.
  * @param TrailLength		Trail lenght of the sparks.
- * @noreturn
  */
 stock void TE_SetupSparks(const float pos[3], const float dir[3], int Magnitude, int TrailLength)
 {
@@ -101,7 +100,6 @@ stock void TE_SetupSparks(const float pos[3], const float dir[3], int Magnitude,
  * @param Model			Precached model index.
  * @param Scale			Scale of the smoke.
  * @param FrameRate		Frame rate of the smoke.
- * @noreturn
  */
 stock void TE_SetupSmoke(const float pos[3], int Model, float Scale, int FrameRate)
 {
@@ -119,7 +117,6 @@ stock void TE_SetupSmoke(const float pos[3], int Model, float Scale, int FrameRa
  * @param dir			Direction of the dust.
  * @param Size			Dust cloud size.
  * @param Speed			Dust cloud speed.
- * @noreturn
  */
 stock void TE_SetupDust(const float pos[3], const float dir[3], float Size, float Speed)
 {
@@ -137,7 +134,6 @@ stock void TE_SetupDust(const float pos[3], const float dir[3], float Size, floa
  * @param angles		Rotation angles of the muzzle flash.
  * @param Scale			Scale of the muzzle flash.
  * @param Type			Muzzle flash type to render (Mod specific).
- * @noreturn
  */
 stock void TE_SetupMuzzleFlash(const float pos[3], const float angles[3], float Scale, int Type)
 {
@@ -153,7 +149,6 @@ stock void TE_SetupMuzzleFlash(const float pos[3], const float angles[3], float 
  *
  * @param pos			Position of the metal sparks.
  * @param dir			Direction of the metal sparks.
- * @noreturn
  */
 stock void TE_SetupMetalSparks(const float pos[3], const float dir[3])
 {
@@ -168,7 +163,6 @@ stock void TE_SetupMetalSparks(const float pos[3], const float dir[3])
  * @param pos			Position of the energy splash.
  * @param dir			Direction of the energy splash.
  * @param Explosive		Makes the effect explosive.
- * @noreturn
  */
 stock void TE_SetupEnergySplash(const float pos[3], const float dir[3], bool Explosive)
 {
@@ -183,7 +177,6 @@ stock void TE_SetupEnergySplash(const float pos[3], const float dir[3], bool Exp
  *
  * @param pos			Position of the armor ricochet.
  * @param dir			Direction of the armor ricochet.
- * @noreturn
  */
 stock void TE_SetupArmorRicochet(const float pos[3], const float dir[3])
 {
@@ -200,7 +193,6 @@ stock void TE_SetupArmorRicochet(const float pos[3], const float dir[3])
  * @param Life			Time duration of the sprite.
  * @param Size			Sprite size.
  * @param Brightness		Sprite brightness.
- * @noreturn
  */
 stock void TE_SetupGlowSprite(const float pos[3], int Model, float Life, float Size, int Brightness)
 {
@@ -224,7 +216,6 @@ stock void TE_SetupGlowSprite(const float pos[3], int Model, float Life, float S
  * @param Magnitude		Explosion size.
  * @param normal		Normal vector to the explosion.
  * @param MaterialType		Exploded material type.
- * @noreturn
  */
 stock void TE_SetupExplosion(const float pos[3], int Model, float Scale, int Framerate, int Flags, int Radius, int Magnitude, const float normal[3]={0.0, 0.0, 1.0}, int MaterialType='C')
 {
@@ -249,7 +240,6 @@ stock void TE_SetupExplosion(const float pos[3], int Model, float Scale, int Fra
  * @param Size			Sprite size.
  * @param SprayModel		Precached model index.
  * @param BloodDropModel	Precached model index.
- * @noreturn
  */
 stock void TE_SetupBloodSprite(const float pos[3], const float dir[3], const int color[4], int Size, int SprayModel, int BloodDropModel)
 {
@@ -281,7 +271,6 @@ stock void TE_SetupBloodSprite(const float pos[3], const float dir[3], const int
  * @param Color			Color array (r, g, b, a).
  * @param Speed			Speed of the beam.
  * @param Flags			Beam flags.
- * @noreturn
  */
 stock void TE_SetupBeamRingPoint(const float center[3], float Start_Radius, float End_Radius, int ModelIndex, int HaloIndex, int StartFrame, 
 				int FrameRate, float Life, float Width, float Amplitude, const int Color[4], int Speed, int Flags)
@@ -323,7 +312,6 @@ stock void TE_SetupBeamRingPoint(const float center[3], float Start_Radius, floa
  * @param Amplitude		Beam amplitude.
  * @param Color			Color array (r, g, b, a).
  * @param Speed			Speed of the beam.
- * @noreturn
  */
 stock void TE_SetupBeamPoints(const float start[3], const float end[3], int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, float Life, 
 				float Width, float EndWidth, int FadeLength, float Amplitude, const int Color[4], int Speed)
@@ -363,7 +351,6 @@ stock void TE_SetupBeamPoints(const float start[3], const float end[3], int Mode
  * @param Amplitude		Beam amplitude.
  * @param Color			Color array (r, g, b, a).
  * @param Speed			Speed of the beam.
- * @noreturn
  */
 stock void TE_SetupBeamLaser(int StartEntity, int EndEntity, int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, float Life, 
 				float Width, float EndWidth, int FadeLength, float Amplitude, const int Color[4], int Speed)
@@ -402,7 +389,6 @@ stock void TE_SetupBeamLaser(int StartEntity, int EndEntity, int ModelIndex, int
  * @param Color			Color array (r, g, b, a).
  * @param Speed			Speed of the beam.
  * @param Flags			Beam flags.
- * @noreturn
  */
 stock void TE_SetupBeamRing(int StartEntity, int EndEntity, int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, float Life, float Width, float Amplitude, const int Color[4], int Speed, int Flags)
 {
@@ -437,7 +423,6 @@ stock void TE_SetupBeamRing(int StartEntity, int EndEntity, int ModelIndex, int 
  * @param EndWidth		Final beam width.
  * @param FadeLength		Beam fade time duration.
  * @param Color			Color array (r, g, b, a).
- * @noreturn
  */
 stock void TE_SetupBeamFollow(int EntIndex, int ModelIndex, int HaloIndex, float Life, float Width, float EndWidth, int FadeLength, const int Color[4])
 {

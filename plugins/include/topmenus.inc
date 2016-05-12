@@ -125,7 +125,6 @@ enum TopMenuObject
  * @param param				Extra parameter (if used).
  * @param buffer			Output buffer (if used).
  * @param maxlength			Output buffer (if used).
- * @noreturn
  */
 typedef TopMenuHandler = function void (
   TopMenu topmenu, 
@@ -351,7 +350,6 @@ native int GetTopMenuObjName(Handle topmenu, TopMenuObject topobj, char[] buffer
  *
  * @param topmenu			TopMenu Handle.
  * @param topobj			TopMenuObject ID.
- * @noreturn
  * @error					Invalid TopMenu Handle.
  */
 native void RemoveFromTopMenu(Handle topmenu, TopMenuObject topobj);
@@ -397,7 +395,6 @@ native TopMenuObject FindTopMenuCategory(Handle topmenu, const char[] name);
  * @param topmenu       TopMenu Handle.
  * @param cache_titles  Cache the menu titles and don't call the handler with
  *                      TopMenuAction_DisplayTitle everytime the menu is drawn?
- * @noreturn
  * @error               Invalid TopMenu Handle
  */
 native void SetTopMenuTitleCaching(Handle topmenu, bool cache_titles);

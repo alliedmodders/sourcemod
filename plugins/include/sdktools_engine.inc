@@ -42,7 +42,6 @@
  *
  * @param client		Client index.
  * @param entity		Entity index.
- * @noreturn
  * @error				Invalid client or entity, lack of mod support, or client not in 
  *						game.
  */
@@ -53,7 +52,6 @@ native void SetClientViewEntity(int client, int entity);
  *
  * @param style			Light style (from 0 to MAX_LIGHTSTYLES-1)
  * @param value			Light value string (see world.cpp/light.cpp in dlls)
- * @noreturn
  * @error				Light style index is out of range.
  */
 native void SetLightStyle(int style, const char[] value);
@@ -63,7 +61,6 @@ native void SetLightStyle(int style, const char[] value);
  *
  * @param client		Player's index.
  * @param pos			Destination vector to store the client's eye position.
- * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native void GetClientEyePosition(int client, float pos[3]);

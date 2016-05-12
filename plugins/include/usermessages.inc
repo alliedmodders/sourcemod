@@ -146,7 +146,6 @@ native Handle StartMessageEx(UserMsg msg, int[] clients, int numClients, int fla
 /**
  * Ends a previously started user message (network message).
  *
- * @noreturn
  */
 native void EndMessage();
 
@@ -190,7 +189,6 @@ typeset MsgHook
  *
  * @param msg_id		Message index.
  * @param sent			True if message was sent, false if blocked.
- * @noreturn
  */
 typedef MsgPostHook = function void (UserMsg msg_id, bool sent);
 
@@ -203,7 +201,6 @@ typedef MsgPostHook = function void (UserMsg msg_id, bool sent);
  * 						allowing the user to block the message.  Otherwise,
  *						the hook is normal and ignores the return value.
  * @param post		Notification function.
- * @noreturn
  * @error				Invalid message index.
  */
 native void HookUserMessage(UserMsg msg_id, MsgHook hook, bool intercept=false, MsgPostHook post=INVALID_FUNCTION);
@@ -214,7 +211,6 @@ native void HookUserMessage(UserMsg msg_id, MsgHook hook, bool intercept=false, 
  * @param msg_id		Message index.
  * @param hook			Function used for the hook.
  * @param intercept		Specifies whether the hook was an intercept hook or not.
- * @noreturn
  * @error				Invalid message index.
  */
 native void UnhookUserMessage(UserMsg msg_id, MsgHook hook, bool intercept=false);

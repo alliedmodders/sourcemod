@@ -70,7 +70,6 @@ native float GetVectorDotProduct(const float vec1[3], const float vec2[3]);
  * @param vec1		First vector.
  * @param vec2		Second vector.
  * @param result	Resultant vector.
- * @noreturn
  */
 native void GetVectorCrossProduct(const float vec1[3], const float vec2[3], float result[3]);
 
@@ -90,7 +89,6 @@ native float NormalizeVector(const float vec[3], float result[3]);
  * @param fwd		Forward vector buffer or NULL_VECTOR.
  * @param right		Right vector buffer or NULL_VECTOR.
  * @param up		Up vector buffer or NULL_VECTOR.
- * @noreturn
  */
 native void GetAngleVectors(const float angle[3], float fwd[3], float right[3], float up[3]);
 
@@ -99,7 +97,6 @@ native void GetAngleVectors(const float angle[3], float fwd[3], float right[3], 
  *
  * @param vec		Vector.
  * @param angle		Angle buffer.
- * @noreturn
  */
 native void GetVectorAngles(const float vec[3], float angle[3]);
 
@@ -109,7 +106,6 @@ native void GetVectorAngles(const float vec[3], float angle[3]);
  * @param vec		Vector.
  * @param right		Right vector buffer or NULL_VECTOR.
  * @param up		Up vector buffer or NULL_VECTOR.
- * @noreturn
  */
 native void GetVectorVectors(const float vec[3], float right[3], float up[3]);
 
@@ -120,7 +116,6 @@ native void GetVectorVectors(const float vec[3], float right[3], float up[3]);
  * @param vec1		First vector.
  * @param vec2		Second vector.
  * @param result	Result buffer.
- * @noreturn
  */
 stock void AddVectors(const float vec1[3], const float vec2[3], float result[3])
 {
@@ -136,7 +131,6 @@ stock void AddVectors(const float vec1[3], const float vec2[3], float result[3])
  * @param vec1		First vector.
  * @param vec2		Second vector to subtract from first.
  * @param result	Result buffer.
- * @noreturn
  */
 stock void SubtractVectors(const float vec1[3], const float vec2[3], float result[3])
 {
@@ -150,7 +144,6 @@ stock void SubtractVectors(const float vec1[3], const float vec2[3], float resul
  *
  * @param vec		Vector.
  * @param scale		Scale value.
- * @noreturn
  */
 stock void ScaleVector(float vec[3], float scale)
 {
@@ -163,7 +156,6 @@ stock void ScaleVector(float vec[3], float scale)
  * Negatives a vector.
  *
  * @param vec		Vector.
- * @noreturn
  */
 stock void NegateVector(float vec[3])
 {
@@ -178,7 +170,6 @@ stock void NegateVector(float vec[3])
  * @param pt1		First point (to be subtracted from the second).
  * @param pt2		Second point.
  * @param output	Output vector buffer.
- * @noreturn
  */
 stock void MakeVectorFromPoints(const float pt1[3], const float pt2[3], float output[3])
 {

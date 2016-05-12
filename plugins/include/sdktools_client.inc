@@ -39,7 +39,6 @@
  * Sets the client to an inactive state waiting for a new map
  *
  * @param client		The client index
- * @noreturn
  */
 native void InactivateClient(int client);
 
@@ -47,6 +46,5 @@ native void InactivateClient(int client);
  * Reconnect a client without dropping the netchannel
  *
  * @param client		The client index
- * @noreturn
  */
 native void ReconnectClient(int client);

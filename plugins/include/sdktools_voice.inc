@@ -61,7 +61,6 @@ enum ListenOverride
  *
  * @param client		The client index
  * @param flags		The voice flags
- * @noreturn
  */
 native void SetClientListeningFlags(int client, int flags);
 

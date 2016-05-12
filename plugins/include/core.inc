@@ -162,7 +162,6 @@ native int VerifyCoreVersion();
  * removed natives results in a run-time error.
  *
  * @param name			Native name.
- * @noreturn
  */
 native void MarkNativeAsOptional(const char[] name);
 

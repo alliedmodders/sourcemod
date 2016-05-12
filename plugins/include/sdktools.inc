@@ -107,7 +107,6 @@ enum SDKPassMethod
  * Starts the preparation of an SDK call.
  *
  * @param type			Type of function call this will be.
- * @noreturn
  */
 native void StartPrepSDKCall(SDKCallType type);
 
@@ -115,7 +114,6 @@ native void StartPrepSDKCall(SDKCallType type);
  * Sets the virtual index of the SDK call if it is virtual.
  *
  * @param vtblidx		Virtual table index.
- * @noreturn
  */
 native void PrepSDKCall_SetVirtual(int vtblidx);
 
@@ -159,7 +157,6 @@ native bool PrepSDKCall_SetFromConf(Handle gameconf, SDKFuncConfSource source, c
  * @param pass			How the data is passed in C++.
  * @param decflags		Flags on decoding from the plugin to C++.
  * @param encflags		Flags on encoding from C++ to the plugin.
- * @noreturn
  */
 native void PrepSDKCall_SetReturnInfo(SDKType type, SDKPassMethod pass, int decflags=0, int encflags=0);
 
@@ -170,7 +167,6 @@ native void PrepSDKCall_SetReturnInfo(SDKType type, SDKPassMethod pass, int decf
  * @param pass			How the data is passed in C++.
  * @param decflags		Flags on decoding from the plugin to C++.
  * @param encflags		Flags on encoding from C++ to the plugin.
- * @noreturn
  */
 native void PrepSDKCall_AddParameter(SDKType type, SDKPassMethod pass, int decflags=0, int encflags=0);
 

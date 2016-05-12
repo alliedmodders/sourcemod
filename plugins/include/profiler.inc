@@ -51,7 +51,6 @@ native Handle CreateProfiler();
  * Starts profiling.
  *
  * @param prof		Profiling object.
- * @noreturn
  * @error			Invalid Handle.
  */
 native void StartProfiling(Handle prof);
@@ -60,7 +59,6 @@ native void StartProfiling(Handle prof);
  * Stops profiling.
  *
  * @param prof		Profiling object.
- * @noreturn
  * @error			Invalid Handle or profiling was never started.
  */
 native void StopProfiling(Handle prof);
@@ -82,7 +80,6 @@ native float GetProfilerTime(Handle prof);
  * @param group     Budget group. This can be "all" for a default, or a short
  *                  description like "Timers" or "Events".
  * @param name      A name to attribute to this profiling event.
- * @noreturn
  */
 native void EnterProfilingEvent(const char[] group, const char[] name);
 

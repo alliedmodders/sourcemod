@@ -92,7 +92,6 @@ native int ProcessTargetString(const char[] pattern,
  *
  * @param client		Client index, or 0 for server.
  * @param reason		COMMAND_TARGET reason.
- * @noreturn
  */
 stock void ReplyToTargetError(int client, int reason)
 {
@@ -149,7 +148,6 @@ typedef MultiTargetFilter = function bool (const char[] pattern, Handle clients)
  * @param filter        Filter function.
  * @param phrase        Descriptive phrase to display on successful match.
  * @param phraseIsML    True if phrase is multi-lingual, false otherwise.
- * @noreturn
  */
 native void AddMultiTargetFilter(const char[] pattern, MultiTargetFilter filter,
                                  const char[] phrase, bool phraseIsML);
@@ -159,6 +157,5 @@ native void AddMultiTargetFilter(const char[] pattern, MultiTargetFilter filter,
  *
  * @param pattern       Pattern to match (case sensitive).
  * @param filter        Filter function.
- * @noreturn
  */
 native void RemoveMultiTargetFilter(const char[] pattern, MultiTargetFilter filter);

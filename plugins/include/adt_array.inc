@@ -256,7 +256,6 @@ native Handle CloneArray(Handle array);
  *
  * @param array			Array Handle.
  * @param newsize		New size.
- * @noreturn
  * @error				Invalid Handle or out of memory.
  */
 native void ResizeArray(Handle array, int newsize);

@@ -41,7 +41,6 @@
  *
  * @param format		String format.
  * @param ...			Format arguments.
- * @noreturn
  */
 native void LogMessage(const char[] format, any ...);
 
@@ -52,7 +51,6 @@ native void LogMessage(const char[] format, any ...);
  * @param file			File to write the log message in.
  * @param format		String format.
  * @param ...			Format arguments.
- * @noreturn
  * @error				File could not be opened/written.
  */
 native void LogToFile(const char[] file, const char[] format, any ...);
@@ -63,7 +61,6 @@ native void LogToFile(const char[] file, const char[] format, any ...);
  * @param file			File to write the log message in.
  * @param format		String format.
  * @param ...			Format arguments.
- * @noreturn
  * @error				File could not be opened/written.
  */
 native void LogToFileEx(const char[] file, const char[] format, any ...);
@@ -77,7 +74,6 @@ native void LogToFileEx(const char[] file, const char[] format, any ...);
  * @param target		Client being targetted, or -1 if not applicable.
  * @param message		Message format.
  * @param ...			Message formatting parameters.
- * @noreturn
  */
 native void LogAction(int client, int target, const char[] message, any ...);
 
@@ -86,7 +82,6 @@ native void LogAction(int client, int target, const char[] message, any ...);
  *
  * @param format		String format.
  * @param ...			Format arguments.
- * @noreturn
  */
 native void LogError(const char[] format, any ...);
 
@@ -129,7 +124,6 @@ typedef GameLogHook = function Action (const char[] message);
  * Adds a game log hook.
  *
  * @param hook			Hook function.
- * @noreturn
  */
 native void AddGameLogHook(GameLogHook hook);
 
@@ -137,6 +131,5 @@ native void AddGameLogHook(GameLogHook hook);
  * Removes a game log hook.
  *
  * @param hook			Hook function.
- * @noreturn
  */
 native void RemoveGameLogHook(GameLogHook hook);

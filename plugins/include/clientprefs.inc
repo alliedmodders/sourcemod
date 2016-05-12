@@ -126,7 +126,6 @@ native void SetClientCookie(int client, Handle cookie, const char[] value);
  * @param cookie		Client preference cookie handle.
  * @param buffer		Copyback buffer for value.
  * @param maxlen		Maximum length of the buffer.
- * @noreturn
  * @error				Invalid cookie handle or invalid client index.
  */
 native void GetClientCookie(int client, Handle cookie, char[] buffer, int maxlen);
@@ -137,7 +136,6 @@ native void GetClientCookie(int client, Handle cookie, char[] buffer, int maxlen
  * @param authID		String Auth/STEAM ID of player to set.
  * @param cookie		Client preference cookie handle.
  * @param value			String value to set.
- * @noreturn
  * @error			Invalid cookie handle.
  */
 native void SetAuthIdCookie(const char[] authID, Handle cookie, const char[] value);
@@ -186,7 +184,6 @@ typedef CookieMenuHandler = function void (
  * @param display		Text to show on the menu.
  * @param handler		Optional handler callback for translations and output on selection
  * @param info			Info data to pass to the callback.
- * @noreturn
  * @error				Invalid cookie handle.
  */
 native void SetCookiePrefabMenu(Handle cookie, CookieMenu type, const char[] display, CookieMenuHandler handler=INVALID_FUNCTION, any info=0);
@@ -199,7 +196,6 @@ native void SetCookiePrefabMenu(Handle cookie, CookieMenu type, const char[] dis
  * @param handler		A MenuHandler callback function.
  * @param info			Data to pass to the callback.
  * @param display		Text to show on the menu.
- * @noreturn
  * @error				Invalid cookie handle.
  */
 native void SetCookieMenuItem(CookieMenuHandler handler, any info, const char[] display);
@@ -208,7 +204,6 @@ native void SetCookieMenuItem(CookieMenuHandler handler, any info, const char[] 
  * Displays the settings menu to a client.
  *
  * @param client		Client index.
- * @noreturn
  */
 native void ShowCookieMenu(int client);
 

@@ -553,7 +553,6 @@ native Handle SQL_ReadDriver(Handle database, char[] ident="", int ident_length=
  * @param driver		Driver Handle, or INVALID_HANDLE for the default driver.
  * @param ident			Identification string buffer.
  * @param maxlength		Maximum length of the buffer.
- * @noreturn
  * @error				Invalid Handle other than INVALID_HANDLE.
  */
 native void SQL_GetDriverIdent(Handle driver, char[] ident, int maxlength);
@@ -566,7 +565,6 @@ native void SQL_GetDriverIdent(Handle driver, char[] ident, int maxlength);
  * @param driver		Driver Handle, or INVALID_HANDLE for the default driver.
  * @param product		Product string buffer.
  * @param maxlength		Maximum length of the buffer.
- * @noreturn
  * @error				Invalid Handle other than INVALID_HANDLE.
  */
 native void SQL_GetDriverProduct(Handle driver, char[] product, int maxlength);
@@ -1034,7 +1032,6 @@ native int SQL_AddQuery(Transaction txn, const char[] query, any data=0);
  * @param onError       An optional callback to receive an error message.
  * @param data          An optional value to pass to callbacks.
  * @param prio          Priority queue to use.
- * @noreturn
  * @error               An invalid handle.
  */
 native SQL_ExecuteTransaction(

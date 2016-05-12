@@ -212,7 +212,6 @@ native bool SMC_GetErrorString(SMCError error, char[] buffer, int buf_max);
  *
  * @param smc			Handle to an SMC Parse.
  * @param func			SMC_ParseStart function.
- * @noreturn
  * @error				Invalid or corrupt Handle.
  */
 native SMC_SetParseStart(Handle smc, SMC_ParseStart func);
@@ -222,7 +221,6 @@ native SMC_SetParseStart(Handle smc, SMC_ParseStart func);
  *
  * @param smc			Handle to an SMC Parse.
  * @param func			SMC_ParseEnd function.
- * @noreturn
  * @error				Invalid or corrupt Handle.
  */
 native SMC_SetParseEnd(Handle smc, SMC_ParseEnd func);

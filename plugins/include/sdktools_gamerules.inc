@@ -95,7 +95,6 @@ native int GameRules_GetProp(const char[] prop, int size=4, int element=0);
  * @param element		Element # (starting from 0) if property is an array.
  * @param changeState	This parameter is ignored.
  * @error				Not supported.
- * @noreturn
  */
 native void GameRules_SetProp(const char[] prop, any value, int size=4, int element=0, bool changeState=false);
 
@@ -116,7 +115,6 @@ native float GameRules_GetPropFloat(const char[] prop, int element=0);
  * @param value			Value to set.
  * @param element		Element # (starting from 0) if property is an array.
  * @param changeState	This parameter is ignored.
- * @noreturn
  * @error				Not supported.
  */
 native void GameRules_SetPropFloat(const char[] prop, float value, int element=0, bool changeState=false);
@@ -140,7 +138,6 @@ native int GameRules_GetPropEnt(const char[] prop, int element=0);
  * @param other			Entity index to set, or -1 to unset.
  * @param element		Element # (starting from 0) if property is an array.
  * @param changeState	This parameter is ignored.
- * @noreturn
  * @error				Not supported.
  */
 native void GameRules_SetPropEnt(const char[] prop, int other, int element=0, bool changeState=false);
@@ -151,7 +148,6 @@ native void GameRules_SetPropEnt(const char[] prop, int other, int element=0, bo
  * @param prop			Property name.
  * @param vec			Vector buffer to store data in.
  * @param element		Element # (starting from 0) if property is an array.
- * @noreturn
  * @error				Not supported.
  */
 native void GameRules_GetPropVector(const char[] prop, float vec[3], int element=0);
@@ -163,7 +159,6 @@ native void GameRules_GetPropVector(const char[] prop, float vec[3], int element
  * @param vec			Vector to set.
  * @param element		Element # (starting from 0) if property is an array.
  * @param changeState	This parameter is ignored.
- * @noreturn
  * @error				Not supported.
  */
 native void GameRules_SetPropVector(const char[] prop, const float vec[3], int element=0, bool changeState=false);

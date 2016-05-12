@@ -42,7 +42,6 @@
  * If no extension is specified, .txt is assumed.
  *
  * @param file		Translation file.
- * @noreturn
  */
 native void LoadTranslations(const char[] file);
 
@@ -53,7 +52,6 @@ native void LoadTranslations(const char[] file);
  * not during this function call.
  *
  * @param client	Client index or LANG_SERVER.
- * @noreturn
  */
 native void SetGlobalTransTarget(int client);
 
@@ -88,7 +86,6 @@ native int GetLanguageCount();
  * @param codeLen	Maximum length of the language code buffer.
  * @param name		Language name buffer.
  * @param nameLen	Maximum length of the language name buffer.
- * @noreturn
  * @error			Invalid language number.
  */
 native void GetLanguageInfo(int language, char[] code="", int codeLen=0, char[] name="", int nameLen=0);
@@ -98,7 +95,6 @@ native void GetLanguageInfo(int language, char[] code="", int codeLen=0, char[] 
  *
  * @param client	Client index.
  * @param language	Language number.
- * @noreturn
  * @error			Invalid client index or client not connected.
  */
 native void SetClientLanguage(int client, int language);
