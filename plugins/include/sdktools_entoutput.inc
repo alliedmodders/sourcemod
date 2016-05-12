@@ -79,7 +79,6 @@ native bool UnhookEntityOutput(const char[] classname, const char[] output, Enti
  * @param output		The output name to hook.
  * @param callback		An EntityOutput function pointer.
  * @param once			Only fire this hook once and then remove itself.
- * @noreturn			
  * @error				Entity Outputs disabled	or Invalid Entity index.
  */
 native void HookSingleEntityOutput(int entity, const char[] output, EntityOutput callback, bool once=false);

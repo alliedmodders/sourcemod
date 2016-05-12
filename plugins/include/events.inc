@@ -66,7 +66,6 @@ typeset EventHook
 	//						this event has set the hook mode EventHookMode_PostNoCopy.
 	// @param name			String containing the name of the event.
 	// @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
-	// @noreturn
 	///
 	function void (Event event, const char[] name, bool dontBroadcast);
 };

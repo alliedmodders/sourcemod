@@ -114,7 +114,6 @@ native Handle FindClientCookie(const char[] name);
  * @param client		Client index.
  * @param cookie		Client preference cookie handle.
  * @param value			String value to set.
- * @noreturn			
  * @error				Invalid cookie handle or invalid client index.
  */
 native void SetClientCookie(int client, Handle cookie, const char[] value);
@@ -164,7 +163,6 @@ forward void OnClientCookiesCached(int client);
  * @param info			Info data passed.
  * @param buffer		Outbut buffer.
  * @param maxlen		Max length of the output buffer.
- * @noreturn			
  */
 typedef CookieMenuHandler = function void (
   int client,

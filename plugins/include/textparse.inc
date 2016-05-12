@@ -109,7 +109,6 @@ typedef SMC_EndSection = function SMCResult (SMCParser smc);
 // @param smc			The SMCParser.
 // @param halted		True if abnormally halted, false otherwise.
 // @param failed		True if parsing failed, false otherwise.
-// @noreturn
 typedef SMC_ParseEnd = function void (SMCParser smc, bool halted, bool failed);
 
 // Callback for whenever a new line of text is about to be parsed.
