@@ -79,6 +79,13 @@ methodmap Event < Handle
 	//
 	// @param dontBroadcast Optional boolean that determines if event should be broadcast to clients.
 	public native void Fire(bool dontBroadcast=false);
+	
+	// Fires a game event to only the specified client.
+	//
+	// Unlike Fire, this function DOES NOT close the event Handle.
+	//
+	// @param client		Index of client to receive the event..
+	public native void FireToClient(int client);
 
 	// Cancels a previously created game event that has not been fired. This
 	// is necessary to avoid leaking memory when an event isn't fired.

@@ -31,6 +31,8 @@
 
 #include "EventManager.h"
 #include "sm_stringutil.h"
+#include "PlayerManager.h"
+
 #include "logic_bridge.h"
 #include <bridge/include/IScriptManager.h>
 
@@ -358,6 +360,13 @@ void EventManager::FireEvent(EventInfo *pInfo, bool bDontBroadcast)
 
 	/* Add EventInfo struct to free event stack */
 	m_FreeEvents.push(pInfo);
+}
+
+void EventManager::FireEventToClient(EventInfo *pInfo, IClient *pClient)
+{
+	// The IClient vtable is +4 from the IGameEventListener2 (CBaseClient) vtable due to multiple inheritance.
+	IGameEventListener2 *pGameClient = (IGameEventListener2 *)((intptr_t)pClient - 4);
+	pGameClient->FireGameEvent(pInfo->pEvent);
 }
 
 void EventManager::CancelCreatedEvent(EventInfo *pInfo)
