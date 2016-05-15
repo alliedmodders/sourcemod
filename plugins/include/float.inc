@@ -42,7 +42,7 @@
  * @param value			Integer to convert.
  * @return				Floating point value.
  */
-native float float(value);
+native float float(int value);
 #endif
 
 /**
