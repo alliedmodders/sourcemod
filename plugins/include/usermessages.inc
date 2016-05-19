@@ -145,7 +145,6 @@ native Handle StartMessageEx(UserMsg msg, int[] clients, int numClients, int fla
 
 /**
  * Ends a previously started user message (network message).
- *
  */
 native void EndMessage();
 
