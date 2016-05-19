@@ -244,7 +244,6 @@ stock int RoundFloat(float value)
 
 /**
  * User defined operators.
- *
  */
 #if !defined __sourcepawn2__
 #pragma rational Float
@@ -366,7 +365,6 @@ stock bool operator<=(int oper1, float oper2)
 
 /**
  * Forbidden operators.
- *
  */
 forward operator%(float oper1, float oper2);
 forward operator%(float oper1, int oper2);

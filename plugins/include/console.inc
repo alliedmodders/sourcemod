@@ -140,7 +140,6 @@ native void InsertServerCommand(const char[] format, any ...);
 
 /**
  * Executes every command in the server's command buffer, rather than once per frame.
- *
  */
 native void ServerExecute();
 
@@ -643,6 +642,5 @@ forward Action OnClientSayCommand(int client, const char[] command, const char[]
  * @param client		Client index.
  * @param command		Command name.
  * @param sArgs			Chat argument string.
- * 
  */
 forward void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs);
