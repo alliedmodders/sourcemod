@@ -91,7 +91,6 @@ enum APLRes
  *
  * If any run-time error is thrown during this callback, the plugin will be marked 
  * as failed.
- *
  */
 forward void OnPluginStart();
 
@@ -130,7 +129,6 @@ forward APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_ma
  * It is not necessary to close any handles or remove hooks in this function.  
  * SourceMod guarantees that plugin shutdown automatically and correctly releases 
  * all resources.
- *
  */
 forward void OnPluginEnd();
 
@@ -167,7 +165,6 @@ forward void OnMapEnd();
  *
  * @note This will always be called once and only once per map.  It will be 
  * called after OnMapStart().
- *
  */
 forward void OnConfigsExecuted();
 
@@ -183,7 +180,6 @@ forward void OnConfigsExecuted();
  *
  * Unlike OnMapStart() and OnConfigsExecuted(), this is not called on 
  * late loads that occur after OnMapStart().
- *
  */
 forward void OnAutoConfigsBuffered();
 
