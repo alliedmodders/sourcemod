@@ -111,6 +111,15 @@ void CHookManager::Shutdown()
 	sharesys->DropCapabilityProvider(myself, this, FEATURECAP_PLAYERRUNCMD_11PARAMS);
 }
 
+void CHookManager::OnMapStart()
+{
+	m_bFSTranHookWarned = false;
+#if SOURCE_ENGINE == SE_TF2
+	static ConVarRef replay_enable("replay_enable");
+	m_bReplayEnabled = replay_enable.GetBool();
+#endif
+}
+
 void CHookManager::OnClientConnect(int client)
 {
 	NetChannelHook(client);
@@ -238,6 +247,17 @@ void CHookManager::NetChannelHook(int client)
 		size_t iter;
 
 		/* Initial Hook */
+#if SOURCE_ENGINE == SE_TF2
+		if (m_bReplayEnabled)
+		{
+			if (!m_bFSTranHookWarned)
+			{
+				g_pSM->LogError(myself, "OnFileSend hooks are not currently working on TF2 servers with Replay enabled.");
+				m_bFSTranHookWarned = true;
+			}
+		}
+		else
+#endif
 		if (!m_netChannelHooks.length())
 		{
 			CVTableHook filehook(basefilesystem);

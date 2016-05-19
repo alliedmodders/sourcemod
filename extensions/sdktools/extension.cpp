@@ -313,6 +313,7 @@ void SDKTools::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax
 {
 	InitTeamNatives();
 	GetResourceEntity();
+	g_Hooks.OnMapStart();
 }
 
 bool SDKTools::QueryRunning(char *error, size_t maxlength)

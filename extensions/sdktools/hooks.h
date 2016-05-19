@@ -49,6 +49,7 @@ public:
 	void OnClientConnect(int client);
 	void OnClientPutInServer(int client);
 	void PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper);
+	void OnMapStart();
 public: /* NetChannel/Related Hooks */
 	bool FileExists(const char *filename, const char *pathID);
 #if SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2
@@ -75,6 +76,8 @@ private:
 	ke::Vector<CVTableHook *> m_runUserCmdHooks;
 	ke::Vector<CVTableHook *> m_netChannelHooks;
 	INetChannel *m_pActiveNetChannel;
+	bool m_bFSTranHookWarned = false;
+	bool m_bReplayEnabled = false;
 };
 
 extern CHookManager g_Hooks;
