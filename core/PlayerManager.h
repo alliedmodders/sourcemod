@@ -48,6 +48,8 @@
 
 using namespace SourceHook;
 
+class IClient;
+
 #define PLAYER_LIFE_UNKNOWN	0
 #define PLAYER_LIFE_ALIVE	1
 #define PLAYER_LIFE_DEAD	2
@@ -104,6 +106,9 @@ public:
 	void DoBasicAdminChecks();
 	void MarkAsBeingKicked();
 	int GetLifeState();
+
+	// This can be NULL for fakeclients due to limitations in our impl
+	IClient *GetIClient() const;
 private:
 	void Initialize(const char *name, const char *ip, edict_t *pEntity);
 	void Connect();

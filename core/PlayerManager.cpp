@@ -42,6 +42,7 @@
 #include "HalfLife2.h"
 #include <inetchannel.h>
 #include <iclient.h>
+#include <iserver.h>
 #include <IGameConfigs.h>
 #include "ConsoleDetours.h"
 #include "logic_bridge.h"
@@ -2311,10 +2312,9 @@ void CPlayer::DumpAdmin(bool deleting)
 void CPlayer::Kick(const char *str)
 {
 	MarkAsBeingKicked();
-	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
-	if (pNetChan == NULL)
+	IClient *pClient = GetIClient();
+	if (pClient == nullptr)
 	{
-		/* What does this even mean? Hell if I know. */
 		int userid = GetUserId();
 		if (userid > 0)
 		{
@@ -2325,7 +2325,6 @@ void CPlayer::Kick(const char *str)
 	}
 	else
 	{
-		IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
 #if SOURCE_ENGINE == SE_CSGO
 		pClient->Disconnect(str);
 #else
@@ -2538,6 +2537,26 @@ int CPlayer::GetLifeState()
 	{
 		return PLAYER_LIFE_DEAD;
 	}
+}
+
+IClient *CPlayer::GetIClient() const
+{
+#if SOURCE_ENGINE == SE_TF2      \
+	|| SOURCE_ENGINE == SE_CSS   \
+	|| SOURCE_ENGINE == SE_DODS  \
+	|| SOURCE_ENGINE == SE_HL2DM \
+	|| SOURCE_ENGINE == SE_BMS   \
+	|| SOURCE_ENGINE == SE_INSURGENCY
+	return engine->GetIServer()->GetClient(m_iIndex - 1);
+#else
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
+	if (pNetChan)
+	{
+		return static_cast<IClient *>(pNetChan->GetMsgHandler());
+	}
+
+	return nullptr;
+#endif
 }
 
 unsigned int CPlayer::GetSerial()

@@ -16,11 +16,6 @@
 	{
 		"Offsets"
 		{
-			/* Offset into CBaseTempEntity constructor */
-			"s_pTempEntities"
-			{
-				"windows"	"16"
-			}
 			"GetTEName"
 			{
 				"windows"	"4"
@@ -38,43 +33,6 @@
 				"windows"	"0"
 				"linux"		"0"
 				"mac"		"0"
-			}
-		}
-
-		"Signatures"
-		{
-			"CBaseTempEntity"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x89\x41\x04\xC7\x01\x2A\x2A\x2A\x2A\xA1"
-			}
-			"s_pTempEntities"
-			{
-				"library"	"server"
-				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-			}
-		}
-	}
-	
-	/* CGlobalEntityList */
-	"#default"
-	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"hl2mp"
-		}
-		
-		"Signatures"
-		{
-			/* Functions in CGlobalEntityList */
-			"FindEntityByClassname"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x56\x57\x8B\xF9\x8B\x4D\x08\x85\xC9\x74\x15"
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
 		}
 	}
@@ -144,7 +102,6 @@
 		{
 			"game"		"dod"
 			"game"		"tf"
-			"game"		"garrysmod"
 			"game"		"hl2mp"
 		}
 		
