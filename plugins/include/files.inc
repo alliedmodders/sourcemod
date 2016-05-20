@@ -593,7 +593,7 @@ native bool SetFilePermissions(const char[] path, int mode);
  * @param tmode			Time mode.
  * @return				Time value, or -1 on failure.
  */
-native GetFileTime(const char[] file, FileTimeMode tmode);
+native int GetFileTime(const char[] file, FileTimeMode tmode);
 
 /**
  * Same as LogToFile(), except uses an open file Handle.  The file must 
