@@ -81,7 +81,7 @@ methodmap DataPack < Handle
 	//
 	// @param buffer	Destination string buffer.
 	// @param maxlen	Maximum length of output string buffer.
-	public native void ReadString(char[] buffer, maxlen);
+	public native void ReadString(char[] buffer, int maxlen);
 
 	// Reads a function pointer from a data pack.
 	//
@@ -118,7 +118,6 @@ native DataPack CreateDataPack();
  *
  * @param pack		Handle to the data pack.
  * @param cell		Cell to add.
- * @noreturn
  * @error			Invalid handle.
  */
 native void WritePackCell(Handle pack, any cell);
@@ -128,7 +127,6 @@ native void WritePackCell(Handle pack, any cell);
  *
  * @param pack		Handle to the data pack.
  * @param val		Float to add.
- * @noreturn
  * @error			Invalid handle.
  */
 native void WritePackFloat(Handle pack, float val);
@@ -138,7 +136,6 @@ native void WritePackFloat(Handle pack, float val);
  *
  * @param pack		Handle to the data pack.
  * @param str		String to add.
- * @noreturn
  * @error			Invalid handle.
  */
 native void WritePackString(Handle pack, const char[] str);
@@ -148,7 +145,6 @@ native void WritePackString(Handle pack, const char[] str);
  *
  * @param pack		Handle to the data pack.
  * @param fktptr	Function pointer to add.
- * @noreturn
  * @error			Invalid handle.
  */
 native void WritePackFunction(Handle pack, Function fktptr);
@@ -177,10 +173,9 @@ native float ReadPackFloat(Handle pack);
  * @param pack		Handle to the data pack.
  * @param buffer	Destination string buffer.
  * @param maxlen	Maximum length of output string buffer.
- * @noreturn
  * @error			Invalid handle, or bounds error.
  */
-native void ReadPackString(Handle pack, char[] buffer, maxlen);
+native void ReadPackString(Handle pack, char[] buffer, int maxlen);
 
 /**
  * Reads a function pointer from a data pack.
@@ -196,7 +191,6 @@ native Function ReadPackFunction(Handle pack);
  *
  * @param pack		Handle to the data pack.
  * @param clear		If true, clears the contained data.
- * @noreturn
  * @error			Invalid handle.
  */
 native void ResetPack(Handle pack, bool clear=false);
@@ -215,7 +209,6 @@ native DataPackPos GetPackPosition(Handle pack);
  *
  * @param pack		Handle to the data pack.
  * @param position	New position to set. Must have been previously retrieved from a call to GetPackPosition.
- * @noreturn
  * @error			Invalid handle, or position is beyond the pack bounds.
  */
 native void SetPackPosition(Handle pack, DataPackPos position);
@@ -230,4 +223,3 @@ native void SetPackPosition(Handle pack, DataPackPos position);
  * @error			Invalid handle.
  */
 native bool IsPackReadable(Handle pack, int bytes);
-

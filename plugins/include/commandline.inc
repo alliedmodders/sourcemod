@@ -43,7 +43,7 @@
  * @return					True if the command line is valid; otherwise, false.
  * @error					No command line available, or no mod support.
  */
-native bool:GetCommandLine(String:commandLine[], maxlen);
+native bool GetCommandLine(char[] commandLine, int maxlen);
 
 /**
  * Gets the value of a command line parameter the server was launched with.
@@ -52,10 +52,9 @@ native bool:GetCommandLine(String:commandLine[], maxlen);
  * @param value		Buffer to store the parameter value in.
  * @param maxlen	Maximum length of the value buffer.
  * @param defValue	The default value to return if the parameter wasn't specified.
- * @return			True if the command line is valid; otherwise, false.
  * @error			No command line available, or no mod support.
  */
-native GetCommandLineParam(const String:param[], String:value[], maxlen, const String:defValue[]="");
+native void GetCommandLineParam(const char[] param, char[] value, int maxlen, const char[] defValue="");
 
 /**
  * Gets the value of a command line parameter the server was launched with.
@@ -65,7 +64,7 @@ native GetCommandLineParam(const String:param[], String:value[], maxlen, const S
  * @return			The integer value of the command line parameter value.
  * @error			No command line available, or no mod support.
  */
-native GetCommandLineParamInt(const String:param[], defValue=0);
+native int GetCommandLineParamInt(const char[] param, int defValue=0);
 
 /**
  * Gets the value of a command line parameter the server was launched with.
@@ -75,7 +74,7 @@ native GetCommandLineParamInt(const String:param[], defValue=0);
  * @return			The floating point value of the command line parameter value.
  * @error			No command line available, or no mod support.
  */
-native Float:GetCommandLineParamFloat(const String:param[], Float:defValue=0.0);
+native float GetCommandLineParamFloat(const char[] param, float defValue=0.0);
 
 /**
  * Determines if a specific command line parameter is present.
@@ -84,4 +83,4 @@ native Float:GetCommandLineParamFloat(const String:param[], Float:defValue=0.0);
  * @return			True if the command line parameter is specified; otherwise, false.
  * @error			No command line available, or no mod support.
  */
-native bool:FindCommandLineParam(const String:param[]);
+native bool FindCommandLineParam(const char[] param);

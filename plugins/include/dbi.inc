@@ -411,8 +411,8 @@ methodmap Database < Handle
 	// @param data          An optional value to pass to callbacks.
 	// @param prio          Priority queue to use.
 	public native void Execute(Transaction txn,
-	                           SQLTxnSuccess:onSuccess = INVALID_FUNCTION,
-	                           SQLTxnFailure:onError = INVALID_FUNCTION,
+	                           SQLTxnSuccess onSuccess = INVALID_FUNCTION,
+	                           SQLTxnFailure onError = INVALID_FUNCTION,
 	                           any data = 0,
 	                           DBPriority priority = DBPrio_Normal);
 };
@@ -467,7 +467,7 @@ stock Database SQL_DefConnect(char[] error, int maxlength, bool persistent=true)
  */
 native Database SQL_ConnectCustom(Handle keyvalues,
 			  					  char[] error,
-			  					  maxlength,
+			  					  int maxlength,
 			  					  bool persistent);
 
 /**
@@ -487,9 +487,9 @@ native Database SQL_ConnectCustom(Handle keyvalues,
  */
 stock Database SQLite_UseDatabase(const char[] database,
 			  					  char[] error, 
-			  					  maxlength)
+			  					  int maxlength)
 {
-	KeyValues kv = CreateKeyValues("");
+	KeyValues kv = new KeyValues("");
 	kv.SetString("driver", "sqlite");
 	kv.SetString("database", database);
 
@@ -505,15 +505,15 @@ stock Database SQLite_UseDatabase(const char[] database,
  */
 #pragma deprecated Use SQL_ConnectCustom instead.
 native Handle SQL_ConnectEx(Handle driver, 
-							const String:host[],
-							const String:user[], 
-							const String:pass[],
-							const String:database[],
+							const char[] host,
+							const char[] user, 
+							const char[] pass,
+							const char[] database,
 							char[] error,
-							maxlength,
+							int maxlength,
 							bool persistent=true,
-							port=0,
-							maxTimeout=0);
+							int port=0,
+							int maxTimeout=0);
 							
 /**
  * Returns if a named configuration is present in databases.cfg.
@@ -543,7 +543,7 @@ native Handle SQL_GetDriver(const char[] name="");
  * @param ident_length	Maximum length of the buffer.
  * @return				Driver Handle.
  */
-native Handle SQL_ReadDriver(Handle database, char[] ident="", ident_length=0);
+native Handle SQL_ReadDriver(Handle database, char[] ident="", int ident_length=0);
 
 /**
  * Retrieves a driver's identification string.
@@ -553,7 +553,6 @@ native Handle SQL_ReadDriver(Handle database, char[] ident="", ident_length=0);
  * @param driver		Driver Handle, or INVALID_HANDLE for the default driver.
  * @param ident			Identification string buffer.
  * @param maxlength		Maximum length of the buffer.
- * @noreturn
  * @error				Invalid Handle other than INVALID_HANDLE.
  */
 native void SQL_GetDriverIdent(Handle driver, char[] ident, int maxlength);
@@ -566,7 +565,6 @@ native void SQL_GetDriverIdent(Handle driver, char[] ident, int maxlength);
  * @param driver		Driver Handle, or INVALID_HANDLE for the default driver.
  * @param product		Product string buffer.
  * @param maxlength		Maximum length of the buffer.
- * @noreturn
  * @error				Invalid Handle other than INVALID_HANDLE.
  */
 native void SQL_GetDriverProduct(Handle driver, char[] product, int maxlength);
@@ -648,8 +646,8 @@ native bool SQL_EscapeString(Handle database,
 stock bool SQL_QuoteString(Handle database,
 						   const char[] string,
 						   char[] buffer,
-						   maxlength,
-						   &written=0)
+						   int maxlength,
+						   int &written=0)
 {
 	return SQL_EscapeString(database, string, buffer, maxlength, written);
 }
@@ -754,7 +752,7 @@ native int SQL_GetFieldCount(Handle query);
  * @error				Invalid query Handle, invalid field index, or
  *						no current result set.
  */
-native void SQL_FieldNumToName(Handle query, int field, String:name[], int maxlength);
+native void SQL_FieldNumToName(Handle query, int field, char[] name, int maxlength);
 
 /**
  * Retrieves a field index by name.
@@ -765,7 +763,7 @@ native void SQL_FieldNumToName(Handle query, int field, String:name[], int maxle
  * @return				True if found, false if not found.
  * @error				Invalid query Handle or no current result set.
  */
-native bool SQL_FieldNameToNum(Handle query, const char[] name, &field);
+native bool SQL_FieldNameToNum(Handle query, const char[] name, int &field);
 
 /**
  * Fetches a row from the current result set.  This must be 
@@ -813,7 +811,7 @@ native bool SQL_Rewind(Handle query);
  *						type conversion requested from the database,
  *						or no current result set.
  */
-native int SQL_FetchString(Handle query, int field, char[] buffer, int maxlength,  DBResult &result=DBVal_Error);
+native int SQL_FetchString(Handle query, int field, char[] buffer, int maxlength, DBResult &result=DBVal_Error);
 
 /**
  * Fetches a float from a field in the current row of a result set.  
@@ -1034,13 +1032,12 @@ native int SQL_AddQuery(Transaction txn, const char[] query, any data=0);
  * @param onError       An optional callback to receive an error message.
  * @param data          An optional value to pass to callbacks.
  * @param prio          Priority queue to use.
- * @noreturn
  * @error               An invalid handle.
  */
 native SQL_ExecuteTransaction(
 		Handle db,
-		Transaction:txn,
-		SQLTxnSuccess:onSuccess = INVALID_FUNCTION,
-		SQLTxnFailure:onError = INVALID_FUNCTION,
+		Transaction txn,
+		SQLTxnSuccess onSuccess = INVALID_FUNCTION,
+		SQLTxnFailure onError = INVALID_FUNCTION,
 		any data=0,
-		DBPriority:priority=DBPrio_Normal);
+		DBPriority priority=DBPrio_Normal);
