@@ -1034,7 +1034,7 @@ native int SQL_AddQuery(Transaction txn, const char[] query, any data=0);
  * @param prio          Priority queue to use.
  * @error               An invalid handle.
  */
-native SQL_ExecuteTransaction(
+native void SQL_ExecuteTransaction(
 		Handle db,
 		Transaction txn,
 		SQLTxnSuccess onSuccess = INVALID_FUNCTION,
