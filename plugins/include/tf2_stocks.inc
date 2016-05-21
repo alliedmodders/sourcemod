@@ -529,43 +529,49 @@ stock int TF2_GetPlayerConditionFlags(int client)
  */
 stock bool TF2_IsPlayerInCondition(int client, TFCond cond)
 {
-	// Conditions are stored across two netprops now, one for each 32-bit segment.
-	if (view_as<int>(cond) < 32)
+	// Conditions are stored across multiple netprops now, one for each 32-bit segment.
+	int iCond = view_as<int>(cond);
+	switch (iCond / 32)
 	{
-		int bit = 1 << view_as<int>(cond);
-		if ((GetEntProp(client, Prop_Send, "m_nPlayerCond") & bit) == bit)
+	case 0:
 		{
-			return true;
-		}
+			int bit = 1 << iCond;
+			if ((GetEntProp(client, Prop_Send, "m_nPlayerCond") & bit) == bit)
+			{
+				return true;
+			}
 
-		if ((GetEntProp(client, Prop_Send, "_condition_bits") & bit) == bit)
-		{
-			return true;
+			if ((GetEntProp(client, Prop_Send, "_condition_bits") & bit) == bit)
+			{
+				return true;
+			}
 		}
-	}
-	else if (view_as<int>(cond) < 64)
-	{
-		int bit = (1 << (view_as<int>(cond) - 32));
-		if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx") & bit) == bit)
+	case 1:
 		{
-			return true;
+			int bit = (1 << (iCond - 32));
+			if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx") & bit) == bit)
+			{
+				return true;
+			}
 		}
-	}
-	else if (view_as<int>(cond) < 96)
-	{
-		int bit = (1 << (view_as<int>(cond) - 64));
-		if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx2") & bit) == bit)
+	case 2:
 		{
-			return true;
+			int bit = (1 << (iCond - 64));
+			if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx2") & bit) == bit)
+			{
+				return true;
+			}
 		}
-	}
-	else
-	{
-		int bit = (1 << (view_as<int>(cond) - 96));
-		if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx3") & bit) == bit)
+	case 3:
 		{
-			return true;
+			int bit = (1 << (iCond - 96));
+			if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx3") & bit) == bit)
+			{
+				return true;
+			}
 		}
+	default:
+		ThrowError("Invalid TFCond value %d", iCond);
 	}
 
 	return false;
