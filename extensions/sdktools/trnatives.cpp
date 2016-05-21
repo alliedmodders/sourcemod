@@ -58,6 +58,7 @@ private:
 /* Used for the global trace version */
 Ray_t g_Ray;
 trace_t g_Trace;
+cell_t g_TraceEntRef = INVALID_EHANDLE_INDEX;
 Vector g_StartVec;
 Vector g_EndVec;
 Vector g_HullMins;
@@ -71,6 +72,18 @@ enum
 	RayType_EndPoint,
 	RayType_Infinite
 };
+
+void UpdateGlobalTraceEnt()
+{
+	if (g_Trace.m_pEnt)
+	{
+		g_TraceEntRef = gamehelpers->EntityToReference(g_Trace.m_pEnt);
+	}
+	else
+	{
+		g_TraceEntRef = INVALID_EHANDLE_INDEX;
+	}
+}
 
 static cell_t smn_TRTraceRay(IPluginContext *pContext, const cell_t *params)
 {
@@ -101,6 +114,7 @@ static cell_t smn_TRTraceRay(IPluginContext *pContext, const cell_t *params)
 
 	g_Ray.Init(g_StartVec, g_EndVec);
 	enginetrace->TraceRay(g_Ray, params[3], &g_HitAllFilter, &g_Trace);
+	UpdateGlobalTraceEnt();
 
 	return 1;
 }
@@ -120,6 +134,7 @@ static cell_t smn_TRTraceHull(IPluginContext *pContext, const cell_t *params)
 
 	g_Ray.Init(g_StartVec, g_EndVec, g_HullMins, g_HullMaxs);
 	enginetrace->TraceRay(g_Ray, params[5], &g_HitAllFilter, &g_Trace);
+	UpdateGlobalTraceEnt();
 
 	return 1;
 }
@@ -172,6 +187,7 @@ static cell_t smn_TRTraceRayFilter(IPluginContext *pContext, const cell_t *param
 
 	g_Ray.Init(g_StartVec, g_EndVec);
 	enginetrace->TraceRay(g_Ray, params[3], &g_SMTraceFilter, &g_Trace);
+	UpdateGlobalTraceEnt();
 
 	return 1;
 }
@@ -203,6 +219,7 @@ static cell_t smn_TRTraceHullFilter(IPluginContext *pContext, const cell_t *para
 
 	g_Ray.Init(g_StartVec, g_EndVec, g_HullMins, g_HullMaxs);
 	enginetrace->TraceRay(g_Ray, params[5], &g_SMTraceFilter, &g_Trace);
+	UpdateGlobalTraceEnt();
 
 	return 1;
 }
@@ -499,14 +516,16 @@ static cell_t smn_TRGetEntityIndex(IPluginContext *pContext, const cell_t *param
 
 	if (params[1] == BAD_HANDLE)
 	{
-		tr = &g_Trace;
-	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return gamehelpers->ReferenceToBCompatRef(g_TraceEntRef);
+	}
+	else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None)
+	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
 	}
 
 	if (tr->m_pEnt == NULL)
 	{
-		return 0;
+		return -1;
 	}
 
 	return gamehelpers->EntityToBCompatRef(tr->m_pEnt);
