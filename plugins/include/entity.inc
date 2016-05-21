@@ -79,14 +79,22 @@ enum PropFieldType
  */
 
 /**
- * Returns the maximum number of entities.
+ * Returns the maximum number of networked entities.
  *
- * @return				Maximum number of entities.
+ * Note: For legacy reasons, this only returns the maximum
+ * networked entities (maximum edicts), rather than total
+ * maximum entities.
+ *
+ * @return				Maximum number of networked entities.
  */
 native int GetMaxEntities();
 
 /**
- * Returns the number of entities in the server.
+ * Returns the number of networked entities in the server.
+ *
+ * Note: For legacy reasons, this only returns the current count
+ * of networked entities (current edicts), rather than total
+ * count of current entities.
  *
  * @return				Number of entities in the server.
  */
@@ -94,12 +102,12 @@ native int GetEntityCount();
 
 /**
  * Returns whether or not an entity is valid.  Returns false
- * if there is no matching CBaseEntity for this edict index.
+ * if there is no matching CBaseEntity for this entity index.
  *
- * @param edict			Index of the entity/edict.
+ * @param entity		Index of the entity.
  * @return				True if valid, false otherwise.
  */
-native bool IsValidEntity(int edict);
+native bool IsValidEntity(int entity);
 
 /**
  * Returns whether or not an edict index is valid.
@@ -110,12 +118,12 @@ native bool IsValidEntity(int edict);
 native bool IsValidEdict(int edict);
 
 /**
- * Returns whether or not an entity is a valid networkable edict.
+ * Returns whether or not an entity has a valid networkable edict.
  *
- * @param edict			Index of the edict.
+ * @param edict			Index of the entity.
  * @return				True if networkable, false if invalid or not networkable.
  */
-native bool IsEntNetworkable(int edict);
+native bool IsEntNetworkable(int entiy);
 
 /**
  * Creates a new edict (the basis of a networkable entity)
