@@ -227,8 +227,7 @@ native int GetGameDescription(char[] buffer, int maxlength, bool original=false)
  *
  * @param buffer		Buffer to store the directory name.
  * @param maxlength		Maximum size of the buffer.
- *
- * return				Number of bytes written to the buffer (UTF-8 safe).
+ * @return				Number of bytes written to the buffer (UTF-8 safe).
  */
 native int GetGameFolderName(char[] buffer, int maxlength);
 
