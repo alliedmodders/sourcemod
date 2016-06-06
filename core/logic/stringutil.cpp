@@ -83,11 +83,13 @@ unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search
 	size_t searchLen = strlen(search);
 	size_t replaceLen = strlen(replace);
 
-	char *ptr = subject;
+	char *newptr, *ptr = subject;
 	unsigned int total = 0;
-	while ((ptr = UTIL_ReplaceEx(ptr, maxlength, search, searchLen, replace, replaceLen, caseSensitive)) != NULL)
+	while ((newptr = UTIL_ReplaceEx(ptr, maxlength, search, searchLen, replace, replaceLen, caseSensitive)) != NULL)
 	{
 		total++;
+		maxlength -= newptr - ptr;
+		ptr = newptr;
 		if (*ptr == '\0')
 		{
 			break;
