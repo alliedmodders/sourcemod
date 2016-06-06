@@ -1192,10 +1192,11 @@ void CPlugin::SetRegistered()
 	m_state = PluginState::Registered;
 }
 
-void CPlugin::SetWaitingToUnload()
+void CPlugin::SetWaitingToUnload(bool andReload)
 {
-	assert(m_state == PluginState::Registered);
-	m_state = PluginState::WaitingToUnload;
+	assert(m_state == PluginState::Registered ||
+			(m_state == PluginState::WaitingToUnload && andReload));
+	m_state = andReload ? PluginState::WaitingToUnloadAndReload : PluginState::WaitingToUnload;
 }
 
 void CPluginManager::LoadExtensions(CPlugin *pPlugin)
@@ -1440,8 +1441,11 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 	assert(m_plugins.contains(pPlugin));
 
 	// If we're already in the unload queue, just wait.
-	if (pPlugin->State() == PluginState::WaitingToUnload)
+	if (pPlugin->State() == PluginState::WaitingToUnload ||
+		pPlugin->State() == PluginState::WaitingToUnloadAndReload)
+	{
 		return false;
+	}
 
 	// It is not safe to unload any plugin while another is on the callstack.
 	bool any_active = false;
@@ -2015,13 +2019,22 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			else
 				strcpy(name, pl->GetFilename());
 
-			if (ReloadPlugin(pl))
+			if (ReloadPlugin(pl, true))
 			{
 				rootmenu->ConsolePrint("[SM] Plugin %s reloaded successfully.", name);
 			}
 			else
 			{
-				rootmenu->ConsolePrint("[SM] Failed to reload plugin %s.", name);
+				switch (pl->State())
+				{
+					//the unload/reload attempt next frame will print a message
+					case PluginState::WaitingToUnload:
+					case PluginState::WaitingToUnloadAndReload:
+						return;
+
+					default:
+						rootmenu->ConsolePrint("[SM] Failed to reload plugin %s.", name);
+				}
 			}
 
 			return;
@@ -2041,15 +2054,14 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 	rootmenu->DrawGenericOption("unload_all", "Unloads all plugins");
 }
 
-bool CPluginManager::ReloadPlugin(CPlugin *pl)
+bool CPluginManager::ReloadPlugin(CPlugin *pl, bool print)
 {
-	char filename[PLATFORM_MAX_PATH];
-	bool wasloaded;
-	PluginType ptype;
-	IPlugin *newpl;
+	PluginState state = pl->State();
+	if (state == PluginState::WaitingToUnloadAndReload)
+		return false;
 
-	strcpy(filename, pl->GetFilename());
-	ptype = pl->GetType();
+	ke::AString filename(pl->GetFilename());
+	PluginType ptype = pl->GetType();
 
 	int id = 1;
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next(), id++) {
@@ -2059,12 +2071,33 @@ bool CPluginManager::ReloadPlugin(CPlugin *pl)
 
 	if (!UnloadPlugin(pl))
 	{
+		if (pl->State() == PluginState::WaitingToUnload)
+		{
+			pl->SetWaitingToUnload(true);
+			ScheduleTaskForNextFrame([this, id, filename, ptype, print]() -> void {
+				ReloadPluginImpl(id, filename.chars(), ptype, print);
+			});
+		}
 		return false;
 	}
-	if (!(newpl=LoadPlugin(filename, true, ptype, NULL, 0, &wasloaded)))
+
+	ReloadPluginImpl(id, filename.chars(), ptype, false);
+	return true;
+}
+
+void CPluginManager::ReloadPluginImpl(int id, const char filename[], PluginType ptype, bool print)
+{
+	char error[128];
+	bool wasloaded;
+	IPlugin *newpl = LoadPlugin(filename, true, ptype, error, sizeof(error), &wasloaded);
+	if (!newpl) 
 	{
-		return false;
+		rootmenu->ConsolePrint("[SM] Plugin %s failed to reload: %s.", filename, error);
+		return;
 	}
+
+	if (print)
+		rootmenu->ConsolePrint("[SM] Plugin %s reloaded successfully.", filename);
 
 	m_plugins.remove(static_cast<CPlugin *>(newpl));
 
@@ -2073,8 +2106,6 @@ bool CPluginManager::ReloadPlugin(CPlugin *pl)
 		// Empty loop.
 	}
 	m_plugins.insertBefore(iter, static_cast<CPlugin *>(newpl));
-
-	return true;
 }
 
 void CPluginManager::RefreshAll()
