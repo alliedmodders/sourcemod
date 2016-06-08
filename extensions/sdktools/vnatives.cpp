@@ -829,12 +829,13 @@ static cell_t NativeFindEntityByClassname(IPluginContext *pContext, const cell_t
 
 static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *params)
 {
-#if SOURCE_ENGINE == SE_TF2      \
-	|| SOURCE_ENGINE == SE_DODS  \
-	|| SOURCE_ENGINE == SE_HL2DM \
-	|| SOURCE_ENGINE == SE_CSS   \
-	|| SOURCE_ENGINE == SE_BMS   \
-	|| SOURCE_ENGINE == SE_SDK2013
+#if SOURCE_ENGINE == SE_TF2        \
+	|| SOURCE_ENGINE == SE_DODS    \
+	|| SOURCE_ENGINE == SE_HL2DM   \
+	|| SOURCE_ENGINE == SE_CSS     \
+	|| SOURCE_ENGINE == SE_BMS     \
+	|| SOURCE_ENGINE == SE_SDK2013 \
+	|| SOURCE_ENGINE == SE_NUCLEARDAWN
 
 	static bool bHasServerTools3 = !!g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr);
 	if (bHasServerTools3)
