@@ -44,7 +44,7 @@
 #if !defined WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#if !defined snprintf
+#if !defined snprintf && defined _MSC_VER && _MSC_VER < 1900
 #define snprintf _snprintf
 #endif
 #if !defined stat
