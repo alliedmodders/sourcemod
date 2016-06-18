@@ -174,11 +174,6 @@ public Action Command_Rename(int client, int args)
 			ShowActivity2(client, "[SM] ", "%t", "Renamed target", "_s", target_name);
 		}
 
-		if (target_count > 1) /* We cannot name everyone the same thing. */
-		{
-			randomize = true;
-		}
-
 		for (int i = 0; i < target_count; i++)
 		{
 			if(randomize)
@@ -187,7 +182,10 @@ public Action Command_Rename(int client, int args)
 			}
 			else
 			{
-				Format(g_NewName[target_list[i]], MAX_NAME_LENGTH, "%s", arg2);
+				if(target_count>1)
+					Format(g_NewName[target_list[i]], MAX_NAME_LENGTH, "%s %i", arg2, i+1);
+				else
+					Format(g_NewName[target_list[i]], MAX_NAME_LENGTH, "%s", arg2);
 			}
 			PerformRename(client, target_list[i]);
 		}
