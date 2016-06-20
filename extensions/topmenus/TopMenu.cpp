@@ -36,7 +36,7 @@
 struct obj_by_name_t
 {
 	unsigned int obj_index;
-	char name[64];
+	char name[TOPMENU_DISPLAY_BUFFER_SIZE];
 };
 
 int _SortObjectNamesDescending(const void *ptr1, const void *ptr2);
@@ -667,7 +667,7 @@ unsigned int TopMenu::OnMenuDisplayItem(IBaseMenu *menu,
 		return 0;
 
 	/* Ask the object to render the text for this client */
-	char renderbuf[64];
+	char renderbuf[TOPMENU_DISPLAY_BUFFER_SIZE];
 	obj->callbacks->OnTopMenuDisplayOption(this, client, obj->object_id, renderbuf, sizeof(renderbuf));
 
 	/* Build the new draw info */
