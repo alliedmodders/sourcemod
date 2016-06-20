@@ -176,16 +176,20 @@ public Action Command_Rename(int client, int args)
 
 		for (int i = 0; i < target_count; i++)
 		{
-			if(randomize)
+			if (randomize)
 			{
 				RandomizeName(target_list[i]);
 			}
 			else
 			{
-				if(target_count>1)
+				if (target_count > 1)
+				{
 					Format(g_NewName[target_list[i]], MAX_NAME_LENGTH, "%s %i", arg2, i+1);
+				}
 				else
+				{
 					Format(g_NewName[target_list[i]], MAX_NAME_LENGTH, "%s", arg2);
+				}
 			}
 			PerformRename(client, target_list[i]);
 		}
