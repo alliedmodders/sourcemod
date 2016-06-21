@@ -20,6 +20,7 @@ elif builder.target_platform == 'windows':
 
 binary.sources += [
   'extension.cpp',
+  'natives.cpp',
   'FileDownloader.cpp',
   'MemoryDownloader.cpp',
   'curlapi.cpp',
