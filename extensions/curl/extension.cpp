@@ -156,11 +156,18 @@ static cell_t HTTP_CreateFileDownloader(IPluginContext *pCtx, const cell_t *para
 		return pCtx->ThrowNativeError("Could not create downloader");
 	}
 
-	return g_pHandleSys->CreateHandle(g_DownloadHandle,
+	auto hndl = g_pHandleSys->CreateHandle(g_DownloadHandle,
 		(void*)downloader,
 		pCtx->GetIdentity(),
 		myself->GetIdentity(),
 		NULL);
+
+	if (hndl == BAD_HANDLE)
+	{
+		delete downloader;
+	}
+
+	return hndl;
 }
 
 static cell_t HTTP_CreateMemoryDownloader(IPluginContext *pCtx, const cell_t *params)
@@ -172,11 +179,18 @@ static cell_t HTTP_CreateMemoryDownloader(IPluginContext *pCtx, const cell_t *pa
 		return pCtx->ThrowNativeError("Could not create downloader");
 	}
 
-	return g_pHandleSys->CreateHandle(g_DownloadHandle,
+	auto hndl = g_pHandleSys->CreateHandle(g_DownloadHandle,
 		(void*)downloader,
 		pCtx->GetIdentity(),
 		myself->GetIdentity(),
 		NULL);
+
+	if (hndl == BAD_HANDLE)
+	{
+		delete downloader;
+	}
+
+	return hndl;
 }
 
 static cell_t HTTP_CreateWebForm(IPluginContext *pCtx, const cell_t *params)
@@ -188,11 +202,18 @@ static cell_t HTTP_CreateWebForm(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Could not create web form");
 	}
 
-	return g_pHandleSys->CreateHandle(g_FormHandle,
+	auto hndl = g_pHandleSys->CreateHandle(g_FormHandle,
 		(void*)form,
 		pCtx->GetIdentity(),
 		myself->GetIdentity(),
 		NULL);
+
+	if (hndl == BAD_HANDLE)
+	{
+		delete form;
+	}
+
+	return hndl;
 }
 
 static cell_t HTTP_AddStringToWebForm(IPluginContext *pCtx, const cell_t *params)
@@ -272,11 +293,18 @@ static cell_t HTTP_CreateSession(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Could not create session");
 	}
 
-	return g_pHandleSys->CreateHandle(g_SessionHandle, 
+	auto hndl = g_pHandleSys->CreateHandle(g_SessionHandle, 
 		(void*)x, 
 		pCtx->GetIdentity(), 
 		myself->GetIdentity(),
 		NULL);
+
+	if (hndl == BAD_HANDLE)
+	{
+		delete x;
+	}
+
+	return hndl;
 }
 
 static cell_t HTTP_GetLastError(IPluginContext *pCtx, const cell_t *params)
