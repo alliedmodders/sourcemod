@@ -139,17 +139,26 @@ public:
 
 extern HTTPHandleDispatcher g_HTTPHandler;
 
-struct HTTPRequestCompletedContextFunction {
-	funcid_t uPluginFunction;
-	bool bHasContext;
-};
-
-union HTTPRequestCompletedContextPack {
-	uint64_t ulContextValue;
-	struct {
-		HTTPRequestCompletedContextFunction *pCallbackFunction;
-		cell_t iPluginContextValue;
-	};
+class HTTPRequestCompletedContext
+{
+public:
+	HTTPRequestCompletedContext() {}
+	HTTPRequestCompletedContext(funcid_t callback)
+	{
+		m_uPluginFunction = callback;
+	}
+	inline void SetContextValue(cell_t value)
+	{
+		m_iPluginContextValue = value;
+		m_bHasContext = true;
+	}
+	inline funcid_t GetPluginFunction() { return m_uPluginFunction; }
+	inline bool HasContextValue() { return m_bHasContext; }
+	inline cell_t GetContextValue() { return m_iPluginContextValue; }
+private:
+	funcid_t m_uPluginFunction = 0;
+	cell_t m_iPluginContextValue;
+	bool m_bHasContext = false;
 };
 
 struct HTTPRequestHandleSet
@@ -177,11 +186,11 @@ public:
 	void PostAndDownload(IPluginContext *pCtx, 
 		HTTPRequestHandleSet handles,
 		const char *url,
-		HTTPRequestCompletedContextPack contextPack);
+		HTTPRequestCompletedContext &reqCtx);
 	void Download(IPluginContext *pCtx, 
 		HTTPRequestHandleSet handles,
 		const char *url,
-		HTTPRequestCompletedContextPack contextPack);
+		HTTPRequestCompletedContext &reqCtx);
 protected:
 	
 private:
@@ -201,7 +210,7 @@ private:
 		HTTPRequestMethod method;
 		HTTPRequestHandleSet handles;
 		const char *url;
-		HTTPRequestCompletedContextPack contextPack;
+		HTTPRequestCompletedContext context;
 		cell_t result;
 
 		bool operator==(const HTTPRequest& lhs) const

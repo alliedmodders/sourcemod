@@ -399,21 +399,17 @@ static cell_t HTTP_PostAndDownload(IPluginContext *pCtx, const cell_t *params)
 	// 4th param: target URL
 	pCtx->LocalToString(params[4], &url);
 
-	HTTPRequestCompletedContextPack contextPack;
-	contextPack.pCallbackFunction = new HTTPRequestCompletedContextFunction;
-
 	// 5th param: callback function
-	contextPack.pCallbackFunction->uPluginFunction = params[5];
+	HTTPRequestCompletedContext ctx(params[5]);
 
 	// 6th param: custom user data
 	if (params[0] >= 6)
 	{
-		contextPack.pCallbackFunction->bHasContext = true;
-		contextPack.iPluginContextValue = params[6];
+		ctx.SetContextValue(params[6]);
 	}
 
 	// Queue request for asynchronous execution
-	g_SessionManager.PostAndDownload(pCtx, handles, url, contextPack);
+	g_SessionManager.PostAndDownload(pCtx, handles, url, ctx);
 	
 	return true;
 }
@@ -464,21 +460,17 @@ static cell_t HTTP_Download(IPluginContext *pCtx, const cell_t *params)
 	// 3rd param: target URL
 	pCtx->LocalToString(params[3], &url);
 
-	HTTPRequestCompletedContextPack contextPack;
-	contextPack.pCallbackFunction = new HTTPRequestCompletedContextFunction;
-
 	// 4th param: callback function
-	contextPack.pCallbackFunction->uPluginFunction = params[4];
+	HTTPRequestCompletedContext ctx(params[4]);
 
 	// 5th param: custom user data
 	if (params[0] >= 5)
 	{
-		contextPack.pCallbackFunction->bHasContext = true;
-		contextPack.iPluginContextValue = params[5];
+		ctx.SetContextValue(params[5]);
 	}
 
 	// Queue request for asynchronous execution
-	g_SessionManager.Download(pCtx, handles, url, contextPack);
+	g_SessionManager.Download(pCtx, handles, url, ctx);
 
 	return true;
 }
@@ -580,7 +572,7 @@ static cell_t HTTP_SetFailOnHTTPError(IPluginContext *pCtx, const cell_t *params
 		return pCtx->ThrowNativeError("HTTP session data not found\n");
 	}
 
-	return xfer->SetFailOnHTTPError(static_cast<bool>(params[2]));
+	return xfer->SetFailOnHTTPError(params[2] != 0);
 }
 
 const sp_nativeinfo_t curlext_natives[] = 
@@ -628,7 +620,7 @@ void HTTPSessionManager::PluginUnloaded(IPlugin *plugin)
 
 void HTTPSessionManager::PostAndDownload(IPluginContext *pCtx, 
 	HTTPRequestHandleSet handles, const char *url, 
-	HTTPRequestCompletedContextPack contextPack)
+	HTTPRequestCompletedContext &reqCtx)
 {
 	HTTPRequest request = {};
 	BurnSessionHandle(pCtx, handles);
@@ -637,14 +629,14 @@ void HTTPSessionManager::PostAndDownload(IPluginContext *pCtx,
 	request.handles = handles;
 	request.method = HTTP_POST;
 	request.url = url;
-	request.contextPack = contextPack;
+	request.context = reqCtx;
 
 	m_pWorker->MakeThread(new HTTPAsyncRequestHandler(request), Thread_AutoRelease);
 }
 
 void HTTPSessionManager::Download(IPluginContext *pCtx, 
 	HTTPRequestHandleSet handles, const char *url, 
-	HTTPRequestCompletedContextPack contextPack)
+	HTTPRequestCompletedContext &reqCtx)
 {
 	HTTPRequest request = {};
 	BurnSessionHandle(pCtx, handles);
@@ -653,7 +645,7 @@ void HTTPSessionManager::Download(IPluginContext *pCtx,
 	request.handles = handles;
 	request.method = HTTP_GET;
 	request.url = url;
-	request.contextPack = contextPack;
+	request.context = reqCtx;
 
 	m_pWorker->MakeThread(new HTTPAsyncRequestHandler(request), Thread_AutoRelease);
 }
@@ -693,7 +685,7 @@ void HTTPSessionManager::RunFrame()
 			if (parent != NULL && herr != HandleError_Freed)
 			{
 				IPluginContext *pCtx = parent->GetBaseContext();
-				funcid_t id = request.contextPack.pCallbackFunction->uPluginFunction;
+				funcid_t id = request.context.GetPluginFunction();
 				IPluginFunction *pFunction = pCtx->GetFunctionById(id);
 
 				if (pFunction != NULL)
@@ -702,9 +694,9 @@ void HTTPSessionManager::RunFrame()
 					pFunction->PushCell(request.handles.hndlSession);
 					pFunction->PushCell(request.result);
 					pFunction->PushCell(request.handles.hndlDownloader);
-					if (request.contextPack.pCallbackFunction->bHasContext)
+					if (request.context.HasContextValue())
 					{
-						pFunction->PushCell(request.contextPack.iPluginContextValue);
+						pFunction->PushCell(request.context.GetContextValue());
 					}
 					pFunction->Execute(NULL);
 				}
