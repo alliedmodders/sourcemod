@@ -190,9 +190,8 @@ static cell_t sm_SquareRoot(IPluginContext *pCtx, const cell_t *params)
 static cell_t sm_RoundToNearest(IPluginContext *pCtx, const cell_t *params)
 {
 	float val = sp_ctof(params[1]);
-	val = (float)floor(val + 0.5f);
 
-	return static_cast<int>(val);
+	return (int)val;
 }
 
 static cell_t sm_RoundToFloor(IPluginContext *pCtx, const cell_t *params)
