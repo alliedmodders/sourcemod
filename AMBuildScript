@@ -193,6 +193,8 @@ class SMConfig(object):
         else:
           cxx.cxxflags += ['-Wno-deprecated']
         cxx.cflags += ['-Wno-sometimes-uninitialized']
+        if cxx.version >= 'clang-3.6'
+          cxx.cxxflags += ['-Wno-inconsistent-missing-override']
 
       cxx.linkflags += ['-m32']
       cxx.cxxflags += [
