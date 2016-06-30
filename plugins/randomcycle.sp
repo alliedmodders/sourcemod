@@ -82,6 +82,7 @@ public void OnConfigsExecuted()
 public Action Timer_RandomizeNextmap(Handle timer)
 {
 	char map[PLATFORM_MAX_PATH];
+	char resolvedMap[PLATFORM_MAX_PATH];
 
 	bool oldMaps = false;
 	if (g_Cvar_ExcludeMaps.IntValue && g_MapList.Length > g_Cvar_ExcludeMaps.IntValue)
@@ -89,16 +90,14 @@ public Action Timer_RandomizeNextmap(Handle timer)
 		oldMaps = true;
 	}
 	
-	int b = GetRandomInt(0, g_MapList.Length - 1);
-	g_MapList.GetString(b, map, sizeof(map));
-
-	while (oldMaps && g_OldMapList.FindString(map) != -1)
+	do
 	{
-		b = GetRandomInt(0, g_MapList.Length - 1);
+		int b = GetRandomInt(0, g_MapList.Length - 1);
 		g_MapList.GetString(b, map, sizeof(map));
-	}
+		FindMap(map, resolvedMap, sizeof(resolvedMap));
+	} while (oldMaps && g_OldMapList.FindString(resolvedMap) != -1);
 	
-	g_OldMapList.PushString(map);
+	g_OldMapList.PushString(resolvedMap);
 	SetNextMap(map);
 
 	if (g_OldMapList.Length > g_Cvar_ExcludeMaps.IntValue)

@@ -58,9 +58,7 @@ bool g_ClientMutes[SM_MAXPLAYERS+1][SM_MAXPLAYERS+1];
 
 SH_DECL_HOOK3(IVoiceServer, SetClientListening, SH_NOATTRIB, 0, bool, int, int, bool);
 
-#if SOURCE_ENGINE == SE_DOTA
-SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, CEntityIndex, const CCommand &);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *, const CCommand &);
 #else
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
@@ -93,11 +91,7 @@ void SDKTools::VoiceInit()
 	SH_ADD_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &SDKTools::OnClientCommand), true);
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void SDKTools::OnClientCommand(CEntityIndex index, const CCommand &args)
-{
-	int client = index.Get();
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void SDKTools::OnClientCommand(edict_t *pEntity, const CCommand &args)
 {
 	int client = IndexOfEdict(pEntity);

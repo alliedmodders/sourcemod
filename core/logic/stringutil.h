@@ -41,6 +41,7 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
 size_t UTIL_DecodeHexString(unsigned char *buffer, size_t maxlength, const char *hexstr);
 
 void UTIL_StripExtension(const char *in, char *out, int outSize);
+char *UTIL_TrimWhitespace(char *str, size_t &len);
 
 #endif /* _INCLUDE_SOURCEMOD_COMMON_STRINGUTIL_H_ */
 

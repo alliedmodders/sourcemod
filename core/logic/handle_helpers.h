@@ -32,6 +32,7 @@
 #define _include_sourcemod_handle_helpers_h_
 
 #include "common_logic.h"
+#include <IHandleSys.h>
 
 // T must be a pointer type.
 template <typename T>

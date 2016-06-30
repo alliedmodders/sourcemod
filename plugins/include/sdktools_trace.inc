@@ -71,7 +71,7 @@
  * @endsection
  */
 
-#define	CONTENTS_ORIGIN			0x1000000	/**< removed before bsping an entity. */
+#define	CONTENTS_ORIGIN			0x1000000	/**< removed before bsp-ing an entity. */
 #define	CONTENTS_MONSTER		0x2000000	/**< should never be on a brush, only in game. */
 #define	CONTENTS_DEBRIS			0x4000000
 #define	CONTENTS_DETAIL			0x8000000	/**< brushes to be added after vis leafs. */
@@ -139,7 +139,7 @@ typeset TraceEntityFilter
  * @param entindex		Entity index found at the given position (by reference).
  * @return				Contents mask.
  */
-native TR_GetPointContents(const Float:pos[3], &entindex=-1);
+native int TR_GetPointContents(const float pos[3], int &entindex=-1);
 
 /**
  * Get the point contents testing only the given entity index.
@@ -148,7 +148,7 @@ native TR_GetPointContents(const Float:pos[3], &entindex=-1);
  * @param pos			World position.
  * @return				Contents mask.
  */
-native TR_GetPointContentsEnt(entindex, const Float:pos[3]);
+native int TR_GetPointContentsEnt(int entindex, const float pos[3]);
 
 /**
  * Starts up a new trace ray using a global trace result.
@@ -158,12 +158,11 @@ native TR_GetPointContentsEnt(entindex, const Float:pos[3]);
  *						ending point, or the direction angle.
  * @param flags			Trace flags.
  * @param rtype			Method to calculate the ray direction.
- * @noreturn
  */
-native TR_TraceRay(const Float:pos[3],
-				   const Float:vec[3],
-				   flags,
-				   RayType:rtype);
+native void TR_TraceRay(const float pos[3],
+						const float vec[3],
+						int flags,
+						RayType rtype);
 				   
 /**
  * Starts up a new trace hull using a global trace result.
@@ -173,13 +172,12 @@ native TR_TraceRay(const Float:pos[3],
  * @param mins			Hull minimum size.
  * @param maxs			Hull maximum size.
  * @param flags			Trace flags.
- * @noreturn
  */
-native TR_TraceHull(const Float:pos[3],
-					const Float:vec[3],
-					const Float:mins[3],
-					const Float:maxs[3],
-					flags);
+native void TR_TraceHull(const float pos[3],
+						 const float vec[3],
+						 const float mins[3],
+						 const float maxs[3],
+						 int flags);
 
 /**
  * Starts up a new trace ray using a global trace result and a customized 
@@ -196,14 +194,13 @@ native TR_TraceHull(const Float:pos[3],
  * @param filter		Function to use as a filter.
  * @param data			Arbitrary data value to pass through to the filter 
  *						function.
- * @noreturn
  */
-native TR_TraceRayFilter(const Float:pos[3],
-						 const Float:vec[3],
-						 flags,
-						 RayType:rtype,
-						 TraceEntityFilter:filter,
-						 any:data=0);
+native void TR_TraceRayFilter(const float pos[3],
+							  const float vec[3],
+							  int flags,
+							  RayType rtype,
+							  TraceEntityFilter filter,
+							  any data=0);
 						 
 /**
  * Starts up a new trace hull using a global trace result and a customized 
@@ -221,15 +218,14 @@ native TR_TraceRayFilter(const Float:pos[3],
  * @param filter		Function to use as a filter.
  * @param data			Arbitrary data value to pass through to the filter 
  *						function.
- * @noreturn
  */
-native TR_TraceHullFilter(const Float:pos[3],
-						  const Float:vec[3],
-						  const Float:mins[3],
-						  const Float:maxs[3],
-						  flags,
-						  TraceEntityFilter:filter,
-						  any:data=0);
+native void TR_TraceHullFilter(const float pos[3],
+							   const float vec[3],
+							   const float mins[3],
+							   const float maxs[3],
+							   int flags,
+							   TraceEntityFilter filter,
+							   any data=0);
 
 /**
  * Starts up a new trace ray using a new trace result.
@@ -241,10 +237,10 @@ native TR_TraceHullFilter(const Float:pos[3],
  * @param rtype			Method to calculate the ray direction.
  * @return				Ray trace handle, which must be closed via CloseHandle().
  */
-native Handle:TR_TraceRayEx(const Float:pos[3],
-							const Float:vec[3],
-							flags,
-							RayType:rtype);
+native Handle TR_TraceRayEx(const float pos[3],
+							const float vec[3],
+							int flags,
+							RayType rtype);
 							
 /**
  * Starts up a new trace hull using a new trace result.
@@ -256,11 +252,11 @@ native Handle:TR_TraceRayEx(const Float:pos[3],
  * @param flags			Trace flags.
  * @return				Ray trace handle, which must be closed via CloseHandle().
  */
-native Handle:TR_TraceHullEx(const Float:pos[3],
-							 const Float:vec[3],
-							 const Float:mins[3],
-							 const Float:maxs[3],
-							 flags);
+native Handle TR_TraceHullEx(const float pos[3],
+							 const float vec[3],
+							 const float mins[3],
+							 const float maxs[3],
+							 int flags);
 
 /**
  * Starts up a new trace ray using a new trace result and a customized 
@@ -278,12 +274,12 @@ native Handle:TR_TraceHullEx(const Float:pos[3],
  * @param data			Arbitrary data value to pass through to the filter function.
  * @return				Ray trace handle, which must be closed via CloseHandle().
  */
-native Handle:TR_TraceRayFilterEx(const Float:pos[3], 
-								  const Float:vec[3],
-								  flags, 
-								  RayType:rtype, 
-								  TraceEntityFilter:filter,
-								  any:data=0);
+native Handle TR_TraceRayFilterEx(const float pos[3], 
+								  const float vec[3],
+								  int flags, 
+								  RayType rtype, 
+								  TraceEntityFilter filter,
+								  any data=0);
 								  
 /**
  * Starts up a new trace hull using a new trace result and a customized 
@@ -301,13 +297,13 @@ native Handle:TR_TraceRayFilterEx(const Float:pos[3],
  * @param data			Arbitrary data value to pass through to the filter function.
  * @return				Ray trace handle, which must be closed via CloseHandle().
  */
-native Handle:TR_TraceHullFilterEx(const Float:pos[3], 
-								   const Float:vec[3],
-								   const Float:mins[3],
-								   const Float:maxs[3],
-								   flags, 
-								   TraceEntityFilter:filter,
-								   any:data=0);
+native Handle TR_TraceHullFilterEx(const float pos[3], 
+								   const float vec[3],
+								   const float mins[3],
+								   const float maxs[3],
+								   int flags, 
+								   TraceEntityFilter filter,
+								   any data=0);
 
 /**
  * Returns the time fraction from a trace result (1.0 means no collision).
@@ -316,17 +312,16 @@ native Handle:TR_TraceHullFilterEx(const Float:pos[3],
  * @return				Time fraction value of the trace.
  * @error				Invalid Handle.
  */
-native Float:TR_GetFraction(Handle:hndl=INVALID_HANDLE);
+native float TR_GetFraction(Handle hndl=INVALID_HANDLE);
 
 /**
  * Returns the collision position of a trace result.
  *
  * @param pos			Vector buffer to store data in.
  * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
- * @noreturn
  * @error				Invalid Handle.
  */
-native TR_GetEndPosition(Float:pos[3], Handle:hndl=INVALID_HANDLE);
+native void TR_GetEndPosition(float pos[3], Handle hndl=INVALID_HANDLE);
 
 /**
  * Returns the entity index that collided with the trace.
@@ -335,7 +330,7 @@ native TR_GetEndPosition(Float:pos[3], Handle:hndl=INVALID_HANDLE);
  * @return				Entity index or -1 for no collision.
  * @error				Invalid Handle.
  */
-native TR_GetEntityIndex(Handle:hndl=INVALID_HANDLE);
+native int TR_GetEntityIndex(Handle hndl=INVALID_HANDLE);
 
 /**
  * Returns if there was any kind of collision along the trace ray.
@@ -344,7 +339,7 @@ native TR_GetEntityIndex(Handle:hndl=INVALID_HANDLE);
  * @return				True if any collision found, otherwise false.
  * @error				Invalid Handle.
  */
-native bool:TR_DidHit(Handle:hndl=INVALID_HANDLE);
+native bool TR_DidHit(Handle hndl=INVALID_HANDLE);
 
 /**
  * Returns in which body hit group the trace collided if any.
@@ -353,17 +348,16 @@ native bool:TR_DidHit(Handle:hndl=INVALID_HANDLE);
  * @return				Body hit group.
  * @error				Invalid Handle.
  */
-native TR_GetHitGroup(Handle:hndl=INVALID_HANDLE);
+native int TR_GetHitGroup(Handle hndl=INVALID_HANDLE);
 
 /**
- * Find the normal vector to the collison plane of a trace.
+ * Find the normal vector to the collision plane of a trace.
  *
  * @param hndl		A trace Handle, or INVALID_HANDLE to use a global trace result.
  * @param normal	Vector buffer to store the vector normal to the collision plane
- * @noreturn
  * @error			Invalid Handle
  */
-native TR_GetPlaneNormal(Handle:hndl, Float:normal[3]);
+native void TR_GetPlaneNormal(Handle hndl, float normal[3]);
 
 /**
  * Tests a point to see if it's outside any playable area
@@ -371,4 +365,4 @@ native TR_GetPlaneNormal(Handle:hndl, Float:normal[3]);
  * @param pos		Vector buffer to store data in.
  * @return		True if outside world, otherwise false.
  */
-native TR_PointOutsideWorld(Float:pos[3]);
+native bool TR_PointOutsideWorld(float pos[3]);

@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2016 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -63,6 +63,15 @@ enum ConfigSource
 {
 	ConfigSource_File = 0,		/**< Config option was set from config file (core.cfg) */
 	ConfigSource_Console = 1,	/**< Config option was set from console command (sm config) */
+};
+
+// Must match clients.inc
+enum class AuthIdType
+{
+	Engine = 0,
+	Steam2,
+	Steam3,
+	SteamId64,
 };
 
 /** 
@@ -156,13 +165,6 @@ public:
 	 * @brief Called after plugins are loaded on mapchange.
 	 */
 	virtual void OnSourceModPluginsLoaded()
-	{
-	}
-
-	/**
-	 * @brief Called when SourceMod receives a pointer to IServerPluginCallbacks from SourceMM
-	 */
-	virtual void OnSourceModVSPReceived()
 	{
 	}
 

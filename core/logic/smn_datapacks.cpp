@@ -32,12 +32,7 @@
 #include "common_logic.h"
 #include <IHandleSys.h>
 #include <ISourceMod.h>
-
-// This just in from the bucket o' hacks department.
-// One day, IDataPack will go away and CDataPack will be merged into this file.
-// This internal header is included directly to access GetCapacity,
-// which can not be added to the public interface due to ABI issues.
-#include "../CDataPack.h"
+#include "CDataPack.h"
 
 HandleType_t g_DataPackType;
 
@@ -66,7 +61,7 @@ public:
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		g_pSM->FreeDataPack(reinterpret_cast<IDataPack *>(object));
+		CDataPack::Free(reinterpret_cast<IDataPack *>(object));
 	}
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
 	{
@@ -78,7 +73,7 @@ public:
 
 static cell_t smn_CreateDataPack(IPluginContext *pContext, const cell_t *params)
 {
-	IDataPack *pDataPack = g_pSM->CreateDataPack();
+	IDataPack *pDataPack = CDataPack::New();
 
 	if (!pDataPack)
 	{

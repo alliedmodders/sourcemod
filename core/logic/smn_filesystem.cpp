@@ -40,8 +40,11 @@
 #include <ITranslator.h>
 #include "common_logic.h"
 #include "Logger.h"
+#include "sprintf.h"
 #include <am-utility.h>
 #include "handle_helpers.h"
+#include <bridge/include/IFileSystemBridge.h>
+#include <bridge/include/CoreProvider.h>
 
 #if defined PLATFORM_WINDOWS
 #include <io.h>
@@ -98,54 +101,54 @@ public:
 	}
 
 	static ValveFile *Open(const char *filename, const char *mode, const char *pathID) {
-		FileHandle_t handle = smcore.filesystem->Open(filename, mode, pathID);
+		FileHandle_t handle = bridge->filesystem->Open(filename, mode, pathID);
 		if (!handle)
 			return NULL;
 		return new ValveFile(handle);
 	}
 
 	static bool Delete(const char *filename, const char *pathID) {
-		if (!smcore.filesystem->FileExists(filename, pathID))
+		if (!bridge->filesystem->FileExists(filename, pathID))
 			return false;
 
-		smcore.filesystem->RemoveFile(filename, pathID);
+		bridge->filesystem->RemoveFile(filename, pathID);
 
-		if (smcore.filesystem->FileExists(filename, pathID))
+		if (bridge->filesystem->FileExists(filename, pathID))
 			return false;
 
 		return true;
 	}
 
-	size_t Read(void *pOut, int size) KE_OVERRIDE {
-		return (size_t)smcore.filesystem->Read(pOut, size, handle_);
+	size_t Read(void *pOut, int size) override {
+		return (size_t)bridge->filesystem->Read(pOut, size, handle_);
 	}
-	char *ReadLine(char *pOut, int size) KE_OVERRIDE {
-		return smcore.filesystem->ReadLine(pOut, size, handle_);
+	char *ReadLine(char *pOut, int size) override {
+		return bridge->filesystem->ReadLine(pOut, size, handle_);
 	}
-	size_t Write(const void *pData, int size) KE_OVERRIDE {
-		return (size_t)smcore.filesystem->Write(pData, size, handle_);
+	size_t Write(const void *pData, int size) override {
+		return (size_t)bridge->filesystem->Write(pData, size, handle_);
 	}
-	bool Seek(int pos, int seek_type) KE_OVERRIDE  {
-		smcore.filesystem->Seek(handle_, pos, seek_type);
+	bool Seek(int pos, int seek_type) override  {
+		bridge->filesystem->Seek(handle_, pos, seek_type);
 		return !HasError();
 	}
-	int Tell() KE_OVERRIDE {
-		return smcore.filesystem->Tell(handle_);
+	int Tell() override {
+		return bridge->filesystem->Tell(handle_);
 	}
-	bool HasError() KE_OVERRIDE {
-		return !handle_ || !smcore.filesystem->IsOk(handle_);
+	bool HasError() override {
+		return !handle_ || !bridge->filesystem->IsOk(handle_);
 	}
-	bool Flush() KE_OVERRIDE {
-		smcore.filesystem->Flush(handle_);
+	bool Flush() override {
+		bridge->filesystem->Flush(handle_);
 		return true;
 	}
-	bool EndOfFile() KE_OVERRIDE {
-		return smcore.filesystem->EndOfFile(handle_);
+	bool EndOfFile() override {
+		return bridge->filesystem->EndOfFile(handle_);
 	}
-	void Close() KE_OVERRIDE {
+	void Close() override {
 		if (!handle_)
 			return;
-		smcore.filesystem->Close(handle_);
+		bridge->filesystem->Close(handle_);
 		handle_ = NULL;
 	}
 	virtual ValveFile *AsValveFile() {
@@ -180,31 +183,31 @@ public:
 		return unlink(path) == 0;
 	}
 
-	size_t Read(void *pOut, int size) KE_OVERRIDE {
+	size_t Read(void *pOut, int size) override {
 		return fread(pOut, 1, size, fp_);
 	}
-	char *ReadLine(char *pOut, int size) KE_OVERRIDE {
+	char *ReadLine(char *pOut, int size) override {
 		return fgets(pOut, size, fp_);
 	}
-	size_t Write(const void *pData, int size) KE_OVERRIDE {
+	size_t Write(const void *pData, int size) override {
 		return fwrite(pData, 1, size, fp_);
 	}
-	bool Seek(int pos, int seek_type) KE_OVERRIDE  {
+	bool Seek(int pos, int seek_type) override  {
 		return fseek(fp_, pos, seek_type) == 0;
 	}
-	int Tell() KE_OVERRIDE {
+	int Tell() override {
 		return ftell(fp_);
 	}
-	bool HasError() KE_OVERRIDE {
+	bool HasError() override {
 		return ferror(fp_) != 0;
 	}
-	bool Flush() KE_OVERRIDE {
+	bool Flush() override {
 		return fflush(fp_) == 0;
 	}
-	bool EndOfFile() KE_OVERRIDE {
+	bool EndOfFile() override {
 		return feof(fp_) != 0;
 	}
-	void Close() KE_OVERRIDE {
+	void Close() override {
 		if (!fp_)
 			return;
 		fclose(fp_);
@@ -271,7 +274,7 @@ public:
 		else if (type == g_ValveDirType)
 		{
 			ValveDirectory *valveDir = (ValveDirectory *)object;
-			smcore.filesystem->FindClose(valveDir->hndl);
+			bridge->filesystem->FindClose(valveDir->hndl);
 			delete valveDir;
 		}
 	}
@@ -329,7 +332,7 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 		
 		ValveDirectory *valveDir = new ValveDirectory;
 		
-		const char *pFirst = smcore.filesystem->FindFirstEx(wildcardedPath, pathID, &valveDir->hndl);
+		const char *pFirst = bridge->filesystem->FindFirstEx(wildcardedPath, pathID, &valveDir->hndl);
 		if (!pFirst)
 		{
 			delete valveDir;
@@ -418,7 +421,7 @@ static cell_t sm_ReadDirEntry(IPluginContext *pContext, const cell_t *params)
 		}
 		else
 		{
-			pEntry = smcore.filesystem->FindNext(valveDir->hndl);
+			pEntry = bridge->filesystem->FindNext(valveDir->hndl);
 		}
 		
 		valveDir->bHandledFirstPath = true;
@@ -442,7 +445,7 @@ static cell_t sm_ReadDirEntry(IPluginContext *pContext, const cell_t *params)
 			return 0;
 		}
 
-		if (smcore.filesystem->FindIsDirectory(valveDir->hndl))
+		if (bridge->filesystem->FindIsDirectory(valveDir->hndl))
 		{
 			*filetype = 1;
 		} else {
@@ -556,7 +559,7 @@ static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
 		if (params[0] >= 3)
 			pContext->LocalToStringNULL(params[3], &pathID);
 		
-		return smcore.filesystem->FileExists(name, pathID) ? 1 : 0;
+		return bridge->filesystem->FileExists(name, pathID) ? 1 : 0;
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
@@ -597,7 +600,7 @@ static cell_t sm_RenameFile(IPluginContext *pContext, const cell_t *params)
 		char *pathID;
 		pContext->LocalToStringNULL(params[4], &pathID);
 		
-		smcore.filesystem->RenameFile(oldpath, newpath, pathID);
+		bridge->filesystem->RenameFile(oldpath, newpath, pathID);
 		return 1;
 	}
 
@@ -628,7 +631,7 @@ static cell_t sm_DirExists(IPluginContext *pContext, const cell_t *params)
 		char *pathID;
 		pContext->LocalToStringNULL(params[3], &pathID);
 		
-		return smcore.filesystem->IsDirectory(name, pathID) ? 1 : 0;
+		return bridge->filesystem->IsDirectory(name, pathID) ? 1 : 0;
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
@@ -670,9 +673,9 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 		if (params[0] >= 3)
 			pContext->LocalToStringNULL(params[3], &pathID);
 		
-		if (!smcore.filesystem->FileExists(name, pathID))
+		if (!bridge->filesystem->FileExists(name, pathID))
 			return -1;
-		return smcore.filesystem->Size(name, pathID);
+		return bridge->filesystem->Size(name, pathID);
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
@@ -729,12 +732,12 @@ static cell_t sm_CreateDirectory(IPluginContext *pContext, const cell_t *params)
 		char *pathID;
 		pContext->LocalToStringNULL(params[4], &pathID);
 		
-		if (smcore.filesystem->IsDirectory(name, pathID))
+		if (bridge->filesystem->IsDirectory(name, pathID))
 			return 0;
 		
-		smcore.filesystem->CreateDirHierarchy(name, pathID);
+		bridge->filesystem->CreateDirHierarchy(name, pathID);
 		
-		if (smcore.filesystem->IsDirectory(name, pathID))
+		if (bridge->filesystem->IsDirectory(name, pathID))
 			return 1;
 		
 		return 0;
@@ -774,7 +777,7 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 	char buffer[2048];
 	{
 		DetectExceptions eh(pContext);
-		smcore.atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
+		atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
 		if (eh.HasException())
 			return 0;
 	}
@@ -782,8 +785,8 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 	if (SystemFile *sysfile = file->AsSystemFile()) {
 		fprintf(sysfile->fp(), "%s\n", buffer);
 	} else if (ValveFile *vfile = file->AsValveFile()) {
-		smcore.filesystem->FPrint(vfile->handle(), buffer);
-		smcore.filesystem->FPrint(vfile->handle(), "\n");
+		bridge->filesystem->FPrint(vfile->handle(), buffer);
+		bridge->filesystem->FPrint(vfile->handle(), "\n");
 	} else {
 		assert(false);
 	}
@@ -809,7 +812,7 @@ static cell_t sm_BuildPath(IPluginContext *pContext, const cell_t *params)
 
 	{
 		DetectExceptions eh(pContext);
-		smcore.atcprintf(path, sizeof(path), fmt, pContext, params, &arg);
+		atcprintf(path, sizeof(path), fmt, pContext, params, &arg);
 		if (eh.HasException())
 			return 0;
 	}
@@ -839,7 +842,7 @@ static cell_t sm_LogToGame(IPluginContext *pContext, const cell_t *params)
 		buffer[len] = '\0';
 	}
 
-	smcore.LogToGame(buffer);
+	bridge->LogToGame(buffer);
 
 	return 1;
 }

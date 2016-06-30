@@ -29,27 +29,15 @@
 
 #include "ConVarManager.h"
 #include "HalfLife2.h"
-#include "sm_srvcmds.h"
 #include "sm_stringutil.h"
 #include <sh_vector.h>
 #include <sm_namehashset.h>
 #include "logic_bridge.h"
+#include "sourcemod.h"
+#include "provider.h"
+#include <bridge/include/IScriptManager.h>
 
 ConVarManager g_ConVarManager;
-
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *, float);
-#else
-SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallback, SH_NOATTRIB, false, ConVar *, const char *);
-#endif
-
-#if SOURCE_ENGINE == SE_DOTA
-SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, CEntityIndex, EQueryCvarValueStatus, const char *, const char *);
-SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, CEntityIndex, EQueryCvarValueStatus, const char *, const char *);
-#elif SOURCE_ENGINE != SE_DARKMESSIAH
-SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
-SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
-#endif
 
 const ParamType CONVARCHANGE_PARAMS[] = {Param_Cell, Param_String, Param_String};
 typedef List<const ConVar *> ConVarList;
@@ -89,7 +77,7 @@ public:
 
 ConVarReentrancyGuard *ConVarReentrancyGuard::chain = NULL;
 
-ConVarManager::ConVarManager() : m_ConVarType(0), m_bIsDLLQueryHooked(false), m_bIsVSPQueryHooked(false)
+ConVarManager::ConVarManager() : m_ConVarType(0)
 {
 }
 
@@ -112,29 +100,12 @@ void ConVarManager::OnSourceModStartup(bool late)
 
 void ConVarManager::OnSourceModAllInitialized()
 {
-	/**
-	 * Episode 2 has this function by default, but the older versions do not.
-	 */
-#if SOURCE_ENGINE == SE_EPISODEONE
-	if (g_SMAPI->GetGameDLLVersion() >= 6)
-	{
-		SH_ADD_HOOK(IServerGameDLL, OnQueryCvarValueFinished, gamedll, SH_MEMBER(this, &ConVarManager::OnQueryCvarValueFinished), false);
-		m_bIsDLLQueryHooked = true;
-	}
-#endif
-
 	g_Players.AddClientListener(this);
-
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-	SH_ADD_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
-#else
-	SH_ADD_HOOK(ICvar, CallGlobalChangeCallback, icvar, SH_STATIC(OnConVarChanged), false);
-#endif
 
 	scripts->AddPluginsListener(this);
 
 	/* Add the 'convars' option to the 'sm' console command */
-	g_RootMenu.AddRootConsoleCommand("cvars", "View convars created by a plugin", this);
+	rootmenu->AddRootConsoleCommand3("cvars", "View convars created by a plugin", this);
 }
 
 void ConVarManager::OnSourceModShutdown()
@@ -180,32 +151,10 @@ void ConVarManager::OnSourceModShutdown()
 	}
 	convar_cache.clear();
 
-#if SOURCE_ENGINE != SE_DARKMESSIAH
-	/* Unhook things */
-	if (m_bIsDLLQueryHooked)
-	{
-		SH_REMOVE_HOOK(IServerGameDLL, OnQueryCvarValueFinished, gamedll, SH_MEMBER(this, &ConVarManager::OnQueryCvarValueFinished), false);
-		m_bIsDLLQueryHooked = false;
-	}
-	else if (m_bIsVSPQueryHooked)
-	{
-#if SOURCE_ENGINE != SE_DOTA
-		SH_REMOVE_HOOK(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, SH_MEMBER(this, &ConVarManager::OnQueryCvarValueFinished), false);
-#endif
-		m_bIsVSPQueryHooked = false;
-	}
-#endif
-
 	g_Players.RemoveClientListener(this);
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-	SH_REMOVE_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
-#else
-	SH_REMOVE_HOOK(ICvar, CallGlobalChangeCallback, icvar, SH_STATIC(OnConVarChanged), false);
-#endif
-
 	/* Remove the 'convars' option from the 'sm' console command */
-	g_RootMenu.RemoveRootConsoleCommand("cvars", this);
+	rootmenu->RemoveRootConsoleCommand("cvars", this);
 
 	scripts->RemovePluginsListener(this);
 
@@ -213,45 +162,12 @@ void ConVarManager::OnSourceModShutdown()
 	handlesys->RemoveType(m_ConVarType, g_pCoreIdent);
 }
 
-/**
- * Orange Box will never use this.
- */
-void ConVarManager::OnSourceModVSPReceived()
-{
-	/**
-	 * Don't bother if the DLL is already hooked.
-	 */
-	if (m_bIsDLLQueryHooked)
-	{
-		return;
-	}
-
-	/* For later MM:S versions, use the updated API, since it's cleaner. */
-#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
-	int engine = g_SMAPI->GetSourceEngineBuild();
-	if (engine == SOURCE_ENGINE_ORIGINAL || vsp_version < 2)
-	{
-		return;
-	}
-#else
-	if (g_HL2.IsOriginalEngine() || vsp_version < 2)
-	{
-		return;
-	}
-#endif
-
-#if SOURCE_ENGINE != SE_DARKMESSIAH && SOURCE_ENGINE != SE_DOTA
-	SH_ADD_HOOK(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, SH_MEMBER(this, &ConVarManager::OnQueryCvarValueFinished), false);
-	m_bIsVSPQueryHooked = true;
-#endif
-}
-
 bool convar_cache_lookup(const char *name, ConVarInfo **pVar)
 {
 	return convar_cache.retrieve(name, pVar);
 }
 
-void ConVarManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe)
+void ConVarManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name)
 {
 	/* Only check convars that have not been created by SourceMod's core */
 	ConVarInfo *pInfo;
@@ -340,19 +256,19 @@ bool ConVarManager::GetHandleApproxSize(HandleType_t type, void *object, unsigne
 	return true;
 }
 
-void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
+void ConVarManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command)
 {
-	int argcount = command.ArgC();
+	int argcount = command->ArgC();
 	if (argcount >= 3)
 	{
 		bool wantReset = false;
 		
 		/* Get plugin index that was passed */
-		const char *arg = command.Arg(2);
+		const char *arg = command->Arg(2);
 		if (argcount >= 4 && strcmp(arg, "reset") == 0)
 		{
 			wantReset = true;
-			arg = command.Arg(3);
+			arg = command->Arg(3);
 		}
 		
 		/* Get plugin object */
@@ -360,7 +276,7 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 
 		if (!plugin)
 		{
-			g_RootMenu.ConsolePrint("[SM] Plugin \"%s\" was not found.", arg);
+			UTIL_ConsolePrint("[SM] Plugin \"%s\" was not found.", arg);
 			return;
 		}
 
@@ -374,14 +290,14 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 		/* If no convar list... */
 		if (!plugin->GetProperty("ConVarList", (void **)&pConVarList))
 		{
-			g_RootMenu.ConsolePrint("[SM] No convars found for: %s", plname);
+			UTIL_ConsolePrint("[SM] No convars found for: %s", plname);
 			return;
 		}
 
 		if (!wantReset)
 		{
-			g_RootMenu.ConsolePrint("[SM] Listing %d convars for: %s", pConVarList->size(), plname);
-			g_RootMenu.ConsolePrint("  %-32.31s %s", "[Name]", "[Value]");
+			UTIL_ConsolePrint("[SM] Listing %d convars for: %s", pConVarList->size(), plname);
+			UTIL_ConsolePrint("  %-32.31s %s", "[Name]", "[Value]");
 		}
 		
 		/* Iterate convar list and display/reset each one */
@@ -390,7 +306,7 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 			/*const */ConVar *pConVar = const_cast<ConVar *>(*iter);
 			if (!wantReset)
 			{
-				g_RootMenu.ConsolePrint("  %-32.31s %s", pConVar->GetName(), pConVar->GetString()); 
+				UTIL_ConsolePrint("  %-32.31s %s", pConVar->GetName(), pConVar->GetString()); 
 			} else {
 				pConVar->Revert();
 			}
@@ -398,14 +314,14 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 		
 		if (wantReset)
 		{
-			g_RootMenu.ConsolePrint("[SM] Reset %d convars for: %s", pConVarList->size(), plname);
+			UTIL_ConsolePrint("[SM] Reset %d convars for: %s", pConVarList->size(), plname);
 		}
 
 		return;
 	}
 
 	/* Display usage of subcommand */
-	g_RootMenu.ConsolePrint("[SM] Usage: sm cvars [reset] <plugin #>");
+	UTIL_ConsolePrint("[SM] Usage: sm cvars [reset] <plugin #>");
 }
 
 Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name, const char *defaultVal, const char *description, int flags, bool hasMin, float min, bool hasMax, float max)
@@ -625,35 +541,13 @@ void ConVarManager::UnhookConVarChange(ConVar *pConVar, IPluginFunction *pFuncti
 
 QueryCvarCookie_t ConVarManager::QueryClientConVar(edict_t *pPlayer, const char *name, IPluginFunction *pCallback, Handle_t hndl)
 {
-	QueryCvarCookie_t cookie = 0;
-
-#if SOURCE_ENGINE != SE_DARKMESSIAH
-	/* Call StartQueryCvarValue() in either the IVEngineServer or IServerPluginHelpers depending on situation */
-	if (m_bIsDLLQueryHooked)
-	{
-#if SOURCE_ENGINE == SE_DOTA
-		cookie = engine->StartQueryCvarValue(CEntityIndex(IndexOfEdict(pPlayer)), name);
-#else
-		cookie = engine->StartQueryCvarValue(pPlayer, name);	
-#endif
-	}
-#if SOURCE_ENGINE != SE_DOTA
-	else if (m_bIsVSPQueryHooked)
-	{
-		cookie = serverpluginhelpers->StartQueryCvarValue(pPlayer, name);
-	}
-#endif
-	else
-	{
-		return InvalidQueryCvarCookie;
-	}
+	QueryCvarCookie_t cookie = sCoreProviderImpl.QueryClientConVar(IndexOfEdict(pPlayer), name);
 
 	if (pCallback != NULL)
 	{
 		ConVarQuery query = { cookie, pCallback, (cell_t) hndl, IndexOfEdict(pPlayer) };
 		m_ConVarQueries.push_back(query);
 	}
-#endif
 
 	return cookie;
 }
@@ -696,11 +590,7 @@ void ConVarManager::AddConVarToPluginList(IPluginContext *pContext, const ConVar
 	}
 }
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
 void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
-#else
-void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
-#endif
 {
 	/* If the values are the same, exit early in order to not trigger callbacks */
 	if (strcmp(pConVar->GetString(), oldValue) == 0)
@@ -720,16 +610,8 @@ void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 
 	if (pInfo->changeListeners.size() != 0)
 	{
-		for (List<IConVarChangeListener *>::iterator i = pInfo->changeListeners.begin();
-			 i != pInfo->changeListeners.end();
-			 i++)
-		{
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+		for (auto i = pInfo->changeListeners.begin(); i != pInfo->changeListeners.end(); i++)
 			(*i)->OnConVarChanged(pConVar, oldValue, flOldValue);
-#else
-			(*i)->OnConVarChanged(pConVar, oldValue, atof(oldValue));
-#endif
-		}
 	}
 
 	if (pForward != NULL)
@@ -746,23 +628,16 @@ void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 
 bool ConVarManager::IsQueryingSupported()
 {
-	return (m_bIsDLLQueryHooked || m_bIsVSPQueryHooked);
+	return sCoreProviderImpl.IsClientConVarQueryingSupported();
 }
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
-#if SOURCE_ENGINE == SE_DOTA
-void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, CEntityIndex player, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
-#else
-void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
-#endif // SE_DOTA
+void ConVarManager::OnClientQueryFinished(QueryCvarCookie_t cookie,
+                                          int client,
+                                          EQueryCvarValueStatus result,
+										  const char *cvarName,
+										  const char *cvarValue)
 {
-#if SOURCE_ENGINE == SE_CSGO
-	if (g_Players.HandleConVarQuery(cookie, pPlayer, result, cvarName, cvarValue))
-	{
-		return;
-	}
-#endif
-
 	IPluginFunction *pCallback = NULL;
 	cell_t value = 0;
 	List<ConVarQuery>::iterator iter;
@@ -783,11 +658,7 @@ void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *
 		cell_t ret;
 
 		pCallback->PushCell(cookie);
-#if SOURCE_ENGINE == SE_DOTA
-		pCallback->PushCell(player.Get());
-#else
-		pCallback->PushCell(IndexOfEdict(pPlayer));
-#endif
+		pCallback->PushCell(client);
 		pCallback->PushCell(result);
 		pCallback->PushString(cvarName);
 

@@ -144,6 +144,21 @@ enum {
 	TF_CUSTOM_MERASMUS_DECAPITATION,
 	TF_CUSTOM_CANNONBALL_PUSH,
 	TF_CUSTOM_TAUNT_ALLCLASS_GUITAR_RIFF,
+	TF_CUSTOM_THROWABLE,
+	TF_CUSTOM_THROWABLE_KILL,
+	TF_CUSTOM_SPELL_TELEPORT,
+	TF_CUSTOM_SPELL_SKELETON,
+	TF_CUSTOM_SPELL_MIRV,
+	TF_CUSTOM_SPELL_METEOR,
+	TF_CUSTOM_SPELL_LIGHTNING,
+	TF_CUSTOM_SPELL_FIREBALL,
+	TF_CUSTOM_SPELL_MONOCULUS,
+	TF_CUSTOM_SPELL_BLASTJUMP,
+	TF_CUSTOM_SPELL_BATS,
+	TF_CUSTOM_SPELL_TINY,
+	TF_CUSTOM_KART,
+	TF_CUSTOM_GIANT_HAMMER,
+	TF_CUSTOM_RUNE_REFLECT,
 };
 
 // Weapon codes as used in some events, such as player_death
@@ -250,6 +265,9 @@ enum {
 	TF_WEAPON_SPELLBOOK_PROJECTILE,
 	TF_WEAPON_SNIPERRIFLE_CLASSIC,
 	TF_WEAPON_PARACHUTE,
+	TF_WEAPON_GRAPPLINGHOOK,
+	TF_WEAPON_PASSTIME_GUN,
+	TF_WEAPON_CHARGED_SMG,
 };
 
 // TF2 Weapon Loadout Slots
@@ -296,7 +314,7 @@ enum TFResourceType
 	TFResource_PlayerClass
 };
 
-static const String:TFResourceNames[TFResourceType][] =
+static const char TFResourceNames[TFResourceType][] =
 {
 	"m_iPing",
 	"m_iScore",
@@ -325,9 +343,9 @@ static const String:TFResourceNames[TFResourceType][] =
  * @return				Current TFTeam of client.
  * @error				Invalid client index.
  */
-stock TFTeam:TF2_GetClientTeam(client)
+stock TFTeam TF2_GetClientTeam(int client)
 {
-	return TFTeam:GetClientTeam(client);
+	return view_as<TFTeam>(GetClientTeam(client));
 }
 
 /**
@@ -335,12 +353,11 @@ stock TFTeam:TF2_GetClientTeam(client)
  *
  * @param client        Client index.
  * @param team          TFTeam team symbol.
- * @noreturn
  * @error               Invalid client index.
  */
-stock TF2_ChangeClientTeam(client, TFTeam:team)
+stock void TF2_ChangeClientTeam(int client, TFTeam team)
 {
-    ChangeClientTeam(client, _:team);
+    ChangeClientTeam(client, view_as<int>(team));
 }
 
 /**
@@ -350,9 +367,9 @@ stock TF2_ChangeClientTeam(client, TFTeam:team)
  * @return				Current TFClassType of player.
  * @error				Invalid client index.
  */
-stock TFClassType:TF2_GetPlayerClass(client)
+stock TFClassType TF2_GetPlayerClass(int client)
 {
-	return TFClassType:GetEntProp(client, Prop_Send, "m_iClass");
+	return view_as<TFClassType>(GetEntProp(client, Prop_Send, "m_iClass"));
 }
 
 /**
@@ -364,16 +381,15 @@ stock TFClassType:TF2_GetPlayerClass(client)
  * @param classType		TFClassType class symbol.
  * @param weapons		This parameter is ignored.
  * @param persistent	If true, changes the player's desired class so the change stays after death.
- * @noreturn
  * @error				Invalid client index.
  */
-stock TF2_SetPlayerClass(client, TFClassType:classType, bool:weapons=true, bool:persistent=true)
+stock void TF2_SetPlayerClass(int client, TFClassType classType, bool weapons=true, bool persistent=true)
 {
-	SetEntProp(client, Prop_Send, "m_iClass", _:classType);
+	SetEntProp(client, Prop_Send, "m_iClass", view_as<int>(classType));
 
 	if (persistent)
 	{
-		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:classType);
+		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", view_as<int>(classType));
 	}
 }
 
@@ -386,21 +402,21 @@ stock TF2_SetPlayerClass(client, TFClassType:classType, bool:weapons=true, bool:
  * @error				Invalid client index, client not in game or failed to find resource entity.
  */
 #pragma deprecated Use GetPlayerResourceEntity and GetEntProp instead
-stock TF2_GetPlayerResourceData(client, TFResourceType:type)
+stock int TF2_GetPlayerResourceData(int client, TFResourceType type)
 {
 	if (!IsClientConnected(client))
 	{
 		return -1;
 	}
 
-	new offset = FindSendPropInfo("CTFPlayerResource", TFResourceNames[type]);
+	int offset = FindSendPropInfo("CTFPlayerResource", TFResourceNames[type]);
 
 	if (offset < 1)
 	{
 		return -1;
 	}
 
-	new entity = TF2_GetResourceEntity();
+	int entity = TF2_GetResourceEntity();
 
 	if (entity == -1)
 	{
@@ -422,21 +438,21 @@ stock TF2_GetPlayerResourceData(client, TFResourceType:type)
  * @error				Invalid client index, client not in game or failed to find resource entity.
  */
 #pragma deprecated Use GetPlayerResourceEntity and SetEntProp instead
-stock bool:TF2_SetPlayerResourceData(client, TFResourceType:type, any:value)
+stock bool TF2_SetPlayerResourceData(int client, TFResourceType type, any value)
 {
 	if (!IsClientConnected(client))
 	{
 		return false;
 	}
 
-	new offset = FindSendPropInfo("CTFPlayerResource", TFResourceNames[type]);
+	int offset = FindSendPropInfo("CTFPlayerResource", TFResourceNames[type]);
 
 	if (offset < 1)
 	{
 		return false;
 	}
 
-	new entity = TF2_GetResourceEntity();
+	int entity = TF2_GetResourceEntity();
 
 	if (entity == -1)
 	{
@@ -453,17 +469,16 @@ stock bool:TF2_SetPlayerResourceData(client, TFResourceType:type, any:value)
  *
  * @param client		Player's index.
  * @param slot			Slot index (0-5)
- * @noreturn
  * @error				Invalid client, invalid slot or lack of mod support
  */
-stock TF2_RemoveWeaponSlot(client, slot)
+stock void TF2_RemoveWeaponSlot(int client, int slot)
 {
-	new weaponIndex;
+	int weaponIndex;
 	while ((weaponIndex = GetPlayerWeaponSlot(client, slot)) != -1)
 	{
 		// bug #6206
 		// papering over a valve bug where a weapon's extra wearables aren't properly removed from the weapon's owner
-		new extraWearable = GetEntPropEnt(weaponIndex, Prop_Send, "m_hExtraWearable");
+		int extraWearable = GetEntPropEnt(weaponIndex, Prop_Send, "m_hExtraWearable");
 		if (extraWearable != -1)
 		{
 			TF2_RemoveWearable(client, extraWearable);
@@ -484,11 +499,10 @@ stock TF2_RemoveWeaponSlot(client, slot)
  * Removes all weapons from a client
  *
  * @param client		Player's index.
- * @noreturn
  */
-stock TF2_RemoveAllWeapons(client)
+stock void TF2_RemoveAllWeapons(int client)
 {
-	for (new i = 0; i <= 5; i++)
+	for (int i = 0; i <= 5; i++)
 	{
 		TF2_RemoveWeaponSlot(client, i);
 	}
@@ -501,7 +515,7 @@ stock TF2_RemoveAllWeapons(client)
  * @return				Player's condition bits
  */
 #pragma deprecated Use TF2_IsPlayerInCondition instead.
-stock TF2_GetPlayerConditionFlags(client)
+stock int TF2_GetPlayerConditionFlags(int client)
 {
 	return GetEntProp(client, Prop_Send, "m_nPlayerCond")|GetEntProp(client, Prop_Send, "_condition_bits");
 }
@@ -513,45 +527,51 @@ stock TF2_GetPlayerConditionFlags(client)
  * @param cond			TFCond constant
  * @return				True if set, false otherwise
  */
-stock bool:TF2_IsPlayerInCondition(client, TFCond:cond)
+stock bool TF2_IsPlayerInCondition(int client, TFCond cond)
 {
-	// Conditions are stored across two netprops now, one for each 32-bit segment.
-	if (_:cond < 32)
+	// Conditions are stored across multiple netprops now, one for each 32-bit segment.
+	int iCond = view_as<int>(cond);
+	switch (iCond / 32)
 	{
-		new bit = 1 << _:cond;
-		if ((GetEntProp(client, Prop_Send, "m_nPlayerCond") & bit) == bit)
+	case 0:
 		{
-			return true;
-		}
+			int bit = 1 << iCond;
+			if ((GetEntProp(client, Prop_Send, "m_nPlayerCond") & bit) == bit)
+			{
+				return true;
+			}
 
-		if ((GetEntProp(client, Prop_Send, "_condition_bits") & bit) == bit)
-		{
-			return true;
+			if ((GetEntProp(client, Prop_Send, "_condition_bits") & bit) == bit)
+			{
+				return true;
+			}
 		}
-	}
-	else if (_:cond < 64)
-	{
-		new bit = (1 << (_:cond - 32));
-		if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx") & bit) == bit)
+	case 1:
 		{
-			return true;
+			int bit = (1 << (iCond - 32));
+			if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx") & bit) == bit)
+			{
+				return true;
+			}
 		}
-	}
-	else if (_:cond < 96)
-	{
-		new bit = (1 << (_:cond - 64));
-		if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx2") & bit) == bit)
+	case 2:
 		{
-			return true;
+			int bit = (1 << (iCond - 64));
+			if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx2") & bit) == bit)
+			{
+				return true;
+			}
 		}
-	}
-	else
-	{
-		new bit = (1 << (_:cond - 96));
-		if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx3") & bit) == bit)
+	case 3:
 		{
-			return true;
+			int bit = (1 << (iCond - 96));
+			if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx3") & bit) == bit)
+			{
+				return true;
+			}
 		}
+	default:
+		ThrowError("Invalid TFCond value %d", iCond);
 	}
 
 	return false;
@@ -564,16 +584,16 @@ stock bool:TF2_IsPlayerInCondition(client, TFCond:cond)
  * @return				Current TFObjectType of entity.
  * @error				Invalid entity index.
  */
-stock TFObjectType:TF2_GetObjectType(entity)
+stock TFObjectType TF2_GetObjectType(int entity)
 {
-	new offset = GetEntSendPropOffs(entity, "m_iObjectType");
+	int offset = GetEntSendPropOffs(entity, "m_iObjectType");
 
 	if (offset <= 0)
 	{
 		ThrowError("Entity index %d is not an object", entity);
 	}
 
-	return TFObjectType:GetEntData(entity, offset);
+	return view_as<TFObjectType>(GetEntData(entity, offset));
 }
 
 /**
@@ -583,14 +603,14 @@ stock TFObjectType:TF2_GetObjectType(entity)
  * @return				Current TFObjectMode of entity.
  * @error				Invalid entity index.
  */
-stock TFObjectMode:TF2_GetObjectMode(entity)
+stock TFObjectMode TF2_GetObjectMode(int entity)
 {
-	new offset = GetEntSendPropOffs(entity, "m_iObjectMode");
+	int offset = GetEntSendPropOffs(entity, "m_iObjectMode");
 
 	if (offset <= 0)
 	{
 		ThrowError("Entity index %d is not an object", entity);
 	}
 
-	return TFObjectMode:GetEntData(entity, offset);
+	return view_as<TFObjectMode>(GetEntData(entity, offset));
 }

@@ -35,6 +35,9 @@
 #include <IPlayerHelpers.h>
 #include <IForwardSys.h>
 #include "stringutil.h"
+#include <am-string.h>
+#include <bridge/include/IVEngineServerBridge.h>
+#include <bridge/include/CoreProvider.h>
 
 #define BANFLAG_AUTO	(1<<0)	/**< Auto-detects whether to ban by steamid or IP */
 #define BANFLAG_IP   	(1<<1)	/**< Always ban by IP address */
@@ -140,7 +143,7 @@ static cell_t BanIdentity(IPluginContext *pContext, const cell_t *params)
 		char command[256];
 		if (ban_by_ip)
 		{
-			smcore.Format(
+			ke::SafeSprintf(
 				command,
 				sizeof(command),
 				"addip %d %s\n",
@@ -155,7 +158,7 @@ static cell_t BanIdentity(IPluginContext *pContext, const cell_t *params)
 		}
 		else if (!gamehelpers->IsLANServer())
 		{
-			smcore.Format(
+			ke::SafeSprintf(
 				command,
 				sizeof(command),
 				"banid %d %s\n",
@@ -213,7 +216,7 @@ static cell_t RemoveBan(IPluginContext *pContext, const cell_t *params)
 	{
 		if (!handled)
 		{
-			smcore.Format(
+			ke::SafeSprintf(
 				command,
 				sizeof(command),
 				"removeip %s\n",
@@ -226,7 +229,7 @@ static cell_t RemoveBan(IPluginContext *pContext, const cell_t *params)
 	{
 		if (!handled)
 		{
-			smcore.Format(
+			ke::SafeSprintf(
 				command,
 				sizeof(command),
 				"removeid %s\n",
@@ -270,7 +273,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 	ban_source = params[7];
 
 	/* Check how we should ban the player */
-	if (!strcmp(smcore.GetSourceEngineName(), "darkmessiah"))
+	if (!strcmp(bridge->GetSourceEngineName(), "darkmessiah"))
 	{
 		/* Dark Messiah doesn't have Steam IDs so there is only one ban method to choose */
 		ban_flags |= BANFLAG_IP;
@@ -336,7 +339,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		{
 			/* Get the IP address and strip the port */
 			char ip[24], *ptr;
-			smcore.strncopy(ip, pPlayer->GetIPAddress(), sizeof(ip));
+			strncopy(ip, pPlayer->GetIPAddress(), sizeof(ip));
 			if ((ptr = strchr(ip, ':')) != NULL)
 			{
 				*ptr = '\0';
@@ -344,7 +347,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		
 			/* Tell the server to ban the ip */
 			char command[256];
-			smcore.Format(
+			ke::SafeSprintf(
 				command,
 				sizeof(command),
 				"addip %d %s\n",
@@ -368,7 +371,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		{
 			/* Tell the server to ban the auth string */
 			char command[256];
-			smcore.Format(
+			ke::SafeSprintf(
 				command, 
 				sizeof(command), 
 				"banid %d %s\n", 

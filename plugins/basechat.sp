@@ -35,7 +35,9 @@
 
 #include <sourcemod>
 
-public Plugin:myinfo = 
+#pragma newdecls required
+
+public Plugin myinfo = 
 {
 	name = "Basic Chat",
 	author = "AlliedModders LLC",
@@ -46,14 +48,14 @@ public Plugin:myinfo =
 
 #define CHAT_SYMBOL '@'
 
-new String:g_ColorNames[13][10] = {"White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "Olive", "Lime", "Violet", "Lightblue"};
-new g_Colors[13][3] = {{255,255,255},{255,0,0},{0,255,0},{0,0,255},{255,255,0},{255,0,255},{0,255,255},{255,128,0},{255,0,128},{128,255,0},{0,255,128},{128,0,255},{0,128,255}};
+char g_ColorNames[13][10] = {"White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "Olive", "Lime", "Violet", "Lightblue"};
+int g_Colors[13][3] = {{255,255,255},{255,0,0},{0,255,0},{0,0,255},{255,255,0},{255,0,255},{0,255,255},{255,128,0},{255,0,128},{128,255,0},{0,255,128},{128,0,255},{0,128,255}};
 
 ConVar g_Cvar_Chatmode;
 
-new EngineVersion:g_GameEngine = Engine_Unknown;
+EngineVersion g_GameEngine = Engine_Unknown;
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	
@@ -76,9 +78,9 @@ public OnPluginStart()
 	RegAdminCmd("sm_msay", Command_SmMsay, ADMFLAG_CHAT, "sm_msay <message> - sends message as a menu panel");
 }
 
-public Action:OnClientSayCommand(client, const String:command[], const String:sArgs[])
+public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs)
 {
-	new startidx;
+	int startidx;
 	if (sArgs[startidx] != CHAT_SYMBOL)
 		return Plugin_Continue;
 	
@@ -108,10 +110,10 @@ public Action:OnClientSayCommand(client, const String:command[], const String:sA
 				return Plugin_Continue;
 			}
 			
-			decl String:arg[64];
+			char arg[64];
 			
-			new len = BreakString(sArgs[startidx], arg, sizeof(arg));
-			new target = FindTarget(client, arg, true, false);
+			int len = BreakString(sArgs[startidx], arg, sizeof(arg));
+			int target = FindTarget(client, arg, true, false);
 			
 			if (target == -1 || len == -1)
 				return Plugin_Stop;
@@ -150,7 +152,7 @@ public Action:OnClientSayCommand(client, const String:command[], const String:sA
 	return Plugin_Continue;
 }
 
-public Action:Command_SmSay(client, args)
+public Action Command_SmSay(int client, int args)
 {
 	if (args < 1)
 	{
@@ -158,7 +160,7 @@ public Action:Command_SmSay(client, args)
 		return Plugin_Handled;	
 	}
 	
-	decl String:text[192];
+	char text[192];
 	GetCmdArgString(text, sizeof(text));
 
 	SendChatToAll(client, text);
@@ -167,7 +169,7 @@ public Action:Command_SmSay(client, args)
 	return Plugin_Handled;		
 }
 
-public Action:Command_SmCsay(client, args)
+public Action Command_SmCsay(int client, int args)
 {
 	if (args < 1)
 	{
@@ -175,7 +177,7 @@ public Action:Command_SmCsay(client, args)
 		return Plugin_Handled;	
 	}
 	
-	decl String:text[192];
+	char text[192];
 	GetCmdArgString(text, sizeof(text));
 	
 	DisplayCenterTextToAll(client, text);
@@ -185,7 +187,7 @@ public Action:Command_SmCsay(client, args)
 	return Plugin_Handled;		
 }
 
-public Action:Command_SmHsay(client, args)
+public Action Command_SmHsay(int client, int args)
 {
 	if (args < 1)
 	{
@@ -193,12 +195,12 @@ public Action:Command_SmHsay(client, args)
 		return Plugin_Handled;  
 	}
 	
-	decl String:text[192];
+	char text[192];
 	GetCmdArgString(text, sizeof(text));
  
-	decl String:nameBuf[MAX_NAME_LENGTH];
+	char nameBuf[MAX_NAME_LENGTH];
 	
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || IsFakeClient(i))
 		{
@@ -213,7 +215,7 @@ public Action:Command_SmHsay(client, args)
 	return Plugin_Handled;	
 }
 
-public Action:Command_SmTsay(client, args)
+public Action Command_SmTsay(int client, int args)
 {
 	if (args < 1)
 	{
@@ -221,13 +223,13 @@ public Action:Command_SmTsay(client, args)
 		return Plugin_Handled;  
 	}
 	
-	decl String:text[192], String:colorStr[16];
+	char text[192], colorStr[16];
 	GetCmdArgString(text, sizeof(text));
 	
-	new len = BreakString(text, colorStr, 16);
+	int len = BreakString(text, colorStr, 16);
 		
-	new color = FindColor(colorStr);
-	new String:nameBuf[MAX_NAME_LENGTH];
+	int color = FindColor(colorStr);
+	char nameBuf[MAX_NAME_LENGTH];
 	
 	if (color == -1)
 	{
@@ -235,7 +237,7 @@ public Action:Command_SmTsay(client, args)
 		len = 0;
 	}
 	
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || IsFakeClient(i))
 		{
@@ -250,7 +252,7 @@ public Action:Command_SmTsay(client, args)
 	return Plugin_Handled;	
 }
 
-public Action:Command_SmChat(client, args)
+public Action Command_SmChat(int client, int args)
 {
 	if (args < 1)
 	{
@@ -258,7 +260,7 @@ public Action:Command_SmChat(client, args)
 		return Plugin_Handled;	
 	}	
 	
-	decl String:text[192];
+	char text[192];
 	GetCmdArgString(text, sizeof(text));
 
 	SendChatToAdmins(client, text);
@@ -267,7 +269,7 @@ public Action:Command_SmChat(client, args)
 	return Plugin_Handled;	
 }
 
-public Action:Command_SmPsay(client, args)
+public Action Command_SmPsay(int client, int args)
 {
 	if (args < 2)
 	{
@@ -275,13 +277,13 @@ public Action:Command_SmPsay(client, args)
 		return Plugin_Handled;	
 	}	
 	
-	decl String:text[192], String:arg[64], String:message[192];
+	char text[192], arg[64], message[192];
 	GetCmdArgString(text, sizeof(text));
 
-	new len = BreakString(text, arg, sizeof(arg));
+	int len = BreakString(text, arg, sizeof(arg));
 	BreakString(text[len], message, sizeof(message));
 	
-	new target = FindTarget(client, arg, true, false);
+	int target = FindTarget(client, arg, true, false);
 		
 	if (target == -1)
 		return Plugin_Handled;	
@@ -291,7 +293,7 @@ public Action:Command_SmPsay(client, args)
 	return Plugin_Handled;	
 }
 
-public Action:Command_SmMsay(client, args)
+public Action Command_SmMsay(int client, int args)
 {
 	if (args < 1)
 	{
@@ -299,7 +301,7 @@ public Action:Command_SmMsay(client, args)
 		return Plugin_Handled;	
 	}
 	
-	decl String:text[192];
+	char text[192];
 	GetCmdArgString(text, sizeof(text));
 
 	SendPanelToAll(client, text);
@@ -309,9 +311,9 @@ public Action:Command_SmMsay(client, args)
 	return Plugin_Handled;		
 }
 
-FindColor(String:color[])
+int FindColor(const char[] color)
 {
-	for (new i = 0; i < 13; i++)
+	for (int i = 0; i < sizeof(g_ColorNames); i++)
 	{
 		if (strcmp(color, g_ColorNames[i], false) == 0)
 			return i;
@@ -320,11 +322,11 @@ FindColor(String:color[])
 	return -1;
 }
 
-SendChatToAll(client, const String:message[])
+void SendChatToAll(int client, const char[] message)
 {
-	new String:nameBuf[MAX_NAME_LENGTH];
+	char nameBuf[MAX_NAME_LENGTH];
 	
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || IsFakeClient(i))
 		{
@@ -336,11 +338,11 @@ SendChatToAll(client, const String:message[])
 	}
 }
 
-DisplayCenterTextToAll(client, const String:message[])
+void DisplayCenterTextToAll(int client, const char[] message)
 {
-	new String:nameBuf[MAX_NAME_LENGTH];
+	char nameBuf[MAX_NAME_LENGTH];
 	
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || IsFakeClient(i))
 		{
@@ -351,10 +353,10 @@ DisplayCenterTextToAll(client, const String:message[])
 	}
 }
 
-SendChatToAdmins(from, const String:message[])
+void SendChatToAdmins(int from, const char[] message)
 {
-	new fromAdmin = CheckCommandAccess(from, "sm_chat", ADMFLAG_CHAT);
-	for (new i = 1; i <= MaxClients; i++)
+	int fromAdmin = CheckCommandAccess(from, "sm_chat", ADMFLAG_CHAT);
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i) && (from == i || CheckCommandAccess(i, "sm_chat", ADMFLAG_CHAT)))
 		{
@@ -363,9 +365,9 @@ SendChatToAdmins(from, const String:message[])
 	}
 }
 
-SendDialogToOne(client, color, const String:text[], any:...)
+void SendDialogToOne(int client, int color, const char[] text, any ...)
 {
-	new String:message[100];
+	char message[100];
 	VFormat(message, sizeof(message), text, 4);	
 	
 	KeyValues kv = new KeyValues("Stuff", "title", message);
@@ -378,7 +380,7 @@ SendDialogToOne(client, color, const String:text[], any:...)
 	delete kv;
 }
 
-SendPrivateChat(client, target, const String:message[])
+void SendPrivateChat(int client, int target, const char[] message)
 {
 	if (!client)
 	{
@@ -400,27 +402,27 @@ void SendPanelToAll(int from, char[] message)
 	
 	ReplaceString(message, 192, "\\n", "\n");
 	
-	Panel mSayPanel = CreatePanel();
+	Panel mSayPanel = new Panel();
 	mSayPanel.SetTitle(title);
-	DrawPanelItem(mSayPanel, "", ITEMDRAW_SPACER);
-	DrawPanelText(mSayPanel, message);
-	DrawPanelItem(mSayPanel, "", ITEMDRAW_SPACER);
+	mSayPanel.DrawItem("", ITEMDRAW_SPACER);
+	mSayPanel.DrawText(message);
+	mSayPanel.DrawItem("", ITEMDRAW_SPACER);
 
-	SetPanelCurrentKey(mSayPanel, 10);
-	DrawPanelItem(mSayPanel, "Exit", ITEMDRAW_CONTROL);
+	mSayPanel.CurrentKey = 10;
+	mSayPanel.DrawItem("Exit", ITEMDRAW_CONTROL);
 
-	for(new i = 1; i <= MaxClients; i++)
+	for(int i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientInGame(i) && !IsFakeClient(i))
 		{
-			SendPanelToClient(mSayPanel, i, Handler_DoNothing, 10);
+			mSayPanel.Send(i, Handler_DoNothing, 10);
 		}
 	}
 
 	delete mSayPanel;
 }
 
-public Handler_DoNothing(Menu menu, MenuAction action, int param1, int param2)
+public int Handler_DoNothing(Menu menu, MenuAction action, int param1, int param2)
 {
 	/* Do nothing */
 }

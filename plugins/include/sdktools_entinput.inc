@@ -38,7 +38,7 @@
 /**
  * Invokes a named input method on an entity.  
  *
- * After completion (successful or not), the current global variant is re-initalized.
+ * After completion (successful or not), the current global variant is re-initialized.
  *
  * @param dest		Destination entity index.
  * @param input		Input action.
@@ -48,69 +48,61 @@
  * @return		True if successful otherwise false.
  * @error		Invalid entity index or no mod support.
  */
-native bool:AcceptEntityInput(dest, const String:input[], activator=-1, caller=-1, outputid=0);
+native bool AcceptEntityInput(int dest, const char[] input, int activator=-1, int caller=-1, int outputid=0);
 
 /**
  * Sets a bool value in the global variant object.
  *
  * @param val		Input value.
- * @noreturn
  */
-native SetVariantBool(bool:val);
+native void SetVariantBool(bool val);
 
 /**
  * Sets a string in the global variant object.
  *
  * @param str		Input string.
- * @noreturn
  */
-native SetVariantString(const String:str[]);
+native void SetVariantString(const char[] str);
 
 /**
  * Sets an integer value in the global variant object.
  *
  * @param val		Input value.
- * @noreturn
  */
-native SetVariantInt(val);
+native void SetVariantInt(int val);
 
 /**
  * Sets a floating point value in the global variant object.
  *
  * @param val		Input value.
- * @noreturn
  */
-native SetVariantFloat(Float:val);
+native void SetVariantFloat(float val);
 
 /**
  * Sets a 3D vector in the global variant object.
  *
  * @param vec		Input vector.
- * @noreturn
  */
-native SetVariantVector3D(const Float:vec[3]);
+native void SetVariantVector3D(const float vec[3]);
 
 /**
  * Sets a 3D position vector in the global variant object.
  *
  * @param vec		Input position vector.
- * @noreturn
  */
-native SetVariantPosVector3D(const Float:vec[3]);
+native void SetVariantPosVector3D(const float vec[3]);
 
 /**
  * Sets a color in the global variant object.
  *
  * @param color		Input color.
- * @noreturn
  */
-native SetVariantColor(const color[4]);
+native void SetVariantColor(const int color[4]);
 
 /**
  * Sets an entity in the global variant object.
  *
  * @param entity	Entity index.
- * @noreturn
  * @error		Invalid entity index.
  */
-native SetVariantEntity(entity);
+native void SetVariantEntity(int entity);

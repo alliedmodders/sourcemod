@@ -36,6 +36,8 @@ class CUserCmd;
 
 #include "extension.h"
 #include <am-vector.h>
+#include "inetchannel.h"
+#include "iclient.h"
 #include "vtable_hook_helper.h"
 
 class CHookManager : IPluginsListener, IFeatureProvider
@@ -44,8 +46,19 @@ public:
 	CHookManager();
 	void Initialize();
 	void Shutdown();
+	void OnClientConnect(int client);
 	void OnClientPutInServer(int client);
 	void PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper);
+	void OnMapStart();
+public: /* NetChannel/Related Hooks */
+	bool FileExists(const char *filename, const char *pathID);
+#if SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2
+	bool SendFile(const char *filename, unsigned int transferID, bool isReplayDemo);
+#else
+	bool SendFile(const char *filename, unsigned int transferID);
+#endif
+	void ProcessPacket(struct netpacket_s *packet, bool bHasHeader);
+	void ProcessPacket_Post(struct netpacket_s *packet, bool bHasHeader);
 public: //IPluginsListener
 	void OnPluginLoaded(IPlugin *plugin);
 	void OnPluginUnloaded(IPlugin *plugin);
@@ -53,8 +66,18 @@ public: //IFeatureProvider
 	virtual FeatureStatus GetFeatureStatus(FeatureType type, const char *name);
 
 private:
+	void PlayerRunCmdHook(int client);
+	void NetChannelHook(int client);
+
+private:
 	IForward *m_usercmdsFwd;
+	IForward *m_netFileSendFwd;
+	IForward *m_netFileReceiveFwd;
 	ke::Vector<CVTableHook *> m_runUserCmdHooks;
+	ke::Vector<CVTableHook *> m_netChannelHooks;
+	INetChannel *m_pActiveNetChannel;
+	bool m_bFSTranHookWarned = false;
+	bool m_bReplayEnabled = false;
 };
 
 extern CHookManager g_Hooks;

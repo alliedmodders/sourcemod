@@ -95,11 +95,10 @@ DETOUR_DECL_MEMBER2(DetourTerminateRound, void, float, delay, int, reason)
 	}
 #else
 //Windows CSGO
-//char __userpurge TerminateRound<al>(unsigned int a1<ecx>, signed int a2<edi>, unsigned int a3<xmm1>, int a4)
+//char __userpurge TerminateRound(int a1@<ecx>, float a2@<xmm1>, int *a3)
 // a1 - this
-// a2 - unknown
-// a3 - delay
-// a4 - reason
+// a2 - delay
+// a3 - reason
 DETOUR_DECL_MEMBER1(DetourTerminateRound, void, int, reason)
 {
 	float delay;
@@ -122,6 +121,10 @@ DETOUR_DECL_MEMBER1(DetourTerminateRound, void, int, reason)
 
 	cell_t result = Pl_Continue;
 
+#if SOURCE_ENGINE == SE_CSGO
+	reason--;
+#endif
+	
 	g_pTerminateRoundForward->PushFloatByRef(&delay);
 	g_pTerminateRoundForward->PushCellByRef(&reason);
 	g_pTerminateRoundForward->Execute(&result);
@@ -129,6 +132,10 @@ DETOUR_DECL_MEMBER1(DetourTerminateRound, void, int, reason)
 	if (result >= Pl_Handled)
 		return;
 
+#if SOURCE_ENGINE == SE_CSGO
+	reason++;
+#endif
+	
 #if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 	if (result == Pl_Changed)
 		return DETOUR_MEMBER_CALL(DetourTerminateRound)(delay, reason);

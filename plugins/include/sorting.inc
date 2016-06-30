@@ -62,9 +62,8 @@ enum SortType
  * @param array			Array of integers to sort in-place.
  * @param array_size	Size of the array.
  * @param order			Sorting order to use.
- * @noreturn
  */
-native SortIntegers(array[], array_size, SortOrder:order = Sort_Ascending);
+native void SortIntegers(int[] array, int array_size, SortOrder order = Sort_Ascending);
 
 /**
  * Sorts an array of float point numbers.
@@ -72,9 +71,8 @@ native SortIntegers(array[], array_size, SortOrder:order = Sort_Ascending);
  * @param array			Array of floating point numbers to sort in-place.
  * @param array_size	Size of the array.
  * @param order			Sorting order to use.
- * @noreturn
  */
-native SortFloats(Float:array[], array_size, SortOrder:order = Sort_Ascending);
+native void SortFloats(float[] array, int array_size, SortOrder order = Sort_Ascending);
 
 /**
  * Sorts an array of strings.
@@ -82,9 +80,8 @@ native SortFloats(Float:array[], array_size, SortOrder:order = Sort_Ascending);
  * @param array			Array of strings to sort in-place.
  * @param array_size	Size of the array.
  * @param order			Sorting order to use.
- * @noreturn
  */
-native SortStrings(String:array[][], array_size, SortOrder:order = Sort_Ascending);
+native void SortStrings(char[][] array, int array_size, SortOrder order = Sort_Ascending);
 
 /**
  * Sort comparison function for 1D array elements.
@@ -107,9 +104,8 @@ typedef SortFunc1D = function int (int elem1, int elem2, const int[] array, Hand
  * @param array_size	Size of the array to sort.
  * @param sortfunc		Sort function.
  * @param hndl			Optional Handle to pass through the comparison calls.
- * @noreturn
  */
-native SortCustom1D(array[], array_size, SortFunc1D:sortfunc, Handle:hndl=INVALID_HANDLE);
+native void SortCustom1D(int[] array, int array_size, SortFunc1D sortfunc, Handle hndl=INVALID_HANDLE);
 
 /**
  * Sort comparison function for 2D array elements (sub-arrays).
@@ -136,9 +132,8 @@ typeset SortFunc2D
  * @param array_size	Size of the major array to sort (first index, outermost).
  * @param sortfunc		Sort comparison function to use.
  * @param hndl			Optional Handle to pass through the comparison calls.
- * @noreturn
  */
-native SortCustom2D(array[][], array_size, SortFunc2D:sortfunc, Handle:hndl=INVALID_HANDLE);
+native void SortCustom2D(any[][] array, int array_size, SortFunc2D sortfunc, Handle hndl=INVALID_HANDLE);
 
 /**
  * Sort an ADT Array. Specify the type as Integer, Float, or String.
@@ -146,9 +141,8 @@ native SortCustom2D(array[][], array_size, SortFunc2D:sortfunc, Handle:hndl=INVA
  * @param array			Array Handle to sort
  * @param order			Sort order to use, same as other sorts.
  * @param type			Data type stored in the ADT Array
- * @noreturn
  */
-native SortADTArray(Handle:array, SortOrder:order, SortType:type);
+native void SortADTArray(Handle array, SortOrder order, SortType type);
 
 /**
  * Sort comparison function for ADT Array elements. Function provides you with
@@ -169,8 +163,7 @@ typedef SortFuncADTArray = function int (int index1, int index2, Handle array, H
  * Custom sorts an ADT Array. You must pass in a comparison function.
  *
  * @param array			Array Handle to sort
- * @param sortfunc		Sort comparision function to use
+ * @param sortfunc		Sort comparison function to use
  * @param hndl			Optional Handle to pass through the comparison calls.
- * @noreturn
  */
-native SortADTArrayCustom(Handle:array, SortFuncADTArray:sortfunc, Handle:hndl=INVALID_HANDLE); 
+native void SortADTArrayCustom(Handle array, SortFuncADTArray sortfunc, Handle hndl=INVALID_HANDLE); 

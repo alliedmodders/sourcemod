@@ -6,7 +6,7 @@
 		{
 			"EndTouch"
 			{
-				"windows"	"91"
+				"windows"	"90"
 			}
 			"FireBullets"
 			{
@@ -38,7 +38,7 @@
 			}
 			"StartTouch"
 			{
-				"windows"	"89"
+				"windows"	"88"
 			}
 			"Think"
 			{
@@ -46,7 +46,7 @@
 			}
 			"Touch"
 			{
-				"windows"	"90"
+				"windows"	"89"
 			}
 			"TraceAttack"
 			{
@@ -54,27 +54,27 @@
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"143"
+				"windows"	"142"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"223"
+				"windows"	"222"
 			}
 			"Weapon_CanUse"
 			{
-				"windows"	"217"
+				"windows"	"216"
 			}
 			"Weapon_Drop"
 			{
-				"windows"	"220"
+				"windows"	"219"
 			}
 			"Weapon_Equip"
 			{
-				"windows"	"218"
+				"windows"	"217"
 			}
 			"Weapon_Switch"
 			{
-				"windows"	"221"
+				"windows"	"220"
 			}
 		}
 	}

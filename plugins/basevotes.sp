@@ -37,7 +37,9 @@
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 
-public Plugin:myinfo =
+#pragma newdecls required
+
+public Plugin myinfo =
 {
 	name = "Basic Votes",
 	author = "AlliedModders LLC",
@@ -52,7 +54,7 @@ public Plugin:myinfo =
 Menu g_hVoteMenu = null;
 
 ConVar g_Cvar_Limits[3] = {null, ...};
-//new Handle:g_Cvar_VoteSay = INVALID_HANDLE;
+//ConVar g_Cvar_VoteSay = null;
 
 enum voteType
 {
@@ -62,21 +64,21 @@ enum voteType
 	question
 }
 
-new voteType:g_voteType = voteType:question;
+voteType g_voteType = question;
 
 // Menu API does not provide us with a way to pass multiple peices of data with a single
 // choice, so some globals are used to hold stuff.
 //
 #define VOTE_CLIENTID	0
 #define VOTE_USERID	1
-new g_voteClient[2];		/* Holds the target's client id and user id */
+int g_voteClient[2];		/* Holds the target's client id and user id */
 
 #define VOTE_NAME	0
 #define VOTE_AUTHID	1
 #define	VOTE_IP		2
-new String:g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
+char g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
 
-new String:g_voteArg[256];	/* Used to hold ban/kick reasons or vote questions */
+char g_voteArg[256];	/* Used to hold ban/kick reasons or vote questions */
 
 
 TopMenu hTopMenu;
@@ -85,7 +87,7 @@ TopMenu hTopMenu;
 #include "basevotes/voteban.sp"
 #include "basevotes/votemap.sp"
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("basevotes.phrases");
@@ -116,23 +118,23 @@ public OnPluginStart()
 		OnAdminMenuReady(topmenu);
 	}
 	
-	g_SelectedMaps = CreateArray(33);
+	g_SelectedMaps = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
 	
-	g_MapList = CreateMenu(MenuHandler_Map, MenuAction_DrawItem|MenuAction_Display);
+	g_MapList = new Menu(MenuHandler_Map, MenuAction_DrawItem|MenuAction_Display);
 	g_MapList.SetTitle("%T", "Please select a map", LANG_SERVER);
 	g_MapList.ExitBackButton = true;
 	
-	decl String:mapListPath[PLATFORM_MAX_PATH];
+	char mapListPath[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, mapListPath, sizeof(mapListPath), "configs/adminmenu_maplist.ini");
 	SetMapListCompatBind("sm_votemap menu", mapListPath);
 }
 
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {
 	g_mapCount = LoadMapList(g_MapList);
 }
 
-public OnAdminMenuReady(Handle aTopMenu)
+public void OnAdminMenuReady(Handle aTopMenu)
 {
 	TopMenu topmenu = TopMenu.FromHandle(aTopMenu);
 
@@ -146,7 +148,7 @@ public OnAdminMenuReady(Handle aTopMenu)
 	hTopMenu = topmenu;
 	
 	/* Build the "Voting Commands" category */
-	new TopMenuObject:voting_commands = hTopMenu.FindCategory(ADMINMENU_VOTINGCOMMANDS);
+	TopMenuObject voting_commands = hTopMenu.FindCategory(ADMINMENU_VOTINGCOMMANDS);
 
 	if (voting_commands != INVALID_TOPMENUOBJECT)
 	{
@@ -156,7 +158,7 @@ public OnAdminMenuReady(Handle aTopMenu)
 	}
 }
 
-public Action:Command_Vote(client, args)
+public Action Command_Vote(int client, int args)
 {
 	if (args < 1)
 	{
@@ -175,13 +177,13 @@ public Action:Command_Vote(client, args)
 		return Plugin_Handled;
 	}
 	
-	decl String:text[256];
+	char text[256];
 	GetCmdArgString(text, sizeof(text));
 
-	decl String:answers[5][64];
-	new answerCount;	
-	new len = BreakString(text, g_voteArg, sizeof(g_voteArg));
-	new pos = len;
+	char answers[5][64];
+	int answerCount;	
+	int len = BreakString(text, g_voteArg, sizeof(g_voteArg));
+	int pos = len;
 	
 	while (args > 1 && pos != -1 && answerCount < 5)
 	{	
@@ -197,9 +199,9 @@ public Action:Command_Vote(client, args)
 	LogAction(client, -1, "\"%L\" initiated a generic vote.", client);
 	ShowActivity2(client, "[SM] ", "%t", "Initiate Vote", g_voteArg);
 	
-	g_voteType = voteType:question;
+	g_voteType = question;
 	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 	g_hVoteMenu.SetTitle("%s?", g_voteArg);
 	
 	if (answerCount < 2)
@@ -209,7 +211,7 @@ public Action:Command_Vote(client, args)
 	}
 	else
 	{
-		for (new i = 0; i < answerCount; i++)
+		for (int i = 0; i < answerCount; i++)
 		{
 			g_hVoteMenu.AddItem(answers[i], answers[i]);
 		}	
@@ -221,7 +223,7 @@ public Action:Command_Vote(client, args)
 	return Plugin_Handled;	
 }
 
-public Handler_VoteCallback(Menu menu, MenuAction action, param1, param2)
+public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -229,7 +231,7 @@ public Handler_VoteCallback(Menu menu, MenuAction action, param1, param2)
 	}
 	else if (action == MenuAction_Display)
 	{
-	 	if (g_voteType != voteType:question)
+	 	if (g_voteType != question)
 	 	{
 			char title[64];
 			menu.GetTitle(title, sizeof(title));
@@ -237,18 +239,18 @@ public Handler_VoteCallback(Menu menu, MenuAction action, param1, param2)
 	 		char buffer[255];
 			Format(buffer, sizeof(buffer), "%T", title, param1, g_voteInfo[VOTE_NAME]);
 
-			Panel panel = Panel:param2;
+			Panel panel = view_as<Panel>(param2);
 			panel.SetTitle(buffer);
 		}
 	}
 	else if (action == MenuAction_DisplayItem)
 	{
-		decl String:display[64];
+		char display[64];
 		menu.GetItem(param2, "", 0, _, display, sizeof(display));
 	 
 	 	if (strcmp(display, "No") == 0 || strcmp(display, "Yes") == 0)
 	 	{
-			decl String:buffer[255];
+			char buffer[255];
 			Format(buffer, sizeof(buffer), "%T", display, param1);
 
 			return RedrawMenuItem(buffer);
@@ -278,7 +280,7 @@ public Handler_VoteCallback(Menu menu, MenuAction action, param1, param2)
 		
 		percent = GetVotePercent(votes, totalVotes);
 		
-		if (g_voteType != voteType:question)
+		if (g_voteType != question)
 		{
 			limit = g_Cvar_Limits[g_voteType].FloatValue;
 		}
@@ -299,7 +301,7 @@ public Handler_VoteCallback(Menu menu, MenuAction action, param1, param2)
 			
 			switch (g_voteType)
 			{
-				case (voteType:question):
+				case (question):
 				{
 					if (strcmp(item, VOTE_NO) == 0 || strcmp(item, VOTE_YES) == 0)
 					{
@@ -309,16 +311,19 @@ public Handler_VoteCallback(Menu menu, MenuAction action, param1, param2)
 					PrintToChatAll("[SM] %t", "Vote End", g_voteArg, item);
 				}
 				
-				case (voteType:map):
+				case (map):
 				{
+					// single-vote items don't use the display item
+					char displayName[PLATFORM_MAX_PATH];
+					GetMapDisplayName(item, displayName, sizeof(displayName));
 					LogAction(-1, -1, "Changing map to %s due to vote.", item);
-					PrintToChatAll("[SM] %t", "Changing map", item);
-					new Handle:dp;
+					PrintToChatAll("[SM] %t", "Changing map", displayName);
+					DataPack dp;
 					CreateDataTimer(5.0, Timer_ChangeMap, dp);
-					WritePackString(dp, item);		
+					dp.WriteString(item);		
 				}
 					
-				case (voteType:kick):
+				case (kick):
 				{
 					if (g_voteArg[0] == '\0')
 					{
@@ -331,7 +336,7 @@ public Handler_VoteCallback(Menu menu, MenuAction action, param1, param2)
 					ServerCommand("kickid %d \"%s\"", g_voteClient[VOTE_USERID], g_voteArg);					
 				}
 					
-				case (voteType:ban):
+				case (ban):
 				{
 					if (g_voteArg[0] == '\0')
 					{
@@ -356,11 +361,11 @@ public Handler_VoteCallback(Menu menu, MenuAction action, param1, param2)
 }
 
 /*
-VoteSelect(Handle:menu, param1, param2 = 0)
+void VoteSelect(Menu menu, int param1, int param2 = 0)
 {
-	if (GetConVarInt(g_Cvar_VoteShow) == 1)
+	if (g_Cvar_VoteShow.IntValue == 1)
 	{
-		decl String:voter[64], String:junk[64], String:choice[64];
+		char voter[64], junk[64], choice[64];
 		GetClientName(param1, voter, sizeof(voter));
 		menu.GetItem(param2, junk, sizeof(junk), _, choice, sizeof(choice));
 		PrintToChatAll("[SM] %T", "Vote Select", LANG_SERVER, voter, choice);
@@ -368,20 +373,20 @@ VoteSelect(Handle:menu, param1, param2 = 0)
 }
 */
 
-VoteMenuClose()
+void VoteMenuClose()
 {
 	delete g_hVoteMenu;
 	g_hVoteMenu = null;
 }
 
-Float:GetVotePercent(votes, totalVotes)
+float GetVotePercent(int votes, int totalVotes)
 {
 	return FloatDiv(float(votes),float(totalVotes));
 }
 
-bool:TestVoteDelay(client)
+bool TestVoteDelay(int client)
 {
- 	new delay = CheckVoteDelay();
+ 	int delay = CheckVoteDelay();
  	
  	if (delay > 0)
  	{
@@ -400,12 +405,12 @@ bool:TestVoteDelay(client)
 	return true;
 }
 
-public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
+public Action Timer_ChangeMap(Handle timer, DataPack dp)
 {
-	decl String:mapname[65];
+	char mapname[65];
 	
-	ResetPack(dp);
-	ReadPackString(dp, mapname, sizeof(mapname));
+	dp.Reset();
+	dp.ReadString(mapname, sizeof(mapname));
 	
 	ForceChangeLevel(mapname, "sm_votemap Result");
 	

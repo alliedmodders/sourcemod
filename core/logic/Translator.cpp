@@ -40,6 +40,10 @@
 #include <ILibrarySys.h>
 #include "PhraseCollection.h"
 #include "stringutil.h"
+#include "sprintf.h"
+#include <am-string.h>
+#include <bridge/include/ILogger.h>
+#include <bridge/include/CoreProvider.h>
 
 Translator g_Translator;
 IPhraseCollection *g_pCorePhrases = NULL;
@@ -711,13 +715,13 @@ ConfigResult Translator::OnSourceModConfigChanged(const char *key,
 			unsigned int index;
 			if (!GetLanguageByCode(value, &index))
 			{
-				smcore.Format(error, maxlength, "Language code \"%s\" is not registered", value);
+				ke::SafeSprintf(error, maxlength, "Language code \"%s\" is not registered", value);
 				return ConfigResult_Reject;
 			}
 
 			m_ServerLang = index;
 		} else {
-			smcore.strncopy(m_InitialLang, value, sizeof(m_InitialLang));
+			strncopy(m_InitialLang, value, sizeof(m_InitialLang));
 		}
 
 		return ConfigResult_Accept;
@@ -735,7 +739,7 @@ void Translator::OnSourceModAllInitialized()
 {
 	AddLanguage("en", "English");
 
-	const char* lang = smcore.GetCoreConfigValue("ServerLang");
+	const char* lang = bridge->GetCoreConfigValue("ServerLang");
 	if (lang)
 	{
 		strncpy(m_InitialLang, lang, sizeof(m_InitialLang));
@@ -745,6 +749,13 @@ void Translator::OnSourceModAllInitialized()
 	g_pCorePhrases->AddPhraseFile("core.phrases");
 
 	sharesys->AddInterface(NULL, this);
+
+	auto sm_reload_translations = [this] (int client, const ICommandArgs *args) -> bool {
+		RebuildLanguageDatabase();
+		return true;
+	};
+	bridge->DefineCommand("sm_reload_translations", "Reparses all loaded translation files",
+	                      sm_reload_translations);
 }
 
 void Translator::OnSourceModShutdown()
@@ -839,7 +850,7 @@ void Translator::RebuildLanguageDatabase()
 	{
 		logger->LogError("Server language was set to bad language \"%s\" -- reverting to English", m_InitialLang);
 
-		smcore.strncopy(m_InitialLang, "en", sizeof(m_InitialLang));
+		strncopy(m_InitialLang, "en", sizeof(m_InitialLang));
 		m_ServerLang = SOURCEMOD_LANGUAGE_ENGLISH;
 	}
 
@@ -923,7 +934,7 @@ bool Translator::AddLanguage(const char *langcode, const char *description)
 		Language *pLanguage = new Language;
 		idx = m_Languages.size();
 
-		smcore.Format(pLanguage->m_code2, sizeof(pLanguage->m_code2), "%s", langcode);
+		ke::SafeSprintf(pLanguage->m_code2, sizeof(pLanguage->m_code2), "%s", langcode);
 		pLanguage->m_CanonicalName = m_pStringTab->AddString(lower);
 
 		m_LCodeLookup.insert(langcode, idx);
@@ -987,7 +998,7 @@ unsigned int Translator::GetInterfaceVersion()
 	return SMINTERFACE_TRANSLATOR_VERSION;
 }
 
-IPhraseCollection *Translator::CreatePhraseCollection()
+CPhraseCollection *Translator::CreatePhraseCollection()
 {
 	return new CPhraseCollection();
 }
@@ -1058,7 +1069,7 @@ bool Translator::FormatString(char *buffer,
 	unsigned int arg;
 
 	arg = 0;
-	if (!smcore.gnprintf(buffer, maxlength, format, pPhrases, params, numparams, arg, pOutLength, pFailPhrase))
+	if (!gnprintf(buffer, maxlength, format, pPhrases, params, numparams, arg, pOutLength, pFailPhrase))
 	{
 		return false;
 	}

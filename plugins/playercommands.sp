@@ -38,7 +38,9 @@
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 
-public Plugin:myinfo =
+#pragma newdecls required
+
+public Plugin myinfo =
 {
 	name = "Player Commands",
 	author = "AlliedModders LLC",
@@ -54,7 +56,7 @@ TopMenu hTopMenu;
 #include "playercommands/slap.sp"
 #include "playercommands/rename.sp"
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("playercommands.phrases");
@@ -71,7 +73,7 @@ public OnPluginStart()
 	}
 }
 
-public OnAdminMenuReady(Handle aTopMenu)
+public void OnAdminMenuReady(Handle aTopMenu)
 {
 	TopMenu topmenu = TopMenu.FromHandle(aTopMenu);
 

@@ -41,11 +41,6 @@
 		"engine"	"csgo"
 	}
 	
-	"engine.dota.txt"
-	{
-		"engine"	"dota"
-	}
-	
 	"engine.ep2v.txt"
 	{
 		"engine"	"orangebox_valve"
@@ -188,5 +183,10 @@
 	"game.modularcombat.txt"
 	{
 		"game"		"modularcombat"
+	}
+	
+	"game.kz.txt"
+	{
+		"game"		"KreedzClimbing"
 	}
 }

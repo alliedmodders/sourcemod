@@ -48,6 +48,15 @@
 #include <unistd.h>
 #include <sys/times.h>
 #endif
+#include <IForwardSys.h>
+#include <ILibrarySys.h>
+#include <bridge/include/CoreProvider.h>
+#include <bridge/include/IScriptManager.h>
+#include <bridge/include/IExtensionBridge.h>
+
+using namespace SourceMod;
+using namespace SourcePawn;
+
 
 HandleType_t g_PlIter;
 
@@ -78,7 +87,7 @@ public:
 			Param_Cell,
 			Param_String);
 		
-		sm_datetime_format = smcore.FindConVar("sm_datetime_format");
+		sm_datetime_format = bridge->FindConVar("sm_datetime_format");
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
@@ -173,7 +182,7 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 
 	if (format == NULL)
 	{
-		format = const_cast<char *>(smcore.GetCvarString(sm_datetime_format));
+		format = const_cast<char *>(bridge->GetCvarString(sm_datetime_format));
 	}
 
 #if defined SUBPLATFORM_SECURECRT
@@ -381,7 +390,7 @@ static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] == 1)
 	{
-		pPlugin->SetErrorState(Plugin_Failed, "%s", str);
+		pPlugin->EvictWithError(Plugin_Failed, "%s", str);
 
 		return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", str);
 	}
@@ -393,10 +402,10 @@ static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
 			DetectExceptions eh(pContext);
 			g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
 			if (eh.HasException()) {
-				pPlugin->SetErrorState(Plugin_Failed, "%s", str);
+				pPlugin->EvictWithError(Plugin_Failed, "%s", str);
 				return 0;
 			}
-			pPlugin->SetErrorState(Plugin_Failed, "%s", buffer);
+			pPlugin->EvictWithError(Plugin_Failed, "%s", buffer);
 			pContext->ReportFatalError("%s", buffer);
 			return 0;
 		}
@@ -665,7 +674,7 @@ static cell_t RequireFeature(IPluginContext *pContext, const cell_t *params)
 			g_pSM->Format(default_message, sizeof(default_message), "Feature \"%s\" not available", name);
 			msg = default_message;
 		}
-		pPlugin->SetErrorState(Plugin_Error, "%s", msg);
+		pPlugin->EvictWithError(Plugin_Error, "%s", msg);
 
 		if (!eh.HasException())
 			pContext->ReportFatalError("%s", msg);

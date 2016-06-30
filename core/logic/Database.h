@@ -65,8 +65,7 @@ class DBManager :
 	public SMGlobalClass,
 	public IHandleTypeDispatch,
 	public ITextListener_SMC,
-	public IPluginsListener,
-	public ke::IRunnable
+	public IPluginsListener
 {
 public:
 	DBManager();
@@ -101,7 +100,7 @@ public: //ke::IRunnable
 	void Run();
 	void ThreadMain();
 public: //IPluginsListener
-	void OnPluginUnloaded(IPlugin *plugin);
+	void OnPluginWillUnload(IPlugin *plugin);
 public:
 	ConfDbInfo *GetDatabaseConf(const char *name);
 	IDBDriver *FindOrLoadDriver(const char *name);

@@ -76,6 +76,14 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_bForceFriendlyFire = false;
 #endif
 
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2
+	m_flDamageForForce = 0.f;
+#endif
+
+#if SOURCE_ENGINE == SE_TF2
+	m_eCritType = kCritType_None;
+#endif
+
 #if SOURCE_ENGINE >= SE_ALIENSWARM
 	m_flRadius = 0.0f;
 #endif

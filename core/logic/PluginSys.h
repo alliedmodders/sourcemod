@@ -50,67 +50,21 @@
 #include "IGameConfigs.h"
 #include "NativeOwner.h"
 #include "ShareSys.h"
+#include "PhraseCollection.h"
+#include <am-string.h>
+#include <bridge/include/IScriptManager.h>
+#include <am-function.h>
+#include <ReentrantList.h>
 
 class CPlayer;
 
 using namespace SourceHook;
-
-/**
- * NOTES:
- *
- * UPDATE 2008-03-11: These comments are horribly out of date.  They paint a good overall 
- * picture of how PluginSys works, but things like dependencies and fake natives have 
- * complicated things quite a bit.
- *
- *  Currently this system needs a lot of work but it's good skeletally.  Plugin creation 
- * is done without actually compiling anything.  This is done by Load functions in the 
- * manager.  This will need a rewrite when we add context switching.
- *
- *  The plugin object itself has a few things to note.  The most important is that it stores
- * a table of function objects.  The manager marshals allocation and freeing of these objects.
- * The plugin object can be in erroneous states, they are:
- *   Plugin_Error   --> Some error occurred any time during or after compilation.
- *						This error can be cleared since the plugin itself is valid.
- *						However, the state itself being set prevents any runtime action.
- *   Plugin_BadLoad	--> The plugin failed to load entirely and nothing can be done to save it.
- *
- *  If a plugin fails to load externally, it is never added to the internal tracker.  However, 
- * plugins that failed to load from the internal loading mechanism are always tracked.  This 
- * allows users to see which automatically loaded plugins failed, and makes the interface a bit
- * more flexible.
- *
- *  Once a plugin is compiled, it sets its own state to Plugin_Created.  This state is still invalid
- * for execution.  SourceMod is a two pass system, and even though the second pass is not implemented
- * yet, it is structured so Plugin_Created must be switched to Plugin_Running in the second pass.  When
- * implemented, a Created plugin will be switched to Error in the second pass if it not loadable.
- *
- *  The two pass loading mechanism is described below.  Modules/natives are not implemented yet.
- * PASS ONE: All loadable plugins are found and have the following steps performed:
- *			 1.  Loading and compilation is attempted.
- *			 2.  If successful, all natives from Core are added.
- *			 3.  OnPluginLoad() is called.
- *			 4.  If failed, any user natives are scrapped and the process halts here.
- *			 5.  If successful, the plugin is ready for Pass 2.
- * INTERMEDIATE:
- *			 1.  All forced modules are loaded.
- * PASS TWO: All loaded plugins are found and have these steps performed:
- *			 1. Any modules referenced in the plugin that are not already loaded, are loaded.
- *			 2. If any module fails to load and the plugin requires it, load fails and jump to step 6.
- *			 3. If any natives are unresolved, check if they are found in the user-natives pool.
- *			 4. If yes, load succeeds.  If not, natives are passed through a native acceptance filter.
- *			 5. If the filter fails, the plugin is marked as failed.
- *			 6. If the plugin has failed to load at this point, any dynamic natives it has added are scrapped.
- *			    Furthermore, any plugin that referenced these natives must now have pass 2 re-ran.
- * PASS THREE (not a real pass):
- *			 7. Once all plugins are deemed to be loaded, OnPluginStart() is called
- */
 
 enum LoadRes
 {
 	LoadRes_Successful,
 	LoadRes_AlreadyLoaded,
 	LoadRes_Failure,
-	LoadRes_SilentFailure,
 	LoadRes_NeverLoad
 };
 
@@ -121,12 +75,27 @@ enum APLRes
 	APLRes_SilentFailure
 };
 
+// Plugin membership state.
+enum class PluginState
+{
+	// The plugin has not yet been added to the global plugin list.
+	Unregistered,
+
+	// The plugin is a member of the global plugin list.
+	Registered,
+
+	// The plugin has been evicted.
+	Evicted,
+
+	// The plugin is waiting to be unloaded.
+	WaitingToUnload,
+	WaitingToUnloadAndReload,
+};
+
 class CPlugin : 
 	public SMPlugin,
 	public CNativeOwner
 {
-	friend class CPluginManager;
-	friend class CFunction;
 public:
 	CPlugin(const char *file);
 	~CPlugin();
@@ -138,8 +107,8 @@ public:
 	const char *GetFilename();
 	bool IsDebugging();
 	PluginStatus GetStatus();
+	PluginStatus Status() const;
 	bool IsSilentlyFailed();
-	void SetSilentlyFailed(bool sf);
 	const sm_plugininfo_t *GetPublicInfo();
 	bool SetPauseState(bool paused);
 	unsigned int GetSerial();
@@ -152,6 +121,18 @@ public:
 	CNativeOwner *ToNativeOwner() {
 		return this;
 	}
+
+	struct ExtVar {
+		char *name;
+		char *file;
+		bool autoload;
+		bool required;
+	};
+
+	typedef ke::Lambda<bool(const sp_pubvar_t *, const ExtVar& ext)> ExtVarCallback;
+	bool ForEachExtVar(const ExtVarCallback& callback);
+
+	void ForEachLibrary(ke::Lambda<void(const char *)> callback);
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -160,78 +141,51 @@ public:
 	 *   If an error buffer is not specified, the error will be copied to an internal buffer and 
 	 * a valid (but error-stated) CPlugin will be returned.
 	 */
-	static CPlugin *CreatePlugin(const char *file, char *error, size_t maxlength);
+	static CPlugin *Create(const char *file);
 
 	static inline bool matches(const char *file, const CPlugin *plugin)
 	{
 		return strcmp(plugin->m_filename, file) == 0;
 	}
+
 public:
+	// Evicts the plugin from memory and sets an error state.
+	void EvictWithError(PluginStatus status, const char *error_fmt, ...);
+	void FinishEviction();
 
-	/**
-	 * Sets an error state on the plugin
-	 */
-	void SetErrorState(PluginStatus status, const char *error_fmt, ...);
-
-	/**
-	 * Initializes the plugin's identity information
-	 */
+	// Initializes the plugin's identity information
 	void InitIdentity();
 
-	/**
-	 * Calls the OnPluginLoad function, and sets any failed states if necessary.
-	 * NOTE: Valid pre-states are: Plugin_Created
-	 * NOTE: If validated, plugin state is changed to Plugin_Loaded
-	 *
-	 * If the error buffer is NULL, the error message is cached locally.
-	 */
-	APLRes Call_AskPluginLoad(char *error, size_t maxlength);
+	// Calls the OnPluginLoad function, and sets any failed states if necessary.
+	// After invoking AskPluginLoad, its state is either Running or Failed.
+	APLRes AskPluginLoad();
 
-	/**
-	 * Calls the OnPluginStart function.
-	 * NOTE: Valid pre-states are: Plugin_Created
-	 * NOTE: Post-state will be Plugin_Running
-	 */
-	void Call_OnPluginStart();
+	// Transition to the fully running state, if possible.
+	bool OnPluginStart();
 
-	/**
-	 * Calls the OnPluginEnd function.
-	 */
 	void Call_OnPluginEnd();
-
-	/**
-	 * Calls the OnAllPluginsLoaded function.
-	 */
 	void Call_OnAllPluginsLoaded();
-
-	/**
-	 * Calls the OnLibraryAdded function.
-	 */
 	void Call_OnLibraryAdded(const char *lib);
 
-	/**
-	 * Returns true if a plugin is usable.
-	 */
+	// Returns true if a plugin is usable.
 	bool IsRunnable();
 
-	/**
-	 * Get languages info.
-	 */
+	// Get languages info.
 	IPhraseCollection *GetPhrases();
+
+	PluginState State() const {
+		return m_state;
+	}
+	void SetRegistered();
+	void SetWaitingToUnload(bool andReload=false);
+
+	PluginStatus GetDisplayStatus() const {
+		return m_status;
+	}
+	bool IsEvictionCandidate() const;
+
 public:
-	/**
-	 * Returns the modification time during last plugin load.
-	 */
-	time_t GetTimeStamp();
-
-	/**
-	 * Returns the current modification time of the plugin file.
-	 */
-	time_t GetFileTimeStamp();
-
-	/** 
-	 * Returns true if the plugin was running, but is now invalid.
-	 */
+	// Returns true if the plugin was running, but is now invalid.
 	bool WasRunning();
 
 	Handle_t GetMyHandle();
@@ -240,41 +194,108 @@ public:
 	void AddConfig(bool autoCreate, const char *cfg, const char *folder);
 	size_t GetConfigCount();
 	AutoConfig *GetConfig(size_t i);
-	inline void AddLibrary(const char *name)
-	{
+	inline void AddLibrary(const char *name) {
 		m_Libraries.push_back(name);
+	}
+	inline bool HasLibrary(const char *name) {
+		return m_Libraries.find(name) != m_Libraries.end();
 	}
 	void LibraryActions(LibraryAction action);
 	void SyncMaxClients(int max_clients);
+
+	// Returns true if the plugin's underlying file structure has a newer
+	// modification time than either when it was first instantiated or
+	// since the last call to HasUpdatedFile().
+	bool HasUpdatedFile();
+
+	const char *GetDateTime() const {
+		return m_DateTime;
+	}
+	int GetFileVersion() const {
+		return m_FileVersion;
+	}
+	const char *GetErrorMsg() const {
+		assert(m_status != Plugin_Running && m_status != Plugin_Loaded);
+		return m_errormsg;
+	}
+
+	void AddRequiredLib(const char *name);
+	bool ForEachRequiredLib(ke::Lambda<bool(const char *)> callback);
+
+	bool HasMissingFakeNatives() const {
+		return m_FakeNativesMissing;
+	}
+	bool HasMissingLibrary() const {
+		return m_LibraryMissing;
+	}
+	bool HasFakeNatives() const {
+		return m_fakes.length() > 0;
+	}
+
+	// True if we got far enough into the second pass to call OnPluginLoaded
+	// in the listener list.
+	bool EnteredSecondPass() const {
+		return m_EnteredSecondPass;
+	}
+
+	bool IsInErrorState() const {
+		if (m_status == Plugin_Running || m_status == Plugin_Loaded)
+			return false;
+		return true;
+	}
+
+	bool TryCompile();
+	void BindFakeNativesTo(CPlugin *other);
+
 protected:
-	bool UpdateInfo();
-	void SetTimeStamp(time_t t);
 	void DependencyDropped(CPlugin *pOwner);
+
 private:
-	PluginType m_type;
+	time_t GetFileTimeStamp();
+	bool ReadInfo();
+	void DestroyIdentity();
+
+private:
+	// This information is static for the lifetime of the plugin.
 	char m_filename[PLATFORM_MAX_PATH];
-	PluginStatus m_status;
-	bool m_bSilentlyFailed;
 	unsigned int m_serial;
-	sm_plugininfo_t m_info;
-	char m_errormsg[256];
-	time_t m_LastAccess;
-	IdentityToken_t *m_ident;
-	Handle_t m_handle;
-	bool m_WasRunning;
-	IPhraseCollection *m_pPhrases;
-	List<String> m_RequiredLibs;
-	List<String> m_Libraries;
-	StringHashMap<void *> m_Props;
+
+	PluginStatus m_status;
+	PluginState m_state;
+	bool m_AddedLibraries;
+	bool m_EnteredSecondPass;
+
+	// Statuses that are set during failure.
+	bool m_SilentFailure;
 	bool m_FakeNativesMissing;
 	bool m_LibraryMissing;
-	CVector<AutoConfig *> m_configs;
-	bool m_bGotAllLoaded;
-	int m_FileVersion;
-	char m_DateTime[256];
-	IPluginRuntime *m_pRuntime;
+	char m_errormsg[256];
+
+	// Internal properties that must by reset if the runtime is evicted.
+	ke::AutoPtr<IPluginRuntime> m_pRuntime;
+	ke::AutoPtr<CPhraseCollection> m_pPhrases;
 	IPluginContext *m_pContext;
 	sp_pubvar_t *m_MaxClientsVar;
+	StringHashMap<void *> m_Props;
+	CVector<AutoConfig *> m_configs;
+	List<String> m_Libraries;
+	bool m_bGotAllLoaded;
+	int m_FileVersion;
+
+	// Information that survives past eviction.
+	List<String> m_RequiredLibs;
+	IdentityToken_t *m_ident;
+	time_t m_LastFileModTime;
+	Handle_t m_handle;
+	char m_DateTime[256];
+
+	// Cached.
+	sm_plugininfo_t m_info;
+	ke::AString info_name_;
+	ke::AString info_author_;
+	ke::AString info_description_;
+	ke::AString info_version_;
+	ke::AString info_url_;
 };
 
 class CPluginManager : 
@@ -283,26 +304,26 @@ class CPluginManager :
 	public IHandleTypeDispatch,
 	public IRootConsoleCommand
 {
-	friend class CPlugin;
 public:
 	CPluginManager();
 	~CPluginManager();
 public:
 	/* Implements iterator class */
-	class CPluginIterator : public IPluginIterator
+	class CPluginIterator
+		: public IPluginIterator,
+		  public IPluginsListener
 	{
 	public:
-		CPluginIterator(List<CPlugin *> *mylist);
+		CPluginIterator(ReentrantList<CPlugin *>& in);
 		virtual ~CPluginIterator();
 		virtual bool MorePlugins();
 		virtual IPlugin *GetPlugin();
 		virtual void NextPlugin();
 		void Release();
-	public:
-		void Reset();
+		void OnPluginDestroyed(IPlugin *plugin) override;
 	private:
-		List<CPlugin *> *mylist;
-		List<CPlugin *>::iterator current;
+		ke::LinkedList<CPlugin *> mylist;
+		ke::LinkedList<CPlugin *>::iterator current;
 	};
 	friend class CPluginManager::CPluginIterator;
 public: //IScriptManager
@@ -338,6 +359,7 @@ public: //IScriptManager
 	}
 	const CVector<SMPlugin *> *ListPlugins();
 	void FreePluginList(const CVector<SMPlugin *> *plugins);
+
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
@@ -347,7 +369,7 @@ public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);
 public: //IRootConsoleCommand
-	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
+	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command) override;
 public:
 	/**
 	 * Loads all plugins not yet loaded
@@ -358,17 +380,6 @@ public:
 	 * Runs the second loading pass for all plugins
 	 */
 	void LoadAll_SecondPass();
-
-	/**
-	 * Tests a plugin file mask against a local folder.
-	 * The alias is searched backwards from localdir - i.e., given this input:
-	 *   csdm/ban        csdm/ban
-	 *   ban             csdm/ban
-	 *   csdm/ban        optional/csdm/ban
-	 * All of these will return true for an alias match.  
-	 * Wildcards are allowed in the filename.
-	 */
-	bool TestAliasMatch(const char *alias, const char *localdir);
 
 	/** 
 	 * Returns whether anything loaded will be a late load.
@@ -416,15 +427,19 @@ public:
 
 	bool LibraryExists(const char *lib);
 
-	bool ReloadPlugin(CPlugin *pl);
+	bool ReloadPlugin(CPlugin *pl, bool print=false);
 
 	void UnloadAll();
 
 	void SyncMaxClients(int max_clients);
 
 	void ListPluginsToClient(CPlayer *player, const CCommand &args);
+
+	void _SetPauseState(CPlugin *pPlugin, bool pause);
+
+	void ForEachPlugin(ke::Lambda<void(CPlugin *)> callback);
 private:
-	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
+	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type);
 
 	void LoadAutoPlugin(const char *plugin);
 
@@ -438,27 +453,20 @@ private:
 	 */
 	void AddPlugin(CPlugin *pPlugin);
 
-	/**
-	 * Runs the second loading pass on a plugin.
-	 */
-	bool RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength);
+	// First pass for loading a plugin, and its helpers.
+	CPlugin *CompileAndPrep(const char *path);
+	bool MalwareCheckPass(CPlugin *pPlugin);
 
-	/**
-	 * Runs an extension pass on a plugin.
-	 */
-	bool LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass, char *error, size_t maxlength);
+	// Runs the second loading pass on a plugin.
+	bool RunSecondPass(CPlugin *pPlugin);
+	void LoadExtensions(CPlugin *pPlugin);
+	bool RequireExtensions(CPlugin *pPlugin);
+	bool FindOrRequirePluginDeps(CPlugin *pPlugin);
 
-	/**
-	* Manages required natives.
-	*/
-	bool FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size_t maxlength);
+	void UnloadPluginImpl(CPlugin *plugin);
+	void ReloadPluginImpl(int id, const char filename[], PluginType ptype, bool print);
 
-	void _SetPauseState(CPlugin *pPlugin, bool pause);
-protected:
-	/**
-	 * Caching internal objects
-	 */
-	void ReleaseIterator(CPluginIterator *iter);
+	void Purge(CPlugin *plugin);
 public:
 	inline IdentityToken_t *GetIdentity()
 	{
@@ -468,9 +476,13 @@ public:
 private:
 	void TryRefreshDependencies(CPlugin *pOther);
 private:
-	List<IPluginsListener *> m_listeners;
-	List<CPlugin *> m_plugins;
-	CStack<CPluginManager::CPluginIterator *> m_iters;
+	ReentrantList<IPluginsListener *> m_listeners;
+	ReentrantList<CPlugin *> m_plugins;
+	ke::LinkedList<CPluginIterator *> m_iterators;
+
+	typedef decltype(m_listeners)::iterator ListenerIter;
+	typedef decltype(m_plugins)::iterator PluginIter;
+
 	NameHashSet<CPlugin *> m_LoadLookup;
 	bool m_AllPluginsLoaded;
 	IdentityToken_t *m_MyIdent;

@@ -48,7 +48,7 @@
  * @param str			String to check.
  * @return				Number of valid character bytes in the string.
  */
-native strlen(const String:str[]);
+native int strlen(const char[] str);
 
 /**
  * Tests whether a string is found inside another string.
@@ -60,7 +60,7 @@ native strlen(const String:str[]);
  * @return				-1 on failure (no match found). Any other value
  *						indicates a position in the string where the match starts.
  */
-native StrContains(const String:str[], const String:substr[], bool:caseSensitive=true);
+native int StrContains(const char[] str, const char[] substr, bool caseSensitive=true);
 
 /**
  * Compares two strings lexographically.
@@ -73,7 +73,7 @@ native StrContains(const String:str[], const String:substr[], bool:caseSensitive
  *						0 if str1 == str2
  *						1 if str1 > str2
  */
-native strcmp(const String:str1[], const String:str2[], bool:caseSensitive=true);
+native int strcmp(const char[] str1, const char[] str2, bool caseSensitive=true);
 
 /**
  * Compares two strings parts lexographically.
@@ -87,14 +87,14 @@ native strcmp(const String:str1[], const String:str2[], bool:caseSensitive=true)
  *						0 if str1 == str2
  *						1 if str1 > str2
  */
-native strncmp(const String:str1[], const String:str2[], num, bool:caseSensitive=true);
+native int strncmp(const char[] str1, const char[] str2, int num, bool caseSensitive=true);
 
 /**
  * Backwards compatible stock - StrCompare is now strcmp
  * @deprecated		Renamed to strcmp
  */
 #pragma deprecated Use strcmp() instead
-stock StrCompare(const String:str1[], const String:str2[], bool:caseSensitive=true)
+stock int StrCompare(const char[] str1, const char[] str2, bool caseSensitive=true)
 {
 	return strcmp(str1, str2, caseSensitive);
 }
@@ -108,7 +108,7 @@ stock StrCompare(const String:str1[], const String:str2[], bool:caseSensitive=tr
  * 						If false, comparison is case insensitive.
  * @return				True if equal, false otherwise.
  */
-stock bool:StrEqual(const String:str1[], const String:str2[], bool:caseSensitive=true)
+stock bool StrEqual(const char[] str1, const char[] str2, bool caseSensitive=true)
 {
 	return (strcmp(str1, str2, caseSensitive) == 0);
 }
@@ -123,14 +123,14 @@ stock bool:StrEqual(const String:str1[], const String:str2[], bool:caseSensitive
  * @param source		Source string buffer to copy from.
  * @return				Number of cells written.
  */
-native strcopy(String:dest[], destLen, const String:source[]);
+native int strcopy(char[] dest, int destLen, const char[] source);
 
 /**
  * Backwards compatibility stock - use strcopy
  * @deprecated			Renamed to strcopy
  */
 #pragma deprecated Use strcopy() instead
-stock StrCopy(String:dest[], destLen, const String:source[])
+stock int StrCopy(char[] dest, int destLen, const char[] source)
 {
 	return strcopy(dest, destLen, source);
 }
@@ -144,7 +144,7 @@ stock StrCopy(String:dest[], destLen, const String:source[])
  * @param ...			Variable number of format parameters.
  * @return				Number of cells written.
  */
-native Format(String:buffer[], maxlength, const String:format[], any:...);
+native int Format(char[] buffer, int maxlength, const char[] format, any ...);
 
 /**
  * Formats a string according to the SourceMod format rules (see documentation).
@@ -158,7 +158,7 @@ native Format(String:buffer[], maxlength, const String:format[], any:...);
  * @param ...			Variable number of format parameters.
  * @return				Number of cells written.
  */
-native FormatEx(String:buffer[], maxlength, const String:format[], any:...);
+native int FormatEx(char[] buffer, int maxlength, const char[] format, any ...);
 
 /**
  * Formats a string according to the SourceMod format rules (see documentation).
@@ -173,7 +173,7 @@ native FormatEx(String:buffer[], maxlength, const String:format[], any:...);
  *						Note: Arguments start at 1.
  * @return 				Number of bytes written.
  */
-native VFormat(String:buffer[], maxlength, const String:format[], varpos);
+native int VFormat(char[] buffer, int maxlength, const char[] format, int varpos);
 
 /**
  * Converts a string to an integer.
@@ -182,7 +182,7 @@ native VFormat(String:buffer[], maxlength, const String:format[], varpos);
  * @param nBase			Numerical base to use.  10 is default.
  * @return				Integer conversion of string, or 0 on failure.
  */
-native StringToInt(const String:str[], nBase=10);
+native int StringToInt(const char[] str, int nBase=10);
 
 /**
  * Converts a string to an integer with some more options.
@@ -192,7 +192,7 @@ native StringToInt(const String:str[], nBase=10);
  * @param nBase			Numerical base to use.  10 is default.
  * @return				Number of characters consumed.
  */
-native StringToIntEx(const String:str[], &result, nBase=10);
+native int StringToIntEx(const char[] str, int &result, int nBase=10);
 
 /**
  * Converts an integer to a string.
@@ -202,24 +202,24 @@ native StringToIntEx(const String:str[], &result, nBase=10);
  * @param maxlength		Maximum length of string buffer.
  * @return				Number of cells written to buffer.
  */
-native IntToString(num, String:str[], maxlength);
+native int IntToString(int num, char[] str, int maxlength);
 
 /** 
  * Converts a string to a floating point number.
  *
- * @param str			String to convert to a foat.
+ * @param str			String to convert to a float.
  * @return				Floating point result, or 0.0 on error.
  */
-native Float:StringToFloat(const String:str[]);
+native float StringToFloat(const char[] str);
 
 /** 
  * Converts a string to a floating point number with some more options.
  *
- * @param str			String to convert to a foat.
+ * @param str			String to convert to a float.
  * @param result		Variable to store result in.
  * @return				Number of characters consumed.
  */
-native StringToFloatEx(const String:str[], &Float:result);
+native int StringToFloatEx(const char[] str, float &result);
 
 /**
  * Converts a floating point number to a string.
@@ -229,7 +229,7 @@ native StringToFloatEx(const String:str[], &Float:result);
  * @param maxlength		Maximum length of string buffer.
  * @return				Number of cells written to buffer.
  */
-native FloatToString(Float:num, String:str[], maxlength);
+native int FloatToString(float num, char[] str, int maxlength);
 
 /**
  * Finds the first "argument" in a string; either a set of space
@@ -243,14 +243,14 @@ native FloatToString(Float:num, String:str[], maxlength);
  * @param argLen		Maximum length of argument buffer.
  * @return				Index to next piece of string, or -1 if none.
  */
-native BreakString(const String:source[], String:arg[], argLen);
+native int BreakString(const char[] source, char[] arg, int argLen);
 
 /**
  * Backwards compatibility stock - use BreakString
  * @deprecated			Renamed to BreakString.
  */
 #pragma deprecated Use BreakString() instead
-stock StrBreak(const String:source[], String:arg[], argLen)
+stock int StrBreak(const char[] source, char[] arg, int argLen)
 {
 	return BreakString(source, arg, argLen);
 }
@@ -261,7 +261,7 @@ stock StrBreak(const String:source[], String:arg[], argLen)
  * @param str			The string to trim.
  * @return				Number of bytes written (UTF-8 safe).
  */
-native TrimString(String:str[]);
+native int TrimString(char[] str);
 
 /**
  * Returns text in a string up until a certain character sequence is reached.
@@ -274,7 +274,7 @@ native TrimString(String:str[]);
  *						marking the first index after the searched text.  The
  *						index is always relative to the start of the input string.
  */
-native SplitString(const String:source[], const String:split[], String:part[], partLen);
+native int SplitString(const char[] source, const char[] split, char[] part, int partLen);
 
 /**
  * Given a string, replaces all occurrences of a search string with a 
@@ -287,7 +287,7 @@ native SplitString(const String:source[], const String:split[], String:part[], p
  * @param caseSensitive	If true (default), search is case sensitive.
  * @return				Number of replacements that were performed.
  */
-native ReplaceString(String:text[], maxlength, const String:search[], const String:replace[], bool:caseSensitive=true);
+native int ReplaceString(char[] text, int maxlength, const char[] search, const char[] replace, bool caseSensitive=true);
 
 /**
  * Given a string, replaces the first occurrence of a search string with a 
@@ -306,7 +306,7 @@ native ReplaceString(String:text[], maxlength, const String:search[], const Stri
  *						the last replacement ended, or -1 if no replacements were
  *						made.
  */
-native ReplaceStringEx(String:text[], maxlength, const String:search[], const String:replace[], searchLen=-1, replaceLen=-1, bool:caseSensitive=true);
+native int ReplaceStringEx(char[] text, int maxlength, const char[] search, const char[] replace, int searchLen=-1, int replaceLen=-1, bool caseSensitive=true);
 
 /** 
  * Returns the number of bytes a character is using.  This is
@@ -316,7 +316,7 @@ native ReplaceStringEx(String:text[], maxlength, const String:search[], const St
  * @param source		Source input string.
  * @return				Number of bytes the current character uses.
  */
-native GetCharBytes(const String:source[]);
+native int GetCharBytes(const char[] source);
 
 /**
  * Returns whether a character is an ASCII alphabet character.
@@ -326,7 +326,7 @@ native GetCharBytes(const String:source[]);
  * @param chr			Character to test.
  * @return				True if character is alphabetical, otherwise false.
  */
-native bool:IsCharAlpha(chr);
+native bool IsCharAlpha(int chr);
 
 /**
  * Returns whether a character is numeric.
@@ -336,7 +336,7 @@ native bool:IsCharAlpha(chr);
  * @param chr			Character to test.
  * @return				True if character is numeric, otherwise false.
  */
-native bool:IsCharNumeric(chr);
+native bool IsCharNumeric(int chr);
 
 /**
  * Returns whether a character is whitespace.
@@ -346,7 +346,7 @@ native bool:IsCharNumeric(chr);
  * @param chr			Character to test.
  * @return				True if character is whitespace, otherwise false.
  */
-native bool:IsCharSpace(chr);
+native bool IsCharSpace(int chr);
 
 /**
  * Returns if a character is multi-byte or not.
@@ -355,7 +355,7 @@ native bool:IsCharSpace(chr);
  * @return				0 for a normal 7-bit ASCII character,
  *						otherwise number of bytes in multi-byte character.
  */
-native IsCharMB(chr);
+native int IsCharMB(int chr);
 
 /**
  * Returns whether an alphabetic character is uppercase.
@@ -365,7 +365,7 @@ native IsCharMB(chr);
  * @param chr			Character to test.
  * @return				True if character is uppercase, otherwise false.
  */
-native bool:IsCharUpper(chr);
+native bool IsCharUpper(int chr);
 
 /**
  * Returns whether an alphabetic character is lowercase.
@@ -375,7 +375,7 @@ native bool:IsCharUpper(chr);
  * @param chr			Character to test.
  * @return				True if character is lowercase, otherwise false.
  */
-native bool:IsCharLower(chr);
+native bool IsCharLower(int chr);
 
 /**
  * Strips a quote pair off a string if it exists.  That is, the following 
@@ -389,16 +389,16 @@ native bool:IsCharLower(chr);
  * @return				True if string was modified, false if there was no 
  *						set of quotes.
  */
-native bool:StripQuotes(String:text[]);
+native bool StripQuotes(char[] text);
 
 /**
  * Returns an uppercase character to a lowercase character.
  *
- * @param chr			Characer to convert.
+ * @param chr			Character to convert.
  * @return				Lowercase character on success, 
  *						no change on failure.
  */
-stock CharToUpper(chr)
+stock int CharToUpper(int chr)
 {
 	if (IsCharLower(chr))
 	{
@@ -410,11 +410,11 @@ stock CharToUpper(chr)
 /**
  * Returns a lowercase character to an uppercase character.
  *
- * @param chr			Characer to convert.
+ * @param chr			Character to convert.
  * @return				Uppercase character on success, 
  *						no change on failure.
  */
-stock CharToLower(chr)
+stock int CharToLower(int chr)
 {
 	if (IsCharUpper(chr))
 	{
@@ -460,9 +460,9 @@ stock int FindCharInString(const char[] str, char c, bool reverse = false)
  * @param source		Source string to concatenate.
  * @return				Number of bytes written.
  */
-stock StrCat(String:buffer[], maxlength, const String:source[])
+stock int StrCat(char[] buffer, int maxlength, const char[] source)
 {
-	new len = strlen(buffer);
+	int len = strlen(buffer);
 	if (len >= maxlength)
 	{
 		return 0;
@@ -483,10 +483,10 @@ stock StrCat(String:buffer[], maxlength, const String:source[])
  *							delimiters after last piece.
  * @return					Number of strings retrieved.
  */
-stock ExplodeString(const String:text[], const String:split[], String:buffers[][], maxStrings,
-                    maxStringLength, bool:copyRemainder = false)
+stock int ExplodeString(const char[] text, const char[] split, char[][] buffers, int maxStrings,
+                    int maxStringLength, bool copyRemainder = false)
 {
-	new reloc_idx, idx, total;
+	int reloc_idx, idx, total;
 
 	if (maxStrings < 1 || !split[0])
 	{
@@ -522,11 +522,11 @@ stock ExplodeString(const String:text[], const String:split[], String:buffers[][
  * @param maxLength		Maximum length of the output buffer.
  * @return				Number of bytes written to the output buffer.
  */
-stock ImplodeStrings(const String:strings[][], numStrings, const String:join[], String:buffer[], maxLength)
+stock int ImplodeStrings(const char[][] strings, int numStrings, const char[] join, char[] buffer, int maxLength)
 {
-	new total, length, part_length;
-	new join_length = strlen(join);
-	for (new i=0; i<numStrings; i++)
+	int total, length, part_length;
+	int join_length = strlen(join);
+	for (int i=0; i<numStrings; i++)
 	{
 		length = strcopy(buffer[total], maxLength-total, strings[i]);
 		total += length;

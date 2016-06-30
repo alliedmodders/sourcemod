@@ -44,11 +44,6 @@
 #include "concmd_cleaner.h"
 #include "PlayerManager.h"
 
-#if SOURCE_ENGINE == SE_DARKMESSIAH
-class EQueryCvarValueStatus;
-typedef int QueryCvarCookie_t;
-#endif
-
 using namespace SourceHook;
 
 class IConVarChangeListener
@@ -100,16 +95,15 @@ public: // SMGlobalClass
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
-	void OnSourceModVSPReceived();
 public: // IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);
 public: // IPluginsListener
 	void OnPluginUnloaded(IPlugin *plugin);
 public: //IRootConsoleCommand
-	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
+	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command) override;
 public: //IConCommandTracker
-	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe);
+	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name) override;
 public: //IClientListener
 	void OnClientDisconnected(int client);
 public:
@@ -147,37 +141,26 @@ public:
 
 	HandleError ReadConVarHandle(Handle_t hndl, ConVar **pVar);
 
+	// Called via game hooks.
+	void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
+#if SOURCE_ENGINE != SE_DARKMESSIAH
+	void OnClientQueryFinished(
+	  QueryCvarCookie_t cookie,
+	  int client,
+	  EQueryCvarValueStatus result,
+	  const char *cvarName,
+	  const char *cvarValue);
+#endif
+
 private:
 	/**
 	 * Adds a convar to a plugin's list.
 	 */
 	static void AddConVarToPluginList(IPluginContext *pContext, const ConVar *pConVar);
-
-	/**
-	 * Static callback that Valve's ConVar object executes when the convar's value changes.
-	 */
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-	static void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
-#else
-	static void OnConVarChanged(ConVar *pConVar, const char *oldValue);
-#endif
-
-	/**
-	 * Callback for when StartQueryCvarValue() has finished.
-	 */
-#if SOURCE_ENGINE == SE_DOTA
-	void OnQueryCvarValueFinished(QueryCvarCookie_t cookie, CEntityIndex player, EQueryCvarValueStatus result,
-	                              const char *cvarName, const char *cvarValue);
-#elif SOURCE_ENGINE != SE_DARKMESSIAH
-	void OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result,
-	                              const char *cvarName, const char *cvarValue);
-#endif
 private:
 	HandleType_t m_ConVarType;
 	List<ConVarInfo *> m_ConVars;
 	List<ConVarQuery> m_ConVarQueries;
-	bool m_bIsDLLQueryHooked;
-	bool m_bIsVSPQueryHooked;
 };
 
 extern ConVarManager g_ConVarManager;

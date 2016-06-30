@@ -71,8 +71,8 @@ public:
 	unsigned int access;
 
 private:
-	CItem(const CItem &other) KE_DELETE;
-	CItem &operator =(const CItem &other) KE_DELETE;
+	CItem(const CItem &other) = delete;
+	CItem &operator =(const CItem &other) = delete;
 };
 
 class CBaseMenuPlayer

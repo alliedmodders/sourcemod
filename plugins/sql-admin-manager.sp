@@ -36,12 +36,14 @@
 
 #include <sourcemod>
 
+#pragma newdecls required
+
 #define CURRENT_SCHEMA_VERSION		1409
 #define SCHEMA_UPGRADE_1			1409
 
-new current_version[4] = {1, 0, 0, CURRENT_SCHEMA_VERSION};
+int current_version[4] = {1, 0, 0, CURRENT_SCHEMA_VERSION};
 
-public Plugin:myinfo = 
+public Plugin myinfo = 
 {
 	name = "SQL Admin Manager",
 	author = "AlliedModders LLC",
@@ -50,7 +52,7 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("sqladmins.phrases");
@@ -84,9 +86,9 @@ Database Connect()
 	return db;
 }
 
-CreateMySQL(client, Handle:db)
+void CreateMySQL(int client, Database db)
 {
-	new String:queries[7][] = 
+	char queries[7][] = 
 	{
 		"CREATE TABLE sm_admins (id int(10) unsigned NOT NULL auto_increment, authtype enum('steam','name','ip') NOT NULL, identity varchar(65) NOT NULL, password varchar(65), flags varchar(30) NOT NULL, name varchar(65) NOT NULL, immunity int(10) unsigned NOT NULL, PRIMARY KEY (id))",
 		"CREATE TABLE sm_groups (id int(10) unsigned NOT NULL auto_increment, flags varchar(30) NOT NULL, name varchar(120) NOT NULL, immunity_level int(1) unsigned NOT NULL, PRIMARY KEY (id))",
@@ -97,7 +99,7 @@ CreateMySQL(client, Handle:db)
 		"CREATE TABLE IF NOT EXISTS sm_config (cfg_key varchar(32) NOT NULL, cfg_value varchar(255) NOT NULL, PRIMARY KEY (cfg_key))"
 	};
 
-	for (new i = 0; i < 7; i++)
+	for (int i = 0; i < 7; i++)
 	{
 		if (!DoQuery(client, db, queries[i]))
 		{
@@ -105,7 +107,7 @@ CreateMySQL(client, Handle:db)
 		}
 	}
 
-	decl String:query[256];
+	char query[256];
 	Format(query, 
 		sizeof(query), 
 		"INSERT INTO sm_config (cfg_key, cfg_value) VALUES ('admin_version', '1.0.0.%d') ON DUPLICATE KEY UPDATE cfg_value = '1.0.0.%d'",
@@ -120,9 +122,9 @@ CreateMySQL(client, Handle:db)
 	ReplyToCommand(client, "[SM] Admin tables have been created.");
 }
 
-CreateSQLite(client, Handle:db)
+void CreateSQLite(int client, Database db)
 {
-	new String:queries[7][] = 
+	char queries[7][] = 
 	{
 		"CREATE TABLE sm_admins (id INTEGER PRIMARY KEY AUTOINCREMENT, authtype varchar(16) NOT NULL CHECK(authtype IN ('steam', 'ip', 'name')), identity varchar(65) NOT NULL, password varchar(65), flags varchar(30) NOT NULL, name varchar(65) NOT NULL, immunity INTEGER NOT NULL)",
 		"CREATE TABLE sm_groups (id INTEGER PRIMARY KEY AUTOINCREMENT, flags varchar(30) NOT NULL, name varchar(120) NOT NULL, immunity_level INTEGER NOT NULL)",
@@ -133,7 +135,7 @@ CreateSQLite(client, Handle:db)
 		"CREATE TABLE IF NOT EXISTS sm_config (cfg_key varchar(32) NOT NULL, cfg_value varchar(255) NOT NULL, PRIMARY KEY (cfg_key))"
 	};
 
-	for (new i = 0; i < 7; i++)
+	for (int i = 0; i < 7; i++)
 	{
 		if (!DoQuery(client, db, queries[i]))
 		{
@@ -141,7 +143,7 @@ CreateSQLite(client, Handle:db)
 		}
 	}
 
-	decl String:query[256];
+	char query[256];
 	Format(query, 
 		sizeof(query), 
 		"REPLACE INTO sm_config (cfg_key, cfg_value) VALUES ('admin_version', '1.0.0.%d')",
@@ -155,7 +157,7 @@ CreateSQLite(client, Handle:db)
 	ReplyToCommand(client, "[SM] Admin tables have been created.");
 }
 
-public Action:Command_CreateTables(args)
+public Action Command_CreateTables(int args)
 {
 	int client = 0;
 	Database db = Connect();
@@ -182,7 +184,7 @@ public Action:Command_CreateTables(args)
 	return Plugin_Handled;
 }
 
-bool:GetUpdateVersion(client, Handle:db, versions[4])
+bool GetUpdateVersion(int client, Database db, int versions[4])
 {
 	char query[256];
 	DBResultSet rs;
@@ -201,7 +203,7 @@ bool:GetUpdateVersion(client, Handle:db, versions[4])
 		char version_numbers[4][12];
 		if (ExplodeString(version_string, ".", version_numbers, 4, 12) == 4)
 		{
-			for (new i = 0; i < 4; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				versions[i] = StringToInt(version_numbers[i]);
 			}
@@ -222,11 +224,10 @@ bool:GetUpdateVersion(client, Handle:db, versions[4])
 		return false;
 	}
 
-
 	return true;
 }
 
-UpdateSQLite(client, Database db)
+void UpdateSQLite(int client, Database db)
 {
 	char query[512];
 	DBResultSet rs;
@@ -242,7 +243,7 @@ UpdateSQLite(client, Database db)
 
 	delete rs;
 
-	new versions[4];
+	int versions[4];
 	if (found)
 	{
 		if (!GetUpdateVersion(client, db, versions))
@@ -268,7 +269,7 @@ UpdateSQLite(client, Database db)
 			"CREATE TABLE IF NOT EXISTS sm_config (cfg_key varchar(32) NOT NULL, cfg_value varchar(255) NOT NULL, PRIMARY KEY (cfg_key))"
 		};
 
-		for (new i = 0; i < 8; i++)
+		for (int i = 0; i < 8; i++)
 		{
 			if (!DoQuery(client, db, queries[i]))
 			{
@@ -292,7 +293,7 @@ UpdateSQLite(client, Database db)
 	ReplyToCommand(client, "[SM] Your tables are now up to date.");
 }
 
-UpdateMySQL(client, Database db)
+void UpdateMySQL(int client, Database db)
 {
 	char query[512];
 	DBResultSet rs;
@@ -316,7 +317,7 @@ UpdateMySQL(client, Database db)
 	}
 	delete rs;
 
-	new versions[4];
+	int versions[4];
 
 	if (found && !GetUpdateVersion(client, db, versions))
 	{
@@ -338,7 +339,7 @@ UpdateMySQL(client, Database db)
 			"ALTER TABLE sm_groups DROP immunity"
 		};
 
-		for (new i = 0; i < 6; i++)
+		for (int i = 0; i < 6; i++)
 		{
 			if (!DoQuery(client, db, queries[i]))
 			{
@@ -361,9 +362,9 @@ UpdateMySQL(client, Database db)
 	ReplyToCommand(client, "[SM] Your tables are now up to date.");
 }
 
-public Action:Command_UpdateTables(args)
+public Action Command_UpdateTables(int args)
 {
-	new client = 0;
+	int client = 0;
 	Database db = Connect();
 	if (db == null)
 	{
@@ -388,7 +389,7 @@ public Action:Command_UpdateTables(args)
 	return Plugin_Handled;
 }
 
-public Action:Command_SetAdminGroups(client, args)
+public Action Command_SetAdminGroups(int client, int args)
 {
 	if (args < 2)
 	{
@@ -481,7 +482,7 @@ public Action:Command_SetAdminGroups(client, args)
 	
 	char name[80];
 	int inherit_order = 0;
-	for (new i=3; i<=args; i++)
+	for (int i=3; i<=args; i++)
 	{
 		GetCmdArg(i, name, sizeof(name));
 		
@@ -490,7 +491,7 @@ public Action:Command_SetAdminGroups(client, args)
 		{
 			ReplyToCommand(client, "[SM] %t", "SQL Group X not found", name);
 		} else {
-			new gid = SQL_FetchInt(hFindQuery, 0);
+			int gid = SQL_FetchInt(hFindQuery, 0);
 			
 			hAddQuery.BindInt(0, gid);
 			hAddQuery.BindInt(1, ++inherit_order);
@@ -516,7 +517,7 @@ public Action:Command_SetAdminGroups(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_DelGroup(client, args)
+public Action Command_DelGroup(int client, int args)
 {
 	if (args < 1)
 	{
@@ -600,7 +601,7 @@ public Action:Command_DelGroup(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_AddGroup(client, args)
+public Action Command_AddGroup(int client, int args)
 {
 	if (args < 2)
 	{
@@ -608,10 +609,10 @@ public Action:Command_AddGroup(client, args)
 		return Plugin_Handled;
 	}
 
-	new immunity;
+	int immunity;
 	if (args >= 3)
 	{
-		new String:arg3[32];
+		char arg3[32];
 		GetCmdArg(3, arg3, sizeof(arg3));
 		if (!StringToIntEx(arg3, immunity))
 		{
@@ -673,7 +674,7 @@ public Action:Command_AddGroup(client, args)
 	return Plugin_Handled;
 }	
 
-public Action:Command_DelAdmin(client, args)
+public Action Command_DelAdmin(int client, int args)
 {
 	if (args < 2)
 	{
@@ -751,7 +752,7 @@ public Action:Command_DelAdmin(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_AddAdmin(client, args)
+public Action Command_AddAdmin(int client, int args)
 {
 	if (args < 4)
 	{
@@ -854,11 +855,11 @@ public Action:Command_AddAdmin(client, args)
 	return Plugin_Handled;
 }
 
-stock bool:DoQuery(client, Handle:db, const String:query[])
+stock bool DoQuery(int client, Database db, const char[] query)
 {
 	if (!SQL_FastQuery(db, query))
 	{
-		decl String:error[255];
+		char error[255];
 		SQL_GetError(db, error, sizeof(error));
 		LogError("Query failed: %s", error);
 		LogError("Query dump: %s", query);
@@ -869,9 +870,9 @@ stock bool:DoQuery(client, Handle:db, const String:query[])
 	return true;
 }
 
-stock Action:DoError(client, Handle:db, const String:query[], const String:msg[])
+stock Action DoError(int client, Database db, const char[] query, const char[] msg)
 {
-		decl String:error[255];
+		char error[255];
 		SQL_GetError(db, error, sizeof(error));
 		LogError("%s: %s", msg, error);
 		LogError("Query dump: %s", query);
@@ -880,7 +881,7 @@ stock Action:DoError(client, Handle:db, const String:query[], const String:msg[]
 		return Plugin_Handled;
 }
 
-stock Action:DoStmtError(client, Handle:db, const String:query[], const String:error[], const String:msg[])
+stock Action DoStmtError(int client, Database db, const char[] query, const char[] error, const char[] msg)
 {
 		LogError("%s: %s", msg, error);
 		LogError("Query dump: %s", query);
@@ -888,4 +889,3 @@ stock Action:DoStmtError(client, Handle:db, const String:query[], const String:e
 		ReplyToCommand(client, "[SM] %t", "Failed to query database");
 		return Plugin_Handled;
 }
-

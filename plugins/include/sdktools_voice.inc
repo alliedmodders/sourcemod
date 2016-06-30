@@ -61,9 +61,8 @@ enum ListenOverride
  *
  * @param client		The client index
  * @param flags		The voice flags
- * @noreturn
  */
-native SetClientListeningFlags(client, flags);
+native void SetClientListeningFlags(int client, int flags);
 
 /**
  * Retrieve the client current listening flags.
@@ -71,7 +70,7 @@ native SetClientListeningFlags(client, flags);
  * @param client		The client index
  * @return			The current voice flags
  */
-native GetClientListeningFlags(client);
+native int GetClientListeningFlags(int client);
 
 /**
  * Set the receiver ability to listen to the sender.
@@ -82,7 +81,7 @@ native GetClientListeningFlags(client);
  * @return			True if successful otherwise false.
  */
 #pragma deprecated Use SetListenOverride() instead
-native bool:SetClientListening(iReceiver, iSender, bool:bListen);
+native bool SetClientListening(int iReceiver, int iSender, bool bListen);
 
 /**
  * Retrieves if the receiver can listen to the sender.
@@ -92,7 +91,7 @@ native bool:SetClientListening(iReceiver, iSender, bool:bListen);
  * @return			True if successful otherwise false.
  */
 #pragma deprecated GetListenOverride() instead
-native bool:GetClientListening(iReceiver, iSender);
+native bool GetClientListening(int iReceiver, int iSender);
 
 /**
  * Override the receiver's ability to listen to the sender.
@@ -102,7 +101,7 @@ native bool:GetClientListening(iReceiver, iSender);
  * @param override		The override of the receiver's ability to listen to the sender.
  * @return			True if successful otherwise false.
  */
-native bool:SetListenOverride(iReceiver, iSender, ListenOverride:override);
+native bool SetListenOverride(int iReceiver, int iSender, ListenOverride override);
 
 /**
  * Retrieves the override of the receiver's ability to listen to the sender.
@@ -111,7 +110,7 @@ native bool:SetListenOverride(iReceiver, iSender, ListenOverride:override);
  * @param iSender		The sender index.
  * @return			The override value.
  */
-native ListenOverride:GetListenOverride(iReceiver, iSender);
+native ListenOverride GetListenOverride(int iReceiver, int iSender);
 
 /**
  * Retrieves if the muter has muted the mutee.
@@ -120,5 +119,4 @@ native ListenOverride:GetListenOverride(iReceiver, iSender);
  * @param iMutee		The mutee index.
  * @return			True if muter has muted mutee, false otherwise.
  */
-native bool:IsClientMuted(iMuter, iMutee);
-
+native bool IsClientMuted(int iMuter, int iMutee);

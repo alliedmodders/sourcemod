@@ -243,6 +243,8 @@ void StartRTV()
 		char map[PLATFORM_MAX_PATH];
 		if (GetNextMap(map, sizeof(map)))
 		{
+			GetMapDisplayName(map, map, sizeof(map));
+			
 			PrintToChatAll("[SM] %t", "Changing Maps", map);
 			CreateTimer(5.0, Timer_ChangeMap, _, TIMER_FLAG_NO_MAPCHANGE);
 			g_InChange = true;

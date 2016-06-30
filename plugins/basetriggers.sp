@@ -39,7 +39,9 @@
 #include <mapchooser>
 #define REQUIRE_PLUGIN
 
-public Plugin:myinfo = 
+#pragma newdecls required
+
+public Plugin myinfo = 
 {
 	name = "Basic Info Triggers",
 	author = "AlliedModders LLC",
@@ -62,11 +64,11 @@ ConVar g_Cvar_MaxRounds;
 #define TIMELEFT_ALL_MAYBE		1		/* Print to all players if sm_trigger_show allows */
 #define TIMELEFT_ONE			2		/* Print to a single player */
 
-new bool:mapchooser;
+bool mapchooser;
 
-new g_TotalRounds;
+int g_TotalRounds;
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("basetriggers.phrases");
@@ -82,17 +84,17 @@ public OnPluginStart()
 	
 	g_Cvar_TimeleftInterval.AddChangeHook(ConVarChange_TimeleftInterval);
 
-	decl String:folder[64];   	 
-   	GetGameFolderName(folder, sizeof(folder));
+	char folder[64];   	 
+	GetGameFolderName(folder, sizeof(folder));
 
-   	if (strcmp(folder, "insurgency") == 0)
-   	{
-   		HookEvent("game_newmap", Event_GameStart);
-   	}
-   	else
-   	{
-   		HookEvent("game_start", Event_GameStart);
-   	}
+	if (strcmp(folder, "insurgency") == 0)
+	{
+		HookEvent("game_newmap", Event_GameStart);
+	}
+	else
+	{
+		HookEvent("game_start", Event_GameStart);
+	}
 	
 	if (strcmp(folder, "nucleardawn") == 0)
 	{
@@ -114,25 +116,25 @@ public OnPluginStart()
 	mapchooser = LibraryExists("mapchooser");
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
 	g_TotalRounds = 0;	
 }
 
 /* Round count tracking */
-public Event_TFRestartRound(Handle:event, const String:name[], bool:dontBroadcast)
+public void Event_TFRestartRound(Event event, const char[] name, bool dontBroadcast)
 {
 	/* Game got restarted - reset our round count tracking */
 	g_TotalRounds = 0;	
 }
 
-public Event_GameStart(Handle:event, const String:name[], bool:dontBroadcast)
+public void Event_GameStart(Event event, const char[] name, bool dontBroadcast)
 {
 	/* Game got restarted - reset our round count tracking */
 	g_TotalRounds = 0;	
 }
 
-public Event_TeamPlayWinPanel(Event event, const String:name[], bool:dontBroadcast)
+public void Event_TeamPlayWinPanel(Event event, const char[] name, bool dontBroadcast)
 {
 	if (event.GetInt("round_complete") == 1 || StrEqual(name, "arena_win_panel"))
 	{
@@ -140,12 +142,12 @@ public Event_TeamPlayWinPanel(Event event, const String:name[], bool:dontBroadca
 	}
 }
 /* You ask, why don't you just use team_score event? And I answer... Because CSS doesn't. */
-public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
+public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	g_TotalRounds++;
 }
 
-public OnLibraryRemoved(const String:name[])
+public void OnLibraryRemoved(const char[] name)
 {
 	if (StrEqual(name, "mapchooser"))
 	{
@@ -153,7 +155,7 @@ public OnLibraryRemoved(const String:name[])
 	}
 }
  
-public OnLibraryAdded(const String:name[])
+public void OnLibraryAdded(const char[] name)
 {
 	if (StrEqual(name, "mapchooser"))
 	{
@@ -161,9 +163,9 @@ public OnLibraryAdded(const String:name[])
 	}
 }
 
-public ConVarChange_TimeleftInterval(Handle:convar, const String:oldValue[], const String:newValue[])
+public void ConVarChange_TimeleftInterval(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-	new Float:newval = StringToFloat(newValue);
+	float newval = StringToFloat(newValue);
 	
 	if (newval < 1.0)
 	{
@@ -184,24 +186,24 @@ public ConVarChange_TimeleftInterval(Handle:convar, const String:oldValue[], con
 		g_Timer_TimeShow = CreateTimer(newval, Timer_DisplayTimeleft, _, TIMER_REPEAT);
 }
 
-public Action:Timer_DisplayTimeleft(Handle:timer)
+public Action Timer_DisplayTimeleft(Handle timer)
 {
 	ShowTimeLeft(0, TIMELEFT_ALL_ALWAYS);	
 }
 
-public Action:Command_Timeleft(client, args)
+public Action Command_Timeleft(int client, int args)
 {
 	ShowTimeLeft(client, TIMELEFT_ONE);
 	
 	return Plugin_Handled;
 }
 
-public Action:Command_Nextmap(client, args)
+public Action Command_Nextmap(int client, int args)
 {
 	if (client && !IsClientInGame(client))
 		return Plugin_Handled;
 	
-	decl String:map[PLATFORM_MAX_PATH];
+	char map[PLATFORM_MAX_PATH];
 	
 	GetNextMap(map, sizeof(map));
 	
@@ -211,13 +213,14 @@ public Action:Command_Nextmap(client, args)
 	}
 	else
 	{
+		GetMapDisplayName(map, map, sizeof(map));
 		ReplyToCommand(client, "[SM] %t", "Next Map", map);
 	}
 	
 	return Plugin_Handled;
 }
 
-public Action:Command_Motd(client, args)
+public Action Command_Motd(int client, int args)
 {
 	if (client == 0)
 	{
@@ -233,7 +236,7 @@ public Action:Command_Motd(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_FriendlyFire(client, args)
+public Action Command_FriendlyFire(int client, int args)
 {
 	if (client == 0)
 	{
@@ -249,7 +252,7 @@ public Action:Command_FriendlyFire(client, args)
 	return Plugin_Handled;
 }
 
-public OnClientSayCommand_Post(client, const String:command[], const String:sArgs[])
+public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
 	if (strcmp(sArgs, "timeleft", false) == 0)
 	{
@@ -291,7 +294,8 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 	{
 		char map[PLATFORM_MAX_PATH];
 		GetNextMap(map, sizeof(map));
-			
+		GetMapDisplayName(map, map, sizeof(map));
+		
 		if (g_Cvar_TriggerShow.IntValue)
 		{
 			if (mapchooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
@@ -321,7 +325,7 @@ public OnClientSayCommand_Post(client, const String:command[], const String:sArg
 	}
 }
 
-ShowTimeLeft(client, who)
+void ShowTimeLeft(int client, int who)
 {
 	bool lastround = false;
 	bool written = false;
@@ -335,11 +339,11 @@ ShowTimeLeft(client, who)
 		client = 0;	
 	}
 	
-	new timeleft;
+	int timeleft;
 	if (GetMapTimeLeft(timeleft))
 	{
-		new mins, secs;
-		new timelimit;
+		int mins, secs;
+		int timelimit;
 		
 		if (timeleft > 0)
 		{
@@ -369,7 +373,7 @@ ShowTimeLeft(client, who)
 			{
 				if (written)
 				{
-					new len = strlen(finalOutput);
+					int len = strlen(finalOutput);
 					if (len < sizeof(finalOutput))
 					{
 						if (winlimit > 1)
@@ -406,7 +410,7 @@ ShowTimeLeft(client, who)
 			{
 				if (written)
 				{
-					new len = strlen(finalOutput);
+					int len = strlen(finalOutput);
 					if (len < sizeof(finalOutput))
 					{
 						if (fraglimit > 1)
@@ -441,11 +445,11 @@ ShowTimeLeft(client, who)
 			
 			if (maxrounds > 0)
 			{
-				new remaining = maxrounds - g_TotalRounds;
+				int remaining = maxrounds - g_TotalRounds;
 				
 				if (written)
 				{
-					new len = strlen(finalOutput);
+					int len = strlen(finalOutput);
 					if (len < sizeof(finalOutput))
 					{
 						if (remaining > 1)
@@ -500,7 +504,7 @@ ShowTimeLeft(client, who)
 	}
 }
 
-ShowFriendlyFire(client)
+void ShowFriendlyFire(int client)
 {
 	if (g_Cvar_FriendlyFire)
 	{

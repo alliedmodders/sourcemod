@@ -35,7 +35,8 @@
 #include <IHandleSys.h>
 #include <stdio.h>
 #include <sm_namehashset.h>
-#include <am-string.h>
+#include <amtl/am-string.h>
+#include <amtl/am-function.h>
 #include "common_logic.h"
 
 #define HANDLESYS_MAX_HANDLES		(1<<15)
@@ -111,7 +112,7 @@ struct QHandleType
 	}
 };
 
-typedef void (HANDLE_REPORTER)(const char *str, ...);
+typedef ke::Lambda<void(const char *)> HandleReporter;
 
 class HandleSystem : 
 	public IHandleSys
@@ -163,7 +164,7 @@ public: //IHandleSystem
 		const HandleAccess *pAccess,
 		HandleError *err);
 
-	void Dump(HANDLE_REPORTER rep);
+	void Dump(const HandleReporter &reporter);
 
 	/* Bypasses security checks. */
 	Handle_t FastCloneHandle(Handle_t hndl);

@@ -37,7 +37,9 @@
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 
-public Plugin:myinfo =
+#pragma newdecls required
+
+public Plugin myinfo =
 {
 	name = "Basic Commands",
 	author = "AlliedModders LLC",
@@ -49,7 +51,7 @@ public Plugin:myinfo =
 TopMenu hTopMenu;
 
 Menu g_MapList;
-new Handle:g_ProtectedVars;
+StringMap g_ProtectedVars;
 
 #include "basecommands/kick.sp"
 #include "basecommands/reloadadmins.sp"
@@ -58,7 +60,7 @@ new Handle:g_ProtectedVars;
 #include "basecommands/map.sp"
 #include "basecommands/execcfg.sp"
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("plugin.basecommands");
@@ -81,7 +83,7 @@ public OnPluginStart()
 		OnAdminMenuReady(topmenu);
 	}
 	
-	g_MapList = CreateMenu(MenuHandler_ChangeMap, MenuAction_Display);
+	g_MapList = new Menu(MenuHandler_ChangeMap, MenuAction_Display);
 	g_MapList.SetTitle("%T", "Please select a map", LANG_SERVER);
 	g_MapList.ExitBackButton = true;
 	
@@ -89,39 +91,39 @@ public OnPluginStart()
 	BuildPath(Path_SM, mapListPath, sizeof(mapListPath), "configs/adminmenu_maplist.ini");
 	SetMapListCompatBind("sm_map menu", mapListPath);
 	
-	g_ProtectedVars = CreateTrie();
+	g_ProtectedVars = new StringMap();
 	ProtectVar("rcon_password");
 	ProtectVar("sm_show_activity");
 	ProtectVar("sm_immunity_mode");
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
 	ParseConfigs();
 }
 
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {
 	LoadMapList(g_MapList);
 }
 
-ProtectVar(const String:cvar[])
+void ProtectVar(const char[] cvar)
 {
-	SetTrieValue(g_ProtectedVars, cvar, 1);
+	g_ProtectedVars.SetValue(cvar, 1);
 }
 
-bool:IsVarProtected(const String:cvar[])
+bool IsVarProtected(const char[] cvar)
 {
-	decl dummy_value;
-	return GetTrieValue(g_ProtectedVars, cvar, dummy_value);
+	int dummy_value;
+	return g_ProtectedVars.GetValue(cvar, dummy_value);
 }
 
-bool:IsClientAllowedToChangeCvar(client, const String:cvarname[])
+bool IsClientAllowedToChangeCvar(int client, const char[] cvarname)
 {
 	ConVar hndl = FindConVar(cvarname);
 
-	new bool:allowed = false;
-	new client_flags = client == 0 ? ADMFLAG_ROOT : GetUserFlagBits(client);
+	bool allowed = false;
+	int client_flags = client == 0 ? ADMFLAG_ROOT : GetUserFlagBits(client);
 	
 	if (client_flags & ADMFLAG_ROOT)
 	{
@@ -146,7 +148,7 @@ bool:IsClientAllowedToChangeCvar(client, const String:cvarname[])
 	return allowed;
 }
 
-public OnAdminMenuReady(Handle aTopMenu)
+public void OnAdminMenuReady(Handle aTopMenu)
 {
 	TopMenu topmenu = TopMenu.FromHandle(aTopMenu);
 
@@ -185,7 +187,7 @@ public OnAdminMenuReady(Handle aTopMenu)
 	}
 }
 
-public OnLibraryRemoved(const String:name[])
+public void OnLibraryRemoved(const char[] name)
 {
 	if (strcmp(name, "adminmenu") == 0)
 	{
@@ -194,7 +196,7 @@ public OnLibraryRemoved(const String:name[])
 }
 
 #define FLAG_STRINGS		14
-new String:g_FlagNames[FLAG_STRINGS][20] =
+char g_FlagNames[FLAG_STRINGS][20] =
 {
 	"res",
 	"admin",
@@ -212,16 +214,16 @@ new String:g_FlagNames[FLAG_STRINGS][20] =
 	"cheat"
 };
 
-CustomFlagsToString(String:buffer[], maxlength, flags)
+int CustomFlagsToString(char[] buffer, int maxlength, int flags)
 {
 	char joins[6][6];
-	new total;
+	int total;
 	
-	for (new i=_:Admin_Custom1; i<=_:Admin_Custom6; i++)
+	for (int i=view_as<int>(Admin_Custom1); i<=view_as<int>(Admin_Custom6); i++)
 	{
 		if (flags & (1<<i))
 		{
-			IntToString(i - _:Admin_Custom1 + 1, joins[total++], 6);
+			IntToString(i - view_as<int>(Admin_Custom1) + 1, joins[total++], 6);
 		}
 	}
 	
@@ -230,12 +232,12 @@ CustomFlagsToString(String:buffer[], maxlength, flags)
 	return total;
 }
 
-FlagsToString(String:buffer[], maxlength, flags)
+void FlagsToString(char[] buffer, int maxlength, int flags)
 {
 	char joins[FLAG_STRINGS+1][32];
-	new total;
+	int total;
 
-	for (new i=0; i<FLAG_STRINGS; i++)
+	for (int i=0; i<FLAG_STRINGS; i++)
 	{
 		if (flags & (1<<i))
 		{
@@ -252,7 +254,7 @@ FlagsToString(String:buffer[], maxlength, flags)
 	ImplodeStrings(joins, total, ", ", buffer, maxlength);
 }
 
-public Action:Command_Cvar(client, args)
+public Action Command_Cvar(int client, int args)
 {
 	if (args < 1)
 	{
@@ -323,7 +325,7 @@ public Action:Command_Cvar(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_ResetCvar(client, args)
+public Action Command_ResetCvar(int client, int args)
 {
 	if (args < 1)
 	{
@@ -367,7 +369,7 @@ public Action:Command_ResetCvar(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_Rcon(client, args)
+public Action Command_Rcon(int client, int args)
 {
 	if (args < 1)
 	{
@@ -384,7 +386,7 @@ public Action:Command_Rcon(client, args)
 	{
 		ServerCommand("%s", argstring);
 	} else {
-		new String:responseBuffer[4096];
+		char responseBuffer[4096];
 		ServerCommandEx(responseBuffer, sizeof(responseBuffer), "%s", argstring);
 		ReplyToCommand(client, responseBuffer);
 	}
@@ -392,7 +394,7 @@ public Action:Command_Rcon(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_ReVote(client, args)
+public Action Command_ReVote(int client, int args)
 {
 	if (client == 0)
 	{

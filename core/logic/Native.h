@@ -38,6 +38,8 @@
 #include <am-refcounting.h>
 #include "common_logic.h"
 
+class CNativeOwner;
+
 struct FakeNative
 {
 	FakeNative(const char *name, IPluginFunction *fun)
@@ -87,7 +89,7 @@ struct Native : public ke::Refcounted<Native>
 		return fake->name.chars();
 	}
 
-	static inline bool matches(const char *name, const ke::Ref<Native> &entry)
+	static inline bool matches(const char *name, const ke::RefPtr<Native> &entry)
 	{
 		return strcmp(name, entry->name()) == 0;
 	}

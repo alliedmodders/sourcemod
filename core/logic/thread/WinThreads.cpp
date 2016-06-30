@@ -106,11 +106,15 @@ IThreadHandle *WinThreader::MakeThread(IThread *pThread, const ThreadParams *par
 	if (params == NULL)
 		params = &g_defparams;
 
-	ke::AutoPtr<ThreadHandle> pHandle(new ThreadHandle(this, pThread, params));
+	ThreadHandle* pHandle = new ThreadHandle(this, pThread, params);
 
-	pHandle->m_thread = new ke::Thread(pHandle, "SourceMod");
-	if (!pHandle->m_thread->Succeeded())
-		return NULL;
+	pHandle->m_thread = new ke::Thread([pHandle]() -> void {
+		pHandle->Run();
+	}, "SourceMod");
+	if (!pHandle->m_thread->Succeeded()) {
+		delete pHandle;
+		return nullptr;
+	}
 
 	if (pHandle->m_params.prio != ThreadPrio_Normal)
 		pHandle->SetPriority(pHandle->m_params.prio);
@@ -118,7 +122,7 @@ IThreadHandle *WinThreader::MakeThread(IThread *pThread, const ThreadParams *par
 	if (!(params->flags & Thread_CreateSuspended))
 		pHandle->Unpause();
 
-	return pHandle.take();
+	return pHandle;
 }
 
 IEventSignal *WinThreader::MakeEventSignal()

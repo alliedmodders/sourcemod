@@ -33,16 +33,17 @@
 #define _INCLUDE_SOURCEMOD_NEXTMAP_H_
 
 #include "sm_globals.h"
-#include "eiface.h"
+#include <eiface.h>
 #include "sh_list.h"
 #include "sm_stringutil.h"
+#include <amtl/am-string.h>
 
 struct MapChangeData
 {
 	MapChangeData(const char *mapName, const char *changeReason, time_t time)
 	{
-		UTIL_Format(m_mapName, sizeof(m_mapName), mapName);
-		UTIL_Format(m_changeReason, sizeof(m_changeReason), changeReason);
+		ke::SafeStrcpy(m_mapName, sizeof(m_mapName), mapName);
+		ke::SafeStrcpy(m_changeReason, sizeof(m_changeReason), changeReason);
 		startTime = time;
 	}
 
@@ -58,9 +59,7 @@ struct MapChangeData
 	time_t startTime;
 };
 
-#if SOURCE_ENGINE == SE_DOTA
-void CmdChangeLevelCallback(const CCommandContext &context, const CCommand &command);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdChangeLevelCallback(const CCommand &command);
 #else
 void CmdChangeLevelCallback();
@@ -71,9 +70,7 @@ class NextMapManager : public SMGlobalClass
 public:
 	NextMapManager();
 
-#if SOURCE_ENGINE == SE_DOTA
-	friend void CmdChangeLevelCallback(const CCommandContext &context, const CCommand &command);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	friend void CmdChangeLevelCallback(const CCommand &command);
 #else
 	friend void CmdChangeLevelCallback();

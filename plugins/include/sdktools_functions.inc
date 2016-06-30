@@ -44,7 +44,7 @@
  * @error				Invalid client or entity, lack of mod support, or client not in 
  *						game.
  */
-native bool:RemovePlayerItem(client, item);
+native bool RemovePlayerItem(int client, int item);
 
 /**
  * Gives a named item to a player.
@@ -55,7 +55,7 @@ native bool:RemovePlayerItem(client, item);
  * @return				Entity index on success, or -1 on failure.
  * @error				Invalid client or client not in game, or lack of mod support.
  */
-native GivePlayerItem(client, const String:item[], iSubType=0);
+native int GivePlayerItem(int client, const char[] item, int iSubType=0);
 
 /**
  * Returns the weapon in a player's slot.  
@@ -65,7 +65,7 @@ native GivePlayerItem(client, const String:item[], iSubType=0);
  * @return				Entity index on success, -1 if no weapon existed.
  * @error				Invalid client or client not in game, or lack of mod support.
  */
-native GetPlayerWeaponSlot(client, slot);
+native int GetPlayerWeaponSlot(int client, int slot);
 
 /**
  * Ignites an entity on fire.
@@ -75,19 +75,17 @@ native GetPlayerWeaponSlot(client, slot);
  * @param npc			True to only affect NPCs.
  * @param size			Unknown.
  * @param level			Unknown.
- * @noreturn
  * @error				Invalid entity or client not in game, or lack of mod support.
  */
-native IgniteEntity(entity, Float:time, bool:npc=false, Float:size=0.0, bool:level=false);
+native void IgniteEntity(int entity, float time, bool npc=false, float size=0.0, bool level=false);
 
 /**
  * Extinguishes an entity that is on fire.
  *
  * @param entity		Entity index.
- * @noreturn
  * @error				Invalid entity or client not in game, or lack of mod support.
  */
-native ExtinguishEntity(entity);
+native void ExtinguishEntity(int entity);
 
 /**
  * Teleports an entity.
@@ -96,19 +94,17 @@ native ExtinguishEntity(entity);
  * @param origin		New origin, or NULL_VECTOR for no change.
  * @param angles		New angles, or NULL_VECTOR for no change.
  * @param velocity		New velocity, or NULL_VECTOR for no change.
- * @noreturn
  * @error				Invalid entity or client not in game, or lack of mod support.
  */
-native TeleportEntity(entity, const Float:origin[3], const Float:angles[3], const Float:velocity[3]);
+native void TeleportEntity(int entity, const float origin[3], const float angles[3], const float velocity[3]);
 
 /**
  * Forces a player to commit suicide.
  *
  * @param client		Client index.
- * @noreturn
  * @error				Invalid client or client not in game, or lack of mod support.
  */
-native ForcePlayerSuicide(client);
+native void ForcePlayerSuicide(int client);
 
 /**
  * Slaps a player in a random direction.
@@ -116,10 +112,9 @@ native ForcePlayerSuicide(client);
  * @param client		Client index.
  * @param health		Health to subtract.
  * @param sound			False to disable the sound effects.
- * @noreturn
  * @error				Invalid client or client not in game, or lack of mod support.
  */
-native SlapPlayer(client, health=5, bool:sound=true);
+native void SlapPlayer(int client, int health=5, bool sound=true);
 
 /**
  * Searches for an entity by classname.
@@ -130,7 +125,7 @@ native SlapPlayer(client, health=5, bool:sound=true);
  * @return				Entity index >= 0 if found, -1 otherwise.
  * @error				Lack of mod support.
  */
-native FindEntityByClassname(startEnt, const String:classname[]);
+native int FindEntityByClassname(int startEnt, const char[] classname);
 
 /**
  * Returns the client's eye angles.
@@ -140,7 +135,7 @@ native FindEntityByClassname(startEnt, const String:classname[]);
  * @return				True on success, false on failure.
  * @error				Invalid client index, client not in game, or no mod support.
  */
-native bool:GetClientEyeAngles(client, Float:ang[3]);
+native bool GetClientEyeAngles(int client, float ang[3]);
 
 /**
  * Creates an entity by string name, but does not spawn it (see DispatchSpawn).
@@ -152,7 +147,7 @@ native bool:GetClientEyeAngles(client, Float:ang[3]);
  * @return					Entity index on success, or -1 on failure.
  * @error					Invalid edict index, or no mod support.
  */
-native CreateEntityByName(const String:classname[], ForceEdictIndex=-1);
+native int CreateEntityByName(const char[] classname, int ForceEdictIndex=-1);
 
 /**
  * Spawns an entity into the game.
@@ -161,7 +156,7 @@ native CreateEntityByName(const String:classname[], ForceEdictIndex=-1);
  * @return				True on success, false otherwise.
  * @error				Invalid entity index, or no mod support.
  */
-native bool:DispatchSpawn(entity);
+native bool DispatchSpawn(int entity);
 
 /**
  * Dispatches a KeyValue into given entity using a string value.
@@ -172,7 +167,7 @@ native bool:DispatchSpawn(entity);
  * @return				True on success, false otherwise.
  * @error				Invalid entity index, or no mod support.
  */
-native bool:DispatchKeyValue(entity, const String:keyName[], const String:value[]);
+native bool DispatchKeyValue(int entity, const char[] keyName, const char[] value);
 
 /**
  * Dispatches a KeyValue into given entity using a floating point value.
@@ -183,7 +178,7 @@ native bool:DispatchKeyValue(entity, const String:keyName[], const String:value[
  * @return				True on success, false otherwise.
  * @error				Invalid entity index, or no mod support.
  */
-native bool:DispatchKeyValueFloat(entity, const String:keyName[], Float:value);
+native bool DispatchKeyValueFloat(int entity, const char[] keyName, float value);
 
 /**
  * Dispatches a KeyValue into given entity using a vector value.
@@ -194,7 +189,7 @@ native bool:DispatchKeyValueFloat(entity, const String:keyName[], Float:value);
  * @return				True on success, false otherwise.
  * @error				Invalid entity index, or no mod support.
  */
-native bool:DispatchKeyValueVector(entity, const String:keyName[], const Float:vec[3]);
+native bool DispatchKeyValueVector(int entity, const char[] keyName, const float vec[3]);
 
 /**
  * Returns the entity a client is aiming at.
@@ -206,7 +201,7 @@ native bool:DispatchKeyValueVector(entity, const String:keyName[], const Float:v
  * 						-2 if the function is not supported.
  * @error				Invalid client index or client not in game.
  */
-native GetClientAimTarget(client, bool:only_clients=true);
+native int GetClientAimTarget(int client, bool only_clients=true);
 
 /**
  * Returns the total number of teams in a game.
@@ -214,7 +209,7 @@ native GetClientAimTarget(client, bool:only_clients=true);
  *
  * @return				Total number of teams.
  */
-native GetTeamCount();
+native int GetTeamCount();
 
 /**
  * Retrieves the team name based on a team index.
@@ -223,10 +218,9 @@ native GetTeamCount();
  * @param index				Team index.
  * @param name				Buffer to store string in.
  * @param maxlength			Maximum length of string buffer.
- * @noreturn
  * @error				Invalid team index.
  */
-native GetTeamName(index, String:name[], maxlength);
+native void GetTeamName(int index, char[] name, int maxlength);
 
 /**
  * Returns the score of a team based on a team index.
@@ -236,7 +230,7 @@ native GetTeamName(index, String:name[], maxlength);
  * @return				Score.
  * @error				Invalid team index.
  */
-native GetTeamScore(index);
+native int GetTeamScore(int index);
 
 /**
  * Sets the score of a team based on a team index.
@@ -244,10 +238,9 @@ native GetTeamScore(index);
  *
  * @param index				Team index.
  * @param value				New score value.
- * @return				Score.
  * @error				Invalid team index.
  */
-native SetTeamScore(index, value);
+native void SetTeamScore(int index, int value);
 
 /**
  * Retrieves the number of players in a certain team.
@@ -257,7 +250,7 @@ native SetTeamScore(index, value);
  * @return				Number of players in the team.
  * @error				Invalid team index.
  */
-native GetTeamClientCount(index);
+native int GetTeamClientCount(int index);
 
 /**
  * Returns the entity index of a team.
@@ -273,10 +266,9 @@ native int GetTeamEntity(int teamIndex);
  *
  * @param entity			Entity index.
  * @param model				Model name.
- * @noreturn
  * @error				Invalid entity index, or no mod support.
  */
-native SetEntityModel(entity, const String:model[]);
+native void SetEntityModel(int entity, const char[] model);
 
 /**
  * Retrieves the decal file name associated with a given client.
@@ -287,7 +279,7 @@ native SetEntityModel(entity, const String:model[]);
  * @return				True on success, otherwise false.
  * @error				Invalid client or client not in game.
  */
-native bool:GetPlayerDecalFile(client, String:hex[], maxlength);
+native bool GetPlayerDecalFile(int client, char[] hex, int maxlength);
 
 /**
  * Retrieves the jingle file name associated with a given client.
@@ -298,48 +290,44 @@ native bool:GetPlayerDecalFile(client, String:hex[], maxlength);
  * @return				True on success, otherwise false.
  * @error				Invalid client or client not in game.
  */
-native bool:GetPlayerJingleFile(client, String:hex[], maxlength);
+native bool GetPlayerJingleFile(int client, char[] hex, int maxlength);
 
 /**
  * Returns the average server network traffic in bytes/sec.
  *
  * @param in				Buffer to store the input traffic velocity.
  * @param out				Buffer to store the output traffic velocity.
- * @noreturn
  */
-native GetServerNetStats(&Float:inAmount, &Float:outAmout);
+native void GetServerNetStats(float &inAmount, float &outAmout);
 
 /**
  * Equip's a player's weapon.
  *
  * @param client		Client index.
  * @param weapon			CBaseCombatWeapon entity index.
- * @noreturn
  * @error				Invalid client or entity, lack of mod support, or client not in 
  *						game.
  */
-native EquipPlayerWeapon(client, weapon);
+native void EquipPlayerWeapon(int client, int weapon);
 
 /**
  * Activates an entity (CBaseAnimating::Activate)
  *
  * @param entity		Entity index.
- * @noreturn
  * @error				Invalid entity or lack of mod support.
  */
-native ActivateEntity(entity);
+native void ActivateEntity(int entity);
 
 /**
  * Sets values to client info buffer keys and notifies the engine of the change.
- * The change does not get propogated to mods until the next frame.
+ * The change does not get propagated to mods until the next frame.
  *
  * @param client		Player's index.
  * @param key			Key string.
  * @param value			Value string.
- * @noreturn
  * @error				Invalid client index, or client not connected.
  */
-native SetClientInfo(client, const String:key[], const String:value[]);
+native void SetClientInfo(int client, const char[] key, const char[] value);
 
 /**
  * Changes a client's name.
@@ -361,4 +349,4 @@ native void SetClientName(int client, const char[] name);
  *
  * @return Amount of ammo actually given.
  */
-native GivePlayerAmmo(client, amount, ammotype, bool:suppressSound=false);
+native int GivePlayerAmmo(int client, int amount, int ammotype, bool suppressSound=false);

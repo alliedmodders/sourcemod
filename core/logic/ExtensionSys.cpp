@@ -36,6 +36,9 @@
 #include "common_logic.h"
 #include "PluginSys.h"
 #include <am-utility.h>
+#include <am-string.h>
+#include <bridge/include/CoreProvider.h>
+#include <bridge/include/ILogger.h>
 
 CExtensionManager g_Extensions;
 IdentityType_t g_ExtType;
@@ -78,7 +81,7 @@ CLocalExtension::CLocalExtension(const char *filename)
 		PLATFORM_MAX_PATH,
 		"extensions/%s.%s." PLATFORM_LIB_EXT,
 		filename,
-		smcore.gamesuffix);
+		bridge->gamesuffix);
 
 	if (libsys->IsPathFile(path))
 	{
@@ -86,9 +89,9 @@ CLocalExtension::CLocalExtension(const char *filename)
 	}
 
 	/* COMPAT HACK: One-halfth, if ep2v, see if there is an engine specific build in the new place with old naming */
-	if (strcmp(smcore.gamesuffix, "2.tf2") == 0
-		|| strcmp(smcore.gamesuffix, "2.dods") == 0
-		|| strcmp(smcore.gamesuffix, "2.hl2dm") == 0
+	if (strcmp(bridge->gamesuffix, "2.tf2") == 0
+		|| strcmp(bridge->gamesuffix, "2.dods") == 0
+		|| strcmp(bridge->gamesuffix, "2.hl2dm") == 0
 		)
 	{
 		g_pSM->BuildPath(Path_SM,
@@ -102,7 +105,7 @@ CLocalExtension::CLocalExtension(const char *filename)
 			goto found;
 		}
 	}
-	else if (strcmp(smcore.gamesuffix, "2.nd") == 0)
+	else if (strcmp(bridge->gamesuffix, "2.nd") == 0)
 	{
 		g_pSM->BuildPath(Path_SM,
 			path,
@@ -122,7 +125,7 @@ CLocalExtension::CLocalExtension(const char *filename)
 		PLATFORM_MAX_PATH,
 		"extensions/auto.%s/%s." PLATFORM_LIB_EXT,
 		filename,
-		smcore.gamesuffix);
+		bridge->gamesuffix);
 
 	/* Try the "normal" version */
 	if (!libsys->IsPathFile(path))
@@ -191,7 +194,7 @@ bool CLocalExtension::Load(char *error, size_t maxlength)
 	if (m_pAPI->IsMetamodExtension())
 	{
 		bool ok;
-		m_PlId = smcore.LoadMMSPlugin(m_Path.c_str(), &ok, error, maxlength);
+		m_PlId = bridge->LoadMMSPlugin(m_Path.c_str(), &ok, error, maxlength);
 
 		if (!m_PlId || !ok)
 		{
@@ -208,7 +211,7 @@ bool CLocalExtension::Load(char *error, size_t maxlength)
 		{
 			if (m_PlId)
 			{
-				smcore.UnloadMMSPlugin(m_PlId);
+				bridge->UnloadMMSPlugin(m_PlId);
 				m_PlId = 0;
 			}
 		}
@@ -229,7 +232,7 @@ void CLocalExtension::Unload()
 {
 	if (m_pAPI != NULL && m_PlId)
 	{
-		smcore.UnloadMMSPlugin(m_PlId);
+		bridge->UnloadMMSPlugin(m_PlId);
 		m_PlId = 0;
 	}
 
@@ -292,18 +295,17 @@ bool CExtension::PerformAPICheck(char *error, size_t maxlength)
 bool CExtension::Load(char *error, size_t maxlength)
 {
 	CreateIdentity();
-	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, maxlength, !smcore.IsMapLoading()))
+	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, maxlength, !bridge->IsMapLoading()))
 	{
+		g_ShareSys.RemoveInterfaces(this);
 		DestroyIdentity();
 		return false;
 	}
-	else
+
+	/* Check if we're past load time */
+	if (!bridge->IsMapLoading())
 	{
-		/* Check if we're past load time */
-		if (!smcore.IsMapLoading())
-		{
-			m_pAPI->OnExtensionsAllLoaded();
-		}
+		m_pAPI->OnExtensionsAllLoaded();
 	}
 
 	return true;
@@ -511,7 +513,7 @@ void CExtensionManager::OnSourceModAllInitialized()
 {
 	g_ExtType = g_ShareSys.CreateIdentType("EXTENSION");
 	pluginsys->AddPluginsListener(this);
-	rootmenu->AddRootConsoleCommand("exts", "Manage extensions", this);
+	rootmenu->AddRootConsoleCommand3("exts", "Manage extensions", this);
 	g_ShareSys.AddInterface(NULL, this);
 }
 
@@ -567,7 +569,7 @@ void CExtensionManager::TryAutoload()
 		}
 
 		char file[PLATFORM_MAX_PATH];
-		len = smcore.Format(file, sizeof(file), "%s", lfile);
+		len = ke::SafeSprintf(file, sizeof(file), "%s", lfile);
 		strcpy(&file[len - 9], ".ext");
 
 		LoadAutoExtension(file);
@@ -583,7 +585,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path, bool bErrorOn
 	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
 		char path2[PLATFORM_MAX_PATH];
-		smcore.Format(path2, sizeof(path2), "%s", path);
+		ke::SafeSprintf(path2, sizeof(path2), "%s", path);
 		path2[strlen(path) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
 		return LoadAutoExtension(path2, bErrorOnMissing);
 	}
@@ -675,7 +677,7 @@ IExtension *CExtensionManager::LoadExtension(const char *file, char *error, size
 	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
 		char path2[PLATFORM_MAX_PATH];
-		smcore.Format(path2, sizeof(path2), "%s", file);
+		ke::SafeSprintf(path2, sizeof(path2), "%s", file);
 		path2[strlen(file) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
 		return LoadExtension(path2, error, maxlength);
 	}
@@ -928,12 +930,12 @@ void CExtensionManager::AddDependency(IExtension *pSource, const char *file, boo
 	}
 }
 
-void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
+void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command)
 {
-	int argcount = smcore.Argc(command);
+	int argcount = command->ArgC();
 	if (argcount >= 3)
 	{
-		const char *cmd = smcore.Arg(command, 2);
+		const char *cmd = command->Arg(2);
 		if (strcmp(cmd, "list") == 0)
 		{
 			List<CExtension *>::iterator iter;
@@ -989,11 +991,11 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				return;
 			}
 
-			const char *filename = smcore.Arg(command, 3);
+			const char *filename = command->Arg(3);
 			char path[PLATFORM_MAX_PATH];
 			char error[256];
 
-			smcore.Format(path, sizeof(path), "%s%s%s", filename, !strstr(filename, ".ext") ? ".ext" : "",
+			ke::SafeSprintf(path, sizeof(path), "%s%s%s", filename, !strstr(filename, ".ext") ? ".ext" : "",
 				!strstr(filename, "." PLATFORM_LIB_EXT) ? "." PLATFORM_LIB_EXT : "");
 			
 			if (FindExtensionByFile(path) != NULL)
@@ -1020,7 +1022,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				return;
 			}
 
-			const char *sId = smcore.Arg(command, 3);
+			const char *sId = command->Arg(3);
 			unsigned int id = atoi(sId);
 			if (id <= 0)
 			{
@@ -1105,7 +1107,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				return;
 			}
 
-			const char *arg = smcore.Arg(command, 3);
+			const char *arg = command->Arg(3);
 			unsigned int num = atoi(arg);
 			CExtension *pExt = FindByOrder(num);
 
@@ -1117,7 +1119,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 
 			if (argcount > 4 && pExt->unload_code)
 			{
-				const char *unload = smcore.Arg(command, 4);
+				const char *unload = command->Arg(4);
 				if (pExt->unload_code == (unsigned)atoi(unload))
 				{
 					char filename[PLATFORM_MAX_PATH];
@@ -1171,7 +1173,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 							/* Will our dependent care? */
 							if (!pExt->GetAPI()->QueryInterfaceDrop((*i_iter).iface))
 							{
-								rootmenu->ConsolePrint(" -> %s", pExt->GetFilename());
+								rootmenu->ConsolePrint(" -> %s", pOther->GetFilename());
 								/* Add to plugin unload list */
 								List<CPlugin *>::iterator p_iter;
 								for (p_iter=pOther->m_Dependents.begin();
@@ -1222,7 +1224,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				return;
 			}
 			
-			const char *arg = smcore.Arg(command, 3);
+			const char *arg = command->Arg(3);
 			unsigned int num = atoi(arg);
 			CExtension *pExt = FindByOrder(num);
 

@@ -36,6 +36,9 @@
 #include "compat_wrappers.h"
 #include "logic_bridge.h"
 #include <sourcemod_version.h>
+#include "provider.h"
+#include <IExtensionSys.h>
+#include <bridge/include/ILogger.h>
 
 SourceMod_Core g_SourceMod_Core;
 IVEngineServer *engine = NULL;
@@ -60,12 +63,42 @@ int vsp_version = 0;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
+#if !defined(METAMOD_PLAPI_VERSION) && PLAPI_VERSION < 11
+# error "SourceMod requires Metamod:Source 1.8 or higher."
+#endif
+#if SH_IMPL_VERSION < 4
+# error "SourceMod requires a newer version of SourceHook."
+#endif
+
+ConVar sourcemod_version("sourcemod_version", SOURCEMOD_VERSION, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY, "SourceMod Version");
+
 bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
 {
 	PLUGIN_SAVEVARS();
 
 	GET_V_IFACE_ANY(GetServerFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_SDK2013
+	// Shim to avoid hooking shims
+	engine = (IVEngineServer *)ismm->GetEngineFactory()("VEngineServer023", nullptr);
+	if (!engine)
+	{
+		engine = (IVEngineServer *)ismm->GetEngineFactory()("VEngineServer022", nullptr);
+		if (!engine)
+		{
+			engine = (IVEngineServer *)ismm->GetEngineFactory()("VEngineServer021", nullptr);
+			if (!engine)
+			{
+				if (error && maxlen)
+				{
+					ismm->Format(error, maxlen, "Could not find interface: VEngineServer023 or VEngineServer022");
+				}
+				return false;
+			}
+		}
+	}
+#else
 	GET_V_IFACE_CURRENT(GetEngineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
+#endif
 	GET_V_IFACE_CURRENT(GetServerFactory, serverClients, IServerGameClients, INTERFACEVERSION_SERVERGAMECLIENTS);
 	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(GetEngineFactory, gameevents, IGameEventManager2, INTERFACEVERSION_GAMEEVENTSMANAGER2);
@@ -75,9 +108,7 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	GET_V_IFACE_CURRENT(GetServerFactory, servertools, IServerTools, VSERVERTOOLS_INTERFACE_VERSION);
 #endif
-#if SOURCE_ENGINE != SE_DOTA
 	GET_V_IFACE_CURRENT(GetEngineFactory, serverpluginhelpers, IServerPluginHelpers, INTERFACEVERSION_ISERVERPLUGINHELPERS);
-#endif
 
 	/* :TODO: Make this optional and... make it find earlier versions [?] */
 	GET_V_IFACE_CURRENT(GetServerFactory, playerinfo, IPlayerInfoManager, INTERFACEVERSION_PLAYERINFOMANAGER);
@@ -95,9 +126,7 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	
 	ismm->AddListener(this, this);
 
-#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	if ((vsp_interface = g_SMAPI->GetVSPInfo(&vsp_version)) == NULL)
-#endif
 	{
 		g_SMAPI->EnableVSPListener();
 	}
@@ -185,35 +214,14 @@ void SourceMod_Core::OnVSPListening(IServerPluginCallbacks *iface)
 		return;
 	}
 
-#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	if (vsp_version == 0)
 	{
 		g_SMAPI->GetVSPInfo(&vsp_version);
 	}
-#else
-	if (vsp_version == 0)
-	{
-		if (strcmp(g_SourceMod.GetGameFolderName(), "ship") == 0)
-		{
-			vsp_version = 1;
-		}
-		else
-		{
-			vsp_version = 2;
-		}
-	}
-#endif
 
 	/* Notify! */
-	SMGlobalClass *pBase = SMGlobalClass::head;
-	while (pBase)
-	{
-		pBase->OnSourceModVSPReceived();
-		pBase = pBase->m_pGlobalClassNext;
-	}
+    sCoreProviderImpl.OnVSPReceived();
 }
-
-#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 
 void SourceMod_Core::OnUnlinkConCommandBase(PluginId id, ConCommandBase *pCommand)
 {
@@ -221,15 +229,6 @@ void SourceMod_Core::OnUnlinkConCommandBase(PluginId id, ConCommandBase *pComman
 	Global_OnUnlinkConCommandBase(pCommand);
 #endif
 }
-
-#else
-
-void SourceMod_Core::OnPluginUnload(PluginId id)
-{
-	Global_OnUnlinkConCommandBase(NULL);
-}
-
-#endif
 
 void *SourceMod_Core::OnMetamodQuery(const char *iface, int *ret)
 {

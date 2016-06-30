@@ -176,7 +176,7 @@ methodmap Panel < Handle
 	//                      No numbering or newlines are needed.
 	// @param style         ITEMDRAW style flags.
 	// @return              A slot position, or 0 if item was a rawline or could not be drawn.
-	public native void DrawItem(const char[] text, style=ITEMDRAW_DEFAULT);
+	public native int DrawItem(const char[] text, int style=ITEMDRAW_DEFAULT);
 
 	// Draws a raw line of text on a panel, without any markup other than a
 	// newline.
@@ -379,7 +379,7 @@ methodmap Menu < Handle
 
 	// Get or set the menu's pagination.
 	//  
-	// If pgination is MENU_NO_PAGINATION, and the exit button flag is set, 
+	// If pagination is MENU_NO_PAGINATION, and the exit button flag is set, 
 	// then the exit button flag is removed. It can be re-applied if desired.
 	property int Pagination {
 		public native get();
@@ -784,10 +784,10 @@ native bool VoteMenu(Handle menu, int[] clients, int numClients, int time, int f
  */
 stock bool VoteMenuToAll(Handle menu, int time, int flags=0)
 {
-	new total;
-	decl players[MaxClients];
+	int total;
+	int[] players = new int[MaxClients];
 	
-	for (new i=1; i<=MaxClients; i++)
+	for (int i=1; i<=MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || IsFakeClient(i))
 		{
@@ -970,7 +970,7 @@ native void SetPanelTitle(Handle panel, const char[] text, bool onlyIfEmpty=fals
  * @return				A slot position, or 0 if item was a rawline or could not be drawn.
  * @error				Invalid Handle.
  */
-native int DrawPanelItem(Handle panel, const char[] text, style=ITEMDRAW_DEFAULT);
+native int DrawPanelItem(Handle panel, const char[] text, int style=ITEMDRAW_DEFAULT);
 
 /**
  * Draws a raw line of text on a panel, without any markup other than a newline.
@@ -992,7 +992,7 @@ native bool DrawPanelText(Handle panel, const char[] text);
  * @return				True if item is drawable, false otherwise.
  * @error				Invalid Handle.
  */
-native bool CanPanelDrawFlags(Handle panel, style);
+native bool CanPanelDrawFlags(Handle panel, int style);
 
 /**
  * Sets the selectable key map of a panel.  This is not supported by
@@ -1096,7 +1096,7 @@ native bool InternalShowMenu(int client, const char[] str, int time, int keys=-1
  * @param winningVotes	Number of votes received by the winning option.
  * @param totalVotes	Number of total votes received.
  */
-stock void GetMenuVoteInfo(param2, &winningVotes, &totalVotes)
+stock void GetMenuVoteInfo(int param2, int &winningVotes, int &totalVotes)
 {
 	winningVotes = param2 & 0xFFFF;
 	totalVotes = param2 >> 16;
@@ -1119,4 +1119,3 @@ stock bool IsNewVoteAllowed()
 	
 	return true;
 }
-

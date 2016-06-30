@@ -32,11 +32,7 @@
 #include "vsound.h"
 #include <IForwardSys.h>
 
-#if SOURCE_ENGINE == SE_DOTA
-SH_DECL_HOOK8_void(IVEngineServer, EmitAmbientSound, SH_NOATTRIB, 0, CEntityIndex, const Vector &, const char *, float, soundlevel_t, int, int, float);
-#else
 SH_DECL_HOOK8_void(IVEngineServer, EmitAmbientSound, SH_NOATTRIB, 0, int, const Vector &, const char *, float, soundlevel_t, int, int, float);
-#endif
 
 #if SOURCE_ENGINE >= SE_PORTAL2
 SH_DECL_HOOK17(IEngineSound, EmitSound, SH_NOATTRIB, 0, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
@@ -74,13 +70,7 @@ size_t SoundHooks::_FillInPlayers(int *pl_array, IRecipientFilter *pFilter)
 
 	for (size_t i=0; i<size; i++)
 	{
-		int index;
-#if SOURCE_ENGINE == SE_DOTA
-		index = pFilter->GetRecipientIndex(i).Get();
-#else
-		index = pFilter->GetRecipientIndex(i);
-#endif
-		pl_array[i] = index;
+		pl_array[i] = pFilter->GetRecipientIndex(i);
 	}
 
 	return size;
@@ -227,16 +217,9 @@ bool SoundHooks::RemoveHook(int type, IPluginFunction *pFunc)
 	return false;
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void SoundHooks::OnEmitAmbientSound(CEntityIndex index, const Vector &pos, const char *samp, float vol, 
-									soundlevel_t soundlevel, int fFlags, int pitch, float delay)
-{
-	int entindex = index.Get();
-#else
 void SoundHooks::OnEmitAmbientSound(int entindex, const Vector &pos, const char *samp, float vol, 
 									soundlevel_t soundlevel, int fFlags, int pitch, float delay)
 {
-#endif
 	SoundHookIter iter;
 	IPluginFunction *pFunc;
 	cell_t vec[3] = {sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z)};
@@ -272,13 +255,8 @@ void SoundHooks::OnEmitAmbientSound(int entindex, const Vector &pos, const char 
 				vec2.x = sp_ctof(vec[0]);
 				vec2.y = sp_ctof(vec[1]);
 				vec2.z = sp_ctof(vec[2]);
-#if SOURCE_ENGINE == SE_DOTA
-				RETURN_META_NEWPARAMS(MRES_IGNORED, &IVEngineServer::EmitAmbientSound, 
-										(CEntityIndex(entindex), vec2, buffer, vol, soundlevel, fFlags, pitch, delay));
-#else
 				RETURN_META_NEWPARAMS(MRES_IGNORED, &IVEngineServer::EmitAmbientSound,
 										(entindex, vec2, buffer, vol, soundlevel, fFlags, pitch, delay));
-#endif
 			}
 		}
 	}
@@ -410,9 +388,9 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 
 					if (!pPlayer)
 					{
-						pFunc->GetParentContext()->ThrowNativeError("Client index %d is invalid", client);
+						pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided client index %d is invalid", client);
 					} else if (!pPlayer->IsInGame()) {
-						pFunc->GetParentContext()->ThrowNativeError("Client %d is not connected", client);
+						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client %d is not connected", client);
 					} else {
 						continue;
 					}
@@ -548,9 +526,9 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 
 					if (!pPlayer)
 					{
-						pFunc->GetParentContext()->ThrowNativeError("Client index %d is invalid", client);
+						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client index %d is invalid", client);
 					} else if (!pPlayer->IsInGame()) {
-						pFunc->GetParentContext()->ThrowNativeError("Client %d is not connected", client);
+						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client %d is not connected", client);
 					} else {
 						continue;
 					}
@@ -755,11 +733,7 @@ static cell_t FadeClientVolume(IPluginContext *pContext, const cell_t *params)
 	}
 
 	engine->FadeClientVolume(
-#if SOURCE_ENGINE == SE_DOTA
-		player->GetIndex(),
-#else
 		player->GetEdict(),
-#endif
 		sp_ctof(params[2]),
 		sp_ctof(params[3]),
 		sp_ctof(params[4]),

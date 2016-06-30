@@ -176,7 +176,7 @@ enum RenderFx
  * @return			Entity's flags, see entity flag defines above.
  * @error			Invalid entity index, or lack of mod compliance.
  */
-native GetEntityFlags(entity);
+native int GetEntityFlags(int entity);
 
 /**
  * Sets an entity's flags.
@@ -187,10 +187,9 @@ native GetEntityFlags(entity);
  *
  * @param entity	Entity index.
  * @param flags		Entity flags, see entity flag defines above.
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
-native SetEntityFlags(entity, flags);
+native void SetEntityFlags(int entity, int flags);
 
 
 /**
@@ -200,15 +199,15 @@ native SetEntityFlags(entity, flags);
  * @return			Movetype, see enum above.
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock MoveType:GetEntityMoveType(entity)
+stock MoveType GetEntityMoveType(int entity)
 {
-	static bool:gotconfig = false;
-	static String:datamap[32];
+	static bool gotconfig = false;
+	static char datamap[32];
 	
 	if (!gotconfig)
 	{
-		new Handle:gc = LoadGameConfigFile("core.games");
-		new bool:exists = GameConfGetKeyValue(gc, "m_MoveType", datamap, sizeof(datamap));
+		Handle gc = LoadGameConfigFile("core.games");
+		bool exists = GameConfGetKeyValue(gc, "m_MoveType", datamap, sizeof(datamap));
 		CloseHandle(gc);
 		
 		if (!exists)
@@ -219,7 +218,7 @@ stock MoveType:GetEntityMoveType(entity)
 		gotconfig = true;
 	}
 	
-	return MoveType:GetEntProp(entity, Prop_Data, datamap);
+	return view_as<MoveType>(GetEntProp(entity, Prop_Data, datamap));
 }
 
 /**
@@ -227,18 +226,17 @@ stock MoveType:GetEntityMoveType(entity)
  *
  * @param entity	Entity index.
  * @param mt		Movetype, see enum above.
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock SetEntityMoveType(entity, MoveType:mt)
+stock void SetEntityMoveType(int entity, MoveType mt)
 {
-	static bool:gotconfig = false;
-	static String:datamap[32];
+	static bool gotconfig = false;
+	static char datamap[32];
 	
 	if (!gotconfig)
 	{
-		new Handle:gc = LoadGameConfigFile("core.games");
-		new bool:exists = GameConfGetKeyValue(gc, "m_MoveType", datamap, sizeof(datamap));
+		Handle gc = LoadGameConfigFile("core.games");
+		bool exists = GameConfGetKeyValue(gc, "m_MoveType", datamap, sizeof(datamap));
 		CloseHandle(gc);
 		
 		if (!exists)
@@ -259,15 +257,15 @@ stock SetEntityMoveType(entity, MoveType:mt)
  * @return			RenderMode value.
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock RenderMode:GetEntityRenderMode(entity)
+stock RenderMode GetEntityRenderMode(int entity)
 {
-	static bool:gotconfig = false;
-	static String:prop[32];
+	static bool gotconfig = false;
+	static char prop[32];
 	
 	if (!gotconfig)
 	{
-		new Handle:gc = LoadGameConfigFile("core.games");
-		new bool:exists = GameConfGetKeyValue(gc, "m_nRenderMode", prop, sizeof(prop));
+		Handle gc = LoadGameConfigFile("core.games");
+		bool exists = GameConfGetKeyValue(gc, "m_nRenderMode", prop, sizeof(prop));
 		CloseHandle(gc);
 		
 		if (!exists)
@@ -278,7 +276,7 @@ stock RenderMode:GetEntityRenderMode(entity)
 		gotconfig = true;
 	}
 	
-	return RenderMode:GetEntProp(entity, Prop_Send, prop, 1);
+	return view_as<RenderMode>(GetEntProp(entity, Prop_Send, prop, 1));
 }
 
 /**
@@ -286,18 +284,17 @@ stock RenderMode:GetEntityRenderMode(entity)
  *
  * @param entity	Entity index.
  * @param mode		RenderMode value.
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock SetEntityRenderMode(entity, RenderMode:mode)
+stock void SetEntityRenderMode(int entity, RenderMode mode)
 {
-	static bool:gotconfig = false;
-	static String:prop[32];
+	static bool gotconfig = false;
+	static char prop[32];
 	
 	if (!gotconfig)
 	{
-		new Handle:gc = LoadGameConfigFile("core.games");
-		new bool:exists = GameConfGetKeyValue(gc, "m_nRenderMode", prop, sizeof(prop));
+		Handle gc = LoadGameConfigFile("core.games");
+		bool exists = GameConfGetKeyValue(gc, "m_nRenderMode", prop, sizeof(prop));
 		CloseHandle(gc);
 		
 		if (!exists)
@@ -318,15 +315,15 @@ stock SetEntityRenderMode(entity, RenderMode:mode)
  * @return			RenderFx value.
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock RenderFx:GetEntityRenderFx(entity)
+stock RenderFx GetEntityRenderFx(int entity)
 {
-	static bool:gotconfig = false;
-	static String:prop[32];
+	static bool gotconfig = false;
+	static char prop[32];
 	
 	if (!gotconfig)
 	{
-		new Handle:gc = LoadGameConfigFile("core.games");
-		new bool:exists = GameConfGetKeyValue(gc, "m_nRenderFX", prop, sizeof(prop));
+		Handle gc = LoadGameConfigFile("core.games");
+		bool exists = GameConfGetKeyValue(gc, "m_nRenderFX", prop, sizeof(prop));
 		CloseHandle(gc);
 		
 		if (!exists)
@@ -337,7 +334,7 @@ stock RenderFx:GetEntityRenderFx(entity)
 		gotconfig = true;
 	}
 	
-	return RenderFx:GetEntProp(entity, Prop_Send, prop, 1);
+	return view_as<RenderFx>(GetEntProp(entity, Prop_Send, prop, 1));
 }
 
 /**
@@ -345,18 +342,17 @@ stock RenderFx:GetEntityRenderFx(entity)
  *
  * @param entity	Entity index.
  * @param fx		RenderFx value.
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock SetEntityRenderFx(entity, RenderFx:fx)
+stock void SetEntityRenderFx(int entity, RenderFx fx)
 {
-	static bool:gotconfig = false;
-	static String:prop[32];
+	static bool gotconfig = false;
+	static char prop[32];
 	
 	if (!gotconfig)
 	{
-		new Handle:gc = LoadGameConfigFile("core.games");
-		new bool:exists = GameConfGetKeyValue(gc, "m_nRenderFX", prop, sizeof(prop));
+		Handle gc = LoadGameConfigFile("core.games");
+		bool exists = GameConfGetKeyValue(gc, "m_nRenderFX", prop, sizeof(prop));
 		CloseHandle(gc);
 		
 		if (!exists)
@@ -371,25 +367,24 @@ stock SetEntityRenderFx(entity, RenderFx:fx)
 }
 
 /**
- * Sets an entity's color.
+ * Gets an entity's color.
  *
- * @param entity	Entity index
+ * @param entity	Entity index.
  * @param r 		Amount of red (0-255)
  * @param g 		Amount of green (0-255)
  * @param b 		Amount of blue (0-255)
  * @param a 		Amount of alpha (0-255)
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock SetEntityRenderColor(entity, r=255, g=255, b=255, a=255)
+stock void GetEntityRenderColor(int entity, int &r, int &g, int &b, int &a)
 {
-	static bool:gotconfig = false;
-	static String:prop[32];
+	static bool gotconfig = false;
+	static char prop[32];
 	
 	if (!gotconfig)
 	{
-		new Handle:gc = LoadGameConfigFile("core.games");
-		new bool:exists = GameConfGetKeyValue(gc, "m_clrRender", prop, sizeof(prop));
+		Handle gc = LoadGameConfigFile("core.games");
+		bool exists = GameConfGetKeyValue(gc, "m_clrRender", prop, sizeof(prop));
 		CloseHandle(gc);
 		
 		if (!exists)
@@ -400,7 +395,49 @@ stock SetEntityRenderColor(entity, r=255, g=255, b=255, a=255)
 		gotconfig = true;
 	}
 	
-	new offset = GetEntSendPropOffs(entity, prop);
+	int offset = GetEntSendPropOffs(entity, prop);
+	
+	if (offset <= 0)
+	{
+		ThrowError("GetEntityRenderColor not supported by this mod");
+	}
+	
+	r = GetEntData(entity, offset, 1);
+	g = GetEntData(entity, offset + 1, 1);
+	b = GetEntData(entity, offset + 2, 1);
+	a = GetEntData(entity, offset + 3, 1);
+}
+
+/**
+ * Sets an entity's color.
+ *
+ * @param entity	Entity index
+ * @param r 		Amount of red (0-255)
+ * @param g 		Amount of green (0-255)
+ * @param b 		Amount of blue (0-255)
+ * @param a 		Amount of alpha (0-255)
+ * @error			Invalid entity index, or lack of mod compliance.
+ */
+stock void SetEntityRenderColor(int entity, int r=255, int g=255, int b=255, int a=255)
+{
+	static bool gotconfig = false;
+	static char prop[32];
+	
+	if (!gotconfig)
+	{
+		Handle gc = LoadGameConfigFile("core.games");
+		bool exists = GameConfGetKeyValue(gc, "m_clrRender", prop, sizeof(prop));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(prop, sizeof(prop), "m_clrRender");
+		}
+		
+		gotconfig = true;
+	}
+	
+	int offset = GetEntSendPropOffs(entity, prop);
 	
 	if (offset <= 0)
 	{
@@ -420,15 +457,15 @@ stock SetEntityRenderColor(entity, r=255, g=255, b=255, a=255)
  * @return			Entity's m_flGravity value.
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock Float:GetEntityGravity(entity)
+stock float GetEntityGravity(int entity)
 {
-	static bool:gotconfig = false;
-	static String:datamap[32];
+	static bool gotconfig = false;
+	static char datamap[32];
 	
 	if (!gotconfig)
 	{
-		new Handle:gc = LoadGameConfigFile("core.games");
-		new bool:exists = GameConfGetKeyValue(gc, "m_flGravity", datamap, sizeof(datamap));
+		Handle gc = LoadGameConfigFile("core.games");
+		bool exists = GameConfGetKeyValue(gc, "m_flGravity", datamap, sizeof(datamap));
 		CloseHandle(gc);
 		
 		if (!exists)
@@ -447,18 +484,17 @@ stock Float:GetEntityGravity(entity)
  *
  * @param entity	Entity index.
  * @param amount	Gravity to set (default = 1.0, half = 0.5, double = 2.0).
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock SetEntityGravity(entity, Float:amount)
+stock void SetEntityGravity(int entity, float amount)
 {
-	static bool:gotconfig = false;
-	static String:datamap[32];
+	static bool gotconfig = false;
+	static char datamap[32];
 	
 	if (!gotconfig)
 	{
-		new Handle:gc = LoadGameConfigFile("core.games");
-		new bool:exists = GameConfGetKeyValue(gc, "m_flGravity", datamap, sizeof(datamap));
+		Handle gc = LoadGameConfigFile("core.games");
+		bool exists = GameConfGetKeyValue(gc, "m_flGravity", datamap, sizeof(datamap));
 		CloseHandle(gc);
 		
 		if (!exists)
@@ -477,18 +513,17 @@ stock SetEntityGravity(entity, Float:amount)
  *
  * @param entity	Entity index.
  * @param amount	Health amount.
- * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock SetEntityHealth(entity, amount)
+stock void SetEntityHealth(int entity, int amount)
 {
-	static bool:gotconfig = false;
-	static String:prop[32];
+	static bool gotconfig = false;
+	static char prop[32];
 	
 	if (!gotconfig)
 	{
-		new Handle:gc = LoadGameConfigFile("core.games");
-		new bool:exists = GameConfGetKeyValue(gc, "m_iHealth", prop, sizeof(prop));
+		Handle gc = LoadGameConfigFile("core.games");
+		bool exists = GameConfGetKeyValue(gc, "m_iHealth", prop, sizeof(prop));
 		CloseHandle(gc);
 		
 		if (!exists)
@@ -499,9 +534,9 @@ stock SetEntityHealth(entity, amount)
 		gotconfig = true;
 	}
 	
-	decl String:cls[64];
-	new PropFieldType:type;
-	new offset;
+	char cls[64];
+	PropFieldType type;
+	int offset;
 	
 	if (!GetEntityNetClass(entity, cls, sizeof(cls)))
 	{
@@ -536,15 +571,15 @@ stock SetEntityHealth(entity, amount)
  * @error			Invalid client index, client not in game, 
  *					or lack of mod compliance.
  */
-stock GetClientButtons(client)
+stock int GetClientButtons(int client)
 {
-	static bool:gotconfig = false;
-	static String:datamap[32];
+	static bool gotconfig = false;
+	static char datamap[32];
 	
 	if (!gotconfig)
 	{
-		new Handle:gc = LoadGameConfigFile("core.games");
-		new bool:exists = GameConfGetKeyValue(gc, "m_nButtons", datamap, sizeof(datamap));
+		Handle gc = LoadGameConfigFile("core.games");
+		bool exists = GameConfGetKeyValue(gc, "m_nButtons", datamap, sizeof(datamap));
 		CloseHandle(gc);
 		
 		if (!exists)

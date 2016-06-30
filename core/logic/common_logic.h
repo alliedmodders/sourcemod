@@ -32,30 +32,56 @@
 #ifndef _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_
 #define _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_
 
-#include <IHandleSys.h>
-
 #include "../sm_globals.h"
-#include "intercom.h"
 
-extern sm_core_t smcore;
-extern IHandleSys *handlesys;
-extern ISourceMod *g_pSM;
-extern ILibrarySys *libsys;
-extern ITextParsers *textparser;
-extern IVEngineServer *engine;
-extern IShareSys *sharesys;
-extern IRootConsole *rootmenu;
-extern IPluginManager *pluginsys;
-extern IForwardManager *forwardsys;
-extern ITimerSystem *timersys;
+namespace SourceMod {
+class CoreProvider;
+class IHandleSys;
+class ISourceMod;
+class ILibrarySys;
+class ITextParsers;
+class IShareSys;
+class IRootConsole ;
+class IPluginManager;
+class IForwardManager;
+class ITimerSystem;
+class IPlayerManager;
+class IAdminSystem;
+class IGameHelpers;
+class IScriptManager;
+class IExtensionSys;
+class ILogger;
+class IMenuManager;
+#if defined SM_LOGIC
+class IVEngineServerBridge;
+#endif
+} // namespace SourceMod
+struct ServerGlobals;
+
+extern SourceMod::CoreProvider *bridge;
+extern SourceMod::IHandleSys *handlesys;
+extern SourceMod::ISourceMod *g_pSM;
+extern SourceMod::ILibrarySys *libsys;
+extern SourceMod::ITextParsers *textparser;
+extern SourceMod::IShareSys *sharesys;
+extern SourceMod::IRootConsole *rootmenu;
+extern SourceMod::IPluginManager *pluginsys;
+extern SourceMod::IForwardManager *forwardsys;
+extern SourceMod::ITimerSystem *timersys;
 extern ServerGlobals serverGlobals;
-extern IPlayerManager *playerhelpers;
-extern IAdminSystem *adminsys;
-extern IGameHelpers *gamehelpers;
-extern IScriptManager *scripts;
-extern IExtensionSys *extsys;
-extern ILogger *logger;
-extern IMenuManager *menus;
+extern SourceMod::IPlayerManager *playerhelpers;
+extern SourceMod::IAdminSystem *adminsys;
+extern SourceMod::IGameHelpers *gamehelpers;
+extern SourceMod::IScriptManager *scripts;
+extern SourceMod::IExtensionSys *extsys;
+extern SourceMod::ILogger *logger;
+extern SourceMod::IMenuManager *menus;
+
+#if defined SM_LOGIC
+extern SourceMod::IVEngineServerBridge *engine;
+#else
+extern IVEngineServer *engine;
+#endif
 
 #endif /* _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_ */
 

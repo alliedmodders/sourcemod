@@ -69,7 +69,7 @@ private:
 	void *CopyBlob(unsigned int param, const void *blobptr, size_t length);
 private:
 	MYSQL *m_mysql;
-	ke::Ref<MyDatabase> m_pParent;
+	ke::RefPtr<MyDatabase> m_pParent;
 	MYSQL_STMT *m_stmt;
 	MYSQL_BIND *m_bind;
 	MYSQL_RES *m_pRes;

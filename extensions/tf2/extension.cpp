@@ -414,7 +414,7 @@ int FindEntityByNetClass(int start, const char *classname)
 	for (int i = ((start != -1) ? start : 0); i < gpGlobals->maxEntities; i++)
 	{
 		current = engine->PEntityOfEntIndex(i);
-		if (current == NULL)
+		if (current == NULL || current->IsFree())
 		{
 			continue;
 		}

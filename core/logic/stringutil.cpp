@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 sw=4 tw=99 et :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
@@ -34,6 +34,8 @@
 #include <ctype.h>
 #include <sm_platform.h>
 #include "stringutil.h"
+#include <am-string.h>
+#include "TextParsers.h"
 
 // We're in logic so we don't have this from the SDK.
 #ifndef MIN
@@ -73,19 +75,7 @@ const char *stristr(const char *str, const char *substr)
 
 unsigned int strncopy(char *dest, const char *src, size_t count)
 {
-	if (!count)
-	{
-		return 0;
-	}
-
-	char *start = dest;
-	while ((*src) && (--count))
-	{
-		*dest++ = *src++;
-	}
-	*dest = '\0';
-
-	return (dest - start);
+	return ke::SafeStrcpy(dest, count, src);
 }
 
 unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search, const char *replace, bool caseSensitive)
@@ -93,11 +83,13 @@ unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search
 	size_t searchLen = strlen(search);
 	size_t replaceLen = strlen(replace);
 
-	char *ptr = subject;
+	char *newptr, *ptr = subject;
 	unsigned int total = 0;
-	while ((ptr = UTIL_ReplaceEx(ptr, maxlength, search, searchLen, replace, replaceLen, caseSensitive)) != NULL)
+	while ((newptr = UTIL_ReplaceEx(ptr, maxlength, search, searchLen, replace, replaceLen, caseSensitive)) != NULL)
 	{
 		total++;
+		maxlength -= newptr - ptr;
+		ptr = newptr;
 		if (*ptr == '\0')
 		{
 			break;
@@ -340,3 +332,34 @@ void UTIL_StripExtension(const char *in, char *out, int outSize)
 		}
 	}
 }
+
+char *UTIL_TrimWhitespace(char *str, size_t &len)
+{
+	char *end = str + len - 1;
+
+	if (!len)
+	{
+		return str;
+	}
+
+	/* Iterate backwards through string until we reach first non-whitespace char */
+	while (end >= str && g_TextParser.IsWhitespace(end))
+	{
+		end--;
+		len--;
+	}
+
+	/* Replace first whitespace char (at the end) with null terminator.
+	 * If there is none, we're just replacing the null terminator. 
+	 */
+	*(end + 1) = '\0';
+
+	while (*str != '\0' && g_TextParser.IsWhitespace(str))
+	{
+		str++;
+		len--;
+	}
+
+	return str;
+}
+

@@ -33,6 +33,7 @@
 #include <stdarg.h>
 #include "DebugReporter.h"
 #include "Logger.h"
+#include <am-string.h>
 
 DebugReport g_DbgReporter;
 
@@ -47,7 +48,7 @@ void DebugReport::OnDebugSpew(const char *msg, ...)
 	char buffer[512];
 
 	va_start(ap, msg);
-	smcore.FormatArgs(buffer, sizeof(buffer), msg, ap);
+	ke::SafeVsprintf(buffer, sizeof(buffer), msg, ap);
 	va_end(ap);
 
 	g_Logger.LogMessage("[SM] %s", buffer);
@@ -65,7 +66,7 @@ void DebugReport::GenerateError(IPluginContext *ctx, cell_t func_idx, int err, c
 void DebugReport::GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err, const char *message, va_list ap)
 {
 	char buffer[512];
-	smcore.FormatArgs(buffer, sizeof(buffer), message, ap);
+	ke::SafeVsprintf(buffer, sizeof(buffer), message, ap);
 
 	const char *plname = pluginsys->FindPluginByContext(ctx->GetContext())->GetFilename();
 	const char *error = g_pSourcePawn2->GetErrorString(err);
@@ -99,7 +100,7 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 	char buffer[512];
 
 	va_start(ap, message);
-	smcore.FormatArgs(buffer, sizeof(buffer), message, ap);
+	ke::SafeVsprintf(buffer, sizeof(buffer), message, ap);
 	va_end(ap);
 
 	const char *plname = pluginsys->FindPluginByContext(pContext->GetContext())->GetFilename();
@@ -156,44 +157,66 @@ int DebugReport::_GetPluginIndex(IPluginContext *ctx)
 
 void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 {
-	// Find the nearest plugin to blame.
 	const char *blame = nullptr;
-	for (; !iter.Done(); iter.Next()) {
-		if (iter.IsScriptedFrame()) {
-			IPlugin *plugin = pluginsys->FindPluginByContext(iter.Context()->GetContext());
-			if (plugin)
-				blame = plugin->GetFilename();
-			else
-				blame = iter.Context()->GetRuntime()->GetFilename();
-			break;
+	if (report.Blame()) 
+	{
+		blame = report.Blame()->DebugName();
+	} else {
+	    // Find the nearest plugin to blame.
+		for (; !iter.Done(); iter.Next()) 
+		{
+			if (iter.IsScriptedFrame()) 
+			{
+				IPlugin *plugin = pluginsys->FindPluginByContext(iter.Context()->GetContext());
+				if (plugin)
+				{
+					blame = plugin->GetFilename();
+				} else {
+					blame = iter.Context()->GetRuntime()->GetFilename();
+				}
+				break;
+			}
 		}
 	}
 
 	iter.Reset();
 
 	g_Logger.LogError("[SM] Exception reported: %s", report.Message());
-	if (blame)
-		g_Logger.LogError("[SM] Blaming plugin: %s", blame);
-	g_Logger.LogError("[SM] Call stack trace:");
 
-	for (int index = 0; !iter.Done(); iter.Next(), index++) {
-		const char *fn = iter.FunctionName();
-		if (!fn)
-			fn = "<unknown function>";
+	if (blame) 
+	{
+		g_Logger.LogError("[SM] Blaming: %s()", blame);
+	}
 
-		if (iter.IsNativeFrame()) {
-			g_Logger.LogError("[SM]   [%d] %s", index, fn);
-			continue;
-		}
-		if (iter.IsScriptedFrame()) {
-			const char *file = iter.FilePath();
-			if (!file)
-				file = "<unknown>";
-			g_Logger.LogError("[SM]   [%d] Line %d, %s::%s()",
-				index,
-				iter.LineNumber(),
-				file,
-				fn);
+	if (!iter.Done()) 
+	{
+		g_Logger.LogError("[SM] Call stack trace:");
+
+		for (int index = 0; !iter.Done(); iter.Next(), index++) 
+		{
+			const char *fn = iter.FunctionName();
+			if (!fn)
+			{
+				fn = "<unknown function>";
+			}
+			if (iter.IsNativeFrame()) 
+			{
+				g_Logger.LogError("[SM]   [%d] %s", index, fn);
+				continue;
+			}
+			if (iter.IsScriptedFrame()) 
+			{
+				const char *file = iter.FilePath();
+				if (!file)
+				{
+					file = "<unknown>";
+				}
+				g_Logger.LogError("[SM]   [%d] Line %d, %s::%s()",
+						index,
+						iter.LineNumber(),
+						file,
+						fn);
+			}
 		}
 	}
 }

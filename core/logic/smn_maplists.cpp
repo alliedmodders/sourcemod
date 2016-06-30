@@ -38,6 +38,9 @@
 #include <ITextParsers.h>
 #include <ISourceMod.h>
 #include "stringutil.h"
+#include <bridge/include/CoreProvider.h>
+#include <bridge/include/ILogger.h>
+#include <bridge/include/IFileSystemBridge.h>
 
 using namespace SourceHook;
 
@@ -87,13 +90,13 @@ public:
 	}
 	void GetMapCycleFilePath(char *pBuffer, int maxlen)
 	{
-		const char *pMapCycleFileName = m_pMapCycleFile ? smcore.GetCvarString(m_pMapCycleFile) : "mapcycle.txt";
+		const char *pMapCycleFileName = m_pMapCycleFile ? bridge->GetCvarString(m_pMapCycleFile) : "mapcycle.txt";
 
 		g_pSM->Format(pBuffer, maxlen, "cfg/%s", pMapCycleFileName);
-		if (!smcore.filesystem->FileExists(pBuffer, "GAME"))
+		if (!bridge->filesystem->FileExists(pBuffer, "GAME"))
 		{
 			g_pSM->Format(pBuffer, maxlen, "%s", pMapCycleFileName);
-			if (!smcore.filesystem->FileExists(pBuffer, "GAME"))
+			if (!bridge->filesystem->FileExists(pBuffer, "GAME"))
 			{
 				g_pSM->Format(pBuffer, maxlen, "cfg/mapcycle_default.txt");
 			}
@@ -110,9 +113,9 @@ public:
 			pMapList->bIsCompat = true;
 			pMapList->bIsPath = true;
 			pMapList->last_modified_time = 0;
-			smcore.strncopy(pMapList->name, name, sizeof(pMapList->name));
+			strncopy(pMapList->name, name, sizeof(pMapList->name));
 			pMapList->pArray = NULL;
-			smcore.strncopy(pMapList->path, file, sizeof(pMapList->path));
+			strncopy(pMapList->path, file, sizeof(pMapList->path));
 			pMapList->serial = 0;
 			m_ListLookup.insert(name, pMapList);
 			m_MapLists.push_back(pMapList);
@@ -123,13 +126,13 @@ public:
 		if (!pMapList->bIsCompat)
 			return;
 
-		smcore.strncopy(path, file, sizeof(path));
+		strncopy(path, file, sizeof(path));
 
 		/* If the path matches, don't reset the serial/time */
 		if (strcmp(path, pMapList->path) == 0)
 			return;
 
-		smcore.strncopy(pMapList->path, path, sizeof(pMapList->path));
+		strncopy(pMapList->path, path, sizeof(pMapList->path));
 		pMapList->bIsPath = true;
 		pMapList->last_modified_time = 0;
 		pMapList->serial = 0;
@@ -158,7 +161,7 @@ public:
 			return;
 		}
 
-		m_pMapCycleFile = smcore.FindConVar("mapcyclefile");
+		m_pMapCycleFile = bridge->FindConVar("mapcyclefile");
 
 		/* Dump everything we know about. */
 		List<maplist_info_t *> compat;
@@ -168,7 +171,7 @@ public:
 		maplist_info_t *pDefList = new maplist_info_t;
 
 		pDefList->bIsPath = true;
-		smcore.strncopy(pDefList->name, "mapcyclefile", sizeof(pDefList->name));
+		strncopy(pDefList->name, "mapcyclefile", sizeof(pDefList->name));
 
 		GetMapCycleFilePath(pDefList->path, sizeof(pDefList->path));
 		
@@ -246,7 +249,7 @@ public:
 			m_pCurMapList = new maplist_info_t;
 
 			memset(m_pCurMapList, 0, sizeof(maplist_info_t));
-			smcore.strncopy(m_pCurMapList->name, name, sizeof(m_pCurMapList->name));
+			strncopy(m_pCurMapList->name, name, sizeof(m_pCurMapList->name));
 
 			m_CurState = MPS_MAPLIST;
 		}
@@ -266,12 +269,12 @@ public:
 
 		if (strcmp(key, "file") == 0)
 		{
-			smcore.strncopy(m_pCurMapList->path, value, sizeof(m_pCurMapList->path));
+			strncopy(m_pCurMapList->path, value, sizeof(m_pCurMapList->path));
 			m_pCurMapList->bIsPath = true;
 		}
 		else if (strcmp(key, "target") == 0)
 		{
-			smcore.strncopy(m_pCurMapList->path, value, sizeof(m_pCurMapList->path));
+			strncopy(m_pCurMapList->path, value, sizeof(m_pCurMapList->path));
 			m_pCurMapList->bIsPath = false;
 		}
 
@@ -363,7 +366,7 @@ public:
 			cell_t *blk;
 
 			FileFindHandle_t findHandle;
-			const char *fileName = smcore.filesystem->FindFirstEx("maps/*.bsp", "GAME", &findHandle);
+			const char *fileName = bridge->filesystem->FindFirstEx("maps/*.bsp", "GAME", &findHandle);
 
 			while (fileName)
 			{
@@ -373,22 +376,22 @@ public:
 
 				if (!gamehelpers->IsMapValid(buffer))
 				{
-					fileName = smcore.filesystem->FindNext(findHandle);
+					fileName = bridge->filesystem->FindNext(findHandle);
 					continue;
 				}
 
 				if ((blk = pNewArray->push()) == NULL)
 				{
-					fileName = smcore.filesystem->FindNext(findHandle);
+					fileName = bridge->filesystem->FindNext(findHandle);
 					continue;
 				}
 
-				smcore.strncopy((char *)blk, buffer, 255);
+				strncopy((char *)blk, buffer, 255);
 
-				fileName = smcore.filesystem->FindNext(findHandle);
+				fileName = bridge->filesystem->FindNext(findHandle);
 			}
 
-			smcore.filesystem->FindClose(findHandle);
+			bridge->filesystem->FindClose(findHandle);
 
 			/* Remove the array if there were no items. */
 			if (pNewArray->size() == 0)
@@ -442,7 +445,7 @@ public:
 		{
 			blk_dst = pUseArray->push();
 			blk_src = pNewArray->at(i);
-			smcore.strncopy((char *)blk_dst, (char *)blk_src, pUseArray->blocksize() * sizeof(cell_t));
+			strncopy((char *)blk_dst, (char *)blk_src, pUseArray->blocksize() * sizeof(cell_t));
 		}
 
 		/* Free resources if necessary. */
@@ -480,7 +483,7 @@ private:
 
 			if (strcmp(path, pMapList->path) != 0)
 			{
-				smcore.strncopy(pMapList->path, path, sizeof(pMapList->path));
+				strncopy(pMapList->path, path, sizeof(pMapList->path));
 				pMapList->last_modified_time = 0;
 			}
 		}
@@ -493,7 +496,7 @@ private:
 			cell_t *blk;
 			char buffer[255];
 
-			if ((fp = smcore.filesystem->Open(pMapList->path, "rt", "GAME")) == NULL)
+			if ((fp = bridge->filesystem->Open(pMapList->path, "rt", "GAME")) == NULL)
 			{
 				return false;
 			}
@@ -501,10 +504,10 @@ private:
 			delete pMapList->pArray;
 			pMapList->pArray = new CellArray(64);
 
-			while (!smcore.filesystem->EndOfFile(fp) && smcore.filesystem->ReadLine(buffer, sizeof(buffer), fp) != NULL)
+			while (!bridge->filesystem->EndOfFile(fp) && bridge->filesystem->ReadLine(buffer, sizeof(buffer), fp) != NULL)
 			{
 				size_t len = strlen(buffer);
-				char *ptr = smcore.TrimWhitespace(buffer, len);
+				char *ptr = UTIL_TrimWhitespace(buffer, len);
 				if (*ptr == '\0'
 					|| *ptr == ';'
 					|| strncmp(ptr, "//", 2) == 0)
@@ -512,7 +515,7 @@ private:
 					continue;
 				}
 				
-				if (strcmp(smcore.GetSourceEngineName(), "insurgency") == 0)
+				if (strcmp(bridge->GetSourceEngineName(), "insurgency") == 0)
 				{
 					// Insurgency (presumably?) doesn't allow spaces in map names
 					// and does use a space to delimit the map name from the map mode
@@ -535,11 +538,11 @@ private:
 
 				if ((blk = pMapList->pArray->push()) != NULL)
 				{
-					smcore.strncopy((char *)blk, ptr, 255);
+					strncopy((char *)blk, ptr, 255);
 				}
 			}
 
-			smcore.filesystem->Close(fp);
+			bridge->filesystem->Close(fp);
 
 			pMapList->last_modified_time = last_time;
 			pMapList->serial = ++m_nSerialChange;

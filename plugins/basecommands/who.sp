@@ -31,20 +31,20 @@
  * Version: $Id$
  */
  
-PerformWho(client, target, ReplySource:reply, bool:is_admin)
+void PerformWho(int client, int target, ReplySource reply, bool is_admin)
 {
-	decl String:name[MAX_NAME_LENGTH];
+	char name[MAX_NAME_LENGTH];
 	GetClientName(target, name, sizeof(name));
 	
-	new bool:show_name = false;
-	new String:admin_name[MAX_NAME_LENGTH];
-	new AdminId:id = GetUserAdmin(target);
-	if (id != INVALID_ADMIN_ID && GetAdminUsername(id, admin_name, sizeof(admin_name)))
+	bool show_name = false;
+	char admin_name[MAX_NAME_LENGTH];
+	AdminId id = GetUserAdmin(target);
+	if (id != INVALID_ADMIN_ID && id.GetUsername(admin_name, sizeof(admin_name)))
 	{
 		show_name = true;
 	}
 	
-	new ReplySource:old_reply = SetCmdReplySource(reply);
+	ReplySource old_reply = SetCmdReplySource(reply);
 	
 	if (id == INVALID_ADMIN_ID)
 	{
@@ -58,8 +58,8 @@ PerformWho(client, target, ReplySource:reply, bool:is_admin)
 		}
 		else
 		{
-			new flags = GetUserFlagBits(target);
-			decl String:flagstring[255];
+			int flags = GetUserFlagBits(target);
+			char flagstring[255];
 			if (flags == 0)
 			{
 				strcopy(flagstring, sizeof(flagstring), "none");
@@ -87,11 +87,11 @@ PerformWho(client, target, ReplySource:reply, bool:is_admin)
 	SetCmdReplySource(old_reply);
 }
 
-DisplayWhoMenu(client)
+void DisplayWhoMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_Who);
+	Menu menu = new Menu(MenuHandler_Who);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "Identify player", client);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
@@ -101,12 +101,12 @@ DisplayWhoMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public AdminMenu_Who(Handle:topmenu, 
-					  TopMenuAction:action,
-					  TopMenuObject:object_id,
-					  param,
-					  String:buffer[],
-					  maxlength)
+public void AdminMenu_Who(TopMenu topmenu, 
+					  TopMenuAction action,
+					  TopMenuObject object_id,
+					  int param,
+					  char[] buffer,
+					  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -118,7 +118,7 @@ public AdminMenu_Who(Handle:topmenu,
 	}
 }
 
-public MenuHandler_Who(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_Who(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -133,8 +133,8 @@ public MenuHandler_Who(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32];
-		new userid, target;
+		char info[32];
+		int userid, target;
 		
 		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
@@ -162,9 +162,9 @@ public MenuHandler_Who(Menu menu, MenuAction action, int param1, int param2)
 		*/
 	}
 }
-public Action:Command_Who(client, args)
+public Action Command_Who(int client, int args)
 {
-	new bool:is_admin = false;
+	bool is_admin = false;
 	
 	if (!client || (client && GetUserFlagBits(client) != 0))
 	{
@@ -174,7 +174,7 @@ public Action:Command_Who(client, args)
 	if (args < 1)
 	{
 		/* Display header */
-		decl String:t_access[16], String:t_name[16], String:t_username[16];
+		char t_access[16], t_name[16], t_username[16];
 		Format(t_access, sizeof(t_access), "%T", "Admin access", client);
 		Format(t_name, sizeof(t_name), "%T", "Name", client);
 		Format(t_username, sizeof(t_username), "%T", "Username", client);
@@ -189,16 +189,16 @@ public Action:Command_Who(client, args)
 		}
 
 		/* List all players */
-		decl String:flagstring[255];
+		char flagstring[255];
 
-		for (new i=1; i<=MaxClients; i++)
+		for (int i=1; i<=MaxClients; i++)
 		{
 			if (!IsClientInGame(i))
 			{
 				continue;
 			}
-			new flags = GetUserFlagBits(i);
-			new AdminId:id = GetUserAdmin(i);
+			int flags = GetUserFlagBits(i);
+			AdminId id = GetUserAdmin(i);
 			if (flags == 0)
 			{
 				strcopy(flagstring, sizeof(flagstring), "none");
@@ -211,14 +211,14 @@ public Action:Command_Who(client, args)
 			{
 				FlagsToString(flagstring, sizeof(flagstring), flags);
 			}
-			decl String:name[MAX_NAME_LENGTH];
-			new String:username[MAX_NAME_LENGTH];
+			char name[MAX_NAME_LENGTH];
+			char username[MAX_NAME_LENGTH];
 			
 			GetClientName(i, name, sizeof(name));
 			
 			if (id != INVALID_ADMIN_ID)
 			{
-				GetAdminUsername(id, username, sizeof(username));
+				id.GetUsername(username, sizeof(username));
 			}
 			
 			if (is_admin)
@@ -246,10 +246,10 @@ public Action:Command_Who(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:arg[65];
+	char arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	new target = FindTarget(client, arg, false, false);
+	int target = FindTarget(client, arg, false, false);
 	if (target == -1)
 	{
 		return Plugin_Handled;

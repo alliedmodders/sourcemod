@@ -31,7 +31,10 @@
 
 #include "EventManager.h"
 #include "sm_stringutil.h"
+#include "PlayerManager.h"
+
 #include "logic_bridge.h"
+#include <bridge/include/IScriptManager.h>
 
 EventManager g_EventManager;
 
@@ -155,7 +158,7 @@ void EventManager::FireGameEvent(IGameEvent *pEvent)
 	   Just need to add ourselves as a listener to make our hook on IGameEventManager2::FireEvent work */
 }
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_DOTA
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 int EventManager::GetEventDebugID()
 {
 	return EVENT_DEBUG_ID_INIT;
@@ -359,6 +362,13 @@ void EventManager::FireEvent(EventInfo *pInfo, bool bDontBroadcast)
 	m_FreeEvents.push(pInfo);
 }
 
+void EventManager::FireEventToClient(EventInfo *pInfo, IClient *pClient)
+{
+	// The IClient vtable is +4 from the IGameEventListener2 (CBaseClient) vtable due to multiple inheritance.
+	IGameEventListener2 *pGameClient = (IGameEventListener2 *)((intptr_t)pClient - 4);
+	pGameClient->FireGameEvent(pInfo->pEvent);
+}
+
 void EventManager::CancelCreatedEvent(EventInfo *pInfo)
 {
 	/* Free event from IGameEventManager2 */
@@ -423,7 +433,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 			m_EventCopies.push(gameevents->DuplicateEvent(pEvent));
 		}
 
-		if (res)
+		if (res >= Pl_Handled)
 		{
 			gameevents->FreeEvent(pEvent);
 			RETURN_META_VALUE(MRES_SUPERCEDE, false);

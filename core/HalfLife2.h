@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2016 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -36,6 +36,7 @@
 #include <sh_string.h>
 #include <sh_tinyhash.h>
 #include <am-utility.h>
+#include <am-hashset.h>
 #include <am-hashmap.h>
 #include <sm_stringhashmap.h>
 #include <sm_namehashset.h>
@@ -49,7 +50,9 @@
 #include <tier0/icommandline.h>
 #include <string_t.h>
 
-class CCommand;
+namespace SourceMod {
+class ICommandArgs;
+} // namespace SourceMod
 
 using namespace SourceHook;
 using namespace SourceMod;
@@ -100,7 +103,7 @@ struct DelayedFakeCliCmd
 
 struct CachedCommandInfo
 {
-	const CCommand *args;
+	const ICommandArgs *args;
 #if SOURCE_ENGINE <= SE_DARKMESSIAH
 	char cmd[300];
 #endif
@@ -121,7 +124,7 @@ public:
 	int				m_SerialNumber;
 	CEntInfo		*m_pPrev;
 	CEntInfo		*m_pNext;
-#if (SOURCE_ENGINE >= SE_PORTAL2) && (SOURCE_ENGINE != SE_DOTA)
+#if SOURCE_ENGINE >= SE_PORTAL2
 	string_t		m_iName;
 	string_t		m_iClassName;
 #endif
@@ -141,6 +144,7 @@ class CHalfLife2 :
 	public SMGlobalClass,
 	public IGameHelpers
 {
+	friend class AutoEnterCommand;
 public:
 	CHalfLife2();
 	~CHalfLife2();
@@ -149,6 +153,8 @@ public:
 	void OnSourceModAllInitialized();
 	void OnSourceModAllInitialized_Post();
 	/*void OnSourceModAllShutdown();*/
+	ConfigResult OnSourceModConfigChanged(const char *key, const char *value,
+		ConfigSource source, char *error, size_t maxlength) override;
 public: //IGameHelpers
 	SendProp *FindInSendTable(const char *classname, const char *offset);
 	bool FindSendPropInfo(const char *classname, const char *offset, sm_sendprop_info_t *info);
@@ -182,24 +188,25 @@ public: //IGameHelpers
 	const char *GetEntityClassname(edict_t *pEdict);
 	const char *GetEntityClassname(CBaseEntity *pEntity);
 	bool IsMapValid(const char *map);
-	SMFindMapResult FindMap(char *pMapName, int nMapNameMax);
+	SMFindMapResult FindMap(char *pMapName, size_t nMapNameMax);
+	SMFindMapResult FindMap(const char *pMapName, char *pFoundMap = NULL, size_t nMapNameMax = 0);
+	bool GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	string_t AllocPooledString(const char *pszValue);
 #endif
+	bool GetServerSteam3Id(char *pszOut, size_t len) const override;
+	uint64_t GetServerSteamId64() const override;
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();
 public:
-	void PushCommandStack(const CCommand *cmd);
-	void PopCommandStack();
-	const CCommand *PeekCommandStack();
+	const ICommandArgs *PeekCommandStack();
 	const char *CurrentCommandName();
 	void AddDelayedKick(int client, int userid, const char *msg);
 	void ProcessDelayedKicks();
-#if !defined METAMOD_PLAPI_VERSION || PLAPI_VERSION < 11
-	bool IsOriginalEngine();
-#endif
 private:
+	void PushCommandStack(const ICommandArgs *cmd);
+	void PopCommandStack();
 	DataTableInfo *_FindServerClass(const char *classname);
 private:
 	void InitLogicalEntData();
@@ -218,10 +225,31 @@ private:
 	CStack<CachedCommandInfo> m_CommandStack;
 	Queue<DelayedKickInfo> m_DelayedKicks;
 	void *m_pGetCommandLine;
+#if SOURCE_ENGINE == SE_CSGO
+public:
+	bool CanSetCSGOEntProp(const char *pszPropName)
+	{
+		return !m_bFollowCSGOServerGuidelines || !m_CSGOBadList.has(pszPropName);
+	}
+private:
+	ke::HashSet<ke::AString, detail::StringHashMapPolicy> m_CSGOBadList;
+	bool m_bFollowCSGOServerGuidelines = true;
+#endif
 };
 
 extern CHalfLife2 g_HL2;
 
 bool IndexToAThings(cell_t, CBaseEntity **pEntData, edict_t **pEdictData);
+
+class AutoEnterCommand
+{
+public:
+	AutoEnterCommand(const ICommandArgs *args) {
+		g_HL2.PushCommandStack(args);
+	}
+	~AutoEnterCommand() {
+		g_HL2.PopCommandStack();
+	}
+};
 
 #endif //_INCLUDE_SOURCEMOD_CHALFLIFE2_H_

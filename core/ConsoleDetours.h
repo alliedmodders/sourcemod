@@ -36,6 +36,10 @@
 #include <IForwardSys.h>
 #include <sm_stringhashmap.h>
 
+namespace SourceMod {
+class ICommandArgs;
+} // namespace SourceMod
+
 class ConsoleDetours :
 	public SMGlobalClass,
 	public IFeatureProvider
@@ -54,7 +58,7 @@ public:
 	bool AddListener(IPluginFunction *fun, const char *command);
 	bool RemoveListener(IPluginFunction *fun, const char *command);
 private:
-	cell_t InternalDispatch(int client, const CCommand& args);
+	cell_t InternalDispatch(int client, const SourceMod::ICommandArgs *args);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	static cell_t Dispatch(ConCommand *pBase, const CCommand& args);
 #else

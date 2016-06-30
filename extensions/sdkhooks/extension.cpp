@@ -92,6 +92,9 @@ HookTypeData g_HookTypes[SDKHook_MAXHOOKS] =
 	{"BlockedPost",           "",                       false},
 	{"OnTakeDamageAlive",     "DT_BaseCombatCharacter", false},
 	{"OnTakeDamageAlivePost", "DT_BaseCombatCharacter", false},
+
+	// There is no DT for CBaseMultiplayerPlayer. Going up a level
+	{"CanBeAutobalanced",     "DT_BasePlayer",          false},
 };
 
 SDKHooks g_Interface;
@@ -176,11 +179,7 @@ SH_DECL_MANUALHOOK0_void(PostThink, 0, 0, 0);
 SH_DECL_MANUALHOOK0(Reload, 0, 0, 0, bool);
 SH_DECL_MANUALHOOK2_void(SetTransmit, 0, 0, 0, CCheckTransmitInfo *, bool);
 SH_DECL_MANUALHOOK2(ShouldCollide, 0, 0, 0, bool, int, int);
-#if SOURCE_ENGINE == SE_DOTA
-SH_DECL_MANUALHOOK1_void(Spawn, 0, 0, 0, CEntityKeyValues *);
-#else
 SH_DECL_MANUALHOOK0_void(Spawn, 0, 0, 0);
-#endif
 SH_DECL_MANUALHOOK1_void(StartTouch, 0, 0, 0, CBaseEntity *);
 SH_DECL_MANUALHOOK0_void(Think, 0, 0, 0);
 SH_DECL_MANUALHOOK1_void(Touch, 0, 0, 0, CBaseEntity *);
@@ -198,6 +197,7 @@ SH_DECL_MANUALHOOK3_void(Weapon_Drop, 0, 0, 0, CBaseCombatWeapon *, const Vector
 SH_DECL_MANUALHOOK1_void(Weapon_Equip, 0, 0, 0, CBaseCombatWeapon *);
 SH_DECL_MANUALHOOK2(Weapon_Switch, 0, 0, 0, bool, CBaseCombatWeapon *, int);
 SH_DECL_MANUALHOOK1_void(Blocked, 0, 0, 0, CBaseEntity *);
+SH_DECL_MANUALHOOK0(CanBeAutobalanced, 0, 0, 0, bool);
 
 
 /**
@@ -538,6 +538,7 @@ void SDKHooks::SetupHooks()
 	CHECKOFFSET_W(Switch,         true,  true);
 	CHECKOFFSET(VPhysicsUpdate,   true,  true);
 	CHECKOFFSET(Blocked,          true,  true);
+	CHECKOFFSET(CanBeAutobalanced, true, false);
 
 	// this one is in a class all its own -_-
 	offset = 0;
@@ -719,6 +720,9 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 				break;
 			case SDKHook_BlockedPost:
 				hookid = SH_ADD_MANUALVPHOOK(Blocked, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_BlockedPost), true);
+				break;
+			case SDKHook_CanBeAutobalanced:
+				hookid = SH_ADD_MANUALVPHOOK(CanBeAutobalanced, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_CanBeAutobalanced), false);
 				break;
 		}
 
@@ -905,6 +909,50 @@ bool SDKHooks::Hook_LevelInit(char const *pMapName, char const *pMapEntities, ch
 /**
  * CBaseEntity Hook Handlers
  */
+bool SDKHooks::Hook_CanBeAutobalanced()
+{
+	CBaseEntity *pPlayer = META_IFACEPTR(CBaseEntity);
+
+	CVTableHook vhook(pPlayer);
+	ke::Vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_CanBeAutobalanced];
+	for (size_t entry = 0; entry < vtablehooklist.length(); ++entry)
+	{
+		if (vhook != vtablehooklist[entry]->vtablehook)
+		{
+			continue;
+		}
+
+		int entity = gamehelpers->EntityToBCompatRef(pPlayer);
+
+		bool origRet = SH_MCALL(pPlayer, CanBeAutobalanced)();
+		bool newRet = origRet;
+
+		ke::Vector<IPluginFunction *> callbackList;
+		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
+		for (entry = 0; entry < callbackList.length(); ++entry)
+		{
+			cell_t res = origRet;
+			IPluginFunction *callback = callbackList[entry];
+			callback->PushCell(entity);
+			callback->PushCell(origRet);
+			callback->Execute(&res);
+
+			// Only update our new ret if different from original
+			// (so if multiple plugins returning different answers,
+			//  the one(s) that changed it win)
+			if (res != origRet)
+				newRet = !origRet;
+		}
+
+		if (newRet != origRet)
+			RETURN_META_VALUE(MRES_SUPERCEDE, newRet);
+
+		break;
+	}
+
+	RETURN_META_VALUE(MRES_IGNORED, false);
+}
+
 void SDKHooks::Hook_EndTouch(CBaseEntity *pOther)
 {
 	cell_t result = Call(META_IFACEPTR(CBaseEntity), SDKHook_EndTouch, pOther);
@@ -1059,13 +1107,13 @@ int SDKHooks::HandleOnTakeDamageHook(CTakeDamageInfoHack &info, SDKHookType hook
 					CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
 					if (!pEntAttacker)
 					{
-						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for attacker is invalid", attacker);
+						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for attacker is invalid", attacker);
 						RETURN_META_VALUE(MRES_IGNORED, 0);
 					}
 					CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
 					if (!pEntInflictor)
 					{
-						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for inflictor is invalid", inflictor);
+						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for inflictor is invalid", inflictor);
 						RETURN_META_VALUE(MRES_IGNORED, 0);
 					}
 
@@ -1303,11 +1351,7 @@ bool SDKHooks::Hook_ShouldCollide(int collisionGroup, int contentsMask)
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void SDKHooks::Hook_Spawn(CEntityKeyValues *kv)
-#else
 void SDKHooks::Hook_Spawn()
-#endif
 {
 	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
 
@@ -1341,11 +1385,7 @@ void SDKHooks::Hook_Spawn()
 	RETURN_META(MRES_IGNORED);
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void SDKHooks::Hook_SpawnPost(CEntityKeyValues *kv)
-#else
 void SDKHooks::Hook_SpawnPost()
-#endif
 {
 	Call(META_IFACEPTR(CBaseEntity), SDKHook_SpawnPost);
 }
@@ -1442,13 +1482,13 @@ void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir,
 					CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
 					if(!pEntAttacker)
 					{
-						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for attacker is invalid", attacker);
+						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for attacker is invalid", attacker);
 						RETURN_META(MRES_IGNORED);
 					}
 					CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
 					if(!pEntInflictor)
 					{
-						callback->GetParentRuntime()->GetDefaultContext()->ThrowNativeError("Entity %d for inflictor is invalid", inflictor);
+						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for inflictor is invalid", inflictor);
 						RETURN_META(MRES_IGNORED);
 					}
 					

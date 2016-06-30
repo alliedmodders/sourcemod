@@ -30,33 +30,25 @@
  */
 
 #include "ConCmdManager.h"
-#include "sm_srvcmds.h"
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
 #include "HalfLife2.h"
 #include "ChatTriggers.h"
 #include "logic_bridge.h"
+#include "sourcemod.h"
+#include "provider.h"
+#include "command_args.h"
+#include <bridge/include/IScriptManager.h>
 
 using namespace ke;
 
 ConCmdManager g_ConCmds;
-
-#if SOURCE_ENGINE == SE_DOTA
-	SH_DECL_HOOK2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
-	SH_DECL_HOOK1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
-#else
-	SH_DECL_HOOK0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
-#endif
-
-SH_DECL_HOOK1_void(IServerGameClients, SetCommandClient, SH_NOATTRIB, false, int);
 
 typedef ke::LinkedList<CmdHook *> PluginHookList;
 void RegisterInPlugin(CmdHook *hook);
 
 ConCmdManager::ConCmdManager()
 {
-	m_CmdClient = 0;
 }
 
 ConCmdManager::~ConCmdManager()
@@ -66,19 +58,16 @@ ConCmdManager::~ConCmdManager()
 void ConCmdManager::OnSourceModAllInitialized()
 {
 	scripts->AddPluginsListener(this);
-	g_RootMenu.AddRootConsoleCommand("cmds", "List console commands", this);
-	SH_ADD_HOOK(IServerGameClients, SetCommandClient, serverClients, SH_MEMBER(this, &ConCmdManager::SetCommandClient), false);
+	rootmenu->AddRootConsoleCommand3("cmds", "List console commands", this);
 }
 
 void ConCmdManager::OnSourceModShutdown()
 {
 	scripts->RemovePluginsListener(this);
-	/* All commands should already be removed by the time we're done */
-	SH_REMOVE_HOOK(IServerGameClients, SetCommandClient, serverClients, SH_MEMBER(this, &ConCmdManager::SetCommandClient), false);
-	g_RootMenu.RemoveRootConsoleCommand("cmds", this);
+	rootmenu->RemoveRootConsoleCommand("cmds", this);
 }
 
-void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe)
+void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name)
 {
 	/* Whoa, first get its information struct */
 	ConCmdInfo *pInfo;
@@ -113,7 +102,7 @@ void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *na
 		delete hook;
 	}
 
-	RemoveConCmd(pInfo, name, is_read_safe, false);
+	RemoveConCmd(pInfo, name, false);
 }
 
 void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
@@ -132,7 +121,7 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 			hook->admin->group->hooks.remove(hook);
 
 		if (hook->info->hooks.empty())
-			RemoveConCmd(hook->info, hook->info->pCmd->GetName(), true, true);
+			RemoveConCmd(hook->info, hook->info->pCmd->GetName(), true);
 
 		iter = pList->erase(iter);
 		delete hook;
@@ -141,28 +130,13 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 	delete pList;
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void CommandCallback(const CCommandContext &context, const CCommand &command)
+void CommandCallback(DISPATCH_ARGS)
 {
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
-void CommandCallback(const CCommand &command)
-{
-#else
-void CommandCallback()
-{
-	CCommand command;
-#endif
+	DISPATCH_PROLOGUE;
+	EngineArgs args(command);
 
-	g_HL2.PushCommandStack(&command);
-
-	g_ConCmds.InternalDispatch(command);
-
-	g_HL2.PopCommandStack();
-}
-
-void ConCmdManager::SetCommandClient(int client)
-{
-	m_CmdClient = client + 1;
+	AutoEnterCommand autoEnterCommand(&args);
+	g_ConCmds.InternalDispatch(sCoreProviderImpl.CommandClient(), &args);
 }
 
 ConCmdInfo *ConCmdManager::FindInTrie(const char *name)
@@ -231,15 +205,13 @@ ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int
 	return (ResultType)result;
 }
 
-void ConCmdManager::InternalDispatch(const CCommand &command)
+bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 {
-	int client = m_CmdClient;
-
 	if (client)
 	{
 		CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 		if (!pPlayer || !pPlayer->IsConnected())
-			return;
+			return false;
 	}
 
 	/**
@@ -257,11 +229,11 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
          * case-insensitive.  We can't even use our sortedness.
          */
         if (client == 0 && !engine->IsDedicatedServer())
-            return;
+            return false;
 
 		ConCmdList::iterator item = FindInList(cmd);
 		if (item == m_CmdList.end())
-			return;
+			return false;
 
 		pInfo = *item;
 	}
@@ -271,10 +243,10 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 	 * "nicer" when we expose explicit say hooks.
 	 */
 	if (g_ChatTriggers.WasFloodedMessage())
-		return;
+		return false;
 
 	cell_t result = Pl_Continue;
-	int args = command.ArgC() - 1;
+	int argc = args->ArgC() - 1;
 
 	// On a listen server, sometimes the server host's client index can be set
 	// as 0. So index 1 is passed to the command callback to correct this
@@ -310,7 +282,7 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 			hook->pf->PushCell(realClient);
 		}
 
-		hook->pf->PushCell(args);
+		hook->pf->PushCell(argc);
 
 		cell_t tempres = result;
 		if (hook->pf->Execute(&tempres) == SP_ERROR_NONE)
@@ -323,11 +295,9 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 	}
 
 	if (result >= Pl_Handled)
-	{
-		if (!pInfo->sourceMod)
-			RETURN_META(MRES_SUPERCEDE);
-		return;
-	}
+		return !pInfo->sourceMod;
+
+	return false;
 }
 
 bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin)
@@ -347,20 +317,20 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 	char buffer[128];
 	if (!logicore.CoreTranslate(buffer, sizeof(buffer), "%T", 2, NULL, "No Access", &client))
 	{
-		UTIL_Format(buffer, sizeof(buffer), "You do not have access to this command");
+		ke::SafeSprintf(buffer, sizeof(buffer), "You do not have access to this command");
 	}
 
 	unsigned int replyto = g_ChatTriggers.GetReplyTo();
 	if (replyto == SM_REPLY_CONSOLE)
 	{
 		char fullbuffer[192];
-		UTIL_Format(fullbuffer, sizeof(fullbuffer), "[SM] %s.\n", buffer);
+		ke::SafeSprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s.\n", buffer);
 		pPlayer->PrintToConsole(fullbuffer);
 	}
 	else if (replyto == SM_REPLY_CHAT)
 	{
 		char fullbuffer[192];
-		UTIL_Format(fullbuffer, sizeof(fullbuffer), "[SM] %s.", buffer);
+		ke::SafeSprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s.", buffer);
 		g_HL2.TextMsg(client, HUD_PRINTTALK, fullbuffer);
 	}
 	
@@ -386,7 +356,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 			return false;
 		i->value = new CommandGroup();
 	}
-	Ref<CommandGroup> cmdgroup = i->value;
+	RefPtr<CommandGroup> cmdgroup = i->value;
 
 	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description);
 	pHook->admin = new AdminCmdInfo(cmdgroup, adminflags);
@@ -518,7 +488,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 		if (!r.found())
 			return;
 
-		Ref<CommandGroup> group(r->value);
+		RefPtr<CommandGroup> group(r->value);
 
 		for (PluginHookList::iterator iter = group->hooks.begin(); iter != group->hooks.end(); iter++)
 		{
@@ -532,7 +502,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 	}
 }
 
-void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool is_read_safe, bool untrack)
+void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool untrack)
 {
 	/* Remove from the trie */
 	m_Cmds.remove(name);
@@ -555,15 +525,8 @@ void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool is_rea
 		}
 		else
 		{
-			if (is_read_safe)
-			{
-				/* Remove the external hook */
-				SH_REMOVE_HOOK(ConCommand, Dispatch, info->pCmd, SH_STATIC(CommandCallback), false);
-			}
 			if (untrack)
-			{
 				UntrackConCommandBase(info->pCmd, this);
-			}
 		}
 	}
 	
@@ -622,7 +585,11 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 		else
 		{
 			TrackConCommandBase(pCmd, this);
-			SH_ADD_HOOK(ConCommand, Dispatch, pCmd, SH_STATIC(CommandCallback), false);
+			CommandHook::Callback callback = [this] (int client, const ICommandArgs *args) -> bool {
+				AutoEnterCommand autoEnterCommand(args);
+				return this->InternalDispatch(client, args);
+			};
+			pInfo->sh_hook = sCoreProviderImpl.AddCommandHook(pCmd, callback);
 		}
 
 		pInfo->pCmd = pCmd;
@@ -634,17 +601,17 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 	return pInfo;
 }
 
-void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
+void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command)
 {
-	if (command.ArgC() >= 3)
+	if (command->ArgC() >= 3)
 	{
-		const char *text = command.Arg(2);
+		const char *text = command->Arg(2);
 
 		IPlugin *pPlugin = scripts->FindPluginByConsoleArg(text);
 
 		if (!pPlugin)
 		{
-			g_RootMenu.ConsolePrint("[SM] Plugin \"%s\" was not found.", text);
+			UTIL_ConsolePrint("[SM] Plugin \"%s\" was not found.", text);
 			return;
 		}
 
@@ -654,20 +621,20 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 		PluginHookList *pList;
 		if (!pPlugin->GetProperty("CommandList", (void **)&pList))
 		{
-			g_RootMenu.ConsolePrint("[SM] No commands found for: %s", plname);
+			UTIL_ConsolePrint("[SM] No commands found for: %s", plname);
 			return;
 		}
 		if (pList->empty())
 		{
-			g_RootMenu.ConsolePrint("[SM] No commands found for: %s", plname);
+			UTIL_ConsolePrint("[SM] No commands found for: %s", plname);
 			return;
 		}
 
 		const char *type = NULL;
 		const char *name;
 		const char *help;
-		g_RootMenu.ConsolePrint("[SM] Listing commands for: %s", plname);
-		g_RootMenu.ConsolePrint("  %-17.16s %-8.7s %s", "[Name]", "[Type]", "[Help]");
+		UTIL_ConsolePrint("[SM] Listing commands for: %s", plname);
+		UTIL_ConsolePrint("  %-17.16s %-8.7s %s", "[Name]", "[Type]", "[Help]");
 		for (PluginHookList::iterator iter = pList->begin(); iter != pList->end(); iter++)
 		{
 			CmdHook *hook = *iter;
@@ -681,11 +648,11 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 				help = hook->helptext.chars();
 			else
 				help = hook->info->pCmd->GetHelpText();
-			g_RootMenu.ConsolePrint("  %-17.16s %-12.11s %s", name, type, help);		
+			UTIL_ConsolePrint("  %-17.16s %-12.11s %s", name, type, help);		
 		}
 
 		return;
 	}
 
-	g_RootMenu.ConsolePrint("[SM] Usage: sm cmds <plugin #>");
+	UTIL_ConsolePrint("[SM] Usage: sm cmds <plugin #>");
 }

@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -34,27 +34,16 @@
 #include <stdarg.h>
 #include <string.h>
 #include <sm_platform.h>
-#include "sm_stringutil.h"
 #include "LibrarySys.h"
+#include <amtl/am-string.h>
+#include <amtl/os/am-path.h>
+#include <amtl/os/am-fsutil.h>
 
 LibrarySystem g_LibSys;
 
-CLibrary::~CLibrary()
+CLibrary::CLibrary(ke::RefPtr<ke::SharedLib> lib)
+ : lib_(lib)
 {
-	if (m_lib)
-	{
-#if defined PLATFORM_WINDOWS
-		FreeLibrary(m_lib);
-#elif defined PLATFORM_POSIX
-		dlclose(m_lib);
-#endif
-		m_lib = NULL;
-	}
-}
-
-CLibrary::CLibrary(LibraryHandle me)
-{
-	m_lib = me;
 }
 
 void CLibrary::CloseLibrary()
@@ -64,11 +53,7 @@ void CLibrary::CloseLibrary()
 
 void *CLibrary::GetSymbolAddress(const char *symname)
 {
-#if defined PLATFORM_WINDOWS
-	return GetProcAddress(m_lib, symname);
-#elif defined PLATFORM_POSIX
-	return dlsym(m_lib, symname);
-#endif
+	return lib_->lookup(symname);
 }
 
 
@@ -141,7 +126,7 @@ bool CDirectory::IsEntryDirectory()
 #elif defined PLATFORM_POSIX
 	char temppath[PLATFORM_MAX_PATH];
 	snprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
-	return g_LibSys.IsPathDirectory(temppath);
+	return ke::file::IsDirectory(temppath);
 #endif
 }
 
@@ -152,7 +137,7 @@ bool CDirectory::IsEntryFile()
 #elif defined PLATFORM_POSIX
 	char temppath[PLATFORM_MAX_PATH];
 	snprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
-	return g_LibSys.IsPathFile(temppath);
+	return ke::file::IsFile(temppath);
 #endif
 }
 
@@ -187,75 +172,17 @@ bool CDirectory::IsValid()
 
 bool LibrarySystem::PathExists(const char *path)
 {
-#if defined PLATFORM_WINDOWS
-	DWORD attr = GetFileAttributesA(path);
-
-	return (attr != INVALID_FILE_ATTRIBUTES);
-#elif defined PLATFORM_POSIX
-	struct stat s;
-
-	return (stat(path, &s) == 0);
-#endif
+	return ke::file::PathExists(path);
 }
 
 bool LibrarySystem::IsPathFile(const char *path)
 {
-#if defined PLATFORM_WINDOWS
-	DWORD attr = GetFileAttributes(path);
-
-	if (attr == INVALID_FILE_ATTRIBUTES)
-	{
-		return false;
-	}
-
-	if (attr & (FILE_ATTRIBUTE_DIRECTORY|FILE_ATTRIBUTE_DEVICE))
-	{
-		return false;
-	}
-
-	return true;
-#elif defined PLATFORM_POSIX
-	struct stat s;
-
-	if (stat(path, &s) != 0)
-	{
-		return false;
-	}
-
-	return S_ISREG(s.st_mode) ? true : false;
-#endif
+	return ke::file::IsFile(path);
 }
 
 bool LibrarySystem::IsPathDirectory(const char *path)
 {
-#if defined PLATFORM_WINDOWS
-	DWORD attr = GetFileAttributes(path);
-
-	if (attr == INVALID_FILE_ATTRIBUTES)
-	{
-		return false;
-	}
-
-	if (attr & FILE_ATTRIBUTE_DIRECTORY)
-	{
-		return true;
-	}
-
-#elif defined PLATFORM_POSIX
-	struct stat s;
-
-	if (stat(path, &s) != 0)
-	{
-		return false;
-	}
-
-	if (S_ISDIR(s.st_mode))
-	{
-		return true;
-	}
-#endif
-
-	return false;
+	return ke::file::IsDirectory(path);
 }
 
 IDirectory *LibrarySystem::OpenDirectory(const char *path)
@@ -293,30 +220,18 @@ void LibrarySystem::GetPlatformErrorEx(int code, char *error, size_t maxlength)
 						   maxlength,
 						   NULL) == 0)
 		{
-			UTIL_Format(error, maxlength, "error code %08x", code);
+			ke::SafeSprintf(error, maxlength, "error code %08x", code);
 		}
 #elif defined PLATFORM_LINUX
 		const char *ae = strerror_r(code, error, maxlength);
 		if (ae != error)
 		{
-			UTIL_Format(error, maxlength, "%s", ae);
+			ke::SafeSprintf(error, maxlength, "%s", ae);
 		}
 #elif defined PLATFORM_POSIX
 		strerror_r(code, error, maxlength);
 #endif
 	}
-}
-
-void LibrarySystem::GetLoaderError(char *buffer, size_t maxlength)
-{
-#if defined PLATFORM_WINDOWS
-	GetPlatformError(buffer, maxlength);
-#elif defined PLATFORM_POSIX
-	if (buffer != NULL && maxlength)
-	{
-		strncopy(buffer, dlerror(), maxlength);
-	}
-#endif
 }
 
 void LibrarySystem::CloseDirectory(IDirectory *dir)
@@ -326,19 +241,9 @@ void LibrarySystem::CloseDirectory(IDirectory *dir)
 
 ILibrary *LibrarySystem::OpenLibrary(const char *path, char *error, size_t maxlength)
 {
-	LibraryHandle lib;
-#if defined PLATFORM_WINDOWS
-	lib = LoadLibraryA(path);
-#elif defined PLATFORM_POSIX
-	lib = dlopen(path, RTLD_NOW);
-#endif
-
-	if (lib == NULL)
-	{
-		GetLoaderError(error, maxlength);
-		return NULL;
-	}
-
+	ke::RefPtr<ke::SharedLib> lib = ke::SharedLib::Open(path, error, maxlength);
+	if (!lib)
+		return nullptr;
 	return new CLibrary(lib);
 }
 
@@ -346,23 +251,8 @@ size_t LibrarySystem::PathFormat(char *buffer, size_t len, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	size_t mylen = vsnprintf(buffer, len, fmt, ap);
+	size_t mylen = ke::path::FormatVa(buffer, len, fmt, ap);
 	va_end(ap);
-
-	if (mylen >= len)
-	{
-		mylen = len - 1;
-		buffer[mylen] = '\0';
-	}
-
-	for (size_t i=0; i<mylen; i++)
-	{
-		if (buffer[i] == PLATFORM_SEP_ALTCHAR)
-		{
-			buffer[i] = PLATFORM_SEP_CHAR;
-		}
-	}
-
 	return mylen;
 }
 
@@ -398,11 +288,7 @@ const char *LibrarySystem::GetFileExtension(const char *filename)
 
 bool LibrarySystem::CreateFolder(const char *path)
 {
-#if defined PLATFORM_WINDOWS
-	return (mkdir(path) != -1);
-#elif defined PLATFORM_POSIX
-	return (mkdir(path, 0775) != -1);
-#endif
+	return ke::file::CreateDirectory(path, 0775);
 }
 
 size_t LibrarySystem::GetFileFromPath(char *buffer, size_t maxlength, const char *path)
@@ -419,12 +305,12 @@ size_t LibrarySystem::GetFileFromPath(char *buffer, size_t maxlength, const char
 #endif
 			)
 		{
-			return UTIL_Format(buffer, maxlength, "%s", &path[i+1]);
+			return ke::SafeSprintf(buffer, maxlength, "%s", &path[i+1]);
 		}
 	}
 
 	/* We scanned and found no path separator */
-	return UTIL_Format(buffer, maxlength, "%s", path);
+	return ke::SafeSprintf(buffer, maxlength, "%s", path);
 }
 
 bool LibrarySystem::FileTime(const char *path, FileTimeType type, time_t *pTime)

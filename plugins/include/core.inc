@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
@@ -69,7 +69,7 @@ enum Identity
 	Identity_Plugin = 2
 };
 
-public PlVers:__version = 
+public PlVers __version = 
 {
 	version = SOURCEMOD_PLUGINAPI_VERSION,
 	filevers = SOURCEMOD_VERSION,
@@ -92,13 +92,14 @@ enum PluginStatus
 	Plugin_Created,			/**< Plugin is created but not initialized */
 	Plugin_Uncompiled,		/**< Plugin is not yet compiled by the JIT */
 	Plugin_BadLoad,			/**< Plugin failed to load */
+	Plugin_Evicted			/**< Plugin was unloaded due to an error */
 };
 
 /**
  * Plugin information properties. Plugins can declare a global variable with
  * their info. Example,
  *
- *   public Plugin:myinfo = {
+ *   public Plugin myinfo = {
  *   	name = "Admin Help",
  *   	author = "AlliedModders LLC",
  *   	description = "Display command information",
@@ -114,7 +115,7 @@ enum PluginInfo
 	PlInfo_Name,			/**< Plugin name */
 	PlInfo_Author,			/**< Plugin author */
 	PlInfo_Description,		/**< Plugin description */
-	PlInfo_Version,			/**< Plugin verison */
+	PlInfo_Version,			/**< Plugin version */
 	PlInfo_URL,				/**< Plugin URL */
 };
 
@@ -139,13 +140,13 @@ struct SharedPlugin
 	public bool required;		/**< Whether or not to require */
 };
 
-public Float:NULL_VECTOR[3];		/**< Pass this into certain functions to act as a C++ NULL */
-public const String:NULL_STRING[1];	/**< pass this into certain functions to act as a C++ NULL */
+public float NULL_VECTOR[3];		/**< Pass this into certain functions to act as a C++ NULL */
+public const char NULL_STRING[1];	/**< pass this into certain functions to act as a C++ NULL */
 
 /**
  * Horrible compatibility shim.
  */
-public Extension:__ext_core = 
+public Extension __ext_core = 
 {
 	name = "Core",
 	file = "core",
@@ -153,7 +154,7 @@ public Extension:__ext_core =
 	required = 0,
 };
 
-native VerifyCoreVersion();
+native int VerifyCoreVersion();
 
 /**
  * Sets a native as optional, such that if it is unloaded, removed,
@@ -161,11 +162,10 @@ native VerifyCoreVersion();
  * removed natives results in a run-time error.
  *
  * @param name			Native name.
- * @noreturn
  */
-native MarkNativeAsOptional(const String:name[]);
+native void MarkNativeAsOptional(const char[] name);
 
-public __ext_core_SetNTVOptional()
+public void __ext_core_SetNTVOptional()
 {
 	MarkNativeAsOptional("GetFeatureStatus");
 	MarkNativeAsOptional("RequireFeature");

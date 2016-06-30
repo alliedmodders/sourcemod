@@ -1,4 +1,4 @@
-a billion and nanas 
+﻿a billion and nanas 
 joys of buildbot, part 2: buildbot and the very lonely square-shaped duck
 joys of buildbot, part 3: an accidental event proves troublesome for a psychic fish
 joys of buildbot, part 4: a transient mummy is perplexed by a broken wand
@@ -9,7 +9,7 @@ h
 i
 D
 S
-!!!
+!!!!!
 joys of buildbot, part 5: a watermelon's diatribes need not be cause for spilling the queen's tea
 crab
 joys of buildbot, part 6: a merry metal matchturtle mocks mostly and mainly in Madrid.
@@ -17,7 +17,7 @@ joys of buildbot, part nana: if you don't do as you are told, buildbot-san, you 
 DS saves us from Valve again.
 Pants will save us from certain death.
 Invaders' blood marches through my veins, like GIANT RADIOACTIVE RUBBER PANTS!
-� THE PANTS COMMAND COMMAND ME! DO NOT IGNORE MY VEINS. !
+¡ THE PANTS COMMAND COMMAND ME! DO NOT IGNORE MY VEINS. !
 This file sure has gotten big.
 sawce is rukia and loves anime, sushi, and macs
 ur
@@ -70,3 +70,5 @@ Beads.
 snakesssssssss; maple
 R.I.P. Wade Boggs
 Your tier1 tower is under attack..
+All your GSLT are belong to us.
+Christmas!

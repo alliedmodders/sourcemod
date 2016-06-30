@@ -82,7 +82,7 @@ public: //IResultRow
 public:
 	sqlite3_stmt *GetStmt();
 private:
-	ke::Ref<SqDatabase> m_pParent;
+	ke::RefPtr<SqDatabase> m_pParent;
 	sqlite3_stmt *m_pStmt;
 	SqResults *m_pResults;
 	unsigned int m_ParamCount;

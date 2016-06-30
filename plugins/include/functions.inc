@@ -88,7 +88,7 @@ enum ExecType
 #define SP_ERROR_INVALID_ADDRESS		5	/**< A memory address was not valid */
 #define SP_ERROR_NOT_FOUND				6	/**< The object in question was not found */
 #define SP_ERROR_INDEX					7	/**< Invalid index parameter */
-#define SP_ERROR_STACKLOW				8	/**< Nnot enough space left on the stack */
+#define SP_ERROR_STACKLOW				8	/**< Not enough space left on the stack */
 #define SP_ERROR_NOTDEBUGGING			9	/**< Debug mode was not on or debug section not found */
 #define SP_ERROR_INVALID_INSTRUCTION	10	/**< Invalid instruction was encountered */
 #define SP_ERROR_MEMACCESS				11	/**< Invalid memory access */
@@ -120,7 +120,7 @@ enum ExecType
  * @return 					Function id or INVALID_FUNCTION if not found.
  * @error					Invalid or corrupt plugin handle.
  */
-native Function:GetFunctionByName(Handle:plugin, const String:name[]);
+native Function GetFunctionByName(Handle plugin, const char[] name);
 
 /**
  * Creates a global forward.
@@ -136,7 +136,7 @@ native Function:GetFunctionByName(Handle:plugin, const String:name[]);
  * @return 					Handle to new global forward.
  * @error					More than 32 paramater types passed.
  */
-native Handle:CreateGlobalForward(const String:name[], ExecType:type, ParamType:...);
+native Handle CreateGlobalForward(const char[] name, ExecType type, ParamType ...);
 
 /**
  * Creates a private forward.
@@ -150,7 +150,7 @@ native Handle:CreateGlobalForward(const String:name[], ExecType:type, ParamType:
  * @return 					Handle to new private forward.
  * @error					More than 32 paramater types passed.
  */
-native Handle:CreateForward(ExecType:type, ParamType:...);
+native Handle CreateForward(ExecType type, ParamType ...);
 
 /**
  * Returns the number of functions in a global or private forward's call list.
@@ -159,12 +159,12 @@ native Handle:CreateForward(ExecType:type, ParamType:...);
  * @return					Number of functions in forward.
  * @error					Invalid or corrupt forward handle.
  */
-native GetForwardFunctionCount(Handle:fwd);
+native int GetForwardFunctionCount(Handle fwd);
 
 /**
  * Adds a function to a private forward's call list.
  *
- * @note Cannot be used during an incompleted call.
+ * @note Cannot be used during an incomplete call.
  *
  * @param fwd				Handle to private forward.
  * @param plugin			Handle of the plugin that contains the function.
@@ -173,7 +173,7 @@ native GetForwardFunctionCount(Handle:fwd);
  * @return					True on success, false otherwise.
  * @error					Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
  */
-native bool:AddToForward(Handle:fwd, Handle:plugin, Function:func);
+native bool AddToForward(Handle fwd, Handle plugin, Function func);
 
 /**
  * Removes a function from a private forward's call list.
@@ -188,7 +188,7 @@ native bool:AddToForward(Handle:fwd, Handle:plugin, Function:func);
  * @return					True on success, false otherwise.
  * @error					Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
  */
-native bool:RemoveFromForward(Handle:fwd, Handle:plugin, Function:func);
+native bool RemoveFromForward(Handle fwd, Handle plugin, Function func);
 
 /**
  * Removes all instances of a plugin from a private forward's call list.
@@ -201,31 +201,29 @@ native bool:RemoveFromForward(Handle:fwd, Handle:plugin, Function:func);
  * @return					Number of functions removed from forward.
  * @error					Invalid or corrupt private forward handle or invalid or corrupt plugin handle.
  */
-native RemoveAllFromForward(Handle:fwd, Handle:plugin);
+native int RemoveAllFromForward(Handle fwd, Handle plugin);
 
 /**
  * Starts a call to functions in a forward's call list.
  *
- * @note Cannot be used during an incompleted call.
+ * @note Cannot be used during an incomplete call.
  *
  * @param fwd				Handle to global or private forward.
- * @noreturn
  * @error					Invalid or corrupt forward handle or called before another call has completed.
  */
-native Call_StartForward(Handle:fwd);
+native void Call_StartForward(Handle fwd);
 
 /**
  * Starts a call to a function.
  *
- * @note Cannot be used during an incompleted call.
+ * @note Cannot be used during an incomplete call.
  *
  * @param plugin			Handle of the plugin that contains the function.
  *							Pass INVALID_HANDLE to specify the calling plugin.
  * @param func				Function to call.
- * @noreturn
  * @error					Invalid or corrupt plugin handle, invalid function, or called before another call has completed.
  */
-native Call_StartFunction(Handle:plugin, Function:func);
+native void Call_StartFunction(Handle plugin, Function func);
 
 /**
  * Pushes a cell onto the current call.
@@ -233,10 +231,9 @@ native Call_StartFunction(Handle:plugin, Function:func);
  * @note Cannot be used before a call has been started.
  *
  * @param value				Cell value to push.
- * @noreturn
  * @error					Called before a call has been started.
  */
-native Call_PushCell(any:value);
+native void Call_PushCell(any value);
 
 /**
  * Pushes a cell by reference onto the current call.
@@ -244,10 +241,9 @@ native Call_PushCell(any:value);
  * @note Cannot be used before a call has been started.
  *
  * @param value				Cell reference to push.
- * @noreturn
  * @error					Called before a call has been started.
  */
-native Call_PushCellRef(&any:value);
+native void Call_PushCellRef(any &value);
 
 /**
  * Pushes a float onto the current call.
@@ -255,10 +251,9 @@ native Call_PushCellRef(&any:value);
  * @note Cannot be used before a call has been started.
  *
  * @param value				Floating point value to push.
- * @noreturn
  * @error					Called before a call has been started.
  */
-native Call_PushFloat(Float:value);
+native void Call_PushFloat(float value);
 
 /**
  * Pushes a float by reference onto the current call.
@@ -266,10 +261,9 @@ native Call_PushFloat(Float:value);
  * @note Cannot be used before a call has been started.
  *
  * @param value				Floating point reference to push.
- * @noreturn
  * @error					Called before a call has been started.
  */
-native Call_PushFloatRef(&Float:value);
+native void Call_PushFloatRef(float &value);
 
 /**
  * Pushes an array onto the current call.
@@ -279,10 +273,9 @@ native Call_PushFloatRef(&Float:value);
  *
  * @param value				Array to push.
  * @param size				Size of array.
- * @noreturn
  * @error					Called before a call has been started.
  */
-native Call_PushArray(const any:value[], size);
+native void Call_PushArray(const any[] value, int size);
 
 /**
  * Pushes an array onto the current call.
@@ -293,10 +286,9 @@ native Call_PushArray(const any:value[], size);
  * @param size				Size of array.
  * @param cpflags			Whether or not changes should be copied back to the input array.
  *							See SP_PARAM_* constants for details.
- * @noreturn
  * @error					Called before a call has been started.
  */
-native Call_PushArrayEx(any:value[], size, cpflags);
+native void Call_PushArrayEx(any[] value, int size, int cpflags);
 
 /**
  * Pushes a string onto the current call.
@@ -305,10 +297,9 @@ native Call_PushArrayEx(any:value[], size, cpflags);
  * @note Cannot be used before a call has been started.
  *
  * @param value				String to push.
- * @noreturn
  * @error					Called before a call has been started.
  */
-native Call_PushString(const String:value[]);
+native void Call_PushString(const char[] value);
 
 /**
  * Pushes a string onto the current call.
@@ -322,10 +313,9 @@ native Call_PushString(const String:value[]);
  *							The default (0) is to push ASCII.
  * @param cpflags			Whether or not changes should be copied back to the input array.
  *							See SM_PARAM_* constants for details.		
- * @noreturn
  * @error					Called before a call has been started.
  */
-native Call_PushStringEx(String:value[], length, szflags, cpflags);
+native void Call_PushStringEx(char[] value, int length, int szflags, int cpflags);
 
 /**
  * Completes a call to a function or forward's call list.
@@ -336,17 +326,16 @@ native Call_PushStringEx(String:value[], length, szflags, cpflags);
  * @return					SP_ERROR_NONE on success, any other integer on failure.
  * @error					Called before a call has been started.
  */
-native Call_Finish(&any:result=0);
+native int Call_Finish(any &result=0);
 
 /**
  * Cancels a call to a function or forward's call list.
  *
  * @note Cannot be used before a call has been started.
  *		
- * @noreturn
  * @error					Called before a call has been started.
  */
-native Call_Cancel();
+native void Call_Cancel();
 
 /**
  * Defines a native function.
@@ -363,12 +352,11 @@ typedef NativeCall = function int (Handle plugin, int numParams);
  * Creates a dynamic native.  This should only be called in AskPluginLoad(), or 
  * else you risk not having your native shared with other plugins.
  *
- * @param name				Name of the dynamic native; must be unique amongst
+ * @param name				Name of the dynamic native; must be unique among
  *							all other registered dynamic natives.
  * @param func				Function to use as the dynamic native.
- * @noreturn
  */
-native CreateNative(const String:name[], NativeCall:func);
+native void CreateNative(const char[] name, NativeCall func);
 
 /**
  * Throws an error in the calling plugin of a native, instead of your own plugin.
@@ -377,7 +365,7 @@ native CreateNative(const String:name[], NativeCall:func);
  * @param fmt				Error message format.
  * @param ...				Format arguments.
  */
-native ThrowNativeError(error, const String:fmt[], any:...);
+native int ThrowNativeError(int error, const char[] fmt, any ...);
 
 /**
  * Retrieves the string length from a native parameter string.  This is useful 
@@ -389,7 +377,7 @@ native ThrowNativeError(error, const String:fmt[], any:...);
  * @return					SP_ERROR_NONE on success, any other integer on failure.
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native GetNativeStringLength(param, &length);
+native int GetNativeStringLength(int param, int &length);
 
 /**
  * Retrieves a string from a native parameter.
@@ -402,7 +390,7 @@ native GetNativeStringLength(param, &length);
  * @return					SP_ERROR_NONE on success, any other integer on failure.
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native GetNativeString(param, String:buffer[], maxlength, &bytes=0);
+native int GetNativeString(int param, char[] buffer, int maxlength, int &bytes=0);
 
 /**
  * Sets a string in a native parameter.
@@ -417,7 +405,7 @@ native GetNativeString(param, String:buffer[], maxlength, &bytes=0);
  * @return					SP_ERROR_NONE on success, any other integer on failure.
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native SetNativeString(param, const String:source[], maxlength, bool:utf8=true, &bytes=0);
+native int SetNativeString(int param, const char[] source, int maxlength, bool utf8=true, int &bytes=0);
 
 /**
  * Gets a cell from a native parameter.
@@ -426,7 +414,7 @@ native SetNativeString(param, const String:source[], maxlength, bool:utf8=true, 
  * @return					Cell value at the parameter number.
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native any:GetNativeCell(param);
+native any GetNativeCell(int param);
 
 /**
  * Gets a function pointer from a native parameter.
@@ -435,7 +423,7 @@ native any:GetNativeCell(param);
  * @return                  Function pointer at the given parameter number.
  * @error                   Invalid parameter number, or calling from a non-native function.
  */
-native Function GetNativeFunction(param);
+native Function GetNativeFunction(int param);
 
 /**
  * Gets a cell from a native parameter, by reference.
@@ -444,17 +432,16 @@ native Function GetNativeFunction(param);
  * @return					Cell value at the parameter number.
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native any:GetNativeCellRef(param);
+native any GetNativeCellRef(int param);
 
 /**
  * Sets a cell from a native parameter, by reference.
  *
  * @param param				Parameter number, starting from 1.
  * @param value				Cell value at the parameter number to set by reference.
- * @noreturn
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native SetNativeCellRef(param, any:value);
+native void SetNativeCellRef(int param, any value);
 
 /**
  * Gets an array from a native parameter (always by reference).
@@ -465,7 +452,7 @@ native SetNativeCellRef(param, any:value);
  * @return					SP_ERROR_NONE on success, anything else on failure.
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native GetNativeArray(param, any:local[], size);
+native int GetNativeArray(int param, any[] local, int size);
 
 /**
  * Copies a local array into a native parameter array (always by reference).
@@ -476,7 +463,7 @@ native GetNativeArray(param, any:local[], size);
  * @return					SP_ERROR_NONE on success, anything else on failure.
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native SetNativeArray(param, const any:local[], size);
+native int SetNativeArray(int param, const any[] local, int size);
 
 /**
  * Formats a string using parameters from a native.
@@ -494,19 +481,18 @@ native SetNativeArray(param, const any:local[], size);
  * @param fmt_string		Format string to use if fmt_param is not used.
  * @return					SP_ERROR_NONE on success, anything else on failure.
  */
-native FormatNativeString(out_param, 
-						  fmt_param, 
-						  vararg_param, 
-						  out_len,
-						  &written=0,
-						  String:out_string[]="",
-						  const String:fmt_string[]="");
+native int FormatNativeString(int out_param, 
+						  int fmt_param, 
+						  int vararg_param, 
+						  int out_len,
+						  int &written=0,
+						  char[] out_string="",
+						  const char[] fmt_string="");
 
 /**
  * Defines a RequestFrame Callback.
  *
  * @param data			Data passed to the RequestFrame native.
- * @noreturn
  */
 typedef RequestFrameCallback = function void (any data);
 
@@ -515,6 +501,5 @@ typedef RequestFrameCallback = function void (any data);
  *
  * @param Function	Function to call on the next frame.
  * @param data			Value to be passed on the invocation of the Function.
- * @noreturn
  */
-native RequestFrame(RequestFrameCallback:Function, any:data=0);
+native void RequestFrame(RequestFrameCallback Function, any data=0);

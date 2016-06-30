@@ -97,7 +97,6 @@
 			"engine"			"blade"
 			"engine"			"insurgency"
 			"engine"			"csgo"
-			"engine"			"dota"
 			"engine"			"sdk2013"
 			"engine"			"contagion"
 			"engine"			"bms"
@@ -161,6 +160,7 @@
 			"game"					"csgo"
 			"game"					"berimbau"
 			"game"					"nmrih"
+			"game"					"KreedzClimbing"
 		}
 
 		"Keys"
@@ -195,6 +195,7 @@
 			"game"					"berimbau"
 			"game"					"$INSURGENCY" // retail game
 			"game"					"nmrih"
+			"game"					"KreedzClimbing"
 		}
 		
 		"Keys"
@@ -238,6 +239,7 @@
 			"game"					"cstrike"
 			"game"					"synergy"
 			"game"					"bms"
+			"game"					"KreedzClimbing"
 		}
 		
 		"Keys"

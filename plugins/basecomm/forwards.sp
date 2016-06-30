@@ -31,9 +31,9 @@
  * Version: $Id$
  */
  
- FireOnClientMute(client, bool:muteState)
- {
- 	static Handle:hForward;
+void FireOnClientMute(int client, bool muteState)
+{
+ 	static Handle hForward;
 	
 	if(hForward == null)
 	{
@@ -44,11 +44,11 @@
 	Call_PushCell(client);
 	Call_PushCell(muteState);
 	Call_Finish();
- }
+}
  
- FireOnClientGag(client, bool:gagState)
- {
- 	static Handle:hForward;
+void FireOnClientGag(int client, bool gagState)
+{
+ 	static Handle hForward;
 	
 	if(hForward == null)
 	{
@@ -59,4 +59,4 @@
 	Call_PushCell(client);
 	Call_PushCell(gagState);
 	Call_Finish();
- }
+}

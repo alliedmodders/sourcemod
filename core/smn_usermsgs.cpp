@@ -33,8 +33,9 @@
 #include "smn_usermsgs.h"
 #include "logic_bridge.h"
 #ifdef USE_PROTOBUF_USERMESSAGES
-#include "UserMessagePBHelpers.h"
+# include "UserMessagePBHelpers.h"
 #endif
+#include <bridge/include/IScriptManager.h>
 
 HandleType_t g_ProtobufType = NO_HANDLE_TYPE;
 HandleType_t g_WrBitBufType = NO_HANDLE_TYPE;
@@ -268,13 +269,7 @@ size_t MsgListenerWrapper::_FillInPlayers(int *pl_array, IRecipientFilter *pFilt
 
 	for (size_t i=0; i<size; i++)
 	{
-		int index;
-#if SOURCE_ENGINE == SE_DOTA
-		index = pFilter->GetRecipientIndex(i).Get();
-#else
-		index = pFilter->GetRecipientIndex(i);
-#endif
-		pl_array[i] = index;
+		pl_array[i] = pFilter->GetRecipientIndex(i);
 	}
 
 	return size;

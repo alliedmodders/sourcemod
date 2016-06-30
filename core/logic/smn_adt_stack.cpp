@@ -33,6 +33,8 @@
 #include "common_logic.h"
 #include "CellArray.h"
 #include "handle_helpers.h"
+#include "stringutil.h"
+#include <IHandleSys.h>
 
 HandleType_t htCellStack;
 
@@ -125,7 +127,7 @@ static cell_t PushStackString(IPluginContext *pContext, const cell_t *params)
 	char *str;
 	pContext->LocalToString(params[2], &str);
 
-	smcore.strncopy((char *)blk, str, array->blocksize() * sizeof(cell_t));
+	strncopy((char *)blk, str, array->blocksize() * sizeof(cell_t));
 
 	return 1;
 }

@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -32,6 +32,8 @@
 #include <stdlib.h>
 #include "common_logic.h"
 #include "CellArray.h"
+#include "stringutil.h"
+#include <IHandleSys.h>
 
 HandleType_t htCellArray;
 
@@ -181,7 +183,7 @@ static cell_t PushArrayString(IPluginContext *pContext, const cell_t *params)
 	char *str;
 	pContext->LocalToString(params[2], &str);
 
-	smcore.strncopy((char *)blk, str, array->blocksize() * sizeof(cell_t));
+	strncopy((char *)blk, str, array->blocksize() * sizeof(cell_t));
 
 	return (cell_t)(array->size() - 1);
 }
@@ -378,7 +380,7 @@ static cell_t SetArrayString(IPluginContext *pContext, const cell_t *params)
 	char *str;
 	pContext->LocalToString(params[3], &str);
 
-	return smcore.strncopy((char *)blk, str, array->blocksize() * sizeof(cell_t));
+	return strncopy((char *)blk, str, array->blocksize() * sizeof(cell_t));
 }
 
 static cell_t SetArrayArray(IPluginContext *pContext, const cell_t *params)

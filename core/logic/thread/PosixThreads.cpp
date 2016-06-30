@@ -107,16 +107,20 @@ IThreadHandle *PosixThreader::MakeThread(IThread *pThread, const ThreadParams *p
 	if (params == NULL)
 		params = &g_defparams;
 
-	ke::AutoPtr<ThreadHandle> pHandle(new ThreadHandle(this, pThread, params));
+	ThreadHandle* pHandle = new ThreadHandle(this, pThread, params);
 
-	pHandle->m_thread = new ke::Thread(pHandle, "SourceMod");
-	if (!pHandle->m_thread->Succeeded())
+	pHandle->m_thread = new ke::Thread([pHandle]() -> void {
+		pHandle->Run();
+	}, "SourceMod");
+	if (!pHandle->m_thread->Succeeded()) {
+		delete pHandle;
 		return NULL;
+	}
 
 	if (!(params->flags & Thread_CreateSuspended))
 		pHandle->Unpause();
 
-	return pHandle.take();
+	return pHandle;
 }
 
 IEventSignal *PosixThreader::MakeEventSignal()

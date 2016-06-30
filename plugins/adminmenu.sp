@@ -36,6 +36,8 @@
 #include <sourcemod>
 #include <topmenus>
 
+#pragma newdecls required
+
 public Plugin myinfo = 
 {
 	name = "Admin Menu",
@@ -117,7 +119,7 @@ public void OnAllPluginsLoaded()
 	Call_Finish();
 }
 
-public void DefaultCategoryHandler(Handle topmenu, 
+public void DefaultCategoryHandler(TopMenu topmenu, 
 						TopMenuAction action,
 						TopMenuObject object_id,
 						int param,
@@ -265,4 +267,3 @@ stock int UTIL_AddTargetsToMenu(Menu menu, int source_client, bool in_game_only,
 	
 	return UTIL_AddTargetsToMenu2(menu, source_client, flags);
 }
-

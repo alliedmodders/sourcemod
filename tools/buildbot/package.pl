@@ -3,7 +3,11 @@
 use strict;
 use Cwd;
 use File::Basename;
+use File::stat;
+use File::Temp qw/ tempfile :seekable/;
 use Net::FTP;
+use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
+use Time::localtime;
 
 my ($ftp_file, $ftp_host, $ftp_user, $ftp_pass, $ftp_path, $tag);
 
@@ -29,6 +33,64 @@ require 'helpers.pm';
 
 #Switch to the output folder.
 chdir(Build::PathFormat('../../../OUTPUT/package'));
+
+print "Downloading languages.cfg...\n";
+# Don't check certificate. It will fail on the slaves and we're resolving to internal addressing anyway
+system('wget --no-check-certificate -q -O addons/sourcemod/configs/languages.cfg "https://sm.alliedmods.net/translator/index.php?go=translate&op=export_langs"');
+open(my $fh, '<', 'addons/sourcemod/configs/languages.cfg')
+    or die "Could not open languages.cfg' $!";
+ 
+while (my $ln = <$fh>) {
+    if ($ln =~ /"([^"]+)"\s*"[^"]+.*\((\d+)\) /)
+    {
+	my $abbr = $1;
+	my $id = $2;
+
+	print "Downloading language pack $abbr.zip...\n";
+        # Don't check certificate. It will fail on the slaves and we're resolving to internal addressing anyway
+        system("wget --no-check-certificate -q -O $abbr.zip \"https://sm.alliedmods.net/translator/index.php?go=translate&op=export&lang_id=$id\"");
+        system("unzip -qo $abbr.zip -d addons/sourcemod/translations/");
+        unlink("$abbr.zip");
+    }
+}
+close($fh);
+
+my $needNewGeoIP = 1;
+if (-e '../GeoIP.dat.gz')
+{
+    my $fileModifiedTime = stat('../GeoIP.dat.gz')->mtime;
+    my $fileModifiedMonth = localtime($fileModifiedTime)->mon;
+    my $currentMonth = localtime->mon;
+    my $thirtyOneDays = 60 * 60 * 24 * 31;
+
+    # GeoIP file only updates once per month
+    if ($currentMonth == $fileModifiedMonth || (time() - $fileModifiedTime) < $thirtyOneDays)
+    {
+        $needNewGeoIP = 0;
+    }
+}
+
+if ($needNewGeoIP)
+{
+    print "Downloading GeoIP.dat...\n";
+    system('wget -q -O ../GeoIP.dat.gz http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz');
+}
+else
+{
+    print "Reusing existing GeoIP.dat\n";
+}
+
+my $geoIPfile = 'addons/sourcemod/configs/geoip/GeoIP.dat';
+if (-e $geoIPfile) {
+	unlink($geoIPfile);
+}
+
+open(my $fh, ">", $geoIPfile) 
+    	or die "cannot open $geoIPfile for writing: $!";
+binmode($fh);
+gunzip '../GeoIP.dat.gz' => $fh
+        or die "gunzip failed: $GunzipError\n";
+close($fh);
 
 my ($version);
 
@@ -70,6 +132,20 @@ else
     system("zip -r $filename addons cfg");
 }
 
+my ($tmpfh, $tmpfile) = tempfile();
+print $tmpfh $filename;
+$tmpfh->seek( 0, SEEK_END );
+my $latest = "sourcemod-latest-";
+if ($^O eq "darwin") {
+	$latest .= "mac";
+}
+elsif ($^O =~ /MSWin/) {
+	$latest .= "windows";
+}
+else {
+	$latest .= $^O;
+}
+
 my ($major,$minor) = ($version =~ /^(\d+)\.(\d+)/);
 $ftp_path .= "/$major.$minor";
 
@@ -90,6 +166,8 @@ if ($ftp_path ne '')
 $ftp->binary();
 $ftp->put($filename)
     or die "Cannot drop file $filename ($ftp_path): " . $ftp->message . "\n";
+$ftp->put($tmpfile, $latest)
+    or die "Cannot drop file $latest ($ftp_path): " . $ftp->message . "\n";
 
 $ftp->close();
 

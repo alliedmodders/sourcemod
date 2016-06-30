@@ -82,7 +82,7 @@ enum RoundState {
  * @return				Value at the given property offset.
  * @error				Not supported.
  */
-native GameRules_GetProp(const String:prop[], size=4, element=0);
+native int GameRules_GetProp(const char[] prop, int size=4, int element=0);
 
 /**
  * Sets an integer value for a property of the gamerules entity.
@@ -93,11 +93,10 @@ native GameRules_GetProp(const String:prop[], size=4, element=0);
  *						This value is auto-detected, and the size parameter is 
  *						only used as a fallback in case detection fails.
  * @param element		Element # (starting from 0) if property is an array.
- * @param changeState	If true, change will be sent over the network.
+ * @param changeState	This parameter is ignored.
  * @error				Not supported.
- * @noreturn
  */
-native GameRules_SetProp(const String:prop[], any:value, size=4, element=0, bool:changeState=false);
+native void GameRules_SetProp(const char[] prop, any value, int size=4, int element=0, bool changeState=false);
 
 /**
  * Retrieves a float value from a property of the gamerules entity.
@@ -107,7 +106,7 @@ native GameRules_SetProp(const String:prop[], any:value, size=4, element=0, bool
  * @return				Value at the given property offset.
  * @error				Not supported.
  */
-native Float:GameRules_GetPropFloat(const String:prop[], element=0);
+native float GameRules_GetPropFloat(const char[] prop, int element=0);
 
 /**
  * Sets a float value for a property of the gamerules entity.
@@ -115,11 +114,10 @@ native Float:GameRules_GetPropFloat(const String:prop[], element=0);
  * @param prop			Property name.
  * @param value			Value to set.
  * @param element		Element # (starting from 0) if property is an array.
- * @param changeState	If true, change will be sent over the network.
- * @noreturn
+ * @param changeState	This parameter is ignored.
  * @error				Not supported.
  */
-native GameRules_SetPropFloat(const String:prop[], Float:value, element=0, bool:changeState=false);
+native void GameRules_SetPropFloat(const char[] prop, float value, int element=0, bool changeState=false);
 
 /**
  * Retrieves a entity index from a property of the gamerules entity.
@@ -131,7 +129,7 @@ native GameRules_SetPropFloat(const String:prop[], Float:value, element=0, bool:
  *						then -1 is returned.
  * @error				Not supported.
  */
-native GameRules_GetPropEnt(const String:prop[], element=0);
+native int GameRules_GetPropEnt(const char[] prop, int element=0);
 
 /**
  * Sets an entity index for a property of the gamerules entity.
@@ -139,11 +137,10 @@ native GameRules_GetPropEnt(const String:prop[], element=0);
  * @param prop			Property name.
  * @param other			Entity index to set, or -1 to unset.
  * @param element		Element # (starting from 0) if property is an array.
- * @param changeState	If true, change will be sent over the network.
- * @noreturn
+ * @param changeState	This parameter is ignored.
  * @error				Not supported.
  */
-native GameRules_SetPropEnt(const String:prop[], other, element=0, bool:changeState=false);
+native void GameRules_SetPropEnt(const char[] prop, int other, int element=0, bool changeState=false);
 
 /**
  * Retrieves a vector of floats from the gamerules entity, given a named network property.
@@ -151,10 +148,9 @@ native GameRules_SetPropEnt(const String:prop[], other, element=0, bool:changeSt
  * @param prop			Property name.
  * @param vec			Vector buffer to store data in.
  * @param element		Element # (starting from 0) if property is an array.
- * @noreturn
  * @error				Not supported.
  */
-native GameRules_GetPropVector(const String:prop[], Float:vec[3], element=0);
+native void GameRules_GetPropVector(const char[] prop, float vec[3], int element=0);
 
 /**
  * Sets a vector of floats in the gamerules entity, given a named network property.
@@ -162,11 +158,10 @@ native GameRules_GetPropVector(const String:prop[], Float:vec[3], element=0);
  * @param prop			Property name.
  * @param vec			Vector to set.
  * @param element		Element # (starting from 0) if property is an array.
- * @param changeState	If true, change will be sent over the network.
- * @noreturn
+ * @param changeState	This parameter is ignored.
  * @error				Not supported.
  */
-native GameRules_SetPropVector(const String:prop[], const Float:vec[3], element=0, bool:changeState=false);
+native void GameRules_SetPropVector(const char[] prop, const float vec[3], int element=0, bool changeState=false);
 
 /**
  * Gets a gamerules property as a string.
@@ -177,18 +172,18 @@ native GameRules_SetPropVector(const String:prop[], const Float:vec[3], element=
  * @return				Number of non-null bytes written.
  * @error				Not supported.
  */
-native GameRules_GetPropString(const String:prop[], String:buffer[], maxlen);
+native int GameRules_GetPropString(const char[] prop, char[] buffer, int maxlen);
 
 /**
  * Sets a gamerules property as a string.
  *
  * @param prop			Property to use.
  * @param buffer		String to set.		
- * @param changeState	If true, change will be sent over the network.
+ * @param changeState	This parameter is ignored.
  * @return				Number of non-null bytes written.
  * @error				Not supported.
  */
-native GameRules_SetPropString(const String:prop[], const String:buffer[], bool:changeState=false);
+native int GameRules_SetPropString(const char[] prop, const char[] buffer, bool changeState=false);
 
 /**
  * Gets the current round state.
@@ -196,7 +191,7 @@ native GameRules_SetPropString(const String:prop[], const String:buffer[], bool:
  * @return				Round state.
  * @error				Game doesn't support round state.
  */
-stock RoundState:GameRules_GetRoundState()
+stock RoundState GameRules_GetRoundState()
 {
-	return RoundState:GameRules_GetProp("m_iRoundState");
+	return view_as<RoundState>(GameRules_GetProp("m_iRoundState"));
 }

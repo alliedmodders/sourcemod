@@ -53,7 +53,7 @@
 			"RemoveCondition"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x08\x57\x56\x8B\xF9\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x84\x2A\x2A\x2A\x2A\x53"
+				"windows"	"\x55\x8B\xEC\x56\x57\x8B\x7D\x08\x8B\xF1\x57\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x84"
 				"linux"		"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
 				"mac"		"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
 			}
@@ -74,7 +74,7 @@
 			"StunPlayer"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x28\x57\x8B\xF9\x8B\x87\x2A\x2A\x2A\x2A\x40"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x57\x8B\xF9\x8B\x87\xFC\x03\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 				"mac"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 			}
@@ -95,7 +95,7 @@
 			"CanPlayerTeleport"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x57\x8B\x7D\x08\x8B\xD9\x85\xFF\x0F\x84\x2A\x2A\x2A\x2A\x8B\xCF"
+				"windows"	"\x55\x8B\xEC\x53\x57\x8B\x7D\x08\x8B\xD9\x85\xFF\x75\x2A\x5F\x32\xC0\x5B\x5D\xC2\x04\x00"
 				"linux"		"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer"
 				"mac"		"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer"
 			}
@@ -113,36 +113,36 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"325"
-				"linux"		"326"
-				"mac"		"326"
+				"windows"	"326"
+				"linux"		"327"
+				"mac"		"327"
 			}
 			"CalcIsAttackCriticalHelper"
-			{
-				"windows"	"385"
-				"linux"		"392"
-				"mac"		"392"
-			}
-			"CalcIsAttackCriticalHelperNoCrits"
 			{
 				"windows"	"386"
 				"linux"		"393"
 				"mac"		"393"
 			}
+			"CalcIsAttackCriticalHelperNoCrits"
+			{
+				"windows"	"387"
+				"linux"		"394"
+				"mac"		"394"
+			}
 			
 			// CTFGameRules::IsHolidayActive
 			"IsHolidayActive"
 			{
-				"windows"	"138"
-				"linux"		"139"
-				"mac"		"139"
+				"windows"	"139"
+				"linux"		"140"
+				"mac"		"140"
 			}
 
 			"RemoveWearable"
 			{
-				"windows"	"427"
-				"linux"		"428"
-				"mac"		"428"
+				"windows"	"428"
+				"linux"		"429"
+				"mac"		"429"
 			}
 		}
 	}
@@ -157,14 +157,15 @@
 			"TFHoliday_Birthday"		"1"
 			"TFHoliday_Halloween"		"2"
 			"TFHoliday_Christmas"		"3"
-			"TFHoliday_EndOfTheLine"	"4"
-			"TFHoliday_ValentinesDay"	"5"
-			"TFHoliday_MeetThePyro"		"6"
-			"TFHoliday_SpyVsEngyWar"	"7"
-			"TFHoliday_FullMoon"		"8"
-			"TFHoliday_HalloweenOrFullMoon"				"9"
-			"TFHoliday_HalloweenOrFullMoonOrValentines"	"10"
-			"TFHoliday_AprilFools"		"11"
+			"TFHoliday_CommunityUpdate"	"4"
+			"TFHoliday_EndOfTheLine"	"5"
+			"TFHoliday_ValentinesDay"	"6"
+			"TFHoliday_MeetThePyro"		"7"
+			"TFHoliday_SpyVsEngyWar"	"8"
+			"TFHoliday_FullMoon"		"9"
+			"TFHoliday_HalloweenOrFullMoon"				"10"
+			"TFHoliday_HalloweenOrFullMoonOrValentines"	"11"
+			"TFHoliday_AprilFools"		"12"
 		}
 	}
 }

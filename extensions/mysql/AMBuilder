@@ -28,6 +28,9 @@ if SM.mysql_root:
       'wsock32.lib'
     ]
 
+  if binary.compiler.vendor == 'msvc' and binary.compiler.version >= 1900:
+    binary.compiler.linkflags += ['legacy_stdio_definitions.lib', 'legacy_stdio_wide_specifiers.lib']
+
   binary.sources += [
     '../../public/smsdk_ext.cpp',
     'mysql/MyBasicResults.cpp',

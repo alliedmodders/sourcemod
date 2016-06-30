@@ -32,6 +32,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "CDataPack.h"
+#include <am-utility.h>
+#include <am-vector.h>
+
+using namespace ke;
 
 #define DATAPACK_INITIAL_SIZE 64
 
@@ -45,6 +49,25 @@ CDataPack::CDataPack()
 CDataPack::~CDataPack()
 {
 	free(m_pBase);
+}
+
+static Vector<AutoPtr<CDataPack>> sDataPackCache;
+
+IDataPack * CDataPack::New()
+{
+  if (sDataPackCache.empty())
+    return new CDataPack();
+
+  CDataPack *pack = sDataPackCache.back().take();
+  sDataPackCache.pop();
+  pack->Initialize();
+  return pack;
+}
+
+void
+CDataPack::Free(IDataPack *pack)
+{
+  sDataPackCache.append(static_cast<CDataPack *>(pack));
 }
 
 void CDataPack::Initialize()

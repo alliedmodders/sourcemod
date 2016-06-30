@@ -107,7 +107,7 @@ methodmap KeyValues < Handle
 	//
 	// @param key           Name of the key, or NULL_STRING.
 	// @param value         Large integer value (0=High bits, 1=Low bits)
-	public native void SetUInt64(const char[] key, const value[2]);
+	public native void SetUInt64(const char[] key, const int value[2]);
 
 	// Sets a floating point value of a KeyValues key.
 	//
@@ -167,9 +167,9 @@ methodmap KeyValues < Handle
 	// @param g             Green value, set by reference. 
 	// @param b             Blue value, set by reference. 
 	// @param a             Alpha value, set by reference. 
-	public native void GetColor(const char[] key, &r, &g, &b, &a);
+	public native void GetColor(const char[] key, int &r, int &g, int &b, int &a);
 
-	// Retrives a set of color values from a KeyValues key.
+	// Retrieves a set of color values from a KeyValues key.
 	//
 	// @param key           Name of the key, or NULL_STRING.
 	// @param color         Red, green, blue, and alpha channels.
@@ -359,7 +359,7 @@ native void KvSetNum(Handle kv, const char[] key, int value);
  * @param value			Large integer value (0=High bits, 1=Low bits)
  * @error				Invalid Handle.
  */
-native void KvSetUInt64(Handle kv, const char[] key, const value[2]);
+native void KvSetUInt64(Handle kv, const char[] key, const int value[2]);
 
 /** 
  * Sets a floating point value of a KeyValues key.

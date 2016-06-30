@@ -45,7 +45,7 @@
 /**
  * Parse result directive.
  */
-enum SMCResult:
+enum SMCResult
 {
 	SMCParse_Continue,			/**< Continue parsing */
 	SMCParse_Halt,				/**< Stop parsing here */
@@ -55,7 +55,7 @@ enum SMCResult:
 /**
  * Parse error codes.
  */
-enum SMCError:
+enum SMCError
 {
 	SMCError_Okay = 0,			/**< No error */
 	SMCError_StreamOpen,		/**< Stream failed to open */
@@ -109,7 +109,6 @@ typedef SMC_EndSection = function SMCResult (SMCParser smc);
 // @param smc			The SMCParser.
 // @param halted		True if abnormally halted, false otherwise.
 // @param failed		True if parsing failed, false otherwise.
-// @noreturn
 typedef SMC_ParseEnd = function void (SMCParser smc, bool halted, bool failed);
 
 // Callback for whenever a new line of text is about to be parsed.
@@ -212,20 +211,18 @@ native bool SMC_GetErrorString(SMCError error, char[] buffer, int buf_max);
  *
  * @param smc			Handle to an SMC Parse.
  * @param func			SMC_ParseStart function.
- * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SMC_SetParseStart(Handle smc, SMC_ParseStart func);
+native void SMC_SetParseStart(Handle smc, SMC_ParseStart func);
 
 /**
  * Sets the SMC_ParseEnd of a parse handle.
  *
  * @param smc			Handle to an SMC Parse.
  * @param func			SMC_ParseEnd function.
- * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SMC_SetParseEnd(Handle smc, SMC_ParseEnd func);
+native void SMC_SetParseEnd(Handle smc, SMC_ParseEnd func);
 
 /**
  * Sets the three main reader functions.

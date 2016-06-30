@@ -189,9 +189,9 @@
 			"SetUserCvar"
 			{
 				/* Not 100% sure on this, why would windows change and not linux - TEST ME */
-				"windows"	"28"
-				"linux"		"65"
-				"mac"		"65"
+				"windows"	"29"
+				"linux"		"67"
+				"mac"		"67"
 			}
 			/**
 			 * CBaseClient::SetName(char  const*);
@@ -200,9 +200,9 @@
 			 */
 			"SetClientName"
 			{
-				"windows"	"27"
-				"linux"		"64"
-				"mac"		"64"
+				"windows"	"28"
+				"linux"		"66"
+				"mac"		"66"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
@@ -214,9 +214,9 @@
 			 */
 			"InfoChanged"
 			{
-				"windows"	"412"
-				"linux"		"412"
-				"mac"		"412"
+				"windows"	"476"
+				"linux"		"456"
+				"mac"		"456"
 			}
 		}
 	}
@@ -232,21 +232,21 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"446"
-				"linux"		"447"
-				"mac"		"447"
+				"windows"	"448"
+				"linux"		"449"
+				"mac"		"449"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"291"
-				"linux"		"292"
-				"mac"		"292"
+				"windows"	"292"
+				"linux"		"293"
+				"mac"		"293"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"287"
-				"linux"		"288"
-				"mac"		"288"
+				"windows"	"288"
+				"linux"		"289"
+				"mac"		"289"
 			}
 			"Ignite"
 			{
@@ -268,9 +268,9 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"496"
-				"linux"		"496"
-				"mac"		"496"
+				"windows"	"498"
+				"linux"		"498"
+				"mac"		"498"
 			}
 			"GetVelocity"
 			{
@@ -298,9 +298,9 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"280"
-				"linux"		"281"
-				"mac"		"281"
+				"windows"	"281"
+				"linux"		"282"
+				"mac"		"282"
 			}
 			"Activate"
 			{
@@ -310,15 +310,15 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"466"
-				"linux"		"467"
-				"mac"		"467"
+				"windows"	"468"
+				"linux"		"469"
+				"mac"		"469"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"273"
-				"linux"		"274"
-				"mac"		"274"
+				"windows"	"274"
+				"linux"		"275"
+				"mac"		"275"
 			}
 		}
 	}

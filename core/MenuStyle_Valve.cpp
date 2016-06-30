@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -65,20 +65,16 @@ bool ValveMenuStyle::OnClientCommand(int client, const char *cmdname, const CCom
 
 void ValveMenuStyle::OnSourceModAllInitialized()
 {
-#if SOURCE_ENGINE != SE_DOTA
 	g_Players.AddClientListener(this);
 	SH_ADD_HOOK(IServerPluginHelpers, CreateMessage, serverpluginhelpers, SH_MEMBER(this, &ValveMenuStyle::HookCreateMessage), false);
 	g_pSPHCC = SH_GET_CALLCLASS(serverpluginhelpers);
-#endif
 }
 
 void ValveMenuStyle::OnSourceModShutdown()
 {
-#if SOURCE_ENGINE != SE_DOTA
 	SH_RELEASE_CALLCLASS(g_pSPHCC);
 	SH_REMOVE_HOOK(IServerPluginHelpers, CreateMessage, serverpluginhelpers, SH_MEMBER(this, &ValveMenuStyle::HookCreateMessage), false);
 	g_Players.RemoveClientListener(this);
-#endif
 }
 
 void ValveMenuStyle::HookCreateMessage(edict_t *pEdict,
@@ -297,7 +293,7 @@ unsigned int CValveMenuDisplay::DrawItem(const ItemDrawInfo &item)
 	}
 
 	char buffer[255];
-	UTIL_Format(buffer, sizeof(buffer), "%d. %s", m_NextPos, item.display);
+	ke::SafeSprintf(buffer, sizeof(buffer), "%d. %s", m_NextPos, item.display);
 
 	KeyValues *ki = m_pKv->FindKey(g_OptionNumTable[m_NextPos], true);
 	ki->SetString("command", g_OptionCmdTable[m_NextPos]);
@@ -382,7 +378,7 @@ bool CValveMenu::SetExtOption(MenuOption option, const void *valuePtr)
 {
 	if (option == MenuOption_IntroMessage)
 	{
-		strncopy(m_IntroMsg, (const char *)valuePtr, sizeof(m_IntroMsg));
+		ke::SafeStrcpy(m_IntroMsg, sizeof(m_IntroMsg), (const char *)valuePtr);
 		return true;
 	} else if (option == MenuOption_IntroColor) {
 		unsigned int *array = (unsigned int *)valuePtr;

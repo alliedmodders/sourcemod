@@ -35,6 +35,9 @@
 #include <IPlayerHelpers.h>
 #include <ISourceMod.h>
 #include <ITranslator.h>
+#include "sprintf.h"
+#include <bridge/include/CoreProvider.h>
+#include <bridge/include/IVEngineServerBridge.h>
 
 static cell_t CheckCommandAccess(IPluginContext *pContext, const cell_t *params)
 {
@@ -51,7 +54,7 @@ static cell_t CheckCommandAccess(IPluginContext *pContext, const cell_t *params)
 	bool found_command = false;
 	if (params[0] < 4 || !params[4])
 	{
-		found_command = smcore.LookForCommandAdminFlags(cmd, &bits);
+		found_command = bridge->LookForCommandAdminFlags(cmd, &bits);
 	}
 
 	if (!found_command)
@@ -72,7 +75,7 @@ static cell_t CheckAccess(IPluginContext *pContext, const cell_t *params)
 	bool found_command = false;
 	if (params[0] < 4 || !params[4])
 	{
-		found_command = smcore.LookForCommandAdminFlags(cmd, &bits);
+		found_command = bridge->LookForCommandAdminFlags(cmd, &bits);
 	}
 
 	if (!found_command)
@@ -90,12 +93,12 @@ static cell_t sm_PrintToServer(IPluginContext *pCtx, const cell_t *params)
 	int arg = 2;
 
 	pCtx->LocalToString(params[1], &fmt);
-	size_t res = smcore.atcprintf(buffer, sizeof(buffer) - 2, fmt, pCtx, params, &arg);
+	size_t res = atcprintf(buffer, sizeof(buffer) - 2, fmt, pCtx, params, &arg);
 
 	buffer[res++] = '\n';
 	buffer[res] = '\0';
 
-	smcore.ConPrint(buffer);
+	bridge->ConPrint(buffer);
 
 	return 1;
 }
@@ -129,7 +132,7 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 	int arg = 3;
 
 	pCtx->LocalToString(params[2], &fmt);
-	size_t res = smcore.atcprintf(buffer, sizeof(buffer) - 2, fmt, pCtx, params, &arg);
+	size_t res = atcprintf(buffer, sizeof(buffer) - 2, fmt, pCtx, params, &arg);
 
 	buffer[res++] = '\n';
 	buffer[res] = '\0';
@@ -139,7 +142,7 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 		pPlayer->PrintToConsole(buffer);
 	}
 	else {
-		smcore.ConPrint(buffer);
+		bridge->ConPrint(buffer);
 	}
 
 	return 1;
@@ -276,7 +279,7 @@ static cell_t ReplyToCommand(IPluginContext *pContext, const cell_t *params)
 		/* Print */
 		buffer[len++] = '\n';
 		buffer[len] = '\0';
-		smcore.ConPrint(buffer);
+		bridge->ConPrint(buffer);
 		return 1;
 	}
 

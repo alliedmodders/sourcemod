@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
@@ -33,6 +33,11 @@
 #define _INCLUDE_SOURCEMOD_COMPAT_WRAPPERS_H_
 
 #include <datamap.h>
+
+#if SOURCE_ENGINE == SE_DARKMESSIAH
+class EQueryCvarValueStatus;
+typedef int QueryCvarCookie_t;
+#endif
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	#define CONVAR_REGISTER(object)				ConVar_Register(0, object)
@@ -147,27 +152,5 @@
 		return td->fieldOffset[TD_OFFSET_NORMAL];
 	}
 #endif //SOURCE_ENGINE >= SE_LEFT4DEAD
-
-#if SOURCE_ENGINE == SE_DOTA
-	inline int GetPlayerUserId(edict_t *pEdict)
-	{
-		return engine->GetPlayerUserId(IndexOfEdict(pEdict) - 1);
-	}
-
-	inline int GetPlayerUserId(int client)
-	{
-		return engine->GetPlayerUserId(client - 1);
-	}
-#else
-	inline int GetPlayerUserId(edict_t *pEdict)
-	{
-		return engine->GetPlayerUserId(pEdict);
-	}
-
-	inline int GetPlayerUserId(int client)
-	{
-		return engine->GetPlayerUserId(PEntityOfEntIndex(client));
-	}
-#endif //SOURCE_ENGINE >= SE_DOTA
 
 #endif //_INCLUDE_SOURCEMOD_COMPAT_WRAPPERS_H_

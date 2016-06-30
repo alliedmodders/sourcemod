@@ -37,6 +37,7 @@
 #include <am-vector.h>
 #include "common_logic.h"
 #include "Native.h"
+#include <bridge/include/IScriptManager.h>
 
 struct Native;
 class CPlugin;
@@ -68,7 +69,6 @@ public:
 public:
 	void SetMarkSerial(unsigned int serial);
 	unsigned int GetMarkSerial();
-	void PropagateMarkSerial(unsigned int serial);
 public:
 	void AddDependent(CPlugin *pPlugin);
 	void AddWeakRef(const WeakNative & ref);
@@ -81,7 +81,7 @@ protected:
 	unsigned int m_nMarkSerial;
 	List<WeakNative> m_WeakRefs;
 	ke::Vector<const sp_nativeinfo_t *> m_natives;
-	ke::Vector<ke::Ref<Native> > m_fakes;
+	ke::Vector<ke::RefPtr<Native> > m_fakes;
 };
 
 extern CNativeOwner g_CoreNatives;

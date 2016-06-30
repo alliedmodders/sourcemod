@@ -32,6 +32,7 @@
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include "EventManager.h"
+#include "PlayerManager.h"
 #include "logic_bridge.h"
 
 static cell_t sm_HookEvent(IPluginContext *pContext, const cell_t *params)
@@ -142,6 +143,54 @@ static cell_t sm_FireEvent(IPluginContext *pContext, const cell_t *params)
 
 	/* Free handle on game event */
 	handlesys->FreeHandle(hndl, &sec);
+
+	return 1;
+}
+
+static cell_t sm_FireEventToClient(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	EventInfo *pInfo;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), &sec, (void **)&pInfo))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
+	}
+
+	/* If identities do not match, don't fire event */
+	if (pContext->GetIdentity() != pInfo->pOwner)
+	{
+		return pContext->ThrowNativeError("Game event \"%s\" could not be fired because it was not created by this plugin", pInfo->pEvent->GetName());
+	}
+
+	if (pInfo->bDontBroadcast)
+	{
+		return pContext->ThrowNativeError("Game event \"%s\" is set to not be broadcasted to clients", pInfo->pEvent->GetName());
+	}
+
+	int client = params[2];
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	}
+
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected", client);
+	}
+
+	IClient *pClient = pPlayer->GetIClient();
+	if (!pClient)
+	{
+		return pContext->ThrowNativeError("Sending events to fakeclients is not supported on this game (client %d)", client);
+	}
+
+	g_EventManager.FireEventToClient(pInfo, pClient);
 
 	return 1;
 }
@@ -421,6 +470,7 @@ REGISTER_NATIVES(gameEventNatives)
 
 	// Transitional syntax support.
 	{"Event.Fire",			sm_FireEvent},
+	{"Event.FireToClient",	sm_FireEventToClient},
 	{"Event.Cancel",		sm_CancelCreatedEvent},
 	{"Event.GetName",		sm_GetEventName},
 	{"Event.GetBool",		sm_GetEventBool},

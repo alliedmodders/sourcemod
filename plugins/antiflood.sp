@@ -35,7 +35,9 @@
 
 #include <sourcemod>
 
-public Plugin:myinfo = 
+#pragma newdecls required
+
+public Plugin myinfo = 
 {
 	name = "Anti-Flood",
 	author = "AlliedModders LLC",
@@ -44,17 +46,17 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-new Float:g_LastTime[MAXPLAYERS + 1] = {0.0, ...};		/* Last time player used say or say_team */
-new g_FloodTokens[MAXPLAYERS + 1] = {0, ...};			/* Number of flood tokens player has */
+float g_LastTime[MAXPLAYERS + 1] = {0.0, ...};			/* Last time player used say or say_team */
+int g_FloodTokens[MAXPLAYERS + 1] = {0, ...};			/* Number of flood tokens player has */
 
 ConVar sm_flood_time;									/* Handle to sm_flood_time convar */
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	sm_flood_time = CreateConVar("sm_flood_time", "0.75", "Amount of time allowed between chat messages");
 }
 
-public OnClientPutInServer(client)
+public void OnClientPutInServer(int client)
 {
 	g_LastTime[client] = 0.0;
 	g_FloodTokens[client] = 0;
@@ -84,7 +86,7 @@ public bool OnClientFloodCheck(int client)
 	return false;
 }
 
-public OnClientFloodResult(client, bool:blocked)
+public void OnClientFloodResult(int client, bool blocked)
 {
 	if (max_chat <= 0.0 
  		|| CheckCommandAccess(client, "sm_flood_access", ADMFLAG_ROOT, true))
@@ -92,8 +94,8 @@ public OnClientFloodResult(client, bool:blocked)
 		return;
 	}
 	
-	new Float:curTime = GetGameTime();
-	new Float:newTime = curTime + max_chat;
+	float curTime = GetGameTime();
+	float newTime = curTime + max_chat;
 	
 	if (g_LastTime[client] >= curTime)
 	{

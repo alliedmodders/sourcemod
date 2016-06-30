@@ -119,16 +119,17 @@ public:
 		return &m_IdentRoot;
 	}
 public:
+	void BeginBindingFor(CPlugin *pPlugin);
 	void BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly);
-	void BindNativeToPlugin(CPlugin *pPlugin, const ke::Ref<Native> &pEntry);
-	ke::PassRef<Native> AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func);
-	ke::PassRef<Native> FindNative(const char *name);
+	void BindNativeToPlugin(CPlugin *pPlugin, const ke::RefPtr<Native> &pEntry);
+	ke::AlreadyRefed<Native> AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func);
+	ke::RefPtr<Native> FindNative(const char *name);
 private:
-	ke::PassRef<Native> AddNativeToCache(CNativeOwner *pOwner, const sp_nativeinfo_t *ntv);
+	ke::AlreadyRefed<Native> AddNativeToCache(CNativeOwner *pOwner, const sp_nativeinfo_t *ntv);
 	void ClearNativeFromCache(CNativeOwner *pOwner, const char *name);
-	void BindNativeToPlugin(CPlugin *pPlugin, const sp_native_t *ntv,  uint32_t index, const ke::Ref<Native> &pEntry);
+	void BindNativeToPlugin(CPlugin *pPlugin, const sp_native_t *ntv,  uint32_t index, const ke::RefPtr<Native> &pEntry);
 private:
-	typedef NameHashSet<ke::Ref<Native>, Native> NativeCache;
+	typedef NameHashSet<ke::RefPtr<Native>, Native> NativeCache;
 
 	List<IfaceInfo> m_Interfaces;
 	HandleType_t m_TypeRoot;

@@ -36,6 +36,7 @@
 #include <IPluginSys.h>
 #include <sh_stack.h>
 #include "DebugReporter.h"
+#include <bridge/include/CoreProvider.h>
 
 using namespace SourceHook;
 

@@ -27,6 +27,9 @@
 			"SpriteExplosion"	""
 			"SpriteGlow"		"sprites/blueflare1.vmt"
 			"SpriteHalo"		"sprites/glow01.vmt"
+			
+			"SoundFinal"	"ui/arm_bomb.wav"
+			"SoundBoom"		"weapons/hegrenade/explode4.wav"
 		}
 	}
 	

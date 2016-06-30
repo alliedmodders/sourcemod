@@ -35,6 +35,7 @@
 #include <am-refcounting.h>
 #include <sm_stringhashmap.h>
 #include "sm_memtable.h"
+#include <IHandleSys.h>
 
 HandleType_t htCellTrie;
 HandleType_t htSnapshot;
@@ -121,7 +122,7 @@ public:
 	}
 
 private:
-	Entry(const Entry &other) KE_DELETE;
+	Entry(const Entry &other) = delete;
 
 	ArrayInfo *ensureArray(size_t bytes) {
 		ArrayInfo *array = raw();

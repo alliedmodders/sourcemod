@@ -216,7 +216,7 @@
 		"Keys"
 		{
 			"ForceRespawn"			"_ZN9CTFPlayer12ForceRespawnEv"
-			"GiveNamedItemTF"		"_ZN9CTFPlayer13GiveNamedItemEPKciP13CEconItemViewb"
+			"GiveNamedItemTF"		"_ZN9CTFPlayer13GiveNamedItemEPKciPK13CEconItemViewb"
 			"EquipWearable"			"_ZN11CBasePlayer13EquipWearableEP13CEconWearable"
 			"RemoveWearable"		"_ZN11CBasePlayer14RemoveWearableEP13CEconWearable"
 			"GrenadeDetonate"		"_ZN12CBaseGrenade8DetonateEv"

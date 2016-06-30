@@ -91,7 +91,7 @@ public: // Used by the driver to implement GetInsertIDForQuery()/GetAffectedRows
 	unsigned int GetInsertID();
 	unsigned int GetAffectedRows();
 private:
-	ke::Ref<MyDatabase> m_pParent;
+	ke::RefPtr<MyDatabase> m_pParent;
 	MyBasicResults m_rs;
 	unsigned int m_InsertID;
 	unsigned int m_AffectedRows;

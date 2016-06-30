@@ -41,6 +41,9 @@ class CDataPack : public IDataPack
 public:
 	CDataPack();
 	~CDataPack();
+
+    static IDataPack *New();
+    static void Free(IDataPack *pack);
 public: //IDataReader
 	void Reset() const;
 	size_t GetPosition() const;

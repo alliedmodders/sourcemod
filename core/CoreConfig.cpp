@@ -33,13 +33,20 @@
 #include "CoreConfig.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include "sm_srvcmds.h"
 #include "sm_stringutil.h"
-#include "LibrarySys.h"
 #include "Logger.h"
 #include "frame_hooks.h"
 #include "logic_bridge.h"
+#include "compat_wrappers.h"
 #include <sourcemod_version.h>
+#include <amtl/os/am-path.h>
+#include <amtl/os/am-fsutil.h>
+#include <sh_list.h>
+#include <IForwardSys.h>
+#include <bridge/include/IScriptManager.h>
+#include <bridge/include/ILogger.h>
+
+using namespace SourceHook;
 
 #ifdef PLATFORM_WINDOWS
 ConVar sm_corecfgfile("sm_corecfgfile", "addons\\sourcemod\\configs\\core.cfg", 0, "SourceMod core configuration file");
@@ -60,21 +67,14 @@ ConVar *g_ServerCfgFile = NULL;
 
 void CheckAndFinalizeConfigs();
 
-#if SOURCE_ENGINE == SE_DOTA
-SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
-void Hook_ExecDispatchPre(const CCommandContext &context, const CCommand &cmd)
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 void Hook_ExecDispatchPre(const CCommand &cmd)
 #elif SOURCE_ENGINE == SE_DARKMESSIAH
 SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 void Hook_ExecDispatchPre()
 #else
-# if SH_IMPL_VERSION >= 4
- extern int __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
-# else
- extern bool __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
-# endif
+extern int __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
 extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
 void Hook_ExecDispatchPre()
 #endif
@@ -91,9 +91,7 @@ void Hook_ExecDispatchPre()
 	}
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void Hook_ExecDispatchPost(const CCommandContext &context, const CCommand &cmd)
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void Hook_ExecDispatchPost(const CCommand &cmd)
 #else
 void Hook_ExecDispatchPost()
@@ -117,7 +115,7 @@ void CheckAndFinalizeConfigs()
 
 void CoreConfig::OnSourceModAllInitialized()
 {
-	g_RootMenu.AddRootConsoleCommand("config", "Set core configuration options", this);
+	rootmenu->AddRootConsoleCommand3("config", "Set core configuration options", this);
 	g_pOnServerCfg = forwardsys->CreateForward("OnServerCfg", ET_Ignore, 0, NULL);
 	g_pOnConfigsExecuted = forwardsys->CreateForward("OnConfigsExecuted", ET_Ignore, 0, NULL);
 	g_pOnAutoConfigsBuffered = forwardsys->CreateForward("OnAutoConfigsBuffered", ET_Ignore, 0, NULL);
@@ -133,7 +131,7 @@ CoreConfig::~CoreConfig()
 
 void CoreConfig::OnSourceModShutdown()
 {
-	g_RootMenu.RemoveRootConsoleCommand("config", this);
+	rootmenu->RemoveRootConsoleCommand("config", this);
 	forwardsys->ReleaseForward(g_pOnServerCfg);
 	forwardsys->ReleaseForward(g_pOnConfigsExecuted);
 	forwardsys->ReleaseForward(g_pOnAutoConfigsBuffered);
@@ -183,44 +181,45 @@ void CoreConfig::OnSourceModLevelChange(const char *mapName)
 	g_bGotTrigger = false;
 }
 
-void CoreConfig::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
+void CoreConfig::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command)
 {
-	int argcount = command.ArgC();
+	int argcount = command->ArgC();
 	if (argcount >= 4)
 	{
-		const char *option = command.Arg(2);
-		const char *value = command.Arg(3);
+		const char *option = command->Arg(2);
+		const char *value = command->Arg(3);
 
 		char error[255];
-
 		ConfigResult res = SetConfigOption(option, value, ConfigSource_Console, error, sizeof(error));
 
 		if (res == ConfigResult_Reject)
 		{
-			g_RootMenu.ConsolePrint("[SM] Could not set config option \"%s\" to \"%s\". (%s)", option, value, error);
-		} else if (res == ConfigResult_Ignore) {
-			g_RootMenu.ConsolePrint("[SM] No such config option \"%s\" exists.", option);
+			UTIL_ConsolePrint("[SM] Could not set config option \"%s\" to \"%s\". (%s)", option, value, error);
 		} else {
-			g_RootMenu.ConsolePrint("[SM] Config option \"%s\" successfully set to \"%s\".", option, value);
+			if (res == ConfigResult_Ignore) {
+				UTIL_ConsolePrint("[SM] WARNING: Config option \"%s\" is not registered.", option);
+			}
+
+			UTIL_ConsolePrint("[SM] Config option \"%s\" set to \"%s\".", option, value);
 		}
 
 		return;
 	} else if (argcount >= 3) {
-		const char *option = command.Arg(2);
+		const char *option = command->Arg(2);
 		
 		const char *value = GetCoreConfigValue(option);
 		
 		if (value == NULL)
 		{
-			g_RootMenu.ConsolePrint("[SM] No such config option \"%s\" exists.", option);
+			UTIL_ConsolePrint("[SM] No such config option \"%s\" exists.", option);
 		} else {
-			g_RootMenu.ConsolePrint("[SM] Config option \"%s\" is set to \"%s\".", option, value);
+			UTIL_ConsolePrint("[SM] Config option \"%s\" is set to \"%s\".", option, value);
 		}
 		
 		return;
 	}
 
-	g_RootMenu.ConsolePrint("[SM] Usage: sm config <option> [value]");
+	UTIL_ConsolePrint("[SM] Usage: sm config <option> [value]");
 }
 
 void CoreConfig::Initialize()
@@ -237,7 +236,7 @@ void CoreConfig::Initialize()
 	 */
 	if (corecfg)
 	{
-		g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), corecfg);
+		ke::path::Format(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), corecfg);
 	}
 	else
 	{
@@ -246,11 +245,11 @@ void CoreConfig::Initialize()
 		/* Format path to config file */
 		if (basepath)
 		{
-			g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s/%s", g_SourceMod.GetGamePath(), basepath, "configs/core.cfg");
+			ke::path::Format(filePath, sizeof(filePath), "%s/%s/%s", g_SourceMod.GetGamePath(), basepath, "configs/core.cfg");
 		}
 		else
 		{
-			g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), sm_corecfgfile.GetDefault());
+			ke::path::Format(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), sm_corecfgfile.GetDefault());
 		}
 	}
 
@@ -341,12 +340,12 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 
 		g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "cfg/%s", folder);
 
-		if (!g_LibSys.IsPathDirectory(path))
+		if (!ke::file::IsDirectory(path))
 		{
 			char *cur_ptr = path;
 			size_t len;
 			
-			g_LibSys.PathFormat(path, sizeof(path), "%s", folder);
+			ke::path::Format(path, sizeof(path), "%s", folder);
 			len = g_SourceMod.BuildPath(Path_Game, build, sizeof(build), "cfg");
 
 			do
@@ -367,14 +366,12 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 				{
 					next_ptr = NULL;
 				}
-				len += g_LibSys.PathFormat(&build[len], 
+				len += ke::path::Format(&build[len],
 					sizeof(build)-len,
 					"/%s",
 					cur_ptr);
-				if (!g_LibSys.CreateFolder(build))
-				{
+				if (!ke::file::CreateDirectory(build))
 					break;
-				}
 				cur_ptr = next_ptr;
 			} while (cur_ptr);
 		}
@@ -386,13 +383,13 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 
 	if (cfg->folder.size())
 	{
-		g_LibSys.PathFormat(local, 
-			sizeof(local), 
+		ke::path::Format(local,
+			sizeof(local),
 			"%s/%s.cfg",
 			cfg->folder.c_str(),
 			cfg->autocfg.c_str());
 	} else {
-		g_LibSys.PathFormat(local,
+		ke::path::Format(local,
 			sizeof(local),
 			"%s.cfg",
 			cfg->autocfg.c_str());
@@ -400,7 +397,7 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 	
 	g_SourceMod.BuildPath(Path_Game, file, sizeof(file), "cfg/%s", local);
 
-	bool file_exists = g_LibSys.IsPathFile(file);
+	bool file_exists = ke::file::IsFile(file);
 	if (!file_exists && will_create)
 	{
 		List<const ConVar *> *convars = NULL;
@@ -429,7 +426,7 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 					char *dptr = descr;
 
 					/* Print comments until there is no more */
-					strncopy(descr, cvar->GetHelpText(), sizeof(descr));
+					ke::SafeStrcpy(descr, sizeof(descr), cvar->GetHelpText());
 					while (*dptr != '\0')
 					{
 						/* Find the next line */
@@ -478,7 +475,7 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 	if (file_exists)
 	{
 		char cmd[255];
-		UTIL_Format(cmd, sizeof(cmd), "exec %s\n", local);
+		ke::SafeSprintf(cmd, sizeof(cmd), "exec %s\n", local);
 		engine->ServerCommand(cmd);
 	}
 
@@ -533,7 +530,7 @@ void SM_ExecuteForPlugin(IPluginContext *ctx)
 			can_create = SM_ExecuteConfig(plugin, plugin->GetConfig(i), can_create);
 		}
 		char cmd[255];
-		UTIL_Format(cmd, sizeof(cmd), "sm internal 2 %d\n", plugin->GetSerial());
+		ke::SafeSprintf(cmd, sizeof(cmd), "sm_internal 2 %d\n", plugin->GetSerial());
 		engine->ServerCommand(cmd);
 	}
 }
@@ -580,7 +577,24 @@ void SM_InternalCmdTrigger()
 {
 	/* Order is important here.  We need to buffer things before we send the command out. */
 	g_pOnAutoConfigsBuffered->Execute(NULL);
-	engine->ServerCommand("sm internal 1\n");
+	engine->ServerCommand("sm_internal 1\n");
     g_PendingInternalPush = false;
 }
 
+CON_COMMAND(sm_internal, "")
+{
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
+	CCommand args;
+#endif
+
+	if (args.ArgC() < 1)
+		return;
+
+	const char *arg = args.Arg(1);
+	if (strcmp(arg, "1") == 0) {
+		SM_ConfigsExecuted_Global();
+	} else if (strcmp(arg, "2") == 0) {
+		if (args.ArgC() >= 3)
+			SM_ConfigsExecuted_Plugin(atoi(args.Arg(2)));
+	}
+}

@@ -40,7 +40,6 @@
 #include <sm_namehashset.h>
 
 using namespace SourceMod;
-using namespace SourceHook;
 
 class SendProp;
 

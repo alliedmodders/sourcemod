@@ -34,6 +34,9 @@
 #include "Logger.h"
 #include <sourcemod_version.h>
 #include <ISourceMod.h>
+#include <am-string.h>
+#include <ILibrarySys.h>
+#include <bridge/include/CoreProvider.h>
 
 Logger g_Logger;
 
@@ -57,7 +60,7 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "off") == 0) {
 			state = false;
 		} else {
-			smcore.Format(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
+			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
 			return ConfigResult_Reject;
 		}
 
@@ -78,7 +81,7 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "game") == 0) {
 			m_Mode = LoggingMode_Game;
 		} else {
-			smcore.Format(error, maxlength, "Invalid value: must be [daily|map|game]");
+			ke::SafeSprintf(error, maxlength, "Invalid value: must be [daily|map|game]");
 			return ConfigResult_Reject;
 		}
 
@@ -261,10 +264,10 @@ void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
 		return;
 	}
 
-	static ConVar *sv_logecho = smcore.FindConVar("sv_logecho");
+	static ConVar *sv_logecho = bridge->FindConVar("sv_logecho");
 
 	char buffer[3072];
-	smcore.FormatArgs(buffer, sizeof(buffer), msg, ap);
+	ke::SafeVsprintf(buffer, sizeof(buffer), msg, ap);
 
 	char date[32];
 	time_t t = g_pSM->GetAdjustedTime();
@@ -273,11 +276,11 @@ void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
 
 	fprintf(fp, "L %s: %s\n", date, buffer);
 
-	if (!sv_logecho || smcore.GetCvarBool(sv_logecho))
+	if (!sv_logecho || bridge->GetCvarBool(sv_logecho))
 	{
 		static char conBuffer[4096];
-		smcore.Format(conBuffer, sizeof(conBuffer), "L %s: %s\n", date, buffer);
-		smcore.ConPrint(conBuffer);
+		ke::SafeSprintf(conBuffer, sizeof(conBuffer), "L %s: %s\n", date, buffer);
+		bridge->ConPrint(conBuffer);
 	}
 }
 
@@ -289,7 +292,7 @@ void Logger::LogToFileOnlyEx(FILE *fp, const char *msg, va_list ap)
 	}
 
 	char buffer[3072];
-	smcore.FormatArgs(buffer, sizeof(buffer), msg, ap);
+	ke::SafeVsprintf(buffer, sizeof(buffer), msg, ap);
 
 	char date[32];
 	time_t t = g_pSM->GetAdjustedTime();
@@ -474,7 +477,7 @@ void Logger::_PrintToGameLog(const char *fmt, va_list ap)
 	msg[len++] = '\n';
 	msg[len] = '\0';
 
-	smcore.LogToGame(msg);
+	bridge->LogToGame(msg);
 }
 
 const char *Logger::GetLogFileName(LogType type) const

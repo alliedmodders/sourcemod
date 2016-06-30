@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -33,15 +33,10 @@
 #define _INCLUDE_SOURCEMOD_SYSTEM_LIBRARY_H_
 
 #include <ILibrarySys.h>
+#include <amtl/os/am-shared-library.h>
 #include "sm_platform.h"
 
 using namespace SourceMod;
-
-#if defined PLATFORM_WINDOWS
-typedef HMODULE		LibraryHandle;
-#elif defined PLATFORM_POSIX
-typedef void *		LibraryHandle;
-#endif
 
 class CDirectory : public IDirectory
 {
@@ -71,13 +66,12 @@ private:
 class CLibrary : public ILibrary
 {
 public:
-	CLibrary(LibraryHandle me);
-	~CLibrary();
+	CLibrary(ke::RefPtr<ke::SharedLib> lib);
 public:
-	void CloseLibrary();
-	void *GetSymbolAddress(const char *symname);
+	void CloseLibrary() override;
+	void *GetSymbolAddress(const char *symname) override;
 private:
-	LibraryHandle m_lib;
+	ke::RefPtr<ke::SharedLib> lib_;
 };
 
 class LibrarySystem : public ILibrarySys
@@ -96,7 +90,6 @@ public:
 	bool CreateFolder(const char *path);
 	size_t GetFileFromPath(char *buffer, size_t maxlength, const char *path);
 	bool FileTime(const char *path, FileTimeType type, time_t *pTime);
-	void GetLoaderError(char *buffer, size_t maxlength);
 };
 
 extern LibrarySystem g_LibSys;

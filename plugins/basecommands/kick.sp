@@ -31,7 +31,7 @@
  * Version: $Id$
  */
  
-PerformKick(client, target, const String:reason[])
+void PerformKick(int client, int target, const char[] reason)
 {
 	LogAction(client, target, "\"%L\" kicked \"%L\" (reason \"%s\")", client, target, reason);
 
@@ -45,11 +45,11 @@ PerformKick(client, target, const String:reason[])
 	}
 }
 
-DisplayKickMenu(client)
+void DisplayKickMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_Kick);
+	Menu menu = new Menu(MenuHandler_Kick);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "Kick player", client);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
@@ -59,12 +59,12 @@ DisplayKickMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public AdminMenu_Kick(Handle:topmenu, 
-					  TopMenuAction:action,
-					  TopMenuObject:object_id,
-					  param,
-					  String:buffer[],
-					  maxlength)
+public void AdminMenu_Kick(TopMenu topmenu, 
+					  TopMenuAction action,
+					  TopMenuObject object_id,
+					  int param,
+					  char[] buffer,
+					  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -76,7 +76,7 @@ public AdminMenu_Kick(Handle:topmenu,
 	}
 }
 
-public MenuHandler_Kick(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_Kick(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -91,8 +91,8 @@ public MenuHandler_Kick(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32];
-		new userid, target;
+		char info[32];
+		int userid, target;
 		
 		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
@@ -107,7 +107,7 @@ public MenuHandler_Kick(Menu menu, MenuAction action, int param1, int param2)
 		}
 		else
 		{
-			decl String:name[MAX_NAME_LENGTH];
+			char name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			ShowActivity2(param1, "[SM] ", "%t", "Kicked target", "_s", name);
 			PerformKick(param1, target, "");
@@ -121,7 +121,7 @@ public MenuHandler_Kick(Menu menu, MenuAction action, int param1, int param2)
 	}
 }
 
-public Action:Command_Kick(client, args)
+public Action Command_Kick(int client, int args)
 {
 	if (args < 1)
 	{
@@ -129,11 +129,11 @@ public Action:Command_Kick(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:Arguments[256];
+	char Arguments[256];
 	GetCmdArgString(Arguments, sizeof(Arguments));
 
-	decl String:arg[65];
-	new len = BreakString(Arguments, arg, sizeof(arg));
+	char arg[65];
+	int len = BreakString(Arguments, arg, sizeof(arg));
 	
 	if (len == -1)
 	{
@@ -142,8 +142,9 @@ public Action:Command_Kick(client, args)
 		Arguments[0] = '\0';
 	}
 
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(
 			arg,
@@ -155,7 +156,7 @@ public Action:Command_Kick(client, args)
 			sizeof(target_name),
 			tn_is_ml)) > 0)
 	{
-		decl String:reason[64];
+		char reason[64];
 		Format(reason, sizeof(reason), Arguments[len]);
 
 		if (tn_is_ml)
@@ -181,9 +182,9 @@ public Action:Command_Kick(client, args)
 			}
 		}
 		
-		new kick_self = 0;
+		int kick_self = 0;
 		
-		for (new i = 0; i < target_count; i++)
+		for (int i = 0; i < target_count; i++)
 		{
 			/* Kick everyone else first */
 			if (target_list[i] == client)

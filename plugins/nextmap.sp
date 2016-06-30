@@ -63,7 +63,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 			|| StrEqual(game, "left4dead2", false)
 			|| StrEqual(game, "garrysmod", false)
 			|| StrEqual(game, "swarm", false)
-			|| StrEqual(game, "dota", false)
 			|| StrEqual(game, "bms", false)
 			|| GetEngineVersion() == Engine_Insurgency)
 	{
@@ -73,7 +72,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 	return APLRes_Success;
 }
-
 
 public void OnPluginStart()
 {
@@ -153,7 +151,8 @@ void FindAndSetNextMap()
 		for (int i = 0; i < mapCount; i++)
 		{
 			g_MapList.GetString(i, mapName, sizeof(mapName));
-			if (strcmp(current, mapName, false) == 0)
+			if (FindMap(mapName, mapName, sizeof(mapName)) != FindMap_NotFound && 
+				strcmp(current, mapName, false) == 0)
 			{
 				g_MapPos = i;
 				break;

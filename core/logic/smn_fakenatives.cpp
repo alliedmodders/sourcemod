@@ -35,6 +35,7 @@
 #include "common_logic.h"
 #include "ShareSys.h"
 #include "PluginSys.h"
+#include "sprintf.h"
 
 using namespace SourceHook;
 
@@ -391,7 +392,6 @@ static cell_t FormatNativeString(IPluginContext *pContext, const cell_t *params)
 	}
 
 	/* Get buffer information */
-	int err;
 	char *output_buffer;
 	char *format_buffer;
 
@@ -412,7 +412,7 @@ static cell_t FormatNativeString(IPluginContext *pContext, const cell_t *params)
 	size_t written;
 	{
 		DetectExceptions eh(pContext);
-		written = smcore.atcprintf(output_buffer, maxlen, format_buffer, s_curcaller, s_curparams, &var_param);
+		written = atcprintf(output_buffer, maxlen, format_buffer, s_curcaller, s_curparams, &var_param);
 		if (eh.HasException())
 			return 0;
 	}

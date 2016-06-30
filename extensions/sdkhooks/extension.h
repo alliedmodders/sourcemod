@@ -31,10 +31,6 @@
 #define GAMEDESC_CAN_CHANGE
 #endif
 
-#if SOURCE_ENGINE == SE_DOTA
-class CEntityKeyValues;
-#endif
-
 
 /**
  * Globals
@@ -92,6 +88,7 @@ enum SDKHookType
 	SDKHook_BlockedPost,
 	SDKHook_OnTakeDamage_Alive,
 	SDKHook_OnTakeDamage_AlivePost,
+	SDKHook_CanBeAutobalanced,
 	SDKHook_MAXHOOKS
 };
 
@@ -284,6 +281,7 @@ public:
 	/**
 	 * CBaseEntity Hook Handlers
 	 */
+	bool Hook_CanBeAutobalanced();
 	void Hook_EndTouch(CBaseEntity *pOther);
 	void Hook_EndTouchPost(CBaseEntity *pOther);
 	void Hook_FireBulletsPost(const FireBulletsInfo_t &info);
@@ -303,13 +301,8 @@ public:
 	bool Hook_ReloadPost();
 	void Hook_SetTransmit(CCheckTransmitInfo *pInfo, bool bAlways);
 	bool Hook_ShouldCollide(int collisonGroup, int contentsMask);
-#if SOURCE_ENGINE == SE_DOTA
-	void Hook_Spawn(CEntityKeyValues *kv);
-	void Hook_SpawnPost(CEntityKeyValues *kv);
-#else
 	void Hook_Spawn();
 	void Hook_SpawnPost();
-#endif
 	void Hook_StartTouch(CBaseEntity *pOther);
 	void Hook_StartTouchPost(CBaseEntity *pOther);
 	void Hook_Think();

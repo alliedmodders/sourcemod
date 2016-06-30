@@ -31,23 +31,18 @@
 #ifndef _INCLUDE_SOURCEMOD_LOGIC_BRIDGE_H_
 #define _INCLUDE_SOURCEMOD_LOGIC_BRIDGE_H_
 
-#include "logic/intercom.h"
+#include <bridge/include/LogicProvider.h>
 
-void InitLogicBridge();
-bool StartLogicBridge(char *error, size_t maxlength);
-void ShutdownLogicBridge();
-
-struct sm_logic_t;
-
-extern sm_logic_t logicore;
-extern ITranslator *translator;
-extern IGameConfig *g_pGameConf;
-extern IScriptManager *scripts;
-extern IShareSys *sharesys;
-extern IExtensionSys *extsys;
-extern IHandleSys *handlesys;
-extern IForwardManager *forwardsys;
-extern IAdminSystem *adminsys;
-extern ILogger *logger;
+extern SourceMod::sm_logic_t logicore;
+extern SourceMod::ITranslator *translator;
+extern SourceMod::IGameConfig *g_pGameConf;
+extern SourceMod::IScriptManager *scripts;
+extern SourceMod::IShareSys *sharesys;
+extern SourceMod::IExtensionSys *extsys;
+extern SourceMod::IHandleSys *handlesys;
+extern SourceMod::IForwardManager *forwardsys;
+extern SourceMod::IAdminSystem *adminsys;
+extern SourceMod::ILogger *logger;
+extern SourceMod::IRootConsole *rootmenu;
 
 #endif /* _INCLUDE_SOURCEMOD_LOGIC_BRIDGE_H_ */

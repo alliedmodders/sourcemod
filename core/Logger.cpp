@@ -34,10 +34,10 @@
 #include "sourcemm_api.h"
 #include "sm_stringutil.h"
 #include "Logger.h"
-#include "LibrarySys.h"
 #include "TimerSys.h"
 #include "logic_bridge.h"
 #include <sourcemod_version.h>
+#include <bridge/include/IProviderCallbacks.h>
 
 bool g_in_game_log_hook = false;
 
@@ -48,7 +48,7 @@ SH_DECL_HOOK1_void(IVEngineServer, LogPrint, SH_NOATTRIB, false, const char *);
 static void HookLogPrint(const char *message)
 {
 	g_in_game_log_hook = true;
-	bool stopped = logicore.OnLogPrint(message);
+	bool stopped = logicore.callbacks->OnLogPrint(message);
 	g_in_game_log_hook = false;
 
 	if (stopped)

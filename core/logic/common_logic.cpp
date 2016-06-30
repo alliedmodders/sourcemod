@@ -51,31 +51,40 @@
 #include "AdminCache.h"
 #include "ProfileTools.h"
 #include "Logger.h"
+#include "frame_tasks.h"
+#include "sprintf.h"
+#include "LibrarySys.h"
+#include "RootConsoleMenu.h"
+#include "CDataPack.h"
+#include <bridge/include/BridgeAPI.h>
+#include <bridge/include/IProviderCallbacks.h>
 
-sm_core_t smcore;
-IHandleSys *handlesys = &g_HandleSys;
-IdentityToken_t *g_pCoreIdent;
 SMGlobalClass *SMGlobalClass::head = NULL;
-ISourceMod *g_pSM;
-ILibrarySys *libsys;
+
+CoreProvider *bridge = nullptr;
+ISourceMod *g_pSM = nullptr;
+IVEngineServerBridge *engine = nullptr;
+IdentityToken_t *g_pCoreIdent = nullptr;
+ITimerSystem *timersys = nullptr;
+IGameHelpers *gamehelpers = nullptr;
+IMenuManager *menus = nullptr;
+IPlayerManager *playerhelpers = nullptr;
+
+IHandleSys *handlesys = &g_HandleSys;
+ILibrarySys *libsys = &g_LibSys;
 ITextParsers *textparser = &g_TextParser;
-IVEngineServer *engine;
 IShareSys *sharesys = &g_ShareSys;
-IRootConsole *rootmenu;
+IRootConsole *rootmenu = &g_RootMenu;
 IPluginManager *pluginsys = g_PluginSys.GetOldAPI();
 IForwardManager *forwardsys = &g_Forwards;
-ITimerSystem *timersys;
 ServerGlobals serverGlobals;
-IPlayerManager *playerhelpers;
 IAdminSystem *adminsys = &g_Admins;
-IGameHelpers *gamehelpers;
 ISourcePawnEngine *g_pSourcePawn;
 ISourcePawnEngine2 *g_pSourcePawn2;
-CNativeOwner g_CoreNatives;
 IScriptManager *scripts = &g_PluginSys;
 IExtensionSys *extsys = &g_Extensions;
 ILogger *logger = &g_Logger;
-IMenuManager *menus;
+CNativeOwner g_CoreNatives;
 
 static void AddCorePhraseFile(const char *filename)
 {
@@ -86,9 +95,6 @@ static IGameConfig *GetCoreGameConfig()
 {
 	return g_pGameConf;
 }
-
-// Defined in smn_filesystem.cpp.
-extern bool OnLogPrint(const char *msg);
 
 static void GenerateError(IPluginContext *ctx, cell_t idx, int err, const char *msg, ...)
 {
@@ -103,20 +109,24 @@ static void AddNatives(sp_nativeinfo_t *natives)
 	g_CoreNatives.AddNatives(natives);
 }
 
-static void DumpHandles(void (*dumpfn)(const char *fmt, ...))
-{
-	g_HandleSys.Dump(dumpfn);
-}
-
-static bool DumpAdminCache(const char *filename)
-{
-	return g_Admins.DumpCache(filename);
-}
-
 static void RegisterProfiler(IProfilingTool *tool)
 {
 	g_ProfileToolManager.RegisterTool(tool);
 }
+
+// Defined in smn_filesystem.cpp.
+extern bool OnLogPrint(const char *msg);
+
+class ProviderCallbackListener : public IProviderCallbacks
+{
+public:
+	bool OnLogPrint(const char *msg) override {
+		return ::OnLogPrint(msg);
+	}
+	void OnThink(bool simulating) override {
+		RunScheduledFrameTasks(simulating);
+	}
+} sProviderCallbackListener;
 
 static sm_logic_t logic =
 {
@@ -124,19 +134,19 @@ static sm_logic_t logic =
 	g_pThreader,
 	&g_Translator,
 	stristr,
+	atcprintf,
 	CoreTranslate,
 	AddCorePhraseFile,
 	UTIL_ReplaceAll,
 	UTIL_ReplaceEx,
 	UTIL_DecodeHexString,
 	GetCoreGameConfig,
-	OnLogPrint,
 	&g_DbgReporter,
 	GenerateError,
 	AddNatives,
-	DumpHandles,
-	DumpAdminCache,
 	RegisterProfiler,
+	CDataPack::New,
+	CDataPack::Free,
 	&g_PluginSys,
 	&g_ShareSys,
 	&g_Extensions,
@@ -145,21 +155,21 @@ static sm_logic_t logic =
 	&g_Admins,
 	NULL,
 	&g_Logger,
+	&g_RootMenu,
+	&sProviderCallbackListener,
 	-1.0f
 };
 
-static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
+static void logic_init(CoreProvider* core, sm_logic_t* _logic)
 {
 	logic.head = SMGlobalClass::head;
 
-	memcpy(&smcore, core, sizeof(sm_core_t));
+	bridge = core;
 	memcpy(_logic, &logic, sizeof(sm_logic_t));
 	memcpy(&serverGlobals, core->serverGlobals, sizeof(ServerGlobals));
 
-	libsys = core->libsys;
 	engine = core->engine;
 	g_pSM = core->sm;
-	rootmenu = core->rootmenu;
 	timersys = core->timersys;
 	playerhelpers = core->playerhelpers;
 	gamehelpers = core->gamehelpers;

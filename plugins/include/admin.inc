@@ -234,7 +234,7 @@ methodmap AdminId {
 	// @param maxlength     Maximum size of the output name buffer.
 	//                      Note: This will safely chop UTF-8 strings.
 	// @return              True if there was a password set, false otherwise.
-	public native bool GetPassword(char[] buffer="", maxlength=0);
+	public native bool GetPassword(char[] buffer="", int maxlength=0);
 
 	// Tests whether one admin can target another.
 	//
@@ -584,7 +584,7 @@ native void SetAdminPassword(AdminId id, const char[] password);
  *						Note: This will safely chop UTF-8 strings.
  * @return				True if there was a password set, false otherwise.
  */
-native bool GetAdminPassword(AdminId id, char buffer[]="", int maxlength=0);
+native bool GetAdminPassword(AdminId id, char[] buffer="", int maxlength=0);
 
 /**
  * Attempts to find an admin by an auth method and an identity.
@@ -662,7 +662,7 @@ native bool FindFlagByName(const char[] name, AdminFlag &flag);
 native bool FindFlagByChar(int c, AdminFlag &flag);
 
 /**
- * Finds a flag char by a gived admin flag.
+ * Finds the flag char for a given admin flag.
  *
  * @param flag                 Flag to look up.
  * @param c                    Variable to store flag char.

@@ -42,26 +42,29 @@ innerclass = ""
 classname = None
 offsetdata = {}
 
+# Detect address size
+adr_size = 8 if __EA64__ else 4
+
 def ExtractTypeInfo(ea, level = 0):
 	global catchclass
 	global innerclass
 	global classname
 	global offsetdata
 	
-	end = ea + 4
+	end = ea + adr_size
 	
 	while len(Name(end)) == 0:
-		end += 4
+		end += adr_size
 	
-	while Dword(end - 4) == 0:
-		end -= 4
+	while Dword(end - adr_size) == 0:
+		end -= adr_size
 	
 	# Skip vtable
-	ea += 4
+	ea += adr_size
 	
 	# Get type name
 	name = Demangle("_Z" + GetString(Dword(ea)), GetLongPrm(INF_LONG_DN))
-	ea += 4
+	ea += adr_size
 	
 	if classname is None and level == 0:
 		classname = name
@@ -76,15 +79,15 @@ def ExtractTypeInfo(ea, level = 0):
 		pass
 	elif Dword(ea) != 0: #elif isData(GetFlags(Dword(ea))): # Single Inheritance
 		ExtractTypeInfo(Dword(ea), level + 1)
-		ea += 4
+		ea += adr_size
 	else: # Multiple Inheritance
 		ea += 8
 		while ea < end:
 			catchclass = True
 			ExtractTypeInfo(Dword(ea), level + 1)
-			ea += 4
+			ea += adr_size
 			offset = Dword(ea)
-			ea += 4
+			ea += adr_size
 			#print "%*s Offset: 0x%06X" % (level, "", offset >> 8)
 			if (offset >> 8) != 0:
 				offsetdata[offset >> 8] = innerclass
@@ -106,15 +109,15 @@ def Analyze():
 	
 	ea = ScreenEA()
 	
-	end = ea + 4
+	end = ea + adr_size
 	while Demangle(Name(end), GetLongPrm(INF_LONG_DN)) is None:
-		end += 4
+		end += adr_size
 	
-	while Dword(end - 4) == 0:
-		end -= 4
+	while Dword(end - adr_size) == 0:
+		end -= adr_size
 	
 	while Demangle(Name(ea), GetLongPrm(INF_LONG_DN)) is None:
-		ea -= 4
+		ea -= adr_size
 	
 	name = Demangle(Name(ea), GetLongPrm(INF_LONG_DN))
 	if ea == BADADDR or name is None or not re.search(r"vf?table(?: |'\{)for", name):
@@ -134,11 +137,11 @@ def Analyze():
 		# Read thisoffs
 		offset = -twos_comp(Dword(ea), 32)
 		#print "Offset: 0x%08X (%08X)" % (offset, ea)
-		ea += 4
+		ea += adr_size
 		
 		# Read typeinfo address
 		typeinfo = Dword(ea)
-		ea += 4
+		ea += adr_size
 		
 		if offset == 0: # We only need to read this once
 			print "Inheritance Tree:"
@@ -175,7 +178,7 @@ def Analyze():
 					#print "Stripping '%s' from windows vtable." % (name)
 					temp_windows_vtable.remove(name)
 			
-			ea += 4
+			ea += adr_size
 	
 	for i, v in enumerate(temp_windows_vtable):
 		if "::~" in v:

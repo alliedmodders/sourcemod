@@ -10,23 +10,23 @@
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"227"
+				"windows"	"226"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"225"
+				"windows"	"224"
 			}
 			"Ignite"
 			{
-				"windows"	"189"
+				"windows"	"188"
 			}
 			"Extinguish"
 			{
-				"windows"	"190"
+				"windows"	"189"
 			}
 			"Teleport"
 			{
-				"windows"	"99"
+				"windows"	"98"
 			}
 			"CommitSuicide"
 			{
@@ -34,11 +34,11 @@
 			}
 			"GetVelocity"
 			{
-				"windows"	"127"
+				"windows"	"126"
 			}
 			"EyeAngles"
 			{
-				"windows"	"119"
+				"windows"	"118"
 			}
 			"AcceptInput"
 			{
@@ -62,7 +62,7 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"218"
+				"windows"	"217"
 			}
 			"Activate"
 			{
@@ -79,6 +79,26 @@
 			{
 				"library"	"server"
 				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x6A\x00"
+			}
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x57\x85\xF6"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"windows"	"\x56\x8B\x74\x24\x0C\x57\x8B\x7C\x24\x0C\x83\xFE\xFF"
+			}
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x81\xEC\x20\x01\x00\x00\x53\x55\x56"
+			}
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x40\xC1\xE0\x04\x8B\x3C\x30\xEB\x2A\x8B\xBE\x04\x00\x01\x00\x85\xFF\x74\x2A\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\x8D\xA4\x24\x00\x00\x00\x00\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\xD5\x83\xC4\x04\xEB\x2A\x39\x5E\x0C"
 			}
 		}
 		"Keys"

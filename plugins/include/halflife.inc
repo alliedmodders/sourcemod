@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2016 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -53,7 +53,7 @@
 #define MOTDPANEL_TYPE_TEXT		0	/**< Treat msg as plain text */
 #define MOTDPANEL_TYPE_INDEX	1	/**< Msg is auto determined by the engine */
 #define MOTDPANEL_TYPE_URL		2	/**< Treat msg as an URL link */
-#define MOTDPANEL_TYPE_FILE		3	/**< Treat msg as a filename to be openned */
+#define MOTDPANEL_TYPE_FILE		3	/**< Treat msg as a filename to be opened */
 
 enum DialogType
 {
@@ -117,17 +117,15 @@ enum FindMapResult
  *
  * @param format		String format.
  * @param ...			Format arguments.
- * @noreturn
  */
-native LogToGame(const String:format[], any:...);
+native void LogToGame(const char[] format, any ...);
 
 /**
  * Sets the seed value for the global Half-Life 2 Random Stream.
  *
  * @param seed			Seed value.
- * @noreturn	
  */
-native SetRandomSeed(seed);
+native void SetRandomSeed(int seed);
 
 /**
  * Returns a random floating point number from the Half-Life 2 Random Stream.
@@ -136,7 +134,7 @@ native SetRandomSeed(seed);
  * @param fMax			Maximum random bound.
  * @return				A random number between (inclusive) fMin and fMax.
  */
-native Float:GetRandomFloat(Float:fMin=0.0, Float:fMax=1.0);
+native float GetRandomFloat(float fMin=0.0, float fMax=1.0);
 
 /**
  * Returns a random number from the Half-Life 2 Random Stream.
@@ -145,7 +143,7 @@ native Float:GetRandomFloat(Float:fMin=0.0, Float:fMax=1.0);
  * @param nmax			Maximum random bound.
  * @return				A random number between (inclusive) nmin and nmax.
  */
-native GetRandomInt(nmin, nmax);
+native int GetRandomInt(int nmin, int nmax);
 
 /**
  * Returns whether a map is valid or not.
@@ -153,46 +151,65 @@ native GetRandomInt(nmin, nmax);
  * @param map 			Map name, excluding .bsp extension.
  * @return				True if valid, false otherwise.
  */
-native bool:IsMapValid(const String:map[]);
+native bool IsMapValid(const char[] map);
 
 /**
  * Returns whether a full or partial map name is found or can be resolved
  * 
  * @param map 			Map name (usually same as map path relative to maps/ dir,
- *						excluding .bsp extension). If result is FindMap_FuzzyMatch
- *						or FindMap_NonCanonical, this will be updated to the full path.
+ *						excluding .bsp extension).
+ * @param foundmap		Resolved map name. If the return is FindMap_FuzzyMatch
+ *						or FindMap_NonCanonical the buffer will be the full path.
  * @param maxlen		Maximum length to write to map var.
  * @return				Result of the find operation. Not all result types are supported on all games.
  */
-native FindMapResult FindMap(char[] map, int maxlen);
+native FindMapResult FindMap(const char[] map, char[] foundmap, int maxlen);
+
+/**
+ * Get the display name of a workshop map.
+ * 
+ * Note: You do not need to call FindMap first.  This native will call FindMap internally.
+ * 
+ * @param map 			Map name (usually same as map path relative to maps/ dir,
+ *						excluding .bsp extension).
+ * @param displayName	Map's display name, i.e. cp_mymapname or de_mymapname.
+ *						If FindMap returns FindMap_PossiblyAvailable or FindMap_NotFound,
+ *						the map cannot be resolved and this native will return false,
+ *						but displayName will be a copy of map.
+ * @param maxlen		Maximum length to write to displayName var.
+ * @return				true if FindMap returns FindMap_Found, FindMap_FuzzyMatch, or
+ * 						FindMap_NonCanonical.
+ * 						false if FindMap returns FindMap_PossiblyAvailable or FindMap_NotFound.
+ */
+native bool GetMapDisplayName(const char[] map, char[] displayName, int maxlen);
 
 /**
  * Returns whether the server is dedicated.
  *
  * @return				True if dedicated, false otherwise.
  */
-native bool:IsDedicatedServer();
+native bool IsDedicatedServer();
 
 /**
  * Returns a high-precision time value for profiling the engine.
  *
  * @return				A floating point time value.
  */
-native Float:GetEngineTime();
+native float GetEngineTime();
 
 /** 
  * Returns the game time based on the game tick.
  *
  * @return				Game tick time.
  */
-native Float:GetGameTime();
+native float GetGameTime();
 
 /** 
  * Returns the game's internal tick count.
  *
  * @return				Game tick count.
  */
-native GetGameTickCount();
+native int GetGameTickCount();
 
 /**
  * Returns the game description from the mod.
@@ -203,17 +220,16 @@ native GetGameTickCount();
  *						ignoring any potential hooks from plugins.
  * @return				Number of bytes written to the buffer (UTF-8 safe).
  */
-native GetGameDescription(String:buffer[], maxlength, bool:original=false);
+native int GetGameDescription(char[] buffer, int maxlength, bool original=false);
 
 /**
  * Returns the name of the game's directory.
  *
  * @param buffer		Buffer to store the directory name.
  * @param maxlength		Maximum size of the buffer.
- *
- * return				Number of bytes written to the buffer (UTF-8 safe).
+ * @return				Number of bytes written to the buffer (UTF-8 safe).
  */
-native GetGameFolderName(String:buffer[], maxlength);
+native int GetGameFolderName(char[] buffer, int maxlength);
 
 /**
  * Returns the current map name.
@@ -222,7 +238,7 @@ native GetGameFolderName(String:buffer[], maxlength);
  * @param maxlength		Maximum length of buffer.
  * @return				Number of bytes written (UTF-8 safe).
  */
-native GetCurrentMap(String:buffer[], maxlength);
+native int GetCurrentMap(char[] buffer, int maxlength);
 
 /**
  * Precaches a given model.
@@ -231,7 +247,7 @@ native GetCurrentMap(String:buffer[], maxlength);
  * @param preload		If preload is true the file will be precached before level startup.
  * @return				Returns the model index, 0 for error.
  */
-native PrecacheModel(const String:model[], bool:preload=false);
+native int PrecacheModel(const char[] model, bool preload=false);
 
 /**
  * Precaches a given sentence file.
@@ -240,7 +256,7 @@ native PrecacheModel(const String:model[], bool:preload=false);
  * @param preload		If preload is true the file will be precached before level startup.
  * @return				Returns a sentence file index.
  */
-native PrecacheSentenceFile(const String:file[], bool:preload=false);
+native int PrecacheSentenceFile(const char[] file, bool preload=false);
 
 /**
  * Precaches a given decal.
@@ -249,7 +265,7 @@ native PrecacheSentenceFile(const String:file[], bool:preload=false);
  * @param preload		If preload is true the file will be precached before level startup.
  * @return				Returns a decal index.
  */
-native PrecacheDecal(const String:decal[], bool:preload=false);
+native int PrecacheDecal(const char[] decal, bool preload=false);
 
 /**
  * Precaches a given generic file.
@@ -258,7 +274,7 @@ native PrecacheDecal(const String:decal[], bool:preload=false);
  * @param preload		If preload is true the file will be precached before level startup.
  * @return				Returns a generic file index.
  */
-native PrecacheGeneric(const String:generic[], bool:preload=false);
+native int PrecacheGeneric(const char[] generic, bool preload=false);
 
 /**
  * Returns if a given model is precached.
@@ -266,7 +282,7 @@ native PrecacheGeneric(const String:generic[], bool:preload=false);
  * @param model			Name of the model to check.
  * @return				True if precached, false otherwise.
  */
-native bool:IsModelPrecached(const String:model[]);
+native bool IsModelPrecached(const char[] model);
 
 /**
  * Returns if a given decal is precached.
@@ -274,7 +290,7 @@ native bool:IsModelPrecached(const String:model[]);
  * @param decal			Name of the decal to check.
  * @return				True if precached, false otherwise.
  */
-native bool:IsDecalPrecached(const String:decal[]);
+native bool IsDecalPrecached(const char[] decal);
 
 /**
  * Returns if a given generic file is precached.
@@ -282,7 +298,7 @@ native bool:IsDecalPrecached(const String:decal[]);
  * @param generic		Name of the generic file to check.
  * @return				True if precached, false otherwise.
  */
-native bool:IsGenericPrecached(const String:generic[]);
+native bool IsGenericPrecached(const char[] generic);
 
 /**
  * Precaches a given sound.
@@ -291,7 +307,7 @@ native bool:IsGenericPrecached(const String:generic[]);
  * @param preload		If preload is true the file will be precached before level startup.
  * @return				True if successfully precached, false otherwise.
  */
-native bool:PrecacheSound(const String:sound[], bool:preload=false);
+native bool PrecacheSound(const char[] sound, bool preload=false);
 
 /**
  * Returns if a given sound is precached.
@@ -299,7 +315,7 @@ native bool:PrecacheSound(const String:sound[], bool:preload=false);
  * @param sound			Name of the sound to check.
  * @return				True if precached, false otherwise.
  */
-native bool:IsSoundPrecached(const String:sound[]);
+native bool IsSoundPrecached(const char[] sound);
 
 /**
  * Creates different types of ingame messages.
@@ -307,10 +323,9 @@ native bool:IsSoundPrecached(const String:sound[]);
  * @param client		Index of the client.
  * @param kv			KeyValues handle to set the menu keys and options. (Check iserverplugin.h for more information).
  * @param type			Message type to display ingame.
- * @noreturn
  * @error				Invalid client index, or client not connected.
  */
-native CreateDialog(client, Handle:kv, DialogType:type);
+native void CreateDialog(int client, Handle kv, DialogType type);
 
 /**
  * Guesses the SDK version a mod was compiled against.  If nothing 
@@ -322,7 +337,7 @@ native CreateDialog(client, Handle:kv, DialogType:type);
  * @return				SOURCE_SDK version code.
  */
 #pragma deprecated See GetEngineVersion()
-native GuessSDKVersion();
+native int GuessSDKVersion();
 
 /**
  * Gets the engine version that the currently-loaded SM core was compiled against.
@@ -332,7 +347,7 @@ native GuessSDKVersion();
  *
  * @return				An EngineVersion value.
  */
-native EngineVersion:GetEngineVersion();
+native EngineVersion GetEngineVersion();
 
 /**
  * Prints a message to a specific client in the chat area.
@@ -340,23 +355,21 @@ native EngineVersion:GetEngineVersion();
  * @param client		Client index.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
-native PrintToChat(client, const String:format[], any:...);
+native void PrintToChat(int client, const char[] format, any ...);
 
 /**
  * Prints a message to all clients in the chat area.
  *
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  */
-stock PrintToChatAll(const String:format[], any:...)
+stock void PrintToChatAll(const char[] format, any ...)
 {
-	decl String:buffer[254];
+	char buffer[254];
 	
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
@@ -373,23 +386,21 @@ stock PrintToChatAll(const String:format[], any:...)
  * @param client		Client index.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
-native PrintCenterText(client, const String:format[], any:...);
+native void PrintCenterText(int client, const char[] format, any ...);
 
 /**
  * Prints a message to all clients in the center of the screen.
  *
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  */
-stock PrintCenterTextAll(const String:format[], any:...)
+stock void PrintCenterTextAll(const char[] format, any ...)
 {
-	decl String:buffer[254];
+	char buffer[254];
 
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
@@ -406,23 +417,21 @@ stock PrintCenterTextAll(const String:format[], any:...)
  * @param client		Client index.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
-native PrintHintText(client, const String:format[], any:...);
+native void PrintHintText(int client, const char[] format, any ...);
 
 /**
  * Prints a message to all clients with a hint box.
  *
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @noreturn
  */
-stock PrintHintTextToAll(const String:format[], any:...)
+stock void PrintHintTextToAll(const char[] format, any ...)
 {
-	decl String:buffer[254];
+	char buffer[254];
 	
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
@@ -442,10 +451,9 @@ stock PrintHintTextToAll(const String:format[], any:...)
  * @param Kv			KeyValues handle with all the data for the panel setup (Depends 
  *						on the panel type and may be unused).
  * @param show			True to show the panel, or false to remove it from the client screen.
- * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
-native ShowVGUIPanel(client, const String:name[], Handle:Kv=INVALID_HANDLE, bool:show=true);
+native void ShowVGUIPanel(int client, const char[] name, Handle Kv=INVALID_HANDLE, bool show=true);
 
 /**
  * Creates a HUD synchronization object.  This object is used to automatically assign and 
@@ -480,7 +488,7 @@ native ShowVGUIPanel(client, const String:name[], Handle:Kv=INVALID_HANDLE, bool
  *						If HUD text is not supported on this mod, then 
  *						INVALID_HANDLE is returned.
  */
-native Handle:CreateHudSynchronizer();
+native Handle CreateHudSynchronizer();
 
 /**
  * Sets the HUD parameters for drawing text.  These parameters are stored 
@@ -504,10 +512,9 @@ native Handle:CreateHudSynchronizer();
  * @param fxTime		Duration of chosen effect (may not apply to all effects).
  * @param fadeIn		Number of seconds to spend fading in.
  * @param fadeOut		Number of seconds to spend fading out.
- * @noreturn
  */
-native SetHudTextParams(Float:x, Float:y, Float:holdTime, r, g, b, a, effect = 0,
-						Float:fxTime=6.0, Float:fadeIn=0.1, Float:fadeOut=0.2);
+native void SetHudTextParams(float x, float y, float holdTime, int r, int g, int b, int a, int effect = 0,
+						float fxTime=6.0, float fadeIn=0.1, float fadeOut=0.2);
 						
 /**
  * Sets the HUD parameters for drawing text.  These parameters are stored 
@@ -527,11 +534,10 @@ native SetHudTextParams(Float:x, Float:y, Float:holdTime, r, g, b, a, effect = 0
  * @param fxTime		Duration of chosen effect (may not apply to all effects).
  * @param fadeIn		Number of seconds to spend fading in.
  * @param fadeOut		Number of seconds to spend fading out.
- * @noreturn
  */
-native SetHudTextParamsEx(Float:x, Float:y, Float:holdTime, color1[4], 
-						  color2[4]={255,255,255,0}, effect = 0, Float:fxTime=6.0, 
-						  Float:fadeIn=0.1, Float:fadeOut=0.2);
+native void SetHudTextParamsEx(float x, float y, float holdTime, int color1[4], 
+						  int color2[4]={255,255,255,0}, int effect = 0, float fxTime=6.0, 
+						  float fadeIn=0.1, float fadeOut=0.2);
 
 /**
  * Shows a synchronized HUD message to a client.  
@@ -546,7 +552,7 @@ native SetHudTextParamsEx(Float:x, Float:y, Float:holdTime, color1[4],
  *						This function fails if the mod does not support it.
  * @error				Client not in-game, or sync object not valid.
  */
-native ShowSyncHudText(client, Handle:sync, const String:message[], any:...);
+native int ShowSyncHudText(int client, Handle sync, const char[] message, any ...);
 
 /**
  * Clears the text on a synchronized HUD channel. 
@@ -562,10 +568,9 @@ native ShowSyncHudText(client, Handle:sync, const String:message[], any:...);
  *
  * @param client		Client index to send the message to.
  * @param sync			Synchronization object.
- * @noreturn
  * @error				Client not in-game, or sync object not valid.
  */
-native ClearSyncHud(client, Handle:sync);
+native void ClearSyncHud(int client, Handle sync);
 
 /**
  * Shows a HUD message to a client on the given channel.
@@ -584,7 +589,7 @@ native ClearSyncHud(client, Handle:sync);
  *						Any other return value is the channel number that was 
  *						used to render the text.
  */
-native ShowHudText(client, channel, const String:message[], any:...);
+native int ShowHudText(int client, int channel, const char[] message, any ...);
 
 /**
  * Shows a MOTD panel to a specific client.
@@ -594,10 +599,9 @@ native ShowHudText(client, channel, const String:message[], any:...);
  * @param msg			Contents of the panel, it can be treated as an url, filename or plain text
  *				 		depending on the type parameter (WARNING: msg has to be 192 bytes maximum!)
  * @param type			Determines the way to treat the message body of the panel.
- * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
-stock ShowMOTDPanel(client, const String:title[], const String:msg[], type=MOTDPANEL_TYPE_INDEX)
+stock void ShowMOTDPanel(int client, const char[] title, const char[] msg, int type=MOTDPANEL_TYPE_INDEX)
 {
 	char num[3];
 	IntToString(type, num, sizeof(num));
@@ -617,9 +621,8 @@ stock ShowMOTDPanel(client, const String:title[], const String:msg[], type=MOTDP
  * @param time			Duration to hold the panel on the client's screen.
  * @param ip			Destination IP.
  * @param password		Password to connect to the destination IP. The client will be able to see this.
- * @noreturn
  */
-stock DisplayAskConnectBox(client, Float:time, const String:ip[], const String:password[] = "")
+stock void DisplayAskConnectBox(int client, float time, const char[] ip, const char[] password = "")
 {
 	char destination[288];
 	FormatEx(destination, sizeof(destination), "%s/%s", ip, password);
@@ -637,7 +640,7 @@ stock DisplayAskConnectBox(client, Float:time, const String:ip[], const String:p
  * @param entity		Entity index.
  * @return				Entity reference.
  */
-native EntIndexToEntRef(entity);
+native int EntIndexToEntRef(int entity);
 
 /**
  * Retrieves the entity index from a reference.
@@ -645,7 +648,7 @@ native EntIndexToEntRef(entity);
  * @param ref			Entity reference.
  * @return				Entity index.
  */
-native EntRefToEntIndex(ref);
+native int EntRefToEntIndex(int ref);
 
 /**
  * Converts a reference into a backwards compatible version.
@@ -653,7 +656,7 @@ native EntRefToEntIndex(ref);
  * @param ref			Entity reference.
  * @return				Bcompat reference.
  */
-native MakeCompatEntRef(ref);
+native int MakeCompatEntRef(int ref);
 
 
 enum ClientRangeType
@@ -673,3 +676,23 @@ enum ClientRangeType
  */
 native int GetClientsInRange(float origin[3], ClientRangeType rangeType, int[] clients, int size);
 
+/**
+ * Retrieves the server's authentication string (SteamID).
+ *
+ * Note: If called before server is connected to Steam, auth id
+ * will be invalid ([I:0:1], 1, etc.)
+ *
+ * @param authType		Auth id type and format to use.
+ * 						(Only AuthId_Steam3 and AuthId_SteamID64 are supported)
+ * @param auth			Buffer to store the server's auth id.
+ * @param maxlen		Maximum length of string buffer (includes NULL terminator).
+ * @error				Invalid AuthIdType given.
+ */
+native void GetServerAuthId(AuthIdType authType, char[] auth, int maxlen);
+
+/**
+ * Returns the server's Steam account ID.
+ *
+ * @return				Steam account ID or 0 if not available.
+ */
+native int GetServerSteamAccountId();

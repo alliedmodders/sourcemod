@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -32,6 +32,8 @@
 #include "common_logic.h"
 #include "PhraseCollection.h"
 #include "Translator.h"
+#include "sprintf.h"
+#include <am-string.h>
 
 CPhraseCollection::CPhraseCollection()
 {
@@ -54,7 +56,7 @@ IPhraseFile *CPhraseCollection::AddPhraseFile(const char *filename)
 	char full_name[PLATFORM_MAX_PATH];
 
 	/* No compat shim here.  The user should have read the doc. */
-	smcore.Format(full_name, sizeof(full_name), "%s.txt", filename);
+	ke::SafeSprintf(full_name, sizeof(full_name), "%s.txt", filename);
 	
 	fid = g_Translator.FindOrAddPhraseFile(full_name);
 	pFile = g_Translator.GetFileByIndex(fid);
@@ -113,7 +115,7 @@ bool CPhraseCollection::FormatString(char *buffer,
 	unsigned int arg;
 
 	arg = 0;
-	if (!smcore.gnprintf(buffer, maxlength, format, this, params, numparams, arg, pOutLength, pFailPhrase))
+	if (!gnprintf(buffer, maxlength, format, this, params, numparams, arg, pOutLength, pFailPhrase))
 	{
 		return false;
 	}

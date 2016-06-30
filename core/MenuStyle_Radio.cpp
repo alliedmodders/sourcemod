@@ -141,11 +141,7 @@ void CRadioStyle::OnSourceModShutdown()
 
 bool CRadioStyle::IsSupported()
 {
-#if SOURCE_ENGINE == SE_DOTA
-	return false;
-#else
 	return (g_ShowMenuId != -1);
-#endif
 }
 
 bool CRadioStyle::OnClientCommand(int client, const char *cmdname, const CCommand &cmd)
@@ -176,10 +172,9 @@ void CRadioStyle::OnUserMessage(int msg_id, protobuf::Message &msg, IRecipientFi
 void CRadioStyle::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
 #endif
 {
-#if SOURCE_ENGINE != SE_DOTA
 	int count = pFilter->GetRecipientCount();
 
-#ifdef USE_PROTOBUF_USERMESSAGES
+#if SOURCE_ENGINE == SE_CSGO
 	int c = ((CCSUsrMsg_ShowMenu &)msg).display_time();
 #else
 	bf_read br(bf->GetBasePointer(), 3);
@@ -194,7 +189,6 @@ void CRadioStyle::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFil
 	{
 		g_last_clients[g_last_client_count++] = pFilter->GetRecipientIndex(i);
 	}
-#endif
 }
 
 void CRadioStyle::OnUserMessageSent(int msg_id)
@@ -456,7 +450,7 @@ void CRadioMenuPlayer::Radio_Init(int keys, const char *title, const char *text)
 {
 	if (title[0] != '\0')
 	{
-		display_len = UTIL_Format(display_pkt, 
+		display_len = ke::SafeSprintf(display_pkt, 
 			sizeof(display_pkt), 
 			"%s\n%s", 
 			title,
@@ -464,7 +458,7 @@ void CRadioMenuPlayer::Radio_Init(int keys, const char *title, const char *text)
 	}
 	else
 	{
-		display_len = UTIL_Format(display_pkt, 
+		display_len = ke::SafeSprintf(display_pkt, 
 			sizeof(display_pkt), 
 			"%s", 
 			text);
@@ -474,7 +468,6 @@ void CRadioMenuPlayer::Radio_Init(int keys, const char *title, const char *text)
 
 void CRadioMenuPlayer::Radio_Refresh()
 {
-#if SOURCE_ENGINE != SE_DOTA
 	cell_t players[1] = { (cell_t)m_index };
 	char *ptr = display_pkt;
 	char save = 0;
@@ -491,8 +484,7 @@ void CRadioMenuPlayer::Radio_Refresh()
 		time = menuHoldTime - (unsigned int)(gpGlobals->curtime - menuStartTime);
 	}
 
-#ifdef USE_PROTOBUF_USERMESSAGES
-	// If or when we need to support multiple games per engine with this, we can switch to reflection
+#if SOURCE_ENGINE == SE_CSGO
 	// TODO: find what happens past 240 on CS:GO
 	CCSUsrMsg_ShowMenu *msg = (CCSUsrMsg_ShowMenu *)g_UserMsgs.StartProtobufMessage(g_ShowMenuId, players, 1, USERMSG_BLOCKHOOKS);
 	msg->set_bits_valid_slots(display_keys);
@@ -528,7 +520,6 @@ void CRadioMenuPlayer::Radio_Refresh()
 #endif
 
 	display_last_refresh = gpGlobals->curtime;
-#endif // !DOTA
 }
 
 int CRadioDisplay::GetAmountRemaining()

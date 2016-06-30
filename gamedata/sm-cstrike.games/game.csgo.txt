@@ -57,7 +57,7 @@
 			"CCSPlayerInventoryOffset"
 			{
 				"windows"	"55"
-				"linux"		"32"
+				"linux"		"70"
 				"mac"		"109"
 			}
 			"GetItemInLoadout"
@@ -68,12 +68,12 @@
 			}
 			"GetWeaponPriceFunc"
 			{
-				"windows"	"84"
+				"windows"	"98"
 			}
 			//This is GetWeaponPriceFunc offset -1 (only used by GDC)
 			"GetWeaponPriceFuncGDC"
 			{
-				"windows"	"83"
+				"windows"	"97"
 			}
 		}
 		"Signatures"
@@ -95,7 +95,7 @@
 			"HandleCommand_Buy_Internal"//Wildcard first 6 bytes for getting address for weapon price.
 			{
 				"library"		"server"
-				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x81\xEC\x64\x01\x00\x00\x53\x56\x57\x6A\x00\x8B\xF9\xE8\x2A\x2A\x2A\x2A\x33\xC9\x84\xC0"
+				"windows"		"\x2A\x2A\x2A\x2A\x2A\xF8\x81\xEC\x7C\x01\x00\x00\x53\x56\x57"
 				"linux"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcib"
 				"mac"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcib"
 			}
@@ -108,8 +108,8 @@
 			}
 			"TerminateRound"
 			{
-				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x3C\x53\x8B\xD9\xF3\x0F\x11\x4C\x24\x18\x56\x57\x89\x2A\x2A\x2A\x83"
+				"library"		"server"	
+				"windows"		"\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x64\x53\x8B\xD9\xF3\x0F\x2A\x2A\x2A\x2A\x56\x57\x89\x2A\x2A\x2A\x83\xBB\x2A\x2A\x2A\x2A\x00"
 				"linux"			"@_ZN12CCSGameRules14TerminateRoundEfi"
 				"mac"			"@_ZN12CCSGameRules14TerminateRoundEfi"
 			}
@@ -123,7 +123,7 @@
 			"GetWeaponInfo"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xEC\x08\x33\xC0\xEB\x2A\x8D\x9B\x00\x00\x00\x00\x39\x0C\xC5\x2A\x2A\x2A\x2A\x74\x2A\x40\x83\xF8\x38\x72\x2A\x33\xC0"
+				"windows"		"\x55\x8B\xEC\x83\xEC\x08\x33\xC0\xEB\x2A\x8D\x9B\x00\x00\x00\x00\x39\x0C\xC5\x2A\x2A\x2A\x2A\x74\x2A\x40\x83\xF8\x2A\x72\x2A\x33\xC0"
 				"linux"			"@_Z13GetWeaponInfo10CSWeaponID"
 				"mac"			"@_Z13GetWeaponInfo10CSWeaponID"
 			}
@@ -145,7 +145,7 @@
 			"WeaponIDToAlias"
 			{
 				"library"	"server"
-				"windows"	"\x33\xC0\x39\x0C\xC5\x2A\x2A\x2A\x2A\x74\x2A\x40\x83\xF8\x38\x72\x2A\x33\xC0\xC3\x6A\x5F"
+				"windows"	"\x33\xC0\x39\x0C\xC5\x2A\x2A\x2A\x2A\x74\x2A\x40\x83\xF8\x3E\x72\x2A\x33\xC0\xC3\x6A\x5F"
 				"linux"		"@_Z15WeaponIDToAliasi"
 				"mac"		"@_Z15WeaponIDToAliasi"
 			}
@@ -160,7 +160,7 @@
 			"GetWeaponPrice"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\xD1\x8B\x4D\x08\x83\xF9\x33\x75\x2A\x83\xBA"
+				"windows"	"\x55\x8B\xEC\x8B\xD1\x8B\x4D\x08\x83\xF9\x2A\x75\x2A\x83\xBA\x2A\x2A\x2A\x2A\x64\xB8\xE8\x2A\x2A\x2A\x7C"
 				"linux"		"@_ZNK13CCSWeaponInfo14GetWeaponPriceEPK13CEconItemViewif"
 				"mac"		"@_ZNK13CCSWeaponInfo14GetWeaponPriceEPK13CEconItemViewif"
 			}
@@ -203,9 +203,9 @@
 		{
 			"CScore"
 			{
-				"windows"	"67"
-				"linux"		"67"
-				"mac"		"67"
+				"windows"	"75"
+				"linux"		"75"
+				"mac"		"75"
 			}
 		}
 	}

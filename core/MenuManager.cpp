@@ -446,7 +446,7 @@ skip_search:
 		char text[50];
 		if (!logicore.CoreTranslate(text, sizeof(text), "%T", 2, NULL, "No Vote", &client))
 		{
-			UTIL_Format(text, sizeof(text), "No Vote");
+			ke::SafeStrcpy(text, sizeof(text), "No Vote");
 		}
 		ItemDrawInfo dr(text, 0);
 		position = panel->DrawItem(dr);
@@ -606,7 +606,7 @@ skip_search:
 					{
 						if (!logicore.CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Back", &client))
 						{
-							UTIL_Format(text, sizeof(text), "Back");
+							ke::SafeStrcpy(text, sizeof(text), "Back");
 						}
 						dr.style = ITEMDRAW_CONTROL;
 						position = panel->DrawItem(dr);
@@ -616,7 +616,7 @@ skip_search:
 					{
 						if (!logicore.CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Previous", &client))
 						{
-							UTIL_Format(text, sizeof(text), "Previous");
+							ke::SafeStrcpy(text, sizeof(text), "Previous");
 						}
 						dr.style = (displayPrev ? 0 : ITEMDRAW_DISABLED)|ITEMDRAW_CONTROL;
 						position = panel->DrawItem(dr);
@@ -637,7 +637,7 @@ skip_search:
 				{
 					if (!logicore.CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Next", &client))
 					{
-						UTIL_Format(text, sizeof(text), "Next");
+						ke::SafeStrcpy(text, sizeof(text), "Next");
 					}
 					dr.style = (displayNext ? 0 : ITEMDRAW_DISABLED)|ITEMDRAW_CONTROL;
 					position = panel->DrawItem(dr);
@@ -668,7 +668,7 @@ skip_search:
 		{
 			if (!logicore.CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Exit", &client))
 			{
-				UTIL_Format(text, sizeof(text), "Exit");
+				ke::SafeStrcpy(text, sizeof(text), "Exit");
 			}
 			dr.style = ITEMDRAW_CONTROL;
 			position = panel->DrawItem(dr);

@@ -9,7 +9,6 @@ project.sources += [
   'sm_stringutil.cpp',
   'MenuVoting.cpp',
   'smn_events.cpp',
-  'CDataPack.cpp',
   'frame_hooks.cpp',
   'smn_nextmap.cpp',
   'sourcemm_api.cpp',
@@ -21,7 +20,6 @@ project.sources += [
   'NextMap.cpp',
   'ConCmdManager.cpp',
   'ConVarManager.cpp',
-  'LibrarySys.cpp',
   'PlayerManager.cpp',
   'TimerSys.cpp',
   'CoreConfig.cpp',
@@ -38,10 +36,10 @@ project.sources += [
   'EventManager.cpp',
   'MenuStyle_Radio.cpp',
   'sm_autonatives.cpp',
-  'sm_srvcmds.cpp',
   'ConsoleDetours.cpp',
   'vprof_tool.cpp',
   'smn_commandline.cpp',
+  'GameHooks.cpp',
 ]
 
 for sdk_name in SM.sdks:
@@ -51,24 +49,21 @@ for sdk_name in SM.sdks:
   binary = SM.HL2Config(project, binary_name, sdk)
   compiler = binary.compiler
 
+  compiler.cxxincludes += [
+    builder.sourcePath
+  ]
+
   if sdk.name == 'csgo':
     compiler.cxxincludes += [
       os.path.join(sdk.path, 'common', 'protobuf-2.5.0', 'src'),
       os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
       os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf')
     ]
-  elif sdk.name == 'dota':
-    compiler.cxxincludes += [
-      os.path.join(sdk.path, 'common', 'protobuf-2.6.1', 'src'),
-      os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
-      os.path.join(sdk.path, 'public', 'game', 'shared', 'protobuf'),
-      os.path.join(sdk.path, 'public', 'game', 'shared', 'dota', 'protobuf')
-    ]
 
   if builder.target_platform == 'linux':
     compiler.postlink += ['-lpthread', '-lrt']
 
-  if sdk.name == 'csgo' or sdk.name == 'dota':
+  if sdk.name == 'csgo':
     if builder.target_platform == 'linux':
       lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
     elif builder.target_platform == 'mac':
@@ -78,6 +73,8 @@ for sdk_name in SM.sdks:
       vs_year = ''
       if msvc_ver == 1800:
         vs_year = '2013'
+      elif msvc_ver == 1900:
+        vs_year = '2015'
       else:
         raise Exception('Cannot find libprotobuf for MSVC version "' + str(compiler.version) + '"')
 
@@ -87,7 +84,7 @@ for sdk_name in SM.sdks:
         lib_path = os.path.join(sdk.path, 'lib', 'win32', 'release', 'vs' + vs_year, 'libprotobuf.lib')
     compiler.linkflags.insert(0, binary.Dep(lib_path))
   
-  if sdk.name in ['csgo', 'dota']:
+  if sdk.name == 'csgo':
     binary.sources += ['smn_protobuf.cpp']
   else:
     binary.sources += ['smn_bitbuffer.cpp']
@@ -97,17 +94,6 @@ for sdk_name in SM.sdks:
       os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
       os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessages.pb.cc'),
       os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessage_helpers.cpp'),
-    ]
-  elif sdk.name == 'dota':
-    binary.sources += [
-      os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'networkbasetypes.pb.cc'),
-      os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
-      os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'network_connection.pb.cc'),
-      os.path.join(sdk.path, 'public', 'game', 'shared', 'protobuf', 'ai_activity.pb.cc'),
-      os.path.join(sdk.path, 'public', 'game', 'shared', 'protobuf', 'usermessages.pb.cc'),
-      os.path.join(sdk.path, 'public', 'game', 'shared', 'dota', 'protobuf', 'dota_commonmessages.pb.cc'),
-      os.path.join(sdk.path, 'public', 'game', 'shared', 'dota', 'protobuf', 'dota_usermessages.pb.cc'),
-      os.path.join(sdk.path, 'public', 'game', 'shared', 'dota', 'protobuf', 'dota_usermessage_helpers.cpp'),
     ]
 
 SM.binaries += builder.Add(project)

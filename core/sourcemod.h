@@ -36,7 +36,6 @@
 #include <ISourceMod.h>
 #include <sh_stack.h>
 #include <sh_vector.h>
-#include "CDataPack.h"
 
 using namespace SourceHook;
 
@@ -139,7 +138,6 @@ public: // ISourceMod
 private:
 	void ShutdownServices();
 private:
-	CStack<CDataPack *> m_freepacks;
 	char m_SMBaseDir[PLATFORM_MAX_PATH];
 	char m_SMRelDir[PLATFORM_MAX_PATH];
 	char m_ModDir[32];
@@ -150,6 +148,9 @@ private:
 	bool m_GotBasePath;
 	CVector<GAME_FRAME_HOOK> m_frame_hooks;
 };
+
+void UTIL_ConsolePrintVa(const char *fmt, va_list ap);
+void UTIL_ConsolePrint(const char *fmt, ...);
 
 extern bool g_Loaded;
 extern bool sm_show_debug_spew;

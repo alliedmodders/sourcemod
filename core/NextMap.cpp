@@ -35,8 +35,10 @@
 #include "sourcemm_api.h"
 #include "sm_stringutil.h"
 #include "sourcehook.h"
-#include "sm_srvcmds.h"
 #include "logic_bridge.h"
+#include "compat_wrappers.h"
+#include <time.h>
+#include <bridge/include/ILogger.h>
 
 NextMapManager g_NextMap;
 
@@ -46,24 +48,19 @@ SH_DECL_HOOK2_void(IVEngineServer, ChangeLevel, SH_NOATTRIB, 0, const char *, co
 SH_DECL_HOOK4_void(IVEngineServer, ChangeLevel, SH_NOATTRIB, 0, const char *, const char *, const char *, bool);
 #endif
 
-#if SOURCE_ENGINE == SE_DOTA
-SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 #elif SOURCE_ENGINE == SE_DARKMESSIAH
 SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 #else
-# if SH_IMPL_VERSION >= 4
- extern int __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
-# else
- extern bool __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
-#endif
+extern int __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
 extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
 #endif
 
 ConCommand *changeLevelCmd = NULL;
 
 ConVar sm_nextmap("sm_nextmap", "", FCVAR_NOTIFY);
+ConVar sm_maphistory_size("sm_maphistory_size", "20");
 
 bool g_forcedChange = false;
 
@@ -144,8 +141,8 @@ void NextMapManager::HookChangeLevel(const char *map, const char *unknown, const
 
 	logger->LogMessage("[SM] Changed map to \"%s\"", newmap);
 
-	UTIL_Format(m_tempChangeInfo.m_mapName, sizeof(m_tempChangeInfo.m_mapName), newmap);
-	UTIL_Format(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), "Normal level change");
+	ke::SafeSprintf(m_tempChangeInfo.m_mapName, sizeof(m_tempChangeInfo.m_mapName), newmap);
+	ke::SafeSprintf(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), "Normal level change");
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 	RETURN_META_NEWPARAMS(MRES_IGNORED, &IVEngineServer::ChangeLevel, (newmap, unknown));
@@ -168,33 +165,36 @@ void NextMapManager::OnSourceModLevelChange( const char *mapName )
 		{
 			/* Something intercepted the mapchange */
 			char newReason[255];
-			UTIL_Format(newReason, sizeof(newReason), "%s (Map overridden)", m_tempChangeInfo.m_changeReason);
+			ke::SafeSprintf(newReason, sizeof(newReason), "%s (Map overridden)", m_tempChangeInfo.m_changeReason);
 			m_mapHistory.push_back(new MapChangeData(lastMap, newReason, m_tempChangeInfo.startTime));
 		}
 
-		/* TODO: Should this be customizable? */
-		if (m_mapHistory.size() > 20)
+		int historydiff = sm_maphistory_size.GetInt();
+		if (historydiff > 0)
 		{
-			SourceHook::List<MapChangeData *>::iterator iter;
-			iter = m_mapHistory.begin();
+			historydiff -= m_mapHistory.size();
+		} else if (historydiff < 0)
+		{
+			historydiff = (m_mapHistory.size() * -1);
+		}
 
+		for (SourceHook::List<MapChangeData *>::iterator iter = m_mapHistory.begin(); historydiff++ < 0; iter = m_mapHistory.erase(iter))
+		{
 			delete (MapChangeData *)*iter;
-
-			m_mapHistory.erase(iter);
 		}
 	}
 
 	m_tempChangeInfo.m_mapName[0] ='\0';
 	m_tempChangeInfo.m_changeReason[0] = '\0';
 	m_tempChangeInfo.startTime = time(NULL);
-	UTIL_Format(lastMap, sizeof(lastMap), "%s", mapName);
+	ke::SafeSprintf(lastMap, sizeof(lastMap), "%s", mapName);
 }
 
 void NextMapManager::ForceChangeLevel( const char *mapName, const char* changeReason )
 {
 	/* Store the mapname and reason */
-	UTIL_Format(m_tempChangeInfo.m_mapName, sizeof(m_tempChangeInfo.m_mapName), "%s", mapName);
-	UTIL_Format(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), "%s", changeReason);
+	ke::SafeSprintf(m_tempChangeInfo.m_mapName, sizeof(m_tempChangeInfo.m_mapName), "%s", mapName);
+	ke::SafeSprintf(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), "%s", changeReason);
 
 	/* Change level and skip our hook */
 	g_forcedChange = true;
@@ -208,10 +208,7 @@ NextMapManager::NextMapManager()
 	m_mapHistory = SourceHook::List<MapChangeData *>();
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void CmdChangeLevelCallback(const CCommandContext &context, const CCommand &command)
-{
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdChangeLevelCallback(const CCommand &command)
 {
 #else
@@ -227,7 +224,7 @@ void CmdChangeLevelCallback()
 
 	if (g_NextMap.m_tempChangeInfo.m_mapName[0] == '\0')
 	{
-		UTIL_Format(g_NextMap.m_tempChangeInfo.m_mapName, sizeof(g_NextMap.m_tempChangeInfo.m_mapName), command.Arg(1));
-		UTIL_Format(g_NextMap.m_tempChangeInfo.m_changeReason, sizeof(g_NextMap.m_tempChangeInfo.m_changeReason), "changelevel Command");
+		ke::SafeSprintf(g_NextMap.m_tempChangeInfo.m_mapName, sizeof(g_NextMap.m_tempChangeInfo.m_mapName), command.Arg(1));
+		ke::SafeSprintf(g_NextMap.m_tempChangeInfo.m_changeReason, sizeof(g_NextMap.m_tempChangeInfo.m_changeReason), "changelevel Command");
 	}
 }

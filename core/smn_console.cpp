@@ -47,8 +47,11 @@
 #include "logic_bridge.h"
 #include <sm_namehashset.h>
 #include "smn_keyvalues.h"
+#include <bridge/include/IScriptManager.h>
+#include <bridge/include/ILogger.h>
+#include <ITranslator.h>
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
+#if SOURCE_ENGINE == SE_CSGO
 #include <netmessages.pb.h>
 #endif
 
@@ -128,7 +131,7 @@ public:
 class CommandFlagsHelper : public IConCommandTracker
 {
 public:
-	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe)
+	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name) override
 	{
 		m_CmdFlags.remove(name);
 	}
@@ -361,13 +364,13 @@ static cell_t sm_SetConVarNum(IPluginContext *pContext, const cell_t *params)
 
 #if SOURCE_ENGINE < SE_ORANGEBOX
 	/* Should we replicate it? */
-	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
+	if (params[0] >= 3 && params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
 		ReplicateConVar(pConVar);
 	}
 
 	/* Should we notify clients? */
-	if (params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
+	if (params[0] >= 4 && params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
 	{
 		NotifyConVar(pConVar);
 	}
@@ -410,13 +413,13 @@ static cell_t sm_SetConVarFloat(IPluginContext *pContext, const cell_t *params)
 
 #if SOURCE_ENGINE < SE_ORANGEBOX
 	/* Should we replicate it? */
-	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
+	if (params[0] >= 3 && params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
 		ReplicateConVar(pConVar);
 	}
 
 	/* Should we notify clients? */
-	if (params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
+	if (params[0] >= 4 && params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
 	{
 		NotifyConVar(pConVar);
 	}
@@ -461,13 +464,13 @@ static cell_t sm_SetConVarString(IPluginContext *pContext, const cell_t *params)
 
 #if SOURCE_ENGINE < SE_ORANGEBOX
 	/* Should we replicate it? */
-	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
+	if (params[0] >= 3 && params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
 		ReplicateConVar(pConVar);
 	}
 
 	/* Should we notify clients? */
-	if (params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
+	if (params[0] >= 4 && params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
 	{
 		NotifyConVar(pConVar);
 	}
@@ -781,7 +784,7 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_GetCmdArgs(IPluginContext *pContext, const cell_t *params)
 {
-	const CCommand *pCmd = g_HL2.PeekCommandStack();
+	const ICommandArgs *pCmd = g_HL2.PeekCommandStack();
 
 	if (!pCmd)
 	{
@@ -793,7 +796,7 @@ static cell_t sm_GetCmdArgs(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_GetCmdArg(IPluginContext *pContext, const cell_t *params)
 {
-	const CCommand *pCmd = g_HL2.PeekCommandStack();
+	const ICommandArgs *pCmd = g_HL2.PeekCommandStack();
 
 	if (!pCmd)
 	{
@@ -811,7 +814,7 @@ static cell_t sm_GetCmdArg(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_GetCmdArgString(IPluginContext *pContext, const cell_t *params)
 {
-	const CCommand *pCmd = g_HL2.PeekCommandStack();
+	const ICommandArgs *pCmd = g_HL2.PeekCommandStack();
 
 	if (!pCmd)
 	{
@@ -974,7 +977,7 @@ static cell_t FakeClientCommandEx(IPluginContext *pContext, const cell_t *params
 			return 0;
 	}
 
-	g_HL2.AddToFakeCliCmdQueue(params[1], GetPlayerUserId(pPlayer->GetEdict()), buffer);
+	g_HL2.AddToFakeCliCmdQueue(params[1], engine->GetPlayerUserId(pPlayer->GetEdict()), buffer);
 
 	return 1;
 }
@@ -1161,7 +1164,7 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 	char data[256];
 	bf_write buffer(data, sizeof(data));
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
+#if SOURCE_ENGINE == SE_CSGO
 	CNETMsg_SetConVar msg;
 	CMsg_CVars_CVar *cvar = msg.mutable_convars()->add_cvars();
 
@@ -1240,50 +1243,11 @@ static cell_t RemoveCommandListener(IPluginContext *pContext, const cell_t *para
 	return 1;
 }
 
-static cell_t ConVar_BoolValue_set(IPluginContext *pContext, const cell_t *params)
-{
-	static cell_t new_params[5] = {
-		4,
-		params[1],
-		params[2],
-		0, /* Default replicate setting. */
-		0, /* Default replicate setting. */
-	};
-
-	return sm_SetConVarNum(pContext, new_params);
-}
-
-static cell_t ConVar_IntValue_set(IPluginContext *pContext, const cell_t *params)
-{
-	static cell_t new_params[5] = {
-		4,
-		params[1],
-		params[2],
-		0, /* Default replicate setting. */
-		0, /* Default replicate setting. */
-	};
-
-	return sm_SetConVarNum(pContext, new_params);
-}
-
-static cell_t ConVar_FloatValue_set(IPluginContext *pContext, const cell_t *params)
-{
-	static cell_t new_params[5] = {
-		4,
-		params[1],
-		params[2],
-		0, /* Default replicate setting. */
-		0, /* Default replicate setting. */
-	};
-
-	return sm_SetConVarFloat(pContext, new_params);
-}
-
 static cell_t ConVar_ReplicateToClient(IPluginContext *pContext, const cell_t *params)
 {
 	// Old version is (client, handle, value).
 	// New version is (handle, client, value).
-	static cell_t new_params[4] = {
+	cell_t new_params[4] = {
 		3,
 		params[2],
 		params[1],
@@ -1295,7 +1259,7 @@ static cell_t ConVar_ReplicateToClient(IPluginContext *pContext, const cell_t *p
 
 static cell_t FakeClientCommandKeyValues(IPluginContext *pContext, const cell_t *params)
 {
-#if SOURCE_ENGINE >= SE_EYE && SOURCE_ENGINE != SE_DOTA
+#if SOURCE_ENGINE >= SE_EYE
 	int client = params[1];
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
@@ -1381,11 +1345,11 @@ REGISTER_NATIVES(consoleNatives)
 
 	// Transitional syntax support.
 	{"ConVar.BoolValue.get",	sm_GetConVarBool},
-	{"ConVar.BoolValue.set",	ConVar_BoolValue_set},
+	{"ConVar.BoolValue.set",	sm_SetConVarNum},
 	{"ConVar.FloatValue.get",	sm_GetConVarFloat},
-	{"ConVar.FloatValue.set",	ConVar_FloatValue_set},
+	{"ConVar.FloatValue.set",	sm_SetConVarFloat},
 	{"ConVar.IntValue.get",		sm_GetConVarInt},
-	{"ConVar.IntValue.set",		ConVar_IntValue_set},
+	{"ConVar.IntValue.set",		sm_SetConVarNum},
 	{"ConVar.Flags.get",		sm_GetConVarFlags},
 	{"ConVar.Flags.set",		sm_SetConVarFlags},
 	{"ConVar.SetBool",			sm_SetConVarNum},
