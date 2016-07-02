@@ -186,26 +186,28 @@ stock void MakeVectorFromPoints(const float pt1[3], const float pt2[3], float ou
  * @param mistake	Max mistake.
  * @return				Return true if vectors are different, false otherwise.
  */
-stock bool:VectorsAreDifferent(const Float:vec1[3], const Float:vec2[3], const Float:mistake=0.0)
+stock bool VectorsAreDifferent(const float vec1[3], const float vec2[3], const float mistake=0.0)
 {
-	if(mistake > 0.0)
+	if (mistake > 0.0)
 	{
-		new bool:dif = false, i;
-		for(i=0; i<3; ++i)
+		bool different = false, int i;
+		for (i = 0; i < 3; ++i)
 		{
-			if(vec1[i] > vec2[i])
+			if (vec1[i] > vec2[i])
 			{
-				if(vec1[i] - mistake > vec2[i]) {
-					dif = true;
+				if (vec1[i] - mistake > vec2[i])
+				{
+					different = true;
 					break;
 				}
 			}
-			else if(vec2[i] - mistake > vec1[i]) {
-				dif = true;
+			else if (vec2[i] - mistake > vec1[i])
+			{
+				different = true;
 				break;
 			}
 		}
-		return dif;
+		return different;
 	}
-	return bool:(vec1[0] != vec2[0] || vec1[1] != vec2[1] || vec1[2] != vec2[2]);
+	return (vec1[0] != vec2[0] || vec1[1] != vec2[1] || vec1[2] != vec2[2]);
 }
