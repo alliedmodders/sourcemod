@@ -188,18 +188,18 @@ stock void MakeVectorFromPoints(const float pt1[3], const float pt2[3], float ou
  */
 stock bool VectorsAreDifferent(const float vec1[3], const float vec2[3], const float mistake=0.0)
 {
-	if (mistake > 0.0)
+	if (FloatCompare(mistake, 0.0) != 1)
 	{
-		bool different = false, int i;
-		for (i = 0; i < 3; ++i)
-		{
-			if (FloatCompare(FloatAbs(vec1[i] - vec2[i]), mistake) == 1)
-			{
-				different = true;
-				break;
-			}
-		}
-		return different;
+		return (vec1[0] != vec2[0] || vec1[1] != vec2[1] || vec1[2] != vec2[2]);
 	}
-	return (vec1[0] != vec2[0] || vec1[1] != vec2[1] || vec1[2] != vec2[2]);
+	bool different = false, int i;
+	for (i = 0; i < 3; ++i)
+	{
+		if (FloatCompare(FloatAbs(vec1[i] - vec2[i]), mistake) == 1)
+		{
+			different = true;
+			break;
+		}
+	}
+	return different;
 }
