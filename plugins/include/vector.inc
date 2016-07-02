@@ -179,7 +179,7 @@ stock void MakeVectorFromPoints(const float pt1[3], const float pt2[3], float ou
 }
 
 /**
- * Compares two vectors.
+ * Checking whether the vectors are different
  *
  * @param vec1		First vector.
  * @param vec2		Second vector.
