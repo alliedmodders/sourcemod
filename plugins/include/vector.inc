@@ -193,15 +193,7 @@ stock bool VectorsAreDifferent(const float vec1[3], const float vec2[3], const f
 		bool different = false, int i;
 		for (i = 0; i < 3; ++i)
 		{
-			if (vec1[i] > vec2[i])
-			{
-				if (vec1[i] - mistake > vec2[i])
-				{
-					different = true;
-					break;
-				}
-			}
-			else if (vec2[i] - mistake > vec1[i])
+			if (FloatCompare(FloatAbs(vec1[i] - vec2[i]), mistake) == 1)
 			{
 				different = true;
 				break;
