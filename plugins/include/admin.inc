@@ -782,15 +782,15 @@ stock bool BitToFlag(int bit, AdminFlag &flag)
  * @param maxSize		Maximum size of the string array.
  * @return				Number of flag characters written.
  */
-stock FindFlagString(const bits, String:flags[], maxSize)
+stock int FindFlagString(const int bits, char[] flags, const int maxSize)
 {
-	new AdminFlag:array[AdminFlags_TOTAL];
-	new numFlags = FlagBitsToArray(bits, array, AdminFlags_TOTAL);
+	AdminFlag array[AdminFlags_TOTAL];
+	int numFlags = FlagBitsToArray(bits, array, AdminFlags_TOTAL);
 	if (numFlags > maxSize)
 	{
 		numFlags = maxSize;
 	}
-	new i, c, numId = 0;
+	int i, c, numId = 0;
 	for (i = 0; i < numFlags; ++i)
 	{
 		if(FindFlagChar(array[i], c))
