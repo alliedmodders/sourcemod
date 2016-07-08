@@ -161,11 +161,10 @@
 			"TFHoliday_EndOfTheLine"	"5"
 			"TFHoliday_ValentinesDay"	"6"
 			"TFHoliday_MeetThePyro"		"7"
-			"TFHoliday_SpyVsEngyWar"	"8"
-			"TFHoliday_FullMoon"		"9"
-			"TFHoliday_HalloweenOrFullMoon"				"10"
-			"TFHoliday_HalloweenOrFullMoonOrValentines"	"11"
-			"TFHoliday_AprilFools"		"12"
+			"TFHoliday_FullMoon"		"8"
+			"TFHoliday_HalloweenOrFullMoon"				"9"
+			"TFHoliday_HalloweenOrFullMoonOrValentines"	"10"
+			"TFHoliday_AprilFools"		"11"
 		}
 	}
 }
