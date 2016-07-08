@@ -212,7 +212,6 @@ public const TFHoliday TFHoliday_EndOfTheLine;
 public const TFHoliday TFHoliday_CommunityUpdate;
 public const TFHoliday TFHoliday_ValentinesDay;
 public const TFHoliday TFHoliday_MeetThePyro;
-public const TFHoliday TFHoliday_SpyVsEngyWar;
 public const TFHoliday TFHoliday_FullMoon;
 public const TFHoliday TFHoliday_HalloweenOrFullMoon;
 public const TFHoliday TFHoliday_HalloweenOrFullMoonOrValentines;
