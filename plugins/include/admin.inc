@@ -790,7 +790,7 @@ stock int FindFlagString(const int bits, char[] flags, const int maxSize)
 	{
 		numFlags = maxSize;
 	}
-	int i, int c, int numId = 0;
+	int i, c, numId = 0;
 	for (i = 0; i < numFlags; ++i)
 	{
 		if(FindFlagChar(array[i], c))
