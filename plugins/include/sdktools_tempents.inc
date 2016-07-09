@@ -174,7 +174,7 @@ native void TE_Send(const int[] clients, int numClients, float delay=0.0);
 stock void TE_WriteEncodedEnt(const char[] prop, int value)
 {
 	int encvalue = (value & 0x0FFF) | ((1 & 0xF)<<12);
-	return TE_WriteNum(prop, encvalue);
+	TE_WriteNum(prop, encvalue);
 }
 
 /**
@@ -194,7 +194,7 @@ stock void TE_SendToAll(float delay=0.0)
 			clients[total++] = i;
 		}
 	}
-	return TE_Send(clients, total, delay);
+	TE_Send(clients, total, delay);
 }
 
 /**
@@ -211,7 +211,7 @@ stock void TE_SendToClient(int client, float delay=0.0)
 
 	players[0] = client;
 
-	return TE_Send(players, 1, delay);
+	TE_Send(players, 1, delay);
 }
 
 /**
@@ -228,5 +228,5 @@ stock void TE_SendToAllInRange(float origin[3], ClientRangeType rangeType, float
 {
 	int[] clients = new int[MaxClients];
 	int total = GetClientsInRange(origin, rangeType, clients, MaxClients);
-	return TE_Send(clients, total, delay);
+	TE_Send(clients, total, delay);
 }
