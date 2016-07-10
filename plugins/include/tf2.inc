@@ -195,7 +195,8 @@ enum TFCond
 	TFCond_KnockedIntoAir,
 	TFCond_CompetitiveWinner,
 	TFCond_CompetitiveLoser,
-	TFCond_NoTaunting,
+	TFCond_NoTaunting, // 118
+	TFCond_HealingDebuff=118,
 };
 
 const float TFCondDuration_Infinite = -1.0;
