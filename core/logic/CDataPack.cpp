@@ -32,8 +32,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "CDataPack.h"
-#include <am-utility.h>
-#include <am-vector.h>
+#include <amtl/am-autoptr.h>
+#include <amtl/am-vector.h>
 
 using namespace ke;
 
