@@ -34,7 +34,7 @@
 #include <IHandleSys.h>
 #include <IForwardSys.h>
 #include <ISourceMod.h>
-#include <am-utility.h>
+#include <amtl/am-autoptr.h>
 
 HandleType_t g_GlobalFwdType = 0;
 HandleType_t g_PrivateFwdType = 0;

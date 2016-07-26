@@ -110,7 +110,7 @@ public:
 		  memory_used_(0)
 	{
 		if (!internal_.init())
-			internal_.reportOutOfMemory();
+			internal_.allocPolicy().reportOutOfMemory();
 	}
 
 	typedef typename Internal::Result Result;
