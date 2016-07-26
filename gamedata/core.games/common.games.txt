@@ -100,6 +100,8 @@
 			"engine"			"sdk2013"
 			"engine"			"contagion"
 			"engine"			"bms"
+			// DOI doesn't have it's own SDK yet, but may in future
+			"game"				"doi"
 		}
 		
 		"Offsets"
@@ -161,6 +163,7 @@
 			"game"					"berimbau"
 			"game"					"nmrih"
 			"game"					"KreedzClimbing"
+			"game"					"doi"
 		}
 
 		"Keys"
@@ -196,6 +199,7 @@
 			"game"					"$INSURGENCY" // retail game
 			"game"					"nmrih"
 			"game"					"KreedzClimbing"
+			"game"					"doi"
 		}
 		
 		"Keys"
@@ -285,6 +289,7 @@
 			"engine"	"csgo"
 			"engine"	"blade"
 			"engine"	"insurgency"
+			"game"		"doi"
 		}
 		
 		"Keys"
