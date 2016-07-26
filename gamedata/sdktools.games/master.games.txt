@@ -250,4 +250,8 @@
 	{
 		"game"		"KreedzClimbing"
 	}
+	"game.doi.txt"
+	{
+		"game"		"doi"
+	}
 }
