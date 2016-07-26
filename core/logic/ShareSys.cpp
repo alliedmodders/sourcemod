@@ -341,6 +341,8 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, const sp_native_t *native
 		/* The native is optional, this is a special case */
 		if ((native->flags & SP_NTVFLAG_OPTIONAL) == SP_NTVFLAG_OPTIONAL)
 		{
+			flags |= SP_NTVFLAG_OPTIONAL;
+
 			/* Only add if there is a valid owner. */
 			if (!pEntry->owner)
 				return;

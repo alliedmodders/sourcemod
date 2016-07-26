@@ -73,7 +73,7 @@ void CNativeOwner::UnbindWeakRef(const WeakNative &ref)
 	pContext->GetRuntime()->UpdateNativeBinding(
 	  ref.idx,
 	  nullptr,
-	  0,
+	  SP_NTVFLAG_OPTIONAL,
 	  nullptr);
 }
 
