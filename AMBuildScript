@@ -193,7 +193,7 @@ class SMConfig(object):
         else:
           cxx.cxxflags += ['-Wno-deprecated']
         cxx.cflags += ['-Wno-sometimes-uninitialized']
-        if cxx.version >= '3.6':
+        if cxx.version >= 'apple-clang-6.1' or cxx.version >= 'clang-3.6':
           cxx.cxxflags += ['-Wno-inconsistent-missing-override']
 
       cxx.linkflags += ['-m32']
