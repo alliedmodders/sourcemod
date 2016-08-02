@@ -1350,7 +1350,7 @@ static void setconstants(void)
 #endif
   add_constant("charbits",sCHARBITS,sGLOBAL,0);
   add_constant("charmin",0,sGLOBAL,0);
-  add_constant("charmax",~(-1 << sCHARBITS) - 1,sGLOBAL,0);
+  add_constant("charmax",~(-1UL << sCHARBITS) - 1,sGLOBAL,0);
   add_constant("ucharmax",(1 << (sizeof(cell)-1)*8)-1,sGLOBAL,0);
 
   add_constant("__Pawn",VERSION_INT,sGLOBAL,0);

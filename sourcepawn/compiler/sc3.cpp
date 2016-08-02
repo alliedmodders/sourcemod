@@ -1105,7 +1105,7 @@ static int hier14(value *lval1)
    * negative value would do).
    */
   for (i=0; i<sDIMEN_MAX; i++)
-    arrayidx1[i]=arrayidx2[i]=(cell)(-1L << (sizeof(cell)*8-1));
+    arrayidx1[i]=arrayidx2[i]=(cell)(-1UL << (sizeof(cell)*8-1));
   org_arrayidx=lval1->arrayidx; /* save current pointer, to reset later */
   if (lval1->arrayidx==NULL)
     lval1->arrayidx=arrayidx1;
