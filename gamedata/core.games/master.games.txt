@@ -95,7 +95,7 @@
 		"engine"	"insurgency"
 	}
 	
-	"game.ddd.txt"
+	"game.dinodday.txt"
 	{
 		"game"		"dinodday"
 	}
