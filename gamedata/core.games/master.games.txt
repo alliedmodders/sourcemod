@@ -94,6 +94,11 @@
 	{
 		"engine"	"insurgency"
 	}
+	
+	"game.ddd.txt"
+	{
+		"game"		"dinodday"
+	}
 
 	"blacklist.plugins.txt"
 	{

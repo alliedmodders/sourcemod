@@ -252,6 +252,7 @@ CopyFiles('gamedata/core.games', 'addons/sourcemod/gamedata/core.games',
     'engine.l4d2.txt',
     'engine.sdk2013.txt',
     'engine.swarm.txt',
+    'game.dinodday.txt',
     'master.games.txt',
   ]
 )

@@ -16,7 +16,7 @@
 	{
 		"#supported"
 		{
-			"game"		"swarm"
+			"game"	"dinodday"
 		}
 		
 		"Offsets"
@@ -24,7 +24,7 @@
 			/* Offset into LevelShutdown */
 			"gEntList"
 			{
-				"windows"	"11"
+				"windows"	"16"
 			}
 
 			"EntInfo"
@@ -38,7 +38,7 @@
 			"LevelShutdown"
 			{
 				"library"	"server"
-				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
+				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8"
 			}
 		}
 	}
