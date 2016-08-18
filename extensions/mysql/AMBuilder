@@ -28,9 +28,6 @@ if SM.mysql_root:
       'wsock32.lib'
     ]
 
-  if binary.compiler.vendor == 'msvc' and binary.compiler.version >= 1900:
-    binary.compiler.linkflags += ['legacy_stdio_definitions.lib', 'legacy_stdio_wide_specifiers.lib']
-
   binary.sources += [
     '../../public/smsdk_ext.cpp',
     'mysql/MyBasicResults.cpp',
@@ -40,5 +37,10 @@ if SM.mysql_root:
     'mysql/MyStatement.cpp',
     'extension.cpp'
   ]
+  
+  if binary.compiler.vendor == 'msvc' and binary.compiler.version >= 1900:
+    binary.sources += [ 'msvc15hack.c' ]
+    binary.compiler.linkflags += ['legacy_stdio_definitions.lib', 'legacy_stdio_wide_specifiers.lib']
+
   SM.extensions += [builder.Add(binary)]
 
