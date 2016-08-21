@@ -34,10 +34,11 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ICellArray.h>
 
 extern HandleType_t htCellArray;
 
-class CellArray
+class CellArray : public ICellArray
 {
 public:
 	CellArray(size_t blocksize) : m_Data(NULL), m_BlockSize(blocksize), m_AllocSize(0), m_Size(0)
@@ -49,6 +50,18 @@ public:
 		free(m_Data);
 	}
 
+	static ICellArray *New(size_t blocksize)
+	{
+		return new CellArray(blocksize);
+	}
+
+	static void Free(ICellArray *arr)
+	{
+		delete arr;
+	}
+
+	// ICellArray
+public:
 	size_t size() const
 	{
 		return m_Size;
@@ -154,7 +167,7 @@ public:
 		return true;
 	}
 
-	CellArray *clone()
+	ICellArray *clone()
 	{
 		CellArray *array = new CellArray(m_BlockSize);
 		array->m_AllocSize = m_AllocSize;

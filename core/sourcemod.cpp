@@ -745,6 +745,16 @@ bool SourceModBase::IsMapRunning()
 	return g_OnMapStarted;
 }
 
+ICellArray *SourceModBase::CreateCellArray(size_t blocksize)
+{
+	return logicore.CreateCellArray(blocksize);
+}
+
+void SourceModBase::FreeCellArray(ICellArray *arr)
+{
+	logicore.FreeCellArray(arr);
+}
+
 class ConVarRegistrar :
 	public IConCommandBaseAccessor,
 	public SMGlobalClass

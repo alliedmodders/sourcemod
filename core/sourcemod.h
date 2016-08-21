@@ -135,6 +135,8 @@ public: // ISourceMod
 	int GetPluginId();
 	int GetShApiVersion();
 	bool IsMapRunning();
+	ICellArray *CreateCellArray(size_t blocksize);
+	void FreeCellArray(ICellArray *arr);
 private:
 	void ShutdownServices();
 private:

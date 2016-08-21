@@ -40,10 +40,11 @@
 #include <IHandleSys.h>
 #include <sp_vm_api.h>
 #include <IDataPack.h>
+#include <ICellArray.h>
 #include <time.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	13
+#define SMINTERFACE_SOURCEMOD_VERSION	14
 
 /**
 * @brief Forward declaration of the KeyValues class.
@@ -318,6 +319,23 @@ namespace SourceMod
 		 * @return			True if a map is currently running, otherwise false.
 		 */
 		virtual bool IsMapRunning() = 0;
+
+		/**
+		* @brief Creates a cell array object.
+		*
+		* @param blocksize  The number of cells each member of the array can
+		*                   hold.  For example, 32 cells is equivalent to:
+		*                   new Array[X][32]
+		* @return			A new ICellArray object.
+		*/
+		virtual ICellArray *CreateCellArray(size_t blocksize) = 0;
+
+		/**
+		* @brief Releases a cell array's resources so it can be re-used.
+		*
+		* @param pack		An ICellArray object to release.
+		*/
+		virtual void FreeCellArray(ICellArray *arr) = 0;
 	};
 }
 
