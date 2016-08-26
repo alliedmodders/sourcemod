@@ -50,11 +50,24 @@ public:
 		free(m_Data);
 	}
 
+	/**
+	* @brief Creates a cell array object.
+	*
+	* @param blocksize  The number of cells each member of the array can
+	*                   hold.  For example, 32 cells is equivalent to:
+	*                   new Array[X][32]
+	* @return			A new ICellArray object.
+	*/
 	static ICellArray *New(size_t blocksize)
 	{
 		return new CellArray(blocksize);
 	}
 
+	/**
+	* @brief Releases a cell array's resources.
+	*
+	* @param pack		An ICellArray object to release.
+	*/
 	static void Free(ICellArray *arr)
 	{
 		delete arr;
