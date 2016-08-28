@@ -51,6 +51,7 @@ class IExtensionSys;
 class ITextParsers;
 class ILogger;
 class IDataPack;
+class ICellArray;
 
 struct sm_logic_t
 {
@@ -71,6 +72,8 @@ struct sm_logic_t
 	void            (*RegisterProfiler)(IProfilingTool *tool);
 	IDataPack *     (*CreateDataPack)();
 	void            (*FreeDataPack)(IDataPack *pack);
+	ICellArray *    (*CreateCellArray)(size_t blocksize);
+	void            (*FreeCellArray)(ICellArray *arr);
 	IScriptManager	*scripts;
 	IShareSys		*sharesys;
 	IExtensionSys	*extsys;

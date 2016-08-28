@@ -321,7 +321,7 @@ public:
 	{
 		return strcmp((char *)str1, (char *)str2);
 	}
-	CellArray *UpdateMapList(CellArray *pUseArray, const char *name, int *pSerial, unsigned int flags)
+	ICellArray *UpdateMapList(ICellArray *pUseArray, const char *name, int *pSerial, unsigned int flags)
 	{
 		int change_serial;
 		CellArray *pNewArray = NULL;
@@ -594,7 +594,7 @@ static cell_t LoadMapList(IPluginContext *pContext, const cell_t *params)
 	char *str;
 	Handle_t hndl;
 	cell_t *addr, flags;
-	CellArray *pArray, *pNewArray;
+	ICellArray *pArray, *pNewArray;
 
 	hndl = params[1];
 	pContext->LocalToPhysAddr(params[2], &addr);
