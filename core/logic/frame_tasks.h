@@ -29,6 +29,17 @@
 
 #include <am-function.h>
 
+class FrameTasks :
+	public SMGlobalClass
+{
+	friend class SourceMod;
+public: // SMGlobalClass
+	void OnSourceModAllInitialized();
+	void OnSourceModShutdown();
+protected:
+	IForward *m_pOnThink;
+};
+
 namespace SourceMod {
 
 void ScheduleTaskForNextFrame(ke::Lambda<void()>&& task);

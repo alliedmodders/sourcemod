@@ -24,6 +24,7 @@
 // this exception to all derivative works.  AlliedModders LLC defines further
 // exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
 // or <http://www.sourcemod.net/license.php>.
+#include "common_logic.h"
 #include "frame_tasks.h"
 #include <am-vector.h>
 
@@ -31,6 +32,19 @@ using namespace SourceMod;
 
 ke::Vector<ke::Lambda<void()>> sNextTasks;
 ke::Vector<ke::Lambda<void()>> sWorkTasks;
+FrameTasks sPawnTasks;
+
+void
+FrameTasks::OnSourceModAllInitialized()
+{
+	m_pOnThink = forwardsys->CreateForward("OnThinkFrame", ET_Ignore, 1, NULL, Param_Cell);
+}
+
+void
+FrameTasks::OnSourceModShutdown()
+{
+	forwardsys->ReleaseForward(m_pOnThink);
+}
 
 void
 SourceMod::ScheduleTaskForNextFrame(ke::Lambda<void()>&& task)
@@ -41,6 +55,12 @@ SourceMod::ScheduleTaskForNextFrame(ke::Lambda<void()>&& task)
 void
 SourceMod::RunScheduledFrameTasks(bool simulating)
 {
+	if (sPawnTasks.pOnThink->GetFunctionCount() != 0)
+	{
+		sPawnTasks.pOnThink->PushCell(simulating);
+		sPawnTasks.pOnThink->Execute(NULL);
+	}
+
 	if (sNextTasks.empty())
 		return;
 
