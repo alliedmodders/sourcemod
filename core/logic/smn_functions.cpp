@@ -645,7 +645,15 @@ static cell_t sm_AddFrameAction(IPluginContext *pContext, const cell_t *params)
 	pForward->AddFunction(pFunction);
 
 	SMFrameActionData *pData = new SMFrameActionData(Handle, pPlugin->GetMyHandle(), params[2]);
-	g_pSM->AddFrameAction(PawnFrameAction, pData);
+	if (params[0] >= 3)	//for backwards compatibility
+	{
+		if (params[3]) { g_pSM->AddThinkAction(PawnFrameAction, pData); }
+		else { g_pSM->AddFrameAction(PawnFrameAction, pData); }
+	}
+	else
+	{
+		g_pSM->AddFrameAction(PawnFrameAction, pData);
+	}
 	return 1;
 }
 

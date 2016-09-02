@@ -50,4 +50,7 @@ extern bool g_PendingInternalPush;
 void AddFrameAction(const FrameAction & action);
 void RunFrameHooks(bool simulating);
 
+void AddThinkAction(const FrameAction & action);
+void RunThinkHooks(bool FinalTick);
+
 #endif //_INCLUDE_SOURCEMOD_FRAME_HOOKS_H_

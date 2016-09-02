@@ -242,6 +242,11 @@ void TimerSystem::GameFrame(bool simulating)
 	}
 }
 
+void TimerSystem::Think(bool FinalTick)
+{
+	RunThinkHooks(FinalTick);
+}
+
 void TimerSystem::RunFrame()
 {
 	ITimer *pTimer;

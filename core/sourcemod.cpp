@@ -254,6 +254,7 @@ void SourceModBase::StartSourceMod(bool late)
 {
 	SH_ADD_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &SourceModBase::LevelShutdown), false);
 	SH_ADD_HOOK(IServerGameDLL, GameFrame, gamedll, SH_MEMBER(&g_Timers, &TimerSystem::GameFrame), false);
+	SH_ADD_HOOK(IServerGameDLL, Think, gamedll, SH_MEMBER(&g_Timers, &TimerSystem::Think), false);
 
 	enginePatch = SH_GET_CALLCLASS(engine);
 	gamedllPatch = SH_GET_CALLCLASS(gamedll);
@@ -543,6 +544,7 @@ void SourceModBase::ShutdownServices()
 
 	SH_REMOVE_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &SourceModBase::LevelShutdown), false);
 	SH_REMOVE_HOOK(IServerGameDLL, GameFrame, gamedll, SH_MEMBER(&g_Timers, &TimerSystem::GameFrame), false);
+	SH_REMOVE_HOOK(IServerGameDLL, Think, gamedll, SH_MEMBER(&g_Timers, &TimerSystem::Think), false);
 	SH_REMOVE_HOOK(IServerGameDLL, Think, gamedll, SH_MEMBER(logicore.callbacks, &IProviderCallbacks::OnThink), false);
 }
 
@@ -720,6 +722,11 @@ size_t SourceModBase::FormatArgs(char *buffer,
 void SourceModBase::AddFrameAction(FRAMEACTION fn, void *data)
 {
 	::AddFrameAction(FrameAction(fn, data));
+}
+
+void SourceModBase::AddThinkAction(FRAMEACTION fn, void *data)
+{
+	::AddThinkAction(FrameAction(fn, data));
 }
 
 const char *SourceModBase::GetCoreConfigValue(const char *key)

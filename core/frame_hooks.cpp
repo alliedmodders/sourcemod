@@ -46,6 +46,10 @@ static float g_LastMenuTime = 0.0f;
 static float g_LastAuthCheck = 0.0f;
 bool g_PendingInternalPush = false;
 
+static IMutex *think_mutex;
+static Queue<FrameAction> *think_queue;
+static Queue<FrameAction> *think_actions;
+
 class FrameActionInit : public SMGlobalClass
 {
 public:
@@ -63,6 +67,24 @@ public:
 		frame_mutex->DestroyThis();
 	}
 } s_FrameActionInit;
+
+class ThinkActionInit : public SMGlobalClass
+{
+public:
+	void OnSourceModAllInitialized()
+	{
+		think_queue = new Queue<FrameAction>();
+		think_actions = new Queue<FrameAction>();
+		think_mutex = g_pThreader->MakeMutex();
+	}
+
+	void OnSourceModShutdown()
+	{
+		delete think_queue;
+		delete think_actions;
+		think_mutex->DestroyThis();
+	}
+} s_ThinkActionInit;
 
 void AddFrameAction(const FrameAction & action)
 {
@@ -118,5 +140,38 @@ void RunFrameHooks(bool simulating)
 	{
 		g_Players.RunAuthChecks();
 		g_LastAuthCheck = curtime;
+	}
+}
+
+
+
+void AddThinkAction(const FrameAction & action)
+{
+	think_mutex->Lock();
+	think_queue->push(action);
+	think_mutex->Unlock();
+}
+
+void RunThinkHooks(bool FinalTick)
+{
+	/* It's okay if this check races. */
+	if (think_queue->size())
+	{
+		Queue<FrameAction> *temp;
+
+		/* Very quick lock to move queue/actions back and forth */
+		think_mutex->Lock();
+		temp = think_queue;
+		think_queue = think_actions;
+		think_actions = temp;
+		think_mutex->Unlock();
+
+		/* The server will now be adding to the other queue, so we can process events. */
+		while (!think_actions->empty())
+		{
+			FrameAction &item = think_actions->first();
+			think_actions->pop();
+			item.action(item.data);
+		}
 	}
 }

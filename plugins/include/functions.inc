@@ -500,6 +500,8 @@ typedef RequestFrameCallback = function void (any data);
  * Creates a single use Next Frame hook.
  *
  * @param Function	Function to call on the next frame.
- * @param data			Value to be passed on the invocation of the Function.
+ * @param data		Value to be passed on the invocation of the Function.
+ * @param HookThink	Enable this flag if you want your function to be called 
+ *					even if the server is hibernating.
  */
-native void RequestFrame(RequestFrameCallback Function, any data=0);
+native void RequestFrame(RequestFrameCallback Function, any data=0, bool HookThink=false);

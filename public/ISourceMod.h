@@ -289,6 +289,16 @@ namespace SourceMod
 		virtual void AddFrameAction(FRAMEACTION fn, void *data) = 0;
 
 		/**
+		* @brief Adds an action to be executed on the next available think call.
+		*
+		* This function is thread safe.
+		*
+		* @param fn			Function to execute.
+		* @param data		Data to pass to function.
+		*/
+		virtual void AddThinkAction(FRAMEACTION fn, void *data) = 0;
+
+		/**
 		 * @brief Retrieves a core.cfg configuration value.
 		 *
 		 * @param key		Core.cfg key phrase.
