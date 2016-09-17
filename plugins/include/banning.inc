@@ -87,7 +87,7 @@ forward Action OnBanIdentity(const char[] identity,
  * @param flags			Ban flags (only IP or AUTHID are valid here).
  * @param command		Command string to identify the ban source.
  * @param source		Source value passed via BanIdentity().
- * @return				Plugin_Handled to block the actual server banning.
+ * @return				Plugin_Handled to block the actual unbanning.
  */
 forward Action OnRemoveBan(const char[] identity,
 						   int flags,
