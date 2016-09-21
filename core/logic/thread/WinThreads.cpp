@@ -108,7 +108,7 @@ IThreadHandle *WinThreader::MakeThread(IThread *pThread, const ThreadParams *par
 
 	ThreadHandle* pHandle = new ThreadHandle(this, pThread, params);
 
-	pHandle->m_thread = new ke::Thread([pHandle]() -> void {
+	pHandle->m_thread = ke::MakeUnique<ke::Thread>([pHandle]() -> void {
 		pHandle->Run();
 	}, "SourceMod");
 	if (!pHandle->m_thread->Succeeded()) {

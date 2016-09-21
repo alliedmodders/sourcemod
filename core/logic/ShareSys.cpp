@@ -410,7 +410,7 @@ AlreadyRefed<Native> ShareSystem::AddFakeNative(IPluginFunction *pFunc, const ch
 
 	AutoPtr<FakeNative> fake(new FakeNative(name, pFunc));
 
-	fake->gate = g_pSourcePawn2->CreateFakeNative(func, fake);
+	fake->gate = g_pSourcePawn2->CreateFakeNative(func, fake.get());
 	if (!fake->gate)
 		return nullptr;
 

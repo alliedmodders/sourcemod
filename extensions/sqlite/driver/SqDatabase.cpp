@@ -65,7 +65,7 @@ const char *SqDatabase::GetError(int *errorCode/* =NULL */)
 bool SqDatabase::LockForFullAtomicOperation()
 {
 	if (!m_FullLock)
-		m_FullLock = new ke::Mutex();
+		m_FullLock = ke::MakeUnique<ke::Mutex>();
 
 	m_FullLock->Lock();
 	return true;
