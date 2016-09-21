@@ -206,7 +206,7 @@ HandleType_t HandleSystem::CreateType(const char *name,
 	pType->dispatch = dispatch;
 	if (name && name[0] != '\0')
 	{
-		pType->name = new ke::AString(name);
+		pType->name = ke::MakeUnique<ke::AString>(name);
 		m_TypeLookup.insert(name, pType);
 	}
 

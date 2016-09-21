@@ -181,7 +181,7 @@ ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int
 		if (hook->type == CmdHook::Server || !hook->pf->IsRunnable())
 			continue;
 
-		if (hook->admin && !CheckAccess(client, cmd, hook->admin))
+		if (hook->admin && !CheckAccess(client, cmd, hook->admin.get()))
 		{
 			if (result < Pl_Handled)
 				result = Pl_Handled;
@@ -271,7 +271,7 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 		} else {
 			// Check admin rights if needed. realClient isn't needed since we
 			// should bypass admin checks if client == 0 anyway.
-			if (client && hook->admin && !CheckAccess(client, cmd, hook->admin))
+			if (client && hook->admin && !CheckAccess(client, cmd, hook->admin.get()))
 			{
 				if (result < Pl_Handled)
 					result = Pl_Handled;
@@ -359,7 +359,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	RefPtr<CommandGroup> cmdgroup = i->value;
 
 	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description);
-	pHook->admin = new AdminCmdInfo(cmdgroup, adminflags);
+	pHook->admin = MakeUnique<AdminCmdInfo>(cmdgroup, adminflags);
 
 	/* First get the command group override, if any */
 	bool override = adminsys->GetCommandOverride(group, 
