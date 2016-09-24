@@ -1634,8 +1634,8 @@ private:
 
 		assert(results_.length() == txn_->entries.length());
 
-		ke::AutoArray<cell_t> data(new cell_t[results_.length()]);
-		ke::AutoArray<cell_t> handles(new cell_t[results_.length()]);
+		ke::AutoPtr<cell_t[]> data = ke::MakeUnique<cell_t[]>(results_.length());
+		ke::AutoPtr<cell_t[]> handles = ke::MakeUnique<cell_t[]>(results_.length());
 		for (size_t i = 0; i < results_.length(); i++)
 		{
 			CombinedQuery *obj = new CombinedQuery(results_[i], db_);
@@ -1662,8 +1662,8 @@ private:
 		success_->PushCell(dbh);
 		success_->PushCell(data_);
 		success_->PushCell(txn_->entries.length());
-		success_->PushArray(handles, results_.length());
-		success_->PushArray(data, results_.length());
+		success_->PushArray(handles.get(), results_.length());
+		success_->PushArray(data.get(), results_.length());
 		success_->Execute(NULL);
 
 		// Cleanup. Note we clear results_, since freeing their handles will
@@ -1692,7 +1692,7 @@ public:
 		{
 			HandleSecurity sec(ident_, g_pCoreIdent);
 
-			ke::AutoArray<cell_t> data(new cell_t[results_.length()]);
+			ke::AutoPtr<cell_t[]> data = ke::MakeUnique<cell_t[]>(results_.length());
 			for (size_t i = 0; i < txn_->entries.length(); i++)
 				data[i] = txn_->entries[i].data;
 
@@ -1708,7 +1708,7 @@ public:
 			failure_->PushCell(txn_->entries.length());
 			failure_->PushString(error_.chars());
 			failure_->PushCell(failIndex_);
-			failure_->PushArray(data, txn_->entries.length());
+			failure_->PushArray(data.get(), txn_->entries.length());
 			failure_->Execute(NULL);
 
 			handlesys->FreeHandle(dbh, &sec);

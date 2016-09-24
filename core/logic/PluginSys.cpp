@@ -251,7 +251,7 @@ void CPlugin::EvictWithError(PluginStatus status, const char *error_fmt, ...)
 	ke::SafeVsprintf(m_errormsg, sizeof(m_errormsg), error_fmt, ap);
 	va_end(ap);
 
-	if (m_pRuntime != NULL)
+	if (m_pRuntime)
 	{
 		m_pRuntime->SetPauseState(true);
 	}
@@ -499,7 +499,7 @@ bool CPlugin::TryCompile()
 
 IPluginContext *CPlugin::GetBaseContext()
 {
-	if (m_pRuntime == NULL)
+	if (!m_pRuntime)
 	{
 		return NULL;
 	}
@@ -558,7 +558,7 @@ bool CPlugin::IsSilentlyFailed()
 
 bool CPlugin::IsDebugging()
 {
-	if (m_pRuntime == NULL)
+	if (!m_pRuntime)
 	{
 		return false;
 	}
