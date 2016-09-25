@@ -181,7 +181,7 @@ struct TrieSnapshot
 	}
 
 	size_t length;
-	ke::AutoArray<int> keys;
+	ke::AutoPtr<int[]> keys;
 	BaseStringTable strings;
 };
 
@@ -556,7 +556,7 @@ static cell_t CreateTrieSnapshot(IPluginContext *pContext, const cell_t *params)
 
 	TrieSnapshot *snapshot = new TrieSnapshot;
 	snapshot->length = pTrie->map.elements();
-	snapshot->keys = new int[snapshot->length];
+	snapshot->keys = ke::MakeUnique<int[]>(snapshot->length);
 	size_t i = 0;
 	for (StringHashMap<Entry>::iterator iter = pTrie->map.iter(); !iter.empty(); iter.next(), i++)
 		snapshot->keys[i] = snapshot->strings.AddString(iter->key.chars(), iter->key.length());

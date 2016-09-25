@@ -313,13 +313,13 @@ bool ConsoleDetours::AddListener(IPluginFunction *fun, const char *command)
 	}
 	else
 	{
-		ke::AutoArray<char> str(UTIL_ToLowerCase(command));
+		ke::AutoPtr<char[]> str(UTIL_ToLowerCase(command));
 		IChangeableForward *forward;
-		if (!m_Listeners.retrieve(str, &forward))
+		if (!m_Listeners.retrieve(str.get(), &forward))
 		{
 			forward = forwardsys->CreateForwardEx(NULL, ET_Hook, 3, NULL, Param_Cell,
 			                                     Param_String, Param_Cell);
-			m_Listeners.insert(str, forward);
+			m_Listeners.insert(str.get(), forward);
 		}
 		forward->AddFunction(fun);
 	}
@@ -335,9 +335,9 @@ bool ConsoleDetours::RemoveListener(IPluginFunction *fun, const char *command)
 	}
 	else
 	{
-		ke::AutoArray<char> str(UTIL_ToLowerCase(command));
+		ke::AutoPtr<char[]> str(UTIL_ToLowerCase(command));
 		IChangeableForward *forward;
-		if (!m_Listeners.retrieve(str, &forward))
+		if (!m_Listeners.retrieve(str.get(), &forward))
 			return false;
 		return forward->RemoveFunction(fun);
 	}
