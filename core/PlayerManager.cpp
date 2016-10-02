@@ -1963,7 +1963,6 @@ CPlayer::CPlayer()
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 {
 	m_IsConnected = true;
-	m_Name.assign(name);
 	m_Ip.assign(ip);
 	m_pEdict = pEntity;
 	m_iIndex = IndexOfEdict(pEntity);
@@ -1971,6 +1970,8 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 
 	m_Serial.bits.index = m_iIndex;
 	m_Serial.bits.serial = g_PlayerSerialCount++;
+
+	SetName(name);
 
 	char ip2[24], *ptr;
 	ke::SafeStrcpy(ip2, sizeof(ip2), ip);
@@ -2135,7 +2136,30 @@ void CPlayer::Disconnect()
 
 void CPlayer::SetName(const char *name)
 {
-	m_Name.assign(name);
+	// Player names from Steam can get truncated in the engine, leaving
+	// a partial, invalid UTF-8 char at the end. Strip it off.
+
+	char szNewName[MAX_PLAYER_NAME_LENGTH];
+	ke::SafeStrcpy(szNewName, sizeof(szNewName), name);
+
+	size_t i = 0;
+	while (i < sizeof(szNewName))
+	{
+		if (szNewName[i] == 0)
+			break;
+
+		unsigned int cCharBytes = _GetUTF8CharBytes(&szNewName[i]);
+		size_t newPos = i + cCharBytes;
+		if (newPos > (sizeof(szNewName) - 1))
+		{
+			szNewName[i] = 0;
+			break;
+		}
+
+		i = newPos;
+	}
+
+	m_Name.assign(szNewName);
 }
 
 const char *CPlayer::GetName()
