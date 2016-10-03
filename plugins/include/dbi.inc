@@ -380,6 +380,16 @@ methodmap Database < Handle
 	//                       The buffer must be at least 2*strlen(string)+1.
 	public native bool Escape(const char[] string, char[] buffer, int maxlength, int &written=0);
 
+	// Formats a string according to the SourceMod format rules (see documentation).
+	// All format specifiers are escaped (see SQL_EscapeString) unless the '!' flag is used.
+	//
+	// @param buffer		Destination string buffer.
+	// @param maxlength		Maximum length of output string buffer.
+	// @param format		Formatting rules.
+	// @param ...			Variable number of format parameters.
+	// @return				Number of cells written.
+	public native int Format(const char[] buffer, int maxlength, const char[] format, any ...);
+
 	// Returns whether a database is the same connection as another database.
 	public native bool IsSameConnection(Database other);
 
@@ -638,6 +648,19 @@ native bool SQL_EscapeString(Handle database,
 							 char[] buffer, 
 							 int maxlength, 
 							 int &written=0);
+
+/**
+ * Formats a string according to the SourceMod format rules (see documentation).
+ * All format specifiers are escaped (see SQL_EscapeString) unless the '!' flag is used.
+ *
+ * @param database		A database Handle.
+ * @param buffer		Destination string buffer.
+ * @param maxlength		Maximum length of output string buffer.
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @return				Number of cells written.
+ */
+native int SQL_FormatQuery(Handle database, const char[] buffer, int maxlength, const char[] format, any ...);
 
 /**
  * This is a backwards compatibility stock.  You should use SQL_EscapeString() 
