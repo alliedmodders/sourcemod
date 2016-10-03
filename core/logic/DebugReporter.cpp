@@ -185,7 +185,7 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 
 	if (blame) 
 	{
-		g_Logger.LogError("[SM] Blaming: %s()", blame);
+		g_Logger.LogError("[SM] Blaming: %s", blame);
 	}
 
 	if (!iter.Done()) 
@@ -211,7 +211,7 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 				{
 					file = "<unknown>";
 				}
-				g_Logger.LogError("[SM]   [%d] Line %d, %s::%s()",
+				g_Logger.LogError("[SM]   [%d] Line %d, %s::%s",
 						index,
 						iter.LineNumber(),
 						file,
