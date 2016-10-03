@@ -252,6 +252,9 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 		if (filter)
 			filter->Preprocess(func, temp_info);
 
+		if (func->GetParentRuntime()->IsPaused())
+			continue;
+
 		for (unsigned int i=0; i<num_params; i++)
 		{
 			int err = SP_ERROR_PARAM;
