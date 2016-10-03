@@ -395,7 +395,7 @@ native bool StripQuotes(char[] text);
  * Returns an uppercase character to a lowercase character.
  *
  * @param chr			Character to convert.
- * @return				Lowercase character on success, 
+ * @return				Uppercase character on success, 
  *						no change on failure.
  */
 stock int CharToUpper(int chr)
@@ -411,7 +411,7 @@ stock int CharToUpper(int chr)
  * Returns a lowercase character to an uppercase character.
  *
  * @param chr			Character to convert.
- * @return				Uppercase character on success, 
+ * @return				Lowercase character on success, 
  *						no change on failure.
  */
 stock int CharToLower(int chr)
