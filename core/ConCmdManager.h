@@ -94,6 +94,20 @@ struct CmdHook : public ke::InlineListNode<CmdHook>
 
 typedef ke::InlineList<CmdHook> CmdHookList;
 
+struct CmdAutoCompleteSuggest : public ke::InlineListNode<CmdAutoCompleteSuggest>
+{
+	CmdAutoCompleteSuggest(ConCmdInfo *cmd, IPluginFunction *fun)
+		: info(cmd),
+		pf(fun)
+	{
+	}
+
+	ConCmdInfo *info;
+	IPluginFunction *pf;
+};
+
+typedef ke::InlineList<CmdAutoCompleteSuggest> CmdAutoCompleteSuggestList;
+
 struct ConCmdInfo
 {
 	ConCmdInfo()
@@ -105,8 +119,10 @@ struct ConCmdInfo
 	bool sourceMod;					/**< Determines whether or not concmd was created by a SourceMod plugin */
 	ConCommand *pCmd;				/**< Pointer to the command itself */
 	CmdHookList hooks;				/**< Hook list */
+	CmdAutoCompleteSuggestList autocompleters; /**< AutoComplete list */
 	FlagBits eflags;				/**< Effective admin flags */
-	ke::RefPtr<CommandHook> sh_hook;   /**< SourceHook hook, if any. */
+	ke::RefPtr<CommandHook> sh_hook;   /**< SourceHook Dispatch hook, if any. */
+	ke::RefPtr<CommandAutoCompleteHook> sh_autocomplete_hook; /**< SourceHook AutoCompleteSuggest hook, if any. */
 };
 
 typedef List<ConCmdInfo *> ConCmdList;
@@ -118,6 +134,7 @@ class ConCmdManager :
 	public IConCommandTracker
 {
 	friend void CommandCallback(DISPATCH_ARGS);
+	friend int CommandCompletionCallback(char const *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 public:
 	ConCmdManager();
 	~ConCmdManager();
@@ -131,21 +148,24 @@ public: //IRootConsoleCommand
 public: //IConCommandTracker
 	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name) override;
 public:
-	bool AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
+	bool AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags, IPluginFunction *pAutoCompleteFunction = nullptr);
 	bool AddAdminCommand(IPluginFunction *pFunction, 
 						 const char *name, 
 						 const char *group,
 						 int adminflags,
 						 const char *description, 
-						 int flags);
+						 int flags,
+						 IPluginFunction *pAutoCompleteFunction);
 	ResultType DispatchClientCommand(int client, const char *cmd, int args, ResultType type);
 	void UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits, bool remove);
 	bool LookForSourceModCommand(const char *cmd);
 	bool LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags);
 private:
 	bool InternalDispatch(int client, const ICommandArgs *args);
+	int InternalCommandCompletionCallback(char const *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH], int size);
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
 	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags);
+	ConCmdInfo *FindCommandFromPartial(const char *partial);
 	void AddToCmdList(ConCmdInfo *info);
 	void RemoveConCmd(ConCmdInfo *info, const char *cmd, bool untrack);
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);

@@ -39,6 +39,7 @@
 #include "provider.h"
 #include "command_args.h"
 #include <bridge/include/IScriptManager.h>
+#include <ICellArray.h>
 
 using namespace ke;
 
@@ -102,6 +103,14 @@ void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *na
 		delete hook;
 	}
 
+	CmdAutoCompleteSuggestList::iterator iter2 = pInfo->autocompleters.begin();
+	while (iter2 != pInfo->autocompleters.end())
+	{
+		CmdAutoCompleteSuggest *autocompleter = *iter2;
+		iter2 = pInfo->autocompleters.erase(iter2);
+		delete autocompleter;
+	}
+
 	RemoveConCmd(pInfo, name, false);
 }
 
@@ -119,6 +128,16 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 		hook->info->hooks.remove(hook);
 		if (hook->admin)
 			hook->admin->group->hooks.remove(hook);
+
+		// See if this plugin registered a autocomplete suggestion callback
+		CmdAutoCompleteSuggestList::iterator autocompleteIter = hook->info->autocompleters.begin();
+		while (autocompleteIter != hook->info->autocompleters.end())
+		{
+			CmdAutoCompleteSuggest *autocompleter = *autocompleteIter;
+			if (autocompleter->pf->GetParentContext() == plugin->GetBaseContext())
+				autocompleteIter = hook->info->autocompleters.erase(autocompleteIter);
+			delete autocompleter;
+		}
 
 		if (hook->info->hooks.empty())
 			RemoveConCmd(hook->info, hook->info->pCmd->GetName(), true);
@@ -300,6 +319,77 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 	return false;
 }
 
+int CommandCompletionCallback(char const *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+	return g_ConCmds.InternalCommandCompletionCallback(partial, commands, 0);
+}
+
+int ConCmdManager::InternalCommandCompletionCallback(char const *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH], int size)
+{
+	ConCmdInfo *pInfo = FindCommandFromPartial(partial);
+	if (!pInfo)
+		return size;
+
+	if (pInfo->autocompleters.empty())
+		return size;
+
+	HandleType_t htCellArray;
+	if (!handlesys->FindHandleType("CellArray", &htCellArray))
+		return size;
+
+	ICellArray *array = logicore.CreateCellArray((COMMAND_COMPLETION_ITEM_LENGTH + 3) / 4);
+
+	HandleSecurity sec(g_pCoreIdent, g_pCoreIdent);
+	HandleAccess access;
+	access.access[HandleAccess_Read] = 0;
+	access.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY;
+	access.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
+	Handle_t hndl = handlesys->CreateHandleEx(htCellArray, array, &sec, &access, nullptr);
+	if (hndl == BAD_HANDLE)
+	{
+		logicore.FreeCellArray(array);
+		return size;
+	}
+
+	// Add existing suggestions to the cell array
+	cell_t *block;
+	for (int i = 0; i < size; i++)
+	{
+		block = array->push();
+		if (!block)
+			return size;
+
+		ke::SafeStrcpy((char *)block, array->blocksize() * sizeof(cell_t), commands[i]);
+	}
+
+	for (CmdAutoCompleteSuggestList::iterator iter = pInfo->autocompleters.begin(); iter != pInfo->autocompleters.end(); iter++)
+	{
+		CmdAutoCompleteSuggest *suggestor = *iter;
+
+		if (!suggestor->pf->IsRunnable())
+			continue;
+
+		suggestor->pf->PushString(pInfo->pCmd->GetName());
+		suggestor->pf->PushString(partial);
+		suggestor->pf->PushCell(hndl);
+		
+		suggestor->pf->Execute(nullptr);
+	}
+
+	size = array->size();
+	if (size > COMMAND_COMPLETION_MAXITEMS)
+		size = COMMAND_COMPLETION_MAXITEMS;
+
+	for (int i = 0; i < size; i++)
+	{
+		cell_t *blk = array->at(i);
+		ke::SafeStrcpy(commands[i], COMMAND_COMPLETION_ITEM_LENGTH, (char *)blk);
+	}
+
+	handlesys->FreeHandle(hndl, &sec);
+	return size;
+}
+
 bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin)
 {
 	if (adminsys->CheckClientCommandAccess(client, cmd, pAdmin->eflags))
@@ -342,7 +432,8 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 									 const char *group,
 									 int adminflags,
 									 const char *description, 
-									 int flags)
+									 int flags,
+									 IPluginFunction *pAutoCompleteFunction)
 {
 	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
 
@@ -357,6 +448,9 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 		i->value = new CommandGroup();
 	}
 	RefPtr<CommandGroup> cmdgroup = i->value;
+
+	if (pAutoCompleteFunction)
+		pInfo->autocompleters.append(new CmdAutoCompleteSuggest(pInfo, pAutoCompleteFunction));
 
 	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description);
 	pHook->admin = new AdminCmdInfo(cmdgroup, adminflags);
@@ -388,13 +482,17 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 bool ConCmdManager::AddServerCommand(IPluginFunction *pFunction, 
 									  const char *name, 
 									  const char *description, 
-									  int flags)
+									  int flags,
+									  IPluginFunction *pAutoCompleteFunction)
 
 {
 	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
 
 	if (!pInfo)
 		return false;
+
+	if (pAutoCompleteFunction)
+		pInfo->autocompleters.append(new CmdAutoCompleteSuggest(pInfo, pAutoCompleteFunction));
 
 	CmdHook *pHook = new CmdHook(CmdHook::Server, pInfo, pFunction, description);
 
@@ -579,7 +677,7 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 			}
 			char *new_name = sm_strdup(name);
 			char *new_help = sm_strdup(description);
-			pCmd = new ConCommand(new_name, CommandCallback, new_help, flags);
+			pCmd = new ConCommand(new_name, CommandCallback, new_help, flags, CommandCompletionCallback);
 			pInfo->sourceMod = true;
 		}
 		else
@@ -590,6 +688,24 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 				return this->InternalDispatch(client, args);
 			};
 			pInfo->sh_hook = sCoreProviderImpl.AddCommandHook(pCmd, callback);
+
+			// Route new CUtlVector AutoCompleteSuggest through old fixed-size array impl.
+			CommandAutoCompleteHook::Callback auto_complete = [this] (AUTOCOMPLETESUGGEST_ARGS, size_t size) -> int {
+#ifdef AUTOCOMPLETESUGGEST_NEWARGS
+				char oldCommands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH];
+				size = commands.Count();
+				if (size > COMMAND_COMPLETION_MAXITEMS)
+					size = COMMAND_COMPLETION_MAXITEMS;
+
+				for (size_t i = 0; i < size; i++)
+				{
+					ke::SafeStrcpy(oldCommands[i], COMMAND_COMPLETION_ITEM_LENGTH, commands[i]);
+				}
+#endif
+				return this->InternalCommandCompletionCallback(partial, oldCommands, size);
+			};
+			// Add AutoCompleteSuggest and CanAutoComplete hooks
+			pInfo->sh_autocomplete_hook = sCoreProviderImpl.AddCommandAutoCompleteHook(pCmd, auto_complete);
 		}
 
 		pInfo->pCmd = pCmd;
@@ -598,6 +714,28 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 		AddToCmdList(pInfo);
 	}
 
+	return pInfo;
+}
+
+ConCmdInfo *ConCmdManager::FindCommandFromPartial(const char *partial)
+{
+	char command[256];
+	ke::SafeStrcpy(command, sizeof(command), partial);
+
+	char *space = strstr(command, " ");
+	if (space)
+		*space = '\0';
+
+	ConCmdInfo *pInfo;
+
+	if ((pInfo = FindInTrie(command)) == nullptr)
+	{
+		ConCmdList::iterator item = FindInList(command);
+		if (item == m_CmdList.end())
+			return nullptr;
+		pInfo = *item;
+	}
+	
 	return pInfo;
 }
 

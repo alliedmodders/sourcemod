@@ -48,6 +48,15 @@ struct CCommandContext;
 # define DISPATCH_PROLOGUE  CCommand command
 #endif
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+# define AUTOCOMPLETESUGGEST_NEWARGS
+# define AUTOCOMPLETESUGGEST_TYPES     const char *, CUtlVector< CUtlString > &
+# define AUTOCOMPLETESUGGEST_ARGS      const char *partial, CUtlVector< CUtlString > &commands
+#else
+//# define AUTOCOMPLETESUGGEST_TYPES      char const *, char *
+# define AUTOCOMPLETESUGGEST_ARGS      char const *partial, char oldCommands[ COMMAND_COMPLETION_MAXITEMS ][ COMMAND_COMPLETION_ITEM_LENGTH ]
+#endif
+
 namespace SourceMod {
 
 // Describes the mechanism in which client cvar queries are implemented.
@@ -76,6 +85,24 @@ private:
 	Callback callback_;
 };
 
+class CommandAutoCompleteHook : public ke::Refcounted<CommandAutoCompleteHook>
+{
+public:
+	typedef ke::Lambda<int(AUTOCOMPLETESUGGEST_ARGS, size_t)> Callback;
+
+public:
+	CommandAutoCompleteHook(ConCommand *cmd, const Callback &callback);
+	~CommandAutoCompleteHook();
+	int AutoCompleteSuggest(AUTOCOMPLETESUGGEST_ARGS);
+	bool CanAutoComplete();
+	void Zap();
+
+private:
+	int suggest_hook_id_;
+	int can_hook_id_;
+	Callback callback_;
+};
+
 class GameHooks
 {
 public:
@@ -92,6 +119,8 @@ public:
 public:
 	ke::RefPtr<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 	ke::RefPtr<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
+
+	ke::RefPtr<CommandAutoCompleteHook> AddCommandAutocompleteHook(ConCommand *cmd, const CommandAutoCompleteHook::Callback &callback);
 
 	int CommandClient() const {
 		return last_command_client_;

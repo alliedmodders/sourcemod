@@ -69,6 +69,7 @@ public:
 
 	ke::RefPtr<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 	ke::RefPtr<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
+	ke::RefPtr<CommandAutoCompleteHook> AddCommandAutoCompleteHook(ConCommand *cmd, const CommandAutoCompleteHook::Callback &callback);
 
 	int CommandClient() const {
 		return hooks_.CommandClient();

@@ -741,6 +741,13 @@ CoreProviderImpl::AddPostCommandHook(ConCommand *cmd, const CommandHook::Callbac
 	return hooks_.AddPostCommandHook(cmd, callback);
 }
 
+ke::RefPtr<CommandAutoCompleteHook>
+CoreProviderImpl::AddCommandAutoCompleteHook(ConCommand *cmd, const CommandAutoCompleteHook::Callback &callback)
+{
+
+	return hooks_.AddCommandAutocompleteHook(cmd, callback);
+}
+
 CoreProviderImpl::CommandImpl::CommandImpl(ConCommand *cmd, CommandHook *hook)
 : cmd_(cmd),
   hook_(hook)

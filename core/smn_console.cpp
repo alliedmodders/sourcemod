@@ -688,8 +688,8 @@ static cell_t sm_QueryClientConVar(IPluginContext *pContext, const cell_t *param
 
 static cell_t sm_RegServerCmd(IPluginContext *pContext, const cell_t *params)
 {
-	char *name,*help;
-	IPluginFunction *pFunction;
+	char *name, *help;
+	IPluginFunction *pFunction, *pAutoCompleteFunction = nullptr;
 
 	pContext->LocalToString(params[1], &name);
 
@@ -706,7 +706,16 @@ static cell_t sm_RegServerCmd(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 
-	if (!g_ConCmds.AddServerCommand(pFunction, name, help, params[4]))
+	if (params[0] > 4 && params[5] != -1)
+	{
+		pAutoCompleteFunction = pContext->GetFunctionById(params[5]);
+		if (!pAutoCompleteFunction)
+		{
+			return pContext->ThrowNativeError("Invalid auto complete function id (%X)", params[5]);
+		}
+	}
+
+	if (!g_ConCmds.AddServerCommand(pFunction, name, help, params[4], pAutoCompleteFunction))
 	{
 		return pContext->ThrowNativeError("Command \"%s\" could not be created. A convar with the same name already exists.", name);
 	}
@@ -717,7 +726,7 @@ static cell_t sm_RegServerCmd(IPluginContext *pContext, const cell_t *params)
 static cell_t sm_RegConsoleCmd(IPluginContext *pContext, const cell_t *params)
 {
 	char *name,*help;
-	IPluginFunction *pFunction;
+	IPluginFunction *pFunction, *pAutoCompleteFunction = nullptr;
 
 	pContext->LocalToString(params[1], &name);
 
@@ -734,9 +743,18 @@ static cell_t sm_RegConsoleCmd(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 
+	if (params[0] > 4 && params[5] != -1)
+	{
+		pAutoCompleteFunction = pContext->GetFunctionById(params[5]);
+		if (!pAutoCompleteFunction)
+		{
+			return pContext->ThrowNativeError("Invalid auto complete function id (%X)", params[5]);
+		}
+	}
+
 	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 	const char *group = pPlugin->GetFilename();
-	if (!g_ConCmds.AddAdminCommand(pFunction, name, group, 0, help, params[4]))
+	if (!g_ConCmds.AddAdminCommand(pFunction, name, group, 0, help, params[4], pAutoCompleteFunction))
 	{
 		return pContext->ThrowNativeError("Command \"%s\" could not be created. A convar with the same name already exists.", name);
 	}
@@ -748,7 +766,7 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 {
 	char *name,*help;
 	const char *group;
-	IPluginFunction *pFunction;
+	IPluginFunction *pFunction, *pAutoCompleteFunction = nullptr;
 	FlagBits flags = params[3];
 	int cmdflags = params[6];
 
@@ -774,7 +792,16 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 
-	if (!g_ConCmds.AddAdminCommand(pFunction, name, group, flags, help, cmdflags))
+	if (params[0] > 6 && params[7] != -1)
+	{
+		pAutoCompleteFunction = pContext->GetFunctionById(params[7]);
+		if (!pAutoCompleteFunction)
+		{
+			return pContext->ThrowNativeError("Invalid auto complete function id (%X)", params[7]);
+		}
+	}
+
+	if (!g_ConCmds.AddAdminCommand(pFunction, name, group, flags, help, cmdflags, pAutoCompleteFunction))
 	{
 		return pContext->ThrowNativeError("Command \"%s\" could not be created. A convar with the same name already exists.", name);
 	}

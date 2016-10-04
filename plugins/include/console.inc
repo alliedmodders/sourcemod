@@ -321,6 +321,21 @@ native bool FormatActivitySource(int client, int target, const char[] namebuf, i
 typedef SrvCmd = function Action (int args);
 
 /**
+ * Called when the server operator typed "some_command <tab>" in the server console.
+ * Provide and change argument autocompletion suggestions for the command.
+ *
+ * If there is only one suggestion for the arguments, the command line string
+ * is replaced with the suggestion.
+ *
+ * @param command      The name of the command to generate argument suggestions for.
+ * @param partial      The whole command line string typed yet (including the command name).
+ * @param suggestions  ArrayList holding all suggestions for the command arguments.
+ *                     The suggestions should include the full command line with the 
+                       command name itself.
+ */
+typedef CommandCompletionCallback = function void (const char[] command, const char[] partial, ArrayList suggestions);
+
+/**
  * Creates a server-only console command, or hooks an already existing one.  
  *
  * Server commands are case sensitive.
@@ -329,9 +344,10 @@ typedef SrvCmd = function Action (int args);
  * @param callback		A function to use as a callback for when the command is invoked.
  * @param description	Optional description to use for command creation.
  * @param flags			Optional flags to use for command creation.
+ * @param autocomplete	Optional callback to provide or alter argument autocomplete suggestions.
  * @error				Command name is the same as an existing convar.
  */
-native void RegServerCmd(const char[] cmd, SrvCmd callback, const char[] description="", int flags=0);
+native void RegServerCmd(const char[] cmd, SrvCmd callback, const char[] description="", int flags=0, CommandCompletionCallback autocomplete=INVALID_FUNCTION);
 
 /**
  * Called when a generic console command is invoked.
@@ -354,9 +370,10 @@ typedef ConCmd = function Action (int client, int args);
  * @param callback		A function to use as a callback for when the command is invoked.
  * @param description	Optional description to use for command creation.
  * @param flags			Optional flags to use for command creation.
+ * @param autocomplete	Optional callback to provide or alter argument autocomplete suggestions.
  * @error				Command name is the same as an existing convar.
  */
-native void RegConsoleCmd(const char[] cmd, ConCmd callback, const char[] description="", int flags=0);
+native void RegConsoleCmd(const char[] cmd, ConCmd callback, const char[] description="", int flags=0, CommandCompletionCallback autocomplete=INVALID_FUNCTION);
 
 /**
  * Creates a console command as an administrative command.  If the command does not exist,
@@ -372,6 +389,7 @@ native void RegConsoleCmd(const char[] cmd, ConCmd callback, const char[] descri
  * @param group			String containing the command group to use.  If empty,
  * 						the plugin's filename will be used instead.
  * @param flags			Optional console flags.
+ * @param autocomplete	Optional callback to provide or alter argument autocomplete suggestions.
  * @error				Command name is the same as an existing convar.
  */
 native void RegAdminCmd(const char[] cmd,
@@ -379,7 +397,8 @@ native void RegAdminCmd(const char[] cmd,
 					int adminflags,
 					const char[] description="",
 					const char[] group="",
-					int flags=0);
+					int flags=0,
+					CommandCompletionCallback autocomplete=INVALID_FUNCTION);
 					
 /**
  * Returns the number of arguments from the current console or server command.

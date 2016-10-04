@@ -43,9 +43,13 @@ SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
+SH_DECL_HOOK2(ConCommand, AutoCompleteSuggest, SH_NOATTRIB, false, int, const char *, CUtlVector< CUtlString > &);
 #else
 SH_DECL_HOOK0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
+SH_DECL_HOOK2(ConCommand, AutoCompleteSuggest, SH_NOATTRIB, false, int, char const *, char **);
 #endif
+
+SH_DECL_HOOK0(ConCommand, CanAutoComplete, SH_NOATTRIB, false, bool);
 
 SH_DECL_HOOK1_void(IServerGameClients, SetCommandClient, SH_NOATTRIB, false, int);
 
@@ -135,6 +139,12 @@ GameHooks::AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &call
 	return new CommandHook(cmd, callback, true);
 }
 
+ke::RefPtr<CommandAutoCompleteHook>
+GameHooks::AddCommandAutocompleteHook(ConCommand *cmd, const CommandAutoCompleteHook::Callback &callback)
+{
+	return new CommandAutoCompleteHook(cmd, callback);
+}
+
 void GameHooks::SetCommandClient(int client)
 {
 	last_command_client_ = client + 1;
@@ -168,4 +178,41 @@ void CommandHook::Dispatch(DISPATCH_ARGS)
 void CommandHook::Zap()
 {
 	hook_id_ = 0;
+}
+
+CommandAutoCompleteHook::CommandAutoCompleteHook(ConCommand *cmd, const Callback &callback)
+	: suggest_hook_id_(0),
+	can_hook_id_(0),
+	callback_(callback)
+{
+	suggest_hook_id_ = SH_ADD_HOOK(ConCommand, AutoCompleteSuggest, cmd, SH_MEMBER(this, &CommandAutoCompleteHook::AutoCompleteSuggest), true);
+	can_hook_id_ = SH_ADD_HOOK(ConCommand, CanAutoComplete, cmd, SH_MEMBER(this, &CommandAutoCompleteHook::CanAutoComplete), false);
+}
+
+CommandAutoCompleteHook::~CommandAutoCompleteHook()
+{
+	if (suggest_hook_id_)
+		SH_REMOVE_HOOK_ID(suggest_hook_id_);
+	if (can_hook_id_)
+		SH_REMOVE_HOOK_ID(can_hook_id_);
+}
+
+int CommandAutoCompleteHook::AutoCompleteSuggest(AUTOCOMPLETESUGGEST_ARGS)
+{
+	int count = META_RESULT_ORIG_RET(int);
+	AddRef();
+	int rval = callback_(partial, commands, count);
+	Release();
+	RETURN_META_VALUE(MRES_SUPERCEDE, rval);
+}
+
+bool CommandAutoCompleteHook::CanAutoComplete()
+{
+	RETURN_META_VALUE(MRES_SUPERCEDE, true);
+}
+
+void CommandAutoCompleteHook::Zap()
+{
+	suggest_hook_id_ = 0;
+	can_hook_id_ = 0;
 }
