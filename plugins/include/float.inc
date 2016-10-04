@@ -385,7 +385,7 @@ stock float DegToRad(float angle)
 }
 
 /**
- * Converts degrees to radians.
+ * Converts radians to degrees.
  *
  * @param angle		Radians.
  * @return			Degrees.
