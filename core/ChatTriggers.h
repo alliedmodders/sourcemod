@@ -64,7 +64,11 @@ public:
 	bool IsChatTrigger();
 	bool WasFloodedMessage();
 private:
-	void SetChatTriggers(bool silent, const char *value);
+	enum ChatTriggerType {
+		ChatTrigger_Public,
+		ChatTrigger_Private,
+	};
+	void SetChatTrigger(ChatTriggerType type, const char *value);
 	bool PreProcessTrigger(edict_t *pEdict, const char *args);
 	bool ClientIsFlooding(int client);
 	cell_t CallOnClientSayCommand(int client);

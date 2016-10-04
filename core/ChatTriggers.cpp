@@ -62,26 +62,26 @@ ChatTriggers::~ChatTriggers()
 	m_ArgSBackup = NULL;
 }
 
-void ChatTriggers::SetChatTriggers(bool silent, const char *value)
+void ChatTriggers::SetChatTrigger(ChatTriggerType type, const char *value)
 {
-	ke::AutoArray<char> filtered(new char[strlen(value) + 1]);
+	ke::AutoPtr<char[]> filtered(new char[strlen(value) + 1]);
 
 	const char *src = value;
-	char *dest = filtered;
+	char *dest = filtered.get();
 	char c;
 	while ((c = *src++) != '\0') {
 		if (c <= ' ' || c == '"' || c == '\'' || (c >= '0' && c <= '9') || c == ';' || (c >= 'A' && c <= 'Z') || c == '\\' || (c >= 'a' && c <= 'z') || c >= 0x7F) {
-			logger->LogError("Ignoring %s chat trigger character '%c', not in valid set: %s", (silent ? "silent" : "public"), c, "!#$%&()*+,-./:<=>?@[]^_`{|}~");
+			logger->LogError("Ignoring %s chat trigger character '%c', not in valid set: %s", (type == ChatTrigger_Private ? "silent" : "public"), c, "!#$%&()*+,-./:<=>?@[]^_`{|}~");
 			continue;
 		}
 		*dest++ = c;
 	}
 	*dest = '\0';
 
-	if (silent) {
-		m_PrivTrigger = filtered;
+	if (type == ChatTrigger_Private) {
+		m_PrivTrigger = filtered.get();
 	} else {
-		m_PubTrigger = filtered;
+		m_PubTrigger = filtered.get();
 	}
 }
 
@@ -93,12 +93,12 @@ ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key,
 {
 	if (strcmp(key, "PublicChatTrigger") == 0)
 	{
-		SetChatTriggers(false, value);
+		SetChatTrigger(ChatTrigger_Public, value);
 		return ConfigResult_Accept;
 	}
 	else if (strcmp(key, "SilentChatTrigger") == 0)
 	{
-		SetChatTriggers(true, value);
+		SetChatTrigger(ChatTrigger_Private, value);
 		return ConfigResult_Accept;
 	}
 	else if (strcmp(key, "SilentFailSuppress") == 0)
