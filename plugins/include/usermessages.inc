@@ -86,7 +86,7 @@ stock BfWrite UserMessageToBfWrite(Handle msg)
 }
 
 // Make sure to only call this on readable buffers (eg from a message hook).
-stock BfWrite UserMessageToBfRead(Handle msg)
+stock BfRead UserMessageToBfRead(Handle msg)
 {
 	if (GetUserMessageType() == UM_Protobuf)
 		return null;
