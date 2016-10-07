@@ -220,9 +220,9 @@
 			"SetUserCvar"
 			{
 				/* Not 100% sure on this, why would windows change and not linux - TEST ME */
-				"windows"	"29"
-				"linux"		"67"
-				"mac"		"67"
+				"windows"	"30"
+				"linux"		"68"
+				"mac"		"68"
 			}
 			/**
 			 * CBaseClient::SetName(char  const*);
@@ -231,9 +231,9 @@
 			 */
 			"SetClientName"
 			{
-				"windows"	"28"
-				"linux"		"66"
-				"mac"		"66"
+				"windows"	"29"
+				"linux"		"67"
+				"mac"		"67"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
