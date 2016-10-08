@@ -62,16 +62,10 @@
 # include <unistd.h>
 #endif
 
-#if SH_IMPL_VERSION >= 5
-# if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
-# else
-	SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
-# endif
 #else
-extern int __SourceHook_FHVPAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>,bool);
-extern int __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
-extern bool __SourceHook_FHRemoveConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
+	SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 #endif
 
 class GenericCommandHooker : public IConCommandLinkListener
