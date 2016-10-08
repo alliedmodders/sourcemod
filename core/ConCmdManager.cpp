@@ -331,7 +331,8 @@ int ConCmdManager::InternalCommandCompletionCallback(const ICommandArgs *args, k
 		pInfo = *item;
 	}
 
-	if (!pInfo->autocompleter)
+	// No plugins listening at the moment. Ignore.
+	if (!pInfo->autocompleter || pInfo->autocompleter->GetFunctionCount() == 0)
 		return size;
 
 	HandleType_t htCellArray;
