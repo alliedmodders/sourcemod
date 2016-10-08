@@ -211,7 +211,8 @@ int CommandAutoCompleteHook::AutoCompleteSuggest(AUTOCOMPLETESUGGEST_ARGS)
 		suggestions.append(commands[i]);
 	}
 
-	count = callback_(partial, suggestions);
+	ArgsFromString args(partial);
+	count = callback_(&args, suggestions);
 
 	// Put the suggestions back into the expected structure for the engine.
 #if defined AUTOCOMPLETESUGGEST_NEWARGS

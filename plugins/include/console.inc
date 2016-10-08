@@ -323,17 +323,17 @@ typedef SrvCmd = function Action (int args);
 /**
  * Called when the server operator typed "some_command <tab>" in the server console.
  * Provide and change argument autocompletion suggestions for the command.
+ * Use the GetCmdArg* natives to access the command and (incomplete) arguments.
  *
  * If there is only one suggestion for the arguments, the command line string
  * is replaced with the suggestion.
  *
- * @param command      The name of the command to generate argument suggestions for.
- * @param partial      The whole command line string typed yet (including the command name).
+ * @param args         Number of arguments that are in the argument string.
  * @param suggestions  ArrayList holding all suggestions for the command arguments.
  *                     The suggestions should include the full command line with the 
                        command name itself.
  */
-typedef CommandCompletionCallback = function void (const char[] command, const char[] partial, ArrayList suggestions);
+typedef CommandCompletionCallback = function void (int args, ArrayList suggestions);
 
 /**
  * Creates a server-only console command, or hooks an already existing one.  

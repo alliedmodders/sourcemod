@@ -304,7 +304,8 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 int CommandCompletionCallback(char const *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
 	ke::Vector<ke::AString> suggestions;
-	int count = g_ConCmds.InternalCommandCompletionCallback(partial, suggestions);
+	ArgsFromString args(partial);
+	int count = g_ConCmds.InternalCommandCompletionCallback(&args, suggestions);
 
 	// Put the suggestions into the engine's buffer.
 	if (count > COMMAND_COMPLETION_MAXITEMS)
@@ -317,12 +318,18 @@ int CommandCompletionCallback(char const *partial, char commands[COMMAND_COMPLET
 	return count;
 }
 
-int ConCmdManager::InternalCommandCompletionCallback(char const *partial, ke::Vector<ke::AString> &suggestions)
+int ConCmdManager::InternalCommandCompletionCallback(const ICommandArgs *args, ke::Vector<ke::AString> &suggestions)
 {
 	int size = suggestions.length();
-	ConCmdInfo *pInfo = FindCommandFromPartial(partial);
-	if (!pInfo)
-		return size;
+	ConCmdInfo *pInfo;
+	const char *cmd = args->Arg(0);
+	if ((pInfo = FindInTrie(cmd)) == nullptr)
+	{
+		ConCmdList::iterator item = FindInList(cmd);
+		if (item == m_CmdList.end())
+			return size;
+		pInfo = *item;
+	}
 
 	if (!pInfo->autocompleter)
 		return size;
@@ -331,6 +338,7 @@ int ConCmdManager::InternalCommandCompletionCallback(char const *partial, ke::Ve
 	if (!handlesys->FindHandleType("CellArray", &htCellArray))
 		return size;
 
+	// Enough cells to fit the maximum item length including null terminator.
 	ICellArray *array = logicore.CreateCellArray((COMMAND_COMPLETION_ITEM_LENGTH + 3) / 4);
 
 	HandleSecurity sec(g_pCoreIdent, g_pCoreIdent);
@@ -356,12 +364,13 @@ int ConCmdManager::InternalCommandCompletionCallback(char const *partial, ke::Ve
 		ke::SafeStrcpy((char *)block, array->blocksize() * sizeof(cell_t), suggestions.at(i).chars());
 	}
 
-	// Call the plugin functions
-	pInfo->autocompleter->PushString(pInfo->pCmd->GetName());
-	pInfo->autocompleter->PushString(partial);
-	pInfo->autocompleter->PushCell(hndl);
-		
-	pInfo->autocompleter->Execute(nullptr);
+	{
+		// Call the plugin functions
+		AutoEnterCommand autoEnterCommand(args);
+		pInfo->autocompleter->PushCell(args->ArgC());
+		pInfo->autocompleter->PushCell(hndl);
+		pInfo->autocompleter->Execute(nullptr);
+	}
 
 	// Replace suggestions with the ones from the plugin.
 	suggestions.clear();
@@ -438,7 +447,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	if (pAutoCompleteFunction)
 	{
 		if (!pInfo->autocompleter)
-			pInfo->autocompleter = forwardsys->CreateForwardEx(NULL, ET_Ignore, 3, NULL, Param_String, Param_String, Param_Cell);
+			pInfo->autocompleter = forwardsys->CreateForwardEx(NULL, ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 		pInfo->autocompleter->AddFunction(pAutoCompleteFunction);
 	}
 
@@ -484,7 +493,7 @@ bool ConCmdManager::AddServerCommand(IPluginFunction *pFunction,
 	if (pAutoCompleteFunction)
 	{
 		if (!pInfo->autocompleter)
-			pInfo->autocompleter = forwardsys->CreateForwardEx(NULL, ET_Ignore, 3, NULL, Param_String, Param_String, Param_Cell);
+			pInfo->autocompleter = forwardsys->CreateForwardEx(NULL, ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 		pInfo->autocompleter->AddFunction(pAutoCompleteFunction);
 	}
 
@@ -688,8 +697,8 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 			pInfo->sh_hook = sCoreProviderImpl.AddCommandHook(pCmd, callback);
 
 			// Add AutoCompleteSuggest and CanAutoComplete hooks
-			CommandAutoCompleteHook::Callback auto_complete = [this](char const *partial, ke::Vector<ke::AString> &suggestions) -> int {
-				return this->InternalCommandCompletionCallback(partial, suggestions);
+			CommandAutoCompleteHook::Callback auto_complete = [this](const ICommandArgs *args, ke::Vector<ke::AString> &suggestions) -> int {
+				return this->InternalCommandCompletionCallback(args, suggestions);
 			};
 			pInfo->sh_autocomplete_hook = sCoreProviderImpl.AddCommandAutoCompleteHook(pCmd, auto_complete);
 		}
@@ -700,28 +709,6 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 		AddToCmdList(pInfo);
 	}
 
-	return pInfo;
-}
-
-ConCmdInfo *ConCmdManager::FindCommandFromPartial(const char *partial)
-{
-	char command[256];
-	ke::SafeStrcpy(command, sizeof(command), partial);
-
-	char *space = strstr(command, " ");
-	if (space)
-		*space = '\0';
-
-	ConCmdInfo *pInfo;
-
-	if ((pInfo = FindInTrie(command)) == nullptr)
-	{
-		ConCmdList::iterator item = FindInList(command);
-		if (item == m_CmdList.end())
-			return nullptr;
-		pInfo = *item;
-	}
-	
 	return pInfo;
 }
 

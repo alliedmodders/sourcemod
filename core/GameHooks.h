@@ -87,7 +87,7 @@ private:
 class CommandAutoCompleteHook : public ke::Refcounted<CommandAutoCompleteHook>
 {
 public:
-	typedef ke::Lambda<int(const char *, ke::Vector<ke::AString> &)> Callback;
+	typedef ke::Lambda<int(const ICommandArgs *, ke::Vector<ke::AString> &)> Callback;
 
 public:
 	CommandAutoCompleteHook(ConCommand *cmd, const Callback &callback);

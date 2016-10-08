@@ -70,7 +70,7 @@ class IPlayerInfoBridge;
 class ICommandArgs;
 
 typedef ke::Lambda<bool(int client, const ICommandArgs*)> CommandFunc;
-typedef ke::Lambda<int(const char *, ke::Vector<ke::AString> &)> AutoCompleteFunc;
+typedef ke::Lambda<int(const ICommandArgs*, ke::Vector<ke::AString> &)> AutoCompleteFunc;
 
 class CoreProvider
 {

@@ -149,10 +149,9 @@ public:
 	bool LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags);
 private:
 	bool InternalDispatch(int client, const ICommandArgs *args);
-	int InternalCommandCompletionCallback(char const *partial, ke::Vector<ke::AString> &suggestions);
+	int InternalCommandCompletionCallback(const ICommandArgs *args, ke::Vector<ke::AString> &suggestions);
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
 	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags);
-	ConCmdInfo *FindCommandFromPartial(const char *partial);
 	void AddToCmdList(ConCmdInfo *info);
 	void RemoveConCmd(ConCmdInfo *info, const char *cmd, bool untrack);
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);

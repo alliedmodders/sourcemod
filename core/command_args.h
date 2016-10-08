@@ -30,6 +30,9 @@
 #include "sourcemm_api.h"
 #include <IRootConsoleMenu.h>
 #include <compat_wrappers.h>
+#include "logic_bridge.h"
+#include <amtl/am-vector.h>
+#include <amtl/am-string.h>
 
 #if SOURCE_ENGINE==SE_EPISODEONE || SOURCE_ENGINE==SE_DARKMESSIAH
 class EngineArgs : public ICommandArgs
@@ -73,5 +76,58 @@ public:
 	}
 };
 #endif
+
+class ArgsFromString : public ICommandArgs
+{
+public:
+	ArgsFromString(const char *args) :
+		arg_string_(nullptr)
+	{
+		size_t arglen = strlen(args);
+		char *arg = new char[arglen + 1];
+		arg[0] = 0;
+
+		// Break all the arguments including the command name at whitespace.
+		size_t pos = 0;
+		const char *arg_pos = args;
+		while ((pos = logicore.BreakString(arg_pos, arg, arglen)) != -1)
+		{
+			args_.append(arg);
+			
+			// Skip the command name in the argument string.
+			if (!arg_string_)
+				arg_string_ = &args[pos];
+
+			arg_pos += pos;
+		}
+		args_.append(arg);
+
+		// No arguments?
+		if (!arg_string_)
+			arg_string_ = &args[arglen];
+
+		delete arg;
+	}
+
+	const char *Arg(int n) const
+	{
+		if (n < 0 || (size_t)n >= args_.length())
+			return nullptr;
+
+		return args_.at(n).chars();
+	}
+	int ArgC() const
+	{
+		return args_.length();
+	}
+	const char *ArgS() const
+	{
+		return arg_string_;
+	}
+
+private:
+	ke::Vector<ke::AString> args_;
+	const char *arg_string_;
+};
 
 #endif // _INCLUDE_SOURCEMOD_CCOMMANDARGS_IMPL_H_
