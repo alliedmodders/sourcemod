@@ -58,7 +58,6 @@
 #endif
 
 #define METAMOD_API_MAJOR			2
-#define FILENAME_1_6_EP1			"sourcemod.2.ep1" PLATFORM_EXT
 #define FILENAME_1_6_EP2			"sourcemod.2.ep2" PLATFORM_EXT
 #define FILENAME_1_6_EP1			"sourcemod.2.ep1" PLATFORM_EXT
 #define FILENAME_1_6_L4D			"sourcemod.2.l4d" PLATFORM_EXT
