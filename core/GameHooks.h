@@ -50,7 +50,6 @@ struct CCommandContext;
 #endif
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-# define AUTOCOMPLETESUGGEST_NEWARGS
 # define AUTOCOMPLETESUGGEST_ARGS      const char *partial, CUtlVector< CUtlString > &commands
 #else
 # define AUTOCOMPLETESUGGEST_ARGS      char const *partial, char commands[ COMMAND_COMPLETION_MAXITEMS ][ COMMAND_COMPLETION_ITEM_LENGTH ]

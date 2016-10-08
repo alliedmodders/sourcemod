@@ -215,7 +215,7 @@ int CommandAutoCompleteHook::AutoCompleteSuggest(AUTOCOMPLETESUGGEST_ARGS)
 	count = callback_(&args, suggestions);
 
 	// Put the suggestions back into the expected structure for the engine.
-#if defined AUTOCOMPLETESUGGEST_NEWARGS
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	commands.Purge();
 	for (int i = 0; i < count; i++)
 	{
