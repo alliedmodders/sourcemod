@@ -54,28 +54,6 @@ public:
 		return engine->Cmd_Args();
 	}
 };
-#else
-class EngineArgs : public ICommandArgs
-{
-	const CCommand *cmd;
-public:
-	EngineArgs(const CCommand& _cmd) : cmd(&_cmd)
-	{
-	}
-	const char *Arg(int n) const
-	{
-		return cmd->Arg(n);
-	}
-	int ArgC() const
-	{
-		return cmd->ArgC();
-	}
-	const char *ArgS() const
-	{
-		return cmd->ArgS();
-	}
-};
-#endif
 
 class ArgsFromString : public ICommandArgs
 {
@@ -93,14 +71,17 @@ public:
 		while ((pos = logicore.BreakString(arg_pos, arg, arglen)) != -1)
 		{
 			args_.append(arg);
-			
+
 			// Skip the command name in the argument string.
 			if (!arg_string_)
 				arg_string_ = &args[pos];
 
 			arg_pos += pos;
 		}
-		args_.append(arg);
+
+		// Add the last argument as well.
+		if (strlen(arg) > 0)
+			args_.append(arg);
 
 		// No arguments?
 		if (!arg_string_)
@@ -129,5 +110,51 @@ private:
 	ke::Vector<ke::AString> args_;
 	const char *arg_string_;
 };
+#else
+class EngineArgs : public ICommandArgs
+{
+	const CCommand *cmd;
+public:
+	EngineArgs(const CCommand& _cmd) : cmd(&_cmd)
+	{
+	}
+	const char *Arg(int n) const
+	{
+		return cmd->Arg(n);
+	}
+	int ArgC() const
+	{
+		return cmd->ArgC();
+	}
+	const char *ArgS() const
+	{
+		return cmd->ArgS();
+	}
+};
+
+class ArgsFromString : public ICommandArgs
+{
+public:
+	ArgsFromString(const char *args)
+	{
+		cmd.Tokenize(args);
+	}
+	const char *Arg(int n) const
+	{
+		return cmd.Arg(n);
+	}
+	int ArgC() const
+	{
+		return cmd.ArgC();
+	}
+	const char *ArgS() const
+	{
+		return cmd.ArgS();
+	}
+
+private:
+	CCommand cmd;
+};
+#endif
 
 #endif // _INCLUDE_SOURCEMOD_CCOMMANDARGS_IMPL_H_
