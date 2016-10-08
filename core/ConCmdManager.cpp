@@ -304,7 +304,7 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 int CommandCompletionCallback(char const *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
 	ke::Vector<ke::AString> suggestions;
-	int count = g_ConCmds.InternalCommandCompletionCallback(partial, suggestions, 0);
+	int count = g_ConCmds.InternalCommandCompletionCallback(partial, suggestions);
 
 	// Put the suggestions into the engine's buffer.
 	if (count > COMMAND_COMPLETION_MAXITEMS)
@@ -317,8 +317,9 @@ int CommandCompletionCallback(char const *partial, char commands[COMMAND_COMPLET
 	return count;
 }
 
-int ConCmdManager::InternalCommandCompletionCallback(char const *partial, ke::Vector<ke::AString> &suggestions, int size)
+int ConCmdManager::InternalCommandCompletionCallback(char const *partial, ke::Vector<ke::AString> &suggestions)
 {
+	int size = suggestions.length();
 	ConCmdInfo *pInfo = FindCommandFromPartial(partial);
 	if (!pInfo)
 		return size;
@@ -623,7 +624,7 @@ void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool untrac
 
 	/* Remove the autocomplete forward. */
 	if (info->autocompleter)
-		logicore.forwardsys->ReleaseForward(info->autocompleter);
+		forwardsys->ReleaseForward(info->autocompleter);
 	
 	/* Remove from list */
 	m_CmdList.remove(info);
@@ -687,8 +688,8 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 			pInfo->sh_hook = sCoreProviderImpl.AddCommandHook(pCmd, callback);
 
 			// Add AutoCompleteSuggest and CanAutoComplete hooks
-			CommandAutoCompleteHook::Callback auto_complete = [this](char const *partial, ke::Vector<ke::AString> &suggestions, size_t size) -> int {
-				return this->InternalCommandCompletionCallback(partial, suggestions, size);
+			CommandAutoCompleteHook::Callback auto_complete = [this](char const *partial, ke::Vector<ke::AString> &suggestions) -> int {
+				return this->InternalCommandCompletionCallback(partial, suggestions);
 			};
 			pInfo->sh_autocomplete_hook = sCoreProviderImpl.AddCommandAutoCompleteHook(pCmd, auto_complete);
 		}
