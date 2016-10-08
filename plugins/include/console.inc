@@ -432,6 +432,16 @@ native int GetCmdArg(int argnum, char[] buffer, int maxlength);
 native int GetCmdArgString(char[] buffer, int maxlength);
 
 /**
+ * Returns the autocomplete suggestions for the given input.
+ * This is the same as typing "command <tab>".
+ * ArrayList handle has to be closed after use.
+ *
+ * @param partial  The console command with optional additional partial arguments.
+ * @return         An ArrayList of all suggestions or INVALID_HANDLE if no suggestions / error.
+ */
+native ArrayList GetCmdAutoCompleteSuggestions(const char[] partial);
+
+/**
  * Gets a command iterator.  Must be freed with CloseHandle().
  *
  * @return				A new command iterator.

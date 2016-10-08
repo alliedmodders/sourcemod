@@ -50,6 +50,7 @@
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/ILogger.h>
 #include <ITranslator.h>
+#include <ICellArray.h>
 
 #if SOURCE_ENGINE == SE_CSGO
 #include <netmessages.pb.h>
@@ -861,6 +862,64 @@ static cell_t sm_GetCmdArgString(IPluginContext *pContext, const cell_t *params)
 	return (cell_t)length;
 }
 
+static cell_t sm_GetCmdAutoCompleteSuggestions(IPluginContext *pContext, const cell_t *params)
+{
+	char *cmd;
+	pContext->LocalToString(params[1], &cmd);
+
+	HandleType_t htCellArray;
+	if (!handlesys->FindHandleType("CellArray", &htCellArray))
+		return BAD_HANDLE;
+
+	// Cut out the commmand name at the first space.
+	const char *space = logicore.stristr(cmd, " ");
+	if (space)
+		cmd[space - cmd] = 0;
+
+	ConCommand *pCmd = FindCommand(cmd);
+	if (!pCmd)
+		return BAD_HANDLE;
+
+	// Put the space back in there.
+	if (space)
+		cmd[space - cmd] = ' ';
+
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+	CUtlVector<CUtlString> commands;
+#else
+	char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH];
+#endif
+	// Get the actual suggestions from the engine.
+	int count = pCmd->AutoCompleteSuggest(cmd, commands);
+
+	// No suggestions.
+	if (!count)
+		return BAD_HANDLE;
+
+	// Enough cells to fit the maximum item length including null terminator.
+	ICellArray *array = logicore.CreateCellArray((COMMAND_COMPLETION_ITEM_LENGTH + 3) / 4);
+
+	Handle_t hndl = handlesys->CreateHandle(htCellArray, array, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	if (hndl == BAD_HANDLE)
+	{
+		logicore.FreeCellArray(array);
+		return BAD_HANDLE;
+	}
+
+	// Add the suggestions to the cell array
+	cell_t *block;
+	for (int i = 0; i < count; i++)
+	{
+		block = array->push();
+		if (!block)
+			return hndl;
+
+		ke::SafeStrcpy((char *)block, array->blocksize() * sizeof(cell_t), commands[i]);
+	}
+
+	return hndl;
+}
+
 char *g_ServerCommandBuffer = NULL;
 cell_t g_ServerCommandBufferLength;
 
@@ -1356,6 +1415,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"GetCmdArgs",			sm_GetCmdArgs},
 	{"GetCmdArg",			sm_GetCmdArg},
 	{"RegAdminCmd",			sm_RegAdminCmd},
+	{"GetCmdAutoCompleteSuggestions", sm_GetCmdAutoCompleteSuggestions },
 	{"ServerCommandEx",		sm_ServerCommandEx},
 	{"GetCommandIterator",	GetCommandIterator},
 	{"ReadCommandIterator",	ReadCommandIterator},
