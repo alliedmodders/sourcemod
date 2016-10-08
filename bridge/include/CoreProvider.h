@@ -31,6 +31,8 @@
 #include <stdint.h>
 #include <IAdminSystem.h>
 #include <amtl/am-function.h>
+#include <amtl/am-vector.h>
+#include <amtl/am-string.h>
 
 namespace SourcePawn {
 class ISourcePawnEngine;
@@ -68,6 +70,7 @@ class IPlayerInfoBridge;
 class ICommandArgs;
 
 typedef ke::Lambda<bool(int client, const ICommandArgs*)> CommandFunc;
+typedef ke::Lambda<int(const char *, ke::Vector<ke::AString> &)> AutoCompleteFunc;
 
 class CoreProvider
 {
@@ -97,7 +100,7 @@ public:
 	virtual bool GetCvarBool(ConVar* cvar) = 0;
 
 	// Command functions.
-	virtual void DefineCommand(const char *cmd, const char *help, const CommandFunc &callback) = 0;
+	virtual void DefineCommand(const char *cmd, const char *help, const CommandFunc &callback, const AutoCompleteFunc &autocompleter = nullptr) = 0;
 
 	// Game description functions.
 	virtual bool GetGameName(char *buffer, size_t maxlength) = 0;

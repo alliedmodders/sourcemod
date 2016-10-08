@@ -748,9 +748,10 @@ CoreProviderImpl::AddCommandAutoCompleteHook(ConCommand *cmd, const CommandAutoC
 	return hooks_.AddCommandAutocompleteHook(cmd, callback);
 }
 
-CoreProviderImpl::CommandImpl::CommandImpl(ConCommand *cmd, CommandHook *hook)
+CoreProviderImpl::CommandImpl::CommandImpl(ConCommand *cmd, CommandHook *hook, CommandAutoCompleteHook *autocompleter)
 : cmd_(cmd),
-  hook_(hook)
+  hook_(hook),
+  autocompleter_(autocompleter)
 {
 }
 
@@ -765,7 +766,7 @@ CoreProviderImpl::CommandImpl::~CommandImpl()
 }
 
 void
-CoreProviderImpl::DefineCommand(const char *name, const char *help, const CommandFunc &callback)
+CoreProviderImpl::DefineCommand(const char *name, const char *help, const CommandFunc &callback, const AutoCompleteFunc &autocompleter)
 {
 	char *new_name = sm_strdup(name);
 	char *new_help = sm_strdup(help);
@@ -777,7 +778,12 @@ CoreProviderImpl::DefineCommand(const char *name, const char *help, const Comman
 	ConCommand *cmd = new ConCommand(new_name, ignore_callback, new_help, flags);
 	ke::RefPtr<CommandHook> hook = AddCommandHook(cmd, callback);
 
-	ke::RefPtr<CommandImpl> impl = new CommandImpl(cmd, hook);
+
+	ke::RefPtr<CommandAutoCompleteHook> autocompleter_hook;
+	if (autocompleter)
+		autocompleter_hook = AddCommandAutoCompleteHook(cmd, autocompleter);
+
+	ke::RefPtr<CommandImpl> impl = new CommandImpl(cmd, hook, autocompleter_hook);
 	commands_.append(impl);
 }
 

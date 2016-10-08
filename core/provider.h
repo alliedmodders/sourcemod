@@ -65,7 +65,7 @@ public:
 	void UnloadMMSPlugin(int id) override;
 	int QueryClientConVar(int client, const char *cvar) override;
 	bool IsClientConVarQueryingSupported() override;
-	void DefineCommand(const char *cmd, const char *help, const SourceMod::CommandFunc &callback) override;
+	void DefineCommand(const char *cmd, const char *help, const SourceMod::CommandFunc &callback, const AutoCompleteFunc &autocompleter = nullptr) override;
 
 	ke::RefPtr<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 	ke::RefPtr<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
@@ -83,12 +83,13 @@ private:
 	struct CommandImpl : public ke::Refcounted<CommandImpl>
 	{
 	public:
-		CommandImpl(ConCommand *cmd, CommandHook *hook);
+		CommandImpl(ConCommand *cmd, CommandHook *hook, CommandAutoCompleteHook *autocompleter);
 		~CommandImpl();
 
 	private:
 		ConCommand *cmd_;
 		ke::RefPtr<CommandHook> hook_;
+		ke::RefPtr<CommandAutoCompleteHook> autocompleter_;
 	};
 	ke::Vector<ke::RefPtr<CommandImpl>> commands_;
 };
