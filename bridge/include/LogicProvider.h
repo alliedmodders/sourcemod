@@ -65,6 +65,7 @@ struct sm_logic_t
 	unsigned int	(*ReplaceAll)(char*, size_t, const char *, const char *, bool);
 	char            *(*ReplaceEx)(char *, size_t, const char *, size_t, const char *, size_t, bool);
 	size_t          (*DecodeHexString)(unsigned char *, size_t, const char *);
+	int				(*BreakString)(const char *, char *, size_t);
 	IGameConfig *   (*GetCoreGameConfig)();
 	IDebugListener   *debugger;
 	void			(*GenerateError)(IPluginContext *, cell_t, int, const char *, ...);

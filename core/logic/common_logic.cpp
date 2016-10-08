@@ -141,6 +141,7 @@ static sm_logic_t logic =
 	UTIL_ReplaceAll,
 	UTIL_ReplaceEx,
 	UTIL_DecodeHexString,
+	UTIL_BreakString,
 	GetCoreGameConfig,
 	&g_DbgReporter,
 	GenerateError,

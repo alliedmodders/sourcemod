@@ -365,6 +365,88 @@ char *UTIL_TrimWhitespace(char *str, size_t &len)
 	return str;
 }
 
+/* :TODO: make this UTF8 safe */
+int UTIL_BreakString(const char *input, char *output, size_t maxlen)
+{
+	const char *inptr = input;
+	/* Eat up whitespace */
+	while (*inptr != '\0' && textparsers->IsWhitespace(inptr))
+	{
+		inptr++;
+	}
+
+	if (*inptr == '\0')
+	{
+		if (maxlen)
+		{
+			*output = '\0';
+		}
+		return -1;
+	}
+
+	const char *start, *end = NULL;
+
+	bool quoted = (*inptr == '"');
+	if (quoted)
+	{
+		inptr++;
+		start = inptr;
+		/* Read input until we reach a quote. */
+		while (*inptr != '\0' && *inptr != '"')
+		{
+			/* Update the end point, increment the stream. */
+			end = inptr++;
+		}
+		/* Read one more token if we reached an end quote */
+		if (*inptr == '"')
+		{
+			inptr++;
+		}
+	}
+	else {
+		start = inptr;
+		/* Read input until we reach a space */
+		while (*inptr != '\0' && !textparsers->IsWhitespace(inptr))
+		{
+			/* Update the end point, increment the stream. */
+			end = inptr++;
+		}
+	}
+
+	/* Copy the string we found, if necessary */
+	if (end == NULL)
+	{
+		if (maxlen)
+		{
+			*output = '\0';
+		}
+	}
+	else if (maxlen) {
+		char *outptr = output;
+		maxlen--;
+		for (const char *ptr = start;
+			(ptr <= end) && ((unsigned)(outptr - output) < (maxlen));
+			ptr++, outptr++)
+		{
+			*outptr = *ptr;
+		}
+		*outptr = '\0';
+	}
+
+	/* Consume more of the string until we reach non-whitespace */
+	while (*inptr != '\0' && textparsers->IsWhitespace(inptr))
+	{
+		inptr++;
+	}
+
+	if (*inptr == '\0')
+	{
+		return -1;
+	}
+
+	return inptr - input;
+}
+
 class StaticCharBuf
 {
     char *buffer;
