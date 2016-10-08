@@ -201,9 +201,35 @@ int CommandAutoCompleteHook::AutoCompleteSuggest(AUTOCOMPLETESUGGEST_ARGS)
 {
 	int count = META_RESULT_ORIG_RET(int);
 	AddRef();
-	int rval = callback_(partial, commands, count);
+
+	// Fill the existing suggestions in a uniform vector.
+	ke::Vector<ke::AString> suggestions;
+	for (int i = 0; i < count; i++)
+	{
+		suggestions.append(commands[i]);
+	}
+
+	count = callback_(partial, suggestions, count);
+
+	// Put the suggestions back into the expected structure for the engine.
+#if defined AUTOCOMPLETESUGGEST_NEWARGS
+	commands.Purge();
+	for (int i = 0; i < count; i++)
+	{
+		commands.AddToTail(suggestions.at(i).chars());
+	}
+#else
+	if (count > COMMAND_COMPLETION_MAXITEMS)
+		count = COMMAND_COMPLETION_MAXITEMS;
+
+	for (int i = 0; i < count; i++)
+	{
+		ke::SafeStrcpy(commands[i], COMMAND_COMPLETION_ITEM_LENGTH, suggestions.at(i).chars());
+	}
+#endif
+
 	Release();
-	RETURN_META_VALUE(MRES_SUPERCEDE, rval);
+	RETURN_META_VALUE(MRES_SUPERCEDE, count);
 }
 
 bool CommandAutoCompleteHook::CanAutoComplete()

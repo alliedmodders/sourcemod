@@ -162,7 +162,7 @@ public:
 	bool LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags);
 private:
 	bool InternalDispatch(int client, const ICommandArgs *args);
-	int InternalCommandCompletionCallback(char const *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH], int size);
+	int InternalCommandCompletionCallback(char const *partial, ke::Vector<ke::AString> &suggestions, int size);
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
 	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags);
 	ConCmdInfo *FindCommandFromPartial(const char *partial);

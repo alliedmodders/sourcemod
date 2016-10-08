@@ -321,10 +321,21 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 
 int CommandCompletionCallback(char const *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
-	return g_ConCmds.InternalCommandCompletionCallback(partial, commands, 0);
+	ke::Vector<ke::AString> suggestions;
+	int count = g_ConCmds.InternalCommandCompletionCallback(partial, suggestions, 0);
+
+	// Put the suggestions into the engine's buffer.
+	if (count > COMMAND_COMPLETION_MAXITEMS)
+		count = COMMAND_COMPLETION_MAXITEMS;
+
+	for (int i = 0; i < count; i++)
+	{
+		ke::SafeStrcpy(commands[i], COMMAND_COMPLETION_ITEM_LENGTH, suggestions.at(i).chars());
+	}
+	return count;
 }
 
-int ConCmdManager::InternalCommandCompletionCallback(char const *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH], int size)
+int ConCmdManager::InternalCommandCompletionCallback(char const *partial, ke::Vector<ke::AString> &suggestions, int size)
 {
 	ConCmdInfo *pInfo = FindCommandFromPartial(partial);
 	if (!pInfo)
@@ -359,9 +370,10 @@ int ConCmdManager::InternalCommandCompletionCallback(char const *partial, char c
 		if (!block)
 			return size;
 
-		ke::SafeStrcpy((char *)block, array->blocksize() * sizeof(cell_t), commands[i]);
+		ke::SafeStrcpy((char *)block, array->blocksize() * sizeof(cell_t), suggestions.at(i).chars());
 	}
 
+	// Call the plugin functions
 	for (CmdAutoCompleteSuggestList::iterator iter = pInfo->autocompleters.begin(); iter != pInfo->autocompleters.end(); iter++)
 	{
 		CmdAutoCompleteSuggest *suggestor = *iter;
@@ -376,14 +388,13 @@ int ConCmdManager::InternalCommandCompletionCallback(char const *partial, char c
 		suggestor->pf->Execute(nullptr);
 	}
 
+	// Replace suggestions with the ones from the plugin.
+	suggestions.clear();
 	size = array->size();
-	if (size > COMMAND_COMPLETION_MAXITEMS)
-		size = COMMAND_COMPLETION_MAXITEMS;
-
 	for (int i = 0; i < size; i++)
 	{
 		cell_t *blk = array->at(i);
-		ke::SafeStrcpy(commands[i], COMMAND_COMPLETION_ITEM_LENGTH, (char *)blk);
+		suggestions.append((char *)blk);
 	}
 
 	handlesys->FreeHandle(hndl, &sec);
@@ -689,22 +700,10 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 			};
 			pInfo->sh_hook = sCoreProviderImpl.AddCommandHook(pCmd, callback);
 
-			// Route new CUtlVector AutoCompleteSuggest through old fixed-size array impl.
-			CommandAutoCompleteHook::Callback auto_complete = [this] (AUTOCOMPLETESUGGEST_ARGS, size_t size) -> int {
-#ifdef AUTOCOMPLETESUGGEST_NEWARGS
-				char oldCommands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH];
-				size = commands.Count();
-				if (size > COMMAND_COMPLETION_MAXITEMS)
-					size = COMMAND_COMPLETION_MAXITEMS;
-
-				for (size_t i = 0; i < size; i++)
-				{
-					ke::SafeStrcpy(oldCommands[i], COMMAND_COMPLETION_ITEM_LENGTH, commands[i]);
-				}
-#endif
-				return this->InternalCommandCompletionCallback(partial, oldCommands, size);
-			};
 			// Add AutoCompleteSuggest and CanAutoComplete hooks
+			CommandAutoCompleteHook::Callback auto_complete = [this](char const *partial, ke::Vector<ke::AString> &suggestions, size_t size) -> int {
+				return this->InternalCommandCompletionCallback(partial, suggestions, size);
+			};
 			pInfo->sh_autocomplete_hook = sCoreProviderImpl.AddCommandAutoCompleteHook(pCmd, auto_complete);
 		}
 

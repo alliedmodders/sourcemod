@@ -34,6 +34,7 @@
 #include <iserverplugin.h>
 #include <amtl/am-refcounting.h>
 #include <amtl/am-vector.h>
+#include <amtl/am-string.h>
 #include <amtl/am-function.h>
 
 class ConVar;
@@ -50,11 +51,9 @@ struct CCommandContext;
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 # define AUTOCOMPLETESUGGEST_NEWARGS
-# define AUTOCOMPLETESUGGEST_TYPES     const char *, CUtlVector< CUtlString > &
 # define AUTOCOMPLETESUGGEST_ARGS      const char *partial, CUtlVector< CUtlString > &commands
 #else
-//# define AUTOCOMPLETESUGGEST_TYPES      char const *, char *
-# define AUTOCOMPLETESUGGEST_ARGS      char const *partial, char oldCommands[ COMMAND_COMPLETION_MAXITEMS ][ COMMAND_COMPLETION_ITEM_LENGTH ]
+# define AUTOCOMPLETESUGGEST_ARGS      char const *partial, char commands[ COMMAND_COMPLETION_MAXITEMS ][ COMMAND_COMPLETION_ITEM_LENGTH ]
 #endif
 
 namespace SourceMod {
@@ -88,7 +87,7 @@ private:
 class CommandAutoCompleteHook : public ke::Refcounted<CommandAutoCompleteHook>
 {
 public:
-	typedef ke::Lambda<int(AUTOCOMPLETESUGGEST_ARGS, size_t)> Callback;
+	typedef ke::Lambda<int(const char *, ke::Vector<ke::AString> &, size_t)> Callback;
 
 public:
 	CommandAutoCompleteHook(ConCommand *cmd, const Callback &callback);
