@@ -368,6 +368,7 @@ int ConCmdManager::InternalCommandCompletionCallback(const ICommandArgs *args, k
 	{
 		// Call the plugin functions
 		AutoEnterCommand autoEnterCommand(args);
+		pInfo->autocompleter->PushString(cmd);
 		pInfo->autocompleter->PushCell(args->ArgC());
 		pInfo->autocompleter->PushCell(hndl);
 		pInfo->autocompleter->Execute(nullptr);
@@ -448,7 +449,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	if (pAutoCompleteFunction)
 	{
 		if (!pInfo->autocompleter)
-			pInfo->autocompleter = forwardsys->CreateForwardEx(NULL, ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
+			pInfo->autocompleter = forwardsys->CreateForwardEx(NULL, ET_Ignore, 3, NULL, Param_String, Param_Cell, Param_Cell);
 		pInfo->autocompleter->AddFunction(pAutoCompleteFunction);
 	}
 
@@ -494,7 +495,7 @@ bool ConCmdManager::AddServerCommand(IPluginFunction *pFunction,
 	if (pAutoCompleteFunction)
 	{
 		if (!pInfo->autocompleter)
-			pInfo->autocompleter = forwardsys->CreateForwardEx(NULL, ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
+			pInfo->autocompleter = forwardsys->CreateForwardEx(NULL, ET_Ignore, 3, NULL, Param_String, Param_Cell, Param_Cell);
 		pInfo->autocompleter->AddFunction(pAutoCompleteFunction);
 	}
 

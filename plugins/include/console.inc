@@ -328,12 +328,13 @@ typedef SrvCmd = function Action (int args);
  * If there is only one suggestion for the arguments, the command line string
  * is replaced with the suggestion.
  *
+ * @param cmd          The command to suggest arguments for.
  * @param args         Number of arguments that are in the argument string.
  * @param suggestions  ArrayList holding all suggestions for the command arguments.
  *                     The suggestions should include the full command line with the 
                        command name itself.
  */
-typedef CommandCompletionCallback = function void (int args, ArrayList suggestions);
+typedef CommandCompletionCallback = function void (const char[] cmd, int args, ArrayList suggestions);
 
 /**
  * Creates a server-only console command, or hooks an already existing one.  
