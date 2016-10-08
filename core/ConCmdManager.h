@@ -94,32 +94,19 @@ struct CmdHook : public ke::InlineListNode<CmdHook>
 
 typedef ke::InlineList<CmdHook> CmdHookList;
 
-struct CmdAutoCompleteSuggest : public ke::InlineListNode<CmdAutoCompleteSuggest>
-{
-	CmdAutoCompleteSuggest(ConCmdInfo *cmd, IPluginFunction *fun)
-		: info(cmd),
-		pf(fun)
-	{
-	}
-
-	ConCmdInfo *info;
-	IPluginFunction *pf;
-};
-
-typedef ke::InlineList<CmdAutoCompleteSuggest> CmdAutoCompleteSuggestList;
-
 struct ConCmdInfo
 {
 	ConCmdInfo()
 	{
 		sourceMod = false;
 		pCmd = NULL;
+		autocompleter = nullptr;
 		eflags = 0;
 	}
 	bool sourceMod;					/**< Determines whether or not concmd was created by a SourceMod plugin */
 	ConCommand *pCmd;				/**< Pointer to the command itself */
 	CmdHookList hooks;				/**< Hook list */
-	CmdAutoCompleteSuggestList autocompleters; /**< AutoComplete list */
+	IChangeableForward *autocompleter; /**< AutoComplete forward */
 	FlagBits eflags;				/**< Effective admin flags */
 	ke::RefPtr<CommandHook> sh_hook;   /**< SourceHook Dispatch hook, if any. */
 	ke::RefPtr<CommandAutoCompleteHook> sh_autocomplete_hook; /**< SourceHook AutoCompleteSuggest hook, if any. */

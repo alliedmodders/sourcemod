@@ -103,14 +103,6 @@ void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *na
 		delete hook;
 	}
 
-	CmdAutoCompleteSuggestList::iterator iter2 = pInfo->autocompleters.begin();
-	while (iter2 != pInfo->autocompleters.end())
-	{
-		CmdAutoCompleteSuggest *autocompleter = *iter2;
-		iter2 = pInfo->autocompleters.erase(iter2);
-		delete autocompleter;
-	}
-
 	RemoveConCmd(pInfo, name, false);
 }
 
@@ -128,16 +120,6 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 		hook->info->hooks.remove(hook);
 		if (hook->admin)
 			hook->admin->group->hooks.remove(hook);
-
-		// See if this plugin registered a autocomplete suggestion callback
-		CmdAutoCompleteSuggestList::iterator autocompleteIter = hook->info->autocompleters.begin();
-		while (autocompleteIter != hook->info->autocompleters.end())
-		{
-			CmdAutoCompleteSuggest *autocompleter = *autocompleteIter;
-			if (autocompleter->pf->GetParentContext() == plugin->GetBaseContext())
-				autocompleteIter = hook->info->autocompleters.erase(autocompleteIter);
-			delete autocompleter;
-		}
 
 		if (hook->info->hooks.empty())
 			RemoveConCmd(hook->info, hook->info->pCmd->GetName(), true);
@@ -341,7 +323,7 @@ int ConCmdManager::InternalCommandCompletionCallback(char const *partial, ke::Ve
 	if (!pInfo)
 		return size;
 
-	if (pInfo->autocompleters.empty())
+	if (!pInfo->autocompleter)
 		return size;
 
 	HandleType_t htCellArray;
@@ -374,19 +356,11 @@ int ConCmdManager::InternalCommandCompletionCallback(char const *partial, ke::Ve
 	}
 
 	// Call the plugin functions
-	for (CmdAutoCompleteSuggestList::iterator iter = pInfo->autocompleters.begin(); iter != pInfo->autocompleters.end(); iter++)
-	{
-		CmdAutoCompleteSuggest *suggestor = *iter;
-
-		if (!suggestor->pf->IsRunnable())
-			continue;
-
-		suggestor->pf->PushString(pInfo->pCmd->GetName());
-		suggestor->pf->PushString(partial);
-		suggestor->pf->PushCell(hndl);
+	pInfo->autocompleter->PushString(pInfo->pCmd->GetName());
+	pInfo->autocompleter->PushString(partial);
+	pInfo->autocompleter->PushCell(hndl);
 		
-		suggestor->pf->Execute(nullptr);
-	}
+	pInfo->autocompleter->Execute(nullptr);
 
 	// Replace suggestions with the ones from the plugin.
 	suggestions.clear();
@@ -461,7 +435,11 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	RefPtr<CommandGroup> cmdgroup = i->value;
 
 	if (pAutoCompleteFunction)
-		pInfo->autocompleters.append(new CmdAutoCompleteSuggest(pInfo, pAutoCompleteFunction));
+	{
+		if (!pInfo->autocompleter)
+			pInfo->autocompleter = forwardsys->CreateForwardEx(NULL, ET_Ignore, 3, NULL, Param_String, Param_String, Param_Cell);
+		pInfo->autocompleter->AddFunction(pAutoCompleteFunction);
+	}
 
 	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description);
 	pHook->admin = new AdminCmdInfo(cmdgroup, adminflags);
@@ -503,7 +481,11 @@ bool ConCmdManager::AddServerCommand(IPluginFunction *pFunction,
 		return false;
 
 	if (pAutoCompleteFunction)
-		pInfo->autocompleters.append(new CmdAutoCompleteSuggest(pInfo, pAutoCompleteFunction));
+	{
+		if (!pInfo->autocompleter)
+			pInfo->autocompleter = forwardsys->CreateForwardEx(NULL, ET_Ignore, 3, NULL, Param_String, Param_String, Param_Cell);
+		pInfo->autocompleter->AddFunction(pAutoCompleteFunction);
+	}
 
 	CmdHook *pHook = new CmdHook(CmdHook::Server, pInfo, pFunction, description);
 
@@ -638,6 +620,10 @@ void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool untrac
 				UntrackConCommandBase(info->pCmd, this);
 		}
 	}
+
+	/* Remove the autocomplete forward. */
+	if (info->autocompleter)
+		logicore.forwardsys->ReleaseForward(info->autocompleter);
 	
 	/* Remove from list */
 	m_CmdList.remove(info);
