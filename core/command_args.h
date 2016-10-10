@@ -68,7 +68,7 @@ public:
 		// Break all the arguments including the command name at whitespace.
 		size_t pos = 0;
 		const char *arg_pos = args;
-		while ((pos = logicore.BreakString(arg_pos, arg, arglen)) != -1)
+		while ((pos = logicore.BreakString(arg_pos, arg, arglen + 1)) != -1)
 		{
 			args_.append(arg);
 
@@ -87,7 +87,7 @@ public:
 		if (!arg_string_)
 			arg_string_ = &args[arglen];
 
-		delete arg;
+		delete [] arg;
 	}
 
 	const char *Arg(int n) const
