@@ -1254,7 +1254,7 @@ void CreatePreviousMapsTextFile()
     	if (!FileExists(path))
     	{      
     	    	File file = OpenFile(path, "w");
-		file.Close()   
+		file.Close();   
    	}
 }
 
@@ -1270,7 +1270,7 @@ void ReadPreviousMapsFromText()
     
     	char map[64];
     
-  	while (!file.EndOfFile() && file.ReadLine(map, sizeof(map))
+  	while (!file.EndOfFile() && file.ReadLine(map, sizeof(map)))
    	{
          	g_OldMapList.PushString(map);
     	}    
