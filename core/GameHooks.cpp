@@ -44,12 +44,14 @@ SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 SH_DECL_HOOK2(ConCommand, AutoCompleteSuggest, SH_NOATTRIB, false, int, const char *, CUtlVector< CUtlString > &);
-SH_DECL_HOOK0(ConCommand, CanAutoComplete, SH_NOATTRIB, false, bool);
 #else
 SH_DECL_HOOK0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
-// sourcehook for ep1 doesn't support the argument..
-//SH_DECL_HOOK2(ConCommand, AutoCompleteSuggest, SH_NOATTRIB, false, int, char const *, char **);
+
+typedef char(*AutoCompleteArray)[COMMAND_COMPLETION_ITEM_LENGTH];
+SH_DECL_HOOK2(ConCommand, AutoCompleteSuggest, SH_NOATTRIB, false, int, char const *, AutoCompleteArray);
 #endif
+
+SH_DECL_HOOK0(ConCommand, CanAutoComplete, SH_NOATTRIB, false, bool);
 
 SH_DECL_HOOK1_void(IServerGameClients, SetCommandClient, SH_NOATTRIB, false, int);
 
@@ -185,10 +187,8 @@ CommandAutoCompleteHook::CommandAutoCompleteHook(ConCommand *cmd, const Callback
 	can_hook_id_(0),
 	callback_(callback)
 {
-#if SOURCE_ENGINE >= SE_ORANGEBOX
 	suggest_hook_id_ = SH_ADD_HOOK(ConCommand, AutoCompleteSuggest, cmd, SH_MEMBER(this, &CommandAutoCompleteHook::AutoCompleteSuggest), true);
 	can_hook_id_ = SH_ADD_HOOK(ConCommand, CanAutoComplete, cmd, SH_MEMBER(this, &CommandAutoCompleteHook::CanAutoComplete), false);
-#endif
 }
 
 CommandAutoCompleteHook::~CommandAutoCompleteHook()
