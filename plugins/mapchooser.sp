@@ -62,6 +62,7 @@ ConVar g_Cvar_ExtendTimeStep;
 ConVar g_Cvar_ExtendRoundStep;
 ConVar g_Cvar_ExtendFragStep;
 ConVar g_Cvar_ExcludeMaps;
+ConVar g_Cvar_PersistentMaps;
 ConVar g_Cvar_IncludeMaps;
 ConVar g_Cvar_NoVoteMode;
 ConVar g_Cvar_Extend;
@@ -86,6 +87,7 @@ Menu g_VoteMenu;
 
 int g_Extends;
 int g_TotalRounds;
+bool g_FirstConfigExec = true;
 bool g_HasVoteStarted;
 bool g_WaitingForVote;
 bool g_MapVoteCompleted;
@@ -104,6 +106,8 @@ int g_winCount[MAXTEAMS];
 
 #define VOTE_EXTEND "##extend##"
 #define VOTE_DONTCHANGE "##dontchange##"
+
+#define MAPCHOOSER_TXT "data/mapchooser.txt"
 
 public void OnPluginStart()
 {
@@ -126,6 +130,7 @@ public void OnPluginStart()
 	g_Cvar_ExtendRoundStep = CreateConVar("sm_extendmap_roundstep", "5", "Specifies how many more rounds each extension makes", _, true, 1.0);
 	g_Cvar_ExtendFragStep = CreateConVar("sm_extendmap_fragstep", "10", "Specifies how many more frags are allowed when map is extended.", _, true, 5.0);	
 	g_Cvar_ExcludeMaps = CreateConVar("sm_mapvote_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
+	g_Cvar_PersistentMaps = CreateConVar("sm_mapvote_persisentmaps", "0", "Specifies  whether or not previous maps should be persistent.", _, true, 0.0, true, 1.0);
 	g_Cvar_IncludeMaps = CreateConVar("sm_mapvote_include", "5", "Specifies how many maps to include in the vote.", _, true, 2.0, true, 6.0);
 	g_Cvar_NoVoteMode = CreateConVar("sm_mapvote_novote", "1", "Specifies whether or not MapChooser should pick a map if no votes are received.", _, true, 0.0, true, 1.0);
 	g_Cvar_Extend = CreateConVar("sm_mapvote_extend", "0", "Number of extensions allowed each map.", _, true, 0.0);
@@ -183,6 +188,8 @@ public void OnPluginStart()
 	
 	g_NominationsResetForward = CreateGlobalForward("OnNominationRemoved", ET_Ignore, Param_String, Param_Cell);
 	g_MapVoteStartedForward = CreateGlobalForward("OnMapVoteStarted", ET_Ignore);
+	
+	CreatePreviousMapsTextFile();
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -232,8 +239,7 @@ public void OnConfigsExecuted()
 	for (int i=0; i<MAXTEAMS; i++)
 	{
 		g_winCount[i] = 0;	
-	}
-	
+	}	
 
 	/* Check if mapchooser will attempt to start mapvote during bonus round time - TF2 Only */
 	if (g_Cvar_Bonusroundtime && !g_Cvar_StartRounds.IntValue)
@@ -242,6 +248,17 @@ public void OnConfigsExecuted()
 		{
 			LogError("Warning - Bonus Round Time shorter than Vote Time. Votes during bonus round may not have time to complete");
 		}
+	}
+	
+	/* Recall previous maps from a text file, if persistentcy is enabled */
+	if (g_FirstConfigExec)
+	{
+		if (g_Cvar_PersistentMaps.BoolValue)
+		{
+			ReadPreviousMapsFromText();		
+		}
+		
+		g_FirstConfigExec = false;
 	}
 }
 
@@ -263,6 +280,8 @@ public void OnMapEnd()
 	{
 		g_OldMapList.Erase(0);
 	}	
+	
+	WritePreviousMapsToText();
 }
 
 public void OnClientDisconnect(int client)
@@ -1222,4 +1241,63 @@ public int Native_GetNominatedMapList(Handle plugin, int numParams)
 	}
 
 	return;
+}
+
+/* Persisently store previous maps incase user wants to recall them */
+
+// Create a text file (if not present)
+void CreatePreviousMapsTextFile()
+{
+	char path[PLATFORM_MAX_PATH];
+   	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, MAPCHOOSER_TXT);
+        
+    	if (!FileExists(path))
+    	{      
+    	    	File file = OpenFile(path, "w");
+		file.Close()   
+   	}
+}
+
+// Read previous maps from text file
+void ReadPreviousMapsFromText()
+{
+    	g_OldMapList.Clear();
+            
+    	char path[PLATFORM_MAX_PATH];
+    	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, MAPCHOOSER_TXT);
+        
+    	File file = OpenFile(path, "r");
+    
+    	char map[64];
+    
+  	while (!file.EndOfFile() && file.ReadLine(map, sizeof(map))
+   	{
+         	g_OldMapList.PushString(map);
+    	}    
+
+    	file.Close();
+}
+
+// Write the previous maps to a text file
+void WritePreviousMapsToText()
+{    
+    	char path[PLATFORM_MAX_PATH];
+    	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, MAPCHOOSER_TXT);
+        
+   	DeleteFile(path);
+        
+    	File file = OpenFile(path, "w");
+    
+    	char lastMap[64];
+    
+    	for (int idx = 0; idx < g_OldMapList.Length; idx++)
+    	{
+        	g_OldMapList.GetString(idx, lastMap, sizeof(lastMap));
+        
+        	TrimString(lastMap);
+        
+        	file.WriteLine(lastMap);
+    	}
+
+    	file.Close();    
 }
