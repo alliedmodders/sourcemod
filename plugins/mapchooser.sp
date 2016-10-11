@@ -1272,7 +1272,8 @@ void ReadPreviousMapsFromText()
     
   	while (!file.EndOfFile() && file.ReadLine(map, sizeof(map)))
    	{
-         	g_OldMapList.PushString(map);
+         	TrimString(map);
+		g_OldMapList.PushString(map);
     	}    
 
     	file.Close();
