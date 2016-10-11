@@ -78,7 +78,8 @@ methodmap ArrayList < Handle {
 	public native ArrayList Clone();
 
 	// Resizes an array.  If the size is smaller than the current size, the
-	// array is truncated.
+	// array is truncated.  If the size is larger than the current size,
+	// the data at the additional indexes will not be initialized.
 	//
 	// @param newsize       New size.
 	public native void Resize(int newsize);
@@ -252,7 +253,8 @@ native Handle CloneArray(Handle array);
 
 /**
  * Resizes an array.  If the size is smaller than the current size,
- * the array is truncated.
+ * the array is truncated.  If the size is larger than the current size,
+ * the data at the additional indexes will not be initialized.
  *
  * @param array			Array Handle.
  * @param newsize		New size.
