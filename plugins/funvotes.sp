@@ -128,6 +128,8 @@ public void OnPluginStart()
 		g_Cvar_Show = CreateConVar("sm_vote_show", "1", "Show player's votes? Default on.", 0, true, 0.0, true, 1.0);
 	}
 	*/
+
+	AutoExecConfig(true, "funvotes");
 	
 	/* Account for late loading */
 	TopMenu topmenu;
