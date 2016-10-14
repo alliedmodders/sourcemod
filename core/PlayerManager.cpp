@@ -2012,30 +2012,20 @@ void CPlayer::UpdateAuthIds()
 	{
 		return;
 	}
-	
-	// First cache engine networkid
+
 	const char *authstr = engine->GetPlayerNetworkIDString(m_pEdict);
-	if (!authstr)
+	if (authstr && m_AuthID.compare(authstr) != 0)
 	{
-		// engine doesn't have the client's auth string just yet, we can't do anything
-		return;
+		m_AuthID = authstr;
 	}
-
-	if (m_AuthID.compare(authstr) == 0)
-	{
-		return;
-	}
-
-	m_AuthID = authstr;
 	
-	// Then, cache SteamId
 	if (IsFakeClient())
 	{
 		m_SteamId = k_steamIDNil;
 	}
 	else
 	{
-#if SOURCE_ENGINE < SE_ORANGEBOX || SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE < SE_ORANGEBOX
 		const char * pAuth = GetAuthString();
 		/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
 		if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
