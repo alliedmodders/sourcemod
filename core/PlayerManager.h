@@ -120,6 +120,8 @@ private:
 	void Authorize_Post();
 	void DoPostConnectAuthorization();
 	bool IsAuthStringValidated();
+	bool SetEngineString();
+	bool SetCSteamID();
 private:
 	bool m_IsConnected;
 	bool m_IsInGame;

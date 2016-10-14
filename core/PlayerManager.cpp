@@ -2008,53 +2008,8 @@ void CPlayer::Connect()
 
 void CPlayer::UpdateAuthIds()
 {
-	if (m_IsAuthorized)
-	{
+	if (m_IsAuthorized || (!SetEngineString() && !SetCSteamID()))
 		return;
-	}
-
-	const char *authstr = engine->GetPlayerNetworkIDString(m_pEdict);
-	if (authstr)
-	{
-		if (m_AuthID.compare(authstr) != 0)
-		{
-			m_AuthID = authstr;
-		}
-		else
-		{
-			return;
-		}
-	}
-	
-	if (IsFakeClient())
-	{
-		m_SteamId = k_steamIDNil;
-	}
-	else
-	{
-#if SOURCE_ENGINE < SE_ORANGEBOX
-		const char * pAuth = GetAuthString();
-		/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
-		if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
-		{
-			m_SteamId = CSteamID(atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1),
-				k_unSteamUserDesktopInstance, k_EUniversePublic, k_EAccountTypeIndividual);
-		}
-#else
-		const CSteamID *steamId = engine->GetClientSteamID(m_pEdict);
-		if (steamId)
-		{
-			if (m_SteamId != (*steamId))
-			{
-				m_SteamId = (*steamId);
-			}
-			else
-			{
-				return;
-			}
-		}
-#endif
-	}
 	
 	// Now cache Steam2/3 rendered ids
 	if (IsFakeClient())
@@ -2104,6 +2059,53 @@ void CPlayer::UpdateAuthIds()
 	}
 	
 	m_Steam3Id = szAuthBuffer;
+}
+
+bool CPlayer::SetEngineString()
+{
+	const char *authstr = engine->GetPlayerNetworkIDString(m_pEdict);
+	if (!authstr || m_AuthID.compare(authstr) == 0)
+		return false;
+
+	m_AuthID = authstr;
+	SetCSteamID();
+	return true;
+}
+
+bool CPlayer::SetCSteamID()
+{
+	if (IsFakeClient())
+	{
+		m_SteamId = k_steamIDNil;
+		return true; /* This is the default value. There's a bug-out branch in the caller function. */
+	}
+
+#if SOURCE_ENGINE < SE_ORANGEBOX
+	const char *pAuth = GetAuthString();
+	/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
+	if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
+	{
+		CSteamID sid = CSteamID(atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1),
+			k_unSteamUserDesktopInstance, k_EUniversePublic, k_EAccountTypeIndividual);
+
+		if (m_SteamId != sid)
+		{
+			m_SteamId = sid;
+			return true;
+		}
+	}
+#else
+	const CSteamID *steamId = engine->GetClientSteamID(m_pEdict);
+	if (steamId)
+	{
+		if (m_SteamId != (*steamId))
+		{
+			m_SteamId = (*steamId);
+			return true;
+		}
+	}
+#endif
+	return false;
 }
 
 // Ensure a valid AuthString is set before calling.
