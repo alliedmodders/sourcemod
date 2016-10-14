@@ -2035,7 +2035,7 @@ void CPlayer::UpdateAuthIds()
 	}
 	else
 	{
-#if SOURCE_ENGINE < SE_ORANGEBOX
+#if SOURCE_ENGINE < SE_ORANGEBOX || SOURCE_ENGINE == SE_CSGO
 		const char * pAuth = GetAuthString();
 		/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
 		if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
