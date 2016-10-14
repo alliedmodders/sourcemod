@@ -2085,7 +2085,7 @@ bool CPlayer::SetCSteamID()
 	/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
 	if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
 	{
-		CSteamID &sid = CSteamID(atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1),
+		CSteamID sid = CSteamID(atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1),
 			k_unSteamUserDesktopInstance, k_EUniversePublic, k_EAccountTypeIndividual);
 
 		if (m_SteamId != sid)
