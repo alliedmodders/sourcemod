@@ -2017,9 +2017,13 @@ void CPlayer::UpdateAuthIds()
 	if (authstr)
 	{
 		if (m_AuthID.compare(authstr) != 0)
+		{
 			m_AuthID = authstr;
+		}
 		else
+		{
 			return;
+		}
 	}
 	
 	if (IsFakeClient())
@@ -2041,9 +2045,13 @@ void CPlayer::UpdateAuthIds()
 		if (steamId)
 		{
 			if (m_SteamId != (*steamId))
+			{
 				m_SteamId = (*steamId);
+			}
 			else
+			{
 				return;
+			}
 		}
 #endif
 	}
