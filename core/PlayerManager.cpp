@@ -2014,9 +2014,12 @@ void CPlayer::UpdateAuthIds()
 	}
 
 	const char *authstr = engine->GetPlayerNetworkIDString(m_pEdict);
-	if (authstr && m_AuthID.compare(authstr) != 0)
+	if (authstr)
 	{
-		m_AuthID = authstr;
+		if (m_AuthID.compare(authstr) != 0)
+			m_AuthID = authstr;
+		else
+			return;
 	}
 	
 	if (IsFakeClient())
@@ -2037,7 +2040,10 @@ void CPlayer::UpdateAuthIds()
 		const CSteamID *steamId = engine->GetClientSteamID(m_pEdict);
 		if (steamId)
 		{
-			m_SteamId = (*steamId);
+			if (m_SteamId != (*steamId))
+				m_SteamId = (*steamId);
+			else
+				return;
 		}
 #endif
 	}
