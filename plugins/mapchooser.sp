@@ -1284,21 +1284,17 @@ void WritePreviousMapsToText()
 {    
     	char path[PLATFORM_MAX_PATH];
     	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, MAPCHOOSER_TXT);
-        
-   	DeleteFile(path);
-        
+  
     	File file = OpenFile(path, "w");
     
     	char lastMap[64];
     
-    	for (int idx = 0; idx < g_OldMapList.Length; idx++)
+    	for (int idx=0; idx <g_OldMapList.Length; idx++)
     	{
-        	g_OldMapList.GetString(idx, lastMap, sizeof(lastMap));
-        
-        	TrimString(lastMap);
-        
+        	g_OldMapList.GetString(idx, lastMap, sizeof(lastMap));		
+        	TrimString(lastMap);      
         	file.WriteLine(lastMap);
     	}
 
-    	file.Close();    
+    	file.Close();
 }
