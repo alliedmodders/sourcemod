@@ -1246,10 +1246,10 @@ public int Native_GetNominatedMapList(Handle plugin, int numParams)
 // Read previous maps from text file
 void ReadPreviousMapsFromText()
 {
-    	char path[PLATFORM_MAX_PATH];
-    	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, MAPCHOOSER_TXT);
+	char path[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, MAPCHOOSER_TXT);
         
-    	File file = OpenFile(path, "r");
+	File file = OpenFile(path, "r");
 	
 	if (file == null)
 	{
@@ -1266,16 +1266,16 @@ void ReadPreviousMapsFromText()
 		g_OldMapList.PushString(map);
 	}	
 
-    	file.Close();
+	file.Close();
 }
 
 // Write the previous maps to a text file
 void WritePreviousMapsToText()
 {    
-    	char path[PLATFORM_MAX_PATH];
-    	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, MAPCHOOSER_TXT);
+	char path[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, MAPCHOOSER_TXT);
   
-    	File file = OpenFile(path, "w");
+	File file = OpenFile(path, "w");
 	
 	if (file == null)
 	{
@@ -1284,14 +1284,14 @@ void WritePreviousMapsToText()
 		return;
 	}
     
-    	char lastMap[64];
+	char lastMap[64];
     
-    	for (int idx=0; idx <g_OldMapList.Length; idx++)
+	for (int idx=0; idx <g_OldMapList.Length; idx++)
     	{
-        	g_OldMapList.GetString(idx, lastMap, sizeof(lastMap));		
-        	TrimString(lastMap);      
-        	file.WriteLine(lastMap);
-    	}
+		g_OldMapList.GetString(idx, lastMap, sizeof(lastMap));		
+		TrimString(lastMap);      
+		file.WriteLine(lastMap);
+	}
 
-    	file.Close();
+	file.Close();
 }
