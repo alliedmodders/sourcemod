@@ -217,6 +217,9 @@ void TempEntHooks::OnPlaybackTempEntity(IRecipientFilter &filter, float delay, c
 		for (iter=pInfo->lst.begin(); iter!=pInfo->lst.end(); iter++)
 		{
 			pFunc = (*iter);
+			if (!pFunc->IsRunnable())
+				continue;
+
 			pFunc->PushString(name);
 			pFunc->PushArray(g_TEPlayers, size);
 			pFunc->PushCell(size);

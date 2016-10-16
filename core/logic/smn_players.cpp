@@ -129,6 +129,9 @@ public: //ICommandTargetProcessor
 		for (iter = simpleMultis.begin(); iter != simpleMultis.end(); iter++) {
 			SimpleMultiTargetFilter *smtf = (*iter);
 			if (strcmp(smtf->pattern.c_str(), info->pattern) == 0) {
+				if (!smtf->fun->IsRunnable())
+					return false;
+
 				CellArray *array = new CellArray(1);
 				HandleSecurity sec(g_pCoreIdent, g_pCoreIdent);
 				Handle_t hndl = handlesys->CreateHandleEx(htCellArray, array, &sec, NULL, NULL);

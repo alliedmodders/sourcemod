@@ -306,6 +306,11 @@ void MsgListenerWrapper::OnUserMessage(int msg_id, protobuf::Message *msg, IReci
 void MsgListenerWrapper::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
 #endif
 {
+	if (!m_Hook->IsRunnable())
+	{
+		return;
+	}
+
 	cell_t res;
 	Handle_t hndl;
 	size_t size = _FillInPlayers(g_MsgPlayers, pFilter);
@@ -338,6 +343,11 @@ ResultType MsgListenerWrapper::InterceptUserMessage(int msg_id, protobuf::Messag
 ResultType MsgListenerWrapper::InterceptUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
 #endif
 {
+	if (!m_Intercept->IsRunnable())
+	{
+		return Pl_Continue;
+	}
+
 	Handle_t hndl;
 	cell_t res = static_cast<cell_t>(Pl_Continue);
 	size_t size = _FillInPlayers(g_MsgPlayers, pFilter);
@@ -368,7 +378,7 @@ ResultType MsgListenerWrapper::InterceptUserMessage(int msg_id, bf_write *bf, IR
 
 void MsgListenerWrapper::OnPostUserMessage(int msg_id, bool sent)
 {
-	if (!m_Notify)
+	if (!m_Notify || !m_Notify->IsRunnable())
 	{
 		return;
 	}

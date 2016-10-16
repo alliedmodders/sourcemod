@@ -451,7 +451,7 @@ static void PopulateCallbackList(const ke::Vector<HookList> &source, ke::Vector<
 	destination.ensure(8); /* Skip trivial allocations as AMTL uses length<<1. */
 	for (size_t iter = 0; iter < source.length(); ++iter)
 	{
-		if (source[iter].entity != entity)
+		if (source[iter].entity != entity || !source[iter].callback->IsRunnable())
 		{
 			continue;
 		}

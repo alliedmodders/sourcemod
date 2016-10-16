@@ -295,7 +295,7 @@ private:
 
 void CPanelHandler::OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
 {
-	if (m_pFunc)
+	if (m_pFunc && m_pFunc->IsRunnable())
 	{
 		m_pFunc->PushCell(BAD_HANDLE);
 		m_pFunc->PushCell(MenuAction_Cancel);
@@ -308,7 +308,7 @@ void CPanelHandler::OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason r
 
 void CPanelHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int item)
 {
-	if (m_pFunc)
+	if (m_pFunc && m_pFunc->IsRunnable())
 	{
 		unsigned int old_reply = playerhelpers->SetReplyTo(SM_REPLY_CHAT);
 		m_pFunc->PushCell(BAD_HANDLE);
@@ -456,6 +456,9 @@ cell_t CMenuHandler::DoAction(IBaseMenu *menu, MenuAction action, cell_t param1,
 		param1,
 		param2);
 #endif
+	if (!m_pBasic->IsRunnable())
+		return 0;
+
 	cell_t res = def_res;
 	m_pBasic->PushCell(menu->GetHandle());
 	m_pBasic->PushCell((cell_t)action);
@@ -569,7 +572,7 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 		}
 
 		/* Finally, push everything */
-		if (!no_call)
+		if (!no_call && m_pVoteResults->IsRunnable())
 		{
 			m_pVoteResults->PushCell(menu->GetHandle());
 			m_pVoteResults->PushCell(results->num_votes);
