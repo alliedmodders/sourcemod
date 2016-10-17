@@ -76,6 +76,8 @@ public void OnPluginStart()
 	
 	RegAdminCmd("sm_nominate_addmap", Command_Addmap, ADMFLAG_CHANGEMAP, "sm_nominate_addmap <mapname> - Forces a map to be on the next mapvote.");
 	
+	AutoExecConfig(true, "nominations");
+	
 	g_mapTrie = new StringMap();
 }
 
