@@ -71,10 +71,12 @@ public void OnPluginStart()
 	sm_reserved_slots = CreateConVar("sm_reserved_slots", "0", "Number of reserved player slots", 0, true, 0.0);
 	sm_hide_slots = CreateConVar("sm_hide_slots", "0", "If set to 1, reserved slots will hidden (subtracted from the max slot count)", 0, true, 0.0, true, 1.0);
 	sv_visiblemaxplayers = FindConVar("sv_visiblemaxplayers");
-	sm_reserve_type = CreateConVar("sm_reserve_type", "0", "Method of reserving slots", 0, true, 0.0, true, 2.0);
+	sm_reserve_type = CreateConVar("sm_reserve_type", "0", "Method of reserving slots: 0-Public slots are used in preference to reserved slots, 1-If someone with reserve access joins into a reserved slot, a player with no reserved slot access is kicked, 2-Same as method 1 except once a certain number of admins has been reached, the reserve slot stops kicking people", 0, true, 0.0, true, 2.0);
 	sm_reserve_maxadmins = CreateConVar("sm_reserve_maxadmins", "1", "Maximum amount of admins to let in the server with reserve type 2", 0, true, 0.0);
-	sm_reserve_kicktype = CreateConVar("sm_reserve_kicktype", "0", "How to select a client to kick (if appropriate)", 0, true, 0.0, true, 2.0);
-	
+	sm_reserve_kicktype = CreateConVar("sm_reserve_kicktype", "0", "How to select a client to kick (if appropriate): 0-Highest ping, 1-Longest connection time, 2-Random choice", 0, true, 0.0, true, 2.0);
+
+	AutoExecConfig(true, "reservedslots");
+
 	sm_reserved_slots.AddChangeHook(SlotCountChanged);
 	sm_hide_slots.AddChangeHook(SlotHideChanged);
 }
