@@ -54,6 +54,8 @@ ConVar sm_flood_time;									/* Handle to sm_flood_time convar */
 public void OnPluginStart()
 {
 	sm_flood_time = CreateConVar("sm_flood_time", "0.75", "Amount of time allowed between chat messages");
+	
+	AutoExecConfig(true, "antiflood");
 }
 
 public void OnClientPutInServer(int client)
