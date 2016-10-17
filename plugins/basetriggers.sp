@@ -81,7 +81,9 @@ public void OnPluginStart()
 	RegConsoleCmd("nextmap", Command_Nextmap);
 	RegConsoleCmd("motd", Command_Motd);
 	RegConsoleCmd("ff", Command_FriendlyFire);
-	
+
+	AutoExecConfig(true, "basetriggers");
+
 	g_Cvar_TimeleftInterval.AddChangeHook(ConVarChange_TimeleftInterval);
 
 	char folder[64];   	 
