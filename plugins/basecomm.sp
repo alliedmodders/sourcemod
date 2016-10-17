@@ -89,7 +89,9 @@ public void OnPluginStart()
 	RegAdminCmd("sm_unmute", Command_Unmute, ADMFLAG_CHAT, "sm_unmute <player> - Restores a player's ability to use voice.");
 	RegAdminCmd("sm_ungag", Command_Ungag, ADMFLAG_CHAT, "sm_ungag <player> - Restores a player's ability to use chat.");
 	RegAdminCmd("sm_unsilence", Command_Unsilence, ADMFLAG_CHAT, "sm_unsilence <player> - Restores a player's ability to use voice and chat.");	
-	
+
+	AutoExecConfig(true, "basecomm");
+
 	g_Cvar_Deadtalk.AddChangeHook(ConVarChange_Deadtalk);
 	g_Cvar_Alltalk.AddChangeHook(ConVarChange_Alltalk);
 	
