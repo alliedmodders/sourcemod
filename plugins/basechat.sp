@@ -76,6 +76,8 @@ public void OnPluginStart()
 	RegAdminCmd("sm_chat", Command_SmChat, ADMFLAG_CHAT, "sm_chat <message> - sends message to admins");
 	RegAdminCmd("sm_psay", Command_SmPsay, ADMFLAG_CHAT, "sm_psay <name or #userid> <message> - sends private message");
 	RegAdminCmd("sm_msay", Command_SmMsay, ADMFLAG_CHAT, "sm_msay <message> - sends message as a menu panel");
+	
+	AutoExecConfig(true, "basechat");
 }
 
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs)
