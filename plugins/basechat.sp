@@ -277,20 +277,28 @@ public Action Command_SmPsay(int client, int args)
 		return Plugin_Handled;	
 	}	
 	
-	char text[192], arg[64], message[192];
+	char text[192], sTarget[64], message[192];
 	GetCmdArgString(text, sizeof(text));
 
-	int len = BreakString(text, arg, sizeof(arg));
-	BreakString(text[len], message, sizeof(message));
+	GetCmdArg(1, sTarget, sizeof(sTarget));
 	
-	int target = FindTarget(client, arg, true, false);
+	int target = FindTarget(client, sTarget, true, false);
 		
 	if (target == -1)
-		return Plugin_Handled;	
+	{
+		return Plugin_Handled;
+	}
+	
+	char buffer[100];
+	for (int i = 2; i <= args; i++)
+	{
+		GetCmdArg(i, buffer, sizeof(buffer));
+		Format(message, sizeof(message), "%s %s", message, buffer);
+	}
 	
 	SendPrivateChat(client, target, message);
 	
-	return Plugin_Handled;	
+	return Plugin_Handled;
 }
 
 public Action Command_SmMsay(int client, int args)
