@@ -32,7 +32,7 @@
 #ifndef _INCLUDE_SM_PGSQL_BASIC_RESULTS_H_
 #define _INCLUDE_SM_PGSQL_BASIC_RESULTS_H_
 
-#include <am-refcounting.h>
+#include <amtl/am-refcounting.h>
 #include "PgDatabase.h"
 
 class PgQuery;
@@ -93,7 +93,7 @@ public: // Used by the driver to implement GetInsertIDForQuery()/GetAffectedRows
 	unsigned int GetInsertID();
 	unsigned int GetAffectedRows();
 private:
-	ke::Ref<PgDatabase> m_pParent;
+	ke::RefPtr<PgDatabase> m_pParent;
 	PgBasicResults m_rs;
 	unsigned int m_InsertID;
 	unsigned int m_AffectedRows;

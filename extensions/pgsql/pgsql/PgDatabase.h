@@ -32,8 +32,8 @@
 #ifndef _INCLUDE_SM_MYSQL_DATABASE_H_
 #define _INCLUDE_SM_MYSQL_DATABASE_H_
 
-#include <am-thread-utils.h>
-#include <am-refcounting-threadsafe.h>
+#include <amtl/am-thread-utils.h>
+#include <amtl/am-refcounting-threadsafe.h>
 #include "PgDriver.h"
 
 class PgQuery;

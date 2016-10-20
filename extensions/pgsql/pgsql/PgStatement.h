@@ -70,7 +70,7 @@ private:
 	void *CopyBlob(unsigned int param, const void *blobptr, size_t length);
 private:
 	PGconn *m_pgsql;
-	ke::Ref<PgDatabase> m_pParent;
+	ke::RefPtr<PgDatabase> m_pParent;
 	char *m_stmtName;
 
 	ParamBind *m_pushinfo;

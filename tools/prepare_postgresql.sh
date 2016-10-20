@@ -14,8 +14,7 @@ if [ `uname` = "Darwin" ]; then
   ismac=1
 elif [ `uname` != "Linux" ] && [ -n "${COMSPEC:+1}" ]; then
   iswin=1
-  archive_ext=zip
-  decomp=unzip
+  decomp=7z
 fi
 
 sourcemodfolder="sourcemod"
@@ -27,8 +26,8 @@ if [ ! -d "sourcemod" ]; then
   fi
 fi
 
-pgsqlver="9.4.6"
-pgsqlmaj="9.4"
+pgsqlver="9.6.0"
+pgsqlmaj="9.6"
 if [ $ismac -eq 0 ] && [ ! -d "postgresql-$pgsqlmaj" ]; then
   if [ `command -v wget` ]; then
     wget http://ftp.postgresql.org/pub/source/v$pgsqlver/postgresql-$pgsqlver.tar.gz -O pgsql.tar.gz
@@ -38,7 +37,7 @@ if [ $ismac -eq 0 ] && [ ! -d "postgresql-$pgsqlmaj" ]; then
     echo "Failed to locate wget or curl. Install one of these programs to download PostgreSQL."
     exit 1
   fi
-  tar xfz pgsql.tar.gz
+  $decomp pgsql.tar.gz
   mv postgresql-$pgsqlver postgresql-$pgsqlmaj
   rm pgsql.tar.gz
   

@@ -43,7 +43,7 @@
 
 #include <sh_string.h>
 #include <sh_list.h>
-#include <am-thread-utils.h>
+#include <amtl/am-thread-utils.h>
 
 using namespace SourceMod;
 using namespace SourceHook;
