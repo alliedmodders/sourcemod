@@ -1245,11 +1245,8 @@ public int Native_GetNominatedMapList(Handle plugin, int numParams)
 
 // Read previous maps from text file
 void ReadPreviousMapsFromText()
-{
-	char path[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, MAPCHOOSER_TXT);
-        
-	File file = OpenFile(path, "r");
+{      
+	File file = OpenFile(GetTextFilePath(), "r");
 	
 	if (file == null)
 	{
@@ -1275,10 +1272,7 @@ void ReadPreviousMapsFromText()
 // Write the previous maps to a text file
 void WritePreviousMapsToText()
 {    
-	char path[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, MAPCHOOSER_TXT);
-  
-	File file = OpenFile(path, "w");
+	File file = OpenFile(GetTextFilePath(), "w");
 	
 	if (file == null)
 	{
@@ -1296,4 +1290,12 @@ void WritePreviousMapsToText()
 	}
 
 	file.Close();
+}
+
+// Get the path of the mapchooser text file
+char GetTextFilePath()
+{
+	char path[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, MAPCHOOSER_TXT);
+	return path;
 }
