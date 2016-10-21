@@ -87,7 +87,6 @@ Menu g_VoteMenu;
 
 int g_Extends;
 int g_TotalRounds;
-bool g_FirstConfigExec = true;
 bool g_HasVoteStarted;
 bool g_WaitingForVote;
 bool g_MapVoteCompleted;
@@ -249,6 +248,7 @@ public void OnConfigsExecuted()
 	}
 	
 	/* Recall previous maps from a text file, if persistentcy is enabled */
+	static bool g_FirstConfigExec = true;	
 	if (g_FirstConfigExec)
 	{
 		if (g_Cvar_PersistentMaps.BoolValue)
@@ -1253,18 +1253,22 @@ void ReadPreviousMapsFromText()
 	
 	if (file == null)
 	{
-		file.Close();
 		return;
 	}
 
 	g_OldMapList.Clear();
 	char map[64];
 
-	while (!file.EndOfFile() && file.ReadLine(map, sizeof(map)))
+	do 
 	{
-		TrimString(map);
-		g_OldMapList.PushString(map);
-	}	
+		if (file.ReadLine(map, sizeof(map))
+		{
+			TrimString(map);
+			g_OldMapList.PushString(map);		
+		}	
+	}
+	while (!file.EndOfFile()) 
+	
 
 	file.Close();
 }
