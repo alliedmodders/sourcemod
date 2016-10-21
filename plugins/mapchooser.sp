@@ -1267,8 +1267,7 @@ void ReadPreviousMapsFromText()
 			g_OldMapList.PushString(map);		
 		}	
 	}
-	while (!file.EndOfFile()) 
-	
+	while (!file.EndOfFile())
 
 	file.Close();
 }
