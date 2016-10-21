@@ -1284,7 +1284,6 @@ void WritePreviousMapsToText()
 	if (file == null)
 	{
 		LogError("[SM] Error writing to %s. Check file permissions.", MAPCHOOSER_TXT);
-		file.Close();
 		return;
 	}
     
