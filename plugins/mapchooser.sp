@@ -1283,7 +1283,7 @@ void WritePreviousMapsToText()
 	char lastMap[64];
     
 	for (int idx=0; idx <g_OldMapList.Length; idx++)
-    	{
+	{
 		g_OldMapList.GetString(idx, lastMap, sizeof(lastMap));		
 		TrimString(lastMap);      
 		file.WriteLine(lastMap);
