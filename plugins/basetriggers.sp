@@ -96,14 +96,7 @@ public void OnPluginStart()
 		HookEvent("game_start", Event_GameStart);
 	}
 	
-	if (strcmp(folder, "nucleardawn") == 0)
-	{
-		HookEvent("round_win", Event_RoundEnd);
-	}
-	else
-	{
-		HookEvent("round_end", Event_RoundEnd);
-	}
+	HookEvent(RoundEndString(folder), Event_RoundEnd);
 	
 	HookEventEx("teamplay_win_panel", Event_TeamPlayWinPanel);
 	HookEventEx("teamplay_restart_round", Event_TFRestartRound);
