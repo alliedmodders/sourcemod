@@ -82,10 +82,11 @@ stock int FindTeamByName(const char[] name)
  *
  * @param game_folder		The name of the game folder.
  * @return			"round_win" if "nucleardawn"
- * 					"round_end" otherwise
+ 				"game_end" if "empires"
+ * 				"round_end" otherwise
  */
 
-stock char RoundEndString(const char[] game_folder)
+stock char RoundEndString(char[] game_folder)
 {
 	if (strcmp(game_folder, "empires") == 0)
 	{
