@@ -88,14 +88,22 @@ stock int FindTeamByName(const char[] name)
 
 stock char RoundEndString(char[] game_folder)
 {
+	char event_name[16];
+	
 	if (strcmp(game_folder, "empires") == 0)
 	{
-		return "game_end";
-	}
-	else if (strcmp(game_folder, "nucleardawn") == 0)
-	{
-		return "round_win";
+		Format(event_name, sizeof(event_name), "game_end");
 	}
 	
-	return "round_end";
+	else if (strcmp(game_folder, "nucleardawn") == 0)
+	{
+		Format(event_name, sizeof(event_name), "round_win");
+	}
+	
+	else
+	{
+		Format(event_name, sizeof(event_name), "round_end");
+	}
+	
+	return event_name;
 }
