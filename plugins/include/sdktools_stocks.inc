@@ -79,7 +79,6 @@ stock int FindTeamByName(const char[] name)
  *
  * This is a wrapper for finding the round end event string.
  * It's intended to be used when hooking the round end event.
- * Fully compatibility with Nuclear Dawn is ensured by calling.
  *
  * @param game_folder		The name of the game folder.
  * @return			"round_win" if "nucleardawn"
@@ -88,5 +87,14 @@ stock int FindTeamByName(const char[] name)
 
 stock char RoundEndString(const char[] game_folder)
 {
-	return strcmp(folder, "nucleardawn") == 0 ? "round_win" : "round_end";	
+	if (strcmp(folder, "empires") == 0)
+	{
+		return "game_end";
+	}
+	else if (strcmp(folder, "nucleardawn") == 0)
+	{
+		return "round_win";
+	}
+	
+	return "round_end";
 }
