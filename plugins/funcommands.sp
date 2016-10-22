@@ -170,7 +170,7 @@ void HookEvents()
 		HookEvent("arena_win_panel", Event_RoundEnd, EventHookMode_PostNoCopy);
 	}
 	else
-	{		
+	{
 		HookEvent(RoundEndString(folder), Event_RoundEnd, EventHookMode_PostNoCopy);
 	}	
 }
