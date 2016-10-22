@@ -169,13 +169,9 @@ void HookEvents()
 		HookEvent("teamplay_restart_round", Event_RoundEnd, EventHookMode_PostNoCopy);
 		HookEvent("arena_win_panel", Event_RoundEnd, EventHookMode_PostNoCopy);
 	}
-	else if (strcmp(folder, "nucleardawn") == 0)
-	{
-		HookEvent("round_win", Event_RoundEnd, EventHookMode_PostNoCopy);
-	}
 	else
-	{
-		HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
+	{		
+		HookEvent(RoundEndString(folder), Event_RoundEnd, EventHookMode_PostNoCopy);
 	}	
 }
 
