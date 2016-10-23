@@ -35,6 +35,8 @@
 #endif
 #define _event_stocks_included
 
+#define EK_CHAR_SIZE 32
+
 /* Update these three strings when adding new event game data */
 
 //The Enum: For the physical index of the event name
@@ -71,12 +73,12 @@ stock char gd_event_default[EventGameData][] =
 stock char GetEventHookName(EventGameData event)
 {
 	static bool got_name[EventGameData] = false;
-	static char event_name[EventGameData][32];
+	static char event_name[EventGameData][EK_CHAR_SIZE];
 	
 	int index = view_as<int>(event);	
 	if (!got_name[index])
 	{	
-		Format(event_name[index], sizeof(event_name[index]), GetEventNameEx(event));		
+		Format(event_name[index], EK_CHAR_SIZE, GetEventNameEx(event));		
 		got_name = true;
 	}
 	
@@ -96,12 +98,12 @@ stock char GetEventHookNameEx(EventGameData event)
 	int index = view_as<int>(event);
 	
 	Handle gc = LoadGameConfigFile("sm-events.games");
-	bool exists = GameConfGetKeyValue(gc, gd_event_name[index], event_name, sizeof(event_name));
+	bool exists = GameConfGetKeyValue(gc, gd_event_name[index], event_name, EK_CHAR_SIZE);
 	CloseHandle(gc);
 	
 	if (!exists)
 	{
-		Format(event_name, sizeof(event_name), gd_event_default[index]);	
+		Format(event_name, EK_CHAR_SIZE, gd_event_default[index]);	
 	}
 	
 	return event_name;
