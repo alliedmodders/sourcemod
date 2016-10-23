@@ -94,7 +94,7 @@ stock char GetEventHookName(EventGameData event)
   
 stock char GetEventHookNameEx(EventGameData event)
 {
-	char event_name[32];
+	char event_name[EK_CHAR_SIZE];
 	int index = view_as<int>(event);
 	
 	Handle gc = LoadGameConfigFile("sm-events.games");
