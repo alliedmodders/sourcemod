@@ -53,73 +53,49 @@ stock char gd_event_default[EventGameData][] =
 };
 
 /**
- * Searches through gamedata to find the proper round end event.
- *
- * This is a wrapper for finding the round end event string.
- * It's intended to be used when hooking the round end event.
- *
- * @return			Round end event from gamedata
- */
-
-stock char RoundEndString()
-{	
-	static bool got_name = false;
-	static char event_name[32];
-	
-	if (!got_name)
-	{	
-		Format(event_name, sizeof(event_name), GetEventGameData(gd_RoundEnd));		
-		got_name = true;
-	}
-	
-	return event_name;
-}
-
-/**
- * Searches through gamedata to find the proper game start event.
- *
- * This is a wrapper for finding the game start event string.
- * It's intended to be used when hooking the game start event.
- *
- * @return			Game start event from gamedata
- */
-
-stock char GameStartString()
-{
-	static bool got_name = false;
-	static char event_name[32];
-	
-	if (!got_name)
-	{
-		Format(event_name, sizeof(event_name), GetEventGameData(gd_GameStart));
-		got_name = true;
-	}
-	
-	return event_name;
-}
-
-/**
  * Searches through gamedata to find an event name.
  *
- * This is a wrapper for finding a game event string.
- * It's intended to be used when hooking an event.
+ * Caches the event name after reading from keyvalues first time.
+ * This wrapper is intended to be used when hooking an event.
  *
  * @parm			GameEventsData enum
  * @return			event string for current game
  */
+  
+stock char GetEventName(EventGameData event)
+{
+	static bool got_name[EventGameData] = false;
+	static char event_name[EventGameData][32];
+	
+	int index = view_as<int>(event);	
+	if (!got_name[index])
+	{	
+		Format(event_name[index], sizeof(event_name[index]), GetEventNameEx(event));		
+		got_name = true;
+	}
+	
+	return event_name[index];
+}
 
-stock char GetEventGameData(EventGameData data)
+/**
+ * Same as GetEventName() except for value is read from keyvalues each time.
+ *
+ * @parm			GameEventsData enum
+ * @return			event string for current game
+ */
+  
+stock char GetEventNameEx(EventGameData event)
 {
 	char event_name[32];
-	int gd_index = view_as<int>(data);
+	int index = view_as<int>(event);
 	
 	Handle gc = LoadGameConfigFile("events.games");
-	bool exists = GameConfGetKeyValue(gc, gd_event_name[gd_index], event_name, sizeof(event_name));
+	bool exists = GameConfGetKeyValue(gc, gd_event_name[index], event_name, sizeof(event_name));
 	CloseHandle(gc);
 	
 	if (!exists)
 	{
-		Format(event_name, sizeof(event_name), gd_event_default[gd_index]);	
+		Format(event_name, sizeof(event_name), gd_event_default[index]);	
 	}
 	
 	return event_name;
