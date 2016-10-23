@@ -1,0 +1,36 @@
+"Games"
+{
+	"#default"
+	{
+
+		"Keys"
+		{
+			"RoundEnd"	"round_end"
+			"GameStart"	"game_start"
+		}
+	}
+	
+	"nucleardawn"
+	{
+		"Keys"
+		{
+			"RoundEnd"	"round_win"		
+		}
+	}
+	
+	"empires"
+	{
+		"Keys"
+		{
+			"RoundEnd"	"game_end"		
+		}	
+	}
+	
+	"insurgency"
+	{
+		"Keys"
+		{
+			"GameStart"	"game_newmap"
+		}	
+	}
+}
