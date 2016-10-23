@@ -338,3 +338,5 @@ native void GetEventName(Handle event, char[] name, int maxlength);
  * @error               Invalid Handle.
  */
 native void SetEventBroadcast(Handle event, bool dontBroadcast);
+
+#include <event_stocks>
