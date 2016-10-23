@@ -54,7 +54,7 @@ stock char gd_EN[EventGameData][] =
 };
 
 //The Default Name: What do we return, if game data reading fails?
-stock char gd_EDEventGameData][] =
+stock char gd_ED[EventGameData][] =
 {
 	"round_end",
 	"game_start"
