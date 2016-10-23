@@ -84,8 +84,8 @@ public void OnPluginStart()
 	
 	g_Cvar_TimeleftInterval.AddChangeHook(ConVarChange_TimeleftInterval);
 
-	HookEvent(GameStartString(), Event_GameStart);	
-	HookEvent(RoundEndString(), Event_RoundEnd);
+	HookEvent(GetEventName(EventHook_GameStart), Event_GameStart);	
+	HookEvent(GetEventName(EventHook_RoundEnd), Event_RoundEnd);
 	
 	HookEventEx("teamplay_win_panel", Event_TeamPlayWinPanel);
 	HookEventEx("teamplay_restart_round", Event_TFRestartRound);
