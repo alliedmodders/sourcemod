@@ -88,21 +88,17 @@ stock int FindTeamByName(const char[] name)
 
 stock char RoundEndString(char[] game_folder)
 {
-	char event_name[16];
-	
-	if (strcmp(game_folder, "empires") == 0)
+	static Handle gameConfig = LoadGameConfigFile("events.games");	
+	if (gameConfig == null)
 	{
-		Format(event_name, sizeof(event_name), "game_end");
+		SetFailState("Unable to load game config events.games");
+		return null;
 	}
 	
-	else if (strcmp(game_folder, "nucleardawn") == 0)
+	static char event_name[16];
+	if (event_name == null)
 	{
-		Format(event_name, sizeof(event_name), "round_win");
-	}
-	
-	else
-	{
-		Format(event_name, sizeof(event_name), "round_end");
+		GameConfGetKeyValue(gameConfig, "RoundEnd", event_name, sizeof(event_name)) && event_name[0])	
 	}
 	
 	return event_name;
