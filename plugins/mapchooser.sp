@@ -155,7 +155,7 @@ public void OnPluginStart()
 		}
 		else
 		{
-			HookEvent(GetEventName(EventHook_RoundEnd), Event_RoundEnd);
+			HookEvent(GetEventHookName(EventHook_RoundEnd), Event_RoundEnd);
 		}
 	}
 	
