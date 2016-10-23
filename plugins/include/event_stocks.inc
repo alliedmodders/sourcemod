@@ -79,7 +79,7 @@ stock char GetEventHookName(EventGameData event)
 	if (!got_name[index])
 	{	
 		Format(event_name[index], EH_CHAR_SIZE, GetEventHookNameEx(event));		
-		got_name = true;
+		got_name[index] = true;
 	}
 	
 	return event_name[index];
