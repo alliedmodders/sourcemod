@@ -78,7 +78,7 @@ stock char GetEventName(EventGameData event)
 }
 
 /**
- * Same as GetEventName() except for value is read from keyvalues each time.
+ * Same as GetEventName() except for value is not cached.
  *
  * @parm			GameEventsData enum
  * @return			event string for current game
