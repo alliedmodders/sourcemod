@@ -35,9 +35,6 @@
 #endif
 #define _event_stocks_included
 
-#define EVENT_RE_DEFAULT "round_end"
-#define EVENT_GS_DEFAULT "game_start"
-
 /**
  * Searches through gamedata to find the proper round end event.
  *
@@ -50,19 +47,11 @@
 stock char RoundEndString()
 {	
 	static bool got_name = false;
-	static char event_name[16];
+	static char event_name[32];
 	
 	if (!got_name)
 	{	
-		Handle gc = LoadGameConfigFile("events.games");
-		bool exists = GameConfGetKeyValue(gc, "RoundEnd", event_name, sizeof(event_name));
-		CloseHandle(gc);
-		
-		if (!exists)
-		{
-			Format(event_name, sizeof(event_name), EVENT_RE_DEFAULT);
-		}
-		
+		Format(event_name, sizeof(event_name), GetEventString(gd_RoundEnd));		
 		got_name = true;
 	}
 	
@@ -81,20 +70,56 @@ stock char RoundEndString()
 stock char GameStartString()
 {
 	static bool got_name = false;
-	static char event_name[16];
+	static char event_name[32];
 	
 	if (!got_name)
 	{
-		Handle gc = LoadGameConfigFile("events.games");
-		bool exists = GameConfGetKeyValue(gc, "GameStart", event_name, sizeof(event_name));
-		CloseHandle(gc);
-		
-		if (!exists)
-		{
-			Format(event_name, sizeof(event_name), EVENT_GS_DEFAULT);
-		}
-
+		Format(event_name, sizeof(event_name), GetEventString(gd_GameStart));
 		got_name = true;
+	}
+	
+	return event_name;
+}
+
+/* Wrapper for adding new events to game data */
+enum EventGameData 
+{
+	gd_RoundEnd = 0,
+	gd_GameStart
+}
+stock char gd_event_name[EventGameData][] = 
+{
+	"RoundEnd",
+	"GameStart"
+};
+stock char gd_event_default[EventGameData][] =
+{
+	"round_end",
+	"game_start"
+};
+
+/**
+ * Searches through gamedata to find an event name.
+ *
+ * This is a wrapper for finding a game event string.
+ * It's intended to be used when hooking an event.
+ *
+ * @parm			GameEventsData enum
+ * @return			event string for current game
+ */
+
+stock char GetEventString(EventGameData data)
+{
+	char event_name[32];
+	int gd_index = view_as<int>(data);
+	
+	Handle gc = LoadGameConfigFile("events.games");
+	bool exists = GameConfGetKeyValue(gc, gd_event_name[gd_index], event_name, sizeof(event_name));
+	CloseHandle(gc);
+	
+	if (!exists)
+	{
+		Format(event_name, sizeof(event_name), gd_event_default[gd_index]);	
 	}
 	
 	return event_name;
