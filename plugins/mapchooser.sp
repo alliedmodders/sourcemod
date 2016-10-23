@@ -34,7 +34,6 @@
  
 #pragma semicolon 1
 #include <sourcemod>
-#include <sdktools>
 #include <mapchooser>
 #include <nextmap>
 
@@ -156,7 +155,7 @@ public void OnPluginStart()
 		}
 		else
 		{
-			HookEvent(RoundEndString(folder), Event_RoundEnd);
+			HookEvent(RoundEndString(), Event_RoundEnd);
 		}
 	}
 	
