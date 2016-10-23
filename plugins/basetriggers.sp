@@ -84,18 +84,7 @@ public void OnPluginStart()
 	
 	g_Cvar_TimeleftInterval.AddChangeHook(ConVarChange_TimeleftInterval);
 
-	char folder[64];   	 
-	GetGameFolderName(folder, sizeof(folder));
-
-	if (strcmp(folder, "insurgency") == 0)
-	{
-		HookEvent("game_newmap", Event_GameStart);
-	}
-	else
-	{
-		HookEvent("game_start", Event_GameStart);
-	}
-	
+	HookEvent(GameStartString(), Event_GameStart);	
 	HookEvent(RoundEndString(), Event_RoundEnd);
 	
 	HookEventEx("teamplay_win_panel", Event_TeamPlayWinPanel);
