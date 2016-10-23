@@ -7,18 +7,6 @@
 #define EVENT_GS_DEFAULT "game_start"
 
 /**
- * A wrapper function for loading the game data for events.
- * The static tag makes it only load the file once (hopefully)
- *
- * @return			Game data for events or null if failed
- */
- 
-stock static Handle GameEventsData()
-{
-	return LoadGameConfigFile("events.games");
-}
-
-/**
  * Searches through gamedata to find the proper round end event.
  *
  * This is a wrapper for finding the round end event string.
@@ -28,16 +16,22 @@ stock static Handle GameEventsData()
  */
 
 stock char RoundEndString()
-{
+{	
+	static bool got_name = false;
 	static char event_name[16];
 	
-	if (event_name == null)
+	if (!got_name)
 	{	
-		// If retrieval fails, assume the default option
-		if (!GameConfGetKeyValue(GameEventsData(), "RoundEnd", event_name, sizeof(event_name)) && event_name[0]))
+		Handle gc = LoadGameConfigFile("events.games");
+		bool exists = GameConfGetKeyValue(gc, "RoundEnd", event_name, sizeof(event_name));
+		CloseHandle(gc);
+		
+		if (!exists)
 		{
 			Format(event_name, sizeof(event_name), EVENT_RE_DEFAULT);
 		}
+		
+		got_name = true;
 	}
 	
 	return event_name;
@@ -54,15 +48,21 @@ stock char RoundEndString()
 
 stock char GameStartString()
 {
+	static bool got_name = false;
 	static char event_name[16];
 	
-	if (event_name == null)
+	if (!got_name)
 	{
-		// If retrieval fails, assume the default option
-		if (!GameConfGetKeyValue(GameEventsData(), "GameStart", event_name, sizeof(event_name)) && event_name[0]))
+		Handle gc = LoadGameConfigFile("events.games");
+		bool exists = GameConfGetKeyValue(gc, "GameStart", event_name, sizeof(event_name));
+		CloseHandle(gc);
+		
+		if (!exists)
 		{
 			Format(event_name, sizeof(event_name), EVENT_GS_DEFAULT);
 		}
+
+		got_name = true;
 	}
 	
 	return event_name;
