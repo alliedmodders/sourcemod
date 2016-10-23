@@ -171,7 +171,7 @@ void HookEvents()
 	}
 	else
 	{
-		HookEvent(RoundEndString(), Event_RoundEnd, EventHookMode_PostNoCopy);
+		HookEvent(GetEventName(EventHook_RoundEnd), Event_RoundEnd, EventHookMode_PostNoCopy);
 	}	
 }
 
