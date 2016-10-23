@@ -35,6 +35,23 @@
 #endif
 #define _event_stocks_included
 
+/* Wrapper for adding new events to game data */
+enum EventGameData 
+{
+	gd_RoundEnd = 0,
+	gd_GameStart
+}
+stock char gd_event_name[EventGameData][] = 
+{
+	"RoundEnd",
+	"GameStart"
+};
+stock char gd_event_default[EventGameData][] =
+{
+	"round_end",
+	"game_start"
+};
+
 /**
  * Searches through gamedata to find the proper round end event.
  *
@@ -80,23 +97,6 @@ stock char GameStartString()
 	
 	return event_name;
 }
-
-/* Wrapper for adding new events to game data */
-enum EventGameData 
-{
-	gd_RoundEnd = 0,
-	gd_GameStart
-}
-stock char gd_event_name[EventGameData][] = 
-{
-	"RoundEnd",
-	"GameStart"
-};
-stock char gd_event_default[EventGameData][] =
-{
-	"round_end",
-	"game_start"
-};
 
 /**
  * Searches through gamedata to find an event name.
