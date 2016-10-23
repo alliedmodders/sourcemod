@@ -101,8 +101,15 @@ stock char GetEventHookNameEx(EventGameData event)
 	return !GameConfGetKeyValue(EventHookData(), gd_EN[index], event_name, EH_CHAR_SIZE) ? gd_ED[index] : event_name;
 }
 
-//Helper function for GetEventHookNameEx()
+//Helper function for GetEventHookNameEx(), caches the game config handle
 stock Handle EventHookData() 
 {
-	return LoadGameConfigFile("sm-events.games");
+	static Handle gc = null;
+	
+	if (gc == null)
+	{
+		gc = LoadGameConfigFile("sm-events.games");
+	}
+	
+	return gc;
 }
