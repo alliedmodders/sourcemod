@@ -38,8 +38,8 @@
 /* Wrapper for adding new events to game data */
 enum EventGameData 
 {
-	gd_RoundEnd = 0,
-	gd_GameStart
+	EventHook_RoundEnd = 0,
+	EventHook_GameStart
 }
 stock char gd_event_name[EventGameData][] = 
 {
