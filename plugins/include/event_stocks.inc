@@ -89,7 +89,7 @@ stock char GetEventHookNameEx(EventGameData event)
 	char event_name[32];
 	int index = view_as<int>(event);
 	
-	Handle gc = LoadGameConfigFile("events.games");
+	Handle gc = LoadGameConfigFile("sm-events.games");
 	bool exists = GameConfGetKeyValue(gc, gd_event_name[index], event_name, sizeof(event_name));
 	CloseHandle(gc);
 	
