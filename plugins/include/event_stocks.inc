@@ -62,7 +62,7 @@ stock char gd_event_default[EventGameData][] =
  * @return			event string for current game
  */
   
-stock char GetEventName(EventGameData event)
+stock char GetEventHookName(EventGameData event)
 {
 	static bool got_name[EventGameData] = false;
 	static char event_name[EventGameData][32];
@@ -84,7 +84,7 @@ stock char GetEventName(EventGameData event)
  * @return			event string for current game
  */
   
-stock char GetEventNameEx(EventGameData event)
+stock char GetEventHookNameEx(EventGameData event)
 {
 	char event_name[32];
 	int index = view_as<int>(event);
