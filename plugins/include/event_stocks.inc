@@ -35,7 +35,7 @@
 #endif
 #define _event_stocks_included
 
-#define EK_CHAR_SIZE 32
+#define EH_CHAR_SIZE 32 // What to change the char buffer size? Update it here.
 
 /* Update these three strings when adding new event game data */
 
@@ -73,12 +73,12 @@ stock char gd_event_default[EventGameData][] =
 stock char GetEventHookName(EventGameData event)
 {
 	static bool got_name[EventGameData] = false;
-	static char event_name[EventGameData][EK_CHAR_SIZE];
+	static char event_name[EventGameData][EH_CHAR_SIZE];
 	
 	int index = view_as<int>(event);	
 	if (!got_name[index])
 	{	
-		Format(event_name[index], EK_CHAR_SIZE, GetEventNameEx(event));		
+		Format(event_name[index], EH_CHAR_SIZE, GetEventNameEx(event));		
 		got_name = true;
 	}
 	
@@ -94,16 +94,16 @@ stock char GetEventHookName(EventGameData event)
   
 stock char GetEventHookNameEx(EventGameData event)
 {
-	char event_name[EK_CHAR_SIZE];
+	char event_name[EH_CHAR_SIZE];
 	int index = view_as<int>(event);
 	
 	Handle gc = LoadGameConfigFile("sm-events.games");
-	bool exists = GameConfGetKeyValue(gc, gd_event_name[index], event_name, EK_CHAR_SIZE);
+	bool exists = GameConfGetKeyValue(gc, gd_event_name[index], event_name, EH_CHAR_SIZE);
 	CloseHandle(gc);
 	
 	if (!exists)
 	{
-		Format(event_name, EK_CHAR_SIZE, gd_event_default[index]);	
+		Format(event_name, EH_CHAR_SIZE, gd_event_default[index]);	
 	}
 	
 	return event_name;
