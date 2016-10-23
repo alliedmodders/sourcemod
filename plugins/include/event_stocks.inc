@@ -51,7 +51,7 @@ stock char RoundEndString()
 	
 	if (!got_name)
 	{	
-		Format(event_name, sizeof(event_name), GetEventString(gd_RoundEnd));		
+		Format(event_name, sizeof(event_name), GetEventGameData(gd_RoundEnd));		
 		got_name = true;
 	}
 	
@@ -74,7 +74,7 @@ stock char GameStartString()
 	
 	if (!got_name)
 	{
-		Format(event_name, sizeof(event_name), GetEventString(gd_GameStart));
+		Format(event_name, sizeof(event_name), GetEventGameData(gd_GameStart));
 		got_name = true;
 	}
 	
@@ -108,7 +108,7 @@ stock char gd_event_default[EventGameData][] =
  * @return			event string for current game
  */
 
-stock char GetEventString(EventGameData data)
+stock char GetEventGameData(EventGameData data)
 {
 	char event_name[32];
 	int gd_index = view_as<int>(data);
