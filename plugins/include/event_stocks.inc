@@ -47,14 +47,14 @@ enum EventGameData
 }
 
 //The Event Name: As you've specified in the game data
-stock char gd_event_name[EventGameData][] = 
+stock char gd_EN[EventGameData][] = 
 {
 	"RoundEnd",
 	"GameStart"
 };
 
 //The Default Name: What do we return, if game data reading fails?
-stock char gd_event_default[EventGameData][] =
+stock char gd_EDEventGameData][] =
 {
 	"round_end",
 	"game_start"
@@ -95,16 +95,14 @@ stock char GetEventHookName(EventGameData event)
 stock char GetEventHookNameEx(EventGameData event)
 {
 	char event_name[EH_CHAR_SIZE];
-	int index = view_as<int>(event);
-	
-	Handle gc = LoadGameConfigFile("sm-events.games");
-	bool exists = GameConfGetKeyValue(gc, gd_event_name[index], event_name, EH_CHAR_SIZE);
-	CloseHandle(gc);
-	
-	if (!exists)
-	{
-		Format(event_name, EH_CHAR_SIZE, gd_event_default[index]);	
-	}
-	
-	return event_name;
+	int index = view_as<int>(event);	
+
+	//Get gamedata for event from keyvalues. If it fails, return the default name, else return the found event_name
+	return !GameConfGetKeyValue(EventHooktData(), gd_EN[index], event_name, EH_CHAR_SIZE) ? gd_ED[index] : event_name;
+}
+
+//Helper function for GetEventHookNameEx()
+stock Handle EventHooktData() 
+{
+	return LoadGameConfigFile("sm-events.games");
 }
