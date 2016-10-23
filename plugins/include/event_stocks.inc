@@ -35,17 +35,23 @@
 #endif
 #define _event_stocks_included
 
-/* Wrapper for adding new events to game data */
+/* Update these three strings when adding new event game data */
+
+//The Enum: For the physical index of the event name
 enum EventGameData 
 {
 	EventHook_RoundEnd = 0,
 	EventHook_GameStart
 }
+
+//The Event Name: As you've specified in the game data
 stock char gd_event_name[EventGameData][] = 
 {
 	"RoundEnd",
 	"GameStart"
 };
+
+//The Default Name: What do we return, if game data reading fails?
 stock char gd_event_default[EventGameData][] =
 {
 	"round_end",
