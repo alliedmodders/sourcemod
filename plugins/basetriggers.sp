@@ -34,7 +34,6 @@
 #pragma semicolon 1
 
 #include <sourcemod>
-#include <sdktools>
 
 #undef REQUIRE_PLUGIN
 #include <mapchooser>
@@ -97,7 +96,7 @@ public void OnPluginStart()
 		HookEvent("game_start", Event_GameStart);
 	}
 	
-	HookEvent(RoundEndString(folder), Event_RoundEnd);
+	HookEvent(RoundEndString(), Event_RoundEnd);
 	
 	HookEventEx("teamplay_win_panel", Event_TeamPlayWinPanel);
 	HookEventEx("teamplay_restart_round", Event_TFRestartRound);
