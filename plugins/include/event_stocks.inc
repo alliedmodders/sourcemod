@@ -78,7 +78,7 @@ stock char GetEventHookName(EventGameData event)
 }
 
 /**
- * Same as GetEventName() except for value is not cached.
+ * Same as GetEventHookName() except for value is not cached.
  *
  * @parm			GameEventsData enum
  * @return			event string for current game
