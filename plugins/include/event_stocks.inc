@@ -98,11 +98,11 @@ stock char GetEventHookNameEx(EventGameData event)
 	int index = view_as<int>(event);	
 
 	//Get gamedata for event from keyvalues. If it fails, return the default name, else return the found event_name
-	return !GameConfGetKeyValue(EventHooktData(), gd_EN[index], event_name, EH_CHAR_SIZE) ? gd_ED[index] : event_name;
+	return !GameConfGetKeyValue(EventHookData(), gd_EN[index], event_name, EH_CHAR_SIZE) ? gd_ED[index] : event_name;
 }
 
 //Helper function for GetEventHookNameEx()
-stock Handle EventHooktData() 
+stock Handle EventHookData() 
 {
 	return LoadGameConfigFile("sm-events.games");
 }
