@@ -78,7 +78,7 @@ stock char GetEventHookName(EventGameData event)
 	int index = view_as<int>(event);	
 	if (!got_name[index])
 	{	
-		Format(event_name[index], EH_CHAR_SIZE, GetEventNameEx(event));		
+		Format(event_name[index], EH_CHAR_SIZE, GetEventHookNameEx(event));		
 		got_name = true;
 	}
 	
