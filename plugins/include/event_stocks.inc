@@ -35,11 +35,54 @@
 #endif
 #define _event_stocks_included
 
+/**
+ * Get various properties of GameEventData
+ * Example usage GameEventData.GetHandle()
+ */
+
+methodmap GameEventData
+{
+	#define TXT_GAME_EVENTS "sm-events.games"
+	
+	/**
+	 * Gets and caches the game data for event names from keyvalues
+	 *
+	 * @return Handle	Game Data
+	 */
+	
+	public static Handle GetHandle()
+	{
+		static Handle gc = null;
+	
+		if (gc == null)
+		{
+			gc = LoadGameConfigFile(TXT_GAME_EVENTS);
+		}
+		
+		return gc;
+	}
+	
+	/**
+	 * Same as GameEventData.GetHandle except value is not cached
+	 *
+	 * @return Handle	Game Data
+	 */
+	
+	public static Handle GetHandleEx()
+	{
+		return LoadGameConfigFile(TXT_GAME_EVENTS);
+	}
+}
+
+/**
+ * Get various properties of an EventName using the enum
+ * Example usage EventName.DefaultValue(eRoundStart)
+ */
 enum EventGameData 
 {
 	eRoundEnd = 0,
 	eGameStart
-}
+}	
 
 methodmap EventName
 {
@@ -81,24 +124,6 @@ methodmap EventName
 	}
 	
 	/**
-	 * Gets and caches the game data for event names from keyvalues
-	 *
-	 * @return Handle	Game Data
-	 */
-	
-	public static Handle GetData()
-	{
-		static Handle gc = null;
-	
-		if (gc == null)
-		{
-			gc = LoadGameConfigFile("sm-events.games");
-		}
-		
-		return gc;
-	}
-	
-	/**
 	 * Same as EventName.GetString() except for value is not cached.
 	 *
 	 * @parm			GameEventsData enum
@@ -109,8 +134,8 @@ methodmap EventName
 	{
 		char event_name[EH_CHAR_SIZE];
 
-		//Get gamedata for event from keyvalues. If it fails, return the default name, else return the found event_name
-		return 	! GameConfGetKeyValue(EventName.GetData(), EventName.DataName(event), event_name, EH_CHAR_SIZE) 
+		//Get gamedata for event from keyvalues. If it fails, return the default name, else return event_name
+		return 	! GameConfGetKeyValue(GameEventData.GetHandle(), EventName.DataName(event), event_name, EH_CHAR_SIZE) 
 				? EventName.DefaultValue(event) 
 				: event_name;
 	}
