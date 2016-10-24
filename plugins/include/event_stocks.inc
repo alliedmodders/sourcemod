@@ -86,7 +86,7 @@ methodmap EventName
 	 * @return Handle	Game Data
 	 */
 	
-	public static Handle Handle()
+	public static Handle GetData()
 	{
 		static Handle gc = null;
 	
@@ -110,8 +110,9 @@ methodmap EventName
 		char event_name[EH_CHAR_SIZE];
 
 		//Get gamedata for event from keyvalues. If it fails, return the default name, else return the found event_name
-		return !GameConfGetKeyValue(EventName.Handle(), EventName.DataName(event), event_name, EH_CHAR_SIZE) 
-		? EventName.DefaultValue(event) : event_name;
+		return 	! GameConfGetKeyValue(EventName.GetData(), EventName.DataName(event), event_name, EH_CHAR_SIZE) 
+				? EventName.DefaultValue(event) 
+				: event_name;
 	}
 	
 	/**
