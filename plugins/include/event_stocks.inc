@@ -35,81 +35,107 @@
 #endif
 #define _event_stocks_included
 
-#define EH_CHAR_SIZE 32 // What to change the char buffer size? Update it here.
-
-/* Update these three strings when adding new event game data */
-
-//The Enum: For the physical index of the event name
 enum EventGameData 
 {
-	EventHook_RoundEnd = 0,
-	EventHook_GameStart
+	eRoundEnd = 0,
+	eGameStart
 }
 
-//The Event Name: As you've specified in the game data
-stock char gd_EN[EventGameData][] = 
+methodmap EventName
 {
-	"RoundEnd",
-	"GameStart"
-};
-
-//The Default Name: What do we return, if game data reading fails?
-stock char gd_ED[EventGameData][] =
-{
-	"round_end",
-	"game_start"
-};
-
-/**
- * Searches through gamedata to find an event name.
- *
- * Caches the event name after reading from keyvalues first time.
- * This wrapper is intended to be used when hooking an event.
- *
- * @parm			GameEventsData enum
- * @return			event string for current game
- */
-  
-stock char GetEventHookName(EventGameData event)
-{
-	static bool got_name[EventGameData] = false;
-	static char event_name[EventGameData][EH_CHAR_SIZE];
+	#define EH_CHAR_SIZE 32 // What to change the char buffer size? Update it here.
 	
-	int index = view_as<int>(event);	
-	if (!got_name[index])
-	{	
-		Format(event_name[index], EH_CHAR_SIZE, GetEventHookNameEx(event));		
-		got_name[index] = true;
-	}
+	/**
+	 * Gets the default value for a event
+	 * 
+	 * @parm enum		EventGameData
+	 * @return char		Name
+	 */
 	
-	return event_name[index];
-}
-
-/**
- * Same as GetEventHookName() except for value is not cached.
- *
- * @parm			GameEventsData enum
- * @return			event string for current game
- */
-  
-stock char GetEventHookNameEx(EventGameData event)
-{
-	char event_name[EH_CHAR_SIZE];
-	int index = view_as<int>(event);	
-
-	//Get gamedata for event from keyvalues. If it fails, return the default name, else return the found event_name
-	return !GameConfGetKeyValue(EventHookData(), gd_EN[index], event_name, EH_CHAR_SIZE) ? gd_ED[index] : event_name;
-}
-
-//Helper function for GetEventHookNameEx(), caches the game config handle
-stock Handle EventHookData() 
-{
-	static Handle gc = null;
-	
-	if (gc == null)
+	public static char DefaultValue(EventGameData event) 
 	{
-		gc = LoadGameConfigFile("sm-events.games");
+		char Default[EventGameData][] =
+		{
+			"round_end",
+			"game_start"
+		};
+		
+		return Default[view_as<int>(event)];
 	}
 	
-	return gc;
-}
+	/**
+	 * Gets the game data name
+	 * 
+	 * @parm enum		EventGameData
+	 * @return char		Name
+	 */
+	
+	public static char DataName(EventGameData event)
+	{
+		char Name[EventGameData][] = {
+			"RoundEnd",
+			"GameStart"
+		};
+		
+		return Name[view_as<int>(event)];
+	}
+	
+	/**
+	 * Gets and caches the game data for event names from keyvalues
+	 *
+	 * @return Handle	Game Data
+	 */
+	
+	public static Handle Handle()
+	{
+		static Handle gc = null;
+	
+		if (gc == null)
+		{
+			gc = LoadGameConfigFile("sm-events.games");
+		}
+		
+		return gc;
+	}
+	
+	/**
+	 * Same as EventName.GetString() except for value is not cached.
+	 *
+	 * @parm			GameEventsData enum
+	 * @return			event string for current game
+	 */
+	 
+	public static char GetStringEx(EventGameData event)
+	{
+		char event_name[EH_CHAR_SIZE];
+
+		//Get gamedata for event from keyvalues. If it fails, return the default name, else return the found event_name
+		return !GameConfGetKeyValue(EventName.Handle(), EventName.DataName(event), event_name, EH_CHAR_SIZE) 
+		? EventName.DefaultValue(event) : event_name;
+	}
+	
+	/**
+	 * Searches through gamedata to find an event name.
+	 *
+	 * Caches the event name after reading from keyvalues first time.
+	 * This wrapper is intended to be used when hooking an event.
+	 *
+	 * @parm			GameEventsData enum
+	 * @return			event string for current game
+	 */
+	 
+	public static char GetString(EventGameData event)
+	{
+		static bool got_name[EventGameData] = false;
+		static char event_name[EventGameData][EH_CHAR_SIZE];
+				
+		int index = view_as<int>(event);	
+		if (!got_name[index])
+		{	
+			Format(event_name[index], EH_CHAR_SIZE, EventName.GetStringEx(event));		
+			got_name[index] = true;
+		}
+				
+		return event_name[index];
+	}
+};
