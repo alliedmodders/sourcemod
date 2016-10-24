@@ -135,7 +135,7 @@ methodmap EventName
 		char event_name[EVENT_NAME_SIZE];
 
 		//Get gamedata for event from keyvalues. If it fails, return the default name, else return event_name
-		return !GameConfGetKeyValue(GameEventData.GetHandle(), EventName.DataName(event), event_name, EVENT_NAME_SIZE ? EventName.DefaultValue(event) : event_name;
+		return !GameConfGetKeyValue(GameEventData.GetHandle(), EventName.DataName(event), event_name, EVENT_NAME_SIZE) ? EventName.DefaultValue(event) : event_name;
 	}
 	
 	/**
