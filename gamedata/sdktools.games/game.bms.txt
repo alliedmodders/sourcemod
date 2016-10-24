@@ -101,57 +101,57 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"418"
-				"linux"		"419"
-				"mac"		"419"
+				"windows"	"421"
+				"linux"		"422"
+				"mac"		"422"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"285"
-				"linux"		"286"
-				"mac"		"286"
+				"windows"	"288"
+				"linux"		"289"
+				"mac"		"289"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"283"
-				"linux"		"284"
-				"mac"		"284"
+				"windows"	"286"
+				"linux"		"287"
+				"mac"		"287"
 			}
 			"Ignite"
 			{
-				"windows"	"222"
-				"linux"		"223"
-				"mac"		"223"
+				"windows"	"225"
+				"linux"		"226"
+				"mac"		"226"
 			}
 			"Extinguish"
 			{
-				"windows"	"226"
-				"linux"		"227"
-				"mac"		"227"
+				"windows"	"229"
+				"linux"		"230"
+				"mac"		"230"
 			}
 			"Teleport"
 			{
-				"windows"	"115"
-				"linux"		"116"
-				"mac"		"116"
+				"windows"	"116"
+				"linux"		"117"
+				"mac"		"117"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"458"
-				"linux"		"458"
-				"mac"		"458"
+				"windows"	"461"
+				"linux"		"461"
+				"mac"		"461"
 			}
 			"GetVelocity"
 			{
-				"windows"	"148"
-				"linux"		"149"
-				"mac"		"149"
+				"windows"	"149"
+				"linux"		"150"
+				"mac"		"150"
 			}
 			"EyeAngles"
 			{
-				"windows"	"138"
-				"linux"		"139"
-				"mac"		"139"
+				"windows"	"139"
+				"linux"		"140"
+				"mac"		"140"
 			}
 			"SetEntityModel"
 			{
@@ -167,9 +167,9 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"276"
-				"linux"		"277"
-				"mac"		"277"
+				"windows"	"279"
+				"linux"		"280"
+				"mac"		"280"
 			}
 			"Activate"
 			{
@@ -179,22 +179,22 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"437"
-				"linux"		"438"
-				"mac"		"438"
+				"windows"	"440"
+				"linux"		"441"
+				"mac"		"441"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"267"
-				"linux"		"268"
-				"mac"		"268"
+				"windows"	"270"
+				"linux"		"271"
+				"mac"		"271"
 			}
 		}
 		
 		"Keys"
 		{
-			"GameRulesProxy"	"CTFGameRulesProxy"
-			"GameRulesDataTable" "tf_gamerules_data"
+			"GameRulesProxy"	"CBM_MP_GameRulesProxy"
+			"GameRulesDataTable" "blackmesa_mp_gamerules_data"
 		}
 	}
 }

@@ -42,6 +42,8 @@
 using namespace SourceHook;
 using namespace SourceMod;
 
+#define TOPMENU_DISPLAY_BUFFER_SIZE 128
+
 struct config_category_t
 {
 	int name;

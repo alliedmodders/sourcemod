@@ -40,7 +40,7 @@
 /**
  * Actions a top menu will take on an topobj.
  */
-enum TopMenuAction:
+enum TopMenuAction
 {
 	/**
 	 * An option is being drawn for a menu (or for sorting purposes).
@@ -92,7 +92,7 @@ enum TopMenuAction:
 /**
  * Top menu topobj types.
  */
-enum TopMenuObjectType:
+enum TopMenuObjectType
 {
 	TopMenuObject_Category = 0,			/**< Category (sub-menu branching from root) */
 	TopMenuObject_Item = 1				/**< Item on a sub-menu */
@@ -101,7 +101,7 @@ enum TopMenuObjectType:
 /**
  * Top menu starting positions for display.
  */
-enum TopMenuPosition:
+enum TopMenuPosition
 {
 	TopMenuPosition_Start = 0,			/**< Start/root of the menu */
 	TopMenuPosition_LastRoot = 1,		/**< Last position in the root menu */
@@ -111,7 +111,7 @@ enum TopMenuPosition:
 /**
  * Top menu topobj tag for type checking.
  */
-enum TopMenuObject:
+enum TopMenuObject
 {
 	INVALID_TOPMENUOBJECT = 0,
 };
@@ -125,7 +125,6 @@ enum TopMenuObject:
  * @param param				Extra parameter (if used).
  * @param buffer			Output buffer (if used).
  * @param maxlength			Output buffer (if used).
- * @noreturn
  */
 typedef TopMenuHandler = function void (
   TopMenu topmenu, 
@@ -351,7 +350,6 @@ native int GetTopMenuObjName(Handle topmenu, TopMenuObject topobj, char[] buffer
  *
  * @param topmenu			TopMenu Handle.
  * @param topobj			TopMenuObject ID.
- * @noreturn
  * @error					Invalid TopMenu Handle.
  */
 native void RemoveFromTopMenu(Handle topmenu, TopMenuObject topobj);
@@ -397,7 +395,6 @@ native TopMenuObject FindTopMenuCategory(Handle topmenu, const char[] name);
  * @param topmenu       TopMenu Handle.
  * @param cache_titles  Cache the menu titles and don't call the handler with
  *                      TopMenuAction_DisplayTitle everytime the menu is drawn?
- * @noreturn
  * @error               Invalid TopMenu Handle
  */
 native void SetTopMenuTitleCaching(Handle topmenu, bool cache_titles);
@@ -423,7 +420,7 @@ public Extension __ext_topmenus =
 };
 
 #if !defined REQUIRE_EXTENSIONS
-public __ext_topmenus_SetNTVOptional()
+public void __ext_topmenus_SetNTVOptional()
 {
 	MarkNativeAsOptional("CreateTopMenu");
 	MarkNativeAsOptional("LoadTopMenuConfig");

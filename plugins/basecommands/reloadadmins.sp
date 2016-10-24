@@ -31,7 +31,7 @@
  * Version: $Id$
  */
  
-PerformReloadAdmins(client)
+void PerformReloadAdmins(int client)
 {
 	/* Dump it all! */
 	DumpAdminCache(AdminCache_Groups, true);
@@ -41,12 +41,12 @@ PerformReloadAdmins(client)
 	ReplyToCommand(client, "[SM] %t", "Admin cache refreshed");
 }
 
-public AdminMenu_ReloadAdmins(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public void AdminMenu_ReloadAdmins(TopMenu topmenu, 
+							  TopMenuAction action,
+							  TopMenuObject object_id,
+							  int param,
+							  char[] buffer,
+							  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -59,7 +59,7 @@ public AdminMenu_ReloadAdmins(Handle:topmenu,
 	}
 }
 
-public Action:Command_ReloadAdmins(client, args)
+public Action Command_ReloadAdmins(int client, int args)
 {
 	PerformReloadAdmins(client);
 

@@ -95,9 +95,7 @@ public: //IClientListner
 public: // IVoiceServer
 	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
 	void VoiceInit();
-#if SOURCE_ENGINE == SE_DOTA
-	void OnClientCommand(CEntityIndex index, const CCommand &args);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	void OnClientCommand(edict_t *pEntity, const CCommand &args);
 #else
 	void OnClientCommand(edict_t *pEntity);
@@ -113,8 +111,10 @@ public:
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 public:
 	bool HasAnyLevelInited() { return m_bAnyLevelInited; }
+	bool ShouldFollowCSGOServerGuidelines() const { return m_bFollowCSGOServerGuidelines; }
 
 private:
+	bool m_bFollowCSGOServerGuidelines = false;
 	bool m_bAnyLevelInited = false;
 };
 

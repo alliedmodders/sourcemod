@@ -56,6 +56,7 @@
 #include "LibrarySys.h"
 #include "RootConsoleMenu.h"
 #include "CDataPack.h"
+#include "CellArray.h"
 #include <bridge/include/BridgeAPI.h>
 #include <bridge/include/IProviderCallbacks.h>
 
@@ -147,6 +148,8 @@ static sm_logic_t logic =
 	RegisterProfiler,
 	CDataPack::New,
 	CDataPack::Free,
+	CellArray::New,
+	CellArray::Free,
 	&g_PluginSys,
 	&g_ShareSys,
 	&g_Extensions,

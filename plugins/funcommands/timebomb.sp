@@ -31,21 +31,21 @@
  * Version: $Id$
  */
 
-new g_TimeBombSerial[MAXPLAYERS+1] = { 0, ... };
-new g_TimeBombTime[MAXPLAYERS+1] = { 0, ... };
+int g_TimeBombSerial[MAXPLAYERS+1] = { 0, ... };
+int g_TimeBombTime[MAXPLAYERS+1] = { 0, ... };
 
 ConVar g_Cvar_TimeBombTicks;
 ConVar g_Cvar_TimeBombRadius;
 ConVar g_Cvar_TimeBombMode;
 
-CreateTimeBomb(client)
+void CreateTimeBomb(int client)
 {
 	g_TimeBombSerial[client] = ++g_Serial_Gen;
 	CreateTimer(1.0, Timer_TimeBomb, client | (g_Serial_Gen << 7), DEFAULT_TIMER_FLAGS);
 	g_TimeBombTime[client] = g_Cvar_TimeBombTicks.IntValue;
 }
 
-KillTimeBomb(client)
+void KillTimeBomb(int client)
 {
 	g_TimeBombSerial[client] = 0;
 
@@ -55,15 +55,15 @@ KillTimeBomb(client)
 	}
 }
 
-KillAllTimeBombs()
+void KillAllTimeBombs()
 {
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		KillTimeBomb(i);
 	}
 }
 
-PerformTimeBomb(client, target)
+void PerformTimeBomb(int client, int target)
 {
 	if (g_TimeBombSerial[target] == 0)
 	{
@@ -78,7 +78,7 @@ PerformTimeBomb(client, target)
 	}
 }
 
-public Action:Timer_TimeBomb(Handle:timer, any:value)
+public Action Timer_TimeBomb(Handle timer, any value)
 {
 	int client = value & 0x7f;
 	int serial = value >> 7;
@@ -155,7 +155,7 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 		{
 			int teamOnly = ((g_Cvar_TimeBombMode.IntValue == 1) ? true : false);
 			
-			for (new i = 1; i <= MaxClients; i++)
+			for (int i = 1; i <= MaxClients; i++)
 			{
 				if (!IsClientInGame(i) || !IsPlayerAlive(i) || i == client)
 				{
@@ -177,7 +177,7 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 					continue;
 				}
 				
-				new damage = 220;
+				int damage = 220;
 				damage = RoundToFloor(damage * ((g_Cvar_TimeBombRadius.FloatValue - distance) / g_Cvar_TimeBombRadius.FloatValue));
 					
 				SlapPlayer(i, damage, false);
@@ -195,8 +195,8 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 
 				if (i == TR_GetEntityIndex())
 				{
-					new damage = 100;
-					new radius = g_Cvar_TimeBombRadius.IntValue / 2;
+					int damage = 100;
+					int radius = g_Cvar_TimeBombRadius.IntValue / 2;
 					
 					if (distance > radius)
 					{
@@ -213,12 +213,12 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 	}
 }
 
-public AdminMenu_TimeBomb(Handle:topmenu, 
-					  TopMenuAction:action,
-					  TopMenuObject:object_id,
-					  param,
-					  String:buffer[],
-					  maxlength)
+public void AdminMenu_TimeBomb(TopMenu topmenu, 
+					  TopMenuAction action,
+					  TopMenuObject object_id,
+					  int param,
+					  char[] buffer,
+					  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -230,11 +230,11 @@ public AdminMenu_TimeBomb(Handle:topmenu,
 	}
 }
 
-DisplayTimeBombMenu(client)
+void DisplayTimeBombMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_TimeBomb);
+	Menu menu = new Menu(MenuHandler_TimeBomb);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "TimeBomb player", client);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
@@ -244,7 +244,7 @@ DisplayTimeBombMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_TimeBomb(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_TimeBomb(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -259,8 +259,8 @@ public MenuHandler_TimeBomb(Menu menu, MenuAction action, int param1, int param2
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32];
-		new userid, target;
+		char info[32];
+		int userid, target;
 		
 		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
@@ -275,7 +275,7 @@ public MenuHandler_TimeBomb(Menu menu, MenuAction action, int param1, int param2
 		}
 		else
 		{
-			new String:name[MAX_NAME_LENGTH];
+			char name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			
 			PerformTimeBomb(param1, target);
@@ -290,7 +290,7 @@ public MenuHandler_TimeBomb(Menu menu, MenuAction action, int param1, int param2
 	}
 }
 
-public Action:Command_TimeBomb(client, args)
+public Action Command_TimeBomb(int client, int args)
 {
 	if (args < 1)
 	{
@@ -298,11 +298,12 @@ public Action:Command_TimeBomb(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:arg[65];
+	char arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(
 			arg,
@@ -318,7 +319,7 @@ public Action:Command_TimeBomb(client, args)
 		return Plugin_Handled;
 	}
 	
-	for (new i = 0; i < target_count; i++)
+	for (int i = 0; i < target_count; i++)
 	{
 		PerformTimeBomb(client, target_list[i]);
 	}

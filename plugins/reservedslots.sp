@@ -35,7 +35,9 @@
 
 #include <sourcemod>
 
-public Plugin:myinfo = 
+#pragma newdecls required
+
+public Plugin myinfo = 
 {
 	name = "Reserved Slots",
 	author = "AlliedModders LLC",
@@ -44,8 +46,8 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-new g_adminCount = 0;
-new bool:g_isAdmin[MAXPLAYERS+1];
+int g_adminCount = 0;
+bool g_isAdmin[MAXPLAYERS+1];
 
 /* Handles to convars used by plugin */
 ConVar sm_reserved_slots;
@@ -62,7 +64,7 @@ enum KickType
 	Kick_Random,	
 };
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("reservedslots.phrases");
 	
@@ -77,29 +79,23 @@ public OnPluginStart()
 	sm_hide_slots.AddChangeHook(SlotHideChanged);
 }
 
-public OnPluginEnd()
+public void OnPluginEnd()
 {
 	/* 	If the plugin has been unloaded, reset visiblemaxplayers. In the case of the server shutting down this effect will not be visible */
 	ResetVisibleMax();
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
-	if (sm_hide_slots.BoolValue)
-	{
-		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - sm_reserved_slots.IntValue);
-	}
+	CheckHiddenSlots();
 }
 
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {
-	if (sm_hide_slots.BoolValue)
-	{
-		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - sm_reserved_slots.IntValue);
-	}	
+	CheckHiddenSlots();	
 }
 
-public Action:OnTimedKick(Handle:timer, any:client)
+public Action OnTimedKick(Handle timer, any client)
 {	
 	if (!client || !IsClientInGame(client))
 	{
@@ -108,25 +104,22 @@ public Action:OnTimedKick(Handle:timer, any:client)
 	
 	KickClient(client, "%T", "Slot reserved", client);
 	
-	if (sm_hide_slots.BoolValue)
-	{				
-		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - sm_reserved_slots.IntValue);
-	}
+	CheckHiddenSlots();
 	
 	return Plugin_Handled;
 }
 
-public OnClientPostAdminCheck(client)
+public void OnClientPostAdminCheck(int client)
 {
-	new reserved = sm_reserved_slots.IntValue;
+	int reserved = sm_reserved_slots.IntValue;
 
 	if (reserved > 0)
 	{
-		new clients = GetClientCount(false);
-		new limit = GetMaxHumanPlayers() - reserved;
-		new flags = GetUserFlagBits(client);
+		int clients = GetClientCount(false);
+		int limit = GetMaxHumanPlayers() - reserved;
+		int flags = GetUserFlagBits(client);
 		
-		new type = sm_reserve_type.IntValue;
+		int type = sm_reserve_type.IntValue;
 		
 		if (type == 0)
 		{
@@ -149,7 +142,7 @@ public OnClientPostAdminCheck(client)
 			{
 				if (flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION)
 				{
-					new target = SelectKickClient();
+					int target = SelectKickClient();
 						
 					if (target)
 					{
@@ -178,7 +171,7 @@ public OnClientPostAdminCheck(client)
 				
 				if (g_isAdmin[client])
 				{
-					new target = SelectKickClient();
+					int target = SelectKickClient();
 						
 					if (target)
 					{
@@ -196,12 +189,9 @@ public OnClientPostAdminCheck(client)
 	}
 }
 
-public OnClientDisconnect_Post(client)
+public void OnClientDisconnect_Post(int client)
 {
-	if (sm_hide_slots.BoolValue)
-	{		
-		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - sm_reserved_slots.IntValue);
-	}
+	CheckHiddenSlots();
 	
 	if (g_isAdmin[client])
 	{
@@ -210,10 +200,10 @@ public OnClientDisconnect_Post(client)
 	}
 }
 
-public SlotCountChanged(ConVar convar, const String:oldValue[], const String:newValue[])
+public void SlotCountChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	/* Reserved slots or hidden slots have been disabled - reset sv_visiblemaxplayers */
-	new slotcount = convar.IntValue;
+	int slotcount = convar.IntValue;
 	if (slotcount == 0)
 	{
 		ResetVisibleMax();
@@ -224,7 +214,7 @@ public SlotCountChanged(ConVar convar, const String:oldValue[], const String:new
 	}
 }
 
-public SlotHideChanged(ConVar convar, const String:oldValue[], const String:newValue[])
+public void SlotHideChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	/* Reserved slots or hidden slots have been disabled - reset sv_visiblemaxplayers */
 	if (!convar.BoolValue)
@@ -237,9 +227,17 @@ public SlotHideChanged(ConVar convar, const String:oldValue[], const String:newV
 	}
 }
 
-SetVisibleMaxSlots(clients, limit)
+void CheckHiddenSlots()
 {
-	new num = clients;
+	if (sm_hide_slots.BoolValue)
+	{		
+		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - sm_reserved_slots.IntValue);
+	}
+}
+
+void SetVisibleMaxSlots(int clients, int limit)
+{
+	int num = clients;
 	
 	if (clients == GetMaxHumanPlayers())
 	{
@@ -251,33 +249,33 @@ SetVisibleMaxSlots(clients, limit)
 	sv_visiblemaxplayers.IntValue = num;
 }
 
-ResetVisibleMax()
+void ResetVisibleMax()
 {
 	sv_visiblemaxplayers.IntValue = -1;
 }
 
-SelectKickClient()
+int SelectKickClient()
 {
-	new KickType:type = KickType:sm_reserve_kicktype.IntValue;
+	KickType type = view_as<KickType>(sm_reserve_kicktype.IntValue);
 	
-	new Float:highestValue;
-	new highestValueId;
+	float highestValue;
+	int highestValueId;
 	
-	new Float:highestSpecValue;
-	new highestSpecValueId;
+	float highestSpecValue;
+	int highestSpecValueId;
 	
-	new bool:specFound;
+	bool specFound;
 	
-	new Float:value;
+	float value;
 	
-	for (new i=1; i<=MaxClients; i++)
+	for (int i=1; i<=MaxClients; i++)
 	{	
 		if (!IsClientConnected(i))
 		{
 			continue;
 		}
 	
-		new flags = GetUserFlagBits(i);
+		int flags = GetUserFlagBits(i);
 		
 		if (IsFakeClient(i) || flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION || CheckCommandAccess(i, "sm_reskick_immunity", ADMFLAG_RESERVATION, true))
 		{

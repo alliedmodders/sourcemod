@@ -261,7 +261,7 @@ public Action Command_Nominate(int client, int args)
 	GetClientName(client, name, sizeof(name));
 	PrintToChatAll("[SM] %t", "Map Nominated", name, displayName);
 	
-	return Plugin_Continue;
+	return Plugin_Handled;
 }
 
 void AttemptNominate(int client)

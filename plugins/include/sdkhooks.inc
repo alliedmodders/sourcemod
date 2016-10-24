@@ -121,6 +121,7 @@ enum SDKHookType
 	SDKHook_BlockedPost,
 	SDKHook_OnTakeDamageAlive,
 	SDKHook_OnTakeDamageAlivePost,
+	SDKHook_CanBeAutobalanced,
 };
 
 /*
@@ -128,6 +129,8 @@ enum SDKHookType
 
 	SDKHook_Blocked,
 	SDKHook_BlockedPost,
+	
+	SDKHook_CanBeAutobalanced,
 	
 	SDKHook_EndTouch,
 	SDKHook_EndTouchPost,
@@ -291,6 +294,9 @@ typeset SDKHookCB
 	
 	// Reload post
 	function void (int weapon, bool bSuccessful);
+	
+	// CanBeAutobalanced
+	function bool (int client, bool origRet);
 };
 
 

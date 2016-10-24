@@ -6,21 +6,21 @@
 		{
 			"Blocked"
 			{
-				"windows"	"108"
-				"linux"		"109"
-				"mac"		"109"
+				"windows"	"109"
+				"linux"		"110"
+				"mac"		"110"
 			}
 			"EndTouch"
 			{
-				"windows"	"106"
-				"linux"		"107"
-				"mac"		"107"
+				"windows"	"107"
+				"linux"		"108"
+				"mac"		"108"
 			}
 			"FireBullets"
 			{
-				"windows"	"119"
-				"linux"		"120"
-				"mac"		"120"
+				"windows"	"120"
+				"linux"		"121"
+				"mac"		"121"
 			}
 			"OnTakeDamage"
 			{
@@ -30,21 +30,21 @@
 			}
 			"OnTakeDamage_Alive"
 			{
-				"windows"	"287"
-				"linux"		"288"
-				"mac"		"288"
+				"windows"	"290"
+				"linux"		"291"
+				"mac"		"291"
 			}
 			"PreThink"
 			{
-				"windows"	"349"
-				"linux"		"350"
-				"mac"		"350"
+				"windows"	"352"
+				"linux"		"353"
+				"mac"		"353"
 			}
 			"PostThink"
 			{
-				"windows"	"350"
-				"linux"		"351"
-				"mac"		"351"
+				"windows"	"353"
+				"linux"		"354"
+				"mac"		"354"
 			}
 			"SetTransmit"
 			{
@@ -66,9 +66,9 @@
 			}
 			"StartTouch"
 			{
-				"windows"	"104"
-				"linux"		"105"
-				"mac"		"105"
+				"windows"	"105"
+				"linux"		"106"
+				"mac"		"106"
 			}
 			"Think"
 			{
@@ -78,9 +78,9 @@
 			}
 			"Touch"
 			{
-				"windows"	"105"
-				"linux"		"106"
-				"mac"		"106"
+				"windows"	"106"
+				"linux"		"107"
+				"mac"		"107"
 			}
 			"TraceAttack"
 			{
@@ -90,39 +90,52 @@
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"155"
-				"linux"		"156"
-				"mac"		"156"
+				"windows"	"166"
+				"linux"		"167"
+				"mac"		"167"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"281"
-				"linux"		"282"
-				"mac"		"282"
+				"windows"	"284"
+				"linux"		"285"
+				"mac"		"285"
 			}
 			"Weapon_CanUse"
-			{
-				"windows"	"275"
-				"linux"		"276
-				"mac"		"276"
-			}
-			"Weapon_Drop"
 			{
 				"windows"	"278"
 				"linux"		"279"
 				"mac"		"279"
 			}
-			"Weapon_Equip"
+			"Weapon_Drop"
 			{
-				"windows"	"276"
-				"linux"		"277"
-				"mac"		"277"
+				"windows"	"281"
+				"linux"		"282"
+				"mac"		"282"
 			}
-			"Weapon_Switch"
+			"Weapon_Equip"
 			{
 				"windows"	"279"
 				"linux"		"280"
 				"mac"		"280"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"282"
+				"linux"		"283"
+				"mac"		"283"
+			}
+		}
+	}
+	
+	"#default"
+	{
+		"Offsets"
+		{
+			"EntityListeners"
+			{
+				"windows"		"131108"
+				"linux"			"131108"
+				"mac"			"131108"
 			}
 		}
 	}

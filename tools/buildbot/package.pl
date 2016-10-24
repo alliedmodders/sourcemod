@@ -58,16 +58,20 @@ close($fh);
 my $needNewGeoIP = 1;
 if (-e '../GeoIP.dat.gz')
 {
-    my $fileModifiedTime = stat('../GeoIP.dat.gz')->mtime;
-    my $fileModifiedMonth = localtime($fileModifiedTime)->mon;
-    my $currentMonth = localtime->mon;
-    my $thirtyOneDays = 60 * 60 * 24 * 31;
+	my $stats = stat('../GeoIP.dat.gz');
+	if ($stats->size != 0)
+	{
+		my $fileModifiedTime = $stats->mtime;
+		my $fileModifiedMonth = localtime($fileModifiedTime)->mon;
+		my $currentMonth = localtime->mon;
+		my $thirtyOneDays = 60 * 60 * 24 * 31;
 
-    # GeoIP file only updates once per month
-    if ($currentMonth == $fileModifiedMonth || (time() - $fileModifiedTime) < $thirtyOneDays)
-    {
-        $needNewGeoIP = 0;
-    }
+		# GeoIP file only updates once per month
+		if ($currentMonth == $fileModifiedMonth || (time() - $fileModifiedTime) < $thirtyOneDays)
+		{
+			$needNewGeoIP = 0;
+		}
+	}
 }
 
 if ($needNewGeoIP)

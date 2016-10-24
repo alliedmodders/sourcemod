@@ -37,7 +37,9 @@
 #include <sourcemod>
 #include <clientprefs>
 
-public Plugin:myinfo =
+#pragma newdecls required
+
+public Plugin myinfo =
 {
 	name = "Client Preferences",
 	author = "AlliedModders LLC",
@@ -46,7 +48,7 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("clientprefs.phrases");
 	
@@ -54,7 +56,7 @@ public OnPluginStart()
 	RegConsoleCmd("sm_settings", Command_Settings);	
 }
 
-public Action:Command_Cookie(client, args)
+public Action Command_Cookie(int client, int args)
 {
 	if (args == 0)
 	{
@@ -62,16 +64,16 @@ public Action:Command_Cookie(client, args)
 		ReplyToCommand(client, "[SM] %t", "Printing Cookie List");
 		
 		/* Show list of cookies */
-		new Handle:iter = GetCookieIterator();
+		Handle iter = GetCookieIterator();
 		
-		decl String:name[30];
+		char name[30];
 		name[0] = '\0';
-		decl String:description[255];
+		char description[255];
 		description[0] = '\0';
 		
 		PrintToConsole(client, "%t:", "Cookie List");
 		
-		new CookieAccess:access;
+		CookieAccess access;
 		
 		while (ReadCookieIterator(iter, 
 								name, 
@@ -96,11 +98,11 @@ public Action:Command_Cookie(client, args)
 		return Plugin_Handled;	
 	}
 	
-	decl String:name[30];
+	char name[30];
 	name[0] = '\0';
 	GetCmdArg(1, name, sizeof(name));
 	
-	new Handle:cookie = FindClientCookie(name);
+	Handle cookie = FindClientCookie(name);
 	
 	if (cookie == null)
 	{
@@ -108,7 +110,7 @@ public Action:Command_Cookie(client, args)
 		return Plugin_Handled;
 	}
 	
-	new CookieAccess:access = GetCookieAccess(cookie);
+	CookieAccess access = GetCookieAccess(cookie);
 	
 	if (access == CookieAccess_Private)
 	{
@@ -117,7 +119,7 @@ public Action:Command_Cookie(client, args)
 		return Plugin_Handled;
 	}
 	
-	decl String:value[100];
+	char value[100];
 	value[0] = '\0';
 	
 	if (args == 1)
@@ -147,7 +149,7 @@ public Action:Command_Cookie(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_Settings(client, args)
+public Action Command_Settings(int client, int args)
 {
 	if (client == 0)
 	{

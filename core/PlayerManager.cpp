@@ -42,6 +42,7 @@
 #include "HalfLife2.h"
 #include <inetchannel.h>
 #include <iclient.h>
+#include <iserver.h>
 #include <IGameConfigs.h>
 #include "ConsoleDetours.h"
 #include "logic_bridge.h"
@@ -65,13 +66,6 @@ List<ICommandTargetProcessor *> target_processors;
 
 ConVar sm_debug_connect("sm_debug_connect", "0", 0, "Log Debug information about potential connection issues.");
 
-#if SOURCE_ENGINE == SE_DOTA
-SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, CEntityIndex, const char *, const char *, char *, int);
-SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, CEntityIndex, const char *);
-SH_DECL_HOOK2_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, CEntityIndex, int);
-SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, CEntityIndex, const CCommand &);
-SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, CEntityIndex);
-#else
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
 SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, edict_t *);
@@ -81,26 +75,20 @@ SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *,
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
 SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
-#endif // SE_DOTA
-#if SOURCE_ENGINE >= SE_EYE && SOURCE_ENGINE != SE_DOTA
+
+#if SOURCE_ENGINE >= SE_EYE
 SH_DECL_HOOK2_void(IServerGameClients, ClientCommandKeyValues, SH_NOATTRIB, 0, edict_t *, KeyValues *);
 #endif
 
-#if SOURCE_ENGINE == SE_DOTA
-SH_DECL_HOOK0_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0);
-#else
 SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
-#endif
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_DOTA
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 SH_DECL_HOOK1_void(IServerGameDLL, ServerHibernationUpdate, SH_NOATTRIB, 0, bool);
-#elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox. +dota
+#elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 SH_DECL_HOOK1_void(IServerGameDLL, SetServerHibernation, SH_NOATTRIB, 0, bool);
 #endif
 
-#if SOURCE_ENGINE == SE_DOTA
-SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 #elif SOURCE_ENGINE == SE_DARKMESSIAH
 SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
@@ -177,15 +165,15 @@ void PlayerManager::OnSourceModAllInitialized()
 	SH_ADD_HOOK(IServerGameClients, ClientDisconnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientDisconnect), false);
 	SH_ADD_HOOK(IServerGameClients, ClientDisconnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientDisconnect_Post), true);
 	SH_ADD_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommand), false);
-#if SOURCE_ENGINE >= SE_EYE && SOURCE_ENGINE != SE_DOTA
+#if SOURCE_ENGINE >= SE_EYE
 	SH_ADD_HOOK(IServerGameClients, ClientCommandKeyValues, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommandKeyValues), false);
 	SH_ADD_HOOK(IServerGameClients, ClientCommandKeyValues, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommandKeyValues_Post), true);
 #endif
 	SH_ADD_HOOK(IServerGameClients, ClientSettingsChanged, serverClients, SH_MEMBER(this, &PlayerManager::OnClientSettingsChanged), true);
 	SH_ADD_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_DOTA
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 	SH_ADD_HOOK(IServerGameDLL, ServerHibernationUpdate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
-#elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox. +dota
+#elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 	SH_ADD_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
 #endif
 
@@ -230,15 +218,15 @@ void PlayerManager::OnSourceModShutdown()
 	SH_REMOVE_HOOK(IServerGameClients, ClientDisconnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientDisconnect), false);
 	SH_REMOVE_HOOK(IServerGameClients, ClientDisconnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientDisconnect_Post), true);
 	SH_REMOVE_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommand), false);
-#if SOURCE_ENGINE >= SE_EYE && SOURCE_ENGINE != SE_DOTA
+#if SOURCE_ENGINE >= SE_EYE
 	SH_REMOVE_HOOK(IServerGameClients, ClientCommandKeyValues, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommandKeyValues), false);
 	SH_REMOVE_HOOK(IServerGameClients, ClientCommandKeyValues, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommandKeyValues_Post), true);
 #endif
 	SH_REMOVE_HOOK(IServerGameClients, ClientSettingsChanged, serverClients, SH_MEMBER(this, &PlayerManager::OnClientSettingsChanged), true);
 	SH_REMOVE_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_DOTA
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 	SH_REMOVE_HOOK(IServerGameDLL, ServerHibernationUpdate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
-#elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox. +dota
+#elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 	SH_REMOVE_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
 #endif
 
@@ -307,11 +295,7 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 	return ConfigResult_Ignore;
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void PlayerManager::OnServerActivate()
-#else
 void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
-#endif
 {
 	static ConVar *tv_enable = icvar->FindVar("tv_enable");
 #if SOURCE_ENGINE == SE_TF2
@@ -329,11 +313,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	g_OnMapStarted = true;
 	m_bServerActivated = true;
 
-#if SOURCE_ENGINE == SE_DOTA
-	extsys->CallOnCoreMapStart(gpGlobals->pEdicts, gpGlobals->maxEntities, gpGlobals->maxClients);
-#else
 	extsys->CallOnCoreMapStart(pEdictList, edictCount, m_maxClients);
-#endif
 
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
@@ -499,16 +479,9 @@ void PlayerManager::RunAuthChecks()
 	}
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-bool PlayerManager::OnClientConnect(CEntityIndex index, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
-{
-	int client = index.Get();
-	edict_t *pEntity = PEntityOfEntIndex(client);
-#else
 bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
 	int client = IndexOfEdict(pEntity);
-#endif
 	CPlayer *pPlayer = &m_Players[client];
 	++m_PlayersSinceActive;
 
@@ -525,13 +498,8 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 			logger->LogMessage("\"%s<%d><%s><>\" was already connected to the server.", pPlayer->GetName(), pPlayer->GetUserId(), pAuth);
 		}
 
-#if SOURCE_ENGINE == SE_DOTA
-		OnClientDisconnect(pPlayer->GetIndex(), 0);
-		OnClientDisconnect_Post(pPlayer->GetIndex(), 0);
-#else
 		OnClientDisconnect(pPlayer->GetEdict());
 		OnClientDisconnect_Post(pPlayer->GetEdict());
-#endif
 	}
 
 	pPlayer->Initialize(pszName, pszAddress, pEntity);
@@ -578,7 +546,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 			m_AuthQueue[++m_AuthQueue[0]] = client;
 		}
 
-		m_UserIdLookUp[GetPlayerUserId(pEntity)] = client;
+		m_UserIdLookUp[engine->GetPlayerUserId(pEntity)] = client;
 	}
 	else
 	{
@@ -591,17 +559,9 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 	return true;
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-bool PlayerManager::OnClientConnect_Post(CEntityIndex index, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
-{
-	int client = index.Get();
-	edict_t *pEntity = PEntityOfEntIndex(client);
-#else
 bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
 	int client = IndexOfEdict(pEntity);
-#endif
-
 	bool orig_value = META_RESULT_ORIG_RET(bool);
 	CPlayer *pPlayer = &m_Players[client];
 
@@ -638,18 +598,10 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 	return true;
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void PlayerManager::OnClientPutInServer(CEntityIndex index, const char *playername)
-{
-	int client = index.Get();
-	edict_t *pEntity = PEntityOfEntIndex(client);
-#else
 void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername)
 {
-	int client = IndexOfEdict(pEntity);
-#endif
-
 	cell_t res;
+	int client = IndexOfEdict(pEntity);
 	CPlayer *pPlayer = &m_Players[client];
 
 	/* If they're not connected, they're a bot */
@@ -682,8 +634,9 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		// This doesn't actually get incremented until OnClientConnect. Fake it to check.
 		int newCount = m_PlayersSinceActive + 1;
 
-		int userId = GetPlayerUserId(pEntity);
-#if (SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_NUCLEARDAWN || SOURCE_ENGINE == SE_LEFT4DEAD2)
+		int userId = engine->GetPlayerUserId(pEntity);
+#if (SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_SDK2013 \
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_NUCLEARDAWN  || SOURCE_ENGINE == SE_LEFT4DEAD2)
 		static ConVar *tv_name = icvar->FindVar("tv_name");
 #endif
 #if SOURCE_ENGINE == SE_TF2
@@ -708,7 +661,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 			&& (m_SourceTVUserId == userId
 #if SOURCE_ENGINE == SE_CSGO
 				|| strcmp(playername, "GOTV") == 0
-#elif (SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_NUCLEARDAWN)
+#elif (SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_SDK2013 \
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_NUCLEARDAWN  || SOURCE_ENGINE == SE_LEFT4DEAD2)
 				|| (tv_name && strcmp(playername, tv_name->GetString()) == 0) || (tv_name && tv_name->GetString()[0] == 0 && strcmp(playername, "unnamed") == 0)
 #else
 				|| strcmp(playername, "SourceTV") == 0
@@ -720,11 +674,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 			m_SourceTVUserId = userId;
 		}
 
-#if SOURCE_ENGINE == SE_DOTA
-		if (!OnClientConnect(client, playername, "127.0.0.1", error, sizeof(error)))
-#else
 		if (!OnClientConnect(pEntity, playername, "127.0.0.1", error, sizeof(error)))
-#endif
 		{
 			/* :TODO: kick the bot if it's rejected */
 			return;
@@ -806,13 +756,8 @@ void PlayerManager::OnSourceModLevelEnd()
 	{
 		if (m_Players[i].IsConnected())
 		{
-#if SOURCE_ENGINE == SE_DOTA
-			OnClientDisconnect(m_Players[i].GetIndex(), 0);
-			OnClientDisconnect_Post(m_Players[i].GetIndex(), 0);
-#else
 			OnClientDisconnect(m_Players[i].GetEdict());
 			OnClientDisconnect_Post(m_Players[i].GetEdict());
-#endif
 		}
 	}
 	m_PlayerCount = 0;
@@ -836,30 +781,17 @@ void PlayerManager::OnServerHibernationUpdate(bool bHibernating)
 				if (pPlayer->IsSourceTV() || pPlayer->IsReplay())
 					continue;
 #endif
-#if SOURCE_ENGINE == SE_DOTA
-				OnClientDisconnect(m_Players[i].GetIndex(), 0);
-				OnClientDisconnect_Post(m_Players[i].GetIndex(), 0);
-#else
 				OnClientDisconnect(m_Players[i].GetEdict());
 				OnClientDisconnect_Post(m_Players[i].GetEdict());
-#endif
 			}
 		}
 	}
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void PlayerManager::OnClientDisconnect(CEntityIndex index, int reason)
-{
-	int client = index.Get();
-	edict_t *pEntity = PEntityOfEntIndex(client);
-#else
 void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 {
-	int client = IndexOfEdict(pEntity);
-#endif
-
 	cell_t res;
+	int client = IndexOfEdict(pEntity);
 	CPlayer *pPlayer = &m_Players[client];
 
 	if (pPlayer->IsConnected())
@@ -887,16 +819,9 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 	}
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void PlayerManager::OnClientDisconnect_Post(CEntityIndex index, int reason)
-{
-	int client = index.Get();
-	edict_t *pEntity = PEntityOfEntIndex(client);
-#else
 void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 {
 	int client = IndexOfEdict(pEntity);
-#endif
 	CPlayer *pPlayer = &m_Players[client];
 	if (!pPlayer->IsConnected())
 	{
@@ -1112,24 +1037,17 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 	}
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void PlayerManager::OnClientCommand(CEntityIndex index, const CCommand &args)
-{
-	int client = index.Get();
-	edict_t *pEntity = PEntityOfEntIndex(client);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void PlayerManager::OnClientCommand(edict_t *pEntity, const CCommand &args)
 {
-	int client = IndexOfEdict(pEntity);
 #else
 void PlayerManager::OnClientCommand(edict_t *pEntity)
 {
 	CCommand args;
-
-	int client = IndexOfEdict(pEntity);
 #endif
 	
 	cell_t res = Pl_Continue;
+	int client = IndexOfEdict(pEntity);
 	CPlayer *pPlayer = &m_Players[client];
 
 	if (!pPlayer->IsConnected())
@@ -1234,7 +1152,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 	}
 }
 
-#if SOURCE_ENGINE >= SE_EYE && SOURCE_ENGINE != SE_DOTA
+#if SOURCE_ENGINE >= SE_EYE
 static bool s_LastCCKVAllowed = true;
 
 void PlayerManager::OnClientCommandKeyValues(edict_t *pEntity, KeyValues *pCommand)
@@ -1314,18 +1232,10 @@ void PlayerManager::OnClientCommandKeyValues_Post(edict_t *pEntity, KeyValues *p
 }
 #endif
 
-#if SOURCE_ENGINE == SE_DOTA
-void PlayerManager::OnClientSettingsChanged(CEntityIndex index)
-{
-	int client = index.Get();
-	edict_t *pEntity = PEntityOfEntIndex(client);
-#else
 void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 {
-	int client = IndexOfEdict(pEntity);
-#endif
-
 	cell_t res;
+	int client = IndexOfEdict(pEntity);
 	CPlayer *pPlayer = &m_Players[client];
 
 	if (!pPlayer->IsConnected())
@@ -1445,7 +1355,7 @@ int PlayerManager::GetClientOfUserId(int userid)
 		CPlayer *player = GetPlayerByIndex(client);
 		if (player && player->IsConnected())
 		{
-			int realUserId = GetPlayerUserId(player->GetEdict());
+			int realUserId = engine->GetPlayerUserId(player->GetEdict());
 			if (realUserId == userid)
 			{
 				return client;
@@ -1462,7 +1372,7 @@ int PlayerManager::GetClientOfUserId(int userid)
 		{
 			continue;
 		}
-		if (GetPlayerUserId(player->GetEdict()) == userid)
+		if (engine->GetPlayerUserId(player->GetEdict()) == userid)
 		{
 			m_UserIdLookUp[userid] = i;
 			return i;
@@ -1568,7 +1478,7 @@ void PlayerManager::InvalidatePlayer(CPlayer *pPlayer)
 		}
 	}
 	
-	m_UserIdLookUp[GetPlayerUserId(pPlayer->m_pEdict)] = 0;
+	m_UserIdLookUp[engine->GetPlayerUserId(pPlayer->m_pEdict)] = 0;
 	pPlayer->Disconnect();
 }
 
@@ -1993,10 +1903,7 @@ int PlayerManager::GetClientFromSerial(unsigned int serial)
 	return 0;
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void CmdMaxplayersCallback(const CCommandContext &context, const CCommand &command)
-{
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdMaxplayersCallback(const CCommand &command)
 {
 #else
@@ -2056,7 +1963,6 @@ CPlayer::CPlayer()
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 {
 	m_IsConnected = true;
-	m_Name.assign(name);
 	m_Ip.assign(ip);
 	m_pEdict = pEntity;
 	m_iIndex = IndexOfEdict(pEntity);
@@ -2064,6 +1970,8 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 
 	m_Serial.bits.index = m_iIndex;
 	m_Serial.bits.serial = g_PlayerSerialCount++;
+
+	SetName(name);
 
 	char ip2[24], *ptr;
 	ke::SafeStrcpy(ip2, sizeof(ip2), ip);
@@ -2100,61 +2008,8 @@ void CPlayer::Connect()
 
 void CPlayer::UpdateAuthIds()
 {
-	if (m_IsAuthorized)
-	{
+	if (m_IsAuthorized || (!SetEngineString() && !SetCSteamID()))
 		return;
-	}
-	
-	// First cache engine networkid
-	const char *authstr;
-#if SOURCE_ENGINE == SE_DOTA
-	authstr = engine->GetPlayerNetworkIDString(m_iIndex - 1);
-#else
-	authstr = engine->GetPlayerNetworkIDString(m_pEdict);
-#endif
-
-	if (!authstr)
-	{
-		// engine doesn't have the client's auth string just yet, we can't do anything
-		return;
-	}
-
-	if (m_AuthID.compare(authstr) == 0)
-	{
-		return;
-	}
-
-	m_AuthID = authstr;
-	
-	// Then, cache SteamId
-	if (IsFakeClient())
-	{
-		m_SteamId = k_steamIDNil;
-	}
-	else
-	{
-#if SOURCE_ENGINE < SE_ORANGEBOX
-		const char * pAuth = GetAuthString();
-		/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
-		if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
-		{
-			m_SteamId = CSteamID(atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1),
-				k_unSteamUserDesktopInstance, k_EUniversePublic, k_EAccountTypeIndividual);
-		}
-#else
-		const CSteamID *steamId;
-#if SOURCE_ENGINE == SE_DOTA
-		steamId = engine->GetClientSteamID(m_iIndex);
-#else
-		steamId = engine->GetClientSteamID(m_pEdict);
-#endif
-
-		if (steamId)
-		{
-			m_SteamId = (*steamId);
-		}
-#endif
-	}
 	
 	// Now cache Steam2/3 rendered ids
 	if (IsFakeClient())
@@ -2206,6 +2061,53 @@ void CPlayer::UpdateAuthIds()
 	m_Steam3Id = szAuthBuffer;
 }
 
+bool CPlayer::SetEngineString()
+{
+	const char *authstr = engine->GetPlayerNetworkIDString(m_pEdict);
+	if (!authstr || m_AuthID.compare(authstr) == 0)
+		return false;
+
+	m_AuthID = authstr;
+	SetCSteamID();
+	return true;
+}
+
+bool CPlayer::SetCSteamID()
+{
+	if (IsFakeClient())
+	{
+		m_SteamId = k_steamIDNil;
+		return true; /* This is the default value. There's a bug-out branch in the caller function. */
+	}
+
+#if SOURCE_ENGINE < SE_ORANGEBOX
+	const char *pAuth = GetAuthString();
+	/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
+	if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
+	{
+		CSteamID sid = CSteamID(atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1),
+			k_unSteamUserDesktopInstance, k_EUniversePublic, k_EAccountTypeIndividual);
+
+		if (m_SteamId != sid)
+		{
+			m_SteamId = sid;
+			return true;
+		}
+	}
+#else
+	const CSteamID *steamId = engine->GetClientSteamID(m_pEdict);
+	if (steamId)
+	{
+		if (m_SteamId != (*steamId))
+		{
+			m_SteamId = (*steamId);
+			return true;
+		}
+	}
+#endif
+	return false;
+}
+
 // Ensure a valid AuthString is set before calling.
 void CPlayer::Authorize()
 {
@@ -2240,7 +2142,30 @@ void CPlayer::Disconnect()
 
 void CPlayer::SetName(const char *name)
 {
-	m_Name.assign(name);
+	// Player names from Steam can get truncated in the engine, leaving
+	// a partial, invalid UTF-8 char at the end. Strip it off.
+
+	char szNewName[MAX_PLAYER_NAME_LENGTH];
+	ke::SafeStrcpy(szNewName, sizeof(szNewName), name);
+
+	size_t i = 0;
+	while (i < sizeof(szNewName))
+	{
+		if (szNewName[i] == 0)
+			break;
+
+		unsigned int cCharBytes = _GetUTF8CharBytes(&szNewName[i]);
+		size_t newPos = i + cCharBytes;
+		if (newPos > (sizeof(szNewName) - 1))
+		{
+			szNewName[i] = 0;
+			break;
+		}
+
+		i = newPos;
+	}
+
+	m_Name.assign(szNewName);
 }
 
 const char *CPlayer::GetName()
@@ -2346,11 +2271,7 @@ bool CPlayer::IsAuthStringValidated()
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	if (!IsFakeClient() && g_Players.m_bAuthstringValidation && !g_HL2.IsLANServer())
 	{
-#if SOURCE_ENGINE == SE_DOTA
-		return engine->IsClientFullyAuthenticated(m_iIndex);
-#else
 		return engine->IsClientFullyAuthenticated(m_pEdict);
-#endif
 	}
 #endif
 
@@ -2421,10 +2342,9 @@ void CPlayer::DumpAdmin(bool deleting)
 void CPlayer::Kick(const char *str)
 {
 	MarkAsBeingKicked();
-	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
-	if (pNetChan == NULL)
+	IClient *pClient = GetIClient();
+	if (pClient == nullptr)
 	{
-		/* What does this even mean? Hell if I know. */
 		int userid = GetUserId();
 		if (userid > 0)
 		{
@@ -2435,13 +2355,7 @@ void CPlayer::Kick(const char *str)
 	}
 	else
 	{
-		IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
-#if SOURCE_ENGINE == SE_DOTA
-		// Including network_connection.pb.h (and .cpp) is overkill for just this.  -p
-		// Copied from ENetworkDisconnectionReason enum
-		const int NETWORK_DISCONNECT_KICKED = 39;
-		pClient->Disconnect(NETWORK_DISCONNECT_KICKED);
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 		pClient->Disconnect(str);
 #else
 		pClient->Disconnect("%s", str);
@@ -2558,7 +2472,7 @@ void CPlayer::DoBasicAdminChecks()
 	{
 		if (!g_Players.CheckSetAdminName(client, this, id))
 		{
-			int userid = GetPlayerUserId(m_pEdict);
+			int userid = engine->GetPlayerUserId(m_pEdict);
 			g_Timers.CreateTimer(&s_KickPlayerTimer, 0.1f, (void *)userid, 0);
 		}
 		return;
@@ -2597,7 +2511,7 @@ int CPlayer::GetUserId()
 {
 	if (m_UserId == -1)
 	{
-		m_UserId = GetPlayerUserId(GetEdict());
+		m_UserId = engine->GetPlayerUserId(GetEdict());
 	}
 
 	return m_UserId;
@@ -2655,6 +2569,26 @@ int CPlayer::GetLifeState()
 	}
 }
 
+IClient *CPlayer::GetIClient() const
+{
+#if SOURCE_ENGINE == SE_TF2      \
+	|| SOURCE_ENGINE == SE_CSS   \
+	|| SOURCE_ENGINE == SE_DODS  \
+	|| SOURCE_ENGINE == SE_HL2DM \
+	|| SOURCE_ENGINE == SE_BMS   \
+	|| SOURCE_ENGINE == SE_INSURGENCY
+	return engine->GetIServer()->GetClient(m_iIndex - 1);
+#else
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
+	if (pNetChan)
+	{
+		return static_cast<IClient *>(pNetChan->GetMsgHandler());
+	}
+
+	return nullptr;
+#endif
+}
+
 unsigned int CPlayer::GetSerial()
 {
 	return m_Serial.value;
@@ -2673,9 +2607,5 @@ void CPlayer::PrintToConsole(const char *pMsg)
 		return;
 	}
 
-#if SOURCE_ENGINE == SE_DOTA
-	engine->ClientPrintf(m_iIndex, pMsg);
-#else
 	engine->ClientPrintf(m_pEdict, pMsg);
-#endif
 }

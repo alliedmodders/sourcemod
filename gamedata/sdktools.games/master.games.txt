@@ -80,11 +80,6 @@
 		"engine"	"csgo"
 	}
 	
-	"engine.dota.txt"
-	{
-		"engine"	"dota"
-	}
-	
 	"engine.blade.txt"
 	{
 		"engine"	"blade"
@@ -254,5 +249,9 @@
 	"game.kz.txt"
 	{
 		"game"		"KreedzClimbing"
+	}
+	"game.doi.txt"
+	{
+		"game"		"doi"
 	}
 }

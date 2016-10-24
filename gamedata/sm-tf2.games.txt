@@ -74,14 +74,14 @@
 			"StunPlayer"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x57\x8B\xF9\x8B\x87\xFC\x03\x00\x00"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x57\x8B\xF9\x8B\x87\xF8\x03\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 				"mac"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 			}
 			"MakeBleed"
 			{
 				"library" 	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x56\x8B\xF1\x89\x75\xF8\x8B\x8E\x2A\x2A\x2A\x2A\x8B\x01"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x28\x53\x8B\xD9\x89\x5D\xF0"
 				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefib"
 				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefib"
 			}
@@ -113,36 +113,36 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"325"
-				"linux"		"326"
-				"mac"		"326"
+				"windows"	"327"
+				"linux"		"328"
+				"mac"		"328"
 			}
 			"CalcIsAttackCriticalHelper"
-			{
-				"windows"	"385"
-				"linux"		"392"
-				"mac"		"392"
-			}
-			"CalcIsAttackCriticalHelperNoCrits"
 			{
 				"windows"	"386"
 				"linux"		"393"
 				"mac"		"393"
 			}
+			"CalcIsAttackCriticalHelperNoCrits"
+			{
+				"windows"	"387"
+				"linux"		"394"
+				"mac"		"394"
+			}
 			
 			// CTFGameRules::IsHolidayActive
 			"IsHolidayActive"
 			{
-				"windows"	"138"
-				"linux"		"139"
-				"mac"		"139"
+				"windows"	"139"
+				"linux"		"140"
+				"mac"		"140"
 			}
 
 			"RemoveWearable"
 			{
-				"windows"	"427"
-				"linux"		"428"
-				"mac"		"428"
+				"windows"	"429"
+				"linux"		"430"
+				"mac"		"430"
 			}
 		}
 	}
@@ -161,11 +161,10 @@
 			"TFHoliday_EndOfTheLine"	"5"
 			"TFHoliday_ValentinesDay"	"6"
 			"TFHoliday_MeetThePyro"		"7"
-			"TFHoliday_SpyVsEngyWar"	"8"
-			"TFHoliday_FullMoon"		"9"
-			"TFHoliday_HalloweenOrFullMoon"				"10"
-			"TFHoliday_HalloweenOrFullMoonOrValentines"	"11"
-			"TFHoliday_AprilFools"		"12"
+			"TFHoliday_FullMoon"		"8"
+			"TFHoliday_HalloweenOrFullMoon"				"9"
+			"TFHoliday_HalloweenOrFullMoonOrValentines"	"10"
+			"TFHoliday_AprilFools"		"11"
 		}
 	}
 }

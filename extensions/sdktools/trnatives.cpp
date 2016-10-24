@@ -32,6 +32,25 @@
 #include "extension.h"
 #include <worldsize.h>
 
+class sm_trace_t : public trace_t
+{
+public:
+	cell_t GetEntRef() const { return m_EntRef; }
+	void UpdateEntRef()
+	{
+		if (m_pEnt)
+		{
+			m_EntRef = gamehelpers->EntityToReference(m_pEnt);
+		}
+		else
+		{
+			m_EntRef = INVALID_EHANDLE_INDEX;
+		}
+	}
+private:
+	cell_t m_EntRef = INVALID_EHANDLE_INDEX;
+};
+
 class CSMTraceFilter : public CTraceFilter
 {
 public:
@@ -57,7 +76,7 @@ private:
 
 /* Used for the global trace version */
 Ray_t g_Ray;
-trace_t g_Trace;
+sm_trace_t g_Trace;
 Vector g_StartVec;
 Vector g_EndVec;
 Vector g_HullMins;
@@ -101,6 +120,7 @@ static cell_t smn_TRTraceRay(IPluginContext *pContext, const cell_t *params)
 
 	g_Ray.Init(g_StartVec, g_EndVec);
 	enginetrace->TraceRay(g_Ray, params[3], &g_HitAllFilter, &g_Trace);
+	g_Trace.UpdateEntRef();
 
 	return 1;
 }
@@ -120,6 +140,7 @@ static cell_t smn_TRTraceHull(IPluginContext *pContext, const cell_t *params)
 
 	g_Ray.Init(g_StartVec, g_EndVec, g_HullMins, g_HullMaxs);
 	enginetrace->TraceRay(g_Ray, params[5], &g_HitAllFilter, &g_Trace);
+	g_Trace.UpdateEntRef();
 
 	return 1;
 }
@@ -172,6 +193,7 @@ static cell_t smn_TRTraceRayFilter(IPluginContext *pContext, const cell_t *param
 
 	g_Ray.Init(g_StartVec, g_EndVec);
 	enginetrace->TraceRay(g_Ray, params[3], &g_SMTraceFilter, &g_Trace);
+	g_Trace.UpdateEntRef();
 
 	return 1;
 }
@@ -203,6 +225,7 @@ static cell_t smn_TRTraceHullFilter(IPluginContext *pContext, const cell_t *para
 
 	g_Ray.Init(g_StartVec, g_EndVec, g_HullMins, g_HullMaxs);
 	enginetrace->TraceRay(g_Ray, params[5], &g_SMTraceFilter, &g_Trace);
+	g_Trace.UpdateEntRef();
 
 	return 1;
 }
@@ -239,9 +262,10 @@ static cell_t smn_TRTraceRayEx(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	trace_t *tr = new trace_t;
+	sm_trace_t *tr = new sm_trace_t;
 	ray.Init(StartVec, EndVec);
 	enginetrace->TraceRay(ray, params[3], &g_HitAllFilter, tr);
+	tr->UpdateEntRef();
 
 	HandleError herr;
 	Handle_t hndl;
@@ -272,8 +296,9 @@ static cell_t smn_TRTraceHullEx(IPluginContext *pContext, const cell_t *params)
 
 	ray.Init(StartVec, EndVec, vmins, vmaxs);
 
-	trace_t *tr = new trace_t;
+	sm_trace_t *tr = new sm_trace_t;
 	enginetrace->TraceRay(ray, params[5], &g_HitAllFilter, tr);
+	tr->UpdateEntRef();
 
 	HandleError herr;
 	Handle_t hndl;
@@ -336,9 +361,10 @@ static cell_t smn_TRTraceRayFilterEx(IPluginContext *pContext, const cell_t *par
 		}
 	}
 
-	trace_t *tr = new trace_t;
+	sm_trace_t *tr = new sm_trace_t;
 	ray.Init(StartVec, EndVec);
 	enginetrace->TraceRay(ray, params[3], &smfilter, tr);
+	tr->UpdateEntRef();
 
 	HandleError herr;
 	Handle_t hndl;
@@ -381,8 +407,9 @@ static cell_t smn_TRTraceHullFilterEx(IPluginContext *pContext, const cell_t *pa
 
 	ray.Init(StartVec, EndVec, vmins, vmaxs);
 
-	trace_t *tr = new trace_t;
+	sm_trace_t *tr = new sm_trace_t;
 	enginetrace->TraceRay(ray, params[5], &smfilter, tr);
+	tr->UpdateEntRef();
 
 	HandleError herr;
 	Handle_t hndl;
@@ -397,7 +424,7 @@ static cell_t smn_TRTraceHullFilterEx(IPluginContext *pContext, const cell_t *pa
 
 static cell_t smn_TRGetFraction(IPluginContext *pContext, const cell_t *params)
 {
-	trace_t *tr;
+	sm_trace_t *tr;
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
 
@@ -413,7 +440,7 @@ static cell_t smn_TRGetFraction(IPluginContext *pContext, const cell_t *params)
 
 static cell_t smn_TRGetPlaneNormal(IPluginContext *pContext, const cell_t *params)
 {
-	trace_t *tr;
+	sm_trace_t *tr;
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
 
@@ -438,7 +465,7 @@ static cell_t smn_TRGetPlaneNormal(IPluginContext *pContext, const cell_t *param
 
 static cell_t smn_TRGetEndPosition(IPluginContext *pContext, const cell_t *params)
 {
-	trace_t *tr;
+	sm_trace_t *tr;
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
 
@@ -461,7 +488,7 @@ static cell_t smn_TRGetEndPosition(IPluginContext *pContext, const cell_t *param
 
 static cell_t smn_TRDidHit(IPluginContext *pContext, const cell_t *params)
 {
-	trace_t *tr;
+	sm_trace_t *tr;
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
 
@@ -477,7 +504,7 @@ static cell_t smn_TRDidHit(IPluginContext *pContext, const cell_t *params)
 
 static cell_t smn_TRGetHitGroup(IPluginContext *pContext, const cell_t *params)
 {
-	trace_t *tr;
+	sm_trace_t *tr;
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
 
@@ -493,23 +520,20 @@ static cell_t smn_TRGetHitGroup(IPluginContext *pContext, const cell_t *params)
 
 static cell_t smn_TRGetEntityIndex(IPluginContext *pContext, const cell_t *params)
 {
-	trace_t *tr;
+	sm_trace_t *tr;
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
 
 	if (params[1] == BAD_HANDLE)
 	{
-		tr = &g_Trace;
-	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return gamehelpers->ReferenceToBCompatRef(g_Trace.GetEntRef());
+	}
+	else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None)
+	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
 	}
 
-	if (tr->m_pEnt == NULL)
-	{
-		return 0;
-	}
-
-	return gamehelpers->EntityToBCompatRef(tr->m_pEnt);
+	return gamehelpers->ReferenceToBCompatRef(tr->GetEntRef());
 }
 
 static cell_t smn_TRGetPointContents(IPluginContext *pContext, const cell_t *params)
@@ -530,7 +554,7 @@ static cell_t smn_TRGetPointContents(IPluginContext *pContext, const cell_t *par
 	{
 		mask = enginetrace->GetPointContents(pos);
 	} else {
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
+#if SOURCE_ENGINE >= SE_LEFT4DEAD || SOURCE_ENGINE == SE_BMS
 		mask = enginetrace->GetPointContents(pos, MASK_ALL, &hentity);
 #else
 		mask = enginetrace->GetPointContents(pos, &hentity);

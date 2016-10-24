@@ -88,7 +88,8 @@ enum class PluginState
 	Evicted,
 
 	// The plugin is waiting to be unloaded.
-	WaitingToUnload
+	WaitingToUnload,
+	WaitingToUnloadAndReload,
 };
 
 class CPlugin : 
@@ -176,7 +177,7 @@ public:
 		return m_state;
 	}
 	void SetRegistered();
-	void SetWaitingToUnload();
+	void SetWaitingToUnload(bool andReload=false);
 
 	PluginStatus GetDisplayStatus() const {
 		return m_status;
@@ -426,7 +427,7 @@ public:
 
 	bool LibraryExists(const char *lib);
 
-	bool ReloadPlugin(CPlugin *pl);
+	bool ReloadPlugin(CPlugin *pl, bool print=false);
 
 	void UnloadAll();
 
@@ -462,8 +463,8 @@ private:
 	bool RequireExtensions(CPlugin *pPlugin);
 	bool FindOrRequirePluginDeps(CPlugin *pPlugin);
 
-	bool ScheduleUnload(CPlugin *plugin);
 	void UnloadPluginImpl(CPlugin *plugin);
+	void ReloadPluginImpl(int id, const char filename[], PluginType ptype, bool print);
 
 	void Purge(CPlugin *plugin);
 public:

@@ -92,7 +92,7 @@ void TQueryOp::RunThreadPart()
 
 IDBDriver *TQueryOp::GetDriver()
 {
-	return m_database->GetDriver();
+	return m_driver;
 }
 
 IdentityToken_t *TQueryOp::GetOwner()
@@ -114,6 +114,7 @@ TQueryOp::TQueryOp(enum querytype type, int serial)
 	m_type = type;
 	m_serial = serial;
 	m_database = NULL;
+	m_driver = NULL;
 	m_insertId = -1;
 	m_pResult = NULL;
 }
@@ -123,6 +124,7 @@ TQueryOp::TQueryOp(enum querytype type, Cookie *cookie)
 	m_type = type;
 	m_pCookie = cookie;
 	m_database = NULL;
+	m_driver = NULL;
 	m_insertId = -1;
 	m_pResult = NULL;
 	m_serial = 0;
@@ -131,6 +133,7 @@ TQueryOp::TQueryOp(enum querytype type, Cookie *cookie)
 void TQueryOp::SetDatabase(IDatabase *db)
 {
 	m_database = db;
+	m_driver = m_database->GetDriver();
 }
 
 bool TQueryOp::BindParamsAndRun()

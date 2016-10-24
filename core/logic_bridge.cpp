@@ -45,9 +45,7 @@
 #include "ConCmdManager.h"
 #include "IDBDriver.h"
 #include "provider.h"
-#if SOURCE_ENGINE == SE_DOTA
-# include "convar_sm_dota.h"
-#elif SOURCE_ENGINE >= SE_ALIENSWARM
+#if SOURCE_ENGINE >= SE_ALIENSWARM
 # include "convar_sm_swarm.h"
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD
 # include "convar_sm_l4d.h"
@@ -116,19 +114,11 @@ public:
 	}
 	virtual void ClientCommand(edict_t *pEdict, const char *szCommand)
 	{
-#if SOURCE_ENGINE == SE_DOTA
-		engine->ClientCommand(IndexOfEdict(pEdict), "%s", szCommand);
-#else
 		engine->ClientCommand(pEdict, "%s", szCommand);
-#endif
 	}
 	virtual void FakeClientCommand(edict_t *pEdict, const char *szCommand)
 	{
-#if SOURCE_ENGINE == SE_DOTA
-		engine->ClientCommand(IndexOfEdict(pEdict), "%s", szCommand);
-#else
 		serverpluginhelpers->ClientCommand(pEdict, szCommand);
-#endif
 	}
 } engine_wrapper;
 
@@ -401,8 +391,6 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 #define GAMEFIX "2.insurgency"
 #elif SOURCE_ENGINE == SE_CSGO
 #define GAMEFIX "2.csgo"
-#elif SOURCE_ENGINE == SE_DOTA
-#define GAMEFIX "2.dota"
 #elif SOURCE_ENGINE == SE_CONTAGION
 #define GAMEFIX "2.contagion"
 #else
@@ -528,8 +516,6 @@ const char *CoreProviderImpl::GetSourceEngineName()
 	return "insurgency";
 #elif SOURCE_ENGINE == SE_CSGO
 	return "csgo";
-#elif SOURCE_ENGINE == SE_DOTA
-	return "dota";
 #endif
 }
 
@@ -546,8 +532,7 @@ bool CoreProviderImpl::SymbolsAreHidden()
 	|| (SOURCE_ENGINE == SE_LEFT4DEAD2)  \
 	|| (SOURCE_ENGINE == SE_INSURGENCY)  \
 	|| (SOURCE_ENGINE == SE_BLADE)       \
-	|| (SOURCE_ENGINE == SE_CSGO)        \
-	|| (SOURCE_ENGINE == SE_DOTA)
+	|| (SOURCE_ENGINE == SE_CSGO)
 	return true;
 #else
 	return false;
@@ -605,7 +590,7 @@ bool CoreProviderImpl::DescribePlayer(int index, const char **namep, const char 
 		*authp = (auth && *auth) ? auth : "STEAM_ID_PENDING";
 	}
 	if (useridp)
-		*useridp = GetPlayerUserId(player->GetEdict());
+		*useridp = ::engine->GetPlayerUserId(player->GetEdict());
 	return true;
 }
 
@@ -655,15 +640,9 @@ int CoreProviderImpl::QueryClientConVar(int client, const char *cvar)
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 	switch (hooks_.GetClientCvarQueryMode()) {
 	case ClientCvarQueryMode::DLL:
-# if SOURCE_ENGINE == SE_DOTA
-		return ::engine->StartQueryCvarValue(CEntityIndex(client), cvar);
-# else
 		return ::engine->StartQueryCvarValue(PEntityOfEntIndex(client), cvar);
-# endif
 	case ClientCvarQueryMode::VSP:
-# if SOURCE_ENGINE != SE_DOTA
 		return serverpluginhelpers->StartQueryCvarValue(PEntityOfEntIndex(client), cvar);
-# endif
 	default:
 		return InvalidQueryCvarCookie;
 	}

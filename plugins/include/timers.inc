@@ -87,7 +87,7 @@ typeset Timer
  * @return					Handle to the timer object.  You do not need to call CloseHandle().
  *							If the timer could not be created, INVALID_HANDLE will be returned.
  */
-native Handle:CreateTimer(Float:interval, Timer:func, any:data=INVALID_HANDLE, flags=0);
+native Handle CreateTimer(float interval, Timer func, any data=INVALID_HANDLE, int flags=0);
 
 /**
  * Kills a timer.  Use this instead of CloseHandle() if you need more options.
@@ -95,10 +95,9 @@ native Handle:CreateTimer(Float:interval, Timer:func, any:data=INVALID_HANDLE, f
  * @param timer				Timer Handle to kill.
  * @param autoClose			If autoClose is true, the data that was passed to CreateTimer() will
  *							be closed as a handle if TIMER_DATA_HNDL_CLOSE was not specified.
- * @noreturn
  * @error				Invalid handles will cause a run time error.
  */
-native KillTimer(Handle:timer, bool:autoClose=false);
+native void KillTimer(Handle timer, bool autoClose=false);
 
 /**
  * Manually triggers a timer so its function will be called.
@@ -106,9 +105,8 @@ native KillTimer(Handle:timer, bool:autoClose=false);
  * @param timer				Timer Handle to trigger.
  * @param reset				If reset is true, the elapsed time counter is reset
  *							so the full interval must pass again.
- * @noreturn
  */
-native TriggerTimer(Handle:timer, bool:reset=false);
+native void TriggerTimer(Handle timer, bool reset=false);
 
 /**
  * Returns the simulated game time.  
@@ -121,7 +119,7 @@ native TriggerTimer(Handle:timer, bool:reset=false);
  *
  * @return					Time based on the game tick count.
  */
-native Float:GetTickedTime();
+native float GetTickedTime();
 
 /**
  * Returns an estimate of the time left before the map ends.  If the server 
@@ -132,7 +130,7 @@ native Float:GetTickedTime();
  *							value is less than 0, the time limit is infinite.
  * @return					True if the operation is supported, false otherwise.
  */
-native bool:GetMapTimeLeft(&timeleft);
+native bool GetMapTimeLeft(int &timeleft);
 
 /**
  * Retrieves the current map time limit.  If the server has not processed any 
@@ -143,7 +141,7 @@ native bool:GetMapTimeLeft(&timeleft);
  *							limit, or 0 if there is no time limit set.
  * @return					True on success, false if operation is not supported.
  */
-native bool:GetMapTimeLimit(&time);
+native bool GetMapTimeLimit(int &time);
 
 /**
  * Extends the map time limit in a way that will notify all plugins.
@@ -153,7 +151,7 @@ native bool:GetMapTimeLimit(&time);
  *							If 0, the map will be set to have no time limit.
  * @return					True on success, false if operation is not supported.
  */
-native bool:ExtendMapTimeLimit(time);
+native bool ExtendMapTimeLimit(int time);
 
 /**
  * Returns the number of seconds in between game server ticks.
@@ -162,7 +160,7 @@ native bool:ExtendMapTimeLimit(time);
  *
  * @return					Number of seconds in between ticks.
  */
-native Float:GetTickInterval();
+native float GetTickInterval();
 
 /**
  * Notification that the map's time left has changed via a change in the time 
@@ -189,7 +187,7 @@ forward void OnMapTimeLeftChanged();
  *
  * @return					True if the server is ticking, false otherwise.
  */
-native bool:IsServerProcessing();
+native bool IsServerProcessing();
 
 /**
  * Creates a timer associated with a new datapack, and returns the datapack.
@@ -203,10 +201,9 @@ native bool:IsServerProcessing();
  * @param flags				Timer flags.
  * @return					Handle to the timer object.  You do not need to call CloseHandle().
  */
-stock Handle:CreateDataTimer(Float:interval, Timer:func, &Handle:datapack, flags=0)
+stock Handle CreateDataTimer(float interval, Timer func, Handle &datapack, int flags=0)
 {
-	datapack = CreateDataPack();
+	datapack = new DataPack();
 	flags |= TIMER_DATA_HNDL_CLOSE;
 	return CreateTimer(interval, func, datapack, flags);
 }
-

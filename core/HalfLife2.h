@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2016 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -36,6 +36,7 @@
 #include <sh_string.h>
 #include <sh_tinyhash.h>
 #include <am-utility.h>
+#include <am-hashset.h>
 #include <am-hashmap.h>
 #include <sm_stringhashmap.h>
 #include <sm_namehashset.h>
@@ -123,7 +124,7 @@ public:
 	int				m_SerialNumber;
 	CEntInfo		*m_pPrev;
 	CEntInfo		*m_pNext;
-#if (SOURCE_ENGINE >= SE_PORTAL2) && (SOURCE_ENGINE != SE_DOTA)
+#if SOURCE_ENGINE >= SE_PORTAL2
 	string_t		m_iName;
 	string_t		m_iClassName;
 #endif
@@ -152,6 +153,8 @@ public:
 	void OnSourceModAllInitialized();
 	void OnSourceModAllInitialized_Post();
 	/*void OnSourceModAllShutdown();*/
+	ConfigResult OnSourceModConfigChanged(const char *key, const char *value,
+		ConfigSource source, char *error, size_t maxlength) override;
 public: //IGameHelpers
 	SendProp *FindInSendTable(const char *classname, const char *offset);
 	bool FindSendPropInfo(const char *classname, const char *offset, sm_sendprop_info_t *info);
@@ -191,6 +194,8 @@ public: //IGameHelpers
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	string_t AllocPooledString(const char *pszValue);
 #endif
+	bool GetServerSteam3Id(char *pszOut, size_t len) const override;
+	uint64_t GetServerSteamId64() const override;
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();
@@ -220,6 +225,16 @@ private:
 	CStack<CachedCommandInfo> m_CommandStack;
 	Queue<DelayedKickInfo> m_DelayedKicks;
 	void *m_pGetCommandLine;
+#if SOURCE_ENGINE == SE_CSGO
+public:
+	bool CanSetCSGOEntProp(const char *pszPropName)
+	{
+		return !m_bFollowCSGOServerGuidelines || !m_CSGOBadList.has(pszPropName);
+	}
+private:
+	ke::HashSet<ke::AString, detail::StringHashMapPolicy> m_CSGOBadList;
+	bool m_bFollowCSGOServerGuidelines = true;
+#endif
 };
 
 extern CHalfLife2 g_HL2;

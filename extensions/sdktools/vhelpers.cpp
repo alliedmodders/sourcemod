@@ -217,11 +217,7 @@ int GetClientAimTarget(edict_t *pEdict, bool only_players)
 	QAngle eye_angles;
 
 	/* Get the private information we need */
-#if SOURCE_ENGINE == SE_DOTA
-	serverClients->ClientEarPosition(IndexOfEdict(pEdict), &eye_position);
-#else
 	serverClients->ClientEarPosition(pEdict, &eye_position);
-#endif
 
 	if (!GetEyeAngles(pEntity, &eye_angles))
 	{

@@ -306,7 +306,7 @@ native bool PbReadBool(Handle pb, const char[] field, int index = PB_FIELD_NOT_R
  * @param index			Index into repeated field.
  * @error				Invalid or incorrect Handle, non-existent field, or incorrect field type.
  */
-native void PbReadString(Handle pb, const char[] field, String:buffer[], maxlength, int index = PB_FIELD_NOT_REPEATED);
+native void PbReadString(Handle pb, const char[] field, char[] buffer, int maxlength, int index = PB_FIELD_NOT_REPEATED);
 
 /**
  * Reads an RGBA color value from a protobuf message.
@@ -317,7 +317,7 @@ native void PbReadString(Handle pb, const char[] field, String:buffer[], maxleng
  * @param index			Index into repeated field.
  * @error				Invalid or incorrect Handle, non-existent field, or incorrect field type.
  */
-native void PbReadColor(Handle pb, const char[] field, buffer[4], int index = PB_FIELD_NOT_REPEATED);
+native void PbReadColor(Handle pb, const char[] field, int buffer[4], int index = PB_FIELD_NOT_REPEATED);
 
 /**
  * Reads an XYZ angle value from a protobuf message.

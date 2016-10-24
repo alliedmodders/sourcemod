@@ -35,6 +35,8 @@
 
 #include <sourcemod>
 
+#pragma newdecls required
+
 #define COMMANDS_PER_PAGE	10
 
 public Plugin myinfo = 

@@ -67,6 +67,32 @@ SqDriver::SqDriver()
 {
 	m_Handle = BAD_HANDLE;
 	m_bThreadSafe = false;
+	m_bShutdown = false;
+}
+
+// The extension got unloaded. Remove any open database now to avoid a use-after-free
+// of g_SqDriver in SqDatabase's destructor.
+SqDriver::~SqDriver()
+{
+	ke::AutoLock lock(&m_OpenLock);
+
+	List<SqDbInfo>::iterator iter;
+	SqDatabase *sqdb;
+	for (iter = m_Cache.begin(); iter != m_Cache.end(); iter++)
+	{
+		// Don't let SqDatabase try to remove itself from m_Cache
+		// now that we're gone.
+		sqdb = (SqDatabase *)(*iter).db;
+		sqdb->PrepareForForcedShutdown();
+
+		iter = m_Cache.erase(iter);
+	}
+	
+	if (!m_bShutdown)
+	{
+		dbi->RemoveDriver(&g_SqDriver);
+		Shutdown();
+	}
 }
 
 void SqDriver::Initialize()
@@ -76,6 +102,7 @@ void SqDriver::Initialize()
 
 void SqDriver::Shutdown()
 {
+	m_bShutdown = true;
 	if (m_bThreadSafe)
 	{
 		sqlite3_enable_shared_cache(0);

@@ -31,9 +31,9 @@
  * Version: $Id$
  */
 
-PerformNoClip(client, target)
+void PerformNoClip(int client, int target)
 {
-	new MoveType:movetype = GetEntityMoveType(target);
+	MoveType movetype = GetEntityMoveType(target);
 
 	if (movetype != MOVETYPE_NOCLIP)
 	{
@@ -47,12 +47,12 @@ PerformNoClip(client, target)
 	LogAction(client, target, "\"%L\" toggled noclip on \"%L\"", client, target);
 }
 
-public AdminMenu_NoClip(Handle:topmenu, 
-					  TopMenuAction:action,
-					  TopMenuObject:object_id,
-					  param,
-					  String:buffer[],
-					  maxlength)
+public void AdminMenu_NoClip(TopMenu topmenu, 
+					  TopMenuAction action,
+					  TopMenuObject object_id,
+					  int param,
+					  char[] buffer,
+					  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -64,11 +64,11 @@ public AdminMenu_NoClip(Handle:topmenu,
 	}
 }
 
-DisplayNoClipMenu(client)
+void DisplayNoClipMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_NoClip);
+	Menu menu = new Menu(MenuHandler_NoClip);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "NoClip player", client);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
@@ -78,7 +78,7 @@ DisplayNoClipMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_NoClip(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_NoClip(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -93,8 +93,8 @@ public MenuHandler_NoClip(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32];
-		new userid, target;
+		char info[32];
+		int userid, target;
 		
 		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
@@ -109,7 +109,7 @@ public MenuHandler_NoClip(Menu menu, MenuAction action, int param1, int param2)
 		}
 		else
 		{
-			new String:name[MAX_NAME_LENGTH];
+			char name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			
 			PerformNoClip(param1, target);
@@ -124,7 +124,7 @@ public MenuHandler_NoClip(Menu menu, MenuAction action, int param1, int param2)
 	}
 }
 
-public Action:Command_NoClip(client, args)
+public Action Command_NoClip(int client, int args)
 {
 	if (args < 1)
 	{
@@ -132,11 +132,12 @@ public Action:Command_NoClip(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:arg[65];
+	char arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 	
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(
 			arg,
@@ -152,7 +153,7 @@ public Action:Command_NoClip(client, args)
 		return Plugin_Handled;
 	}
 	
-	for (new i = 0; i < target_count; i++)
+	for (int i = 0; i < target_count; i++)
 	{
 		PerformNoClip(client, target_list[i]);
 	}

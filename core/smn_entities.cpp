@@ -93,6 +93,15 @@ enum PropFieldType
 	PropField_String_T,			/**< Valid for Data fields.  Read only! */
 };
 
+inline bool CanSetPropName(const char *pszPropName)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return g_HL2.CanSetCSGOEntProp(pszPropName);
+#else
+	return true;
+#endif
+}
+
 inline edict_t *BaseEntityToEdict(CBaseEntity *pEntity)
 {
 	IServerUnknown *pUnk = (IServerUnknown *)pEntity;
@@ -1255,7 +1264,8 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2 \
+	|| SOURCE_ENGINE == SE_CSGO
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -1351,10 +1361,15 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 	case Prop_Send:
 		{
 			FIND_PROP_SEND(DPT_Int, "integer");
+			if (!CanSetPropName(prop))
+			{
+				return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
+			}
 
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2 \
+	|| SOURCE_ENGINE == SE_CSGO
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -1503,6 +1518,10 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 	case Prop_Send:
 		{
 			FIND_PROP_SEND(DPT_Float, "float");
+			if (!CanSetPropName(prop))
+			{
+				return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
+			}
 			break;
 		}
 	default:
@@ -1566,11 +1585,9 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 			case FIELD_CLASSPTR:
 				type = PropEnt_Entity;
 				break;
-#if SOURCE_ENGINE != SE_DOTA
 			case FIELD_EDICT:
 				type = PropEnt_Edict;
 				break;
-#endif
 			default:
 				return pContext->ThrowNativeError("Data field %s is not an entity nor edict (%d)",
 					prop,
@@ -1661,13 +1678,11 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 			case FIELD_CLASSPTR:
 				type = PropEnt_Entity;
 				break;
-#if SOURCE_ENGINE != SE_DOTA
 			case FIELD_EDICT:
 				type = PropEnt_Edict;
 				if (!pEdict)
 					return pContext->ThrowNativeError("Edict %d is invalid", params[1]);
 				break;
-#endif
 			default:
 				return pContext->ThrowNativeError("Data field %s is not an entity nor edict (%d)",
 					prop,
@@ -2086,6 +2101,11 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 						prop,
 						element);
 				}
+			}
+
+			if (!CanSetPropName(prop))
+			{
+				return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
 			}
 
 			if (bIsStringIndex)

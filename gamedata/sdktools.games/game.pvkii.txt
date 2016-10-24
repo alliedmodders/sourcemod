@@ -37,33 +37,33 @@
 			/* CBasePlayer */
 			"GiveNamedItem"
 			{
-				"windows"	"403"
-				"linux"		"404"
-				"mac"		"404"
+				"windows"	"404"
+				"linux"		"405"
+				"mac"		"405"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"272"
-				"linux"		"273"
-				"mac"		"273"
+				"windows"	"273"
+				"linux"		"274"
+				"mac"		"274"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"270"
-				"linux"		"271"
-				"mac"		"271"
+				"windows"	"271"
+				"linux"		"272"
+				"mac"		"272"
 			}
 			"Ignite"
 			{
-				"windows"	"211"
-				"linux"		"212"
-				"mac"		"212"
+				"windows"	"212"
+				"linux"		"213"
+				"mac"		"213"
 			}
 			"Extinguish"
 			{
-				"windows"	"215"
-				"linux"		"216"
-				"mac"		"216"
+				"windows"	"216"
+				"linux"		"217"
+				"mac"		"217"
 			}
 			"Teleport"
 			{
@@ -73,9 +73,9 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"442"
-				"linux"		"442"
-				"mac"		"442"
+				"windows"	"443"
+				"linux"		"443"
+				"mac"		"443"
 			}
 			"GetVelocity"
 			{
@@ -103,9 +103,9 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"263"
-				"linux"		"264"
-				"mac"		"264"
+				"windows"	"264"
+				"linux"		"265"
+				"mac"		"265"
 			}
 			"Activate"
 			{
@@ -115,15 +115,15 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"421"
-				"linux"		"422"
-				"mac"		"422"
+				"windows"	"422"
+				"linux"		"423"
+				"mac"		"423"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"254"
-				"linux"		"255"
-				"mac"		"255"
+				"windows"	"255"
+				"linux"		"256"
+				"mac"		"256"
 			}
 		}
 		
@@ -132,15 +132,6 @@
 			"GameRulesProxy"		"CPVK2GameRulesProxy"
 			"GameRulesDataTable"	"pvk2_gamerules_data"
 		}
-		
-		"Signatures"
-		{
-			"FireOutput"
-			{
-				"library"	"server"
-				"windows"	"\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x8B\x71\x2A\x85\xF6\x57"
-				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-			}
-		}
+
 	}
 }

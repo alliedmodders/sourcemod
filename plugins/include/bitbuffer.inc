@@ -312,7 +312,6 @@ native void BfWriteVecCoord(Handle bf, float coord[3]);
  *
  * @param bf			bf_write handle to write to.
  * @param vec			Vector to write.
- * @noreturn
  * @error				Invalid or incorrect Handle.
  */
 native void BfWriteVecNormal(Handle bf, float vec[3]);

@@ -31,22 +31,22 @@
  * Version: $Id$
  */
 
-new g_FireBombSerial[MAXPLAYERS+1] = { 0, ... };
-new g_FireBombTime[MAXPLAYERS+1] = { 0, ... };
+int g_FireBombSerial[MAXPLAYERS+1] = { 0, ... };
+int g_FireBombTime[MAXPLAYERS+1] = { 0, ... };
 
 ConVar g_Cvar_BurnDuration;
 ConVar g_Cvar_FireBombTicks;
 ConVar g_Cvar_FireBombRadius;
 ConVar g_Cvar_FireBombMode;
 
-CreateFireBomb(client)
+void CreateFireBomb(int client)
 {
 	g_FireBombSerial[client] = ++g_Serial_Gen;
 	CreateTimer(1.0, Timer_FireBomb, client | (g_Serial_Gen << 7), DEFAULT_TIMER_FLAGS);
 	g_FireBombTime[client] = g_Cvar_FireBombTicks.IntValue;
 }
 
-KillFireBomb(client)
+void KillFireBomb(int client)
 {
 	g_FireBombSerial[client] = 0;
 
@@ -56,21 +56,21 @@ KillFireBomb(client)
 	}
 }
 
-KillAllFireBombs()
+void KillAllFireBombs()
 {
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		KillFireBomb(i);
 	}
 }
 
-PerformBurn(client, target, Float:seconds)
+void PerformBurn(int client, int target, float seconds)
 {
 	IgniteEntity(target, seconds);
 	LogAction(client, target, "\"%L\" ignited \"%L\" (seconds \"%f\")", client, target, seconds);
 }
 
-PerformFireBomb(client, target)
+void PerformFireBomb(int client, int target)
 {
 	if (g_FireBombSerial[client] == 0)
 	{
@@ -85,10 +85,10 @@ PerformFireBomb(client, target)
 	}
 }
 
-public Action:Timer_FireBomb(Handle:timer, any:value)
+public Action Timer_FireBomb(Handle timer, any value)
 {
-	new client = value & 0x7f;
-	new serial = value >> 7;
+	int client = value & 0x7f;
+	int serial = value >> 7;
 
 	if (!IsClientInGame(client)
 		|| !IsPlayerAlive(client)
@@ -179,7 +179,7 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 		{
 			int teamOnly = ((g_Cvar_FireBombMode.IntValue == 1) ? true : false);
 			
-			for (new i = 1; i <= MaxClients; i++)
+			for (int i = 1; i <= MaxClients; i++)
 			{
 				if (!IsClientInGame(i) || !IsPlayerAlive(i) || i == client)
 				{
@@ -211,12 +211,12 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 	}
 }
 
-public AdminMenu_Burn(Handle:topmenu, 
-					  TopMenuAction:action,
-					  TopMenuObject:object_id,
-					  param,
-					  String:buffer[],
-					  maxlength)
+public void AdminMenu_Burn(TopMenu topmenu, 
+					  TopMenuAction action,
+					  TopMenuObject object_id,
+					  int param,
+					  char[] buffer,
+					  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -228,12 +228,12 @@ public AdminMenu_Burn(Handle:topmenu,
 	}
 }
 
-public AdminMenu_FireBomb(Handle:topmenu, 
-					  TopMenuAction:action,
-					  TopMenuObject:object_id,
-					  param,
-					  String:buffer[],
-					  maxlength)
+public void AdminMenu_FireBomb(TopMenu topmenu, 
+					  TopMenuAction action,
+					  TopMenuObject object_id,
+					  int param,
+					  char[] buffer,
+					  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -245,11 +245,11 @@ public AdminMenu_FireBomb(Handle:topmenu,
 	}
 }
 
-DisplayBurnMenu(client)
+void DisplayBurnMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_Burn);
+	Menu menu = new Menu(MenuHandler_Burn);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "Burn player", client);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
@@ -259,11 +259,11 @@ DisplayBurnMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-DisplayFireBombMenu(client)
+void DisplayFireBombMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_FireBomb);
+	Menu menu = new Menu(MenuHandler_FireBomb);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "FireBomb player", client);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
@@ -273,7 +273,7 @@ DisplayFireBombMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_Burn(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_Burn(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -288,8 +288,8 @@ public MenuHandler_Burn(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32];
-		new userid, target;
+		char info[32];
+		int userid, target;
 		
 		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
@@ -304,7 +304,7 @@ public MenuHandler_Burn(Menu menu, MenuAction action, int param1, int param2)
 		}
 		else
 		{
-			new String:name[MAX_NAME_LENGTH];
+			char name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			PerformBurn(param1, target, 20.0);
 			ShowActivity2(param1, "[SM] ", "%t", "Set target on fire", "_s", name);
@@ -318,7 +318,7 @@ public MenuHandler_Burn(Menu menu, MenuAction action, int param1, int param2)
 	}
 }
 
-public MenuHandler_FireBomb(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_FireBomb(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -333,8 +333,8 @@ public MenuHandler_FireBomb(Menu menu, MenuAction action, int param1, int param2
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32];
-		new userid, target;
+		char info[32];
+		int userid, target;
 		
 		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
@@ -349,7 +349,7 @@ public MenuHandler_FireBomb(Menu menu, MenuAction action, int param1, int param2
 		}
 		else
 		{
-			new String:name[MAX_NAME_LENGTH];
+			char name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			
 			PerformFireBomb(param1, target);
@@ -364,7 +364,7 @@ public MenuHandler_FireBomb(Menu menu, MenuAction action, int param1, int param2
 	}
 }
 
-public Action:Command_Burn(client, args)
+public Action Command_Burn(int client, int args)
 {
 	if (args < 1)
 	{
@@ -406,7 +406,7 @@ public Action:Command_Burn(client, args)
 		return Plugin_Handled;
 	}
 	
-	for (new i = 0; i < target_count; i++)
+	for (int i = 0; i < target_count; i++)
 	{
 		PerformBurn(client, target_list[i], seconds);
 	}
@@ -423,7 +423,7 @@ public Action:Command_Burn(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_FireBomb(client, args)
+public Action Command_FireBomb(int client, int args)
 {
 	if (args < 1)
 	{
@@ -452,7 +452,7 @@ public Action:Command_FireBomb(client, args)
 		return Plugin_Handled;
 	}
 	
-	for (new i = 0; i < target_count; i++)
+	for (int i = 0; i < target_count; i++)
 	{
 		PerformFireBomb(client, target_list[i]);
 	}
@@ -467,9 +467,3 @@ public Action:Command_FireBomb(client, args)
 	}	
 	return Plugin_Handled;
 }
-
-
-
-
-
-

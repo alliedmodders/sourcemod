@@ -41,6 +41,8 @@
 #include <IForwardSys.h>
 #include <IPluginSys.h>
 
+class IClient;
+
 using namespace SourceHook;
 
 struct EventInfo
@@ -110,7 +112,7 @@ public: // IPluginsListener
 	void OnPluginUnloaded(IPlugin *plugin);
 public: // IGameEventListener2
 	void FireGameEvent(IGameEvent *pEvent);
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_DOTA
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 	int GetEventDebugID();
 #endif
 public:
@@ -126,6 +128,7 @@ public:
 	EventHookError UnhookEvent(const char *name, IPluginFunction *pFunction, EventHookMode mode=EventHookMode_Post);
 	EventInfo *CreateEvent(IPluginContext *pContext, const char *name, bool force=false);
 	void FireEvent(EventInfo *pInfo, bool bDontBroadcast=false);
+	void FireEventToClient(EventInfo *pInfo, IClient *pClient);
 	void CancelCreatedEvent(EventInfo *pInfo);
 private: // IGameEventManager2 hooks
 	bool OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast);

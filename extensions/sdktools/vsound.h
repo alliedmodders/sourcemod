@@ -51,11 +51,7 @@ public:
 	void AddHook(int type, IPluginFunction *pFunc);
 	bool RemoveHook(int type, IPluginFunction *pFunc);
 
-#if SOURCE_ENGINE == SE_DOTA
-	void OnEmitAmbientSound(CEntityIndex index, const Vector &pos, const char *samp, float vol, soundlevel_t soundlevel, int fFlags, int pitch, float delay);
-#else
 	void OnEmitAmbientSound(int entindex, const Vector &pos, const char *samp, float vol, soundlevel_t soundlevel, int fFlags, int pitch, float delay);
-#endif
 
 #if SOURCE_ENGINE >= SE_PORTAL2
 	int OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *, unsigned int, const char *pSample, float flVolume, 

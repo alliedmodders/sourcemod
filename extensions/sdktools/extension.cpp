@@ -170,6 +170,15 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	InitSDKToolsAPI();
 
+#if SOURCE_ENGINE == SE_CSGO
+	m_bFollowCSGOServerGuidelines = true;
+	const char *pszValue = g_pSM->GetCoreConfigValue("FollowCSGOServerGuidelines");
+	if (pszValue && strcasecmp(pszValue, "no") == 0)
+	{
+		m_bFollowCSGOServerGuidelines = false;
+	}
+#endif
+
 	return true;
 }
 
@@ -253,9 +262,7 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 	GET_V_IFACE_ANY(GetEngineFactory, engsound, IEngineSound, IENGINESOUND_SERVER_INTERFACE_VERSION);
 	GET_V_IFACE_ANY(GetEngineFactory, enginetrace, IEngineTrace, INTERFACEVERSION_ENGINETRACE_SERVER);
 	GET_V_IFACE_ANY(GetEngineFactory, netstringtables, INetworkStringTableContainer, INTERFACENAME_NETWORKSTRINGTABLESERVER);
-#if SOURCE_ENGINE != SE_DOTA
 	GET_V_IFACE_ANY(GetEngineFactory, pluginhelpers, IServerPluginHelpers, INTERFACEVERSION_ISERVERPLUGINHELPERS);
-#endif
 	GET_V_IFACE_ANY(GetServerFactory, serverClients, IServerGameClients, INTERFACEVERSION_SERVERGAMECLIENTS);
 	GET_V_IFACE_ANY(GetEngineFactory, voiceserver, IVoiceServer, INTERFACEVERSION_VOICESERVER);
 	GET_V_IFACE_ANY(GetServerFactory, playerinfomngr, IPlayerInfoManager, INTERFACEVERSION_PLAYERINFOMANAGER);
@@ -306,6 +313,7 @@ void SDKTools::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax
 {
 	InitTeamNatives();
 	GetResourceEntity();
+	g_Hooks.OnMapStart();
 }
 
 bool SDKTools::QueryRunning(char *error, size_t maxlength)

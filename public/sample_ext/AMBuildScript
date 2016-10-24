@@ -12,7 +12,7 @@ class SDK(object):
     self.define = name
     self.platform = platform
     self.name = dir
-    self.path = None
+    self.path = None # Actual path
 
 WinOnly = ['windows']
 WinLinux = ['windows', 'linux']
@@ -34,7 +34,7 @@ PossibleSDKs = {
   'bgt':  SDK('HL2SDK-BGT', '2.bgt', '4', 'BLOODYGOODTIME', WinOnly, 'bgt'),
   'eye':  SDK('HL2SDK-EYE', '2.eye', '5', 'EYE', WinOnly, 'eye'),
   'csgo': SDK('HL2SDKCSGO', '2.csgo', '20', 'CSGO', WinLinuxMac, 'csgo'),
-  'dota': SDK('HL2SDKDOTA', '2.dota', '21', 'DOTA', WinLinuxMac, 'dota'),
+  'dota': SDK('HL2SDKDOTA', '2.dota', '21', 'DOTA', [], 'dota'),
   'portal2':  SDK('HL2SDKPORTAL2', '2.portal2', '17', 'PORTAL2', [], 'portal2'),
   'blade':  SDK('HL2SDKBLADE', '2.blade', '18', 'BLADE', WinLinux, 'blade'),
   'insurgency':  SDK('HL2SDKINSURGENCY', '2.insurgency', '19', 'INSURGENCY', WinLinuxMac, 'insurgency'),
@@ -131,140 +131,168 @@ class ExtensionConfig(object):
     cxx = builder.DetectCompilers()
 
     if cxx.like('gcc'):
-      cxx.defines += [
-        'stricmp=strcasecmp',
-        '_stricmp=strcasecmp',
-        '_snprintf=snprintf',
-        '_vsnprintf=vsnprintf',
-        'HAVE_STDINT_H',
-        'GNUC',
-      ]
-      cxx.cflags += [
-        '-pipe',
-        '-fno-strict-aliasing',
-        '-Wall',
-        '-Werror',
-        '-Wno-unused',
-        '-Wno-switch',
-        '-Wno-array-bounds',
-        '-msse',
-        '-m32',
-      ]
-      cxx.cxxflags += [
-        '-std=c++11',
-      ]
-
-      have_gcc = cxx.vendor == 'gcc'
-      have_clang = cxx.vendor == 'clang'
-      if have_clang or (have_gcc and cxx.version >= '4'):
-        cxx.cflags += ['-fvisibility=hidden']
-        cxx.cxxflags += ['-fvisibility-inlines-hidden']
-        if have_clang or (have_gcc and cxx.version >= '4.6'):
-          cxx.cflags += ['-Wno-narrowing']
-        if (have_gcc and cxx.version >= '4.7') or (have_clang and cxx.version >= '3'):
-          cxx.cxxflags += ['-Wno-delete-non-virtual-dtor']
-        if have_gcc and cxx.version >= '4.8':
-          cxx.cflags += ['-Wno-unused-result']
-      if have_clang:
-        cxx.cxxflags += ['-Wno-implicit-exception-spec-mismatch']
-        if cxx.version >= 'apple-clang-5.1' or cxx.version >= 'clang-3.4':
-          cxx.cxxflags += ['-Wno-deprecated-register']
-        else:
-          cxx.cxxflags += ['-Wno-deprecated']
-        cxx.cflags += ['-Wno-sometimes-uninitialized']
-
-      cxx.linkflags += ['-m32']
-      cxx.cxxflags += [
-        '-fno-exceptions',
-        '-fno-threadsafe-statics',
-        '-Wno-non-virtual-dtor',
-        '-Wno-overloaded-virtual',
-      ]
-
-      if have_gcc:
-        cxx.cflags += ['-mfpmath=sse']
+      self.configure_gcc(cxx)
     elif cxx.vendor == 'msvc':
-      if builder.options.debug == '1':
-        cxx.cflags += ['/MTd']
-        cxx.linkflags += ['/NODEFAULTLIB:libcmt']
-      else:
-        cxx.cflags += ['/MT']
-      cxx.defines += [
-        '_CRT_SECURE_NO_DEPRECATE',
-        '_CRT_SECURE_NO_WARNINGS',
-        '_CRT_NONSTDC_NO_DEPRECATE',
-        '_ITERATOR_DEBUG_LEVEL=0',
-      ]
-      cxx.cflags += [
-        '/W3',
-      ]
-      cxx.cxxflags += [
-        '/EHsc',
-        '/GR-',
-        '/TP',
-      ]
-      cxx.linkflags += [
-        '/MACHINE:X86',
-        'kernel32.lib',
-        'user32.lib',
-        'gdi32.lib',
-        'winspool.lib',
-        'comdlg32.lib',
-        'advapi32.lib',
-        'shell32.lib',
-        'ole32.lib',
-        'oleaut32.lib',
-        'uuid.lib',
-        'odbc32.lib',
-        'odbccp32.lib',
-      ] 
+      self.configure_msvc(cxx)
 
-    # Optimization
+    # Optimizaiton
     if builder.options.opt == '1':
       cxx.defines += ['NDEBUG']
-      if cxx.like('gcc'):
-        cxx.cflags += ['-O3']
-      elif cxx.like('msvc'):
-        cxx.cflags += ['/Ox', '/Zo']
-        cxx.linkflags += ['/OPT:ICF', '/OPT:REF']
 
     # Debugging
     if builder.options.debug == '1':
       cxx.defines += ['DEBUG', '_DEBUG']
-      if cxx.like('msvc'):
-        cxx.cflags += ['/Od', '/RTC1']
-
-    # This needs to be after our optimization flags which could otherwise disable it.
-    if cxx.vendor == 'msvc':
-      # Don't omit the frame pointer.
-      cxx.cflags += ['/Oy-']
 
     # Platform-specifics
     if builder.target_platform == 'linux':
-      cxx.defines += ['_LINUX', 'POSIX']
-      cxx.linkflags += ['-lm']
-      if cxx.vendor == 'gcc':
-        cxx.linkflags += ['-static-libgcc']
-      elif cxx.vendor == 'clang':
-        cxx.linkflags += ['-lgcc_eh']
+      self.configure_linux(cxx)
     elif builder.target_platform == 'mac':
-      cxx.defines += ['OSX', '_OSX', 'POSIX']
-      cxx.cflags += ['-mmacosx-version-min=10.5']
-      cxx.linkflags += [
-        '-mmacosx-version-min=10.5',
-        '-arch', 'i386',
-        '-lstdc++',
-        '-stdlib=libstdc++',
-      ]
-      cxx.cxxflags += ['-stdlib=libstdc++']
+      self.configure_mac(cxx)
     elif builder.target_platform == 'windows':
-      cxx.defines += ['WIN32', '_WINDOWS']
+      self.configure_windows(cxx)
 
     # Finish up.
     cxx.includes += [
       os.path.join(self.sm_root, 'public'),
     ]
+
+  def configure_gcc(self, cxx):
+    cxx.defines += [
+      'stricmp=strcasecmp',
+      '_stricmp=strcasecmp',
+      '_snprintf=snprintf',
+      '_vsnprintf=vsnprintf',
+      'HAVE_STDINT_H',
+      'GNUC',
+    ]
+    cxx.cflags += [
+      '-pipe',
+      '-fno-strict-aliasing',
+      '-Wall',
+      '-Werror',
+      '-Wno-unused',
+      '-Wno-switch',
+      '-Wno-array-bounds',
+      '-msse',
+      '-m32',
+      '-fvisibility=hidden',
+    ]
+    cxx.cxxflags += [
+      '-std=c++11',
+      '-fno-exceptions',
+      '-fno-threadsafe-statics',
+      '-Wno-non-virtual-dtor',
+      '-Wno-overloaded-virtual',
+      '-fvisibility-inlines-hidden',
+    ]
+    cxx.linkflags += ['-m32']
+
+    have_gcc = cxx.vendor == 'gcc'
+    have_clang = cxx.vendor == 'clang'
+    if cxx.version >= 'clang-3.6':
+      cxx.cxxflags += ['-Wno-inconsistent-missing-override']
+    if have_clang or (cxx.version >= 'gcc-4.6'):
+      cxx.cflags += ['-Wno-narrowing']
+    if have_clang or (cxx.version >= 'gcc-4.7'):
+      cxx.cxxflags += ['-Wno-delete-non-virtual-dtor']
+    if cxx.version >= 'gcc-4.8':
+      cxx.cflags += ['-Wno-unused-result']
+
+    if have_clang:
+      cxx.cxxflags += ['-Wno-implicit-exception-spec-mismatch']
+      if cxx.version >= 'apple-clang-5.1' or cxx.version >= 'clang-3.4':
+        cxx.cxxflags += ['-Wno-deprecated-register']
+      else:
+        cxx.cxxflags += ['-Wno-deprecated']
+      cxx.cflags += ['-Wno-sometimes-uninitialized']
+
+    if have_gcc:
+      cxx.cflags += ['-mfpmath=sse']
+
+    if builder.options.opt == '1':
+      cxx.cflags += ['-O3']
+
+  def configure_msvc(self, cxx):
+    if builder.options.debug == '1':
+      cxx.cflags += ['/MTd']
+      cxx.linkflags += ['/NODEFAULTLIB:libcmt']
+    else:
+      cxx.cflags += ['/MT']
+    cxx.defines += [
+      '_CRT_SECURE_NO_DEPRECATE',
+      '_CRT_SECURE_NO_WARNINGS',
+      '_CRT_NONSTDC_NO_DEPRECATE',
+      '_ITERATOR_DEBUG_LEVEL=0',
+    ]
+    cxx.cflags += [
+      '/W3',
+    ]
+    cxx.cxxflags += [
+      '/EHsc',
+      '/GR-',
+      '/TP',
+    ]
+    cxx.linkflags += [
+      '/MACHINE:X86',
+      'kernel32.lib',
+      'user32.lib',
+      'gdi32.lib',
+      'winspool.lib',
+      'comdlg32.lib',
+      'advapi32.lib',
+      'shell32.lib',
+      'ole32.lib',
+      'oleaut32.lib',
+      'uuid.lib',
+      'odbc32.lib',
+      'odbccp32.lib',
+    ]
+
+    if builder.options.opt == '1':
+      cxx.cflags += ['/Ox', '/Zo']
+      cxx.linkflags += ['/OPT:ICF', '/OPT:REF']
+
+    if builder.options.debug == '1':
+      cxx.cflags += ['/Od', '/RTC1']
+
+    # This needs to be after our optimization flags which could otherwise disable it.
+    # Don't omit the frame pointer.
+    cxx.cflags += ['/Oy-']
+
+  def configure_linux(self, cxx):
+    cxx.defines += ['_LINUX', 'POSIX']
+    cxx.linkflags += ['-Wl,--exclude-libs,ALL', '-lm']
+    if cxx.vendor == 'gcc':
+      cxx.linkflags += ['-static-libgcc']
+    elif cxx.vendor == 'clang':
+      cxx.linkflags += ['-lgcc_eh']
+
+  def configure_mac(self, cxx):
+    cxx.defines += ['OSX', '_OSX', 'POSIX']
+    cxx.cflags += ['-mmacosx-version-min=10.5']
+    cxx.linkflags += [
+      '-mmacosx-version-min=10.5',
+      '-arch', 'i386',
+      '-lstdc++',
+      '-stdlib=libstdc++',
+    ]
+    cxx.cxxflags += ['-stdlib=libstdc++']
+
+  def configure_windows(self, cxx):
+    cxx.defines += ['WIN32', '_WINDOWS']
 	
+  def ConfigureForExtension(self, context, compiler):
+    compiler.cxxincludes += [
+      os.path.join(context.currentSourcePath),
+      os.path.join(context.currentSourcePath, 'sdk'),
+      os.path.join(self.sm_root, 'public'),
+      os.path.join(self.sm_root, 'public', 'extensions'),
+      os.path.join(self.sm_root, 'sourcepawn', 'include'),
+      os.path.join(self.sm_root, 'public', 'amtl', 'amtl'),
+      os.path.join(self.sm_root, 'public', 'amtl'),
+    ]
+    return compiler
+
   def ConfigureForHL2(self, binary, sdk):
     compiler = binary.compiler
 
@@ -357,7 +385,7 @@ class ExtensionConfig(object):
 
     dynamic_libs = []
     if builder.target_platform == 'linux':
-      if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2']:
+      if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency']:
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
       elif sdk.name in ['l4d', 'blade', 'insurgency', 'csgo', 'dota']:
         dynamic_libs = ['libtier0.so', 'libvstdlib.so']
@@ -389,22 +417,16 @@ class ExtensionConfig(object):
 
     return binary
 
-  def ConfigureForExtension(self, context, compiler):
-    compiler.cxxincludes += [
-      os.path.join(context.currentSourcePath),
-      os.path.join(context.currentSourcePath, 'sdk'),
-      os.path.join(self.sm_root, 'public'),
-      os.path.join(self.sm_root, 'public', 'extensions'),
-      os.path.join(self.sm_root, 'sourcepawn', 'include'),
-      os.path.join(self.sm_root, 'public', 'amtl', 'include'),
-    ]
-    return compiler
+  def HL2Library(self, context, name, sdk):
+    binary = context.compiler.Library(name)
+    self.ConfigureForExtension(context, binary.compiler)
+    return self.ConfigureForHL2(binary, sdk)
 
   def HL2Project(self, context, name):
     project = context.compiler.LibraryProject(name)
     self.ConfigureForExtension(context, project.compiler)
     return project
-	
+
   def HL2Config(self, project, name, sdk):
     binary = project.Configure(name, '{0} - {1}'.format(self.tag, sdk.name))
     return self.ConfigureForHL2(binary, sdk)

@@ -31,17 +31,17 @@
  * Version: $Id$
  */
 
-new g_FreezeSerial[MAXPLAYERS+1] = { 0, ... };
-new g_FreezeBombSerial[MAXPLAYERS+1] = { 0, ... };
-new g_FreezeTime[MAXPLAYERS+1] = { 0, ... };
-new g_FreezeBombTime[MAXPLAYERS+1] = { 0, ... };
+int g_FreezeSerial[MAXPLAYERS+1] = { 0, ... };
+int g_FreezeBombSerial[MAXPLAYERS+1] = { 0, ... };
+int g_FreezeTime[MAXPLAYERS+1] = { 0, ... };
+int g_FreezeBombTime[MAXPLAYERS+1] = { 0, ... };
 
 ConVar g_Cvar_FreezeDuration;
 ConVar g_Cvar_FreezeBombTicks;
 ConVar g_Cvar_FreezeBombRadius;
 ConVar g_Cvar_FreezeBombMode;
 
-FreezeClient(client, time)
+void FreezeClient(int client, int time)
 {
 	if (g_FreezeSerial[client] != 0)
 	{
@@ -53,7 +53,7 @@ FreezeClient(client, time)
 
 	if (g_FreezeSound[0])
 	{
-		new Float:vec[3];
+		float vec[3];
 		GetClientEyePosition(client, vec);
 		EmitAmbientSound(g_FreezeSound, vec, client, SNDLEVEL_RAIDSIREN);
 	}
@@ -63,7 +63,7 @@ FreezeClient(client, time)
 	CreateTimer(1.0, Timer_Freeze, client | (g_Serial_Gen << 7), DEFAULT_TIMER_FLAGS);
 }
 
-UnfreezeClient(client)
+void UnfreezeClient(int client)
 {
 	g_FreezeSerial[client] = 0;
 	g_FreezeTime[client] = 0;
@@ -72,7 +72,7 @@ UnfreezeClient(client)
 	{
 		if (g_FreezeSound[0])
 		{
-			new Float:vec[3];
+			float vec[3];
 			GetClientAbsOrigin(client, vec);
 			vec[2] += 10;	
 			
@@ -86,7 +86,7 @@ UnfreezeClient(client)
 	}
 }
 
-CreateFreezeBomb(client)
+void CreateFreezeBomb(int client)
 {
 	if (g_FreezeBombSerial[client] != 0)
 	{
@@ -98,7 +98,7 @@ CreateFreezeBomb(client)
 	CreateTimer(1.0, Timer_FreezeBomb, client | (g_Serial_Gen << 7), DEFAULT_TIMER_FLAGS);
 }
 
-KillFreezeBomb(client)
+void KillFreezeBomb(int client)
 {
 	g_FreezeBombSerial[client] = 0;
 	g_FreezeBombTime[client] = 0;
@@ -109,9 +109,9 @@ KillFreezeBomb(client)
 	}
 }
 
-KillAllFreezes( )
+void KillAllFreezes()
 {
-	for(new i = 1; i <= MaxClients; i++)
+	for(int i = 1; i <= MaxClients; i++)
 	{
 		if (g_FreezeSerial[i] != 0)
 		{
@@ -125,13 +125,13 @@ KillAllFreezes( )
 	}
 }
 
-PerformFreeze(client, target, time)
+void PerformFreeze(int client, int target, int time)
 {
 	FreezeClient(target, time);
 	LogAction(client, target, "\"%L\" froze \"%L\"", client, target);
 }
 
-PerformFreezeBomb(client, target)
+void PerformFreezeBomb(int client, int target)
 {
 	if (g_FreezeBombSerial[target] != 0)
 	{
@@ -145,10 +145,10 @@ PerformFreezeBomb(client, target)
 	}
 }
 
-public Action:Timer_Freeze(Handle:timer, any:value)
+public Action Timer_Freeze(Handle timer, any value)
 {
-	new client = value & 0x7f;
-	new serial = value >> 7;
+	int client = value & 0x7f;
+	int serial = value >> 7;
 
 	if (!IsClientInGame(client)
 		|| !IsPlayerAlive(client)
@@ -188,7 +188,7 @@ public Action:Timer_Freeze(Handle:timer, any:value)
 	SetEntityMoveType(client, MOVETYPE_NONE);
 	SetEntityRenderColor(client, 0, 128, 255, 135);
 
-	new Float:vec[3];
+	float vec[3];
 	GetClientAbsOrigin(client, vec);
 	vec[2] += 10;
 
@@ -206,10 +206,10 @@ public Action:Timer_Freeze(Handle:timer, any:value)
 	return Plugin_Continue;
 }
 
-public Action:Timer_FreezeBomb(Handle:timer, any:value)
+public Action Timer_FreezeBomb(Handle timer, any value)
 {
-	new client = value & 0x7f;
-	new serial = value >> 7;
+	int client = value & 0x7f;
+	int serial = value >> 7;
 
 	if (!IsClientInGame(client)
 		|| !IsPlayerAlive(client)
@@ -219,13 +219,13 @@ public Action:Timer_FreezeBomb(Handle:timer, any:value)
 		return Plugin_Stop;
 	}
 
-	new Float:vec[3];
+	float vec[3];
 	GetClientEyePosition(client, vec);
 	g_FreezeBombTime[client]--;
 
 	if (g_FreezeBombTime[client] > 0)
 	{
-		new color;
+		int color;
 
 		if (g_FreezeBombTime[client] > 1)
 		{
@@ -325,12 +325,12 @@ public Action:Timer_FreezeBomb(Handle:timer, any:value)
 	}
 }
 
-public AdminMenu_Freeze(Handle:topmenu, 
-					  TopMenuAction:action,
-					  TopMenuObject:object_id,
-					  param,
-					  String:buffer[],
-					  maxlength)
+public void AdminMenu_Freeze(TopMenu topmenu, 
+					  TopMenuAction action,
+					  TopMenuObject object_id,
+					  int param,
+					  char[] buffer,
+					  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -342,12 +342,12 @@ public AdminMenu_Freeze(Handle:topmenu,
 	}
 }
 
-public AdminMenu_FreezeBomb(Handle:topmenu, 
-					  TopMenuAction:action,
-					  TopMenuObject:object_id,
-					  param,
-					  String:buffer[],
-					  maxlength)
+public void AdminMenu_FreezeBomb(TopMenu topmenu, 
+					  TopMenuAction action,
+					  TopMenuObject object_id,
+					  int param,
+					  char[] buffer,
+					  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -359,11 +359,11 @@ public AdminMenu_FreezeBomb(Handle:topmenu,
 	}
 }
 
-DisplayFreezeMenu(client)
+void DisplayFreezeMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_Freeze);
+	Menu menu = new Menu(MenuHandler_Freeze);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "Freeze player", client);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
@@ -373,11 +373,11 @@ DisplayFreezeMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-DisplayFreezeBombMenu(client)
+void DisplayFreezeBombMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_FreezeBomb);
+	Menu menu = new Menu(MenuHandler_FreezeBomb);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "FreezeBomb player", client);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
@@ -387,7 +387,7 @@ DisplayFreezeBombMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_Freeze(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_Freeze(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -402,8 +402,8 @@ public MenuHandler_Freeze(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32];
-		new userid, target;
+		char info[32];
+		int userid, target;
 		
 		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
@@ -418,7 +418,7 @@ public MenuHandler_Freeze(Menu menu, MenuAction action, int param1, int param2)
 		}
 		else
 		{
-			new String:name[MAX_NAME_LENGTH];
+			char name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			
 			PerformFreeze(param1, target, g_Cvar_FreezeDuration.IntValue);
@@ -433,7 +433,7 @@ public MenuHandler_Freeze(Menu menu, MenuAction action, int param1, int param2)
 	}
 }
 
-public MenuHandler_FreezeBomb(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_FreezeBomb(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -448,8 +448,8 @@ public MenuHandler_FreezeBomb(Menu menu, MenuAction action, int param1, int para
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32];
-		new userid, target;
+		char info[32];
+		int userid, target;
 		
 		menu.GetItem(param2, info, sizeof(info));
 		userid = StringToInt(info);
@@ -464,7 +464,7 @@ public MenuHandler_FreezeBomb(Menu menu, MenuAction action, int param1, int para
 		}
 		else
 		{
-			new String:name[MAX_NAME_LENGTH];
+			char name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			
 			PerformFreezeBomb(param1, target);
@@ -494,7 +494,7 @@ public Action Command_Freeze(int client, int args)
 	
 	if (args > 1)
 	{
-		decl String:time[20];
+		char time[20];
 		GetCmdArg(2, time, sizeof(time));
 		if (StringToIntEx(time, seconds) == 0)
 		{
@@ -503,8 +503,9 @@ public Action Command_Freeze(int client, int args)
 		}
 	}	
 
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(
 			arg,
@@ -520,7 +521,7 @@ public Action Command_Freeze(int client, int args)
 		return Plugin_Handled;
 	}
 	
-	for (new i = 0; i < target_count; i++)
+	for (int i = 0; i < target_count; i++)
 	{
 		PerformFreeze(client, target_list[i], seconds);
 	}
@@ -537,7 +538,7 @@ public Action Command_Freeze(int client, int args)
 	return Plugin_Handled;
 }
 
-public Action:Command_FreezeBomb(client, args)
+public Action Command_FreezeBomb(int client, int args)
 {
 	if (args < 1)
 	{
@@ -545,11 +546,12 @@ public Action:Command_FreezeBomb(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:arg[65];
+	char arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(
 			arg,
@@ -565,7 +567,7 @@ public Action:Command_FreezeBomb(client, args)
 		return Plugin_Handled;
 	}
 	
-	for (new i = 0; i < target_count; i++)
+	for (int i = 0; i < target_count; i++)
 	{
 		PerformFreezeBomb(client, target_list[i]);
 	}

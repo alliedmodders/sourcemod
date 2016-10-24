@@ -58,7 +58,6 @@ native bool GetNextMap(char[] map, int maxlen);
  *
  * @param map		Map to change to.
  * @param reason	Reason for change.
- * @noreturn
  */
 native void ForceChangeLevel(const char[] map, const char[] reason);
 
@@ -78,7 +77,6 @@ native int GetMapHistorySize();
  * @param reason		Buffer to store the change reason.
  * @param reasonLen		Length of the reason buffer.
  * @param startTime		Time the map started.
- * @noreturn
  * @error				Invalid item number.	
  */
 native void GetMapHistory(int item, char[] map, int mapLen, char[] reason, int reasonLen, int &startTime);

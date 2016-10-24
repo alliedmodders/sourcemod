@@ -81,6 +81,7 @@ binary.sources += [
   'RootConsoleMenu.cpp',
   'CDataPack.cpp',
   'frame_tasks.cpp',
+  'smn_halflife.cpp',
 ]
 if builder.target_platform == 'windows':
   binary.sources += ['thread/WinThreads.cpp']

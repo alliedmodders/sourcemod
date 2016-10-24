@@ -31,15 +31,15 @@
  * Version: $Id$
  */
 
-PerformSlay(client, target)
+void PerformSlay(int client, int target)
 {
 	LogAction(client, target, "\"%L\" slayed \"%L\"", client, target);
 	ForcePlayerSuicide(target);
 }
 
-DisplaySlayMenu(client)
+void DisplaySlayMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_Slay);
+	Menu menu = new Menu(MenuHandler_Slay);
 	
 	char title[100];
 	Format(title, sizeof(title), "%T:", "Slay player", client);
@@ -51,12 +51,12 @@ DisplaySlayMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public AdminMenu_Slay(Handle:topmenu, 
-					  TopMenuAction:action,
-					  TopMenuObject:object_id,
-					  param,
-					  String:buffer[],
-					  maxlength)
+public void AdminMenu_Slay(TopMenu topmenu, 
+					  TopMenuAction action,
+					  TopMenuObject object_id,
+					  int param,
+					  char[] buffer,
+					  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -68,7 +68,7 @@ public AdminMenu_Slay(Handle:topmenu,
 	}
 }
 
-public MenuHandler_Slay(Menu menu, MenuAction action, param1, param2)
+public int MenuHandler_Slay(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -103,7 +103,7 @@ public MenuHandler_Slay(Menu menu, MenuAction action, param1, param2)
 		}
 		else
 		{
-			decl String:name[MAX_NAME_LENGTH];
+			char name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
 			PerformSlay(param1, target);
 			ShowActivity2(param1, "[SM] ", "%t", "Slayed target", "_s", name);
@@ -113,7 +113,7 @@ public MenuHandler_Slay(Menu menu, MenuAction action, param1, param2)
 	}
 }
 
-public Action:Command_Slay(client, args)
+public Action Command_Slay(int client, int args)
 {
 	if (args < 1)
 	{
@@ -121,11 +121,12 @@ public Action:Command_Slay(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:arg[65];
+	char arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(
 			arg,
@@ -141,7 +142,7 @@ public Action:Command_Slay(client, args)
 		return Plugin_Handled;
 	}
 
-	for (new i = 0; i < target_count; i++)
+	for (int i = 0; i < target_count; i++)
 	{
 		PerformSlay(client, target_list[i]);
 	}

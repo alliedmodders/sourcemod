@@ -36,6 +36,8 @@
 
 #include <sourcemod>
 
+#pragma newdecls required
+
 public Plugin myinfo = 
 {
 	name = "SQL Admins (Threaded)",
@@ -532,7 +534,6 @@ void FetchUsersWeCan(Database db)
 	RebuildCachePart[AdminCache_Admins] = 0;
 }
 
-
 public void OnReceiveGroupImmunity(Database db, DBResultSet rs, const char[] error, any data)
 {
 	DataPack pk = view_as<DataPack>(data);
@@ -844,4 +845,3 @@ void FetchOverrides(Database db, int sequence)
 	
 	db.Query(OnReceiveOverrides, query, pk, DBPrio_High);
 }
-

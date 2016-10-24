@@ -502,7 +502,7 @@ static cell_t CloneArray(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
 	}
 
-	CellArray *array = oldArray->clone();
+	ICellArray *array = oldArray->clone();
 
 	Handle_t hndl = handlesys->CreateHandle(htCellArray, array, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	if (!hndl)

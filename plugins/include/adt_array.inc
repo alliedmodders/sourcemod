@@ -42,7 +42,7 @@
  * @param size			Number of bytes.
  * @return				Minimum number of cells required to fit the byte count.
  */
-stock ByteCountToCells(size)
+stock int ByteCountToCells(int size)
 {
 	if (!size)
 		return 1;
@@ -78,7 +78,8 @@ methodmap ArrayList < Handle {
 	public native ArrayList Clone();
 
 	// Resizes an array.  If the size is smaller than the current size, the
-	// array is truncated.
+	// array is truncated.  If the size is larger than the current size,
+	// the data at the additional indexes will not be initialized.
 	//
 	// @param newsize       New size.
 	public native void Resize(int newsize);
@@ -128,7 +129,7 @@ methodmap ArrayList < Handle {
 	// @param maxlength     Maximum size of the buffer.
 	// @return              Number of characters copied.
 	// @error               Invalid index.
-	public native int GetString(int index, char[] buffer, maxlength);
+	public native int GetString(int index, char[] buffer, int maxlength);
 
 	// Retrieves an array of cells from an array.
 	//
@@ -252,14 +253,14 @@ native Handle CloneArray(Handle array);
 
 /**
  * Resizes an array.  If the size is smaller than the current size,
- * the array is truncated.
+ * the array is truncated.  If the size is larger than the current size,
+ * the data at the additional indexes will not be initialized.
  *
  * @param array			Array Handle.
  * @param newsize		New size.
- * @noreturn
  * @error				Invalid Handle or out of memory.
  */
-native bool ResizeArray(Handle array, int newsize);
+native void ResizeArray(Handle array, int newsize);
 
 /**
  * Returns the array size.
@@ -332,7 +333,7 @@ native any GetArrayCell(Handle array, int index, int block=0, bool asChar=false)
  * @return				Number of characters copied.
  * @error				Invalid Handle or invalid index.
  */
-native int GetArrayString(Handle array, int index, char[] buffer, maxlength);
+native int GetArrayString(Handle array, int index, char[] buffer, int maxlength);
 
 /**
  * Retrieves an array of cells from an array.

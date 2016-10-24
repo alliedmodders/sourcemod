@@ -41,7 +41,7 @@ using namespace SourceMod;
 class PosixThreader : public IThreader
 {
 public:
-	class ThreadHandle : public IThreadHandle, public ke::IRunnable
+	class ThreadHandle : public IThreadHandle
 	{
 		friend class PosixThreader;
 	public:

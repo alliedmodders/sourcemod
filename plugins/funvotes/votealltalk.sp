@@ -31,7 +31,7 @@
  * Version: $Id$
  */
 
-DisplayVoteAllTalkMenu(client)
+void DisplayVoteAllTalkMenu(int client)
 {
 	if (IsVoteInProgress())
 	{
@@ -47,10 +47,10 @@ DisplayVoteAllTalkMenu(client)
 	LogAction(client, -1, "\"%L\" initiated an alltalk vote.", client);
 	ShowActivity2(client, "[SM] ", "%t", "Initiated Vote Alltalk");
 	
-	g_voteType = voteType:alltalk;
+	g_voteType = alltalk;
 	g_voteInfo[VOTE_NAME][0] = '\0';
 
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 	
 	if (g_Cvar_Alltalk.BoolValue)
 	{
@@ -67,13 +67,12 @@ DisplayVoteAllTalkMenu(client)
 	g_hVoteMenu.DisplayVoteToAll(20);
 }
 
-
-public AdminMenu_VoteAllTalk(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public void AdminMenu_VoteAllTalk(TopMenu topmenu, 
+							  TopMenuAction action,
+							  TopMenuObject object_id,
+							  int param,
+							  char[] buffer,
+							  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -90,7 +89,7 @@ public AdminMenu_VoteAllTalk(Handle:topmenu,
 	}
 }
 
-public Action:Command_VoteAlltalk(client, args)
+public Action Command_VoteAlltalk(int client, int args)
 {
 	if (args > 0)
 	{

@@ -54,13 +54,13 @@
  * @return				Plugin_Handled to block the actual server banning.
  *						Kicking will still occur.
  */
-forward Action:OnBanClient(client,
-						   time, 
-						   flags, 
-						   const String:reason[], 
-						   const String:kick_message[], 
-						   const String:command[],
-						   any:source);
+forward Action OnBanClient(int client,
+						   int time, 
+						   int flags, 
+						   const char[] reason, 
+						   const char[] kick_message, 
+						   const char[] command,
+						   any source);
 
 /**
  * Called for calls to BanIdentity() with a non-empty command.
@@ -73,12 +73,12 @@ forward Action:OnBanClient(client,
  * @param source		Source value passed via BanIdentity().
  * @return				Plugin_Handled to block the actual server banning.
  */
-forward Action:OnBanIdentity(const String:identity[],
-							 time,
-							 flags,
-							 const String:reason[],
-							 const String:command[],
-							 any:source);
+forward Action OnBanIdentity(const char[] identity,
+							 int time,
+							 int flags,
+							 const char[] reason,
+							 const char[] command,
+							 any source);
 
 /**
  * Called for calls to RemoveBan() with a non-empty command.
@@ -87,12 +87,12 @@ forward Action:OnBanIdentity(const String:identity[],
  * @param flags			Ban flags (only IP or AUTHID are valid here).
  * @param command		Command string to identify the ban source.
  * @param source		Source value passed via BanIdentity().
- * @return				Plugin_Handled to block the actual server banning.
+ * @return				Plugin_Handled to block the actual unbanning.
  */
-forward Action:OnRemoveBan(const String:identity[],
-						   flags,
-						   const String:command[],
-						   any:source);
+forward Action OnRemoveBan(const char[] identity,
+						   int flags,
+						   const char[] command,
+						   any source);
 
 /**
  * Bans a client.
@@ -111,13 +111,13 @@ forward Action:OnRemoveBan(const String:identity[],
  * @return				True on success, false on failure.
  * @error				Invalid client index or client not in game.
  */
-native bool:BanClient(client, 
-					  time, 
-					  flags, 
-					  const String:reason[], 
-					  const String:kick_message[]="", 
-					  const String:command[]="",
-					  any:source=0);
+native bool BanClient(int client, 
+					  int time, 
+					  int flags, 
+					  const char[] reason, 
+					  const char[] kick_message="", 
+					  const char[] command="",
+					  any source=0);
 
 /**
  * Bans an identity (either an IP address or auth string).
@@ -132,12 +132,12 @@ native bool:BanClient(client,
  *						index of any sort (not actually checked by Core).
  * @return				True on success, false on failure.
  */
-native bool:BanIdentity(const String:identity[], 
-						time, 
-						flags, 
-						const String:reason[],
-						const String:command[]="",
-						any:source=0);
+native bool BanIdentity(const char[] identity, 
+						int time, 
+						int flags, 
+						const char[] reason,
+						const char[] command="",
+						any source=0);
 
 /**
  * Removes a ban that was written to the server (either in memory or on disk).
@@ -150,8 +150,7 @@ native bool:BanIdentity(const String:identity[],
  *						index of any sort (not actually checked by Core).
  * @return				True on success, false on failure.
  */
-native bool:RemoveBan(const String:identity[], 
-					  flags, 
-					  const String:command[]="", 
-					  any:source=0);
-
+native bool RemoveBan(const char[] identity, 
+					  int flags, 
+					  const char[] command="", 
+					  any source=0);
