@@ -135,9 +135,7 @@ methodmap EventName
 		char event_name[EVENT_NAME_SIZE];
 
 		//Get gamedata for event from keyvalues. If it fails, return the default name, else return event_name
-		return 	! GameConfGetKeyValue(GameEventData.GetHandle(), EventName.DataName(event), event_name, sizeof(event_name) 
-			? EventName.DefaultValue(event) 
-			: event_name;
+		return !GameConfGetKeyValue(GameEventData.GetHandle(), EventName.DataName(event), event_name, EVENT_NAME_SIZE ? EventName.DefaultValue(event) : event_name;
 	}
 	
 	/**
@@ -158,7 +156,7 @@ methodmap EventName
 		int index = view_as<int>(event);	
 		if (!got_name[index])
 		{	
-			Format(event_name[index], sizeof(event_name[]), EventName.GetStringEx(event));		
+			Format(event_name[index], EVENT_NAME_SIZE, EventName.GetStringEx(event));		
 			got_name[index] = true;
 		}
 				
