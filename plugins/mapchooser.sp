@@ -153,17 +153,9 @@ public void OnPluginStart()
 			HookEvent("teamplay_restart_round", Event_TFRestartRound);
 			HookEvent("arena_win_panel", Event_TeamPlayWinPanel);
 		}
-		else if (strcmp(folder, "nucleardawn") == 0)
-		{
-			HookEvent("round_win", Event_RoundEnd);
-		}
-		else if (strcmp(folder, "empires") == 0)
-		{
-			HookEvent("game_end", Event_RoundEnd);
-		}
 		else
 		{
-			HookEvent("round_end", Event_RoundEnd);
+			HookEvent(EventName.GetString(eRoundEnd), Event_RoundEnd);
 		}
 	}
 	
