@@ -155,7 +155,7 @@ public void OnPluginStart()
 		}
 		else
 		{
-			HookEvent(GetEventHookName(EventHook_RoundEnd), Event_RoundEnd);
+			HookEvent(EventName.GetString(eRoundEnd), Event_RoundEnd);
 		}
 	}
 	
