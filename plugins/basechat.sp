@@ -290,10 +290,12 @@ public Action Command_SmPsay(int client, int args)
 	}
 	
 	char buffer[100];
+	buffer[0] = ' ';
+	
 	for (int i = 2; i <= args; i++)
 	{
-		GetCmdArg(i, buffer, sizeof(buffer));
-		Format(message, sizeof(message), "%s %s", message, buffer);
+		GetCmdArg(i, buffer, sizeof(buffer) - 1);
+		StrCat(message, sizeof(message), buffer);
 	}
 	
 	SendPrivateChat(client, target, message);
