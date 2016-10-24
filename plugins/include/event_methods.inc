@@ -86,7 +86,7 @@ enum EventGameData
 
 methodmap EventName
 {
-	#define EH_CHAR_SIZE 32 // What to change the char buffer size? Update it here.
+	#define EVENT_NAME_SIZE 32 // What to change the char buffer size? Update it here.
 	
 	/**
 	 * Gets the default value for a event
@@ -132,12 +132,12 @@ methodmap EventName
 	 
 	public static char GetStringEx(EventGameData event)
 	{
-		char event_name[EH_CHAR_SIZE];
+		char event_name[EVENT_NAME_SIZE];
 
 		//Get gamedata for event from keyvalues. If it fails, return the default name, else return event_name
-		return 	! GameConfGetKeyValue(GameEventData.GetHandle(), EventName.DataName(event), event_name, EH_CHAR_SIZE) 
-				? EventName.DefaultValue(event) 
-				: event_name;
+		return 	! GameConfGetKeyValue(GameEventData.GetHandle(), EventName.DataName(event), event_name, sizeof(event_name) 
+			? EventName.DefaultValue(event) 
+			: event_name;
 	}
 	
 	/**
@@ -153,12 +153,12 @@ methodmap EventName
 	public static char GetString(EventGameData event)
 	{
 		static bool got_name[EventGameData] = false;
-		static char event_name[EventGameData][EH_CHAR_SIZE];
+		static char event_name[EventGameData][EVENT_NAME_SIZE];
 				
 		int index = view_as<int>(event);	
 		if (!got_name[index])
 		{	
-			Format(event_name[index], EH_CHAR_SIZE, EventName.GetStringEx(event));		
+			Format(event_name[index], sizeof(event_name[]), EventName.GetStringEx(event));		
 			got_name[index] = true;
 		}
 				
