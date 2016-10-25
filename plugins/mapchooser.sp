@@ -1276,7 +1276,11 @@ void WritePreviousMapsToText()
 	
 	if (file == null)
 	{
-		LogError("[SM] Error writing to %s. Check file permissions.", MAPCHOOSER_TXT);
+		if (g_Cvar_PersistentMaps.BoolValue)
+		{
+			LogError("[SM] Error writing to %s. Check file permissions.", MAPCHOOSER_TXT);
+		}
+		
 		return;
 	}
     
