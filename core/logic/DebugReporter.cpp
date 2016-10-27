@@ -157,6 +157,12 @@ int DebugReport::_GetPluginIndex(IPluginContext *ctx)
 
 void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 {
+	// Don't log an error if a function wasn't runnable.
+	// This is necassary due to the way SM is handling and exposing
+	// scripted functions. It's too late to change that now.
+	if (report.Code() == SP_ERROR_NOT_RUNNABLE)
+		return;
+
 	const char *blame = nullptr;
 	if (report.Blame()) 
 	{
