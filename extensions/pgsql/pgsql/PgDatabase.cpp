@@ -362,5 +362,9 @@ IDBDriver *PgDatabase::GetDriver()
 
 bool PgDatabase::SetCharacterSet(const char *characterset)
 {
-	return PQsetClientEncoding(m_pgsql, characterset) == 0 ? true : false;
+	bool res;
+	LockForFullAtomicOperation();
+	res = PQsetClientEncoding(m_pgsql, characterset) == 0;
+	UnlockFromFullAtomicOperation();
+	return res;
 }
