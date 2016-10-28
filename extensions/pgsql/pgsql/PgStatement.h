@@ -29,8 +29,8 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SM_MYSQL_STATEMENT_H_
-#define _INCLUDE_SM_MYSQL_STATEMENT_H_
+#ifndef _INCLUDE_SM_PGSQL_STATEMENT_H_
+#define _INCLUDE_SM_PGSQL_STATEMENT_H_
 
 #include "PgDatabase.h"
 #include "PgBasicResults.h"
@@ -82,4 +82,4 @@ private:
 	bool m_Results;
 };
 
-#endif //_INCLUDE_SM_MYSQL_STATEMENT_H_
+#endif //_INCLUDE_SM_PGSQL_STATEMENT_H_

@@ -163,13 +163,29 @@ void PgDatabase::IncReferenceCount()
 	AddRef();
 }
 
+void PgDatabase::LockForListQueryInfoAccess()
+{
+	if (!m_LastQueryInfoLock)
+		m_LastQueryInfoLock = new ke::Mutex();
+
+	m_LastQueryInfoLock->Lock();
+}
+
+void PgDatabase::UnlockFromListQueryInfoAccess()
+{
+	if (m_LastQueryInfoLock)
+		m_LastQueryInfoLock->Unlock();
+}
+
 void PgDatabase::SetLastIDAndRows(unsigned int insertID, unsigned int affectedRows)
 {
-	LockForFullAtomicOperation();
+	LockForListQueryInfoAccess();
+
 	// Also remember the last query's insert id and affected rows. postgresql only stores them per query.
 	m_lastInsertID = insertID;
 	m_lastAffectedRows = affectedRows;
-	UnlockFromFullAtomicOperation();
+
+	UnlockFromListQueryInfoAccess();
 }
 
 bool PgDatabase::Close()
@@ -184,12 +200,20 @@ const DatabaseInfo &PgDatabase::GetInfo()
 
 unsigned int PgDatabase::GetInsertID()
 {
-	return m_lastInsertID;
+	unsigned int lastInsertID;
+	LockForListQueryInfoAccess();
+	lastInsertID = m_lastInsertID;
+	UnlockFromListQueryInfoAccess();
+	return lastInsertID;
 }
 
 unsigned int PgDatabase::GetAffectedRows()
 {
-	return m_lastAffectedRows;
+	unsigned int lastAffectedRows;
+	LockForListQueryInfoAccess();
+	lastAffectedRows = m_lastAffectedRows;
+	UnlockFromListQueryInfoAccess();
+	return lastAffectedRows;
 }
 
 const char *PgDatabase::GetError(int *errCode)

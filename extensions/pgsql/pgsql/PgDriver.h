@@ -29,8 +29,8 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SM_MYSQL_DRIVER_H_
-#define _INCLUDE_SM_MYSQL_DRIVER_H_
+#ifndef _INCLUDE_SM_PGSQL_DRIVER_H_
+#define _INCLUDE_SM_PGSQL_DRIVER_H_
 
 #define SOURCEMOD_SQL_DRIVER_CODE
 #include <IDBDriver.h>
@@ -78,4 +78,4 @@ extern PgDriver g_PgDriver;
 
 unsigned int strncopy(char *dest, const char *src, size_t count);
 
-#endif //_INCLUDE_SM_MYSQL_DRIVER_H_
+#endif //_INCLUDE_SM_PGSQL_DRIVER_H_

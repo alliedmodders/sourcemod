@@ -29,8 +29,8 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SM_MYSQL_DATABASE_H_
-#define _INCLUDE_SM_MYSQL_DATABASE_H_
+#ifndef _INCLUDE_SM_PGSQL_DATABASE_H_
+#define _INCLUDE_SM_PGSQL_DATABASE_H_
 
 #include <amtl/am-thread-utils.h>
 #include <amtl/am-refcounting-threadsafe.h>
@@ -70,11 +70,16 @@ public:
 	const DatabaseInfo &GetInfo();
 	void SetLastIDAndRows(unsigned int insertID, unsigned int affectedRows);
 private:
+	void LockForListQueryInfoAccess();
+	void UnlockFromListQueryInfoAccess();
+
+private:
 	PGconn *m_pgsql;
 	ke::AutoPtr<ke::Mutex> m_FullLock;
 
 	unsigned int m_lastInsertID;
 	unsigned int m_lastAffectedRows;
+	ke::AutoPtr<ke::Mutex> m_LastQueryInfoLock;
 	
 	unsigned int m_preparedStatementID;
 
@@ -89,4 +94,4 @@ private:
 
 DBType GetOurType(Oid type);
 
-#endif //_INCLUDE_SM_MYSQL_DATABASE_H_
+#endif //_INCLUDE_SM_PGSQL_DATABASE_H_
