@@ -33,6 +33,7 @@
 #include "util.h"
 #include "vhelpers.h"
 #include "vglobals.h"
+#include <amtl/os/am-fsutil.h>
 
 CallHelper s_Teleport;
 CallHelper s_GetVelocity;
@@ -952,5 +953,91 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 	}
 
 	fclose(fp);
+
+}
+
+void DumpOneDatamapToFile(const char *date, const char *svclass_name, const char *datamap_name, datamap_t *pMap)
+{
+	char dir_path[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, dir_path, sizeof(dir_path), "datamaps");
+	
+	// create output directory if it doesn't already exist
+	ke::file::CreateDirectory(dir_path);
+	
+	char file_path[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, file_path, sizeof(file_path), "datamaps/%s - %s.txt", svclass_name, datamap_name);
+	
+	FILE *fp = NULL;
+	if ((fp = fopen(file_path, "wt")) == NULL)
+	{
+		META_CONPRINTF("Could not open file \"%s\"\n", file_path);
+		return;
+	}
+	
+	fprintf(fp, "// Datamap dump for \"%s\" entity \"%s\" - \"%s\" as at %s\n//\n//\n", g_pSM->GetGameFolderName(), svclass_name, datamap_name, date);
+	fprintf(fp, "// Flag Details:\n//\n");
+	fprintf(fp, "// Global: This field is masked for global entity save/restore\n");
+	fprintf(fp, "// Save: This field is saved to disk\n");
+	fprintf(fp, "// Key: This field can be requested and written to by string name at load time\n");
+	fprintf(fp, "// Input: This field can be written to by string name at run time, and a function called\n");
+	fprintf(fp, "// Output: This field propogates it's value to all targets whenever it changes\n");
+	fprintf(fp, "// FunctionTable: This is a table entry for a member function pointer\n");
+	fprintf(fp, "// Ptr: This field is a pointer, not an embedded object\n");
+	fprintf(fp, "// Override: The field is an override for one in a base class (only used by prediction system for now)\n");
+	
+	fprintf(fp, "//\n\n");
+	
+	fprintf(fp,"%s - %s\n", svclass_name, datamap_name);
+	UTIL_DrawDataTable(fp, pMap, 0);
+	
+	fclose(fp);
+}
+
+CON_COMMAND(sm_dump_datamaps_sorted, "Dumps the data map list as a series of text files under the datamaps directory")
+{
+	CEntityFactoryDictionary *dict = GetEntityFactoryDictionary();
+	if ( dict == NULL )
+	{
+		META_CONPRINT("Failed to locate function\n");
+		return;
+	}
+
+	char buffer[80];
+	buffer[0] = 0;
+
+#if defined SUBPLATFORM_SECURECRT
+	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+#endif
+
+	time_t t = g_pSM->GetAdjustedTime();
+	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+
+#if defined SUBPLATFORM_SECURECRT
+	_set_invalid_parameter_handler(handler);
+#endif
+
+	static int offsEFlags = -1;
+	for ( int i = dict->m_Factories.First(); i != dict->m_Factories.InvalidIndex(); i = dict->m_Factories.Next( i ) )
+	{
+		IServerNetworkable *entity = dict->Create(dict->m_Factories.GetElementName(i));
+		ServerClass *sclass = entity->GetServerClass();
+		datamap_t *pMap = gamehelpers->GetDataMap(entity->GetBaseEntity());
+
+		DumpOneDatamapToFile(buffer, sclass->GetName(), dict->m_Factories.GetElementName(i), pMap);
+
+		if (offsEFlags == -1)
+		{
+			sm_datatable_info_t info;
+			if (!gamehelpers->FindDataMapInfo(pMap, "m_iEFlags", &info))
+			{
+				continue;
+			}
+
+			offsEFlags = info.actual_offset;
+		}
+		
+		int *eflags = (int *)((char *)entity->GetBaseEntity() + offsEFlags);
+		*eflags |= (1<<0); // EFL_KILLME
+	}
 
 }
