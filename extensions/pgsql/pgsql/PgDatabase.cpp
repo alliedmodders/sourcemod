@@ -144,6 +144,7 @@ PgDatabase::PgDatabase(PGconn *pgsql, const DatabaseInfo *info, bool persistent)
 	m_Info.driver = NULL;
 	m_Info.maxTimeout = info->maxTimeout;
 	m_Info.port = info->port;
+	m_LastQueryInfoLock = new ke::Mutex();
 }
 
 PgDatabase::~PgDatabase()
@@ -163,29 +164,12 @@ void PgDatabase::IncReferenceCount()
 	AddRef();
 }
 
-void PgDatabase::LockForListQueryInfoAccess()
-{
-	if (!m_LastQueryInfoLock)
-		m_LastQueryInfoLock = new ke::Mutex();
-
-	m_LastQueryInfoLock->Lock();
-}
-
-void PgDatabase::UnlockFromListQueryInfoAccess()
-{
-	if (m_LastQueryInfoLock)
-		m_LastQueryInfoLock->Unlock();
-}
-
 void PgDatabase::SetLastIDAndRows(unsigned int insertID, unsigned int affectedRows)
 {
-	LockForListQueryInfoAccess();
-
+	ke::AutoLock(m_LastQueryInfoLock.get());
 	// Also remember the last query's insert id and affected rows. postgresql only stores them per query.
 	m_lastInsertID = insertID;
 	m_lastAffectedRows = affectedRows;
-
-	UnlockFromListQueryInfoAccess();
 }
 
 bool PgDatabase::Close()
@@ -200,20 +184,14 @@ const DatabaseInfo &PgDatabase::GetInfo()
 
 unsigned int PgDatabase::GetInsertID()
 {
-	unsigned int lastInsertID;
-	LockForListQueryInfoAccess();
-	lastInsertID = m_lastInsertID;
-	UnlockFromListQueryInfoAccess();
-	return lastInsertID;
+	ke::AutoLock(m_LastQueryInfoLock.get());
+	return m_lastInsertID;
 }
 
 unsigned int PgDatabase::GetAffectedRows()
 {
-	unsigned int lastAffectedRows;
-	LockForListQueryInfoAccess();
-	lastAffectedRows = m_lastAffectedRows;
-	UnlockFromListQueryInfoAccess();
-	return lastAffectedRows;
+	ke::AutoLock(m_LastQueryInfoLock.get());
+	return m_lastAffectedRows;
 }
 
 const char *PgDatabase::GetError(int *errCode)

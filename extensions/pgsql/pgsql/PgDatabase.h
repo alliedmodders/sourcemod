@@ -70,10 +70,6 @@ public:
 	const DatabaseInfo &GetInfo();
 	void SetLastIDAndRows(unsigned int insertID, unsigned int affectedRows);
 private:
-	void LockForListQueryInfoAccess();
-	void UnlockFromListQueryInfoAccess();
-
-private:
 	PGconn *m_pgsql;
 	ke::AutoPtr<ke::Mutex> m_FullLock;
 
