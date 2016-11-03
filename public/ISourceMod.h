@@ -43,7 +43,7 @@
 #include <time.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	13
+#define SMINTERFACE_SOURCEMOD_VERSION	14
 
 /**
 * @brief Forward declaration of the KeyValues class.
