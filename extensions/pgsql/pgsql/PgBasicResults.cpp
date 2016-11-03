@@ -76,6 +76,9 @@ bool PgBasicResults::FieldNameToNum(const char *name, unsigned int *columnId)
 
 const char *PgBasicResults::FieldNumToName(unsigned int colId)
 {
+	if (colId < 0 || colId >= m_ColCount)
+		return nullptr;
+
 	return PQfname(m_pRes, colId);
 }
 
@@ -124,7 +127,7 @@ bool PgBasicResults::Rewind()
 
 DBType PgBasicResults::GetFieldType(unsigned int field)
 {
-	if (field >= m_ColCount)
+	if (field < 0 || field >= m_ColCount)
 	{
 		return DBType_Unknown;
 	}
@@ -140,6 +143,11 @@ DBType PgBasicResults::GetFieldType(unsigned int field)
 
 DBType PgBasicResults::GetFieldDataType(unsigned int field)
 {
+	if (field < 0 || field >= m_ColCount)
+	{
+		return DBType_Unknown;
+	}
+
 	if (PQfformat(m_pRes, field) == 1)
 	{
 		return DBType_Blob;
@@ -150,7 +158,7 @@ DBType PgBasicResults::GetFieldDataType(unsigned int field)
 
 bool PgBasicResults::IsNull(unsigned int columnId)
 {
-	if (columnId >= m_ColCount)
+	if (columnId < 0 || columnId >= m_ColCount)
 	{
 		return true;
 	}
@@ -160,7 +168,7 @@ bool PgBasicResults::IsNull(unsigned int columnId)
 
 DBResult PgBasicResults::GetString(unsigned int columnId, const char **pString, size_t *length)
 {
-	if (columnId >= m_ColCount)
+	if (columnId < 0 || columnId >= m_ColCount)
 	{
 		return DBVal_Error;
 	} else if (IsNull(columnId)) {
@@ -189,7 +197,7 @@ DBResult PgBasicResults::CopyString(unsigned int columnId,
 {
 	DBResult res;
 	const char *str;
-	if ((res=GetString(columnId, &str, NULL)) == DBVal_Error)
+	if ((res=GetString(columnId, &str, nullptr)) == DBVal_Error)
 	{
 		return DBVal_Error;
 	}
@@ -205,7 +213,7 @@ DBResult PgBasicResults::CopyString(unsigned int columnId,
 
 size_t PgBasicResults::GetDataSize(unsigned int columnId)
 {
-	if (columnId >= m_ColCount)
+	if (columnId < 0 || columnId >= m_ColCount)
 	{
 		return 0;
 	}
@@ -215,7 +223,7 @@ size_t PgBasicResults::GetDataSize(unsigned int columnId)
 
 DBResult PgBasicResults::GetFloat(unsigned int col, float *fval)
 {
-	if (col >= m_ColCount)
+	if (col < 0 || col >= m_ColCount)
 	{
 		return DBVal_Error;
 	} else if (IsNull(col)) {
@@ -230,7 +238,7 @@ DBResult PgBasicResults::GetFloat(unsigned int col, float *fval)
 
 DBResult PgBasicResults::GetInt(unsigned int col, int *val)
 {
-	if (col >= m_ColCount)
+	if (col < 0 || col >= m_ColCount)
 	{
 		return DBVal_Error;
 	} else if (IsNull(col)) {
@@ -245,11 +253,11 @@ DBResult PgBasicResults::GetInt(unsigned int col, int *val)
 
 DBResult PgBasicResults::GetBlob(unsigned int col, const void **pData, size_t *length)
 {
-	if (col >= m_ColCount)
+	if (col < 0 || col >= m_ColCount)
 	{
 		return DBVal_Error;
 	} else if (IsNull(col)) {
-		*pData = NULL;
+		*pData = nullptr;
 		if (length)
 		{
 			*length = 0;
@@ -278,7 +286,7 @@ DBResult PgBasicResults::CopyBlob(unsigned int columnId, void *buffer, size_t ma
 		return DBVal_Error;
 	}
 
-	if (addr == NULL)
+	if (!addr)
 	{
 		return DBVal_Null;
 	}
@@ -307,9 +315,9 @@ PgQuery::PgQuery(PgDatabase *db, PGresult *res)
 
 IResultSet *PgQuery::GetResultSet()
 {
-	if (m_rs.m_pRes == NULL)
+	if (!m_rs.m_pRes)
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	return &m_rs;
@@ -332,7 +340,7 @@ bool PgQuery::FetchMoreResults()
 
 void PgQuery::Destroy()
 {
-	if (m_rs.m_pRes != NULL)
+	if (m_rs.m_pRes != nullptr)
 	{
 		PQclear(m_rs.m_pRes);
 	}
