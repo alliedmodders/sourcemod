@@ -86,16 +86,16 @@ bool PgBasicResults::MoreRows()
 
 IResultRow *PgBasicResults::FetchRow()
 {
+	// Rows start at 0. Start incrementing the current row when fetching the second time.
+	if (m_RowFetched)
+		m_CurRow++;
+
+	// Reached the end of the rows.
 	if (m_CurRow >= m_RowCount)
 	{
-		/* Put us one after so we know to block CurrentRow() */
-		m_CurRow = m_RowCount + 1;
-		return NULL;
+		m_CurRow = m_RowCount;
+		return nullptr;
 	}
-	
-	// Rows start at 0. Start incrementing the current row when fetching the second time.
-	if(m_RowFetched)
-		m_CurRow++;
 
 	// We fetched some rows.
 	m_RowFetched = true;
@@ -107,9 +107,9 @@ IResultRow *PgBasicResults::CurrentRow()
 {
 	if (!m_pRes
 		|| !m_RowFetched
-		|| m_CurRow > m_RowCount)
+		|| m_CurRow >= m_RowCount)
 	{
-		return NULL;
+		return nullptr;
 	}
 	
 	return this;
