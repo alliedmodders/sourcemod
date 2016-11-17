@@ -180,6 +180,13 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 	}
 
 	iter.Reset();
+	
+	// Don't log an error if a function wasn't runnable.	
+	// This is necassary due to the way SM is handling and exposing
+	// scripted functions. It's too late to change that now.
+	// Make sure this error wasn't manually thrown by a plugin.
+	if (!blame && !strcmp(report.Message(), "Plugin not runnable"))
+		return;
 
 	g_Logger.LogError("[SM] Exception reported: %s", report.Message());
 
