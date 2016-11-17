@@ -85,6 +85,7 @@
 			"plugin_229bb55fb7f4d9e6df47682847201031"	""	/* VIP Test (wS) - Version 1.2 */
 			"plugin_4a9943bb6c831c605c3e4aef38d9c789"	""	/* VIP Module (Trails) (wS) - Version 1.2 */
 			"plugin_2296f1162a2f1886fcad5601c1597835"	""	/* VIP (!vips) (wS) - Version 1.2.1 */
+			"plugin_0bdc1c30ee71d6fe54a2d931e6433400"	""	/* Token Auto Updater (Pheonix) - Version 1.2.5 */
 		}
 	}
 }
