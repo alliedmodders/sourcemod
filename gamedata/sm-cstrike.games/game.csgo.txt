@@ -76,7 +76,7 @@
 			"GetWeaponPriceFuncGDC"
 			{
 				"windows"	"97"
-				"windows"	"138"
+				"linux"		"138"
 			}
 		}
 		"Signatures"
