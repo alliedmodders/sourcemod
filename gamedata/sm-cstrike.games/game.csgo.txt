@@ -150,7 +150,8 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x8B\xD1\x8B\x4D\x08\x83\xF9\x2A\x75\x2A\x83\xBA\x2A\x2A\x2A\x2A\x64\xB8\xE8\x2A\x2A\x2A\x7C"
-				"linux"		"\x55\x89\xE5\x53\x83\xEC\x14\x8B\x55\x0C\x8B\x4D\x08"
+				"linux"		"@_ZNK13CCSWeaponInfo14GetWeaponPriceEPK13CEconItemViewif"
+				"mac"		"@_ZNK13CCSWeaponInfo14GetWeaponPriceEPK13CEconItemViewif"
 			}
 			"SetModelFromClass"
 			{
