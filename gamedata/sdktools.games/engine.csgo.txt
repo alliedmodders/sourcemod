@@ -32,24 +32,22 @@
 			"s_pTempEntities"
 			{
 				"windows"	"4"
+				"linux"		"20"
 			}
 			"GetTEName"
 			{
 				"windows"	"4"
 				"linux"		"4"
-				"mac"		"4"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
 				"linux"		"8"
-				"mac"		"8"
 			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
 				"linux"		"0"
-				"mac"		"0"
 			}
 		}
 
@@ -59,12 +57,7 @@
 			{
 				"library"	"server"
 				"windows"	"\x89\x41\x04\xA1\x2A\x2A\x2A\x2A\x89\x41\x08\x89\x0D\x2A\x2A\x2A\x2A\xC7"
-			}
-			"s_pTempEntities"
-			{
-				"library"	"server"
-				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
+				"linux"		"\x55\x89\xE5\x8B\x45\x08\x8B\x55\x0C\xC7\x00\x2A\x2A\x2A\x2A\x89\x50\x04\x8B\x15\x2A\x2A\x2A\x2A"
 			}
 		}
 	}
@@ -79,8 +72,8 @@
 			{
 				"library"	"server"
 				// Fallback to IServerTools method instead on Windows, lest we add custom logic since it's no longer a thiscall on Windows in CS:GO
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+				// TODO: find signature on Linux. Symbols are RIP, but too much to update and we can fallback to IServerTools for now.
+				//"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
 		}
 	}
@@ -137,17 +130,17 @@
 	{
 		"Signatures"
 		{
-			"EntityFactory"
-			{
-				"library"	"server"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
-				"mac"		"@_Z23EntityFactoryDictionaryv"
-			}
 			
 			"EntityFactoryFinder"
 			{
 				"library"	"server"
 				"windows"	"\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\xC8\xC7"
+			}
+			
+			"EntityFactoryCaller"
+			{
+				"library"	"server"
+				"linux"		"\x55\x89\xE5\x53\x83\xEC\x14\x8B\x5D\x08\xE8\x2A\x2A\x2A\x2A\x8B\x10\x89\x04\x24"
 			}
 		}
 		
@@ -156,6 +149,10 @@
 			"EntityFactoryOffset"
 			{
 				"windows" 	"4"
+			}
+			"EntityFactoryCallOffset"
+			{
+				"linux"		"11"
 			}
 		}
 	}
@@ -169,8 +166,7 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x8B\xC1\x53\x56\x57\x8B\x2A\x2A\x89\x2A\x2A\x2A\x33"
-				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x7C\x01\x00\x00\x8B\x55\x08\x8B\x75\x14"
 			}
 		}
 	}
