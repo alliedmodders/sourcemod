@@ -466,7 +466,6 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 #if SOURCE_ENGINE == SE_CSGO
 	static ICallWrapper *pWrapper = NULL;
 
-#if defined(WIN32)
 	if(!pWrapper)
 	{
 		void *pGetWeaponPrice = GetWeaponPriceFunction();
@@ -475,7 +474,13 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 			return pContext->ThrowNativeError("Failed to locate function");
 		}
 
-		PassInfo pass[2];
+		
+#ifdef _WIN32 
+		const size_t GWP_ARGC = 2;
+#else
+		const size_t GWP_ARGC = 3;
+#endif
+		PassInfo pass[GWP_ARGC];
 		PassInfo ret;
 		pass[0].flags = PASSFLAG_BYVAL;
 		pass[0].type = PassType_Basic;
@@ -483,32 +488,17 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 		pass[1].flags = PASSFLAG_BYVAL;
 		pass[1].type = PassType_Basic;
 		pass[1].size = sizeof(int);
+#ifndef _WIN32
+		pass[2].flags = PASSFLAG_BYVAL;
+		pass[2].type = PassType_Float;
+		pass[2].size = sizeof(float);
+#endif
 		ret.flags = PASSFLAG_BYVAL;
 		ret.type = PassType_Basic;
 		ret.size = sizeof(int);
-		pWrapper = g_pBinTools->CreateCall(pGetWeaponPrice, CallConv_ThisCall, &ret, pass, 2);
+		pWrapper = g_pBinTools->CreateCall(pGetWeaponPrice, CallConv_ThisCall, &ret, pass, GWP_ARGC);
 	}
-#else
-	if (!pWrapper)
-	{
-		REGISTER_NATIVE_ADDR("GetWeaponPrice",
-		PassInfo pass[3]; \
-		PassInfo ret; \
-		pass[0].flags = PASSFLAG_BYVAL; \
-		pass[0].type = PassType_Basic; \
-		pass[0].size = sizeof(CEconItemView *); \
-		pass[1].flags = PASSFLAG_BYVAL; \
-		pass[1].type = PassType_Basic; \
-		pass[1].size = sizeof(int); \
-		pass[2].flags = PASSFLAG_BYVAL; \
-		pass[2].type = PassType_Float; \
-		pass[2].size = sizeof(float); \
-		ret.flags = PASSFLAG_BYVAL; \
-		ret.type = PassType_Basic; \
-		ret.size = sizeof(int); \
-		pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &ret, pass, 3))
-	}
-#endif
+
 	// Get a CEconItemView for the m4
 	// Found in CCSPlayer::HandleCommand_Buy_Internal
 	// Linux a1 - CCSPlayer *pEntity, v5 - Player Team, a3 - ItemLoadoutSlot -1 use default loadoutslot:

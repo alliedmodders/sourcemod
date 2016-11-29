@@ -16,6 +16,7 @@
 		"Keys"
 		{
 			"GetWeaponPriceByteCheck"	"E9"
+			"GetWeaponPriceByteCheck_Linux"	"E8"
 		}
 		"Offsets"
 		{
@@ -69,11 +70,13 @@
 			"GetWeaponPriceFunc"
 			{
 				"windows"	"98"
+				"linux"		"139"
 			}
 			//This is GetWeaponPriceFunc offset -1 (only used by GDC)
 			"GetWeaponPriceFuncGDC"
 			{
 				"windows"	"97"
+				"windows"	"138"
 			}
 		}
 		"Signatures"
@@ -145,7 +148,8 @@
 				"windows"	"\x55\x8B\xEC\x8B\x55\x08\x85\xD2\x74\x28\x8D\x81\x2A\x2A\x2A\x2A\x56\x8D\x70\x0F\x3B\xC6\x73\x16\x2B\xD0\x8D"
 				"linux"		"\x55\x89\xE5\x83\xEC\x18\x8B\x45\x0C\x85\xC0\x74\x2A\x89\x44\x24\x04\x8B\x45\x08\xC7\x44\x24\x08\x10\x00\x00\x00"
 			}
-			//In windows this is CCSPlayer::GetWeaponPrice NOT CCSWeaponInfo::GetWeaponPrice
+			// Since it's not possible to make a unique signature for CCSWeaponInfo::GetWeaponInfo, this is instead a signature to a
+			// function that calls it. The offset from the signature to the CCSWeaponInfo func offset is the GetWeaponPriceFunc offset.
 			"GetWeaponPrice"
 			{
 				"library"	"server"
