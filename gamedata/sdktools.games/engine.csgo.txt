@@ -72,8 +72,7 @@
 			{
 				"library"	"server"
 				// Fallback to IServerTools method instead on Windows, lest we add custom logic since it's no longer a thiscall on Windows in CS:GO
-				// TODO: find signature on Linux. Symbols are RIP, but too much to update and we can fallback to IServerTools for now.
-				//"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x83\xEC\x1C\x8B\x45\x0C\x8B\x5D\x08\x8B\x7D\x10\x85\xC0\x0F\x84\x2A\x2A\x2A\x2A\x8B\x10\x89\x04\x24\xFF\x52\x0C\x8B\x10\xB8\xFF\x1F\x00\x00\x0F\xB7\xCA\x83\xFA\xFF\x0F\x45\xC1\x8D\x04\x40\x8B\x5C\xC3\x10\xEB\x2A\x90\x2A\x2A\x2A\x2A\x89"
 			}
 		}
 	}
