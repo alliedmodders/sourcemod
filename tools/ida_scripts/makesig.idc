@@ -44,15 +44,22 @@ static main()
 		// isTail(GetFlags(pAddress)) == Operand
 		// ((GetFlags(pAddress) & MS_CODE) == FF_IMMD) == :iiam:
 		
-		if (pInfo.n == 1 && (pInfo.Op0.type == o_near || pInfo.Op0.type == o_far)) {
-			if (Byte(pAddress) == 0x0F) { // Two-byte instruction
-				sig = sig + sprintf("0F %02X ", Byte(pAddress + 1)) + PrintWildcards(GetDTSize(pInfo.Op0.dtyp));
-			} else {
-				sig = sig + sprintf("%02X ", Byte(pAddress)) + PrintWildcards(GetDTSize(pInfo.Op0.dtyp));
+		auto bDone = 0;
+		
+		if (pInfo.n == 1) {
+			if (pInfo.Op0.type == o_near || pInfo.Op0.type == o_far) {
+				if (Byte(pAddress) == 0x0F) { // Two-byte instruction
+					sig = sig + sprintf("0F %02X ", Byte(pAddress + 1)) + PrintWildcards(GetDTSize(pInfo.Op0.dtyp));
+				} else {
+					sig = sig + sprintf("%02X ", Byte(pAddress)) + PrintWildcards(GetDTSize(pInfo.Op0.dtyp));
+				}
+				bDone = 1;
 			}
-		} else { // unknown, just wildcard addresses
-			auto i = 0;
-			for (i = 0; i < pInfo.size; i++) {
+		}
+		
+		if (!bDone) { // unknown, just wildcard addresses
+			auto i = 0, itemSize = ItemSize(pAddress);
+			for (i = 0; i < itemSize; i++) {
 				auto pLoc = pAddress + i;
 				if (GetFixupTgtType(pLoc) == FIXUP_OFF32) {
 					sig = sig + PrintWildcards(4);
