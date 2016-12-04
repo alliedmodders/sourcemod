@@ -183,7 +183,7 @@ IDatabase *SqDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 	/* Full path to the database file */
 	char fullpath[PLATFORM_MAX_PATH];
 
-	if (strcmp(info->database, ":memory:") == 0)
+	if (strcmp(info->database, ":memory:") == 0 || strncmp(info->database, "file:", 5) == 0)
 	{
 		ke::SafeStrcpy(fullpath, sizeof(fullpath), info->database);
 	}
