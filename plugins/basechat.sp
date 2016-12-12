@@ -407,12 +407,7 @@ void SendPanelToAll(int from, char[] message)
 	mSayPanel.DrawItem("", ITEMDRAW_SPACER);
 	mSayPanel.DrawText(message);
 	mSayPanel.DrawItem("", ITEMDRAW_SPACER);
-	int exitkey = 10;
-	if(GetEngineVersion() == Engine_CSGO)
-	{
-		exitkey = 9; //fix for CS:GO not showing the exit button.
-	}
-	mSayPanel.CurrentKey = exitkey;
+	mSayPanel.CurrentKey = GetMaxPageItems(GetMenuStyleHandle(mSayPanel));
 	mSayPanel.DrawItem("Exit", ITEMDRAW_CONTROL);
 
 	for(int i = 1; i <= MaxClients; i++)
