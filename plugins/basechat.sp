@@ -407,7 +407,7 @@ void SendPanelToAll(int from, char[] message)
 	mSayPanel.DrawItem("", ITEMDRAW_SPACER);
 	mSayPanel.DrawText(message);
 	mSayPanel.DrawItem("", ITEMDRAW_SPACER);
-	mSayPanel.CurrentKey = GetMaxPageItems(GetPanelStyle(mSayPanel));
+	mSayPanel.CurrentKey = GetMaxPageItems(mSayPanel.Style);
 	mSayPanel.DrawItem("Exit", ITEMDRAW_CONTROL);
 
 	for(int i = 1; i <= MaxClients; i++)
