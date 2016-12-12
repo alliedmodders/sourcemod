@@ -1652,7 +1652,7 @@ REGISTER_NATIVES(menuNatives)
 	{"Panel.TextRemaining.get",	GetPanelTextRemaining},
 	{"Panel.CurrentKey.get",	GetPanelCurrentKey},
 	{"Panel.CurrentKey.set",	SetPanelCurrentKey},
-	{"Panel.Style",				GetPanelStyle},
+	{"Panel.Style.get",			GetPanelStyle},
 	{"Panel.CanDrawFlags",		CanPanelDrawFlags},
 	{"Panel.SetTitle",			SetPanelTitle},
 	{"Panel.SetKeys",			SetPanelKeys},
