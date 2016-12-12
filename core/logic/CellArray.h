@@ -186,6 +186,12 @@ public:
 		array->m_AllocSize = m_AllocSize;
 		array->m_Size = m_Size;
 		array->m_Data = (cell_t *)malloc(sizeof(cell_t) * m_BlockSize * m_AllocSize);
+		if (!array->m_Data)
+		{
+			delete array;
+			return NULL;
+		}
+		
 		memcpy(array->m_Data, m_Data, sizeof(cell_t) * m_BlockSize * m_Size);
 		return array;
 	}

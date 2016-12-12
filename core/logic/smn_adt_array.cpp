@@ -503,6 +503,10 @@ static cell_t CloneArray(IPluginContext *pContext, const cell_t *params)
 	}
 
 	ICellArray *array = oldArray->clone();
+	if (!array)
+	{
+		return pContext->ThrowNativeError("Failed to clone array. Out of memory.");
+	}
 
 	Handle_t hndl = handlesys->CreateHandle(htCellArray, array, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	if (!hndl)
