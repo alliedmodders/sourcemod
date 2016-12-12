@@ -250,9 +250,6 @@ public:
 	{
 		/* Create a Handle for our query */
 		HandleSecurity sec(me->GetIdentity(), g_pCoreIdent);
-		HandleAccess access;
-		handlesys->InitAccessDefaults(NULL, &access);
-		access.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
 
 		Handle_t qh = BAD_HANDLE;
 		
@@ -260,7 +257,7 @@ public:
 		{
 			CombinedQuery *c = new CombinedQuery(m_pQuery, m_pDatabase);
 			
-			qh = handlesys->CreateHandle(hCombinedQueryType, c, me->GetIdentity(), g_pCoreIdent, NULL);
+			qh = CreateLocalHandle(hCombinedQueryType, c, &sec);
 			if (qh != BAD_HANDLE)
 			{
 				m_pQuery = NULL;
