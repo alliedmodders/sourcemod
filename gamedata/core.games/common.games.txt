@@ -299,4 +299,17 @@
 			"RadioMenuMaxPageItems"	"9"
 		}
 	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"bms"
+		}
+		
+		"Keys"
+		{
+			"RadioMenuMaxPageItems"	"6"
+		}
+	}
 }
