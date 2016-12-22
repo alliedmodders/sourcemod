@@ -36,7 +36,12 @@
 			"EntInfo"
 			{
 				"linux"		"4"
-				"mac"		"4"
+			}
+			
+			/* Offset into LevelShutdown */
+			"gEntList"
+			{
+				"linux"		"13"
 			}
 		}
 		
@@ -49,11 +54,10 @@
 				"windows"	"\xEB\x15\x0F\xB7\xC0\x8D\x34\x40\x8B\x34\x2A\x2A\x2A\x2A\x2A\xEB\x06\x8B\x35"
 			}
 			
-			"gEntList"
+			"LevelShutdown"
 			{
 				"library"	"server"
-				"linux"		"@gEntList"
-				"mac"		"@gEntList"
+				"linux"		"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xC7\x2A\x2A\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
 			}
 		}
 	}

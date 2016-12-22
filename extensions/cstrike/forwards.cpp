@@ -207,7 +207,7 @@ bool CreateWeaponPriceDetour()
 		}
 	}
 
-#if SOURCE_ENGINE == SE_CSGO && defined(WIN32)
+#if SOURCE_ENGINE == SE_CSGO
 	void *pGetWeaponPriceAddress = GetWeaponPriceFunction();
 
 	if(!pGetWeaponPriceAddress)

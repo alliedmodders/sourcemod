@@ -113,21 +113,21 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"326"
-				"linux"		"327"
-				"mac"		"327"
+				"windows"	"328"
+				"linux"		"329"
+				"mac"		"329"
 			}
 			"CalcIsAttackCriticalHelper"
-			{
-				"windows"	"386"
-				"linux"		"393"
-				"mac"		"393"
-			}
-			"CalcIsAttackCriticalHelperNoCrits"
 			{
 				"windows"	"387"
 				"linux"		"394"
 				"mac"		"394"
+			}
+			"CalcIsAttackCriticalHelperNoCrits"
+			{
+				"windows"	"388"
+				"linux"		"395"
+				"mac"		"395"
 			}
 			
 			// CTFGameRules::IsHolidayActive
@@ -140,9 +140,9 @@
 
 			"RemoveWearable"
 			{
-				"windows"	"428"
-				"linux"		"429"
-				"mac"		"429"
+				"windows"	"430"
+				"linux"		"431"
+				"mac"		"431"
 			}
 		}
 	}

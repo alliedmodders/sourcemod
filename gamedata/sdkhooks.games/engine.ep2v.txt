@@ -7,9 +7,9 @@
 		{
 			"CanBeAutobalanced"
 			{
-				"windows"	"459"
-				"linux"		"460"
-				"mac"		"460"
+				"windows"	"461"
+				"linux"		"462"
+				"mac"		"462"
 			}
 			"EndTouch"
 			{
@@ -43,27 +43,27 @@
 			}
 			"OnTakeDamage_Alive"
 			{
-				"windows"	"273"
-				"linux"		"274"
-				"mac"		"274"
+				"windows"	"274"
+				"linux"		"275"
+				"mac"		"275"
 			}
 			"PreThink"
 			{
-				"windows"	"333"
-				"linux"		"334"
-				"mac"		"334"
+				"windows"	"335"
+				"linux"		"336"
+				"mac"		"336"
 			}
 			"PostThink"
 			{
-				"windows"	"334"
-				"linux"		"335"
-				"mac"		"335"
+				"windows"	"336"
+				"linux"		"337"
+				"mac"		"337"
 			}
 			"Reload"
 			{
-				"windows"	"274"
-				"linux"		"280"
-				"mac"		"280"
+				"windows"	"275"
+				"linux"		"281"
+				"mac"		"281"
 			}
 			"SetTransmit"
 			{
@@ -127,33 +127,33 @@
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"267"
-				"linux"		"268"
-				"mac"		"268"
+				"windows"	"268"
+				"linux"		"269"
+				"mac"		"269"
 			}
 			"Weapon_CanUse"
-			{
-				"windows"	"261"
-				"linux"		"262"
-				"mac"		"262"
-			}
-			"Weapon_Drop"
-			{
-				"windows"	"264"
-				"linux"		"265"
-				"mac"		"265"
-			}
-			"Weapon_Equip"
 			{
 				"windows"	"262"
 				"linux"		"263"
 				"mac"		"263"
 			}
-			"Weapon_Switch"
+			"Weapon_Drop"
 			{
 				"windows"	"265"
 				"linux"		"266"
 				"mac"		"266"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"263"
+				"linux"		"264"
+				"mac"		"264"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"266"
+				"linux"		"267"
+				"mac"		"267"
 			}
 		}
 	}

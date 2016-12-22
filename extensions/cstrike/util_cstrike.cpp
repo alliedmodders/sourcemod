@@ -230,50 +230,58 @@ const char *WeaponIDToAlias(int weaponID)
 	return alias;
 }
 
-#if SOURCE_ENGINE == SE_CSGO && defined(WIN32)
+#if SOURCE_ENGINE == SE_CSGO
 void *GetWeaponPriceFunction()
 {
-	static void *pGetWeaponPriceAddress = NULL;
-
-	if(pGetWeaponPriceAddress == NULL)
+	static void *pGetWeaponPriceAddress = nullptr;
+	if (pGetWeaponPriceAddress)
 	{
-		void *pAddress = NULL;
-		int offset = 0;
-		int callOffset = 0;
-		const char* byteCheck = NULL;
-
-		if(!g_pGameConf->GetMemSig("GetWeaponPrice", &pAddress) || pAddress == NULL)
-		{
-			g_pSM->LogError(myself, "Failed to get GetWeaponPrice address.");
-			return NULL;
-		}
-
-		if(!g_pGameConf->GetOffset("GetWeaponPriceFunc", &offset))
-		{
-			g_pSM->LogError(myself, "Failed to get GetWeaponPriceFunc offset.");
-			return NULL;
-		}
-
-		byteCheck = g_pGameConf->GetKeyValue("GetWeaponPriceByteCheck");
-
-		if(byteCheck == NULL)
-		{
-			g_pSM->LogError(myself, "Failed to get GetWeaponPriceByteCheck keyvalue.");
-			return NULL;
-		}
-
-		uint8_t iByte = strtoul(byteCheck, NULL, 16);
-
-		if(iByte != *(uint8_t *)((intptr_t)pAddress + (offset-1)))
-		{
-			g_pSM->LogError(myself, "GetWeaponPrice Byte check failed.");
-			return NULL;
-		}
-
-		callOffset = *(uint32_t *)((intptr_t)pAddress + offset);
-
-		pGetWeaponPriceAddress = (void *)((intptr_t)pAddress + offset + callOffset + sizeof(int));
+		return pGetWeaponPriceAddress;
 	}
+
+	void *pAddress = nullptr;
+	int offset = 0;
+	int callOffset = 0;
+	const char* byteCheck = nullptr;
+
+	if (!g_pGameConf->GetMemSig("GetWeaponPrice", &pAddress) || !pAddress)
+	{
+		g_pSM->LogError(myself, "Failed to get GetWeaponPrice address.");
+		return nullptr;
+	}
+
+	if (!g_pGameConf->GetOffset("GetWeaponPriceFunc", &offset))
+	{
+		// If no offset specified, assume that GetWeaponPrice is the func we want, and not just our
+		// helper to find the real one.
+		pGetWeaponPriceAddress = pAddress;
+		return pGetWeaponPriceAddress;
+	}
+
+#if defined( _WIN32 )
+	byteCheck = g_pGameConf->GetKeyValue("GetWeaponPriceByteCheck");
+#elif defined( _LINUX )
+	byteCheck = g_pGameConf->GetKeyValue("GetWeaponPriceByteCheck_Linux");
+#else
+	// We don't compile for csgo on mac anymore
+	#error Unsupported platform
+#endif
+	if (byteCheck == nullptr)
+	{
+		g_pSM->LogError(myself, "Failed to get GetWeaponPriceByteCheck keyvalue.");
+		return nullptr;
+	}
+
+	uint8_t iByte = strtoul(byteCheck, nullptr, 16);
+	if (iByte != *(uint8_t *)((intptr_t)pAddress + (offset-1)))
+	{
+		g_pSM->LogError(myself, "GetWeaponPrice Byte check failed.");
+		return nullptr;
+	}
+
+	callOffset = *(uint32_t *)((intptr_t)pAddress + offset);
+
+	pGetWeaponPriceAddress = (void *)((intptr_t)pAddress + offset + callOffset + sizeof(int));
 
 	return pGetWeaponPriceAddress;
 }

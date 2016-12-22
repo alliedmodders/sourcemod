@@ -164,6 +164,7 @@
 			"game"					"nmrih"
 			"game"					"KreedzClimbing"
 			"game"					"doi"
+			"game"					"bms"
 		}
 
 		"Keys"
@@ -200,6 +201,7 @@
 			"game"					"nmrih"
 			"game"					"KreedzClimbing"
 			"game"					"doi"
+			"game"					"bms"
 		}
 		
 		"Keys"
@@ -295,6 +297,19 @@
 		"Keys"
 		{
 			"RadioMenuMaxPageItems"	"9"
+		}
+	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"bms"
+		}
+		
+		"Keys"
+		{
+			"RadioMenuMaxPageItems"	"6"
 		}
 	}
 }

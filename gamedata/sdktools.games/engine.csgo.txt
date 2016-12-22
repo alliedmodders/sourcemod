@@ -32,24 +32,22 @@
 			"s_pTempEntities"
 			{
 				"windows"	"4"
+				"linux"		"20"
 			}
 			"GetTEName"
 			{
 				"windows"	"4"
 				"linux"		"4"
-				"mac"		"4"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
 				"linux"		"8"
-				"mac"		"8"
 			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
 				"linux"		"0"
-				"mac"		"0"
 			}
 		}
 
@@ -59,12 +57,7 @@
 			{
 				"library"	"server"
 				"windows"	"\x89\x41\x04\xA1\x2A\x2A\x2A\x2A\x89\x41\x08\x89\x0D\x2A\x2A\x2A\x2A\xC7"
-			}
-			"s_pTempEntities"
-			{
-				"library"	"server"
-				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
+				"linux"		"\x55\x89\xE5\x8B\x45\x08\x8B\x55\x0C\xC7\x00\x2A\x2A\x2A\x2A\x89\x50\x04\x8B\x15\x2A\x2A\x2A\x2A"
 			}
 		}
 	}
@@ -79,8 +72,7 @@
 			{
 				"library"	"server"
 				// Fallback to IServerTools method instead on Windows, lest we add custom logic since it's no longer a thiscall on Windows in CS:GO
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x83\xEC\x1C\x8B\x45\x0C\x8B\x5D\x08\x8B\x7D\x10\x85\xC0\x0F\x84\x2A\x2A\x2A\x2A\x8B\x10\x89\x04\x24\xFF\x52\x0C\x8B\x10\xB8\xFF\x1F\x00\x00\x0F\xB7\xCA\x83\xFA\xFF\x0F\x45\xC1\x8D\x04\x40\x8B\x5C\xC3\x10\xEB\x2A\x90\x2A\x2A\x2A\x2A\x89"
 			}
 		}
 	}
@@ -109,6 +101,7 @@
 			 * here.
 			 */
 			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x56\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B"
+			"CreateFakeClient_Linux"	"\x55\x89\xE5\x53\x83\xEC\x14\x8B\x45\x0C\xC7\x04\x24\x2A\x2A\x2A\x2A"
 		}
 		
 		"Offsets"
@@ -117,19 +110,10 @@
 			"sv"
 			{
 				"windows"	"8"
+				"linux"		"13"
 			}
 		}
 		
-		"Signatures"
-		{
-			/* CBaseServer object for IServer interface */
-			"sv"
-			{
-				"library"	"engine"
-				"linux"		"@sv"
-				"mac"		"@sv"
-			}
-		}
 	}
 	
 	/* EntityFactoryDictionary function */
@@ -137,17 +121,17 @@
 	{
 		"Signatures"
 		{
-			"EntityFactory"
-			{
-				"library"	"server"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
-				"mac"		"@_Z23EntityFactoryDictionaryv"
-			}
 			
 			"EntityFactoryFinder"
 			{
 				"library"	"server"
 				"windows"	"\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\xC8\xC7"
+			}
+			
+			"EntityFactoryCaller"
+			{
+				"library"	"server"
+				"linux"		"\x55\x89\xE5\x53\x83\xEC\x14\x8B\x5D\x08\xE8\x2A\x2A\x2A\x2A\x8B\x10\x89\x04\x24"
 			}
 		}
 		
@@ -156,6 +140,10 @@
 			"EntityFactoryOffset"
 			{
 				"windows" 	"4"
+			}
+			"EntityFactoryCallOffset"
+			{
+				"linux"		"11"
 			}
 		}
 	}
@@ -169,8 +157,7 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x8B\xC1\x53\x56\x57\x8B\x2A\x2A\x89\x2A\x2A\x2A\x33"
-				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x7C\x01\x00\x00\x8B\x55\x08\x8B\x75\x14"
 			}
 		}
 	}
@@ -214,9 +201,9 @@
 			 */
 			"InfoChanged"
 			{
-				"windows"	"476"
-				"linux"		"456"
-				"mac"		"456"
+				"windows"	"480"
+				"linux"		"460"
+				"mac"		"460"
 			}
 		}
 	}
