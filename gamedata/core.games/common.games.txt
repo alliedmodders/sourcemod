@@ -100,8 +100,6 @@
 			"engine"			"sdk2013"
 			"engine"			"contagion"
 			"engine"			"bms"
-			// DOI doesn't have it's own SDK yet, but may in future
-			"game"				"doi"
 		}
 		
 		"Offsets"
@@ -133,7 +131,6 @@
 	{
 		"#supported"
 		{
-			"engine"				"csgo"
 			"game"					"cstrike"
 			"game"					"dod"
 			"game"					"sourceforts"
@@ -173,12 +170,24 @@
 		}
 	}
 	
+		"#default"
+	{
+		"#supported"
+		{
+			"engine"				"csgo"
+		}
+
+		"Keys"
+		{
+			"HudRadioMenuMsg"		"ShowMenu"
+		}
+	}
+	
 	/* Which games need a radio menu timeout? */
 	"#default"
 	{
 		"#supported"
 		{
-			"engine"				"csgo"
 			"game"					"tf"
 			"game"					"synergy"
 			"game"					"dod"
@@ -202,6 +211,19 @@
 			"game"					"KreedzClimbing"
 			"game"					"doi"
 			"game"					"bms"
+		}
+		
+		"Keys"
+		{
+			"RadioMenuTimeout"		"4"
+		}
+	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"				"csgo"
 		}
 		
 		"Keys"
@@ -254,12 +276,19 @@
 		}
 	}
 
+	"cstrike"
+	{
+		"Keys"
+		{
+			"GameExtension"		"game.cstrike"
+		}
+	}
+	
 	"#default"
 	{
 		"#supported"
 		{
 			"engine"	"csgo"
-			"game"		"cstrike"
 		}
 		
 		"Keys"
@@ -291,7 +320,6 @@
 			"engine"	"csgo"
 			"engine"	"blade"
 			"engine"	"insurgency"
-			"game"		"doi"
 		}
 		
 		"Keys"
@@ -300,13 +328,8 @@
 		}
 	}
 	
-	"#default"
+	"bms"
 	{
-		"#supported"
-		{
-			"game"		"bms"
-		}
-		
 		"Keys"
 		{
 			"RadioMenuMaxPageItems"	"6"
