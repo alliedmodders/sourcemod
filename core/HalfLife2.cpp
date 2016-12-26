@@ -574,6 +574,10 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 
 	pBitBuf->WriteByte(dest);
 	pBitBuf->WriteString(msg);
+	pBitBuf->WriteString("");
+	pBitBuf->WriteString("");
+	pBitBuf->WriteString("");
+	pBitBuf->WriteString("");
 #endif
 
 	g_UserMsgs.EndMessage();
