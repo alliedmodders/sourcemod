@@ -91,7 +91,16 @@ static cell_t CompileRegex(IPluginContext *pCtx, const cell_t *params)
 		return 0;
 	}
 
-	return g_pHandleSys->CreateHandle(g_RegexHandle, (void*)x, pCtx->GetIdentity(), myself->GetIdentity(), NULL);
+	HandleError error = HandleError_None;
+	Handle_t regexHandle = g_pHandleSys->CreateHandle(g_RegexHandle, (void*)x, pCtx->GetIdentity(), myself->GetIdentity(), &error);
+	if (!regexHandle || error != HandleError_None)
+	{
+		delete x;
+		pCtx->ReportError("Allocation of regex handkle failed, error code #%d", error);
+		return 0;
+	}
+	
+	return regexHandle;
 }
 
 
