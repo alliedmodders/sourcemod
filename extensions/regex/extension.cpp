@@ -87,6 +87,7 @@ static cell_t CompileRegex(IPluginContext *pCtx, const cell_t *params)
 		const char *err = x->mError;
 		*eOff = x->mErrorOffset;
 		pCtx->StringToLocal(params[3], params[4], err ? err:"unknown");
+		delete x;
 		return 0;
 	}
 
