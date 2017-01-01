@@ -96,7 +96,7 @@ static cell_t CompileRegex(IPluginContext *pCtx, const cell_t *params)
 	if (!regexHandle || error != HandleError_None)
 	{
 		delete x;
-		pCtx->ReportError("Allocation of regex handkle failed, error code #%d", error);
+		pCtx->ReportError("Allocation of regex handle failed, error code #%d", error);
 		return 0;
 	}
 	
