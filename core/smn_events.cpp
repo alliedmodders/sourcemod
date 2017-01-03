@@ -160,11 +160,6 @@ static cell_t sm_FireEventToClient(IPluginContext *pContext, const cell_t *param
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
 	}
 
-	if (pInfo->bDontBroadcast)
-	{
-		return pContext->ThrowNativeError("Game event \"%s\" is set to not be broadcasted to clients", pInfo->pEvent->GetName());
-	}
-
 	int client = params[2];
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 
