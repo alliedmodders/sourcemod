@@ -160,12 +160,6 @@ static cell_t sm_FireEventToClient(IPluginContext *pContext, const cell_t *param
 		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
 	}
 
-	/* If identities do not match, don't fire event */
-	if (pContext->GetIdentity() != pInfo->pOwner)
-	{
-		return pContext->ThrowNativeError("Game event \"%s\" could not be fired because it was not created by this plugin", pInfo->pEvent->GetName());
-	}
-
 	if (pInfo->bDontBroadcast)
 	{
 		return pContext->ThrowNativeError("Game event \"%s\" is set to not be broadcasted to clients", pInfo->pEvent->GetName());
