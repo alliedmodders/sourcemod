@@ -99,6 +99,7 @@ private:
 
 	IForward *m_pOnGameFrame;
 	IForward *m_pOnMapTimeLeftChanged;
+	IForward *m_pOnServerThink;
 };
 
 time_t GetAdjustedTime(time_t *buf = NULL);

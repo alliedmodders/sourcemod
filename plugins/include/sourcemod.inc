@@ -146,6 +146,16 @@ forward void OnPluginPauseChange(bool pause);
 forward void OnGameFrame();
 
 /**
+ * Called before every server think. Note that you should avoid
+ * doing expensive computations or declaring large local arrays.
+ *
+ * @note In contrast with OnGameFrame, this forward is triggered
+ * even if no level was loaded yet. This is useful when working
+ * with network bound events.
+ */
+forward void OnServerThink();
+
+/**
  * Called when the map is loaded.
  *
  * @note This used to be OnServerLoad(), which is now deprecated.

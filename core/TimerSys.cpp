@@ -183,6 +183,7 @@ void TimerSystem::OnSourceModAllInitialized()
 	sharesys->AddInterface(NULL, this);
 	m_pOnGameFrame = forwardsys->CreateForward("OnGameFrame", ET_Ignore, 0, NULL);
 	m_pOnMapTimeLeftChanged = forwardsys->CreateForward("OnMapTimeLeftChanged", ET_Ignore, 0, NULL);
+	m_pOnServerThink = forwardsys->CreateForward("OnServerThink", ET_Ignore, 0, NULL);
 }
 
 void TimerSystem::OnSourceModGameInitialized()
@@ -200,6 +201,7 @@ void TimerSystem::OnSourceModShutdown()
 	SetMapTimer(NULL);
 	forwardsys->ReleaseForward(m_pOnGameFrame);
 	forwardsys->ReleaseForward(m_pOnMapTimeLeftChanged);
+	forwardsys->ReleaseForward(m_pOnServerThink);
 }
 
 void TimerSystem::OnSourceModLevelEnd()
@@ -245,6 +247,11 @@ void TimerSystem::GameFrame(bool simulating)
 void TimerSystem::Think(bool FinalTick)
 {
 	RunThinkHooks(FinalTick);
+
+	if (m_pOnServerThink->GetFunctionCount())
+	{
+		m_pOnServerThink->Execute(NULL);
+	}
 }
 
 void TimerSystem::RunFrame()
