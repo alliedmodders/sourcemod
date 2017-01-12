@@ -41,10 +41,6 @@
 	#define PLATFORM_EXT			".dll"
 	#define vsnprintf				_vsnprintf
 	#define PATH_SEP_CHAR			"\\"
-	inline bool IsPathSepChar(char c) 
-	{
-		return (c == '/' || c == '\\');
-	}
 	#include <Windows.h>
 #else
 	#define DLL_EXPORT				extern "C" __attribute__((visibility("default")))
@@ -58,15 +54,10 @@
 	#endif
 	typedef void *					HINSTANCE;
 	#define PATH_SEP_CHAR			"/"
-	inline bool IsPathSepChar(char c) 
-	{
-		return (c == '/');
-	}
 	#include <dlfcn.h>
 #endif
 
 #define METAMOD_API_MAJOR			2
-#define FILENAME_1_4_EP1			"sourcemod.1.ep1" PLATFORM_EXT
 #define FILENAME_1_6_EP2			"sourcemod.2.ep2" PLATFORM_EXT
 #define FILENAME_1_6_EP1			"sourcemod.2.ep1" PLATFORM_EXT
 #define FILENAME_1_6_L4D			"sourcemod.2.l4d" PLATFORM_EXT
@@ -185,28 +176,6 @@ error:
 	closelib(g_hCore);
 	g_hCore = NULL;
 	return NULL;
-}
-
-bool GetFileOfAddress(void *pAddr, char *buffer, size_t maxlength)
-{
-#if defined _MSC_VER
-	MEMORY_BASIC_INFORMATION mem;
-	if (!VirtualQuery(pAddr, &mem, sizeof(mem)))
-		return false;
-	if (mem.AllocationBase == NULL)
-		return false;
-	HMODULE dll = (HMODULE)mem.AllocationBase;
-	GetModuleFileName(dll, (LPTSTR)buffer, maxlength);
-#else
-	Dl_info info;
-	if (!dladdr(pAddr, &info))
-		return false;
-	if (!info.dli_fbase || !info.dli_fname)
-		return false;
-	const char *dllpath = info.dli_fname;
-	snprintf(buffer, maxlength, "%s", dllpath);
-#endif
-	return true;
 }
 
 DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, const MetamodLoaderInfo *mli)
@@ -371,44 +340,6 @@ DLL_EXPORT void UnloadInterface_MMS()
 		closelib(g_hCore);
 		g_hCore = NULL;
 	}
-}
-
-DLL_EXPORT void *CreateInterface(const char *iface, int *ret)
-{
-	/**
-	 * If a load has already been attempted, bail out immediately.
-	 */
-	if (load_attempted)
-	{
-		return NULL;
-	}
-
-	if (strcmp(iface, METAMOD_PLAPI_NAME) == 0)
-	{
-		char thisfile[256];
-		char targetfile[256];
-
-		if (!GetFileOfAddress((void *)CreateInterface_MMS, thisfile, sizeof(thisfile)))
-		{
-			return NULL;
-		}
-
-		size_t len = strlen(thisfile);
-		for (size_t iter=len-1; iter<len; iter--)
-		{
-			if (IsPathSepChar(thisfile[iter]))
-			{
-				thisfile[iter] = '\0';
-				break;
-			}
-		}
-
-		UTIL_Format(targetfile, sizeof(targetfile), "%s" PATH_SEP_CHAR FILENAME_1_4_EP1, thisfile);
-
-		return _GetPluginPtr(targetfile, METAMOD_FAIL_API_V1);
-	}
-
-	return NULL;
 }
 
 #if defined _MSC_VER

@@ -49,10 +49,6 @@
 #include <IEngineSound.h>
 #include <toolframework/itoolentity.h>
 
-#ifndef METAMOD_PLAPI_VERSION
-	#include <metamod_wrappers.h>
-#endif
-
 /**
  * @file Contains wrappers around required Metamod:Source API exports
  */

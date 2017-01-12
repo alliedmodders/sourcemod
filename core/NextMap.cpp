@@ -50,11 +50,8 @@ SH_DECL_HOOK4_void(IVEngineServer, ChangeLevel, SH_NOATTRIB, 0, const char *, co
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
-#elif SOURCE_ENGINE == SE_DARKMESSIAH
-SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 #else
-extern int __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
-extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
+SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 #endif
 
 ConCommand *changeLevelCmd = NULL;

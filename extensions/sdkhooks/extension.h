@@ -18,12 +18,6 @@
 
 #include "takedamageinfohack.h"
 
-#ifndef METAMOD_PLAPI_VERSION
-#define GetCGlobals pGlobals
-#define GetEngineFactory engineFactory
-#define GetServerFactory serverFactory
-#endif
-
 #if SOURCE_ENGINE >= SE_CSS && SOURCE_ENGINE != SE_LEFT4DEAD
 #define GETMAXHEALTH_IS_VIRTUAL
 #endif

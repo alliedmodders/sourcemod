@@ -357,11 +357,7 @@ void SDKTools::NotifyInterfaceDrop(SMInterface *pInterface)
 
 bool SDKTools::RegisterConCommandBase(ConCommandBase *pVar)
 {
-#if defined METAMOD_PLAPI_VERSION
 	return g_SMAPI->RegisterConCommandBase(g_PLAPI, pVar);
-#else
-	return g_SMAPI->RegisterConCmdBase(g_PLAPI, pVar);
-#endif
 }
 
 bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)

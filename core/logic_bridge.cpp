@@ -354,7 +354,6 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 	va_end(ap);
 }
 
-#if defined METAMOD_PLAPI_VERSION
 #if SOURCE_ENGINE == SE_LEFT4DEAD
 #define GAMEFIX "2.l4d"
 #elif SOURCE_ENGINE == SE_LEFT4DEAD2
@@ -395,10 +394,7 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 #define GAMEFIX "2.contagion"
 #else
 #define GAMEFIX "2.ep1"
-#endif //(SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-#else  //METAMOD_PLAPI_VERSION
-#define GAMEFIX "1.ep1"
-#endif //METAMOD_PLAPI_VERSION
+#endif
 
 static ServerGlobals serverGlobals;
 
@@ -601,18 +597,7 @@ int CoreProviderImpl::LoadMMSPlugin(const char *file, bool *ok, char *error, siz
 
 	Pl_Status status;
 
-#ifndef METAMOD_PLAPI_VERSION
-	const char *filep;
-	PluginId source;
-#endif
-
-	if (!id || (
-#ifndef METAMOD_PLAPI_VERSION
-		g_pMMPlugins->Query(id, filep, status, source)
-#else
-		g_pMMPlugins->Query(id, NULL, &status, NULL)
-#endif
-		&& status < Pl_Paused))
+	if (!id || (g_pMMPlugins->Query(id, NULL, &status, NULL) && status < Pl_Paused))
 	{
 		*ok = false;
 	}
