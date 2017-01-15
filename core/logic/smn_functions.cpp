@@ -645,15 +645,32 @@ static cell_t sm_AddFrameAction(IPluginContext *pContext, const cell_t *params)
 	pForward->AddFunction(pFunction);
 
 	SMFrameActionData *pData = new SMFrameActionData(Handle, pPlugin->GetMyHandle(), params[2]);
-	if (params[0] >= 3)	//for backwards compatibility
+	g_pSM->AddFrameAction(PawnFrameAction, pData);
+	return 1;
+}
+
+static cell_t sm_AddThinkAction(IPluginContext *pContext, const cell_t *params)
+{
+	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+	IPluginFunction *pFunction = pPlugin->GetBaseContext()->GetFunctionById(params[1]);
+	if (!pFunction)
 	{
-		if (params[3]) { g_pSM->AddThinkAction(PawnFrameAction, pData); }
-		else { g_pSM->AddFrameAction(PawnFrameAction, pData); }
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[1]);
 	}
-	else
+
+	IChangeableForward *pForward = forwardsys->CreateForwardEx(NULL, ET_Ignore, 1, NULL, Param_Cell);
+	IdentityToken_t *pIdentity = pContext->GetIdentity();
+	Handle_t Handle = handlesys->CreateHandle(g_PrivateFwdType, pForward, pIdentity, g_pCoreIdent, NULL);
+	if (Handle == BAD_HANDLE)
 	{
-		g_pSM->AddFrameAction(PawnFrameAction, pData);
+		forwardsys->ReleaseForward(pForward);
+		return 0;
 	}
+
+	pForward->AddFunction(pFunction);
+
+	SMFrameActionData *pData = new SMFrameActionData(Handle, pPlugin->GetMyHandle(), params[2]);
+	g_pSM->AddThinkAction(PawnFrameAction, pData);
 	return 1;
 }
 
@@ -679,5 +696,6 @@ REGISTER_NATIVES(functionNatives)
 	{"Call_Finish",				sm_CallFinish},
 	{"Call_Cancel",				sm_CallCancel},
 	{"RequestFrame",			sm_AddFrameAction},
+	{"RequestThink",			sm_AddThinkAction},
 	{NULL,						NULL},
 };
