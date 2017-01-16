@@ -96,7 +96,7 @@
 			"plugin_75948f0451be404066536cdbd5111277"	""	/* [AnoX]TeamChange - Version 1.2 */
 			"plugin_8f8d96631fa47e2d4b35236c42579e81"	""	/* [Sky]Welcome - Version 1.06 */
 			"plugin_465e4abb31f03cf519e8a80a8b4b44be"	""	/* [AnoX]NoSucide - Version 1.0 */
-			"plugin_33a4351dd2b9350d6f2b21dab68f7d9e"	""	/* [CS:GO] Komutcu Daire System (Sourceless distro) - Version 1.0
+			"plugin_33a4351dd2b9350d6f2b21dab68f7d9e"	""	/* [CS:GO] Komutcu Daire System (Sourceless distro) - Version 1.0 */
 		}
 	}
 }
