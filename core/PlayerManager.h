@@ -67,6 +67,32 @@ union serial_t
 	} bits;
 };
 
+class CPrintfBuffer
+{
+public:
+	struct CChunk
+	{
+		void *m_pMem;
+		char *m_pMessage;
+		size_t m_Length;
+		struct CChunk *m_pNext;
+	};
+
+	bool m_StopSend;
+
+private:
+	CChunk *m_pFirstChunk;
+	CChunk *m_pLastChunk;
+	size_t m_MaxLength;
+	size_t m_Length;
+
+public:
+	CPrintfBuffer(size_t MaxLength=16384);
+	bool Append(const char *pString, size_t Length);
+	const CChunk *Get();
+	void Consumed(size_t Length);
+};
+
 class CPlayer : public IGamePlayer
 {
 	friend class PlayerManager;
@@ -152,6 +178,7 @@ private:
 #if SOURCE_ENGINE == SE_CSGO
 	QueryCvarCookie_t m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
+	CPrintfBuffer m_PrintfBuffer;
 };
 
 class PlayerManager : 
@@ -190,6 +217,8 @@ public:
 	void OnClientSettingsChanged(edict_t *pEntity);
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
 	void OnServerHibernationUpdate(bool bHibernating);
+	void OnClientPrintf(edict_t *pEdict, const char *szMsg);
+	void OnGameFrame();
 public: //IPlayerManager
 	void AddClientListener(IClientListener *listener);
 	void RemoveClientListener(IClientListener *listener);

@@ -30,6 +30,7 @@
  */
 
 #include "PlayerManager.h"
+#include "sourcemod.h"
 #include "IAdminSystem.h"
 #include "ConCmdManager.h"
 #include "MenuStyle_Valve.h"
@@ -92,6 +93,12 @@ SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &)
 #else
 SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 #endif
+SH_DECL_HOOK2_void(IVEngineServer, ClientPrintf, SH_NOATTRIB, 0, edict_t *, const char *);
+
+static void FrameHook(bool simulating)
+{
+	g_Players.OnGameFrame();
+}
 
 ConCommand *maxplayersCmd = NULL;
 
@@ -172,6 +179,7 @@ void PlayerManager::OnSourceModAllInitialized()
 #elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 	SH_ADD_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
 #endif
+	SH_ADD_HOOK(IVEngineServer, ClientPrintf, engine, SH_MEMBER(this, &PlayerManager::OnClientPrintf), false);
 
 	sharesys->AddInterface(NULL, this);
 
@@ -204,10 +212,12 @@ void PlayerManager::OnSourceModAllInitialized()
 		SH_ADD_HOOK(ConCommand, Dispatch, pCmd, SH_STATIC(CmdMaxplayersCallback), true);
 		maxplayersCmd = pCmd;
 	}
+	g_SourceMod.AddGameFrameHook(&FrameHook);
 }
 
 void PlayerManager::OnSourceModShutdown()
 {
+	g_SourceMod.RemoveGameFrameHook(&FrameHook);
 	SH_REMOVE_HOOK(IServerGameClients, ClientConnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientConnect), false);
 	SH_REMOVE_HOOK(IServerGameClients, ClientConnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientConnect_Post), true);
 	SH_REMOVE_HOOK(IServerGameClients, ClientPutInServer, serverClients, SH_MEMBER(this, &PlayerManager::OnClientPutInServer), true);
@@ -225,6 +235,7 @@ void PlayerManager::OnSourceModShutdown()
 #elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 	SH_REMOVE_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
 #endif
+	SH_REMOVE_HOOK(IVEngineServer, ClientPrintf, engine, SH_MEMBER(this, &PlayerManager::OnClientPrintf), false);
 
 	/* Release forwards */
 	forwardsys->ReleaseForward(m_clconnect);
@@ -843,6 +854,146 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 	{
 		pListener = (*iter);
 		pListener->OnClientDisconnected(client);
+	}
+}
+
+/* CPrintfBuffer */
+CPrintfBuffer::CPrintfBuffer(size_t MaxLength)
+{
+	m_pFirstChunk = NULL;
+	m_pLastChunk = NULL;
+	m_MaxLength = MaxLength;
+	m_Length = 0;
+}
+
+bool CPrintfBuffer::Append(const char *pString, size_t Length)
+{
+	if(Length <= 0 || Length >= 1023)
+		return false;
+
+	if(m_Length >= m_MaxLength)
+		return false;
+
+	CChunk *pChunk = new CChunk();
+	pChunk->m_pMessage = strdup(pString);
+	pChunk->m_pMem = pChunk->m_pMessage;
+	pChunk->m_Length = Length;
+	pChunk->m_pNext = NULL;
+
+	if(m_pLastChunk)
+		m_pLastChunk->m_pNext = pChunk;
+	else
+		m_pFirstChunk = m_pLastChunk = pChunk;
+
+	m_pLastChunk = pChunk;
+	m_Length += Length;
+
+	return true;
+}
+
+const CPrintfBuffer::CChunk *CPrintfBuffer::Get()
+{
+	return m_pFirstChunk;
+}
+
+void CPrintfBuffer::Consumed(size_t Length)
+{
+	if(Length <= 0 || !m_pFirstChunk)
+		return;
+
+	if(Length > m_pFirstChunk->m_Length)
+		Length = m_pFirstChunk->m_Length;
+
+	m_pFirstChunk->m_Length -= Length;
+
+	if(m_pFirstChunk->m_Length == 0)
+	{
+		free(m_pFirstChunk->m_pMem);
+
+		if(m_pFirstChunk == m_pLastChunk)
+		{
+			delete m_pFirstChunk;
+			m_pFirstChunk = m_pLastChunk = NULL;
+		}
+		else
+		{
+			CChunk *pTmp = m_pFirstChunk;
+			m_pFirstChunk = m_pFirstChunk->m_pNext;
+			delete pTmp;
+		}
+	}
+	else
+	{
+		m_pFirstChunk->m_pMessage += Length;
+	}
+
+	m_Length -= Length;
+}
+/* CPrintfBuffer */
+
+void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
+{
+	int client = IndexOfEdict(pEdict);
+
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
+	if(pNetChan == NULL)
+		return;
+
+	CPrintfBuffer *pPrintfBuffer = &m_Players[client].m_PrintfBuffer;
+
+	size_t nMsgLen = strlen(szMsg);
+	int nNumBitsWritten = pNetChan->GetNumBitsWritten(false);
+
+	// 2048 = SVC_Print buffersize (-1 for \0)
+	// 6 = NETMSG_TYPE_BITS, +1 for \0
+	if(pPrintfBuffer->m_StopSend || (nNumBitsWritten + 6) / 8 + nMsgLen + 1 >= 2048)
+	{
+		// Don't send any more messages for this player until the buffer is empty.
+		pPrintfBuffer->m_StopSend = true;
+
+		pPrintfBuffer->Append(szMsg, nMsgLen);
+		RETURN_META(MRES_SUPERCEDE);
+		return;
+	}
+
+	SH_CALL(engine, &IVEngineServer::ClientPrintf)(pEdict, szMsg);
+
+	RETURN_META(MRES_SUPERCEDE);
+}
+
+void PlayerManager::OnGameFrame()
+{
+	for(int client = 1; client <= m_maxClients; client++)
+	{
+		CPlayer *pPlayer = &m_Players[client];
+		if(!pPlayer->IsInGame())
+			continue;
+
+		INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
+		if(pNetChan == NULL)
+			continue;
+
+		CPrintfBuffer *pPrintfBuffer = &pPlayer->m_PrintfBuffer;
+
+		const CPrintfBuffer::CChunk *pChunk;
+		while((pChunk = pPrintfBuffer->Get()))
+		{
+			int nMsgLen = pChunk->m_Length;
+			int nNumBitsWritten = pNetChan->GetNumBitsWritten(false);
+
+			// 2048 = SVC_Print buffersize (-1 for \0)
+			// 6 = NETMSG_TYPE_BITS, +1 for \0
+			if((nNumBitsWritten + 6) / 8 + nMsgLen + 1 >= 2048)
+				break;
+
+			SH_CALL(engine, &IVEngineServer::ClientPrintf)(pPlayer->m_pEdict, pChunk->m_pMessage);
+
+			pPrintfBuffer->Consumed(nMsgLen);
+		}
+
+		// Buffer is empty, send new messages without enqueing again.
+		if(pChunk == NULL)
+			pPrintfBuffer->m_StopSend = false;
 	}
 }
 
