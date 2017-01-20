@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <math.h>
 #include <iostream>
+#include <link.h>
 #include "gdc.h"
 #include "GameConfigs.h"
 #include "MemoryUtils.h"
@@ -619,7 +620,10 @@ int checkSigStringL(void *handle, const char* symbol)
 
 		if (real_bytes >= 1)
 		{
-			mu.FindPattern(handle, (char*)real_sig, real_bytes, matches, dummy);
+			// The pointer returned by dlopen is not inside the loaded librarys memory region.
+			struct link_map *dlmap = (struct link_map *)handle;
+			
+			mu.FindPattern((void *)dlmap->l_addr, (char*)real_sig, real_bytes, matches, dummy);
 		}
 	}
 
