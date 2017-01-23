@@ -402,7 +402,14 @@ native void RegAdminCmd(const char[] cmd,
 					const char[] description="",
 					const char[] group="",
 					int flags=0);
-					
+
+/**
+ * Returns whether there is a command callback available.
+ *
+ * @return				True if called from inside a command callback.
+ */
+native bool IsCommandCallback();
+
 /**
  * Returns the number of arguments from the current console or server command.
  * @note Unlike the HL2 engine call, this does not include the command itself.

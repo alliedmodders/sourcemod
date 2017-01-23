@@ -84,6 +84,25 @@ native int ProcessTargetString(const char[] pattern,
 							   int tn_maxlength,
 							   bool &tn_is_ml);
 
+
+/**
+ * Retrieves arguments that were passed to the last ProcessTargetString call.
+ *
+ * @param pattern		Buffer to store the pattern.
+ * @param p_maxlen		Maximum length of the pattern buffer.
+ * @param admin			OUTPUT: Admin performing the action, or 0 if the server.
+ * @param filter_flags	OUTPUT: Filter flags.
+ * @noreturn
+ */
+native void GetLastProcessTargetString(char[] pattern,
+								  int p_maxlen,
+								  int &admin,
+								  int &filter_flags);
+
+#undef REQUIRE_PLUGIN
+#include <DynamicTargeting>
+#define REQUIRE_PLUGIN
+
 /**
  * Replies to a client with a given message describing a targetting 
  * failure reason.
@@ -93,7 +112,7 @@ native int ProcessTargetString(const char[] pattern,
  * @param client        Client index, or 0 for server.
  * @param reason        COMMAND_TARGET reason.
  */
-stock void ReplyToTargetError(int client, int reason)
+stock void ReplyToTargetError(int client, int reason, bool dynamic=true)
 {
 	switch (reason)
 	{
@@ -128,6 +147,34 @@ stock void ReplyToTargetError(int client, int reason)
 		case COMMAND_TARGET_AMBIGUOUS:
 		{
 			ReplyToCommand(client, "[SM] %t", "More than one client matched");
+
+			if(dynamic &&
+				GetFeatureStatus(FeatureType_Native, "GetLastProcessTargetString") == FeatureStatus_Available &&
+				LibraryExists("DynamicTargeting"))
+			{
+				if(GetFeatureStatus(FeatureType_Native, "IsCommandCallback") == FeatureStatus_Available &&
+					!IsCommandCallback())
+				{
+					return;
+				}
+
+				char sCommand[128];
+				GetCmdArg(0, sCommand, sizeof(sCommand));
+
+				char sArgString[256];
+				GetCmdArgString(sArgString, sizeof(sArgString));
+
+				char pattern[MAX_TARGET_LENGTH];
+				int admin;
+				int filter_flags;
+
+				GetLastProcessTargetString(pattern, sizeof(pattern), admin, filter_flags);
+
+				if(!admin || !IsClientInGame(admin) || IsFakeClient(admin))
+					return;
+
+				AmbiguousMenu(admin, sCommand, sArgString, pattern, filter_flags);
+			}
 		}
 	}
 }
