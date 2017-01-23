@@ -137,11 +137,14 @@ stock void ReplyToTargetError(int client, int reason)
  *
  * @param pattern       Pattern name.
  * @param clients       Array to fill with unique, valid client indexes.
+ * @param client        Client that triggered this filter.
  * @return              True if pattern was recognized, false otherwise.
  */
 typeset MultiTargetFilter {
 	function bool (const char[] pattern, Handle clients);
 	function bool (const char[] pattern, ArrayList clients);
+	function bool (const char[] pattern, Handle clients, int client);
+	function bool (const char[] pattern, ArrayList clients, int client);
 }
 
 /**

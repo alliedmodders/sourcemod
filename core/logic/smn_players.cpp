@@ -141,6 +141,7 @@ public: //ICommandTargetProcessor
 
 				smtf->fun->PushString(info->pattern);
 				smtf->fun->PushCell(ahc.getClone());
+				smtf->fun->PushCell(info->admin);
 				cell_t result = 0;
 				if (smtf->fun->Execute(&result) != SP_ERROR_NONE || !result)
 					return false;
