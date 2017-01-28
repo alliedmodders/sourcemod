@@ -33,10 +33,10 @@
 #define _include_sourcemod_hashtable_h_
 
 /**
- * @file sm_stringhashmap.h
+ * @file sm_hashmap.h
  *
  * @brief Generic Key -> Value map class, based on a hash table. The Key, in
- * this case, is always an ASCII string, and the value type is a template
+ * this case, is always an ASCII string or Int, and the value type is a template
  * parameter. This class is intended as a drop-in replacement for KTrie
  * (though the retrieve() signature has been improved).
  *
@@ -55,10 +55,10 @@ namespace SourceMod
 
 namespace detail
 {
-	class CharsAndLength
+	class CharHash
 	{
 	 public:
-	  CharsAndLength(const char *str)
+	  CharHash(const char *str)
 		: str_(str),
 		  length_(0)
 	  {
@@ -88,24 +88,61 @@ namespace detail
 
 	struct StringHashMapPolicy
 	{
-		static inline bool matches(const CharsAndLength &lookup, const ke::AString &key) {
+		static inline bool matches(const CharHash &lookup, const ke::AString &key) {
 			return lookup.length() == key.length() &&
 				   memcmp(lookup.chars(), key.chars(), key.length()) == 0;
 		}
-		static inline uint32_t hash(const CharsAndLength &key) {
+		static inline uint32_t hash(const CharHash &key) {
+			return key.hash();
+		}
+	};
+
+	class IntHash
+	{
+	 public:
+	  IntHash(const int v)
+	  	: value_(v)
+	  {
+	  	/* Credit: Thomas Mueller @ http://stackoverflow.com/questions/664014 */
+	  	hash_ = v;
+	  	hash_ = ((hash_ >> 16) ^ hash_) * 0x45d9f3b;
+	  	hash_ = ((hash_ >> 16) ^ hash_) * 0x45d9f3b;
+	  	hash_ = (hash_ >> 16) ^ hash_;
+	  }
+
+	  uint32_t hash() const {
+	  	return hash_;
+	  }
+	  const int value() const {
+	  	return value_;
+	  }
+	  size_t length() const {
+	  	return sizeof(int);
+	  }
+
+	 private:
+	  const int value_;
+	  uint32_t hash_;
+	};
+
+	struct IntHashMapPolicy
+	{
+		static inline bool matches(const IntHash &lookup, const int compare) {
+			return lookup.value() == compare;
+		}
+		static inline uint32_t hash(const IntHash &key) {
 			return key.hash();
 		}
 	};
 }
 
-template <typename T>
-class StringHashMap
+template <typename T, typename K, typename P, typename C, typename KT>
+class HashMap
 {
-	typedef detail::CharsAndLength CharsAndLength;
-	typedef ke::HashMap<ke::AString, T, detail::StringHashMapPolicy> Internal;
+	typedef ke::HashMap<K, T, P> Internal;
 
 public:
-	StringHashMap()
+	HashMap()
 		: internal_(ke::SystemAllocatorPolicy()),
 		  memory_used_(0)
 	{
@@ -118,9 +155,9 @@ public:
 	typedef typename Internal::iterator iterator;
 
 	// Some KTrie-like helper functions.
-	bool retrieve(const char *aKey, T *aResult = NULL)
+	bool retrieve(KT aKey, T *aResult = NULL)
 	{
-		CharsAndLength key(aKey);
+		C key(aKey);
 		Result r = internal_.find(key);
 		if (!r.found())
 			return false;
@@ -129,22 +166,22 @@ public:
 		return true;
 	}
 
-	Result find(const char *aKey)
+	Result find(KT aKey)
 	{
-		CharsAndLength key(aKey);
+		C key(aKey);
 		return internal_.find(key);
 	}
 
-	bool contains(const char *aKey)
+	bool contains(KT aKey)
 	{
-		CharsAndLength key(aKey);
+		C key(aKey);
 		Result r = internal_.find(key);
 		return r.found();
 	}
 
-	bool replace(const char *aKey, const T &value)
+	bool replace(KT aKey, const T &value)
 	{
-		CharsAndLength key(aKey);
+		C key(aKey);
 		Insert i = internal_.findForAdd(key);
 		if (!i.found())
 		{
@@ -157,9 +194,9 @@ public:
 		return true;
 	}
 
-	bool insert(const char *aKey, const T &value)
+	bool insert(KT aKey, const T &value)
 	{
-		CharsAndLength key(aKey);
+		C key(aKey);
 		Insert i = internal_.findForAdd(key);
 		if (i.found())
 			return false;
@@ -171,9 +208,9 @@ public:
 		return true;
 	}
 
-	bool remove(const char *aKey)
+	bool remove(KT aKey)
 	{
-		CharsAndLength key(aKey);
+		C key(aKey);
 		Result r = internal_.find(key);
 		if (!r.found())
 			return false;
@@ -208,9 +245,9 @@ public:
 	}
 
 
-	Insert findForAdd(const char *aKey)
+	Insert findForAdd(KT aKey)
 	{
-		CharsAndLength key(aKey);
+		C key(aKey);
 		return internal_.findForAdd(key);
 	}
 
@@ -223,7 +260,7 @@ public:
 	}
 
 	// Only value needs to be set after.
-	bool add(Insert &i, const char *aKey)
+	bool add(Insert &i, KT aKey)
 	{
 		if (!internal_.add(i))
 			return false;
@@ -235,6 +272,12 @@ private:
 	Internal internal_;
 	size_t memory_used_;
 };
+
+template <typename T>
+using StringHashMap = HashMap<T, ke::AString, detail::StringHashMapPolicy, detail::CharHash, const char *>;
+
+template <typename T>
+using IntHashMap = HashMap<T, int, detail::IntHashMapPolicy, detail::IntHash, const int>;
 
 }
 

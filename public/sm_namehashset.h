@@ -43,7 +43,7 @@
 #include <am-allocator-policies.h>
 #include <am-hashmap.h>
 #include <am-string.h>
-#include "sm_stringhashmap.h"
+#include "sm_hashmap.h"
 
 namespace SourceMod
 {
@@ -59,7 +59,7 @@ namespace SourceMod
 template <typename T, typename KeyPolicy = T>
 class NameHashSet : public ke::SystemAllocatorPolicy
 {
-	typedef detail::CharsAndLength CharsAndLength;
+	typedef detail::CharHash CharHash;
 
 	// Default policy type: the two types are different. Use them directly.
 	template <typename KeyType, typename KeyPolicyType>
@@ -67,12 +67,12 @@ class NameHashSet : public ke::SystemAllocatorPolicy
 	{
 		typedef KeyType Payload;
 
-		static uint32_t hash(const CharsAndLength &key)
+		static uint32_t hash(const CharHash &key)
 		{
 			return key.hash();
 		}
 
-		static bool matches(const CharsAndLength &key, const KeyType &value)
+		static bool matches(const CharHash &key, const KeyType &value)
 		{
 			return KeyPolicyType::matches(key.chars(), value);
 		}
@@ -85,12 +85,12 @@ class NameHashSet : public ke::SystemAllocatorPolicy
 	{
 		typedef KeyType *Payload;
 
-		static uint32_t hash(const detail::CharsAndLength &key)
+		static uint32_t hash(const detail::CharHash &key)
 		{
 			return key.hash();
 		}
 
-		static bool matches(const CharsAndLength &key, const KeyType *value)
+		static bool matches(const CharHash &key, const KeyType *value)
 		{
 			return KeyType::matches(key.chars(), value);
 		}
@@ -127,7 +127,7 @@ public:
 
 	bool retrieve(const char *aKey, T *value)
 	{
-		CharsAndLength key(aKey);
+		CharHash key(aKey);
 		Result r = table_.find(aKey);
 		if (!r.found())
 			return false;
@@ -138,7 +138,7 @@ public:
 	template <typename U>
 	bool insert(const char *aKey, U &&value)
 	{
-		CharsAndLength key(aKey);
+		CharHash key(aKey);
 		Insert i = table_.findForAdd(key);
 		if (i.found())
 			return false;
@@ -147,14 +147,14 @@ public:
 
 	bool contains(const char *aKey)
 	{
-		CharsAndLength key(aKey);
+		CharHash key(aKey);
 		Result r = table_.find(aKey);
 		return r.found();
 	}
 
 	bool remove(const char *aKey)
 	{
-		CharsAndLength key(aKey);
+		CharHash key(aKey);
 		Result r = table_.find(key);
 		if (!r.found())
 			return false;

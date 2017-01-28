@@ -166,5 +166,55 @@ private:
 	BaseMemTable m_table;
 };
 
+class BaseIntTable
+{
+public:
+	BaseIntTable(unsigned int init_size) : m_table(init_size)
+	{
+	}
+public:
+	/** 
+	 * Adds a int to the int table and returns its index.
+	 */
+	int AddInt(const int x)
+	{
+		int idx;
+		int *addr;
+
+		idx = m_table.CreateMem(sizeof(int), (void **)&addr);
+		*addr = x;
+		return idx;
+	}
+
+	/**
+	 * Given an index into the int table, returns the associated int.
+	 */
+	inline const int GetInt(int index)
+	{
+		return *(const int *)m_table.GetAddress(index);
+	}
+
+	/**
+	 * Scraps the int table. For caching purposes, the memory
+	 * is not freed, however subsequent calls to AddInt() will 
+	 * begin at the first index again.
+	 */
+	void Reset()
+	{
+		m_table.Reset();
+	}
+
+	/**
+	 * Returns the parent BaseMemTable that this int table uses.
+	 */
+	inline BaseMemTable *GetMemTable()
+	{
+		return &m_table;
+	}
+private:
+	BaseMemTable m_table;
+};
+
+
 #endif //_INCLUDE_SOURCEMOD_CORE_STRINGTABLE_H_
 

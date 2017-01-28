@@ -34,7 +34,7 @@
 
 #include <IADTFactory.h>
 #include "common_logic.h"
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 
 using namespace SourceMod;
 

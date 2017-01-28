@@ -87,7 +87,6 @@ methodmap StringMap < Handle
 
 	// Retrieves an array in a Map.
 	//
-	// @param map        Map Handle.
 	// @param key        Key string.
 	// @param array      Buffer to store array.
 	// @param max_size   Maximum size of array buffer.
@@ -124,6 +123,93 @@ methodmap StringMap < Handle
 	}
 };
 
+methodmap IntMap < Handle
+{
+	// Creates a hash map. A hash map is a container that can map integers (called
+	// "keys") to arbitrary values (cells, arrays, or strings). Keys in a hash map
+	// are unique. That is, there is at most one entry in the map for a given key.
+	//
+	// Insertion, deletion, and lookup in a hash map are all considered to be fast
+	// operations, amortized to O(1), or constant time.
+	//
+	// The word "Trie" in this API is historical. As of SourceMod 1.6, tries have
+	// been internally replaced with hash tables, which have O(1) insertion time
+	// instead of O(n).
+	//
+	// The IntMap must be freed via delete or CloseHandle().
+	public native IntMap();
+
+	// Sets a value in a hash map, either inserting a new entry or replacing an old one.
+	//
+	// @param key        Key integer.
+	// @param value      Value to store at this key.
+	// @param replace    If false, operation will fail if the key is already set.
+	// @return           True on success, false on failure.
+	public native bool SetValue(const int key, any value, bool replace=true);
+
+	// Sets an array value in a Map, either inserting a new entry or replacing an old one.
+	//
+	// @param key        Key integer.
+	// @param array      Array to store.
+	// @param num_items  Number of items in the array.
+	// @param replace    If false, operation will fail if the key is already set.
+	// @return           True on success, false on failure.
+	public native bool SetArray(const int key, const any[] array, int num_items, bool replace=true);
+
+	// Sets a string value in a Map, either inserting a new entry or replacing an old one.
+	//
+	// @param key        Key integer.
+	// @param value      String to store.
+	// @param replace    If false, operation will fail if the key is already set.
+	// @return           True on success, false on failure.
+	public native bool SetString(const int key, const char[] value, bool replace=true);
+
+	// Retrieves a value in a Map.
+	//
+	// @param key        Key integer.
+	// @param value      Variable to store value.
+	// @return           True on success.  False if the key is not set, or the key is set 
+	//                   as an array or string (not a value).
+	public native bool GetValue(const int key, any &value);
+
+	// Retrieves an array in a Map.
+	//
+	// @param key        Key integer.
+	// @param array      Buffer to store array.
+	// @param max_size   Maximum size of array buffer.
+	// @param size       Optional parameter to store the number of elements written to the buffer.
+	// @return           True on success.  False if the key is not set, or the key is set 
+	//                   as a value or string (not an array).
+	public native bool GetArray(const int key, any[] array, int max_size, int &size=0);
+
+	// Retrieves a string in a Map.
+	//
+	// @param key        Key integer.
+	// @param value      Buffer to store value.
+	// @param max_size   Maximum size of string buffer.
+	// @param size       Optional parameter to store the number of bytes written to the buffer.
+	// @return           True on success.  False if the key is not set, or the key is set 
+	//                   as a value or array (not a string).
+	public native bool GetString(const int key, char[] value, int max_size, int &size=0);
+
+	// Removes a key entry from a Map.
+	//
+	// @param key        Key integer.
+	// @return           True on success, false if the value was never set.
+	public native bool Remove(const int key);
+
+	// Clears all entries from a Map.
+	public native void Clear();
+
+	// Create a snapshot of the map's keys. See IntMapSnapshot.
+	public native IntMapSnapshot Snapshot();
+
+	// Retrieves the number of elements in a map.
+	property int Size {
+		public native get();
+	}
+};
+
 // A StringMapSnapshot is created via StringMap.Snapshot(). It captures the
 // keys on a map so they can be read. Snapshots must be freed with delete or
 // CloseHandle().
@@ -152,6 +238,24 @@ methodmap StringMapSnapshot < Handle
 	public native int GetKey(int index, char[] buffer, int maxlength);
 };
 
+// A IntMapSnapshot is created via IntMap.Snapshot(). It captures the
+// keys on a map so they can be read. Snapshots must be freed with delete or
+// CloseHandle().
+methodmap IntMapSnapshot < Handle
+{
+	// Returns the number of keys in the map snapshot.
+	property int Length {
+		public native get();
+	}
+
+	// Retrieves the key integer of a given key in a map snapshot.
+	// 
+	// @param index      Key index (starting from 0).
+	// @return           The key integer
+	// @error            Index out of range.
+	public native int GetKey(int index);
+};
+
 /**
  * Creates a hash map. A hash map is a container that can map strings (called
  * "keys") to arbitrary values (cells, arrays, or strings). Keys in a hash map
@@ -169,6 +273,22 @@ methodmap StringMapSnapshot < Handle
 native StringMap CreateTrie();
 
 /**
+ * Creates a hash map. A hash map is a container that can map integers (called
+ * "keys") to arbitrary values (cells, arrays, or strings). Keys in a hash map
+ * are unique. That is, there is at most one entry in the map for a given key.
+ *
+ * Insertion, deletion, and lookup in a hash map are all considered to be fast
+ * operations, amortized to O(1), or constant time.
+ *
+ * The word "Trie" in this API is historical. As of SourceMod 1.6, tries have
+ * been internally replaced with hash tables, which have O(1) insertion time
+ * instead of O(n).
+ *
+ * @return 			New Map Handle, which must be freed via CloseHandle().
+ */
+native IntMap CreateIntTrie();
+
+/**
  * Sets a value in a hash map, either inserting a new entry or replacing an old one.
  *
  * @param map		Map Handle.
@@ -179,6 +299,18 @@ native StringMap CreateTrie();
  * @error			Invalid Handle.
  */
 native bool SetTrieValue(Handle map, const char[] key, any value, bool replace=true);
+
+/**
+ * Sets a value in a hash map, either inserting a new entry or replacing an old one.
+ *
+ * @param map		Map Handle.
+ * @param key		Key integer.
+ * @param value		Value to store at this key.
+ * @param replace	If false, operation will fail if the key is already set.
+ * @return			True on success, false on failure.
+ * @error			Invalid Handle.
+ */
+native bool SetIntTrieValue(Handle map, const int key, any value, bool replace=true);
 
 /**
  * Sets an array value in a Map, either inserting a new entry or replacing an old one.
@@ -194,6 +326,19 @@ native bool SetTrieValue(Handle map, const char[] key, any value, bool replace=t
 native bool SetTrieArray(Handle map, const char[] key, const any[] array, int num_items, bool replace=true);
 
 /**
+ * Sets an array value in a Map, either inserting a new entry or replacing an old one.
+ *
+ * @param map		Map Handle.
+ * @param key		Key integer.
+ * @param array		Array to store.
+ * @param num_items	Number of items in the array.
+ * @param replace	If false, operation will fail if the key is already set.
+ * @return			True on success, false on failure.
+ * @error			Invalid Handle.
+ */
+native bool SetIntTrieArray(Handle map, const int key, const any[] array, int num_items, bool replace=true);
+
+/**
  * Sets a string value in a Map, either inserting a new entry or replacing an old one.
  *
  * @param map		Map Handle.
@@ -206,6 +351,18 @@ native bool SetTrieArray(Handle map, const char[] key, const any[] array, int nu
 native bool SetTrieString(Handle map, const char[] key, const char[] value, bool replace=true);
 
 /**
+ * Sets a string value in a Map, either inserting a new entry or replacing an old one.
+ *
+ * @param map		Map Handle.
+ * @param key		Key integer.
+ * @param value		String to store.
+ * @param replace	If false, operation will fail if the key is already set.
+ * @return			True on success, false on failure.
+ * @error			Invalid Handle.
+ */
+native bool SetIntTrieString(Handle map, const int key, const char[] value, bool replace=true);
+
+/**
  * Retrieves a value in a Map.
  *
  * @param map		Map Handle.
@@ -216,6 +373,18 @@ native bool SetTrieString(Handle map, const char[] key, const char[] value, bool
  * @error			Invalid Handle.
  */
 native bool GetTrieValue(Handle map, const char[] key, any &value);
+
+/**
+ * Retrieves a value in a Map.
+ *
+ * @param map		Map Handle.
+ * @param key		Key integer.
+ * @param value		Variable to store value.
+ * @return			True on success.  False if the key is not set, or the key is set 
+ *					as an array or string (not a value).
+ * @error			Invalid Handle.
+ */
+native bool GetIntTrieValue(Handle map, const int key, any &value);
 
 /**
  * Retrieves an array in a Map.
@@ -232,6 +401,20 @@ native bool GetTrieValue(Handle map, const char[] key, any &value);
 native bool GetTrieArray(Handle map, const char[] key, any[] array, int max_size, int &size=0);
 
 /**
+ * Retrieves an array in a Map.
+ *
+ * @param map		Map Handle.
+ * @param key		Key integer.
+ * @param array		Buffer to store array.
+ * @param max_size	Maximum size of array buffer.
+ * @param size		Optional parameter to store the number of elements written to the buffer.
+ * @return			True on success.  False if the key is not set, or the key is set 
+ *					as a value or string (not an array).
+ * @error			Invalid Handle.
+ */
+native bool GetIntTrieArray(Handle map, const int key, any[] array, int max_size, int &size=0);
+
+/**
  * Retrieves a string in a Map.
  *
  * @param map		Map Handle.
@@ -246,6 +429,20 @@ native bool GetTrieArray(Handle map, const char[] key, any[] array, int max_size
 native bool GetTrieString(Handle map, const char[] key, char[] value, int max_size, int &size=0);
 
 /**
+ * Retrieves a string in a Map.
+ *
+ * @param map		Map Handle.
+ * @param key		Key integer.
+ * @param value		Buffer to store value.
+ * @param max_size	Maximum size of string buffer.
+ * @param size		Optional parameter to store the number of bytes written to the buffer.
+ * @return			True on success.  False if the key is not set, or the key is set 
+ *					as a value or array (not a string).
+ * @error			Invalid Handle.
+ */
+native bool GetIntTrieString(Handle map, const int key, char[] value, int max_size, int &size=0);
+
+/**
  * Removes a key entry from a Map.
  *
  * @param map		Map Handle.
@@ -256,12 +453,30 @@ native bool GetTrieString(Handle map, const char[] key, char[] value, int max_si
 native bool RemoveFromTrie(Handle map, const char[] key);
 
 /**
+ * Removes a key entry from a Map.
+ *
+ * @param map		Map Handle.
+ * @param key		Key integer
+ * @return			True on success, false if the value was never set.
+ * @error			Invalid Handle.
+ */
+native bool RemoveFromIntTrie(Handle map, const int key);
+
+/**
  * Clears all entries from a Map.
  *
  * @param map		Map Handle.
  * @error			Invalid Handle.
  */
 native void ClearTrie(Handle map);
+
+/**
+ * Clears all entries from a Map.
+ *
+ * @param map		Map Handle.
+ * @error			Invalid Handle.
+ */
+native void ClearIntTrie(Handle map);
 
 /**
  * Retrieves the number of elements in a map.
@@ -271,6 +486,15 @@ native void ClearTrie(Handle map);
  * @error			Invalid Handle.
  */
 native int GetTrieSize(Handle map);
+
+/**
+ * Retrieves the number of elements in a map.
+ *
+ * @param map		Map Handle.
+ * @return			Number of elements in the trie.
+ * @error			Invalid Handle.
+ */
+native int GetIntTrieSize(Handle map);
 
 /**
  * Creates a snapshot of all keys in the map. If the map is changed after this
@@ -283,6 +507,16 @@ native int GetTrieSize(Handle map);
 native Handle CreateTrieSnapshot(Handle map);
 
 /**
+ * Creates a snapshot of all keys in the map. If the map is changed after this
+ * call, the changes are not reflected in the snapshot. Keys are not sorted.
+ *
+ * @param map       Map Handle.
+ * @return			New Map Snapshot Handle, which must be closed via CloseHandle().
+ * @error			Invalid Handle.
+ */
+native Handle CreateIntTrieSnapshot(Handle map);
+
+/**
  * Returns the number of keys in a map snapshot. Note that this may be
  * different from the size of the map, since the map can change after the
  * snapshot of its keys was taken.
@@ -292,6 +526,17 @@ native Handle CreateTrieSnapshot(Handle map);
  * @error			Invalid Handle.
  */
 native int TrieSnapshotLength(Handle snapshot);
+
+/**
+ * Returns the number of keys in a map snapshot. Note that this may be
+ * different from the size of the map, since the map can change after the
+ * snapshot of its keys was taken.
+ *
+ * @param snapshot	Map snapshot.
+ * @return			Number of keys.
+ * @error			Invalid Handle.
+ */
+native int IntTrieSnapshotLength(Handle snapshot);
 
 /**
  * Returns the buffer size required to store a given key. That is, it returns
@@ -315,3 +560,13 @@ native int TrieSnapshotKeyBufferSize(Handle snapshot, int index);
  * @error			Invalid Handle or index out of range.
  */
 native int GetTrieSnapshotKey(Handle snapshot, int index, char[] buffer, int maxlength);
+
+/**
+ * Retrieves the key string of a given key in a map snapshot.
+ *
+ * @param snapshot	Map snapshot.
+ * @param index		Key index (starting from 0).
+ * @return			The key interger.
+ * @error			Invalid Handle or index out of range.
+ */
+native int GetIntTrieSnapshotKey(Handle snapshot, int index);
