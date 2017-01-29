@@ -498,8 +498,8 @@ typedef RequestFrameCallback = function void (any data);
 
 /**
  * Creates a single use Next Frame hook.
- * @note If you need to queue an action even when the server is hibernating,
- * Use RequestFrame instead
+ * @note If you need to queue an action even when the server is hibernating
+ * use RequestThink instead.
  *
  * @param Function	Function to call on the next frame.
  * @param data		Value to be passed on the invocation of the Function.
