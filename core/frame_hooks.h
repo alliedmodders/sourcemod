@@ -51,6 +51,6 @@ void AddFrameAction(const FrameAction & action);
 void RunFrameHooks(bool simulating);
 
 void AddThinkAction(const FrameAction & action);
-void RunThinkHooks(bool FinalTick);
+void RunThinkHooks(bool finalTick);
 
 #endif //_INCLUDE_SOURCEMOD_FRAME_HOOKS_H_

@@ -699,6 +699,36 @@ void SourceModBase::ProcessGameFrameHooks(bool simulating)
 	}
 }
 
+void SourceModBase::AddServerThinkHook(GAME_FRAME_HOOK hook)
+{
+	m_think_hooks.push_back(hook);
+}
+
+void SourceModBase::RemoveServerThinkHook(GAME_FRAME_HOOK hook)
+{
+	for (size_t i = 0; i < m_think_hooks.size(); i++)
+	{
+		if (m_think_hooks[i] == hook)
+		{
+			m_think_hooks.erase(m_think_hooks.iterAt(i));
+			return;
+		}
+	}
+}
+
+void SourceModBase::ProcessServerThinkHooks(bool finalTick)
+{
+	if (m_think_hooks.size() == 0)
+	{
+		return;
+	}
+
+	for (size_t i = 0; i < m_think_hooks.size(); i++)
+	{
+		m_think_hooks[i](finalTick);
+	}
+}
+
 size_t SourceModBase::Format(char *buffer, size_t maxlength, const char *fmt, ...)
 {
 	size_t len;

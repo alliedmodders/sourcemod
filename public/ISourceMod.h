@@ -328,6 +328,20 @@ namespace SourceMod
 		* @param data		Data to pass to function.
 		*/
 		virtual void AddThinkAction(FRAMEACTION fn, void *data) = 0;
+
+		/**
+		* @brief Adds a function to be called each server think.
+		*
+		* @param hook		Hook function.
+		*/
+		virtual void AddServerThinkHook(GAME_FRAME_HOOK hook) = 0;
+
+		/**
+		* @brief Removes one server think hook matching the given function.
+		*
+		* @param hook		Hook function.
+		*/
+		virtual void RemoveServerThinkHook(GAME_FRAME_HOOK hook) = 0;
 	};
 }
 

@@ -244,9 +244,9 @@ void TimerSystem::GameFrame(bool simulating)
 	}
 }
 
-void TimerSystem::Think(bool FinalTick)
+void TimerSystem::Think(bool finalTick)
 {
-	RunThinkHooks(FinalTick);
+	RunThinkHooks(finalTick);
 
 	if (m_pOnServerThink->GetFunctionCount())
 	{

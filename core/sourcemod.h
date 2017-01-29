@@ -128,6 +128,9 @@ public: // ISourceMod
 	void AddGameFrameHook(GAME_FRAME_HOOK hook);
 	void RemoveGameFrameHook(GAME_FRAME_HOOK hook);
 	void ProcessGameFrameHooks(bool simulating);
+	void AddServerThinkHook(GAME_FRAME_HOOK hook);
+	void RemoveServerThinkHook(GAME_FRAME_HOOK hook);
+	void ProcessServerThinkHooks(bool finalTick);
 	size_t Format(char *buffer, size_t maxlength, const char *fmt, ...);
 	size_t FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
 	void AddFrameAction(FRAMEACTION fn, void *data);
@@ -148,6 +151,7 @@ private:
 	unsigned int m_target;
 	bool m_GotBasePath;
 	CVector<GAME_FRAME_HOOK> m_frame_hooks;
+	CVector<GAME_FRAME_HOOK> m_think_hooks;
 };
 
 void UTIL_ConsolePrintVa(const char *fmt, va_list ap);

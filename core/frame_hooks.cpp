@@ -152,7 +152,7 @@ void AddThinkAction(const FrameAction & action)
 	think_mutex->Unlock();
 }
 
-void RunThinkHooks(bool FinalTick)
+void RunThinkHooks(bool finalTick)
 {
 	/* It's okay if this check races. */
 	if (think_queue->size())
@@ -174,4 +174,5 @@ void RunThinkHooks(bool FinalTick)
 			item.action(item.data);
 		}
 	}
+	g_SourceMod.ProcessServerThinkHooks(finalTick);
 }
