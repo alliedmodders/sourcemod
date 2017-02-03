@@ -55,10 +55,10 @@ namespace SourceMod
 
 namespace detail
 {
-	class CharHash
+	class CharsAndLength
 	{
 	 public:
-	  CharHash(const char *str)
+	  CharsAndLength(const char *str)
 		: str_(str),
 		  length_(0)
 	  {
@@ -88,11 +88,11 @@ namespace detail
 
 	struct StringHashMapPolicy
 	{
-		static inline bool matches(const CharHash &lookup, const ke::AString &key) {
+		static inline bool matches(const CharsAndLength &lookup, const ke::AString &key) {
 			return lookup.length() == key.length() &&
 				   memcmp(lookup.chars(), key.chars(), key.length()) == 0;
 		}
-		static inline uint32_t hash(const CharHash &key) {
+		static inline uint32_t hash(const CharsAndLength &key) {
 			return key.hash();
 		}
 	};
@@ -274,7 +274,7 @@ private:
 };
 
 template <typename T>
-using StringHashMap = HashMap<T, ke::AString, detail::StringHashMapPolicy, detail::CharHash, const char *>;
+using StringHashMap = HashMap<T, ke::AString, detail::StringHashMapPolicy, detail::CharsAndLength, const char *>;
 
 template <typename T>
 using IntHashMap = HashMap<T, int, detail::IntHashMapPolicy, detail::IntHash, const int>;

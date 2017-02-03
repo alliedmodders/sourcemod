@@ -59,7 +59,7 @@ namespace SourceMod
 template <typename T, typename KeyPolicy = T>
 class NameHashSet : public ke::SystemAllocatorPolicy
 {
-	typedef detail::CharHash CharHash;
+	typedef detail::CharsAndLength CharsAndLength;
 
 	// Default policy type: the two types are different. Use them directly.
 	template <typename KeyType, typename KeyPolicyType>
@@ -67,12 +67,12 @@ class NameHashSet : public ke::SystemAllocatorPolicy
 	{
 		typedef KeyType Payload;
 
-		static uint32_t hash(const CharHash &key)
+		static uint32_t hash(const CharsAndLength &key)
 		{
 			return key.hash();
 		}
 
-		static bool matches(const CharHash &key, const KeyType &value)
+		static bool matches(const CharsAndLength &key, const KeyType &value)
 		{
 			return KeyPolicyType::matches(key.chars(), value);
 		}
@@ -85,12 +85,12 @@ class NameHashSet : public ke::SystemAllocatorPolicy
 	{
 		typedef KeyType *Payload;
 
-		static uint32_t hash(const detail::CharHash &key)
+		static uint32_t hash(const detail::CharsAndLength &key)
 		{
 			return key.hash();
 		}
 
-		static bool matches(const CharHash &key, const KeyType *value)
+		static bool matches(const CharsAndLength &key, const KeyType *value)
 		{
 			return KeyType::matches(key.chars(), value);
 		}
@@ -127,7 +127,7 @@ public:
 
 	bool retrieve(const char *aKey, T *value)
 	{
-		CharHash key(aKey);
+		CharsAndLength key(aKey);
 		Result r = table_.find(aKey);
 		if (!r.found())
 			return false;
@@ -138,7 +138,7 @@ public:
 	template <typename U>
 	bool insert(const char *aKey, U &&value)
 	{
-		CharHash key(aKey);
+		CharsAndLength key(aKey);
 		Insert i = table_.findForAdd(key);
 		if (i.found())
 			return false;
@@ -147,14 +147,14 @@ public:
 
 	bool contains(const char *aKey)
 	{
-		CharHash key(aKey);
+		CharsAndLength key(aKey);
 		Result r = table_.find(aKey);
 		return r.found();
 	}
 
 	bool remove(const char *aKey)
 	{
-		CharHash key(aKey);
+		CharsAndLength key(aKey);
 		Result r = table_.find(key);
 		if (!r.found())
 			return false;
