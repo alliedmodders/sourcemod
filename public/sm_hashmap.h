@@ -37,7 +37,7 @@
  *
  * @brief Generic Key -> Value map class, based on a hash table. The Key, in
  * this case, is always an ASCII string or Int, and the value type is a template
- * parameter. This class is intended as a drop-in replacement for KTrie
+ * parameter. This class is intended as a drop-in replacement for KeyLookupTyperie
  * (though the retrieve() signature has been improved).
  *
  * If your Value type already contains the key string, consider using
@@ -136,10 +136,10 @@ namespace detail
 	};
 }
 
-template <typename T, typename K, typename P, typename C, typename KT>
+template <typename T, typename KeyStoreType, typename Policy, typename ContainerType, typename KeyLookupType>
 class HashMap
 {
-	typedef ke::HashMap<K, T, P> Internal;
+	typedef ke::HashMap<KeyStoreType, T, Policy> Internal;
 
 public:
 	HashMap()
@@ -154,10 +154,10 @@ public:
 	typedef typename Internal::Insert Insert;
 	typedef typename Internal::iterator iterator;
 
-	// Some KTrie-like helper functions.
-	bool retrieve(KT aKey, T *aResult = NULL)
+	// Some KeyLookupTyperie-like helper functions.
+	bool retrieve(KeyLookupType aKey, T *aResult = NULL)
 	{
-		C key(aKey);
+		ContainerType key(aKey);
 		Result r = internal_.find(key);
 		if (!r.found())
 			return false;
@@ -166,22 +166,22 @@ public:
 		return true;
 	}
 
-	Result find(KT aKey)
+	Result find(KeyLookupType aKey)
 	{
-		C key(aKey);
+		ContainerType key(aKey);
 		return internal_.find(key);
 	}
 
-	bool contains(KT aKey)
+	bool contains(KeyLookupType aKey)
 	{
-		C key(aKey);
+		ContainerType key(aKey);
 		Result r = internal_.find(key);
 		return r.found();
 	}
 
-	bool replace(KT aKey, const T &value)
+	bool replace(KeyLookupType aKey, const T &value)
 	{
-		C key(aKey);
+		ContainerType key(aKey);
 		Insert i = internal_.findForAdd(key);
 		if (!i.found())
 		{
@@ -194,9 +194,9 @@ public:
 		return true;
 	}
 
-	bool insert(KT aKey, const T &value)
+	bool insert(KeyLookupType aKey, const T &value)
 	{
-		C key(aKey);
+		ContainerType key(aKey);
 		Insert i = internal_.findForAdd(key);
 		if (i.found())
 			return false;
@@ -208,9 +208,9 @@ public:
 		return true;
 	}
 
-	bool remove(KT aKey)
+	bool remove(KeyLookupType aKey)
 	{
-		C key(aKey);
+		ContainerType key(aKey);
 		Result r = internal_.find(key);
 		if (!r.found())
 			return false;
@@ -245,9 +245,9 @@ public:
 	}
 
 
-	Insert findForAdd(KT aKey)
+	Insert findForAdd(KeyLookupType aKey)
 	{
-		C key(aKey);
+		ContainerType key(aKey);
 		return internal_.findForAdd(key);
 	}
 
@@ -260,7 +260,7 @@ public:
 	}
 
 	// Only value needs to be set after.
-	bool add(Insert &i, KT aKey)
+	bool add(Insert &i, KeyLookupType aKey)
 	{
 		if (!internal_.add(i))
 			return false;
