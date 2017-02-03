@@ -97,41 +97,13 @@ namespace detail
 		}
 	};
 
-	class IntHash
-	{
-	 public:
-	  IntHash(const int v)
-	  	: value_(v)
-	  {
-	  	/* Credit: Thomas Mueller @ http://stackoverflow.com/questions/664014 */
-	  	hash_ = v;
-	  	hash_ = ((hash_ >> 16) ^ hash_) * 0x45d9f3b;
-	  	hash_ = ((hash_ >> 16) ^ hash_) * 0x45d9f3b;
-	  	hash_ = (hash_ >> 16) ^ hash_;
-	  }
-
-	  uint32_t hash() const {
-	  	return hash_;
-	  }
-	  const int value() const {
-	  	return value_;
-	  }
-	  size_t length() const {
-	  	return sizeof(int);
-	  }
-
-	 private:
-	  const int value_;
-	  uint32_t hash_;
-	};
-
 	struct IntHashMapPolicy
 	{
-		static inline bool matches(const IntHash &lookup, const int compare) {
-			return lookup.value() == compare;
+		static inline bool matches(const int32_t lookup, const int32_t compare) {
+			return lookup == compare;
 		}
-		static inline uint32_t hash(const IntHash &key) {
-			return key.hash();
+		static inline uint32_t hash(const int32_t key) {
+			return ke::HashInt32(key);
 		}
 	};
 }
@@ -277,7 +249,7 @@ template <typename T>
 using StringHashMap = HashMap<T, ke::AString, detail::StringHashMapPolicy, detail::CharsAndLength, const char *>;
 
 template <typename T>
-using IntHashMap = HashMap<T, int, detail::IntHashMapPolicy, detail::IntHash, const int>;
+using IntHashMap = HashMap<T, int32_t, detail::IntHashMapPolicy, const int32_t, const int32_t>;
 
 }
 
