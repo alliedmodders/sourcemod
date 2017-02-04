@@ -177,6 +177,9 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	{
 		m_bFollowCSGOServerGuidelines = false;
 	}
+
+	m_CSGOBadList.add("m_bIsValveDS");
+	m_CSGOBadList.add("m_bIsQuestEligible");
 #endif
 
 	return true;
