@@ -823,8 +823,8 @@ static void GuessDataPropTypes(typedescription_t *td, cell_t * pSize, cell_t * p
 	case FIELD_POSITION_VECTOR:
 		{
 			*pType = PropField_Vector;
-			*pSize = 12;
-			break;
+			*pSize = 96;
+			return;
 		}
 	case FIELD_SHORT:
 		{
