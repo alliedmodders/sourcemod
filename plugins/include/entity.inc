@@ -72,6 +72,8 @@ enum PropFieldType
 									 thus FindDataMapOffs() will return the constant size
 									 of the string_t container (which is 32 bits right now).
 								 */
+	PropField_Variant,				/**< Valid for Data fields only Type is not known at the field level,
+									(for this call), but dependent on current field value. */
 };
 
 /**
