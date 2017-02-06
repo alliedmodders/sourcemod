@@ -222,6 +222,11 @@
 			"EquipWearable"			"_ZN11CBasePlayer13EquipWearableEP13CEconWearable"
 			"RemoveWearable"		"_ZN11CBasePlayer14RemoveWearableEP13CEconWearable"
 			"GrenadeDetonate"		"_ZN12CBaseGrenade8DetonateEv"
+			"CTFPlayer::ShouldGib"		"_ZN9CTFPlayer9ShouldGibERK15CTakeDamageInfo"
+			"CTFBot::IsAllowedToPickUpFlag"		"_ZNK6CTFBot21IsAllowedToPickUpFlagEv"
+			"CTFPlayer::IsValidObserverTarget"	"_ZN9CTFPlayer21IsValidObserverTargetEP11CBaseEntity"
+			"CTFWeaponBase::GetMaxClip1"		"_ZNK13CTFWeaponBase11GetMaxClip1Ev"
+			"CCaptureFlag::PickUp"			"_ZN12CCaptureFlag6PickUpEP9CTFPlayerb"
 		}
 	}
 
