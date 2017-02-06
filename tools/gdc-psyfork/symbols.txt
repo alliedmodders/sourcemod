@@ -37,6 +37,7 @@
 			
 			// SDKHooks
 			"Blocked"			"_ZN11CBaseEntity7BlockedEPS_"
+			"CanBeAutobalanced"		"_ZN22CBaseMultiplayerPlayer17CanBeAutobalancedEv"
 			"EndTouch"			"_ZN11CBaseEntity8EndTouchEPS_"
 			"FireBullets"		"_ZN11CBaseEntity11FireBulletsERK17FireBulletsInfo_t"
 			"GroundEntChanged"	"_ZN11CBaseEntity35NetworkStateChanged_m_hGroundEntityEPv"
@@ -84,6 +85,7 @@
 			// TF2 ext
 			"CalcIsAttackCriticalHelper"	"_ZN13CTFWeaponBase26CalcIsAttackCriticalHelperEv"
 			"CalcIsAttackCriticalHelperNoCrits"	"_ZN13CTFWeaponBase33CalcIsAttackCriticalHelperNoCritsEv"
+			"IsHolidayActive"		"_ZNK12CTFGameRules15IsHolidayActiveEi"
 
 			// CSSDM
 			"IPointsForKill"	"_ZN14CTeamplayRules14IPointsForKillEP11CBasePlayerS1_"
@@ -230,6 +232,7 @@
 			"engine"	"css"
 			"engine"	"sdk2013"
 			"engine"	"orangebox_valve"
+			"engine"	"bms"
 		}
 
 		"Keys"
@@ -375,6 +378,14 @@
 		"Keys"
 		{
 			"Ignite"	"_ZN14CBaseAnimating6IgniteEfbfbP11CBaseEntity8string_t"
+		}
+	}
+
+	"bms"
+	{
+		"Keys"
+		{
+			"GiveNamedItem"	"_ZN11CBasePlayer13GiveNamedItemEPKciii"
 		}
 	}
 }
