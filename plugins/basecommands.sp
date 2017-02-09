@@ -308,6 +308,16 @@ public Action Command_Cvar(int client, int args)
 	}
 
 	GetCmdArg(2, value, sizeof(value));
+	
+	// The server passes the values of these directly into ServerCommand, following exec. Sanitize.
+	if (StrEqual(cvarname, "servercfgfile", false) || StrEqual(cvarname, "lservercfgfile", false))
+	{
+		int pos = StrContains(value, ";", true);
+		if (pos != -1)
+		{
+			value[pos] = '\0';
+		}
+	}
 
 	if ((hndl.Flags & FCVAR_PROTECTED) != FCVAR_PROTECTED)
 	{

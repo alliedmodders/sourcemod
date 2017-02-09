@@ -1726,7 +1726,7 @@ public:
 		{
 			HandleSecurity sec(ident_, g_pCoreIdent);
 
-			ke::AutoPtr<cell_t[]> data = ke::MakeUnique<cell_t[]>(results_.length());
+			ke::AutoPtr<cell_t[]> data = ke::MakeUnique<cell_t[]>(txn_->entries.length());
 			for (size_t i = 0; i < txn_->entries.length(); i++)
 				data[i] = txn_->entries[i].data;
 
