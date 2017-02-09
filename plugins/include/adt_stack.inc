@@ -109,6 +109,11 @@ methodmap ArrayStack < Handle
 	property bool Empty {
 		public native get();
 	}
+	
+	// Retrieve the blocksize the stack was created with.
+	property int BlockSize {
+		public native get();
+	}
 };
 
 /**
@@ -224,3 +229,12 @@ stock bool PopStack(Handle stack)
 	int value;
 	return PopStackCell(stack, value);
 }
+
+/**
+ * Returns the blocksize the stack was created with.
+ *
+ * @param stack			Stack Handle.
+ * @return 				The blocksize of the stack.
+ * @error				Invalid Handle
+ */
+native int GetStackBlockSize(Handle stack);

@@ -212,6 +212,11 @@ methodmap ArrayList < Handle {
 	property int Length {
 		public native get();
 	}
+	
+	// Retrieve the blocksize the array was created with.
+	property int BlockSize {
+		public native get();
+	}
 };
 
 /**
@@ -439,3 +444,12 @@ native int FindStringInArray(Handle array, const char[] item);
  * @error				Invalid Handle or invalid block
  */
 native int FindValueInArray(Handle array, any item, int block=0);
+
+/**
+ * Returns the blocksize the array was created with.
+ *
+ * @param array			Array Handle.
+ * @return 				The blocksize of the array.
+ * @error				Invalid Handle
+ */
+native int GetArrayBlockSize(Handle array);
