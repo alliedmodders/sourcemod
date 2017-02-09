@@ -1190,6 +1190,7 @@ inline int MatchTypeDescAsInteger(_fieldtypes type, int flags)
 			// Variant, read as int32.
 			return 32;
 		}
+		break;
 	case FIELD_SHORT:
 		return 16;
 	case FIELD_CHARACTER:
@@ -1722,7 +1723,7 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 
 			CBaseEntity *pHandleEntity = g_HL2.ReferenceToEntity(hndl->GetEntryIndex());
 
-			if (!pHandleEntity || hndl != &reinterpret_cast<IHandleEntity *>(pHandleEntity)->GetRefEHandle())
+			if (!pHandleEntity || *hndl != reinterpret_cast<IHandleEntity *>(pHandleEntity)->GetRefEHandle())
 				return -1;
 
 			return g_HL2.EntityToBCompatRef(pHandleEntity);
