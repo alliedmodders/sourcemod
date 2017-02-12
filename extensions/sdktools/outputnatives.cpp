@@ -33,7 +33,7 @@
 #include "variant-t.h"
 #include "output.h"
 
-ICallWrapper *g_pAcceptOutput = NULL;
+ICallWrapper *g_pFireOutput = NULL;
 
 #define ENTINDEX_TO_CBASEENTITY(ref, buffer) \
 	buffer = gamehelpers->ReferenceToEntity(ref); \
@@ -279,7 +279,7 @@ cell_t UnHookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
-static void *FindOutputPointerByName(CBaseEntity *pEntity, const char *outputname)
+void *FindOutputPointerByName(CBaseEntity *pEntity, const char *outputname)
 {
 	datamap_t *pMap = gamehelpers->GetDataMap(pEntity);
 
@@ -291,7 +291,7 @@ static void *FindOutputPointerByName(CBaseEntity *pEntity, const char *outputnam
 			{
 				if (strcmp(pMap->dataDesc[i].externalName,outputname) == 0)
 				{
-					return reinterpret_cast<void *>((int)pEntity + GetTypeDescOffs(&pMap->dataDesc[i]));
+					return reinterpret_cast<void *>((unsigned char*)pEntity + GetTypeDescOffs(&pMap->dataDesc[i]));
 				}
 			}
 		}
@@ -300,17 +300,47 @@ static void *FindOutputPointerByName(CBaseEntity *pEntity, const char *outputnam
 	return NULL;
 }
 
-// AcceptEntityOutput(int ent, const char[] output, int activator, float delay);
-static cell_t AcceptEntityOutput(IPluginContext *pContext, const cell_t *params)
+// FireEntityOutput(int ent, const char[] output, int activator, float delay);
+static cell_t FireEntityOutput(IPluginContext *pContext, const cell_t *params)
 {
-	if (!g_pAcceptOutput)
+	if (!g_pFireOutput)
 	{
 		void *addr;
 		if (!g_pGameConf->GetMemSig("FireOutput", &addr) || !addr)
 		{
-			return pContext->ThrowNativeError("\"AcceptEntityOutput\" not supported by this mod");
+			return pContext->ThrowNativeError("\"FireEntityOutput\" not supported by this mod");
 		}
-		
+#ifdef PLATFORM_WINDOWS
+		int iMaxParam = 8;
+		//Instead of being one param, MSVC broke variant_t param into 5 params..
+		PassInfo pass[8];
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].type = PassType_Basic;
+		pass[0].size = sizeof(int);
+		pass[1].flags = PASSFLAG_BYVAL;
+		pass[1].type = PassType_Basic;
+		pass[1].size = sizeof(int);
+		pass[2].flags = PASSFLAG_BYVAL;
+		pass[2].type = PassType_Basic;
+		pass[2].size = sizeof(int);
+		pass[3].flags = PASSFLAG_BYVAL;
+		pass[3].type = PassType_Basic;
+		pass[3].size = sizeof(int);
+		pass[4].flags = PASSFLAG_BYVAL;
+		pass[4].type = PassType_Basic;
+		pass[4].size = sizeof(int);
+		pass[5].flags = PASSFLAG_BYVAL;
+		pass[5].type = PassType_Basic;
+		pass[5].size = sizeof(CBaseEntity *);
+		pass[6].flags = PASSFLAG_BYVAL;
+		pass[6].type = PassType_Basic;
+		pass[6].size = sizeof(CBaseEntity *);
+		pass[7].flags = PASSFLAG_BYVAL;
+		pass[7].type = PassType_Basic;
+		pass[7].size = sizeof(float);
+#else
+		int iMaxParam = 4;
+
 		PassInfo pass[4];
 		pass[0].type = PassType_Object;
 		pass[0].flags = PASSFLAG_BYVAL|PASSFLAG_OCTOR|PASSFLAG_ODTOR|PASSFLAG_OASSIGNOP;
@@ -324,10 +354,10 @@ static cell_t AcceptEntityOutput(IPluginContext *pContext, const cell_t *params)
 		pass[3].flags = PASSFLAG_BYVAL;
 		pass[3].type = PassType_Basic;
 		pass[3].size = sizeof(float);
-		
-		if (!(g_pAcceptOutput = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 4)))
+#endif
+		if (!(g_pFireOutput = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, iMaxParam)))
 		{
-			return pContext->ThrowNativeError("\"AcceptEntityOutput\" wrapper failed to initialize.");
+			return pContext->ThrowNativeError("\"FireEntityOutput\" wrapper failed to initialize.");
 		}
 	}
 
@@ -341,30 +371,33 @@ static cell_t AcceptEntityOutput(IPluginContext *pContext, const cell_t *params)
 	ENTINDEX_TO_CBASEENTITY(params[1], pCaller);
 	pContext->LocalToString(params[2], &outputname);
 	
-	if (!(pOutput == FindOutputPointerByName(pCaller,outputname)))
-		return pContext->ThrowNativeError("Couldn't find %s output on %i entity!", outputname, params[1]);
-	
-	if (params[3] == -1)
+	if ((pOutput = FindOutputPointerByName(pCaller,outputname)))
 	{
-		pActivator = NULL;
-	} else {
-		ENTINDEX_TO_CBASEENTITY(params[3], pActivator);
+		if (params[3] == -1)
+		{
+			pActivator = NULL;
+		}
+		else
+		{
+			ENTINDEX_TO_CBASEENTITY(params[3], pActivator);
+		}
+
+		*(void **)vptr = pOutput;
+		vptr += sizeof(void *);
+		memcpy(vptr, g_Variant_t, SIZEOF_VARIANT_T);
+		vptr += SIZEOF_VARIANT_T;
+		*(CBaseEntity **)vptr = pActivator;
+		vptr += sizeof(CBaseEntity *);
+		*(CBaseEntity **)vptr = pCaller;
+		vptr += sizeof(CBaseEntity *);
+		*(float *)vptr = sp_ctof(params[4]);
+
+		g_pFireOutput->Execute(vstk, NULL);
+
+		_init_variant_t();
+		return 1;
 	}
-
-	*(void **)vptr = pOutput;
-	vptr += sizeof(void *);
-	memcpy(vptr, g_Variant_t, SIZEOF_VARIANT_T);
-	vptr += SIZEOF_VARIANT_T;
-	*(CBaseEntity **)vptr = pActivator;
-	vptr += sizeof(CBaseEntity *);
-	*(CBaseEntity **)vptr = pCaller;
-	vptr += sizeof(CBaseEntity *);
-	*(float *)vptr = sp_ctof(params[4]);
-
-	g_pAcceptOutput->Execute(vstk, NULL);
-
-	_init_variant_t();
-	return 1;
+	return pContext->ThrowNativeError("Couldn't find %s output on %i entity!", outputname, params[1]);
 }
 
 sp_nativeinfo_t g_EntOutputNatives[] =
@@ -373,6 +406,6 @@ sp_nativeinfo_t g_EntOutputNatives[] =
 	{"UnhookEntityOutput",			UnHookEntityOutput},
 	{"HookSingleEntityOutput",		HookSingleEntityOutput},
 	{"UnhookSingleEntityOutput",	UnHookSingleEntityOutput},
-	{"AcceptEntityOutput",			AcceptEntityOutput},
+	{"FireEntityOutput",			FireEntityOutput},
 	{NULL,							NULL},
 };

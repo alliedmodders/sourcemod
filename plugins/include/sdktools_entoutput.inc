@@ -105,4 +105,4 @@ native bool UnhookSingleEntityOutput(int entity, const char[] output, EntityOutp
  * @param delay		Delay before firing the output.
  * @error		Invalid entity index or no mod support.
  */
-native void AcceptEntityOutput(int caller, const char[] output, int activator=-1, float delay=0.0);
+native void FireEntityOutput(int caller, const char[] output, int activator=-1, float delay=0.0);
