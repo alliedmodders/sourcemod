@@ -54,3 +54,4 @@ inline void _init_variant_t()
 	*(fieldtype_t *)vptr = FIELD_VOID;
 }
 
+#endif //_INCLUDE_SOURCEMOD_EXTENSION_VARIANT_T_H_
