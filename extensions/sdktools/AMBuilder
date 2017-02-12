@@ -4,6 +4,7 @@ import os
 project = SM.HL2Project(builder, 'sdktools.ext')
 project.sources += [
   'extension.cpp',
+  'variant-t.cpp',
   'inputnatives.cpp',
   'output.cpp',
   'outputnatives.cpp',
