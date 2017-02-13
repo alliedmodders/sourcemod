@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2017 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -46,6 +46,7 @@
 #include <sdktools_tempents>
 #include <sdktools_tempents_stocks>
 #include <sdktools_voice>
+#include <sdktools_variant_t>
 #include <sdktools_entinput>
 #include <sdktools_entoutput>
 #include <sdktools_hooks>
