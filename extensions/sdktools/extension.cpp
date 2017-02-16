@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2017 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -38,6 +38,7 @@
 #include "vglobals.h"
 #include "tempents.h"
 #include "vsound.h"
+#include "variant-t.h"
 #include "output.h"
 #include "hooks.h"
 #include "gamerulesnatives.h"
@@ -114,6 +115,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_TRNatives);
 	sharesys->AddNatives(myself, g_StringTableNatives);
 	sharesys->AddNatives(myself, g_VoiceNatives);
+	sharesys->AddNatives(myself, g_VariantTNatives);
 	sharesys->AddNatives(myself, g_EntInputNatives);
 	sharesys->AddNatives(myself, g_TeamNatives);
 	sharesys->AddNatives(myself, g_EntOutputNatives);

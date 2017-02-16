@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2017 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -93,3 +93,16 @@ native void HookSingleEntityOutput(int entity, const char[] output, EntityOutput
  * @error				Entity Outputs disabled	or Invalid Entity index.	
  */
 native bool UnhookSingleEntityOutput(int entity, const char[] output, EntityOutput callback);
+
+/**
+ * Fire a named output on an entity.  
+ *
+ * After completion (successful or not), the current global variant is re-initialized.
+ *
+ * @param caller	Entity index from where the output is fired.
+ * @param output	Output name.
+ * @param activator	Entity index which initiated the sequence of actions (-1 for a NULL entity).
+ * @param delay		Delay before firing the output.
+ * @error		Invalid entity index or no mod support.
+ */
+native void FireEntityOutput(int caller, const char[] output, int activator=-1, float delay=0.0);
