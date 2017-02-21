@@ -114,4 +114,19 @@
 			"GameRulesDataTable" "tf_gamerules_data"
 		}
 	}
+	
+	/* CBaseEntityOutput::FireOutput */
+	"#default"
+	{
+		"Signatures"
+		{
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x24\x01\x00\x00\x53"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+		}
+	}
 }

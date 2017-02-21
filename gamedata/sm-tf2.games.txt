@@ -18,7 +18,7 @@
 			"Burn"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x51\x56\x8B\xF1\x8B\x8E\x2A\x2A\x2A\x2A\x8B\x01\x8B\x80\x2A\x2A\x2A\x2A\xFF\xD0\x84\xC0\x0F\x84"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x8C\x01\x00\x00\x8B\x01"
 				"linux"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 				"mac"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 			}
@@ -60,7 +60,7 @@
 			"SetPowerplayEnabled"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x80\x7D\x08\x00\x56\x57"
+				"windows"	"\x55\x8B\xEC\x80\x7D\x08\x00\x56\x57\x8B\xF9"
 				"linux"		"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
 				"mac"		"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
 			}
@@ -81,7 +81,7 @@
 			"MakeBleed"
 			{
 				"library" 	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x28\x53\x8B\xD9\x89\x5D\xF0"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x2C\x53\x8B\xD9\x89\x5D\xEC"
 				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefib"
 				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefib"
 			}
