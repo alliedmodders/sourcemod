@@ -118,7 +118,7 @@ public void OnClientConnected(int client)
 	g_Voted[client] = false;
 
 	g_Voters++;
-	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Cvar_Needed.FloatValue);
+	g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
 	
 	return;
 }
@@ -135,7 +135,7 @@ public void OnClientDisconnect(int client)
 	
 	g_Voters--;
 	
-	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Cvar_Needed.FloatValue);
+	g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
 	
 	if (!g_CanRTV)
 	{
