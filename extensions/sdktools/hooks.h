@@ -49,6 +49,7 @@ public:
 	void OnClientConnect(int client);
 	void OnClientPutInServer(int client);
 	void PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper);
+	void PlayerRunCmdPost(CUserCmd *ucmd, IMoveHelper *moveHelper);
 	void OnMapStart();
 public: /* NetChannel/Related Hooks */
 	bool FileExists(const char *filename, const char *pathID);
@@ -66,14 +67,16 @@ public: //IFeatureProvider
 	virtual FeatureStatus GetFeatureStatus(FeatureType type, const char *name);
 
 private:
-	void PlayerRunCmdHook(int client);
+	void PlayerRunCmdHook(int client, bool post);
 	void NetChannelHook(int client);
 
 private:
 	IForward *m_usercmdsFwd;
+	IForward *m_usercmdsPostFwd;
 	IForward *m_netFileSendFwd;
 	IForward *m_netFileReceiveFwd;
 	ke::Vector<CVTableHook *> m_runUserCmdHooks;
+	ke::Vector<CVTableHook *> m_runUserCmdPostHooks;
 	ke::Vector<CVTableHook *> m_netChannelHooks;
 	INetChannel *m_pActiveNetChannel;
 	bool m_bFSTranHookWarned = false;
