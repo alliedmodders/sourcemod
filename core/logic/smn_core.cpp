@@ -759,6 +759,27 @@ static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
+static cell_t IsNullVector(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *pNullVec = pContext->GetNullRef(SP_NULL_VECTOR);
+	if (!pNullVec)
+		return 0;
+	
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[1], &addr);
+
+	return addr == pNullVec;
+}
+
+static cell_t IsNullString(IPluginContext *pContext, const cell_t *params)
+{
+	char *str;
+	if (pContext->LocalToStringNULL(params[1], &str) != SP_ERROR_NONE)
+		return 0;
+
+	return str == nullptr;
+}
+
 REGISTER_NATIVES(coreNatives)
 {
 	{"ThrowError",				ThrowError},
@@ -787,5 +808,7 @@ REGISTER_NATIVES(coreNatives)
 	{"RequireFeature",          RequireFeature},
 	{"LoadFromAddress",         LoadFromAddress},
 	{"StoreToAddress",          StoreToAddress},
+	{"IsNullVector",			IsNullVector},
+	{"IsNullString",			IsNullString},
 	{NULL,						NULL},
 };
