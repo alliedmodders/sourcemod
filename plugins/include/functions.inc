@@ -466,6 +466,22 @@ native int GetNativeArray(int param, any[] local, int size);
 native int SetNativeArray(int param, const any[] local, int size);
 
 /**
+ * Check if the native parameter is the NULL_VECTOR.
+ *
+ * @param param		Parameter number, starting from 1.
+ * @return        True if NULL_VECTOR, false otherwise.
+ */
+native bool IsNativeParamNullVector(int param);
+
+/**
+ * Check if the native parameter is the NULL_STRING.
+ *
+ * @param param		Parameter number, starting from 1.
+ * @return        True if NULL_STRING, false otherwise.
+ */
+native bool IsNativeParamNullString(int param);
+
+/**
  * Formats a string using parameters from a native.
  *
  * @note All parameter indexes start at 1.
