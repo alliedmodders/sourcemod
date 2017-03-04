@@ -1255,7 +1255,8 @@ bool CHalfLife2::GetMapDisplayName(const char *pMapName, char *pDisplayname, siz
 
 	char *lastSlashPos;
 	// In CSGO, workshop maps show up as workshop/123456789/mapname or workshop\123456789\mapname depending on OS
-	if (strncmp(pDisplayname, workshop, 9) == 0 && (lastSlashPos = strrchr(pDisplayname, PLATFORM_SEP_CHAR)) != NULL)
+	// As on sometime in 2016, CS:GO for Windows now recognizes both / and \ so we need to check for both
+	if (strncmp(pDisplayname, workshop, 9) == 0 && ((lastSlashPos = strrchr(pDisplayname, '/')) != NULL || (lastSlashPos = strrchr(pDisplayname, '\\')) != NULL))
 	{
 		ke::SafeStrcpy(pDisplayname, nMapNameMax, &lastSlashPos[1]);
 		return true;
