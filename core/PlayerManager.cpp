@@ -717,7 +717,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		pPlayer->Authorize_Post();
 	}
 #if SOURCE_ENGINE == SE_CSGO
-	else
+	else if(m_QueryLang)
 	{
 		// Not a bot
 		pPlayer->m_LanguageCookie = g_ConVarManager.QueryClientConVar(pEntity, "cl_language", NULL, 0);
