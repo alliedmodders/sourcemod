@@ -1253,14 +1253,10 @@ bool CHalfLife2::GetMapDisplayName(const char *pMapName, char *pDisplayname, siz
 	}
 
 #if SOURCE_ENGINE == SE_CSGO
-	// In CSGO, the path separator is used in workshop maps.
-	char workshop[10];
-	ke::SafeSprintf(workshop, SM_ARRAYSIZE(workshop), "%s%c", "workshop", PLATFORM_SEP_CHAR);
-
 	char *lastSlashPos;
 	// In CSGO, workshop maps show up as workshop/123456789/mapname or workshop\123456789\mapname depending on OS
 	// As on sometime in 2016, CS:GO for Windows now recognizes both / and \ so we need to check for both
-	if (strncmp(pDisplayname, workshop, 9) == 0 && ((lastSlashPos = strrchr(pDisplayname, '/')) != NULL || (lastSlashPos = strrchr(pDisplayname, '\\')) != NULL))
+	if (strncmp(pDisplayname, "workshop", 8) == 0 && ((lastSlashPos = strrchr(pDisplayname, '/')) != NULL || (lastSlashPos = strrchr(pDisplayname, '\\')) != NULL))
 	{
 		ke::SafeStrcpy(pDisplayname, nMapNameMax, &lastSlashPos[1]);
 		return true;
