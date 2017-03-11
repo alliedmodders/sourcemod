@@ -448,7 +448,7 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 		for (int i = 1; i <= playerhelpers->GetMaxClients(); i++)
 		{
 			IGamePlayer *player = playerhelpers->GetGamePlayer(i);
-			if (player == NULL || !player->IsInGame())
+			if (player == NULL || !player->IsInGame() || player->IsSourceTV() || player->IsReplay())
 				continue;
 			IPlayerInfo *plinfo = player->GetPlayerInfo();
 			if (plinfo == NULL)
