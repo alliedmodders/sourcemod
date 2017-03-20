@@ -100,6 +100,7 @@
 			"engine"			"sdk2013"
 			"engine"			"contagion"
 			"engine"			"bms"
+			"engine"			"csgo"
 		}
 		
 		"Offsets"
