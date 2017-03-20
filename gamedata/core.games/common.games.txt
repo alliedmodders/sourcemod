@@ -100,7 +100,6 @@
 			"engine"			"sdk2013"
 			"engine"			"contagion"
 			"engine"			"bms"
-			"engine"			"csgo"
 		}
 		
 		"Offsets"
@@ -269,6 +268,7 @@
 			"game"					"synergy"
 			"game"					"bms"
 			"game"					"KreedzClimbing"
+			"engine"				"csgo"
 		}
 		
 		"Keys"
