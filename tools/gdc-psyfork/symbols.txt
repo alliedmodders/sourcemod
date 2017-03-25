@@ -351,7 +351,8 @@
 			"CalcDominationAndRevenge_Byte_Win"		"0F"
 			"CalcDominationAndRevenge_Byte_Lin"		"74"
 			"GetWeaponPrice_Offset"					"GetWeaponPriceFuncGDC"
-			"GetWeaponPrice_Byte_Win"				"E9"	
+			"GetWeaponPrice_Byte_Win"				"E9"
+			"GetWeaponPrice_Byte_Lin"				"E8"	
 		}
 	}
 	
