@@ -246,7 +246,7 @@
 			"game"					"synergy"
 			"game"					"bms"
 			"game"					"KreedzClimbing"
-			"engine"				"csgo"
+			"game"					"csgo"
 		}
 		
 		"Keys"
