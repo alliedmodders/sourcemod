@@ -83,7 +83,7 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x81\x2A\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\x2A\x8B\x45\x2A\x53\x56\x8B\x2A\x2A\x57\x8B\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\xC7"
-				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x2A\x2A\x2A\x2A\x8B\x2A\x2A\x65\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x31\xC0\x8B\x2A\x2A\x8B\x2A\x2A\x8B\x2A\x2A\x8B\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x2A\x2A\x2A\x89"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
@@ -93,80 +93,2769 @@
 	{
 		"Offsets"
 		{
-			"GiveNamedItem"
-			{
-				"windows"	"404"
-				"linux"		"405"
-			}
-			"RemovePlayerItem"
-			{
-				"windows"	"274"
-				"linux"		"275"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"272"
-				"linux"		"273"
-			}
-			"Ignite"
-			{
-				"windows"	"213"
-				"linux"		"214"
-			}
-			"Extinguish"
-			{
-				"windows"	"217"
-				"linux"		"218"
-			}
-			"Teleport"
-			{
-				"windows"	"110"
-				"linux"		"111"
-			}
+			/** Start overrides */
+
+			/* CEmpPlayer::CommitSuicide(bool, bool);444;445;587280 */
 			"CommitSuicide"
 			{
-				"windows"	"444"
-				"linux"		"444"
+			    "windows"   445
+			    "linux"     445
 			}
-			"GetVelocity"
+
+			/** End overrides */
+			/* CEmpPlayer::~CEmpPlayer();-5;0;5A50B0 */
+			"~CEmpPlayer"
 			{
-				"windows"	"145"
-				"linux"		"146"
+				"windows"	-5
+				"linux"		0
 			}
-			"EyeAngles"
+			/* CEmpPlayer::~CEmpPlayer();0;1;5A5340 */
+			"~CEmpPlayer"
 			{
-				"windows"	"136"
-				"linux"		"137"
+				"windows"	0
+				"linux"		1
 			}
-			"AcceptInput"
+			/* CBaseEntity::SetRefEHandle(CBaseHandle const&);1;2;4F72B0 */
+			"SetRefEHandle"
 			{
-				"windows"	"36"
-				"linux"		"37"
+				"windows"	1
+				"linux"		2
 			}
+			/* CBaseEntity::GetRefEHandle() const;2;3;29A4E0 */
+			"GetRefEHandle"
+			{
+				"windows"	2
+				"linux"		3
+			}
+			/* CBaseEntity::GetCollideable();3;4;29A480 */
+			"GetCollideable"
+			{
+				"windows"	3
+				"linux"		4
+			}
+			/* CBaseEntity::GetNetworkable();4;5;29A490 */
+			"GetNetworkable"
+			{
+				"windows"	4
+				"linux"		5
+			}
+			/* CBaseEntity::GetBaseEntity();5;6;29A4A0 */
+			"GetBaseEntity"
+			{
+				"windows"	5
+				"linux"		6
+			}
+			/* CBaseEntity::GetModelIndex() const;6;7;29A4D0 */
+			"GetModelIndex"
+			{
+				"windows"	6
+				"linux"		7
+			}
+			/* CBaseEntity::GetModelName() const;7;8;29A4B0 */
+			"GetModelName"
+			{
+				"windows"	7
+				"linux"		8
+			}
+			/* CBaseEntity::SetModelIndex(int);8;9;5088A0 */
+			"SetModelIndex"
+			{
+				"windows"	8
+				"linux"		9
+			}
+			/* CEmpPlayer::GetServerClass();9;10;580390 */
+			"GetServerClass"
+			{
+				"windows"	9
+				"linux"		10
+			}
+			/* CEmpPlayer::YouForgotToImplementOrDeclareServerClass();10;11;5803A0 */
+			"YouForgotToImplementOrDeclareServerClass"
+			{
+				"windows"	10
+				"linux"		11
+			}
+			/* CBasePlayer::GetDataDescMap();11;12;6EEBC0 */
+			"GetDataDescMap"
+			{
+				"windows"	11
+				"linux"		12
+			}
+			/* CBaseEntity::SetModelIndexOverride(int, int);12;13;4F6BD0 */
+			"SetModelIndexOverride"
+			{
+				"windows"	12
+				"linux"		13
+			}
+			/* CBaseAnimating::TestCollision(Ray_t const&, unsigned int, CGameTrace&);13;14;4D9480 */
+			"TestCollision"
+			{
+				"windows"	13
+				"linux"		14
+			}
+			/* CBaseAnimating::TestHitboxes(Ray_t const&, unsigned int, CGameTrace&);14;15;4E07D0 */
+			"TestHitboxes"
+			{
+				"windows"	14
+				"linux"		15
+			}
+			/* CBaseEntity::ComputeWorldSpaceSurroundingBox(Vector*, Vector*);15;16;4F7140 */
+			"ComputeWorldSpaceSurroundingBox"
+			{
+				"windows"	15
+				"linux"		16
+			}
+			/* CEmpPlayer::ShouldCollide(int, int) const;16;17;581460 */
+			"ShouldCollide"
+			{
+				"windows"	16
+				"linux"		17
+			}
+			/* CBaseEntity::SetOwnerEntity(CBaseEntity*);17;18;4FA8F0 */
+			"SetOwnerEntity"
+			{
+				"windows"	17
+				"linux"		18
+			}
+			/* CBasePlayer::ShouldTransmit(CCheckTransmitInfo const*);18;19;6F3B80 */
+			"ShouldTransmit"
+			{
+				"windows"	18
+				"linux"		19
+			}
+			/* CBasePlayer::UpdateTransmitState();19;20;6F05A0 */
+			"UpdateTransmitState"
+			{
+				"windows"	19
+				"linux"		20
+			}
+			/* CBaseCombatCharacter::SetTransmit(CCheckTransmitInfo*, bool);20;21;4E9320 */
+			"SetTransmit"
+			{
+				"windows"	20
+				"linux"		21
+			}
+			/* CBasePlayer::GetTracerType();21;22;2DA0E0 */
+			"GetTracerType"
+			{
+				"windows"	21
+				"linux"		22
+			}
+			/* CEmpPlayer::Spawn();22;23;598790 */
+			"Spawn"
+			{
+				"windows"	22
+				"linux"		23
+			}
+			/* CEmpPlayer::Precache();23;24;580960 */
+			"Precache"
+			{
+				"windows"	23
+				"linux"		24
+			}
+			/* CBasePlayer::SetModel(char const*);24;25;6F2230 */
+			"SetModel"
+			{
+				"windows"	24
+				"linux"		25
+			}
+			/* CBaseAnimating::OnNewModel();25;26;4DE930 */
+			"OnNewModel"
+			{
+				"windows"	25
+				"linux"		26
+			}
+			/* CBaseEntity::PostConstructor(char const*);26;27;4F83F0 */
+			"PostConstructor"
+			{
+				"windows"	26
+				"linux"		27
+			}
+			/* CBaseEntity::PostClientActive();27;28;4F6BC0 */
+			"PostClientActive"
+			{
+				"windows"	27
+				"linux"		28
+			}
+			/* CBaseEntity::ParseMapData(CEntityMapData*);28;29;2CE830 */
+			"ParseMapData"
+			{
+				"windows"	28
+				"linux"		29
+			}
+			/* CBaseEntity::KeyValue(char const*, char const*);31;30;2CA700 */
+			"KeyValue"
+			{
+				"windows"	31
+				"linux"		30
+			}
+			/* CBaseEntity::KeyValue(char const*, float);30;31;2CB3B0 */
+			"KeyValue"
+			{
+				"windows"	30
+				"linux"		31
+			}
+			/* CBaseEntity::KeyValue(char const*, Vector const&);29;32;2CB410 */
+			"KeyValue"
+			{
+				"windows"	29
+				"linux"		32
+			}
+			/* CBaseEntity::GetKeyValue(char const*, char*, int);32;33;2CB490 */
+			"GetKeyValue"
+			{
+				"windows"	32
+				"linux"		33
+			}
+			/* CBasePlayer::Activate();33;34;6FD400 */
 			"Activate"
 			{
-				"windows"	"33"
-				"linux"		"34"
+				"windows"	33
+				"linux"		34
 			}
-			"SetEntityModel"
+			/* CBaseEntity::SetParent(CBaseEntity*, int);34;35;5035E0 */
+			"SetParent"
 			{
-				"windows"	"24"
-				"linux"		"25"
+				"windows"	34
+				"linux"		35
 			}
-			"WeaponEquip"
+			/* CBasePlayer::ObjectCaps();35;36;520B70 */
+			"ObjectCaps"
 			{
-				"windows"	"265"
-				"linux"		"266"
+				"windows"	35
+				"linux"		36
 			}
-			"PlayerRunCmd"
+			/* CBaseEntity::AcceptInput(char const*, CBaseEntity*, CBaseEntity*, variant_t, int);36;37;500B50 */
+			"AcceptInput"
 			{
-				"windows"	"422"
-				"linux"		"423"
+				"windows"	36
+				"linux"		37
 			}
+			/* CBaseAnimating::GetInputDispatchEffectPosition(char const*, Vector&, QAngle&);37;38;4DC800 */
+			"GetInputDispatchEffectPosition"
+			{
+				"windows"	37
+				"linux"		38
+			}
+			/* CBasePlayer::DrawDebugGeometryOverlays();38;39;6F0330 */
+			"DrawDebugGeometryOverlays"
+			{
+				"windows"	38
+				"linux"		39
+			}
+			/* CBaseAnimating::DrawDebugTextOverlays();39;40;4DEFD0 */
+			"DrawDebugTextOverlays"
+			{
+				"windows"	39
+				"linux"		40
+			}
+			/* CBasePlayer::Save(ISave&);40;41;6EF740 */
+			"Save"
+			{
+				"windows"	40
+				"linux"		41
+			}
+			/* CBasePlayer::Restore(IRestore&);41;42;6F9A70 */
+			"Restore"
+			{
+				"windows"	41
+				"linux"		42
+			}
+			/* CBasePlayer::ShouldSavePhysics();42;43;6EF130 */
+			"ShouldSavePhysics"
+			{
+				"windows"	42
+				"linux"		43
+			}
+			/* CBaseEntity::OnSave(IEntitySaveUtils*);43;44;500320 */
+			"OnSave"
+			{
+				"windows"	43
+				"linux"		44
+			}
+			/* CBasePlayer::OnRestore();44;45;705D60 */
+			"OnRestore"
+			{
+				"windows"	44
+				"linux"		45
+			}
+			/* CBasePlayer::RequiredEdictIndex();45;46;520550 */
+			"RequiredEdictIndex"
+			{
+				"windows"	45
+				"linux"		46
+			}
+			/* CBaseEntity::MoveDone();46;47;299EC0 */
+			"MoveDone"
+			{
+				"windows"	46
+				"linux"		47
+			}
+			/* CBaseEntity::Think();47;48;299EF0 */
+			"Think"
+			{
+				"windows"	47
+				"linux"		48
+			}
+			/* CBasePlayer::NetworkStateChanged_m_nNextThinkTick();49;49;520D40 */
+			"NetworkStateChanged_m_nNextThinkTick"
+			{
+				"windows"	49
+				"linux"		49
+			}
+			/* CBasePlayer::NetworkStateChanged_m_nNextThinkTick(void*);48;50;521370 */
+			"NetworkStateChanged_m_nNextThinkTick"
+			{
+				"windows"	48
+				"linux"		50
+			}
+			/* CBaseAnimating::GetBaseAnimating();50;51;2C6C90 */
+			"GetBaseAnimating"
+			{
+				"windows"	50
+				"linux"		51
+			}
+			/* CBaseEntity::GetResponseSystem();51;52;4F7240 */
+			"GetResponseSystem"
+			{
+				"windows"	51
+				"linux"		52
+			}
+			/* CBaseEntity::DispatchResponse(char const*);52;53;506700 */
+			"DispatchResponse"
+			{
+				"windows"	52
+				"linux"		53
+			}
+			/* CBasePlayer::Classify();53;54;6EEE40 */
+			"Classify"
+			{
+				"windows"	53
+				"linux"		54
+			}
+			/* CBaseEntity::DeathNotice(CBaseEntity*);54;55;299F50 */
+			"DeathNotice"
+			{
+				"windows"	54
+				"linux"		55
+			}
+			/* CBaseEntity::ShouldAttractAutoAim(CBaseEntity*);55;56;299F60 */
+			"ShouldAttractAutoAim"
+			{
+				"windows"	55
+				"linux"		56
+			}
+			/* CBaseEntity::GetAutoAimRadius();56;57;4F6FF0 */
+			"GetAutoAimRadius"
+			{
+				"windows"	56
+				"linux"		57
+			}
+			/* CBaseEntity::GetAutoAimCenter();57;58;299F80 */
+			"GetAutoAimCenter"
+			{
+				"windows"	57
+				"linux"		58
+			}
+			/* CBaseEntity::GetBeamTraceFilter();58;59;2CCB20 */
+			"GetBeamTraceFilter"
+			{
+				"windows"	58
+				"linux"		59
+			}
+			/* CBaseEntity::PassesDamageFilter(CTakeDamageInfo const&);59;60;4F7030 */
+			"PassesDamageFilter"
+			{
+				"windows"	59
+				"linux"		60
+			}
+			/* CBasePlayer::TraceAttack(CTakeDamageInfo const&, Vector const&, CGameTrace*, CDmgAccumulator*);60;61;6F1580 */
+			"TraceAttack"
+			{
+				"windows"	60
+				"linux"		61
+			}
+			/* CBaseEntity::CanBeHitByMeleeAttack(CBaseEntity*);61;62;299FC0 */
+			"CanBeHitByMeleeAttack"
+			{
+				"windows"	61
+				"linux"		62
+			}
+			/* CEmpPlayer::OnTakeDamage(CTakeDamageInfo const&);62;63;591550 */
+			"OnTakeDamage"
+			{
+				"windows"	62
+				"linux"		63
+			}
+			/* CBaseEntity::AdjustDamageDirection(CTakeDamageInfo const&, Vector&, CBaseEntity*);63;64;299FD0 */
+			"AdjustDamageDirection"
+			{
+				"windows"	63
+				"linux"		64
+			}
+			/* CBasePlayer::TakeHealth(float, int);64;65;6F0540 */
+			"TakeHealth"
+			{
+				"windows"	64
+				"linux"		65
+			}
+			/* CBaseEntity::IsAlive();65;66;29A4F0 */
+			"IsAlive"
+			{
+				"windows"	65
+				"linux"		66
+			}
+			/* CEmpPlayer::Event_Killed(CTakeDamageInfo const&);66;67;59C000 */
+			"Event_Killed"
+			{
+				"windows"	66
+				"linux"		67
+			}
+			/* CBasePlayer::Event_KilledOther(CBaseEntity*, CTakeDamageInfo const&);67;68;6F0950 */
+			"Event_KilledOther"
+			{
+				"windows"	67
+				"linux"		68
+			}
+			/* CBaseCombatCharacter::BloodColor();68;69;2BB0C0 */
+			"BloodColor"
+			{
+				"windows"	68
+				"linux"		69
+			}
+			/* CBaseEntity::IsTriggered(CBaseEntity*);69;70;299FF0 */
+			"IsTriggered"
+			{
+				"windows"	69
+				"linux"		70
+			}
+			/* CBaseEntity::IsNPC() const;70;71;29A000 */
+			"IsNPC"
+			{
+				"windows"	70
+				"linux"		71
+			}
+			/* CBaseCombatCharacter::MyCombatCharacterPointer();71;72;3FA520 */
+			"MyCombatCharacterPointer"
+			{
+				"windows"	71
+				"linux"		72
+			}
+			/* CBaseEntity::MyNextBotPointer();72;73;29A020 */
+			"MyNextBotPointer"
+			{
+				"windows"	72
+				"linux"		73
+			}
+			/* CBaseEntity::GetDelay();73;74;29A030 */
+			"GetDelay"
+			{
+				"windows"	73
+				"linux"		74
+			}
+			/* CBaseEntity::IsMoving();74;75;4F8B30 */
+			"IsMoving"
+			{
+				"windows"	74
+				"linux"		75
+			}
+			/* CBaseEntity::DamageDecal(int, int);75;76;2CBC80 */
+			"DamageDecal"
+			{
+				"windows"	75
+				"linux"		76
+			}
+			/* CBaseEntity::DecalTrace(CGameTrace*, char const*);76;77;2CB8F0 */
+			"DecalTrace"
+			{
+				"windows"	76
+				"linux"		77
+			}
+			/* CBaseEntity::ImpactTrace(CGameTrace*, int, char const*);77;78;2CB9D0 */
+			"ImpactTrace"
+			{
+				"windows"	77
+				"linux"		78
+			}
+			/* CBaseEntity::OnControls(CBaseEntity*);78;79;29A040 */
+			"OnControls"
+			{
+				"windows"	78
+				"linux"		79
+			}
+			/* CBaseEntity::HasTarget(string_t);79;80;4F9320 */
+			"HasTarget"
+			{
+				"windows"	79
+				"linux"		80
+			}
+			/* CBasePlayer::IsPlayer() const;80;81;520590 */
+			"IsPlayer"
+			{
+				"windows"	80
+				"linux"		81
+			}
+			/* CBasePlayer::IsNetClient() const;81;82;5205A0 */
+			"IsNetClient"
+			{
+				"windows"	81
+				"linux"		82
+			}
+			/* CBaseEntity::IsVehicle() const;82;83;29A070 */
+			"IsVehicle"
+			{
+				"windows"	82
+				"linux"		83
+			}
+			/* CBaseEntity::IsBuilding() const;83;84;29A080 */
+			"IsBuilding"
+			{
+				"windows"	83
+				"linux"		84
+			}
+			/* CBaseEntity::IsTemplate();84;85;29A090 */
+			"IsTemplate"
+			{
+				"windows"	84
+				"linux"		85
+			}
+			/* CBaseEntity::IsBaseObject() const;85;86;29A0A0 */
+			"IsBaseObject"
+			{
+				"windows"	85
+				"linux"		86
+			}
+			/* CBaseEntity::IsBaseTrain() const;86;87;29A0B0 */
+			"IsBaseTrain"
+			{
+				"windows"	86
+				"linux"		87
+			}
+			/* CBaseEntity::IsCombatItem() const;87;88;29A0C0 */
+			"IsCombatItem"
+			{
+				"windows"	87
+				"linux"		88
+			}
+			/* CBaseEntity::IsBaseCombatWeapon() const;88;89;29A0D0 */
+			"IsBaseCombatWeapon"
+			{
+				"windows"	88
+				"linux"		89
+			}
+			/* CBaseEntity::IsWearable() const;89;90;29A0E0 */
+			"IsWearable"
+			{
+				"windows"	89
+				"linux"		90
+			}
+			/* CBaseEntity::MyCombatWeaponPointer();90;91;29A0F0 */
+			"MyCombatWeaponPointer"
+			{
+				"windows"	90
+				"linux"		91
+			}
+			/* CBaseEntity::GetServerVehicle();91;92;29A100 */
+			"GetServerVehicle"
+			{
+				"windows"	91
+				"linux"		92
+			}
+			/* CBaseEntity::IsViewable();92;93;4F87D0 */
+			"IsViewable"
+			{
+				"windows"	92
+				"linux"		93
+			}
+			/* CEmpPlayer::ChangeTeam(int);93;94;59A5A0 */
+			"ChangeTeam"
+			{
+				"windows"	93
+				"linux"		94
+			}
+			/* CBaseEntity::OnEntityEvent(EntityEvent_t, void*);94;95;4F88F0 */
+			"OnEntityEvent"
+			{
+				"windows"	94
+				"linux"		95
+			}
+			/* CBaseEntity::CanStandOn(CBaseEntity*) const;96;96;29A860 */
+			"CanStandOn"
+			{
+				"windows"	96
+				"linux"		96
+			}
+			/* CBaseEntity::CanStandOn(edict_t*) const;95;97;29A110 */
+			"CanStandOn"
+			{
+				"windows"	95
+				"linux"		97
+			}
+			/* CBaseEntity::GetEnemy();98;98;29A160 */
+			"GetEnemy"
+			{
+				"windows"	98
+				"linux"		98
+			}
+			/* CBaseEntity::GetEnemy() const;97;99;29A170 */
+			"GetEnemy"
+			{
+				"windows"	97
+				"linux"		99
+			}
+			/* CBaseEntity::Use(CBaseEntity*, CBaseEntity*, USE_TYPE, float);99;100;4F8830 */
+			"Use"
+			{
+				"windows"	99
+				"linux"		100
+			}
+			/* CBaseEntity::StartTouch(CBaseEntity*);100;101;4F6D30 */
+			"StartTouch"
+			{
+				"windows"	100
+				"linux"		101
+			}
+			/* CBasePlayer::Touch(CBaseEntity*);101;102;6F1250 */
+			"Touch"
+			{
+				"windows"	101
+				"linux"		102
+			}
+			/* CBaseEntity::EndTouch(CBaseEntity*);102;103;4F6E10 */
+			"EndTouch"
+			{
+				"windows"	102
+				"linux"		103
+			}
+			/* CBaseEntity::StartBlocked(CBaseEntity*);103;104;29A180 */
+			"StartBlocked"
+			{
+				"windows"	103
+				"linux"		104
+			}
+			/* CBaseEntity::Blocked(CBaseEntity*);104;105;4F6E60 */
+			"Blocked"
+			{
+				"windows"	104
+				"linux"		105
+			}
+			/* CBaseEntity::EndBlocked();105;106;29A190 */
+			"EndBlocked"
+			{
+				"windows"	105
+				"linux"		106
+			}
+			/* CBasePlayer::PhysicsSimulate();106;107;709280 */
+			"PhysicsSimulate"
+			{
+				"windows"	106
+				"linux"		107
+			}
+			/* CBasePlayer::UpdateOnRemove();107;108;6F05C0 */
+			"UpdateOnRemove"
+			{
+				"windows"	107
+				"linux"		108
+			}
+			/* CBaseEntity::StopLoopingSounds();108;109;29A1A0 */
+			"StopLoopingSounds"
+			{
+				"windows"	108
+				"linux"		109
+			}
+			/* CBaseEntity::SUB_AllowedToFade();109;110;4F7710 */
+			"SUB_AllowedToFade"
+			{
+				"windows"	109
+				"linux"		110
+			}
+			/* CBaseFlex::Teleport(Vector const*, QAngle const*, Vector const*);110;111;513C40 */
+			"Teleport"
+			{
+				"windows"	110
+				"linux"		111
+			}
+			/* CBaseEntity::NotifySystemEvent(CBaseEntity*, notify_system_event_t, notify_system_event_params_t const&);111;112;4F7210 */
+			"NotifySystemEvent"
+			{
+				"windows"	111
+				"linux"		112
+			}
+			/* CBasePlayer::MakeTracer(Vector const&, CGameTrace const&, int);112;113;2D97A0 */
+			"MakeTracer"
+			{
+				"windows"	112
+				"linux"		113
+			}
+			/* CBaseEntity::GetTracerAttachment();113;114;2CCE40 */
+			"GetTracerAttachment"
+			{
+				"windows"	113
+				"linux"		114
+			}
+			/* CBaseEntity::FireBullets(FireBulletsInfo_t const&);114;115;2CEBD0 */
+			"FireBullets"
+			{
+				"windows"	114
+				"linux"		115
+			}
+			/* CBasePlayer::DoImpactEffect(CGameTrace&, int);115;116;6EF850 */
+			"DoImpactEffect"
+			{
+				"windows"	115
+				"linux"		116
+			}
+			/* CBaseEntity::ModifyFireBulletsDamage(CTakeDamageInfo*);116;117;29A1B0 */
+			"ModifyFireBulletsDamage"
+			{
+				"windows"	116
+				"linux"		117
+			}
+			/* CBaseEntity::Respawn();117;118;29A1C0 */
+			"Respawn"
+			{
+				"windows"	117
+				"linux"		118
+			}
+			/* CBaseEntity::IsLockedByMaster();118;119;29A1D0 */
+			"IsLockedByMaster"
+			{
+				"windows"	118
+				"linux"		119
+			}
+			/* CBaseEntity::GetMaxHealth() const;119;120;29A1E0 */
+			"GetMaxHealth"
+			{
+				"windows"	119
+				"linux"		120
+			}
+			/* CBaseEntity::SetMaxHealth(int);120;121;29A7A0 */
+			"SetMaxHealth"
+			{
+				"windows"	120
+				"linux"		121
+			}
+			/* CBaseEntity::GetHealth() const;121;122;29A1F0 */
+			"GetHealth"
+			{
+				"windows"	121
+				"linux"		122
+			}
+			/* CBaseEntity::SetHealth(int);122;123;29A800 */
+			"SetHealth"
+			{
+				"windows"	122
+				"linux"		123
+			}
+			/* CBaseAnimating::ModifyOrAppendCriteria(AI_CriteriaSet&);123;124;4D9100 */
+			"ModifyOrAppendCriteria"
+			{
+				"windows"	123
+				"linux"		124
+			}
+			/* CBaseEntity::NetworkStateChanged_m_iMaxHealth();125;125;29A200 */
+			"NetworkStateChanged_m_iMaxHealth"
+			{
+				"windows"	125
+				"linux"		125
+			}
+			/* CBaseEntity::NetworkStateChanged_m_iMaxHealth(void*);124;126;29A210 */
+			"NetworkStateChanged_m_iMaxHealth"
+			{
+				"windows"	124
+				"linux"		126
+			}
+			/* CBasePlayer::NetworkStateChanged_m_iHealth();127;127;520DC0 */
+			"NetworkStateChanged_m_iHealth"
+			{
+				"windows"	127
+				"linux"		127
+			}
+			/* CBasePlayer::NetworkStateChanged_m_iHealth(void*);126;128;521610 */
+			"NetworkStateChanged_m_iHealth"
+			{
+				"windows"	126
+				"linux"		128
+			}
+			/* CBasePlayer::NetworkStateChanged_m_lifeState();129;129;520E00 */
+			"NetworkStateChanged_m_lifeState"
+			{
+				"windows"	129
+				"linux"		129
+			}
+			/* CBasePlayer::NetworkStateChanged_m_lifeState(void*);128;130;521760 */
+			"NetworkStateChanged_m_lifeState"
+			{
+				"windows"	128
+				"linux"		130
+			}
+			/* CBaseEntity::NetworkStateChanged_m_takedamage();131;131;29A260 */
+			"NetworkStateChanged_m_takedamage"
+			{
+				"windows"	131
+				"linux"		131
+			}
+			/* CBaseEntity::NetworkStateChanged_m_takedamage(void*);130;132;29A270 */
+			"NetworkStateChanged_m_takedamage"
+			{
+				"windows"	130
+				"linux"		132
+			}
+			/* CBaseEntity::GetDamageType() const;132;133;4F7200 */
+			"GetDamageType"
+			{
+				"windows"	132
+				"linux"		133
+			}
+			/* CBaseEntity::GetDamage();133;134;29A280 */
+			"GetDamage"
+			{
+				"windows"	133
+				"linux"		134
+			}
+			/* CBaseEntity::SetDamage(float);134;135;29A290 */
+			"SetDamage"
+			{
+				"windows"	134
+				"linux"		135
+			}
+			/* CBasePlayer::EyePosition();135;136;2D6220 */
+			"EyePosition"
+			{
+				"windows"	135
+				"linux"		136
+			}
+			/* CBasePlayer::EyeAngles();136;137;2D62A0 */
+			"EyeAngles"
+			{
+				"windows"	136
+				"linux"		137
+			}
+			/* CBasePlayer::LocalEyeAngles();137;138;2D5E80 */
+			"LocalEyeAngles"
+			{
+				"windows"	137
+				"linux"		138
+			}
+			/* CBaseEntity::EarPosition();138;139;2C9DD0 */
+			"EarPosition"
+			{
+				"windows"	138
+				"linux"		139
+			}
+			/* CBasePlayer::BodyTarget(Vector const&, bool);139;140;6F2A80 */
+			"BodyTarget"
+			{
+				"windows"	139
+				"linux"		140
+			}
+			/* CBaseEntity::HeadTarget(Vector const&);140;141;4F6C20 */
+			"HeadTarget"
+			{
+				"windows"	140
+				"linux"		141
+			}
+			/* CBaseEntity::GetVectors(Vector*, Vector*, Vector*) const;141;142;4FFFE0 */
+			"GetVectors"
+			{
+				"windows"	141
+				"linux"		142
+			}
+			/* CBaseEntity::GetViewOffset() const;142;143;2C9E70 */
+			"GetViewOffset"
+			{
+				"windows"	142
+				"linux"		143
+			}
+			/* CBaseEntity::SetViewOffset(Vector const&);143;144;2C9E00 */
+			"SetViewOffset"
+			{
+				"windows"	143
+				"linux"		144
+			}
+			/* CBasePlayer::GetSmoothedVelocity();144;145;6F07E0 */
+			"GetSmoothedVelocity"
+			{
+				"windows"	144
+				"linux"		145
+			}
+			/* CBaseAnimating::GetVelocity(Vector*, Vector*);145;146;4DDE50 */
+			"GetVelocity"
+			{
+				"windows"	145
+				"linux"		146
+			}
+			/* CBaseCombatCharacter::FVisible(CBaseEntity*, int, CBaseEntity**);147;147;4F04A0 */
+			"FVisible"
+			{
+				"windows"	147
+				"linux"		147
+			}
+			/* CBaseCombatCharacter::FVisible(Vector const&, int, CBaseEntity**);146;148;3FBE20 */
+			"FVisible"
+			{
+				"windows"	146
+				"linux"		148
+			}
+			/* CBaseEntity::CanBeSeenBy(CAI_BaseNPC*);148;149;29A2A0 */
+			"CanBeSeenBy"
+			{
+				"windows"	148
+				"linux"		149
+			}
+			/* CBaseEntity::GetAttackDamageScale(CBaseEntity*);149;150;4F8350 */
+			"GetAttackDamageScale"
+			{
+				"windows"	149
+				"linux"		150
+			}
+			/* CBaseEntity::GetReceivedDamageScale(CBaseEntity*);150;151;4F82B0 */
+			"GetReceivedDamageScale"
+			{
+				"windows"	150
+				"linux"		151
+			}
+			/* CBaseEntity::GetGroundVelocityToApply(Vector&);151;152;29A2B0 */
+			"GetGroundVelocityToApply"
+			{
+				"windows"	151
+				"linux"		152
+			}
+			/* CBaseEntity::PhysicsSplash(Vector const&, Vector const&, float, float);152;153;29A2E0 */
+			"PhysicsSplash"
+			{
+				"windows"	152
+				"linux"		153
+			}
+			/* CBaseEntity::Splash();153;154;29A2F0 */
+			"Splash"
+			{
+				"windows"	153
+				"linux"		154
+			}
+			/* CBaseEntity::WorldSpaceCenter() const;154;155;2C9E80 */
+			"WorldSpaceCenter"
+			{
+				"windows"	154
+				"linux"		155
+			}
+			/* CBaseEntity::GetSoundEmissionOrigin() const;155;156;4F7080 */
+			"GetSoundEmissionOrigin"
+			{
+				"windows"	155
+				"linux"		156
+			}
+			/* CBaseEntity::ModifyEmitSoundParams(EmitSound_t&);156;157;2CD480 */
+			"ModifyEmitSoundParams"
+			{
+				"windows"	156
+				"linux"		157
+			}
+			/* CBaseEntity::IsDeflectable();157;158;29A300 */
+			"IsDeflectable"
+			{
+				"windows"	157
+				"linux"		158
+			}
+			/* CBaseEntity::Deflected(CBaseEntity*, Vector&);158;159;29A310 */
+			"Deflected"
+			{
+				"windows"	158
+				"linux"		159
+			}
+			/* CBaseEntity::CreateVPhysics();159;160;2CC360 */
+			"CreateVPhysics"
+			{
+				"windows"	159
+				"linux"		160
+			}
+			/* CBaseEntity::ForceVPhysicsCollide(CBaseEntity*);160;161;29A320 */
+			"ForceVPhysicsCollide"
+			{
+				"windows"	160
+				"linux"		161
+			}
+			/* CBasePlayer::VPhysicsDestroyObject();161;162;6EF8F0 */
+			"VPhysicsDestroyObject"
+			{
+				"windows"	161
+				"linux"		162
+			}
+			/* CBasePlayer::VPhysicsUpdate(IPhysicsObject*);162;163;6EF9C0 */
+			"VPhysicsUpdate"
+			{
+				"windows"	162
+				"linux"		163
+			}
+			/* CBaseEntity::VPhysicsTakeDamage(CTakeDamageInfo const&);163;164;4F8650 */
+			"VPhysicsTakeDamage"
+			{
+				"windows"	163
+				"linux"		164
+			}
+			/* CBaseCombatCharacter::VPhysicsShadowCollision(int, gamevcollisionevent_t*);164;165;4EB6E0 */
+			"VPhysicsShadowCollision"
+			{
+				"windows"	164
+				"linux"		165
+			}
+			/* CBasePlayer::VPhysicsShadowUpdate(IPhysicsObject*);165;166;707CD0 */
+			"VPhysicsShadowUpdate"
+			{
+				"windows"	165
+				"linux"		166
+			}
+			/* CBasePlayer::VPhysicsCollision(int, gamevcollisionevent_t*);166;167;6EF100 */
+			"VPhysicsCollision"
+			{
+				"windows"	166
+				"linux"		167
+			}
+			/* CBaseEntity::VPhysicsFriction(IPhysicsObject*, float, int, int);167;168;4F8170 */
+			"VPhysicsFriction"
+			{
+				"windows"	167
+				"linux"		168
+			}
+			/* CBaseEntity::UpdatePhysicsShadowToCurrentPosition(float);168;169;500720 */
+			"UpdatePhysicsShadowToCurrentPosition"
+			{
+				"windows"	168
+				"linux"		169
+			}
+			/* CBaseEntity::VPhysicsGetObjectList(IPhysicsObject**, int);169;170;4F6F00 */
+			"VPhysicsGetObjectList"
+			{
+				"windows"	169
+				"linux"		170
+			}
+			/* CBaseEntity::VPhysicsIsFlesh();170;171;4F6F30 */
+			"VPhysicsIsFlesh"
+			{
+				"windows"	170
+				"linux"		171
+			}
+			/* CBaseEntity::HasPhysicsAttacker(float);171;172;29A340 */
+			"HasPhysicsAttacker"
+			{
+				"windows"	171
+				"linux"		172
+			}
+			/* CEmpPlayer::PhysicsSolidMaskForEntity() const;172;173;311CF0 */
+			"PhysicsSolidMaskForEntity"
+			{
+				"windows"	172
+				"linux"		173
+			}
+			/* CBaseEntity::ResolveFlyCollisionCustom(CGameTrace&, Vector&);173;174;372F40 */
+			"ResolveFlyCollisionCustom"
+			{
+				"windows"	173
+				"linux"		174
+			}
+			/* CBaseEntity::PerformCustomPhysics(Vector*, Vector*, QAngle*, QAngle*);174;175;6D5750 */
+			"PerformCustomPhysics"
+			{
+				"windows"	174
+				"linux"		175
+			}
+			/* CBaseAnimating::GetStepOrigin() const;175;176;4D8F90 */
+			"GetStepOrigin"
+			{
+				"windows"	175
+				"linux"		176
+			}
+			/* CBaseAnimating::GetStepAngles() const;176;177;4D8FD0 */
+			"GetStepAngles"
+			{
+				"windows"	176
+				"linux"		177
+			}
+			/* CBaseEntity::ShouldDrawWaterImpacts();177;178;29A350 */
+			"ShouldDrawWaterImpacts"
+			{
+				"windows"	177
+				"linux"		178
+			}
+			/* CBasePlayer::NetworkStateChanged_m_fFlags();179;179;520F40 */
+			"NetworkStateChanged_m_fFlags"
+			{
+				"windows"	179
+				"linux"		179
+			}
+			/* CBasePlayer::NetworkStateChanged_m_fFlags(void*);178;180;520F80 */
+			"NetworkStateChanged_m_fFlags"
+			{
+				"windows"	178
+				"linux"		180
+			}
+			/* CBasePlayer::NetworkStateChanged_m_nWaterLevel();181;181;520D00 */
+			"NetworkStateChanged_m_nWaterLevel"
+			{
+				"windows"	181
+				"linux"		181
+			}
+			/* CBasePlayer::NetworkStateChanged_m_nWaterLevel(void*);180;182;5210D0 */
+			"NetworkStateChanged_m_nWaterLevel"
+			{
+				"windows"	180
+				"linux"		182
+			}
+			/* CBasePlayer::NetworkStateChanged_m_hGroundEntity();183;183;520E40 */
+			"NetworkStateChanged_m_hGroundEntity"
+			{
+				"windows"	183
+				"linux"		183
+			}
+			/* CBasePlayer::NetworkStateChanged_m_hGroundEntity(void*);182;184;5218B0 */
+			"NetworkStateChanged_m_hGroundEntity"
+			{
+				"windows"	182
+				"linux"		184
+			}
+			/* CBasePlayer::NetworkStateChanged_m_vecBaseVelocity();185;185;520D80 */
+			"NetworkStateChanged_m_vecBaseVelocity"
+			{
+				"windows"	185
+				"linux"		185
+			}
+			/* CBasePlayer::NetworkStateChanged_m_vecBaseVelocity(void*);184;186;5214C0 */
+			"NetworkStateChanged_m_vecBaseVelocity"
+			{
+				"windows"	184
+				"linux"		186
+			}
+			/* CBasePlayer::NetworkStateChanged_m_flFriction();187;187;520EC0 */
+			"NetworkStateChanged_m_flFriction"
+			{
+				"windows"	187
+				"linux"		187
+			}
+			/* CBasePlayer::NetworkStateChanged_m_flFriction(void*);186;188;521B50 */
+			"NetworkStateChanged_m_flFriction"
+			{
+				"windows"	186
+				"linux"		188
+			}
+			/* CBasePlayer::NetworkStateChanged_m_vecVelocity();189;189;520CC0 */
+			"NetworkStateChanged_m_vecVelocity"
+			{
+				"windows"	189
+				"linux"		189
+			}
+			/* CBasePlayer::NetworkStateChanged_m_vecVelocity(void*);188;190;521220 */
+			"NetworkStateChanged_m_vecVelocity"
+			{
+				"windows"	188
+				"linux"		190
+			}
+			/* CBasePlayer::NetworkStateChanged_m_vecViewOffset();191;191;520F00 */
+			"NetworkStateChanged_m_vecViewOffset"
+			{
+				"windows"	191
+				"linux"		191
+			}
+			/* CBasePlayer::NetworkStateChanged_m_vecViewOffset(void*);190;192;521CA0 */
+			"NetworkStateChanged_m_vecViewOffset"
+			{
+				"windows"	190
+				"linux"		192
+			}
+			/* CBaseEntity::ShouldBlockNav() const;192;193;29A440 */
+			"ShouldBlockNav"
+			{
+				"windows"	192
+				"linux"		193
+			}
+			/* CBaseAnimating::GetIdealSpeed() const;193;194;4D8F40 */
+			"GetIdealSpeed"
+			{
+				"windows"	193
+				"linux"		194
+			}
+			/* CBaseAnimating::GetIdealAccel() const;194;195;4D8F50 */
+			"GetIdealAccel"
+			{
+				"windows"	194
+				"linux"		195
+			}
+			/* CBaseAnimatingOverlay::StudioFrameAdvance();195;196;4E5F60 */
+			"StudioFrameAdvance"
+			{
+				"windows"	195
+				"linux"		196
+			}
+			/* CBaseAnimating::SetSequence(int);196;197;4DA220 */
+			"SetSequence"
+			{
+				"windows"	196
+				"linux"		197
+			}
+			/* CBaseAnimating::IsActivityFinished();197;198;2C6CA0 */
+			"IsActivityFinished"
+			{
+				"windows"	197
+				"linux"		198
+			}
+			/* CBaseAnimating::GetSequenceGroundSpeed(CStudioHdr*, int);198;199;4DB840 */
+			"GetSequenceGroundSpeed"
+			{
+				"windows"	198
+				"linux"		199
+			}
+			/* CBaseAnimating::ClampRagdollForce(Vector const&, Vector*);199;200;2C6CB0 */
+			"ClampRagdollForce"
+			{
+				"windows"	199
+				"linux"		200
+			}
+			/* CBaseAnimating::BecomeRagdollOnClient(Vector const&);200;201;4D9FB0 */
+			"BecomeRagdollOnClient"
+			{
+				"windows"	200
+				"linux"		201
+			}
+			/* CBaseAnimating::IsRagdoll();201;202;4D8F30 */
+			"IsRagdoll"
+			{
+				"windows"	201
+				"linux"		202
+			}
+			/* CBaseAnimating::CanBecomeRagdoll();202;203;4DE560 */
+			"CanBecomeRagdoll"
+			{
+				"windows"	202
+				"linux"		203
+			}
+			/* CBaseAnimatingOverlay::GetSkeleton(CStudioHdr*, Vector*, Quaternion*, int);203;204;4E6450 */
+			"GetSkeleton"
+			{
+				"windows"	203
+				"linux"		204
+			}
+			/* CBaseAnimating::GetBoneTransform(int, matrix3x4_t&);204;205;4E0700 */
+			"GetBoneTransform"
+			{
+				"windows"	204
+				"linux"		205
+			}
+			/* CBaseAnimating::SetupBones(matrix3x4_t*, int);205;206;4E11E0 */
+			"SetupBones"
+			{
+				"windows"	205
+				"linux"		206
+			}
+			/* CBaseAnimating::CalculateIKLocks(float);206;207;4D97C0 */
+			"CalculateIKLocks"
+			{
+				"windows"	206
+				"linux"		207
+			}
+			/* CBaseAnimatingOverlay::DispatchAnimEvents(CBaseAnimating*);207;208;4E4DB0 */
+			"DispatchAnimEvents"
+			{
+				"windows"	207
+				"linux"		208
+			}
+			/* CBasePlayer::HandleAnimEvent(animevent_t*);208;209;6F0B70 */
+			"HandleAnimEvent"
+			{
+				"windows"	208
+				"linux"		209
+			}
+			/* CBaseAnimating::PopulatePoseParameters();209;210;4D8F80 */
+			"PopulatePoseParameters"
+			{
+				"windows"	209
+				"linux"		210
+			}
+			/* CBaseAnimating::GetAttachment(int, matrix3x4_t&);210;211;4DD180 */
+			"GetAttachment"
+			{
+				"windows"	210
+				"linux"		211
+			}
+			/* CBaseAnimating::InitBoneControllers();211;212;4E0A80 */
+			"InitBoneControllers"
+			{
+				"windows"	211
+				"linux"		212
+			}
+			/* CBaseAnimating::GetGroundSpeedVelocity();212;213;4DE050 */
+			"GetGroundSpeedVelocity"
+			{
+				"windows"	212
+				"linux"		213
+			}
+			/* CBasePlayer::RefreshCollisionBounds();213;214;6F2C30 */
+			"RefreshCollisionBounds"
+			{
+				"windows"	213
+				"linux"		214
+			}
+			/* CBaseAnimating::Ignite(float, bool, float, bool);214;215;4D9E40 */
+			"Ignite"
+			{
+				"windows"	214
+				"linux"		215
+			}
+			/* CBaseAnimating::IgniteLifetime(float);215;216;4D9290 */
+			"IgniteLifetime"
+			{
+				"windows"	215
+				"linux"		216
+			}
+			/* CBaseAnimating::IgniteNumHitboxFires(int);216;217;4D91D0 */
+			"IgniteNumHitboxFires"
+			{
+				"windows"	216
+				"linux"		217
+			}
+			/* CBaseAnimating::IgniteHitboxFireScale(float);217;218;4D9110 */
+			"IgniteHitboxFireScale"
+			{
+				"windows"	217
+				"linux"		218
+			}
+			/* CBaseAnimating::Extinguish();218;219;2C7340 */
+			"Extinguish"
+			{
+				"windows"	218
+				"linux"		219
+			}
+			/* CBaseCombatCharacter::SetLightingOriginRelative(CBaseEntity*);219;220;4EA930 */
+			"SetLightingOriginRelative"
+			{
+				"windows"	219
+				"linux"		220
+			}
+			/* CBaseAnimating::SetLightingOrigin(CBaseEntity*);220;221;2C7570 */
+			"SetLightingOrigin"
+			{
+				"windows"	220
+				"linux"		221
+			}
+			/* CBaseFlex::SetViewtarget(Vector const&);221;222;514070 */
+			"SetViewtarget"
+			{
+				"windows"	221
+				"linux"		222
+			}
+			/* CBaseFlex::StartSceneEvent(CSceneEventInfo*, CChoreoScene*, CChoreoEvent*, CChoreoActor*, CBaseEntity*);222;223;5184F0 */
+			"StartSceneEvent"
+			{
+				"windows"	222
+				"linux"		223
+			}
+			/* CBaseFlex::ProcessSceneEvents();223;224;515110 */
+			"ProcessSceneEvents"
+			{
+				"windows"	223
+				"linux"		224
+			}
+			/* CBaseFlex::ProcessSceneEvent(CSceneEventInfo*, CChoreoScene*, CChoreoEvent*);224;225;51B670 */
+			"ProcessSceneEvent"
+			{
+				"windows"	224
+				"linux"		225
+			}
+			/* CBaseFlex::ClearSceneEvent(CSceneEventInfo*, bool, bool);225;226;513CD0 */
+			"ClearSceneEvent"
+			{
+				"windows"	225
+				"linux"		226
+			}
+			/* CBaseFlex::CheckSceneEventCompletion(CSceneEventInfo*, float, CChoreoScene*, CChoreoEvent*);226;227;513EE0 */
+			"CheckSceneEventCompletion"
+			{
+				"windows"	226
+				"linux"		227
+			}
+			/* CBaseFlex::PlayScene(char const*, float, AI_Response*, IRecipientFilter*);227;228;513C80 */
+			"PlayScene"
+			{
+				"windows"	227
+				"linux"		228
+			}
+			/* CBaseFlex::PlayAutoGeneratedSoundScene(char const*);228;229;513C50 */
+			"PlayAutoGeneratedSoundScene"
+			{
+				"windows"	228
+				"linux"		229
+			}
+			/* CBaseFlex::GetSpecialDSP();229;230;3FA4B0 */
+			"GetSpecialDSP"
+			{
+				"windows"	229
+				"linux"		230
+			}
+			/* CBasePlayer::GetPhysicsImpactDamageTable();230;231;6EEBD0 */
+			"GetPhysicsImpactDamageTable"
+			{
+				"windows"	230
+				"linux"		231
+			}
+			/* CBaseCombatCharacter::FInViewCone(CBaseEntity*);232;232;4E7970 */
+			"FInViewCone"
+			{
+				"windows"	232
+				"linux"		232
+			}
+			/* CBaseCombatCharacter::FInViewCone(Vector const&);231;233;4E8110 */
+			"FInViewCone"
+			{
+				"windows"	231
+				"linux"		233
+			}
+			/* CBaseCombatCharacter::FInAimCone(CBaseEntity*);234;234;4E79B0 */
+			"FInAimCone"
+			{
+				"windows"	234
+				"linux"		234
+			}
+			/* CBaseCombatCharacter::FInAimCone(Vector const&);233;235;4E9900 */
+			"FInAimCone"
+			{
+				"windows"	233
+				"linux"		235
+			}
+			/* CBaseCombatCharacter::ShouldShootMissTarget(CBaseCombatCharacter*);235;236;4E7D00 */
+			"ShouldShootMissTarget"
+			{
+				"windows"	235
+				"linux"		236
+			}
+			/* CBaseCombatCharacter::FindMissTarget();236;237;4E9B50 */
+			"FindMissTarget"
+			{
+				"windows"	236
+				"linux"		237
+			}
+			/* CBaseCombatCharacter::HandleInteraction(int, void*, CBaseCombatCharacter*);237;238;4E7A30 */
+			"HandleInteraction"
+			{
+				"windows"	237
+				"linux"		238
+			}
+			/* CBasePlayer::BodyAngles();238;239;6EEED0 */
+			"BodyAngles"
+			{
+				"windows"	238
+				"linux"		239
+			}
+			/* CBaseCombatCharacter::BodyDirection2D();239;240;4E7FF0 */
+			"BodyDirection2D"
+			{
+				"windows"	239
+				"linux"		240
+			}
+			/* CBaseCombatCharacter::BodyDirection3D();240;241;4E80C0 */
+			"BodyDirection3D"
+			{
+				"windows"	240
+				"linux"		241
+			}
+			/* CBaseCombatCharacter::HeadDirection2D();241;242;4F0B40 */
+			"HeadDirection2D"
+			{
+				"windows"	241
+				"linux"		242
+			}
+			/* CBaseCombatCharacter::HeadDirection3D();242;243;4F0B70 */
+			"HeadDirection3D"
+			{
+				"windows"	242
+				"linux"		243
+			}
+			/* CBaseCombatCharacter::EyeDirection2D();243;244;4F0BA0 */
+			"EyeDirection2D"
+			{
+				"windows"	243
+				"linux"		244
+			}
+			/* CBaseCombatCharacter::EyeDirection3D();244;245;4F0BD0 */
+			"EyeDirection3D"
+			{
+				"windows"	244
+				"linux"		245
+			}
+			/* CBaseCombatCharacter::IsHiddenByFog(Vector const&) const;247;246;4E9DB0 */
+			"IsHiddenByFog"
+			{
+				"windows"	247
+				"linux"		246
+			}
+			/* CBaseCombatCharacter::IsHiddenByFog(CBaseEntity*) const;246;247;4E97E0 */
+			"IsHiddenByFog"
+			{
+				"windows"	246
+				"linux"		247
+			}
+			/* CBaseCombatCharacter::IsHiddenByFog(float) const;245;248;4E7D50 */
+			"IsHiddenByFog"
+			{
+				"windows"	245
+				"linux"		248
+			}
+			/* CBaseCombatCharacter::GetFogObscuredRatio(Vector const&) const;250;249;4E9D40 */
+			"GetFogObscuredRatio"
+			{
+				"windows"	250
+				"linux"		249
+			}
+			/* CBaseCombatCharacter::GetFogObscuredRatio(CBaseEntity*) const;249;250;4E9E20 */
+			"GetFogObscuredRatio"
+			{
+				"windows"	249
+				"linux"		250
+			}
+			/* CBaseCombatCharacter::GetFogObscuredRatio(float) const;248;251;4E7D80 */
+			"GetFogObscuredRatio"
+			{
+				"windows"	248
+				"linux"		251
+			}
+			/* CBaseCombatCharacter::IsLookingTowards(CBaseEntity const*, float) const;252;252;2BB320 */
+			"IsLookingTowards"
+			{
+				"windows"	252
+				"linux"		252
+			}
+			/* CBaseCombatCharacter::IsLookingTowards(Vector const&, float) const;251;253;2BB400 */
+			"IsLookingTowards"
+			{
+				"windows"	251
+				"linux"		253
+			}
+			/* CBaseCombatCharacter::IsInFieldOfView(CBaseEntity*) const;254;254;2BB500 */
+			"IsInFieldOfView"
+			{
+				"windows"	254
+				"linux"		254
+			}
+			/* CBaseCombatCharacter::IsInFieldOfView(Vector const&) const;253;255;2BB7F0 */
+			"IsInFieldOfView"
+			{
+				"windows"	253
+				"linux"		255
+			}
+			/* CBaseCombatCharacter::IsLineOfSightClear(CBaseEntity*, CBaseCombatCharacter::LineOfSightCheckType) const;256;256;2BB890 */
+			"IsLineOfSightClear"
+			{
+				"windows"	256
+				"linux"		256
+			}
+			/* CBaseCombatCharacter::IsLineOfSightClear(Vector const&, CBaseCombatCharacter::LineOfSightCheckType, CBaseEntity*) const;255;257;2BB980 */
+			"IsLineOfSightClear"
+			{
+				"windows"	255
+				"linux"		257
+			}
+			/* CBaseCombatCharacter::GiveAmmo(int, int, bool);257;258;4E8A90 */
 			"GiveAmmo"
 			{
-				"windows"	"256"
-				"linux"		"257"
+				"windows"	257
+				"linux"		258
+			}
+			/* CBaseCombatCharacter::RemoveAmmo(int, int);259;259;2BAD60 */
+			"RemoveAmmo"
+			{
+				"windows"	259
+				"linux"		259
+			}
+			/* CBaseCombatCharacter::RemoveAmmo(int, char const*);258;260;2BAE10 */
+			"RemoveAmmo"
+			{
+				"windows"	258
+				"linux"		260
+			}
+			/* CBaseCombatCharacter::GetAmmoCount(int) const;260;261;2BAF30 */
+			"GetAmmoCount"
+			{
+				"windows"	260
+				"linux"		261
+			}
+			/* CBaseCombatCharacter::NPC_TranslateActivity(Activity);261;262;4E7AB0 */
+			"NPC_TranslateActivity"
+			{
+				"windows"	261
+				"linux"		262
+			}
+			/* CBaseCombatCharacter::Weapon_TranslateActivity(Activity, bool*);262;263;4E7A40 */
+			"Weapon_TranslateActivity"
+			{
+				"windows"	262
+				"linux"		263
+			}
+			/* CBaseCombatCharacter::Weapon_FrameUpdate();263;264;4E7AC0 */
+			"Weapon_FrameUpdate"
+			{
+				"windows"	263
+				"linux"		264
+			}
+			/* CBaseCombatCharacter::Weapon_HandleAnimEvent(animevent_t*);264;265;4E7C30 */
+			"Weapon_HandleAnimEvent"
+			{
+				"windows"	264
+				"linux"		265
+			}
+			/* CBasePlayer::Weapon_CanUse(CBaseCombatWeapon*);265;266;6EEFC0 */
+			"Weapon_CanUse"
+			{
+				"windows"	265
+				"linux"		266
+			}
+			/* CBasePlayer::Weapon_Equip(CBaseCombatWeapon*);266;267;6F0C20 */
+			"Weapon_Equip"
+			{
+				"windows"	266
+				"linux"		267
+			}
+			/* CBaseCombatCharacter::Weapon_EquipAmmoOnly(CBaseCombatWeapon*);267;268;4EBA10 */
+			"Weapon_EquipAmmoOnly"
+			{
+				"windows"	267
+				"linux"		268
+			}
+			/* CBasePlayer::Weapon_Drop(CBaseCombatWeapon*, Vector const*, Vector const*);268;269;6F1AC0 */
+			"Weapon_Drop"
+			{
+				"windows"	268
+				"linux"		269
+			}
+			/* CEmpPlayer::Weapon_Switch(CBaseCombatWeapon*, int);269;270;591360 */
+			"Weapon_Switch"
+			{
+				"windows"	269
+				"linux"		270
+			}
+			/* CBasePlayer::Weapon_ShootPosition();270;271;2D6AB0 */
+			"Weapon_ShootPosition"
+			{
+				"windows"	270
+				"linux"		271
+			}
+			/* CBaseCombatCharacter::Weapon_CanSwitchTo(CBaseCombatWeapon*);271;272;2BAB20 */
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	271
+				"linux"		272
+			}
+			/* CBaseCombatCharacter::Weapon_SlotOccupied(CBaseCombatWeapon*);272;273;4E7B30 */
+			"Weapon_SlotOccupied"
+			{
+				"windows"	272
+				"linux"		273
+			}
+			/* CBaseCombatCharacter::Weapon_GetSlot(int) const;273;274;4E7B80 */
+			"Weapon_GetSlot"
+			{
+				"windows"	273
+				"linux"		274
+			}
+			/* CBaseCombatCharacter::AddPlayerItem(CBaseCombatWeapon*);274;275;3FA4C0 */
+			"AddPlayerItem"
+			{
+				"windows"	274
+				"linux"		275
+			}
+			/* CBasePlayer::RemovePlayerItem(CBaseCombatWeapon*);275;276;6FF270 */
+			"RemovePlayerItem"
+			{
+				"windows"	275
+				"linux"		276
+			}
+			/* CBaseCombatCharacter::CanBecomeServerRagdoll();276;277;3FA4E0 */
+			"CanBecomeServerRagdoll"
+			{
+				"windows"	276
+				"linux"		277
+			}
+			/* CBasePlayer::OnTakeDamage_Alive(CTakeDamageInfo const&);277;278;6F3330 */
+			"OnTakeDamage_Alive"
+			{
+				"windows"	277
+				"linux"		278
+			}
+			/* CBaseCombatCharacter::OnTakeDamage_Dying(CTakeDamageInfo const&);278;279;4E7CA0 */
+			"OnTakeDamage_Dying"
+			{
+				"windows"	278
+				"linux"		279
+			}
+			/* CBaseCombatCharacter::OnTakeDamage_Dead(CTakeDamageInfo const&);279;280;4E9880 */
+			"OnTakeDamage_Dead"
+			{
+				"windows"	279
+				"linux"		280
+			}
+			/* CBaseCombatCharacter::GetAliveDuration() const;280;281;3FBFC0 */
+			"GetAliveDuration"
+			{
+				"windows"	280
+				"linux"		281
+			}
+			/* CBaseCombatCharacter::OnFriendDamaged(CBaseCombatCharacter*, CBaseEntity*);281;282;4F0C00 */
+			"OnFriendDamaged"
+			{
+				"windows"	281
+				"linux"		282
+			}
+			/* CBaseCombatCharacter::NotifyFriendsOfDamage(CBaseEntity*);282;283;4F0C10 */
+			"NotifyFriendsOfDamage"
+			{
+				"windows"	282
+				"linux"		283
+			}
+			/* CBaseCombatCharacter::HasEverBeenInjured(int) const;283;284;4E7DA0 */
+			"HasEverBeenInjured"
+			{
+				"windows"	283
+				"linux"		284
+			}
+			/* CBaseCombatCharacter::GetTimeSinceLastInjury(int) const;284;285;4E9480 */
+			"GetTimeSinceLastInjury"
+			{
+				"windows"	284
+				"linux"		285
+			}
+			/* CBaseCombatCharacter::OnPlayerKilledOther(CBaseEntity*, CTakeDamageInfo const&);285;286;3FA4F0 */
+			"OnPlayerKilledOther"
+			{
+				"windows"	285
+				"linux"		286
+			}
+			/* CBaseCombatCharacter::GetDeathActivity();286;287;4EB090 */
+			"GetDeathActivity"
+			{
+				"windows"	286
+				"linux"		287
+			}
+			/* CBaseCombatCharacter::CorpseGib(CTakeDamageInfo const&);287;288;4E8980 */
+			"CorpseGib"
+			{
+				"windows"	287
+				"linux"		288
+			}
+			/* CBaseCombatCharacter::CorpseFade();288;289;4EB4B0 */
+			"CorpseFade"
+			{
+				"windows"	288
+				"linux"		289
+			}
+			/* CBaseCombatCharacter::HasHumanGibs();289;290;4E7950 */
+			"HasHumanGibs"
+			{
+				"windows"	289
+				"linux"		290
+			}
+			/* CBaseCombatCharacter::HasAlienGibs();290;291;4E7960 */
+			"HasAlienGibs"
+			{
+				"windows"	290
+				"linux"		291
+			}
+			/* CBaseCombatCharacter::ShouldGib(CTakeDamageInfo const&);291;292;3FA500 */
+			"ShouldGib"
+			{
+				"windows"	291
+				"linux"		292
+			}
+			/* CBaseCombatCharacter::OnKilledNPC(CBaseCombatCharacter*);292;293;3FA510 */
+			"OnKilledNPC"
+			{
+				"windows"	292
+				"linux"		293
+			}
+			/* CBaseCombatCharacter::Event_Gibbed(CTakeDamageInfo const&);293;294;4E8770 */
+			"Event_Gibbed"
+			{
+				"windows"	293
+				"linux"		294
+			}
+			/* CBasePlayer::Event_Dying(CTakeDamageInfo const&);294;295;6F0250 */
+			"Event_Dying"
+			{
+				"windows"	294
+				"linux"		295
+			}
+			/* CBaseCombatCharacter::Event_Dying();295;296;4E85A0 */
+			"Event_Dying"
+			{
+				"windows"	295
+				"linux"		296
+			}
+			/* CBaseCombatCharacter::BecomeRagdoll(CTakeDamageInfo const&, Vector const&);296;297;4E9EC0 */
+			"BecomeRagdoll"
+			{
+				"windows"	296
+				"linux"		297
+			}
+			/* CBaseCombatCharacter::FixupBurningServerRagdoll(CBaseEntity*);297;298;4EAB30 */
+			"FixupBurningServerRagdoll"
+			{
+				"windows"	297
+				"linux"		298
+			}
+			/* CBaseCombatCharacter::BecomeRagdollBoogie(CBaseEntity*, Vector const&, float, int);298;299;4E85E0 */
+			"BecomeRagdollBoogie"
+			{
+				"windows"	298
+				"linux"		299
+			}
+			/* CBaseCombatCharacter::CheckTraceHullAttack(float, Vector const&, Vector const&, int, int, float, bool);300;300;4EA720 */
+			"CheckTraceHullAttack"
+			{
+				"windows"	300
+				"linux"		300
+			}
+			/* CBaseCombatCharacter::CheckTraceHullAttack(Vector const&, Vector const&, Vector const&, Vector const&, int, int, float, bool);299;301;4EA0E0 */
+			"CheckTraceHullAttack"
+			{
+				"windows"	299
+				"linux"		301
+			}
+			/* CBaseCombatCharacter::PushawayTouch(CBaseEntity*);301;302;3FA530 */
+			"PushawayTouch"
+			{
+				"windows"	301
+				"linux"		302
+			}
+			/* CBaseCombatCharacter::IRelationType(CBaseEntity*);302;303;4ED270 */
+			"IRelationType"
+			{
+				"windows"	302
+				"linux"		303
+			}
+			/* CBaseCombatCharacter::IRelationPriority(CBaseEntity*);303;304;4ED240 */
+			"IRelationPriority"
+			{
+				"windows"	303
+				"linux"		304
+			}
+			/* CBasePlayer::IsInAVehicle() const;304;305;5208E0 */
+			"IsInAVehicle"
+			{
+				"windows"	304
+				"linux"		305
+			}
+			/* CBasePlayer::GetVehicle();305;306;520850 */
+			"GetVehicle"
+			{
+				"windows"	305
+				"linux"		306
+			}
+			/* CBasePlayer::GetVehicleEntity();306;307;5208A0 */
+			"GetVehicleEntity"
+			{
+				"windows"	306
+				"linux"		307
+			}
+			/* CBaseCombatCharacter::ExitVehicle();307;308;3FA570 */
+			"ExitVehicle"
+			{
+				"windows"	307
+				"linux"		308
+			}
+			/* CBaseCombatCharacter::RemoveAllWeapons();308;309;4EDF00 */
+			"RemoveAllWeapons"
+			{
+				"windows"	308
+				"linux"		309
+			}
+			/* CBaseCombatCharacter::CalcWeaponProficiency(CBaseCombatWeapon*);309;310;4E7CF0 */
+			"CalcWeaponProficiency"
+			{
+				"windows"	309
+				"linux"		310
+			}
+			/* CBaseCombatCharacter::GetAttackSpread(CBaseCombatWeapon*, CBaseEntity*);310;311;4E8A30 */
+			"GetAttackSpread"
+			{
+				"windows"	310
+				"linux"		311
+			}
+			/* CBaseCombatCharacter::GetSpreadBias(CBaseCombatWeapon*, CBaseEntity*);311;312;4E7CC0 */
+			"GetSpreadBias"
+			{
+				"windows"	311
+				"linux"		312
+			}
+			/* CBasePlayer::DoMuzzleFlash();312;313;2D96C0 */
+			"DoMuzzleFlash"
+			{
+				"windows"	312
+				"linux"		313
+			}
+			/* CBaseCombatCharacter::AddEntityRelationship(CBaseEntity*, Disposition_t, int);313;314;4F08B0 */
+			"AddEntityRelationship"
+			{
+				"windows"	313
+				"linux"		314
+			}
+			/* CBaseCombatCharacter::RemoveEntityRelationship(CBaseEntity*);314;315;4E7DD0 */
+			"RemoveEntityRelationship"
+			{
+				"windows"	314
+				"linux"		315
+			}
+			/* CBaseCombatCharacter::AddClassRelationship(Class_T, Disposition_t, int);315;316;4F0A20 */
+			"AddClassRelationship"
+			{
+				"windows"	315
+				"linux"		316
+			}
+			/* CBaseCombatCharacter::OnChangeActiveWeapon(CBaseCombatWeapon*, CBaseCombatWeapon*);316;317;4F0C20 */
+			"OnChangeActiveWeapon"
+			{
+				"windows"	316
+				"linux"		317
+			}
+			/* CBaseCombatCharacter::GetLastKnownArea() const;317;318;3FA580 */
+			"GetLastKnownArea"
+			{
+				"windows"	317
+				"linux"		318
+			}
+			/* CBaseCombatCharacter::IsAreaTraversable(CNavArea const*) const;318;319;4E7FA0 */
+			"IsAreaTraversable"
+			{
+				"windows"	318
+				"linux"		319
+			}
+			/* CBaseCombatCharacter::ClearLastKnownArea();319;320;4E7F00 */
+			"ClearLastKnownArea"
+			{
+				"windows"	319
+				"linux"		320
+			}
+			/* CBaseCombatCharacter::UpdateLastKnownArea();320;321;4E7D90 */
+			"UpdateLastKnownArea"
+			{
+				"windows"	320
+				"linux"		321
+			}
+			/* CBaseCombatCharacter::OnNavAreaChanged(CNavArea*, CNavArea*);321;322;3FA590 */
+			"OnNavAreaChanged"
+			{
+				"windows"	321
+				"linux"		322
+			}
+			/* CBaseCombatCharacter::OnNavAreaRemoved(CNavArea*);322;323;4E8950 */
+			"OnNavAreaRemoved"
+			{
+				"windows"	322
+				"linux"		323
+			}
+			/* CBaseCombatCharacter::OnPursuedBy(INextBot*);323;324;3FA5A0 */
+			"OnPursuedBy"
+			{
+				"windows"	323
+				"linux"		324
+			}
+			/* CBasePlayer::NetworkStateChanged_m_iAmmo();325;325;520E80 */
+			"NetworkStateChanged_m_iAmmo"
+			{
+				"windows"	325
+				"linux"		325
+			}
+			/* CBasePlayer::NetworkStateChanged_m_iAmmo(void*);324;326;521A00 */
+			"NetworkStateChanged_m_iAmmo"
+			{
+				"windows"	324
+				"linux"		326
+			}
+			/* CEmpPlayer::CreateViewModel(int);326;327;586940 */
+			"CreateViewModel"
+			{
+				"windows"	326
+				"linux"		327
+			}
+			/* CEmpPlayer::SetupVisibility(CBaseEntity*, unsigned char*, int);327;328;583560 */
+			"SetupVisibility"
+			{
+				"windows"	327
+				"linux"		328
+			}
+			/* CEmpPlayer::WantsLagCompensationOnEntity(CBasePlayer const*, CUserCmd const*, CBitVec<2048> const*) const;328;329;583150 */
+			"WantsLagCompensationOnEntity"
+			{
+				"windows"	328
+				"linux"		329
+			}
+			/* CBasePlayer::SharedSpawn();329;330;2D9820 */
+			"SharedSpawn"
+			{
+				"windows"	329
+				"linux"		330
+			}
+			/* CBasePlayer::ForceRespawn();330;331;6EFFF0 */
+			"ForceRespawn"
+			{
+				"windows"	330
+				"linux"		331
+			}
+			/* CEmpPlayer::InitialSpawn();331;332;5858C0 */
+			"InitialSpawn"
+			{
+				"windows"	331
+				"linux"		332
+			}
+			/* CBasePlayer::InitHUD();332;333;520570 */
+			"InitHUD"
+			{
+				"windows"	332
+				"linux"		333
+			}
+			/* CBasePlayer::ShowViewPortPanel(char const*, bool, KeyValues*);333;334;6F1EF0 */
+			"ShowViewPortPanel"
+			{
+				"windows"	333
+				"linux"		334
+			}
+			/* CBasePlayer::PlayerDeathThink();334;335;6FA4F0 */
+			"PlayerDeathThink"
+			{
+				"windows"	334
+				"linux"		335
+			}
+			/* CBasePlayer::Jump();335;336;6EEE30 */
+			"Jump"
+			{
+				"windows"	335
+				"linux"		336
+			}
+			/* CBasePlayer::Duck();336;337;6F07B0 */
+			"Duck"
+			{
+				"windows"	336
+				"linux"		337
+			}
+			/* CEmpPlayer::PreThink();337;338;5872F0 */
+			"PreThink"
+			{
+				"windows"	337
+				"linux"		338
+			}
+			/* CEmpPlayer::PostThink();338;339;5937F0 */
+			"PostThink"
+			{
+				"windows"	338
+				"linux"		339
+			}
+			/* CBasePlayer::DamageEffect(float, int);339;340;6F0CE0 */
+			"DamageEffect"
+			{
+				"windows"	339
+				"linux"		340
+			}
+			/* CBasePlayer::ShouldFadeOnDeath();340;341;520580 */
+			"ShouldFadeOnDeath"
+			{
+				"windows"	340
+				"linux"		341
+			}
+			/* CBasePlayer::IsFakeClient() const;341;342;6EF160 */
+			"IsFakeClient"
+			{
+				"windows"	341
+				"linux"		342
+			}
+			/* CBasePlayer::GetPlayerMins() const;342;343;2D5E90 */
+			"GetPlayerMins"
+			{
+				"windows"	342
+				"linux"		343
+			}
+			/* CBasePlayer::GetPlayerMaxs() const;343;344;2D6000 */
+			"GetPlayerMaxs"
+			{
+				"windows"	343
+				"linux"		344
+			}
+			/* CBasePlayer::CalcRoll(QAngle const&, Vector const&, float, float);344;345;2D9300 */
+			"CalcRoll"
+			{
+				"windows"	344
+				"linux"		345
+			}
+			/* CBasePlayer::PackDeadPlayerItems();345;346;6EFA20 */
+			"PackDeadPlayerItems"
+			{
+				"windows"	345
+				"linux"		346
+			}
+			/* CBasePlayer::RemoveAllItems(bool);346;347;6FF370 */
+			"RemoveAllItems"
+			{
+				"windows"	346
+				"linux"		347
+			}
+			/* CBasePlayer::Weapon_TracerPosition();347;348;2D6AE0 */
+			"Weapon_TracerPosition"
+			{
+				"windows"	347
+				"linux"		348
+			}
+			/* CBasePlayer::Weapon_SetLast(CBaseCombatWeapon*);348;349;2D6BA0 */
+			"Weapon_SetLast"
+			{
+				"windows"	348
+				"linux"		349
+			}
+			/* CBasePlayer::Weapon_ShouldSetLast(CBaseCombatWeapon*, CBaseCombatWeapon*);349;350;5205B0 */
+			"Weapon_ShouldSetLast"
+			{
+				"windows"	349
+				"linux"		350
+			}
+			/* CBasePlayer::Weapon_ShouldSelectItem(CBaseCombatWeapon*);350;351;2D6FE0 */
+			"Weapon_ShouldSelectItem"
+			{
+				"windows"	350
+				"linux"		351
+			}
+			/* CBasePlayer::OnMyWeaponFired(CBaseCombatWeapon*);351;352;520B90 */
+			"OnMyWeaponFired"
+			{
+				"windows"	351
+				"linux"		352
+			}
+			/* CBasePlayer::GetTimeSinceWeaponFired() const;352;353;520BC0 */
+			"GetTimeSinceWeaponFired"
+			{
+				"windows"	352
+				"linux"		353
+			}
+			/* CBasePlayer::IsFiringWeapon() const;353;354;520C20 */
+			"IsFiringWeapon"
+			{
+				"windows"	353
+				"linux"		354
+			}
+			/* CBasePlayer::UpdateClientData();354;355;6F37E0 */
+			"UpdateClientData"
+			{
+				"windows"	354
+				"linux"		355
+			}
+			/* CBasePlayer::ExitLadder();355;356;5205C0 */
+			"ExitLadder"
+			{
+				"windows"	355
+				"linux"		356
+			}
+			/* CBasePlayer::GetLadderSurface(Vector const&);356;357;2D64D0 */
+			"GetLadderSurface"
+			{
+				"windows"	356
+				"linux"		357
+			}
+			/* CBasePlayer::SetFlashlightEnabled(bool);357;358;5205D0 */
+			"SetFlashlightEnabled"
+			{
+				"windows"	357
+				"linux"		358
+			}
+			/* CEmpPlayer::FlashlightIsOn();358;359;580430 */
+			"FlashlightIsOn"
+			{
+				"windows"	358
+				"linux"		359
+			}
+			/* CEmpPlayer::FlashlightTurnOn();359;360;580940 */
+			"FlashlightTurnOn"
+			{
+				"windows"	359
+				"linux"		360
+			}
+			/* CEmpPlayer::FlashlightTurnOff();360;361;589070 */
+			"FlashlightTurnOff"
+			{
+				"windows"	360
+				"linux"		361
+			}
+			/* CBasePlayer::IsIlluminatedByFlashlight(CBaseEntity*, float*);361;362;520610 */
+			"IsIlluminatedByFlashlight"
+			{
+				"windows"	361
+				"linux"		362
+			}
+			/* CBasePlayer::UpdateStepSound(surfacedata_t*, Vector const&, Vector const&);362;363;2D6510 */
+			"UpdateStepSound"
+			{
+				"windows"	362
+				"linux"		363
+			}
+			/* CBasePlayer::PlayStepSound(Vector&, surfacedata_t*, float, bool);363;364;2DB310 */
+			"PlayStepSound"
+			{
+				"windows"	363
+				"linux"		364
+			}
+			/* CBasePlayer::GetOverrideStepSound(char const*);364;365;520620 */
+			"GetOverrideStepSound"
+			{
+				"windows"	364
+				"linux"		365
+			}
+			/* CBasePlayer::GetStepSoundVelocities(float*, float*);365;366;2D69D0 */
+			"GetStepSoundVelocities"
+			{
+				"windows"	365
+				"linux"		366
+			}
+			/* CBasePlayer::SetStepSoundTime(stepsoundtimes_t, bool);366;367;2D6A10 */
+			"SetStepSoundTime"
+			{
+				"windows"	366
+				"linux"		367
+			}
+			/* CBasePlayer::DeathSound(CTakeDamageInfo const&);367;368;6F1500 */
+			"DeathSound"
+			{
+				"windows"	367
+				"linux"		368
+			}
+			/* CBasePlayer::GetSceneSoundToken();368;369;520630 */
+			"GetSceneSoundToken"
+			{
+				"windows"	368
+				"linux"		369
+			}
+			/* CBasePlayer::OnEmitFootstepSound(CSoundParameters const&, Vector const&, float);369;370;520640 */
+			"OnEmitFootstepSound"
+			{
+				"windows"	369
+				"linux"		370
+			}
+			/* CEmpPlayer::SetAnimation(PLAYER_ANIM);370;371;586A50 */
+			"SetAnimation"
+			{
+				"windows"	370
+				"linux"		371
+			}
+			/* CBasePlayer::ImpulseCommands();371;372;6FADB0 */
+			"ImpulseCommands"
+			{
+				"windows"	371
+				"linux"		372
+			}
+			/* CEmpPlayer::CheatImpulseCommands(int);372;373;581B70 */
+			"CheatImpulseCommands"
+			{
+				"windows"	372
+				"linux"		373
+			}
+			/* CEmpPlayer::ClientCommand(CCommand const&);373;374;59E620 */
+			"ClientCommand"
+			{
+				"windows"	373
+				"linux"		374
+			}
+			/* CBasePlayer::StartObserverMode(int);374;375;6F9090 */
+			"StartObserverMode"
+			{
+				"windows"	374
+				"linux"		375
+			}
+			/* CBasePlayer::StopObserverMode();375;376;6F44D0 */
+			"StopObserverMode"
+			{
+				"windows"	375
+				"linux"		376
+			}
+			/* CBasePlayer::ModeWantsSpectatorGUI(int);376;377;520650 */
+			"ModeWantsSpectatorGUI"
+			{
+				"windows"	376
+				"linux"		377
+			}
+			/* CBasePlayer::SetObserverMode(int);377;378;6F46E0 */
+			"SetObserverMode"
+			{
+				"windows"	377
+				"linux"		378
+			}
+			/* CBasePlayer::GetObserverMode();378;379;6EEBE0 */
+			"GetObserverMode"
+			{
+				"windows"	378
+				"linux"		379
+			}
+			/* CBasePlayer::SetObserverTarget(CBaseEntity*);379;380;703360 */
+			"SetObserverTarget"
+			{
+				"windows"	379
+				"linux"		380
+			}
+			/* CBasePlayer::ObserverUse(bool);380;381;6F0F10 */
+			"ObserverUse"
+			{
+				"windows"	380
+				"linux"		381
+			}
+			/* CBasePlayer::GetObserverTarget();381;382;6EED10 */
+			"GetObserverTarget"
+			{
+				"windows"	381
+				"linux"		382
+			}
+			/* CBasePlayer::FindNextObserverTarget(bool);382;383;6EF770 */
+			"FindNextObserverTarget"
+			{
+				"windows"	382
+				"linux"		383
+			}
+			/* CBasePlayer::GetNextObserverSearchStartPoint(bool);383;384;6EED50 */
+			"GetNextObserverSearchStartPoint"
+			{
+				"windows"	383
+				"linux"		384
+			}
+			/* CBasePlayer::IsValidObserverTarget(CBaseEntity*);384;385;6F19B0 */
+			"IsValidObserverTarget"
+			{
+				"windows"	384
+				"linux"		385
+			}
+			/* CBasePlayer::CheckObserverSettings();385;386;7039A0 */
+			"CheckObserverSettings"
+			{
+				"windows"	385
+				"linux"		386
+			}
+			/* CBasePlayer::JumptoPosition(Vector const&, QAngle const&);386;387;6EFF80 */
+			"JumptoPosition"
+			{
+				"windows"	386
+				"linux"		387
+			}
+			/* CBasePlayer::ForceObserverMode(int);387;388;6EEBF0 */
+			"ForceObserverMode"
+			{
+				"windows"	387
+				"linux"		388
+			}
+			/* CBasePlayer::ResetObserverMode();388;389;2D8C10 */
+			"ResetObserverMode"
+			{
+				"windows"	388
+				"linux"		389
+			}
+			/* CBasePlayer::ValidateCurrentObserverTarget();389;390;6F4280 */
+			"ValidateCurrentObserverTarget"
+			{
+				"windows"	389
+				"linux"		390
+			}
+			/* CBasePlayer::AttemptToExitFreezeCam();390;391;6EEC60 */
+			"AttemptToExitFreezeCam"
+			{
+				"windows"	390
+				"linux"		391
+			}
+			/* CBasePlayer::StartReplayMode(float, float, int);391;392;6EEC80 */
+			"StartReplayMode"
+			{
+				"windows"	391
+				"linux"		392
+			}
+			/* CBasePlayer::StopReplayMode();392;393;6EECD0 */
+			"StopReplayMode"
+			{
+				"windows"	392
+				"linux"		393
+			}
+			/* CBasePlayer::GetDelayTicks();393;394;6F0740 */
+			"GetDelayTicks"
+			{
+				"windows"	393
+				"linux"		394
+			}
+			/* CBasePlayer::GetReplayEntity();394;395;6EED00 */
+			"GetReplayEntity"
+			{
+				"windows"	394
+				"linux"		395
+			}
+			/* CBasePlayer::CreateCorpse();395;396;520660 */
+			"CreateCorpse"
+			{
+				"windows"	395
+				"linux"		396
+			}
+			/* CEmpPlayer::EntSelectSpawnPoint();396;397;5A54A0 */
+			"EntSelectSpawnPoint"
+			{
+				"windows"	396
+				"linux"		397
+			}
+			/* CBasePlayer::GetInVehicle(IServerVehicle*, int);397;398;6FC490 */
+			"GetInVehicle"
+			{
+				"windows"	397
+				"linux"		398
+			}
+			/* CEmpPlayer::LeaveVehicle(Vector const&, QAngle const&);398;399;584F20 */
+			"LeaveVehicle"
+			{
+				"windows"	398
+				"linux"		399
+			}
+			/* CBasePlayer::OnVehicleStart();399;400;520670 */
+			"OnVehicleStart"
+			{
+				"windows"	399
+				"linux"		400
+			}
+			/* CBasePlayer::OnVehicleEnd(Vector&);400;401;520680 */
+			"OnVehicleEnd"
+			{
+				"windows"	400
+				"linux"		401
+			}
+			/* CBasePlayer::BumpWeapon(CBaseCombatWeapon*);401;402;6F1000 */
+			"BumpWeapon"
+			{
+				"windows"	401
+				"linux"		402
+			}
+			/* CBasePlayer::SelectLastItem();402;403;2D6E10 */
+			"SelectLastItem"
+			{
+				"windows"	402
+				"linux"		403
+			}
+			/* CBasePlayer::SelectItem(char const*, int);403;404;2D7000 */
+			"SelectItem"
+			{
+				"windows"	403
+				"linux"		404
+			}
+			/* CBasePlayer::ItemPostFrame();404;405;2D8FD0 */
+			"ItemPostFrame"
+			{
+				"windows"	404
+				"linux"		405
+			}
+			/* CBasePlayer::GiveNamedItem(char const*, int);405;406;6F4D10 */
+			"GiveNamedItem"
+			{
+				"windows"	405
+				"linux"		406
+			}
+			/* CBasePlayer::CheckTrainUpdate();406;407;6F2170 */
+			"CheckTrainUpdate"
+			{
+				"windows"	406
+				"linux"		407
+			}
+			/* CBasePlayer::SetPlayerUnderwater(bool);407;408;2DAF70 */
+			"SetPlayerUnderwater"
+			{
+				"windows"	407
+				"linux"		408
+			}
+			/* CBasePlayer::CanBreatheUnderwater() const;408;409;520690 */
+			"CanBreatheUnderwater"
+			{
+				"windows"	408
+				"linux"		409
+			}
+			/* CBasePlayer::PlayerUse();409;410;2D8290 */
+			"PlayerUse"
+			{
+				"windows"	409
+				"linux"		410
+			}
+			/* CBasePlayer::PlayUseDenySound();410;411;5206A0 */
+			"PlayUseDenySound"
+			{
+				"windows"	410
+				"linux"		411
+			}
+			/* CBasePlayer::FindUseEntity();411;412;2D7130 */
+			"FindUseEntity"
+			{
+				"windows"	411
+				"linux"		412
+			}
+			/* CEmpPlayer::IsUseableEntity(CBaseEntity*, unsigned int);412;413;583730 */
+			"IsUseableEntity"
+			{
+				"windows"	412
+				"linux"		413
+			}
+			/* CBasePlayer::PickupObject(CBaseEntity*, bool);413;414;5206B0 */
+			"PickupObject"
+			{
+				"windows"	413
+				"linux"		414
+			}
+			/* CBasePlayer::ForceDropOfCarriedPhysObjects(CBaseEntity*);414;415;5206C0 */
+			"ForceDropOfCarriedPhysObjects"
+			{
+				"windows"	414
+				"linux"		415
+			}
+			/* CBasePlayer::GetHeldObjectMass(IPhysicsObject*);415;416;6EEE20 */
+			"GetHeldObjectMass"
+			{
+				"windows"	415
+				"linux"		416
+			}
+			/* CBasePlayer::UpdateGeigerCounter();416;417;6F2010 */
+			"UpdateGeigerCounter"
+			{
+				"windows"	416
+				"linux"		417
+			}
+			/* CBasePlayer::GetAutoaimVector(float);419;418;6EEF10 */
+			"GetAutoaimVector"
+			{
+				"windows"	419
+				"linux"		418
+			}
+			/* CBasePlayer::GetAutoaimVector(float, float);418;419;6EEF70 */
+			"GetAutoaimVector"
+			{
+				"windows"	418
+				"linux"		419
+			}
+			/* CBasePlayer::GetAutoaimVector(autoaim_params_t&);417;420;6FEBD0 */
+			"GetAutoaimVector"
+			{
+				"windows"	417
+				"linux"		420
+			}
+			/* CBasePlayer::ShouldAutoaim();420;421;6F0870 */
+			"ShouldAutoaim"
+			{
+				"windows"	420
+				"linux"		421
+			}
+			/* CBasePlayer::ForceClientDllUpdate();421;422;6EFF30 */
+			"ForceClientDllUpdate"
+			{
+				"windows"	421
+				"linux"		422
+			}
+			/* CBasePlayer::ProcessUsercmds(CUserCmd*, int, int, int, bool);422;423;709B70 */
+			"ProcessUsercmds"
+			{
+				"windows"	422
+				"linux"		423
+			}
+			/* CBasePlayer::PlayerRunCommand(CUserCmd*, IMoveHelper*);423;424;6F0140 */
+			"PlayerRunCommand"
+			{
+				"windows"	423
+				"linux"		424
+			}
+			/* CBasePlayer::CanHearAndReadChatFrom(CBasePlayer*);424;425;5206D0 */
+			"CanHearAndReadChatFrom"
+			{
+				"windows"	424
+				"linux"		425
+			}
+			/* CBasePlayer::CanSpeak();425;426;558030 */
+			"CanSpeak"
+			{
+				"windows"	425
+				"linux"		426
+			}
+			/* CBasePlayer::ModifyOrAppendPlayerCriteria(AI_CriteriaSet&);426;427;6F1D20 */
+			"ModifyOrAppendPlayerCriteria"
+			{
+				"windows"	426
+				"linux"		427
+			}
+			/* CBasePlayer::CheckChatText(char*, int);427;428;5206E0 */
+			"CheckChatText"
+			{
+				"windows"	427
+				"linux"		428
+			}
+			/* CEmpPlayer::CreateRagdollEntity();428;429;587490 */
+			"CreateRagdollEntity"
+			{
+				"windows"	428
+				"linux"		429
+			}
+			/* CBasePlayer::ShouldAnnounceAchievement();429;430;709E70 */
+			"ShouldAnnounceAchievement"
+			{
+				"windows"	429
+				"linux"		430
+			}
+			/* CBasePlayer::IsFollowingPhysics();430;431;520700 */
+			"IsFollowingPhysics"
+			{
+				"windows"	430
+				"linux"		431
+			}
+			/* CBasePlayer::InitVCollision(Vector const&, Vector const&);431;432;701A20 */
+			"InitVCollision"
+			{
+				"windows"	431
+				"linux"		432
+			}
+			/* CBasePlayer::UpdatePhysicsShadowToCurrentPosition();432;433;6F9E10 */
+			"UpdatePhysicsShadowToCurrentPosition"
+			{
+				"windows"	432
+				"linux"		433
+			}
+			/* CBasePlayer::Hints();433;434;520710 */
+			"Hints"
+			{
+				"windows"	433
+				"linux"		434
+			}
+			/* CBasePlayer::IsReadyToPlay();434;435;520720 */
+			"IsReadyToPlay"
+			{
+				"windows"	434
+				"linux"		435
+			}
+			/* CBasePlayer::IsReadyToSpawn();435;436;520730 */
+			"IsReadyToSpawn"
+			{
+				"windows"	435
+				"linux"		436
+			}
+			/* CBasePlayer::ShouldGainInstantSpawn();436;437;520740 */
+			"ShouldGainInstantSpawn"
+			{
+				"windows"	436
+				"linux"		437
+			}
+			/* CBasePlayer::ResetPerRoundStats();437;438;520750 */
+			"ResetPerRoundStats"
+			{
+				"windows"	437
+				"linux"		438
+			}
+			/* CBasePlayer::ResetScores();438;439;520C70 */
+			"ResetScores"
+			{
+				"windows"	438
+				"linux"		439
+			}
+			/* CEmpPlayer::IncrementFragCount(int);439;440;580930 */
+			"IncrementFragCount"
+			{
+				"windows"	439
+				"linux"		440
+			}
+			/* CEmpPlayer::IncrementDeathCount(int);440;441;580920 */
+			"IncrementDeathCount"
+			{
+				"windows"	440
+				"linux"		441
+			}
+			/* CBasePlayer::EquipSuit(bool);441;442;6EF180 */
+			"EquipSuit"
+			{
+				"windows"	441
+				"linux"		442
+			}
+			/* CBasePlayer::RemoveSuit();442;443;6EF1C0 */
+			"RemoveSuit"
+			{
+				"windows"	442
+				"linux"		443
+			}
+			/* CBasePlayer::GetPlayerMaxSpeed();443;444;2D5D10 */
+			"GetPlayerMaxSpeed"
+			{
+				"windows"	443
+				"linux"		444
+			}
+			/* CBasePlayer::IsBot() const;446;447;6EF140 */
+			"IsBot"
+			{
+				"windows"	446
+				"linux"		447
+			}
+			/* CBasePlayer::IsBotOfType(int) const;447;448;5207F0 */
+			"IsBotOfType"
+			{
+				"windows"	447
+				"linux"		448
+			}
+			/* CBasePlayer::GetBotType() const;448;449;520840 */
+			"GetBotType"
+			{
+				"windows"	448
+				"linux"		449
+			}
+			/* CBasePlayer::GetExpresser();449;450;520760 */
+			"GetExpresser"
+			{
+				"windows"	449
+				"linux"		450
+			}
+			/* CEmpPlayer::IsCommander() const;450;451;558040 */
+			"IsCommander"
+			{
+				"windows"	450
+				"linux"		451
+			}
+			/* CBasePlayer::Internal_HandleMapEvent(inputdata_t&);451;452;520780 */
+			"Internal_HandleMapEvent"
+			{
+				"windows"	451
+				"linux"		452
+			}
+			/* CBasePlayer::SpawnArmorValue() const;452;453;520790 */
+			"SpawnArmorValue"
+			{
+				"windows"	452
+				"linux"		453
+			}
+			/* CBasePlayer::NetworkStateChanged_m_ArmorValue();454;454;5207A0 */
+			"NetworkStateChanged_m_ArmorValue"
+			{
+				"windows"	454
+				"linux"		454
+			}
+			/* CBasePlayer::NetworkStateChanged_m_ArmorValue(void*);453;455;5207B0 */
+			"NetworkStateChanged_m_ArmorValue"
+			{
+				"windows"	453
+				"linux"		455
+			}
+			/* CBasePlayer::HasHaptics();455;456;5207C0 */
+			"HasHaptics"
+			{
+				"windows"	455
+				"linux"		456
+			}
+			/* CBasePlayer::SetHaptics(bool);456;457;5207D0 */
+			"SetHaptics"
+			{
+				"windows"	456
+				"linux"		457
+			}
+			/* CBasePlayer::PlayerSolidMask(bool) const;457;458;6EF110 */
+			"PlayerSolidMask"
+			{
+				"windows"	457
+				"linux"		458
+			}
+			/* CEmpPlayer::TraceAttack(CTakeDamageInfo const&, Vector const&, CGameTrace*);458;459;5804A0 */
+			"TraceAttack"
+			{
+				"windows"	458
+				"linux"		459
+			}
+			/* CEmpPlayer::WantsCommand() const;459;460;558050 */
+			"WantsCommand"
+			{
+				"windows"	459
+				"linux"		460
 			}
 		}
 		
