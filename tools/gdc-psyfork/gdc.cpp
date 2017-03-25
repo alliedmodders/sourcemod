@@ -571,7 +571,9 @@ void *GetLinuxSigPtr(void *handle, const char* symbol)
 
 		if (real_bytes >= 1)
 		{
-			return mu.FindPattern(handle, (char*)real_sig, real_bytes, matches, dummy);
+			struct link_map *dlmap = (struct link_map *)handle;
+			
+			return mu.FindPattern((void *)dlmap->l_addr, (char*)real_sig, real_bytes, matches, dummy);
 		}
 	}
 
