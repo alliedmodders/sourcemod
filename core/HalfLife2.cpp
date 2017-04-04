@@ -1244,34 +1244,14 @@ bool CHalfLife2::GetMapDisplayName(const char *pMapName, char *pDisplayname, siz
 	SMFindMapResult result = FindMap(pMapName, pDisplayname, nMapNameMax);
 
 	if (result == SMFindMapResult::NotFound)
-	{
 		return false;
-	}
 
-#if SOURCE_ENGINE == SE_CSGO
-	// In CSGO, the path separator is used in workshop maps.
-	char workshop[10];
-	ke::SafeSprintf(workshop, SM_ARRAYSIZE(workshop), "%s%c", "workshop", PLATFORM_SEP_CHAR);
+	char *pPos;
+	if ((pPos = strrchr(pDisplayname, '/')) != NULL || (pPos = strrchr(pDisplayname, '\\')) != NULL)
+		ke::SafeStrcpy(pDisplayname, nMapNameMax, &pPos[1]);
 
-	char *lastSlashPos;
-	// In CSGO, workshop maps show up as workshop/123456789/mapname or workshop\123456789\mapname depending on OS
-	// As on sometime in 2016, CS:GO for Windows now recognizes both / and \ so we need to check for both
-	if (strncmp(pDisplayname, workshop, 9) == 0 && ((lastSlashPos = strrchr(pDisplayname, '/')) != NULL || (lastSlashPos = strrchr(pDisplayname, '\\')) != NULL))
-	{
-		ke::SafeStrcpy(pDisplayname, nMapNameMax, &lastSlashPos[1]);
-		return true;
-	}
-#elif SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_BMS
-	char *ugcPos;
-	// In TF2 and BMS, workshop maps show up as workshop/mapname.ugc123456789 regardless of OS
-	if (strncmp(pDisplayname, "workshop/", 9) == 0 && (ugcPos = strstr(pDisplayname, ".ugc")) != NULL)
-	{
-		// Overwrite the . with a null and SafeStrcpy will handle the rest
-		ugcPos[0] = '\0';
-		ke::SafeStrcpy(pDisplayname, nMapNameMax, &pDisplayname[9]);
-		return true;
-	}
-#endif
+	if ((pPos = strstr(pDisplayname, ".ugc")) != NULL)
+		pPos[0] = '\0';
 
 	return true;
 }
