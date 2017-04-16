@@ -8,7 +8,7 @@ if [[ $# -ne 0 ]]; then
 	do
 		smxfile="`echo $i | sed -e 's/\.sp$/\.smx/'`";
 		echo -e "Compiling $i...";
-		./spcomp $i -ocompiled/$smxfile
+		./spcomp $i -ocompiled/$smxfile -iinclude
 		RETVAL=$?
 		if [ $RETVAL -ne 0 ]; then
 			exit 1;
@@ -19,7 +19,7 @@ else
 	do
 		smxfile="`echo $sourcefile | sed -e 's/\.sp$/\.smx/'`"
 		echo -e "Compiling $sourcefile ..."
-		./spcomp $sourcefile -ocompiled/$smxfile
+		./spcomp $sourcefile -ocompiled/$smxfile -iinclude
 		RETVAL=$?
 		if [ $RETVAL -ne 0 ]; then
 			exit 1;
