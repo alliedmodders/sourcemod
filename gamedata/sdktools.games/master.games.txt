@@ -254,4 +254,8 @@
 	{
 		"game"		"doi"
 	}
+	"game.reactivedrop.txt"
+	{
+		"game"		"reactivedrop"
+	}
 }

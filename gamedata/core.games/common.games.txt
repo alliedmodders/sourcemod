@@ -269,6 +269,7 @@
 			"game"					"bms"
 			"game"					"KreedzClimbing"
 			"game"					"csgo"
+			"game"					"reactivedrop"
 		}
 		
 		"Keys"

@@ -1,0 +1,100 @@
+"Games"
+{
+	"#default"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"102"
+			}
+			"FireBullets"
+			{
+				"windows"	"115"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"119"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"66"
+			}
+			"PreThink"
+			{
+				"windows"	"347"
+			}
+			"PostThink"
+			{
+				"windows"	"348"
+			}
+			"SetTransmit"
+			{
+				"windows"	"22"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"17"
+			}
+			"Spawn"
+			{
+				"windows"	"24"
+			}
+			"StartTouch"
+			{
+				"windows"	"100"
+			}
+			"Think"
+			{
+				"windows"	"50"
+			}
+			"Touch"
+			{
+				"windows"	"101"
+			}
+			"TraceAttack"
+			{
+				"windows"	"64"
+			}
+			"Use"
+			{
+				"windows"	"99"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"160"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"283"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"277"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"280"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"278"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"281"
+			}
+		}
+	}
+	
+	"#default"
+	{
+		"Offsets"
+		{
+			"EntityListeners"
+			{
+				"windows"		"131108"
+			}
+		}
+	}
+}
