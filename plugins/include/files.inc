@@ -107,7 +107,7 @@ methodmap DirectoryListing < Handle
 // actually a file, it just closes it.
 methodmap File < Handle
 {
-	// Close the file handle. This is the same as using CloseHandle) or delete.
+	// Close the file handle. This is the same as using CloseHandle() or delete.
 	public void Close() {
 		CloseHandle(this);
 	}
