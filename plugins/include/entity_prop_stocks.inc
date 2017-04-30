@@ -449,7 +449,44 @@ stock void SetEntityRenderColor(int entity, int r=255, int g=255, int b=255, int
 	SetEntData(entity, offset + 2, b, 1, true);
 	SetEntData(entity, offset + 3, a, 1, true);
 }
-
+/**
+ * Gets an entity's color.
+ *
+ * @param entity	Entity index
+ * @param colors 	Array to save values into
+ * @noreturn
+ * @error			Invalid entity index, or lack of mod compliance.
+ */
+stock GetEntityRenderColor(entity,int colors[4])
+{
+	static bool gotconfig = false;
+	static char prop[32];
+	
+	if (!gotconfig)
+	{
+		Handle gc = LoadGameConfigFile("core.games");
+		bool exists = GameConfGetKeyValue(gc, "m_clrRender", prop, sizeof(prop));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(prop, sizeof(prop), "m_clrRender");
+		}
+		
+		gotconfig = true;
+	}
+	
+	int offset = GetEntSendPropOffs(entity, prop);
+	
+	if (offset <= 0)
+	{
+		ThrowError("GetEntityRenderColor not supported by this mod");
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		colors[i] = GetEntData(entity, offset + i, 1);
+	}
+}
 /**
  * Gets an entity's gravity.
  *
