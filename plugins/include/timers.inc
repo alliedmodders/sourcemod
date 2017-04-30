@@ -207,3 +207,25 @@ stock Handle CreateDataTimer(float interval, Timer func, Handle &datapack, int f
 	flags |= TIMER_DATA_HNDL_CLOSE;
 	return CreateTimer(interval, func, datapack, flags);
 }
+
+/**
+ * Kill timer and set INVALID_HANDLE to handle
+ *
+ * @param timer				Timer Handle to kill.
+ * @param autoClose			If autoClose is true, the data that was passed to CreateTimer() will
+ *							be closed as a handle if TIMER_DATA_HNDL_CLOSE was not specified.
+ *
+ * @return					True when handle is close, false when handle is INVALID_HANDLE
+ */
+stock bool CloseTimer(Handle &timer, bool autoClose=false)
+{
+	if(timer == INVALID_HANDLE)
+	{
+		return false;
+	}
+	
+	KillTimer(timer, autoClose);
+	timer = INVALID_HANDLE;
+	
+	return true;
+}
