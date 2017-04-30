@@ -97,7 +97,7 @@ methodmap DataPack < Handle
 	//  position to the end can be read.
 	//
 	// @param bytes		Number of bytes to simulate reading.
-	public native bool IsReadable();
+	public native bool IsReadable(int bytes);
 	
 	// The read or write position in a data pack.
 	property DataPackPos Position {
