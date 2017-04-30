@@ -177,3 +177,29 @@ stock void MakeVectorFromPoints(const float pt1[3], const float pt2[3], float ou
 	output[1] = pt2[1] - pt1[1];
 	output[2] = pt2[2] - pt1[2];
 }
+
+/**
+ * Checking whether the vectors are different
+ *
+ * @param vec1		First vector.
+ * @param vec2		Second vector.
+ * @param mistake	Max mistake.
+ * @return				Return true if vectors are different, false otherwise.
+ */
+stock bool VectorsAreDifferent(const float vec1[3], const float vec2[3], const float mistake=0.0)
+{
+	if (FloatCompare(mistake, 0.0) != 1)
+	{
+		return (FloatCompare(vec1[0], vec2[0]) != 0 || FloatCompare(vec1[1], vec2[1]) != 0 || FloatCompare(vec1[2], vec2[2]) != 0);
+	}
+	bool different = false;
+	for (int i = 0; i < 3; ++i)
+	{
+		if (FloatCompare(FloatAbs(vec1[i] - vec2[i]), mistake) == 1)
+		{
+			different = true;
+			break;
+		}
+	}
+	return different;
+}
