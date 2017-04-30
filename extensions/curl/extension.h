@@ -44,7 +44,7 @@
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
  */
-class CurlExt : public SDKExtension
+class CurlExt : public SDKExtension, public IHandleTypeDispatch
 {
 public:
 	/**
@@ -66,7 +66,7 @@ public:
 	 * @brief This is called once all known extensions have been loaded.
 	 * Note: It is is a good idea to add natives here, if any are provided.
 	 */
-	//virtual void SDK_OnAllLoaded();
+	virtual void SDK_OnAllLoaded();
 
 	/**
 	 * @brief Called when the pause state is changed.
@@ -83,6 +83,7 @@ public:
 	//virtual bool QueryRunning(char *error, size_t maxlength);
 	const char *GetExtensionVerString();
 	const char *GetExtensionDateString();
+	void OnHandleDestroy(HandleType_t type, void *object);
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**
