@@ -53,14 +53,14 @@ public SMCResult ReadOldOverrides_NewSection(SMCParser smc, const char[] name, b
 	
 	if (g_OverrideState == OverrideState_None)
 	{
-		if (StrEqual(name, "Levels"))
+		if (StrEqual(name, "Levels", false))
 		{
 			g_OverrideState = OverrideState_Levels;
 		} else {
 			g_IgnoreLevel++;
 		}
 	} else if (g_OverrideState == OverrideState_Levels) {
-		if (StrEqual(name, "Overrides"))
+		if (StrEqual(name, "Overrides", false))
 		{
 			g_OverrideState = OverrideState_Overrides;
 		} else {
@@ -83,7 +83,7 @@ public SMCResult ReadNewOverrides_NewSection(SMCParser smc, const char[] name, b
 	
 	if (g_OverrideState == OverrideState_None)
 	{
-		if (StrEqual(name, "Overrides"))
+		if (StrEqual(name, "Overrides", false))
 		{
 			g_OverrideState = OverrideState_Overrides;
 		} else {

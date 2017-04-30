@@ -62,7 +62,7 @@ public SMCResult ReadGroups_NewSection(SMCParser smc, const char[] name, bool op
 	
 	if (g_GroupState == GroupState_None)
 	{
-		if (StrEqual(name, "Groups"))
+		if (StrEqual(name, "Groups", false))
 		{
 			g_GroupState = GroupState_Groups;
 		} else {
@@ -75,7 +75,7 @@ public SMCResult ReadGroups_NewSection(SMCParser smc, const char[] name, bool op
 		}
 		g_GroupState = GroupState_InGroup;
 	} else if (g_GroupState == GroupState_InGroup) {
-		if (StrEqual(name, "Overrides"))
+		if (StrEqual(name, "Overrides", false))
 		{
 			g_GroupState = GroupState_Overrides;
 		} else {
@@ -105,7 +105,7 @@ public SMCResult ReadGroups_KeyValue(SMCParser smc,
 	{
 		if (g_GroupState == GroupState_InGroup)
 		{
-			if (StrEqual(key, "flags"))
+			if (StrEqual(key, "flags", false))
 			{
 				int len = strlen(value);
 				for (int i=0; i<len; i++)
@@ -116,7 +116,7 @@ public SMCResult ReadGroups_KeyValue(SMCParser smc,
 					}
 					g_CurGrp.SetFlag(flag, true);
 				}
-			} else if (StrEqual(key, "immunity")) {
+			} else if (StrEqual(key, "immunity", false)) {
 				g_NeedReparse = true;
 			}
 		} else if (g_GroupState == GroupState_Overrides) {
@@ -137,7 +137,7 @@ public SMCResult ReadGroups_KeyValue(SMCParser smc,
 	} else if (g_GroupPass == GroupPass_Second
 			   && g_GroupState == GroupState_InGroup) {
 		/* Check for immunity again, core should handle double inserts */
-		if (StrEqual(key, "immunity"))
+		if (StrEqual(key, "immunity", false))
 		{
 			/* If it's a value we know about, use it */
 			if (StrEqual(value, "*"))
