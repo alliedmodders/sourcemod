@@ -253,6 +253,12 @@ void TimerSystem::RunFrame()
 		pTimer = (*iter);
 		if (curtime >= pTimer->m_ToExec)
 		{
+			// Bug 6338: Timers being deleted if a plugin is paused.
+			if (pTimer->m_Listener->IsPaused(pTimer, pTimer->m_pData))
+			{
+				pTimer->m_ToExec = curtime + pTimer->m_Interval;
+				continue;
+			}
 			pTimer->m_InExec = true;
 			pTimer->m_Listener->OnTimer(pTimer, pTimer->m_pData);
 			pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
