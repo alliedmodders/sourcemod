@@ -58,6 +58,9 @@ native void SetGlobalTransTarget(int client);
 /**
  * Retrieves the language number of a client.
  *
+ * The language number is representing the language defined by the client's
+ * console variable "cl_language" upon joining the server.
+ *
  * @param client	Client index.
  * @return			Language number client is using.
  * @error			Invalid client index or client not connected.
