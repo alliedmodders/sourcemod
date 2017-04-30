@@ -99,7 +99,7 @@ public:
 	HandleError ReadStyleHandle(Handle_t handle, IMenuStyle **style);
 public:
 	bool MenuSoundsEnabled();
-	const char *GetMenuSound(ItemSelection sel);
+	bool GetMenuSound(ItemSelection sel, char *pszOut, size_t maxlen);
 protected:
 	Handle_t CreateMenuHandle(IBaseMenu *menu, IdentityToken_t *pOwner);
 	Handle_t CreateStyleHandle(IMenuStyle *style);

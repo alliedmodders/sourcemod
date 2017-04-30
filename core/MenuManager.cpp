@@ -720,10 +720,8 @@ ConfigResult MenuManager::OnSourceModConfigChanged(const char *key,
 	return ConfigResult_Ignore;
 }
 
-const char *MenuManager::GetMenuSound(ItemSelection sel)
+bool MenuManager::GetMenuSound(ItemSelection sel, char *pszOut, size_t maxlen)
 {
-	const char *sound = NULL;
-
 	switch (sel)
 	{
 	case ItemSel_Back:
@@ -732,7 +730,12 @@ const char *MenuManager::GetMenuSound(ItemSelection sel)
 		{
 			if (m_SelectSound.size() > 0)
 			{
-				sound = m_SelectSound.c_str();
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+				ke::SafeSprintf(pszOut, maxlen, "*%s", m_SelectSound.c_str());
+#else
+				ke::SafeStrcpy(pszOut, maxlen, m_SelectSound.c_str());
+#endif
+				return true;
 			}
 			break;
 		}
@@ -740,7 +743,12 @@ const char *MenuManager::GetMenuSound(ItemSelection sel)
 		{
 			if (m_ExitBackSound.size() > 0)
 			{
-				sound = m_ExitBackSound.c_str();
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+				ke::SafeSprintf(pszOut, maxlen, "*%s", m_ExitBackSound.c_str());
+#else
+				ke::SafeStrcpy(pszOut, maxlen, m_ExitBackSound.c_str());
+#endif
+				return true;
 			}
 			break;
 		}
@@ -748,17 +756,18 @@ const char *MenuManager::GetMenuSound(ItemSelection sel)
 		{
 			if (m_ExitSound.size() > 0)
 			{
-				sound = m_ExitSound.c_str();
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+				ke::SafeSprintf(pszOut, maxlen, "*%s", m_ExitSound.c_str());
+#else
+				ke::SafeStrcpy(pszOut, maxlen, m_ExitSound.c_str());
+#endif
+				return true;
 			}
 			break;
 		}
-	default:
-		{
-			break;
-		}
 	}
-
-	return sound;
+	
+	return false;
 }
 
 void MenuManager::OnSourceModLevelChange(const char *mapName)
