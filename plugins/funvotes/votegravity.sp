@@ -45,8 +45,13 @@ void DisplayVoteGravityMenu(int client, int count, char[][] items)
 		strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), items[0]);
 			
 		g_hVoteMenu.SetTitle("Change Gravity To");
-		g_hVoteMenu.AddItem(items[0], "Yes");
-		g_hVoteMenu.AddItem(VOTE_NO, "No");
+		
+		char option[10][2];
+		Format(option[0], sizeof(option[0]), "%T", "Yes", client);
+		Format(option[1], sizeof(option[1]), "%T", "No", client);
+		
+		g_hVoteMenu.AddItem(items[0], option[0]);
+		g_hVoteMenu.AddItem(VOTE_NO,  option[1]);
 	}
 	else
 	{

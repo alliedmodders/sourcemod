@@ -52,17 +52,16 @@ void DisplayVoteFFMenu(int client)
 	
 	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 	
-	if (g_Cvar_FF.BoolValue)
-	{
-		g_hVoteMenu.SetTitle("Voteff Off");
-	}
-	else
-	{
-		g_hVoteMenu.SetTitle("Voteff On");
-	}
+	char status[10];
+	Format(status, sizeof(status), "%T", g_Cvar_FF.BoolValue ? "Off" : "On", client);
+	g_hVoteMenu.SetTitle("Voteff %s", status);
 	
-	g_hVoteMenu.AddItem(VOTE_YES, "Yes");
-	g_hVoteMenu.AddItem(VOTE_NO, "No");
+	char option[10][2];
+	Format(option[0], sizeof(option[0]), "%T", "Yes", client);
+	Format(option[1], sizeof(option[1]), "%T", "No", client);
+	
+	g_hVoteMenu.AddItem(VOTE_YES, option[0]);
+	g_hVoteMenu.AddItem(VOTE_NO,  option[1]);
 	g_hVoteMenu.ExitButton = false;
 	g_hVoteMenu.DisplayVoteToAll(20);
 }

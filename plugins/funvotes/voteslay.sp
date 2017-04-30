@@ -49,8 +49,14 @@ void DisplayVoteSlayMenu(int client, int target, char[] name)
 	
 	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 	g_hVoteMenu.SetTitle("Voteslay Player");
-	g_hVoteMenu.AddItem(VOTE_YES, "Yes");
-	g_hVoteMenu.AddItem(VOTE_NO, "No");
+	
+	char option[10][2];
+	Format(option[0], sizeof(option[0]), "%T", "Yes", client);
+	Format(option[1], sizeof(option[1]), "%T", "No", client);
+		
+	g_hVoteMenu.AddItem(VOTE_YES, option[0]);
+	g_hVoteMenu.AddItem(VOTE_NO,  option[1]);
+
 	g_hVoteMenu.ExitButton = false;
 	g_hVoteMenu.DisplayVoteToAll(20);
 }
