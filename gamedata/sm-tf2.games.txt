@@ -144,6 +144,19 @@
 				"linux"		"431"
 				"mac"		"431"
 			}
+
+			"TmpDamageBonusOffset"
+			{
+				"windows"	"8"
+				"linux"		"8"
+				"mac"		"8"
+			}
+
+			"TmpDamageBonusProp"
+			{
+				"class"		"CTFPlayer"
+				"prop"		"m_unTauntSourceItemID_High"
+			}
 		}
 	}
 	
