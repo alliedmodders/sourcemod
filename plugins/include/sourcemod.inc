@@ -303,6 +303,19 @@ native Handle FindPluginByNumber(int order_num);
 native void SetFailState(const char[] string, any ...);
 
 /**
+ * This blames another plugin for a function error.
+ * @Note: Currently doesn't allow INVALID_HANDLE to be passed for plugin param.
+ *
+ * @param plugin        Plugin owning function you're blaming error for.
+ * @param blame         Method you're blaming error for.
+ * @param format        Format specifier string.
+ * @param ...           Formatting arguments.
+ * @noreturn
+ * @error               Throws if plugin handle couldn't be read.
+ */
+native void BlamePluginError(Handle plugin, Function blame, const char[] format, any ...);
+
+/**
  * Aborts the current callback and throws an error.  This function
  * does not return in that no code is executed following it.
  *
