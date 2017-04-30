@@ -52,9 +52,10 @@ enum Handle // Tag disables introducing "Handle" as a symbol.
  *       sure you read the documentation on whatever provided the Handle.
  *
  * @param hndl		Handle to close.
+ * @return			True on success, false if Handle does not exists or on Handle access violation.
  * @error			Invalid handles will cause a run time error.
  */
-native void CloseHandle(Handle hndl);
+native bool CloseHandle(Handle hndl);
 
 /**
  * Clones a Handle.  When passing handles in between plugins, caching handles
