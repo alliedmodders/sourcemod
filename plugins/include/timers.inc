@@ -90,7 +90,7 @@ typeset Timer
 native Handle CreateTimer(float interval, Timer func, any data=INVALID_HANDLE, int flags=0);
 
 /**
- * Kills a timer.  Use this instead of CloseHandle() if you need more options.
+ * Kills a timer.  Use this instead of CloseHandle() if you want to close a repeating timer.
  *
  * @param timer				Timer Handle to kill.
  * @param autoClose			If autoClose is true, the data that was passed to CreateTimer() will
