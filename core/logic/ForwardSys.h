@@ -55,6 +55,8 @@ public: //IForward
 	virtual unsigned int GetFunctionCount();
 	virtual ExecType GetExecType();
 	virtual int Execute(cell_t *result, IForwardFilter *filter);
+	virtual int PushNullString();
+	virtual int PushNullVector();
 public: //IChangeableForward
 	virtual bool RemoveFunction(IPluginFunction *func);
 	virtual unsigned int RemoveFunctionsOfPlugin(IPlugin *plugin);
