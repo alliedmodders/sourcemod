@@ -59,6 +59,23 @@
 forward Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2]);
 
 /**
+ * @brief Called after a clients movement buttons were processed.
+ *
+ * @param client	Index of the client.
+ * @param buttons	The current commands (as bitflags - see entity_prop_stocks.inc).
+ * @param impulse	The current impulse command.
+ * @param vel		Players desired velocity.
+ * @param angles	Players desired view angles.
+ * @param weapon	Entity index of the new weapon if player switches weapon, 0 otherwise.
+ * @param subtype	Weapon subtype when selected from a menu.
+ * @param cmdnum	Command number. Increments from the first command sent.
+ * @param tickcount	Tick count. A client's prediction based on the server's GetGameTickCount value.
+ * @param seed		Random seed. Used to determine weapon recoil, spread, and other predicted elements.
+ * @param mouse		Mouse direction (x, y).
+ */
+forward void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, const int mouse[2]);
+
+/**
  * @brief Called when a client requests a file from the server.
  *
  * @param client	Client index.
