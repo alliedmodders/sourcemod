@@ -125,7 +125,7 @@
 			"EntityFactoryFinder"
 			{
 				"library"	"server"
-				"windows"	"\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\xC8\xC7"
+				"windows"	"\xFF\x75\x2A\x83\xEC\x0C\xC7\x05\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68"
 			}
 			
 			"EntityFactoryCaller"
@@ -139,7 +139,7 @@
 		{
 			"EntityFactoryOffset"
 			{
-				"windows" 	"4"
+				"windows" 	"50"
 			}
 			"EntityFactoryCallOffset"
 			{
