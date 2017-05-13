@@ -37,14 +37,14 @@
 			//Offset into CheckRestartRound
 			"CTTeamScoreOffset"
 			{
-				"windows"	"104"
+				"windows"	"98"
 				"linux"		"115"
 				"mac"		"150"
 			}
 			//Offset into CheckRestartRound
 			"TTeamScoreOffset"
 			{
-				"windows"	"128"
+				"windows"	"125"
 				"linux"		"148"
 				"mac"		"185"
 			}
