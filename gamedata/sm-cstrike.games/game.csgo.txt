@@ -57,7 +57,7 @@
 			//Offset into HandleCommand_Buy_Internal
 			"CCSPlayerInventoryOffset"
 			{
-				"windows"	"61"
+				"windows"	"55"
 				"linux"		"87"
 				"mac"		"109"
 			}
