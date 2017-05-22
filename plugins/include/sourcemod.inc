@@ -65,7 +65,6 @@ struct Plugin
 #include <clients>
 #include <console>
 #include <convars>
-#include <events>
 #include <bitbuffer>
 #include <protobuf>
 #include <usermessages>
@@ -648,3 +647,5 @@ native void StoreToAddress(Address addr, int data, NumberType size);
 #include <helpers>
 #include <entity>
 #include <entity_prop_stocks>
+#include <events>
+#include <event_methods>
