@@ -54,11 +54,6 @@
 	/* CBaseEntityOutput::FireOutput */
 	"#default"
 	{
-		"#supported"
-		{
-			"game"		"swarm"
-			"game"		"dinodday"
-		}
 		"Signatures"
 		{
 			"FireOutput"
