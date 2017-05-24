@@ -125,7 +125,7 @@
 			"EntityFactoryFinder"
 			{
 				"library"	"server"
-				"windows"	"\xFF\x75\x2A\x83\xEC\x0C\xC7\x05\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68"
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\x53\xFF\x50\x2A\xC7"
 			}
 			
 			"EntityFactoryCaller"
@@ -139,7 +139,7 @@
 		{
 			"EntityFactoryOffset"
 			{
-				"windows" 	"50"
+				"windows" 	"1"
 			}
 			"EntityFactoryCallOffset"
 			{
@@ -219,21 +219,21 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"448"
-				"linux"		"449"
-				"mac"		"449"
+				"windows"	"449"
+				"linux"		"450"
+				"mac"		"450"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"292"
-				"linux"		"293"
-				"mac"		"293"
+				"windows"	"293"
+				"linux"		"294"
+				"mac"		"294"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"288"
-				"linux"		"289"
-				"mac"		"289"
+				"windows"	"289"
+				"linux"		"290"
+				"mac"		"290"
 			}
 			"Ignite"
 			{
@@ -255,9 +255,9 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"498"
-				"linux"		"498"
-				"mac"		"498"
+				"windows"	"499"
+				"linux"		"499"
+				"mac"		"499"
 			}
 			"GetVelocity"
 			{
@@ -285,9 +285,9 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"281"
-				"linux"		"282"
-				"mac"		"282"
+				"windows"	"282"
+				"linux"		"283"
+				"mac"		"283"
 			}
 			"Activate"
 			{
@@ -297,15 +297,15 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"468"
-				"linux"		"469"
-				"mac"		"469"
+				"windows"	"469"
+				"linux"		"470"
+				"mac"		"470"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"274"
-				"linux"		"275"
-				"mac"		"275"
+				"windows"	"275"
+				"linux"		"276"
+				"mac"		"276"
 			}
 		}
 	}
