@@ -17,6 +17,7 @@
 		"#supported"
 		{
 			"game"		"swarm"
+			"game"		"reactivedrop"
 		}
 		
 		"Offsets"
