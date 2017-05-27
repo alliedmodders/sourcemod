@@ -19,6 +19,27 @@ for sdk_name in ['css', 'csgo']:
     continue
   sdk = SM.sdks[sdk_name]
   
-  SM.HL2Config(project, 'game.cstrike.ext.' + sdk.ext, sdk)
+  if sdk_name == 'csgo':
+    project.sources += ['rulesfix.cpp']
+  
+  binary = SM.HL2Config(project, 'game.cstrike.ext.' + sdk.ext, sdk)
+  if sdk_name == 'csgo':
+    compiler = binary.compiler
+    compiler.cxxincludes += [os.path.join(sdk.path, 'public', 'steam')]
+    compiler.defines += ['VERSION_SAFE_STEAM_API_INTERFACES']
+    if builder.target_platform == 'windows':
+      compiler.linkflags.insert(0, binary.Dep(os.path.join(sdk.path, 'lib', 'public', 'steam_api.lib')))
+    elif builder.target_platform == 'linux':
+      source_path = os.path.join(sdk.path, 'lib', 'linux', 'libsteam_api.so')
+      output_path = os.path.join(binary.localFolder, 'libsteam_api.so')
+
+      def make_linker(source_path, output_path):
+        def link(context, binary):
+          cmd_node, (output,) = context.AddSymlink(source_path, output_path)
+          return output
+        return link
+
+      linker = make_linker(source_path, output_path)
+      compiler.linkflags[0:0] = [compiler.Dep('libsteam_api.so', linker)]
 
 SM.extensions += builder.Add(project)

@@ -36,6 +36,9 @@
 #include "iplayerinfo.h"
 #include "ISDKTools.h"
 #include "forwards.h"
+#if SOURCE_ENGINE == SE_CSGO
+#include "rulesfix.h"
+#endif
 
 /**
  * @file extension.cpp
@@ -86,6 +89,10 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
+#if SOURCE_ENGINE == SE_CSGO
+	rulesfix.OnLoad();
+#endif
+
 	CDetourManager::Init(g_pSM->GetScriptingEngine(), g_pGameConf);
 
 	g_pHandleBuyForward = forwards->CreateForward("CS_OnBuyCommand", ET_Event, 2, NULL, Param_Cell, Param_String);
@@ -107,6 +114,12 @@ bool CStrike::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool 
 	GET_V_IFACE_CURRENT(GetEngineFactory, gameevents, IGameEventManager2, INTERFACEVERSION_GAMEEVENTSMANAGER2);
 	GET_V_IFACE_CURRENT(GetEngineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
 
+#if SOURCE_ENGINE == SE_CSGO
+	ICvar *icvar;
+	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
+	g_pCVar = icvar;
+#endif
+
 	return true;
 }
 
@@ -126,6 +139,10 @@ void CStrike::SDK_OnUnload()
 	forwards->ReleaseForward(g_pPriceForward);
 	forwards->ReleaseForward(g_pTerminateRoundForward);
 	forwards->ReleaseForward(g_pCSWeaponDropForward);
+
+#if SOURCE_ENGINE == SE_CSGO
+	rulesfix.OnUnload();
+#endif
 }
 
 void CStrike::SDK_OnAllLoaded()
