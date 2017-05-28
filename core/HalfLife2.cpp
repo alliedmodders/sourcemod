@@ -59,7 +59,7 @@ typedef ICommandLine *(*FakeGetCommandLine)();
 #elif defined __linux__
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
 	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_LEFT4DEAD2 || SOURCE_ENGINE == SE_NUCLEARDAWN \
-	|| SOURCE_ENGINE == SE_BMS
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_INSURGENCY
 #define TIER0_NAME			"libtier0_srv.so"
 #define VSTDLIB_NAME		"libvstdlib_srv.so"
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD
