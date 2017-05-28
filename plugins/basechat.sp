@@ -407,7 +407,10 @@ void SendPanelToAll(int from, char[] message)
 	mSayPanel.DrawItem("", ITEMDRAW_SPACER);
 	mSayPanel.DrawText(message);
 	mSayPanel.DrawItem("", ITEMDRAW_SPACER);
-	mSayPanel.CurrentKey = GetMaxPageItems(mSayPanel.Style);
+	
+	if (g_GameEngine != Engine_CSGO)	mSayPanel.CurrentKey = (GetMaxPageItems(mSayPanel.Style) - 1);
+	else	mSayPanel.CurrentKey = GetMaxPageItems(mSayPanel.Style);
+	
 	mSayPanel.DrawItem("Exit", ITEMDRAW_CONTROL);
 
 	for(int i = 1; i <= MaxClients; i++)
