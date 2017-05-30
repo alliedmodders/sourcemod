@@ -74,7 +74,7 @@ for sdk_name in SM.sdks:
       if msvc_ver == 1800:
         vs_year = '2013'
       elif msvc_ver == 1900:
-	    vs_year = '2015'
+        vs_year = '2015'
       else:
         raise Exception('Cannot find libprotobuf for MSVC version "' + str(compiler.version) + '"')
 
