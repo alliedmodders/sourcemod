@@ -400,11 +400,7 @@ native bool StripQuotes(char[] text);
  */
 stock int CharToUpper(int chr)
 {
-	if (IsCharLower(chr))
-	{
-		return (chr & ~(1<<5));
-	}
-	return chr;
+	return chr & '_';
 }
 
 /**
@@ -416,11 +412,7 @@ stock int CharToUpper(int chr)
  */
 stock int CharToLower(int chr)
 {
-	if (IsCharUpper(chr))
-	{
-		return (chr | (1<<5));
-	}
-	return chr;
+	return chr | ' ';
 }
 
 /**
