@@ -648,3 +648,4 @@ native void StoreToAddress(Address addr, int data, NumberType size);
 #include <helpers>
 #include <entity>
 #include <entity_prop_stocks>
+#include <event_methods>
