@@ -657,6 +657,12 @@ void ConVarManager::OnClientQueryFinished(QueryCvarCookie_t cookie,
 	{
 		cell_t ret;
 
+		if (!pCallback->IsRunnable())
+		{
+			m_ConVarQueries.erase(iter);
+			return;
+		}
+
 		pCallback->PushCell(cookie);
 		pCallback->PushCell(client);
 		pCallback->PushCell(result);

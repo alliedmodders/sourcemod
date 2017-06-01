@@ -230,6 +230,9 @@ void SoundHooks::OnEmitAmbientSound(int entindex, const Vector &pos, const char 
 	for (iter=m_AmbientFuncs.begin(); iter!=m_AmbientFuncs.end(); iter++)
 	{
 		pFunc = (*iter);
+		if (!pFunc->IsRunnable())
+			continue;
+
 		pFunc->PushStringEx(buffer, sizeof(buffer), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		pFunc->PushCellByRef(&entindex);
 		pFunc->PushFloatByRef(&vol);
@@ -351,6 +354,8 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 		int players[SM_MAXPLAYERS], size;
 		size = _FillInPlayers(players, &filter);
 		pFunc = (*iter);
+		if (!pFunc->IsRunnable())
+			continue;
 
 		pFunc->PushArray(players, SM_ARRAYSIZE(players), SM_PARAM_COPYBACK);
 		pFunc->PushCellByRef(&size);
@@ -489,6 +494,8 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 		int players[SM_MAXPLAYERS], size;
 		size = _FillInPlayers(players, &filter);
 		pFunc = (*iter);
+		if (!pFunc->IsRunnable())
+			continue;
 
 		pFunc->PushArray(players, SM_ARRAYSIZE(players), SM_PARAM_COPYBACK);
 		pFunc->PushCellByRef(&size);

@@ -190,6 +190,13 @@ bool EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 			{
 				cell_t result;
 
+				if (!hook->pf->IsRunnable())
+				{
+					hook->in_use = false;
+					_iter++;
+					continue;
+				}
+
 				//fire the forward to hook->pf
 				hook->pf->PushString(pOutputName->Name);
 				hook->pf->PushCell(gamehelpers->ReferenceToBCompatRef(ref));

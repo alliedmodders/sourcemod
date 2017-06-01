@@ -87,6 +87,9 @@ public:
 		unsigned int object_id)
 	{
 		char buffer[2] = {ITEMDRAW_DEFAULT, 0x0};
+		if (!m_pFunction->IsRunnable())
+			return (unsigned int)buffer[0];
+
 		m_pFunction->PushCell(m_hMenuHandle);
 		m_pFunction->PushCell(TopMenuAction_DrawOption);
 		m_pFunction->PushCell(object_id);
@@ -103,6 +106,9 @@ public:
 		char buffer[], 
 		size_t maxlength)
 	{
+		if (!m_pFunction->IsRunnable())
+			return;
+
 		m_pFunction->PushCell(m_hMenuHandle);
 		m_pFunction->PushCell(TopMenuAction_DisplayOption);
 		m_pFunction->PushCell(object_id);
@@ -118,6 +124,9 @@ public:
 		char buffer[],
 		size_t maxlength)
 	{
+		if (!m_pFunction->IsRunnable())
+			return;
+
 		m_pFunction->PushCell(m_hMenuHandle);
 		m_pFunction->PushCell(TopMenuAction_DisplayTitle);
 		m_pFunction->PushCell(object_id);
@@ -131,6 +140,9 @@ public:
 		int client, 
 		unsigned int object_id)
 	{
+		if (!m_pFunction->IsRunnable())
+			return;
+
 		unsigned int old_reply = playerhelpers->SetReplyTo(SM_REPLY_CHAT);
 		m_pFunction->PushCell(m_hMenuHandle);
 		m_pFunction->PushCell(TopMenuAction_SelectOption);
@@ -144,6 +156,9 @@ public:
 
 	void OnTopMenuObjectRemoved(ITopMenu *menu, unsigned int object_id)
 	{
+		if (!m_pFunction->IsRunnable())
+			return;
+
 		m_pFunction->PushCell(m_hMenuHandle);
 		m_pFunction->PushCell(TopMenuAction_RemoveObject);
 		m_pFunction->PushCell(object_id);
