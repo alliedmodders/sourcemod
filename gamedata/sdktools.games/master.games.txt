@@ -248,7 +248,7 @@
 	}
 	"game.kz.txt"
 	{
-		"game"		"KreedzClimbing"
+		"game"		"kz"
 	}
 	"game.doi.txt"
 	{
