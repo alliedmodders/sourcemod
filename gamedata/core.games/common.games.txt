@@ -159,7 +159,7 @@
 			"game"					"nucleardawn"
 			"game"					"berimbau"
 			"game"					"nmrih"
-			"game"					"KreedzClimbing"
+			"game"					"kz"
 			"game"					"doi"
 			"game"					"bms"
 		}
@@ -208,7 +208,7 @@
 			"game"					"berimbau"
 			"game"					"$INSURGENCY" // retail game
 			"game"					"nmrih"
-			"game"					"KreedzClimbing"
+			"game"					"kz"
 			"game"					"doi"
 			"game"					"bms"
 		}
@@ -267,7 +267,7 @@
 			"game"					"cstrike"
 			"game"					"synergy"
 			"game"					"bms"
-			"game"					"KreedzClimbing"
+			"game"					"kz"
 			"game"					"csgo"
 			"game"					"reactivedrop"
 		}

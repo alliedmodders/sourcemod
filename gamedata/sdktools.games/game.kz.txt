@@ -12,7 +12,7 @@
 "Games"
 {
 	/* Kreedz Climbing */
-	"KreedzClimbing"
+	"#default"
 	{
 		"Offsets"
 		{
