@@ -7,7 +7,7 @@ addons:
     - libc6-dev-i386
     - linux-libc-dev
     - g++-multilib
-    - g++4.8
+    - g++-4.8
     sources:
     - llvm-toolchain-precise-3.7
     - ubuntu-toolchain-r-test
