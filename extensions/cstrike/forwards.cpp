@@ -158,20 +158,12 @@ DETOUR_DECL_MEMBER1(DetourTerminateRound, void, int, reason)
 #endif
 }
 
-#if SOURCE_ENGINE == SE_CSGO
-DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, Vector, vec, bool, unknown)
-#else
 DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, bDropShield, bool, bThrowForward)
-#endif
 {
 	if (g_pIgnoreCSWeaponDropDetour)
 	{
 		g_pIgnoreCSWeaponDropDetour = false;
-#if SOURCE_ENGINE == SE_CSGO
-		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, vec, unknown);
-#else
 		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, bDropShield, bThrowForward);
-#endif
 		return;
 	}
 
@@ -186,11 +178,7 @@ DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, bDrop
 
 	if (result == Pl_Continue)
 	{
-#if SOURCE_ENGINE == SE_CSGO
-		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, vec, unknown);
-#else
 		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, bDropShield, bThrowForward);
-#endif
 	}
 
 	return;
@@ -269,7 +257,7 @@ bool CreateHandleBuyDetour()
 
 bool CreateCSWeaponDropDetour()
 {
-	DCSWeaponDrop = DETOUR_CREATE_MEMBER(DetourCSWeaponDrop, "CSWeaponDrop");
+	DCSWeaponDrop = DETOUR_CREATE_MEMBER(DetourCSWeaponDrop, WEAPONDROP_GAMEDATA_NAME);
 
 	if (DCSWeaponDrop != NULL)
 	{
