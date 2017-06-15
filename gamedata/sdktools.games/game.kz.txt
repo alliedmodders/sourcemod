@@ -80,8 +80,8 @@
 		
 		"Keys"
 		{
-			"GameRulesProxy"		"CHL2MPGameRulesProxy"
-			"GameRulesDataTable"	"hl2mp_gamerules_data"
+			"GameRulesProxy"		"CKZModGameRulesProxy"
+			"GameRulesDataTable"	"kzmod_gamerules_data"
 		}
 	}
 	
