@@ -1960,6 +1960,21 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	}
 	m_IpNoPort.assign(ip2);
 
+#if SOURCE_ENGINE == SE_TF2      \
+	|| SOURCE_ENGINE == SE_CSS   \
+	|| SOURCE_ENGINE == SE_DODS  \
+	|| SOURCE_ENGINE == SE_HL2DM \
+	|| SOURCE_ENGINE == SE_BMS   \
+	|| SOURCE_ENGINE == SE_INSURGENCY
+	m_pIClient = engine->GetIServer()->GetClient(m_iIndex - 1);
+#else
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
+	if (pNetChan)
+	{
+		m_pIClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
+	}
+#endif
+
 	UpdateAuthIds();
 }
 
@@ -2550,22 +2565,7 @@ int CPlayer::GetLifeState()
 
 IClient *CPlayer::GetIClient() const
 {
-#if SOURCE_ENGINE == SE_TF2      \
-	|| SOURCE_ENGINE == SE_CSS   \
-	|| SOURCE_ENGINE == SE_DODS  \
-	|| SOURCE_ENGINE == SE_HL2DM \
-	|| SOURCE_ENGINE == SE_BMS   \
-	|| SOURCE_ENGINE == SE_INSURGENCY
-	return engine->GetIServer()->GetClient(m_iIndex - 1);
-#else
-	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
-	if (pNetChan)
-	{
-		return static_cast<IClient *>(pNetChan->GetMsgHandler());
-	}
-
-	return nullptr;
-#endif
+	return m_pIClient;
 }
 
 unsigned int CPlayer::GetSerial()

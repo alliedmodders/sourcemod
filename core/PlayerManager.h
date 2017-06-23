@@ -138,6 +138,7 @@ private:
 	bool m_TempAdmin = false;
 	edict_t *m_pEdict = nullptr;
 	IPlayerInfo *m_Info = nullptr;
+	IClient *m_pIClient = nullptr;
 	String m_LastPassword;
 	bool m_bAdminCheckSignalled = false;
 	int m_iIndex;
