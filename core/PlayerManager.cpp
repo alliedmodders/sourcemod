@@ -1967,6 +1967,13 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	|| SOURCE_ENGINE == SE_BMS   \
 	|| SOURCE_ENGINE == SE_INSURGENCY
 	m_pIClient = engine->GetIServer()->GetClient(m_iIndex - 1);
+#elif SOURCE_ENGINE == SE_SDK2013
+	// Source SDK 2013 mods that ship on Steam can be using older engine binaries
+	static IVEngineServer *engine22 = (IVEngineServer *)(g_SMAPI->GetEngineFactory()("VEngineServer022", nullptr));
+	if (engine22)
+	{
+		m_pIClient = engine22->GetIServer()->GetClient(m_iIndex - 1);
+	}
 #else
 	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
 	if (pNetChan)
