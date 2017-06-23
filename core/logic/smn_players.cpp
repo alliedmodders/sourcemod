@@ -1361,14 +1361,6 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 			return 0;
 	}
 
-	if (pPlayer->IsFakeClient())
-	{
-		// Kick uses the kickid command for bots. It is already delayed
-		// until the next frame unless someone flushes command buffer
-		pPlayer->Kick(buffer);
-		return 1;
-	}
-
 	gamehelpers->AddDelayedKick(client, pPlayer->GetUserId(), buffer);
 
 	return 1;
