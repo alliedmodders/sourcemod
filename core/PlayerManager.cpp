@@ -1974,11 +1974,14 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	{
 		m_pIClient = engine22->GetIServer()->GetClient(m_iIndex - 1);
 	}
+	else
 #else
-	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
-	if (pNetChan)
 	{
-		m_pIClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
+		INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
+		if (pNetChan)
+		{
+			m_pIClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
+		}
 	}
 #endif
 
