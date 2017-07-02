@@ -163,6 +163,8 @@ class SMConfig(object):
     if builder.options.debug == '1':
       cxx.defines += ['DEBUG', '_DEBUG']
 
+    cxx.defines += ['KE_ABSOLUTELY_NO_STL']
+
     # Platform-specifics
     if builder.target_platform == 'linux':
       self.configure_linux(cxx)
