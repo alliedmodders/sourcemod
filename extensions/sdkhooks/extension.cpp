@@ -103,8 +103,6 @@ SMEXT_LINK(&g_Interface);
 CGlobalVars *gpGlobals;
 ke::Vector<CVTableList *> g_HookList[SDKHook_MAXHOOKS];
 
-CBitVec<NUM_ENT_ENTRIES> m_EntityExists;
-
 IBinTools *g_pBinTools = NULL;
 ICvar *icvar = NULL;
 
@@ -231,6 +229,8 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
+	memset(m_EntityCache, INVALID_EHANDLE_INDEX, sizeof(m_EntityCache));
+
 	CUtlVector<IEntityListener *> *entListeners = EntListeners();
 	if (!entListeners)
 	{
@@ -270,13 +270,20 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 			continue;
 		
 		index = hndl.GetEntryIndex();
-		m_EntityExists.Set(index);
+		if (EntityIndexInRange(index))
+		{
+			m_EntityCache[index] = gamehelpers->IndexToReference(index);
+		}
+		else
+		{
+			g_pSM->LogError(myself, "SDKHooks::HandleEntiyCreated - Got entity index out of range (%d)", index);
+		}
 	}
 #else
 	for (int i = 0; i < NUM_ENT_ENTRIES; i++)
 	{
 		if (gamehelpers->ReferenceToEntity(i) != NULL)
-			m_EntityExists.Set(i);
+			m_EntityCache[i] = gamehelpers->IndexToReference(i);
 	}
 #endif
 
@@ -853,7 +860,9 @@ void SDKHooks::OnEntityCreated(CBaseEntity *pEntity)
 	int index = gamehelpers->ReferenceToIndex(ref);
 
 	// This can be -1 for player ents before any players have connected
-	if ((unsigned)index == INVALID_EHANDLE_INDEX || m_EntityExists.IsBitSet(index) || (index > 0 && index <= playerhelpers->GetMaxClients()))
+	if ((unsigned)index == INVALID_EHANDLE_INDEX
+		|| (EntityIndexInRange(index) && m_EntityCache[index] == gamehelpers->EntityToReference(pEntity))
+		|| (index > 0 && index <= playerhelpers->GetMaxClients()))
 	{
 		return;
 	}
@@ -1770,7 +1779,15 @@ void SDKHooks::HandleEntityCreated(CBaseEntity *pEntity, int ref)
 	g_pOnEntityCreated->PushString(pName ? pName : "");
 	g_pOnEntityCreated->Execute(NULL);
 
-	m_EntityExists.Set(gamehelpers->ReferenceToIndex(ref));
+	int index = gamehelpers->ReferenceToIndex(ref);
+	if (EntityIndexInRange(index))
+	{
+		m_EntityCache[index] = ref;
+	}
+	else
+	{
+		g_pSM->LogError(myself, "SDKHooks::HandleEntiyCreated - Got entity index out of range (%d)", index);
+	}
 }
 
 void SDKHooks::HandleEntityDeleted(CBaseEntity *pEntity, int ref)
@@ -1789,6 +1806,4 @@ void SDKHooks::HandleEntityDeleted(CBaseEntity *pEntity, int ref)
 	g_pOnEntityDestroyed->Execute(NULL);
 
 	Unhook(pEntity);
-
-	m_EntityExists.Set(gamehelpers->ReferenceToIndex(ref), false);
 }

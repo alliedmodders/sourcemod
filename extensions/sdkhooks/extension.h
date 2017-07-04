@@ -311,7 +311,6 @@ public:
 	void Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr);
 	void Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr);
 #endif
-	void Hook_UpdateOnRemove();
 	void Hook_Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	void Hook_UsePost(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	void Hook_VPhysicsUpdate(IPhysicsObject *pPhysics);
@@ -338,6 +337,10 @@ private:
 private:
 	int HandleOnTakeDamageHook(CTakeDamageInfoHack &info, SDKHookType hookType);
 	int HandleOnTakeDamageHookPost(CTakeDamageInfoHack &info, SDKHookType hookType);
+
+private:
+	inline bool EntityIndexInRange(int i) { return i >= 0 && i < NUM_ENT_ENTRIES; }
+	cell_t m_EntityCache[NUM_ENT_ENTRIES];
 };
 
 extern CGlobalVars *gpGlobals;
