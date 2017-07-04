@@ -339,7 +339,7 @@ private:
 	int HandleOnTakeDamageHookPost(CTakeDamageInfoHack &info, SDKHookType hookType);
 
 private:
-	inline bool EntityIndexInRange(int i) { return i >= 0 && i < NUM_ENT_ENTRIES; }
+	inline bool IsEntityIndexInRange(int i) { return i >= 0 && i < NUM_ENT_ENTRIES; }
 	cell_t m_EntityCache[NUM_ENT_ENTRIES];
 };
 

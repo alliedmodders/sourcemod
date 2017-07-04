@@ -270,13 +270,13 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 			continue;
 		
 		index = hndl.GetEntryIndex();
-		if (EntityIndexInRange(index))
+		if (IsEntityIndexInRange(index))
 		{
 			m_EntityCache[index] = gamehelpers->IndexToReference(index);
 		}
 		else
 		{
-			g_pSM->LogError(myself, "SDKHooks::HandleEntiyCreated - Got entity index out of range (%d)", index);
+			g_pSM->LogError(myself, "SDKHooks::HandleEntityCreated - Got entity index out of range (%d)", index);
 		}
 	}
 #else
@@ -860,14 +860,22 @@ void SDKHooks::OnEntityCreated(CBaseEntity *pEntity)
 	int index = gamehelpers->ReferenceToIndex(ref);
 
 	// This can be -1 for player ents before any players have connected
-	if ((unsigned)index == INVALID_EHANDLE_INDEX
-		|| (EntityIndexInRange(index) && m_EntityCache[index] == ref)
-		|| (index > 0 && index <= playerhelpers->GetMaxClients()))
+	if ((unsigned)index == INVALID_EHANDLE_INDEX || (index > 0 && index <= playerhelpers->GetMaxClients()))
 	{
 		return;
 	}
 
-	HandleEntityCreated(pEntity, index, ref);
+	if (!IsEntityIndexInRange(index))
+	{
+		g_pSM->LogError(myself, "SDKHooks::OnEntityCreated - Got entity index out of range (%d)", index);
+		return;
+	}
+
+	// The entity could already exist. The creation notifier fires twice for some paths
+	if (m_EntityCache[index] != ref)
+	{
+		HandleEntityCreated(pEntity, index, ref);
+	}
 }
 
 #ifdef GAMEDESC_CAN_CHANGE
