@@ -311,7 +311,6 @@ public:
 	void Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr);
 	void Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr);
 #endif
-	void Hook_UpdateOnRemove();
 	void Hook_Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	void Hook_UsePost(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	void Hook_VPhysicsUpdate(IPhysicsObject *pPhysics);
@@ -330,14 +329,18 @@ public:
 	bool Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelindex);
 	
 private:
-	void HandleEntityCreated(CBaseEntity *pEntity, int ref);
-	void HandleEntityDeleted(CBaseEntity *pEntity, int ref);
+	void HandleEntityCreated(CBaseEntity *pEntity, int index, cell_t ref);
+	void HandleEntityDeleted(CBaseEntity *pEntity);
 	void Unhook(CBaseEntity *pEntity);
 	void Unhook(IPluginContext *pContext);
 
 private:
 	int HandleOnTakeDamageHook(CTakeDamageInfoHack &info, SDKHookType hookType);
 	int HandleOnTakeDamageHookPost(CTakeDamageInfoHack &info, SDKHookType hookType);
+
+private:
+	inline bool IsEntityIndexInRange(int i) { return i >= 0 && i < NUM_ENT_ENTRIES; }
+	cell_t m_EntityCache[NUM_ENT_ENTRIES];
 };
 
 extern CGlobalVars *gpGlobals;
