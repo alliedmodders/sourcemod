@@ -189,7 +189,7 @@ static cell_t smn_KvSetUInt64(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToStringNULL(params[2], &key);
 	pCtx->LocalToPhysAddr(params[3], &addr);
 
-	value = static_cast<uint64>(*addr);
+	value = *reinterpret_cast<uint64 *>(addr);
 	pStk->pCurRoot.front()->SetUint64(key, value);
 
 	return 1;
