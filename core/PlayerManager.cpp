@@ -2133,6 +2133,7 @@ void CPlayer::Disconnect()
 	m_Steam3Id = "";
 	m_pEdict = NULL;
 	m_Info = NULL;
+	m_pIClient = NULL;
 	m_bAdminCheckSignalled = false;
 	m_UserId = -1;
 	m_bIsInKickQueue = false;
