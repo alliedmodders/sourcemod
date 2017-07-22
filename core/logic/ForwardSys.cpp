@@ -269,59 +269,9 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 			if ((i >= m_numparams) || (type & SP_PARAMFLAG_BYREF))
 			{
 				/* If we're byref or we're vararg, we always push everything by ref.
-				 * Even if they're byval, we must push them byref.
-				 */
-				if (type == Param_String)
-				{
-					// If NULL_STRING was pushed, push the reference to the pubvar of the callee instead.
-					if (param->isnull)
-					{
-						IPluginRuntime *runtime = func->GetParentRuntime();
-						uint32_t null_string_idx;
-						err = runtime->FindPubvarByName("NULL_STRING", &null_string_idx);
-
-						if (!err)
-						{
-							cell_t null_string;
-							err = runtime->GetPubvarAddrs(null_string_idx, &null_string, nullptr);
-
-							if (!err)
-								err = func->PushCell(null_string);
-						}
-					}
-					else
-					{
-						err = func->PushStringEx((char *)param->byref.orig_addr, param->byref.cells, param->byref.sz_flags, param->byref.flags);
-					}
-				}
-				else if (type == Param_Float || type == Param_Cell)
-				{
-					err = func->PushCellByRef(&param->val); 
-				}
-				else
-				{
-					// If NULL_VECTOR was pushed, push the reference to the pubvar of the callee instead.
-					if (param->isnull && type == Param_Array)
-					{
-						IPluginRuntime *runtime = func->GetParentRuntime();
-						uint32_t null_vector_idx;
-						err = runtime->FindPubvarByName("NULL_VECTOR", &null_vector_idx);
-
-						if (!err)
-						{
-							cell_t null_vector;
-							err = runtime->GetPubvarAddrs(null_vector_idx, &null_vector, nullptr);
-
-							if (!err)
-								err = func->PushCell(null_vector);
-						}
-					}
-					else
-					{
-						err = func->PushArray(param->byref.orig_addr, param->byref.cells, param->byref.flags);
-					}
-					assert(type == Param_Array || type == Param_FloatByRef || type == Param_CellByRef);
-				}
+				* Even if they're byval, we must push them byref.
+				*/
+				err = _ExecutePushRef(func, type, param);
 			}
 			else
 			{
@@ -418,6 +368,58 @@ done:
 	}
 
 	return SP_ERROR_NONE;
+}
+
+int CForward::_ExecutePushRef(IPluginFunction *func, ParamType type, FwdParamInfo *param)
+{
+	/* If we're byref or we're vararg, we always push everything by ref.
+	* Even if they're byval, we must push them byref.
+	*/
+	int err;
+	IPluginRuntime *runtime = func->GetParentRuntime();
+	switch (type)
+	{
+	case Param_String:
+		// Normal string was pushed.
+		if (!param->isnull)
+			return func->PushStringEx((char *)param->byref.orig_addr, param->byref.cells, param->byref.sz_flags, param->byref.flags);
+
+		// If NULL_STRING was pushed, push the reference to the pubvar of the callee instead.
+		uint32_t null_string_idx;
+		err = runtime->FindPubvarByName("NULL_STRING", &null_string_idx);
+		if (err)
+			return err;
+
+		cell_t null_string;
+		err = runtime->GetPubvarAddrs(null_string_idx, &null_string, nullptr);
+		if (err)
+			return err;
+
+		return func->PushCell(null_string);
+	
+	case Param_Float:
+	case Param_Cell:
+		return func->PushCellByRef(&param->val);
+
+	default:
+		assert(type == Param_Array || type == Param_FloatByRef || type == Param_CellByRef);
+		// No NULL_VECTOR was pushed.
+		if (type != Param_Array || !param->isnull)
+			return func->PushArray(param->byref.orig_addr, param->byref.cells, param->byref.flags);
+
+		// If NULL_VECTOR was pushed, push the reference to the pubvar of the callee instead.
+		uint32_t null_vector_idx;
+		err = runtime->FindPubvarByName("NULL_VECTOR", &null_vector_idx);
+		if (err)
+			return err;
+
+		cell_t null_vector;
+		err = runtime->GetPubvarAddrs(null_vector_idx, &null_vector, nullptr);
+		if (err)
+			return err;
+
+		return func->PushCell(null_vector);
+	}
 }
 
 int CForward::PushCell(cell_t cell)
