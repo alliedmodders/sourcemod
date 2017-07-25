@@ -55,6 +55,8 @@ public: //IForward
 	virtual unsigned int GetFunctionCount();
 	virtual ExecType GetExecType();
 	virtual int Execute(cell_t *result, IForwardFilter *filter);
+	virtual int PushNullString();
+	virtual int PushNullVector();
 public: //IChangeableForward
 	virtual bool RemoveFunction(IPluginFunction *func);
 	virtual unsigned int RemoveFunctionsOfPlugin(IPlugin *plugin);
@@ -72,6 +74,7 @@ private:
 	CForward(ExecType et, const char *name,
 	         const ParamType *types, unsigned num_params);
 
+	int _ExecutePushRef(IPluginFunction *func, ParamType type, FwdParamInfo *param);
 	void _Int_PushArray(cell_t *inarray, unsigned int cells, int flags);
 	void _Int_PushString(cell_t *inarray, unsigned int cells, int sz_flags, int cp_flags);
 	inline int SetError(int err)
