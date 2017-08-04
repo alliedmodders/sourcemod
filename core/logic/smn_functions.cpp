@@ -580,7 +580,7 @@ static cell_t sm_CallPushNullVector(IPluginContext *pContext, const cell_t *para
 	}
 	else if (s_pForward)
 	{
-		err = s_pForward->PushNullVector();
+		err = s_pForward->PushArray(NULL, 3);
 	}
 
 	if (err)
@@ -621,7 +621,7 @@ static cell_t sm_CallPushNullString(IPluginContext *pContext, const cell_t *para
 	}
 	else if (s_pForward)
 	{
-		err = s_pForward->PushNullString();
+		err = s_pForward->PushString(NULL);
 	}
 
 	if (err)

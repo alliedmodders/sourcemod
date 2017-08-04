@@ -528,10 +528,17 @@ void CForward::_Int_PushArray(cell_t *inarray, unsigned int cells, int flags)
 
 int CForward::PushArray(cell_t *inarray, unsigned int cells, int flags)
 {
-	/* We don't allow this here */
+	/* Push a reference to the NULL_VECTOR pubvar if NULL was passed. */
 	if (!inarray)
 	{
-		return SetError(SP_ERROR_PARAM);
+		/* Make sure this was intentional. */
+		if (cells == 3)
+		{
+			return PushNullVector();
+		} else {
+			/* We don't allow this here */
+			return SetError(SP_ERROR_PARAM);
+		}
 	}
 
 	if (m_curparam < m_numparams)
@@ -568,6 +575,12 @@ void CForward::_Int_PushString(cell_t *inarray, unsigned int cells, int sz_flags
 
 int CForward::PushString(const char *string)
 {
+	/* Push a reference to the NULL_STRING pubvar if NULL was passed. */
+	if (!string)
+	{
+		return PushNullString();
+	}
+
 	if (m_curparam < m_numparams)
 	{
 		if (m_types[m_curparam] == Param_Any)
