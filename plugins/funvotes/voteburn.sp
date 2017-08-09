@@ -40,6 +40,8 @@ void DisplayVoteBurnMenu(int client, int target, char[] name)
 	}
 	
 	g_voteClient[VOTE_CLIENTID] = target;
+	g_voteClient[VOTE_USERID] = GetClientUserId(target);
+	
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a burn vote against \"%L\"", client, target);
