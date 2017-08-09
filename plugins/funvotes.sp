@@ -247,19 +247,35 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 				
 				case (burn):
 				{
-					PrintToChatAll("[SM] %t", "Set target on fire", "_s", g_voteInfo[VOTE_NAME]);					
-					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote burn successful, igniting \"%L\"", g_voteClient[VOTE_CLIENTID]);
-					
-					IgniteEntity(g_voteClient[VOTE_CLIENTID], 19.8);	
+					if(GetClientOfUserId(g_voteClient[VOTE_USERID]) == 0)
+					{
+						PrintToChatAll("[SM] %t", "Player no longer available");
+						LogAction(-1, -1, "Vote burn failed, unable to burn \"%s\" (%d) (reason \"%s\")", g_voteInfo[VOTE_NAME], g_voteClient[VOTE_CLIENTID], "Player no longer available");
+					}
+					else
+					{
+						PrintToChatAll("[SM] %t", "Set target on fire", "_s", g_voteInfo[VOTE_NAME]);					
+						LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote burn successful, igniting \"%L\"", g_voteClient[VOTE_CLIENTID]);
+						
+						IgniteEntity(g_voteClient[VOTE_CLIENTID], 19.8);	
+					}
 				}
 				
 				case (slay):
 				{
-					PrintToChatAll("[SM] %t", "Slayed player", g_voteInfo[VOTE_NAME]);					
-					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote slay successful, slaying \"%L\"", g_voteClient[VOTE_CLIENTID]);
-					
-					ExtinguishEntity(g_voteClient[VOTE_CLIENTID]);
-					ForcePlayerSuicide(g_voteClient[VOTE_CLIENTID]);
+					if(GetClientOfUserId(g_voteClient[VOTE_USERID]) == 0)
+					{
+						PrintToChatAll("[SM] %t", "Player no longer available");
+						LogAction(-1, -1, "Vote slay failed, unable to slay \"%s\" (%d) (reason \"%s\")", g_voteInfo[VOTE_NAME], g_voteClient[VOTE_CLIENTID], "Player no longer available");
+					}
+					else
+					{
+						PrintToChatAll("[SM] %t", "Slayed player", g_voteInfo[VOTE_NAME]);					
+						LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote slay successful, slaying \"%L\"", g_voteClient[VOTE_CLIENTID]);
+						
+						ExtinguishEntity(g_voteClient[VOTE_CLIENTID]);
+						ForcePlayerSuicide(g_voteClient[VOTE_CLIENTID]);
+					}
 				}
 				
 				case (alltalk):
