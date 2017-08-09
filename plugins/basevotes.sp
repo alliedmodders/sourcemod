@@ -327,33 +327,49 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 					
 				case (kick):
 				{
-					if (g_voteArg[0] == '\0')
+					if(GetClientOfUserId(g_voteClient[VOTE_USERID]) == 0)
 					{
-						strcopy(g_voteArg, sizeof(g_voteArg), "Votekicked");
+						PrintToChatAll("[SM] %t", "Player no longer available");
+						LogAction(-1, -1, "Vote kick failed, unable to kick \"%s\" (%d) (reason \"%s\")", g_voteInfo[VOTE_NAME], g_voteClient[VOTE_CLIENTID], "Player no longer available");
 					}
-					
-					PrintToChatAll("[SM] %t", "Kicked target", "_s", g_voteInfo[VOTE_NAME]);					
-					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote kick successful, kicked \"%L\" (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
-					
-					ServerCommand("kickid %d \"%s\"", g_voteClient[VOTE_USERID], g_voteArg);					
+					else
+					{
+						if (g_voteArg[0] == '\0')
+						{
+							strcopy(g_voteArg, sizeof(g_voteArg), "Votekicked");
+						}
+						
+						PrintToChatAll("[SM] %t", "Kicked target", "_s", g_voteInfo[VOTE_NAME]);					
+						LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote kick successful, kicked \"%L\" (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
+						
+						ServerCommand("kickid %d \"%s\"", g_voteClient[VOTE_USERID], g_voteArg);					
+					}
 				}
 					
 				case (ban):
 				{
-					if (g_voteArg[0] == '\0')
+					if(GetClientOfUserId(g_voteClient[VOTE_USERID]) == 0)
 					{
-						strcopy(g_voteArg, sizeof(g_voteArg), "Votebanned");
+						PrintToChatAll("[SM] %t", "Player no longer available");
+						LogAction(-1, -1, "Vote ban failed, unable to ban \"%s\" (%d) (reason \"%s\")", g_voteInfo[VOTE_NAME], g_voteClient[VOTE_CLIENTID], "Player no longer available");
 					}
-					
-					PrintToChatAll("[SM] %t", "Banned player", g_voteInfo[VOTE_NAME], 30);
-					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote ban successful, banned \"%L\" (minutes \"30\") (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
-
-					BanClient(g_voteClient[VOTE_CLIENTID],
-							  30,
-							  BANFLAG_AUTO,
-							  g_voteArg,
-							  "Banned by vote",
-							  "sm_voteban");
+					else
+					{
+						if (g_voteArg[0] == '\0')
+						{
+							strcopy(g_voteArg, sizeof(g_voteArg), "Votebanned");
+						}
+						
+						PrintToChatAll("[SM] %t", "Banned player", g_voteInfo[VOTE_NAME], 30);
+						LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote ban successful, banned \"%L\" (minutes \"30\") (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
+	
+						BanClient(g_voteClient[VOTE_CLIENTID],
+								  30,
+								  BANFLAG_AUTO,
+								  g_voteArg,
+								  "Banned by vote",
+								  "sm_voteban");
+					}
 				}
 			}
 		}
