@@ -66,6 +66,9 @@ enum voteType
 
 voteType g_voteType = question;
 
+// Menu API does not provide us with a way to pass multiple peices of data with a single
+// choice, so some globals are used to hold stuff.
+//
 int g_voteTarget;		/* Holds the target's user id */
 
 #define VOTE_NAME	0
