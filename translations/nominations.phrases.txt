@@ -38,7 +38,7 @@
 	"Map Nomination Changed"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"{1} has changed his nomination to {2}."
+		"en"			"{1} has changed their nomination to {2}."
 	}
 	
 	"Nominate Title"
