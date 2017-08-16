@@ -682,7 +682,6 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	{
 		g_HasVoteStarted = false;
 		delete g_VoteMenu;
-		g_VoteMenu = null;
 		return;
 	}
 	
