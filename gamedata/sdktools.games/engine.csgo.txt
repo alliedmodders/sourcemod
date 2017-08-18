@@ -208,7 +208,7 @@
 		}
 	}
 	
-	"#default"
+	"csgo"
 	{
 		"Keys"
 		{
@@ -220,7 +220,7 @@
 			"GiveNamedItem"
 			{
 				"windows"	"449"
-				"linux"		"450"
+				"linux"		"451"
 				"mac"		"450"
 			}
 			"RemovePlayerItem"
@@ -297,14 +297,14 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"469"
-				"linux"		"470"
-				"mac"		"470"
+				"windows"	"470"
+				"linux"		"471"
+				"mac"		"471"
 			}
 			"GiveAmmo"
 			{
 				"windows"	"275"
-				"linux"		"276"
+				"linux"		"277"
 				"mac"		"276"
 			}
 		}
