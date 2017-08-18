@@ -44,7 +44,7 @@ DETOUR_DECL_MEMBER1(DetourHandleBuy, int, const char *, weapon)
 	}
 
 #if SOURCE_ENGINE == SE_CSGO
-	int val = DETOUR_MEMBER_CALL(DetourHandleBuy)(weapon, iUnknown, bRebuy);
+	int val = DETOUR_MEMBER_CALL(DetourHandleBuy)(iUnknown, weapon, bRebuy);
 #else
 	int val = DETOUR_MEMBER_CALL(DetourHandleBuy)(weapon);
 #endif
