@@ -208,7 +208,7 @@
 		}
 	}
 	
-	"csgo"
+	"#default"
 	{
 		"Keys"
 		{
