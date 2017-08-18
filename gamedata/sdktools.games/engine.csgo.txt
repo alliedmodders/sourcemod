@@ -219,9 +219,9 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"449"
+				"windows"	"450"
 				"linux"		"451"
-				"mac"		"450"
+				"mac"		"451"
 			}
 			"RemovePlayerItem"
 			{
@@ -303,9 +303,9 @@
 			}
 			"GiveAmmo"
 			{
-				"windows"	"275"
+				"windows"	"276"
 				"linux"		"277"
-				"mac"		"276"
+				"mac"		"277"
 			}
 		}
 	}
