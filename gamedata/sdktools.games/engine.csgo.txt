@@ -255,9 +255,9 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"499"
-				"linux"		"499"
-				"mac"		"499"
+				"windows"	"500"
+				"linux"		"500"
+				"mac"		"500"
 			}
 			"GetVelocity"
 			{
