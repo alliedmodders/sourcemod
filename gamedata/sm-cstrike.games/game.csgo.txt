@@ -11,7 +11,7 @@
 
 "Games"
 {
-	"#default"
+	"csgo"
 	{
 		"Keys"
 		{
@@ -58,7 +58,7 @@
 			"CCSPlayerInventoryOffset"
 			{
 				"windows"	"55"
-				"linux"		"87"
+				"linux"		"97"
 				"mac"		"109"
 			}
 			"GetItemInLoadout"
@@ -97,7 +97,7 @@
 			{
 				"library"		"server"
 				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x81\xEC\x7C\x01\x00\x00\x53\x56\x57\x6A\x00"
-				"linux"			"\x2A\x2A\x2A\x2A\x2A\x2A\x81\xEC\x9C\x01\x00\x00\x0F\xB6\x55\x14"
+				"linux"			"\x2A\x2A\x2A\x2A\x2A\x2A\x0F\xB6\x55\x14\x89\x75\xF8\x8B\x75\x08"
 			}
 			"CSWeaponDrop"//Wildcard first 6 bytes for CS:S DM (kept for backcompat with old SM versions)
 			{
@@ -171,7 +171,7 @@
 		}
 	}
 	
-	"#default"
+	"csgo"
 	{
 		"Keys"
 		{
@@ -189,7 +189,7 @@
 		}
 	}
 	
-	"#default"
+	"csgo"
 	{
 		"Keys"
 		{
@@ -207,7 +207,7 @@
 		}
 	}
 	
-	"#default"
+	"csgo"
 	{
 		"Keys"
 		{
