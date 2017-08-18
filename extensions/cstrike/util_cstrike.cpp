@@ -146,7 +146,7 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 	
 	for (int i = 0; i < (sizeof(szAliases) / sizeof(szAliases[0]) / 2); i++)
 	{
-		if (stricmp(weapon, szAliases[i * 2]))
+		if (stricmp(weapon, szAliases[i * 2]) == 0)
 			return szAliases[i * 2 + 1];
 	}
 
@@ -156,8 +156,9 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 
 int AliasToWeaponID(const char *weapon)
 {
+#if SOURCE_ENGINE != SE_CSGO
 	int weaponID = 0;
-#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
+
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -180,28 +181,23 @@ int AliasToWeaponID(const char *weapon)
 	*(const char **)vptr = weapon;
 
 	pWrapper->Execute(vstk, &weaponID);
-#else
-	static void *addr = NULL;
 
-	if(!addr)
-	{
-		GET_MEMSIG("AliasToWeaponID", 0);
-	}
-
-	__asm
-	{
-		mov ecx, weapon
-		call addr
-		mov weaponID, eax
-	}
-#endif
 	return weaponID;
+#else //this is horribly broken hackfix for now.
+	for (unsigned int i = 0; i < (sizeof(szWeaponInfo) / sizeof(szWeaponInfo[0])); i++)
+	{
+		if (stricmp(weapon, szWeaponInfo[i]) == 0)
+			return i;
+	}
+	return 0;
+#endif
 }
 
 const char *WeaponIDToAlias(int weaponID)
 {
-	const char *alias = NULL;
 #if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
+	const char *alias = NULL;
+
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -224,23 +220,18 @@ const char *WeaponIDToAlias(int weaponID)
 	*(int *)vptr = GetRealWeaponID(weaponID);
 
 	pWrapper->Execute(vstk, &alias);
-#else
-	static void *addr = NULL;
 
-	if(!addr)
-	{
-		GET_MEMSIG("WeaponIDToAlias", 0);
-	}
-
-	int realWeaponID = GetRealWeaponID(weaponID);
-	__asm
-	{
-		mov ecx, realWeaponID
-		call addr
-		mov alias, eax
-	}
-#endif
 	return alias;
+#else
+	int realID = GetRealWeaponID(weaponID);
+
+	if (realID < (sizeof(szWeaponInfo) / sizeof(szWeaponInfo[0])) && realID > 0)
+		return szWeaponInfo[realID];
+
+	return NULL;
+
+#endif
+	
 }
 
 #if SOURCE_ENGINE == SE_CSGO
