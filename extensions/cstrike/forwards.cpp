@@ -21,15 +21,8 @@ CDetour *DCSWeaponDrop = NULL;
 
 int weaponNameOffset = -1;
 
-//Windows CS:GO
-// int __userpurge HandleCommand_Buy_Internal<eax>(int a1<ecx>, float a2<xmm0>, int a3, int a4, char a5)
-// a1 - this
-// a2 - CCSGameRules::GetWarmupPeriodEndTime(g_pGameRules)
-// a3 - weapon
-// a4 - unknown
-// a5 - bRebuy
 #if SOURCE_ENGINE == SE_CSGO
-DETOUR_DECL_MEMBER3(DetourHandleBuy, int, const char *, weapon, int, iUnknown, bool, bRebuy)
+DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iUnknown, const char *, weapon, bool, bRebuy)
 #else
 DETOUR_DECL_MEMBER1(DetourHandleBuy, int, const char *, weapon)
 #endif
