@@ -98,9 +98,9 @@ void *GetWeaponInfo(int weaponID)
 
 const char *GetTranslatedWeaponAlias(const char *weapon)
 {
+#if SOURCE_ENGINE != SE_CSGO
 	const char *alias = NULL;
 
-#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -123,22 +123,35 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 	*(const char **)vptr = weapon;
 
 	pWrapper->Execute(vstk, &alias);
-#else
-	static void *addr = NULL;
-
-	if(!addr)
-	{
-		GET_MEMSIG("GetTranslatedWeaponAlias", weapon);
-	}
-
-	__asm
-	{
-		mov ecx, weapon
-		call addr
-		mov alias, eax
-	}
-#endif
 	return alias;
+#else //this should work for both games maybe replace both?
+
+	static char *szAliases[] =
+	{
+		"cv47", "ak47",
+		"magnum", "awp",
+		"d3au1", "g3sg1",
+		"clarion", "famas",
+		"bullpup", "aug",
+		"9x19mm", "glock",
+		"nighthawk", "deagle",
+		"elites", "elite",
+		"fn57", "fiveseven",
+		"autoshotgun", "xm1014",
+		"c90", "p90",
+		"vest", "kevlar",
+		"vesthelm", "assaultsuit",
+		"nvgs", "nightvision"
+	};
+	
+	for (int i = 0; i < (sizeof(szAliases) / sizeof(szAliases[0]) / 2); i++)
+	{
+		if (stricmp(weapon, szAliases[i * 2]))
+			return szAliases[i * 2 + 1];
+	}
+
+	return weapon;
+#endif
 }
 
 int AliasToWeaponID(const char *weapon)
