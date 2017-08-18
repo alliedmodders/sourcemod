@@ -38,7 +38,7 @@
 	void *addr; \
 	if (!g_pGameConf->GetMemSig(name, &addr) || !addr) \
 	{ \
-		g_pSM->LogError(myself, "Failed to locate function."); \
+		g_pSM->LogError(myself, "Failed to lookup %s signature.", name); \
 		return defaultret; \
 	} \
 	code; \
@@ -47,7 +47,7 @@
 #define GET_MEMSIG(name, defaultret) \
 	if (!g_pGameConf->GetMemSig(name, &addr) || !addr) \
 	{ \
-		g_pSM->LogError(myself, "Failed to locate function."); \
+		g_pSM->LogError(myself, "Failed to lookup %s signature.", name); \
 		return defaultret;\
 	}
 
