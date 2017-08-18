@@ -11,7 +11,7 @@
 
 "Games"
 {
-	"csgo"
+	"#default"
 	{
 		"Keys"
 		{
@@ -171,7 +171,7 @@
 		}
 	}
 	
-	"csgo"
+	"#default"
 	{
 		"Keys"
 		{
@@ -189,7 +189,7 @@
 		}
 	}
 	
-	"csgo"
+	"#default"
 	{
 		"Keys"
 		{
@@ -207,7 +207,7 @@
 		}
 	}
 	
-	"csgo"
+	"#default"
 	{
 		"Keys"
 		{
