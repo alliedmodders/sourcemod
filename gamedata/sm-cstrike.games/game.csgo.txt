@@ -57,8 +57,8 @@
 			//Offset into HandleCommand_Buy_Internal
 			"CCSPlayerInventoryOffset"
 			{
-				"windows"	"55"
-				"linux"		"87"
+				"windows"	"60"
+				"linux"		"97"
 				"mac"		"109"
 			}
 			"GetItemInLoadout"
@@ -96,8 +96,8 @@
 			"HandleCommand_Buy_Internal"//Wildcard first 6 bytes for getting address for weapon price.
 			{
 				"library"		"server"
-				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x81\xEC\x7C\x01\x00\x00\x53\x56\x57\x6A\x00"
-				"linux"			"\x2A\x2A\x2A\x2A\x2A\x2A\x81\xEC\x9C\x01\x00\x00\x0F\xB6\x55\x14"
+				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x83\xEC\x0C\x53\x56\x57\x6A\x01"
+				"linux"			"\x2A\x2A\x2A\x2A\x2A\x2A\x0F\xB6\x55\x14\x89\x75\xF8\x8B\x75\x08"
 			}
 			"CSWeaponDrop"//Wildcard first 6 bytes for CS:S DM (kept for backcompat with old SM versions)
 			{
@@ -151,7 +151,7 @@
 			"SetClanTag"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x55\x08\x85\xD2\x74\x2A\x8D\x81\x5C\x29\x00\x00"
+				"windows"	"\x55\x8B\xEC\x8B\x55\x08\x85\xD2\x74\x2A\x8D\x81\x34\x25\x00\x00"
 				"linux"		"\x55\x89\xE5\x83\xEC\x18\x8B\x45\x0C\x85\xC0\x74\x2A\x89\x44\x24\x04\x8B\x45\x08\xC7\x44\x24\x08\x10\x00\x00\x00"
 			}
 			// Since it's not possible to make a unique signature for CCSWeaponInfo::GetWeaponInfo, this is instead a signature to a
