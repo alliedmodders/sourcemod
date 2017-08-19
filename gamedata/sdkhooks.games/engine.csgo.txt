@@ -120,9 +120,9 @@
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"286"
-				"linux"		"287"
-				"mac"		"287"
+				"windows"	"287"
+				"linux"		"288"
+				"mac"		"288"
 			}
 			"Weapon_CanUse"
 			{
@@ -132,9 +132,9 @@
 			}
 			"Weapon_Drop"
 			{
-				"windows"	"283"
-				"linux"		"284"
-				"mac"		"284"
+				"windows"	"284"
+				"linux"		"285"
+				"mac"		"285"
 			}
 			"Weapon_Equip"
 			{
@@ -144,9 +144,9 @@
 			}
 			"Weapon_Switch"
 			{
-				"windows"	"284"
-				"linux"		"285"
-				"mac"		"285"
+				"windows"	"285"
+				"linux"		"286"
+				"mac"		"286"
 			}
 		}
 	}
