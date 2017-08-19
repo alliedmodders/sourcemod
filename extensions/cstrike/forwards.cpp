@@ -83,15 +83,16 @@ DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pItemDefRet
 	if (weaponPriceOffset != -1)
 	{
 		originalPrice = *(int *)((intptr_t)pDef + weaponPriceOffset);
-	}
-	int changedPrice = CallPriceForward(client, weaponName, originalPrice);
 
-	if (originalPrice != changedPrice)
-		*(int *)((intptr_t)pDef + weaponPriceOffset) = changedPrice;
+		int changedPrice = CallPriceForward(client, weaponName, originalPrice);
+
+		if (originalPrice != changedPrice)
+			*(int *)((intptr_t)pDef + weaponPriceOffset) = changedPrice;
+	}
 
 	int ret = DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pItemDefRet, bRebuy);
 
-	if (originalPrice != changedPrice)
+	if (weaponPriceOffset != -1)
 		*(int *)((intptr_t)pDef + weaponPriceOffset) = originalPrice;
 
 	return ret;
