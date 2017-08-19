@@ -35,12 +35,15 @@
 #if SOURCE_ENGINE == SE_CSGO
 class CEconItemView;
 
+CEconItemView *GetEconItemView(void *pEntity, int iSlot);
+void *GetItemDef(CEconItemView *view);
+
 static const char *szWeaponInfo[] =
 {
 	"none",
 	"deagle",
 	"elite",
-	"fn57",
+	"fiveseven",
 	"glock",
 	"p228",
 	"usp",
@@ -74,6 +77,7 @@ static const char *szWeaponInfo[] =
 	"mp9",
 	"nova",
 	"p250",
+	"scar17",
 	"scar20",
 	"sg556",
 	"ssg08",
@@ -86,8 +90,8 @@ static const char *szWeaponInfo[] =
 	"decoy",
 	"incgrenade",
 	"c4",
-	"vest",
-	"vesthelm",
+	"kevlar",
+	"assaultsuit",
 	"nvg",
 	"defuser"
 };

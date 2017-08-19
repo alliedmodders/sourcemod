@@ -13,26 +13,22 @@
 {
 	"#default"
 	{
-		"Keys"
-		{
-			"GetWeaponPriceByteCheck"	"E9"
-			"GetWeaponPriceByteCheck_Linux"	"E8"
-		}
 		"Offsets"
 		{
-			//Offset of szClassName in CCSWeaponInfo 
+			// Offset of szClassName in CEconItemDefinition(?) 
 			"WeaponName"
 			{
-				"windows"		"6"
-				"linux"			"6"
-				"mac"			"6"
+				"windows"		"4"
+				"linux"			"4"
+				"mac"			"4"
 			}
-			//Econ update doesnt check this now but for what we use it hopefully its fine.
+			// In HandleCommand_Buy_Internal
+			// -*(_DWORD *)(v34 + 204)
 			"WeaponPrice"
 			{
-				"windows"		"2528"
-				"linux"			"2528"
-				"mac"			"2528"
+				"windows"		"204"
+				"linux"			"204"
+				"mac"			"204"
 			}
 			//Offset into CheckRestartRound
 			"CTTeamScoreOffset"
@@ -66,17 +62,6 @@
 				"windows"	"8"
 				"linux"		"9"
 				"mac"		"9"
-			}
-			"GetWeaponPriceFunc"
-			{
-				"windows"	"105"
-				"linux"		"152"
-			}
-			//This is GetWeaponPriceFunc offset -1 (only used by GDC)
-			"GetWeaponPriceFuncGDC"
-			{
-				"windows"	"104"
-				"linux"		"151"
 			}
 		}
 		"Signatures"
@@ -117,12 +102,6 @@
 				"windows"		"\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x2A\x53\x8B\xD9\xF3\x0F\x2A\x2A\x2A\x2A\x56\x57\x89\x2A\x2A\x2A\x83\xBB"
 				"linux"			"\x55\x89\xE5\x57\x56\x53\x81\xEC\xDC\x00\x00\x00\x8B\x75\x08\x8B\x86"
 			}
-			"GetWeaponInfo"
-			{
-				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xEC\x08\x33\xC0\x85\xC9"
-				"linux"			"\x55\x89\xE5\x56\x53\x31\xDB\x83\xEC\x10\x8B\x55\x08\x85\xD2"
-			}
 			//In CS:GO this is actually CCSGameRules::CheckRestartRound(void) but to keep same gamedata as cs:s.
 			"CheckWinLimit"
 			{
@@ -136,20 +115,20 @@
 				"windows"	"\x55\x8B\xEC\x8B\x55\x08\x85\xD2\x74\x2A\x8D\x81\x34\x25\x00\x00"
 				"linux"		"\x55\x89\xE5\x83\xEC\x18\x8B\x45\x0C\x85\xC0\x74\x2A\x89\x44\x24\x04\x8B\x45\x08\xC7\x44\x24\x08\x10\x00\x00\x00"
 			}
-			// Since it's not possible to make a unique signature for CCSWeaponInfo::GetWeaponInfo, this is instead a signature to a
-			// function that calls it. The offset from the signature to the CCSWeaponInfo func offset is the GetWeaponPriceFunc offset.
-			"GetWeaponPrice"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\xD1\x8B\x4D\x08\x85\xC9\x75\x2A\x83\xC8\xFF"
-				"linux"		"\x55\x89\xE5\x83\xEC\x18\x89\x5D\xF8\x8B\x5D\x10\x89\x75\xFC\x8B\x4D\x08"
-			}
 			"SetModelFromClass"
 			{
 				"library"	"server"
 				"windows"	"\x53\x56\x57\x8B\xF9\x8B\x87\x00\x03\x00\x00"
 				"linux"		"\x55\x89\xE5\x83\xEC\x28\x89\x5D\xF4\x8B\x5D\x08\x89\x75\xF8\x89\x7D\xFC\x89\x1C\x24\xE8\x2A\x2A\x2A\x2A\x83\xF8\x02"
 			}
+			//GetItemDefintionFromView (maybe?) Found in HandleCommand_Buy_Internal
+			"GetItemDefintionFromView"
+			{
+				"library"	"server"
+				"windows"	"\x85\xC9\x75\x2A\x33\xC0\xC3\xE8\x2A\x2A\x2A\x2A\x8B"
+				"linux"		"\x55\x89\xE5\x83\xEC\x18\x8B\x45\x08\x85\xC0\x74\x2A\x89\x04\x24"
+			}
+			
 		}
 	}
 	

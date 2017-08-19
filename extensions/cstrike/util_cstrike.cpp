@@ -33,6 +33,7 @@
 
 #include "extension.h"
 #include "RegNatives.h"
+#include <iplayerinfo.h>
 
 #define REGISTER_ADDR(name, defaultret, code) \
 	void *addr; \
@@ -50,6 +51,129 @@
 		g_pSM->LogError(myself, "Failed to lookup %s signature.", name); \
 		return defaultret;\
 	}
+
+#if SOURCE_ENGINE == SE_CSGO
+
+ // Get a CEconItemView for the m4
+ // Found in CCSPlayer::HandleCommand_Buy_Internal
+ // Linux a1 - CCSPlayer *pEntity, v5 - Player Team, a3 - ItemLoadoutSlot -1 use default loadoutslot:
+ // v4 = *(int (__cdecl **)(_DWORD, _DWORD, _DWORD))(*(_DWORD *)(a1 + 9492) + 36); // offset 9
+ // v6 = v4(a1 + 9492, v5, a3);
+ // Windows v5 - CCSPlayer *pEntity a4 -  ItemLoadoutSlot -1 use default loadoutslot:
+ // v8 = (*(int (__stdcall **)(_DWORD, int))(*(_DWORD *)(v5 + 9472) + 32))(*(_DWORD *)(v5 + 760), a4); // offset 8
+ // The function is CCSPlayerInventory::GetItemInLoadout(int, int)
+ // We can pass NULL view to the GetAttribute to use default loadoutslot.
+ // We only really care about m4a1/m4a4 as price differs between them
+ // thisPtrOffset = 9472/9492
+
+CEconItemView *GetEconItemView(void *pEntity, int iSlot)
+{
+	if (!pEntity)
+		return NULL;
+
+	static ICallWrapper *pWrapper = NULL;
+	static int thisPtrOffset = -1;
+
+	if (!pWrapper)
+	{
+		int offset = -1;
+		int byteOffset = -1;
+		void *pHandleCommandBuy = NULL;
+		if (!g_pGameConf->GetOffset("GetItemInLoadout", &offset) || offset == -1)
+		{
+			smutils->LogError(myself, "Failed to get GetItemInLoadout offset.");
+			return NULL;
+		}
+		else if (!g_pGameConf->GetOffset("CCSPlayerInventoryOffset", &byteOffset) || byteOffset == -1)
+		{
+			smutils->LogError(myself, "Failed to get CCSPlayerInventoryOffset offset.");
+			return NULL;
+		}
+		else if (!g_pGameConf->GetMemSig("HandleCommand_Buy_Internal", &pHandleCommandBuy) || !pHandleCommandBuy)
+		{
+			smutils->LogError(myself, "Failed to get HandleCommand_Buy_Internal function.");
+			return NULL;
+		}
+		else
+		{
+			thisPtrOffset = *(int *)((intptr_t)pHandleCommandBuy + byteOffset);
+
+			PassInfo pass[2];
+			PassInfo ret;
+			pass[0].flags = PASSFLAG_BYVAL;
+			pass[0].type = PassType_Basic;
+			pass[0].size = sizeof(int);
+			pass[1].flags = PASSFLAG_BYVAL;
+			pass[1].type = PassType_Basic;
+			pass[1].size = sizeof(int);
+
+			ret.flags = PASSFLAG_BYVAL;
+			ret.type = PassType_Basic;
+			ret.size = sizeof(CEconItemView *);
+
+			pWrapper = g_pBinTools->CreateVCall(offset, 0, 0, &ret, pass, 2);
+			g_RegNatives.Register(pWrapper);
+		}
+	}
+
+	int client = gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(pEntity));
+
+	IPlayerInfo *playerinfo = playerhelpers->GetGamePlayer(client)->GetPlayerInfo();
+	
+	if (!playerinfo)
+		return NULL;
+
+	int team = playerinfo->GetTeamIndex();
+
+	if (team != 2 && team != 3)
+		return NULL;
+
+	CEconItemView *ret;
+	unsigned char vstk[sizeof(void *) + sizeof(int) * 2];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = (void *)((intptr_t)pEntity + thisPtrOffset);
+	vptr += sizeof(void *);
+	*(int *)vptr = team;
+	vptr += sizeof(int);
+	*(int *)vptr = iSlot;
+
+	pWrapper->Execute(vstk, &ret);
+
+	return ret;
+}
+
+//Is this an itemdef for sure?
+void *GetItemDef(CEconItemView *view)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		REGISTER_ADDR("GetItemDefintionFromView", NULL,
+			PassInfo pass[1]; \
+			PassInfo retpass; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].type = PassType_Basic; \
+			pass[0].size = sizeof(CEconItemView *); \
+			retpass.flags = PASSFLAG_BYVAL; \
+			retpass.type = PassType_Basic; \
+			retpass.size = sizeof(void *); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, pass, 1))
+	}
+
+	unsigned char vstk[sizeof(const char *)];
+	unsigned char *vptr = vstk;
+
+	*(CEconItemView **)vptr = view;
+
+	void *pDef = NULL;
+
+	pWrapper->Execute(vstk, &pDef);
+
+	return pDef;
+}
+#endif
 
 void *GetWeaponInfo(int weaponID)
 {
@@ -126,7 +250,7 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 	return alias;
 #else //this should work for both games maybe replace both?
 
-	static char *szAliases[] =
+	static const char *szAliases[] =
 	{
 		"cv47", "ak47",
 		"magnum", "awp",
@@ -144,7 +268,7 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 		"nvgs", "nightvision"
 	};
 	
-	for (int i = 0; i < (sizeof(szAliases) / sizeof(szAliases[0]) / 2); i++)
+	for (int i = 0; i < SM_ARRAYSIZE(szAliases)/2; i++)
 	{
 		if (stricmp(weapon, szAliases[i * 2]) == 0)
 			return szAliases[i * 2 + 1];
@@ -184,7 +308,7 @@ int AliasToWeaponID(const char *weapon)
 
 	return weaponID;
 #else //this is horribly broken hackfix for now.
-	for (unsigned int i = 0; i < (sizeof(szWeaponInfo) / sizeof(szWeaponInfo[0])); i++)
+	for (unsigned int i = 0; i < SM_ARRAYSIZE(szWeaponInfo); i++)
 	{
 		if (stricmp(weapon, szWeaponInfo[i]) == 0)
 			return i;
