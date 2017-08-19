@@ -46,7 +46,7 @@ DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pItemDefRet
 		return DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pItemDefRet, bRebuy);
 	}
 
-	const char *szClassname = *(char **)((intptr_t)pDef + 4);
+	const char *szClassname = *(char **)((intptr_t)pDef + weaponNameOffset);
 
 	char weaponName[128];
 
