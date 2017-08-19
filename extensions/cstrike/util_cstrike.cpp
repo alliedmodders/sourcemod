@@ -143,14 +143,13 @@ CEconItemView *GetEconItemView(void *pEntity, int iSlot)
 	return ret;
 }
 
-//Is this an itemdef for sure?
-void *GetItemDef(CEconItemView *view)
+void *GetCCSWeaponData(CEconItemView *view)
 {
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
 	{
-		REGISTER_ADDR("GetItemDefintionFromView", NULL,
+		REGISTER_ADDR("GetCCSWeaponData", NULL,
 			PassInfo pass[1]; \
 			PassInfo retpass; \
 			pass[0].flags = PASSFLAG_BYVAL; \

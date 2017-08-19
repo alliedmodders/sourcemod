@@ -36,7 +36,7 @@
 class CEconItemView;
 
 CEconItemView *GetEconItemView(void *pEntity, int iSlot);
-void *GetItemDef(CEconItemView *view);
+void *GetCCSWeaponData(CEconItemView *view);
 
 static const char *szWeaponInfo[] =
 {

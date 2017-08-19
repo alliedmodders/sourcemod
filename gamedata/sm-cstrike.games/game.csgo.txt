@@ -15,7 +15,7 @@
 	{
 		"Offsets"
 		{
-			// Offset of szClassName in CEconItemDefinition(?) 
+			// Offset of szClassName in CCSWeaponData, szDefaultName is @ 140 which returns the default weapon class for the loadoutslot ignoring the users inventory.
 			"WeaponName"
 			{
 				"windows"		"4"
@@ -121,8 +121,8 @@
 				"windows"	"\x53\x56\x57\x8B\xF9\x8B\x87\x00\x03\x00\x00"
 				"linux"		"\x55\x89\xE5\x83\xEC\x28\x89\x5D\xF4\x8B\x5D\x08\x89\x75\xF8\x89\x7D\xFC\x89\x1C\x24\xE8\x2A\x2A\x2A\x2A\x83\xF8\x02"
 			}
-			//GetItemDefintionFromView (maybe?) Found in HandleCommand_Buy_Internal
-			"GetItemDefintionFromView"
+			//GetCCSWeaponData Found in HandleCommand_Buy_Internal
+			"GetCCSWeaponData"
 			{
 				"library"	"server"
 				"windows"	"\x85\xC9\x75\x2A\x33\xC0\xC3\xE8\x2A\x2A\x2A\x2A\x8B"

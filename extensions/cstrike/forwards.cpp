@@ -39,14 +39,14 @@ DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pItemDefRet
 		return DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pItemDefRet, bRebuy);
 	}
 
-	void *pDef = GetItemDef(pView);
+	void *pWpnData = GetCCSWeaponData(pView);
 
-	if (!pDef)
+	if (!pWpnData)
 	{
 		return DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pItemDefRet, bRebuy);
 	}
 
-	const char *szClassname = *(char **)((intptr_t)pDef + weaponNameOffset);
+	const char *szClassname = *(char **)((intptr_t)pWpnData + weaponNameOffset);
 
 	char weaponName[128];
 
@@ -82,18 +82,18 @@ DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pItemDefRet
 
 	if (weaponPriceOffset != -1)
 	{
-		originalPrice = *(int *)((intptr_t)pDef + weaponPriceOffset);
+		originalPrice = *(int *)((intptr_t)pWpnData + weaponPriceOffset);
 
 		int changedPrice = CallPriceForward(client, weaponName, originalPrice);
 
 		if (originalPrice != changedPrice)
-			*(int *)((intptr_t)pDef + weaponPriceOffset) = changedPrice;
+			*(int *)((intptr_t)pWpnData + weaponPriceOffset) = changedPrice;
 	}
 
 	int ret = DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pItemDefRet, bRebuy);
 
 	if (weaponPriceOffset != -1)
-		*(int *)((intptr_t)pDef + weaponPriceOffset) = originalPrice;
+		*(int *)((intptr_t)pWpnData + weaponPriceOffset) = originalPrice;
 
 	return ret;
 }
