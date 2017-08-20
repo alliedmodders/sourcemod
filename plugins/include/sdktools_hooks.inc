@@ -57,7 +57,7 @@
  * @note			To see if all 12 params are available, use FeatureType_Capability and
  *					FEATURECAP_PLAYERRUNCMD_11PARAMS.
  */
-forward Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2]);
+forward Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2], bool repeating);
 
 /**
  * @brief Called after a clients movement buttons were processed.
@@ -75,7 +75,7 @@ forward Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[
  * @param mouse		Mouse direction (x, y).
  * @param repeating	Whether the UserCmd is being repeated by server or not (true/false).
  */
-forward void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, const int mouse[2]);
+forward void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, const int mouse[2], bool repeating);
 
 /**
  * @brief Called when a client requests a file from the server.

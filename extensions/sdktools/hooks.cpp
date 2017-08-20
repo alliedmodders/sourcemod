@@ -103,7 +103,7 @@ void CHookManager::Initialize()
 		Param_Array,		// mouse[2]
 		Param_Cell);		// repeating
 
-	m_usercmdsPostFwd = forwards->CreateForward("OnPlayerRunCmdPost", ET_Ignore, 11, NULL,
+	m_usercmdsPostFwd = forwards->CreateForward("OnPlayerRunCmdPost", ET_Ignore, 12, NULL,
 		Param_Cell,			// client
 		Param_Cell,			// buttons
 		Param_Cell,			// impulse
