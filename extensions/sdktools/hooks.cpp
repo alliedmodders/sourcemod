@@ -217,16 +217,16 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	
 	cell_t result = 0;
 	
-	static cell_t buttons[MAXPLAYERS + 1];
+	static cell_t buttons[SM_MAXPLAYERS + 1];
 	/* Impulse is a byte so we copy it back manually */
-	static cell_t impulse[MAXPLAYERS + 1];
-	static cell_t vel[MAXPLAYERS + 1][3];
-	static cell_t angles[MAXPLAYERS + 1][3];
-	static cell_t weaponselect[MAXPLAYERS + 1];
-	static cell_t weaponsubtype[MAXPLAYERS + 1];
-	static cell_t command_number[MAXPLAYERS + 1];
-	static cell_t random_seed[MAXPLAYERS + 1];
-	static cell_t mouse[MAXPLAYERS + 1][2];
+	static cell_t impulse[SM_MAXPLAYERS + 1];
+	static cell_t vel[SM_MAXPLAYERS + 1][3];
+	static cell_t angles[SM_MAXPLAYERS + 1][3];
+	static cell_t weaponselect[SM_MAXPLAYERS + 1];
+	static cell_t weaponsubtype[SM_MAXPLAYERS + 1];
+	static cell_t command_number[SM_MAXPLAYERS + 1];
+	static cell_t random_seed[SM_MAXPLAYERS + 1];
+	static cell_t mouse[SM_MAXPLAYERS + 1][2];
 	
 	// Check if the UserCmd is repeating, we won't check the tickcount as that always increments regardless.
 	repeating = buttons[client] == ucmd->buttons && impulse[client] == ucmd->impulse && vel[client][0] == ucmd->forwardmove && vel[client][1] == ucmd->sidemove && vel[client][2] == ucmd->upmove \
@@ -301,15 +301,15 @@ void CHookManager::PlayerRunCmdPost(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	int client = IndexOfEdict(pEdict);
 	bool repeating = false;
 	
-	static cell_t buttons[MAXPLAYERS + 1];
-	static cell_t impulse[MAXPLAYERS + 1];
-	static cell_t vel[MAXPLAYERS + 1][3];
-	static cell_t angles[MAXPLAYERS + 1][3];
-	static cell_t weaponselect[MAXPLAYERS + 1];
-	static cell_t weaponsubtype[MAXPLAYERS + 1];
-	static cell_t command_number[MAXPLAYERS + 1];
-	static cell_t random_seed[MAXPLAYERS + 1];
-	static cell_t mouse[MAXPLAYERS + 1][2];
+	static cell_t buttons[SM_MAXPLAYERS + 1];
+	static cell_t impulse[SM_MAXPLAYERS + 1];
+	static cell_t vel[SM_MAXPLAYERS + 1][3];
+	static cell_t angles[SM_MAXPLAYERS + 1][3];
+	static cell_t weaponselect[SM_MAXPLAYERS + 1];
+	static cell_t weaponsubtype[SM_MAXPLAYERS + 1];
+	static cell_t command_number[SM_MAXPLAYERS + 1];
+	static cell_t random_seed[SM_MAXPLAYERS + 1];
+	static cell_t mouse[SM_MAXPLAYERS + 1][2];
 	
 	// Check if the UserCmd is repeating, we won't check the tickcount as that always increments regardless.
 	repeating = buttons[client] == ucmd->buttons && impulse[client] == ucmd->impulse && vel[client][0] == ucmd->forwardmove && vel[client][1] == ucmd->sidemove && vel[client][2] == ucmd->upmove \
