@@ -231,7 +231,7 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	// Check if the UserCmd is repeating, we won't check the tickcount as that always increments regardless.
 	repeating = buttons[client] == ucmd->buttons && impulse[client] == ucmd->impulse && vel[client][0] == ucmd->forwardmove && vel[client][1] == ucmd->sidemove && vel[client][2] == ucmd->upmove \
 	&& angles[client][0] == ucmd->viewangles.x && angles[client][1] == ucmd->viewangles.y && angles[client][2] == ucmd->viewangles.y && weaponselect[client] == ucmd->weaponselect \
-	&& weaponsubtype[client] == ucmd->weaponselect && command_number[client] == ucmd->command_number && random_seed[client] == ucmd->random_seed && mouse[client][0] == ucmd->ucmd->mousedx \
+	&& weaponsubtype[client] == ucmd->weaponsubtype && command_number[client] == ucmd->command_number && random_seed[client] == ucmd->random_seed && mouse[client][0] == ucmd->ucmd->mousedx \
 	&& mouse[client][1] == ucmd->mousedy;
 	
 	buttons[client] = ucmd->buttons;
@@ -258,7 +258,6 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	m_usercmdsFwd->PushCell(repeating);
 	m_usercmdsFwd->Execute(&result);
 
-	ucmd->buttons = buttons[client];
 	ucmd->impulse = impulse[client];
 	ucmd->forwardmove = sp_ctof(vel[client][0]);
 	ucmd->sidemove = sp_ctof(vel[client][1]);
@@ -314,7 +313,7 @@ void CHookManager::PlayerRunCmdPost(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	// Check if the UserCmd is repeating, we won't check the tickcount as that always increments regardless.
 	repeating = buttons[client] == ucmd->buttons && impulse[client] == ucmd->impulse && vel[client][0] == ucmd->forwardmove && vel[client][1] == ucmd->sidemove && vel[client][2] == ucmd->upmove \
 	&& angles[client][0] == ucmd->viewangles.x && angles[client][1] == ucmd->viewangles.y && angles[client][2] == ucmd->viewangles.y && weaponselect[client] == ucmd->weaponselect \
-	&& weaponsubtype[client] == ucmd->weaponselect && command_number[client] == ucmd->command_number && random_seed[client] == ucmd->random_seed && mouse[client][0] == ucmd->ucmd->mousedx \
+	&& weaponsubtype[client] == ucmd->weaponsubtype && command_number[client] == ucmd->command_number && random_seed[client] == ucmd->random_seed && mouse[client][0] == ucmd->ucmd->mousedx \
 	&& mouse[client][1] == ucmd->mousedy;
 	
 	buttons[client] = ucmd->buttons;
