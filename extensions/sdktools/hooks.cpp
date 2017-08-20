@@ -231,8 +231,8 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	// Check if the UserCmd is repeating, we won't check the tickcount as that always increments regardless.
 	repeating = buttons[client] == ucmd->buttons && impulse[client] == ucmd->impulse && vel[client][0] == ucmd->forwardmove && vel[client][1] == ucmd->sidemove && vel[client][2] == ucmd->upmove \
 	&& angles[client][0] == ucmd->viewangles.x && angles[client][1] == ucmd->viewangles.y && angles[client][2] == ucmd->viewangles.y && weaponselect[client] == ucmd->weaponselect \
-	&& weaponsubtype[client] == ucmd->weaponselect && command_number[client] == ucmd->command_number && random_seed[client] == ucmd->random_seed && mouse[0] == ucmd->ucmd->mousedx \
-	&& mouse[1] == ucmd->mousedy;
+	&& weaponsubtype[client] == ucmd->weaponselect && command_number[client] == ucmd->command_number && random_seed[client] == ucmd->random_seed && mouse[client][0] == ucmd->ucmd->mousedx \
+	&& mouse[client][1] == ucmd->mousedy;
 	
 	buttons[client] = ucmd->buttons;
 	impulse[client] = ucmd->impulse;
@@ -249,11 +249,11 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	m_usercmdsFwd->PushCellByRef(&impulse[client]);
 	m_usercmdsFwd->PushArray(vel[client], 3, SM_PARAM_COPYBACK);
 	m_usercmdsFwd->PushArray(angles[client], 3, SM_PARAM_COPYBACK);
-	m_usercmdsFwd->PushCellByRef(weaponselect[client]);
-	m_usercmdsFwd->PushCellByRef(weaponsubtype[client]);
-	m_usercmdsFwd->PushCellByRef(command_number[client]);
+	m_usercmdsFwd->PushCellByRef(&weaponselect[client]);
+	m_usercmdsFwd->PushCellByRef(&weaponsubtype[client]);
+	m_usercmdsFwd->PushCellByRef(&command_number[client]);
 	m_usercmdsFwd->PushCellByRef(&ucmd->tick_count);
-	m_usercmdsFwd->PushCellByRef(random_seed[client]);
+	m_usercmdsFwd->PushCellByRef(&random_seed[client]);
 	m_usercmdsFwd->PushArray(mouse[client], 2, SM_PARAM_COPYBACK);
 	m_usercmdsFwd->PushCell(repeating);
 	m_usercmdsFwd->Execute(&result);
@@ -314,8 +314,8 @@ void CHookManager::PlayerRunCmdPost(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	// Check if the UserCmd is repeating, we won't check the tickcount as that always increments regardless.
 	repeating = buttons[client] == ucmd->buttons && impulse[client] == ucmd->impulse && vel[client][0] == ucmd->forwardmove && vel[client][1] == ucmd->sidemove && vel[client][2] == ucmd->upmove \
 	&& angles[client][0] == ucmd->viewangles.x && angles[client][1] == ucmd->viewangles.y && angles[client][2] == ucmd->viewangles.y && weaponselect[client] == ucmd->weaponselect \
-	&& weaponsubtype[client] == ucmd->weaponselect && command_number[client] == ucmd->command_number && random_seed[client] == ucmd->random_seed && mouse[0] == ucmd->ucmd->mousedx \
-	&& mouse[1] == ucmd->mousedy;
+	&& weaponsubtype[client] == ucmd->weaponselect && command_number[client] == ucmd->command_number && random_seed[client] == ucmd->random_seed && mouse[client][0] == ucmd->ucmd->mousedx \
+	&& mouse[client][1] == ucmd->mousedy;
 	
 	buttons[client] = ucmd->buttons;
 	impulse[client] = ucmd->impulse;
