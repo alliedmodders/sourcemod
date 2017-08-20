@@ -63,9 +63,30 @@
 				"linux"		"9"
 				"mac"		"9"
 			}
+			"GetItemDefintionByName" //_ZN15CEconItemSchema23GetItemDefinitionByNameEPKc
+			{
+				"windows"		"42"
+				"linux"			"41"
+				"mac"			"41"
+			}
+			// Search for "%s (ID %llu) at backpack slot %d" (CCSPlayerInventory::DumpInventoryToConsole(bool))
+			// Jump to the vtable 2 functions above calls CCStrike15ItemDefinition::GetLoadoutSlot(CCStrike15ItemDefinition *this, int)
+			// This is an offset into CCStrike15ItemDefinition that contains the loadoutslot IGNORING the team param (the second param in the function)
+			"LoadoutSlotOffset"
+			{
+				"library"	"server"
+				"windows"	"588"
+				"linux"		"588"
+			}
 		}
 		"Signatures"
 		{
+			"GetItemSchema"
+			{
+				"library"	"server"
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\x85\xC0\x75\x2A\xA1\x2A\x2A\x2A\x2A\x56\x68\x2A\x2A\x00\x00\x8B"
+				"linux"		"\x55\x89\xE5\x83\xEC\x08\xE8\x2A\x2A\x2A\x2A\xC9\x83\xC0\x04\xC3"
+			}
 			"RoundRespawn"
 			{
 				"library"	"server"
@@ -128,7 +149,6 @@
 				"windows"	"\x85\xC9\x75\x2A\x33\xC0\xC3\xE8\x2A\x2A\x2A\x2A\x8B"
 				"linux"		"\x55\x89\xE5\x83\xEC\x18\x8B\x45\x08\x85\xC0\x74\x2A\x89\x04\x24"
 			}
-			
 		}
 	}
 	

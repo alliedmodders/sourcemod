@@ -172,12 +172,85 @@ void *GetCCSWeaponData(CEconItemView *view)
 
 	return pDef;
 }
+
+void *GetItemSchema()
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		REGISTER_ADDR("GetItemSchema", NULL,
+			PassInfo retpass; \
+			retpass.flags = PASSFLAG_BYVAL; \
+			retpass.type = PassType_Basic; \
+			retpass.size = sizeof(void *); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, NULL, 0))
+	}
+
+	void *pSchema = NULL;
+	pWrapper->Execute(NULL, &pSchema);
+
+	//In windows this is actually ItemSystem() + 4 is ItemSchema
+#ifdef WIN32
+	return (void *)((intptr_t)pSchema + 4);
+#else
+	return pSchema;
+#endif
+}
+
+void *GetItemDefintionByName(const char *classname)
+{
+	void *pSchema = GetItemSchema();
+
+	if (!pSchema)
+		return NULL;
+
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		int offset = -1;
+
+		if (!g_pGameConf->GetOffset("GetItemDefintionByName", &offset) || offset == -1)
+		{
+			smutils->LogError(myself, "Failed to get GetItemDefintionByName offset.");
+			return NULL;
+		}
+
+		PassInfo pass[1];
+		PassInfo ret;
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].type = PassType_Basic;
+		pass[0].size = sizeof(const char *);
+
+		ret.flags = PASSFLAG_BYVAL;
+		ret.type = PassType_Basic;
+		ret.size = sizeof(void *);
+
+		pWrapper = g_pBinTools->CreateVCall(offset, 0, 0, &ret, pass, 1);
+
+		g_RegNatives.Register(pWrapper);
+	}
+
+	unsigned char vstk[sizeof(void *) + sizeof(const char *)];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = pSchema;
+	vptr += sizeof(void *);
+	*(const char **)vptr = classname;
+
+	void *pItemDef = NULL;
+	pWrapper->Execute(vstk, &pItemDef);
+
+	return pItemDef;
+}
 #endif
 
+#if SOURCE_ENGINE != SE_CSGO
 void *GetWeaponInfo(int weaponID)
 {
 	void *info;
-#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
+
 	static ICallWrapper *pWrapper = NULL;
 	if (!pWrapper)
 	{
@@ -200,24 +273,9 @@ void *GetWeaponInfo(int weaponID)
 
 	pWrapper->Execute(vstk, &info);
 
-	
-#else
-	static void *addr = NULL;
-
-	if(!addr)
-	{
-		GET_MEMSIG("GetWeaponInfo", 0);
-	}
-
-	__asm
-	{
-		mov ecx, weaponID
-		call addr
-		mov info, eax
-	}
-#endif
 	return info;
 }
+#endif
 
 const char *GetTranslatedWeaponAlias(const char *weapon)
 {
@@ -356,63 +414,6 @@ const char *WeaponIDToAlias(int weaponID)
 #endif
 	
 }
-
-#if SOURCE_ENGINE == SE_CSGO
-void *GetWeaponPriceFunction()
-{
-	static void *pGetWeaponPriceAddress = nullptr;
-	if (pGetWeaponPriceAddress)
-	{
-		return pGetWeaponPriceAddress;
-	}
-
-	void *pAddress = nullptr;
-	int offset = 0;
-	int callOffset = 0;
-	const char* byteCheck = nullptr;
-
-	if (!g_pGameConf->GetMemSig("GetWeaponPrice", &pAddress) || !pAddress)
-	{
-		g_pSM->LogError(myself, "Failed to get GetWeaponPrice address.");
-		return nullptr;
-	}
-
-	if (!g_pGameConf->GetOffset("GetWeaponPriceFunc", &offset))
-	{
-		// If no offset specified, assume that GetWeaponPrice is the func we want, and not just our
-		// helper to find the real one.
-		pGetWeaponPriceAddress = pAddress;
-		return pGetWeaponPriceAddress;
-	}
-
-#if defined( _WIN32 )
-	byteCheck = g_pGameConf->GetKeyValue("GetWeaponPriceByteCheck");
-#elif defined( _LINUX )
-	byteCheck = g_pGameConf->GetKeyValue("GetWeaponPriceByteCheck_Linux");
-#else
-	// We don't compile for csgo on mac anymore
-	#error Unsupported platform
-#endif
-	if (byteCheck == nullptr)
-	{
-		g_pSM->LogError(myself, "Failed to get GetWeaponPriceByteCheck keyvalue.");
-		return nullptr;
-	}
-
-	uint8_t iByte = strtoul(byteCheck, nullptr, 16);
-	if (iByte != *(uint8_t *)((intptr_t)pAddress + (offset-1)))
-	{
-		g_pSM->LogError(myself, "GetWeaponPrice Byte check failed.");
-		return nullptr;
-	}
-
-	callOffset = *(uint32_t *)((intptr_t)pAddress + offset);
-
-	pGetWeaponPriceAddress = (void *)((intptr_t)pAddress + offset + callOffset + sizeof(int));
-
-	return pGetWeaponPriceAddress;
-}
-#endif
 
 int GetRealWeaponID(int weaponId)
 {

@@ -37,6 +37,8 @@ class CEconItemView;
 
 CEconItemView *GetEconItemView(void *pEntity, int iSlot);
 void *GetCCSWeaponData(CEconItemView *view);
+void *GetItemSchema();
+void *GetItemDefintionByName(const char *classname);
 
 static const char *szWeaponInfo[] =
 {
@@ -212,7 +214,10 @@ enum SMCSWeapon
 	SMCSWeapon_INCGRENADE,
 	SMCSWeapon_DEFUSER
 };
+
+#if SOURCE_ENGINE != SE_CSGO
 void *GetWeaponInfo(int weaponID);
+#endif
 
 const char *GetTranslatedWeaponAlias(const char *weapon);
 
@@ -225,7 +230,4 @@ int GetRealWeaponID(int weaponId);
 int GetFakeWeaponID(int weaponId);
 
 bool IsValidWeaponID(int weaponId);
-
-void *GetWeaponPriceFunction();
-
 #endif

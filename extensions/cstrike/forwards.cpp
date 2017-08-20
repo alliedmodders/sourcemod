@@ -24,10 +24,6 @@ CDetour *DCSWeaponDrop = NULL;
 int weaponNameOffset = -1;
 
 #if SOURCE_ENGINE == SE_CSGO
-int weaponPriceOffset = -1;
-#endif
-
-#if SOURCE_ENGINE == SE_CSGO
 DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pItemDefRet, bool, bRebuy)
 {
 	int client = gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(this));
@@ -46,7 +42,7 @@ DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pItemDefRet
 		return DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pItemDefRet, bRebuy);
 	}
 
-	const char *szClassname = *(char **)((intptr_t)pWpnData + weaponNameOffset);
+	const char *szClassname = *(const char **)((intptr_t)pWpnData + weaponNameOffset);
 
 	char weaponName[128];
 
@@ -80,20 +76,20 @@ DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pItemDefRet
 	
 	int originalPrice = 0;
 
-	if (weaponPriceOffset != -1)
+	if (g_iPriceOffset != -1)
 	{
-		originalPrice = *(int *)((intptr_t)pWpnData + weaponPriceOffset);
+		originalPrice = *(int *)((intptr_t)pWpnData + g_iPriceOffset);
 
 		int changedPrice = CallPriceForward(client, weaponName, originalPrice);
 
 		if (originalPrice != changedPrice)
-			*(int *)((intptr_t)pWpnData + weaponPriceOffset) = changedPrice;
+			*(int *)((intptr_t)pWpnData + g_iPriceOffset) = changedPrice;
 	}
 
 	int ret = DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pItemDefRet, bRebuy);
 
-	if (weaponPriceOffset != -1)
-		*(int *)((intptr_t)pWpnData + weaponPriceOffset) = originalPrice;
+	if (g_iPriceOffset != -1)
+		*(int *)((intptr_t)pWpnData + g_iPriceOffset) = originalPrice;
 
 	return ret;
 }
@@ -262,9 +258,9 @@ bool CreateWeaponPriceDetour()
 		return true;
 	}
 #else
-	if (weaponPriceOffset == -1)
+	if (g_iPriceOffset == -1)
 	{
-		if (!g_pGameConf->GetOffset("WeaponPrice", &weaponPriceOffset))
+		if (!g_pGameConf->GetOffset("WeaponPrice", &g_iPriceOffset))
 		{
 			smutils->LogError(myself, "Could not find WeaponPrice offset - Disabled OnGetWeaponPrice forward");
 			return false;
