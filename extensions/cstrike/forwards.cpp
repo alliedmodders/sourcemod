@@ -48,7 +48,7 @@ DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pWpnDataRef
 
 	if (strstr(szClassname, "knife"))
 	{
-		Q_strcpy(weaponName, "knife");
+		Q_strncpy(weaponName, "knife", sizeof(weaponName));
 	}
 	else
 	{
@@ -59,7 +59,7 @@ DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pWpnDataRef
 		}
 		else
 		{
-			Q_strcpy(weaponName, szClassname);
+			Q_strncpy(weaponName, szClassname, sizeof(weaponName));
 		}
 	}
 
