@@ -429,12 +429,6 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Failed to get weaponinfo");
 	}
 
-	CBaseEntity *pEntity;
-	if (!(pEntity = GetCBaseEntity(params[1], true)))
-	{
-		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
-	}
-
 	if (g_iPriceOffset == -1)
 	{
 		if (!g_pGameConf->GetOffset("WeaponPrice", &g_iPriceOffset))
