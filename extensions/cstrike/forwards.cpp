@@ -24,7 +24,7 @@ CDetour *DCSWeaponDrop = NULL;
 int weaponNameOffset = -1;
 
 #if SOURCE_ENGINE == SE_CSGO
-DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pItemDefRet, bool, bRebuy)
+DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pWpnDataRef, bool, bRebuy)
 {
 	int client = gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(this));
 
@@ -32,14 +32,14 @@ DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pItemDefRet
 
 	if (!pView)
 	{
-		return DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pItemDefRet, bRebuy);
+		return DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pWpnDataRef, bRebuy);
 	}
 
 	void *pWpnData = GetCCSWeaponData(pView);
 
 	if (!pWpnData)
 	{
-		return DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pItemDefRet, bRebuy);
+		return DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pWpnDataRef, bRebuy);
 	}
 
 	const char *szClassname = *(const char **)((intptr_t)pWpnData + weaponNameOffset);
@@ -86,7 +86,7 @@ DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pItemDefRet
 			*(int *)((intptr_t)pWpnData + g_iPriceOffset) = changedPrice;
 	}
 
-	int ret = DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pItemDefRet, bRebuy);
+	int ret = DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pWpnDataRef, bRebuy);
 
 	if (g_iPriceOffset != -1)
 		*(int *)((intptr_t)pWpnData + g_iPriceOffset) = originalPrice;

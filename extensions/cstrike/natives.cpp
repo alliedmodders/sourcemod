@@ -506,7 +506,18 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 	int iLoadoutSlot = *(int *)((intptr_t)pDef + iLoadoutSlotOffset);
 
 	CEconItemView *pView = GetEconItemView(pEntity, iLoadoutSlot);
+
+	if (!pView)
+	{
+		return pContext->ThrowNativeError("Failed to get CEconItemVIiew for %s", classname);
+	}
+
 	void *pWpnData = GetCCSWeaponData(pView);
+
+	if (!pWpnData)
+	{
+		return pContext->ThrowNativeError("Failed to get CCSWeaponData for %s", classname);
+	}
 
 	int price = *(int *)((intptr_t)pWpnData + g_iPriceOffset);
 

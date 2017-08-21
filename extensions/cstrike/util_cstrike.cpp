@@ -406,7 +406,7 @@ const char *WeaponIDToAlias(int weaponID)
 #else
 	int realID = GetRealWeaponID(weaponID);
 
-	if (realID < (sizeof(szWeaponInfo) / sizeof(szWeaponInfo[0])) && realID > 0)
+	if (realID < SM_ARRAYSIZE(szWeaponInfo) && realID > 0)
 		return szWeaponInfo[realID];
 
 	return NULL;
