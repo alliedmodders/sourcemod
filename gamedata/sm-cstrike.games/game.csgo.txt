@@ -74,9 +74,9 @@
 			// This is an offset into CCStrike15ItemDefinition that contains the loadoutslot IGNORING the team param (the second param in the function)
 			"LoadoutSlotOffset"
 			{
-				"library"	"server"
 				"windows"	"588"
 				"linux"		"588"
+				"mac"		"588"
 			}
 		}
 		"Signatures"
