@@ -376,7 +376,7 @@ int AliasToWeaponID(const char *weapon)
 
 const char *WeaponIDToAlias(int weaponID)
 {
-#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
+#if SOURCE_ENGINE != SE_CSGO
 	const char *alias = NULL;
 
 	static ICallWrapper *pWrapper = NULL;
