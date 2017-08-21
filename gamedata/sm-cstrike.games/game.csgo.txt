@@ -13,26 +13,22 @@
 {
 	"#default"
 	{
-		"Keys"
-		{
-			"GetWeaponPriceByteCheck"	"E9"
-			"GetWeaponPriceByteCheck_Linux"	"E8"
-		}
 		"Offsets"
 		{
-			//Offset of szClassName in CCSWeaponInfo 
+			// Offset of szClassName in CCSWeaponData, szDefaultName is @ 140 which returns the default weapon class for the loadoutslot ignoring the users inventory.
 			"WeaponName"
 			{
-				"windows"		"6"
-				"linux"			"6"
-				"mac"			"6"
+				"windows"		"4"
+				"linux"			"4"
+				"mac"			"4"
 			}
-			//Econ update doesnt check this now but for what we use it hopefully its fine.
+			// In HandleCommand_Buy_Internal
+			// -*(_DWORD *)(v34 + 204)
 			"WeaponPrice"
 			{
-				"windows"		"2528"
-				"linux"			"2528"
-				"mac"			"2528"
+				"windows"		"204"
+				"linux"			"204"
+				"mac"			"204"
 			}
 			//Offset into CheckRestartRound
 			"CTTeamScoreOffset"
@@ -67,20 +63,30 @@
 				"linux"		"9"
 				"mac"		"9"
 			}
-			"GetWeaponPriceFunc"
+			"GetItemDefintionByName" //_ZN15CEconItemSchema23GetItemDefinitionByNameEPKc
 			{
-				"windows"	"105"
-				"linux"		"152"
+				"windows"		"42"
+				"linux"			"41"
+				"mac"			"41"
 			}
-			//This is GetWeaponPriceFunc offset -1 (only used by GDC)
-			"GetWeaponPriceFuncGDC"
+			// Search for "%s (ID %llu) at backpack slot %d" (CCSPlayerInventory::DumpInventoryToConsole(bool))
+			// Jump to the vtable 2 functions above calls CCStrike15ItemDefinition::GetLoadoutSlot(CCStrike15ItemDefinition *this, int)
+			// This is an offset into CCStrike15ItemDefinition that contains the loadoutslot IGNORING the team param (the second param in the function)
+			"LoadoutSlotOffset"
 			{
-				"windows"	"104"
-				"linux"		"151"
+				"windows"	"588"
+				"linux"		"588"
+				"mac"		"588"
 			}
 		}
 		"Signatures"
 		{
+			"GetItemSchema"
+			{
+				"library"	"server"
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\x85\xC0\x75\x2A\xA1\x2A\x2A\x2A\x2A\x56\x68\x2A\x2A\x00\x00\x8B"
+				"linux"		"\x55\x89\xE5\x83\xEC\x08\xE8\x2A\x2A\x2A\x2A\xC9\x83\xC0\x04\xC3"
+			}
 			"RoundRespawn"
 			{
 				"library"	"server"
@@ -117,18 +123,6 @@
 				"windows"		"\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x2A\x53\x8B\xD9\xF3\x0F\x2A\x2A\x2A\x2A\x56\x57\x89\x2A\x2A\x2A\x83\xBB"
 				"linux"			"\x55\x89\xE5\x57\x56\x53\x81\xEC\xDC\x00\x00\x00\x8B\x75\x08\x8B\x86"
 			}
-			"GetTranslatedWeaponAlias"
-			{
-				"library"		"server"
-				"windows"		"\x56\x57\x8B\xF9\x33\xF6\x66\x66\x0F\x1F\x84\x00\x00\x00\x00\x00\x8B\x0C\xF5\x2A\x2A\x2A\x2A\x8B\xD7\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x46\x83\xFE\x19"
-				"linux"			"\x55\x89\xE5\x56\x53\x31\xDB\x83\xEC\x10\x8B\x75\x08\xEB\x2A\x90\x83\xC3\x01\x83\xFB\x19"
-			}
-			"GetWeaponInfo"
-			{
-				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xEC\x08\x33\xC0\x85\xC9"
-				"linux"			"\x55\x89\xE5\x56\x53\x31\xDB\x83\xEC\x10\x8B\x55\x08\x85\xD2"
-			}
 			//In CS:GO this is actually CCSGameRules::CheckRestartRound(void) but to keep same gamedata as cs:s.
 			"CheckWinLimit"
 			{
@@ -136,37 +130,24 @@
 				"windows"	"\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x2A\x53\x56\x57\x8B\xF9\x8B\x0D\x2A\x2A\x2A\x2A\x81\xF9"
 				"linux"		"\x55\x89\xE5\x56\x53\x83\xEC\x70\xA1\x2A\x2A\x2A\x2A\x8B\x35\x2A\x2A\x2A\x2A\x8B"
 			}
-			"AliasToWeaponID"
-			{
-				"library"	"server"
-				"windows"	"\x57\x8B\xF9\x85\xFF\x75\x2A\x33\xC0\x5F\xC3\x56\x33\xF6\x66\x90\x6A\x5F"
-				"linux"		"\x55\x31\xC0\x89\xE5\x56\x53\x83\xEC\x10\x8B\x75\x08\x85\xF6\x74\x2A\x31\xDB\xEB\x2A\x8D"
-			}
-			"WeaponIDToAlias"
-			{
-				"library"	"server"
-				"windows"	"\x33\xC0\x39\x0C\xC5\x2A\x2A\x2A\x2A\x74\x2A\x40\x83\xF8\x3E\x72\x2A\x33\xC0\xC3\x6A\x5F"
-				"linux"		"\x55\x89\xE5\x83\xEC\x18\x8B\x55\x08\x39\x15\x2A\x2A\x2A\x2A\x74"
-			}
 			"SetClanTag"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x8B\x55\x08\x85\xD2\x74\x2A\x8D\x81\x34\x25\x00\x00"
 				"linux"		"\x55\x89\xE5\x83\xEC\x18\x8B\x45\x0C\x85\xC0\x74\x2A\x89\x44\x24\x04\x8B\x45\x08\xC7\x44\x24\x08\x10\x00\x00\x00"
 			}
-			// Since it's not possible to make a unique signature for CCSWeaponInfo::GetWeaponInfo, this is instead a signature to a
-			// function that calls it. The offset from the signature to the CCSWeaponInfo func offset is the GetWeaponPriceFunc offset.
-			"GetWeaponPrice"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\xD1\x8B\x4D\x08\x85\xC9\x75\x2A\x83\xC8\xFF"
-				"linux"		"\x55\x89\xE5\x83\xEC\x18\x89\x5D\xF8\x8B\x5D\x10\x89\x75\xFC\x8B\x4D\x08"
-			}
 			"SetModelFromClass"
 			{
 				"library"	"server"
 				"windows"	"\x53\x56\x57\x8B\xF9\x8B\x87\x00\x03\x00\x00"
 				"linux"		"\x55\x89\xE5\x83\xEC\x28\x89\x5D\xF4\x8B\x5D\x08\x89\x75\xF8\x89\x7D\xFC\x89\x1C\x24\xE8\x2A\x2A\x2A\x2A\x83\xF8\x02"
+			}
+			//GetCCSWeaponData Found in HandleCommand_Buy_Internal
+			"GetCCSWeaponData"
+			{
+				"library"	"server"
+				"windows"	"\x85\xC9\x75\x2A\x33\xC0\xC3\xE8\x2A\x2A\x2A\x2A\x8B"
+				"linux"		"\x55\x89\xE5\x83\xEC\x18\x8B\x45\x08\x85\xC0\x74\x2A\x89\x04\x24"
 			}
 		}
 	}
