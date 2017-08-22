@@ -298,7 +298,6 @@ void VoteSelect(Menu menu, int param1, int param2 = 0)
 void VoteMenuClose()
 {
 	delete g_hVoteMenu;
-	g_hVoteMenu = null;
 }
 
 float GetVotePercent(int votes, int totalVotes)
