@@ -89,7 +89,7 @@ void CHookManager::Initialize()
 	plsys->AddPluginsListener(this);
 	sharesys->AddCapabilityProvider(myself, this, FEATURECAP_PLAYERRUNCMD_11PARAMS);
 
-	m_usercmdsFwd = forwards->CreateForward("OnPlayerRunCmd", ET_Event, 11, NULL,
+	m_usercmdsFwd = forwards->CreateForward("OnPlayerRunCmd", ET_Event, 12, NULL,
 		Param_Cell,			// client
 		Param_CellByRef,	// buttons
 		Param_CellByRef,	// impulse
@@ -100,9 +100,10 @@ void CHookManager::Initialize()
 		Param_CellByRef,	// cmdnum
 		Param_CellByRef,	// tickcount
 		Param_CellByRef,	// seed
-		Param_Array);		// mouse[2]
+		Param_Array,		// mouse[2]
+		Param_Cell);		// repeating
 
-	m_usercmdsPostFwd = forwards->CreateForward("OnPlayerRunCmdPost", ET_Ignore, 11, NULL,
+	m_usercmdsPostFwd = forwards->CreateForward("OnPlayerRunCmdPost", ET_Ignore, 12, NULL,
 		Param_Cell,			// client
 		Param_Cell,			// buttons
 		Param_Cell,			// impulse
@@ -113,7 +114,8 @@ void CHookManager::Initialize()
 		Param_Cell,			// cmdnum
 		Param_Cell,			// tickcount
 		Param_Cell,			// seed
-		Param_Array);		// mouse[2]
+		Param_Array,		// mouse[2]
+		Param_Cell);		// repeating
 }
 
 void CHookManager::Shutdown()
@@ -211,39 +213,66 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	}
 
 	int client = IndexOfEdict(pEdict);
-
-
+	bool repeating = false;
+	
 	cell_t result = 0;
+	
+	static cell_t buttons[SM_MAXPLAYERS + 1];
 	/* Impulse is a byte so we copy it back manually */
-	cell_t impulse = ucmd->impulse;
-	cell_t vel[3] = {sp_ftoc(ucmd->forwardmove), sp_ftoc(ucmd->sidemove), sp_ftoc(ucmd->upmove)};
-	cell_t angles[3] = {sp_ftoc(ucmd->viewangles.x), sp_ftoc(ucmd->viewangles.y), sp_ftoc(ucmd->viewangles.z)};
-	cell_t mouse[2] = {ucmd->mousedx, ucmd->mousedy};
-
+	static cell_t impulse[SM_MAXPLAYERS + 1];
+	static cell_t vel[SM_MAXPLAYERS + 1][3];
+	static cell_t angles[SM_MAXPLAYERS + 1][3];
+	static cell_t weaponselect[SM_MAXPLAYERS + 1];
+	static cell_t weaponsubtype[SM_MAXPLAYERS + 1];
+	static cell_t command_number[SM_MAXPLAYERS + 1];
+	static cell_t random_seed[SM_MAXPLAYERS + 1];
+	static cell_t mouse[SM_MAXPLAYERS + 1][2];
+	
+	// Check if the UserCmd is repeating, we won't check the tickcount as that always increments regardless.
+	repeating = buttons[client] == ucmd->buttons && impulse[client] == ucmd->impulse && vel[client][0] == ucmd->forwardmove && vel[client][1] == ucmd->sidemove && vel[client][2] == ucmd->upmove \
+	&& angles[client][0] == ucmd->viewangles.x && angles[client][1] == ucmd->viewangles.y && angles[client][2] == ucmd->viewangles.z && weaponselect[client] == ucmd->weaponselect \
+	&& weaponsubtype[client] == ucmd->weaponsubtype && command_number[client] == ucmd->command_number && random_seed[client] == ucmd->random_seed && mouse[client][0] == ucmd->mousedx \
+	&& mouse[client][1] == ucmd->mousedy;
+	
+	buttons[client] = ucmd->buttons;
+	impulse[client] = ucmd->impulse;
+	vel[client][0] = ucmd->forwardmove;
+	vel[client][1] = ucmd->sidemove;
+	vel[client][2] = ucmd->upmove;
+	angles[client][0] = ucmd->viewangles.x;
+	angles[client][1] = ucmd->viewangles.y;
+	angles[client][2] = ucmd->viewangles.z;
+	weaponselect[client] = ucmd->weaponselect;
+	weaponsubtype[client] = ucmd->weaponsubtype;
+	command_number[client] = ucmd->command_number;
+	random_seed[client] = ucmd->random_seed;
+	mouse[client][0] = ucmd->mousedx;
+	mouse[client][1] = ucmd->mousedy;
+	
 	m_usercmdsFwd->PushCell(client);
-	m_usercmdsFwd->PushCellByRef(&ucmd->buttons);
-	m_usercmdsFwd->PushCellByRef(&impulse);
-	m_usercmdsFwd->PushArray(vel, 3, SM_PARAM_COPYBACK);
-	m_usercmdsFwd->PushArray(angles, 3, SM_PARAM_COPYBACK);
-	m_usercmdsFwd->PushCellByRef(&ucmd->weaponselect);
-	m_usercmdsFwd->PushCellByRef(&ucmd->weaponsubtype);
-	m_usercmdsFwd->PushCellByRef(&ucmd->command_number);
+	m_usercmdsFwd->PushCellByRef(&buttons[client]);
+	m_usercmdsFwd->PushCellByRef(&impulse[client]);
+	m_usercmdsFwd->PushArray(vel[client], 3, SM_PARAM_COPYBACK);
+	m_usercmdsFwd->PushArray(angles[client], 3, SM_PARAM_COPYBACK);
+	m_usercmdsFwd->PushCellByRef(&weaponselect[client]);
+	m_usercmdsFwd->PushCellByRef(&weaponsubtype[client]);
+	m_usercmdsFwd->PushCellByRef(&command_number[client]);
 	m_usercmdsFwd->PushCellByRef(&ucmd->tick_count);
-	m_usercmdsFwd->PushCellByRef(&ucmd->random_seed);
-	m_usercmdsFwd->PushArray(mouse, 2, SM_PARAM_COPYBACK);
+	m_usercmdsFwd->PushCellByRef(&random_seed[client]);
+	m_usercmdsFwd->PushArray(mouse[client], 2, SM_PARAM_COPYBACK);
+	m_usercmdsFwd->PushCell(repeating);
 	m_usercmdsFwd->Execute(&result);
 
-	ucmd->impulse = impulse;
-	ucmd->forwardmove = sp_ctof(vel[0]);
-	ucmd->sidemove = sp_ctof(vel[1]);
-	ucmd->upmove = sp_ctof(vel[2]);
-	ucmd->viewangles.x = sp_ctof(angles[0]);
-	ucmd->viewangles.y = sp_ctof(angles[1]);
-	ucmd->viewangles.z = sp_ctof(angles[2]);
-	ucmd->mousedx = mouse[0];
-	ucmd->mousedy = mouse[1];
-
-
+	ucmd->impulse = impulse[client];
+	ucmd->forwardmove = sp_ctof(vel[client][0]);
+	ucmd->sidemove = sp_ctof(vel[client][1]);
+	ucmd->upmove = sp_ctof(vel[client][2]);
+	ucmd->viewangles.x = sp_ctof(angles[client][0]);
+	ucmd->viewangles.y = sp_ctof(angles[client][1]);
+	ucmd->viewangles.z = sp_ctof(angles[client][2]);
+	ucmd->mousedx = mouse[client][0];
+	ucmd->mousedy = mouse[client][1];
+	
 	if (result == Pl_Handled)
 	{
 		RETURN_META(MRES_SUPERCEDE);
@@ -274,21 +303,51 @@ void CHookManager::PlayerRunCmdPost(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	}
 
 	int client = IndexOfEdict(pEdict);
-	cell_t vel[3] = { sp_ftoc(ucmd->forwardmove), sp_ftoc(ucmd->sidemove), sp_ftoc(ucmd->upmove) };
-	cell_t angles[3] = { sp_ftoc(ucmd->viewangles.x), sp_ftoc(ucmd->viewangles.y), sp_ftoc(ucmd->viewangles.z) };
-	cell_t mouse[2] = { ucmd->mousedx, ucmd->mousedy };
+	bool repeating = false;
+	
+	static cell_t buttons[SM_MAXPLAYERS + 1];
+	static cell_t impulse[SM_MAXPLAYERS + 1];
+	static cell_t vel[SM_MAXPLAYERS + 1][3];
+	static cell_t angles[SM_MAXPLAYERS + 1][3];
+	static cell_t weaponselect[SM_MAXPLAYERS + 1];
+	static cell_t weaponsubtype[SM_MAXPLAYERS + 1];
+	static cell_t command_number[SM_MAXPLAYERS + 1];
+	static cell_t random_seed[SM_MAXPLAYERS + 1];
+	static cell_t mouse[SM_MAXPLAYERS + 1][2];
+	
+	// Check if the UserCmd is repeating, we won't check the tickcount as that always increments regardless.
+	repeating = buttons[client] == ucmd->buttons && impulse[client] == ucmd->impulse && vel[client][0] == ucmd->forwardmove && vel[client][1] == ucmd->sidemove && vel[client][2] == ucmd->upmove \
+	&& angles[client][0] == ucmd->viewangles.x && angles[client][1] == ucmd->viewangles.y && angles[client][2] == ucmd->viewangles.z && weaponselect[client] == ucmd->weaponselect \
+	&& weaponsubtype[client] == ucmd->weaponsubtype && command_number[client] == ucmd->command_number && random_seed[client] == ucmd->random_seed && mouse[client][0] == ucmd->mousedx \
+	&& mouse[client][1] == ucmd->mousedy;
+	
+	buttons[client] = ucmd->buttons;
+	impulse[client] = ucmd->impulse;
+	vel[client][0] = ucmd->forwardmove;
+	vel[client][1] = ucmd->sidemove;
+	vel[client][2] = ucmd->upmove;
+	angles[client][0] = ucmd->viewangles.x;
+	angles[client][1] = ucmd->viewangles.y;
+	angles[client][2] = ucmd->viewangles.z;
+	weaponselect[client] = ucmd->weaponselect;
+	weaponsubtype[client] = ucmd->weaponsubtype;
+	command_number[client] = ucmd->command_number;
+	random_seed[client] = ucmd->random_seed;
+	mouse[client][0] = ucmd->mousedx;
+	mouse[client][1] = ucmd->mousedy;
 
 	m_usercmdsPostFwd->PushCell(client);
-	m_usercmdsPostFwd->PushCell(ucmd->buttons);
-	m_usercmdsPostFwd->PushCell(ucmd->impulse);
-	m_usercmdsPostFwd->PushArray(vel, 3);
-	m_usercmdsPostFwd->PushArray(angles, 3);
-	m_usercmdsPostFwd->PushCell(ucmd->weaponselect);
-	m_usercmdsPostFwd->PushCell(ucmd->weaponsubtype);
-	m_usercmdsPostFwd->PushCell(ucmd->command_number);
+	m_usercmdsPostFwd->PushCell(buttons[client]);
+	m_usercmdsPostFwd->PushCell(impulse[client]);
+	m_usercmdsPostFwd->PushArray(vel[client], 3);
+	m_usercmdsPostFwd->PushArray(angles[client], 3);
+	m_usercmdsPostFwd->PushCell(weaponselect[client]);
+	m_usercmdsPostFwd->PushCell(weaponsubtype[client]);
+	m_usercmdsPostFwd->PushCell(command_number[client]);
 	m_usercmdsPostFwd->PushCell(ucmd->tick_count);
-	m_usercmdsPostFwd->PushCell(ucmd->random_seed);
-	m_usercmdsPostFwd->PushArray(mouse, 2);
+	m_usercmdsPostFwd->PushCell(random_seed[client]);
+	m_usercmdsPostFwd->PushArray(mouse[client], 2);
+	m_usercmdsPostFwd->PushCell(repeating);
 	m_usercmdsPostFwd->Execute();
 
 	RETURN_META(MRES_IGNORED);
