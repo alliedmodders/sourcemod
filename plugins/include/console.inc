@@ -59,7 +59,6 @@ enum ReplySource
  * for each constant come directly from the Source SDK.
  */
 
-#pragma deprecated No logic using this flag ever existed in a released game. It only ever appeared in the first hl2sdk.
 #define FCVAR_PLUGIN           0       // Actual value is same as FCVAR_SS_ADDED in Left 4 Dead and later.
 #pragma deprecated Did you mean FCVAR_DEVELOPMENTONLY? (No logic using this flag ever existed in a released game. It only ever appeared in the first hl2sdk.)
 #define FCVAR_LAUNCHER         (1<<1)  // Same value as FCVAR_DEVELOPMENTONLY, which is what most usages of this were intending to use.
