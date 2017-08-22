@@ -28,6 +28,7 @@
  */
 
 #include "ConVarManager.h"
+#include "convar_sm.h"
 #include "HalfLife2.h"
 #include "sm_stringutil.h"
 #include <sh_vector.h>
@@ -392,6 +393,9 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 	}
 
 	pInfo->handle = hndl;
+	
+	/* This ConVar was created by a plugin, add the flag. */
+	flags |= FCVAR_PLUGIN;
 
 	/* Since an existing convar (or concmd with the same name) was not found , now we can finally create it */
 	pConVar = new ConVar(sm_strdup(name), sm_strdup(defaultVal), flags, sm_strdup(description), hasMin, min, hasMax, max);
