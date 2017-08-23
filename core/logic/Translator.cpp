@@ -672,6 +672,15 @@ TransError CPhraseFile::GetTranslation(const char *szPhrase, unsigned int lang_i
 	return Trans_Okay;
 }
 
+bool CPhraseFile::TranslationPhraseExists(const char *phrase)
+{
+	int address;
+	if (!m_PhraseLookup.retrieve(phrase, &address))
+		return false;
+	
+	return true;
+}
+
 const char *CPhraseFile::GetFilename()
 {
 	return m_File.c_str();

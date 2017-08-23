@@ -113,6 +113,15 @@ namespace SourceMod
 		 * @return					File name.
 		 */
 		virtual const char *GetFilename() =0;
+		
+		/**
+		 * @brief Determines if a translation phrase exists within
+		 * the file.
+		 *
+		 * @param phrase				Phrase to search for.
+		 * @return						True if search was successful.
+		 */
+		virtual bool TranslationPhraseExists(const char* phrase) =0;
 	};
 
 	/**
@@ -221,6 +230,16 @@ namespace SourceMod
 			unsigned int numparams,
 			size_t *pOutLength,
 			const char **pFailPhrase) =0;
+			
+			
+		/**
+		 * @brief Determines if a translation phrase exists within
+		 * the collection.
+		 *
+		 * @param phrase				Phrase to search for.
+		 * @return						True if search was successful.
+		 */
+		virtual bool TranslationPhraseExists(const char *phrase) =0;
 	};
 
 	/**

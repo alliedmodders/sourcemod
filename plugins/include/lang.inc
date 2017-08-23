@@ -114,3 +114,20 @@ native int GetLanguageByCode(const char[] code);
  * @return			Language number. -1 if not found.
  */
 native int GetLanguageByName(const char[] name);
+
+/**
+ * Determines if the specified phrase exists.
+ *
+ * @param phrase	Phrase to look for.
+ * @return			True if phrase exists.
+ */
+native bool TranslationPhraseExists(const char[] phrase);
+
+/**
+ * Determines if a there is a translation for the speicifed language.
+ *
+ * @param phrase	Phrase to look for language in.
+ * @param language	Language code.
+ * @return			True if translation exists.
+ */
+native bool IsTranslatedForLanguage(const char[] phrase, int language);
