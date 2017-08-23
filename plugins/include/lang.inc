@@ -126,8 +126,8 @@ native bool TranslationPhraseExists(const char[] phrase);
 /**
  * Determines if a there is a translation for the speicifed language.
  *
- * @param phrase	Phrase to look for language in.
- * @param language	Language code.
+ * @param phrase	Phrase to check.
+ * @param language	Language number.
  * @return			True if translation exists.
  */
 native bool IsTranslatedForLanguage(const char[] phrase, int language);
