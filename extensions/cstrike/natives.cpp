@@ -459,7 +459,7 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 	if (!IsValidWeaponID(params[2]))
 		return pContext->ThrowNativeError("Invalid WeaponID passed for this game");
 
-	static int iLoadoutSlotOffset = -1;
+	/*static int iLoadoutSlotOffset = -1;
 
 	if (iLoadoutSlotOffset == -1)
 	{
@@ -468,7 +468,7 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 			iLoadoutSlotOffset = -1;
 			return pContext->ThrowNativeError("Failed to get LoadoutSlotOffset offset.");
 		}
-	}
+	}*/
 
 	if (g_iPriceOffset == -1)
 	{
@@ -497,16 +497,7 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 
 	void *pDef = GetItemDefintionByName(classname);
 
-	int iLoadoutSlot = *(int *)((intptr_t)pDef + iLoadoutSlotOffset);
-
-	CEconItemView *pView = GetEconItemView(pEntity, iLoadoutSlot);
-
-	if (!pView)
-	{
-		return pContext->ThrowNativeError("Failed to get CEconItemVIiew for %s", classname);
-	}
-
-	void *pWpnData = GetCCSWeaponData(pView);
+	void *pWpnData = GetCCSWpnDataFromItemDef(pDef);
 
 	if (!pWpnData)
 	{
@@ -617,6 +608,10 @@ static cell_t CS_AliasToWeaponID(IPluginContext *pContext, const cell_t *params)
 	else if (strstr(weapon, "m4a1_silencer") != NULL)
 	{
 		return SMCSWeapon_M4A1;
+	}
+	else if (strstr(weapon, "revolver") != NULL)
+	{
+		return SMCSWeapon_DEAGLE;
 	}
 #endif
 

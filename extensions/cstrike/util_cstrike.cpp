@@ -161,16 +161,16 @@ void *GetCCSWeaponData(CEconItemView *view)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, pass, 1))
 	}
 
-	unsigned char vstk[sizeof(const char *)];
+	unsigned char vstk[sizeof(void *)];
 	unsigned char *vptr = vstk;
 
 	*(CEconItemView **)vptr = view;
 
-	void *pDef = NULL;
+	void *pWpnData = NULL;
 
-	pWrapper->Execute(vstk, &pDef);
+	pWrapper->Execute(vstk, &pWpnData);
 
-	return pDef;
+	return pWpnData;
 }
 
 void *GetItemSchema()
@@ -243,6 +243,40 @@ void *GetItemDefintionByName(const char *classname)
 	pWrapper->Execute(vstk, &pItemDef);
 
 	return pItemDef;
+}
+
+void *GetCCSWpnDataFromItemDef(void *pItemDef)
+{
+	if (!pItemDef)
+		return NULL;
+
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		// In windows this is a sig to the inlined code in GetCCSWeaponData
+		// We abuse the fact that the ItemDef is stored in ecx
+		REGISTER_ADDR("GetCCSWeaponDataFromDef", NULL,
+			PassInfo pass[1]; \
+			PassInfo retpass; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].type = PassType_Basic; \
+			pass[0].size = sizeof(void *); \
+			retpass.flags = PASSFLAG_BYVAL; \
+			retpass.type = PassType_Basic; \
+			retpass.size = sizeof(void *); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, pass, 1))
+	}
+
+	unsigned char vstk[sizeof(void *)];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = pItemDef;
+
+	void *pWpnData = NULL;
+	pWrapper->Execute(vstk, &pWpnData);
+
+	return pWpnData;
 }
 #endif
 
