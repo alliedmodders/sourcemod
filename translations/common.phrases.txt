@@ -242,15 +242,18 @@
 	
 	"Say all"
 	{
-		"en"			"ALL"
+		"#format"		"{1:s}"
+		"en"			"(ALL) {1}"
 	}
 	"Chat admins"
 	{
-		"en"			"ADMINS"
+		"#format"		"{1:N}"
+		"en"			"(ADMINS) {1}"
 	}
 	"Chat to admins"
 	{
-		"en"			"TO ADMINS"
+		"#format"		"{1:N}"
+		"en"			"(TO ADMINS) {1}"
 	}
 	"Private say to"
 	{
