@@ -399,8 +399,11 @@ void SendPrivateChat(int client, int target, const char[] message)
 		else
 			PrintToChat(client, "\x04%t: \x01%s", "Private say to", target, client, message);
 	}
-
-	PrintToChat(target, " \x01\x0B\x04%t: \x01%s", "Private say to", target, client, message);
+	
+	if (g_GameEngine == Engine_CSGO)
+		PrintToChat(target, " \x01\x0B\x04%t: \x01%s", "Private say to", target, client, message);
+	else
+		PrintToChat(target, "\x04%t: \x01%s", "Private say to", target, client, message);
 	LogAction(client, -1, "\"%L\" triggered sm_psay to \"%L\" (text %s)", client, target, message);
 }
 
