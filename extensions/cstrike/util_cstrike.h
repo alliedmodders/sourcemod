@@ -33,13 +33,39 @@
 #define _INCLUDE_CSTRIKE_UTIL_H_
 
 #if SOURCE_ENGINE == SE_CSGO
-class CEconItemView;
+#include "extension.h"
 
-CEconItemView *GetEconItemView(void *pEntity, int iSlot);
-void *GetCCSWeaponData(CEconItemView *view);
-void *GetItemSchema();
-void *GetItemDefintionByName(const char *classname);
-void *GetCCSWpnDataFromItemDef(void *pItemDef);
+class CEconItemView;
+class CCSWeaponData;
+class CEconItemSchema;
+
+class CEconItemDefinition
+{
+public:
+	void **m_pVtable;
+	KeyValues *m_pKv;
+	uint16_t m_iDefinitionIndex;
+	int GetDefaultLoadoutSlot()
+	{
+		static int iLoadoutSlotOffset = -1;
+
+		if (iLoadoutSlotOffset == -1)
+		{
+			if (!g_pGameConf->GetOffset("LoadoutSlotOffset", &iLoadoutSlotOffset) || iLoadoutSlotOffset == -1)
+			{
+				iLoadoutSlotOffset = -1;
+				return -1;
+			}
+		}
+
+		return *(int *)((intptr_t)this + iLoadoutSlotOffset);
+	}
+};
+
+CEconItemView *GetEconItemView(CBaseEntity *pEntity, int iSlot);
+CCSWeaponData *GetCCSWeaponData(CEconItemView *view);
+CEconItemSchema *GetItemSchema();
+CEconItemDefinition *GetItemDefintionByName(const char *classname);
 
 static const char *szWeaponInfo[] =
 {

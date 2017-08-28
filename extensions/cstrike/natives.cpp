@@ -34,7 +34,6 @@
 #include "forwards.h"
 #include "util_cstrike.h"
 #include <server_class.h>
-#include <iplayerinfo.h>
 
 int g_iPriceOffset = -1;
 
@@ -456,37 +455,21 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	if (!IsValidWeaponID(params[2]))
-		return pContext->ThrowNativeError("Invalid WeaponID passed for this game");
+	static const char *pPriceKey = NULL;
 
-	/*static int iLoadoutSlotOffset = -1;
-
-	if (iLoadoutSlotOffset == -1)
+	if (!pPriceKey)
 	{
-		if (!g_pGameConf->GetOffset("LoadoutSlotOffset", &iLoadoutSlotOffset) || iLoadoutSlotOffset == -1)
+		pPriceKey = g_pGameConf->GetKeyValue("PriceKey");
+		if (!pPriceKey)
 		{
-			iLoadoutSlotOffset = -1;
-			return pContext->ThrowNativeError("Failed to get LoadoutSlotOffset offset.");
-		}
-	}*/
-
-	if (g_iPriceOffset == -1)
-	{
-		if (!g_pGameConf->GetOffset("WeaponPrice", &g_iPriceOffset) || g_iPriceOffset == -1)
-		{
-			g_iPriceOffset = -1;
-			return pContext->ThrowNativeError("Failed to get WeaponPrice offset");
+			return pContext->ThrowNativeError("Failed to get PriceKey KeyValue.");
 		}
 	}
 
-	int id = GetRealWeaponID(params[2]);
+	if (!IsValidWeaponID(params[2]))
+		return pContext->ThrowNativeError("Invalid WeaponID passed for this game");
 
-	if (id == WEAPON_C4 || id == WEAPON_KNIFE || id == WEAPON_KNIFE_GG)
-		return 0;
-	else if (id == WEAPON_NIGHTVISION)
-		return 1250;
-	else if (id == WEAPON_DEFUSER)
-		return 400;
+	int id = GetRealWeaponID(params[2]);
 
 	char classname[128];
 
@@ -495,16 +478,21 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 	else
 		Q_snprintf(classname, sizeof(classname), "item_%s", WeaponIDToAlias(params[2]));
 
-	void *pDef = GetItemDefintionByName(classname);
+	CEconItemDefinition *pDef = GetItemDefintionByName(classname);
 
-	void *pWpnData = GetCCSWpnDataFromItemDef(pDef);
-
-	if (!pWpnData)
+	if (!pDef)
 	{
-		return pContext->ThrowNativeError("Failed to get CCSWeaponData for %s", classname);
+		return pContext->ThrowNativeError("Failed to get CEconItemDefinition for %s", classname);
 	}
 
-	int price = *(int *)((intptr_t)pWpnData + g_iPriceOffset);
+	KeyValues *pAttributes = pDef->m_pKv->FindKey("attributes", false);
+
+	if (!pAttributes)
+	{
+		return pContext->ThrowNativeError("Failed to get item attributes keyvalue for %s", classname);
+	}
+
+	int price = pAttributes->GetInt(pPriceKey, 0);
 
 	if (params[3] || weaponNameOffset == -1)
 		return price;
@@ -559,14 +547,11 @@ static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("SetClanTag",
-			PassInfo pass[2]; \
+			PassInfo pass[1]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
 			pass[0].type  = PassType_Basic; \
-			pass[0].size  = sizeof(CBaseEntity *); \
-			pass[1].flags = PASSFLAG_BYVAL; \
-			pass[1].type  = PassType_Basic; \
-			pass[1].size  = sizeof(char *); \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2))
+			pass[0].size  = sizeof(char *); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 1))
 	}
 
 	CBaseEntity *pEntity;

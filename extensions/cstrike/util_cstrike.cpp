@@ -66,7 +66,7 @@
  // We only really care about m4a1/m4a4 as price differs between them
  // thisPtrOffset = 9472/9492
 
-CEconItemView *GetEconItemView(void *pEntity, int iSlot)
+CEconItemView *GetEconItemView(CBaseEntity *pEntity, int iSlot)
 {
 	if (!pEntity)
 		return NULL;
@@ -116,7 +116,7 @@ CEconItemView *GetEconItemView(void *pEntity, int iSlot)
 		}
 	}
 
-	int client = gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(pEntity));
+	int client = gamehelpers->EntityToBCompatRef(pEntity);
 
 	IPlayerInfo *playerinfo = playerhelpers->GetGamePlayer(client)->GetPlayerInfo();
 	
@@ -143,37 +143,33 @@ CEconItemView *GetEconItemView(void *pEntity, int iSlot)
 	return ret;
 }
 
-void *GetCCSWeaponData(CEconItemView *view)
+CCSWeaponData *GetCCSWeaponData(CEconItemView *view)
 {
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
 	{
 		REGISTER_ADDR("GetCCSWeaponData", NULL,
-			PassInfo pass[1]; \
 			PassInfo retpass; \
-			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].type = PassType_Basic; \
-			pass[0].size = sizeof(CEconItemView *); \
 			retpass.flags = PASSFLAG_BYVAL; \
 			retpass.type = PassType_Basic; \
-			retpass.size = sizeof(void *); \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, pass, 1))
+			retpass.size = sizeof(CCSWeaponData *); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, NULL, 0))
 	}
 
-	unsigned char vstk[sizeof(void *)];
+	unsigned char vstk[sizeof(CEconItemView *)];
 	unsigned char *vptr = vstk;
 
 	*(CEconItemView **)vptr = view;
 
-	void *pWpnData = NULL;
+	CCSWeaponData *pWpnData = NULL;
 
 	pWrapper->Execute(vstk, &pWpnData);
 
 	return pWpnData;
 }
 
-void *GetItemSchema()
+CEconItemSchema *GetItemSchema()
 {
 	static ICallWrapper *pWrapper = NULL;
 
@@ -192,15 +188,15 @@ void *GetItemSchema()
 
 	//In windows this is actually ItemSystem() + 4 is ItemSchema
 #ifdef WIN32
-	return (void *)((intptr_t)pSchema + 4);
+	return (CEconItemSchema *)((intptr_t)pSchema + 4);
 #else
-	return pSchema;
+	return (CEconItemSchema *)pSchema;
 #endif
 }
 
-void *GetItemDefintionByName(const char *classname)
+CEconItemDefinition *GetItemDefintionByName(const char *classname)
 {
-	void *pSchema = GetItemSchema();
+	CEconItemSchema *pSchema = GetItemSchema();
 
 	if (!pSchema)
 		return NULL;
@@ -225,7 +221,7 @@ void *GetItemDefintionByName(const char *classname)
 
 		ret.flags = PASSFLAG_BYVAL;
 		ret.type = PassType_Basic;
-		ret.size = sizeof(void *);
+		ret.size = sizeof(CEconItemDefinition *);
 
 		pWrapper = g_pBinTools->CreateVCall(offset, 0, 0, &ret, pass, 1);
 
@@ -239,44 +235,10 @@ void *GetItemDefintionByName(const char *classname)
 	vptr += sizeof(void *);
 	*(const char **)vptr = classname;
 
-	void *pItemDef = NULL;
+	CEconItemDefinition *pItemDef = NULL;
 	pWrapper->Execute(vstk, &pItemDef);
 
 	return pItemDef;
-}
-
-void *GetCCSWpnDataFromItemDef(void *pItemDef)
-{
-	if (!pItemDef)
-		return NULL;
-
-	static ICallWrapper *pWrapper = NULL;
-
-	if (!pWrapper)
-	{
-		// In windows this is a sig to the inlined code in GetCCSWeaponData
-		// We abuse the fact that the ItemDef is stored in ecx
-		REGISTER_ADDR("GetCCSWeaponDataFromDef", NULL,
-			PassInfo pass[1]; \
-			PassInfo retpass; \
-			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].type = PassType_Basic; \
-			pass[0].size = sizeof(void *); \
-			retpass.flags = PASSFLAG_BYVAL; \
-			retpass.type = PassType_Basic; \
-			retpass.size = sizeof(void *); \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, pass, 1))
-	}
-
-	unsigned char vstk[sizeof(void *)];
-	unsigned char *vptr = vstk;
-
-	*(void **)vptr = pItemDef;
-
-	void *pWpnData = NULL;
-	pWrapper->Execute(vstk, &pWpnData);
-
-	return pWpnData;
 }
 #endif
 
