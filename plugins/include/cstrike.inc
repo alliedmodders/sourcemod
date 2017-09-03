@@ -109,7 +109,7 @@ enum CSWeaponID
 	CSWeapon_SHIELD,
 	CSWeapon_KEVLAR,
 	CSWeapon_ASSAULTSUIT,
-	CSWeapon_NIGHTVISION,
+	CSWeapon_NIGHTVISION, //Anything below is CS:GO ONLY
 	CSWeapon_GALILAR,
 	CSWeapon_BIZON,
 	CSWeapon_MAG7,
@@ -130,7 +130,27 @@ enum CSWeaponID
 	CSWeapon_MOLOTOV,
 	CSWeapon_DECOY,
 	CSWeapon_INCGRENADE,
-	CSWeapon_DEFUSER
+	CSWeapon_DEFUSER,
+	CSWeapon_HEAVYASSAULTSUIT,
+	//The rest are actual item definition indexes for CS:GO
+	CSWeapon_CUTTERS = 56,
+	CSWeapon_HEALTHSHOT = 57,
+	CSWeapon_KNIFE_T = 59,
+	CSWeapon_M4A1_SILENCER = 60.
+	CSWeapon_USP_SILENCER = 61,
+	CSWeapon_CZ75A = 63,
+	CSWeapon_REVOLVER = 64,
+	CSWeapon_TAGGRENADE = 68.
+	CSWeapon_BAYONET = 500,
+	CSWeapon_KNIFE_FLIP = 505,
+	CSWeapon_KNIFE_GUT = 506,
+	CSWeapon_KNIFE_KARAMBIT = 507,
+	CSWeapon_KNIFE_M9_BAYONET = 508,
+	CSWeapon_KNIFE_TATICAL = 509,
+	CSWeapon_KNIFE_FALCHION = 512,
+	CSWeapon_KNIFE_SURVIVAL_BOWIE = 514,
+	CSWeapon_KNIFE_BUTTERFLY = 515,
+	CSWeapon_KNIFE_PUSH = 516,
 };
 
 /**
