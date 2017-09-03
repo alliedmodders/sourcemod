@@ -576,7 +576,7 @@ bool IsValidWeaponID(int id)
 	if (!res.found())
 		return false;
 #else
-	else if (id > (int)SMCSWeapon_NIGHTVISION)
+	else if (id > SMCSWeapon_NIGHTVISION || !GetWeaponInfo(id))
 		return false;
 #endif
 	return true;
