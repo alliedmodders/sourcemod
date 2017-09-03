@@ -136,11 +136,11 @@ enum CSWeaponID
 	CSWeapon_CUTTERS = 56,
 	CSWeapon_HEALTHSHOT = 57,
 	CSWeapon_KNIFE_T = 59,
-	CSWeapon_M4A1_SILENCER = 60.
+	CSWeapon_M4A1_SILENCER = 60,
 	CSWeapon_USP_SILENCER = 61,
 	CSWeapon_CZ75A = 63,
 	CSWeapon_REVOLVER = 64,
-	CSWeapon_TAGGRENADE = 68.
+	CSWeapon_TAGGRENADE = 68,
 	CSWeapon_BAYONET = 500,
 	CSWeapon_KNIFE_FLIP = 505,
 	CSWeapon_KNIFE_GUT = 506,
@@ -151,6 +151,7 @@ enum CSWeaponID
 	CSWeapon_KNIFE_SURVIVAL_BOWIE = 514,
 	CSWeapon_KNIFE_BUTTERFLY = 515,
 	CSWeapon_KNIFE_PUSH = 516,
+	CSWeapon_MAX_WEAPONS //THIS MUST BE LAST, EASY WAY TO CREATE LOOPS. When looping, do CS_IsValidWeaponID(i), to check.
 };
 
 /**
