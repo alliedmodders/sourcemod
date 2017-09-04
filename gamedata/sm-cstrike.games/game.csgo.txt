@@ -13,6 +13,10 @@
 {
 	"#default"
 	{
+		"Keys"
+		{
+			"PriceKey"		"in game price"
+		}
 		"Offsets"
 		{
 			// Offset of szClassName in CCSWeaponData, szDefaultName is @ 140 which returns the default weapon class for the loadoutslot ignoring the users inventory.
@@ -143,6 +147,7 @@
 				"linux"		"\x55\x89\xE5\x83\xEC\x28\x89\x5D\xF4\x8B\x5D\x08\x89\x75\xF8\x89\x7D\xFC\x89\x1C\x24\xE8\x2A\x2A\x2A\x2A\x83\xF8\x02"
 			}
 			//GetCCSWeaponData Found in HandleCommand_Buy_Internal
+			//Uses an econitemview
 			"GetCCSWeaponData"
 			{
 				"library"	"server"
