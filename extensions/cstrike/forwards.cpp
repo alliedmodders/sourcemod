@@ -26,16 +26,17 @@ int weaponNameOffset = -1;
 #if SOURCE_ENGINE == SE_CSGO
 DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pWpnDataRef, bool, bRebuy)
 {
-	int client = gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(this));
+	CBaseEntity *pEntity = reinterpret_cast<CBaseEntity *>(this);
+	int client = gamehelpers->EntityToBCompatRef(pEntity);
 
-	CEconItemView *pView = GetEconItemView(this, iLoadoutSlot);
+	CEconItemView *pView = GetEconItemView(pEntity, iLoadoutSlot);
 
 	if (!pView)
 	{
 		return DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pWpnDataRef, bRebuy);
 	}
 
-	void *pWpnData = GetCCSWeaponData(pView);
+	CCSWeaponData *pWpnData = GetCCSWeaponData(pView);
 
 	if (!pWpnData)
 	{
