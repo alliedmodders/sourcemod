@@ -1,4 +1,4 @@
-# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python: 
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
 project = SM.HL2Project(builder, 'sourcemod')
@@ -77,6 +77,8 @@ for sdk_name in SM.sdks:
         vs_year = '2015'
       elif msvc_ver == 1910:
         vs_year = '2017'
+      elif msvc_ver == 1911:
+        vs_year = '2017'
       else:
         raise Exception('Cannot find libprotobuf for MSVC version "' + str(compiler.version) + '"')
 
@@ -85,7 +87,7 @@ for sdk_name in SM.sdks:
       else:
         lib_path = os.path.join(sdk.path, 'lib', 'win32', 'release', 'vs' + vs_year, 'libprotobuf.lib')
     compiler.linkflags.insert(0, binary.Dep(lib_path))
-  
+
   if sdk.name == 'csgo':
     binary.sources += ['smn_protobuf.cpp']
   else:
