@@ -489,12 +489,22 @@ native int FormatNativeString(int out_param,
 						  char[] out_string="",
 						  const char[] fmt_string="");
 
-/**
- * Defines a RequestFrame Callback.
- *
- * @param data			Data passed to the RequestFrame native.
- */
-typedef RequestFrameCallback = function void (any data);
+typeset RequestFrameCallback
+{
+	/**
+	 * Defines a RequestFrame Callback with data.
+	 *
+	 * @param data			Data passed to the RequestFrame native.
+	 */
+	function void (any data);
+	
+	/**
+	 * Defines a RequestFrame Callback.
+	 *
+	 */
+	function void ();
+}
+
 
 /**
  * Creates a single use Next Frame hook.
