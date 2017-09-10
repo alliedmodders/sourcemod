@@ -50,15 +50,11 @@ def output_version_headers():
     count, shorthash, longhash = get_git_version()
 
   with open(os.path.join(SourceFolder, 'product.version')) as fp:
-    contents = fp.read()
+    contents = fp.read().strip()
   m = re.match('(\d+)\.(\d+)\.(\d+)-?(.*)', contents)
   if m == None:
     raise Exception('Could not detremine product version')
   major, minor, release, tag = m.groups()
-  major = major.strip()
-  minir = minor.strip()
-  release = release.strip()
-  tag = tag.strip()
   product = "{0}.{1}.{2}.{3}".format(major, minor, release, count)
   fullstring = product
   if tag != "":
