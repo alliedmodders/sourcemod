@@ -862,6 +862,21 @@ static cell_t CS_UpdateClientModel(IPluginContext *pContext, const cell_t *param
 
 	return 1;
 }
+
+static cell_t CS_ItemDefIndexToID(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	ItemIndexMap::Result res = g_mapDefIdxToClass.find((uint16_t)params[1]);
+
+	if (!res.found())
+		return  pContext->ThrowNativeError("Invalid item definition passed.");
+
+	return res->value.m_iWeaponID;
+#else
+	return pContext->ThrowNativeError("CS_ItemDefIndexToID is not supported on this game");
+#endif
+}
+
 sp_nativeinfo_t g_CSNatives[] = 
 {
 	{"CS_RespawnPlayer",			CS_RespawnPlayer}, 
@@ -884,6 +899,7 @@ sp_nativeinfo_t g_CSNatives[] =
 	{"CS_SetClientAssists",			CS_SetClientAssists},
 	{"CS_UpdateClientModel",		CS_UpdateClientModel},
 	{"CS_IsValidWeaponID",			CS_IsValidWeaponID},
+	{"CS_ItemDefIndexToID",			CS_ItemDefIndexToID },
 	{NULL,							NULL}
 };
 

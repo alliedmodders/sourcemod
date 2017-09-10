@@ -392,6 +392,17 @@ native bool CS_IsValidWeaponID(CSWeaponID id);
 native void CS_UpdateClientModel(int client);
 
 /**
+ * Returns a CSWeaponID equivalent based on the item definition index.
+ *
+ * @param ItemDefinitionIndex	Definition index to get the CSWeaponID value for.
+ * @return			Returns CSWeaponID value for the definition index.
+ * 
+ * @error			Invalid definition index.
+ * @note			In most cases the id will be the item definition index.
+ */
+native CSWeaponID CS_ItemDefIndexToID(int ItemDefinitionIndex);
+
+/**
  * Do not edit below this line!
  */
 public Extension __ext_cstrike = 
@@ -429,5 +440,6 @@ public void __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_WeaponIDToAlias");
 	MarkNativeAsOptional("CS_IsValidWeaponID");
 	MarkNativeAsOptional("CS_UpdateClientModel");
+	MarkNativeAsOptional("CS_ItemDefIndexToID");
 }
 #endif
