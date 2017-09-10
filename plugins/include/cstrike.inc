@@ -141,6 +141,7 @@ enum CSWeaponID
 	CSWeapon_CZ75A = 63,
 	CSWeapon_REVOLVER = 64,
 	CSWeapon_TAGGRENADE = 68,
+	CSWeapon_MAX_WEAPONS_NO_KNIFES, // Max without the knife item defs, usefull when treating all knives as a regular knife.
 	CSWeapon_BAYONET = 500,
 	CSWeapon_KNIFE_FLIP = 505,
 	CSWeapon_KNIFE_GUT = 506,
