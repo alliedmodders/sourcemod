@@ -556,6 +556,12 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 				addrInBase = bridge->engineFactory;
 			} else if (strcmp(s_TempSig.library, "matchmaking_ds") == 0) {
 				addrInBase = bridge->matchmakingDSFactory;
+			} else if (strcmp(s_TempSig.library, "sourcemod") == 0) {
+				addrInBase = bridge;
+			} else if (strcmp(s_TempSig.library, "sourcemod.logic") == 0) {
+				addrInBase = &g_GameConfigs;
+			} else if (strcmp(s_TempSig.library, "sourcepawn.jit") == 0) {
+				addrInBase = bridge->jitFactory;
 			}
 			void *final_addr = NULL;
 			if (addrInBase == NULL)

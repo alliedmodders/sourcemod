@@ -657,6 +657,16 @@ void CoreProviderImpl::InitializeBridge()
 		this->matchmakingDSFactory =
 		  mmlib->get<decltype(sCoreProviderImpl.matchmakingDSFactory)>("CreateInterface");
 	}
+
+	ke::path::Format(path, sizeof(path),
+	                 "%s/bin/sourcepawn.jit.x86.%s",
+	                 g_SourceMod.GetSourceModPath(),
+	                 PLATFORM_LIB_EXT);
+
+	if (ke::RefPtr<ke::SharedLib> jitlib = ke::SharedLib::Open(path, NULL, 0)) {
+		this->jitFactory =
+			jitlib->get<decltype(sCoreProviderImpl.jitFactory)>("GetSourcePawnFactory");
+	}
 	
 	logic_init_(this, &logicore);
 
