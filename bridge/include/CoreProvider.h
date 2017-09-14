@@ -89,6 +89,7 @@ public:
 	void *          serverFactory;
 	void *          engineFactory;
 	void *          matchmakingDSFactory;
+	void *          jitFactory;
 	SMGlobalClass *	listeners;
 
 	// ConVar functions.
