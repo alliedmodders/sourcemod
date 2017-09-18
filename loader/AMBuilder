@@ -1,26 +1,27 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os.path
 
-if builder.target.platform in ['windows', 'mac']:
-  name = 'sourcemod_mm'
-  extra_ldflags = []
-elif builder.target.platform == 'linux':
-  name = 'sourcemod_mm_i486'
-  extra_ldflags = ['-ldl']
+for arch in SM.archs:
+  if builder.target.platform in ['windows', 'mac']:
+    name = 'sourcemod_mm'
+    extra_ldflags = []
+  elif builder.target.platform == 'linux':
+    name = 'sourcemod_mm_i486'
+    extra_ldflags = ['-ldl']
 
-binary = SM.Library(builder, name)
-binary.compiler.cxxincludes += [
-  os.path.join(SM.mms_root, 'core'),
-  os.path.join(SM.mms_root, 'sourcehook')
-]
-if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
-  binary.compiler.cxxflags += ['-fno-rtti']
-elif binary.compiler.family == 'msvc':
-  binary.compiler.cxxflags += ['/GR-']
-binary.compiler.linkflags += extra_ldflags
-binary.sources = [
-  'loader.cpp'
-]
+  binary = SM.Library(builder, name, arch)
+  binary.compiler.cxxincludes += [
+    os.path.join(SM.mms_root, 'core'),
+    os.path.join(SM.mms_root, 'sourcehook')
+  ]
+  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+    binary.compiler.cxxflags += ['-fno-rtti']
+  elif binary.compiler.family == 'msvc':
+    binary.compiler.cxxflags += ['/GR-']
+  binary.compiler.linkflags += extra_ldflags
+  binary.sources = [
+    'loader.cpp'
+  ]
 
-nodes = builder.Add(binary)
-SM.binaries += [nodes]
+  nodes = builder.Add(binary)
+  SM.binaries += [nodes]
