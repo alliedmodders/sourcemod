@@ -141,7 +141,7 @@ enum CSWeaponID
 	CSWeapon_CZ75A = 63,
 	CSWeapon_REVOLVER = 64,
 	CSWeapon_TAGGRENADE = 68,
-	CSWeapon_MAX_WEAPONS_NO_KNIFES, // Max without the knife item defs, usefull when treating all knives as a regular knife.
+	CSWeapon_MAX_WEAPONS_NO_KNIFES, // Max without the knife item defs, useful when treating all knives as a regular knife.
 	CSWeapon_BAYONET = 500,
 	CSWeapon_KNIFE_FLIP = 505,
 	CSWeapon_KNIFE_GUT = 506,
@@ -380,7 +380,7 @@ native int CS_WeaponIDToAlias(CSWeaponID weaponID, char[] destination, int len);
  * @param weaponID		WeaponID to check
  * @return				Returns true if its a valid WeaponID false otherwise.
  *
- * @note This will return false always for CSWeapon_NONE
+ * @note This will return false always for CSWeapon_NONE. Should only be called after OnMapStart since weapon info isnt intialized before.
  */
 native bool CS_IsValidWeaponID(CSWeaponID id);
 
@@ -395,13 +395,24 @@ native void CS_UpdateClientModel(int client);
 /**
  * Returns a CSWeaponID equivalent based on the item definition index.
  *
- * @param ItemDefinitionIndex	Definition index to get the CSWeaponID value for.
+ * @param iDefIndex	Definition index to get the CSWeaponID value for.
  * @return			Returns CSWeaponID value for the definition index.
  * 
  * @error			Invalid definition index.
- * @note			In most cases the id will be the item definition index.
+ * @note			In most cases the id will be the item definition index. Works for CS:GO ONLY.
  */
-native CSWeaponID CS_ItemDefIndexToID(int ItemDefinitionIndex);
+native CSWeaponID CS_ItemDefIndexToID(int iDefIndex);
+
+/**
+ * Returns a item definition index equivalent based on the CSWeaponID.
+ *
+ * @param id CSWeaponID to get the item definition for.
+ * @return			Returns item definition index value for the weapon id.
+ * 
+ * @error			Invalid weapon id.
+ * @note			In most cases the item deinition index will be the id. Works for CS:GO ONLY.
+ */
+native int CS_WeaponIDToItemDefIndex(CSWeaponID id);
 
 /**
  * Do not edit below this line!
@@ -442,5 +453,6 @@ public void __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_IsValidWeaponID");
 	MarkNativeAsOptional("CS_UpdateClientModel");
 	MarkNativeAsOptional("CS_ItemDefIndexToID");
+	MarkNativeAsOptional("CS_WeaponIDToItemDefIndex");
 }
 #endif
