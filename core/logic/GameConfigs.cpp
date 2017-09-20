@@ -76,16 +76,22 @@ static const char *g_pParseEngine = NULL;
 #define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS	13
 #define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ	14
 
+#if defined PLATFORM_X86
+#define PLATFORM_ARCH_SUFFIX		""
+#elif defined PLATFORM_X64
+#define PLATFORM_ARCH_SUFFIX		"64"
+#endif
+
 #if defined PLATFORM_WINDOWS
-#define PLATFORM_NAME				"windows"
+#define PLATFORM_NAME				"windows" PLATFORM_ARCH_SUFFIX
 #define PLATFORM_SERVER_BINARY		"server.dll"
 #elif defined PLATFORM_LINUX
-#define PLATFORM_NAME				"linux"
-#define PLATFORM_COMPAT_ALT			"mac"				/* Alternate platform name if game data is missing for primary one */
+#define PLATFORM_NAME				"linux" PLATFORM_ARCH_SUFFIX
+#define PLATFORM_COMPAT_ALT			"mac" PLATFORM_ARCH_SUFFIX	/* Alternate platform name if game data is missing for primary one */
 #define PLATFORM_SERVER_BINARY		"server_i486.so"
 #elif defined PLATFORM_APPLE
-#define PLATFORM_NAME				"mac"
-#define PLATFORM_COMPAT_ALT			"linux"
+#define PLATFORM_NAME				"mac" PLATFORM_ARCH_SUFFIX
+#define PLATFORM_COMPAT_ALT			"linux" PLATFORM_ARCH_SUFFIX
 #define PLATFORM_SERVER_BINARY		"server.dylib"
 #endif
 
@@ -337,7 +343,8 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			}
 			else
 			{
-				if (strcmp(name, "linux") != 0 && strcmp(name, "windows") != 0 && strcmp(name, "mac") != 0)
+				if (strcmp(name, "linux") != 0 && strcmp(name, "windows") != 0 && strcmp(name, "mac") != 0 &&
+					strcmp(name, "linux64") != 0 && strcmp(name, "windows64") != 0 && strcmp(name, "mac64") != 0)
 				{
 					logger->LogError("[SM] Error while parsing Address section for \"%s\" (%s):", m_Address, m_CurFile);
 					logger->LogError("[SM] Unrecognized platform \"%s\"", name);

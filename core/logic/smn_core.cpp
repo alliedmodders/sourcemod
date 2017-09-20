@@ -696,6 +696,7 @@ enum NumberType
 
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 {
+#ifdef PLATFORM_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
 
 	if (addr == NULL)
@@ -719,11 +720,15 @@ static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 	default:
 		return pContext->ThrowNativeError("Invalid number types %d", size);
 	}
+#else
+	return pContext->ThrowNativeError("Not yet supported");
+#endif
 }
 
 
 static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 {
+#ifdef PLATFORM_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
 
 	if (addr == NULL)
@@ -757,6 +762,9 @@ static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return 0;
+#else
+	return pContext->ThrowNativeError("Not yet supported");
+#endif
 }
 
 REGISTER_NATIVES(coreNatives)
