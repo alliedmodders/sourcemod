@@ -198,10 +198,20 @@ bool CDataPack::IsReadable(size_t bytes) const
 const char *CDataPack::ReadString(size_t *len) const
 {
 	if (!this->IsReadable())
+	{
+		if (len)
+			*len = 0;
+
 		return "";
+	}
 
 	if (this->elements[this->position].type != CDataPackType::String)
+	{
+		if (len)
+			*len = 0;
+
 		return "";
+	}
 
 	const ke::AString &val = *static_cast<ke::AString *>(this->elements[this->position++].pData.vval);
 	if (len)
