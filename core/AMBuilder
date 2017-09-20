@@ -69,9 +69,15 @@ for sdk_name in SM.sdks:
 
     if sdk.name == 'csgo':
       if builder.target.platform == 'linux':
-        lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
+        if arch == 'x86':
+          lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
+        elif arch == 'x64':
+          lib_path = os.path.join(sdk.path, 'lib', 'linux64', 'release', 'libprotobuf.a')
       elif builder.target.platform == 'mac':
-        lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
+        if arch == 'x86':
+          lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
+        elif arch == 'x64':
+          lib_path = os.path.join(sdk.path, 'lib', 'osx64', 'release', 'libprotobuf.a')
       elif builder.target.platform == 'windows':
         msvc_ver = compiler.version
         vs_year = ''

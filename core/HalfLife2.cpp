@@ -1307,7 +1307,7 @@ string_t CHalfLife2::AllocPooledString(const char *pszValue)
 
 bool CHalfLife2::GetServerSteam3Id(char *pszOut, size_t len) const
 {
-	CSteamID sid(GetServerSteamId64());
+	CSteamID sid((uint64)GetServerSteamId64());
 
 	switch (sid.GetEAccountType())
 	{

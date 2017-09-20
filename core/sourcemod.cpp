@@ -185,7 +185,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	/* Attempt to load the JIT! */
 	char file[PLATFORM_MAX_PATH];
 	char myerror[255];
-	g_SMAPI->PathFormat(file, sizeof(file), "%s/bin/sourcepawn.jit.x86.%s",
+	g_SMAPI->PathFormat(file, sizeof(file), "%s/bin/" PLATFORM_ARCH_FOLDER "sourcepawn.jit.x86.%s",
 		GetSourceModPath(),
 		PLATFORM_LIB_EXT
 		);
@@ -195,7 +195,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	{
 		if (error && maxlength)
 		{
-			ke::SafeSprintf(error, maxlength, "%s (failed to load bin/sourcepawn.jit.x86.%s)", 
+			ke::SafeSprintf(error, maxlength, "%s (failed to load bin/" PLATFORM_ARCH_FOLDER "sourcepawn.jit.x86.%s)", 
 				myerror,
 				PLATFORM_LIB_EXT);
 		}
