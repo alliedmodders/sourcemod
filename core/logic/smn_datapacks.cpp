@@ -214,7 +214,7 @@ static cell_t smn_ReadPackFloat(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
 	}
 
-	if (!pDataPack->IsReadable(sizeof(char) + sizeof(size_t) + sizeof(float)))
+	if (!pDataPack->IsReadable())
 	{
 		return pContext->ThrowNativeError("DataPack operation is out of bounds.");
 	}
