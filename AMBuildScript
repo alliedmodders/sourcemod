@@ -108,7 +108,7 @@ class SMConfig(object):
     self.extensions = []
     self.generated_headers = None
     self.mms_root = None
-    self.mysql_root = None
+    self.mysql_root = {}
     self.spcomp = None
     self.spcomp_bins = None
     self.smx_files = {}
@@ -179,15 +179,28 @@ class SMConfig(object):
 
     if builder.options.hasMySql:
       if builder.options.mysql_path:
-        self.mysql_root = builder.options.mysql_path
+        self.mysql_root['x86'] = builder.options.mysql_path
       else:
         for i in range(7):
-          self.mysql_root = ResolveEnvPath('MYSQL5', 'mysql-5.' + str(i))
-          if self.mysql_root:
+          self.mysql_root['x86'] = ResolveEnvPath('MYSQL5', 'mysql-5.' + str(i))
+          if self.mysql_root['x86']:
             break
-      if not self.mysql_root or not os.path.isdir(self.mysql_root):
+      if not self.mysql_root['x86'] or not os.path.isdir(self.mysql_root['x86']):
         raise Exception('Could not find a path to MySQL!')
-      self.mysql_root = Normalize(self.mysql_root)
+      self.mysql_root['x86'] = Normalize(self.mysql_root['x86'])
+
+      # For now, ignore 64-bit MySQL on Windows
+      if 'x64' in self.archs and builder.target.platform != 'windows':
+        if builder.options.mysql_path:
+          self.mysql_root['x64'] = builder.options.mysql64_path
+        else:
+          for i in range(7):
+            self.mysql_root['x64'] = ResolveEnvPath('MYSQL5_64', 'mysql-5.' + str(i) + '-x86_64')
+            if self.mysql_root['x64']:
+              break
+        if not self.mysql_root['x64'] or not os.path.isdir(self.mysql_root['x64']):
+          raise Exception('Could not find a path to 64-bit MySQL!')
+        self.mysql_root['x64'] = Normalize(self.mysql_root['x64'])
 
   def configure(self):
     builder.AddConfigureFile('pushbuild.txt')

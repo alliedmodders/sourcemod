@@ -5,7 +5,7 @@ if SM.mysql_root:
   for arch in SM.archs:
     binary = SM.ExtLibrary(builder, 'dbi.mysql.ext', arch)
     binary.compiler.cxxincludes += [
-      os.path.join(SM.mysql_root, 'include'),
+      os.path.join(SM.mysql_root[arch], 'include'),
       os.path.join(SM.mms_root, 'core', 'sourcehook')
     ]
     if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
@@ -15,7 +15,7 @@ if SM.mysql_root:
 
     if builder.target.platform == 'linux' or builder.target.platform == 'mac':
       binary.compiler.postlink += [
-        os.path.join(SM.mysql_root, 'lib', 'libmysqlclient_r.a'),
+        os.path.join(SM.mysql_root[arch], 'lib', 'libmysqlclient_r.a'),
         '-lz',
         '-lpthread',
         '-lm',
