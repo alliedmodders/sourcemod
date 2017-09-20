@@ -12,11 +12,17 @@ for arch in SM.archs:
     binary.compiler.cxxflags += ['/GR-']
 
   if builder.target.platform == 'linux':
-    path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux', 'libpcre.a')
+    if arch == 'x86':
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux', 'libpcre.a')
+    elif arch == 'x64':
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux64', 'libpcre.a')
   elif builder.target.platform == 'windows':
     path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_win', 'pcre.lib')
   elif builder.target.platform == 'mac':
-    path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin', 'libpcre.a')
+    if arch == 'x86':
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin', 'libpcre.a')
+    elif arch == 'x64':
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin64', 'libpcre.a')
   binary.compiler.postlink += [binary.Dep(path)]
 
   binary.sources += [
