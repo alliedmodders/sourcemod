@@ -102,6 +102,7 @@ const jit_uint8_t kREG_EDI      = 7;
 #define	IA32_MOV_RM_REG			0x89	// encoding is /r
 #define IA32_MOV_REG8_RM8		0x8A	// encoding is /r
 #define	IA32_MOV_REG_RM			0x8B	// encoding is /r
+#define IA32_MOV_RM_IMM32		0xC7	// encoding is /0
 #define IA32_LEA_REG_MEM		0x8D	// encoding is /r
 #define IA32_MOVSB				0xA4	// no extra encoding
 #define IA32_MOVSD				0xA5	// no extra encoding
@@ -463,6 +464,15 @@ inline jitoffs_t IA32_Jump_Imm32(JitWriter *jit, jit_int32_t disp)
 	ptr = jit->get_outputpos();
 	jit->write_int32(disp);
 	return ptr;
+}
+
+inline void IA32_Mov_ESP_Disp8_Imm32(JitWriter *jit, jit_int8_t disp8, jit_int32_t val)
+{
+	jit->write_ubyte(IA32_MOV_RM_IMM32);
+	jit->write_ubyte(ia32_modrm(MOD_DISP8, 0, kREG_SIB));
+	jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, kREG_ESP));
+	jit->write_byte(disp8);
+	jit->write_int32(val);
 }
 
 #endif //_INCLUDE_JIT_X86_MACROS_H
