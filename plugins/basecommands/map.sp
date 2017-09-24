@@ -48,7 +48,7 @@ public int MenuHandler_ChangeMap(Menu menu, MenuAction action, int param1, int p
 	
 		ShowActivity2(param1, "[SM] ", "%t", "Changing map", map);
 
-		LogAction(param1, -1, "\"%L\" changed map to \"%s\"", param1, map);
+		LogAction(param1, map, "\"%L\" changed map to \"%s\"", param1, map);
 
 		DataPack dp;
 		CreateDataTimer(3.0, Timer_ChangeMap, dp);
@@ -102,7 +102,7 @@ public Action Command_Map(int client, int args)
 	GetMapDisplayName(displayName, displayName, sizeof(displayName));
 
 	ShowActivity2(client, "[SM] ", "%t", "Changing map", displayName);
-	LogAction(client, -1, "\"%L\" changed map to \"%s\"", client, map);
+	LogAction(client, map, "\"%L\" changed map to \"%s\"", client, map);
 
 	DataPack dp;
 	CreateDataTimer(3.0, Timer_ChangeMap, dp);
