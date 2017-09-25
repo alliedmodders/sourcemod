@@ -309,6 +309,13 @@ void Logger::_UpdateFiles(bool bLevelChange)
 	time_t t = g_pSM->GetAdjustedTime();
 	tm *curtime = localtime(&t);
 
+	if (!bLevelChange && curtime->tm_mday == m_Day)
+	{
+		return;
+	}
+
+	m_Day = curtime->tm_mday;
+
 	char buff[PLATFORM_MAX_PATH];
 	ke::SafeSprintf(buff, sizeof(buff), "%04d%02d%02d", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
 

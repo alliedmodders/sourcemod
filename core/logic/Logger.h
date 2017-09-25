@@ -53,7 +53,7 @@ enum LoggingMode
 class Logger : public SMGlobalClass, public ILogger
 {
 public:
-	Logger() : m_Mode(LoggingMode_Daily), m_Active(true), m_DamagedNormalFile(false), m_DamagedErrorFile(false)
+	Logger() : m_Day(-1), m_Mode(LoggingMode_Daily), m_Active(true), m_DamagedNormalFile(false), m_DamagedErrorFile(false)
 	{
 	}
 public: //SMGlobalClass
@@ -99,6 +99,8 @@ private:
 	ke::AString m_NormalFileName;
 	ke::AString m_ErrorFileName;
 	ke::AString m_CurrentMapName;
+
+	int m_Day;
 
 	LoggingMode m_Mode;
 	bool m_Active;
