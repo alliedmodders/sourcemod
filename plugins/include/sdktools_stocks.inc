@@ -73,3 +73,29 @@ stock int FindTeamByName(const char[] name)
 
 	return found_team;
 }
+
+/**
+ * Get the end point coordinates where client aim at.
+ *
+ * @param client			Player Index.
+ * @param pos				Destination vector to store the end point coordinates.
+ * @param flags				Trace flags. MASK_SHOT by default.
+ */
+stock void TraceRayClientAimEndPoint(int client, float pos[3], int flags = MASK_SHOT)
+{
+	float client_pos[3], client_ang[3];
+
+	GetClientEyePosition(client, client_pos);
+	GetClientEyeAngles(client, client_ang);
+
+	Handle trace = TR_TraceRayFilterEx(client_pos, client_ang, flags, RayType_Infinite, TraceRayClientAimEndPointCB, client);
+	TR_GetEndPosition(pos, trace);
+	delete trace;
+}
+public bool TraceRayClientAimEndPointCB(int entity, int contentsMask, any data)
+{
+	if(data == entity)
+		return false;
+
+	return true;
+}
