@@ -83,6 +83,10 @@ stock int FindTeamByName(const char[] name)
  */
 stock void TraceRayClientAimEndPoint(int client, float pos[3], int flags = MASK_SHOT)
 {
+
+	if( !(0 < client <= MaxClients) || !IsClientInGame(client))
+		return;
+
 	float client_pos[3], client_ang[3];
 
 	GetClientEyePosition(client, client_pos);
