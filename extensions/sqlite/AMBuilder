@@ -5,9 +5,9 @@ binary = SM.ExtLibrary(builder, 'dbi.sqlite.ext')
 binary.compiler.cxxincludes += [
   os.path.join(SM.mms_root, 'core', 'sourcehook'),
 ]
-if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
   binary.compiler.cxxflags += ['-fno-rtti']
-elif binary.compiler.vendor == 'msvc':
+elif binary.compiler.family == 'msvc':
   binary.compiler.cxxflags += ['/GR-']
 
 binary.compiler.defines += [
@@ -16,7 +16,7 @@ binary.compiler.defines += [
   'SQLITE_USE_URI',
   'SQLITE_ALLOW_URI_AUTHORITY',
 ]
-if builder.target_platform == 'linux':
+if builder.target.platform == 'linux':
   binary.compiler.postlink += ['-ldl', '-lpthread']
 
 binary.sources += [

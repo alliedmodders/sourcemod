@@ -16,15 +16,15 @@ binary.compiler.defines += [
   'SM_LOGIC'
 ]
   
-if builder.target_platform == 'linux':
+if builder.target.platform == 'linux':
   binary.compiler.postlink += ['-lpthread', '-lrt']
-elif builder.target_platform == 'mac':
+elif builder.target.platform == 'mac':
   binary.compiler.cflags += ['-Wno-deprecated-declarations']
   binary.compiler.postlink += ['-framework', 'CoreServices']
 
-if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
   binary.compiler.cxxflags += ['-fno-rtti']
-elif binary.compiler.vendor == 'msvc':
+elif binary.compiler.family == 'msvc':
   binary.compiler.cxxflags += ['/GR-']
 
 binary.sources += [
@@ -83,7 +83,7 @@ binary.sources += [
   'frame_tasks.cpp',
   'smn_halflife.cpp',
 ]
-if builder.target_platform == 'windows':
+if builder.target.platform == 'windows':
   binary.sources += ['thread/WinThreads.cpp']
 else:
   binary.sources += ['thread/PosixThreads.cpp']
