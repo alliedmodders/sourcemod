@@ -91,7 +91,7 @@ stock bool ClientAimEndPos(int client, float pos[3], int flags = MASK_SHOT)
 	GetClientEyePosition(client, client_pos);
 	GetClientEyeAngles(client, client_ang);
 
-	Handle trace = TR_TraceRayFilterEx(client_pos, client_ang, flags, RayType_Infinite, ClientAimEndPosCB, client);
+	Handle trace = TR_TraceRayFilterEx(client_pos, client_ang, flags, RayType_Infinite, __ClientAimEndPosCB, client);
 	TR_GetEndPosition(client_pos, trace);
 
 	bool successful = (!TR_PointOutsideWorld(client_pos) && TR_DidHit(trace));
@@ -110,6 +110,6 @@ stock bool ClientAimEndPos(int client, float pos[3], int flags = MASK_SHOT)
 /**
  * Part of stock ClientAimEndPos(), don't use this.
  */
-stock bool ClientAimEndPosCB(int entity, int contentsMask, int data){
+stock bool __ClientAimEndPosCB(int entity, int contentsMask, int data){
 	return (data != entity);
 }
