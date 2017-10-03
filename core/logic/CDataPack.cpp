@@ -46,7 +46,7 @@ CDataPack::~CDataPack()
 
 static ke::Vector<ke::AutoPtr<CDataPack>> sDataPackCache;
 
-IDataPack * CDataPack::New()
+IDataPack *CDataPack::New()
 {
   if (sDataPackCache.empty())
     return new CDataPack();
@@ -205,20 +205,21 @@ const char *CDataPack::ReadString(size_t *len) const
 
 void *CDataPack::GetMemory() const
 {
-	if (!IsReadable() || elements[position].type != CDataPackType::Raw)
-		return nullptr;
-
-	return &(reinterpret_cast<size_t *>(elements[position].pData.vval)[1]);
+	return nullptr;
 }
 
 void *CDataPack::ReadMemory(size_t *size) const
 {
-	void *ptr = GetMemory();
-	if (ptr != nullptr)
-		++position;
-	
+	void *ptr = nullptr;
+	if (!IsReadable() || elements[position].type != CDataPackType::Raw)
+		return ptr;
+
+	size_t *val = reinterpret_cast<size_t *>(elements[position].pData.vval);
+	ptr = &(val[1]);
+	++position;
+
 	if (size)
-		*size = (reinterpret_cast<size_t *>(ptr)[-1]); /* Egor!!!! */
+		*size = val[0]; /* Egor!!!! */
 
 	return ptr;
 }

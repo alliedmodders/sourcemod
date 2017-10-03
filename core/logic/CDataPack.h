@@ -75,7 +75,7 @@ public: //IDataPack
 public:
 	void Initialize();
 	inline size_t GetCapacity() const { return this->elements.length(); };
-	CDataPackType GetCurrentType(void) const { return this->elements[this->position].type; };
+	inline CDataPackType GetCurrentType(void) const { return this->elements[this->position].type; };
 private:
 
 	typedef union {
