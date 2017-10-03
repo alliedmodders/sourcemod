@@ -1,7 +1,7 @@
 # vim: sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-lib = builder.compiler.StaticLibrary('version')
+lib = SM.StaticLibrary(builder, 'version')
 lib.compiler.includes += [
   os.path.join(builder.sourcePath, 'public')
 ]
