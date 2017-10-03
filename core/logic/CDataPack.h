@@ -34,6 +34,7 @@
 
 #include <IDataPack.h>
 #include <amtl/am-vector.h>
+#include <amtl/am-string.h>
 
 using namespace SourceMod;
 
@@ -80,7 +81,8 @@ private:
 	typedef union {
 		cell_t cval;
 		float fval;
-		void *vval;
+		uint8_t *vval;
+		ke::AString *sval;
 	} InternalPackValue;
 	
 	typedef struct {
