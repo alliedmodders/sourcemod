@@ -567,13 +567,8 @@ skip_search:
 		ItemDrawInfo padItem(NULL, ITEMDRAW_SPACER);
 		if (exitButton || (displayNext || displayPrev))
 		{
-			/* If there are no control options,
-			 * Instead just pad with invisible slots.
-			 */
-			if (!displayNext && !displayPrev)
-			{
-				padItem.style = ITEMDRAW_NOTEXT;
-			}
+			padItem.style = ITEMDRAW_NOTEXT;
+
 			/* Add spacers so we can pad to the end */
 			for (unsigned int i=0; i<padding; i++)
 			{
