@@ -33,7 +33,7 @@
 #include "CallWrapper.h"
 #include "CallMaker.h"
 
-CallWrapper::CallWrapper(const SourceHook::ProtoInfo *protoInfo)
+CallWrapper::CallWrapper(const SourceHook::ProtoInfo *protoInfo) : m_FnFlags(0)
 {
 	m_AddrCodeBase = NULL;
 	m_AddrCallee = NULL;
@@ -75,6 +75,22 @@ CallWrapper::CallWrapper(const SourceHook::ProtoInfo *protoInfo)
 		m_Params[i].offset = offs;
 		offs += m_Params[i].info.size;
 	}
+}
+
+CallWrapper::CallWrapper(const SourceHook::ProtoInfo *protoInfo, const PassInfo *retInfo,
+                         const PassInfo paramInfo[], unsigned int fnFlags) : CallWrapper(protoInfo)
+{
+	m_RetParam->fields = retInfo->fields;
+	m_RetParam->numFields = retInfo->numFields;
+	
+	unsigned int argnum = protoInfo->numOfParams;
+	for (unsigned int i = 0; i < argnum; i++)
+	{
+		m_Params[i].info.fields = paramInfo[i].fields;
+		m_Params[i].info.numFields = paramInfo[i].numFields;
+	}
+	
+	m_FnFlags = fnFlags;
 }
 
 CallWrapper::~CallWrapper()
@@ -183,4 +199,9 @@ unsigned int CallWrapper::GetParamOffset(unsigned int num)
 	assert(num < GetParamCount() && num >= 0);
 
 	return m_Params[num].offset;
+}
+
+unsigned int CallWrapper::GetFunctionFlags()
+{
+	return m_FnFlags;
 }

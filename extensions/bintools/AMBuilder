@@ -18,11 +18,13 @@ for arch in SM.archs:
     'extension.cpp',
     'CallMaker.cpp',
     'CallWrapper.cpp',
-    'HookWrapper.cpp',
-    'jit_call.cpp',
-    'jit_hook.cpp',
     '../../public/smsdk_ext.cpp'
   ]
+  
+  if arch == 'x64':
+    binary.sources += ['jit_call_x64.cpp']
+  else:
+    binary.sources += ['jit_call.cpp']
 
   SM.extensions += [builder.Add(binary)]
 
