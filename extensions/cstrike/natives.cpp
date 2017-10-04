@@ -880,7 +880,7 @@ static cell_t CS_ItemDefIndexToID(IPluginContext *pContext, const cell_t *params
 static cell_t CS_WeaponIDToItemDefIndex(IPluginContext *pContext, const cell_t *params)
 {
 #if SOURCE_ENGINE == SE_CSGO
-	WeaponIDMap::Result res = g_mapWeaponIDToDefIdx.find((uint16_t)params[1]);
+	WeaponIDMap::Result res = g_mapWeaponIDToDefIdx.find((SMCSWeapon)params[1]);
 
 	if (!res.found())
 		return  pContext->ThrowNativeError("Invalid weapon id passed.");
