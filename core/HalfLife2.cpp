@@ -245,7 +245,12 @@ void CHalfLife2::InitLogicalEntData()
 				return;
 			}
 
+#ifdef PLATFORM_X86
 			g_EntList = *reinterpret_cast<void **>(addr + offset);
+#elif defined PLATFORM_X64
+			int32_t varOffset = *reinterpret_cast<int32_t *>(addr + offset);
+			g_EntList = reinterpret_cast<void *>(addr + offset + sizeof(int32_t) + varOffset);
+#endif
 
 		}
 	}
