@@ -158,9 +158,13 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 
 static cell_t PrepSDKCall_SetAddress(IPluginContext *pContext, const cell_t *params)
 {
+#ifdef PLATFORM_X86
 	s_call_addr = reinterpret_cast<void *>(params[1]);
 
 	return (s_call_addr != NULL) ? 1 : 0;
+#else
+	return pContext->ThrowNativeError("Not yet supported");
+#endif
 }
 
 // Must match same enum in sdktools.inc
