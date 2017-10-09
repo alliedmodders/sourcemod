@@ -321,7 +321,7 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 		"nvgs", "nightvision"
 	};
 	
-	for (int i = 0; i < SM_ARRAYSIZE(szAliases)/2; i++)
+	for (size_t i = 0; i < SM_ARRAYSIZE(szAliases)/2; i++)
 	{
 		if (stricmp(weapon, szAliases[i * 2]) == 0)
 			return szAliases[i * 2 + 1];
@@ -402,7 +402,7 @@ const char *WeaponIDToAlias(int weaponID)
 #else
 	int realID = GetRealWeaponID(weaponID);
 
-	if (realID < SM_ARRAYSIZE(szWeaponInfo) && realID > 0)
+	if (static_cast<size_t>(realID) < SM_ARRAYSIZE(szWeaponInfo) && realID > 0)
 		return szWeaponInfo[realID];
 
 	return NULL;
