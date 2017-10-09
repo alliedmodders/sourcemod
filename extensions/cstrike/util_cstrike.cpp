@@ -479,7 +479,7 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 		"nvgs", "nightvision"
 	};
 
-	for (int i = 0; i < SM_ARRAYSIZE(szAliases) / 2; i++)
+	for (size_t i = 0; i < SM_ARRAYSIZE(szAliases) / 2; i++)
 	{
 		if (Q_stristr(GetWeaponNameFromClassname(weapon), szAliases[i * 2]) != 0)
 			return szAliases[i * 2 + 1];
