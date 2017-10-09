@@ -23,7 +23,7 @@ elif builder.target.platform == 'windows':
 elif builder.target.platform == 'linux':
   binary.compiler.defines += ['_GNU_SOURCE']
 
-if binary.compiler.vendor == 'clang':
+if binary.compiler.family == 'clang':
   # https://llvm.org/bugs/show_bug.cgi?id=16428
   binary.compiler.cflags += ['-Wno-attributes']
 

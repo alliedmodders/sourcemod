@@ -219,6 +219,10 @@ class SMConfig(object):
 
     have_gcc = cxx.family == 'gcc'
     have_clang = cxx.family == 'clang'
+    if cxx.version >= 'clang-3.9' or cxx.version >= 'apple-clang-8.0':
+      cxx.cxxflags += ['-Wno-expansion-to-defined']
+    if cxx.version == 'clang-3.9' or cxx.version == 'apple-clang-8.0':
+      cxx.cflags += ['-Wno-varargs']
     if cxx.version >= 'clang-3.6' or cxx.version >= 'apple-clang-7.0':
       cxx.cxxflags += ['-Wno-inconsistent-missing-override']
     if cxx.version >= 'clang-2.9' or cxx.version >= 'apple-clang-3.0':
@@ -240,6 +244,7 @@ class SMConfig(object):
 
     if have_gcc:
       cxx.cflags += ['-mfpmath=sse']
+      cxx.cflags += ['-Wno-maybe-uninitialized']
 
     if builder.options.opt == '1':
       cxx.cflags += ['-O3']
