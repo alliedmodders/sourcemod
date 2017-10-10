@@ -14,7 +14,6 @@ addons:
     packages:
       - clang-3.6
       - clang-3.8
-      - clang-3.9
       - clang-4.0
       - clang-5.0
       - lib32stdc++6
