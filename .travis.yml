@@ -17,7 +17,6 @@ addons:
       - libc6-dev-i386
       - linux-libc-dev
       - g++-multilib
-    packages:
 #      - clang-3.6
 #      - clang-3.8
 #      - clang-4.0
