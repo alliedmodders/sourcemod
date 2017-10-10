@@ -20,17 +20,17 @@ addons:
       - lib32z1-dev
       - libc6-dev-i386
       - linux-libc-dev
-      - g++-4.8
-      - g++-4.9
-      - g++-5
+#      - g++-4.8
+#      - g++-4.9
+#      - g++-5
       - g++-6
-      - g++-7
+#      - g++-7
       - g++-multilib
-      - g++-4.8-multilib
-      - g++-4.9-multilib
-      - g++-5-multilib
+#      - g++-4.8-multilib
+#      - g++-4.9-multilib
+#      - g++-5-multilib
       - g++-6-multilib
-      - g++-7-multilib
+#      - g++-7-multilib
     cache:
       directories:
         - ../mysql-5.0
