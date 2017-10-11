@@ -3,27 +3,27 @@ import os, platform
 
 builder.SetBuildFolder('libcurl')
 
-binary = builder.compiler.StaticLibrary('curl')
+binary = SM.StaticLibrary(builder, 'curl')
 binary.compiler.includes += [
   os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl-src', 'lib'),
   os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl-src', 'include')
 ]
 
-if builder.target_platform == 'mac':
+if builder.target.platform == 'mac':
   mac_version, ignore, ignore = platform.mac_ver()
   mac_tuple = mac_version.split('.')
   if int(mac_tuple[0]) >= 10 and int(mac_tuple[1]) >= 9:
     binary.compiler.defines += ['BUILTIN_STRLCAT']
-elif builder.target_platform == 'windows':
+elif builder.target.platform == 'windows':
   binary.compiler.defines += [
     'BUILDING_LIBCURL',
     'CURL_STATICLIB',
     'CURL_DISABLE_LDAP',
   ]
-elif builder.target_platform == 'linux':
+elif builder.target.platform == 'linux':
   binary.compiler.defines += ['_GNU_SOURCE']
 
-if binary.compiler.vendor == 'clang':
+if binary.compiler.family == 'clang':
   # https://llvm.org/bugs/show_bug.cgi?id=16428
   binary.compiler.cflags += ['-Wno-attributes']
 

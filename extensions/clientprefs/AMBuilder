@@ -5,9 +5,9 @@ binary = SM.ExtLibrary(builder, 'clientprefs.ext')
 binary.compiler.cxxincludes += [
   os.path.join(SM.mms_root, 'core', 'sourcehook'),
 ]
-if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
   binary.compiler.cxxflags += ['-fno-rtti']
-elif binary.compiler.vendor == 'msvc':
+elif binary.compiler.family == 'msvc':
   binary.compiler.cxxflags += ['/GR-']
 
 binary.sources += [
