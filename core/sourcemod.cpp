@@ -745,6 +745,16 @@ bool SourceModBase::IsMapRunning()
 	return g_OnMapStarted;
 }
 
+void *SourceModBase::FromPseudoAddress(uint32_t pseudoAddr)
+{
+	return logicore.FromPseudoAddress(pseudoAddr);
+}
+
+uint32_t SourceModBase::ToPseudoAddress(void *addr)
+{
+	return logicore.ToPseudoAddress(addr);
+}
+
 class ConVarRegistrar :
 	public IConCommandBaseAccessor,
 	public SMGlobalClass

@@ -74,6 +74,8 @@ struct sm_logic_t
 	void            (*FreeDataPack)(IDataPack *pack);
 	ICellArray *    (*CreateCellArray)(size_t blocksize);
 	void            (*FreeCellArray)(ICellArray *arr);
+	void *			(*FromPseudoAddress)(uint32_t pseudoAddr);
+	uint32_t		(*ToPseudoAddress)(void *addr);
 	IScriptManager	*scripts;
 	IShareSys		*sharesys;
 	IExtensionSys	*extsys;

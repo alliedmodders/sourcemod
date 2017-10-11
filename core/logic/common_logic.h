@@ -33,6 +33,7 @@
 #define _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_
 
 #include "../sm_globals.h"
+#include "PseudoAddrManager.h"
 
 namespace SourceMod {
 class CoreProvider;
@@ -57,6 +58,7 @@ class IVEngineServerBridge;
 #endif
 } // namespace SourceMod
 struct ServerGlobals;
+class PseudoAddressManager;
 
 extern SourceMod::CoreProvider *bridge;
 extern SourceMod::IHandleSys *handlesys;
@@ -76,6 +78,7 @@ extern SourceMod::IScriptManager *scripts;
 extern SourceMod::IExtensionSys *extsys;
 extern SourceMod::ILogger *logger;
 extern SourceMod::IMenuManager *menus;
+extern PseudoAddressManager pseudoAddr;
 
 #if defined SM_LOGIC
 extern SourceMod::IVEngineServerBridge *engine;

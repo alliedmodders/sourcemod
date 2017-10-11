@@ -131,7 +131,6 @@ static cell_t smn_GameConfGetKeyValue(IPluginContext *pCtx, const cell_t *params
 
 static cell_t smn_GameConfGetAddress(IPluginContext *pCtx, const cell_t *params)
 {
-#ifdef PLATFORM_X86
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
@@ -153,9 +152,10 @@ static cell_t smn_GameConfGetAddress(IPluginContext *pCtx, const cell_t *params)
 	if (!gc->GetAddress(key, &val))
 		return 0;
 
+#ifdef PLATFORM_X86
 	return (cell_t)val;
 #else
-	return pCtx->ThrowNativeError("Not yet supported");
+	return pseudoAddr.ToPseudoAddress(val);
 #endif
 }
 

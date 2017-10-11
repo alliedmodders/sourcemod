@@ -2613,7 +2613,7 @@ static cell_t GetEntityAddress(IPluginContext *pContext, const cell_t *params)
 #ifdef PLATFORM_X86
 	return reinterpret_cast<cell_t>(pEntity);
 #else
-	return pContext->ThrowNativeError("Not yet supported");
+	return g_SourceMod.ToPseudoAddress(pEntity);
 #endif
 }
 

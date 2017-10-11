@@ -160,11 +160,11 @@ static cell_t PrepSDKCall_SetAddress(IPluginContext *pContext, const cell_t *par
 {
 #ifdef PLATFORM_X86
 	s_call_addr = reinterpret_cast<void *>(params[1]);
+#else
+	s_call_addr = g_pSM->FromPseudoAddress(params[1]);
+#endif
 
 	return (s_call_addr != NULL) ? 1 : 0;
-#else
-	return pContext->ThrowNativeError("Not yet supported");
-#endif
 }
 
 // Must match same enum in sdktools.inc
