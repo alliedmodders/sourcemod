@@ -800,7 +800,9 @@ static cell_t SQL_Query(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &query);
 
 	IQuery *qr;
-	
+
+	db->LockForFullAtomicOperation();
+
 	if (params[0] >= 3 && params[3] != -1)
 	{
 		qr = db->DoQueryEx(query, params[3]);
@@ -809,6 +811,8 @@ static cell_t SQL_Query(IPluginContext *pContext, const cell_t *params)
 	{
 		qr = db->DoQuery(query);
 	}
+
+	db->UnlockFromFullAtomicOperation();
 
 	if (!qr)
 	{
@@ -887,8 +891,6 @@ static cell_t SQL_LockDatabase(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid database Handle %x (error: %d)", params[1], err);
 	}
 
-	db->LockForFullAtomicOperation();
-
 	return 1;
 }
 
@@ -902,8 +904,6 @@ static cell_t SQL_UnlockDatabase(IPluginContext *pContext, const cell_t *params)
 	{
 		return pContext->ThrowNativeError("Invalid database Handle %x (error: %d)", params[1], err);
 	}
-
-	db->UnlockFromFullAtomicOperation();
 
 	return 1;
 }
