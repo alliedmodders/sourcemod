@@ -591,10 +591,10 @@ class SMConfig(object):
 
     return binary
 
-  def HL2Library(self, context, name, sdk):
-    binary = self.Library(context, name)
+  def HL2Library(self, context, name, sdk, arch):
+    binary = self.Library(context, name, arch)
     self.ConfigureForExtension(context, binary.compiler)
-    return self.ConfigureForHL2(binary, sdk)
+    return self.ConfigureForHL2(binary, sdk, arch)
 
   def HL2Project(self, context, name):
     project = context.cxx.LibraryProject(name)
