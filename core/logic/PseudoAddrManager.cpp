@@ -32,6 +32,9 @@
 #include <mach/mach.h>
 #include <mach/vm_region.h>
 #endif
+#ifdef PLATFORM_LINUX
+#include <inttypes.h>
+#endif
 
 PseudoAddressManager::PseudoAddressManager() : m_NumEntries(0)
 {
@@ -144,7 +147,7 @@ void *PseudoAddressManager::GetAllocationBase(void *ptr)
 	FILE *fp = fopen("/proc/self/maps", "r");
 	if (fp) {
 		uintptr_t lower, upper;
-		while (fscanf(fp, "%lx-%lx", &lower, &upper) != EOF) {
+		while (fscanf(fp, "%" PRIxPTR "-%" PRIxPTR, &lower, &upper) != EOF) {
 			if (addr >= lower && addr <= upper) {
 				fclose(fp);
 				return reinterpret_cast<void *>(lower);
