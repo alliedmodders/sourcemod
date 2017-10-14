@@ -83,8 +83,11 @@ for arch in SM.archs:
     'CDataPack.cpp',
     'frame_tasks.cpp',
     'smn_halflife.cpp',
-    'PseudoAddrManager.cpp',
   ]
+
+  if arch == 'x64':
+    binary.sources += ['PseudoAddrManager.cpp']
+
   if builder.target.platform == 'windows':
     binary.sources += ['thread/WinThreads.cpp']
   else:
