@@ -57,9 +57,6 @@
 #include "RootConsoleMenu.h"
 #include "CDataPack.h"
 #include "CellArray.h"
-#ifdef PLATFORM_X64
-#include "PseudoAddrManager.h"
-#endif
 #include <bridge/include/BridgeAPI.h>
 #include <bridge/include/IProviderCallbacks.h>
 
