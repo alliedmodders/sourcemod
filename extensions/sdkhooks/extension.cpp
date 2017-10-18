@@ -957,7 +957,7 @@ bool SDKHooks::Hook_CanBeAutobalanced()
 			// Only update our new ret if different from original
 			// (so if multiple plugins returning different answers,
 			//  the one(s) that changed it win)
-			if (res != origRet)
+			if ((bool)res != origRet)
 				newRet = !origRet;
 		}
 
