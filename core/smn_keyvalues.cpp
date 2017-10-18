@@ -1113,6 +1113,36 @@ static cell_t KeyValues_Import(IPluginContext *pContext, const cell_t *params)
 	return smn_CopySubkeys(pContext, new_params);
 }
 
+// KeyValues.ExportToString(char[] buffer, int maxlen);
+static cell_t smn_KeyValuesToString(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+	KeyValues *kv;
+	CUtlBuffer buffer;
+	
+	kv = pStk->pCurRoot.front(); // grab kv from kvstack
+
+	kv->RecursiveSaveToFile(buffer, 0); // write kvs to CUtlBuffer
+	
+	char* outStr;
+	pContext->LocalToString(params[2], &outStr);
+	size_t maxlen = static_cast<size_t>(params[3]);
+	
+	buffer.GetString(outStr, maxlen); // write buffer output to sp str
+}
+
 static KeyValueNatives s_KeyValueNatives;
 
 REGISTER_NATIVES(keyvaluenatives)
@@ -1187,6 +1217,7 @@ REGISTER_NATIVES(keyvaluenatives)
 	{"KeyValues.ImportFromFile",		smn_FileToKeyValues},
 	{"KeyValues.ImportFromString",		smn_StringToKeyValues},
 	{"KeyValues.ExportToFile",			smn_KeyValuesToFile},
+	{"KeyValues.ExportToString",		smn_KeyValuesToString},
 
 	{NULL,						NULL}
 };
