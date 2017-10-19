@@ -1113,7 +1113,7 @@ static cell_t KeyValues_Import(IPluginContext *pContext, const cell_t *params)
 	return smn_CopySubkeys(pContext, new_params);
 }
 
-// KeyValues.ExportToString(char[] buffer, int maxlen);
+// int KeyValues.ExportToString(char[] buffer, int maxlen);
 static cell_t smn_KeyValuesToString(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -1141,6 +1141,37 @@ static cell_t smn_KeyValuesToString(IPluginContext *pContext, const cell_t *para
 	size_t maxlen = static_cast<size_t>(params[3]);
 	
 	buffer.GetString(outStr, maxlen); // write buffer output to sp str
+	return buffer.TellGet(); // output size able to be written
+}
+
+// int KeyValues.ExportLength; 
+static cell_t smn_KeyValuesExportLength(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+	KeyValues *kv;
+	CUtlBuffer buffer;
+	
+	kv = pStk->pCurRoot.front(); // grab kv from kvstack
+
+	kv->RecursiveSaveToFile(buffer, 0); // write kvs to CUtlBuffer
+	
+	/* In order for TellGet to return the size, we have to GetString atleast once... */
+	char string[2];
+	buffer.GetString(string, sizeof(string));
+
+	return (cell_t)buffer.TellGet(); // output size able to be written
 }
 
 static KeyValueNatives s_KeyValueNatives;
@@ -1218,6 +1249,7 @@ REGISTER_NATIVES(keyvaluenatives)
 	{"KeyValues.ImportFromString",		smn_StringToKeyValues},
 	{"KeyValues.ExportToFile",			smn_KeyValuesToFile},
 	{"KeyValues.ExportToString",		smn_KeyValuesToString},
+	{"KeyValues.ExportLength.get",		smn_KeyValuesExportLength},
 
 	{NULL,						NULL}
 };
