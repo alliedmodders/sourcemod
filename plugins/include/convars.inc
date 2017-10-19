@@ -84,6 +84,9 @@ native ConVar CreateConVar(
 
 // Searches for a console variable.
 //
+// Note: A lookup is performed when FindConVar is called,
+// so it should be considered expensive.
+//
 // @param name			Name of convar to find.
 // @return				A ConVar object if found; null otherwise.
 native ConVar FindConVar(const char[] name);
