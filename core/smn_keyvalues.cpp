@@ -1113,7 +1113,6 @@ static cell_t KeyValues_Import(IPluginContext *pContext, const cell_t *params)
 	return smn_CopySubkeys(pContext, new_params);
 }
 
-// int KeyValues.ExportToString(char[] buffer, int maxlen);
 static cell_t smn_KeyValuesToString(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -1144,7 +1143,6 @@ static cell_t smn_KeyValuesToString(IPluginContext *pContext, const cell_t *para
 	return buffer.TellGet(); // output size able to be written
 }
 
-// int KeyValues.ExportLength; 
 static cell_t smn_KeyValuesExportLength(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
