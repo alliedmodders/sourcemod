@@ -932,6 +932,31 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 	libsys->CloseDirectory(dir);
 }
 
+inline bool HashesAreEqual(const unsigned char* a, const unsigned char* b)
+{
+	return strlen((const char*)a) == strlen((const char*)b) && memcmp(a, b, strlen((const char*)a)) == 0;
+}
+
+CPlugin* PluginExistsInHashSet(CPlugin *plugin, NameHashSet<CPlugin *> &hashset)
+{
+	auto it = hashset.iter();
+	
+	CPlugin *current;
+	while (!it.empty())
+	{
+		current = *it;
+		
+		if (HashesAreEqual(current->GetRuntime()->GetCodeHash(), plugin->GetRuntime()->GetCodeHash()))
+		{
+			return current;
+		}
+		
+		it.next();
+	}
+	
+	return nullptr;
+}
+
 LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool debug, PluginType type)
 {
 	if (m_LoadingLocked)
@@ -960,6 +985,16 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 
 	CPlugin *plugin = CompileAndPrep(path);
 
+	// Now that we've got CPlugin: check hashes to see if plugin is already loaded. Checking names is not enough
+	CPlugin *search = PluginExistsInHashSet(plugin, m_LoadLookup);
+	if (search)
+	{
+		delete plugin; // free mem from plugin
+		
+		*aResult = search;
+		return LoadRes_AlreadyLoaded;
+	}
+	
 	// Assign our outparam so we can return early. It must be set.
 	*aResult = plugin;
 
