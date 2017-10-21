@@ -82,8 +82,8 @@
 			{
 				"library" 	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x30\x53\x8B\xD9\x89\x5D\xEC"
-				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefib"
-				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefib"
+				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
+				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
 			}
 			"IsPlayerInDuel"
 			{
