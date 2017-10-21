@@ -932,41 +932,38 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 	libsys->CloseDirectory(dir);
 }
 
-inline bool HashesAreEqual(const unsigned char* a, const unsigned char* b)
+#ifdef PLATFORM_WINDOWS
+char *strdup_tolower(const char *input)
 {
-	return strlen((const char*)a) == strlen((const char*)b) && memcmp(a, b, strlen((const char*)a)) == 0;
-}
-
-CPlugin* PluginExistsInHashSet(CPlugin *plugin, NameHashSet<CPlugin *> &hashset)
-{
-	auto it = hashset.iter();
+	char *str = strdup(input);
 	
-	CPlugin *current;
-	while (!it.empty())
+	for (char *c = str; *c; c++)
 	{
-		current = *it;
-		
-		if (HashesAreEqual(current->GetRuntime()->GetCodeHash(), plugin->GetRuntime()->GetCodeHash()))
-		{
-			return current;
-		}
-		
-		it.next();
+		*c = tolower((unsigned char)*c);
 	}
 	
-	return nullptr;
+	return str;
 }
+#endif
 
 LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool debug, PluginType type)
 {
 	if (m_LoadingLocked)
 		return LoadRes_NeverLoad;
 
+/* For windows, we convert the path to lower-case in order to avoid duplicate plugin loading */
+#ifdef PLATFORM_WINDOWS
+	ke::AString finalPath(strdup_tolower(path));
+#elif 
+	ke::AString finalPath(strdup(path));
+#endif
+
+
 	/**
 	 * Does this plugin already exist?
 	 */
 	CPlugin *pPlugin;
-	if (m_LoadLookup.retrieve(path, &pPlugin))
+	if (m_LoadLookup.retrieve(finalPath.chars(), &pPlugin))
 	{
 		/* Check to see if we should try reloading it */
 		if (pPlugin->GetStatus() == Plugin_BadLoad
@@ -983,18 +980,8 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 		}
 	}
 
-	CPlugin *plugin = CompileAndPrep(path);
+	CPlugin *plugin = CompileAndPrep(finalPath.chars());
 
-	// Now that we've got CPlugin: check hashes to see if plugin is already loaded. Checking names is not enough
-	CPlugin *search = PluginExistsInHashSet(plugin, m_LoadLookup);
-	if (search)
-	{
-		delete plugin; // free mem from plugin
-		
-		*aResult = search;
-		return LoadRes_AlreadyLoaded;
-	}
-	
 	// Assign our outparam so we can return early. It must be set.
 	*aResult = plugin;
 
