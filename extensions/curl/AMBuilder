@@ -1,21 +1,21 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python : 
 import os
 
-libcurl = builder.RunScript('curl-src/lib/AMBuilder')
+libcurl = builder.Build('curl-src/lib/AMBuilder')
 
 binary = SM.ExtLibrary(builder, 'webternet.ext')
 binary.compiler.includes += [
   os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl-src', 'include')
 ]
 binary.compiler.defines += ['CURL_STATICLIB']
-if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
   binary.compiler.cxxflags += ['-fno-rtti']
-elif binary.compiler.vendor == 'msvc':
+elif binary.compiler.family == 'msvc':
   binary.compiler.cxxflags += ['/GR-']
 binary.compiler.postlink += [libcurl.binary]
-if builder.target_platform == 'linux':
+if builder.target.platform == 'linux':
   binary.compiler.postlink += ['-lrt']
-elif builder.target_platform == 'windows':
+elif builder.target.platform == 'windows':
   binary.compiler.postlink += ['ws2_32.lib']
 
 binary.sources += [

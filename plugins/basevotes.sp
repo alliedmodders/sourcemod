@@ -69,9 +69,7 @@ voteType g_voteType = question;
 // Menu API does not provide us with a way to pass multiple peices of data with a single
 // choice, so some globals are used to hold stuff.
 //
-#define VOTE_CLIENTID	0
-#define VOTE_USERID	1
-int g_voteClient[2];		/* Holds the target's client id and user id */
+int g_voteTarget;		/* Holds the target's user id */
 
 #define VOTE_NAME	0
 #define VOTE_AUTHID	1
@@ -287,12 +285,10 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 			limit = g_Cvar_Limits[g_voteType].FloatValue;
 		}
 		
-		/* :TODO: g_voteClient[userid] needs to be checked */
-
 		// A multi-argument vote is "always successful", but have to check if its a Yes/No vote.
 		if ((strcmp(item, VOTE_YES) == 0 && FloatCompare(percent,limit) < 0 && param1 == 0) || (strcmp(item, VOTE_NO) == 0 && param1 == 1))
 		{
-			/* :TODO: g_voteClient[userid] should be used here and set to -1 if not applicable.
+			/* :TODO: g_voteTarget should be used here and set to -1 if not applicable.
 			 */
 			LogAction(-1, -1, "Vote failed.");
 			PrintToChatAll("[SM] %t", "Vote Failed", RoundToNearest(100.0*limit), RoundToNearest(100.0*percent), totalVotes);
@@ -327,33 +323,49 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 					
 				case (kick):
 				{
-					if (g_voteArg[0] == '\0')
+					int voteTarget;
+					if((voteTarget = GetClientOfUserId(g_voteTarget)) == 0)
 					{
-						strcopy(g_voteArg, sizeof(g_voteArg), "Votekicked");
+						LogAction(-1, -1, "Vote kick failed, unable to kick \"%s\" (reason \"%s\")", g_voteInfo[VOTE_NAME], "Player no longer available");
 					}
-					
-					PrintToChatAll("[SM] %t", "Kicked target", "_s", g_voteInfo[VOTE_NAME]);					
-					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote kick successful, kicked \"%L\" (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
-					
-					ServerCommand("kickid %d \"%s\"", g_voteClient[VOTE_USERID], g_voteArg);					
+					else
+					{
+						if (g_voteArg[0] == '\0')
+						{
+							strcopy(g_voteArg, sizeof(g_voteArg), "Votekicked");
+						}
+						
+						PrintToChatAll("[SM] %t", "Kicked target", "_s", g_voteInfo[VOTE_NAME]);					
+						LogAction(-1, voteTarget, "Vote kick successful, kicked \"%L\" (reason \"%s\")", voteTarget, g_voteArg);
+						
+						ServerCommand("kickid %d \"%s\"", g_voteTarget, g_voteArg);					
+					}
 				}
 					
 				case (ban):
 				{
-					if (g_voteArg[0] == '\0')
+					int voteTarget;
+					if((voteTarget = GetClientOfUserId(g_voteTarget)) == 0)
 					{
-						strcopy(g_voteArg, sizeof(g_voteArg), "Votebanned");
+						LogAction(-1, -1, "Vote ban failed, unable to ban \"%s\" (reason \"%s\")", g_voteInfo[VOTE_NAME], "Player no longer available");
 					}
-					
-					PrintToChatAll("[SM] %t", "Banned player", g_voteInfo[VOTE_NAME], 30);
-					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote ban successful, banned \"%L\" (minutes \"30\") (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
-
-					BanClient(g_voteClient[VOTE_CLIENTID],
-							  30,
-							  BANFLAG_AUTO,
-							  g_voteArg,
-							  "Banned by vote",
-							  "sm_voteban");
+					else
+					{
+						if (g_voteArg[0] == '\0')
+						{
+							strcopy(g_voteArg, sizeof(g_voteArg), "Votebanned");
+						}
+						
+						PrintToChatAll("[SM] %t", "Banned player", g_voteInfo[VOTE_NAME], 30);
+						LogAction(-1, voteTarget, "Vote ban successful, banned \"%L\" (minutes \"30\") (reason \"%s\")", voteTarget, g_voteArg);
+	
+						BanClient(voteTarget,
+								  30,
+								  BANFLAG_AUTO,
+								  g_voteArg,
+								  "Banned by vote",
+								  "sm_voteban");
+					}
 				}
 			}
 		}
@@ -378,7 +390,6 @@ void VoteSelect(Menu menu, int param1, int param2 = 0)
 void VoteMenuClose()
 {
 	delete g_hVoteMenu;
-	g_hVoteMenu = null;
 }
 
 float GetVotePercent(int votes, int totalVotes)

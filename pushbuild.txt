@@ -34,7 +34,7 @@ THIS IS NOT AN EXIT.
 ABANDON ALL HOPE YE WHO ENTER HERE.
 egg!!
 blimey!
-this->crab
+this.crab
 jibbly jibbly jibbly
 oh mercurial
 hi
@@ -71,3 +71,5 @@ R.I.P. Wade Boggs
 Your tier1 tower is under attack..
 Christmas!!!
 the mousse angles are smooth
+spoilers
+

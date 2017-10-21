@@ -1,33 +1,116 @@
+git:
+  depth: 3
+
+sudo: false
+language: cpp
+os: linux
+dist: trusty
 addons:
   apt:
-    packages:
-    - lib32stdc++6
-    - lib32z1-dev
-    - libc6-dev-i386
-    - linux-libc-dev
-    - g++-multilib
-    - g++-4.8
     sources:
-    - ubuntu-toolchain-r-test
-  cache:
-    directories:
-    - ../mysql-5.0
-language: cpp
-sudo: false
-compiler:
-  - clang
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-trusty-4.0
+      - llvm-toolchain-trusty-5.0
+    packages:
+      - lib32stdc++6
+      - lib32z1-dev
+      - libc6-dev-i386
+      - linux-libc-dev
+      - g++-multilib
+#      - clang-3.6
+#      - clang-3.8
+#      - clang-4.0
+#      - clang-5.0
+#      - g++-6
+#      - g++-6-multilib
+      - g++-4.8-multilib
+      - g++-4.8
+      - g++-4.9-multilib
+      - g++-4.9
+      - g++-5-multilib
+      - g++-5
+      - g++-7-multilib
+      - g++-7
+    cache:
+      directories:
+        - ../mysql-5.0
 env:
-  global:
-  - LLVM_ARCHIVE_URI=http://sourcemod.net/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-before_install:
-  - wget -nc $LLVM_ARCHIVE_URI -O $HOME/clang+llvm.tar.xz
-  - mkdir -p $HOME/clang+llvm
-  - tar -xf $HOME/clang+llvm.tar.xz -C $HOME/clang+llvm --strip-components 1
-  - export PATH=$HOME/clang+llvm/bin:$PATH
+ - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+ - MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
+ - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+ - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+ - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+matrix:
+  fast_finish: true
+  include:
+    - os: linux
+      sudo: false
+      language: cpp
+      addons:
+        apt:
+          packages: ['clang-3.6', 'lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev', 'g++-multilib']
+        cache:
+          directories: ['../mysql-5.0']
+      env: ['MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"']
+
+    - os: linux
+      sudo: false
+      language: cpp
+      addons:
+        apt:
+          packages: ['clang-3.8', 'lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev', 'g++-multilib']
+        cache:
+          directories: ['../mysql-5.0']
+      env: ['MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"']
+
+    - os: linux
+      sudo: false
+      language: cpp
+      addons:
+        apt:
+          sources: ['llvm-toolchain-trusty-4.0']
+          packages: ['clang-4.0', 'lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev', 'g++-multilib']
+        cache:
+          directories: ['../mysql-5.0']
+      env: ['MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"']
+
+    - os: linux
+      sudo: false
+      language: cpp
+      addons:
+        apt:
+          sources: ['llvm-toolchain-trusty-5.0']
+          packages: ['clang-5.0', 'lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev', 'g++-multilib']
+        cache:
+          directories: ['../mysql-5.0']
+      env: ['MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"']
+
+    - os: linux
+      sudo: false
+      language: cpp
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-6', 'g++-6-multilib', 'lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev', 'g++-multilib']
+        cache:
+          directories: ['../mysql-5.0']
+      env: ['MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"']
+
+  allow_failures:
+    - env: MATRIX_EVAL="CC=clang-3.7 && CXX=clang++-3.7"
+    - env: MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+    - env: MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
+    - env: MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+    - env: MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+    - env: MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+
 before_script:
   - CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh && cd $CHECKOUT_DIR
 script:
   - mkdir build && cd build
   - PATH="~/.local/bin:$PATH"
-  - CC=clang-3.8 CXX=clang-3.8 python ../configure.py --enable-optimize --sdks=episode1,tf2,l4d2,csgo,dota
+  - eval "${MATRIX_EVAL}"
+  - python ../configure.py --enable-optimize --sdks=episode1,tf2,l4d2,csgo,dota
   - ambuild

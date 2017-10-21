@@ -5,16 +5,16 @@ binary = SM.ExtLibrary(builder, 'regex.ext')
 binary.compiler.cxxincludes += [
   os.path.join(SM.mms_root, 'core', 'sourcehook'),
 ]
-if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
   binary.compiler.cxxflags += ['-fno-rtti']
-elif binary.compiler.vendor == 'msvc':
+elif binary.compiler.family == 'msvc':
   binary.compiler.cxxflags += ['/GR-']
 
-if builder.target_platform == 'linux':
+if builder.target.platform == 'linux':
   path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux', 'libpcre.a')
-elif builder.target_platform == 'windows':
+elif builder.target.platform == 'windows':
   path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_win', 'pcre.lib')
-elif builder.target_platform == 'mac':
+elif builder.target.platform == 'mac':
   path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin', 'libpcre.a')
 binary.compiler.postlink += [binary.Dep(path)]
 

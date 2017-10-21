@@ -50,7 +50,7 @@
 using namespace SourcePawn;
 
 #define SMINTERFACE_FORWARDMANAGER_NAME		"IForwardManager"
-#define SMINTERFACE_FORWARDMANAGER_VERSION	4
+#define SMINTERFACE_FORWARDMANAGER_VERSION	3
 
 /*
  * There is some very important documentation at the bottom of this file.
@@ -118,7 +118,6 @@ namespace SourceMod
 		cell_t val;
 		ByrefInfo byref;
 		ParamType pushedas;
-		bool isnull;
 	};
 	
 	class IForwardFilter
@@ -184,22 +183,6 @@ namespace SourceMod
 		 * @return			Error code, if any.
 		 */
 		virtual int PushArray(cell_t *inarray, unsigned int cells, int flags=0) =0;
-
-		/**
-		 * @brief Pushes the NULL_STRING onto the current call. This will always push the
-		 * correct reference to each function in the forward.
-		 *
-		 * @return			Error code, if any.
-		 */
-		virtual int PushNullString() =0;
-
-		/**
-		 * @brief Pushes the NULL_VECTOR onto the current call. This will always push the
-		 * correct reference to each function in the forward.
-		 *
-		 * @return			Error code, if any.
-		 */
-		virtual int PushNullVector() =0;
 	};
 
 	/**

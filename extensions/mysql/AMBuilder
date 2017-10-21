@@ -7,21 +7,21 @@ if SM.mysql_root:
     os.path.join(SM.mysql_root, 'include'),
     os.path.join(SM.mms_root, 'core', 'sourcehook')
   ]
-  if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
     binary.compiler.cxxflags += ['-fno-rtti']
-  elif binary.compiler.vendor == 'msvc':
+  elif binary.compiler.family == 'msvc':
     binary.compiler.cxxflags += ['/GR-']
 
-  if builder.target_platform == 'linux' or builder.target_platform == 'mac':
+  if builder.target.platform == 'linux' or builder.target.platform == 'mac':
     binary.compiler.postlink += [
       os.path.join(SM.mysql_root, 'lib', 'libmysqlclient_r.a'),
       '-lz',
       '-lpthread',
       '-lm',
     ]
-  if builder.target_platform == 'linux':
+  if builder.target.platform == 'linux':
     binary.compiler.postlink += ['-lrt']
-  elif builder.target_platform == 'windows':
+  elif builder.target.platform == 'windows':
     binary.compiler.postlink += [
       os.path.join(SM.mysql_root, 'lib', 'opt', 'mysqlclient.lib'),
       os.path.join(SM.mysql_root, 'lib', 'opt', 'zlib.lib'),
@@ -38,7 +38,7 @@ if SM.mysql_root:
     'extension.cpp'
   ]
   
-  if binary.compiler.vendor == 'msvc' and binary.compiler.version >= 1900:
+  if binary.compiler.family == 'msvc' and binary.compiler.version >= 1900:
     binary.sources += [ 'msvc15hack.c' ]
     binary.compiler.linkflags += ['legacy_stdio_definitions.lib', 'legacy_stdio_wide_specifiers.lib']
 

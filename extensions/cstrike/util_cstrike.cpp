@@ -33,12 +33,13 @@
 
 #include "extension.h"
 #include "RegNatives.h"
+#include <iplayerinfo.h>
 
 #define REGISTER_ADDR(name, defaultret, code) \
 	void *addr; \
 	if (!g_pGameConf->GetMemSig(name, &addr) || !addr) \
 	{ \
-		g_pSM->LogError(myself, "Failed to locate function."); \
+		g_pSM->LogError(myself, "Failed to lookup %s signature.", name); \
 		return defaultret; \
 	} \
 	code; \
@@ -47,14 +48,205 @@
 #define GET_MEMSIG(name, defaultret) \
 	if (!g_pGameConf->GetMemSig(name, &addr) || !addr) \
 	{ \
-		g_pSM->LogError(myself, "Failed to locate function."); \
+		g_pSM->LogError(myself, "Failed to lookup %s signature.", name); \
 		return defaultret;\
 	}
 
+#if SOURCE_ENGINE == SE_CSGO
+
+ // Get a CEconItemView for the m4
+ // Found in CCSPlayer::HandleCommand_Buy_Internal
+ // Linux a1 - CCSPlayer *pEntity, v5 - Player Team, a3 - ItemLoadoutSlot -1 use default loadoutslot:
+ // v4 = *(int (__cdecl **)(_DWORD, _DWORD, _DWORD))(*(_DWORD *)(a1 + 9492) + 36); // offset 9
+ // v6 = v4(a1 + 9492, v5, a3);
+ // Windows v5 - CCSPlayer *pEntity a4 -  ItemLoadoutSlot -1 use default loadoutslot:
+ // v8 = (*(int (__stdcall **)(_DWORD, int))(*(_DWORD *)(v5 + 9472) + 32))(*(_DWORD *)(v5 + 760), a4); // offset 8
+ // The function is CCSPlayerInventory::GetItemInLoadout(int, int)
+ // We can pass NULL view to the GetAttribute to use default loadoutslot.
+ // We only really care about m4a1/m4a4 as price differs between them
+ // thisPtrOffset = 9472/9492
+
+CEconItemView *GetEconItemView(CBaseEntity *pEntity, int iSlot)
+{
+	if (!pEntity)
+		return NULL;
+
+	static ICallWrapper *pWrapper = NULL;
+	static int thisPtrOffset = -1;
+
+	if (!pWrapper)
+	{
+		int offset = -1;
+		int byteOffset = -1;
+		void *pHandleCommandBuy = NULL;
+		if (!g_pGameConf->GetOffset("GetItemInLoadout", &offset) || offset == -1)
+		{
+			smutils->LogError(myself, "Failed to get GetItemInLoadout offset.");
+			return NULL;
+		}
+		else if (!g_pGameConf->GetOffset("CCSPlayerInventoryOffset", &byteOffset) || byteOffset == -1)
+		{
+			smutils->LogError(myself, "Failed to get CCSPlayerInventoryOffset offset.");
+			return NULL;
+		}
+		else if (!g_pGameConf->GetMemSig("HandleCommand_Buy_Internal", &pHandleCommandBuy) || !pHandleCommandBuy)
+		{
+			smutils->LogError(myself, "Failed to get HandleCommand_Buy_Internal function.");
+			return NULL;
+		}
+		else
+		{
+			thisPtrOffset = *(int *)((intptr_t)pHandleCommandBuy + byteOffset);
+
+			PassInfo pass[2];
+			PassInfo ret;
+			pass[0].flags = PASSFLAG_BYVAL;
+			pass[0].type = PassType_Basic;
+			pass[0].size = sizeof(int);
+			pass[1].flags = PASSFLAG_BYVAL;
+			pass[1].type = PassType_Basic;
+			pass[1].size = sizeof(int);
+
+			ret.flags = PASSFLAG_BYVAL;
+			ret.type = PassType_Basic;
+			ret.size = sizeof(CEconItemView *);
+
+			pWrapper = g_pBinTools->CreateVCall(offset, 0, 0, &ret, pass, 2);
+			g_RegNatives.Register(pWrapper);
+		}
+	}
+
+	int client = gamehelpers->EntityToBCompatRef(pEntity);
+
+	IPlayerInfo *playerinfo = playerhelpers->GetGamePlayer(client)->GetPlayerInfo();
+	
+	if (!playerinfo)
+		return NULL;
+
+	int team = playerinfo->GetTeamIndex();
+
+	if (team != 2 && team != 3)
+		return NULL;
+
+	CEconItemView *ret;
+	unsigned char vstk[sizeof(void *) + sizeof(int) * 2];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = (void *)((intptr_t)pEntity + thisPtrOffset);
+	vptr += sizeof(void *);
+	*(int *)vptr = team;
+	vptr += sizeof(int);
+	*(int *)vptr = iSlot;
+
+	pWrapper->Execute(vstk, &ret);
+
+	return ret;
+}
+
+CCSWeaponData *GetCCSWeaponData(CEconItemView *view)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		REGISTER_ADDR("GetCCSWeaponData", NULL,
+			PassInfo retpass; \
+			retpass.flags = PASSFLAG_BYVAL; \
+			retpass.type = PassType_Basic; \
+			retpass.size = sizeof(CCSWeaponData *); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, NULL, 0))
+	}
+
+	unsigned char vstk[sizeof(CEconItemView *)];
+	unsigned char *vptr = vstk;
+
+	*(CEconItemView **)vptr = view;
+
+	CCSWeaponData *pWpnData = NULL;
+
+	pWrapper->Execute(vstk, &pWpnData);
+
+	return pWpnData;
+}
+
+CEconItemSchema *GetItemSchema()
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		REGISTER_ADDR("GetItemSchema", NULL,
+			PassInfo retpass; \
+			retpass.flags = PASSFLAG_BYVAL; \
+			retpass.type = PassType_Basic; \
+			retpass.size = sizeof(void *); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, NULL, 0))
+	}
+
+	void *pSchema = NULL;
+	pWrapper->Execute(NULL, &pSchema);
+
+	//In windows this is actually ItemSystem() + 4 is ItemSchema
+#ifdef WIN32
+	return (CEconItemSchema *)((intptr_t)pSchema + 4);
+#else
+	return (CEconItemSchema *)pSchema;
+#endif
+}
+
+CEconItemDefinition *GetItemDefintionByName(const char *classname)
+{
+	CEconItemSchema *pSchema = GetItemSchema();
+
+	if (!pSchema)
+		return NULL;
+
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		int offset = -1;
+
+		if (!g_pGameConf->GetOffset("GetItemDefintionByName", &offset) || offset == -1)
+		{
+			smutils->LogError(myself, "Failed to get GetItemDefintionByName offset.");
+			return NULL;
+		}
+
+		PassInfo pass[1];
+		PassInfo ret;
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].type = PassType_Basic;
+		pass[0].size = sizeof(const char *);
+
+		ret.flags = PASSFLAG_BYVAL;
+		ret.type = PassType_Basic;
+		ret.size = sizeof(CEconItemDefinition *);
+
+		pWrapper = g_pBinTools->CreateVCall(offset, 0, 0, &ret, pass, 1);
+
+		g_RegNatives.Register(pWrapper);
+	}
+
+	unsigned char vstk[sizeof(void *) + sizeof(const char *)];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = pSchema;
+	vptr += sizeof(void *);
+	*(const char **)vptr = classname;
+
+	CEconItemDefinition *pItemDef = NULL;
+	pWrapper->Execute(vstk, &pItemDef);
+
+	return pItemDef;
+}
+#endif
+
+#if SOURCE_ENGINE != SE_CSGO
 void *GetWeaponInfo(int weaponID)
 {
 	void *info;
-#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
+
 	static ICallWrapper *pWrapper = NULL;
 	if (!pWrapper)
 	{
@@ -77,30 +269,15 @@ void *GetWeaponInfo(int weaponID)
 
 	pWrapper->Execute(vstk, &info);
 
-	
-#else
-	static void *addr = NULL;
-
-	if(!addr)
-	{
-		GET_MEMSIG("GetWeaponInfo", 0);
-	}
-
-	__asm
-	{
-		mov ecx, weaponID
-		call addr
-		mov info, eax
-	}
-#endif
 	return info;
 }
+#endif
 
 const char *GetTranslatedWeaponAlias(const char *weapon)
 {
+#if SOURCE_ENGINE != SE_CSGO
 	const char *alias = NULL;
 
-#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -123,28 +300,42 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 	*(const char **)vptr = weapon;
 
 	pWrapper->Execute(vstk, &alias);
-#else
-	static void *addr = NULL;
-
-	if(!addr)
-	{
-		GET_MEMSIG("GetTranslatedWeaponAlias", weapon);
-	}
-
-	__asm
-	{
-		mov ecx, weapon
-		call addr
-		mov alias, eax
-	}
-#endif
 	return alias;
+#else //this should work for both games maybe replace both?
+
+	static const char *szAliases[] =
+	{
+		"cv47", "ak47",
+		"magnum", "awp",
+		"d3au1", "g3sg1",
+		"clarion", "famas",
+		"bullpup", "aug",
+		"9x19mm", "glock",
+		"nighthawk", "deagle",
+		"elites", "elite",
+		"fn57", "fiveseven",
+		"autoshotgun", "xm1014",
+		"c90", "p90",
+		"vest", "kevlar",
+		"vesthelm", "assaultsuit",
+		"nvgs", "nightvision"
+	};
+	
+	for (size_t i = 0; i < SM_ARRAYSIZE(szAliases)/2; i++)
+	{
+		if (stricmp(weapon, szAliases[i * 2]) == 0)
+			return szAliases[i * 2 + 1];
+	}
+
+	return weapon;
+#endif
 }
 
 int AliasToWeaponID(const char *weapon)
 {
+#if SOURCE_ENGINE != SE_CSGO
 	int weaponID = 0;
-#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
+
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -167,28 +358,23 @@ int AliasToWeaponID(const char *weapon)
 	*(const char **)vptr = weapon;
 
 	pWrapper->Execute(vstk, &weaponID);
-#else
-	static void *addr = NULL;
 
-	if(!addr)
-	{
-		GET_MEMSIG("AliasToWeaponID", 0);
-	}
-
-	__asm
-	{
-		mov ecx, weapon
-		call addr
-		mov weaponID, eax
-	}
-#endif
 	return weaponID;
+#else //this is horribly broken hackfix for now.
+	for (unsigned int i = 0; i < SM_ARRAYSIZE(szWeaponInfo); i++)
+	{
+		if (stricmp(weapon, szWeaponInfo[i]) == 0)
+			return i;
+	}
+	return 0;
+#endif
 }
 
 const char *WeaponIDToAlias(int weaponID)
 {
+#if SOURCE_ENGINE != SE_CSGO
 	const char *alias = NULL;
-#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
+
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -211,81 +397,19 @@ const char *WeaponIDToAlias(int weaponID)
 	*(int *)vptr = GetRealWeaponID(weaponID);
 
 	pWrapper->Execute(vstk, &alias);
-#else
-	static void *addr = NULL;
 
-	if(!addr)
-	{
-		GET_MEMSIG("WeaponIDToAlias", 0);
-	}
-
-	int realWeaponID = GetRealWeaponID(weaponID);
-	__asm
-	{
-		mov ecx, realWeaponID
-		call addr
-		mov alias, eax
-	}
-#endif
 	return alias;
-}
-
-#if SOURCE_ENGINE == SE_CSGO
-void *GetWeaponPriceFunction()
-{
-	static void *pGetWeaponPriceAddress = nullptr;
-	if (pGetWeaponPriceAddress)
-	{
-		return pGetWeaponPriceAddress;
-	}
-
-	void *pAddress = nullptr;
-	int offset = 0;
-	int callOffset = 0;
-	const char* byteCheck = nullptr;
-
-	if (!g_pGameConf->GetMemSig("GetWeaponPrice", &pAddress) || !pAddress)
-	{
-		g_pSM->LogError(myself, "Failed to get GetWeaponPrice address.");
-		return nullptr;
-	}
-
-	if (!g_pGameConf->GetOffset("GetWeaponPriceFunc", &offset))
-	{
-		// If no offset specified, assume that GetWeaponPrice is the func we want, and not just our
-		// helper to find the real one.
-		pGetWeaponPriceAddress = pAddress;
-		return pGetWeaponPriceAddress;
-	}
-
-#if defined( _WIN32 )
-	byteCheck = g_pGameConf->GetKeyValue("GetWeaponPriceByteCheck");
-#elif defined( _LINUX )
-	byteCheck = g_pGameConf->GetKeyValue("GetWeaponPriceByteCheck_Linux");
 #else
-	// We don't compile for csgo on mac anymore
-	#error Unsupported platform
+	int realID = GetRealWeaponID(weaponID);
+
+	if (static_cast<size_t>(realID) < SM_ARRAYSIZE(szWeaponInfo) && realID > 0)
+		return szWeaponInfo[realID];
+
+	return NULL;
+
 #endif
-	if (byteCheck == nullptr)
-	{
-		g_pSM->LogError(myself, "Failed to get GetWeaponPriceByteCheck keyvalue.");
-		return nullptr;
-	}
-
-	uint8_t iByte = strtoul(byteCheck, nullptr, 16);
-	if (iByte != *(uint8_t *)((intptr_t)pAddress + (offset-1)))
-	{
-		g_pSM->LogError(myself, "GetWeaponPrice Byte check failed.");
-		return nullptr;
-	}
-
-	callOffset = *(uint32_t *)((intptr_t)pAddress + offset);
-
-	pGetWeaponPriceAddress = (void *)((intptr_t)pAddress + offset + callOffset + sizeof(int));
-
-	return pGetWeaponPriceAddress;
+	
 }
-#endif
 
 int GetRealWeaponID(int weaponId)
 {
