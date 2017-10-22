@@ -195,7 +195,17 @@ enum TFCond
 	TFCond_KnockedIntoAir,
 	TFCond_CompetitiveWinner,
 	TFCond_CompetitiveLoser,
-	TFCond_NoTaunting,
+	TFCond_NoTaunting_DEPRECATED,
+	TFCond_HealingDebuff = 118,
+	TFCond_PasstimePenaltyDebuff,
+	TFCond_GrappledToPlayer,
+	TFCond_GrappledByPlayer,
+	TFCond_ParachuteDeployed,
+	TFCond_Gas,
+	TFCond_BurningPyro,
+	TFCond_RocketPack,
+	TFCond_LostFooting,
+	TFCond_AirCurrent,
 };
 
 const float TFCondDuration_Infinite = -1.0;
