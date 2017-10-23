@@ -581,6 +581,14 @@ stock bool TF2_IsPlayerInCondition(int client, TFCond cond)
 				return true;
 			}
 		}
+	case 4:
+		{
+			int bit = (1 << (iCond - 128));
+			if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx4") & bit) == bit)
+			{
+				return true;
+			}
+		}
 	default:
 		ThrowError("Invalid TFCond value %d", iCond);
 	}
