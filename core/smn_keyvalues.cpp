@@ -1131,16 +1131,16 @@ static cell_t smn_KeyValuesToString(IPluginContext *pContext, const cell_t *para
 	KeyValues *kv;
 	CUtlBuffer buffer;
 	
-	kv = pStk->pCurRoot.front(); // grab kv from kvstack
+	kv = pStk->pCurRoot.front();
 
-	kv->RecursiveSaveToFile(buffer, 0); // write kvs to CUtlBuffer
+	kv->RecursiveSaveToFile(buffer, 0);
 	
 	char* outStr;
 	pContext->LocalToString(params[2], &outStr);
 	size_t maxlen = static_cast<size_t>(params[3]);
 	
-	buffer.GetString(outStr, maxlen); // write buffer output to sp str
-	return buffer.TellGet(); // output size able to be written
+	buffer.GetString(outStr, maxlen);
+	return buffer.TellGet();
 }
 
 static cell_t smn_KeyValuesExportLength(IPluginContext *pContext, const cell_t *params)
@@ -1161,15 +1161,15 @@ static cell_t smn_KeyValuesExportLength(IPluginContext *pContext, const cell_t *
 	KeyValues *kv;
 	CUtlBuffer buffer;
 	
-	kv = pStk->pCurRoot.front(); // grab kv from kvstack
+	kv = pStk->pCurRoot.front();
 
-	kv->RecursiveSaveToFile(buffer, 0); // write kvs to CUtlBuffer
+	kv->RecursiveSaveToFile(buffer, 0);
 	
 	/* In order for TellGet to return the size, we have to GetString atleast once... */
 	char string[2];
 	buffer.GetString(string, sizeof(string));
 
-	return (cell_t)buffer.TellGet(); // output size able to be written
+	return (cell_t)buffer.TellGet();
 }
 
 static KeyValueNatives s_KeyValueNatives;
