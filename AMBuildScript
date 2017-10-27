@@ -219,7 +219,7 @@ class SMConfig(object):
 
     have_gcc = cxx.family == 'gcc'
     have_clang = cxx.family == 'clang'
-    if cxx.version >= 'clang-3.9' or cxx.version >= 'apple-clang-8.0':
+    if cxx.version >= 'clang-3.9':
       cxx.cxxflags += ['-Wno-expansion-to-defined']
     if cxx.version == 'clang-3.9' or cxx.version == 'apple-clang-8.0':
       cxx.cflags += ['-Wno-varargs']
@@ -305,7 +305,7 @@ class SMConfig(object):
       cxx.linkflags += ['-lgcc_eh']
 
   def configure_mac(self, cxx):
-    cxx.defines += ['OSX', '_OSX', 'POSIX']
+    cxx.defines += ['OSX', '_OSX', 'POSIX', 'KE_ABSOLUTELY_NO_STL']
     cxx.cflags += ['-mmacosx-version-min=10.5']
     cxx.linkflags += [
       '-mmacosx-version-min=10.5',
