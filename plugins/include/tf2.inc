@@ -42,6 +42,7 @@
 #define TF_STUNFLAG_NOSOUNDOREFFECT (1 << 5)	/**< no sound or particle */
 #define TF_STUNFLAG_THIRDPERSON     (1 << 6)	/**< panic animation */
 #define TF_STUNFLAG_GHOSTEFFECT     (1 << 7)	/**< ghost particles */
+#define TF_STUNFLAG_SOUND           (1 << 8)	/**< sound */
 
 #define TF_STUNFLAGS_LOSERSTATE     TF_STUNFLAG_SLOWDOWN|TF_STUNFLAG_NOSOUNDOREFFECT|TF_STUNFLAG_THIRDPERSON
 #define TF_STUNFLAGS_GHOSTSCARE     TF_STUNFLAG_GHOSTEFFECT|TF_STUNFLAG_THIRDPERSON
