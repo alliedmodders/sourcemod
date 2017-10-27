@@ -46,6 +46,7 @@
 #include "frame_tasks.h"
 #include <amtl/am-string.h>
 #include <amtl/am-linkedlist.h>
+#include <amtl/am-uniqueptr.h>
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/CoreProvider.h>
 
@@ -953,9 +954,9 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 
 /* For windows, we convert the path to lower-case in order to avoid duplicate plugin loading */
 #if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
-	char *finalPath = strdup_tolower(path);
+	ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup_tolower(path));
 #else 
-	char *finalPath = strdup(path);
+	ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup(path));
 #endif
 
 
@@ -963,7 +964,7 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 	 * Does this plugin already exist?
 	 */
 	CPlugin *pPlugin;
-	if (m_LoadLookup.retrieve(finalPath, &pPlugin))
+	if (m_LoadLookup.retrieve(finalPath.get(), &pPlugin))
 	{
 		/* Check to see if we should try reloading it */
 		if (pPlugin->GetStatus() == Plugin_BadLoad
@@ -977,13 +978,11 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 			if (aResult)
 				*aResult = pPlugin;
 			
-			free(finalPath);
 			return LoadRes_AlreadyLoaded;
 		}
 	}
 
-	CPlugin *plugin = CompileAndPrep(finalPath);
-	free(finalPath);
+	CPlugin *plugin = CompileAndPrep(finalPath.get());
 
 	// Assign our outparam so we can return early. It must be set.
 	*aResult = plugin;
