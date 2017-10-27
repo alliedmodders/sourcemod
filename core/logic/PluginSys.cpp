@@ -953,9 +953,9 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 
 /* For windows, we convert the path to lower-case in order to avoid duplicate plugin loading */
 #ifdef PLATFORM_WINDOWS
-	ke::AString finalPath(strdup_tolower(path));
-#elif 
-	ke::AString finalPath(strdup(path));
+	char *finalPath = strdup_tolower(path);
+#else 
+	char *finalPath = strdup(path);
 #endif
 
 
@@ -963,7 +963,7 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 	 * Does this plugin already exist?
 	 */
 	CPlugin *pPlugin;
-	if (m_LoadLookup.retrieve(finalPath.chars(), &pPlugin))
+	if (m_LoadLookup.retrieve(finalPath, &pPlugin))
 	{
 		/* Check to see if we should try reloading it */
 		if (pPlugin->GetStatus() == Plugin_BadLoad
@@ -976,11 +976,14 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 		{
 			if (aResult)
 				*aResult = pPlugin;
+			
+			free(finalPath);
 			return LoadRes_AlreadyLoaded;
 		}
 	}
 
-	CPlugin *plugin = CompileAndPrep(finalPath.chars());
+	CPlugin *plugin = CompileAndPrep(finalPath);
+	free(finalPath);
 
 	// Assign our outparam so we can return early. It must be set.
 	*aResult = plugin;
