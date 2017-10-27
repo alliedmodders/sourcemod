@@ -33,7 +33,7 @@
 #define _INCLUDE_CSTRIKE_UTIL_H_
  //THIS IS THE INCLUDE ENUM DO NOT CHANGE ONLY UPDATE THE INCLUDE
  //This is used to match to old weaponid's to their correct enum value
- //Anything after defuser will pass the itemdef as they will be the id set in include
+ //Anything after heavy assault suit will pass the itemdef as they will be the id set in include
 enum SMCSWeapon
 {
 	SMCSWeapon_NONE = 0,
