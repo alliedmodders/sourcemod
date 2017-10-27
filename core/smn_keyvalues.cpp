@@ -1140,7 +1140,7 @@ static cell_t smn_KeyValuesToString(IPluginContext *pContext, const cell_t *para
 	size_t maxlen = static_cast<size_t>(params[3]);
 	
 	buffer.GetString(outStr, maxlen);
-	return buffer.TellGet();
+	return buffer.TellPut();
 }
 
 static cell_t smn_KeyValuesExportLength(IPluginContext *pContext, const cell_t *params)
@@ -1165,11 +1165,7 @@ static cell_t smn_KeyValuesExportLength(IPluginContext *pContext, const cell_t *
 
 	kv->RecursiveSaveToFile(buffer, 0);
 	
-	/* In order for TellGet to return the size, we have to GetString atleast once... */
-	char string[2];
-	buffer.GetString(string, sizeof(string));
-
-	return (cell_t)buffer.TellGet();
+	return (cell_t)buffer.TellPut();
 }
 
 static KeyValueNatives s_KeyValueNatives;
