@@ -33,6 +33,10 @@
 #include "extension.h"
 #include <sh_memory.h>
 
+// Grab the convar ref
+ConVarRef cvar_host_rules_show = ConVarRef("host_rules_show");
+bool bPatched = false;
+
 RulesFix rulesfix;
 
 SH_DECL_HOOK1_void(IServerGameDLL, GameServerSteamAPIActivated, SH_NOATTRIB, 0, bool);
@@ -42,61 +46,114 @@ RulesFix::RulesFix() :
 {
 }
 
+void SetMTUMax(int iValue)
+{
+	static int iDefaultMax = -1;
+	static int *m_pMaxMTU = nullptr;
+
+	//If we never changed skip resetting
+	if (!iValue == -1 && iDefaultMax == -1)
+		return;
+
+	if (m_pMaxMTU == nullptr)
+	{
+		if (!g_pGameConf->GetOffset("DefaultMTUMax", &iDefaultMax))
+		{
+			g_pSM->LogMessage(myself, "[CStrike] Failed to locate DefaultMTUMax offset.");
+			return;
+		}
+
+		void *pAddr;
+		if (!g_pGameConf->GetMemSig("NET_SendPacket", &pAddr))
+		{
+			g_pSM->LogMessage(myself, "[CStrike] Failed to locate NET_SendPacket signature.");
+			return;
+		}
+
+		int offset;
+		if (!g_pGameConf->GetOffset("MaxMTU", &offset))
+		{
+			g_pSM->LogMessage(myself, "[CStrike] Failed to locate MaxMTU offset.");
+			return;
+		}
+
+		m_pMaxMTU = (int *)((intp)pAddr + offset);
+
+		if (*m_pMaxMTU != iDefaultMax)
+		{
+			g_pSM->LogMessage(myself, "[CStrike] m_pMaxMTU value is not the same as DefaultMTUMax");
+			m_pMaxMTU = nullptr;
+			return;
+		}
+
+		SourceHook::SetMemAccess(m_pMaxMTU, sizeof(int), SH_MEM_READ | SH_MEM_WRITE | SH_MEM_EXEC);
+	}
+
+	if (iValue == -1)
+		*m_pMaxMTU = iDefaultMax;
+	else
+		*m_pMaxMTU = iValue;
+}
+
 void RulesFix::OnLoad()
 {
-	// Set this only once on load, so that it can still be explicitly disabled.
-	ConVarRef host_rules_show("host_rules_show");
-	host_rules_show.SetValue(true);
+	if (cvar_host_rules_show.GetBool())
+	{
+		SetMTUMax(5000);
+		bPatched = true;
+	}
 
 	SH_ADD_HOOK(IServerGameDLL, GameServerSteamAPIActivated, gamedll, SH_MEMBER(this, &RulesFix::Hook_GameServerSteamAPIActivated), true);
-
-	void *pAddr;
-	if (!g_pGameConf->GetMemSig("NET_SendPacket", &pAddr))
-	{
-		g_pSM->LogMessage(myself, "[CStrike] Failed to locate NET_SendPacket signature.");
-		return;
-	}
-
-	int offset;
-	if (!g_pGameConf->GetOffset("MaxMTU", &offset))
-	{
-		g_pSM->LogMessage(myself, "[CStrike] Failed to locate MaxMTU offset.");
-		return;
-	}
-
-	m_pMaxMTU = (int *)((intp)pAddr + offset);
-	m_iOldMaxMTU = *m_pMaxMTU;
-	SourceHook::SetMemAccess(m_pMaxMTU, sizeof(int), SH_MEM_READ | SH_MEM_WRITE | SH_MEM_EXEC);
-	*m_pMaxMTU = 5000;
 }
 
 void RulesFix::OnUnload()
 {
-	if (m_pMaxMTU)
-	{
-		*m_pMaxMTU = m_iOldMaxMTU;
-	}
-
+	SetMTUMax(-1);
 	SH_REMOVE_HOOK(IServerGameDLL, GameServerSteamAPIActivated, gamedll, SH_MEMBER(this, &RulesFix::Hook_GameServerSteamAPIActivated), true);
 }
 
-void RulesFix::OnSteamServersConnected(SteamServersConnected_t *)
+void NotifyAllCVars()
 {
-	// The engine clears all after the Steam interfaces become available after they've been gone.
-
 	ICvar::Iterator iter(g_pCVar);
 	for (iter.SetFirst(); iter.IsValid(); iter.Next())
 	{
 		ConCommandBase *cmd = iter.Get();
 		if (!cmd->IsCommand() && cmd->IsFlagSet(FCVAR_NOTIFY))
 		{
-			OnNotifyConVarChanged((ConVar *)cmd);
+			rulesfix.OnNotifyConVarChanged((ConVar *)cmd);
 		}
 	}
 }
 
+void RulesFix::OnSteamServersConnected(SteamServersConnected_t *)
+{
+	// The engine clears all after the Steam interfaces become available after they've been gone.
+	NotifyAllCVars();
+}
+
 static void OnConVarChanged(IConVar *var, const char *pOldValue, float flOldValue)
 {
+	if (var == cvar_host_rules_show.GetLinkedConVar())
+	{
+		if (cvar_host_rules_show.GetBool())
+		{
+			if (!bPatched)
+			{
+				SetMTUMax(5000);
+				bPatched = true;
+				NotifyAllCVars();
+			}
+		}
+		else
+		{
+			if (bPatched)
+			{
+				SetMTUMax(-1);
+				bPatched = false;
+			}
+		}
+	}
+
 	if (var->IsFlagSet(FCVAR_NOTIFY))
 	{
 		rulesfix.OnNotifyConVarChanged((ConVar *)var);
@@ -105,6 +162,9 @@ static void OnConVarChanged(IConVar *var, const char *pOldValue, float flOldValu
 
 void RulesFix::OnNotifyConVarChanged(ConVar *pVar)
 {
+	if (!bPatched)
+		return;
+
 	if (m_Steam.SteamMasterServerUpdater())
 	{
 		if (pVar->IsFlagSet(FCVAR_PROTECTED))
