@@ -143,6 +143,7 @@ PlayerConditionsMgr::PlayerConditionsMgr()
 	m_CondOffset[m_nPlayerCondEx] = 32;
 	m_CondOffset[m_nPlayerCondEx2] = 64;
 	m_CondOffset[m_nPlayerCondEx3] = 96;
+	m_CondOffset[m_nPlayerCondEx4] = 128;
 }
 
 bool PlayerConditionsMgr::Init()
@@ -153,7 +154,8 @@ bool PlayerConditionsMgr::Init()
 		&& SetupProp<_condition_bits>("_condition_bits")
 		&& SetupProp<m_nPlayerCondEx>("m_nPlayerCondEx")
 		&& SetupProp<m_nPlayerCondEx2>("m_nPlayerCondEx2")
-		&& SetupProp<m_nPlayerCondEx3>("m_nPlayerCondEx3");
+		&& SetupProp<m_nPlayerCondEx3>("m_nPlayerCondEx3")
+		&& SetupProp<m_nPlayerCondEx4>("m_nPlayerCondEx4");
 
 	if (!bFoundProps)
 		return false;

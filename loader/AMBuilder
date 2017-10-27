@@ -1,10 +1,10 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os.path
 
-if builder.target_platform in ['windows', 'mac']:
+if builder.target.platform in ['windows', 'mac']:
   name = 'sourcemod_mm'
   extra_ldflags = []
-elif builder.target_platform == 'linux':
+elif builder.target.platform == 'linux':
   name = 'sourcemod_mm_i486'
   extra_ldflags = ['-ldl']
 
@@ -13,9 +13,9 @@ binary.compiler.cxxincludes += [
   os.path.join(SM.mms_root, 'core'),
   os.path.join(SM.mms_root, 'sourcehook')
 ]
-if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
+if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
   binary.compiler.cxxflags += ['-fno-rtti']
-elif binary.compiler.vendor == 'msvc':
+elif binary.compiler.family == 'msvc':
   binary.compiler.cxxflags += ['/GR-']
 binary.compiler.linkflags += extra_ldflags
 binary.sources = [
