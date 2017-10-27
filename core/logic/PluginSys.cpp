@@ -932,7 +932,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 	libsys->CloseDirectory(dir);
 }
 
-#ifdef PLATFORM_WINDOWS
+#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
 char *strdup_tolower(const char *input)
 {
 	char *str = strdup(input);
@@ -952,7 +952,7 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 		return LoadRes_NeverLoad;
 
 /* For windows, we convert the path to lower-case in order to avoid duplicate plugin loading */
-#ifdef PLATFORM_WINDOWS
+#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
 	char *finalPath = strdup_tolower(path);
 #else 
 	char *finalPath = strdup(path);
