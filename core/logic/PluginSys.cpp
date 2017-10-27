@@ -952,7 +952,7 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 	if (m_LoadingLocked)
 		return LoadRes_NeverLoad;
 
-/* For windows, we convert the path to lower-case in order to avoid duplicate plugin loading */
+/* For windows & mac, we convert the path to lower-case in order to avoid duplicate plugin loading */
 #if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
 	ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup_tolower(path));
 #else 
