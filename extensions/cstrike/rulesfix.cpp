@@ -52,7 +52,7 @@ void SetMTUMax(int iValue)
 	static int *m_pMaxMTU = nullptr;
 
 	//If we never changed skip resetting
-	if (!iValue == -1 && iDefaultMax == -1)
+	if (iDefaultMax == -1)
 		return;
 
 	if (m_pMaxMTU == nullptr)
