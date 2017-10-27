@@ -52,6 +52,7 @@ public:
 		m_nPlayerCondEx,
 		m_nPlayerCondEx2,
 		m_nPlayerCondEx3,
+		m_nPlayerCondEx4,
 
 		CondVar_Count
 	};
