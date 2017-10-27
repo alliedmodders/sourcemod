@@ -79,6 +79,8 @@
 #define TF_DEATHFLAG_INTERRUPTED        (1 << 6)
 #define TF_DEATHFLAG_GIBBED             (1 << 7)
 #define TF_DEATHFLAG_PURGATORY          (1 << 8)
+#define TF_DEATHFLAG_MINIBOSS           (1 << 9)
+#define TF_DEATHFLAG_AUSTRALIUM         (1 << 10)
 
 // Custom kill identifiers for the customkill property on the player_death event
 enum {
