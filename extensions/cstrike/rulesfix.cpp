@@ -48,21 +48,15 @@ RulesFix::RulesFix() :
 
 void SetMTUMax(int iValue)
 {
-	static int iDefaultMax = -1;
+	static int iOriginalValue = -1;
 	static int *m_pMaxMTU = nullptr;
 
 	//If we never changed skip resetting
-	if (iDefaultMax == -1)
+	if (iOriginalValue == -1)
 		return;
 
 	if (m_pMaxMTU == nullptr)
 	{
-		if (!g_pGameConf->GetOffset("DefaultMTUMax", &iDefaultMax))
-		{
-			g_pSM->LogMessage(myself, "[CStrike] Failed to locate DefaultMTUMax offset.");
-			return;
-		}
-
 		void *pAddr;
 		if (!g_pGameConf->GetMemSig("NET_SendPacket", &pAddr))
 		{
@@ -78,19 +72,13 @@ void SetMTUMax(int iValue)
 		}
 
 		m_pMaxMTU = (int *)((intp)pAddr + offset);
-
-		if (*m_pMaxMTU != iDefaultMax)
-		{
-			g_pSM->LogMessage(myself, "[CStrike] m_pMaxMTU value is not the same as DefaultMTUMax");
-			m_pMaxMTU = nullptr;
-			return;
-		}
-
 		SourceHook::SetMemAccess(m_pMaxMTU, sizeof(int), SH_MEM_READ | SH_MEM_WRITE | SH_MEM_EXEC);
+
+		iOriginalValue = *m_pMaxMTU;
 	}
 
 	if (iValue == -1)
-		*m_pMaxMTU = iDefaultMax;
+		*m_pMaxMTU = iOriginalValue;
 	else
 		*m_pMaxMTU = iValue;
 }
