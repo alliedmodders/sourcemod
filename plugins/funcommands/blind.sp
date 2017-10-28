@@ -76,7 +76,7 @@ void PerformBlind(int client, int target, int amount)
 	
 	EndMessage();
 
-	LogAction(client, target, "\"%L\" set blind on \"%L\", amount %d.", client, target, amount);
+	LogAction(client, target, "\"%L\" set blind on \"%L\" (amount \"%d\")", client, target, amount);
 }
 
 public void AdminMenu_Blind(TopMenu topmenu, 

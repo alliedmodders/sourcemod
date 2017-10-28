@@ -2,15 +2,15 @@
 
 /* makesig.idc: IDA script to automatically create and wildcard a function signature.
  * Copyright 2014, Asher Baker
- * 
+ *
  * This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
- * 
+ *
  * 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
- * 
+ *
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
@@ -19,33 +19,33 @@ static main()
 	Wait(); // We won't work until autoanalysis is complete
 
 	SetStatus(IDA_STATUS_WORK);
-	
+
 	auto pAddress = ScreenEA();
 	pAddress = GetFunctionAttr(pAddress, FUNCATTR_START);
 	if (pAddress == BADADDR) {
-		Warning("Make sure you are in a function!");							
+		Warning("Make sure you are in a function!");
 		SetStatus(IDA_STATUS_READY);
 		return;
 	}
-	
+
 	auto name = Name(pAddress);
 	auto sig = "", found = 0;
 	auto pFunctionEnd = GetFunctionAttr(pAddress, FUNCATTR_END);
-	
+
 	while (pAddress != BADADDR) {
 		auto pInfo = DecodeInstruction(pAddress);
 		if (!pInfo) {
-			Warning("Something went terribly wrong D:");       
+			Warning("Something went terribly wrong D:");
 			SetStatus(IDA_STATUS_READY);
 			return;
 		}
-		
+
 		// isCode(GetFlags(pAddress)) == Opcode
 		// isTail(GetFlags(pAddress)) == Operand
 		// ((GetFlags(pAddress) & MS_CODE) == FF_IMMD) == :iiam:
-		
+
 		auto bDone = 0;
-		
+
 		if (pInfo.n == 1) {
 			if (pInfo.Op0.type == o_near || pInfo.Op0.type == o_far) {
 				if (Byte(pAddress) == 0x0F) { // Two-byte instruction
@@ -56,12 +56,12 @@ static main()
 				bDone = 1;
 			}
 		}
-		
+
 		if (!bDone) { // unknown, just wildcard addresses
 			auto i = 0, itemSize = ItemSize(pAddress);
 			for (i = 0; i < itemSize; i++) {
 				auto pLoc = pAddress + i;
-				if (GetFixupTgtType(pLoc) == FIXUP_OFF32) {
+				if ((GetFixupTgtType(pLoc) & FIXUP_MASK) == FIXUP_OFF32) {
 					sig = sig + PrintWildcards(4);
 					i = i + 3;
 				} else {
@@ -69,17 +69,17 @@ static main()
 				}
 			}
 		}
-		
+
 		if (IsGoodSig(sig)) {
 			found = 1;
 			break;
 		}
-		
+
 		pAddress = NextHead(pAddress, pFunctionEnd);
 	}
 
 	if (found == 0) {
-		Warning("Ran out of bytes to create unique signature.");       
+		Warning("Ran out of bytes to create unique signature.");
 		SetStatus(IDA_STATUS_READY);
 		return;
 	}
@@ -97,7 +97,7 @@ static main()
 	}
 
 	Message("Signature for %s:\n%s\n%s\n", name, sig, smsig);
-	
+
 	SetStatus(IDA_STATUS_READY);
 	return;
 }

@@ -1,6 +1,6 @@
 "Games"
 {
-	"KreedzClimbing"
+	"#default"
 	{
 		"Offsets"
 		{

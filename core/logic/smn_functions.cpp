@@ -552,6 +552,88 @@ static cell_t sm_CallPushStringEx(IPluginContext *pContext, const cell_t *params
 	return 1;
 }
 
+static cell_t sm_CallPushNullVector(IPluginContext *pContext, const cell_t *params)
+{
+	int err = SP_ERROR_NOT_FOUND;
+
+	if (!s_CallStarted)
+	{
+		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
+	}
+
+	if (s_pFunction)
+	{
+		// Find the NULL_VECTOR pubvar in the target plugin and push the local address.
+		IPluginRuntime *runtime = s_pFunction->GetParentRuntime();
+		uint32_t null_vector_idx;
+		err = runtime->FindPubvarByName("NULL_VECTOR", &null_vector_idx);
+		if (err)
+		{
+			return pContext->ThrowNativeErrorEx(err, "Target plugin has no NULL_VECTOR.");
+		}
+
+		cell_t null_vector;
+		err = runtime->GetPubvarAddrs(null_vector_idx, &null_vector, nullptr);
+
+		if (!err)
+			err = s_pCallable->PushCell(null_vector);
+	}
+	else if (s_pForward)
+	{
+		err = s_pForward->PushArray(NULL, 3);
+	}
+
+	if (err)
+	{
+		s_pCallable->Cancel();
+		ResetCall();
+		return pContext->ThrowNativeErrorEx(err, NULL);
+	}
+
+	return 1;
+}
+
+static cell_t sm_CallPushNullString(IPluginContext *pContext, const cell_t *params)
+{
+	int err = SP_ERROR_NOT_FOUND;
+
+	if (!s_CallStarted)
+	{
+		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
+	}
+
+	if (s_pFunction)
+	{
+		// Find the NULL_STRING pubvar in the target plugin and push the local address.
+		IPluginRuntime *runtime = s_pFunction->GetParentRuntime();
+		uint32_t null_string_idx;
+		err = runtime->FindPubvarByName("NULL_STRING", &null_string_idx);
+		if (err)
+		{
+			return pContext->ThrowNativeErrorEx(err, "Target plugin has no NULL_STRING.");
+		}
+
+		cell_t null_string;
+		err = runtime->GetPubvarAddrs(null_string_idx, &null_string, nullptr);
+
+		if (!err)
+			err = s_pCallable->PushCell(null_string);
+	}
+	else if (s_pForward)
+	{
+		err = s_pForward->PushString(NULL);
+	}
+
+	if (err)
+	{
+		s_pCallable->Cancel();
+		ResetCall();
+		return pContext->ThrowNativeErrorEx(err, NULL);
+	}
+
+	return 1;
+}
+
 static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 {
 	int err = SP_ERROR_NOT_RUNNABLE;
@@ -668,6 +750,8 @@ REGISTER_NATIVES(functionNatives)
 	{"Call_PushArrayEx",		sm_CallPushArrayEx},
 	{"Call_PushString",			sm_CallPushString},
 	{"Call_PushStringEx",		sm_CallPushStringEx},
+	{"Call_PushNullVector",		sm_CallPushNullVector},
+	{"Call_PushNullString",		sm_CallPushNullString},
 	{"Call_Finish",				sm_CallFinish},
 	{"Call_Cancel",				sm_CallCancel},
 	{"RequestFrame",			sm_AddFrameAction},

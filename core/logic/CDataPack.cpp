@@ -185,7 +185,7 @@ size_t CDataPack::GetPosition() const
 
 bool CDataPack::SetPosition(size_t pos) const
 {
-	if (pos > m_size-1)
+	if (pos > m_size)
 	{
 		return false;
 	}

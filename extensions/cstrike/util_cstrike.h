@@ -33,7 +33,97 @@
 #define _INCLUDE_CSTRIKE_UTIL_H_
 
 #if SOURCE_ENGINE == SE_CSGO
+#include "extension.h"
+
 class CEconItemView;
+class CCSWeaponData;
+class CEconItemSchema;
+
+class CEconItemDefinition
+{
+public:
+	void **m_pVtable;
+	KeyValues *m_pKv;
+	uint16_t m_iDefinitionIndex;
+	int GetDefaultLoadoutSlot()
+	{
+		static int iLoadoutSlotOffset = -1;
+
+		if (iLoadoutSlotOffset == -1)
+		{
+			if (!g_pGameConf->GetOffset("LoadoutSlotOffset", &iLoadoutSlotOffset) || iLoadoutSlotOffset == -1)
+			{
+				iLoadoutSlotOffset = -1;
+				return -1;
+			}
+		}
+
+		return *(int *)((intptr_t)this + iLoadoutSlotOffset);
+	}
+};
+
+CEconItemView *GetEconItemView(CBaseEntity *pEntity, int iSlot);
+CCSWeaponData *GetCCSWeaponData(CEconItemView *view);
+CEconItemSchema *GetItemSchema();
+CEconItemDefinition *GetItemDefintionByName(const char *classname);
+
+static const char *szWeaponInfo[] =
+{
+	"none",
+	"deagle",
+	"elite",
+	"fiveseven",
+	"glock",
+	"p228",
+	"usp",
+	"ak47",
+	"aug",
+	"awp",
+	"famas",
+	"g3sg1",
+	"galil",
+	"galilar",
+	"m249",
+	"m3",
+	"m4a1",
+	"mac10",
+	"mp5",
+	"p90",
+	"scout",
+	"sg550",
+	"sg552",
+	"tmp",
+	"ump45",
+	"xm1014",
+	"bizon",
+	"mag7",
+	"negev",
+	"sawedoff",
+	"tec9",
+	"taser",
+	"hkp2000",
+	"mp7",
+	"mp9",
+	"nova",
+	"p250",
+	"scar17",
+	"scar20",
+	"sg556",
+	"ssg08",
+	"knifegg",
+	"knife",
+	"flashbang",
+	"hegrenade",
+	"smokegrenade",
+	"molotov",
+	"decoy",
+	"incgrenade",
+	"c4",
+	"kevlar",
+	"assaultsuit",
+	"nvg",
+	"defuser"
+};
 
 enum CSGOWeapon
 {
@@ -151,7 +241,10 @@ enum SMCSWeapon
 	SMCSWeapon_INCGRENADE,
 	SMCSWeapon_DEFUSER
 };
+
+#if SOURCE_ENGINE != SE_CSGO
 void *GetWeaponInfo(int weaponID);
+#endif
 
 const char *GetTranslatedWeaponAlias(const char *weapon);
 
@@ -164,7 +257,4 @@ int GetRealWeaponID(int weaponId);
 int GetFakeWeaponID(int weaponId);
 
 bool IsValidWeaponID(int weaponId);
-
-void *GetWeaponPriceFunction();
-
 #endif

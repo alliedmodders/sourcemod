@@ -277,7 +277,7 @@ SMCResult CoreConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key,
 
 ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, ConfigSource source, char *error, size_t maxlength)
 {
-	ConfigResult result;
+	ConfigResult result = ConfigResult_Ignore;
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
@@ -285,7 +285,7 @@ ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, 
 	{
 		if ((result = pBase->OnSourceModConfigChanged(option, value, source, error, maxlength)) != ConfigResult_Ignore)
 		{
-			return result;
+			break;
 		}
 		pBase = pBase->m_pGlobalClassNext;
 	}
@@ -293,7 +293,7 @@ ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, 
 	ke::AString vstr(value);
 	m_KeyValues.replace(option, ke::Move(vstr));
 
-	return ConfigResult_Ignore;
+	return result;
 }
 
 const char *CoreConfig::GetCoreConfigValue(const char *key)

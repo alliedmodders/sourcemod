@@ -76,14 +76,12 @@ voteType g_voteType = gravity;
 // Menu API does not provide us with a way to pass multiple peices of data with a single
 // choice, so some globals are used to hold stuff.
 //
-#define VOTE_CLIENTID	0
-#define VOTE_USERID	1
-int g_voteClient[2];		/* Holds the target's client id and user id */
+int g_voteTarget;		/* Holds the target's user id */
 
 #define VOTE_NAME	0
 #define VOTE_AUTHID	1
 #define	VOTE_IP		2
-char g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
+char g_voteInfo[3][65];		/* Holds the target's name, authid, and IP */
 
 TopMenu hTopMenu;
 
@@ -221,13 +219,10 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 		
 		limit = g_Cvar_Limits[g_voteType].FloatValue;
 		
-		/* :TODO: g_voteClient[userid] needs to be checked.
-		 */
-
 		// A multi-argument vote is "always successful", but have to check if its a Yes/No vote.
 		if ((strcmp(item, VOTE_YES) == 0 && FloatCompare(percent,limit) < 0 && param1 == 0) || (strcmp(item, VOTE_NO) == 0 && param1 == 1))
 		{
-			/* :TODO: g_voteClient[userid] should be used here and set to -1 if not applicable.
+			/* :TODO: g_voteTarget should be used here and set to -1 if not applicable.
 			 */
 			LogAction(-1, -1, "Vote failed.");
 			PrintToChatAll("[SM] %t", "Vote Failed", RoundToNearest(100.0*limit), RoundToNearest(100.0*percent), totalVotes);
@@ -247,19 +242,35 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 				
 				case (burn):
 				{
-					PrintToChatAll("[SM] %t", "Set target on fire", "_s", g_voteInfo[VOTE_NAME]);					
-					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote burn successful, igniting \"%L\"", g_voteClient[VOTE_CLIENTID]);
-					
-					IgniteEntity(g_voteClient[VOTE_CLIENTID], 19.8);	
+					int voteTarget;
+					if((voteTarget = GetClientOfUserId(g_voteTarget)) == 0)
+					{
+						LogAction(-1, -1, "Vote burn failed, unable to burn \"%s\" (reason \"%s\")", g_voteInfo[VOTE_NAME], "Player no longer available");
+					}
+					else
+					{
+						PrintToChatAll("[SM] %t", "Set target on fire", "_s", g_voteInfo[VOTE_NAME]);					
+						LogAction(-1, voteTarget, "Vote burn successful, igniting \"%L\"", voteTarget);
+						
+						IgniteEntity(voteTarget, 19.8);	
+					}
 				}
 				
 				case (slay):
 				{
-					PrintToChatAll("[SM] %t", "Slayed player", g_voteInfo[VOTE_NAME]);					
-					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote slay successful, slaying \"%L\"", g_voteClient[VOTE_CLIENTID]);
-					
-					ExtinguishEntity(g_voteClient[VOTE_CLIENTID]);
-					ForcePlayerSuicide(g_voteClient[VOTE_CLIENTID]);
+					int voteTarget;
+					if((voteTarget = GetClientOfUserId(g_voteTarget)) == 0)
+					{
+						LogAction(-1, -1, "Vote slay failed, unable to slay \"%s\" (reason \"%s\")", g_voteInfo[VOTE_NAME], "Player no longer available");
+					}
+					else
+					{
+						PrintToChatAll("[SM] %t", "Slayed player", g_voteInfo[VOTE_NAME]);					
+						LogAction(-1, voteTarget, "Vote slay successful, slaying \"%L\"", voteTarget);
+						
+						ExtinguishEntity(voteTarget);
+						ForcePlayerSuicide(voteTarget);
+					}
 				}
 				
 				case (alltalk):
@@ -298,7 +309,6 @@ void VoteSelect(Menu menu, int param1, int param2 = 0)
 void VoteMenuClose()
 {
 	delete g_hVoteMenu;
-	g_hVoteMenu = null;
 }
 
 float GetVotePercent(int votes, int totalVotes)

@@ -68,6 +68,18 @@ methodmap KeyValues < Handle
 	// @return              True on success, false otherwise.
 	public native bool ExportToFile(const char[] file);
 
+	// Exports a KeyValues tree to a string. The string is dumped from the current position.
+	//
+	// @param buffer        Buffer to write to.
+	// @param maxlength		Max length of buffer.
+	// @return              Number of bytes that can be written to buffer.
+	public native int ExportToString(char[] buffer, int maxlength);
+
+	// Amount of bytes written by ExportToFile & ExportToString.
+	property int ExportLength {
+		public native get();
+	}
+
 	// Imports a file in KeyValues format. The file is read into the current
 	// position of the tree.
 	//

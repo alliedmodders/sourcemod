@@ -45,7 +45,7 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 	if(!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("MakeBleed",
-			PassInfo pass[5]; \
+			PassInfo pass[6]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
 			pass[0].size = sizeof(CBaseEntity *); \
 			pass[0].type = PassType_Basic; \
@@ -61,7 +61,10 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 			pass[4].flags = PASSFLAG_BYVAL; \
 			pass[4].size = sizeof(bool); \
 			pass[4].type = PassType_Basic; \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 5))
+			pass[5].flags = PASSFLAG_BYVAL; \
+			pass[5].size = sizeof(int); \
+			pass[5].type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 6))
 	}
 
 	CBaseEntity *pEntity;
@@ -78,7 +81,7 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *) + sizeof(float) + sizeof(int) + sizeof(bool)];
+	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *) + sizeof(float) + sizeof(int) + sizeof(bool) + sizeof(int)];
 	unsigned char *vptr = vstk;
 
 	*(void **)vptr = obj;
@@ -89,9 +92,11 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 	vptr += sizeof(CBaseEntity *);
 	*(float *)vptr = sp_ctof(params[3]);
 	vptr += sizeof(float);
-	*(int *)vptr = 4;
+	*(int *)vptr = 4;      // Damage amount
 	vptr += sizeof(int);
-	*(bool *)vptr = false;
+	*(bool *)vptr = false; // Permanent
+	vptr += sizeof(bool);
+	*(int *)vptr = 34;     // Custom Damage type (bleeding)
 
 	pWrapper->Execute(vstk, NULL);
 
@@ -143,7 +148,7 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 	vptr += sizeof(CBaseEntity *);
 	*(CBaseEntity **)vptr = NULL;
 	vptr += sizeof(CBaseEntity *);
-	*(float *)vptr = -1.0f;
+	*(float *)vptr = 10.0f; // duration
 
 	pWrapper->Execute(vstk, NULL);
 
