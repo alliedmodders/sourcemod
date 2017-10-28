@@ -31,6 +31,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <ctype.h>
 #include "PluginSys.h"
 #include "ShareSys.h"
 #include <ILibrarySys.h>
