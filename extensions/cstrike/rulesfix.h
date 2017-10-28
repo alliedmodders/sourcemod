@@ -47,7 +47,6 @@ private:
 private:
 	CSteamGameServerAPIContext m_Steam;
 	STEAM_GAMESERVER_CALLBACK(RulesFix, OnSteamServersConnected, SteamServersConnected_t, m_OnSteamServersConnected);
-	int m_iOldMaxMTU;
 };
 
 extern RulesFix rulesfix;
