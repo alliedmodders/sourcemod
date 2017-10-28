@@ -34,7 +34,7 @@
 #include <sh_memory.h>
 
 // Grab the convar ref
-ConVarRef cvar_host_rules_show = ConVarRef("host_rules_show");
+ConVar *host_rules_show = nullptr;
 bool bPatched = false;
 
 RulesFix rulesfix;
@@ -52,7 +52,7 @@ void SetMTUMax(int iValue)
 	static int *m_pMaxMTU = nullptr;
 
 	//If we never changed skip resetting
-	if (iOriginalValue == -1)
+	if (iOriginalValue == -1 && iValue == -1)
 		return;
 
 	if (m_pMaxMTU == nullptr)
@@ -85,8 +85,11 @@ void SetMTUMax(int iValue)
 
 void RulesFix::OnLoad()
 {
-	if (cvar_host_rules_show.GetBool())
+	if (host_rules_show)
 	{
+		// Default to enabled. Explicit disable via cfg will still be obeyed.
+		host_rules_show->SetValue(true);
+
 		SetMTUMax(5000);
 		bPatched = true;
 	}
@@ -121,9 +124,9 @@ void RulesFix::OnSteamServersConnected(SteamServersConnected_t *)
 
 static void OnConVarChanged(IConVar *var, const char *pOldValue, float flOldValue)
 {
-	if (var == cvar_host_rules_show.GetLinkedConVar())
+	if (host_rules_show && var == host_rules_show)
 	{
-		if (cvar_host_rules_show.GetBool())
+		if (host_rules_show->GetBool())
 		{
 			if (!bPatched)
 			{
