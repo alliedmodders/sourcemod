@@ -148,7 +148,7 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 	vptr += sizeof(CBaseEntity *);
 	*(CBaseEntity **)vptr = NULL;
 	vptr += sizeof(CBaseEntity *);
-	*(float *)vptr = -1.0f;
+	*(float *)vptr = 10.0f; // duration
 
 	pWrapper->Execute(vstk, NULL);
 
