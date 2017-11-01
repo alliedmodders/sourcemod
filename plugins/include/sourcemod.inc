@@ -651,7 +651,7 @@ methodmap FrameIterator < Handle {
 	public native FrameIterator();
 	
 	// Determines if there are any more stack frames to iterate.
-	// @return True if there's another stack frame.
+	// @return True if there are no more stack frames left.
 	public native bool Done();
 	
 	// Advances the iterator to the next stack frame.
