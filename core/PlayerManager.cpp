@@ -2576,7 +2576,8 @@ IClient *CPlayer::GetIClient() const
 	|| SOURCE_ENGINE == SE_DODS  \
 	|| SOURCE_ENGINE == SE_HL2DM \
 	|| SOURCE_ENGINE == SE_BMS   \
-	|| SOURCE_ENGINE == SE_INSURGENCY
+	|| SOURCE_ENGINE == SE_INSURGENCY \
+	|| SOURCE_ENGINE == SE_DOI
 	return engine->GetIServer()->GetClient(m_iIndex - 1);
 #else
 	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
