@@ -82,6 +82,14 @@
 				"linux"		"588"
 				"mac"		"588"
 			}
+			// Offset into CEconItemSchema * to a hashmap of all itemdefs
+			// Offset can be found in... GetItemDefinitionMutable (easy to get offset on windows should be the same)
+			"ItemDefHashOffset"
+			{
+				"windows"	"172"
+				"linux"		"172"
+				"mac"		"172"
+			}
 		}
 		"Signatures"
 		{

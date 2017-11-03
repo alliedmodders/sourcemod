@@ -29,11 +29,17 @@
  * Version: $Id$
  */
 
-#include "util_cstrike.h"
-
 #include "extension.h"
+#include "util_cstrike.h"
 #include "RegNatives.h"
 #include <iplayerinfo.h>
+#if SOURCE_ENGINE == SE_CSGO
+#include "itemdef-hash.h"
+
+ClassnameMap g_mapClassToDefIdx;
+ItemIndexMap g_mapDefIdxToClass;
+WeaponIDMap g_mapWeaponIDToDefIdx;
+#endif
 
 #define REGISTER_ADDR(name, defaultret, code) \
 	void *addr; \
@@ -240,6 +246,145 @@ CEconItemDefinition *GetItemDefintionByName(const char *classname)
 
 	return pItemDef;
 }
+
+void CreateHashMaps()
+{
+	CEconItemSchema *pSchema = GetItemSchema();
+
+	if (!pSchema)
+		return;
+
+	static const char *pPriceKey = NULL;
+
+	if (!pPriceKey)
+	{
+		pPriceKey = g_pGameConf->GetKeyValue("PriceKey");
+		if (!pPriceKey)
+		{
+			return;
+		}
+	}
+
+	static int iHashMapOffset = -1;
+
+	if (iHashMapOffset == -1)
+	{
+		if (!g_pGameConf->GetOffset("ItemDefHashOffset", &iHashMapOffset) || iHashMapOffset == -1)
+		{
+			return;
+		}
+	}
+
+	g_mapClassToDefIdx.init();
+	g_mapDefIdxToClass.init();
+	g_mapWeaponIDToDefIdx.init();
+
+	CHashItemDef *map = (CHashItemDef *)((intptr_t)pSchema + iHashMapOffset);
+
+	for (int i = 0; i < map->currentElements; i++)
+	{
+		HashItemDef_Node node = map->pMem[i];
+
+		if (!node.pDef || !node.pDef->m_pKv)
+			continue;
+
+		KeyValues *pClassname = node.pDef->m_pKv->FindKey("name", false);
+		KeyValues *pAttributes = node.pDef->m_pKv->FindKey("attributes", false);
+
+		if (pClassname && pAttributes)
+		{
+			KeyValues *pPrice = pAttributes->FindKey(pPriceKey, false);
+
+			if (pPrice)
+			{
+				const char *classname = pClassname->GetString();
+
+				unsigned int price = pPrice->GetInt();
+				uint16_t iItemDefIdx = node.pDef->m_iDefinitionIndex;
+				SMCSWeapon iWeaponID = GetWeaponIdFromDefIdx(iItemDefIdx);
+				int iLoadoutslot = node.pDef->GetDefaultLoadoutSlot();
+
+				ClassnameMap::Insert i = g_mapClassToDefIdx.findForAdd(classname);
+				g_mapClassToDefIdx.add(i, ke::AString(classname), ItemDefHashValue(iLoadoutslot, price, iWeaponID, iItemDefIdx, classname));
+
+				ItemIndexMap::Insert x = g_mapDefIdxToClass.findForAdd(iItemDefIdx);
+				g_mapDefIdxToClass.add(x, iItemDefIdx, ItemDefHashValue(iLoadoutslot, price, iWeaponID, iItemDefIdx, classname));
+
+				WeaponIDMap::Insert t = g_mapWeaponIDToDefIdx.findForAdd(iWeaponID);
+				g_mapWeaponIDToDefIdx.add(t, iWeaponID, ItemDefHashValue(iLoadoutslot, price, iWeaponID, iItemDefIdx, classname));
+			}
+		}
+	}
+}
+
+void ClearHashMaps()
+{
+	g_mapClassToDefIdx.clear();
+	g_mapDefIdxToClass.clear();
+	g_mapWeaponIDToDefIdx.clear();
+}
+
+SMCSWeapon GetWeaponIdFromDefIdx(uint16_t iDefIdx)
+{
+	//DEAR GOD THIS IS HIDEOUS
+	//None in the middle are weapons that dont exist.
+	//If they are added and use the same idx they should be changed to their respective ones
+	static SMCSWeapon weaponIDMap[SMCSWeapon_MAXWEAPONIDS] =
+	{
+		SMCSWeapon_NONE, SMCSWeapon_DEAGLE, SMCSWeapon_ELITE, SMCSWeapon_FIVESEVEN,
+		SMCSWeapon_GLOCK, SMCSWeapon_NONE, SMCSWeapon_NONE, SMCSWeapon_AK47,
+		SMCSWeapon_AUG, SMCSWeapon_AWP, SMCSWeapon_FAMAS, SMCSWeapon_G3SG1,
+		SMCSWeapon_NONE, SMCSWeapon_GALILAR, SMCSWeapon_M249, SMCSWeapon_NONE,
+		SMCSWeapon_M4A1, SMCSWeapon_MAC10, SMCSWeapon_NONE, SMCSWeapon_P90,
+		SMCSWeapon_NONE, SMCSWeapon_NONE, SMCSWeapon_NONE, SMCSWeapon_NONE,
+		SMCSWeapon_UMP45, SMCSWeapon_XM1014, SMCSWeapon_BIZON, SMCSWeapon_MAG7,
+		SMCSWeapon_NEGEV, SMCSWeapon_SAWEDOFF, SMCSWeapon_TEC9, SMCSWeapon_TASER,
+		SMCSWeapon_HKP2000, SMCSWeapon_MP7, SMCSWeapon_MP9, SMCSWeapon_NOVA,
+		SMCSWeapon_P250, SMCSWeapon_NONE, SMCSWeapon_SCAR20, SMCSWeapon_SG556,
+		SMCSWeapon_SSG08, SMCSWeapon_KNIFE_GG, SMCSWeapon_KNIFE, SMCSWeapon_FLASHBANG,
+		SMCSWeapon_HEGRENADE, SMCSWeapon_SMOKEGRENADE, SMCSWeapon_MOLOTOV, SMCSWeapon_DECOY,
+		SMCSWeapon_INCGRENADE, SMCSWeapon_C4, SMCSWeapon_KEVLAR, SMCSWeapon_ASSAULTSUIT,
+		SMCSWeapon_HEAVYASSAULTSUIT, SMCSWeapon_NONE, SMCSWeapon_NIGHTVISION, SMCSWeapon_DEFUSER
+	};
+
+	if (iDefIdx >= SMCSWeapon_MAXWEAPONIDS)
+		return (SMCSWeapon)iDefIdx;
+	else
+		return weaponIDMap[iDefIdx];
+}
+
+ItemDefHashValue *GetHashValueFromWeapon(const char *szWeapon)
+{
+	char tempWeapon[MAX_WEAPON_NAME_LENGTH];
+
+	Q_strncpy(tempWeapon, szWeapon, sizeof(tempWeapon));
+	Q_strlower(tempWeapon);
+
+	if (strstr(tempWeapon, "weapon_") == NULL && strstr(tempWeapon, "item_") == NULL)
+	{
+		static const char *szClassPrefixs[] = { "weapon_", "item_" };
+
+		for (unsigned int i = 0; i < SM_ARRAYSIZE(szClassPrefixs); i++)
+		{
+			char classname[MAX_WEAPON_NAME_LENGTH];
+			Q_snprintf(classname, sizeof(classname), "%s%s", szClassPrefixs[i], tempWeapon);
+
+			ClassnameMap::Result res = g_mapClassToDefIdx.find(classname);
+
+			if (res.found())
+				return &res->value;
+		}
+
+		return NULL;
+	}
+
+	ClassnameMap::Result res = g_mapClassToDefIdx.find(tempWeapon);
+
+	if (res.found())
+		return &res->value;
+
+	return NULL;
+}
 #endif
 
 #if SOURCE_ENGINE != SE_CSGO
@@ -273,6 +418,20 @@ void *GetWeaponInfo(int weaponID)
 }
 #endif
 
+const char *GetWeaponNameFromClassname(const char *weapon)
+{
+	char *szTemp = strstr((char *)weapon, "_");
+
+	if (!szTemp)
+	{
+		return weapon;
+	}
+	else
+	{
+		return (const char *)((intptr_t)szTemp + 1);
+	}
+}
+
 const char *GetTranslatedWeaponAlias(const char *weapon)
 {
 #if SOURCE_ENGINE != SE_CSGO
@@ -297,12 +456,11 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 	unsigned char vstk[sizeof(const char *)];
 	unsigned char *vptr = vstk;
 
-	*(const char **)vptr = weapon;
+	*(const char **)vptr = GetWeaponNameFromClassname(weapon);
 
 	pWrapper->Execute(vstk, &alias);
 	return alias;
 #else //this should work for both games maybe replace both?
-
 	static const char *szAliases[] =
 	{
 		"cv47", "ak47",
@@ -320,14 +478,14 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 		"vesthelm", "assaultsuit",
 		"nvgs", "nightvision"
 	};
-	
-	for (size_t i = 0; i < SM_ARRAYSIZE(szAliases)/2; i++)
+
+	for (size_t i = 0; i < SM_ARRAYSIZE(szAliases) / 2; i++)
 	{
-		if (stricmp(weapon, szAliases[i * 2]) == 0)
+		if (Q_stristr(GetWeaponNameFromClassname(weapon), szAliases[i * 2]) != 0)
 			return szAliases[i * 2 + 1];
 	}
 
-	return weapon;
+	return  GetWeaponNameFromClassname(weapon);
 #endif
 }
 
@@ -355,17 +513,17 @@ int AliasToWeaponID(const char *weapon)
 	unsigned char vstk[sizeof(const char *)];
 	unsigned char *vptr = vstk;
 
-	*(const char **)vptr = weapon;
+	*(const char **)vptr = GetWeaponNameFromClassname(weapon);
 
 	pWrapper->Execute(vstk, &weaponID);
 
 	return weaponID;
-#else //this is horribly broken hackfix for now.
-	for (unsigned int i = 0; i < SM_ARRAYSIZE(szWeaponInfo); i++)
-	{
-		if (stricmp(weapon, szWeaponInfo[i]) == 0)
-			return i;
-	}
+#else
+	ItemDefHashValue *pHashValue = GetHashValueFromWeapon(weapon);
+
+	if (pHashValue)
+		return pHashValue->m_iWeaponID;
+
 	return 0;
 #endif
 }
@@ -390,285 +548,35 @@ const char *WeaponIDToAlias(int weaponID)
 			retpass.size = sizeof(const char *); \
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
-	
+
 	unsigned char vstk[sizeof(int)];
 	unsigned char *vptr = vstk;
 
-	*(int *)vptr = GetRealWeaponID(weaponID);
+	*(int *)vptr = weaponID;
 
 	pWrapper->Execute(vstk, &alias);
 
 	return alias;
 #else
-	int realID = GetRealWeaponID(weaponID);
+	WeaponIDMap::Result res = g_mapWeaponIDToDefIdx.find((SMCSWeapon)weaponID);
 
-	if (static_cast<size_t>(realID) < SM_ARRAYSIZE(szWeaponInfo) && realID > 0)
-		return szWeaponInfo[realID];
+	if (res.found())
+		return res->value.m_szItemName;
 
 	return NULL;
-
-#endif
-	
-}
-
-int GetRealWeaponID(int weaponId)
-{
-#if SOURCE_ENGINE == SE_CSGO
-	switch((SMCSWeapon)weaponId)
-	{
-		case SMCSWeapon_NONE:
-			return (int)CSGOWeapon_NONE;
-		case SMCSWeapon_DEAGLE:
-			return (int)CSGOWeapon_DEAGLE;
-		case SMCSWeapon_ELITE:
-			return (int)CSGOWeapon_ELITE;
-		case SMCSWeapon_FIVESEVEN:
-			return (int)CSGOWeapon_FIVESEVEN;
-		case SMCSWeapon_GLOCK:
-			return (int)CSGOWeapon_GLOCK;
-		case SMCSWeapon_P228:
-			return (int)CSGOWeapon_P228;
-		case SMCSWeapon_USP:
-			return (int)CSGOWeapon_USP;
-		case SMCSWeapon_AK47:
-			return (int)CSGOWeapon_AK47;
-		case SMCSWeapon_AUG:
-			return (int)CSGOWeapon_AUG;
-		case SMCSWeapon_AWP:
-			return (int)CSGOWeapon_AWP;
-		case SMCSWeapon_FAMAS:
-			return (int)CSGOWeapon_FAMAS;
-		case SMCSWeapon_G3SG1:
-			return (int)CSGOWeapon_G3SG1;
-		case SMCSWeapon_GALIL:
-			return (int)CSGOWeapon_GALIL;
-		case SMCSWeapon_GALILAR:
-			return (int)CSGOWeapon_GALILAR;
-		case SMCSWeapon_M249:
-			return (int)CSGOWeapon_M249;
-		case SMCSWeapon_M3:
-			return (int)CSGOWeapon_M3;
-		case SMCSWeapon_M4A1:
-			return (int)CSGOWeapon_M4A1;
-		case SMCSWeapon_MAC10:
-			return (int)CSGOWeapon_MAC10;
-		case SMCSWeapon_MP5NAVY:
-			return (int)CSGOWeapon_MP5NAVY;
-		case SMCSWeapon_P90:
-			return (int)CSGOWeapon_P90;
-		case SMCSWeapon_SCOUT:
-			return (int)CSGOWeapon_SCOUT;
-		case SMCSWeapon_SG550:
-			return (int)CSGOWeapon_SG550;
-		case SMCSWeapon_SG552:
-			return (int)CSGOWeapon_SG552;
-		case SMCSWeapon_TMP:
-			return (int)CSGOWeapon_TMP;
-		case SMCSWeapon_UMP45:
-			return (int)CSGOWeapon_UMP45;
-		case SMCSWeapon_XM1014:
-			return (int)CSGOWeapon_XM1014;
-		case SMCSWeapon_BIZON:
-			return (int)CSGOWeapon_BIZON;
-		case SMCSWeapon_MAG7:
-			return (int)CSGOWeapon_MAG7;
-		case SMCSWeapon_NEGEV:
-			return (int)CSGOWeapon_NEGEV;
-		case SMCSWeapon_SAWEDOFF:
-			return (int)CSGOWeapon_SAWEDOFF;
-		case SMCSWeapon_TEC9:
-			return (int)CSGOWeapon_TEC9;
-		case SMCSWeapon_TASER:
-			return (int)CSGOWeapon_TASER;
-		case SMCSWeapon_HKP2000:
-			return (int)CSGOWeapon_HKP2000;
-		case SMCSWeapon_MP7:
-			return (int)CSGOWeapon_MP7;
-		case SMCSWeapon_MP9:
-			return (int)CSGOWeapon_MP9;
-		case SMCSWeapon_NOVA:
-			return (int)CSGOWeapon_NOVA;
-		case SMCSWeapon_P250:
-			return (int)CSGOWeapon_P250;
-		case SMCSWeapon_SCAR17:
-			return (int)CSGOWeapon_SCAR17;
-		case SMCSWeapon_SCAR20:
-			return (int)CSGOWeapon_SCAR20;
-		case SMCSWeapon_SG556:
-			return (int)CSGOWeapon_SG556;
-		case SMCSWeapon_SSG08:
-			return (int)CSGOWeapon_SSG08;
-		case SMCSWeapon_KNIFE_GG:
-			return (int)CSGOWeapon_KNIFE_GG;
-		case SMCSWeapon_KNIFE:
-			return (int)CSGOWeapon_KNIFE;
-		case SMCSWeapon_FLASHBANG:
-			return (int)CSGOWeapon_FLASHBANG;
-		case SMCSWeapon_HEGRENADE:
-			return (int)CSGOWeapon_HEGRENADE;
-		case SMCSWeapon_SMOKEGRENADE:
-			return (int)CSGOWeapon_SMOKEGRENADE;
-		case SMCSWeapon_MOLOTOV:
-			return (int)CSGOWeapon_MOLOTOV;
-		case SMCSWeapon_DECOY:
-			return (int)CSGOWeapon_DECOY;
-		case SMCSWeapon_INCGRENADE:
-			return (int)CSGOWeapon_INCGRENADE;
-		case SMCSWeapon_C4:
-			return (int)CSGOWeapon_C4;
-		case SMCSWeapon_KEVLAR:
-			return (int)CSGOWeapon_KEVLAR;
-		case SMCSWeapon_ASSAULTSUIT:
-			return (int)CSGOWeapon_ASSAULTSUIT;
-		case SMCSWeapon_NIGHTVISION:
-			return (int)CSGOWeapon_NVG;
-		case SMCSWeapon_DEFUSER:
-			return (int)CSGOWeapon_DEFUSER;
-		default:
-			return (int)CSGOWeapon_NONE;
-	}
-#else
-	if (weaponId > (int)SMCSWeapon_NIGHTVISION || weaponId < (int)SMCSWeapon_NONE)
-		return (int)SMCSWeapon_NONE;
-	else
-		return weaponId;
 #endif
 }
 
-int GetFakeWeaponID(int weaponId)
-{
-#if SOURCE_ENGINE == SE_CSGO
-	switch((CSGOWeapon)weaponId)
-	{
-		case CSGOWeapon_NONE:
-			return (int)SMCSWeapon_NONE;
-		case CSGOWeapon_DEAGLE:
-			return (int)SMCSWeapon_DEAGLE;
-		case CSGOWeapon_ELITE:
-			return (int)SMCSWeapon_ELITE;
-		case CSGOWeapon_FIVESEVEN:
-			return (int)SMCSWeapon_FIVESEVEN;
-		case CSGOWeapon_GLOCK:
-			return (int)SMCSWeapon_GLOCK;
-		case CSGOWeapon_P228:
-			return (int)SMCSWeapon_P228;
-		case CSGOWeapon_USP:
-			return (int)SMCSWeapon_USP;
-		case CSGOWeapon_AK47:
-			return (int)SMCSWeapon_AK47;
-		case CSGOWeapon_AUG:
-			return (int)SMCSWeapon_AUG;
-		case CSGOWeapon_AWP:
-			return (int)SMCSWeapon_AWP;
-		case CSGOWeapon_FAMAS:
-			return (int)SMCSWeapon_FAMAS;
-		case CSGOWeapon_G3SG1:
-			return (int)SMCSWeapon_G3SG1;
-		case CSGOWeapon_GALIL:
-			return (int)SMCSWeapon_GALIL;
-		case CSGOWeapon_GALILAR:
-			return (int)SMCSWeapon_GALILAR;
-		case CSGOWeapon_M249:
-			return (int)SMCSWeapon_M249;
-		case CSGOWeapon_M3:
-			return (int)SMCSWeapon_M3;
-		case CSGOWeapon_M4A1:
-			return (int)SMCSWeapon_M4A1;
-		case CSGOWeapon_MAC10:
-			return (int)SMCSWeapon_MAC10;
-		case CSGOWeapon_MP5NAVY:
-			return (int)SMCSWeapon_MP5NAVY;
-		case CSGOWeapon_P90:
-			return (int)SMCSWeapon_P90;
-		case CSGOWeapon_SCOUT:
-			return (int)SMCSWeapon_SCOUT;
-		case CSGOWeapon_SG550:
-			return (int)SMCSWeapon_SG550;
-		case CSGOWeapon_SG552:
-			return (int)SMCSWeapon_SG552;
-		case CSGOWeapon_TMP:
-			return (int)SMCSWeapon_TMP;
-		case CSGOWeapon_UMP45:
-			return (int)SMCSWeapon_UMP45;
-		case CSGOWeapon_XM1014:
-			return (int)SMCSWeapon_XM1014;
-		case CSGOWeapon_BIZON:
-			return (int)SMCSWeapon_BIZON;
-		case CSGOWeapon_MAG7:
-			return (int)SMCSWeapon_MAG7;
-		case CSGOWeapon_NEGEV:
-			return (int)SMCSWeapon_NEGEV;
-		case CSGOWeapon_SAWEDOFF:
-			return (int)SMCSWeapon_SAWEDOFF;
-		case CSGOWeapon_TEC9:
-			return (int)SMCSWeapon_TEC9;
-		case CSGOWeapon_TASER:
-			return (int)SMCSWeapon_TASER;
-		case CSGOWeapon_HKP2000:
-			return (int)SMCSWeapon_HKP2000;
-		case CSGOWeapon_MP7:
-			return (int)SMCSWeapon_MP7;
-		case CSGOWeapon_MP9:
-			return (int)SMCSWeapon_MP9;
-		case CSGOWeapon_NOVA:
-			return (int)SMCSWeapon_NOVA;
-		case CSGOWeapon_P250:
-			return (int)SMCSWeapon_P250;
-		case CSGOWeapon_SCAR17:
-			return (int)SMCSWeapon_SCAR17;
-		case CSGOWeapon_SCAR20:
-			return (int)SMCSWeapon_SCAR20;
-		case CSGOWeapon_SG556:
-			return (int)SMCSWeapon_SG556;
-		case CSGOWeapon_SSG08:
-			return (int)SMCSWeapon_SSG08;
-		case CSGOWeapon_KNIFE_GG:
-			return (int)SMCSWeapon_KNIFE_GG;
-		case CSGOWeapon_KNIFE:
-			return (int)SMCSWeapon_KNIFE;
-		case CSGOWeapon_FLASHBANG:
-			return (int)SMCSWeapon_FLASHBANG;
-		case CSGOWeapon_HEGRENADE:
-			return (int)SMCSWeapon_HEGRENADE;
-		case CSGOWeapon_SMOKEGRENADE:
-			return (int)SMCSWeapon_SMOKEGRENADE;
-		case CSGOWeapon_MOLOTOV:
-			return (int)SMCSWeapon_MOLOTOV;
-		case CSGOWeapon_DECOY:
-			return (int)SMCSWeapon_DECOY;
-		case CSGOWeapon_INCGRENADE:
-			return (int)SMCSWeapon_INCGRENADE;
-		case CSGOWeapon_C4:
-			return (int)SMCSWeapon_C4;
-		case CSGOWeapon_KEVLAR:
-			return (int)SMCSWeapon_KEVLAR;
-		case CSGOWeapon_ASSAULTSUIT:
-			return (int)SMCSWeapon_ASSAULTSUIT;
-		case CSGOWeapon_NVG:
-			return (int)SMCSWeapon_NIGHTVISION;
-		case CSGOWeapon_DEFUSER:
-			return (int)SMCSWeapon_DEFUSER;
-		default:
-			return (int)SMCSWeapon_NONE;
-	}
-#else
-	if (weaponId > (int)SMCSWeapon_NIGHTVISION || weaponId < (int)SMCSWeapon_NONE)
-		return (int)SMCSWeapon_NONE;
-	else
-		return weaponId;
-#endif
-}
 bool IsValidWeaponID(int id)
 {
 	if (id <= (int)SMCSWeapon_NONE)
 		return false;
-	//Why are these even HERE!?! They dont exist in CS:GO but have valid ID's still
 #if SOURCE_ENGINE == SE_CSGO
-	else if (id > (int)SMCSWeapon_DEFUSER || id == (int)SMCSWeapon_P228 || id == (int)SMCSWeapon_SCOUT || id == (int)SMCSWeapon_SG550 || id == (int)SMCSWeapon_GALIL ||
-			id == (int)SMCSWeapon_SCAR17 || id == (int)SMCSWeapon_USP || id == (int)SMCSWeapon_M3 || id == (int)SMCSWeapon_MP5NAVY || id == (int)SMCSWeapon_TMP || id == (int)SMCSWeapon_SG552)
-			return false;
+	WeaponIDMap::Result res = g_mapWeaponIDToDefIdx.find((SMCSWeapon)id);
+	if (!res.found())
+		return false;
 #else
-	else if (id > (int)SMCSWeapon_NIGHTVISION)
+	else if (id > SMCSWeapon_NIGHTVISION || !GetWeaponInfo(id))
 		return false;
 #endif
 	return true;
