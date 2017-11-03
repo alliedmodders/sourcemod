@@ -141,6 +141,7 @@ native bool GetClientEyeAngles(int client, float ang[3]);
  * Creates an entity by string name, but does not spawn it (see DispatchSpawn).
  * If ForceEdictIndex is not -1, then it will use the edict by that index. If the index is 
  *  invalid or there is already an edict using that index, it will error out.
+ * Note: For CS:GO CreateItemByName is called first to create items (defuser's, assaultsuit, vest, etc...) and weapons. If null CreateEntityByName is then called.
  *
  * @param classname			Entity classname.
  * @param ForceEdictIndex	Edict index used by the created entity (ignored on Orangebox and above).
