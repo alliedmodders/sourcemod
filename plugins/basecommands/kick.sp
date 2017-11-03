@@ -174,7 +174,7 @@ public Action Command_Kick(int client, int args)
 		{
 			if (reason[0] == '\0')
 			{
-				ShowActivity2(client, "[SM] ", "%t", "Kicked target", "_s", target_name);            
+				ShowActivity2(client, "[SM] ", "%t", "Kicked target", "_s", target_name);
 			}
 			else
 			{
