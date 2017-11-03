@@ -388,6 +388,8 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 #define GAMEFIX "2.blade"
 #elif SOURCE_ENGINE == SE_INSURGENCY
 #define GAMEFIX "2.insurgency"
+#elif SOURCE_ENGINE == SE_DOI
+#define GAMEFIX "2.doi"
 #elif SOURCE_ENGINE == SE_CSGO
 #define GAMEFIX "2.csgo"
 #elif SOURCE_ENGINE == SE_CONTAGION
@@ -510,6 +512,8 @@ const char *CoreProviderImpl::GetSourceEngineName()
 	return "blade";
 #elif SOURCE_ENGINE == SE_INSURGENCY
 	return "insurgency";
+#elif SOURCE_ENGINE == SE_DOI
+	return "doi";
 #elif SOURCE_ENGINE == SE_CSGO
 	return "csgo";
 #endif
@@ -527,6 +531,7 @@ bool CoreProviderImpl::SymbolsAreHidden()
 	|| (SOURCE_ENGINE == SE_NUCLEARDAWN) \
 	|| (SOURCE_ENGINE == SE_LEFT4DEAD2)  \
 	|| (SOURCE_ENGINE == SE_INSURGENCY)  \
+	|| (SOURCE_ENGINE == SE_DOI)  \
 	|| (SOURCE_ENGINE == SE_BLADE)       \
 	|| (SOURCE_ENGINE == SE_CSGO)
 	return true;
