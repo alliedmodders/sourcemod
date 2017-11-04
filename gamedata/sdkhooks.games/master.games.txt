@@ -59,6 +59,7 @@
 	"engine.insurgency.txt"
 	{
 		"engine"	"insurgency"
+		"engine"	"doi" // #cheating #yolo
 	}
 	
 /*

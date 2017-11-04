@@ -515,10 +515,11 @@ private:
 					continue;
 				}
 				
-				if (strcmp(bridge->GetSourceEngineName(), "insurgency") == 0)
+				if (strcmp(bridge->GetSourceEngineName(), "insurgency") == 0
+					|| strcmp(bridge->GetSourceEngineName(), "doi") == 0)
 				{
-					// Insurgency (presumably?) doesn't allow spaces in map names
-					// and does use a space to delimit the map name from the map mode
+					// Insurgency and Day of Infamy (presumably?) doesn't allow spaces in map names
+					// and do use a space to delimit the map name from the map mode
 					int i = 0;
 					while (ptr[i] != 0)
 					{

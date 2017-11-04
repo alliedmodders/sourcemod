@@ -223,9 +223,10 @@ void GetIServer()
 	|| SOURCE_ENGINE == SE_CSS     \
 	|| SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BMS     \
+	|| SOURCE_ENGINE == SE_DOI     \
 	|| SOURCE_ENGINE == SE_INSURGENCY
 
-#if SOURCE_ENGINE != SE_INSURGENCY
+#if SOURCE_ENGINE != SE_INSURGENCY && SOURCE_ENGINE != SE_DOI
 	if (g_SMAPI->GetEngineFactory(false)("VEngineServer022", nullptr))
 #endif // !SE_INSURGENCY
 	{

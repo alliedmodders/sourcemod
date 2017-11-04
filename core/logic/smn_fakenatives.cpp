@@ -424,6 +424,58 @@ static cell_t FormatNativeString(IPluginContext *pContext, const cell_t *params)
 	return SP_ERROR_NONE;
 }
 
+static cell_t IsNativeParamNullVector(IPluginContext *pContext, const cell_t *params)
+{
+	if (!s_curnative || (s_curnative->ctx != pContext))
+	{
+		return pContext->ThrowNativeError("Not called from inside a native function");
+	}
+
+	cell_t param = params[1];
+	if (param < 1 || param > s_curparams[0])
+	{
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAM, "Invalid parameter number: %d", param);
+	}
+
+	int err;
+	cell_t *addr;
+	if ((err = s_curcaller->LocalToPhysAddr(s_curparams[param], &addr)) != SP_ERROR_NONE)
+	{
+		return err;
+	}
+
+	cell_t *pNullVec = s_curcaller->GetNullRef(SP_NULL_VECTOR);
+	if (!pNullVec)
+	{
+		return 0;
+	}
+
+	return addr == pNullVec ? 1 : 0;
+}
+
+static cell_t IsNativeParamNullString(IPluginContext *pContext, const cell_t *params)
+{
+	if (!s_curnative || (s_curnative->ctx != pContext))
+	{
+		return pContext->ThrowNativeError("Not called from inside a native function");
+	}
+
+	cell_t param = params[1];
+	if (param < 1 || param > s_curparams[0])
+	{
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAM, "Invalid parameter number: %d", param);
+	}
+
+	int err;
+	char *str;
+	if ((err = s_curcaller->LocalToStringNULL(s_curparams[param], &str)) != SP_ERROR_NONE)
+	{
+		return err;
+	}
+
+	return str == nullptr ? 1 : 0;
+}
+
 //tee hee
 REGISTER_NATIVES(nativeNatives)
 {
@@ -439,5 +491,7 @@ REGISTER_NATIVES(nativeNatives)
 	{"SetNativeArray",			SetNativeArray},
 	{"SetNativeCellRef",		SetNativeCellRef},
 	{"SetNativeString",			SetNativeString},
+	{"IsNativeParamNullVector",	IsNativeParamNullVector},
+	{"IsNativeParamNullString",	IsNativeParamNullString},
 	{NULL,						NULL},
 };

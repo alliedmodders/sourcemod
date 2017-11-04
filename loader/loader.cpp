@@ -82,6 +82,7 @@
 #define FILENAME_1_6_ND				PLATFORM_ARCH_FOLDER "sourcemod.2.nd" PLATFORM_EXT
 #define FILENAME_1_6_BLADE			PLATFORM_ARCH_FOLDER "sourcemod.2.blade" PLATFORM_EXT
 #define FILENAME_1_6_INSURGENCY		PLATFORM_ARCH_FOLDER "sourcemod.2.insurgency" PLATFORM_EXT
+#define FILENAME_1_6_DOI			PLATFORM_ARCH_FOLDER "sourcemod.2.doi" PLATFORM_EXT
 #define FILENAME_1_6_CONTAGION		PLATFORM_ARCH_FOLDER "sourcemod.2.contagion" PLATFORM_EXT
 #define FILENAME_1_6_BMS			PLATFORM_ARCH_FOLDER "sourcemod.2.bms" PLATFORM_EXT
 
@@ -325,6 +326,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_INSURGENCY:
 		{
 			filename = FILENAME_1_6_INSURGENCY;
+			break;
+		}
+	case SOURCE_ENGINE_DOI:
+		{
+			filename = FILENAME_1_6_DOI;
 			break;
 		}
 	default:
