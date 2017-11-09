@@ -41,9 +41,10 @@
 #include <sp_vm_api.h>
 #include <IDataPack.h>
 #include <time.h>
+#include <IKeyValueStack.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	13
+#define SMINTERFACE_SOURCEMOD_VERSION	14
 
 /**
 * @brief Forward declaration of the KeyValues class.
@@ -318,6 +319,43 @@ namespace SourceMod
 		 * @return			True if a map is currently running, otherwise false.
 		 */
 		virtual bool IsMapRunning() = 0;
+
+		/**
+		 * @brief Creates a KeyValues stack object.
+		 * 
+		 * @return			A new IKeyValueStack object.
+		 */
+		virtual IKeyValueStack *CreateKVStack(KeyValues *root) = 0;
+
+		/**
+		 * @brief Removes a KeyValues stack object.
+		 * 
+		 * @return			An IKeyValueStack object to remove.
+		 */
+		virtual void FreeKVStack(IKeyValueStack *kVStack) = 0;
+
+		/**
+		 * @brief Retrieves a IKeyValueStack pointer from a handle.
+		 * 
+		 * @param hndl		Handle_t from which to retrieve contents.
+		 * @param owner		The identity token of the owner of the handle.
+		 * @param err		Optional address to store a possible handle error.
+		 * 
+		 * @return			The IKeyValueStack pointer, or NULL for any error encountered.
+		 */
+		virtual IKeyValueStack *ReadKVStackFromHandle(Handle_t hndl, IdentityToken_t *owner = NULL, HandleError *err = NULL) = 0;
+		
+		/**
+		 * @brief Packs a IKeyValueStack object into a handle as a "KeyValues" type for
+		 * plugins to use. This object gets deleted once the handle is destroyed. 
+		 * 
+		 * @param kVStack	A IKeyValueStack object to pack into the handle.
+		 * @param owner		The identity token of the owner of the handle.
+		 * @param err		Optional address to store a possible handle error.
+		 * 
+		 * @return			The IKeyValueStack object packed into a handle.
+		 */
+		virtual Handle_t CreateHandleFromKVStack(IKeyValueStack *kVStack, IdentityToken_t *owner, HandleError *err = NULL) = 0;
 	};
 }
 

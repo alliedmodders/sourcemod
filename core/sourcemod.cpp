@@ -48,6 +48,7 @@
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/IProviderCallbacks.h>
 #include <bridge/include/ILogger.h>
+#include "KeyValueStack.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -743,6 +744,16 @@ int SourceModBase::GetShApiVersion()
 bool SourceModBase::IsMapRunning()
 {
 	return g_OnMapStarted;
+}
+
+IKeyValueStack *SourceModBase::CreateKVStack(KeyValues *root)
+{
+	return new KeyValueStack(root);
+}
+
+void SourceModBase::FreeKVStack(IKeyValueStack *kVStack)
+{
+	delete static_cast<KeyValueStack *>(kVStack);
 }
 
 class ConVarRegistrar :

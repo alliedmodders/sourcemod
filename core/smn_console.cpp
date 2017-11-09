@@ -46,7 +46,7 @@
 #include "ConCommandBaseIterator.h"
 #include "logic_bridge.h"
 #include <sm_namehashset.h>
-#include "smn_keyvalues.h"
+#include <IKeyValueStack.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/ILogger.h>
 #include <ITranslator.h>
@@ -1275,24 +1275,29 @@ static cell_t FakeClientCommandKeyValues(IPluginContext *pContext, const cell_t 
 	Handle_t hndl = static_cast<Handle_t>(params[2]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	KeyValues *pKeyValues;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr = handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **) &pStk))
-		!= HandleError_None)
+	bool bReadFromRoot = true;
+	// The current implementation reads the KV from root, not from the current section, 
+	// this is not advertised anywhere in sp.
+
+	pKeyValues = g_SourceMod.ReadKeyValuesHandle(hndl, &herr, bReadFromRoot);
+
+	if (herr != HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
 	if (g_Players.InClientCommandKeyValuesHook())
 	{
-		SH_CALL(serverClients, &IServerGameClients::ClientCommandKeyValues)(pPlayer->GetEdict(), pStk->pBase);
+		SH_CALL(serverClients, &IServerGameClients::ClientCommandKeyValues)(pPlayer->GetEdict(), pKeyValues);
 	}
 	else
 	{
-		serverClients->ClientCommandKeyValues(pPlayer->GetEdict(), pStk->pBase);
+		serverClients->ClientCommandKeyValues(pPlayer->GetEdict(), pKeyValues);
 	}
 
 	return 1;

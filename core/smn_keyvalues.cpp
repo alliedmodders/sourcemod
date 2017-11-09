@@ -36,7 +36,6 @@
 #include "sm_stringutil.h"
 #include "HalfLife2.h"
 #include <KeyValues.h>
-#include "utlbuffer.h"
 #include "logic_bridge.h"
 
 HandleType_t g_KeyValueType;
@@ -57,55 +56,38 @@ public:
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		KeyValueStack *pStk = reinterpret_cast<KeyValueStack *>(object);
-		if (pStk->m_bDeleteOnDestroy)
-		{
-			pStk->pBase->deleteThis();
-		}
-
-		delete pStk;
-	}
-	int CalcKVSizeR(KeyValues *pv)
-	{
-		CUtlBuffer buf;
-		int size;
-
-		pv->RecursiveSaveToFile(buf, 0);
-		size = buf.TellMaxPut();
-
-		buf.Purge();
-
-		return size;
+		IKeyValueStack *pKVStack = reinterpret_cast<IKeyValueStack *>(object);
+		g_SourceMod.FreeKVStack(pKVStack);
 	}
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
 	{
-		KeyValueStack *pStk = (KeyValueStack *)object;
-		unsigned int size = sizeof(KeyValueStack) + (pStk->pCurRoot.size() * sizeof(KeyValues *));
-
-		/* Check how much memory the actual thing takes up */		
-		size += CalcKVSizeR(pStk->pBase);
-
-		*pSize = size;
+		IKeyValueStack *pKVStack = (IKeyValueStack *)object;
+		*pSize = pKVStack->CalcSize();
 
 		return true;
 	}
 };
 
-KeyValues *SourceModBase::ReadKeyValuesHandle(Handle_t hndl, HandleError *err, bool root)
+Handle_t SourceModBase::CreateHandleFromKVStack(IKeyValueStack *kVStack, IdentityToken_t *owner, HandleError *err)
 {
-	HandleError herr;
-	HandleSecurity sec;
-	KeyValueStack *pStk;
+	return handlesys->CreateHandle(g_KeyValueType, kVStack, owner, g_pCoreIdent, err);
+}
 
-	sec.pOwner = NULL;
-	sec.pIdentity = g_pCoreIdent;
+IKeyValueStack *SourceModBase::ReadKVStackFromHandle(Handle_t hndl, IdentityToken_t *owner, HandleError *err)
+{
+	HandleError hErr;
+	HandleSecurity hSec;
+	IKeyValueStack *pKVStack;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	hSec.pOwner = NULL;
+	hSec.pIdentity = g_pCoreIdent;
+
+	if ((hErr = handlesys->ReadHandle(hndl, g_KeyValueType, &hSec, (void **)&pKVStack))
 		!= HandleError_None)
 	{
 		if (err)
 		{
-			*err = herr;
+			*err = hErr;
 		}
 		return NULL;
 	}
@@ -115,7 +97,17 @@ KeyValues *SourceModBase::ReadKeyValuesHandle(Handle_t hndl, HandleError *err, b
 		*err = HandleError_None;
 	}
 
-	return (root) ? pStk->pBase : pStk->pCurRoot.front();
+	return pKVStack;
+}
+
+KeyValues *SourceModBase::ReadKeyValuesHandle(Handle_t hndl, HandleError *err, bool root)
+{
+	IKeyValueStack* pKVStack = ReadKVStackFromHandle(hndl, NULL, err);
+	if (*err == HandleError_None)
+	{
+		return (root) ? pKVStack->GetRootSection() : pKVStack->GetCurrentSection();
+	}
+	return NULL;
 }
 
 static cell_t smn_KvSetString(IPluginContext *pCtx, const cell_t *params)
@@ -123,7 +115,7 @@ static cell_t smn_KvSetString(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -138,7 +130,7 @@ static cell_t smn_KvSetString(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToStringNULL(params[2], &key);
 	pCtx->LocalToString(params[3], &value);
 
-	pStk->pCurRoot.front()->SetString(key, value);
+	pStk->GetCurrentSection()->SetString(key, value);
 
 	return 1;
 }
@@ -148,7 +140,7 @@ static cell_t smn_KvSetNum(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -162,7 +154,7 @@ static cell_t smn_KvSetNum(IPluginContext *pCtx, const cell_t *params)
 	char *key;
 	pCtx->LocalToStringNULL(params[2], &key);
 
-	pStk->pCurRoot.front()->SetInt(key, params[3]);
+	pStk->GetCurrentSection()->SetInt(key, params[3]);
 
 	return 1;
 }
@@ -172,7 +164,7 @@ static cell_t smn_KvSetUInt64(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -190,7 +182,7 @@ static cell_t smn_KvSetUInt64(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToPhysAddr(params[3], &addr);
 
 	value = *reinterpret_cast<uint64 *>(addr);
-	pStk->pCurRoot.front()->SetUint64(key, value);
+	pStk->GetCurrentSection()->SetUint64(key, value);
 
 	return 1;
 }
@@ -200,7 +192,7 @@ static cell_t smn_KvSetFloat(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -214,7 +206,7 @@ static cell_t smn_KvSetFloat(IPluginContext *pCtx, const cell_t *params)
 	char *key;
 	pCtx->LocalToStringNULL(params[2], &key);
 
-	pStk->pCurRoot.front()->SetFloat(key, sp_ctof(params[3]));
+	pStk->GetCurrentSection()->SetFloat(key, sp_ctof(params[3]));
 
 	return 1;
 }
@@ -224,7 +216,7 @@ static cell_t smn_KvSetColor(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -239,7 +231,7 @@ static cell_t smn_KvSetColor(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToStringNULL(params[2], &key);
 
 	Color color(params[3], params[4], params[5], params[6]);
-	pStk->pCurRoot.front()->SetColor(key, color);
+	pStk->GetCurrentSection()->SetColor(key, color);
 
 	return 1;
 }
@@ -249,7 +241,7 @@ static cell_t smn_KvSetVector(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -268,7 +260,7 @@ static cell_t smn_KvSetVector(IPluginContext *pCtx, const cell_t *params)
 
 	ke::SafeSprintf(buffer, sizeof(buffer), "%f %f %f", sp_ctof(vector[0]), sp_ctof(vector[1]), sp_ctof(vector[2]));
 
-	pStk->pCurRoot.front()->SetString(key, buffer);
+	pStk->GetCurrentSection()->SetString(key, buffer);
 
 	return 1;
 }
@@ -278,7 +270,7 @@ static cell_t smn_KvGetString(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -294,7 +286,7 @@ static cell_t smn_KvGetString(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToStringNULL(params[2], &key);
 	pCtx->LocalToString(params[5], &defvalue);
 
-	value = pStk->pCurRoot.front()->GetString(key, defvalue);
+	value = pStk->GetCurrentSection()->GetString(key, defvalue);
 	pCtx->StringToLocalUTF8(params[3], params[4], value, NULL);
 
 	return 1;
@@ -305,7 +297,7 @@ static cell_t smn_KvGetNum(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -320,7 +312,7 @@ static cell_t smn_KvGetNum(IPluginContext *pCtx, const cell_t *params)
 	char *key;
 	pCtx->LocalToStringNULL(params[2], &key);
 
-	value = pStk->pCurRoot.front()->GetInt(key, params[3]);
+	value = pStk->GetCurrentSection()->GetInt(key, params[3]);
 
 	return value;
 }
@@ -330,7 +322,7 @@ static cell_t smn_KvGetFloat(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -345,7 +337,7 @@ static cell_t smn_KvGetFloat(IPluginContext *pCtx, const cell_t *params)
 	char *key;
 	pCtx->LocalToStringNULL(params[2], &key);
 
-	value = pStk->pCurRoot.front()->GetFloat(key, sp_ctof(params[3]));
+	value = pStk->GetCurrentSection()->GetFloat(key, sp_ctof(params[3]));
 
 	return sp_ftoc(value);
 }
@@ -355,7 +347,7 @@ static cell_t smn_KvGetColor(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -375,7 +367,7 @@ static cell_t smn_KvGetColor(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToPhysAddr(params[5], &b);
 	pCtx->LocalToPhysAddr(params[6], &a);
 
-	color = pStk->pCurRoot.front()->GetColor(key);
+	color = pStk->GetCurrentSection()->GetColor(key);
 	*r = color.r();
 	*g = color.g();
 	*b = color.b();
@@ -389,7 +381,7 @@ static cell_t smn_KvGetUInt64(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -407,7 +399,7 @@ static cell_t smn_KvGetUInt64(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToPhysAddr(params[3], &addr);
 	pCtx->LocalToPhysAddr(params[4], &defvalue);
 
-	value = pStk->pCurRoot.front()->GetUint64(key, static_cast<uint64>(*defvalue));
+	value = pStk->GetCurrentSection()->GetUint64(key, static_cast<uint64>(*defvalue));
 	*reinterpret_cast<uint64 *>(addr) = value;
 
 	return 1;
@@ -418,7 +410,7 @@ static cell_t smn_KvGetVector(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -439,7 +431,7 @@ static cell_t smn_KvGetVector(IPluginContext *pCtx, const cell_t *params)
 
 	ke::SafeSprintf(buffer, sizeof(buffer), "%f %f %f", sp_ctof(defvector[0]), sp_ctof(defvector[1]), sp_ctof(defvector[2]));
 
-	value = pStk->pCurRoot.front()->GetString(key, buffer);
+	value = pStk->GetCurrentSection()->GetString(key, buffer);
 
 	float out;
 	int components = 0;
@@ -488,7 +480,7 @@ static cell_t smn_KvGetVector(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t smn_CreateKeyValues(IPluginContext *pCtx, const cell_t *params)
 {
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 	char *name, *firstkey, *firstvalue;
 	bool is_empty;
 
@@ -497,11 +489,10 @@ static cell_t smn_CreateKeyValues(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[3], &firstvalue);
 
 	is_empty = (firstkey[0] == '\0');
-	pStk = new KeyValueStack;
-	pStk->pBase = new KeyValues(name, is_empty ? NULL : firstkey, (is_empty||(firstvalue[0]=='\0')) ? NULL : firstvalue);
-	pStk->pCurRoot.push(pStk->pBase);
+	KeyValues *pKV = new KeyValues(name, is_empty ? NULL : firstkey, (is_empty || (firstvalue[0] == '\0')) ? NULL : firstvalue);
+	pStk = g_SourceMod.CreateKVStack(pKV);
 
-	return handlesys->CreateHandle(g_KeyValueType, pStk, pCtx->GetIdentity(), g_pCoreIdent, NULL);
+	return g_SourceMod.CreateHandleFromKVStack(pStk, pCtx->GetIdentity(), NULL);
 }
 
 static cell_t smn_KvJumpToKey(IPluginContext *pCtx, const cell_t *params)
@@ -510,7 +501,7 @@ static cell_t smn_KvJumpToKey(IPluginContext *pCtx, const cell_t *params)
 	HandleError herr;
 	HandleSecurity sec;
 	char *name;	
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -522,24 +513,18 @@ static cell_t smn_KvJumpToKey(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	pCtx->LocalToString(params[2], &name);
+	bool createKey = (params[3]) ? true : false;
 
-	KeyValues *pSubKey = pStk->pCurRoot.front();
-	pSubKey = pSubKey->FindKey(name, (params[3]) ? true : false);
-	if (!pSubKey)
-	{
-		return 0;
-	}
-	pStk->pCurRoot.push(pSubKey);
-
-	return 1;
+	return pStk->JumpToKey(name, createKey);
 }
 
 static cell_t smn_KvJumpToKeySymbol(IPluginContext *pCtx, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	int symbol = params[2];
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -550,23 +535,16 @@ static cell_t smn_KvJumpToKeySymbol(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	KeyValues *pSubKey = pStk->pCurRoot.front();
-	pSubKey = pSubKey->FindKey(params[2]);
-	if (!pSubKey)
-	{
-		return 0;
-	}
-	pStk->pCurRoot.push(pSubKey);
-
-	return 1;
+	return pStk->JumpToKeySymbol(symbol);
 }
 
 static cell_t smn_KvGotoFirstSubKey(IPluginContext *pCtx, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	bool keyOnly = params[2];
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -577,30 +555,16 @@ static cell_t smn_KvGotoFirstSubKey(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	KeyValues *pSubKey = pStk->pCurRoot.front();
-	KeyValues *pFirstSubKey;
-	if (params[2])
-	{
-		pFirstSubKey = pSubKey->GetFirstTrueSubKey();
-	} else {
-		pFirstSubKey = pSubKey->GetFirstSubKey();
-	}
-
-	if (!pFirstSubKey)
-	{
-		return 0;
-	}
-	pStk->pCurRoot.push(pFirstSubKey);
-
-	return 1;
+	return pStk->GotoFirstSubKey(keyOnly);
 }
 
 static cell_t smn_KvGotoNextKey(IPluginContext *pCtx, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	bool keyOnly = params[2];
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -611,21 +575,7 @@ static cell_t smn_KvGotoNextKey(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	KeyValues *pSubKey = pStk->pCurRoot.front();
-	if (params[2])
-	{
-		pSubKey = pSubKey->GetNextTrueSubKey();
-	} else {
-		pSubKey = pSubKey->GetNextKey();
-	}
-	if (!pSubKey)
-	{
-		return 0;
-	}
-	pStk->pCurRoot.pop();
-	pStk->pCurRoot.push(pSubKey);
-
-	return 1;	
+	return pStk->GotoNextKey(keyOnly);
 }
 
 static cell_t smn_KvGoBack(IPluginContext *pCtx, const cell_t *params)
@@ -633,7 +583,7 @@ static cell_t smn_KvGoBack(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -644,13 +594,7 @@ static cell_t smn_KvGoBack(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	if (pStk->pCurRoot.size() == 1)
-	{
-		return 0;
-	}
-	pStk->pCurRoot.pop();
-
-	return 1;
+	return pStk->GoBack();
 }
 
 static cell_t smn_KvRewind(IPluginContext *pCtx, const cell_t *params)
@@ -658,7 +602,7 @@ static cell_t smn_KvRewind(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -669,10 +613,7 @@ static cell_t smn_KvRewind(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	while (pStk->pCurRoot.size() > 1)
-	{
-		pStk->pCurRoot.pop();
-	}
+	pStk->Rewind();
 
 	return 1;
 }
@@ -682,7 +623,7 @@ static cell_t smn_KvGetSectionName(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -693,8 +634,7 @@ static cell_t smn_KvGetSectionName(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	KeyValues *pSection = pStk->pCurRoot.front();
-	const char *name = pSection->GetName();
+	const char *name = pStk->GetCurrentSection()->GetName();
 	if (!name)
 	{
 		return 0;
@@ -710,7 +650,7 @@ static cell_t smn_KvSetSectionName(IPluginContext *pCtx, const cell_t *params)
 	HandleError herr;
 	HandleSecurity sec;
 	char *name;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -723,8 +663,7 @@ static cell_t smn_KvSetSectionName(IPluginContext *pCtx, const cell_t *params)
 
 	pCtx->LocalToString(params[2], &name);
 
-	KeyValues *pSection = pStk->pCurRoot.front();
-	pSection->SetName(name);
+	pStk->GetCurrentSection()->SetName(name);
 
 	return 1;
 }
@@ -735,7 +674,7 @@ static cell_t smn_KvGetDataType(IPluginContext *pCtx, const cell_t *params)
 	HandleError herr;
 	HandleSecurity sec;
 	char *name;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -748,7 +687,7 @@ static cell_t smn_KvGetDataType(IPluginContext *pCtx, const cell_t *params)
 
 	pCtx->LocalToString(params[2], &name);
 
-	return pStk->pCurRoot.front()->GetDataType(name);
+	return pStk->GetCurrentSection()->GetDataType(name);
 }
 
 static cell_t smn_KeyValuesToFile(IPluginContext *pCtx, const cell_t *params)
@@ -757,7 +696,7 @@ static cell_t smn_KeyValuesToFile(IPluginContext *pCtx, const cell_t *params)
 	HandleError herr;
 	HandleSecurity sec;
 	char *path;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -770,7 +709,7 @@ static cell_t smn_KeyValuesToFile(IPluginContext *pCtx, const cell_t *params)
 
 	pCtx->LocalToString(params[2], &path);
 
-	return pStk->pCurRoot.front()->SaveToFile(basefilesystem, path);
+	return pStk->GetCurrentSection()->SaveToFile(basefilesystem, path);
 }
 
 static cell_t smn_FileToKeyValues(IPluginContext *pCtx, const cell_t *params)
@@ -779,13 +718,13 @@ static cell_t smn_FileToKeyValues(IPluginContext *pCtx, const cell_t *params)
 	HandleError herr;
 	HandleSecurity sec;
 	char *path;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 	KeyValues *kv;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+	if ((herr = handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
@@ -793,8 +732,7 @@ static cell_t smn_FileToKeyValues(IPluginContext *pCtx, const cell_t *params)
 
 	pCtx->LocalToString(params[2], &path);
 
-	kv = pStk->pCurRoot.front();
-	return g_HL2.KVLoadFromFile(kv, basefilesystem, path);
+	return g_HL2.KVLoadFromFile(pStk->GetCurrentSection(), basefilesystem, path);
 }
 
 static cell_t smn_StringToKeyValues(IPluginContext *pCtx, const cell_t *params)
@@ -802,8 +740,7 @@ static cell_t smn_StringToKeyValues(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
-	KeyValues *kv;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -819,8 +756,7 @@ static cell_t smn_StringToKeyValues(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[2], &buffer);
 	pCtx->LocalToString(params[3], &resourceName);
 
-	kv = pStk->pCurRoot.front();
-	return kv->LoadFromBuffer(resourceName, buffer);
+	return pStk->GetCurrentSection()->LoadFromBuffer(resourceName, buffer);
 }
 
 static cell_t smn_KvSetEscapeSequences(IPluginContext *pCtx, const cell_t *params)
@@ -828,7 +764,7 @@ static cell_t smn_KvSetEscapeSequences(IPluginContext *pCtx, const cell_t *param
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -839,7 +775,7 @@ static cell_t smn_KvSetEscapeSequences(IPluginContext *pCtx, const cell_t *param
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	pStk->pCurRoot.front()->UsesEscapeSequences(params[2] ? true : false);
+	pStk->GetCurrentSection()->UsesEscapeSequences(params[2] ? true : false);
 
 	return 1;
 }
@@ -849,7 +785,7 @@ static cell_t smn_KvNodesInStack(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -860,7 +796,7 @@ static cell_t smn_KvNodesInStack(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	return pStk->pCurRoot.size() - 1;
+	return pStk->GetNodeCount();
 }
 
 static cell_t smn_KvDeleteThis(IPluginContext *pContext, const cell_t *params)
@@ -868,7 +804,7 @@ static cell_t smn_KvDeleteThis(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -879,42 +815,7 @@ static cell_t smn_KvDeleteThis(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	if (pStk->pCurRoot.size() < 2)
-	{
-		return 0;
-	}
-
-	KeyValues *pValues = pStk->pCurRoot.front();
-	pStk->pCurRoot.pop();
-	KeyValues *pRoot = pStk->pCurRoot.front();
-
-	/* We have to manually verify this since Valve sucks
-	 * :TODO: make our own KeyValues.h file and make
-	 * the sub stuff private so we can do this ourselves!
- 	 */
-	KeyValues *sub = pRoot->GetFirstSubKey();
-	while (sub)
-	{
-		if (sub == pValues)
-		{
-			KeyValues *pNext = pValues->GetNextKey();
-			pRoot->RemoveSubKey(pValues);
-			pValues->deleteThis();
-			if (pNext)
-			{
-				pStk->pCurRoot.push(pNext);
-				return 1;
-			} else {
-				return -1;
-			}
-		}
-		sub = sub->GetNextKey();
-	}
-
-	/* Push this back on :( */
-	pStk->pCurRoot.push(pValues);
-
-	return 0;
+	return pStk->DeleteThis();
 }
 
 static cell_t smn_KvDeleteKey(IPluginContext *pContext, const cell_t *params)
@@ -922,7 +823,7 @@ static cell_t smn_KvDeleteKey(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -933,7 +834,7 @@ static cell_t smn_KvDeleteKey(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	if (pStk->pCurRoot.size() < 2)
+	if (pStk->GetNodeCount() == 0)
 	{
 		return 0;
 	}
@@ -941,7 +842,7 @@ static cell_t smn_KvDeleteKey(IPluginContext *pContext, const cell_t *params)
 	char *keyName;
 	pContext->LocalToString(params[2], &keyName);
 
-	KeyValues *pRoot = pStk->pCurRoot.front();
+	KeyValues *pRoot = pStk->GetCurrentSection();
 	KeyValues *pValues = pRoot->FindKey(keyName);
 	if (!pValues)
 	{
@@ -959,7 +860,7 @@ static cell_t smn_KvSavePosition(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -970,15 +871,7 @@ static cell_t smn_KvSavePosition(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	if (pStk->pCurRoot.size() < 2)
-	{
-		return 0;
-	}
-
-	KeyValues *pValues = pStk->pCurRoot.front();
-	pStk->pCurRoot.push(pValues);
-
-	return 1;
+	return pStk->SavePosition();
 }
 
 static cell_t smn_CopySubkeys(IPluginContext *pContext, const cell_t *params)
@@ -987,7 +880,7 @@ static cell_t smn_CopySubkeys(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl_parent = static_cast<Handle_t>(params[2]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk_copied, *pStk_parent;
+	IKeyValueStack *pStk_copied, *pStk_parent;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -1003,7 +896,7 @@ static cell_t smn_CopySubkeys(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl_parent, herr);
 	}
 
-	pStk_copied->pCurRoot.front()->CopySubkeys(pStk_parent->pCurRoot.front());
+	pStk_copied->GetCurrentSection()->CopySubkeys(pStk_parent->GetCurrentSection());
 
 	return 1;
 }
@@ -1013,7 +906,7 @@ static cell_t smn_GetNameSymbol(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 	cell_t *val;
 	char *key;
 
@@ -1026,14 +919,14 @@ static cell_t smn_GetNameSymbol(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	if (pStk->pCurRoot.size() < 2)
+	if (pStk->GetNodeCount() == 0)
 	{
 		return 0;
 	}
 
 	pContext->LocalToString(params[2], &key);
 
-	KeyValues *pKv = pStk->pCurRoot.front()->FindKey(key);
+	KeyValues *pKv = pStk->GetCurrentSection()->FindKey(key);
 	if (!pKv)
 	{
 		return 0;
@@ -1049,7 +942,7 @@ static cell_t smn_FindKeyById(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -1060,7 +953,7 @@ static cell_t smn_FindKeyById(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	KeyValues *pKv = pStk->pCurRoot.front()->FindKey(params[2]);
+	KeyValues *pKv = pStk->GetCurrentSection()->FindKey(params[2]);
 	if (!pKv)
 	{
 		return 0;
@@ -1076,7 +969,7 @@ static cell_t smn_KvGetSectionSymbol(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 	cell_t *val;
 
 	sec.pOwner = NULL;
@@ -1088,7 +981,7 @@ static cell_t smn_KvGetSectionSymbol(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	KeyValues *pSection = pStk->pCurRoot.front();
+	KeyValues *pSection = pStk->GetCurrentSection();
 
 	pCtx->LocalToPhysAddr(params[2], &val);
 	*val = pSection->GetNameSymbol();
@@ -1118,7 +1011,7 @@ static cell_t smn_KeyValuesToString(IPluginContext *pContext, const cell_t *para
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -1131,7 +1024,7 @@ static cell_t smn_KeyValuesToString(IPluginContext *pContext, const cell_t *para
 	KeyValues *kv;
 	CUtlBuffer buffer;
 	
-	kv = pStk->pCurRoot.front();
+	kv = pStk->GetCurrentSection();
 
 	kv->RecursiveSaveToFile(buffer, 0);
 	
@@ -1148,7 +1041,7 @@ static cell_t smn_KeyValuesExportLength(IPluginContext *pContext, const cell_t *
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	KeyValueStack *pStk;
+	IKeyValueStack *pStk;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -1161,7 +1054,7 @@ static cell_t smn_KeyValuesExportLength(IPluginContext *pContext, const cell_t *
 	KeyValues *kv;
 	CUtlBuffer buffer;
 	
-	kv = pStk->pCurRoot.front();
+	kv = pStk->GetCurrentSection();
 
 	kv->RecursiveSaveToFile(buffer, 0);
 	

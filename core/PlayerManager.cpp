@@ -47,7 +47,8 @@
 #include "ConsoleDetours.h"
 #include "logic_bridge.h"
 #include <sourcemod_version.h>
-#include "smn_keyvalues.h"
+#include <IKeyValueStack.h>
+#include "sourcemod.h"
 #include "command_args.h"
 #include <bridge/include/IExtensionBridge.h>
 #include <bridge/include/IScriptManager.h>
@@ -1163,12 +1164,10 @@ void PlayerManager::OnClientCommandKeyValues(edict_t *pEntity, KeyValues *pComma
 		RETURN_META(MRES_IGNORED);
 	}
 
-	KeyValueStack *pStk = new KeyValueStack;
-	pStk->pBase = pCommand;
-	pStk->pCurRoot.push(pStk->pBase);
-	pStk->m_bDeleteOnDestroy = false;
+	IKeyValueStack *pKVStack = g_SourceMod.CreateKVStack(pCommand);
+	pKVStack->SetDeleteKVOnDestroy(false);
 
-	Handle_t hndl = handlesys->CreateHandle(g_KeyValueType, pStk, g_pCoreIdent, g_pCoreIdent, NULL);
+	Handle_t hndl = g_SourceMod.CreateHandleFromKVStack(pKVStack, g_pCoreIdent);
 
 	m_bInCCKVHook = true;
 	m_clcommandkv->PushCell(client);
@@ -1208,12 +1207,10 @@ void PlayerManager::OnClientCommandKeyValues_Post(edict_t *pEntity, KeyValues *p
 		return;
 	}
 
-	KeyValueStack *pStk = new KeyValueStack;
-	pStk->pBase = pCommand;
-	pStk->pCurRoot.push(pStk->pBase);
-	pStk->m_bDeleteOnDestroy = false;
+	IKeyValueStack *pKVStack = g_SourceMod.CreateKVStack(pCommand);
+	pKVStack->SetDeleteKVOnDestroy(false);
 
-	Handle_t hndl = handlesys->CreateHandle(g_KeyValueType, pStk, g_pCoreIdent, g_pCoreIdent, NULL);
+	Handle_t hndl = g_SourceMod.CreateHandleFromKVStack(pKVStack, g_pCoreIdent);
 
 	m_bInCCKVHook = true;
 	m_clcommandkv_post->PushCell(client);
