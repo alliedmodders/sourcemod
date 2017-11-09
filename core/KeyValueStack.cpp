@@ -199,12 +199,12 @@ void KeyValueStack::Rewind()
 	pCurrentPath.popall();
 }
 
-size_t KeyValueStack::GetNodeCount()
+unsigned int KeyValueStack::GetNodeCount()
 {
 	return pCurrentPath.size();
 }
 
-size_t KeyValueStack::CalcSize()
+unsigned int KeyValueStack::CalcSize()
 {
 	return sizeof(*this) + pCurrentPath.size() * sizeof(KeyValues *) + CalcKVSize();
 }
@@ -219,7 +219,7 @@ void KeyValueStack::SetDeleteKVOnDestroy(bool deleteOnDestroy)
 	m_bDeleteOnDestroy = deleteOnDestroy;
 }
 
-size_t KeyValueStack::CalcKVSize()
+unsigned int KeyValueStack::CalcKVSize()
 {
 	CUtlBuffer buf;
 	size_t size;

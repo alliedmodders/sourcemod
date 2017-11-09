@@ -52,12 +52,12 @@ public:
 	bool GoBack();
 	DeleteThis_Result DeleteThis();
 	void Rewind();
-	size_t GetNodeCount();
-	size_t CalcSize();
+	unsigned int GetNodeCount();
+	unsigned int CalcSize();
 	bool DeleteKVOnDestroy();
 	void SetDeleteKVOnDestroy(bool deleteOnDestroy);
 private:
-	size_t CalcKVSize();
+	unsigned int CalcKVSize();
 	KeyValues* pRoot;
 	SourceHook::CStack<KeyValues *> pCurrentPath;
 	bool m_bDeleteOnDestroy = true;

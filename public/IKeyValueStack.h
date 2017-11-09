@@ -151,7 +151,7 @@ namespace SourceMod
 		 * 
 		 * @return			Number of non-root nodes in the jump stack.
 		 */
-		virtual size_t GetNodeCount() = 0;
+		virtual unsigned int GetNodeCount() = 0;
 
 		/**
 		 * @brief Returns a computed aproximate size of this object, 
@@ -159,7 +159,7 @@ namespace SourceMod
 		 * 
 		 * @return			Aproximate size of this structure and the KV object.
 		 */
-		virtual size_t CalcSize() = 0;
+		virtual unsigned int CalcSize() = 0;
 
 		/**
 		 * @brief Returns True if the KeyValues object should be deleted along with
