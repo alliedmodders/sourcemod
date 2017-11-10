@@ -47,12 +47,11 @@ public:
 	 * Struct which holds all of the cached values for each individual frame.
 	 */
 	struct FrameInfo
-	{
-		unsigned LineNumber;
-		
+	{	
 		ke::AString FunctionName;
 		ke::AString FilePath;
-		
+		unsigned LineNumber;
+
 		FrameInfo(IFrameIterator *it)
 		{		
 			LineNumber = it->LineNumber();
@@ -65,7 +64,7 @@ public:
 	SafeFrameIterator(IFrameIterator *);
 
 	bool Done() const;
-	void Next();
+	bool Next();
 	void Reset();
 
 	int LineNumber() const;

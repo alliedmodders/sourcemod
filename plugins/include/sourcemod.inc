@@ -649,14 +649,11 @@ methodmap FrameIterator < Handle {
 	// Creates a stack frame iterator to build your own stack traces.
 	// @return New handle to a FrameIterator.
 	public native FrameIterator();
-	
-	// Determines if there are any more stack frames to iterate.
-	// @return True if there are no more stack frames left.
-	public native bool Done();
-	
+		
 	// Advances the iterator to the next stack frame.
+	// @return True if another frame was fetched and data can be successfully read.
 	// @error No next element exception.
-	public native void Next();
+	public native bool Next();
 	
 	// Resets the iterator back to it's starting position.
 	public native void Reset();

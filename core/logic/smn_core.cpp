@@ -810,24 +810,6 @@ static cell_t FrameIterator_Create(IPluginContext *pContext, const cell_t *param
 	return handle;
 }
 
-static cell_t FrameIterator_Done(IPluginContext *pContext, const cell_t *params)
-{
-	Handle_t hndl = (Handle_t)params[1];
-	HandleError err;
-	SafeFrameIterator *iterator;
-
-	HandleSecurity sec;
-	sec.pIdentity = g_pCoreIdent;
-	sec.pOwner = pContext->GetIdentity();
-
-	if ((err=handlesys->ReadHandle(hndl, g_FrameIter, &sec, (void **)&iterator)) != HandleError_None)
-	{
-		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
-	}
-	
-	return iterator->Done();
-}
-
 static cell_t FrameIterator_Next(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = (Handle_t)params[1];
@@ -843,8 +825,7 @@ static cell_t FrameIterator_Next(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
 	}
 	
-	iterator->Next();
-	return 0;
+	return iterator->Next();
 }
 
 static cell_t FrameIterator_Reset(IPluginContext *pContext, const cell_t *params)
@@ -884,7 +865,7 @@ static cell_t FrameIterator_LineNumber(IPluginContext *pContext, const cell_t *p
 	int lineNum = iterator->LineNumber();
 	if (lineNum < 0)
 	{
-		return pContext->ThrowNativeError("Iterator out of bounds!");
+		return pContext->ThrowNativeError("Iterator out of bounds. Check return value of FrameIterator.Next");
 	}
 	
 	return lineNum;
@@ -906,17 +887,16 @@ static cell_t FrameIterator_GetFunctionName(IPluginContext *pContext, const cell
 	}
 	
 	const char* functionName = iterator->FunctionName();
-	
 	if (!functionName)
 	{
-		return pContext->ThrowNativeError("Iterator out of bounds!");
+		return pContext->ThrowNativeError("Iterator out of bounds. Check return value of FrameIterator.Next");
 	}
 	
 	char* buffer;
 	pContext->LocalToString(params[2], &buffer);
 	size_t size = static_cast<size_t>(params[3]);
 	
-	snprintf(buffer, size, "%s", functionName);
+	ke::SafeStrcpy(buffer, size, functionName);
 	return 0;
 }
 
@@ -938,14 +918,14 @@ static cell_t FrameIterator_GetFilePath(IPluginContext *pContext, const cell_t *
 	const char* filePath = iterator->FilePath();
 	if (!filePath)
 	{
-		return pContext->ThrowNativeError("Iterator out of bounds!");
+		return pContext->ThrowNativeError("Iterator out of bounds. Check return value of FrameIterator.Next");
 	}
 
 	char* buffer;
 	pContext->LocalToString(params[2], &buffer);
 	size_t size = static_cast<size_t>(params[3]);
 	
-	snprintf(buffer, size, "%s", filePath);
+	ke::SafeStrcpy(buffer, size, filePath);
 	return 0;
 }
 
@@ -981,7 +961,6 @@ REGISTER_NATIVES(coreNatives)
 	{"IsNullString",			IsNullString},
 	
 	{"FrameIterator.FrameIterator",				FrameIterator_Create},
-	{"FrameIterator.Done",						FrameIterator_Done},
 	{"FrameIterator.Next",						FrameIterator_Next},
 	{"FrameIterator.Reset",						FrameIterator_Reset},
 	{"FrameIterator.LineNumber.get",			FrameIterator_LineNumber},
