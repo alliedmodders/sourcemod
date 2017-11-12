@@ -51,7 +51,7 @@ bool SafeFrameIterator::Done() const
 
 bool SafeFrameIterator::Next()
 {
-	if(!this->Done())
+	if (!this->Done())
 	{
 		current++;
 		return true;
