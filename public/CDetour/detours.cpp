@@ -212,7 +212,7 @@ bool CDetour::CreateDetour()
 	
 	wr.outbase = NULL;
 	wr.outptr = NULL;
-	
+
 jit_rewind:
 
 	/* Patch old bytes in */
@@ -222,12 +222,11 @@ jit_rewind:
 		wr.outptr += shortBytes;
 		bool isShort = IsShortJump(jit, detour_address);
 		wr.outptr -= shortBytes;
-		if (isShort) {
+		if (isShort)
 			detour_restore.bytes = shortBytes;
-		}
 #endif
-        /* Save restore bits */
-        memcpy(detour_restore.patch, detour_address, detour_restore.bytes);
+		/* Save restore bits */
+		memcpy(detour_restore.patch, detour_address, detour_restore.bytes);
 
 		copy_bytes((unsigned char *)detour_address, (unsigned char*)wr.outptr, detour_restore.bytes);
 	}
