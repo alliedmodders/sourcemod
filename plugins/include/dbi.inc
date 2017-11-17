@@ -941,30 +941,15 @@ native void SQL_BindParamString(Handle statement, int param, const char[] value,
 native bool SQL_Execute(Handle statement);
 
 /**
- * Locks a database so threading operations will not interrupt.
- * 
- * If you are using a database Handle for both threading and non-threading,
- * this MUST be called before doing any set of non-threading DB operations.
- * Otherwise you risk corrupting the database driver's memory or network
- * connection.
- * 
- * Leaving a lock on a database and then executing a threaded query results
- * in a dead lock! Make sure to call SQL_UnlockDatabase()!
- *
- * If the lock cannot be acquired, the main thread will pause until the 
- * threaded operation has concluded.
- *
- * @param database		A database Handle.
- * @error				Invalid database Handle.
+ * @deprecated Functionality removed.
  */
+#pragma deprecated Use SQL_Query() normally.
 native void SQL_LockDatabase(Handle database);
 
 /**
- * Unlocks a database so threading operations may continue.
- *
- * @param database		A database Handle.
- * @error				Invalid database Handle.
+ * @deprecated Functionality removed.
  */
+#pragma deprecated Use SQL_Query() normally.
 native void SQL_UnlockDatabase(Handle database);
 
 // General callback for threaded SQL stuff.
