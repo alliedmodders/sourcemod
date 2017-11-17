@@ -645,6 +645,37 @@ native int LoadFromAddress(Address addr, NumberType size);
  */
 native void StoreToAddress(Address addr, int data, NumberType size); 
 
+methodmap FrameIterator < Handle {
+	// Creates a stack frame iterator to build your own stack traces.
+	// @return New handle to a FrameIterator.
+	public native FrameIterator();
+		
+	// Advances the iterator to the next stack frame.
+	// @return True if another frame was fetched and data can be successfully read.
+	// @error No next element exception.
+	public native bool Next();
+	
+	// Resets the iterator back to it's starting position.
+	public native void Reset();
+	
+	// Returns the line number of the current function call.
+	property bool LineNumber {
+		public native get();
+	}
+	
+	// Gets the name of the current function in the call stack.
+	//
+	// @param buffer Buffer to copy to.
+	// @param maxlen Max size of the buffer.
+	public native void GetFunctionName(char[] buffer, int maxlen);
+	
+	// Gets the file path to the current call in the call stack.
+	//
+	// @param buffer Buffer to copy to.
+	// @param maxlen Max size of the buffer.
+	public native void GetFilePath(char[] buffer, int maxlen);
+}
+
 #include <helpers>
 #include <entity>
 #include <entity_prop_stocks>

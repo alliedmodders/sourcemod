@@ -82,6 +82,7 @@ binary.sources += [
   'CDataPack.cpp',
   'frame_tasks.cpp',
   'smn_halflife.cpp',
+  'FrameIterator.cpp',
 ]
 if builder.target.platform == 'windows':
   binary.sources += ['thread/WinThreads.cpp']
