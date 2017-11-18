@@ -231,7 +231,6 @@ namespace SourceMod
 			size_t *pOutLength,
 			const char **pFailPhrase) =0;
 			
-			
 		/**
 		 * @brief Determines if a translation phrase exists within
 		 * the collection.

@@ -39,10 +39,9 @@
 static cell_t sm_TranslationPhraseExists(IPluginContext *pCtx, const cell_t *params)
 {
 	IPlugin *pl = pluginsys->FindPluginByContext(pCtx->GetContext());
-	IPhraseCollection* collection = pl->GetPhrases();
+	IPhraseCollection *collection = pl->GetPhrases();
 	
 	char *phrase;
-	
 	pCtx->LocalToString(params[1], &phrase);
 
 	return collection->TranslationPhraseExists(phrase);
@@ -51,7 +50,7 @@ static cell_t sm_TranslationPhraseExists(IPluginContext *pCtx, const cell_t *par
 static cell_t sm_IsTranslatedForLanguage(IPluginContext *pCtx, const cell_t *params)
 {
 	IPlugin *pl = pluginsys->FindPluginByContext(pCtx->GetContext());
-	IPhraseCollection* collection = pl->GetPhrases();
+	IPhraseCollection *collection = pl->GetPhrases();
 	
 	char *phrase;
 	pCtx->LocalToString(params[1], &phrase);
@@ -59,12 +58,7 @@ static cell_t sm_IsTranslatedForLanguage(IPluginContext *pCtx, const cell_t *par
 	int langid = params[2];
 
 	Translation trans;
-	if (collection->FindTranslation(phrase, langid, &trans) == Trans_Okay)
-	{
-		return true;
-	}
-
-	return false;
+	return (collection->FindTranslation(phrase, langid, &trans) == Trans_Okay);
 }
 
 static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)

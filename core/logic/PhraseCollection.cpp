@@ -91,9 +91,7 @@ IPhraseFile *CPhraseCollection::GetFile(unsigned int file)
 
 bool CPhraseCollection::TranslationPhraseExists(const char *key)
 {
-	size_t i;
-
-	for (i = 0; i < m_Files.size(); i++)
+	for (size_t i = 0; i < m_Files.size(); i++)
 	{
 		if (m_Files[i]->TranslationPhraseExists(key))
 		{
