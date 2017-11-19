@@ -94,7 +94,6 @@ methodmap Timer < Handle
 	/**
 	 * Kills a timer.  Use this instead of delete if you need more options.
 	 *
-	 * @param timer				Timer Handle to kill.
 	 * @param autoClose			If autoClose is true, the data that was passed to CreateTimer() will
 	 *							be closed as a handle if TIMER_DATA_HNDL_CLOSE was not specified.
 	 * @error				Invalid handles will cause a run time error.
@@ -104,7 +103,6 @@ methodmap Timer < Handle
 	/**
 	 * Manually triggers a timer so its function will be called.
 	 *
-	 * @param timer				Timer Handle to trigger.
 	 * @param reset				If reset is true, the elapsed time counter is reset
 	 *							so the full interval must pass again.
 	 */
