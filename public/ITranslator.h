@@ -119,7 +119,7 @@ namespace SourceMod
 		 * the file.
 		 *
 		 * @param phrase				Phrase to search for.
-		 * @return						True if search was successful.
+		 * @return						True if the phrase was found.
 		 */
 		virtual bool TranslationPhraseExists(const char* phrase) =0;
 	};
@@ -236,7 +236,7 @@ namespace SourceMod
 		 * the collection.
 		 *
 		 * @param phrase				Phrase to search for.
-		 * @return						True if search was successful.
+		 * @return						True if the phrase was found.
 		 */
 		virtual bool TranslationPhraseExists(const char *phrase) =0;
 	};
