@@ -807,6 +807,42 @@ static cell_t CS_GetMVPCount(IPluginContext *pContext, const cell_t *params)
 	return GetPlayerVar<int>(pContext, params, "MVPs");
 }
 
+static cell_t CS_SetClientContributionScore(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return SetPlayerVar<int>(pContext, params, "CScore");
+#else
+	return pContext->ThrowNativeError("SetClientContributionScore is not supported on this game");
+#endif
+}
+
+static cell_t CS_GetClientContributionScore(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return GetPlayerVar<int>(pContext, params, "CScore");
+#else
+	return pContext->ThrowNativeError("GetClientContributionScore is not supported on this game");
+#endif
+}
+
+static cell_t CS_SetClientAssists(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return SetPlayerVar<int>(pContext, params, "Assists");
+#else
+	return pContext->ThrowNativeError("SetClientAssists is not supported on this game");
+#endif
+}
+
+static cell_t CS_GetClientAssists(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return GetPlayerVar<int>(pContext, params, "Assists");
+#else
+	return pContext->ThrowNativeError("GetClientAssists is not supported on this game");
+#endif
+}
+
 static cell_t CS_UpdateClientModel(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
@@ -827,48 +863,33 @@ static cell_t CS_UpdateClientModel(IPluginContext *pContext, const cell_t *param
 	return 1;
 }
 
-//CS:GO only natives below this.
-#if SOURCE_ENGINE == SE_CSGO
-static cell_t CS_SetClientContributionScore(IPluginContext *pContext, const cell_t *params)
-{
-	return SetPlayerVar<int>(pContext, params, "CScore");
-}
-
-static cell_t CS_GetClientContributionScore(IPluginContext *pContext, const cell_t *params)
-{
-	return GetPlayerVar<int>(pContext, params, "CScore");
-}
-
-static cell_t CS_SetClientAssists(IPluginContext *pContext, const cell_t *params)
-{
-	return SetPlayerVar<int>(pContext, params, "Assists");
-}
-
-static cell_t CS_GetClientAssists(IPluginContext *pContext, const cell_t *params)
-{
-	return GetPlayerVar<int>(pContext, params, "Assists");
-}
-
 static cell_t CS_ItemDefIndexToID(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_CSGO
 	ItemIndexMap::Result res = g_mapDefIdxToClass.find((uint16_t)params[1]);
 
 	if (!res.found())
 		return  pContext->ThrowNativeError("Invalid item definition passed.");
 
 	return res->value.m_iWeaponID;
+#else
+	return pContext->ThrowNativeError("CS_ItemDefIndexToID is not supported on this game");
+#endif
 }
 
 static cell_t CS_WeaponIDToItemDefIndex(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_CSGO
 	WeaponIDMap::Result res = g_mapWeaponIDToDefIdx.find((SMCSWeapon)params[1]);
 
 	if (!res.found())
 		return  pContext->ThrowNativeError("Invalid weapon id passed.");
 
 	return res->value.m_iDefIdx;
-}
+#else
+	return pContext->ThrowNativeError("CS_WeaponIDToItemDefIndex is not supported on this game");
 #endif
+}
 
 sp_nativeinfo_t g_CSNatives[] = 
 {
@@ -886,16 +907,14 @@ sp_nativeinfo_t g_CSNatives[] =
 	{"CS_GetMVPCount",				CS_GetMVPCount},
 	{"CS_SetMVPCount",				CS_SetMVPCount},
 	{"CS_WeaponIDToAlias",			CS_WeaponIDToAlias},
-	{"CS_UpdateClientModel",		CS_UpdateClientModel},
-	{"CS_IsValidWeaponID",			CS_IsValidWeaponID},
-#if SOURCE_ENGINE == SE_CSGO
 	{"CS_GetClientContributionScore",	CS_GetClientContributionScore},
 	{"CS_SetClientContributionScore",	CS_SetClientContributionScore},
 	{"CS_GetClientAssists",			CS_GetClientAssists},
 	{"CS_SetClientAssists",			CS_SetClientAssists},
+	{"CS_UpdateClientModel",		CS_UpdateClientModel},
+	{"CS_IsValidWeaponID",			CS_IsValidWeaponID},
 	{"CS_ItemDefIndexToID",			CS_ItemDefIndexToID},
 	{"CS_WeaponIDToItemDefIndex",	CS_WeaponIDToItemDefIndex},
-#endif
 	{NULL,							NULL}
 };
 
