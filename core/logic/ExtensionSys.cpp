@@ -43,8 +43,9 @@
 CExtensionManager g_Extensions;
 IdentityType_t g_ExtType;
 
-void CExtension::Initialize(const char *filename, const char *path)
+void CExtension::Initialize(const char *filename, const char *path, bool bRequired)
 {
+	m_bRequired = bRequired;
 	m_pAPI = NULL;
 	m_pIdentToken = NULL;
 	unload_code = 0;
@@ -62,7 +63,7 @@ CRemoteExtension::CRemoteExtension(IExtensionInterface *pAPI, const char *filena
 	m_pAPI = pAPI;
 }
 
-CLocalExtension::CLocalExtension(const char *filename)
+CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 {
 	m_PlId = 0;
 	m_pLib = NULL;
@@ -139,7 +140,7 @@ CLocalExtension::CLocalExtension(const char *filename)
 	}
 
 found:
-	Initialize(filename, path);
+	Initialize(filename, path, bRequired);
 }
 
 bool CRemoteExtension::Load(char *error, size_t maxlength)
@@ -505,6 +506,11 @@ void CExtension::AddLibrary(const char *library)
 	m_Libraries.push_back(library);
 }
 
+bool CExtension::IsRequired()
+{
+	return m_bRequired;
+}
+
 /*********************
  * EXTENSION MANAGER *
  *********************/
@@ -597,7 +603,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path, bool bErrorOn
 	}
 
 	char error[256];
-	CExtension *p = new CLocalExtension(path);
+	CExtension *p = new CLocalExtension(path, bErrorOnMissing);
 
 	/* We put us in the list beforehand so extensions that check for each other
 	 * won't recursively load each other.
@@ -959,7 +965,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 					break;
 				}
 			}
-			for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++,num++)
+			for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
 			{
 				pExt = (*iter);
 				if (pExt->IsLoaded())
@@ -977,8 +983,15 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 						const char *descr = pAPI->GetExtensionDescription();
 						rootmenu->ConsolePrint("[%02d] %s (%s): %s", num, name, version, descr);
 					}
-				} else {
+				}
+				else if (pExt->IsRequired())
+				{
 					rootmenu->ConsolePrint("[%02d] <FAILED> file \"%s\": %s", num, pExt->GetFilename(), pExt->m_Error.c_str());
+				}
+
+				if (pExt->IsLoaded() || pExt->IsRequired())
+				{
+					num++;
 				}
 			}
 			return;
