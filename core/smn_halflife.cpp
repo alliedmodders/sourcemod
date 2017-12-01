@@ -211,6 +211,11 @@ static cell_t GetCurrentMap(IPluginContext *pContext, const cell_t *params)
 
 static cell_t PrecacheModel(IPluginContext *pContext, const cell_t *params)
 {
+	if (!g_pSM->IsMapRunning())
+	{
+		return pContext->ThrowNativeError("Cannot Precache model when no map is running");
+	}
+	
 	char *model;
 	pContext->LocalToString(params[1], &model);
 
@@ -219,6 +224,11 @@ static cell_t PrecacheModel(IPluginContext *pContext, const cell_t *params)
 
 static cell_t PrecacheSentenceFile(IPluginContext *pContext, const cell_t *params)
 {
+	if (!g_pSM->IsMapRunning())
+	{
+		return pContext->ThrowNativeError("Cannot Precache sentence when no map is running");
+	}
+	
 	char *sentencefile;
 	pContext->LocalToString(params[1], &sentencefile);
 
@@ -227,6 +237,11 @@ static cell_t PrecacheSentenceFile(IPluginContext *pContext, const cell_t *param
 
 static cell_t PrecacheDecal(IPluginContext *pContext, const cell_t *params)
 {
+	if (!g_pSM->IsMapRunning())
+	{
+		return pContext->ThrowNativeError("Cannot Precache decal when no map is running");
+	}
+	
 	char *decal;
 	pContext->LocalToString(params[1], &decal);
 
@@ -235,6 +250,11 @@ static cell_t PrecacheDecal(IPluginContext *pContext, const cell_t *params)
 
 static cell_t PrecacheGeneric(IPluginContext *pContext, const cell_t *params)
 {
+	if (!g_pSM->IsMapRunning())
+	{
+		return pContext->ThrowNativeError("Cannot Precache generic when no map is running");
+	}
+	
 	char *generic;
 	pContext->LocalToString(params[1], &generic);
 
