@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include "logic/common_logic.h"
 #include "sm_globals.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
