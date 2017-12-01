@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include "logic/common_logic.h"
 #include "sm_globals.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
@@ -211,6 +212,11 @@ static cell_t GetCurrentMap(IPluginContext *pContext, const cell_t *params)
 
 static cell_t PrecacheModel(IPluginContext *pContext, const cell_t *params)
 {
+	if (!g_pSM->IsMapRunning())
+	{
+		return pContext->ThrowNativeError("Cannot precache model when no map is running");
+	}
+	
 	char *model;
 	pContext->LocalToString(params[1], &model);
 
@@ -219,6 +225,11 @@ static cell_t PrecacheModel(IPluginContext *pContext, const cell_t *params)
 
 static cell_t PrecacheSentenceFile(IPluginContext *pContext, const cell_t *params)
 {
+	if (!g_pSM->IsMapRunning())
+	{
+		return pContext->ThrowNativeError("Cannot precache sentence when no map is running");
+	}
+	
 	char *sentencefile;
 	pContext->LocalToString(params[1], &sentencefile);
 
@@ -227,6 +238,11 @@ static cell_t PrecacheSentenceFile(IPluginContext *pContext, const cell_t *param
 
 static cell_t PrecacheDecal(IPluginContext *pContext, const cell_t *params)
 {
+	if (!g_pSM->IsMapRunning())
+	{
+		return pContext->ThrowNativeError("Cannot precache decal when no map is running");
+	}
+	
 	char *decal;
 	pContext->LocalToString(params[1], &decal);
 
@@ -235,6 +251,11 @@ static cell_t PrecacheDecal(IPluginContext *pContext, const cell_t *params)
 
 static cell_t PrecacheGeneric(IPluginContext *pContext, const cell_t *params)
 {
+	if (!g_pSM->IsMapRunning())
+	{
+		return pContext->ThrowNativeError("Cannot precache generic when no map is running");
+	}
+	
 	char *generic;
 	pContext->LocalToString(params[1], &generic);
 
