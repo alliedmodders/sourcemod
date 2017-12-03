@@ -1263,8 +1263,58 @@ const char *CHalfLife2::GetEntityClassname(CBaseEntity *pEntity)
 	return *(const char **)(((unsigned char *)pEntity) + offset);
 }
 
+#ifdef PLATFORM_WINDOWS
+bool CheckReservedFilename(const char *in, const char *reservedName)
+{
+	size_t nameLen = strlen(reservedName);
+	for (size_t i = 0; i < nameLen; ++i)
+	{
+		if (reservedName[i] != tolower(in[i]))
+		{
+			return false;
+		}
+	}
+
+	if (in[nameLen] == '\0' || in[nameLen] == '.')
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool IsWindowsReservedDeviceName(const char *pMapname)
+{
+	static const char * const reservedDeviceNames[] = {
+		"con", "prn", "aux", "clock$", "nul", "com1",
+		"com2", "com3", "com4", "com5", "com6", "com7",
+		"com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4",
+		"lpt5", "lpt6", "lpt7", "lpt8", "lpt9"
+	};
+	
+	size_t reservedCount = sizeof(reservedDeviceNames) / sizeof(reservedDeviceNames[0]);
+	for (int i = 0; i < reservedCount; ++i)
+	{
+		if (CheckReservedFilename(pMapname, reservedDeviceNames[i]))
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+#endif 
+
 SMFindMapResult CHalfLife2::FindMap(char *pMapName, int nMapNameMax)
 {
+	/* We need to ensure user input does not contain reserved device names on windows */
+#ifdef PLATFORM_WINDOWS
+	if (IsWindowsReservedDeviceName(pMapName))
+	{
+		return SMFindMapResult::NotFound;
+	}
+#endif
+
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 	static char mapNameTmp[PLATFORM_MAX_PATH];
 	g_SourceMod.Format(mapNameTmp, sizeof(mapNameTmp), "maps%c%s.bsp", PLATFORM_SEP_CHAR, pMapName);
