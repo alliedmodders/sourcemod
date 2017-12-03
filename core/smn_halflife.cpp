@@ -67,11 +67,55 @@ static cell_t IsMapValid(IPluginContext *pContext, const cell_t *params)
 	return g_HL2.IsMapValid(map);
 }
 
+#ifdef PLATFORM_WINDOWS
+char arr[][8] = 
+{
+	"con", "prn", "aux", "clock$", "nul", "com1",
+	"com2", "com3", "com4", "com5", "com6", "com7",
+	"com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4",
+	"lpt5", "lpt6", "lpt7", "lpt8", "lpt9"
+};
+
+void strtolower(char* string)
+{
+	for (int i = 0; string[i]; i++)
+	{
+		string[i] = tolower(string[i]);
+	}
+}
+
+bool IsBadInput(char* pMapname)
+{
+	strtolower(pMapname);
+	
+	int items = sizeof(arr) / sizeof(arr[0]);
+	for (int i = 0; i < items; i++)
+	{
+		int itemLength = strlen(arr[i]);
+		if (strncmp(pMapname, arr[i], itemLength) == 0 && (pMapname[itemLength] == '\0' || pMapname[itemLength] == '.'))
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+#endif 
+
 static cell_t FindMap(IPluginContext *pContext, const cell_t *params)
 {
 	char *pMapname;
 	pContext->LocalToString(params[1], &pMapname);
 
+	/* We need to ensure user input does not contain reserved device names on windows */
+#ifdef PLATFORM_WINDOWS
+	if (IsBadInput(pMapname))
+	{
+		return static_cast<cell_t>(SMFindMapResult::NotFound);
+	}
+#endif
+	
+	
 	if (params[0] == 2)
 	{
 		return static_cast<cell_t>(g_HL2.FindMap(pMapname, params[2]));
