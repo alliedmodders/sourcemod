@@ -219,8 +219,8 @@
 			"NET_SendPacket"
 			{
 				"library"	"engine"
-				"windows"	"\x81\xFB\xB0\x04\x00\x00\x7E\x31\xFF\x75\x08"
-				"linux"		"\x84\xDB\x0F\x85\x2A\x2A\x2A\x2A\x81\x7D\x18\xB0\x04\x00\x00"
+				"windows"	"\x89\x4C\x24\x14\x81\xFF\xB0\x04\x00\x00\x7E"
+				"linux"		"\x8B\x7D\x10\x81\xFE\xB0\x04\x00\x00\x0F"
 			}
 		}
 		
@@ -229,8 +229,8 @@
 			// Offset from NET_SendPacket sig to MTU
 			"MaxMTU"
 			{
-				"windows"	"2"
-				"linux"		"11"
+				"windows"	"6"
+				"linux"		"5"
 			}
 		}
 	}
