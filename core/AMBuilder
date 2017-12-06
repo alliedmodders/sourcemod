@@ -66,6 +66,7 @@ for sdk_name in SM.sdks:
   if sdk.name == 'csgo':
     if builder.target.platform == 'linux':
       lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
+      compiler.linkflags += ['-Wl,--exclude-libs=libprotobuf.a']
     elif builder.target.platform == 'mac':
       lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
     elif builder.target.platform == 'windows':
