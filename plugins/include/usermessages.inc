@@ -109,7 +109,7 @@ native UserMsg GetUserMessageId(const char[] msg);
  * @param maxlength		Maximum length of string buffer.
  * @return				True if message index is valid, false otherwise.
  */
-native bool GetUserMessageName(UserMsg msg_id, const char[] msg, int maxlength);
+native bool GetUserMessageName(UserMsg msg_id, char[] msg, int maxlength);
 
 /**
  * Starts a usermessage (network message).
