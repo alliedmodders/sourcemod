@@ -135,6 +135,10 @@ public: // ISourceMod
 	int GetPluginId();
 	int GetShApiVersion();
 	bool IsMapRunning();
+	IKeyValueStack *CreateKVStack(KeyValues *root);
+	void FreeKVStack(IKeyValueStack *kVStack);
+	IKeyValueStack *ReadKVStackFromHandle(Handle_t hndl, IdentityToken_t *owner = NULL, HandleError *err = NULL);
+	Handle_t CreateHandleFromKVStack(IKeyValueStack *kVStack, IdentityToken_t *owner, HandleError *err = NULL);
 private:
 	void ShutdownServices();
 private:

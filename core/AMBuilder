@@ -40,6 +40,7 @@ project.sources += [
   'vprof_tool.cpp',
   'smn_commandline.cpp',
   'GameHooks.cpp',
+  'KeyValueStack.cpp',
 ]
 
 for sdk_name in SM.sdks:

@@ -2,7 +2,7 @@
 * vim: set ts=4 :
 * =============================================================================
 * SourceMod
-* Copyright (C) 2004-2015 AlliedModders LLC.  All rights reserved.
+* Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
 * =============================================================================
 *
 * This program is free software; you can redistribute it and/or modify it under
@@ -29,14 +29,38 @@
 * Version: $Id$
 */
 
-#ifndef _INCLUDE_SOURCEMOD_KVWRAPPER_H_
-#define _INCLUDE_SOURCEMOD_KVWRAPPER_H_
+#ifndef _INCLUDE_SOURCEMOD_KEYVALUESTACK_H_
+#define _INCLUDE_SOURCEMOD_KEYVALUESTACK_H_
 
-#include <IHandleSys.h>
 #include <IKeyValueStack.h>
+#include <sh_stack.h>
 
 using namespace SourceMod;
 
-extern HandleType_t g_KeyValueType;
+class KeyValueStack : public IKeyValueStack
+{
+public:
+	KeyValueStack(KeyValues *root);
+	~KeyValueStack();
+	KeyValues *GetRootSection();
+	KeyValues *GetCurrentSection();
+	bool JumpToKey(const char* keyName, bool create = false);
+	bool JumpToKeySymbol(int symbol);
+	bool GotoNextKey(bool keyOnly);
+	bool GotoFirstSubKey(bool keyOnly);
+	bool SavePosition();
+	bool GoBack();
+	DeleteThis_Result DeleteThis();
+	void Rewind();
+	unsigned int GetNodeCount();
+	unsigned int CalcSize();
+	bool DeleteKVOnDestroy();
+	void SetDeleteKVOnDestroy(bool deleteOnDestroy);
+private:
+	unsigned int CalcKVSize();
+	KeyValues* pRoot;
+	SourceHook::CStack<KeyValues *> pCurrentPath;
+	bool m_bDeleteOnDestroy = true;
+};
 
-#endif // _INCLUDE_SOURCEMOD_KVWRAPPER_H_
+#endif
