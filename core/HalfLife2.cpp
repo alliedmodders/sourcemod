@@ -157,6 +157,7 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 	m_CSGOBadList.add("m_flFallbackWear");
 	m_CSGOBadList.add("m_nFallbackStatTrak");
 	m_CSGOBadList.add("m_iCompetitiveRanking");
+	m_CSGOBadList.add("m_iCompetitiveRankType");
 	m_CSGOBadList.add("m_nActiveCoinRank");
 	m_CSGOBadList.add("m_nMusicID");
 #endif
