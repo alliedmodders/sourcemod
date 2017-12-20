@@ -17,6 +17,7 @@ for arch in SM.archs:
     os.path.join(SM.mms_root, 'core'),
     os.path.join(SM.mms_root, 'sourcehook')
   ]
+  binary.compiler.defines += ['META_NO_HL2SDK']
   if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
     binary.compiler.cxxflags += ['-fno-rtti']
   elif binary.compiler.family == 'msvc':

@@ -359,7 +359,7 @@ class SMConfig(object):
 
   def configure_linux(self, cxx):
     cxx.defines += ['_LINUX', 'POSIX', '_FILE_OFFSET_BITS=64']
-    cxx.linkflags += ['-Wl,--exclude-libs,ALL', '-lm']
+    cxx.linkflags += ['-lm']
     if cxx.family == 'gcc':
       cxx.linkflags += ['-static-libgcc']
     elif cxx.family == 'clang':

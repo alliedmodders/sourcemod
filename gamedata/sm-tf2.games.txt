@@ -119,15 +119,15 @@
 			}
 			"CalcIsAttackCriticalHelper"
 			{
-				"windows"	"389"
-				"linux"		"396"
-				"mac"		"396"
-			}
-			"CalcIsAttackCriticalHelperNoCrits"
-			{
 				"windows"	"390"
 				"linux"		"397"
 				"mac"		"397"
+			}
+			"CalcIsAttackCriticalHelperNoCrits"
+			{
+				"windows"	"391"
+				"linux"		"398"
+				"mac"		"398"
 			}
 			
 			// CTFGameRules::IsHolidayActive

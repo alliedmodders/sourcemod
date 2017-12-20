@@ -83,6 +83,7 @@ for arch in SM.archs:
     'CDataPack.cpp',
     'frame_tasks.cpp',
     'smn_halflife.cpp',
+    'FrameIterator.cpp',
   ]
 
   if arch == 'x64':
