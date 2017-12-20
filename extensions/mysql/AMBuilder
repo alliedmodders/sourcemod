@@ -24,8 +24,8 @@ if SM.mysql_root:
       binary.compiler.postlink += ['-lrt']
     elif builder.target.platform == 'windows':
       binary.compiler.postlink += [
-        os.path.join(SM.mysql_root, 'lib', 'opt', 'mysqlclient.lib'),
-        os.path.join(SM.mysql_root, 'lib', 'opt', 'zlib.lib'),
+        os.path.join(SM.mysql_root[arch], 'lib', 'opt', 'mysqlclient.lib'),
+        os.path.join(SM.mysql_root[arch], 'lib', 'opt', 'zlib.lib'),
         'wsock32.lib'
       ]
 
