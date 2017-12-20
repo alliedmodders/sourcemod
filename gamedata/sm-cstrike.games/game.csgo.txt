@@ -71,7 +71,6 @@
 			{
 				"windows"	"8"
 				"linux"		"9"
-				"mac"		"9"
 				"linux64"	"9"
 				"mac64"		"9"
 			}
