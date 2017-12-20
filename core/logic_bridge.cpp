@@ -653,7 +653,7 @@ void CoreProviderImpl::InitializeBridge()
 	char path[PLATFORM_MAX_PATH];
 
 	ke::path::Format(path, sizeof(path),
-	                 "%s/bin/matchmaking_ds%s.%s",
+	                 "%s/bin/" PLATFORM_FOLDER "matchmaking_ds%s.%s",
                      g_SMAPI->GetBaseDir(),
                      MATCHMAKINGDS_SUFFIX,
                      MATCHMAKINGDS_EXT);
@@ -691,7 +691,7 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 	/* Now it's time to load the logic binary */
 	g_SMAPI->PathFormat(file,
 		sizeof(file),
-		"%s/bin/sourcemod.logic." PLATFORM_LIB_EXT,
+		"%s/bin/" PLATFORM_ARCH_FOLDER "sourcemod.logic." PLATFORM_LIB_EXT,
 		g_SourceMod.GetSourceModPath());
 
 	char myerror[255];

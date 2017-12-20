@@ -125,7 +125,9 @@ bool CDirectory::IsEntryDirectory()
 	return ((m_fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY);
 #elif defined PLATFORM_POSIX
 	char temppath[PLATFORM_MAX_PATH];
-	snprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
+	int ret = snprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
+	if (static_cast<size_t>(ret) >= sizeof(temppath))
+		return false;
 	return ke::file::IsDirectory(temppath);
 #endif
 }
@@ -136,7 +138,9 @@ bool CDirectory::IsEntryFile()
 	return !(m_fd.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY|FILE_ATTRIBUTE_DEVICE));
 #elif defined PLATFORM_POSIX
 	char temppath[PLATFORM_MAX_PATH];
-	snprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
+	int ret = snprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
+	if (static_cast<size_t>(ret) >= sizeof(temppath))
+		return false;
 	return ke::file::IsFile(temppath);
 #endif
 }

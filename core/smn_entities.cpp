@@ -2609,7 +2609,12 @@ static cell_t GetEntityAddress(IPluginContext *pContext, const cell_t *params)
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
+
+#ifdef PLATFORM_X86
 	return reinterpret_cast<cell_t>(pEntity);
+#else
+	return g_SourceMod.ToPseudoAddress(pEntity);
+#endif
 }
 
 REGISTER_NATIVES(entityNatives)

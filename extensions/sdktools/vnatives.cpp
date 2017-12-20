@@ -1349,8 +1349,8 @@ static cell_t SetClientName(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	// The IClient vtable is +4 from the CBaseClient vtable due to multiple inheritance.
-	void *pGameClient = (void *)((intptr_t)pClient - 4);
+	// The IClient vtable is +sizeof(void *) from the CBaseClient vtable due to multiple inheritance.
+	void *pGameClient = (void *)((intptr_t)pClient - sizeof(void *));
 
 	// Change the name in the engine.
 	START_CALL();
@@ -1427,7 +1427,7 @@ static cell_t SetClientInfo(IPluginContext *pContext, const cell_t *params)
 	}
 #endif
 
-	unsigned char *CGameClient = (unsigned char *)pClient - 4;
+	unsigned char *CGameClient = (unsigned char *)pClient - sizeof(void *);
 
 	START_CALL();
 	/* Not really a CBaseEntity* but this works */

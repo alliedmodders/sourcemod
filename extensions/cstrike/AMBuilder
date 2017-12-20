@@ -11,14 +11,24 @@ project.sources += [
   'util_cstrike.cpp',
   '../../public/smsdk_ext.cpp',
   '../../public/CDetour/detours.cpp',
-  '../../public/asm/asm.c'
+  '../../public/asm/asm.c',
+  '../../public/libudis86/decode.c',
+  '../../public/libudis86/itab.c',
+  '../../public/libudis86/syn-att.c',
+  '../../public/libudis86/syn-intel.c',
+  '../../public/libudis86/syn.c',
+  '../../public/libudis86/udis86.c',
 ]
+project.compiler.defines += ['HAVE_STRING_H'];
 
 for sdk_name in ['css', 'csgo']:
   if sdk_name not in SM.sdks:
     continue
   sdk = SM.sdks[sdk_name]
-  
-  SM.HL2Config(project, 'game.cstrike.ext.' + sdk.ext, sdk)
+  for arch in SM.archs:
+    if not arch in sdk.platformSpec[builder.target.platform]:
+      continue
+
+    SM.HL2Config(project, 'game.cstrike.ext.' + sdk.ext, sdk, arch)
 
 SM.extensions += builder.Add(project)

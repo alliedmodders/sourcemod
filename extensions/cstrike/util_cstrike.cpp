@@ -192,9 +192,9 @@ CEconItemSchema *GetItemSchema()
 	void *pSchema = NULL;
 	pWrapper->Execute(NULL, &pSchema);
 
-	//In windows this is actually ItemSystem() + 4 is ItemSchema
-#ifdef WIN32
-	return (CEconItemSchema *)((intptr_t)pSchema + 4);
+	//On windows/mac this is actually ItemSystem() + sizeof(void *) is ItemSchema
+#if defined(PLATFORM_WINDOWS) || defined(PLATFORM_APPLE)
+	return (CEconItemSchema *)((intptr_t)pSchema + sizeof(void *));
 #else
 	return (CEconItemSchema *)pSchema;
 #endif

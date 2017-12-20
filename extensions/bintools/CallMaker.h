@@ -34,7 +34,6 @@
 
 
 #include "CallWrapper.h"
-#include "HookWrapper.h"
 
 using namespace SourceMod;
 
@@ -45,26 +44,30 @@ public: //IBinTools
 		CallConvention cv,
 		const PassInfo *retInfo,
 		const PassInfo paramInfo[],
-		unsigned int numParams);
+		unsigned int numParams,
+		unsigned int fnFlags);
 	ICallWrapper *CreateVCall(unsigned int vtblIdx,
 		unsigned int vtblOffs,
 		unsigned int thisOffs,
 		const PassInfo *retInfo,
 		const PassInfo paramInfo[],
-		unsigned int numParams);
+		unsigned int numParams,
+		unsigned int fnFlags);
 };
 
 class CallMaker2 
-#if defined HOOKING_ENABLED
-	: public IBinTools2
-#endif
 {
 public: //IBinTools2
 	virtual ICallWrapper *CreateCall(void *address,
 		const SourceHook::ProtoInfo *protoInfo);
 	virtual ICallWrapper *CreateVirtualCall(const SourceHook::ProtoInfo *protoInfo,
 		const SourceHook::MemFuncInfo *info);
-#if defined HOOKING_ENABLED
+	ICallWrapper *CreateCall(void *address, const SourceHook::ProtoInfo *protoInfo,
+		const PassInfo *retInfo, const PassInfo paramInfo[], unsigned int fnFlags);
+	ICallWrapper *CreateVirtualCall(const SourceHook::ProtoInfo *protoInfo,
+		const SourceHook::MemFuncInfo *info, const PassInfo *retInfo, 
+		const PassInfo paramInfo[], unsigned int fnFlags);
+#if 0
 	virtual IHookWrapper *CreateVirtualHook(SourceHook::ISourceHook *pSH, 
 		const SourceHook::ProtoInfo *protoInfo, 
 		const SourceHook::MemFuncInfo *info, 
