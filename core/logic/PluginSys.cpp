@@ -1855,7 +1855,12 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				const char *ext = libsys->GetFileExtension(arg) ? "" : ".smx";
 				g_pSM->BuildPath(Path_None, pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
-				if (!m_LoadLookup.retrieve(pluginfile, &pl))
+#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
+				ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup_tolower(pluginfile));
+#else 
+				ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup(pluginfile));
+#endif
+				if (!m_LoadLookup.retrieve(finalPath.get(), &pl))
 				{
 					rootmenu->ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
 					return;
@@ -1945,7 +1950,12 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				const char *ext = libsys->GetFileExtension(arg) ? "" : ".smx";
 				g_pSM->BuildPath(Path_None, pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
-				if (!m_LoadLookup.retrieve(pluginfile, &pl))
+#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
+				ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup_tolower(pluginfile));
+#else 
+				ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup(pluginfile));
+#endif
+				if (!m_LoadLookup.retrieve(finalPath.get(), &pl))
 				{
 					rootmenu->ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
 					return;
@@ -2030,7 +2040,12 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				const char *ext = libsys->GetFileExtension(arg) ? "" : ".smx";
 				g_pSM->BuildPath(Path_None, pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
-				if (!m_LoadLookup.retrieve(pluginfile, &pl))
+#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
+				ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup_tolower(pluginfile));
+#else 
+				ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup(pluginfile));
+#endif
+				if (!m_LoadLookup.retrieve(finalPath.get(), &pl))
 				{
 					rootmenu->ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
 					return;
