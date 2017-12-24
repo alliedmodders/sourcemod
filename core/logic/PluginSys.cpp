@@ -31,7 +31,6 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <ctype.h>
 #include "PluginSys.h"
 #include "ShareSys.h"
 #include <ILibrarySys.h>
@@ -47,7 +46,6 @@
 #include "frame_tasks.h"
 #include <amtl/am-string.h>
 #include <amtl/am-linkedlist.h>
-#include <amtl/am-uniqueptr.h>
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/CoreProvider.h>
 
@@ -934,38 +932,16 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 	libsys->CloseDirectory(dir);
 }
 
-#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
-char *strdup_tolower(const char *input)
-{
-	char *str = strdup(input);
-	
-	for (char *c = str; *c; c++)
-	{
-		*c = tolower((unsigned char)*c);
-	}
-	
-	return str;
-}
-#endif
-
 LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool debug, PluginType type)
 {
 	if (m_LoadingLocked)
 		return LoadRes_NeverLoad;
 
-/* For windows & mac, we convert the path to lower-case in order to avoid duplicate plugin loading */
-#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
-	ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup_tolower(path));
-#else 
-	ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup(path));
-#endif
-
-
 	/**
 	 * Does this plugin already exist?
 	 */
 	CPlugin *pPlugin;
-	if (m_LoadLookup.retrieve(finalPath.get(), &pPlugin))
+	if (m_LoadLookup.retrieve(path, &pPlugin))
 	{
 		/* Check to see if we should try reloading it */
 		if (pPlugin->GetStatus() == Plugin_BadLoad
@@ -978,12 +954,11 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 		{
 			if (aResult)
 				*aResult = pPlugin;
-			
 			return LoadRes_AlreadyLoaded;
 		}
 	}
 
-	CPlugin *plugin = CompileAndPrep(finalPath.get());
+	CPlugin *plugin = CompileAndPrep(path);
 
 	// Assign our outparam so we can return early. It must be set.
 	*aResult = plugin;
@@ -1855,12 +1830,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				const char *ext = libsys->GetFileExtension(arg) ? "" : ".smx";
 				g_pSM->BuildPath(Path_None, pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
-#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
-				ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup_tolower(pluginfile));
-#else 
-				ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup(pluginfile));
-#endif
-				if (!m_LoadLookup.retrieve(finalPath.get(), &pl))
+				if (!m_LoadLookup.retrieve(pluginfile, &pl))
 				{
 					rootmenu->ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
 					return;
@@ -1950,12 +1920,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				const char *ext = libsys->GetFileExtension(arg) ? "" : ".smx";
 				g_pSM->BuildPath(Path_None, pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
-#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
-				ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup_tolower(pluginfile));
-#else 
-				ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup(pluginfile));
-#endif
-				if (!m_LoadLookup.retrieve(finalPath.get(), &pl))
+				if (!m_LoadLookup.retrieve(pluginfile, &pl))
 				{
 					rootmenu->ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
 					return;
@@ -2040,12 +2005,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				const char *ext = libsys->GetFileExtension(arg) ? "" : ".smx";
 				g_pSM->BuildPath(Path_None, pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
-#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
-				ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup_tolower(pluginfile));
-#else 
-				ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup(pluginfile));
-#endif
-				if (!m_LoadLookup.retrieve(finalPath.get(), &pl))
+				if (!m_LoadLookup.retrieve(pluginfile, &pl))
 				{
 					rootmenu->ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
 					return;
