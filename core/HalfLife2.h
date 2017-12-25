@@ -68,13 +68,21 @@ struct DataTableInfo
 		{
 			return strcmp(name, info.prop->GetName()) == 0;
 		}
+		static inline uint32_t hash(const detail::CharsAndLength &key)
+		{
+			return key.hash();
+		}
 	};
 
 	static inline bool matches(const char *name, const DataTableInfo *info)
 	{
 		return strcmp(name, info->sc->GetName()) == 0;
 	}
-
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
+	}
+	
 	DataTableInfo(ServerClass *sc)
 		: sc(sc)
 	{
@@ -89,6 +97,10 @@ struct DataMapCachePolicy
 	static inline bool matches(const char *name, const sm_datatable_info_t &info)
 	{
 		return strcmp(name, info.prop->fieldName) == 0;
+	}
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
 	}
 };
 
