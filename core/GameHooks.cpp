@@ -51,7 +51,7 @@ SH_DECL_HOOK1_void(IServerGameClients, SetCommandClient, SH_NOATTRIB, false, int
 
 GameHooks::GameHooks()
 	: client_cvar_query_mode_(ClientCvarQueryMode::Unavailable),
-	  last_command_client_(-1)
+	  last_command_client_(0)
 {
 }
 
