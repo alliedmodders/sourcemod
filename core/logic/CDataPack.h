@@ -33,8 +33,18 @@
 #define _INCLUDE_SOURCEMOD_CDATAPACK_H_
 
 #include <IDataPack.h>
+#include <amtl/am-vector.h>
+#include <amtl/am-string.h>
 
 using namespace SourceMod;
+
+enum CDataPackType {
+	Raw,
+	Cell,
+	Float,
+	String,
+	Function
+};
 
 class CDataPack : public IDataPack
 {
@@ -50,7 +60,7 @@ public: //IDataReader
 	bool SetPosition(size_t pos) const;
 	cell_t ReadCell() const;
 	float ReadFloat() const;
-	bool IsReadable(size_t bytes) const;
+	bool IsReadable(size_t bytes = 0) const;
 	const char *ReadString(size_t *len) const;
 	void *GetMemory() const;
 	void *ReadMemory(size_t *size) const;
@@ -64,22 +74,24 @@ public: //IDataPack
 	void PackFunction(cell_t function);
 public:
 	void Initialize();
-	inline size_t GetCapacity() const { return m_capacity; }
+	inline size_t GetCapacity() const { return this->elements.length(); };
+	inline CDataPackType GetCurrentType(void) const { return this->elements[this->position].type; };
 private:
-	void CheckSize(size_t sizetype);
-private:
-	char *m_pBase;
-	mutable char *m_curptr;
-	size_t m_capacity;
-	size_t m_size;
 
-	enum DataPackType {
-		Raw,
-		Cell,
-		Float,
-		String,
-		Function
-	};
+	typedef union {
+		cell_t cval;
+		float fval;
+		uint8_t *vval;
+		ke::AString *sval;
+	} InternalPackValue;
+	
+	typedef struct {
+		InternalPackValue pData;
+		CDataPackType type;
+	} InternalPack;
+
+	ke::Vector<InternalPack> elements;
+	mutable size_t position;
 };
 
 #endif //_INCLUDE_SOURCEMOD_CDATAPACK_H_

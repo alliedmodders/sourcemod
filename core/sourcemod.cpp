@@ -619,7 +619,7 @@ unsigned int SourceModBase::GetGlobalTarget() const
 
 IDataPack *SourceModBase::CreateDataPack()
 {
-	return logicore.CreateDataPack();
+	return nullptr;
 }
 
 void SourceModBase::FreeDataPack(IDataPack *pack)
