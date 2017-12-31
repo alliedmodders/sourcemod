@@ -948,20 +948,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 			CExtension *pExt;
 			unsigned int num = 1;
 
-			List<CExtension *> required; // List of loaded and required extensions
-			List<CExtension *> optional; // List of non loaded optional extensions
-
-			for (iter = m_Libs.begin(); iter != m_Libs.end(); iter++)
-			{
-				pExt = (*iter);
-
-				if (pExt->IsLoaded() || pExt->IsRequired())
-					required.push_back(pExt);
-				else if (!pExt->IsLoaded() && !pExt->IsRequired())
-					optional.push_back(pExt);
-			}
-
-			switch (required.size())
+			switch (m_Libs.size())
 			{
 			case 1:
 				{
@@ -975,11 +962,11 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 				}
 			default:
 				{
-					rootmenu->ConsolePrint("[SM] Displaying %d extensions:", required.size());
+					rootmenu->ConsolePrint("[SM] Displaying %d extensions:", m_Libs.size());
 					break;
 				}
 			}
-			for (iter = required.begin(); iter != required.end(); iter++,num++)
+			for (iter = m_Libs.begin(); iter != m_Libs.end(); iter++,num++)
 			{
 				pExt = (*iter);
 				if (pExt->IsLoaded())
@@ -998,32 +985,13 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 						rootmenu->ConsolePrint("[%02d] %s (%s): %s", num, name, version, descr);
 					}
 				}
-				else
+				else if(pExt->IsRequired() || libsys->PathExists(pExt->GetPath()))
 				{
 					rootmenu->ConsolePrint("[%02d] <FAILED> file \"%s\": %s", num, pExt->GetFilename(), pExt->m_Error.c_str());
 				}
-			}
-			if (optional.size())
-			{
-				num = 1;
-				switch (optional.size())
+				else
 				{
-					case 1:
-					{
-						rootmenu->ConsolePrint("\n[SM] Displaying 1 optional extension not found:");
-						break;
-					}
-					default:
-					{
-						rootmenu->ConsolePrint("\n[SM] Displaying %d optional extensions not found:", optional.size());
-						break;
-					}
-				}
-
-				for (iter = optional.begin(); iter != optional.end(); iter++,num++)
-				{
-					pExt = (*iter);
-					rootmenu->ConsolePrint("[%02d] \"%s\"", num, pExt->GetFilename());
+					rootmenu->ConsolePrint("[%02d] <OPTIONAL> file \"%s\": %s", num, pExt->GetFilename(), pExt->m_Error.c_str());
 				}
 			}
 			return;
