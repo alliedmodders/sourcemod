@@ -317,7 +317,7 @@ static cell_t RemoveEntity(IPluginContext *pContext, const cell_t *params)
 		sm_datatable_info_t info;
 		if (!g_HL2.FindDataMapInfo(pMap, "InputKill", &info))
 		{
-			return pContext->ThrowNativeError("Failed to find Kill input!", g_HL2.ReferenceToIndex(params[1]), params[1]);
+			return pContext->ThrowNativeError("Failed to find Kill input!");
 		}
 
 		fnKillEntity = info.prop->inputFunc;
