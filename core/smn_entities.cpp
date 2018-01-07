@@ -94,6 +94,7 @@ enum PropFieldType
 	PropField_Variant,			/**< Valid for variants/any. (User must know type) */
 };
 
+// From game/server/variant_t.h, same on all supported games.
 class variant_t
 {
 public:
@@ -109,6 +110,15 @@ public:
 	
 	CBaseHandle eVal;
 	fieldtype_t fieldType;
+};
+
+// From game/server/baseentity.h, same on all supported games.
+struct inputdata_t
+{
+	CBaseEntity *pActivator;		// The entity that initially caused this chain of output events.
+	CBaseEntity *pCaller;			// The entity that fired this particular output.
+	variant_t value;				// The data parameter for this output.
+	int nOutputID;					// The unique ID of the output that was fired.
 };
 
 inline bool CanSetPropName(const char *pszPropName)
@@ -276,6 +286,47 @@ static cell_t RemoveEdict(IPluginContext *pContext, const cell_t *params)
 	}
 
 	engine->RemoveEdict(pEdict);
+
+	return 1;
+}
+
+static cell_t RemoveEntity(IPluginContext *pContext, const cell_t *params)
+{
+	auto *pEntity = GetEntity(params[1]);
+	if (!pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is not a valid entity", g_HL2.ReferenceToIndex(params[1]), params[1]);
+	}
+
+	// Some games have UTIL_Remove exposed on IServerTools, but for consistence, we'll
+	// use this method for all. Results in DeathNotice( this ) being called on parent,
+	// and parent being cleared (both if any parent) before UTIL_Remove is called.
+	static inputfunc_t fnKillEntity = nullptr;
+	if (!fnKillEntity)
+	{
+		// Get world, as other ents aren't guaranteed to inherit full datadesc (but kill func is same for all)
+		CBaseEntity *pGetterEnt = g_HL2.ReferenceToEntity(0);
+		if (pGetterEnt == nullptr)
+		{
+			// If we don't have a world entity yet, we'll have to rely on the given entity. Does this even make sense???
+			pGetterEnt = pEntity;
+		}
+
+		datamap_t *pMap = g_HL2.GetDataMap(pGetterEnt);
+
+		sm_datatable_info_t info;
+		if (!g_HL2.FindDataMapInfo(pMap, "InputKill", &info))
+		{
+			return pContext->ThrowNativeError("Failed to find Kill input!");
+		}
+
+		fnKillEntity = info.prop->inputFunc;
+	}
+
+	// Input data is ignored for this. No need to initialize
+	static inputdata_t data;
+
+	(pEntity->*fnKillEntity)(data);
 
 	return 1;
 }
@@ -2645,6 +2696,7 @@ REGISTER_NATIVES(entityNatives)
 	{"IsEntNetworkable",		IsEntNetworkable},
 	{"IsValidEdict",			IsValidEdict},
 	{"IsValidEntity",			IsValidEntity},
+	{"RemoveEntity",			RemoveEntity},
 	{"RemoveEdict",				RemoveEdict},
 	{"SetEdictFlags",			SetEdictFlags},
 	{"SetEntData",				SetEntData},
