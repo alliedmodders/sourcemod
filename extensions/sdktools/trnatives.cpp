@@ -74,6 +74,28 @@ private:
 	cell_t m_Data;
 };
 
+class CSMTraceEnum : public IEntityEnumerator
+{
+public:
+	bool EnumEntity(IHandleEntity *pEntity) override
+	{
+		cell_t res = 1;
+		m_pFunc->PushCell(gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity*>(pEntity)));
+		m_pFunc->PushCell(m_Data);
+		m_pFunc->Execute(&res);
+
+		return (res) ? true : false;
+	}
+	void SetFunctionPtr(IPluginFunction *pFunc, cell_t data)
+	{
+		m_pFunc = pFunc;
+		m_Data = data;
+	}
+private:
+	IPluginFunction *m_pFunc;
+	cell_t m_Data;
+};
+
 /* Used for the global trace version */
 Ray_t g_Ray;
 sm_trace_t g_Trace;
@@ -84,6 +106,7 @@ Vector g_HullMaxs;
 QAngle g_DirAngles;
 CTraceFilterHitAll g_HitAllFilter;
 CSMTraceFilter g_SMTraceFilter;
+CSMTraceEnum g_SMTraceEnum;
 
 enum
 {
@@ -141,6 +164,86 @@ static cell_t smn_TRTraceHull(IPluginContext *pContext, const cell_t *params)
 	g_Ray.Init(g_StartVec, g_EndVec, g_HullMins, g_HullMaxs);
 	enginetrace->TraceRay(g_Ray, params[5], &g_HitAllFilter, &g_Trace);
 	g_Trace.UpdateEntRef();
+
+	return 1;
+}
+
+static cell_t smn_TREnumerateEntities(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunc = pContext->GetFunctionById(params[5]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[5]);
+	}
+
+	cell_t data;
+	if (params[0] >= 6)
+	{
+		data = params[6];
+	}
+	else
+	{
+		data = 0;
+	}
+
+	g_SMTraceEnum.SetFunctionPtr(pFunc, data);
+
+	cell_t *startaddr, *endaddr;
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+	pContext->LocalToPhysAddr(params[2], &endaddr);
+
+	g_StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+
+	switch (params[4])
+	{
+		case RayType_EndPoint:
+		{
+			g_EndVec.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
+			break;
+		}
+	case RayType_Infinite:
+		{
+			g_DirAngles.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
+			AngleVectors(g_DirAngles, &g_EndVec);
+
+			/* Make it unitary and get the ending point */
+			g_EndVec.NormalizeInPlace();
+			g_EndVec = g_StartVec + g_EndVec * MAX_TRACE_LENGTH;
+			break;
+		}
+	}
+
+	g_Ray.Init(g_StartVec, g_EndVec);
+
+	bool triggers = (params[3]) ? true : false;
+	enginetrace->EnumerateEntities(g_Ray, triggers, &g_SMTraceEnum);
+
+	return 1;
+}
+
+static cell_t smn_TRClipRayToEntity(IPluginContext *pContext, const cell_t *params)
+{
+	sm_trace_t *tr;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if (params[3] == BAD_HANDLE)
+	{
+		tr = &g_Trace;
+	}
+	else if ((err = handlesys->ReadHandle(params[3], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[3], err);
+	}
+
+	edict_t *pEdict = PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[2]));
+	if (!pEdict || pEdict->IsFree())
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[2]);
+	}
+
+	IHandleEntity *pEnt = reinterpret_cast<IHandleEntity*>(pEdict->GetUnknown()->GetBaseEntity());
+	enginetrace->ClipRayToEntity(g_Ray, params[1], pEnt, tr);
 
 	return 1;
 }
@@ -604,6 +707,7 @@ sp_nativeinfo_t g_TRNatives[] =
 {
 	{"TR_TraceRay",				smn_TRTraceRay},
 	{"TR_TraceHull",			smn_TRTraceHull},
+	{"TR_EnumerateEntities",	smn_TREnumerateEntities},
 	{"TR_TraceRayEx",			smn_TRTraceRayEx},
 	{"TR_TraceHullEx",			smn_TRTraceHullEx},
 	{"TR_GetFraction",			smn_TRGetFraction},
@@ -611,6 +715,7 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_GetEntityIndex",		smn_TRGetEntityIndex},
 	{"TR_DidHit",				smn_TRDidHit},
 	{"TR_GetHitGroup",			smn_TRGetHitGroup},
+	{"TR_ClipRayToEntity",		smn_TRClipRayToEntity},
 	{"TR_GetPointContents",		smn_TRGetPointContents},
 	{"TR_GetPointContentsEnt",	smn_TRGetPointContentsEnt},
 	{"TR_TraceRayFilter",		smn_TRTraceRayFilter},

@@ -132,6 +132,26 @@ typeset TraceEntityFilter
 	function bool (int entity, int contentsMask, any data);
 };
 
+typeset TraceEntityEnumerator
+{
+	/**
+	 * Called on entity enumerating.
+	 *
+	 * @param entity		Entity index.
+ 	 * @return				True to continue enumerating entities, otherwise false.
+ 	 */
+	function bool (int entity);
+	
+	/**
+	 * Called on entity enumerating.
+	 *
+	 * @param entity		Entity index.
+ 	 * @param data			Data value, if used.
+ 	 * @return				True to continue enumerating entities, otherwise false.
+ 	 */
+	function bool (int entity, any data);
+}
+
 /**
  * Get the contents mask and the entity index at the given position.
  *
@@ -180,6 +200,25 @@ native void TR_TraceHull(const float pos[3],
 						 int flags);
 
 /**
+ * Enumerates over all entities along a ray
+ *
+ * @param pos			Starting position of the ray.
+ * @param vec			Depending on RayType, it will be used as the ending 
+ *						point, or the direction angle.
+ * @param triggers		If triggers == true, it enumerates all triggers along a ray
+ * @param rtype			Method to calculate the ray direction.
+ * @param enumerator	Function to use as enumerator. For each entity found along ray, this entity is called.
+ * @param data			Arbitrary data value to pass through to the filter 
+ *						function.
+ */
+native void TR_EnumerateEntities(const float pos[3],
+								const float vec[3],
+								bool triggers,
+								RayType rtype,
+								TraceEntityEnumerator enumerator,
+								any data=0);
+						 
+/**
  * Starts up a new trace ray using a global trace result and a customized 
  * trace ray filter.
  *
@@ -226,7 +265,7 @@ native void TR_TraceHullFilter(const float pos[3],
 							   int flags,
 							   TraceEntityFilter filter,
 							   any data=0);
-
+							   
 /**
  * Starts up a new trace ray using a new trace result.
  *
@@ -358,6 +397,16 @@ native int TR_GetHitGroup(Handle hndl=INVALID_HANDLE);
  * @error			Invalid Handle
  */
 native void TR_GetPlaneNormal(Handle hndl, float normal[3]);
+
+/**
+ * Traces a ray against a particular edict.
+ *
+ * @param flags		Trace flags.
+ * @param entity	Entity to trace against
+ * @param hndl		A trace Handle, or INVALID_HANDLE to use a global trace result.
+ * @error			Invalid Handle
+ */
+native void TR_ClipRayToEntity(int flags, int entity, Handle hndl=INVALID_HANDLE);
 
 /**
  * Tests a point to see if it's outside any playable area
