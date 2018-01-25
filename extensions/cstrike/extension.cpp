@@ -39,6 +39,7 @@
 #if SOURCE_ENGINE == SE_CSGO
 #include "rulesfix.h"
 #endif
+#include "util_cstrike.h"
 
 /**
  * @file extension.cpp
@@ -142,6 +143,7 @@ void CStrike::SDK_OnUnload()
 
 #if SOURCE_ENGINE == SE_CSGO
 	rulesfix.OnUnload();
+	ClearHashMaps();
 #endif
 }
 
@@ -163,6 +165,10 @@ void CStrike::SDK_OnAllLoaded()
 	hooked_everything = true;
 
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
+
+#if SOURCE_ENGINE == SE_CSGO
+	CreateHashMaps();
+#endif
 }
 
 bool CStrike::QueryRunning(char *error, size_t maxlength)

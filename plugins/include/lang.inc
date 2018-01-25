@@ -114,3 +114,21 @@ native int GetLanguageByCode(const char[] code);
  * @return			Language number. -1 if not found.
  */
 native int GetLanguageByName(const char[] name);
+
+/**
+ * Determines if the specified phrase exists within the plugin's
+ * translation cache.
+ *
+ * @param phrase	Phrase to look for.
+ * @return			True if phrase exists.
+ */
+native bool TranslationPhraseExists(const char[] phrase);
+
+/**
+ * Determines if there is a translation for the specified language.
+ *
+ * @param phrase	Phrase to check.
+ * @param language	Language number.
+ * @return			True if translation exists.
+ */
+native bool IsTranslatedForLanguage(const char[] phrase, int language);

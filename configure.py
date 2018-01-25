@@ -22,6 +22,8 @@ parser.options.add_option('--hl2sdk-root', type=str, dest='hl2sdk_root', default
 		                   help='Root search folder for HL2SDKs')
 parser.options.add_option('--mysql-path', type=str, dest='mysql_path', default=None,
 		                   help='Path to MySQL 5')
+parser.options.add_option('--mysql64-path', type=str, dest='mysql64_path', default=None,
+		                   help='Path to 64-bit MySQL 5')
 parser.options.add_option('--mms-path', type=str, dest='mms_path', default=None,
                        help='Path to Metamod:Source')
 parser.options.add_option('--enable-debug', action='store_const', const='1', dest='debug',
