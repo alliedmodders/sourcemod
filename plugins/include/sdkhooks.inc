@@ -74,6 +74,24 @@
 #if !defined DMG_CRIT
 	// TF2 crits and minicrits
 	#define DMG_CRIT DMG_ACID
+
+	//No damage falloff
+	#define DMG_RADIUS_MAX			DMG_ENERGYBEAM
+
+	//Don't do damage falloff too close
+	#define DMG_NOCLOSEDISTANCEMOD	DMG_POISON
+
+	//50% damage falloff
+	#define DMG_HALF_FALLOFF		DMG_RADIATION
+
+	//Do damage falloff
+	#define	DMG_USEDISTANCEMOD		DMG_SLOWBURN
+
+	//Ignite victim
+	#define DMG_IGNITE				DMG_PLASMA
+
+	//Do hit location damage (Like the sniperrifle and ambassador)
+	#define	DMG_USE_HITLOCATIONS	DMG_AIRBOAT
 #endif
 
 enum SDKHookType
