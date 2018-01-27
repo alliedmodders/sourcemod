@@ -38,7 +38,7 @@
 #define FEATURECAP_PLAYERRUNCMD_11PARAMS	"SDKTools PlayerRunCmd 11Params"
 
 /**
- * @brief Called when a clients movement buttons are being processed
+ * Called when a clients movement buttons are being processed
  *
  * @param client	Index of the client.
  * @param buttons	Copyback buffer containing the current commands (as bitflags - see entity_prop_stocks.inc).
@@ -59,7 +59,7 @@
 forward Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2]);
 
 /**
- * @brief Called after a clients movement buttons were processed.
+ * Called after a clients movement buttons were processed.
  *
  * @param client	Index of the client.
  * @param buttons	The current commands (as bitflags - see entity_prop_stocks.inc).
@@ -76,7 +76,7 @@ forward Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[
 forward void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, const int mouse[2]);
 
 /**
- * @brief Called when a client requests a file from the server.
+ * Called when a client requests a file from the server.
  *
  * @param client	Client index.
  * @param sFile	Requested file path.
@@ -86,7 +86,7 @@ forward void OnPlayerRunCmdPost(int client, int buttons, int impulse, const floa
 forward Action OnFileSend(int client, const char[] sFile);
 
 /**
- * @brief Called when a client sends a file to the server.
+ * Called when a client sends a file to the server.
  *
  * @param client	Client index.
  * @param sFile	Requested file path.
