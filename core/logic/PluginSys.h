@@ -503,25 +503,7 @@ private:
 		static inline bool matches(const char *file, const CPlugin *plugin)
 		{
 			const char *pluginFile = const_cast<CPlugin*>(plugin)->GetFilename();
-#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
-			size_t fileLen = strlen(file);
-			if (fileLen != strlen(pluginFile))
-			{
-				return false;
-			}
-			
-			for (size_t i = 0; i < fileLen; ++i)
-			{
-				if (tolower(file[i]) != tolower(pluginFile[i]))
-				{
-					return false;
-				}
-			}
-			
-			return true;
-#else
-			return strcmp(pluginFile, file) == 0;
-#endif
+			return (detail::CharsAndLength(file).hash() == detail::CharsAndLength(pluginFile).hash());
 		}
 	};
 	NameHashSet<CPlugin *, CPluginPolicy> m_LoadLookup;
