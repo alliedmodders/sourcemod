@@ -18,21 +18,21 @@
 			"Burn"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x8C\x01\x00\x00\x8B\x01"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x90\x01\x00\x00\x8B\x01"
 				"linux"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 				"mac"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 			}
 			"RemoveDisguise"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x51\x56\x8B\xF1\x57\xF7\x86"
+				"windows"	"\x55\x8B\xEC\x51\x56\x8B\xF1\x57\xF7\x86\xD0\x00\x00\x00\x00\x00\x02\x00"
 				"linux"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 				"mac"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 			}
 			"Disguise"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x51\x56\x57\x8B\xF9\x8B\x8F\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\x97\x2A\x2A\x2A\x2A\x8B\xF0"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x56\x57\x8B\xF9\x8B\x8F\x90\x01\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
 				"mac"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
 			}
@@ -53,7 +53,7 @@
 			"RemoveCondition"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x56\x57\x8B\x7D\x08\x8B\xF1\x57\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x84"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x8B\x5D\x08\x56\x53"
 				"linux"		"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
 				"mac"		"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
 			}
@@ -74,16 +74,16 @@
 			"StunPlayer"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x57\x8B\xF9\x8B\x87\xF8\x03\x00\x00"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x20\x57\x8B\xF9\x8B\x87\x58\x04\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 				"mac"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 			}
 			"MakeBleed"
 			{
 				"library" 	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x2C\x53\x8B\xD9\x89\x5D\xEC"
-				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefib"
-				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefib"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x30\x53\x8B\xD9\x89\x5D\xEC"
+				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
+				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
 			}
 			"IsPlayerInDuel"
 			{
@@ -113,21 +113,21 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"328"
-				"linux"		"329"
-				"mac"		"329"
+				"windows"	"329"
+				"linux"		"330"
+				"mac"		"330"
 			}
 			"CalcIsAttackCriticalHelper"
 			{
-				"windows"	"387"
-				"linux"		"394"
-				"mac"		"394"
+				"windows"	"390"
+				"linux"		"397"
+				"mac"		"397"
 			}
 			"CalcIsAttackCriticalHelperNoCrits"
 			{
-				"windows"	"388"
-				"linux"		"395"
-				"mac"		"395"
+				"windows"	"391"
+				"linux"		"398"
+				"mac"		"398"
 			}
 			
 			// CTFGameRules::IsHolidayActive
@@ -140,9 +140,9 @@
 
 			"RemoveWearable"
 			{
-				"windows"	"430"
-				"linux"		"431"
-				"mac"		"431"
+				"windows"	"431"
+				"linux"		"432"
+				"mac"		"432"
 			}
 		}
 	}

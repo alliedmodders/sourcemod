@@ -102,7 +102,7 @@ class KickPlayerTimer : public ITimedEvent
 public:
 	ResultType OnTimer(ITimer *pTimer, void *pData)
 	{
-		int userid = (int)pData;
+		int userid = (int)(intptr_t)pData;
 		int client = g_Players.GetClientOfUserId(userid);
 		if (client)
 		{
@@ -1965,7 +1965,8 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	|| SOURCE_ENGINE == SE_DODS  \
 	|| SOURCE_ENGINE == SE_HL2DM \
 	|| SOURCE_ENGINE == SE_BMS   \
-	|| SOURCE_ENGINE == SE_INSURGENCY
+	|| SOURCE_ENGINE == SE_INSURGENCY \
+	|| SOURCE_ENGINE == SE_DOI
 	m_pIClient = engine->GetIServer()->GetClient(m_iIndex - 1);
 #else
   #if SOURCE_ENGINE == SE_SDK2013
@@ -2479,7 +2480,7 @@ void CPlayer::DoBasicAdminChecks()
 		if (!g_Players.CheckSetAdminName(client, this, id))
 		{
 			int userid = engine->GetPlayerUserId(m_pEdict);
-			g_Timers.CreateTimer(&s_KickPlayerTimer, 0.1f, (void *)userid, 0);
+			g_Timers.CreateTimer(&s_KickPlayerTimer, 0.1f, (void *)(intptr_t)userid, 0);
 		}
 		return;
 	}

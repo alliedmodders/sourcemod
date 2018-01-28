@@ -109,7 +109,7 @@ enum CSWeaponID
 	CSWeapon_SHIELD,
 	CSWeapon_KEVLAR,
 	CSWeapon_ASSAULTSUIT,
-	CSWeapon_NIGHTVISION,
+	CSWeapon_NIGHTVISION, //Anything below is CS:GO ONLY
 	CSWeapon_GALILAR,
 	CSWeapon_BIZON,
 	CSWeapon_MAG7,
@@ -130,7 +130,29 @@ enum CSWeaponID
 	CSWeapon_MOLOTOV,
 	CSWeapon_DECOY,
 	CSWeapon_INCGRENADE,
-	CSWeapon_DEFUSER
+	CSWeapon_DEFUSER,
+	CSWeapon_HEAVYASSAULTSUIT,
+	//The rest are actual item definition indexes for CS:GO
+	CSWeapon_CUTTERS = 56,
+	CSWeapon_HEALTHSHOT = 57,
+	CSWeapon_KNIFE_T = 59,
+	CSWeapon_M4A1_SILENCER = 60,
+	CSWeapon_USP_SILENCER = 61,
+	CSWeapon_CZ75A = 63,
+	CSWeapon_REVOLVER = 64,
+	CSWeapon_TAGGRENADE = 68,
+	CSWeapon_MAX_WEAPONS_NO_KNIFES, // Max without the knife item defs, useful when treating all knives as a regular knife.
+	CSWeapon_BAYONET = 500,
+	CSWeapon_KNIFE_FLIP = 505,
+	CSWeapon_KNIFE_GUT = 506,
+	CSWeapon_KNIFE_KARAMBIT = 507,
+	CSWeapon_KNIFE_M9_BAYONET = 508,
+	CSWeapon_KNIFE_TATICAL = 509,
+	CSWeapon_KNIFE_FALCHION = 512,
+	CSWeapon_KNIFE_SURVIVAL_BOWIE = 514,
+	CSWeapon_KNIFE_BUTTERFLY = 515,
+	CSWeapon_KNIFE_PUSH = 516,
+	CSWeapon_MAX_WEAPONS //THIS MUST BE LAST, EASY WAY TO CREATE LOOPS. When looping, do CS_IsValidWeaponID(i), to check.
 };
 
 /**
@@ -358,7 +380,7 @@ native int CS_WeaponIDToAlias(CSWeaponID weaponID, char[] destination, int len);
  * @param weaponID		WeaponID to check
  * @return				Returns true if its a valid WeaponID false otherwise.
  *
- * @note This will return false always for CSWeapon_NONE
+ * @note This will return false always for CSWeapon_NONE. Should only be called after OnMapStart since weapon info isnt intialized before.
  */
 native bool CS_IsValidWeaponID(CSWeaponID id);
 
@@ -369,6 +391,28 @@ native bool CS_IsValidWeaponID(CSWeaponID id);
  * @error			Invalid client index, client not in game.
  */
 native void CS_UpdateClientModel(int client);
+
+/**
+ * Returns a CSWeaponID equivalent based on the item definition index.
+ *
+ * @param iDefIndex	Definition index to get the CSWeaponID value for.
+ * @return			Returns CSWeaponID value for the definition index.
+ * 
+ * @error			Invalid definition index.
+ * @note			In most cases the id will be the item definition index. Works for CS:GO ONLY.
+ */
+native CSWeaponID CS_ItemDefIndexToID(int iDefIndex);
+
+/**
+ * Returns a item definition index equivalent based on the CSWeaponID.
+ *
+ * @param id CSWeaponID to get the item definition for.
+ * @return			Returns item definition index value for the weapon id.
+ * 
+ * @error			Invalid weapon id.
+ * @note			In most cases the item deinition index will be the id. Works for CS:GO ONLY.
+ */
+native int CS_WeaponIDToItemDefIndex(CSWeaponID id);
 
 /**
  * Do not edit below this line!
@@ -408,5 +452,7 @@ public void __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_WeaponIDToAlias");
 	MarkNativeAsOptional("CS_IsValidWeaponID");
 	MarkNativeAsOptional("CS_UpdateClientModel");
+	MarkNativeAsOptional("CS_ItemDefIndexToID");
+	MarkNativeAsOptional("CS_WeaponIDToItemDefIndex");
 }
 #endif

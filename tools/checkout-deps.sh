@@ -24,6 +24,25 @@ if [ ! -d "sourcemod" ]; then
   fi
 fi
 
+getmysql ()
+{
+  if [ ! -d $mysqlfolder ]; then
+    if [ `command -v wget` ]; then
+      wget $mysqlurl -O $mysqlfolder.$archive_ext
+    elif [ `command -v curl` ]; then
+      curl -o $mysqlfolder.$archive_ext $mysqlurl
+    else
+      echo "Failed to locate wget or curl. Install one of these programs to download MySQL."
+      exit 1
+    fi
+    $decomp $mysqlfolder.$archive_ext
+    mv $mysqlver $mysqlfolder
+    rm $mysqlfolder.$archive_ext
+  fi
+}
+
+# 32-bit MySQL
+mysqlfolder=mysql-5.0
 if [ $ismac -eq 1 ]; then
   mysqlver=mysql-5.5.28-osx10.5-x86
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
@@ -36,20 +55,18 @@ else
   mysqlver=mysql-5.6.15-linux-glibc2.5-i686
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.6/$mysqlver.$archive_ext
 fi
+getmysql
 
-if [ ! -d "mysql-5.0" ]; then
-  if [ `command -v wget` ]; then
-    wget $mysqlurl -O mysql.$archive_ext
-  elif [ `command -v curl` ]; then
-    curl -o mysql.$archive_ext $mysqlurl
-  else
-    echo "Failed to locate wget or curl. Install one of these programs to download MySQL."
-    exit 1
-  fi
-  $decomp mysql.$archive_ext
-  mv $mysqlver mysql-5.0
-  rm mysql.$archive_ext
+# 64-bit MySQL
+mysqlfolder=mysql-5.0-x86_64
+if [ $ismac -eq 1 ]; then
+  mysqlver=mysql-5.5.28-osx10.5-x86_64
+  mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
+elif [ $iswin -eq 0 ]; then
+  mysqlver=mysql-5.6.15-linux-glibc2.5-x86_64
+  mysqlurl=https://cdn.mysql.com/archives/mysql-5.6/$mysqlver.$archive_ext
 fi
+getmysql
 
 checkout ()
 {
@@ -75,7 +92,7 @@ repo="https://github.com/alliedmodders/metamod-source"
 origin=
 checkout
 
-sdks=( csgo hl2dm nucleardawn l4d2 dods l4d css tf2 insurgency sdk2013 dota )
+sdks=( csgo hl2dm nucleardawn l4d2 dods l4d css tf2 insurgency sdk2013 doi )
 
 if [ $ismac -eq 0 ]; then
   # Add these SDKs for Windows or Linux

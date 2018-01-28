@@ -76,16 +76,22 @@ static const char *g_pParseEngine = NULL;
 #define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS	13
 #define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ	14
 
+#if defined PLATFORM_X86
+#define PLATFORM_ARCH_SUFFIX		""
+#elif defined PLATFORM_X64
+#define PLATFORM_ARCH_SUFFIX		"64"
+#endif
+
 #if defined PLATFORM_WINDOWS
-#define PLATFORM_NAME				"windows"
+#define PLATFORM_NAME				"windows" PLATFORM_ARCH_SUFFIX
 #define PLATFORM_SERVER_BINARY		"server.dll"
 #elif defined PLATFORM_LINUX
-#define PLATFORM_NAME				"linux"
-#define PLATFORM_COMPAT_ALT			"mac"				/* Alternate platform name if game data is missing for primary one */
+#define PLATFORM_NAME				"linux" PLATFORM_ARCH_SUFFIX
+#define PLATFORM_COMPAT_ALT			"mac" PLATFORM_ARCH_SUFFIX	/* Alternate platform name if game data is missing for primary one */
 #define PLATFORM_SERVER_BINARY		"server_i486.so"
 #elif defined PLATFORM_APPLE
-#define PLATFORM_NAME				"mac"
-#define PLATFORM_COMPAT_ALT			"linux"
+#define PLATFORM_NAME				"mac" PLATFORM_ARCH_SUFFIX
+#define PLATFORM_COMPAT_ALT			"linux" PLATFORM_ARCH_SUFFIX
 #define PLATFORM_SERVER_BINARY		"server.dylib"
 #endif
 
@@ -323,6 +329,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			m_Address[0] = '\0';
 			m_AddressSignature[0] = '\0';
 			m_AddressReadCount = 0;
+			m_AddressLastIsOffset = false;
 
 			strncopy(m_Address, name, sizeof(m_Address));
 			m_ParseState = PSTATE_GAMEDEFS_ADDRESSES_ADDRESS;
@@ -337,7 +344,8 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			}
 			else
 			{
-				if (strcmp(name, "linux") != 0 && strcmp(name, "windows") != 0 && strcmp(name, "mac") != 0)
+				if (strcmp(name, "linux") != 0 && strcmp(name, "windows") != 0 && strcmp(name, "mac") != 0 &&
+					strcmp(name, "linux64") != 0 && strcmp(name, "windows64") != 0 && strcmp(name, "mac64") != 0)
 				{
 					logger->LogError("[SM] Error while parsing Address section for \"%s\" (%s):", m_Address, m_CurFile);
 					logger->LogError("[SM] Unrecognized platform \"%s\"", name);
@@ -430,10 +438,18 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			}
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_ADDRESSES_ADDRESS || m_ParseState == PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ) {
-		if (strcmp(key, "read") == 0) {
+		if (strcmp(key, "read") == 0 || strcmp(key, "offset") == 0) {
 			int limit = sizeof(m_AddressRead)/sizeof(m_AddressRead[0]);
-			if (m_AddressReadCount < limit)
+			if (m_AddressLastIsOffset)
 			{
+				logger->LogError("[SM] Error parsing Address \"%s\", 'offset' entry must be the last entry (gameconf \"%s\")", m_Address, m_CurFile);
+			}
+			else if (m_AddressReadCount < limit)
+			{
+				if (strcmp(key, "offset") == 0)
+				{
+					m_AddressLastIsOffset = true;
+				}
 				m_AddressRead[m_AddressReadCount] = atoi(value);
 				m_AddressReadCount++;
 			}
@@ -637,7 +653,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 
 			if (m_Address[0] != '\0' && m_AddressSignature[0] != '\0')
 			{
-				AddressConf addrConf(m_AddressSignature, sizeof(m_AddressSignature), m_AddressReadCount, m_AddressRead);
+				AddressConf addrConf(m_AddressSignature, sizeof(m_AddressSignature), m_AddressReadCount, m_AddressRead, m_AddressLastIsOffset);
 				m_Addresses.replace(m_Address, addrConf);
 			}
 
@@ -997,12 +1013,17 @@ bool CGameConfig::GetAddress(const char *key, void **retaddr)
 		int offset = addrConf.read[i];
 
 		//NULLs in the middle of an indirection chain are bad, end NULL is ok
-		if (addr ==  NULL || reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+		if (addr == NULL || reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
 		{
 			*retaddr = NULL;
 			return false;
 		}
-		addr = *(reinterpret_cast<void**>(reinterpret_cast<uint8_t*>(addr) + offset));
+		//If lastIsOffset is set and this is the last iteration of the loop, don't deref
+		if (addrConf.lastIsOffset && i == addrConf.readCount-1) {
+			addr = reinterpret_cast<void*>(reinterpret_cast<uint8_t*>(addr) + offset);
+		} else {
+			addr = *(reinterpret_cast<void**>(reinterpret_cast<uint8_t*>(addr) + offset));
+		}
 	}
 
 	*retaddr = addr;
@@ -1014,13 +1035,17 @@ static inline unsigned minOf(unsigned a, unsigned b)
 	return a <= b ? a : b;
 }
 
-CGameConfig::AddressConf::AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read)
+CGameConfig::AddressConf::AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read, bool lastIsOffset)
 {
 	unsigned readLimit = minOf(readCount, sizeof(this->read) / sizeof(this->read[0]));
 
 	strncopy(signatureName, sigName, sizeof(signatureName) / sizeof(signatureName[0]));
 	this->readCount = readLimit;
 	memcpy(&this->read[0], read, sizeof(this->read[0])*readLimit);
+
+	//For safety: if the readLimit isn't the same as the readCount, then the
+	//last read value was definitely discarded, so lastIsOffset should be ignored
+	this->lastIsOffset = readLimit < readCount ? false : lastIsOffset;
 }
 
 SendProp *CGameConfig::GetSendProp(const char *key)

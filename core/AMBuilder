@@ -44,59 +44,70 @@ project.sources += [
 
 for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
-  binary_name = 'sourcemod.' + sdk.ext
+  for arch in SM.archs:
+    if not arch in sdk.platformSpec[builder.target.platform]:
+      continue
 
-  binary = SM.HL2Config(project, binary_name, sdk)
-  compiler = binary.compiler
+    binary_name = 'sourcemod.' + sdk.ext
 
-  compiler.cxxincludes += [
-    builder.sourcePath
-  ]
+    binary = SM.HL2Config(project, binary_name, sdk, arch)
+    compiler = binary.compiler
 
-  if sdk.name == 'csgo':
     compiler.cxxincludes += [
-      os.path.join(sdk.path, 'common', 'protobuf-2.5.0', 'src'),
-      os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
-      os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf')
+      builder.sourcePath
     ]
 
-  if builder.target_platform == 'linux':
-    compiler.postlink += ['-lpthread', '-lrt']
+    if sdk.name == 'csgo':
+      compiler.cxxincludes += [
+        os.path.join(sdk.path, 'common', 'protobuf-2.5.0', 'src'),
+        os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
+        os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf')
+      ]
 
-  if sdk.name == 'csgo':
-    if builder.target_platform == 'linux':
-      lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
-    elif builder.target_platform == 'mac':
-      lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
-    elif builder.target_platform == 'windows':
-      msvc_ver = compiler.version
-      vs_year = ''
-      if msvc_ver == 1800:
-        vs_year = '2013'
-      elif msvc_ver == 1900:
-        vs_year = '2015'
-      elif msvc_ver in (1910, 1911):
-        vs_year = '2017'
-      else:
-        raise Exception('Cannot find libprotobuf for MSVC version "' + str(compiler.version) + '"')
+    if builder.target.platform == 'linux':
+      compiler.postlink += ['-lpthread', '-lrt']
 
-      if 'DEBUG' in compiler.defines:
-        lib_path = os.path.join(sdk.path, 'lib', 'win32', 'debug', 'vs' + vs_year, 'libprotobuf.lib')
-      else:
-        lib_path = os.path.join(sdk.path, 'lib', 'win32', 'release', 'vs' + vs_year, 'libprotobuf.lib')
-    compiler.linkflags.insert(0, binary.Dep(lib_path))
+    if sdk.name == 'csgo':
+      if builder.target.platform == 'linux':
+        if arch == 'x86':
+          lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
+        elif arch == 'x64':
+          lib_path = os.path.join(sdk.path, 'lib', 'linux64', 'release', 'libprotobuf.a')
+        compiler.linkflags += ['-Wl,--exclude-libs=libprotobuf.a']
+      elif builder.target.platform == 'mac':
+        if arch == 'x86':
+          lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
+        elif arch == 'x64':
+          lib_path = os.path.join(sdk.path, 'lib', 'osx64', 'release', 'libprotobuf.a')
+      elif builder.target.platform == 'windows':
+        msvc_ver = compiler.version
+        vs_year = ''
+        if msvc_ver == 1800:
+          vs_year = '2013'
+        elif msvc_ver == 1900:
+          vs_year = '2015'
+        elif msvc_ver in (1910, 1911):
+          vs_year = '2017'
+        else:
+          raise Exception('Cannot find libprotobuf for MSVC version "' + str(compiler.version) + '"')
 
-  if sdk.name == 'csgo':
-    binary.sources += ['smn_protobuf.cpp']
-  else:
-    binary.sources += ['smn_bitbuffer.cpp']
+        if 'DEBUG' in compiler.defines:
+          lib_path = os.path.join(sdk.path, 'lib', 'win32', 'debug', 'vs' + vs_year, 'libprotobuf.lib')
+        else:
+          lib_path = os.path.join(sdk.path, 'lib', 'win32', 'release', 'vs' + vs_year, 'libprotobuf.lib')
+      compiler.linkflags.insert(0, binary.Dep(lib_path))
+  
+    if sdk.name == 'csgo':
+      binary.sources += ['smn_protobuf.cpp']
+    else:
+      binary.sources += ['smn_bitbuffer.cpp']
 
-  if sdk.name == 'csgo':
-    binary.sources += [
-      os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
-      os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessages.pb.cc'),
-      os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessage_helpers.cpp'),
-    ]
+    if sdk.name == 'csgo':
+      binary.sources += [
+        os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
+        os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessages.pb.cc'),
+        os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessage_helpers.cpp'),
+      ]
 
 SM.binaries += builder.Add(project)
 

@@ -46,12 +46,20 @@ if ($^O =~ /darwin/) {
 	push(@conf_argv, '--hl2sdk-root=/Volumes/hgshare');
 	push(@conf_argv, '--mms-path=/Users/builds/slaves/common/mmsource-1.10');
 	push(@conf_argv, '--mysql-path=/Users/builds/slaves/common/mysql-5.0');
+	push(@conf_argv, '--mysql64-path=/Users/builds/slaves/common/mysql-5.0-x86_64');
 } elsif ($^O =~ /linux/) {
 	push(@conf_argv, '--hl2sdk-root=/hgshare');
 	push(@conf_argv, '--mms-path=/home/builds/common/mmsource-1.10');
 	push(@conf_argv, '--mysql-path=/home/builds/common/mysql-5.0');
+	push(@conf_argv, '--mysql64-path=/home/builds/common/mysql-5.0-x86_64');
 } elsif ($^O =~ /MSWin/) {
 	push(@conf_argv, '--hl2sdk-root=H:\\');
+}
+
+if ($^O !~ /MSWin/) {
+	push(@conf_argv, '--target-arch=x86,x64');
+} else {
+	push(@conf_argv, '--target-arch=x86');
 }
 
 my $conf_args = join(' ', @conf_argv);

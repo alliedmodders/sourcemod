@@ -143,6 +143,14 @@ native int CreateEdict();
 native void RemoveEdict(int edict);
 
 /**
+ * Marks an entity for deletion.
+ *
+ * @param entity		Index of the entity.
+ * @error				Invalid entity index.
+ */
+native void RemoveEntity(int entity);
+
+/**
  * Returns the flags on an edict.  These are not the same as entity flags.
  *
  * @param edict			Index of the entity.

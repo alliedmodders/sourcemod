@@ -1,28 +1,35 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-binary = SM.ExtLibrary(builder, 'regex.ext')
-binary.compiler.cxxincludes += [
-  os.path.join(SM.mms_root, 'core', 'sourcehook'),
-]
-if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
-  binary.compiler.cxxflags += ['-fno-rtti']
-elif binary.compiler.vendor == 'msvc':
-  binary.compiler.cxxflags += ['/GR-']
+for arch in SM.archs:
+  binary = SM.ExtLibrary(builder, 'regex.ext', arch)
+  binary.compiler.cxxincludes += [
+    os.path.join(SM.mms_root, 'core', 'sourcehook'),
+  ]
+  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+    binary.compiler.cxxflags += ['-fno-rtti']
+  elif binary.compiler.family == 'msvc':
+    binary.compiler.cxxflags += ['/GR-']
 
-if builder.target_platform == 'linux':
-  path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux', 'libpcre.a')
-elif builder.target_platform == 'windows':
-  path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_win', 'pcre.lib')
-elif builder.target_platform == 'mac':
-  path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin', 'libpcre.a')
-binary.compiler.postlink += [binary.Dep(path)]
+  if builder.target.platform == 'linux':
+    if arch == 'x86':
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux', 'libpcre.a')
+    elif arch == 'x64':
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux64', 'libpcre.a')
+  elif builder.target.platform == 'windows':
+    path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_win', 'pcre.lib')
+  elif builder.target.platform == 'mac':
+    if arch == 'x86':
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin', 'libpcre.a')
+    elif arch == 'x64':
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin64', 'libpcre.a')
+  binary.compiler.postlink += [binary.Dep(path)]
 
-binary.sources += [
-  'extension.cpp',
-  'CRegEx.cpp',
-  '../../public/smsdk_ext.cpp'
-]
+  binary.sources += [
+    'extension.cpp',
+    'CRegEx.cpp',
+    '../../public/smsdk_ext.cpp'
+  ]
 
-SM.extensions += [builder.Add(binary)]
+  SM.extensions += [builder.Add(binary)]
 

@@ -5,7 +5,7 @@ joys of buildbot, part 4: a transient mummy is perplexed by a broken wand
 buildbot has horrible bloogs
 I am the very model of a modern major general
 It's no wonder the build always falls over when we call it pushing.
-h
+H
 i
 D
 S
@@ -71,3 +71,5 @@ R.I.P. Wade Boggs
 Your tier1 tower is under attack..
 Christmas!!!
 the mousse angles are smooth
+spoilers
+

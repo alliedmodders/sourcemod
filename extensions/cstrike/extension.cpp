@@ -36,6 +36,7 @@
 #include "iplayerinfo.h"
 #include "ISDKTools.h"
 #include "forwards.h"
+#include "util_cstrike.h"
 
 /**
  * @file extension.cpp
@@ -126,6 +127,10 @@ void CStrike::SDK_OnUnload()
 	forwards->ReleaseForward(g_pPriceForward);
 	forwards->ReleaseForward(g_pTerminateRoundForward);
 	forwards->ReleaseForward(g_pCSWeaponDropForward);
+
+#if SOURCE_ENGINE == SE_CSGO
+	ClearHashMaps();
+#endif
 }
 
 void CStrike::SDK_OnAllLoaded()
@@ -146,6 +151,10 @@ void CStrike::SDK_OnAllLoaded()
 	hooked_everything = true;
 
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
+
+#if SOURCE_ENGINE == SE_CSGO
+	CreateHashMaps();
+#endif
 }
 
 bool CStrike::QueryRunning(char *error, size_t maxlength)

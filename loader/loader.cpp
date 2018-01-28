@@ -57,27 +57,34 @@
 	#include <dlfcn.h>
 #endif
 
+#if defined(_WIN64) || defined(__x86_64__)
+#define PLATFORM_ARCH_FOLDER 	"x64" PATH_SEP_CHAR
+#else
+#define PLATFORM_ARCH_FOLDER	""
+#endif
+
 #define METAMOD_API_MAJOR			2
-#define FILENAME_1_6_EP2			"sourcemod.2.ep2" PLATFORM_EXT
-#define FILENAME_1_6_EP1			"sourcemod.2.ep1" PLATFORM_EXT
-#define FILENAME_1_6_L4D			"sourcemod.2.l4d" PLATFORM_EXT
-#define FILENAME_1_6_DARKM			"sourcemod.2.darkm" PLATFORM_EXT
-#define FILENAME_1_6_L4D2			"sourcemod.2.l4d2" PLATFORM_EXT
-#define FILENAME_1_6_SWARM			"sourcemod.2.swarm" PLATFORM_EXT
-#define FILENAME_1_6_BGT			"sourcemod.2.bgt" PLATFORM_EXT
-#define FILENAME_1_6_EYE			"sourcemod.2.eye" PLATFORM_EXT
-#define FILENAME_1_6_PORTAL2		"sourcemod.2.portal2" PLATFORM_EXT
-#define FILENAME_1_6_CSGO			"sourcemod.2.csgo" PLATFORM_EXT
-#define FILENAME_1_6_CSS			"sourcemod.2.css" PLATFORM_EXT
-#define FILENAME_1_6_HL2DM			"sourcemod.2.hl2dm" PLATFORM_EXT
-#define FILENAME_1_6_DODS			"sourcemod.2.dods" PLATFORM_EXT
-#define FILENAME_1_6_SDK2013		"sourcemod.2.sdk2013" PLATFORM_EXT
-#define FILENAME_1_6_TF2			"sourcemod.2.tf2" PLATFORM_EXT
-#define FILENAME_1_6_ND				"sourcemod.2.nd" PLATFORM_EXT
-#define FILENAME_1_6_BLADE			"sourcemod.2.blade" PLATFORM_EXT
-#define FILENAME_1_6_INSURGENCY		"sourcemod.2.insurgency" PLATFORM_EXT
-#define FILENAME_1_6_CONTAGION		"sourcemod.2.contagion" PLATFORM_EXT
-#define FILENAME_1_6_BMS			"sourcemod.2.bms" PLATFORM_EXT
+#define FILENAME_1_6_EP2			PLATFORM_ARCH_FOLDER "sourcemod.2.ep2" PLATFORM_EXT
+#define FILENAME_1_6_EP1			PLATFORM_ARCH_FOLDER "sourcemod.2.ep1" PLATFORM_EXT
+#define FILENAME_1_6_L4D			PLATFORM_ARCH_FOLDER "sourcemod.2.l4d" PLATFORM_EXT
+#define FILENAME_1_6_DARKM			PLATFORM_ARCH_FOLDER "sourcemod.2.darkm" PLATFORM_EXT
+#define FILENAME_1_6_L4D2			PLATFORM_ARCH_FOLDER "sourcemod.2.l4d2" PLATFORM_EXT
+#define FILENAME_1_6_SWARM			PLATFORM_ARCH_FOLDER "sourcemod.2.swarm" PLATFORM_EXT
+#define FILENAME_1_6_BGT			PLATFORM_ARCH_FOLDER "sourcemod.2.bgt" PLATFORM_EXT
+#define FILENAME_1_6_EYE			PLATFORM_ARCH_FOLDER "sourcemod.2.eye" PLATFORM_EXT
+#define FILENAME_1_6_PORTAL2		PLATFORM_ARCH_FOLDER "sourcemod.2.portal2" PLATFORM_EXT
+#define FILENAME_1_6_CSGO			PLATFORM_ARCH_FOLDER "sourcemod.2.csgo" PLATFORM_EXT
+#define FILENAME_1_6_CSS			PLATFORM_ARCH_FOLDER "sourcemod.2.css" PLATFORM_EXT
+#define FILENAME_1_6_HL2DM			PLATFORM_ARCH_FOLDER "sourcemod.2.hl2dm" PLATFORM_EXT
+#define FILENAME_1_6_DODS			PLATFORM_ARCH_FOLDER "sourcemod.2.dods" PLATFORM_EXT
+#define FILENAME_1_6_SDK2013		PLATFORM_ARCH_FOLDER "sourcemod.2.sdk2013" PLATFORM_EXT
+#define FILENAME_1_6_TF2			PLATFORM_ARCH_FOLDER "sourcemod.2.tf2" PLATFORM_EXT
+#define FILENAME_1_6_ND				PLATFORM_ARCH_FOLDER "sourcemod.2.nd" PLATFORM_EXT
+#define FILENAME_1_6_BLADE			PLATFORM_ARCH_FOLDER "sourcemod.2.blade" PLATFORM_EXT
+#define FILENAME_1_6_INSURGENCY		PLATFORM_ARCH_FOLDER "sourcemod.2.insurgency" PLATFORM_EXT
+#define FILENAME_1_6_DOI			PLATFORM_ARCH_FOLDER "sourcemod.2.doi" PLATFORM_EXT
+#define FILENAME_1_6_CONTAGION		PLATFORM_ARCH_FOLDER "sourcemod.2.contagion" PLATFORM_EXT
+#define FILENAME_1_6_BMS			PLATFORM_ARCH_FOLDER "sourcemod.2.bms" PLATFORM_EXT
 
 HINSTANCE g_hCore = NULL;
 bool load_attempted = false;
@@ -319,6 +326,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_INSURGENCY:
 		{
 			filename = FILENAME_1_6_INSURGENCY;
+			break;
+		}
+	case SOURCE_ENGINE_DOI:
+		{
+			filename = FILENAME_1_6_DOI;
 			break;
 		}
 	default:

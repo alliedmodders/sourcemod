@@ -191,6 +191,11 @@ void CHookManager::PlayerRunCmdHook(int client, bool post)
 
 void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 {
+	if (!ucmd)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
 	if (m_usercmdsFwd->GetFunctionCount() == 0)
 	{
 		RETURN_META(MRES_IGNORED);
@@ -254,6 +259,11 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 
 void CHookManager::PlayerRunCmdPost(CUserCmd *ucmd, IMoveHelper *moveHelper)
 {
+	if (!ucmd)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
 	if (m_usercmdsPostFwd->GetFunctionCount() == 0)
 	{
 		RETURN_META(MRES_IGNORED);

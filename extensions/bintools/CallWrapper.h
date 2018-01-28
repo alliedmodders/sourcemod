@@ -47,6 +47,8 @@ class CallWrapper : public ICallWrapper
 {
 public:
 	CallWrapper(const SourceHook::ProtoInfo *protoInfo);
+	CallWrapper(const SourceHook::ProtoInfo *protoInfo, const PassInfo *retInfo,
+	            const PassInfo paramInfo[], unsigned int fnFlags);
 	~CallWrapper();
 public: //ICallWrapper
 	CallConvention GetCallConvention();
@@ -59,6 +61,7 @@ public: //ICallWrapper
 	SourceHook::ProtoInfo::CallConvention GetSHCallConvention();
 	const SourceHook::PassInfo *GetSHParamInfo(unsigned int num);
 	unsigned int GetParamOffset(unsigned int num);
+	unsigned int GetFunctionFlags();
 public:
 	void SetCalleeAddr(void *addr);
 	void SetCodeBaseAddr(void *addr);
@@ -74,6 +77,7 @@ private:
 	void *m_AddrCallee;
 	void *m_AddrCodeBase;
 	SourceHook::MemFuncInfo m_FuncInfo;
+	unsigned int m_FnFlags;
 };
 
 #endif //_INCLUDE_SOURCEMOD_CALLWRAPPER_H_

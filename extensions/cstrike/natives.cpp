@@ -35,13 +35,17 @@
 #include "util_cstrike.h"
 #include <server_class.h>
 
+#if SOURCE_ENGINE == SE_CSGO
+#include "itemdef-hash.h"
+#endif
+
 int g_iPriceOffset = -1;
 
 #define REGISTER_NATIVE_ADDR(name, code) \
 	void *addr; \
 	if (!g_pGameConf->GetMemSig(name, &addr) || !addr) \
 	{ \
-		return pContext->ThrowNativeError("Failed to locate function"); \
+		return pContext->ThrowNativeError("Failed to lookup %s signature.", name); \
 	} \
 	code; \
 	g_RegNatives.Register(pWrapper);
@@ -49,7 +53,7 @@ int g_iPriceOffset = -1;
 #define GET_MEMSIG(name) \
 	if (!g_pGameConf->GetMemSig(name, &addr) || !addr) \
 	{ \
-		return pContext->ThrowNativeError("Failed to locate function"); \
+		return pContext->ThrowNativeError("Failed to lookup %s signature.", name); \
 	}
 
 inline CBaseEntity *GetCBaseEntity(int num, bool isplayer)
@@ -366,6 +370,10 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 
 static cell_t CS_WeaponIDToAlias(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_CSGO
+	if(g_mapClassToDefIdx.elements() == 0)
+		return pContext->ThrowNativeError("Failed to create weapon hashmap");
+#endif
 	if (!IsValidWeaponID(params[1]))
 		return pContext->ThrowNativeError("Invalid WeaponID passed for this game");
 
@@ -409,7 +417,7 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 	if (!IsValidWeaponID(params[2]))
 		return pContext->ThrowNativeError("Invalid WeaponID passed for this game");
 
-	int id = GetRealWeaponID(params[2]);
+	int id = params[2];
 
 	//Hard code return values for weapons that dont call GetWeaponPrice and always use default value.
  	if (id == WEAPON_C4 || id == WEAPON_KNIFE || id == WEAPON_SHIELD)
@@ -449,55 +457,26 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 #else
 static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 {
+	if (g_mapClassToDefIdx.elements() == 0)
+		return pContext->ThrowNativeError("Failed to create weapon hashmap");
+
 	CBaseEntity *pEntity;
 	if (!(pEntity = GetCBaseEntity(params[1], true)))
 	{
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	static const char *pPriceKey = NULL;
-
-	if (!pPriceKey)
-	{
-		pPriceKey = g_pGameConf->GetKeyValue("PriceKey");
-		if (!pPriceKey)
-		{
-			return pContext->ThrowNativeError("Failed to get PriceKey KeyValue.");
-		}
-	}
-
 	if (!IsValidWeaponID(params[2]))
 		return pContext->ThrowNativeError("Invalid WeaponID passed for this game");
 
-	int id = GetRealWeaponID(params[2]);
+	WeaponIDMap::Result res = g_mapWeaponIDToDefIdx.find((SMCSWeapon)params[2]);
 
-	char classname[128];
-
-	if (id < CSGOWeapon_KEVLAR)
-		Q_snprintf(classname, sizeof(classname), "weapon_%s", WeaponIDToAlias(params[2]));
-	else
-		Q_snprintf(classname, sizeof(classname), "item_%s", WeaponIDToAlias(params[2]));
-
-	CEconItemDefinition *pDef = GetItemDefintionByName(classname);
-
-	if (!pDef)
-	{
-		return pContext->ThrowNativeError("Failed to get CEconItemDefinition for %s", classname);
-	}
-
-	KeyValues *pAttributes = pDef->m_pKv->FindKey("attributes", false);
-
-	if (!pAttributes)
-	{
-		return pContext->ThrowNativeError("Failed to get item attributes keyvalue for %s", classname);
-	}
-
-	int price = pAttributes->GetInt(pPriceKey, 0);
+	int price = res->value.m_iPrice;
 
 	if (params[3] || weaponNameOffset == -1)
 		return price;
 
-	return CallPriceForward(params[1], WeaponIDToAlias(params[2]), price);
+	return CallPriceForward(params[1], res->value.m_szClassname, price);
 }
 #endif
 
@@ -577,30 +556,15 @@ static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params
 
 static cell_t CS_AliasToWeaponID(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_CSGO
+	if (g_mapClassToDefIdx.elements() == 0)
+		return pContext->ThrowNativeError("Failed to create weapon hashmap");
+#endif
 	char *weapon;
 
 	pContext->LocalToString(params[1], &weapon);
 
-#if SOURCE_ENGINE == SE_CSGO
-	if (strstr(weapon, "usp_silencer") != NULL)
-	{
-		return SMCSWeapon_HKP2000;
-	}
-	else if(strstr(weapon, "cz75a") != NULL)
-	{
-		return SMCSWeapon_P250;
-	}
-	else if (strstr(weapon, "m4a1_silencer") != NULL)
-	{
-		return SMCSWeapon_M4A1;
-	}
-	else if (strstr(weapon, "revolver") != NULL)
-	{
-		return SMCSWeapon_DEAGLE;
-	}
-#endif
-
-	int id = GetFakeWeaponID(AliasToWeaponID(weapon));
+	int id = AliasToWeaponID(weapon);
 
 	if (!IsValidWeaponID(id))
 		return SMCSWeapon_NONE;
@@ -898,6 +862,35 @@ static cell_t CS_UpdateClientModel(IPluginContext *pContext, const cell_t *param
 
 	return 1;
 }
+
+static cell_t CS_ItemDefIndexToID(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	ItemIndexMap::Result res = g_mapDefIdxToClass.find((uint16_t)params[1]);
+
+	if (!res.found())
+		return  pContext->ThrowNativeError("Invalid item definition passed.");
+
+	return res->value.m_iWeaponID;
+#else
+	return pContext->ThrowNativeError("CS_ItemDefIndexToID is not supported on this game");
+#endif
+}
+
+static cell_t CS_WeaponIDToItemDefIndex(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	WeaponIDMap::Result res = g_mapWeaponIDToDefIdx.find((SMCSWeapon)params[1]);
+
+	if (!res.found())
+		return  pContext->ThrowNativeError("Invalid weapon id passed.");
+
+	return res->value.m_iDefIdx;
+#else
+	return pContext->ThrowNativeError("CS_WeaponIDToItemDefIndex is not supported on this game");
+#endif
+}
+
 sp_nativeinfo_t g_CSNatives[] = 
 {
 	{"CS_RespawnPlayer",			CS_RespawnPlayer}, 
@@ -920,6 +913,8 @@ sp_nativeinfo_t g_CSNatives[] =
 	{"CS_SetClientAssists",			CS_SetClientAssists},
 	{"CS_UpdateClientModel",		CS_UpdateClientModel},
 	{"CS_IsValidWeaponID",			CS_IsValidWeaponID},
+	{"CS_ItemDefIndexToID",			CS_ItemDefIndexToID},
+	{"CS_WeaponIDToItemDefIndex",	CS_WeaponIDToItemDefIndex},
 	{NULL,							NULL}
 };
 

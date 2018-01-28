@@ -103,8 +103,9 @@ private:
 		char signatureName[64];
 		int readCount;
 		int read[8];
+		bool lastIsOffset;
 
-		AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read);
+		AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read, bool lastIsOffset);
 
 		AddressConf() {}
 	};
@@ -113,6 +114,7 @@ private:
 	char m_AddressSignature[64];
 	int m_AddressReadCount;
 	int m_AddressRead[8];
+	bool m_AddressLastIsOffset;
 	StringHashMap<AddressConf> m_Addresses;
 	const char *m_pEngine;
 	const char *m_pBaseEngine;

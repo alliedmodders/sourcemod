@@ -82,7 +82,8 @@ ICallWrapper *CallMaker::CreateCall(void *address,
 						 CallConvention cv,
 						 const PassInfo *retInfo,
 						 const PassInfo paramInfo[],
-						 unsigned int numParams)
+						 unsigned int numParams,
+						 unsigned int fnFlags)
 {
 	SourceHook::CProtoInfoBuilder protoInfo(GetSHCallConvention(cv));
 
@@ -103,7 +104,11 @@ ICallWrapper *CallMaker::CreateCall(void *address,
 			NULL, NULL, NULL, NULL);
 	}
 
+#if defined PLATFORM_X64
+	return g_CallMaker2.CreateCall(address, &(*protoInfo), retInfo, paramInfo, fnFlags);
+#else
 	return g_CallMaker2.CreateCall(address, &(*protoInfo));
+#endif
 }
 
 ICallWrapper *CallMaker::CreateVCall(unsigned int vtblIdx, 
@@ -111,7 +116,8 @@ ICallWrapper *CallMaker::CreateVCall(unsigned int vtblIdx,
 									 unsigned int thisOffs, 
 									 const PassInfo *retInfo, 
 									 const PassInfo paramInfo[], 
-									 unsigned int numParams)
+									 unsigned int numParams,
+									 unsigned int fnFlags)
 {
 	SourceHook::MemFuncInfo info;
 	info.isVirtual = true;
@@ -138,12 +144,16 @@ ICallWrapper *CallMaker::CreateVCall(unsigned int vtblIdx,
 			NULL, NULL, NULL, NULL);
 	}
 	
-
+#if defined PLATFORM_X64
+	return g_CallMaker2.CreateVirtualCall(&(*protoInfo), &info, retInfo, paramInfo, fnFlags);
+#else
 	return g_CallMaker2.CreateVirtualCall(&(*protoInfo), &info);
+#endif
 }
 
 ICallWrapper *CallMaker2::CreateCall(void *address, const SourceHook::ProtoInfo *protoInfo)
 {
+#ifdef PLATFORM_X86
 	CallWrapper *pWrapper = new CallWrapper(protoInfo);
 	pWrapper->SetCalleeAddr(address);
 
@@ -151,11 +161,15 @@ ICallWrapper *CallMaker2::CreateCall(void *address, const SourceHook::ProtoInfo 
 	pWrapper->SetCodeBaseAddr(addr);
 
 	return pWrapper;
+#else
+	return nullptr;
+#endif
 }
 
 ICallWrapper *CallMaker2::CreateVirtualCall(const SourceHook::ProtoInfo *protoInfo, 
 											const SourceHook::MemFuncInfo *info)
 {
+#ifdef PLATFORM_X86
 	CallWrapper *pWrapper = new CallWrapper(protoInfo);
 	pWrapper->SetMemFuncInfo(info);
 
@@ -163,9 +177,48 @@ ICallWrapper *CallMaker2::CreateVirtualCall(const SourceHook::ProtoInfo *protoIn
 	pWrapper->SetCodeBaseAddr(addr);
 
 	return pWrapper;
+#else
+	return nullptr;
+#endif
 }
 
-#if defined HOOKING_ENABLED
+ICallWrapper *CallMaker2::CreateCall(void *address, const SourceHook::ProtoInfo *protoInfo,
+                                     const PassInfo *retInfo, const PassInfo paramInfo[],
+                                     unsigned int fnFlags)
+{
+#ifdef PLATFORM_X64
+	CallWrapper *pWrapper = new CallWrapper(protoInfo, retInfo, paramInfo, fnFlags);
+	pWrapper->SetCalleeAddr(address);
+
+	void *addr = JIT_CallCompile(pWrapper, FuncAddr_Direct);
+	pWrapper->SetCodeBaseAddr(addr);
+
+	return pWrapper;
+#else
+	return nullptr;
+#endif
+}
+
+ICallWrapper *CallMaker2::CreateVirtualCall(const SourceHook::ProtoInfo *protoInfo, 
+											const SourceHook::MemFuncInfo *info,
+											const PassInfo *retInfo,
+                                            const PassInfo paramInfo[],
+                                            unsigned int fnFlags)
+{
+#ifdef PLATFORM_X64
+	CallWrapper *pWrapper = new CallWrapper(protoInfo, retInfo, paramInfo, fnFlags);
+	pWrapper->SetMemFuncInfo(info);
+
+	void *addr = JIT_CallCompile(pWrapper, FuncAddr_VTable);
+	pWrapper->SetCodeBaseAddr(addr);
+
+	return pWrapper;
+#else
+	return nullptr;
+#endif
+}
+
+#if 0
 IHookWrapper *CallMaker2::CreateVirtualHook(SourceHook::ISourceHook *pSH, 
 											const SourceHook::ProtoInfo *protoInfo,
 											const SourceHook::MemFuncInfo *info, 

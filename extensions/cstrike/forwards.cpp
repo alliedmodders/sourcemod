@@ -53,15 +53,7 @@ DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pWpnDataRef
 	}
 	else
 	{
-		const char *underscore = strstr(szClassname, "_");
-		if (underscore)
-		{
-			Q_strncpy(weaponName, (const char *)((intptr_t)underscore + 1), sizeof(weaponName));
-		}
-		else
-		{
-			Q_strncpy(weaponName, szClassname, sizeof(weaponName));
-		}
+		Q_strncpy(weaponName, GetWeaponNameFromClassname(szClassname), sizeof(weaponName));
 	}
 
 	cell_t result = Pl_Continue;
