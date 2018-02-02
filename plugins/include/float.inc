@@ -260,6 +260,12 @@ stock int RoundFloat(float value)
 #if !defined __sourcepawn2__
 #pragma rational Float
 
+// Internal aliases for backwards compatability.
+native float __FLOAT_MUL__(float a, float b) = FloatMul;
+native float __FLOAT_DIV__(float a, float b) = FloatDiv;
+native float __FLOAT_ADD__(float a, float b) = FloatAdd;
+native float __FLOAT_SUB__(float a, float b) = FloatSub;
+
 native bool __FLOAT_GT__(float a, float b);
 native bool __FLOAT_GE__(float a, float b);
 native bool __FLOAT_LT__(float a, float b);
@@ -268,10 +274,10 @@ native bool __FLOAT_EQ__(float a, float b);
 native bool __FLOAT_NE__(float a, float b);
 native bool __FLOAT_NOT__(float a);
 
-native float operator*(float oper1, float oper2) = FloatMul;
-native float operator/(float oper1, float oper2) = FloatDiv;
-native float operator+(float oper1, float oper2) = FloatAdd;
-native float operator-(float oper1, float oper2) = FloatSub;
+native float operator*(float oper1, float oper2) = __FLOAT_MUL__;
+native float operator/(float oper1, float oper2) = __FLOAT_DIV__;
+native float operator+(float oper1, float oper2) = __FLOAT_ADD__;
+native float operator-(float oper1, float oper2) = __FLOAT_SUB__;
 native bool operator!(float oper1) = __FLOAT_NOT__;
 native bool operator>(float oper1, float oper2) = __FLOAT_GT__;
 native bool operator>=(float oper1, float oper2) = __FLOAT_GE__;
@@ -297,32 +303,32 @@ stock float operator-(float oper)
 
 stock float operator*(float oper1, int oper2)
 {
-	return FloatMul(oper1, float(oper2));			/* "*" is commutative */
+	return __FLOAT_MUL__(oper1, float(oper2));			/* "*" is commutative */
 }
 
 stock float operator/(float oper1, int oper2)
 {
-	return FloatDiv(oper1, float(oper2));
+	return __FLOAT_DIV__(oper1, float(oper2));
 }
 
 stock float operator/(int oper1, float oper2)
 {
-	return FloatDiv(float(oper1), oper2);
+	return __FLOAT_DIV__(float(oper1), oper2);
 }
 
 stock float operator+(float oper1, int oper2)
 {
-	return FloatAdd(oper1, float(oper2));			/* "+" is commutative */
+	return __FLOAT_ADD__(oper1, float(oper2));			/* "+" is commutative */
 }
 
 stock float operator-(float oper1, int oper2)
 {
-	return FloatSub(oper1, float(oper2));
+	return __FLOAT_SUB__(oper1, float(oper2));
 }
 
 stock float operator-(int oper1, float oper2)
 {
-	return FloatSub(float(oper1), oper2);
+	return __FLOAT_SUB__(float(oper1), oper2);
 }
 
 stock bool operator==(float oper1, int oper2)
