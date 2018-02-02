@@ -48,45 +48,49 @@ native float float(int value);
 /**
  * Multiplies two floats together.
  *
- * Note: This native only exists to be overloaded. For multiplication use the '*' operator.
+ * Note: This native is internal implementation. For multiplication use the '*' operator.
  *
  * @param oper1			First value.
  * @param oper2			Second value.
  * @return				oper1*oper2.
  */
+#pragma deprecated This native is internal implementation. For multiplication use the '*' operator.
 native float FloatMul(float oper1, float oper2);
 
 /**
  * Divides the dividend by the divisor.
  *
- * Note: This native only exists to be overloaded. For division use the '/' operator.
+ * Note: This native is internal implementation. For division use the '/' operator.
  *
  * @param dividend		First value.
  * @param divisor		Second value.
  * @return				dividend/divisor.
  */
+#pragma deprecated This native is internal implementation. For division use the '/' operator.
 native float FloatDiv(float dividend, float divisor);
 
 /**
  * Adds two floats together.
  *
- * Note: This native only exists to be overloaded. For addition use the '+' operator.
+ * Note: This native is internal implementation. For addition use the '+' operator.
  *
  * @param oper1			First value.
  * @param oper2			Second value.
  * @return				oper1+oper2.
  */
+#pragma deprecated This native is internal implementation. For addition use the '+' operator.
 native float FloatAdd(float oper1, float oper2);
 
 /**
  * Subtracts oper2 from oper1.
  *
- * Note: This native only exists to be overloaded. For subtraction use the '-' operator.
+ * Note: This native is internal implementation. For subtraction use the '-' operator.
  *
  * @param oper1			First value.
  * @param oper2			Second value.
  * @return				oper1-oper2.
  */
+#pragma deprecated This native is internal implementation. For subtraction use the '-' operator.
 native float FloatSub(float oper1, float oper2);
 
 /**
