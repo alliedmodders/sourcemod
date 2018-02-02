@@ -274,10 +274,10 @@ native bool __FLOAT_EQ__(float a, float b);
 native bool __FLOAT_NE__(float a, float b);
 native bool __FLOAT_NOT__(float a);
 
-native float operator*(float oper1, float oper2) = __FLOAT_MUL__;
-native float operator/(float oper1, float oper2) = __FLOAT_DIV__;
-native float operator+(float oper1, float oper2) = __FLOAT_ADD__;
-native float operator-(float oper1, float oper2) = __FLOAT_SUB__;
+native float operator*(float oper1, float oper2) = FloatMul;
+native float operator/(float oper1, float oper2) = FloatDiv;
+native float operator+(float oper1, float oper2) = FloatAdd;
+native float operator-(float oper1, float oper2) = FloatSub;
 native bool operator!(float oper1) = __FLOAT_NOT__;
 native bool operator>(float oper1, float oper2) = __FLOAT_GT__;
 native bool operator>=(float oper1, float oper2) = __FLOAT_GE__;
