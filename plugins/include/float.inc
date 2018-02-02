@@ -301,6 +301,8 @@ stock float operator-(float oper)
 	return oper^view_as<float>(cellmin);				/* IEEE values are sign/magnitude */
 }
 
+// The stocks below are int->float converting versions of the above natives.
+
 stock float operator*(float oper1, int oper2)
 {
 	return __FLOAT_MUL__(oper1, float(oper2));			/* "*" is commutative */
