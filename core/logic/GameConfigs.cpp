@@ -66,15 +66,16 @@ static const char *g_pParseEngine = NULL;
 #define PSTATE_GAMEDEFS_OFFSETS			3
 #define PSTATE_GAMEDEFS_OFFSETS_OFFSET	4
 #define PSTATE_GAMEDEFS_KEYS			5
-#define PSTATE_GAMEDEFS_SUPPORTED		6
-#define PSTATE_GAMEDEFS_SIGNATURES		7
-#define PSTATE_GAMEDEFS_SIGNATURES_SIG	8
-#define PSTATE_GAMEDEFS_CRC				9
-#define PSTATE_GAMEDEFS_CRC_BINARY		10
-#define PSTATE_GAMEDEFS_CUSTOM			11
-#define PSTATE_GAMEDEFS_ADDRESSES		12
-#define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS	13
-#define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ	14
+#define PSTATE_GAMEDEFS_KEYS_PLATFORM	6
+#define PSTATE_GAMEDEFS_SUPPORTED		7
+#define PSTATE_GAMEDEFS_SIGNATURES		8
+#define PSTATE_GAMEDEFS_SIGNATURES_SIG	9
+#define PSTATE_GAMEDEFS_CRC				10
+#define PSTATE_GAMEDEFS_CRC_BINARY		11
+#define PSTATE_GAMEDEFS_CUSTOM			12
+#define PSTATE_GAMEDEFS_ADDRESSES		13
+#define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS	14
+#define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ	15
 
 #if defined PLATFORM_X86
 #define PLATFORM_ARCH_SUFFIX		""
@@ -258,6 +259,13 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			}
 			break;
 		}
+	case PSTATE_GAMEDEFS_KEYS:
+		{
+			strncopy(m_Key, name, sizeof(m_Key));
+			m_ParseState = PSTATE_GAMEDEFS_KEYS_PLATFORM;
+			matched_platform = false;
+			break;
+		}
 	case PSTATE_GAMEDEFS_OFFSETS:
 		{
 			m_Prop[0] = '\0';
@@ -356,7 +364,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 		}
 	/* No sub-sections allowed:
 	 case PSTATE_GAMEDEFS_OFFSETS_OFFSET:
-	 case PSTATE_GAMEDEFS_KEYS:
+	 case PSTATE_GAMEDEFS_KEYS_PLATFORM:
 	 case PSTATE_GAMEDEFS_SUPPORTED:
 	 case PSTATE_GAMEDEFS_SIGNATURES_SIG:
 	 case PSTATE_GAMEDEFS_CRC_BINARY:
@@ -393,6 +401,13 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
 		ke::AString vstr(value);
 		m_Keys.replace(key, ke::Move(vstr));
+	}
+	else if (m_ParseState == PSTATE_GAMEDEFS_KEYS_PLATFORM) {
+		if (IsPlatformCompatible(key, &matched_platform))
+		{
+			ke::AString vstr(value);
+			m_Keys.replace(m_Key, ke::Move(vstr));
+		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
 		if (strcmp(key, "game") == 0)
 		{
@@ -504,6 +519,11 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 	case PSTATE_GAMEDEFS_OFFSETS:
 		{
 			m_ParseState = PSTATE_GAMEDEFS;
+			break;
+		}
+	case PSTATE_GAMEDEFS_KEYS_PLATFORM:
+		{
+			m_ParseState = PSTATE_GAMEDEFS_KEYS;
 			break;
 		}
 	case PSTATE_GAMEDEFS_OFFSETS_OFFSET:
