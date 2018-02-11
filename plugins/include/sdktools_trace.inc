@@ -267,6 +267,30 @@ native void TR_TraceHullFilter(const float pos[3],
 							   any data=0);
 							   
 /**
+ * Traces a ray against a particular edict.
+ *
+ * @param pos		Starting position of the ray.
+ * @param vec		Depending on RayType, it will be used as the ending 
+ *					point, or the direction angle.
+ * @param flags		Trace flags.
+ * @param rtype		Method to calculate the ray direction.
+ * @param entity	Entity to trace against
+ */
+native void TR_ClipRayToEntity(const float pos[3],
+								const float vec[3],
+								int flags,
+								RayType rtype,
+								int entity);
+								
+/**
+ * Traces the current global ray against a particular edict.
+ *
+ * @param flags		Trace flags.
+ * @param entity	Entity to trace against
+ */
+native void TR_ClipCurrRayToEntity(int flags, int entity);
+							   
+/**
  * Starts up a new trace ray using a new trace result.
  *
  * @param pos			Starting position of the ray.
@@ -343,6 +367,32 @@ native Handle TR_TraceHullFilterEx(const float pos[3],
 								   int flags, 
 								   TraceEntityFilter filter,
 								   any data=0);
+								   
+/**
+ * Traces a ray against a particular edict.
+ *
+ * @param pos		Starting position of the ray.
+ * @param vec		Depending on RayType, it will be used as the ending 
+ *					point, or the direction angle.
+ * @param flags		Trace flags.
+ * @param rtype		Method to calculate the ray direction.
+ * @param entity	Entity to trace against
+ * @return			Ray trace handle, which must be closed via CloseHandle().
+ */
+native Handle TR_ClipRayToEntityEx(const float pos[3],
+									const float vec[3],
+									int flags,
+									RayType rtype,
+									int entity);
+									
+/**
+ * Traces current global ray against a particular edict.
+ *
+ * @param flags		Trace flags.
+ * @param entity	Entity to trace against
+ * @return			Ray trace handle, which must be closed via CloseHandle().
+ */
+native Handle TR_ClipCurrRayToEntityEx(int flags, int entity);
 
 /**
  * Returns the time fraction from a trace result (1.0 means no collision).
@@ -397,16 +447,6 @@ native int TR_GetHitGroup(Handle hndl=INVALID_HANDLE);
  * @error			Invalid Handle
  */
 native void TR_GetPlaneNormal(Handle hndl, float normal[3]);
-
-/**
- * Traces a ray against a particular edict.
- *
- * @param flags		Trace flags.
- * @param entity	Entity to trace against
- * @param hndl		A trace Handle, or INVALID_HANDLE to use a global trace result.
- * @error			Invalid Handle
- */
-native void TR_ClipRayToEntity(int flags, int entity, Handle hndl=INVALID_HANDLE);
 
 /**
  * Tests a point to see if it's outside any playable area

@@ -196,7 +196,7 @@ static cell_t smn_TREnumerateEntities(IPluginContext *pContext, const cell_t *pa
 
 	switch (params[4])
 	{
-		case RayType_EndPoint:
+	case RayType_EndPoint:
 		{
 			g_EndVec.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
 			break;
@@ -223,27 +223,57 @@ static cell_t smn_TREnumerateEntities(IPluginContext *pContext, const cell_t *pa
 
 static cell_t smn_TRClipRayToEntity(IPluginContext *pContext, const cell_t *params)
 {
-	sm_trace_t *tr;
-	HandleError err;
-	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+	cell_t *startaddr;
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+	cell_t *endaddr;
+	pContext->LocalToPhysAddr(params[2], &endaddr);
 
-	if (params[3] == BAD_HANDLE)
+	g_StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+
+	switch (params[4])
 	{
-		tr = &g_Trace;
-	}
-	else if ((err = handlesys->ReadHandle(params[3], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[3], err);
+	case RayType_EndPoint:
+		{
+			g_EndVec.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
+			break;
+		}
+	case RayType_Infinite:
+		{
+			g_DirAngles.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
+			AngleVectors(g_DirAngles, &g_EndVec);
+
+			/* Make it unitary and get the ending point */
+			g_EndVec.NormalizeInPlace();
+			g_EndVec = g_StartVec + g_EndVec * MAX_TRACE_LENGTH;
+			break;
+		}
 	}
 
-	edict_t *pEdict = PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[2]));
+	edict_t *pEdict = PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[5]));
 	if (!pEdict || pEdict->IsFree())
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[2]);
+		return pContext->ThrowNativeError("Entity %d is invalid", params[5]);
 	}
 
 	IHandleEntity *pEnt = reinterpret_cast<IHandleEntity*>(pEdict->GetUnknown()->GetBaseEntity());
-	enginetrace->ClipRayToEntity(g_Ray, params[1], pEnt, tr);
+	g_Ray.Init(g_StartVec, g_EndVec);
+	enginetrace->ClipRayToEntity(g_Ray, params[3], pEnt, &g_Trace);
+	g_Trace.UpdateEntRef();
+
+	return 1;
+}
+
+static cell_t smn_TRClipCurrRayToEntity( IPluginContext *pContext, const cell_t *params )
+{
+	edict_t *pEdict = PEntityOfEntIndex( gamehelpers->ReferenceToIndex( params[2] ) );
+	if( !pEdict || pEdict->IsFree() )
+	{
+		return pContext->ThrowNativeError( "Entity %d is invalid", params[2] );
+	}
+
+	IHandleEntity *pEnt = reinterpret_cast<IHandleEntity*>( pEdict->GetUnknown()->GetBaseEntity() );
+	enginetrace->ClipRayToEntity( g_Ray, params[1], pEnt, &g_Trace );
+	g_Trace.UpdateEntRef();
 
 	return 1;
 }
@@ -401,6 +431,87 @@ static cell_t smn_TRTraceHullEx(IPluginContext *pContext, const cell_t *params)
 
 	sm_trace_t *tr = new sm_trace_t;
 	enginetrace->TraceRay(ray, params[5], &g_HitAllFilter, tr);
+	tr->UpdateEntRef();
+
+	HandleError herr;
+	Handle_t hndl;
+	if (!(hndl=handlesys->CreateHandle(g_TraceHandle, tr, pContext->GetIdentity(), myself->GetIdentity(), &herr)))
+	{
+		delete tr;
+		return pContext->ThrowNativeError("Unable to create a new trace handle (error %d)", herr);
+	}
+
+	return hndl;
+}
+
+static cell_t smn_TRClipRayToEntityEx( IPluginContext *pContext, const cell_t *params )
+{
+	cell_t *startaddr;
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+	cell_t *endaddr;
+	pContext->LocalToPhysAddr(params[2], &endaddr);
+
+	Vector StartVec, EndVec;
+
+	StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+
+	switch (params[4])
+	{
+	case RayType_EndPoint:
+		{
+			EndVec.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
+			break;
+		}
+	case RayType_Infinite:
+		{
+			QAngle DirAngles;
+			DirAngles.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
+			AngleVectors(DirAngles, &EndVec);
+
+			/* Make it unitary and get the ending point */
+			EndVec.NormalizeInPlace();
+			EndVec = StartVec + EndVec * MAX_TRACE_LENGTH;
+			break;
+		}
+	}
+
+	edict_t *pEdict = PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[5]));
+	if (!pEdict || pEdict->IsFree())
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[5]);
+	}
+
+	Ray_t ray;
+	sm_trace_t *tr = new sm_trace_t;
+
+	IHandleEntity *pEnt = reinterpret_cast<IHandleEntity*>(pEdict->GetUnknown()->GetBaseEntity());
+	ray.Init(StartVec, EndVec);
+	enginetrace->ClipRayToEntity(ray, params[3], pEnt, tr);
+	tr->UpdateEntRef();
+
+	HandleError herr;
+	Handle_t hndl;
+	if (!(hndl=handlesys->CreateHandle(g_TraceHandle, tr, pContext->GetIdentity(), myself->GetIdentity(), &herr)))
+	{
+		delete tr;
+		return pContext->ThrowNativeError("Unable to create a new trace handle (error %d)", herr);
+	}
+
+	return hndl;
+}
+
+static cell_t smn_TRClipCurrRayToEntityEx( IPluginContext *pContext, const cell_t *params )
+{
+	edict_t *pEdict = PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[2]));
+	if (!pEdict || pEdict->IsFree())
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[2]);
+	}
+
+	sm_trace_t *tr = new sm_trace_t;
+
+	IHandleEntity *pEnt = reinterpret_cast<IHandleEntity*>(pEdict->GetUnknown()->GetBaseEntity());
+	enginetrace->ClipRayToEntity(g_Ray, params[1], pEnt, tr);
 	tr->UpdateEntRef();
 
 	HandleError herr;
@@ -716,6 +827,9 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_DidHit",				smn_TRDidHit},
 	{"TR_GetHitGroup",			smn_TRGetHitGroup},
 	{"TR_ClipRayToEntity",		smn_TRClipRayToEntity},
+	{"TR_ClipRayToEntityEx",	smn_TRClipRayToEntityEx},
+	{"TR_ClipCurrRayToEntity",	smn_TRClipCurrRayToEntity},
+	{"TR_ClipCurrRayToEntityEx",smn_TRClipCurrRayToEntityEx},
 	{"TR_GetPointContents",		smn_TRGetPointContents},
 	{"TR_GetPointContentsEnt",	smn_TRGetPointContentsEnt},
 	{"TR_TraceRayFilter",		smn_TRTraceRayFilter},
