@@ -33,7 +33,6 @@
 
 #include "pcre.h"
 #include "CRegEx.h"
-#include <sh_string.h>
 #include "extension.h"
 
 RegEx::RegEx()
@@ -106,9 +105,37 @@ int RegEx::Match(const char *str)
 	subject = new char[strlen(str)+1];
 	strcpy(subject, str);
 
-	rc = pcre_exec(re, NULL, subject, (int)strlen(subject), 0, 0, ovector, 30);
+	unsigned int offset = 0;
+	unsigned int len = strlen(subject);
+	unsigned int matches = 0;
 
-	if (rc < 0)
+	while (offset < len && (rc = pcre_exec(re, 0, subject, len, offset, 0, ovector, sizeof(ovector))) >= 0)
+	{
+		/* This also works for capture groups now, but assume rc is always 1 if we have any match.
+		Reference : https://stackoverflow.com/questions/1421785/how-can-i-use-pcre-to-get-all-match-groups
+		Example:
+		rc = 2 for
+		tes(t)
+		with string test
+
+		0 = test
+		1 = t
+
+		for (int i = 0; i < rc; ++i)
+		{
+			printf("%2d: %.*s\n", i, ovector[2 * i + 1] - ovector[2 * i], str + ovector[2 * i]);
+		}
+		*/
+
+		char *substr_a = subject + ovector[2 * 0];
+		int substr_l = ovector[2 * 0 + 1] - ovector[2 * 0];
+
+		mMatches[matches] = ke::AString(substr_a, substr_l);
+		offset = ovector[1];
+		matches++;
+	}
+
+	if (rc < 0 && matches == 0) // rc < 0 when there is no more matches, so if we have matches dont error (Maybe check if rc == PCRE_ERROR_NOMATCH and if we have matches?)
 	{
 		if (rc == PCRE_ERROR_NOMATCH)
 		{
@@ -119,7 +146,7 @@ int RegEx::Match(const char *str)
 		}
 	}
 
-	mSubStrings = rc;
+	mSubStrings = matches;
 
 	return 1;
 }
@@ -140,17 +167,7 @@ const char *RegEx::GetSubstring(int s, char buffer[], int max)
 	if (s >= mSubStrings || s < 0)
 		return NULL;
 
-	char *substr_a = subject + ovector[2*s];
-	int substr_l = ovector[2*s+1] - ovector[2*s];
-
-	for (i = 0; i<substr_l; i++)
-	{
-		if (i >= max)
-			break;
-		buffer[i] = substr_a[i];
-	}
-
-	buffer[i] = '\0';
+	ke::SafeStrcpy(buffer, max, mMatches[s].chars());
 
 	return buffer;
 }

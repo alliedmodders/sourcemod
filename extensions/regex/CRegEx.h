@@ -28,6 +28,7 @@
  *
  * Version: $Id$
  */
+#include <am-string.h>
 
 #ifndef _INCLUDE_CREGEX_H
 #define _INCLUDE_CREGEX_H
@@ -48,6 +49,7 @@ public:
 	int mErrorOffset;
 	const char *mError;
 	int mSubStrings;
+	ke::AString mMatches[30];
 private:
 	pcre *re;
 	bool mFree;
