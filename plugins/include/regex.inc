@@ -161,7 +161,7 @@ methodmap Regex < Handle
 	//
 	// @param match			Match to get the offset of. Match starts at 0, and ends at MatchCount() -1
 	// @return				Offset of the match in the string.
-	public native int Offset(int match = 0)
+	public native int MatchOffset(int match = 0)
 };
 
 /**
@@ -193,19 +193,6 @@ native Regex CompileRegex(const char[] pattern, int flags = 0, char[] error="", 
 native int MatchRegex(Handle regex, const char[] str, RegexError &ret = REGEX_ERROR_NONE, int offset = 0);
 
 /**
- * Gets all matches from a string against a pre-compiled regular expression pattern.
- *
- * @param str			The string to check.
- * @param regex			Regex Handle from CompileRegex()
- * @param ret			Error code, if applicable.
- * @return				Number of matches found or -1 on failure.
- *
- * @note				Use the regex handle passed to this function to extract
- *						matches with GetRegexSubString() and loop from 1 -> totalmatches.
- */
-native int MatchRegexAll(Handle regex, const char[] str, RegexError &ret = REGEX_ERROR_NONE);
-
-/**
  * Returns a matched substring from a regex handle.
  * Substring ids start at 0 and end at captures-1, where captures is the number returned 
  * by MatchRegex or GetRegexCaptureCount.
@@ -221,33 +208,6 @@ native int MatchRegexAll(Handle regex, const char[] str, RegexError &ret = REGEX
  *						if MatchRegex is used match can only be 0
  */
 native bool GetRegexSubString(Handle regex, int str_id, char[] buffer, int maxlen, int match = 0);
- 
- /**
-  * Returns number of matches
-  * When using MatchRegex this is always 1 or 0 (unless an error occured)
-  *
-  * @param regex			The regex handle to extract data from.
-  * @return					Total number of matches found.
-  */
-  native int GetRegexMatchCount(Handle regex);
-  
-/** Returns number of captures for a match
- *
- * @param regex				The regex handle to extract data from.
- * @param match				Match to get the number of captures for. Match starts at 0, and ends at MatchCount() -1
- * @return					Number of captures in the match.
- *
- * @note					Use GetRegexSubString() and loop from 1 -> captures -1 for str_id to get all captures
- */
-native int GetRegexCaptureCount(Handle regex, int match = 0);
-
-/** Returns the string offset of a match.
- *
- * @param regex				The regex handle to extract data from.
- * @param match				Match to get the offset of. Match starts at 0, and ends at MatchCount() -1
- * @return					Offset of the match in the string.
- */
-native int GetRegexOffset(Handle regex, int match = 0)
   
 stock int SimpleRegexMatch(const char[] str, const char[] pattern, int flags = 0, char[] error="", int maxLen = 0)
 {
