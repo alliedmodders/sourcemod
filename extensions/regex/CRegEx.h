@@ -33,10 +33,13 @@
 #ifndef _INCLUDE_CREGEX_H
 #define _INCLUDE_CREGEX_H
 
+#define MAX_MATCHES 20
+#define MAX_CAPTURES MAX_MATCHES*3
+
 struct RegexMatch
 {
 	int mSubStringCount;
-	int mVector[30];
+	int mVector[MAX_CAPTURES];
 };
 
 class RegEx
@@ -56,7 +59,7 @@ public:
 	int mErrorOffset;
 	const char *mError;
 	int mMatchCount;
-	RegexMatch mMatches[10];
+	RegexMatch mMatches[MAX_MATCHES];
 private:
 	pcre *re;
 	bool mFree;

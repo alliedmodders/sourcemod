@@ -107,7 +107,7 @@ int RegEx::Match(const char *str, unsigned int offset)
 
 	unsigned int len = strlen(subject);
 
-	rc = pcre_exec(re, NULL, subject, len, offset, 0, mMatches[0].mVector, sizeof(mMatches[0].mVector));
+	rc = pcre_exec(re, NULL, subject, len, offset, 0, mMatches[0].mVector, MAX_CAPTURES);
 
 	if (rc < 0)
 	{
@@ -143,7 +143,7 @@ int RegEx::MatchAll(const char *str)
 	unsigned int len = strlen(subject);
 	unsigned int matches = 0;
 
-	while (offset < len && (rc = pcre_exec(re, 0, subject, len, offset, 0, mMatches[matches].mVector, sizeof(mMatches[matches].mVector))) >= 0)
+	while (matches < MAX_MATCHES && offset < len && (rc = pcre_exec(re, 0, subject, len, offset, 0, mMatches[matches].mVector, MAX_CAPTURES)) >= 0)
 	{
 		offset = mMatches[matches].mVector[1];
 		mMatches[matches].mSubStringCount = rc;
