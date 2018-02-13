@@ -42,7 +42,7 @@ RegEx::RegEx()
 	re = NULL;
 	mFree = true;
 	subject = NULL;
-	mSubStrings = 0;
+	mMatchCount = 0;
 }
 
 void RegEx::Clear ()
@@ -56,7 +56,7 @@ void RegEx::Clear ()
 	if (subject)
 		delete [] subject;
 	subject = NULL;
-	mSubStrings = 0;
+	mMatchCount = 0;
 }
 
 RegEx::~RegEx()
@@ -92,7 +92,7 @@ int RegEx::Compile(const char *pattern, int iFlags)
 	return 1;
 }
 
-int RegEx::Match(const char *str)
+int RegEx::Match(const char *str, unsigned int offset)
 {
 	int rc = 0;
 
@@ -105,37 +105,11 @@ int RegEx::Match(const char *str)
 	subject = new char[strlen(str)+1];
 	strcpy(subject, str);
 
-	unsigned int offset = 0;
 	unsigned int len = strlen(subject);
-	unsigned int matches = 0;
 
-	while (offset < len && (rc = pcre_exec(re, 0, subject, len, offset, 0, ovector, sizeof(ovector))) >= 0)
-	{
-		/* This also works for capture groups now, but assume rc is always 1 if we have any match.
-		Reference : https://stackoverflow.com/questions/1421785/how-can-i-use-pcre-to-get-all-match-groups
-		Example:
-		rc = 2 for
-		tes(t)
-		with string test
+	rc = pcre_exec(re, NULL, subject, len, offset, 0, mMatches[0].mVector, sizeof(mMatches[0].mVector));
 
-		0 = test
-		1 = t
-
-		for (int i = 0; i < rc; ++i)
-		{
-			printf("%2d: %.*s\n", i, ovector[2 * i + 1] - ovector[2 * i], str + ovector[2 * i]);
-		}
-		*/
-
-		char *substr_a = subject + ovector[2 * 0];
-		int substr_l = ovector[2 * 0 + 1] - ovector[2 * 0];
-
-		mMatches[matches] = ke::AString(substr_a, substr_l);
-		offset = ovector[1];
-		matches++;
-	}
-
-	if (rc < 0 && matches == 0) // rc < 0 when there is no more matches, so if we have matches dont error (Maybe check if rc == PCRE_ERROR_NOMATCH and if we have matches?)
+	if (rc < 0)
 	{
 		if (rc == PCRE_ERROR_NOMATCH)
 		{
@@ -146,10 +120,54 @@ int RegEx::Match(const char *str)
 		}
 	}
 
-	mSubStrings = matches;
+	mMatches[0].mSubStringCount = rc;
+	mMatchCount = 1;
 
 	return 1;
 }
+
+int RegEx::MatchAll(const char *str)
+{
+	int rc = 0;
+
+	if (mFree || re == NULL)
+		return -1;
+
+	this->ClearMatch();
+
+	//save str
+	subject = new char[strlen(str) + 1];
+	strcpy(subject, str);
+
+	unsigned int offset = 0;
+	unsigned int len = strlen(subject);
+	unsigned int matches = 0;
+
+	while (offset < len && (rc = pcre_exec(re, 0, subject, len, offset, 0, mMatches[matches].mVector, sizeof(mMatches[matches].mVector))) >= 0)
+	{
+		offset = mMatches[matches].mVector[1];
+		mMatches[matches].mSubStringCount = rc;
+
+		matches++;
+	}
+
+	if (rc < PCRE_ERROR_NOMATCH || (rc == PCRE_ERROR_NOMATCH && matches == 0))
+	{
+		if (rc == PCRE_ERROR_NOMATCH)
+		{
+			return 0;
+		}
+		else {
+			mErrorOffset = rc;
+			return -1;
+		}
+	}
+
+	mMatchCount = matches;
+
+	return 1;
+}
+
 void RegEx::ClearMatch()
 {
 	// Clears match results
@@ -158,17 +176,28 @@ void RegEx::ClearMatch()
 	if (subject)
 		delete [] subject;
 	subject = NULL;
-	mSubStrings = 0;
+	mMatchCount = 0;
 }
 
-const char *RegEx::GetSubstring(int s, char buffer[], int max)
+bool RegEx::GetSubstring(int s, char buffer[], int max, int match)
 {
 	int i = 0;
-	if (s >= mSubStrings || s < 0)
-		return NULL;
 
-	ke::SafeStrcpy(buffer, max, mMatches[s].chars());
+	if (s >= mMatches[match].mSubStringCount || s < 0)
+		return false;
 
-	return buffer;
+	char *substr_a = subject + mMatches[match].mVector[2 * s];
+	int substr_l = mMatches[match].mVector[2 * s + 1] - mMatches[match].mVector[2 * s];
+
+	for (i = 0; i<substr_l; i++)
+	{
+		if (i >= max)
+			break;
+		buffer[i] = substr_a[i];
+	}
+
+	buffer[i] = '\0';
+
+	return true;
 }
 

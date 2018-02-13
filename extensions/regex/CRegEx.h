@@ -33,6 +33,12 @@
 #ifndef _INCLUDE_CREGEX_H
 #define _INCLUDE_CREGEX_H
 
+struct RegexMatch
+{
+	int mSubStringCount;
+	int mVector[30];
+};
+
 class RegEx
 {
 public:
@@ -42,18 +48,18 @@ public:
 	void Clear();
 
 	int Compile(const char *pattern, int iFlags);
-	int Match(const char *str);
+	int Match(const char *str, unsigned int offset);
+	int MatchAll(const char *str);
 	void ClearMatch();
-	const char *GetSubstring(int s, char buffer[], int max);
+	bool GetSubstring(int s, char buffer[], int max, int match);
 public:
 	int mErrorOffset;
 	const char *mError;
-	int mSubStrings;
-	ke::AString mMatches[30];
+	int mMatchCount;
+	RegexMatch mMatches[10];
 private:
 	pcre *re;
 	bool mFree;
-	int ovector[30];
 	char *subject;
 };
 
