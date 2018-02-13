@@ -346,9 +346,6 @@ const sp_nativeinfo_t regex_natives[] =
 	{"MatchRegex",					MatchRegex},
 	{"CompileRegex",				CompileRegex},
 	{"MatchRegexAll",				MatchRegexAll},
-	{"GetRegexMatchCount",			GetRegexMatchCount},
-	{"GetRegexCaptureCount",		GetRegexCaptureCount},
-	{"GetRegexOffset",				GetRegexOffset},
 
 	// Methodmap versions/
 	{"Regex.GetSubString",		GetRegexSubString},
@@ -357,6 +354,6 @@ const sp_nativeinfo_t regex_natives[] =
 	{"Regex.MatchAll",			MatchRegexAll},
 	{"Regex.MatchCount",		GetRegexMatchCount},
 	{"Regex.CaptureCount",		GetRegexCaptureCount},
-	{"Regex.Offset",			GetRegexOffset},
+	{"Regex.MatchOffset",			GetRegexOffset},
 	{NULL,							NULL},
 };
