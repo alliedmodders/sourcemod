@@ -208,7 +208,21 @@ native int MatchRegex(Handle regex, const char[] str, RegexError &ret = REGEX_ER
  *						if MatchRegex is used match can only be 0
  */
 native bool GetRegexSubString(Handle regex, int str_id, char[] buffer, int maxlen, int match = 0);
-  
+
+/**
+ * Matches a string against a regular expression pattern.
+ *
+ * @note				If you intend on using the same regular expression pattern
+ *						multiple times, consider using CompileRegex and MatchRegex 
+ *						instead of making this function reparse the expression each time.
+ *
+ * @param str			The string to check.
+ * @param pattern		The regular expression pattern.
+ * @param flags			General flags for the regular expression.
+ * @param error			Error message, if applicable.
+ * @param maxLen		Maximum length of the error buffer.
+ * @return				Number of substrings found or -1 on failure.
+ */
 stock int SimpleRegexMatch(const char[] str, const char[] pattern, int flags = 0, char[] error="", int maxLen = 0)
 {
 	Regex regex = new Regex(pattern, flags, error, maxLen);
