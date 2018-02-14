@@ -228,7 +228,7 @@ static cell_t GetRegexSubString(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner=NULL;
 	sec.pIdentity=myself->GetIdentity();
 
-	unsigned int match = 0;
+	int match = 0;
 
 	RegEx *x;
 
@@ -248,7 +248,7 @@ static cell_t GetRegexSubString(IPluginContext *pCtx, const cell_t *params)
 		match = params[5];
 	}
 
-	if(match >= x->mMatchCount)
+	if(match >= x->mMatchCount || match < 0)
 		return pCtx->ThrowNativeError("Invalid match index passed.\n");
 
 	char *buffer;
