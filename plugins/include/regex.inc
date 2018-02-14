@@ -110,7 +110,7 @@ methodmap Regex < Handle
 	// @param str			The string to check.
 	// @param regex			Regex Handle from CompileRegex()
 	// @param ret			Error code, if applicable.
-	// @param offset		Offset in the string to start searching from.
+	// @param offset		Offset in the string to start searching from. MatchOffset returns the offset of the match.
 	// @return				Number of captures found or -1 on failure.
 	// 
 	// @note				Use the regex handle passed to this function to extract
@@ -184,30 +184,28 @@ native Regex CompileRegex(const char[] pattern, int flags = 0, char[] error="", 
  * @param str			The string to check.
  * @param regex			Regex Handle from CompileRegex()
  * @param ret			Error code, if applicable.
- * @param offset		Offset in the string to start searching from.
  * @return				Number of captures found or -1 on failure.
  *
  * @note				Use the regex handle passed to this function to extract
  *						matches with GetRegexSubString().
  */
-native int MatchRegex(Handle regex, const char[] str, RegexError &ret = REGEX_ERROR_NONE, int offset = 0);
+native int MatchRegex(Handle regex, const char[] str, RegexError &ret = REGEX_ERROR_NONE);
 
 /**
  * Returns a matched substring from a regex handle.
  * Substring ids start at 0 and end at captures-1, where captures is the number returned 
- * by MatchRegex or GetRegexCaptureCount.
+ * by MatchRegex.
  *
  * @param regex			The regex handle to extract data from.
  * @param str_id		The index of the expression to get - starts at 0, and ends at captures - 1.
  * @param buffer		The buffer to set to the matching substring.
  * @param maxlen		The maximum string length of the buffer.
- * @param match			Match to get the captures for - starts at 0, and ends at GetRegexMatchCount() - 1
  * @return				True if a substring was found, False on fail/error
  *
  * @note				str_id = 0 is the full captured string, anything else is the capture group index.
- *						if MatchRegex is used match can only be 0
+ *
  */
-native bool GetRegexSubString(Handle regex, int str_id, char[] buffer, int maxlen, int match = 0);
+native bool GetRegexSubString(Handle regex, int str_id, char[] buffer, int maxlen);
 
 /**
  * Matches a string against a regular expression pattern.
