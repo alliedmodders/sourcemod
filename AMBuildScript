@@ -182,12 +182,9 @@ class SMConfig(object):
       if builder.options.mysql_path:
         self.mysql_root['x86'] = builder.options.mysql_path
       else:
-        for i in range(7):
-          self.mysql_root['x86'] = ResolveEnvPath('MYSQL5', 'mysql-5.' + str(i))
-          if self.mysql_root['x86']:
-            break
+        self.mysql_root['x86'] = ResolveEnvPath('MYSQLC', 'mysql-connector-c'
       if not self.mysql_root['x86'] or not os.path.isdir(self.mysql_root['x86']):
-        raise Exception('Could not find a path to MySQL!')
+        raise Exception('Could not find a path to MySQL Connector/C!')
       self.mysql_root['x86'] = Normalize(self.mysql_root['x86'])
 
       # For now, ignore 64-bit MySQL on Windows
@@ -195,12 +192,11 @@ class SMConfig(object):
         if builder.options.mysql_path:
           self.mysql_root['x64'] = builder.options.mysql64_path
         else:
-          for i in range(7):
-            self.mysql_root['x64'] = ResolveEnvPath('MYSQL5_64', 'mysql-5.' + str(i) + '-x86_64')
+          self.mysql_root['x64'] = ResolveEnvPath('MYSQLC_64', 'mysql-connector-c-x86_64')
             if self.mysql_root['x64']:
               break
         if not self.mysql_root['x64'] or not os.path.isdir(self.mysql_root['x64']):
-          raise Exception('Could not find a path to 64-bit MySQL!')
+          raise Exception('Could not find a path to 64-bit MySQL Connector/C!')
         self.mysql_root['x64'] = Normalize(self.mysql_root['x64'])
 
   def configure(self):
