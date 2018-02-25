@@ -36,14 +36,12 @@
 #include <IDBDriver.h>
 #include <sm_platform.h>
 #if defined PLATFORM_WINDOWS
-#include <winsock.h>
+#include <WinSock2.h>
 #endif
 
 #include <mysql.h>
-#if !defined(PLATFORM_WINDOWS)
-# include <my_global.h>
-# include <my_sys.h>
-#endif
+#include <my_global.h>
+#include <my_sys.h>
 
 #include <sh_string.h>
 #include <sh_list.h>
