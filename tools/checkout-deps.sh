@@ -8,6 +8,7 @@ iswin=0
 
 archive_ext=tar.gz
 decomp="tar zxf"
+mysqlurlbase=https://cdn.mysql.com/archives/mysql-connector-c
 
 if [ `uname` = "Darwin" ]; then
   ismac=1
@@ -32,7 +33,7 @@ getmysql ()
     elif [ `command -v curl` ]; then
       curl -o $mysqlfolder.$archive_ext $mysqlurl
     else
-      echo "Failed to locate wget or curl. Install one of these programs to download MySQL."
+      echo "Failed to locate wget or curl. Install one of these programs to download MySQL Connector/C."
       exit 1
     fi
     $decomp $mysqlfolder.$archive_ext
@@ -41,30 +42,30 @@ getmysql ()
   fi
 }
 
-# 32-bit MySQL
-mysqlfolder=mysql-5.0
+# 32-bit MySQL Connector/C
+mysqlfolder=mysql-connector-c
 if [ $ismac -eq 1 ]; then
-  mysqlver=mysql-5.5.28-osx10.5-x86
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
+  mysqlver=mysql-connector-c-6.0.2-osx10.5-x86-32bit
+  mysqlurl=$mysqlurlbase/$mysqlver.$archive_ext
 elif [ $iswin -eq 1 ]; then
-  mysqlver=mysql-noinstall-5.0.24a-win32
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.0/$mysqlver.$archive_ext
+  mysqlver=mysql-connector-c-noinstall-6.0.2-win32
+  mysqlurl=$mysqlurlbase/$mysqlver.$archive_ext
   # The folder in the zip archive does not contain the substring "-noinstall", so strip it
   mysqlver=${mysqlver/-noinstall}
 else
-  mysqlver=mysql-5.6.15-linux-glibc2.5-i686
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.6/$mysqlver.$archive_ext
+  mysqlver=mysql-connector-c-6.0.2-linux-glibc2.3-x86-32bit
+  mysqlurl=$mysqlurlbase/$mysqlver.$archive_ext
 fi
 getmysql
 
-# 64-bit MySQL
-mysqlfolder=mysql-5.0-x86_64
+# 64-bit MySQL Connector/C
+mysqlfolder=mysql-connector-c-x86_64
 if [ $ismac -eq 1 ]; then
-  mysqlver=mysql-5.5.28-osx10.5-x86_64
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
+  mysqlver=mysql-connector-c-6.0.2-osx10.5-x86-64bit
+  mysqlurl=$mysqlurlbase/$mysqlver.$archive_ext
 elif [ $iswin -eq 0 ]; then
-  mysqlver=mysql-5.6.15-linux-glibc2.5-x86_64
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.6/$mysqlver.$archive_ext
+  mysqlver=mysql-connector-c-6.0.2-linux-glibc2.3-x86-64bit
+  mysqlurl=$mysqlurlbase/$mysqlver.$archive_ext
 fi
 getmysql
 
