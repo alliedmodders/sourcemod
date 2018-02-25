@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <IThreader.h>
 #include <bridge/include/ILogger.h>
+#include <bridge/include/CoreProvider.h>
 
 #define DBPARSE_LEVEL_NONE		0
 #define DBPARSE_LEVEL_MAIN		1
@@ -65,7 +66,7 @@ void DBManager::OnSourceModAllInitialized()
 	g_HandleSys.InitAccessDefaults(NULL, &sec);
 	sec.access[HandleAccess_Delete] |= HANDLE_RESTRICT_IDENTITY;
 	sec.access[HandleAccess_Clone] |= HANDLE_RESTRICT_IDENTITY;
-	
+
 	m_DriverType = g_HandleSys.CreateType("IDriver", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 	m_DatabaseType = g_HandleSys.CreateType("IDatabase", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 
@@ -74,29 +75,19 @@ void DBManager::OnSourceModAllInitialized()
 	g_pSM->BuildPath(Path_SM, m_Filename, sizeof(m_Filename), "configs/databases.cfg");
 
 	g_PluginSys.AddPluginsListener(this);
-	
+
 	g_pSM->AddGameFrameHook(&FrameHook);
+
+	auto sm_reload_databases = [this] (int client, const ICommandArgs *args) -> bool {
+		ReloadDatabaseConfigurations();
+		return true;
+	};
+	bridge->DefineCommand("sm_reload_databases", "Reparse database configurations file", sm_reload_databases);
 }
 
 void DBManager::OnSourceModLevelChange(const char *mapName)
 {
-	SMCError err;
-	SMCStates states = {0, 0};
-
-	/* We lock and don't give up the lock until we're done.
-	 * This way the thread's search won't be searching through a
-	 * potentially empty/corrupt list, which would be very bad.
-	 */
-	ke::AutoLock lock(&m_ConfigLock);
-	if ((err = textparsers->ParseFile_SMC(m_Filename, this, &states)) != SMCError_Okay)
-	{
-		logger->LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename);
-		if (err != SMCError_Custom)
-		{
-			const char *txt = textparsers->GetSMCErrorString(err);
-			logger->LogError("[SM] Line %d: %s", states.line, txt);
-		}
-	}
+	ReloadDatabaseConfigurations();
 }
 
 void DBManager::OnSourceModShutdown()
@@ -749,3 +740,23 @@ void DBManager::AddDependency(IExtension *myself, IDBDriver *driver)
 	g_Extensions.AddRawDependency(myself, driver->GetIdentity(), driver);
 }
 
+void DBManager::ReloadDatabaseConfigurations()
+{
+	SMCError err;
+	SMCStates states = {0, 0};
+
+	/* We lock and don't give up the lock until we're done.
+	 * This way the thread's search won't be searching through a
+	 * potentially empty/corrupt list, which would be very bad.
+	 */
+	ke::AutoLock lock(&m_ConfigLock);
+	if ((err = textparsers->ParseFile_SMC(m_Filename, this, &states)) != SMCError_Okay)
+	{
+		logger->LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename);
+		if (err != SMCError_Custom)
+		{
+			const char *txt = textparsers->GetSMCErrorString(err);
+			logger->LogError("[SM] Line %d: %s", states.line, txt);
+		}
+	}
+}
