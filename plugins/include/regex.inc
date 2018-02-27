@@ -58,6 +58,24 @@
 enum RegexError
 {
 	REGEX_ERROR_NONE = 0,				/* No error */
+	
+	REGEX_ERROR_ASSERT = 1,  /* internal error ? */
+	REGEX_ERROR_BADBR,       /* invalid repeat counts in {} */
+	REGEX_ERROR_BADPAT,      /* pattern error */
+	REGEX_ERROR_BADRPT,      /* ? * + invalid */
+	REGEX_ERROR_EBRACE,      /* unbalanced {} */
+	REGEX_ERROR_EBRACK,      /* unbalanced [] */
+	REGEX_ERROR_ECOLLATE,    /* collation error - not relevant */
+	REGEX_ERROR_ECTYPE,      /* bad class */
+	REGEX_ERROR_EESCAPE,     /* bad escape sequence */
+	REGEX_ERROR_EMPTY,       /* empty expression */
+	REGEX_ERROR_EPAREN,      /* unbalanced () */
+	REGEX_ERROR_ERANGE,      /* bad range inside [] */
+	REGEX_ERROR_ESIZE,       /* expression too big */
+	REGEX_ERROR_ESPACE,      /* failed to get memory */
+	REGEX_ERROR_ESUBREG,     /* bad back reference */
+	REGEX_ERROR_INVARG,      /* bad argument */
+	
 	REGEX_ERROR_NOMATCH = -1,			/* No match was found */
 	REGEX_ERROR_NULL = -2,
 	REGEX_ERROR_BADOPTION = -3,
