@@ -142,7 +142,7 @@ methodmap Regex < Handle
 	// @param ret			Error code, if applicable.
 	// @return				Number of matches found or -1 on failure.
 	// 
-	// @note				Use GetSubString() and loop from 1 -> totalmatches.
+	// @note				Use GetSubString() and loop from 0 -> totalmatches - 1.
 	public native int MatchAll(const char[] str, RegexError &ret = REGEX_ERROR_NONE);
 
 	// Returns a matched substring from a regex handle.
