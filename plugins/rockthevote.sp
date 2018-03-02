@@ -112,34 +112,26 @@ public void OnConfigsExecuted()
 
 public void OnClientConnected(int client)
 {
-	if(IsFakeClient(client))
-		return;
-	
-	g_Voted[client] = false;
-
-	g_Voters++;
-	g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
-	
-	return;
+	if (!IsFakeClient(client))
+	{
+		g_Voters++;
+		g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
+	}
 }
 
 public void OnClientDisconnect(int client)
 {
-	if(IsFakeClient(client))
-		return;
+	g_Voted[client] = false;
 	
-	if(g_Voted[client])
+	if (g_Voted[client])
 	{
 		g_Votes--;
 	}
 	
-	g_Voters--;
-	
-	g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
-	
-	if (!g_CanRTV)
+	if (!IsFakeClient(client))
 	{
-		return;	
+		g_Voters--;
+		g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
 	}
 	
 	if (g_Votes && 
