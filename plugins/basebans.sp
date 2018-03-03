@@ -299,6 +299,13 @@ public Action Command_AddBan(int client, int args)
 		return Plugin_Handled;
 	}
 
+	AdminId tid = FindAdminByIdentity("steam", authid);
+	if (client && !CanAdminTarget(GetUserAdmin(client), tid))
+	{
+		ReplyToCommand(client, "[SM] %t", "No Access");
+		return Plugin_Handled;
+	}
+
 	int minutes = StringToInt(time);
 
 	LogAction(client, 
