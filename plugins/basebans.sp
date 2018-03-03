@@ -86,7 +86,7 @@ public void OnPluginStart()
 	}
 }
 
-public void OnMapStart()
+public void OnConfigsExecuted()
 {
 	//(Re-)Load BanReasons
 	LoadBanReasons();
