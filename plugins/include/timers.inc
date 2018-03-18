@@ -55,7 +55,7 @@ typeset TimerCallback
  	 * @return				Plugin_Stop to stop a repeating timer, any other value for
  	 *						default behavior.
  	 */
-	function Action(Handle timer, Handle hndl);
+	function Action(Timer timer, Handle hndl);
 	
 	/**
  	 * Called when the timer interval has elapsed.
@@ -65,7 +65,7 @@ typeset TimerCallback
  	 * @return				Plugin_Stop to stop a repeating timer, any other value for
  	 *						default behavior.
  	 */
-	function Action(Handle timer, any data);
+	function Action(Timer timer, any data);
 	
 	/**
  	 * Called when the timer interval has elapsed.
@@ -74,7 +74,7 @@ typeset TimerCallback
  	 * @return				Plugin_Stop to stop a repeating timer, any other value for
  	 *						default behavior.
  	 */
-	function Action(Handle timer);
+	function Action(Timer timer);
 };
 
 methodmap Timer < Handle
@@ -119,7 +119,7 @@ methodmap Timer < Handle
  * @return					Handle to the timer object.  You do not need to call CloseHandle().
  *							If the timer could not be created, INVALID_HANDLE will be returned.
  */
-native Handle CreateTimer(float interval, TimerCallback func, any data=INVALID_HANDLE, int flags=0);
+native Timer CreateTimer(float interval, TimerCallback func, any data=INVALID_HANDLE, int flags=0);
 
 /**
  * Kills a timer.  Use this instead of CloseHandle() if you need more options.
@@ -233,9 +233,9 @@ native bool IsServerProcessing();
  * @param flags				Timer flags.
  * @return					Handle to the timer object.  You do not need to call CloseHandle().
  */
-stock Handle CreateDataTimer(float interval, TimerCallback func, Handle &datapack, int flags=0)
+stock Timer CreateDataTimer(float interval, TimerCallback func, Handle &datapack, int flags=0)
 {
 	datapack = new DataPack();
 	flags |= TIMER_DATA_HNDL_CLOSE;
-	return CreateTimer(interval, func, datapack, flags);
+	return (new Timer(interval, func, datapack, flags));
 }
