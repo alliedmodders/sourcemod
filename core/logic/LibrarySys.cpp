@@ -230,7 +230,7 @@ void LibrarySystem::GetPlatformErrorEx(int code, char *error, size_t maxlength)
 		const char *ae = strerror_r(code, error, maxlength);
 		if (ae != error)
 		{
-			ke::SafeSprintf(error, maxlength, "%s", ae);
+			ke::SafeStrcpy(error, maxlength, ae);
 		}
 #elif defined PLATFORM_POSIX
 		strerror_r(code, error, maxlength);
@@ -309,12 +309,12 @@ size_t LibrarySystem::GetFileFromPath(char *buffer, size_t maxlength, const char
 #endif
 			)
 		{
-			return ke::SafeSprintf(buffer, maxlength, "%s", &path[i+1]);
+			return ke::SafeStrcpy(buffer, maxlength, &path[i+1]);
 		}
 	}
 
 	/* We scanned and found no path separator */
-	return ke::SafeSprintf(buffer, maxlength, "%s", path);
+	return ke::SafeStrcpy(buffer, maxlength, path);
 }
 
 bool LibrarySystem::FileTime(const char *path, FileTimeType type, time_t *pTime)

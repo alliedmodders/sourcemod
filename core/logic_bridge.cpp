@@ -704,7 +704,7 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 	LogicLoadFunction llf = logic_->get<decltype(llf)>("logic_load");
 	if (!llf) {
 		logic_ = nullptr;
-		ke::SafeSprintf(error, maxlength, "could not find logic_load function");
+		ke::SafeStrcpy(error, maxlength, "could not find logic_load function");
 		return false;
 	}
 
@@ -713,7 +713,7 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 
 	logic_init_ = llf(SM_LOGIC_MAGIC);
 	if (!logic_init_) {
-		ke::SafeSprintf(error, maxlength, "component version mismatch");
+		ke::SafeStrcpy(error, maxlength, "component version mismatch");
 		return false;
 	}
 	return true;

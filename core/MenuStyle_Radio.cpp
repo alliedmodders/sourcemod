@@ -458,9 +458,8 @@ void CRadioMenuPlayer::Radio_Init(int keys, const char *title, const char *text)
 	}
 	else
 	{
-		display_len = ke::SafeSprintf(display_pkt, 
+		display_len = ke::SafeStrcpy(display_pkt, 
 			sizeof(display_pkt), 
-			"%s", 
 			text);
 	}
 	display_keys = keys;

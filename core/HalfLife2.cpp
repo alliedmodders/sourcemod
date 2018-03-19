@@ -181,7 +181,7 @@ ConfigResult CHalfLife2::OnSourceModConfigChanged(const char *key, const char *v
 		}
 		else
 		{
-			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
 			return ConfigResult_Reject;
 		}
 #endif
@@ -851,7 +851,7 @@ void CHalfLife2::AddDelayedKick(int client, int userid, const char *msg)
 
 	kick.client = client;
 	kick.userid = userid;
-	ke::SafeSprintf(kick.buffer, sizeof(kick.buffer), "%s", msg);
+	ke::SafeStrcpy(kick.buffer, sizeof(kick.buffer), msg);
 
 	m_DelayedKicks.push(kick);
 }

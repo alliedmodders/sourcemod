@@ -940,7 +940,7 @@ bool Translator::AddLanguage(const char *langcode, const char *description)
 		Language *pLanguage = new Language;
 		idx = m_Languages.size();
 
-		ke::SafeSprintf(pLanguage->m_code2, sizeof(pLanguage->m_code2), "%s", langcode);
+		ke::SafeStrcpy(pLanguage->m_code2, sizeof(pLanguage->m_code2), langcode);
 		pLanguage->m_CanonicalName = m_pStringTab->AddString(lower);
 
 		m_LCodeLookup.insert(langcode, idx);
