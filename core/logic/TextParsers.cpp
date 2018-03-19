@@ -144,7 +144,7 @@ SMCError TextParsers::ParseSMCFile(const char *file,
 	fclose(fp);
 
 	errstr = GetSMCErrorString(result);
-	ke::SafeSprintf(buffer, maxsize, "%s", errstr != NULL ? errstr : "Unknown error");
+	ke::SafeStrcpy(buffer, maxsize, errstr != NULL ? errstr : "Unknown error");
 
 	return result;
 }
@@ -195,7 +195,7 @@ SMCError TextParsers::ParseSMCStream(const char *stream,
 	result = ParseStream_SMC(&rs, RawStreamReader, smc_listener, states);
 
 	const char *errstr = GetSMCErrorString(result);
-	ke::SafeSprintf(buffer, maxsize, "%s", errstr != NULL ? errstr : "Unknown error");
+	ke::SafeStrcpy(buffer, maxsize, errstr != NULL ? errstr : "Unknown error");
 
 	return result;
 }

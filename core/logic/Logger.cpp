@@ -56,7 +56,7 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "off") == 0) {
 			state = false;
 		} else {
-			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
 			return ConfigResult_Reject;
 		}
 
@@ -77,7 +77,7 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "game") == 0) {
 			m_Mode = LoggingMode_Game;
 		} else {
-			ke::SafeSprintf(error, maxlength, "Invalid value: must be [daily|map|game]");
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be [daily|map|game]");
 			return ConfigResult_Reject;
 		}
 

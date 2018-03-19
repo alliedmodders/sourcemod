@@ -256,7 +256,7 @@ static bool sm_dump_handles(int client, const ICommandArgs *args)
 		auto write_handles_to_game = [] (const char *str) -> void
 		{
 			char buffer[1024];
-			size_t len = ke::SafeSprintf(buffer, sizeof(buffer)-2, "%s", str);
+			size_t len = ke::SafeStrcpy(buffer, sizeof(buffer)-2, str);
 
 			buffer[len] = '\n';
 			buffer[len+1] = '\0';
