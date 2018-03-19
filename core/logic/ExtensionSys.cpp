@@ -176,7 +176,7 @@ bool CLocalExtension::Load(char *error, size_t maxlength)
 	{
 		m_pLib->CloseLibrary();
 		m_pLib = NULL;
-		snprintf(error, maxlength, "Unable to find extension entry point");
+		ke::SafeStrcpy(error, maxlength, "Unable to find extension entry point");
 		return false;
 	}
 
@@ -246,7 +246,7 @@ void CLocalExtension::Unload()
 
 bool CRemoteExtension::Reload(char *error, size_t maxlength)
 {
-	snprintf(error, maxlength, "Remote extensions do not support reloading");
+	ke::SafeStrcpy(error, maxlength, "Remote extensions do not support reloading");
 	return false;
 }
 
@@ -280,13 +280,13 @@ bool CExtension::PerformAPICheck(char *error, size_t maxlength)
 {
 	if (!m_pAPI)
 	{
-		snprintf(error, maxlength, "No IExtensionInterface instance provided");
+		ke::SafeStrcpy(error, maxlength, "No IExtensionInterface instance provided");
 		return false;
 	}
 	
 	if (m_pAPI->GetExtensionVersion() > SMINTERFACE_EXTENSIONAPI_VERSION)
 	{
-		snprintf(error, maxlength, "Extension version is too new to load (%d, max is %d)", m_pAPI->GetExtensionVersion(), SMINTERFACE_EXTENSIONAPI_VERSION);
+		ke::SafeSprintf(error, maxlength, "Extension version is too new to load (%d, max is %d)", m_pAPI->GetExtensionVersion(), SMINTERFACE_EXTENSIONAPI_VERSION);
 		return false;
 	}
 
@@ -493,7 +493,7 @@ bool CExtension::IsRunning(char *error, size_t maxlength)
 	{
 		if (error)
 		{
-			snprintf(error, maxlength, "%s", m_Error.c_str());
+			ke::SafeStrcpy(error, maxlength, m_Error.c_str());
 		}
 		return false;
 	}
@@ -1136,7 +1136,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 				if (pExt->unload_code == (unsigned)atoi(unload))
 				{
 					char filename[PLATFORM_MAX_PATH];
-					snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
+					ke::SafeStrcpy(filename, PLATFORM_MAX_PATH, pExt->GetFilename());
 					UnloadExtension(pExt);
 					rootmenu->ConsolePrint("[SM] Extension %s is now unloaded.", filename);
 				}
@@ -1151,7 +1151,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 				|| (!pExt->m_ChildDeps.size() && !pExt->m_Dependents.size()))
 			{
 				char filename[PLATFORM_MAX_PATH];
-				snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
+				ke::SafeStrcpy(filename, PLATFORM_MAX_PATH, pExt->GetFilename());
 				UnloadExtension(pExt);
 				rootmenu->ConsolePrint("[SM] Extension %s is now unloaded.", filename);
 				return;
@@ -1252,7 +1252,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 				char filename[PLATFORM_MAX_PATH];
 				char error[255];
 				
-				snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
+				ke::SafeStrcpy(filename, PLATFORM_MAX_PATH, pExt->GetFilename());
 				
 				if (pExt->Reload(error, sizeof(error)))
 				{

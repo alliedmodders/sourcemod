@@ -32,6 +32,7 @@
 #include <sourcemod_version.h>
 #include "extension.h"
 #include "GeoIP.h"
+#include "am-string.h"
 
 /**
  * @file extension.cpp
@@ -51,7 +52,7 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	if (!gi)
 	{
-		snprintf(error, maxlength, "Could not load configs/geoip/GeoIP.dat");
+		ke::SafeStrcpy(error, maxlength, "Could not load configs/geoip/GeoIP.dat");
 		return false;
 	}
 

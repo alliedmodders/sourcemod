@@ -66,7 +66,7 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	
 	if (DBInfo == NULL)
 	{
-		snprintf(error, maxlength, "Could not find any suitable database configs");
+		ke::SafeStrcpy(error, maxlength, "Could not find any suitable database configs");
 		return false;
 	}
 
@@ -81,7 +81,7 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	if (Driver == NULL)
 	{
-		snprintf(error, maxlength, "Could not load DB Driver \"%s\"", DBInfo->driver);
+		ke::SafeSprintf(error, maxlength, "Could not load DB Driver \"%s\"", DBInfo->driver);
 		return false;
 	}
 
