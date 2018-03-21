@@ -330,7 +330,6 @@ methodmap Menu < Handle
 	// Creates a raw MenuPanel based off the menu's style.
 	// The Handle must be freed with CloseHandle().
 	//
-	// @param menu          Menu Handle.
 	// @return              A new MenuPanel Handle.
 	public native Panel ToPanel();
 
