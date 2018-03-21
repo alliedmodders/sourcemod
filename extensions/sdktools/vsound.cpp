@@ -528,7 +528,7 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 					{
 						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client index %d is invalid", client);
 					} else if (!pPlayer->IsInGame()) {
-						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client %d is not connected", client);
+						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client %d is not in game", client);
 					} else {
 						continue;
 					}
