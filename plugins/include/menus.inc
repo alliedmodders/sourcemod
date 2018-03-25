@@ -321,7 +321,6 @@ methodmap Menu < Handle
 
 	// Returns the text of a menu's title.
 	//
-	// @param menu          Menu Handle.
 	// @param buffer        Buffer to store title.
 	// @param maxlength     Maximum length of the buffer.
 	// @return              Number of bytes written.
@@ -330,7 +329,6 @@ methodmap Menu < Handle
 	// Creates a raw MenuPanel based off the menu's style.
 	// The Handle must be freed with CloseHandle().
 	//
-	// @param menu          Menu Handle.
 	// @return              A new MenuPanel Handle.
 	public native Panel ToPanel();
 
