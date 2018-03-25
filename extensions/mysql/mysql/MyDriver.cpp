@@ -32,6 +32,7 @@
 #include "MyDriver.h"
 #include "MyDatabase.h"
 #include "smsdk_ext.h"
+#include "am-string.h"
 
 MyDriver g_MyDriver;
 
@@ -133,7 +134,7 @@ MYSQL *Connect(const DatabaseInfo *info, char *error, size_t maxlength)
 		M_CLIENT_MULTI_RESULTS))
 	{
 		/* :TODO: expose UTIL_Format from smutil! */
-		snprintf(error, maxlength, "[%d]: %s", mysql_errno(mysql), mysql_error(mysql));
+		ke::SafeSprintf(error, maxlength, "[%d]: %s", mysql_errno(mysql), mysql_error(mysql));
 		mysql_close(mysql);
 		return NULL;
 	}

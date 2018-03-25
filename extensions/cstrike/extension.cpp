@@ -63,7 +63,7 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 #if SOURCE_ENGINE != SE_CSGO
 	if (strcmp(g_pSM->GetGameFolderName(), "cstrike") != 0)
 	{
-		snprintf(error, maxlength, "Cannot Load Cstrike Extension on mods other than CS:S and CS:GO");
+		ke::SafeStrcpy(error, maxlength, "Cannot Load Cstrike Extension on mods other than CS:S and CS:GO");
 		return false;
 	}
 #endif
@@ -76,7 +76,7 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	{
 		if (error)
 		{
-			snprintf(error, maxlength, "Could not read sm-cstrike.games: %s", conf_error);
+			ke::SafeSprintf(error, maxlength, "Could not read sm-cstrike.games: %s", conf_error);
 		}
 		return false;
 	}

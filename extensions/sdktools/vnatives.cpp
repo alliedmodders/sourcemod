@@ -40,6 +40,7 @@
 #include <inetchannel.h>
 #include <iclient.h>
 #include "iserver.h"
+#include "am-string.h"
 
 SourceHook::List<ValveCall *> g_RegCalls;
 SourceHook::List<ICallWrapper *> g_CallWraps;
@@ -623,7 +624,7 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 		int maxClients = playerhelpers->GetMaxClients();
 
 		int r = (rand() % s_sound_count) + 1;
-		snprintf(name, sizeof(name), "SlapSound%d", r);
+		ke::SafeSprintf(name, sizeof(name), "SlapSound%d", r);
 
 		if ((sound_name = g_pGameConf->GetKeyValue(name)) != NULL)
 		{
