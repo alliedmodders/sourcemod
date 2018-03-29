@@ -166,7 +166,7 @@ void RootConsoleMenu::DrawGenericOption(const char *cmd, const char *text)
 		{
 			buffer[len++] = ' ';
 		}
-		len += snprintf(&buffer[len], sizeof(buffer) - len, " - %s", text);
+		len += ke::SafeSprintf(&buffer[len], sizeof(buffer) - len, " - %s", text);
 		ConsolePrint("%s", buffer);
 	}
 }
