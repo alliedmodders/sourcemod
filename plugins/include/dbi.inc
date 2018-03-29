@@ -665,7 +665,7 @@ native int SQL_FormatQuery(Handle database, const char[] buffer, int maxlength, 
 /**
  * This function is deprecated.  Use SQL_EscapeString instead.
  */
-#pragma deprecated Use SQL_ConnectCustom instead.
+#pragma deprecated Use SQL_EscapeString instead.
 stock bool SQL_QuoteString(Handle database,
 						   const char[] string,
 						   char[] buffer,
