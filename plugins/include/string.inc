@@ -546,3 +546,32 @@ stock int ImplodeStrings(const char[][] strings, int numStrings, const char[] jo
 	}
 	return total;
 }
+
+/**
+ * Converts a small integer number between 1 and 12 to a word.
+ * Able to be used when translating across multiple languages.
+ *
+ * @param int		A number between 1 and 12.
+ * @return		The corresponding word belonging to the number.
+ */
+
+stock char NumberToWord(int num)
+{
+	char englishNumber[16];
+	switch (num)
+	{
+		case 1: Format(englishNumber, sizeof(englishNumber), "one");
+		case 2: Format(englishNumber, sizeof(englishNumber), "two");
+		case 3: Format(englishNumber, sizeof(englishNumber), "three");
+		case 4: Format(englishNumber, sizeof(englishNumber), "four");
+		case 5: Format(englishNumber, sizeof(englishNumber), "five");
+		case 6: Format(englishNumber, sizeof(englishNumber), "six");
+		case 7: Format(englishNumber, sizeof(englishNumber), "seven");
+		case 8: Format(englishNumber, sizeof(englishNumber), "eight");
+		case 9: Format(englishNumber, sizeof(englishNumber), "nine");
+		case 10: Format(englishNumber, sizeof(englishNumber), "ten");
+		case 11: Format(englishNumber, sizeof(englishNumber), "eleven");
+		case 12: Format(englishNumber, sizeof(englishNumber), "twelve");
+	}	
+	return englishNumber;
+}
