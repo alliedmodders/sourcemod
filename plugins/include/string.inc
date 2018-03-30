@@ -549,7 +549,9 @@ stock int ImplodeStrings(const char[][] strings, int numStrings, const char[] jo
 
 /**
  * Converts a small integer number between 1 and 12 to a word.
- * Able to be used when translating across multiple languages.
+ *
+ * Able to be used when translating if numbers.phrases is loaded.
+ * Example: PrintToChat(client, "Language Number: %t", NumberToWord(5));
  *
  * @param int		A number between 1 and 12.
  * @return		The corresponding word belonging to the number.
