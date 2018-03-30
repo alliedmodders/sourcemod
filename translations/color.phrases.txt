@@ -1,0 +1,55 @@
+"Phrases"
+{
+	"red"
+	{
+		"en"		"red"
+	}
+	"green"
+	{
+		"en"		"green"
+	}
+	"blue"
+	{
+		"en"		"blue"
+	}
+	"yellow"
+	{
+		"en"		"yellow"	
+	}
+	"orange"
+	{
+		"en"		"orange"
+	}
+	"purple"
+	{
+		"en"		"purple"
+	}
+	"pink"
+	{
+		"en"		"pink"
+	}
+	"white"
+	{
+		"en"		"white"	
+	}
+	"black"
+	{
+		"en"		"black"	
+	}
+	"gray"
+	{
+		"en"		"gray"
+	}
+	"brown"
+	{
+		"en"		"brown"
+	}
+	"silver"
+	{
+		"en"		"silver"
+	}
+	"gold"
+	{
+		"en"		"gold"
+	}	
+}
