@@ -221,6 +221,45 @@ static cell_t smn_TREnumerateEntities(IPluginContext *pContext, const cell_t *pa
 	return 1;
 }
 
+static cell_t smn_TREnumerateEntitiesHull(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunc = pContext->GetFunctionById(params[6]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[6]);
+	}
+	
+	cell_t data;
+	if (params[0] >= 7)
+	{
+		data = params[7];
+	}
+	else
+	{
+		data = 0;
+	}
+	
+	g_SMTraceEnum.SetFunctionPtr(pFunc, data);
+	
+	cell_t *startaddr, *endaddr, *mins, *maxs;
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+	pContext->LocalToPhysAddr(params[2], &endaddr);
+	pContext->LocalToPhysAddr(params[3], &mins);
+	pContext->LocalToPhysAddr(params[4], &maxs);
+	
+	g_StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+	g_HullMins.Init(sp_ctof(mins[0]), sp_ctof(mins[1]), sp_ctof(mins[2]));
+	g_HullMaxs.Init(sp_ctof(maxs[0]), sp_ctof(maxs[1]), sp_ctof(maxs[2]));
+	g_EndVec.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
+	
+	g_Ray.Init(g_StartVec, g_EndVec, g_HullMins, g_HullMaxs);
+	
+	bool triggers = (params[5]) ? true : false;	
+	enginetrace->EnumerateEntities(g_Ray, triggers, &g_SMTraceEnum);
+	
+	return 1;
+}
+
 static cell_t smn_TRClipRayToEntity(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t *startaddr;
@@ -260,6 +299,34 @@ static cell_t smn_TRClipRayToEntity(IPluginContext *pContext, const cell_t *para
 	enginetrace->ClipRayToEntity(g_Ray, params[3], pEnt, &g_Trace);
 	g_Trace.UpdateEntRef();
 
+	return 1;
+}
+
+static cell_t smn_TRClipRayHullToEntity(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *startaddr, *endaddr, *mins, *maxs;
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+	pContext->LocalToPhysAddr(params[2], &endaddr);
+	pContext->LocalToPhysAddr(params[3], &mins);
+	pContext->LocalToPhysAddr(params[4], &maxs);
+
+	edict_t *pEdict = PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[6]));
+	if (!pEdict || pEdict->IsFree())
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[6]);
+	}
+
+	IHandleEntity *pEnt = reinterpret_cast<IHandleEntity*>(pEdict->GetUnknown()->GetBaseEntity());
+	
+	g_StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+	g_HullMins.Init(sp_ctof(mins[0]), sp_ctof(mins[1]), sp_ctof(mins[2]));
+	g_HullMaxs.Init(sp_ctof(maxs[0]), sp_ctof(maxs[1]), sp_ctof(maxs[2]));
+	g_EndVec.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
+	
+	g_Ray.Init(g_StartVec, g_EndVec, g_HullMins, g_HullMaxs);
+	enginetrace->ClipRayToEntity(g_Ray, params[5], pEnt, &g_Trace);
+	g_Trace.UpdateEntRef();
+	
 	return 1;
 }
 
@@ -497,6 +564,47 @@ static cell_t smn_TRClipRayToEntityEx( IPluginContext *pContext, const cell_t *p
 		return pContext->ThrowNativeError("Unable to create a new trace handle (error %d)", herr);
 	}
 
+	return hndl;
+}
+
+static cell_t smn_TRClipRayHullToEntityEx(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *startaddr, *endaddr, *mins, *maxs;
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+	pContext->LocalToPhysAddr(params[2], &endaddr);
+	pContext->LocalToPhysAddr(params[3], &mins);
+	pContext->LocalToPhysAddr(params[4], &maxs);
+
+	edict_t *pEdict = PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[6]));
+	if (!pEdict || pEdict->IsFree())
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[6]);
+	}
+
+	IHandleEntity *pEnt = reinterpret_cast<IHandleEntity*>(pEdict->GetUnknown()->GetBaseEntity());	
+	
+	Ray_t ray;
+	Vector StartVec, EndVec, vmins, vmaxs;
+	
+	StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+	vmins.Init(sp_ctof(mins[0]), sp_ctof(mins[1]), sp_ctof(mins[2]));
+	vmaxs.Init(sp_ctof(maxs[0]), sp_ctof(maxs[1]), sp_ctof(maxs[2]));
+	EndVec.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
+	
+	ray.Init(StartVec, EndVec, vmins, vmaxs);	
+	
+	sm_trace_t *tr = new sm_trace_t;
+	enginetrace->ClipRayToEntity(ray, params[5], pEnt, tr);
+	tr->UpdateEntRef();
+	
+	HandleError herr;
+	Handle_t hndl;
+	if (!(hndl=handlesys->CreateHandle(g_TraceHandle, tr, pContext->GetIdentity(), myself->GetIdentity(), &herr)))
+	{
+		delete tr;
+		return pContext->ThrowNativeError("Unable to create a new trace handle (error %d)", herr);
+	}
+	
 	return hndl;
 }
 
@@ -819,6 +927,7 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_TraceRay",				smn_TRTraceRay},
 	{"TR_TraceHull",			smn_TRTraceHull},
 	{"TR_EnumerateEntities",	smn_TREnumerateEntities},
+	{"TR_EnumerateEntitiesHull",smn_TREnumerateEntitiesHull},
 	{"TR_TraceRayEx",			smn_TRTraceRayEx},
 	{"TR_TraceHullEx",			smn_TRTraceHullEx},
 	{"TR_GetFraction",			smn_TRGetFraction},
@@ -828,6 +937,8 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_GetHitGroup",			smn_TRGetHitGroup},
 	{"TR_ClipRayToEntity",		smn_TRClipRayToEntity},
 	{"TR_ClipRayToEntityEx",	smn_TRClipRayToEntityEx},
+	{"TR_ClipRayHullToEntity",	smn_TRClipRayHullToEntity},
+	{"TR_ClipRayHullToEntityEx",smn_TRClipRayHullToEntityEx},
 	{"TR_ClipCurrRayToEntity",	smn_TRClipCurrRayToEntity},
 	{"TR_ClipCurrRayToEntityEx",smn_TRClipCurrRayToEntityEx},
 	{"TR_GetPointContents",		smn_TRGetPointContents},

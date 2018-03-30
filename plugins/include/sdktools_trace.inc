@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -120,7 +120,7 @@ typeset TraceEntityFilter
  	 * @return				True to allow the current entity to be hit, otherwise false.
  	 */
 	function bool (int entity, int contentsMask);
-	
+
 	/**
 	 * Called on entity filtering.
 	 *
@@ -135,19 +135,19 @@ typeset TraceEntityFilter
 typeset TraceEntityEnumerator
 {
 	/**
-	 * Called on entity enumerating.
+	 * Called for each entity enumerated with EnumerateEntities*.
 	 *
 	 * @param entity		Entity index.
- 	 * @return				True to continue enumerating entities, otherwise false.
+ 	 * @return				True to continue enumerating, otherwise false.
  	 */
 	function bool (int entity);
-	
+
 	/**
-	 * Called on entity enumerating.
+	 * Called for each entity enumerated with EnumerateEntities*.
 	 *
 	 * @param entity		Entity index.
  	 * @param data			Data value, if used.
- 	 * @return				True to continue enumerating entities, otherwise false.
+ 	 * @return				True to continue enumerating, otherwise false.
  	 */
 	function bool (int entity, any data);
 }
@@ -183,7 +183,7 @@ native void TR_TraceRay(const float pos[3],
 						const float vec[3],
 						int flags,
 						RayType rtype);
-				   
+
 /**
  * Starts up a new trace hull using a global trace result.
  *
@@ -200,16 +200,19 @@ native void TR_TraceHull(const float pos[3],
 						 int flags);
 
 /**
- * Enumerates over all entities along a ray
+ * Enumerates over entities along a ray. This may find entities that are
+ * close to the ray but do not actually intersect it. Use TR_Clip*RayToEntity
+ * with TR_DidHit to check if the ray actually intersects the entity.
  *
  * @param pos			Starting position of the ray.
- * @param vec			Depending on RayType, it will be used as the ending 
+ * @param vec			Depending on RayType, it will be used as the ending
  *						point, or the direction angle.
- * @param triggers		If triggers == true, it enumerates all triggers along a ray
+ * @param triggers		If true, enumerate only triggers. Otherwise, enumerate
+ *						only non-triggers.
  * @param rtype			Method to calculate the ray direction.
- * @param enumerator	Function to use as enumerator. For each entity found along ray, this entity is called.
- * @param data			Arbitrary data value to pass through to the filter 
- *						function.
+ * @param enumerator	Function to use as enumerator. For each entity found
+ *						along the ray, this function is called.
+ * @param data			Arbitrary data value to pass through to the enumerator.
  */
 native void TR_EnumerateEntities(const float pos[3],
 								const float vec[3],
@@ -217,21 +220,44 @@ native void TR_EnumerateEntities(const float pos[3],
 								RayType rtype,
 								TraceEntityEnumerator enumerator,
 								any data=0);
-						 
+
 /**
- * Starts up a new trace ray using a global trace result and a customized 
+ * Enumerates over entities along a ray hull. This may find entities that are
+ * close to the ray but do not actually intersect it. Use TR_Clip*RayToEntity
+ * with TR_DidHit to check if the ray actually intersects the entity.
+ *
+ * @param pos			Starting position of the ray.
+ * @param vec			Ending position of the ray.
+ * @param mins			Hull minimum size.
+ * @param maxs			Hull maximum size.
+ * @param triggers		If true, enumerate only triggers. Otherwise, enumerate
+ *						only non-triggers.
+ * @param enumerator	Function to use as enumerator. For each entity found
+ *						along the ray, this function is called.
+ * @param data			Arbitrary data value to pass through to the enumerator.
+ */
+native void TR_EnumerateEntitiesHull(const float pos[3],
+								    const float vec[3],
+								    const float mins[3],
+								    const float maxs[3],
+								    bool triggers,
+									TraceEntityEnumerator enumerator,
+									any data=0);
+
+/**
+ * Starts up a new trace ray using a global trace result and a customized
  * trace ray filter.
  *
- * Calling TR_Trace*Filter or TR_Trace*FilterEx from inside a filter 
+ * Calling TR_Trace*Filter or TR_Trace*FilterEx from inside a filter
  * function is currently not allowed and may not work.
  *
  * @param pos			Starting position of the ray.
- * @param vec			Depending on RayType, it will be used as the ending 
+ * @param vec			Depending on RayType, it will be used as the ending
  *						point, or the direction angle.
  * @param flags			Trace flags.
  * @param rtype			Method to calculate the ray direction.
  * @param filter		Function to use as a filter.
- * @param data			Arbitrary data value to pass through to the filter 
+ * @param data			Arbitrary data value to pass through to the filter
  *						function.
  */
 native void TR_TraceRayFilter(const float pos[3],
@@ -240,22 +266,21 @@ native void TR_TraceRayFilter(const float pos[3],
 							  RayType rtype,
 							  TraceEntityFilter filter,
 							  any data=0);
-						 
+
 /**
- * Starts up a new trace hull using a global trace result and a customized 
+ * Starts up a new trace hull using a global trace result and a customized
  * trace ray filter.
  *
- * Calling TR_Trace*Filter or TR_Trace*FilterEx from inside a filter 
+ * Calling TR_Trace*Filter or TR_Trace*FilterEx from inside a filter
  * function is currently not allowed and may not work.
  *
  * @param pos			Starting position of the ray.
- * @param vec			Depending on RayType, it will be used as the ending 
- *						point, or the direction angle.
+ * @param vec			Ending position of the ray.
  * @param mins			Hull minimum size.
  * @param maxs			Hull maximum size.
  * @param flags			Trace flags.
  * @param filter		Function to use as a filter.
- * @param data			Arbitrary data value to pass through to the filter 
+ * @param data			Arbitrary data value to pass through to the filter
  *						function.
  */
 native void TR_TraceHullFilter(const float pos[3],
@@ -265,36 +290,53 @@ native void TR_TraceHullFilter(const float pos[3],
 							   int flags,
 							   TraceEntityFilter filter,
 							   any data=0);
-							   
+
 /**
- * Traces a ray against a particular edict.
+ * Clips a ray to a particular entity.
  *
  * @param pos		Starting position of the ray.
- * @param vec		Depending on RayType, it will be used as the ending 
+ * @param vec		Depending on RayType, it will be used as the ending
  *					point, or the direction angle.
  * @param flags		Trace flags.
  * @param rtype		Method to calculate the ray direction.
- * @param entity	Entity to trace against
+ * @param entity	Entity to clip to.
  */
 native void TR_ClipRayToEntity(const float pos[3],
 								const float vec[3],
 								int flags,
 								RayType rtype,
 								int entity);
-								
+
 /**
- * Traces the current global ray against a particular edict.
+ * Clips a ray hull to a particular entity.
+ *
+ * @param pos		Starting position of the ray.
+ * @param vec		Ending position of the ray.
+ * @param mins		Hull minimum size.
+ * @param maxs		Hull maximum size.
+ * @param flags		Trace flags.
+ * @param entity	Entity to clip to.
+ */
+native void TR_ClipRayHullToEntity(const float pos[3],
+								   const float vec[3],
+								   const float mins[3],
+								   const float maxs[3],
+								   int flags,
+								   int entity);
+
+/**
+ * Clips the current global ray (or hull) to a particular entity.
  *
  * @param flags		Trace flags.
- * @param entity	Entity to trace against
+ * @param entity	Entity to clip to.
  */
 native void TR_ClipCurrRayToEntity(int flags, int entity);
-							   
+
 /**
  * Starts up a new trace ray using a new trace result.
  *
  * @param pos			Starting position of the ray.
- * @param vec			Depending on RayType, it will be used as the ending 
+ * @param vec			Depending on RayType, it will be used as the ending
  *						point, or the direction angle.
  * @param flags			Trace flags.
  * @param rtype			Method to calculate the ray direction.
@@ -304,7 +346,7 @@ native Handle TR_TraceRayEx(const float pos[3],
 							const float vec[3],
 							int flags,
 							RayType rtype);
-							
+
 /**
  * Starts up a new trace hull using a new trace result.
  *
@@ -322,14 +364,14 @@ native Handle TR_TraceHullEx(const float pos[3],
 							 int flags);
 
 /**
- * Starts up a new trace ray using a new trace result and a customized 
+ * Starts up a new trace ray using a new trace result and a customized
  * trace ray filter.
  *
- * Calling TR_Trace*Filter or TR_TraceRay*Ex from inside a filter 
+ * Calling TR_Trace*Filter or TR_TraceRay*Ex from inside a filter
  * function is currently not allowed and may not work.
  *
  * @param pos			Starting position of the ray.
- * @param vec			Depending on RayType, it will be used as the ending 
+ * @param vec			Depending on RayType, it will be used as the ending
  *						point, or the direction angle.
  * @param flags			Trace flags.
  * @param rtype			Method to calculate the ray direction.
@@ -337,18 +379,18 @@ native Handle TR_TraceHullEx(const float pos[3],
  * @param data			Arbitrary data value to pass through to the filter function.
  * @return				Ray trace handle, which must be closed via CloseHandle().
  */
-native Handle TR_TraceRayFilterEx(const float pos[3], 
+native Handle TR_TraceRayFilterEx(const float pos[3],
 								  const float vec[3],
-								  int flags, 
-								  RayType rtype, 
+								  int flags,
+								  RayType rtype,
 								  TraceEntityFilter filter,
 								  any data=0);
-								  
+
 /**
- * Starts up a new trace hull using a new trace result and a customized 
+ * Starts up a new trace hull using a new trace result and a customized
  * trace ray filter.
  *
- * Calling TR_Trace*Filter or TR_Trace*FilterEx from inside a filter 
+ * Calling TR_Trace*Filter or TR_Trace*FilterEx from inside a filter
  * function is currently not allowed and may not work.
  *
  * @param pos			Starting position of the ray.
@@ -360,23 +402,23 @@ native Handle TR_TraceRayFilterEx(const float pos[3],
  * @param data			Arbitrary data value to pass through to the filter function.
  * @return				Ray trace handle, which must be closed via CloseHandle().
  */
-native Handle TR_TraceHullFilterEx(const float pos[3], 
+native Handle TR_TraceHullFilterEx(const float pos[3],
 								   const float vec[3],
 								   const float mins[3],
 								   const float maxs[3],
-								   int flags, 
+								   int flags,
 								   TraceEntityFilter filter,
 								   any data=0);
-								   
+
 /**
- * Traces a ray against a particular edict.
+ * Clips a ray to a particular entity.
  *
  * @param pos		Starting position of the ray.
- * @param vec		Depending on RayType, it will be used as the ending 
+ * @param vec		Depending on RayType, it will be used as the ending
  *					point, or the direction angle.
  * @param flags		Trace flags.
  * @param rtype		Method to calculate the ray direction.
- * @param entity	Entity to trace against
+ * @param entity	Entity to clip to.
  * @return			Ray trace handle, which must be closed via CloseHandle().
  */
 native Handle TR_ClipRayToEntityEx(const float pos[3],
@@ -384,12 +426,30 @@ native Handle TR_ClipRayToEntityEx(const float pos[3],
 									int flags,
 									RayType rtype,
 									int entity);
-									
+
 /**
- * Traces current global ray against a particular edict.
+ * Clips a ray hull to a particular entity.
+ *
+ * @param pos		Starting position of the ray.
+ * @param vec		Ending position of the ray.
+ * @param mins		Hull minimum size.
+ * @param maxs		Hull maximum size.
+ * @param flags		Trace flags.
+ * @param entity	Entity to clip to.
+ * @return			Ray trace handle, which must be closed via CloseHandle().
+ */
+native Handle TR_ClipRayHullToEntityEx(const float pos[3],
+									   const float vec[3],
+									   const float mins[3],
+									   const float maxs[3],
+									   int flags,
+									   int entity);
+
+/**
+ * Clips the current global ray (or hull) to a particular entity.
  *
  * @param flags		Trace flags.
- * @param entity	Entity to trace against
+ * @param entity	Entity to clip to.
  * @return			Ray trace handle, which must be closed via CloseHandle().
  */
 native Handle TR_ClipCurrRayToEntityEx(int flags, int entity);
@@ -452,6 +512,6 @@ native void TR_GetPlaneNormal(Handle hndl, float normal[3]);
  * Tests a point to see if it's outside any playable area
  *
  * @param pos		Vector buffer to store data in.
- * @return		True if outside world, otherwise false.
+ * @return			True if outside world, otherwise false.
  */
 native bool TR_PointOutsideWorld(float pos[3]);
