@@ -84,6 +84,37 @@ enum APLRes
 	APLRes_SilentFailure	/**< Plugin shouldn't load but do so silently */
 };
 
+methodmap GameData < Handle
+{
+	// Loads a game config file.
+	//
+	// @param file		File to load.  The path must be relative to the 'gamedata' folder under the config folder 
+	//					and the extension should be omitted.
+	// @return			A handle to the game config file or null on failure.
+	public native GameData(const char[] file);
+
+	// Returns an offset value.
+	//
+	// @param key		Key to retrieve from the offset section.
+	// @return			An offset, or -1 on failure.
+	public native int GetOffset(const char[] key);
+
+	// Gets the value of a key from the "Keys" section.
+	//
+	// @param key		Key to retrieve from the Keys section.
+	// @param buffer	Destination string buffer.
+	// @param maxlen	Maximum length of output string buffer.
+	// @return			True if key existed, false otherwise.
+	public native bool GetKeyValue(const char[] key, char[] buffer, int maxlen);
+
+	// Finds an address calculation in a GameConfig file,
+	// performs LoadFromAddress on it as appropriate, then returns the final address.
+	//
+	// @param name		Name of the property to find.
+	// @return			An address calculated on success, or 0 on failure.
+	public native Address GetAddress(const char[] name);
+};
+
 /**
  * Called when the plugin is fully initialized and all known external references 
  * are resolved. This is only called once in the lifetime of the plugin, and is 
@@ -339,9 +370,9 @@ native void FormatTime(char[] buffer, int maxlength, const char[] format, int st
  *
  * @param file			File to load.  The path must be relative to the 'gamedata' folder under the config folder 
  *					and the extension should be omitted.
- * @return			A handle to the game config file or INVALID_HANDLE in failure.
+ * @return			A handle to the game config file or INVALID_HANDLE on failure.
  */
-native Handle LoadGameConfigFile(const char[] file);
+native GameData LoadGameConfigFile(const char[] file);
 
 /**
  * Returns an offset value.
@@ -367,7 +398,7 @@ native bool GameConfGetKeyValue(Handle gc, const char[] key, char[] buffer, int 
  * Finds an address calculation in a GameConfig file,
  * performs LoadFromAddress on it as appropriate, then returns the final address.
  *
- * @param gameconf      GameConfig Handle, or INVALID_HANDLE to use sdktools.games.txt.
+ * @param gameconf      Game config handle.
  * @param name          Name of the property to find.
  * @return              An address calculated on success, or 0 on failure.
  */
