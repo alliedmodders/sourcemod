@@ -23,8 +23,8 @@
 	
 	"Already Voted"
 	{
- 		"#format"		"{1:d},{2:d}"
-	 	"en"			"You have already voted to Rock the Vote. ({1} votes, {2} required)"
+ 		"#format"		"{1:d},{2:s},{3:d}"
+	 	"en"			"You have already voted to Rock the Vote. ({1} vote{2}, {3} required)"
 	}
 	
 	"Minimal Players Not Met"
@@ -32,11 +32,10 @@
 		"en"			"The minimal number of players required has not been met."
 	}
 	
-	
 	"RTV Requested"
 	{
-		"#format"		"{1:s},{2:d},{3:d}"
-		"en"			"{1} wants to rock the vote. ({2} votes, {3} required)"
+		"#format"		"{1:s},{2:d},{3:s},{4:d}"
+		"en"			"{1} wants to rock the vote. ({2} vote{3}, {4} required)"
 	}
 	
 	"RTV Vote Ready"
