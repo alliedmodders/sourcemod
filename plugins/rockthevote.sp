@@ -216,6 +216,7 @@ void AttemptRTV(int client)
 	
 	g_Votes++;
 	g_Voted[client] = true;
+	
 	PrintToChatAll("[SM] %t", "RTV Requested", name, g_Votes, g_Votes == 1?"":"s", g_VotesNeeded);
 	
 	if (g_Votes >= g_VotesNeeded)
