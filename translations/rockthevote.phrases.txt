@@ -14,7 +14,7 @@
 	{
 		"en"			"Rock the Vote has already started."
 	}
-	
+
 	"RTV Ended"
 	{
 		"en"			"RTV has already ended, you cannot start it again or nominate maps."
