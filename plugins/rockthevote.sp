@@ -207,7 +207,10 @@ void AttemptRTV(int client)
 	
 	if (g_Voted[client])
 	{
-		ReplyToCommand(client, "[SM] %t", "Already Voted", g_Votes, g_VotesNeeded);
+		if (g_Votes == 1)
+			ReplyToCommand(client, "[SM] %t", "Already VotedSingular", g_Votes, g_VotesNeeded);
+		else
+			ReplyToCommand(client, "[SM] %t", "Already Voted", g_Votes, g_VotesNeeded);
 		return;
 	}	
 	
@@ -216,8 +219,10 @@ void AttemptRTV(int client)
 	
 	g_Votes++;
 	g_Voted[client] = true;
-	
-	PrintToChatAll("[SM] %t", "RTV Requested", name, g_Votes, g_VotesNeeded);
+	if (g_Votes == 1)
+		PrintToChatAll("[SM] %t", "RTV RequestedSingular", name, g_Votes, g_VotesNeeded);
+	else
+		PrintToChatAll("[SM] %t", "RTV Requested", name, g_Votes, g_VotesNeeded);
 	
 	if (g_Votes >= g_VotesNeeded)
 	{
