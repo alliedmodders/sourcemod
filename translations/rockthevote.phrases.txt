@@ -14,13 +14,13 @@
 	{
 		"en"			"Rock the Vote has already started."
 	}
-
+	
 	"RTV Ended"
 	{
 		"en"			"RTV has already ended, you cannot start it again or nominate maps."
 
 	}
-
+	
 	"Already Voted"
 	{
  		"#format"		"{1:d},{2:s},{3:d}"
