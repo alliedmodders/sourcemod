@@ -314,6 +314,12 @@ public:
 		error[0] = '\0';
 		strncopy(dbname, _dbname, sizeof(dbname));
 		me = scripts->FindPluginByContext(m_pFunction->GetParentContext()->GetContext());
+		
+		pInfo = g_DBMan.FindDatabaseConf(dbname);
+		if (!pInfo)
+		{
+			g_pSM->Format(error, sizeof(error), "Could not find database config \"%s\"", dbname);
+		}
 	}
 	IdentityToken_t *GetOwner()
 	{
@@ -325,11 +331,8 @@ public:
 	}
 	void RunThreadPart()
 	{
-		const DatabaseInfo *pInfo = g_DBMan.FindDatabaseConf(dbname);
-		if (!pInfo)
+		if (pInfo)
 		{
-			g_pSM->Format(error, sizeof(error), "Could not find database config \"%s\"", dbname);
-		} else {
 			m_pDatabase = m_pDriver->Connect(pInfo, false, error, sizeof(error));
 		}
 	}
@@ -381,6 +384,7 @@ public:
 		delete this;
 	}
 private:
+	const DatabaseInfo *pInfo;
 	IPlugin *me;
 	IPluginFunction *m_pFunction;
 	IDBDriver *m_pDriver;
