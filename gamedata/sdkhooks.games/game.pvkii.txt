@@ -32,8 +32,8 @@
 			"GroundEntChanged"
 			{
 				"windows"	"180"
-				"linux"		"181"
-				"mac"		"181"
+				"linux"		"182"
+				"mac"		"182"
 			}
 			"OnTakeDamage"
 			{
@@ -58,6 +58,12 @@
 				"windows"	"339"
 				"linux"		"340"
 				"mac"		"340"
+			}
+			"Reload"
+			{
+				"windows"	"275"
+				"linux"		"276"
+				"mac"		"276"
 			}
 			"SetTransmit"
 			{
