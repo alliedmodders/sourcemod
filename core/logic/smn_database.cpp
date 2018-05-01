@@ -325,7 +325,6 @@ public:
 	}
 	void RunThreadPart()
 	{
-		g_DBMan.LockConfig();
 		const DatabaseInfo *pInfo = g_DBMan.FindDatabaseConf(dbname);
 		if (!pInfo)
 		{
@@ -333,7 +332,6 @@ public:
 		} else {
 			m_pDatabase = m_pDriver->Connect(pInfo, false, error, sizeof(error));
 		}
-		g_DBMan.UnlockConfig();
 	}
 	void CancelThinkPart()
 	{
@@ -453,7 +451,7 @@ static cell_t ConnectToDbAsync(IPluginContext *pContext, const cell_t *params, A
 			g_pSM->Format(error, 
 				sizeof(error), 
 				"Could not find driver \"%s\"", 
-				pInfo->driver[0] == '\0' ? g_DBMan.GetDefaultDriverName() : pInfo->driver);
+				pInfo->driver[0] == '\0' ? g_DBMan.GetDefaultDriverName().chars() : pInfo->driver);
 		} else if (!driver->IsThreadSafe()) {
 			g_pSM->Format(error,
 				sizeof(error),
