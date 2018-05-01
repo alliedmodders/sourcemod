@@ -38,7 +38,6 @@
 
 #include <am-vector.h>
 #include <am-string.h>
-#include <am-refcounting-threadsafe.h>
 
 class ConfDbInfo
 {
@@ -56,7 +55,7 @@ public:
 	DatabaseInfo info;
 };
 
-class ConfDbInfoList : public ke::RefcountedThreadsafe<ConfDbInfoList>, public ke::Vector<ConfDbInfo *>
+class ConfDbInfoList : public ke::Vector<ConfDbInfo *>
 {
 	friend class DatabaseConfBuilder; // lets DatabaseConfBuilder use SetDefaultDriver
 public:
@@ -90,7 +89,7 @@ public:
 	~DatabaseConfBuilder();
 	void StartParse();
 	void SetPath(char* path);
-	ke::RefPtr<ConfDbInfoList> GetConfigList();
+	ConfDbInfoList *GetConfigList();
 public: //ITextListener_SMC
 	void ReadSMC_ParseStart();
 	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
@@ -102,10 +101,10 @@ private:
 	unsigned int m_ParseLevel;
 	unsigned int m_ParseState;
 	ConfDbInfo *m_ParseCurrent;
-	ke::RefPtr<ConfDbInfoList> m_ParseList;
+	ConfDbInfoList *m_ParseList;
 private:
 	ke::AString m_Filename;
-	ke::RefPtr<ConfDbInfoList> m_InfoList;
+	ConfDbInfoList *m_InfoList;
 };
 
 #endif //_INCLUDE_DATABASE_CONF_BUILDER_H_

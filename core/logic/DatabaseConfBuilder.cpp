@@ -50,9 +50,9 @@ DatabaseConfBuilder::~DatabaseConfBuilder()
 {
 }
 
-ke::RefPtr<ConfDbInfoList> DatabaseConfBuilder::GetConfigList()
+ConfDbInfoList *DatabaseConfBuilder::GetConfigList()
 {
-	return ke::RefPtr<ConfDbInfoList>(m_InfoList);
+	return m_InfoList;
 }
 
 void DatabaseConfBuilder::StartParse()
@@ -76,7 +76,6 @@ void DatabaseConfBuilder::ReadSMC_ParseStart()
 	m_ParseState = DBPARSE_LEVEL_NONE;
 	
 	m_ParseList = new ConfDbInfoList();
-	m_ParseList->AddRef();
 }
  
 SMCResult DatabaseConfBuilder::ReadSMC_NewSection(const SMCStates *states, const char *name)
@@ -176,9 +175,8 @@ SMCResult DatabaseConfBuilder::ReadSMC_LeavingSection(const SMCStates *states)
 
 void DatabaseConfBuilder::ReadSMC_ParseEnd(bool halted, bool failed)
 {
-	ConfDbInfoList *temp = m_InfoList;
+	delete m_InfoList;
 	m_InfoList = m_ParseList;
-	temp->Release();
 	
 	m_ParseList = nullptr;
 }
