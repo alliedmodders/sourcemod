@@ -233,7 +233,7 @@ native bool IsServerProcessing();
  * @param flags				Timer flags.
  * @return					Handle to the timer object.  You do not need to call CloseHandle().
  */
-stock Timer CreateDataTimer(float interval, TimerCallback func, Handle &datapack, int flags=0)
+stock Timer CreateDataTimer(float interval, TimerCallback func, DataPack &datapack, int flags=0)
 {
 	datapack = new DataPack();
 	flags |= TIMER_DATA_HNDL_CLOSE;
