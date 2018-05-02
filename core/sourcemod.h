@@ -138,6 +138,8 @@ public: // ISourceMod
 	void *FromPseudoAddress(uint32_t pseudoAddr);
 	uint32_t ToPseudoAddress(void *addr);
 private:
+	bool LoadSourcePawnDebugger();
+private:
 	void ShutdownServices();
 private:
 	char m_SMBaseDir[PLATFORM_MAX_PATH];
