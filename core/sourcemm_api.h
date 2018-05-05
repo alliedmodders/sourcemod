@@ -32,7 +32,11 @@
 #ifndef _INCLUDE_SOURCEMOD_MM_API_H_
 #define _INCLUDE_SOURCEMOD_MM_API_H_
 
-#if SOURCE_ENGINE >= SE_ALIENSWARM
+// TODO: move this garbage to the actual SDKs behind SOURCEMOD_BUILD ifdef,
+// or use gamedata
+#if SOURCE_ENGINE == SE_BMS
+#include "convar_sm_bms.h"
+#elif SOURCE_ENGINE >= SE_ALIENSWARM
 #include "convar_sm_swarm.h"
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD
 #include "convar_sm_l4d.h"
@@ -41,6 +45,7 @@
 #else
 #include "convar_sm.h"
 #endif
+//
 #include <ISmmPlugin.h>
 #include <eiface.h>
 #include <igameevents.h>
