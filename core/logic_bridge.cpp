@@ -45,20 +45,7 @@
 #include "ConCmdManager.h"
 #include "IDBDriver.h"
 #include "provider.h"
-// TODO: move this garbage to the actual SDKs behind SOURCEMOD_BUILD ifdef,
-// or use gamedata
-#if SOURCE_ENGINE == SE_BMS
-#include "convar_sm_bms.h"
-#elif SOURCE_ENGINE >= SE_ALIENSWARM
-# include "convar_sm_swarm.h"
-#elif SOURCE_ENGINE >= SE_LEFT4DEAD
-# include "convar_sm_l4d.h"
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
-# include "convar_sm_ob.h"
-#else
-# include "convar_sm.h"
-#endif
-//
+#include "sm_convar.h"
 #include <amtl/os/am-shared-library.h>
 #include <amtl/os/am-path.h>
 #include <bridge/include/IVEngineServerBridge.h>

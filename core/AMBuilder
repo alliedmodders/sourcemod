@@ -60,6 +60,9 @@ for sdk_name in SM.sdks:
       os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf')
     ]
 
+  if compiler.like('msvc'):
+    compiler.defines += ['_XKEYCHECK_H']
+
   if builder.target.platform == 'linux':
     compiler.postlink += ['-lpthread', '-lrt']
 
