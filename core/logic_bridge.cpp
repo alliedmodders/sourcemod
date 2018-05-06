@@ -65,20 +65,7 @@
 #include <bridge/include/IPlayerInfoBridge.h>
 #include <bridge/include/IFileSystemBridge.h>
 
-#if defined _WIN32
-# define MATCHMAKINGDS_SUFFIX	""
-# define MATCHMAKINGDS_EXT	"dll"
-#elif defined __APPLE__
-# define MATCHMAKINGDS_SUFFIX	""
-# define MATCHMAKINGDS_EXT	"dylib"
-#elif defined __linux__
-#if SOURCE_ENGINE < SE_LEFT4DEAD2
-# define MATCHMAKINGDS_SUFFIX	"_i486"
-#else
-# define MATCHMAKINGDS_SUFFIX	""
-#endif
-# define MATCHMAKINGDS_EXT	"so"
-#endif
+#define MATCHMAKINGDS_NAME "matchmaking_ds" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT
 
 sm_logic_t logicore;
 
@@ -658,10 +645,8 @@ void CoreProviderImpl::InitializeBridge()
 	char path[PLATFORM_MAX_PATH];
 
 	ke::path::Format(path, sizeof(path),
-	                 "%s/bin/matchmaking_ds%s.%s",
-                     g_SMAPI->GetBaseDir(),
-                     MATCHMAKINGDS_SUFFIX,
-                     MATCHMAKINGDS_EXT);
+	                 "%s/bin/" MATCHMAKINGDS_NAME,
+                     g_SMAPI->GetBaseDir());
 
 	if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0)) {
 		this->matchmakingDSFactory =
