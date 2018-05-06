@@ -540,7 +540,7 @@ static cell_t sm_GetConVarFlags(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
-	return pConVar->GetFlags();
+	return pConVar->m_nFlags;
 }
 
 static cell_t sm_SetConVarFlags(IPluginContext *pContext, const cell_t *params)
