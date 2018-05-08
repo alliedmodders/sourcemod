@@ -42,13 +42,13 @@ getmysql ()
 }
 
 # 32-bit MySQL
-mysqlfolder=mysql-5.0
+mysqlfolder=mysql-5.5
 if [ $ismac -eq 1 ]; then
   mysqlver=mysql-5.5.28-osx10.5-x86
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
 elif [ $iswin -eq 1 ]; then
-  mysqlver=mysql-noinstall-5.0.24a-win32
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.0/$mysqlver.$archive_ext
+  mysqlver=mysql-5.5.54-win32
+  mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
   # The folder in the zip archive does not contain the substring "-noinstall", so strip it
   mysqlver=${mysqlver/-noinstall}
 else
@@ -58,7 +58,7 @@ fi
 getmysql
 
 # 64-bit MySQL
-mysqlfolder=mysql-5.0-x86_64
+mysqlfolder=mysql-5.5-x86_64
 if [ $ismac -eq 1 ]; then
   mysqlver=mysql-5.5.28-osx10.5-x86_64
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext

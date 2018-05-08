@@ -397,7 +397,7 @@ static cell_t SteamIdToLocal(IPluginContext *pCtx, int index, AuthIdType authTyp
 			}
 			
 			char szAuth[64];
-			snprintf(szAuth, sizeof(szAuth), "%" PRIu64, steamId);
+			ke::SafeSprintf(szAuth, sizeof(szAuth), "%" PRIu64, steamId);
 			
 			pCtx->StringToLocal(local_addr, bytes, szAuth);
 		}

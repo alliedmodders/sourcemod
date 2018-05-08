@@ -50,26 +50,8 @@
 
 typedef ICommandLine *(*FakeGetCommandLine)();
 
-#if defined _WIN32
-#define TIER0_NAME			"tier0.dll"
-#define VSTDLIB_NAME		"vstdlib.dll"
-#elif defined __APPLE__
-#define TIER0_NAME			"libtier0.dylib"
-#define VSTDLIB_NAME		"libvstdlib.dylib"
-#elif defined __linux__
-#if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_LEFT4DEAD2 || SOURCE_ENGINE == SE_NUCLEARDAWN \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI
-#define TIER0_NAME			"libtier0_srv.so"
-#define VSTDLIB_NAME		"libvstdlib_srv.so"
-#elif SOURCE_ENGINE >= SE_LEFT4DEAD
-#define TIER0_NAME			"libtier0.so"
-#define VSTDLIB_NAME		"libvstdlib.so"
-#else
-#define TIER0_NAME			"tier0_i486.so"
-#define VSTDLIB_NAME		"vstdlib_i486.so"
-#endif
-#endif
+#define TIER0_NAME			SOURCE_BIN_PREFIX "tier0" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT
+#define VSTDLIB_NAME		SOURCE_BIN_PREFIX "vstdlib" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT
 
 CHalfLife2 g_HL2;
 ConVar *sv_lan = NULL;
@@ -181,7 +163,7 @@ ConfigResult CHalfLife2::OnSourceModConfigChanged(const char *key, const char *v
 		}
 		else
 		{
-			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
 			return ConfigResult_Reject;
 		}
 #endif
@@ -851,7 +833,7 @@ void CHalfLife2::AddDelayedKick(int client, int userid, const char *msg)
 
 	kick.client = client;
 	kick.userid = userid;
-	ke::SafeSprintf(kick.buffer, sizeof(kick.buffer), "%s", msg);
+	ke::SafeStrcpy(kick.buffer, sizeof(kick.buffer), msg);
 
 	m_DelayedKicks.push(kick);
 }

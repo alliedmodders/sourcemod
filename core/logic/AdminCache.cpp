@@ -1090,14 +1090,14 @@ bool AdminCache::GetUnifiedSteamIdentity(const char *ident, char *out, size_t ma
 	else if (len >= 11 && !strncmp(ident, "STEAM_", 6) && ident[8] != '_')
 	{
 		// non-bot/lan Steam2 Id, strip off the STEAM_* part
-		snprintf(out, maxlen, "%s", &ident[8]);
+		ke::SafeStrcpy(out, maxlen, &ident[8]);
 		return true;
 	}
 	else if (len >= 7 && !strncmp(ident, "[U:", 3) && ident[len-1] == ']')
 	{
 		// Steam3 Id, replicate the Steam2 Post-"STEAM_" part
 		uint32_t accountId = strtoul(&ident[5], nullptr, 10);
-		snprintf(out, maxlen, "%u:%u", accountId & 1, accountId >> 1);
+		ke::SafeSprintf(out, maxlen, "%u:%u", accountId & 1, accountId >> 1);
 		return true;
 	}
 	else
@@ -1124,7 +1124,7 @@ bool AdminCache::GetUnifiedSteamIdentity(const char *ident, char *out, size_t ma
 				&& accountType == k_EAccountTypeIndividual && accountInstance <= k_unSteamUserWebInstance
 				)
 			{
-				snprintf(out, maxlen, "%u:%u", accountId & 1, accountId >> 1);
+				ke::SafeSprintf(out, maxlen, "%u:%u", accountId & 1, accountId >> 1);
 				return true;
 			}
 		}

@@ -46,6 +46,8 @@
 #include "clientnatives.h"
 #include "teamnatives.h"
 #include "filesystem.h"
+#include "am-string.h"
+
 /**
  * @file extension.cpp
  * @brief Implements SDK Tools extension code.
@@ -128,7 +130,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_CallHandle = handlesys->CreateType("ValveCall", this, 0, NULL, NULL, myself->GetIdentity(), &err);
 	if (g_CallHandle == 0)
 	{
-		snprintf(error, maxlength, "Could not create call handle type (err: %d)", err);	
+		ke::SafeSprintf(error, maxlength, "Could not create call handle type (err: %d)", err);	
 		return false;
 	}
 
@@ -142,7 +144,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	{
 		handlesys->RemoveType(g_CallHandle, myself->GetIdentity());
 		g_CallHandle = 0;
-		snprintf(error, maxlength, "Could not create traceray handle type (err: %d)", err);
+		ke::SafeSprintf(error, maxlength, "Could not create traceray handle type (err: %d)", err);
 		return false;
 	}
 
@@ -385,7 +387,7 @@ bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char co
 
 	while (n <= count)
 	{
-		snprintf(key, sizeof(key), "SlapSound%d", n);
+		ke::SafeSprintf(key, sizeof(key), "SlapSound%d", n);
 		if ((name=g_pGameConf->GetKeyValue(key)))
 		{
 			engsound->PrecacheSound(name, true);
@@ -436,7 +438,7 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 		info->num_targets = 1;
 		info->reason = COMMAND_TARGET_VALID;
 		info->target_name_style = COMMAND_TARGETNAME_RAW;
-		snprintf(info->target_name, info->target_name_maxlength, "%s", pTarget->GetName());
+		ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pTarget->GetName());
 		return true;
 	}
 	else if (strcmp(info->pattern, "@spec") == 0)
@@ -462,7 +464,7 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 		}
 		info->reason = info->num_targets > 0 ? COMMAND_TARGET_VALID : COMMAND_TARGET_EMPTY_FILTER;
 		info->target_name_style = COMMAND_TARGETNAME_ML;
-		snprintf(info->target_name, info->target_name_maxlength, "all spectators");
+		ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all spectators");
 		return true;
 	}
 

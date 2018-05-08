@@ -77,7 +77,7 @@ CPlugin::CPlugin(const char *file)
 	m_serial = ++MySerial;
 	m_errormsg[0] = '\0';
 	m_DateTime[0] = '\0';
-	ke::SafeSprintf(m_filename, sizeof(m_filename), "%s", file);
+	ke::SafeStrcpy(m_filename, sizeof(m_filename), file);
 
 	memset(&m_info, 0, sizeof(m_info));
 
@@ -907,7 +907,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 			if (localpath == NULL)
 			{
 				/* If no path yet, don't add a former slash */
-				ke::SafeSprintf(new_local, sizeof(new_local), "%s", dir->GetEntryName());
+				ke::SafeStrcpy(new_local, sizeof(new_local), dir->GetEntryName());
 			} else {
 				libsys->PathFormat(new_local, sizeof(new_local), "%s/%s", localpath, dir->GetEntryName());
 			}
@@ -922,7 +922,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 				char plugin[PLATFORM_MAX_PATH];
 				if (localpath == NULL)
 				{
-					ke::SafeSprintf(plugin, sizeof(plugin), "%s", name);
+					ke::SafeStrcpy(plugin, sizeof(plugin), name);
 				} else {
 					libsys->PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
 				}
@@ -1019,9 +1019,9 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 
 	if (res == LoadRes_NeverLoad) {
 		if (m_LoadingLocked)
-			ke::SafeSprintf(error, maxlength, "There is a global plugin loading lock in effect");
+			ke::SafeStrcpy(error, maxlength, "There is a global plugin loading lock in effect");
 		else
-			ke::SafeSprintf(error, maxlength, "This plugin is blocked from loading (see plugin_settings.cfg)");
+			ke::SafeStrcpy(error, maxlength, "This plugin is blocked from loading (see plugin_settings.cfg)");
 		return NULL;
 	}
 
@@ -1302,7 +1302,7 @@ bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 	unsigned char *pCodeHash = pPlugin->GetRuntime()->GetCodeHash();
 
 	char codeHashBuf[40];
-	ke::SafeSprintf(codeHashBuf, 40, "plugin_");
+	ke::SafeStrcpy(codeHashBuf, sizeof(codeHashBuf), "plugin_");
 	for (int i = 0; i < 16; i++)
 		ke::SafeSprintf(codeHashBuf + 7 + (i * 2), 3, "%02x", pCodeHash[i]);
 
@@ -1632,7 +1632,7 @@ ConfigResult CPluginManager::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "no") == 0) {
 			m_bBlockBadPlugins = false;
 		} else {
-			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
 			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
@@ -1758,7 +1758,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				if (pl->GetStatus() < Plugin_Created || pl->GetStatus() == Plugin_Evicted)
 				{
 					if (pl->IsSilentlyFailed())
-						len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " Disabled:");
+						len += ke::SafeStrcpy(&buffer[len], sizeof(buffer)-len, " Disabled:");
 					len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 					if (IS_STR_FILLED(info->version))
 					{
@@ -1867,11 +1867,11 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			if (pl->GetStatus() < Plugin_Created)
 			{
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
-				ke::SafeSprintf(name, sizeof(name), (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+				ke::SafeStrcpy(name, sizeof(name), (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 			}
 			else
 			{
-				ke::SafeSprintf(name, sizeof(name), "%s", pl->GetFilename());
+				ke::SafeStrcpy(name, sizeof(name), pl->GetFilename());
 			}
 
 			if (UnloadPlugin(pl))

@@ -110,7 +110,7 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	{
 		if (error)
 		{
-			snprintf(error, maxlen, "Unable to find interface %s", MMIFACE_PLMANAGER);
+			ke::SafeSprintf(error, maxlen, "Unable to find interface %s", MMIFACE_PLMANAGER);
 		}
 		return false;
 	}

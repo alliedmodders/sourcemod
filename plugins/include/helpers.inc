@@ -49,7 +49,7 @@ stock void FormatUserLogText(int client, char[] buffer, int maxlength)
 	char name[MAX_NAME_LENGTH];
 	
 	int userid = GetClientUserId(client);
-	if (!GetClientAuthString(client, auth, sizeof(auth)))
+	if (!GetClientAuthId(client, AuthId_Engine, auth, sizeof(auth)))
 	{
 		strcopy(auth, sizeof(auth), "UNKNOWN");
 	}
