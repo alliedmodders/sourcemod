@@ -316,7 +316,12 @@ const DatabaseInfo *DBManager::FindDatabaseConf(const char *name)
 	ConfDbInfo *info = list->GetDatabaseConf(name);
 	if (!info)
 	{
-		return NULL;
+		// couldn't find requested conf, return default if exists
+		info = list->GetDefaultConfiguration();
+		if (!info)
+		{
+			return NULL;
+		}
 	}
 
 	return &info->info;

@@ -57,8 +57,10 @@ public:
 
 class ConfDbInfoList : public ke::Vector<ConfDbInfo *>
 {
-	friend class DatabaseConfBuilder; // lets DatabaseConfBuilder use SetDefaultDriver
-public:
+	/* Allow internal usage of ConfDbInfoList */
+	friend class DBManager;
+	friend class DatabaseConfBuilder;
+private:
 	ke::AString& GetDefaultDriver() {
 		return m_DefDriver;
 	}
@@ -67,6 +69,12 @@ public:
 		for (size_t i = 0; i < this->length(); i++)
 		{
 			ConfDbInfo *current = this->at(i);
+			/* If we run into the default configuration, then we'll save it
+			 * for the next call to GetDefaultConfiguration */ 
+			if (strcmp(current->name.chars(), "default") == 0)
+			{
+				m_DefaultConfig = current;
+			}
 			if (strcmp(current->name.chars(), name) == 0)
 			{
 				return current;
@@ -74,10 +82,14 @@ public:
 		}
 		return nullptr;
 	}
-private:
+	ConfDbInfo *GetDefaultConfiguration() {
+		return m_DefaultConfig;
+	}
 	void SetDefaultDriver(const char *input) {
 		m_DefDriver = ke::AString(input);
 	}
+private:
+	ConfDbInfo *m_DefaultConfig;
 	ke::AString m_DefDriver;
 };
 
