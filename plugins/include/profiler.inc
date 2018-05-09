@@ -85,7 +85,7 @@ native Profiler CreateProfiler();
  * @param prof		Profiling object.
  * @error			Invalid Handle.
  */
-native void StartProfiling(Profiler prof);
+native void StartProfiling(Handle prof);
 
 /**
  * Stops profiling.
@@ -93,7 +93,7 @@ native void StartProfiling(Profiler prof);
  * @param prof		Profiling object.
  * @error			Invalid Handle or profiling was never started.
  */
-native void StopProfiling(Profiler prof);
+native void StopProfiling(Handle prof);
 
 /**
  * Returns the amount of high-precision time in seconds
@@ -104,7 +104,7 @@ native void StopProfiling(Profiler prof);
  * @return			Time elapsed in seconds.
  * @error			Invalid Handle.
  */
-native float GetProfilerTime(Profiler prof);
+native float GetProfilerTime(Handle prof);
 
 /**
  * Mark the start of a profiling event.
