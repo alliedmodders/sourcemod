@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2018 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -43,7 +43,7 @@ methodmap Profiler < Handle
 {
 	/**
 	 * Creates a new profile object.  The Handle must be freed
-	 * using CloseHandle().
+	 * using delete or CloseHandle().
 	 */
 	public native Profiler();
 	
@@ -73,7 +73,7 @@ methodmap Profiler < Handle
 
 /**
  * Creates a new profile object.  The Handle must be freed
- * using CloseHandle().
+ * using delete or CloseHandle().
  *
  * @return			Handle to the profiler object.
  */
