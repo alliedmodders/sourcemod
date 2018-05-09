@@ -38,14 +38,46 @@
 /**
  * ONLY AVAILABLE ON WINDOWS RIGHT NOW K.
  */
- 
+
+methodmap Profiler < Handle
+{
+	/**
+	 * Creates a new profile object.  The Handle must be freed
+	 * using CloseHandle().
+	 */
+	public native Profiler();
+	
+	/**
+	 * Starts profiling.
+	 */
+	public native void Start();
+
+	/**
+	 * Stops profiling.
+	 *
+	 * @error			If profiler hasn't started.
+	 */
+	public native void Stop();
+	
+	/**
+	 * Returns the amount of high-precision time in seconds
+	 * that passed during the profiler's last start/stop 
+	 * cycle.
+	 *
+	 * @return			Time elapsed in seconds.
+	 */
+	property float Time {
+		public native get();
+	}
+}
+
 /**
  * Creates a new profile object.  The Handle must be freed
  * using CloseHandle().
  *
  * @return			Handle to the profiler object.
  */
-native Handle CreateProfiler();
+native Profiler CreateProfiler();
 
 /**
  * Starts profiling.
@@ -53,7 +85,7 @@ native Handle CreateProfiler();
  * @param prof		Profiling object.
  * @error			Invalid Handle.
  */
-native void StartProfiling(Handle prof);
+native void StartProfiling(Profiler prof);
 
 /**
  * Stops profiling.
@@ -61,7 +93,7 @@ native void StartProfiling(Handle prof);
  * @param prof		Profiling object.
  * @error			Invalid Handle or profiling was never started.
  */
-native void StopProfiling(Handle prof);
+native void StopProfiling(Profiler prof);
 
 /**
  * Returns the amount of high-precision time in seconds
@@ -72,7 +104,7 @@ native void StopProfiling(Handle prof);
  * @return			Time elapsed in seconds.
  * @error			Invalid Handle.
  */
-native float GetProfilerTime(Handle prof);
+native float GetProfilerTime(Profiler prof);
 
 /**
  * Mark the start of a profiling event.
