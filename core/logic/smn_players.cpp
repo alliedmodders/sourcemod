@@ -1123,7 +1123,6 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 	{
 		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(i);
 		if (!pPlayer->IsInGame()
-			|| pPlayer->IsFakeClient()
 			|| (display_in_chat && i == client))
 		{
 			continue;
@@ -1250,7 +1249,6 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 	{
 		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(i);
 		if (!pPlayer->IsInGame()
-			|| pPlayer->IsFakeClient()
 			|| i == client)
 		{
 			continue;
