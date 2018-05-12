@@ -119,7 +119,7 @@ void DBManager::OnHandleDestroy(HandleType_t type, void *object)
 bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool persistent, char *error, size_t maxlength)
 {
 	ConfDbInfoList *list = m_Builder.GetConfigList();
-	ConfDbInfo *pInfo = list->GetDatabaseConf(name);
+	ke::RefPtr<ConfDbInfo> pInfo = list->GetDatabaseConf(name);
 
 	if (!pInfo)
 	{
@@ -202,7 +202,7 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 	ConfDbInfoList *list = m_Builder.GetConfigList();
 	for (size_t i = 0; i < list->length(); i++)
 	{
-		ConfDbInfo *current = list->at(i);
+		ke::RefPtr<ConfDbInfo> current = list->at(i);
 		if (current->realDriver == pDriver)
 		{
 			current->realDriver = NULL;
@@ -313,7 +313,7 @@ IDBDriver *DBManager::GetDriver(unsigned int index)
 const DatabaseInfo *DBManager::FindDatabaseConf(const char *name)
 {
 	ConfDbInfoList *list = m_Builder.GetConfigList();
-	ConfDbInfo *info = list->GetDatabaseConf(name);
+	ke::RefPtr<ConfDbInfo> info = list->GetDatabaseConf(name);
 	if (!info)
 	{
 		// couldn't find requested conf, return default if exists
@@ -325,6 +325,13 @@ const DatabaseInfo *DBManager::FindDatabaseConf(const char *name)
 	}
 
 	return &info->info;
+}
+
+ConfDbInfo *DBManager::GetDatabaseConf(const char *name)
+{
+	ConfDbInfoList *list = m_Builder.GetConfigList();
+	ke::RefPtr<ConfDbInfo> info(list->GetDatabaseConf(name));
+	return info;
 }
 
 IDBDriver *DBManager::FindOrLoadDriver(const char *name)

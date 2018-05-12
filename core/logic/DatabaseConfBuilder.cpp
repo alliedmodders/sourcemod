@@ -160,6 +160,7 @@ SMCResult DatabaseConfBuilder::ReadSMC_LeavingSection(const SMCStates *states)
 		m_ParseCurrent->info.pass = m_ParseCurrent->pass.chars();
 		
 		/* Save it.. */
+		m_ParseCurrent->AddRef();
 		m_ParseList->append(m_ParseCurrent);
 		m_ParseCurrent = nullptr;
 		
@@ -175,6 +176,7 @@ SMCResult DatabaseConfBuilder::ReadSMC_LeavingSection(const SMCStates *states)
 
 void DatabaseConfBuilder::ReadSMC_ParseEnd(bool halted, bool failed)
 {
+	m_InfoList->ReleaseMembers();
 	delete m_InfoList;
 	m_InfoList = m_ParseList;
 	

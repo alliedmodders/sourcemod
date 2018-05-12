@@ -38,8 +38,9 @@
 
 #include <am-vector.h>
 #include <am-string.h>
+#include <am-refcounting-threadsafe.h>
 
-class ConfDbInfo
+class ConfDbInfo : public ke::RefcountedThreadsafe<ConfDbInfo>
 {
 public:
 	ConfDbInfo() : realDriver(NULL)
@@ -87,6 +88,12 @@ private:
 	}
 	void SetDefaultDriver(const char *input) {
 		m_DefDriver = ke::AString(input);
+	}
+	void ReleaseMembers() {
+		for (int i = 0; i < this->length(); i++) {
+			ConfDbInfo *current = this->at(i);
+			current->Release();
+		}
 	}
 private:
 	ConfDbInfo *m_DefaultConfig;
