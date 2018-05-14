@@ -90,7 +90,7 @@ private:
 		m_DefDriver = ke::AString(input);
 	}
 	void ReleaseMembers() {
-		for (int i = 0; i < this->length(); i++) {
+		for (size_t i = 0; i < this->length(); i++) {
 			ConfDbInfo *current = this->at(i);
 			current->Release();
 		}
