@@ -211,7 +211,7 @@ native float GetTickInterval();
 forward void OnMapTimeLeftChanged();
 
 /**
- * Returns whether or not the server is processing frames or not.  
+ * Returns whether or not the server is processing frames.  
  *
  * The server does not process frames until at least one client joins the game.  
  * Once the first player has in, even if that player, leaves, the server's 
