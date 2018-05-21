@@ -65,7 +65,7 @@ for sdk_name in SM.sdks:
       ]
 
     if compiler.like('msvc'):
-      compiler.defines += ['_XKEYCHECK_H']
+      compiler.defines += ['_ALLOW_KEYWORD_MACROS']
     if builder.target.platform == 'linux':
       compiler.postlink += ['-lpthread', '-lrt']
 
