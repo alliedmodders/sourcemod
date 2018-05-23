@@ -226,7 +226,7 @@ forward void OnClientPostAdminFilter(int client);
 forward void OnClientPostAdminCheck(int client);
 
 /**
- * This function will be deprecated in a future release.  Use the MaxClients variable instead.
+ * This function is deprecated. Use the MaxClients variable instead.
  *
  * Returns the maximum number of clients allowed on the server.  This may 
  * return 0 if called before OnMapStart(), and thus should not be called 
@@ -238,6 +238,7 @@ forward void OnClientPostAdminCheck(int client);
  *
  * @return				Maximum number of clients allowed.
  */
+#pragma deprecated Use MaxClients variable instead.
 native int GetMaxClients();
 
 /**
