@@ -317,7 +317,7 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 	char buffer[128];
 	if (!logicore.CoreTranslate(buffer, sizeof(buffer), "%T", 2, NULL, "No Access", &client))
 	{
-		ke::SafeSprintf(buffer, sizeof(buffer), "You do not have access to this command");
+		ke::SafeStrcpy(buffer, sizeof(buffer), "You do not have access to this command");
 	}
 
 	unsigned int replyto = g_ChatTriggers.GetReplyTo();

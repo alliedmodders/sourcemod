@@ -38,6 +38,7 @@
  * @file IDataPack.h
  * @brief Contains functions for packing data abstractly to/from plugins.  The wrappers
  * for creating these are contained in ISourceMod.h
+ * @deprecated Deprecated. Does nothing.
  */
 
 namespace SourceMod

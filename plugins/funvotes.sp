@@ -313,7 +313,7 @@ void VoteMenuClose()
 
 float GetVotePercent(int votes, int totalVotes)
 {
-	return FloatDiv(float(votes),float(totalVotes));
+	return float(votes) / float(totalVotes);
 }
 
 bool TestVoteDelay(int client)

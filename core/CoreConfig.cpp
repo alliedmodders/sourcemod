@@ -412,8 +412,11 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 				for (iter = convars->begin(); iter != convars->end(); iter++)
 				{
 					const ConVar *cvar = (*iter);
-
-					if ((cvar->GetFlags() & FCVAR_DONTRECORD) == FCVAR_DONTRECORD)
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+					if (cvar->IsFlagSet(FCVAR_DONTRECORD))
+#else
+					if (cvar->IsBitSet(FCVAR_DONTRECORD))
+#endif
 					{
 						continue;
 					}

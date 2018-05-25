@@ -31,6 +31,7 @@
 
 #include "extension.h"
 #include "output.h"
+#include "am-string.h"
 
 ISourcePawnEngine *spengine = NULL;
 EntityOutputManager g_OutputManager;
@@ -120,7 +121,7 @@ bool EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 	}
 
 	char sOutput[20];
-	Q_snprintf(sOutput, sizeof(sOutput), "%p", pOutput);
+	ke::SafeSprintf(sOutput, sizeof(sOutput), "%p", pOutput);
 
 	// attempt to directly lookup a hook using the pOutput pointer
 	OutputNameStruct *pOutputName = NULL;

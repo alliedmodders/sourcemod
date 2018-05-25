@@ -68,7 +68,7 @@ static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 	IPlugin *pl = pluginsys->FindPluginByContext(pCtx->GetContext());
 
 	pCtx->LocalToString(params[1], &filename);
-	ke::SafeSprintf(buffer, sizeof(buffer), "%s", filename);
+	ke::SafeStrcpy(buffer, sizeof(buffer), filename);
 
 	/* Make sure there is no extension */
 	if ((ext = strstr(buffer, ".txt")) != NULL

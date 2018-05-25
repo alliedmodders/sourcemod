@@ -334,7 +334,10 @@ void SendChatToAll(int client, const char[] message)
 		}
 		FormatActivitySource(client, i, nameBuf, sizeof(nameBuf));
 		
-		PrintToChat(i, "\x04(ALL) %s: \x01%s", nameBuf, message);
+		if (g_GameEngine == Engine_CSGO)
+			PrintToChat(i, " \x01\x0B\x04%t: \x01%s", "Say all", nameBuf, message);
+		else
+			PrintToChat(i, "\x04%t: \x01%s", "Say all", nameBuf, message);
 	}
 }
 
@@ -360,7 +363,10 @@ void SendChatToAdmins(int from, const char[] message)
 	{
 		if (IsClientInGame(i) && (from == i || CheckCommandAccess(i, "sm_chat", ADMFLAG_CHAT)))
 		{
-			PrintToChat(i, "\x04(%sADMINS) %N: \x01%s", fromAdmin ? "" : "TO ", from, message);
+			if (g_GameEngine == Engine_CSGO)
+				PrintToChat(i, " \x01\x0B\x04%t: \x01%s", fromAdmin ? "Chat admins" : "Chat to admins", from, message);
+			else
+				PrintToChat(i, "\x04%t: \x01%s", fromAdmin ? "Chat admins" : "Chat to admins", from, message);
 		}	
 	}
 }
@@ -388,10 +394,16 @@ void SendPrivateChat(int client, int target, const char[] message)
 	}
 	else if (target != client)
 	{
-		PrintToChat(client, "\x04(Private to %N) %N: \x01%s", target, client, message);
+		if (g_GameEngine == Engine_CSGO)
+			PrintToChat(client, " \x01\x0B\x04%t: \x01%s", "Private say to", target, client, message);
+		else
+			PrintToChat(client, "\x04%t: \x01%s", "Private say to", target, client, message);
 	}
-
-	PrintToChat(target, "\x04(Private to %N) %N: \x01%s", target, client, message);
+  
+	if (g_GameEngine == Engine_CSGO)
+		PrintToChat(target, " \x01\x0B\x04%t: \x01%s", "Private say to", target, client, message);
+	else
+		PrintToChat(target, "\x04%t: \x01%s", "Private say to", target, client, message);
 	LogAction(client, target, "\"%L\" triggered sm_psay to \"%L\" (text %s)", client, target, message);
 }
 

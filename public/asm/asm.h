@@ -3,6 +3,7 @@
 
 #define OP_JMP				0xE9
 #define OP_JMP_SIZE			5
+#define X64_ABS_SIZE		14
 
 #define OP_NOP				0x90
 #define OP_NOP_SIZE			1

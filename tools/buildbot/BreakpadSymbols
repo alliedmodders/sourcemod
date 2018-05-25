@@ -22,7 +22,7 @@ for cxx_task in cxx_tasks:
 	elif builder.target.platform == 'windows':
 		argv = ['dump_syms.exe', debug_file]
 
-	base_file = os.path.splitext(os.path.basename(debug_file))[0]
+	base_file = os.path.split(os.path.dirname(debug_file))[1]
 	symbol_file = base_file + '.breakpad'
 
 	argv = [sys.executable, UPLOAD_SCRIPT, symbol_file] + argv

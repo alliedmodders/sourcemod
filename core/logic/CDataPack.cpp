@@ -33,27 +33,20 @@
 #include <string.h>
 #include "CDataPack.h"
 #include <amtl/am-autoptr.h>
-#include <amtl/am-vector.h>
-
-using namespace ke;
-
-#define DATAPACK_INITIAL_SIZE 64
 
 CDataPack::CDataPack()
 {
-	m_pBase = (char *)malloc(DATAPACK_INITIAL_SIZE);
-	m_capacity = DATAPACK_INITIAL_SIZE;
 	Initialize();
 }
 
 CDataPack::~CDataPack()
 {
-	free(m_pBase);
+	Initialize();
 }
 
-static Vector<AutoPtr<CDataPack>> sDataPackCache;
+static ke::Vector<ke::AutoPtr<CDataPack>> sDataPackCache;
 
-IDataPack * CDataPack::New()
+IDataPack *CDataPack::New()
 {
   if (sDataPackCache.empty())
     return new CDataPack();
@@ -72,286 +65,161 @@ CDataPack::Free(IDataPack *pack)
 
 void CDataPack::Initialize()
 {
-	m_curptr = m_pBase;
-	m_size = 0;
-}
-
-void CDataPack::CheckSize(size_t typesize)
-{
-	if (m_curptr - m_pBase + typesize <= m_capacity)
+	for (size_t index = 0; index < elements.length(); ++index)
 	{
-		return;
+		switch (elements[index].type)
+		{
+			case CDataPackType::Raw:
+			{
+				delete elements[index].pData.vval;
+				elements.remove(index--);
+				break;
+			}
+
+			case CDataPackType::String:
+			{
+				delete elements[index].pData.sval;
+				elements.remove(index--);
+				break;
+			}
+		}
 	}
 
-	size_t pos = m_curptr - m_pBase;
-	do
-	{
-		m_capacity *= 2;
-	} while (pos + typesize > m_capacity);
-	
-	m_pBase = (char *)realloc(m_pBase, m_capacity);
-	m_curptr = m_pBase + pos;
+	elements.clear();
+	position = 0;
 }
 
 void CDataPack::ResetSize()
 {
-	m_size = 0;
+	Initialize();
 }
 
 size_t CDataPack::CreateMemory(size_t size, void **addr)
 {
-	CheckSize(sizeof(char) + sizeof(size_t) + size);
-	size_t pos = m_curptr - m_pBase;
+	InternalPack val;
+	val.type = CDataPackType::Raw;
+	val.pData.vval = new uint8_t[size + sizeof(size)];
+	reinterpret_cast<size_t *>(val.pData.vval)[0] = size;
+	elements.insert(position, val);
 
-	*(char *)m_curptr = Raw;
-	m_curptr += sizeof(char);
-
-	*(size_t *)m_curptr = size;
-	m_curptr += sizeof(size_t);
-
-	if (addr)
-	{
-		*addr = m_curptr;
-	}
-
-	m_curptr += size;
-	m_size += sizeof(char) + sizeof(size_t) + size;
-
-	return pos;
+	return position++;
 }
 
 void CDataPack::PackCell(cell_t cell)
 {
-	CheckSize(sizeof(char) + sizeof(size_t) + sizeof(cell_t));
-
-	*(char *)m_curptr = Cell;
-	m_curptr += sizeof(char);
-
-	*(size_t *)m_curptr = sizeof(cell_t);
-	m_curptr += sizeof(size_t);
-
-	*(cell_t *)m_curptr = cell;
-	m_curptr += sizeof(cell_t);
-
-	m_size += sizeof(char) + sizeof(size_t) + sizeof(cell_t);
+	InternalPack val;
+	val.type = CDataPackType::Cell;
+	val.pData.cval = cell;
+	elements.insert(position++, val);
 }
 
-void CDataPack::PackFloat(float val)
+void CDataPack::PackFunction(cell_t function)
 {
-	CheckSize(sizeof(char) + sizeof(size_t) + sizeof(float));
+	InternalPack val;
+	val.type = CDataPackType::Function;
+	val.pData.cval = function;
+	elements.insert(position++, val);
+}
 
-	*(char *)m_curptr = Float;
-	m_curptr += sizeof(char);
-
-	*(size_t *)m_curptr = sizeof(float);
-	m_curptr += sizeof(size_t);
-
-	*(float *)m_curptr = val;
-	m_curptr += sizeof(float);
-
-	m_size += sizeof(char) + sizeof(size_t) + sizeof(float);
+void CDataPack::PackFloat(float floatval)
+{
+	InternalPack val;
+	val.type = CDataPackType::Float;
+	val.pData.fval = floatval;
+	elements.insert(position++, val);
 }
 
 void CDataPack::PackString(const char *string)
 {
-	size_t len = strlen(string);
-	size_t maxsize = sizeof(char) + sizeof(size_t) + len + 1;
-	CheckSize(maxsize);
-
-	*(char *)m_curptr = String;
-	m_curptr += sizeof(char);
-
-	// Pack the string length first for buffer overrun checking.
-	*(size_t *)m_curptr = len;
-	m_curptr += sizeof(size_t);
-
-	// Now pack the string.
-	memcpy(m_curptr, string, len);
-	m_curptr[len] = '\0';
-	m_curptr += len + 1;
-
-	m_size += maxsize;
+	InternalPack val;
+	val.type = CDataPackType::String;
+	ke::AString *sval = new ke::AString(string);
+	val.pData.sval = sval;
+	elements.insert(position++, val);
 }
 
 void CDataPack::Reset() const
 {
-	m_curptr = m_pBase;
+	position = 0;
 }
 
 size_t CDataPack::GetPosition() const
 {
-	return static_cast<size_t>(m_curptr - m_pBase);
+	return position;
 }
 
 bool CDataPack::SetPosition(size_t pos) const
 {
-	if (pos > m_size)
-	{
+	if (pos > elements.length())
 		return false;
-	}
-	m_curptr = m_pBase + pos;
 
+	position = pos;
 	return true;
 }
 
 cell_t CDataPack::ReadCell() const
 {
-	if (!IsReadable(sizeof(char) + sizeof(size_t) + sizeof(cell_t)))
-	{
+	if (!IsReadable() || elements[position].type != CDataPackType::Cell)
 		return 0;
-	}
-	if (*reinterpret_cast<char *>(m_curptr) != Cell)
-	{
-		return 0;
-	}
-	m_curptr += sizeof(char);
-
-	if (*reinterpret_cast<size_t *>(m_curptr) != sizeof(cell_t))
-	{
-		return 0;
-	}
-
-	m_curptr += sizeof(size_t);
-
-	cell_t val = *reinterpret_cast<cell_t *>(m_curptr);
-	m_curptr += sizeof(cell_t);
-	return val;
-}
-
-float CDataPack::ReadFloat() const
-{
-	if (!IsReadable(sizeof(char) + sizeof(size_t) + sizeof(float)))
-	{
-		return 0;
-	}
-	if (*reinterpret_cast<char *>(m_curptr) != Float)
-	{
-		return 0;
-	}
-	m_curptr += sizeof(char);
-
-	if (*reinterpret_cast<size_t *>(m_curptr) != sizeof(float))
-	{
-		return 0;
-	}
-
-	m_curptr += sizeof(size_t);
-
-	float val = *reinterpret_cast<float *>(m_curptr);
-	m_curptr += sizeof(float);
-	return val;
-}
-
-bool CDataPack::IsReadable(size_t bytes) const
-{
-	return (bytes + (m_curptr - m_pBase) > m_size) ? false : true;
-}
-
-const char *CDataPack::ReadString(size_t *len) const
-{
-	if (!IsReadable(sizeof(char) + sizeof(size_t)))
-	{
-		return NULL;
-	}
-	if (*reinterpret_cast<char *>(m_curptr) != String)
-	{
-		return NULL;
-	}
-	m_curptr += sizeof(char);
-
-	size_t real_len = *(size_t *)m_curptr;
-
-	m_curptr += sizeof(size_t);
-	char *str = (char *)m_curptr;
-
-	if ((strlen(str) != real_len) || !(IsReadable(real_len+1)))
-	{
-		return NULL;
-	}
-
-	if (len)
-	{
-		*len = real_len;
-	}
-
-	m_curptr += real_len + 1;
-
-	return str;
-}
-
-void *CDataPack::GetMemory() const
-{
-	return m_curptr;
-}
-
-void *CDataPack::ReadMemory(size_t *size) const
-{
-	if (!IsReadable(sizeof(size_t)))
-	{
-		return NULL;
-	}
-	if (*reinterpret_cast<char *>(m_curptr) != Raw)
-	{
-		return NULL;
-	}
-	m_curptr += sizeof(char);
-
-	size_t bytecount = *(size_t *)m_curptr;
-	m_curptr += sizeof(size_t);
-
-	if (!IsReadable(bytecount))
-	{
-		return NULL;
-	}
-
-	void *ptr = m_curptr;
-
-	if (size)
-	{
-		*size = bytecount;
-	}
-
-	m_curptr += bytecount;
-
-	return ptr;
-}
-
-void CDataPack::PackFunction(cell_t function)
-{
-	CheckSize(sizeof(char) + sizeof(size_t) + sizeof(cell_t));
-
-	*(char *)m_curptr = Function;
-	m_curptr += sizeof(char);
-
-	*(size_t *)m_curptr = sizeof(cell_t);
-	m_curptr += sizeof(size_t);
-
-	*(cell_t *)m_curptr = function;
-	m_curptr += sizeof(cell_t);
-
-	m_size += sizeof(char) + sizeof(size_t) + sizeof(cell_t);
+	
+	return elements[position++].pData.cval;
 }
 
 cell_t CDataPack::ReadFunction() const
 {
-	if (!IsReadable(sizeof(char) + sizeof(size_t) + sizeof(cell_t)))
-	{
+	if (!IsReadable() || elements[position].type != CDataPackType::Function)
 		return 0;
-	}
-	if (*reinterpret_cast<char *>(m_curptr) != Function)
-	{
+	
+	return elements[position++].pData.cval;
+}
+
+float CDataPack::ReadFloat() const
+{
+	if (!IsReadable() || elements[position].type != CDataPackType::Float)
 		return 0;
-	}
-	m_curptr += sizeof(char);
+	
+	return elements[position++].pData.fval;
+}
 
-	if (*reinterpret_cast<size_t *>(m_curptr) != sizeof(cell_t))
+bool CDataPack::IsReadable(size_t bytes) const
+{
+	return (position < elements.length());
+}
+
+const char *CDataPack::ReadString(size_t *len) const
+{
+	if (!IsReadable() || elements[position].type != CDataPackType::String)
 	{
-		return 0;
+		if (len)
+			*len = 0;
+
+		return nullptr;
 	}
 
-	m_curptr += sizeof(size_t);
+	const ke::AString &val = *elements[position++].pData.sval;
+	if (len)
+		*len = val.length();
 
-	cell_t val = *reinterpret_cast<cell_t *>(m_curptr);
-	m_curptr += sizeof(cell_t);
-	return val;
+	return val.chars();
+}
+
+void *CDataPack::GetMemory() const
+{
+	return nullptr;
+}
+
+void *CDataPack::ReadMemory(size_t *size) const
+{
+	void *ptr = nullptr;
+	if (!IsReadable() || elements[position].type != CDataPackType::Raw)
+		return ptr;
+
+	size_t *val = reinterpret_cast<size_t *>(elements[position].pData.vval);
+	ptr = &(val[1]);
+	++position;
+
+	if (size)
+		*size = val[0]; /* Egor!!!! */
+
+	return ptr;
 }

@@ -33,21 +33,29 @@
 			{
 				"windows"	"4"
 				"linux"		"20"
+				"linux64"	"18"
+				"mac64"		"21"
 			}
 			"GetTEName"
 			{
 				"windows"	"4"
 				"linux"		"4"
+				"linux64"	"8"
+				"mac64"		"8"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
 				"linux"		"8"
+				"linux64"	"16"
+				"mac64"		"16"
 			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
 				"linux"		"0"
+				"linux64"	"0"
+				"mac64"		"0"
 			}
 		}
 
@@ -58,6 +66,8 @@
 				"library"	"server"
 				"windows"	"\x89\x41\x04\xA1\x2A\x2A\x2A\x2A\x89\x41\x08\x89\x0D\x2A\x2A\x2A\x2A\xC7"
 				"linux"		"\x55\x89\xE5\x8B\x45\x08\x8B\x55\x0C\xC7\x00\x2A\x2A\x2A\x2A\x89\x50\x04\x8B\x15\x2A\x2A\x2A\x2A"
+				"linux64"	"\x48\x8D\x05\x2A\x2A\x2A\x2A\x55\x48\x89\x07\x48\x89\xE5\x5D\x48\x8B\x05\x2A\x2A\x2A\x2A"
+				"mac64"		"\x55\x48\x89\xE5\x48\x8D\x05\x2A\x2A\x2A\x2A\x48\x89\x07\x48\x89\x77\x08\x48\x8B\x05\x2A\x2A\x2A\x2A"
 			}
 		}
 	}
@@ -73,6 +83,8 @@
 				"library"	"server"
 				// Fallback to IServerTools method instead on Windows, lest we add custom logic since it's no longer a thiscall on Windows in CS:GO
 				"linux"		"\x55\x89\xE5\x57\x56\x53\x83\xEC\x1C\x8B\x45\x0C\x8B\x5D\x08\x8B\x7D\x10\x85\xC0\x0F\x84\x2A\x2A\x2A\x2A\x8B\x10\x89\x04\x24\xFF\x52\x0C\x8B\x10\xB8\xFF\x1F\x00\x00\x0F\xB7\xCA\x83\xFA\xFF\x0F\x45\xC1\x8D\x04\x40\x8B\x5C\xC3\x10\xEB\x2A\x90\x2A\x2A\x2A\x2A\x89"
+				"linux64"	"\x55\x48\x89\xE5\x41\x55\x49\x89\xD5\x41\x54\x53\x48\x89\xFB\x48\x83\xEC\x08\x48\x85\xF6\x0F\x84\xBC\x00\x00\x00"
+				"mac64"		"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x54\x53\x49\x89\xD7\x48\x89\xFB\x48\x85\xF6\x74\x29\x48\x8B\x06\x48\x89\xF7\xFF\x50\x18\x8B\x00\x83\xF8\xFF\x0F\xB7\xC0\xB9\xFF\x1F\x00\x00\x48\x0F\x45\xC8\x48\x8D\x04\x49\x48\xC1\xE0\x04\x48\x8D\x5C\x03\x20\xEB\x07\x48\x81\xC3\x08\x00\x06\x00\x48\x8B\x1B\x45\x31\xE4\x48\x85\xDB\x74\x58\x4C\x8D\x35\x2A\x2A\x2A\x2A\x0F"
 			}
 		}
 	}
@@ -102,6 +114,8 @@
 			 */
 			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x56\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B"
 			"CreateFakeClient_Linux"	"\x55\x89\xE5\x53\x83\xEC\x14\x8B\x45\x0C\xC7\x04\x24\x2A\x2A\x2A\x2A"
+			"CreateFakeClient_Linux64"	"\x55\x48\x89\xE5\x53\x48\x83\xEC\x08\x48\x8B\x3D\x2A\x2A\x2A\x2A\xE8"
+			"CreateFakeClient_Mac64"	"\x55\x48\x89\xE5\x53\x50\x48\x8D\x3D\x2A\x2A\x2A\x2A\x48\x8B\x07\xFF\x90\x78"
 		}
 		
 		"Offsets"
@@ -111,6 +125,8 @@
 			{
 				"windows"	"8"
 				"linux"		"13"
+				"linux64"	"12"
+				"mac64"		"9"
 			}
 		}
 		
@@ -132,6 +148,8 @@
 			{
 				"library"	"server"
 				"linux"		"\x55\x89\xE5\x53\x83\xEC\x14\x8B\x5D\x08\xE8\x2A\x2A\x2A\x2A\x8B\x10\x89\x04\x24"
+				"linux64"	"\x55\x48\x89\xE5\x53\x48\x89\xFB\x48\x83\xEC\x08\xE8\x2A\x2A\x2A\x2A\x48\x89\xDE\x48\x8B\x10\x48\x89\xC7\xFF\x52\x08"
+				"mac64"		"\xE8\x2A\x2A\x2A\x2A\x48\x8B\x08\x48\x89\xC7\x4C\x89\xFE\xFF\x51\x08"
 			}
 		}
 		
@@ -144,6 +162,8 @@
 			"EntityFactoryCallOffset"
 			{
 				"linux"		"11"
+				"linux64"	"13"
+				"mac64"		"1"
 			}
 		}
 	}
@@ -158,6 +178,8 @@
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x8B\xC1\x53\x56\x57\x8B\x2A\x2A\x89\x2A\x2A\x2A\x33"
 				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x7C\x01\x00\x00\x8B\x55\x08\x8B\x75\x14"
+				"linux64"	"\x55\x48\x89\xE5\x41\x57\x41\x56\x49\x89\xF6\x41\x55\x41\x54\x49\x89\xCC\x53"
+				"mac64"		"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x81\xEC\x88\x01\x00\x00\xF3\x0F\x11\x85\x8C\xFE\xFF\xFF"
 			}
 		}
 	}
@@ -178,7 +200,8 @@
 				/* Not 100% sure on this, why would windows change and not linux - TEST ME */
 				"windows"	"31"
 				"linux"		"69"
-				"mac"		"69"
+				"linux64"	"69"
+				"mac64"		"69"
 			}
 			/**
 			 * CBaseClient::SetName(char  const*);
@@ -189,7 +212,8 @@
 			{
 				"windows"	"30"
 				"linux"		"68"
-				"mac"		"68"
+				"linux64"	"68"
+				"mac64"		"68"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
@@ -203,7 +227,8 @@
 			{
 				"windows"	"484"
 				"linux"		"464"
-				"mac"		"464"
+				"linux64"	"592"
+				"mac64"		"608"
 			}
 		}
 	}
@@ -221,91 +246,106 @@
 			{
 				"windows"	"450"
 				"linux"		"451"
-				"mac"		"451"
+				"linux64"	"451"
+				"mac64"		"451"
 			}
 			"RemovePlayerItem"
 			{
 				"windows"	"293"
 				"linux"		"294"
-				"mac"		"294"
+				"linux64"	"294"
+				"mac64"		"294"
 			}
 			"Weapon_GetSlot"
 			{
 				"windows"	"289"
 				"linux"		"290"
-				"mac"		"290"
+				"linux64"	"290"
+				"mac64"		"290"
 			}
 			"Ignite"
 			{
 				"windows"	"223"
 				"linux"		"224"
-				"mac"		"224"
+				"linux64"	"224"
+				"mac64"		"224"
 			}
 			"Extinguish"
 			{
 				"windows"	"226"
 				"linux"		"227"
-				"mac"		"227"
+				"linux64"	"227"
+				"mac64"		"227"
 			}
 			"Teleport"
 			{
 				"windows"	"113"
 				"linux"		"114"
-				"mac"		"114"
+				"linux64"	"114"
+				"mac64"		"114"
 			}
 			"CommitSuicide"
 			{
 				"windows"	"500"
 				"linux"		"500"
-				"mac"		"500"
+				"linux64"	"500"
+				"mac64"		"500"
 			}
 			"GetVelocity"
 			{
 				"windows"	"138"
 				"linux"		"139"
-				"mac"		"139"
+				"linux64"	"139"
+				"mac64"		"139"
 			}
 			"EyeAngles"
 			{
 				"windows"	"129"
 				"linux"		"130"
-				"mac"		"130"
+				"linux64"	"130"
+				"mac64"		"130"
 			}
 			"AcceptInput"
 			{
 				"windows"	"40"
 				"linux"		"41"
-				"mac"		"41"
+				"linux64"	"41"
+				"mac64"		"41"
 			}
 			"SetEntityModel"
 			{
 				"windows"	"26"
 				"linux"		"27"
-				"mac"		"27"
+				"linux64"	"27"
+				"mac64"		"27"
 			}
 			"WeaponEquip"
 			{
 				"windows"	"282"
 				"linux"		"283"
-				"mac"		"283"
+				"linux64"	"283"
+				"mac64"		"283"
 			}
 			"Activate"
 			{
 				"windows"	"37"
 				"linux"		"38"
-				"mac"		"38"
+				"linux64"	"38"
+				"mac64"		"38"
 			}
 			"PlayerRunCmd"
 			{
 				"windows"	"470"
 				"linux"		"471"
-				"mac"		"471"
+				"linux64"	"471"
+				"mac64"		"471"
 			}
 			"GiveAmmo"
 			{
 				"windows"	"275"
 				"linux"		"276"
-				"mac"		"276"
+				"linux64"	"276"
+				"mac64"		"276"
 			}
 		}
 	}

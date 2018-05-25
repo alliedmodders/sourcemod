@@ -166,7 +166,7 @@ void RootConsoleMenu::DrawGenericOption(const char *cmd, const char *text)
 		{
 			buffer[len++] = ' ';
 		}
-		len += snprintf(&buffer[len], sizeof(buffer) - len, " - %s", text);
+		len += ke::SafeSprintf(&buffer[len], sizeof(buffer) - len, " - %s", text);
 		ConsolePrint("%s", buffer);
 	}
 }
@@ -256,7 +256,7 @@ static bool sm_dump_handles(int client, const ICommandArgs *args)
 		auto write_handles_to_game = [] (const char *str) -> void
 		{
 			char buffer[1024];
-			size_t len = ke::SafeSprintf(buffer, sizeof(buffer)-2, "%s", str);
+			size_t len = ke::SafeStrcpy(buffer, sizeof(buffer)-2, str);
 
 			buffer[len] = '\n';
 			buffer[len+1] = '\0';

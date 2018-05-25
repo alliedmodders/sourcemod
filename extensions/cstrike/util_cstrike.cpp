@@ -192,9 +192,9 @@ CEconItemSchema *GetItemSchema()
 	void *pSchema = NULL;
 	pWrapper->Execute(NULL, &pSchema);
 
-	//In windows this is actually ItemSystem() + 4 is ItemSchema
-#ifdef WIN32
-	return (CEconItemSchema *)((intptr_t)pSchema + 4);
+	//On windows/mac this is actually ItemSystem() + sizeof(void *) is ItemSchema
+#if defined(PLATFORM_WINDOWS) || defined(PLATFORM_APPLE)
+	return (CEconItemSchema *)((intptr_t)pSchema + sizeof(void *));
 #else
 	return (CEconItemSchema *)pSchema;
 #endif
@@ -357,7 +357,7 @@ ItemDefHashValue *GetHashValueFromWeapon(const char *szWeapon)
 {
 	char tempWeapon[MAX_WEAPON_NAME_LENGTH];
 
-	Q_strncpy(tempWeapon, szWeapon, sizeof(tempWeapon));
+	ke::SafeStrcpy(tempWeapon, sizeof(tempWeapon), szWeapon);
 	Q_strlower(tempWeapon);
 
 	if (strstr(tempWeapon, "weapon_") == NULL && strstr(tempWeapon, "item_") == NULL)
@@ -367,7 +367,7 @@ ItemDefHashValue *GetHashValueFromWeapon(const char *szWeapon)
 		for (unsigned int i = 0; i < SM_ARRAYSIZE(szClassPrefixs); i++)
 		{
 			char classname[MAX_WEAPON_NAME_LENGTH];
-			Q_snprintf(classname, sizeof(classname), "%s%s", szClassPrefixs[i], tempWeapon);
+			ke::SafeSprintf(classname, sizeof(classname), "%s%s", szClassPrefixs[i], tempWeapon);
 
 			ClassnameMap::Result res = g_mapClassToDefIdx.find(classname);
 

@@ -86,6 +86,7 @@ private:
 	char m_Prop[64];
 	char m_offset[64];
 	char m_Game[256];
+	char m_Key[64];
 	bool bShouldBeReadingDefault;
 	bool had_game;
 	bool matched_game;

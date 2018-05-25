@@ -1,4 +1,5 @@
 #include "asm.h"
+#include "libudis86/udis86.h"
 
 #ifndef WIN32
 #define _GNU_SOURCE
@@ -6,6 +7,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "libudis86/udis86.h"
 
 #define REG_EAX			0
 #define REG_ECX			1
@@ -25,7 +28,9 @@
 */
 void check_thunks(unsigned char *dest, unsigned char *pc)
 {
-#ifndef WIN32
+#if defined(_WIN32) || defined(__x86_64__)
+	return;
+#else
 	/* Step write address back 4 to the start of the function address */
 	unsigned char *writeaddr = dest - 4;
 	unsigned char *calloffset = *(unsigned char **)writeaddr;
@@ -85,6 +90,59 @@ void check_thunks(unsigned char *dest, unsigned char *pc)
 #endif
 }
 
+int copy_bytes(unsigned char *func, unsigned char *dest, int required_len)
+{
+	ud_t ud_obj;
+	ud_init(&ud_obj);
+
+#if defined(_WIN64) || defined(__x86_64__)
+	ud_set_mode(&ud_obj, 64);
+#else
+	ud_set_mode(&ud_obj, 32);
+#endif
+
+	ud_set_input_buffer(&ud_obj, func, 20);
+	unsigned int bytecount = 0;
+	
+	while (bytecount < required_len && ud_disassemble(&ud_obj))
+	{
+		unsigned int insn_len = ud_insn_len(&ud_obj);
+		bytecount += insn_len;
+		
+		if (dest)
+		{	
+			const uint8_t *opcode = ud_insn_ptr(&ud_obj);
+			if ((opcode[0] & 0xFE) == 0xE8)	// Fix CALL/JMP offset
+			{
+				dest[0] = func[0];
+				dest++; func++;
+				if (ud_insn_opr(&ud_obj, 0)->size == 32)
+				{
+					*(int32_t *)dest = func + *(int32_t *)func - dest;
+					check_thunks(dest+4, func+4);
+					dest += sizeof(int32_t);
+				}
+				else
+				{
+					*(int16_t *)dest = func + *(int16_t *)func - dest;
+					dest += sizeof(int16_t);
+				}
+				func--;
+			}
+			else
+			{
+				memcpy(dest, func, insn_len);
+				dest += insn_len;
+			}
+		}
+
+		func += insn_len;
+	}
+	
+	return bytecount;
+}
+
+#if 0
 //if dest is NULL, returns minimum number of bytes needed to be copied
 //if dest is not NULL, it will copy the bytes to dest as well as fix CALLs and JMPs
 //http://www.devmaster.net/forums/showthread.php?t=2311
@@ -336,6 +394,7 @@ int copy_bytes(unsigned char *func, unsigned char* dest, int required_len) {
 
 	return bytecount;
 }
+#endif
 
 //insert a specific JMP instruction at the given location
 void inject_jmp(void* src, void* dest) {

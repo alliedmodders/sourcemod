@@ -48,37 +48,49 @@ native float float(int value);
 /**
  * Multiplies two floats together.
  *
+ * Note: This native is internal implementation. For multiplication use the '*' operator.
+ *
  * @param oper1			First value.
  * @param oper2			Second value.
  * @return				oper1*oper2.
  */
+#pragma deprecated This native is internal implementation. For multiplication use the '*' operator.
 native float FloatMul(float oper1, float oper2);
 
 /**
  * Divides the dividend by the divisor.
  *
+ * Note: This native is internal implementation. For division use the '/' operator.
+ *
  * @param dividend		First value.
  * @param divisor		Second value.
  * @return				dividend/divisor.
  */
+#pragma deprecated This native is internal implementation. For division use the '/' operator.
 native float FloatDiv(float dividend, float divisor);
 
 /**
  * Adds two floats together.
  *
+ * Note: This native is internal implementation. For addition use the '+' operator.
+ *
  * @param oper1			First value.
  * @param oper2			Second value.
  * @return				oper1+oper2.
  */
+#pragma deprecated This native is internal implementation. For addition use the '+' operator.
 native float FloatAdd(float oper1, float oper2);
 
 /**
  * Subtracts oper2 from oper1.
  *
+ * Note: This native is internal implementation. For subtraction use the '-' operator.
+ *
  * @param oper1			First value.
  * @param oper2			Second value.
  * @return				oper1-oper2.
  */
+#pragma deprecated This native is internal implementation. For subtraction use the '-' operator.
 native float FloatSub(float oper1, float oper2);
 
 /**
@@ -248,6 +260,12 @@ stock int RoundFloat(float value)
 #if !defined __sourcepawn2__
 #pragma rational Float
 
+// Internal aliases for backwards compatability.
+native float __FLOAT_MUL__(float a, float b) = FloatMul;
+native float __FLOAT_DIV__(float a, float b) = FloatDiv;
+native float __FLOAT_ADD__(float a, float b) = FloatAdd;
+native float __FLOAT_SUB__(float a, float b) = FloatSub;
+
 native bool __FLOAT_GT__(float a, float b);
 native bool __FLOAT_GE__(float a, float b);
 native bool __FLOAT_LT__(float a, float b);
@@ -283,34 +301,36 @@ stock float operator-(float oper)
 	return oper^view_as<float>(cellmin);				/* IEEE values are sign/magnitude */
 }
 
+// The stocks below are int->float converting versions of the above natives.
+
 stock float operator*(float oper1, int oper2)
 {
-	return FloatMul(oper1, float(oper2));			/* "*" is commutative */
+	return __FLOAT_MUL__(oper1, float(oper2));			/* "*" is commutative */
 }
 
 stock float operator/(float oper1, int oper2)
 {
-	return FloatDiv(oper1, float(oper2));
+	return __FLOAT_DIV__(oper1, float(oper2));
 }
 
 stock float operator/(int oper1, float oper2)
 {
-	return FloatDiv(float(oper1), oper2);
+	return __FLOAT_DIV__(float(oper1), oper2);
 }
 
 stock float operator+(float oper1, int oper2)
 {
-	return FloatAdd(oper1, float(oper2));			/* "+" is commutative */
+	return __FLOAT_ADD__(oper1, float(oper2));			/* "+" is commutative */
 }
 
 stock float operator-(float oper1, int oper2)
 {
-	return FloatSub(oper1, float(oper2));
+	return __FLOAT_SUB__(oper1, float(oper2));
 }
 
 stock float operator-(int oper1, float oper2)
 {
-	return FloatSub(float(oper1), oper2);
+	return __FLOAT_SUB__(float(oper1), oper2);
 }
 
 stock bool operator==(float oper1, int oper2)

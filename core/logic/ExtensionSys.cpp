@@ -171,7 +171,7 @@ bool CLocalExtension::Load(char *error, size_t maxlength)
 	{
 		m_pLib->CloseLibrary();
 		m_pLib = NULL;
-		snprintf(error, maxlength, "Unable to find extension entry point");
+		ke::SafeStrcpy(error, maxlength, "Unable to find extension entry point");
 		return false;
 	}
 
@@ -241,7 +241,7 @@ void CLocalExtension::Unload()
 
 bool CRemoteExtension::Reload(char *error, size_t maxlength)
 {
-	snprintf(error, maxlength, "Remote extensions do not support reloading");
+	ke::SafeStrcpy(error, maxlength, "Remote extensions do not support reloading");
 	return false;
 }
 
@@ -275,13 +275,13 @@ bool CExtension::PerformAPICheck(char *error, size_t maxlength)
 {
 	if (!m_pAPI)
 	{
-		snprintf(error, maxlength, "No IExtensionInterface instance provided");
+		ke::SafeStrcpy(error, maxlength, "No IExtensionInterface instance provided");
 		return false;
 	}
 	
 	if (m_pAPI->GetExtensionVersion() > SMINTERFACE_EXTENSIONAPI_VERSION)
 	{
-		snprintf(error, maxlength, "Extension version is too new to load (%d, max is %d)", m_pAPI->GetExtensionVersion(), SMINTERFACE_EXTENSIONAPI_VERSION);
+		ke::SafeSprintf(error, maxlength, "Extension version is too new to load (%d, max is %d)", m_pAPI->GetExtensionVersion(), SMINTERFACE_EXTENSIONAPI_VERSION);
 		return false;
 	}
 
@@ -488,7 +488,7 @@ bool CExtension::IsRunning(char *error, size_t maxlength)
 	{
 		if (error)
 		{
-			snprintf(error, maxlength, "%s", m_Error.c_str());
+			ke::SafeStrcpy(error, maxlength, m_Error.c_str());
 		}
 		return false;
 	}
@@ -570,7 +570,7 @@ void CExtensionManager::TryAutoload()
 		}
 
 		char file[PLATFORM_MAX_PATH];
-		len = ke::SafeSprintf(file, sizeof(file), "%s", lfile);
+		len = ke::SafeStrcpy(file, sizeof(file), lfile);
 		strcpy(&file[len - 9], ".ext");
 
 		LoadAutoExtension(file);
@@ -586,7 +586,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path, bool bErrorOn
 	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
 		char path2[PLATFORM_MAX_PATH];
-		ke::SafeSprintf(path2, sizeof(path2), "%s", path);
+		ke::SafeStrcpy(path2, sizeof(path2), path);
 		path2[strlen(path) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
 		return LoadAutoExtension(path2, bErrorOnMissing);
 	}
@@ -678,7 +678,7 @@ IExtension *CExtensionManager::LoadExtension(const char *file, char *error, size
 	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
 		char path2[PLATFORM_MAX_PATH];
-		ke::SafeSprintf(path2, sizeof(path2), "%s", file);
+		ke::SafeStrcpy(path2, sizeof(path2), file);
 		path2[strlen(file) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
 		return LoadExtension(path2, error, maxlength);
 	}
@@ -943,20 +943,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 			CExtension *pExt;
 			unsigned int num = 1;
 
-			List<CExtension *> required; // List of loaded and required extensions
-			List<CExtension *> optional; // List of non loaded optional extensions
-
-			for (iter = m_Libs.begin(); iter != m_Libs.end(); iter++)
-			{
-				pExt = (*iter);
-
-				if (pExt->IsLoaded() || pExt->IsRequired())
-					required.push_back(pExt);
-				else if (!pExt->IsLoaded() && !pExt->IsRequired())
-					optional.push_back(pExt);
-			}
-
-			switch (required.size())
+			switch (m_Libs.size())
 			{
 			case 1:
 				{
@@ -970,11 +957,11 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 				}
 			default:
 				{
-					rootmenu->ConsolePrint("[SM] Displaying %d extensions:", required.size());
+					rootmenu->ConsolePrint("[SM] Displaying %d extensions:", m_Libs.size());
 					break;
 				}
 			}
-			for (iter = required.begin(); iter != required.end(); iter++,num++)
+			for (iter = m_Libs.begin(); iter != m_Libs.end(); iter++,num++)
 			{
 				pExt = (*iter);
 				if (pExt->IsLoaded())
@@ -993,32 +980,13 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 						rootmenu->ConsolePrint("[%02d] %s (%s): %s", num, name, version, descr);
 					}
 				}
-				else
+				else if(pExt->IsRequired() || libsys->PathExists(pExt->GetPath()))
 				{
 					rootmenu->ConsolePrint("[%02d] <FAILED> file \"%s\": %s", num, pExt->GetFilename(), pExt->m_Error.c_str());
 				}
-			}
-			if (optional.size())
-			{
-				num = 1;
-				switch (optional.size())
+				else
 				{
-					case 1:
-					{
-						rootmenu->ConsolePrint("\n[SM] Displaying 1 optional extension not found:");
-						break;
-					}
-					default:
-					{
-						rootmenu->ConsolePrint("\n[SM] Displaying %d optional extensions not found:", optional.size());
-						break;
-					}
-				}
-
-				for (iter = optional.begin(); iter != optional.end(); iter++,num++)
-				{
-					pExt = (*iter);
-					rootmenu->ConsolePrint("[%02d] \"%s\"", num, pExt->GetFilename());
+					rootmenu->ConsolePrint("[%02d] <OPTIONAL> file \"%s\": %s", num, pExt->GetFilename(), pExt->m_Error.c_str());
 				}
 			}
 			return;
@@ -1163,7 +1131,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 				if (pExt->unload_code == (unsigned)atoi(unload))
 				{
 					char filename[PLATFORM_MAX_PATH];
-					snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
+					ke::SafeStrcpy(filename, PLATFORM_MAX_PATH, pExt->GetFilename());
 					UnloadExtension(pExt);
 					rootmenu->ConsolePrint("[SM] Extension %s is now unloaded.", filename);
 				}
@@ -1178,7 +1146,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 				|| (!pExt->m_ChildDeps.size() && !pExt->m_Dependents.size()))
 			{
 				char filename[PLATFORM_MAX_PATH];
-				snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
+				ke::SafeStrcpy(filename, PLATFORM_MAX_PATH, pExt->GetFilename());
 				UnloadExtension(pExt);
 				rootmenu->ConsolePrint("[SM] Extension %s is now unloaded.", filename);
 				return;
@@ -1279,7 +1247,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 				char filename[PLATFORM_MAX_PATH];
 				char error[255];
 				
-				snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
+				ke::SafeStrcpy(filename, PLATFORM_MAX_PATH, pExt->GetFilename());
 				
 				if (pExt->Reload(error, sizeof(error)))
 				{

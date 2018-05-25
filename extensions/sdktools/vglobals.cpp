@@ -199,12 +199,18 @@ bool UTIL_VerifySignature(const void *addr, const char *sig, size_t len)
 	return true;
 }
 
+#ifdef PLATFORM_X64
+#define KEY_SUFFIX "64"
+#else
+#define KEY_SUFFIX ""
+#endif
+
 #if defined PLATFORM_WINDOWS
-#define FAKECLIENT_KEY "CreateFakeClient_Windows"
+#define FAKECLIENT_KEY "CreateFakeClient_Windows" KEY_SUFFIX
 #elif defined PLATFORM_LINUX
-#define FAKECLIENT_KEY "CreateFakeClient_Linux"
+#define FAKECLIENT_KEY "CreateFakeClient_Linux" KEY_SUFFIX
 #elif defined PLATFORM_APPLE
-#define FAKECLIENT_KEY "CreateFakeClient_Mac"
+#define FAKECLIENT_KEY "CreateFakeClient_Mac" KEY_SUFFIX
 #else
 #error "Unsupported platform"
 #endif
@@ -273,7 +279,12 @@ void GetIServer()
 	}
 
 	/* Finally we have the interface we were looking for */
+#ifdef PLATFORM_X86
 	iserver = *reinterpret_cast<IServer **>(reinterpret_cast<unsigned char *>(vfunc) + offset);
+#elif defined PLATFORM_X64
+	int32_t varOffset = *reinterpret_cast<int32_t *>(reinterpret_cast<unsigned char *>(vfunc) + offset);
+	iserver = reinterpret_cast<IServer *>(reinterpret_cast<unsigned char *>(vfunc) + offset + sizeof(int32_t) + varOffset);
+#endif
 }
 
 void GetResourceEntity()

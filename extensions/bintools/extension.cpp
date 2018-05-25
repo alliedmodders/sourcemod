@@ -50,12 +50,6 @@ bool BinTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_SPEngine = g_pSM->GetScriptingEngine();
 	g_pShareSys->AddInterface(myself, &g_CallMaker);
 
-	/* IBinTools2 is only compatible with SH v5 */
-	if (g_pSM->GetShApiVersion() >= 5)
-	{
-		g_pShareSys->AddInterface(myself, &g_CallMaker2);
-	}
-
 	return true;
 }
 

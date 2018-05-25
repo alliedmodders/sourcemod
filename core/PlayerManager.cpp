@@ -102,7 +102,7 @@ class KickPlayerTimer : public ITimedEvent
 public:
 	ResultType OnTimer(ITimer *pTimer, void *pData)
 	{
-		int userid = (int)pData;
+		int userid = (int)(intptr_t)pData;
 		int client = g_Players.GetClientOfUserId(userid);
 		if (client)
 		{
@@ -272,7 +272,7 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "off") == 0) {
 			m_QueryLang = false;
 		} else {
-			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
 			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
@@ -283,7 +283,7 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 		} else if ( strcasecmp(value, "no") == 0) {
 			m_bAuthstringValidation = false;
 		} else {
-			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
 			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
@@ -2050,18 +2050,18 @@ void CPlayer::UpdateAuthIds()
 	}
 	
 	char szAuthBuffer[64];
-	snprintf(szAuthBuffer, sizeof(szAuthBuffer), "STEAM_%u:%u:%u", steam2universe, m_SteamId.GetAccountID() & 1, m_SteamId.GetAccountID() >> 1);
+	ke::SafeSprintf(szAuthBuffer, sizeof(szAuthBuffer), "STEAM_%u:%u:%u", steam2universe, m_SteamId.GetAccountID() & 1, m_SteamId.GetAccountID() >> 1);
 	
 	m_Steam2Id = szAuthBuffer;
 	
 	// TODO: make sure all hl2sdks' steamclientpublic.h have k_unSteamUserDesktopInstance.
 	if (m_SteamId.GetUnAccountInstance() == 1 /* k_unSteamUserDesktopInstance */)
 	{
-		snprintf(szAuthBuffer, sizeof(szAuthBuffer), "[U:%u:%u]", m_SteamId.GetEUniverse(), m_SteamId.GetAccountID());
+		ke::SafeSprintf(szAuthBuffer, sizeof(szAuthBuffer), "[U:%u:%u]", m_SteamId.GetEUniverse(), m_SteamId.GetAccountID());
 	}
 	else
 	{
-		snprintf(szAuthBuffer, sizeof(szAuthBuffer), "[U:%u:%u:%u]", m_SteamId.GetEUniverse(), m_SteamId.GetAccountID(), m_SteamId.GetUnAccountInstance());
+		ke::SafeSprintf(szAuthBuffer, sizeof(szAuthBuffer), "[U:%u:%u:%u]", m_SteamId.GetEUniverse(), m_SteamId.GetAccountID(), m_SteamId.GetUnAccountInstance());
 	}
 	
 	m_Steam3Id = szAuthBuffer;
@@ -2480,7 +2480,7 @@ void CPlayer::DoBasicAdminChecks()
 		if (!g_Players.CheckSetAdminName(client, this, id))
 		{
 			int userid = engine->GetPlayerUserId(m_pEdict);
-			g_Timers.CreateTimer(&s_KickPlayerTimer, 0.1f, (void *)userid, 0);
+			g_Timers.CreateTimer(&s_KickPlayerTimer, 0.1f, (void *)(intptr_t)userid, 0);
 		}
 		return;
 	}

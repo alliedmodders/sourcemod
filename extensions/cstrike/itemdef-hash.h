@@ -18,7 +18,11 @@ struct HashItemDef_Node
 class CHashItemDef
 {
 public:
+#ifdef PLATFORM_X86
 	unsigned char padding[36];
+#else
+	unsigned char padding[56];
+#endif
 	HashItemDef_Node *pMem;
 	int nAllocatedCount;
 	int nGrowSize;

@@ -233,7 +233,7 @@ stock void PrintToConsoleAll(const char[] format, any ...)
 }
 
 /**
- * Reples to a message in a command.
+ * Replies to a message in a command.
  *
  * A client index of 0 will use PrintToServer().
  * If the command was from the console, PrintToConsole() is used.
