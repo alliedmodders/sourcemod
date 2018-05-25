@@ -206,8 +206,8 @@ const char *PgDatabase::GetError(int *errCode)
 
 bool PgDatabase::QuoteString(const char *str, char buffer[], size_t maxlength, size_t *newSize)
 {
-	unsigned long size = static_cast<unsigned long>(strlen(str));
-	unsigned long needed = size * 2 + 1;
+	size_t size = strlen(str);
+	size_t needed = size * 2 + 1;
 
 	if (maxlength < needed)
 	{
@@ -218,13 +218,14 @@ bool PgDatabase::QuoteString(const char *str, char buffer[], size_t maxlength, s
 		return false;
 	}
 
-	needed = PQescapeStringConn(m_pgsql, buffer, str, size, NULL);
+	int error = 0;
+	needed = PQescapeStringConn(m_pgsql, buffer, str, size, &error);
 	if (newSize)
 	{
 		*newSize = (size_t)needed;
 	}
 
-	return true;
+	return error == 0;
 }
 
 bool PgDatabase::DoSimpleQuery(const char *query)
