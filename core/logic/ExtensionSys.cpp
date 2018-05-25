@@ -73,73 +73,68 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 	/* Special case for new bintools binary */
 	if (strcmp(filename, "bintools.ext") == 0)
 	{
-		goto normal;
-	}
-
-	/* Zeroth, see if there is an engine specific build in the new place. */
-	g_pSM->BuildPath(Path_SM,
-		path,
-		PLATFORM_MAX_PATH,
-		"extensions/" PLATFORM_ARCH_FOLDER "%s.%s." PLATFORM_LIB_EXT,
-		filename,
-		bridge->gamesuffix);
-
-	if (libsys->IsPathFile(path))
-	{
-		goto found;
-	}
-
-	/* COMPAT HACK: One-halfth, if ep2v, see if there is an engine specific build in the new place with old naming */
-	if (strcmp(bridge->gamesuffix, "2.tf2") == 0
-		|| strcmp(bridge->gamesuffix, "2.dods") == 0
-		|| strcmp(bridge->gamesuffix, "2.hl2dm") == 0
-		)
-	{
 		g_pSM->BuildPath(Path_SM,
 			path,
 			PLATFORM_MAX_PATH,
-			"extensions/" PLATFORM_ARCH_FOLDER "%s.2.ep2v." PLATFORM_LIB_EXT,
+			"extensions/%s." PLATFORM_LIB_EXT,
 			filename);
+	}
+	else
+	{
+		/* Zeroth, see if there is an engine specific build in the new place. */
+		g_pSM->BuildPath(Path_SM,
+			path,
+			PLATFORM_MAX_PATH,
+			"extensions/%s.%s." PLATFORM_LIB_EXT,
+			filename,
+			bridge->gamesuffix);
 
-		if (libsys->IsPathFile(path))
+		if (!libsys->IsPathFile(path))
 		{
-			goto found;
+			/* COMPAT HACK: One-halfth, if ep2v, see if there is an engine specific build in the new place with old naming */
+			if (strcmp(bridge->gamesuffix, "2.tf2") == 0
+				|| strcmp(bridge->gamesuffix, "2.dods") == 0
+				|| strcmp(bridge->gamesuffix, "2.hl2dm") == 0
+				)
+			{
+				g_pSM->BuildPath(Path_SM,
+					path,
+					PLATFORM_MAX_PATH,
+					"extensions/%s.2.ep2v." PLATFORM_LIB_EXT,
+					filename);
+			}
+			else if (strcmp(bridge->gamesuffix, "2.nd") == 0)
+			{
+				g_pSM->BuildPath(Path_SM,
+					path,
+					PLATFORM_MAX_PATH,
+					"extensions/%s.2.l4d2." PLATFORM_LIB_EXT,
+					filename);
+			}
+
+			//Try further
+			if (!libsys->IsPathFile(path))
+			{
+				/* First see if there is an engine specific build! */
+				g_pSM->BuildPath(Path_SM,
+					path,
+					PLATFORM_MAX_PATH,
+					"extensions/auto.%s/%s." PLATFORM_LIB_EXT,
+					filename,
+					bridge->gamesuffix);
+
+				/* Try the "normal" version */
+				if (!libsys->IsPathFile(path))
+				{
+					g_pSM->BuildPath(Path_SM,
+						path,
+						PLATFORM_MAX_PATH,
+						"extensions/%s." PLATFORM_LIB_EXT,
+						filename);
+				}
+			}
 		}
 	}
-	else if (strcmp(bridge->gamesuffix, "2.nd") == 0)
-	{
-		g_pSM->BuildPath(Path_SM,
-			path,
-			PLATFORM_MAX_PATH,
-			"extensions/" PLATFORM_ARCH_FOLDER "%s.2.l4d2." PLATFORM_LIB_EXT,
-			filename);
-
-		if (libsys->IsPathFile(path))
-		{
-			goto found;
-		}
-	}
-
-	/* First see if there is an engine specific build! */
-	g_pSM->BuildPath(Path_SM, 
-		path, 
-		PLATFORM_MAX_PATH,
-		"extensions/" PLATFORM_ARCH_FOLDER "auto.%s/%s." PLATFORM_LIB_EXT,
-		filename,
-		bridge->gamesuffix);
-
-	/* Try the "normal" version */
-	if (!libsys->IsPathFile(path))
-	{
-		normal:
-		g_pSM->BuildPath(Path_SM,
-			path,
-			PLATFORM_MAX_PATH,
-			"extensions/" PLATFORM_ARCH_FOLDER "%s." PLATFORM_LIB_EXT,
-			filename);
-	}
-
-found:
 	Initialize(filename, path, bRequired);
 }
 
