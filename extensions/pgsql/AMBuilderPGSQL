@@ -3,7 +3,7 @@ import os, platform
 
 builder.SetBuildFolder('libpq')
 
-binary = builder.compiler.StaticLibrary('libpq')
+binary = SM.StaticLibrary(builder, 'libpq', 'x86')
 binary.compiler.includes += [
   os.path.join(SM.pgsql_root, 'src', 'include'),
   os.path.join(SM.pgsql_root, 'src', 'include', 'port'),
@@ -11,12 +11,12 @@ binary.compiler.includes += [
   os.path.join(SM.pgsql_root, 'src', 'interfaces', 'libpq')
 ]
 
-if builder.target_platform == 'mac':
+if builder.target.platform == 'mac':
   binary.compiler.defines += [
     'FRONTEND',
     'UNSAFE_STAT_OK'
   ]
-elif builder.target_platform == 'windows':
+elif builder.target.platform == 'windows':
   binary.compiler.includes += [
     os.path.join(SM.pgsql_root, 'src', 'include', 'port', 'win32'),
     os.path.join(SM.pgsql_root, 'src', 'include', 'port', 'win32_msvc')
@@ -34,14 +34,15 @@ elif builder.target_platform == 'windows':
   binary.compiler.cxxflags.append('/O2')
   binary.compiler.cxxflags.append('/MT')
 
-  binary.compiler.postlink += ['kernel32.lib', 'user32.lib', 'advapi32.lib', 'shfolder.lib', 'wsock32.lib', 'ws2_32.lib', 'secur32.lib']
+  binary.compiler.postlink += ['kernel32.lib', 'user32.lib', 'advapi32.lib', 'shell32.lib', 'wsock32.lib', 'ws2_32.lib', 'secur32.lib']
   
   binary.sources += [
     os.path.join(SM.pgsql_root, 'src', 'port', 'getaddrinfo.c'),
     os.path.join(SM.pgsql_root, 'src', 'port', 'inet_aton.c'),
     os.path.join(SM.pgsql_root, 'src', 'port', 'crypt.c'),
     os.path.join(SM.pgsql_root, 'src', 'interfaces', 'libpq', 'win32.c'),
-    #os.path.join(SM.pgsql_root, 'src', 'port', 'win32error.c'),
+    os.path.join(SM.pgsql_root, 'src', 'port', 'win32error.c'),
+    os.path.join(SM.pgsql_root, 'src', 'port', 'system.c'),
     os.path.join(SM.pgsql_root, 'src', 'port', 'win32setlocale.c'),
     os.path.join(SM.pgsql_root, 'src', 'port', 'pgsleep.c'),
     os.path.join(SM.pgsql_root, 'src', 'port', 'dirent.c'),
@@ -51,7 +52,7 @@ elif builder.target_platform == 'windows':
     os.path.join(SM.pgsql_root, 'src', 'common', 'fe_memutils.c'),
     os.path.join(SM.pgsql_root, 'src', 'interfaces', 'libpq', 'pthread-win32.c')
   ]
-elif builder.target_platform == 'linux':
+elif builder.target.platform == 'linux':
   binary.compiler.defines += [
     'FRONTEND',
     'UNSAFE_STAT_OK',

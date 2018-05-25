@@ -3,9 +3,9 @@ import os
 
 if SM.pgsql_root:
   # First compile libpq
-  libpq = builder.RunScript('AMBuilderPGSQL', { 'SM': SM })
+  libpq = builder.Build('AMBuilderPGSQL', { 'SM': SM })
 
-  binary = SM.ExtLibrary(builder, 'dbi.pgsql.ext')
+  binary = SM.ExtLibrary(builder, 'dbi.pgsql.ext', 'x86')
   binary.compiler.cxxincludes += [
     os.path.join(SM.pgsql_root, 'src', 'interfaces', 'libpq'),
     os.path.join(SM.pgsql_root, 'src', 'include'),
@@ -15,13 +15,13 @@ if SM.pgsql_root:
   # Link the compiled libpq
   binary.compiler.postlink += [libpq.binary]
   
-  if builder.target_platform == 'linux' or builder.target_platform == 'mac':
+  if builder.target.platform == 'linux' or builder.target.platform == 'mac':
     binary.compiler.postlink += [
       '-lz',
       '-lpthread',
       '-lm'
     ]
-  elif builder.target_platform == 'windows':
+  elif builder.target.platform == 'windows':
     binary.compiler.postlink += [
       'wsock32.lib',
       'ws2_32.lib',
