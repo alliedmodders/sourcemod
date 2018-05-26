@@ -76,7 +76,7 @@ bool PgBasicResults::FieldNameToNum(const char *name, unsigned int *columnId)
 
 const char *PgBasicResults::FieldNumToName(unsigned int colId)
 {
-	if (colId < 0 || colId >= m_ColCount)
+	if (colId >= m_ColCount)
 		return nullptr;
 
 	return PQfname(m_pRes, colId);
@@ -127,7 +127,7 @@ bool PgBasicResults::Rewind()
 
 DBType PgBasicResults::GetFieldType(unsigned int field)
 {
-	if (field < 0 || field >= m_ColCount)
+	if (field >= m_ColCount)
 	{
 		return DBType_Unknown;
 	}
@@ -143,7 +143,7 @@ DBType PgBasicResults::GetFieldType(unsigned int field)
 
 DBType PgBasicResults::GetFieldDataType(unsigned int field)
 {
-	if (field < 0 || field >= m_ColCount)
+	if (field >= m_ColCount)
 	{
 		return DBType_Unknown;
 	}
@@ -158,7 +158,7 @@ DBType PgBasicResults::GetFieldDataType(unsigned int field)
 
 bool PgBasicResults::IsNull(unsigned int columnId)
 {
-	if (columnId < 0 || columnId >= m_ColCount)
+	if (columnId >= m_ColCount)
 	{
 		return true;
 	}
@@ -168,7 +168,7 @@ bool PgBasicResults::IsNull(unsigned int columnId)
 
 DBResult PgBasicResults::GetString(unsigned int columnId, const char **pString, size_t *length)
 {
-	if (columnId < 0 || columnId >= m_ColCount)
+	if (columnId >= m_ColCount)
 	{
 		return DBVal_Error;
 	} else if (IsNull(columnId)) {
@@ -213,7 +213,7 @@ DBResult PgBasicResults::CopyString(unsigned int columnId,
 
 size_t PgBasicResults::GetDataSize(unsigned int columnId)
 {
-	if (columnId < 0 || columnId >= m_ColCount)
+	if (columnId >= m_ColCount)
 	{
 		return 0;
 	}
@@ -223,7 +223,7 @@ size_t PgBasicResults::GetDataSize(unsigned int columnId)
 
 DBResult PgBasicResults::GetFloat(unsigned int col, float *fval)
 {
-	if (col < 0 || col >= m_ColCount)
+	if (col >= m_ColCount)
 	{
 		return DBVal_Error;
 	} else if (IsNull(col)) {
@@ -238,7 +238,7 @@ DBResult PgBasicResults::GetFloat(unsigned int col, float *fval)
 
 DBResult PgBasicResults::GetInt(unsigned int col, int *val)
 {
-	if (col < 0 || col >= m_ColCount)
+	if (col >= m_ColCount)
 	{
 		return DBVal_Error;
 	} else if (IsNull(col)) {
@@ -253,7 +253,7 @@ DBResult PgBasicResults::GetInt(unsigned int col, int *val)
 
 DBResult PgBasicResults::GetBlob(unsigned int col, const void **pData, size_t *length)
 {
-	if (col < 0 || col >= m_ColCount)
+	if (col >= m_ColCount)
 	{
 		return DBVal_Error;
 	} else if (IsNull(col)) {
