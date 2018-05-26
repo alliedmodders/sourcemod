@@ -41,31 +41,25 @@
 
 methodmap Profiler < Handle
 {
-	/**
-	 * Creates a new profile object.  The Handle must be freed
-	 * using delete or CloseHandle().
-	 */
+	// Creates a new profile object.  The Handle must be freed
+	// using delete or CloseHandle().
+	//
+	// @return		A new Profiler Handle.
 	public native Profiler();
 	
-	/**
-	 * Starts profiling.
-	 */
+	// Starts a cycle for profiling.
 	public native void Start();
 
-	/**
-	 * Stops profiling.
-	 *
-	 * @error			If profiler hasn't started.
-	 */
+	// Stops a cycle for profiling.
+	//
+	// @error		Profiler was never started.
 	public native void Stop();
 	
-	/**
-	 * Returns the amount of high-precision time in seconds
-	 * that passed during the profiler's last start/stop 
-	 * cycle.
-	 *
-	 * @return			Time elapsed in seconds.
-	 */
+	// Returns the amount of high-precision time in seconds
+	// that passed during the profiler's last start/stop 
+	// cycle.
+	//
+	// @return		Time elapsed in seconds.
 	property float Time {
 		public native get();
 	}
