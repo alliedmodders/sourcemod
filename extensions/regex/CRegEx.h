@@ -57,6 +57,7 @@ public:
 	bool GetSubstring(int s, char buffer[], int max, int match);
 public:
 	int mErrorOffset;
+	int mErrorCode;
 	const char *mError;
 	int mMatchCount;
 	RegexMatch mMatches[MAX_MATCHES];

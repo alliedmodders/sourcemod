@@ -33,6 +33,7 @@
 #include "extension.h"
 #include <sh_string.h>
 #include "pcre.h"
+#include "posix_map.h"
 #include "CRegEx.h"
 using namespace SourceHook;
 
@@ -82,10 +83,11 @@ static cell_t CompileRegex(IPluginContext *pCtx, const cell_t *params)
 	
 	if (x->Compile(regex, params[2]) == 0)
 	{
-		cell_t *eOff;
-		pCtx->LocalToPhysAddr(params[5], &eOff);
+		cell_t *eError;
+		pCtx->LocalToPhysAddr(params[5], &eError);
 		const char *err = x->mError;
-		*eOff = x->mErrorOffset;
+		// Convert error code to posix error code but use pcre's error string since it is more detailed.
+		*eError = pcre_posix_compile_error_map[x->mErrorCode];
 		pCtx->StringToLocal(params[3], params[4], err ? err:"unknown");
 		delete x;
 		return 0;
@@ -146,7 +148,7 @@ static cell_t MatchRegex(IPluginContext *pCtx, const cell_t *params)
 		/* there was a match error.  move on. */
 		cell_t *res;
 		pCtx->LocalToPhysAddr(params[3], &res);
-		*res = x->mErrorOffset;
+		*res = x->mErrorCode;
 		/* only clear the match results, since the regex object
 		   may still be referenced later */
 		x->ClearMatch();
@@ -199,7 +201,7 @@ static cell_t MatchRegexAll(IPluginContext *pCtx, const cell_t *params)
 		/* there was a match error.  move on. */
 		cell_t *res;
 		pCtx->LocalToPhysAddr(params[3], &res);
-		*res = x->mErrorOffset;
+		*res = x->mErrorCode;
 		/* only clear the match results, since the regex object
 		may still be referenced later */
 		x->ClearMatch();
