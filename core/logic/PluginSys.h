@@ -44,7 +44,7 @@
 #include <sh_string.h>
 #include "common_logic.h"
 #include <IRootConsoleMenu.h>
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 #include <sm_namehashset.h>
 #include "ITranslator.h"
 #include "IGameConfigs.h"

@@ -33,12 +33,14 @@
 #include "common_logic.h"
 #include <am-moveable.h>
 #include <am-refcounting.h>
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 #include "sm_memtable.h"
 #include <IHandleSys.h>
 
-HandleType_t htCellTrie;
-HandleType_t htSnapshot;
+HandleType_t htStringCellTrie;
+HandleType_t htStringSnapshot;
+HandleType_t htIntCellTrie;
+HandleType_t htIntSnapshot;
 
 enum EntryType
 {
@@ -164,14 +166,19 @@ private:
 	cell_t data_;
 };
 
-struct CellTrie
+struct StringCellTrie
 {
 	StringHashMap<Entry> map;
 };
 
-struct TrieSnapshot
+struct IntCellTrie
 {
-	TrieSnapshot()
+	IntHashMap<Entry> map;
+};
+
+struct StringTrieSnapshot
+{
+	StringTrieSnapshot()
 		: strings(128)
 	{ }
 
@@ -185,6 +192,22 @@ struct TrieSnapshot
 	BaseStringTable strings;
 };
 
+struct IntTrieSnapshot
+{
+	IntTrieSnapshot()
+		: ints(128)
+	{ }
+
+	size_t mem_usage()
+	{
+		return length * sizeof(int) + ints.GetMemTable()->GetMemUsage();
+	}
+
+	size_t length;
+	ke::AutoPtr<int[]> keys;
+	BaseIntTable ints;
+};
+
 class TrieHelpers : 
 	public SMGlobalClass,
 	public IHandleTypeDispatch
@@ -192,45 +215,100 @@ class TrieHelpers :
 public: //SMGlobalClass
 	void OnSourceModAllInitialized()
 	{
-		htCellTrie = handlesys->CreateType("Trie", this, 0, NULL, NULL, g_pCoreIdent, NULL);
-		htSnapshot = handlesys->CreateType("TrieSnapshot", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		htStringCellTrie = handlesys->CreateType("Trie", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		htStringSnapshot = handlesys->CreateType("TrieSnapshot", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		htIntCellTrie = handlesys->CreateType("IntTrie", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		htIntSnapshot = handlesys->CreateType("IntTrieSnapshot", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 	}
 	void OnSourceModShutdown()
 	{
-		handlesys->RemoveType(htSnapshot, g_pCoreIdent);
-		handlesys->RemoveType(htCellTrie, g_pCoreIdent);
+		handlesys->RemoveType(htStringSnapshot, g_pCoreIdent);
+		handlesys->RemoveType(htStringCellTrie, g_pCoreIdent);
+		handlesys->RemoveType(htIntSnapshot, g_pCoreIdent);
+		handlesys->RemoveType(htIntCellTrie, g_pCoreIdent);
 	}
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		if (type == htCellTrie)
+		if (type == htStringCellTrie)
 		{
-			delete (CellTrie *)object;
-		} else {
-			TrieSnapshot *snapshot = (TrieSnapshot *)object;
-			delete snapshot;
+			delete (StringCellTrie *)object;
+			return;
+		}
+
+		if (type == htStringSnapshot)
+		{
+			delete (StringTrieSnapshot *)object;
+			return;
+		}
+
+		if (type == htIntCellTrie)
+		{
+			delete (IntCellTrie *)object;
+			return;
+		}
+
+		if (type == htIntSnapshot)
+		{
+			delete (IntTrieSnapshot *)object;
+			return;
 		}
 	}
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
 	{
-		if (type == htCellTrie)
+		if (type == htStringCellTrie)
 		{
-			CellTrie *pArray = (CellTrie *)object;
-			*pSize = sizeof(CellTrie) + pArray->map.mem_usage();
-		} else {
-			TrieSnapshot *snapshot = (TrieSnapshot *)object;
-			*pSize = sizeof(TrieSnapshot) + snapshot->mem_usage();
+			StringCellTrie *pArray = (StringCellTrie *)object;
+			*pSize = sizeof(StringCellTrie) + pArray->map.mem_usage();
+			return true;
 		}
-		return true;
+
+		if (type == htStringSnapshot)
+		{
+			StringTrieSnapshot *snapshot = (StringTrieSnapshot *)object;
+			*pSize = sizeof(StringTrieSnapshot) + snapshot->mem_usage();
+			return true;
+		}
+
+		if (type == htIntCellTrie)
+		{
+			IntCellTrie *pArray = (IntCellTrie *)object;
+			*pSize = sizeof(IntCellTrie) + pArray->map.mem_usage();
+			return true;
+		}
+
+		if (type == htIntSnapshot)
+		{
+			IntTrieSnapshot *snapshot = (IntTrieSnapshot *)object;
+			*pSize = sizeof(IntTrieSnapshot) + snapshot->mem_usage();
+			return true;
+		}
+
+		return false;
 	}
 } s_CellTrieHelpers;
 
 static cell_t CreateTrie(IPluginContext *pContext, const cell_t *params)
 {
-	CellTrie *pTrie = new CellTrie;
+	StringCellTrie *pTrie = new StringCellTrie;
 	Handle_t hndl;
 
-	if ((hndl = handlesys->CreateHandle(htCellTrie, pTrie, pContext->GetIdentity(), g_pCoreIdent, NULL))
+	if ((hndl = handlesys->CreateHandle(htStringCellTrie, pTrie, pContext->GetIdentity(), g_pCoreIdent, NULL))
+		== BAD_HANDLE)
+	{
+		delete pTrie;
+		return BAD_HANDLE;
+	}
+
+	return hndl;
+}
+
+static cell_t CreateIntTrie(IPluginContext *pContext, const cell_t *params)
+{
+	IntCellTrie *pTrie = new IntCellTrie;
+	Handle_t hndl;
+
+	if ((hndl = handlesys->CreateHandle(htIntCellTrie, pTrie, pContext->GetIdentity(), g_pCoreIdent, NULL))
 		== BAD_HANDLE)
 	{
 		delete pTrie;
@@ -242,13 +320,13 @@ static cell_t CreateTrie(IPluginContext *pContext, const cell_t *params)
 
 static cell_t SetTrieValue(IPluginContext *pContext, const cell_t *params)
 {
-	CellTrie *pTrie;
+	StringCellTrie *pTrie;
 	HandleError err;
 	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
 
 	Handle_t hndl = params[1];
 
-	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htStringCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -273,15 +351,47 @@ static cell_t SetTrieValue(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-static cell_t SetTrieArray(IPluginContext *pContext, const cell_t *params)
+static cell_t SetIntTrieValue(IPluginContext *pContext, const cell_t *params)
 {
-	CellTrie *pTrie;
+	IntCellTrie *pTrie;
 	HandleError err;
 	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
 
 	Handle_t hndl = params[1];
 
-	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htIntCellTrie, &sec, (void **)&pTrie))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	const int key = params[2];
+
+	IntHashMap<Entry>::Insert i = pTrie->map.findForAdd(key);
+	if (!i.found())
+	{
+		if (!pTrie->map.add(i, key))
+			return 0;
+		i->value.setCell(params[3]);
+		return 1;
+	}
+
+	if (!params[4])
+		return 0;
+
+	i->value.setCell(params[3]);
+	return 1;
+}
+
+static cell_t SetTrieArray(IPluginContext *pContext, const cell_t *params)
+{
+	StringCellTrie *pTrie;
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	Handle_t hndl = params[1];
+
+	if ((err = handlesys->ReadHandle(hndl, htStringCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -314,15 +424,56 @@ static cell_t SetTrieArray(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-static cell_t SetTrieString(IPluginContext *pContext, const cell_t *params)
+static cell_t SetIntTrieArray(IPluginContext *pContext, const cell_t *params)
 {
-	CellTrie *pTrie;
+	IntCellTrie *pTrie;
 	HandleError err;
 	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
 
 	Handle_t hndl = params[1];
 
-	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htIntCellTrie, &sec, (void **)&pTrie))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	if (params[4] < 0)
+	{
+		return pContext->ThrowNativeError("Invalid array size: %d", params[4]);
+	}
+
+	const int key = params[2];
+	cell_t *array;
+	pContext->LocalToPhysAddr(params[3], &array);
+
+	IntHashMap<Entry>::Insert i = pTrie->map.findForAdd(key);
+	if (!i.found())
+	{
+		if (!pTrie->map.add(i, key))
+			return 0;
+		i->key = key;
+		i->value.setArray(array, params[4]);
+		return 1;
+	}
+
+	if (!params[5])
+		return 0;
+
+	i->value.setArray(array, params[4]);
+	return 1;
+}
+
+
+static cell_t SetTrieString(IPluginContext *pContext, const cell_t *params)
+{
+	StringCellTrie *pTrie;
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	Handle_t hndl = params[1];
+
+	if ((err = handlesys->ReadHandle(hndl, htStringCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -348,15 +499,50 @@ static cell_t SetTrieString(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-static cell_t RemoveFromTrie(IPluginContext *pContext, const cell_t *params)
+static cell_t SetIntTrieString(IPluginContext *pContext, const cell_t *params)
 {
-	CellTrie *pTrie;
+	IntCellTrie *pTrie;
 	HandleError err;
 	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
 
 	Handle_t hndl = params[1];
 
-	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htIntCellTrie, &sec, (void **)&pTrie))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	const int key = params[2];
+	char *val;
+	pContext->LocalToString(params[3], &val);
+
+	IntHashMap<Entry>::Insert i = pTrie->map.findForAdd(key);
+	if (!i.found())
+	{
+		if (!pTrie->map.add(i, key))
+			return 0;
+		i->value.setString(val);
+		return 1;
+	}
+
+	if (!params[4])
+		return 0;
+
+	i->value.setString(val);
+	return 1;
+}
+
+
+static cell_t RemoveFromTrie(IPluginContext *pContext, const cell_t *params)
+{
+	StringCellTrie *pTrie;
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	Handle_t hndl = params[1];
+
+	if ((err = handlesys->ReadHandle(hndl, htStringCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -373,16 +559,60 @@ static cell_t RemoveFromTrie(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t RemoveFromIntTrie(IPluginContext *pContext, const cell_t *params)
+{
+	IntCellTrie *pTrie;
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	Handle_t hndl = params[1];
+
+	if ((err = handlesys->ReadHandle(hndl, htIntCellTrie, &sec, (void **)&pTrie))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	const int key = params[2];
+
+	IntHashMap<Entry>::Result r = pTrie->map.find(key);
+	if (!r.found())
+		return 0;
+
+	pTrie->map.remove(r);
+	return 1;
+}
+
+
 static cell_t ClearTrie(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl;
-	CellTrie *pTrie;
+	StringCellTrie *pTrie;
 	HandleError err;
 	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
 
 	hndl = params[1];
 
-	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htStringCellTrie, &sec, (void **)&pTrie))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	pTrie->map.clear();
+	return 1;
+}
+
+static cell_t ClearIntTrie(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl;
+	IntCellTrie *pTrie;
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	hndl = params[1];
+
+	if ((err = handlesys->ReadHandle(hndl, htIntCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -395,13 +625,13 @@ static cell_t ClearTrie(IPluginContext *pContext, const cell_t *params)
 static cell_t GetTrieValue(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl;
-	CellTrie *pTrie;
+	StringCellTrie *pTrie;
 	HandleError err;
 	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
 
 	hndl = params[1];
 
-	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htStringCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -434,16 +664,57 @@ static cell_t GetTrieValue(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
-static cell_t GetTrieArray(IPluginContext *pContext, const cell_t *params)
+static cell_t GetIntTrieValue(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl;
-	CellTrie *pTrie;
+	IntCellTrie *pTrie;
 	HandleError err;
 	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
 
 	hndl = params[1];
 
-	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htIntCellTrie, &sec, (void **)&pTrie))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	const char key = params[2];
+	cell_t *pValue;
+	pContext->LocalToPhysAddr(params[3], &pValue);
+
+	IntHashMap<Entry>::Result r = pTrie->map.find(key);
+	if (!r.found())
+		return 0;
+
+	if (r->value.isCell())
+	{
+		*pValue = r->value.cell();
+		return 1;
+	}
+
+	// Maintain compatibility with an old bug. If an array was set with one
+	// cell, it was stored internally as a single cell. We now store as an
+	// actual array, but we make GetTrieValue() still work for this case.
+	if (r->value.isArray() && r->value.arrayLength() == 1)
+	{
+		*pValue = r->value.array()[0];
+		return 1;
+	}
+	
+	return 0;
+}
+
+static cell_t GetTrieArray(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl;
+	StringCellTrie *pTrie;
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	hndl = params[1];
+
+	if ((err = handlesys->ReadHandle(hndl, htStringCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -486,16 +757,68 @@ static cell_t GetTrieArray(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-static cell_t GetTrieString(IPluginContext *pContext, const cell_t *params)
+static cell_t GetIntTrieArray(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl;
-	CellTrie *pTrie;
+	IntCellTrie *pTrie;
 	HandleError err;
 	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
 
 	hndl = params[1];
 
-	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htIntCellTrie, &sec, (void **)&pTrie))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	if (params[4] < 0)
+	{
+		return pContext->ThrowNativeError("Invalid array size: %d", params[4]);
+	}
+
+	const int key = params[2];
+	cell_t *pValue, *pSize;
+	pContext->LocalToPhysAddr(params[3], &pValue);
+	pContext->LocalToPhysAddr(params[5], &pSize);
+
+
+	IntHashMap<Entry>::Result r = pTrie->map.find(key);
+	if (!r.found() || !r->value.isArray())
+		return 0;
+
+	if (!r->value.array())
+	{
+		*pSize = 0;
+		return 1;
+	}
+
+	if (!params[4])
+		return 1;
+
+	size_t length = r->value.arrayLength();
+	cell_t *base = r->value.array();
+
+	if (length > size_t(params[4]))
+		*pSize = params[4];
+	else
+		*pSize = length;
+
+	memcpy(pValue, base, sizeof(cell_t) * pSize[0]);
+	return 1;
+}
+
+
+static cell_t GetTrieString(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl;
+	StringCellTrie *pTrie;
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	hndl = params[1];
+
+	if ((err = handlesys->ReadHandle(hndl, htStringCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -522,16 +845,70 @@ static cell_t GetTrieString(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-static cell_t GetTrieSize(IPluginContext *pContext, const cell_t *params)
+static cell_t GetIntTrieString(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl;
-	CellTrie *pTrie;
+	IntCellTrie *pTrie;
 	HandleError err;
 	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
 
 	hndl = params[1];
 
-	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htIntCellTrie, &sec, (void **)&pTrie))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	if (params[4] < 0)
+	{
+		return pContext->ThrowNativeError("Invalid buffer size: %d", params[4]);
+	}
+
+	const int key = params[2];
+	cell_t *pSize;
+	pContext->LocalToPhysAddr(params[5], &pSize);
+
+	IntHashMap<Entry>::Result r = pTrie->map.find(key);
+	if (!r.found() || !r->value.isString())
+		return 0;
+
+	size_t written;
+	pContext->StringToLocalUTF8(params[3], params[4], r->value.chars(), &written);
+
+	*pSize = (cell_t)written;
+	return 1;
+}
+
+
+static cell_t GetTrieSize(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl;
+	StringCellTrie *pTrie;
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	hndl = params[1];
+
+	if ((err = handlesys->ReadHandle(hndl, htStringCellTrie, &sec, (void **)&pTrie))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	return pTrie->map.elements();
+}
+
+static cell_t GetIntTrieSize(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl;
+	IntCellTrie *pTrie;
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	hndl = params[1];
+
+	if ((err = handlesys->ReadHandle(hndl, htIntCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -547,14 +924,14 @@ static cell_t CreateTrieSnapshot(IPluginContext *pContext, const cell_t *params)
 
 	Handle_t hndl = params[1];
 
-	CellTrie *pTrie;
-	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	StringCellTrie *pTrie;
+	if ((err = handlesys->ReadHandle(hndl, htStringCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
 	}
 
-	TrieSnapshot *snapshot = new TrieSnapshot;
+	StringTrieSnapshot *snapshot = new StringTrieSnapshot;
 	snapshot->length = pTrie->map.elements();
 	snapshot->keys = ke::MakeUnique<int[]>(snapshot->length);
 	size_t i = 0;
@@ -562,7 +939,7 @@ static cell_t CreateTrieSnapshot(IPluginContext *pContext, const cell_t *params)
 		snapshot->keys[i] = snapshot->strings.AddString(iter->key.chars(), iter->key.length());
 	assert(i == snapshot->length);
 
-	if ((hndl = handlesys->CreateHandle(htSnapshot, snapshot, pContext->GetIdentity(), g_pCoreIdent, NULL))
+	if ((hndl = handlesys->CreateHandle(htStringSnapshot, snapshot, pContext->GetIdentity(), g_pCoreIdent, NULL))
 		== BAD_HANDLE)
 	{
 		delete snapshot;
@@ -572,6 +949,39 @@ static cell_t CreateTrieSnapshot(IPluginContext *pContext, const cell_t *params)
 	return hndl;
 }
 
+static cell_t CreateIntTrieSnapshot(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	Handle_t hndl = params[1];
+
+	IntCellTrie *pTrie;
+	if ((err = handlesys->ReadHandle(hndl, htIntCellTrie, &sec, (void **)&pTrie))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	IntTrieSnapshot *snapshot = new IntTrieSnapshot;
+	snapshot->length = pTrie->map.elements();
+	snapshot->keys = ke::MakeUnique<int[]>(snapshot->length);
+	size_t i = 0;
+	for (IntHashMap<Entry>::iterator iter = pTrie->map.iter(); !iter.empty(); iter.next(), i++)
+		snapshot->keys[i] = snapshot->ints.AddInt(iter->key);
+	assert(i == snapshot->length);
+
+	if ((hndl = handlesys->CreateHandle(htIntSnapshot, snapshot, pContext->GetIdentity(), g_pCoreIdent, NULL))
+		== BAD_HANDLE)
+	{
+		delete snapshot;
+		return BAD_HANDLE;
+	}
+
+	return hndl;
+}
+
+
 static cell_t TrieSnapshotLength(IPluginContext *pContext, const cell_t *params)
 {
 	HandleError err;
@@ -579,8 +989,25 @@ static cell_t TrieSnapshotLength(IPluginContext *pContext, const cell_t *params)
 
 	Handle_t hndl = params[1];
 
-	TrieSnapshot *snapshot;
-	if ((err = handlesys->ReadHandle(hndl, htSnapshot, &sec, (void **)&snapshot))
+	StringTrieSnapshot *snapshot;
+	if ((err = handlesys->ReadHandle(hndl, htStringSnapshot, &sec, (void **)&snapshot))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	return snapshot->length;
+}
+
+static cell_t IntTrieSnapshotLength(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	Handle_t hndl = params[1];
+
+	IntTrieSnapshot *snapshot;
+	if ((err = handlesys->ReadHandle(hndl, htIntSnapshot, &sec, (void **)&snapshot))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -596,8 +1023,8 @@ static cell_t TrieSnapshotKeyBufferSize(IPluginContext *pContext, const cell_t *
 
 	Handle_t hndl = params[1];
 
-	TrieSnapshot *snapshot;
-	if ((err = handlesys->ReadHandle(hndl, htSnapshot, &sec, (void **)&snapshot))
+	StringTrieSnapshot *snapshot;
+	if ((err = handlesys->ReadHandle(hndl, htStringSnapshot, &sec, (void **)&snapshot))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -617,8 +1044,8 @@ static cell_t GetTrieSnapshotKey(IPluginContext *pContext, const cell_t *params)
 
 	Handle_t hndl = params[1];
 
-	TrieSnapshot *snapshot;
-	if ((err = handlesys->ReadHandle(hndl, htSnapshot, &sec, (void **)&snapshot))
+	StringTrieSnapshot *snapshot;
+	if ((err = handlesys->ReadHandle(hndl, htStringSnapshot, &sec, (void **)&snapshot))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -634,6 +1061,28 @@ static cell_t GetTrieSnapshotKey(IPluginContext *pContext, const cell_t *params)
 	return written;
 }
 
+static cell_t GetIntTrieSnapshotKey(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	Handle_t hndl = params[1];
+
+	IntTrieSnapshot *snapshot;
+	if ((err = handlesys->ReadHandle(hndl, htIntSnapshot, &sec, (void **)&snapshot))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	unsigned index = params[2];
+	if (index >= snapshot->length)
+		return pContext->ThrowNativeError("Invalid index %d", index);
+
+	return snapshot->ints.GetInt(snapshot->keys[index]);
+}
+
+
 REGISTER_NATIVES(trieNatives)
 {
 	{"ClearTrie",				ClearTrie},
@@ -647,27 +1096,57 @@ REGISTER_NATIVES(trieNatives)
 	{"SetTrieValue",			SetTrieValue},
 	{"GetTrieSize",				GetTrieSize},
 
-	{"CreateTrieSnapshot",		CreateTrieSnapshot},
-	{"TrieSnapshotLength",		TrieSnapshotLength},
-	{"TrieSnapshotKeyBufferSize", TrieSnapshotKeyBufferSize},
-	{"GetTrieSnapshotKey",		GetTrieSnapshotKey},
+	{"ClearIntTrie",			ClearIntTrie},
+	{"CreateIntTrie",			CreateIntTrie},
+	{"GetIntTrieArray",			GetIntTrieArray},
+	{"GetIntTrieString",			GetIntTrieString},
+	{"GetIntTrieValue",			GetIntTrieValue},
+	{"RemoveFromIntTrie",			RemoveFromIntTrie},
+	{"SetIntTrieArray",			SetIntTrieArray},
+	{"SetIntTrieString",			SetIntTrieString},
+	{"SetIntTrieValue",			SetIntTrieValue},
+	{"GetIntTrieSize",			GetIntTrieSize},
+
+	{"CreateTrieSnapshot",			CreateTrieSnapshot},
+	{"TrieSnapshotLength",			TrieSnapshotLength},
+	{"TrieSnapshotKeyBufferSize",		TrieSnapshotKeyBufferSize},
+	{"GetTrieSnapshotKey",			GetTrieSnapshotKey},
+
+	{"CreateIntTrieSnapshot",		CreateIntTrieSnapshot},
+	{"IntTrieSnapshotLength",		IntTrieSnapshotLength},
+	{"GetIntTrieSnapshotKey",		GetIntTrieSnapshotKey},
 
 	// Transitional syntax support.
-	{"StringMap.StringMap",		CreateTrie},
+	{"StringMap.StringMap",			CreateTrie},
 	{"StringMap.Clear",			ClearTrie},
-	{"StringMap.GetArray",		GetTrieArray},
-	{"StringMap.GetString",		GetTrieString},
-	{"StringMap.GetValue",		GetTrieValue},
-	{"StringMap.Remove",		RemoveFromTrie},
-	{"StringMap.SetArray",		SetTrieArray},
-	{"StringMap.SetString",		SetTrieString},
-	{"StringMap.SetValue",		SetTrieValue},
-	{"StringMap.Size.get",		GetTrieSize},
-	{"StringMap.Snapshot",		CreateTrieSnapshot},
+	{"StringMap.GetArray",			GetTrieArray},
+	{"StringMap.GetString",			GetTrieString},
+	{"StringMap.GetValue",			GetTrieValue},
+	{"StringMap.Remove",			RemoveFromTrie},
+	{"StringMap.SetArray",			SetTrieArray},
+	{"StringMap.SetString",			SetTrieString},
+	{"StringMap.SetValue",			SetTrieValue},
+	{"StringMap.Size.get",			GetTrieSize},
+	{"StringMap.Snapshot",			CreateTrieSnapshot},
+
+	{"IntMap.IntMap",			CreateIntTrie},
+	{"IntMap.Clear",			ClearIntTrie},
+	{"IntMap.GetArray",			GetIntTrieArray},
+	{"IntMap.GetString",			GetIntTrieString},
+	{"IntMap.GetValue",			GetIntTrieValue},
+	{"IntMap.Remove",			RemoveFromIntTrie},
+	{"IntMap.SetArray",			SetIntTrieArray},
+	{"IntMap.SetString",			SetIntTrieString},
+	{"IntMap.SetValue",			SetIntTrieValue},
+	{"IntMap.Size.get",			GetIntTrieSize},
+	{"IntMap.Snapshot",			CreateIntTrieSnapshot},
 
 	{"StringMapSnapshot.Length.get",	TrieSnapshotLength},
-	{"StringMapSnapshot.KeyBufferSize", TrieSnapshotKeyBufferSize},
+	{"StringMapSnapshot.KeyBufferSize",	TrieSnapshotKeyBufferSize},
 	{"StringMapSnapshot.GetKey",		GetTrieSnapshotKey},
 
-	{NULL,						NULL},
+	{"IntMapSnapshot.Length.get",		IntTrieSnapshotLength},
+	{"IntMapSnapshot.GetKey",		GetIntTrieSnapshotKey},
+
+	{NULL,					NULL},
 };

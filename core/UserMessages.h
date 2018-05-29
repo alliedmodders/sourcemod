@@ -34,7 +34,7 @@
 
 #include <IUserMessages.h>
 #include "sourcemm_api.h"
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 #include "sm_stringutil.h"
 #include "CellRecipientFilter.h"
 #include "sm_globals.h"

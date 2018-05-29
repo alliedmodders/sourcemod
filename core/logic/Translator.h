@@ -33,7 +33,7 @@
 #define _INCLUDE_SOURCEMOD_TRANSLATOR_H_
 
 #include "common_logic.h"
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 #include <sh_string.h>
 #include <sh_vector.h>
 #include "sm_memtable.h"

@@ -38,7 +38,7 @@
 #include <am-utility.h>
 #include <am-refcounting.h>
 #include <sh_list.h>
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 #include <sm_namehashset.h>
 #include "common_logic.h"
 #include "Native.h"

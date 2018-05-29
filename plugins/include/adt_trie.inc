@@ -87,7 +87,6 @@ methodmap StringMap < Handle
 
 	// Retrieves an array in a Map.
 	//
-	// @param map        Map Handle.
 	// @param key        Key string.
 	// @param array      Buffer to store array.
 	// @param max_size   Maximum size of array buffer.
@@ -124,6 +123,93 @@ methodmap StringMap < Handle
 	}
 };
 
+methodmap IntMap < Handle
+{
+	// Creates a hash map. A hash map is a container that can map integers (called
+	// "keys") to arbitrary values (cells, arrays, or strings). Keys in a hash map
+	// are unique. That is, there is at most one entry in the map for a given key.
+	//
+	// Insertion, deletion, and lookup in a hash map are all considered to be fast
+	// operations, amortized to O(1), or constant time.
+	//
+	// The word "Trie" in this API is historical. As of SourceMod 1.6, tries have
+	// been internally replaced with hash tables, which have O(1) insertion time
+	// instead of O(n).
+	//
+	// The IntMap must be freed via delete or CloseHandle().
+	public native IntMap();
+
+	// Sets a value in a hash map, either inserting a new entry or replacing an old one.
+	//
+	// @param key        Key integer.
+	// @param value      Value to store at this key.
+	// @param replace    If false, operation will fail if the key is already set.
+	// @return           True on success, false on failure.
+	public native bool SetValue(const int key, any value, bool replace=true);
+
+	// Sets an array value in a Map, either inserting a new entry or replacing an old one.
+	//
+	// @param key        Key integer.
+	// @param array      Array to store.
+	// @param num_items  Number of items in the array.
+	// @param replace    If false, operation will fail if the key is already set.
+	// @return           True on success, false on failure.
+	public native bool SetArray(const int key, const any[] array, int num_items, bool replace=true);
+
+	// Sets a string value in a Map, either inserting a new entry or replacing an old one.
+	//
+	// @param key        Key integer.
+	// @param value      String to store.
+	// @param replace    If false, operation will fail if the key is already set.
+	// @return           True on success, false on failure.
+	public native bool SetString(const int key, const char[] value, bool replace=true);
+
+	// Retrieves a value in a Map.
+	//
+	// @param key        Key integer.
+	// @param value      Variable to store value.
+	// @return           True on success.  False if the key is not set, or the key is set 
+	//                   as an array or string (not a value).
+	public native bool GetValue(const int key, any &value);
+
+	// Retrieves an array in a Map.
+	//
+	// @param key        Key integer.
+	// @param array      Buffer to store array.
+	// @param max_size   Maximum size of array buffer.
+	// @param size       Optional parameter to store the number of elements written to the buffer.
+	// @return           True on success.  False if the key is not set, or the key is set 
+	//                   as a value or string (not an array).
+	public native bool GetArray(const int key, any[] array, int max_size, int &size=0);
+
+	// Retrieves a string in a Map.
+	//
+	// @param key        Key integer.
+	// @param value      Buffer to store value.
+	// @param max_size   Maximum size of string buffer.
+	// @param size       Optional parameter to store the number of bytes written to the buffer.
+	// @return           True on success.  False if the key is not set, or the key is set 
+	//                   as a value or array (not a string).
+	public native bool GetString(const int key, char[] value, int max_size, int &size=0);
+
+	// Removes a key entry from a Map.
+	//
+	// @param key        Key integer.
+	// @return           True on success, false if the value was never set.
+	public native bool Remove(const int key);
+
+	// Clears all entries from a Map.
+	public native void Clear();
+
+	// Create a snapshot of the map's keys. See IntMapSnapshot.
+	public native IntMapSnapshot Snapshot();
+
+	// Retrieves the number of elements in a map.
+	property int Size {
+		public native get();
+	}
+};
+
 // A StringMapSnapshot is created via StringMap.Snapshot(). It captures the
 // keys on a map so they can be read. Snapshots must be freed with delete or
 // CloseHandle().
@@ -150,6 +236,24 @@ methodmap StringMapSnapshot < Handle
 	// @return           Number of bytes written to the buffer.
 	// @error            Index out of range.
 	public native int GetKey(int index, char[] buffer, int maxlength);
+};
+
+// A IntMapSnapshot is created via IntMap.Snapshot(). It captures the
+// keys on a map so they can be read. Snapshots must be freed with delete or
+// CloseHandle().
+methodmap IntMapSnapshot < Handle
+{
+	// Returns the number of keys in the map snapshot.
+	property int Length {
+		public native get();
+	}
+
+	// Retrieves the key integer of a given key in a map snapshot.
+	// 
+	// @param index      Key index (starting from 0).
+	// @return           The key integer
+	// @error            Index out of range.
+	public native int GetKey(int index);
 };
 
 /**
