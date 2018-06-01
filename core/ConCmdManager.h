@@ -41,6 +41,7 @@
 #include <IAdminSystem.h>
 #include "concmd_cleaner.h"
 #include "GameHooks.h"
+#include <am-autoptr.h>
 #include <sm_stringhashmap.h>
 #include <am-utility.h>
 #include <am-inlinelist.h>

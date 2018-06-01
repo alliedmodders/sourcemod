@@ -35,6 +35,7 @@
 #include <IHandleSys.h>
 #include <stdio.h>
 #include <sm_namehashset.h>
+#include <amtl/am-autoptr.h>
 #include <amtl/am-string.h>
 #include <amtl/am-function.h>
 #include "common_logic.h"
