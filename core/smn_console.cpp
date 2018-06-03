@@ -609,10 +609,12 @@ static cell_t sm_SetConVarBounds(IPluginContext *pContext, const cell_t *params)
 	switch (params[2])
 	{
 	case ConVarBound_Upper:
-		pConVar->m_fMaxVal = params[3] ? true : false, sp_ctof(params[4]);
+		pConVar->m_fMaxVal = sp_ctof(params[4]);
+		pConVar->m_bHasMax = params[3] ? true : false;
 		break;
 	case ConVarBound_Lower:
-		pConVar->m_fMinVal = params[3] ? true : false, sp_ctof(params[4]);
+		pConVar->m_fMinVal = sp_ctof(params[4]);
+		pConVar->m_bHasMin = params[3] ? true : false;
 		break;
 	default:
 		return pContext->ThrowNativeError("Invalid ConVarBounds value %d");
