@@ -42,6 +42,7 @@ if SM.mysql_root:
     if binary.compiler.family == 'msvc' and binary.compiler.version >= 1900:
       binary.sources += [ 'msvc15hack.c' ]
       binary.compiler.linkflags += ['legacy_stdio_definitions.lib', 'legacy_stdio_wide_specifiers.lib']
+      binary.compiler.defines += ['HAVE_STRUCT_TIMESPEC']
 
     SM.extensions += [builder.Add(binary)]
 

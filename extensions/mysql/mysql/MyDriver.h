@@ -39,9 +39,9 @@
 #include <WinSock2.h>
 #endif
 
-#include <mysql.h>
 #include <my_global.h>
 #include <my_sys.h>
+#include <mysql.h>
 
 #include <sh_string.h>
 #include <sh_list.h>
