@@ -33,7 +33,7 @@
 #include "MyBoundResults.h"
 
 MyStatement::MyStatement(MyDatabase *db, MYSQL_STMT *stmt)
-: m_mysql(db->m_mysql), m_pParent(db), m_stmt(stmt), m_rs(NULL), m_Results(false)
+: m_mysql(db->m_mysql), m_pParent(db), m_stmt(stmt), m_pRes(NULL), m_rs(NULL), m_Results(false)
 {
 	m_Params = (unsigned int)mysql_stmt_param_count(m_stmt);
 
@@ -48,14 +48,18 @@ MyStatement::MyStatement(MyDatabase *db, MYSQL_STMT *stmt)
 		m_bind = NULL;
 	}
 
-	m_pRes = mysql_stmt_result_metadata(stmt);
 	m_Results = false;
 }
 
 MyStatement::~MyStatement()
 {
+	while (FetchMoreResults())
+	{
+		/* Spin until all are gone */
+	}
+
 	/* Free result set structures */
-	delete m_rs;
+	ClearResults();
 
 	/* Free old blobs */
 	for (unsigned int i=0; i<m_Params; i++)
@@ -68,10 +72,6 @@ MyStatement::~MyStatement()
 	free(m_bind);
 	
 	/* Close our mysql handles */
-	if (m_pRes)
-	{
-		mysql_free_result(m_pRes);
-	}
 	mysql_stmt_close(m_stmt);
 }
 
@@ -80,12 +80,76 @@ void MyStatement::Destroy()
 	delete this;
 }
 
+void MyStatement::ClearResults()
+{
+	if (m_rs)
+	{
+		delete m_rs;
+		m_rs = NULL;
+	}
+	if (m_pRes)
+	{
+		mysql_free_result(m_pRes);
+		m_pRes = NULL;
+	}
+	m_Results = false;
+}
+
 bool MyStatement::FetchMoreResults()
 {
-	/* Multiple result sets are not supported by statements,
-	 * thank god.
+	if (m_pRes == NULL)
+	{
+		return false;
+	}
+	else if (!mysql_more_results(m_pParent->m_mysql)) {
+		return false;
+	}
+
+	ClearResults();
+
+	if (mysql_stmt_next_result(m_stmt) != 0)
+	{
+		return false;
+	}
+
+	/* the column count is > 0 if there is a result set
+	 * 0 if the result is only the final status packet in CALL queries.
 	 */
-	return false;
+	unsigned int num_fields = mysql_stmt_field_count(m_stmt);
+	if (num_fields == 0)
+	{
+		return false;
+	}
+
+	/* Skip away if we don't have data */
+	m_pRes = mysql_stmt_result_metadata(m_stmt);
+	if (!m_pRes)
+	{
+		return false;
+	}
+
+	/* If we don't have a result manager, create one. */
+	if (!m_rs)
+	{
+		m_rs = new MyBoundResults(m_stmt, m_pRes, num_fields);
+	}
+
+	/* Tell the result set to update its bind info,
+	* and initialize itself if necessary.
+	*/
+	if (!(m_Results = m_rs->Initialize()))
+	{
+		return false;
+	}
+
+	/* Try precaching the results. */
+	m_Results = (mysql_stmt_store_result(m_stmt) == 0);
+
+	/* Update now that the data is known. */
+	m_rs->Update();
+
+	/* Return indicator */
+	return m_Results;
 }
 
 void *MyStatement::CopyBlob(unsigned int param, const void *blobptr, size_t length)
@@ -211,7 +275,13 @@ bool MyStatement::BindParamNull(unsigned int param)
 bool MyStatement::Execute()
 {
 	/* Clear any past result first! */
-	m_Results = false;
+	while (FetchMoreResults())
+	{
+		/* Spin until all are gone */
+	}
+
+	/* Free result set structures */
+	ClearResults();
 
 	/* Bind the parameters */
 	if (m_Params)
@@ -227,17 +297,24 @@ bool MyStatement::Execute()
 		return false;
 	}
 
+	/* the column count is > 0 if there is a result set
+	 * 0 if the result is only the final status packet in CALL queries.
+	 */
+	unsigned int num_fields = mysql_stmt_field_count(m_stmt);
+	if (num_fields == 0)
+	{
+		return true;
+	}
+
 	/* Skip away if we don't have data */
+	m_pRes = mysql_stmt_result_metadata(m_stmt);
 	if (!m_pRes)
 	{
 		return true;
 	}
 
-	/* If we don't have a result manager, create one. */
-	if (!m_rs)
-	{
-		m_rs = new MyBoundResults(m_stmt, m_pRes);
-	}
+	/* Create our result manager. */
+	m_rs = new MyBoundResults(m_stmt, m_pRes, num_fields);
 
 	/* Tell the result set to update its bind info,
 	 * and initialize itself if necessary.
