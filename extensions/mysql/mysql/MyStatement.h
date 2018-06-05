@@ -67,6 +67,7 @@ public: //IPreparedQuery
 	unsigned int GetInsertID();
 private:
 	void *CopyBlob(unsigned int param, const void *blobptr, size_t length);
+	void ClearResults();
 private:
 	MYSQL *m_mysql;
 	ke::RefPtr<MyDatabase> m_pParent;
