@@ -56,20 +56,14 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	if (DBInfo == NULL)
 	{
-		DBInfo = dbi->FindDatabaseConf("default");
-
+		DBInfo = dbi->FindDatabaseConf("storage-local");
 		if (DBInfo == NULL)
 		{
-			DBInfo = dbi->FindDatabaseConf("storage-local");
+			ke::SafeStrcpy(error, maxlength, "Could not find any suitable database configs");
+			return false;
 		}
 	}
 	
-	if (DBInfo == NULL)
-	{
-		ke::SafeStrcpy(error, maxlength, "Could not find any suitable database configs");
-		return false;
-	}
-
 	if (DBInfo->driver && DBInfo->driver[0] != '\0')
 	{
 		Driver = dbi->FindOrLoadDriver(DBInfo->driver);

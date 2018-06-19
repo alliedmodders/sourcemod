@@ -314,6 +314,12 @@ public:
 		error[0] = '\0';
 		strncopy(dbname, _dbname, sizeof(dbname));
 		me = scripts->FindPluginByContext(m_pFunction->GetParentContext()->GetContext());
+		
+		m_pInfo = g_DBMan.GetDatabaseConf(dbname);
+		if (!m_pInfo)
+		{
+			g_pSM->Format(error, sizeof(error), "Could not find database config \"%s\"", dbname);
+		}
 	}
 	IdentityToken_t *GetOwner()
 	{
@@ -325,15 +331,10 @@ public:
 	}
 	void RunThreadPart()
 	{
-		g_DBMan.LockConfig();
-		const DatabaseInfo *pInfo = g_DBMan.FindDatabaseConf(dbname);
-		if (!pInfo)
+		if (m_pInfo)
 		{
-			g_pSM->Format(error, sizeof(error), "Could not find database config \"%s\"", dbname);
-		} else {
-			m_pDatabase = m_pDriver->Connect(pInfo, false, error, sizeof(error));
+			m_pDatabase = m_pDriver->Connect(&m_pInfo->info, false, error, sizeof(error));
 		}
-		g_DBMan.UnlockConfig();
 	}
 	void CancelThinkPart()
 	{
@@ -383,6 +384,7 @@ public:
 		delete this;
 	}
 private:
+	ke::RefPtr<ConfDbInfo> m_pInfo;
 	IPlugin *me;
 	IPluginFunction *m_pFunction;
 	IDBDriver *m_pDriver;
@@ -453,7 +455,7 @@ static cell_t ConnectToDbAsync(IPluginContext *pContext, const cell_t *params, A
 			g_pSM->Format(error, 
 				sizeof(error), 
 				"Could not find driver \"%s\"", 
-				pInfo->driver[0] == '\0' ? g_DBMan.GetDefaultDriverName() : pInfo->driver);
+				pInfo->driver[0] == '\0' ? g_DBMan.GetDefaultDriverName().chars() : pInfo->driver);
 		} else if (!driver->IsThreadSafe()) {
 			g_pSM->Format(error,
 				sizeof(error),
