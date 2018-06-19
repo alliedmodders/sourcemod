@@ -34,6 +34,8 @@
 
 #include "sp_vm_api.h"
 #include "common_logic.h"
+#include <am-vector.h>
+#include <am-string.h>
 
 class DebugReport : 
 	public SMGlobalClass, 
@@ -48,6 +50,7 @@ public:
 	void GenerateError(IPluginContext *ctx, cell_t func_idx, int err, const char *message, ...);
 	void GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err, const char *message, va_list ap); 
 	void GenerateCodeError(IPluginContext *ctx, uint32_t code_addr, int err, const char *message, ...);
+	ke::Vector<ke::AString> GetStackTrace(IFrameIterator *iter);
 private:
 	int _GetPluginIndex(IPluginContext *ctx);
 };
