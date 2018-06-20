@@ -601,24 +601,3 @@ void DBManager::AddDependency(IExtension *myself, IDBDriver *driver)
 {
 	g_Extensions.AddRawDependency(myself, driver->GetIdentity(), driver);
 }
-
-void DBManager::ReloadDatabaseConfigurations()
-{
-	SMCError err;
-	SMCStates states = {0, 0};
-
-	/* We lock and don't give up the lock until we're done.
-	 * This way the thread's search won't be searching through a
-	 * potentially empty/corrupt list, which would be very bad.
-	 */
-	ke::AutoLock lock(&m_ConfigLock);
-	if ((err = textparsers->ParseFile_SMC(m_Filename, this, &states)) != SMCError_Okay)
-	{
-		logger->LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename);
-		if (err != SMCError_Custom)
-		{
-			const char *txt = textparsers->GetSMCErrorString(err);
-			logger->LogError("[SM] Line %d: %s", states.line, txt);
-		}
-	}
-}
