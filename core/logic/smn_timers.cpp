@@ -361,6 +361,9 @@ REGISTER_NATIVES(timernatives)
 	{"ExtendMapTimeLimit",		smn_ExtendMapTimeLimit},
 	{"IsServerProcessing",		smn_IsServerProcessing},
 	{"GetTickInterval",			smn_GetTickInterval},
+	{"Timer.Timer",				smn_CreateTimer},
+	{"Timer.Kill",				smn_KillTimer},
+	{"Timer.Trigger",			smn_TriggerTimer},
 	{NULL,						NULL}
 };
 

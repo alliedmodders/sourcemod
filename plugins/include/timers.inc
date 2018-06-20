@@ -45,7 +45,7 @@
 /**
  * Any of the following prototypes will work for a timed function.
  */
-typeset Timer
+typeset TimerCallback
 {
 	/**
  	 * Called when the timer interval has elapsed.
@@ -55,7 +55,7 @@ typeset Timer
  	 * @return				Plugin_Stop to stop a repeating timer, any other value for
  	 *						default behavior.
  	 */
-	function Action(Handle timer, Handle hndl);
+	function Action(Timer timer, Handle hndl);
 	
 	/**
  	 * Called when the timer interval has elapsed.
@@ -65,7 +65,7 @@ typeset Timer
  	 * @return				Plugin_Stop to stop a repeating timer, any other value for
  	 *						default behavior.
  	 */
-	function Action(Handle timer, any data);
+	function Action(Timer timer, any data);
 	
 	/**
  	 * Called when the timer interval has elapsed.
@@ -74,8 +74,40 @@ typeset Timer
  	 * @return				Plugin_Stop to stop a repeating timer, any other value for
  	 *						default behavior.
  	 */
-	function Action(Handle timer);
+	function Action(Timer timer);
 };
+
+methodmap Timer < Handle
+{
+	/**
+	 * Creates a basic timer.  Calling delete on a timer handle will end the timer.
+	 *
+	 * @param interval			Interval from the current game time to execute the given function.
+	 * @param func				Function to execute once the given interval has elapsed.
+	 * @param data				Handle or value to pass through to the timer callback function.
+	 * @param flags				Flags to set (such as repeatability or auto-Handle closing).
+	 * @return					Handle to the timer object.  You do not need to call CloseHandle().
+	 *							If the timer could not be created, INVALID_HANDLE will be returned.
+	 */
+	public native Timer(float interval, TimerCallback func, any data=INVALID_HANDLE, int flags=0);
+	
+	/**
+	 * Kills a timer.  Use this instead of delete if you need more options.
+	 *
+	 * @param autoClose			If autoClose is true, the data that was passed to CreateTimer() will
+	 *							be closed as a handle if TIMER_DATA_HNDL_CLOSE was not specified.
+	 * @error				Invalid handles will cause a run time error.
+	 */
+	public native void Kill(bool autoClose=false);
+
+	/**
+	 * Manually triggers a timer so its function will be called.
+	 *
+	 * @param reset				If reset is true, the elapsed time counter is reset
+	 *							so the full interval must pass again.
+	 */
+	public native void Trigger(bool reset=false);
+}
 
 /**
  * Creates a basic timer.  Calling CloseHandle() on a timer will end the timer.
@@ -87,7 +119,7 @@ typeset Timer
  * @return					Handle to the timer object.  You do not need to call CloseHandle().
  *							If the timer could not be created, INVALID_HANDLE will be returned.
  */
-native Handle CreateTimer(float interval, Timer func, any data=INVALID_HANDLE, int flags=0);
+native Timer CreateTimer(float interval, TimerCallback func, any data=INVALID_HANDLE, int flags=0);
 
 /**
  * Kills a timer.  Use this instead of CloseHandle() if you need more options.
@@ -179,7 +211,7 @@ native float GetTickInterval();
 forward void OnMapTimeLeftChanged();
 
 /**
- * Returns whether or not the server is processing frames or not.  
+ * Returns whether or not the server is processing frames.  
  *
  * The server does not process frames until at least one client joins the game.  
  * Once the first player has in, even if that player, leaves, the server's 
@@ -201,9 +233,9 @@ native bool IsServerProcessing();
  * @param flags				Timer flags.
  * @return					Handle to the timer object.  You do not need to call CloseHandle().
  */
-stock Handle CreateDataTimer(float interval, Timer func, Handle &datapack, int flags=0)
+stock Timer CreateDataTimer(float interval, TimerCallback func, DataPack &datapack, int flags=0)
 {
 	datapack = new DataPack();
 	flags |= TIMER_DATA_HNDL_CLOSE;
-	return CreateTimer(interval, func, datapack, flags);
+	return (new Timer(interval, func, datapack, flags));
 }
