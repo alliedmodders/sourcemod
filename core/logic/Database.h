@@ -76,12 +76,6 @@ public: //IDBManager
 	HandleError ReadHandle(Handle_t hndl, DBHandleType type, void **ptr);
 	HandleError ReleaseHandle(Handle_t hndl, DBHandleType type, IdentityToken_t *token);
 	void AddDependency(IExtension *myself, IDBDriver *driver);
-public: //ITextListener_SMC
-	void ReadSMC_ParseStart();
-	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
-	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
-	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
-	void ReadSMC_ParseEnd(bool halted, bool failed);
 public: //ke::IRunnable
 	void Run();
 	void ThreadMain();
