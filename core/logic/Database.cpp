@@ -78,7 +78,7 @@ void DBManager::OnSourceModAllInitialized()
 	g_pSM->AddGameFrameHook(&FrameHook);
 
 	auto sm_reload_databases = [this] (int client, const ICommandArgs *args) -> bool {
-		ReloadDatabaseConfigurations();
+		m_Builder.StartParse();
 		return true;
 	};
 	bridge->DefineCommand("sm_reload_databases", "Reparse database configurations file", sm_reload_databases);
