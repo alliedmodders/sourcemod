@@ -141,14 +141,14 @@ public:
 		if (m_CmdFlags.retrieve(name, &pCmd))
 		{
 			TrackConCommandBase(pCmd, this);
-			*flags = pCmd->GetFlags();
+			*flags = pCmd->m_nFlags;
 			return true;
 		}
 		else if ((pCmd=FindCommandBase(name)))
 		{
 			m_CmdFlags.insert(name, pCmd);
 			TrackConCommandBase(pCmd, this);
-			*flags = pCmd->GetFlags();
+			*flags = pCmd->m_nFlags;
 			return true;
 		}
 		else
@@ -161,14 +161,14 @@ public:
 		ConCommandBase *pCmd;
 		if (m_CmdFlags.retrieve(name, &pCmd))
 		{
-			pCmd->SetFlags(flags);
+			pCmd->m_nFlags = flags;
 			TrackConCommandBase(pCmd, this);
 			return true;
 		}
 		else if ((pCmd=FindCommandBase(name)))
 		{
 			m_CmdFlags.insert(name, pCmd);
-			pCmd->SetFlags(flags);
+			pCmd->m_nFlags = flags;
 			TrackConCommandBase(pCmd, this);
 			return true;
 		}
@@ -540,7 +540,7 @@ static cell_t sm_GetConVarFlags(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
-	return pConVar->GetFlags();
+	return pConVar->m_nFlags;
 }
 
 static cell_t sm_SetConVarFlags(IPluginContext *pContext, const cell_t *params)
@@ -555,7 +555,7 @@ static cell_t sm_SetConVarFlags(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
-	pConVar->SetFlags(params[2]);
+	pConVar->m_nFlags = params[2];
 
 	return 1;
 }
@@ -609,10 +609,12 @@ static cell_t sm_SetConVarBounds(IPluginContext *pContext, const cell_t *params)
 	switch (params[2])
 	{
 	case ConVarBound_Upper:
-		pConVar->SetMax(params[3] ? true : false, sp_ctof(params[4]));
+		pConVar->m_fMaxVal = sp_ctof(params[4]);
+		pConVar->m_bHasMax = params[3] ? true : false;
 		break;
 	case ConVarBound_Lower:
-		pConVar->SetMin(params[3] ? true : false, sp_ctof(params[4]));
+		pConVar->m_fMinVal = sp_ctof(params[4]);
+		pConVar->m_bHasMin = params[3] ? true : false;
 		break;
 	default:
 		return pContext->ThrowNativeError("Invalid ConVarBounds value %d");
@@ -1086,7 +1088,7 @@ static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params
 
 	pContext->StringToLocalUTF8(params[1], params[2], pConCmd->GetName(), NULL);
 	*pIsCmd = pConCmd->IsCommand() ? 1 : 0;
-	*pFlags = pConCmd->GetFlags();
+	*pFlags = pConCmd->m_nFlags;
 
 	if (params[6])
 	{
@@ -1135,7 +1137,7 @@ static cell_t FindNextConCommand(IPluginContext *pContext, const cell_t *params)
 
 	pContext->StringToLocalUTF8(params[2], params[3], pConCmd->GetName(), NULL);
 	*pIsCmd = pConCmd->IsCommand() ? 1 : 0;
-	*pFlags = pConCmd->GetFlags();
+	*pFlags = pConCmd->m_nFlags;
 
 	if (params[7])
 	{

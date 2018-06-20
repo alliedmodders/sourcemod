@@ -38,6 +38,7 @@
 RegEx::RegEx()
 {
 	mErrorOffset = 0;
+	mErrorCode = 0;
 	mError = NULL;
 	re = NULL;
 	mFree = true;
@@ -48,6 +49,7 @@ RegEx::RegEx()
 void RegEx::Clear ()
 {
 	mErrorOffset = 0;
+	mErrorCode = 0;
 	mError = NULL;
 	if (re)
 		pcre_free(re);
@@ -80,7 +82,7 @@ int RegEx::Compile(const char *pattern, int iFlags)
 	if (!mFree)
 		Clear();
 		
-	re = pcre_compile(pattern, iFlags, &mError, &mErrorOffset, NULL);
+	re = pcre_compile2(pattern, iFlags, &mErrorCode, &mError, &mErrorOffset, NULL);
 
 	if (re == NULL)
 	{
@@ -115,7 +117,7 @@ int RegEx::Match(const char *str, unsigned int offset)
 		{
 			return 0;
 		} else {
-			mErrorOffset = rc;
+			mErrorCode = rc;
 			return -1;
 		}
 	}
@@ -158,7 +160,7 @@ int RegEx::MatchAll(const char *str)
 			return 0;
 		}
 		else {
-			mErrorOffset = rc;
+			mErrorCode = rc;
 			return -1;
 		}
 	}
@@ -172,6 +174,7 @@ void RegEx::ClearMatch()
 {
 	// Clears match results
 	mErrorOffset = 0;
+	mErrorCode = 0;
 	mError = NULL;
 	if (subject)
 		delete [] subject;

@@ -6,6 +6,7 @@
 #include <dlfcn.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "libudis86/udis86.h"
 

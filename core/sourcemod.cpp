@@ -107,7 +107,7 @@ ConfigResult SourceModBase::OnSourceModConfigChanged(const char *key,
 	{
 		if (source == ConfigSource_Console)
 		{
-			ke::SafeSprintf(error, maxlength, "Cannot be set at runtime");
+			ke::SafeStrcpy(error, maxlength, "Cannot be set at runtime");
 			return ConfigResult_Reject;
 		}
 
@@ -207,7 +207,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 
 	if (!factoryFn) {
 		if (error && maxlength)
-			snprintf(error, maxlength, "SourcePawn library is out of date");
+			ke::SafeStrcpy(error, maxlength, "SourcePawn library is out of date");
 		ShutdownJIT();
 		return false;
 	}
@@ -215,7 +215,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	ISourcePawnFactory *factory = factoryFn(SOURCEPAWN_API_VERSION);
 	if (!factory) {
 		if (error && maxlength)
-			snprintf(error, maxlength, "SourcePawn library is out of date");
+			ke::SafeStrcpy(error, maxlength, "SourcePawn library is out of date");
 		ShutdownJIT();
 		return false;
 	}
@@ -223,7 +223,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	g_pPawnEnv = factory->NewEnvironment();
 	if (!g_pPawnEnv) {
 		if (error && maxlength)
-			snprintf(error, maxlength, "Could not create a SourcePawn environment!");
+			ke::SafeStrcpy(error, maxlength, "Could not create a SourcePawn environment!");
 		ShutdownJIT();
 		return false;
 	}

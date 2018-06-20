@@ -182,8 +182,8 @@ class SMConfig(object):
       if builder.options.mysql_path:
         self.mysql_root['x86'] = builder.options.mysql_path
       else:
-        for i in range(7):
-          self.mysql_root['x86'] = ResolveEnvPath('MYSQL5', 'mysql-5.' + str(i))
+        for i in range(10):
+          self.mysql_root['x86'] = ResolveEnvPath('MYSQL55', 'mysql-5.' + str(i))
           if self.mysql_root['x86']:
             break
       if not self.mysql_root['x86'] or not os.path.isdir(self.mysql_root['x86']):
@@ -192,11 +192,11 @@ class SMConfig(object):
 
       # For now, ignore 64-bit MySQL on Windows
       if 'x64' in self.archs and builder.target.platform != 'windows':
-        if builder.options.mysql_path:
+        if builder.options.mysql64_path:
           self.mysql_root['x64'] = builder.options.mysql64_path
         else:
-          for i in range(7):
-            self.mysql_root['x64'] = ResolveEnvPath('MYSQL5_64', 'mysql-5.' + str(i) + '-x86_64')
+          for i in range(10):
+            self.mysql_root['x64'] = ResolveEnvPath('MYSQL55_64', 'mysql-5.' + str(i) + '-x86_64')
             if self.mysql_root['x64']:
               break
         if not self.mysql_root['x64'] or not os.path.isdir(self.mysql_root['x64']):

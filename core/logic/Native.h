@@ -33,6 +33,7 @@
 
 #include <IShareSys.h>
 #include <IHandleSys.h>
+#include <am-autoptr.h>
 #include <am-string.h>
 #include <am-utility.h>
 #include <am-refcounting.h>

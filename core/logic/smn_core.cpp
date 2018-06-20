@@ -937,6 +937,27 @@ static cell_t FrameIterator_GetFilePath(IPluginContext *pContext, const cell_t *
 	return 0;
 }
 
+static cell_t LogStackTrace(IPluginContext *pContext, const cell_t *params)
+{
+	char buffer[512];
+
+	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
+		
+	IFrameIterator *it = pContext->CreateFrameIterator();
+	ke::Vector<ke::AString> arr = g_DbgReporter.GetStackTrace(it);
+	pContext->DestroyFrameIterator(it);
+
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+
+	g_Logger.LogError("[SM] Stack trace requested: %s", buffer);
+	g_Logger.LogError("[SM] Called from: %s", pPlugin->GetFilename());
+	for (size_t i = 0; i < arr.length(); i)
+	{
+		g_Logger.LogError("%s", arr[i].chars());
+	}
+	return 0;
+}
+
 REGISTER_NATIVES(coreNatives)
 {
 	{"ThrowError",				ThrowError},
@@ -967,6 +988,7 @@ REGISTER_NATIVES(coreNatives)
 	{"StoreToAddress",          StoreToAddress},
 	{"IsNullVector",			IsNullVector},
 	{"IsNullString",			IsNullString},
+	{"LogStackTrace",           LogStackTrace},
 	
 	{"FrameIterator.FrameIterator",				FrameIterator_Create},
 	{"FrameIterator.Next",						FrameIterator_Next},

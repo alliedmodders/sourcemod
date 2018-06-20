@@ -84,6 +84,7 @@ for arch in SM.archs:
     'frame_tasks.cpp',
     'smn_halflife.cpp',
     'FrameIterator.cpp',
+    'DatabaseConfBuilder.cpp',
   ]
 
   if arch == 'x64':
