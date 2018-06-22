@@ -11,96 +11,81 @@
 
 "Games"
 {
-	/* IOS:Source */
-	"ios"
+	/* IOSoccer */
+	"iosoccer"
 	{
 		"Offsets"
 		{
 			/* CBasePlayer */
 			"GiveNamedItem"
 			{
-				"windows"	"328"
-				"linux"		"329"
+				"windows"	"336"
+				"linux"		"337"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"226"
-				"linux"		"227"
+				"windows"	"241"
+				"linux"		"242"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"224"
-				"linux"		"225"
+				"windows"	"239"
+				"linux"		"240"
 			}
 			"Ignite"
 			{
-				"windows"	"188"
-				"linux"		"189"
+				"windows"	"196"
+				"linux"		"197"
 			}
 			"Extinguish"
 			{
-				"windows"	"189"
-				"linux"		"190"
+				"windows"	"200"
+				"linux"		"201"
 			}
 			"Teleport"
 			{
-				"windows"	"98"
-				"linux"		"99"
+				"windows"	"103"
+				"linux"		"104"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"356"
-				"linux"		"357"
+				"windows"	"378"
+				"linux"		"378"
 			}
 			"GetVelocity"
 			{
-				"windows"	"126"
-				"linux"		"127"
+				"windows"	"133"
+				"linux"		"134"
 			}
 			"EyeAngles"
 			{
-				"windows"	"118"
-				"linux"		"119"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"31"
-				"linux"		"30"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"30"
-				"linux"		"31"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"29"
-				"linux"		"32"
+				"windows"	"125"
+				"linux"		"126"
 			}
 			"AcceptInput"
 			{
-				"windows"	"35"
-				"linux"		"36"
+				"windows"	"34"
+				"linux"		"35"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"25"
-				"linux"		"26"
+				"windows"	"23"
+				"linux"		"24"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"217"
-				"linux"		"218"
+				"windows"	"232"
+				"linux"		"233"
 			}
 			"Activate"
 			{
-				"windows"	"32"
-				"linux"		"33"
+				"windows"	"31"
+				"linux"		"32"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"346"
-				"linux"		"347"
+				"windows"	"356"
+				"linux"		"357"
 			}
 		}
 		
