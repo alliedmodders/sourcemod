@@ -267,6 +267,10 @@ public Action Command_Ban(int client, int args)
 {
 	if (args < 2)
 	{
+		if (client != 0 && args == 0)
+		{
+			DisplayBanTargetMenu(client);
+		}
 		ReplyToCommand(client, "[SM] Usage: sm_ban <#userid|name> <minutes|0> [reason]");
 		return Plugin_Handled;
 	}
