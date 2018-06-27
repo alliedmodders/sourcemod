@@ -125,6 +125,7 @@ public Action Command_Kick(int client, int args)
 {
 	if (args < 1)
 	{
+		DisplayKickMenu(client);
 		ReplyToCommand(client, "[SM] Usage: sm_kick <#userid|name> [reason]");
 		return Plugin_Handled;
 	}
