@@ -85,7 +85,7 @@ public Action Command_Map(int client, int args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_map <map>");
+		g_MapList.Display(client, MENU_TIME_FOREVER);
 		return Plugin_Handled;
 	}
 
