@@ -122,10 +122,10 @@ native bool IsValidEdict(int edict);
 /**
  * Returns whether or not an entity has a valid networkable edict.
  *
- * @param edict			Index of the entity.
+ * @param entity		Index of the entity.
  * @return				True if networkable, false if invalid or not networkable.
  */
-native bool IsEntNetworkable(int entiy);
+native bool IsEntNetworkable(int entity);
 
 /**
  * Creates a new edict (the basis of a networkable entity)
