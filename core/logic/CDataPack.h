@@ -74,6 +74,7 @@ public: //IDataPack
 	void PackFunction(cell_t function);
 public:
 	void Initialize();
+	void RemoveNextItem();
 	inline size_t GetCapacity() const { return this->elements.length(); };
 	inline CDataPackType GetCurrentType(void) const { return this->elements[this->position].type; };
 private:

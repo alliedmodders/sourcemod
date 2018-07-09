@@ -49,23 +49,27 @@ methodmap DataPack < Handle
 
 	// Packs a normal cell into a data pack.
 	//
-	// @param cell		Cell to add.
-	public native void WriteCell(any cell);
+	// @param cell			Cell to add.
+	// @param overwrite		Whether existing data should be overwritten.
+	public native void WriteCell(any cell, bool overwrite = true);
 
 	// Packs a float into a data pack.
 	//
-	// @param val		Float to add.
-	public native void WriteFloat(float val);
+	// @param val			Float to add.
+	// @param overwrite		Whether existing data should be overwritten.
+	public native void WriteFloat(float val, bool overwrite = true);
 
 	// Packs a string into a data pack.
 	//
-	// @param str		String to add.
-	public native void WriteString(const char[] str);
+	// @param str			String to add.
+	// @param overwrite		Whether existing data should be overwritten.
+	public native void WriteString(const char[] str, bool overwrite = true);
 
 	// Packs a function pointer into a data pack.
 	//
-	// @param fktptr	Function pointer to add.
-	public native void WriteFunction(Function fktptr);
+	// @param fktptr		Function pointer to add.
+	// @param overwrite		Whether existing data should be overwritten.
+	public native void WriteFunction(Function fktptr, bool overwrite = true);
 
 	// Reads a cell from a data pack.
 	//

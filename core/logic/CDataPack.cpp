@@ -223,3 +223,8 @@ void *CDataPack::ReadMemory(size_t *size) const
 
 	return ptr;
 }
+
+void CDataPack::RemoveNextItem()
+{
+	elements.remove(position--);
+}

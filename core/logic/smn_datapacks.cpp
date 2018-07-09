@@ -99,6 +99,12 @@ static cell_t smn_WritePackCell(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
+	bool overwrite = (params[0] >= 3) ? params[3] : true;
+	if (overwrite && pDataPack->GetPosition() != pDataPack->GetCapacity())
+	{
+		pDataPack->RemoveNextItem();
+	}
+
 	pDataPack->PackCell(params[2]);
 
 	return 1;
@@ -118,6 +124,12 @@ static cell_t smn_WritePackFloat(IPluginContext *pContext, const cell_t *params)
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
+	}
+
+	bool overwrite = (params[0] >= 3) ? params[3] : true;
+	if (overwrite && pDataPack->GetPosition() != pDataPack->GetCapacity())
+	{
+		pDataPack->RemoveNextItem();
 	}
 
 	pDataPack->PackFloat(sp_ctof(params[2]));
@@ -141,6 +153,12 @@ static cell_t smn_WritePackString(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
+	bool overwrite = (params[0] >= 3) ? params[3] : true;
+	if (overwrite && pDataPack->GetPosition() != pDataPack->GetCapacity())
+	{
+		pDataPack->RemoveNextItem();
+	}
+
 	char *str;
 	pContext->LocalToString(params[2], &str);
 	pDataPack->PackString(str);
@@ -162,6 +180,12 @@ static cell_t smn_WritePackFunction(IPluginContext *pContext, const cell_t *para
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
+	}
+
+	bool overwrite = (params[0] >= 3) ? params[3] : true;
+	if (overwrite && pDataPack->GetPosition() != pDataPack->GetCapacity())
+	{
+		pDataPack->RemoveNextItem();
 	}
 
 	pDataPack->PackFunction(params[2]);
