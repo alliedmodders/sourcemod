@@ -36,6 +36,7 @@
 #include <am-string.h>
 #include <am-utility.h>
 #include <am-refcounting.h>
+#include <sm_stringhashmap.h>
 #include "common_logic.h"
 
 class CNativeOwner;
@@ -92,6 +93,10 @@ struct Native : public ke::Refcounted<Native>
 	static inline bool matches(const char *name, const ke::RefPtr<Native> &entry)
 	{
 		return strcmp(name, entry->name()) == 0;
+	}
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
 	}
 };
 

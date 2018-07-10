@@ -48,10 +48,12 @@
 namespace SourceMod
 {
 
-// The HashPolicy type must have this method:
+// The HashPolicy type must have these methods:
 // 		static bool matches(const char *key, const T &value);
+// 		static uint32_t hash(const CharsAndLength &key);
 //
-// Depending on what lookup types are used.
+// Depending on what lookup types are used, and how hashing should be done.
+// Most of the time, key hashing will just call the key's hash() method.
 //
 // If these members are available on T, then the HashPolicy type can be left
 // default. It is okay to use |T *|, the functions will still be looked up
@@ -69,7 +71,7 @@ class NameHashSet : public ke::SystemAllocatorPolicy
 
 		static uint32_t hash(const CharsAndLength &key)
 		{
-			return key.hash();
+			return KeyPolicyType::hash(key);
 		}
 
 		static bool matches(const CharsAndLength &key, const KeyType &value)
@@ -85,9 +87,9 @@ class NameHashSet : public ke::SystemAllocatorPolicy
 	{
 		typedef KeyType *Payload;
 
-		static uint32_t hash(const detail::CharsAndLength &key)
+		static uint32_t hash(const CharsAndLength &key)
 		{
-			return key.hash();
+			return KeyType::hash(key);
 		}
 
 		static bool matches(const CharsAndLength &key, const KeyType *value)
