@@ -1340,18 +1340,13 @@ static cell_t sm_CommandIteratorNext(IPluginContext *pContext, const cell_t *par
 		iter->iter++;
 	}
 
-	while (iter->iter != cmds.end()
-			&& !(*(iter->iter))->sourceMod)
+	// iterate further, skip non-sourcemod cmds
+	while (iter->iter != cmds.end() && !(*(iter->iter))->sourceMod)
 	{
 		iter->iter++;
 	}
-
-	if (iter->iter == cmds.end())
-	{
-		return 0;
-	}
 	
-	return 1;
+	return iter->iter != cmds.end();
 }
 
 static cell_t sm_CommandIteratorFlags(IPluginContext *pContext, const cell_t *params)
@@ -1365,7 +1360,8 @@ static cell_t sm_CommandIteratorFlags(IPluginContext *pContext, const cell_t *pa
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
 	}
-	if (!iter->started)
+	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	if (!iter->started || iter->iter == cmds.end())
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator position");
 	}
@@ -1385,14 +1381,15 @@ static cell_t sm_CommandIteratorGetDesc(IPluginContext *pContext, const cell_t *
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
 	}
-	if (!iter->started)
+	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	if (!iter->started || iter->iter == cmds.end())
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator position");
 	}
 
 	ConCmdInfo *pInfo = (*(iter->iter));
-
 	pContext->StringToLocalUTF8(params[2], params[3], pInfo->pCmd->GetHelpText(), NULL);
+
 	return 1;
 }
 
@@ -1407,14 +1404,15 @@ static cell_t sm_CommandIteratorGetName(IPluginContext *pContext, const cell_t *
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
 	}
-	if (!iter->started)
+	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	if (!iter->started || iter->iter == cmds.end())
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator position");
 	}
 
 	ConCmdInfo *pInfo = (*(iter->iter));
-
 	pContext->StringToLocalUTF8(params[2], params[3], pInfo->pCmd->GetName(), NULL);
+
 	return 1;
 }
 
@@ -1429,13 +1427,13 @@ static cell_t sm_CommandIteratorPlugin(IPluginContext *pContext, const cell_t *p
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
 	}
-	if (!iter->started)
+	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	if (!iter->started || iter->iter == cmds.end())
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator position");
 	}
 
 	ConCmdInfo *pInfo = (*(iter->iter));
-
 	return pInfo->pPlugin->GetMyHandle();
 }
 
