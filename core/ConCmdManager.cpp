@@ -342,9 +342,10 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 									 const char *group,
 									 int adminflags,
 									 const char *description, 
-									 int flags)
+									 int flags,
+									 IPlugin *pPlugin)
 {
-	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
+	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags, pPlugin);
 
 	if (!pInfo)
 		return false;
@@ -388,10 +389,11 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 bool ConCmdManager::AddServerCommand(IPluginFunction *pFunction, 
 									  const char *name, 
 									  const char *description, 
-									  int flags)
+									  int flags,
+									  IPlugin *pPlugin)
 
 {
-	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
+	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags, pPlugin);
 
 	if (!pInfo)
 		return false;
@@ -555,7 +557,7 @@ bool ConCmdManager::LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags)
 	return true;
 }
 
-ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *description, int flags)
+ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *description, int flags, IPlugin *pPlugin)
 {
 	ConCmdInfo *pInfo;
 	if (!m_Cmds.retrieve(name, &pInfo))
@@ -580,6 +582,7 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 			char *new_name = sm_strdup(name);
 			char *new_help = sm_strdup(description);
 			pCmd = new ConCommand(new_name, CommandCallback, new_help, flags);
+			pInfo->pPlugin = pPlugin;
 			pInfo->sourceMod = true;
 		}
 		else

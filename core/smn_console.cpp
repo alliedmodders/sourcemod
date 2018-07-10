@@ -712,7 +712,8 @@ static cell_t sm_RegServerCmd(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 
-	if (!g_ConCmds.AddServerCommand(pFunction, name, help, params[4]))
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+	if (!g_ConCmds.AddServerCommand(pFunction, name, help, params[4], pPlugin))
 	{
 		return pContext->ThrowNativeError("Command \"%s\" could not be created. A convar with the same name already exists.", name);
 	}
@@ -742,7 +743,7 @@ static cell_t sm_RegConsoleCmd(IPluginContext *pContext, const cell_t *params)
 
 	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 	const char *group = pPlugin->GetFilename();
-	if (!g_ConCmds.AddAdminCommand(pFunction, name, group, 0, help, params[4]))
+	if (!g_ConCmds.AddAdminCommand(pFunction, name, group, 0, help, params[4], pPlugin))
 	{
 		return pContext->ThrowNativeError("Command \"%s\" could not be created. A convar with the same name already exists.", name);
 	}
@@ -769,9 +770,9 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[5], (char **)&group);
 	pFunction = pContext->GetFunctionById(params[2]);
 
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 	if (group[0] == '\0')
 	{
-		IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 		group = pPlugin->GetFilename();
 	}
 
@@ -780,7 +781,7 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 
-	if (!g_ConCmds.AddAdminCommand(pFunction, name, group, flags, help, cmdflags))
+	if (!g_ConCmds.AddAdminCommand(pFunction, name, group, flags, help, cmdflags, pPlugin))
 	{
 		return pContext->ThrowNativeError("Command \"%s\" could not be created. A convar with the same name already exists.", name);
 	}
@@ -1307,6 +1308,141 @@ static cell_t FakeClientCommandKeyValues(IPluginContext *pContext, const cell_t 
 #endif
 }
 
+static cell_t sm_CommandIterator(IPluginContext *pContext, const cell_t *params)
+{
+	GlobCmdIter *iter = new GlobCmdIter;
+	iter->started = false;
+
+	Handle_t hndl = handlesys->CreateHandle(hCmdIterType, iter, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	if (hndl == BAD_HANDLE)
+	{
+		delete iter;
+	}
+
+	return hndl;
+}
+
+static cell_t sm_CommandIteratorNext(IPluginContext *pContext, const cell_t *params)
+{
+	GlobCmdIter *iter;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], hCmdIterType, &sec, (void **)&iter))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
+	}
+
+	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+
+	if (!iter->started)
+	{
+		iter->iter = cmds.begin();
+		iter->started = true;
+	}
+	else
+	{
+		iter->iter++;
+	}
+
+	// iterate further, skip non-sourcemod cmds
+	while (iter->iter != cmds.end() && !(*(iter->iter))->sourceMod)
+	{
+		iter->iter++;
+	}
+	
+	return iter->iter != cmds.end();
+}
+
+static cell_t sm_CommandIteratorFlags(IPluginContext *pContext, const cell_t *params)
+{
+	GlobCmdIter *iter;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], hCmdIterType, &sec, (void **)&iter))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
+	}
+	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	if (!iter->started || iter->iter == cmds.end())
+	{
+		return pContext->ThrowNativeError("Invalid CommandIterator position");
+	}
+	
+	ConCmdInfo *pInfo = (*(iter->iter));
+	return pInfo->eflags;
+}
+
+static cell_t sm_CommandIteratorGetDesc(IPluginContext *pContext, const cell_t *params)
+{
+	GlobCmdIter *iter;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], hCmdIterType, &sec, (void **)&iter))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
+	}
+	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	if (!iter->started || iter->iter == cmds.end())
+	{
+		return pContext->ThrowNativeError("Invalid CommandIterator position");
+	}
+
+	ConCmdInfo *pInfo = (*(iter->iter));
+	pContext->StringToLocalUTF8(params[2], params[3], pInfo->pCmd->GetHelpText(), NULL);
+
+	return 1;
+}
+
+static cell_t sm_CommandIteratorGetName(IPluginContext *pContext, const cell_t *params)
+{
+	GlobCmdIter *iter;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], hCmdIterType, &sec, (void **)&iter))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
+	}
+	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	if (!iter->started || iter->iter == cmds.end())
+	{
+		return pContext->ThrowNativeError("Invalid CommandIterator position");
+	}
+
+	ConCmdInfo *pInfo = (*(iter->iter));
+	pContext->StringToLocalUTF8(params[2], params[3], pInfo->pCmd->GetName(), NULL);
+
+	return 1;
+}
+
+static cell_t sm_CommandIteratorPlugin(IPluginContext *pContext, const cell_t *params)
+{
+	GlobCmdIter *iter;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], hCmdIterType, &sec, (void **)&iter))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
+	}
+	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	if (!iter->started || iter->iter == cmds.end())
+	{
+		return pContext->ThrowNativeError("Invalid CommandIterator position");
+	}
+
+	ConCmdInfo *pInfo = (*(iter->iter));
+	return pInfo->pPlugin->GetMyHandle();
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -1371,6 +1507,13 @@ REGISTER_NATIVES(consoleNatives)
 	{"ConVar.ReplicateToClient",	ConVar_ReplicateToClient},
 	{"ConVar.AddChangeHook",	sm_HookConVarChange},
 	{"ConVar.RemoveChangeHook",	sm_UnhookConVarChange},
+
+	{"CommandIterator.CommandIterator",	sm_CommandIterator},
+	{"CommandIterator.Next",		sm_CommandIteratorNext},
+	{"CommandIterator.GetDescription",	sm_CommandIteratorGetDesc},
+	{"CommandIterator.GetName",		sm_CommandIteratorGetName},
+	{"CommandIterator.Flags.get",		sm_CommandIteratorFlags},
+	{"CommandIterator.Plugin.get",		sm_CommandIteratorPlugin},
 
 	{NULL,					NULL}
 };
