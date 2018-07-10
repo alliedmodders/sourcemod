@@ -484,17 +484,10 @@ private:
 		{
 /* For windows & mac, we convert the path to lower-case in order to avoid duplicate plugin loading */
 #if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
-			const char *original = key.chars();
-			char *copy = strdup(original);
+			ke::AString original(key.chars());
+			ke::AString lower = original.lowercase();
 			
-			for (size_t i = 0; copy[i]; ++i)
-			{
-				copy[i] = tolower(copy[i]);
-			}
-			
-			uint32_t hash = detail::CharsAndLength(copy).hash();
-			free(copy);
-			return hash;
+			return detail::CharsAndLength(lower.chars()).hash();
 #else
 			return key.hash();
 #endif
@@ -502,8 +495,15 @@ private:
 		
 		static inline bool matches(const char *file, const CPlugin *plugin)
 		{
-			const char *pluginFile = const_cast<CPlugin*>(plugin)->GetFilename();
-			return (detail::CharsAndLength(file).hash() == detail::CharsAndLength(pluginFile).hash());
+			const char *pluginFileChars = const_cast<CPlugin*>(plugin)->GetFilename();
+#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
+			ke::AString pluginFile = ke::AString(pluginFileChars).lowercase();
+			ke::AString input = ke::AString(file).lowercase();
+			
+			return pluginFile == input;
+#else
+			return strcmp(pluginFileChars, file) == 0;
+#endif
 		}
 	};
 	NameHashSet<CPlugin *, CPluginPolicy> m_LoadLookup;
