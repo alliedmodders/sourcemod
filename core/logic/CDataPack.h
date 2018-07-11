@@ -76,7 +76,7 @@ public:
 	void Initialize();
 	inline size_t GetCapacity() const { return this->elements.length(); };
 	inline CDataPackType GetCurrentType(void) const { return this->elements[this->position].type; };
-	void RemoveItem(size_t pos);
+	bool RemoveItem(size_t pos);
 private:
 
 	typedef union {

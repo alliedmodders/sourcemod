@@ -99,10 +99,15 @@ static cell_t smn_WritePackCell(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
-	bool overwrite = (params[0] >= 3) ? params[3] : true;
-	if (overwrite && pDataPack->GetPosition() != pDataPack->GetCapacity())
+	bool insert = (params[0] >= 3) ? params[3] : false;
+	if (!insert)
 	{
-		pDataPack->RemoveItem(-1);
+		size_t pos = pDataPack->GetPosition();
+
+		if (pos != pDataPack->GetCapacity())
+		{
+			pDataPack->RemoveItem(pos+1); // remove next
+		}
 	}
 
 	pDataPack->PackCell(params[2]);
@@ -126,10 +131,15 @@ static cell_t smn_WritePackFloat(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
-	bool overwrite = (params[0] >= 3) ? params[3] : true;
-	if (overwrite && pDataPack->GetPosition() != pDataPack->GetCapacity())
+	bool insert = (params[0] >= 3) ? params[3] : false;
+	if (!insert)
 	{
-		pDataPack->RemoveItem(-1);
+		size_t pos = pDataPack->GetPosition();
+
+		if (pos != pDataPack->GetCapacity())
+		{
+			pDataPack->RemoveItem(pos+1); // remove next
+		}
 	}
 
 	pDataPack->PackFloat(sp_ctof(params[2]));
@@ -153,10 +163,15 @@ static cell_t smn_WritePackString(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
-	bool overwrite = (params[0] >= 3) ? params[3] : true;
-	if (overwrite && pDataPack->GetPosition() != pDataPack->GetCapacity())
+	bool insert = (params[0] >= 3) ? params[3] : false;
+	if (!insert)
 	{
-		pDataPack->RemoveItem(-1);
+		size_t pos = pDataPack->GetPosition();
+
+		if (pos != pDataPack->GetCapacity())
+		{
+			pDataPack->RemoveItem(pos+1); // remove next
+		}
 	}
 
 	char *str;
@@ -182,10 +197,15 @@ static cell_t smn_WritePackFunction(IPluginContext *pContext, const cell_t *para
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
-	bool overwrite = (params[0] >= 3) ? params[3] : true;
-	if (overwrite && pDataPack->GetPosition() != pDataPack->GetCapacity())
+	bool insert = (params[0] >= 3) ? params[3] : false;
+	if (!insert)
 	{
-		pDataPack->RemoveItem(-1);
+		size_t pos = pDataPack->GetPosition();
+
+		if (pos != pDataPack->GetCapacity())
+		{
+			pDataPack->RemoveItem(pos+1); // remove next
+		}
 	}
 
 	pDataPack->PackFunction(params[2]);
