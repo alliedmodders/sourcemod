@@ -179,6 +179,7 @@
 			"game"					"kz"
 			"game"					"doi"
 			"game"					"bms"
+			"game"					"iosoccer"
 		}
 
 		"Keys"
@@ -228,6 +229,7 @@
 			"game"					"kz"
 			"game"					"doi"
 			"game"					"bms"
+			"game"					"iosoccer"
 		}
 		
 		"Keys"
