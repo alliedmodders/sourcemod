@@ -103,7 +103,6 @@ static cell_t smn_WritePackCell(IPluginContext *pContext, const cell_t *params)
 	if (!insert)
 	{
 		size_t pos = pDataPack->GetPosition();
-
 		if (pos != pDataPack->GetCapacity())
 		{
 			pDataPack->RemoveItem(pos+1); // remove next
@@ -135,7 +134,6 @@ static cell_t smn_WritePackFloat(IPluginContext *pContext, const cell_t *params)
 	if (!insert)
 	{
 		size_t pos = pDataPack->GetPosition();
-
 		if (pos != pDataPack->GetCapacity())
 		{
 			pDataPack->RemoveItem(pos+1); // remove next
@@ -167,7 +165,6 @@ static cell_t smn_WritePackString(IPluginContext *pContext, const cell_t *params
 	if (!insert)
 	{
 		size_t pos = pDataPack->GetPosition();
-
 		if (pos != pDataPack->GetCapacity())
 		{
 			pDataPack->RemoveItem(pos+1); // remove next
@@ -201,7 +198,6 @@ static cell_t smn_WritePackFunction(IPluginContext *pContext, const cell_t *para
 	if (!insert)
 	{
 		size_t pos = pDataPack->GetPosition();
-
 		if (pos != pDataPack->GetCapacity())
 		{
 			pDataPack->RemoveItem(pos+1); // remove next
