@@ -102,7 +102,7 @@ static cell_t smn_WritePackCell(IPluginContext *pContext, const cell_t *params)
 	bool overwrite = (params[0] >= 3) ? params[3] : true;
 	if (overwrite && pDataPack->GetPosition() != pDataPack->GetCapacity())
 	{
-		pDataPack->RemoveNextItem();
+		pDataPack->RemoveItem(-1);
 	}
 
 	pDataPack->PackCell(params[2]);
@@ -129,7 +129,7 @@ static cell_t smn_WritePackFloat(IPluginContext *pContext, const cell_t *params)
 	bool overwrite = (params[0] >= 3) ? params[3] : true;
 	if (overwrite && pDataPack->GetPosition() != pDataPack->GetCapacity())
 	{
-		pDataPack->RemoveNextItem();
+		pDataPack->RemoveItem(-1);
 	}
 
 	pDataPack->PackFloat(sp_ctof(params[2]));
@@ -156,7 +156,7 @@ static cell_t smn_WritePackString(IPluginContext *pContext, const cell_t *params
 	bool overwrite = (params[0] >= 3) ? params[3] : true;
 	if (overwrite && pDataPack->GetPosition() != pDataPack->GetCapacity())
 	{
-		pDataPack->RemoveNextItem();
+		pDataPack->RemoveItem(-1);
 	}
 
 	char *str;
@@ -185,7 +185,7 @@ static cell_t smn_WritePackFunction(IPluginContext *pContext, const cell_t *para
 	bool overwrite = (params[0] >= 3) ? params[3] : true;
 	if (overwrite && pDataPack->GetPosition() != pDataPack->GetCapacity())
 	{
-		pDataPack->RemoveNextItem();
+		pDataPack->RemoveItem(-1);
 	}
 
 	pDataPack->PackFunction(params[2]);
