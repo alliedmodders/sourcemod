@@ -133,7 +133,7 @@ public:
 	{
 		CharsAndLength key(aKey);
 		Result r = internal_.find(key);
-		if(!r.found())
+		if (!r.found())
 			return false;
 			
 		*aResult = &r->value;
