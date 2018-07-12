@@ -114,12 +114,11 @@ public void OnClientConnected(int client)
 }
 
 public void OnClientDisconnect(int client)
-{
-	g_Voted[client] = false;
-	
+{	
 	if (g_Voted[client])
 	{
 		g_Votes--;
+		g_Voted[client] = false;
 	}
 	
 	if (!IsFakeClient(client))
