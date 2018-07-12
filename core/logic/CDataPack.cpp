@@ -235,7 +235,7 @@ bool CDataPack::RemoveItem(size_t pos)
 	{
 		pos = position;
 	}
-	else if (pos >= elements.length())
+	else if (pos > elements.length())
 	{
 		return false;
 	}
