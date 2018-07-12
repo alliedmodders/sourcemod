@@ -135,7 +135,6 @@ public:
 		Result r = internal_.find(key);
 		if (!r.found())
 			return false;
-			
 		*aResult = &r->value;
 		return true;
 	}
