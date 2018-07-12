@@ -54,7 +54,6 @@ ConVar g_Cvar_Interval;
 ConVar g_Cvar_ChangeTime;
 ConVar g_Cvar_RTVPostVoteAction;
 
-bool g_CanRTV = false;		// True if RTV loaded maps and is active.
 bool g_RTVAllowed = false;	// True if RTV is available to players. Used to delay rtv votes.
 int g_Voters = 0;				// Total voters connected. Doesn't include fake clients.
 int g_Votes = 0;				// Total number of "say rtv" votes
@@ -78,15 +77,9 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_rtv", Command_RTV);
 	
 	AutoExecConfig(true, "rtv");
-}
 
-public void OnMapStart()
-{
-	g_Voters = 0;
-	g_Votes = 0;
-	g_VotesNeeded = 0;
-	g_InChange = false;
-	
+	OnMapEnd();
+
 	/* Handle late load */
 	for (int i=1; i<=MaxClients; i++)
 	{
@@ -99,47 +92,39 @@ public void OnMapStart()
 
 public void OnMapEnd()
 {
-	g_CanRTV = false;	
 	g_RTVAllowed = false;
+	g_Voters = 0;
+	g_Votes = 0;
+	g_VotesNeeded = 0;
+	g_InChange = false;
 }
 
 public void OnConfigsExecuted()
-{	
-	g_CanRTV = true;
-	g_RTVAllowed = false;
+{
 	CreateTimer(g_Cvar_InitialDelay.FloatValue, Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public void OnClientConnected(int client)
 {
-	if(IsFakeClient(client))
-		return;
-	
-	g_Voted[client] = false;
-
-	g_Voters++;
-	g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
-	
-	return;
+	if (!IsFakeClient(client))
+	{
+		g_Voters++;
+		g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
+	}
 }
 
 public void OnClientDisconnect(int client)
-{
-	if(IsFakeClient(client))
-		return;
-	
-	if(g_Voted[client])
+{	
+	if (g_Voted[client])
 	{
 		g_Votes--;
+		g_Voted[client] = false;
 	}
 	
-	g_Voters--;
-	
-	g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
-	
-	if (!g_CanRTV)
+	if (!IsFakeClient(client))
 	{
-		return;	
+		g_Voters--;
+		g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
 	}
 	
 	if (g_Votes && 
@@ -158,7 +143,7 @@ public void OnClientDisconnect(int client)
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
-	if (!g_CanRTV || !client)
+	if (!client || IsChatTrigger())
 	{
 		return;
 	}
@@ -175,7 +160,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 
 public Action Command_RTV(int client, int args)
 {
-	if (!g_CanRTV || !client)
+	if (!client)
 	{
 		return Plugin_Handled;
 	}
@@ -187,7 +172,7 @@ public Action Command_RTV(int client, int args)
 
 void AttemptRTV(int client)
 {
-	if (!g_RTVAllowed  || (g_Cvar_RTVPostVoteAction.IntValue == 1 && HasEndOfMapVoteFinished()))
+	if (!g_RTVAllowed || (g_Cvar_RTVPostVoteAction.IntValue == 1 && HasEndOfMapVoteFinished()))
 	{
 		ReplyToCommand(client, "[SM] %t", "RTV Not Allowed");
 		return;

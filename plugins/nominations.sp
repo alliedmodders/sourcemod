@@ -169,7 +169,7 @@ public Action Command_Addmap(int client, int args)
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
-	if (!client)
+	if (!client || IsChatTrigger())
 	{
 		return;
 	}
