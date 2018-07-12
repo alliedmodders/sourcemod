@@ -226,21 +226,21 @@ void *CDataPack::ReadMemory(size_t *size) const
 
 bool CDataPack::RemoveItem(size_t pos)
 {
-	if (pos > elements.length())
+	if (!elements.length())
 	{
 		return false;
 	}
-	if (pos == 0)
+
+	if (pos == static_cast<size_t>(-1))
 	{
-		if (position == elements.length())
-		{
-			return false;
-		}
-		elements.remove(position--);
-		return true;
+		pos = position;
+	}
+	else if (pos >= elements.length())
+	{
+		return false;
 	}
 
-	elements.remove(pos-1);
+	elements.remove(pos);
 	--position;
 	return true;
 }
