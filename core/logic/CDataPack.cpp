@@ -230,6 +230,15 @@ bool CDataPack::RemoveItem(size_t pos)
 	{
 		return false;
 	}
+	if (pos == 0)
+	{
+		if (position == elements.length())
+		{
+			return false;
+		}
+		elements.remove(position--);
+		return true;
+	}
 
 	elements.remove(pos-1);
 	--position;
