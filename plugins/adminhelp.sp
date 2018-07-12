@@ -58,7 +58,7 @@ public void OnPluginStart()
 
 public Action HelpCmd(int client, int args)
 {
-	if(client != 0 && !IsClientInGame(client))
+	if (client && !IsClientInGame(client))
 	{
 		return Plugin_Handled;
 	}
