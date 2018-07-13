@@ -28,13 +28,13 @@
 				"mac64"			"8"
 			}
 			// In HandleCommand_Buy_Internal
-			// -*(_DWORD *)(v34 + 204)
+			// -*(_DWORD *)(v34 + 8) in ida 7 -v34[52]
 			"WeaponPrice"
 			{
-				"windows"		"204"
-				"linux"			"204"
-				"linux64"		"324"
-				"mac64"			"324"
+				"windows"		"208"
+				"linux"			"208"
+				"linux64"		"328"
+				"mac64"			"328"
 			}
 			//Offset into CheckRestartRound
 			"CTTeamScoreOffset"
