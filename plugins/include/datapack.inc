@@ -100,8 +100,8 @@ methodmap DataPack < Handle
 	// Returns whether or not a specified number of bytes from the data pack
 	//  position to the end can be read.
 	//
-	// @param bytes		Number of bytes to simulate reading.
-	public native bool IsReadable(int bytes);
+	// @param unused	Unused variable. Exists for backwards compatability.
+	public native bool IsReadable(int unused = 0);
 	
 	// The read or write position in a data pack.
 	property DataPackPos Position {
