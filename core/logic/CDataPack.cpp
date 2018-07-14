@@ -233,14 +233,14 @@ bool CDataPack::RemoveItem(size_t pos)
 
 	if (pos == static_cast<size_t>(-1))
 	{
-		pos = position + 1;
+		pos = position;
 	}
-	if (pos > elements.length())
+	if (pos >= elements.length())
 	{
 		return false;
 	}
 
-	elements.remove(pos-1);
+	elements.remove(pos);
 	--position;
 	return true;
 }
