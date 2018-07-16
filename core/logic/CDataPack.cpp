@@ -225,7 +225,7 @@ bool CDataPack::RemoveItem(size_t pos)
 		return false;
 	}
 
-	switch (elements[index].type)
+	switch (elements[pos].type)
 	{
 		case CDataPackType::Raw:
 		{
