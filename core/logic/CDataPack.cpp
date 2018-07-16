@@ -65,25 +65,9 @@ CDataPack::Free(IDataPack *pack)
 
 void CDataPack::Initialize()
 {
-	for (size_t index = 0; index < elements.length(); ++index)
+	do
 	{
-		switch (elements[index].type)
-		{
-			case CDataPackType::Raw:
-			{
-				delete elements[index].pData.vval;
-				elements.remove(index--);
-				break;
-			}
-
-			case CDataPackType::String:
-			{
-				delete elements[index].pData.sval;
-				elements.remove(index--);
-				break;
-			}
-		}
-	}
+	} while (this->RemoveItem());
 
 	elements.clear();
 	position = 0;
@@ -235,9 +219,25 @@ bool CDataPack::RemoveItem(size_t pos)
 	{
 		pos = position;
 	}
+
 	if (pos >= elements.length())
 	{
 		return false;
+	}
+
+	switch (elements[pos].type)
+	{
+		case CDataPackType::Raw:
+		{
+			delete elements[pos].pData.vval;
+			break;
+		}
+
+		case CDataPackType::String:
+		{
+			delete elements[pos].pData.sval;
+			break;
+		}
 	}
 
 	elements.remove(pos);
