@@ -67,7 +67,7 @@ void CDataPack::Initialize()
 {
 	do
 	{
-	} while (!this->RemoveItem());
+	} while (this->RemoveItem());
 
 	elements.clear();
 	position = 0;
