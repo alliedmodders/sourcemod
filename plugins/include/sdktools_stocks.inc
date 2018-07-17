@@ -73,3 +73,43 @@ stock int FindTeamByName(const char[] name)
 
 	return found_team;
 }
+
+/**
+ * Get the end point coordinates where client aim at.
+ *
+ * @param client		Player Index.
+ * @param pos			Destination vector to store the end point coordinates.
+ * @param flags			Trace flags. MASK_SHOT by default.
+ * @return				True when aim end point hit inside skybox, playable area. "pos" argument return new coordinates.
+						False when hit unplayable area or out of space. "pos" argument return unchanged.
+ * @error				Invalid client index or client is not in game.
+ */
+stock bool ClientAimEndPos(int client, float pos[3], int flags = MASK_SHOT)
+{
+	float client_pos[3], client_ang[3];
+
+	GetClientEyePosition(client, client_pos);
+	GetClientEyeAngles(client, client_ang);
+
+	Handle trace = TR_TraceRayFilterEx(client_pos, client_ang, flags, RayType_Infinite, __ClientAimEndPosCB, client);
+	TR_GetEndPosition(client_pos, trace);
+
+	bool successful = (!TR_PointOutsideWorld(client_pos) && TR_DidHit(trace));
+	delete trace;
+
+	if(successful)
+	{
+		pos[0] = client_pos[0];
+		pos[1] = client_pos[1];
+		pos[2] = client_pos[2];
+	}
+
+	return successful;
+}
+
+/**
+ * Part of stock ClientAimEndPos(), don't use this.
+ */
+stock bool __ClientAimEndPosCB(int entity, int contentsMask, int data){
+	return (data != entity);
+}
