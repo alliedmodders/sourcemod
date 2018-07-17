@@ -9,6 +9,7 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - llvm-toolchain-trusty-3.9
       - llvm-toolchain-trusty-4.0
       - llvm-toolchain-trusty-5.0
     packages:
@@ -23,6 +24,7 @@ addons:
 #      - clang-5.0
 #      - g++-6
 #      - g++-6-multilib
+      - clang-3.9
       - g++-4.8-multilib
       - g++-4.8
       - g++-4.9-multilib
