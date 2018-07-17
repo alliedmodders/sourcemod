@@ -16,3 +16,8 @@ Development
 - [SourcePawn scripting](https://wiki.alliedmods.net/Category:SourceMod_Scripting): SourcePawn examples and introduction to the language
 - [SourceMod plugin API](https://sm.alliedmods.net/new-api): Online SourceMod plugin API reference generated from the include files
 - [SourceMod extension development](https://wiki.alliedmods.net/Category:SourceMod_Development): C++ examples and introduction to various extension interfaces
+
+Contact
+-------
+- Connect with us on [GameSurge](https://gamesurge.net) IRC in #sourcemod
+- Alternatively feel free to join our [Discord](https://discord.gg/HgZctSS) server
