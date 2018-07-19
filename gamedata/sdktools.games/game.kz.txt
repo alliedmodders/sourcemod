@@ -12,21 +12,21 @@
 "Games"
 {
 	/* Kreedz Climbing */
-	"KreedzClimbing"
+	"#default"
 	{
 		"Offsets"
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"407"
+				"windows"	"408"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"277"
+				"windows"	"278"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"275"
+				"windows"	"276"
 			}
 			"Ignite"
 			{
@@ -42,7 +42,7 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"446"
+				"windows"	"447"
 			}
 			"GetVelocity"
 			{
@@ -62,7 +62,7 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"268"
+				"windows"	"269"
 			}
 			"Activate"
 			{
@@ -70,18 +70,18 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"425"
+				"windows"	"426"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"259"
+				"windows"	"260"
 			}
 		}
 		
 		"Keys"
 		{
-			"GameRulesProxy"		"CHL2MPGameRulesProxy"
-			"GameRulesDataTable"	"hl2mp_gamerules_data"
+			"GameRulesProxy"		"CKZModGameRulesProxy"
+			"GameRulesDataTable"	"kzmod_gamerules_data"
 		}
 	}
 	
@@ -93,7 +93,7 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xE4\xC0\x81\xEC\x34\x01\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x84\x24\x30\x01\x00\x00\x53\x8B\x5D\x20"
+				"windows"	"\x55\x8B\xEC\x83\xE4\xC0\x81\xEC\x34\x01\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x84\x24\x30\x01\x00\x00\x8B\xC1"
 			}
 		}
 	}

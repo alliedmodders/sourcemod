@@ -663,9 +663,9 @@ native bool SQL_EscapeString(Handle database,
 native int SQL_FormatQuery(Handle database, const char[] buffer, int maxlength, const char[] format, any ...);
 
 /**
- * This is a backwards compatibility stock.  You should use SQL_EscapeString() 
- * instead, as this function will probably be deprecated in SourceMod 1.1.
+ * This function is deprecated.  Use SQL_EscapeString instead.
  */
+#pragma deprecated Use SQL_EscapeString instead.
 stock bool SQL_QuoteString(Handle database,
 						   const char[] string,
 						   char[] buffer,

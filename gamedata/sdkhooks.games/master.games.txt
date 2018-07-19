@@ -59,6 +59,7 @@
 	"engine.insurgency.txt"
 	{
 		"engine"	"insurgency"
+		"engine"	"doi" // #cheating #yolo
 	}
 	
 /*
@@ -187,11 +188,15 @@
 	
 	"game.kz.txt"
 	{
-		"game"		"KreedzClimbing"
+		"game"		"kz"
 	}
 	
 	"game.doi.txt"
 	{
 		"game"		"doi"
+	}
+	"game.reactivedrop.txt"
+	{
+		"game"		"reactivedrop"
 	}
 }

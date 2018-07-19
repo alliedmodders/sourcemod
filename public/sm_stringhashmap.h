@@ -129,6 +129,16 @@ public:
 		return true;
 	}
 
+	bool retrieve(const char *aKey, T **aResult)
+	{
+		CharsAndLength key(aKey);
+		Result r = internal_.find(key);
+		if (!r.found())
+			return false;
+		*aResult = &r->value;
+		return true;
+	}
+
 	Result find(const char *aKey)
 	{
 		CharsAndLength key(aKey);
@@ -142,32 +152,31 @@ public:
 		return r.found();
 	}
 
-	bool replace(const char *aKey, const T &value)
+	template <typename UV>
+	bool replace(const char *aKey, UV &&value)
 	{
 		CharsAndLength key(aKey);
 		Insert i = internal_.findForAdd(key);
 		if (!i.found())
 		{
 			memory_used_ += key.length() + 1;
-			if (!internal_.add(i))
+			if (!internal_.add(i, aKey))
 				return false;
-			i->key = aKey;
 		}
-		i->value = value;
+		i->value = ke::Forward<UV>(value);
 		return true;
 	}
 
-	bool insert(const char *aKey, const T &value)
+	template <typename UV>
+	bool insert(const char *aKey, UV &&value)
 	{
 		CharsAndLength key(aKey);
 		Insert i = internal_.findForAdd(key);
 		if (i.found())
 			return false;
-		if (!internal_.add(i))
+		if (!internal_.add(i, aKey, ke::Forward<UV>(value)))
 			return false;
 		memory_used_ += key.length() + 1;
-		i->key = aKey;
-		i->value = value;
 		return true;
 	}
 
@@ -225,9 +234,8 @@ public:
 	// Only value needs to be set after.
 	bool add(Insert &i, const char *aKey)
 	{
-		if (!internal_.add(i))
+		if (!internal_.add(i, aKey))
 			return false;
-		i->key = aKey;
 		return true;
 	}
 

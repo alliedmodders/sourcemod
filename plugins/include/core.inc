@@ -144,6 +144,22 @@ public float NULL_VECTOR[3];		/**< Pass this into certain functions to act as a 
 public const char NULL_STRING[1];	/**< pass this into certain functions to act as a C++ NULL */
 
 /**
+ * Check if the given vector is the NULL_VECTOR.
+ *
+ * @param vec     The vector to test.
+ * @return        True if NULL_VECTOR, false otherwise.
+ */
+native bool IsNullVector(const float vec[3]);
+
+/**
+ * Check if the given string is the NULL_STRING.
+ *
+ * @param str     The string to test.
+ * @return        True if NULL_STRING, false otherwise.
+ */
+native bool IsNullString(const char[] str);
+
+/**
  * Horrible compatibility shim.
  */
 public Extension __ext_core = 

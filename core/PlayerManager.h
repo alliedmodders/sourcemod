@@ -38,6 +38,7 @@
 #include <IForwardSys.h>
 #include <IPlayerHelpers.h>
 #include <IAdminSystem.h>
+#include <ITranslator.h>
 #include <sh_string.h>
 #include <sh_list.h>
 #include <sh_vector.h>
@@ -123,32 +124,33 @@ private:
 	bool SetEngineString();
 	bool SetCSteamID();
 private:
-	bool m_IsConnected;
-	bool m_IsInGame;
-	bool m_IsAuthorized;
-	bool m_bIsInKickQueue;
+	bool m_IsConnected = false;
+	bool m_IsInGame = false;
+	bool m_IsAuthorized = false;
+	bool m_bIsInKickQueue = false;
 	String m_Name;
 	String m_Ip;
 	String m_IpNoPort;
 	ke::AString m_AuthID;
 	ke::AString m_Steam2Id;
 	ke::AString m_Steam3Id;
-	AdminId m_Admin;
-	bool m_TempAdmin;
-	edict_t *m_pEdict;
-	IPlayerInfo *m_Info;
+	AdminId m_Admin = INVALID_ADMIN_ID;
+	bool m_TempAdmin = false;
+	edict_t *m_pEdict = nullptr;
+	IPlayerInfo *m_Info = nullptr;
+	IClient *m_pIClient = nullptr;
 	String m_LastPassword;
-	bool m_bAdminCheckSignalled;
+	bool m_bAdminCheckSignalled = false;
 	int m_iIndex;
-	unsigned int m_LangId;
-	int m_UserId;
-	bool m_bFakeClient;
-	bool m_bIsSourceTV;
-	bool m_bIsReplay;
+	unsigned int m_LangId = SOURCEMOD_LANGUAGE_ENGLISH;
+	int m_UserId = -1;
+	bool m_bFakeClient = false;
+	bool m_bIsSourceTV = false;
+	bool m_bIsReplay = false;
 	serial_t m_Serial;
 	CSteamID m_SteamId;
 #if SOURCE_ENGINE == SE_CSGO
-	QueryCvarCookie_t m_LanguageCookie;
+	QueryCvarCookie_t m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
 };
 

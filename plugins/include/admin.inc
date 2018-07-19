@@ -221,7 +221,7 @@ methodmap AdminId {
 	// @param maxlength     Maximum size of the output name buffer.
 	// @return              A GroupId index and a name pointer, or
 	//                      INVALID_GROUP_ID and NULL if an error occurred.
-	public native GroupId GetGroup(int index, const char[] name, int maxlength);
+	public native GroupId GetGroup(int index, char[] name, int maxlength);
 
 	// Sets a password on an admin.
 	//
@@ -565,7 +565,7 @@ native int GetAdminGroupCount(AdminId id);
  * @return				A GroupId index and a name pointer, or
  *						INVALID_GROUP_ID and NULL if an error occurred.
  */
-native GroupId GetAdminGroup(AdminId id, int index, const char[] name, int maxlength);
+native GroupId GetAdminGroup(AdminId id, int index, char[] name, int maxlength);
 
 /**
  * Sets a password on an admin.

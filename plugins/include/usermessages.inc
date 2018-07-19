@@ -125,7 +125,7 @@ native bool GetUserMessageName(UserMsg msg_id, char[] msg, int maxlength);
  * @error				Invalid message name, unable to start a message, invalid client,
  *						or client not connected.
  */
-native Handle StartMessage(char[] msgname, int[] clients, int numClients, int flags=0);
+native Handle StartMessage(const char[] msgname, const int[] clients, int numClients, int flags=0);
 
 /**
  * Starts a usermessage (network message).
@@ -141,7 +141,7 @@ native Handle StartMessage(char[] msgname, int[] clients, int numClients, int fl
  * @error				Invalid message name, unable to start a message, invalid client,
  *						or client not connected.
  */
-native Handle StartMessageEx(UserMsg msg, int[] clients, int numClients, int flags=0);
+native Handle StartMessageEx(UserMsg msg, const int[] clients, int numClients, int flags=0);
 
 /**
  * Ends a previously started user message (network message).
@@ -223,7 +223,7 @@ native void UnhookUserMessage(UserMsg msg_id, MsgHook hook, bool intercept=false
  * @return				A handle to a bf_write bit packing structure, or
  *						INVALID_HANDLE on failure.
  */
-stock Handle StartMessageAll(char[] msgname, int flags=0)
+stock Handle StartMessageAll(const char[] msgname, int flags=0)
 {
 	int total = 0;
 	int[] clients = new int[MaxClients];
@@ -247,7 +247,7 @@ stock Handle StartMessageAll(char[] msgname, int flags=0)
  * @return				A handle to a bf_write bit packing structure, or
  *						INVALID_HANDLE on failure.
  */
-stock Handle StartMessageOne(char[] msgname, int client, int flags=0)
+stock Handle StartMessageOne(const char[] msgname, int client, int flags=0)
 {
 	int players[1];
 	

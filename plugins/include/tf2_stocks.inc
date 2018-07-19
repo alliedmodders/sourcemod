@@ -79,6 +79,8 @@
 #define TF_DEATHFLAG_INTERRUPTED        (1 << 6)
 #define TF_DEATHFLAG_GIBBED             (1 << 7)
 #define TF_DEATHFLAG_PURGATORY          (1 << 8)
+#define TF_DEATHFLAG_MINIBOSS           (1 << 9)
+#define TF_DEATHFLAG_AUSTRALIUM         (1 << 10)
 
 // Custom kill identifiers for the customkill property on the player_death event
 enum {
@@ -159,6 +161,11 @@ enum {
 	TF_CUSTOM_KART,
 	TF_CUSTOM_GIANT_HAMMER,
 	TF_CUSTOM_RUNE_REFLECT,
+	TF_CUSTOM_DRAGONS_FURY_IGNITE,
+	TF_CUSTOM_DRAGONS_FURY_BONUS_BURNING,
+	TF_CUSTOM_SLAP_KILL,
+	TF_CUSTOM_CROC,
+	TF_CUSTOM_TAUNTATK_GASBLAST,
 };
 
 // Weapon codes as used in some events, such as player_death
@@ -268,6 +275,12 @@ enum {
 	TF_WEAPON_GRAPPLINGHOOK,
 	TF_WEAPON_PASSTIME_GUN,
 	TF_WEAPON_CHARGED_SMG,
+	TF_WEAPON_BREAKABLE_SIGN,
+	TF_WEAPON_ROCKETPACK,
+	TF_WEAPON_SLAP,
+	TF_WEAPON_JAR_GAS,
+	TF_WEAPON_GRENADE_JAR_GAS,
+	TF_WEAPON_FLAME_BALL,
 };
 
 // TF2 Weapon Loadout Slots
@@ -566,6 +579,14 @@ stock bool TF2_IsPlayerInCondition(int client, TFCond cond)
 		{
 			int bit = (1 << (iCond - 96));
 			if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx3") & bit) == bit)
+			{
+				return true;
+			}
+		}
+	case 4:
+		{
+			int bit = (1 << (iCond - 128));
+			if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx4") & bit) == bit)
 			{
 				return true;
 			}

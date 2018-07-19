@@ -70,7 +70,8 @@ static CBaseEntity* GetGameRulesProxyEnt()
 	if (proxyEntRef == -1 || (pProxy = gamehelpers->ReferenceToEntity(proxyEntRef)) == NULL)
 	{
 		pProxy = FindEntityByNetClass(playerhelpers->GetMaxClients(), g_szGameRulesProxy);
-		proxyEntRef = gamehelpers->EntityToReference(pProxy);
+		if (pProxy)
+			proxyEntRef = gamehelpers->EntityToReference(pProxy);
 	}
 	
 	return pProxy;

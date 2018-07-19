@@ -72,6 +72,9 @@ private:
 	CForward(ExecType et, const char *name,
 	         const ParamType *types, unsigned num_params);
 
+	int PushNullString();
+	int PushNullVector();
+	int _ExecutePushRef(IPluginFunction *func, ParamType type, FwdParamInfo *param);
 	void _Int_PushArray(cell_t *inarray, unsigned int cells, int flags);
 	void _Int_PushString(cell_t *inarray, unsigned int cells, int sz_flags, int cp_flags);
 	inline int SetError(int err)

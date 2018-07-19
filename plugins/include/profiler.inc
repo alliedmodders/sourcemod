@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2018 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -38,14 +38,40 @@
 /**
  * ONLY AVAILABLE ON WINDOWS RIGHT NOW K.
  */
- 
+
+methodmap Profiler < Handle
+{
+	// Creates a new profile object.  The Handle must be freed
+	// using delete or CloseHandle().
+	//
+	// @return		A new Profiler Handle.
+	public native Profiler();
+	
+	// Starts a cycle for profiling.
+	public native void Start();
+
+	// Stops a cycle for profiling.
+	//
+	// @error		Profiler was never started.
+	public native void Stop();
+	
+	// Returns the amount of high-precision time in seconds
+	// that passed during the profiler's last start/stop 
+	// cycle.
+	//
+	// @return		Time elapsed in seconds.
+	property float Time {
+		public native get();
+	}
+}
+
 /**
  * Creates a new profile object.  The Handle must be freed
- * using CloseHandle().
+ * using delete or CloseHandle().
  *
  * @return			Handle to the profiler object.
  */
-native Handle CreateProfiler();
+native Profiler CreateProfiler();
 
 /**
  * Starts profiling.

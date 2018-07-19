@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2017 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -38,12 +38,15 @@
 #include "vglobals.h"
 #include "tempents.h"
 #include "vsound.h"
+#include "variant-t.h"
 #include "output.h"
 #include "hooks.h"
 #include "gamerulesnatives.h"
 #include <ISDKTools.h>
 #include "teamnatives.h"
 #include "filesystem.h"
+#include "am-string.h"
+
 /**
  * @file extension.cpp
  * @brief Implements SDK Tools extension code.
@@ -113,6 +116,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_TRNatives);
 	sharesys->AddNatives(myself, g_StringTableNatives);
 	sharesys->AddNatives(myself, g_VoiceNatives);
+	sharesys->AddNatives(myself, g_VariantTNatives);
 	sharesys->AddNatives(myself, g_EntInputNatives);
 	sharesys->AddNatives(myself, g_TeamNatives);
 	sharesys->AddNatives(myself, g_EntOutputNatives);
@@ -125,7 +129,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_CallHandle = handlesys->CreateType("ValveCall", this, 0, NULL, NULL, myself->GetIdentity(), &err);
 	if (g_CallHandle == 0)
 	{
-		snprintf(error, maxlength, "Could not create call handle type (err: %d)", err);	
+		ke::SafeSprintf(error, maxlength, "Could not create call handle type (err: %d)", err);	
 		return false;
 	}
 
@@ -139,7 +143,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	{
 		handlesys->RemoveType(g_CallHandle, myself->GetIdentity());
 		g_CallHandle = 0;
-		snprintf(error, maxlength, "Could not create traceray handle type (err: %d)", err);
+		ke::SafeSprintf(error, maxlength, "Could not create traceray handle type (err: %d)", err);
 		return false;
 	}
 
@@ -177,6 +181,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		m_bFollowCSGOServerGuidelines = false;
 	}
 
+	m_CSGOBadList.init();
 	m_CSGOBadList.add("m_bIsValveDS");
 	m_CSGOBadList.add("m_bIsQuestEligible");
 #endif
@@ -381,7 +386,7 @@ bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char co
 
 	while (n <= count)
 	{
-		snprintf(key, sizeof(key), "SlapSound%d", n);
+		ke::SafeSprintf(key, sizeof(key), "SlapSound%d", n);
 		if ((name=g_pGameConf->GetKeyValue(key)))
 		{
 			engsound->PrecacheSound(name, true);
@@ -432,7 +437,7 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 		info->num_targets = 1;
 		info->reason = COMMAND_TARGET_VALID;
 		info->target_name_style = COMMAND_TARGETNAME_RAW;
-		snprintf(info->target_name, info->target_name_maxlength, "%s", pTarget->GetName());
+		ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pTarget->GetName());
 		return true;
 	}
 	else if (strcmp(info->pattern, "@spec") == 0)
@@ -444,7 +449,7 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 		for (int i = 1; i <= playerhelpers->GetMaxClients(); i++)
 		{
 			IGamePlayer *player = playerhelpers->GetGamePlayer(i);
-			if (player == NULL || !player->IsInGame())
+			if (player == NULL || !player->IsInGame() || player->IsSourceTV() || player->IsReplay())
 				continue;
 			IPlayerInfo *plinfo = player->GetPlayerInfo();
 			if (plinfo == NULL)
@@ -458,7 +463,7 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 		}
 		info->reason = info->num_targets > 0 ? COMMAND_TARGET_VALID : COMMAND_TARGET_EMPTY_FILTER;
 		info->target_name_style = COMMAND_TARGETNAME_ML;
-		snprintf(info->target_name, info->target_name_maxlength, "all spectators");
+		ke::SafeStrcpy(info->target_name, info->target_name_maxlength, "all spectators");
 		return true;
 	}
 

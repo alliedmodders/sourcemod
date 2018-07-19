@@ -103,8 +103,6 @@ SMEXT_LINK(&g_Interface);
 CGlobalVars *gpGlobals;
 ke::Vector<CVTableList *> g_HookList[SDKHook_MAXHOOKS];
 
-CBitVec<NUM_ENT_ENTRIES> m_EntityExists;
-
 IBinTools *g_pBinTools = NULL;
 ICvar *icvar = NULL;
 
@@ -231,6 +229,8 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
+	memset(m_EntityCache, INVALID_EHANDLE_INDEX, sizeof(m_EntityCache));
+
 	CUtlVector<IEntityListener *> *entListeners = EntListeners();
 	if (!entListeners)
 	{
@@ -270,13 +270,20 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 			continue;
 		
 		index = hndl.GetEntryIndex();
-		m_EntityExists.Set(index);
+		if (IsEntityIndexInRange(index))
+		{
+			m_EntityCache[index] = gamehelpers->IndexToReference(index);
+		}
+		else
+		{
+			g_pSM->LogError(myself, "SDKHooks::HandleEntityCreated - Got entity index out of range (%d)", index);
+		}
 	}
 #else
 	for (int i = 0; i < NUM_ENT_ENTRIES; i++)
 	{
 		if (gamehelpers->ReferenceToEntity(i) != NULL)
-			m_EntityExists.Set(i);
+			m_EntityCache[i] = gamehelpers->IndexToReference(i);
 	}
 #endif
 
@@ -411,14 +418,14 @@ void SDKHooks::OnClientPutInServer(int client)
 {
 	CBaseEntity *pPlayer = gamehelpers->ReferenceToEntity(client);
 
-	HandleEntityCreated(pPlayer, client);
+	HandleEntityCreated(pPlayer, client, gamehelpers->EntityToReference(pPlayer));
 }
 
 void SDKHooks::OnClientDisconnecting(int client)
 {
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(client);
 	
-	HandleEntityDeleted(pEntity, client);
+	HandleEntityDeleted(pEntity);
 }
 
 void SDKHooks::AddEntityListener(ISMEntityListener *listener)
@@ -725,7 +732,7 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 				hookid = SH_ADD_MANUALVPHOOK(CanBeAutobalanced, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_CanBeAutobalanced), false);
 				break;
 			case SDKHook_MAXHOOKS:
-				// This is checked up above.
+				//this is checked up above
 				break;
 		}
 
@@ -852,16 +859,26 @@ void SDKHooks::Unhook(int entity, SDKHookType type, IPluginFunction *pCallback)
 void SDKHooks::OnEntityCreated(CBaseEntity *pEntity)
 {
 	// Call OnEntityCreated forward
-	int ref = gamehelpers->EntityToBCompatRef(pEntity);
+	int ref = gamehelpers->EntityToReference(pEntity);
 	int index = gamehelpers->ReferenceToIndex(ref);
 
 	// This can be -1 for player ents before any players have connected
-	if ((unsigned)index == INVALID_EHANDLE_INDEX || m_EntityExists.IsBitSet(index) || (index > 0 && index <= playerhelpers->GetMaxClients()))
+	if ((unsigned)index == INVALID_EHANDLE_INDEX || (index > 0 && index <= playerhelpers->GetMaxClients()))
 	{
 		return;
 	}
 
-	HandleEntityCreated(pEntity, ref);
+	if (!IsEntityIndexInRange(index))
+	{
+		g_pSM->LogError(myself, "SDKHooks::OnEntityCreated - Got entity index out of range (%d)", index);
+		return;
+	}
+
+	// The entity could already exist. The creation notifier fires twice for some paths
+	if (m_EntityCache[index] != ref)
+	{
+		HandleEntityCreated(pEntity, index, ref);
+	}
 }
 
 #ifdef GAMEDESC_CAN_CHANGE
@@ -943,7 +960,7 @@ bool SDKHooks::Hook_CanBeAutobalanced()
 			// Only update our new ret if different from original
 			// (so if multiple plugins returning different answers,
 			//  the one(s) that changed it win)
-			if (res != origRet)
+			if ((bool)res != origRet)
 				newRet = !origRet;
 		}
 
@@ -1108,13 +1125,13 @@ int SDKHooks::HandleOnTakeDamageHook(CTakeDamageInfoHack &info, SDKHookType hook
 				if (ret == Pl_Changed)
 				{
 					CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
-					if (!pEntAttacker)
+					if (!pEntAttacker && attacker != -1)
 					{
 						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for attacker is invalid", attacker);
 						RETURN_META_VALUE(MRES_IGNORED, 0);
 					}
 					CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
-					if (!pEntInflictor)
+					if (!pEntInflictor && inflictor != -1)
 					{
 						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for inflictor is invalid", inflictor);
 						RETURN_META_VALUE(MRES_IGNORED, 0);
@@ -1636,8 +1653,7 @@ void SDKHooks::Hook_UsePost(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 
 void SDKHooks::OnEntityDeleted(CBaseEntity *pEntity)
 {
-	int ref = gamehelpers->EntityToBCompatRef(pEntity);
-	int index = gamehelpers->ReferenceToIndex(ref);
+	int index = gamehelpers->ReferenceToIndex(gamehelpers->EntityToReference(pEntity));
 
 	// This can be -1 for player ents before any players have connected
 	if ((unsigned)index == INVALID_EHANDLE_INDEX || (index > 0 && index <= playerhelpers->GetMaxClients()))
@@ -1645,7 +1661,7 @@ void SDKHooks::OnEntityDeleted(CBaseEntity *pEntity)
 		return;
 	}
 
-	HandleEntityDeleted(pEntity, ref);
+	HandleEntityDeleted(pEntity);
 }
 
 void SDKHooks::Hook_VPhysicsUpdate(IPhysicsObject *pPhysics)
@@ -1755,9 +1771,10 @@ bool SDKHooks::Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelin
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
 
-void SDKHooks::HandleEntityCreated(CBaseEntity *pEntity, int ref)
+void SDKHooks::HandleEntityCreated(CBaseEntity *pEntity, int index, cell_t ref)
 {
 	const char *pName = gamehelpers->GetEntityClassname(pEntity);
+	cell_t bcompatRef = gamehelpers->EntityToBCompatRef(pEntity);
 
 	// Send OnEntityCreated to SM listeners
 	SourceHook::List<ISMEntityListener *>::iterator iter;
@@ -1769,15 +1786,17 @@ void SDKHooks::HandleEntityCreated(CBaseEntity *pEntity, int ref)
 	}
 
 	// Call OnEntityCreated forward
-	g_pOnEntityCreated->PushCell(ref);
+	g_pOnEntityCreated->PushCell(bcompatRef);
 	g_pOnEntityCreated->PushString(pName ? pName : "");
 	g_pOnEntityCreated->Execute(NULL);
 
-	m_EntityExists.Set(gamehelpers->ReferenceToIndex(ref));
+	m_EntityCache[index] = ref;
 }
 
-void SDKHooks::HandleEntityDeleted(CBaseEntity *pEntity, int ref)
+void SDKHooks::HandleEntityDeleted(CBaseEntity *pEntity)
 {
+	cell_t bcompatRef = gamehelpers->EntityToBCompatRef(pEntity);
+
 	// Send OnEntityDestroyed to SM listeners
 	SourceHook::List<ISMEntityListener *>::iterator iter;
 	ISMEntityListener *pListener = NULL;
@@ -1788,10 +1807,8 @@ void SDKHooks::HandleEntityDeleted(CBaseEntity *pEntity, int ref)
 	}
 
 	// Call OnEntityDestroyed forward
-	g_pOnEntityDestroyed->PushCell(ref);
+	g_pOnEntityDestroyed->PushCell(bcompatRef);
 	g_pOnEntityDestroyed->Execute(NULL);
 
 	Unhook(pEntity);
-
-	m_EntityExists.Set(gamehelpers->ReferenceToIndex(ref), false);
 }

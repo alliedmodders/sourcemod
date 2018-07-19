@@ -124,7 +124,7 @@ enum
 /**
  * Prefetches a sound.
  *
- * @param name		Sound file name relative to the "sounds" folder.
+ * @param name		Sound file name relative to the "sound" folder.
  */
 native void PrefetchSound(const char[] name);
 
@@ -132,7 +132,7 @@ native void PrefetchSound(const char[] name);
  * This function is not known to work, and may crash.  You should 
  * not use it.  It is provided for backwards compatibility only.
  *
- * @param name		Sound file name relative to the "sounds" folder.
+ * @param name		Sound file name relative to the "sound" folder.
  * @return			Duration in seconds.
  */
 #pragma deprecated Does not work, may crash.
@@ -141,7 +141,7 @@ native float GetSoundDuration(const char[] name);
 /**
  * Emits an ambient sound.
  *
- * @param name		Sound file name relative to the "sounds" folder.
+ * @param name		Sound file name relative to the "sound" folder.
  * @param pos		Origin of sound.
  * @param entity	Entity index to associate sound with.
  * @param level		Sound level (from 0 to 255).
@@ -176,7 +176,7 @@ native void FadeClientVolume(int client, float percent, float outtime, float hol
  *
  * @param entity	Entity index.
  * @param channel	Channel number.
- * @param name		Sound file name relative to the "sounds" folder.
+ * @param name		Sound file name relative to the "sound" folder.
  */
 native void StopSound(int entity, int channel, const char[] name);
 
@@ -185,7 +185,7 @@ native void StopSound(int entity, int channel, const char[] name);
  *
  * @param clients		Array of client indexes.
  * @param numClients	Number of clients in the array.
- * @param sample		Sound file name relative to the "sounds" folder.
+ * @param sample		Sound file name relative to the "sound" folder.
  * @param entity		Entity to emit from.
  * @param channel		Channel to emit with.
  * @param level			Sound level.
@@ -223,7 +223,7 @@ native void EmitSound(const int[] clients,
  * @param clients		Array of client indexes.
  * @param numClients	Number of clients in the array.
  * @param soundEntry	Sound entry name.
- * @param sample		Sound file name relative to the "sounds" folder.
+ * @param sample		Sound file name relative to the "sound" folder.
  * @param entity		Entity to emit from.
  * @param channel		Channel to emit with.
  * @param level			Sound level.
@@ -307,7 +307,7 @@ native float GetDistGainFromSoundLevel(int soundlevel, float distance);
  *
  * NOTICE: all parameters can be overwritten to modify the default behavior.
  *
- * @param sample	Sound file name relative to the "sounds" folder.
+ * @param sample	Sound file name relative to the "sound" folder.
  * @param entity	Entity index associated to the sound.
  * @param volume	Volume (from 0.0 to 1.0).
  * @param level		Sound level (from 0 to 255).
@@ -336,7 +336,7 @@ typeset NormalSHook
 	//
 	// @param clients       Array of client indexes.
 	// @param numClients    Number of clients in the array (modify this value if you add/remove elements from the client array).
-	// @param sample        Sound file name relative to the "sounds" folder.
+	// @param sample        Sound file name relative to the "sound" folder.
 	// @param entity        Entity emitting the sound.
 	// @param channel       Channel emitting the sound.
 	// @param volume        Sound volume.
@@ -397,7 +397,7 @@ native void RemoveNormalSoundHook(NormalSHook hook);
  * Wrapper to emit sound to one client.
  *
  * @param client		Client index.
- * @param sample		Sound file name relative to the "sounds" folder.
+ * @param sample		Sound file name relative to the "sound" folder.
  * @param entity		Entity to emit from.
  * @param channel		Channel to emit with.
  * @param level			Sound level.
@@ -437,7 +437,7 @@ stock void EmitSoundToClient(int client,
 /**
  * Wrapper to emit sound to all clients.
  *
- * @param sample		Sound file name relative to the "sounds" folder.
+ * @param sample		Sound file name relative to the "sound" folder.
  * @param entity		Entity to emit from.
  * @param channel		Channel to emit with.
  * @param level			Sound level.
@@ -515,7 +515,7 @@ stock int ATTN_TO_SNDLEVEL(float attn)
  * @param level			Sound level.
  * @param volume		Sound volume.
  * @param pitch			Sound pitch.
- * @param sample		Sound file name relative to the "sounds" folder.
+ * @param sample		Sound file name relative to the "sound" folder.
  * @param maxlength		Maximum length of sample string buffer.
  * @param entity		Entity the sound is being emitted from.
  * @return				True if the sound was successfully retrieved, false if it

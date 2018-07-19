@@ -60,6 +60,30 @@ using namespace SourceMod;
 #define HUD_PRINTTALK		3
 #define HUD_PRINTCENTER		4
 
+#if defined _WIN32
+#define SOURCE_BIN_PREFIX ""
+#define SOURCE_BIN_SUFFIX ""
+#define SOURCE_BIN_EXT ".dll"
+#elif defined __APPLE__
+#define SOURCE_BIN_PREFIX ""
+#define SOURCE_BIN_SUFFIX ""
+#define SOURCE_BIN_EXT ".dylib"
+#elif defined __linux__
+#if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
+	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_LEFT4DEAD2 || SOURCE_ENGINE == SE_NUCLEARDAWN \
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI
+#define SOURCE_BIN_PREFIX "lib"
+#define SOURCE_BIN_SUFFIX "_srv"
+#elif SOURCE_ENGINE >= SE_LEFT4DEAD
+#define SOURCE_BIN_PREFIX "lib"
+#define SOURCE_BIN_SUFFIX ""
+#else
+#define SOURCE_BIN_PREFIX ""
+#define SOURCE_BIN_SUFFIX "_i486"
+#endif
+#define SOURCE_BIN_EXT ".so"
+#endif
+
 struct DataTableInfo
 {
 	struct SendPropPolicy
@@ -68,13 +92,21 @@ struct DataTableInfo
 		{
 			return strcmp(name, info.prop->GetName()) == 0;
 		}
+		static inline uint32_t hash(const detail::CharsAndLength &key)
+		{
+			return key.hash();
+		}
 	};
 
 	static inline bool matches(const char *name, const DataTableInfo *info)
 	{
 		return strcmp(name, info->sc->GetName()) == 0;
 	}
-
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
+	}
+	
 	DataTableInfo(ServerClass *sc)
 		: sc(sc)
 	{
@@ -89,6 +121,10 @@ struct DataMapCachePolicy
 	static inline bool matches(const char *name, const sm_datatable_info_t &info)
 	{
 		return strcmp(name, info.prop->fieldName) == 0;
+	}
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
 	}
 };
 

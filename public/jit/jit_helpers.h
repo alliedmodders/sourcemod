@@ -115,6 +115,22 @@ public:
 		}
 		outptr += sizeof(jit_uint32_t);
 	}
+	inline void write_int64(jit_int64_t c)
+	{
+		if (outbase)
+		{
+			*(jit_int64_t *)outptr = c;
+		}
+		outptr += sizeof(jit_int64_t);
+	}
+	inline void write_uint64(jit_uint64_t c)
+	{
+		if (outbase)
+		{
+			*(jit_uint64_t *)outptr = c;
+		}
+		outptr += sizeof(jit_uint64_t);
+	}
 	inline jitoffs_t get_outputpos()
 	{
 		return (outptr - outbase);

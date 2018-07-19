@@ -239,4 +239,25 @@
 	{
 		"en"			"Off"
 	}
+	
+	"Say all"
+	{
+		"#format"		"{1:s}"
+		"en"			"(ALL) {1}"
+	}
+	"Chat admins"
+	{
+		"#format"		"{1:N}"
+		"en"			"(ADMINS) {1}"
+	}
+	"Chat to admins"
+	{
+		"#format"		"{1:N}"
+		"en"			"(TO ADMINS) {1}"
+	}
+	"Private say to"
+	{
+		"#format"		"{1:N},{2:N}"
+		"en"			"(Private to {1}) {2}"
+	}
 }

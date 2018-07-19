@@ -364,8 +364,8 @@ void EventManager::FireEvent(EventInfo *pInfo, bool bDontBroadcast)
 
 void EventManager::FireEventToClient(EventInfo *pInfo, IClient *pClient)
 {
-	// The IClient vtable is +4 from the IGameEventListener2 (CBaseClient) vtable due to multiple inheritance.
-	IGameEventListener2 *pGameClient = (IGameEventListener2 *)((intptr_t)pClient - 4);
+	// The IClient vtable is +sizeof(void *) from the IGameEventListener2 (CBaseClient) vtable due to multiple inheritance.
+	IGameEventListener2 *pGameClient = (IGameEventListener2 *)((intptr_t)pClient - sizeof(void *));
 	pGameClient->FireGameEvent(pInfo->pEvent);
 }
 

@@ -44,6 +44,7 @@
 CHookManager g_Hooks;
 static bool PRCH_enabled = false;
 static bool PRCH_used = false;
+static bool PRCHPost_used = false;
 static bool FILE_used = false;
 
 SH_DECL_MANUALHOOK2_void(PlayerRunCmdHook, 0, 0, 0, CUserCmd *, IMoveHelper *);
@@ -60,6 +61,7 @@ SourceHook::CallClass<IBaseFileSystem> *basefilesystemPatch = NULL;
 CHookManager::CHookManager()
 {
 	m_usercmdsFwd = NULL;
+	m_usercmdsPostFwd = NULL;
 	m_netFileSendFwd = NULL;
 	m_netFileReceiveFwd = NULL;
 	m_pActiveNetChannel = NULL;
@@ -99,11 +101,25 @@ void CHookManager::Initialize()
 		Param_CellByRef,	// tickcount
 		Param_CellByRef,	// seed
 		Param_Array);		// mouse[2]
+
+	m_usercmdsPostFwd = forwards->CreateForward("OnPlayerRunCmdPost", ET_Ignore, 11, NULL,
+		Param_Cell,			// client
+		Param_Cell,			// buttons
+		Param_Cell,			// impulse
+		Param_Array,		// Float:vel[3]
+		Param_Array,		// Float:angles[3]
+		Param_Cell,			// weapon
+		Param_Cell,			// subtype
+		Param_Cell,			// cmdnum
+		Param_Cell,			// tickcount
+		Param_Cell,			// seed
+		Param_Array);		// mouse[2]
 }
 
 void CHookManager::Shutdown()
 {
 	forwards->ReleaseForward(m_usercmdsFwd);
+	forwards->ReleaseForward(m_usercmdsPostFwd);
 	forwards->ReleaseForward(m_netFileSendFwd);
 	forwards->ReleaseForward(m_netFileReceiveFwd);
 
@@ -127,14 +143,14 @@ void CHookManager::OnClientConnect(int client)
 
 void CHookManager::OnClientPutInServer(int client)
 {
-	PlayerRunCmdHook(client);
+	if (PRCH_used)
+		PlayerRunCmdHook(client, false);
+	if (PRCHPost_used)
+		PlayerRunCmdHook(client, true);
 }
 
-void CHookManager::PlayerRunCmdHook(int client)
+void CHookManager::PlayerRunCmdHook(int client, bool post)
 {
-	if (!PRCH_used)
-		return;
-
 	edict_t *pEdict = PEntityOfEntIndex(client);
 	if (!pEdict)
 	{
@@ -153,22 +169,33 @@ void CHookManager::PlayerRunCmdHook(int client)
 		return;
 	}
 
+	ke::Vector<CVTableHook *> &runUserCmdHookVec = post ? m_runUserCmdPostHooks : m_runUserCmdHooks;
 	CVTableHook hook(pEntity);
-	for (size_t i = 0; i < m_runUserCmdHooks.length(); ++i)
+	for (size_t i = 0; i < runUserCmdHookVec.length(); ++i)
 	{
-		if (hook == m_runUserCmdHooks[i])
+		if (hook == runUserCmdHookVec[i])
 		{
 			return;
 		}
 	}
 
-	int hookid = SH_ADD_MANUALVPHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmd), false);
+	int hookid;
+	if (post)
+		hookid = SH_ADD_MANUALVPHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmdPost), true);
+	else
+		hookid = SH_ADD_MANUALVPHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmd), false);
+
 	hook.SetHookID(hookid);
-	m_runUserCmdHooks.append(new CVTableHook(hook));
+	runUserCmdHookVec.append(new CVTableHook(hook));
 }
 
 void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 {
+	if (!ucmd)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
 	if (m_usercmdsFwd->GetFunctionCount() == 0)
 	{
 		RETURN_META(MRES_IGNORED);
@@ -226,6 +253,53 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	{
 		RETURN_META(MRES_SUPERCEDE);
 	}
+
+	RETURN_META(MRES_IGNORED);
+}
+
+void CHookManager::PlayerRunCmdPost(CUserCmd *ucmd, IMoveHelper *moveHelper)
+{
+	if (!ucmd)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
+	if (m_usercmdsPostFwd->GetFunctionCount() == 0)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
+	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
+
+	if (!pEntity)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
+	edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
+
+	if (!pEdict)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
+	int client = IndexOfEdict(pEdict);
+	cell_t vel[3] = { sp_ftoc(ucmd->forwardmove), sp_ftoc(ucmd->sidemove), sp_ftoc(ucmd->upmove) };
+	cell_t angles[3] = { sp_ftoc(ucmd->viewangles.x), sp_ftoc(ucmd->viewangles.y), sp_ftoc(ucmd->viewangles.z) };
+	cell_t mouse[2] = { ucmd->mousedx, ucmd->mousedy };
+
+	m_usercmdsPostFwd->PushCell(client);
+	m_usercmdsPostFwd->PushCell(ucmd->buttons);
+	m_usercmdsPostFwd->PushCell(ucmd->impulse);
+	m_usercmdsPostFwd->PushArray(vel, 3);
+	m_usercmdsPostFwd->PushArray(angles, 3);
+	m_usercmdsPostFwd->PushCell(ucmd->weaponselect);
+	m_usercmdsPostFwd->PushCell(ucmd->weaponsubtype);
+	m_usercmdsPostFwd->PushCell(ucmd->command_number);
+	m_usercmdsPostFwd->PushCell(ucmd->tick_count);
+	m_usercmdsPostFwd->PushCell(ucmd->random_seed);
+	m_usercmdsPostFwd->PushArray(mouse, 2);
+	m_usercmdsPostFwd->Execute();
 
 	RETURN_META(MRES_IGNORED);
 }
@@ -387,16 +461,30 @@ bool CHookManager::SendFile(const char *filename, unsigned int transferID)
 
 void CHookManager::OnPluginLoaded(IPlugin *plugin)
 {
-	if (PRCH_enabled && !PRCH_used && m_usercmdsFwd->GetFunctionCount())
+	if (PRCH_enabled)
 	{
-		PRCH_used = true;
-
-		int MaxClients = playerhelpers->GetMaxClients();
-		for (int i = 1; i <= MaxClients; i++)
+		bool changed = false;
+		if (!PRCH_used && (m_usercmdsFwd->GetFunctionCount() > 0))
 		{
-			if (playerhelpers->GetGamePlayer(i)->IsInGame())
+			PRCH_used = true;
+			changed = true;
+		}
+		if (!PRCHPost_used && (m_usercmdsPostFwd->GetFunctionCount() > 0))
+		{
+			PRCHPost_used = true;
+			changed = true;
+		}
+
+		// Only check the hooks on the players if a new hook is used by this plugin.
+		if (changed)
+		{
+			int MaxClients = playerhelpers->GetMaxClients();
+			for (int i = 1; i <= MaxClients; i++)
 			{
-				OnClientPutInServer(i);
+				if (playerhelpers->GetGamePlayer(i)->IsInGame())
+				{
+					OnClientPutInServer(i);
+				}
 			}
 		}
 	}
@@ -427,6 +515,17 @@ void CHookManager::OnPluginUnloaded(IPlugin *plugin)
 
 		m_runUserCmdHooks.clear();
 		PRCH_used = false;
+	}
+
+	if (PRCHPost_used && !m_usercmdsPostFwd->GetFunctionCount())
+	{
+		for (size_t i = 0; i < m_runUserCmdPostHooks.length(); ++i)
+		{
+			delete m_runUserCmdPostHooks[i];
+		}
+
+		m_runUserCmdPostHooks.clear();
+		PRCHPost_used = false;
 	}
 
 	if (FILE_used && !m_netFileSendFwd->GetFunctionCount() && !m_netFileReceiveFwd->GetFunctionCount())

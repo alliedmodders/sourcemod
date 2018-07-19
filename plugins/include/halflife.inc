@@ -89,6 +89,7 @@ enum EngineVersion
 	Engine_Insurgency,			/**< Insurgency (2013 Retail version)*/
 	Engine_Contagion,			/**< Contagion */
 	Engine_BlackMesa,			/**< Black Mesa Multiplayer */
+	Engine_DOI,					/**< Day of Infamy */
 };
 
 enum FindMapResult
@@ -210,6 +211,13 @@ native float GetGameTime();
  * @return				Game tick count.
  */
 native int GetGameTickCount();
+
+/** 
+ * Returns the time the Game took processing the last frame.
+ *
+ * @return				Game frame time.
+ */
+native float GetGameFrameTime();
 
 /**
  * Returns the game description from the mod.

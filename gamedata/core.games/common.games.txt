@@ -99,7 +99,6 @@
 			"engine"			"csgo"
 			"engine"			"sdk2013"
 			"engine"			"contagion"
-			"engine"			"bms"
 		}
 		
 		"Offsets"
@@ -108,7 +107,27 @@
 			{
 				"windows"		"11"
 				"linux"			"12"
+				"linux64"		"12"
 				"mac"			"12"
+				"mac64"			"12"
+			}
+		}
+	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"			"bms"
+		}
+		
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"12"
+				"linux"			"13"
+				"mac"			"13"
 			}
 		}
 	}
@@ -159,9 +178,10 @@
 			"game"					"nucleardawn"
 			"game"					"berimbau"
 			"game"					"nmrih"
-			"game"					"KreedzClimbing"
+			"game"					"kz"
 			"game"					"doi"
 			"game"					"bms"
+			"game"					"iosoccer"
 		}
 
 		"Keys"
@@ -208,9 +228,10 @@
 			"game"					"berimbau"
 			"game"					"$INSURGENCY" // retail game
 			"game"					"nmrih"
-			"game"					"KreedzClimbing"
+			"game"					"kz"
 			"game"					"doi"
 			"game"					"bms"
+			"game"					"iosoccer"
 		}
 		
 		"Keys"
@@ -267,7 +288,9 @@
 			"game"					"cstrike"
 			"game"					"synergy"
 			"game"					"bms"
-			"game"					"KreedzClimbing"
+			"game"					"kz"
+			"game"					"csgo"
+			"game"					"reactivedrop"
 		}
 		
 		"Keys"

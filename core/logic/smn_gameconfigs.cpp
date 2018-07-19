@@ -152,7 +152,11 @@ static cell_t smn_GameConfGetAddress(IPluginContext *pCtx, const cell_t *params)
 	if (!gc->GetAddress(key, &val))
 		return 0;
 
+#ifdef PLATFORM_X86
 	return (cell_t)val;
+#else
+	return pseudoAddr.ToPseudoAddress(val);
+#endif
 }
 
 static GameConfigsNatives s_GameConfigsNatives;

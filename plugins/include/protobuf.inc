@@ -109,8 +109,15 @@ methodmap Protobuf < Handle
 	//
 	// @param field      Field name.
 	// @return           Number of elements in the field.
-	// @error            Non-existent field, or incorrect field type.
+	// @error            Non-existent field, or non-repeated field.
 	public native int GetRepeatedFieldCount(const char[] field);
+	
+	// Returns whether or not the named, non-repeated field has a value set.
+	//
+	// @param field      Field name.
+	// @return           True if value has been set, else false.
+	// @error            Non-existent field, or repeated field.
+	public native bool HasField(const char[] field);
 
 	// Sets an int32, uint32, sint32, fixed32, sfixed32, or enum value on a protobuf message.
 	//

@@ -397,7 +397,7 @@ static cell_t SteamIdToLocal(IPluginContext *pCtx, int index, AuthIdType authTyp
 			}
 			
 			char szAuth[64];
-			snprintf(szAuth, sizeof(szAuth), "%" PRIu64, steamId);
+			ke::SafeSprintf(szAuth, sizeof(szAuth), "%" PRIu64, steamId);
 			
 			pCtx->StringToLocal(local_addr, bytes, szAuth);
 		}
@@ -1123,7 +1123,6 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 	{
 		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(i);
 		if (!pPlayer->IsInGame()
-			|| pPlayer->IsFakeClient()
 			|| (display_in_chat && i == client))
 		{
 			continue;
@@ -1249,7 +1248,6 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 	{
 		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(i);
 		if (!pPlayer->IsInGame()
-			|| pPlayer->IsFakeClient()
 			|| i == client)
 		{
 			continue;
@@ -1358,14 +1356,6 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
 		if (eh.HasException())
 			return 0;
-	}
-
-	if (pPlayer->IsFakeClient())
-	{
-		// Kick uses the kickid command for bots. It is already delayed
-		// until the next frame unless someone flushes command buffer
-		pPlayer->Kick(buffer);
-		return 1;
 	}
 
 	gamehelpers->AddDelayedKick(client, pPlayer->GetUserId(), buffer);

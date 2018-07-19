@@ -34,6 +34,7 @@
 
 #include <IShareSys.h>
 #include <ILibrarySys.h>
+#include "am-string.h"
 
 /**
  * @file IExtensionSys.h
@@ -443,7 +444,7 @@ namespace SourceMod
 		{ \
 			if (errbuf) \
 			{ \
-				size_t len = snprintf(errbuf, \
+				size_t len = ke::SafeSprintf(errbuf, \
 					errsize, \
 					"Could not find interface: %s (version: %d)", \
 					SM_IFACEPAIR(prefix)); \

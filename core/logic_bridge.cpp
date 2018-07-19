@@ -45,35 +45,12 @@
 #include "ConCmdManager.h"
 #include "IDBDriver.h"
 #include "provider.h"
-#if SOURCE_ENGINE >= SE_ALIENSWARM
-# include "convar_sm_swarm.h"
-#elif SOURCE_ENGINE >= SE_LEFT4DEAD
-# include "convar_sm_l4d.h"
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
-# include "convar_sm_ob.h"
-#else
-# include "convar_sm.h"
-#endif
+#include "sm_convar.h"
 #include <amtl/os/am-shared-library.h>
 #include <amtl/os/am-path.h>
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/IPlayerInfoBridge.h>
 #include <bridge/include/IFileSystemBridge.h>
-
-#if defined _WIN32
-# define MATCHMAKINGDS_SUFFIX	""
-# define MATCHMAKINGDS_EXT	"dll"
-#elif defined __APPLE__
-# define MATCHMAKINGDS_SUFFIX	""
-# define MATCHMAKINGDS_EXT	"dylib"
-#elif defined __linux__
-#if SOURCE_ENGINE < SE_LEFT4DEAD2
-# define MATCHMAKINGDS_SUFFIX	"_i486"
-#else
-# define MATCHMAKINGDS_SUFFIX	""
-#endif
-# define MATCHMAKINGDS_EXT	"so"
-#endif
 
 sm_logic_t logicore;
 
@@ -388,6 +365,8 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 #define GAMEFIX "2.blade"
 #elif SOURCE_ENGINE == SE_INSURGENCY
 #define GAMEFIX "2.insurgency"
+#elif SOURCE_ENGINE == SE_DOI
+#define GAMEFIX "2.doi"
 #elif SOURCE_ENGINE == SE_CSGO
 #define GAMEFIX "2.csgo"
 #elif SOURCE_ENGINE == SE_CONTAGION
@@ -510,6 +489,8 @@ const char *CoreProviderImpl::GetSourceEngineName()
 	return "blade";
 #elif SOURCE_ENGINE == SE_INSURGENCY
 	return "insurgency";
+#elif SOURCE_ENGINE == SE_DOI
+	return "doi";
 #elif SOURCE_ENGINE == SE_CSGO
 	return "csgo";
 #endif
@@ -527,6 +508,7 @@ bool CoreProviderImpl::SymbolsAreHidden()
 	|| (SOURCE_ENGINE == SE_NUCLEARDAWN) \
 	|| (SOURCE_ENGINE == SE_LEFT4DEAD2)  \
 	|| (SOURCE_ENGINE == SE_INSURGENCY)  \
+	|| (SOURCE_ENGINE == SE_DOI)  \
 	|| (SOURCE_ENGINE == SE_BLADE)       \
 	|| (SOURCE_ENGINE == SE_CSGO)
 	return true;
@@ -648,10 +630,8 @@ void CoreProviderImpl::InitializeBridge()
 	char path[PLATFORM_MAX_PATH];
 
 	ke::path::Format(path, sizeof(path),
-	                 "%s/bin/matchmaking_ds%s.%s",
-                     g_SMAPI->GetBaseDir(),
-                     MATCHMAKINGDS_SUFFIX,
-                     MATCHMAKINGDS_EXT);
+	                 "%s/bin/" PLATFORM_FOLDER "matchmaking_ds" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT,
+                     g_SMAPI->GetBaseDir());
 
 	if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0)) {
 		this->matchmakingDSFactory =
@@ -686,7 +666,7 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 	/* Now it's time to load the logic binary */
 	g_SMAPI->PathFormat(file,
 		sizeof(file),
-		"%s/bin/sourcemod.logic." PLATFORM_LIB_EXT,
+		"%s/bin/" PLATFORM_ARCH_FOLDER "sourcemod.logic." PLATFORM_LIB_EXT,
 		g_SourceMod.GetSourceModPath());
 
 	char myerror[255];
@@ -699,7 +679,7 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 	LogicLoadFunction llf = logic_->get<decltype(llf)>("logic_load");
 	if (!llf) {
 		logic_ = nullptr;
-		ke::SafeSprintf(error, maxlength, "could not find logic_load function");
+		ke::SafeStrcpy(error, maxlength, "could not find logic_load function");
 		return false;
 	}
 
@@ -708,7 +688,7 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 
 	logic_init_ = llf(SM_LOGIC_MAGIC);
 	if (!logic_init_) {
-		ke::SafeSprintf(error, maxlength, "component version mismatch");
+		ke::SafeStrcpy(error, maxlength, "component version mismatch");
 		return false;
 	}
 	return true;

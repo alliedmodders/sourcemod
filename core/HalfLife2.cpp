@@ -50,26 +50,8 @@
 
 typedef ICommandLine *(*FakeGetCommandLine)();
 
-#if defined _WIN32
-#define TIER0_NAME			"tier0.dll"
-#define VSTDLIB_NAME		"vstdlib.dll"
-#elif defined __APPLE__
-#define TIER0_NAME			"libtier0.dylib"
-#define VSTDLIB_NAME		"libvstdlib.dylib"
-#elif defined __linux__
-#if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_LEFT4DEAD2 || SOURCE_ENGINE == SE_NUCLEARDAWN \
-	|| SOURCE_ENGINE == SE_BMS
-#define TIER0_NAME			"libtier0_srv.so"
-#define VSTDLIB_NAME		"libvstdlib_srv.so"
-#elif SOURCE_ENGINE >= SE_LEFT4DEAD
-#define TIER0_NAME			"libtier0.so"
-#define VSTDLIB_NAME		"libvstdlib.so"
-#else
-#define TIER0_NAME			"tier0_i486.so"
-#define VSTDLIB_NAME		"vstdlib_i486.so"
-#endif
-#endif
+#define TIER0_NAME			SOURCE_BIN_PREFIX "tier0" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT
+#define VSTDLIB_NAME		SOURCE_BIN_PREFIX "vstdlib" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT
 
 CHalfLife2 g_HL2;
 ConVar *sv_lan = NULL;
@@ -157,6 +139,7 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 	m_CSGOBadList.add("m_flFallbackWear");
 	m_CSGOBadList.add("m_nFallbackStatTrak");
 	m_CSGOBadList.add("m_iCompetitiveRanking");
+	m_CSGOBadList.add("m_iCompetitiveRankType");
 	m_CSGOBadList.add("m_nActiveCoinRank");
 	m_CSGOBadList.add("m_nMusicID");
 #endif
@@ -171,13 +154,16 @@ ConfigResult CHalfLife2::OnSourceModConfigChanged(const char *key, const char *v
 		if (strcasecmp(value, "no") == 0)
 		{
 			m_bFollowCSGOServerGuidelines = false;
+			return ConfigResult_Accept;
 		}
 		else if (strcasecmp(value, "yes") == 0)
 		{
 			m_bFollowCSGOServerGuidelines = true;
+			return ConfigResult_Accept;
 		}
 		else
 		{
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
 			return ConfigResult_Reject;
 		}
 #endif
@@ -242,7 +228,12 @@ void CHalfLife2::InitLogicalEntData()
 				return;
 			}
 
+#ifdef PLATFORM_X86
 			g_EntList = *reinterpret_cast<void **>(addr + offset);
+#elif defined PLATFORM_X64
+			int32_t varOffset = *reinterpret_cast<int32_t *>(addr + offset);
+			g_EntList = reinterpret_cast<void *>(addr + offset + sizeof(int32_t) + varOffset);
+#endif
 
 		}
 	}
@@ -842,7 +833,7 @@ void CHalfLife2::AddDelayedKick(int client, int userid, const char *msg)
 
 	kick.client = client;
 	kick.userid = userid;
-	ke::SafeSprintf(kick.buffer, sizeof(kick.buffer), "%s", msg);
+	ke::SafeStrcpy(kick.buffer, sizeof(kick.buffer), msg);
 
 	m_DelayedKicks.push(kick);
 }
@@ -1179,8 +1170,58 @@ SMFindMapResult CHalfLife2::FindMap(char *pMapName, size_t nMapNameMax)
 	return this->FindMap(pMapName, pMapName, nMapNameMax);
 }
 
+#ifdef PLATFORM_WINDOWS
+bool CheckReservedFilename(const char *in, const char *reservedName)
+{
+	size_t nameLen = strlen(reservedName);
+	for (size_t i = 0; i < nameLen; ++i)
+	{
+		if (reservedName[i] != tolower(in[i]))
+		{
+			return false;
+		}
+	}
+
+	if (in[nameLen] == '\0' || in[nameLen] == '.')
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool IsWindowsReservedDeviceName(const char *pMapname)
+{
+	static const char * const reservedDeviceNames[] = {
+		"con", "prn", "aux", "clock$", "nul", "com1",
+		"com2", "com3", "com4", "com5", "com6", "com7",
+		"com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4",
+		"lpt5", "lpt6", "lpt7", "lpt8", "lpt9"
+	};
+	
+	size_t reservedCount = sizeof(reservedDeviceNames) / sizeof(reservedDeviceNames[0]);
+	for (int i = 0; i < reservedCount; ++i)
+	{
+		if (CheckReservedFilename(pMapname, reservedDeviceNames[i]))
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+#endif 
+
 SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_t nMapNameMax)
 {
+	/* We need to ensure user input does not contain reserved device names on windows */
+#ifdef PLATFORM_WINDOWS
+	if (IsWindowsReservedDeviceName(pMapName))
+	{
+		return SMFindMapResult::NotFound;
+	}
+#endif
+	
 	ke::SafeStrcpy(pFoundMap, nMapNameMax, pMapName);
 
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
@@ -1248,33 +1289,14 @@ bool CHalfLife2::GetMapDisplayName(const char *pMapName, char *pDisplayname, siz
 	SMFindMapResult result = FindMap(pMapName, pDisplayname, nMapNameMax);
 
 	if (result == SMFindMapResult::NotFound)
-	{
 		return false;
-	}
 
-#if SOURCE_ENGINE == SE_CSGO
-	// In CSGO, the path separator is used in workshop maps.
-	char workshop[10];
-	ke::SafeSprintf(workshop, SM_ARRAYSIZE(workshop), "%s%c", "workshop", PLATFORM_SEP_CHAR);
+	char *pPos;
+	if ((pPos = strrchr(pDisplayname, '/')) != NULL || (pPos = strrchr(pDisplayname, '\\')) != NULL)
+		ke::SafeStrcpy(pDisplayname, nMapNameMax, &pPos[1]);
 
-	char *lastSlashPos;
-	// In CSGO, workshop maps show up as workshop/123456789/mapname or workshop\123456789\mapname depending on OS
-	if (strncmp(pDisplayname, workshop, 9) == 0 && (lastSlashPos = strrchr(pDisplayname, PLATFORM_SEP_CHAR)) != NULL)
-	{
-		ke::SafeStrcpy(pDisplayname, nMapNameMax, &lastSlashPos[1]);
-		return true;
-	}
-#elif SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_BMS
-	char *ugcPos;
-	// In TF2 and BMS, workshop maps show up as workshop/mapname.ugc123456789 regardless of OS
-	if (strncmp(pDisplayname, "workshop/", 9) == 0 && (ugcPos = strstr(pDisplayname, ".ugc")) != NULL)
-	{
-		// Overwrite the . with a null and SafeStrcpy will handle the rest
-		ugcPos[0] = '\0';
-		ke::SafeStrcpy(pDisplayname, nMapNameMax, &pDisplayname[9]);
-		return true;
-	}
-#endif
+	if ((pPos = strstr(pDisplayname, ".ugc")) != NULL)
+		pPos[0] = '\0';
 
 	return true;
 }
@@ -1323,7 +1345,7 @@ string_t CHalfLife2::AllocPooledString(const char *pszValue)
 
 bool CHalfLife2::GetServerSteam3Id(char *pszOut, size_t len) const
 {
-	CSteamID sid(GetServerSteamId64());
+	CSteamID sid((uint64)GetServerSteamId64());
 
 	switch (sid.GetEAccountType())
 	{
@@ -1364,6 +1386,7 @@ uint64_t CHalfLife2::GetServerSteamId64() const
 	|| SOURCE_ENGINE == SE_EYE         \
 	|| SOURCE_ENGINE == SE_HL2DM       \
 	|| SOURCE_ENGINE == SE_INSURGENCY  \
+	|| SOURCE_ENGINE == SE_DOI  \
 	|| SOURCE_ENGINE == SE_SDK2013     \
 	|| SOURCE_ENGINE == SE_ALIENSWARM  \
 	|| SOURCE_ENGINE == SE_TF2

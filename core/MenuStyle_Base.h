@@ -34,6 +34,7 @@
 
 #include <IMenuManager.h>
 #include <IPlayerHelpers.h>
+#include <am-autoptr.h>
 #include <am-string.h>
 #include <am-vector.h>
 #include "sm_fastlink.h"

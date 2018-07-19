@@ -31,6 +31,7 @@
 
 #include <stdlib.h>
 #include "common_logic.h"
+#include <am-autoptr.h>
 #include <am-moveable.h>
 #include <am-refcounting.h>
 #include <sm_stringhashmap.h>

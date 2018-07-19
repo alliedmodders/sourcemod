@@ -89,6 +89,19 @@ IPhraseFile *CPhraseCollection::GetFile(unsigned int file)
 	return m_Files[file];
 }
 
+bool CPhraseCollection::TranslationPhraseExists(const char *key)
+{
+	for (size_t i = 0; i < m_Files.size(); i++)
+	{
+		if (m_Files[i]->TranslationPhraseExists(key))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 TransError CPhraseCollection::FindTranslation(const char *key, unsigned int langid, Translation *pTrans)
 {
 	size_t i;

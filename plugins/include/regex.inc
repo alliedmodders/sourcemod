@@ -58,6 +58,24 @@
 enum RegexError
 {
 	REGEX_ERROR_NONE = 0,				/* No error */
+	
+	REGEX_ERROR_ASSERT = 1,  /* internal error ? */
+	REGEX_ERROR_BADBR,       /* invalid repeat counts in {} */
+	REGEX_ERROR_BADPAT,      /* pattern error */
+	REGEX_ERROR_BADRPT,      /* ? * + invalid */
+	REGEX_ERROR_EBRACE,      /* unbalanced {} */
+	REGEX_ERROR_EBRACK,      /* unbalanced [] */
+	REGEX_ERROR_ECOLLATE,    /* collation error - not relevant */
+	REGEX_ERROR_ECTYPE,      /* bad class */
+	REGEX_ERROR_EESCAPE,     /* bad escape sequence */
+	REGEX_ERROR_EMPTY,       /* empty expression */
+	REGEX_ERROR_EPAREN,      /* unbalanced () */
+	REGEX_ERROR_ERANGE,      /* bad range inside [] */
+	REGEX_ERROR_ESIZE,       /* expression too big */
+	REGEX_ERROR_ESPACE,      /* failed to get memory */
+	REGEX_ERROR_ESUBREG,     /* bad back reference */
+	REGEX_ERROR_INVARG,      /* bad argument */
+	
 	REGEX_ERROR_NOMATCH = -1,			/* No match was found */
 	REGEX_ERROR_NULL = -2,
 	REGEX_ERROR_BADOPTION = -3,
@@ -110,23 +128,58 @@ methodmap Regex < Handle
 	// @param str			The string to check.
 	// @param regex			Regex Handle from CompileRegex()
 	// @param ret			Error code, if applicable.
-	// @return				Number of substrings found or -1 on failure.
+	// @param offset		Offset in the string to start searching from. MatchOffset returns the offset of the match.
+	// @return				Number of captures found or -1 on failure.
 	// 
 	// @note				Use the regex handle passed to this function to extract
-	// 						matches with GetRegexSubString().
-	public native int Match(const char[] str, RegexError &ret = REGEX_ERROR_NONE);
+	// 						matches with GetSubString().
+	public native int Match(const char[] str, RegexError &ret = REGEX_ERROR_NONE, int offset = 0);
+	
+	// Gets all matches from a string against a pre-compiled regular expression pattern.
+	// 
+	// @param str			The string to check.
+	// @param regex			Regex Handle from CompileRegex()
+	// @param ret			Error code, if applicable.
+	// @return				Number of matches found or -1 on failure.
+	// 
+	// @note				Use GetSubString() and loop from 0 -> totalmatches - 1.
+	public native int MatchAll(const char[] str, RegexError &ret = REGEX_ERROR_NONE);
 
 	// Returns a matched substring from a regex handle.
     //
-	// Substring ids start at 0 and end at substrings-1, where substrings is the
-	// number returned by Regex.Match.
+	// Substring ids start at 0 and end at captures-1, where captures is the
+	// number returned by Regex.Match or Regex.CaptureCount.
 	//
 	// @param regex			The regex handle to extract data from.
-	// @param str_id		The index of the expression to get - starts at 0, and ends at substrings - 1.
+	// @param str_id		The index of the expression to get - starts at 0, and ends at captures - 1.
 	// @param buffer		The buffer to set to the matching substring.
 	// @param maxlen		The maximum string length of the buffer.
+	// @param match			Match to get the captures for - starts at 0, and ends at MatchCount() -1
 	// @return				True if a substring was found, False on fail/error
-	public native bool GetSubString(int str_id, char[] buffer, int maxlen);
+	//
+	// @note				str_id = 0 is the full captured string, anything else is the capture group index.
+	//						if Regex.Match is used match can only be 0
+	public native bool GetSubString(int str_id, char[] buffer, int maxlen, int match = 0);
+	
+	// Returns number of matches
+	//
+	// When using Match this is always 1 or 0 (unless an error occured)
+	// @return				Total number of matches found.
+	public native int MatchCount();
+	
+	// Returns number of captures for a match
+	//
+	// @param match			Match to get the number of captures for. Match starts at 0, and ends at MatchCount() -1
+	// @return				Number of captures in the match.
+	//
+	// @note				Use GetSubString() and loop from 1 -> captures -1 for str_id to get all captures
+	public native int CaptureCount(int match = 0);
+	
+	// Returns the string offset of a match.
+	//
+	// @param match			Match to get the offset of. Match starts at 0, and ends at MatchCount() -1
+	// @return				Offset of the match in the string.
+	public native int MatchOffset(int match = 0)
 };
 
 /**
@@ -149,7 +202,7 @@ native Regex CompileRegex(const char[] pattern, int flags = 0, char[] error="", 
  * @param str			The string to check.
  * @param regex			Regex Handle from CompileRegex()
  * @param ret			Error code, if applicable.
- * @return				Number of substrings found or -1 on failure.
+ * @return				Number of captures found or -1 on failure.
  *
  * @note				Use the regex handle passed to this function to extract
  *						matches with GetRegexSubString().
@@ -158,14 +211,17 @@ native int MatchRegex(Handle regex, const char[] str, RegexError &ret = REGEX_ER
 
 /**
  * Returns a matched substring from a regex handle.
- * Substring ids start at 0 and end at substrings-1, where substrings is the number returned 
- * by MatchRegex
+ * Substring ids start at 0 and end at captures-1, where captures is the number returned 
+ * by MatchRegex.
  *
  * @param regex			The regex handle to extract data from.
- * @param str_id		The index of the expression to get - starts at 0, and ends at substrings - 1.
+ * @param str_id		The index of the expression to get - starts at 0, and ends at captures - 1.
  * @param buffer		The buffer to set to the matching substring.
  * @param maxlen		The maximum string length of the buffer.
  * @return				True if a substring was found, False on fail/error
+ *
+ * @note				str_id = 0 is the full captured string, anything else is the capture group index.
+ *
  */
 native bool GetRegexSubString(Handle regex, int str_id, char[] buffer, int maxlen);
 

@@ -72,8 +72,31 @@
 #endif
 
 #if !defined DMG_CRIT
-	// TF2 crits and minicrits
-	#define DMG_CRIT DMG_ACID
+	#define DMG_CRIT				DMG_ACID	/**< TF2 crits and minicrits */
+#endif
+
+#if !defined DMG_RADIUS_MAX
+	#define DMG_RADIUS_MAX			DMG_ENERGYBEAM	/**< No damage falloff */
+#endif
+
+#if !defined DMG_NOCLOSEDISTANCEMOD	
+	#define DMG_NOCLOSEDISTANCEMOD	DMG_POISON	/**< Don't do damage falloff too close */
+#endif
+
+#if !defined DMG_HALF_FALLOFF	
+	#define DMG_HALF_FALLOFF		DMG_RADIATION	/**< 50% damage falloff */
+#endif
+
+#if !defined DMG_USEDISTANCEMOD	
+	#define	DMG_USEDISTANCEMOD		DMG_SLOWBURN	/**< Do damage falloff */
+#endif
+
+#if !defined DMG_IGNITE	
+	#define DMG_IGNITE				DMG_PLASMA	/**< Ignite victim */
+#endif
+
+#if !defined DMG_USE_HITLOCATIONS	
+	#define	DMG_USE_HITLOCATIONS	DMG_AIRBOAT	/**< Do hit location damage (Like the sniperrifle and ambassador) */
 #endif
 
 enum SDKHookType

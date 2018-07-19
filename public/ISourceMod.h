@@ -43,7 +43,7 @@
 #include <time.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	13
+#define SMINTERFACE_SOURCEMOD_VERSION	14
 
 /**
 * @brief Forward declaration of the KeyValues class.
@@ -318,6 +318,20 @@ namespace SourceMod
 		 * @return			True if a map is currently running, otherwise false.
 		 */
 		virtual bool IsMapRunning() = 0;
+
+		/**
+		 * @brief Converts 32-bit pseudo address to memory address on 64-bit platforms.
+		 *
+		 * @return 			Memory address, or nullptr if pseudo address could not be converted.
+		 */
+		virtual void *FromPseudoAddress(uint32_t pseudoAddr) = 0;
+
+		/**
+		 * @brief Converts memory address to 32-bit pseudo address on 64-bit platforms.
+		 *
+		 * @return			Pseudo address, or 0 if memory address could not be converted.
+		 */
+		virtual uint32_t ToPseudoAddress(void *addr) = 0;
 	};
 }
 

@@ -63,7 +63,7 @@ int vsp_version = 0;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
-ConVar sourcemod_version("sourcemod_version", SOURCEMOD_VERSION, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY, "SourceMod Version");
+ConVar sourcemod_version("sourcemod_version", SOURCEMOD_VERSION, FCVAR_SPONLY|FCVAR_NOTIFY, "SourceMod Version");
 
 bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
 {
@@ -110,7 +110,7 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	{
 		if (error)
 		{
-			snprintf(error, maxlen, "Unable to find interface %s", MMIFACE_PLMANAGER);
+			ke::SafeSprintf(error, maxlen, "Unable to find interface %s", MMIFACE_PLMANAGER);
 		}
 		return false;
 	}

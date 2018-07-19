@@ -42,7 +42,7 @@ public int MenuHandler_ChangeMap(Menu menu, MenuAction action, int param1, int p
 	}
 	else if (action == MenuAction_Select)
 	{
-		char map[64];
+		char map[PLATFORM_MAX_PATH];
 		
 		menu.GetItem(param2, map, sizeof(map));
 	
@@ -89,17 +89,19 @@ public Action Command_Map(int client, int args)
 		return Plugin_Handled;
 	}
 
-	char map[64];
+	char map[PLATFORM_MAX_PATH];
+	char displayName[PLATFORM_MAX_PATH];
 	GetCmdArg(1, map, sizeof(map));
 
-	if (!IsMapValid(map))
+	if (FindMap(map, displayName, sizeof(displayName)) == FindMap_NotFound)
 	{
 		ReplyToCommand(client, "[SM] %t", "Map was not found", map);
 		return Plugin_Handled;
 	}
 
-	ShowActivity2(client, "[SM] ", "%t", "Changing map", map);
+	GetMapDisplayName(displayName, displayName, sizeof(displayName));
 
+	ShowActivity2(client, "[SM] ", "%t", "Changing map", displayName);
 	LogAction(client, -1, "\"%L\" changed map to \"%s\"", client, map);
 
 	DataPack dp;
@@ -111,7 +113,7 @@ public Action Command_Map(int client, int args)
 
 public Action Timer_ChangeMap(Handle timer, DataPack dp)
 {
-	char map[65];
+	char map[PLATFORM_MAX_PATH];
 
 	dp.Reset();
 	dp.ReadString(map, sizeof(map));
@@ -144,7 +146,7 @@ int LoadMapList(Menu menu)
 	
 	menu.RemoveAllItems();
 	
-	char map_name[64];
+	char map_name[PLATFORM_MAX_PATH];
 	int map_count = GetArraySize(g_map_array);
 	
 	for (int i = 0; i < map_count; i++)

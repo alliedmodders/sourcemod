@@ -70,7 +70,7 @@ enum AuthIdType
  */
 
 #define MAXPLAYERS		65	/**< Maximum number of players SourceMod supports */
-#define MAX_NAME_LENGTH 32	/**< Maximum buffer required to store a client name */
+#define MAX_NAME_LENGTH 128	/**< Maximum buffer required to store a client name */
 
 public const int MaxClients;	/**< Maximum number of players the server supports (dynamic) */
 
@@ -226,7 +226,7 @@ forward void OnClientPostAdminFilter(int client);
 forward void OnClientPostAdminCheck(int client);
 
 /**
- * This function will be deprecated in a future release.  Use the MaxClients variable instead.
+ * This function is deprecated. Use the MaxClients variable instead.
  *
  * Returns the maximum number of clients allowed on the server.  This may 
  * return 0 if called before OnMapStart(), and thus should not be called 
@@ -238,6 +238,7 @@ forward void OnClientPostAdminCheck(int client);
  *
  * @return				Maximum number of clients allowed.
  */
+#pragma deprecated Use MaxClients variable instead.
 native int GetMaxClients();
 
 /**
@@ -317,7 +318,8 @@ native bool GetClientAuthString(int client, char[] auth, int maxlen, bool valida
 native bool GetClientAuthId(int client, AuthIdType authType, char[] auth, int maxlen, bool validate=true);
 
 /**
- * Returns the client's Steam account ID.
+ * Returns the client's Steam account ID, a number uniquely identifying a given Steam account.
+ * This number is the basis for the various display SteamID forms, see the AuthIdType enum for examples.
  *
  * @param client		Client Index.
  * @param validate		Check backend validation status.
