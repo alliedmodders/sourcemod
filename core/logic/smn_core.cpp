@@ -951,7 +951,7 @@ static cell_t LogStackTrace(IPluginContext *pContext, const cell_t *params)
 
 	g_Logger.LogError("[SM] Stack trace requested: %s", buffer);
 	g_Logger.LogError("[SM] Called from: %s", pPlugin->GetFilename());
-	for (size_t i = 0; i < arr.length(); i)
+	for (size_t i = 0; i < arr.length(); ++i)
 	{
 		g_Logger.LogError("%s", arr[i].chars());
 	}

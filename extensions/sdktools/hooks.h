@@ -80,7 +80,9 @@ private:
 	ke::Vector<CVTableHook *> m_netChannelHooks;
 	INetChannel *m_pActiveNetChannel;
 	bool m_bFSTranHookWarned = false;
+#if SOURCE_ENGINE == SE_TF2
 	bool m_bReplayEnabled = false;
+#endif
 };
 
 extern CHookManager g_Hooks;
