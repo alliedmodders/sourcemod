@@ -266,7 +266,6 @@ class SMConfig(object):
       '-Werror',
       '-Wno-error=switch',
       '-Wno-error=unused-function',
-      '-Wno-error=unused-private-field',
       '-msse',
       '-fvisibility=hidden',
     ]
@@ -295,7 +294,10 @@ class SMConfig(object):
       cxx.cxxflags += ['-Wno-delete-non-virtual-dtor']
 
     if have_clang:
-      cxx.cxxflags += ['-Wno-implicit-exception-spec-mismatch']
+      cxx.cxxflags += [
+        '-Wno-implicit-exception-spec-mismatch',
+        '-Wno-error=unused-private-field',
+      ]
       if cxx.version >= 'apple-clang-5.1' or cxx.version >= 'clang-3.4':
         cxx.cxxflags += ['-Wno-error=deprecated-register']
       else:

@@ -1200,7 +1200,7 @@ void CPlugin::SetWaitingToUnload(bool andReload)
 
 void CPluginManager::LoadExtensions(CPlugin *pPlugin)
 {
-	auto callback = [pPlugin] (const sp_pubvar_t *pubvar, const CPlugin::ExtVar& ext) -> bool
+	auto callback = [] (const sp_pubvar_t *pubvar, const CPlugin::ExtVar& ext) -> bool
 	{
 		char path[PLATFORM_MAX_PATH];
 		/* Attempt to auto-load if necessary */
