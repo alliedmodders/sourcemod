@@ -315,7 +315,8 @@ bool UserMessages::EndMessage()
 			delete m_FakeEngineBuffer;
 			m_FakeEngineBuffer = NULL;
 			break;
-		//case MRES_SUPERCEDE:
+		default:
+			break;
 		}
 
 		OnMessageEnd_Post();

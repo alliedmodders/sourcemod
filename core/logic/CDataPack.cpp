@@ -232,10 +232,13 @@ bool CDataPack::RemoveItem(size_t pos)
 			delete elements[pos].pData.vval;
 			break;
 		}
-
 		case CDataPackType::String:
 		{
 			delete elements[pos].pData.sval;
+			break;
+		}
+		default:
+		{
 			break;
 		}
 	}

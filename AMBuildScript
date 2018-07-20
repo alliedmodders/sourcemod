@@ -264,7 +264,9 @@ class SMConfig(object):
       '-fno-strict-aliasing',
       '-Wall',
       '-Werror',
+      '-Wno-error=switch',
       '-Wno-error=unused-function',
+      '-Wno-error=unused-private-field',
       '-msse',
       '-fvisibility=hidden',
     ]

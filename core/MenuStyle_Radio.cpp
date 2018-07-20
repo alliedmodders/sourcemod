@@ -469,8 +469,6 @@ void CRadioMenuPlayer::Radio_Refresh()
 {
 	cell_t players[1] = { (cell_t)m_index };
 	char *ptr = display_pkt;
-	char save = 0;
-	size_t len = display_len;
 	unsigned int time;
 
 	/* Compute the new time */
@@ -491,6 +489,8 @@ void CRadioMenuPlayer::Radio_Refresh()
 	msg->set_menu_string(ptr);
 	g_UserMsgs.EndMessage();
 #else
+	size_t len = display_len;
+	char save = 0;
 	while (true)
 	{
 		if (len > 240)

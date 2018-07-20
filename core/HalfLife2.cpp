@@ -1200,7 +1200,7 @@ bool IsWindowsReservedDeviceName(const char *pMapname)
 	};
 	
 	size_t reservedCount = sizeof(reservedDeviceNames) / sizeof(reservedDeviceNames[0]);
-	for (int i = 0; i < reservedCount; ++i)
+	for (size_t i = 0; i < reservedCount; ++i)
 	{
 		if (CheckReservedFilename(pMapname, reservedDeviceNames[i]))
 		{
@@ -1330,6 +1330,8 @@ string_t CHalfLife2::AllocPooledString(const char *pszValue)
 		sm_datatable_info_t info;
 		bool found = FindDataMapInfo(pDataMap, "m_iName", &info);
 		assert(found);
+		(void)(found); // silence -Wunused-variable for release builds
+
 		offset = info.actual_offset;
 	}
 

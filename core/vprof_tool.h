@@ -37,8 +37,6 @@ class VProfTool
 	  public SMGlobalClass
 {
 public:
-	VProfTool();
-
 	// IProfilingTool
 	const char *Name() override;
 	const char *Description() override;

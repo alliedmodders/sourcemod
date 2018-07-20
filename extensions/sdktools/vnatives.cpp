@@ -861,9 +861,9 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 #endif
 
 	static ValveCall *pCall = NULL;
-	static bool bProbablyNoFEBC = false;
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
+	static bool bProbablyNoFEBC = false;
 	if (bProbablyNoFEBC)
 	{
 		return NativeFindEntityByClassname(pContext, params);
