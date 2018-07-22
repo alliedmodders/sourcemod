@@ -7,17 +7,17 @@ Please consider the following guidelines when reporting an issue.
 #### Not for general support
 This is not the right place to get help with using or installing SourceMod, or for issues with specific, third-party SourceMod plugins or extensions.
 
-For help with SourceMod, please consult the [AlliedModders forums](https://forums.alliedmods.net/forumdisplay.php?f=52). Similary, for assistance with, or to report issues with third-party SourceMod plugins or extension, you should post in the existing thread for the plugin or extension at the [AlliedModders forums](https://forums.alliedmods.net/forumdisplay.php?f=52).
+For help with SourceMod, please consult the [AlliedModders forums](https://forums.alliedmods.net/forumdisplay.php?f=52). Similarly, for assistance with, or to report issues with, third-party SourceMod plugins or extensions, you should post in the existing thread for that plugin or extension on the [AlliedModders forums](https://forums.alliedmods.net/forumdisplay.php?f=52).
 
 #### Details, details, details
 Provide as much detail as possible when reporting an issue.
 
-For bugs or other undesired behavior, answers to the follow questions are a great start.
+For bugs or other undesired behavior, answers to the following questions are a great start:
 * What is the issue?
 * What behavior are you expecting instead?
 * On what operating system is the game server running?
 * What game is the game server running?
-* What exact (full x.y.z.a version number) version of Metamod:Source and SourceMod are installed on the game server?
+* What exact version (full x.y.z.a version number) of Metamod:Source and SourceMod are installed on the game server?
 * What is the specific, shortest path to reproducing this issue? If this issue can be reproduced with plugin code, please try to shorten it to the minimum required to trigger the problem.
  
 If this is a feature request, the following are helpful. Generally, not all will apply, but whatever you can answer ahead of time will shorten back and forth conversation.
@@ -29,18 +29,18 @@ If this is a feature request, the following are helpful. Generally, not all will
 Please report any security bugs to [security@alliedmods.net](mailto:security@alliedmods.net) rather than to this public issue tracker.
 
 #### We're only human
-Please keep in mind that we maintain the project in our spare time, at no cost. There is no SLA, and you are not owed a response or fix.
+Please keep in mind that we maintain this project in our spare time, at no cost. There is no SLA, and you are not owed a response or a fix.
 
 #### Conduct
 Please refer to the [AlliedModders forum rules.](https://forums.alliedmods.net/misc.php?do=showrules)
 
 ## Pull Requests
 
-Firstly, thank you for considering to contribute changes to the project!
+Firstly, thank you for considering contributing changes to the project!
 
-However, if this is anything more than a small fix such an a gamedata update, a glaring code flaw, or a simple typo in a file like this one, please file an issue first so that it can be discussed, unless you have already spoken to multiple members of the development team about it on IRC or the AlliedModders forums.
+However, if this is anything more than a small fix such as a gamedata update, a glaring code flaw, or a simple typo in a file like this one, please file an issue first so that it can be discussed, unless you have already spoken to multiple members of the development team about it on IRC or the AlliedModders forums.
 
-We don't like to have to reject pull requests, so we want to avoid those scenarios. We wouldn't want you to feel that you wasted your time writing something only for us to have it then be shot down.
+We don't like to have to reject pull requests, so we want to avoid those scenarios. We wouldn't want you to feel like you wasted your time writing something only for us to shoot it down.
 
 #### Rejection
 *Copied from Phabricator's [Contributing Code guidelines](https://secure.phabricator.com/book/phabcontrib/article/contributing_code/#rejecting-patches), as we largely feel the same way about this.*
