@@ -574,6 +574,7 @@ native bool RemoveDir(const char[] path);
  *                      Valve search paths, rather than directly in the gamedir.
  * @param valve_path_id	If use_valve_fs, a search path from gameinfo or NULL_STRING for default.
  *                      In this case, mode is ignored.
+ * @return			True on success, false otherwise.
  */
 native bool CreateDirectory(const char[] path, int mode, bool use_valve_fs=false, const char[] valve_path_id="DEFAULT_WRITE_PATH");
 
