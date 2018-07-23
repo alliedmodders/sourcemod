@@ -357,16 +357,30 @@ native int Call_Finish(any &result=0);
  */
 native void Call_Cancel();
 
-/**
- * Defines a native function.
- *
- * It is not necessary to validate the parameter count 
- *
- * @param plugin			Handle of the calling plugin.
- * @param numParams			Number of parameters passed to the native.
- * @return 					Value for the native call to return.
- */
-typedef NativeCall = function int (Handle plugin, int numParams);
+typeset NativeCall
+{
+	/**
+	 * Defines a native function.
+	 *
+	 * It is not necessary to validate the parameter count 
+	 *
+	 * @param plugin			Handle of the calling plugin.
+	 * @param numParams			Number of parameters passed to the native.
+	 * @return 					Value for the native call to return.
+	 */
+	function int (Handle plugin, int numParams);
+
+	/**
+	 * Defines a native function.
+	 *
+	 * It is not necessary to validate the parameter count 
+	 *
+	 * @param plugin			Handle of the calling plugin.
+	 * @param numParams			Number of parameters passed to the native.
+	 * @return 					Value for the native call to return.
+	 */
+	function any (Handle plugin, int numParams);
+}
 
 /**
  * Creates a dynamic native.  This should only be called in AskPluginLoad(), or 

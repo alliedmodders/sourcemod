@@ -162,9 +162,9 @@ public void DefaultCategoryHandler(TopMenu topmenu,
 	}
 }
 
-public int __GetAdminTopMenu(Handle plugin, int numParams)
+public any __GetAdminTopMenu(Handle plugin, int numParams)
 {
-	return view_as<int>(hAdminMenu);
+	return hAdminMenu;
 }
 
 public int __AddTargetsToMenu(Handle plugin, int numParams)
