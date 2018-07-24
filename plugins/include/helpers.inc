@@ -45,31 +45,7 @@
  */
 stock void FormatUserLogText(int client, char[] buffer, int maxlength)
 {
-	char auth[32];
-	char name[MAX_NAME_LENGTH];
-	int userid;
-	
-	if (client)
-	{
-		userid = GetClientUserId(client);
-		if (!GetClientAuthId(client, AuthId_Engine, auth, sizeof(auth)))
-		{
-			strcopy(auth, sizeof(auth), "UNKNOWN");
-		}
-		if (!GetClientName(client, name, sizeof(name)))
-		{
-			strcopy(name, sizeof(name), "UNKNOWN");
-		}
-	}
-	else
-	{
-		strcopy(auth, sizeof(auth), "Console");
-		strcopy(name, sizeof(name), "Console");
-	}
-	
-	/** Currently, no team stuff ... */
-	
-	Format(buffer, maxlength, "\"%s<%d><%s><%s>\"", name, userid, auth, client ? "" : name);
+	FormatEx(buffer, maxlength, "\"%L\"", client);
 }
 
 /**
