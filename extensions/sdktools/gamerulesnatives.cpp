@@ -128,6 +128,7 @@ enum PropFieldType
 				type); \
 		} \
 	} \
+	(void)bit_count; \
 
 #define FIND_PROP_SEND_IN_SENDTABLE(info, pProp, element, type, type_name) \
 	SendTable *pTable = pProp->GetDataTable(); \
