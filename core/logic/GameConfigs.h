@@ -72,10 +72,6 @@ public: //NameHashSet
 	{
 		return strcmp(key, value->m_File) == 0;
 	}
-	static inline uint32_t hash(const detail::CharsAndLength &key)
-	{
-		return key.hash();
-	}
 private:
 	char m_File[PLATFORM_MAX_PATH];
 	char m_CurFile[PLATFORM_MAX_PATH];

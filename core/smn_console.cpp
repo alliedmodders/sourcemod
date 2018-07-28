@@ -184,10 +184,6 @@ private:
 		{
 			return strcmp(name, base->GetName()) == 0;
 		}
-		static inline uint32_t hash(const detail::CharsAndLength &key)
-		{
-			return key.hash();
-		}
 	};
 	NameHashSet<ConCommandBase *, ConCommandPolicy> m_CmdFlags;
 } s_CommandFlagsHelper;

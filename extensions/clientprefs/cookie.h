@@ -96,10 +96,6 @@ struct Cookie
 	{
 		return strcmp(name, cookie->name) == 0;
 	}
-	static inline uint32_t hash(const detail::CharsAndLength &key)
-	{
-		return key.hash();
-	}
 };
 
 class CookieManager : public IClientListener, public IPluginsListener

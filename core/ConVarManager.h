@@ -43,7 +43,6 @@
 #include <compat_wrappers.h>
 #include "concmd_cleaner.h"
 #include "PlayerManager.h"
-#include <sm_stringhashmap.h>
 
 using namespace SourceHook;
 
@@ -67,10 +66,6 @@ struct ConVarInfo
 	static inline bool matches(const char *name, const ConVarInfo *info)
 	{
 		return strcmp(name, info->pVar->GetName()) == 0;
-	}
-	static inline uint32_t hash(const detail::CharsAndLength &key)
-	{
-		return key.hash();
 	}
 };
 
