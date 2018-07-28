@@ -383,14 +383,12 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args)
 	/* See if we need to do extra string manipulation */
 	if (prepended)
 	{
-		size_t len;
-
 		/* Check if we need to prepend sm_ */
 		if (prepended)
 		{
-			len = ke::SafeSprintf(m_ToExecute, sizeof(m_ToExecute), "sm_%s", args);
+			ke::SafeSprintf(m_ToExecute, sizeof(m_ToExecute), "sm_%s", args);
 		} else {
-			len = ke::SafeStrcpy(m_ToExecute, sizeof(m_ToExecute), args);
+			ke::SafeStrcpy(m_ToExecute, sizeof(m_ToExecute), args);
 		}
 	} else {
 		ke::SafeStrcpy(m_ToExecute, sizeof(m_ToExecute), args);

@@ -335,7 +335,6 @@ SMCError TextParsers::ParseStream_SMC(void *stream,
 	unsigned int curlevel = 0;
 	bool in_quote = false;
 	bool ignoring = false;
-	bool eol_comment = false;
 	bool ml_comment = false;
 	unsigned int i;
 	SMCError err = SMCError_Okay;
@@ -406,7 +405,6 @@ SMCError TextParsers::ParseStream_SMC(void *stream,
 				}
 
 				/* Next, let's clear some line-based values that may no longer have meaning */
-				eol_comment = false;
 				in_quote = false;
 				if (ignoring && !ml_comment)
 				{
@@ -536,7 +534,6 @@ SMCError TextParsers::ParseStream_SMC(void *stream,
 							{
 								/* standard comment */
 								ignoring = true;
-								eol_comment = true;
 								restage = true;
 							} 
 							else if (parse_point[i+1] == '*') 
@@ -555,7 +552,6 @@ SMCError TextParsers::ParseStream_SMC(void *stream,
 						else 
 						{
 							ignoring = true;
-							eol_comment = true;
 							restage = true;
 						}
 					} 

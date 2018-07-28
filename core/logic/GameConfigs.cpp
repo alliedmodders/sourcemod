@@ -642,11 +642,6 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 					/* First, preprocess the signature */
 					unsigned char real_sig[511];
 					size_t real_bytes;
-					size_t length;
-
-					real_bytes = 0;
-					length = strlen(s_TempSig.sig);
-
 					real_bytes = UTIL_DecodeHexString(real_sig, sizeof(real_sig), s_TempSig.sig);
 
 					if (real_bytes >= 1)

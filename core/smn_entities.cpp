@@ -1226,7 +1226,8 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 			pProp->GetType(), \
 			pProp->m_nBits, \
 			type); \
-	}
+	} \
+	(void)bit_count; \
 
 
 inline int MatchTypeDescAsInteger(_fieldtypes type, int flags)

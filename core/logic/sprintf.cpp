@@ -617,7 +617,6 @@ bool gnprintf(char *buffer,
 	int width;
 	int prec;
 	int n;
-	char sign;
 	const char *fmt;
 	size_t llen = maxlen - 1;
 
@@ -644,7 +643,6 @@ bool gnprintf(char *buffer,
 		flags = 0;
 		width = 0;
 		prec = -1;
-		sign = '\0';
 
 rflag:
 		ch = *fmt++;
@@ -1028,7 +1026,6 @@ size_t atcprintf(char *buffer, size_t maxlen, const char *format, IPluginContext
 	int width;
 	int prec;
 	int n;
-	char sign;
 	const char *fmt;
 	size_t llen = maxlen - 1;
 
@@ -1056,7 +1053,6 @@ size_t atcprintf(char *buffer, size_t maxlen, const char *format, IPluginContext
 		flags = 0;
 		width = 0;
 		prec = -1;
-		sign = '\0';
 
 rflag:
 		ch = *fmt++;
