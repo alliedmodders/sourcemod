@@ -309,11 +309,20 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 					fseek(fp, 0, SEEK_SET);
 
 					buffer = malloc(size);
-					fread(buffer, size, 1, fp);
-					s_ServerBinCRC = UTIL_CRC32(buffer, size);
-					free(buffer);
-					s_ServerBinCRC_Ok = true;
-					fclose(fp);
+					size_t res = fread(buffer, size, 1, fp);
+					if (res != 1)
+					{
+						ke::SafeSprintf(error, sizeof(error), "Could not open binary: %s", path);
+						free(buffer);
+						fclose(fp);
+					}
+					else
+					{
+						s_ServerBinCRC = UTIL_CRC32(buffer, size);
+						free(buffer);
+						s_ServerBinCRC_Ok = true;
+						fclose(fp);
+					}
 				}
 			}
 			if (error[0] != '\0')
