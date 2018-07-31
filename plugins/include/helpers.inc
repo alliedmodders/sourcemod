@@ -36,13 +36,15 @@
 #define _helpers_included
 
 /**
- * Formats a user's info as log text.  This is usually not needed because
- * %L can be used to auto-format client information into a string.
+ * This function is deprecated. Use the %L format specifier instead.
+ * 
+ * Formats a user's info as log text.
  *
  * @param client		Client index.
  * @param buffer		Buffer for text.
  * @param maxlength		Maximum length of text.
  */
+#pragma deprecated Use the %L format specifier instead.
 stock void FormatUserLogText(int client, char[] buffer, int maxlength)
 {
 	FormatEx(buffer, maxlength, "\"%L\"", client);
