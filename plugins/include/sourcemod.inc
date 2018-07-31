@@ -316,7 +316,7 @@ native void ThrowError(const char[] fmt, any ...);
  * Logs a stack trace from the current function call. Code 
  * execution continues after the call
  *
- * @param fmt		String format.
+ * @param fmt		Format string to send with the stack trace.
  * @param ...		Format arguments.
  * @error			Always logs a stack trace.
  */
