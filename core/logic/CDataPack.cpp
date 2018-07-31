@@ -219,10 +219,14 @@ bool CDataPack::RemoveItem(size_t pos)
 	{
 		pos = position;
 	}
-
 	if (pos >= elements.length())
 	{
 		return false;
+	}
+
+	if (pos < position) // we're deleting under us, step back
+	{
+		position--;
 	}
 
 	switch (elements[pos].type)
