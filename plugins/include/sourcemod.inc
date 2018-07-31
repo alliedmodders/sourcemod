@@ -313,6 +313,16 @@ native void SetFailState(const char[] string, any ...);
 native void ThrowError(const char[] fmt, any ...);
 
 /**
+ * Logs a stack trace from the current function call. Code 
+ * execution continues after the call
+ *
+ * @param fmt		Format string to send with the stack trace.
+ * @param ...		Format arguments.
+ * @error			Always logs a stack trace.
+ */
+native void LogStackTrace(const char[] fmt, any ...);
+
+/**
  * Gets the system time as a unix timestamp.
  *
  * @param bigStamp		Optional array to store the 64bit timestamp in.
