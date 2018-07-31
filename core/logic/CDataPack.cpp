@@ -241,6 +241,5 @@ bool CDataPack::RemoveItem(size_t pos)
 	}
 
 	elements.remove(pos);
-	--position;
 	return true;
 }
