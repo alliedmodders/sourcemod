@@ -18,73 +18,73 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"358"
-				"linux"		"359"
+				"windows"	"552"
+				"linux"		"553"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"247"
-				"linux"		"248"
+				"windows"	"289"
+				"linux"		"290"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"242"
-				"linux"		"243"
+				"windows"	"284"
+				"linux"		"285"
 			}
 			"Ignite"
 			{
-				"windows"	"199"
-				"linux"		"200"
+				"windows"	"223"
+				"linux"		"224"
 			}
 			"Extinguish"
 			{
-				"windows"	"203"
-				"linux"		"204"
+				"windows"	"227"
+				"linux"		"228"
 			}
 			"Teleport"
 			{
-				"windows"	"104"
-				"linux"		"105"
+				"windows"	"121"
+				"linux"		"122"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"405"
-				"linux"		"405"
+				"windows"	"465"
+				"linux"		"465"
 			}
 			"GetVelocity"
 			{
-				"windows"	"133"
-				"linux"		"134"
+				"windows"	"153"
+				"linux"		"154"
 			}
 			"EyeAngles"
 			{
-				"windows"	"125"
-				"linux"		"126"
+				"windows"	"144"
+				"linux"		"145"
 			}
 			"AcceptInput"
 			{
-				"windows"	"35"
-				"linux"		"36"
+				"windows"	"42"
+				"linux"		"43"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"24"
-				"linux"		"25"
+				"windows"	"30"
+				"linux"		"31"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"235"
-				"linux"		"236"
+				"windows"	"275"
+				"linux"		"276"
 			}
 			"Activate"
 			{
-				"windows"	"32"
-				"linux"		"33"
+				"windows"	"39"
+				"linux"		"40"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"377"
-				"linux"		"378"
+				"windows"	"443"
+				"linux"		"444"
 			}
 		}
 		"Signatures"
@@ -92,13 +92,13 @@
 			"FindEntityByClassname"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x2A\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\xFF\xD2\x8B\x00\x25\x2A\x2A\x2A\x2A\x40\xC1\xE0\x2A\x8B\x3C\x30\xEB\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5D\x2A\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x2A\x2A\x2A\x2A\x83\xC4\x2A\xEB\x2A\x39"
+				"windows"	"\x55\x8B\xEC\x53\x56\x57\x8B\xF9\x8B\x4D\x2A\x85\xC9\x74\x2A\x8B\x01\xFF\x2A\x2A\x8B\x2A\x81\xE6\x2A\x2A\x2A\x2A\x46\x03\xF6\x8B\x34\x2A\xEB\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x85\xF6\x74\x2A\x8B\x5D\x2A\x8B\x3E\x85\xFF\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x2A\x2A\x2A\x83\xC4\x2A\xEB\x2A\x39"
 				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\x2A\x2A\x2A\x2A\x2A\x53\x56\x8B\x71\x2A\x57"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x2A\x2A\x53\x8B\x5D\x2A\x8B\xC1\x8B\x2A\x2A\x56\x57"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
@@ -135,7 +135,7 @@
 			"CBaseTempEntity"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\xC1\x8B\x4D\x2A\xC7\x2A\x2A\x2A\x2A\x2A\x89"
+				"windows"	"\x55\x8B\xEC\x8B\x45\x2A\xC7\x2A\x2A\x2A\x2A\x2A\x8B\x2A\x89"
 			}
 			"s_pTempEntities"
 			{

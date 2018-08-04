@@ -125,7 +125,7 @@ native int GetLanguageByName(const char[] name);
 native bool TranslationPhraseExists(const char[] phrase);
 
 /**
- * Determines if a there is a translation for the speicifed language.
+ * Determines if there is a translation for the specified language.
  *
  * @param phrase	Phrase to check.
  * @param language	Language number.

@@ -60,12 +60,16 @@ for sdk_name in SM.sdks:
       os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf')
     ]
 
+  if compiler.like('msvc'):
+    compiler.defines += ['_XKEYCHECK_H']
+
   if builder.target.platform == 'linux':
     compiler.postlink += ['-lpthread', '-lrt']
 
   if sdk.name == 'csgo':
     if builder.target.platform == 'linux':
       lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
+      compiler.linkflags += ['-Wl,--exclude-libs=libprotobuf.a']
     elif builder.target.platform == 'mac':
       lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
     elif builder.target.platform == 'windows':

@@ -27,12 +27,12 @@
 				"mac"			"4"
 			}
 			// In HandleCommand_Buy_Internal
-			// -*(_DWORD *)(v34 + 204)
+			// -*(_DWORD *)(v34 + 208) in ida 7 -v34[52]
 			"WeaponPrice"
 			{
-				"windows"		"204"
-				"linux"			"204"
-				"mac"			"204"
+				"windows"		"208"
+				"linux"			"208"
+				"mac"			"208"
 			}
 			//Offset into CheckRestartRound
 			"CTTeamScoreOffset"
@@ -133,7 +133,7 @@
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x2A\x53\x8B\xD9\xF3\x0F\x2A\x2A\x2A\x2A\x56\x57\x89\x2A\x2A\x2A\x83\xBB"
-				"linux"			"\x55\x89\xE5\x57\x56\x53\x81\xEC\xDC\x00\x00\x00\x8B\x75\x08\x8B\x86"
+				"linux"			"\x55\x89\xE5\x57\x56\x53\x81\xEC\xBC\x00\x00\x00\x8B\x7D\x08\x8B\x9F"
 			}
 			//In CS:GO this is actually CCSGameRules::CheckRestartRound(void) but to keep same gamedata as cs:s.
 			"CheckWinLimit"
@@ -145,7 +145,7 @@
 			"SetClanTag"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x55\x08\x85\xD2\x74\x2A\x8D\x81\x34\x25\x00\x00"
+				"windows"	"\x55\x8B\xEC\x8B\x55\x08\x85\xD2\x74\x2A\x8D\x81\x44\x25\x00\x00"
 				"linux"		"\x55\x89\xE5\x83\xEC\x18\x8B\x45\x0C\x85\xC0\x74\x2A\x89\x44\x24\x04\x8B\x45\x08\xC7\x44\x24\x08\x10\x00\x00\x00"
 			}
 			"SetModelFromClass"

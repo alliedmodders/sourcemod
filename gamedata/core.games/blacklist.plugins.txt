@@ -19,6 +19,8 @@
 			"plugin_ee0bb0aa0d24491feda4235a92779f71"	"http://forums.alliedmods.net/showpost.php?p=2032419&postcount=1"	/* Advertising plugin being uploaded to CS:GO servers */
 			"plugin_28a4f07bb94e25e160e9655f8a614292"	"https://forums.alliedmods.net/showthread.php?t=291340"	/* [AnoX]A-Nox Core - Version 2.5 */
 			"plugin_dad1e86497adcbeb383da6bd8229069d"	"https://forums.alliedmods.net/showpost.php?p=2511172&postcount=3" /* ZenServer: Ultimate (Zen) - Version 4.50 */
+			"plugin_c71bb73bc544728fdcd7fc9b0353f8d6"	"https://forums.alliedmods.net/showthread.php?t=304847" /* Malicious plugin uploaded to CS:GO servers */
+			"plugin_f946e12de75a0553d3012c594d5e7317"	"https://forums.alliedmods.net/showthread.php?t=304847" /* Malicious plugin uploaded to CS:GO servers */
 			"plugin_f405db5491a465b1a30859ee7f7c5080"	""	/* UCP Server (Endi) - Version 6.9 */
 			"plugin_6fcb6721fb740b854b0a05bfc9a7984a"	""	/* UCP Server (Endi) - Version 7.1 */
 			"plugin_4d320d6c5aba5d31c644fe2847c0662f"	""	/* UCP Server (Endi) - Version 7.2 */
@@ -99,6 +101,7 @@
 			"plugin_465e4abb31f03cf519e8a80a8b4b44be"	""	/* [AnoX]NoSucide - Version 1.0 */
 			"plugin_33a4351dd2b9350d6f2b21dab68f7d9e"	""	/* [CS:GO] Komutcu Daire System (Sourceless distro) - Version 1.0 */
 			"plugin_0f9828ea5fe6900981137f3c6fb9d70b"	""	/* token changer (Adi) - Version 1.1.2 */
+			"plugin_267929e572d647c43e54ab7aa921174d"	""	/* Playwire MOTD (Playwire Media) - Version 1.1.0 */
 		}
 	}
 }
