@@ -273,3 +273,19 @@ public Extension __ext_regex =
 	required = 0,
 #endif
 };
+
+#if !defined REQUIRE_EXTENSIONS
+public void __ext_regex_SetNTVOptional()
+{
+	MarkNativeAsOptional("CompileRegex");
+	MarkNativeAsOptional("MatchRegex");
+	MarkNativeAsOptional("GetRegexSubString");
+	MarkNativeAsOptional("Regex.Regex");
+	MarkNativeAsOptional("Regex.Match");
+	MarkNativeAsOptional("Regex.MatchAll");
+	MarkNativeAsOptional("Regex.GetSubString");
+	MarkNativeAsOptional("Regex.MatchCount");
+	MarkNativeAsOptional("Regex.CaptureCount");
+	MarkNativeAsOptional("Regex.MatchOffset");
+}
+#endif

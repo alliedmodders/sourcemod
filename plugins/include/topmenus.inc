@@ -430,5 +430,17 @@ public void __ext_topmenus_SetNTVOptional()
 	MarkNativeAsOptional("DisplayTopMenuCategory");
 	MarkNativeAsOptional("FindTopMenuCategory");
 	MarkNativeAsOptional("SetTopMenuTitleCaching");
+	MarkNativeAsOptional("TopMenu.TopMenu");
+	MarkNativeAsOptional("TopMenu.FromHandle");
+	MarkNativeAsOptional("TopMenu.LoadConfig");
+	MarkNativeAsOptional("TopMenu.AddCategory");
+	MarkNativeAsOptional("TopMenu.AddItem");
+	MarkNativeAsOptional("TopMenu.GetInfoString");
+	MarkNativeAsOptional("TopMenu.GetObjName");
+	MarkNativeAsOptional("TopMenu.Remove");
+	MarkNativeAsOptional("TopMenu.Display");
+	MarkNativeAsOptional("TopMenu.DisplayCategory");
+	MarkNativeAsOptional("TopMenu.FindCategory");
+	MarkNativeAsOptional("TopMenu.CacheTitles.set");
 }
 #endif
