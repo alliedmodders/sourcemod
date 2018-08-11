@@ -77,6 +77,10 @@ struct EventHook
 	{
 		return strcmp(name, hook->name.chars()) == 0;
 	}
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
+	}
 };
 
 enum EventHookMode
