@@ -102,6 +102,10 @@
 			"plugin_33a4351dd2b9350d6f2b21dab68f7d9e"	""	/* [CS:GO] Komutcu Daire System (Sourceless distro) - Version 1.0 */
 			"plugin_0f9828ea5fe6900981137f3c6fb9d70b"	""	/* token changer (Adi) - Version 1.1.2 */
 			"plugin_267929e572d647c43e54ab7aa921174d"	""	/* Playwire MOTD (Playwire Media) - Version 1.1.0 */
+			"plugin_f9874d362c5c8142037045a0a2c6249c"	""	/* [AnoX]A-Nox Core (A-Nox dev.) - Version 3.1a */
+			"plugin_eae8ed2c593591814f9e6bfa73000d85"	""	/* Unknown VIP plugin with fake myinfo */
+			"plugin_da0e76b67029c12eb5c1995df4fa4f89"	""	/* token changer (Adi) - Version 1.3.9 */
+			"plugin_514efe1f39061e7365a31fc21d452a79"	""	/* Token Auto Updater (Phoenix) - Version 1.4 */
 		}
 	}
 }
