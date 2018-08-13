@@ -116,19 +116,19 @@ typeset TraceEntityFilter
 	 * Called on entity filtering.
 	 *
 	 * @param entity		Entity index.
- 	 * @param contentsMask	Contents Mask.
- 	 * @return				True to allow the current entity to be hit, otherwise false.
- 	 */
+	 * @param contentsMask	Contents Mask.
+	 * @return				True to allow the current entity to be hit, otherwise false.
+	 */
 	function bool (int entity, int contentsMask);
 
 	/**
 	 * Called on entity filtering.
 	 *
 	 * @param entity		Entity index.
- 	 * @param contentsMask	Contents Mask.
- 	 * @param data			Data value, if used.
- 	 * @return				True to allow the current entity to be hit, otherwise false.
- 	 */
+	 * @param contentsMask	Contents Mask.
+	 * @param data			Data value, if used.
+	 * @return				True to allow the current entity to be hit, otherwise false.
+	 */
 	function bool (int entity, int contentsMask, any data);
 };
 
@@ -138,17 +138,16 @@ typeset TraceEntityEnumerator
 	 * Called for each entity enumerated with EnumerateEntities*.
 	 *
 	 * @param entity		Entity index.
- 	 * @return				True to continue enumerating, otherwise false.
- 	 */
+	 * @return				True to continue enumerating, otherwise false.
+	 */
 	function bool (int entity);
 
 	/**
 	 * Called for each entity enumerated with EnumerateEntities*.
 	 *
 	 * @param entity		Entity index.
- 	 * @param data			Data value, if used.
- 	 * @return				True to continue enumerating, otherwise false.
- 	 */
+	 * @param data			Data value, if used.
+	 * @return				True to continue enumerating, otherwise false.	 */
 	function bool (int entity, any data);
 }
 
@@ -330,7 +329,7 @@ native void TR_ClipRayHullToEntity(const float pos[3],
  * @param flags		Trace flags.
  * @param entity	Entity to clip to.
  */
-native void TR_ClipCurrRayToEntity(int flags, int entity);
+native void TR_ClipCurrentRayToEntity(int flags, int entity);
 
 /**
  * Starts up a new trace ray using a new trace result.
@@ -452,7 +451,7 @@ native Handle TR_ClipRayHullToEntityEx(const float pos[3],
  * @param entity	Entity to clip to.
  * @return			Ray trace handle, which must be closed via CloseHandle().
  */
-native Handle TR_ClipCurrRayToEntityEx(int flags, int entity);
+native Handle TR_ClipCurrentRayToEntityEx(int flags, int entity);
 
 /**
  * Returns the time fraction from a trace result (1.0 means no collision).
