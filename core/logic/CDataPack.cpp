@@ -46,7 +46,7 @@ CDataPack::~CDataPack()
 
 static ke::Vector<ke::AutoPtr<CDataPack>> sDataPackCache;
 
-IDataPack *CDataPack::New()
+CDataPack *CDataPack::New()
 {
   if (sDataPackCache.empty())
     return new CDataPack();
@@ -58,7 +58,7 @@ IDataPack *CDataPack::New()
 }
 
 void
-CDataPack::Free(IDataPack *pack)
+CDataPack::Free(CDataPack *pack)
 {
   sDataPackCache.append(static_cast<CDataPack *>(pack));
 }
@@ -185,11 +185,6 @@ const char *CDataPack::ReadString(size_t *len) const
 		*len = val.length();
 
 	return val.chars();
-}
-
-void *CDataPack::GetMemory() const
-{
-	return nullptr;
 }
 
 void *CDataPack::ReadMemory(size_t *size) const

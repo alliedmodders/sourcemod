@@ -617,14 +617,14 @@ unsigned int SourceModBase::GetGlobalTarget() const
 	return m_target;
 }
 
-IDataPack *SourceModBase::CreateDataPack()
+void *SourceModBase::CreateDataPack()
 {
 	return nullptr;
 }
 
-void SourceModBase::FreeDataPack(IDataPack *pack)
+void SourceModBase::FreeDataPack(void *pack)
 {
-	logicore.FreeDataPack(pack);
+	return;
 }
 
 Handle_t SourceModBase::GetDataPackHandleType(bool readonly)

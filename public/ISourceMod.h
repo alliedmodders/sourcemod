@@ -39,7 +39,6 @@
 
 #include <IHandleSys.h>
 #include <sp_vm_api.h>
-#include <IDataPack.h>
 #include <time.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
@@ -163,18 +162,18 @@ namespace SourceMod
 									unsigned int param) =0;
 
 		/**
-		 * @brief Creates a data pack object.
+		 * @brief Not implemented, do not use.
 		 *
-		 * @return			A new IDataPack object.
+		 * @return nullptr
 		 */
-		virtual IDataPack *CreateDataPack() =0;
+		virtual void *CreateDataPack() =0;
 
 		/**
-		 * @brief Releases a data pack's resources so it can be re-used.
+		 * @brief Not implemented, do not use.
 		 *
-		 * @param pack		An IDataPack object to release.
+		 * @param pack	Ignored
 		 */
-		virtual void FreeDataPack(IDataPack *pack) =0;
+		virtual void FreeDataPack(void *pack) =0;
 
 		/**
 		 * @brief Not implemented, do not use.
