@@ -1,105 +1,105 @@
 "Games"
 {
-	/* Zombic Panic Source 2.0 */
+	/* Zombic Panic Source 3.0.7 (Hotfix-3) */
 	"zps"
 	{
 		"Offsets"
 		{
 			"EndTouch"
 			{
-				"windows"	"96"
-				"linux"		"97"
+				"windows"	"113"
+				"linux"		"114"
 			}
 			"FireBullets"
 			{
-				"windows"	"108"
-				"linux"		"109"
+				"windows"	"125"
+				"linux"		"126"
 			}
 			"OnTakeDamage"
 			{
-				"windows"	"61"
-				"linux"		"62"
+				"windows"	"74"
+				"linux"		"75"
 			}
 			"PreThink"
 			{
-				"windows"	"295"
-				"linux"		"296"
+				"windows"	"351"
+				"linux"		"352"
 			}
 			"PostThink"
 			{
-				"windows"	"296"
-				"linux"		"297"
+				"windows"	"352"
+				"linux"		"353"
 			}
 			"SetTransmit"
 			{
-				"windows"	"19"
-				"linux"		"20"
+				"windows"	"26"
+				"linux"		"27"
 			}
 			"ShouldCollide"
 			{
-				"windows"	"15"
-				"linux"		"16"
+				"windows"	"22"
+				"linux"		"23"
 			}
 			"Spawn"
 			{
-				"windows"	"21"
-				"linux"		"22"
+				"windows"	"28"
+				"linux"		"29"
 			}
 			"StartTouch"
 			{
-				"windows"	"94"
-				"linux"		"95"
+				"windows"	"111"
+				"linux"		"112"
 			}
 			"Think"
 			{
-				"windows"	"46"
-				"linux"		"47"
+				"windows"	"57"
+				"linux"		"58"
 			}
 			"Touch"
 			{
-				"windows"	"95"
-				"linux"		"96"
+				"windows"	"112"
+				"linux"		"113"
 			}
 			"TraceAttack"
 			{
-				"windows"	"59"
-				"linux"		"60"
+				"windows"	"70"
+				"linux"		"71"
 			}
 			"Use"
 			{
-				"windows"	"93"
-				"linux"		"94"
+				"windows"	"110"
+				"linux"		"111"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"149"
-				"linux"		"150"
+				"windows"	"170"
+				"linux"		"171"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"240"
-				"linux"		"241"
+				"windows"	"281"
+				"linux"		"282"
 			}
 			"Weapon_CanUse"
 			{
-				"windows"	"234"
-				"linux"		"235"
+				"windows"	"274"
+				"linux"		"275"
 			}
 			"Weapon_Drop"
 			{
-				"windows"	"237"
-				"linux"		"238"
+				"windows"	"277"
+				"linux"		"278"
 			}
 			"Weapon_Equip"
 			{
-				"windows"	"235"
-				"linux"		"236"
+				"windows"	"275"
+				"linux"		"276"
 			}
-			//"Weapon_Switch"
-			//{
-			//	"windows"	"234"
-			//	"linux"		"235"
-			//}
+			"Weapon_Switch"
+			{
+				"windows"	"278"
+				"linux"		"279"
+			}
 		}
 	}
 }

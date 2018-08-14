@@ -109,7 +109,7 @@ enum CSWeaponID
 	CSWeapon_SHIELD,
 	CSWeapon_KEVLAR,
 	CSWeapon_ASSAULTSUIT,
-	CSWeapon_NIGHTVISION,
+	CSWeapon_NIGHTVISION, //Anything below is CS:GO ONLY
 	CSWeapon_GALILAR,
 	CSWeapon_BIZON,
 	CSWeapon_MAG7,
@@ -130,7 +130,29 @@ enum CSWeaponID
 	CSWeapon_MOLOTOV,
 	CSWeapon_DECOY,
 	CSWeapon_INCGRENADE,
-	CSWeapon_DEFUSER
+	CSWeapon_DEFUSER,
+	CSWeapon_HEAVYASSAULTSUIT,
+	//The rest are actual item definition indexes for CS:GO
+	CSWeapon_CUTTERS = 56,
+	CSWeapon_HEALTHSHOT = 57,
+	CSWeapon_KNIFE_T = 59,
+	CSWeapon_M4A1_SILENCER = 60,
+	CSWeapon_USP_SILENCER = 61,
+	CSWeapon_CZ75A = 63,
+	CSWeapon_REVOLVER = 64,
+	CSWeapon_TAGGRENADE = 68,
+	CSWeapon_MAX_WEAPONS_NO_KNIFES, // Max without the knife item defs, useful when treating all knives as a regular knife.
+	CSWeapon_BAYONET = 500,
+	CSWeapon_KNIFE_FLIP = 505,
+	CSWeapon_KNIFE_GUT = 506,
+	CSWeapon_KNIFE_KARAMBIT = 507,
+	CSWeapon_KNIFE_M9_BAYONET = 508,
+	CSWeapon_KNIFE_TATICAL = 509,
+	CSWeapon_KNIFE_FALCHION = 512,
+	CSWeapon_KNIFE_SURVIVAL_BOWIE = 514,
+	CSWeapon_KNIFE_BUTTERFLY = 515,
+	CSWeapon_KNIFE_PUSH = 516,
+	CSWeapon_MAX_WEAPONS //THIS MUST BE LAST, EASY WAY TO CREATE LOOPS. When looping, do CS_IsValidWeaponID(i), to check.
 };
 
 /**
@@ -141,7 +163,7 @@ enum CSWeaponID
  * @param client	Client index
  * @param weapon	User input for weapon name
  */
-forward Action:CS_OnBuyCommand(client, const String:weapon[]);
+forward Action CS_OnBuyCommand(int client, const char[] weapon);
 
 /**
  * Called when CSWeaponDrop is called
@@ -151,7 +173,7 @@ forward Action:CS_OnBuyCommand(client, const String:weapon[]);
  * @param client	Client index
  * @param weaponIndex	Weapon index
  */
-forward Action:CS_OnCSWeaponDrop(client, weaponIndex);
+forward Action CS_OnCSWeaponDrop(int client, int weaponIndex);
 
 /**
  * Called when game retrieves a weapon's price for a player.
@@ -166,7 +188,7 @@ forward Action:CS_OnCSWeaponDrop(client, weaponIndex);
  *
  * @note			Not all "weapons" call GetWeaponPrice. Example: c4, knife, vest, vest helmet, night vision.
  */
-forward Action:CS_OnGetWeaponPrice(client, const String:weapon[], &price);
+forward Action CS_OnGetWeaponPrice(int client, const char[] weapon, int &price);
 
 /**
  * Called when TerminateRound is called.
@@ -177,26 +199,24 @@ forward Action:CS_OnGetWeaponPrice(client, const String:weapon[], &price);
  * @param delay		Time (in seconds) until new round starts
  * @param reason	Reason for round end
  */
-forward Action:CS_OnTerminateRound(&Float:delay, &CSRoundEndReason:reason);
+forward Action CS_OnTerminateRound(float &delay, CSRoundEndReason &reason);
 
 /**
  * Respawns a player.
  *
  * @param client		Player's index.
- * @noreturn
  * @error			Invalid client index, client not in game.
  */
-native CS_RespawnPlayer(client);
+native void CS_RespawnPlayer(int client);
 
 /**
  * Switches the player's team.
  *
  * @param client		Player's index.
  * @param team			Team index.
- * @noreturn
  * @error			Invalid client index, client not in game.
  */
-native CS_SwitchTeam(client, team);
+native void CS_SwitchTeam(int client, int team);
 
 /**
  * Forces a player to drop or toss their weapon
@@ -206,10 +226,9 @@ native CS_SwitchTeam(client, team);
  * @param toss			True to toss weapon (with velocity) or false to just drop weapon
  * @param blockhook		Set to true to stop the corresponding CS_OnCSWeaponDrop
  * 
- * @noreturn
  * @error				Invalid client index, client not in game, or invalid weapon index.
  */
-native CS_DropWeapon(client, weaponIndex, bool:toss, bool:blockhook = false);
+native void CS_DropWeapon(int client, int weaponIndex, bool toss, bool blockhook = false);
 
 /**
  * Forces round to end with a reason
@@ -218,9 +237,8 @@ native CS_DropWeapon(client, weaponIndex, bool:toss, bool:blockhook = false);
  * @param reason		Reason for the round ending
  * @param blockhook		Set to true to stop the corresponding CS_OnTerminateRound
  *						forward from being called.
- * @noreturn
  */
-native CS_TerminateRound(Float:delay, CSRoundEndReason:reason, bool:blockhook = false);
+native void CS_TerminateRound(float delay, CSRoundEndReason reason, bool blockhook = false);
  
 /**
  * Gets a weapon name from a weapon alias
@@ -228,11 +246,10 @@ native CS_TerminateRound(Float:delay, CSRoundEndReason:reason, bool:blockhook = 
  * @param alias			Weapons alias to get weapon name for.
  * @param weapon		Buffer to store weapons name
  * @param size			Size of buffer to store the weapons name.
- * @noreturn
  *
  * @note				Will set the buffer to the original alias if it is not an alias to a weapon.
  */
-native CS_GetTranslatedWeaponAlias(const String:alias[], String:weapon[], size);
+native void CS_GetTranslatedWeaponAlias(const char[] alias, char[] weapon, int size);
  
 /**
  * Gets a weapon's price
@@ -245,7 +262,7 @@ native CS_GetTranslatedWeaponAlias(const String:alias[], String:weapon[], size);
  * @error				Invalid client, failing to get weapon info, or failing to get price offset.
  * @note				c4, knife and shield will always return 0. vest, vest helmet and night vision will always return default price.
  */
-native CS_GetWeaponPrice(client, CSWeaponID:id, bool:defaultprice = false);
+native int CS_GetWeaponPrice(int client, CSWeaponID id, bool defaultprice = false);
  
 /**
  * Gets a clients clan tag
@@ -256,17 +273,16 @@ native CS_GetWeaponPrice(client, CSWeaponID:id, bool:defaultprice = false);
  *
  * @error				Invalid client.
  */
-native CS_GetClientClanTag(client, String:buffer[], size);
+native int CS_GetClientClanTag(int client, char[] buffer, int size);
 
 /**
  * Sets a clients clan tag
  * @param client		Client index to set clan tag for.
  * @param tag			Tag to set clients clan tag as.
- * @noreturn
  *
  * @error				Invalid client.
  */
-native CS_SetClientClanTag(client, const String:tag[]);
+native void CS_SetClientClanTag(int client, const char[] tag);
 
 /**
  * Gets a team's score
@@ -275,18 +291,17 @@ native CS_SetClientClanTag(client, const String:tag[]);
  *
  * @error				Invalid team index.
  */
-native CS_GetTeamScore(team);
+native int CS_GetTeamScore(int team);
 
 /**
  * Sets a team's score
  * @param team			Team index to set score for.
  * @param value			Value to set teams score as.
- * @noreturn
  *
  * @error				Invalid team index.
  * @note				This will update the scoreboard only after the scoreboard update function is called. Use SetTeamScore plus this to update the scoreboard instantly and save values correctly.
  */
-native CS_SetTeamScore(team, value);
+native void CS_SetTeamScore(int team, int value);
 
 /**
  * Gets a client's mvp count
@@ -295,17 +310,16 @@ native CS_SetTeamScore(team, value);
  *
  * @error				Invalid client.
  */
-native CS_GetMVPCount(client);
+native int CS_GetMVPCount(int client);
 
 /**
  * Sets a client's mvp count
  * @param client		Client index to set mvp count for.
  * @param value			Value to set client's mvp count as.
- * @noreturn
  *
  * @error				Invalid client.
  */
-native CS_SetMVPCount(client, value);
+native void CS_SetMVPCount(int client, int value);
 
 /**
  * Gets a client's contribution score (CS:GO only)
@@ -314,17 +328,16 @@ native CS_SetMVPCount(client, value);
  *
  * @error				Invalid client.
  */
-native CS_GetClientContributionScore(client);
+native int CS_GetClientContributionScore(int client);
 
 /**
  * Sets a client's contribution score (CS:GO only)
  * @param client		Client index to set score for.
  * @param value			Value to set client's score as.
- * @noreturn
  *
  * @error				Invalid client.
  */
-native CS_SetClientContributionScore(client, value);
+native void CS_SetClientContributionScore(int client, int value);
 
 /**
  * Gets a client's assists (CS:GO only)
@@ -333,17 +346,16 @@ native CS_SetClientContributionScore(client, value);
  *
  * @error				Invalid client.
  */
-native CS_GetClientAssists(client);
+native int CS_GetClientAssists(int client);
 
 /**
  * Sets a client's assists (CS:GO only)
  * @param client		Client index to set assists for.
  * @param value			Value to set client's assists as.
- * @noreturn
  *
  * @error				Invalid client.
  */
-native CS_SetClientAssists(client, value);
+native void CS_SetClientAssists(int client, int value);
 
 /**
  * Gets a weaponID from a alias
@@ -352,7 +364,7 @@ native CS_SetClientAssists(client, value);
  *
  * @note For best results use CS_GetTranslatedWeaponAlias on the weapon name before passing it.
  */
-native CSWeaponID:CS_AliasToWeaponID(const String:alias[]);
+native CSWeaponID CS_AliasToWeaponID(const char[] alias);
 
 /**
  * Gets a alias from a weaponID
@@ -361,30 +373,51 @@ native CSWeaponID:CS_AliasToWeaponID(const String:alias[]);
  * @param len			Length of the destination array.
  * @return				Returns number of cells written.
  */
-native CS_WeaponIDToAlias(CSWeaponID:weaponID, String:destination[], len);
+native int CS_WeaponIDToAlias(CSWeaponID weaponID, char[] destination, int len);
 
 /**
  * Returns weather a WeaponID is valid on the current mod (css or csgo)
  * @param weaponID		WeaponID to check
  * @return				Returns true if its a valid WeaponID false otherwise.
  *
- * @note This will return false always for CSWeapon_NONE
+ * @note This will return false always for CSWeapon_NONE. Should only be called after OnMapStart since weapon info isnt intialized before.
  */
-native bool:CS_IsValidWeaponID(CSWeaponID:id);
+native bool CS_IsValidWeaponID(CSWeaponID id);
 
 /**
  * Sets a player's model based on their current class
  *
  * @param client		Player's index.
- * @noreturn
  * @error			Invalid client index, client not in game.
  */
-native CS_UpdateClientModel(client);
+native void CS_UpdateClientModel(int client);
+
+/**
+ * Returns a CSWeaponID equivalent based on the item definition index.
+ *
+ * @param iDefIndex	Definition index to get the CSWeaponID value for.
+ * @return			Returns CSWeaponID value for the definition index.
+ * 
+ * @error			Invalid definition index.
+ * @note			In most cases the id will be the item definition index. Works for CS:GO ONLY.
+ */
+native CSWeaponID CS_ItemDefIndexToID(int iDefIndex);
+
+/**
+ * Returns a item definition index equivalent based on the CSWeaponID.
+ *
+ * @param id CSWeaponID to get the item definition for.
+ * @return			Returns item definition index value for the weapon id.
+ * 
+ * @error			Invalid weapon id.
+ * @note			In most cases the item deinition index will be the id. Works for CS:GO ONLY.
+ */
+native int CS_WeaponIDToItemDefIndex(CSWeaponID id);
 
 /**
  * Do not edit below this line!
  */
-public Extension:__ext_cstrike = 
+public Extension __ext_cstrike = 
 {
 	name = "cstrike",
 	file = "games/game.cstrike.ext",
@@ -397,7 +430,7 @@ public Extension:__ext_cstrike =
 };
 
 #if !defined REQUIRE_EXTENSIONS
-public __ext_cstrike_SetNTVOptional()
+public void __ext_cstrike_SetNTVOptional()
 {
 	MarkNativeAsOptional("CS_RespawnPlayer");
 	MarkNativeAsOptional("CS_SwitchTeam");
@@ -419,6 +452,7 @@ public __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_WeaponIDToAlias");
 	MarkNativeAsOptional("CS_IsValidWeaponID");
 	MarkNativeAsOptional("CS_UpdateClientModel");
+	MarkNativeAsOptional("CS_ItemDefIndexToID");
+	MarkNativeAsOptional("CS_WeaponIDToItemDefIndex");
 }
 #endif
-

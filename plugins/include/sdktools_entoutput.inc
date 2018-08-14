@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2017 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -42,9 +42,15 @@
  * @param caller		Entity index of the caller.
  * @param activator		Entity index of the activator.
  * @param delay			Delay in seconds? before the event gets fired.
- * @noreturn
+ * @return					Anything other than Plugin_Continue will supress this event,
+ *								returning Plugin_Continue will allow it to propagate the results
+ *								of this output to any entity inputs.
  */
-typedef EntityOutput = function void (const char[] output, int caller, int activator, float delay);
+typeset EntityOutput
+{
+	function void (const char[] output, int caller, int activator, float delay);
+	function Action (const char[] output, int caller, int activator, float delay);
+};
 
 /**
  * Add an entity output hook on a entity classname
@@ -52,10 +58,9 @@ typedef EntityOutput = function void (const char[] output, int caller, int activ
  * @param classname		The classname to hook.
  * @param output		The output name to hook.
  * @param callback		An EntityOutput function pointer.
- * @noreturn
  * @error				Entity Outputs disabled.
  */
-native HookEntityOutput(const String:classname[], const String:output[], EntityOutput:callback);
+native void HookEntityOutput(const char[] classname, const char[] output, EntityOutput callback);
 
 /**
  * Remove an entity output hook.
@@ -65,7 +70,7 @@ native HookEntityOutput(const String:classname[], const String:output[], EntityO
  * @return				True on success, false if no valid hook was found.
  * @error				Entity Outputs disabled.
  */
-native bool:UnhookEntityOutput(const String:classname[], const String:output[], EntityOutput:callback);
+native bool UnhookEntityOutput(const char[] classname, const char[] output, EntityOutput callback);
 
 /**
  * Add an entity output hook on a single entity instance	
@@ -74,10 +79,9 @@ native bool:UnhookEntityOutput(const String:classname[], const String:output[], 
  * @param output		The output name to hook.
  * @param callback		An EntityOutput function pointer.
  * @param once			Only fire this hook once and then remove itself.
- * @noreturn			
  * @error				Entity Outputs disabled	or Invalid Entity index.
  */
-native HookSingleEntityOutput(entity, const String:output[], EntityOutput:callback , bool:once=false);
+native void HookSingleEntityOutput(int entity, const char[] output, EntityOutput callback, bool once=false);
 
 /**
  * Remove a single entity output hook.	
@@ -88,5 +92,17 @@ native HookSingleEntityOutput(entity, const String:output[], EntityOutput:callba
  * @return				True on success, false if no valid hook was found.
  * @error				Entity Outputs disabled	or Invalid Entity index.	
  */
-native bool:UnhookSingleEntityOutput(entity, const String:output[], EntityOutput:callback);
+native bool UnhookSingleEntityOutput(int entity, const char[] output, EntityOutput callback);
 
+/**
+ * Fire a named output on an entity.  
+ *
+ * After completion (successful or not), the current global variant is re-initialized.
+ *
+ * @param caller	Entity index from where the output is fired.
+ * @param output	Output name.
+ * @param activator	Entity index which initiated the sequence of actions (-1 for a NULL entity).
+ * @param delay		Delay before firing the output.
+ * @error		Invalid entity index or no mod support.
+ */
+native void FireEntityOutput(int caller, const char[] output, int activator=-1, float delay=0.0);

@@ -57,15 +57,18 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	char game[128];
 	GetGameFolderName(game, sizeof(game));
 
+	EngineVersion engine = GetEngineVersion();
+
 	if (StrEqual(game, "left4dead", false)
 			|| StrEqual(game, "dystopia", false)
 			|| StrEqual(game, "synergy", false)
 			|| StrEqual(game, "left4dead2", false)
 			|| StrEqual(game, "garrysmod", false)
 			|| StrEqual(game, "swarm", false)
-			|| StrEqual(game, "dota", false)
 			|| StrEqual(game, "bms", false)
-			|| GetEngineVersion() == Engine_Insurgency)
+			|| StrEqual(game, "reactivedrop", false)
+			|| engine == Engine_Insurgency
+			|| engine == Engine_DOI)
 	{
 		strcopy(error, err_max, "Nextmap is incompatible with this game");
 		return APLRes_SilentFailure;
@@ -73,7 +76,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 	return APLRes_Success;
 }
-
 
 public void OnPluginStart()
 {

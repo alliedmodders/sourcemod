@@ -35,6 +35,7 @@
 #include <IHandleSys.h>
 #include <stdio.h>
 #include <sm_namehashset.h>
+#include <amtl/am-autoptr.h>
 #include <amtl/am-string.h>
 #include <amtl/am-function.h>
 #include "common_logic.h"
@@ -109,6 +110,10 @@ struct QHandleType
 	static inline bool matches(const char *key, const QHandleType *type)
 	{
 		return type->name && type->name->compare(key) == 0;
+	}
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
 	}
 };
 

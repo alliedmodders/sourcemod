@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2016 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		10
+#define SMINTERFACE_GAMEHELPERS_VERSION		11
 
 class CBaseEntity;
 class CBaseHandle;
@@ -335,6 +335,23 @@ namespace SourceMod
 		 *						on failure.
 		 */
 		virtual bool FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatable_info_t *pDataTable) =0;
+
+		/**
+		 * @brief Retrieves the server's rendered Steam3 id.
+		 *
+		 * @param pszOut		Buffer to which id will be copied.
+		 * @param len			Max size of buffer in bytes.
+		 * @return				True on id successfully retrieved and buffer populated
+		 *						(even if id invalid/unset) false on failure (unknown id type).
+		 */
+		virtual bool GetServerSteam3Id(char *pszOut, size_t len) const =0;
+
+		/**
+		 * @brief Retrieves the server's SteamID64.
+		 *
+		 * @return				64-bit server Steam id.
+		 */
+		virtual uint64_t GetServerSteamId64() const =0;
 	};
 }
 

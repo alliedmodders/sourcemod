@@ -118,6 +118,13 @@ public:
 		return msg;
 	}
 
+	inline bool HasField(const char *pszFieldName)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_NOT_REPEATED();
+		return msg->GetReflection()->HasField(*msg, field);
+	}
+
 	inline bool GetInt32(const char *pszFieldName, int32 *out)
 	{
 		GETCHECK_FIELD();

@@ -166,7 +166,7 @@ methodmap StringMapSnapshot < Handle
  *
  * @return 			New Map Handle, which must be freed via CloseHandle().
  */
-native StringMap:CreateTrie();
+native StringMap CreateTrie();
 
 /**
  * Sets a value in a hash map, either inserting a new entry or replacing an old one.
@@ -253,7 +253,7 @@ native bool GetTrieString(Handle map, const char[] key, char[] value, int max_si
  * @return			True on success, false if the value was never set.
  * @error			Invalid Handle.
  */
-native RemoveFromTrie(Handle map, const char[] key);
+native bool RemoveFromTrie(Handle map, const char[] key);
 
 /**
  * Clears all entries from a Map.
@@ -261,7 +261,7 @@ native RemoveFromTrie(Handle map, const char[] key);
  * @param map		Map Handle.
  * @error			Invalid Handle.
  */
-native ClearTrie(Handle map);
+native void ClearTrie(Handle map);
 
 /**
  * Retrieves the number of elements in a map.
@@ -270,7 +270,7 @@ native ClearTrie(Handle map);
  * @return			Number of elements in the trie.
  * @error			Invalid Handle.
  */
-native GetTrieSize(Handle map);
+native int GetTrieSize(Handle map);
 
 /**
  * Creates a snapshot of all keys in the map. If the map is changed after this
@@ -291,7 +291,7 @@ native Handle CreateTrieSnapshot(Handle map);
  * @return			Number of keys.
  * @error			Invalid Handle.
  */
-native TrieSnapshotLength(Handle snapshot);
+native int TrieSnapshotLength(Handle snapshot);
 
 /**
  * Returns the buffer size required to store a given key. That is, it returns
@@ -302,7 +302,7 @@ native TrieSnapshotLength(Handle snapshot);
  * @return 			Buffer size required to store the key string.
  * @error			Invalid Handle or index out of range.
  */
-native TrieSnapshotKeyBufferSize(Handle snapshot, int index);
+native int TrieSnapshotKeyBufferSize(Handle snapshot, int index);
 
 /**
  * Retrieves the key string of a given key in a map snapshot.
@@ -314,4 +314,4 @@ native TrieSnapshotKeyBufferSize(Handle snapshot, int index);
  * @return			Number of bytes written to the buffer.
  * @error			Invalid Handle or index out of range.
  */
-native GetTrieSnapshotKey(Handle snapshot, int index, char[] buffer, int maxlength);
+native int GetTrieSnapshotKey(Handle snapshot, int index, char[] buffer, int maxlength);

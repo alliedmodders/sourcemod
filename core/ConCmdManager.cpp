@@ -317,7 +317,7 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 	char buffer[128];
 	if (!logicore.CoreTranslate(buffer, sizeof(buffer), "%T", 2, NULL, "No Access", &client))
 	{
-		ke::SafeSprintf(buffer, sizeof(buffer), "You do not have access to this command");
+		ke::SafeStrcpy(buffer, sizeof(buffer), "You do not have access to this command");
 	}
 
 	unsigned int replyto = g_ChatTriggers.GetReplyTo();
@@ -342,9 +342,10 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 									 const char *group,
 									 int adminflags,
 									 const char *description,
-									 int flags)
+									 int flags,
+									 IPlugin *pPlugin)
 {
-	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
+	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags, pPlugin);
 
 	if (!pInfo)
 		return false;
@@ -356,7 +357,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 			return false;
 		i->value = new CommandGroup();
 	}
-	Ref<CommandGroup> cmdgroup = i->value;
+	RefPtr<CommandGroup> cmdgroup = i->value;
 
 	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description);
 	pHook->admin = new AdminCmdInfo(cmdgroup, adminflags);
@@ -391,10 +392,10 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 bool ConCmdManager::AddServerCommand(IPluginFunction *pFunction,
 									  const char *name,
 									  const char *description,
-									  int flags)
-
+									  int flags,
+									  IPlugin *pPlugin)
 {
-	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
+	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags, pPlugin);
 
 	if (!pInfo)
 		return false;
@@ -491,7 +492,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 		if (!r.found())
 			return;
 
-		Ref<CommandGroup> group(r->value);
+		RefPtr<CommandGroup> group(r->value);
 
 		for (PluginHookList::iterator iter = group->hooks.begin(); iter != group->hooks.end(); iter++)
 		{
@@ -558,7 +559,7 @@ bool ConCmdManager::LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags)
 	return true;
 }
 
-ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *description, int flags)
+ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *description, int flags, IPlugin *pPlugin)
 {
 	ConCmdInfo *pInfo;
 	if (!m_Cmds.retrieve(name, &pInfo))
@@ -583,6 +584,7 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 			char *new_name = sm_strdup(name);
 			char *new_help = sm_strdup(description);
 			pCmd = new ConCommand(new_name, CommandCallback, new_help, flags);
+			pInfo->pPlugin = pPlugin;
 			pInfo->sourceMod = true;
 		}
 		else

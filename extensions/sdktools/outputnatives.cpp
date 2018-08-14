@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2017 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -30,9 +30,19 @@
  */
 
 #include "extension.h"
+#include "variant-t.h"
 #include "output.h"
 
-// HookSingleEntityOutput(ent, const String:output[], function, bool:once);
+ICallWrapper *g_pFireOutput = NULL;
+
+#define ENTINDEX_TO_CBASEENTITY(ref, buffer) \
+	buffer = gamehelpers->ReferenceToEntity(ref); \
+	if (!buffer) \
+	{ \
+		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseEntity", gamehelpers->ReferenceToIndex(ref), ref); \
+	}
+
+// HookSingleEntityOutput(int ent, const char[] output, EntityOutput function, bool once);
 cell_t HookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 {
 	if (!g_OutputManager.IsEnabled())
@@ -97,7 +107,7 @@ cell_t HookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-// HookEntityOutput(const String:classname[], const String:output[], function);
+// HookEntityOutput(const char[] classname, const char[] output, EntityOutput function);
 cell_t HookEntityOutput(IPluginContext *pContext, const cell_t *params)
 {
 	if (!g_OutputManager.IsEnabled())
@@ -160,7 +170,7 @@ cell_t HookEntityOutput(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-// UnHookEntityOutput(const String:classname[], const String:output[], EntityOutput:callback);
+// UnHookEntityOutput(const char[] classname, const char[] output, EntityOutput callback);
 cell_t UnHookEntityOutput(IPluginContext *pContext, const cell_t *params)
 {
 	if (!g_OutputManager.IsEnabled())
@@ -211,7 +221,7 @@ cell_t UnHookEntityOutput(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
-// UnHookSingleEntityOutput(entity, const String:output[], EntityOutput:callback);
+// UnHookSingleEntityOutput(int entity, const char[] output, EntityOutput callback);
 cell_t UnHookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 {
 	if (!g_OutputManager.IsEnabled())
@@ -269,11 +279,133 @@ cell_t UnHookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
+void *FindOutputPointerByName(CBaseEntity *pEntity, const char *outputname)
+{
+	datamap_t *pMap = gamehelpers->GetDataMap(pEntity);
+
+	while (pMap)
+	{
+		for (int i=0; i<pMap->dataNumFields; i++)
+		{
+			if (pMap->dataDesc[i].flags & FTYPEDESC_OUTPUT)
+			{
+				if (strcmp(pMap->dataDesc[i].externalName,outputname) == 0)
+				{
+					return reinterpret_cast<void *>((unsigned char*)pEntity + GetTypeDescOffs(&pMap->dataDesc[i]));
+				}
+			}
+		}
+		pMap = pMap->baseMap;
+	}
+	return NULL;
+}
+
+// FireEntityOutput(int ent, const char[] output, int activator, float delay);
+static cell_t FireEntityOutput(IPluginContext *pContext, const cell_t *params)
+{
+	if (!g_pFireOutput)
+	{
+		void *addr;
+		if (!g_pGameConf->GetMemSig("FireOutput", &addr) || !addr)
+		{
+			return pContext->ThrowNativeError("\"FireEntityOutput\" not supported by this mod");
+		}
+#ifdef PLATFORM_WINDOWS
+		int iMaxParam = 8;
+		//Instead of being one param, MSVC broke variant_t param into 5 params..
+		PassInfo pass[8];
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].type = PassType_Basic;
+		pass[0].size = sizeof(int);
+		pass[1].flags = PASSFLAG_BYVAL;
+		pass[1].type = PassType_Basic;
+		pass[1].size = sizeof(int);
+		pass[2].flags = PASSFLAG_BYVAL;
+		pass[2].type = PassType_Basic;
+		pass[2].size = sizeof(int);
+		pass[3].flags = PASSFLAG_BYVAL;
+		pass[3].type = PassType_Basic;
+		pass[3].size = sizeof(int);
+		pass[4].flags = PASSFLAG_BYVAL;
+		pass[4].type = PassType_Basic;
+		pass[4].size = sizeof(int);
+		pass[5].flags = PASSFLAG_BYVAL;
+		pass[5].type = PassType_Basic;
+		pass[5].size = sizeof(CBaseEntity *);
+		pass[6].flags = PASSFLAG_BYVAL;
+		pass[6].type = PassType_Basic;
+		pass[6].size = sizeof(CBaseEntity *);
+		pass[7].flags = PASSFLAG_BYVAL;
+		pass[7].type = PassType_Basic;
+		pass[7].size = sizeof(float);
+#else
+		int iMaxParam = 4;
+
+		PassInfo pass[4];
+		pass[0].type = PassType_Object;
+		pass[0].flags = PASSFLAG_BYVAL|PASSFLAG_OCTOR|PASSFLAG_ODTOR|PASSFLAG_OASSIGNOP;
+		pass[0].size = SIZEOF_VARIANT_T;
+		pass[1].flags = PASSFLAG_BYVAL;
+		pass[1].type = PassType_Basic;
+		pass[1].size = sizeof(CBaseEntity *);
+		pass[2].flags = PASSFLAG_BYVAL;
+		pass[2].type = PassType_Basic;
+		pass[2].size = sizeof(CBaseEntity *);
+		pass[3].flags = PASSFLAG_BYVAL;
+		pass[3].type = PassType_Basic;
+		pass[3].size = sizeof(float);
+#endif
+		if (!(g_pFireOutput = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, iMaxParam)))
+		{
+			return pContext->ThrowNativeError("\"FireEntityOutput\" wrapper failed to initialize.");
+		}
+	}
+
+	CBaseEntity *pActivator, *pCaller;
+	void *pOutput = NULL;
+	
+	char *outputname;
+	unsigned char vstk[sizeof(void *) + sizeof(CBaseEntity *)*2 + SIZEOF_VARIANT_T + sizeof(float)];
+	unsigned char *vptr = vstk;
+
+	ENTINDEX_TO_CBASEENTITY(params[1], pCaller);
+	pContext->LocalToString(params[2], &outputname);
+	
+	if ((pOutput = FindOutputPointerByName(pCaller,outputname)))
+	{
+		if (params[3] == -1)
+		{
+			pActivator = NULL;
+		}
+		else
+		{
+			ENTINDEX_TO_CBASEENTITY(params[3], pActivator);
+		}
+
+		*(void **)vptr = pOutput;
+		vptr += sizeof(void *);
+		memcpy(vptr, g_Variant_t, SIZEOF_VARIANT_T);
+		vptr += SIZEOF_VARIANT_T;
+		*(CBaseEntity **)vptr = pActivator;
+		vptr += sizeof(CBaseEntity *);
+		*(CBaseEntity **)vptr = pCaller;
+		vptr += sizeof(CBaseEntity *);
+		*(float *)vptr = sp_ctof(params[4]);
+
+		g_pFireOutput->Execute(vstk, NULL);
+
+		_init_variant_t();
+		return 1;
+	}
+	return pContext->ThrowNativeError("Couldn't find %s output on %i entity!", outputname, params[1]);
+}
+
 sp_nativeinfo_t g_EntOutputNatives[] =
 {
 	{"HookEntityOutput",			HookEntityOutput},
 	{"UnhookEntityOutput",			UnHookEntityOutput},
 	{"HookSingleEntityOutput",		HookSingleEntityOutput},
 	{"UnhookSingleEntityOutput",	UnHookSingleEntityOutput},
+	{"FireEntityOutput",			FireEntityOutput},
 	{NULL,							NULL},
 };

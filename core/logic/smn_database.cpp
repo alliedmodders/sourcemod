@@ -32,6 +32,7 @@
 #include "common_logic.h"
 #include "Database.h"
 #include "ExtensionSys.h"
+#include "sprintf.h"
 #include "stringutil.h"
 #include "ISourceMod.h"
 #include "AutoHandleRooter.h"
@@ -236,6 +237,9 @@ public:
 	}
 	void CancelThinkPart()
 	{
+		if (!m_pFunction->IsRunnable())
+			return;
+
 		m_pFunction->PushCell(BAD_HANDLE);
 		m_pFunction->PushCell(BAD_HANDLE);
 		m_pFunction->PushString("Driver is unloading");
@@ -246,9 +250,6 @@ public:
 	{
 		/* Create a Handle for our query */
 		HandleSecurity sec(me->GetIdentity(), g_pCoreIdent);
-		HandleAccess access;
-		handlesys->InitAccessDefaults(NULL, &access);
-		access.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
 
 		Handle_t qh = BAD_HANDLE;
 		
@@ -256,7 +257,7 @@ public:
 		{
 			CombinedQuery *c = new CombinedQuery(m_pQuery, m_pDatabase);
 			
-			qh = handlesys->CreateHandle(hCombinedQueryType, c, me->GetIdentity(), g_pCoreIdent, NULL);
+			qh = CreateLocalHandle(hCombinedQueryType, c, &sec);
 			if (qh != BAD_HANDLE)
 			{
 				m_pQuery = NULL;
@@ -266,11 +267,14 @@ public:
 			}
 		}
 
-		m_pFunction->PushCell(m_MyHandle);
-		m_pFunction->PushCell(qh);
-		m_pFunction->PushString(qh == BAD_HANDLE ? error : "");
-		m_pFunction->PushCell(m_Data);
-		m_pFunction->Execute(NULL);
+		if (m_pFunction->IsRunnable())
+		{
+			m_pFunction->PushCell(m_MyHandle);
+			m_pFunction->PushCell(qh);
+			m_pFunction->PushString(qh == BAD_HANDLE ? error : "");
+			m_pFunction->PushCell(m_Data);
+			m_pFunction->Execute(NULL);
+		}
 
 		if (qh != BAD_HANDLE)
 		{
@@ -310,6 +314,12 @@ public:
 		error[0] = '\0';
 		strncopy(dbname, _dbname, sizeof(dbname));
 		me = scripts->FindPluginByContext(m_pFunction->GetParentContext()->GetContext());
+		
+		m_pInfo = g_DBMan.GetDatabaseConf(dbname);
+		if (!m_pInfo)
+		{
+			g_pSM->Format(error, sizeof(error), "Could not find database config \"%s\"", dbname);
+		}
 	}
 	IdentityToken_t *GetOwner()
 	{
@@ -321,22 +331,19 @@ public:
 	}
 	void RunThreadPart()
 	{
-		g_DBMan.LockConfig();
-		const DatabaseInfo *pInfo = g_DBMan.FindDatabaseConf(dbname);
-		if (!pInfo)
+		if (m_pInfo)
 		{
-			g_pSM->Format(error, sizeof(error), "Could not find database config \"%s\"", dbname);
-		} else {
-			m_pDatabase = m_pDriver->Connect(pInfo, false, error, sizeof(error));
+			m_pDatabase = m_pDriver->Connect(&m_pInfo->info, false, error, sizeof(error));
 		}
-		g_DBMan.UnlockConfig();
 	}
 	void CancelThinkPart()
 	{
 		if (m_pDatabase)
-		{
 			m_pDatabase->Close();
-		}
+		
+		if (!m_pFunction->IsRunnable())
+			return;
+
 		if (m_ACM == ACM_Old)
 			m_pFunction->PushCell(BAD_HANDLE);
 		m_pFunction->PushCell(BAD_HANDLE);
@@ -348,6 +355,13 @@ public:
 	{
 		Handle_t hndl = BAD_HANDLE;
 		
+		if (!m_pFunction->IsRunnable())
+		{
+			if (m_pDatabase)
+				m_pDatabase->Close();
+			return;
+		}
+
 		if (m_pDatabase)
 		{
 			if ((hndl = g_DBMan.CreateHandle(DBHandle_Database, m_pDatabase, me->GetIdentity()))
@@ -370,6 +384,7 @@ public:
 		delete this;
 	}
 private:
+	ke::RefPtr<ConfDbInfo> m_pInfo;
 	IPlugin *me;
 	IPluginFunction *m_pFunction;
 	IDBDriver *m_pDriver;
@@ -440,7 +455,7 @@ static cell_t ConnectToDbAsync(IPluginContext *pContext, const cell_t *params, A
 			g_pSM->Format(error, 
 				sizeof(error), 
 				"Could not find driver \"%s\"", 
-				pInfo->driver[0] == '\0' ? g_DBMan.GetDefaultDriverName() : pInfo->driver);
+				pInfo->driver[0] == '\0' ? g_DBMan.GetDefaultDriverName().chars() : pInfo->driver);
 		} else if (!driver->IsThreadSafe()) {
 			g_pSM->Format(error,
 				sizeof(error),
@@ -730,6 +745,24 @@ static cell_t SQL_QuoteString(IPluginContext *pContext, const cell_t *params)
 	*addr = (cell_t)written;
 
 	return s ? 1 : 0;
+}
+
+static cell_t SQL_FormatQuery(IPluginContext *pContext, const cell_t *params)
+{
+	IDatabase *db = NULL;
+	HandleError err;
+
+	if ((err = g_DBMan.ReadHandle(params[1], DBHandle_Database, (void **)&db))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid database Handle %x (error: %d)", params[1], err);
+	}
+
+	g_FormatEscapeDatabase = db;
+	cell_t result = InternalFormat(pContext, params, 1);
+	g_FormatEscapeDatabase = NULL;
+
+	return result;
 }
 
 static cell_t SQL_FastQuery(IPluginContext *pContext, const cell_t *params)
@@ -1634,8 +1667,8 @@ private:
 
 		assert(results_.length() == txn_->entries.length());
 
-		ke::AutoArray<cell_t> data(new cell_t[results_.length()]);
-		ke::AutoArray<cell_t> handles(new cell_t[results_.length()]);
+		ke::AutoPtr<cell_t[]> data = ke::MakeUnique<cell_t[]>(results_.length());
+		ke::AutoPtr<cell_t[]> handles = ke::MakeUnique<cell_t[]>(results_.length());
 		for (size_t i = 0; i < results_.length(); i++)
 		{
 			CombinedQuery *obj = new CombinedQuery(results_[i], db_);
@@ -1659,12 +1692,15 @@ private:
 			data[i] = txn_->entries[i].data;
 		}
 
-		success_->PushCell(dbh);
-		success_->PushCell(data_);
-		success_->PushCell(txn_->entries.length());
-		success_->PushArray(handles, results_.length());
-		success_->PushArray(data, results_.length());
-		success_->Execute(NULL);
+		if (success_->IsRunnable())
+		{
+			success_->PushCell(dbh);
+			success_->PushCell(data_);
+			success_->PushCell(txn_->entries.length());
+			success_->PushArray(handles.get(), results_.length());
+			success_->PushArray(data.get(), results_.length());
+			success_->Execute(NULL);
+		}
 
 		// Cleanup. Note we clear results_, since freeing their handles will
 		// call Destroy(), and we don't want to double-free in ~TTransactOp.
@@ -1692,7 +1728,7 @@ public:
 		{
 			HandleSecurity sec(ident_, g_pCoreIdent);
 
-			ke::AutoArray<cell_t> data(new cell_t[results_.length()]);
+			ke::AutoPtr<cell_t[]> data = ke::MakeUnique<cell_t[]>(txn_->entries.length());
 			for (size_t i = 0; i < txn_->entries.length(); i++)
 				data[i] = txn_->entries[i].data;
 
@@ -1703,20 +1739,23 @@ public:
 				db_->AddRef();
 			}
 
-			failure_->PushCell(dbh);
-			failure_->PushCell(data_);
-			failure_->PushCell(txn_->entries.length());
-			failure_->PushString(error_.chars());
-			failure_->PushCell(failIndex_);
-			failure_->PushArray(data, txn_->entries.length());
-			failure_->Execute(NULL);
+			if (failure_->IsRunnable())
+			{
+				failure_->PushCell(dbh);
+				failure_->PushCell(data_);
+				failure_->PushCell(txn_->entries.length());
+				failure_->PushString(error_.chars());
+				failure_->PushCell(failIndex_);
+				failure_->PushArray(data.get(), txn_->entries.length());
+				failure_->Execute(NULL);
+			}
 
 			handlesys->FreeHandle(dbh, &sec);
 		}
 	}
 
 private:
-	ke::Ref<IDatabase> db_;
+	ke::RefPtr<IDatabase> db_;
 	Transaction *txn_;
 	IdentityToken_t *ident_;
 	IPluginFunction *success_;
@@ -1814,6 +1853,7 @@ REGISTER_NATIVES(dbNatives)
 	{"Database.Driver.get",				Database_Driver_get},
 	{"Database.SetCharset",				SQL_SetCharset},
 	{"Database.Escape",					SQL_QuoteString},
+	{"Database.Format",					SQL_FormatQuery},
 	{"Database.IsSameConnection",		SQL_IsSameConnection},
 	{"Database.Execute",				SQL_ExecuteTransaction},
 
@@ -1827,6 +1867,7 @@ REGISTER_NATIVES(dbNatives)
 	{"SQL_Connect",				SQL_Connect},
 	{"SQL_ConnectEx",			SQL_ConnectEx},
 	{"SQL_EscapeString",		SQL_QuoteString},
+	{"SQL_FormatQuery",			SQL_FormatQuery},
 	{"SQL_Execute",				SQL_Execute},
 	{"SQL_FastQuery",			SQL_FastQuery},
 	{"SQL_FetchFloat",			SQL_FetchFloat},

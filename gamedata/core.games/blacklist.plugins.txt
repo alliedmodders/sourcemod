@@ -17,6 +17,10 @@
 			"plugin_39ddd719f74b62e27e8e480871b9d3b6"	"http://forums.alliedmods.net/showpost.php?p=1803875&postcount=1"	/* Malicious plugin being uploaded to CS:GO servers */
 			"plugin_da397f32bf24c7ef954bd121441a3b0e"	"http://forums.alliedmods.net/showpost.php?p=2032419&postcount=1"	/* Advertising plugin being uploaded to CS:GO servers */
 			"plugin_ee0bb0aa0d24491feda4235a92779f71"	"http://forums.alliedmods.net/showpost.php?p=2032419&postcount=1"	/* Advertising plugin being uploaded to CS:GO servers */
+			"plugin_28a4f07bb94e25e160e9655f8a614292"	"https://forums.alliedmods.net/showthread.php?t=291340"	/* [AnoX]A-Nox Core - Version 2.5 */
+			"plugin_dad1e86497adcbeb383da6bd8229069d"	"https://forums.alliedmods.net/showpost.php?p=2511172&postcount=3" /* ZenServer: Ultimate (Zen) - Version 4.50 */
+			"plugin_c71bb73bc544728fdcd7fc9b0353f8d6"	"https://forums.alliedmods.net/showthread.php?t=304847" /* Malicious plugin uploaded to CS:GO servers */
+			"plugin_f946e12de75a0553d3012c594d5e7317"	"https://forums.alliedmods.net/showthread.php?t=304847" /* Malicious plugin uploaded to CS:GO servers */
 			"plugin_f405db5491a465b1a30859ee7f7c5080"	""	/* UCP Server (Endi) - Version 6.9 */
 			"plugin_6fcb6721fb740b854b0a05bfc9a7984a"	""	/* UCP Server (Endi) - Version 7.1 */
 			"plugin_4d320d6c5aba5d31c644fe2847c0662f"	""	/* UCP Server (Endi) - Version 7.2 */
@@ -26,6 +30,7 @@
 			"plugin_24602c74f183cfcd157b3d50dee96c52"	""	/* UCP Server (Endi) - Version 7.8.3 */
 			"plugin_43bd225c5fdcd3af35729ca9d481b20d"	""	/* UCP Server (Endi) - Version 8.3 */
 			"plugin_aaeeeedeca7bdbdd630ddc5868daade7"	""	/* UCP Server (Endi) - Version 8.4 */
+			"plugin_9e42a827411f7584cebda62bf5030d02"	""	/* UCP Server (Endi) - Version 8.5 */
 			"plugin_78140f1a0f26cd3297767d0598eac4b1"	""	/* [Any] PReplay (DarthNinja) - Version 1.0.0 */
 			"plugin_55923ba6bfe41569a3e4fbd7ca4606e5"	""	/* VIP Plugin (wS) - Version 2.0 */
 			"plugin_4bf983e1d5b61ba0b1ab9a7e53bfda27"	""	/* WarMod CS:GO (Twelve-60) */
@@ -85,6 +90,22 @@
 			"plugin_229bb55fb7f4d9e6df47682847201031"	""	/* VIP Test (wS) - Version 1.2 */
 			"plugin_4a9943bb6c831c605c3e4aef38d9c789"	""	/* VIP Module (Trails) (wS) - Version 1.2 */
 			"plugin_2296f1162a2f1886fcad5601c1597835"	""	/* VIP (!vips) (wS) - Version 1.2.1 */
+			"plugin_0bdc1c30ee71d6fe54a2d931e6433400"	""	/* Token Auto Updater (Pheonix) - Version 1.2.5 */
+			"plugin_abb30458960e39fb54336630ec2ff99f"	""	/* [AnoX]Bot Manager - Version 1.0 */
+			"plugin_6ac5fda7402e6c827d6113c2e8b266e8"	""	/* [AnoX]ChatLog - Version 1.0 */
+			"plugin_626f1014fc7a1431fd56c558f4ae88e3"	""	/* [AnoX]CP Control - Version 1.1 */
+			"plugin_1587f9e5578e349448fb05948258c035"	""	/* [AnoX]K/D Ratio - Version 1.0 */
+			"plugin_beae6d494edc696b0c2470e77bbb9a38"	""	/* [AnoX]ShowMotd - Version 1.01 */
+			"plugin_75948f0451be404066536cdbd5111277"	""	/* [AnoX]TeamChange - Version 1.2 */
+			"plugin_8f8d96631fa47e2d4b35236c42579e81"	""	/* [Sky]Welcome - Version 1.06 */
+			"plugin_465e4abb31f03cf519e8a80a8b4b44be"	""	/* [AnoX]NoSucide - Version 1.0 */
+			"plugin_33a4351dd2b9350d6f2b21dab68f7d9e"	""	/* [CS:GO] Komutcu Daire System (Sourceless distro) - Version 1.0 */
+			"plugin_0f9828ea5fe6900981137f3c6fb9d70b"	""	/* token changer (Adi) - Version 1.1.2 */
+			"plugin_267929e572d647c43e54ab7aa921174d"	""	/* Playwire MOTD (Playwire Media) - Version 1.1.0 */
+			"plugin_f9874d362c5c8142037045a0a2c6249c"	""	/* [AnoX]A-Nox Core (A-Nox dev.) - Version 3.1a */
+			"plugin_eae8ed2c593591814f9e6bfa73000d85"	""	/* Unknown VIP plugin with fake myinfo */
+			"plugin_da0e76b67029c12eb5c1995df4fa4f89"	""	/* token changer (Adi) - Version 1.3.9 */
+			"plugin_514efe1f39061e7365a31fc21d452a79"	""	/* Token Auto Updater (Phoenix) - Version 1.4 */
 		}
 	}
 }

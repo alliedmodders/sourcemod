@@ -1,6 +1,6 @@
 "Games"
 {
-	"KreedzClimbing"
+	"#default"
 	{
 		"Offsets"
 		{
@@ -26,15 +26,15 @@
 			}
 			"OnTakeDamage_Alive"
 			{
-				"windows"	"279"
+				"windows"	"280"
 			}
 			"PreThink"
 			{
-				"windows"	"339"
+				"windows"	"340"
 			}
 			"PostThink"
 			{
-				"windows"	"340"
+				"windows"	"341"
 			}
 			"SetTransmit"
 			{
@@ -78,23 +78,23 @@
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"273"
+				"windows"	"274"
 			}
 			"Weapon_CanUse"
 			{
-				"windows"	"267"
+				"windows"	"268"
 			}
 			"Weapon_Drop"
 			{
-				"windows"	"270"
+				"windows"	"271"
 			}
 			"Weapon_Equip"
 			{
-				"windows"	"268"
+				"windows"	"269"
 			}
 			"Weapon_Switch"
 			{
-				"windows"	"271"
+				"windows"	"272"
 			}
 		}
 	}

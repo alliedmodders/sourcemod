@@ -55,7 +55,7 @@
 /**
  * File inode types.
  */
-enum FileType:
+enum FileType
 {
 	FileType_Unknown = 0,	/* Unknown file type (device/socket) */
 	FileType_Directory = 1,	/* File is a directory */
@@ -65,7 +65,7 @@ enum FileType:
 /**
  * File time modes.
  */
-enum FileTimeMode:
+enum FileTimeMode
 {
 	FileTime_LastAccess = 0,	/* Last access (does not work on FAT) */
 	FileTime_Created = 1,		/* Creation (does not work on FAT) */
@@ -81,7 +81,7 @@ enum FileTimeMode:
 /**
  * Path types.
  */
-enum PathType:
+enum PathType
 {
 	Path_SM,		/**< SourceMod root folder */	
 };
@@ -107,7 +107,7 @@ methodmap DirectoryListing < Handle
 // actually a file, it just closes it.
 methodmap File < Handle
 {
-	// Close the file handle. This is the same as using CloseHandle) or delete.
+	// Close the file handle. This is the same as using CloseHandle() or delete.
 	public void Close() {
 		CloseHandle(this);
 	}
@@ -167,7 +167,7 @@ methodmap File < Handle
 	// @param format          Formatting rules.
 	// @param ...             Variable number of format parameters.
 	// @return                True on success, false otherwise.
-	public native bool WriteLine(const char[] format, any:...);
+	public native bool WriteLine(const char[] format, any ...);
 
 	// Reads a single int8 (byte) from a file. The returned value is sign-
 	// extended to an int32.
@@ -251,7 +251,7 @@ methodmap File < Handle
  * @param ...			Format arguments.
  * @return				Number of bytes written to buffer (not including null terminator).
  */
-native int BuildPath(PathType type, char[] buffer, int maxlength, const char[] fmt, any:...);
+native int BuildPath(PathType type, char[] buffer, int maxlength, const char[] fmt, any ...);
 
 /**
  * Opens a directory/folder for contents enumeration.
@@ -409,7 +409,7 @@ native bool WriteFileString(Handle hndl, const char[] buffer, bool term);
  * @return				True on success, false otherwise.
  * @error				Invalid Handle.
  */
-native bool WriteFileLine(Handle hndl, const char[] format, any:...);
+native bool WriteFileLine(Handle hndl, const char[] format, any ...);
 
 /**
  * Reads a single binary cell from a file.
@@ -574,6 +574,7 @@ native bool RemoveDir(const char[] path);
  *                      Valve search paths, rather than directly in the gamedir.
  * @param valve_path_id	If use_valve_fs, a search path from gameinfo or NULL_STRING for default.
  *                      In this case, mode is ignored.
+ * @return			True on success, false otherwise.
  */
 native bool CreateDirectory(const char[] path, int mode, bool use_valve_fs=false, const char[] valve_path_id="DEFAULT_WRITE_PATH");
 
@@ -584,7 +585,7 @@ native bool CreateDirectory(const char[] path, int mode, bool use_valve_fs=false
  * @param mode			Permissions to set.
  * @return				True on success, false otherwise.
  */
-native bool SetFilePermissions(const String:path[], int mode);
+native bool SetFilePermissions(const char[] path, int mode);
 
 /**
  * Returns a file timestamp as a unix timestamp.
@@ -593,7 +594,7 @@ native bool SetFilePermissions(const String:path[], int mode);
  * @param tmode			Time mode.
  * @return				Time value, or -1 on failure.
  */
-native GetFileTime(const char[] file, FileTimeMode tmode);
+native int GetFileTime(const char[] file, FileTimeMode tmode);
 
 /**
  * Same as LogToFile(), except uses an open file Handle.  The file must 
@@ -604,7 +605,7 @@ native GetFileTime(const char[] file, FileTimeMode tmode);
  * @param ...			Message format parameters.
  * @error				Invalid Handle.
  */
-native void LogToOpenFile(Handle hndl, const char[] message, any:...);
+native void LogToOpenFile(Handle hndl, const char[] message, any ...);
 
 /**
  * Same as LogToFileEx(), except uses an open file Handle.  The file must 
@@ -615,5 +616,4 @@ native void LogToOpenFile(Handle hndl, const char[] message, any:...);
  * @param ...			Message format parameters.
  * @error				Invalid Handle.
  */
-native void LogToOpenFileEx(Handle hndl, const char[] message, any:...);
-
+native void LogToOpenFileEx(Handle hndl, const char[] message, any ...);

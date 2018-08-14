@@ -41,6 +41,7 @@
 #include <IAdminSystem.h>
 #include "concmd_cleaner.h"
 #include "GameHooks.h"
+#include <am-autoptr.h>
 #include <sm_stringhashmap.h>
 #include <am-utility.h>
 #include <am-inlinelist.h>
@@ -59,13 +60,13 @@ struct CommandGroup : public ke::Refcounted<CommandGroup>
 
 struct AdminCmdInfo
 {
-	AdminCmdInfo(const ke::Ref<CommandGroup> &group, FlagBits flags)
+	AdminCmdInfo(const ke::RefPtr<CommandGroup> &group, FlagBits flags)
 		: group(group),
 		  flags(flags),
 		  eflags(0)
 	{
 	}
-	ke::Ref<CommandGroup> group;
+	ke::RefPtr<CommandGroup> group;
 	FlagBits flags;			/* default flags */
 	FlagBits eflags;		/* effective flags */
 };
@@ -98,15 +99,17 @@ struct ConCmdInfo
 {
 	ConCmdInfo()
 	{
+		pPlugin = nullptr;
 		sourceMod = false;
-		pCmd = NULL;
+		pCmd = nullptr;
 		eflags = 0;
 	}
 	bool sourceMod;					/**< Determines whether or not concmd was created by a SourceMod plugin */
 	ConCommand *pCmd;				/**< Pointer to the command itself */
 	CmdHookList hooks;				/**< Hook list */
 	FlagBits eflags;				/**< Effective admin flags */
-	ke::Ref<CommandHook> sh_hook;   /**< SourceHook hook, if any. */
+	ke::RefPtr<CommandHook> sh_hook;   /**< SourceHook hook, if any. */
+	IPlugin *pPlugin; 				/**< Owning plugin handle. */
 };
 
 typedef List<ConCmdInfo *> ConCmdList;
@@ -131,13 +134,14 @@ public: //IRootConsoleCommand
 public: //IConCommandTracker
 	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name) override;
 public:
-	bool AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
+	bool AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags, IPlugin *pPlugin);
 	bool AddAdminCommand(IPluginFunction *pFunction, 
 						 const char *name, 
 						 const char *group,
 						 int adminflags,
 						 const char *description, 
-						 int flags);
+						 int flags,
+						 IPlugin *pPlugin);
 	ResultType DispatchClientCommand(int client, const char *cmd, int args, ResultType type);
 	void UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits, bool remove);
 	bool LookForSourceModCommand(const char *cmd);
@@ -145,7 +149,7 @@ public:
 private:
 	bool InternalDispatch(int client, const ICommandArgs *args);
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
-	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags);
+	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags, IPlugin *pPlugin);
 	void AddToCmdList(ConCmdInfo *info);
 	void RemoveConCmd(ConCmdInfo *info, const char *cmd, bool untrack);
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);
@@ -161,7 +165,7 @@ public:
 		return m_CmdList;
 	}
 private:
-	typedef StringHashMap<ke::Ref<CommandGroup> > GroupMap;
+	typedef StringHashMap<ke::RefPtr<CommandGroup> > GroupMap;
 
 	StringHashMap<ConCmdInfo *> m_Cmds; /* command lookup */
 	GroupMap m_CmdGrps;				/* command group map */

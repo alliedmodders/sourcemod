@@ -35,6 +35,8 @@
 
 #include <sourcemod>
 
+#pragma newdecls required
+
 #define COMMANDS_PER_PAGE	10
 
 public Plugin myinfo = 
@@ -56,6 +58,11 @@ public void OnPluginStart()
 
 public Action HelpCmd(int client, int args)
 {
+	if (client && !IsClientInGame(client))
+	{
+		return Plugin_Handled;
+	}
+	
 	char arg[64], CmdName[20];
 	int PageNum = 1;
 	bool DoSearch;

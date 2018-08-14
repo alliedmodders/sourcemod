@@ -66,12 +66,12 @@ private:
 class CLibrary : public ILibrary
 {
 public:
-	CLibrary(ke::Ref<ke::SharedLib> lib);
+	CLibrary(ke::RefPtr<ke::SharedLib> lib);
 public:
 	void CloseLibrary() override;
 	void *GetSymbolAddress(const char *symname) override;
 private:
-	ke::Ref<ke::SharedLib> lib_;
+	ke::RefPtr<ke::SharedLib> lib_;
 };
 
 class LibrarySystem : public ILibrarySys

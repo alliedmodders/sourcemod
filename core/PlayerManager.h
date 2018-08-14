@@ -38,6 +38,7 @@
 #include <IForwardSys.h>
 #include <IPlayerHelpers.h>
 #include <IAdminSystem.h>
+#include <ITranslator.h>
 #include <sh_string.h>
 #include <sh_list.h>
 #include <sh_vector.h>
@@ -47,6 +48,8 @@
 #include <steam/steamclientpublic.h>
 
 using namespace SourceHook;
+
+class IClient;
 
 #define PLAYER_LIFE_UNKNOWN	0
 #define PLAYER_LIFE_ALIVE	1
@@ -104,6 +107,9 @@ public:
 	void DoBasicAdminChecks();
 	void MarkAsBeingKicked();
 	int GetLifeState();
+
+	// This can be NULL for fakeclients due to limitations in our impl
+	IClient *GetIClient() const;
 private:
 	void Initialize(const char *name, const char *ip, edict_t *pEntity);
 	void Connect();
@@ -115,33 +121,36 @@ private:
 	void Authorize_Post();
 	void DoPostConnectAuthorization();
 	bool IsAuthStringValidated();
+	bool SetEngineString();
+	bool SetCSteamID();
 private:
-	bool m_IsConnected;
-	bool m_IsInGame;
-	bool m_IsAuthorized;
-	bool m_bIsInKickQueue;
+	bool m_IsConnected = false;
+	bool m_IsInGame = false;
+	bool m_IsAuthorized = false;
+	bool m_bIsInKickQueue = false;
 	String m_Name;
 	String m_Ip;
 	String m_IpNoPort;
 	ke::AString m_AuthID;
 	ke::AString m_Steam2Id;
 	ke::AString m_Steam3Id;
-	AdminId m_Admin;
-	bool m_TempAdmin;
-	edict_t *m_pEdict;
-	IPlayerInfo *m_Info;
+	AdminId m_Admin = INVALID_ADMIN_ID;
+	bool m_TempAdmin = false;
+	edict_t *m_pEdict = nullptr;
+	IPlayerInfo *m_Info = nullptr;
+	IClient *m_pIClient = nullptr;
 	String m_LastPassword;
-	bool m_bAdminCheckSignalled;
+	bool m_bAdminCheckSignalled = false;
 	int m_iIndex;
-	unsigned int m_LangId;
-	int m_UserId;
-	bool m_bFakeClient;
-	bool m_bIsSourceTV;
-	bool m_bIsReplay;
+	unsigned int m_LangId = SOURCEMOD_LANGUAGE_ENGLISH;
+	int m_UserId = -1;
+	bool m_bFakeClient = false;
+	bool m_bIsSourceTV = false;
+	bool m_bIsReplay = false;
 	serial_t m_Serial;
 	CSteamID m_SteamId;
 #if SOURCE_ENGINE == SE_CSGO
-	QueryCvarCookie_t m_LanguageCookie;
+	QueryCvarCookie_t m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
 };
 
@@ -164,16 +173,6 @@ public:
 	CPlayer *GetPlayerByIndex(int client) const;
 	void RunAuthChecks();
 public:
-#if SOURCE_ENGINE == SE_DOTA
-	bool OnClientConnect(CEntityIndex index, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
-	bool OnClientConnect_Post(CEntityIndex index, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
-	void OnClientPutInServer(CEntityIndex index, char const *playername);
-	void OnClientDisconnect(CEntityIndex index, int reason);
-	void OnClientDisconnect_Post(CEntityIndex index, int reason);
-	void OnClientCommand(CEntityIndex index, const CCommand &args);
-	void OnClientSettingsChanged(CEntityIndex index);
-	//void OnClientSettingsChanged_Pre(CEntityIndex client);
-#else
 	bool OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
 	bool OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
 	void OnClientPutInServer(edict_t *pEntity, char const *playername);
@@ -181,7 +180,7 @@ public:
 	void OnClientDisconnect_Post(edict_t *pEntity);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	void OnClientCommand(edict_t *pEntity, const CCommand &args);
-#if SOURCE_ENGINE >= SE_EYE && SOURCE_ENGINE != SE_DOTA
+#if SOURCE_ENGINE >= SE_EYE
 	void OnClientCommandKeyValues(edict_t *pEntity, KeyValues *pCommand);
 	void OnClientCommandKeyValues_Post(edict_t *pEntity, KeyValues *pCommand);
 #endif
@@ -190,7 +189,6 @@ public:
 #endif
 	void OnClientSettingsChanged(edict_t *pEntity);
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
-#endif
 	void OnServerHibernationUpdate(bool bHibernating);
 public: //IPlayerManager
 	void AddClientListener(IClientListener *listener);
@@ -236,11 +234,7 @@ public:
 	bool HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue);
 #endif
 private:
-#if SOURCE_ENGINE == SE_DOTA
-	void OnServerActivate();
-#else
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
-#endif
 	void InvalidatePlayer(CPlayer *pPlayer);
 private:
 	List<IClientListener *> m_hooks;
@@ -275,9 +269,7 @@ private:
 	bool m_bInCCKVHook;
 };
 
-#if SOURCE_ENGINE == SE_DOTA
-void CmdMaxplayersCallback(const CCommandContext &context, const CCommand &command);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdMaxplayersCallback(const CCommand &command);
 #else
 void CmdMaxplayersCallback();

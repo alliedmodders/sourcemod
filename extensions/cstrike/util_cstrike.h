@@ -31,68 +31,9 @@
 
 #ifndef _INCLUDE_CSTRIKE_UTIL_H_
 #define _INCLUDE_CSTRIKE_UTIL_H_
-
-#if SOURCE_ENGINE == SE_CSGO
-class CEconItemView;
-
-enum CSGOWeapon
-{
-	CSGOWeapon_NONE,
-	CSGOWeapon_DEAGLE,
-	CSGOWeapon_ELITE,
-	CSGOWeapon_FIVESEVEN,
-	CSGOWeapon_GLOCK,
-	CSGOWeapon_P228,
-	CSGOWeapon_USP,
-	CSGOWeapon_AK47,
-	CSGOWeapon_AUG,
-	CSGOWeapon_AWP,
-	CSGOWeapon_FAMAS,
-	CSGOWeapon_G3SG1,
-	CSGOWeapon_GALIL,
-	CSGOWeapon_GALILAR,
-	CSGOWeapon_M249,
-	CSGOWeapon_M3,
-	CSGOWeapon_M4A1,
-	CSGOWeapon_MAC10,
-	CSGOWeapon_MP5NAVY,
-	CSGOWeapon_P90,
-	CSGOWeapon_SCOUT,
-	CSGOWeapon_SG550,
-	CSGOWeapon_SG552,
-	CSGOWeapon_TMP,
-	CSGOWeapon_UMP45,
-	CSGOWeapon_XM1014,
-	CSGOWeapon_BIZON,
-	CSGOWeapon_MAG7,
-	CSGOWeapon_NEGEV,
-	CSGOWeapon_SAWEDOFF,
-	CSGOWeapon_TEC9,
-	CSGOWeapon_TASER,
-	CSGOWeapon_HKP2000,
-	CSGOWeapon_MP7,
-	CSGOWeapon_MP9,
-	CSGOWeapon_NOVA,
-	CSGOWeapon_P250,
-	CSGOWeapon_SCAR17,
-	CSGOWeapon_SCAR20,
-	CSGOWeapon_SG556,
-	CSGOWeapon_SSG08,
-	CSGOWeapon_KNIFE_GG,
-	CSGOWeapon_KNIFE,
-	CSGOWeapon_FLASHBANG,
-	CSGOWeapon_HEGRENADE,
-	CSGOWeapon_SMOKEGRENADE,
-	CSGOWeapon_MOLOTOV,
-	CSGOWeapon_DECOY,
-	CSGOWeapon_INCGRENADE,
-	CSGOWeapon_C4, //49
-	CSGOWeapon_KEVLAR = 50,
-	CSGOWeapon_ASSAULTSUIT,
-	CSGOWeapon_NVG,
-	CSGOWeapon_DEFUSER
-};
-#endif
+ //THIS IS THE INCLUDE ENUM DO NOT CHANGE ONLY UPDATE THE INCLUDE
+ //This is used to match to old weaponid's to their correct enum value
+ //Anything after heavy assault suit will pass the itemdef as they will be the id set in include
 enum SMCSWeapon
 {
 	SMCSWeapon_NONE = 0,
@@ -149,22 +90,117 @@ enum SMCSWeapon
 	SMCSWeapon_MOLOTOV,
 	SMCSWeapon_DECOY,
 	SMCSWeapon_INCGRENADE,
-	SMCSWeapon_DEFUSER
+	SMCSWeapon_DEFUSER,
+	SMCSWeapon_HEAVYASSAULTSUIT,
+	SMCSWeapon_MAXWEAPONIDS, //This only exists here... the include has more. This is for easy array construction
 };
+
+#if SOURCE_ENGINE == SE_CSGO
+//These are the ItemDefintion indexs they are used as a reference to create GetWeaponIdFromDefIdx
+/*
+enum CSGOItemDefs
+{
+	CSGOItemDef_NONE = 0,
+	CSGOItemDef_DEAGLE,
+	CSGOItemDef_ELITE,
+	CSGOItemDef_FIVESEVEN,
+	CSGOItemDef_GLOCK,
+	CSGOItemDef_P228,
+	CSGOItemDef_USP,
+	CSGOItemDef_AK47,
+	CSGOItemDef_AUG,
+	CSGOItemDef_AWP,
+	CSGOItemDef_FAMAS,
+	CSGOItemDef_G3SG1,
+	CSGOItemDef_GALIL,
+	CSGOItemDef_GALILAR,
+	CSGOItemDef_M249,
+	CSGOItemDef_M3,
+	CSGOItemDef_M4A1,
+	CSGOItemDef_MAC10,
+	CSGOItemDef_MP5NAVY,
+	CSGOItemDef_P90,
+	CSGOItemDef_SCOUT,
+	CSGOItemDef_SG550,
+	CSGOItemDef_SG552,
+	CSGOItemDef_TMP,
+	CSGOItemDef_UMP45,
+	CSGOItemDef_XM1014,
+	CSGOItemDef_BIZON,
+	CSGOItemDef_MAG7,
+	CSGOItemDef_NEGEV,
+	CSGOItemDef_SAWEDOFF,
+	CSGOItemDef_TEC9,
+	CSGOItemDef_TASER,
+	CSGOItemDef_HKP2000,
+	CSGOItemDef_MP7,
+	CSGOItemDef_MP9,
+	CSGOItemDef_NOVA,
+	CSGOItemDef_P250,
+	CSGOItemDef_SCAR17,
+	CSGOItemDef_SCAR20,
+	CSGOItemDef_SG556,
+	CSGOItemDef_SSG08,
+	CSGOItemDef_KNIFE_GG,
+	CSGOItemDef_KNIFE,
+	CSGOItemDef_FLASHBANG,
+	CSGOItemDef_HEGRENADE,
+	CSGOItemDef_SMOKEGRENADE,
+	CSGOItemDef_MOLOTOV,
+	CSGOItemDef_DECOY,
+	CSGOItemDef_INCGRENADE,
+	CSGOItemDef_C4,
+	CSGOItemDef_KEVLAR,
+	CSGOItemDef_ASSAULTSUIT,
+	CSGOItemDef_HEAVYASSAULTSUIT,
+	CSGOItemDef_UNUSED,
+	CSGOItemDef_NVG,
+	CSGOItemDef_DEFUSER,
+	CSGOItemDef_MAXDEFS,
+};
+*/
+struct ItemDefHashValue;
+class CEconItemView;
+class CCSWeaponData;
+class CEconItemSchema;
+class CEconItemDefinition
+{
+public:
+	void **m_pVtable;
+	KeyValues *m_pKv;
+	uint16_t m_iDefinitionIndex;
+	int GetDefaultLoadoutSlot()
+	{
+		static int iLoadoutSlotOffset = -1;
+
+		if (iLoadoutSlotOffset == -1)
+		{
+			if (!g_pGameConf->GetOffset("LoadoutSlotOffset", &iLoadoutSlotOffset) || iLoadoutSlotOffset == -1)
+			{
+				iLoadoutSlotOffset = -1;
+				return -1;
+			}
+		}
+
+		return *(int *)((intptr_t)this + iLoadoutSlotOffset);
+	}
+};
+
+CEconItemView *GetEconItemView(CBaseEntity *pEntity, int iSlot);
+CCSWeaponData *GetCCSWeaponData(CEconItemView *view);
+CEconItemSchema *GetItemSchema();
+CEconItemDefinition *GetItemDefintionByName(const char *classname);
+void CreateHashMaps();
+void ClearHashMaps();
+SMCSWeapon GetWeaponIdFromDefIdx(uint16_t iDefIdx);
+ItemDefHashValue *GetHashValueFromWeapon(const char *szWeapon);
+#else //CS:S ONLY STUFF
 void *GetWeaponInfo(int weaponID);
+#endif
 
+const char *GetWeaponNameFromClassname(const char *weapon);
 const char *GetTranslatedWeaponAlias(const char *weapon);
-
 int AliasToWeaponID(const char *weapon);
-
 const char *WeaponIDToAlias(int weaponID);
-
-int GetRealWeaponID(int weaponId);
-
-int GetFakeWeaponID(int weaponId);
-
 bool IsValidWeaponID(int weaponId);
-
-void *GetWeaponPriceFunction();
-
 #endif

@@ -157,6 +157,10 @@ public void OnPluginStart()
 		{
 			HookEvent("round_win", Event_RoundEnd);
 		}
+		else if (strcmp(folder, "empires") == 0)
+		{
+			HookEvent("game_end", Event_RoundEnd);
+		}
 		else
 		{
 			HookEvent("round_end", Event_RoundEnd);
@@ -298,10 +302,10 @@ public Action Command_SetNextmap(int client, int args)
 		ReplyToCommand(client, "[SM] %t", "Map was not found", map);
 		return Plugin_Handled;
 	}
-	
+
 	GetMapDisplayName(displayName, displayName, sizeof(displayName));
-	
-	ShowActivity(client, "%t", "Changed Next Map", displayName);
+
+	ShowActivity2(client, "[SM] ", "%t", "Changed Next Map", displayName);
 	LogAction(client, -1, "\"%L\" changed nextmap to \"%s\"", client, map);
 
 	SetNextMap(map);
@@ -678,7 +682,6 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	{
 		g_HasVoteStarted = false;
 		delete g_VoteMenu;
-		g_VoteMenu = null;
 		return;
 	}
 	

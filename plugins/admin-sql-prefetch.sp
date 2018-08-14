@@ -36,6 +36,8 @@
 
 #include <sourcemod>
 
+#pragma newdecls required
+
 public Plugin myinfo = 
 {
 	name = "SQL Admins (Prefetch)",
@@ -375,4 +377,3 @@ void FetchOverrides(Database db)
 	
 	delete rs;
 }
-

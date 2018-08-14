@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2016 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -336,17 +336,10 @@ static cell_t sm_GetClientIP(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
-// Must match clients.inc
-enum class AuthIdType
-{
-	Engine = 0,
-	Steam2,
-	Steam3,
-	SteamId64,
-};
-
 static cell_t SteamIdToLocal(IPluginContext *pCtx, int index, AuthIdType authType, cell_t local_addr, size_t bytes, bool validate)
 {
+	pCtx->StringToLocal(local_addr, bytes, "STEAM_ID_STOP_IGNORING_RETVALS");
+
 	if ((index < 1) || (index > playerhelpers->GetMaxClients()))
 	{
 		return pCtx->ThrowNativeError("Client index %d is invalid", index);
@@ -404,7 +397,7 @@ static cell_t SteamIdToLocal(IPluginContext *pCtx, int index, AuthIdType authTyp
 			}
 			
 			char szAuth[64];
-			snprintf(szAuth, sizeof(szAuth), "%" PRIu64, steamId);
+			ke::SafeSprintf(szAuth, sizeof(szAuth), "%" PRIu64, steamId);
 			
 			pCtx->StringToLocal(local_addr, bytes, szAuth);
 		}
@@ -1130,7 +1123,6 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 	{
 		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(i);
 		if (!pPlayer->IsInGame()
-			|| pPlayer->IsFakeClient()
 			|| (display_in_chat && i == client))
 		{
 			continue;
@@ -1257,7 +1249,6 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 	{
 		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(i);
 		if (!pPlayer->IsInGame()
-			|| pPlayer->IsFakeClient()
 			|| i == client)
 		{
 			continue;
@@ -1366,14 +1357,6 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
 		if (eh.HasException())
 			return 0;
-	}
-
-	if (pPlayer->IsFakeClient())
-	{
-		// Kick uses the kickid command for bots. It is already delayed
-		// until the next frame unless someone flushes command buffer
-		pPlayer->Kick(buffer);
-		return 1;
 	}
 
 	gamehelpers->AddDelayedKick(client, pPlayer->GetUserId(), buffer);

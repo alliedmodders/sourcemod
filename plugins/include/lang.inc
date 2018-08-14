@@ -42,9 +42,8 @@
  * If no extension is specified, .txt is assumed.
  *
  * @param file		Translation file.
- * @noreturn
  */
-native LoadTranslations(const String:file[]);
+native void LoadTranslations(const char[] file);
 
 /**
  * Sets the global language target.  This is useful for creating functions
@@ -53,9 +52,8 @@ native LoadTranslations(const String:file[]);
  * not during this function call.
  *
  * @param client	Client index or LANG_SERVER.
- * @noreturn
  */
-native SetGlobalTransTarget(client);
+native void SetGlobalTransTarget(int client);
 
 /**
  * Retrieves the language number of a client.
@@ -64,21 +62,21 @@ native SetGlobalTransTarget(client);
  * @return			Language number client is using.
  * @error			Invalid client index or client not connected.
  */
-native GetClientLanguage(client);
+native int GetClientLanguage(int client);
 
 /**
  * Retrieves the server's language.
  *
  * @return			Language number server is using.
  */
-native GetServerLanguage();
+native int GetServerLanguage();
 
 /**
  * Returns the number of languages known in languages.cfg.
  *
  * @return			Language count.
  */
-native GetLanguageCount();
+native int GetLanguageCount();
 
 /**
  * Retrieves info about a given language number.
@@ -88,20 +86,18 @@ native GetLanguageCount();
  * @param codeLen	Maximum length of the language code buffer.
  * @param name		Language name buffer.
  * @param nameLen	Maximum length of the language name buffer.
- * @noreturn
  * @error			Invalid language number.
  */
-native GetLanguageInfo(language, String:code[]="", codeLen=0, String:name[]="", nameLen=0);
+native void GetLanguageInfo(int language, char[] code="", int codeLen=0, char[] name="", int nameLen=0);
 
 /**
  * Sets the language number of a client.
  *
  * @param client	Client index.
  * @param language	Language number.
- * @noreturn
  * @error			Invalid client index or client not connected.
  */
-native SetClientLanguage(client, language);
+native void SetClientLanguage(int client, int language);
 
 /**
  * Retrieves the language number from a language code.
@@ -109,7 +105,7 @@ native SetClientLanguage(client, language);
  * @param code		Language code (2-3 characters usually).
  * @return			Language number. -1 if not found.
  */
-native GetLanguageByCode(const String:code[]);
+native int GetLanguageByCode(const char[] code);
 
 /**
  * Retrieves the language number from a language name.
@@ -117,4 +113,22 @@ native GetLanguageByCode(const String:code[]);
  * @param name		Language name (case insensitive).
  * @return			Language number. -1 if not found.
  */
-native GetLanguageByName(const String:name[]);
+native int GetLanguageByName(const char[] name);
+
+/**
+ * Determines if the specified phrase exists within the plugin's
+ * translation cache.
+ *
+ * @param phrase	Phrase to look for.
+ * @return			True if phrase exists.
+ */
+native bool TranslationPhraseExists(const char[] phrase);
+
+/**
+ * Determines if there is a translation for the specified language.
+ *
+ * @param phrase	Phrase to check.
+ * @param language	Language number.
+ * @return			True if translation exists.
+ */
+native bool IsTranslatedForLanguage(const char[] phrase, int language);

@@ -65,7 +65,11 @@ void TimeLeftEvents::FireGameEvent(IGameEvent *event)
 	}
 	else if (strcmp(name, "round_end") == 0)
 	{
+#if SOURCE_ENGINE == SE_CSGO
+		if (event->GetInt("reason") == 16)
+#else
 		if (event->GetInt("reason") == 15)
+#endif
 		{
 			get_new_timeleft_offset = true;
 		}

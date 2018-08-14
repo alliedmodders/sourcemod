@@ -290,7 +290,8 @@ void TempEntityManager::Initialize()
 	|| SOURCE_ENGINE == SE_HL2DM   \
 	|| SOURCE_ENGINE == SE_CSS     \
 	|| SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS
+	|| SOURCE_ENGINE == SE_BMS     \
+	|| SOURCE_ENGINE == SE_NUCLEARDAWN
 
 	if (g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr))
 	{
@@ -319,7 +320,12 @@ void TempEntityManager::Initialize()
 				return;
 			}
 			/* Store the head of the TE linked list */
+#ifdef PLATFORM_X86
 			m_ListHead = **(void ***) ((unsigned char *) addr + offset);
+#else
+			int32_t varOffset = *(int32_t *) ((unsigned char *) addr + offset);
+			m_ListHead = **(void ***) ((unsigned char *) addr + offset + sizeof(int32_t) + varOffset);
+#endif
 		}
 		else
 		{

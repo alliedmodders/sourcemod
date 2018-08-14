@@ -45,37 +45,12 @@
 #include "ConCmdManager.h"
 #include "IDBDriver.h"
 #include "provider.h"
-#if SOURCE_ENGINE == SE_DOTA
-# include "convar_sm_dota.h"
-#elif SOURCE_ENGINE >= SE_ALIENSWARM
-# include "convar_sm_swarm.h"
-#elif SOURCE_ENGINE >= SE_LEFT4DEAD
-# include "convar_sm_l4d.h"
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
-# include "convar_sm_ob.h"
-#else
-# include "convar_sm.h"
-#endif
+#include "sm_convar.h"
 #include <amtl/os/am-shared-library.h>
 #include <amtl/os/am-path.h>
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/IPlayerInfoBridge.h>
 #include <bridge/include/IFileSystemBridge.h>
-
-#if defined _WIN32
-# define MATCHMAKINGDS_SUFFIX	""
-# define MATCHMAKINGDS_EXT	"dll"
-#elif defined __APPLE__
-# define MATCHMAKINGDS_SUFFIX	""
-# define MATCHMAKINGDS_EXT	"dylib"
-#elif defined __linux__
-#if SOURCE_ENGINE < SE_LEFT4DEAD2
-# define MATCHMAKINGDS_SUFFIX	"_i486"
-#else
-# define MATCHMAKINGDS_SUFFIX	""
-#endif
-# define MATCHMAKINGDS_EXT	"so"
-#endif
 
 sm_logic_t logicore;
 
@@ -116,19 +91,11 @@ public:
 	}
 	virtual void ClientCommand(edict_t *pEdict, const char *szCommand)
 	{
-#if SOURCE_ENGINE == SE_DOTA
-		engine->ClientCommand(IndexOfEdict(pEdict), "%s", szCommand);
-#else
 		engine->ClientCommand(pEdict, "%s", szCommand);
-#endif
 	}
 	virtual void FakeClientCommand(edict_t *pEdict, const char *szCommand)
 	{
-#if SOURCE_ENGINE == SE_DOTA
-		engine->ClientCommand(IndexOfEdict(pEdict), "%s", szCommand);
-#else
 		serverpluginhelpers->ClientCommand(pEdict, szCommand);
-#endif
 	}
 } engine_wrapper;
 
@@ -364,7 +331,6 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 	va_end(ap);
 }
 
-#if defined METAMOD_PLAPI_VERSION
 #if SOURCE_ENGINE == SE_LEFT4DEAD
 #define GAMEFIX "2.l4d"
 #elif SOURCE_ENGINE == SE_LEFT4DEAD2
@@ -399,18 +365,15 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 #define GAMEFIX "2.blade"
 #elif SOURCE_ENGINE == SE_INSURGENCY
 #define GAMEFIX "2.insurgency"
+#elif SOURCE_ENGINE == SE_DOI
+#define GAMEFIX "2.doi"
 #elif SOURCE_ENGINE == SE_CSGO
 #define GAMEFIX "2.csgo"
-#elif SOURCE_ENGINE == SE_DOTA
-#define GAMEFIX "2.dota"
 #elif SOURCE_ENGINE == SE_CONTAGION
 #define GAMEFIX "2.contagion"
 #else
 #define GAMEFIX "2.ep1"
-#endif //(SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-#else  //METAMOD_PLAPI_VERSION
-#define GAMEFIX "1.ep1"
-#endif //METAMOD_PLAPI_VERSION
+#endif
 
 static ServerGlobals serverGlobals;
 
@@ -526,10 +489,10 @@ const char *CoreProviderImpl::GetSourceEngineName()
 	return "blade";
 #elif SOURCE_ENGINE == SE_INSURGENCY
 	return "insurgency";
+#elif SOURCE_ENGINE == SE_DOI
+	return "doi";
 #elif SOURCE_ENGINE == SE_CSGO
 	return "csgo";
-#elif SOURCE_ENGINE == SE_DOTA
-	return "dota";
 #endif
 }
 
@@ -545,9 +508,9 @@ bool CoreProviderImpl::SymbolsAreHidden()
 	|| (SOURCE_ENGINE == SE_NUCLEARDAWN) \
 	|| (SOURCE_ENGINE == SE_LEFT4DEAD2)  \
 	|| (SOURCE_ENGINE == SE_INSURGENCY)  \
+	|| (SOURCE_ENGINE == SE_DOI)  \
 	|| (SOURCE_ENGINE == SE_BLADE)       \
-	|| (SOURCE_ENGINE == SE_CSGO)        \
-	|| (SOURCE_ENGINE == SE_DOTA)
+	|| (SOURCE_ENGINE == SE_CSGO)
 	return true;
 #else
 	return false;
@@ -605,7 +568,7 @@ bool CoreProviderImpl::DescribePlayer(int index, const char **namep, const char 
 		*authp = (auth && *auth) ? auth : "STEAM_ID_PENDING";
 	}
 	if (useridp)
-		*useridp = GetPlayerUserId(player->GetEdict());
+		*useridp = ::engine->GetPlayerUserId(player->GetEdict());
 	return true;
 }
 
@@ -616,18 +579,7 @@ int CoreProviderImpl::LoadMMSPlugin(const char *file, bool *ok, char *error, siz
 
 	Pl_Status status;
 
-#ifndef METAMOD_PLAPI_VERSION
-	const char *filep;
-	PluginId source;
-#endif
-
-	if (!id || (
-#ifndef METAMOD_PLAPI_VERSION
-		g_pMMPlugins->Query(id, filep, status, source)
-#else
-		g_pMMPlugins->Query(id, NULL, &status, NULL)
-#endif
-		&& status < Pl_Paused))
+	if (!id || (g_pMMPlugins->Query(id, NULL, &status, NULL) && status < Pl_Paused))
 	{
 		*ok = false;
 	}
@@ -655,15 +607,9 @@ int CoreProviderImpl::QueryClientConVar(int client, const char *cvar)
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 	switch (hooks_.GetClientCvarQueryMode()) {
 	case ClientCvarQueryMode::DLL:
-# if SOURCE_ENGINE == SE_DOTA
-		return ::engine->StartQueryCvarValue(CEntityIndex(client), cvar);
-# else
 		return ::engine->StartQueryCvarValue(PEntityOfEntIndex(client), cvar);
-# endif
 	case ClientCvarQueryMode::VSP:
-# if SOURCE_ENGINE != SE_DOTA
 		return serverpluginhelpers->StartQueryCvarValue(PEntityOfEntIndex(client), cvar);
-# endif
 	default:
 		return InvalidQueryCvarCookie;
 	}
@@ -684,12 +630,10 @@ void CoreProviderImpl::InitializeBridge()
 	char path[PLATFORM_MAX_PATH];
 
 	ke::path::Format(path, sizeof(path),
-	                 "%s/bin/matchmaking_ds%s.%s",
-                     g_SMAPI->GetBaseDir(),
-                     MATCHMAKINGDS_SUFFIX,
-                     MATCHMAKINGDS_EXT);
+	                 "%s/bin/" PLATFORM_FOLDER "matchmaking_ds" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT,
+                     g_SMAPI->GetBaseDir());
 
-	if (ke::Ref<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0)) {
+	if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0)) {
 		this->matchmakingDSFactory =
 		  mmlib->get<decltype(sCoreProviderImpl.matchmakingDSFactory)>("CreateInterface");
 	}
@@ -722,7 +666,7 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 	/* Now it's time to load the logic binary */
 	g_SMAPI->PathFormat(file,
 		sizeof(file),
-		"%s/bin/sourcemod.logic." PLATFORM_LIB_EXT,
+		"%s/bin/" PLATFORM_ARCH_FOLDER "sourcemod.logic." PLATFORM_LIB_EXT,
 		g_SourceMod.GetSourceModPath());
 
 	char myerror[255];
@@ -735,7 +679,7 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 	LogicLoadFunction llf = logic_->get<decltype(llf)>("logic_load");
 	if (!llf) {
 		logic_ = nullptr;
-		ke::SafeSprintf(error, maxlength, "could not find logic_load function");
+		ke::SafeStrcpy(error, maxlength, "could not find logic_load function");
 		return false;
 	}
 
@@ -744,19 +688,19 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 
 	logic_init_ = llf(SM_LOGIC_MAGIC);
 	if (!logic_init_) {
-		ke::SafeSprintf(error, maxlength, "component version mismatch");
+		ke::SafeStrcpy(error, maxlength, "component version mismatch");
 		return false;
 	}
 	return true;
 }
 
-ke::PassRef<CommandHook>
+ke::RefPtr<CommandHook>
 CoreProviderImpl::AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback)
 {
 	return hooks_.AddCommandHook(cmd, callback);
 }
 
-ke::PassRef<CommandHook>
+ke::RefPtr<CommandHook>
 CoreProviderImpl::AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback)
 {
 	return hooks_.AddPostCommandHook(cmd, callback);
@@ -789,9 +733,9 @@ CoreProviderImpl::DefineCommand(const char *name, const char *help, const Comman
 	};
 
 	ConCommand *cmd = new ConCommand(new_name, ignore_callback, new_help, flags);
-	ke::Ref<CommandHook> hook = AddCommandHook(cmd, callback);
+	ke::RefPtr<CommandHook> hook = AddCommandHook(cmd, callback);
 
-	ke::Ref<CommandImpl> impl = new CommandImpl(cmd, hook);
+	ke::RefPtr<CommandImpl> impl = new CommandImpl(cmd, hook);
 	commands_.append(impl);
 }
 

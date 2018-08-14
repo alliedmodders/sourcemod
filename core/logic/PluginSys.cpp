@@ -75,7 +75,7 @@ CPlugin::CPlugin(const char *file)
 	m_serial = ++MySerial;
 	m_errormsg[0] = '\0';
 	m_DateTime[0] = '\0';
-	ke::SafeSprintf(m_filename, sizeof(m_filename), "%s", file);
+	ke::SafeStrcpy(m_filename, sizeof(m_filename), file);
 
 	memset(&m_info, 0, sizeof(m_info));
 
@@ -251,7 +251,7 @@ void CPlugin::EvictWithError(PluginStatus status, const char *error_fmt, ...)
 	ke::SafeVsprintf(m_errormsg, sizeof(m_errormsg), error_fmt, ap);
 	va_end(ap);
 
-	if (m_pRuntime != NULL)
+	if (m_pRuntime)
 	{
 		m_pRuntime->SetPauseState(true);
 	}
@@ -499,7 +499,7 @@ bool CPlugin::TryCompile()
 
 IPluginContext *CPlugin::GetBaseContext()
 {
-	if (m_pRuntime == NULL)
+	if (!m_pRuntime)
 	{
 		return NULL;
 	}
@@ -558,7 +558,7 @@ bool CPlugin::IsSilentlyFailed()
 
 bool CPlugin::IsDebugging()
 {
-	if (m_pRuntime == NULL)
+	if (!m_pRuntime)
 	{
 		return false;
 	}
@@ -676,7 +676,7 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 	unsigned int unbound = 0;
 	for (size_t i = 0; i < pOwner->m_fakes.length(); i++)
 	{
-		ke::Ref<Native> entry(pOwner->m_fakes[i]);
+		ke::RefPtr<Native> entry(pOwner->m_fakes[i]);
 
 		uint32_t idx;
 		if (m_pRuntime->FindNativeByName(entry->name(), &idx) != SP_ERROR_NONE)
@@ -769,7 +769,7 @@ void CPlugin::DropEverything()
 
 bool CPlugin::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
 {
-	ke::Ref<Native> entry = g_ShareSys.AddFakeNative(pFunc, name, func);
+	ke::RefPtr<Native> entry = g_ShareSys.AddFakeNative(pFunc, name, func);
 	if (!entry)
 		return false;
 
@@ -905,7 +905,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 			if (localpath == NULL)
 			{
 				/* If no path yet, don't add a former slash */
-				ke::SafeSprintf(new_local, sizeof(new_local), "%s", dir->GetEntryName());
+				ke::SafeStrcpy(new_local, sizeof(new_local), dir->GetEntryName());
 			} else {
 				libsys->PathFormat(new_local, sizeof(new_local), "%s/%s", localpath, dir->GetEntryName());
 			}
@@ -920,7 +920,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 				char plugin[PLATFORM_MAX_PATH];
 				if (localpath == NULL)
 				{
-					ke::SafeSprintf(plugin, sizeof(plugin), "%s", name);
+					ke::SafeStrcpy(plugin, sizeof(plugin), name);
 				} else {
 					libsys->PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
 				}
@@ -994,9 +994,9 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 
 	if (res == LoadRes_NeverLoad) {
 		if (m_LoadingLocked)
-			ke::SafeSprintf(error, maxlength, "There is a global plugin loading lock in effect");
+			ke::SafeStrcpy(error, maxlength, "There is a global plugin loading lock in effect");
 		else
-			ke::SafeSprintf(error, maxlength, "This plugin is blocked from loading (see plugin_settings.cfg)");
+			ke::SafeStrcpy(error, maxlength, "This plugin is blocked from loading (see plugin_settings.cfg)");
 		return NULL;
 	}
 
@@ -1108,7 +1108,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin)
 				/* Check that we aren't registering the same library twice */
 				pPlugin->AddRequiredLib(name);
 
-				CPlugin *found;
+				CPlugin *found = nullptr;
 				for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 					CPlugin *pl = (*iter);
 					if (pl->HasLibrary(name)) {
@@ -1192,10 +1192,11 @@ void CPlugin::SetRegistered()
 	m_state = PluginState::Registered;
 }
 
-void CPlugin::SetWaitingToUnload()
+void CPlugin::SetWaitingToUnload(bool andReload)
 {
-	assert(m_state == PluginState::Registered);
-	m_state = PluginState::WaitingToUnload;
+	assert(m_state == PluginState::Registered ||
+			(m_state == PluginState::WaitingToUnload && andReload));
+	m_state = andReload ? PluginState::WaitingToUnloadAndReload : PluginState::WaitingToUnload;
 }
 
 void CPluginManager::LoadExtensions(CPlugin *pPlugin)
@@ -1276,7 +1277,7 @@ bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 	unsigned char *pCodeHash = pPlugin->GetRuntime()->GetCodeHash();
 
 	char codeHashBuf[40];
-	ke::SafeSprintf(codeHashBuf, 40, "plugin_");
+	ke::SafeStrcpy(codeHashBuf, sizeof(codeHashBuf), "plugin_");
 	for (int i = 0; i < 16; i++)
 		ke::SafeSprintf(codeHashBuf + 7 + (i * 2), 3, "%02x", pCodeHash[i]);
 
@@ -1435,17 +1436,16 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 {
 	CPlugin *pPlugin = (CPlugin *)plugin;
-	return ScheduleUnload(pPlugin);
-}
 
-bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
-{
 	// Should not be recursively removing.
 	assert(m_plugins.contains(pPlugin));
 
 	// If we're already in the unload queue, just wait.
-	if (pPlugin->State() == PluginState::WaitingToUnload)
+	if (pPlugin->State() == PluginState::WaitingToUnload ||
+		pPlugin->State() == PluginState::WaitingToUnloadAndReload)
+	{
 		return false;
+	}
 
 	// It is not safe to unload any plugin while another is on the callstack.
 	bool any_active = false;
@@ -1460,8 +1460,8 @@ bool CPluginManager::ScheduleUnload(CPlugin *pPlugin)
 
 	if (any_active) {
 		pPlugin->SetWaitingToUnload();
-		ScheduleTaskForNextFrame([this, pPlugin] () -> void {
-			ScheduleUnload(pPlugin);
+		ScheduleTaskForNextFrame([this, pPlugin]() -> void {
+			UnloadPluginImpl(pPlugin);
 		});
 		return false;
 	}
@@ -1607,7 +1607,7 @@ ConfigResult CPluginManager::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "no") == 0) {
 			m_bBlockBadPlugins = false;
 		} else {
-			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
 			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
@@ -1733,7 +1733,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				if (pl->GetStatus() < Plugin_Created || pl->GetStatus() == Plugin_Evicted)
 				{
 					if (pl->IsSilentlyFailed())
-						len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " Disabled:");
+						len += ke::SafeStrcpy(&buffer[len], sizeof(buffer)-len, " Disabled:");
 					len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 					if (IS_STR_FILLED(info->version))
 					{
@@ -1842,11 +1842,11 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			if (pl->GetStatus() < Plugin_Created)
 			{
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
-				ke::SafeSprintf(name, sizeof(name), (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+				ke::SafeStrcpy(name, sizeof(name), (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 			}
 			else
 			{
-				ke::SafeSprintf(name, sizeof(name), "%s", pl->GetFilename());
+				ke::SafeStrcpy(name, sizeof(name), pl->GetFilename());
 			}
 
 			if (UnloadPlugin(pl))
@@ -1855,7 +1855,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			}
 			else
 			{
-				rootmenu->ConsolePrint("[SM] Failed to unload plugin %s.", name);
+				rootmenu->ConsolePrint("[SM] Plugin %s will be unloaded on the next frame.", name);
 			}
 
 			return;
@@ -2019,13 +2019,22 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			else
 				strcpy(name, pl->GetFilename());
 
-			if (ReloadPlugin(pl))
+			if (ReloadPlugin(pl, true))
 			{
 				rootmenu->ConsolePrint("[SM] Plugin %s reloaded successfully.", name);
 			}
 			else
 			{
-				rootmenu->ConsolePrint("[SM] Failed to reload plugin %s.", name);
+				switch (pl->State())
+				{
+					//the unload/reload attempt next frame will print a message
+					case PluginState::WaitingToUnload:
+					case PluginState::WaitingToUnloadAndReload:
+						return;
+
+					default:
+						rootmenu->ConsolePrint("[SM] Failed to reload plugin %s.", name);
+				}
 			}
 
 			return;
@@ -2045,15 +2054,14 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 	rootmenu->DrawGenericOption("unload_all", "Unloads all plugins");
 }
 
-bool CPluginManager::ReloadPlugin(CPlugin *pl)
+bool CPluginManager::ReloadPlugin(CPlugin *pl, bool print)
 {
-	char filename[PLATFORM_MAX_PATH];
-	bool wasloaded;
-	PluginType ptype;
-	IPlugin *newpl;
+	PluginState state = pl->State();
+	if (state == PluginState::WaitingToUnloadAndReload)
+		return false;
 
-	strcpy(filename, pl->GetFilename());
-	ptype = pl->GetType();
+	ke::AString filename(pl->GetFilename());
+	PluginType ptype = pl->GetType();
 
 	int id = 1;
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next(), id++) {
@@ -2063,12 +2071,33 @@ bool CPluginManager::ReloadPlugin(CPlugin *pl)
 
 	if (!UnloadPlugin(pl))
 	{
+		if (pl->State() == PluginState::WaitingToUnload)
+		{
+			pl->SetWaitingToUnload(true);
+			ScheduleTaskForNextFrame([this, id, filename, ptype, print]() -> void {
+				ReloadPluginImpl(id, filename.chars(), ptype, print);
+			});
+		}
 		return false;
 	}
-	if (!(newpl=LoadPlugin(filename, true, ptype, NULL, 0, &wasloaded)))
+
+	ReloadPluginImpl(id, filename.chars(), ptype, false);
+	return true;
+}
+
+void CPluginManager::ReloadPluginImpl(int id, const char filename[], PluginType ptype, bool print)
+{
+	char error[128];
+	bool wasloaded;
+	IPlugin *newpl = LoadPlugin(filename, true, ptype, error, sizeof(error), &wasloaded);
+	if (!newpl) 
 	{
-		return false;
+		rootmenu->ConsolePrint("[SM] Plugin %s failed to reload: %s.", filename, error);
+		return;
 	}
+
+	if (print)
+		rootmenu->ConsolePrint("[SM] Plugin %s reloaded successfully.", filename);
 
 	m_plugins.remove(static_cast<CPlugin *>(newpl));
 
@@ -2077,8 +2106,6 @@ bool CPluginManager::ReloadPlugin(CPlugin *pl)
 		// Empty loop.
 	}
 	m_plugins.insertBefore(iter, static_cast<CPlugin *>(newpl));
-
-	return true;
 }
 
 void CPluginManager::RefreshAll()
@@ -2319,7 +2346,7 @@ public:
 
 	void AddPluginsListener_V1(IPluginsListener_V1 *listener) override
 	{
-		ke::Ref<PluginsListenerV1Wrapper> wrapper = new PluginsListenerV1Wrapper(listener);
+		ke::RefPtr<PluginsListenerV1Wrapper> wrapper = new PluginsListenerV1Wrapper(listener);
 
 		v1_wrappers_.append(wrapper);
 		g_PluginSys.AddPluginsListener(wrapper);
@@ -2327,7 +2354,7 @@ public:
 
 	void RemovePluginsListener_V1(IPluginsListener_V1 *listener) override
 	{
-		ke::Ref<PluginsListenerV1Wrapper> wrapper;
+		ke::RefPtr<PluginsListenerV1Wrapper> wrapper;
 
 		// Find which wrapper has this listener.
 		for (decltype(v1_wrappers_)::iterator iter(v1_wrappers_); !iter.done(); iter.next()) {
@@ -2356,7 +2383,7 @@ public:
 	}
 
 private:
-	ReentrantList<ke::Ref<PluginsListenerV1Wrapper>> v1_wrappers_;
+	ReentrantList<ke::RefPtr<PluginsListenerV1Wrapper>> v1_wrappers_;
 };
 
 static OldPluginAPI sOldPluginAPI;

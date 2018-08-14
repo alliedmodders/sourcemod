@@ -42,6 +42,8 @@
 using namespace SourceHook;
 using namespace SourceMod;
 
+#define TOPMENU_DISPLAY_BUFFER_SIZE 128
+
 struct config_category_t
 {
 	int name;
@@ -74,6 +76,10 @@ struct topmenu_object_t
 	static inline bool matches(const char *name, const topmenu_object_t *topmenu)
 	{
 		return strcmp(name, topmenu->name) == 0;
+	}
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
 	}
 };
 

@@ -49,6 +49,7 @@ public:
 	unsigned int GetFileCount();
 	IPhraseFile *GetFile(unsigned int file);
 	void Destroy();
+	bool TranslationPhraseExists(const char *key);
 	TransError FindTranslation(const char *key, unsigned int langid, Translation *pTrans);
 	bool FormatString(
 		char *buffer,

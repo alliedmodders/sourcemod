@@ -75,7 +75,7 @@ ArrayList g_DataArray;
 void BuildDynamicMenu()
 {
 	int itemInput[Item];
-	g_DataArray = CreateArray(sizeof(itemInput));
+	g_DataArray = new ArrayList(sizeof(itemInput));
 	
 	char executeBuffer[32];
 	
@@ -175,7 +175,7 @@ void BuildDynamicMenu()
 	  			
 	  			if (count == 1)
 	  			{
-		  			itemInput[Item_submenus] = CreateArray(sizeof(submenuInput));	
+		  			itemInput[Item_submenus] = new ArrayList(sizeof(submenuInput));	
 	  			}
 	  			
 	  			kvMenu.GetString("type", inputBuffer, sizeof(inputBuffer));
@@ -197,7 +197,7 @@ void BuildDynamicMenu()
 					
 					kvMenu.GetString("path", inputBuffer, sizeof(inputBuffer),"mapcycle.txt");
 					
-					submenuInput[Submenu_listdata] = CreateDataPack();
+					submenuInput[Submenu_listdata] = new DataPack();
 					submenuInput[Submenu_listdata].WriteString(inputBuffer);
 					submenuInput[Submenu_listdata].Reset();
 				}
@@ -213,7 +213,7 @@ void BuildDynamicMenu()
 				{
 					submenuInput[Submenu_type] = SubMenu_List;
 					
-					submenuInput[Submenu_listdata] = CreateDataPack();
+					submenuInput[Submenu_listdata] = new DataPack();
 					
 					char temp[6];
 					char value[64];
@@ -334,8 +334,8 @@ void ParseConfigs()
 	delete g_groupList[groupListName];
 	delete g_groupList[groupListCommand];
 	
-	g_groupList[groupListName] = CreateArray(ARRAY_STRING_LENGTH);
-	g_groupList[groupListCommand] = CreateArray(ARRAY_STRING_LENGTH);
+	g_groupList[groupListName] = new ArrayList(ARRAY_STRING_LENGTH);
+	g_groupList[groupListCommand] = new ArrayList(ARRAY_STRING_LENGTH);
 	
 	char configPath[256];
 	BuildPath(Path_SM, configPath, sizeof(configPath), "configs/dynamicmenu/adminmenu_grouping.txt");
@@ -450,7 +450,7 @@ public void ParamCheck(int client)
 	{
 		outputItem[Item_submenus].GetArray(g_currentPlace[client][Place_ReplaceNum] - 1, outputSubmenu[0]);
 		
-		Menu itemMenu = CreateMenu(Menu_Selection);
+		Menu itemMenu = new Menu(Menu_Selection);
 		itemMenu.ExitBackButton = true;
 			
 		if ((outputSubmenu[Submenu_type] == SubMenu_Group) || (outputSubmenu[Submenu_type] == SubMenu_GroupPlayer))
@@ -644,7 +644,6 @@ public int Menu_Selection(Menu menu, MenuAction action, int param1, int param2)
 
 	return 0;
 }
-
 
 stock bool QuoteString(char[] input, char[] output, int maxlen, char[] quotechars)
 {

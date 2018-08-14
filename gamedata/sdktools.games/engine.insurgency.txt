@@ -153,7 +153,7 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\x53\x8B\xC1\xC7\x45\x2A\x2A\x2A\x2A\x00\x56\x57\x89"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x20\x01\x00\x00\x53\x8B\xC1"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
@@ -173,9 +173,9 @@
 			 */
 			"SetUserCvar"
 			{
-				"windows"	"21"
-				"linux"		"68"
-				"mac"		"68"
+				"windows"	"22"
+				"linux"		"69"
+				"mac"		"69"
 			}
 			/**
 			 * CBaseClient::SetName(char  const*);
@@ -184,9 +184,9 @@
 			 */
 			"SetClientName"
 			{
-				"windows"	"20"
-				"linux"		"67"
-				"mac"		"67"
+				"windows"	"21"
+				"linux"		"68"
+				"mac"		"68"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
@@ -211,9 +211,9 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"440"
-				"linux"		"441"
-				"mac"		"441"
+				"windows"	"441"
+				"linux"		"442"
+				"mac"		"442"
 			}
 			"RemovePlayerItem"
 			{
@@ -229,51 +229,51 @@
 			}
 			"Ignite"
 			{
-				"windows"	"224"
-				"linux"		"225"
-				"mac"		"225"
+				"windows"	"223"
+				"linux"		"224"
+				"mac"		"224"
 			}
 			"Extinguish"
 			{
-				"windows"	"227"
-				"linux"		"228"
-				"mac"		"228"
+				"windows"	"226"
+				"linux"		"227"
+				"mac"		"227"
 			}
 			"Teleport"
 			{
-				"windows"	"116"
-				"linux"		"117"
-				"mac"		"117"
+				"windows"	"115"
+				"linux"		"116"
+				"mac"		"116"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"489"
-				"linux"		"489"
-				"mac"		"489"
+				"windows"	"490"
+				"linux"		"490"
+				"mac"		"490"
 			}
 			"GetVelocity"
 			{
-				"windows"	"141"
-				"linux"		"142"
-				"mac"		"142"
+				"windows"	"140"
+				"linux"		"141"
+				"mac"		"141"
 			}
 			"EyeAngles"
 			{
-				"windows"	"132"
-				"linux"		"133"
-				"mac"		"133"
+				"windows"	"131"
+				"linux"		"132"
+				"mac"		"132"
 			}
 			"AcceptInput"
 			{
-				"windows"	"41"
-				"linux"		"42"
-				"mac"		"42"
+				"windows"	"40"
+				"linux"		"41"
+				"mac"		"41"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"26"
-				"linux"		"27"
-				"mac"		"27"
+				"windows"	"24"
+				"linux"		"25"
+				"mac"		"25"
 			}
 			"WeaponEquip"
 			{
@@ -283,15 +283,15 @@
 			}
 			"Activate"
 			{
-				"windows"	"37"
-				"linux"		"38"
-				"mac"		"38"
+				"windows"	"35"
+				"linux"		"36"
+				"mac"		"36"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"459"
-				"linux"		"460"
-				"mac"		"460"
+				"windows"	"460"
+				"linux"		"461"
+				"mac"		"461"
 			}
 		}
 	}

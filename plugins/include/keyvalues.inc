@@ -68,6 +68,18 @@ methodmap KeyValues < Handle
 	// @return              True on success, false otherwise.
 	public native bool ExportToFile(const char[] file);
 
+	// Exports a KeyValues tree to a string. The string is dumped from the current position.
+	//
+	// @param buffer        Buffer to write to.
+	// @param maxlength		Max length of buffer.
+	// @return              Number of bytes that can be written to buffer.
+	public native int ExportToString(char[] buffer, int maxlength);
+
+	// Amount of bytes written by ExportToFile & ExportToString.
+	property int ExportLength {
+		public native get();
+	}
+
 	// Imports a file in KeyValues format. The file is read into the current
 	// position of the tree.
 	//
@@ -107,7 +119,7 @@ methodmap KeyValues < Handle
 	//
 	// @param key           Name of the key, or NULL_STRING.
 	// @param value         Large integer value (0=High bits, 1=Low bits)
-	public native void SetUInt64(const char[] key, const value[2]);
+	public native void SetUInt64(const char[] key, const int value[2]);
 
 	// Sets a floating point value of a KeyValues key.
 	//
@@ -167,7 +179,7 @@ methodmap KeyValues < Handle
 	// @param g             Green value, set by reference. 
 	// @param b             Blue value, set by reference. 
 	// @param a             Alpha value, set by reference. 
-	public native void GetColor(const char[] key, &r, &g, &b, &a);
+	public native void GetColor(const char[] key, int &r, int &g, int &b, int &a);
 
 	// Retrieves a set of color values from a KeyValues key.
 	//
@@ -359,7 +371,7 @@ native void KvSetNum(Handle kv, const char[] key, int value);
  * @param value			Large integer value (0=High bits, 1=Low bits)
  * @error				Invalid Handle.
  */
-native void KvSetUInt64(Handle kv, const char[] key, const value[2]);
+native void KvSetUInt64(Handle kv, const char[] key, const int value[2]);
 
 /** 
  * Sets a floating point value of a KeyValues key.

@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2016 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -43,35 +43,15 @@
 #include <tier0/mem.h>
 #include <bridge/include/ILogger.h>
 
-#if SOURCE_ENGINE == SE_DOTA
-#include <game/shared/protobuf/usermessages.pb.h>
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 #include <cstrike15_usermessages.pb.h>
 #endif
 
 
 typedef ICommandLine *(*FakeGetCommandLine)();
 
-#if defined _WIN32
-#define TIER0_NAME			"tier0.dll"
-#define VSTDLIB_NAME		"vstdlib.dll"
-#elif defined __APPLE__
-#define TIER0_NAME			"libtier0.dylib"
-#define VSTDLIB_NAME		"libvstdlib.dylib"
-#elif defined __linux__
-#if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_LEFT4DEAD2 || SOURCE_ENGINE == SE_NUCLEARDAWN \
-	|| SOURCE_ENGINE == SE_BMS
-#define TIER0_NAME			"libtier0_srv.so"
-#define VSTDLIB_NAME		"libvstdlib_srv.so"
-#elif SOURCE_ENGINE >= SE_LEFT4DEAD
-#define TIER0_NAME			"libtier0.so"
-#define VSTDLIB_NAME		"libvstdlib.so"
-#else
-#define TIER0_NAME			"tier0_i486.so"
-#define VSTDLIB_NAME		"vstdlib_i486.so"
-#endif
-#endif
+#define TIER0_NAME			SOURCE_BIN_PREFIX "tier0" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT
+#define VSTDLIB_NAME		SOURCE_BIN_PREFIX "vstdlib" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT
 
 CHalfLife2 g_HL2;
 ConVar *sv_lan = NULL;
@@ -137,6 +117,59 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 {
 	InitLogicalEntData();
 	InitCommandLine();
+#if SOURCE_ENGINE == SE_CSGO
+	m_CSGOBadList.init();
+	m_CSGOBadList.add("m_iItemDefinitionIndex");
+	m_CSGOBadList.add("m_iEntityLevel");
+	m_CSGOBadList.add("m_iItemIDHigh");
+	m_CSGOBadList.add("m_iItemIDLow");
+	m_CSGOBadList.add("m_iAccountID");
+	m_CSGOBadList.add("m_iEntityQuality");
+	m_CSGOBadList.add("m_bInitialized");
+	m_CSGOBadList.add("m_szCustomName");
+	m_CSGOBadList.add("m_iAttributeDefinitionIndex");
+	m_CSGOBadList.add("m_iRawValue32");
+	m_CSGOBadList.add("m_iRawInitialValue32");
+	m_CSGOBadList.add("m_nRefundableCurrency");
+	m_CSGOBadList.add("m_bSetBonus");
+	m_CSGOBadList.add("m_OriginalOwnerXuidLow");
+	m_CSGOBadList.add("m_OriginalOwnerXuidHigh");
+	m_CSGOBadList.add("m_nFallbackPaintKit");
+	m_CSGOBadList.add("m_nFallbackSeed");
+	m_CSGOBadList.add("m_flFallbackWear");
+	m_CSGOBadList.add("m_nFallbackStatTrak");
+	m_CSGOBadList.add("m_iCompetitiveRanking");
+	m_CSGOBadList.add("m_iCompetitiveRankType");
+	m_CSGOBadList.add("m_nActiveCoinRank");
+	m_CSGOBadList.add("m_nMusicID");
+#endif
+}
+
+ConfigResult CHalfLife2::OnSourceModConfigChanged(const char *key, const char *value,
+	ConfigSource source, char *error, size_t maxlength)
+{
+	if (strcasecmp(key, "FollowCSGOServerGuidelines") == 0)
+	{
+#if SOURCE_ENGINE == SE_CSGO
+		if (strcasecmp(value, "no") == 0)
+		{
+			m_bFollowCSGOServerGuidelines = false;
+			return ConfigResult_Accept;
+		}
+		else if (strcasecmp(value, "yes") == 0)
+		{
+			m_bFollowCSGOServerGuidelines = true;
+			return ConfigResult_Accept;
+		}
+		else
+		{
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
+			return ConfigResult_Reject;
+		}
+#endif
+	}
+
+	return ConfigResult_Ignore;
 }
 
 void CHalfLife2::InitLogicalEntData()
@@ -146,7 +179,8 @@ void CHalfLife2::InitLogicalEntData()
 	|| SOURCE_ENGINE == SE_HL2DM   \
 	|| SOURCE_ENGINE == SE_CSS     \
 	|| SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS
+	|| SOURCE_ENGINE == SE_BMS     \
+	|| SOURCE_ENGINE == SE_NUCLEARDAWN
 
 	if (g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr))
 	{
@@ -194,7 +228,12 @@ void CHalfLife2::InitLogicalEntData()
 				return;
 			}
 
+#ifdef PLATFORM_X86
 			g_EntList = *reinterpret_cast<void **>(addr + offset);
+#elif defined PLATFORM_X64
+			int32_t varOffset = *reinterpret_cast<int32_t *>(addr + offset);
+			g_EntList = reinterpret_cast<void *>(addr + offset + sizeof(int32_t) + varOffset);
+#endif
 
 		}
 	}
@@ -226,7 +265,7 @@ void CHalfLife2::InitCommandLine()
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 	if (g_SMAPI->GetSourceEngineBuild() != SOURCE_ENGINE_ORIGINAL)
 	{
-		ke::Ref<ke::SharedLib> lib = ke::SharedLib::Open(TIER0_NAME, error, sizeof(error));
+		ke::RefPtr<ke::SharedLib> lib = ke::SharedLib::Open(TIER0_NAME, error, sizeof(error));
 		if (!lib) {
 			logger->LogError("Could not load %s: %s", TIER0_NAME, error);
 			return;
@@ -243,7 +282,7 @@ void CHalfLife2::InitCommandLine()
 	else
 #endif
 	{
-		ke::Ref<ke::SharedLib> lib = ke::SharedLib::Open(VSTDLIB_NAME, error, sizeof(error));
+		ke::RefPtr<ke::SharedLib> lib = ke::SharedLib::Open(VSTDLIB_NAME, error, sizeof(error));
 		if (!lib) {
 			logger->LogError("Could not load %s: %s", VSTDLIB_NAME, error);
 			return;
@@ -269,11 +308,7 @@ ICommandLine *CHalfLife2::GetValveCommandLine()
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
 {
-#if SOURCE_ENGINE == SE_DOTA
-	return engine->GetChangeAccessor( IndexOfEdict((const edict_t *)this) );
-#else
 	return engine->GetChangeAccessor( (const edict_t *)this );
-#endif
 }
 #endif
 
@@ -481,17 +516,7 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 			char buffer[253];
 			ke::SafeSprintf(buffer, sizeof(buffer), "%s\1\n", msg);
 
-#if SOURCE_ENGINE == SE_DOTA
-			CUserMsg_SayText *pMsg;
-			if ((pMsg = (CUserMsg_SayText *)g_UserMsgs.StartProtobufMessage(m_SayTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
-			{
-				return false;
-			}
-
-			pMsg->set_client(0);
-			pMsg->set_text(buffer);
-			pMsg->set_chat(false);
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 			CCSUsrMsg_SayText *pMsg;
 			if ((pMsg = (CCSUsrMsg_SayText *)g_UserMsgs.StartProtobufMessage(m_SayTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 			{
@@ -518,16 +543,7 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 		}
 	}
 
-#if SOURCE_ENGINE == SE_DOTA
-	CUserMsg_TextMsg *pMsg;
-	if ((pMsg = (CUserMsg_TextMsg *)g_UserMsgs.StartProtobufMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
-	{
-		return false;
-	}
-
-	pMsg->set_dest(dest);
-	pMsg->add_param(msg);
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 	CCSUsrMsg_TextMsg *pMsg;
 	if ((pMsg = (CCSUsrMsg_TextMsg *)g_UserMsgs.StartProtobufMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
@@ -549,6 +565,10 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 
 	pBitBuf->WriteByte(dest);
 	pBitBuf->WriteString(msg);
+	pBitBuf->WriteString("");
+	pBitBuf->WriteString("");
+	pBitBuf->WriteString("");
+	pBitBuf->WriteString("");
 #endif
 
 	g_UserMsgs.EndMessage();
@@ -560,15 +580,7 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 {
 	cell_t players[] = {client};
 
-#if SOURCE_ENGINE == SE_DOTA
-	CUserMsg_HintText *pMsg;
-	if ((pMsg = (CUserMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
-	{
-		return false;
-	}
-
-	pMsg->set_message(msg);
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 	CCSUsrMsg_HintText *pMsg;
 	if ((pMsg = (CCSUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
@@ -598,15 +610,7 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 
 bool CHalfLife2::HintTextMsg(cell_t *players, int count, const char *msg)
 {
-#if SOURCE_ENGINE == SE_DOTA
-	CUserMsg_HintText *pMsg;
-	if ((pMsg = (CUserMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, count, USERMSG_RELIABLE)) == NULL)
-	{
-		return false;
-	}
-
-	pMsg->set_message(msg);
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 	CCSUsrMsg_HintText *pMsg;
 	if ((pMsg = (CCSUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, count, USERMSG_RELIABLE)) == NULL)
 	{
@@ -641,13 +645,7 @@ bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, boo
 	int count = 0;
 	cell_t players[] = {client};
 
-#if SOURCE_ENGINE == SE_DOTA
-	CUserMsg_VGUIMenu *pMsg;
-	if ((pMsg = (CUserMsg_VGUIMenu *)g_UserMsgs.StartProtobufMessage(m_VGUIMenu, players, 1, USERMSG_RELIABLE)) == NULL)
-	{
-		return false;
-	}
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 	CCSUsrMsg_VGUIMenu *pMsg;
 	if ((pMsg = (CCSUsrMsg_VGUIMenu *)g_UserMsgs.StartProtobufMessage(m_VGUIMenu, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
@@ -672,18 +670,7 @@ bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, boo
 		SubKey = data->GetFirstSubKey();
 	}
 
-#if SOURCE_ENGINE == SE_DOTA
-	pMsg->set_name(name);
-	pMsg->set_show(show);
-
-	while (SubKey)
-	{
-		CUserMsg_VGUIMenu_Keys *key = pMsg->add_keys();
-		key->set_name(SubKey->GetName());
-		key->set_value(SubKey->GetString());
-		SubKey = SubKey->GetNextKey();
-	}
-#elif SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO
 	pMsg->set_name(name);
 	pMsg->set_show(show);
 
@@ -739,11 +726,7 @@ void CHalfLife2::ProcessFakeCliCmdQueue()
 		if (g_Players.GetClientOfUserId(pFake->userid) == pFake->client)
 		{
 			CPlayer *pPlayer = g_Players.GetPlayerByIndex(pFake->client);
-#if SOURCE_ENGINE == SE_DOTA
-			engine->ClientCommand(pPlayer->GetIndex(), "%s", pFake->cmd.c_str());
-#else
 			serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), pFake->cmd.c_str());
-#endif
 		}
 
 		m_CmdQueue.pop();
@@ -850,7 +833,7 @@ void CHalfLife2::AddDelayedKick(int client, int userid, const char *msg)
 
 	kick.client = client;
 	kick.userid = userid;
-	ke::SafeSprintf(kick.buffer, sizeof(kick.buffer), "%s", msg);
+	ke::SafeStrcpy(kick.buffer, sizeof(kick.buffer), msg);
 
 	m_DelayedKicks.push(kick);
 }
@@ -1187,8 +1170,58 @@ SMFindMapResult CHalfLife2::FindMap(char *pMapName, size_t nMapNameMax)
 	return this->FindMap(pMapName, pMapName, nMapNameMax);
 }
 
+#ifdef PLATFORM_WINDOWS
+bool CheckReservedFilename(const char *in, const char *reservedName)
+{
+	size_t nameLen = strlen(reservedName);
+	for (size_t i = 0; i < nameLen; ++i)
+	{
+		if (reservedName[i] != tolower(in[i]))
+		{
+			return false;
+		}
+	}
+
+	if (in[nameLen] == '\0' || in[nameLen] == '.')
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool IsWindowsReservedDeviceName(const char *pMapname)
+{
+	static const char * const reservedDeviceNames[] = {
+		"con", "prn", "aux", "clock$", "nul", "com1",
+		"com2", "com3", "com4", "com5", "com6", "com7",
+		"com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4",
+		"lpt5", "lpt6", "lpt7", "lpt8", "lpt9"
+	};
+	
+	size_t reservedCount = sizeof(reservedDeviceNames) / sizeof(reservedDeviceNames[0]);
+	for (int i = 0; i < reservedCount; ++i)
+	{
+		if (CheckReservedFilename(pMapname, reservedDeviceNames[i]))
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+#endif 
+
 SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_t nMapNameMax)
 {
+	/* We need to ensure user input does not contain reserved device names on windows */
+#ifdef PLATFORM_WINDOWS
+	if (IsWindowsReservedDeviceName(pMapName))
+	{
+		return SMFindMapResult::NotFound;
+	}
+#endif
+	
 	ke::SafeStrcpy(pFoundMap, nMapNameMax, pMapName);
 
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
@@ -1233,7 +1266,7 @@ SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_
 		return SMFindMapResult::FuzzyMatch;
 	}
 
-#elif SOURCE_ENGINE == SE_TF2
+#elif SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_BMS
 	static char szTemp[PLATFORM_MAX_PATH];
 	if (pFoundMap == NULL)
 	{
@@ -1256,29 +1289,14 @@ bool CHalfLife2::GetMapDisplayName(const char *pMapName, char *pDisplayname, siz
 	SMFindMapResult result = FindMap(pMapName, pDisplayname, nMapNameMax);
 
 	if (result == SMFindMapResult::NotFound)
-	{
 		return false;
-	}
 
-#if SOURCE_ENGINE == SE_CSGO
-	char *lastSlashPos;
-	// In CSGO, workshop maps show up as workshop/123456789/mapname
-	if (strncmp(pDisplayname, "workshop/", 9) == 0 && (lastSlashPos = strrchr(pDisplayname, '/')) != NULL)
-	{
-		ke::SafeSprintf(pDisplayname, nMapNameMax, "%s", &lastSlashPos[1]);
-		return true;
-	}
-#elif SOURCE_ENGINE == SE_TF2
-	char *ugcPos;
-	// In TF2, workshop maps show up as workshop/mapname.ugc123456789
-	if (strncmp(pDisplayname, "workshop/", 9) == 0 && (ugcPos = strstr(pDisplayname, ".ugc")) != NULL)
-	{
-		// Overwrite the . with a nul and SafeSprintf will handle the rest
-		ugcPos[0] = '\0';
-		ke::SafeSprintf(pDisplayname, nMapNameMax, "%s", &pDisplayname[9]);
-		return true;
-	}
-#endif
+	char *pPos;
+	if ((pPos = strrchr(pDisplayname, '/')) != NULL || (pPos = strrchr(pDisplayname, '\\')) != NULL)
+		ke::SafeStrcpy(pDisplayname, nMapNameMax, &pPos[1]);
+
+	if ((pPos = strstr(pDisplayname, ".ugc")) != NULL)
+		pPos[0] = '\0';
 
 	return true;
 }
@@ -1324,3 +1342,76 @@ string_t CHalfLife2::AllocPooledString(const char *pszValue)
 	return newString;
 }
 #endif
+
+bool CHalfLife2::GetServerSteam3Id(char *pszOut, size_t len) const
+{
+	CSteamID sid((uint64)GetServerSteamId64());
+
+	switch (sid.GetEAccountType())
+	{
+	case k_EAccountTypeAnonGameServer:
+		ke::SafeSprintf(pszOut, len, "[A:%u:%u:%u]", sid.GetEUniverse(), sid.GetAccountID(), sid.GetUnAccountInstance());
+		break;
+	case k_EAccountTypeGameServer:
+		ke::SafeSprintf(pszOut, len, "[G:%u:%u]", sid.GetEUniverse(), sid.GetAccountID());
+		break;
+	case k_EAccountTypeInvalid:
+		ke::SafeSprintf(pszOut, len, "[I:%u:%u]", sid.GetEUniverse(), sid.GetAccountID());
+		break;
+	default:
+		return false;
+	}
+
+	return true;
+}
+
+#if defined( PLATFORM_WINDOWS )
+#define STEAM_LIB_PREFIX
+#define STEAM_LIB_SUFFIX
+#elif defined( PLATFORM_LINUX )
+#define STEAM_LIB_PREFIX "lib"
+#define STEAM_LIB_SUFFIX ".so"
+#elif defined( PLATFORM_APPLE )
+#define STEAM_LIB_PREFIX "lib"
+#define STEAM_LIB_SUFFIX ".dylib"
+#endif
+
+uint64_t CHalfLife2::GetServerSteamId64() const
+{
+#if SOURCE_ENGINE == SE_BLADE          \
+	|| SOURCE_ENGINE == SE_BMS         \
+	|| SOURCE_ENGINE == SE_CSGO        \
+	|| SOURCE_ENGINE == SE_CSS         \
+	|| SOURCE_ENGINE == SE_DODS        \
+	|| SOURCE_ENGINE == SE_EYE         \
+	|| SOURCE_ENGINE == SE_HL2DM       \
+	|| SOURCE_ENGINE == SE_INSURGENCY  \
+	|| SOURCE_ENGINE == SE_DOI  \
+	|| SOURCE_ENGINE == SE_SDK2013     \
+	|| SOURCE_ENGINE == SE_ALIENSWARM  \
+	|| SOURCE_ENGINE == SE_TF2
+	const CSteamID *sid = engine->GetGameServerSteamID();
+	if (sid)
+	{
+		return sid->ConvertToUint64();
+	}
+#else
+	typedef uint64_t(* GetServerSteamIdFn)(void);
+	static GetServerSteamIdFn fn = nullptr;
+	if (!fn)
+	{
+		ke::SharedLib steam_api(STEAM_LIB_PREFIX "steam_api" STEAM_LIB_SUFFIX);
+		if (steam_api.valid())
+		{
+			fn = (GetServerSteamIdFn)steam_api.lookup("SteamGameServer_GetSteamID");
+		}
+	}
+
+	if (fn)
+	{
+		return fn();
+	}
+#endif
+
+	return 1ULL;
+}

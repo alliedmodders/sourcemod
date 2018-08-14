@@ -50,6 +50,10 @@
 #include <convar.h>
 #include <iserver.h>
 #include <cdll_int.h>
+#if SOURCE_ENGINE == SE_CSGO
+#include <am-hashset.h>
+#include <sm_stringhashmap.h>
+#endif
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
@@ -95,9 +99,7 @@ public: //IClientListner
 public: // IVoiceServer
 	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
 	void VoiceInit();
-#if SOURCE_ENGINE == SE_DOTA
-	void OnClientCommand(CEntityIndex index, const CCommand &args);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	void OnClientCommand(edict_t *pEntity, const CCommand &args);
 #else
 	void OnClientCommand(edict_t *pEntity);
@@ -113,7 +115,14 @@ public:
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 public:
 	bool HasAnyLevelInited() { return m_bAnyLevelInited; }
-
+#if SOURCE_ENGINE == SE_CSGO
+public:
+	bool ShouldFollowCSGOServerGuidelines() const { return m_bFollowCSGOServerGuidelines; }
+	bool CanSetCSGOEntProp(const char *pszPropName) { return !ShouldFollowCSGOServerGuidelines() || !m_CSGOBadList.has(pszPropName); }
+private:
+	ke::HashSet<ke::AString, detail::StringHashMapPolicy> m_CSGOBadList;
+	bool m_bFollowCSGOServerGuidelines = false;
+#endif
 private:
 	bool m_bAnyLevelInited = false;
 };

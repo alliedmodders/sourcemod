@@ -4,6 +4,12 @@
 	{
 		"Offsets"
 		{
+			"CanBeAutobalanced"
+			{
+				"windows"	"462"
+				"linux"		"463"
+				"mac"		"463"
+			}
 			"Blocked"
 			{
 				"windows"	"102"

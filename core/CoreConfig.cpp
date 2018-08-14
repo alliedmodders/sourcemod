@@ -67,18 +67,11 @@ ConVar *g_ServerCfgFile = NULL;
 
 void CheckAndFinalizeConfigs();
 
-#if SOURCE_ENGINE == SE_DOTA
-SH_DECL_EXTERN2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
-void Hook_ExecDispatchPre(const CCommandContext &context, const CCommand &cmd)
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 void Hook_ExecDispatchPre(const CCommand &cmd)
-#elif SOURCE_ENGINE == SE_DARKMESSIAH
-SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
-void Hook_ExecDispatchPre()
 #else
-extern int __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
-extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
+SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 void Hook_ExecDispatchPre()
 #endif
 {
@@ -94,9 +87,7 @@ void Hook_ExecDispatchPre()
 	}
 }
 
-#if SOURCE_ENGINE == SE_DOTA
-void Hook_ExecDispatchPost(const CCommandContext &context, const CCommand &cmd)
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void Hook_ExecDispatchPost(const CCommand &cmd)
 #else
 void Hook_ExecDispatchPost()
@@ -286,7 +277,7 @@ SMCResult CoreConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key,
 
 ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, ConfigSource source, char *error, size_t maxlength)
 {
-	ConfigResult result;
+	ConfigResult result = ConfigResult_Ignore;
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
@@ -294,7 +285,7 @@ ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, 
 	{
 		if ((result = pBase->OnSourceModConfigChanged(option, value, source, error, maxlength)) != ConfigResult_Ignore)
 		{
-			return result;
+			break;
 		}
 		pBase = pBase->m_pGlobalClassNext;
 	}
@@ -302,7 +293,7 @@ ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, 
 	ke::AString vstr(value);
 	m_KeyValues.replace(option, ke::Move(vstr));
 
-	return ConfigResult_Ignore;
+	return result;
 }
 
 const char *CoreConfig::GetCoreConfigValue(const char *key)
@@ -421,8 +412,11 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 				for (iter = convars->begin(); iter != convars->end(); iter++)
 				{
 					const ConVar *cvar = (*iter);
-
-					if ((cvar->GetFlags() & FCVAR_DONTRECORD) == FCVAR_DONTRECORD)
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+					if (cvar->IsFlagSet(FCVAR_DONTRECORD))
+#else
+					if (cvar->IsBitSet(FCVAR_DONTRECORD))
+#endif
 					{
 						continue;
 					}

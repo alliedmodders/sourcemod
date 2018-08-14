@@ -67,15 +67,15 @@ public:
 	bool IsClientConVarQueryingSupported() override;
 	void DefineCommand(const char *cmd, const char *help, const SourceMod::CommandFunc &callback) override;
 
-	ke::PassRef<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
-	ke::PassRef<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
+	ke::RefPtr<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
+	ke::RefPtr<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 
 	int CommandClient() const {
 		return hooks_.CommandClient();
 	}
 
 private:
-	ke::Ref<ke::SharedLib> logic_;
+	ke::RefPtr<ke::SharedLib> logic_;
 	LogicInitFunction logic_init_;
 	GameHooks hooks_;
 
@@ -87,9 +87,9 @@ private:
 
 	private:
 		ConCommand *cmd_;
-		ke::Ref<CommandHook> hook_;
+		ke::RefPtr<CommandHook> hook_;
 	};
-	ke::Vector<ke::Ref<CommandImpl>> commands_;
+	ke::Vector<ke::RefPtr<CommandImpl>> commands_;
 };
 
 extern CoreProviderImpl sCoreProviderImpl;

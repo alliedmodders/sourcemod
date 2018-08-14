@@ -40,6 +40,7 @@
 #include <inetchannel.h>
 #include <iclient.h>
 #include "iserver.h"
+#include "am-string.h"
 
 SourceHook::List<ValveCall *> g_RegCalls;
 SourceHook::List<ICallWrapper *> g_CallWraps;
@@ -144,6 +145,20 @@ static cell_t RemovePlayerItem(IPluginContext *pContext, const cell_t *params)
 class CEconItemView;
 static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 {
+	if (g_SdkTools.ShouldFollowCSGOServerGuidelines())
+	{
+		char *pWeaponName;
+		pContext->LocalToString(params[2], &pWeaponName);
+
+		// Don't allow knives other than weapon_knife,  weapon_knifegg, and weapon_knife_t.
+		// Others follow pattern weapon_knife_*
+		size_t len = strlen(pWeaponName);
+		if (len >= 14 && strnicmp(pWeaponName, "weapon_knife_", 13) == 0 && !(pWeaponName[13] == 't' && pWeaponName[14] == '\0'))
+		{
+			return pContext->ThrowNativeError("Blocked giving of %s due to core.cfg option FollowCSGOServerGuidelines", pWeaponName);
+		}
+	}
+
 	static ValveCall *pCall = NULL;
 	if (!pCall)
 	{
@@ -172,7 +187,40 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
+#elif SOURCE_ENGINE == SE_BMS
+// CBaseEntity	*GiveNamedItem( const char *szName, int iSubType = 0, int iPrimaryAmmo = -1, int iSecondaryAmmo = -1 )
+static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[5];
+		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[3], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[4], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("GiveNamedItem", ValveCall_Player, &pass[4], pass, 4, &pCall))
+		{
+			return pContext->ThrowNativeError("\"GiveNamedItem\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"GiveNamedItem\" wrapper failed to initialize");
+		}
+	}
+
+	CBaseEntity *pEntity = NULL;
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	DECODE_VALVE_PARAM(3, vparams, 1);
+	*(int *)(vptr + 12) = -1;
+	*(int *)(vptr + 16) = -1;
+	FINISH_CALL_SIMPLE(&pEntity);
+
+	return gamehelpers->EntityToBCompatRef(pEntity);
+}
 #else
+// CBaseEntity	*GiveNamedItem( const char *szName, int iSubType = 0 )
 static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
@@ -439,11 +487,7 @@ static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Entity %d is not valid", params[2]);
 	}
 
-#if SOURCE_ENGINE == SE_DOTA
-	engine->SetView(params[1], params[2]);
-#else
 	engine->SetView(player->GetEdict(), pEdict);
-#endif
 
 	return 1;
 }
@@ -580,7 +624,7 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 		int maxClients = playerhelpers->GetMaxClients();
 
 		int r = (rand() % s_sound_count) + 1;
-		snprintf(name, sizeof(name), "SlapSound%d", r);
+		ke::SafeSprintf(name, sizeof(name), "SlapSound%d", r);
 
 		if ((sound_name = g_pGameConf->GetKeyValue(name)) != NULL)
 		{
@@ -636,11 +680,7 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 	/* Force suicide */
 	if (should_slay)
 	{
-#if SOURCE_ENGINE == SE_DOTA
-		engine->ClientCommand(params[1], "kill\n");
-#else
 		pluginhelpers->ClientCommand(pEdict, "kill\n");
-#endif
 	}
 
 	if (s_frag_offs > 0)
@@ -664,11 +704,7 @@ static cell_t GetClientEyePosition(IPluginContext *pContext, const cell_t *param
 	}
 
 	Vector pos;
-#if SOURCE_ENGINE == SE_DOTA
-	serverClients->ClientEarPosition(params[1], &pos);
-#else
 	serverClients->ClientEarPosition(player->GetEdict(), &pos);
-#endif
 
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[2], &addr);
@@ -794,12 +830,13 @@ static cell_t NativeFindEntityByClassname(IPluginContext *pContext, const cell_t
 
 static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *params)
 {
-#if SOURCE_ENGINE == SE_TF2      \
-	|| SOURCE_ENGINE == SE_DODS  \
-	|| SOURCE_ENGINE == SE_HL2DM \
-	|| SOURCE_ENGINE == SE_CSS   \
-	|| SOURCE_ENGINE == SE_BMS   \
-	|| SOURCE_ENGINE == SE_SDK2013
+#if SOURCE_ENGINE == SE_TF2        \
+	|| SOURCE_ENGINE == SE_DODS    \
+	|| SOURCE_ENGINE == SE_HL2DM   \
+	|| SOURCE_ENGINE == SE_CSS     \
+	|| SOURCE_ENGINE == SE_BMS     \
+	|| SOURCE_ENGINE == SE_SDK2013 \
+	|| SOURCE_ENGINE == SE_NUCLEARDAWN
 
 	static bool bHasServerTools3 = !!g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr);
 	if (bHasServerTools3)
@@ -893,7 +930,16 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 
 	char *classname;
 	pContext->LocalToString(params[1], &classname);
+#if SOURCE_ENGINE != SE_CSGO
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateEntityByName(classname);
+#else
+	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateItemEntityByName(classname);
+
+	if(!pEntity)
+	{
+		pEntity = (CBaseEntity *)servertools->CreateEntityByName(classname);
+	}
+#endif
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
 #else
@@ -1304,8 +1350,8 @@ static cell_t SetClientName(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	// The IClient vtable is +4 from the CBaseClient vtable due to multiple inheritance.
-	void *pGameClient = (void *)((intptr_t)pClient - 4);
+	// The IClient vtable is +sizeof(void *) from the CBaseClient vtable due to multiple inheritance.
+	void *pGameClient = (void *)((intptr_t)pClient - sizeof(void *));
 
 	// Change the name in the engine.
 	START_CALL();
@@ -1315,11 +1361,7 @@ static cell_t SetClientName(IPluginContext *pContext, const cell_t *params)
 	FINISH_CALL_SIMPLE(NULL);
 
 	// Notify the server of the change.
-#if SOURCE_ENGINE == SE_DOTA
-	serverClients->ClientSettingsChanged(player->GetIndex());
-#else
 	serverClients->ClientSettingsChanged(player->GetEdict());
-#endif
 
 	return 1;
 }
@@ -1386,7 +1428,7 @@ static cell_t SetClientInfo(IPluginContext *pContext, const cell_t *params)
 	}
 #endif
 
-	unsigned char *CGameClient = (unsigned char *)pClient - 4;
+	unsigned char *CGameClient = (unsigned char *)pClient - sizeof(void *);
 
 	START_CALL();
 	/* Not really a CBaseEntity* but this works */

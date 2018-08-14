@@ -42,7 +42,7 @@ using namespace SourceMod;
 class WinThreader : public IThreader
 {
 public:
-	class ThreadHandle : public IThreadHandle, public ke::IRunnable
+	class ThreadHandle : public IThreadHandle
 	{
 		friend class WinThreader;
 		friend DWORD WINAPI Win32_ThreadGate(LPVOID param);

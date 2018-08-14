@@ -36,31 +36,18 @@
 #define _helpers_included
 
 /**
- * Formats a user's info as log text.  This is usually not needed because
- * %L can be used to auto-format client information into a string.
+ * This function is deprecated. Use the %L format specifier instead.
+ * 
+ * Formats a user's info as log text.
  *
  * @param client		Client index.
  * @param buffer		Buffer for text.
  * @param maxlength		Maximum length of text.
  */
-stock FormatUserLogText(client, String:buffer[], maxlength)
+#pragma deprecated Use the %L format specifier instead.
+stock void FormatUserLogText(int client, char[] buffer, int maxlength)
 {
-	decl String:auth[32];
-	decl String:name[MAX_NAME_LENGTH];
-	
-	new userid = GetClientUserId(client);
-	if (!GetClientAuthString(client, auth, sizeof(auth)))
-	{
-		strcopy(auth, sizeof(auth), "UNKNOWN");
-	}
-	if (!GetClientName(client, name, sizeof(name)))
-	{
-		strcopy(name, sizeof(name), "UNKNOWN");
-	}
-	
-	/** Currently, no team stuff ... */
-	
-	Format(buffer, maxlength, "\"%s<%d><%s><>\"", name, userid, auth);
+	FormatEx(buffer, maxlength, "\"%L\"", client);
 }
 
 /**
@@ -69,12 +56,12 @@ stock FormatUserLogText(client, String:buffer[], maxlength)
  * @param filename		Filename of the plugin to search for.
  * @return				Handle to plugin if found, INVALID_HANDLE otherwise.
  */
-stock Handle:FindPluginByFile(const String:filename[])
+stock Handle FindPluginByFile(const char[] filename)
 {
-	decl String:buffer[256];
+	char buffer[256];
 	
-	new Handle:iter = GetPluginIterator();
-	new Handle:pl;
+	Handle iter = GetPluginIterator();
+	Handle pl;
 	
 	while (MorePlugins(iter))
 	{
@@ -152,12 +139,13 @@ stock int SearchForClients(const char[] pattern, int[] clients, int maxClients)
  * @param immunity	Optional. Set to false to ignore target immunity.
  * @return			Index of target client, or -1 on error.
  */
-stock FindTarget(client, const String:target[], bool:nobots = false, bool:immunity = true)
+stock int FindTarget(int client, const char[] target, bool nobots = false, bool immunity = true)
 {
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[1], target_count, bool:tn_is_ml;
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[1], target_count;
+	bool tn_is_ml;
 	
-	new flags = COMMAND_FILTER_NO_MULTI;
+	int flags = COMMAND_FILTER_NO_MULTI;
 	if (nobots)
 	{
 		flags |= COMMAND_FILTER_NO_BOTS;
@@ -202,10 +190,10 @@ stock FindTarget(client, const String:target[], bool:nobots = false, bool:immuni
  * @return			Number of maps loaded or 0 if in error.
  */
 #pragma deprecated Use ReadMapList() instead. 
- stock LoadMaps(Handle:array, &fileTime = 0, Handle:fileCvar = INVALID_HANDLE)
+ stock int LoadMaps(Handle array, int &fileTime = 0, Handle fileCvar = INVALID_HANDLE)
  { 
- 	decl String:mapPath[256], String:mapFile[64];
- 	new bool:fileFound = false;
+ 	char mapPath[256], mapFile[64];
+ 	bool fileFound = false;
  	
  	if (fileCvar != INVALID_HANDLE)
  	{
@@ -216,7 +204,7 @@ stock FindTarget(client, const String:target[], bool:nobots = false, bool:immuni
  
  	if (!fileFound)
  	{
- 		new Handle:mapCycleFile = FindConVar("mapcyclefile");
+ 		Handle mapCycleFile = FindConVar("mapcyclefile");
  		GetConVarString(mapCycleFile, mapPath, sizeof(mapPath));
  		fileFound = FileExists(mapPath);
  	}
@@ -231,7 +219,7 @@ stock FindTarget(client, const String:target[], bool:nobots = false, bool:immuni
  
  	// If the file hasn't changed, there's no reason to reload
  	// all of the maps.
- 	new newTime =  GetFileTime(mapPath, FileTime_LastChange);
+ 	int newTime =  GetFileTime(mapPath, FileTime_LastChange);
  	if (fileTime == newTime)
  	{
  		return GetArraySize(array);

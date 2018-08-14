@@ -40,10 +40,7 @@ class ConVar;
 class CCommand;
 struct CCommandContext;
 
-#if SOURCE_ENGINE == SE_DOTA
-# define DISPATCH_ARGS      const CCommandContext &context, const CCommand &command
-# define DISPATCH_PROLOGUE
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 # define DISPATCH_ARGS      const CCommand &command
 # define DISPATCH_PROLOGUE
 #else
@@ -93,8 +90,8 @@ public:
 	}
 
 public:
-	ke::PassRef<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
-	ke::PassRef<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
+	ke::RefPtr<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
+	ke::RefPtr<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 
 	int CommandClient() const {
 		return last_command_client_;
@@ -109,10 +106,7 @@ private:
 #endif
 
 	// Callback for when StartQueryCvarValue() has finished.
-#if SOURCE_ENGINE == SE_DOTA
-	void OnQueryCvarValueFinished(QueryCvarCookie_t cookie, CEntityIndex player, EQueryCvarValueStatus result,
-	                              const char *cvarName, const char *cvarValue);
-#elif SOURCE_ENGINE != SE_DARKMESSIAH
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 	void OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result,
 	                              const char *cvarName, const char *cvarValue);
 #endif

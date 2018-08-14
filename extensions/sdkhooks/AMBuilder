@@ -12,12 +12,16 @@ project.sources += [
 
 for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
+
+  for arch in SM.archs:
+    if not arch in sdk.platformSpec[builder.target.platform]:
+      continue
   
-  binary = SM.HL2Config(project, 'sdkhooks.ext.' + sdk.ext, sdk)
-  binary.compiler.cxxincludes += [
-    os.path.join(sdk.path, 'game', 'shared')
-  ]
-  if binary.compiler.cxx.behavior == 'gcc':
-    binary.compiler.cxxflags += ['-Wno-invalid-offsetof']
+    binary = SM.HL2Config(project, 'sdkhooks.ext.' + sdk.ext, sdk, arch)
+    binary.compiler.cxxincludes += [
+      os.path.join(sdk.path, 'game', 'shared')
+    ]
+    if binary.compiler.behavior == 'gcc':
+      binary.compiler.cxxflags += ['-Wno-invalid-offsetof']
 
 SM.extensions += builder.Add(project)

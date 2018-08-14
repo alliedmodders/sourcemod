@@ -91,7 +91,44 @@ enum PropFieldType
 	PropField_Vector,			/**< Valid for SendProp and Data fields */
 	PropField_String,			/**< Valid for SendProp and Data fields */
 	PropField_String_T,			/**< Valid for Data fields.  Read only! */
+	PropField_Variant,			/**< Valid for variants/any. (User must know type) */
 };
+
+// From game/server/variant_t.h, same on all supported games.
+class variant_t
+{
+public:
+	union
+	{
+		bool bVal;
+		string_t iszVal;
+		int iVal;
+		float flVal;
+		float vecVal[3];
+		color32 rgbaVal;
+	};
+	
+	CBaseHandle eVal;
+	fieldtype_t fieldType;
+};
+
+// From game/server/baseentity.h, same on all supported games.
+struct inputdata_t
+{
+	CBaseEntity *pActivator;		// The entity that initially caused this chain of output events.
+	CBaseEntity *pCaller;			// The entity that fired this particular output.
+	variant_t value;				// The data parameter for this output.
+	int nOutputID;					// The unique ID of the output that was fired.
+};
+
+inline bool CanSetPropName(const char *pszPropName)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return g_HL2.CanSetCSGOEntProp(pszPropName);
+#else
+	return true;
+#endif
+}
 
 inline edict_t *BaseEntityToEdict(CBaseEntity *pEntity)
 {
@@ -249,6 +286,47 @@ static cell_t RemoveEdict(IPluginContext *pContext, const cell_t *params)
 	}
 
 	engine->RemoveEdict(pEdict);
+
+	return 1;
+}
+
+static cell_t RemoveEntity(IPluginContext *pContext, const cell_t *params)
+{
+	auto *pEntity = GetEntity(params[1]);
+	if (!pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is not a valid entity", g_HL2.ReferenceToIndex(params[1]), params[1]);
+	}
+
+	// Some games have UTIL_Remove exposed on IServerTools, but for consistence, we'll
+	// use this method for all. Results in DeathNotice( this ) being called on parent,
+	// and parent being cleared (both if any parent) before UTIL_Remove is called.
+	static inputfunc_t fnKillEntity = nullptr;
+	if (!fnKillEntity)
+	{
+		// Get world, as other ents aren't guaranteed to inherit full datadesc (but kill func is same for all)
+		CBaseEntity *pGetterEnt = g_HL2.ReferenceToEntity(0);
+		if (pGetterEnt == nullptr)
+		{
+			// If we don't have a world entity yet, we'll have to rely on the given entity. Does this even make sense???
+			pGetterEnt = pEntity;
+		}
+
+		datamap_t *pMap = g_HL2.GetDataMap(pGetterEnt);
+
+		sm_datatable_info_t info;
+		if (!g_HL2.FindDataMapInfo(pMap, "InputKill", &info))
+		{
+			return pContext->ThrowNativeError("Failed to find Kill input!");
+		}
+
+		fnKillEntity = info.prop->inputFunc;
+	}
+
+	// Input data is ignored for this. No need to initialize
+	static inputdata_t data;
+
+	(pEntity->*fnKillEntity)(data);
 
 	return 1;
 }
@@ -808,26 +886,26 @@ static void GuessDataPropTypes(typedescription_t *td, cell_t * pSize, cell_t * p
 		{
 			*pType = PropField_Integer;
 			*pSize = 32;
-			break;
+			return;
 		}
 	case FIELD_VECTOR:
 	case FIELD_POSITION_VECTOR:
 		{
 			*pType = PropField_Vector;
-			*pSize = 12;
-			break;
+			*pSize = 96;
+			return;
 		}
 	case FIELD_SHORT:
 		{
 			*pType = PropField_Integer;
 			*pSize = 16;
-			break;
+			return;
 		}
 	case FIELD_BOOLEAN:
 		{
 			*pType = PropField_Integer;
 			*pSize = 1;
-			break;
+			return;
 		}
 	case FIELD_CHARACTER:
 		{
@@ -841,7 +919,7 @@ static void GuessDataPropTypes(typedescription_t *td, cell_t * pSize, cell_t * p
 				*pType = PropField_String;
 				*pSize = 8 * td->fieldSize;
 			}
-			break;
+			return;
 		}
 	case FIELD_MODELNAME:
 	case FIELD_SOUNDNAME:
@@ -849,27 +927,34 @@ static void GuessDataPropTypes(typedescription_t *td, cell_t * pSize, cell_t * p
 		{
 			*pSize = sizeof(string_t);
 			*pType = PropField_String_T;
-			break;
+			return;
 		}
 	case FIELD_FLOAT:
 	case FIELD_TIME:
 		{
 			*pType = PropField_Float;
 			*pSize = 32;
-			break;
+			return;
 		}
 	case FIELD_EHANDLE:
 		{
 			*pType = PropField_Entity;
 			*pSize = 32;
-			break;
+			return;
 		}
-	default:
+	case FIELD_CUSTOM:
 		{
-			*pType = PropField_Unsupported;
-			*pSize = 0;
+			if ((td->flags & FTYPEDESC_OUTPUT) == FTYPEDESC_OUTPUT)
+			{
+				*pType = PropField_Variant;
+				*pSize = 0;
+				return;
+			}
 		}
 	}
+			
+	*pType = PropField_Unsupported;
+	*pSize = 0;
 }
 
 static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
@@ -1041,6 +1126,26 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	\
 	offset = info.actual_offset + (element * (td->fieldSizeInBytes / td->fieldSize));
 
+#define CHECK_TYPE_VALID_IF_VARIANT(type, typeName) \
+	if (td->fieldType == FIELD_CUSTOM && (td->flags & FTYPEDESC_OUTPUT) == FTYPEDESC_OUTPUT) \
+	{ \
+		auto *pVariant = (variant_t *)((intptr_t)pEntity + offset); \
+		if (pVariant->fieldType != type) \
+		{ \
+			return pContext->ThrowNativeError("Variant value for %s is not %s (%d)", \
+				prop, \
+				typeName, \
+				pVariant->fieldType); \
+		} \
+	}
+
+#define SET_TYPE_IF_VARIANT(type) \
+	if (td->fieldType == FIELD_CUSTOM && (td->flags & FTYPEDESC_OUTPUT) == FTYPEDESC_OUTPUT) \
+	{ \
+		auto *pVariant = (variant_t *)((intptr_t)pEntity + offset); \
+		pVariant->fieldType = type; \
+	}
+
 #define FIND_PROP_SEND(type, type_name) \
 	sm_sendprop_info_t info;\
 	SendProp *pProp; \
@@ -1120,9 +1225,9 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	}
 
 
-inline int MatchFieldAsInteger(int field_type)
+inline int MatchTypeDescAsInteger(_fieldtypes type, int flags)
 {
-	switch (field_type)
+	switch (type)
 	{
 	case FIELD_TICK:
 	case FIELD_MODELINDEX:
@@ -1130,6 +1235,13 @@ inline int MatchFieldAsInteger(int field_type)
 	case FIELD_INTEGER:
 	case FIELD_COLOR32:
 		return 32;
+	case FIELD_CUSTOM:
+		if ((flags & FTYPEDESC_OUTPUT) == FTYPEDESC_OUTPUT)
+		{
+			// Variant, read as int32.
+			return 32;
+		}
+		break;
 	case FIELD_SHORT:
 		return 16;
 	case FIELD_CHARACTER:
@@ -1237,7 +1349,7 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 
 			FIND_PROP_DATA(td);
 
-			if ((bit_count = MatchFieldAsInteger(td->fieldType)) == 0)
+			if ((bit_count = MatchTypeDescAsInteger(td->fieldType, td->flags)) == 0)
 			{
 				return pContext->ThrowNativeError("Data field %s is not an integer (%d)", 
 					prop,
@@ -1245,6 +1357,17 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 			}
 
 			CHECK_SET_PROP_DATA_OFFSET();
+			
+			if (td->fieldType == FIELD_CUSTOM && (td->flags & FTYPEDESC_OUTPUT) == FTYPEDESC_OUTPUT)
+			{
+				auto *pVariant = (variant_t *)((intptr_t)pEntity + offset);
+				if ((bit_count = MatchTypeDescAsInteger(pVariant->fieldType, 0)) == 0)
+				{
+					return pContext->ThrowNativeError("Variant value for %s is not an integer (%d)",
+						prop,
+						pVariant->fieldType);
+				} \
+			}
 
 			break;
 		}
@@ -1255,7 +1378,8 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2 \
+	|| SOURCE_ENGINE == SE_CSGO
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -1337,7 +1461,7 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 
 			FIND_PROP_DATA(td);
 
-			if ((bit_count = MatchFieldAsInteger(td->fieldType)) == 0)
+			if ((bit_count = MatchTypeDescAsInteger(td->fieldType, td->flags)) == 0)
 			{
 				return pContext->ThrowNativeError("Data field %s is not an integer (%d)", 
 					prop,
@@ -1346,15 +1470,35 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 
 			CHECK_SET_PROP_DATA_OFFSET();
 
+			if (td->fieldType == FIELD_CUSTOM && (td->flags & FTYPEDESC_OUTPUT) == FTYPEDESC_OUTPUT)
+			{
+				auto *pVariant = (variant_t *)((intptr_t)pEntity + offset);
+				// These are the only three int-ish types that variants support. If set to valid one that isn't
+				// (32-bit) integer, leave it alone. It's probably the intended type.
+				if (pVariant->fieldType != FIELD_COLOR32 && pVariant->fieldType != FIELD_BOOLEAN)
+				{
+					pVariant->fieldType = FIELD_INTEGER;
+				}
+
+				bit_count = MatchTypeDescAsInteger(pVariant->fieldType, 0);
+			}
+
+			SET_TYPE_IF_VARIANT(FIELD_INTEGER);
+
 			break;
 		}
 	case Prop_Send:
 		{
 			FIND_PROP_SEND(DPT_Int, "integer");
+			if (!CanSetPropName(prop))
+			{
+				return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
+			}
 
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2 \
+	|| SOURCE_ENGINE == SE_CSGO
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -1439,6 +1583,8 @@ static cell_t GetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 
 			CHECK_SET_PROP_DATA_OFFSET();
 
+			CHECK_TYPE_VALID_IF_VARIANT(FIELD_FLOAT, "float");
+
 			break;
 		}
 	case Prop_Send:
@@ -1498,11 +1644,17 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 
 			CHECK_SET_PROP_DATA_OFFSET();
 
+			SET_TYPE_IF_VARIANT(FIELD_FLOAT);
+
 			break;
 		}
 	case Prop_Send:
 		{
 			FIND_PROP_SEND(DPT_Float, "float");
+			if (!CanSetPropName(prop))
+			{
+				return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
+			}
 			break;
 		}
 	default:
@@ -1523,9 +1675,11 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 
 enum PropEntType
 {
+	PropEnt_Unknown,
 	PropEnt_Handle,
 	PropEnt_Entity,
 	PropEnt_Edict,
+	PropEnt_Variant,
 };
 
 static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
@@ -1535,7 +1689,7 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	int offset;
 	int bit_count;
 	edict_t *pEdict;
-	PropEntType type;
+	PropEntType type = PropEnt_Unknown;
 
 	int element = 0;
 	if (params[0] >= 4)
@@ -1566,18 +1720,27 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 			case FIELD_CLASSPTR:
 				type = PropEnt_Entity;
 				break;
-#if SOURCE_ENGINE != SE_DOTA
 			case FIELD_EDICT:
 				type = PropEnt_Edict;
 				break;
-#endif
-			default:
+			case FIELD_CUSTOM:
+				if ((td->flags & FTYPEDESC_OUTPUT) == FTYPEDESC_OUTPUT)
+				{
+					type = PropEnt_Variant;
+				}
+				break;
+			}
+
+			if (type == PropEnt_Unknown)
+			{
 				return pContext->ThrowNativeError("Data field %s is not an entity nor edict (%d)",
 					prop,
 					td->fieldType);
 			}
 
 			CHECK_SET_PROP_DATA_OFFSET();
+
+			CHECK_TYPE_VALID_IF_VARIANT(FIELD_EHANDLE, "ehandle");
 
 			break;
 		}
@@ -1596,11 +1759,22 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	switch (type)
 	{
 	case PropEnt_Handle:
+	case PropEnt_Variant:
 		{
-			CBaseHandle &hndl = *(CBaseHandle *) ((uint8_t *) pEntity + offset);
-			CBaseEntity *pHandleEntity = g_HL2.ReferenceToEntity(hndl.GetEntryIndex());
+			CBaseHandle *hndl;
+			if (type == PropEnt_Handle)
+			{
+				hndl = (CBaseHandle *)((uint8_t *)pEntity + offset);
+			}
+			else // PropEnt_Variant
+			{
+				auto *pVariant = (variant_t *)((intptr_t)pEntity + offset);
+				hndl = &pVariant->eVal;
+			}
 
-			if (!pHandleEntity || hndl != reinterpret_cast<IHandleEntity *>(pHandleEntity)->GetRefEHandle())
+			CBaseEntity *pHandleEntity = g_HL2.ReferenceToEntity(hndl->GetEntryIndex());
+
+			if (!pHandleEntity || *hndl != reinterpret_cast<IHandleEntity *>(pHandleEntity)->GetRefEHandle())
 				return -1;
 
 			return g_HL2.EntityToBCompatRef(pHandleEntity);
@@ -1630,7 +1804,7 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	int offset;
 	int bit_count;
 	edict_t *pEdict;
-	PropEntType type;
+	PropEntType type = PropEnt_Unknown;
 
 	int element = 0;
 	if (params[0] >= 5)
@@ -1661,20 +1835,29 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 			case FIELD_CLASSPTR:
 				type = PropEnt_Entity;
 				break;
-#if SOURCE_ENGINE != SE_DOTA
 			case FIELD_EDICT:
 				type = PropEnt_Edict;
 				if (!pEdict)
 					return pContext->ThrowNativeError("Edict %d is invalid", params[1]);
 				break;
-#endif
-			default:
+			case FIELD_CUSTOM:
+				if ((td->flags & FTYPEDESC_OUTPUT) == FTYPEDESC_OUTPUT)
+				{
+					type = PropEnt_Variant;
+				}
+				break;				
+			}
+
+			if (type == PropEnt_Unknown)
+			{
 				return pContext->ThrowNativeError("Data field %s is not an entity nor edict (%d)",
 					prop,
 					td->fieldType);
 			}
 
 			CHECK_SET_PROP_DATA_OFFSET();
+
+			SET_TYPE_IF_VARIANT(FIELD_EHANDLE);
 
 			break;
 		}
@@ -1699,9 +1882,20 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	switch (type)
 	{
 	case PropEnt_Handle:
+	case PropEnt_Variant:
 		{
-			CBaseHandle &hndl = *(CBaseHandle *) ((uint8_t *) pEntity + offset);
-			hndl.Set((IHandleEntity *) pOther);
+			CBaseHandle *hndl;
+			if (type == PropEnt_Handle)
+			{
+				hndl = (CBaseHandle *)((uint8_t *)pEntity + offset);
+			}
+			else // PropEnt_Variant
+			{
+				auto *pVariant = (variant_t *)((intptr_t)pEntity + offset);
+				hndl = &pVariant->eVal;
+			}
+
+			hndl->Set((IHandleEntity *) pOther);
 
 			if (params[2] == Prop_Send && (pEdict != NULL))
 			{
@@ -1784,6 +1978,17 @@ static cell_t GetEntPropVector(IPluginContext *pContext, const cell_t *params)
 
 			CHECK_SET_PROP_DATA_OFFSET();
 
+			if (td->fieldType == FIELD_CUSTOM && (td->flags & FTYPEDESC_OUTPUT) == FTYPEDESC_OUTPUT)
+			{
+				auto *pVariant = (variant_t *)((intptr_t)pEntity + offset);
+				if (pVariant->fieldType != FIELD_VECTOR && pVariant->fieldType != FIELD_POSITION_VECTOR)
+				{
+					return pContext->ThrowNativeError("Variant value for %s is not vector (%d)",
+						prop,
+						pVariant->fieldType);
+				}
+			}
+
 			break;
 		}
 	case Prop_Send:
@@ -1850,6 +2055,17 @@ static cell_t SetEntPropVector(IPluginContext *pContext, const cell_t *params)
 
 			CHECK_SET_PROP_DATA_OFFSET();
 
+			if (td->fieldType == FIELD_CUSTOM && (td->flags & FTYPEDESC_OUTPUT) == FTYPEDESC_OUTPUT)
+			{
+				auto *pVariant = (variant_t *)((intptr_t)pEntity + offset);
+				// Both of these are supported and we don't know which is intended. But, if it's already
+				// a pos vector, we probably want to keep that.
+				if (pVariant->fieldType != FIELD_POSITION_VECTOR)
+				{
+					pVariant->fieldType = FIELD_VECTOR;
+				}
+			}
+
 			break;
 		}
 	case Prop_Send:
@@ -1911,10 +2127,11 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 			
 			FIND_PROP_DATA(td);
 
-			if (td->fieldType != FIELD_CHARACTER
+			if ((td->fieldType != FIELD_CHARACTER
 				&& td->fieldType != FIELD_STRING
 				&& td->fieldType != FIELD_MODELNAME 
 				&& td->fieldType != FIELD_SOUNDNAME)
+				|| (td->fieldType == FIELD_CUSTOM && (td->flags & FTYPEDESC_OUTPUT) != FTYPEDESC_OUTPUT))
 			{
 				return pContext->ThrowNativeError("Data field %s is not a string (%d != %d)", 
 					prop,
@@ -2056,10 +2273,11 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 			}
 			
 			typedescription_t *td = info.prop;
-			if (td->fieldType != FIELD_CHARACTER
+			if ((td->fieldType != FIELD_CHARACTER
 				&& td->fieldType != FIELD_STRING
 				&& td->fieldType != FIELD_MODELNAME
 				&& td->fieldType != FIELD_SOUNDNAME)
+				|| (td->fieldType == FIELD_CUSTOM && (td->flags & FTYPEDESC_OUTPUT) != FTYPEDESC_OUTPUT))
 			{
 				return pContext->ThrowNativeError("Property \"%s\" is not a valid string", prop);
 			}
@@ -2088,6 +2306,11 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 				}
 			}
 
+			if (!CanSetPropName(prop))
+			{
+				return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
+			}
+
 			if (bIsStringIndex)
 			{
 				offset += (element * (td->fieldSizeInBytes / td->fieldSize));
@@ -2096,6 +2319,8 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 			{
 				maxlen = td->fieldSize;
 			}
+
+			SET_TYPE_IF_VARIANT(FIELD_STRING);
 
 			break;
 		}
@@ -2435,7 +2660,12 @@ static cell_t GetEntityAddress(IPluginContext *pContext, const cell_t *params)
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
+
+#ifdef PLATFORM_X86
 	return reinterpret_cast<cell_t>(pEntity);
+#else
+	return g_SourceMod.ToPseudoAddress(pEntity);
+#endif
 }
 
 REGISTER_NATIVES(entityNatives)
@@ -2466,6 +2696,7 @@ REGISTER_NATIVES(entityNatives)
 	{"IsEntNetworkable",		IsEntNetworkable},
 	{"IsValidEdict",			IsValidEdict},
 	{"IsValidEntity",			IsValidEntity},
+	{"RemoveEntity",			RemoveEntity},
 	{"RemoveEdict",				RemoveEdict},
 	{"SetEdictFlags",			SetEdictFlags},
 	{"SetEntData",				SetEntData},

@@ -31,7 +31,7 @@
  * Version: $Id$
  */
  
-PerformCancelVote(client)
+void PerformCancelVote(int client)
 {
 	if (!IsVoteInProgress())
 	{
@@ -44,12 +44,12 @@ PerformCancelVote(client)
 	CancelVote();
 }
 	
-public AdminMenu_CancelVote(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public void AdminMenu_CancelVote(TopMenu topmenu, 
+							  TopMenuAction action,
+							  TopMenuObject object_id,
+							  int param,
+							  char[] buffer,
+							  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -66,10 +66,9 @@ public AdminMenu_CancelVote(Handle:topmenu,
 	}
 }
 
-public Action:Command_CancelVote(client, args)
+public Action Command_CancelVote(int client, int args)
 {
 	PerformCancelVote(client);
 
 	return Plugin_Handled;
 }
-

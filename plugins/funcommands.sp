@@ -38,7 +38,9 @@
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 
-public Plugin:myinfo =
+#pragma newdecls required
+
+public Plugin myinfo =
 {
 	name = "Fun Commands",
 	author = "AlliedModders LLC",
@@ -51,34 +53,34 @@ public Plugin:myinfo =
 TopMenu hTopMenu;
 
 // Sounds
-new String:g_BlipSound[PLATFORM_MAX_PATH];
-new String:g_BeepSound[PLATFORM_MAX_PATH];
-new String:g_FinalSound[PLATFORM_MAX_PATH];
-new String:g_BoomSound[PLATFORM_MAX_PATH];
-new String:g_FreezeSound[PLATFORM_MAX_PATH];
+char g_BlipSound[PLATFORM_MAX_PATH];
+char g_BeepSound[PLATFORM_MAX_PATH];
+char g_FinalSound[PLATFORM_MAX_PATH];
+char g_BoomSound[PLATFORM_MAX_PATH];
+char g_FreezeSound[PLATFORM_MAX_PATH];
 
 // Following are model indexes for temp entities
-new g_BeamSprite        = -1;
-new g_BeamSprite2       = -1;
-new g_HaloSprite        = -1;
-new g_GlowSprite        = -1;
-new g_ExplosionSprite   = -1;
+int g_BeamSprite        = -1;
+int g_BeamSprite2       = -1;
+int g_HaloSprite        = -1;
+int g_GlowSprite        = -1;
+int g_ExplosionSprite   = -1;
 
 // Basic color arrays for temp entities
-new redColor[4]		= {255, 75, 75, 255};
-new orangeColor[4]	= {255, 128, 0, 255};
-new greenColor[4]	= {75, 255, 75, 255};
-new blueColor[4]	= {75, 75, 255, 255};
-new whiteColor[4]	= {255, 255, 255, 255};
-new greyColor[4]	= {128, 128, 128, 255};
+int redColor[4]		= {255, 75, 75, 255};
+int orangeColor[4]	= {255, 128, 0, 255};
+int greenColor[4]	= {75, 255, 75, 255};
+int blueColor[4]	= {75, 75, 255, 255};
+int whiteColor[4]	= {255, 255, 255, 255};
+int greyColor[4]	= {128, 128, 128, 255};
 
 // UserMessageId for Fade.
-new UserMsg:g_FadeUserMsgId;
+UserMsg g_FadeUserMsgId;
 
 // Serial Generator for Timer Safety
-new g_Serial_Gen = 0;
+int g_Serial_Gen = 0;
 
-new EngineVersion:g_GameEngine = Engine_Unknown;
+EngineVersion g_GameEngine = Engine_Unknown;
 
 // Flags used in various timers
 #define DEFAULT_TIMER_FLAGS TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE
@@ -93,7 +95,7 @@ new EngineVersion:g_GameEngine = Engine_Unknown;
 #include "funcommands/noclip.sp"
 #include "funcommands/drug.sp"
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	if (FindPluginByFile("basefuncommands.smx") != null)
 	{
@@ -105,9 +107,9 @@ public OnPluginStart()
 	g_GameEngine = GetEngineVersion();
 	g_FadeUserMsgId = GetUserMessageId("Fade");
 
-	RegisterCvars( );
-	RegisterCmds( );
-	HookEvents( );
+	RegisterCvars();
+	RegisterCmds();
+	HookEvents();
 	
 	/* Account for late loading */
 	TopMenu topmenu;
@@ -117,7 +119,7 @@ public OnPluginStart()
 	}
 }
 
-RegisterCvars( )
+void RegisterCvars()
 {
 	// beacon
 	g_Cvar_BeaconRadius = CreateConVar("sm_beacon_radius", "375", "Sets the radius for beacon's light rings.", 0, true, 50.0, true, 1500.0);
@@ -142,7 +144,7 @@ RegisterCvars( )
 	AutoExecConfig(true, "funcommands");
 }
 
-RegisterCmds( )
+void RegisterCmds()
 {
 	RegAdminCmd("sm_beacon", Command_Beacon, ADMFLAG_SLAY, "sm_beacon <#userid|name> [0/1]");
 	RegAdminCmd("sm_timebomb", Command_TimeBomb, ADMFLAG_SLAY, "sm_timebomb <#userid|name> [0/1]");
@@ -156,9 +158,9 @@ RegisterCmds( )
 	RegAdminCmd("sm_drug", Command_Drug, ADMFLAG_SLAY, "sm_drug <#userid|name> [0/1]");
 }
 
-HookEvents( )
+void HookEvents()
 {
-	decl String:folder[64];
+	char folder[64];
 	GetGameFolderName(folder, sizeof(folder));
 
 	if (strcmp(folder, "tf") == 0)
@@ -177,9 +179,9 @@ HookEvents( )
 	}	
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
-	new Handle:gameConfig = LoadGameConfigFile("funcommands.games");
+	Handle gameConfig = LoadGameConfigFile("funcommands.games");
 	if (gameConfig == null)
 	{
 		SetFailState("Unable to load game config funcommands.games");
@@ -211,7 +213,7 @@ public OnMapStart()
 		PrecacheSound(g_FreezeSound, true);
 	}
 	
-	new String:buffer[PLATFORM_MAX_PATH];
+	char buffer[PLATFORM_MAX_PATH];
 	if (GameConfGetKeyValue(gameConfig, "SpriteBeam", buffer, sizeof(buffer)) && buffer[0])
 	{
 		g_BeamSprite = PrecacheModel(buffer);
@@ -240,25 +242,25 @@ public OnMapStart()
 	delete gameConfig;
 }
 
-public OnMapEnd()
+public void OnMapEnd()
 {
-	KillAllBeacons( );
+	KillAllBeacons();
 	KillAllTimeBombs();
 	KillAllFireBombs();
 	KillAllFreezes();
 	KillAllDrugs();
 }
 
-public Action:Event_RoundEnd(Handle:event,const String:name[],bool:dontBroadcast)
+public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
-	KillAllBeacons( );
+	KillAllBeacons();
 	KillAllTimeBombs();
 	KillAllFireBombs();
 	KillAllFreezes();
 	KillAllDrugs();
 }
 
-public OnAdminMenuReady(Handle aTopMenu)
+public void OnAdminMenuReady(Handle aTopMenu)
 {
 	TopMenu topmenu = TopMenu.FromHandle(aTopMenu);
 
@@ -295,4 +297,3 @@ void AddTranslatedMenuItem(Menu menu, const char[] opt, const char[] phrase, int
 	Format(buffer, sizeof(buffer), "%T", phrase, client);
 	menu.AddItem(opt, buffer);
 }
-

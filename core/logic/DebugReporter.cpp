@@ -29,11 +29,11 @@
  * Version: $Id$
  */
 
+#include <ISourceMod.h>
 #include <IPluginSys.h>
 #include <stdarg.h>
 #include "DebugReporter.h"
 #include "Logger.h"
-#include <am-string.h>
 
 DebugReport g_DbgReporter;
 
@@ -157,44 +157,90 @@ int DebugReport::_GetPluginIndex(IPluginContext *ctx)
 
 void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 {
-	// Find the nearest plugin to blame.
+	// Don't log an error if a function wasn't runnable.
+	// This is necassary due to the way SM is handling and exposing
+	// scripted functions. It's too late to change that now.
+	if (report.Code() == SP_ERROR_NOT_RUNNABLE)
+		return;
+
 	const char *blame = nullptr;
-	for (; !iter.Done(); iter.Next()) {
-		if (iter.IsScriptedFrame()) {
-			IPlugin *plugin = pluginsys->FindPluginByContext(iter.Context()->GetContext());
-			if (plugin)
-				blame = plugin->GetFilename();
-			else
-				blame = iter.Context()->GetRuntime()->GetFilename();
-			break;
+	if (report.Blame()) 
+	{
+		blame = report.Blame()->DebugName();
+	} else {
+	    // Find the nearest plugin to blame.
+		for (; !iter.Done(); iter.Next()) 
+		{
+			if (iter.IsScriptedFrame()) 
+			{
+				IPlugin *plugin = pluginsys->FindPluginByContext(iter.Context()->GetContext());
+				if (plugin)
+				{
+					blame = plugin->GetFilename();
+				} else {
+					blame = iter.Context()->GetRuntime()->GetFilename();
+				}
+				break;
+			}
 		}
 	}
 
 	iter.Reset();
 
 	g_Logger.LogError("[SM] Exception reported: %s", report.Message());
-	if (blame)
-		g_Logger.LogError("[SM] Blaming plugin: %s", blame);
-	g_Logger.LogError("[SM] Call stack trace:");
 
-	for (int index = 0; !iter.Done(); iter.Next(), index++) {
-		const char *fn = iter.FunctionName();
-		if (!fn)
-			fn = "<unknown function>";
+	if (blame) 
+	{
+		g_Logger.LogError("[SM] Blaming: %s", blame);
+	}
 
-		if (iter.IsNativeFrame()) {
-			g_Logger.LogError("[SM]   [%d] %s", index, fn);
-			continue;
-		}
-		if (iter.IsScriptedFrame()) {
-			const char *file = iter.FilePath();
-			if (!file)
-				file = "<unknown>";
-			g_Logger.LogError("[SM]   [%d] Line %d, %s::%s()",
-				index,
-				iter.LineNumber(),
-				file,
-				fn);
+	ke::Vector<ke::AString> arr = GetStackTrace(&iter);
+	for (size_t i = 0; i < arr.length(); i++)
+	{
+		g_Logger.LogError("%s", arr[i].chars());
+	}
+}
+
+ke::Vector<ke::AString> DebugReport::GetStackTrace(IFrameIterator *iter)
+{
+	char temp[3072];
+	ke::Vector<ke::AString> trace;
+	iter->Reset();
+	
+	if (!iter->Done())
+	{
+		trace.append("[SM] Call stack trace:");
+
+		for (int index = 0; !iter->Done(); iter->Next(), index++) 
+		{
+			const char *fn = iter->FunctionName();
+			if (!fn)
+			{
+				fn = "<unknown function>";
+			}
+			if (iter->IsNativeFrame()) 
+			{
+				g_pSM->Format(temp, sizeof(temp), "[SM]   [%d] %s", index, fn);
+				trace.append(temp);
+				continue;
+			}
+			if (iter->IsScriptedFrame()) 
+			{
+				const char *file = iter->FilePath();
+				if (!file)
+				{
+					file = "<unknown>";
+				}
+				g_pSM->Format(temp, sizeof(temp), "[SM]   [%d] Line %d, %s::%s",
+						index,
+						iter->LineNumber(),
+						file,
+						fn);
+				
+				trace.append(temp);
+			}
 		}
 	}
+	
+	return trace;
 }

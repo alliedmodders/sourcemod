@@ -29,11 +29,13 @@
  * Version: $Id$
  */
 
+#include "common_logic.h"
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <sm_platform.h>
 #include "stringutil.h"
+#include "sprintf.h"
 #include <am-string.h>
 #include "TextParsers.h"
 
@@ -83,11 +85,13 @@ unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search
 	size_t searchLen = strlen(search);
 	size_t replaceLen = strlen(replace);
 
-	char *ptr = subject;
+	char *newptr, *ptr = subject;
 	unsigned int total = 0;
-	while ((ptr = UTIL_ReplaceEx(ptr, maxlength, search, searchLen, replace, replaceLen, caseSensitive)) != NULL)
+	while ((newptr = UTIL_ReplaceEx(ptr, maxlength, search, searchLen, replace, replaceLen, caseSensitive)) != NULL)
 	{
 		total++;
+		maxlength -= newptr - ptr;
+		ptr = newptr;
 		if (*ptr == '\0')
 		{
 			break;
@@ -361,3 +365,76 @@ char *UTIL_TrimWhitespace(char *str, size_t &len)
 	return str;
 }
 
+class StaticCharBuf
+{
+    char *buffer;
+    size_t max_size;
+public:
+    StaticCharBuf() : buffer(NULL), max_size(0)
+    {
+    }
+    ~StaticCharBuf()
+    {
+        free(buffer);
+    }
+    char* GetWithSize(size_t len)
+    {
+        if (len > max_size)
+        {
+            buffer = (char *)realloc(buffer, len);
+            max_size = len;
+        }
+        return buffer;
+    }
+};
+
+static char g_formatbuf[2048];
+static StaticCharBuf g_extrabuf;
+cell_t InternalFormat(IPluginContext *pCtx, const cell_t *params, int start)
+{
+	char *buf, *fmt, *destbuf;
+	cell_t start_addr, end_addr, maxparam;
+	size_t res, maxlen;
+	int arg = start + 4;
+	bool copy = false;
+	char *__copy_buf;
+
+	pCtx->LocalToString(params[start + 1], &destbuf);
+	pCtx->LocalToString(params[start + 3], &fmt);
+
+	maxlen = static_cast<size_t>(params[start + 2]);
+	start_addr = params[start + 1];
+	end_addr = params[start + 1] + maxlen;
+	maxparam = params[0];
+
+	for (cell_t i = (start + 3); i <= maxparam; i++)
+	{
+		if ((params[i] >= start_addr) && (params[i] <= end_addr))
+		{
+			copy = true;
+			break;
+		}
+	}
+
+	if (copy)
+	{
+		if (maxlen > sizeof(g_formatbuf))
+		{
+			__copy_buf = g_extrabuf.GetWithSize(maxlen);
+		}
+		else
+		{
+			__copy_buf = g_formatbuf;
+		}
+	}
+
+	buf = (copy) ? __copy_buf : destbuf;
+	res = atcprintf(buf, maxlen, fmt, pCtx, params, &arg);
+
+	if (copy)
+	{
+		memcpy(destbuf, __copy_buf, res+1);
+	}
+
+	return static_cast<cell_t>(res);
+}

@@ -58,6 +58,10 @@ struct maplist_info_t
 	{
 		return strcmp(value->name, key) == 0;
 	}
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
+	}
 };
 
 #define MAPLIST_FLAG_MAPSFOLDER		(1<<0)		/**< On failure, use all maps in the maps folder. */
@@ -321,7 +325,7 @@ public:
 	{
 		return strcmp((char *)str1, (char *)str2);
 	}
-	CellArray *UpdateMapList(CellArray *pUseArray, const char *name, int *pSerial, unsigned int flags)
+	ICellArray *UpdateMapList(ICellArray *pUseArray, const char *name, int *pSerial, unsigned int flags)
 	{
 		int change_serial;
 		CellArray *pNewArray = NULL;
@@ -515,10 +519,11 @@ private:
 					continue;
 				}
 				
-				if (strcmp(bridge->GetSourceEngineName(), "insurgency") == 0)
+				if (strcmp(bridge->GetSourceEngineName(), "insurgency") == 0
+					|| strcmp(bridge->GetSourceEngineName(), "doi") == 0)
 				{
-					// Insurgency (presumably?) doesn't allow spaces in map names
-					// and does use a space to delimit the map name from the map mode
+					// Insurgency and Day of Infamy (presumably?) doesn't allow spaces in map names
+					// and do use a space to delimit the map name from the map mode
 					int i = 0;
 					while (ptr[i] != 0)
 					{
@@ -594,7 +599,7 @@ static cell_t LoadMapList(IPluginContext *pContext, const cell_t *params)
 	char *str;
 	Handle_t hndl;
 	cell_t *addr, flags;
-	CellArray *pArray, *pNewArray;
+	ICellArray *pArray, *pNewArray;
 
 	hndl = params[1];
 	pContext->LocalToPhysAddr(params[2], &addr);

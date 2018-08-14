@@ -304,6 +304,14 @@ static cell_t smn_PbGetRepeatedFieldCount(IPluginContext *pCtx, const cell_t *pa
 	return cnt;
 }
 
+static cell_t smn_PbHasField(IPluginContext *pCtx, const cell_t *params)
+{
+	GET_MSG_FROM_HANDLE_OR_ERR();
+	GET_FIELD_NAME_OR_ERR();
+
+	return msg->HasField(strField) ? 1 : 0;
+}
+
 static cell_t smn_PbSetInt(IPluginContext *pCtx, const cell_t *params)
 {
 	GET_MSG_FROM_HANDLE_OR_ERR();
@@ -778,6 +786,7 @@ REGISTER_NATIVES(protobufnatives)
 	{"Protobuf.ReadVector",					smn_PbReadVector},
 	{"Protobuf.ReadVector2D",				smn_PbReadVector2D},
 	{"Protobuf.GetRepeatedFieldCount",		smn_PbGetRepeatedFieldCount},
+	{"Protobuf.HasField",					smn_PbHasField},
 	{"Protobuf.SetInt",						smn_PbSetInt},
 	{"Protobuf.SetFloat",					smn_PbSetFloat},
 	{"Protobuf.SetBool",					smn_PbSetBool},

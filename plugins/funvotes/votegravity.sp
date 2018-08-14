@@ -31,15 +31,14 @@
  * Version: $Id$
  */
 
-
-DisplayVoteGravityMenu(client,count,String:items[5][])
+void DisplayVoteGravityMenu(int client, int count, char[][] items)
 {
 	LogAction(client, -1, "\"%L\" initiated a gravity vote.", client);
 	ShowActivity2(client, "[SM] ", "%t", "Initiated Vote Gravity");
 	
-	g_voteType = voteType:gravity;
+	g_voteType = gravity;
 	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 	
 	if (count == 1)
 	{
@@ -54,7 +53,7 @@ DisplayVoteGravityMenu(client,count,String:items[5][])
 		g_voteInfo[VOTE_NAME][0] = '\0';
 		
 		g_hVoteMenu.SetTitle("Gravity Vote");
-		for (new i = 0; i < count; i++)
+		for (int i = 0; i < count; i++)
 		{
 			g_hVoteMenu.AddItem(items[i], items[i]);
 		}	
@@ -64,12 +63,12 @@ DisplayVoteGravityMenu(client,count,String:items[5][])
 	g_hVoteMenu.DisplayVoteToAll(20);
 }
 
-public AdminMenu_VoteGravity(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public void AdminMenu_VoteGravity(TopMenu topmenu, 
+							  TopMenuAction action,
+							  TopMenuObject object_id,
+							  int param,
+							  char[] buffer,
+							  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -78,7 +77,7 @@ public AdminMenu_VoteGravity(Handle:topmenu,
 	else if (action == TopMenuAction_SelectOption)
 	{
 		/* Might need a better way of selecting the list of pre-defined gravity choices */
-		new String:items[5][5] ={"200","400","800","1600","3200"};
+		char items[5][5] ={"200","400","800","1600","3200"};
 		DisplayVoteGravityMenu(param,5, items);
 	}
 	else if (action == TopMenuAction_DrawOption)
@@ -88,7 +87,7 @@ public AdminMenu_VoteGravity(Handle:topmenu,
 	}
 }
 
-public Action:Command_VoteGravity(client, args)
+public Action Command_VoteGravity(int client, int args)
 {
 	if (args < 1)
 	{
@@ -107,18 +106,18 @@ public Action:Command_VoteGravity(client, args)
 		return Plugin_Handled;
 	}
 	
-	decl String:text[256];
+	char text[256];
 	GetCmdArgString(text, sizeof(text));
 
-	decl String:items[5][64];
-	new count;	
-	new len, pos;
+	char items[5][64];
+	int count;	
+	int len, pos;
 	
 	while (pos != -1 && count < 5)
 	{	
 		pos = BreakString(text[len], items[count], sizeof(items[]));
 		
-		decl Float:temp;
+		float temp;
 		if (StringToFloatEx(items[count], temp) == 0)
 		{
 			ReplyToCommand(client, "[SM] %t", "Invalid Amount");

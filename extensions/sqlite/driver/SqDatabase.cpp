@@ -84,6 +84,18 @@ IDBDriver *SqDatabase::GetDriver()
 
 bool SqDatabase::QuoteString(const char *str, char buffer[], size_t maxlen, size_t *newSize)
 {
+	unsigned long size = static_cast<unsigned long>(strlen(str));
+	unsigned long needed = size * 2 + 1;
+
+	if (maxlen < needed)
+	{
+		if (newSize != NULL)
+		{
+			*newSize = (size_t)needed;
+		}
+		return false;
+	}
+
 	char *res = sqlite3_snprintf(static_cast<int>(maxlen), buffer, "%q", str);
 
 	if (res != NULL && newSize != NULL)

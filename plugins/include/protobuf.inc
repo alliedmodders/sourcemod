@@ -109,8 +109,15 @@ methodmap Protobuf < Handle
 	//
 	// @param field      Field name.
 	// @return           Number of elements in the field.
-	// @error            Non-existent field, or incorrect field type.
+	// @error            Non-existent field, or non-repeated field.
 	public native int GetRepeatedFieldCount(const char[] field);
+	
+	// Returns whether or not the named, non-repeated field has a value set.
+	//
+	// @param field      Field name.
+	// @return           True if value has been set, else false.
+	// @error            Non-existent field, or repeated field.
+	public native bool HasField(const char[] field);
 
 	// Sets an int32, uint32, sint32, fixed32, sfixed32, or enum value on a protobuf message.
 	//
@@ -306,7 +313,7 @@ native bool PbReadBool(Handle pb, const char[] field, int index = PB_FIELD_NOT_R
  * @param index			Index into repeated field.
  * @error				Invalid or incorrect Handle, non-existent field, or incorrect field type.
  */
-native void PbReadString(Handle pb, const char[] field, String:buffer[], maxlength, int index = PB_FIELD_NOT_REPEATED);
+native void PbReadString(Handle pb, const char[] field, char[] buffer, int maxlength, int index = PB_FIELD_NOT_REPEATED);
 
 /**
  * Reads an RGBA color value from a protobuf message.
@@ -317,7 +324,7 @@ native void PbReadString(Handle pb, const char[] field, String:buffer[], maxleng
  * @param index			Index into repeated field.
  * @error				Invalid or incorrect Handle, non-existent field, or incorrect field type.
  */
-native void PbReadColor(Handle pb, const char[] field, buffer[4], int index = PB_FIELD_NOT_REPEATED);
+native void PbReadColor(Handle pb, const char[] field, int buffer[4], int index = PB_FIELD_NOT_REPEATED);
 
 /**
  * Reads an XYZ angle value from a protobuf message.

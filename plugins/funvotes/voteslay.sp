@@ -31,8 +31,7 @@
  * Version: $Id$
  */
 
-
-DisplayVoteSlayMenu(client, target, String:name[])
+void DisplayVoteSlayMenu(int client, int target, char[] name)
 {
 	if (!IsPlayerAlive(target))
 	{
@@ -40,15 +39,16 @@ DisplayVoteSlayMenu(client, target, String:name[])
 		return;
 	}
 	
-	g_voteClient[VOTE_CLIENTID] = target;
+	g_voteTarget = GetClientUserId(target);
+	
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a slay vote against \"%L\"", client, target);
 	ShowActivity2(client, "[SM] ", "%t", "Initiated Vote Slay", g_voteInfo[VOTE_NAME]);
 	
-	g_voteType = voteType:slay;
+	g_voteType = slay;
 	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 	g_hVoteMenu.SetTitle("Voteslay Player");
 	g_hVoteMenu.AddItem(VOTE_YES, "Yes");
 	g_hVoteMenu.AddItem(VOTE_NO, "No");
@@ -56,11 +56,11 @@ DisplayVoteSlayMenu(client, target, String:name[])
 	g_hVoteMenu.DisplayVoteToAll(20);
 }
 
-DisplaySlayTargetMenu(client)
+void DisplaySlayTargetMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_Slay);
+	Menu menu = new Menu(MenuHandler_Slay);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "Slay vote", client);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
@@ -70,12 +70,12 @@ DisplaySlayTargetMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public AdminMenu_VoteSlay(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public void AdminMenu_VoteSlay(TopMenu topmenu, 
+							  TopMenuAction action,
+							  TopMenuObject object_id,
+							  int param,
+							  char[] buffer,
+							  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -92,7 +92,7 @@ public AdminMenu_VoteSlay(Handle:topmenu,
 	}
 }
 
-public MenuHandler_Slay(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_Slay(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -107,8 +107,8 @@ public MenuHandler_Slay(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32], String:name[32];
-		new userid, target;
+		char info[32], name[32];
+		int userid, target;
 		
 		menu.GetItem(param2, info, sizeof(info), _, name, sizeof(name));
 		userid = StringToInt(info);
@@ -132,7 +132,7 @@ public MenuHandler_Slay(Menu menu, MenuAction action, int param1, int param2)
 	}
 }
 
-public Action:Command_VoteSlay(client, args)
+public Action Command_VoteSlay(int client, int args)
 {
 	if (args < 1)
 	{
@@ -151,13 +151,14 @@ public Action:Command_VoteSlay(client, args)
 		return Plugin_Handled;
 	}
 	
-	decl String:text[256], String:arg[64];
+	char text[256], arg[64];
 	GetCmdArgString(text, sizeof(text));
 	
 	BreakString(text, arg, sizeof(arg));
 	
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(
 			arg,

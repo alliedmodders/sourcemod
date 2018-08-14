@@ -44,7 +44,7 @@
 using namespace SourceHook;
 using namespace SourceMod;
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
+#if SOURCE_ENGINE == SE_CSGO
 #define USE_PROTOBUF_USERMESSAGES
 #endif
 
@@ -102,12 +102,12 @@ public: //IUserMessages
 		bool intercept=false);
 	UserMessageType GetUserMessageType() const;
 public:
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
+#if SOURCE_ENGINE == SE_CSGO
 	void OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg);
 	void OnSendUserMessage_Post(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg);
 #endif
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_DOTA
+#if SOURCE_ENGINE == SE_CSGO
 	protobuf::Message *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
 	protobuf::Message *OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD

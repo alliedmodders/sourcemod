@@ -34,10 +34,11 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ICellArray.h>
 
 extern HandleType_t htCellArray;
 
-class CellArray
+class CellArray : public ICellArray
 {
 public:
 	CellArray(size_t blocksize) : m_Data(NULL), m_BlockSize(blocksize), m_AllocSize(0), m_Size(0)
@@ -49,6 +50,31 @@ public:
 		free(m_Data);
 	}
 
+	/**
+	* @brief Creates a cell array object.
+	*
+	* @param blocksize  The number of cells each member of the array can
+	*                   hold.  For example, 32 cells is equivalent to:
+	*                   new Array[X][32]
+	* @return			A new ICellArray object.
+	*/
+	static ICellArray *New(size_t blocksize)
+	{
+		return new CellArray(blocksize);
+	}
+
+	/**
+	* @brief Releases a cell array's resources.
+	*
+	* @param pack		An ICellArray object to release.
+	*/
+	static void Free(ICellArray *arr)
+	{
+		delete arr;
+	}
+
+	// ICellArray
+public:
 	size_t size() const
 	{
 		return m_Size;
@@ -154,12 +180,18 @@ public:
 		return true;
 	}
 
-	CellArray *clone()
+	ICellArray *clone()
 	{
 		CellArray *array = new CellArray(m_BlockSize);
 		array->m_AllocSize = m_AllocSize;
 		array->m_Size = m_Size;
 		array->m_Data = (cell_t *)malloc(sizeof(cell_t) * m_BlockSize * m_AllocSize);
+		if (!array->m_Data)
+		{
+			delete array;
+			return NULL;
+		}
+		
 		memcpy(array->m_Data, m_Data, sizeof(cell_t) * m_BlockSize * m_Size);
 		return array;
 	}

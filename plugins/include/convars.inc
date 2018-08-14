@@ -216,7 +216,7 @@ methodmap ConVar < Handle
 	//
 	// @param name       Buffer to store the name of the convar.
 	// @param maxlength  Maximum length of string buffer.
-	public native void GetName(char[] name, maxlength);
+	public native void GetName(char[] name, int maxlength);
 
 	// Replicates a convar value to a specific client. This does not change the actual convar value.
 	//
@@ -405,7 +405,7 @@ native int GetConVarFlags(Handle convar);
  * @param flags			A bitstring containing the FCVAR_* flags to enable.
  * @error				Invalid or corrupt Handle.
  */
-native void SetConVarFlags(Handle convar, flags);
+native void SetConVarFlags(Handle convar, int flags);
 
 /**
  * Retrieves the specified bound of a console variable.
@@ -437,7 +437,7 @@ native void SetConVarBounds(Handle convar, ConVarBounds type, bool set, float va
  * @param maxlength		Maximum length of string buffer.
  * @error				Invalid or corrupt Handle.     
  */
-native void GetConVarName(Handle convar, char[] name, maxlength);
+native void GetConVarName(Handle convar, char[] name, int maxlength);
 
 /**
  * Replicates a convar value to a specific client. This does not change the actual convar value.

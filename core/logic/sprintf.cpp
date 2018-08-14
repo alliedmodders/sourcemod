@@ -30,15 +30,19 @@
 #include "sprintf.h"
 #include <am-float.h>
 #include <am-string.h>
+#include <IDBDriver.h>
 #include <ITranslator.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/CoreProvider.h>
 
 using namespace SourceMod;
 
-#define LADJUST			0x00000004		/* left adjustment */
-#define ZEROPAD			0x00000080		/* zero (as opposed to blank) pad */
-#define UPPERDIGITS		0x00000200		/* make alpha digits uppercase */
+IDatabase *g_FormatEscapeDatabase = NULL;
+
+#define LADJUST			0x00000001		/* left adjustment */
+#define ZEROPAD			0x00000002		/* zero (as opposed to blank) pad */
+#define UPPERDIGITS		0x00000004		/* make alpha digits uppercase */
+#define NOESCAPE		0x00000008		/* do not escape strings (they are only escaped if a database connection is provided) */
 #define to_digit(c)		((c) - '0')
 #define is_digit(c)		((unsigned)to_digit(c) <= 9)
 
@@ -87,7 +91,7 @@ try_serverlang:
 	}
 	else
 	{
-		pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Translation failed: invalid client index %d", target);
+		pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Translation failed: invalid client index %d (arg %d)", target, *arg);
 		goto error_out;
 	}
 
@@ -102,13 +106,13 @@ try_serverlang:
 		{
 			if (pPhrases->FindTranslation(key, SOURCEMOD_LANGUAGE_ENGLISH, &pTrans) != Trans_Okay)
 			{
-				pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found", key);
+				pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found (arg %d)", key, *arg);
 				goto error_out;
 			}
 		}
 		else
 		{
-			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found", key);
+			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found (arg %d)", key, *arg);
 			goto error_out;
 		}
 	}
@@ -123,9 +127,8 @@ try_serverlang:
 		if ((*arg) + (max_params - 1) > (size_t)params[0])
 		{
 			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, 
-				"Translation string formatted incorrectly - missing at least %d parameters", 
-				((*arg + (max_params - 1)) - params[0])
-				);
+				"Translation string formatted incorrectly - missing at least %d parameters (arg %d)", 
+				((*arg + (max_params - 1)) - params[0]), *arg);
 			goto error_out;
 		}
 
@@ -147,7 +150,7 @@ error_out:
 	return 0;
 }
 
-void AddString(char **buf_p, size_t &maxlen, const char *string, int width, int prec)
+bool AddString(char **buf_p, size_t &maxlen, const char *string, int width, int prec, int flags)
 {
 	int size = 0;
 	char *buf;
@@ -159,6 +162,7 @@ void AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 	{
 		string = nlstr;
 		prec = -1;
+		flags |= NOESCAPE;
 	}
 
 	if (prec >= 0)
@@ -182,12 +186,44 @@ void AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 		size = maxlen;
 	}
 
-	maxlen -= size;
 	width -= size;
 
-	while (size--)
+	if (g_FormatEscapeDatabase && (flags & NOESCAPE) == 0)
 	{
-		*buf++ = *string++;
+		char *tempBuffer = NULL;
+		if (prec != -1)
+		{
+			// I doubt anyone will ever do this, so just allocate.
+			tempBuffer = new char[maxlen + 1];
+			memcpy(tempBuffer, string, size);
+			tempBuffer[size] = '\0';
+		}
+
+		size_t newSize;
+		bool ret = g_FormatEscapeDatabase->QuoteString(tempBuffer ? tempBuffer : string, buf, maxlen + 1, &newSize);
+
+		if (tempBuffer)
+		{
+			delete[] tempBuffer;
+		}
+
+		if (!ret)
+		{
+			return false;
+		}
+
+		maxlen -= newSize;
+		buf += newSize;
+		size = 0; // Consistency.
+	}
+	else
+	{
+		maxlen -= size;
+
+		while (size--)
+		{
+			*buf++ = *string++;
+		}
 	}
 
 	while ((width-- > 0) && maxlen)
@@ -197,6 +233,8 @@ void AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 	}
 
 	*buf_p = buf;
+
+	return true;
 }
 
 void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, int flags)
@@ -212,7 +250,7 @@ void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, in
 
 	if (ke::IsNaN(fval))
 	{
-		AddString(buf_p, maxlen, "NaN", width, prec);
+		AddString(buf_p, maxlen, "NaN", width, prec, flags | NOESCAPE);
 		return;
 	}
 
@@ -750,7 +788,7 @@ reswitch:
 				}
 				const char *str = (const char *)params[curparam];
 				curparam++;
-				AddString(&buf_p, llen, str, width, prec);
+				AddString(&buf_p, llen, str, width, prec, flags);
 				arg++;
 				break;
 			}
@@ -1030,6 +1068,11 @@ reswitch:
 				flags |= LADJUST;
 				goto rflag;
 			}
+		case '!':
+			{
+				flags |= NOESCAPE;
+				goto rflag;
+			}
 		case '.':
 			{
 				n = 0;
@@ -1127,21 +1170,16 @@ reswitch:
 					const char *auth;
 					int userid;
 					if (!bridge->DescribePlayer(*value, &name, &auth, &userid))
-						return pCtx->ThrowNativeError("Client index %d is invalid", *value);
-					ke::SafeSprintf(buffer, 
-						sizeof(buffer), 
-						"%s<%d><%s><>", 
-						name,
-						userid,
-						auth);
+						return pCtx->ThrowNativeError("Client index %d is invalid (arg %d)", *value, arg);
+					
+					ke::SafeSprintf(buffer, sizeof(buffer), "%s<%d><%s><>", name, userid, auth);
 				}
 				else
 				{
-					ke::SafeSprintf(buffer,
-						sizeof(buffer),
-						"Console<0><Console><Console>");
+					ke::SafeStrcpy(buffer, sizeof(buffer), "Console<0><Console><Console>");
 				}
-				AddString(&buf_p, llen, buffer, width, prec);
+				if (!AddString(&buf_p, llen, buffer, width, prec, flags))
+					return pCtx->ThrowNativeError("Escaped string would be truncated (arg %d)", arg);
 				arg++;
 				break;
 			}
@@ -1154,9 +1192,10 @@ reswitch:
 				const char *name = "Console";
 				if (*value) {
 					if (!bridge->DescribePlayer(*value, &name, nullptr, nullptr))
-						return pCtx->ThrowNativeError("Client index %d is invalid", *value);
+						return pCtx->ThrowNativeError("Client index %d is invalid (arg %d)", *value, arg);
 				}
-				AddString(&buf_p, llen, name, width, prec);
+				if (!AddString(&buf_p, llen, name, width, prec, flags))
+					return pCtx->ThrowNativeError("Escaped string would be truncated (arg %d)", arg);
 				arg++;
 				break;
 			}
@@ -1165,7 +1204,8 @@ reswitch:
 				CHECK_ARGS(0);
 				char *str;
 				pCtx->LocalToString(params[arg], &str);
-				AddString(&buf_p, llen, str, width, prec);
+				if (!AddString(&buf_p, llen, str, width, prec, flags))
+					return pCtx->ThrowNativeError("Escaped string would be truncated (arg %d)", arg);
 				arg++;
 				break;
 			}

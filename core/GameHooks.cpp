@@ -36,17 +36,12 @@ SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar 
 SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallback, SH_NOATTRIB, false, ConVar *, const char *);
 #endif
 
-#if SOURCE_ENGINE == SE_DOTA
-SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, CEntityIndex, EQueryCvarValueStatus, const char *, const char *);
-SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, CEntityIndex, EQueryCvarValueStatus, const char *, const char *);
-#elif SOURCE_ENGINE != SE_DARKMESSIAH
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
 SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
 #endif
 
-#if SOURCE_ENGINE == SE_DOTA
-SH_DECL_HOOK2_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommandContext &, const CCommand &);
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 #else
 SH_DECL_HOOK0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
@@ -88,7 +83,7 @@ void GameHooks::OnVSPReceived()
 	if (g_SMAPI->GetSourceEngineBuild() == SOURCE_ENGINE_ORIGINAL || vsp_version < 2)
 		return;
 
-#if SOURCE_ENGINE != SE_DARKMESSIAH && SOURCE_ENGINE != SE_DOTA
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 	hooks_ += SH_ADD_HOOK(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, SH_MEMBER(this, &GameHooks::OnQueryCvarValueFinished), false);
 	client_cvar_query_mode_ = ClientCvarQueryMode::VSP;
 #endif
@@ -116,19 +111,9 @@ void GameHooks::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 }
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
-# if SOURCE_ENGINE == SE_DOTA
-void GameHooks::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, CEntityIndex player, EQueryCvarValueStatus result,
-                                         const char *cvarName, const char *cvarValue)
-# else
 void GameHooks::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result,
-                                         const char *cvarName, const char *cvarValue)
-# endif
-{
-# if SOURCE_ENGINE == SE_DOTA
-	int client = player.Get();
-# else
+                                         const char *cvarName, const char *cvarValue){
 	int client = IndexOfEdict(pPlayer);
-# endif
 
 # if SOURCE_ENGINE == SE_CSGO
 	if (g_Players.HandleConVarQuery(cookie, client, result, cvarName, cvarValue))
@@ -138,13 +123,13 @@ void GameHooks::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPla
 }
 #endif
 
-ke::PassRef<CommandHook>
+ke::RefPtr<CommandHook>
 GameHooks::AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback)
 {
 	return new CommandHook(cmd, callback, false);
 }
 
-ke::PassRef<CommandHook>
+ke::RefPtr<CommandHook>
 GameHooks::AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback)
 {
 	return new CommandHook(cmd, callback, true);

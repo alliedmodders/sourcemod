@@ -321,7 +321,7 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 	{
 		size_t len = strlen(path);
 		char wildcardedPath[PLATFORM_MAX_PATH];
-		snprintf(wildcardedPath, sizeof(wildcardedPath), "%s%s*", path, (path[len-1] != '/' && path[len-1] != '\\') ? "/" : "");
+		ke::SafeSprintf(wildcardedPath, sizeof(wildcardedPath), "%s%s*", path, (path[len-1] != '/' && path[len-1] != '\\') ? "/" : "");
 		
 		char *pathID;
 		if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)

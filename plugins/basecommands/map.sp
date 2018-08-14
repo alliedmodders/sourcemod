@@ -31,7 +31,7 @@
  * Version: $Id$
  */
  
-public MenuHandler_ChangeMap(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_ChangeMap(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Cancel)
 	{
@@ -42,7 +42,7 @@ public MenuHandler_ChangeMap(Menu menu, MenuAction action, int param1, int param
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:map[64];
+		char map[PLATFORM_MAX_PATH];
 		
 		menu.GetItem(param2, map, sizeof(map));
 	
@@ -50,24 +50,26 @@ public MenuHandler_ChangeMap(Menu menu, MenuAction action, int param1, int param
 
 		LogAction(param1, -1, "\"%L\" changed map to \"%s\"", param1, map);
 
-		new Handle:dp;
+		DataPack dp;
 		CreateDataTimer(3.0, Timer_ChangeMap, dp);
-		WritePackString(dp, map);
+		dp.WriteString(map);
 	}
 	else if (action == MenuAction_Display)
 	{
-		decl String:title[128];
+		char title[128];
 		Format(title, sizeof(title), "%T", "Please select a map", param1);
-		SetPanelTitle(Handle:param2, title);
+
+		Panel panel = view_as<Panel>(param2);
+		panel.SetTitle(title);
 	}
 }
 
-public AdminMenu_Map(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public void AdminMenu_Map(TopMenu topmenu, 
+							  TopMenuAction action,
+							  TopMenuObject object_id,
+							  int param,
+							  char[] buffer,
+							  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -79,7 +81,7 @@ public AdminMenu_Map(Handle:topmenu,
 	}
 }
 
-public Action:Command_Map(client, args)
+public Action Command_Map(int client, int args)
 {
 	if (args < 1)
 	{
@@ -87,44 +89,46 @@ public Action:Command_Map(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:map[64];
+	char map[PLATFORM_MAX_PATH];
+	char displayName[PLATFORM_MAX_PATH];
 	GetCmdArg(1, map, sizeof(map));
 
-	if (!IsMapValid(map))
+	if (FindMap(map, displayName, sizeof(displayName)) == FindMap_NotFound)
 	{
 		ReplyToCommand(client, "[SM] %t", "Map was not found", map);
 		return Plugin_Handled;
 	}
 
-	ShowActivity2(client, "[SM] ", "%t", "Changing map", map);
+	GetMapDisplayName(displayName, displayName, sizeof(displayName));
 
+	ShowActivity2(client, "[SM] ", "%t", "Changing map", displayName);
 	LogAction(client, -1, "\"%L\" changed map to \"%s\"", client, map);
 
-	new Handle:dp;
+	DataPack dp;
 	CreateDataTimer(3.0, Timer_ChangeMap, dp);
-	WritePackString(dp, map);
+	dp.WriteString(map);
 
 	return Plugin_Handled;
 }
 
-public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
+public Action Timer_ChangeMap(Handle timer, DataPack dp)
 {
-	decl String:map[65];
+	char map[PLATFORM_MAX_PATH];
 
-	ResetPack(dp);
-	ReadPackString(dp, map, sizeof(map));
+	dp.Reset();
+	dp.ReadString(map, sizeof(map));
 
 	ForceChangeLevel(map, "sm_map Command");
 
 	return Plugin_Stop;
 }
 
-new Handle:g_map_array = null;
-new g_map_serial = -1;
+Handle g_map_array = null;
+int g_map_serial = -1;
 
 int LoadMapList(Menu menu)
 {
-	new Handle:map_array;
+	Handle map_array;
 	
 	if ((map_array = ReadMapList(g_map_array,
 			g_map_serial,
@@ -140,9 +144,9 @@ int LoadMapList(Menu menu)
 		return 0;
 	}
 	
-	RemoveAllMenuItems(menu);
+	menu.RemoveAllItems();
 	
-	char map_name[64];
+	char map_name[PLATFORM_MAX_PATH];
 	int map_count = GetArraySize(g_map_array);
 	
 	for (int i = 0; i < map_count; i++)

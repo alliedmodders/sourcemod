@@ -97,10 +97,8 @@
 			"engine"			"blade"
 			"engine"			"insurgency"
 			"engine"			"csgo"
-			"engine"			"dota"
 			"engine"			"sdk2013"
 			"engine"			"contagion"
-			"engine"			"bms"
 		}
 		
 		"Offsets"
@@ -109,7 +107,27 @@
 			{
 				"windows"		"11"
 				"linux"			"12"
+				"linux64"		"12"
 				"mac"			"12"
+				"mac64"			"12"
+			}
+		}
+	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"			"bms"
+		}
+		
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"12"
+				"linux"			"13"
+				"mac"			"13"
 			}
 		}
 	}
@@ -158,9 +176,25 @@
 			"game"					"dinodday"
 			"game"					"esmod"
 			"game"					"nucleardawn"
-			"game"					"csgo"
 			"game"					"berimbau"
 			"game"					"nmrih"
+			"game"					"kz"
+			"game"					"doi"
+			"game"					"bms"
+			"game"					"iosoccer"
+		}
+
+		"Keys"
+		{
+			"HudRadioMenuMsg"		"ShowMenu"
+		}
+	}
+	
+		"#default"
+	{
+		"#supported"
+		{
+			"engine"				"csgo"
 		}
 
 		"Keys"
@@ -191,10 +225,26 @@
 			"game"					"fof"
 			"game"					"dinodday"
 			"game"					"nucleardawn"
-			"game"					"csgo"
 			"game"					"berimbau"
 			"game"					"$INSURGENCY" // retail game
 			"game"					"nmrih"
+			"game"					"kz"
+			"game"					"doi"
+			"game"					"bms"
+			"game"					"iosoccer"
+		}
+		
+		"Keys"
+		{
+			"RadioMenuTimeout"		"4"
+		}
+	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"				"csgo"
 		}
 		
 		"Keys"
@@ -238,6 +288,9 @@
 			"game"					"cstrike"
 			"game"					"synergy"
 			"game"					"bms"
+			"game"					"kz"
+			"game"					"csgo"
+			"game"					"reactivedrop"
 		}
 		
 		"Keys"
@@ -246,12 +299,19 @@
 		}
 	}
 
+	"cstrike"
+	{
+		"Keys"
+		{
+			"GameExtension"		"game.cstrike"
+		}
+	}
+	
 	"#default"
 	{
 		"#supported"
 		{
-			"game"		"cstrike"
-			"game"		"csgo"
+			"engine"	"csgo"
 		}
 		
 		"Keys"
@@ -288,6 +348,14 @@
 		"Keys"
 		{
 			"RadioMenuMaxPageItems"	"9"
+		}
+	}
+	
+	"bms"
+	{
+		"Keys"
+		{
+			"RadioMenuMaxPageItems"	"6"
 		}
 	}
 }

@@ -39,11 +39,10 @@
 
 #include <IHandleSys.h>
 #include <sp_vm_api.h>
-#include <IDataPack.h>
 #include <time.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	13
+#define SMINTERFACE_SOURCEMOD_VERSION	14
 
 /**
 * @brief Forward declaration of the KeyValues class.
@@ -163,18 +162,18 @@ namespace SourceMod
 									unsigned int param) =0;
 
 		/**
-		 * @brief Creates a data pack object.
+		 * @brief Not implemented, do not use.
 		 *
-		 * @return			A new IDataPack object.
+		 * @return nullptr
 		 */
-		virtual IDataPack *CreateDataPack() =0;
+		virtual void *CreateDataPack() =0;
 
 		/**
-		 * @brief Releases a data pack's resources so it can be re-used.
+		 * @brief Not implemented, do not use.
 		 *
-		 * @param pack		An IDataPack object to release.
+		 * @param pack	Ignored
 		 */
-		virtual void FreeDataPack(IDataPack *pack) =0;
+		virtual void FreeDataPack(void *pack) =0;
 
 		/**
 		 * @brief Not implemented, do not use.
@@ -318,6 +317,20 @@ namespace SourceMod
 		 * @return			True if a map is currently running, otherwise false.
 		 */
 		virtual bool IsMapRunning() = 0;
+
+		/**
+		 * @brief Converts 32-bit pseudo address to memory address on 64-bit platforms.
+		 *
+		 * @return 			Memory address, or nullptr if pseudo address could not be converted.
+		 */
+		virtual void *FromPseudoAddress(uint32_t pseudoAddr) = 0;
+
+		/**
+		 * @brief Converts memory address to 32-bit pseudo address on 64-bit platforms.
+		 *
+		 * @return			Pseudo address, or 0 if memory address could not be converted.
+		 */
+		virtual uint32_t ToPseudoAddress(void *addr) = 0;
 	};
 }
 

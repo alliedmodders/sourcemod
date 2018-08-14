@@ -44,14 +44,14 @@
  * @param name			Name of string table to find.
  * @return				A string table index number if found, INVALID_STRING_TABLE otherwise.
  */
-native FindStringTable(const String:name[]);
+native int FindStringTable(const char[] name);
 
 /**
  * Returns the number of string tables that currently exist.
  *
  * @return				Number of string tables that currently exist.
  */
-native GetNumStringTables();
+native int GetNumStringTables();
 
 /**
  * Returns the number of strings that currently exist in a given string table.
@@ -60,7 +60,7 @@ native GetNumStringTables();
  * @return				Number of strings that currently exist.
  * @error				Invalid string table index.
  */
-native GetStringTableNumStrings(tableidx);
+native int GetStringTableNumStrings(int tableidx);
 
 /**
  * Returns the maximum number of strings that are allowed in a given string table.
@@ -69,7 +69,7 @@ native GetStringTableNumStrings(tableidx);
  * @return				Maximum number of strings allowed.
  * @error				Invalid string table index.
  */
-native GetStringTableMaxStrings(tableidx);
+native int GetStringTableMaxStrings(int tableidx);
 
 /**
  * Retrieves the name of a string table.
@@ -80,7 +80,7 @@ native GetStringTableMaxStrings(tableidx);
  * @return				Number of bytes written to the buffer (UTF-8 safe).
  * @error				Invalid string table index.
  */
-native GetStringTableName(tableidx, String:name[], maxlength);
+native int GetStringTableName(int tableidx, char[] name, int maxlength);
 
 /**
  * Searches for the index of a given string in a string table.
@@ -90,7 +90,7 @@ native GetStringTableName(tableidx, String:name[], maxlength);
  * @return				String index if found, INVALID_STRING_INDEX otherwise.
  * @error				Invalid string table index.
  */
-native FindStringIndex(tableidx, const String:str[]);
+native int FindStringIndex(int tableidx, const char[] str);
 
 /**
  * Retrieves the string at a given index of a string table.
@@ -102,7 +102,7 @@ native FindStringIndex(tableidx, const String:str[]);
  * @return				Number of bytes written to the buffer (UTF-8 safe).
  * @error				Invalid string table index or string index.
  */
-native ReadStringTable(tableidx, stringidx, String:str[], maxlength);
+native int ReadStringTable(int tableidx, int stringidx, char[] str, int maxlength);
 
 /**
  * Returns the length of the user data associated with a given string index.
@@ -112,7 +112,7 @@ native ReadStringTable(tableidx, stringidx, String:str[], maxlength);
  * @return				Length of user data. This will be 0 if there is no user data.
  * @error				Invalid string table index or string index.
  */
-native GetStringTableDataLength(tableidx, stringidx);
+native int GetStringTableDataLength(int tableidx, int stringidx);
 
 /**
  * Retrieves the user data associated with a given string index.
@@ -124,7 +124,7 @@ native GetStringTableDataLength(tableidx, stringidx);
  * @return				Number of bytes written to the buffer (UTF-8 safe).
  * @error				Invalid string table index or string index.
  */
-native GetStringTableData(tableidx, stringidx, String:userdata[], maxlength);
+native int GetStringTableData(int tableidx, int stringidx, char[] userdata, int maxlength);
 
 /**
  * Sets the user data associated with a given string index.
@@ -136,7 +136,7 @@ native GetStringTableData(tableidx, stringidx, String:userdata[], maxlength);
  * @return				Number of bytes written to the buffer (UTF-8 safe).
  * @error				Invalid string table index or string index.
  */
-native SetStringTableData(tableidx, stringidx, const String:userdata[], length);
+native int SetStringTableData(int tableidx, int stringidx, const char[] userdata, int length);
 
 /**
  * Adds a string to a given string table.
@@ -148,7 +148,7 @@ native SetStringTableData(tableidx, stringidx, const String:userdata[], length);
  *						If set to -1, then user data will be not be altered if the specified string
  *						already exists in the string table.
  */
-native AddToStringTable(tableidx, const String:str[], const String:userdata[]="", length=-1);
+native void AddToStringTable(int tableidx, const char[] str, const char[] userdata="", int length=-1);
 
 /**
  * Locks or unlocks the network string tables.
@@ -157,7 +157,7 @@ native AddToStringTable(tableidx, const String:str[], const String:userdata[]=""
  *						True means the tables should be locked for writing; false means unlocked.
  * @return				Previous lock state.
  */
-native bool:LockStringTables(bool:lock);
+native bool LockStringTables(bool lock);
 
 /**
  * Adds a file to the downloadables network string table.
@@ -165,16 +165,16 @@ native bool:LockStringTables(bool:lock);
  *
  * @param filename		File that will be added to downloadables table.
  */
-stock AddFileToDownloadsTable(const String:filename[])
+stock void AddFileToDownloadsTable(const char[] filename)
 {
-	static table = INVALID_STRING_TABLE;
+	static int table = INVALID_STRING_TABLE;
 	
 	if (table == INVALID_STRING_TABLE)
 	{
 		table = FindStringTable("downloadables");
 	}
 	
-	new bool:save = LockStringTables(false);
+	bool save = LockStringTables(false);
 	AddToStringTable(table, filename);
 	LockStringTables(save);
 }

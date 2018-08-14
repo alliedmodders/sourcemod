@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2017 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -46,6 +46,7 @@
 #include <sdktools_tempents>
 #include <sdktools_tempents_stocks>
 #include <sdktools_voice>
+#include <sdktools_variant_t>
 #include <sdktools_entinput>
 #include <sdktools_entoutput>
 #include <sdktools_hooks>
@@ -107,17 +108,15 @@ enum SDKPassMethod
  * Starts the preparation of an SDK call.
  *
  * @param type			Type of function call this will be.
- * @noreturn
  */
-native StartPrepSDKCall(SDKCallType:type);
+native void StartPrepSDKCall(SDKCallType type);
 
 /**
  * Sets the virtual index of the SDK call if it is virtual.
  *
  * @param vtblidx		Virtual table index.
- * @noreturn
  */
-native PrepSDKCall_SetVirtual(vtblidx);
+native void PrepSDKCall_SetVirtual(int vtblidx);
 
 /**
  * Finds an address in a library and sets it as the address to use for the SDK call.
@@ -129,7 +128,7 @@ native PrepSDKCall_SetVirtual(vtblidx);
  * @param bytes			Number of bytes in the binary search string.
  * @return				True on success, false if nothing was found.
  */
-native bool:PrepSDKCall_SetSignature(SDKLibrary:lib, const String:signature[], bytes);
+native bool PrepSDKCall_SetSignature(SDKLibrary lib, const char[] signature, int bytes);
 
 /**
  * Uses the given function address for the SDK call.
@@ -137,7 +136,7 @@ native bool:PrepSDKCall_SetSignature(SDKLibrary:lib, const String:signature[], b
  * @param addr			Address of function to use.
  * @return				True on success, false on failure.
  */
-native bool:PrepSDKCall_SetAddress(Address:addr);
+native bool PrepSDKCall_SetAddress(Address addr);
 
 /**
  * Finds an address or virtual function index in a GameConfig file and sets it as
@@ -148,7 +147,7 @@ native bool:PrepSDKCall_SetAddress(Address:addr);
  * @param name			Name of the property to find.
  * @return				True on success, false if nothing was found.
  */
-native bool:PrepSDKCall_SetFromConf(Handle:gameconf, SDKFuncConfSource:source, const String:name[]);
+native bool PrepSDKCall_SetFromConf(Handle gameconf, SDKFuncConfSource source, const char[] name);
 
 /**
  * Sets the return information of an SDK call.  Do not call this if there is no return data.
@@ -159,9 +158,8 @@ native bool:PrepSDKCall_SetFromConf(Handle:gameconf, SDKFuncConfSource:source, c
  * @param pass			How the data is passed in C++.
  * @param decflags		Flags on decoding from the plugin to C++.
  * @param encflags		Flags on encoding from C++ to the plugin.
- * @noreturn
  */
-native PrepSDKCall_SetReturnInfo(SDKType:type, SDKPassMethod:pass, decflags=0, encflags=0);
+native void PrepSDKCall_SetReturnInfo(SDKType type, SDKPassMethod pass, int decflags=0, int encflags=0);
 
 /**
  * Adds a parameter to the calling convention.  This should be called in normal ascending order.
@@ -170,16 +168,15 @@ native PrepSDKCall_SetReturnInfo(SDKType:type, SDKPassMethod:pass, decflags=0, e
  * @param pass			How the data is passed in C++.
  * @param decflags		Flags on decoding from the plugin to C++.
  * @param encflags		Flags on encoding from C++ to the plugin.
- * @noreturn
  */
-native PrepSDKCall_AddParameter(SDKType:type, SDKPassMethod:pass, decflags=0, encflags=0);
+native void PrepSDKCall_AddParameter(SDKType type, SDKPassMethod pass, int decflags=0, int encflags=0);
 
 /**
  * Finalizes an SDK call preparation and returns the resultant Handle.
  *
  * @return				A new SDKCall Handle on success, or INVALID_HANDLE on failure.
  */
-native Handle:EndPrepSDKCall();
+native Handle EndPrepSDKCall();
 
 /**
  * Calls an SDK function with the given parameters.
@@ -201,21 +198,21 @@ native Handle:EndPrepSDKCall();
  * @return				Simple return value, if any.
  * @error				Invalid Handle or internal decoding error.
  */
-native any:SDKCall(Handle:call, any:...);
+native any SDKCall(Handle call, any ...);
 
 /**
  * Returns the entity index of the player resource/manager entity.
  *
  * @return				Index of resource entity or -1 if not found.
  */
-native GetPlayerResourceEntity();
+native int GetPlayerResourceEntity();
 
 #include <sdktools_stocks>
 
 /**
  * Do not edit below this line!
  */
-public Extension:__ext_sdktools = 
+public Extension __ext_sdktools = 
 {
 	name = "SDKTools",
 	file = "sdktools.ext",

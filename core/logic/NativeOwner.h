@@ -81,7 +81,7 @@ protected:
 	unsigned int m_nMarkSerial;
 	List<WeakNative> m_WeakRefs;
 	ke::Vector<const sp_nativeinfo_t *> m_natives;
-	ke::Vector<ke::Ref<Native> > m_fakes;
+	ke::Vector<ke::RefPtr<Native> > m_fakes;
 };
 
 extern CNativeOwner g_CoreNatives;

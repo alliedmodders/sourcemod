@@ -1,0 +1,115 @@
+"Games"
+{
+	/* Alien Swarm: Reactive Drop */
+	
+	/* General Temp Entities */
+	"#default"
+	{
+		"Offsets"
+		{
+			/* Offset into CBaseTempEntity constructor */
+			"s_pTempEntities"
+			{
+				"windows"	"16"
+			}
+		}
+
+		"Signatures"
+		{
+			"CBaseTempEntity"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x89\x41\x04\xC7\x01"
+			}
+		}
+	}
+
+	/* CGlobalEntityList */
+	"#default"
+	{
+		"Signatures"
+		{
+			/* Functions in CGlobalEntityList */
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x08\x57\x85\xC9\x74\x2A\x8B\x01\xFF\x50\x08\x8B\x00\x83\xF8\xFF\x75\x2A\xB8\xFF\x1F\x00\x00\x40\x03\xC0\x8B\x34\xC6\xEB\x2A\x0F\xB7\xC0\x40\x03\xC0\x8B\x34\xC6\xEB\x2A\x8B\xB6\x04\x00\x02\x00\x85\xF6\x74\x2A\x8B\x5D\x0C\x8B\x3E\x85\xFF\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x15\x2A\x2A\x2A\x2A\x83\xC4\x04\xEB\x2A\x39\x5F\x5C"
+			}
+		}
+	}
+	
+	/* EntityFactoryDictionary function */
+	"#default"
+	{
+		"Signatures"
+		{
+			"EntityFactory"
+			{
+				"library"	"server"
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\xA8\x01\x75\x2A\x83\xC8\x01\xB9\x2A\x2A\x2A\x2A\xA3\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A"
+			}
+		}
+	}
+
+	/* CBaseEntityOutput::FireOutput */
+	"#default"
+	{
+		"Signatures"
+		{
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x20\x01\x00\x00\x53\x8B\xC1"
+			}
+		}
+	}
+	
+	"#default"
+	{
+		"Offsets"
+		{
+			"Ignite"
+			{
+				"windows"	"219"
+			}
+			"Extinguish"
+			{
+				"windows"	"222"
+			}
+			"Teleport"
+			{
+				"windows"	"111"
+			}
+			"GetVelocity"
+			{
+				"windows"	"144"
+			}
+			"EyeAngles"
+			{
+				"windows"	"135"
+			}
+			"AcceptInput"
+			{
+				"windows"	"39"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"26"
+			}
+			"Activate"
+			{
+				"windows"	"36"
+			}
+			"PlayerRunCmd"
+			{
+				"windows"	"442"
+			}
+		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"		"CAlienSwarmProxy"
+			"GameRulesDataTable"	"asw_gamerules_data"
+		}
+	}
+}

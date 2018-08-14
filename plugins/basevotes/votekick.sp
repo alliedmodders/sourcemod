@@ -31,33 +31,30 @@
  * Version: $Id$
  */
 
-
-DisplayVoteKickMenu(client, target)
+void DisplayVoteKickMenu(int client, int target)
 {
-	g_voteClient[VOTE_CLIENTID] = target;
-	g_voteClient[VOTE_USERID] = GetClientUserId(target);
+	g_voteTarget = GetClientUserId(target);
 
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a kick vote against \"%L\"", client, target);
 	ShowActivity(client, "%t", "Initiated Vote Kick", g_voteInfo[VOTE_NAME]);
 	
-	g_voteType = voteType:kick;
+	g_voteType = kick;
 	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 	g_hVoteMenu.SetTitle("Votekick Player");
 	g_hVoteMenu.AddItem(VOTE_YES, "Yes");
 	g_hVoteMenu.AddItem(VOTE_NO, "No");
 	g_hVoteMenu.ExitButton = false;
 	g_hVoteMenu.DisplayVoteToAll(20);
-
 }
 
-DisplayKickTargetMenu(client)
+void DisplayKickTargetMenu(int client)
 {
-	Menu menu = CreateMenu(MenuHandler_Kick);
+	Menu menu = new Menu(MenuHandler_Kick);
 	
-	decl String:title[100];
+	char title[100];
 	Format(title, sizeof(title), "%T:", "Kick vote", client);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
@@ -67,12 +64,12 @@ DisplayKickTargetMenu(client)
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public AdminMenu_VoteKick(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public void AdminMenu_VoteKick(TopMenu topmenu, 
+							  TopMenuAction action,
+							  TopMenuObject object_id,
+							  int param,
+							  char[] buffer,
+							  int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -89,7 +86,7 @@ public AdminMenu_VoteKick(Handle:topmenu,
 	}
 }
 
-public MenuHandler_Kick(Menu menu, MenuAction action, int param1, int param2)
+public int MenuHandler_Kick(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -104,8 +101,8 @@ public MenuHandler_Kick(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32], String:name[32];
-		new userid, target;
+		char info[32], name[32];
+		int userid, target;
 		
 		menu.GetItem(param2, info, sizeof(info), _, name, sizeof(name));
 		userid = StringToInt(info);
@@ -126,7 +123,7 @@ public MenuHandler_Kick(Menu menu, MenuAction action, int param1, int param2)
 	}
 }
 
-public Action:Command_Votekick(client, args)
+public Action Command_Votekick(int client, int args)
 {
 	if (args < 1)
 	{
@@ -145,12 +142,12 @@ public Action:Command_Votekick(client, args)
 		return Plugin_Handled;
 	}
 	
-	decl String:text[256], String:arg[64];
+	char text[256], arg[64];
 	GetCmdArgString(text, sizeof(text));
 	
-	new len = BreakString(text, arg, sizeof(arg));
+	int len = BreakString(text, arg, sizeof(arg));
 	
-	new target = FindTarget(client, arg);
+	int target = FindTarget(client, arg);
 	if (target == -1)
 	{
 		return Plugin_Handled;

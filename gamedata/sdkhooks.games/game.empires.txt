@@ -4,85 +4,120 @@
 	{
 		"Offsets"
 		{
+			"Blocked"
+			{
+				"windows"	"104"
+				"linux"		"105"
+			}
 			"EndTouch"
 			{
-				"windows"	"103"
+				"windows"	"102"
+				"linux"		"103"
 			}
 			"FireBullets"
 			{
-				"windows"	"115"
+				"windows"	"114"
+				"linux"		"115"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"119"
+				"linux"		"120"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"182"
+				"linux"		"184"
 			}
 			"OnTakeDamage"
 			{
 				"windows"	"62"
+				"linux"		"63"
 			}
 			"PreThink"
 			{
 				"windows"	"337"
+				"linux"		"338"
 			}
 			"PostThink"
 			{
 				"windows"	"338"
+				"linux"		"339"
 			}
 			"Reload"
 			{
-				"windows"	"274"
+				"windows"	"276"
+				"linux"		"277"
 			}
 			"SetTransmit"
 			{
 				"windows"	"20"
+				"linux"		"21"
 			}
 			"ShouldCollide"
 			{
 				"windows"	"16"
+				"linux"		"17"
 			}
 			"Spawn"
 			{
 				"windows"	"22"
+				"linux"		"23"
 			}
 			"StartTouch"
 			{
-				"windows"	"101"
+				"windows"	"100"
+				"linux"		"101
 			}
 			"Think"
 			{
 				"windows"	"47"
+				"linux"		"48"
 			}
 			"Touch"
 			{
-				"windows"	"102"
+				"windows"	"101"
+				"linux"		"102"
 			}
 			"TraceAttack"
 			{
 				"windows"	"60"
+				"linux"		"61"
 			}
 			"Use"
 			{
-				"windows"	"100"
+				"windows"	"99"
+				"linux"		"100"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"163"
+				"windows"	"162"
+				"linux"		"163"
 			}
 			"Weapon_CanSwitchTo"
 			{
 				"windows"	"271"
+				"linux"		"272"
 			}
 			"Weapon_CanUse"
 			{
 				"windows"	"265"
+				"linux"		"266"
 			}
 			"Weapon_Drop"
 			{
 				"windows"	"268"
+				"linux"		"269"
 			}
 			"Weapon_Equip"
 			{
 				"windows"	"266"
+				"linux"		"267"
 			}
 			"Weapon_Switch"
 			{
 				"windows"	"269"
+				"linux"		"270"
 			}
 		}
 	}

@@ -101,100 +101,100 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"418"
-				"linux"		"419"
-				"mac"		"419"
+				"windows"	"423"
+				"linux"		"424"
+				"mac"		"424"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"285"
-				"linux"		"286"
-				"mac"		"286"
+				"windows"	"289"
+				"linux"		"290"
+				"mac"		"290"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"283"
-				"linux"		"284"
-				"mac"		"284"
+				"windows"	"287"
+				"linux"		"288"
+				"mac"		"288"
 			}
 			"Ignite"
-			{
-				"windows"	"222"
-				"linux"		"223"
-				"mac"		"223"
-			}
-			"Extinguish"
 			{
 				"windows"	"226"
 				"linux"		"227"
 				"mac"		"227"
 			}
+			"Extinguish"
+			{
+				"windows"	"230"
+				"linux"		"231"
+				"mac"		"231"
+			}
 			"Teleport"
 			{
-				"windows"	"115"
-				"linux"		"116"
-				"mac"		"116"
+				"windows"	"117"
+				"linux"		"118"
+				"mac"		"118"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"458"
-				"linux"		"458"
-				"mac"		"458"
+				"windows"	"463"
+				"linux"		"463"
+				"mac"		"463"
 			}
 			"GetVelocity"
 			{
-				"windows"	"148"
-				"linux"		"149"
-				"mac"		"149"
+				"windows"	"150"
+				"linux"		"151"
+				"mac"		"151"
 			}
 			"EyeAngles"
 			{
-				"windows"	"138"
-				"linux"		"139"
-				"mac"		"139"
+				"windows"	"140"
+				"linux"		"141"
+				"mac"		"141"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"24"
-				"linux"		"25"
-				"mac"		"25"
+				"windows"	"25"
+				"linux"		"26"
+				"mac"		"26"
 			}
 			"AcceptInput"
 			{
-				"windows"	"37"
-				"linux"		"38"
-				"mac"		"38"
+				"windows"	"38"
+				"linux"		"39"
+				"mac"		"39"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"276"
-				"linux"		"277"
-				"mac"		"277"
+				"windows"	"280"
+				"linux"		"281"
+				"mac"		"281"
 			}
 			"Activate"
 			{
-				"windows"	"34"
-				"linux"		"35"
-				"mac"		"35"
+				"windows"	"35"
+				"linux"		"36"
+				"mac"		"36"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"437"
-				"linux"		"438"
-				"mac"		"438"
+				"windows"	"442"
+				"linux"		"443"
+				"mac"		"443"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"267"
-				"linux"		"268"
-				"mac"		"268"
+				"windows"	"271"
+				"linux"		"272"
+				"mac"		"272"
 			}
 		}
 		
 		"Keys"
 		{
-			"GameRulesProxy"	"CTFGameRulesProxy"
-			"GameRulesDataTable" "tf_gamerules_data"
+			"GameRulesProxy"	"CBM_MP_GameRulesProxy"
+			"GameRulesDataTable" "blackmesa_mp_gamerules_data"
 		}
 	}
 }

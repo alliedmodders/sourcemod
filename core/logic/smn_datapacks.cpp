@@ -61,7 +61,7 @@ public:
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		CDataPack::Free(reinterpret_cast<IDataPack *>(object));
+		CDataPack::Free(reinterpret_cast<CDataPack *>(object));
 	}
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
 	{
@@ -73,7 +73,7 @@ public:
 
 static cell_t smn_CreateDataPack(IPluginContext *pContext, const cell_t *params)
 {
-	IDataPack *pDataPack = CDataPack::New();
+	CDataPack *pDataPack = CDataPack::New();
 
 	if (!pDataPack)
 	{
@@ -88,7 +88,7 @@ static cell_t smn_WritePackCell(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	IDataPack *pDataPack;
+	CDataPack *pDataPack;
 
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
@@ -96,7 +96,13 @@ static cell_t smn_WritePackCell(IPluginContext *pContext, const cell_t *params)
 	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
+	}
+
+	bool insert = (params[0] >= 3) ? params[3] : false;
+	if (!insert)
+	{
+		pDataPack->RemoveItem();
 	}
 
 	pDataPack->PackCell(params[2]);
@@ -109,7 +115,7 @@ static cell_t smn_WritePackFloat(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	IDataPack *pDataPack;
+	CDataPack *pDataPack;
 
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
@@ -117,7 +123,13 @@ static cell_t smn_WritePackFloat(IPluginContext *pContext, const cell_t *params)
 	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
+	}
+
+	bool insert = (params[0] >= 3) ? params[3] : false;
+	if (!insert)
+	{
+		pDataPack->RemoveItem();
 	}
 
 	pDataPack->PackFloat(sp_ctof(params[2]));
@@ -130,7 +142,7 @@ static cell_t smn_WritePackString(IPluginContext *pContext, const cell_t *params
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	IDataPack *pDataPack;
+	CDataPack *pDataPack;
 
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
@@ -138,7 +150,13 @@ static cell_t smn_WritePackString(IPluginContext *pContext, const cell_t *params
 	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
+	}
+
+	bool insert = (params[0] >= 3) ? params[3] : false;
+	if (!insert)
+	{
+		pDataPack->RemoveItem();
 	}
 
 	char *str;
@@ -153,7 +171,7 @@ static cell_t smn_WritePackFunction(IPluginContext *pContext, const cell_t *para
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	IDataPack *pDataPack;
+	CDataPack *pDataPack;
 
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
@@ -161,7 +179,13 @@ static cell_t smn_WritePackFunction(IPluginContext *pContext, const cell_t *para
 	if ((herr = handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
+	}
+
+	bool insert = (params[0] >= 3) ? params[3] : false;
+	if (!insert)
+	{
+		pDataPack->RemoveItem();
 	}
 
 	pDataPack->PackFunction(params[2]);
@@ -174,7 +198,7 @@ static cell_t smn_ReadPackCell(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	IDataPack *pDataPack;
+	CDataPack *pDataPack;
 
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
@@ -182,12 +206,17 @@ static cell_t smn_ReadPackCell(IPluginContext *pContext, const cell_t *params)
 	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
-	if (!pDataPack->IsReadable(sizeof(char) + sizeof(size_t) + sizeof(cell_t)))
+	if (!pDataPack->IsReadable())
 	{
-		return pContext->ThrowNativeError("DataPack operation is out of bounds.");
+		return pContext->ThrowNativeError("Data pack operation is out of bounds.");
+	}
+
+	if (pDataPack->GetCurrentType() != CDataPackType::Cell)
+	{
+		return pContext->ThrowNativeError("Invalid data pack type (got %d / expected %d).", pDataPack->GetCurrentType(), CDataPackType::Cell);
 	}
 
 	return pDataPack->ReadCell();
@@ -198,7 +227,7 @@ static cell_t smn_ReadPackFloat(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	IDataPack *pDataPack;
+	CDataPack *pDataPack;
 
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
@@ -206,12 +235,17 @@ static cell_t smn_ReadPackFloat(IPluginContext *pContext, const cell_t *params)
 	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
-	if (!pDataPack->IsReadable(sizeof(char) + sizeof(size_t) + sizeof(float)))
+	if (!pDataPack->IsReadable())
 	{
-		return pContext->ThrowNativeError("DataPack operation is out of bounds.");
+		return pContext->ThrowNativeError("Data pack operation is out of bounds.");
+	}
+
+	if (pDataPack->GetCurrentType() != CDataPackType::Float)
+	{
+		return pContext->ThrowNativeError("Invalid data pack type (got %d / expected %d).", pDataPack->GetCurrentType(), CDataPackType::Float);
 	}
 
 	return sp_ftoc(pDataPack->ReadFloat());
@@ -222,7 +256,7 @@ static cell_t smn_ReadPackString(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	IDataPack *pDataPack;
+	CDataPack *pDataPack;
 
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
@@ -230,15 +264,20 @@ static cell_t smn_ReadPackString(IPluginContext *pContext, const cell_t *params)
 	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
-	const char *str;
-	if (!(str=pDataPack->ReadString(NULL)))
+	if (!pDataPack->IsReadable())
 	{
-		return pContext->ThrowNativeError("DataPack operation is out of bounds.");
+		return pContext->ThrowNativeError("Data pack operation is out of bounds.");
 	}
 
+	if (pDataPack->GetCurrentType() != CDataPackType::String)
+	{
+		return pContext->ThrowNativeError("Invalid data pack type (got %d / expected %d).", pDataPack->GetCurrentType(), CDataPackType::String);
+	}
+
+	const char *str = pDataPack->ReadString(NULL);
 	pContext->StringToLocal(params[2], params[3], str);
 
 	return 1;
@@ -249,7 +288,7 @@ static cell_t smn_ReadPackFunction(IPluginContext *pContext, const cell_t *param
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	IDataPack *pDataPack;
+	CDataPack *pDataPack;
 
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
@@ -257,12 +296,17 @@ static cell_t smn_ReadPackFunction(IPluginContext *pContext, const cell_t *param
 	if ((herr = handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
-	if (!pDataPack->IsReadable(sizeof(char) + sizeof(size_t) + sizeof(cell_t)))
+	if (!pDataPack->IsReadable())
 	{
-		return pContext->ThrowNativeError("DataPack operation is out of bounds.");
+		return pContext->ThrowNativeError("Data pack operation is out of bounds.");
+	}
+
+	if (pDataPack->GetCurrentType() != CDataPackType::Function)
+	{
+		return pContext->ThrowNativeError("Invalid data pack type (got %d / expected %d).", pDataPack->GetCurrentType(), CDataPackType::Function);
 	}
 
 	return pDataPack->ReadFunction();
@@ -273,7 +317,7 @@ static cell_t smn_ResetPack(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	IDataPack *pDataPack;
+	CDataPack *pDataPack;
 
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
@@ -281,13 +325,16 @@ static cell_t smn_ResetPack(IPluginContext *pContext, const cell_t *params)
 	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
-	pDataPack->Reset();
 	if (params[2])
 	{
 		pDataPack->ResetSize();
+	}
+	else
+	{
+		pDataPack->Reset();
 	}
 
 	return 1;
@@ -298,7 +345,7 @@ static cell_t smn_GetPackPosition(IPluginContext *pContext, const cell_t *params
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	IDataPack *pDataPack;
+	CDataPack *pDataPack;
 
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
@@ -306,7 +353,7 @@ static cell_t smn_GetPackPosition(IPluginContext *pContext, const cell_t *params
 	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
 	return static_cast<cell_t>(pDataPack->GetPosition());
@@ -317,7 +364,7 @@ static cell_t smn_SetPackPosition(IPluginContext *pContext, const cell_t *params
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	IDataPack *pDataPack;
+	CDataPack *pDataPack;
 
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
@@ -325,12 +372,12 @@ static cell_t smn_SetPackPosition(IPluginContext *pContext, const cell_t *params
 	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
 	if (!pDataPack->SetPosition(params[2]))
 	{
-		return pContext->ThrowNativeError("Invalid DataPack position, %d is out of bounds", params[2]);
+		return pContext->ThrowNativeError("Invalid data pack position, %d is out of bounds (%d)", params[2], pDataPack->GetCapacity());
 	}
 
 	return 1;
@@ -341,7 +388,7 @@ static cell_t smn_IsPackReadable(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	IDataPack *pDataPack;
+	CDataPack *pDataPack;
 
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
@@ -349,7 +396,7 @@ static cell_t smn_IsPackReadable(IPluginContext *pContext, const cell_t *params)
 	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
+		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d).", hndl, herr);
 	}
 
 	return pDataPack->IsReadable(params[2]) ? 1 : 0;

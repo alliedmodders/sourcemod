@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2017 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -48,69 +48,4 @@
  * @return		True if successful otherwise false.
  * @error		Invalid entity index or no mod support.
  */
-native bool:AcceptEntityInput(dest, const String:input[], activator=-1, caller=-1, outputid=0);
-
-/**
- * Sets a bool value in the global variant object.
- *
- * @param val		Input value.
- * @noreturn
- */
-native SetVariantBool(bool:val);
-
-/**
- * Sets a string in the global variant object.
- *
- * @param str		Input string.
- * @noreturn
- */
-native SetVariantString(const String:str[]);
-
-/**
- * Sets an integer value in the global variant object.
- *
- * @param val		Input value.
- * @noreturn
- */
-native SetVariantInt(val);
-
-/**
- * Sets a floating point value in the global variant object.
- *
- * @param val		Input value.
- * @noreturn
- */
-native SetVariantFloat(Float:val);
-
-/**
- * Sets a 3D vector in the global variant object.
- *
- * @param vec		Input vector.
- * @noreturn
- */
-native SetVariantVector3D(const Float:vec[3]);
-
-/**
- * Sets a 3D position vector in the global variant object.
- *
- * @param vec		Input position vector.
- * @noreturn
- */
-native SetVariantPosVector3D(const Float:vec[3]);
-
-/**
- * Sets a color in the global variant object.
- *
- * @param color		Input color.
- * @noreturn
- */
-native SetVariantColor(const color[4]);
-
-/**
- * Sets an entity in the global variant object.
- *
- * @param entity	Entity index.
- * @noreturn
- * @error		Invalid entity index.
- */
-native SetVariantEntity(entity);
+native bool AcceptEntityInput(int dest, const char[] input, int activator=-1, int caller=-1, int outputid=0);
