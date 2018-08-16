@@ -336,7 +336,7 @@ SMCSWeapon GetWeaponIdFromDefIdx(uint16_t iDefIdx)
 		SMCSWeapon_AUG, SMCSWeapon_AWP, SMCSWeapon_FAMAS, SMCSWeapon_G3SG1,
 		SMCSWeapon_NONE, SMCSWeapon_GALILAR, SMCSWeapon_M249, SMCSWeapon_NONE,
 		SMCSWeapon_M4A1, SMCSWeapon_MAC10, SMCSWeapon_NONE, SMCSWeapon_P90,
-		SMCSWeapon_NONE, SMCSWeapon_NONE, SMCSWeapon_NONE, SMCSWeapon_NONE,
+		SMCSWeapon_NONE, SMCSWeapon_NONE, SMCSWeapon_NONE, SMCSWeapon_MP5NAVY,
 		SMCSWeapon_UMP45, SMCSWeapon_XM1014, SMCSWeapon_BIZON, SMCSWeapon_MAG7,
 		SMCSWeapon_NEGEV, SMCSWeapon_SAWEDOFF, SMCSWeapon_TEC9, SMCSWeapon_TASER,
 		SMCSWeapon_HKP2000, SMCSWeapon_MP7, SMCSWeapon_MP9, SMCSWeapon_NOVA,
