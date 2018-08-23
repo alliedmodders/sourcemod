@@ -315,7 +315,7 @@ public:
 		strncopy(dbname, _dbname, sizeof(dbname));
 		me = scripts->FindPluginByContext(m_pFunction->GetParentContext()->GetContext());
 		
-		m_pInfo = g_DBMan.GetDatabaseConf(dbname);
+		m_pInfo = g_DBMan.FindDatabaseConf(dbname);
 		if (!m_pInfo)
 		{
 			g_pSM->Format(error, sizeof(error), "Could not find database config \"%s\"", dbname);
@@ -333,7 +333,7 @@ public:
 	{
 		if (m_pInfo)
 		{
-			m_pDatabase = m_pDriver->Connect(&m_pInfo->info, false, error, sizeof(error));
+			m_pDatabase = m_pDriver->Connect(m_pInfo, false, error, sizeof(error));
 		}
 	}
 	void CancelThinkPart()
@@ -384,7 +384,7 @@ public:
 		delete this;
 	}
 private:
-	ke::RefPtr<ConfDbInfo> m_pInfo;
+	const DatabaseInfo *m_pInfo;
 	IPlugin *me;
 	IPluginFunction *m_pFunction;
 	IDBDriver *m_pDriver;

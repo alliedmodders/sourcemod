@@ -56,6 +56,7 @@ public:
 	DatabaseInfo info;
 };
 
+// TODO: make this a map to prevent O(n) lookups
 class ConfDbInfoList : public ke::Vector<ConfDbInfo *>
 {
 	/* Allow internal usage of ConfDbInfoList */
