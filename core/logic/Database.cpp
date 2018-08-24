@@ -119,13 +119,9 @@ void DBManager::OnHandleDestroy(HandleType_t type, void *object)
 bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool persistent, char *error, size_t maxlength)
 {
 	ConfDbInfoList *list = m_Builder.GetConfigList();
+	ke::RefPtr<ConfDbInfo> pInfo = list->GetDatabaseConf(name);
 
-	/* First we'll call DBManager::FindDatabaseConf to allow for
-	 * default fallback, then once we found our db (default or not)
-	 * we'll grab the ConfDbInfo from the list.
-	 */
-	const DatabaseInfo *dbinfo = this->FindDatabaseConf(name);
-	if (!dbinfo)
+	if (!pInfo)
 	{
 		if (pdr)
 		{
@@ -136,7 +132,6 @@ bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool
 		return false;
 	}
 
-	ke::RefPtr<ConfDbInfo> pInfo = list->GetDatabaseConf(dbinfo->database);
 	const char *dname = pInfo->info.driver;
 	if (!pInfo->realDriver)
 	{
