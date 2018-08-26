@@ -197,7 +197,7 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 
 	if (blame) 
 	{
-		g_Logger.LogError("[SM] Blaming: %s (Version: %s)", blame, (*plversion != '\0') ? plversion : "Not specified");
+		g_Logger.LogError("[SM] Blaming: %s (Version: %s)", blame, (plversion != nullptr && *plversion != '\0') ? plversion : "Not specified");
 	}
 
 	if (!iter.Done()) 
