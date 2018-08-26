@@ -34,6 +34,7 @@
 #include <stdarg.h>
 #include "DebugReporter.h"
 #include "Logger.h"
+#include "sm_stringutil.h"
 
 DebugReport g_DbgReporter;
 
@@ -68,14 +69,21 @@ void DebugReport::GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err,
 	char buffer[512];
 	ke::SafeVsprintf(buffer, sizeof(buffer), message, ap);
 
-	const char *plname = pluginsys->FindPluginByContext(ctx->GetContext())->GetFilename();
+	IPlugin* plugin = pluginsys->FindPluginByContext(ctx->GetContext());
+	const char *plname = plugin->GetFilename();
+	const char *plversion = plugin->GetPublicInfo()->version;
+	
+	if (!IS_STR_FILLED(plversion))
+	{
+		plversion = "Not specified";
+	}
 	const char *error = g_pSourcePawn2->GetErrorString(err);
 
 	if (error)
 	{
-		g_Logger.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
+		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered error %d: %s", plname, plversion, err, error);
 	} else {
-		g_Logger.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
+		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered unknown error %d", plname, plversion, err);
 	}
 
 	g_Logger.LogError("[SM] %s", buffer);
@@ -103,14 +111,19 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 	ke::SafeVsprintf(buffer, sizeof(buffer), message, ap);
 	va_end(ap);
 
-	const char *plname = pluginsys->FindPluginByContext(pContext->GetContext())->GetFilename();
+	IPlugin* plugin = pluginsys->FindPluginByContext(pContext->GetContext());
+	const char *plname = plugin->GetFilename();
+	const char *plversion = plugin->GetPublicInfo()->version;
 	const char *error = g_pSourcePawn2->GetErrorString(err);
-
+	if (!IS_STR_FILLED(plversion))
+	{
+		plversion = "Not specified";
+	}
 	if (error)
 	{
-		g_Logger.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
+		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered error %d: %s", plname, plversion, err, error);
 	} else {
-		g_Logger.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
+		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered unknown error %d", plname, plversion, err);
 	}
 
 	g_Logger.LogError("[SM] %s", buffer);
@@ -164,6 +177,7 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 		return;
 
 	const char *blame = nullptr;
+	const char *plversion = "Not specified";
 	if (report.Blame()) 
 	{
 		blame = report.Blame()->DebugName();
@@ -177,8 +191,13 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 				if (plugin)
 				{
 					blame = plugin->GetFilename();
+					if (IS_STR_FILLED(plugin->GetPublicInfo()->version)) 
+					{
+						plversion = plugin->GetPublicInfo()->version;
+					}
 				} else {
-					blame = iter.Context()->GetRuntime()->GetFilename();
+					IPluginRuntime *runtime = iter.Context()->GetRuntime();
+					blame = runtime->GetFilename();
 				}
 				break;
 			}
@@ -191,7 +210,7 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 
 	if (blame) 
 	{
-		g_Logger.LogError("[SM] Blaming: %s", blame);
+		g_Logger.LogError("[SM] Blaming: %s (Version: %s)", blame, plversion);
 	}
 
 	ke::Vector<ke::AString> arr = GetStackTrace(&iter);
