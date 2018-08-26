@@ -29,11 +29,11 @@
  * Version: $Id$
  */
 
+#include <ISourceMod.h>
 #include <IPluginSys.h>
 #include <stdarg.h>
 #include "DebugReporter.h"
 #include "Logger.h"
-#include <am-string.h>
 
 DebugReport g_DbgReporter;
 
@@ -71,13 +71,18 @@ void DebugReport::GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err,
 	IPlugin* plugin = pluginsys->FindPluginByContext(ctx->GetContext());
 	const char *plname = plugin->GetFilename();
 	const char *plversion = plugin->GetPublicInfo()->version;
+	
+	if (!IS_STR_FILLED(plversion))
+	{
+		plversion = "Not specified";
+	}
 	const char *error = g_pSourcePawn2->GetErrorString(err);
 
 	if (error)
 	{
-		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered error %d: %s", plname, (*plversion != '\0') ? plversion : "Not specified", err, error);
+		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered error %d: %s", plname, plversion, err, error);
 	} else {
-		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered unknown error %d", plname, (*plversion != '\0') ? plversion : "Not specified", err);
+		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered unknown error %d", plname, plversion, err);
 	}
 
 	g_Logger.LogError("[SM] %s", buffer);
@@ -109,12 +114,15 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 	const char *plname = plugin->GetFilename();
 	const char *plversion = plugin->GetPublicInfo()->version;
 	const char *error = g_pSourcePawn2->GetErrorString(err);
-
+	if (!IS_STR_FILLED(plversion))
+	{
+		plversion = "Not specified";
+	}
 	if (error)
 	{
-		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered error %d: %s", plname, (*plversion != '\0') ? plversion : "Not specified", err, error);
+		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered error %d: %s", plname, plversion, err, error);
 	} else {
-		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered unknown error %d", plname, (*plversion != '\0') ? plversion : "Not specified", err);
+		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered unknown error %d", plname, plversion, err);
 	}
 
 	g_Logger.LogError("[SM] %s", buffer);
@@ -168,7 +176,7 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 		return;
 
 	const char *blame = nullptr;
-	const char *plversion = nullptr;
+	const char *plversion = "Not specified";
 	if (report.Blame()) 
 	{
 		blame = report.Blame()->DebugName();
@@ -182,9 +190,13 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 				if (plugin)
 				{
 					blame = plugin->GetFilename();
-					plversion = plugin->GetPublicInfo()->version;
+					if (IS_STR_FILLED(plugin->GetPublicInfo()->version))
+					{
+						plversion = plugin->GetPublicInfo()->version;
+					}
 				} else {
-					blame = iter.Context()->GetRuntime()->GetFilename();
+					IPluginRuntime *runtime = iter.Context()->GetRuntime();
+					blame = runtime->GetFilename();
 				}
 				break;
 			}
@@ -197,38 +209,56 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 
 	if (blame) 
 	{
-		g_Logger.LogError("[SM] Blaming: %s (Version: %s)", blame, (plversion != nullptr && *plversion != '\0') ? plversion : "Not specified");
+		g_Logger.LogError("[SM] Blaming: %s (Version: %s)", blame, plversion);
 	}
 
-	if (!iter.Done()) 
+	ke::Vector<ke::AString> arr = GetStackTrace(&iter);
+	for (size_t i = 0; i < arr.length(); i++)
 	{
-		g_Logger.LogError("[SM] Call stack trace:");
+		g_Logger.LogError("%s", arr[i].chars());
+	}
+}
 
-		for (int index = 0; !iter.Done(); iter.Next(), index++) 
+ke::Vector<ke::AString> DebugReport::GetStackTrace(IFrameIterator *iter)
+{
+	char temp[3072];
+	ke::Vector<ke::AString> trace;
+	iter->Reset();
+	
+	if (!iter->Done())
+	{
+		trace.append("[SM] Call stack trace:");
+
+		for (int index = 0; !iter->Done(); iter->Next(), index++) 
 		{
-			const char *fn = iter.FunctionName();
+			const char *fn = iter->FunctionName();
 			if (!fn)
 			{
 				fn = "<unknown function>";
 			}
-			if (iter.IsNativeFrame()) 
+			if (iter->IsNativeFrame()) 
 			{
-				g_Logger.LogError("[SM]   [%d] %s", index, fn);
+				g_pSM->Format(temp, sizeof(temp), "[SM]   [%d] %s", index, fn);
+				trace.append(temp);
 				continue;
 			}
-			if (iter.IsScriptedFrame()) 
+			if (iter->IsScriptedFrame()) 
 			{
-				const char *file = iter.FilePath();
+				const char *file = iter->FilePath();
 				if (!file)
 				{
 					file = "<unknown>";
 				}
-				g_Logger.LogError("[SM]   [%d] Line %d, %s::%s",
+				g_pSM->Format(temp, sizeof(temp), "[SM]   [%d] Line %d, %s::%s",
 						index,
-						iter.LineNumber(),
+						iter->LineNumber(),
 						file,
 						fn);
+				
+				trace.append(temp);
 			}
 		}
 	}
+	
+	return trace;
 }
