@@ -75,9 +75,9 @@ void DebugReport::GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err,
 
 	if (error)
 	{
-		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered error %d: %s", plname, (*plversion == '\0') ? plversion : "Not specified", err, error);
+		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered error %d: %s", plname, (*plversion != '\0') ? plversion : "Not specified", err, error);
 	} else {
-		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered unknown error %d", plname, (*plversion == '\0') ? plversion : "Not specified", err);
+		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered unknown error %d", plname, (*plversion != '\0') ? plversion : "Not specified", err);
 	}
 
 	g_Logger.LogError("[SM] %s", buffer);
@@ -112,9 +112,9 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 
 	if (error)
 	{
-		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered error %d: %s", plname, (*plversion == '\0') ? plversion : "Not specified", err, error);
+		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered error %d: %s", plname, (*plversion != '\0') ? plversion : "Not specified", err, error);
 	} else {
-		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered unknown error %d", plname, (*plversion == '\0') ? plversion : "Not specified", err);
+		g_Logger.LogError("[SM] Plugin \"%s\" (Version: %s) encountered unknown error %d", plname, (*plversion != '\0') ? plversion : "Not specified", err);
 	}
 
 	g_Logger.LogError("[SM] %s", buffer);
@@ -197,7 +197,7 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 
 	if (blame) 
 	{
-		g_Logger.LogError("[SM] Blaming: %s (Version: %s)", blame, (plversion) ? plversion : "Not specified");
+		g_Logger.LogError("[SM] Blaming: %s (Version: %s)", blame, (*plversion != '\0') ? plversion : "Not specified");
 	}
 
 	if (!iter.Done()) 
