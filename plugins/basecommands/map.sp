@@ -90,10 +90,7 @@ public Action Command_Map(int client, int args)
 			g_MapList.SetTitle("%T", "Choose Map", client);
 			g_MapList.Display(client, MENU_TIME_FOREVER);
 		}
-		else
-		{
-			ReplyToCommand(client, "[SM] Usage: sm_map <map>");
-		}
+		ReplyToCommand(client, "[SM] Usage: sm_map <map>");
 		return Plugin_Handled;
 	}
 
