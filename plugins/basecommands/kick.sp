@@ -129,7 +129,11 @@ public Action Command_Kick(int client, int args)
 		{
 			DisplayKickMenu(client);
 		}
-		ReplyToCommand(client, "[SM] Usage: sm_kick <#userid|name> [reason]");
+		else
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_kick <#userid|name> [reason]");
+		}
+		
 		return Plugin_Handled;
 	}
 
