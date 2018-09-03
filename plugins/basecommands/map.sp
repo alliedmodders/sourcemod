@@ -85,7 +85,15 @@ public Action Command_Map(int client, int args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_map <map>");
+		if ((GetCmdReplySource() == SM_REPLY_TO_CHAT) && (client != 0))
+		{
+			g_MapList.SetTitle("%T", "Choose Map", client);
+			g_MapList.Display(client, MENU_TIME_FOREVER);
+		}
+		else 
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_map <map>");
+		}
 		return Plugin_Handled;
 	}
 

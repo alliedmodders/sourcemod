@@ -57,14 +57,20 @@ void PrepareBan(int client, int target, int time, const char[] reason)
 		if (reason[0] == '\0')
 		{
 			ShowActivity(client, "%t", "Permabanned player", name);
-		} else {
+		}
+		else
+		{
 			ShowActivity(client, "%t", "Permabanned player reason", name, reason);
 		}
-	} else {
+	}
+	else
+	{
 		if (reason[0] == '\0')
 		{
 			ShowActivity(client, "%t", "Banned player", name, time);
-		} else {
+		}
+		else
+		{
 			ShowActivity(client, "%t", "Banned player reason", name, time, reason);
 		}
 	}
@@ -267,7 +273,15 @@ public Action Command_Ban(int client, int args)
 {
 	if (args < 2)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_ban <#userid|name> <minutes|0> [reason]");
+		if ((GetCmdReplySource() == SM_REPLY_TO_CHAT) && (client != 0) && (args == 0))
+		{
+			DisplayBanTargetMenu(client);
+		}
+		else
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_ban <#userid|name> <minutes|0> [reason]");
+		}
+		
 		return Plugin_Handled;
 	}
 
