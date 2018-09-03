@@ -85,7 +85,7 @@ public Action Command_Map(int client, int args)
 {
 	if (args < 1)
 	{
-		if (client != 0)
+		if ((GetCmdReplySource() == SM_REPLY_TO_CHAT) && (client != 0))
 		{
 			g_MapList.SetTitle("%T", "Choose Map", client);
 			g_MapList.Display(client, MENU_TIME_FOREVER);

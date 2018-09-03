@@ -125,7 +125,7 @@ public Action Command_Kick(int client, int args)
 {
 	if (args < 1)
 	{
-		if (client != 0)
+		if ((GetCmdReplySource() == SM_REPLY_TO_CHAT) && (client != 0))
 		{
 			DisplayKickMenu(client);
 		}

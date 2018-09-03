@@ -273,7 +273,7 @@ public Action Command_Ban(int client, int args)
 {
 	if (args < 2)
 	{
-		if (client != 0 && args == 0)
+		if ((GetCmdReplySource() == SM_REPLY_TO_CHAT) && (client != 0) && (args == 0))
 		{
 			DisplayBanTargetMenu(client);
 		}
