@@ -74,17 +74,17 @@ private:
 	cell_t m_Data;
 };
 
-class CSMTraceEnumerator : public IEntityEnumerator
+class CSMTraceEnumerator : public IPartitionEnumerator
 {
 public:
-	bool EnumEntity(IHandleEntity *pEntity) override
+	IterationRetval_t EnumElement(IHandleEntity *pEntity) override
 	{
 		cell_t res = 1;
 		m_pFunc->PushCell(gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity*>(pEntity)));
 		m_pFunc->PushCell(m_Data);
 		m_pFunc->Execute(&res);
 
-		return (res) ? true : false;
+		return (res) ? ITERATION_CONTINUE : ITERATION_STOP;
 	}
 	void SetFunctionPtr(IPluginFunction *pFunc, cell_t data)
 	{
@@ -113,6 +113,23 @@ enum
 	RayType_EndPoint,
 	RayType_Infinite
 };
+
+// For backwards compatibility, old EnumerateEntities functions accepted bool instead of flags
+int TranslatePartitionFlags(int input)
+{
+	if (input == 0)
+	{
+		return PARTITION_ENGINE_SOLID_EDICTS;
+	}
+	else if (input == 1)
+	{
+		return PARTITION_ENGINE_TRIGGER_EDICTS;
+	}
+	else
+	{
+		return input >> 1;
+	}
+}
 
 static cell_t smn_TRTraceRay(IPluginContext *pContext, const cell_t *params)
 {
@@ -211,8 +228,8 @@ static cell_t smn_TREnumerateEntities(IPluginContext *pContext, const cell_t *pa
 
 	g_Ray.Init(g_StartVec, g_EndVec);
 
-	bool triggers = (params[3]) ? true : false;
-	enginetrace->EnumerateEntities(g_Ray, triggers, &g_SMTraceEnumerator);
+	int mask = TranslatePartitionFlags(params[3]);
+	partition->EnumerateElementsAlongRay(mask, g_Ray, false, &g_SMTraceEnumerator);
 
 	return 1;
 }
@@ -246,8 +263,8 @@ static cell_t smn_TREnumerateEntitiesHull(IPluginContext *pContext, const cell_t
 
 	g_Ray.Init(g_StartVec, g_EndVec, g_HullMins, g_HullMaxs);
 
-	bool triggers = (params[5]) ? true : false;
-	enginetrace->EnumerateEntities(g_Ray, triggers, &g_SMTraceEnumerator);
+	int mask = TranslatePartitionFlags(params[5]);
+	partition->EnumerateElementsAlongRay(mask, g_Ray, false, &g_SMTraceEnumerator);
 
 	return 1;
 }
@@ -752,6 +769,22 @@ static cell_t smn_TRGetFraction(IPluginContext *pContext, const cell_t *params)
 	return sp_ftoc(tr->fraction);
 }
 
+static cell_t smn_TRGetFractionLeftSolid(IPluginContext *pContext, const cell_t *params)
+{
+	sm_trace_t *tr;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if (params[1] == BAD_HANDLE)
+	{
+		tr = &g_Trace;
+	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+	}
+
+	return sp_ftoc(tr->fractionleftsolid);
+}
+
 static cell_t smn_TRGetPlaneNormal(IPluginContext *pContext, const cell_t *params)
 {
 	sm_trace_t *tr;
@@ -776,6 +809,28 @@ static cell_t smn_TRGetPlaneNormal(IPluginContext *pContext, const cell_t *param
 	return 1;
 }
 
+static cell_t smn_TRGetStartPosition(IPluginContext *pContext, const cell_t *params)
+{
+	sm_trace_t *tr;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if (params[2] == BAD_HANDLE)
+	{
+		tr = &g_Trace;
+	} else if ((err = handlesys->ReadHandle(params[2], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[2], err);
+	}
+
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[1], &addr);
+
+	addr[0] = sp_ftoc(tr->startpos.x);
+	addr[1] = sp_ftoc(tr->startpos.y);
+	addr[2] = sp_ftoc(tr->startpos.z);
+
+	return 1;
+}
 
 static cell_t smn_TRGetEndPosition(IPluginContext *pContext, const cell_t *params)
 {
@@ -798,6 +853,120 @@ static cell_t smn_TRGetEndPosition(IPluginContext *pContext, const cell_t *param
 	addr[2] = sp_ftoc(tr->endpos.z);
 
 	return 1;
+}
+
+static cell_t smn_TRGetDispFlags(IPluginContext *pContext, const cell_t *params)
+{
+	sm_trace_t *tr;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if (params[1] == BAD_HANDLE)
+	{
+		tr = &g_Trace;
+	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+	}
+
+	return tr->dispFlags;
+}
+
+static cell_t smn_TRGetSurfaceName(IPluginContext *pContext, const cell_t *params)
+{
+	sm_trace_t *tr;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if (params[1] == BAD_HANDLE)
+	{
+		tr = &g_Trace;
+	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+	}
+
+	pContext->StringToLocal(params[2], params[3], tr->surface.name);
+
+	return 1;
+}
+
+static cell_t smn_TRGetSurfaceProps(IPluginContext *pContext, const cell_t *params)
+{
+	sm_trace_t *tr;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if (params[1] == BAD_HANDLE)
+	{
+		tr = &g_Trace;
+	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+	}
+
+	return tr->surface.surfaceProps;
+}
+
+static cell_t smn_TRGetSurfaceFlags(IPluginContext *pContext, const cell_t *params)
+{
+	sm_trace_t *tr;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if (params[1] == BAD_HANDLE)
+	{
+		tr = &g_Trace;
+	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+	}
+
+	return tr->surface.flags;
+}
+
+static cell_t smn_TRGetPhysicsBone(IPluginContext *pContext, const cell_t *params)
+{
+	sm_trace_t *tr;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if (params[1] == BAD_HANDLE)
+	{
+		tr = &g_Trace;
+	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+	}
+
+	return tr->physicsbone;
+}
+
+static cell_t smn_TRAllSolid(IPluginContext *pContext, const cell_t *params)
+{
+	sm_trace_t *tr;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if (params[1] == BAD_HANDLE)
+	{
+		tr = &g_Trace;
+	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+	}
+
+	return tr->allsolid ? 1 : 0;
+}
+
+static cell_t smn_TRStartSolid(IPluginContext *pContext, const cell_t *params)
+{
+	sm_trace_t *tr;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if (params[1] == BAD_HANDLE)
+	{
+		tr = &g_Trace;
+	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+	}
+
+	return tr->startsolid ? 1 : 0;
 }
 
 static cell_t smn_TRDidHit(IPluginContext *pContext, const cell_t *params)
@@ -923,8 +1092,17 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_TraceRayEx",				smn_TRTraceRayEx},
 	{"TR_TraceHullEx",				smn_TRTraceHullEx},
 	{"TR_GetFraction",				smn_TRGetFraction},
+	{"TR_GetFractionLeftSolid",		smn_TRGetFractionLeftSolid},
+	{"TR_GetStartPosition",			smn_TRGetStartPosition},
 	{"TR_GetEndPosition",			smn_TRGetEndPosition},
 	{"TR_GetEntityIndex",			smn_TRGetEntityIndex},
+	{"TR_GetDispFlags",				smn_TRGetDispFlags},
+	{"TR_GetSurfaceName",			smn_TRGetSurfaceName},
+	{"TR_GetSurfaceProps",			smn_TRGetSurfaceProps},
+	{"TR_GetSurfaceFlags",			smn_TRGetSurfaceFlags},
+	{"TR_GetPhysicsBone",			smn_TRGetPhysicsBone},
+	{"TR_AllSolid",					smn_TRAllSolid},
+	{"TR_StartSolid",				smn_TRStartSolid},
 	{"TR_DidHit",					smn_TRDidHit},
 	{"TR_GetHitGroup",				smn_TRGetHitGroup},
 	{"TR_ClipRayToEntity",			smn_TRClipRayToEntity},

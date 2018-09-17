@@ -103,7 +103,61 @@
 /**
  * @endsection
  */
+ 
+/**
+ * @section Surface flags.
+ */
+ 
+#define	SURF_LIGHT		0x0001		// value will hold the light strength
+#define	SURF_SKY2D		0x0002		// don't draw, indicates we should skylight + draw 2d sky but not draw the 3D skybox
+#define	SURF_SKY		0x0004		// don't draw, but add to skybox
+#define	SURF_WARP		0x0008		// turbulent water warp
+#define	SURF_TRANS		0x0010
+#define SURF_NOPORTAL	0x0020	// the surface can not have a portal placed on it
+#define	SURF_TRIGGER	0x0040	// FIXME: This is an xbox hack to work around elimination of trigger surfaces, which breaks occluders
+#define	SURF_NODRAW		0x0080	// don't bother referencing the texture
 
+#define	SURF_HINT		0x0100	// make a primary bsp splitter
+
+#define	SURF_SKIP		0x0200	// completely ignore, allowing non-closed brushes
+#define SURF_NOLIGHT	0x0400	// Don't calculate light
+#define SURF_BUMPLIGHT	0x0800	// calculate three lightmaps for the surface for bumpmapping
+#define SURF_NOSHADOWS	0x1000	// Don't receive shadows
+#define SURF_NODECALS	0x2000	// Don't receive decals
+#define SURF_NOCHOP		0x4000	// Don't subdivide patches on this surface 
+#define SURF_HITBOX		0x8000	// surface is part of a hitbox
+
+/**
+ * @endsection
+ */
+ 
+/**
+ * @section Partition masks.
+ */
+ 
+#define PARTITION_SOLID_EDICTS      (1 << 1) // every edict_t that isn't SOLID_TRIGGER or SOLID_NOT (and static props)
+#define PARTITION_TRIGGER_EDICTS    (1 << 2) // every edict_t that IS SOLID_TRIGGER
+#define PARTITION_NON_STATIC_EDICTS (1 << 5) // everything in solid & trigger except the static props, includes SOLID_NOTs
+#define PARTITION_STATIC_PROPS      (1 << 7)
+
+/**
+ * @endsection
+ */
+ 
+/**
+ * @section Disp flags.
+ */
+ 
+#define DISPSURF_FLAG_SURFACE		(1<<0)
+#define DISPSURF_FLAG_WALKABLE		(1<<1)
+#define DISPSURF_FLAG_BUILDABLE		(1<<2)
+#define DISPSURF_FLAG_SURFPROP1		(1<<3)
+#define DISPSURF_FLAG_SURFPROP2		(1<<4)
+
+/**
+ * @endsection
+ */
+ 
 enum RayType
 {
 	RayType_EndPoint,	/**< The trace ray will go from the start position to the end position. */
@@ -206,8 +260,7 @@ native void TR_TraceHull(const float pos[3],
  * @param pos			Starting position of the ray.
  * @param vec			Depending on RayType, it will be used as the ending
  *						point, or the direction angle.
- * @param triggers		If true, enumerate only triggers. Otherwise, enumerate
- *						only non-triggers.
+ * @param mask			Mask to use for the trace. See PARTITION_* flags.
  * @param rtype			Method to calculate the ray direction.
  * @param enumerator	Function to use as enumerator. For each entity found
  *						along the ray, this function is called.
@@ -215,7 +268,7 @@ native void TR_TraceHull(const float pos[3],
  */
 native void TR_EnumerateEntities(const float pos[3],
 								const float vec[3],
-								bool triggers,
+								int mask,
 								RayType rtype,
 								TraceEntityEnumerator enumerator,
 								any data=0);
@@ -229,8 +282,7 @@ native void TR_EnumerateEntities(const float pos[3],
  * @param vec			Ending position of the ray.
  * @param mins			Hull minimum size.
  * @param maxs			Hull maximum size.
- * @param triggers		If true, enumerate only triggers. Otherwise, enumerate
- *						only non-triggers.
+ * @param mask			Mask to use for the trace. See PARTITION_ENGINE_* flags.
  * @param enumerator	Function to use as enumerator. For each entity found
  *						along the ray, this function is called.
  * @param data			Arbitrary data value to pass through to the enumerator.
@@ -239,7 +291,7 @@ native void TR_EnumerateEntitiesHull(const float pos[3],
 								    const float vec[3],
 								    const float mins[3],
 								    const float maxs[3],
-								    bool triggers,
+								    int mask,
 									TraceEntityEnumerator enumerator,
 									any data=0);
 
@@ -463,6 +515,25 @@ native Handle TR_ClipCurrentRayToEntityEx(int flags, int entity);
 native float TR_GetFraction(Handle hndl=INVALID_HANDLE);
 
 /**
+ * Returns the time fraction from a trace result when it left a solid.
+ * Only valid if trace started in solid
+ *
+ * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
+ * @return				Time fraction left solid value of the trace.
+ * @error				Invalid Handle.
+ */
+native float TR_GetFraction(Handle hndl=INVALID_HANDLE);
+
+/**
+ * Returns the starting position of a trace.
+ *
+ * @param pos			Vector buffer to store data in.
+ * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
+ * @error				Invalid Handle.
+ */
+native void TR_GetStartPosition(float pos[3], Handle hndl=INVALID_HANDLE);
+
+/**
  * Returns the collision position of a trace result.
  *
  * @param pos			Vector buffer to store data in.
@@ -479,6 +550,69 @@ native void TR_GetEndPosition(float pos[3], Handle hndl=INVALID_HANDLE);
  * @error				Invalid Handle.
  */
 native int TR_GetEntityIndex(Handle hndl=INVALID_HANDLE);
+
+/**
+ * Returns the displacement flags for the surface that was hit. See DISPSURF_FLAG_*.
+ *
+ * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
+ * @return				Displacement flags.
+ * @error				Invalid Handle.
+ */
+native int TR_GetDispFlags(Handle hndl=INVALID_HANDLE);
+
+/**
+ * Returns the name of the surface that was hit.
+ *
+ * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
+ * @noreturn
+ * @error				Invalid Handle.
+ */
+native void TR_GetSurfaceName(Handle hndl=INVALID_HANDLE, char[] buffer, int maxlen);
+
+/**
+ * Returns the surface properties index of the surface that was hit.
+ *
+ * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
+ * @return				Surface props.
+ * @error				Invalid Handle.
+ */
+native int TR_GetSurfaceProps(Handle hndl=INVALID_HANDLE);
+
+/**
+ * Returns the surface flags. See SURF_*.
+ *
+ * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
+ * @return				Surface flags.
+ * @error				Invalid Handle.
+ */
+native int TR_GetSurfaceFlags(Handle hndl=INVALID_HANDLE);
+
+/**
+ * Returns the index of the physics bone that was hit.
+ *
+ * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
+ * @return				Physics bone index.
+ * @error				Invalid Handle.
+ */
+native int TR_GetPhysicsBone(Handle hndl=INVALID_HANDLE);
+
+/**
+ * If true, plane is not valid.
+ *
+ * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
+ * @return				Physics bone index.
+ * @error				Invalid Handle.
+ */
+native bool TR_AllSolid(Handle hndl=INVALID_HANDLE);
+
+/**
+ * Returns whether the initial point was in a solid area.
+ *
+ * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
+ * @return				True if initial point was in a solid area, otherwise false.
+ * @error				Invalid Handle.
+ */
+native bool TR_StartSolid(Handle hndl=INVALID_HANDLE);
 
 /**
  * Returns if there was any kind of collision along the trace ray.
