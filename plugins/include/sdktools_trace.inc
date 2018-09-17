@@ -522,7 +522,7 @@ native float TR_GetFraction(Handle hndl=INVALID_HANDLE);
  * @return				Time fraction left solid value of the trace.
  * @error				Invalid Handle.
  */
-native float TR_GetFraction(Handle hndl=INVALID_HANDLE);
+native float TR_GetFractionLeftSolid(Handle hndl=INVALID_HANDLE);
 
 /**
  * Returns the starting position of a trace.
