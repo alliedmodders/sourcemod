@@ -282,7 +282,7 @@ native void TR_EnumerateEntities(const float pos[3],
  * @param vec			Ending position of the ray.
  * @param mins			Hull minimum size.
  * @param maxs			Hull maximum size.
- * @param mask			Mask to use for the trace. See PARTITION_ENGINE_* flags.
+ * @param mask			Mask to use for the trace. See PARTITION_* flags.
  * @param enumerator	Function to use as enumerator. For each entity found
  *						along the ray, this function is called.
  * @param data			Arbitrary data value to pass through to the enumerator.
