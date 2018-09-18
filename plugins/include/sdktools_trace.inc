@@ -597,10 +597,10 @@ native int TR_GetSurfaceFlags(Handle hndl=INVALID_HANDLE);
 native int TR_GetPhysicsBone(Handle hndl=INVALID_HANDLE);
 
 /**
- * If true, plane is not valid.
+ * Returns whether the entire trace was in a solid area.
  *
  * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
- * @return				Physics bone index.
+ * @return				True if entire trace was in a solid area, otherwise false.
  * @error				Invalid Handle.
  */
 native bool TR_AllSolid(Handle hndl=INVALID_HANDLE);
