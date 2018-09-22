@@ -62,6 +62,7 @@ ConVar g_Cvar_ExtendTimeStep;
 ConVar g_Cvar_ExtendRoundStep;
 ConVar g_Cvar_ExtendFragStep;
 ConVar g_Cvar_ExcludeMaps;
+ConVar g_Cvar_PersistentMaps;
 ConVar g_Cvar_IncludeMaps;
 ConVar g_Cvar_NoVoteMode;
 ConVar g_Cvar_Extend;
@@ -105,6 +106,8 @@ int g_winCount[MAXTEAMS];
 #define VOTE_EXTEND "##extend##"
 #define VOTE_DONTCHANGE "##dontchange##"
 
+#define MAPCHOOSER_TXT "data/mapchooser_history.txt"
+
 public void OnPluginStart()
 {
 	LoadTranslations("mapchooser.phrases");
@@ -126,6 +129,7 @@ public void OnPluginStart()
 	g_Cvar_ExtendRoundStep = CreateConVar("sm_extendmap_roundstep", "5", "Specifies how many more rounds each extension makes", _, true, 1.0);
 	g_Cvar_ExtendFragStep = CreateConVar("sm_extendmap_fragstep", "10", "Specifies how many more frags are allowed when map is extended.", _, true, 5.0);	
 	g_Cvar_ExcludeMaps = CreateConVar("sm_mapvote_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
+	g_Cvar_PersistentMaps = CreateConVar("sm_mapvote_persistentmaps", "0", "Specifies whether or not previous maps should be stored persistently.", _, true, 0.0, true, 1.0);
 	g_Cvar_IncludeMaps = CreateConVar("sm_mapvote_include", "5", "Specifies how many maps to include in the vote.", _, true, 2.0, true, 6.0);
 	g_Cvar_NoVoteMode = CreateConVar("sm_mapvote_novote", "1", "Specifies whether or not MapChooser should pick a map if no votes are received.", _, true, 0.0, true, 1.0);
 	g_Cvar_Extend = CreateConVar("sm_mapvote_extend", "0", "Number of extensions allowed each map.", _, true, 0.0);
@@ -183,6 +187,18 @@ public void OnPluginStart()
 	
 	g_NominationsResetForward = CreateGlobalForward("OnNominationRemoved", ET_Ignore, Param_String, Param_Cell);
 	g_MapVoteStartedForward = CreateGlobalForward("OnMapVoteStarted", ET_Ignore);
+
+	/* Recall previous maps from a text file, if persistency is enabled */
+	static bool g_FirstConfigExec = true;	
+	if (g_FirstConfigExec)
+	{
+		if (g_Cvar_PersistentMaps.BoolValue)
+		{
+			ReadPreviousMapsFromText();		
+		}
+		
+		g_FirstConfigExec = false;
+	}
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -262,7 +278,9 @@ public void OnMapEnd()
 	if (g_OldMapList.Length > g_Cvar_ExcludeMaps.IntValue)
 	{
 		g_OldMapList.Erase(0);
-	}	
+	}
+
+	WritePreviousMapsToText();
 }
 
 public void OnClientDisconnect(int client)
@@ -1221,4 +1239,60 @@ public int Native_GetNominatedMapList(Handle plugin, int numParams)
 	}
 
 	return;
+}
+
+/* Persistently store previous maps incase user wants to recall them */
+// Read previous maps from text file
+void ReadPreviousMapsFromText()
+{      
+	File file = OpenFile(GetTextFilePath(), "r");
+	
+	if (file == null)
+	{
+		return;
+	}
+ 	g_OldMapList.Clear();
+	char map[64];
+ 	do 
+	{
+		if (file.ReadLine(map, sizeof(map)))
+		{
+			TrimString(map);
+			g_OldMapList.PushString(map);		
+		}	
+	}
+	while (!file.EndOfFile());
+ 	file.Close();
+}
+ // Write the previous maps to a text file
+void WritePreviousMapsToText()
+{    
+	File file = OpenFile(GetTextFilePath(), "w");
+	
+	if (file == null)
+	{
+		if (g_Cvar_PersistentMaps.BoolValue)
+		{
+			LogError("[SM] Error writing to %s. Check file permissions.", MAPCHOOSER_TXT);
+		}
+		
+		return;
+	}
+    
+	char lastMap[64];
+    
+	for (int idx=0; idx <g_OldMapList.Length; idx++)
+	{
+		g_OldMapList.GetString(idx, lastMap, sizeof(lastMap));		
+		TrimString(lastMap);      
+		file.WriteLine(lastMap);
+	}
+ 	file.Close();
+}
+ // Get the path of the mapchooser text file
+char GetTextFilePath()
+{
+	char path[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, MAPCHOOSER_TXT);
+	return path;
 }
