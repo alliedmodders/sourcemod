@@ -145,7 +145,7 @@
  */
  
 /**
- * @section Disp flags.
+ * @section Displacement flags.
  */
  
 #define DISPSURF_FLAG_SURFACE		(1<<0)
@@ -558,7 +558,7 @@ native int TR_GetEntityIndex(Handle hndl=INVALID_HANDLE);
  * @return				Displacement flags.
  * @error				Invalid Handle.
  */
-native int TR_GetDispFlags(Handle hndl=INVALID_HANDLE);
+native int TR_GetDisplacementFlags(Handle hndl=INVALID_HANDLE);
 
 /**
  * Returns the name of the surface that was hit.

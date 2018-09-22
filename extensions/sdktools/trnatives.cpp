@@ -855,7 +855,7 @@ static cell_t smn_TRGetEndPosition(IPluginContext *pContext, const cell_t *param
 	return 1;
 }
 
-static cell_t smn_TRGetDispFlags(IPluginContext *pContext, const cell_t *params)
+static cell_t smn_TRGetDisplacementFlags(IPluginContext *pContext, const cell_t *params)
 {
 	sm_trace_t *tr;
 	HandleError err;
@@ -1096,7 +1096,7 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_GetStartPosition",			smn_TRGetStartPosition},
 	{"TR_GetEndPosition",			smn_TRGetEndPosition},
 	{"TR_GetEntityIndex",			smn_TRGetEntityIndex},
-	{"TR_GetDispFlags",				smn_TRGetDispFlags},
+	{"TR_GetDisplacementFlags",		smn_TRGetDisplacementFlags },
 	{"TR_GetSurfaceName",			smn_TRGetSurfaceName},
 	{"TR_GetSurfaceProps",			smn_TRGetSurfaceProps},
 	{"TR_GetSurfaceFlags",			smn_TRGetSurfaceFlags},
