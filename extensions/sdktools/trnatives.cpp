@@ -877,7 +877,7 @@ static cell_t smn_TRGetSurfaceName(IPluginContext *pContext, const cell_t *param
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
 
-	if (params[1] == BAD_HANDLE)
+	if (params[3] == BAD_HANDLE)
 	{
 		tr = &g_Trace;
 	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
