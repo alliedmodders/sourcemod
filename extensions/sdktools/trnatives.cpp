@@ -881,7 +881,7 @@ static cell_t smn_TRGetSurfaceName(IPluginContext *pContext, const cell_t *param
 	{
 		tr = &g_Trace;
 	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
-		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[3], err);
 	}
 
 	pContext->StringToLocal(params[1], params[2], tr->surface.name);
