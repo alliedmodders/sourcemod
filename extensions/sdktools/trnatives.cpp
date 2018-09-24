@@ -117,16 +117,13 @@ enum
 // For backwards compatibility, old EnumerateEntities functions accepted bool instead of flags
 int TranslatePartitionFlags(int input)
 {
-	if (input == 0)
+	switch (input)
 	{
+	case 0:
 		return PARTITION_ENGINE_SOLID_EDICTS;
-	}
-	else if (input == 1)
-	{
+	case 1:
 		return PARTITION_ENGINE_TRIGGER_EDICTS;
-	}
-	else
-	{
+	default:
 		return input >> 1;
 	}
 }
