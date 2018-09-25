@@ -874,14 +874,14 @@ static cell_t smn_TRGetSurfaceName(IPluginContext *pContext, const cell_t *param
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
 
-	if (params[3] == BAD_HANDLE)
+	if (params[1] == BAD_HANDLE)
 	{
 		tr = &g_Trace;
 	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
-		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[3], err);
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
 	}
 
-	pContext->StringToLocal(params[1], params[2], tr->surface.name);
+	pContext->StringToLocal(params[2], params[3], tr->surface.name);
 
 	return 1;
 }

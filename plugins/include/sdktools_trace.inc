@@ -563,13 +563,13 @@ native int TR_GetDisplacementFlags(Handle hndl=INVALID_HANDLE);
 /**
  * Returns the name of the surface that was hit.
  *
+ * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
  * @param buffer			Buffer to store surface name in
  * @param maxlen			Maximum length of output buffer
- * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
  * @noreturn
  * @error				Invalid Handle.
  */
-native void TR_GetSurfaceName(char[] buffer, int maxlen, Handle hndl=INVALID_HANDLE);
+native void TR_GetSurfaceName(Handle hndl, char[] buffer, int maxlen);
 
 /**
  * Returns the surface properties index of the surface that was hit.
