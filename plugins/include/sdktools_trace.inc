@@ -527,11 +527,11 @@ native float TR_GetFractionLeftSolid(Handle hndl=INVALID_HANDLE);
 /**
  * Returns the starting position of a trace.
  *
- * @param pos			Vector buffer to store data in.
  * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
+ * @param pos			Vector buffer to store data in.
  * @error				Invalid Handle.
  */
-native void TR_GetStartPosition(float pos[3], Handle hndl=INVALID_HANDLE);
+native void TR_GetStartPosition(Handle hndl, float pos[3]);
 
 /**
  * Returns the collision position of a trace result.

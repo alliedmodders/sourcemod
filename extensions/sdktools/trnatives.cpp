@@ -812,15 +812,15 @@ static cell_t smn_TRGetStartPosition(IPluginContext *pContext, const cell_t *par
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
 
-	if (params[2] == BAD_HANDLE)
+	if (params[1] == BAD_HANDLE)
 	{
 		tr = &g_Trace;
-	} else if ((err = handlesys->ReadHandle(params[2], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
-		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[2], err);
+	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
 	}
 
 	cell_t *addr;
-	pContext->LocalToPhysAddr(params[1], &addr);
+	pContext->LocalToPhysAddr(params[2], &addr);
 
 	addr[0] = sp_ftoc(tr->startpos.x);
 	addr[1] = sp_ftoc(tr->startpos.y);
