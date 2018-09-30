@@ -639,32 +639,40 @@ for arch in SM.archs:
      SP.libsourcepawn[arch]
   ]
 
-BuildScripts = [
-  'loader/AMBuilder',
-  'core/AMBuilder',
+NonSDKBuilds = [
   'core/logic/AMBuilder',
   'extensions/bintools/AMBuilder',
   'extensions/clientprefs/AMBuilder',
   'extensions/curl/AMBuilder',
-  'extensions/cstrike/AMBuilder',
   'extensions/geoip/AMBuilder',
-  'extensions/mysql/AMBuilder',
   'extensions/regex/AMBuilder',
-  'extensions/sdkhooks/AMBuilder',
-  'extensions/sdktools/AMBuilder',
   'extensions/sqlite/AMBuilder',
-  'extensions/tf2/AMBuilder',
   'extensions/topmenus/AMBuilder',
   'extensions/updater/AMBuilder',
+  'loader/AMBuilder',
 ]
+if SM.mysql_root:
+  NonSDKBuilds += [
+    'extensions/mysql/AMBuilder',
+  ]
+for arch in SM.archs:
+  builder.Build(NonSDKBuilds, { 'SM': SM, 'arch': arch })
+
+SDKBuilds = [
+  'core/AMBuilder',
+  'extensions/cstrike/AMBuilder',
+  'extensions/sdkhooks/AMBuilder',
+  'extensions/sdktools/AMBuilder',
+  'extensions/tf2/AMBuilder',
+]
+builder.Build(SDKBuilds, { 'SM': SM })
 
 if builder.backend == 'amb2':
-  BuildScripts += [
+  OtherScripts = [
     'plugins/AMBuilder',
     'tools/buildbot/PackageScript',
   ]
-
-builder.Build(BuildScripts, { 'SM': SM })
+  builder.Build(OtherScripts, { 'SM': SM })
 
 if builder.options.breakpad_dump:
   builder.Build('tools/buildbot/BreakpadSymbols', { 'SM': SM })
