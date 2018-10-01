@@ -115,7 +115,7 @@ enum
 };
 
 // For backwards compatibility, old EnumerateEntities functions accepted bool instead of flags
-int TranslatePartitionFlags(int input)
+static int TranslatePartitionFlags(int input)
 {
 	switch (input)
 	{
