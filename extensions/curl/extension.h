@@ -38,13 +38,19 @@
  */
 
 #include "smsdk_ext.h"
+#include "IWebternet.h"
+#include "IBaseDownloader.h"
+#include <amtl/am-linkedlist.h>
+#include <amtl/am-vector.h>
+#include <amtl/am-thread-utils.h>
+#include <string.h>
 
 
 /**
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
  */
-class CurlExt : public SDKExtension
+class CurlExt : public SDKExtension, IPluginsListener
 {
 public:
 	/**
@@ -83,6 +89,9 @@ public:
 	//virtual bool QueryRunning(char *error, size_t maxlength);
 	const char *GetExtensionVerString();
 	const char *GetExtensionDateString();
+
+	virtual void OnPluginUnloaded(IPlugin *plugin);
+
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**
@@ -120,5 +129,120 @@ public:
 
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
+
+// Handle helper class
+class HTTPHandleDispatcher : public IHandleTypeDispatch
+{
+public:
+	virtual void OnHandleDestroy(HandleType_t type, void *object);
+};
+
+extern HTTPHandleDispatcher g_HTTPHandler;
+
+struct HTTPRequestCompletedContextFunction {
+	funcid_t uPluginFunction;
+	bool bHasContext;
+};
+
+union HTTPRequestCompletedContextPack {
+	uint64_t ulContextValue;
+	struct {
+		HTTPRequestCompletedContextFunction *pCallbackFunction;
+		cell_t iPluginContextValue;
+	};
+};
+
+struct HTTPRequestHandleSet
+{
+	Handle_t hndlSession;
+	Handle_t hndlDownloader;
+	Handle_t hndlForm;
+};
+
+class HTTPSessionManager
+{
+public:
+	static HTTPSessionManager& instance()
+	{
+		static HTTPSessionManager _instance;
+		return _instance;
+	}
+	~HTTPSessionManager() {}
+
+	void Initialize();
+	void Shutdown();
+	void PluginUnloaded(IPlugin *plugin);
+	void RunFrame();
+	void BurnSessionHandle(IPluginContext * pCtx, HTTPRequestHandleSet &handles);
+	void PostAndDownload(IPluginContext *pCtx, 
+		HTTPRequestHandleSet handles,
+		const char *url,
+		HTTPRequestCompletedContextPack contextPack);
+	void Download(IPluginContext *pCtx, 
+		HTTPRequestHandleSet handles,
+		const char *url,
+		HTTPRequestCompletedContextPack contextPack);
+protected:
+	
+private:
+	HTTPSessionManager() {}
+	HTTPSessionManager(const HTTPSessionManager&);
+	HTTPSessionManager & operator = (const HTTPSessionManager &);
+
+	enum HTTPRequestMethod
+	{
+		HTTP_GET,
+		HTTP_POST
+	};
+
+	struct HTTPRequest 
+	{
+		Handle_t plugin;
+		HTTPRequestMethod method;
+		HTTPRequestHandleSet handles;
+		const char *url;
+		HTTPRequestCompletedContextPack contextPack;
+		cell_t result;
+
+		bool operator==(const HTTPRequest& lhs) const
+		{
+			return !memcmp(&lhs, this, sizeof(HTTPRequest));
+		}
+	};
+
+	void RemoveFinishedThreads();
+	void AddCallback(HTTPRequest request);
+
+	static const unsigned int iMaxRequestsPerFrame = 20;
+	IThreadWorker *m_pWorker;
+	ke::ConditionVariable threads_;
+	ke::LinkedList<IThreadHandle*> threads;
+	ke::ConditionVariable callbacks_;
+	ke::Vector<HTTPRequest> callbacks;
+
+	class HTTPAsyncRequestHandler : public IThread
+	{
+	public:
+		HTTPAsyncRequestHandler(HTTPRequest request)
+		{
+			this->request = request;
+		}
+		~HTTPAsyncRequestHandler() {}
+	protected:
+	private:
+		HTTPRequest request;
+		virtual void RunThread(IThreadHandle *pHandle);
+		virtual void OnTerminate(IThreadHandle *pHandle, bool cancel)
+		{
+			delete this;
+		}
+	};
+};
+
+void OnGameFrame(bool simulating);
+IPlugin *FindPluginByContext(IPluginContext *pContext);
+
+// Natives
+extern const sp_nativeinfo_t curlext_natives[];
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

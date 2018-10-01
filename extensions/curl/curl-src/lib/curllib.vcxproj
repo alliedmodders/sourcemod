@@ -1,0 +1,363 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="DLL Debug|Win32">
+      <Configuration>DLL Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DLL Release|Win32">
+      <Configuration>DLL Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="LIB Debug|Win32">
+      <Configuration>LIB Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="LIB Release|Win32">
+      <Configuration>LIB Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName />
+    <SccLocalPath />
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='LIB Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='LIB Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='LIB Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='LIB Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DLL Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DLL Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL Release|Win32'">
+    <OutDir>.\DLL-Release\</OutDir>
+    <IntDir>.\DLL-Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL Debug|Win32'">
+    <OutDir>.\DLL-Debug\</OutDir>
+    <IntDir>.\DLL-Debug\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='LIB Debug|Win32'">
+    <OutDir>.\LIB-Debug\</OutDir>
+    <IntDir>.\LIB-Debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='LIB Release|Win32'">
+    <OutDir>.\LIB-Release\</OutDir>
+    <IntDir>.\LIB-Release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL Release|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>.;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;BUILDING_LIBCURL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\DLL-Release\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\DLL-Release\curllib.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\DLL-Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\DLL-Release\</ProgramDataBaseFileName>
+    </ClCompile>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\DLL-Release\curllib.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\DLL-Release\curllib.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkDLL>true</LinkDLL>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>DLL-Release/libcurl.dll</OutputFile>
+      <ImportLibrary>DLL-Release/libcurl_imp.lib</ImportLibrary>
+      <AdditionalDependencies>ws2_32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL Debug|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <MinimalRebuild>true</MinimalRebuild>
+      <AdditionalIncludeDirectories>.;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;BUILDING_LIBCURL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\DLL-Debug\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\DLL-Debug\curllib.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\DLL-Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\DLL-Debug\</ProgramDataBaseFileName>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\DLL-Debug\curllib.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\DLL-Debug\curllib.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkDLL>true</LinkDLL>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>DLL-Debug/libcurld.dll</OutputFile>
+      <ImportLibrary>DLL-Debug/libcurld_imp.lib</ImportLibrary>
+      <AdditionalDependencies>ws2_32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='LIB Debug|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <MinimalRebuild>true</MinimalRebuild>
+      <AdditionalIncludeDirectories>.;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;BUILDING_LIBCURL;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\LIB-Debug\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\LIB-Debug\curllib.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\LIB-Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\LIB-Debug\</ProgramDataBaseFileName>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\LIB-Debug\curllib.bsc</OutputFile>
+    </Bscmake>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>LIB-Debug/libcurld.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='LIB Release|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(OPENSSLWIN32)\include;.;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;BUILDING_LIBCURL;CURL_STATICLIB;DCURL_DISABLE_LDAP;DCURL_DISABLE_TELNET;DCURL_DISABLE_DICT;DCURL_DISABLE_TFTP;USE_SSLEAY;USE_OPENSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\LIB-Release\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\LIB-Release\curllib.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\LIB-Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\LIB-Release\</ProgramDataBaseFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\LIB-Release\curllib.bsc</OutputFile>
+    </Bscmake>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>LIB-Release/libcurl.lib</OutputFile>
+      <AdditionalLibraryDirectories>$(OPENSSLWIN32)\lib\VC\static;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="base64.c" />
+    <ClCompile Include="connect.c" />
+    <ClCompile Include="content_encoding.c" />
+    <ClCompile Include="cookie.c" />
+    <ClCompile Include="curl_addrinfo.c" />
+    <ClCompile Include="dict.c" />
+    <ClCompile Include="easy.c" />
+    <ClCompile Include="escape.c" />
+    <ClCompile Include="file.c" />
+    <ClCompile Include="formdata.c" />
+    <ClCompile Include="ftp.c" />
+    <ClCompile Include="getenv.c" />
+    <ClCompile Include="getinfo.c" />
+    <ClCompile Include="gtls.c" />
+    <ClCompile Include="hash.c" />
+    <ClCompile Include="hostares.c" />
+    <ClCompile Include="hostasyn.c" />
+    <ClCompile Include="hostip4.c" />
+    <ClCompile Include="hostip6.c" />
+    <ClCompile Include="hostip.c" />
+    <ClCompile Include="hostsyn.c" />
+    <ClCompile Include="hostthre.c" />
+    <ClCompile Include="http.c" />
+    <ClCompile Include="http_chunks.c" />
+    <ClCompile Include="http_digest.c" />
+    <ClCompile Include="http_negotiate.c" />
+    <ClCompile Include="http_ntlm.c" />
+    <ClCompile Include="if2ip.c" />
+    <ClCompile Include="inet_ntop.c" />
+    <ClCompile Include="inet_pton.c" />
+    <ClCompile Include="krb4.c" />
+    <ClCompile Include="krb5.c" />
+    <ClCompile Include="ldap.c" />
+    <ClCompile Include="llist.c" />
+    <ClCompile Include="md5.c" />
+    <ClCompile Include="memdebug.c" />
+    <ClCompile Include="mprintf.c" />
+    <ClCompile Include="multi.c" />
+    <ClCompile Include="netrc.c" />
+    <ClCompile Include="nss.c" />
+    <ClCompile Include="parsedate.c" />
+    <ClCompile Include="progress.c" />
+    <ClCompile Include="qssl.c" />
+    <ClCompile Include="rawstr.c" />
+    <ClCompile Include="security.c" />
+    <ClCompile Include="select.c" />
+    <ClCompile Include="sendf.c" />
+    <ClCompile Include="share.c" />
+    <ClCompile Include="socks.c" />
+    <ClCompile Include="speedcheck.c" />
+    <ClCompile Include="splay.c" />
+    <ClCompile Include="ssh.c" />
+    <ClCompile Include="sslgen.c" />
+    <ClCompile Include="ssluse.c" />
+    <ClCompile Include="strdup.c" />
+    <ClCompile Include="strequal.c" />
+    <ClCompile Include="strerror.c" />
+    <ClCompile Include="strtok.c" />
+    <ClCompile Include="strtoofft.c" />
+    <ClCompile Include="telnet.c" />
+    <ClCompile Include="tftp.c" />
+    <ClCompile Include="timeval.c" />
+    <ClCompile Include="transfer.c" />
+    <ClCompile Include="url.c" />
+    <ClCompile Include="version.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="arpa_telnet.h" />
+    <ClInclude Include="config-win32.h" />
+    <ClInclude Include="connect.h" />
+    <ClInclude Include="content_encoding.h" />
+    <ClInclude Include="cookie.h" />
+    <ClInclude Include="curl_addrinfo.h" />
+    <ClInclude Include="curl_base64.h" />
+    <ClInclude Include="curl_ldap.h" />
+    <ClInclude Include="curl_md5.h" />
+    <ClInclude Include="curlx.h" />
+    <ClInclude Include="dict.h" />
+    <ClInclude Include="easyif.h" />
+    <ClInclude Include="escape.h" />
+    <ClInclude Include="file.h" />
+    <ClInclude Include="formdata.h" />
+    <ClInclude Include="ftp.h" />
+    <ClInclude Include="getinfo.h" />
+    <ClInclude Include="gtls.h" />
+    <ClInclude Include="hash.h" />
+    <ClInclude Include="hostip.h" />
+    <ClInclude Include="http_chunks.h" />
+    <ClInclude Include="http_digest.h" />
+    <ClInclude Include="http.h" />
+    <ClInclude Include="http_negotiate.h" />
+    <ClInclude Include="http_ntlm.h" />
+    <ClInclude Include="if2ip.h" />
+    <ClInclude Include="inet_ntop.h" />
+    <ClInclude Include="inet_pton.h" />
+    <ClInclude Include="krb4.h" />
+    <ClInclude Include="llist.h" />
+    <ClInclude Include="memdebug.h" />
+    <ClInclude Include="memory.h" />
+    <ClInclude Include="multiif.h" />
+    <ClInclude Include="netrc.h" />
+    <ClInclude Include="nssg.h" />
+    <ClInclude Include="parsedate.h" />
+    <ClInclude Include="progress.h" />
+    <ClInclude Include="qssl.h" />
+    <ClInclude Include="rawstr.h" />
+    <ClInclude Include="select.h" />
+    <ClInclude Include="sendf.h" />
+    <ClInclude Include="setup.h" />
+    <ClInclude Include="setup_once.h" />
+    <ClInclude Include="share.h" />
+    <ClInclude Include="sockaddr.h" />
+    <ClInclude Include="socks.h" />
+    <ClInclude Include="speedcheck.h" />
+    <ClInclude Include="splay.h" />
+    <ClInclude Include="ssh.h" />
+    <ClInclude Include="sslgen.h" />
+    <ClInclude Include="ssluse.h" />
+    <ClInclude Include="strdup.h" />
+    <ClInclude Include="strequal.h" />
+    <ClInclude Include="strerror.h" />
+    <ClInclude Include="strtok.h" />
+    <ClInclude Include="strtoofft.h" />
+    <ClInclude Include="telnet.h" />
+    <ClInclude Include="tftp.h" />
+    <ClInclude Include="timeval.h" />
+    <ClInclude Include="transfer.h" />
+    <ClInclude Include="urldata.h" />
+    <ClInclude Include="url.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="libcurl.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

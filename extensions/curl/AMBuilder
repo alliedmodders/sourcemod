@@ -20,6 +20,8 @@ elif builder.target.platform == 'windows':
 
 binary.sources += [
   'extension.cpp',
+  'FileDownloader.cpp',
+  'MemoryDownloader.cpp',
   'curlapi.cpp',
   '../../public/smsdk_ext.cpp'
 ]
