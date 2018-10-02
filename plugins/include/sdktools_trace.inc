@@ -108,24 +108,24 @@
  * @section Surface flags.
  */
  
-#define SURF_LIGHT       0x0001      // value will hold the light strength
-#define SURF_SKY2D       0x0002      // don't draw, indicates we should skylight + draw 2d sky but not draw the 3D skybox
-#define SURF_SKY         0x0004      // don't draw, but add to skybox
-#define SURF_WARP        0x0008      // turbulent water warp
+#define SURF_LIGHT       0x0001      /**< value will hold the light strength */
+#define SURF_SKY2D       0x0002      /**< don't draw, indicates we should skylight + draw 2d sky but not draw the 3D skybox */
+#define SURF_SKY         0x0004      /**< don't draw, but add to skybox */
+#define SURF_WARP        0x0008      /**< turbulent water warp */
 #define SURF_TRANS       0x0010
-#define SURF_NOPORTAL    0x0020      // the surface can not have a portal placed on it
-#define SURF_TRIGGER     0x0040      // This is an xbox hack to work around elimination of trigger surfaces, which breaks occluders
-#define SURF_NODRAW      0x0080      // don't bother referencing the texture
+#define SURF_NOPORTAL    0x0020      /**< the surface can not have a portal placed on it */
+#define SURF_TRIGGER     0x0040      /**< This is an xbox hack to work around elimination of trigger surfaces, which breaks occluders */
+#define SURF_NODRAW      0x0080      /**< don't bother referencing the texture */
 
-#define SURF_HINT        0x0100      // make a primary bsp splitter
+#define SURF_HINT        0x0100      /**< make a primary bsp splitter */
 
-#define SURF_SKIP        0x0200      // completely ignore, allowing non-closed brushes
-#define SURF_NOLIGHT     0x0400      // Don't calculate light
-#define SURF_BUMPLIGHT   0x0800      // calculate three lightmaps for the surface for bumpmapping
-#define SURF_NOSHADOWS   0x1000      // Don't receive shadows
-#define SURF_NODECALS    0x2000      // Don't receive decals
-#define SURF_NOCHOP      0x4000      // Don't subdivide patches on this surface 
-#define SURF_HITBOX      0x8000      // surface is part of a hitbox
+#define SURF_SKIP        0x0200      /**< completely ignore, allowing non-closed brushes */
+#define SURF_NOLIGHT     0x0400      /**< Don't calculate light */
+#define SURF_BUMPLIGHT   0x0800      /**< calculate three lightmaps for the surface for bumpmapping */
+#define SURF_NOSHADOWS   0x1000      /**< Don't receive shadows */
+#define SURF_NODECALS    0x2000      /**< Don't receive decals */
+#define SURF_NOCHOP      0x4000      /**< Don't subdivide patches on this surface */
+#define SURF_HITBOX      0x8000      /**< surface is part of a hitbox */
 
 /**
  * @endsection
@@ -135,9 +135,9 @@
  * @section Partition masks.
  */
  
-#define PARTITION_SOLID_EDICTS        (1 << 1) // every edict_t that isn't SOLID_TRIGGER or SOLID_NOT (and static props)
-#define PARTITION_TRIGGER_EDICTS      (1 << 2) // every edict_t that IS SOLID_TRIGGER
-#define PARTITION_NON_STATIC_EDICTS   (1 << 5) // everything in solid & trigger except the static props, includes SOLID_NOTs
+#define PARTITION_SOLID_EDICTS        (1 << 1) /**< every edict_t that isn't SOLID_TRIGGER or SOLID_NOT (and static props) */
+#define PARTITION_TRIGGER_EDICTS      (1 << 2) /**< every edict_t that IS SOLID_TRIGGER */
+#define PARTITION_NON_STATIC_EDICTS   (1 << 5) /**< everything in solid & trigger except the static props, includes SOLID_NOTs */
 #define PARTITION_STATIC_PROPS        (1 << 7)
 
 /**
