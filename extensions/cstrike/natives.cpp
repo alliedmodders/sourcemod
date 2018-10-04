@@ -368,7 +368,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	if (params[3] == 1 && g_pTerminateRoundDetoured)
 		g_pIgnoreTerminateDetour = true;
 
-	unsigned char vstk[sizeof(void *) + sizeof(float)+ sizeof(int)];
+	unsigned char vstk[sizeof(void *) + sizeof(float) + (sizeof(int)*3)];
 	unsigned char *vptr = vstk;
 
 	*(void **)vptr = gamerules;
