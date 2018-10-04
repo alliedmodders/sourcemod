@@ -314,17 +314,17 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	reason++;
 #endif
 	
-#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
+#if SOURCE_ENGINE != SE_CSGO
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("TerminateRound",
 			PassInfo pass[2]; \
-			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].flags = PASSFLAG_BYVAL; \  // delay
 			pass[0].type = PassType_Basic; \
 			pass[0].size = sizeof(float); \
-			pass[1].flags = PASSFLAG_BYVAL; \
+			pass[1].flags = PASSFLAG_BYVAL; \ // reason
 			pass[1].type = PassType_Basic; \
 			pass[1].size = sizeof(int); \
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2))
@@ -343,6 +343,45 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	*(int*)vptr = reason;
 
 	pWrapper->Execute(vstk, NULL);
+#elif !defined(WIN32)
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("TerminateRound",
+			PassInfo pass[4]; \
+			pass[0].flags = PASSFLAG_BYVAL; \  // delay
+			pass[0].type = PassType_Basic; \
+			pass[0].size = sizeof(float); \
+			pass[1].flags = PASSFLAG_BYVAL; \ // reason
+			pass[1].type = PassType_Basic; \
+			pass[1].size = sizeof(int); \
+			pass[2].flags = PASSFLAG_BYVAL; \ // unknown
+			pass[2].type = PassType_Basic; \
+			pass[2].size = sizeof(int); \
+			pass[3].flags = PASSFLAG_BYVAL; \ // unknown2
+			pass[3].type = PassType_Basic; \
+			pass[3].size = sizeof(int); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 4))
+	}
+
+	if (params[3] == 1 && g_pTerminateRoundDetoured)
+		g_pIgnoreTerminateDetour = true;
+
+	unsigned char vstk[sizeof(void *) + sizeof(float)+ sizeof(int)];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = gamerules;
+	vptr += sizeof(void *);
+	*(float *)vptr = sp_ctof(params[1]);
+	vptr += sizeof(float);
+	*(int*)vptr = reason;
+	vptr += sizeof(int);
+	*(int*)vptr = 0;
+	vptr += sizeof(int);
+	*(int*)vptr = 0;
+
+	pWrapper->Execute(vstk, NULL);
 #else
 	static void *addr = NULL;
 
@@ -358,6 +397,8 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	
 	__asm
 	{
+		push 0
+		push 0
 		push reason
 		movss xmm1, delay
 		mov ecx, gamerules
