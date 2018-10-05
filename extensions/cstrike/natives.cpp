@@ -314,7 +314,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	reason++;
 #endif
 	
-#if SOURCE_ENGINE != SE_CSGO
+#if SOURCE_ENGINE == SE_CSS
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -343,7 +343,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	*(int*)vptr = reason;
 
 	pWrapper->Execute(vstk, NULL);
-#elif !defined(WIN32)
+#elif SOURCE_ENGINE == SE_CSGO && !defined(WIN32)
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -382,7 +382,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	*(int*)vptr = 0;
 
 	pWrapper->Execute(vstk, NULL);
-#else
+#else // CSGO Win32
 	static void *addr = NULL;
 
 	if(!addr)

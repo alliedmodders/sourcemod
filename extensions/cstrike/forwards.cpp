@@ -126,7 +126,7 @@ DETOUR_DECL_MEMBER0(DetourWeaponPrice, int)
 }
 #endif
 
-#if SOURCE_ENGINE != SE_CSGO
+#if SOURCE_ENGINE == SE_CSS
 DETOUR_DECL_MEMBER2(DetourTerminateRound, void, float, delay, int, reason)
 {
 	if (g_pIgnoreTerminateDetour)
@@ -135,7 +135,7 @@ DETOUR_DECL_MEMBER2(DetourTerminateRound, void, float, delay, int, reason)
 		DETOUR_MEMBER_CALL(DetourTerminateRound)(delay, reason);
 		return;
 	}
-#elif !defined(WIN32)
+#elif SOURCE_ENGINE == SE_CSGO && !defined(WIN32)
 DETOUR_DECL_MEMBER4(DetourTerminateRound, void, float, delay, int, reason, int, unknown, int, unknown2)
 {
 	if (g_pIgnoreTerminateDetour)
@@ -189,12 +189,12 @@ DETOUR_DECL_MEMBER3(DetourTerminateRound, void, int, reason, int, unknown, int, 
 	reason++;
 #endif
 	
-#if SOURCE_ENGINE != SE_CSGO
+#if SOURCE_ENGINE == SE_CSS
 	if (result == Pl_Changed)
 		return DETOUR_MEMBER_CALL(DetourTerminateRound)(delay, reason);
 
 	return DETOUR_MEMBER_CALL(DetourTerminateRound)(orgdelay, orgreason);
-#elif !defined(WIN32)
+#elif SOURCE_ENGINE == SE_CSGO && !defined(WIN32)
 	if (result == Pl_Changed)
 		return DETOUR_MEMBER_CALL(DetourTerminateRound)(delay, reason, unknown, unknown2);
 
