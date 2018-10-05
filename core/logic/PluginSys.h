@@ -143,11 +143,6 @@ public:
 	 */
 	static CPlugin *Create(const char *file);
 
-	static inline bool matches(const char *file, const CPlugin *plugin)
-	{
-		return strcmp(plugin->m_filename, file) == 0;
-	}
-
 public:
 	// Evicts the plugin from memory and sets an error state.
 	void EvictWithError(PluginStatus status, const char *error_fmt, ...);
@@ -483,7 +478,54 @@ private:
 	typedef decltype(m_listeners)::iterator ListenerIter;
 	typedef decltype(m_plugins)::iterator PluginIter;
 
-	NameHashSet<CPlugin *> m_LoadLookup;
+	struct CPluginPolicy
+	{
+		static inline uint32_t hash(const detail::CharsAndLength &key)
+		{
+/* For windows & mac, we convert the path to lower-case in order to avoid duplicate plugin loading */
+#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
+			const char *original = key.chars();
+			char *copy = strdup(original);
+			
+			for (size_t i = 0; copy[i]; ++i)
+			{
+				copy[i] = tolower(copy[i]);
+			}
+			
+			uint32_t hash = detail::CharsAndLength(copy).hash();
+			free(copy);
+			return hash;
+#else
+			return key.hash();
+#endif
+		}
+		
+		static inline bool matches(const char *file, const CPlugin *plugin)
+		{
+			const char *pluginFile = const_cast<CPlugin*>(plugin)->GetFilename();
+#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
+			size_t fileLen = strlen(file);
+			if (fileLen != strlen(pluginFile))
+			{
+				return false;
+			}
+			
+			for (size_t i = 0; i < fileLen; ++i)
+			{
+				if (tolower(file[i]) != tolower(pluginFile[i]))
+				{
+					return false;
+				}
+			}
+			
+			return true;
+#else
+			return strcmp(pluginFile, file) == 0;
+#endif
+		}
+	};
+	NameHashSet<CPlugin *, CPluginPolicy> m_LoadLookup;
+
 	bool m_AllPluginsLoaded;
 	IdentityToken_t *m_MyIdent;
 
