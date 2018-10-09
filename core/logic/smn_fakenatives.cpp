@@ -120,7 +120,7 @@ static cell_t CreateNative(IPluginContext *pContext, const cell_t *params)
 
 	if (!pPlugin->AddFakeNative(pFunction, name, FakeNativeRouter))
 	{
-		return pContext->ThrowNativeError("Fatal error creating dynamic native!");
+		return pContext->ThrowNativeError("Failed to create dynamic native, name is probably already in use");
 	}
 
 	return 1;
