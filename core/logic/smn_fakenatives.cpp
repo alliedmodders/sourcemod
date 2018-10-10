@@ -113,14 +113,14 @@ static cell_t CreateNative(IPluginContext *pContext, const cell_t *params)
 	IPluginFunction *pFunction = pContext->GetFunctionById(params[2]);
 	if (!pFunction)
 	{
-		return pContext->ThrowNativeError("Function %x is not a valid function", params[2]);
+		return pContext->ThrowNativeError("Failed to create native \"%s\", function %x is not a valid function", name, params[2]);
 	}
 
 	pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
 
 	if (!pPlugin->AddFakeNative(pFunction, name, FakeNativeRouter))
 	{
-		return pContext->ThrowNativeError("Fatal error creating dynamic native!");
+		return pContext->ThrowNativeError("Failed to create native \"%s\", name is probably already in use", name);
 	}
 
 	return 1;
