@@ -325,6 +325,10 @@ native int GetTime(int bigStamp[2]={0,0});
  *
  * See this URL for valid parameters: 
  * http://cplusplus.com/reference/clibrary/ctime/strftime.html
+ * 
+ * Note that available parameters depends on support from your operating system.
+ * In particular, ones highlighted in yellow on that page are not currently
+ * available on Windows and should be avoided for portable plugins.
  *
  * @param buffer		Destination string buffer.
  * @param maxlength		Maximum length of output string buffer.
