@@ -31,15 +31,17 @@
 
 #include <sourcemod_version.h>
 #include "extension.h"
-#include "GeoIP.h"
+#include "libmaxminddb/include/maxminddb.h"
 #include "am-string.h"
+
+#define DATA_REL_PATH "configs/geoip/GeoLite2-Country.mmdb"
 
 /**
  * @file extension.cpp
  * @brief Implement extension code here.
  */
 GeoIP_Extension g_GeoIP;
-GeoIP *gi = NULL;
+MMDB_s gi2;
 
 SMEXT_LINK(&g_GeoIP);
 
@@ -47,26 +49,32 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	char path[PLATFORM_MAX_PATH];
 
-	g_pSM->BuildPath(Path_SM, path, sizeof(path), "configs/geoip/GeoIP.dat");
-	gi = GeoIP_open(path, GEOIP_MEMORY_CACHE);
-
-	if (!gi)
+	g_pSM->BuildPath(Path_SM, path, sizeof(path), DATA_REL_PATH);
+	int res = MMDB_open(path, 0, &gi2);
+	if (res != MMDB_SUCCESS)
 	{
-		ke::SafeStrcpy(error, maxlength, "Could not load configs/geoip/GeoIP.dat");
+		ke::SafeSprintf(error, maxlength, "Could not load GeoIP data from %s. (%s)", DATA_REL_PATH, MMDB_strerror(res));
 		return false;
 	}
 
 	g_pShareSys->AddNatives(myself, geoip_natives);
 	g_pShareSys->RegisterLibrary(myself, "GeoIP");
-	g_pSM->LogMessage(myself, "GeoIP database info: %s", GeoIP_database_info(gi));
+
+	if (gi2.metadata.description.count)
+	{
+		g_pSM->LogMessage(myself, "GeoIP database info: %s", gi2.metadata.description.descriptions[0]->description);
+	}
+	else
+	{
+		g_pSM->LogMessage(myself, "GeoIP database info: Unknown version");
+	}
 
 	return true;
 }
 
 void GeoIP_Extension::SDK_OnUnload()
 {
-	GeoIP_delete(gi);
-	gi = NULL;
+	MMDB_close(&gi2);
 }
 
 const char *GeoIP_Extension::GetExtensionVerString()
@@ -96,44 +104,58 @@ inline void StripPort(char *ip)
 static cell_t sm_Geoip_Code2(IPluginContext *pCtx, const cell_t *params)
 {
 	char *ip;
-	const char *ccode;
-
 	pCtx->LocalToString(params[1], &ip);
 	StripPort(ip);
 
-	ccode = GeoIP_country_code_by_addr(gi, ip);
+	int gai_error;
+	int mmdb_error;
+	MMDB_lookup_result_s res = MMDB_lookup_string(&gi2, ip, &gai_error, &mmdb_error);
+	if (gai_error != 0 || mmdb_error != MMDB_SUCCESS || !res.found_entry)
+	{
+		return 0;
+	}
 
-	pCtx->StringToLocal(params[2], 3, ccode ? ccode : "");
+	MMDB_entry_data_s entry_data;
+	int status = MMDB_get_value(&res.entry, &entry_data, "country", "iso_code", NULL);
+	if (status != MMDB_SUCCESS || !entry_data.has_data || entry_data.type != MMDB_DATA_TYPE_UTF8_STRING)
+	{
+		return 0;
+	}
 
-	return ccode ? 1 : 0;
+	pCtx->StringToLocal(params[2], 3, entry_data.utf8_string);
+
+	return 1;
 }
 
 static cell_t sm_Geoip_Code3(IPluginContext *pCtx, const cell_t *params)
 {
-	char *ip;
-	const char *ccode;
-
-	pCtx->LocalToString(params[1], &ip);
-	StripPort(ip);
-
-	ccode = GeoIP_country_code3_by_addr(gi, ip);
-	pCtx->StringToLocal(params[2], 4, ccode ? ccode : "");
-
-	return ccode ? 1 : 0;
+	return pCtx->ThrowNativeError("Unsupported.");
 }
 
 static cell_t sm_Geoip_Country(IPluginContext *pCtx, const cell_t *params)
 {
 	char *ip;
-	const char *ccode;
-
 	pCtx->LocalToString(params[1], &ip);
 	StripPort(ip);
 
-	ccode = GeoIP_country_name_by_addr(gi, ip);
-	pCtx->StringToLocal(params[2], params[3], (ccode) ? ccode : "");
+	int gai_error;
+	int mmdb_error;
+	MMDB_lookup_result_s res = MMDB_lookup_string(&gi2, ip, &gai_error, &mmdb_error);
+	if (gai_error != 0 || mmdb_error != MMDB_SUCCESS || !res.found_entry)
+	{
+		return 0;
+	}
 
-	return ccode ? 1 : 0;
+	MMDB_entry_data_s entry_data;
+	int status = MMDB_get_value(&res.entry, &entry_data, "country", "iso_code", NULL);
+	if (status != MMDB_SUCCESS || !entry_data.has_data || entry_data.type != MMDB_DATA_TYPE_UTF8_STRING)
+	{
+		return 0;
+	}
+
+	pCtx->StringToLocal(params[2], params[3], entry_data.utf8_string);
+
+	return 1;
 }
 
 const sp_nativeinfo_t geoip_natives[] = 

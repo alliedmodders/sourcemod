@@ -7,13 +7,20 @@ for arch in SM.archs:
     binary.compiler.cxxflags += ['-fno-rtti']
   elif binary.compiler.family == 'msvc':
     binary.compiler.cxxflags += ['/GR-']
+    binary.compiler.cxxflags.remove('/TP')
   if builder.target.platform == 'windows':
-    binary.compiler.postlink += ['wsock32.lib']
+    binary.compiler.postlink += ['ws2_32.lib']
+  
+  binary.compiler.cxxincludes += [
+    os.path.join(builder.sourcePath, 'extensions', 'geoip', 'libmaxminddb', 'include'),
+    os.path.join(builder.sourcePath, 'extensions', 'geoip', 'libmaxminddb', 'src'),
+  ]
 
   binary.sources += [
     'extension.cpp',
-    'GeoIP.c',
-    '../../public/smsdk_ext.cpp'
+    '../../public/smsdk_ext.cpp',
+    'libmaxminddb/src/data-pool.c',
+    'libmaxminddb/src/maxminddb.c',
   ]
 
   SM.extensions += [builder.Add(binary)]
