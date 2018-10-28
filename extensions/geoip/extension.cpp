@@ -147,7 +147,7 @@ static cell_t sm_Geoip_Country(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	MMDB_entry_data_s entry_data;
-	int status = MMDB_get_value(&res.entry, &entry_data, "country", "iso_code", NULL);
+	int status = MMDB_get_value(&res.entry, &entry_data, "country", "names", "en", NULL);
 	if (status != MMDB_SUCCESS || !entry_data.has_data || entry_data.type != MMDB_DATA_TYPE_UTF8_STRING)
 	{
 		return 0;
