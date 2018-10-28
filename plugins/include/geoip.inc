@@ -57,6 +57,7 @@ native bool GeoipCode2(const char[] ip, char ccode[3]);
  * @param ccode			Destination string buffer to store the code.
  * @return				True on success, false if no country found.
  */
+#pragma deprecated No longer supported by Maxmind API
 native bool GeoipCode3(const char[] ip, char ccode[4]);
 
 /**
