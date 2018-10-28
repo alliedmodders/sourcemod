@@ -11,7 +11,7 @@ for arch in SM.archs:
   if builder.target.platform == 'windows':
     binary.compiler.postlink += ['ws2_32.lib']
   
-  binary.compiler.cxxincludes += [
+  binary.compiler.includes += [
     os.path.join(builder.sourcePath, 'extensions', 'geoip', 'libmaxminddb', 'include'),
     os.path.join(builder.sourcePath, 'extensions', 'geoip', 'libmaxminddb', 'src'),
   ]
