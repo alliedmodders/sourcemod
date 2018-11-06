@@ -523,6 +523,9 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 
 static cell_t CS_GetClientClanTag(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_CSGO
+	return GetPlayerStringVar(pContext, params, "ClanTag");
+#else
 	static void *addr;
 	if (!addr)
 	{
@@ -558,10 +561,14 @@ static cell_t CS_GetClientClanTag(IPluginContext *pContext, const cell_t *params
 	pContext->StringToLocalUTF8(params[2], params[3], src, &len);
 
 	return len;
+#endif
 }
 
 static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_CSGO
+	return SetPlayerStringVar(pContext, params, "ClanTag");
+#else
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -593,6 +600,7 @@ static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params
 	pWrapper->Execute(vstk, NULL);
 
 	return 1;
+#endif
 }
 
 static cell_t CS_AliasToWeaponID(IPluginContext *pContext, const cell_t *params)
@@ -836,6 +844,54 @@ static inline cell_t SetPlayerVar(IPluginContext *pContext, const cell_t *params
 	}
 
 	return 0;
+}
+
+static inline cell_t GetPlayerStringVar(IPluginContext *pContext, const cell_t *params, const char *varName)
+{
+	CBaseEntity *pPlayer = GetCBaseEntity(params[1], true);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	char **pVar = GetPlayerVarAddressOrError<char *>(varName, pContext, pPlayer);
+	if (pVar)
+	{
+		size_t len;
+		pContext->StringToLocalUTF8(params[2], params[3], *pVar, &len);
+		return len;
+	}
+
+	return 0;
+}
+
+static inline cell_t SetPlayerStringVar(IPluginContext *pContext, const cell_t *params, const char *varName)
+{
+	CBaseEntity *pPlayer = GetCBaseEntity(params[1], true);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	char szSizeName[128];
+	g_pSM->Format(szSizeName, sizeof(szSizeName), "%sSize", varName);
+
+	int maxlen = 0;
+	if(!g_pGameConf->GetOffset(szSizeName, &maxlen))
+	{
+		return pContext->ThrowNativeError("Failed to locate %s offset in gamedata", szSizeName);
+	}
+
+	char **pVar = GetPlayerVarAddressOrError<char *>(varName, pContext, pPlayer);
+
+	if (pVar)
+	{
+		char *newValue;
+		pContext->LocalToString(params[2], &newValue);
+		Q_strncpy(*pVar, newValue, maxlen);
+	}
+
+	return 1;
 }
 
 static cell_t CS_SetMVPCount(IPluginContext *pContext, const cell_t *params)
