@@ -263,7 +263,7 @@
 				"linux64"	"16"
 				"mac64"		"16"
 			}
-			"Assists"
+			"ClanTag"
 			{
 				"windows"	"140"
 				"linux"		"140"
