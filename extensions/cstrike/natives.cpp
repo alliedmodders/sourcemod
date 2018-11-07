@@ -772,11 +772,11 @@ static inline cell_t GetPlayerStringVar(IPluginContext *pContext, const cell_t *
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	char **pVar = GetPlayerVarAddressOrError<char *>(varName, pContext, pPlayer);
+	char *pVar = GetPlayerVarAddressOrError<char>(varName, pContext, pPlayer);
 	if (pVar)
 	{
 		size_t len;
-		pContext->StringToLocalUTF8(params[2], params[3], *pVar, &len);
+		pContext->StringToLocalUTF8(params[2], params[3], pVar, &len);
 		return len;
 	}
 
@@ -800,13 +800,13 @@ static inline cell_t SetPlayerStringVar(IPluginContext *pContext, const cell_t *
 		return pContext->ThrowNativeError("Failed to locate %s offset in gamedata", szSizeName);
 	}
 
-	char **pVar = GetPlayerVarAddressOrError<char *>(varName, pContext, pPlayer);
+	char *pVar = GetPlayerVarAddressOrError<char>(varName, pContext, pPlayer);
 
 	if (pVar)
 	{
 		char *newValue;
 		pContext->LocalToString(params[2], &newValue);
-		Q_strncpy(*pVar, newValue, maxlen);
+		Q_strncpy(pVar, newValue, maxlen);
 	}
 
 	return 1;
