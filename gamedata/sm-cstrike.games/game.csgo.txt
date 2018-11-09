@@ -52,13 +52,6 @@
 				"linux64"	"174"
 				"mac64"		"177"
 			}
-			"ClanTagOffset"
-			{
-				"windows"	"12"
-				"linux"		"29"
-				"linux64"	"13"
-				"mac64"		"12"
-			}
 			//Offset into HandleCommand_Buy_Internal
 			"CCSPlayerInventoryOffset"
 			{
@@ -168,14 +161,6 @@
 				"linux64"	"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x89\xFB\x48\x83\xEC\x58\x64\x48\x8B\x04\x25\x28\x00\x00\x00\x48\x89\x45\xC8\x31\xC0\x4C\x8B\x2D\x46\xD3\xBB\x00"
 				"mac64"		"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x83\xEC\x58\x49\x89\xFD\x48\x8B\x1D\x85\x76\x60\x00"
 			}
-			"SetClanTag"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x55\x08\x85\xD2\x74\x2A\x8D\x81\x5C\x25\x00\x00"
-				"linux"		"\x55\x89\xE5\x83\xEC\x18\x8B\x45\x0C\x85\xC0\x74\x2A\x89\x44\x24\x04\x8B\x45\x08\xC7\x44\x24\x08\x10\x00\x00\x00"
-				"linux64"	"\x55\x48\x85\xF6\x48\x89\xE5\x74\x2A\x5D\x48\x81\xC7\x90\x28\x00\x00"
-				"mac64"		"\x55\x48\x89\xE5\x48\x85\xF6\x74\x2A\x48\x81\xC7\x88\x28\x00\x00"
-			}
 			"SetModelFromClass"
 			{
 				"library"	"server"
@@ -250,6 +235,40 @@
 				"linux"		"15"
 				"linux64"	"15"
 				"mac64"		"15"
+			}
+		}
+	}
+	
+	// Used for SetClanTag and GetClanTag
+	// to find the ClanTag offset start with the string "ClanTagChanged". Inside the function there is 2 KeyValues::GetString, one for "tag", and one for "name"
+	// The respective function underneath each are SetClanTag and SetClanName.
+	// To get the offset of the base (m_flGroundAccelLinearFracLastTime) unqiue string is "------- accelspeed = %f, flGoalSpeed = %f, flStoredAccel = %f\n"
+	// Inside that function right above the debug message is an if with a call to CBaseEntity::NetworkStateChanged and a member set with the same offset.
+	// Do math. 
+	// Note: Second offset can be skipped by simply dumping the netprops instead on each os although the distance will probably be the same on all.
+	
+	"#default"
+	{
+		"Keys"
+		{
+			"ClanTagBase"		"m_flGroundAccelLinearFracLastTime"
+		}
+		
+		"Offsets"
+		{
+			"ClanTagSize"
+			{
+				"windows"	"16"
+				"linux"		"16"
+				"linux64"	"16"
+				"mac64"		"16"
+			}
+			"ClanTag"
+			{
+				"windows"	"140"
+				"linux"		"140"
+				"linux64"	"140"
+				"mac64"		"140"
 			}
 		}
 	}

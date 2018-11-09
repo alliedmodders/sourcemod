@@ -521,80 +521,6 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 }
 #endif
 
-static cell_t CS_GetClientClanTag(IPluginContext *pContext, const cell_t *params)
-{
-	static void *addr;
-	if (!addr)
-	{
-		if (!g_pGameConf->GetMemSig("SetClanTag", &addr) || !addr)
-		{
-			return pContext->ThrowNativeError("Failed to locate function");
-		}
-	}
-
-	CBaseEntity *pEntity;
-	if (!(pEntity = GetCBaseEntity(params[1], true)))
-	{
-		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
-	}
-
-	static int tagOffsetOffset = -1;
-	static int tagOffset;
-
-	if (tagOffsetOffset == -1)
-	{
-		if (!g_pGameConf->GetOffset("ClanTagOffset", &tagOffsetOffset))
-		{
-			tagOffsetOffset = -1;
-			return pContext->ThrowNativeError("Unable to find ClanTagOffset gamedata");
-		}
-
-		tagOffset = *(int *)((intptr_t)addr + tagOffsetOffset);
-	}
-
-	size_t len;
-
-	const char *src = (char *)((intptr_t)pEntity + tagOffset);
-	pContext->StringToLocalUTF8(params[2], params[3], src, &len);
-
-	return len;
-}
-
-static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params)
-{
-	static ICallWrapper *pWrapper = NULL;
-
-	if (!pWrapper)
-	{
-		REGISTER_NATIVE_ADDR("SetClanTag",
-			PassInfo pass[1]; \
-			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].type  = PassType_Basic; \
-			pass[0].size  = sizeof(char *); \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 1))
-	}
-
-	CBaseEntity *pEntity;
-	if (!(pEntity = GetCBaseEntity(params[1], true)))
-	{
-		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
-	}
-
-	char *szNewTag;
-	pContext->LocalToString(params[2], &szNewTag);
-
-	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(char *)];
-	unsigned char *vptr = vstk;
-
-	*(CBaseEntity **)vptr = pEntity;
-	vptr += sizeof(CBaseEntity *);
-	*(char **)vptr = szNewTag;
-
-	pWrapper->Execute(vstk, NULL);
-
-	return 1;
-}
-
 static cell_t CS_AliasToWeaponID(IPluginContext *pContext, const cell_t *params)
 {
 #if SOURCE_ENGINE == SE_CSGO
@@ -836,6 +762,136 @@ static inline cell_t SetPlayerVar(IPluginContext *pContext, const cell_t *params
 	}
 
 	return 0;
+}
+
+static inline cell_t GetPlayerStringVar(IPluginContext *pContext, const cell_t *params, const char *varName)
+{
+	CBaseEntity *pPlayer = GetCBaseEntity(params[1], true);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	char *pVar = GetPlayerVarAddressOrError<char>(varName, pContext, pPlayer);
+	if (pVar)
+	{
+		size_t len;
+		pContext->StringToLocalUTF8(params[2], params[3], pVar, &len);
+		return len;
+	}
+
+	return 0;
+}
+
+static inline cell_t SetPlayerStringVar(IPluginContext *pContext, const cell_t *params, const char *varName)
+{
+	CBaseEntity *pPlayer = GetCBaseEntity(params[1], true);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	char szSizeName[128];
+	g_pSM->Format(szSizeName, sizeof(szSizeName), "%sSize", varName);
+
+	int maxlen = 0;
+	if(!g_pGameConf->GetOffset(szSizeName, &maxlen))
+	{
+		return pContext->ThrowNativeError("Failed to locate %s offset in gamedata", szSizeName);
+	}
+
+	char *pVar = GetPlayerVarAddressOrError<char>(varName, pContext, pPlayer);
+
+	if (pVar)
+	{
+		char *newValue;
+		pContext->LocalToString(params[2], &newValue);
+		Q_strncpy(pVar, newValue, maxlen);
+	}
+
+	return 1;
+}
+
+static cell_t CS_GetClientClanTag(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return GetPlayerStringVar(pContext, params, "ClanTag");
+#else
+	static void *addr;
+	if (!addr)
+	{
+		if (!g_pGameConf->GetMemSig("SetClanTag", &addr) || !addr)
+		{
+			return pContext->ThrowNativeError("Failed to locate function");
+		}
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	static int tagOffsetOffset = -1;
+	static int tagOffset;
+
+	if (tagOffsetOffset == -1)
+	{
+		if (!g_pGameConf->GetOffset("ClanTagOffset", &tagOffsetOffset))
+		{
+			tagOffsetOffset = -1;
+			return pContext->ThrowNativeError("Unable to find ClanTagOffset gamedata");
+		}
+
+		tagOffset = *(int *)((intptr_t)addr + tagOffsetOffset);
+	}
+
+	size_t len;
+
+	const char *src = (char *)((intptr_t)pEntity + tagOffset);
+	pContext->StringToLocalUTF8(params[2], params[3], src, &len);
+
+	return len;
+#endif
+}
+
+static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return SetPlayerStringVar(pContext, params, "ClanTag");
+#else
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("SetClanTag",
+			PassInfo pass[1]; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].type = PassType_Basic; \
+			pass[0].size = sizeof(char *); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 1))
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	char *szNewTag;
+	pContext->LocalToString(params[2], &szNewTag);
+
+	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(char *)];
+	unsigned char *vptr = vstk;
+
+	*(CBaseEntity **)vptr = pEntity;
+	vptr += sizeof(CBaseEntity *);
+	*(char **)vptr = szNewTag;
+
+	pWrapper->Execute(vstk, NULL);
+
+	return 1;
+#endif
 }
 
 static cell_t CS_SetMVPCount(IPluginContext *pContext, const cell_t *params)
