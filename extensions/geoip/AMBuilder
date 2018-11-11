@@ -12,6 +12,7 @@ for arch in SM.archs:
     binary.compiler.postlink += ['ws2_32.lib']
   
   binary.compiler.includes += [
+    os.path.join(builder.sourcePath, 'extensions', 'geoip'),
     os.path.join(builder.sourcePath, 'extensions', 'geoip', 'libmaxminddb', 'include'),
     os.path.join(builder.sourcePath, 'extensions', 'geoip', 'libmaxminddb', 'src'),
   ]
