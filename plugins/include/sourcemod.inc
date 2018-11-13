@@ -375,7 +375,7 @@ native int GetTime(int bigStamp[2]={0,0});
  * @param maxlength		Maximum length of output string buffer.
  * @param format		Formatting rules (passing NULL_STRING will use the rules defined in sm_datetime_format).
  * @param stamp			Optional time stamp.
- * @param localtime		Requires use OS timezone settings.
+ * @param localtime		Use OS timezone.
  * @error			Buffer too small or invalid time format.
  */
 native void FormatTime(char[] buffer, int maxlength, const char[] format, int stamp=-1, bool localtime = true);
