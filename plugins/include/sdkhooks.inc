@@ -69,6 +69,8 @@
 #define DMG_BLAST_SURFACE					(1 << 27)	/**< A blast on the surface of water that cannot harm things underwater */
 #define DMG_DIRECT								(1 << 28)
 #define DMG_BUCKSHOT							(1 << 29)	/**< not quite a bullet. Little, rounder, different. */
+#define DMG_LASTGENERICFLAG							(1 << 30)
+#define DMG_HEADSHOT							(1 << 31)	/**< Damage from a headshot. */
 #endif
 
 #if !defined DMG_CRIT
