@@ -21,7 +21,7 @@ for arch in SM.archs:
   # We need to define manually since we're not using their build tools.
   # TODO: parse from their file.
   if not binary.compiler.like('msvc'):
-    binary.compiler.defines += ['PACKAGE_VERSION=1.3.2']
+    binary.compiler.defines += ['PACKAGE_VERSION="1.3.2"']
 
   binary.sources += [
     'extension.cpp',
