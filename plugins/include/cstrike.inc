@@ -43,6 +43,7 @@
 #define CS_SLOT_PRIMARY		0	/**< Primary weapon slot. */
 #define CS_SLOT_SECONDARY	1	/**< Secondary weapon slot. */
 #define CS_SLOT_KNIFE		2	/**< Knife slot. */
+#define CS_SLOT_MELEE		2	/**< Melee slot. */
 #define CS_SLOT_GRENADE		3	/**< Grenade slot (will only return one grenade). */
 #define CS_SLOT_C4			4	/**< C4 slot. */
 
