@@ -188,9 +188,9 @@
 		{
 			"CScore"
 			{
-				"windows"	"75"
-				"linux"		"75"
-				"mac"		"75"
+				"windows"	"63"
+				"linux"		"63"
+				"mac"		"63"
 			}
 		}
 	}
