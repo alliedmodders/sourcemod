@@ -204,10 +204,10 @@
 		{
 			"CScore"
 			{
-				"windows"	"75"
-				"linux"		"75"
-				"linux64"	"75"
-				"mac64"		"75"
+				"windows"	"63"
+				"linux"		"63"
+				"linux64"	"63"
+				"mac64"		"63"
 			}
 		}
 	}
