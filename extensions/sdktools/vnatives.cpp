@@ -184,7 +184,7 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(3, vparams, 1);
 	*(CEconItemView **)(vptr + 12) = NULL;
 	*(bool *)(vptr + 16) = false;
-	*(void **)(vptr + 20) = NULL;
+	*(void **)(vptr + 17) = NULL;
 	FINISH_CALL_SIMPLE(&pEntity);
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
