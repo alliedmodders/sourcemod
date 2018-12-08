@@ -148,7 +148,7 @@ enum CSWeaponID
 	CSWeapon_AXE = 75,
 	CSWeapon_HAMMER = 76,
 	CSWeapon_SPANNER = 78,
-	CSWeapon_KNiFE_GHOST = 80,
+	CSWeapon_KNIFE_GHOST = 80,
 	CSWeapon_FIREBOMB = 81,
 	CSWeapon_DIVERSION = 82,
 	CSWeapon_FRAGGRENADE = 83,
