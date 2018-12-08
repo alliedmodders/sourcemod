@@ -273,9 +273,9 @@
 			"Extinguish"
 			{
 				"windows"	"229"
-				"linux"		"239"
-				"linux64"	"239"
-				"mac64"		"239"
+				"linux"		"230"
+				"linux64"	"230"
+				"mac64"		"230"
 			}
 			"Teleport"
 			{
