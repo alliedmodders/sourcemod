@@ -1200,7 +1200,7 @@ bool IsWindowsReservedDeviceName(const char *pMapname)
 	};
 	
 	size_t reservedCount = sizeof(reservedDeviceNames) / sizeof(reservedDeviceNames[0]);
-	for (int i = 0; i < reservedCount; ++i)
+	for (size_t i = 0; i < reservedCount; ++i)
 	{
 		if (CheckReservedFilename(pMapname, reservedDeviceNames[i]))
 		{
