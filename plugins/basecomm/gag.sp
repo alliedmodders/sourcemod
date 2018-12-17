@@ -44,15 +44,14 @@ enum CommType
 void DisplayGagTypesMenu(int client)
 {
 	Menu menu = new Menu(MenuHandler_GagTypes);
+	int target = playerstate[client].gagTarget;
 	
 	char title[100];
-	Format(title, sizeof(title), "%T: %N", "Choose Type", client, g_GagTarget[client]);
+	Format(title, sizeof(title), "%T: %N", "Choose Type", client, target);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
-	
-	int target = g_GagTarget[client];
-	
-	if (!g_Muted[target])
+
+	if (!playerstate[target].isMuted)
 	{
 		AddTranslatedMenuItem(menu, "0", "Mute Player", client);
 	}
@@ -61,7 +60,7 @@ void DisplayGagTypesMenu(int client)
 		AddTranslatedMenuItem(menu, "1", "UnMute Player", client);
 	}
 	
-	if (!g_Gagged[target])
+	if (!playerstate[target].isGagged)
 	{
 		AddTranslatedMenuItem(menu, "2", "Gag Player", client);
 	}
@@ -70,7 +69,7 @@ void DisplayGagTypesMenu(int client)
 		AddTranslatedMenuItem(menu, "3", "UnGag Player", client);
 	}
 	
-	if (!g_Muted[target] || !g_Gagged[target])
+	if (!playerstate[target].isMuted || !playerstate[target].isGagged)
 	{
 		AddTranslatedMenuItem(menu, "4", "Silence Player", client);
 	}
@@ -151,7 +150,7 @@ public int MenuHandler_GagPlayer(Menu menu, MenuAction action, int param1, int p
 		}
 		else
 		{
-			g_GagTarget[param1] = GetClientOfUserId(userid);
+			playerstate[param1].gagTarget = GetClientOfUserId(userid);
 			DisplayGagTypesMenu(param1);
 		}
 	}
@@ -178,39 +177,41 @@ public int MenuHandler_GagTypes(Menu menu, MenuAction action, int param1, int pa
 		menu.GetItem(param2, info, sizeof(info));
 		type = view_as<CommType>(StringToInt(info));
 		
+		int target = playerstate[param1].gagTarget;
+		
 		char name[MAX_NAME_LENGTH];
-		GetClientName(g_GagTarget[param1], name, sizeof(name));
+		GetClientName(target, name, sizeof(name));
 
 		switch (type)
 		{
 			case CommType_Mute:
 			{
-				PerformMute(param1, g_GagTarget[param1]);
+				PerformMute(param1, target);
 				ShowActivity2(param1, "[SM] ", "%t", "Muted target", "_s", name);
 			}
 			case CommType_UnMute:
 			{
-				PerformUnMute(param1, g_GagTarget[param1]);
+				PerformUnMute(param1, target);
 				ShowActivity2(param1, "[SM] ", "%t", "Unmuted target", "_s", name);
 			}
 			case CommType_Gag:
 			{
-				PerformGag(param1, g_GagTarget[param1]);
+				PerformGag(param1, target);
 				ShowActivity2(param1, "[SM] ", "%t", "Gagged target", "_s", name);
 			}
 			case CommType_UnGag:
 			{
-				PerformUnGag(param1, g_GagTarget[param1]);
+				PerformUnGag(param1, target);
 				ShowActivity2(param1, "[SM] ", "%t", "Ungagged target", "_s", name);
 			}
 			case CommType_Silence:
 			{
-				PerformSilence(param1, g_GagTarget[param1]);
+				PerformSilence(param1, target);
 				ShowActivity2(param1, "[SM] ", "%t", "Silenced target", "_s", name);
 			}
 			case CommType_UnSilence:
 			{
-				PerformUnSilence(param1, g_GagTarget[param1]);
+				PerformUnSilence(param1, target);
 				ShowActivity2(param1, "[SM] ", "%t", "Unsilenced target", "_s", name);
 			}
 		}
@@ -219,7 +220,7 @@ public int MenuHandler_GagTypes(Menu menu, MenuAction action, int param1, int pa
 
 void PerformMute(int client, int target, bool silent=false)
 {
-	g_Muted[target] = true;
+	playerstate[target].isMuted = true;
 	SetClientListeningFlags(target, VOICE_MUTED);
 	
 	FireOnClientMute(target, true);
@@ -232,7 +233,7 @@ void PerformMute(int client, int target, bool silent=false)
 
 void PerformUnMute(int client, int target, bool silent=false)
 {
-	g_Muted[target] = false;
+	playerstate[target].isMuted = false;
 	if (g_Cvar_Deadtalk.IntValue == 1 && !IsPlayerAlive(target))
 	{
 		SetClientListeningFlags(target, VOICE_LISTENALL);
@@ -256,7 +257,7 @@ void PerformUnMute(int client, int target, bool silent=false)
 
 void PerformGag(int client, int target, bool silent=false)
 {
-	g_Gagged[target] = true;
+	playerstate[target].isGagged = true;
 	FireOnClientGag(target, true);
 	
 	if (!silent)
@@ -267,7 +268,7 @@ void PerformGag(int client, int target, bool silent=false)
 
 void PerformUnGag(int client, int target, bool silent=false)
 {
-	g_Gagged[target] = false;
+	playerstate[target].isGagged = false;
 	FireOnClientGag(target, false);
 	
 	if (!silent)
@@ -278,15 +279,15 @@ void PerformUnGag(int client, int target, bool silent=false)
 
 void PerformSilence(int client, int target)
 {
-	if (!g_Gagged[target])
+	if (!playerstate[target].isGagged)
 	{
-		g_Gagged[target] = true;
+		playerstate[target].isGagged = true;
 		FireOnClientGag(target, true);
 	}
 	
-	if (!g_Muted[target])
+	if (!playerstate[target].isMuted)
 	{
-		g_Muted[target] = true;
+		playerstate[target].isMuted = true;
 		SetClientListeningFlags(target, VOICE_MUTED);
 		FireOnClientMute(target, true);
 	}
@@ -296,15 +297,15 @@ void PerformSilence(int client, int target)
 
 void PerformUnSilence(int client, int target)
 {
-	if (g_Gagged[target])
+	if (playerstate[target].isGagged)
 	{
-		g_Gagged[target] = false;
+		playerstate[target].isGagged = false;
 		FireOnClientGag(target, false);
 	}
 	
-	if (g_Muted[target])
+	if (playerstate[target].isMuted)
 	{
-		g_Muted[target] = false;
+		playerstate[target].isMuted = false;
 		
 		if (g_Cvar_Deadtalk.IntValue == 1 && !IsPlayerAlive(target))
 		{
@@ -501,7 +502,7 @@ public Action Command_Unmute(int client, int args)
 	{
 		int target = target_list[i];
 		
-		if (!g_Muted[target])
+		if (!playerstate[target].isMuted)
 		{
 			continue;
 		}
