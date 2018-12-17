@@ -1,4 +1,4 @@
-
+// vim: set noet:
 #define NAME_LENGTH 64
 #define CMD_LENGTH 255
 
@@ -161,26 +161,26 @@ void BuildDynamicMenu()
 			{
 				itemInput[Item_execute] = Execute_Player;
 			}
-  							
-  			/* iterate all submenus and load data into itemInput[Item_submenus] (ArrayList) */
-  			
-  			int count = 1;
-  			char countBuffer[10] = "1";
-  			
-  			char inputBuffer[48];
-  			
-  			while (kvMenu.JumpToKey(countBuffer))
-  			{
-	  			int submenuInput[Submenu];
-	  			
-	  			if (count == 1)
-	  			{
-		  			itemInput[Item_submenus] = new ArrayList(sizeof(submenuInput));	
-	  			}
-	  			
-	  			kvMenu.GetString("type", inputBuffer, sizeof(inputBuffer));
-	  			
-	  			if (strncmp(inputBuffer,"group",5)==0)
+								
+			/* iterate all submenus and load data into itemInput[Item_submenus] (ArrayList) */
+			
+			int count = 1;
+			char countBuffer[10] = "1";
+			
+			char inputBuffer[48];
+			
+			while (kvMenu.JumpToKey(countBuffer))
+			{
+				int submenuInput[Submenu];
+					
+				if (count == 1)
+				{
+					itemInput[Item_submenus] = new ArrayList(sizeof(submenuInput));	
+				}
+					
+				kvMenu.GetString("type", inputBuffer, sizeof(inputBuffer));
+					
+				if (strncmp(inputBuffer,"group",5)==0)
 				{	
 					if (StrContains(inputBuffer, "player") != -1)
 					{			
@@ -287,18 +287,18 @@ void BuildDynamicMenu()
 				
 				kvMenu.GetString("title", inputBuffer, sizeof(inputBuffer));
 				strcopy(submenuInput[Submenu_title], sizeof(submenuInput[Submenu_title]), inputBuffer);
-	  			
-	  			count++;
-	  			Format(countBuffer, sizeof(countBuffer), "%i", count);
-	  			
-	  			itemInput[Item_submenus].PushArray(submenuInput[0]);
-	  		
-	  			kvMenu.GoBack();	
-  			}
-  			
-  			/* Save this entire item into the global items array and add it to the menu */
-  			
-  			int location = g_DataArray.PushArray(itemInput[0]);
+					
+				count++;
+				Format(countBuffer, sizeof(countBuffer), "%i", count);
+					
+				itemInput[Item_submenus].PushArray(submenuInput[0]);
+				
+				kvMenu.GoBack();	
+			}
+				
+			/* Save this entire item into the global items array and add it to the menu */
+				
+			int location = g_DataArray.PushArray(itemInput[0]);
 			
 			char locString[10];
 			IntToString(location, locString, sizeof(locString));
@@ -327,9 +327,9 @@ void ParseConfigs()
 	if (!g_configParser)
 		g_configParser = new SMCParser();
 	
-        g_configParser.OnEnterSection = NewSection;
-        g_configParser.OnKeyValue = KeyValue;
-        g_configParser.OnLeaveSection = EndSection;
+	g_configParser.OnEnterSection = NewSection;
+	g_configParser.OnKeyValue = KeyValue;
+	g_configParser.OnLeaveSection = EndSection;
 	
 	delete g_groupList[groupListName];
 	delete g_groupList[groupListCommand];
