@@ -152,6 +152,7 @@ enum CSWeaponID
 	CSWeapon_FIREBOMB = 81,
 	CSWeapon_DIVERSION = 82,
 	CSWeapon_FRAGGRENADE = 83,
+	CSWeapon_SNOWBALL = 84,
 	CSWeapon_MAX_WEAPONS_NO_KNIFES, // Max without the knife item defs, useful when treating all knives as a regular knife.
 	CSWeapon_BAYONET = 500,
 	CSWeapon_KNIFE_FLIP = 505,
