@@ -87,23 +87,27 @@ static cell_t smn_PbReadInt64(IPluginContext *pCtx, const cell_t *params)
 	GET_MSG_FROM_HANDLE_OR_ERR();
 	GET_FIELD_NAME_OR_ERR();
 	
-	int64 *ret;
-	pCtx->LocalToPhysAddr(params[3], reinterpret_cast<cell_t **>(&ret));
+	cell_t *ret;
+	pCtx->LocalToPhysAddr(params[3], &ret);
+	int64 temp = ((int64)ret[0] << 32) | ret[1];
 	
 	if (params[4] < 0)
 	{
-		if (!msg->GetInt64OrUnsigned(strField, ret))
+		if (!msg->GetInt64OrUnsigned(strField, &temp))
 		{
 			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 		}
 	}
 	else
 	{
-		if (!msg->GetRepeatedInt64OrUnsigned(strField, params[4], ret))
+		if (!msg->GetRepeatedInt64OrUnsigned(strField, params[4], &temp))
 		{
 			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[4], msg->GetProtobufMessage()->GetTypeName().c_str());
 		}
 	}
+	
+	ret[0] = (cell_t)(temp >> 32);
+	ret[1] = (cell_t)temp;
 	
 	return 1;
 }
@@ -367,19 +371,20 @@ static cell_t smn_PbSetInt64(IPluginContext *pCtx, const cell_t *params)
 	GET_MSG_FROM_HANDLE_OR_ERR();
 	GET_FIELD_NAME_OR_ERR();
 	
-	int64 *value;
-	pCtx->LocalToPhysAddr(params[3], reinterpret_cast<cell_t **>(&value));
+	cell_t *value;
+	pCtx->LocalToPhysAddr(params[3], &value);
+	int64 temp = ((int64)value[0] << 32) | value[1];
 	
 	if (params[4] < 0)
 	{
-		if (!msg->SetInt64OrUnsigned(strField, *value))
+		if (!msg->SetInt64OrUnsigned(strField, temp))
 		{
 			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 		}
 	}
 	else
 	{
-		if (!msg->SetRepeatedInt64OrUnsigned(strField, params[4], *value))
+		if (!msg->SetRepeatedInt64OrUnsigned(strField, params[4], temp))
 		{
 			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[4], msg->GetProtobufMessage()->GetTypeName().c_str());
 		}
@@ -610,10 +615,11 @@ static cell_t smn_PbAddInt64(IPluginContext *pCtx, const cell_t *params)
 	GET_MSG_FROM_HANDLE_OR_ERR();
 	GET_FIELD_NAME_OR_ERR();
 	
-	int64 *value;
-	pCtx->LocalToPhysAddr(params[3], reinterpret_cast<cell_t **>(&value));
+	cell_t *value;
+	pCtx->LocalToPhysAddr(params[3], &value);
+	int64 temp = ((int64)value[0] << 32) | value[1];
 
-	if (!msg->AddInt64OrUnsigned(strField, *value))
+	if (!msg->AddInt64OrUnsigned(strField, temp))
 	{
 		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
