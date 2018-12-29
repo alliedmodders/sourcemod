@@ -82,6 +82,32 @@ static cell_t smn_PbReadInt(IPluginContext *pCtx, const cell_t *params)
 	return ret;
 }
 
+static cell_t smn_PbReadInt64(IPluginContext *pCtx, const cell_t *params)
+{
+	GET_MSG_FROM_HANDLE_OR_ERR();
+	GET_FIELD_NAME_OR_ERR();
+	
+	int64 *ret;
+	pCtx->LocalToPhysAddr(params[3], &reinterpret_cast<cell_t *>(ret));
+	
+	if (params[4] < 0)
+	{
+		if (!msg->GetInt64OrUnsigned(strField, ret))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->GetRepeatedInt64OrUnsigned(strField, params[4], ret))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[4], msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	
+	return 1;
+}
+
 static cell_t smn_PbReadFloat(IPluginContext *pCtx, const cell_t *params)
 {
 	GET_MSG_FROM_HANDLE_OR_ERR();
@@ -336,6 +362,32 @@ static cell_t smn_PbSetInt(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t smn_PbSetInt64(IPluginContext *pCtx, const cell_t *params)
+{
+	GET_MSG_FROM_HANDLE_OR_ERR();
+	GET_FIELD_NAME_OR_ERR();
+	
+	int64 *value;
+	pCtx->LocalToPhysAddr(params[3], &reinterpret_cast<cell_t *>(value));
+	
+	if (params[4] < 0)
+	{
+		if (!msg->SetInt64OrUnsigned(strField, *value))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->SetRepeatedInt64OrUnsigned(strField, params[4], *value))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[4], msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+
+	return 1;
+}
+
 static cell_t smn_PbSetFloat(IPluginContext *pCtx, const cell_t *params)
 {
 	GET_MSG_FROM_HANDLE_OR_ERR();
@@ -553,6 +605,22 @@ static cell_t smn_PbAddInt(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t smn_PbAddInt64(IPluginContext *pCtx, const cell_t *params)
+{
+	GET_MSG_FROM_HANDLE_OR_ERR();
+	GET_FIELD_NAME_OR_ERR();
+	
+	int64 *value;
+	pCtx->LocalToPhysAddr(params[3], &reinterpret_cast<cell_t *>(value));
+
+	if (!msg->AddInt64OrUnsigned(strField, *value))
+	{
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+	}
+
+	return 1;
+}
+
 static cell_t smn_PbAddFloat(IPluginContext *pCtx, const cell_t *params)
 {
 	GET_MSG_FROM_HANDLE_OR_ERR();
@@ -747,6 +815,7 @@ static cell_t smn_PbAddMessage(IPluginContext *pCtx, const cell_t *params)
 REGISTER_NATIVES(protobufnatives)
 {
 	{"PbReadInt",					smn_PbReadInt},
+	{"PbReadInt64",					smn_PbReadInt64},
 	{"PbReadFloat",					smn_PbReadFloat},
 	{"PbReadBool",					smn_PbReadBool},
 	{"PbReadString",				smn_PbReadString},
@@ -756,6 +825,7 @@ REGISTER_NATIVES(protobufnatives)
 	{"PbReadVector2D",				smn_PbReadVector2D},
 	{"PbGetRepeatedFieldCount",		smn_PbGetRepeatedFieldCount},
 	{"PbSetInt",					smn_PbSetInt},
+	{"PbSetInt64",					smn_PbSetInt64},
 	{"PbSetFloat",					smn_PbSetFloat},
 	{"PbSetBool",					smn_PbSetBool},
 	{"PbSetString",					smn_PbSetString},
@@ -764,6 +834,7 @@ REGISTER_NATIVES(protobufnatives)
 	{"PbSetVector",					smn_PbSetVector},
 	{"PbSetVector2D",				smn_PbSetVector2D},
 	{"PbAddInt",					smn_PbAddInt},
+	{"PbAddInt64",					smn_PbAddInt64},
 	{"PbAddFloat",					smn_PbAddFloat},
 	{"PbAddBool",					smn_PbAddBool},
 	{"PbAddString",					smn_PbAddString},
@@ -778,6 +849,7 @@ REGISTER_NATIVES(protobufnatives)
 
 	// Transitional syntax.
 	{"Protobuf.ReadInt",					smn_PbReadInt},
+	{"Protobuf.ReadInt64",					smn_PbReadInt64},
 	{"Protobuf.ReadFloat",					smn_PbReadFloat},
 	{"Protobuf.ReadBool",					smn_PbReadBool},
 	{"Protobuf.ReadString",					smn_PbReadString},
@@ -788,6 +860,7 @@ REGISTER_NATIVES(protobufnatives)
 	{"Protobuf.GetRepeatedFieldCount",		smn_PbGetRepeatedFieldCount},
 	{"Protobuf.HasField",					smn_PbHasField},
 	{"Protobuf.SetInt",						smn_PbSetInt},
+	{"Protobuf.SetInt64",					smn_PbSetInt64},
 	{"Protobuf.SetFloat",					smn_PbSetFloat},
 	{"Protobuf.SetBool",					smn_PbSetBool},
 	{"Protobuf.SetString",					smn_PbSetString},
@@ -796,6 +869,7 @@ REGISTER_NATIVES(protobufnatives)
 	{"Protobuf.SetVector",					smn_PbSetVector},
 	{"Protobuf.SetVector2D",				smn_PbSetVector2D},
 	{"Protobuf.AddInt",						smn_PbAddInt},
+	{"Protobuf.AddInt64",					smn_PbAddInt64},
 	{"Protobuf.AddFloat",					smn_PbAddFloat},
 	{"Protobuf.AddBool",					smn_PbAddBool},
 	{"Protobuf.AddString",					smn_PbAddString},

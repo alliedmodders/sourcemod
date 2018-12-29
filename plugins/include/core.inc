@@ -249,6 +249,7 @@ public void __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("BfRead.GetNumBytesLeft");
 	
 	MarkNativeAsOptional("PbReadInt");
+	MarkNativeAsOptional("PbReadInt64");
 	MarkNativeAsOptional("PbReadFloat");
 	MarkNativeAsOptional("PbReadBool");
 	MarkNativeAsOptional("PbReadString");
@@ -258,6 +259,7 @@ public void __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("PbReadVector2D");
 	MarkNativeAsOptional("PbGetRepeatedFieldCount");
 	MarkNativeAsOptional("PbSetInt");
+	MarkNativeAsOptional("PbSetInt64");
 	MarkNativeAsOptional("PbSetFloat");
 	MarkNativeAsOptional("PbSetBool");
 	MarkNativeAsOptional("PbSetString");
@@ -266,6 +268,7 @@ public void __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("PbSetVector");
 	MarkNativeAsOptional("PbSetVector2D");
 	MarkNativeAsOptional("PbAddInt");
+	MarkNativeAsOptional("PbAddInt64");
 	MarkNativeAsOptional("PbAddFloat");
 	MarkNativeAsOptional("PbAddBool");
 	MarkNativeAsOptional("PbAddString");
@@ -279,6 +282,7 @@ public void __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("PbAddMessage");
 
 	MarkNativeAsOptional("Protobuf.ReadInt");
+	MarkNativeAsOptional("Protobuf.ReadInt64");
 	MarkNativeAsOptional("Protobuf.ReadFloat");
 	MarkNativeAsOptional("Protobuf.ReadBool");
 	MarkNativeAsOptional("Protobuf.ReadString");
@@ -288,6 +292,7 @@ public void __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("Protobuf.ReadVector2D");
 	MarkNativeAsOptional("Protobuf.GetRepeatedFieldCount");
 	MarkNativeAsOptional("Protobuf.SetInt");
+	MarkNativeAsOptional("Protobuf.SetInt64");
 	MarkNativeAsOptional("Protobuf.SetFloat");
 	MarkNativeAsOptional("Protobuf.SetBool");
 	MarkNativeAsOptional("Protobuf.SetString");
@@ -296,6 +301,7 @@ public void __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("Protobuf.SetVector");
 	MarkNativeAsOptional("Protobuf.SetVector2D");
 	MarkNativeAsOptional("Protobuf.AddInt");
+	MarkNativeAsOptional("Protobuf.AddInt64");
 	MarkNativeAsOptional("Protobuf.AddFloat");
 	MarkNativeAsOptional("Protobuf.AddBool");
 	MarkNativeAsOptional("Protobuf.AddString");
