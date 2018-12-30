@@ -89,7 +89,9 @@ static cell_t smn_PbReadInt64(IPluginContext *pCtx, const cell_t *params)
 	
 	cell_t *ret;
 	pCtx->LocalToPhysAddr(params[3], &ret);
-	int64 temp = ((int64)ret[0] << 32) | ret[1];
+	int64 temp;
+	((cell_t *)&temp)[0] = ret[0];
+	((cell_t *)&temp)[1] = ret[1];
 	
 	if (params[4] < 0)
 	{
@@ -106,8 +108,8 @@ static cell_t smn_PbReadInt64(IPluginContext *pCtx, const cell_t *params)
 		}
 	}
 	
-	ret[0] = (cell_t)(temp >> 32);
-	ret[1] = (cell_t)temp;
+	ret[0] = ((cell_t *)&temp)[0];
+	ret[1] = ((cell_t *)&temp)[1];
 	
 	return 1;
 }
@@ -373,7 +375,9 @@ static cell_t smn_PbSetInt64(IPluginContext *pCtx, const cell_t *params)
 	
 	cell_t *value;
 	pCtx->LocalToPhysAddr(params[3], &value);
-	int64 temp = ((int64)value[0] << 32) | value[1];
+	int64 temp;
+	((cell_t *)&temp)[0] = value[0];
+	((cell_t *)&temp)[1] = value[1];
 	
 	if (params[4] < 0)
 	{
@@ -617,7 +621,9 @@ static cell_t smn_PbAddInt64(IPluginContext *pCtx, const cell_t *params)
 	
 	cell_t *value;
 	pCtx->LocalToPhysAddr(params[3], &value);
-	int64 temp = ((int64)value[0] << 32) | value[1];
+	int64 temp;
+	((cell_t *)&temp)[0] = value[0];
+	((cell_t *)&temp)[1] = value[1];
 
 	if (!msg->AddInt64OrUnsigned(strField, temp))
 	{
