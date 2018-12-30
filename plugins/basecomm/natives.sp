@@ -34,12 +34,12 @@
  public int Native_IsClientGagged(Handle hPlugin, int numParams)
 {
 	int client = GetNativeCell(1);
-	if (client < 1 || client > MaxClients)
+	if (!(-1 < client <= MaxClients))
 	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index %d", client);
 	}
 	
-	if (!IsClientInGame(client))
+	if (client && !IsClientInGame(client))
 	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Client %d is not in game", client);
 	}
@@ -50,12 +50,12 @@
 public int Native_IsClientMuted(Handle hPlugin, int numParams)
 {
 	int client = GetNativeCell(1);
-	if (client < 1 || client > MaxClients)
+	if (!(-1 < client <= MaxClients))
 	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index %d", client);
 	}
 	
-	if (!IsClientInGame(client))
+	if (client && !IsClientInGame(client))
 	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Client %d is not in game", client);
 	}
@@ -66,12 +66,12 @@ public int Native_IsClientMuted(Handle hPlugin, int numParams)
 public int Native_SetClientGag(Handle hPlugin, int numParams)
 {
 	int client = GetNativeCell(1);
-	if (client < 1 || client > MaxClients)
+	if (!(-1 < client <= MaxClients))
 	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index %d", client);
 	}
 	
-	if (!IsClientInGame(client))
+	if (client && !IsClientInGame(client))
 	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Client %d is not in game", client);
 	}
@@ -103,12 +103,12 @@ public int Native_SetClientGag(Handle hPlugin, int numParams)
 public int Native_SetClientMute(Handle hPlugin, int numParams)
 {
 	int client = GetNativeCell(1);
-	if (client < 1 || client > MaxClients)
+	if (!(-1 < client <= MaxClients))
 	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index %d", client);
 	}
 	
-	if (!IsClientInGame(client))
+	if (client && !IsClientInGame(client))
 	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Client %d is not in game", client);
 	}
