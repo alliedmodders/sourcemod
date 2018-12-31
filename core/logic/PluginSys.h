@@ -55,6 +55,9 @@
 #include <bridge/include/IScriptManager.h>
 #include <am-function.h>
 #include <ReentrantList.h>
+#ifdef PLATFORM_APPLE
+#include <cctype>
+#endif
 
 class CPlayer;
 
