@@ -246,7 +246,7 @@ public void __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("BfRead.ReadVecCoord");
 	MarkNativeAsOptional("BfRead.ReadVecNormal");
 	MarkNativeAsOptional("BfRead.ReadAngles");
-	MarkNativeAsOptional("BfRead.GetNumBytesLeft");
+	MarkNativeAsOptional("BfRead.BytesLeft.get");
 	
 	MarkNativeAsOptional("PbReadInt");
 	MarkNativeAsOptional("PbReadFloat");
