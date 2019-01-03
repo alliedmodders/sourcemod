@@ -56,6 +56,7 @@ typeset EventHook
 	//						this event has set the hook mode EventHookMode_PostNoCopy.
 	// @param name			String containing the name of the event.
 	// @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
+	//						May not correspond to the real value. Use the property BroadcastDisabled.
 	// @return				Ignored for post hooks. Plugin_Handled will block event if hooked as pre.
 	///
 	function Action (Event event, const char[] name, bool dontBroadcast);
@@ -160,6 +161,7 @@ methodmap Event < Handle
 	// or HookEventEx callbacks.
 	property bool BroadcastDisabled {
 		public native set(bool dontBroadcast);
+		public native get();
 	}
 }
 
