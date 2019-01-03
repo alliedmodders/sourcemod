@@ -467,7 +467,6 @@ REGISTER_NATIVES(gameEventNatives)
 	{"GetEventInt",			sm_GetEventInt},
 	{"GetEventFloat",		sm_GetEventFloat},
 	{"GetEventString",		sm_GetEventString},
-	{"GetEventBroadcast",   sm_GetEventBroadcast},
 	{"SetEventBool",		sm_SetEventBool},
 	{"SetEventInt",			sm_SetEventInt},
 	{"SetEventFloat",		sm_SetEventFloat},
@@ -483,12 +482,12 @@ REGISTER_NATIVES(gameEventNatives)
 	{"Event.GetInt",		sm_GetEventInt},
 	{"Event.GetFloat",		sm_GetEventFloat},
 	{"Event.GetString",		sm_GetEventString},
-	{"Event.BroadcastDisabled.get", sm_GetEventBroadcast},
 	{"Event.SetBool",		sm_SetEventBool},
 	{"Event.SetInt",		sm_SetEventInt},
 	{"Event.SetFloat",		sm_SetEventFloat},
 	{"Event.SetString",		sm_SetEventString},
 	{"Event.BroadcastDisabled.set", sm_SetEventBroadcast},
+	{"Event.BroadcastDisabled.get", sm_GetEventBroadcast},
 
 	{NULL,					NULL}
 };
