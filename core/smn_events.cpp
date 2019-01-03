@@ -438,6 +438,22 @@ static cell_t sm_SetEventBroadcast(IPluginContext *pContext, const cell_t *param
 	return 1;
 }
 
+static cell_t sm_GetEventBroadcast(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	EventInfo *pInfo;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), &sec, (void **)&pInfo))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
+	}
+
+	return pInfo->bDontBroadcast;
+}
+
 REGISTER_NATIVES(gameEventNatives)
 {
 	{"HookEvent",			sm_HookEvent},
@@ -451,6 +467,7 @@ REGISTER_NATIVES(gameEventNatives)
 	{"GetEventInt",			sm_GetEventInt},
 	{"GetEventFloat",		sm_GetEventFloat},
 	{"GetEventString",		sm_GetEventString},
+	{"GetEventBroadcast",   sm_GetEventBroadcast},
 	{"SetEventBool",		sm_SetEventBool},
 	{"SetEventInt",			sm_SetEventInt},
 	{"SetEventFloat",		sm_SetEventFloat},
@@ -466,6 +483,7 @@ REGISTER_NATIVES(gameEventNatives)
 	{"Event.GetInt",		sm_GetEventInt},
 	{"Event.GetFloat",		sm_GetEventFloat},
 	{"Event.GetString",		sm_GetEventString},
+	{"Event.BroadcastDisabled.get", sm_GetEventBroadcast},
 	{"Event.SetBool",		sm_SetEventBool},
 	{"Event.SetInt",		sm_SetEventInt},
 	{"Event.SetFloat",		sm_SetEventFloat},

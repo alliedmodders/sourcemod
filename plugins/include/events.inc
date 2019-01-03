@@ -160,6 +160,7 @@ methodmap Event < Handle
 	// or HookEventEx callbacks.
 	property bool BroadcastDisabled {
 		public native set(bool dontBroadcast);
+		public native get();
 	}
 }
 
@@ -338,3 +339,12 @@ native void GetEventName(Handle event, char[] name, int maxlength);
  * @error               Invalid Handle.
  */
 native void SetEventBroadcast(Handle event, bool dontBroadcast);
+
+/**
+ * Returns whether an event's broadcasting disabled or not.
+ *
+ * @param event         Handle to an event from an event hook.
+ * @return				The boolean value of the whether an event's broadcasting disabled.
+ * @error               Invalid Handle.
+ */
+native bool GetEventBroadcast(Handle event);
