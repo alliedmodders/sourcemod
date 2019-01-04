@@ -305,17 +305,6 @@ methodmap Protobuf < Handle
 native int PbReadInt(Handle pb, const char[] field, int index = PB_FIELD_NOT_REPEATED);
 
 /**
- * Reads an int64, uint64, sint64, fixed64, sfixed64 from a protobuf message.
- *
- * @param pb			protobuf handle.
- * @param field			Field name.
- * @param value			Array to represent the large integer (0=High bits, 1=Low bits).
- * @param index			Index into repeated field.
- * @error				Invalid or incorrect Handle, non-existent field, or incorrect field type.
- */
-native void PbReadInt64(Handle pb, const char[] field, int value[2], int index = PB_FIELD_NOT_REPEATED);
-
-/**
  * Reads a float or downcasted double from a protobuf message.
  *
  * @param pb			protobuf handle.
@@ -415,17 +404,6 @@ native int PbGetRepeatedFieldCount(Handle pb, const char[] field);
 native void PbSetInt(Handle pb, const char[] field, int value, int index = PB_FIELD_NOT_REPEATED);
 
 /**
- * Sets an int64, uint64, sint64, fixed64, sfixed64 on a protobuf message.
- *
- * @param pb			protobuf handle.
- * @param field			Field name.
- * @param value			Large integer value to set (0=High bits, 1=Low bits).
- * @param index			Index into repeated field.
- * @error				Invalid or incorrect Handle, non-existent field, or incorrect field type.
- */
-native void PbSetInt64(Handle pb, const char[] field, int value[2], int index = PB_FIELD_NOT_REPEATED);
-
-/**
  * Sets a float or double on a protobuf message.
  *
  * @param pb			protobuf handle.
@@ -511,16 +489,6 @@ native void PbSetVector2D(Handle pb, const char[] field, const float vec[2], int
  * @error				Invalid or incorrect Handle, non-existent field, or incorrect field type.
  */
 native void PbAddInt(Handle pb, const char[] field, int value);
-
-/**
- * Add an int64, uint64, sint64, fixed64, sfixed64 to a protobuf message repeated field.
- *
- * @param pb			protobuf handle.
- * @param field			Field name.
- * @param value			Large integer value to add (0=High bits, 1=Low bits).
- * @error				Invalid or incorrect Handle, non-existent field, or incorrect field type.
- */
-native void PbAddInt64(Handle pb, const char[] field, int value[2]);
 
 /**
  * Add a float or double to a protobuf message repeated field.

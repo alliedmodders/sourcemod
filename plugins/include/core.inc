@@ -249,7 +249,6 @@ public void __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("BfRead.GetNumBytesLeft");
 	
 	MarkNativeAsOptional("PbReadInt");
-	MarkNativeAsOptional("PbReadInt64");
 	MarkNativeAsOptional("PbReadFloat");
 	MarkNativeAsOptional("PbReadBool");
 	MarkNativeAsOptional("PbReadString");
@@ -259,7 +258,6 @@ public void __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("PbReadVector2D");
 	MarkNativeAsOptional("PbGetRepeatedFieldCount");
 	MarkNativeAsOptional("PbSetInt");
-	MarkNativeAsOptional("PbSetInt64");
 	MarkNativeAsOptional("PbSetFloat");
 	MarkNativeAsOptional("PbSetBool");
 	MarkNativeAsOptional("PbSetString");
@@ -268,7 +266,6 @@ public void __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("PbSetVector");
 	MarkNativeAsOptional("PbSetVector2D");
 	MarkNativeAsOptional("PbAddInt");
-	MarkNativeAsOptional("PbAddInt64");
 	MarkNativeAsOptional("PbAddFloat");
 	MarkNativeAsOptional("PbAddBool");
 	MarkNativeAsOptional("PbAddString");
