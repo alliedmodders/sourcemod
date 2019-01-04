@@ -827,7 +827,6 @@ static cell_t smn_PbAddMessage(IPluginContext *pCtx, const cell_t *params)
 REGISTER_NATIVES(protobufnatives)
 {
 	{"PbReadInt",					smn_PbReadInt},
-	{"PbReadInt64",					smn_PbReadInt64},
 	{"PbReadFloat",					smn_PbReadFloat},
 	{"PbReadBool",					smn_PbReadBool},
 	{"PbReadString",				smn_PbReadString},
@@ -837,7 +836,6 @@ REGISTER_NATIVES(protobufnatives)
 	{"PbReadVector2D",				smn_PbReadVector2D},
 	{"PbGetRepeatedFieldCount",		smn_PbGetRepeatedFieldCount},
 	{"PbSetInt",					smn_PbSetInt},
-	{"PbSetInt64",					smn_PbSetInt64},
 	{"PbSetFloat",					smn_PbSetFloat},
 	{"PbSetBool",					smn_PbSetBool},
 	{"PbSetString",					smn_PbSetString},
@@ -846,7 +844,6 @@ REGISTER_NATIVES(protobufnatives)
 	{"PbSetVector",					smn_PbSetVector},
 	{"PbSetVector2D",				smn_PbSetVector2D},
 	{"PbAddInt",					smn_PbAddInt},
-	{"PbAddInt64",					smn_PbAddInt64},
 	{"PbAddFloat",					smn_PbAddFloat},
 	{"PbAddBool",					smn_PbAddBool},
 	{"PbAddString",					smn_PbAddString},
