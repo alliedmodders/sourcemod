@@ -1266,19 +1266,26 @@ SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_
 		return SMFindMapResult::FuzzyMatch;
 	}
 
-#elif SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_BMS
-	static char szTemp[PLATFORM_MAX_PATH];
-	if (pFoundMap == NULL)
+#elif SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM \
+	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS
+	static IVEngineServer *engine23 = (IVEngineServer *)(g_SMAPI->GetEngineFactory()("VEngineServer023", nullptr));
+	if (engine23)
 	{
-		ke::SafeStrcpy(szTemp, SM_ARRAYSIZE(szTemp), pMapName);
-		pFoundMap = szTemp;
-		nMapNameMax = 0;
-	}
+		static char szTemp[PLATFORM_MAX_PATH];
+		if (pFoundMap == NULL)
+		{
+			ke::SafeStrcpy(szTemp, SM_ARRAYSIZE(szTemp), pMapName);
+			pFoundMap = szTemp;
+			nMapNameMax = 0;
+		}
 
-	return static_cast<SMFindMapResult>(engine->FindMap(pFoundMap, static_cast<int>(nMapNameMax)));
-#elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_SDK2013
-	static IVEngineServer *engine21 = (IVEngineServer *)(g_SMAPI->GetEngineFactory()("VEngineServer021", nullptr));
-	return engine21->IsMapValid(pMapName) == 0 ? SMFindMapResult::NotFound : SMFindMapResult::Found;
+		return static_cast<SMFindMapResult>(engine->FindMap(pFoundMap, static_cast<int>(nMapNameMax)));
+	}
+	else
+	{
+		static IVEngineServer *engine21 = (IVEngineServer *)(g_SMAPI->GetEngineFactory()("VEngineServer021", nullptr));
+		return engine21->IsMapValid(pMapName) == 0 ? SMFindMapResult::NotFound : SMFindMapResult::Found;
+	}
 #else
 	return engine->IsMapValid(pMapName) == 0 ? SMFindMapResult::NotFound : SMFindMapResult::Found;
 #endif
