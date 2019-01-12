@@ -367,19 +367,39 @@ bool CPlugin::OnPluginStart()
 
 void CPlugin::Call_OnPluginEnd()
 {
-	if (m_status > Plugin_Paused)
-	{
-		return;
-	}
-
 	cell_t result;
-	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("OnPluginEnd");
-	if (!pFunction)
+	IPluginFunction *pFunction;
+	
+	IPluginIterator *iter = g_PluginSys.GetPluginIterator();
+	while (iter->MorePlugins())
 	{
-		return;
+		IPlugin *plugin = iter->GetPlugin();
+		if (plugin->GetSerial() != m_serial)
+		{
+			pFunction = plugin->GetBaseContext()->GetFunctionByName("OnPluginEndEx");
+			if (pFunction)
+			{
+				pFunction->PushCell(plugin->GetMyHandle());
+				pFunction->Execute(&result);
+			}
+		}
+		iter->NextPlugin();
 	}
+	iter->Release();
 
-	pFunction->Execute(&result);
+	// We only pair OnPluginEnd with OnPluginStart if we would have
+	// successfully called OnPluginStart, *and* SetFailState() wasn't called,
+	// which guarantees no further code will execute.
+	if (m_status == Plugin_Running)
+	{
+		pFunction = m_pRuntime->GetFunctionByName("OnPluginEnd");
+		if (!pFunction)
+		{
+			return;
+		}
+		
+		pFunction->Execute(&result);
+	}
 }
 
 void CPlugin::Call_OnAllPluginsLoaded()
@@ -1484,11 +1504,7 @@ void CPluginManager::Purge(CPlugin *plugin)
 		}
 	}
 
-	// We only pair OnPluginEnd with OnPluginStart if we would have
-	// successfully called OnPluginStart, *and* SetFailState() wasn't called,
-	// which guarantees no further code will execute.
-	if (plugin->GetStatus() == Plugin_Running)
-		plugin->Call_OnPluginEnd();
+	plugin->Call_OnPluginEnd();
 
 	// Notify listeners of unloading.
 	if (plugin->EnteredSecondPass()) {
