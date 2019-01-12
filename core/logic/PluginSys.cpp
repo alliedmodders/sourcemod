@@ -379,7 +379,7 @@ void CPlugin::Call_OnPluginEnd()
 			pFunction = plugin->GetBaseContext()->GetFunctionByName("OnPluginEndEx");
 			if (pFunction)
 			{
-				pFunction->PushCell(plugin->GetMyHandle());
+				pFunction->PushCell(m_handle);
 				pFunction->Execute(&result);
 			}
 		}
