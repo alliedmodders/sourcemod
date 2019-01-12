@@ -164,6 +164,13 @@ forward APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_ma
 forward void OnPluginEnd();
 
 /**
+ * Called when other plugins are unloaded.
+ *
+ * @param plugin		Нandle of the plugin that is unloaded.
+ */
+forward void OnPluginEndEx(Handle plugin);
+
+/**
  * Called when the plugin's pause status is changing.
  *
  * @param pause			True if the plugin is being paused, false otherwise.
