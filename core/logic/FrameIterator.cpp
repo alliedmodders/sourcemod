@@ -52,13 +52,7 @@ bool SafeFrameIterator::Done() const
 bool SafeFrameIterator::Next()
 {
 	current++;
-
-	if (!this->Done())
-	{
-		return true;
-	}
-	
-	return false;
+	return !this->Done();
 }
 
 void SafeFrameIterator::Reset()
