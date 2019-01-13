@@ -46,14 +46,15 @@ SafeFrameIterator::SafeFrameIterator(IFrameIterator *it)
 
 bool SafeFrameIterator::Done() const
 {
-	return current == frames.length();
+	return current >= frames.length();
 }
 
 bool SafeFrameIterator::Next()
 {
+	current++;
+
 	if (!this->Done())
 	{
-		current++;
 		return true;
 	}
 	
