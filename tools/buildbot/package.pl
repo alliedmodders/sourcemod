@@ -77,7 +77,7 @@ if (-e '../GeoIP.dat.gz')
 if ($needNewGeoIP)
 {
     print "Downloading GeoIP.dat...\n";
-    system('wget -q -O ../GeoIP.dat.gz http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz');
+    system('wget -q -O ../GeoIP.dat.gz https://sm.alliedmods.net/GeoIP.dat.gz');
 }
 else
 {
