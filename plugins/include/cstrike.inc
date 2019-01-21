@@ -47,6 +47,7 @@
 #define CS_SLOT_C4			4	/**< C4 slot. */
 
 #define CS_DMG_HEADSHOT		(1 << 30)	/**< Headshot */
+#define CS_DMG_THROW		(2 << 6)	/**< Throw damage */
 
 enum CSRoundEndReason
 {
