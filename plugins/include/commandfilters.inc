@@ -139,7 +139,10 @@ stock void ReplyToTargetError(int client, int reason)
  * @param clients       Array to fill with unique, valid client indexes.
  * @return              True if pattern was recognized, false otherwise.
  */
-typedef MultiTargetFilter = function bool (const char[] pattern, Handle clients);
+typeset MultiTargetFilter {
+	function bool (const char[] pattern, Handle clients);
+	function bool (const char[] pattern, ArrayList clients);
+}
 
 /**
  * Adds a multi-target filter function for ProcessTargetString().
