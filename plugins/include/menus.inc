@@ -437,7 +437,7 @@ methodmap Menu < Handle
 	property int Selection {
 		public native get();
 	}
-}
+};
 
 /**
  * Creates a new, empty menu using the default style.

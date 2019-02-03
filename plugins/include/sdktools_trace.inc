@@ -203,7 +203,7 @@ typeset TraceEntityEnumerator
 	 * @param data			Data value, if used.
 	 * @return				True to continue enumerating, otherwise false.	 */
 	function bool (int entity, any data);
-}
+};
 
 /**
  * Get the contents mask and the entity index at the given position.

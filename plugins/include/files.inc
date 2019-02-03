@@ -237,7 +237,7 @@ methodmap File < Handle
 	property int Position {
 		public native get();
 	}
-}
+};
 
 /**
  * Builds a path relative to the SourceMod folder.  This should be used instead of 

@@ -264,7 +264,7 @@ methodmap AdminId {
 		public native get();
 		public native set(int level);
 	}
-}
+};
 
 methodmap GroupId {
 	// Gets whether or not a flag is enabled on a group's flag set.
@@ -320,7 +320,7 @@ methodmap GroupId {
 		public native get();
 		public native set(int level);
 	}
-}
+};
 
 /**
  * Called when part of the cache needs to be rebuilt.

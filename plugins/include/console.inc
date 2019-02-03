@@ -477,7 +477,7 @@ methodmap CommandIterator < Handle {
 	property int Flags {
 		public native get();
 	}
-}
+};
 
 /**
  * Gets a command iterator.  Must be freed with CloseHandle().

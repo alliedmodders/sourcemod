@@ -719,7 +719,7 @@ methodmap FrameIterator < Handle {
 	// @param buffer Buffer to copy to.
 	// @param maxlen Max size of the buffer.
 	public native void GetFilePath(char[] buffer, int maxlen);
-}
+};
 
 #include <helpers>
 #include <entity>

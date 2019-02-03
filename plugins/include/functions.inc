@@ -380,7 +380,7 @@ typeset NativeCall
 	 * @return 					Value for the native call to return.
 	 */
 	function any (Handle plugin, int numParams);
-}
+};
 
 /**
  * Creates a dynamic native.  This should only be called in AskPluginLoad(), or 

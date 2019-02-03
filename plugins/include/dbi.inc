@@ -255,7 +255,7 @@ typeset SQLTxnSuccess
 	// @param results       An array of DBResultSet results, one for each of numQueries. They are closed automatically.
 	// @param queryData     An array of each data value passed to SQL_AddQuery().
 	function void (Database db, any data, int numQueries, DBResultSet[] results, any[] queryData);	
-}
+};
 
 // Callback for a failed transaction.
 //

@@ -163,7 +163,7 @@ methodmap Event < Handle
 		public native set(bool dontBroadcast);
 		public native get();
 	}
-}
+};
 
 /**
  * Creates a hook for when a game event is fired.

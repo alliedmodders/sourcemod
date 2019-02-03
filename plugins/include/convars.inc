@@ -237,7 +237,7 @@ methodmap ConVar < Handle
 	// @param callback  An OnConVarChanged function pointer.
 	// @error           No active hook on convar.
 	public native void RemoveChangeHook(ConVarChanged callback);
-}
+};
 
 /**
  * Creates a hook for when a console variable's value is changed.

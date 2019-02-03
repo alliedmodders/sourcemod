@@ -63,7 +63,7 @@ methodmap Profiler < Handle
 	property float Time {
 		public native get();
 	}
-}
+};
 
 /**
  * Creates a new profile object.  The Handle must be freed
