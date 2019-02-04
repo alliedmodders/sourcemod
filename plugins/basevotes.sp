@@ -266,7 +266,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 	}	
 	else if (action == MenuAction_VoteEnd)
 	{
-		char item[64], display[64];
+		char item[PLATFORM_MAX_PATH], display[64];
 		float percent, limit;
 		int votes, totalVotes;
 
@@ -420,7 +420,7 @@ bool TestVoteDelay(int client)
 
 public Action Timer_ChangeMap(Handle timer, DataPack dp)
 {
-	char mapname[65];
+	char mapname[PLATFORM_MAX_PATH];
 	
 	dp.Reset();
 	dp.ReadString(mapname, sizeof(mapname));
