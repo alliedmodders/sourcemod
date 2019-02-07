@@ -24,4 +24,4 @@ Contact
 
 License
 -------
-SourceMod is licensed under the GNU General Public License version 3. Special excpetions are outlined in the LICENSE.txt file inside of the licenses folder.
+SourceMod is licensed under the GNU General Public License version 3. Special exceptions are outlined in the LICENSE.txt file inside of the licenses folder.
