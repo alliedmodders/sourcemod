@@ -179,7 +179,7 @@ methodmap Regex < Handle
 	//
 	// @param match			Match to get the offset of. Match starts at 0, and ends at MatchCount() -1
 	// @return				Offset of the match in the string.
-	public native int MatchOffset(int match = 0)
+	public native int MatchOffset(int match = 0);
 };
 
 /**
