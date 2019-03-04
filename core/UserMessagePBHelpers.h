@@ -348,6 +348,20 @@ public:
 
 		return true;	
 	}
+	
+	inline bool GetInt64OrUnsigned(const char *pszFieldName, int64 *out)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE2(INT64, UINT64);
+		CHECK_FIELD_NOT_REPEATED();
+
+		if (fieldType == protobuf::FieldDescriptor::CPPTYPE_UINT64)
+			*out = (int64)msg->GetReflection()->GetUInt64(*msg, field);
+		else
+			*out = msg->GetReflection()->GetInt64(*msg, field);
+
+		return true;	
+	}
 
 	inline bool SetInt32OrUnsignedOrEnum(const char *pszFieldName, int32 value)
 	{
@@ -374,6 +388,24 @@ public:
 
 		return true;
 	}
+	
+	inline bool SetInt64OrUnsigned(const char *pszFieldName, int64 value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE2(INT64, UINT64);
+		CHECK_FIELD_NOT_REPEATED();
+
+		if (fieldType == protobuf::FieldDescriptor::CPPTYPE_UINT64)
+		{
+			msg->GetReflection()->SetUInt64(msg, field, (uint64)value);
+		}
+		else
+		{
+			msg->GetReflection()->SetInt64(msg, field, value);
+		}
+
+		return true;
+	}
 
 	inline bool GetRepeatedInt32OrUnsignedOrEnum(const char *pszFieldName, int index, int32 *out)
 	{
@@ -388,6 +420,21 @@ public:
 			*out = msg->GetReflection()->GetRepeatedInt32(*msg, field, index);
 		else // CPPTYPE_ENUM
 			*out = msg->GetReflection()->GetRepeatedEnum(*msg, field, index)->number();
+
+		return true;
+	}
+	
+	inline bool GetRepeatedInt64OrUnsigned(const char *pszFieldName, int index, int64 *out)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE2(INT64, UINT64);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+		
+		if (fieldType == protobuf::FieldDescriptor::CPPTYPE_UINT64)
+			*out = (int64)msg->GetReflection()->GetRepeatedUInt64(*msg, field, index);
+		else
+			*out = msg->GetReflection()->GetRepeatedInt64(*msg, field, index);
 
 		return true;
 	}
@@ -418,6 +465,25 @@ public:
 
 		return true;
 	}
+	
+	inline bool SetRepeatedInt64OrUnsigned(const char *pszFieldName, int index, int64 value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE2(INT64, UINT64);
+		CHECK_FIELD_REPEATED();
+		CHECK_REPEATED_ELEMENT(index);
+		
+		if (fieldType == protobuf::FieldDescriptor::CPPTYPE_UINT64)
+		{
+			msg->GetReflection()->SetRepeatedUInt64(msg, field, index, (uint64)value);
+		}
+		else
+		{
+			msg->GetReflection()->SetRepeatedInt64(msg, field, index, value);
+		}
+
+		return true;
+	}
 
 	inline bool AddInt32OrUnsignedOrEnum(const char *pszFieldName, int32 value)
 	{
@@ -442,6 +508,24 @@ public:
 			msg->GetReflection()->AddEnum(msg, field, pEnumValue);
 		}
 
+		return true;
+	}
+	
+	inline bool AddInt64OrUnsigned(const char *pszFieldName, int64 value)
+	{
+		GETCHECK_FIELD();
+		CHECK_FIELD_TYPE2(INT64, UINT64);
+		CHECK_FIELD_REPEATED();
+
+		if (fieldType == protobuf::FieldDescriptor::CPPTYPE_UINT64)
+		{
+			msg->GetReflection()->AddUInt64(msg, field, (uint64)value);
+		}
+		else
+		{
+			msg->GetReflection()->AddInt64(msg, field, value);
+		}
+		
 		return true;
 	}
 

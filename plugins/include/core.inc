@@ -279,6 +279,7 @@ public void __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("PbAddMessage");
 
 	MarkNativeAsOptional("Protobuf.ReadInt");
+	MarkNativeAsOptional("Protobuf.ReadInt64");
 	MarkNativeAsOptional("Protobuf.ReadFloat");
 	MarkNativeAsOptional("Protobuf.ReadBool");
 	MarkNativeAsOptional("Protobuf.ReadString");
@@ -288,6 +289,7 @@ public void __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("Protobuf.ReadVector2D");
 	MarkNativeAsOptional("Protobuf.GetRepeatedFieldCount");
 	MarkNativeAsOptional("Protobuf.SetInt");
+	MarkNativeAsOptional("Protobuf.SetInt64");
 	MarkNativeAsOptional("Protobuf.SetFloat");
 	MarkNativeAsOptional("Protobuf.SetBool");
 	MarkNativeAsOptional("Protobuf.SetString");
@@ -296,6 +298,7 @@ public void __ext_core_SetNTVOptional()
 	MarkNativeAsOptional("Protobuf.SetVector");
 	MarkNativeAsOptional("Protobuf.SetVector2D");
 	MarkNativeAsOptional("Protobuf.AddInt");
+	MarkNativeAsOptional("Protobuf.AddInt64");
 	MarkNativeAsOptional("Protobuf.AddFloat");
 	MarkNativeAsOptional("Protobuf.AddBool");
 	MarkNativeAsOptional("Protobuf.AddString");

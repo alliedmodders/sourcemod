@@ -46,6 +46,14 @@ methodmap Protobuf < Handle
 	// @return           Integer value read.
 	// @error            Non-existent field, or incorrect field type.
 	public native int ReadInt(const char[] field, int index = PB_FIELD_NOT_REPEATED);
+	
+	// Reads an int64, uint64, sint64, fixed64, sfixed64 from a protobuf message.
+	// 
+	// @param field      Field name.
+	// @param value      Array to represent the large integer (0=High bits, 1=Low bits).
+	// @param index      Index into repeated field.
+	// @error            Non-existent field, or incorrect field type.
+	public native void ReadInt64(const char[] field, int value[2], int index = PB_FIELD_NOT_REPEATED);
 
 	// Reads a float or downcasted double from a protobuf message.
 	//
@@ -125,7 +133,15 @@ methodmap Protobuf < Handle
 	// @param value      Integer value to set.
 	// @param index      Index into repeated field.
 	// @error            Non-existent field, or incorrect field type.
-	public native int SetInt(const char[] field, int value, int index = PB_FIELD_NOT_REPEATED);
+	public native void SetInt(const char[] field, int value, int index = PB_FIELD_NOT_REPEATED);
+	
+	// Sets an int64, uint64, sint64, fixed64, sfixed64 on a protobuf message.
+	// 
+	// @param field      Field name.
+	// @param value      Large integer value to set (0=High bits, 1=Low bits).
+	// @param index      Index into repeated field.
+	// @error            Non-existent field, or incorrect field type.
+	public native void SetInt64(const char[] field, int value[2], int index = PB_FIELD_NOT_REPEATED);
 
 	// Sets a float or double on a protobuf message.
 	//
@@ -189,6 +205,13 @@ methodmap Protobuf < Handle
 	// @param value      Integer value to add.
 	// @error            Non-existent field, or incorrect field type.
 	public native void AddInt(const char[] field, int value);
+	
+	// Add an int64, uint64, sint64, fixed64, sfixed64 to a protobuf message repeated field.
+	// 
+	// @param field      Field name.
+	// @param value      Large integer value to add (0=High bits, 1=Low bits).
+	// @error            Non-existent field, or incorrect field type.
+	public native void AddInt64(const char[] field, int value[2]);
 
 	// Add a float or double to a protobuf message repeated field.
 	// 
