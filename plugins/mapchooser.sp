@@ -148,7 +148,7 @@ public void OnPluginStart()
 	
 	if (g_Cvar_Winlimit || g_Cvar_Maxrounds)
 	{
-		char folder[64];
+		char folder[PLATFORM_MAX_PATH];
 		GetGameFolderName(folder, sizeof(folder));
 
 		if (strcmp(folder, "tf") == 0)
@@ -1252,7 +1252,7 @@ void ReadPreviousMapsFromText()
 		return;
 	}
  	g_OldMapList.Clear();
-	char map[64];
+	char map[PLATFORM_MAX_PATH];
  	do 
 	{
 		if (file.ReadLine(map, sizeof(map)))
@@ -1279,7 +1279,7 @@ void WritePreviousMapsToText()
 		return;
 	}
     
-	char lastMap[64];
+	char lastMap[PLATFORM_MAX_PATH];
     
 	for (int idx=0; idx <g_OldMapList.Length; idx++)
 	{
