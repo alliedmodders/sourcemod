@@ -35,6 +35,7 @@
 #include "RegNatives.h"
 
 #include <ISDKTools.h>
+#include <sm_memwriter.h>
 
 // native TF2_MakeBleed(client, attacker, Float:duration)
 cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
@@ -81,25 +82,13 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *) + sizeof(float) + sizeof(int) + sizeof(bool) + sizeof(int)];
-	unsigned char *vptr = vstk;
-
-	*(void **)vptr = obj;
-	vptr += sizeof(void *);
-	*(CBaseEntity **)vptr = pAttacker;
-	vptr += sizeof(CBaseEntity *);
-	*(CBaseEntity **)vptr = NULL;
-	vptr += sizeof(CBaseEntity *);
-	*(float *)vptr = sp_ctof(params[3]);
-	vptr += sizeof(float);
-	*(int *)vptr = 4;      // Damage amount
-	vptr += sizeof(int);
-	*(bool *)vptr = false; // Permanent
-	vptr += sizeof(bool);
-	*(int *)vptr = 34;     // Custom Damage type (bleeding)
-
-	pWrapper->Execute(vstk, NULL);
-
+	MemWriter<void*, CBaseEntity*, CBaseEntity*, 
+											float,
+											int, // Damage amount
+											bool, // Permanent
+											int>  // Custom Damage type (bleeding)
+											vstk(obj, pAttacker, NULL, sp_ctof(params[3]), 4, false, 32);
+	pWrapper->Execute(vstk.GetBuffer(), nullptr);
 	return 1;
 }
 
@@ -139,19 +128,10 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *) + sizeof(float)];
-	unsigned char *vptr = vstk;
-
-	*(void **)vptr = obj;
-	vptr += sizeof(void *);
-	*(CBaseEntity **)vptr = pTarget;
-	vptr += sizeof(CBaseEntity *);
-	*(CBaseEntity **)vptr = NULL;
-	vptr += sizeof(CBaseEntity *);
-	*(float *)vptr = 10.0f; // duration
-
-	pWrapper->Execute(vstk, NULL);
-
+	MemWriter<void*, CBaseEntity*, CBaseEntity*, 
+										float> //duration
+										vstk(obj, pTarget, nullptr, 10.0f);
+	pWrapper->Execute(vstk.GetBuffer(), nullptr);
 	return 1;
 }
 
@@ -200,21 +180,8 @@ cell_t TF2_Disguise(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Target client index %d is not valid", params[4]);
 	}
 
-	unsigned char vstk[sizeof(void *) + 2*sizeof(int) + sizeof(CBaseEntity *) + sizeof(bool)];
-	unsigned char *vptr = vstk;
-
-
-	*(void **)vptr = obj;
-	vptr += sizeof(void *);
-	*(int *)vptr = params[2];
-	vptr += sizeof(int);
-	*(int *)vptr = params[3];
-	vptr += sizeof(int);
-	*(CBaseEntity **)vptr = pTarget;
-	vptr += sizeof(CBaseEntity *);
-	*(bool *)vptr = true;
-	
-	pWrapper->Execute(vstk, NULL);
+	MemWriter<void*, int, int, CBaseEntity*, bool> vstk(obj, params[2], params[3], pTarget, true);
+	pWrapper->Execute(vstk.GetBuffer(), nullptr);
 
 	return 1;
 }
@@ -238,14 +205,8 @@ cell_t TF2_RemoveDisguise(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *)];
-	unsigned char *vptr = vstk;
-
-
-	*(void **)vptr = obj;
-
-	pWrapper->Execute(vstk, NULL);
-
+	MemWriter<void*> vstk(obj);
+	pWrapper->Execute(vstk.GetBuffer(), nullptr);
 	return 1;
 }
 
@@ -285,19 +246,8 @@ cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *) + sizeof(int) + sizeof(float) + sizeof(CBaseEntity *)];
-	unsigned char *vptr = vstk;
-
-	*(void **)vptr = obj;
-	vptr += sizeof(void *);
-	*(int *)vptr = params[2];
-	vptr += sizeof(int);
-	*(float *)vptr = *(float *)&params[3];
-	vptr += sizeof(float);
-	*(CBaseEntity **)vptr = pInflictor;
-
-	pWrapper->Execute(vstk, NULL);
-
+	MemWriter<void*, int, float, CBaseEntity*> vstk(obj, params[2], params[3], pInflictor);
+	pWrapper->Execute(vstk.GetBuffer(), nullptr);
 	return 1;
 }
 
@@ -326,17 +276,9 @@ cell_t TF2_RemoveCondition(IPluginContext *pContext, const cell_t *params)
 	}
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
-
-	unsigned char vstk[sizeof(void *) + sizeof(int) + sizeof(bool)];
-	unsigned char *vptr = vstk;
-
-	*(void **)vptr = obj;
-	vptr += sizeof(void *);
-	*(int *)vptr = params[2];
-	vptr += sizeof(int);
-	*(bool *)vptr = true;
-
-	pWrapper->Execute(vstk, NULL);
+	
+	MemWriter<void*, int, bool> vstk(obj, params[2], true);
+	pWrapper->Execute(vstk.GetBuffer(), nullptr);
 
 	return 1;
 }
@@ -380,20 +322,8 @@ cell_t TF2_StunPlayer(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *) + 2*sizeof(float) + sizeof(int) + sizeof(CBaseEntity *)];
-	unsigned char *vptr = vstk;
-
-	*(void **)vptr = obj;
-	vptr += sizeof(void *);
-	*(float *)vptr = sp_ctof(params[2]);
-	vptr += sizeof(float);
-	*(float *)vptr = sp_ctof(params[3]);
-	vptr += sizeof(float);
-	*(int *)vptr = params[4];
-	vptr += sizeof(int);
-	*(CBaseEntity **)vptr = pAttacker;
-
-	pWrapper->Execute(vstk, NULL);
+	MemWriter<void*, float, float, int, CBaseEntity*> vstk(obj, sp_ctof(params[2]), sp_ctof(params[3]), params[4], pAttacker);
+	pWrapper->Execute(vstk.GetBuffer(), nullptr);
 
 	return 1;
 }
@@ -419,20 +349,8 @@ cell_t TF2_SetPowerplayEnabled(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	bool bEnablePP = false;
-	if (params[2] != 0)
-	{
-		bEnablePP = true;
-	}
-
-	unsigned char vstk[sizeof(void *) + sizeof(bool)];
-	unsigned char *vptr = vstk;
-
-	*(void **)vptr = (void *)pEntity;
-	vptr += sizeof(void *);
-	*(bool *)vptr = bEnablePP;
-
-	pWrapper->Execute(vstk, NULL);
+	MemWriter<void*, bool> vstk(pEntity, params[2] != 0);
+	pWrapper->Execute(vstk.GetBuffer(), nullptr);
 
 	return 1;
 }
@@ -468,13 +386,8 @@ cell_t TF2_Respawn(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	unsigned char vstk[sizeof(void *)];
-	unsigned char *vptr = vstk;
-
-
-	*(void **)vptr = (void *)pEntity;
-
-	pWrapper->Execute(vstk, NULL);
+	MemWriter<void*> vstk(pEntity);
+	pWrapper->Execute(vstk.GetBuffer(), nullptr);
 
 	return 1;
 }
@@ -501,14 +414,8 @@ cell_t TF2_Regenerate(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 	
-	unsigned char vstk[sizeof(void *) + sizeof(bool)];
-	unsigned char *vptr = vstk;
-
-	*(void **)vptr = (void *)pEntity;
-	vptr += sizeof(void *);
-	*(bool *)vptr = true;
-
-	pWrapper->Execute(vstk, NULL);
+	MemWriter<void*, bool> vstk(pEntity, true);
+	pWrapper->Execute(vstk.GetBuffer(), nullptr);
 
 	return 1;
 }
@@ -552,13 +459,10 @@ cell_t TF2_IsPlayerInDuel(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	unsigned char vstk[sizeof(CBaseEntity *)];
-	unsigned char *vptr = vstk;
-	*(CBaseEntity **)vptr = pPlayer;
-
+	MemWriter<CBaseEntity*> vstk(pPlayer);
+	
 	bool retValue;
-	pWrapper->Execute(vstk, &retValue);
-
+	pWrapper->Execute(vstk.GetBuffer(), &retValue);
 	return (retValue) ? 1 : 0;
 }
 
@@ -596,15 +500,10 @@ cell_t TF2_IsHolidayActive(IPluginContext *pContext, const cell_t *params)
 		g_RegNatives.Register(pWrapper);
 	}
 
-	unsigned char vstk[sizeof(void *) + sizeof(int)];
-	unsigned char *vptr = vstk;
-	*(void **)vptr = pGameRules;
-	vptr += sizeof(void *);
-	*(int *)vptr = params[1];
-	
-	bool retValue;
+	MemWriter<void*, int> vstk(pGameRules, params[1]);
 
-	pWrapper->Execute(vstk, &retValue);
+	bool retValue;
+	pWrapper->Execute(vstk.GetBuffer(), &retValue);
 
 	return (retValue) ? 1 : 0;
 }
@@ -646,14 +545,8 @@ cell_t TF2_RemoveWearable(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Wearable index %d is not valid", params[2]);
 	}
 
-	unsigned char vstk[sizeof(void *) + sizeof(CBaseEntity *)];
-	unsigned char *vptr = vstk;
-
-	*(void **)vptr = (void *)pEntity;
-	vptr += sizeof(void *);
-	*(CBaseEntity **)vptr = pWearable;
-
-	pWrapper->Execute(vstk, NULL);
+	MemWriter<void*, CBaseEntity*> vstk(pEntity, pWearable);
+	pWrapper->Execute(vstk.GetBuffer(), nullptr);
 
 	return 1;
 }

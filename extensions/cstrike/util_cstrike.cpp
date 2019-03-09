@@ -35,6 +35,7 @@
 #include <iplayerinfo.h>
 #if SOURCE_ENGINE == SE_CSGO
 #include "itemdef-hash.h"
+#include <sm_memwriter.h>
 
 ClassnameMap g_mapClassToDefIdx;
 ItemIndexMap g_mapDefIdxToClass;
@@ -135,17 +136,10 @@ CEconItemView *GetEconItemView(CBaseEntity *pEntity, int iSlot)
 		return NULL;
 
 	CEconItemView *ret;
-	unsigned char vstk[sizeof(void *) + sizeof(int) * 2];
-	unsigned char *vptr = vstk;
+	
+	MemWriter<void*, int> vstk(reinterpret_cast<void*>(((intptr_t)pEntity + thisPtrOffset)), iSlot);
 
-	*(void **)vptr = (void *)((intptr_t)pEntity + thisPtrOffset);
-	vptr += sizeof(void *);
-	*(int *)vptr = team;
-	vptr += sizeof(int);
-	*(int *)vptr = iSlot;
-
-	pWrapper->Execute(vstk, &ret);
-
+	pWrapper->Execute(vstk.GetBuffer(), &ret);
 	return ret;
 }
 
@@ -163,14 +157,10 @@ CCSWeaponData *GetCCSWeaponData(CEconItemView *view)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, NULL, 0))
 	}
 
-	unsigned char vstk[sizeof(CEconItemView *)];
-	unsigned char *vptr = vstk;
-
-	*(CEconItemView **)vptr = view;
-
 	CCSWeaponData *pWpnData = NULL;
 
-	pWrapper->Execute(vstk, &pWpnData);
+	MemWriter<CEconItemView*> vstk(view);
+	pWrapper->Execute(vstk.GetBuffer(), &pWpnData);
 
 	return pWpnData;
 }
@@ -234,15 +224,10 @@ CEconItemDefinition *GetItemDefintionByName(const char *classname)
 		g_RegNatives.Register(pWrapper);
 	}
 
-	unsigned char vstk[sizeof(void *) + sizeof(const char *)];
-	unsigned char *vptr = vstk;
-
-	*(void **)vptr = pSchema;
-	vptr += sizeof(void *);
-	*(const char **)vptr = classname;
-
 	CEconItemDefinition *pItemDef = NULL;
-	pWrapper->Execute(vstk, &pItemDef);
+
+	MemWriter<void*, const char *> vstk(pSchema, classname);
+	pWrapper->Execute(vstk.GetBuffer(), &pItemDef);
 
 	return pItemDef;
 }
@@ -390,8 +375,6 @@ ItemDefHashValue *GetHashValueFromWeapon(const char *szWeapon)
 #if SOURCE_ENGINE != SE_CSGO
 void *GetWeaponInfo(int weaponID)
 {
-	void *info;
-
 	static ICallWrapper *pWrapper = NULL;
 	if (!pWrapper)
 	{
@@ -407,12 +390,10 @@ void *GetWeaponInfo(int weaponID)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
 
-	unsigned char vstk[sizeof(int)];
-	unsigned char *vptr = vstk;
+	void *info = nullptr;
 
-	*(int *)vptr = weaponID;
-
-	pWrapper->Execute(vstk, &info);
+	MemWriter<int> vstk(weaponID);
+	pWrapper->Execute(vstk.GetBuffer(), &info);
 
 	return info;
 }
@@ -435,7 +416,6 @@ const char *GetWeaponNameFromClassname(const char *weapon)
 const char *GetTranslatedWeaponAlias(const char *weapon)
 {
 #if SOURCE_ENGINE != SE_CSGO
-	const char *alias = NULL;
 
 	static ICallWrapper *pWrapper = NULL;
 
@@ -453,12 +433,11 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
 
-	unsigned char vstk[sizeof(const char *)];
-	unsigned char *vptr = vstk;
+	const char *alias = nullptr;
 
-	*(const char **)vptr = GetWeaponNameFromClassname(weapon);
+	MemWriter<const char *> vstk(GetWeaponNameFromClassname(weapon));
+	pWrapper->Execute(vstk.GetBuffer(), &alias);
 
-	pWrapper->Execute(vstk, &alias);
 	return alias;
 #else //this should work for both games maybe replace both?
 	static const char *szAliases[] =
@@ -492,8 +471,6 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 int AliasToWeaponID(const char *weapon)
 {
 #if SOURCE_ENGINE != SE_CSGO
-	int weaponID = 0;
-
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -510,12 +487,10 @@ int AliasToWeaponID(const char *weapon)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
 
-	unsigned char vstk[sizeof(const char *)];
-	unsigned char *vptr = vstk;
+	int weaponID = 0;
 
-	*(const char **)vptr = GetWeaponNameFromClassname(weapon);
-
-	pWrapper->Execute(vstk, &weaponID);
+	MemWriter<const char *> vstk(GetWeaponNameFromClassname(weapon));
+	pWrapper->Execute(vstk.GetBuffer(), &weaponID);
 
 	return weaponID;
 #else
@@ -531,10 +506,8 @@ int AliasToWeaponID(const char *weapon)
 const char *WeaponIDToAlias(int weaponID)
 {
 #if SOURCE_ENGINE != SE_CSGO
-	const char *alias = NULL;
 
 	static ICallWrapper *pWrapper = NULL;
-
 	if (!pWrapper)
 	{
 		REGISTER_ADDR("WeaponIDToAlias", 0,
@@ -549,12 +522,10 @@ const char *WeaponIDToAlias(int weaponID)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
 
-	unsigned char vstk[sizeof(int)];
-	unsigned char *vptr = vstk;
+	const char *alias = nullptr;
 
-	*(int *)vptr = weaponID;
-
-	pWrapper->Execute(vstk, &alias);
+	MemWriter<int> vstk(weaponID);
+	pWrapper->Execute(vstk.GetBuffer(), &alias);
 
 	return alias;
 #else

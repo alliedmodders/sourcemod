@@ -34,6 +34,7 @@
 #include "forwards.h"
 #include "util_cstrike.h"
 #include <server_class.h>
+#include <sm_memwriter.h>
 
 #if SOURCE_ENGINE == SE_CSGO
 #include "itemdef-hash.h"
@@ -178,13 +179,9 @@ static cell_t CS_SwitchTeam(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(int)];
-	unsigned char *vptr = vstk;
+	MemWriter<CBaseEntity*, int> vstk(pEntity, params[2]);
 
-	*(CBaseEntity **)vptr = pEntity;
-	vptr += sizeof(CBaseEntity *);
-	*(int *)vptr = params[2];
-	pWrapper->Execute(vstk, NULL);
+	pWrapper->Execute(vstk.GetBuffer(), NULL);
 #else
 	if (g_pSDKTools == NULL)
 	{
@@ -273,20 +270,10 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	if (params[4] == 1 && g_pCSWeaponDropDetoured)
 		g_pIgnoreCSWeaponDropDetour = true;
 
-	unsigned char vstk[sizeof(CBaseEntity *) * 2 + sizeof(bool) * 2];
-	unsigned char *vptr = vstk;
-
 	// <psychonic> first one is always false. second is true to toss, false to just drop
-	*(CBaseEntity **)vptr = pEntity;
-	vptr += sizeof(CBaseEntity *);
-	*(CBaseEntity **)vptr = pWeapon;
-	vptr += sizeof(CBaseEntity *);
-	*(bool *)vptr = false;
-	vptr += sizeof(bool);
-	*(bool *)vptr = (params[3]) ? true : false;
+	MemWriter<CBaseEntity*, CBaseEntity*, bool, bool> vstk(pEntity, pWeapon, false, (params[3]) ? true : false);
 
- 	pWrapper->Execute(vstk, NULL);
-
+	pWrapper->Execute(vstk.GetBuffer(), NULL);
 	return 1;
 }
 
@@ -333,16 +320,9 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	if (params[3] == 1 && g_pTerminateRoundDetoured)
 		g_pIgnoreTerminateDetour = true;
 
-	unsigned char vstk[sizeof(void *) + sizeof(float)+ sizeof(int)];
-	unsigned char *vptr = vstk;
+	MemWriter<void*, float, int> vstk(gamerules, sp_ctof(params[1]), reason);
 
-	*(void **)vptr = gamerules;
-	vptr += sizeof(void *);
-	*(float *)vptr = sp_ctof(params[1]);
-	vptr += sizeof(float);
-	*(int*)vptr = reason;
-
-	pWrapper->Execute(vstk, NULL);
+	pWrapper->Execute(vstk.GetBuffer(), NULL);
 #elif SOURCE_ENGINE == SE_CSGO && !defined(WIN32)
 	static ICallWrapper *pWrapper = NULL;
 
@@ -368,20 +348,9 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	if (params[3] == 1 && g_pTerminateRoundDetoured)
 		g_pIgnoreTerminateDetour = true;
 
-	unsigned char vstk[sizeof(void *) + sizeof(float) + (sizeof(int)*3)];
-	unsigned char *vptr = vstk;
+	MemWriter<void*, float, int, int, int> vstk(gamerules, sp_ctof(params[1]), reason, 0, 0);
 
-	*(void **)vptr = gamerules;
-	vptr += sizeof(void *);
-	*(float *)vptr = sp_ctof(params[1]);
-	vptr += sizeof(float);
-	*(int*)vptr = reason;
-	vptr += sizeof(int);
-	*(int*)vptr = 0;
-	vptr += sizeof(int);
-	*(int*)vptr = 0;
-
-	pWrapper->Execute(vstk, NULL);
+	pWrapper->Execute(vstk.GetBuffer(), NULL);
 #else // CSGO Win32
 	static void *addr = NULL;
 
@@ -881,15 +850,9 @@ static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params
 	char *szNewTag;
 	pContext->LocalToString(params[2], &szNewTag);
 
-	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(char *)];
-	unsigned char *vptr = vstk;
+	MemWriter<CBaseEntity*, char*> vstk(pEntity, szNewTag);
 
-	*(CBaseEntity **)vptr = pEntity;
-	vptr += sizeof(CBaseEntity *);
-	*(char **)vptr = szNewTag;
-
-	pWrapper->Execute(vstk, NULL);
-
+	pWrapper->Execute(vstk.GetBuffer(), NULL);
 	return 1;
 #endif
 }

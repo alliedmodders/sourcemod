@@ -32,6 +32,7 @@
 #include "extension.h"
 #include "variant-t.h"
 #include "output.h"
+#include <sm_memwriter.h>
 
 ICallWrapper *g_pFireOutput = NULL;
 
@@ -365,9 +366,6 @@ static cell_t FireEntityOutput(IPluginContext *pContext, const cell_t *params)
 	void *pOutput = NULL;
 	
 	char *outputname;
-	unsigned char vstk[sizeof(void *) + sizeof(CBaseEntity *)*2 + SIZEOF_VARIANT_T + sizeof(float)];
-	unsigned char *vptr = vstk;
-
 	ENTINDEX_TO_CBASEENTITY(params[1], pCaller);
 	pContext->LocalToString(params[2], &outputname);
 	
@@ -382,17 +380,9 @@ static cell_t FireEntityOutput(IPluginContext *pContext, const cell_t *params)
 			ENTINDEX_TO_CBASEENTITY(params[3], pActivator);
 		}
 
-		*(void **)vptr = pOutput;
-		vptr += sizeof(void *);
-		memcpy(vptr, g_Variant_t, SIZEOF_VARIANT_T);
-		vptr += SIZEOF_VARIANT_T;
-		*(CBaseEntity **)vptr = pActivator;
-		vptr += sizeof(CBaseEntity *);
-		*(CBaseEntity **)vptr = pCaller;
-		vptr += sizeof(CBaseEntity *);
-		*(float *)vptr = sp_ctof(params[4]);
+		MemWriter<void*, decltype(g_Variant_t), CBaseEntity*, CBaseEntity*, float> vstk(pOutput, g_Variant_t, pActivator, pCaller, sp_ctof(params[4]));
 
-		g_pFireOutput->Execute(vstk, NULL);
+		g_pFireOutput->Execute(vstk.GetBuffer(), nullptr);
 
 		_init_variant_t();
 		return 1;
