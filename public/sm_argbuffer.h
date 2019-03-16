@@ -39,11 +39,8 @@ public:
 		unsigned char *ptr = buff;
 		buildbuffer(&ptr, t, rest...);
 	}
-		
-	void *GetBuffer() {
-		return buff;
-	}
-	
+
+	operator void*() { return buff; }
 private:
 	template <typename K>
 	constexpr static int sizetypes() {

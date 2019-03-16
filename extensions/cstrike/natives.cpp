@@ -181,7 +181,7 @@ static cell_t CS_SwitchTeam(IPluginContext *pContext, const cell_t *params)
 
 	ArgBuffer<CBaseEntity*, int> vstk(pEntity, params[2]);
 
-	pWrapper->Execute(vstk.GetBuffer(), NULL);
+	pWrapper->Execute(vstk, NULL);
 #else
 	if (g_pSDKTools == NULL)
 	{
@@ -273,7 +273,7 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	// <psychonic> first one is always false. second is true to toss, false to just drop
 	ArgBuffer<CBaseEntity*, CBaseEntity*, bool, bool> vstk(pEntity, pWeapon, false, (params[3]) ? true : false);
 
-	pWrapper->Execute(vstk.GetBuffer(), NULL);
+	pWrapper->Execute(vstk, NULL);
 	return 1;
 }
 
@@ -322,7 +322,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 
 	ArgBuffer<void*, float, int> vstk(gamerules, sp_ctof(params[1]), reason);
 
-	pWrapper->Execute(vstk.GetBuffer(), NULL);
+	pWrapper->Execute(vstk, NULL);
 #elif SOURCE_ENGINE == SE_CSGO && !defined(WIN32)
 	static ICallWrapper *pWrapper = NULL;
 
@@ -350,7 +350,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 
 	ArgBuffer<void*, float, int, int, int> vstk(gamerules, sp_ctof(params[1]), reason, 0, 0);
 
-	pWrapper->Execute(vstk.GetBuffer(), NULL);
+	pWrapper->Execute(vstk, NULL);
 #else // CSGO Win32
 	static void *addr = NULL;
 
@@ -851,7 +851,7 @@ static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params
 	pContext->LocalToString(params[2], &szNewTag);
 
 	ArgBuffer<CBaseEntity*, char*> vstk(pEntity, szNewTag);
-	pWrapper->Execute(vstk.GetBuffer(), NULL);
+	pWrapper->Execute(vstk, NULL);
 	return 1;
 #endif
 }

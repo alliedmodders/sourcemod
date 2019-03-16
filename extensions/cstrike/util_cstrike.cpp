@@ -138,7 +138,7 @@ CEconItemView *GetEconItemView(CBaseEntity *pEntity, int iSlot)
 	CEconItemView *ret;
 	ArgBuffer<void*, int> vstk(reinterpret_cast<void*>(((intptr_t)pEntity + thisPtrOffset)), iSlot);
 
-	pWrapper->Execute(vstk.GetBuffer(), &ret);
+	pWrapper->Execute(vstk, &ret);
 	return ret;
 }
 
@@ -159,7 +159,7 @@ CCSWeaponData *GetCCSWeaponData(CEconItemView *view)
 	CCSWeaponData *pWpnData;
 	ArgBuffer<CEconItemView*> vstk(view);
 	
-	pWrapper->Execute(vstk.GetBuffer(), &pWpnData);
+	pWrapper->Execute(vstk, &pWpnData);
 	return pWpnData;
 }
 
@@ -225,7 +225,7 @@ CEconItemDefinition *GetItemDefintionByName(const char *classname)
 	CEconItemDefinition *pItemDef;
 	ArgBuffer<void*, const char *> vstk(pSchema, classname);
 	
-	pWrapper->Execute(vstk.GetBuffer(), &pItemDef);
+	pWrapper->Execute(vstk, &pItemDef);
 	return pItemDef;
 }
 
@@ -390,7 +390,7 @@ void *GetWeaponInfo(int weaponID)
 	void *info = nullptr;
 	ArgBuffer<int> vstk(weaponID);
 	
-	pWrapper->Execute(vstk.GetBuffer(), &info);
+	pWrapper->Execute(vstk, &info);
 	return info;
 }
 #endif
@@ -432,7 +432,7 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 	const char *alias = nullptr;
 	ArgBuffer<const char *> vstk(GetWeaponNameFromClassname(weapon));
 	
-	pWrapper->Execute(vstk.GetBuffer(), &alias);
+	pWrapper->Execute(vstk, &alias);
 	return alias;
 #else //this should work for both games maybe replace both?
 	static const char *szAliases[] =
@@ -485,7 +485,7 @@ int AliasToWeaponID(const char *weapon)
 	int weaponID = 0;
 	ArgBuffer<const char *> vstk(GetWeaponNameFromClassname(weapon));
 	
-	pWrapper->Execute(vstk.GetBuffer(), &weaponID);
+	pWrapper->Execute(vstk, &weaponID);
 	return weaponID;
 #else
 	ItemDefHashValue *pHashValue = GetHashValueFromWeapon(weapon);
@@ -519,7 +519,7 @@ const char *WeaponIDToAlias(int weaponID)
 	const char *alias = nullptr;
 	ArgBuffer<int> vstk(weaponID);
 	
-	pWrapper->Execute(vstk.GetBuffer(), &alias);
+	pWrapper->Execute(vstk, &alias);
 	return alias;
 #else
 	WeaponIDMap::Result res = g_mapWeaponIDToDefIdx.find((SMCSWeapon)weaponID);

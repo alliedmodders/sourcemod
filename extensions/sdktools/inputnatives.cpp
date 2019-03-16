@@ -98,7 +98,7 @@ static cell_t AcceptEntityInput(IPluginContext *pContext, const cell_t *params)
 	bool ret = false;
 
 	ArgBuffer<void*, const char*, CBaseEntity*, CBaseEntity*, decltype(g_Variant_t), int> vstk(pDest, inputname, pActivator, pCaller, g_Variant_t, params[5]);
-	g_pAcceptInput->Execute(vstk.GetBuffer(), &ret);
+	g_pAcceptInput->Execute(vstk, &ret);
 
 	_init_variant_t();
 

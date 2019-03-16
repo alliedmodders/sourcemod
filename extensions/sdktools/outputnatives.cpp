@@ -382,7 +382,7 @@ static cell_t FireEntityOutput(IPluginContext *pContext, const cell_t *params)
 
 		ArgBuffer<void*, decltype(g_Variant_t), CBaseEntity*, CBaseEntity*, float> vstk(pOutput, g_Variant_t, pActivator, pCaller, sp_ctof(params[4]));
 
-		g_pFireOutput->Execute(vstk.GetBuffer(), nullptr);
+		g_pFireOutput->Execute(vstk, nullptr);
 
 		_init_variant_t();
 		return 1;
