@@ -33,48 +33,40 @@
  * A type-safe abstraction for creating a contiguous blob of memory.
  */
 template <typename T, typename...Rest>
-class MemWriter {
+class ArgBuffer {
 public:
-	MemWriter(T t, Rest... rest) {
-		size = sizetypes(t, rest...);
-		buff = new unsigned char[size];
-		start = buff;
-		buildbuffer(t, rest...);
+	ArgBuffer(T t, Rest... rest) {
+		unsigned char *ptr = buff;
+		buildbuffer(&ptr, t, rest...);
 	}
-	
-	~MemWriter() {
-		delete[] start;
-	}
-	
-	void *GetBuffer() const {
-		return start;
+		
+	void *GetBuffer() {
+		return buff;
 	}
 	
 private:
 	template <typename K>
-	static constexpr int sizetypes(K k) {
-		return sizeof(k);
+	constexpr static int sizetypes() {
+		return sizeof(K);
 	}
-	template <typename K, typename... Kn>
-	static constexpr int sizetypes(K k, Kn... kn) {
-		return sizeof(k) + sizetypes(kn...);
+	template <typename K, typename K2, typename... Kn>
+	constexpr static int sizetypes() {
+		return sizeof(K) + sizetypes<K2, Kn...>();
 	}
 	
 	template <typename K>
-	constexpr void buildbuffer(K k) {
-		memcpy(buff, &k, sizeof(K));
-		buff += sizeof(K);
+	constexpr void buildbuffer(unsigned char **ptr, K k) {
+		memcpy(*ptr, &k, sizeof(K));
+		*ptr += sizeof(K);
 	}
 	
 	template <typename K, typename... Kn>
-	constexpr void buildbuffer(K k, Kn... kn) {
-		buildbuffer(k);
+	constexpr void buildbuffer(unsigned char **ptr, K k, Kn... kn) {
+		buildbuffer(ptr, k);
 		if (sizeof...(kn)!=0)
-			buildbuffer(kn...);
+			buildbuffer(ptr, kn...);
 	}
 	
 private:
-	int size;
-	unsigned char *buff;
-	unsigned char *start;
+	unsigned char buff[sizetypes<T, Rest...>()];
 };

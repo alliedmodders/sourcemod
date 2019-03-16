@@ -35,7 +35,7 @@
 #include <iplayerinfo.h>
 #if SOURCE_ENGINE == SE_CSGO
 #include "itemdef-hash.h"
-#include <sm_memwriter.h>
+#include <sm_argbuffer.h>
 
 ClassnameMap g_mapClassToDefIdx;
 ItemIndexMap g_mapDefIdxToClass;
@@ -136,8 +136,7 @@ CEconItemView *GetEconItemView(CBaseEntity *pEntity, int iSlot)
 		return NULL;
 
 	CEconItemView *ret;
-	
-	MemWriter<void*, int> vstk(reinterpret_cast<void*>(((intptr_t)pEntity + thisPtrOffset)), iSlot);
+	ArgBuffer<void*, int> vstk(reinterpret_cast<void*>(((intptr_t)pEntity + thisPtrOffset)), iSlot);
 
 	pWrapper->Execute(vstk.GetBuffer(), &ret);
 	return ret;
@@ -157,11 +156,10 @@ CCSWeaponData *GetCCSWeaponData(CEconItemView *view)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, NULL, 0))
 	}
 
-	CCSWeaponData *pWpnData = NULL;
-
-	MemWriter<CEconItemView*> vstk(view);
+	CCSWeaponData *pWpnData;
+	ArgBuffer<CEconItemView*> vstk(view);
+	
 	pWrapper->Execute(vstk.GetBuffer(), &pWpnData);
-
 	return pWpnData;
 }
 
@@ -224,11 +222,10 @@ CEconItemDefinition *GetItemDefintionByName(const char *classname)
 		g_RegNatives.Register(pWrapper);
 	}
 
-	CEconItemDefinition *pItemDef = NULL;
-
-	MemWriter<void*, const char *> vstk(pSchema, classname);
+	CEconItemDefinition *pItemDef;
+	ArgBuffer<void*, const char *> vstk(pSchema, classname);
+	
 	pWrapper->Execute(vstk.GetBuffer(), &pItemDef);
-
 	return pItemDef;
 }
 
@@ -391,10 +388,9 @@ void *GetWeaponInfo(int weaponID)
 	}
 
 	void *info = nullptr;
-
-	MemWriter<int> vstk(weaponID);
+	ArgBuffer<int> vstk(weaponID);
+	
 	pWrapper->Execute(vstk.GetBuffer(), &info);
-
 	return info;
 }
 #endif
@@ -434,10 +430,9 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 	}
 
 	const char *alias = nullptr;
-
-	MemWriter<const char *> vstk(GetWeaponNameFromClassname(weapon));
+	ArgBuffer<const char *> vstk(GetWeaponNameFromClassname(weapon));
+	
 	pWrapper->Execute(vstk.GetBuffer(), &alias);
-
 	return alias;
 #else //this should work for both games maybe replace both?
 	static const char *szAliases[] =
@@ -488,10 +483,9 @@ int AliasToWeaponID(const char *weapon)
 	}
 
 	int weaponID = 0;
-
-	MemWriter<const char *> vstk(GetWeaponNameFromClassname(weapon));
+	ArgBuffer<const char *> vstk(GetWeaponNameFromClassname(weapon));
+	
 	pWrapper->Execute(vstk.GetBuffer(), &weaponID);
-
 	return weaponID;
 #else
 	ItemDefHashValue *pHashValue = GetHashValueFromWeapon(weapon);
@@ -523,10 +517,9 @@ const char *WeaponIDToAlias(int weaponID)
 	}
 
 	const char *alias = nullptr;
-
-	MemWriter<int> vstk(weaponID);
+	ArgBuffer<int> vstk(weaponID);
+	
 	pWrapper->Execute(vstk.GetBuffer(), &alias);
-
 	return alias;
 #else
 	WeaponIDMap::Result res = g_mapWeaponIDToDefIdx.find((SMCSWeapon)weaponID);

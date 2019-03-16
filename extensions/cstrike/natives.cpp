@@ -34,7 +34,7 @@
 #include "forwards.h"
 #include "util_cstrike.h"
 #include <server_class.h>
-#include <sm_memwriter.h>
+#include <sm_argbuffer.h>
 
 #if SOURCE_ENGINE == SE_CSGO
 #include "itemdef-hash.h"
@@ -179,7 +179,7 @@ static cell_t CS_SwitchTeam(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	MemWriter<CBaseEntity*, int> vstk(pEntity, params[2]);
+	ArgBuffer<CBaseEntity*, int> vstk(pEntity, params[2]);
 
 	pWrapper->Execute(vstk.GetBuffer(), NULL);
 #else
@@ -271,7 +271,7 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 		g_pIgnoreCSWeaponDropDetour = true;
 
 	// <psychonic> first one is always false. second is true to toss, false to just drop
-	MemWriter<CBaseEntity*, CBaseEntity*, bool, bool> vstk(pEntity, pWeapon, false, (params[3]) ? true : false);
+	ArgBuffer<CBaseEntity*, CBaseEntity*, bool, bool> vstk(pEntity, pWeapon, false, (params[3]) ? true : false);
 
 	pWrapper->Execute(vstk.GetBuffer(), NULL);
 	return 1;
@@ -320,7 +320,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	if (params[3] == 1 && g_pTerminateRoundDetoured)
 		g_pIgnoreTerminateDetour = true;
 
-	MemWriter<void*, float, int> vstk(gamerules, sp_ctof(params[1]), reason);
+	ArgBuffer<void*, float, int> vstk(gamerules, sp_ctof(params[1]), reason);
 
 	pWrapper->Execute(vstk.GetBuffer(), NULL);
 #elif SOURCE_ENGINE == SE_CSGO && !defined(WIN32)
@@ -348,7 +348,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	if (params[3] == 1 && g_pTerminateRoundDetoured)
 		g_pIgnoreTerminateDetour = true;
 
-	MemWriter<void*, float, int, int, int> vstk(gamerules, sp_ctof(params[1]), reason, 0, 0);
+	ArgBuffer<void*, float, int, int, int> vstk(gamerules, sp_ctof(params[1]), reason, 0, 0);
 
 	pWrapper->Execute(vstk.GetBuffer(), NULL);
 #else // CSGO Win32
@@ -850,8 +850,7 @@ static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params
 	char *szNewTag;
 	pContext->LocalToString(params[2], &szNewTag);
 
-	MemWriter<CBaseEntity*, char*> vstk(pEntity, szNewTag);
-
+	ArgBuffer<CBaseEntity*, char*> vstk(pEntity, szNewTag);
 	pWrapper->Execute(vstk.GetBuffer(), NULL);
 	return 1;
 #endif

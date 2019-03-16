@@ -32,7 +32,7 @@
 #include "extension.h"
 #include "variant-t.h"
 #include <datamap.h>
-#include <sm_memwriter.h>
+#include <sm_argbuffer.h>
 
 ICallWrapper *g_pAcceptInput = NULL;
 
@@ -97,7 +97,7 @@ static cell_t AcceptEntityInput(IPluginContext *pContext, const cell_t *params)
 
 	bool ret = false;
 
-	MemWriter<void*, const char*, CBaseEntity*, CBaseEntity*, decltype(g_Variant_t), int> vstk(pDest, inputname, pActivator, pCaller, g_Variant_t, params[5]);
+	ArgBuffer<void*, const char*, CBaseEntity*, CBaseEntity*, decltype(g_Variant_t), int> vstk(pDest, inputname, pActivator, pCaller, g_Variant_t, params[5]);
 	g_pAcceptInput->Execute(vstk.GetBuffer(), &ret);
 
 	_init_variant_t();

@@ -32,7 +32,7 @@
 #include "extension.h"
 #include "variant-t.h"
 #include "output.h"
-#include <sm_memwriter.h>
+#include <sm_argbuffer.h>
 
 ICallWrapper *g_pFireOutput = NULL;
 
@@ -380,7 +380,7 @@ static cell_t FireEntityOutput(IPluginContext *pContext, const cell_t *params)
 			ENTINDEX_TO_CBASEENTITY(params[3], pActivator);
 		}
 
-		MemWriter<void*, decltype(g_Variant_t), CBaseEntity*, CBaseEntity*, float> vstk(pOutput, g_Variant_t, pActivator, pCaller, sp_ctof(params[4]));
+		ArgBuffer<void*, decltype(g_Variant_t), CBaseEntity*, CBaseEntity*, float> vstk(pOutput, g_Variant_t, pActivator, pCaller, sp_ctof(params[4]));
 
 		g_pFireOutput->Execute(vstk.GetBuffer(), nullptr);
 
