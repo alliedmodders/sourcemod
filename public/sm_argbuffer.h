@@ -30,7 +30,9 @@
  */
  
 /**
- * A type-safe abstraction for creating a contiguous blob of memory.
+ * A type-safe abstraction for creating a contiguous blob of memory used for 
+ * vtable function calls. This blob contains the parameters to be passed into
+ * the function call.
  */
 template <typename T, typename...Rest>
 class ArgBuffer {
@@ -50,20 +52,20 @@ private:
 	constexpr static int sizetypes() {
 		return sizeof(K) + sizetypes<K2, Kn...>();
 	}
-	
+
 	template <typename K>
-	constexpr void buildbuffer(unsigned char **ptr, K k) {
-		memcpy(*ptr, &k, sizeof(K));
+	void buildbuffer(unsigned char **ptr, K k) {
+		memcpy(*ptr, &k, sizeof(k));
 		*ptr += sizeof(K);
 	}
-	
+
 	template <typename K, typename... Kn>
-	constexpr void buildbuffer(unsigned char **ptr, K k, Kn... kn) {
+	void buildbuffer(unsigned char **ptr, K k, Kn... kn) {
 		buildbuffer(ptr, k);
 		if (sizeof...(kn)!=0)
 			buildbuffer(ptr, kn...);
 	}
-	
+
 private:
 	unsigned char buff[sizetypes<T, Rest...>()];
 };
