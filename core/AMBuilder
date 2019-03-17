@@ -109,5 +109,11 @@ for sdk_name in SM.sdks:
         os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessage_helpers.cpp'),
       ]
 
+if builder.target.platform == 'windows':
+  if binary.compiler.vendor == 'msvc' and binary.compiler.version >= 1900:
+    binary.sources += [
+        '../../public/msvc/msvc15hack.c'
+    ]
+
 SM.binaries += builder.Add(project)
 
