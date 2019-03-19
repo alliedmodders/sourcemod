@@ -43,6 +43,12 @@ public:
 	}
 
 	operator void*() { return buff; }
+	operator unsigned char*() { return buff; }
+
+	constexpr int size() const {
+		return sizeof(buff);
+	}
+
 private:
 	template <typename K>
 	constexpr static int sizetypes() {
