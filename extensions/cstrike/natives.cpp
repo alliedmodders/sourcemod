@@ -851,6 +851,7 @@ static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params
 	pContext->LocalToString(params[2], &szNewTag);
 
 	ArgBuffer<CBaseEntity*, char*> vstk(pEntity, szNewTag);
+
 	pWrapper->Execute(vstk, NULL);
 	return 1;
 #endif

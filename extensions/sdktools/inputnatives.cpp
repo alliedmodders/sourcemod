@@ -95,9 +95,9 @@ static cell_t AcceptEntityInput(IPluginContext *pContext, const cell_t *params)
 		ENTINDEX_TO_CBASEENTITY(params[4], pCaller);
 	}
 
-	bool ret = false;
-
 	ArgBuffer<void*, const char*, CBaseEntity*, CBaseEntity*, decltype(g_Variant_t), int> vstk(pDest, inputname, pActivator, pCaller, g_Variant_t, params[5]);
+
+	bool ret = false;
 	g_pAcceptInput->Execute(vstk, &ret);
 
 	_init_variant_t();

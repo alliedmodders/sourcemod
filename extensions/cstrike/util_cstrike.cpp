@@ -135,10 +135,11 @@ CEconItemView *GetEconItemView(CBaseEntity *pEntity, int iSlot)
 	if (team != 2 && team != 3)
 		return NULL;
 
-	CEconItemView *ret;
 	ArgBuffer<void*, int> vstk(reinterpret_cast<void*>(((intptr_t)pEntity + thisPtrOffset)), iSlot);
 
+	CEconItemView *ret = nullptr;
 	pWrapper->Execute(vstk, &ret);
+
 	return ret;
 }
 
@@ -156,10 +157,11 @@ CCSWeaponData *GetCCSWeaponData(CEconItemView *view)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, NULL, 0))
 	}
 
-	CCSWeaponData *pWpnData;
 	ArgBuffer<CEconItemView*> vstk(view);
-	
+
+	CCSWeaponData *pWpnData = nullptr;
 	pWrapper->Execute(vstk, &pWpnData);
+
 	return pWpnData;
 }
 
@@ -222,10 +224,11 @@ CEconItemDefinition *GetItemDefintionByName(const char *classname)
 		g_RegNatives.Register(pWrapper);
 	}
 
-	CEconItemDefinition *pItemDef;
 	ArgBuffer<void*, const char *> vstk(pSchema, classname);
-	
+
+	CEconItemDefinition *pItemDef = nullptr;
 	pWrapper->Execute(vstk, &pItemDef);
+
 	return pItemDef;
 }
 
@@ -387,10 +390,11 @@ void *GetWeaponInfo(int weaponID)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
 
-	void *info = nullptr;
 	ArgBuffer<int> vstk(weaponID);
-	
+
+	void *info = nullptr;
 	pWrapper->Execute(vstk, &info);
+
 	return info;
 }
 #endif
@@ -429,10 +433,11 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
 
-	const char *alias = nullptr;
 	ArgBuffer<const char *> vstk(GetWeaponNameFromClassname(weapon));
-	
+
+	const char *alias = nullptr;
 	pWrapper->Execute(vstk, &alias);
+
 	return alias;
 #else //this should work for both games maybe replace both?
 	static const char *szAliases[] =
@@ -482,10 +487,11 @@ int AliasToWeaponID(const char *weapon)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
 
-	int weaponID = 0;
 	ArgBuffer<const char *> vstk(GetWeaponNameFromClassname(weapon));
-	
+
+	int weaponID = 0;
 	pWrapper->Execute(vstk, &weaponID);
+
 	return weaponID;
 #else
 	ItemDefHashValue *pHashValue = GetHashValueFromWeapon(weapon);
@@ -516,10 +522,11 @@ const char *WeaponIDToAlias(int weaponID)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
 
-	const char *alias = nullptr;
 	ArgBuffer<int> vstk(weaponID);
-	
+
+	const char *alias = nullptr;
 	pWrapper->Execute(vstk, &alias);
+
 	return alias;
 #else
 	WeaponIDMap::Result res = g_mapWeaponIDToDefIdx.find((SMCSWeapon)weaponID);

@@ -81,13 +81,13 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 	}
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
-
 	ArgBuffer<void*, CBaseEntity*, CBaseEntity*, 
 											float,
 											int, // Damage amount
 											bool, // Permanent
 											int>  // Custom Damage type (bleeding)
 											vstk(obj, pAttacker, NULL, sp_ctof(params[3]), 4, false, 32);
+
 	pWrapper->Execute(vstk, nullptr);
 	return 1;
 }
@@ -127,10 +127,10 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 	}
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
-
 	ArgBuffer<void*, CBaseEntity*, CBaseEntity*, 
 										float> //duration
 										vstk(obj, pTarget, nullptr, 10.0f);
+
 	pWrapper->Execute(vstk, nullptr);
 	return 1;
 }
@@ -181,8 +181,8 @@ cell_t TF2_Disguise(IPluginContext *pContext, const cell_t *params)
 	}
 
 	ArgBuffer<void*, int, int, CBaseEntity*, bool> vstk(obj, params[2], params[3], pTarget, true);
-	pWrapper->Execute(vstk, nullptr);
 
+	pWrapper->Execute(vstk, nullptr);
 	return 1;
 }
 
@@ -204,8 +204,8 @@ cell_t TF2_RemoveDisguise(IPluginContext *pContext, const cell_t *params)
 	}
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
-
 	ArgBuffer<void*> vstk(obj);
+
 	pWrapper->Execute(vstk, nullptr);
 	return 1;
 }
@@ -245,8 +245,8 @@ cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
 	}
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
-
 	ArgBuffer<void*, int, float, CBaseEntity*> vstk(obj, params[2], params[3], pInflictor);
+
 	pWrapper->Execute(vstk, nullptr);
 	return 1;
 }
@@ -276,10 +276,9 @@ cell_t TF2_RemoveCondition(IPluginContext *pContext, const cell_t *params)
 	}
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
-	
 	ArgBuffer<void*, int, bool> vstk(obj, params[2], true);
-	pWrapper->Execute(vstk, nullptr);
 
+	pWrapper->Execute(vstk, nullptr);
 	return 1;
 }
 
@@ -321,10 +320,9 @@ cell_t TF2_StunPlayer(IPluginContext *pContext, const cell_t *params)
 	}
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
-
 	ArgBuffer<void*, float, float, int, CBaseEntity*> vstk(obj, sp_ctof(params[2]), sp_ctof(params[3]), params[4], pAttacker);
-	pWrapper->Execute(vstk, nullptr);
 
+	pWrapper->Execute(vstk, nullptr);
 	return 1;
 }
 
@@ -350,8 +348,8 @@ cell_t TF2_SetPowerplayEnabled(IPluginContext *pContext, const cell_t *params)
 	}
 
 	ArgBuffer<void*, bool> vstk(pEntity, params[2] != 0);
-	pWrapper->Execute(vstk, nullptr);
 
+	pWrapper->Execute(vstk, nullptr);
 	return 1;
 }
 
@@ -387,8 +385,8 @@ cell_t TF2_Respawn(IPluginContext *pContext, const cell_t *params)
 	}
 
 	ArgBuffer<void*> vstk(pEntity);
-	pWrapper->Execute(vstk, nullptr);
 
+	pWrapper->Execute(vstk, nullptr);
 	return 1;
 }
 
@@ -415,8 +413,8 @@ cell_t TF2_Regenerate(IPluginContext *pContext, const cell_t *params)
 	}
 	
 	ArgBuffer<void*, bool> vstk(pEntity, true);
+	
 	pWrapper->Execute(vstk, nullptr);
-
 	return 1;
 }
 
@@ -463,6 +461,7 @@ cell_t TF2_IsPlayerInDuel(IPluginContext *pContext, const cell_t *params)
 	
 	bool retValue;
 	pWrapper->Execute(vstk, &retValue);
+
 	return (retValue) ? 1 : 0;
 }
 
@@ -546,8 +545,8 @@ cell_t TF2_RemoveWearable(IPluginContext *pContext, const cell_t *params)
 	}
 
 	ArgBuffer<void*, CBaseEntity*> vstk(pEntity, pWearable);
-	pWrapper->Execute(vstk, nullptr);
 
+	pWrapper->Execute(vstk, nullptr);
 	return 1;
 }
 
