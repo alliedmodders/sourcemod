@@ -166,6 +166,7 @@ enum {
 	TF_CUSTOM_SLAP_KILL,
 	TF_CUSTOM_CROC,
 	TF_CUSTOM_TAUNTATK_GASBLAST,
+	TF_CUSTOM_AXTINGUISHER_BOOSTED,
 };
 
 // Weapon codes as used in some events, such as player_death
