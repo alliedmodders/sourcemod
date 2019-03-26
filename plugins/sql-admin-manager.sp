@@ -40,7 +40,7 @@
 #define CURRENT_SCHEMA_VERSION		1409
 #define SCHEMA_UPGRADE_1			1409
 
-int current_version[4] = {1, 0, 0, CURRENT_SCHEMA_VERSION};
+int current_version[] = {1, 0, 0, CURRENT_SCHEMA_VERSION};
 
 public Plugin myinfo = 
 {
@@ -87,7 +87,7 @@ Database Connect()
 
 void CreateMySQL(int client, Database db)
 {
-	char queries[7][] = 
+	char queries[][] = 
 	{
 		"CREATE TABLE sm_admins (id int(10) unsigned NOT NULL auto_increment, authtype enum('steam','name','ip') NOT NULL, identity varchar(65) NOT NULL, password varchar(65), flags varchar(30) NOT NULL, name varchar(65) NOT NULL, immunity int(10) unsigned NOT NULL, PRIMARY KEY (id))",
 		"CREATE TABLE sm_groups (id int(10) unsigned NOT NULL auto_increment, flags varchar(30) NOT NULL, name varchar(120) NOT NULL, immunity_level int(1) unsigned NOT NULL, PRIMARY KEY (id))",
@@ -123,7 +123,7 @@ void CreateMySQL(int client, Database db)
 
 void CreateSQLite(int client, Database db)
 {
-	char queries[7][] = 
+	char queries[][] = 
 	{
 		"CREATE TABLE sm_admins (id INTEGER PRIMARY KEY AUTOINCREMENT, authtype varchar(16) NOT NULL CHECK(authtype IN ('steam', 'ip', 'name')), identity varchar(65) NOT NULL, password varchar(65), flags varchar(30) NOT NULL, name varchar(65) NOT NULL, immunity INTEGER NOT NULL)",
 		"CREATE TABLE sm_groups (id INTEGER PRIMARY KEY AUTOINCREMENT, flags varchar(30) NOT NULL, name varchar(120) NOT NULL, immunity_level INTEGER NOT NULL)",
@@ -256,7 +256,7 @@ void UpdateSQLite(int client, Database db)
 	 */
 	if (versions[3] < SCHEMA_UPGRADE_1)
 	{
-		char queries[8][] = 
+		char queries[][] = 
 		{
 			"ALTER TABLE sm_admins ADD immunity INTEGER DEFAULT 0 NOT NULL",
 			"CREATE TABLE _sm_groups_temp (id INTEGER PRIMARY KEY AUTOINCREMENT, flags varchar(30) NOT NULL, name varchar(120) NOT NULL, immunity_level INTEGER DEFAULT 0 NOT NULL)",
@@ -328,7 +328,7 @@ void UpdateMySQL(int client, Database db)
 	 */
 	if (versions[3] < SCHEMA_UPGRADE_1)
 	{
-		char queries[6][] = 
+		char queries[][] = 
 		{
 			"CREATE TABLE IF NOT EXISTS sm_config (cfg_key varchar(32) NOT NULL, cfg_value varchar(255) NOT NULL, PRIMARY KEY (cfg_key))",
 			"ALTER TABLE sm_admins ADD immunity INT UNSIGNED NOT NULL",
