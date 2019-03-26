@@ -31,11 +31,10 @@
  * Version: $Id$
  */
 
-/* We like semicolons */
-#pragma semicolon 1
-
 #include <sourcemod>
 
+/* We like semicolons */
+#pragma semicolon 1
 #pragma newdecls required
 
 #define CURRENT_SCHEMA_VERSION		1409
@@ -99,7 +98,7 @@ void CreateMySQL(int client, Database db)
 		"CREATE TABLE IF NOT EXISTS sm_config (cfg_key varchar(32) NOT NULL, cfg_value varchar(255) NOT NULL, PRIMARY KEY (cfg_key))"
 	};
 
-	for (int i = 0; i < 7; i++)
+	for (int i = 0; i < sizeof(queries); i++)
 	{
 		if (!DoQuery(client, db, queries[i]))
 		{
@@ -135,7 +134,7 @@ void CreateSQLite(int client, Database db)
 		"CREATE TABLE IF NOT EXISTS sm_config (cfg_key varchar(32) NOT NULL, cfg_value varchar(255) NOT NULL, PRIMARY KEY (cfg_key))"
 	};
 
-	for (int i = 0; i < 7; i++)
+	for (int i = 0; i < sizeof(queries); i++)
 	{
 		if (!DoQuery(client, db, queries[i]))
 		{
@@ -203,7 +202,7 @@ bool GetUpdateVersion(int client, Database db, int versions[4])
 		char version_numbers[4][12];
 		if (ExplodeString(version_string, ".", version_numbers, 4, 12) == 4)
 		{
-			for (int i = 0; i < 4; i++)
+			for (int i = 0; i < sizeof(version_numbers); i++)
 			{
 				versions[i] = StringToInt(version_numbers[i]);
 			}
@@ -269,7 +268,7 @@ void UpdateSQLite(int client, Database db)
 			"CREATE TABLE IF NOT EXISTS sm_config (cfg_key varchar(32) NOT NULL, cfg_value varchar(255) NOT NULL, PRIMARY KEY (cfg_key))"
 		};
 
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < sizeof(queries); i++)
 		{
 			if (!DoQuery(client, db, queries[i]))
 			{
@@ -339,7 +338,7 @@ void UpdateMySQL(int client, Database db)
 			"ALTER TABLE sm_groups DROP immunity"
 		};
 
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < sizeof(queries); i++)
 		{
 			if (!DoQuery(client, db, queries[i]))
 			{
@@ -482,7 +481,7 @@ public Action Command_SetAdminGroups(int client, int args)
 	
 	char name[80];
 	int inherit_order = 0;
-	for (int i=3; i<=args; i++)
+	for (int i = 3; i <= args; i++)
 	{
 		GetCmdArg(i, name, sizeof(name));
 		
@@ -494,7 +493,7 @@ public Action Command_SetAdminGroups(int client, int args)
 			int gid = SQL_FetchInt(hFindQuery, 0);
 			
 			hAddQuery.BindInt(0, gid);
-			hAddQuery.BindInt(1, ++inherit_order);
+			hAddQuery.BindInt(1, inherit_order++);
 			if (!SQL_Execute(hAddQuery))
 			{
 				ReplyToCommand(client, "[SM] %t", "SQL Group X failed to bind", name);
@@ -872,20 +871,20 @@ stock bool DoQuery(int client, Database db, const char[] query)
 
 stock Action DoError(int client, Database db, const char[] query, const char[] msg)
 {
-		char error[255];
-		SQL_GetError(db, error, sizeof(error));
-		LogError("%s: %s", msg, error);
-		LogError("Query dump: %s", query);
-		delete db;
-		ReplyToCommand(client, "[SM] %t", "Failed to query database");
-		return Plugin_Handled;
+	char error[255];
+	SQL_GetError(db, error, sizeof(error));
+	LogError("%s: %s", msg, error);
+	LogError("Query dump: %s", query);
+	delete db;
+	ReplyToCommand(client, "[SM] %t", "Failed to query database");
+	return Plugin_Handled;
 }
 
 stock Action DoStmtError(int client, Database db, const char[] query, const char[] error, const char[] msg)
 {
-		LogError("%s: %s", msg, error);
-		LogError("Query dump: %s", query);
-		delete db;
-		ReplyToCommand(client, "[SM] %t", "Failed to query database");
-		return Plugin_Handled;
+	LogError("%s: %s", msg, error);
+	LogError("Query dump: %s", query);
+	delete db;
+	ReplyToCommand(client, "[SM] %t", "Failed to query database");
+	return Plugin_Handled;
 }
