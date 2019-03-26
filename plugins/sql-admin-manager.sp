@@ -493,7 +493,7 @@ public Action Command_SetAdminGroups(int client, int args)
 			int gid = SQL_FetchInt(hFindQuery, 0);
 			
 			hAddQuery.BindInt(0, gid);
-			hAddQuery.BindInt(1, inherit_order++);
+			hAddQuery.BindInt(1, ++inherit_order);
 			if (!SQL_Execute(hAddQuery))
 			{
 				ReplyToCommand(client, "[SM] %t", "SQL Group X failed to bind", name);
