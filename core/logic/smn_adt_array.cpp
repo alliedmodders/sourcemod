@@ -580,15 +580,15 @@ static cell_t FindValueInArray(IPluginContext *pContext, const cell_t *params)
 	}
 	
 	size_t cells = cellsToCompare > 0 ? cellsToCompare : array->blocksize() - blocknumber;
-
+	
 	for (size_t i = 0; i < array->size(); i++)
 	{
-		cell_t *blk = array->at(i);		
+		cell_t *blk = array->at(i);
 		
 		if (memcmp(&params[2], &blk[blocknumber], sizeof(cell_t) * cells) == 0)
 		{
 			return (cell_t) i;
-		}		
+		}
 	}
 
 	return -1;
