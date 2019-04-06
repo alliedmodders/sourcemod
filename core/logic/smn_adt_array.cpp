@@ -560,7 +560,7 @@ static cell_t FindValueInArray(IPluginContext *pContext, const cell_t *params)
 	size_t blocknumber = 0;
 	if (params[0] >= 3)
 	{
-		blocknumber = (size_t) params[3];		
+		blocknumber = (size_t) params[3];
 	}
 
 	if (blocknumber >= array->blocksize())
@@ -582,9 +582,20 @@ static cell_t FindValueInArray(IPluginContext *pContext, const cell_t *params)
 	for (unsigned int i = 0; i < array->size(); i++)
 	{
 		cell_t *blk = array->at(i);
-		if (memcmp(params + 2, blk + blocknumber, sizeof(cell_t) * (cellsToCompare > 0 ? cellsToCompare : array->blocksize() - blocknumber)) == 0)
+		
+		if (cellsToCompare > 0)
 		{
-			return (cell_t) i;
+			if (memcmp(&params[2], &blk[blocknumber], sizeof(cell_t) * cellsToCompare) == 0)
+			{
+				return (cell_t) i;
+			}
+		}
+		else
+		{
+			if (memcmp(&params[2], &blk[blocknumber], sizeof(cell_t) * (array->blocksize() - blocknumber)) == 0)
+			{
+				return (cell_t) i;
+			}			
 		}
 	}
 
