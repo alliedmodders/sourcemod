@@ -579,7 +579,7 @@ static cell_t FindValueInArray(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Comparing %d cells (blocksize: %d)", blocknumber + cellsToCompare, array->blocksize());
 	}
 
-	for (unsigned int i = 0; i < array->size(); i++)
+	for (size_t i = 0; i < array->size(); i++)
 	{
 		cell_t *blk = array->at(i);
 		
