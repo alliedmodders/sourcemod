@@ -204,7 +204,7 @@ methodmap ArrayList < Handle {
 	//
 	// @param item          Value to search for
     	// @param block         Optionally which block to search in
-    	// @param cellsToCompare Optionally the number of cells to compare, 0 stands for the rest of the cells
+    	// @param cellsToCompare Optionally the number of cells to compare, anything below 1 stands for the rest of the cells
 	// @return              Array index, or -1 on failure
 	// @error               Invalid block index
 	public native int FindValue(any item, int block=0, int cellsToCompare=1);
@@ -441,7 +441,7 @@ native int FindStringInArray(Handle array, const char[] item);
  * @param array			Array Handle.
  * @param item			Value to search for
  * @param block			Optionally which block to search in
- * @param cellsToCompare 	Optionally the number of cells to compare, 0 stands for the rest of the cells
+ * @param cellsToCompare 	Optionally the number of cells to compare, anything below 1 stands for the rest of the cells
  * @return				Array index, or -1 on failure
  * @error				Invalid Handle or invalid block
  */
