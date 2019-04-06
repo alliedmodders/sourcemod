@@ -203,10 +203,11 @@ methodmap ArrayList < Handle {
 	// value cannot be located, -1 will be returned.
 	//
 	// @param item          Value to search for
-    // @param block         Optionally which block to search in
+    	// @param block         Optionally which block to search in
+    	// @param cellsToCompare Optionally the number of cells to compare, 0 stands for the rest of the cells
 	// @return              Array index, or -1 on failure
 	// @error               Invalid block index
-	public native int FindValue(any item, int block=0);
+	public native int FindValue(any item, int block=0, int cellsToCompare=1);
 
 	// Retrieve the size of the array.
 	property int Length {
@@ -440,10 +441,11 @@ native int FindStringInArray(Handle array, const char[] item);
  * @param array			Array Handle.
  * @param item			Value to search for
  * @param block			Optionally which block to search in
+ * @param cellsToCompare 	Optionally the number of cells to compare, 0 stands for the rest of the cells
  * @return				Array index, or -1 on failure
  * @error				Invalid Handle or invalid block
  */
-native int FindValueInArray(Handle array, any item, int block=0);
+native int FindValueInArray(Handle array, any item, int block=0, int cellsToCompare=1);
 
 /**
  * Returns the blocksize the array was created with.
