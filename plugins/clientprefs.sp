@@ -75,6 +75,8 @@ public Action Command_Cookie(int client, int args)
 		
 		CookieAccess access;
 		
+		int count = 1;
+		
 		while (ReadCookieIterator(iter, 
 								name, 
 								sizeof(name),
@@ -84,7 +86,7 @@ public Action Command_Cookie(int client, int args)
 		{
 			if (access < CookieAccess_Private)
 			{
-				PrintToConsole(client, "%s - %s", name, description);
+				PrintToConsole(client, "[%03d] %s - %s", count++, name, description);
 			}
 		}
 		
@@ -124,13 +126,37 @@ public Action Command_Cookie(int client, int args)
 	
 	if (args == 1)
 	{
+		Handle iter = GetCookieIterator();
+		
 		GetClientCookie(client, cookie, value, sizeof(value));
 		ReplyToCommand(client, "[SM] %t", "Cookie Value", name, value);
 		
+		char CookieName[30];
+		CookieName[0] = '\0';
+		char description[255];
+		description[0] = '\0';
+		
+		while (ReadCookieIterator(iter, 
+								CookieName, 
+								sizeof(CookieName),
+								access, 
+								description, 
+								sizeof(description)) != false) // We're allowed to re-use access since we're about to return anyways.
+		{
+			if(StrEqual(CookieName, name, true))
+			{
+				TrimString(description);
+				if(description[0] != EOS)
+					ReplyToCommand(client, "- %s", description);
+					
+				break;
+			}
+		}
+		
+		delete iter;
 		delete cookie;
 		return Plugin_Handled;
 	}
-	
 	if (access == CookieAccess_Protected)
 	{
 		ReplyToCommand(client, "[SM] %t", "Protected Cookie", name);
