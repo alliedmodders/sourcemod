@@ -578,25 +578,17 @@ static cell_t FindValueInArray(IPluginContext *pContext, const cell_t *params)
 	{
 		return pContext->ThrowNativeError("Comparing %d cells (blocksize: %d)", blocknumber + cellsToCompare, array->blocksize());
 	}
+	
+	size_t cells = cellsToCompare > 0 ? cellsToCompare : array->blocksize() - blocknumber;
 
 	for (size_t i = 0; i < array->size(); i++)
 	{
-		cell_t *blk = array->at(i);
+		cell_t *blk = array->at(i);		
 		
-		if (cellsToCompare > 0)
+		if (memcmp(&params[2], &blk[blocknumber], sizeof(cell_t) * cells) == 0)
 		{
-			if (memcmp(&params[2], &blk[blocknumber], sizeof(cell_t) * cellsToCompare) == 0)
-			{
-				return (cell_t) i;
-			}
-		}
-		else
-		{
-			if (memcmp(&params[2], &blk[blocknumber], sizeof(cell_t) * (array->blocksize() - blocknumber)) == 0)
-			{
-				return (cell_t) i;
-			}			
-		}
+			return (cell_t) i;
+		}		
 	}
 
 	return -1;
