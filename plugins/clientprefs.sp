@@ -67,9 +67,9 @@ public Action Command_Cookie(int client, int args)
 		Handle iter = GetCookieIterator();
 		
 		char name[30];
-		name[0] = '\0';
+		name[0] = EOS;
 		char description[255];
-		description[0] = '\0';
+		description[0] = EOS;
 		
 		PrintToConsole(client, "%t:", "Cookie List");
 		
@@ -101,7 +101,7 @@ public Action Command_Cookie(int client, int args)
 	}
 	
 	char name[30];
-	name[0] = '\0';
+	name[0] = EOS;
 	GetCmdArg(1, name, sizeof(name));
 	
 	Handle cookie = FindClientCookie(name);
@@ -122,7 +122,7 @@ public Action Command_Cookie(int client, int args)
 	}
 	
 	char value[100];
-	value[0] = '\0';
+	value[0] = EOS;
 	
 	if (args == 1)
 	{
@@ -132,9 +132,9 @@ public Action Command_Cookie(int client, int args)
 		ReplyToCommand(client, "[SM] %t", "Cookie Value", name, value);
 		
 		char CookieName[30];
-		CookieName[0] = '\0';
+		CookieName[0] = EOS;
 		char description[255];
-		description[0] = '\0';
+		description[0] = EOS;
 		
 		while (ReadCookieIterator(iter, 
 								CookieName, 
