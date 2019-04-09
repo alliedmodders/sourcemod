@@ -67,9 +67,7 @@ public Action Command_Cookie(int client, int args)
 		Handle iter = GetCookieIterator();
 		
 		char name[30];
-		name[0] = EOS;
 		char description[255];
-		description[0] = EOS;
 		
 		PrintToConsole(client, "%t:", "Cookie List");
 		
@@ -77,12 +75,13 @@ public Action Command_Cookie(int client, int args)
 		
 		int count = 1;
 		
-		while (ReadCookieIterator(iter, 
-								name, 
-								sizeof(name),
-								access, 
-								description, 
-								sizeof(description)) != false)
+		while (ReadCookieIterator(
+		iter, 
+		name, 
+		sizeof(name),
+		access, 
+		description, 
+		sizeof(description)) != false)
 		{
 			if (access < CookieAccess_Private)
 			{
@@ -101,7 +100,7 @@ public Action Command_Cookie(int client, int args)
 	}
 	
 	char name[30];
-	name[0] = EOS;
+
 	GetCmdArg(1, name, sizeof(name));
 	
 	Handle cookie = FindClientCookie(name);
@@ -122,7 +121,6 @@ public Action Command_Cookie(int client, int args)
 	}
 	
 	char value[100];
-	value[0] = EOS;
 	
 	if (args == 1)
 	{
@@ -132,16 +130,15 @@ public Action Command_Cookie(int client, int args)
 		ReplyToCommand(client, "[SM] %t", "Cookie Value", name, value);
 		
 		char CookieName[30];
-		CookieName[0] = EOS;
 		char description[255];
-		description[0] = EOS;
 		
-		while (ReadCookieIterator(iter, 
-								CookieName, 
-								sizeof(CookieName),
-								access, 
-								description, 
-								sizeof(description)) != false) // We're allowed to re-use access since we're about to return anyways.
+		while (ReadCookieIterator(
+		iter, 
+		CookieName, 
+		sizeof(CookieName),
+		access, 
+		description, 
+		sizeof(description)) != false) // We're allowed to re-use access since we're about to return anyways.
 		{
 			if(StrEqual(CookieName, name, true))
 			{
