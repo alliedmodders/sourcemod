@@ -21,3 +21,7 @@ Contact
 -------
 - Connect with us on [GameSurge](https://gamesurge.net) IRC in #sourcemod
 - Alternatively feel free to join our [Discord](https://discord.gg/HgZctSS) server
+
+License
+-------
+SourceMod is licensed under the GNU General Public License version 3. Special exceptions are outlined in the LICENSE.txt file inside of the licenses folder.

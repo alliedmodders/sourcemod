@@ -420,7 +420,7 @@ CopyFiles('translations', 'addons/sourcemod/translations',
     'sqladmins.phrases.txt',
   ]
 )
-CopyFiles('public/licenses', 'addons/sourcemod',
+CopyFiles('licenses', 'addons/sourcemod',
   [ 'GPLv2.txt',
     'GPLv3.txt',
     'LICENSE.txt'
