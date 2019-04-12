@@ -145,7 +145,7 @@ public Action Command_Cookie(int client, int args)
 			if (StrEqual(CookieName, name, true))
 			{
 				TrimString(description);
-				if(description[0] != EOS)
+				if (description[0] != EOS)
 					ReplyToCommand(client, "- %s", description);
 					
 				break;
