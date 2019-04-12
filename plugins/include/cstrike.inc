@@ -46,6 +46,9 @@
 #define CS_SLOT_GRENADE		3	/**< Grenade slot (will only return one grenade). */
 #define CS_SLOT_C4			4	/**< C4 slot. */
 
+#define CS_BOMBSITE_A		0	/**< Bombsite A. */
+#define CS_BOMBSITE_B		1	/**< Bombsite B. */
+
 #define CS_DMG_HEADSHOT		(1 << 30)	/**< Headshot */
 
 enum CSRoundEndReason
