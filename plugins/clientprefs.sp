@@ -75,7 +75,8 @@ public Action Command_Cookie(int client, int args)
 		
 		int count = 1;
 		
-		while (ReadCookieIterator(
+		while
+		(ReadCookieIterator(
 		iter, 
 		name, 
 		sizeof(name),
@@ -132,7 +133,8 @@ public Action Command_Cookie(int client, int args)
 		char CookieName[30];
 		char description[255];
 		
-		while (ReadCookieIterator(
+		while
+		(ReadCookieIterator(
 		iter, 
 		CookieName, 
 		sizeof(CookieName),
@@ -140,7 +142,7 @@ public Action Command_Cookie(int client, int args)
 		description, 
 		sizeof(description)) != false) // We're allowed to re-use access since we're about to return anyways.
 		{
-			if(StrEqual(CookieName, name, true))
+			if (StrEqual(CookieName, name, true))
 			{
 				TrimString(description);
 				if(description[0] != EOS)
