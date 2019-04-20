@@ -22,7 +22,7 @@ IPluginFunction *GetCallback(IPluginContext *pContext, HookSetup * setup, const 
 {
 	IPluginFunction *ret = NULL;
 
-	if (params[0] >= callback_index)
+	if (static_cast<unsigned int>(params[0]) >= callback_index)
 	{
 		ret = pContext->GetFunctionById(params[callback_index]);
 	}
@@ -61,7 +61,7 @@ cell_t Native_AddParam(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	ParamInfo info;
+	::ParamInfo info;
 
 	info.type = (HookParamType)params[2];
 

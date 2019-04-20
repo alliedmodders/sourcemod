@@ -3,10 +3,13 @@
 
 #include "extension.h"
 
-#include <sourcehook.h>
+#include <sourcehook_pibuilder.h>
 #include <sh_vector.h>
+
 #include <macro-assembler.h>
 #include <assembler-x86.h>
+
+using namespace sp;
 
 enum MRESReturn
 {
@@ -122,7 +125,7 @@ public:
 class DHooksInfo
 {
 public:
-	SourceHook::CVector<ParamInfo> params;
+	SourceHook::CVector<::ParamInfo> params;
 	int offset;
 	unsigned int returnFlag;
 	ReturnType returnType;
@@ -304,7 +307,7 @@ public:
 	ReturnType returnType;
 	HookType hookType;
 	ThisPointerType thisType;
-	SourceHook::CVector<ParamInfo> params;
+	SourceHook::CVector<::ParamInfo> params;
 	int offset;
 	IPluginFunction *callback;
 };
