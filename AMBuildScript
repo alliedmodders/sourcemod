@@ -657,6 +657,7 @@ BuildScripts = [
   'extensions/tf2/AMBuilder',
   'extensions/topmenus/AMBuilder',
   'extensions/updater/AMBuilder',
+  'extensions/dhooks/AMBuilder',
 ]
 
 if builder.backend == 'amb2':
