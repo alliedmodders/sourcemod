@@ -7,17 +7,8 @@ for arch in SM.archs:
     os.path.join(builder.currentSourcePath),
       os.path.join(SM.mms_root, 'core'),
       os.path.join(SM.mms_root, 'core', 'sourcehook'),
-      os.path.join(builder.sourcePath, 'public'),
-      os.path.join(builder.sourcePath, 'public', 'extensions'),
-      os.path.join(builder.sourcePath, 'public', 'sourcepawn'),
-      os.path.join(builder.sourcePath, 'public', 'amtl'),
-      os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
-	  os.path.join(builder.sourcePath, 'public', 'jit'),
-      os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
       os.path.join(builder.sourcePath, 'sourcepawn', 'vm'),
       os.path.join(builder.sourcePath, 'sourcepawn', 'vm', 'x86'),
-	  os.path.join(builder.sourcePath, 'public', 'amtl', 'include'),
-      os.path.join(builder.sourcePath, 'public', 'amtl', 'amtl'),
   ]
   binary.compiler.defines += ['META_NO_HL2SDK']
   binary.sources += [
@@ -27,13 +18,7 @@ for arch in SM.archs:
     'vhook.cpp',
     'util.cpp',
 	os.path.join(builder.sourcePath, 'public', 'smsdk_ext.cpp'),
+	os.path.join(builder.sourcePath, 'sourcepawn', 'vm', 'x86', 'assembler-x86.cpp'),
   ]
-
-  if os.path.isfile(os.path.join(builder.sourcePath, 'sourcepawn', 'vm', 'x86', 'assembler-x86.cpp')):
-    binary.sources += [os.path.join(builder.sourcePath, 'sourcepawn', 'vm', 'x86', 'assembler-x86.cpp'),]
-  elif os.path.isfile(os.path.join(builder.sourcePath, 'public', 'jit', 'x86', 'assembler-x86.cpp')):
-    binary.sources += [os.path.join(builder.sourcePath, 'public', 'jit', 'x86', 'assembler-x86.cpp'),]
-  else:
-    raise Exception('Could not find assembler-x86.cpp.  Did you checkout SourceMod\'s submodules?')
 
   SM.extensions += [builder.Add(binary)]
