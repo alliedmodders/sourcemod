@@ -920,10 +920,10 @@ native MenuSource GetClientMenu(int client, Handle hStyle=null);
 /** 
  * Cancels a menu on a client.  This will only affect non-external menus.
  *
- * @param hStyle		MenuStyle Handle, or INVALID_HANDLE to use the default style.
  * @param client		Client index.
  * @param autoIgnore	If true, no menus can be re-drawn on the client during
  *						the cancellation process.
+ * @param hStyle		MenuStyle Handle, or INVALID_HANDLE to use the default style.
  * @return				True if a menu was cancelled, false otherwise.
  */
 native bool CancelClientMenu(int client, bool autoIgnore=false, Handle hStyle=INVALID_HANDLE);
