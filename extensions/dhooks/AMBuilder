@@ -17,8 +17,8 @@ for arch in SM.archs:
     'natives.cpp',
     'vhook.cpp',
     'util.cpp',
-	os.path.join(builder.sourcePath, 'public', 'smsdk_ext.cpp'),
-	os.path.join(builder.sourcePath, 'sourcepawn', 'vm', 'x86', 'assembler-x86.cpp'),
+    os.path.join(builder.sourcePath, 'public', 'smsdk_ext.cpp'),
+    os.path.join(builder.sourcePath, 'sourcepawn', 'vm', 'x86', 'assembler-x86.cpp'),
   ]
 
   SM.extensions += [builder.Add(binary)]
