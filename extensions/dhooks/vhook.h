@@ -203,7 +203,7 @@ SourceHook::PassInfo::PassType GetParamTypePassType(HookParamType type);
 #ifndef  WIN32
 static void *GenerateThunk(ReturnType type)
 {
-	sp::MacroAssemblerX86 masm;
+	sp::MacroAssembler masm;
 	static const size_t kStackNeeded = (2) * 4; // 2 args max
 	static const size_t kReserve = ke::Align(kStackNeeded+8, 16)-8;
 

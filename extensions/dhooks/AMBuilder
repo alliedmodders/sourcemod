@@ -10,6 +10,10 @@ for arch in SM.archs:
       os.path.join(builder.sourcePath, 'sourcepawn', 'vm'),
       os.path.join(builder.sourcePath, 'sourcepawn', 'vm', 'x86'),
   ]
+
+  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+    binary.compiler.cxxflags += ['-Wno-invalid-offsetof']
+
   binary.compiler.defines += ['META_NO_HL2SDK']
   binary.sources += [
     'extension.cpp',
