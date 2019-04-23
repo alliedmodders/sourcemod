@@ -405,7 +405,8 @@ void BuildMapMenu()
 	delete excludeMaps;
 }
 
-public int MenuHandler_MapSelect(Menu menu, MenuAction action, int param1, int param2) {
+public int MenuHandler_MapSelect(Menu menu, MenuAction action, int param1, int param2)
+{
 	switch (action)
 	{
 		case MenuAction_Select:
