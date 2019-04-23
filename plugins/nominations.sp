@@ -406,7 +406,8 @@ void BuildMapMenu()
 }
 
 public int MenuHandler_MapSelect(Menu menu, MenuAction action, int param1, int param2) {
-	switch (action) {
+	switch (action)
+	{
 		case MenuAction_Select:
 		{
 			char mapname[PLATFORM_MAX_PATH];
