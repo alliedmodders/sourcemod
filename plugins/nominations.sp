@@ -239,7 +239,8 @@ public Action Command_Nominate(int client, int args)
 	return Plugin_Handled;
 }
 
-int FindMatchingMaps(ArrayList mapList, ArrayList results, const char[] input){
+int FindMatchingMaps(ArrayList mapList, ArrayList results, const char[] input)
+{
 	int map_count = mapList.Length;
 
 	if (!map_count)
