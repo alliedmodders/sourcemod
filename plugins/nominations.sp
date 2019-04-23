@@ -34,8 +34,6 @@
 #include <sourcemod>
 #include <mapchooser>
 
-#define MATCHED_INDEXES_MAX 7
-
 #pragma semicolon 1
 #pragma newdecls required
 
