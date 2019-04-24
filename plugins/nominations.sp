@@ -192,10 +192,20 @@ public Action Command_Nominate(int client, int args)
 	{
 		return Plugin_Handled;
 	}
+
+	ReplySource source = GetCmdReplySource();
 	
 	if (args == 0)
-	{
-		OpenNominationMenu(client);
+	{	
+		if (source == SM_REPLY_TO_CHAT)
+		{
+			OpenNominationMenu(client);
+		}
+		else
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_nominate <mapname>");
+		}
+		
 		return Plugin_Handled;
 	}
 	
@@ -211,8 +221,22 @@ public Action Command_Nominate(int client, int args)
 	{
 		ReplyToCommand(client, "%t", "Map was not found", mapname);
 	}
+	// One result
+	else if (matches == 1)
+	{
+		// Get the result and nominate it
+		g_MapList.GetString(results.Get(0), mapResult, sizeof(mapResult));
+		AttemptNominate(client, mapResult, sizeof(mapResult));
+	}
 	else if (matches > 1)
 	{
+		if (source == SM_REPLY_TO_CONSOLE)
+		{
+			// if source is console, attempt instead of displaying menu.
+			AttemptNominate(client, mapname, sizeof(mapname));
+			return Plugin_Handled;
+		}
+
 		// Display results to the client and end
 		Menu menu = new Menu(MenuHandler_MapSelect, MENU_ACTIONS_DEFAULT|MenuAction_DrawItem|MenuAction_DisplayItem);
 		menu.SetTitle("Select map");
@@ -226,13 +250,7 @@ public Action Command_Nominate(int client, int args)
 		menu.Display(client, 30);
 		ReplyToCommand(client, "[SM] %t", "Multiple Matches Found");
 	}
-	// One result
-	else if (matches == 1)
-	{
-		// Get the result and nominate it
-		g_MapList.GetString(results.Get(0), mapResult, sizeof(mapResult));
-		AttemptNominate(client, mapResult, sizeof(mapResult));
-	}
+
 
 	delete results;
 
