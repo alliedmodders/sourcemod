@@ -230,17 +230,14 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR(WEAPONDROP_GAMEDATA_NAME,
-			PassInfo pass[3]; \
+			PassInfo pass[2]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
 			pass[0].type  = PassType_Basic; \
 			pass[0].size  = sizeof(CBaseEntity *); \
 			pass[1].flags = PASSFLAG_BYVAL; \
 			pass[1].type  = PassType_Basic; \
 			pass[1].size  = sizeof(bool); \
-			pass[2].flags = PASSFLAG_BYVAL; \
-			pass[2].type  = PassType_Basic; \
-			pass[2].size  = sizeof(bool); \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3))
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2))
 	}
 
 	CBaseEntity *pEntity;
@@ -273,16 +270,13 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	if (params[4] == 1 && g_pCSWeaponDropDetoured)
 		g_pIgnoreCSWeaponDropDetour = true;
 
-	unsigned char vstk[sizeof(CBaseEntity *) * 2 + sizeof(bool) * 2];
+	unsigned char vstk[sizeof(CBaseEntity *) * 2 + sizeof(bool)];
 	unsigned char *vptr = vstk;
 
-	// <psychonic> first one is always false. second is true to toss, false to just drop
 	*(CBaseEntity **)vptr = pEntity;
 	vptr += sizeof(CBaseEntity *);
 	*(CBaseEntity **)vptr = pWeapon;
 	vptr += sizeof(CBaseEntity *);
-	*(bool *)vptr = false;
-	vptr += sizeof(bool);
 	*(bool *)vptr = (params[3]) ? true : false;
 
  	pWrapper->Execute(vstk, NULL);
