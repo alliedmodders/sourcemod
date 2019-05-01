@@ -122,6 +122,7 @@ enum CSWeaponID
 	CSWeapon_MP9,
 	CSWeapon_NOVA,
 	CSWeapon_P250,
+	CSWeapon_SHIELD,
 	CSWeapon_SCAR17,
 	CSWeapon_SCAR20,
 	CSWeapon_SG556,
@@ -153,6 +154,7 @@ enum CSWeaponID
 	CSWeapon_DIVERSION = 82,
 	CSWeapon_FRAGGRENADE = 83,
 	CSWeapon_SNOWBALL = 84,
+	CSWeapon_BUMPMINE = 85,
 	CSWeapon_MAX_WEAPONS_NO_KNIFES, // Max without the knife item defs, useful when treating all knives as a regular knife.
 	CSWeapon_BAYONET = 500,
 	CSWeapon_KNIFE_FLIP = 505,
