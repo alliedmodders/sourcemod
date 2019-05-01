@@ -33,9 +33,10 @@
 #include "util_cstrike.h"
 #include "RegNatives.h"
 #include <iplayerinfo.h>
+#include <sm_argbuffer.h>
+
 #if SOURCE_ENGINE == SE_CSGO
 #include "itemdef-hash.h"
-#include <sm_argbuffer.h>
 
 ClassnameMap g_mapClassToDefIdx;
 ItemIndexMap g_mapDefIdxToClass;
