@@ -75,14 +75,7 @@ public Action Command_Cookie(int client, int args)
 		
 		int count = 1;
 		
-		while
-		(ReadCookieIterator(
-		iter, 
-		name, 
-		sizeof(name),
-		access, 
-		description, 
-		sizeof(description)) != false)
+		while (ReadCookieIterator(iter, name, sizeof(name), access, description, sizeof(description)) != false)
 		{
 			if (access < CookieAccess_Private)
 			{
@@ -133,14 +126,7 @@ public Action Command_Cookie(int client, int args)
 		char CookieName[30];
 		char description[255];
 		
-		while
-		(ReadCookieIterator(
-		iter, 
-		CookieName, 
-		sizeof(CookieName),
-		access, 
-		description, 
-		sizeof(description)) != false) // We're allowed to re-use access since we're about to return anyways.
+		while (ReadCookieIterator(iter, CookieName, sizeof(CookieName), access, description, sizeof(description)) != false) // We're allowed to re-use access since we're about to return anyways.
 		{
 			if (StrEqual(CookieName, name, true))
 			{
