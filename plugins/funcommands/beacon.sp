@@ -90,43 +90,46 @@ public Action Timer_Beacon(Handle timer, any value)
 	GetClientAbsOrigin(client, vec);
 	vec[2] += 10;
 	
+	int teamColor[4];
+	
 	if (g_BeamSprite > -1 && g_HaloSprite > -1)
 	{
-		TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
-		TE_SendToAll();
-		
 		EngineVersion engine = GetEngineVersion();
 		
 		switch (GetClientTeam(client))
 		{
 			case 1:
 			{
-				TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, greenColor, 10, 0);
+				teamColor = greenColor;
 			}
 			case 2:
 			{
 				if (engine == Engine_Left4Dead || engine == Engine_Left4Dead2)
-					TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, blueColor, 10, 0);
+					teamColor = blueColor;
 				else
-					TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, redColor, 10, 0);
+					teamColor = redColor;
 			}
 			case 3:
 			{
 				if (engine == Engine_Left4Dead || engine == Engine_Left4Dead2)
-					TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, redColor, 10, 0);
+					teamColor = redColor;
 				else
-					TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, blueColor, 10, 0);
+					teamColor = blueColor;
 			}
 			case 4:
 			{
-				TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, orangeColor, 10, 0);
+				teamColor = orangeColor;
 			}
 			default:
 			{
-				TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
+				teamColor = whiteColor;
 			}
 		}
+
+		TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
+		TE_SendToAll();
 		
+		TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, teamColor, 10, 0);
 		TE_SendToAll();
 	}
 	
