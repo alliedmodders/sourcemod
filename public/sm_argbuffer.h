@@ -37,7 +37,7 @@
 template <typename T, typename...Rest>
 class ArgBuffer {
 public:
-	ArgBuffer(T t, Rest... rest) {
+	ArgBuffer(const T& t, const Rest&... rest) {
 		unsigned char *ptr = buff;
 		buildbuffer(&ptr, t, rest...);
 	}
@@ -60,13 +60,13 @@ private:
 	}
 
 	template <typename K>
-	void buildbuffer(unsigned char **ptr, K k) {
+	void buildbuffer(unsigned char **ptr, K& k) {
 		memcpy(*ptr, &k, sizeof(k));
 		*ptr += sizeof(K);
 	}
 
 	template <typename K, typename... Kn>
-	void buildbuffer(unsigned char **ptr, K k, Kn... kn) {
+	void buildbuffer(unsigned char **ptr, K& k, Kn&... kn) {
 		buildbuffer(ptr, k);
 		if (sizeof...(kn)!=0)
 			buildbuffer(ptr, kn...);
