@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -217,7 +217,7 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 	/**
 	 * Note: Console commands will EITHER go through IServerGameDLL::ClientCommand,
 	 * OR this dispatch.  They will NEVER go through both.
-	 * -- 
+	 * --
 	 * Whether or not it goes through the callback is determined by FCVAR_GAMEDLL
 	 */
 	const char *cmd = g_HL2.CurrentCommandName();
@@ -225,7 +225,7 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 	ConCmdInfo *pInfo = FindInTrie(cmd);
 	if (pInfo == NULL)
 	{
-        /* Unfortunately, we now have to do a slow lookup because Valve made client commands 
+        /* Unfortunately, we now have to do a slow lookup because Valve made client commands
          * case-insensitive.  We can't even use our sortedness.
          */
         if (client == 0 && !engine->IsDedicatedServer())
@@ -238,8 +238,8 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 		pInfo = *item;
 	}
 
-	/* This is a hack to prevent say triggers from firing on messages that were 
-	 * blocked because of flooding.  We won't remove this, but the hack will get 
+	/* This is a hack to prevent say triggers from firing on messages that were
+	 * blocked because of flooding.  We won't remove this, but the hack will get
 	 * "nicer" when we expose explicit say hooks.
 	 */
 	if (g_ChatTriggers.WasFloodedMessage())
@@ -333,15 +333,15 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 		ke::SafeSprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s.", buffer);
 		g_HL2.TextMsg(client, HUD_PRINTTALK, fullbuffer);
 	}
-	
+
 	return false;
 }
 
-bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction, 
-									 const char *name, 
+bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
+									 const char *name,
 									 const char *group,
 									 int adminflags,
-									 const char *description, 
+									 const char *description,
 									 int flags,
 									 IPlugin *pPlugin)
 {
@@ -363,7 +363,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	pHook->admin = new AdminCmdInfo(cmdgroup, adminflags);
 
 	/* First get the command group override, if any */
-	bool override = adminsys->GetCommandOverride(group, 
+	bool override = adminsys->GetCommandOverride(group,
 		Override_CommandGroup,
 		&(pHook->admin->eflags));
 
@@ -378,7 +378,10 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	/* Assign normal flags if there were no overrides */
 	if (!override)
 		pHook->admin->eflags = pHook->admin->flags;
-	pInfo->eflags = pHook->admin->eflags;
+
+	/* Only set the command's overall flags if it doesn't already require any */
+	if (pInfo->eflags == 0)
+		pInfo->eflags = pHook->admin->eflags;
 
 	cmdgroup->hooks.append(pHook);
 	pInfo->hooks.append(pHook);
@@ -386,12 +389,11 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	return true;
 }
 
-bool ConCmdManager::AddServerCommand(IPluginFunction *pFunction, 
-									  const char *name, 
-									  const char *description, 
+bool ConCmdManager::AddServerCommand(IPluginFunction *pFunction,
+									  const char *name,
+									  const char *description,
 									  int flags,
 									  IPlugin *pPlugin)
-
 {
 	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags, pPlugin);
 
@@ -531,7 +533,7 @@ void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool untrac
 				UntrackConCommandBase(info->pCmd, this);
 		}
 	}
-	
+
 	/* Remove from list */
 	m_CmdList.remove(info);
 
@@ -572,7 +574,7 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 
 		if (!pCmd)
 		{
-			/* Note that we have to duplicate because the source might not be 
+			/* Note that we have to duplicate because the source might not be
 			 * a static string, and these expect static memory.
 			 */
 			if (!description)
@@ -643,7 +645,7 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 			CmdHook *hook = *iter;
 			if (hook->type == CmdHook::Server)
 				type = "server";
-			else 
+			else
 				type = hook->info->eflags == 0 ? "console" : "admin";
 
 			name = hook->info->pCmd->GetName();
@@ -651,7 +653,7 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 				help = hook->helptext.chars();
 			else
 				help = hook->info->pCmd->GetHelpText();
-			UTIL_ConsolePrint("  %-17.16s %-12.11s %s", name, type, help);		
+			UTIL_ConsolePrint("  %-17.16s %-12.11s %s", name, type, help);
 		}
 
 		return;
