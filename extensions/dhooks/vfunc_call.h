@@ -50,7 +50,7 @@
 		{ \
 			*(paramType *)vptr = *(paramType *)orgAddr; \
 		} \
-		if(i + 1 != dg->params.size()) \
+		if(i + 1 != (int)dg->params.size()) \
 		{ \
 			vptr += dg->params.at(i).size; \
 		} \
