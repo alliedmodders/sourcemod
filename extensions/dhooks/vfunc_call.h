@@ -58,7 +58,7 @@
 
 #define VSTK_PARAM_SWITCH_OBJECT() \
 		memcpy(vptr, objAddr, dg->params.at(i).size); \
-		if(i + 1 != dg->params.size()) \
+		if(i + 1 != (int)dg->params.size()) \
 		{ \
 			vptr += dg->params.at(i).size; \
 		} \
