@@ -287,7 +287,7 @@ string_t CallVFunction<string_t>(DHooksCallback *dg, HookParamsStruct *paramStru
 	{
 		vptr += sizeof(void *);
 		paramInfo = (SourceMod::PassInfo *)malloc(sizeof(SourceMod::PassInfo) * dg->params.size());
-		for(int i = 0; i < dg->params.size(); i++)
+		for(int i = 0; i < (int)dg->params.size(); i++)
 		{
 			size_t offset = GetParamOffset(paramStruct, i);
 
