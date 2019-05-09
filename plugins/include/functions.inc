@@ -120,11 +120,11 @@ methodmap GlobalForward < Handle {
 	 * @note Global forwards cannot be cloned.
 	 * @note Use CloseHandle() to destroy these.
 	 *
-	 * @param name				Name of public function to use in forward.
-	 * @param type				Execution type to be used.
-	 * @param ...				Variable number of parameter types (up to 32).
-	 * @return 					Handle to new global forward.
-	 * @error					More than 32 paramater types passed.
+	 * @param name              Name of public function to use in forward.
+	 * @param type              Execution type to be used.
+	 * @param ...               Variable number of parameter types (up to 32).
+	 * @return                  Handle to new global forward.
+	 * @error                   More than 32 paramater types passed.
 	 */
 	public native GlobalForward(const char[] name, ExecType type, ParamType ...);
 
@@ -133,7 +133,7 @@ methodmap GlobalForward < Handle {
 	 *
 	 * @note Cannot be used during an incomplete call.
 	 *
-	 * @error					Invalid or corrupt forward handle or called before another call has completed.
+	 * @error                   Invalid or corrupt forward handle or called before another call has completed.
 	 */
 	public native void StartCall();
 
@@ -151,10 +151,10 @@ methodmap Forward < GlobalForward {
 	 * @note Private forwards can be cloned.
 	 * @note Use CloseHandle() to destroy these.
 	 *
-	 * @param type				Execution type to be used.
-	 * @param ...				Variable number of parameter types (up to 32).
-	 * @return 					Handle to new private forward.
-	 * @error					More than 32 paramater types passed.
+	 * @param type              Execution type to be used.
+	 * @param ...               Variable number of parameter types (up to 32).
+	 * @return                  Handle to new private forward.
+	 * @error                   More than 32 paramater types passed.
 	 */
 	public native Forward(ExecType type, ParamType ...);
 
@@ -163,11 +163,11 @@ methodmap Forward < GlobalForward {
 	 *
 	 * @note Cannot be used during an incomplete call.
 	 *
-	 * @param plugin			Handle of the plugin that contains the function.
-	 *							Pass INVALID_HANDLE to specify the calling plugin.
-	 * @param func				Function to add to forward.
-	 * @return					True on success, false otherwise.
-	 * @error					Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
+	 * @param plugin            Handle of the plugin that contains the function.
+	 *                          Pass INVALID_HANDLE to specify the calling plugin.
+	 * @param func              Function to add to forward.
+	 * @return                  True on success, false otherwise.
+	 * @error                   Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
 	 */
 	public native bool Add(Handle plugin, Function func);
 
@@ -177,11 +177,11 @@ methodmap Forward < GlobalForward {
 	 * @note Only removes one instance.
 	 * @note Functions will be removed automatically if their parent plugin is unloaded.
 	 *
-	 * @param plugin			Handle of the plugin that contains the function.
-	 *							Pass INVALID_HANDLE to specify the calling plugin.
-	 * @param func				Function to remove from forward.
-	 * @return					True on success, false otherwise.
-	 * @error					Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
+	 * @param plugin            Handle of the plugin that contains the function.
+	 *                          Pass INVALID_HANDLE to specify the calling plugin.
+	 * @param func              Function to remove from forward.
+	 * @return                  True on success, false otherwise.
+	 * @error                   Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
 	 */
 	public native bool Remove(Handle plugin, Function func);
 
@@ -190,10 +190,10 @@ methodmap Forward < GlobalForward {
 	 *
 	 * @note Functions will be removed automatically if their parent plugin is unloaded.
 	 *
-	 * @param plugin			Handle of the plugin to remove instances of.
-	 *							Pass INVALID_HANDLE to specify the calling plugin.
-	 * @return					Number of functions removed from forward.
-	 * @error					Invalid or corrupt private forward handle or invalid or corrupt plugin handle.
+	 * @param plugin            Handle of the plugin to remove instances of.
+	 *                          Pass INVALID_HANDLE to specify the calling plugin.
+	 * @return                  Number of functions removed from forward.
+	 * @error                   Invalid or corrupt private forward handle or invalid or corrupt plugin handle.
 	 */
 	public native int RemoveAll(Handle plugin);
 };
