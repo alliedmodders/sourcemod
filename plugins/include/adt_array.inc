@@ -203,7 +203,7 @@ methodmap ArrayList < Handle {
 	// value cannot be located, -1 will be returned.
 	//
 	// @param item          Value to search for
-    // @param block         Optionally which block to search in
+	// @param block         Optionally which block to search in
 	// @return              Array index, or -1 on failure
 	// @error               Invalid block index
 	public native int FindValue(any item, int block=0);
