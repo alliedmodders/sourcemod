@@ -765,5 +765,5 @@ REGISTER_NATIVES(functionNatives)
 	{"Forward.Remove",                   sm_RemoveFromForward},
 	{"Forward.RemoveAll",                sm_RemoveAllFromForward},
 
-	{NULL,						         NULL},
+	{NULL,                               NULL},
 };
