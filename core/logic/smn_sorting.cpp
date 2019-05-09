@@ -591,5 +591,7 @@ REGISTER_NATIVES(sortNatives)
 	{"SortCustom2D",			sm_SortCustom2D},
 	{"SortADTArray",			sm_SortADTArray},
 	{"SortADTArrayCustom",		sm_SortADTArrayCustom},
+	{"ArrayList.Sort",          sm_SortADTArray},
+	{"ArrayList.SortCustom",    sm_SortADTArrayCustom},
 	{NULL,						NULL},
 };

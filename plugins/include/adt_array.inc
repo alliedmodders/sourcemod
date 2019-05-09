@@ -208,6 +208,22 @@ methodmap ArrayList < Handle {
 	// @error               Invalid block index
 	public native int FindValue(any item, int block=0);
 
+	/**
+	 * Sort an ADT Array. Specify the type as Integer, Float, or String.
+	 *
+	 * @param order			Sort order to use, same as other sorts.
+	 * @param type			Data type stored in the ADT Array
+	 */
+	public native void Sort(SortOrder order, SortType type);
+
+	/**
+	 * Custom sorts an ADT Array. You must pass in a comparison function.
+	 *
+	 * @param sortfunc		Sort comparison function to use
+	 * @param hndl			Optional Handle to pass through the comparison calls.
+	 */
+	public native void SortCustom(SortFuncADTArray sortfunc, Handle hndl=INVALID_HANDLE); 
+
 	// Retrieve the size of the array.
 	property int Length {
 		public native get();
