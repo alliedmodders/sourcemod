@@ -94,7 +94,7 @@ public Action Timer_Beacon(Handle timer, any value)
 	
 	if (g_BeamSprite > -1 && g_HaloSprite > -1)
 	{
-		EngineVersion engine = GetEngineVersion();
+		static EngineVersion engine = GetEngineVersion();
 		
 		switch (GetClientTeam(client))
 		{
