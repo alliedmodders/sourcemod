@@ -35,6 +35,7 @@
 
 #include <sourcemod>
 #include <topmenus>
+#include <adminmenu>
 
 #pragma newdecls required
 
