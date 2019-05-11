@@ -45,6 +45,7 @@
 
 #include <topmenus>
 #include <menus>
+#include <commandfilters>
 #include <clients>
 #include <string>
 
