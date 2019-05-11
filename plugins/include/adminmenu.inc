@@ -44,10 +44,6 @@
 #endif
 
 #include <topmenus>
-#include <menus>
-#include <commandfilters>
-#include <clients>
-#include <string>
 
 /* Restore old REQUIRE_EXTENSIONS value if necessary */
 #if defined TEMP_REQUIRE_EXTENSIONS
@@ -61,6 +57,11 @@
 #define ADMINMENU_SERVERCOMMANDS		"ServerCommands"
 /** Category for voting commands. */
 #define ADMINMENU_VOTINGCOMMANDS		"VotingCommands"
+
+#include <menus>
+#include <commandfilters>
+#include <clients>
+#include <string>
 
 /**
  * Called when the admin menu is created and 3rd party plugins can grab 
