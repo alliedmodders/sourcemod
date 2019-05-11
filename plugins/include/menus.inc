@@ -35,6 +35,8 @@
 #endif
 #define _menus_included
 
+#include <adminmenu>
+
 /**
  * Low-level drawing style of the menu.
  */
@@ -325,6 +327,35 @@ methodmap Menu < Handle
 	// @param maxlength     Maximum length of the buffer.
 	// @return              Number of bytes written.
 	public native void GetTitle(char[] buffer, int maxlength);
+
+	/**
+	 * Adds targets to an admin menu.
+	 *
+	 * Each client is displayed as: name (userid)
+	 * Each item contains the userid as a string for its info.
+	 *
+	 * @param source_client	Source client, or 0 to ignore immunity.
+	 * @param in_game_only	True to only select in-game players.
+	 * @param alive_only 	True to only select alive players.
+	 * @return				Number of clients added.
+	 */
+	public int AddTargets(int source_client, bool in_game_only=true, bool alive_only=false) {
+		return UTIL_AddTargetsToMenu(this, source_client, in_game_only, alive_only);
+	}
+
+	/**
+	 * Adds targets to an admin menu.
+	 *
+	 * Each client is displayed as: name (userid)
+	 * Each item contains the userid as a string for its info.
+	 *
+	 * @param source_client	Source client, or 0 to ignore immunity.
+	 * @param flags			COMMAND_FILTER flags from commandfilters.inc.
+	 * @return				Number of clients added.
+	 */
+	public int AddTargets2(int source_client, int flags) {
+		return UTIL_AddTargetsToMenu2(this, source_client, flags);
+	}
 
 	// Creates a raw MenuPanel based off the menu's style.
 	// The Handle must be freed with CloseHandle().
