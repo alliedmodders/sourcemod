@@ -21,7 +21,7 @@
  *
  * As a special exception, AlliedModders LLC gives you permission to link the
  * code of this program (as well as its derivative works) to "Half-Life 2," the
- * "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
+ * "Source g_GameEngine," the "SourcePawn JIT," and any Game MODs that run on software
  * by the Valve Corporation.  You must obey the GNU General Public License in
  * all respects for all other code used.  Additionally, AlliedModders LLC grants
  * this exception to all derivative works.  AlliedModders LLC defines further
@@ -94,8 +94,6 @@ public Action Timer_Beacon(Handle timer, any value)
 	
 	if (g_BeamSprite > -1 && g_HaloSprite > -1)
 	{
-		static EngineVersion engine = GetEngineVersion();
-		
 		switch (GetClientTeam(client))
 		{
 			case 1:
@@ -104,14 +102,14 @@ public Action Timer_Beacon(Handle timer, any value)
 			}
 			case 2:
 			{
-				if (engine == Engine_Left4Dead || engine == Engine_Left4Dead2)
+				if (g_GameEngine == Engine_Left4Dead || g_GameEngine == Engine_Left4Dead2)
 					teamColor = blueColor;
 				else
 					teamColor = redColor;
 			}
 			case 3:
 			{
-				if (engine == Engine_Left4Dead || engine == Engine_Left4Dead2)
+				if (g_GameEngine == Engine_Left4Dead || g_GameEngine == Engine_Left4Dead2)
 					teamColor = redColor;
 				else
 					teamColor = blueColor;
