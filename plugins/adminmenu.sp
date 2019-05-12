@@ -48,8 +48,8 @@ public Plugin myinfo =
 };
 
 /* Forwards */
-Handle hOnAdminMenuReady = null;
-Handle hOnAdminMenuCreated = null;
+GlobalForward hOnAdminMenuReady = null;
+GlobalForward hOnAdminMenuCreated = null;
 
 /* Menus */
 TopMenu hAdminMenu;
@@ -75,8 +75,8 @@ public void OnPluginStart()
 	LoadTranslations("common.phrases");
 	LoadTranslations("adminmenu.phrases");
 	
-	hOnAdminMenuCreated = CreateGlobalForward("OnAdminMenuCreated", ET_Ignore, Param_Cell);
-	hOnAdminMenuReady = CreateGlobalForward("OnAdminMenuReady", ET_Ignore, Param_Cell);
+	hOnAdminMenuCreated = new GlobalForward("OnAdminMenuCreated", ET_Ignore, Param_Cell);
+	hOnAdminMenuReady = new GlobalForward("OnAdminMenuReady", ET_Ignore, Param_Cell);
 
 	RegAdminCmd("sm_admin", Command_DisplayMenu, ADMFLAG_GENERIC, "Displays the admin menu");
 }
@@ -110,11 +110,11 @@ public void OnAllPluginsLoaded()
 		
 	BuildDynamicMenu();
 	
-	Call_StartForward(hOnAdminMenuCreated);
+	hOnAdminMenuCreated.StartCall();
 	Call_PushCell(hAdminMenu);
 	Call_Finish();
 	
-	Call_StartForward(hOnAdminMenuReady);
+	hOnAdminMenuReady.StartCall();
 	Call_PushCell(hAdminMenu);
 	Call_Finish();
 }
