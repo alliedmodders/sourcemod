@@ -342,7 +342,7 @@ methodmap Menu < Handle
 	 * @return				Number of clients added.
 	 */
 	public int AddTargets(int source_client, bool in_game_only=true, bool alive_only=false) {
-		return UTIL_AddTargetsToMenu(this, source_client, in_game_only, alive_only);
+		return AddTargetsToMenu(this, source_client, in_game_only, alive_only);
 	}
 
 	/**
@@ -356,7 +356,7 @@ methodmap Menu < Handle
 	 * @return				Number of clients added.
 	 */
 	public int AddTargets2(int source_client, int flags) {
-		return UTIL_AddTargetsToMenu2(this, source_client, flags);
+		return AddTargetsToMenu2(this, source_client, flags);
 	}
 
 	// Creates a raw MenuPanel based off the menu's style.
