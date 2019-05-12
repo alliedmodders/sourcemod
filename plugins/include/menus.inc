@@ -331,7 +331,7 @@ methodmap Menu < Handle
 	public native void GetTitle(char[] buffer, int maxlength);
 
 	/**
-	 * Adds targets to an admin menu.
+	 * Adds targets to a menu.
 	 *
 	 * Each client is displayed as: name (userid)
 	 * Each item contains the userid as a string for its info.
@@ -346,7 +346,7 @@ methodmap Menu < Handle
 	}
 
 	/**
-	 * Adds targets to an admin menu.
+	 * Adds targets to a menu.
 	 *
 	 * Each client is displayed as: name (userid)
 	 * Each item contains the userid as a string for its info.
@@ -1152,7 +1152,7 @@ stock bool IsNewVoteAllowed()
 }
 
 /**
- * Adds targets to an admin menu.
+ * Adds targets to a menu.
  *
  * Each client is displayed as: name (userid)
  * Each item contains the userid as a string for its info.
@@ -1218,7 +1218,7 @@ stock int AddTargetsToMenu2(Menu menu, int source_client, int flags)
 }
 
 /**
- * Adds targets to an admin menu.
+ * Adds targets to a menu.
  *
  * Each client is displayed as: name (userid)
  * Each item contains the userid as a string for its info.
