@@ -165,23 +165,6 @@ public any __GetAdminTopMenu(Handle plugin, int numParams)
 	return hAdminMenu;
 }
 
-public int __AddTargetsToMenu(Handle plugin, int numParams)
-{
-	bool alive_only = false;
-	
-	if (numParams >= 4)
-	{
-		alive_only = GetNativeCell(4);
-	}
-	
-	return UTIL_AddTargetsToMenu(GetNativeCell(1), GetNativeCell(2), GetNativeCell(3), alive_only);
-}
-
-public int __AddTargetsToMenu2(Handle plugin, int numParams)
-{
-	return UTIL_AddTargetsToMenu2(GetNativeCell(1), GetNativeCell(2), GetNativeCell(3));
-}
-
 public Action Command_DisplayMenu(int client, int args)
 {
 	if (client == 0)
