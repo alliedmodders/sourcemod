@@ -1151,6 +1151,17 @@ stock bool IsNewVoteAllowed()
 	return true;
 }
 
+/**
+ * Adds targets to an admin menu.
+ *
+ * Each client is displayed as: name (userid)
+ * Each item contains the userid as a string for its info.
+ *
+ * @param menu			Menu Handle.
+ * @param source_client	Source client, or 0 to ignore immunity.
+ * @param flags			COMMAND_FILTER flags from commandfilters.inc.
+ * @return				Number of clients added.
+ */
 stock int AddTargetsToMenu2(Menu menu, int source_client, int flags)
 {
 	char user_id[12];
@@ -1206,7 +1217,19 @@ stock int AddTargetsToMenu2(Menu menu, int source_client, int flags)
 	return num_clients;
 }
 
-stock int AddTargetsToMenu(Menu menu, int source_client, bool in_game_only, bool alive_only)
+/**
+ * Adds targets to an admin menu.
+ *
+ * Each client is displayed as: name (userid)
+ * Each item contains the userid as a string for its info.
+ *
+ * @param menu			Menu Handle.
+ * @param source_client	Source client, or 0 to ignore immunity.
+ * @param in_game_only	True to only select in-game players.
+ * @param alive_only 	True to only select alive players.
+ * @return				Number of clients added.
+ */
+stock int AddTargetsToMenu(Menu menu, int source_client, bool in_game_only=true, bool alive_only=false)
 {
 	int flags = 0;
 	
