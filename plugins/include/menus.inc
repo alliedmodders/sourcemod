@@ -1243,5 +1243,5 @@ stock int AddTargetsToMenu(Menu menu, int source_client, bool in_game_only=true,
 		flags |= COMMAND_FILTER_ALIVE;
 	}
 	
-	return UTIL_AddTargetsToMenu2(menu, source_client, flags);
+	return AddTargetsToMenu2(menu, source_client, flags);
 }
