@@ -246,7 +246,7 @@ native Forward CreateForward(ExecType type, ParamType ...);
  * @return					Number of functions in forward.
  * @error					Invalid or corrupt forward handle.
  */
-native int GetForwardFunctionCount(Forward fwd);
+native int GetForwardFunctionCount(Handle fwd);
 
 /**
  * Adds a function to a private forward's call list.
@@ -260,7 +260,7 @@ native int GetForwardFunctionCount(Forward fwd);
  * @return					True on success, false otherwise.
  * @error					Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
  */
-native bool AddToForward(Forward fwd, Handle plugin, Function func);
+native bool AddToForward(Handle fwd, Handle plugin, Function func);
 
 /**
  * Removes a function from a private forward's call list.
@@ -275,7 +275,7 @@ native bool AddToForward(Forward fwd, Handle plugin, Function func);
  * @return					True on success, false otherwise.
  * @error					Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
  */
-native bool RemoveFromForward(Forward fwd, Handle plugin, Function func);
+native bool RemoveFromForward(Handle fwd, Handle plugin, Function func);
 
 /**
  * Removes all instances of a plugin from a private forward's call list.
@@ -288,7 +288,7 @@ native bool RemoveFromForward(Forward fwd, Handle plugin, Function func);
  * @return					Number of functions removed from forward.
  * @error					Invalid or corrupt private forward handle or invalid or corrupt plugin handle.
  */
-native int RemoveAllFromForward(Forward fwd, Handle plugin);
+native int RemoveAllFromForward(Handle fwd, Handle plugin);
 
 /**
  * Starts a call to functions in a forward's call list.
