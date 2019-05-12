@@ -90,10 +90,10 @@ public Action Timer_Beacon(Handle timer, any value)
 	GetClientAbsOrigin(client, vec);
 	vec[2] += 10;
 	
-	int teamColor[4];
-	
 	if (g_BeamSprite > -1 && g_HaloSprite > -1)
 	{
+		int teamColor[4];
+		
 		switch (GetClientTeam(client))
 		{
 			case 1:
@@ -140,12 +140,7 @@ public Action Timer_Beacon(Handle timer, any value)
 	return Plugin_Continue;
 }
 
-public void AdminMenu_Beacon(TopMenu topmenu, 
-					  TopMenuAction action,
-					  TopMenuObject object_id,
-					  int param,
-					  char[] buffer,
-					  int maxlength)
+public void AdminMenu_Beacon(TopMenu topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
