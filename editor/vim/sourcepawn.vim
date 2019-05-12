@@ -192,7 +192,7 @@ syn keyword	cTag		GroupId AdminId AdmAccessMode AdminCachePart
 syn keyword	cForward	OnRebuildAdminCache   
 
 " adminmenu.inc
-syn keyword	cFunction	GetAdminTopMenu AddTargetsToMenu AddTargetsToMenu2 RedisplayAdminMenu
+syn keyword	cFunction	GetAdminTopMenu RedisplayAdminMenu
 syn keyword	cConstant	ADMINMENU_PLAYERCOMMANDS ADMINMENU_SERVERCOMMANDS ADMINMENU_VOTINGCOMMANDS 
 syn keyword	cForward	OnAdminMenuCreated OnAdminMenuReady  
 
@@ -503,8 +503,8 @@ syn keyword	cTag		NominateResult MapChange
 syn keyword	cForward	OnNominationRemoved   
 
 " menus.inc
-syn keyword	cFunction	CreateMenu DisplayMenu DisplayMenuAtItem AddMenuItem
-syn keyword	cFunction	InsertMenuItem RemoveMenuItem RemoveAllMenuItems GetMenuItem
+syn keyword	cFunction	CreateMenu DisplayMenu DisplayMenuAtItem AddMenuItem AddTargetsToMenu
+syn keyword	cFunction	AddTargetsToMenu2 InsertMenuItem RemoveMenuItem RemoveAllMenuItems GetMenuItem
 syn keyword	cFunction	GetMenuSelectionPosition GetMenuItemCount SetMenuPagination GetMenuPagination
 syn keyword	cFunction	GetMenuStyle SetMenuTitle GetMenuTitle CreatePanelFromMenu
 syn keyword	cFunction	GetMenuExitButton SetMenuExitButton GetMenuExitBackButton SetMenuExitBackButton
