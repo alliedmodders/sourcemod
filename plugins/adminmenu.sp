@@ -35,7 +35,6 @@
 
 #include <sourcemod>
 #include <topmenus>
-#include <adminmenu>
 
 #pragma newdecls required
 
@@ -64,10 +63,8 @@ TopMenuObject obj_votingcmds = INVALID_TOPMENUOBJECT;
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	CreateNative("GetAdminTopMenu", __GetAdminTopMenu);
-	CreateNative("AddTargetsToMenu", __AddTargetsToMenu);
-	CreateNative("AddTargetsToMenu2", __AddTargetsToMenu2);
 	RegPluginLibrary("adminmenu");
+	CreateNative("GetAdminTopMenu", __GetAdminTopMenu);
 	return APLRes_Success;
 }
 

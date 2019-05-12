@@ -1151,7 +1151,7 @@ stock bool IsNewVoteAllowed()
 	return true;
 }
 
-stock int UTIL_AddTargetsToMenu2(Menu menu, int source_client, int flags)
+stock int AddTargetsToMenu2(Menu menu, int source_client, int flags)
 {
 	char user_id[12];
 	char name[MAX_NAME_LENGTH];
@@ -1206,7 +1206,7 @@ stock int UTIL_AddTargetsToMenu2(Menu menu, int source_client, int flags)
 	return num_clients;
 }
 
-stock int UTIL_AddTargetsToMenu(Menu menu, int source_client, bool in_game_only, bool alive_only)
+stock int AddTargetsToMenu(Menu menu, int source_client, bool in_game_only, bool alive_only)
 {
 	int flags = 0;
 	

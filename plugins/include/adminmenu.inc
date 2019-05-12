@@ -84,36 +84,6 @@ forward void OnAdminMenuReady(Handle topmenu);
 native TopMenu GetAdminTopMenu();
 
 /**
- * Adds targets to an admin menu.
- *
- * Each client is displayed as: name (userid)
- * Each item contains the userid as a string for its info.
- *
- * @param menu			Menu Handle.
- * @param source_client	Source client, or 0 to ignore immunity.
- * @param in_game_only	True to only select in-game players.
- * @param alive_only 	True to only select alive players.
- * @return				Number of clients added.
- */
-native int AddTargetsToMenu(Handle menu, 
-						int source_client, 
-						bool in_game_only=true, 
-						bool alive_only=false);
-
-/**
- * Adds targets to an admin menu.
- *
- * Each client is displayed as: name (userid)
- * Each item contains the userid as a string for its info.
- *
- * @param menu			Menu Handle.
- * @param source_client	Source client, or 0 to ignore immunity.
- * @param flags			COMMAND_FILTER flags from commandfilters.inc.
- * @return				Number of clients added.
- */
-native int AddTargetsToMenu2(Handle menu, int source_client, int flags);
-
-/**
  * Re-displays the admin menu to a client after selecting an item.
  * Auto-aborts if the Handle is invalid.
  *
