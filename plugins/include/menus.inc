@@ -1199,7 +1199,7 @@ stock int UTIL_AddTargetsToMenu2(Menu menu, int source_client, int flags)
 		IntToString(GetClientUserId(i), user_id, sizeof(user_id));
 		GetClientName(i, name, sizeof(name));
 		Format(display, sizeof(display), "%s (%s)", name, user_id);
-		menu.AddItem(menu, user_id, display);
+		menu.AddItem(user_id, display);
 		num_clients++;
 	}
 	
