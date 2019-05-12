@@ -59,7 +59,7 @@ void DisplayKickTargetMenu(int client)
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
 	
-	AddTargetsToMenu(menu, client, false, false);
+	menu.AddTargets(client, false, false);
 	
 	menu.Display(client, MENU_TIME_FOREVER);
 }

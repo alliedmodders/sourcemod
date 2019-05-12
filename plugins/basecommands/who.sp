@@ -96,7 +96,7 @@ void DisplayWhoMenu(int client)
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
 	
-	AddTargetsToMenu2(menu, 0, COMMAND_FILTER_CONNECTED);
+	menu.AddTargets2(0, COMMAND_FILTER_CONNECTED);
 	
 	menu.Display(client, MENU_TIME_FOREVER);
 }

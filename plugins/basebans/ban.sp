@@ -96,7 +96,7 @@ void DisplayBanTargetMenu(int client)
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
 
-	AddTargetsToMenu2(menu, client, COMMAND_FILTER_NO_BOTS|COMMAND_FILTER_CONNECTED);
+	menu.AddTargets2(client, COMMAND_FILTER_NO_BOTS|COMMAND_FILTER_CONNECTED);
 
 	menu.Display(client, MENU_TIME_FOREVER);
 }

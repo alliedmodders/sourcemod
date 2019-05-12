@@ -97,7 +97,7 @@ void DisplayGagPlayerMenu(int client)
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
 	
-	AddTargetsToMenu(menu, client, true, false);
+	menu.AddTargets(client, true, false);
 	
 	menu.Display(client, MENU_TIME_FOREVER);
 }

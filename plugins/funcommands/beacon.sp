@@ -148,7 +148,7 @@ void DisplayBeaconMenu(int client)
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
 	
-	AddTargetsToMenu(menu, client, true, true);
+	menu.AddTargets(client, true, true);
 	
 	menu.Display(client, MENU_TIME_FOREVER);
 }

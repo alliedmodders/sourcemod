@@ -68,7 +68,7 @@ void DisplayRenameTargetMenu(int client)
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
 	
-	AddTargetsToMenu(menu, client, true);
+	menu.AddTargets(client, true);
 	
 	menu.Display(client, MENU_TIME_FOREVER);
 }
