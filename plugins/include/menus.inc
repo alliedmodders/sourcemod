@@ -35,7 +35,9 @@
 #endif
 #define _menus_included
 
-#include <adminmenu>
+#include <commandfilters>
+#include <clients>
+#include <string>
 
 /**
  * Low-level drawing style of the menu.
@@ -1147,4 +1149,76 @@ stock bool IsNewVoteAllowed()
 	}
 	
 	return true;
+}
+
+stock int UTIL_AddTargetsToMenu2(Handle menu, int source_client, int flags)
+{
+	char user_id[12];
+	char name[MAX_NAME_LENGTH];
+	char display[MAX_NAME_LENGTH+12];
+	
+	int num_clients;
+	
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientConnected(i) || IsClientInKickQueue(i))
+		{
+			continue;
+		}
+		
+		if (((flags & COMMAND_FILTER_NO_BOTS) == COMMAND_FILTER_NO_BOTS)
+			&& IsFakeClient(i))
+		{
+			continue;
+		}
+		
+		if (((flags & COMMAND_FILTER_CONNECTED) != COMMAND_FILTER_CONNECTED)
+			&& !IsClientInGame(i))
+		{
+			continue;
+		}
+		
+		if (((flags & COMMAND_FILTER_ALIVE) == COMMAND_FILTER_ALIVE) 
+			&& !IsPlayerAlive(i))
+		{
+			continue;
+		}
+		
+		if (((flags & COMMAND_FILTER_DEAD) == COMMAND_FILTER_DEAD)
+			&& IsPlayerAlive(i))
+		{
+			continue;
+		}
+		
+		if ((source_client && ((flags & COMMAND_FILTER_NO_IMMUNITY) != COMMAND_FILTER_NO_IMMUNITY))
+			&& !CanUserTarget(source_client, i))
+		{
+			continue;
+		}
+		
+		IntToString(GetClientUserId(i), user_id, sizeof(user_id));
+		GetClientName(i, name, sizeof(name));
+		Format(display, sizeof(display), "%s (%s)", name, user_id);
+		AddMenuItem(menu, user_id, display);
+		num_clients++;
+	}
+	
+	return num_clients;
+}
+
+stock int UTIL_AddTargetsToMenu(Menu menu, int source_client, bool in_game_only, bool alive_only)
+{
+	int flags = 0;
+	
+	if (!in_game_only)
+	{
+		flags |= COMMAND_FILTER_CONNECTED;
+	}
+	
+	if (alive_only)
+	{
+		flags |= COMMAND_FILTER_ALIVE;
+	}
+	
+	return UTIL_AddTargetsToMenu2(menu, source_client, flags);
 }

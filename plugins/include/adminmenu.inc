@@ -35,6 +35,8 @@
 #endif
 #define _adminmenu_included
 
+#include <menus>
+
 /* Decide whether topmenus should be required */
 #if !defined REQUIRE_PLUGIN
  #if defined REQUIRE_EXTENSIONS
@@ -57,11 +59,6 @@
 #define ADMINMENU_SERVERCOMMANDS		"ServerCommands"
 /** Category for voting commands. */
 #define ADMINMENU_VOTINGCOMMANDS		"VotingCommands"
-
-#include <menus>
-#include <commandfilters>
-#include <clients>
-#include <string>
 
 /**
  * Called when the admin menu is created and 3rd party plugins can grab 
@@ -132,98 +129,6 @@ stock bool RedisplayAdminMenu(Handle topmenu, int client)
 	}
 
 	return DisplayTopMenu(topmenu, client, TopMenuPosition_LastCategory);
-}
-
-/**
- * Used by AddTargetsToMenu* natives to add targets to a menu.
- *
- * @param menu          Menu Handle.
- * @param source_client Source client, or 0 to ignore immunity.
- * @param flags         COMMAND_FILTER flags from commandfilters.inc.
- * @return              Number of clients added to menu.
- */
-stock int UTIL_AddTargetsToMenu2(Menu menu, int source_client, int flags)
-{
-	char user_id[12];
-	char name[MAX_NAME_LENGTH];
-	char display[MAX_NAME_LENGTH+12];
-	
-	int num_clients;
-	
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (!IsClientConnected(i) || IsClientInKickQueue(i))
-		{
-			continue;
-		}
-		
-		if (((flags & COMMAND_FILTER_NO_BOTS) == COMMAND_FILTER_NO_BOTS)
-			&& IsFakeClient(i))
-		{
-			continue;
-		}
-		
-		if (((flags & COMMAND_FILTER_CONNECTED) != COMMAND_FILTER_CONNECTED)
-			&& !IsClientInGame(i))
-		{
-			continue;
-		}
-		
-		if (((flags & COMMAND_FILTER_ALIVE) == COMMAND_FILTER_ALIVE) 
-			&& !IsPlayerAlive(i))
-		{
-			continue;
-		}
-		
-		if (((flags & COMMAND_FILTER_DEAD) == COMMAND_FILTER_DEAD)
-			&& IsPlayerAlive(i))
-		{
-			continue;
-		}
-		
-		if ((source_client && ((flags & COMMAND_FILTER_NO_IMMUNITY) != COMMAND_FILTER_NO_IMMUNITY))
-			&& !CanUserTarget(source_client, i))
-		{
-			continue;
-		}
-		
-		IntToString(GetClientUserId(i), user_id, sizeof(user_id));
-		GetClientName(i, name, sizeof(name));
-		Format(display, sizeof(display), "%s (%s)", name, user_id);
-		menu.AddItem(user_id, display);
-		num_clients++;
-	}
-	
-	return num_clients;
-}
-
-/**
- * Used by AddTargetsToMenu* natives to add targets to a menu.
- *
- * Each client is displayed as: name (userid)
- * Each item contains the userid as a string for its info.
- *
- * @param menu			Menu Handle.
- * @param source_client	Source client, or 0 to ignore immunity.
- * @param in_game_only	True to only select in-game players.
- * @param alive_only 	True to only select alive players.
- * @return				Number of clients added.
- */
-stock int UTIL_AddTargetsToMenu(Menu menu, int source_client, bool in_game_only = true, bool alive_only = false)
-{
-	int flags = 0;
-	
-	if (!in_game_only)
-	{
-		flags |= COMMAND_FILTER_CONNECTED;
-	}
-	
-	if (alive_only)
-	{
-		flags |= COMMAND_FILTER_ALIVE;
-	}
-	
-	return UTIL_AddTargetsToMenu2(menu, source_client, flags);
 }
 
 /* DO NOT EDIT BELOW THIS LINE */
