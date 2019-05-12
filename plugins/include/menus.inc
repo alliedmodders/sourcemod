@@ -1151,7 +1151,7 @@ stock bool IsNewVoteAllowed()
 	return true;
 }
 
-stock int UTIL_AddTargetsToMenu2(Handle menu, int source_client, int flags)
+stock int UTIL_AddTargetsToMenu2(Menu menu, int source_client, int flags)
 {
 	char user_id[12];
 	char name[MAX_NAME_LENGTH];
@@ -1199,7 +1199,7 @@ stock int UTIL_AddTargetsToMenu2(Handle menu, int source_client, int flags)
 		IntToString(GetClientUserId(i), user_id, sizeof(user_id));
 		GetClientName(i, name, sizeof(name));
 		Format(display, sizeof(display), "%s (%s)", name, user_id);
-		AddMenuItem(menu, user_id, display);
+		menu.AddItem(menu, user_id, display);
 		num_clients++;
 	}
 	
