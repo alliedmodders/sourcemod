@@ -89,7 +89,6 @@ methodmap Cookie < Handle {
 	 * @error               Cookie name is blank.
 	 */
 	public native Cookie(const char[] name, const char[] description, CookieAccess access);
-	}
 
 	/**
 	 * Searches for a Client preference cookie.
