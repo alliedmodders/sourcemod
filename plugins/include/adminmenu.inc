@@ -35,8 +35,6 @@
 #endif
 #define _adminmenu_included
 
-#include <menus>
-
 /* Decide whether topmenus should be required */
 #if !defined REQUIRE_PLUGIN
  #if defined REQUIRE_EXTENSIONS
@@ -118,7 +116,5 @@ public SharedPlugin __pl_adminmenu =
 public void __pl_adminmenu_SetNTVOptional()
 {
 	MarkNativeAsOptional("GetAdminTopMenu");
-	MarkNativeAsOptional("AddTargetsToMenu");
-	MarkNativeAsOptional("AddTargetsToMenu2");
 }
 #endif
