@@ -78,7 +78,7 @@ methodmap Cookie < Handle {
 	/**
 	 * Creates a new Client preference cookie.
 	 *
-	 * Handles returned by RegClientCookie can be closed via CloseHandle() when
+	 * Handles returned can be closed via CloseHandle() when
 	 * no longer needed.
 	 *
 	 * @param name          Name of the new preference cookie.
@@ -94,7 +94,7 @@ methodmap Cookie < Handle {
 	/**
 	 * Searches for a Client preference cookie.
 	 *
-	 * Handles returned by FindClientCookie can be closed via CloseHandle() when
+	 * Handles returned by Cookie.Find can be closed via CloseHandle() when
 	 * no longer needed.
 	 *
 	 * @param name          Name of cookie to find.
