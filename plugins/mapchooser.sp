@@ -276,7 +276,7 @@ public void OnClientDisconnect(int client)
 	
 	char oldmap[PLATFORM_MAX_PATH];
 	g_NominateList.GetString(index, oldmap, sizeof(oldmap));
-	g_NominationsResetForward.StartCall();
+	Call_StartForward(g_NominationsResetForward);
 	Call_PushString(oldmap);
 	Call_PushCell(g_NominateOwners.Get(index));
 	Call_Finish();
@@ -573,7 +573,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	g_VoteMenu.VoteResultCallback = Handler_MapVoteFinished;
 
 	/* Call OnMapVoteStarted() Forward */
-	g_MapVoteStartedForward.StartCall();
+	Call_StartForward(g_MapVoteStartedForward);
 	Call_Finish();
 	
 	/**
@@ -603,7 +603,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 			RemoveStringFromArray(g_NextMapList, map);
 			
 			/* Notify Nominations that this map is now free */
-			g_NominationsResetForward.StartCall();
+			Call_StartForward(g_NominationsResetForward);
 			Call_PushString(map);
 			Call_PushCell(g_NominateOwners.Get(i));
 			Call_Finish();
@@ -616,7 +616,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 			/* These maps shouldn't be excluded from the vote as they weren't really nominated at all */
 			
 			/* Notify Nominations that this map is now free */
-			g_NominationsResetForward.StartCall();
+			Call_StartForward(g_NominationsResetForward);
 			Call_PushString(map);
 			Call_PushCell(g_NominateOwners.Get(i));
 			Call_Finish();			
@@ -1024,7 +1024,7 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 	{
 		char oldmap[PLATFORM_MAX_PATH];
 		g_NominateList.GetString(index, oldmap, sizeof(oldmap));
-		g_NominationsResetForward.StartCall();
+		Call_StartForward(g_NominationsResetForward);
 		Call_PushString(oldmap);
 		Call_PushCell(owner);
 		Call_Finish();
@@ -1046,7 +1046,7 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 	{
 		char oldmap[PLATFORM_MAX_PATH];
 		g_NominateList.GetString(0, oldmap, sizeof(oldmap));
-		g_NominationsResetForward.StartCall();
+		Call_StartForward(g_NominationsResetForward);
 		Call_PushString(oldmap);
 		Call_PushCell(g_NominateOwners.Get(0));
 		Call_Finish();
@@ -1086,7 +1086,7 @@ bool InternalRemoveNominationByMap(char[] map)
 
 		if(strcmp(map, oldmap, false) == 0)
 		{
-			g_NominationsResetForward.StartCall();
+			Call_StartForward(g_NominationsResetForward);
 			Call_PushString(oldmap);
 			Call_PushCell(g_NominateOwners.Get(i));
 			Call_Finish();
@@ -1127,7 +1127,7 @@ bool InternalRemoveNominationByOwner(int owner)
 		char oldmap[PLATFORM_MAX_PATH];
 		g_NominateList.GetString(index, oldmap, sizeof(oldmap));
 
-		g_NominationsResetForward.StartCall();
+		Call_StartForward(g_NominationsResetForward);
 		Call_PushString(oldmap);
 		Call_PushCell(owner);
 		Call_Finish();

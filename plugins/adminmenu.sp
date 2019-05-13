@@ -48,8 +48,8 @@ public Plugin myinfo =
 };
 
 /* Forwards */
-GlobalForward hOnAdminMenuReady = null;
-GlobalForward hOnAdminMenuCreated = null;
+GlobalForward hOnAdminMenuReady;
+GlobalForward hOnAdminMenuCreated;
 
 /* Menus */
 TopMenu hAdminMenu;
@@ -110,11 +110,11 @@ public void OnAllPluginsLoaded()
 		
 	BuildDynamicMenu();
 	
-	hOnAdminMenuCreated.StartCall();
+	Call_StartForward(hOnAdminMenuCreated);
 	Call_PushCell(hAdminMenu);
 	Call_Finish();
 	
-	hOnAdminMenuReady.StartCall();
+	Call_StartForward(hOnAdminMenuReady);
 	Call_PushCell(hAdminMenu);
 	Call_Finish();
 }
