@@ -128,22 +128,13 @@ methodmap GlobalForward < Handle {
 	 */
 	public native GlobalForward(const char[] name, ExecType type, ParamType ...);
 
-	/**
-	 * Starts a call to functions in a forward's call list.
-	 *
-	 * @note Cannot be used during an incomplete call.
-	 *
-	 * @error                   Invalid or corrupt forward handle or called before another call has completed.
-	 */
-	public native void StartCall();
-
 	// Returns the number of functions in a global or private forward's call list.
 	property int FunctionCount {
 		public native get();
 	}
 };
 
-methodmap Forward < GlobalForward {
+methodmap PrivateForward < GlobalForward {
 	/**
 	 * Creates a private forward.
 	 *
@@ -156,7 +147,7 @@ methodmap Forward < GlobalForward {
 	 * @return                  Handle to new private forward.
 	 * @error                   More than 32 paramater types passed.
 	 */
-	public native Forward(ExecType type, ParamType ...);
+	public native PrivateForward(ExecType type, ParamType ...);
 
 	/**
 	 * Adds a function to a private forward's call list.
@@ -169,7 +160,7 @@ methodmap Forward < GlobalForward {
 	 * @return                  True on success, false otherwise.
 	 * @error                   Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
 	 */
-	public native bool Add(Handle plugin, Function func);
+	public native bool AddFunction(Handle plugin, Function func);
 
 	/**
 	 * Removes a function from a private forward's call list.
@@ -183,7 +174,7 @@ methodmap Forward < GlobalForward {
 	 * @return                  True on success, false otherwise.
 	 * @error                   Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
 	 */
-	public native bool Remove(Handle plugin, Function func);
+	public native bool RemoveFunction(Handle plugin, Function func);
 
 	/**
 	 * Removes all instances of a plugin from a private forward's call list.
@@ -195,7 +186,7 @@ methodmap Forward < GlobalForward {
 	 * @return                  Number of functions removed from forward.
 	 * @error                   Invalid or corrupt private forward handle or invalid or corrupt plugin handle.
 	 */
-	public native int RemoveAll(Handle plugin);
+	public native int RemoveAllFunctions(Handle plugin);
 };
 
 /**
@@ -237,7 +228,7 @@ native GlobalForward CreateGlobalForward(const char[] name, ExecType type, Param
  * @return 					Handle to new private forward.
  * @error					More than 32 paramater types passed.
  */
-native Forward CreateForward(ExecType type, ParamType ...);
+native PrivateForward CreateForward(ExecType type, ParamType ...);
 
 /**
  * Returns the number of functions in a global or private forward's call list.
