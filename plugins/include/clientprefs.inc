@@ -374,5 +374,10 @@ public void __ext_cprefs_SetNTVOptional()
 	MarkNativeAsOptional("ReadCookieIterator");
 	MarkNativeAsOptional("GetCookieAccess");
 	MarkNativeAsOptional("GetClientCookieTime");
+
+	MarkNativeAsOptional("Cookie.Cookie");
+	MarkNativeAsOptional("Cookie.Find");
+	MarkNativeAsOptional("Cookie.SetPrefabMenu");
+	MarkNativeAsOptional("Cookie.AccessLevel.get");
 }
 #endif
