@@ -245,7 +245,7 @@ cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
 	}
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
-	ArgBuffer<void*, int, float, CBaseEntity*> vstk(obj, params[2], params[3], pInflictor);
+	ArgBuffer<void*, int, float, CBaseEntity*> vstk(obj, params[2], sp_ctof(params[3]), pInflictor);
 
 	pWrapper->Execute(vstk, nullptr);
 	return 1;
