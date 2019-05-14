@@ -114,5 +114,5 @@ script:
   - mkdir build && cd build
   - PATH="~/.local/bin:$PATH"
   - eval "${MATRIX_EVAL}"
-  - python ../configure.py --enable-optimize --sdks=episode1,tf2,l4d2,csgo,dota
+  - python ../configure.py --enable-optimize --sdks=episode1,css,tf2,l4d2,csgo,dota
   - ambuild
