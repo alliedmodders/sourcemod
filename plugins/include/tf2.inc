@@ -79,12 +79,12 @@ enum TFCond
 	TFCond_Disguising, //2: Disguise smoke
 	TFCond_Disguised, //3: Disguise
 	TFCond_Cloaked, //4: Cloak effect
-	TFCond_Ubercharged, //5: Invulnerability, removed when being healed or another Uber effect
+	TFCond_Ubercharged, //5: Invulnerability, removed when being healed or by another Uber effect
 	TFCond_TeleportedGlow, //6: Teleport trail effect
-	TFCond_Taunting, //7: Remove to stop taunting
+	TFCond_Taunting, //7: Used for taunting, can remove to stop taunting
 	TFCond_UberchargeFading, //8: Invulnerability expiration effect
 	TFCond_Unknown1, //9
-	TFCond_CloakFlicker = 9, //9: Flickering effect
+	TFCond_CloakFlicker = 9, //9: Cloak flickering effect
 	TFCond_Teleporting, //10: Used for teleporting, does nothing applying
 	TFCond_Kritzkrieged, //11: Crit boost, removed when being healed or another Uber effect
 	TFCond_Unknown2, //12
@@ -93,7 +93,7 @@ enum TFCond
 	TFCond_Bonked, //14: Bonk! Atomic Punch effect
 	TFCond_Dazed, //15: Slow effect, can remove to remove stun effects
 	TFCond_Buffed, //16: Buff Banner mini-crits, icon, and glow
-	TFCond_Charging, //17: Forced forward charge effect
+	TFCond_Charging, //17: Forced forward, charge effect
 	TFCond_DemoBuff, //18: Eyelander eye glow
 	TFCond_CritCola, //19: Mini-crit effect
 	TFCond_InHealRadius, //20: Ring effect, rings disappear after a taunt ends
@@ -131,7 +131,7 @@ enum TFCond
 	TFCond_UberchargedCanteen, //52: Invulnerability effect and Sentry Gun damage resistance
 	TFCond_HalloweenBombHead, //53: Bomb head effect (does not explode)
 	TFCond_HalloweenThriller, //54: Forced Thriller taunting
-	TFCond_RadiusHealOnDamage, //55: Radius healing, adds TFCond_InHealRadius, TFCond_Healing. Removed when a taunt ends, but condition other than this stays but does nothing
+	TFCond_RadiusHealOnDamage, //55: Radius healing, adds TFCond_InHealRadius, TFCond_Healing. Removed when a taunt ends, but this condition stays but does nothing
 	TFCond_CritOnDamage, //56: Miscellaneous crit-boost
 	TFCond_UberchargedOnTakeDamage, //57: Miscellaneous invulnerability
 	TFCond_UberBulletResist, //58: Vaccinator Uber bullet resistance
@@ -142,11 +142,11 @@ enum TFCond
 	TFCond_SmallFireResist, //63: Vaccinator healing fire resistance
 	TFCond_Stealthed, //64: Cloaked until next attack
 	TFCond_MedigunDebuff, //65: Unknown
-	TFCond_StealthedUserBuffFade, //66: Cloaked, will appear on attack and cloak again
+	TFCond_StealthedUserBuffFade, //66: Cloaked, will appear for a few seconds on attack and cloak again
 	TFCond_BulletImmune, //67: Full bullet immunity
 	TFCond_BlastImmune, //68: Full blast immunity
 	TFCond_FireImmune, //69: Full fire immunity
-	TFCond_PreventDeath, //70: Survive to 1 health, then condition is removed
+	TFCond_PreventDeath, //70: Survive to 1 health, then the condition is removed
 	TFCond_MVMBotRadiowave, //71: Stuns bots and applies radio effect
 	TFCond_HalloweenSpeedBoost, //72: Speed boost, non-melee fire rate and reload, infinite air jumps
 	TFCond_HalloweenQuickHeal, //73: Healing effect, adds TFCond_Healing along with TFCond_MegaHeal temporarily
