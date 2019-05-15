@@ -337,7 +337,7 @@ static cell_t FireEntityOutput(IPluginContext *pContext, const cell_t *params)
 		pass[6].type = PassType_Basic;
 		pass[6].size = sizeof(CBaseEntity *);
 		pass[7].flags = PASSFLAG_BYVAL;
-		pass[7].type = PassType_Basic;
+		pass[7].type = PassType_Float;
 		pass[7].size = sizeof(float);
 #else
 		int iMaxParam = 4;
@@ -353,7 +353,7 @@ static cell_t FireEntityOutput(IPluginContext *pContext, const cell_t *params)
 		pass[2].type = PassType_Basic;
 		pass[2].size = sizeof(CBaseEntity *);
 		pass[3].flags = PASSFLAG_BYVAL;
-		pass[3].type = PassType_Basic;
+		pass[3].type = PassType_Float;
 		pass[3].size = sizeof(float);
 #endif
 		if (!(g_pFireOutput = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, iMaxParam)))
