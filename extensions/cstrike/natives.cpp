@@ -305,7 +305,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 		REGISTER_NATIVE_ADDR("TerminateRound",
 			PassInfo pass[2]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].type = PassType_Basic; \
+			pass[0].type = PassType_Float; \
 			pass[0].size = sizeof(float); \
 			pass[1].flags = PASSFLAG_BYVAL; \
 			pass[1].type = PassType_Basic; \
@@ -327,7 +327,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 		REGISTER_NATIVE_ADDR("TerminateRound",
 			PassInfo pass[4]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].type = PassType_Basic; \
+			pass[0].type = PassType_Float; \
 			pass[0].size = sizeof(float); \
 			pass[1].flags = PASSFLAG_BYVAL; \
 			pass[1].type = PassType_Basic; \

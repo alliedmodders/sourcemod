@@ -55,7 +55,7 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 			pass[1].type = PassType_Basic; \
 			pass[2].flags = PASSFLAG_BYVAL; \
 			pass[2].size = sizeof(float); \
-			pass[2].type = PassType_Basic; \
+			pass[2].type = PassType_Float; \
 			pass[3].flags = PASSFLAG_BYVAL; \
 			pass[3].size = sizeof(int); \
 			pass[3].type = PassType_Basic; \
@@ -110,7 +110,7 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 			pass[1].type = PassType_Basic; \
 			pass[2].flags = PASSFLAG_BYVAL; \
 			pass[2].size = sizeof(float); \
-			pass[2].type = PassType_Basic; \
+			pass[2].type = PassType_Float; \
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3))
 	}
 
@@ -224,7 +224,7 @@ cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
 			pass[0].type = PassType_Basic; \
 			pass[1].flags = PASSFLAG_BYVAL; \
 			pass[1].size = sizeof(float); \
-			pass[1].type = PassType_Basic; \
+			pass[1].type = PassType_Float; \
 			pass[2].flags = PASSFLAG_BYVAL; \
 			pass[2].size = sizeof(CBaseEntity *); \
 			pass[2].type = PassType_Basic; \
@@ -293,10 +293,10 @@ cell_t TF2_StunPlayer(IPluginContext *pContext, const cell_t *params)
 			PassInfo pass[4]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
 			pass[0].size = sizeof(float); \
-			pass[0].type = PassType_Basic; \
+			pass[0].type = PassType_Float; \
 			pass[1].flags = PASSFLAG_BYVAL; \
 			pass[1].size = sizeof(float); \
-			pass[1].type = PassType_Basic; \
+			pass[1].type = PassType_Float; \
 			pass[2].flags = PASSFLAG_BYVAL; \
 			pass[2].size = sizeof(int); \
 			pass[2].type = PassType_Basic; \
