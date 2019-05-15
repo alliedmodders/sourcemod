@@ -136,7 +136,7 @@ CEconItemView *GetEconItemView(CBaseEntity *pEntity, int iSlot)
 	if (team != 2 && team != 3)
 		return NULL;
 
-	ArgBuffer<void*, int> vstk(reinterpret_cast<void*>(((intptr_t)pEntity + thisPtrOffset)), iSlot);
+	ArgBuffer<void*, int, int> vstk(reinterpret_cast<void*>(((intptr_t)pEntity + thisPtrOffset)), team, iSlot);
 
 	CEconItemView *ret = nullptr;
 	pWrapper->Execute(vstk, &ret);
