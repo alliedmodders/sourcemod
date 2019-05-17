@@ -141,7 +141,7 @@ public int MenuHandler_Map(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_DrawItem)
 	{
-		char info[32], name[32];
+		char info[PLATFORM_MAX_PATH], name[32];
 		
 		menu.GetItem(param2, info, sizeof(info), _, name, sizeof(name));
 		
@@ -156,7 +156,7 @@ public int MenuHandler_Map(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		char info[32], name[32];
+		char info[PLATFORM_MAX_PATH], name[32];
 		
 		menu.GetItem(param2, info, sizeof(info), _, name, sizeof(name));
 		
@@ -274,7 +274,7 @@ int LoadMapList(Menu menu)
 	if ((map_array = ReadMapList(g_map_array,
 			g_map_serial,
 			"sm_votemap menu",
-			MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_NO_DEFAULT|MAPLIST_FLAG_MAPSFOLDER))
+			MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER))
 		!= null)
 	{
 		g_map_array = map_array;

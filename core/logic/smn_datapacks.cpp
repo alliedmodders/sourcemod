@@ -73,7 +73,7 @@ public:
 
 static cell_t smn_CreateDataPack(IPluginContext *pContext, const cell_t *params)
 {
-	CDataPack *pDataPack = static_cast<CDataPack *>(CDataPack::New());
+	CDataPack *pDataPack = CDataPack::New();
 
 	if (!pDataPack)
 	{

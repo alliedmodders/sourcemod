@@ -42,6 +42,7 @@
 #include <IPlayerHelpers.h>
 #include <IGameHelpers.h>
 #include <IEngineTrace.h>
+#include <ispatialpartition.h>
 #include <IEngineSound.h>
 #include <ivoiceserver.h>
 #include <iplayerinfo.h>
@@ -131,6 +132,7 @@ extern SDKTools g_SdkTools;
 /* Interfaces from engine or gamedll */
 extern IServerGameEnts *gameents;
 extern IEngineTrace *enginetrace;
+extern ISpatialPartition *partition;
 extern IEngineSound *engsound;
 extern INetworkStringTableContainer *netstringtables;
 extern IServerPluginHelpers *pluginhelpers;

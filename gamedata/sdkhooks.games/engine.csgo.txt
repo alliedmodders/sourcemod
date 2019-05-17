@@ -6,171 +6,171 @@
 		{
 			"Blocked"
 			{
-				"windows"	"105"
-				"linux"		"106"
-				"linux64"	"106"
-				"mac64"		"106"
+				"windows"	"106"
+				"linux"		"107"
+				"linux64"	"107"
+				"mac64"		"107"
 			}
 			"EndTouch"
 			{
-				"windows"	"103"
-				"linux"		"104"
-				"linux64"	"104"
-				"mac64"		"104"
+				"windows"	"104"
+				"linux"		"105"
+				"linux64"	"105"
+				"mac64"		"105"
 			}
 			"FireBullets"
 			{
-				"windows"	"117"
-				"linux"		"118"
-				"linux64"	"118"
-				"mac64"		"118"
+				"windows"	"118"
+				"linux"		"119"
+				"linux64"	"119"
+				"mac64"		"119"
 			}
 			"GetMaxHealth"
 			{
-				"windows"	"121"
-				"linux"		"122"
-				"linux64"	"122"
-				"mac64"		"122"			
+				"windows"	"122"
+				"linux"		"123"
+				"linux64"	"123"
+				"mac64"		"123"			
 			}
 			"GroundEntChanged"
 			{
-				"windows"	"175"
-				"linux"		"177"
-				"linux64"	"177"
-				"mac64"		"177"
+				"windows"	"177"
+				"linux"		"179"
+				"linux64"	"179"
+				"mac64"		"179"
 			}
 			"OnTakeDamage"
 			{
-				"windows"	"67"
-				"linux"		"68"
-				"linux64"	"68"
-				"mac64"		"68"
+				"windows"	"68"
+				"linux"		"69"
+				"linux64"	"69"
+				"mac64"		"69"
 			}
 			"OnTakeDamage_Alive"
 			{
-				"windows"	"295"
-				"linux"		"296"
-				"linux64"	"296"
-				"mac64"		"296"
+				"windows"	"298"
+				"linux"		"299"
+				"linux64"	"299"
+				"mac64"		"299"
 			}
 			"PreThink"
 			{
-				"windows"	"368"
-				"linux"		"369"
-				"linux64"	"369"
-				"mac64"		"369"
+				"windows"	"371"
+				"linux"		"372"
+				"linux64"	"372"
+				"mac64"		"372"
 			}
 			"PostThink"
 			{
-				"windows"	"369"
-				"linux"		"370"
-				"linux64"	"370"
-				"mac64"		"370"
+				"windows"	"372"
+				"linux"		"373"
+				"linux64"	"373"
+				"mac64"		"373"
 			}
 			"Reload"
 			{
-				"windows"	"306"
-				"linux"		"312"
-				"linux64"	"312"
-				"mac64"		"312"
+				"windows"	"310"
+				"linux"		"316"
+				"linux64"	"316"
+				"mac64"		"316"
 			}
 			"SetTransmit"
 			{
-				"windows"	"22"
-				"linux"		"23"
-				"linux64"	"23"
-				"mac64"		"23"
+				"windows"	"23"
+				"linux"		"24"
+				"linux64"	"24"
+				"mac64"		"24"
 			}
 			"ShouldCollide"
 			{
-				"windows"	"17"
-				"linux"		"18"
-				"linux64"	"18"
-				"mac64"		"18"
+				"windows"	"18"
+				"linux"		"19"
+				"linux64"	"19"
+				"mac64"		"19"
 			}
 			"Spawn"
 			{
-				"windows"	"24"
-				"linux"		"25"
-				"linux64"	"25"
-				"mac64"		"25"
+				"windows"	"25"
+				"linux"		"26"
+				"linux64"	"26"
+				"mac64"		"26"
 			}
 			"StartTouch"
-			{
-				"windows"	"101"
-				"linux"		"102"
-				"linux64"	"102"
-				"mac64"		"102"
-			}
-			"Think"
-			{
-				"windows"	"51"
-				"linux"		"52"
-				"linux64"	"52"
-				"mac64"		"52"
-			}
-			"Touch"
 			{
 				"windows"	"102"
 				"linux"		"103"
 				"linux64"	"103"
 				"mac64"		"103"
 			}
+			"Think"
+			{
+				"windows"	"52"
+				"linux"		"53"
+				"linux64"	"53"
+				"mac64"		"53"
+			}
+			"Touch"
+			{
+				"windows"	"103"
+				"linux"		"104"
+				"linux64"	"104"
+				"mac64"		"104"
+			}
 			"TraceAttack"
 			{
-				"windows"	"65"
-				"linux"		"66"
-				"linux64"	"66"
-				"mac64"		"66"
+				"windows"	"66"
+				"linux"		"67"
+				"linux64"	"67"
+				"mac64"		"67"
 			}
 			"Use"
 			{
-				"windows"	"100"
-				"linux"		"101"
-				"linux64"	"101"
-				"mac64"		"101"
+				"windows"	"101"
+				"linux"		"102"
+				"linux64"	"102"
+				"mac64"		"102"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"154"
-				"linux"		"155"
-				"linux64"	"155"
-				"mac64"		"155"
+				"windows"	"156"
+				"linux"		"157"
+				"linux64"	"157"
+				"mac64"		"157"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"287"
-				"linux"		"288"
-				"linux64"	"288"
-				"mac64"		"288"
+				"windows"	"290"
+				"linux"		"291"
+				"linux64"	"291"
+				"mac64"		"291"
 			}
 			"Weapon_CanUse"
-			{
-				"windows"	"281"
-				"linux"		"282"
-				"linux64"	"282"
-				"mac64"		"282"
-			}
-			"Weapon_Drop"
 			{
 				"windows"	"284"
 				"linux"		"285"
 				"linux64"	"285"
 				"mac64"		"285"
 			}
-			"Weapon_Equip"
+			"Weapon_Drop"
 			{
-				"windows"	"282"
-				"linux"		"283"
-				"linux64"	"283"
-				"mac64"		"283"
+				"windows"	"287"
+				"linux"		"288"
+				"linux64"	"288"
+				"mac64"		"288"
 			}
-			"Weapon_Switch"
+			"Weapon_Equip"
 			{
 				"windows"	"285"
 				"linux"		"286"
 				"linux64"	"286"
 				"mac64"		"286"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"288"
+				"linux"		"289"
+				"linux64"	"289"
+				"mac64"		"289"
 			}
 		}
 	}

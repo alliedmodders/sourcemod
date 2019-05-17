@@ -206,9 +206,9 @@ stock MoveType GetEntityMoveType(int entity)
 	
 	if (!gotconfig)
 	{
-		Handle gc = LoadGameConfigFile("core.games");
-		bool exists = GameConfGetKeyValue(gc, "m_MoveType", datamap, sizeof(datamap));
-		CloseHandle(gc);
+		GameData gc = new GameData("core.games");
+		bool exists = gc.GetKeyValue("m_MoveType", datamap, sizeof(datamap));
+		delete gc;
 		
 		if (!exists)
 		{
@@ -235,9 +235,9 @@ stock void SetEntityMoveType(int entity, MoveType mt)
 	
 	if (!gotconfig)
 	{
-		Handle gc = LoadGameConfigFile("core.games");
-		bool exists = GameConfGetKeyValue(gc, "m_MoveType", datamap, sizeof(datamap));
-		CloseHandle(gc);
+		GameData gc = new GameData("core.games");
+		bool exists = gc.GetKeyValue("m_MoveType", datamap, sizeof(datamap));
+		delete gc;
 		
 		if (!exists)
 		{
@@ -264,9 +264,9 @@ stock RenderMode GetEntityRenderMode(int entity)
 	
 	if (!gotconfig)
 	{
-		Handle gc = LoadGameConfigFile("core.games");
-		bool exists = GameConfGetKeyValue(gc, "m_nRenderMode", prop, sizeof(prop));
-		CloseHandle(gc);
+		GameData gc = new GameData("core.games");
+		bool exists = gc.GetKeyValue("m_nRenderMode", prop, sizeof(prop));
+		delete gc;
 		
 		if (!exists)
 		{
@@ -293,9 +293,9 @@ stock void SetEntityRenderMode(int entity, RenderMode mode)
 	
 	if (!gotconfig)
 	{
-		Handle gc = LoadGameConfigFile("core.games");
-		bool exists = GameConfGetKeyValue(gc, "m_nRenderMode", prop, sizeof(prop));
-		CloseHandle(gc);
+		GameData gc = new GameData("core.games");
+		bool exists = gc.GetKeyValue("m_nRenderMode", prop, sizeof(prop));
+		delete gc;
 		
 		if (!exists)
 		{
@@ -322,9 +322,9 @@ stock RenderFx GetEntityRenderFx(int entity)
 	
 	if (!gotconfig)
 	{
-		Handle gc = LoadGameConfigFile("core.games");
-		bool exists = GameConfGetKeyValue(gc, "m_nRenderFX", prop, sizeof(prop));
-		CloseHandle(gc);
+		GameData gc = new GameData("core.games");
+		bool exists = gc.GetKeyValue("m_nRenderFX", prop, sizeof(prop));
+		delete gc;
 		
 		if (!exists)
 		{
@@ -351,9 +351,9 @@ stock void SetEntityRenderFx(int entity, RenderFx fx)
 	
 	if (!gotconfig)
 	{
-		Handle gc = LoadGameConfigFile("core.games");
-		bool exists = GameConfGetKeyValue(gc, "m_nRenderFX", prop, sizeof(prop));
-		CloseHandle(gc);
+		GameData gc = new GameData("core.games");
+		bool exists = gc.GetKeyValue("m_nRenderFX", prop, sizeof(prop));
+		delete gc;
 		
 		if (!exists)
 		{
@@ -383,9 +383,9 @@ stock void GetEntityRenderColor(int entity, int &r, int &g, int &b, int &a)
 	
 	if (!gotconfig)
 	{
-		Handle gc = LoadGameConfigFile("core.games");
-		bool exists = GameConfGetKeyValue(gc, "m_clrRender", prop, sizeof(prop));
-		CloseHandle(gc);
+		GameData gc = new GameData("core.games");
+		bool exists = gc.GetKeyValue("m_clrRender", prop, sizeof(prop));
+		delete gc;
 		
 		if (!exists)
 		{
@@ -425,9 +425,9 @@ stock void SetEntityRenderColor(int entity, int r=255, int g=255, int b=255, int
 	
 	if (!gotconfig)
 	{
-		Handle gc = LoadGameConfigFile("core.games");
-		bool exists = GameConfGetKeyValue(gc, "m_clrRender", prop, sizeof(prop));
-		CloseHandle(gc);
+		GameData gc = new GameData("core.games");
+		bool exists = gc.GetKeyValue("m_clrRender", prop, sizeof(prop));
+		delete gc;
 		
 		if (!exists)
 		{
@@ -464,9 +464,9 @@ stock float GetEntityGravity(int entity)
 	
 	if (!gotconfig)
 	{
-		Handle gc = LoadGameConfigFile("core.games");
-		bool exists = GameConfGetKeyValue(gc, "m_flGravity", datamap, sizeof(datamap));
-		CloseHandle(gc);
+		GameData gc = new GameData("core.games");
+		bool exists = gc.GetKeyValue("m_flGravity", datamap, sizeof(datamap));
+		delete gc;
 		
 		if (!exists)
 		{
@@ -493,9 +493,9 @@ stock void SetEntityGravity(int entity, float amount)
 	
 	if (!gotconfig)
 	{
-		Handle gc = LoadGameConfigFile("core.games");
-		bool exists = GameConfGetKeyValue(gc, "m_flGravity", datamap, sizeof(datamap));
-		CloseHandle(gc);
+		GameData gc = new GameData("core.games");
+		bool exists = gc.GetKeyValue("m_flGravity", datamap, sizeof(datamap));
+		delete gc;
 		
 		if (!exists)
 		{
@@ -522,9 +522,9 @@ stock void SetEntityHealth(int entity, int amount)
 	
 	if (!gotconfig)
 	{
-		Handle gc = LoadGameConfigFile("core.games");
-		bool exists = GameConfGetKeyValue(gc, "m_iHealth", prop, sizeof(prop));
-		CloseHandle(gc);
+		GameData gc = new GameData("core.games");
+		bool exists = gc.GetKeyValue("m_iHealth", prop, sizeof(prop));
+		delete gc;
 		
 		if (!exists)
 		{
@@ -578,9 +578,9 @@ stock int GetClientButtons(int client)
 	
 	if (!gotconfig)
 	{
-		Handle gc = LoadGameConfigFile("core.games");
-		bool exists = GameConfGetKeyValue(gc, "m_nButtons", datamap, sizeof(datamap));
-		CloseHandle(gc);
+		GameData gc = new GameData("core.games");
+		bool exists = gc.GetKeyValue("m_nButtons", datamap, sizeof(datamap));
+		delete gc;
 		
 		if (!exists)
 		{

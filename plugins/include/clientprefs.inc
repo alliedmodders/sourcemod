@@ -270,6 +270,7 @@ public void __ext_cprefs_SetNTVOptional()
 	MarkNativeAsOptional("FindClientCookie");
 	MarkNativeAsOptional("SetClientCookie");
 	MarkNativeAsOptional("GetClientCookie");
+	MarkNativeAsOptional("SetAuthIdCookie");
 	MarkNativeAsOptional("AreClientCookiesCached");
 	MarkNativeAsOptional("SetCookiePrefabMenu");
 	MarkNativeAsOptional("SetCookieMenuItem");

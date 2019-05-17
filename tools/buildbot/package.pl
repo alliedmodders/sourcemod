@@ -77,7 +77,8 @@ if (-e '../GeoIP.dat.gz')
 if ($needNewGeoIP)
 {
     print "Downloading GeoIP.dat...\n";
-    system('wget -q -O ../GeoIP.dat.gz http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz');
+    # Don't check certificate. It will fail on the slaves and we're resolving to internal addressing anyway
+    system('wget --no-check-certificate -q -O ../GeoIP.dat.gz https://sm.alliedmods.net/GeoIP.dat.gz');
 }
 else
 {

@@ -141,6 +141,18 @@ enum CSWeaponID
 	CSWeapon_CZ75A = 63,
 	CSWeapon_REVOLVER = 64,
 	CSWeapon_TAGGRENADE = 68,
+	CSWeapon_FISTS = 69,
+	CSWeapon_BREACHCHARGE = 70,
+	CSWeapon_TABLET = 72,
+	CSWeapon_MELEE = 74,
+	CSWeapon_AXE = 75,
+	CSWeapon_HAMMER = 76,
+	CSWeapon_SPANNER = 78,
+	CSWeapon_KNIFE_GHOST = 80,
+	CSWeapon_FIREBOMB = 81,
+	CSWeapon_DIVERSION = 82,
+	CSWeapon_FRAGGRENADE = 83,
+	CSWeapon_SNOWBALL = 84,
 	CSWeapon_MAX_WEAPONS_NO_KNIFES, // Max without the knife item defs, useful when treating all knives as a regular knife.
 	CSWeapon_BAYONET = 500,
 	CSWeapon_KNIFE_FLIP = 505,
@@ -152,6 +164,10 @@ enum CSWeaponID
 	CSWeapon_KNIFE_SURVIVAL_BOWIE = 514,
 	CSWeapon_KNIFE_BUTTERFLY = 515,
 	CSWeapon_KNIFE_PUSH = 516,
+	CSWeapon_KNIFE_URSUS = 519,
+	CSWeapon_KNIFE_GYPSY_JACKKNIFE = 520,
+	CSWeapon_KNIFE_STILETTO = 522,
+	CSWeapon_KNIFE_WIDOWMAKER = 523,
 	CSWeapon_MAX_WEAPONS //THIS MUST BE LAST, EASY WAY TO CREATE LOOPS. When looping, do CS_IsValidWeaponID(i), to check.
 };
 

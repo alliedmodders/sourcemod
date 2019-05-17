@@ -940,9 +940,8 @@ static cell_t FrameIterator_GetFilePath(IPluginContext *pContext, const cell_t *
 static cell_t LogStackTrace(IPluginContext *pContext, const cell_t *params)
 {
 	char buffer[512];
-
 	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
-		
+
 	IFrameIterator *it = pContext->CreateFrameIterator();
 	ke::Vector<ke::AString> arr = g_DbgReporter.GetStackTrace(it);
 	pContext->DestroyFrameIterator(it);

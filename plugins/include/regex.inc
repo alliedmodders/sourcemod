@@ -179,7 +179,7 @@ methodmap Regex < Handle
 	//
 	// @param match			Match to get the offset of. Match starts at 0, and ends at MatchCount() -1
 	// @return				Offset of the match in the string.
-	public native int MatchOffset(int match = 0)
+	public native int MatchOffset(int match = 0);
 };
 
 /**
@@ -273,3 +273,19 @@ public Extension __ext_regex =
 	required = 0,
 #endif
 };
+
+#if !defined REQUIRE_EXTENSIONS
+public void __ext_regex_SetNTVOptional()
+{
+	MarkNativeAsOptional("CompileRegex");
+	MarkNativeAsOptional("MatchRegex");
+	MarkNativeAsOptional("GetRegexSubString");
+	MarkNativeAsOptional("Regex.Regex");
+	MarkNativeAsOptional("Regex.Match");
+	MarkNativeAsOptional("Regex.MatchAll");
+	MarkNativeAsOptional("Regex.GetSubString");
+	MarkNativeAsOptional("Regex.MatchCount");
+	MarkNativeAsOptional("Regex.CaptureCount");
+	MarkNativeAsOptional("Regex.MatchOffset");
+}
+#endif

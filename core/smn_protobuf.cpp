@@ -82,6 +82,38 @@ static cell_t smn_PbReadInt(IPluginContext *pCtx, const cell_t *params)
 	return ret;
 }
 
+static cell_t smn_PbReadInt64(IPluginContext *pCtx, const cell_t *params)
+{
+	GET_MSG_FROM_HANDLE_OR_ERR();
+	GET_FIELD_NAME_OR_ERR();
+	
+	cell_t *ret;
+	pCtx->LocalToPhysAddr(params[3], &ret);
+	int64 temp;
+	((cell_t *)&temp)[0] = ret[0];
+	((cell_t *)&temp)[1] = ret[1];
+	
+	if (params[4] < 0)
+	{
+		if (!msg->GetInt64OrUnsigned(strField, &temp))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->GetRepeatedInt64OrUnsigned(strField, params[4], &temp))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[4], msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	
+	ret[0] = ((cell_t *)&temp)[0];
+	ret[1] = ((cell_t *)&temp)[1];
+	
+	return 1;
+}
+
 static cell_t smn_PbReadFloat(IPluginContext *pCtx, const cell_t *params)
 {
 	GET_MSG_FROM_HANDLE_OR_ERR();
@@ -336,6 +368,35 @@ static cell_t smn_PbSetInt(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t smn_PbSetInt64(IPluginContext *pCtx, const cell_t *params)
+{
+	GET_MSG_FROM_HANDLE_OR_ERR();
+	GET_FIELD_NAME_OR_ERR();
+	
+	cell_t *value;
+	pCtx->LocalToPhysAddr(params[3], &value);
+	int64 temp;
+	((cell_t *)&temp)[0] = value[0];
+	((cell_t *)&temp)[1] = value[1];
+	
+	if (params[4] < 0)
+	{
+		if (!msg->SetInt64OrUnsigned(strField, temp))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+	else
+	{
+		if (!msg->SetRepeatedInt64OrUnsigned(strField, params[4], temp))
+		{
+			return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[4], msg->GetProtobufMessage()->GetTypeName().c_str());
+		}
+	}
+
+	return 1;
+}
+
 static cell_t smn_PbSetFloat(IPluginContext *pCtx, const cell_t *params)
 {
 	GET_MSG_FROM_HANDLE_OR_ERR();
@@ -546,6 +607,25 @@ static cell_t smn_PbAddInt(IPluginContext *pCtx, const cell_t *params)
 	GET_FIELD_NAME_OR_ERR();
 
 	if (!msg->AddInt32OrUnsignedOrEnum(strField, params[3]))
+	{
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
+	}
+
+	return 1;
+}
+
+static cell_t smn_PbAddInt64(IPluginContext *pCtx, const cell_t *params)
+{
+	GET_MSG_FROM_HANDLE_OR_ERR();
+	GET_FIELD_NAME_OR_ERR();
+	
+	cell_t *value;
+	pCtx->LocalToPhysAddr(params[3], &value);
+	int64 temp;
+	((cell_t *)&temp)[0] = value[0];
+	((cell_t *)&temp)[1] = value[1];
+
+	if (!msg->AddInt64OrUnsigned(strField, temp))
 	{
 		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
@@ -778,6 +858,7 @@ REGISTER_NATIVES(protobufnatives)
 
 	// Transitional syntax.
 	{"Protobuf.ReadInt",					smn_PbReadInt},
+	{"Protobuf.ReadInt64",					smn_PbReadInt64},
 	{"Protobuf.ReadFloat",					smn_PbReadFloat},
 	{"Protobuf.ReadBool",					smn_PbReadBool},
 	{"Protobuf.ReadString",					smn_PbReadString},
@@ -788,6 +869,7 @@ REGISTER_NATIVES(protobufnatives)
 	{"Protobuf.GetRepeatedFieldCount",		smn_PbGetRepeatedFieldCount},
 	{"Protobuf.HasField",					smn_PbHasField},
 	{"Protobuf.SetInt",						smn_PbSetInt},
+	{"Protobuf.SetInt64",					smn_PbSetInt64},
 	{"Protobuf.SetFloat",					smn_PbSetFloat},
 	{"Protobuf.SetBool",					smn_PbSetBool},
 	{"Protobuf.SetString",					smn_PbSetString},
@@ -796,6 +878,7 @@ REGISTER_NATIVES(protobufnatives)
 	{"Protobuf.SetVector",					smn_PbSetVector},
 	{"Protobuf.SetVector2D",				smn_PbSetVector2D},
 	{"Protobuf.AddInt",						smn_PbAddInt},
+	{"Protobuf.AddInt64",					smn_PbAddInt64},
 	{"Protobuf.AddFloat",					smn_PbAddFloat},
 	{"Protobuf.AddBool",					smn_PbAddBool},
 	{"Protobuf.AddString",					smn_PbAddString},
