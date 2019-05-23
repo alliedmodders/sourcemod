@@ -185,7 +185,7 @@ native void StopSound(int entity, int channel, const char[] name);
  * Emits a sound to a list of clients.
  *
  * @param clients       Array of client indexes.
- * @param numClients   Number of clients in the array.
+ * @param numClients    Number of clients in the array.
  * @param sample        Sound file name relative to the "sound" folder.
  * @param entity        Entity to emit from.
  * @param channel       Channel to emit with.
@@ -222,8 +222,8 @@ native void EmitSound(const int[] clients,
  * This native is only available in engines that are greater than or equal to Portal 2.
  *
  * @param clients       Array of client indexes.
- * @param numClients   Number of clients in the array.
- * @param soundEntry   Sound entry name.
+ * @param numClients    Number of clients in the array.
+ * @param soundEntry    Sound entry name.
  * @param sample        Sound file name relative to the "sound" folder.
  * @param entity        Entity to emit from.
  * @param channel       Channel to emit with.
@@ -262,7 +262,7 @@ native void EmitSoundEntry(const int[] clients,
  * Emits a sentence to a list of clients.
  *
  * @param clients       Array of client indexes.
- * @param numClients   Number of clients in the array.
+ * @param numClients    Number of clients in the array.
  * @param sentence      Sentence index (from PrecacheSentenceFile).
  * @param entity        Entity to emit from.
  * @param channel       Channel to emit with.
@@ -538,16 +538,16 @@ native bool GetGameSoundParams(const char[] gameSound,
  * Note that if a game sound has a rndwave section, one of them will be returned
  * at random.
  *
- * @param clients              Array of client indexes.
- * @param numClients   Number of clients in the array.
- * @param gameSound            Name of game sound.
- * @param entity               Entity to emit from.
- * @param flags                        Sound flags.
- * @param speakerentity        Unknown.
- * @param origin               Sound origin.
- * @param dir                  Sound direction.
- * @param updatePos            Unknown (updates positions?)
- * @param soundtime            Alternate time to play sound for.
+ * @param clients       Array of client indexes.
+ * @param numClients    Number of clients in the array.
+ * @param gameSound     Name of game sound.
+ * @param entity        Entity to emit from.
+ * @param flags         Sound flags.
+ * @param speakerentity Unknown.
+ * @param origin        Sound origin.
+ * @param dir           Sound direction.
+ * @param updatePos     Unknown (updates positions?)
+ * @param soundtime     Alternate time to play sound for.
  * @return              True if the sound was played successfully, false if it failed
  * @error               Invalid client index.
  */
@@ -586,11 +586,11 @@ stock bool EmitGameSound(const int[] clients,
  * Note that if a game sound has a rndwave section, one of them will be returned
  * at random.
  *
- * @param gameSound            Name of game sound.
- * @param pos                  Origin of sound.
- * @param entity               Entity index to associate sound with.
- * @param flags                        Sound flags.
- * @param delay                        Play delay.
+ * @param gameSound     Name of game sound.
+ * @param pos           Origin of sound.
+ * @param entity        Entity index to associate sound with.
+ * @param flags         Sound flags.
+ * @param delay         Play delay.
  */
 stock bool EmitAmbientGameSound(const char[] gameSound,
 				const float pos[3],
@@ -622,15 +622,15 @@ stock bool EmitAmbientGameSound(const char[] gameSound,
  * Note that if a game sound has a rndwave section, one of them will be returned
  * at random.
  *
- * @param client               Client index.
- * @param gameSound            Name of game sound.
- * @param entity               Entity to emit from.
- * @param flags                        Sound flags.
- * @param speakerentity        Unknown.
- * @param origin               Sound origin.
- * @param dir                  Sound direction.
- * @param updatePos            Unknown (updates positions?)
- * @param soundtime            Alternate time to play sound for.
+ * @param client        Client index.
+ * @param gameSound     Name of game sound.
+ * @param entity        Entity to emit from.
+ * @param flags         Sound flags.
+ * @param speakerentity Unknown.
+ * @param origin        Sound origin.
+ * @param dir           Sound direction.
+ * @param updatePos     Unknown (updates positions?)
+ * @param soundtime     Alternate time to play sound for.
  * @error               Invalid client index.
  */
 stock bool EmitGameSoundToClient(int client,
@@ -660,14 +660,14 @@ stock bool EmitGameSoundToClient(int client,
  * Note that if a game sound has a rndwave section, one of them will be returned
  * at random.
  *
- * @param gameSound            Name of game sound.
- * @param entity               Entity to emit from.
- * @param flags                        Sound flags.
- * @param speakerentity        Unknown.
- * @param origin               Sound origin.
- * @param dir                  Sound direction.
- * @param updatePos            Unknown (updates positions?)
- * @param soundtime            Alternate time to play sound for.
+ * @param gameSound     Name of game sound.
+ * @param entity        Entity to emit from.
+ * @param flags         Sound flags.
+ * @param speakerentity Unknown.
+ * @param origin        Sound origin.
+ * @param dir           Sound direction.
+ * @param updatePos     Unknown (updates positions?)
+ * @param soundtime     Alternate time to play sound for.
  * @error               Invalid client index.
  */
 stock bool EmitGameSoundToAll(const char[] gameSound,
