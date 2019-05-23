@@ -89,7 +89,7 @@ enum EngineVersion
 	Engine_Insurgency,          /**< Insurgency (2013 Retail version)*/
 	Engine_Contagion,           /**< Contagion */
 	Engine_BlackMesa,           /**< Black Mesa Multiplayer */
-	Engine_DOI                 /**< Day of Infamy */
+	Engine_DOI                  /**< Day of Infamy */
 };
 
 enum FindMapResult
