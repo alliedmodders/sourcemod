@@ -81,8 +81,8 @@
  *
  * @param pos           Position of the sparks.
  * @param dir           Direction of the sparks.
- * @param Magnitude   Sparks size.
- * @param TrailLength Trail lenght of the sparks.
+ * @param Magnitude     Sparks size.
+ * @param TrailLength   Trail lenght of the sparks.
  */
 stock void TE_SetupSparks(const float pos[3], const float dir[3], int Magnitude, int TrailLength)
 {
@@ -99,7 +99,7 @@ stock void TE_SetupSparks(const float pos[3], const float dir[3], int Magnitude,
  * @param pos           Position of the smoke.
  * @param Model         Precached model index.
  * @param Scale         Scale of the smoke.
- * @param FrameRate   Frame rate of the smoke.
+ * @param FrameRate     Frame rate of the smoke.
  */
 stock void TE_SetupSmoke(const float pos[3], int Model, float Scale, int FrameRate)
 {
@@ -162,7 +162,7 @@ stock void TE_SetupMetalSparks(const float pos[3], const float dir[3])
  *
  * @param pos           Position of the energy splash.
  * @param dir           Direction of the energy splash.
- * @param Explosive   Makes the effect explosive.
+ * @param Explosive     Makes the effect explosive.
  */
 stock void TE_SetupEnergySplash(const float pos[3], const float dir[3], bool Explosive)
 {
@@ -192,7 +192,7 @@ stock void TE_SetupArmorRicochet(const float pos[3], const float dir[3])
  * @param Model         Precached model index.
  * @param Life          Time duration of the sprite.
  * @param Size          Sprite size.
- * @param Brightness  Sprite brightness.
+ * @param Brightness    Sprite brightness.
  */
 stock void TE_SetupGlowSprite(const float pos[3], int Model, float Life, float Size, int Brightness)
 {
