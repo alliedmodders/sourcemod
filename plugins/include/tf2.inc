@@ -35,14 +35,14 @@
 #endif
 #define _tf2_included
 
-#define TF_STUNFLAG_SLOWDOWN        (1 << 0)	/**< activates slowdown modifier */
-#define TF_STUNFLAG_BONKSTUCK       (1 << 1)	/**< bonk sound, stuck */
-#define TF_STUNFLAG_LIMITMOVEMENT   (1 << 2)	/**< disable forward/backward movement */
-#define TF_STUNFLAG_CHEERSOUND      (1 << 3)	/**< cheering sound */
-#define TF_STUNFLAG_NOSOUNDOREFFECT (1 << 5)	/**< no sound or particle */
-#define TF_STUNFLAG_THIRDPERSON     (1 << 6)	/**< panic animation */
-#define TF_STUNFLAG_GHOSTEFFECT     (1 << 7)	/**< ghost particles */
-#define TF_STUNFLAG_SOUND           (1 << 8)	/**< sound */
+#define TF_STUNFLAG_SLOWDOWN        (1 << 0)    /**< activates slowdown modifier */
+#define TF_STUNFLAG_BONKSTUCK       (1 << 1)    /**< bonk sound, stuck */
+#define TF_STUNFLAG_LIMITMOVEMENT   (1 << 2)    /**< disable forward/backward movement */
+#define TF_STUNFLAG_CHEERSOUND      (1 << 3)    /**< cheering sound */
+#define TF_STUNFLAG_NOSOUNDOREFFECT (1 << 5)    /**< no sound or particle */
+#define TF_STUNFLAG_THIRDPERSON     (1 << 6)    /**< panic animation */
+#define TF_STUNFLAG_GHOSTEFFECT     (1 << 7)    /**< ghost particles */
+#define TF_STUNFLAG_SOUND           (1 << 8)    /**< sound */
 
 #define TF_STUNFLAGS_LOSERSTATE     TF_STUNFLAG_SLOWDOWN|TF_STUNFLAG_NOSOUNDOREFFECT|TF_STUNFLAG_THIRDPERSON
 #define TF_STUNFLAGS_GHOSTSCARE     TF_STUNFLAG_GHOSTEFFECT|TF_STUNFLAG_THIRDPERSON
@@ -69,7 +69,7 @@ enum TFTeam
 	TFTeam_Unassigned = 0,
 	TFTeam_Spectator = 1,
 	TFTeam_Red = 2,
-	TFTeam_Blue = 3	
+	TFTeam_Blue = 3
 };
 
 enum TFCond
@@ -206,7 +206,7 @@ enum TFCond
 	TFCond_BurningPyro,
 	TFCond_RocketPack,
 	TFCond_LostFooting,
-	TFCond_AirCurrent,
+	TFCond_AirCurrent
 };
 
 const float TFCondDuration_Infinite = -1.0;
@@ -247,55 +247,55 @@ enum TFObjectMode
 /**
  * Sets a client on fire for 10 seconds.
  *
- * @param client		Player's index.
- * @param attacker		Attacker's index.
- * @error				Invalid client index, client not in game, or no mod support.
+ * @param client        Player's index.
+ * @param attacker      Attacker's index.
+ * @error               Invalid client index, client not in game, or no mod support.
  */
 native void TF2_IgnitePlayer(int client, int attacker);
 
 /**
  * Respawns a client
  *
- * @param client		Player's index.
- * @error				Invalid client index, client not in game, or no mod support.
+ * @param client        Player's index.
+ * @error               Invalid client index, client not in game, or no mod support.
  */
 native void TF2_RespawnPlayer(int client);
 
 /**
  * Regenerates a client's health and ammunition
  *
- * @param client		Player's index.
- * @error				Invalid client index, client not in game, or no mod support.
+ * @param client        Player's index.
+ * @error               Invalid client index, client not in game, or no mod support.
  */
 native void TF2_RegeneratePlayer(int client);
 
 /**
  * Adds a condition to a player
  *
- * @param client		Player's index.
- * @param condition		Integer identifier of condition to apply.
- * @param duration		Duration of condition (does not apply to all conditions).
+ * @param client        Player's index.
+ * @param condition     Integer identifier of condition to apply.
+ * @param duration      Duration of condition (does not apply to all conditions).
  *                      Pass TFCondDuration_Infinite to apply until manually removed.
- * @param inflictor		Condition inflictor's index (0 for no inflictor).
- * @error				Invalid client index, client not in game, or no mod support.
+ * @param inflictor     Condition inflictor's index (0 for no inflictor).
+ * @error               Invalid client index, client not in game, or no mod support.
  */
 native void TF2_AddCondition(int client, TFCond condition, float duration=TFCondDuration_Infinite, int inflictor=0);
 
 /**
  * Removes a condition from a player
  *
- * @param client		Player's index.
- * @param condition		Integer identifier of condition to remove.
- * @error				Invalid client index, client not in game, or no mod support.
+ * @param client        Player's index.
+ * @param condition     Integer identifier of condition to remove.
+ * @error               Invalid client index, client not in game, or no mod support.
  */
 native void TF2_RemoveCondition(int client, TFCond condition);
 
 /**
  * Enables/disables PowerPlay mode on a player.
  *
- * @param client		Player's index.
- * @param enabled		Whether to enable or disable PowerPlay on player.
- * @error				Invalid client index, client not in game, or no mod support.
+ * @param client        Player's index.
+ * @param enabled       Whether to enable or disable PowerPlay on player.
+ * @error               Invalid client index, client not in game, or no mod support.
  */
 native void TF2_SetPlayerPowerPlay(int client, bool enabled);
 
@@ -304,47 +304,48 @@ native void TF2_SetPlayerPowerPlay(int client, bool enabled);
  *
  * Note: This only starts the disguise process and a delay occurs before the spy is fully disguised
  *
- * @param client		Player's index.
- * @param team			Team to disguise the player as (only TFTeam_Red and TFTeam_Blue have an effect)
- * @param classType		TFClassType class to disguise the player as
- * @param target		Specific target player to disguise as (0 for any)
- * @error				Invalid client index, client not in game, or no mod support.
+ * @param client        Player's index.
+ * @param team          Team to disguise the player as (only TFTeam_Red and TFTeam_Blue have an effect)
+ * @param classType     TFClassType class to disguise the player as
+ * @param target        Specific target player to disguise as (0 for any)
+ * @error               Invalid client index, client not in game, or no mod support.
  */
 native void TF2_DisguisePlayer(int client, TFTeam team, TFClassType classType, int target=0);
 
 /**
  * Removes the current disguise from a client. Only has an effect on spies.
  *
- * @param client		Player's index.
- * @error				Invalid client index, client not in game, or no mod support.
+ * @param client        Player's index.
+ * @error               Invalid client index, client not in game, or no mod support.
  */
 native void TF2_RemovePlayerDisguise(int client);
 
 /**
  * Stuns a client
  *
- * @param client		Player's index.
- * @param duration		Duration of stun.
- * @param slowdown		Slowdown percent (as decimal, 0.00-1.00)
- *						Ignored if TF_STUNFLAG_SLOWDOWN is not set.
- * @param stunflags		Stun flags.
- * @param attacker		Attacker's index (0 is allowed for world).
+ * @param client        Player's index.
+ * @param duration      Duration of stun.
+ * @param slowdown      Slowdown percent (as decimal, 0.00-1.00)
+ *                      Ignored if TF_STUNFLAG_SLOWDOWN is not set.
+ * @param stunflags     Stun flags.
+ * @param attacker      Attacker's index (0 is allowed for world).
  */
 native void TF2_StunPlayer(int client, float duration, float slowdown=0.0, int stunflags, int attacker=0);
 
 /**
  * Induces the bleed effect on a client
  *
- * @param client		Player's index.
- * @param attacker		Attacker's index.
- * @param duration		Duration of bleeding (in seconds).
+ * @param client        Player's index.
+ * @param attacker      Attacker's index.
+ * @param duration      Duration of bleeding (in seconds).
  */
 native void TF2_MakeBleed(int client, int attacker, float duration);
 
 /**
  * Retrieves the entity index of the CPlayerResource entity
  *
- * @return				The current resource entity index.
+ * @return              The current resource entity index.
+ * @deprecated          Use GetPlayerResourceEntity instead
  */
 #pragma deprecated Use GetPlayerResourceEntity instead
 native int TF2_GetResourceEntity();
@@ -352,8 +353,8 @@ native int TF2_GetResourceEntity();
 /**
  * Finds the TFClassType for a given class name.
  *
- * @param classname		A classname string such as "sniper" or "demoman"
- * @return				A TFClassType constant.
+ * @param classname     A classname string such as "sniper" or "demoman"
+ * @return              A TFClassType constant.
  */
 native TFClassType TF2_GetClass(const char[] classname);
 
@@ -363,19 +364,19 @@ native TFClassType TF2_GetClass(const char[] classname);
  * action to override the decision with the value of 'result'
  *
  * @note Since critical shots are also calculated client side any changes made with
- *		 this will not show for the shooter. Projectile weapons such as the rocketlauncher
- *		 and demoman weapons will show a critical bullet but no critical sound effect.
- *		 Bullet hits should appear as expected.
+ *       this will not show for the shooter. Projectile weapons such as the rocketlauncher
+ *       and demoman weapons will show a critical bullet but no critical sound effect.
+ *       Bullet hits should appear as expected.
  *
- * @param client		Client Index.
- * @param weapon		Weapon entity Index.
- * @param weaponname	Classname of the weapon.
- * @param result		Buffer param for the result of the decision.
+ * @param client        Client Index.
+ * @param weapon        Weapon entity Index.
+ * @param weaponname    Classname of the weapon.
+ * @param result        Buffer param for the result of the decision.
  */
 forward Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname, bool &result);
 
 /**
- * @deprecated		No longer called. Use TF2_OnIsHolidayActive.
+ * @deprecated          No longer called. Use TF2_OnIsHolidayActive.
  */
 #pragma deprecated No longer called. Use TF2_OnIsHolidayActive.
 forward Action TF2_OnGetHoliday(TFHoliday &holiday);
@@ -385,17 +386,17 @@ forward Action TF2_OnGetHoliday(TFHoliday &holiday);
  * Return Plugin_Continue to let the original calculation or return a higher
  * action to override the decision with the value of 'result'
  *
- * @param holiday		Holiday being checked.
- * @param result		Buffer param for the result of the decision.
- * @return				Plugin_Continue for original calculation, higher value to use 'result'.
+ * @param holiday       Holiday being checked.
+ * @param result        Buffer param for the result of the decision.
+ * @return              Plugin_Continue for original calculation, higher value to use 'result'.
  */
 forward Action TF2_OnIsHolidayActive(TFHoliday holiday, bool &result);
 
 /**
  * Returns whether or not a holiday is active
  *
- * @param holiday		Holiday being checked.
- * @return				Boolean of whether or not the holiday is active.
+ * @param holiday       Holiday being checked.
+ * @return              Boolean of whether or not the holiday is active.
  */
 native bool TF2_IsHolidayActive(TFHoliday holiday);
 
@@ -403,7 +404,7 @@ native bool TF2_IsHolidayActive(TFHoliday holiday);
  * Returns whether or not a client (Player) is in a duel.
  *
  * @param client    Client Index.
- * @return          Boolean of whether or not the client/player is dueling.
+ * @return              Boolean of whether or not the client/player is dueling.
  */
 native bool TF2_IsPlayerInDuel(int client);
 
@@ -411,16 +412,16 @@ native bool TF2_IsPlayerInDuel(int client);
  * Removes an econ wearable (hat, misc, etc) from a player.
  * This also deletes the wearable entity.
  *
- * @param client	Client index.
- * @param wearable	Index of the wearable entity.
- * @error			Invalid client index, client not in game, invalid wearable entity, or no mod support.
+ * @param client        Client index.
+ * @param wearable      Index of the wearable entity.
+ * @error               Invalid client index, client not in game, invalid wearable entity, or no mod support.
 */
 native void TF2_RemoveWearable(int client, int wearable);
 
 /**
  * Called after a condition is added to a player
  *
- * @param client		Index of the client to which the condition is being added.
+ * @param client        Index of the client to which the condition is being added.
  * @param condition     Condition that is being added.
  */
 forward void TF2_OnConditionAdded(int client, TFCond condition);
@@ -428,8 +429,8 @@ forward void TF2_OnConditionAdded(int client, TFCond condition);
 /**
  * Called after a condition is removed from a player
  *
- * @param client		Index of the client to which the condition is being removed.
- * @param condition		Condition that is being removed.
+ * @param client        Index of the client to which the condition is being removed.
+ * @param condition     Condition that is being removed.
  */
 forward void TF2_OnConditionRemoved(int client, TFCond condition);
 
@@ -448,11 +449,11 @@ forward void TF2_OnWaitingForPlayersEnd();
  * Return Plugin_Continue to let the original calculation or return a higher
  * action to override the decision with the value of 'result'
  *
- * @param client		Client index.
- * @param teleporter	Teleporter entity index.
- * @param result		Buffer param for the result of the decision.
- *						This is prepopulated with the game's original decision to let a player teleport.
- * @return				Plugin_Continue for original calculation, higher value to use 'result'.
+ * @param client        Client index.
+ * @param teleporter    Teleporter entity index.
+ * @param result        Buffer param for the result of the decision.
+ *                      This is prepopulated with the game's original decision to let a player teleport.
+ * @return              Plugin_Continue for original calculation, higher value to use 'result'.
  */
 forward Action TF2_OnPlayerTeleport(int client, int teleporter, bool &result);
  

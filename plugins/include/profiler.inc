@@ -44,7 +44,7 @@ methodmap Profiler < Handle
 	// Creates a new profile object.  The Handle must be freed
 	// using delete or CloseHandle().
 	//
-	// @return		A new Profiler Handle.
+	// @return              A new Profiler Handle.
 	public native Profiler();
 	
 	// Starts a cycle for profiling.
@@ -52,14 +52,14 @@ methodmap Profiler < Handle
 
 	// Stops a cycle for profiling.
 	//
-	// @error		Profiler was never started.
+	// @error               Profiler was never started.
 	public native void Stop();
 	
 	// Returns the amount of high-precision time in seconds
 	// that passed during the profiler's last start/stop 
 	// cycle.
 	//
-	// @return		Time elapsed in seconds.
+	// @return              Time elapsed in seconds.
 	property float Time {
 		public native get();
 	}
@@ -69,23 +69,23 @@ methodmap Profiler < Handle
  * Creates a new profile object.  The Handle must be freed
  * using delete or CloseHandle().
  *
- * @return			Handle to the profiler object.
+ * @return              Handle to the profiler object.
  */
 native Profiler CreateProfiler();
 
 /**
  * Starts profiling.
  *
- * @param prof		Profiling object.
- * @error			Invalid Handle.
+ * @param prof          Profiling object.
+ * @error               Invalid Handle.
  */
 native void StartProfiling(Handle prof);
 
 /**
  * Stops profiling.
  *
- * @param prof		Profiling object.
- * @error			Invalid Handle or profiling was never started.
+ * @param prof          Profiling object.
+ * @error               Invalid Handle or profiling was never started.
  */
 native void StopProfiling(Handle prof);
 
@@ -94,9 +94,9 @@ native void StopProfiling(Handle prof);
  * that passed during the profiler's last start/stop 
  * cycle.
  *
- * @param prof		Profiling object.
- * @return			Time elapsed in seconds.
- * @error			Invalid Handle.
+ * @param prof          Profiling object.
+ * @return              Time elapsed in seconds.
+ * @error               Invalid Handle.
  */
 native float GetProfilerTime(Handle prof);
 
