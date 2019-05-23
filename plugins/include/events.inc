@@ -207,7 +207,7 @@ native void UnhookEvent(const char[] name, EventHook callback, EventHookMode mod
  * @param force         If set to true, this forces the event to be created even if it's not being hooked.
  *                      Note that this will not force it if the event doesn't exist at all.
  * @return              Handle to event. INVALID_HANDLE is returned if the event doesn't exist or isn't 
-                      being hooked (unless force is true).
+ *                      being hooked (unless force is true).
  */
 native Event CreateEvent(const char[] name, bool force=false);
 
