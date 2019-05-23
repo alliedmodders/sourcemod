@@ -38,12 +38,12 @@
 #tryinclude <version_auto>
 
 #if !defined _auto_version_included
-#define SOURCEMOD_V_TAG         "manual"
-#define SOURCEMOD_V_REV         0
-#define SOURCEMOD_V_CSET        "0"
-#define SOURCEMOD_V_MAJOR       1               /**< SourceMod Major version */
-#define SOURCEMOD_V_MINOR       10              /**< SourceMod Minor version */
-#define SOURCEMOD_V_RELEASE     0               /**< SourceMod Release version */
+ #define SOURCEMOD_V_TAG         "manual"
+ #define SOURCEMOD_V_REV         0
+ #define SOURCEMOD_V_CSET        "0"
+ #define SOURCEMOD_V_MAJOR       1               /**< SourceMod Major version */
+ #define SOURCEMOD_V_MINOR       10              /**< SourceMod Minor version */
+ #define SOURCEMOD_V_RELEASE     0               /**< SourceMod Release version */
 
-#define SOURCEMOD_VERSION       "1.10.0-manual" /**< SourceMod version string (major.minor.release-tag) */
+ #define SOURCEMOD_VERSION       "1.10.0-manual" /**< SourceMod version string (major.minor.release-tag) */
 #endif
