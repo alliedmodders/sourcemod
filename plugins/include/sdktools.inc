@@ -122,7 +122,7 @@ native void PrepSDKCall_SetVirtual(int vtblidx);
  * Finds an address in a library and sets it as the address to use for the SDK call.
  *
  * @param lib           Library to use.
- * @param signature      Binary data to search for in the library.  If it starts with '@',
+ * @param signature     Binary data to search for in the library.  If it starts with '@',
  *                      the bytes parameter is ignored and the signature is interpreted
  *                      as a symbol lookup in the library.
  * @param bytes         Number of bytes in the binary search string.
@@ -191,7 +191,7 @@ native Handle EndPrepSDKCall();
  *
  * If the return value is a float or integer, the return value will be this value.
  * If the return value is a CBaseEntity, CBasePlayer, or edict, the return value will
- *                      always be the entity index, or -1 for NULL.
+ *  always be the entity index, or -1 for NULL.
  *
  * @param call          SDKCall Handle.
  * @param ...           Call Parameters.
