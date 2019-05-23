@@ -53,7 +53,7 @@ native bool GeoipCode2(const char[] ip, char ccode[3]);
 /**
  * Gets the three character country code from an IP address. (USA, CAN, etc)
  *
- * @param i             Ip to determine the country code.
+ * @param ip            Ip to determine the country code.
  * @param ccode         Destination string buffer to store the code.
  * @return              True on success, false if no country found.
  */
