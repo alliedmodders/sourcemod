@@ -263,7 +263,7 @@ typeset SQLTxnSuccess
  * @param data          Data value passed to SQL_ExecuteTransaction().
  * @param numQueries    Number of queries executed in the transaction.
  * @param error         Error message.
- * @param failIndex      Index of the query that failed, or -1 if something else.
+ * @param failIndex     Index of the query that failed, or -1 if something else.
  * @param queryData     An array of each data value passed to SQL_AddQuery().
  */
 typedef SQLTxnFailure = function void (Database db, any data, int numQueries, const char[] error, int failIndex, any[] queryData);
@@ -481,9 +481,9 @@ stock Database SQL_DefConnect(char[] error, int maxlength, bool persistent=true)
  * @error               Invalid KeyValues handle.
  */
 native Database SQL_ConnectCustom(Handle keyvalues,
-			  					  char[] error,
-			  					  int maxlength,
-			  					  bool persistent);
+								  char[] error,
+								  int maxlength,
+								  bool persistent);
 
 /**
  * Grabs a handle to an SQLite database, creating one if it does not exist.  
