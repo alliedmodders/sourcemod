@@ -200,10 +200,31 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 #if defined SUBPLATFORM_SECURECRT
 	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
 #endif
-
-	time_t t = (params[4] == -1) ? g_pSM->GetAdjustedTime() : (time_t)params[4];
-	size_t written = strftime(buffer, params[2], format, localtime(&t));
-
+	
+	struct tm *tm_t;
+	time_t t = (time_t)params[4];
+	
+	if(params[0] > 4 && params[5] == 0)
+	{
+		if(params[4] == -1)
+		{
+			t = time(NULL);
+		}
+		
+		tm_t = gmtime(&t);
+	}
+	else
+	{
+		if(params[4] == -1)
+		{
+			t = g_pSM->GetAdjustedTime();
+		}
+		
+		tm_t = localtime(&t);
+	}
+	
+	size_t written = strftime(buffer, params[2], format, tm_t);
+	
 #if defined SUBPLATFORM_SECURECRT
 	_set_invalid_parameter_handler(handler);
 #endif
