@@ -122,7 +122,6 @@ enum CSWeaponID
 	CSWeapon_MP9,
 	CSWeapon_NOVA,
 	CSWeapon_P250,
-	CSWeapon_SHIELD,
 	CSWeapon_SCAR17,
 	CSWeapon_SCAR20,
 	CSWeapon_SG556,
