@@ -441,33 +441,25 @@ ITERATOR *CExtension::FindFirstDependency(IExtension **pOwner, SMInterface **pIn
 
 bool CExtension::FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface)
 {
-	List<IfaceInfo>::iterator *pIter = (List<IfaceInfo>::iterator *)iter;
-	List<IfaceInfo>::iterator _iter;
+	auto *it = static_cast<List<IfaceInfo>::iterator*>(iter);
 
-	if (_iter == m_Deps.end())
+	if (it == m_Deps.end())
 	{
 		return false;
 	}
 
-	_iter++;
+	it++;
 
 	if (pOwner)
 	{
-		*pOwner = (*_iter).owner;
+		*pOwner = (*it).owner;
 	}
 	if (pInterface)
 	{
-		*pInterface = (*_iter).iface;
+		*pInterface = (*it).iface;
 	}
 
-	*pIter = _iter;
-
-	if (_iter == m_Deps.end())
-	{
-		return false;
-	}
-
-	return true;
+	return it != m_Deps.end();
 }
 
 void CExtension::FreeDependencyIterator(ITERATOR *iter)
