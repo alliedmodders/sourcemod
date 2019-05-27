@@ -441,7 +441,7 @@ ITERATOR *CExtension::FindFirstDependency(IExtension **pOwner, SMInterface **pIn
 
 bool CExtension::FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface)
 {
-	auto *it = static_cast<List<IfaceInfo>::iterator*>(iter);
+	auto &it = *reinterpret_cast<List<IfaceInfo>::iterator*>(iter);
 
 	if (it == m_Deps.end())
 	{
