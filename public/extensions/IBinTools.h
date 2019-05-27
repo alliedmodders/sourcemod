@@ -36,9 +36,9 @@
 
 
 #define SMINTERFACE_BINTOOLS_NAME		"IBinTools"
-#define SMINTERFACE_BINTOOLS_VERSION	4
+#define SMINTERFACE_BINTOOLS_VERSION	5
 // Backwards incompatible change for x64 support.
-#define SMINTERFACE_BINTOOLS_MIN_VERSION 4
+#define SMINTERFACE_BINTOOLS_MIN_VERSION 5
 
 /**
  * @brief Function calling encoding utilities
@@ -53,7 +53,7 @@ namespace SourceMod
 	enum CallConvention
 	{
 		CallConv_ThisCall,		/**< This call (object pointer required) */
-		CallConv_Cdecl,			/**< Standard C call */
+		CallConv_Cdecl			/**< Standard C call */
 	};
 
 	/**
@@ -64,6 +64,31 @@ namespace SourceMod
 		PassType_Basic,			/**< Plain old register data (pointers, integers) */
 		PassType_Float,			/**< Floating point data */
 		PassType_Object,		/**< Object or structure */
+	};
+	
+	/**
+	 * @brief Supported registers for custom call conventions
+	 */
+	enum RegisterType
+	{
+		// Don't change the register and use the stack
+		RegisterType_None=0,
+
+		// 32-bit general purpose registers
+		RegisterType_EAX,
+		RegisterType_ECX,
+		RegisterType_EDX,
+		RegisterType_EBX,
+		
+		// 128-bit XMM registers
+		RegisterType_XMM0,
+		RegisterType_XMM1,
+		RegisterType_XMM2,
+		RegisterType_XMM3,
+		RegisterType_XMM4,
+		RegisterType_XMM5,
+		RegisterType_XMM6,
+		RegisterType_XMM7
 	};
 
 	#define PASSFLAG_BYVAL		(1<<0)		/**< Passing by value */
@@ -93,14 +118,19 @@ namespace SourceMod
 	 */
 	struct PassInfo
 	{
-		PassInfo() : fields(nullptr), numFields(0)
+		PassInfo() : reg(RegisterType_None), fields(nullptr), numFields(0)
 		{ }
 		
 		PassInfo(PassType type, unsigned int flags, size_t size, ObjectField *fields, unsigned int numFields)
-			: type(type), flags(flags), size(size), fields(fields), numFields(numFields)
+			: type(type), reg(RegisterType_None), flags(flags), size(size), fields(fields), numFields(numFields)
+		{ }
+		
+		PassInfo(PassType type, RegisterType reg, unsigned int flags, size_t size, ObjectField *fields, unsigned int numFields)
+			: type(type), reg(reg), flags(flags), size(size), fields(fields), numFields(numFields)
 		{ }
 		
 		PassType type;			/**< PassType value */
+		RegisterType reg;		/**< RegisterType value */
 		unsigned int flags;		/**< Pass/return flags */
 		size_t size;			/**< Size of the data being passed */
 		ObjectField *fields;	/**< List of fields for PassType_Object.

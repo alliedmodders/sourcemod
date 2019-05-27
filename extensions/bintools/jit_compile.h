@@ -44,33 +44,6 @@ void *JIT_HookCompile(HookWrapper *pWrapper);
 void JIT_FreeHook(void *addr);
 #endif
 
-/********************
- * Assembly Helpers *
- ********************/
-
-inline jit_uint8_t _DecodeRegister3(jit_uint32_t val)
-{
-	switch (val % 3)
-	{
-	case 0:
-		{
-			return kREG_EAX;
-		}
-	case 1:
-		{
-			return kREG_EDX;
-		}
-	case 2:
-		{
-			return kREG_ECX;
-		}
-	}
-
-	/* Should never happen */
-	assert(false);
-	return 0xFF;
-}
-
 extern jit_uint32_t g_RegDecoder;
 
 #endif //_INCLUDE_SOURCEMOD_JIT_COMPILE_H_

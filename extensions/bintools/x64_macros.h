@@ -48,14 +48,6 @@ const jit_uint8_t kREG_R13      = 13;
 const jit_uint8_t kREG_R14      = 14;
 const jit_uint8_t kREG_R15      = 15;
 
-const jit_uint8_t kREG_XMM0		= 0;
-const jit_uint8_t kREG_XMM1		= 1;
-const jit_uint8_t kREG_XMM2		= 2;
-const jit_uint8_t kREG_XMM3		= 3;
-const jit_uint8_t kREG_XMM4		= 4;
-const jit_uint8_t kREG_XMM5		= 5;
-const jit_uint8_t kREG_XMM6		= 6;
-const jit_uint8_t kREG_XMM7		= 7;
 const jit_uint8_t kREG_XMM8		= 8;
 const jit_uint8_t kREG_XMM9		= 9;
 const jit_uint8_t kREG_XMM10	= 10;

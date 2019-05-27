@@ -243,7 +243,16 @@ static cell_t PrepSDKCall_AddParameter(IPluginContext *pContext, const cell_t *p
 	DecodePassMethod(info->vtype, method, info->type, info->flags);
 	info->decflags = params[3] | VDECODE_FLAG_BYREF;
 	info->encflags = params[4];
-
+#ifdef PLATFORM_WINDOWS
+	// Validate that the parameter exist, otherwise reset to default
+	if(params[0] == 5)
+		info->reg = (RegisterType)params[5];
+	else
+		info->reg = RegisterType_None;
+#else
+	info->reg = RegisterType_None;
+#endif
+	
 	/* Since SDKPass_ByRef acts like SDKPass_Pointer we can't allow NULL, just in case */
 	if (method == SDKPass_ByRef)
 	{

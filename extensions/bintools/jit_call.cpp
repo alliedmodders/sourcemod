@@ -40,6 +40,60 @@ jit_uint32_t g_StackAlign = 0;
 jit_uint32_t g_RegDecoder = 0;
 
 /********************
+ * Assembly Helpers *
+ ********************/
+
+inline jit_uint8_t NextTypeReg(SourceHook::PassInfo::RegisterType reg)
+{
+	return (reg != SourceHook::PassInfo::RegisterType_None) ? ConvertReg(reg) : NextReg();
+} 
+
+inline jit_uint8_t NextPairReg(SourceHook::PassInfo::RegisterType reg)
+{
+	switch(reg)
+	{
+		case SourceHook::PassInfo::RegisterType_EDX: 
+			return kREG_EAX; 
+		case SourceHook::PassInfo::RegisterType_EAX: 
+			return kREG_EDX; 
+		default: 
+			return NextReg();
+	}
+}
+
+const int NUM_REG_MAX = 13;
+inline jit_uint8_t ConvertReg(SourceHook::PassInfo::RegisterType reg)
+{
+	static const jit_uint8_t table[NUM_REG_MAX];
+		kREG_INVALID, 
+		kREG_EAX, kREG_ECX, kREG_EDX, kREG_EBX,
+		kREG_XMM0, kREG_XMM1, kREG_XMM2, kREG_XMM3, kREG_XMM4, kREG_XMM5, kREG_XMM6, kREG_XMM7
+	};
+	
+	if (reg >= NUM_REG_MAX) 
+	{
+		return kREG_INVALID;
+	}
+	
+	return table[reg];
+}
+
+inline jit_uint8_t NextReg()
+{
+	switch (g_RegDecoder++ % 3)
+	{
+		case 0:
+			return kREG_EAX;
+		case 1:
+			return kREG_EDX;
+		case 2:
+			return kREG_ECX;
+		default:
+			return kREG_INVALID;
+	}
+}
+
+/********************
  * Assembly Opcodes *
  ********************/
 
@@ -113,8 +167,7 @@ inline void Write_Function_Epilogue(JitWriter *jit, bool is_void, bool has_param
 
 inline void Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *info, unsigned int offset)
 {
-	jit_uint8_t reg = _DecodeRegister3(g_RegDecoder++);
-
+	jit_uint8_t reg = NextTypeReg(info->reg);
 	if (info->flags & PASSFLAG_BYVAL)
 	{
 		switch (info->size)
@@ -177,7 +230,7 @@ inline void Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *info, unsi
 				//mov reg2, DWORD PTR [ebx+<offset>]
 				//push reg
 				//push reg2
-				jit_uint8_t reg2 = _DecodeRegister3(g_RegDecoder++);
+				jit_uint8_t reg2 = NextPairReg(info->reg);
 
 				if (offset+4 < SCHAR_MAX)
 				{
@@ -229,6 +282,23 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 		{
 		case 4:
 			{
+				SourceHook::PassInfo::RegisterType regtype = info->reg;
+#ifdef PLATFORM_WINDOWS
+				//if xmm_reg (where i = register index from [0..7])
+				// movss xmm(i), DWORD PTR [ebx+<offset>]
+				if(regtype >= SourceHook::PassInfo::RegisterType_XMM0)
+				{
+					jit_int8_t reg = ConvertReg(regtype);
+					if (offset < SCHAR_MAX) {
+						IA32_Movss_Mem32_Disp8(jit, reg, kREG_EBX, (jit_int8_t)offset);
+					} else if (!offset) {
+						IA32_Movss_Mem32(jit, reg, kREG_EBX);
+					} else {
+						IA32_Movss_Mem32_Disp32(jit, reg, kREG_EBX, offset);
+					}
+					regtype = SourceHook::PassInfo::RegisterType_None;
+				}
+#endif
 				//fld DWORD PTR [ebx+<offset>]
 				//push reg
 				//fstp DWORD PTR [esp]
@@ -240,7 +310,7 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 				} else {
 					IA32_Fld_Mem32_Disp32(jit, kREG_EBX, offset);
 				}
-				IA32_Push_Reg(jit, _DecodeRegister3(g_RegDecoder++));
+				IA32_Push_Reg(jit, NextTypeReg(regtype));
 				IA32_Fstp_Mem32_ESP(jit);
 				g_StackUsage += 4;
 				break;
@@ -274,7 +344,7 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 			return;
 		}
 
-		jit_uint8_t reg = _DecodeRegister3(g_RegDecoder++);
+		jit_uint8_t reg = NextTypeReg(info->reg);
 		if (offset < SCHAR_MAX)
 		{
 			IA32_Lea_DispRegImm8(jit, reg, kREG_EBX, (jit_int8_t)offset);
@@ -361,7 +431,7 @@ push_byref:
 
 		//lea reg, [ebx+<offset>]
 		//push reg
-		jit_uint8_t reg = _DecodeRegister3(g_RegDecoder++);
+		jit_uint8_t reg = NextTypeReg(info->reg);
 		if (offset < SCHAR_MAX)
 		{
 			IA32_Lea_DispRegImm8(jit, reg, kREG_EBX, (jit_int8_t)offset);
@@ -379,7 +449,7 @@ inline void Write_PushThisPtr(JitWriter *jit)
 #ifdef PLATFORM_POSIX
 	//mov reg, [ebx]
 	//push reg
-	jit_uint8_t reg = _DecodeRegister3(g_RegDecoder++);
+	jit_uint8_t reg = NextReg();
 
 	IA32_Mov_Reg_Rm(jit, reg, kREG_EBX, MOD_MEM_REG);
 	IA32_Push_Reg(jit, reg);

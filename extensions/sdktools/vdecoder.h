@@ -92,6 +92,7 @@ struct ValvePassInfo
 	unsigned int decflags;	/**< IN: VDECODE_FLAG_* */
 	unsigned int encflags;	/**< IN: VENCODE_FLAG_* */
 	PassType type;			/**< IN: Pass information */
+	RegisterType reg;		/**< IN: Register type */
 	unsigned int flags;		/**< IN: Pass flags */
 	size_t offset;			/**< OUT: stack offset */
 	size_t obj_offset;		/**< OUT: object offset at end of the stack */
@@ -104,6 +105,7 @@ struct ValveCall;
  *
  * @param type			Valve type.
  * @param pass			Either basic or object.
+ * @param reg			Register type.
  * @param flags			Either BYVAL or BYREF.
  * @param info			Buffer to store param info in.
  * @return				Number of bytes this will use in the virtual stack,
@@ -111,6 +113,7 @@ struct ValveCall;
  */
 size_t ValveParamToBinParam(ValveType type, 
 					  PassType pass,
+					  RegisterType reg,
 					  unsigned int flags,
 					  PassInfo *info,
 					  bool &needs_extra);

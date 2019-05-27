@@ -97,6 +97,28 @@ enum SDKPassMethod
 	SDKPass_ByRef,			/**< Pass an object by reference */
 };
 
+enum SDKRegister
+{
+	// Don't change the register and use the stack
+	SDKRegister_None = 0,
+
+	// 32-bit general purpose registers
+	SDKRegister_EAX,
+	SDKRegister_ECX,
+	SDKRegister_EDX,
+	SDKRegister_EBX,
+	
+	// 128-bit XMM registers
+	SDKRegister_XMM0,
+	SDKRegister_XMM1,
+	SDKRegister_XMM2,
+	SDKRegister_XMM3,
+	SDKRegister_XMM4,
+	SDKRegister_XMM5,
+	SDKRegister_XMM6,
+	SDKRegister_XMM7
+};
+
 #define VDECODE_FLAG_ALLOWNULL		(1<<0)		/**< Allow NULL for pointers */
 #define VDECODE_FLAG_ALLOWNOTINGAME	(1<<1)		/**< Allow players not in game */
 #define VDECODE_FLAG_ALLOWWORLD		(1<<2)		/**< Allow World entity */
@@ -168,8 +190,9 @@ native void PrepSDKCall_SetReturnInfo(SDKType type, SDKPassMethod pass, int decf
  * @param pass			How the data is passed in C++.
  * @param decflags		Flags on decoding from the plugin to C++.
  * @param encflags		Flags on encoding from C++ to the plugin.
+ * @param reg			Which register the data is used in C++. (Used only on Windows OS)
  */
-native void PrepSDKCall_AddParameter(SDKType type, SDKPassMethod pass, int decflags=0, int encflags=0);
+native void PrepSDKCall_AddParameter(SDKType type, SDKPassMethod pass, int decflags=0, int encflags=0, SDKRegister reg=SDKRegister_None);
 
 /**
  * Finalizes an SDK call preparation and returns the resultant Handle.

@@ -102,7 +102,7 @@ ValveCall *CreateValveCall(void *addr,
 	if (retInfo)
 	{
 		retBuf.fields = retFieldBuf;
-		if ((size = ValveParamToBinParam(retInfo->vtype, retInfo->type, retInfo->flags, &retBuf, retbuf_needs_extra)) == 0)
+		if ((size = ValveParamToBinParam(retInfo->vtype, retInfo->type, retInfo->reg, retInfo->flags, &retBuf, retbuf_needs_extra)) == 0)
 		{
 			delete vc;
 			return NULL;
@@ -122,6 +122,7 @@ ValveCall *CreateValveCall(void *addr,
 		paramBuf[i].fields = fieldBuf[i];
 		if ((size = ValveParamToBinParam(params[i].vtype, 
 			params[i].type,
+			params[i].reg,
 			params[i].flags,
 			&paramBuf[i],
 			needs_extra)) == 0)
@@ -259,7 +260,7 @@ ValveCall *CreateValveVCall(unsigned int vtableIdx,
 	bool retbuf_needs_extra;
 	if (retInfo)
 	{
-		if ((size = ValveParamToBinParam(retInfo->vtype, retInfo->type, retInfo->flags, &retBuf, retbuf_needs_extra)) == 0)
+		if ((size = ValveParamToBinParam(retInfo->vtype, retInfo->type, retInfo->reg, retInfo->flags, &retBuf, retbuf_needs_extra)) == 0)
 		{
 			delete vc;
 			return NULL;
@@ -277,6 +278,7 @@ ValveCall *CreateValveVCall(unsigned int vtableIdx,
 		bool needs_extra;
 		if ((size = ValveParamToBinParam(params[i].vtype, 
 										params[i].type,
+										params[i].reg,
 										params[i].flags,
 										&paramBuf[i],
 										needs_extra)) == 0)

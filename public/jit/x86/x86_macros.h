@@ -38,19 +38,22 @@
 
 #include <limits.h>
 
-//MOD R/M
-#define MOD_MEM_REG	0
-#define MOD_DISP8	1
-#define MOD_DISP32	2
-#define MOD_REG		3
+// MOD R/M
+#define MOD_MEM_REG		0
+#define MOD_DISP8		1
+#define MOD_DISP32		2
+#define MOD_REG			3
+#define MOD_XMM			4
+#define MOD_XMM_DISP8	5
+#define MOD_XMM_DISP32	6
 
-//SIB
-#define NOSCALE		0
-#define	SCALE2		1
-#define	SCALE4		2
-#define SCALE8		3
+// SIB
+#define NOSCALE	0
+#define	SCALE2	1
+#define	SCALE4	2
+#define SCALE8	3
 
-//Register codes
+// 32-bit general purpose registers
 const jit_uint8_t kREG_EAX      = 0;
 const jit_uint8_t kREG_ECX      = 1;
 const jit_uint8_t kREG_EDX      = 2;
@@ -63,9 +66,21 @@ const jit_uint8_t kREG_EBP      = 5;
 const jit_uint8_t kREG_ESI      = 6;
 const jit_uint8_t kREG_EDI      = 7;
 
+// 128-bit XMM registers
+const jit_uint8_t kREG_XMM0		= 0;
+const jit_uint8_t kREG_XMM1		= 1;
+const jit_uint8_t kREG_XMM2		= 2;
+const jit_uint8_t kREG_XMM3		= 3;
+const jit_uint8_t kREG_XMM4		= 4;
+const jit_uint8_t kREG_XMM5		= 5;
+const jit_uint8_t kREG_XMM6		= 6;
+const jit_uint8_t kREG_XMM7		= 7;
+
+const jit_uint8_t kREG_INVALID	= 0xFF;
+
 #define IA32_16BIT_PREFIX	0x66
 
-//condition codes (for example, Jcc opcodes)
+// condition codes (for example, Jcc opcodes)
 #define CC_B	0x2
 #define CC_NAE	CC_B
 #define CC_NB	0x3
@@ -89,6 +104,7 @@ const jit_uint8_t kREG_EDI      = 7;
 
 #define IA32_MOVZX_R32_RM8_1	0x0F	// opcode part 1
 #define IA32_MOVZX_R32_RM16_1	0x0F	// opcode part 1
+#define IA32_MOVSS_MEM32_1		0xF3	// opcode part 1
 #define IA32_PUSH_REG			0x50	// encoding is +r
 #define IA32_POP_REG			0x58	// encoding is +r
 #define IA32_PUSH_IMM32			0x68	// encoding is <imm32>
@@ -108,6 +124,8 @@ const jit_uint8_t kREG_EDI      = 7;
 #define IA32_MOVSD				0xA5	// no extra encoding
 #define IA32_MOVZX_R32_RM8_2	0xB6	// encoding is /r
 #define IA32_MOVZX_R32_RM16_2	0xB7	// encoding is /r
+#define IA32_MOVSS_MEM32_2		0x0F	// opcode part 2
+#define IA32_MOVSS_MEM32_3		0x10	// encoding is /r
 #define IA32_MOV_REG_IMM		0xB8	// encoding is +r <imm32>
 #define IA32_FLD_MEM32			0xD9	// encoding is /0
 #define IA32_FSTP_MEM32			0xD9	// encoding is /3
@@ -199,6 +217,32 @@ inline void IA32_Movzx_Reg32_Rm16_Disp32(JitWriter *jit, jit_uint8_t dest, jit_u
 	jit->write_ubyte(IA32_MOVZX_R32_RM16_2);
 	jit->write_ubyte(ia32_modrm(MOD_DISP32, dest, src));
 	jit->write_int32(disp);
+}
+
+inline void IA32_Movss_Mem32(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src)
+{
+	jit->write_ubyte(IA32_MOVSS_MEM32_1);
+	jit->write_ubyte(IA32_MOVSS_MEM32_2);
+	jit->write_ubyte(IA32_MOVSS_MEM32_3);
+	jit->write_ubyte(ia32_modrm(MOD_XMM, dest, src));
+}
+
+inline void IA32_Movss_Mem32_Disp8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_int8_t val)
+{
+	jit->write_ubyte(IA32_MOVSS_MEM32_1);
+	jit->write_ubyte(IA32_MOVSS_MEM32_2);
+	jit->write_ubyte(IA32_MOVSS_MEM32_3);
+	jit->write_ubyte(ia32_modrm(MOD_XMM_DISP8, dest, src));
+	jit->write_ubyte(val);
+}
+
+inline void IA32_Movss_Mem32_Disp32(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_int32_t val)
+{
+	jit->write_ubyte(IA32_MOVSS_MEM32_1);
+	jit->write_ubyte(IA32_MOVSS_MEM32_2);
+	jit->write_ubyte(IA32_MOVSS_MEM32_3);
+	jit->write_ubyte(ia32_modrm(MOD_XMM_DISP32, dest, src));
+	jit->write_int32(val);
 }
 
 inline void IA32_Push_Reg(JitWriter *jit, jit_uint8_t reg)

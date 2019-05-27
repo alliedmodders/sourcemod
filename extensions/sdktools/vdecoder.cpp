@@ -49,11 +49,13 @@ using namespace SourcePawn;
 
 size_t ValveParamToBinParam(ValveType type, 
 						  PassType pass,
+						  RegisterType reg,
 						  unsigned int flags,
 						  PassInfo *info,
 						  bool &needs_extra)
 {
 	needs_extra = false;
+	info->reg = reg;
 	switch (type)
 	{
 	case Valve_Vector:

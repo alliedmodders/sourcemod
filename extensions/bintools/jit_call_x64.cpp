@@ -51,6 +51,10 @@ jit_uint8_t g_ThisPtrReg;
 const jit_uint8_t STACK_PARAM = 16;
 const jit_uint8_t INVALID_REG = 255;
 
+/********************
+ * Assembly Helpers *
+ ********************/
+
 inline jit_uint8_t NextScratchReg()
 {
 	switch (g_RegDecoder++ % 3)

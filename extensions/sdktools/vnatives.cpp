@@ -45,12 +45,13 @@
 SourceHook::List<ValveCall *> g_RegCalls;
 SourceHook::List<ICallWrapper *> g_CallWraps;
 
-inline void InitPass(ValvePassInfo &info, ValveType vtype, PassType type, unsigned int flags, unsigned int decflags=0)
+inline void InitPass(ValvePassInfo &info, ValveType vtype, PassType type, unsigned int flags, unsigned int decflags=0, RegisterType reg=RegisterType_None)
 {
 	info.decflags = decflags;
 	info.encflags = 0;
 	info.flags = flags;
 	info.type = type;
+	info.reg = reg;
 	info.vtype = vtype;
 }
 

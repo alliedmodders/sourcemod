@@ -292,11 +292,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	}
 
 	int reason = params[2];
-	
-#if SOURCE_ENGINE == SE_CSGO
-	reason++;
-#endif
-	
+
 #if SOURCE_ENGINE == SE_CSS
 	static ICallWrapper *pWrapper = NULL;
 
@@ -319,7 +315,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	ArgBuffer<void*, float, int> vstk(gamerules, sp_ctof(params[1]), reason);
 
 	pWrapper->Execute(vstk, NULL);
-#elif SOURCE_ENGINE == SE_CSGO && !defined(WIN32)
+#elif SOURCE_ENGINE == SE_CSGO
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -329,6 +325,9 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 			pass[0].flags = PASSFLAG_BYVAL; \
 			pass[0].type = PassType_Float; \
 			pass[0].size = sizeof(float); \
+#if defined WIN32
+			pass[0].reg = RegisterType_XMM1; \
+#endif
 			pass[1].flags = PASSFLAG_BYVAL; \
 			pass[1].type = PassType_Basic; \
 			pass[1].size = sizeof(int); \
@@ -344,32 +343,11 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	if (params[3] == 1 && g_pTerminateRoundDetoured)
 		g_pIgnoreTerminateDetour = true;
 
+	reason++;
+	
 	ArgBuffer<void*, float, int, int, int> vstk(gamerules, sp_ctof(params[1]), reason, 0, 0);
 
 	pWrapper->Execute(vstk, NULL);
-#else // CSGO Win32
-	static void *addr = NULL;
-
-	if(!addr)
-	{
-		GET_MEMSIG("TerminateRound");
-	}
-
-	if (params[3] == 1 && g_pTerminateRoundDetoured)
-		g_pIgnoreTerminateDetour = true;
-
-	float delay = sp_ctof(params[1]);
-	
-	__asm
-	{
-		push 0
-		push 0
-		push reason
-		movss xmm1, delay
-		mov ecx, gamerules
-		call addr
-	}
-
 #endif
 	return 1;
 }
