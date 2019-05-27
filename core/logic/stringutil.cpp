@@ -426,7 +426,7 @@ cell_t InternalFormat(IPluginContext *pCtx, const cell_t *params, int start)
 		{
 			char *tmpbuff = g_extrabuf.GetWithSize(maxlen);
 			if (!tmpbuff)
-				pCtx->ThrowNativeError("Unable to allocate buffer with a size of \"%u\"", maxlen);
+				return pCtx->ThrowNativeError("Unable to allocate buffer with a size of \"%u\"", maxlen);
 
 			__copy_buf = tmpbuff;
 		}
