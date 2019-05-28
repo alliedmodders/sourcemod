@@ -416,57 +416,20 @@ void CExtension::AddChildDependent(CExtension *pOther, SMInterface *iface)
 	m_ChildDeps.push_back(info);
 }
 
+// note: dependency iteration deprecated since 1.10
 ITERATOR *CExtension::FindFirstDependency(IExtension **pOwner, SMInterface **pInterface)
 {
-	List<IfaceInfo>::iterator iter = m_Deps.begin();
-
-	if (iter == m_Deps.end())
-	{
-		return NULL;
-	}
-
-	if (pOwner)
-	{
-		*pOwner = (*iter).owner;
-	}
-	if (pInterface)
-	{
-		*pInterface = (*iter).iface;
-	}
-
-	List<IfaceInfo>::iterator *pIter = new List<IfaceInfo>::iterator(iter);
-
-	return (ITERATOR *)pIter;
+	return nullptr;
 }
 
 bool CExtension::FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface)
 {
-	auto &it = *reinterpret_cast<List<IfaceInfo>::iterator*>(iter);
-
-	if (it == m_Deps.end())
-	{
-		return false;
-	}
-
-	it++;
-
-	if (pOwner)
-	{
-		*pOwner = (*it).owner;
-	}
-	if (pInterface)
-	{
-		*pInterface = (*it).iface;
-	}
-
-	return it != m_Deps.end();
+	return false;
 }
 
 void CExtension::FreeDependencyIterator(ITERATOR *iter)
 {
-	List<IfaceInfo>::iterator *pIter = (List<IfaceInfo>::iterator *)iter;
 
-	delete pIter;
 }
 
 void CExtension::AddInterface(SMInterface *pInterface)
