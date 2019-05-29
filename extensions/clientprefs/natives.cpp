@@ -471,25 +471,81 @@ cell_t GetClientCookieTime(IPluginContext *pContext, const cell_t *params)
 	return value;
 }
 
+static cell_t Cookie_Set(IPluginContext *pContext, const cell_t *params)
+{
+	// This version takes (handle, client, value). The original is (client, handle, value).
+	cell_t new_params[4] = {
+		3,
+		params[2],
+		params[1],
+		params[3]
+	}
+
+	return SetClientPrefCookie(pContext, new_params);
+}
+
+static cell_t Cookie_Get(IPluginContext *pContext, const cell_t *params)
+{
+	// This verson takes (handle, client, buffer, maxlen). The original is (client, handle, buffer, maxlen).
+	cell_t new_params[5] = {
+		4,
+		params[2],
+		params[1],
+		params[3],
+		params[4]
+	}
+
+	return GetClientPrefCookie(pContext, new_params);
+}
+
+static cell_t Cookie_SetByAuthId(IPluginContext *pContext, const cell_t *params)
+{
+	// Thisv ersion takes (handle, authid, value). The original is (authid, handle, value).
+	cell_t new_params[4] = {
+		3,
+		params[2],
+		params[1],
+		params[3]
+	}
+
+	return SetAuthIdCookie(pContext, new_params);
+}
+
+static cell_t Cookie_GetClientTime(IPluginContext *pContext, const cell_t *params)
+{
+
+	cell_t new_params[3] = {
+		2,
+		params[2],
+		params[1],
+	}
+
+	return GetClientCookieTime(pContext, new_params);
+}
+
 sp_nativeinfo_t g_ClientPrefNatives[] = 
 {
-	{"RegClientCookie",				RegClientPrefCookie},
-	{"FindClientCookie",			FindClientPrefCookie},
-	{"SetClientCookie",				SetClientPrefCookie},
-	{"SetAuthIdCookie",				SetAuthIdCookie},
-	{"GetClientCookie",				GetClientPrefCookie},
-	{"AreClientCookiesCached",		AreClientCookiesCached},
-	{"GetCookieAccess",				GetCookieAccess},
-	{"ReadCookieIterator",			ReadCookieIterator},
-	{"GetCookieIterator",			GetCookieIterator},
-	{"ShowCookieMenu",				ShowSettingsMenu},
-	{"SetCookieMenuItem",			AddSettingsMenuItem},
-	{"SetCookiePrefabMenu",			AddSettingsPrefabMenuItem},
+	{"RegClientCookie",             RegClientPrefCookie},
+	{"FindClientCookie",            FindClientPrefCookie},
+	{"SetClientCookie",             SetClientPrefCookie},
+	{"SetAuthIdCookie",             SetAuthIdCookie},
+	{"GetClientCookie",             GetClientPrefCookie},
+	{"AreClientCookiesCached",      AreClientCookiesCached},
+	{"GetCookieAccess",             GetCookieAccess},
+	{"ReadCookieIterator",          ReadCookieIterator},
+	{"GetCookieIterator",           GetCookieIterator},
+	{"ShowCookieMenu",              ShowSettingsMenu},
+	{"SetCookieMenuItem",           AddSettingsMenuItem},
+	{"SetCookiePrefabMenu",         AddSettingsPrefabMenuItem},
 	{"GetClientCookieTime",         GetClientCookieTime},
 
 	{"Cookie.Cookie",               RegClientPrefCookie},
 	{"Cookie.Find",                 FindClientPrefCookie},
+	{"Cookie.Set",                  Cookie_Set},
+	{"Cookie.Get",                  Cookie_Get},
+	{"Cookie.SetByAuthId",          Cookie_SetByAuthId},
 	{"Cookie.SetPrefabMenu",        AddSettingsPrefabMenuItem},
+	{"Cookie.GetClientTime",        Cookie_GetClientTime},
 	{"Cookie.AccessLevel.get",      GetCookieAccess},
 
 	{NULL,                          NULL}
