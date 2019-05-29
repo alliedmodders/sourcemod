@@ -111,6 +111,74 @@ enum ExecType
  * @endsection
  */
 
+methodmap GlobalForward < Handle {
+	// Creates a global forward.
+	//
+	// @note The name used to create the forward is used as its public function in all target plugins.
+	// @note This is ideal for global, static forwards that are never changed.
+	// @note Global forwards cannot be cloned.
+	// @note Use CloseHandle() to destroy these.
+	//
+	// @param name              Name of public function to use in forward.
+	// @param type              Execution type to be used.
+	// @param ...               Variable number of parameter types (up to 32).
+	// @return                  Handle to new global forward.
+	// @error                   More than 32 paramater types passed.
+	public native GlobalForward(const char[] name, ExecType type, ParamType ...);
+
+	// Returns the number of functions in a global or private forward's call list.
+	property int FunctionCount {
+		public native get();
+	}
+};
+
+methodmap PrivateForward < GlobalForward {
+	// Creates a private forward.
+	//
+	// @note No functions are automatically added. Use AddToForward() to do this.
+	// @note Private forwards can be cloned.
+	// @note Use CloseHandle() to destroy these.
+	//
+	// @param type          Execution type to be used.
+	// @param ...           Variable number of parameter types (up to 32).
+	// @return              Handle to new private forward.
+	// @error               More than 32 paramater types passed.
+	public native PrivateForward(ExecType type, ParamType ...);
+
+	// Adds a function to a private forward's call list.
+	//
+	// @note Cannot be used during an incomplete call.
+	//
+	// @param plugin        Handle of the plugin that contains the function.
+	//                      Pass INVALID_HANDLE to specify the calling plugin.
+	// @param func          Function to add to forward.
+	// @return              True on success, false otherwise.
+	// @error               Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
+	public native bool AddFunction(Handle plugin, Function func);
+
+	// Removes a function from a private forward's call list.
+	//
+	// @note Only removes one instance.
+	// @note Functions will be removed automatically if their parent plugin is unloaded.
+	//
+	// @param plugin        Handle of the plugin that contains the function.
+	//                      Pass INVALID_HANDLE to specify the calling plugin.
+	// @param func          Function to remove from forward.
+	// @return              True on success, false otherwise.
+	// @error               Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
+	public native bool RemoveFunction(Handle plugin, Function func);
+
+	// Removes all instances of a plugin from a private forward's call list.
+	//
+	// @note Functions will be removed automatically if their parent plugin is unloaded.
+	//
+	// @param plugin        Handle of the plugin to remove instances of.
+	//                      Pass INVALID_HANDLE to specify the calling plugin.
+	// @return              Number of functions removed from forward.
+	// @error               Invalid or corrupt private forward handle or invalid or corrupt plugin handle.
+	public native int RemoveAllFunctions(Handle plugin);
+};
+
 /**
  * Gets a function id from a function name.
  *
@@ -136,7 +204,7 @@ native Function GetFunctionByName(Handle plugin, const char[] name);
  * @return              Handle to new global forward.
  * @error               More than 32 paramater types passed.
  */
-native Handle CreateGlobalForward(const char[] name, ExecType type, ParamType ...);
+native GlobalForward CreateGlobalForward(const char[] name, ExecType type, ParamType ...);
 
 /**
  * Creates a private forward.
@@ -150,7 +218,7 @@ native Handle CreateGlobalForward(const char[] name, ExecType type, ParamType ..
  * @return              Handle to new private forward.
  * @error               More than 32 paramater types passed.
  */
-native Handle CreateForward(ExecType type, ParamType ...);
+native PrivateForward CreateForward(ExecType type, ParamType ...);
 
 /**
  * Returns the number of functions in a global or private forward's call list.
