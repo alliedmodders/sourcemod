@@ -295,7 +295,8 @@ class SMConfig(object):
       cxx.cxxflags += ['-Wno-delete-non-virtual-dtor']
     if cxx.version >= 'gcc-4.8':
       cxx.cflags += ['-Wno-unused-result']
-
+    if cxx.version >= 'gcc-9.0':
+      cxx.cxxflags += ['-Wno-class-memaccess', '-Wno-packed-not-aligned']
     if have_clang:
       cxx.cxxflags += ['-Wno-implicit-exception-spec-mismatch']
       if cxx.version >= 'apple-clang-5.1' or cxx.version >= 'clang-3.4':
