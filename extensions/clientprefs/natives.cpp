@@ -479,7 +479,7 @@ static cell_t Cookie_Set(IPluginContext *pContext, const cell_t *params)
 		params[2],
 		params[1],
 		params[3]
-	}
+	};
 
 	return SetClientPrefCookie(pContext, new_params);
 }
@@ -493,7 +493,7 @@ static cell_t Cookie_Get(IPluginContext *pContext, const cell_t *params)
 		params[1],
 		params[3],
 		params[4]
-	}
+	};
 
 	return GetClientPrefCookie(pContext, new_params);
 }
@@ -506,7 +506,7 @@ static cell_t Cookie_SetByAuthId(IPluginContext *pContext, const cell_t *params)
 		params[2],
 		params[1],
 		params[3]
-	}
+	};
 
 	return SetAuthIdCookie(pContext, new_params);
 }
@@ -518,7 +518,7 @@ static cell_t Cookie_GetClientTime(IPluginContext *pContext, const cell_t *param
 		2,
 		params[2],
 		params[1],
-	}
+	};
 
 	return GetClientCookieTime(pContext, new_params);
 }
