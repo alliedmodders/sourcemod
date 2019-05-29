@@ -40,9 +40,9 @@
  */
 enum CookieAccess
 {
-	CookieAccess_Public,            /**< Visible and Changeable by users */
-	CookieAccess_Protected,         /**< Read only to users */
-	CookieAccess_Private            /**< Completely hidden cookie */
+	CookieAccess_Public,			/**< Visible and Changeable by users */
+	CookieAccess_Protected,			/**< Read only to users */
+	CookieAccess_Private,			/**< Completely hidden cookie */
 };
 
 /**
@@ -50,10 +50,10 @@ enum CookieAccess
  */
 enum CookieMenu
 {
-	CookieMenu_YesNo,           /**< Yes/No menu with "yes"/"no" results saved into the cookie */
-	CookieMenu_YesNo_Int,       /**< Yes/No menu with 1/0 saved into the cookie */
-	CookieMenu_OnOff,           /**< On/Off menu with "on"/"off" results saved into the cookie */
-	CookieMenu_OnOff_Int        /**< On/Off menu with 1/0 saved into the cookie */
+	CookieMenu_YesNo,			/**< Yes/No menu with "yes"/"no" results saved into the cookie */
+	CookieMenu_YesNo_Int,		/**< Yes/No menu with 1/0 saved into the cookie */
+	CookieMenu_OnOff,			/**< On/Off menu with "on"/"off" results saved into the cookie */
+	CookieMenu_OnOff_Int,		/**< On/Off menu with 1/0 saved into the cookie */
 };
 
 enum CookieMenuAction
@@ -71,7 +71,7 @@ enum CookieMenuAction
 	 *
 	 * INPUT : Client index and any data if available.
 	 */
-	CookieMenuAction_SelectOption = 1
+	CookieMenuAction_SelectOption = 1,
 };
 
 /**
@@ -82,7 +82,7 @@ enum CookieMenuAction
  * errors by the clientprefs extension.
  */
 
- methodmap Cookie < Handle {
+methodmap Cookie < Handle {
 	// Creates a new Client preference cookie.
 	//
 	// Handles returned can be closed via CloseHandle() when
@@ -152,6 +152,7 @@ enum CookieMenuAction
 		public native get();
 	}
 };
+
 
 /**
  * Creates a new Client preference cookie.
@@ -300,13 +301,13 @@ native bool ReadCookieIterator(Handle iter,
 								CookieAccess &access, 
 								char[] desc="", 
 								int descLen=0);
-
+								
 /**
  * Returns the access level of a cookie
  *
  * @param cookie        Client preference cookie handle.
  * @return              CookieAccess access level.
- * @error               Invalid cookie handle.
+ * @error               Invalid cookie handle.	
  */
 native CookieAccess GetCookieAccess(Handle cookie);
 
@@ -350,5 +351,14 @@ public void __ext_cprefs_SetNTVOptional()
 	MarkNativeAsOptional("ReadCookieIterator");
 	MarkNativeAsOptional("GetCookieAccess");
 	MarkNativeAsOptional("GetClientCookieTime");
+
+	MarkNativeAsOptional("Cookie.Cookie");
+	MarkNativeAsOptional("Cookie.Find");
+	MarkNativeAsOptional("Cookie.Set");
+	MarkNativeAsOptional("Cookie.Get");
+	MarkNativeAsOptional("Cookie.SetByAuthId");
+	MarkNativeAsOptional("Cookie.SetPrefabMenu");
+	MarkNativeAsOptional("Cookie.GetClientTime");
+	MarkNativeAsOptional("Cookie.AccessLevel.get");
 }
 #endif
