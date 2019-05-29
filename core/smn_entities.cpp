@@ -2595,7 +2595,7 @@ static cell_t GetEntityFlags(IPluginContext *pContext, const cell_t *params)
 
 	for (int32_t i = 0; i < 32; i++)
 	{
-		int32_t flag = (1<<i);
+		int32_t flag = (1U<<i);
 		if ((actual_flags & flag) == flag)
 		{
 			sm_flags |= SDKEntFlagToSMEntFlag(flag);
@@ -2641,7 +2641,7 @@ static cell_t SetEntityFlags(IPluginContext *pContext, const cell_t *params)
 
 	for (int32_t i = 0; i < 32; i++)
 	{
-		int32_t flag = (1<<i);
+		int32_t flag = (1U<<i);
 		if ((sm_flags & flag) == flag)
 		{
 			actual_flags |= SMEntFlagToSDKEntFlag(flag);

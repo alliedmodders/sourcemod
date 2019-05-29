@@ -129,10 +129,10 @@ methodmap ArrayStack < Handle
  * The "blocksize" determines how many cells each slot has; it cannot
  * be changed after creation.
  *
- * @param blocksize		The number of cells each entry in the stack can 
- *						hold.  For example, 32 cells is equivalent to:
- *						new Array[X][32]
- * @return				New stack Handle.
+ * @param blocksize     The number of cells each entry in the stack can 
+ *                      hold.  For example, 32 cells is equivalent to:
+ *                      new Array[X][32]
+ * @return              New stack Handle.
  */
 native ArrayStack CreateStack(int blocksize=1);
 
@@ -142,9 +142,9 @@ native ArrayStack CreateStack(int blocksize=1);
  * This may safely be used even if the stack has a blocksize
  * greater than 1.
  *
- * @param stack			Stack Handle.
- * @param value			Value to push.
- * @error				Invalid Handle or out of memory.
+ * @param stack         Stack Handle.
+ * @param value         Value to push.
+ * @error               Invalid Handle or out of memory.
  */
 native void PushStackCell(Handle stack, any value);
 
@@ -152,9 +152,9 @@ native void PushStackCell(Handle stack, any value);
  * Pushes a copy of a string onto the end of a stack, truncating it if it is 
  * too big.
  *
- * @param stack			Stack Handle.
- * @param value			String to push.
- * @error				Invalid Handle or out of memory.
+ * @param stack         Stack Handle.
+ * @param value         String to push.
+ * @error               Invalid Handle or out of memory.
  */
 native void PushStackString(Handle stack, const char[] value);
 
@@ -163,66 +163,66 @@ native void PushStackString(Handle stack, const char[] value);
  * are pushed as a block (i.e. the entire array takes up one stack slot),
  * rather than pushing each cell individually.
  *
- * @param stack			Stack Handle.
- * @param values		Block of values to copy.
- * @param size			If not set, the number of elements copied from the array
- *						will be equal to the blocksize.  If set higher than the 
- *						blocksize, the operation will be truncated.
- * @error				Invalid Handle or out of memory.
+ * @param stack         Stack Handle.
+ * @param values        Block of values to copy.
+ * @param size          If not set, the number of elements copied from the array
+ *                      will be equal to the blocksize.  If set higher than the 
+ *                      blocksize, the operation will be truncated.
+ * @error               Invalid Handle or out of memory.
  */
 native void PushStackArray(Handle stack, const any[] values, int size=-1);
 
 /**
  * Pops a cell value from a stack.
  *
- * @param stack			Stack Handle.
- * @param value			Variable to store the value.
- * @param block			Optionally specify which block to read from
- *						(useful if the blocksize > 0).
- * @param asChar		Optionally read as a byte instead of a cell.
- * @return				True on success, false if the stack is empty.
- * @error				Invalid Handle.
+ * @param stack         Stack Handle.
+ * @param value         Variable to store the value.
+ * @param block         Optionally specify which block to read from
+ *                      (useful if the blocksize > 0).
+ * @param asChar        Optionally read as a byte instead of a cell.
+ * @return              True on success, false if the stack is empty.
+ * @error               Invalid Handle.
  */
 native bool PopStackCell(Handle stack, any &value, int block=0, bool asChar=false);
 
 /**
  * Pops a string value from a stack.
  *
- * @param stack			Stack Handle.
- * @param buffer		Buffer to store string.
- * @param maxlength		Maximum size of the buffer.
- * @return				True on success, false if the stack is empty.
- * @error				Invalid Handle.
+ * @param stack         Stack Handle.
+ * @param buffer        Buffer to store string.
+ * @param maxlength     Maximum size of the buffer.
+ * @return              True on success, false if the stack is empty.
+ * @error               Invalid Handle.
  */
 native bool PopStackString(Handle stack, char[] buffer, int maxlength, int &written=0);
 
 /**
  * Pops an array of cells from a stack.
  *
- * @param stack			Stack Handle.
- * @param buffer		Buffer to store the array in.
- * @param size			If not set, assumes the buffer size is equal to the
- *						blocksize.  Otherwise, the size passed is used.
- * @return				True on success, false if the stack is empty.
- * @error				Invalid Handle.
+ * @param stack         Stack Handle.
+ * @param buffer        Buffer to store the array in.
+ * @param size          If not set, assumes the buffer size is equal to the
+ *                      blocksize.  Otherwise, the size passed is used.
+ * @return              True on success, false if the stack is empty.
+ * @error               Invalid Handle.
  */
 native bool PopStackArray(Handle stack, any[] buffer, int size=-1);
 
 /**
  * Checks if a stack is empty.
  *
- * @param stack			Stack Handle.
- * @return				True if empty, false if not empty.
- * @error				Invalid Handle.
+ * @param stack         Stack Handle.
+ * @return              True if empty, false if not empty.
+ * @error               Invalid Handle.
  */
 native bool IsStackEmpty(Handle stack);
 
 /**
  * Pops a value off a stack, ignoring it completely.
  *
- * @param stack			Stack Handle.
- * @return				True if something was popped, false otherwise.
- * @error				Invalid Handle.
+ * @param stack         Stack Handle.
+ * @return              True if something was popped, false otherwise.
+ * @error               Invalid Handle.
  */
 stock bool PopStack(Handle stack)
 {
@@ -233,8 +233,8 @@ stock bool PopStack(Handle stack)
 /**
  * Returns the blocksize the stack was created with.
  *
- * @param stack			Stack Handle.
- * @return 				The blocksize of the stack.
- * @error				Invalid Handle
+ * @param stack         Stack Handle.
+ * @return              The blocksize of the stack.
+ * @error               Invalid Handle
  */
 native int GetStackBlockSize(Handle stack);

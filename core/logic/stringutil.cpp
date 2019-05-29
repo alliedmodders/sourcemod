@@ -381,7 +381,11 @@ public:
     {
         if (len > max_size)
         {
-            buffer = (char *)realloc(buffer, len);
+            auto *newbuffer = static_cast<char *>(realloc(buffer, len));
+            if (!newbuffer)
+                return nullptr;
+
+            buffer = newbuffer;
             max_size = len;
         }
         return buffer;
@@ -420,7 +424,11 @@ cell_t InternalFormat(IPluginContext *pCtx, const cell_t *params, int start)
 	{
 		if (maxlen > sizeof(g_formatbuf))
 		{
-			__copy_buf = g_extrabuf.GetWithSize(maxlen);
+			char *tmpbuff = g_extrabuf.GetWithSize(maxlen);
+			if (!tmpbuff)
+				return pCtx->ThrowNativeError("Unable to allocate buffer with a size of \"%u\"", maxlen);
+
+			__copy_buf = tmpbuff;
 		}
 		else
 		{
