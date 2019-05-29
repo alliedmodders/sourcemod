@@ -75,6 +75,23 @@ enum CookieMenuAction
 };
 
 /**
+ * Cookie Menu Callback prototype
+ *
+ * @param client		Client index.
+ * @param action		CookieMenuAction being performed.
+ * @param info			Info data passed.
+ * @param buffer		Outbut buffer.
+ * @param maxlen		Max length of the output buffer.
+ */
+typedef CookieMenuHandler = function void (
+  int client,
+  CookieMenuAction action,
+  any info,
+  char[] buffer,
+  int maxlen
+);
+
+/**
  * Note:
  * 
  * A successful return value/result on any client prefs native only guarantees that the local cache has been updated.
@@ -226,22 +243,6 @@ native bool AreClientCookiesCached(int client);
  */
 forward void OnClientCookiesCached(int client);
 
-/**
- * Cookie Menu Callback prototype
- *
- * @param client		Client index.
- * @param action		CookieMenuAction being performed.
- * @param info			Info data passed.
- * @param buffer		Outbut buffer.
- * @param maxlen		Max length of the output buffer.
- */
-typedef CookieMenuHandler = function void (
-  int client,
-  CookieMenuAction action,
-  any info,
-  char[] buffer,
-  int maxlen
-);
 
 /**
  * Add a new prefab item to the client cookie settings menu.
