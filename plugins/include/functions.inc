@@ -126,20 +126,13 @@ methodmap GlobalForward < Handle {
 	// @error                   More than 32 paramater types passed.
 	public native GlobalForward(const char[] name, ExecType type, ParamType ...);
 
-	// Starts a call to functions in a forward's call list.
-	//
-	// @note Cannot be used during an incomplete call.
-	//
-	// @error                   Invalid or corrupt forward handle or called before another call has completed.
-	public native void StartCall();
-
 	// Returns the number of functions in a global or private forward's call list.
 	property int FunctionCount {
 		public native get();
 	}
 };
 
-methodmap Forward < GlobalForward {
+methodmap PrivateForward < GlobalForward {
 	// Creates a private forward.
 	//
 	// @note No functions are automatically added. Use AddToForward() to do this.
@@ -150,7 +143,7 @@ methodmap Forward < GlobalForward {
 	// @param ...           Variable number of parameter types (up to 32).
 	// @return              Handle to new private forward.
 	// @error               More than 32 paramater types passed.
-	public native Forward(ExecType type, ParamType ...);
+	public native PrivateForward(ExecType type, ParamType ...);
 
 	// Adds a function to a private forward's call list.
 	//
@@ -161,7 +154,7 @@ methodmap Forward < GlobalForward {
 	// @param func          Function to add to forward.
 	// @return              True on success, false otherwise.
 	// @error               Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
-	public native bool Add(Handle plugin, Function func);
+	public native bool AddFunction(Handle plugin, Function func);
 
 	// Removes a function from a private forward's call list.
 	//
@@ -173,7 +166,7 @@ methodmap Forward < GlobalForward {
 	// @param func          Function to remove from forward.
 	// @return              True on success, false otherwise.
 	// @error               Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
-	public native bool Remove(Handle plugin, Function func);
+	public native bool RemoveFunction(Handle plugin, Function func);
 
 	// Removes all instances of a plugin from a private forward's call list.
 	//
@@ -183,7 +176,7 @@ methodmap Forward < GlobalForward {
 	//                      Pass INVALID_HANDLE to specify the calling plugin.
 	// @return              Number of functions removed from forward.
 	// @error               Invalid or corrupt private forward handle or invalid or corrupt plugin handle.
-	public native int RemoveAll(Handle plugin);
+	public native int RemoveAllFunctions(Handle plugin);
 };
 
 /**
