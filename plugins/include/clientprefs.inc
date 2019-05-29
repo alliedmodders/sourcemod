@@ -153,19 +153,18 @@ methodmap Cookie < Handle {
 	}
 };
 
-
 /**
  * Creates a new Client preference cookie.
  *
  * Handles returned by RegClientCookie can be closed via CloseHandle() when
  * no longer needed.
  *
- * @param name          Name of the new preference cookie.
- * @param description   Optional description of the preference cookie.
- * @param access        What CookieAccess level to assign to this cookie.
- * @return              A handle to the newly created cookie. If the cookie already
+ * @param name			Name of the new preference cookie.
+ * @param description	Optional description of the preference cookie.
+ * @param access		What CookieAccess level to assign to this cookie.
+ * @return				A handle to the newly created cookie. If the cookie already
  *                      exists, a handle to it will still be returned.
- * @error               Cookie name is blank.
+ * @error				Cookie name is blank.
  */
 native Handle RegClientCookie(const char[] name, const char[] description, CookieAccess access);
 
@@ -175,66 +174,66 @@ native Handle RegClientCookie(const char[] name, const char[] description, Cooki
  * Handles returned by FindClientCookie can be closed via CloseHandle() when
  * no longer needed.
  *
- * @param name          Name of cookie to find.
- * @return              A handle to the cookie if it is found. INVALID_HANDLE otherwise.
+ * @param name			Name of cookie to find.
+ * @return				A handle to the cookie if it is found. INVALID_HANDLE otherwise.
  */
 native Handle FindClientCookie(const char[] name);
 
 /**
  * Set the value of a Client preference cookie.
  *
- * @param client        Client index.
- * @param cookie        Client preference cookie handle.
- * @param value         String value to set.
- * @error               Invalid cookie handle or invalid client index.
+ * @param client		Client index.
+ * @param cookie		Client preference cookie handle.
+ * @param value			String value to set.
+ * @error				Invalid cookie handle or invalid client index.
  */
 native void SetClientCookie(int client, Handle cookie, const char[] value);
 
 /**
  * Retrieve the value of a Client preference cookie.
  *
- * @param client        Client index.
- * @param cookie        Client preference cookie handle.
- * @param buffer        Copyback buffer for value.
- * @param maxlen        Maximum length of the buffer.
- * @error               Invalid cookie handle or invalid client index.
+ * @param client		Client index.
+ * @param cookie		Client preference cookie handle.
+ * @param buffer		Copyback buffer for value.
+ * @param maxlen		Maximum length of the buffer.
+ * @error				Invalid cookie handle or invalid client index.
  */
 native void GetClientCookie(int client, Handle cookie, char[] buffer, int maxlen);
 
 /**
  * Sets the value of a Client preference cookie based on an authID string.
  *
- * @param authID        String Auth/STEAM ID of player to set.
- * @param cookie        Client preference cookie handle.
- * @param value         String value to set.
- * @error               Invalid cookie handle.
+ * @param authID		String Auth/STEAM ID of player to set.
+ * @param cookie		Client preference cookie handle.
+ * @param value			String value to set.
+ * @error			Invalid cookie handle.
  */
 native void SetAuthIdCookie(const char[] authID, Handle cookie, const char[] value);
 
 /**
  * Checks if a clients cookies have been loaded from the database.
  *
- * @param client        Client index.
- * @return              True if loaded, false otherwise.
- * @error               Invalid client index.
+ * @param client		Client index.
+ * @return 				True if loaded, false otherwise.
+ * @error				Invalid client index.
  */
 native bool AreClientCookiesCached(int client);
 
 /**
  * Called once a client's saved cookies have been loaded from the database.
  *
- * @param client        Client index.
+ * @param client		Client index.
  */
 forward void OnClientCookiesCached(int client);
 
 /**
  * Cookie Menu Callback prototype
  *
- * @param client        Client index.
- * @param action        CookieMenuAction being performed.
- * @param info          Info data passed.
- * @param buffer        Outbut buffer.
- * @param maxlen        Max length of the output buffer.
+ * @param client		Client index.
+ * @param action		CookieMenuAction being performed.
+ * @param info			Info data passed.
+ * @param buffer		Outbut buffer.
+ * @param maxlen		Max length of the output buffer.
  */
 typedef CookieMenuHandler = function void (
   int client,
@@ -249,12 +248,12 @@ typedef CookieMenuHandler = function void (
  *
  * Note: This handles everything automatically and does not require a callback
  *
- * @param cookie        Client preference cookie handle.
- * @param type          A CookieMenu prefab menu type.
- * @param display       Text to show on the menu.
- * @param handler       Optional handler callback for translations and output on selection
- * @param info          Info data to pass to the callback.
- * @error               Invalid cookie handle.
+ * @param cookie		Client preference cookie handle.
+ * @param type			A CookieMenu prefab menu type.
+ * @param display		Text to show on the menu.
+ * @param handler		Optional handler callback for translations and output on selection
+ * @param info			Info data to pass to the callback.
+ * @error				Invalid cookie handle.
  */
 native void SetCookiePrefabMenu(Handle cookie, CookieMenu type, const char[] display, CookieMenuHandler handler=INVALID_FUNCTION, any info=0);
 
@@ -263,37 +262,37 @@ native void SetCookiePrefabMenu(Handle cookie, CookieMenu type, const char[] dis
  *
  * Note: This only adds the top level menu item. You need to handle any submenus from the callback.
  *
- * @param handler       A MenuHandler callback function.
- * @param info          Data to pass to the callback.
- * @param display       Text to show on the menu.
- * @error               Invalid cookie handle.
+ * @param handler		A MenuHandler callback function.
+ * @param info			Data to pass to the callback.
+ * @param display		Text to show on the menu.
+ * @error				Invalid cookie handle.
  */
 native void SetCookieMenuItem(CookieMenuHandler handler, any info, const char[] display);
 
 /**
  * Displays the settings menu to a client.
  *
- * @param client        Client index.
+ * @param client		Client index.
  */
 native void ShowCookieMenu(int client);
 
 /**
  * Gets a cookie iterator.  Must be freed with CloseHandle().
  *
- * @return              A new cookie iterator.
+ * @return				A new cookie iterator.
  */
 native Handle GetCookieIterator();
 
 /**
  * Reads a cookie iterator, then advances to the next cookie if any.
  *
- * @param iter          Cookie iterator Handle.
- * @param name          Name buffer.
- * @param nameLen       Name buffer size.
- * @param access        Access level of the cookie.
- * @param desc          Cookie description buffer.
- * @param descLen       Cookie description buffer size.
- * @return              True on success, false if there are no more commands.
+ * @param iter			Cookie iterator Handle.
+ * @param name			Name buffer.
+ * @param nameLen		Name buffer size.
+ * @param access		Access level of the cookie.
+ * @param desc			Cookie description buffer.
+ * @param descLen		Cookie description buffer size.
+ * @return				True on success, false if there are no more commands.
  */
 native bool ReadCookieIterator(Handle iter, 
 								char[] name, 
@@ -305,18 +304,18 @@ native bool ReadCookieIterator(Handle iter,
 /**
  * Returns the access level of a cookie
  *
- * @param cookie        Client preference cookie handle.
- * @return              CookieAccess access level.
- * @error               Invalid cookie handle.	
+ * @param cookie		Client preference cookie handle.
+ * @return				CookieAccess access level.
+ * @error				Invalid cookie handle.	
  */
 native CookieAccess GetCookieAccess(Handle cookie);
 
 /**
  * Returns the last updated timestamp for a client cookie
  *
- * @param client        Client index.
- * @param cookie        Cookie handle.
- * @return              Last updated timestamp.
+ * @param client		Client index.
+ * @param cookie		Cookie handle.
+ * @return			Last updated timestamp.
  */
 native int GetClientCookieTime(int client, Handle cookie);
 
