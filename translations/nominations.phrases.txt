@@ -1,11 +1,5 @@
 "Phrases"
 {
-
-	"Multiple Matches Found"
-	{
-		"en"			"Multiple matches have been found."
-	}
-
 	"Already Nominated"
 	{
 		"en"			"You have already nominated a map."

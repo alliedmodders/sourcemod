@@ -248,9 +248,7 @@ public Action Command_Nominate(int client, int args)
 		}
 
 		menu.Display(client, 30);
-		ReplyToCommand(client, "[SM] %t", "Multiple Matches Found");
 	}
-
 
 	delete results;
 
