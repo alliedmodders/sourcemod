@@ -474,7 +474,7 @@ cell_t GetClientCookieTime(IPluginContext *pContext, const cell_t *params)
 static cell_t Cookie_Set(IPluginContext *pContext, const cell_t *params)
 {
 	// This version takes (handle, client, value). The original is (client, handle, value).
-	cell_t new_params[4] = {
+	const cell_t new_params[4] = {
 		3,
 		params[2],
 		params[1],
@@ -487,7 +487,7 @@ static cell_t Cookie_Set(IPluginContext *pContext, const cell_t *params)
 static cell_t Cookie_Get(IPluginContext *pContext, const cell_t *params)
 {
 	// This verson takes (handle, client, buffer, maxlen). The original is (client, handle, buffer, maxlen).
-	cell_t new_params[5] = {
+	const cell_t new_params[5] = {
 		4,
 		params[2],
 		params[1],
@@ -501,7 +501,7 @@ static cell_t Cookie_Get(IPluginContext *pContext, const cell_t *params)
 static cell_t Cookie_SetByAuthId(IPluginContext *pContext, const cell_t *params)
 {
 	// This version takes (handle, authid, value). The original is (authid, handle, value).
-	cell_t new_params[4] = {
+	const cell_t new_params[4] = {
 		3,
 		params[2],
 		params[1],
@@ -514,7 +514,7 @@ static cell_t Cookie_SetByAuthId(IPluginContext *pContext, const cell_t *params)
 static cell_t Cookie_GetClientTime(IPluginContext *pContext, const cell_t *params)
 {
 	// This version takes (handle, client). The original is (client, handle)
-	cell_t new_params[3] = {
+	const cell_t new_params[3] = {
 		2,
 		params[2],
 		params[1],
