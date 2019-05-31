@@ -1104,7 +1104,7 @@ static cell_t smn_KvGetSectionSymbol(IPluginContext *pCtx, const cell_t *params)
 static cell_t KeyValues_Import(IPluginContext *pContext, const cell_t *params)
 {
 	// This version takes (dest, src). The original is (src, dest).
-	cell_t new_params[3] = {
+	const cell_t new_params[3] = {
 		2,
 		params[2],
 		params[1],
