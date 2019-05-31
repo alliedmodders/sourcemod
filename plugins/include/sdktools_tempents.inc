@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -38,128 +38,128 @@
 /**
  * Called when a temp entity is going to be sent.
  *
- * @param te_name	TE name.
- * @param Players	Array containing target player indexes.
- * @param numClients	Number of players in the array.
- * @param delay		Delay in seconds to send the TE.
- * @return		Plugin_Continue to allow the transmission of the TE, Plugin_Stop to block it.
+ * @param te_name       TE name.
+ * @param Players       Array containing target player indexes.
+ * @param numClients    Number of players in the array.
+ * @param delay         Delay in seconds to send the TE.
+ * @return              Plugin_Continue to allow the transmission of the TE, Plugin_Stop to block it.
  */
 typedef TEHook = function Action (const char[] te_name, const int[] Players, int numClients, float delay);
 
 /**
  * Hooks a temp entity.
  *
- * @param te_name	TE name to hook.
- * @param hook		Function to use as a hook.
- * @error		Temp Entity name not available or invalid function hook.
+ * @param te_name       TE name to hook.
+ * @param hook          Function to use as a hook.
+ * @error               Temp Entity name not available or invalid function hook.
  */
 native void AddTempEntHook(const char[] te_name, TEHook hook);
 
 /**
  * Removes a temp entity hook.
  *
- * @param te_name	TE name to unhook.
- * @param hook		Function used for the hook.
- * @error		Temp Entity name not available or invalid function hook.
+ * @param te_name       TE name to unhook.
+ * @param hook          Function used for the hook.
+ * @error               Temp Entity name not available or invalid function hook.
  */
 native void RemoveTempEntHook(const char[] te_name, TEHook hook);
 
 /**
  * Starts a temp entity transmission.
  *
- * @param te_name	TE name.
- * @error		Temp Entity name not available.
+ * @param te_name       TE name.
+ * @error               Temp Entity name not available.
  */
 native void TE_Start(const char[] te_name);
 
 /**
  * Checks if a certain TE property exists.
  *
- * @param prop		Property to use.
- * @return		True if the property exists, otherwise false.
+ * @param prop          Property to use.
+ * @return              True if the property exists, otherwise false.
  */
 native bool TE_IsValidProp(const char[] prop);
 
 /**
  * Sets an integer value in the current temp entity.
  *
- * @param prop		Property to use.
- * @param value		Integer value to set.
- * @error		Property not found.
+ * @param prop          Property to use.
+ * @param value         Integer value to set.
+ * @error               Property not found.
  */
 native void TE_WriteNum(const char[] prop, int value);
 
 /**
  * Reads an integer value in the current temp entity.
  *
- * @param prop		Property to use.
- * @return		Property value.
- * @error		Property not found.
+ * @param prop          Property to use.
+ * @return              Property value.
+ * @error               Property not found.
  */
 native int TE_ReadNum(const char[] prop);
 
 /**
  * Sets a floating point number in the current temp entity.
  *
- * @param prop		Property to use.
- * @param value		Floating point number to set.
- * @error		Property not found.
+ * @param prop          Property to use.
+ * @param value         Floating point number to set.
+ * @error               Property not found.
  */
 native void TE_WriteFloat(const char[] prop, float value);
 
 /**
  * Reads a floating point number in the current temp entity.
  *
- * @param prop		Property to use.
- * @return		Property value.
- * @error		Property not found.
+ * @param prop          Property to use.
+ * @return              Property value.
+ * @error               Property not found.
  */
 native float TE_ReadFloat(const char[] prop);
 
 /**
  * Sets a vector in the current temp entity.
  *
- * @param prop		Property to use.
- * @param vector	Vector to set.
- * @error		Property not found.
+ * @param prop          Property to use.
+ * @param vector        Vector to set.
+ * @error               Property not found.
  */
 native void TE_WriteVector(const char[] prop, const float vector[3]);
 
 /**
  * Reads a vector in the current temp entity.
  *
- * @param prop		Property to use.
- * @param vector	Vector to read.
- * @error		Property not found.
+ * @param prop          Property to use.
+ * @param vector        Vector to read.
+ * @error               Property not found.
  */
 native void TE_ReadVector(const char[] prop, float vector[3]);
 
 /**
  * Sets a QAngle in the current temp entity.
  *
- * @param prop		Property to use.
- * @param angles	Angles to set.
- * @error		Property not found.
+ * @param prop          Property to use.
+ * @param angles        Angles to set.
+ * @error               Property not found.
  */
 native void TE_WriteAngles(const char[] prop, const float angles[3]);
 
 /**
  * Sets an array of floats in the current temp entity.
  *
- * @param prop		Property to use.
- * @param array		Array of values to copy.
- * @param arraySize	Number of values to copy.
- * @error		Property not found.
+ * @param prop          Property to use.
+ * @param array         Array of values to copy.
+ * @param arraySize     Number of values to copy.
+ * @error               Property not found.
  */
 native void TE_WriteFloatArray(const char[] prop, const float[] array, int arraySize);
 
 /**
  * Sends the current temp entity to one or more clients.
  *
- * @param clients	Array containing player indexes to broadcast to.
- * @param numClients	Number of players in the array.
- * @param delay		Delay in seconds to send the TE.
- * @error		Invalid client index or client not in game.
+ * @param clients       Array containing player indexes to broadcast to.
+ * @param numClients    Number of players in the array.
+ * @param delay         Delay in seconds to send the TE.
+ * @error               Invalid client index or client not in game.
  */
 native void TE_Send(const int[] clients, int numClients, float delay=0.0);
 
@@ -167,9 +167,9 @@ native void TE_Send(const int[] clients, int numClients, float delay=0.0);
  * Sets an encoded entity index in the current temp entity.
  * (This is usually used for m_nStartEntity and m_nEndEntity).
  *
- * @param prop		Property to use.
- * @param value		Value to set.
- * @error		Property not found.
+ * @param prop          Property to use.
+ * @param value         Value to set.
+ * @error               Property not found.
  */
 stock void TE_WriteEncodedEnt(const char[] prop, int value)
 {
@@ -181,7 +181,7 @@ stock void TE_WriteEncodedEnt(const char[] prop, int value)
  * Broadcasts the current temp entity to all clients.
  * @note See TE_Start().
  *
- * @param delay		Delay in seconds to send the TE.
+ * @param delay         Delay in seconds to send the TE.
  */
 stock void TE_SendToAll(float delay=0.0)
 {
@@ -201,9 +201,9 @@ stock void TE_SendToAll(float delay=0.0)
  * Sends the current TE to only a client.
  * @note See TE_Start().
  *
- * @param client	Client to send to.
- * @param delay		Delay in seconds to send the TE.
- * @error		Invalid client index or client not in game.
+ * @param client        Client to send to.
+ * @param delay         Delay in seconds to send the TE.
+ * @error               Invalid client index or client not in game.
  */
 stock void TE_SendToClient(int client, float delay=0.0)
 {
@@ -215,14 +215,14 @@ stock void TE_SendToClient(int client, float delay=0.0)
 }
 
 /**
- * Sends the current TE to all clients that are in 
+ * Sends the current TE to all clients that are in
  * visible or audible range of the origin.
  * @note See TE_Start().
  * @note See GetClientsInRange()
  *
- * @param origin		Coordinates from which to test range.
- * @param rangeType		Range type to use for filtering clients.
- * @param delay			Delay in seconds to send the TE.
+ * @param origin        Coordinates from which to test range.
+ * @param rangeType     Range type to use for filtering clients.
+ * @param delay         Delay in seconds to send the TE.
  */
 stock void TE_SendToAllInRange(float origin[3], ClientRangeType rangeType, float delay=0.0)
 {

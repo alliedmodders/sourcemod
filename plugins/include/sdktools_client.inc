@@ -31,20 +31,20 @@
  */
 
 #if defined _sdktools_client_included
-  #endinput
+ #endinput
 #endif
 #define _sdktools_client_included
 
 /**
  * Sets the client to an inactive state waiting for a new map
  *
- * @param client		The client index
+ * @param client        The client index
  */
 native void InactivateClient(int client);
 
 /**
  * Reconnect a client without dropping the netchannel
  *
- * @param client		The client index
+ * @param client        The client index
  */
 native void ReconnectClient(int client);

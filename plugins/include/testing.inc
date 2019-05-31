@@ -41,9 +41,12 @@ stock void SetTestContext(const char[] context)
 stock void AssertEq(const char[] text, int cell1, int cell2)
 {
 	TestNumber++;
-	if (cell1 == cell2) {
+	if (cell1 == cell2)
+	{
 		PrintToServer("[%d] %s: %s == %d OK", TestNumber, TestContext, text, cell2);
-	} else {
+	}
+	else
+	{
 		PrintToServer("[%d] %s FAIL: %s should be %d, got %d", TestNumber, TestContext, text, cell2, cell1);
 		ThrowError("test %d (%s in %s) failed", TestNumber, text, TestContext);
 	}
@@ -52,9 +55,12 @@ stock void AssertEq(const char[] text, int cell1, int cell2)
 stock void AssertFalse(const char[] text, bool value)
 {
 	TestNumber++;
-	if (!value) {
+	if (!value)
+	{
 		PrintToServer("[%d] %s: %s == false OK", TestNumber, TestContext, text, value);
-	} else {
+	}
+	else
+	{
 		PrintToServer("[%d] %s FAIL: %s should be false, got true", TestNumber, TestContext, text);
 		ThrowError("test %d (%s in %s) failed", TestNumber, text, TestContext);
 	}
@@ -63,9 +69,12 @@ stock void AssertFalse(const char[] text, bool value)
 stock void AssertTrue(const char[] text, bool value)
 {
 	TestNumber++;
-	if (value) {
+	if (value)
+	{
 		PrintToServer("[%d] %s: %s == true OK", TestNumber, TestContext, text, value);
-	} else {
+	}
+	else
+	{
 		PrintToServer("[%d] %s FAIL: %s should be true, got false", TestNumber, TestContext, text);
 		ThrowError("test %d (%s in %s) failed", TestNumber, text, TestContext);
 	}
