@@ -1703,7 +1703,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			int plnum = GetPluginCount();
 			char plstrsize[10];
 			ke::SafeSprintf(plstrsize, sizeof(plstrsize), "%s", plnum);
-			int plpadding = plstrsize.size();
+			int plpadding = strlen(plstrsize);
 
 			if (!plnum)
 			{
