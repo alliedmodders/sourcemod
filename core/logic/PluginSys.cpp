@@ -1701,9 +1701,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			char buffer[256];
 			unsigned int id = 1;
 			int plnum = GetPluginCount();
-			char plstrsize[10];
-			ke::SafeSprintf(plstrsize, sizeof(plstrsize), "%s", plnum);
-			int plpadding = strlen(plstrsize);
+			char plstr[10];
+			ke::SafeSprintf(plstr, sizeof(plstr), "%s", plnum);
+			int plpadding = strlen(plstr);
 
 			if (!plnum)
 			{
