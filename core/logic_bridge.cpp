@@ -627,13 +627,7 @@ void CoreProviderImpl::InitializeBridge()
 	this->serverFactory = (void *)g_SMAPI->GetServerFactory(false);
 	this->listeners = SMGlobalClass::head;
 
-	char path[PLATFORM_MAX_PATH];
-
-	ke::path::Format(path, sizeof(path),
-	                 "%s/bin/" PLATFORM_FOLDER "matchmaking_ds" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT,
-                     g_SMAPI->GetBaseDir());
-
-	if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0)) {
+	if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(FORMAT_SOURCE_BIN_NAME("matchmaking_ds"), NULL, 0)) {
 		this->matchmakingDSFactory =
 		  mmlib->get<decltype(sCoreProviderImpl.matchmakingDSFactory)>("CreateInterface");
 	}

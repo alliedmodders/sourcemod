@@ -50,8 +50,8 @@
 
 typedef ICommandLine *(*FakeGetCommandLine)();
 
-#define TIER0_NAME			SOURCE_BIN_PREFIX "tier0" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT
-#define VSTDLIB_NAME		SOURCE_BIN_PREFIX "vstdlib" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT
+#define TIER0_NAME			FORMAT_SOURCE_BIN_NAME("tier0")
+#define VSTDLIB_NAME		FORMAT_SOURCE_BIN_NAME("vstdlib")
 
 CHalfLife2 g_HL2;
 ConVar *sv_lan = NULL;
