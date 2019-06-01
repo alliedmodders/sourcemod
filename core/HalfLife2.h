@@ -84,6 +84,9 @@ using namespace SourceMod;
 #define SOURCE_BIN_EXT ".so"
 #endif
 
+#define FORMAT_SOURCE_BIN_NAME(basename) \
+	(SOURCE_BIN_PREFIX basename SOURCE_BIN_SUFFIX SOURCE_BIN_EXT)
+
 struct DataTableInfo
 {
 	struct SendPropPolicy
