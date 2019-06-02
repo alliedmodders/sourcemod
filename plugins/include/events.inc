@@ -74,6 +74,18 @@ typeset EventHook
 
 methodmap Event < Handle
 {
+
+	// Creates a game event to be fired later.
+	//
+	// The Handle should not be closed via CloseHandle().  It must be closed via 
+	// event.Fire() or event.Cancel().
+	//
+	// @param name          Name of event.
+	// @param force         If set to true, this forces the event to be created even if it's not being hooked.
+	//                      Note that this will not force it if the event doesn't exist at all.
+	// @return              Handle to event. INVALID_HANDLE is returned if the event doesn't exist or isn't 
+	//                      being hooked (unless force is true).
+	public native Event(const char[] name, bool force=false);
 	// Fires a game event.
 	//
 	// This function closes the event Handle after completing.
