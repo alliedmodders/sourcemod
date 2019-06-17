@@ -457,15 +457,21 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 			IPlayerInfo *plinfo = player->GetPlayerInfo();
 			if (plinfo == NULL)
 				continue;
-			if ((plinfo->GetTeamIndex() == 1
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-			 || plinfo->GetTeamIndex() == 0
-#endif
-			) && playerhelpers->FilterCommandTarget(pAdmin, player, info->flags) ==
+			if ((plinfo->GetTeamIndex() == 0 || plinfo->GetTeamIndex() == 1) &&
+				playerhelpers->FilterCommandTarget(pAdmin, player, info->flags) ==
 				COMMAND_TARGET_VALID)
 			{
 				info->targets[info->num_targets++] = i;
 			}
+#else
+			if (plinfo->GetTeamIndex() == 1 &&
+				playerhelpers->FilterCommandTarget(pAdmin, player, info->flags) ==
+				COMMAND_TARGET_VALID)
+			{
+				info->targets[info->num_targets++] = i;
+			}
+#endif
 		}
 		info->reason = info->num_targets > 0 ? COMMAND_TARGET_VALID : COMMAND_TARGET_EMPTY_FILTER;
 		info->target_name_style = COMMAND_TARGETNAME_ML;
