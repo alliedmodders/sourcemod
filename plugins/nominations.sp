@@ -234,6 +234,7 @@ public Action Command_Nominate(int client, int args)
 		{
 			// if source is console, attempt instead of displaying menu.
 			AttemptNominate(client, mapname, sizeof(mapname));
+			delete results;
 			return Plugin_Handled;
 		}
 
