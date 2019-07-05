@@ -92,7 +92,7 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-// native TF2_Burn(client, target)
+// native TF2_Burn(client, target, duration)
 cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
@@ -129,7 +129,7 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 	ArgBuffer<void*, CBaseEntity*, CBaseEntity*, 
 										float> //duration
-										vstk(obj, pTarget, nullptr, 10.0f);
+										vstk(obj, pTarget, nullptr, sp_ctof(params[3]));
 
 	pWrapper->Execute(vstk, nullptr);
 	return 1;
