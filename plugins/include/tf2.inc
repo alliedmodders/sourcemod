@@ -245,13 +245,16 @@ enum TFObjectMode
 };
 
 /**
- * Sets a client on fire for 10 seconds.
+ * Sets a client on fire.
+ *
+ * @note Fire duration is capped to 10 seconds.
  *
  * @param client        Player's index.
  * @param attacker      Attacker's index.
+ * @param duration      Duration of fire (in seconds).
  * @error               Invalid client index, client not in game, or no mod support.
  */
-native void TF2_IgnitePlayer(int client, int attacker);
+native void TF2_IgnitePlayer(int client, int attacker, float duration=10.0);
 
 /**
  * Respawns a client
