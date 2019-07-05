@@ -247,7 +247,7 @@ enum TFObjectMode
 /**
  * Sets a client on fire.
  *
- * @note fire duration is capped to 10 seconds.
+ * @note Fire duration is capped to 10 seconds.
  *
  * @param client        Player's index.
  * @param attacker      Attacker's index.
