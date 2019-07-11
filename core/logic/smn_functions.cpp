@@ -35,6 +35,7 @@
 #include <IForwardSys.h>
 #include <ISourceMod.h>
 #include <amtl/am-autoptr.h>
+#include "AutoHandleRooter.h"
 
 HandleType_t g_GlobalFwdType = 0;
 HandleType_t g_PrivateFwdType = 0;
@@ -43,6 +44,7 @@ static bool s_CallStarted = false;
 static ICallable *s_pCallable = NULL;
 static IPluginFunction *s_pFunction = NULL;
 static IForward *s_pForward = NULL;
+static Handle_t s_ForwardHndl = BAD_HANDLE;
 
 class ForwardNativeHelpers : 
 	public SMGlobalClass,
@@ -102,6 +104,12 @@ inline void ResetCall()
 	s_pFunction = NULL;
 	s_pForward = NULL;
 	s_pCallable = NULL;
+	if (s_ForwardHndl != BAD_HANDLE)
+	{
+		HandleSecurity sec(g_pCoreIdent, g_pCoreIdent);
+		handlesys->FreeHandle(s_ForwardHndl, &sec);
+		s_ForwardHndl = BAD_HANDLE;
+	}
 }
 
 static cell_t sm_GetFunctionByName(IPluginContext *pContext, const cell_t *params)
@@ -362,6 +370,8 @@ static cell_t sm_CallStartForward(IPluginContext *pContext, const cell_t *params
 	s_pCallable = static_cast<ICallable *>(pForward);
 
 	s_CallStarted = true;
+
+	s_ForwardHndl = handlesys->FastCloneHandle(hndl);
 
 	return 1;
 }
@@ -645,6 +655,8 @@ static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 	}
 
 	pContext->LocalToPhysAddr(params[1], &result);
+
+	AutoHandleRooter ahr(s_ForwardHndl);
 
 	// Note: Execute() swallows exceptions, so this is okay.
 	if (s_pFunction)
