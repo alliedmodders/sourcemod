@@ -30,10 +30,10 @@
  * Version: $Id$
  */
 
-#if defined _commandline_included_
+#if defined _commandline_included
   #endinput
 #endif
-#define _commandline_included_
+#define _commandline_included
 
 /**
  * Gets the full command line the server was launched with.
