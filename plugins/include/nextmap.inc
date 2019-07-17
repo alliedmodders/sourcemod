@@ -30,10 +30,10 @@
  * Version: $Id$
  */
 
-#if defined _nextmap_included_
+#if defined _nextmap_included
   #endinput
 #endif
-#define _nextmap_included_
+#define _nextmap_included
 
 /**
  * Sets SourceMod's internal nextmap. 

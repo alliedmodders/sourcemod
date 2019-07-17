@@ -29,10 +29,10 @@
  *
  * Version: $Id$
  */
-#if defined _mapchooser_included_
+#if defined _mapchooser_included
   #endinput
 #endif
-#define _mapchooser_included_
+#define _mapchooser_included
 
 enum NominateResult
 {
