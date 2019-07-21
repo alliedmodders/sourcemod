@@ -1173,12 +1173,11 @@ HandleError HandleSystem::GetHandleAccess(Handle_t handle, HandleAccess *&pAcces
 {
 	unsigned int index;
 	QHandle *pHandle;
-	HandleError err;
 	IdentityToken_t *ident = NULL;
+	HandleError err = GetHandle(handle, ident, &pHandle, &index);
 
-	if ((err=GetHandle(handle, ident, &pHandle, &index)) != HandleError_None)
-		return err;
+	if (err == HandleError_None)
+		pAccess = &(pHandle->sec);
 
-	pAccess = &(pHandle->sec);
 	return err;
 }
