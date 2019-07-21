@@ -285,17 +285,23 @@ public:
 
 	~AutoHandleIdentLocker()
 	{
-		if (this->pSecurity)
-			this->pSecurity->access[HandleAccess_Delete] &= ~HANDLE_RESTRICT_IDENTEXCLUSIVE;
-
-		this->pSecurity = nullptr;
+		this->Nuke();
 	}
 
 public:
 	AutoHandleIdentLocker &operator =(const AutoHandleIdentLocker &other)
 	{
-		~AutoHandleIdentLocker();
+		this->Nuke();
 		this->pSecurity = other.pSecurity;
+	}
+private:
+	void Nuke(void)
+	{
+		if (this->pSecurity)
+		{
+			this->pSecurity->access[HandleAccess_Delete] &= ~HANDLE_RESTRICT_IDENTEXCLUSIVE;
+			this->pSecurity = nullptr;
+		}
 	}
 private:
 	HandleAccess *pSecurity;
