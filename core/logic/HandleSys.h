@@ -306,6 +306,6 @@ private:
 	}
 private:
 	HandleAccess *pSecurity;
-}
+};
 
 #endif //_INCLUDE_SOURCEMOD_HANDLESYSTEM_H_
