@@ -135,6 +135,8 @@ namespace SourceMod
 	#define HANDLE_RESTRICT_IDENTITY	(1<<0)	
 	/** Access is restricted to the owner */
 	#define HANDLE_RESTRICT_OWNER		(1<<1)
+	/** Access is identity exclusive */
+	#define HANDLE_RESTRICT_IDENTEXCLUSIVE	(1<<2)
 
 	/**
 	 * @brief This is used to define per-type access rights.

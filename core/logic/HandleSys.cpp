@@ -532,6 +532,9 @@ bool HandleSystem::CheckAccess(QHandle *pHandle, HandleAccessRight right, const 
 	/* Check if the owner is allowed */
 	if (access & HANDLE_RESTRICT_OWNER)
 	{
+		if ((access & HANDLE_RESTRICT_IDENTEXCLUSIVE) == HANDLE_RESTRICT_IDENTEXCLUSIVE)
+			return false;
+
 		IdentityToken_t *owner = pHandle->owner;
 		if (owner
 			&& (!pSecurity || pSecurity->pOwner != owner))
