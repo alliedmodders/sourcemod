@@ -118,7 +118,7 @@ public:
 	{
 		this->Nuke();
 		this->pSecurity = other.pSecurity;
-	}
+	};
 private:
 	void Nuke(void)
 	{
