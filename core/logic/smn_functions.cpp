@@ -35,6 +35,7 @@
 #include <IForwardSys.h>
 #include <ISourceMod.h>
 #include <amtl/am-autoptr.h>
+#include <AutoHandleRooter.h>
 
 HandleType_t g_GlobalFwdType = 0;
 HandleType_t g_PrivateFwdType = 0;
@@ -43,6 +44,7 @@ static bool s_CallStarted = false;
 static ICallable *s_pCallable = NULL;
 static IPluginFunction *s_pFunction = NULL;
 static IForward *s_pForward = NULL;
+static Handle_t s_ForwardHndl = BAD_HANDLE;
 
 class ForwardNativeHelpers : 
 	public SMGlobalClass,
@@ -330,12 +332,15 @@ static cell_t sm_CallStartFunction(IPluginContext *pContext, const cell_t *param
 
 	if (!s_pFunction)
 	{
+		ResetCall();
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 
 	s_pCallable = static_cast<ICallable *>(s_pFunction);
 
 	s_CallStarted = true;
+
+	s_ForwardHndl = hndl;
 
 	return 1;
 }
@@ -362,6 +367,7 @@ static cell_t sm_CallStartForward(IPluginContext *pContext, const cell_t *params
 	s_pCallable = static_cast<ICallable *>(pForward);
 
 	s_CallStarted = true;
+	s_ForwardHndl = hndl;
 
 	return 1;
 }
@@ -646,6 +652,7 @@ static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToPhysAddr(params[1], &result);
 
+	AutoHandleIdentLocker lock(s_ForwardHndl);
 	// Note: Execute() swallows exceptions, so this is okay.
 	if (s_pFunction)
 	{
