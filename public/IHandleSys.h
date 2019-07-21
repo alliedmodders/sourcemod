@@ -375,6 +375,15 @@ namespace SourceMod
 		 * @return			True if "given" is a subtype of "actual", false otherwise.
 		 */
 		virtual bool TypeCheck(HandleType_t given, HandleType_t actual) = 0;
+
+		/**
+		 * @brief Obtain the HandleAccess address from the passed in handle.
+		 *
+		 * @param handle	Handle_t identifier to destroy.
+		 * @param pAccess	Access information struct.
+		 * @return			HandleError error code.
+		 */
+		virtual HandleError GetHandleAccess(Handle_t handle, HandleAccess &*pAccess) = 0;
 	};
 }
 

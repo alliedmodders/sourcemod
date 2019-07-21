@@ -1169,3 +1169,16 @@ void HandleSystem::Dump(const HandleReporter &fn)
 	rep(fn, "-- Approximately %d bytes of memory are in use by Handles.\n", total_size);
 }
 
+HandleError HandleSystem::GetHandleAccess(Handle_t handle, HandleAccess &*pAccess)
+{
+	unsigned int index;
+	QHandle *pHandle;
+	HandleError err;
+	IdentityToken_t *ident = NULL;
+
+	if ((err=GetHandle(handle, ident, &pHandle, &index)) != HandleError_None)
+		return err;
+
+	pAccess = &(pHandle->sec);
+	return err;
+}
