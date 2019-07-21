@@ -293,7 +293,8 @@ public:
 	{
 		this->Nuke();
 		this->pSecurity = other.pSecurity;
-	}
+		return *this;
+	};
 private:
 	void Nuke(void)
 	{
