@@ -383,7 +383,7 @@ namespace SourceMod
 		 * @param pAccess	Access information struct.
 		 * @return			HandleError error code.
 		 */
-		virtual HandleError GetHandleAccess(Handle_t handle, HandleAccess &*pAccess) = 0;
+		virtual HandleError GetHandleAccess(Handle_t handle, HandleAccess *&pAccess) = 0;
 	};
 }
 

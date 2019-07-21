@@ -174,7 +174,7 @@ public: //IHandleSystem
 	/* Bypasses security checks. */
 	Handle_t FastCloneHandle(Handle_t hndl);
 
-	HandleError GetHandleAccess(Handle_t handle, HandleAccess &*pSecurity);
+	HandleError GetHandleAccess(Handle_t handle, HandleAccess *&pSecurity);
 protected:
 	/**
 	 * Decodes a handle with sanity and security checking.
