@@ -262,4 +262,43 @@ private:
 	Handle_t hndl;
 };
 
+struct AutoHandleIdentLocker
+{
+public:
+	AutoHandleIdentLocker() : pSecurity(nullptr)
+	{
+	}
+
+	AutoHandleIdentLocker(Handle_t hndl) : pSecurity(nullptr)
+	{
+		if (hndl != BAD_HANDLE)
+		{
+			if (g_HandleSys.GetHandleAccess(hndl, this->pSecurity) == HandleError_None)
+			{
+				if ((this->pSecurity[HandleAccess_Delete] & HANDLE_RESTRICT_IDENTEXCLUSIVE) == HANDLE_RESTRICT_IDENTEXCLUSIVE)
+					this->pSecurity = nullptr;
+				else
+					pSecurity->access[HandleAccess_Delete] |= HANDLE_RESTRICT_IDENTEXCLUSIVE;
+			}
+		}
+	}
+
+	~AutoHandleIdentLocker()
+	{
+		if (this->pSecurity)
+			this->pSecurity->access[HandleAccess_Delete] &= ~HANDLE_RESTRICT_IDENTEXCLUSIVE;
+
+		this->pSecurity = nullptr;
+	}
+
+public:
+	AutoHandleIdentLocker &operator =(const AutoHandleIdentLocker &other)
+	{
+		~AutoHandleIdentLocker();
+		this->pSecurity = other.pSecurity;
+	}
+private:
+	HandleAccess *pSecurity;
+}
+
 #endif //_INCLUDE_SOURCEMOD_HANDLESYSTEM_H_
