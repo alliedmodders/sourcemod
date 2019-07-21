@@ -52,7 +52,7 @@
 #include <sp_vm_types.h>
 
 #define SMINTERFACE_HANDLESYSTEM_NAME			"IHandleSys"
-#define SMINTERFACE_HANDLESYSTEM_VERSION		5
+#define SMINTERFACE_HANDLESYSTEM_VERSION		6
 
 /** Specifies no Identity */
 #define DEFAULT_IDENTITY			NULL
