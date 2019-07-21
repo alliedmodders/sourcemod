@@ -100,10 +100,10 @@ public:
 		{
 			if (handlesys->GetHandleAccess(hndl, this->pSecurity) == HandleError_None)
 			{
-				if ((this->pSecurity[HandleAccess_Delete] & HANDLE_RESTRICT_IDENTEXCLUSIVE) == HANDLE_RESTRICT_IDENTEXCLUSIVE)
+				if ((this->pSecurity->access[HandleAccess_Delete] & HANDLE_RESTRICT_IDENTEXCLUSIVE) == HANDLE_RESTRICT_IDENTEXCLUSIVE)
 					this->pSecurity = nullptr;
 				else
-					pSecurity->access[HandleAccess_Delete] |= HANDLE_RESTRICT_IDENTEXCLUSIVE;
+					this->pSecurity->access[HandleAccess_Delete] |= HANDLE_RESTRICT_IDENTEXCLUSIVE;
 			}
 		}
 	}
