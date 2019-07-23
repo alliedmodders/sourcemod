@@ -10,11 +10,17 @@
 			"SpriteGlow"		"sprites/blueglow2.vmt"
 			"SpriteHalo"		"sprites/halo01.vmt"
 			
-			"SoundBlip"		"buttons/blip1.wav"
-			"SoundBeep"		"buttons/button17.wav"
-			"SoundFinal"	"weapons/cguard/charging.wav"
-			"SoundBoom"		"weapons/explode3.wav"
-			"SoundFreeze"	"physics/glass/glass_impact_bullet4.wav"
+			"SoundBlip"			"buttons/blip1.wav"
+			"SoundBeep"			"buttons/button17.wav"
+			"SoundFinal"		"weapons/cguard/charging.wav"
+			"SoundBoom"			"weapons/explode3.wav"
+			"SoundFreeze"		"physics/glass/glass_impact_bullet4.wav"
+			
+			"Team1Color"		"green"
+			"Team2Color"		"red"
+			"Team3Color"		"blue
+			"Team4Color"		"orange"
+			"DefaultTeamColor"	"white"
 		}
 	}
 	
@@ -28,8 +34,8 @@
 			"SpriteGlow"		"sprites/blueflare1.vmt"
 			"SpriteHalo"		"sprites/glow01.vmt"
 			
-			"SoundFinal"	"ui/arm_bomb.wav"
-			"SoundBoom"		"weapons/hegrenade/explode4.wav"
+			"SoundFinal"		"ui/arm_bomb.wav"
+			"SoundBoom"			"weapons/hegrenade/explode4.wav"
 		}
 	}
 	
@@ -56,13 +62,30 @@
 			"SpriteHalo"		"sprites/glow01.vmt"
 		}
 	}
-	
+	"left4dead"
+	{
+		"Keys"
+		{
+			"Team2Color"		"blue"
+			"Team3Color"		"red"
+		}
+	}
+	"left4dead2"
+	{
+		"Keys"
+		{
+			"SpriteBeam"		"sprites/laserbeam.vmt"
+			
+			"Team2Color"		"blue"
+			"Team3Color"		"red"
+		}
+	}
 	"#default"
 	{
 		"#supported"
 		{
-			"game"	"left4dead"
-			"game"	"left4dead2"
+			"game"				"left4dead"
+			"game"				"left4dead2"
 		}
 		
 		"Keys"
