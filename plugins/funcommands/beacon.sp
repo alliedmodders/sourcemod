@@ -96,32 +96,11 @@ public Action Timer_Beacon(Handle timer, any value)
 
 		switch (GetClientTeam(client))
 		{
-			case 1:
-			{
-				teamColor = greenColor;
-			}
-			case 2:
-			{
-				if (g_GameEngine == Engine_Left4Dead || g_GameEngine == Engine_Left4Dead2)
-					teamColor = blueColor;
-				else
-					teamColor = redColor;
-			}
-			case 3:
-			{
-				if (g_GameEngine == Engine_Left4Dead || g_GameEngine == Engine_Left4Dead2)
-					teamColor = redColor;
-				else
-					teamColor = blueColor;
-			}
-			case 4:
-			{
-				teamColor = orangeColor;
-			}
-			default:
-			{
-				teamColor = whiteColor;
-			}
+			case 1: teamColor = g_Team1Color;
+			case 2: teamColor = g_Team2Color;
+			case 3: teamColor = g_Team3Color;
+			case 4: teamColor = g_Team4Color;
+			default: teamColor = g_DefaultTeamColor;
 		}
 
 		TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
