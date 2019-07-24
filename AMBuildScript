@@ -416,7 +416,7 @@ class SMConfig(object):
     if '-lgcc_eh' in binary.compiler.linkflags:
       binary.compiler.linkflags.remove('-lgcc_eh')
     if binary.compiler.like('gcc'):
-      binary.compiler.linkflags += ['-lstdc++']
+      binary.compiler.linkflags += ['-lstdc++', '-lpthread']
     if binary.compiler.like('msvc'):
       binary.compiler.linkflags += ['/SUBSYSTEM:CONSOLE']
     return binary
