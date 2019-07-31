@@ -126,7 +126,6 @@ methodmap Regex < Handle
 	// Matches a string against a pre-compiled regular expression pattern.
 	//
 	// @param str           The string to check.
-	// @param regex         Regex Handle from CompileRegex()
 	// @param ret           Error code, if applicable.
 	// @param offset        Offset in the string to start searching from. MatchOffset returns the offset of the match.
 	// @return              Number of captures found or -1 on failure.
@@ -138,7 +137,6 @@ methodmap Regex < Handle
 	// Gets all matches from a string against a pre-compiled regular expression pattern.
 	//
 	// @param str           The string to check.
-	// @param regex         Regex Handle from CompileRegex()
 	// @param ret           Error code, if applicable.
 	// @return              Number of matches found or -1 on failure.
 	//
@@ -146,11 +144,10 @@ methodmap Regex < Handle
 	public native int MatchAll(const char[] str, RegexError &ret = REGEX_ERROR_NONE);
 
 	// Returns a matched substring from a regex handle.
-    //
+	//
 	// Substring ids start at 0 and end at captures-1, where captures is the
 	// number returned by Regex.Match or Regex.CaptureCount.
 	//
-	// @param regex         The regex handle to extract data from.
 	// @param str_id        The index of the expression to get - starts at 0, and ends at captures - 1.
 	// @param buffer        The buffer to set to the matching substring.
 	// @param maxlen        The maximum string length of the buffer.
@@ -199,8 +196,8 @@ native Regex CompileRegex(const char[] pattern, int flags = 0, char[] error="", 
 /**
  * Matches a string against a pre-compiled regular expression pattern.
  *
- * @param str           The string to check.
  * @param regex         Regex Handle from CompileRegex()
+ * @param str           The string to check.
  * @param ret           Error code, if applicable.
  * @return              Number of captures found or -1 on failure.
  *
