@@ -233,6 +233,13 @@ methodmap File < Handle
 	// @return                True on success, false otherwise.
 	public native bool Seek(int position, int where);
 
+	// Flushes a file's buffered output; any buffered output
+	// is immediately written to the file.
+	// 
+	// @return              True on success or use_valve_fs specified with OpenFile,
+	//                      otherwise false on failure.
+	public native bool Flush();
+	
 	// Get the current position in the file; returns -1 on failure.
 	property int Position {
 		public native get();
