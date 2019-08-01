@@ -3,14 +3,12 @@
 	"Already Nominated"
 	{
 		"en"			"You have already nominated a map."
-
 	}
 	
 	"Max Nominations"
 	{
 		"en"			"The maximum allowed nominations has been reached."
 	}
-
 
 	"Map Already In Vote"
 	{
