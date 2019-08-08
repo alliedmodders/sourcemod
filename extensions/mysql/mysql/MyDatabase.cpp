@@ -152,24 +152,23 @@ const char *MyDatabase::GetError(int *errCode)
 bool MyDatabase::QuoteString(const char *str, char buffer[], size_t maxlength, size_t *newSize)
 {
 	unsigned long size = static_cast<unsigned long>(strlen(str));
-	unsigned long needed = size * 2 + 1;
-
-	if (maxlength < needed)
-	{
-		if (newSize)
-		{
-			*newSize = (size_t)needed;
-		}
-		return false;
-	}
+	unsigned long needed = 0;
 
 	needed = mysql_real_escape_string(m_mysql, buffer, str, size);
+	
 	if (newSize)
 	{
 		*newSize = (size_t)needed;
 	}
-
-	return true;
+	
+	if (maxlength < needed)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
 }
 
 bool MyDatabase::DoSimpleQuery(const char *query)
