@@ -67,13 +67,13 @@ int g_GlowSprite        = -1;
 int g_ExplosionSprite   = -1;
 
 // Basic color arrays for temp entities
-int redColor[4]		= {255, 75, 75, 255};
-int greenColor[4]	= {75, 255, 75, 255};
-int blueColor[4]	= {75, 75, 255, 255};
-int orangeColor[4]	= {255, 128, 0, 255};
-int whiteColor[4]	= {255, 255, 255, 255};
-int greyColor[4]	= {128, 128, 128, 255};
-int noColor[4]		= {0, 0, 0, 0};
+int redColor[4]     = {255, 75, 75, 255};
+int greenColor[4]   = {75, 255, 75, 255};
+int blueColor[4]    = {75, 75, 255, 255};
+int orangeColor[4]  = {255, 128, 0, 255};
+int whiteColor[4]   = {255, 255, 255, 255};
+int greyColor[4]    = {128, 128, 128, 255};
+int noColor[4]      = {0, 0, 0, 0};
 
 int g_Team1Color[4];
 int g_Team2Color[4];
@@ -248,27 +248,27 @@ public void OnMapStart()
 	
 	if (gameConfig.GetKeyValue("Team1Color", buffer, sizeof(buffer)) && buffer[0])
 	{
-		g_Team1Color = GetColor(buffer);
+		g_Team1Color = GetTeamColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team2Color", buffer, sizeof(buffer)) && buffer[0])
 	{
-		g_Team2Color = GetColor(buffer);
+		g_Team2Color = GetTeamColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team3Color", buffer, sizeof(buffer)) && buffer[0])
 	{
-		g_Team3Color = GetColor(buffer);
+		g_Team3Color = GetTeamColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team4Color", buffer, sizeof(buffer)) && buffer[0])
 	{
-		g_Team4Color = GetColor(buffer);
+		g_Team4Color = GetTeamColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("DefaultTeamColor", buffer, sizeof(buffer)) && buffer[0])
 	{
-		g_DefaultTeamColor = GetColor(buffer);
+		g_DefaultTeamColor = GetTeamColor(buffer);
 	}
 	
 	delete gameConfig;
@@ -330,7 +330,7 @@ void AddTranslatedMenuItem(Menu menu, const char[] opt, const char[] phrase, int
 	menu.AddItem(opt, buffer);
 }
 
-int[] GetColor(const char[] color)
+int[] GetTeamColor(const char[] color)
 {
 	if (strcmp(color, "red") == 0)
 		return redColor;
