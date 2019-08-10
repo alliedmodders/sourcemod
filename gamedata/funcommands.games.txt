@@ -62,24 +62,6 @@
 			"SpriteHalo"		"sprites/glow01.vmt"
 		}
 	}
-	"left4dead"
-	{
-		"Keys"
-		{
-			"Team2Color"		"blue"
-			"Team3Color"		"red"
-		}
-	}
-	"left4dead2"
-	{
-		"Keys"
-		{
-			"SpriteBeam"		"sprites/laserbeam.vmt"
-			
-			"Team2Color"		"blue"
-			"Team3Color"		"red"
-		}
-	}
 	"#default"
 	{
 		"#supported"
@@ -95,6 +77,9 @@
 			"SpriteExplosion"	"sprites/floorfire4_.vmt"
 			"SpriteGlow"		"sprites/blueflare1.vmt"
 			"SpriteHalo"		"sprites/glow01.vmt"
+			
+			"Team2Color"		"blue"
+			"Team3Color"		"red"
 		}
 	}
 }
