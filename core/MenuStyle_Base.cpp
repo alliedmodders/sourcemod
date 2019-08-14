@@ -607,7 +607,7 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 CBaseMenu::CBaseMenu(IMenuHandler *pHandler, IMenuStyle *pStyle, IdentityToken_t *pOwner) : 
 m_pStyle(pStyle), m_Pagination(7), m_bShouldDelete(false), m_bCancelling(false), 
 m_pOwner(pOwner ? pOwner : g_pCoreIdent), m_bDeleting(false), m_bWillFreeHandle(false), 
-m_hHandle(BAD_HANDLE), m_pHandler(pHandler), m_nFlags(MENUFLAG_BUTTON_EXIT)
+m_hHandle(BAD_HANDLE), m_pHandler(pHandler), m_nFlags(MENUFLAG_BUTTON_EXIT), m_RandomMapLen(0)
 {
 }
 
@@ -633,7 +633,7 @@ bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 		return false;
 	}
 
-	CItem item;
+	CItem item(m_items.length());
 
 	item.info = info;
 	if (draw.display)
@@ -655,7 +655,7 @@ bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDr
 	if (position >= m_items.size())
 		return false;
 
-	CItem item;
+	CItem item(position);
 	item.info = info;
 	if (draw.display)
 		item.display = std::make_unique<std::string>(draw.display);
@@ -679,10 +679,15 @@ void CBaseMenu::RemoveAllItems()
 	m_items.clear();
 }
 
-const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =NULL */)
+const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =NULL */, int client/* =0 */)
 {
 	if (position >= m_items.size())
 		return NULL;
+
+	if (client > 0 && position < m_RandomMapLen)
+	{
+		position = m_RandomMaps[client][position];
+	}
 
 	if (draw)
 	{
@@ -691,6 +696,47 @@ const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =
 	}
 
 	return m_items[position].info.c_str();
+}
+
+void CBaseMenu::ShufflePerClient(int start, int stop)
+{
+	// limit map len to 255 items since it's using uint8
+	m_RandomMapLen = MIN(GetItemCount(), 255);
+	if(stop >= 0)
+		m_RandomMapLen = MIN(m_RandomMapLen, (unsigned int)stop);
+
+	for(int i = 1; i < SM_MAXPLAYERS + 1; i++)
+	{
+		// populate per-client map ...
+		m_RandomMaps[i].resize(m_RandomMapLen);
+		for(unsigned int j = 0; j < m_RandomMapLen; j++)
+			m_RandomMaps[i][j] = j;
+
+		// ... and random shuffle it
+		for(int j = m_RandomMapLen - 1; j > start; j--)
+		{
+			int x = rand() % (j - start + 1) + start;
+			uint8_t tmp = m_RandomMaps[i][x];
+			m_RandomMaps[i][x] = m_RandomMaps[i][j];
+			m_RandomMaps[i][j] = tmp;
+		}
+	}
+}
+
+bool CBaseMenu::IsPerClientShuffled()
+{
+	return m_RandomMapLen > 0;
+}
+
+unsigned int CBaseMenu::GetRealItemIndex(int client, unsigned int position)
+{
+	if (client > 0 && position < m_RandomMapLen)
+	{
+		position = m_RandomMaps[client][position];
+		return m_items[position].index;
+	}
+
+	return position;
 }
 
 unsigned int CBaseMenu::GetItemCount()

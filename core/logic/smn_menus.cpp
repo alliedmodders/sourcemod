@@ -816,8 +816,14 @@ static cell_t GetMenuItem(IPluginContext *pContext, const cell_t *params)
 
 	ItemDrawInfo dr;
 	const char *info;
+	cell_t client = (params[0] >= 8) ? params[8] : 0;
+	if(!client && menu->IsPerClientShuffled())
+	{
+		return pContext->ThrowNativeError("This menu has been per-client random shuffled. "
+										  "You have to call GetMenuItem with a client index!");
+	}
 
-	if ((info=menu->GetItemInfo(params[2], &dr)) == NULL)
+	if ((info=menu->GetItemInfo(params[2], &dr, client)) == NULL)
 	{
 		return 0;
 	}
@@ -828,6 +834,30 @@ static cell_t GetMenuItem(IPluginContext *pContext, const cell_t *params)
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[5], &addr);
 	*addr = dr.style;
+
+	return 1;
+}
+
+static cell_t MenuShufflePerClient(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	int start = params[2];
+	int stop = params[3];
+
+	if (stop > 0 && !(stop >= start))
+	{
+		return pContext->ThrowNativeError("Stop must be -1 or >= start!");
+	}
+
+	menu->ShufflePerClient(start, stop);
 
 	return 1;
 }
@@ -1645,6 +1675,7 @@ REGISTER_NATIVES(menuNatives)
 	{"SetPanelKeys",			SetPanelKeys},
 	{"SetVoteResultCallback",	SetVoteResultCallback},
 	{"VoteMenu",				VoteMenu},
+	{"MenuShufflePerClient",	MenuShufflePerClient},
 	{"SetMenuNoVoteButton",		SetMenuNoVoteButton},
 
 	// Transitional syntax support.
@@ -1673,6 +1704,7 @@ REGISTER_NATIVES(menuNatives)
 	{"Menu.ToPanel",			CreatePanelFromMenu},
 	{"Menu.Cancel",				CancelMenu},
 	{"Menu.DisplayVote",		VoteMenu},
+	{"Menu.ShufflePerClient",	MenuShufflePerClient},
 	{"Menu.Pagination.get",		GetMenuPagination},
 	{"Menu.Pagination.set",		SetMenuPagination},
 	{"Menu.OptionFlags.get",	GetMenuOptionFlags},
