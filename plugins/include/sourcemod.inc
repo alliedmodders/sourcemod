@@ -703,7 +703,7 @@ methodmap FrameIterator < Handle {
 	public native void Reset();
 
 	// Returns the line number of the current function call.
-	property bool LineNumber {
+	property int LineNumber {
 		public native get();
 	}
 
