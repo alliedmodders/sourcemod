@@ -60,12 +60,14 @@ void TimeLeftEvents::FireGameEvent(IGameEvent *event)
 			get_new_timeleft_offset = false;
 
 			float flGameStartTime = gpGlobals->curtime;
-			sm_sendprop_info_t info;
-			if (gamehelpers->FindSendPropInfo("CCSGameRulesProxy", "m_flGameStartTime", &info))
+			uintptr_t gamerules = (uintptr_t)g_pSDKTools->GetGameRules();
+			if (gamerules)
 			{
-				uintptr_t gamerules = (uintptr_t)g_pSDKTools->GetGameRules();
-				if (gamerules)
+				sm_sendprop_info_t info;
+				if (gamehelpers->FindSendPropInfo("CCSGameRulesProxy", "m_flGameStartTime", &info))
+				{
 					flGameStartTime = *(float *)(gamerules + info.actual_offset);
+				}
 			}
 
 			timersys->NotifyOfGameStart(flGameStartTime - gpGlobals->curtime);
