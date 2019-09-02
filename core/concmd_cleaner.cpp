@@ -36,7 +36,11 @@
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK1_void(ICvar, UnregisterConCommand, SH_NOATTRIB, 0, ConCommandBase *);
+#if SOURCE_ENGINE == SE_CSGO
+SH_DECL_HOOK2_void(ICvar, RegisterConCommand, SH_NOATTRIB, 0, ConCommandBase *, bool);
+#else
 SH_DECL_HOOK1_void(ICvar, RegisterConCommand, SH_NOATTRIB, 0, ConCommandBase *);
+#endif
 #else
 SH_DECL_HOOK1_void(ICvar, RegisterConCommandBase, SH_NOATTRIB, 0, ConCommandBase *);
 #endif
@@ -78,7 +82,11 @@ public:
 #endif
 	}
 
+#if SOURCE_ENGINE == SE_CSGO
+	void LinkConCommandBase(ConCommandBase *pBase, bool unknown)
+#else
 	void LinkConCommandBase(ConCommandBase *pBase)
+#endif
 	{
 		IConCommandLinkListener *listener = IConCommandLinkListener::head;
 		while (listener)
