@@ -166,6 +166,7 @@ private:
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
 extern ISDKTools *g_pSDKTools;
+extern CGlobalVars *gpGlobals;
 extern int g_msgHintText;
 extern bool g_pIgnoreTerminateDetour;
 extern bool g_pIgnoreCSWeaponDropDetour;
