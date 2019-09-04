@@ -154,7 +154,6 @@ private:
 	QueryCvarCookie_t m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
 	ke::LinkedList<ke::AString> m_PrintfBuffer;
-	bool m_PrintfStop = false;
 };
 
 class PlayerManager : 
