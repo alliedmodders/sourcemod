@@ -860,12 +860,12 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 {
 	int client = IndexOfEdict(pEdict);
 
-	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
-	if (pNetChan == NULL)
-		RETURN_META(MRES_IGNORED);
-
 	CPlayer &player = m_Players[client];
 	if (!player.IsConnected())
+		RETURN_META(MRES_IGNORED);
+
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
+	if (pNetChan == NULL)
 		RETURN_META(MRES_IGNORED);
 
 	size_t nMsgLen = strlen(szMsg);
@@ -888,7 +888,7 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 		// Don't send any more messages for this player until the buffer is empty.
 		// Queue up a gameframe hook to empty the buffer (if we haven't already)
 		if (player.m_PrintfBuffer.empty())
-			g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(intptr_t)client);
+			g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(uintptr_t)player.GetSerial());
 
 		player.m_PrintfBuffer.append(szMsg);
 
@@ -898,8 +898,9 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 	RETURN_META(MRES_IGNORED);
 }
 
-void PlayerManager::OnPrintfFrameAction(int client)
+void PlayerManager::OnPrintfFrameAction(unsigned int serial)
 {
+	int client = GetClientFromSerial(serial);
 	CPlayer &player = m_Players[client];
 	if (!player.IsConnected())
 	{
