@@ -902,11 +902,17 @@ void PlayerManager::OnPrintfFrameAction(int client)
 {
 	CPlayer &player = m_Players[client];
 	if (!player.IsConnected())
+	{
+		player.m_PrintfBuffer.clear();
 		return;
+	}
 
 	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
 	if (pNetChan == NULL)
+	{
+		player.m_PrintfBuffer.clear();
 		return;
+	}
 
 	while (!player.m_PrintfBuffer.empty())
 	{
