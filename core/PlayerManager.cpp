@@ -864,6 +864,10 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 	if (pNetChan == NULL)
 		RETURN_META(MRES_IGNORED);
 
+	CPlayer &player = m_Players[client];
+	if (!player.IsConnected())
+		RETURN_META(MRES_IGNORED);
+
 	size_t nMsgLen = strlen(szMsg);
 #if SOURCE_ENGINE == SE_EPISODEONE
 	int nNumBitsWritten = 0;
@@ -879,16 +883,16 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 		RETURN_META(MRES_IGNORED);
 
 	// enqueue msgs if we'd overflow the SVC_Print buffer (+7 as ceil)
-	if (m_Players[client].m_PrintfStop || (nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + nMsgLen >= SVC_Print_BufferSize)
+	if (player.m_PrintfStop || (nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + nMsgLen >= SVC_Print_BufferSize)
 	{
 		// Don't send any more messages for this player until the buffer is empty.
 		// Queue up a gameframe hook to empty the buffer (if we haven't already)
-		if(!m_Players[client].m_PrintfStop)
+		if (!player.m_PrintfStop)
 			g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(intptr_t)client);
 
-		m_Players[client].m_PrintfStop = true;
+		player.m_PrintfStop = true;
 
-		m_Players[client].m_PrintfBuffer.append(szMsg);
+		player.m_PrintfBuffer.append(szMsg);
 
 		RETURN_META(MRES_SUPERCEDE);
 	}
@@ -898,16 +902,16 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 
 void PlayerManager::OnPrintfFrameAction(int client)
 {
-	CPlayer *pPlayer = &m_Players[client];
-	if (!pPlayer->IsInGame())
+	CPlayer &player = m_Players[client];
+	if (!player->IsConnected())
 		return;
 
 	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
 	if (pNetChan == NULL)
 		return;
 
-	ke::LinkedList<ke::AString>::iterator iter = m_Players[client].m_PrintfBuffer.begin();
-	while (iter != m_Players[client].m_PrintfBuffer.end())
+	ke::LinkedList<ke::AString>::iterator iter = player.m_PrintfBuffer.begin();
+	while (iter != player.m_PrintfBuffer.end())
 	{
 		int nMsgLen = (*iter).length();
 #if SOURCE_ENGINE == SE_EPISODEONE
@@ -920,19 +924,22 @@ void PlayerManager::OnPrintfFrameAction(int client)
 		const int SVC_Print_BufferSize = 2048 - 1; // -1 for terminating \0
 
 		// stop if we'd overflow the SVC_Print buffer  (+7 as ceil)
-		if((nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + nMsgLen >= SVC_Print_BufferSize)
+		if ((nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + nMsgLen >= SVC_Print_BufferSize)
 			break;
 
-		SH_CALL(engine, &IVEngineServer::ClientPrintf)(pPlayer->m_pEdict, (*iter).chars());
+		SH_CALL(engine, &IVEngineServer::ClientPrintf)(player.m_pEdict, (*iter).chars());
 
-		iter = m_Players[client].m_PrintfBuffer.erase(iter);
+		iter = player.m_PrintfBuffer.erase(iter);
 	}
 
-	// Buffer is empty, send new messages without enqueuing again.
-	if (iter == m_Players[client].m_PrintfBuffer.end())
-		m_Players[client].m_PrintfStop = false;
+	if (iter == player.m_PrintfBuffer.end())
+	{
+		// Buffer is empty, send new messages without enqueuing again.
+		player.m_PrintfStop = false;
+	}
 	else
-	{ // buffer not empty yet, continue processing it on the next gameframe.
+	{
+		// buffer not empty yet, continue processing it on the next gameframe.
 		g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(intptr_t)client);
 	}
 }
