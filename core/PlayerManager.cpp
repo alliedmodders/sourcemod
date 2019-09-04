@@ -871,16 +871,20 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 	int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
 #endif
 
-	const int NETMSG_TYPE_BITS = 6; // SVC_Print overhead for netmsg type
+	const int NETMSG_TYPE_BITS = 5; // SVC_Print overhead for netmsg type
 	const int SVC_Print_BufferSize = 2048 - 1; // -1 for terminating \0
 
-	// enqueue msgs if we'd overflow the SVC_Print buffer
-	if (m_Players[client].m_PrintfStop || (nNumBitsWritten + NETMSG_TYPE_BITS) / 8 + nMsgLen >= SVC_Print_BufferSize)
+	// if the msg is bigger than allowed then just let it fail
+	if (nMsgLen + 1 >= SVC_Print_BufferSize) // +1 for NETMSG_TYPE_BITS
+		RETURN_META(MRES_IGNORED);
+
+	// enqueue msgs if we'd overflow the SVC_Print buffer (+7 as ceil)
+	if (m_Players[client].m_PrintfStop || (nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + nMsgLen >= SVC_Print_BufferSize)
 	{
 		// Don't send any more messages for this player until the buffer is empty.
 		// Queue up a gameframe hook to empty the buffer (if we haven't already)
 		if(!m_Players[client].m_PrintfStop)
-			g_pSM->AddFrameAction(PrintfBuffer_FrameAction, (void *)(intptr_t)client);
+			g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(intptr_t)client);
 
 		m_Players[client].m_PrintfStop = true;
 
@@ -912,11 +916,11 @@ void PlayerManager::OnPrintfFrameAction(int client)
 		int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
 #endif
 
-		const int NETMSG_TYPE_BITS = 6; // SVC_Print overhead for netmsg type
+		const int NETMSG_TYPE_BITS = 5; // SVC_Print overhead for netmsg type
 		const int SVC_Print_BufferSize = 2048 - 1; // -1 for terminating \0
 
-		// stop if we'd overflow the SVC_Print buffer
-		if((nNumBitsWritten + NETMSG_TYPE_BITS) / 8 + nMsgLen >= SVC_Print_BufferSize)
+		// stop if we'd overflow the SVC_Print buffer  (+7 as ceil)
+		if((nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + nMsgLen >= SVC_Print_BufferSize)
 			break;
 
 		SH_CALL(engine, &IVEngineServer::ClientPrintf)(pPlayer->m_pEdict, (*iter).chars());
@@ -929,7 +933,7 @@ void PlayerManager::OnPrintfFrameAction(int client)
 		m_Players[client].m_PrintfStop = false;
 	else
 	{ // buffer not empty yet, continue processing it on the next gameframe.
-		g_pSM->AddFrameAction(PrintfBuffer_FrameAction, (void *)(intptr_t)client);
+		g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(intptr_t)client);
 	}
 }
 
@@ -2232,6 +2236,8 @@ void CPlayer::Disconnect()
 #if SOURCE_ENGINE == SE_CSGO
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
+	m_PrintfBuffer.clear();
+	m_PrintfStop = false;
 }
 
 void CPlayer::SetName(const char *name)
