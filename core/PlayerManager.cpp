@@ -883,14 +883,12 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 		RETURN_META(MRES_IGNORED);
 
 	// enqueue msgs if we'd overflow the SVC_Print buffer (+7 as ceil)
-	if (player.m_PrintfStop || (nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + nMsgLen >= SVC_Print_BufferSize)
+	if (!player.m_PrintfBuffer.empty() || (nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + nMsgLen >= SVC_Print_BufferSize)
 	{
 		// Don't send any more messages for this player until the buffer is empty.
 		// Queue up a gameframe hook to empty the buffer (if we haven't already)
-		if (!player.m_PrintfStop)
+		if (player.m_PrintfBuffer.empty())
 			g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(intptr_t)client);
-
-		player.m_PrintfStop = true;
 
 		player.m_PrintfBuffer.append(szMsg);
 
@@ -910,10 +908,8 @@ void PlayerManager::OnPrintfFrameAction(int client)
 	if (pNetChan == NULL)
 		return;
 
-	ke::LinkedList<ke::AString>::iterator iter = player.m_PrintfBuffer.begin();
-	while (iter != player.m_PrintfBuffer.end())
+	while (!player.m_PrintfBuffer.empty())
 	{
-		int nMsgLen = (*iter).length();
 #if SOURCE_ENGINE == SE_EPISODEONE
 		int nNumBitsWritten = 0;
 #else
@@ -923,23 +919,21 @@ void PlayerManager::OnPrintfFrameAction(int client)
 		const int NETMSG_TYPE_BITS = 5; // SVC_Print overhead for netmsg type
 		const int SVC_Print_BufferSize = 2048 - 1; // -1 for terminating \0
 
+		ke::LinkedList<ke::AString>::iterator iter = player.m_PrintfBuffer.begin();
+		ke::AString &string = (*iter);
+
 		// stop if we'd overflow the SVC_Print buffer  (+7 as ceil)
-		if ((nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + nMsgLen >= SVC_Print_BufferSize)
+		if ((nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + string.length() >= SVC_Print_BufferSize)
 			break;
 
-		SH_CALL(engine, &IVEngineServer::ClientPrintf)(player.m_pEdict, (*iter).chars());
+		SH_CALL(engine, &IVEngineServer::ClientPrintf)(player.m_pEdict, string.chars());
 
-		iter = player.m_PrintfBuffer.erase(iter);
+		player.m_PrintfBuffer.erase(iter);
 	}
 
-	if (iter == player.m_PrintfBuffer.end())
+	if (!player.m_PrintfBuffer.empty())
 	{
-		// Buffer is empty, send new messages without enqueuing again.
-		player.m_PrintfStop = false;
-	}
-	else
-	{
-		// buffer not empty yet, continue processing it on the next gameframe.
+		// continue processing it on the next gameframe as buffer is not empty
 		g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(intptr_t)client);
 	}
 }
@@ -2244,7 +2238,6 @@ void CPlayer::Disconnect()
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
 	m_PrintfBuffer.clear();
-	m_PrintfStop = false;
 }
 
 void CPlayer::SetName(const char *name)
