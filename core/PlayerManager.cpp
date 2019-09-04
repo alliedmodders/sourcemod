@@ -903,7 +903,7 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 void PlayerManager::OnPrintfFrameAction(int client)
 {
 	CPlayer &player = m_Players[client];
-	if (!player->IsConnected())
+	if (!player.IsConnected())
 		return;
 
 	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
