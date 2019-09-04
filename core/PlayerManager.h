@@ -193,7 +193,7 @@ public:
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
 	void OnServerHibernationUpdate(bool bHibernating);
 	void OnClientPrintf(edict_t *pEdict, const char *szMsg);
-	void OnPrintfFrameAction(int client);
+	void OnPrintfFrameAction(unsigned int serial);
 public: //IPlayerManager
 	void AddClientListener(IClientListener *listener);
 	void RemoveClientListener(IClientListener *listener);
