@@ -97,8 +97,7 @@ SH_DECL_HOOK2_void(IVEngineServer, ClientPrintf, SH_NOATTRIB, 0, edict_t *, cons
 
 static void PrintfBuffer_FrameAction(void *data)
 {
-	int client = (int)(intptr_t)data;
-	g_Players.OnPrintfFrameAction(client);
+	g_Players.OnPrintfFrameAction(reintrepret_cast<unsigned int>(data));
 }
 
 ConCommand *maxplayersCmd = NULL;
