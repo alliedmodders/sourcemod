@@ -318,6 +318,13 @@ methodmap Menu < Handle
 	// @param stop          Menu item index to stop randomizing at. -1 = infinite
 	public native void ShufflePerClient(int start=0, int stop=-1);
 
+	// Fills the client vote option mapping with user supplied values.
+	//
+	// @param client		Client index.
+	// @param array			Integer array with mapping.
+	// @param length		Length of array.
+	public native void SetClientMapping(int client, int[] array, int length);
+
 	// Sets the menu's default title/instruction message.
 	//
 	// @param fmt           Message string format
@@ -560,10 +567,21 @@ native bool GetMenuItem(Handle menu,
 /**
  * Generates a per-client random mapping for the current vote options.
  *
+ * @param menu          Menu Handle.
  * @param start         Menu item index to start randomizing from.
  * @param stop          Menu item index to stop randomizing at. -1 = infinite
  */
 native void MenuShufflePerClient(Handle menu, int start=0, int stop=-1);
+
+/*
+ * Fills the client vote option mapping with user supplied values.
+ *
+ * @param menu          Menu Handle.
+ * @param client		Client index.
+ * @param array			Integer array with mapping.
+ * @param length		Length of array.
+ */
+native void MenuSetClientMapping(Handle menu, int client, int[] array, int length);
 
 /**
  * Returns the first item on the page of a currently selected menu.

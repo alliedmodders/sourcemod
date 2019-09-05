@@ -607,7 +607,7 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 CBaseMenu::CBaseMenu(IMenuHandler *pHandler, IMenuStyle *pStyle, IdentityToken_t *pOwner) : 
 m_pStyle(pStyle), m_Pagination(7), m_bShouldDelete(false), m_bCancelling(false), 
 m_pOwner(pOwner ? pOwner : g_pCoreIdent), m_bDeleting(false), m_bWillFreeHandle(false), 
-m_hHandle(BAD_HANDLE), m_pHandler(pHandler), m_nFlags(MENUFLAG_BUTTON_EXIT), m_RandomMapLen(0)
+m_hHandle(BAD_HANDLE), m_pHandler(pHandler), m_nFlags(MENUFLAG_BUTTON_EXIT)
 {
 }
 
@@ -684,7 +684,7 @@ const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =
 	if (position >= m_items.size())
 		return NULL;
 
-	if (client > 0 && position < m_RandomMapLen)
+	if (client > 0 && position < m_RandomMaps[client].length())
 	{
 		position = m_RandomMaps[client][position];
 	}
@@ -701,19 +701,19 @@ const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =
 void CBaseMenu::ShufflePerClient(int start, int stop)
 {
 	// limit map len to 255 items since it's using uint8
-	m_RandomMapLen = MIN(GetItemCount(), 255);
-	if(stop >= 0)
-		m_RandomMapLen = MIN(m_RandomMapLen, (unsigned int)stop);
+	int length = MIN(GetItemCount(), 255);
+	if (stop >= 0)
+		length = MIN(length, (unsigned int)stop);
 
-	for(int i = 1; i < SM_MAXPLAYERS + 1; i++)
+	for (int i = 1; i < SM_MAXPLAYERS + 1; i++)
 	{
 		// populate per-client map ...
-		m_RandomMaps[i].resize(m_RandomMapLen);
-		for(unsigned int j = 0; j < m_RandomMapLen; j++)
+		m_RandomMaps[i].resize(length);
+		for (unsigned int j = 0; j < length; j++)
 			m_RandomMaps[i][j] = j;
 
 		// ... and random shuffle it
-		for(int j = m_RandomMapLen - 1; j > start; j--)
+		for (int j = length - 1; j > start; j--)
 		{
 			int x = rand() % (j - start + 1) + start;
 			uint8_t tmp = m_RandomMaps[i][x];
@@ -723,14 +723,24 @@ void CBaseMenu::ShufflePerClient(int start, int stop)
 	}
 }
 
+void CBaseMenu::SetClientMapping(int client, int *array, int length)
+{
+	length = MIN(length, 255);
+	m_RandomMaps[client].resize(length);
+	for (int i = 0; i < length; i++)
+	{
+		m_RandomMaps[client][i] = array[i];
+	}
+}
+
 bool CBaseMenu::IsPerClientShuffled()
 {
-	return m_RandomMapLen > 0;
+	return m_RandomMaps[1].length() > 0;
 }
 
 unsigned int CBaseMenu::GetRealItemIndex(int client, unsigned int position)
 {
-	if (client > 0 && position < m_RandomMapLen)
+	if (client > 0 && position < m_RandomMaps[client].length())
 	{
 		position = m_RandomMaps[client][position];
 		return m_items[position].index;

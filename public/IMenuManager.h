@@ -646,6 +646,14 @@ namespace SourceMod
 		virtual void ShufflePerClient(int start=0, int stop=-1) =0;
 
 		/**
+		 * @brief Fills the client vote option mapping with user supplied values.
+		 * @param client		Client index.
+		 * @param array			Integer array with mapping.
+		 * @param length		Length of array.
+		 */
+		virtual void SetClientMapping(int client, int *array, int length) =0;
+
+		/**
 		 * @brief Returns true if the menu has a per-client random mapping.
 		 * @return				True on success, false otherwise.
 		 */

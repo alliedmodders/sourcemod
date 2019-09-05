@@ -159,6 +159,7 @@ public:
 	virtual void SetMenuOptionFlags(unsigned int flags);
 	virtual IMenuHandler *GetHandler();
 	virtual void ShufflePerClient(int start, int stop);
+	virtual void SetClientMapping(int client, int *array, int length);
 	virtual bool IsPerClientShuffled();
 	virtual unsigned int GetRealItemIndex(int client, unsigned int position);
 	unsigned int GetBaseMemUsage();
@@ -177,7 +178,6 @@ protected:
 	Handle_t m_hHandle;
 	IMenuHandler *m_pHandler;
 	unsigned int m_nFlags;
-	unsigned int m_RandomMapLen;
 	ke::Vector<uint8_t> m_RandomMaps[SM_MAXPLAYERS+1];
 };
 

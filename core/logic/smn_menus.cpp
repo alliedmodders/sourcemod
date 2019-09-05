@@ -862,6 +862,33 @@ static cell_t MenuShufflePerClient(IPluginContext *pContext, const cell_t *param
 	return 1;
 }
 
+static cell_t MenuSetClientMapping(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	int client = params[2];
+	if (client < 1 || client > SM_MAXPLAYERS)
+	{
+		return pContext->ThrowNativeError("Invalid client index!");
+	}
+
+	cell_t *array;
+	pContext->LocalToPhysAddr(params[3], &array);
+
+	int length = params[4];
+
+	menu->SetClientMapping(client, array, length);
+
+	return 1;
+}
+
 static cell_t SetMenuPagination(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = (Handle_t)params[1];
@@ -1676,6 +1703,7 @@ REGISTER_NATIVES(menuNatives)
 	{"SetVoteResultCallback",	SetVoteResultCallback},
 	{"VoteMenu",				VoteMenu},
 	{"MenuShufflePerClient",	MenuShufflePerClient},
+	{"MenuSetClientMapping",	MenuSetClientMapping},
 	{"SetMenuNoVoteButton",		SetMenuNoVoteButton},
 
 	// Transitional syntax support.
@@ -1705,6 +1733,7 @@ REGISTER_NATIVES(menuNatives)
 	{"Menu.Cancel",				CancelMenu},
 	{"Menu.DisplayVote",		VoteMenu},
 	{"Menu.ShufflePerClient",	MenuShufflePerClient},
+	{"Menu.SetClientMapping",	MenuSetClientMapping},
 	{"Menu.Pagination.get",		GetMenuPagination},
 	{"Menu.Pagination.set",		SetMenuPagination},
 	{"Menu.OptionFlags.get",	GetMenuOptionFlags},
