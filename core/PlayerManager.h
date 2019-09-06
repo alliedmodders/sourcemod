@@ -153,7 +153,7 @@ private:
 #if SOURCE_ENGINE == SE_CSGO
 	QueryCvarCookie_t m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
-	ke::LinkedList<ke::AString> m_PrintfBuffer;
+	ke::Deque<ke::AString> m_PrintfBuffer;
 };
 
 class PlayerManager : 
