@@ -124,6 +124,7 @@ private:
 	bool IsAuthStringValidated();
 	bool SetEngineString();
 	bool SetCSteamID();
+	void ClearNetchannelQueue(void);
 private:
 	bool m_IsConnected = false;
 	bool m_IsInGame = false;
