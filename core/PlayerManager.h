@@ -43,7 +43,7 @@
 #include <sh_list.h>
 #include <sh_vector.h>
 #include <am-string.h>
-#include <am-linkedlist.h>
+#include <am-deque.h>
 #include "ConVarManager.h"
 
 #include <steam/steamclientpublic.h>
