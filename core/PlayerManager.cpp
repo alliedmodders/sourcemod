@@ -900,14 +900,14 @@ void PlayerManager::OnPrintfFrameAction(unsigned int serial)
 	CPlayer &player = m_Players[client];
 	if (!player.IsConnected())
 	{
-		player.m_PrintfBuffer.clear();
+		player.ClearNetchannelQueue();
 		return;
 	}
 
 	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
 	if (pNetChan == NULL)
 	{
-		player.m_PrintfBuffer.clear();
+		player.ClearNetchannelQueue();
 		return;
 	}
 
@@ -2236,7 +2236,13 @@ void CPlayer::Disconnect()
 #if SOURCE_ENGINE == SE_CSGO
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
-	m_PrintfBuffer.clear();
+	ClearNetchannelQueue();
+}
+
+void CPlayer::ClearNetchannelQueue(void)
+{
+	while (!m_PrintfBuffer.empty())
+		m_PrintfBuffer.popFront();
 }
 
 void CPlayer::SetName(const char *name)
