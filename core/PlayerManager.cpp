@@ -874,9 +874,6 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 	int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
 #endif
 
-	const int NETMSG_TYPE_BITS = 5; // SVC_Print overhead for netmsg type
-	const int SVC_Print_BufferSize = 2048 - 1; // -1 for terminating \0
-
 	// if the msg is bigger than allowed then just let it fail
 	if (nMsgLen + 1 >= SVC_Print_BufferSize) // +1 for NETMSG_TYPE_BITS
 		RETURN_META(MRES_IGNORED);
@@ -921,9 +918,6 @@ void PlayerManager::OnPrintfFrameAction(unsigned int serial)
 #else
 		int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
 #endif
-
-		const int NETMSG_TYPE_BITS = 5; // SVC_Print overhead for netmsg type
-		const int SVC_Print_BufferSize = 2048 - 1; // -1 for terminating \0
 
 		ke::LinkedList<ke::AString>::iterator iter = player.m_PrintfBuffer.begin();
 		ke::AString &string = (*iter);
