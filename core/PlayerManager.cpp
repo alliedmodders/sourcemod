@@ -919,8 +919,7 @@ void PlayerManager::OnPrintfFrameAction(unsigned int serial)
 		int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
 #endif
 
-		ke::LinkedList<ke::AString>::iterator iter = player.m_PrintfBuffer.begin();
-		ke::AString &string = (*iter);
+		ke::AString &string = player.m_PrintfBuffer.front();
 
 		// stop if we'd overflow the SVC_Print buffer  (+7 as ceil)
 		if ((nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + string.length() >= SVC_Print_BufferSize)
@@ -928,13 +927,13 @@ void PlayerManager::OnPrintfFrameAction(unsigned int serial)
 
 		SH_CALL(engine, &IVEngineServer::ClientPrintf)(player.m_pEdict, string.chars());
 
-		player.m_PrintfBuffer.erase(iter);
+		player.m_PrintfBuffer.popFront();
 	}
 
 	if (!player.m_PrintfBuffer.empty())
 	{
 		// continue processing it on the next gameframe as buffer is not empty
-		g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(intptr_t)client);
+		g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(uintptr_t)player.GetSerial());
 	}
 }
 
