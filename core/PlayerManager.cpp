@@ -869,7 +869,7 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 
 	size_t nMsgLen = strlen(szMsg);
 #if SOURCE_ENGINE == SE_EPISODEONE
-	int nNumBitsWritten = 0;
+	static const int nNumBitsWritten = 0;
 #else
 	int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
 #endif
@@ -914,7 +914,7 @@ void PlayerManager::OnPrintfFrameAction(unsigned int serial)
 	while (!player.m_PrintfBuffer.empty())
 	{
 #if SOURCE_ENGINE == SE_EPISODEONE
-		int nNumBitsWritten = 0;
+		static const int nNumBitsWritten = 0;
 #else
 		int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
 #endif
