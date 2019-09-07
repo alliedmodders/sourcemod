@@ -1,0 +1,89 @@
+"Games"
+{
+	"portal2"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"104"
+			}
+			"FireBullets"
+			{
+				"windows"	"117"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"121"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"67"
+			}
+			"PreThink"
+			{
+				"windows"	"348"
+			}
+			"PostThink"
+			{
+				"windows"	"349"
+			}
+			"SetTransmit"
+			{
+				"windows"	"22"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"17"
+			}
+			"Spawn"
+			{
+				"windows"	"24"
+			}
+			"StartTouch"
+			{
+				"windows"	"102"
+			}
+			"Think"
+			{
+				"windows"	"51"
+			}
+			"Touch"
+			{
+				"windows"	"103"
+			}
+			"TraceAttack"
+			{
+				"windows"	"65"
+			}
+			"Use"
+			{
+				"windows"	"101"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"154"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"289"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"283"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"286"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"284"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"287"
+			}
+		}
+	}
+}

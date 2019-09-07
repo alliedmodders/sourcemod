@@ -101,6 +101,11 @@
 		"game"		"dinodday"
 	}
 
+	"game.portal2.txt"
+	{
+		"game"		"portal2"
+	}
+
 	"blacklist.plugins.txt"
 	{
 	}

@@ -18,6 +18,7 @@
 		{
 			"game"		"swarm"
 			"game"		"dinodday"
+			"game"		"portal2"
 		}
 
 		"Offsets"
@@ -58,6 +59,7 @@
 		{
 			"game"		"swarm"
 			"game"		"dinodday"
+			"game"		"portal2"
 		}
 			
 		"Signatures"
@@ -117,6 +119,7 @@
 		{
 			"game"		"swarm"
 			"game"		"dinodday"
+			"game"		"portal2"
 		}
 		"Signatures"
 		{

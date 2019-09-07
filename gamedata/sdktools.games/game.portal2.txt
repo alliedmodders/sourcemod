@@ -1,0 +1,71 @@
+"Games"
+{
+	"portal2"
+	{
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"433"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"293"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"282"
+			}
+			"Ignite"
+			{
+				"windows"	"222"
+			}
+			"Extinguish"
+			{
+				"windows"	"225"
+			}
+			"Teleport"
+			{
+				"windows"	"113"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"476"
+			}
+			"GetVelocity"
+			{
+				"windows"	"138"
+			}
+			"EyeAngles"
+			{
+				"windows"	"129"
+			}
+			"AcceptInput"
+			{
+				"windows"	"40"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"26"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"284"
+			}
+			"Activate"
+			{
+				"windows"	"37"
+			}
+			"PlayerRunCmd"
+			{
+				"windows"	"453"
+			}
+		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"		"CPortalGameRulesProxy"
+			"GameRulesDataTable"	"portal_gamerules_data"
+		}
+	}
+}

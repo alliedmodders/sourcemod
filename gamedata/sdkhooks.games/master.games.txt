@@ -199,4 +199,8 @@
 	{
 		"game"		"reactivedrop"
 	}
+	"game.portal2.txt"
+	{
+		"game"		"portal2"
+	}
 }
