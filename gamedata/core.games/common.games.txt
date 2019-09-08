@@ -99,6 +99,7 @@
 			"engine"			"csgo"
 			"engine"			"sdk2013"
 			"engine"			"contagion"
+			"engine"			"portal2"
 		}
 		
 		"Offsets"

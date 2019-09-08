@@ -71,6 +71,11 @@
 	}
 */
 	
+	"engine.portal2.txt"
+	{
+		"engine"	"portal2"
+	}
+
 	"game.insurgency.txt"
 	{
 		"game"		"$Insurgency"
@@ -198,9 +203,5 @@
 	"game.reactivedrop.txt"
 	{
 		"game"		"reactivedrop"
-	}
-	"game.portal2.txt"
-	{
-		"game"		"portal2"
 	}
 }

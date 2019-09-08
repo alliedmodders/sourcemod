@@ -16,7 +16,7 @@
 	{
 		"#supported"
 		{
-			"game"	"portal2"
+			"game"		"portal2"
 		}
 		
 		"Offsets"
@@ -24,7 +24,7 @@
 			/* Offset into LevelShutdown */
 			"gEntList"
 			{
-				"windows"	"16"
+				"windows"	"11"
 			}
 
 			"EntInfo"

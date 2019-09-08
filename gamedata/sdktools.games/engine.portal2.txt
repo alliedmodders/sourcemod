@@ -16,8 +16,7 @@
 	{
 		"#supported"
 		{
-			"game"		"swarm"
-			"game"		"dinodday"
+			"game"		"portal2"
 		}
 
 		"Offsets"
@@ -46,7 +45,7 @@
 			"CBaseTempEntity"
 			{
 				"library"	"server"
-				"windows"	"\x8B\xC1\x8B\x4C\x24\x04\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x04\x8B\x15\x2A\x2A\x2A\x2A\x89\x50\x08\xA3\x2A\x2A\x2A\x2A\xC2\x04\x00"
+				"windows"	"\x55\x8B\xEC\x8B\xC1\x8B\x4D\x08\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x04\x8B\x15\x2A\x2A\x2A\x2A"
 			}
 		}
 	}
@@ -56,8 +55,7 @@
 	{
 		"#supported"
 		{
-			"game"		"swarm"
-			"game"		"dinodday"
+			"game"		"portal2"
 		}
 			
 		"Signatures"
@@ -102,10 +100,18 @@
 	{
 		"Signatures"
 		{
-			"EntityFactory"
+			"EntityFactoryCaller"
 			{
 				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x0C\x57\x8B\x7D\x08\x83\xFE\xFF"
+			}
+		}
+
+		"Offsets"
+		{
+			"EntityFactoryCallOffset"
+			{
+				"windows"	"55"
 			}
 		}
 	}
@@ -115,15 +121,14 @@
 	{
 		"#supported"
 		{
-			"game"		"swarm"
-			"game"		"dinodday"
+			"game"		"portal2"
 		}
 		"Signatures"
 		{
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x81\xEC\x1C\x01\x00\x00\x53\x55\x56\x8B\x71\x14\x85\xF6"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x1C\x01\x00\x00\x53\x56\x8B\x71\x14"
 			}
 		}
 	}

@@ -96,14 +96,14 @@
 		"engine"	"doi" // #cheating #yolo
 	}
 	
+	"engine.portal2.txt"
+	{
+		"engine"	"portal2"
+	}
+	
 	"game.dinodday.txt"
 	{
 		"game"		"dinodday"
-	}
-
-	"game.portal2.txt"
-	{
-		"game"		"portal2"
 	}
 
 	"blacklist.plugins.txt"
