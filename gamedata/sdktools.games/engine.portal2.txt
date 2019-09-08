@@ -25,18 +25,26 @@
 			"s_pTempEntities"
 			{
 				"windows"	"17"
+				"linux"		"17"
+				"mac"		"17"
 			}
 			"GetTEName"
 			{
 				"windows"	"4"
+				"linux"		"4"
+				"mac"		"4"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
+				"linux"		"8"
+				"mac"		"8"
 			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
+				"linux"		"0"
+				"mac"		"0"
 			}
 		}
 
@@ -46,6 +54,8 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x8B\xC1\x8B\x4D\x08\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x04\x8B\x15\x2A\x2A\x2A\x2A"
+				"linux"		""
+				"mac"		"@_ZN15CBaseTempEntityC2EPKc"
 			}
 		}
 	}
@@ -65,6 +75,8 @@
 			{
 				"library"	"server"
 				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x85\xC9\x57\x74\x2E\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x83\xF8\xFF\x75\x10\xB8\xFF\x1F\x00\x00\x83\xC0\x01\xC1\xE0\x04\x8B\x3C\x30\xEB\x16\x25\xFF\xFF\x00\x00\x83\xC0\x01\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x34\x8B"
+				"linux"		""
+				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
 		}
 	}
@@ -83,6 +95,7 @@
 			 * here.
 			 */
 			"CreateFakeClient_Windows"	"\x8B\x44\x24\x2A\x50\xB9\x2A\x2A\x2A\x2A\xE8"
+			"CreateFakeClient_Linux"	""
 		}
 		
 		"Offsets"
@@ -91,6 +104,16 @@
 			"sv"
 			{
 				"windows"	"6"
+				"linux"		"11"
+			}
+		}
+
+		"Signatures"
+		{
+			"sv"
+			{
+				"library"	"server"
+				"mac"		"@sv"
 			}
 		}
 	}
@@ -104,6 +127,13 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x56\x8B\x75\x0C\x57\x8B\x7D\x08\x83\xFE\xFF"
+				"linux"		"\x55\x89\xE5\x83\xEC\x38\x89\x5D\xF4\x8B\x5D\x0C\x89\x75\xF8\x8B\x75\x08\x89\x7D\xFC\x0F\xB6\x7D\x10"
+			}
+
+			"EntityFactoryDictionary"
+			{
+				"library"	"server"
+				"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
 		}
 
@@ -112,6 +142,7 @@
 			"EntityFactoryCallOffset"
 			{
 				"windows"	"55"
+				"linux"		"56"
 			}
 		}
 	}
@@ -129,6 +160,8 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x81\xEC\x1C\x01\x00\x00\x53\x56\x8B\x71\x14"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x7C\x01\x00\x00\x8B\x55\x08\x8B\x75\x14"
+				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
@@ -148,6 +181,8 @@
 			{
 				/* Not 100% sure on this, why would windows change and not linux - TEST ME */
 				"windows"	"17"
+				"linux"		"57"
+				"mac"		"57"
 			}
 			/**
 			 * CBaseClient::SetName(char  const*);
@@ -156,6 +191,8 @@
 			"SetClientName"
 			{
 				"windows"	"16"
+				"linux"		"56"
+				"mac"		"56"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
@@ -168,6 +205,8 @@
 			"InfoChanged"
 			{
 				"windows"	"176"
+				"linux"		"176"
+				"mac"		"176"
 			}
 		}
 	}

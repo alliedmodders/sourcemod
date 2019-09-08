@@ -25,20 +25,30 @@
 			"gEntList"
 			{
 				"windows"	"11"
+				"linux"		"13"
 			}
 
 			"EntInfo"
 			{
 				"windows"	"4"	
+				"linux"		"4"
+				"mac"		"4"
 			}
 		}
 		
 		"Signatures"
 		{
+			"gEntList"
+			{
+				"library"	"server"
+				"mac"		"@gEntList"
+			}
+
 			"LevelShutdown"
 			{
 				"library"	"server"
 				"windows"	"\x56\x8B\x35\x2A\x2A\x2A\x2A\x8B\x06\x8B\x50\x78\x8B\xCE"
+				"linux"		"\x55\x89\xE5\x53\x83\xEC\x24\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03"
 			}
 		}
 	}

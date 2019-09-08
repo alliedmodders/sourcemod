@@ -7,82 +7,122 @@
 			"EndTouch"
 			{
 				"windows"	"104"
+				"linux"		"105"
+				"mac"		"105"
 			}
 			"FireBullets"
 			{
 				"windows"	"117"
+				"linux"		"118"
+				"mac"		"118"
 			}
 			"GetMaxHealth"
 			{
 				"windows"	"121"
+				"linux"		"122"
+				"mac"		"122"
 			}
 			"OnTakeDamage"
 			{
 				"windows"	"67"
+				"linux"		"68"
+				"mac"		"68"
 			}
 			"PreThink"
 			{
 				"windows"	"348"
+				"linux"		"349"
+				"mac"		"349"
 			}
 			"PostThink"
 			{
 				"windows"	"349"
+				"linux"		"350"
+				"mac"		"350"
 			}
 			"SetTransmit"
 			{
 				"windows"	"22"
+				"linux"		"23"
+				"mac"		"23"
 			}
 			"ShouldCollide"
 			{
 				"windows"	"17"
+				"linux"		"18"
+				"mac"		"18"
 			}
 			"Spawn"
 			{
 				"windows"	"24"
+				"linux"		"25"
+				"mac"		"25"
 			}
 			"StartTouch"
 			{
 				"windows"	"102"
+				"linux"		"103"
+				"mac"		"103"
 			}
 			"Think"
 			{
 				"windows"	"51"
+				"linux"		"52"
+				"mac"		"52"
 			}
 			"Touch"
 			{
 				"windows"	"103"
+				"linux"		"104"
+				"mac"		"104"
 			}
 			"TraceAttack"
 			{
 				"windows"	"65"
+				"linux"		"66"
+				"mac"		"66"
 			}
 			"Use"
 			{
 				"windows"	"101"
+				"linux"		"102"
+				"mac"		"102"
 			}
 			"VPhysicsUpdate"
 			{
 				"windows"	"154"
+				"linux"		"155"
+				"mac"		"155"
 			}
 			"Weapon_CanSwitchTo"
 			{
 				"windows"	"289"
+				"linux"		"290"
+				"mac"		"290"
 			}
 			"Weapon_CanUse"
 			{
 				"windows"	"283"
+				"linux"		"284"
+				"mac"		"284"
 			}
 			"Weapon_Drop"
 			{
 				"windows"	"286"
+				"linux"		"287"
+				"mac"		"287"
 			}
 			"Weapon_Equip"
 			{
 				"windows"	"284"
+				"linux"		"285"
+				"mac"		"285"
 			}
 			"Weapon_Switch"
 			{
 				"windows"	"287"
+				"linux"		"288"
+				"mac"		"288"
 			}
 		}
 	}
