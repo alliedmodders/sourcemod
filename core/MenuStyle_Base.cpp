@@ -703,13 +703,13 @@ void CBaseMenu::ShufflePerClient(int start, int stop)
 	// limit map len to 255 items since it's using uint8
 	int length = MIN(GetItemCount(), 255);
 	if (stop >= 0)
-		length = MIN(length, (unsigned int)stop);
+		length = MIN(length, stop);
 
 	for (int i = 1; i < SM_MAXPLAYERS + 1; i++)
 	{
 		// populate per-client map ...
 		m_RandomMaps[i].resize(length);
-		for (unsigned int j = 0; j < length; j++)
+		for (int j = 0; j < length; j++)
 			m_RandomMaps[i][j] = j;
 
 		// ... and random shuffle it
@@ -735,7 +735,12 @@ void CBaseMenu::SetClientMapping(int client, int *array, int length)
 
 bool CBaseMenu::IsPerClientShuffled()
 {
-	return m_RandomMaps[1].length() > 0;
+	for (int i = 1; i < SM_MAXPLAYERS + 1; i++)
+	{
+		if(m_RandomMaps[i].length() > 0)
+			return true;
+	}
+	return false;
 }
 
 unsigned int CBaseMenu::GetRealItemIndex(int client, unsigned int position)
