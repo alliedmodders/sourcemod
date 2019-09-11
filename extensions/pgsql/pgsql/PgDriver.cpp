@@ -93,26 +93,28 @@ const char *PgDriver::GetProductName()
 
 PGconn *Connect(const DatabaseInfo *info, char *error, size_t maxlength)
 {
+	/* https://www.postgresql.org/docs/9.6/libpq-connect.html#LIBPQ-CONNSTRING */
+	/* TODO: Switch to PQconnectdbParams to prevent escaping issues. */
 	char *options = new char[1024];
-	snprintf(options, 1024, "host='%s' dbname='%s'", info->host, info->database);
+	int offs = snprintf(options, 1024, "host='%s' dbname='%s'", info->host, info->database);
 
 	if (info->port > 0)
 	{
-		snprintf(options, 1024, "%s port=%d", options, info->port);
+		offs += snprintf(&options[offs], 1024 - offs, " port=%d", info->port);
 	}
 
 	if(info->user[0] != '\0')
 	{
-		snprintf(options, 1024, "%s user='%s'", options, info->user);
+		offs += snprintf(&options[offs], 1024 - offs, " user='%s'", info->user);
 	}
 	if(info->pass[0] != '\0')
 	{
-		snprintf(options, 1024, "%s password='%s'", options, info->pass);
+		offs += snprintf(&options[offs], 1024 - offs, " password='%s'", info->pass);
 	}
 
 	if (info->maxTimeout > 0)
 	{
-		snprintf(options, 1024, "%s connect_timeout=%d", options, info->maxTimeout);
+		offs += snprintf(&options[offs], 1024 - offs, " connect_timeout=%d", info->maxTimeout);
 	}
 
 	/* Make a connection to the database */
