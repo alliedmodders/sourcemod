@@ -1820,23 +1820,23 @@ void SDKHooks::HandleEntitySpawned(CBaseEntity *pEntity, int index, cell_t ref)
 {
 	if (g_pOnEntitySpawned->GetFunctionCount() || m_EntListeners.size())
 	{
-		const char *pName = gamehelpers->GetEntityClassname(pEntity);
 		cell_t bcompatRef = gamehelpers->EntityToBCompatRef(pEntity);
+		const char *pName = gamehelpers->GetEntityClassname(pEntity);
+		if (!pName)
+			pName = "";
 
 		// Send OnEntitySpawned to SM listeners
-		SourceHook::List<ISMEntityListener *>::iterator iter;
-		ISMEntityListener *pListener = NULL;
-		for (iter = m_EntListeners.begin(); iter != m_EntListeners.end(); iter++)
+		for (SourceHook::List<ISMEntityListener *>::iterator iter = m_EntListeners.begin(); iter != m_EntListeners.end(); iter++)
 		{
-			pListener = (*iter);
-			pListener->OnEntitySpawned(pEntity, pName ? pName : "");
+			ISMEntityListener *pListener = (*iter);
+			pListener->OnEntitySpawned(pEntity, pName);
 		}
 
 		// Call OnEntitySpawned forward
 		if (g_pOnEntitySpawned->GetFunctionCount())
 		{
 			g_pOnEntitySpawned->PushCell(bcompatRef);
-			g_pOnEntitySpawned->PushString(pName ? pName : "");
+			g_pOnEntitySpawned->PushString(pName);
 			g_pOnEntitySpawned->Execute(NULL);
 		}
 	}
