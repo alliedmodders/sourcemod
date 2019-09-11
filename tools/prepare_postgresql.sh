@@ -26,7 +26,7 @@ if [ ! -d "sourcemod" ]; then
   fi
 fi
 
-pgsqlver="9.6.9"
+pgsqlver="9.6.15"
 pgsqlmaj="9.6"
 if [ $ismac -eq 0 ] && [ ! -d "postgresql-$pgsqlmaj" ]; then
   if [ `command -v wget` ]; then
