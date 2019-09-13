@@ -224,7 +224,7 @@ stock void TE_SendToClient(int client, float delay=0.0)
  * @param rangeType     Range type to use for filtering clients.
  * @param delay         Delay in seconds to send the TE.
  */
-stock void TE_SendToAllInRange(float origin[3], ClientRangeType rangeType, float delay=0.0)
+stock void TE_SendToAllInRange(const float origin[3], ClientRangeType rangeType, float delay=0.0)
 {
 	int[] clients = new int[MaxClients];
 	int total = GetClientsInRange(origin, rangeType, clients, MaxClients);
