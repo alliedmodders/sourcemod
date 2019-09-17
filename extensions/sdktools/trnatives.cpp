@@ -1118,7 +1118,7 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_StartSolid",				smn_TRStartSolid},
 	{"TR_DidHit",					smn_TRDidHit},
 	{"TR_GetHitGroup",				smn_TRGetHitGroup},
-	{"TR_GetHitBoxIndex",	    	smn_TRGetHitBoxIndex},
+	{"TR_GetHitBoxIndex",			smn_TRGetHitBoxIndex},
 	{"TR_ClipRayToEntity",			smn_TRClipRayToEntity},
 	{"TR_ClipRayToEntityEx",		smn_TRClipRayToEntityEx},
 	{"TR_ClipRayHullToEntity",		smn_TRClipRayHullToEntity},
