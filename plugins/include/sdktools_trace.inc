@@ -634,6 +634,18 @@ native bool TR_DidHit(Handle hndl=INVALID_HANDLE);
 native int TR_GetHitGroup(Handle hndl=INVALID_HANDLE);
 
 /**
+ * Returns in which hitbox the trace collided if any. 
+ *
+ * Note: if the entity that collided with the trace is the world entity, 
+ * then this function doesn't return an hitbox index but a static prop index.
+ *
+ * @param hndl          A trace Handle, or INVALID_HANDLE to use a global trace result.
+ * @return              Hitbox index (Or static prop index).
+ * @error               Invalid Handle.
+ */
+native int TR_GetHitBoxIndex(Handle hndl=INVALID_HANDLE);
+
+/**
  * Find the normal vector to the collision plane of a trace.
  *
  * @param hndl          A trace Handle, or INVALID_HANDLE to use a global trace result.

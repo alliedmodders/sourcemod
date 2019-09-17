@@ -998,6 +998,22 @@ static cell_t smn_TRGetHitGroup(IPluginContext *pContext, const cell_t *params)
 	return tr->hitgroup;
 }
 
+static cell_t smn_TRGetHitBoxIndex(IPluginContext *pContext, const cell_t *params)
+{
+	sm_trace_t *tr;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if (params[1] == BAD_HANDLE)
+	{
+		tr = &g_Trace;
+	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+	}
+
+	return tr->hitbox;
+}
+
 static cell_t smn_TRGetEntityIndex(IPluginContext *pContext, const cell_t *params)
 {
 	sm_trace_t *tr;
@@ -1102,6 +1118,7 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_StartSolid",				smn_TRStartSolid},
 	{"TR_DidHit",					smn_TRDidHit},
 	{"TR_GetHitGroup",				smn_TRGetHitGroup},
+	{"TR_GetHitBoxIndex",			smn_TRGetHitBoxIndex},
 	{"TR_ClipRayToEntity",			smn_TRClipRayToEntity},
 	{"TR_ClipRayToEntityEx",		smn_TRClipRayToEntityEx},
 	{"TR_ClipRayHullToEntity",		smn_TRClipRayHullToEntity},
