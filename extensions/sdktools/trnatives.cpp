@@ -998,7 +998,7 @@ static cell_t smn_TRGetHitGroup(IPluginContext *pContext, const cell_t *params)
 	return tr->hitgroup;
 }
 
-static cell_t smn_TRGetHitBox(IPluginContext *pContext, const cell_t *params)
+static cell_t smn_TRGetHitBoxIndex(IPluginContext *pContext, const cell_t *params)
 {
 	sm_trace_t *tr;
 	HandleError err;
@@ -1118,7 +1118,7 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_StartSolid",				smn_TRStartSolid},
 	{"TR_DidHit",					smn_TRDidHit},
 	{"TR_GetHitGroup",				smn_TRGetHitGroup},
-	{"TR_GetHitBox",				smn_TRGetHitBox},
+	{"TR_GetHitBoxIndex",	    	smn_TRGetHitBoxIndex},
 	{"TR_ClipRayToEntity",			smn_TRClipRayToEntity},
 	{"TR_ClipRayToEntityEx",		smn_TRClipRayToEntityEx},
 	{"TR_ClipRayHullToEntity",		smn_TRClipRayHullToEntity},

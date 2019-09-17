@@ -643,7 +643,7 @@ native int TR_GetHitGroup(Handle hndl=INVALID_HANDLE);
  * @return              Hitbox index (Or static prop index).
  * @error               Invalid Handle.
  */
-native int TR_GetHitBox(Handle hndl=INVALID_HANDLE);
+native int TR_GetHitBoxIndex(Handle hndl=INVALID_HANDLE);
 
 /**
  * Find the normal vector to the collision plane of a trace.
