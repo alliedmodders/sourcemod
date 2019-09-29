@@ -27,7 +27,6 @@ License version 2 (without an "or any higher version" clause) if and only if
 the work was already GNU General Public License 2.0 exclusive.  This clause is 
 provided for backwards compatibility only.
 
-A copy of the JIT License is available in JIT.txt.
 A copy of the GNU General Public License 2.0 is available in GPLv2.txt.
 A copy of the GNU General Public License 3.0 is available in GPLv3.txt.
 
