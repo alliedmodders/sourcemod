@@ -1,5 +1,5 @@
 SOURCEMOD LICENSE INFORMATION
-VERSION: JUNE-13-2008
+VERSION: 29.9.2019
 -----------------------------
 
 SourceMod is licensed under the GNU General Public License, version 3.  
