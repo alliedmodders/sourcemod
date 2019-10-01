@@ -6,7 +6,7 @@ SourceMod is licensed under the GNU General Public License, version 3.
 
 As a special exception, AlliedModders LLC gives you permission to link the code
 of this program (as well as its derivative works) to "Half-Life 2," the "Source 
-Engine and any Game MODs that run on software by the Valve Corporation.
+Engine" and any Game MODs that run on software by the Valve Corporation.
 You must obey the GNU General Public License in all respects for all other code used.
 Additionally, AlliedModders LLC grants this exception to all derivative works.
 
