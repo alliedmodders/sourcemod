@@ -44,10 +44,10 @@ CookieManager::CookieManager()
 		statsPending[i] = false;
 	}
 
-	cookieDataLoadedForward = NULL;
-	clientMenu = NULL;
+	cookieDataLoadedForward = nullptr;
+	clientMenu = nullptr;
 }
-CookieManager::~CookieManager(){}
+CookieManager::~CookieManager() {}
 
 void CookieManager::Unload()
 {
@@ -74,7 +74,7 @@ Cookie *CookieManager::CreateCookie(std::string const &name, std::string const &
 	Cookie *pCookie = FindCookie(name);
 
 	/* Check if cookie already exists */
-	if (pCookie != NULL)
+	if (pCookie != nullptr)
 	{
 		/* Update data fields to the provided values */
 		pCookie->description = description;
@@ -103,7 +103,7 @@ bool CookieManager::GetCookieValue(Cookie *pCookie, int client, std::string &val
 	auto &data = pCookie->data[client];
 
 	/* Check if a value has been set before */
-	if (data == NULL)
+	if (data == nullptr)
 	{
 		data.reset(new CookieData());
 		data->parent = pCookie;
@@ -119,7 +119,7 @@ bool CookieManager::SetCookieValue(Cookie *pCookie, int client, std::string cons
 {
 	auto &data = pCookie->data[client];
 
-	if (data == NULL)
+	if (data == nullptr)
 	{
 		data.reset(new CookieData());
 		data->parent = pCookie;
@@ -127,16 +127,14 @@ bool CookieManager::SetCookieValue(Cookie *pCookie, int client, std::string cons
 
 	data->val = value;
 	data->changed = true;
-	data->timestamp = time(NULL);
-
+	data->timestamp = time(nullptr);
 	return true;
 }
 
 void CookieManager::OnClientAuthorized(int client, const char *authstring)
 {
 	IGamePlayer *player = playerhelpers->GetGamePlayer(client);
-
-	if (player == NULL)
+	if (player == nullptr)
 	{
 		return;
 	}
@@ -220,14 +218,13 @@ void CookieManager::ClientConnectCallback(int serial, IQuery *data)
 	while (results->MoreRows() && ((row = results->FetchRow()) != nullptr))
 	{
 		const char *name = "";
-		row->GetString(0, &name, NULL);
+		row->GetString(0, &name, nullptr);
 		
 		const char *value = "";
 		row->GetString(1, &value, nullptr);
 
 		Cookie *parent = FindCookie(name);
-
-		if (parent == NULL)
+		if (parent == nullptr)
 		{
 			const char *desc = "";
 			row->GetString(2, &desc, nullptr);
@@ -248,7 +245,7 @@ void CookieManager::ClientConnectCallback(int serial, IQuery *data)
 	statsLoaded[client] = true;
 
 	cookieDataLoadedForward->PushCell(client);
-	cookieDataLoadedForward->Execute(NULL);
+	cookieDataLoadedForward->Execute(nullptr);
 }
 
 void CookieManager::InsertCookieCallback(Cookie *pCookie, int dbId)

@@ -75,7 +75,7 @@ void TQueryOp::RunThreadPart()
 		return;
 	}
 	
-	assert(m_database != NULL);
+	assert(m_database != nullptr);
 	/* I don't think this is needed anymore... keeping for now. */
 	m_database->LockForFullAtomicOperation();
 	
@@ -103,7 +103,7 @@ IdentityToken_t *TQueryOp::GetOwner()
 
 void TQueryOp::Destroy()
 {
-	if (m_pResult != NULL)
+	if (m_pResult != nullptr)
 	{
 		m_pResult->Destroy();
 	}
@@ -114,20 +114,20 @@ TQueryOp::TQueryOp(QueryType type, int serial)
 {
 	m_type = type;
 	m_serial = serial;
-	m_database = NULL;
-	m_driver = NULL;
+	m_database = nullptr;
+	m_driver = nullptr;
 	m_insertId = -1;
-	m_pResult = NULL;
+	m_pResult = nullptr;
 }
 
 TQueryOp::TQueryOp(QueryType type, Cookie *cookie)
 {
 	m_type = type;
 	m_pCookie = cookie;
-	m_database = NULL;
-	m_driver = NULL;
+	m_database = nullptr;
+	m_driver = nullptr;
 	m_insertId = -1;
-	m_pResult = NULL;
+	m_pResult = nullptr;
 	m_serial = 0;
 }
 
@@ -207,7 +207,7 @@ bool TQueryOp::BindParamsAndRun()
 
 			m_pResult = m_database->DoQuery(query);
 
-			return (m_pResult != NULL);
+			return (m_pResult != nullptr);
 		}
 
 		case Query_InsertData:
@@ -279,7 +279,7 @@ bool TQueryOp::BindParamsAndRun()
 
 			m_pResult = m_database->DoQuery(query);
 
-			return (m_pResult != NULL);
+			return (m_pResult != nullptr);
 		}
 
 		default:

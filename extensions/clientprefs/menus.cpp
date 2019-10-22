@@ -40,16 +40,16 @@ void ClientMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int i
 
 	const char *info = menu->GetItemInfo(item, &draw);
 
-	AutoMenuData *data = (AutoMenuData *)strtoul(info, NULL, 16);
+	AutoMenuData *data = (AutoMenuData *)strtoul(info, nullptr, 16);
 
-	if (data->handler->forward != NULL)
+	if (data->handler->forward != nullptr)
 	{
 		data->handler->forward->PushCell(client);
 		data->handler->forward->PushCell(CookieMenuAction_SelectOption);
 		data->handler->forward->PushCell(data->datavalue);
 		data->handler->forward->PushString("");
 		data->handler->forward->PushCell(0);
-		data->handler->forward->Execute(NULL);
+		data->handler->forward->Execute(nullptr);
 	}
 
 	if (!data->handler->isAutoMenu)
@@ -61,27 +61,27 @@ void ClientMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int i
 
 	char message[256];
 
-	Translate(message, sizeof(message), "%T:", 2, NULL, "Choose Option", &client);
+	Translate(message, sizeof(message), "%T:", 2, nullptr, "Choose Option", &client);
 	submenu->SetDefaultTitle(message);
 
 	if (data->type == CookieMenu_YesNo || data->type == CookieMenu_YesNo_Int)
 	{
-		Translate(message, sizeof(message), "%T", 2, NULL, "Yes", &client);
+		Translate(message, sizeof(message), "%T", 2, nullptr, "Yes", &client);
 		submenu->AppendItem(info, message);
 
-		Translate(message, sizeof(message), "%T", 2, NULL, "No", &client);
+		Translate(message, sizeof(message), "%T", 2, nullptr, "No", &client);
 		submenu->AppendItem(info, message);
 	}
 	else if (data->type == CookieMenu_OnOff || data->type == CookieMenu_OnOff_Int)
 	{
-		Translate(message, sizeof(message), "%T", 2, NULL, "On", &client);
+		Translate(message, sizeof(message), "%T", 2, nullptr, "On", &client);
 		submenu->AppendItem(info, message);
 
-		Translate(message, sizeof(message), "%T", 2, NULL, "Off", &client);
+		Translate(message, sizeof(message), "%T", 2, nullptr, "Off", &client);
 		submenu->AppendItem(info, message);
 	}
 
-	submenu->Display(client, 0, NULL);
+	submenu->Display(client, 0, nullptr);
 }
 
 unsigned int ClientMenuHandler::OnMenuDisplayItem(IBaseMenu *menu, 
@@ -94,9 +94,9 @@ unsigned int ClientMenuHandler::OnMenuDisplayItem(IBaseMenu *menu,
 
 	const char *info = menu->GetItemInfo(item, &draw);
 
-	AutoMenuData *data = (AutoMenuData *)strtoul(info, NULL, 16);
+	AutoMenuData *data = (AutoMenuData *)strtoul(info, nullptr, 16);
 
-	if (data->handler->forward != NULL)
+	if (data->handler->forward != nullptr)
 	{
 		char buffer[100];
 		g_pSM->Format(buffer, sizeof(buffer), "%s", dr.display);
@@ -106,7 +106,7 @@ unsigned int ClientMenuHandler::OnMenuDisplayItem(IBaseMenu *menu,
 		data->handler->forward->PushCell(data->datavalue);
 		data->handler->forward->PushStringEx(buffer, sizeof(buffer), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		data->handler->forward->PushCell(sizeof(buffer));
-		data->handler->forward->Execute(NULL);
+		data->handler->forward->Execute(nullptr);
 
 		ItemDrawInfo newdraw(buffer, draw.style);
 
@@ -123,7 +123,7 @@ void AutoMenuHandler::OnMenuSelect(SourceMod::IBaseMenu *menu, int client, unsig
 
 	const char *info = menu->GetItemInfo(item, &draw);
 
-	AutoMenuData *data = (AutoMenuData *)strtoul(info, NULL, 16);
+	AutoMenuData *data = (AutoMenuData *)strtoul(info, nullptr, 16);
 
 	g_CookieManager.SetCookieValue(data->pCookie, client, settings[data->type][item]);
 

@@ -54,10 +54,10 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	DBInfo = dbi->FindDatabaseConf("clientprefs");
 
-	if (DBInfo == NULL)
+	if (DBInfo == nullptr)
 	{
 		DBInfo = dbi->FindDatabaseConf("storage-local");
-		if (DBInfo == NULL)
+		if (DBInfo == nullptr)
 		{
 			ke::SafeStrcpy(error, maxlength, "Could not find any suitable database configs");
 			return false;
@@ -73,7 +73,7 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		Driver = dbi->GetDefaultDriver();
 	}
 
-	if (Driver == NULL)
+	if (Driver == nullptr)
 	{
 		ke::SafeSprintf(error, maxlength, "Could not load DB Driver \"%s\"", DBInfo->driver);
 		return false;
@@ -88,23 +88,23 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_ClientPrefNatives);
 	sharesys->RegisterLibrary(myself, "clientprefs");
 	identity = sharesys->CreateIdentity(sharesys->CreateIdentType("ClientPrefs"), this);
-	g_CookieManager.cookieDataLoadedForward = forwards->CreateForward("OnClientCookiesCached", ET_Ignore, 1, NULL, Param_Cell);
+	g_CookieManager.cookieDataLoadedForward = forwards->CreateForward("OnClientCookiesCached", ET_Ignore, 1, nullptr, Param_Cell);
 
 	g_CookieType = handlesys->CreateType("Cookie", 
 		&g_CookieTypeHandler, 
 		0, 
-		NULL, 
-		NULL, 
+		nullptr, 
+		nullptr, 
 		myself->GetIdentity(), 
-		NULL);
+		nullptr);
 
 	g_CookieIterator = handlesys->CreateType("CookieIterator", 
 		&g_CookieIteratorHandler, 
 		0, 
-		NULL, 
-		NULL, 
+		nullptr, 
+		nullptr, 
 		myself->GetIdentity(), 
-		NULL);
+		nullptr);
 
 	IMenuStyle *style = menus->GetDefaultStyle();
 	g_CookieManager.clientMenu = style->CreateMenu(&g_Handler, identity);
@@ -142,7 +142,7 @@ bool ClientPrefs::QueryInterfaceDrop(SMInterface *pInterface)
 void ClientPrefs::NotifyInterfaceDrop(SMInterface *pInterface)
 {
 	if (Database && (void *)pInterface == (void *)(Database->GetDriver()))
-		Database = NULL;
+		Database = nullptr;
 }
 
 void ClientPrefs::SDK_OnDependenciesDropped()
@@ -154,15 +154,15 @@ void ClientPrefs::SDK_OnDependenciesDropped()
 	handlesys->RemoveType(g_CookieType, myself->GetIdentity());
 	handlesys->RemoveType(g_CookieIterator, myself->GetIdentity());
 
-	Database = NULL;
+	Database = nullptr;
 
-	if (g_CookieManager.cookieDataLoadedForward != NULL)
+	if (g_CookieManager.cookieDataLoadedForward != nullptr)
 	{
 		forwards->ReleaseForward(g_CookieManager.cookieDataLoadedForward);
-		g_CookieManager.cookieDataLoadedForward = NULL;
+		g_CookieManager.cookieDataLoadedForward = nullptr;
 	}
 
-	if (g_CookieManager.clientMenu != NULL)
+	if (g_CookieManager.clientMenu != nullptr)
 	{
 		Handle_t menuHandle = g_CookieManager.clientMenu->GetHandle();
 		
@@ -176,13 +176,13 @@ void ClientPrefs::SDK_OnDependenciesDropped()
 			}
 		}
 		
-		g_CookieManager.clientMenu = NULL;
+		g_CookieManager.clientMenu = nullptr;
 	}
 
-	if (phrases != NULL)
+	if (phrases != nullptr)
 	{
 		phrases->Destroy();
-		phrases = NULL;
+		phrases = nullptr;
 	}
 
 	plsys->RemovePluginsListener(&g_CookieManager);
@@ -301,7 +301,7 @@ void ClientPrefs::DatabaseConnect()
 	return;
 
 fatal_fail:
-	Database = NULL;
+	Database = nullptr;
 	databaseLoading = false;
 }
 
@@ -416,7 +416,7 @@ bool Translate(char *buffer,
 		pOutLength,
 		&fail_phrase))
 	{
-		if (fail_phrase != NULL)
+		if (fail_phrase != nullptr)
 		{
 			g_pSM->LogError(myself, "[SM] Could not find core phrase: %s", fail_phrase);
 		}
@@ -433,7 +433,7 @@ bool Translate(char *buffer,
 
 char * UTIL_strncpy(char * destination, const char * source, size_t num)
 {
-	if (source == NULL)
+	if (source == nullptr)
 	{
 		destination[0] = '\0';
 		return destination;
@@ -472,10 +472,10 @@ const char *ClientPrefs::GetExtensionDateString()
 
 ClientPrefs::ClientPrefs()
 {
-	Driver = NULL;
+	Driver = nullptr;
 	databaseLoading = false;
-	phrases = NULL;
-	DBInfo = NULL;
+	phrases = nullptr;
+	DBInfo = nullptr;
 
-	identity = NULL;
+	identity = nullptr;
 }
