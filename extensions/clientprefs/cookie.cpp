@@ -58,22 +58,18 @@ void CookieManager::Unload()
 			OnClientDisconnecting(i);
 	}
 
-	/* Find all cookies and delete them */
-	for (size_t iter = 0; iter < cookieList.length(); ++iter)
-		delete cookieList[iter];
-	
 	cookieList.clear();
 }
 
-Cookie *CookieManager::FindCookie(const char *name)
+Cookie *CookieManager::FindCookie(std::string const &name)
 {
 	Cookie *cookie;
-	if (!cookieFinder.retrieve(name, &cookie))
-		return NULL;
+	if (!cookieFinder.retrieve(name.c_str(), &cookie))
+		return nullptr;
 	return cookie;
 }
 
-Cookie *CookieManager::CreateCookie(const char *name, const char *description, CookieAccess access)
+Cookie *CookieManager::CreateCookie(std::string const &name, std::string const &description, CookieAccess access)
 {
 	Cookie *pCookie = FindCookie(name);
 
@@ -81,7 +77,7 @@ Cookie *CookieManager::CreateCookie(const char *name, const char *description, C
 	if (pCookie != NULL)
 	{
 		/* Update data fields to the provided values */
-		UTIL_strncpy(pCookie->description, description, MAX_DESC_LENGTH);
+		pCookie->description = description;
 		pCookie->access = access;
 
 		return pCookie;
@@ -94,50 +90,42 @@ Cookie *CookieManager::CreateCookie(const char *name, const char *description, C
 	TQueryOp *op = new TQueryOp(Query_InsertCookie, pCookie);
 	op->m_params.cookie = pCookie;
 	
-	cookieFinder.insert(name, pCookie);
-	cookieList.append(pCookie);
+	cookieFinder.insert(name.c_str(), pCookie);
+	cookieList.push_back(std::unique_ptr<Cookie>(pCookie));
 
 	g_ClientPrefs.AddQueryToQueue(op);
 
 	return pCookie;
 }
 
-bool CookieManager::GetCookieValue(Cookie *pCookie, int client, char **value)
+bool CookieManager::GetCookieValue(Cookie *pCookie, int client, std::string &value)
 {
-	CookieData *data = pCookie->data[client];
+	auto &data = pCookie->data[client];
 
 	/* Check if a value has been set before */
 	if (data == NULL)
 	{
-		data = new CookieData("");
+		data.reset(new CookieData());
 		data->parent = pCookie;
-		clientData[client].append(data);
-		pCookie->data[client] = data;
 		data->changed = false;
 		data->timestamp = 0;
 	}
 
-	*value = &data->value[0];
-
+	value = data->val;
 	return true;
 }
 
-bool CookieManager::SetCookieValue(Cookie *pCookie, int client, const char *value)
+bool CookieManager::SetCookieValue(Cookie *pCookie, int client, std::string const &value)
 {
-	CookieData *data = pCookie->data[client];
+	auto &data = pCookie->data[client];
 
 	if (data == NULL)
 	{
-		data = new CookieData(value);
+		data.reset(new CookieData());
 		data->parent = pCookie;
-		clientData[client].append(data);
-		pCookie->data[client] = data;
-	}
-	else
-	{
-		UTIL_strncpy(data->value, value, MAX_VALUE_LENGTH);
 	}
 
+	data->val = value;
 	data->changed = true;
 	data->timestamp = time(NULL);
 
@@ -159,7 +147,7 @@ void CookieManager::OnClientAuthorized(int client, const char *authstring)
 	g_ClientPrefs.AttemptReconnection();
 	
 	TQueryOp *op = new TQueryOp(Query_SelectData, player->GetSerial());
-	UTIL_strncpy(op->m_params.steamId, GetPlayerCompatAuthId(player), MAX_NAME_LENGTH);
+	op->m_params.steamId = GetPlayerCompatAuthId(player);
 
 	g_ClientPrefs.AddQueryToQueue(op);
 }
@@ -170,90 +158,79 @@ void CookieManager::OnClientDisconnecting(int client)
 	statsLoaded[client] = false;
 	statsPending[client] = false;
 
-	CookieData *current = NULL;
-
 	g_ClientPrefs.AttemptReconnection();
 	
 	/* Save this cookie to the database */
 	IGamePlayer *player = playerhelpers->GetGamePlayer(client);
-	const char *pAuth = NULL;
-	int dbId;
-	
+	const char *pAuth = nullptr;
 	if (player)
 	{
 		pAuth = GetPlayerCompatAuthId(player);
 		g_ClientPrefs.ClearQueryCache(player->GetSerial());
 	}
-
-	ke::Vector<CookieData *> &clientvec = clientData[client];
-	for (size_t iter = 0; iter < clientvec.length(); ++iter)
+	
+	/* Loop all known cookies */
+	for (auto &cookie : cookieList)
 	{
-		current = clientvec[iter];
-		dbId = current->parent->dbid;
-		
-		if (player == NULL || pAuth == NULL || !current->changed || dbId == -1)
+		/* Skip cookies that clients have no data in */
+		auto &data = cookie->data[client];
+		if (data == nullptr)
+			continue;
+
+		/* If we can't or shouldn't save, then dont. */
+		int dbId = cookie->dbid;
+		if (player == nullptr || pAuth == nullptr || !data->changed || dbId == -1)
 		{
-			current->parent->data[client] = NULL;
-			delete current;
+			data.reset();
 			continue;
 		}
 
+		/* Send query out */
 		TQueryOp *op = new TQueryOp(Query_InsertData, client);
-
-		UTIL_strncpy(op->m_params.steamId, pAuth, MAX_NAME_LENGTH);
+		op->m_params.steamId = pAuth;
 		op->m_params.cookieId = dbId;
-		op->m_params.data = current;
+		op->m_params.data = std::move(data);
 
 		g_ClientPrefs.AddQueryToQueue(op);
-
-		current->parent->data[client] = NULL;
+		data.reset();
 	}
-	
-	clientvec.clear();
 }
 
 void CookieManager::ClientConnectCallback(int serial, IQuery *data)
 {
-	int client;
-
 	/* Check validity of client */
-	if ((client = playerhelpers->GetClientFromSerial(serial)) == 0)
-	{
+	int client = playerhelpers->GetClientFromSerial(serial);
+	if (!client)
 		return;
-	}
+
 	statsPending[client] = false;
 	
-	IResultSet *results;
-	/* Check validity of results */
-	if (data == NULL || (results = data->GetResultSet()) == NULL)
-	{
+	if (data == nullptr)
 		return;
-	}
 
-	CookieData *pData;
+	/* Check validity of results */
+	IResultSet *results = data->GetResultSet();
+	if (results  == nullptr)
+		return;
+
 	IResultRow *row;
 	unsigned int timestamp;
 	CookieAccess access;
 	
-	while (results->MoreRows() && ((row = results->FetchRow()) != NULL))
+	while (results->MoreRows() && ((row = results->FetchRow()) != nullptr))
 	{
 		const char *name = "";
 		row->GetString(0, &name, NULL);
 		
 		const char *value = "";
-		row->GetString(1, &value, NULL);
-
-		pData = new CookieData(value);
-		pData->changed = false;
-
-		pData->timestamp = (row->GetInt(4, (int *)&timestamp) == DBVal_Data) ? timestamp : 0;
+		row->GetString(1, &value, nullptr);
 
 		Cookie *parent = FindCookie(name);
 
 		if (parent == NULL)
 		{
 			const char *desc = "";
-			row->GetString(2, &desc, NULL);
+			row->GetString(2, &desc, nullptr);
 
 			access = CookieAccess_Public;
 			row->GetInt(3, (int *)&access);
@@ -261,9 +238,11 @@ void CookieManager::ClientConnectCallback(int serial, IQuery *data)
 			parent = CreateCookie(name, desc, access);
 		}
 
-		pData->parent = parent;
-		parent->data[client] = pData;
-		clientData[client].append(pData);
+		auto &data = parent->data[client];
+		data.reset(new CookieData(value));
+		data->changed = false;
+		data->timestamp = (row->GetInt(4, (int *)&timestamp) == DBVal_Data) ? timestamp : 0;
+		data->parent = parent;
 	}
 
 	statsLoaded[client] = true;
@@ -281,38 +260,26 @@ void CookieManager::InsertCookieCallback(Cookie *pCookie, int dbId)
 	}
 
 	TQueryOp *op = new TQueryOp(Query_SelectId, pCookie);
+	
 	/* Put the cookie name into the steamId field to save space - Make sure we remember that it's there */
-	UTIL_strncpy(op->m_params.steamId, pCookie->name, MAX_NAME_LENGTH);
+	op->m_params.steamId = pCookie->name;
 	g_ClientPrefs.AddQueryToQueue(op);
 }
 
 void CookieManager::SelectIdCallback(Cookie *pCookie, IQuery *data)
 {
-	IResultSet *results;
-	
-	if (data == NULL || (results = data->GetResultSet()) == NULL)
-	{
+	if (data == nullptr)
 		return;
-	}
+
+	IResultSet *results = data->GetResultSet();	
+	if (results == nullptr)
+		return;
 
 	IResultRow *row = results->FetchRow();
-
-	if (row == NULL)
-	{
+	if (row == nullptr)
 		return;
-	}
 
 	row->GetInt(0, &pCookie->dbid);
-}
-
-bool CookieManager::AreClientCookiesCached(int client)
-{
-	return statsLoaded[client];
-}
-
-bool CookieManager::AreClientCookiesPending(int client)
-{
-	return statsPending[client];
 }
 
 void CookieManager::OnPluginDestroyed(IPlugin *plugin)
@@ -322,34 +289,27 @@ void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 	if (plugin->GetProperty("SettingsMenuItems", (void **)&pList, true))
 	{
 		ke::Vector<char *> &menuitems = (*pList);
-		char *name;
-		ItemDrawInfo draw;
-		const char *info;
-		AutoMenuData * data;
-		unsigned itemcount;
-		
 		for (size_t p_iter = 0; p_iter < menuitems.length(); ++p_iter)
 		{
-			name = menuitems[p_iter];
-			itemcount = clientMenu->GetItemCount();
-			//remove from this plugins list
-			for (unsigned int i=0; i < itemcount; i++)
-			{
-				info = clientMenu->GetItemInfo(i, &draw);
+			char *name = menuitems[p_iter];
 
-				if (info == NULL)
-				{
+			//remove from this plugins list
+			size_t itemcount = clientMenu->GetItemCount();
+			for (size_t i = 0; i < itemcount; i++)
+			{
+				ItemDrawInfo draw;
+				const char *info = clientMenu->GetItemInfo(i, &draw);
+				if (info == nullptr)
 					continue;
-				}
 
 				if (strcmp(draw.display, name) == 0)
 				{
-					data = (AutoMenuData *)strtoul(info, NULL, 16);
-
-					if (data->handler->forward != NULL)
+					auto *data = reinterpret_cast<AutoMenuData *>(strtoul(info, nullptr, 16));
+					if (data->handler->forward != nullptr)
 					{
 						forwards->ReleaseForward(data->handler->forward);
 					}
+
 					delete data->handler;
 					delete data;
 
@@ -358,24 +318,23 @@ void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 				}
 			}
 
-			delete [] name;
+			delete []name;
 		}
 		
 		menuitems.clear();
 	}
 }
 
-bool CookieManager::GetCookieTime(Cookie *pCookie, int client, time_t *value)
+bool CookieManager::GetCookieTime(Cookie *pCookie, int client, time_t &value)
 {
-	CookieData *data = pCookie->data[client];
+	auto &data = pCookie->data[client];
 
 	/* Check if a value has been set before */
-	if (data == NULL)
+	if (data == nullptr)
 	{
 		return false;
 	}
 
-	*value = data->timestamp;
-
+	value = data->timestamp;
 	return true;
 }

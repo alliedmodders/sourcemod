@@ -211,8 +211,6 @@ void ClientPrefs::AttemptReconnection()
 void ClientPrefs::DatabaseConnect()
 {
 	char error[256];
-	int errCode = 0;
-
 	Database = AdoptRef(Driver->Connect(DBInfo, true, error, sizeof(error)));
 
 	if (!Database)
@@ -223,7 +221,7 @@ void ClientPrefs::DatabaseConnect()
 	}
 
 	const char *identifier = Driver->GetIdentifier();
-
+	Database->LockForFullAtomicOperation();
 	if (strcmp(identifier, "sqlite") == 0)
 	{
 		g_DriverType = Driver_SQLite;
@@ -294,7 +292,7 @@ void ClientPrefs::DatabaseConnect()
 	}
 
 	databaseLoading = false;
-
+	Database->UnlockFromFullAtomicOperation();
 	// Need a new scope because of the goto above.
 	{
 		AutoLock lock(&queryLock);

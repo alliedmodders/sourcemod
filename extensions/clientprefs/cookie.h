@@ -34,7 +34,12 @@
 
 #include "extension.h"
 #include "am-vector.h"
+
 #include <sm_namehashset.h>
+
+#include <string>
+#include <memory>
+#include <vector>
 
 #define MAX_NAME_LENGTH 30
 #define MAX_DESC_LENGTH 255
@@ -51,12 +56,9 @@ struct Cookie;
 
 struct CookieData
 {
-	CookieData(const char *value)
-	{
-		UTIL_strncpy(this->value, value, MAX_VALUE_LENGTH);
-	}
-
-	char value[MAX_VALUE_LENGTH+1];
+	CookieData(std::string const &val) : val(val) {}
+	CookieData() : val("") {}
+	std::string val;
 	bool changed;
 	time_t timestamp;
 	Cookie *parent;
@@ -64,37 +66,24 @@ struct CookieData
 
 struct Cookie
 {
-	Cookie(const char *name, const char *description, CookieAccess access)
+	Cookie(std::string const &name, std::string const &description, CookieAccess access)
+	: name(name), description(description), access(access), dbid(-1)
 	{
-		UTIL_strncpy(this->name, name, MAX_NAME_LENGTH);
-		UTIL_strncpy(this->description, description, MAX_DESC_LENGTH);
-
-		this->access = access;
-
-		dbid = -1;
-
-		for (int i=0; i<=SM_MAXPLAYERS; i++)
-			data[i] = NULL;
 	}
 
 	~Cookie()
 	{
-		for (int i=0; i<=SM_MAXPLAYERS; i++)
-		{
-			if (data[i] != NULL)
-				delete data[i];
-		}
 	}
 
-	char name[MAX_NAME_LENGTH+1];
-	char description[MAX_DESC_LENGTH+1];
-	int dbid;
-	CookieData *data[SM_MAXPLAYERS+1];
+	std::string name;
+	std::string description;
 	CookieAccess access;
+	int dbid;
+	std::unique_ptr<CookieData> data[SM_MAXPLAYERS+1];
 
 	static inline bool matches(const char *name, const Cookie *cookie)
 	{
-		return strcmp(name, cookie->name) == 0;
+		return cookie->name == name;
 	}
 	static inline uint32_t hash(const detail::CharsAndLength &key)
 	{
@@ -111,9 +100,9 @@ public:
 	void OnClientAuthorized(int client, const char *authstring);
 	void OnClientDisconnecting(int client);
 	
-	bool GetCookieValue(Cookie *pCookie, int client, char **value);
-	bool SetCookieValue(Cookie *pCookie, int client, const char *value);
-	bool GetCookieTime(Cookie *pCookie, int client, time_t *value);
+	bool GetCookieValue(Cookie *pCookie, int client, std::string &value);
+	bool SetCookieValue(Cookie *pCookie, int client, std::string const &value);
+	bool GetCookieTime(Cookie *pCookie, int client, time_t &value);
 
 	void Unload();
 
@@ -121,24 +110,25 @@ public:
 	void InsertCookieCallback(Cookie *pCookie, int dbId);
 	void SelectIdCallback(Cookie *pCookie, IQuery *data);
 
-	Cookie *FindCookie(const char *name);
-	Cookie *CreateCookie(const char *name, const char *description, CookieAccess access);
-
-	bool AreClientCookiesCached(int client);
+	Cookie *FindCookie(std::string const &name);
+	Cookie *CreateCookie(std::string const &name, std::string const &description, CookieAccess access);
 
 	void OnPluginDestroyed(IPlugin *plugin);
 	
-	bool AreClientCookiesPending(int client);
+	bool AreClientCookiesCached(int client) {
+		return statsLoaded[client];
+	}
 
+	bool AreClientCookiesPending(int client) {
+		return statsPending[client];
+	}
 public:
 	IForward *cookieDataLoadedForward;
-	ke::Vector<Cookie *> cookieList;
+	std::vector<std::unique_ptr<Cookie>> cookieList;
 	IBaseMenu *clientMenu;
 
 private:
 	NameHashSet<Cookie *> cookieFinder;
-	ke::Vector<CookieData *> clientData[SM_MAXPLAYERS+1];
-
 	bool connected[SM_MAXPLAYERS+1];
 	bool statsLoaded[SM_MAXPLAYERS+1];
 	bool statsPending[SM_MAXPLAYERS+1];

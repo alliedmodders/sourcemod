@@ -49,7 +49,6 @@ cell_t RegClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &desc);
 
 	Cookie *pCookie = g_CookieManager.CreateCookie(name, desc, (CookieAccess)params[3]);
-
 	if (!pCookie)
 	{
 		return BAD_HANDLE;
@@ -143,7 +142,7 @@ cell_t SetAuthIdCookie(IPluginContext *pContext, const cell_t *params)
 	}
 
 	// constructor calls strncpy for us
-	CookieData *payload = new CookieData(value);
+	std::unique_ptr<CookieData> payload(new CookieData(value));
 
 	// set changed so players connecting later in during the same map will have the correct value
 	payload->changed = true;
@@ -152,9 +151,9 @@ cell_t SetAuthIdCookie(IPluginContext *pContext, const cell_t *params)
 	// edit database table
 	TQueryOp *op = new TQueryOp(Query_InsertData, pCookie);
 	// limit player auth length which doubles for cookie name length
-	UTIL_strncpy(op->m_params.steamId, steamID, MAX_NAME_LENGTH);
+	op->m_params.steamId = steamID;
 	op->m_params.cookieId = i_dbId;
-	op->m_params.data = payload;
+	op->m_params.data = std::move(payload);
 
 	g_ClientPrefs.AddQueryToQueue(op);
 
@@ -219,12 +218,10 @@ cell_t GetClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Cookie handle %x (error %d)", hndl, err);
 	}
 	
-	char *value = NULL;
+	std::string value;
+	g_CookieManager.GetCookieValue(pCookie, client, value);
 
-	g_CookieManager.GetCookieValue(pCookie, client, &value);
-
-	pContext->StringToLocal(params[3], params[4], value);
-
+	pContext->StringToLocal(params[3], params[4], value.c_str());
 	return 1;
 }
 
@@ -233,7 +230,6 @@ cell_t AreClientCookiesCached(IPluginContext *pContext, const cell_t *params)
 	g_ClientPrefs.AttemptReconnection();
 
 	int client = params[1];
-
 	if ((client < 1) || (client > playerhelpers->GetMaxClients()))
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
@@ -299,19 +295,19 @@ static cell_t ReadCookieIterator(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Cookie iterator handle %x (error %d)", hndl, err);
 	}
 
-	if (*iter >= g_CookieManager.cookieList.length())
+	if (*iter >= g_CookieManager.cookieList.size())
 	{
 		return 0;
 	}
 
-	Cookie *pCookie = g_CookieManager.cookieList[(*iter)++];
+	auto &cookie = g_CookieManager.cookieList[(*iter)++];
 
-	pContext->StringToLocalUTF8(params[2], params[3], pCookie->name, NULL);
-	pContext->StringToLocalUTF8(params[5], params[6], pCookie->description, NULL);
+	pContext->StringToLocalUTF8(params[2], params[3], cookie->name.c_str(), nullptr);
+	pContext->StringToLocalUTF8(params[5], params[6], cookie->description.c_str(), nullptr);
 
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[4], &addr);
-	*addr = pCookie->access;
+	*addr = cookie->access;
 
 	return 1;
 }
@@ -461,14 +457,13 @@ cell_t GetClientCookieTime(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Cookie handle %x (error %d)", hndl, err);
 	}
 
-	time_t value;
-
-	if (!g_CookieManager.GetCookieTime(pCookie, params[1], &value))
+	time_t out = 0;
+	if (!g_CookieManager.GetCookieTime(pCookie, params[1], out))
 	{
 		return 0;
 	}
 
-	return value;
+	return out;
 }
 
 static cell_t Cookie_Set(IPluginContext *pContext, const cell_t *params)

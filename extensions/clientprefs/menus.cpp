@@ -126,11 +126,12 @@ void AutoMenuHandler::OnMenuSelect(SourceMod::IBaseMenu *menu, int client, unsig
 	AutoMenuData *data = (AutoMenuData *)strtoul(info, NULL, 16);
 
 	g_CookieManager.SetCookieValue(data->pCookie, client, settings[data->type][item]);
-	
+
+	std::string value;
+	g_CookieManager.GetCookieValue(data->pCookie, client, value);
+
 	char message[255];
-	char *value;
-	g_CookieManager.GetCookieValue(data->pCookie, client, &value);
-	Translate(message, sizeof(message), "[SM] %T", 4, NULL, "Cookie Changed Value", &client, &(data->pCookie->name), value);
+	Translate(message, sizeof(message), "[SM] %T", 4, nullptr, "Cookie Changed Value", &client, &(data->pCookie->name), value.c_str());
 
 	gamehelpers->TextMsg(client, 3, message);
 }

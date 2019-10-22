@@ -78,7 +78,8 @@ void TQueryOp::RunThreadPart()
 	assert(m_database != NULL);
 	/* I don't think this is needed anymore... keeping for now. */
 	m_database->LockForFullAtomicOperation();
-		if (!BindParamsAndRun())
+	
+	if (!BindParamsAndRun())
 	{
 		g_pSM->LogError(myself, 
 						"Failed SQL Query, Error: \"%s\" (Query id %i - serial %i)", 
@@ -109,7 +110,7 @@ void TQueryOp::Destroy()
 	delete this;
 }
 
-TQueryOp::TQueryOp(enum querytype type, int serial)
+TQueryOp::TQueryOp(QueryType type, int serial)
 {
 	m_type = type;
 	m_serial = serial;
@@ -119,7 +120,7 @@ TQueryOp::TQueryOp(enum querytype type, int serial)
 	m_pResult = NULL;
 }
 
-TQueryOp::TQueryOp(enum querytype type, Cookie *cookie)
+TQueryOp::TQueryOp(QueryType type, Cookie *cookie)
 {
 	m_type = type;
 	m_pCookie = cookie;
@@ -148,11 +149,11 @@ bool TQueryOp::BindParamsAndRun()
 			char safe_name[MAX_NAME_LENGTH*2 + 1];
 			char safe_desc[MAX_DESC_LENGTH*2 + 1];
 			
-			m_database->QuoteString(m_params.cookie->name, 
+			m_database->QuoteString(m_params.cookie->name.c_str(), 
 				safe_name, 
 				sizeof(safe_name),
 				&ignore);
-			m_database->QuoteString(m_params.cookie->description,
+			m_database->QuoteString(m_params.cookie->description.c_str(),
 				safe_desc,
 				sizeof(safe_desc),
 				&ignore);
@@ -192,7 +193,7 @@ bool TQueryOp::BindParamsAndRun()
 		{
 			char safe_str[128];
 
-			m_database->QuoteString(m_params.steamId, safe_str, sizeof(safe_str), &ignore);
+			m_database->QuoteString(m_params.steamId.c_str(), safe_str, sizeof(safe_str), &ignore);
 
 			g_pSM->Format(query,
 				sizeof(query),
@@ -214,11 +215,11 @@ bool TQueryOp::BindParamsAndRun()
 			char safe_id[128];
 			char safe_val[MAX_VALUE_LENGTH*2 + 1];
 
-			m_database->QuoteString(m_params.steamId,
+			m_database->QuoteString(m_params.steamId.c_str(),
 				safe_id,
 				sizeof(safe_id),
 				&ignore);
-			m_database->QuoteString(m_params.data->value,
+			m_database->QuoteString(m_params.data->val.c_str(),
 				safe_val,
 				sizeof(safe_val),
 				&ignore);
@@ -266,7 +267,7 @@ bool TQueryOp::BindParamsAndRun()
 			char safe_name[MAX_NAME_LENGTH*2 + 1];
 
 			/* the steamId var was actually used to store the name of the cookie - Save duplicating vars */
-			m_database->QuoteString(m_params.steamId, 
+			m_database->QuoteString(m_params.steamId.c_str(), 
 				safe_name,
 				sizeof(safe_name),
 				&ignore);
@@ -291,33 +292,5 @@ bool TQueryOp::BindParamsAndRun()
 	assert(false);
 
 	return false;
-}
-
-querytype TQueryOp::PullQueryType()
-{
-	return m_type;
-}
-
-int TQueryOp::PullQuerySerial()
-{
-	return m_serial;
-}
-
-ParamData::~ParamData()
-{
-	if (data)
-	{
-		/* Data is only ever passed in a client disconnect query and always needs to be deleted */
-		delete data;
-		data = NULL;
-	}
-}
-
-ParamData::ParamData()
-{
-	cookie = NULL;
-	data = NULL;
-	steamId[0] = '\0';
-	cookieId = 0;
 }
 
