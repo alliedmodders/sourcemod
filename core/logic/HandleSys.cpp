@@ -1189,13 +1189,13 @@ void HandleSystem::Dump(const HandleReporter &fn)
 		if (pType->dispatch->GetDispatchVersion() < HANDLESYS_MEMUSAGE_MIN_VERSION
 			|| !bresult)
 		{
-			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%-20.20s", index, owner, type, "-1", date);
+			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%s", index, owner, type, "-1", date);
 		}
 		else
 		{
 			char buffer[32];
 			ke::SafeSprintf(buffer, sizeof(buffer), "%d", size);
-			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%-20.20s", index, owner, type, buffer, date);
+			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%s", index, owner, type, buffer, date);
 			total_size += size;
 		}
 	}
