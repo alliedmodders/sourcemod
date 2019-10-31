@@ -30,6 +30,7 @@
  */
 
 #include "HandleSys.h"
+#include <time.h>
 #include <assert.h>
 #include <string.h>
 #include "common_logic.h"
@@ -38,6 +39,8 @@
 #include "PluginSys.h"
 #include <am-string.h>
 #include <bridge/include/ILogger.h>
+#include <bridge/include/CoreProvider.h>
+#include <ISourceMod.h>
 
 HandleSystem g_HandleSys;
 
@@ -430,7 +433,7 @@ Handle_t HandleSystem::CreateHandleInt(HandleType_t type,
 
 	pHandle->object = object;
 	pHandle->clone = 0;
-
+	pHandle->timestamp = g_pSM->GetAdjustedTime();
 	return handle;
 }
 
@@ -1081,8 +1084,8 @@ static void rep(const HandleReporter &fn, const char *fmt, ...)
 void HandleSystem::Dump(const HandleReporter &fn)
 {
 	unsigned int total_size = 0;
-	rep(fn, "%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s", "Handle", "Owner", "Type", "Memory");
-	rep(fn, "--------------------------------------------------------------------------");
+	rep(fn, "%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s\t%-20.20s", "Handle", "Owner", "Type", "Memory", "Time Created");
+	rep(fn, "---------------------------------------------------------------------------------------------");
 	for (unsigned int i = 1; i <= m_HandleTail; i++)
 	{
 		if (m_Handles[i].set != HandleSet_Used)
@@ -1149,17 +1152,27 @@ void HandleSystem::Dump(const HandleReporter &fn)
 		{
 			bresult = pType->dispatch->GetHandleApproxSize(m_Handles[i].type, m_Handles[i].object, &size);
 		}
+		
+		static ConVar *sm_datetime_format = nullptr;
+		if (!sm_datetime_format)
+		{
+			sm_datetime_format = bridge->FindConVar("sm_datetime_format");
+		}
+		const char *fmt = bridge->GetCvarString(sm_datetime_format);
+		
+		char date[256]; // 256 should me more than enough
+		strftime(date, sizeof(date), fmt, localtime(&m_Handles[i].timestamp));
 
 		if (pType->dispatch->GetDispatchVersion() < HANDLESYS_MEMUSAGE_MIN_VERSION
 			|| !bresult)
 		{
-			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, "-1");
+			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%-20.20s", index, owner, type, "-1", date);
 		}
 		else
 		{
 			char buffer[32];
 			ke::SafeSprintf(buffer, sizeof(buffer), "%d", size);
-			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, buffer);
+			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%-20.20s", index, owner, type, buffer, date);
 			total_size += size;
 		}
 	}
