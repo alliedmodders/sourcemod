@@ -1081,6 +1081,15 @@ static void rep(const HandleReporter &fn, const char *fmt, ...)
 	fn(buffer);
 }
 
+#if defined SUBPLATFORM_SECURECRT // definition exists in smn_core.cpp for FormatTime
+extern void _ignore_invalid_parameter(
+						const wchar_t * expression,
+						const wchar_t * function, 
+						const wchar_t * file, 
+						unsigned int line,
+						uintptr_t pReserved);
+#endif
+
 void HandleSystem::Dump(const HandleReporter &fn)
 {
 	unsigned int total_size = 0;
@@ -1161,8 +1170,21 @@ void HandleSystem::Dump(const HandleReporter &fn)
 			bresult = pType->dispatch->GetHandleApproxSize(m_Handles[i].type, m_Handles[i].object, &size);
 		}
 
+#if defined SUBPLATFORM_SECURECRT
+	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+#endif
+
 		char date[256]; // 256 should be more than enough
-		strftime(date, sizeof(date), fmt, localtime(&m_Handles[i].timestamp));
+		size_t written = strftime(date, sizeof(date), fmt, localtime(&m_Handles[i].timestamp));
+
+#if defined SUBPLATFORM_SECURECRT
+	_set_invalid_parameter_handler(handler);
+#endif
+
+		if (!written)
+		{
+			ke::SafeSprintf(date, sizeof(date), "%s", "INVALID");
+		}
 
 		if (pType->dispatch->GetDispatchVersion() < HANDLESYS_MEMUSAGE_MIN_VERSION
 			|| !bresult)
