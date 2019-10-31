@@ -1086,6 +1086,14 @@ void HandleSystem::Dump(const HandleReporter &fn)
 	unsigned int total_size = 0;
 	rep(fn, "%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s\t%-20.20s", "Handle", "Owner", "Type", "Memory", "Time Created");
 	rep(fn, "---------------------------------------------------------------------------------------------");
+	
+	static ConVar *sm_datetime_format = nullptr;
+	if (!sm_datetime_format)
+	{
+		sm_datetime_format = bridge->FindConVar("sm_datetime_format");
+	}
+	const char *fmt = bridge->GetCvarString(sm_datetime_format);
+
 	for (unsigned int i = 1; i <= m_HandleTail; i++)
 	{
 		if (m_Handles[i].set != HandleSet_Used)
@@ -1152,14 +1160,7 @@ void HandleSystem::Dump(const HandleReporter &fn)
 		{
 			bresult = pType->dispatch->GetHandleApproxSize(m_Handles[i].type, m_Handles[i].object, &size);
 		}
-		
-		static ConVar *sm_datetime_format = nullptr;
-		if (!sm_datetime_format)
-		{
-			sm_datetime_format = bridge->FindConVar("sm_datetime_format");
-		}
-		const char *fmt = bridge->GetCvarString(sm_datetime_format);
-		
+
 		char date[256]; // 256 should me more than enough
 		strftime(date, sizeof(date), fmt, localtime(&m_Handles[i].timestamp));
 
