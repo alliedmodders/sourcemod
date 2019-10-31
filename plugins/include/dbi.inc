@@ -547,7 +547,7 @@ native bool SQL_CheckConfig(const char[] name);
  *                      string to return the default driver.
  * @return              Driver Handle, or INVALID_HANDLE on failure.
  */
-native Handle SQL_GetDriver(const char[] name="");
+native DBDriver SQL_GetDriver(const char[] name="");
 
 /**
  * Reads the driver of an opened database.
@@ -557,7 +557,7 @@ native Handle SQL_GetDriver(const char[] name="");
  * @param ident_length  Maximum length of the buffer.
  * @return              Driver Handle.
  */
-native Handle SQL_ReadDriver(Handle database, char[] ident="", int ident_length=0);
+native DBDriver SQL_ReadDriver(Handle database, char[] ident="", int ident_length=0);
 
 /**
  * Retrieves a driver's identification string.
