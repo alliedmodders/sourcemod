@@ -1161,7 +1161,7 @@ void HandleSystem::Dump(const HandleReporter &fn)
 			bresult = pType->dispatch->GetHandleApproxSize(m_Handles[i].type, m_Handles[i].object, &size);
 		}
 
-		char date[256]; // 256 should me more than enough
+		char date[256]; // 256 should be more than enough
 		strftime(date, sizeof(date), fmt, localtime(&m_Handles[i].timestamp));
 
 		if (pType->dispatch->GetDispatchVersion() < HANDLESYS_MEMUSAGE_MIN_VERSION
