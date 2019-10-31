@@ -156,6 +156,7 @@ enum CSWeaponID
 	CSWeapon_BUMPMINE = 85,
 	CSWeapon_MAX_WEAPONS_NO_KNIFES, // Max without the knife item defs, useful when treating all knives as a regular knife.
 	CSWeapon_BAYONET = 500,
+	CSWeapon_KNIFE_CLASSIC = 503,
 	CSWeapon_KNIFE_FLIP = 505,
 	CSWeapon_KNIFE_GUT = 506,
 	CSWeapon_KNIFE_KARAMBIT = 507,
