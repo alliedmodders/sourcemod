@@ -45,6 +45,7 @@
 HandleSystem g_HandleSys;
 
 QHandle *ignore_handle;
+extern ConVar *g_datetime_format;
 
 inline HandleType_t TypeParent(HandleType_t type)
 {
@@ -961,6 +962,15 @@ bool HandleSystem::InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHa
 	return true;
 }
 
+#if defined SUBPLATFORM_SECURECRT // definition exists in smn_core.cpp for FormatTime
+extern void _ignore_invalid_parameter(
+						const wchar_t * expression,
+						const wchar_t * function, 
+						const wchar_t * file, 
+						unsigned int line,
+						uintptr_t pReserved);
+#endif
+
 #define HANDLE_LOG_VERY_BAD(message, ...) \
 	logger->LogFatal(message, ##__VA_ARGS__); \
 	logger->LogError(message, ##__VA_ARGS__);
@@ -1017,6 +1027,8 @@ bool HandleSystem::TryAndFreeSomeHandles()
 	unsigned int * pCount = new unsigned int[HANDLESYS_TYPEARRAY_SIZE+1];
 	memset(pCount, 0, ((HANDLESYS_TYPEARRAY_SIZE + 1) * sizeof(unsigned int)));
 
+	const QHandle *oldest = nullptr;
+	const QHandle *newest = nullptr;
 	for (unsigned int i = 1; i <= m_HandleTail; ++i)
 	{
 		const QHandle &Handle = m_Handles[i];
@@ -1033,6 +1045,15 @@ bool HandleSystem::TryAndFreeSomeHandles()
 			highest_index = ((Handle.type) + 1);
 		}
 
+		if (!oldest || oldest->timestamp > Handle.timestamp)
+		{
+			oldest = &Handle;
+		}
+		if (!newest || newest->timestamp < Handle.timestamp)
+		{
+			newest = &Handle;
+		}
+		
 		if (Handle.clone != 0)
 		{
 			continue;
@@ -1060,7 +1081,34 @@ bool HandleSystem::TryAndFreeSomeHandles()
 
 		HANDLE_LOG_VERY_BAD("Type\t%-20.20s|\tCount\t%u", pTypeName, pCount[i]);
 	}
+	
+	const char *fmt = bridge->GetCvarString(g_datetime_format);
 
+#if defined SUBPLATFORM_SECURECRT
+	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+#endif
+
+	char oldstamp[256], newstamp[256]; // 256 should be more than enough
+	size_t written = strftime(oldstamp, sizeof(oldstamp), fmt, localtime(&oldest->timestamp));
+	if (!written)
+	{
+		ke::SafeSprintf(oldstamp, sizeof(oldstamp), "%s", "INVALID");
+	}
+
+	written = strftime(newstamp, sizeof(newstamp), fmt, localtime(&newest->timestamp));
+	if (!written)
+	{
+		ke::SafeSprintf(newstamp, sizeof(newstamp), "%s", "INVALID");
+	}
+
+#if defined SUBPLATFORM_SECURECRT
+	_set_invalid_parameter_handler(handler);
+#endif
+
+	HANDLE_LOG_VERY_BAD("--------------------------------------------------------------------------");
+	HANDLE_LOG_VERY_BAD("Oldest Handle: Type\t%-20.20s|\tTimestamp\t%s", m_Types[oldest->type].name->chars(), oldstamp);
+	HANDLE_LOG_VERY_BAD("Newest Handle: Type\t%-20.20s|\tTimestamp\t%s", m_Types[newest->type].name->chars(), newstamp);
+	HANDLE_LOG_VERY_BAD("--------------------------------------------------------------------------");
 	HANDLE_LOG_VERY_BAD("-- Approximately %d bytes of memory are in use by (%u) Handles.\n", total_size, total);
 	delete [] pCount;
 
@@ -1081,27 +1129,13 @@ static void rep(const HandleReporter &fn, const char *fmt, ...)
 	fn(buffer);
 }
 
-#if defined SUBPLATFORM_SECURECRT // definition exists in smn_core.cpp for FormatTime
-extern void _ignore_invalid_parameter(
-						const wchar_t * expression,
-						const wchar_t * function, 
-						const wchar_t * file, 
-						unsigned int line,
-						uintptr_t pReserved);
-#endif
-
 void HandleSystem::Dump(const HandleReporter &fn)
 {
 	unsigned int total_size = 0;
 	rep(fn, "%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s\t%-20.20s", "Handle", "Owner", "Type", "Memory", "Time Created");
 	rep(fn, "---------------------------------------------------------------------------------------------");
 	
-	static ConVar *sm_datetime_format = nullptr;
-	if (!sm_datetime_format)
-	{
-		sm_datetime_format = bridge->FindConVar("sm_datetime_format");
-	}
-	const char *fmt = bridge->GetCvarString(sm_datetime_format);
+	const char *fmt = bridge->GetCvarString(g_datetime_format);
 
 	for (unsigned int i = 1; i <= m_HandleTail; i++)
 	{
