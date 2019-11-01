@@ -40,9 +40,9 @@
  */
 enum EventHookMode
 {
-	EventHookMode_Pre,					//< Hook callback fired before event is fired */
-	EventHookMode_Post,					//< Hook callback fired after event is fired */
-	EventHookMode_PostNoCopy			//< Hook callback fired after event is fired, but event data won't be copied */
+	EventHookMode_Pre,                  //< Hook callback fired before event is fired */
+	EventHookMode_Post,                 //< Hook callback fired after event is fired */
+	EventHookMode_PostNoCopy            //< Hook callback fired after event is fired, but event data won't be copied */
 };
 
 /**
@@ -52,20 +52,22 @@ typeset EventHook
 {
 	// Called when a game event is fired.
 	//
-	// @param event			Handle to event. This could be INVALID_HANDLE if every plugin hooking 
-	//						this event has set the hook mode EventHookMode_PostNoCopy.
-	// @param name			String containing the name of the event.
-	// @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
-	// @return				Ignored for post hooks. Plugin_Handled will block event if hooked as pre.
+	// @param event         Handle to event. This could be INVALID_HANDLE if every plugin hooking 
+	//                      this event has set the hook mode EventHookMode_PostNoCopy.
+	// @param name          String containing the name of the event.
+	// @param dontBroadcast True if event was not broadcast to clients, false otherwise.
+	//                      May not correspond to the real value. Use the property BroadcastDisabled.
+	// @return              Ignored for post hooks. Plugin_Handled will block event if hooked as pre.
 	///
 	function Action (Event event, const char[] name, bool dontBroadcast);
+	
 	//
 	// Called when a game event is fired.
 	//
-	// @param event			Handle to event. This could be INVALID_HANDLE if every plugin hooking 
-	//						this event has set the hook mode EventHookMode_PostNoCopy.
-	// @param name			String containing the name of the event.
-	// @param dontBroadcast	True if event was not broadcast to clients, false otherwise.
+	// @param event         Handle to event. This could be INVALID_HANDLE if every plugin hooking 
+	//                      this event has set the hook mode EventHookMode_PostNoCopy.
+	// @param name          String containing the name of the event.
+	// @param dontBroadcast True if event was not broadcast to clients, false otherwise.
 	///
 	function void (Event event, const char[] name, bool dontBroadcast);
 };
@@ -83,7 +85,7 @@ methodmap Event < Handle
 	//
 	// Unlike Fire, this function DOES NOT close the event Handle.
 	//
-	// @param client		Index of client to receive the event..
+	// @param client        Index of client to receive the event..
 	public native void FireToClient(int client);
 
 	// Cancels a previously created game event that has not been fired. This
@@ -160,37 +162,38 @@ methodmap Event < Handle
 	// or HookEventEx callbacks.
 	property bool BroadcastDisabled {
 		public native set(bool dontBroadcast);
+		public native get();
 	}
 }
 
 /**
  * Creates a hook for when a game event is fired.
  *
- * @param name			Name of event.
- * @param callback		An EventHook function pointer.
- * @param mode			Optional EventHookMode determining the type of hook.
- * @error				Invalid event name or invalid callback function.
+ * @param name          Name of event.
+ * @param callback      An EventHook function pointer.
+ * @param mode          Optional EventHookMode determining the type of hook.
+ * @error               Invalid event name or invalid callback function.
  */
 native void HookEvent(const char[] name, EventHook callback, EventHookMode mode=EventHookMode_Post);
 
 /**
  * Creates a hook for when a game event is fired.
  *
- * @param name			Name of event.
- * @param callback		An EventHook function pointer.
- * @param mode			Optional EventHookMode determining the type of hook.
- * @return				True if event exists and was hooked successfully, false otherwise.
- * @error				Invalid callback function.
+ * @param name          Name of event.
+ * @param callback      An EventHook function pointer.
+ * @param mode          Optional EventHookMode determining the type of hook.
+ * @return              True if event exists and was hooked successfully, false otherwise.
+ * @error               Invalid callback function.
  */
 native bool HookEventEx(const char[] name, EventHook callback, EventHookMode mode=EventHookMode_Post);
 
 /**
  * Removes a hook for when a game event is fired.
  *
- * @param name			Name of event.
- * @param callback		An EventHook function pointer.
- * @param mode			Optional EventHookMode determining the type of hook.
- * @error				Invalid callback function or no active hook for specified event.
+ * @param name          Name of event.
+ * @param callback      An EventHook function pointer.
+ * @param mode          Optional EventHookMode determining the type of hook.
+ * @error               Invalid callback function or no active hook for specified event.
  */
 native void UnhookEvent(const char[] name, EventHook callback, EventHookMode mode=EventHookMode_Post);
 
@@ -200,11 +203,11 @@ native void UnhookEvent(const char[] name, EventHook callback, EventHookMode mod
  * The Handle should not be closed via CloseHandle().  It must be closed via 
  * event.Fire() or event.Cancel().
  *
- * @param name			Name of event.
- * @param force			If set to true, this forces the event to be created even if it's not being hooked.
- *						Note that this will not force it if the event doesn't exist at all.
- * @return				Handle to event. INVALID_HANDLE is returned if the event doesn't exist or isn't 
-						being hooked (unless force is true).
+ * @param name          Name of event.
+ * @param force         If set to true, this forces the event to be created even if it's not being hooked.
+ *                      Note that this will not force it if the event doesn't exist at all.
+ * @return              Handle to event. INVALID_HANDLE is returned if the event doesn't exist or isn't 
+ *                      being hooked (unless force is true).
  */
 native Event CreateEvent(const char[] name, bool force=false);
 
@@ -213,49 +216,49 @@ native Event CreateEvent(const char[] name, bool force=false);
  *
  * This function closes the event Handle after completing.
  *
- * @param event			Handle to the event.
- * @param dontBroadcast	Optional boolean that determines if event should be broadcast to clients.
- * @error				Invalid or corrupt Handle.
+ * @param event         Handle to the event.
+ * @param dontBroadcast Optional boolean that determines if event should be broadcast to clients.
+ * @error               Invalid or corrupt Handle.
  */
 native void FireEvent(Handle event, bool dontBroadcast=false);
 
 /**
  * Cancels a previously created game event that has not been fired.
  *
- * @param event			Handled to the event.
- * @error				Invalid or corrupt Handle.
+ * @param event         Handled to the event.
+ * @error               Invalid or corrupt Handle.
  */
 native void CancelCreatedEvent(Handle event);
 
 /**
  * Returns the boolean value of a game event's key.
  *
- * @param event			Handle to the event.
- * @param key			Name of event key.
- * @param defValue		Optional default value to use if the key is not found.
- * @return				The boolean value of the specified event key.
- * @error				Invalid or corrupt Handle.
+ * @param event         Handle to the event.
+ * @param key           Name of event key.
+ * @param defValue      Optional default value to use if the key is not found.
+ * @return              The boolean value of the specified event key.
+ * @error               Invalid or corrupt Handle.
  */
 native bool GetEventBool(Handle event, const char[] key, bool defValue=false);
 
 /**
  * Sets the boolean value of a game event's key.
  *
- * @param event			Handle to the event.
- * @param key			Name of event key.
- * @param value			New boolean value.
- * @error				Invalid or corrupt Handle.
+ * @param event         Handle to the event.
+ * @param key           Name of event key.
+ * @param value         New boolean value.
+ * @error               Invalid or corrupt Handle.
  */
 native void SetEventBool(Handle event, const char[] key, bool value);
 
 /**
  * Returns the integer value of a game event's key.
  *
- * @param event			Handle to the event.
- * @param key			Name of event key.
- * @param defValue		Optional default value to use if the key is not found.
- * @return				The integer value of the specified event key.
- * @error				Invalid or corrupt Handle.
+ * @param event         Handle to the event.
+ * @param key           Name of event key.
+ * @param defValue      Optional default value to use if the key is not found.
+ * @return              The integer value of the specified event key.
+ * @error               Invalid or corrupt Handle.
  */
 native int GetEventInt(Handle event, const char[] key, int defValue=0);
 
@@ -267,63 +270,63 @@ native int GetEventInt(Handle event, const char[] key, int defValue=0);
  * integers, and only refer to how much data will actually be sent 
  * over the network (if applicable).
  *
- * @param event			Handle to the event.
- * @param key			Name of event key.
- * @param value			New integer value.
- * @error				Invalid or corrupt Handle.
+ * @param event         Handle to the event.
+ * @param key           Name of event key.
+ * @param value         New integer value.
+ * @error               Invalid or corrupt Handle.
  */
 native void SetEventInt(Handle event, const char[] key, int value);
 
 /**
  * Returns the floating point value of a game event's key.
  *
- * @param event			Handle to the event.
- * @param key			Name of event key.
- * @param defValue		Optional default value to use if the key is not found.
- * @return				The floating point value of the specified event key.
- * @error				Invalid or corrupt Handle.
+ * @param event         Handle to the event.
+ * @param key           Name of event key.
+ * @param defValue      Optional default value to use if the key is not found.
+ * @return              The floating point value of the specified event key.
+ * @error               Invalid or corrupt Handle.
  */
 native float GetEventFloat(Handle event, const char[] key, float defValue=0.0);
 
 /**
  * Sets the floating point value of a game event's key.
  *
- * @param event			Handle to the event.
- * @param key			Name of event key.
- * @param value			New floating point value.
- * @error				Invalid or corrupt Handle.
+ * @param event         Handle to the event.
+ * @param key           Name of event key.
+ * @param value         New floating point value.
+ * @error               Invalid or corrupt Handle.
  */
 native void SetEventFloat(Handle event, const char[] key, float value);
 
 /**
  * Retrieves the string value of a game event's key.
  *
- * @param event			Handle to the event.
- * @param key			Name of event key.
- * @param value			Buffer to store the value of the specified event key.
- * @param maxlength		Maximum length of string buffer.
- * @param defValue		Optional default value to use if the key is not found.
- * @error				Invalid or corrupt Handle.
+ * @param event         Handle to the event.
+ * @param key           Name of event key.
+ * @param value         Buffer to store the value of the specified event key.
+ * @param maxlength     Maximum length of string buffer.
+ * @param defValue      Optional default value to use if the key is not found.
+ * @error               Invalid or corrupt Handle.
  */
 native void GetEventString(Handle event, const char[] key, char[] value, int maxlength, const char[] defvalue="");
 
 /**
  * Sets the string value of a game event's key.
  *
- * @param event			Handle to the event.
- * @param key			Name of event key.
- * @param value			New string value.
- * @error				Invalid or corrupt Handle.
+ * @param event         Handle to the event.
+ * @param key           Name of event key.
+ * @param value         New string value.
+ * @error               Invalid or corrupt Handle.
  */
 native void SetEventString(Handle event, const char[] key, const char[] value);
 
 /**
  * Retrieves the name of a game event.
  *
- * @param event			Handle to the event.
- * @param name			Buffer to store the name of the event.
- * @param maxlength		Maximum length of string buffer.
- * @error				Invalid or corrupt Handle.     
+ * @param event         Handle to the event.
+ * @param name          Buffer to store the name of the event.
+ * @param maxlength     Maximum length of string buffer.
+ * @error               Invalid or corrupt Handle.     
  */
 native void GetEventName(Handle event, char[] name, int maxlength);
 

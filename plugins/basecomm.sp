@@ -48,16 +48,19 @@ public Plugin myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-bool g_Muted[MAXPLAYERS+1];			// Is the player muted?
-bool g_Gagged[MAXPLAYERS+1];		// Is the player gagged?
+enum struct PlayerState {
+	bool isMuted; // Is the player muted?
+	bool isGagged; // Is the player gagged?
+	int gagTarget;
+}
+
+PlayerState playerstate[MAXPLAYERS+1];
 
 ConVar g_Cvar_Deadtalk;				// Holds the handle for sm_deadtalk
 ConVar g_Cvar_Alltalk;				// Holds the handle for sv_alltalk
 bool g_Hooked = false;				// Tracks if we've hooked events for deadtalk
 
 TopMenu hTopMenu;
-
-int g_GagTarget[MAXPLAYERS+1];
 
 #include "basecomm/gag.sp"
 #include "basecomm/natives.sp"
@@ -141,15 +144,15 @@ public void ConVarChange_Deadtalk(ConVar convar, const char[] oldValue, const ch
 
 public bool OnClientConnect(int client, char[] rejectmsg, int maxlen)
 {
-	g_Gagged[client] = false;
-	g_Muted[client] = false;
+	playerstate[client].isGagged = false;
+	playerstate[client].isMuted = false;
 	
 	return true;
 }
 
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs)
 {
-	if (client && g_Gagged[client])
+	if (client && playerstate[client].isGagged)
 	{
 		return Plugin_Stop;
 	}
@@ -168,7 +171,7 @@ public void ConVarChange_Alltalk(ConVar convar, const char[] oldValue, const cha
 			continue;
 		}
 		
-		if (g_Muted[i])
+		if (playerstate[i].isMuted)
 		{
 			SetClientListeningFlags(i, VOICE_MUTED);
 		}
@@ -199,7 +202,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 		return;	
 	}
 	
-	if (g_Muted[client])
+	if (playerstate[client].isMuted)
 	{
 		SetClientListeningFlags(client, VOICE_MUTED);
 	}
@@ -218,7 +221,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 		return;	
 	}
 	
-	if (g_Muted[client])
+	if (playerstate[client].isMuted)
 	{
 		SetClientListeningFlags(client, VOICE_MUTED);
 		return;

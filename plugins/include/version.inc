@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -29,7 +29,7 @@
  *
  * Version: $Id$
  */
- 
+
 #if defined _version_included
  #endinput
 #endif
@@ -38,12 +38,12 @@
 #tryinclude <version_auto>
 
 #if !defined _auto_version_included
-#define SOURCEMOD_V_TAG			"manual"
-#define SOURCEMOD_V_REV			0
-#define SOURCEMOD_V_CSET		"0"
-#define SOURCEMOD_V_MAJOR		1				/**< SourceMod Major version */
-#define SOURCEMOD_V_MINOR		8				/**< SourceMod Minor version */
-#define SOURCEMOD_V_RELEASE		0				/**< SourceMod Release version */
+ #define SOURCEMOD_V_TAG         "manual"
+ #define SOURCEMOD_V_REV         0
+ #define SOURCEMOD_V_CSET        "0"
+ #define SOURCEMOD_V_MAJOR       1               /**< SourceMod Major version */
+ #define SOURCEMOD_V_MINOR       10              /**< SourceMod Minor version */
+ #define SOURCEMOD_V_RELEASE     0               /**< SourceMod Release version */
 
-#define SOURCEMOD_VERSION	"1.8.0-manual"	/**< SourceMod version string (major.minor.release-tag) */
+ #define SOURCEMOD_VERSION       "1.10.0-manual" /**< SourceMod version string (major.minor.release-tag) */
 #endif

@@ -35,23 +35,23 @@
 #endif
 #define _commandfilters_included
 
-#define MAX_TARGET_LENGTH			64
+#define MAX_TARGET_LENGTH           64
 
-#define COMMAND_FILTER_ALIVE		(1<<0)		/**< Only allow alive players */
-#define COMMAND_FILTER_DEAD			(1<<1)		/**< Only filter dead players */
-#define COMMAND_FILTER_CONNECTED	(1<<2)		/**< Allow players not fully in-game */
-#define COMMAND_FILTER_NO_IMMUNITY	(1<<3)		/**< Ignore immunity rules */
-#define COMMAND_FILTER_NO_MULTI		(1<<4)		/**< Do not allow multiple target patterns */
-#define COMMAND_FILTER_NO_BOTS		(1<<5)		/**< Do not allow bots to be targetted */
+#define COMMAND_FILTER_ALIVE        (1<<0)      /**< Only allow alive players */
+#define COMMAND_FILTER_DEAD         (1<<1)      /**< Only filter dead players */
+#define COMMAND_FILTER_CONNECTED    (1<<2)      /**< Allow players not fully in-game */
+#define COMMAND_FILTER_NO_IMMUNITY  (1<<3)      /**< Ignore immunity rules */
+#define COMMAND_FILTER_NO_MULTI     (1<<4)      /**< Do not allow multiple target patterns */
+#define COMMAND_FILTER_NO_BOTS      (1<<5)      /**< Do not allow bots to be targetted */
 
-#define COMMAND_TARGET_NONE			0			/**< No target was found */
-#define COMMAND_TARGET_NOT_ALIVE	-1			/**< Single client is not alive */
-#define COMMAND_TARGET_NOT_DEAD		-2			/**< Single client is not dead */
-#define COMMAND_TARGET_NOT_IN_GAME	-3			/**< Single client is not in game */
-#define COMMAND_TARGET_IMMUNE		-4			/**< Single client is immune */
-#define COMMAND_TARGET_EMPTY_FILTER	-5			/**< A multi-filter (such as @all) had no targets */
-#define COMMAND_TARGET_NOT_HUMAN	-6			/**< Target was not human */
-#define COMMAND_TARGET_AMBIGUOUS	-7			/**< Partial name had too many targets */
+#define COMMAND_TARGET_NONE          0          /**< No target was found */
+#define COMMAND_TARGET_NOT_ALIVE    -1          /**< Single client is not alive */
+#define COMMAND_TARGET_NOT_DEAD     -2          /**< Single client is not dead */
+#define COMMAND_TARGET_NOT_IN_GAME  -3          /**< Single client is not in game */
+#define COMMAND_TARGET_IMMUNE       -4          /**< Single client is immune */
+#define COMMAND_TARGET_EMPTY_FILTER -5          /**< A multi-filter (such as @all) had no targets */
+#define COMMAND_TARGET_NOT_HUMAN    -6          /**< Target was not human */
+#define COMMAND_TARGET_AMBIGUOUS    -7          /**< Partial name had too many targets */
 
 /**
  * Processes a generic command target string, and resolves it to a list 
@@ -61,28 +61,28 @@
  * as that file is guaranteed to contain all of the translatable phrases that 
  * ProcessTargetString() will return.
  *
- * @param pattern		Pattern to find clients against.
- * @param admin			Admin performing the action, or 0 if the server.
- * @param targets		Array to hold targets.
- * @param max_targets	Maximum size of the targets array.
- * @param filter_flags	Filter flags.
- * @param target_name	Buffer to store the target name.
- * @param tn_maxlength	Maximum length of the target name buffer.
- * @param tn_is_ml		OUTPUT: Will be true if the target name buffer is an ML phrase,
- *						false if it is a normal string.
- * @return				If a multi-target pattern was used, the number of clients found 
- *						is returned.  If a single-target pattern was used, 1 is returned 
- *						if one valid client is found.  Otherwise, a COMMAND_TARGET reason 
- *						for failure is returned.
+ * @param pattern       Pattern to find clients against.
+ * @param admin         Admin performing the action, or 0 if the server.
+ * @param targets       Array to hold targets.
+ * @param max_targets   Maximum size of the targets array.
+ * @param filter_flags  Filter flags.
+ * @param target_name   Buffer to store the target name.
+ * @param tn_maxlength  Maximum length of the target name buffer.
+ * @param tn_is_ml      OUTPUT: Will be true if the target name buffer is an ML phrase,
+ *                      false if it is a normal string.
+ * @return              If a multi-target pattern was used, the number of clients found 
+ *                      is returned.  If a single-target pattern was used, 1 is returned 
+ *                      if one valid client is found.  Otherwise, a COMMAND_TARGET reason 
+ *                      for failure is returned.
  */
 native int ProcessTargetString(const char[] pattern,
-						   int admin, 
-						   int[] targets,
-						   int max_targets,
-						   int filter_flags,
-						   char[] target_name,
-						   int tn_maxlength,
-						   bool &tn_is_ml);
+							   int admin, 
+							   int[] targets,
+							   int max_targets,
+							   int filter_flags,
+							   char[] target_name,
+							   int tn_maxlength,
+							   bool &tn_is_ml);
 
 /**
  * Replies to a client with a given message describing a targetting 
@@ -90,8 +90,8 @@ native int ProcessTargetString(const char[] pattern,
  *
  * Note: The translation phrases are found in common.phrases.txt.
  *
- * @param client		Client index, or 0 for server.
- * @param reason		COMMAND_TARGET reason.
+ * @param client        Client index, or 0 for server.
+ * @param reason        COMMAND_TARGET reason.
  */
 stock void ReplyToTargetError(int client, int reason)
 {
@@ -139,7 +139,10 @@ stock void ReplyToTargetError(int client, int reason)
  * @param clients       Array to fill with unique, valid client indexes.
  * @return              True if pattern was recognized, false otherwise.
  */
-typedef MultiTargetFilter = function bool (const char[] pattern, Handle clients);
+typeset MultiTargetFilter {
+	function bool (const char[] pattern, Handle clients);
+	function bool (const char[] pattern, ArrayList clients);
+}
 
 /**
  * Adds a multi-target filter function for ProcessTargetString().

@@ -1195,6 +1195,7 @@ REGISTER_NATIVES(filesystem)
 	{"File.WriteLine",			sm_WriteFileLine},
 	{"File.EndOfFile",			sm_IsEndOfFile},
 	{"File.Seek",				sm_FileSeek},
+	{"File.Flush",				sm_FlushFile},
 	{"File.Position.get",		sm_FilePosition},
 	{"File.ReadInt8",			File_ReadTyped<int8_t>},
 	{"File.ReadUint8",			File_ReadTyped<uint8_t>},

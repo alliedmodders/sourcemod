@@ -31,36 +31,36 @@
  */
 
 #if defined _sdktools_engine_included
-  #endinput
+ #endinput
 #endif
 #define _sdktools_engine_included
 
-#define MAX_LIGHTSTYLES			64
+#define MAX_LIGHTSTYLES 64
 
 /**
  * Sets a client's "viewing entity."
  *
- * @param client		Client index.
- * @param entity		Entity index.
- * @error				Invalid client or entity, lack of mod support, or client not in 
- *						game.
+ * @param client        Client index.
+ * @param entity        Entity index.
+ * @error               Invalid client or entity, lack of mod support, or client not in 
+ *                      game.
  */
 native void SetClientViewEntity(int client, int entity);
 
 /**
  * Sets a light style.
  *
- * @param style			Light style (from 0 to MAX_LIGHTSTYLES-1)
- * @param value			Light value string (see world.cpp/light.cpp in dlls)
- * @error				Light style index is out of range.
+ * @param style         Light style (from 0 to MAX_LIGHTSTYLES-1)
+ * @param value         Light value string (see world.cpp/light.cpp in dlls)
+ * @error               Light style index is out of range.
  */
 native void SetLightStyle(int style, const char[] value);
 
 /**
  * Returns the client's eye position.
  *
- * @param client		Player's index.
- * @param pos			Destination vector to store the client's eye position.
- * @error				Invalid client index, client not in game, or no mod support.
+ * @param client        Player's index.
+ * @param pos           Destination vector to store the client's eye position.
+ * @error               Invalid client index, client not in game, or no mod support.
  */
 native void GetClientEyePosition(int client, float pos[3]);
