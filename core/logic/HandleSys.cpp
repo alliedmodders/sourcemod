@@ -1106,9 +1106,8 @@ bool HandleSystem::TryAndFreeSomeHandles()
 #endif
 
 	HANDLE_LOG_VERY_BAD("--------------------------------------------------------------------------");
-	HANDLE_LOG_VERY_BAD("Oldest Handle: Type\t%-20.20s|\tTimestamp\t%s", m_Types[oldest->type].name->chars(), oldstamp);
-	HANDLE_LOG_VERY_BAD("Newest Handle: Type\t%-20.20s|\tTimestamp\t%s", m_Types[newest->type].name->chars(), newstamp);
-	HANDLE_LOG_VERY_BAD("--------------------------------------------------------------------------");
+	HANDLE_LOG_VERY_BAD("Oldest Living Handle: %s created at %s", m_Types[oldest->type].name->chars(), oldstamp);
+	HANDLE_LOG_VERY_BAD("Newest Living Handle: %s created at %s", m_Types[newest->type].name->chars(), newstamp);
 	HANDLE_LOG_VERY_BAD("-- Approximately %d bytes of memory are in use by (%u) Handles.\n", total_size, total);
 	delete [] pCount;
 
