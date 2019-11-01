@@ -45,6 +45,7 @@
 #define CS_SLOT_KNIFE       2   /**< Knife slot. */
 #define CS_SLOT_GRENADE     3   /**< Grenade slot (will only return one grenade). */
 #define CS_SLOT_C4          4   /**< C4 slot. */
+#define CS_SLOT_UTIL        11  /**< Slot for healthshot and shield (will only return one weapon/item). */
 
 #define CS_DMG_HEADSHOT     (1 << 30)    /**< Headshot */
 
