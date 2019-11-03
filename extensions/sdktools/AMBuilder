@@ -53,6 +53,12 @@ for sdk_name in SM.sdks:
     if sdk.name != 'episode1':
       binary.compiler.defines += ['HOOKING_ENABLED']
 
+    #l4d2 has non-conformant code in the hl2sdk, we'll set permissive to allow builds on newer gcc compilers
+    if sdk.name == 'l4d2':
+      if binary.compiler.family == 'gcc' and binary.compiler.version >= 'gcc-8':
+        binary.compiler.cxxflags += ['-fpermissive']
+        binary.compiler.cflags.remove('-Werror')
+
     if binary.compiler.behavior == 'gcc':
       binary.compiler.cxxflags += ['-Wno-invalid-offsetof']
 

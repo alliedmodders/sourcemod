@@ -108,6 +108,10 @@ for sdk_name in SM.sdks:
         os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessages.pb.cc'),
         os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessage_helpers.cpp'),
       ]
-
+    # l4d2 hl2sdk has non-comformant code that we can't control
+    if sdk.name == 'l4d2':
+      if binary.compiler.family == 'gcc' and binary.compiler.version >= 'gcc-8':
+        binary.compiler.cxxflags += ['-fpermissive']
+        binary.compiler.cflags.remove('-Werror')
 SM.binaries += builder.Add(project)
 
