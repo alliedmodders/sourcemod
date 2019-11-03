@@ -11,7 +11,7 @@ for arch in SM.archs:
     binary.compiler.postlink += ['wsock32.lib']
 
   if binary.compiler.family == 'gcc' and binary.compiler.version >= 'gcc-8':
-    binary.compiler.cflags += ['-Wno-class-memacces', '-Wno-stringop-overflow']
+    binary.compiler.cflags += ['-Wno-class-memaccess', '-Wno-stringop-overflow']
   binary.sources += [
     'extension.cpp',
     'GeoIP.c',
