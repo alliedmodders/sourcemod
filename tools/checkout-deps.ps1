@@ -27,7 +27,8 @@ param(
         'swarm',
         'bgt',
         'eye',
-        'contagion'
+        'contagion',
+        'doi'
         )
 )
 
