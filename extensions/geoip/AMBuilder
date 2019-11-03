@@ -5,12 +5,13 @@ for arch in SM.archs:
   binary = SM.ExtLibrary(builder, 'geoip.ext', arch)
   if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
     binary.compiler.cxxflags += ['-fno-rtti']
-    binary.compiler.cflags += ['-Wno-stringop-overflow']
   elif binary.compiler.family == 'msvc':
     binary.compiler.cxxflags += ['/GR-']
   if builder.target.platform == 'windows':
     binary.compiler.postlink += ['wsock32.lib']
 
+  if binary.compiler.family == 'gcc' and binary.compiler.version >= 'gcc-8':
+    binary.compiler.cflags += ['-Wno-class-memacces', '-Wno-stringop-overflow']
   binary.sources += [
     'extension.cpp',
     'GeoIP.c',

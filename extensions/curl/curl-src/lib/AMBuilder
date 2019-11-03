@@ -28,7 +28,8 @@ for arch in SM.archs:
   if binary.compiler.family == 'clang':
     # https://llvm.org/bugs/show_bug.cgi?id=16428
     binary.compiler.cflags += ['-Wno-attributes']
-  if binary.compiler.family == 'gcc':
+
+  if binary.compiler.family == 'gcc' and binary.compiler.version >= 'gcc-8':
     binary.compiler.cflags += ['-Wno-stringop-truncation']
   binary.sources += [
     'base64.c',

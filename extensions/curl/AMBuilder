@@ -10,7 +10,6 @@ for arch in SM.archs:
   binary.compiler.defines += ['CURL_STATICLIB']
   if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
     binary.compiler.cxxflags += ['-fno-rtti']
-    binary.compiler.cflags += ['-Wno-stringop-truncation']
   elif binary.compiler.family == 'msvc':
     binary.compiler.cxxflags += ['/GR-']
   binary.compiler.postlink += [libcurl[arch].binary]
