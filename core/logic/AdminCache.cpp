@@ -60,7 +60,7 @@ AdminFlag g_DefaultFlags[26] =
 	Admin_Slay, Admin_Changemap, Admin_Convars, Admin_Config, Admin_Chat,
 	Admin_Vote, Admin_Password, Admin_RCON, Admin_Cheats, Admin_Custom1, 
 	Admin_Custom2, Admin_Custom3, Admin_Custom4, Admin_Custom5, Admin_Custom6,
-	Admin_Generic, Admin_Generic, Admin_Generic, Admin_Generic, Admin_Generic,
+	Admin_Custom7, Admin_Custom8, Admin_Custom9, Admin_Custom10, Admin_Custom11,
 	Admin_Root
 };
 
@@ -73,11 +73,10 @@ public:
 		if (!Parse())
 		{
 			memcpy(g_FlagLetters, g_DefaultFlags, sizeof(AdminFlag) * 26);
-			for (unsigned int i=0; i<20; i++)
+			for (unsigned int i=0; i<26; i++)
 			{
 				g_FlagCharSet[i] = true;
 			}
-			g_FlagCharSet[25] = true;
 		}
 	}
 private:
@@ -271,6 +270,11 @@ void AdminCache::OnSourceModStartup(bool late)
 	NameFlag("custom4", Admin_Custom4);
 	NameFlag("custom5", Admin_Custom5);
 	NameFlag("custom6", Admin_Custom6);
+	NameFlag("custom7", Admin_Custom7);
+	NameFlag("custom8", Admin_Custom8);
+	NameFlag("custom9", Admin_Custom9);
+	NameFlag("custom10", Admin_Custom10);
+	NameFlag("custom11", Admin_Custom11);
 
 	auto sm_dump_admcache = [this] (int client, const ICommandArgs *args) -> bool {
 		char buffer[PLATFORM_MAX_PATH];
