@@ -8,6 +8,15 @@
 [CmdletBinding()]
 param(
     [string[]]$SDKs = @(
+        'orangebox',
+        'blade',
+        'episode1',
+        'bms',
+        'darkm',
+        'swarm',
+        'bgt',
+        'eye',
+        'contagion',
         'csgo',
         'hl2dm',
         'nucleardawn',
