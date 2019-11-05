@@ -513,7 +513,11 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 		/* Use SayText user message instead */
 		if (chat_saytext != NULL && strcmp(chat_saytext, "yes") == 0)
 		{
+#if SOURCE_ENGINE == SE_CSGO
+			char buffer[2022];
+#else
 			char buffer[253];
+#endif
 			ke::SafeSprintf(buffer, sizeof(buffer), "%s\1\n", msg);
 
 #if SOURCE_ENGINE == SE_CSGO
