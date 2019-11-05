@@ -35,7 +35,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_ADMINSYS_NAME		"IAdminSys"
-#define SMINTERFACE_ADMINSYS_VERSION	9
+#define SMINTERFACE_ADMINSYS_VERSION	8
 
 /**
  * @file IAdminSystem.h
