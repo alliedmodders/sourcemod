@@ -506,12 +506,30 @@ class SMConfig(object):
     if arch == 'x64':
       compiler.defines += ['X64BITS', 'PLATFORM_64BITS']
 
+    #!!TODO!! remove this eventually
+    if sdk.name in ['portal2']:
+      if compiler.family == 'gcc' or compiler.family == 'clang':
+        compiler.cxxflags += [
+          '-Wno-error',
+          '-Wno-reorder',
+          '-Wno-sign-compare',
+          '-Wno-class-memaccess',
+          '-Wno-address',
+          '-Wno-unknown-pragmas',
+          '-Wno-shift-count-negative',
+          '-Wno-return-type',
+          '-Wno-format',
+          '-Wno-nonnull-compare',
+        ]
+      if compiler.family == 'clang':
+        compiler.cxxflags += ['-Wno-macro-redefined']
+
     # For everything after Swarm, this needs to be defined for entity networking
     # to work properly with sendprop value changes.
     if sdk.name in ['blade', 'insurgency', 'doi', 'csgo']:
       compiler.defines += ['NETWORK_VARS_ENABLED']
 
-    if sdk.name in ['css', 'hl2dm', 'dods', 'sdk2013', 'bms', 'tf2', 'l4d', 'nucleardawn', 'l4d2']:
+    if sdk.name in ['css', 'hl2dm', 'dods', 'sdk2013', 'bms', 'tf2', 'l4d', 'nucleardawn', 'l4d2', 'portal2']:
       if builder.target.platform in ['linux', 'mac']:
         compiler.defines += ['NO_HOOK_MALLOC', 'NO_MALLOC_OVERRIDE']
 
@@ -559,7 +577,7 @@ class SMConfig(object):
 
     dynamic_libs = []
     if builder.target.platform == 'linux':
-      if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency', 'doi']:
+      if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency', 'doi', 'portal2']:
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
       elif arch == 'x64' and sdk.name == 'csgo':
         dynamic_libs = ['libtier0_client.so', 'libvstdlib_client.so']
