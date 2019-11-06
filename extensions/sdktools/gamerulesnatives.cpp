@@ -53,6 +53,10 @@ static CBaseEntity *FindEntityByNetClass(int start, const char *classname)
 		if (network == NULL)
 			continue;
 
+		IHandleEntity *pHandleEnt = network->GetEntityHandle();
+		if (pHandleEnt == NULL)
+			continue;
+
 		ServerClass *sClass = network->GetServerClass();
 		const char *name = sClass->GetName();
 
