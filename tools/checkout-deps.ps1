@@ -18,7 +18,17 @@ param(
         'tf2',
         'insurgency',
         'sdk2013',
-        'dota'
+        'dota',
+        'orangebox',
+        'blade',
+        'episode1',
+        'bms',
+        'darkm',
+        'swarm',
+        'bgt',
+        'eye',
+        'contagion',
+        'doi'
         )
 )
 
