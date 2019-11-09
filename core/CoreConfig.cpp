@@ -465,7 +465,7 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 			}
 			else
 			{
-				logger->LogError("Failed to auto generate config for %s, make sure the directory has write permission.", pl->GetFilename());
+				logger->LogError("Failed to auto generate config for %s, make sure %s exists and its directory has write permission.", pl->GetFilename(), file);
 				return can_create;
 			}
 		}
