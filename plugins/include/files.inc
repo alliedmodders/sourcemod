@@ -314,7 +314,7 @@ native bool ReadDirEntry(Handle dir, char[] buffer, int maxlength, FileType &typ
  * Mac, this has no distinction from binary mode. On Windows, it causes the '\n'
  * character (0xA) to be written as "\r\n" (0xD, 0xA).
  *
- * Example: "rb" opens a binary file for writing; "at" opens a text file for
+ * Example: "rb" opens a binary file for reading; "at" opens a text file for
  * appending.
  *
  * @param file          File to open.
