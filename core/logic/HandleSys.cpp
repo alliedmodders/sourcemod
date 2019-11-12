@@ -1131,7 +1131,7 @@ static void rep(const HandleReporter &fn, const char *fmt, ...)
 void HandleSystem::Dump(const HandleReporter &fn)
 {
 	unsigned int total_size = 0;
-	rep(fn, "%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s\t%-20.20s", "Handle", "Owner", "Type", "Memory", "Time Created");
+	rep(fn, "%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s\t%-30.30s", "Handle", "Owner", "Type", "Memory", "Time Created");
 	rep(fn, "---------------------------------------------------------------------------------------------");
 	
 	const char *fmt = bridge->GetCvarString(g_datetime_format);
@@ -1222,13 +1222,13 @@ void HandleSystem::Dump(const HandleReporter &fn)
 		if (pType->dispatch->GetDispatchVersion() < HANDLESYS_MEMUSAGE_MIN_VERSION
 			|| !bresult)
 		{
-			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%s", index, owner, type, "-1", date);
+			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%-30.30s", index, owner, type, "-1", date);
 		}
 		else
 		{
 			char buffer[32];
 			ke::SafeSprintf(buffer, sizeof(buffer), "%d", size);
-			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%s", index, owner, type, buffer, date);
+			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%-30.30s", index, owner, type, buffer, date);
 			total_size += size;
 		}
 	}
