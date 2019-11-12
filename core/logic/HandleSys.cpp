@@ -1092,13 +1092,13 @@ bool HandleSystem::TryAndFreeSomeHandles()
 	size_t written = strftime(oldstamp, sizeof(oldstamp), fmt, localtime(&oldest->timestamp));
 	if (!written)
 	{
-		ke::SafeSprintf(oldstamp, sizeof(oldstamp), "%s", "INVALID");
+		ke::SafeStrcpy(oldstamp, sizeof(oldstamp), "INVALID");
 	}
 
 	written = strftime(newstamp, sizeof(newstamp), fmt, localtime(&newest->timestamp));
 	if (!written)
 	{
-		ke::SafeSprintf(newstamp, sizeof(newstamp), "%s", "INVALID");
+		ke::SafeStrcpy(newstamp, sizeof(newstamp), "INVALID");
 	}
 
 #if defined SUBPLATFORM_SECURECRT
@@ -1204,19 +1204,19 @@ void HandleSystem::Dump(const HandleReporter &fn)
 		}
 
 #if defined SUBPLATFORM_SECURECRT
-	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+		_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
 #endif
 
 		char date[256]; // 256 should be more than enough
 		size_t written = strftime(date, sizeof(date), fmt, localtime(&m_Handles[i].timestamp));
 
 #if defined SUBPLATFORM_SECURECRT
-	_set_invalid_parameter_handler(handler);
+		_set_invalid_parameter_handler(handler);
 #endif
 
 		if (!written)
 		{
-			ke::SafeSprintf(date, sizeof(date), "%s", "INVALID");
+			ke::SafeStrcpy(date, sizeof(date), "INVALID");
 		}
 
 		if (pType->dispatch->GetDispatchVersion() < HANDLESYS_MEMUSAGE_MIN_VERSION
