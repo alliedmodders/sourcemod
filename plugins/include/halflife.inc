@@ -682,7 +682,7 @@ enum ClientRangeType
  * @param size          Maximum size of clients array.
  * @return              Number of client indexes written to clients array.
  */
-native int GetClientsInRange(float origin[3], ClientRangeType rangeType, int[] clients, int size);
+native int GetClientsInRange(const float origin[3], ClientRangeType rangeType, int[] clients, int size);
 
 /**
  * Retrieves the server's authentication string (SteamID).
