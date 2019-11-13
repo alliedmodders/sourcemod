@@ -213,11 +213,16 @@ class SMConfig(object):
     
     if cxx.like('msvc') and len(self.archs) > 1:
       raise Exception('Building multiple archs with MSVC is not currently supported')
-	 
-    if cxx.like('msvc'):
+
+    if cxx.family == 'msvc':
       if cxx.version < 1900:
         raise Exception('Only MSVC 2015 and later are supported.')
-    # TODO: add similar checks here for GCC and Clang minimum supported versions.
+    if cxx..family == 'gcc':
+      if cxx.version < 'gcc-4.9':
+        raise Exception('Only GCC versions 4.9 or greater are supported.')
+    if cxx..family == 'clang':
+      if cxx.version < 'clang-3.4':
+        raise Exception('Only clang versions 3.4 or greater are supported.')
 
     if cxx.like('gcc'):
       self.configure_gcc(cxx)
