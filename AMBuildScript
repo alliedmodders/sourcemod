@@ -217,10 +217,10 @@ class SMConfig(object):
     if cxx.family == 'msvc':
       if cxx.version < 1900:
         raise Exception('Only MSVC 2015 and later are supported.')
-    if cxx..family == 'gcc':
+    if cxx.family == 'gcc':
       if cxx.version < 'gcc-4.9':
         raise Exception('Only GCC versions 4.9 or greater are supported.')
-    if cxx..family == 'clang':
+    if cxx.family == 'clang':
       if cxx.version < 'clang-3.4':
         raise Exception('Only clang versions 3.4 or greater are supported.')
 
