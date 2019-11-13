@@ -84,7 +84,7 @@ methodmap ArrayStack < Handle
 	// @param block        Optionally specify which block to read from
 	//                     (useful if the blocksize > 0).
 	// @param asChar       Optionally read as a byte instead of a cell.
-	// @return             True on success, false if the stack is empty.
+	// @return             Value popped from the stack.
 	// @error              The stack is empty.
 	public native any Pop(int block=0, bool asChar=false);
 
@@ -92,7 +92,7 @@ methodmap ArrayStack < Handle
 	//
 	// @param buffer       Buffer to store string.
 	// @param maxlength    Maximum size of the buffer.
-	// @oaram written      Number of characters written to buffer, not including
+	// @param written      Number of characters written to buffer, not including
 	//                     the null terminator.
 	// @error              The stack is empty.
 	public native void PopString(char[] buffer, int maxlength, int &written = 0);
