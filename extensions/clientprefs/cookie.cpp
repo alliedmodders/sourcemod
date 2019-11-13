@@ -91,7 +91,7 @@ Cookie *CookieManager::CreateCookie(std::string const &name, std::string const &
 	op->m_params.cookie = pCookie;
 	
 	cookieFinder.insert(name.c_str(), pCookie);
-	cookieList.push_back(std::unique_ptr<Cookie>(pCookie));
+	cookieList.emplace_back(pCookie);
 
 	g_ClientPrefs.AddQueryToQueue(op);
 
@@ -286,10 +286,8 @@ void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 	if (plugin->GetProperty("SettingsMenuItems", (void **)&pList, true))
 	{
 		ke::Vector<char *> &menuitems = (*pList);
-		for (size_t p_iter = 0; p_iter < menuitems.length(); ++p_iter)
+		for (char const *name : menuitems)
 		{
-			char *name = menuitems[p_iter];
-
 			//remove from this plugins list
 			size_t itemcount = clientMenu->GetItemCount();
 			for (size_t i = 0; i < itemcount; i++)
