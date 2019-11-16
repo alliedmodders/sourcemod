@@ -280,7 +280,7 @@ static cell_t sm_SortStrings(IPluginContext *pContext, const cell_t *params)
 struct sort_info
 {
 	IPluginFunction *pFunc;
-	Handle_t hndl;
+	cell_t data;
 	cell_t array_addr;
 	cell_t *array_base;
 	cell_t *array_remap;
@@ -302,7 +302,7 @@ int sort1d_amx_custom(const void *elem1, const void *elem2)
 	pf->PushCell(c1);
 	pf->PushCell(c2);
 	pf->PushCell(g_SortInfo.array_addr);
-	pf->PushCell(g_SortInfo.hndl);
+	pf->PushCell(g_SortInfo.data);
 	pf->Invoke(&result);
 
 	return result;
@@ -324,7 +324,7 @@ static cell_t sm_SortCustom1D(IPluginContext *pContext, const cell_t *params)
 	sort_info oldinfo = g_SortInfo;
 
 	DetectExceptions eh(pContext);
-	g_SortInfo.hndl = params[4];
+	g_SortInfo.data = params[4];
 	g_SortInfo.array_addr = params[1];
 	g_SortInfo.array_remap = NULL;
 	g_SortInfo.array_base = NULL;
@@ -357,7 +357,7 @@ int sort2d_amx_custom(const void *elem1, const void *elem2)
 	g_SortInfo.pFunc->PushCell(c1_addr);
 	g_SortInfo.pFunc->PushCell(c2_addr);
 	g_SortInfo.pFunc->PushCell(g_SortInfo.array_addr);
-	g_SortInfo.pFunc->PushCell(g_SortInfo.hndl);
+	g_SortInfo.pFunc->PushCell(g_SortInfo.data);
 	g_SortInfo.pFunc->Invoke(&result);
 
 	return result;
@@ -389,7 +389,7 @@ static cell_t sm_SortCustom2D(IPluginContext *pContext, const cell_t *params)
 
 	DetectExceptions eh(pContext);
 	g_SortInfo.pFunc = pFunction;
-	g_SortInfo.hndl = params[4];
+	g_SortInfo.data = params[4];
 	g_SortInfo.array_addr = params[1];
 	g_SortInfo.eh = &eh;
 	
@@ -521,7 +521,7 @@ struct sort_infoADT
 	cell_t *array_base;
 	cell_t array_bsize;
 	Handle_t array_hndl;
-	Handle_t hndl;
+	cell_t data;
 	ExceptionHandler *eh;
 };
 
@@ -537,7 +537,7 @@ int sort_adtarray_custom(const void *elem1, const void *elem2)
 	pf->PushCell(((cell_t) ((cell_t *) elem1 - g_SortInfoADT.array_base)) / g_SortInfoADT.array_bsize);
 	pf->PushCell(((cell_t) ((cell_t *) elem2 - g_SortInfoADT.array_base)) / g_SortInfoADT.array_bsize);
 	pf->PushCell(g_SortInfoADT.array_hndl);
-	pf->PushCell(g_SortInfoADT.hndl);
+	pf->PushCell(g_SortInfoADT.data);
 	pf->Invoke(&result);
 
 	return result;
@@ -572,7 +572,7 @@ static cell_t sm_SortADTArrayCustom(IPluginContext *pContext, const cell_t *para
 	g_SortInfoADT.array_base = array;
 	g_SortInfoADT.array_bsize = (cell_t) blocksize;
 	g_SortInfoADT.array_hndl = params[1];
-	g_SortInfoADT.hndl = params[3];
+	g_SortInfoADT.data = params[3];
 	g_SortInfoADT.eh = &eh;
 	
 	qsort(array, arraysize, blocksize * sizeof(cell_t), sort_adtarray_custom);
