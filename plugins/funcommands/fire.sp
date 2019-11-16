@@ -66,7 +66,12 @@ void KillAllFireBombs()
 
 void PerformBurn(int client, int target, float seconds)
 {
-	IgniteEntity(target, seconds);
+	if(GetEngineVersion() == Engine_TF2){
+		TF2_IgnitePlayer(target, client, seconds);
+	}
+	else{
+		IgniteEntity(target, seconds);
+	}
 	LogAction(client, target, "\"%L\" ignited \"%L\" (seconds \"%f\")", client, target, seconds);
 }
 
