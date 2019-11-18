@@ -66,7 +66,9 @@ void KillAllFireBombs()
 
 void PerformBurn(int client, int target, float seconds)
 {
-	if(GetEngineVersion() == Engine_TF2){
+	char gamedirectory[40];
+	GetGameFolderName(gamedirectory, sizeof(gamedirectory));
+	if(GetEngineVersion() == Engine_TF2 && StrEqual(gamedirectory, "tf")){
 		TF2_IgnitePlayer(target, client, seconds);
 	}
 	else{
