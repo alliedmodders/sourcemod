@@ -244,10 +244,10 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"456"
-				"linux"		"457"
-				"linux64"	"457"
-				"mac64"		"457"
+				"windows"	"457"
+				"linux"		"458"
+				"linux64"	"458"
+				"mac64"		"458"
 			}
 			"RemovePlayerItem"
 			{
@@ -286,10 +286,10 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"506"
-				"linux"		"506"
-				"linux64"	"506"
-				"mac64"		"506"
+				"windows"	"507"
+				"linux"		"507"
+				"linux64"	"507"
+				"mac64"		"507"
 			}
 			"GetVelocity"
 			{
@@ -335,10 +335,10 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"476"
-				"linux"		"477"
-				"linux64"	"477"
-				"mac64"		"477"
+				"windows"	"477"
+				"linux"		"478"
+				"linux64"	"478"
+				"mac64"		"478"
 			}
 			"GiveAmmo"
 			{
