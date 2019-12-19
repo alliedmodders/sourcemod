@@ -266,6 +266,91 @@ static cell_t smn_TREnumerateEntitiesHull(IPluginContext *pContext, const cell_t
 	return 1;
 }
 
+static cell_t smn_TREnumerateEntitiesSphere(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunc = pContext->GetFunctionById(params[4]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[4]);
+	}
+
+	cell_t data = 0;
+	if (params[0] >= 5)
+	{
+		data = params[5];
+	}
+
+	g_SMTraceEnumerator.SetFunctionPtr(pFunc, data);
+
+	cell_t *startaddr;
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+
+	g_StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+
+	float radius = sp_ctof(params[2]);
+
+	int mask = TranslatePartitionFlags(params[3]);
+	partition->EnumerateElementsInSphere(mask, g_StartVec, radius, false, &g_SMTraceEnumerator);
+
+	return 1;
+}
+
+static cell_t smn_TREnumerateEntitiesBox(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunc = pContext->GetFunctionById(params[4]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[4]);
+	}
+
+	cell_t data = 0;
+	if (params[0] >= 5)
+	{
+		data = params[5];
+	}
+
+	g_SMTraceEnumerator.SetFunctionPtr(pFunc, data);
+
+	cell_t *minsaddr, *maxsaddr;
+	pContext->LocalToPhysAddr(params[1], &minsaddr);
+	pContext->LocalToPhysAddr(params[2], &maxsaddr);
+
+	g_HullMins.Init(sp_ctof(minsaddr[0]), sp_ctof(minsaddr[1]), sp_ctof(minsaddr[2]));
+	g_HullMaxs.Init(sp_ctof(maxsaddr[0]), sp_ctof(maxsaddr[1]), sp_ctof(maxsaddr[2]));
+
+	int mask = TranslatePartitionFlags(params[3]);
+	partition->EnumerateElementsInBox(mask, g_HullMins, g_HullMaxs, false, &g_SMTraceEnumerator);
+
+	return 1;
+}
+
+static cell_t smn_TREnumerateEntitiesPoint(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunc = pContext->GetFunctionById(params[3]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[3]);
+	}
+
+	cell_t data = 0;
+	if (params[0] >= 4)
+	{
+		data = params[4];
+	}
+
+	g_SMTraceEnumerator.SetFunctionPtr(pFunc, data);
+
+	cell_t *startaddr;
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+
+	g_StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+
+	int mask = TranslatePartitionFlags(params[2]);
+	partition->EnumerateElementsAtPoint(mask, g_StartVec, false, &g_SMTraceEnumerator);
+
+	return 1;
+}
+
 static cell_t smn_TRClipRayToEntity(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t *startaddr;
@@ -1102,6 +1187,9 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_TraceHull",				smn_TRTraceHull},
 	{"TR_EnumerateEntities",		smn_TREnumerateEntities},
 	{"TR_EnumerateEntitiesHull",	smn_TREnumerateEntitiesHull},
+	{"TR_EnumerateEntitiesSphere",	smn_TREnumerateEntitiesSphere},
+	{"TR_EnumerateEntitiesBox",		smn_TREnumerateEntitiesBox},
+	{"TR_EnumerateEntitiesPoint",	smn_TREnumerateEntitiesPoint},
 	{"TR_TraceRayEx",				smn_TRTraceRayEx},
 	{"TR_TraceHullEx",				smn_TRTraceHullEx},
 	{"TR_GetFraction",				smn_TRGetFraction},
