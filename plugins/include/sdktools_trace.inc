@@ -306,8 +306,8 @@ native void TR_EnumerateEntitiesHull(const float pos[3],
  * @param data          Arbitrary data value to pass through to the enumerator.
  */
 native void TR_EnumerateEntitiesSphere(const float pos[3],
-									float radius,
-									int mask,
+                                    float radius,
+                                    int mask,
                                     TraceEntityEnumerator enumerator,
                                     any data=0);
                                     
@@ -337,7 +337,7 @@ native void TR_EnumerateEntitiesBox(const float mins[3],
  * @param data          Arbitrary data value to pass through to the enumerator.
  */
 native void TR_EnumerateEntitiesPoint(const float pos[3],
-									int mask,
+                                    int mask,
                                     TraceEntityEnumerator enumerator,
                                     any data=0);
         
