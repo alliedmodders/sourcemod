@@ -1581,7 +1581,7 @@ bool AdminCache::CanAdminTarget(AdminId id, AdminId target)
 		{
 			id = grp_table[i];
 			num = GetGroupImmunityCount(id);
-			for (unsigned int j=0; j<num; i++)
+			for (unsigned int j=0; j<num; j++)
 			{
 				other = GetGroupImmunity(id, j);
 				for (unsigned int k=0; k<pUser->grp_count; k++)

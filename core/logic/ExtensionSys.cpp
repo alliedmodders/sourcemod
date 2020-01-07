@@ -1364,7 +1364,7 @@ bool CLocalExtension::IsSameFile(const char *file)
 
 bool CRemoteExtension::IsSameFile(const char *file)
 {
-	/* :TODO: this could be better, but no one uses this API anyway. */
-	return strcmp(file, m_Path.c_str()) == 0;
+	/* Check full path and name passed in from LoadExternal */
+	return strcmp(file, m_Path.c_str()) == 0 || strcmp(file, m_File.c_str()) == 0;
 }
 
