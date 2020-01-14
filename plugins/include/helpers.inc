@@ -150,9 +150,9 @@ stock int SearchForClients(const char[] pattern, int[] clients, int maxClients)
  * Wraps ProcessTargetString() and handles producing error messages for
  * bad targets.
  *
- * Note that you should use LoadTranslations("common.phrases") in OnPluginStart(), 
- * as that file is guaranteed to contain all of the translatable phrases that 
- * FindTarget() will reply with on error.
+ * Note that you should use LoadTranslations("common.phrases") in OnPluginStart(). 
+ * "common.phrases" contains all of the translatable phrases that FindTarget() will
+ * reply with in the event a target is not found (error).
  *
  * @param client        Client who issued command
  * @param target        Client's target argument
