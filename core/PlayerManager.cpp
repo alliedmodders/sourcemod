@@ -2238,7 +2238,7 @@ unsigned int CPlayer::GetSteamAccountID(bool validated)
 {
 	if (!IsFakeClient() && (!validated || IsAuthStringValidated()))
 	{
-		const CSteamID &id = GetSteamId();
+		const CSteamID &id = GetSteamId(validated);
 		if (id.IsValid())
 			return id.GetAccountID();
 	}
