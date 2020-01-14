@@ -236,7 +236,7 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	}
 
 	Vector vecVelocity;
-	if ((err = pContext->LocalToPhysAddr(params[8], &addr)) != SP_ERROR_NONE)
+	if ((err = pContext->LocalToPhysAddr(params[4], &addr)) != SP_ERROR_NONE)
 	{
 		return pContext->ThrowNativeError("Could not read vecVelocity vector");
 	}
