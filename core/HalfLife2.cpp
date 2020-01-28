@@ -1241,9 +1241,11 @@ public:
 
 void CHalfLife2::FreeUtlVectorUtlString(CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> &vec)
 {
+	CUtlMemoryGlobalMalloc<unsigned char> *pMemory;
 	FOR_EACH_VEC(vec, i)
 	{
-		g_pMemAlloc->Free(vec[i].m_Storage.m_Memory.Detach());
+		pMemory = (CUtlMemoryGlobalMalloc<unsigned char> *) &vec[i].m_Storage.m_Memory;
+		pMemory->Purge();
 		vec[i].m_Storage.SetLength(0);
 	}
 }
