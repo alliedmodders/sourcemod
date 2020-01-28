@@ -1212,6 +1212,43 @@ bool IsWindowsReservedDeviceName(const char *pMapname)
 }
 #endif 
 
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS
+// This frees memory allocated by the game using the game's CRT on Windows,
+// avoiding a crash due to heap corruption (issue #910).
+template< class T, class I >
+class CUtlMemoryGlobalMalloc : public CUtlMemory< T, I >
+{
+	typedef CUtlMemory< T, I > BaseClass;
+
+public:
+	using BaseClass::BaseClass;
+
+	void Purge()
+	{
+		if (!IsExternallyAllocated())
+		{
+			if (m_pMemory)
+			{
+				UTLMEMORY_TRACK_FREE();
+				g_pMemAlloc->Free((void*)m_pMemory);
+				m_pMemory = 0;
+			}
+			m_nAllocationCount = 0;
+		}
+		BaseClass::Purge();
+	}
+};
+
+void CHalfLife2::FreeUtlVectorUtlString(CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> &vec)
+{
+	FOR_EACH_VEC(vec, i)
+	{
+		g_pMemAlloc->Free(vec[i].m_Storage.m_Memory.Detach());
+		vec[i].m_Storage.SetLength(0);
+	}
+}
+#endif
+
 SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_t nMapNameMax)
 {
 	/* We need to ensure user input does not contain reserved device names on windows */
@@ -1245,8 +1282,13 @@ SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_
 
 	static size_t helperCmdLen = strlen(pHelperCmd->GetName());
 
+#ifdef PLATFORM_WINDOWS
+	CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> results;
+	pHelperCmd->AutoCompleteSuggest(pMapName, *(CUtlVector<CUtlString, CUtlMemory<CUtlString>>*)&results);
+#else
 	CUtlVector<CUtlString> results;
 	pHelperCmd->AutoCompleteSuggest(pMapName, results);
+#endif
 	if (results.Count() == 0)
 		return SMFindMapResult::NotFound;
 
@@ -1258,11 +1300,17 @@ SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_
 	bool bExactMatch = Q_strcmp(pMapName, &results[0][helperCmdLen + 1]) == 0;
 	if (bExactMatch)
 	{
+#ifdef PLATFORM_WINDOWS
+		FreeUtlVectorUtlString(results);
+#endif
 		return SMFindMapResult::Found;
 	}
 	else
 	{
 		ke::SafeStrcpy(pFoundMap, nMapNameMax, &results[0][helperCmdLen + 1]);
+#ifdef PLATFORM_WINDOWS
+		FreeUtlVectorUtlString(results);
+#endif
 		return SMFindMapResult::FuzzyMatch;
 	}
 
