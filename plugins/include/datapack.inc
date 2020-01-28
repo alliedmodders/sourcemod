@@ -58,16 +58,6 @@ methodmap DataPack < Handle
 	// @param val           Float to add.
 	// @param insert        Determines whether mid-pack writes will insert instead of overwrite.
 	public native void WriteFloat(float val, bool insert = false);
-	
-	// Packs a vector into a data pack.
-	//
-	// @param val		Float array to add.
-	// @param insert	Determines whether mid-pack writes will insert instead of overwrite.
-	public void WriteVector(const float val[3], bool insert = false)
-	{
-		for(int x=0; x<3; ++x)
-			this.WriteFloat(val[x]);
-	}
 
 	// Packs a string into a data pack.
 	//
@@ -90,15 +80,6 @@ methodmap DataPack < Handle
 	//
 	// @return		Float at this position
 	public native float ReadFloat();
-	
-	// Reads a vector from a data pack
-	//
-	// @param buffer	Destination array
-	public void ReadVector(float buffer[3])
-	{
-		for(int x=0; x<3; ++x)
-			buffer[x] = this.ReadFloat();
-	}
 
 	// Reads a string from a data pack.
 	//
@@ -155,19 +136,6 @@ native void WritePackCell(Handle pack, any cell);
 native void WritePackFloat(Handle pack, float val);
 
 /**
- * Packs a vector into a data pack.
- *
- * @param pack		Handle to the data pack.
- * @param val			Float array to add.
- * @error			Invalid handle.
- */
-stock void WritePackVector(Handle pack, const float val[3])
-{
-	for(int x=0; x<3; ++x)
-		WritePackFloat(pack, val[x]);
-}
-
-/**
  * Packs a string into a data pack.
  *
  * @param pack          Handle to the data pack.
@@ -202,19 +170,6 @@ native any ReadPackCell(Handle pack);
  * @error               Invalid handle, or bounds error.
  */
 native float ReadPackFloat(Handle pack);
-
-/**
- * Reads a vector from a data pack.
- *
- * @param pack		Handle to the data pack.
- * @param buffer		Destination array.
- * @error			Invalid handle, or bounds error.
- */
-stock void ReadPackVector(Handle pack, float buffer[3])
-{
-	for(int x=0; x<3; ++x)
-		buffer[x] = ReadPackFloat(pack);
-}
 
 /**
  * Reads a string from a data pack.
