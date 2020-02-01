@@ -96,7 +96,7 @@ native void ExtinguishEntity(int entity);
  * @param velocity      New velocity, or NULL_VECTOR for no change.
  * @error               Invalid entity or client not in game, or lack of mod support.
  */
-native void TeleportEntity(int entity, const float origin[3], const float angles[3], const float velocity[3]);
+native void TeleportEntity(int entity, const float origin[3] = NULL_VECTOR, const float angles[3] = NULL_VECTOR, const float velocity[3] = NULL_VECTOR);
 
 /**
  * Forces a player to commit suicide.
