@@ -1585,6 +1585,7 @@ static cell_t smn_GetGameSoundParams(IPluginContext *pContext, const cell_t *par
 
 	pContext->StringToLocal(params[6], params[7], soundParams.soundname);
 
+	// Precache the sound we're returning
 	InternalPrecacheScriptSound(soundname);
 
 	return true;
