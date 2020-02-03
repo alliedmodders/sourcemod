@@ -677,11 +677,7 @@ bool InternalPrecacheScriptSound(const char *soundname)
 	for (int wave = 0; wave < waveCount; wave++)
 	{
 		const char* waveName = soundemitterbase->GetWaveName(internal->GetSoundNames()[wave].symbol);
-		// return true even if we precache no new wavs
-		if (!engsound->IsSoundPrecached(waveName))
-		{
-			engsound->PrecacheSound(waveName);
-		}
+		engsound->PrecacheSound(waveName);
 	}
 
 	return true;
@@ -1589,11 +1585,7 @@ static cell_t smn_GetGameSoundParams(IPluginContext *pContext, const cell_t *par
 
 	pContext->StringToLocal(params[6], params[7], soundParams.soundname);
 
-	// Precache the sound we're returning
-	if (!engsound->IsSoundPrecached(soundParams.soundname))
-	{
-		InternalPrecacheScriptSound(soundname);
-	}
+	InternalPrecacheScriptSound(soundname);
 
 	return true;
 }
