@@ -395,10 +395,15 @@ public Action Command_Rcon(int client, int args)
 	if (client == 0) // They will already see the response in the console.
 	{
 		ServerCommand("%s", argstring);
-	} else {
+	}
+	else
+	{
 		char responseBuffer[4096];
 		ServerCommandEx(responseBuffer, sizeof(responseBuffer), "%s", argstring);
-		ReplyToCommand(client, responseBuffer);
+		if (IsClientConnected(client))
+		{
+			ReplyToCommand(client, responseBuffer);
+		}
 	}
 
 	return Plugin_Handled;
