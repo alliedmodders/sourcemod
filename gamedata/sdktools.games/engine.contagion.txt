@@ -22,7 +22,7 @@
 		}
 	}
 	
-		/* General Temp Entities */
+	/* General Temp Entities */
 	"#default"
 	{
 		"Offsets"
@@ -77,7 +77,7 @@
 			"FindEntityByClassname"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x08\x85\xC9\x57\x74\x19\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x1F\x00\x00\x83\xC0\x01\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x31\x8B"
+				"windows"	"\x55\x8B\xEC\x53\x56\x57\x8B\xF9\x8B\x4D\x08\x85\xC9\x74\x2A\x8B\x01\xFF\x50\x08\x8B\x30\x81\xE6\xFF\x1F\x00\x00"
 				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
@@ -92,7 +92,7 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\x53\x56\x8B\x71\x2A\x85\xF6\x57\x89"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\x53\x8B\xC1\xC7\x45"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
@@ -144,7 +144,7 @@
 			"EntityFactory"
 			{
 				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\xA8\x01\x75\x1F\x83\xC8\x01\xB9\x2A\x2A\x2A\x2A\xA3\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8"
 				"linux"		"@_Z23EntityFactoryDictionaryv"
 				"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
@@ -203,39 +203,39 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"432"
+				"windows"	"433"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"290"
+				"windows"	"291"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"288"
+				"windows"	"289"
 			}
 			"Ignite"
 			{
-				"windows"	"222"
+				"windows"	"223"
 			}
 			"Extinguish"
 			{
-				"windows"	"225"
+				"windows"	"226"
 			}
 			"Teleport"
 			{
-				"windows"	"117"
+				"windows"	"118"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"476"
+				"windows"	"477"
 			}
 			"GetVelocity"
 			{
-				"windows"	"149"
+				"windows"	"150"
 			}
 			"EyeAngles"
 			{
-				"windows"	"140"
+				"windows"	"141"
 			}
 			"AcceptInput"
 			{
@@ -247,7 +247,7 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"281"
+				"windows"	"282"
 			}
 			"Activate"
 			{
@@ -255,11 +255,11 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"455"
+				"windows"	"456"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"274"
+				"windows"	"275"
 			}
 		}
 		
