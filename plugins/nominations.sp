@@ -338,7 +338,7 @@ void AttemptNominate(int client, const char[] map, int size)
 		}
 		else
 		{
-			ReplyToCommand(client, "[SM] %t", "Map Already Nominated");
+			ReplyToCommand(client, "[SM] %t", "Max Nominations");
 		}
 		
 		return;	
