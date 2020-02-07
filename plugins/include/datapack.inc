@@ -73,12 +73,12 @@ methodmap DataPack < Handle
 
 	// Reads a cell from a data pack.
 	//
-	// @param pack          Handle to the data pack.
+	// @return		A cell at this position
 	public native any ReadCell();
 
 	// Reads a float from a data pack.
 	//
-	// @param pack          Handle to the data pack.
+	// @return		Float at this position
 	public native float ReadFloat();
 
 	// Reads a string from a data pack.
