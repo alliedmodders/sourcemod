@@ -278,12 +278,20 @@ typeset SDKHookCB
 
 	// OnTakeDamage
 	// OnTakeDamageAlive
-	// Note: The weapon parameter is not used by all games and damage sources.
-	// Note: Force application is dependent on game and damage type(s)
 	// SDKHooks 1.0+
 	function Action (int victim, int &attacker, int &inflictor, float &damage, int &damagetype);
+
+	// OnTakeDamage
+	// OnTakeDamageAlive
+	// Note: The weapon parameter is not used by all games and damage sources.
+	// Note: Force application is dependent on game and damage type(s)
 	// SDKHooks 2.0+
 	function Action (int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3]);
+
+	// OnTakeDamage
+	// OnTakeDamageAlive
+	// Note: The weapon parameter is not used by all games and damage sources.
+	// Note: Force application is dependent on game and damage type(s)
 	// SDKHooks 2.1+  (can check for support at runtime using GetFeatureStatus on SDKHook_DmgCustomInOTD capability.
 	// DON'T attempt to access 'damagecustom' var if feature status != available
 	function Action (int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon,
@@ -292,7 +300,13 @@ typeset SDKHookCB
 	// OnTakeDamagePost
 	// OnTakeDamageAlivePost
 	function void (int victim, int attacker, int inflictor, float damage, int damagetype);
+
+	// OnTakeDamagePost
+	// OnTakeDamageAlivePost
 	function void (int victim, int attacker, int inflictor, float damage, int damagetype, int weapon, const float damageForce[3], const float damagePosition[3]);
+
+	// OnTakeDamagePost
+	// OnTakeDamageAlivePost
 	function void (int victim, int attacker, int inflictor, float damage, int damagetype, int weapon,
 		const float damageForce[3], const float damagePosition[3], int damagecustom);
 
