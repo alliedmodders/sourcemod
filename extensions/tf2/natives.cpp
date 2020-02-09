@@ -86,7 +86,7 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 											int, // Damage amount
 											bool, // Permanent
 											int>  // Custom Damage type (bleeding)
-											vstk(obj, pAttacker, NULL, sp_ctof(params[3]), 4, false, 32);
+											vstk(obj, pAttacker, NULL, sp_ctof(params[3]), 4, false, 34);
 
 	pWrapper->Execute(vstk, nullptr);
 	return 1;
