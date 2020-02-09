@@ -114,35 +114,33 @@ static cell_t MatchRegex(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = myself->GetIdentity();
 
-	unsigned int offset = 0;
-
-	if (params[0] >= 4)
-	{
-		offset = (unsigned int)params[4];
-	}
-
 	RegEx *x;
-
 	if ((err=g_pHandleSys->ReadHandle(hndl, g_RegexHandle, &sec, (void **)&x)) != HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid regex handle %x (error %d)", hndl, err);
 	}
-
 	if (!x)
 	{
 		pCtx->ThrowNativeError("Regex data not found\n");
-
 		return 0;
+	}
+
+	size_t offset = 0;
+	if (params[0] >= 4)
+	{
+		offset = static_cast<size_t>( params[4] );
 	}
 
 	char *str;
 	pCtx->LocalToString(params[2], &str);
 
-	if(offset >= strlen(str))
-		return pCtx->ThrowNativeError("Invalid string index\n");
+	size_t len = strlen(str);
+	if (offset >= len)
+	{
+		return pCtx->ThrowNativeError("Offset greater or equal than string length\n");
+	}
 
-	int e = x->Match(str, offset);
-
+	int e = x->Match(str, len, offset);
 	if (e == -1)
 	{
 		/* there was a match error.  move on. */

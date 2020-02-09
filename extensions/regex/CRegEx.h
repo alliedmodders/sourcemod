@@ -51,7 +51,7 @@ public:
 	void Clear();
 
 	int Compile(const char *pattern, int iFlags);
-	int Match(const char *str, unsigned int offset);
+	int Match(const char *const str, size_t len, const size_t offset);
 	int MatchAll(const char *str);
 	void ClearMatch();
 	bool GetSubstring(int s, char buffer[], int max, int match);
