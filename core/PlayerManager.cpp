@@ -503,9 +503,6 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 	/* Get the client's language */
 	if (m_QueryLang)
 	{
-#if SOURCE_ENGINE == SE_CSGO
-		pPlayer->m_LangId = translator->GetServerLanguage();
-#else
 		const char *name;
 		if (!pPlayer->IsFakeClient() && (name=engine->GetClientConVarValue(client, "cl_language")))
 		{
@@ -514,7 +511,6 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 		} else {
 			pPlayer->m_LangId = translator->GetServerLanguage();
 		}
-#endif
 	}
 	
 	List<IClientListener *>::iterator iter;
