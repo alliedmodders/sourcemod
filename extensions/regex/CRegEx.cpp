@@ -135,8 +135,8 @@ int RegEx::MatchAll(const char *str)
 	this->ClearMatch();
 
 	//save str
-	subject = strdup( str );
-	size_t len = strlen( subject );
+	subject = strdup(str);
+	size_t len = strlen(subject);
 
 	size_t offset = 0;
 	unsigned int matches = 0;
