@@ -140,7 +140,7 @@ static cell_t MatchRegex(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Offset greater or equal than string length\n");
 	}
 
-	int e = x->Match(str, len, offset);
+	int e = x->Match(str, offset);
 	if (e == -1)
 	{
 		/* there was a match error.  move on. */
