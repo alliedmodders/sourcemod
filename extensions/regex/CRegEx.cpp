@@ -104,9 +104,9 @@ int RegEx::Match(const char *const str, const size_t offset)
 	this->ClearMatch();
 
 	//save str
-	subject = strdup( str );
+	subject = strdup(str);
 
-	rc = pcre_exec(re, nullptr, subject, strlen( subject ), offset, 0, mMatches[0].mVector, MAX_CAPTURES);
+	rc = pcre_exec(re, nullptr, subject, strlen(subject), offset, 0, mMatches[0].mVector, MAX_CAPTURES);
 
 	if (rc < 0)
 	{
