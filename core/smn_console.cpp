@@ -294,7 +294,7 @@ static cell_t sm_HookConVarChange(IPluginContext *pContext, const cell_t *params
 
 	g_ConVarManager.HookConVarChange(pConVar, pFunction);
 
-	return 1;
+	return hndl;
 }
 
 static cell_t sm_UnhookConVarChange(IPluginContext *pContext, const cell_t *params)
@@ -318,7 +318,7 @@ static cell_t sm_UnhookConVarChange(IPluginContext *pContext, const cell_t *para
 
 	g_ConVarManager.UnhookConVarChange(pConVar, pFunction);
 
-	return 1;
+	return hndl;
 }
 
 static cell_t sm_GetConVarBool(IPluginContext *pContext, const cell_t *params)
@@ -380,7 +380,7 @@ static cell_t sm_SetConVarNum(IPluginContext *pContext, const cell_t *params)
 	}
 #endif
 
-	return 1;
+	return hndl;
 }
 
 static cell_t sm_GetConVarFloat(IPluginContext *pContext, const cell_t *params)
@@ -429,7 +429,7 @@ static cell_t sm_SetConVarFloat(IPluginContext *pContext, const cell_t *params)
 	}
 #endif
 
-	return 1;
+	return hndl;
 }
 
 static cell_t sm_GetConVarString(IPluginContext *pContext, const cell_t *params)
@@ -480,7 +480,7 @@ static cell_t sm_SetConVarString(IPluginContext *pContext, const cell_t *params)
 	}
 #endif
 
-	return 1;
+	return hndl;
 }
 
 static cell_t sm_ResetConVar(IPluginContext *pContext, const cell_t *params)
@@ -511,7 +511,7 @@ static cell_t sm_ResetConVar(IPluginContext *pContext, const cell_t *params)
 	}
 #endif
 
-	return 1;
+	return hndl;
 }
 
 static cell_t GetConVarDefault(IPluginContext *pContext, const cell_t *params)
@@ -561,7 +561,7 @@ static cell_t sm_SetConVarFlags(IPluginContext *pContext, const cell_t *params)
 
 	pConVar->m_nFlags = params[2];
 
-	return 1;
+	return hndl;
 }
 
 static cell_t sm_GetConVarBounds(IPluginContext *pContext, const cell_t *params)
@@ -624,7 +624,7 @@ static cell_t sm_SetConVarBounds(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid ConVarBounds value %d");
 	}
 
-	return 1;
+	return hndl;
 }
 
 static cell_t sm_GetConVarName(IPluginContext *pContext, const cell_t *params)

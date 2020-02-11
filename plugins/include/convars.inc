@@ -133,7 +133,8 @@ methodmap ConVar < Handle
 	//                  and actually exists on clients.
 	// @param notify    If set to true, clients will be notified that the convar has changed.
 	//                  This will only work if the convar has the FCVAR_NOTIFY flag.
-	public native void SetBool(bool value, bool replicate=false, bool notify=false);
+	// @return          This ConVar handle.
+	public native ConVar SetBool(bool value, bool replicate=false, bool notify=false);
 
 	// Sets the integer value of a console variable.
 	//
@@ -147,7 +148,8 @@ methodmap ConVar < Handle
 	//                  and actually exists on clients.
 	// @param notify    If set to true, clients will be notified that the convar has changed.
 	//                  This will only work if the convar has the FCVAR_NOTIFY flag.
-	public native void SetInt(int value, bool replicate=false, bool notify=false);
+	// @return          This ConVar handle.
+	public native ConVar SetInt(int value, bool replicate=false, bool notify=false);
 
 	// Sets the floating point value of a console variable.
 	//
@@ -161,7 +163,8 @@ methodmap ConVar < Handle
 	//                  and actually exists on clients.
 	// @param notify    If set to true, clients will be notified that the convar has changed.
 	//                  This will only work if the convar has the FCVAR_NOTIFY flag.
-	public native void SetFloat(float value, bool replicate=false, bool notify=false);
+	// @return          This ConVar handle.
+	public native ConVar SetFloat(float value, bool replicate=false, bool notify=false);
 
 	// Retrieves the string value of a console variable.
 	//
@@ -182,7 +185,8 @@ methodmap ConVar < Handle
 	//                   and actually exists on clients.
 	// @param notify     If set to true, clients will be notified that the convar has changed.
 	//                   This will only work if the convar has the FCVAR_NOTIFY flag.
-	public native void SetString(const char[] value, bool replicate=false, bool notify=false);
+	// @return           This ConVar handle.
+	public native ConVar SetString(const char[] value, bool replicate=false, bool notify=false);
 
 	// Resets the console variable to its default value.
 	//
@@ -195,7 +199,8 @@ methodmap ConVar < Handle
 	//                   and actually exists on clients.
 	// @param notify     If set to true, clients will be notified that the convar has changed.
 	//                   This will only work if the convar has the FCVAR_NOTIFY flag.
-	public native void RestoreDefault(bool replicate=false, bool notify=false);
+	// @return           This ConVar handle.
+	public native ConVar RestoreDefault(bool replicate=false, bool notify=false);
 
 	// Retrieves the default string value of a console variable.
 	//
@@ -216,7 +221,8 @@ methodmap ConVar < Handle
 	// @param type       Type of bound to set, ConVarBound_Lower or ConVarBound_Upper
 	// @param set        If set to true, convar will use specified bound. If false, bound will be removed.
 	// @param value      Floating point value to use as the specified bound.
-	public native void SetBounds(ConVarBounds type, bool set, float value=0.0);
+	// @return           This ConVar handle.
+	public native ConVar SetBounds(ConVarBounds type, bool set, float value=0.0);
 
 	// Retrieves the name of a console variable.
 	//
@@ -235,14 +241,15 @@ methodmap ConVar < Handle
 	// Creates a hook for when a console variable's value is changed.
 	//
 	// @param callback  An OnConVarChanged function pointer.
-	public native void AddChangeHook(ConVarChanged callback);
+	// @return          This ConVar handle.
+	public native ConVar AddChangeHook(ConVarChanged callback);
 
 	// Removes a hook for when a console variable's value is changed.
 	//
-	// @param convar    Handle to the convar.
 	// @param callback  An OnConVarChanged function pointer.
 	// @error           No active hook on convar.
-	public native void RemoveChangeHook(ConVarChanged callback);
+	// @return          This ConVar handle.
+	public native ConVar RemoveChangeHook(ConVarChanged callback);
 }
 
 /**
