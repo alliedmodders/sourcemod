@@ -66,7 +66,7 @@ struct ConVarInfo
 
 	struct ConVarPolicy
 	{
-		static inline bool matches(const char* name, ConVarInfo* info)
+		static inline bool matches(const char *name, ConVarInfo *info)
 		{
 			const char* conVarChars = info->pVar->GetName();
 
@@ -76,7 +76,7 @@ struct ConVarInfo
 			return convarName == input;
 		}
 
-		static inline uint32_t hash(const detail::CharsAndLength& key)
+		static inline uint32_t hash(const detail::CharsAndLength &key)
 		{
 			ke::AString original(key.chars());
 			ke::AString lower = original.lowercase();
