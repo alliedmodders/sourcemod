@@ -68,7 +68,7 @@ struct ConVarInfo
 	{
 		static inline bool matches(const char *name, ConVarInfo *info)
 		{
-			const char* conVarChars = info->pVar->GetName();
+			const char *conVarChars = info->pVar->GetName();
 
 			ke::AString convarName = ke::AString(conVarChars).lowercase();
 			ke::AString input = ke::AString(name).lowercase();
