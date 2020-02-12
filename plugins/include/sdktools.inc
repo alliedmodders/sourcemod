@@ -139,15 +139,15 @@ native bool PrepSDKCall_SetSignature(SDKLibrary lib, const char[] signature, int
 native bool PrepSDKCall_SetAddress(Address addr);
 
 /**
- * Finds an address or virtual function index in a GameConfig file and sets it as
+ * Finds an address, signature or virtual function index in a GameConfig file and sets it as
  * the calling information for the SDK call.
  *
- * @param gameconf      GameConfig Handle, or INVALID_HANDLE to use sdktools.games.txt.
- * @param source        Whether to look in Offsets or Signatures.
+ * @param gameconf      GameData Handle, or INVALID_HANDLE to use sdktools.games.txt.
+ * @param source        Whether to look in Addresses, Offsets or Signatures.
  * @param name          Name of the property to find.
  * @return              True on success, false if nothing was found.
  */
-native bool PrepSDKCall_SetFromConf(Handle gameconf, SDKFuncConfSource source, const char[] name);
+native bool PrepSDKCall_SetFromConf(GameData gameconf, SDKFuncConfSource source, const char[] name);
 
 /**
  * Sets the return information of an SDK call.  Do not call this if there is no return data.
