@@ -85,7 +85,7 @@ stock void AssertStrEq(const char[] text, const char[] value, const char[] expec
 	TestNumber++;
 	if (StrEqual(value, expected))
 	{
-		PrintToServer("[%d] %s: '%s' == '%s' OK", TestNumber, TestContext, text, value, expected);
+		PrintToServer("[%d] %s: '%s' == '%s' OK", TestNumber, TestContext, text, expected);
 	}
 	else
 	{
