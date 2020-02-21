@@ -162,18 +162,16 @@ bool ShareSystem::RequestInterface(const char *iface_name,
 								   SMInterface **pIface)
 {
 	/* See if the interface exists */
-	List<IfaceInfo>::iterator iter;
 	SMInterface *iface;
-	IExtension *iface_owner;
+	IExtension *iface_owner = nullptr;
 	bool found = false;
-	for (iter=m_Interfaces.begin(); iter!=m_Interfaces.end(); iter++)
+	for (auto iter = m_Interfaces.begin(); iter!=m_Interfaces.end(); iter++)
 	{
-		IfaceInfo &info = (*iter);
+		IfaceInfo &info = *iter;
 		iface = info.iface;
 		if (strcmp(iface->GetInterfaceName(), iface_name) == 0)
 		{
-			if (iface->GetInterfaceVersion() == iface_vers
-				|| iface->IsVersionCompatible(iface_vers))
+			if (iface->GetInterfaceVersion() == iface_vers || iface->IsVersionCompatible(iface_vers))
 			{
 				iface_owner = info.owner;
 				found = true;

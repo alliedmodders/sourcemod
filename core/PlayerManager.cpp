@@ -1474,7 +1474,10 @@ void PlayerManager::InvalidatePlayer(CPlayer *pPlayer)
 		}
 	}
 	
-	m_UserIdLookUp[engine->GetPlayerUserId(pPlayer->m_pEdict)] = 0;
+	auto userid = engine->GetPlayerUserId(pPlayer->m_pEdict);
+	if (userid != -1)
+		m_UserIdLookUp[userid] = 0;
+
 	pPlayer->Disconnect();
 }
 
@@ -2235,7 +2238,7 @@ unsigned int CPlayer::GetSteamAccountID(bool validated)
 {
 	if (!IsFakeClient() && (!validated || IsAuthStringValidated()))
 	{
-		const CSteamID &id = GetSteamId();
+		const CSteamID &id = GetSteamId(validated);
 		if (id.IsValid())
 			return id.GetAccountID();
 	}

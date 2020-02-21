@@ -449,6 +449,11 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			cell_t *addr;
 			size_t written;
 			pContext->LocalToPhysAddr(params[retparam+1], &addr);
+			if (!(*(char **)vc->retbuf))
+			{
+				pContext->StringToLocalUTF8(params[retparam], *addr, "", &written);
+				return -1;
+			}
 			pContext->StringToLocalUTF8(params[retparam], *addr, *(char **)vc->retbuf, &written);
 			return (cell_t)written;
 		} else if (vc->retinfo->vtype == Valve_Vector

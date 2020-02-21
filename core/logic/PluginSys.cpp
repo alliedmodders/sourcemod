@@ -1701,6 +1701,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			char buffer[256];
 			unsigned int id = 1;
 			int plnum = GetPluginCount();
+			char plstr[10];
+			ke::SafeSprintf(plstr, sizeof(plstr), "%d", plnum);
+			int plpadding = strlen(plstr);
 
 			if (!plnum)
 			{
@@ -1709,7 +1712,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			}
 			else
 			{
-				rootmenu->ConsolePrint("[SM] Listing %d plugin%s:", GetPluginCount(), (plnum > 1) ? "s" : "");
+				rootmenu->ConsolePrint("[SM] Listing %d plugin%s:", plnum, (plnum > 1) ? "s" : "");
 			}
 
 			ke::LinkedList<CPlugin *> fail_list;
@@ -1721,14 +1724,14 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
 				if (pl->GetStatus() != Plugin_Running && !pl->IsSilentlyFailed())
 				{
-					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetDisplayStatus()));
+					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %0*d <%s>", plpadding, id, GetStatusText(pl->GetDisplayStatus()));
 
 					/* Plugin has failed to load. */
 					fail_list.append(pl);
 				}
 				else
 				{
-					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d", id);
+					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %0*d", plpadding, id);
 				}
 				if (pl->GetStatus() < Plugin_Created || pl->GetStatus() == Plugin_Evicted)
 				{
@@ -1958,11 +1961,11 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				if (IPluginRuntime *runtime = pl->GetRuntime()) {
 				  unsigned char *pCodeHash = runtime->GetCodeHash();
 				  unsigned char *pDataHash = runtime->GetDataHash();
-				  
+
 				  char combinedHash[33];
 				  for (int i = 0; i < 16; i++)
 				  	ke::SafeSprintf(combinedHash + (i * 2), 3, "%02x", pCodeHash[i] ^ pDataHash[i]);
-				  
+
 				  rootmenu->ConsolePrint("  Hash: %s", combinedHash);
 				}
 			} else {
@@ -2090,7 +2093,7 @@ void CPluginManager::ReloadPluginImpl(int id, const char filename[], PluginType 
 	char error[128];
 	bool wasloaded;
 	IPlugin *newpl = LoadPlugin(filename, true, ptype, error, sizeof(error), &wasloaded);
-	if (!newpl) 
+	if (!newpl)
 	{
 		rootmenu->ConsolePrint("[SM] Plugin %s failed to reload: %s.", filename, error);
 		return;

@@ -181,60 +181,60 @@ void HookEvents()
 
 public void OnMapStart()
 {
-	Handle gameConfig = LoadGameConfigFile("funcommands.games");
+	GameData gameConfig = new GameData("funcommands.games");
 	if (gameConfig == null)
 	{
 		SetFailState("Unable to load game config funcommands.games");
 		return;
 	}
 	
-	if (GameConfGetKeyValue(gameConfig, "SoundBlip", g_BlipSound, sizeof(g_BlipSound)) && g_BlipSound[0])
+	if (gameConfig.GetKeyValue("SoundBlip", g_BlipSound, sizeof(g_BlipSound)) && g_BlipSound[0])
 	{
 		PrecacheSound(g_BlipSound, true);
 	}
 	
-	if (GameConfGetKeyValue(gameConfig, "SoundBeep", g_BeepSound, sizeof(g_BeepSound)) && g_BeepSound[0])
+	if (gameConfig.GetKeyValue("SoundBeep", g_BeepSound, sizeof(g_BeepSound)) && g_BeepSound[0])
 	{
 		PrecacheSound(g_BeepSound, true);
 	}
 	
-	if (GameConfGetKeyValue(gameConfig, "SoundFinal", g_FinalSound, sizeof(g_FinalSound)) && g_FinalSound[0])
+	if (gameConfig.GetKeyValue("SoundFinal", g_FinalSound, sizeof(g_FinalSound)) && g_FinalSound[0])
 	{
 		PrecacheSound(g_FinalSound, true);
 	}
 	
-	if (GameConfGetKeyValue(gameConfig, "SoundBoom", g_BoomSound, sizeof(g_BoomSound)) && g_BoomSound[0])
+	if (gameConfig.GetKeyValue("SoundBoom", g_BoomSound, sizeof(g_BoomSound)) && g_BoomSound[0])
 	{
 		PrecacheSound(g_BoomSound, true);
 	}
 	
-	if (GameConfGetKeyValue(gameConfig, "SoundFreeze", g_FreezeSound, sizeof(g_FreezeSound)) && g_FreezeSound[0])
+	if (gameConfig.GetKeyValue("SoundFreeze", g_FreezeSound, sizeof(g_FreezeSound)) && g_FreezeSound[0])
 	{
 		PrecacheSound(g_FreezeSound, true);
 	}
 	
 	char buffer[PLATFORM_MAX_PATH];
-	if (GameConfGetKeyValue(gameConfig, "SpriteBeam", buffer, sizeof(buffer)) && buffer[0])
+	if (gameConfig.GetKeyValue("SpriteBeam", buffer, sizeof(buffer)) && buffer[0])
 	{
 		g_BeamSprite = PrecacheModel(buffer);
 	}
 	
-	if (GameConfGetKeyValue(gameConfig, "SpriteBeam2", buffer, sizeof(buffer)) && buffer[0])
+	if (gameConfig.GetKeyValue("SpriteBeam2", buffer, sizeof(buffer)) && buffer[0])
 	{
 		g_BeamSprite2 = PrecacheModel(buffer);
 	}
 	
-	if (GameConfGetKeyValue(gameConfig, "SpriteExplosion", buffer, sizeof(buffer)) && buffer[0])
+	if (gameConfig.GetKeyValue("SpriteExplosion", buffer, sizeof(buffer)) && buffer[0])
 	{
 		g_ExplosionSprite = PrecacheModel(buffer);
 	}
 	
-	if (GameConfGetKeyValue(gameConfig, "SpriteGlow", buffer, sizeof(buffer)) && buffer[0])
+	if (gameConfig.GetKeyValue("SpriteGlow", buffer, sizeof(buffer)) && buffer[0])
 	{
 		g_GlowSprite = PrecacheModel(buffer);
 	}
 	
-	if (GameConfGetKeyValue(gameConfig, "SpriteHalo", buffer, sizeof(buffer)) && buffer[0])
+	if (gameConfig.GetKeyValue("SpriteHalo", buffer, sizeof(buffer)) && buffer[0])
 	{
 		g_HaloSprite = PrecacheModel(buffer);
 	}

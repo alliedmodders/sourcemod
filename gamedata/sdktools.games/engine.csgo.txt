@@ -244,108 +244,121 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"450"
-				"linux"		"451"
-				"linux64"	"451"
-				"mac64"		"451"
+				"windows"	"457"
+				"linux"		"458"
+				"linux64"	"458"
+				"mac64"		"458"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"293"
-				"linux"		"294"
-				"linux64"	"294"
-				"mac64"		"294"
+				"windows"	"296"
+				"linux"		"297"
+				"linux64"	"297"
+				"mac64"		"297"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"289"
-				"linux"		"290"
-				"linux64"	"290"
-				"mac64"		"290"
+				"windows"	"292"
+				"linux"		"293"
+				"linux64"	"293"
+				"mac64"		"293"
 			}
 			"Ignite"
-			{
-				"windows"	"223"
-				"linux"		"224"
-				"linux64"	"224"
-				"mac64"		"224"
-			}
-			"Extinguish"
 			{
 				"windows"	"226"
 				"linux"		"227"
 				"linux64"	"227"
 				"mac64"		"227"
 			}
+			"Extinguish"
+			{
+				"windows"	"229"
+				"linux"		"230"
+				"linux64"	"230"
+				"mac64"		"230"
+			}
 			"Teleport"
 			{
-				"windows"	"113"
-				"linux"		"114"
-				"linux64"	"114"
-				"mac64"		"114"
+				"windows"	"114"
+				"linux"		"115"
+				"linux64"	"115"
+				"mac64"		"115"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"500"
-				"linux"		"500"
-				"linux64"	"500"
-				"mac64"		"500"
+				"windows"	"507"
+				"linux"		"507"
+				"linux64"	"507"
+				"mac64"		"507"
 			}
 			"GetVelocity"
 			{
-				"windows"	"138"
-				"linux"		"139"
-				"linux64"	"139"
-				"mac64"		"139"
+				"windows"	"140"
+				"linux"		"141"
+				"linux64"	"141"
+				"mac64"		"141"
 			}
 			"EyeAngles"
 			{
-				"windows"	"129"
-				"linux"		"130"
-				"linux64"	"130"
-				"mac64"		"130"
+				"windows"	"131"
+				"linux"		"132"
+				"linux64"	"132"
+				"mac64"		"132"
 			}
 			"AcceptInput"
 			{
-				"windows"	"40"
-				"linux"		"41"
-				"linux64"	"41"
-				"mac64"		"41"
+				"windows"	"41"
+				"linux"		"42"
+				"linux64"	"42"
+				"mac64"		"42"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"26"
-				"linux"		"27"
-				"linux64"	"27"
-				"mac64"		"27"
+				"windows"	"27"
+				"linux"		"28"
+				"linux64"	"28"
+				"mac64"		"28"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"282"
-				"linux"		"283"
-				"linux64"	"283"
-				"mac64"		"283"
+				"windows"	"285"
+				"linux"		"286"
+				"linux64"	"286"
+				"mac64"		"286"
 			}
 			"Activate"
 			{
-				"windows"	"37"
-				"linux"		"38"
-				"linux64"	"38"
-				"mac64"		"38"
+				"windows"	"38"
+				"linux"		"39"
+				"linux64"	"39"
+				"mac64"		"39"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"470"
-				"linux"		"471"
-				"linux64"	"471"
-				"mac64"		"471"
+				"windows"	"477"
+				"linux"		"478"
+				"linux64"	"478"
+				"mac64"		"478"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"275"
-				"linux"		"276"
-				"linux64"	"276"
-				"mac64"		"276"
+				"windows"	"278"
+				"linux"		"279"
+				"linux64"	"279"
+				"mac64"		"279"
+			}
+		}
+		"Signatures"
+		{
+			/**
+			 *	CNetworkStringTableContainer::WriteBaselines
+			 *	"Index error writing string table baseline %s\n"
+			 */
+			"WriteBaselines"
+			{
+				"library"	"engine"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x60\x53\x56\x8B\xF1\x8B\x0D\x2A\x2A\x2A\x2A\x57\x89\x75\xF8\x8B\x81\x2A\x2A\x2A\x2A\x89\x45\xF4\x85\xC0"
+				"linux"		"\x55\x89\xE5\x57\x56\x8D\x45\xE7\x53\x83\xEC\x7C\x8B\x7D\x0C\xC7\x44\x24\x2A\x2A\x2A\x2A\x2A\x8B\x75\x08\xC7\x44\x24\x2A\x2A\x2A\x2A\x2A"
 			}
 		}
 	}

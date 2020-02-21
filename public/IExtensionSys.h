@@ -84,28 +84,28 @@ namespace SourceMod
 		virtual IdentityToken_t *GetIdentity() =0;
 
 		/**
-		 * @brief Retrieves the extension dependency list for this extension.
+		 * @brief Deprecated, do not use.
 		 *
-		 * @param pOwner		Optional pointer to store the first interface's owner.
-		 * @param pInterface	Optional pointer to store the first interface.
-		 * @return				An ITERATOR pointer for the results, or NULL if no results at all.
+		 * @param pOwner        Unused
+		 * @param pInterface    Unused
+		 * @return              nullptr
 		 */
 		virtual ITERATOR *FindFirstDependency(IExtension **pOwner, SMInterface **pInterface) =0;
 
 		/**
-		 * @brief Finds the next dependency in the dependency list.
+		 * @brief Deprecated, do not use.
 		 *
-		 * @param iter			Pointer to iterator from FindFirstDependency.
-		 * @param pOwner		Optional pointer to store the interface's owner.
-		 * @param pInterface	Optional pointer to store the interface.
-		 * @return				True if there are more results after this, false otherwise.
+		 * @param iter          Unused
+		 * @param pOwner        Unused
+		 * @param pInterface    Unused
+		 * @return              false
 		 */
 		virtual bool FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface) =0;
 
 		/**
-		 * @brief Frees an ITERATOR handle from FindFirstDependency.
+		 * @brief Deprecated, do not use.
 		 *
-		 * @param iter			Pointer to iterator to free.
+		 * @param iter          Unused
 		 */
 		virtual void FreeDependencyIterator(ITERATOR *iter) =0;
 

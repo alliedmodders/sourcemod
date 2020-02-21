@@ -214,6 +214,16 @@ class SMConfig(object):
     if cxx.like('msvc') and len(self.archs) > 1:
       raise Exception('Building multiple archs with MSVC is not currently supported')
 
+    if cxx.family == 'msvc':
+      if cxx.version < 1900:
+        raise Exception('Only MSVC 2015 and later are supported, c++14 support is required.')
+    if cxx.family == 'gcc':
+      if cxx.version < 'gcc-4.9':
+        raise Exception('Only GCC versions 4.9 or greater are supported, c++14 support is required.')
+    if cxx.family == 'clang':
+      if cxx.version < 'clang-3.4':
+        raise Exception('Only clang versions 3.4 or greater are supported, c++14 support is required.')
+
     if cxx.like('gcc'):
       self.configure_gcc(cxx)
     elif cxx.family == 'msvc':
@@ -295,7 +305,8 @@ class SMConfig(object):
       cxx.cxxflags += ['-Wno-delete-non-virtual-dtor']
     if cxx.version >= 'gcc-4.8':
       cxx.cflags += ['-Wno-unused-result']
-
+    if cxx.version >= 'gcc-9.0':
+      cxx.cxxflags += ['-Wno-class-memaccess', '-Wno-packed-not-aligned']
     if have_clang:
       cxx.cxxflags += ['-Wno-implicit-exception-spec-mismatch']
       if cxx.version >= 'apple-clang-5.1' or cxx.version >= 'clang-3.4':
@@ -378,6 +389,16 @@ class SMConfig(object):
   def configure_windows(self, cxx):
     cxx.defines += ['WIN32', '_WINDOWS']
 
+  def add_libamtl(self):
+    # Add libamtl.
+    self.libamtl = {}
+    for arch in self.archs:
+      def get_configure_fn(arch):
+        return lambda builder, name: self.StaticLibrary(builder, name, arch)
+      extra_vars = {'Configure': get_configure_fn(arch)}
+      libamtl = builder.Build('public/amtl/amtl/AMBuilder', extra_vars)
+      self.libamtl[arch] = libamtl.binary
+
   def AddVersioning(self, binary, arch):
     if builder.target.platform == 'windows':
       binary.sources += ['version.rc']
@@ -415,7 +436,7 @@ class SMConfig(object):
     if '-lgcc_eh' in binary.compiler.linkflags:
       binary.compiler.linkflags.remove('-lgcc_eh')
     if binary.compiler.like('gcc'):
-      binary.compiler.linkflags += ['-lstdc++']
+      binary.compiler.linkflags += ['-lstdc++', '-lpthread']
     if binary.compiler.like('msvc'):
       binary.compiler.linkflags += ['/SUBSYSTEM:CONSOLE']
     return binary
@@ -497,8 +518,7 @@ class SMConfig(object):
 
     if compiler.like('msvc'):
       compiler.defines += ['COMPILER_MSVC', 'COMPILER_MSVC32']
-      if compiler.version >= 1900:
-        compiler.linkflags += ['legacy_stdio_definitions.lib']
+      compiler.linkflags += ['legacy_stdio_definitions.lib']
     else:
       compiler.defines += ['COMPILER_GCC']
 
@@ -612,6 +632,7 @@ SM = SMConfig()
 SM.detectProductVersion()
 SM.detectSDKs()
 SM.configure()
+SM.add_libamtl()
 
 if SM.use_auto_versioning():
   SM.generated_headers = builder.Build(

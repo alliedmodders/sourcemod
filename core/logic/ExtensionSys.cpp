@@ -416,65 +416,20 @@ void CExtension::AddChildDependent(CExtension *pOther, SMInterface *iface)
 	m_ChildDeps.push_back(info);
 }
 
+// note: dependency iteration deprecated since 1.10
 ITERATOR *CExtension::FindFirstDependency(IExtension **pOwner, SMInterface **pInterface)
 {
-	List<IfaceInfo>::iterator iter = m_Deps.begin();
-
-	if (iter == m_Deps.end())
-	{
-		return NULL;
-	}
-
-	if (pOwner)
-	{
-		*pOwner = (*iter).owner;
-	}
-	if (pInterface)
-	{
-		*pInterface = (*iter).iface;
-	}
-
-	List<IfaceInfo>::iterator *pIter = new List<IfaceInfo>::iterator(iter);
-
-	return (ITERATOR *)pIter;
+	return nullptr;
 }
 
 bool CExtension::FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface)
 {
-	List<IfaceInfo>::iterator *pIter = (List<IfaceInfo>::iterator *)iter;
-	List<IfaceInfo>::iterator _iter;
-
-	if (_iter == m_Deps.end())
-	{
-		return false;
-	}
-
-	_iter++;
-
-	if (pOwner)
-	{
-		*pOwner = (*_iter).owner;
-	}
-	if (pInterface)
-	{
-		*pInterface = (*_iter).iface;
-	}
-
-	*pIter = _iter;
-
-	if (_iter == m_Deps.end())
-	{
-		return false;
-	}
-
-	return true;
+	return false;
 }
 
 void CExtension::FreeDependencyIterator(ITERATOR *iter)
 {
-	List<IfaceInfo>::iterator *pIter = (List<IfaceInfo>::iterator *)iter;
 
-	delete pIter;
 }
 
 void CExtension::AddInterface(SMInterface *pInterface)
@@ -1409,7 +1364,7 @@ bool CLocalExtension::IsSameFile(const char *file)
 
 bool CRemoteExtension::IsSameFile(const char *file)
 {
-	/* :TODO: this could be better, but no one uses this API anyway. */
-	return strcmp(file, m_Path.c_str()) == 0;
+	/* Check full path and name passed in from LoadExternal */
+	return strcmp(file, m_Path.c_str()) == 0 || strcmp(file, m_File.c_str()) == 0;
 }
 

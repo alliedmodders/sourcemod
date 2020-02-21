@@ -50,8 +50,8 @@
 
 typedef ICommandLine *(*FakeGetCommandLine)();
 
-#define TIER0_NAME			SOURCE_BIN_PREFIX "tier0" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT
-#define VSTDLIB_NAME		SOURCE_BIN_PREFIX "vstdlib" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT
+#define TIER0_NAME			FORMAT_SOURCE_BIN_NAME("tier0")
+#define VSTDLIB_NAME		FORMAT_SOURCE_BIN_NAME("vstdlib")
 
 CHalfLife2 g_HL2;
 ConVar *sv_lan = NULL;
@@ -1200,7 +1200,7 @@ bool IsWindowsReservedDeviceName(const char *pMapname)
 	};
 	
 	size_t reservedCount = sizeof(reservedDeviceNames) / sizeof(reservedDeviceNames[0]);
-	for (int i = 0; i < reservedCount; ++i)
+	for (size_t i = 0; i < reservedCount; ++i)
 	{
 		if (CheckReservedFilename(pMapname, reservedDeviceNames[i]))
 		{
@@ -1211,6 +1211,45 @@ bool IsWindowsReservedDeviceName(const char *pMapname)
 	return false;
 }
 #endif 
+
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS
+// This frees memory allocated by the game using the game's CRT on Windows,
+// avoiding a crash due to heap corruption (issue #910).
+template< class T, class I >
+class CUtlMemoryGlobalMalloc : public CUtlMemory< T, I >
+{
+	typedef CUtlMemory< T, I > BaseClass;
+
+public:
+	using BaseClass::BaseClass;
+
+	void Purge()
+	{
+		if (!IsExternallyAllocated())
+		{
+			if (m_pMemory)
+			{
+				UTLMEMORY_TRACK_FREE();
+				g_pMemAlloc->Free((void*)m_pMemory);
+				m_pMemory = 0;
+			}
+			m_nAllocationCount = 0;
+		}
+		BaseClass::Purge();
+	}
+};
+
+void CHalfLife2::FreeUtlVectorUtlString(CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> &vec)
+{
+	CUtlMemoryGlobalMalloc<unsigned char> *pMemory;
+	FOR_EACH_VEC(vec, i)
+	{
+		pMemory = (CUtlMemoryGlobalMalloc<unsigned char> *) &vec[i].m_Storage.m_Memory;
+		pMemory->Purge();
+		vec[i].m_Storage.SetLength(0);
+	}
+}
+#endif
 
 SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_t nMapNameMax)
 {
@@ -1245,8 +1284,13 @@ SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_
 
 	static size_t helperCmdLen = strlen(pHelperCmd->GetName());
 
+#ifdef PLATFORM_WINDOWS
+	CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> results;
+	pHelperCmd->AutoCompleteSuggest(pMapName, *(CUtlVector<CUtlString, CUtlMemory<CUtlString>>*)&results);
+#else
 	CUtlVector<CUtlString> results;
 	pHelperCmd->AutoCompleteSuggest(pMapName, results);
+#endif
 	if (results.Count() == 0)
 		return SMFindMapResult::NotFound;
 
@@ -1258,27 +1302,40 @@ SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_
 	bool bExactMatch = Q_strcmp(pMapName, &results[0][helperCmdLen + 1]) == 0;
 	if (bExactMatch)
 	{
+#ifdef PLATFORM_WINDOWS
+		FreeUtlVectorUtlString(results);
+#endif
 		return SMFindMapResult::Found;
 	}
 	else
 	{
 		ke::SafeStrcpy(pFoundMap, nMapNameMax, &results[0][helperCmdLen + 1]);
+#ifdef PLATFORM_WINDOWS
+		FreeUtlVectorUtlString(results);
+#endif
 		return SMFindMapResult::FuzzyMatch;
 	}
 
-#elif SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_BMS
-	static char szTemp[PLATFORM_MAX_PATH];
-	if (pFoundMap == NULL)
+#elif SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM \
+	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS
+	static IVEngineServer *engine23 = (IVEngineServer *)(g_SMAPI->GetEngineFactory()("VEngineServer023", nullptr));
+	if (engine23)
 	{
-		ke::SafeStrcpy(szTemp, SM_ARRAYSIZE(szTemp), pMapName);
-		pFoundMap = szTemp;
-		nMapNameMax = 0;
-	}
+		static char szTemp[PLATFORM_MAX_PATH];
+		if (pFoundMap == NULL)
+		{
+			ke::SafeStrcpy(szTemp, SM_ARRAYSIZE(szTemp), pMapName);
+			pFoundMap = szTemp;
+			nMapNameMax = 0;
+		}
 
-	return static_cast<SMFindMapResult>(engine->FindMap(pFoundMap, static_cast<int>(nMapNameMax)));
-#elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_SDK2013
-	static IVEngineServer *engine21 = (IVEngineServer *)(g_SMAPI->GetEngineFactory()("VEngineServer021", nullptr));
-	return engine21->IsMapValid(pMapName) == 0 ? SMFindMapResult::NotFound : SMFindMapResult::Found;
+		return static_cast<SMFindMapResult>(engine->FindMap(pFoundMap, static_cast<int>(nMapNameMax)));
+	}
+	else
+	{
+		static IVEngineServer *engine21 = (IVEngineServer *)(g_SMAPI->GetEngineFactory()("VEngineServer021", nullptr));
+		return engine21->IsMapValid(pMapName) == 0 ? SMFindMapResult::NotFound : SMFindMapResult::Found;
+	}
 #else
 	return engine->IsMapValid(pMapName) == 0 ? SMFindMapResult::NotFound : SMFindMapResult::Found;
 #endif

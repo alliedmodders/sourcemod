@@ -1425,7 +1425,7 @@ static cell_t SQL_CheckConfig(IPluginContext *pContext, const cell_t *params)
 	char *name;
 	pContext->LocalToString(params[1], &name);
 
-	return (g_DBMan.FindDatabaseConf(name) != NULL) ? 1 : 0;
+	return (g_DBMan.GetDatabaseConf(name) != nullptr) ? 1 : 0;
 }
 
 static cell_t SQL_ConnectCustom(IPluginContext *pContext, const cell_t *params)

@@ -64,14 +64,26 @@ struct ConVarInfo
 	ConVar *pVar;						/**< The actual convar */
 	List<IConVarChangeListener *> changeListeners;
 
-	static inline bool matches(const char *name, const ConVarInfo *info)
+	struct ConVarPolicy
 	{
-		return strcmp(name, info->pVar->GetName()) == 0;
-	}
-	static inline uint32_t hash(const detail::CharsAndLength &key)
-	{
-		return key.hash();
-	}
+		static inline bool matches(const char *name, ConVarInfo *info)
+		{
+			const char *conVarChars = info->pVar->GetName();
+
+			ke::AString convarName = ke::AString(conVarChars).lowercase();
+			ke::AString input = ke::AString(name).lowercase();
+
+			return convarName == input;
+		}
+
+		static inline uint32_t hash(const detail::CharsAndLength &key)
+		{
+			ke::AString original(key.chars());
+			ke::AString lower = original.lowercase();
+
+			return detail::CharsAndLength(lower.chars()).hash();
+		}
+	};
 };
 
 /**

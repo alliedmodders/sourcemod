@@ -324,7 +324,7 @@ bool TestVoteDelay(int client)
  	{
  		if (delay > 60)
  		{
- 			ReplyToCommand(client, "[SM] %t", "Vote Delay Minutes", delay % 60);
+ 			ReplyToCommand(client, "[SM] %t", "Vote Delay Minutes", (delay / 60));
  		}
  		else
  		{
