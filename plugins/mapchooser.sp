@@ -221,6 +221,18 @@ public void OnConfigsExecuted()
 		}
 	}
 	
+	// Recall previous maps from a text file, if persistency is enabled
+	static bool g_FirstConfigExec = true;
+	if (g_FirstConfigExec)
+	{
+		if (g_Cvar_PersistentMaps.BoolValue)
+		{
+			ReadPreviousMapsFromText();
+		}
+		
+		g_FirstConfigExec = false;
+	}
+	
 	CreateNextVote();
 	SetupTimeleftTimer();
 	
@@ -246,18 +258,6 @@ public void OnConfigsExecuted()
 		{
 			LogError("Warning - Bonus Round Time shorter than Vote Time. Votes during bonus round may not have time to complete");
 		}
-	}
-	
-	// Recall previous maps from a text file, if persistency is enabled
-	static bool g_FirstConfigExec = true;
-	if (g_FirstConfigExec)
-	{
-		if (g_Cvar_PersistentMaps.BoolValue)
-		{
-			ReadPreviousMapsFromText();
-		}
-		
-		g_FirstConfigExec = false;
 	}
 }
 
