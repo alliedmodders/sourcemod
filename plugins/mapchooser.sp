@@ -975,8 +975,8 @@ void CreateNextVote()
 	GetCurrentMap(map, sizeof(map));
 	RemoveStringFromArray(tempMaps, map);
 	
-	if (	g_Cvar_ExcludeMaps.IntValue && tempMaps.Length > g_Cvar_ExcludeMaps.IntValue
-		g_Cvar_IncludeMinMaps.IntValue && tempMaps.Length > g_Cvar_IncludeMinMaps.IntValue)
+	if (	g_Cvar_ExcludeMaps.IntValue && tempMaps.Length > g_Cvar_ExcludeMaps.IntValue &&
+		(g_Cvar_IncludeMinMaps.IntValue == 0 || tempMaps.Length > g_Cvar_IncludeMinMaps.IntValue))
 	{
 		// Start excluding the most recently played maps first
 		for (int i = g_OldMapList.Length-1; i >= 0; i--)
