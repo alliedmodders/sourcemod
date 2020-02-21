@@ -185,10 +185,10 @@ public void OnPluginStart()
 		g_Cvar_Bonusroundtime.SetBounds(ConVarBound_Upper, true, 30.0);		
 	}
 	
-	g_NominationsResetForward = CreateGlobalForward("OnNominationRemoved", ET_Ignore, Param_String, Param_Cell);
-	g_MapVoteStartedForward = CreateGlobalForward("OnMapVoteStarted", ET_Ignore);
+	g_NominationsResetForward = new GlobalForward("OnNominationRemoved", ET_Ignore, Param_String, Param_Cell);
+	g_MapVoteStartedForward = new GlobalForward("OnMapVoteStarted", ET_Ignore);
 
-	/* Recall previous maps from a text file, if persistency is enabled */
+	// Recall previous maps from a text file, if persistency is enabled
 	static bool g_FirstConfigExec = true;	
 	if (g_FirstConfigExec)
 	{
@@ -278,7 +278,7 @@ public void OnMapEnd()
 	if (g_OldMapList.Length > g_Cvar_ExcludeMaps.IntValue)
 	{
 		g_OldMapList.Erase(0);
-	}
+	}	
 
 	WritePreviousMapsToText();
 }
@@ -1281,7 +1281,7 @@ void WritePreviousMapsToText()
     
 	char lastMap[PLATFORM_MAX_PATH];
     
-	for (int idx=0; idx <g_OldMapList.Length; idx++)
+	for (int idx=0; idx<g_OldMapList.Length; idx++)
 	{
 		g_OldMapList.GetString(idx, lastMap, sizeof(lastMap));		
 		TrimString(lastMap);      
