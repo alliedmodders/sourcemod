@@ -252,31 +252,31 @@ public void OnMapStart()
 		g_ExternalBeaconColor = GetColor(buffer);
 	}
 	
-	if (gameConfig.GetKeyValue("Team1Color", buffer, sizeof(buffer)) && buffer[0])
+	if (gameConfig.GetKeyValue("Team1BeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
 		g_Team1BeaconColor = GetColor(buffer);
 	}
 	
-	if (gameConfig.GetKeyValue("Team2Color", buffer, sizeof(buffer)) && buffer[0])
+	if (gameConfig.GetKeyValue("Team2BeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
 		g_Team2BeaconColor = GetColor(buffer);
 	}
 	
-	if (gameConfig.GetKeyValue("Team3Color", buffer, sizeof(buffer)) && buffer[0])
+	if (gameConfig.GetKeyValue("Team3BeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
 		g_Team3BeaconColor = GetColor(buffer);
 	}
 	
-	if (gameConfig.GetKeyValue("Team4Color", buffer, sizeof(buffer)) && buffer[0])
+	if (gameConfig.GetKeyValue("Team4BeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
 		g_Team4BeaconColor = GetColor(buffer);
 	}
 	
-	if (gameConfig.GetKeyValue("TeamUnknownColor", buffer, sizeof(buffer)) && buffer[0])
+	if (gameConfig.GetKeyValue("TeamUnknownBeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
 		g_TeamUnknownBeaconColor = GetColor(buffer);
