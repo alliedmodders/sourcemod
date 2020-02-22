@@ -15,6 +15,12 @@
 			"SoundFinal"	"weapons/cguard/charging.wav"
 			"SoundBoom"		"weapons/explode3.wav"
 			"SoundFreeze"	"physics/glass/glass_impact_bullet4.wav"
+			
+			"Team1Color"		"75,255,75,255"
+			"Team2Color"		"255,75,75,255"
+			"Team3Color"		"75,75,255,255"
+			"Team4Color"		"255,128,0,255"
+			"TeamUnknownColor"	"255,255,255,255"
 		}
 	}
 	
@@ -72,6 +78,9 @@
 			"SpriteExplosion"	"sprites/floorfire4_.vmt"
 			"SpriteGlow"		"sprites/blueflare1.vmt"
 			"SpriteHalo"		"sprites/glow01.vmt"
+			
+			"Team2Color"		"75,75,255,255"
+			"Team3Color"		"255,75,75,255"
 		}
 	}
 }
