@@ -16,7 +16,7 @@
 			"SoundBoom"		"weapons/explode3.wav"
 			"SoundFreeze"	"physics/glass/glass_impact_bullet4.wav"
 			
-			"ExternalBeaconColor"		"0,128,0,255"
+			"ExternalBeaconColor"		"128,128,128,255"
 			"Team1BeaconColor"			"75,255,75,255"
 			"Team2BeaconColor"			"255,75,75,255"
 			"Team3BeaconColor"			"75,75,255,255"
