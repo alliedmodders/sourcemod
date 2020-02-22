@@ -92,21 +92,21 @@ public Action Timer_Beacon(Handle timer, any value)
 	
 	if (g_BeamSprite > -1 && g_HaloSprite > -1)
 	{
-		int teamColor[4];
+		int teamBeaconColor[4];
 
 		switch (GetClientTeam(client))
 		{
-			case 1: teamColor = g_Team1BeaconColor;
-			case 2: teamColor = g_Team2BeaconColor;
-			case 3: teamColor = g_Team3BeaconColor;
-			case 4: teamColor = g_Team4BeaconColor;
-			default: teamColor = g_TeamUnknownBeaconColor;
+			case 1: teamBeaconColor = g_Team1BeaconColor;
+			case 2: teamBeaconColor = g_Team2BeaconColor;
+			case 3: teamBeaconColor = g_Team3BeaconColor;
+			case 4: teamBeaconColor = g_Team4BeaconColor;
+			default: teamBeaconColor = g_TeamUnknownBeaconColor;
 		}
 
 		TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, g_ExternalBeaconColor, 10, 0);
 		TE_SendToAll();
 
-		TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, teamColor, 10, 0);
+		TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, teamBeaconColor, 10, 0);
 		TE_SendToAll();
 	}
 	
