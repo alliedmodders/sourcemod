@@ -74,11 +74,12 @@ int blueColor[4]	= {75, 75, 255, 255};
 int whiteColor[4]	= {255, 255, 255, 255};
 int greyColor[4]	= {128, 128, 128, 255};
 
-int g_Team1Color[4];
-int g_Team2Color[4];
-int g_Team3Color[4];
-int g_Team4Color[4];
-int g_TeamUnknownColor[4];
+int g_ExternalBeaconColor[4];
+int g_Team1BeaconColor[4];
+int g_Team2BeaconColor[4];
+int g_Team3BeaconColor[4];
+int g_Team4BeaconColor[4];
+int g_TeamUnknownBeaconColor[4];
 
 // UserMessageId for Fade.
 UserMsg g_FadeUserMsgId;
@@ -245,34 +246,40 @@ public void OnMapStart()
 		g_HaloSprite = PrecacheModel(buffer);
 	}
 	
+	if (gameConfig.GetKeyValue("ExternalBeaconColor", buffer, sizeof(buffer)) && buffer[0])
+	{
+		TrimString(buffer);
+		g_ExternalBeaconColor = GetColor(buffer);
+	}
+	
 	if (gameConfig.GetKeyValue("Team1Color", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
-		g_Team1Color = GetColor(buffer);
+		g_Team1BeaconColor = GetColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team2Color", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
-		g_Team2Color = GetColor(buffer);
+		g_Team2BeaconColor = GetColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team3Color", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
-		g_Team3Color = GetColor(buffer);
+		g_Team3BeaconColor = GetColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team4Color", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
-		g_Team4Color = GetColor(buffer);
+		g_Team4BeaconColor = GetColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("TeamUnknownColor", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
-		g_TeamUnknownColor = GetColor(buffer);
+		g_TeamUnknownBeaconColor = GetColor(buffer);
 	}
 	
 	delete gameConfig;
@@ -336,7 +343,7 @@ void AddTranslatedMenuItem(Menu menu, const char[] opt, const char[] phrase, int
 
 int[] GetColor(const char[] buffer)
 {
-	char sColor[4][4];
+	char sColor[16][4];
 	ExplodeString(buffer, ",", sColor, sizeof(sColor), sizeof(sColor[]));
 	
 	int iColor[4];
