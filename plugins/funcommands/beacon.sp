@@ -85,8 +85,6 @@ public Action Timer_Beacon(Handle timer, any value)
 		KillBeacon(client);
 		return Plugin_Stop;
 	}
-	
-	int team = GetClientTeam(client);
 
 	float vec[3];
 	GetClientAbsOrigin(client, vec);
@@ -94,22 +92,21 @@ public Action Timer_Beacon(Handle timer, any value)
 	
 	if (g_BeamSprite > -1 && g_HaloSprite > -1)
 	{
+		int teamColor[4];
+
+		switch (GetClientTeam(client))
+		{
+			case 1: teamColor = g_Team1Color;
+			case 2: teamColor = g_Team2Color;
+			case 3: teamColor = g_Team3Color;
+			case 4: teamColor = g_Team4Color;
+			default: teamColor = g_TeamUnknownColor;
+		}
+
 		TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
 		TE_SendToAll();
-		
-		if (team == 2)
-		{
-			TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, redColor, 10, 0);
-		}
-		else if (team == 3)
-		{
-			TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, blueColor, 10, 0);
-		}
-		else
-		{
-			TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, greenColor, 10, 0);
-		}
-		
+
+		TE_SetupBeamRingPoint(vec, 10.0, g_Cvar_BeaconRadius.FloatValue, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, teamColor, 10, 0);
 		TE_SendToAll();
 	}
 	
