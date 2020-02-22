@@ -74,6 +74,12 @@ int blueColor[4]	= {75, 75, 255, 255};
 int whiteColor[4]	= {255, 255, 255, 255};
 int greyColor[4]	= {128, 128, 128, 255};
 
+int g_Team1Color[4];
+int g_Team2Color[4];
+int g_Team3Color[4];
+int g_Team4Color[4];
+int g_TeamUnknownColor[4];
+
 // UserMessageId for Fade.
 UserMsg g_FadeUserMsgId;
 
@@ -239,6 +245,36 @@ public void OnMapStart()
 		g_HaloSprite = PrecacheModel(buffer);
 	}
 	
+	if (gameConfig.GetKeyValue("Team1Color", buffer, sizeof(buffer)) && buffer[0])
+	{
+		TrimString(buffer);
+		g_Team1Color = GetColor(buffer);
+	}
+	
+	if (gameConfig.GetKeyValue("Team2Color", buffer, sizeof(buffer)) && buffer[0])
+	{
+		TrimString(buffer);
+		g_Team2Color = GetColor(buffer);
+	}
+	
+	if (gameConfig.GetKeyValue("Team3Color", buffer, sizeof(buffer)) && buffer[0])
+	{
+		TrimString(buffer);
+		g_Team3Color = GetColor(buffer);
+	}
+	
+	if (gameConfig.GetKeyValue("Team4Color", buffer, sizeof(buffer)) && buffer[0])
+	{
+		TrimString(buffer);
+		g_Team4Color = GetColor(buffer);
+	}
+	
+	if (gameConfig.GetKeyValue("TeamUnknownColor", buffer, sizeof(buffer)) && buffer[0])
+	{
+		TrimString(buffer);
+		g_TeamUnknownColor = GetColor(buffer);
+	}
+	
 	delete gameConfig;
 }
 
@@ -296,4 +332,18 @@ void AddTranslatedMenuItem(Menu menu, const char[] opt, const char[] phrase, int
 	char buffer[128];
 	Format(buffer, sizeof(buffer), "%T", phrase, client);
 	menu.AddItem(opt, buffer);
+}
+
+int[] GetColor(const char[] buffer)
+{
+	char sColor[4][4];
+	ExplodeString(buffer, ",", sColor, sizeof(sColor), sizeof(sColor[]));
+	
+	int iColor[4];
+	iColor[0] = StringToInt(sColor[0]);
+	iColor[1] = StringToInt(sColor[1]);
+	iColor[2] = StringToInt(sColor[2]);
+	iColor[3] = StringToInt(sColor[3]);
+
+	return iColor;
 }
