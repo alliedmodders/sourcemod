@@ -67,9 +67,7 @@ int g_GlowSprite        = -1;
 int g_ExplosionSprite   = -1;
 
 // Basic color arrays for temp entities
-int redColor[4]		= {255, 75, 75, 255};
 int orangeColor[4]	= {255, 128, 0, 255};
-int greenColor[4]	= {75, 255, 75, 255};
 int blueColor[4]	= {75, 75, 255, 255};
 int whiteColor[4]	= {255, 255, 255, 255};
 int greyColor[4]	= {128, 128, 128, 255};
@@ -249,37 +247,37 @@ public void OnMapStart()
 	if (gameConfig.GetKeyValue("ExternalBeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
-		g_ExternalBeaconColor = ParseColor(buffer);
+		g_ExternalBeaconColor = GetColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team1BeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
-		g_Team1BeaconColor = ParseColor(buffer);
+		g_Team1BeaconColor = GetColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team2BeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
-		g_Team2BeaconColor = ParseColor(buffer);
+		g_Team2BeaconColor = GetColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team3BeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
-		g_Team3BeaconColor = ParseColor(buffer);
+		g_Team3BeaconColor = GetColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team4BeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
-		g_Team4BeaconColor = ParseColor(buffer);
+		g_Team4BeaconColor = GetColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("TeamUnknownBeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
 		TrimString(buffer);
-		g_TeamUnknownBeaconColor = ParseColor(buffer);
+		g_TeamUnknownBeaconColor = GetColor(buffer);
 	}
 	
 	delete gameConfig;
@@ -341,7 +339,7 @@ void AddTranslatedMenuItem(Menu menu, const char[] opt, const char[] phrase, int
 	menu.AddItem(opt, buffer);
 }
 
-int[] ParseColor(const char[] buffer)
+int[] GetColor(const char[] buffer)
 {
 	char sColor[16][4];
 	ExplodeString(buffer, ",", sColor, sizeof(sColor), sizeof(sColor[]));
