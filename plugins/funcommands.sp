@@ -246,37 +246,31 @@ public void OnMapStart()
 	
 	if (gameConfig.GetKeyValue("ExternalBeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
-		TrimString(buffer);
 		g_ExternalBeaconColor = ParseColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team1BeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
-		TrimString(buffer);
 		g_Team1BeaconColor = ParseColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team2BeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
-		TrimString(buffer);
 		g_Team2BeaconColor = ParseColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team3BeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
-		TrimString(buffer);
 		g_Team3BeaconColor = ParseColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("Team4BeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
-		TrimString(buffer);
 		g_Team4BeaconColor = ParseColor(buffer);
 	}
 	
 	if (gameConfig.GetKeyValue("TeamUnknownBeaconColor", buffer, sizeof(buffer)) && buffer[0])
 	{
-		TrimString(buffer);
 		g_TeamUnknownBeaconColor = ParseColor(buffer);
 	}
 	
