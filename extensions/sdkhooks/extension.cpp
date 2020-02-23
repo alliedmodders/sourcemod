@@ -247,6 +247,7 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddInterface(myself, &g_Interface);
 	sharesys->AddCapabilityProvider(myself, this, "SDKHook_DmgCustomInOTD");
 	sharesys->AddCapabilityProvider(myself, this, "SDKHook_LogicalEntSupport");
+	sharesys->AddCapabilityProvider(myself, this, "SDKHook_OnEntitySpawned");
 
 	playerhelpers->AddClientListener(&g_Interface);
 	
@@ -359,6 +360,7 @@ void SDKHooks::SDK_OnUnload()
 
 	sharesys->DropCapabilityProvider(myself, this, "SDKHook_DmgCustomInOTD");
 	sharesys->DropCapabilityProvider(myself, this, "SDKHook_LogicalEntSupport");
+	sharesys->DropCapabilityProvider(myself, this, "SDKHook_OnEntitySpawned");
 
 	CUtlVector<IEntityListener *> *entListeners = EntListeners();
 	entListeners->FindAndRemove(this);

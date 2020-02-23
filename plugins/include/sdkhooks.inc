@@ -352,6 +352,8 @@ forward void OnEntityCreated(int entity, const char[] classname);
  *
  * @param entity        Entity index
  * @param classname     Class name
+ *
+ * @note Check for support at runtime using GetFeatureStatus on SDKHook_OnEntitySpawned capability.
  */
 forward void OnEntitySpawned(int entity, const char[] classname);
 
