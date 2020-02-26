@@ -257,6 +257,7 @@ public void OnMapEnd()
 	
 	char map[PLATFORM_MAX_PATH];
 	GetCurrentMap(map, sizeof(map));
+	RemoveStringFromArray(g_OldMapList, map);
 	g_OldMapList.PushString(map);
 				
 	if (g_OldMapList.Length > g_Cvar_ExcludeMaps.IntValue)
