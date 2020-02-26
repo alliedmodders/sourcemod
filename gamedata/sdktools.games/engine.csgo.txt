@@ -225,10 +225,10 @@
 			 */
 			"InfoChanged"
 			{
-				"windows"	"484"
-				"linux"		"464"
-				"linux64"	"592"
-				"mac64"		"608"
+				"windows"	"488"
+				"linux"		"468"
+				"linux64"	"600"
+				"mac64"		"616"
 			}
 		}
 	}
