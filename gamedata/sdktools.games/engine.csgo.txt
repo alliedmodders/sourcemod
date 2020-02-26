@@ -225,8 +225,8 @@
 			 */
 			"InfoChanged"
 			{
-				"windows"	"484"
-				"linux"		"464"
+				"windows"	"488"
+				"linux"		"468"
 				"linux64"	"592"
 				"mac64"		"608"
 			}
