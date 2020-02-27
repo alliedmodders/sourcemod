@@ -296,6 +296,52 @@ native void TR_EnumerateEntitiesHull(const float pos[3],
                                     any data=0);
 
 /**
+ * Enumerates over entities in a sphere.
+ *
+ * @param pos           Starting position of the ray.
+ * @param radius        Radius of the ray.
+ * @param mask          Mask to use for the trace. See PARTITION_* flags.
+ * @param enumerator    Function to use as enumerator. For each entity found
+ *                      along the ray, this function is called.
+ * @param data          Arbitrary data value to pass through to the enumerator.
+ */
+native void TR_EnumerateEntitiesSphere(const float pos[3],
+                                    float radius,
+                                    int mask,
+                                    TraceEntityEnumerator enumerator,
+                                    any data=0);
+                                    
+/**
+ * Enumerates over entities in a box.
+ *
+ * @param mins          Box minimum size.
+ * @param maxs          Box maximum size.
+ * @param mask          Mask to use for the trace. See PARTITION_* flags.
+ * @param enumerator    Function to use as enumerator. For each entity found
+ *                      along the box, this function is called.
+ * @param data          Arbitrary data value to pass through to the enumerator.
+ */
+native void TR_EnumerateEntitiesBox(const float mins[3],
+                                    const float maxs[3],
+                                    int mask,
+                                    TraceEntityEnumerator enumerator,
+                                    any data=0);
+        
+/**
+ * Enumerates over entities at point.
+ *
+ * @param pos           Position of the point.
+ * @param mask          Mask to use for the trace. See PARTITION_* flags.
+ * @param enumerator    Function to use as enumerator. For each entity found
+ *                      along the point, this function is called.
+ * @param data          Arbitrary data value to pass through to the enumerator.
+ */
+native void TR_EnumerateEntitiesPoint(const float pos[3],
+                                    int mask,
+                                    TraceEntityEnumerator enumerator,
+                                    any data=0);
+        
+/**
  * Starts up a new trace ray using a global trace result and a customized
  * trace ray filter.
  *
