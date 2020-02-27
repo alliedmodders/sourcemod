@@ -127,7 +127,7 @@ public void OnPluginStart()
 	g_Cvar_ExtendRoundStep = CreateConVar("sm_extendmap_roundstep", "5", "Specifies how many more rounds each extension makes", _, true, 1.0);
 	g_Cvar_ExtendFragStep = CreateConVar("sm_extendmap_fragstep", "10", "Specifies how many more frags are allowed when map is extended.", _, true, 5.0);	
 	g_Cvar_ExcludeMaps = CreateConVar("sm_mapvote_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
-	g_Cvar_IncludeMinMaps = CreateConVar("sm_mapvote_include_min", "4", "Specifies the minimum number of maps to include in the vote.", _, true, 0.0, true, 6.0);
+	g_Cvar_IncludeMinMaps = CreateConVar("sm_mapvote_include_min", "4", "Specifies the minimum number of maps to include in the vote.", _, true, 2.0, true, 6.0);
 	g_Cvar_IncludeMaxMaps = CreateConVar("sm_mapvote_include_max", "6", "Specifies the maximum number of maps to include in the vote.", _, true, 2.0, true, 6.0);
 	g_Cvar_NoVoteMode = CreateConVar("sm_mapvote_novote", "1", "Specifies whether or not MapChooser should pick a map if no votes are received.", _, true, 0.0, true, 1.0);
 	g_Cvar_Extend = CreateConVar("sm_mapvote_extend", "0", "Number of extensions allowed each map.", _, true, 0.0);
