@@ -106,8 +106,6 @@ int g_winCount[MAXTEAMS];
 #define VOTE_EXTEND "##extend##"
 #define VOTE_DONTCHANGE "##dontchange##"
 
-#define MAPCHOOSER_TXT "data/mapchooser_history.txt"
-
 public void OnPluginStart()
 {
 	LoadTranslations("mapchooser.phrases");
@@ -1290,6 +1288,6 @@ void WritePreviousMapsToText()
 char GetTextFilePath()
 {
 	char path[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, MAPCHOOSER_TXT);
+	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "data/mapchooser_history.txt");
 	return path;
 }
