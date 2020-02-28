@@ -97,7 +97,7 @@ SH_DECL_HOOK2_void(IVEngineServer, ClientPrintf, SH_NOATTRIB, 0, edict_t *, cons
 
 static void PrintfBuffer_FrameAction(void *data)
 {
-	g_Players.OnPrintfFrameAction(reinterpret_cast<unsigned int>(data));
+	g_Players.OnPrintfFrameAction(reinterpret_cast<uintptr_t>(data));
 }
 
 ConCommand *maxplayersCmd = NULL;
@@ -868,7 +868,7 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 		RETURN_META(MRES_IGNORED);
 
 	size_t nMsgLen = strlen(szMsg);
-#if SOURCE_ENGINE == SE_EPISODEONE || SOURCE_ENGINE==SE_DARKMESSIAH
+#if SOURCE_ENGINE == SE_EPISODEONE || SOURCE_ENGINE == SE_DARKMESSIAH
 	static const int nNumBitsWritten = 0;
 #else
 	int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
@@ -894,9 +894,9 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 	RETURN_META(MRES_IGNORED);
 }
 
-void PlayerManager::OnPrintfFrameAction(unsigned int serial)
+void PlayerManager::OnPrintfFrameAction(uintptr_t serial)
 {
-	int client = GetClientFromSerial(serial);
+	int client = GetClientFromSerial(static_cast<uint32_t>(serial));
 	CPlayer &player = m_Players[client];
 	if (!player.IsConnected())
 	{
@@ -913,7 +913,7 @@ void PlayerManager::OnPrintfFrameAction(unsigned int serial)
 
 	while (!player.m_PrintfBuffer.empty())
 	{
-#if SOURCE_ENGINE == SE_EPISODEONE || SOURCE_ENGINE==SE_DARKMESSIAH
+#if SOURCE_ENGINE == SE_EPISODEONE || SOURCE_ENGINE == SE_DARKMESSIAH
 		static const int nNumBitsWritten = 0;
 #else
 		int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
