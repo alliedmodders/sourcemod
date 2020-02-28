@@ -70,6 +70,7 @@ ConVar g_Cvar_EndOfMapVote;
 ConVar g_Cvar_VoteDuration;
 ConVar g_Cvar_RunOff;
 ConVar g_Cvar_RunOffPercent;
+ConVar g_Cvar_MapStorage;
 
 Handle g_VoteTimer = null;
 Handle g_RetryTimer = null;
@@ -133,6 +134,7 @@ public void OnPluginStart()
 	g_Cvar_VoteDuration = CreateConVar("sm_mapvote_voteduration", "20", "Specifies how long the mapvote should be available for.", _, true, 5.0);
 	g_Cvar_RunOff = CreateConVar("sm_mapvote_runoff", "0", "Hold runoff votes if winning choice is less than a certain margin", _, true, 0.0, true, 1.0);
 	g_Cvar_RunOffPercent = CreateConVar("sm_mapvote_runoffpercent", "50", "If winning choice has less than this percent of votes, hold a runoff", _, true, 0.0, true, 100.0);
+	g_Cvar_MapStorage = CreateConVar("sm_mapvote_mapstorage", "15", "Specifies how many past maps to store. Always set higher than sm_mapvote_exclude", _, true, 15.0, true, 50.0);
 	
 	RegAdminCmd("sm_mapvote", Command_Mapvote, ADMFLAG_CHANGEMAP, "sm_mapvote - Forces MapChooser to attempt to run a map vote now.");
 	RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
@@ -260,7 +262,7 @@ public void OnMapEnd()
 	RemoveStringFromArray(g_OldMapList, map);
 	g_OldMapList.PushString(map);
 				
-	if (g_OldMapList.Length > g_Cvar_ExcludeMaps.IntValue)
+	if (g_OldMapList.Length > g_Cvar_MapStorage.IntValue)
 	{
 		g_OldMapList.Erase(0);
 	}	
