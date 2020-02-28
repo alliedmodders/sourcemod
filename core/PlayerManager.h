@@ -43,6 +43,7 @@
 #include <sh_list.h>
 #include <sh_vector.h>
 #include <am-string.h>
+#include <am-deque.h>
 #include "ConVarManager.h"
 
 #include <steam/steamclientpublic.h>
@@ -123,6 +124,7 @@ private:
 	bool IsAuthStringValidated();
 	bool SetEngineString();
 	bool SetCSteamID();
+	void ClearNetchannelQueue(void);
 private:
 	bool m_IsConnected = false;
 	bool m_IsInGame = false;
@@ -152,6 +154,7 @@ private:
 #if SOURCE_ENGINE == SE_CSGO
 	QueryCvarCookie_t m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
+	ke::Deque<ke::AString> m_PrintfBuffer;
 };
 
 class PlayerManager : 
@@ -190,6 +193,8 @@ public:
 	void OnClientSettingsChanged(edict_t *pEntity);
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
 	void OnServerHibernationUpdate(bool bHibernating);
+	void OnClientPrintf(edict_t *pEdict, const char *szMsg);
+	void OnPrintfFrameAction(unsigned int serial);
 public: //IPlayerManager
 	void AddClientListener(IClientListener *listener);
 	void RemoveClientListener(IClientListener *listener);
@@ -267,6 +272,9 @@ private:
 	int m_SourceTVUserId;
 	int m_ReplayUserId;
 	bool m_bInCCKVHook;
+private:
+	static const int NETMSG_TYPE_BITS = 5; // SVC_Print overhead for netmsg type
+	static const int SVC_Print_BufferSize = 2048 - 1; // -1 for terminating \0
 };
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
