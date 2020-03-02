@@ -97,7 +97,7 @@ SH_DECL_HOOK2_void(IVEngineServer, ClientPrintf, SH_NOATTRIB, 0, edict_t *, cons
 
 static void PrintfBuffer_FrameAction(void *data)
 {
-	g_Players.OnPrintfFrameAction(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(data)));
+	g_Players.OnPrintfFrameAction(static_cast<unsigned int>(reinterpret_cast<uintptr_t>(data)));
 }
 
 ConCommand *maxplayersCmd = NULL;
@@ -894,7 +894,7 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 	RETURN_META(MRES_IGNORED);
 }
 
-void PlayerManager::OnPrintfFrameAction(uint32_t serial)
+void PlayerManager::OnPrintfFrameAction(unsigned int serial)
 {
 	int client = GetClientFromSerial(serial);
 	CPlayer &player = m_Players[client];
