@@ -97,7 +97,7 @@ SH_DECL_HOOK2_void(IVEngineServer, ClientPrintf, SH_NOATTRIB, 0, edict_t *, cons
 
 static void PrintfBuffer_FrameAction(void *data)
 {
-	g_Players.OnPrintfFrameAction(reinterpret_cast<unsigned int>(data));
+	g_Players.OnPrintfFrameAction(static_cast<unsigned int>(reinterpret_cast<uintptr_t>(data)));
 }
 
 ConCommand *maxplayersCmd = NULL;
@@ -868,7 +868,7 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 		RETURN_META(MRES_IGNORED);
 
 	size_t nMsgLen = strlen(szMsg);
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE == SE_EPISODEONE || SOURCE_ENGINE == SE_DARKMESSIAH
 	static const int nNumBitsWritten = 0;
 #else
 	int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
@@ -913,7 +913,7 @@ void PlayerManager::OnPrintfFrameAction(unsigned int serial)
 
 	while (!player.m_PrintfBuffer.empty())
 	{
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE == SE_EPISODEONE || SOURCE_ENGINE == SE_DARKMESSIAH
 		static const int nNumBitsWritten = 0;
 #else
 		int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
