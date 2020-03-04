@@ -33,8 +33,8 @@ parser.options.add_option('--enable-optimize', action='store_const', const='1', 
 parser.options.add_option('--no-mysql', action='store_false', default=True, dest='hasMySql',
                        help='Disable building MySQL extension')
 parser.options.add_option('-s', '--sdks', default='all', dest='sdks',
-                       help='Build against specified SDKs; valid args are "all", "present", or '
-                            'comma-delimited list of engine names (default: %default)')
+                       help='Build against specified SDKs; valid args are "none", "all", "present",'
+                            ' or comma-delimited list of engine names (default: %default)')
 parser.options.add_option('--breakpad-dump', action='store_true', dest='breakpad_dump',
 											 default=False, help='Dump and upload breakpad symbols')
 parser.options.add_option('--disable-auto-versioning', action='store_true', dest='disable_auto_versioning',
