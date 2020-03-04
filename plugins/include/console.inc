@@ -424,6 +424,37 @@ native int GetCmdArgs();
 native int GetCmdArg(int argnum, char[] buffer, int maxlength);
 
 /**
+ * Retrieves a numeric command argument given its index, from the current
+ * console or server command. Will return 0 if the argument can not be
+ * parsed as a number. Use GetCmdArgIntEx to handle that explicitly.
+ *
+ * @param argnum Argument number to retrieve.
+ * @return       Value of the command argument.
+ */
+stock int GetCmdArgInt(int argnum) {
+    char str[12];
+    GetCmdArg(argnum, str, sizeof(str));
+
+    return StringToInt(str);
+}
+
+/**
+ * Retrieves a numeric command argument given its index, from the current
+ * console or server command. Returns false if the argument can not be
+ * completely parsed as an integer.
+ *
+ * @param argnum Argument number to retrieve.
+ * @param value  Populated with the value of the command argument.
+ * @return       Whether the argument was entirely a numeric value.
+ */
+stock bool GetCmdArgIntEx(int argnum, int &value) {
+    char str[12];
+    int len = GetCmdArg(argnum, str, sizeof(str));
+
+    return StringToIntEx(str, value) == len && len > 0;
+}
+
+/**
  * Retrieves the entire command argument string in one lump from the current 
  * console or server command.
  *
