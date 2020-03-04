@@ -143,6 +143,7 @@ class SMConfig(object):
 
   def detectSDKs(self):
     sdk_list = builder.options.sdks.split(',')
+    use_none = sdk_list[0] == 'none'
     use_all = sdk_list[0] == 'all'
     use_present = sdk_list[0] == 'present'
 
@@ -161,7 +162,7 @@ class SMConfig(object):
           sdk.path = Normalize(sdk_path)
           self.sdks[sdk_name] = sdk
 
-    if len(self.sdks) < 1 and len(sdk_list):
+    if len(self.sdks) < 1 and len(sdk_list) and not use_none:
       raise Exception('No SDKs were found that build on {0}-{1}, nothing to do.'.format(
         builder.target.platform, builder.target.arch))
 
