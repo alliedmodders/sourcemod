@@ -609,15 +609,10 @@ public Action Command_AddGroup(int client, int args)
 	}
 
 	int immunity;
-	if (args >= 3)
+	if (args >= 3 && !GetCmdArgIntEx(3, immunity))
 	{
-		char arg3[32];
-		GetCmdArg(3, arg3, sizeof(arg3));
-		if (!StringToIntEx(arg3, immunity))
-		{
-			ReplyToCommand(client, "[SM] %t", "Invalid immunity");
-			return Plugin_Handled;
-		}
+		ReplyToCommand(client, "[SM] %t", "Invalid immunity");
+		return Plugin_Handled;
 	}
 	
 	Database db = Connect();
@@ -772,15 +767,10 @@ public Action Command_AddAdmin(int client, int args)
 	}
 
 	int immunity;
-	if (args >= 5)
+	if (args >= 5 && !GetCmdArgIntEx(5, immunity))
 	{
-		char arg5[32];
-		GetCmdArg(5, arg5, sizeof(arg5));
-		if (!StringToIntEx(arg5, immunity))
-		{
-			ReplyToCommand(client, "[SM] %t", "Invalid immunity");
-			return Plugin_Handled;
-		}
+		ReplyToCommand(client, "[SM] %t", "Invalid immunity");
+		return Plugin_Handled;
 	}
 	
 	char identity[65];
@@ -804,7 +794,7 @@ public Action Command_AddAdmin(int client, int args)
 	{
 		return DoError(client, db, query, "Admin retrieval query failed");
 	}
-	
+
 	if (rs.RowCount > 0)
 	{
 		ReplyToCommand(client, "[SM] %t", "SQL Admin already exists");
