@@ -200,7 +200,6 @@
 		"Keys"
 		{
 			"HudRadioMenuMsg"		"ShowMenu"
-			"ChatSayText"			"yes"
 		}
 	}
 	

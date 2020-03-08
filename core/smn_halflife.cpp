@@ -329,11 +329,7 @@ static cell_t PrintToChat(IPluginContext *pContext, const cell_t *params)
 
 	g_SourceMod.SetGlobalTarget(client);
 
-#if SOURCE_ENGINE == SE_CSGO
-	char buffer[2023];
-#else
 	char buffer[254];
-#endif
 
 	{
 		DetectExceptions eh(pContext);
@@ -401,12 +397,7 @@ static cell_t PrintHintText(IPluginContext *pContext, const cell_t *params)
 
 	g_SourceMod.SetGlobalTarget(client);
 
-#if SOURCE_ENGINE == SE_CSGO
-	char buffer[0xFFFF];
-#else
 	char buffer[254];
-#endif
-
 	{
 		DetectExceptions eh(pContext);
 		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
