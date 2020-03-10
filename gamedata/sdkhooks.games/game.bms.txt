@@ -4,6 +4,36 @@
 	{
 		"Offsets"
 		{
+			"CanBeAutobalanced"
+			{
+				"windows"	"504"
+				"linux"		"506"
+				"mac"		"506"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"127"
+				"linux"		"128"
+				"mac"		"128"				
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"189"
+				"linux"		"191"
+				"mac"		"191"
+			}
+			"Reload"
+			{
+				"windows"	"290"
+				"linux"		"291"
+				"mac"		"291"
+			}
+			"Use"
+			{
+				"windows"	"106"
+				"linux"		"107"
+				"mac"		"107"
+			}
 			"Blocked"
 			{
 				"windows"	"111"
