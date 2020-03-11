@@ -2365,7 +2365,7 @@ void CPlayer::Kick(const char *str)
 	}
 	else
 	{
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 		pClient->Disconnect(str);
 #else
 		pClient->Disconnect("%s", str);

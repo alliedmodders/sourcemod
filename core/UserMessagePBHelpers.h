@@ -816,7 +816,7 @@ public:
 
 	inline bool GetColor(const char *pszFieldName, Color *out)
 	{
-#if SOURCE_ENGINE != SE_CSGO
+#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE
 		return false;
 #else
 		GETCHECK_FIELD();
@@ -837,7 +837,7 @@ public:
 
 	inline bool SetColor(const char *pszFieldName, const Color &value)
 	{
-#if SOURCE_ENGINE != SE_CSGO
+#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE
 		return false;
 #else
 		GETCHECK_FIELD();
@@ -856,7 +856,7 @@ public:
 
 	inline bool GetRepeatedColor(const char *pszFieldName, int index, Color *out)
 	{
-#if SOURCE_ENGINE != SE_CSGO
+#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE
 		return false;
 #else
 		GETCHECK_FIELD();
@@ -878,7 +878,7 @@ public:
 
 	inline bool SetRepeatedColor(const char *pszFieldName, int index, const Color &value)
 	{
-#if SOURCE_ENGINE != SE_CSGO
+#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE
 		return false;
 #else
 		GETCHECK_FIELD();
@@ -898,7 +898,7 @@ public:
 
 	inline bool AddColor(const char *pszFieldName, const Color &value)
 	{
-#if SOURCE_ENGINE != SE_CSGO
+#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE
 		return false;
 #else
 		GETCHECK_FIELD();
