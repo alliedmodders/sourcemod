@@ -2,6 +2,7 @@
 import os
 
 project = SM.HL2Project(builder, 'sourcemod')
+
 project.sources += [
   'MenuStyle_Valve.cpp',
   'logic_bridge.cpp',
@@ -37,7 +38,6 @@ project.sources += [
   'MenuStyle_Radio.cpp',
   'sm_autonatives.cpp',
   'ConsoleDetours.cpp',
-  'vprof_tool.cpp',
   'smn_commandline.cpp',
   'GameHooks.cpp',
 ]
@@ -63,13 +63,19 @@ for sdk_name in SM.sdks:
         os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
         os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf')
       ]
+    elif sdk.name == 'blade':
+      compiler.cxxincludes += [
+        os.path.join(sdk.path, 'common', 'protobuf-2.5.0', 'src'),
+        os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
+        os.path.join(sdk.path, 'public', 'game', 'shared', 'berimbau', 'protobuf')
+      ]
 
     if compiler.like('msvc'):
       compiler.defines += ['_ALLOW_KEYWORD_MACROS']
     if builder.target.platform == 'linux':
       compiler.postlink += ['-lpthread', '-lrt']
 
-    if sdk.name == 'csgo':
+    if sdk.name in ['csgo', 'blade']:
       if builder.target.platform == 'linux':
         if arch == 'x86':
           lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
@@ -95,16 +101,27 @@ for sdk_name in SM.sdks:
           lib_path = os.path.join(sdk.path, 'lib', 'win32', 'release', 'vs' + vs_year, 'libprotobuf.lib')
       compiler.linkflags.insert(0, binary.Dep(lib_path))
   
-    if sdk.name == 'csgo':
+    if sdk.name in ['csgo', 'blade']:
       binary.sources += ['smn_protobuf.cpp']
     else:
       binary.sources += ['smn_bitbuffer.cpp']
+
+    if sdk.name != 'blade':
+      binary.sources += [
+        'vprof_tool.cpp',
+      ]
 
     if sdk.name == 'csgo':
       binary.sources += [
         os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
         os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessages.pb.cc'),
         os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessage_helpers.cpp'),
+      ]
+    elif sdk.name == 'blade':
+      binary.sources += [
+        os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
+        os.path.join(sdk.path, 'public', 'game', 'shared', 'berimbau', 'protobuf', 'berimbau_usermessages.pb.cc'),
+        os.path.join(sdk.path, 'public', 'game', 'shared', 'berimbau', 'protobuf', 'berimbau_usermessage_helpers.cpp'),
       ]
 
 SM.binaries += builder.Add(project)

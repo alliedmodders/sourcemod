@@ -52,7 +52,7 @@ PossibleSDKs = {
   'eye':  SDK('HL2SDK-EYE', '2.eye', '5', 'EYE', WinOnly, 'eye'),
   'csgo': SDK('HL2SDKCSGO', '2.csgo', '21', 'CSGO', CSGO, 'csgo'),
   'portal2':  SDK('HL2SDKPORTAL2', '2.portal2', '17', 'PORTAL2', [], 'portal2'),
-  'blade':  SDK('HL2SDKBLADE', '2.blade', '18', 'BLADE', WinLinux, 'blade'),
+  'blade':  SDK('HL2SDKBLADE', '2.blade', '18', 'BLADE', WinOnly, 'blade'),
   'insurgency':  SDK('HL2SDKINSURGENCY', '2.insurgency', '19', 'INSURGENCY', WinLinuxMac, 'insurgency'),
   'contagion':  SDK('HL2SDKCONTAGION', '2.contagion', '14', 'CONTAGION', WinOnly, 'contagion'),
   'bms':  SDK('HL2SDKBMS', '2.bms', '10', 'BMS', WinLinux, 'bms'),
@@ -538,7 +538,7 @@ class SMConfig(object):
       if builder.target.platform in ['linux', 'mac']:
         compiler.defines += ['NO_HOOK_MALLOC', 'NO_MALLOC_OVERRIDE']
 
-    if sdk.name == 'csgo' and builder.target.platform == 'linux':
+    if sdk.name in ['csgo', 'blade'] and builder.target.platform == 'linux':
       compiler.linkflags += ['-lstdc++']
       compiler.defines += ['_GLIBCXX_USE_CXX11_ABI=0']
 
@@ -584,7 +584,7 @@ class SMConfig(object):
     if builder.target.platform == 'linux':
       if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency', 'doi']:
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
-      elif arch == 'x64' and sdk.name == 'csgo':
+      elif arch == 'x64' and sdk.name in ['csgo', 'blade']:
         dynamic_libs = ['libtier0_client.so', 'libvstdlib_client.so']
       elif sdk.name in ['l4d', 'blade', 'insurgency', 'doi', 'csgo']:
         dynamic_libs = ['libtier0.so', 'libvstdlib.so']
