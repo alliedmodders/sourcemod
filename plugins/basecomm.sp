@@ -94,7 +94,10 @@ public void OnPluginStart()
 	RegAdminCmd("sm_unsilence", Command_Unsilence, ADMFLAG_CHAT, "sm_unsilence <player> - Restores a player's ability to use voice and chat.");	
 	
 	g_Cvar_Deadtalk.AddChangeHook(ConVarChange_Deadtalk);
-	g_Cvar_Alltalk.AddChangeHook(ConVarChange_Alltalk);
+
+	if (g_Cvar_Alltalk) {
+		g_Cvar_Alltalk.AddChangeHook(ConVarChange_Alltalk);
+	}
 	
 	/* Account for late loading */
 	TopMenu topmenu;
@@ -227,7 +230,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 		return;
 	}
 	
-	if (g_Cvar_Alltalk.BoolValue)
+	if (g_Cvar_Alltalk && g_Cvar_Alltalk.BoolValue)
 	{
 		SetClientListeningFlags(client, VOICE_NORMAL);
 		return;
