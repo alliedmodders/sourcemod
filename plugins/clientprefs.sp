@@ -66,14 +66,12 @@ public Action Command_Cookie(int client, int args)
 		/* Show list of cookies */
 		Handle iter = GetCookieIterator();
 		
+		CookieAccess access;
 		char name[30];
-		name[0] = '\0';
 		char description[255];
-		description[0] = '\0';
+		int i;
 		
 		PrintToConsole(client, "%t:", "Cookie List");
-		
-		CookieAccess access;
 		
 		while (ReadCookieIterator(iter, 
 								name, 
@@ -84,22 +82,21 @@ public Action Command_Cookie(int client, int args)
 		{
 			if (access < CookieAccess_Private)
 			{
-				PrintToConsole(client, "%s - %s", name, description);
+				PrintToConsole(client, "[%03d] %s - %s", ++i, name, description);
 			}
 		}
 		
-		delete iter;		
+		delete iter;
 		return Plugin_Handled;
 	}
 	
 	if (client == 0)
 	{
 		PrintToServer("%T", "No Console", LANG_SERVER);
-		return Plugin_Handled;	
+		return Plugin_Handled;
 	}
 	
 	char name[30];
-	name[0] = '\0';
 	GetCmdArg(1, name, sizeof(name));
 	
 	Handle cookie = FindClientCookie(name);
@@ -120,13 +117,11 @@ public Action Command_Cookie(int client, int args)
 	}
 	
 	char value[100];
-	value[0] = '\0';
 	
 	if (args == 1)
 	{
 		GetClientCookie(client, cookie, value, sizeof(value));
 		ReplyToCommand(client, "[SM] %t", "Cookie Value", name, value);
-		
 		delete cookie;
 		return Plugin_Handled;
 	}
@@ -143,8 +138,8 @@ public Action Command_Cookie(int client, int args)
 	GetCmdArg(2, value, sizeof(value));
 	
 	SetClientCookie(client, cookie, value);
-	delete cookie;
 	ReplyToCommand(client, "[SM] %t", "Cookie Changed Value", name, value);
+	delete cookie;
 	
 	return Plugin_Handled;
 }
@@ -154,7 +149,7 @@ public Action Command_Settings(int client, int args)
 	if (client == 0)
 	{
 		PrintToServer("%T", "No Console", LANG_SERVER);
-		return Plugin_Handled;	
+		return Plugin_Handled;
 	}
 	
 	ShowCookieMenu(client);
