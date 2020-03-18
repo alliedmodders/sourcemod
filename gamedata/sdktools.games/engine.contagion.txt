@@ -203,39 +203,39 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"433"
+				"windows"	"434"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"291"
+				"windows"	"292"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"289"
+				"windows"	"290"
 			}
 			"Ignite"
 			{
-				"windows"	"223"
+				"windows"	"224"
 			}
 			"Extinguish"
 			{
-				"windows"	"226"
+				"windows"	"227"
 			}
 			"Teleport"
 			{
-				"windows"	"118"
+				"windows"	"119"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"477"
+				"windows"	"478"
 			}
 			"GetVelocity"
 			{
-				"windows"	"150"
+				"windows"	"151"
 			}
 			"EyeAngles"
 			{
-				"windows"	"141"
+				"windows"	"142"
 			}
 			"AcceptInput"
 			{
@@ -247,7 +247,7 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"282"
+				"windows"	"283"
 			}
 			"Activate"
 			{
@@ -255,11 +255,11 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"456"
+				"windows"	"457"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"275"
+				"windows"	"276"
 			}
 		}
 		
