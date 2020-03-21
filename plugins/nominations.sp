@@ -351,7 +351,7 @@ void AttemptNominate(int client, const char[] map, int size)
 	char name[MAX_NAME_LENGTH];
 	GetClientName(client, name, sizeof(name));
 
-	PrintToChatAll("[SM] %t", "Map Nominated", name, displayName);
+	ReplyToCommand(client, "[SM] %t", "Map Nominated", name, displayName);
 	
 	return;
 }
