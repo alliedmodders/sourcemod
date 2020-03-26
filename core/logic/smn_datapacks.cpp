@@ -166,6 +166,42 @@ static cell_t smn_WritePackString(IPluginContext *pContext, const cell_t *params
 	return 1;
 }
 
+static cell_t smn_WritePackArray(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	cell_t count = params[3];
+	HandleError herr;
+	HandleSecurity sec;
+	CDataPack *pDataPack;
+
+	sec.pOwner = pContext->GetIdentity();
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr = handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+		!= HandleError_None)
+	{
+		pContext->ReportError("Invalid data pack handle %x (error %d).", hndl, herr);
+		return 0;
+	}
+
+	bool insert = (params[0] >= 4) ? params[4] : false;
+
+	cell_t *pArr;
+	pContext->LocalToPhysAddr(params[2], &pArr);
+
+	for(int i=0; i<count; ++i)
+	{
+		if (!insert)
+		{
+			pDataPack->RemoveItem();
+		}
+
+		pDataPack->PackCell(pArr[i]);
+	}
+
+	return 1;
+}
+
 static cell_t smn_WritePackFunction(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -312,6 +348,36 @@ static cell_t smn_ReadPackFunction(IPluginContext *pContext, const cell_t *param
 	return pDataPack->ReadFunction();
 }
 
+static cell_t smn_ReadPackArray(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	cell_t count = params[3];
+	HandleError herr;
+	HandleSecurity sec;
+	CDataPack *pDataPack;
+
+	sec.pOwner = pContext->GetIdentity();
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr = handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+		!= HandleError_None)
+	{
+		pContext->ReportError("Invalid data pack handle %x (error %d).", hndl, herr);
+		return 0;
+	}
+
+	cell_t *pArr;
+	pContext->LocalToPhysAddr(params[2], &pArr);
+
+	for(int i=0; i<count; ++i)
+	{
+		*pArr = pDataPack->ReadCell();
+		++pArr;
+	}
+
+	return 1;
+}
+
 static cell_t smn_ResetPack(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -426,10 +492,12 @@ REGISTER_NATIVES(datapacknatives)
 	{"DataPack.WriteFloat",			smn_WritePackFloat},
 	{"DataPack.WriteString",		smn_WritePackString},
 	{"DataPack.WriteFunction",		smn_WritePackFunction},
+	{"DataPack.WriteArray",			smn_WritePackArray},
 	{"DataPack.ReadCell",			smn_ReadPackCell},
 	{"DataPack.ReadFloat",			smn_ReadPackFloat},
 	{"DataPack.ReadString",			smn_ReadPackString},
 	{"DataPack.ReadFunction",		smn_ReadPackFunction},
+	{"DataPack.ReadArray",			smn_ReadPackArray},
 	{"DataPack.Reset",				smn_ResetPack},
 	{"DataPack.Position.get",		smn_GetPackPosition},
 	{"DataPack.Position.set",		smn_SetPackPosition},

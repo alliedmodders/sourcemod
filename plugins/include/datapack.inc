@@ -71,6 +71,13 @@ methodmap DataPack < Handle
 	// @param insert        Determines whether mid-pack writes will insert instead of overwrite.
 	public native void WriteFunction(Function fktptr, bool insert = false);
 
+	// Packs a normal cell into a data pack.
+	//
+	// @param array         Array to add.
+	// @param count         Number of elements
+	// @param insert        Determines whether mid-pack writes will insert instead of overwrite.
+	public native void WriteArray(const any[] array, int count, bool insert = false);
+
 	// Reads a cell from a data pack.
 	//
 	// @return		A cell at this position
@@ -91,6 +98,12 @@ methodmap DataPack < Handle
 	//
 	// @return              Function pointer.
 	public native Function ReadFunction();
+
+	// Reads a cell array from a data pack.
+	//
+	// @param buffer        Destination buffer.
+	// @param count         Maximum length of output buffer.
+	public native void ReadArray(any[] buffer, int count);
 
 	// Resets the position in a data pack.
 	//
