@@ -122,6 +122,36 @@ void CDataPack::PackString(const char *string)
 	elements.insert(position++, val);
 }
 
+void CDataPack::PackCellArray(cell_t const *vals, size_t count)
+{
+	InternalPack val;
+	val.type = CDataPackType::Cell;
+	val.flags = DP_ARRAY;
+	
+	if(count < 1)
+		return;
+
+	val.pData.aval = (cell_t *)malloc(sizeof(cell_t) * count + sizeof(count));
+	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * count + sizeof(count));
+	val.pData.aval[0] = (cell_t)count;
+	elements.insert(position++, val);
+}
+
+void CDataPack::PackFloatArray(cell_t const *vals, size_t count)
+{
+	InternalPack val;
+	val.type = CDataPackType::Float;
+	val.flags = DP_ARRAY;
+	
+	if(count < 1)
+		return;
+
+	val.pData.aval = (cell_t *)malloc(sizeof(cell_t) * count + sizeof(count));
+	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * count + sizeof(count));
+	val.pData.aval[0] = (cell_t)count;
+	elements.insert(position++, val);
+}
+
 void CDataPack::Reset() const
 {
 	position = 0;
@@ -143,7 +173,7 @@ bool CDataPack::SetPosition(size_t pos) const
 
 cell_t CDataPack::ReadCell() const
 {
-	if (!IsReadable() || elements[position].type != CDataPackType::Cell)
+	if (!IsReadable() || elements[position].type != CDataPackType::Cell || (elements[position].flags & DP_ARRAY))
 		return 0;
 	
 	return elements[position++].pData.cval;
@@ -151,7 +181,7 @@ cell_t CDataPack::ReadCell() const
 
 cell_t CDataPack::ReadFunction() const
 {
-	if (!IsReadable() || elements[position].type != CDataPackType::Function)
+	if (!IsReadable() || elements[position].type != CDataPackType::Function || (elements[position].flags & DP_ARRAY))
 		return 0;
 	
 	return elements[position++].pData.cval;
@@ -159,7 +189,7 @@ cell_t CDataPack::ReadFunction() const
 
 float CDataPack::ReadFloat() const
 {
-	if (!IsReadable() || elements[position].type != CDataPackType::Float)
+	if (!IsReadable() || elements[position].type != CDataPackType::Float || (elements[position].flags & DP_ARRAY))
 		return 0;
 	
 	return elements[position++].pData.fval;
@@ -185,6 +215,38 @@ const char *CDataPack::ReadString(size_t *len) const
 		*len = val.length();
 
 	return val.chars();
+}
+
+cell_t *CDataPack::ReadCellArray(size_t *size) const
+{
+	cell_t *ptr = nullptr;
+	if (!IsReadable() || (elements[position].flags & DP_ARRAY) == 0 || elements[position].type != CDataPackType::Cell)
+		return ptr;
+
+	cell_t *val = elements[position].pData.aval;
+	ptr = &(val[1]);
+	++position;
+
+	if (size)
+		*size = val[0];
+
+	return ptr;
+}
+
+cell_t *CDataPack::ReadFloatArray(size_t *size) const
+{
+	cell_t *ptr = nullptr;
+	if (!IsReadable() || (elements[position].flags & DP_ARRAY) == 0 || elements[position].type != CDataPackType::Float)
+		return ptr;
+
+	cell_t *val = elements[position].pData.aval;
+	ptr = &(val[1]);
+	++position;
+
+	if (size)
+		*size = val[0];
+
+	return ptr;
 }
 
 void *CDataPack::ReadMemory(size_t *size) const
@@ -237,6 +299,11 @@ bool CDataPack::RemoveItem(size_t pos)
 			delete elements[pos].pData.sval;
 			break;
 		}
+	}
+
+	if(elements[pos].flags & DP_ARRAY)
+	{
+		delete elements[pos].pData.aval;
 	}
 
 	elements.remove(pos);

@@ -46,6 +46,8 @@ enum CDataPackType {
 	Function
 };
 
+#define DP_ARRAY (1<<1)
+
 class CDataPack
 {
 public:
@@ -89,6 +91,19 @@ public: // Originally IDataReader
 	 * @return			A float read from the current position.
 	 */
 	float ReadFloat() const;
+
+	/**
+	 * @brief Reads an array of values from the data stream.
+	 *
+	 * @return			A cell array read from the current position.
+	 */
+	cell_t *ReadCellArray(size_t *len) const;
+	/**
+	 * @brief Reads an array of values from the data stream.
+	 *
+	 * @return			A cell array read from the current position.
+	 */
+	cell_t *ReadFloatArray(size_t *len) const;
 
 	/**
 	 * @brief Returns whether or not a specified number of bytes from the current stream
@@ -151,6 +166,19 @@ public: // Originally IDataPack
 	void PackString(const char *string);
 
 	/**
+	 * @brief Packs an array of cells into the data stream.
+	 *
+	 * @param cell		Cells to write.
+	 */
+	void PackCellArray(cell_t const *vals, size_t count);
+	/**
+	 * @brief Packs an array of cells into the data stream.
+	 *
+	 * @param cell		Cells to write.
+	 */
+	void PackFloatArray(cell_t const *vals, size_t count);
+
+	/**
 	 * @brief Creates a generic block of memory in the stream.
 	 *
 	 * Note that the pointer it returns can be invalidated on further
@@ -182,11 +210,13 @@ private:
 		float fval;
 		uint8_t *vval;
 		ke::AString *sval;
+		cell_t *aval;
 	} InternalPackValue;
 	
 	typedef struct {
 		InternalPackValue pData;
 		CDataPackType type;
+		uint8_t flags;
 	} InternalPack;
 
 	ke::Vector<InternalPack> elements;
