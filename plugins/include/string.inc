@@ -591,20 +591,17 @@ stock bool IsStringNumber(const char[] szString)
  */
 stock void StringToLowerCase(char[] szInput) 
 {
-	int iIterator = 0;
-	int iLength = strlen(szInput);
-	char[] szOutput = new char[iLength + 1];
-	
-	while (szInput[iIterator] != EOS) 
-	{
-		if (!IsCharLower(szInput[iIterator]))szOutput[iIterator] = CharToLower(szInput[iIterator]);
-		else szOutput[iIterator] = szInput[iIterator];
-		
-		iIterator++;
-	}
-	
-	szOutput[iIterator + 1] = EOS;
-	strcopy(szInput, iLength + 1, szOutput);
+    int iIterator = 0;
+    
+    while (szInput[iIterator] != EOS) 
+    {
+        if (!IsCharLower(szInput[iIterator])) szInput[iIterator] = CharToLower(szInput[iIterator]);
+        else szInput[iIterator] = szInput[iIterator];
+        
+        iIterator++;
+    }
+    
+    szInput[iIterator + 1] = EOS;
 }
 
 /**
@@ -615,20 +612,17 @@ stock void StringToLowerCase(char[] szInput)
  */
 stock void StringToUpperCase(char[] szInput) 
 {
-	int iIterator = 0;
-	int iLength = strlen(szInput);
-	char[] szOutput = new char[iLength + 1];
-	
-	while (szInput[iIterator] != EOS) 
-	{
-		if (!IsCharUpper(szInput[iIterator]))szOutput[iIterator] = CharToUpper(szInput[iIterator]);
-		else szOutput[iIterator] = szInput[iIterator];
-		
-		iIterator++;
-	}
-	
-	szOutput[iIterator + 1] = EOS;
-	strcopy(szInput, iLength + 1, szOutput);
+    int iIterator = 0;
+    
+    while (szInput[iIterator] != EOS) 
+    {
+        if (!IsCharUpper(szInput[iIterator])) szInput[iIterator] = CharToUpper(szInput[iIterator]);
+        else szInput[iIterator] = szInput[iIterator];
+        
+        iIterator++;
+    }
+    
+    szInput[iIterator + 1] = EOS;
 }
 
 /**
