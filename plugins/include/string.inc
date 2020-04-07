@@ -557,3 +557,149 @@ stock int ImplodeStrings(const char[][] strings, int numStrings, const char[] jo
 	}
 	return total;
 }
+
+/**
+ * Checks if the given string is an integer (Supports negative values)
+ *
+ * @param szString     Input string
+ * @return             Boolean
+ */
+stock bool IsStringNumber(const char[] szString) 
+{
+	int iIterator = 0;
+	int iLength = strlen(szString);
+	
+	char[] szTemporary = new char[iLength + 1];
+	strcopy(szTemporary, iLength + 1, szString);
+	
+	TrimString(szTemporary);
+	
+	if (szTemporary[0] == '-' && iLength > 1)
+		++iIterator;
+	
+	while (szTemporary[iIterator] && IsCharNumeric(szTemporary[iIterator]))
+		++iIterator;
+	
+	return szTemporary[iIterator] == 0 && iIterator != 0;
+}
+
+/**
+ * Converts the given string to lower case
+ *
+ * @param szString     Input string for conversion and also the output
+ * @return             void
+ */
+stock void StringToLowerCase(char[] szInput) 
+{
+	int iIterator = 0;
+	int iLength = strlen(szInput);
+	char[] szOutput = new char[iLength + 1];
+	
+	while (szInput[iIterator] != EOS) 
+	{
+		if (!IsCharLower(szInput[iIterator]))szOutput[iIterator] = CharToLower(szInput[iIterator]);
+		else szOutput[iIterator] = szInput[iIterator];
+		
+		iIterator++;
+	}
+	
+	szOutput[iIterator + 1] = EOS;
+	strcopy(szInput, iLength + 1, szOutput);
+}
+
+/**
+ * Converts the given string to upper case
+ *
+ * @param szString     Input string for conversion and also the output
+ * @return             void
+ */
+stock void StringToUpperCase(char[] szInput) 
+{
+	int iIterator = 0;
+	int iLength = strlen(szInput);
+	char[] szOutput = new char[iLength + 1];
+	
+	while (szInput[iIterator] != EOS) 
+	{
+		if (!IsCharUpper(szInput[iIterator]))szOutput[iIterator] = CharToUpper(szInput[iIterator]);
+		else szOutput[iIterator] = szInput[iIterator];
+		
+		iIterator++;
+	}
+	
+	szOutput[iIterator + 1] = EOS;
+	strcopy(szInput, iLength + 1, szOutput);
+}
+
+/**
+ * Checks if the given string is a float (Supports negative values)
+ *
+ * @param szString     Input string
+ * @return             Boolean
+ */
+stock bool IsStringFloat(const char[] szString) 
+{
+	char cCharacter;
+	int iIterator;
+	int iP;
+	int iLength = strlen(szString);
+	
+	while (0 < szString[iIterator] <= 255) {
+		if (szString[0] == '-' && iLength > 1) {
+			iIterator++;
+			continue;
+		}
+		
+		cCharacter = szString[iIterator];
+		
+		if (!IsCharNumeric(cCharacter)) {
+			if (cCharacter != '.' || iP)
+				return false;
+			
+			iP = 1;
+		}
+		
+		iIterator++;
+	}
+	
+	return (iIterator > 2);
+}
+
+/**
+ * Finds the position (index) of character in the given string
+ *
+ * @param szString     Input string
+ * @param szString     Input character
+ * @param szString     Do we need the last index (Optional, default: false)
+ * @return             Integer, index of the found character (returns -1 if the character was not found)
+ */
+stock int IndexOfChar(const char[] szText, const char cCharacter, bool bLast = false) 
+{
+	int iTextLength = strlen(szText);
+	int iCharacter, iLastIndex = -1;
+	
+	for (iCharacter = 0; iCharacter < iTextLength; iCharacter++)
+	{
+		if (szText[iCharacter] == cCharacter) 
+		{
+			iLastIndex = iCharacter;
+			
+			if (!bLast)
+				break;
+		}
+	}
+	
+	return iLastIndex;
+}
+
+/**
+ * Finds the last position (index) of character in the given string
+ *
+ * @param szString     Input string
+ * @param szString     Input character
+ * @return             Integer, index of the found character. (returns -1 if the character was not found)
+ */
+stock int LastIndexOfChar(const char[] szText, const char cCharacter) 
+{
+	return IndexOfChar(szText, cCharacter, true);
+} 
