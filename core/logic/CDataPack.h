@@ -43,10 +43,10 @@ enum CDataPackType {
 	Cell,
 	Float,
 	String,
-	Function
+	Function,
+	CellArray,
+	FloatArray,
 };
-
-#define DP_ARRAY (1<<1)
 
 class CDataPack
 {
@@ -216,7 +216,6 @@ private:
 	typedef struct {
 		InternalPackValue pData;
 		CDataPackType type;
-		uint8_t flags;
 	} InternalPack;
 
 	ke::Vector<InternalPack> elements;
