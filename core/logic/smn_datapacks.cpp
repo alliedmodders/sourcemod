@@ -405,9 +405,9 @@ static cell_t smn_ReadPackCellArray(IPluginContext *pContext, const cell_t *para
 		return 0;
 	}
 
-	if (pDataPack->GetCurrentType() != CDataPackType::Cell)
+	if (pDataPack->GetCurrentType() != CDataPackType::CellArray)
 	{
-		pContext->ReportError("Invalid data pack type (got %d / expected %d).", pDataPack->GetCurrentType(), CDataPackType::Cell);
+		pContext->ReportError("Invalid data pack type (got %d / expected %d).", pDataPack->GetCurrentType(), CDataPackType::CellArray);
 		return 0;
 	}
 
@@ -457,9 +457,9 @@ static cell_t smn_ReadPackFloatArray(IPluginContext *pContext, const cell_t *par
 		return 0;
 	}
 
-	if (pDataPack->GetCurrentType() != CDataPackType::Float)
+	if (pDataPack->GetCurrentType() != CDataPackType::FloatArray)
 	{
-		pContext->ReportError("Invalid data pack type (got %d / expected %d).", pDataPack->GetCurrentType(), CDataPackType::Float);
+		pContext->ReportError("Invalid data pack type (got %d / expected %d).", pDataPack->GetCurrentType(), CDataPackType::FloatArray);
 		return 0;
 	}
 
