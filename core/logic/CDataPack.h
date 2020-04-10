@@ -95,12 +95,14 @@ public: // Originally IDataReader
 	/**
 	 * @brief Reads an array of values from the data stream.
 	 *
+	 * @param len       The size of the array stored at this position to return.
 	 * @return			A cell array read from the current position.
 	 */
 	cell_t *ReadCellArray(size_t *len) const;
 	/**
 	 * @brief Reads an array of values from the data stream.
 	 *
+	 * @param len       The size of the array stored at this position to return.
 	 * @return			A cell array read from the current position.
 	 */
 	cell_t *ReadFloatArray(size_t *len) const;
@@ -168,13 +170,15 @@ public: // Originally IDataPack
 	/**
 	 * @brief Packs an array of cells into the data stream.
 	 *
-	 * @param cell		Cells to write.
+	 * @param vals		Cells to write.
+	 * @param count     Number of cells.
 	 */
 	void PackCellArray(cell_t const *vals, size_t count);
 	/**
 	 * @brief Packs an array of cells into the data stream.
 	 *
-	 * @param cell		Cells to write.
+	 * @param vals		Cells to write.
+	 * @param count     Number of cells.
 	 */
 	void PackFloatArray(cell_t const *vals, size_t count);
 

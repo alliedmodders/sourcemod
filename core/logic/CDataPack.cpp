@@ -130,8 +130,8 @@ void CDataPack::PackCellArray(cell_t const *vals, size_t count)
 	if(count < 1)
 		return;
 
-	val.pData.aval = new cell_t [sizeof(cell_t) * count + sizeof(count)];
-	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * count + sizeof(count));
+	val.pData.aval = new cell_t [count + 1];
+	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * (count + 1));
 	val.pData.aval[0] = (cell_t)count;
 	elements.insert(position++, val);
 }
@@ -144,8 +144,8 @@ void CDataPack::PackFloatArray(cell_t const *vals, size_t count)
 	if(count < 1)
 		return;
 
-	val.pData.aval = new cell_t [sizeof(cell_t) * count + sizeof(count)];
-	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * count + sizeof(count));
+	val.pData.aval = new cell_t [count + 1];
+	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * (count + 1));
 	val.pData.aval[0] = (cell_t)count;
 	elements.insert(position++, val);
 }

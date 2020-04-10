@@ -184,16 +184,13 @@ static cell_t smn_WritePackCellArray(IPluginContext *pContext, const cell_t *par
 		return 0;
 	}
 
-	bool insert = (params[0] >= 4) ? params[4] : false;
-
-	cell_t *pArray;
-	pContext->LocalToPhysAddr(params[2], &pArray);
-
-	if (!insert)
+	if (!params[4])
 	{
 		pDataPack->RemoveItem();
 	}
 
+	cell_t *pArray;
+	pContext->LocalToPhysAddr(params[2], &pArray);
 	pDataPack->PackCellArray(pArray, count);
 
 	return 1;
@@ -217,16 +214,13 @@ static cell_t smn_WritePackFloatArray(IPluginContext *pContext, const cell_t *pa
 		return 0;
 	}
 
-	bool insert = (params[0] >= 4) ? params[4] : false;
-
-	cell_t *pArray;
-	pContext->LocalToPhysAddr(params[2], &pArray);
-
-	if (!insert)
+	if (!params[4])
 	{
 		pDataPack->RemoveItem();
 	}
 
+	cell_t *pArray;
+	pContext->LocalToPhysAddr(params[2], &pArray);
 	pDataPack->PackFloatArray(pArray, count);
 
 	return 1;
@@ -396,9 +390,6 @@ static cell_t smn_ReadPackCellArray(IPluginContext *pContext, const cell_t *para
 		return 0;
 	}
 
-	cell_t *pArray;
-	pContext->LocalToPhysAddr(params[2], &pArray);
-
 	if (!pDataPack->IsReadable())
 	{
 		pContext->ReportError("Data pack operation is out of bounds.");
@@ -424,6 +415,9 @@ static cell_t smn_ReadPackCellArray(IPluginContext *pContext, const cell_t *para
 		pContext->ReportError("Input buffer too small (needed %d, got %d).", packCount, count);
 		return 0;
 	}
+	
+	cell_t *pArray;
+	pContext->LocalToPhysAddr(params[2], &pArray);
 
 	memcpy(pArray, pData, sizeof(cell_t) * count);
 
@@ -447,9 +441,6 @@ static cell_t smn_ReadPackFloatArray(IPluginContext *pContext, const cell_t *par
 		pContext->ReportError("Invalid data pack handle %x (error %d).", hndl, herr);
 		return 0;
 	}
-
-	cell_t *pArray;
-	pContext->LocalToPhysAddr(params[2], &pArray);
 
 	if (!pDataPack->IsReadable())
 	{
@@ -476,6 +467,9 @@ static cell_t smn_ReadPackFloatArray(IPluginContext *pContext, const cell_t *par
 		pContext->ReportError("Input buffer too small (needed %d, got %d).", packCount, count);
 		return 0;
 	}
+
+	cell_t *pArray;
+	pContext->LocalToPhysAddr(params[2], &pArray);
 
 	memcpy(pArray, pData, sizeof(cell_t) * count);
 
