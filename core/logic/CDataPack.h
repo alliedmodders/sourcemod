@@ -98,14 +98,14 @@ public: // Originally IDataReader
 	 * @param len       The size of the array stored at this position to return.
 	 * @return			A cell array read from the current position.
 	 */
-	cell_t *ReadCellArray(size_t *len) const;
+	cell_t *ReadCellArray(cell_t *len) const;
 	/**
 	 * @brief Reads an array of values from the data stream.
 	 *
 	 * @param len       The size of the array stored at this position to return.
 	 * @return			A cell array read from the current position.
 	 */
-	cell_t *ReadFloatArray(size_t *len) const;
+	cell_t *ReadFloatArray(cell_t *len) const;
 
 	/**
 	 * @brief Returns whether or not a specified number of bytes from the current stream
@@ -173,14 +173,14 @@ public: // Originally IDataPack
 	 * @param vals		Cells to write.
 	 * @param count     Number of cells.
 	 */
-	void PackCellArray(cell_t const *vals, size_t count);
+	void PackCellArray(cell_t const *vals, cell_t count);
 	/**
 	 * @brief Packs an array of cells into the data stream.
 	 *
 	 * @param vals		Cells to write.
 	 * @param count     Number of cells.
 	 */
-	void PackFloatArray(cell_t const *vals, size_t count);
+	void PackFloatArray(cell_t const *vals, cell_t count);
 
 	/**
 	 * @brief Creates a generic block of memory in the stream.
