@@ -564,23 +564,22 @@ stock int ImplodeStrings(const char[][] strings, int numStrings, const char[] jo
  * @param szString     Input string
  * @return             Boolean
  */
-stock bool IsStringNumber(const char[] szString) 
+stock bool IsStringNumber(const char[] str, int nBase=10)
 {
-	int iIterator = 0;
-	int iLength = strlen(szString);
-	
-	char[] szTemporary = new char[iLength + 1];
-	strcopy(szTemporary, iLength + 1, szString);
-	
-	TrimString(szTemporary);
-	
-	if (szTemporary[0] == '-' && iLength > 1)
-		++iIterator;
-	
-	while (szTemporary[iIterator] && IsCharNumeric(szTemporary[iIterator]))
-		++iIterator;
-	
-	return szTemporary[iIterator] == 0 && iIterator != 0;
+	int result;
+	return StringToIntEx(str, result, nBase) == strlen(str);
+}
+
+/**
+ * Checks if the given string is a float (Supports negative values)
+ *
+ * @param szString     Input string
+ * @return             Boolean
+ */
+stock bool IsStringFloat(const char[] str)
+{
+	float result;
+	return StringToFloatEx(str, result) == strlen(str) && FindCharInString(str, '.') != -1;
 }
 
 /**
@@ -626,41 +625,7 @@ stock void StringToUpperCase(char[] szInput)
 }
 
 /**
- * Checks if the given string is a float (Supports negative values)
- *
- * @param szString     Input string
- * @return             Boolean
- */
-stock bool IsStringFloat(const char[] szString) 
-{
-	char cCharacter;
-	int iIterator;
-	int iP;
-	int iLength = strlen(szString);
-	
-	while (0 < szString[iIterator] <= 255) {
-		if (szString[0] == '-' && iLength > 1) {
-			iIterator++;
-			continue;
-		}
-		
-		cCharacter = szString[iIterator];
-		
-		if (!IsCharNumeric(cCharacter)) {
-			if (cCharacter != '.' || iP)
-				return false;
-			
-			iP = 1;
-		}
-		
-		iIterator++;
-	}
-	
-	return (iIterator > 2);
-}
-
-/**
- * Finds the position (index) of character in the given string
+ * Finds the position (index) of character in the given string (A wrapper around FindCharInString)
  *
  * @param szString     Input string
  * @param szString     Input character
@@ -669,25 +634,11 @@ stock bool IsStringFloat(const char[] szString)
  */
 stock int IndexOfChar(const char[] szText, const char cCharacter, bool bLast = false) 
 {
-	int iTextLength = strlen(szText);
-	int iCharacter, iLastIndex = -1;
-	
-	for (iCharacter = 0; iCharacter < iTextLength; iCharacter++)
-	{
-		if (szText[iCharacter] == cCharacter) 
-		{
-			iLastIndex = iCharacter;
-			
-			if (!bLast)
-				break;
-		}
-	}
-	
-	return iLastIndex;
+	return FindCharInString(szText, cCharacter, bLast);
 }
 
 /**
- * Finds the last position (index) of character in the given string
+ * Finds the last position (index) of character in the given string (A wrapper around IndexOfChar)
  *
  * @param szString     Input string
  * @param szString     Input character
@@ -697,3 +648,22 @@ stock int LastIndexOfChar(const char[] szText, const char cCharacter)
 {
 	return IndexOfChar(szText, cCharacter, true);
 } 
+
+/**
+ * Copies the input string into the output string until it reaches the given character
+ * 
+ * @param szInput           Input string
+ * @param szOutput          Output string
+ * @param iOutputLength     Output max length
+ * @param cCharacter        Character
+ * 
+ * @return                  void
+*/
+stock void CopyC(const char[] szInput, char[] szOutput, int iOutputLength, char cCharacter) {
+    int iInputIterator, iOutputIterator;
+    
+    while(szInput[iInputIterator] != EOS && iOutputIterator < iOutputLength && szInput[iInputIterator] != cCharacter)
+        szOutput[iOutputIterator ++] = szInput[iInputIterator ++];
+    
+    szOutput[iOutputIterator] = EOS;
+}
