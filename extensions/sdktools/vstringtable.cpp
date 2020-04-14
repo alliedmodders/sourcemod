@@ -203,7 +203,7 @@ static cell_t GetStringTableData(IPluginContext *pContext, const cell_t *params)
 	char *addr;
 	pContext->LocalToString(params[3], &addr);
 
-	size_t datalen = params[4];
+	datalen = params[4];
 
 	if (userdata)
 	{
