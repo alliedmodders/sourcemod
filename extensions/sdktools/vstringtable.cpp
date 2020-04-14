@@ -184,8 +184,7 @@ static cell_t GetStringTableData(IPluginContext *pContext, const cell_t *params)
 	INetworkStringTable *pTable = netstringtables->GetTable(idx);
 	int stringidx;
 	const char *userdata;
-	int datalen;
-	size_t numBytes;
+	int datalen = 0;
 
 	if (!pTable)
 	{
@@ -199,12 +198,22 @@ static cell_t GetStringTableData(IPluginContext *pContext, const cell_t *params)
 	}
 
 	userdata = (const char *)pTable->GetStringUserData(stringidx, &datalen);
-	if (!userdata)
-	{
-		userdata = "";
-	}
 
-	pContext->StringToLocalUTF8(params[3], params[4], userdata, &numBytes);
+	char *addr;
+	pContext->LocalToString(params[3], &addr);
+
+	int maxBytes = params[4];
+	size_t numBytes = MIN(maxBytes, datalen);
+
+	if (userdata)
+	{
+		memcpy(addr, userdata, numBytes);
+	}
+	else if (maxBytes > 0)
+	{
+		addr[0] = '\0';
+		numBytes = 0;
+	}
 
 	return numBytes;
 }
