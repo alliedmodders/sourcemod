@@ -199,18 +199,20 @@ static cell_t GetStringTableData(IPluginContext *pContext, const cell_t *params)
 	}
 
 	userdata = (const char *)pTable->GetStringUserData(stringidx, &datalen);
-	if (!userdata)
-	{
-		userdata = "";
-		numBytes = 1;
-	}
-
-	size_t maxBytes = params[4];
 
 	char *addr;
 	pContext->LocalToString(params[3], &addr);
 
-	memcpy(addr, userdata, MIN(numBytes, maxBytes));
+	size_t maxBytes = params[4];
+
+	if (userdata)
+	{
+		memcpy(addr, userdata, MIN(numBytes, maxBytes));
+	}
+	else if (maxBytes > 0)
+	{
+		addr[0] = '\0';
+	}
 
 	return numBytes;
 }
