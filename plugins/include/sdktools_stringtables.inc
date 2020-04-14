@@ -133,10 +133,9 @@ native int GetStringTableData(int tableidx, int stringidx, char[] userdata, int 
  * @param stringidx     A string index.
  * @param userdata      User data string that will be set.
  * @param length        Length of user data string. This should include the null terminator.
- * @return              Returns 1 on success.
  * @error               Invalid string table index or string index.
  */
-native int SetStringTableData(int tableidx, int stringidx, const char[] userdata, int length);
+native void SetStringTableData(int tableidx, int stringidx, const char[] userdata, int length);
 
 /**
  * Adds a string to a given string table.
