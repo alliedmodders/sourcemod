@@ -212,7 +212,6 @@ static cell_t GetStringTableData(IPluginContext *pContext, const cell_t *params)
 	else if (datalen > 0)
 	{
 		addr[0] = '\0';
-		datalen = 1;
 	}
 
 	return datalen;
