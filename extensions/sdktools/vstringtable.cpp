@@ -202,9 +202,15 @@ static cell_t GetStringTableData(IPluginContext *pContext, const cell_t *params)
 	if (!userdata)
 	{
 		userdata = "";
+		numBytes = 1;
 	}
 
-	pContext->StringToLocalUTF8(params[3], params[4], userdata, &numBytes);
+	size_t maxBytes = params[4];
+
+	char *addr;
+	pContext->LocalToString(params[3], &addr);
+
+	memcpy(addr, userdata, MIN(numBytes, maxBytes));
 
 	return numBytes;
 }
