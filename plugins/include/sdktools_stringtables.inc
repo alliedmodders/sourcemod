@@ -119,9 +119,9 @@ native int GetStringTableDataLength(int tableidx, int stringidx);
  *
  * @param tableidx      A string table index.
  * @param stringidx     A string index.
- * @param userdata      Buffer to store the user data. This will be set to "" if there is no user data.
+ * @param userdata      Buffer to store the user data. userdata[0] will be set to null terminator if there is no user data.
  * @param maxlength     Maximum length of string buffer.
- * @return              Number of bytes written to the buffer (UTF-8 safe).
+ * @return              Number of bytes written to the buffer (binary safe, includes the null terminator).
  * @error               Invalid string table index or string index.
  */
 native int GetStringTableData(int tableidx, int stringidx, char[] userdata, int maxlength);
@@ -133,7 +133,7 @@ native int GetStringTableData(int tableidx, int stringidx, char[] userdata, int 
  * @param stringidx     A string index.
  * @param userdata      User data string that will be set.
  * @param length        Length of user data string. This should include the null terminator.
- * @return              Number of bytes written to the buffer (UTF-8 safe).
+ * @return              Returns 1 on success.
  * @error               Invalid string table index or string index.
  */
 native int SetStringTableData(int tableidx, int stringidx, const char[] userdata, int length);
