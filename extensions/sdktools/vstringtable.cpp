@@ -202,8 +202,8 @@ static cell_t GetStringTableData(IPluginContext *pContext, const cell_t *params)
 	char *addr;
 	pContext->LocalToString(params[3], &addr);
 
-	size_t maxBytes = params[4];
-	size_t numBytes = MIN(datalen, maxBytes);
+	int maxBytes = params[4];
+	size_t numBytes = MIN(maxBytes, datalen);
 
 	if (userdata)
 	{
