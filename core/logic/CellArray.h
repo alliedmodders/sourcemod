@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ICellArray.h>
+#include <amtl/am-bits.h>
 
 extern HandleType_t htCellArray;
 
@@ -220,19 +221,21 @@ private:
 		{
 			newAllocSize = 8;
 		}
+		if (!ke::IsUintPtrAddSafe(m_Size, count))
+		{
+			return false;
+		}
 		/* If it's not enough, keep doubling */
 		while (m_Size + count > newAllocSize)
 		{
+			if (!ke::IsUintPtrMultiplySafe(newAllocSize, 2))
+			{
+				return false;
+			}
 			newAllocSize *= 2;
 		}
 		/* finally, allocate the new block */
-		cell_t *data = nullptr;
-		if (m_Data)
-		{
-			data = static_cast<cell_t*>(realloc(m_Data, sizeof(cell_t) * m_BlockSize * newAllocSize));
-		} else {
-			data = static_cast<cell_t*>(malloc(sizeof(cell_t) * m_BlockSize * newAllocSize));
-		}
+		cell_t *data = static_cast<cell_t*>(realloc(m_Data, sizeof(cell_t) * m_BlockSize * newAllocSize));
 		/* Update state if allocation was successful */
 		if (data)
 		{
