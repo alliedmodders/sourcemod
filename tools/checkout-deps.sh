@@ -116,7 +116,7 @@ fi
 for sdk in "${sdks[@]}"
 do
   repo=hl2sdk-proxy-repo
-  origin="https://github.com/alliedmodders/hl2sdk"
+  origin=
   name=hl2sdk-$sdk
   branch=$sdk
   checkout

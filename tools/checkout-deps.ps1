@@ -81,7 +81,7 @@ else
 }
 
 $SDKS | % {
-    Checkout-Repo -Name "hl2sdk-$_" -Branch $_ "hl2sdk-proxy-repo" -Repo "https://github.com/alliedmodders/hl2sdk.git"
+    Checkout-Repo -Name "hl2sdk-$_" -Branch $_ -Repo "hl2sdk-proxy-repo"
 }
 
 Checkout-Repo -Name "ambuild" -Branch "master" -Repo "https://github.com/alliedmodders/ambuild.git"
