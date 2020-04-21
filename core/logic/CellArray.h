@@ -214,30 +214,32 @@ private:
 		{
 			return true;
 		}
+		size_t newAllocSize = m_AllocSize;
 		/* Set a base allocation size of 8 items */
-		if (!m_AllocSize)
+		if (!newAllocSize)
 		{
-			m_AllocSize = 8;
+			newAllocSize = 8;
 		}
 		/* If it's not enough, keep doubling */
-		while (m_Size + count > m_AllocSize)
+		while (m_Size + count > newAllocSize)
 		{
-			m_AllocSize *= 2;
+			newAllocSize *= 2;
 		}
 		/* finally, allocate the new block */
+		cell_t *data = nullptr;
 		if (m_Data)
 		{
-			cell_t *data = static_cast<cell_t*>(realloc(m_Data, sizeof(cell_t) * m_BlockSize * m_AllocSize));
-			if (!data)  // allocation failure
-			{
-				return false;
-			}
-
-			m_Data = data;
+			data = static_cast<cell_t*>(realloc(m_Data, sizeof(cell_t) * m_BlockSize * newAllocSize));
 		} else {
-			m_Data = static_cast<cell_t*>(malloc(sizeof(cell_t) * m_BlockSize * m_AllocSize));
+			data = static_cast<cell_t*>(malloc(sizeof(cell_t) * m_BlockSize * newAllocSize));
 		}
-		return (m_Data != nullptr);
+		/* Update state if allocation was successful */
+		if (data)
+		{
+			m_AllocSize = newAllocSize;
+			m_Data = data;
+		}
+		return (data != nullptr);
 	}
 private:
 	cell_t *m_Data;
