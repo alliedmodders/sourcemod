@@ -54,17 +54,29 @@ enum MenuAction
 	MenuAction_Display = (1<<1),    /**< A menu is about to be displayed (param1=client, param2=MenuPanel Handle) */
 	MenuAction_Select = (1<<2),     /**< An item was selected (param1=client, param2=item) */
 	MenuAction_Cancel = (1<<3),     /**< The menu was cancelled (param1=client, param2=reason) */
-	MenuAction_End = (1<<4),        /**< A menu display has fully ended.
-                                         param1 is the MenuEnd reason, and if it's MenuEnd_Cancelled, then
-                                         param2 is the MenuCancel reason from MenuAction_Cancel. */
-	MenuAction_VoteEnd = (1<<5),    /**< (VOTE ONLY): A vote sequence has succeeded (param1=chosen item)
-                                         This is not called if SetVoteResultCallback has been used on the menu. */
+
+	/**
+	 * A menu display has fully ended.
+	 * param1 is the MenuEnd reason, and if it's MenuEnd_Cancelled, then
+	 * param2 is the MenuCancel reason from MenuAction_Cancel.
+	 */
+	MenuAction_End = (1<<4),
+
+	/**
+	 * (VOTE ONLY): A vote sequence has succeeded (param1=chosen item)
+	 * This is not called if SetVoteResultCallback has been used on the menu.
+	 */
+	MenuAction_VoteEnd = (1<<5),
 	MenuAction_VoteStart = (1<<6),  /**< (VOTE ONLY): A vote sequence has started (nothing passed) */
 	MenuAction_VoteCancel = (1<<7), /**< (VOTE ONLY): A vote sequence has been cancelled (param1=reason) */
 	MenuAction_DrawItem = (1<<8),   /**< An item is being drawn; return the new style (param1=client, param2=item) */
-	MenuAction_DisplayItem = (1<<9) /**< Item text is being drawn to the display (param1=client, param2=item)
-                                         To change the text, use RedrawMenuItem().
-                                         If you do so, return its return value.  Otherwise, return 0. */
+
+	/**
+	 * Item text is being drawn to the display (param1=client, param2=item)
+	 * To change the text, use RedrawMenuItem().
+	 * If you do so, return its return value.  Otherwise, return 0.
+	 */
+	MenuAction_DisplayItem = (1<<9)
 };
 
 /** Default menu actions */
