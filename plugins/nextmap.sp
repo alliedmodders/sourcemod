@@ -207,7 +207,7 @@ public Action Command_MapHistory(int client, int args)
 	
 	if (client && GetCmdReplySource() == SM_REPLY_TO_CHAT)
 	{
-		PrintToChat(client, "Check console for output.");
+		PrintToChat(client, "%t", "See console for output");
 	}
 
 	return Plugin_Handled;
