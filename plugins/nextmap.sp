@@ -205,7 +205,7 @@ public Action Command_MapHistory(int client, int args)
 		lastMapStartTime = startTime;
 	}
 	
-	if (client && GetCmdReplySource() = SM_REPLY_TO_CHAT)
+	if (client && GetCmdReplySource() == SM_REPLY_TO_CHAT)
 	{
 		PrintToChat(client, "Check console for output.");
 	}
