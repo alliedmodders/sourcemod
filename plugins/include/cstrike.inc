@@ -443,6 +443,16 @@ native CSWeaponID CS_ItemDefIndexToID(int iDefIndex);
 native int CS_WeaponIDToItemDefIndex(CSWeaponID id);
 
 /**
+ * Returns the loadout slot based on the CSWeaponID.
+ *
+ * @param id            CSWeaponID to get the loadout slot for.
+ * @return              Returns loadout slot value for the weapon id.
+ * @error               Invalid weapon id.
+ * 
+ */
+native int CS_WeaponIDToLoadoutSlot(CSWeaponID id);
+
+/**
  * Do not edit below this line!
  */
 public Extension __ext_cstrike = 
@@ -482,5 +492,6 @@ public void __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_UpdateClientModel");
 	MarkNativeAsOptional("CS_ItemDefIndexToID");
 	MarkNativeAsOptional("CS_WeaponIDToItemDefIndex");
+	MarkNativeAsOptional("CS_WeaponIDToLoadoutSlot");
 }
 #endif
