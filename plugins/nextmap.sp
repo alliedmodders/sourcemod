@@ -164,12 +164,16 @@ void FindAndSetNextMap()
 		}
 		
 		if (g_MapPos == -1)
+		{
 			g_MapPos = 0;
+		}
 	}
 	
 	g_MapPos++;
 	if (g_MapPos >= mapCount)
-		g_MapPos = 0;	
+	{
+		g_MapPos = 0;
+	}
  
  	g_MapList.GetString(g_MapPos, mapName, sizeof(mapName));
 	SetNextMap(mapName);
