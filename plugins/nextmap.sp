@@ -224,16 +224,16 @@ int FormatTimeDuration(char[] buffer, int maxlen, int time)
 	{
 		return Format(buffer, maxlen, "%id %ih %im", days, hours, (seconds >= 30) ? minutes+1 : minutes);
 	}
-	else if (hours > 0)
+	
+	if (hours > 0)
 	{
 		return Format(buffer, maxlen, "%ih %im", hours, (seconds >= 30) ? minutes+1 : minutes);		
 	}
-	else if (minutes > 0)
+	
+	if (minutes > 0)
 	{
 		return Format(buffer, maxlen, "%im", (seconds >= 30) ? minutes+1 : minutes);		
 	}
-	else
-	{
-		return Format(buffer, maxlen, "%is", seconds);		
-	}
+	
+	return Format(buffer, maxlen, "%is", seconds);	
 }
