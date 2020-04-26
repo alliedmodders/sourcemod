@@ -133,10 +133,11 @@ private:
 	ke::HashSet<ke::AString, detail::StringHashMapPolicy> m_CSGOBadList;
 	bool m_bFollowCSGOServerGuidelines = false;
 #endif
-private:
-	bool m_bAnyLevelInited = false;
+public:
 	IForward *m_OnClientSpeaking;
 	IForward *m_OnClientSpeakingEnd;
+private:
+	bool m_bAnyLevelInited = false;
 };
 
 extern SDKTools g_SdkTools;

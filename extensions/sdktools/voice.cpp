@@ -256,7 +256,7 @@ public:
 	}
 	void OnTimerEnd(ITimer *pTimer, void *pData)
 	{
-		m_pTimerSpeaking[(int)(intptr_t)pData] = NULL;
+		g_hTimerSpeaking[(int)(intptr_t)pData] = NULL;
 	}
 } s_SpeakingEndTimer;
 
