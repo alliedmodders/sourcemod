@@ -165,6 +165,8 @@ extern HandleType_t g_CallHandle;
 extern HandleType_t g_TraceHandle;
 /* Call Wrappers */
 extern ICallWrapper *g_pAcceptInput;
+/* Timers */
+extern ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
 /* Forwards */
 extern IForward *m_OnClientSpeaking;
 extern IForward *m_OnClientSpeakingEnd;
