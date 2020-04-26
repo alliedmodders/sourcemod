@@ -54,6 +54,8 @@
 #if SOURCE_ENGINE == SE_CSGO
 #include <am-hashset.h>
 #include <sm_stringhashmap.h>
+#else
+#include <inetmsghandler.h>
 #endif
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 
@@ -97,6 +99,12 @@ public: //IClientListner
 	bool InterceptClientConnect(int client, char *error, size_t maxlength);
 	void OnClientPutInServer(int client);
 	void OnClientDisconnecting(int client);
+public:
+#if SOURCE_ENGINE == SE_CSGO
+	void OnClientVoice(edict_t *pPlayer);
+#else
+	bool ProcessVoiceData(CLC_VoiceData *msg);
+#endif
 public: // IVoiceServer
 	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
 	void VoiceInit();
@@ -126,6 +134,8 @@ private:
 #endif
 private:
 	bool m_bAnyLevelInited = false;
+	IForward *m_OnClientSpeaking;
+	IForward *m_OnClientSpeakingEnd;
 };
 
 extern SDKTools g_SdkTools;

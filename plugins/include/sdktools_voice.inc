@@ -57,6 +57,20 @@ enum ListenOverride
 };
 
 /**
+ * Called when a client is speaking.
+ *
+ * @param client        The client index
+ */
+forward void OnClientSpeaking(int client);
+
+/**
+ * Called once a client speaking end.
+ *
+ * @param client        The client index
+ */
+forward void OnClientSpeakingEnd(int client);
+
+/**
  * Set the client listening flags.
  *
  * @param client        The client index
@@ -122,3 +136,12 @@ native ListenOverride GetListenOverride(int iReceiver, int iSender);
  * @return              True if muter has muted mutee, false otherwise.
  */
 native bool IsClientMuted(int iMuter, int iMutee);
+
+/**
+ * Retrieves if the certain player is speaking.
+ *
+ * @param client        The client index
+ * @return              True if player is speaking, false otherwise.
+ * @error               Invalid client index.
+ */
+native bool IsClientSpeaking(int client);
