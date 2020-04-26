@@ -63,6 +63,9 @@
 #include <itoolentity.h>
 #endif
 
+ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
+float g_fSpeakingTime[SM_MAXPLAYERS+1];
+
 /**
  * @brief Implementation of the SDK Tools extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
@@ -97,6 +100,7 @@ public: //IConCommandBaseAccessor
 	bool RegisterConCommandBase(ConCommandBase *pVar);
 public: //IClientListner
 	bool InterceptClientConnect(int client, char *error, size_t maxlength);
+	void OnClientConnected(int client);
 	void OnClientPutInServer(int client);
 	void OnClientDisconnecting(int client);
 public:
@@ -137,6 +141,27 @@ private:
 	IForward *m_OnClientSpeaking;
 	IForward *m_OnClientSpeakingEnd;
 };
+
+class SpeakingEndTimer : public ITimedEvent
+{
+public:
+	ResultType OnTimer(ITimer *pTimer, void *pData)
+	{
+		int client = (int)(intptr_t)pData;
+		if ((gpGlobals->curtime - g_fSpeakingTime[client]) > 0.1)
+		{
+			m_OnClientSpeakingEnd->PushCell(client);
+			m_OnClientSpeakingEnd->Execute();
+
+			return Pl_Stop;
+		}
+		return Pl_Continue;
+	}
+	void OnTimerEnd(ITimer *pTimer, void *pData)
+	{
+		m_pTimerSpeaking[(int)(intptr_t)pData] = NULL;
+	}
+} s_SpeakingEndTimer;
 
 extern SDKTools g_SdkTools;
 /* Interfaces from engine or gamedll */

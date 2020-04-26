@@ -57,6 +57,9 @@ SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *,
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 SH_DECL_HOOK1_void_vafmt(IVEngineServer, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
+#if SOURCE_ENGINE == SE_CSGO
+SH_DECL_HOOK1_void(IServerGameClients, ClientVoice, SH_NOATTRIB, 0, edict_t *);
+#endif
 
 SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
 IServerGameEnts *gameents = NULL;
@@ -543,16 +546,29 @@ void SDKTools::OnSendClientCommand(edict_t *pPlayer, const char *szFormat)
 }
 #endif
 
+#if SOURCE_ENGINE == SE_CSGO
+void SDKTools::OnClientVoice(edict_t *pPlayer)
+{
+	if (pPlayer)
+	{
+		int client = IndexOfEdict(pPlayer);
+
+		g_fSpeakingTime[client] = gpGlobals->curtime;
+
+		if (g_hTimerSpeaking[client] == NULL)
+		{
+			g_hTimerSpeaking[client] = timersys->CreateTimer(&s_SpeakingEndTimer, 0.3f, (void *)(intptr_t)client, 1);
+		}
+
+		m_OnClientSpeaking->PushCell(client);
+		m_OnClientSpeaking->Execute();
+	}
+}
+#neif
+
 void SDKTools::OnClientPutInServer(int client)
 {
 	g_Hooks.OnClientPutInServer(client);
-#if SOURCE_ENGINE != SE_CSGO
-	IClient *pClient = g_pServer->GetClient(client-1);
-	if (pClient != NULL)
-	{
-		SH_ADD_HOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + 4), SH_MEMBER(this, &SDKTools::ProcessVoiceData), true);
-	}
-#endif
 }
 
 class SDKTools_API : public ISDKTools
