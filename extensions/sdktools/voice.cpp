@@ -174,7 +174,7 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 #if SOURCE_ENGINE != SE_CSGO
 void SDKTools::OnClientConnected(int client)
 {
-	IClient *pClient = g_pServer->GetClient(client-1);
+	IClient *pClient = iserver->GetClient(client-1);
 	if (pClient != NULL)
 	{
 		SH_ADD_HOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + 4), SH_MEMBER(this, &SDKTools::ProcessVoiceData), true);
