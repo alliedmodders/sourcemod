@@ -13,21 +13,14 @@ for arch in SM.archs:
   
   binary.compiler.includes += [
     os.path.join(builder.sourcePath, 'extensions', 'geoip'),
-    os.path.join(builder.sourcePath, 'extensions', 'geoip', 'libmaxminddb', 'include'),
-    os.path.join(builder.sourcePath, 'extensions', 'geoip', 'libmaxminddb', 'src'),
   ]
-  
-  # This is only defined in their headers for MSVC, else it would take from configure.
-  # We need to define manually since we're not using their build tools.
-  # TODO: parse from their file.
-  if not binary.compiler.like('msvc'):
-    binary.compiler.defines += ['PACKAGE_VERSION="1.3.2"']
 
   binary.sources += [
     'extension.cpp',
+    'geoip_util.cpp',
     '../../public/smsdk_ext.cpp',
-    'libmaxminddb/src/data-pool.c',
-    'libmaxminddb/src/maxminddb.c',
+    'data-pool.c',
+    'maxminddb.c',
   ]
 
   SM.extensions += [builder.Add(binary)]
