@@ -328,6 +328,7 @@ void SDKHooks::SDK_OnAllLoaded()
 	if (hook != 0) \
 	{ \
 		SH_REMOVE_HOOK_ID(hook); \
+		hook = 0; \
 	}
 
 void SDKHooks::SDK_OnUnload()

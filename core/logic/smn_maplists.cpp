@@ -441,7 +441,7 @@ public:
 				 */
 				if (strcmp(name, "default") != 0)
 				{
-					success = GetMapList(&pNewArray, name, &change_serial);
+					success = GetMapList(&pNewArray, "default", &change_serial);
 				}
 				/* If either of the last two conditions failed, try again if we can. */
 				if (!success && strcmp(name, "mapcyclefile") != 0)

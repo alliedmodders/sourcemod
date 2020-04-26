@@ -162,13 +162,14 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	static ValveCall *pCall = NULL;
 	if (!pCall)
 	{
-		ValvePassInfo pass[5];
+		ValvePassInfo pass[6];
 		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[2], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[4], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
-		if (!CreateBaseCall("GiveNamedItem", ValveCall_Player, &pass[4], pass, 4, &pCall))
+		InitPass(pass[5], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("GiveNamedItem", ValveCall_Player, &pass[5], pass, 5, &pCall))
 		{
 			return pContext->ThrowNativeError("\"GiveNamedItem\" not supported by this mod");
 		} else if (!pCall) {
@@ -183,6 +184,7 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(3, vparams, 1);
 	*(CEconItemView **)(vptr + 12) = NULL;
 	*(bool *)(vptr + 16) = false;
+	*(void **)(vptr + 17) = NULL;
 	FINISH_CALL_SIMPLE(&pEntity);
 
 	return gamehelpers->EntityToBCompatRef(pEntity);

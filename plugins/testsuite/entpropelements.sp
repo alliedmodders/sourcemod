@@ -127,8 +127,7 @@ public Action:sm_setammo(client, argc)
 	
 	new max = GetEntPropArraySize(target, proptype, "m_iAmmo");
 	
-	GetCmdArg(1, buffer, sizeof(buffer));
-	new ammotype = StringToInt(buffer);
+	new ammotype = GetCmdArgInt(1);
 	
 	if (ammotype >= max)
 	{
@@ -136,8 +135,7 @@ public Action:sm_setammo(client, argc)
 		return Plugin_Handled;
 	}
 	
-	GetCmdArg(2, buffer, sizeof(buffer));
-	new amount = StringToInt(buffer);
+	new amount = GetCmdArgInt(2);
 	
 	SetEntProp(target, proptype, "m_iAmmo", amount, _, ammotype);
 	

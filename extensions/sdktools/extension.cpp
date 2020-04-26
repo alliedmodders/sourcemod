@@ -101,6 +101,19 @@ extern sp_nativeinfo_t g_ClientNatives[];
 
 static void InitSDKToolsAPI();
 
+#if SOURCE_ENGINE == SE_CSGO
+CDetour *g_WriteBaselinesDetour = NULL;
+
+DETOUR_DECL_MEMBER3(CNetworkStringTableContainer__WriteBaselines, void, char const *, mapName, void *, buffer, int, currentTick)
+{
+	// Replace nAtTick with INT_MAX to work around CS:GO engine bug.
+	// Due to a timing issue in the engine, stringtable entries added in OnConfigsExecuted can be considered
+	// to have been added in the future for the first client that connects, which causes them to be ignored
+	// when iterating for networking, which triggers a Host_Error encoding the CreateStringTable netmsg.
+	return DETOUR_MEMBER_CALL(CNetworkStringTableContainer__WriteBaselines)(mapName, buffer, INT_MAX);
+}
+#endif
+
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	HandleError err;
@@ -186,6 +199,13 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	m_CSGOBadList.init();
 	m_CSGOBadList.add("m_bIsValveDS");
 	m_CSGOBadList.add("m_bIsQuestEligible");
+
+	g_WriteBaselinesDetour = DETOUR_CREATE_MEMBER(CNetworkStringTableContainer__WriteBaselines, "WriteBaselines");
+	if (g_WriteBaselinesDetour) {
+		g_WriteBaselinesDetour->EnableDetour();
+	} else {
+		g_pSM->LogError(myself, "Failed to find WriteBaselines signature -- stringtable error workaround disabled.");
+	}
 #endif
 
 	return true;
@@ -216,6 +236,13 @@ void SDKTools::SDK_OnUnload()
 	}
 	g_RegCalls.clear();
 	ShutdownHelpers();
+
+#if SOURCE_ENGINE == SE_CSGO
+	if (g_WriteBaselinesDetour) {
+		g_WriteBaselinesDetour->DisableDetour();
+		g_WriteBaselinesDetour = NULL;
+	}
+#endif
 
 	if (g_pAcceptInput)
 	{

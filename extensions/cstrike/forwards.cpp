@@ -216,12 +216,12 @@ DETOUR_DECL_MEMBER3(DetourTerminateRound, void, int, reason, int, unknown, int, 
 #endif
 }
 
-DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, bDropShield, bool, bThrowForward)
+DETOUR_DECL_MEMBER2(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, bThrowForward)
 {
 	if (g_pIgnoreCSWeaponDropDetour)
 	{
 		g_pIgnoreCSWeaponDropDetour = false;
-		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, bDropShield, bThrowForward);
+		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, bThrowForward);
 		return;
 	}
 
@@ -236,7 +236,7 @@ DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, bDrop
 
 	if (result == Pl_Continue)
 	{
-		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, bDropShield, bThrowForward);
+		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, bThrowForward);
 	}
 
 	return;

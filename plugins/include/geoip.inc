@@ -31,7 +31,7 @@
  */
 
 #if defined _geoip_included
-  #endinput
+ #endinput
 #endif
 #define _geoip_included
 
@@ -44,18 +44,18 @@
 /**
  * Gets the two character country code from an IP address. (US, CA, etc)
  *
- * @param ip			Ip to determine the country code.
- * @param ccode			Destination string buffer to store the code.
- * @return				True on success, false if no country found.
+ * @param ip            Ip to determine the country code.
+ * @param ccode         Destination string buffer to store the code.
+ * @return              True on success, false if no country found.
  */
 native bool GeoipCode2(const char[] ip, char ccode[3]);
 
 /**
  * Gets the three character country code from an IP address. (USA, CAN, etc)
  *
- * @param ip			Ip to determine the country code.
- * @param ccode			Destination string buffer to store the code.
- * @return				True on success, false if no country found.
+ * @param ip            Ip to determine the country code.
+ * @param ccode         Destination string buffer to store the code.
+ * @return              True on success, false if no country found.
  */
 native bool GeoipCode3(const char[] ip, char ccode[4]);
 
@@ -80,10 +80,10 @@ native bool GeoipContinentCode(const char[] ip, char ccode[3]);
 /**
  * Gets the full country name.
  *
- * @param ip			Ip to determine the country code.
- * @param name			Destination string buffer to store the country name.
- * @param maxlength			Maximum length of output string buffer.
- * @return				True on success, false if no country found.
+ * @param ip            Ip to determine the country code.
+ * @param name          Destination string buffer to store the country name.
+ * @param maxlength     Maximum length of output string buffer.
+ * @return              True on success, false if no country found.
  */
 native bool GeoipCountry(const char[] ip, char[] name, int maxlength);
 

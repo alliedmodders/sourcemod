@@ -266,6 +266,91 @@ static cell_t smn_TREnumerateEntitiesHull(IPluginContext *pContext, const cell_t
 	return 1;
 }
 
+static cell_t smn_TREnumerateEntitiesSphere(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunc = pContext->GetFunctionById(params[4]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[4]);
+	}
+
+	cell_t data = 0;
+	if (params[0] >= 5)
+	{
+		data = params[5];
+	}
+
+	g_SMTraceEnumerator.SetFunctionPtr(pFunc, data);
+
+	cell_t *startaddr;
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+
+	g_StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+
+	float radius = sp_ctof(params[2]);
+
+	int mask = TranslatePartitionFlags(params[3]);
+	partition->EnumerateElementsInSphere(mask, g_StartVec, radius, false, &g_SMTraceEnumerator);
+
+	return 1;
+}
+
+static cell_t smn_TREnumerateEntitiesBox(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunc = pContext->GetFunctionById(params[4]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[4]);
+	}
+
+	cell_t data = 0;
+	if (params[0] >= 5)
+	{
+		data = params[5];
+	}
+
+	g_SMTraceEnumerator.SetFunctionPtr(pFunc, data);
+
+	cell_t *minsaddr, *maxsaddr;
+	pContext->LocalToPhysAddr(params[1], &minsaddr);
+	pContext->LocalToPhysAddr(params[2], &maxsaddr);
+
+	g_HullMins.Init(sp_ctof(minsaddr[0]), sp_ctof(minsaddr[1]), sp_ctof(minsaddr[2]));
+	g_HullMaxs.Init(sp_ctof(maxsaddr[0]), sp_ctof(maxsaddr[1]), sp_ctof(maxsaddr[2]));
+
+	int mask = TranslatePartitionFlags(params[3]);
+	partition->EnumerateElementsInBox(mask, g_HullMins, g_HullMaxs, false, &g_SMTraceEnumerator);
+
+	return 1;
+}
+
+static cell_t smn_TREnumerateEntitiesPoint(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunc = pContext->GetFunctionById(params[3]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[3]);
+	}
+
+	cell_t data = 0;
+	if (params[0] >= 4)
+	{
+		data = params[4];
+	}
+
+	g_SMTraceEnumerator.SetFunctionPtr(pFunc, data);
+
+	cell_t *startaddr;
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+
+	g_StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+
+	int mask = TranslatePartitionFlags(params[2]);
+	partition->EnumerateElementsAtPoint(mask, g_StartVec, false, &g_SMTraceEnumerator);
+
+	return 1;
+}
+
 static cell_t smn_TRClipRayToEntity(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t *startaddr;
@@ -998,6 +1083,22 @@ static cell_t smn_TRGetHitGroup(IPluginContext *pContext, const cell_t *params)
 	return tr->hitgroup;
 }
 
+static cell_t smn_TRGetHitBoxIndex(IPluginContext *pContext, const cell_t *params)
+{
+	sm_trace_t *tr;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if (params[1] == BAD_HANDLE)
+	{
+		tr = &g_Trace;
+	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+	}
+
+	return tr->hitbox;
+}
+
 static cell_t smn_TRGetEntityIndex(IPluginContext *pContext, const cell_t *params)
 {
 	sm_trace_t *tr;
@@ -1084,8 +1185,11 @@ sp_nativeinfo_t g_TRNatives[] =
 {
 	{"TR_TraceRay",					smn_TRTraceRay},
 	{"TR_TraceHull",				smn_TRTraceHull},
-	{"TR_EnumerateEntities",		smn_TREnumerateEntities},
-	{"TR_EnumerateEntitiesHull",	smn_TREnumerateEntitiesHull},
+	{"TR_EnumerateEntities",        smn_TREnumerateEntities},
+	{"TR_EnumerateEntitiesHull",    smn_TREnumerateEntitiesHull},
+	{"TR_EnumerateEntitiesSphere",  smn_TREnumerateEntitiesSphere},
+	{"TR_EnumerateEntitiesBox",     smn_TREnumerateEntitiesBox},
+	{"TR_EnumerateEntitiesPoint",   smn_TREnumerateEntitiesPoint},
 	{"TR_TraceRayEx",				smn_TRTraceRayEx},
 	{"TR_TraceHullEx",				smn_TRTraceHullEx},
 	{"TR_GetFraction",				smn_TRGetFraction},
@@ -1102,6 +1206,7 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_StartSolid",				smn_TRStartSolid},
 	{"TR_DidHit",					smn_TRDidHit},
 	{"TR_GetHitGroup",				smn_TRGetHitGroup},
+	{"TR_GetHitBoxIndex",			smn_TRGetHitBoxIndex},
 	{"TR_ClipRayToEntity",			smn_TRClipRayToEntity},
 	{"TR_ClipRayToEntityEx",		smn_TRClipRayToEntityEx},
 	{"TR_ClipRayHullToEntity",		smn_TRClipRayHullToEntity},

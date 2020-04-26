@@ -584,12 +584,16 @@ static cell_t sm_SortADTArrayCustom(IPluginContext *pContext, const cell_t *para
 
 REGISTER_NATIVES(sortNatives)
 {
-	{"SortIntegers",			sm_SortIntegers},
-	{"SortFloats",				sm_SortFloats},
-	{"SortStrings",				sm_SortStrings},
-	{"SortCustom1D",			sm_SortCustom1D},
-	{"SortCustom2D",			sm_SortCustom2D},
-	{"SortADTArray",			sm_SortADTArray},
-	{"SortADTArrayCustom",		sm_SortADTArrayCustom},
-	{NULL,						NULL},
+	{"SortIntegers",            sm_SortIntegers},
+	{"SortFloats",              sm_SortFloats},
+	{"SortStrings",             sm_SortStrings},
+	{"SortCustom1D",            sm_SortCustom1D},
+	{"SortCustom2D",            sm_SortCustom2D},
+	{"SortADTArray",            sm_SortADTArray},
+	{"SortADTArrayCustom",      sm_SortADTArrayCustom},
+	
+	{"ArrayList.Sort",          sm_SortADTArray},
+	{"ArrayList.SortCustom",    sm_SortADTArrayCustom},
+	
+	{NULL,                      NULL},
 };

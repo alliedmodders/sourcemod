@@ -52,7 +52,7 @@ PossibleSDKs = {
   'eye':  SDK('HL2SDK-EYE', '2.eye', '5', 'EYE', WinOnly, 'eye'),
   'csgo': SDK('HL2SDKCSGO', '2.csgo', '21', 'CSGO', CSGO, 'csgo'),
   'portal2':  SDK('HL2SDKPORTAL2', '2.portal2', '17', 'PORTAL2', [], 'portal2'),
-  'blade':  SDK('HL2SDKBLADE', '2.blade', '18', 'BLADE', WinLinux, 'blade'),
+  'blade':  SDK('HL2SDKBLADE', '2.blade', '18', 'BLADE', WinOnly, 'blade'),
   'insurgency':  SDK('HL2SDKINSURGENCY', '2.insurgency', '19', 'INSURGENCY', WinLinuxMac, 'insurgency'),
   'contagion':  SDK('HL2SDKCONTAGION', '2.contagion', '14', 'CONTAGION', WinOnly, 'contagion'),
   'bms':  SDK('HL2SDKBMS', '2.bms', '10', 'BMS', WinLinux, 'bms'),
@@ -143,6 +143,7 @@ class SMConfig(object):
 
   def detectSDKs(self):
     sdk_list = builder.options.sdks.split(',')
+    use_none = sdk_list[0] == 'none'
     use_all = sdk_list[0] == 'all'
     use_present = sdk_list[0] == 'present'
 
@@ -161,7 +162,7 @@ class SMConfig(object):
           sdk.path = Normalize(sdk_path)
           self.sdks[sdk_name] = sdk
 
-    if len(self.sdks) < 1 and len(sdk_list):
+    if len(self.sdks) < 1 and len(sdk_list) and not use_none:
       raise Exception('No SDKs were found that build on {0}-{1}, nothing to do.'.format(
         builder.target.platform, builder.target.arch))
 
@@ -213,6 +214,16 @@ class SMConfig(object):
     
     if cxx.like('msvc') and len(self.archs) > 1:
       raise Exception('Building multiple archs with MSVC is not currently supported')
+
+    if cxx.family == 'msvc':
+      if cxx.version < 1900:
+        raise Exception('Only MSVC 2015 and later are supported, c++14 support is required.')
+    if cxx.family == 'gcc':
+      if cxx.version < 'gcc-4.9':
+        raise Exception('Only GCC versions 4.9 or greater are supported, c++14 support is required.')
+    if cxx.family == 'clang':
+      if cxx.version < 'clang-3.4':
+        raise Exception('Only clang versions 3.4 or greater are supported, c++14 support is required.')
 
     if cxx.like('gcc'):
       self.configure_gcc(cxx)
@@ -295,7 +306,8 @@ class SMConfig(object):
       cxx.cxxflags += ['-Wno-delete-non-virtual-dtor']
     if cxx.version >= 'gcc-4.8':
       cxx.cflags += ['-Wno-unused-result']
-
+    if cxx.version >= 'gcc-9.0':
+      cxx.cxxflags += ['-Wno-class-memaccess', '-Wno-packed-not-aligned']
     if have_clang:
       cxx.cxxflags += ['-Wno-implicit-exception-spec-mismatch']
       if cxx.version >= 'apple-clang-5.1' or cxx.version >= 'clang-3.4':
@@ -310,6 +322,9 @@ class SMConfig(object):
 
     if builder.options.opt == '1':
       cxx.cflags += ['-O3']
+
+    # Don't omit the frame pointer.
+    cxx.cflags += ['-fno-omit-frame-pointer']
 
   def configure_msvc(self, cxx):
     if builder.options.debug == '1':
@@ -378,6 +393,16 @@ class SMConfig(object):
   def configure_windows(self, cxx):
     cxx.defines += ['WIN32', '_WINDOWS']
 
+  def add_libamtl(self):
+    # Add libamtl.
+    self.libamtl = {}
+    for arch in self.archs:
+      def get_configure_fn(arch):
+        return lambda builder, name: self.StaticLibrary(builder, name, arch)
+      extra_vars = {'Configure': get_configure_fn(arch)}
+      libamtl = builder.Build('public/amtl/amtl/AMBuilder', extra_vars)
+      self.libamtl[arch] = libamtl.binary
+
   def AddVersioning(self, binary, arch):
     if builder.target.platform == 'windows':
       binary.sources += ['version.rc']
@@ -415,7 +440,7 @@ class SMConfig(object):
     if '-lgcc_eh' in binary.compiler.linkflags:
       binary.compiler.linkflags.remove('-lgcc_eh')
     if binary.compiler.like('gcc'):
-      binary.compiler.linkflags += ['-lstdc++']
+      binary.compiler.linkflags += ['-lstdc++', '-lpthread']
     if binary.compiler.like('msvc'):
       binary.compiler.linkflags += ['/SUBSYSTEM:CONSOLE']
     return binary
@@ -497,8 +522,7 @@ class SMConfig(object):
 
     if compiler.like('msvc'):
       compiler.defines += ['COMPILER_MSVC', 'COMPILER_MSVC32']
-      if compiler.version >= 1900:
-        compiler.linkflags += ['legacy_stdio_definitions.lib']
+      compiler.linkflags += ['legacy_stdio_definitions.lib']
     else:
       compiler.defines += ['COMPILER_GCC']
 
@@ -514,7 +538,7 @@ class SMConfig(object):
       if builder.target.platform in ['linux', 'mac']:
         compiler.defines += ['NO_HOOK_MALLOC', 'NO_MALLOC_OVERRIDE']
 
-    if sdk.name == 'csgo' and builder.target.platform == 'linux':
+    if sdk.name in ['csgo', 'blade'] and builder.target.platform == 'linux':
       compiler.linkflags += ['-lstdc++']
       compiler.defines += ['_GLIBCXX_USE_CXX11_ABI=0']
 
@@ -560,7 +584,7 @@ class SMConfig(object):
     if builder.target.platform == 'linux':
       if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency', 'doi']:
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
-      elif arch == 'x64' and sdk.name == 'csgo':
+      elif arch == 'x64' and sdk.name in ['csgo', 'blade']:
         dynamic_libs = ['libtier0_client.so', 'libvstdlib_client.so']
       elif sdk.name in ['l4d', 'blade', 'insurgency', 'doi', 'csgo']:
         dynamic_libs = ['libtier0.so', 'libvstdlib.so']
@@ -612,6 +636,7 @@ SM = SMConfig()
 SM.detectProductVersion()
 SM.detectSDKs()
 SM.configure()
+SM.add_libamtl()
 
 if SM.use_auto_versioning():
   SM.generated_headers = builder.Build(

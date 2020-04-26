@@ -227,11 +227,17 @@ private:
 		/* finally, allocate the new block */
 		if (m_Data)
 		{
-			m_Data = (cell_t *)realloc(m_Data, sizeof(cell_t) * m_BlockSize * m_AllocSize);
+			cell_t *data = static_cast<cell_t*>(realloc(m_Data, sizeof(cell_t) * m_BlockSize * m_AllocSize));
+			if (!data)  // allocation failure
+			{
+				return false;
+			}
+
+			m_Data = data;
 		} else {
-			m_Data = (cell_t *)malloc(sizeof(cell_t) * m_BlockSize * m_AllocSize);
+			m_Data = static_cast<cell_t*>(malloc(sizeof(cell_t) * m_BlockSize * m_AllocSize));
 		}
-		return (m_Data != NULL);
+		return (m_Data != nullptr);
 	}
 private:
 	cell_t *m_Data;

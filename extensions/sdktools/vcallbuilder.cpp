@@ -255,10 +255,12 @@ ValveCall *CreateValveVCall(unsigned int vtableIdx,
 
 	/* Get return information - encode only */
 	PassInfo retBuf;
+	ObjectField retFieldBuf[16];
 	size_t retBufSize = 0;
 	bool retbuf_needs_extra;
 	if (retInfo)
 	{
+		retBuf.fields = retFieldBuf;
 		if ((size = ValveParamToBinParam(retInfo->vtype, retInfo->type, retInfo->flags, &retBuf, retbuf_needs_extra)) == 0)
 		{
 			delete vc;
@@ -269,12 +271,14 @@ ValveCall *CreateValveVCall(unsigned int vtableIdx,
 
 	/* Get parameter info */
 	PassInfo paramBuf[32];
+	ObjectField fieldBuf[32][16];
 	size_t sizes[32];
 	size_t normSize = 0;
 	size_t extraSize = 0;
 	for (unsigned int i=0; i<numParams; i++)
 	{
 		bool needs_extra;
+		paramBuf[i].fields = fieldBuf[i];
 		if ((size = ValveParamToBinParam(params[i].vtype, 
 										params[i].type,
 										params[i].flags,

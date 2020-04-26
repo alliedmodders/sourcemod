@@ -51,6 +51,7 @@ IGameConfig *g_pGameConf = NULL;
 IGameEventManager2 *gameevents = NULL;
 bool hooked_everything = false;
 int g_msgHintText = -1;
+CGlobalVars *gpGlobals;
 
 SMEXT_LINK(&g_CStrike);
 
@@ -107,6 +108,7 @@ bool CStrike::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool 
 {
 	GET_V_IFACE_CURRENT(GetEngineFactory, gameevents, IGameEventManager2, INTERFACEVERSION_GAMEEVENTSMANAGER2);
 	GET_V_IFACE_CURRENT(GetEngineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
+	gpGlobals = ismm->GetCGlobals();
 
 	return true;
 }
