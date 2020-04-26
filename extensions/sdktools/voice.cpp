@@ -63,6 +63,12 @@ SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *,
 #else
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
+#if SOURCE_ENGINE != SE_CSGO
+SH_DECL_HOOK1(IClientMessageHandler, ProcessVoiceData, SH_NOATTRIB, 0, bool, CLC_VoiceData *);
+
+ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
+float g_fSpeakingTime[SM_MAXPLAYERS+1];
+#endif
 
 bool DecHookCount()
 {
@@ -164,9 +170,25 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 
 	RETURN_META_VALUE(MRES_IGNORED, bListen);
 }
-
+#if SOURCE_ENGINE != SE_CSGO
+void SDKTools::OnClientConnected(int client)
+{
+	IClient *pClient = iserver->GetClient(client-1);
+	if (pClient != NULL)
+	{
+		SH_ADD_HOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + 4), SH_MEMBER(this, &SDKTools::ProcessVoiceData), true);
+	}
+}
+#endif
 void SDKTools::OnClientDisconnecting(int client)
 {
+#if SOURCE_ENGINE != SE_CSGO
+	IClient *pClient = iserver->GetClient(client-1);
+	if (pClient != NULL)
+	{
+		SH_REMOVE_HOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + 4), SH_MEMBER(this, &SDKTools::ProcessVoiceData), true);
+	}
+#endif
 	int max_clients = playerhelpers->GetMaxClients();
 
 	if (g_VoiceHookCount == 0)
@@ -213,6 +235,49 @@ void SDKTools::OnClientDisconnecting(int client)
 		DecHookCount();
 	}
 }
+
+#if SOURCE_ENGINE != SE_CSGO
+class SpeakingEndTimer : public ITimedEvent
+{
+public:
+	ResultType OnTimer(ITimer *pTimer, void *pData)
+	{
+		int client = (int)(intptr_t)pData;
+		if ((gpGlobals->curtime - g_fSpeakingTime[client]) > 0.1)
+		{
+			m_OnClientSpeakingEnd->PushCell(client);
+			m_OnClientSpeakingEnd->Execute();
+
+			return Pl_Stop;
+		}
+		return Pl_Continue;
+	}
+	void OnTimerEnd(ITimer *pTimer, void *pData)
+	{
+		g_hTimerSpeaking[(int)(intptr_t)pData] = NULL;
+	}
+} s_SpeakingEndTimer;
+
+bool SDKTools::ProcessVoiceData(CLC_VoiceData *msg)
+{
+	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - 4);
+	if (pClient != NULL)
+	{
+		int client = pClient->GetPlayerSlot() + 1;
+
+		g_fSpeakingTime[client] = gpGlobals->curtime;
+
+		if (g_hTimerSpeaking[client] == NULL)
+		{
+			g_hTimerSpeaking[client] = timersys->CreateTimer(&s_SpeakingEndTimer, 0.3f, (void *)(intptr_t)client, 1);
+		}
+
+		m_OnClientSpeaking->PushCell(client);
+		m_OnClientSpeaking->Execute();
+	}
+	return true;
+}
+#endif
 
 static cell_t SetClientListeningFlags(IPluginContext *pContext, const cell_t *params)
 {
@@ -355,6 +420,31 @@ static cell_t IsClientMuted(IPluginContext *pContext, const cell_t *params)
 	return g_ClientMutes[params[1]][params[2]];
 }
 
+static cell_t IsClientSpeaking(IPluginContext *pContext, const cell_t *params)
+{
+	IGamePlayer *player;
+	
+	player = playerhelpers->GetGamePlayer(params[1]);
+	if (player == NULL)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
+	}
+	else if (!player->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
+	}
+	else if (!player->IsInGame())
+	{
+		return pContext->ThrowNativeError("Client %d is not in-game", params[1]);
+	}
+	else if (player->IsFakeClient())
+	{
+		return pContext->ThrowNativeError("Client %d is a bot", params[1]);
+	}
+	
+	return g_hTimerSpeaking[params[1]] != NULL;
+}
+
 sp_nativeinfo_t g_VoiceNatives[] =
 {
 	{"SetClientListeningFlags",		SetClientListeningFlags},
@@ -364,5 +454,6 @@ sp_nativeinfo_t g_VoiceNatives[] =
 	{"SetListenOverride",			SetClientListening},
 	{"GetListenOverride",			GetClientListening},
 	{"IsClientMuted",				IsClientMuted},
+	{"IsClientSpeaking",			IsClientSpeaking},
 	{NULL,							NULL},
 };

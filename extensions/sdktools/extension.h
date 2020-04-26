@@ -54,6 +54,8 @@
 #if SOURCE_ENGINE == SE_CSGO
 #include <am-hashset.h>
 #include <sm_stringhashmap.h>
+#else
+#include <inetmsghandler.h>
 #endif
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 
@@ -95,8 +97,15 @@ public: //IConCommandBaseAccessor
 	bool RegisterConCommandBase(ConCommandBase *pVar);
 public: //IClientListner
 	bool InterceptClientConnect(int client, char *error, size_t maxlength);
+	void OnClientConnected(int client);
 	void OnClientPutInServer(int client);
 	void OnClientDisconnecting(int client);
+public:
+#if SOURCE_ENGINE == SE_CSGO
+	void OnClientVoice(edict_t *pPlayer);
+#else
+	bool ProcessVoiceData(CLC_VoiceData *msg);
+#endif
 public: // IVoiceServer
 	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
 	void VoiceInit();
@@ -156,6 +165,9 @@ extern HandleType_t g_CallHandle;
 extern HandleType_t g_TraceHandle;
 /* Call Wrappers */
 extern ICallWrapper *g_pAcceptInput;
+/* Forwards */
+extern IForward *m_OnClientSpeaking;
+extern IForward *m_OnClientSpeakingEnd;
 /* Call classes */
 extern SourceHook::CallClass<IVEngineServer> *enginePatch;
 extern SourceHook::CallClass<IEngineSound> *enginesoundPatch;
