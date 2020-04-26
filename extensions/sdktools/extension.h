@@ -97,7 +97,9 @@ public: //IConCommandBaseAccessor
 	bool RegisterConCommandBase(ConCommandBase *pVar);
 public: //IClientListner
 	bool InterceptClientConnect(int client, char *error, size_t maxlength);
+#if SOURCE_ENGINE != SE_CSGO
 	void OnClientConnected(int client);
+#endif
 	void OnClientPutInServer(int client);
 	void OnClientDisconnecting(int client);
 public:
