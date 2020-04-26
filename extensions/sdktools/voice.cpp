@@ -65,6 +65,9 @@ SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *)
 #endif
 #if SOURCE_ENGINE != SE_CSGO
 SH_DECL_HOOK1(IClientMessageHandler, ProcessVoiceData, SH_NOATTRIB, 0, bool, CLC_VoiceData *);
+
+ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
+float g_fSpeakingTime[SM_MAXPLAYERS+1];
 #endif
 
 bool DecHookCount()
@@ -236,6 +239,27 @@ void SDKTools::OnClientDisconnecting(int client)
 }
 
 #if SOURCE_ENGINE != SE_CSGO
+class SpeakingEndTimer : public ITimedEvent
+{
+public:
+	ResultType OnTimer(ITimer *pTimer, void *pData)
+	{
+		int client = (int)(intptr_t)pData;
+		if ((gpGlobals->curtime - g_fSpeakingTime[client]) > 0.1)
+		{
+			m_OnClientSpeakingEnd->PushCell(client);
+			m_OnClientSpeakingEnd->Execute();
+
+			return Pl_Stop;
+		}
+		return Pl_Continue;
+	}
+	void OnTimerEnd(ITimer *pTimer, void *pData)
+	{
+		m_pTimerSpeaking[(int)(intptr_t)pData] = NULL;
+	}
+} s_SpeakingEndTimer;
+
 bool SDKTools::ProcessVoiceData(CLC_VoiceData *msg)
 {
 	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - 4);
