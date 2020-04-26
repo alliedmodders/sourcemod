@@ -170,7 +170,6 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 
 	RETURN_META_VALUE(MRES_IGNORED, bListen);
 }
-
 #if SOURCE_ENGINE != SE_CSGO
 void SDKTools::OnClientConnected(int client)
 {
@@ -181,7 +180,6 @@ void SDKTools::OnClientConnected(int client)
 	}
 }
 #endif
-
 void SDKTools::OnClientDisconnecting(int client)
 {
 #if SOURCE_ENGINE != SE_CSGO

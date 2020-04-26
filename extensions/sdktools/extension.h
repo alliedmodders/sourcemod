@@ -133,9 +133,6 @@ private:
 	ke::HashSet<ke::AString, detail::StringHashMapPolicy> m_CSGOBadList;
 	bool m_bFollowCSGOServerGuidelines = false;
 #endif
-public:
-	IForward *m_OnClientSpeaking;
-	IForward *m_OnClientSpeakingEnd;
 private:
 	bool m_bAnyLevelInited = false;
 };
@@ -168,6 +165,9 @@ extern HandleType_t g_CallHandle;
 extern HandleType_t g_TraceHandle;
 /* Call Wrappers */
 extern ICallWrapper *g_pAcceptInput;
+/* Forwards */
+extern IForward *m_OnClientSpeaking;
+extern IForward *m_OnClientSpeakingEnd;
 /* Call classes */
 extern SourceHook::CallClass<IVEngineServer> *enginePatch;
 extern SourceHook::CallClass<IEngineSound> *enginesoundPatch;

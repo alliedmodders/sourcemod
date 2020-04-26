@@ -63,6 +63,9 @@ SH_DECL_HOOK1_void(IServerGameClients, ClientVoice, SH_NOATTRIB, 0, edict_t *);
 ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
 float g_fSpeakingTime[SM_MAXPLAYERS+1];
 #endif
+
+IForward *m_OnClientSpeaking;
+IForward *m_OnClientSpeakingEnd;
 SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
 IServerGameEnts *gameents = NULL;
 IEngineTrace *enginetrace = NULL;
