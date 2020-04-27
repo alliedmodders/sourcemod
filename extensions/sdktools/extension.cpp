@@ -59,13 +59,8 @@ SH_DECL_HOOK1_void_vafmt(IVEngineServer, ClientCommand, SH_NOATTRIB, 0, edict_t 
 #endif
 #if SOURCE_ENGINE == SE_CSGO
 SH_DECL_HOOK1_void(IServerGameClients, ClientVoice, SH_NOATTRIB, 0, edict_t *);
-
-ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
-float g_fSpeakingTime[SM_MAXPLAYERS+1];
 #endif
 
-IForward *m_OnClientSpeaking;
-IForward *m_OnClientSpeakingEnd;
 SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
 IServerGameEnts *gameents = NULL;
 IEngineTrace *enginetrace = NULL;
@@ -84,6 +79,10 @@ IServer *iserver = NULL;
 IBaseFileSystem *basefilesystem = NULL;
 CGlobalVars *gpGlobals;
 ISoundEmitterSystemBase *soundemitterbase = NULL;
+ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
+float g_fSpeakingTime[SM_MAXPLAYERS+1];
+IForward *m_OnClientSpeaking;
+IForward *m_OnClientSpeakingEnd;
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 IServerTools *servertools = NULL;
@@ -551,28 +550,25 @@ void SDKTools::OnSendClientCommand(edict_t *pPlayer, const char *szFormat)
 }
 #endif
 
-#if SOURCE_ENGINE == SE_CSGO
-class SpeakingEndTimer : public ITimedEvent
+SourceMod::ResultType SDKTools::OnTimer(ITimer *pTimer, void *pData)
 {
-public:
-	ResultType OnTimer(ITimer *pTimer, void *pData)
+	int client = (int)(intptr_t)pData;
+	if ((gpGlobals->curtime - g_fSpeakingTime[client]) > 0.1)
 	{
-		int client = (int)(intptr_t)pData;
-		if ((gpGlobals->curtime - g_fSpeakingTime[client]) > 0.1)
-		{
-			m_OnClientSpeakingEnd->PushCell(client);
-			m_OnClientSpeakingEnd->Execute();
+		m_OnClientSpeakingEnd->PushCell(client);
+		m_OnClientSpeakingEnd->Execute();
 
-			return Pl_Stop;
-		}
-		return Pl_Continue;
+		return Pl_Stop;
 	}
-	void OnTimerEnd(ITimer *pTimer, void *pData)
-	{
-		g_hTimerSpeaking[(int)(intptr_t)pData] = NULL;
-	}
-} s_SpeakingEndTimer;
+	return Pl_Continue;
+}
 
+void SDKTools::OnTimerEnd(ITimer *pTimer, void *pData)
+{
+	g_hTimerSpeaking[(int)(intptr_t)pData] = NULL;
+}
+
+#if SOURCE_ENGINE == SE_CSGO
 void SDKTools::OnClientVoice(edict_t *pPlayer)
 {
 	if (pPlayer)
@@ -583,7 +579,7 @@ void SDKTools::OnClientVoice(edict_t *pPlayer)
 
 		if (g_hTimerSpeaking[client] == NULL)
 		{
-			g_hTimerSpeaking[client] = timersys->CreateTimer(&s_SpeakingEndTimer, 0.3f, (void *)(intptr_t)client, 1);
+			g_hTimerSpeaking[client] = timersys->CreateTimer(this, 0.3f, (void *)(intptr_t)client, TIMER_FLAG_REPEAT);
 		}
 
 		m_OnClientSpeaking->PushCell(client);

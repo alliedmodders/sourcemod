@@ -65,9 +65,6 @@ SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *)
 #endif
 #if SOURCE_ENGINE != SE_CSGO
 SH_DECL_HOOK1(IClientMessageHandler, ProcessVoiceData, SH_NOATTRIB, 0, bool, CLC_VoiceData *);
-
-ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
-float g_fSpeakingTime[SM_MAXPLAYERS+1];
 #endif
 
 bool DecHookCount()
@@ -170,6 +167,7 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 
 	RETURN_META_VALUE(MRES_IGNORED, bListen);
 }
+
 #if SOURCE_ENGINE != SE_CSGO
 void SDKTools::OnClientConnected(int client)
 {
@@ -180,6 +178,7 @@ void SDKTools::OnClientConnected(int client)
 	}
 }
 #endif
+
 void SDKTools::OnClientDisconnecting(int client)
 {
 #if SOURCE_ENGINE != SE_CSGO
@@ -189,6 +188,7 @@ void SDKTools::OnClientDisconnecting(int client)
 		SH_REMOVE_HOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + 4), SH_MEMBER(this, &SDKTools::ProcessVoiceData), true);
 	}
 #endif
+
 	int max_clients = playerhelpers->GetMaxClients();
 
 	if (g_VoiceHookCount == 0)
@@ -237,27 +237,6 @@ void SDKTools::OnClientDisconnecting(int client)
 }
 
 #if SOURCE_ENGINE != SE_CSGO
-class SpeakingEndTimer : public ITimedEvent
-{
-public:
-	ResultType OnTimer(ITimer *pTimer, void *pData)
-	{
-		int client = (int)(intptr_t)pData;
-		if ((gpGlobals->curtime - g_fSpeakingTime[client]) > 0.1)
-		{
-			m_OnClientSpeakingEnd->PushCell(client);
-			m_OnClientSpeakingEnd->Execute();
-
-			return Pl_Stop;
-		}
-		return Pl_Continue;
-	}
-	void OnTimerEnd(ITimer *pTimer, void *pData)
-	{
-		g_hTimerSpeaking[(int)(intptr_t)pData] = NULL;
-	}
-} s_SpeakingEndTimer;
-
 bool SDKTools::ProcessVoiceData(CLC_VoiceData *msg)
 {
 	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - 4);
@@ -269,7 +248,7 @@ bool SDKTools::ProcessVoiceData(CLC_VoiceData *msg)
 
 		if (g_hTimerSpeaking[client] == NULL)
 		{
-			g_hTimerSpeaking[client] = timersys->CreateTimer(&s_SpeakingEndTimer, 0.3f, (void *)(intptr_t)client, 1);
+			g_hTimerSpeaking[client] = timersys->CreateTimer(this, 0.3f, (void *)(intptr_t)client, TIMER_FLAG_REPEAT);
 		}
 
 		m_OnClientSpeaking->PushCell(client);

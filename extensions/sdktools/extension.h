@@ -72,6 +72,7 @@ class SDKTools :
 	public IHandleTypeDispatch,
 	public IConCommandBaseAccessor,
 	public IClientListener,
+	public ITimedEvent,
 	public ICommandTargetProcessor
 {
 public: //public IHandleTypeDispatch
@@ -119,6 +120,9 @@ public: // IVoiceServer
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 	void OnSendClientCommand(edict_t *pPlayer, const char *szFormat);
 #endif
+public: //ITimedEvent
+	ResultType OnTimer(ITimer *pTimer, void *pData);
+	void OnTimerEnd(ITimer *pTimer, void *pData);
 
 public: //ICommandTargetProcessor
 	bool ProcessCommandTarget(cmd_target_info_t *info);
@@ -169,6 +173,7 @@ extern HandleType_t g_TraceHandle;
 extern ICallWrapper *g_pAcceptInput;
 /* Timers */
 extern ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
+extern float g_fSpeakingTime[SM_MAXPLAYERS+1];
 /* Forwards */
 extern IForward *m_OnClientSpeaking;
 extern IForward *m_OnClientSpeakingEnd;
