@@ -56,13 +56,13 @@ Function Checkout-Repo
         Set-Location $Name
         If ($Origin)
         {
-            & git remote set-url origin ..\$Repo
+            & git remote set-url origin ..\$Repo 2>&1 | Write-Host
         }
         & git checkout $Branch 2>&1 | Write-Host
         & git pull origin $Branch 2>&1 | Write-Host
         If ($Origin)
         {
-            & git remote set-url origin $Origin
+            & git remote set-url origin $Origin 2>&1 | Write-Host
         }
         Set-Location ..
     }
