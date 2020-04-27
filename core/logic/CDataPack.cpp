@@ -230,7 +230,7 @@ bool CDataPack::RemoveItem(size_t pos)
 	{
 		case CDataPackType::Raw:
 		{
-			delete elements[pos].pData.vval;
+			delete [] elements[pos].pData.vval;
 			break;
 		}
 
