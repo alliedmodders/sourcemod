@@ -47,16 +47,23 @@ Function Checkout-Repo
         If ($Origin)
         {
             Set-Location $Name
-            & git  remote rm origin 2>&1 | Write-Host
-            & git remote add origin $Origin 2>&1 | Write-Host
+            & git remote set-url origin $Origin 2>&1 | Write-Host
             Set-Location ..
         }
     }
     Else
     {
         Set-Location $Name
+        If ($Origin)
+        {
+            & git remote set-url origin ..\$Repo
+        }
         & git checkout $Branch 2>&1 | Write-Host
         & git pull origin $Branch 2>&1 | Write-Host
+        If ($Origin)
+        {
+            & git remote set-url origin $Origin
+        }
         Set-Location ..
     }
 }
@@ -81,7 +88,7 @@ else
 }
 
 $SDKS | % {
-    Checkout-Repo -Name "hl2sdk-$_" -Branch $_ -Repo "hl2sdk-proxy-repo"
+    Checkout-Repo -Name "hl2sdk-$_" -Branch $_ -Repo "hl2sdk-proxy-repo" "https://github.com/alliedmodders/hl2sdk.git"
 }
 
 Checkout-Repo -Name "ambuild" -Branch "master" -Repo "https://github.com/alliedmodders/ambuild.git"

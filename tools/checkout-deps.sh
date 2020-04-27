@@ -74,14 +74,19 @@ checkout ()
     git clone $repo -b $branch $name
     if [ -n "$origin" ]; then
       cd $name
-      git remote rm origin
-      git remote add origin $origin
+      git remote set-url origin $origin
       cd ..
     fi
   else
     cd $name
+    if [ -n "$origin" ]; then
+      git remote set-url origin ../$repo
+    fi
     git checkout $branch
     git pull origin $branch
+    if [ -n "$origin" ]; then
+      git remote set-url origin $origin
+    fi
     cd ..
   fi
 }
@@ -116,7 +121,7 @@ fi
 for sdk in "${sdks[@]}"
 do
   repo=hl2sdk-proxy-repo
-  origin=
+  origin="https://github.com/alliedmodders/hl2sdk"
   name=hl2sdk-$sdk
   branch=$sdk
   checkout
