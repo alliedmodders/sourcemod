@@ -138,9 +138,6 @@ static cell_t MatchRegex(IPluginContext *pCtx, const cell_t *params)
 	char *str;
 	pCtx->LocalToString(params[2], &str);
 
-	if(offset >= strlen(str))
-		return pCtx->ThrowNativeError("Invalid string index\n");
-
 	int e = x->Match(str, offset);
 
 	if (e == -1)
