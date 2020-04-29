@@ -120,6 +120,8 @@ PGconn *Connect(const DatabaseInfo *info, char *error, size_t maxlength)
 	/* Make a connection to the database */
 	PGconn *conn = PQconnectdb(options);
 
+	delete [] options;
+
 	/* Check to see that the backend connection was successfully made */
 	if (PQstatus(conn) != CONNECTION_OK)
 	{

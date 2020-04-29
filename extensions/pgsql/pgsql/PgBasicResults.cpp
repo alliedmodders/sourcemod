@@ -69,7 +69,7 @@ bool PgBasicResults::FieldNameToNum(const char *name, unsigned int *columnId)
 	if (id == -1)
 		return false;
 
-	*columnId = (unsigned int) id;
+	*columnId = (unsigned int)id;
 
 	return true;
 }

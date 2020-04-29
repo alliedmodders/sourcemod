@@ -54,7 +54,6 @@ bool DBI_PgSQL::SDK_OnLoad(char *error, size_t maxlength, bool late)
 void DBI_PgSQL::SDK_OnUnload()
 {
 	dbi->RemoveDriver(&g_PgDriver);
-
 }
 
 const char *DBI_PgSQL::GetExtensionVerString()
@@ -66,4 +65,3 @@ const char *DBI_PgSQL::GetExtensionDateString()
 {
 	return SOURCEMOD_BUILD_TIME;
 }
-

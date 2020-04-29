@@ -250,7 +250,6 @@ IQuery *PgDatabase::DoQuery(const char *query)
 	
 	if (status != PGRES_COMMAND_OK && status != PGRES_TUPLES_OK)
 	{
-		//smutils->LogMessage(myself, "Error: %s", PQresultErrorMessage(res));
 		PQclear(res);
 		return NULL;
 	}

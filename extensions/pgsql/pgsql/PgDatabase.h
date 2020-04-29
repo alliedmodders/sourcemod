@@ -40,8 +40,8 @@ class PgQuery;
 class PgStatement;
 
 class PgDatabase 
-				: public IDatabase,
-					public ke::RefcountedThreadsafe<PgDatabase>
+	: public IDatabase,
+	  public ke::RefcountedThreadsafe<PgDatabase>
 {
 	friend class PgQuery;
 	friend class PgStatement;
