@@ -152,7 +152,7 @@ PgDatabase::PgDatabase(PGconn *pgsql, const DatabaseInfo *info, bool persistent)
 
 PgDatabase::~PgDatabase()
 {
-	if(m_bPersistent)
+	if (m_bPersistent)
 		g_PgDriver.RemoveFromList(this, true);
 	PQfinish(m_pgsql);
 
@@ -248,7 +248,7 @@ IQuery *PgDatabase::DoQuery(const char *query)
 	
 	ExecStatusType status = PQresultStatus(res);
 	
-	if(status != PGRES_COMMAND_OK && status != PGRES_TUPLES_OK)
+	if (status != PGRES_COMMAND_OK && status != PGRES_TUPLES_OK)
 	{
 		//smutils->LogMessage(myself, "Error: %s", PQresultErrorMessage(res));
 		PQclear(res);
@@ -297,18 +297,18 @@ IPreparedQuery *PgDatabase::PrepareQuery(const char *query, char *error, size_t 
 	// Let postgresql guess the types of the arguments if there are any..
 	PGresult *res = PQprepare(m_pgsql, stmtName, query, 0, NULL);
 
-	if(PQresultStatus(res) != PGRES_COMMAND_OK)
+	if (PQresultStatus(res) != PGRES_COMMAND_OK)
 	{
-		if(error)
+		if (error)
 		{
 			strncopy(error, PQresultErrorMessage(res), maxlength);
 		}
 		
-		if(errCode) {
+		if (errCode) {
 			char *sqlState = PQresultErrorField(res, PG_DIAG_SQLSTATE);
 			// FIXME: Sqlstates can be non-number strings like 01P01.
 			// http://www.postgresql.org/docs/9.2/static/errcodes-appendix.html
-			if(sqlState != NULL)
+			if (sqlState != NULL)
 				*errCode = atoi(sqlState);
 		}
 

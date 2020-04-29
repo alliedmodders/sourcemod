@@ -66,7 +66,7 @@ bool PgBasicResults::FieldNameToNum(const char *name, unsigned int *columnId)
 {
 	int id = PQfnumber(m_pRes, name);
 
-	if(id == -1)
+	if (id == -1)
 		return false;
 
 	*columnId = (unsigned int) id;

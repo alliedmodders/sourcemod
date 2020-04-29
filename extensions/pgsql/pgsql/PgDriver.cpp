@@ -103,11 +103,11 @@ PGconn *Connect(const DatabaseInfo *info, char *error, size_t maxlength)
 		offs += snprintf(&options[offs], 1024 - offs, " port=%d", info->port);
 	}
 
-	if(info->user[0] != '\0')
+	if (info->user[0] != '\0')
 	{
 		offs += snprintf(&options[offs], 1024 - offs, " user='%s'", info->user);
 	}
-	if(info->pass[0] != '\0')
+	if (info->pass[0] != '\0')
 	{
 		offs += snprintf(&options[offs], 1024 - offs, " password='%s'", info->pass);
 	}
@@ -121,7 +121,7 @@ PGconn *Connect(const DatabaseInfo *info, char *error, size_t maxlength)
 	PGconn *conn = PQconnectdb(options);
 
 	/* Check to see that the backend connection was successfully made */
-	if(PQstatus(conn) != CONNECTION_OK)
+	if (PQstatus(conn) != CONNECTION_OK)
 	{
 		/* :TODO: expose UTIL_Format from smutil! */
 		snprintf(error, maxlength, "%s", PQerrorMessage(conn));

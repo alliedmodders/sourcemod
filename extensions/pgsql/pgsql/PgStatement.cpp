@@ -40,7 +40,7 @@ PgStatement::PgStatement(PgDatabase *db, const char* stmtName)
 	PGresult *desc = PQdescribePrepared(m_pgsql, m_stmtName);
 
 	// TODO: Proper error handling?
-	if(PQresultStatus(desc) != PGRES_COMMAND_OK)
+	if (PQresultStatus(desc) != PGRES_COMMAND_OK)
 	{
 		PQclear(desc);
 		return;
@@ -62,9 +62,9 @@ PgStatement::PgStatement(PgDatabase *db, const char* stmtName)
 PgStatement::~PgStatement()
 {
 	/* Free result set structures */
-	if(m_Results)
+	if (m_Results)
 	{
-		if(m_rs->m_pRes != NULL)
+		if (m_rs->m_pRes != NULL)
 			PQclear(m_rs->m_pRes);
 		delete m_rs;
 	}
@@ -205,7 +205,7 @@ bool PgStatement::BindParamNull(unsigned int param)
 bool PgStatement::Execute()
 {
 	/* Clear any past result first! */
-	if(m_Results)
+	if (m_Results)
 		delete m_rs;
 	m_Results = false;
 
@@ -218,9 +218,9 @@ bool PgStatement::Execute()
 		int *paramLengths = new int[m_Params];
 		int *paramFormats = new int[m_Params];
 
-		for(unsigned int i=0;i<m_Params;i++)
+		for (unsigned int i=0; i<m_Params; i++)
 		{
-			switch(m_pushinfo[i].type)
+			switch (m_pushinfo[i].type)
 			{
 			case DBType_Integer:
 				{
@@ -270,9 +270,9 @@ bool PgStatement::Execute()
 		delete [] paramLengths;
 
 		// .. need to free our char buffers
-		for(unsigned int i=0;i<m_Params;i++)
+		for (unsigned int i=0; i<m_Params; i++)
 		{
-			switch(m_pushinfo[i].type)
+			switch (m_pushinfo[i].type)
 			{
 			case DBType_Integer:
 			case DBType_Float:
@@ -291,7 +291,7 @@ bool PgStatement::Execute()
 	}
 
 	ExecStatusType status = PQresultStatus(res);
-	if(status != PGRES_COMMAND_OK && status != PGRES_TUPLES_OK)
+	if (status != PGRES_COMMAND_OK && status != PGRES_TUPLES_OK)
 	{
 		PQclear(res);
 		return false;
@@ -317,7 +317,7 @@ bool PgStatement::Execute()
 
 const char *PgStatement::GetError(int *errCode/* =NULL */)
 {
-	if(m_Results)
+	if (m_Results)
 	{
 		if (errCode)
 		{
