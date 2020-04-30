@@ -201,6 +201,8 @@ const char *PgDatabase::GetError(int *errCode)
 {
 	if (errCode)
 	{
+		// PostgreSQL only supports SQLSTATE error codes.
+		// https://www.postgresql.org/docs/9.6/errcodes-appendix.html
 		*errCode = -1;
 	}
 
@@ -302,13 +304,12 @@ IPreparedQuery *PgDatabase::PrepareQuery(const char *query, char *error, size_t 
 		{
 			strncopy(error, PQresultErrorMessage(res), maxlength);
 		}
-		
-		if (errCode) {
-			char *sqlState = PQresultErrorField(res, PG_DIAG_SQLSTATE);
-			// FIXME: Sqlstates can be non-number strings like 01P01.
-			// http://www.postgresql.org/docs/9.2/static/errcodes-appendix.html
-			if (sqlState != NULL)
-				*errCode = atoi(sqlState);
+
+		if (errCode)
+		{
+			// PostgreSQL only supports SQLSTATE error codes.
+			// https://www.postgresql.org/docs/9.6/errcodes-appendix.html
+			*errCode = -1;
 		}
 
 		PQclear(res);

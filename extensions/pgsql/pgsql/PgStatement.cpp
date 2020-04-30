@@ -321,10 +321,9 @@ const char *PgStatement::GetError(int *errCode/* =NULL */)
 	{
 		if (errCode)
 		{
-			char *sqlState = PQresultErrorField(m_rs->m_pRes, PG_DIAG_SQLSTATE);
-			// FIXME: Sqlstates can be non-number strings like 01P01.
-			// http://www.postgresql.org/docs/9.2/static/errcodes-appendix.html
-			*errCode = atoi(sqlState);
+			// PostgreSQL only supports SQLSTATE error codes.
+			// https://www.postgresql.org/docs/9.6/errcodes-appendix.html
+			*errCode = -1;
 		}
 
 		return PQresultErrorMessage(m_rs->m_pRes);
