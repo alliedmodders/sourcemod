@@ -227,6 +227,7 @@ public const TFHoliday TFHoliday_FullMoon;
 public const TFHoliday TFHoliday_HalloweenOrFullMoon;
 public const TFHoliday TFHoliday_HalloweenOrFullMoonOrValentines;
 public const TFHoliday TFHoliday_AprilFools;
+public const TFHoliday TFHoliday_Soldier;
 
 enum TFObjectType
 {

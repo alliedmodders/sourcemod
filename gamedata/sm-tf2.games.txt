@@ -165,6 +165,7 @@
 			"TFHoliday_HalloweenOrFullMoon"				"9"
 			"TFHoliday_HalloweenOrFullMoonOrValentines"	"10"
 			"TFHoliday_AprilFools"		"11"
+			"TFHoliday_Soldier"			"12"
 		}
 	}
 }
