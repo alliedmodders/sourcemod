@@ -81,7 +81,11 @@ public:
 
 	int GetMapTimeLimit()
 	{
+		#if SOURCE_ENGINE == SE_BMS
+		return (mp_timelimit->GetInt() / 60);
+		#else
 		return mp_timelimit->GetInt();
+		#endif
 	}
 
 	void SetMapTimerStatus(bool enabled)
@@ -107,7 +111,7 @@ public:
 
 		extra_time /= 60;
 
-		mp_timelimit->SetValue(mp_timelimit->GetInt() + extra_time);
+		mp_timelimit->SetValue(GetMapTimeLimit() + extra_time);
 	}
 
 	void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
@@ -484,4 +488,3 @@ bool TimerSystem::GetMapTimeLeft(float *time_left)
 
 	return true;
 }
-
