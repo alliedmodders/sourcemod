@@ -70,11 +70,11 @@ class DefaultMapTimer :
 {
 public:
 
-	#if SOURCE_ENGINE == SE_BMS
+#if SOURCE_ENGINE == SE_BMS
 	static constexpr int kMapTimeScaleFactor = 60;
-	#else
+#else
 	static constexpr int kMapTimeScaleFactor = 1;
-	#endif
+#endif
 	
 	DefaultMapTimer()
 	{
