@@ -109,9 +109,11 @@ public:
 			return;
 		}
 
+		#if SOURCE_ENGINE != SE_BMS
 		extra_time /= 60;
+		#endif
 
-		mp_timelimit->SetValue(GetMapTimeLimit() + extra_time);
+		mp_timelimit->SetValue(mp_timelimit->GetInt() + extra_time);
 	}
 
 	void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
