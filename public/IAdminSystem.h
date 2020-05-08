@@ -88,6 +88,11 @@ namespace SourceMod
 		Admin_Custom4,			/**< Fourth custom flag type */
 		Admin_Custom5,			/**< Fifth custom flag type */
 		Admin_Custom6,			/**< Sixth custom flag type */
+		Admin_Custom7,			/**< seventh custom flag type */
+		Admin_Custom8,			/**< eighth custom flag type */
+		Admin_Custom9,			/**< ninth custom flag type */
+		Admin_Custom10,			/**< tenth custom flag type */
+		Admin_Custom11,			/**< eleventh custom flag type */
 		/* --- */
 		AdminFlags_TOTAL,
 	};
@@ -113,6 +118,11 @@ namespace SourceMod
 	#define ADMFLAG_CUSTOM4				(1<<18)		/**< Convenience macro for Admin_Custom4 as a FlagBit */
 	#define ADMFLAG_CUSTOM5				(1<<19)		/**< Convenience macro for Admin_Custom5 as a FlagBit */
 	#define ADMFLAG_CUSTOM6				(1<<20)		/**< Convenience macro for Admin_Custom6 as a FlagBit */
+	#define ADMFLAG_CUSTOM7				(1<<21)		/**< Convenience macro for Admin_Custom7 as a FlagBit */
+	#define ADMFLAG_CUSTOM8				(1<<22)		/**< Convenience macro for Admin_Custom8 as a FlagBit */
+	#define ADMFLAG_CUSTOM9				(1<<23)		/**< Convenience macro for Admin_Custom9 as a FlagBit */
+	#define ADMFLAG_CUSTOM10			(1<<24)		/**< Convenience macro for Admin_Custom10 as a FlagBit */
+	#define ADMFLAG_CUSTOM11			(1<<25)		/**< Convenience macro for Admin_Custom11 as a FlagBit */
 
 	/**
 	 * @brief Specifies which type of command to override (command or command group).
@@ -748,4 +758,3 @@ namespace SourceMod
 }
 
 #endif //_INCLUDE_SOURCEMOD_ADMINISTRATION_SYSTEM_H_
-
