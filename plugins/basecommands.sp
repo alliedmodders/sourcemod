@@ -216,10 +216,10 @@ char g_FlagNames[FLAG_STRINGS][20] =
 
 int CustomFlagsToString(char[] buffer, int maxlength, int flags)
 {
-	char joins[6][6];
+	char joins[11][6];
 	int total;
 	
-	for (int i=view_as<int>(Admin_Custom1); i<=view_as<int>(Admin_Custom6); i++)
+	for (int i=view_as<int>(Admin_Custom1); i<=view_as<int>(Admin_Custom11); i++)
 	{
 		if (flags & (1<<i))
 		{
