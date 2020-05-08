@@ -676,9 +676,10 @@ enum Address
  *
  * @param addr          Address to a memory location.
  * @param size          How many bytes should be read.
+ *                      If loading a floating-point value, use NumberType_Int32.
  * @return              The value that is stored at that address.
  */
-native int LoadFromAddress(Address addr, NumberType size);
+native any LoadFromAddress(Address addr, NumberType size);
 
 /**
  * Store up to 4 bytes to a memory address.
@@ -686,8 +687,9 @@ native int LoadFromAddress(Address addr, NumberType size);
  * @param addr          Address to a memory location.
  * @param data          Value to store at the address.
  * @param size          How many bytes should be written.
+ *                      If storing a floating-point value, use NumberType_Int32.
  */
-native void StoreToAddress(Address addr, int data, NumberType size);
+native void StoreToAddress(Address addr, any data, NumberType size);
 
 methodmap FrameIterator < Handle {
 	// Creates a stack frame iterator to build your own stack traces.
