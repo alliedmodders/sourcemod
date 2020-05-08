@@ -73,11 +73,10 @@ public:
 		if (!Parse())
 		{
 			memcpy(g_FlagLetters, g_DefaultFlags, sizeof(AdminFlag) * 26);
-			for (unsigned int i=0; i<20; i++)
+			for (unsigned int i=0; i<26; i++)
 			{
 				g_FlagCharSet[i] = true;
 			}
-			g_FlagCharSet[25] = true;
 		}
 	}
 private:
