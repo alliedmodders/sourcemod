@@ -109,7 +109,7 @@ public void OnPluginStart()
 	g_Cvar_Limits[0] = CreateConVar("sm_vote_map", "0.60", "percent required for successful map vote.", 0, true, 0.05, true, 1.0);
 	g_Cvar_Limits[1] = CreateConVar("sm_vote_kick", "0.60", "percent required for successful kick vote.", 0, true, 0.05, true, 1.0);	
 	g_Cvar_Limits[2] = CreateConVar("sm_vote_ban", "0.60", "percent required for successful ban vote.", 0, true, 0.05, true, 1.0);		
-	g_Cvar_Voteban = CreateConVar("sm_voteban_time", "30", "time ban in minutes for successful ban vote.", 0, true, 0.0);	
+	g_Cvar_Voteban = CreateConVar("sm_voteban_time", "30", "length of ban in minutes.", 0, true, 0.0);	
 
 	AutoExecConfig(true, "basevotes");
 	
