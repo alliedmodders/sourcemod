@@ -45,6 +45,9 @@ enum SDKPassMethod
 	SDKPass_ByRef,			/**< Pass an object by reference */
 };
 
+//memory addresses below 0x10000 are automatically considered invalid for dereferencing
+#define VALID_MINIMUM_MEMORY_ADDRESS 0x10000
+
 int s_vtbl_index = -1;
 void *s_call_addr = NULL;
 ValveCallType s_vcalltype = ValveCall_Static;
@@ -364,6 +367,17 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				cell_t *cell;
 				pContext->LocalToPhysAddr(params[startparam], &cell);
 				void *thisptr = reinterpret_cast<void*>(*cell);
+
+				if (thisptr == nullptr)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("ThisPtr address cannot be null");
+				}
+				else if (reinterpret_cast<uintptr_t>(thisptr) < VALID_MINIMUM_MEMORY_ADDRESS)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Invalid ThisPtr address 0x%x is pointing to reserved memory.", thisptr);
+				}
 
 				*(void **)ptr = thisptr;
 				startparam++;
