@@ -281,8 +281,13 @@ class SMConfig(object):
       '-msse',
       '-fvisibility=hidden',
     ]
+
+    if cxx.version == 'apple-clang-6.0':
+      cxx.cxxflags += ['-std=c++1y']
+    else:
+      cxx.cxxflags += ['-std=c++14']
+
     cxx.cxxflags += [
-      '-std=c++11',
       '-fno-exceptions',
       '-fno-threadsafe-statics',
       '-Wno-non-virtual-dtor',
@@ -386,16 +391,16 @@ class SMConfig(object):
       cxx.linkflags += ['-static-libgcc']
     elif cxx.family == 'clang':
       cxx.linkflags += ['-lgcc_eh']
+    cxx.linkflags += ['-static-libstdc++']
 
   def configure_mac(self, cxx):
     cxx.defines += ['OSX', '_OSX', 'POSIX', 'KE_ABSOLUTELY_NO_STL']
-    cxx.cflags += ['-mmacosx-version-min=10.5']
+    cxx.cflags += ['-mmacosx-version-min=10.7']
     cxx.linkflags += [
-      '-mmacosx-version-min=10.5',
-      '-lstdc++',
-      '-stdlib=libstdc++',
+      '-mmacosx-version-min=10.7',
+      '-stdlib=libc++',
     ]
-    cxx.cxxflags += ['-stdlib=libstdc++']
+    cxx.cxxflags += ['-stdlib=libc++']
 
   def configure_windows(self, cxx):
     cxx.defines += ['WIN32', '_WINDOWS']
@@ -545,9 +550,11 @@ class SMConfig(object):
       if builder.target.platform in ['linux', 'mac']:
         compiler.defines += ['NO_HOOK_MALLOC', 'NO_MALLOC_OVERRIDE']
 
-    if sdk.name in ['csgo', 'blade'] and builder.target.platform == 'linux':
-      compiler.linkflags += ['-lstdc++']
-      compiler.defines += ['_GLIBCXX_USE_CXX11_ABI=0']
+    if builder.target.platform == 'linux':
+        if sdk.name in ['csgo', 'blade']:
+          compiler.linkflags.remove('-static-libstdc++')
+          compiler.linkflags += ['-lstdc++']
+          compiler.defines += ['_GLIBCXX_USE_CXX11_ABI=0']
 
     for path in paths:
       compiler.cxxincludes += [os.path.join(sdk.path, *path)]
