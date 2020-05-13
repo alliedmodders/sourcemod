@@ -136,7 +136,7 @@ if [ $? -eq 1 ]; then
   checkout
 
   cd ambuild
-  if [ $iswin -eq 1 ]; then
+  if [ $iswin -eq 1 ] || [ $ismac -eq 1 ]; then
     python setup.py install
   else
     python setup.py build

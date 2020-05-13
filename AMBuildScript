@@ -282,7 +282,7 @@ class SMConfig(object):
       '-fvisibility=hidden',
     ]
 
-    if cxx.version == 'apple-clang-6.0':
+    if cxx.version == 'apple-clang-6.0' or cxx.version == 'clang-3.4':
       cxx.cxxflags += ['-std=c++1y']
     else:
       cxx.cxxflags += ['-std=c++14']
@@ -297,11 +297,11 @@ class SMConfig(object):
 
     have_gcc = cxx.family == 'gcc'
     have_clang = cxx.family == 'clang'
-    if cxx.version >= 'clang-3.9':
+    if cxx.version >= 'clang-3.9' or cxx.version == 'clang-3.4' or cxx.version > 'apple-clang-6.0':
       cxx.cxxflags += ['-Wno-expansion-to-defined']
     if cxx.version == 'clang-3.9' or cxx.version == 'apple-clang-8.0':
       cxx.cflags += ['-Wno-varargs']
-    if cxx.version >= 'clang-3.6' or cxx.version >= 'apple-clang-7.0':
+    if cxx.version >= 'clang-3.4' or cxx.version >= 'apple-clang-7.0':
       cxx.cxxflags += ['-Wno-inconsistent-missing-override']
     if cxx.version >= 'clang-2.9' or cxx.version >= 'apple-clang-3.0':
       cxx.cxxflags += ['-Wno-null-dereference']
