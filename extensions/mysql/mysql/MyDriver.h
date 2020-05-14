@@ -45,7 +45,8 @@
 
 #include <sh_string.h>
 #include <sh_list.h>
-#include <am-thread-utils.h>
+
+#include <mutex>
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -71,7 +72,7 @@ public:
 	void Shutdown();
 	void RemoveFromList(MyDatabase *pdb, bool persistent);
 private:
-	ke::Mutex m_Lock;
+	std::mutex m_Lock;
 	Handle_t m_MyHandle;
 	List<MyDatabase *> m_TempDbs;
 	List<MyDatabase *> m_PermDbs;

@@ -34,17 +34,20 @@
 #include "HandleSys.h"
 #include "ExtensionSys.h"
 #include "PluginSys.h"
+#include <chrono>
+#include <amtl/am-thread.h>
 #include <stdlib.h>
 #include <IThreader.h>
 #include <bridge/include/ILogger.h>
 #include <bridge/include/CoreProvider.h>
+
+using namespace std::chrono_literals;
 
 #define DBPARSE_LEVEL_NONE		0
 #define DBPARSE_LEVEL_MAIN		1
 #define DBPARSE_LEVEL_DATABASE	2
 
 DBManager g_DBMan;
-static bool s_OneTimeThreaderErrorMsg = false;
 
 DBManager::DBManager() 
 	: m_Terminate(false),
@@ -377,13 +380,12 @@ void DBManager::KillWorkerThread()
 	if (m_Worker)
 	{
 		{
-			ke::AutoLock lock(&m_QueueEvent);
+			std::lock_guard<std::mutex> lock(m_Lock);
 			m_Terminate = true;
-			m_QueueEvent.Notify();
+			m_QueueEvent.notify_all();
 		}
-		m_Worker->Join();
+		m_Worker->join();
 		m_Worker = nullptr;
-		s_OneTimeThreaderErrorMsg = false;
 		m_Terminate = false;
 	}
 }
@@ -399,27 +401,17 @@ bool DBManager::AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio)
 
 	if (!m_Worker)
 	{
-		m_Worker = new ke::Thread([this]() -> void {
+		m_Worker = ke::NewThread("SM Database Worker", [this]() -> void {
 			Run();
-		}, "SM SQL Worker");
-		if (!m_Worker->Succeeded())
-		{
-			if (!s_OneTimeThreaderErrorMsg)
-			{
-				logger->LogError("[SM] Unable to create db threader (error unknown)");
-				s_OneTimeThreaderErrorMsg = true;
-			}
-			m_Worker = nullptr;
-			return false;
-		}
+		});
 	}
 
 	/* Add to the queue */
 	{
-		ke::AutoLock lock(&m_QueueEvent);
+		std::lock_guard<std::mutex> lock(m_Lock);
 		Queue<IDBThreadOperation *> &queue = m_OpQueue.GetQueue(prio);
 		queue.push(op);
-		m_QueueEvent.Notify();
+		m_QueueEvent.notify_one();
 	}
 
 	return true;
@@ -450,7 +442,7 @@ void DBManager::Run()
 
 void DBManager::ThreadMain()
 {
-	ke::AutoLock lock(&m_QueueEvent);
+	std::unique_lock<std::mutex> lock(m_Lock);
 
 	while (true) {
 		// The lock has been acquired. Grab everything we can out of the
@@ -458,46 +450,43 @@ void DBManager::ThreadMain()
 		// we process all operations we can before checking to terminate.
 		// There's no risk of starvation since the main thread blocks on us
 		// terminating.
-		while (true)
-		{
-			Queue<IDBThreadOperation *> &queue = m_OpQueue.GetLikelyQueue();
-			if (queue.empty())
-				break;
+		auto queue = &m_OpQueue.GetLikelyQueue();
+		if (queue->empty()) {
+			// If the queue is empty and we've been asked to stop, leave now.
+			if (m_Terminate)
+				return;
 
-			IDBThreadOperation *op = queue.first();
-			queue.pop();
-
-			// Unlock the queue when we run the query, so the main thread can
-			// keep pumping events. We re-acquire the lock to check for more
-			// items. It's okay if we terminate while unlocked; the main
-			// thread would be blocked and we'd need to flush the queue
-			// anyway, so after we've depleted the queue here, we'll just
-			// reach the terminate at the top of the loop.
-			{
-				ke::AutoUnlock unlock(&m_QueueEvent);
-				op->RunThreadPart();
-
-				ke::AutoLock lock(&m_ThinkLock);
-				m_ThinkQueue.push(op);
-			}
-			
-			
-			if (!m_Terminate)
-			{
-				ke::AutoUnlock unlock(&m_QueueEvent);
-#ifdef _WIN32
-				Sleep(20);
-#else
-				usleep(20000);
-#endif
-			}
+			// Otherwise, wait for something to happen.
+			m_QueueEvent.wait(lock);
+			continue;
 		}
 
-		if (m_Terminate)
-			return;
+		IDBThreadOperation *op = queue->first();
+		queue->pop();
 
-		// Release the lock and wait for a signal.
-		m_QueueEvent.Wait();
+		// Unlock the queue when we run the query, so the main thread can
+		// keep pumping events. We re-acquire the lock to check for more
+		// items. It's okay if we terminate while unlocked; the main
+		// thread would be blocked and we'd need to flush the queue
+		// anyway, so after we've depleted the queue here, we'll just
+		// reach the terminate at the top of the loop.
+		lock.unlock();
+		op->RunThreadPart();
+
+		// Re-acquire the lock and give the data back to the main thread
+		// immediately. We use a separate lock to minimize game thread
+		// contention.
+		{
+			std::lock_guard<std::mutex> think_lock(m_ThinkLock);
+			m_ThinkQueue.push(op);
+		}
+
+		// Note that we add a 20ms delay after processing a query. This is
+		// questionable but the intent is to avoid starving the game thread.
+		if (!m_Terminate)
+			std::this_thread::sleep_for(20ms);
+
+		lock.lock();
 	}
 }
 
@@ -512,7 +501,7 @@ void DBManager::RunFrame()
 	/* Dump one thing per-frame so the server stays sane. */
 	IDBThreadOperation *op;
 	{
-		ke::AutoLock lock(&m_ThinkLock);
+		std::lock_guard<std::mutex> lock(m_ThinkLock);
 		op = m_ThinkQueue.first();
 		m_ThinkQueue.pop();
 	}
