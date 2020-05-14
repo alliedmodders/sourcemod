@@ -43,6 +43,7 @@ class BaseWorker;
 class SWThreadHandle : public IThreadHandle
 {
 	friend class BaseWorker;
+	friend class CompatWorker;
 public:
 	SWThreadHandle(IThreadCreator *parent, const ThreadParams *p, IThread *thread);
 	IThread *GetThread();
