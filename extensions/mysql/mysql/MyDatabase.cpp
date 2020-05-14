@@ -277,17 +277,13 @@ IPreparedQuery *MyDatabase::PrepareQuery(const char *query, char *error, size_t 
 
 bool MyDatabase::LockForFullAtomicOperation()
 {
-	if (!m_FullLock)
-		m_FullLock = new ke::Mutex();
-
-	m_FullLock->Lock();
+	m_FullLock.lock();
 	return true;
 }
 
 void MyDatabase::UnlockFromFullAtomicOperation()
 {
-	if (m_FullLock)
-		m_FullLock->Unlock();
+	m_FullLock.unlock();
 }
 
 IDBDriver *MyDatabase::GetDriver()

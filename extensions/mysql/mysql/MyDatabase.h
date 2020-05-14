@@ -32,8 +32,8 @@
 #ifndef _INCLUDE_SM_MYSQL_DATABASE_H_
 #define _INCLUDE_SM_MYSQL_DATABASE_H_
 
-#include <am-thread-utils.h>
 #include <am-refcounting-threadsafe.h>
+#include <mutex>
 #include "MyDriver.h"
 
 class MyQuery;
@@ -70,7 +70,7 @@ public:
 	const DatabaseInfo &GetInfo();
 private:
 	MYSQL *m_mysql;
-	ke::AutoPtr<ke::Mutex> m_FullLock;
+	std::mutex m_FullLock;
 
 	/* ---------- */
 	DatabaseInfo m_Info;
