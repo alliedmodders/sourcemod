@@ -31,6 +31,7 @@
 #include <sm_platform.h>
 #include <amtl/am-deque.h>
 #include <amtl/am-maybe.h>
+#include <amtl/am-thread.h>
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -99,9 +100,10 @@ bool CompatWorker::Start()
 	if (state_ != Worker_Stopped)
 		return false;
 
-	thread_ = std::make_unique<std::thread>([this]() -> void {
+	thread_ = ke::NewThread("SM CompatWorker Thread", [this]() -> void {
 		Worker();
 	});
+
 	state_ = Worker_Running;
 	return true;
 }
@@ -353,7 +355,7 @@ bool CompatThread::Unpause()
 	if (thread_)
 		return false;
 
-	thread_ = std::make_unique<std::thread>([this]() -> void {
+	thread_ = ke::NewThread("SM CompatThread", [this]() -> void {
 		Run();
 	});
 

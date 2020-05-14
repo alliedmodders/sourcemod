@@ -35,7 +35,6 @@
 #include <mutex>
 
 #include <IThreader.h>
-#include <am-thread-utils.h>
 #include <am-utility.h>
 
 using namespace SourceMod;
