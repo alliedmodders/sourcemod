@@ -117,7 +117,7 @@ struct QHandleType
 	}
 };
 
-typedef ke::Lambda<void(const char *)> HandleReporter;
+typedef ke::Function<void(const char *)> HandleReporter;
 
 class HandleSystem : 
 	public IHandleSys
