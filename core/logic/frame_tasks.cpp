@@ -29,11 +29,11 @@
 
 using namespace SourceMod;
 
-ke::Vector<ke::Lambda<void()>> sNextTasks;
-ke::Vector<ke::Lambda<void()>> sWorkTasks;
+ke::Vector<ke::Function<void()>> sNextTasks;
+ke::Vector<ke::Function<void()>> sWorkTasks;
 
 void
-SourceMod::ScheduleTaskForNextFrame(ke::Lambda<void()>&& task)
+SourceMod::ScheduleTaskForNextFrame(ke::Function<void()>&& task)
 {
 	sNextTasks.append(ke::Forward<decltype(task)>(task));
 }
@@ -45,7 +45,7 @@ SourceMod::RunScheduledFrameTasks(bool simulating)
 		return;
 
 	// Swap.
-	ke::Vector<ke::Lambda<void()>> temp(ke::Move(sNextTasks));
+	ke::Vector<ke::Function<void()>> temp(ke::Move(sNextTasks));
 	sNextTasks = ke::Move(sWorkTasks);
 	sWorkTasks = ke::Move(temp);
 
