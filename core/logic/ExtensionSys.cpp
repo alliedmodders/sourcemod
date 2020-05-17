@@ -30,6 +30,9 @@
  */
 
 #include <stdlib.h>
+
+#include <memory>
+
 #include "ExtensionSys.h"
 #include <ILibrarySys.h>
 #include <ISourceMod.h>
@@ -496,7 +499,7 @@ void CExtensionManager::TryAutoload()
 
 	g_pSM->BuildPath(Path_SM, path, sizeof(path), "extensions");
 
-	ke::AutoPtr<IDirectory> pDir(libsys->OpenDirectory(path));
+	std::unique_ptr<IDirectory> pDir(libsys->OpenDirectory(path));
 	if (!pDir)
 		return;
 

@@ -79,7 +79,7 @@ CPlugin::CPlugin(const char *file)
 
 	memset(&m_info, 0, sizeof(m_info));
 
-	m_pPhrases = g_Translator.CreatePhraseCollection();
+	m_pPhrases.reset(g_Translator.CreatePhraseCollection());
 }
 
 CPlugin::~CPlugin()
@@ -227,7 +227,7 @@ bool CPlugin::SetProperty(const char *prop, void *ptr)
 
 IPluginRuntime *CPlugin::GetRuntime()
 {
-	return m_pRuntime;
+	return m_pRuntime.get();
 }
 
 void CPlugin::EvictWithError(PluginStatus status, const char *error_fmt, ...)
@@ -483,7 +483,7 @@ bool CPlugin::TryCompile()
 	g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", m_filename);
 
 	char loadmsg[255];
-	m_pRuntime = g_pSourcePawn2->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg));
+	m_pRuntime.reset(g_pSourcePawn2->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg)));
 	if (!m_pRuntime) {
 		EvictWithError(Plugin_BadLoad, "Unable to load plugin (%s)", loadmsg);
 		return false;
@@ -658,7 +658,7 @@ time_t CPlugin::GetFileTimeStamp()
 
 IPhraseCollection *CPlugin::GetPhrases()
 {
-	return m_pPhrases;
+	return m_pPhrases.get();
 }
 
 void CPlugin::DependencyDropped(CPlugin *pOwner)

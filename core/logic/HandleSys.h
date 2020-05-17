@@ -32,12 +32,14 @@
 #ifndef _INCLUDE_SOURCEMOD_HANDLESYSTEM_H_
 #define _INCLUDE_SOURCEMOD_HANDLESYSTEM_H_
 
-#include <IHandleSys.h>
 #include <stdio.h>
-#include <sm_namehashset.h>
-#include <amtl/am-autoptr.h>
+
+#include <memory>
+
 #include <amtl/am-string.h>
 #include <amtl/am-function.h>
+#include <IHandleSys.h>
+#include <sm_namehashset.h>
 #include "common_logic.h"
 
 #define HANDLESYS_MAX_HANDLES		(1<<15)
@@ -105,7 +107,7 @@ struct QHandleType
 	TypeAccess typeSec;
 	HandleAccess hndlSec;
 	unsigned int opened;
-	ke::AutoPtr<ke::AString> name;
+	std::unique_ptr<ke::AString> name;
 
 	static inline bool matches(const char *key, const QHandleType *type)
 	{

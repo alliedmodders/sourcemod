@@ -32,9 +32,12 @@
 #ifndef _INCLUDE_SOURCEMOD_PLUGINSYSTEM_H_
 #define _INCLUDE_SOURCEMOD_PLUGINSYSTEM_H_
 
-#include <time.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <time.h>
+
+#include <memory>
+
 #include <IPluginSys.h>
 #include <IHandleSys.h>
 #include <IForwardSys.h>
@@ -267,8 +270,8 @@ private:
 	char m_errormsg[256];
 
 	// Internal properties that must by reset if the runtime is evicted.
-	ke::AutoPtr<IPluginRuntime> m_pRuntime;
-	ke::AutoPtr<CPhraseCollection> m_pPhrases;
+	std::unique_ptr<IPluginRuntime> m_pRuntime;
+	std::unique_ptr<CPhraseCollection> m_pPhrases;
 	IPluginContext *m_pContext;
 	sp_pubvar_t *m_MaxClientsVar;
 	StringHashMap<void *> m_Props;

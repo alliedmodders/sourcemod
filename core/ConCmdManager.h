@@ -32,6 +32,8 @@
 #ifndef _INCLUDE_SOURCEMOD_CONCMDMANAGER_H_
 #define _INCLUDE_SOURCEMOD_CONCMDMANAGER_H_
 
+#include <memory>
+
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include <IForwardSys.h>
@@ -41,7 +43,6 @@
 #include <IAdminSystem.h>
 #include "concmd_cleaner.h"
 #include "GameHooks.h"
-#include <am-autoptr.h>
 #include <sm_stringhashmap.h>
 #include <am-utility.h>
 #include <am-inlinelist.h>
@@ -90,7 +91,7 @@ struct CmdHook : public ke::InlineListNode<CmdHook>
 	ConCmdInfo *info;
 	IPluginFunction *pf;				/* function hook */
 	ke::AString helptext;				/* help text */
-	ke::AutoPtr<AdminCmdInfo> admin;	/* admin requirements, if any */
+	std::unique_ptr<AdminCmdInfo> admin;	/* admin requirements, if any */
 };
 
 typedef ke::InlineList<CmdHook> CmdHookList;

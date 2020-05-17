@@ -31,8 +31,10 @@
 
 #include <stdlib.h>
 #include <string.h>
+
+#include <memory>
+
 #include "CDataPack.h"
-#include <amtl/am-autoptr.h>
 
 CDataPack::CDataPack()
 {
@@ -44,14 +46,14 @@ CDataPack::~CDataPack()
 	Initialize();
 }
 
-static ke::Vector<ke::AutoPtr<CDataPack>> sDataPackCache;
+static ke::Vector<std::unique_ptr<CDataPack>> sDataPackCache;
 
 CDataPack *CDataPack::New()
 {
   if (sDataPackCache.empty())
     return new CDataPack();
 
-  CDataPack *pack = sDataPackCache.back().take();
+  CDataPack *pack = sDataPackCache.back().release();
   sDataPackCache.pop();
   pack->Initialize();
   return pack;

@@ -29,8 +29,6 @@
  * Version: $Id$
  */
 
-#include <am-moveable.h>
-
 #ifndef _include_sourcemod_namehashset_h_
 #define _include_sourcemod_namehashset_h_
 
@@ -124,7 +122,7 @@ public:
 	template <typename U>
 	bool add(Insert &i, U &&value)
 	{
-		return table_.add(i, ke::Forward<U>(value));
+		return table_.add(i, std::forward<U>(value));
 	}
 
 	bool retrieve(const char *aKey, T *value)
@@ -144,7 +142,7 @@ public:
 		Insert i = table_.findForAdd(key);
 		if (i.found())
 			return false;
-		return table_.add(i, ke::Forward<U>(value));
+		return table_.add(i, std::forward<U>(value));
 	}
 
 	bool contains(const char *aKey)

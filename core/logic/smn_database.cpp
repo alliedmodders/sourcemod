@@ -29,6 +29,8 @@
  * Version: $Id$
  */
 
+#include <memory>
+
 #include "common_logic.h"
 #include "Database.h"
 #include "ExtensionSys.h"
@@ -1667,8 +1669,8 @@ private:
 
 		assert(results_.length() == txn_->entries.length());
 
-		ke::AutoPtr<cell_t[]> data = ke::MakeUnique<cell_t[]>(results_.length());
-		ke::AutoPtr<cell_t[]> handles = ke::MakeUnique<cell_t[]>(results_.length());
+		std::unique_ptr<cell_t[]> data = std::make_unique<cell_t[]>(results_.length());
+		std::unique_ptr<cell_t[]> handles = std::make_unique<cell_t[]>(results_.length());
 		for (size_t i = 0; i < results_.length(); i++)
 		{
 			CombinedQuery *obj = new CombinedQuery(results_[i], db_);
@@ -1728,7 +1730,7 @@ public:
 		{
 			HandleSecurity sec(ident_, g_pCoreIdent);
 
-			ke::AutoPtr<cell_t[]> data = ke::MakeUnique<cell_t[]>(txn_->entries.length());
+			std::unique_ptr<cell_t[]> data = std::make_unique<cell_t[]>(txn_->entries.length());
 			for (size_t i = 0; i < txn_->entries.length(); i++)
 				data[i] = txn_->entries[i].data;
 
