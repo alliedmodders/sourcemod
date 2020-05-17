@@ -52,7 +52,7 @@
 #include <sp_vm_types.h>
 
 #define SMINTERFACE_HANDLESYSTEM_NAME			"IHandleSys"
-#define SMINTERFACE_HANDLESYSTEM_VERSION		5
+#define SMINTERFACE_HANDLESYSTEM_VERSION		6
 
 /** Specifies no Identity */
 #define DEFAULT_IDENTITY			NULL
@@ -135,6 +135,8 @@ namespace SourceMod
 	#define HANDLE_RESTRICT_IDENTITY	(1<<0)	
 	/** Access is restricted to the owner */
 	#define HANDLE_RESTRICT_OWNER		(1<<1)
+	/** Access is identity exclusive */
+	#define HANDLE_RESTRICT_IDENTEXCLUSIVE	(1<<2)
 
 	/**
 	 * @brief This is used to define per-type access rights.
@@ -373,6 +375,15 @@ namespace SourceMod
 		 * @return			True if "given" is a subtype of "actual", false otherwise.
 		 */
 		virtual bool TypeCheck(HandleType_t given, HandleType_t actual) = 0;
+
+		/**
+		 * @brief Obtain the HandleAccess address from the passed in handle.
+		 *
+		 * @param handle	Handle_t identifier to destroy.
+		 * @param pAccess	Access information struct.
+		 * @return			HandleError error code.
+		 */
+		virtual HandleError GetHandleAccess(Handle_t handle, HandleAccess *&pAccess) = 0;
 	};
 }
 

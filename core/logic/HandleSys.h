@@ -173,6 +173,8 @@ public: //IHandleSystem
 
 	/* Bypasses security checks. */
 	Handle_t FastCloneHandle(Handle_t hndl);
+
+	HandleError GetHandleAccess(Handle_t handle, HandleAccess *&pSecurity);
 protected:
 	/**
 	 * Decodes a handle with sanity and security checking.
@@ -258,6 +260,52 @@ public:
 	}
 private:
 	Handle_t hndl;
+};
+
+struct AutoHandleIdentLocker
+{
+public:
+	AutoHandleIdentLocker() : pSecurity(nullptr)
+	{
+	}
+
+	AutoHandleIdentLocker(Handle_t hndl) : pSecurity(nullptr)
+	{
+		if (hndl != BAD_HANDLE)
+		{
+			if (g_HandleSys.GetHandleAccess(hndl, this->pSecurity) == HandleError_None)
+			{
+				if ((this->pSecurity->access[HandleAccess_Delete] & HANDLE_RESTRICT_IDENTEXCLUSIVE) == HANDLE_RESTRICT_IDENTEXCLUSIVE)
+					this->pSecurity = nullptr;
+				else
+					this->pSecurity->access[HandleAccess_Delete] |= HANDLE_RESTRICT_IDENTEXCLUSIVE;
+			}
+		}
+	}
+
+	~AutoHandleIdentLocker()
+	{
+		this->Nuke();
+	}
+
+public:
+	AutoHandleIdentLocker &operator =(const AutoHandleIdentLocker &other)
+	{
+		this->Nuke();
+		this->pSecurity = other.pSecurity;
+		return *this;
+	};
+private:
+	void Nuke(void)
+	{
+		if (this->pSecurity)
+		{
+			this->pSecurity->access[HandleAccess_Delete] &= ~HANDLE_RESTRICT_IDENTEXCLUSIVE;
+			this->pSecurity = nullptr;
+		}
+	}
+private:
+	HandleAccess *pSecurity;
 };
 
 #endif //_INCLUDE_SOURCEMOD_HANDLESYSTEM_H_

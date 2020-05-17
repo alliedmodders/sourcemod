@@ -532,6 +532,9 @@ bool HandleSystem::CheckAccess(QHandle *pHandle, HandleAccessRight right, const 
 	/* Check if the owner is allowed */
 	if (access & HANDLE_RESTRICT_OWNER)
 	{
+		if ((access & HANDLE_RESTRICT_IDENTEXCLUSIVE) == HANDLE_RESTRICT_IDENTEXCLUSIVE)
+			return false;
+
 		IdentityToken_t *owner = pHandle->owner;
 		if (owner
 			&& (!pSecurity || pSecurity->pOwner != owner))
@@ -1166,3 +1169,15 @@ void HandleSystem::Dump(const HandleReporter &fn)
 	rep(fn, "-- Approximately %d bytes of memory are in use by Handles.\n", total_size);
 }
 
+HandleError HandleSystem::GetHandleAccess(Handle_t handle, HandleAccess *&pAccess)
+{
+	unsigned int index;
+	QHandle *pHandle;
+	IdentityToken_t *ident = NULL;
+	HandleError err = GetHandle(handle, ident, &pHandle, &index);
+
+	if (err == HandleError_None)
+		pAccess = &(pHandle->sec);
+
+	return err;
+}
