@@ -32,9 +32,10 @@
 #ifndef _INCLUDE_MENUSTYLE_BASE_H
 #define _INCLUDE_MENUSTYLE_BASE_H
 
+#include <memory>
+
 #include <IMenuManager.h>
 #include <IPlayerHelpers.h>
-#include <am-autoptr.h>
 #include <am-string.h>
 #include <am-vector.h>
 #include "sm_fastlink.h"
@@ -67,7 +68,7 @@ public:
 
 public:
 	ke::AString info;
-	ke::AutoPtr<ke::AString> display;
+	std::unique_ptr<ke::AString> display;
 	unsigned int style;
 	unsigned int access;
 

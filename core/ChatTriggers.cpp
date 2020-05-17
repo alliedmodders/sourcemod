@@ -29,6 +29,8 @@
  * Version: $Id$
  */
 
+#include <memory>
+
 #include <ITextParsers.h>
 #include "ChatTriggers.h"
 #include "sm_stringutil.h"
@@ -64,7 +66,7 @@ ChatTriggers::~ChatTriggers()
 
 void ChatTriggers::SetChatTrigger(ChatTriggerType type, const char *value)
 {
-	ke::AutoPtr<char[]> filtered(new char[strlen(value) + 1]);
+	std::unique_ptr<char[]> filtered(new char[strlen(value) + 1]);
 
 	const char *src = value;
 	char *dest = filtered.get();

@@ -29,12 +29,13 @@
  * Version: $Id$
  */
 
+#include <memory>
+
 #include "common_logic.h"
 #include <IPluginSys.h>
 #include <IHandleSys.h>
 #include <IForwardSys.h>
 #include <ISourceMod.h>
-#include <amtl/am-autoptr.h>
 
 HandleType_t g_GlobalFwdType = 0;
 HandleType_t g_PrivateFwdType = 0;
@@ -686,7 +687,7 @@ struct SMFrameActionData
 
 static void PawnFrameAction(void *pData)
 {
-	ke::AutoPtr<SMFrameActionData> frame(reinterpret_cast<SMFrameActionData *>(pData));
+	std::unique_ptr<SMFrameActionData> frame(reinterpret_cast<SMFrameActionData *>(pData));
 	IPlugin *pPlugin = pluginsys->PluginFromHandle(frame->ownerhandle, NULL);
 	if (!pPlugin)
 	{

@@ -33,7 +33,6 @@
 
 #include <IShareSys.h>
 #include <IHandleSys.h>
-#include <am-autoptr.h>
 #include <am-string.h>
 #include <am-utility.h>
 #include <am-refcounting.h>
@@ -64,19 +63,19 @@ struct Native : public ke::Refcounted<Native>
 	Native(CNativeOwner *owner, const sp_nativeinfo_t *native)
 		: owner(owner),
 		  native(native),
-		  fake(NULL)
+		  fake(nullptr)
 	{
 	}
 	Native(CNativeOwner *owner, FakeNative *fake)
 		: owner(owner),
-		  native(NULL),
+		  native(nullptr),
 		  fake(fake)
 	{
 	}
 
 	CNativeOwner *owner;
 	const sp_nativeinfo_t *native;
-	ke::AutoPtr<FakeNative> fake;
+	std::unique_ptr<FakeNative> fake;
 
 	SPVM_NATIVE_FUNC func() const
 	{
