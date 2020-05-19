@@ -27,6 +27,8 @@
 #ifndef _include_sourcemod_reentrant_iterator_h_
 #define _include_sourcemod_reentrant_iterator_h_
 
+#include <utility>
+
 #include <amtl/am-linkedlist.h>
 #include <amtl/am-function.h>
 
@@ -148,7 +150,7 @@ public:
 
 	template <typename U>
 	void insertBefore(iterator& where, U &&obj) {
-		BaseType::insertBefore(where.impl_, ke::Forward<U>(obj));
+		BaseType::insertBefore(where.impl_, std::forward<U>(obj));
 	}
 
 	template <typename U>

@@ -26,6 +26,7 @@
 // or <http://www.sourcemod.net/license.php>.
 #include "frame_tasks.h"
 #include <am-vector.h>
+#include <utility>
 
 using namespace SourceMod;
 
@@ -35,7 +36,7 @@ ke::Vector<ke::Function<void()>> sWorkTasks;
 void
 SourceMod::ScheduleTaskForNextFrame(ke::Function<void()>&& task)
 {
-	sNextTasks.append(ke::Forward<decltype(task)>(task));
+	sNextTasks.append(std::forward<decltype(task)>(task));
 }
 
 void
@@ -45,9 +46,9 @@ SourceMod::RunScheduledFrameTasks(bool simulating)
 		return;
 
 	// Swap.
-	ke::Vector<ke::Function<void()>> temp(ke::Move(sNextTasks));
-	sNextTasks = ke::Move(sWorkTasks);
-	sWorkTasks = ke::Move(temp);
+	ke::Vector<ke::Function<void()>> temp(std::move(sNextTasks));
+	sNextTasks = std::move(sWorkTasks);
+	sWorkTasks = std::move(temp);
 
 	for (size_t i = 0; i < sWorkTasks.length(); i++)
 		sWorkTasks[i]();

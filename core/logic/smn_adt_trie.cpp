@@ -34,7 +34,6 @@
 #include <memory>
 
 #include "common_logic.h"
-#include <am-moveable.h>
 #include <am-refcounting.h>
 #include <sm_stringhashmap.h>
 #include "sm_memtable.h"

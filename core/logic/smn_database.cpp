@@ -1540,7 +1540,7 @@ static cell_t SQL_AddQuery(IPluginContext *pContext, const cell_t *params)
 	Transaction::Entry entry;
 	entry.query = query;
 	entry.data = params[3];
-	txn->entries.append(ke::Move(entry));
+	txn->entries.append(std::move(entry));
 
 	return cell_t(txn->entries.length() - 1);
 }
