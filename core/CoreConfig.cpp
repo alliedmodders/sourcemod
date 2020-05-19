@@ -291,7 +291,7 @@ ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, 
 	}
 
 	ke::AString vstr(value);
-	m_KeyValues.replace(option, ke::Move(vstr));
+	m_KeyValues.replace(option, std::move(vstr));
 
 	return result;
 }

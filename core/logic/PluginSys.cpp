@@ -1211,7 +1211,7 @@ void CPluginManager::LoadExtensions(CPlugin *pPlugin)
 		}
 		return true;
 	};
-	pPlugin->ForEachExtVar(ke::Move(callback));
+	pPlugin->ForEachExtVar(std::move(callback));
 }
 
 bool CPluginManager::RequireExtensions(CPlugin *pPlugin)
@@ -1247,7 +1247,7 @@ bool CPluginManager::RequireExtensions(CPlugin *pPlugin)
 		return true;
 	};
 
-	return pPlugin->ForEachExtVar(ke::Move(callback));
+	return pPlugin->ForEachExtVar(std::move(callback));
 }
 
 CPlugin *CPluginManager::CompileAndPrep(const char *path)

@@ -44,11 +44,13 @@
  * NameHashSet instead.
  */
 
+#include <string.h>
+
+#include <utility>
+
 #include <am-allocator-policies.h>
 #include <am-hashmap.h>
 #include <am-string.h>
-#include <am-moveable.h>
-#include <string.h>
 
 namespace SourceMod
 {
@@ -163,7 +165,7 @@ public:
 			if (!internal_.add(i, aKey))
 				return false;
 		}
-		i->value = ke::Forward<UV>(value);
+		i->value = std::forward<UV>(value);
 		return true;
 	}
 
@@ -174,7 +176,7 @@ public:
 		Insert i = internal_.findForAdd(key);
 		if (i.found())
 			return false;
-		if (!internal_.add(i, aKey, ke::Forward<UV>(value)))
+		if (!internal_.add(i, aKey, std::forward<UV>(value)))
 			return false;
 		memory_used_ += key.length() + 1;
 		return true;

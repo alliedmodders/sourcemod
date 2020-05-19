@@ -400,13 +400,13 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
 		ke::AString vstr(value);
-		m_Keys.replace(key, ke::Move(vstr));
+		m_Keys.replace(key, std::move(vstr));
 	}
 	else if (m_ParseState == PSTATE_GAMEDEFS_KEYS_PLATFORM) {
 		if (IsPlatformCompatible(key, &matched_platform))
 		{
 			ke::AString vstr(value);
-			m_Keys.replace(m_Key, ke::Move(vstr));
+			m_Keys.replace(m_Key, std::move(vstr));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
 		if (strcmp(key, "game") == 0)

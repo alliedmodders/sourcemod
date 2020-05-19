@@ -33,6 +33,7 @@
 #define _INCLUDE_MENUSTYLE_BASE_H
 
 #include <memory>
+#include <utility>
 
 #include <IMenuManager.h>
 #include <IPlayerHelpers.h>
@@ -51,16 +52,16 @@ public:
 		access = 0;
 	}
 	CItem(CItem &&other)
-	: info(ke::Move(other.info)),
-	  display(ke::Move(other.display))
+	: info(std::move(other.info)),
+	  display(std::move(other.display))
 	{
 		style = other.style;
 		access = other.access;
 	}
 	CItem & operator =(CItem &&other)
 	{
-		info = ke::Move(other.info);
-		display = ke::Move(other.display);
+		info = std::move(other.info);
+		display = std::move(other.display);
 		style = other.style;
 		access = other.access;
 		return *this;

@@ -640,7 +640,7 @@ bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 		item.display = std::make_unique<ke::AString>(draw.display);
 	item.style = draw.style;
 
-	m_items.append(ke::Move(item));
+	m_items.append(std::move(item));
 	return true;
 }
 
@@ -661,7 +661,7 @@ bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDr
 		item.display = std::make_unique<ke::AString>(draw.display);
 	item.style = draw.style;
 
-	m_items.insert(position, ke::Move(item));
+	m_items.insert(position, std::move(item));
 	return true;
 }
 
