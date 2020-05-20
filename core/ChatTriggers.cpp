@@ -277,10 +277,10 @@ bool ChatTriggers::OnSayCommand_Pre(int client, const ICommandArgs *command)
 	bool is_silent = false;
 
 	// Prefer the silent trigger in case of clashes.
-	if (strchr(m_PrivTrigger.chars(), m_ArgSBackup[0])) {
+	if (strchr(m_PrivTrigger.c_str(), m_ArgSBackup[0])) {
 		is_trigger = true;
 		is_silent = true;
-	} else if (strchr(m_PubTrigger.chars(), m_ArgSBackup[0])) {
+	} else if (strchr(m_PubTrigger.c_str(), m_ArgSBackup[0])) {
 		is_trigger = true;
 	}
 

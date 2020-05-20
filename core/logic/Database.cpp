@@ -148,12 +148,12 @@ bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool
 		/* Try to assign a real driver pointer */
 		if (pInfo->info.driver[0] == '\0')
 		{
-			ke::AString defaultDriver = list->GetDefaultDriver();
+			std::string defaultDriver = list->GetDefaultDriver();
 			if (!m_pDefault && defaultDriver.length() > 0)
 			{
-				m_pDefault = FindOrLoadDriver(defaultDriver.chars());
+				m_pDefault = FindOrLoadDriver(defaultDriver.c_str());
 			}
-			dname = defaultDriver.length() ? defaultDriver.chars() : "default";
+			dname = defaultDriver.length() ? defaultDriver.c_str() : "default";
 			pInfo->realDriver = m_pDefault;
 		} else {
 			pInfo->realDriver = FindOrLoadDriver(pInfo->info.driver);
@@ -256,10 +256,10 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 IDBDriver *DBManager::GetDefaultDriver()
 {
 	ConfDbInfoList *list = m_Builder.GetConfigList();
-	ke::AString defaultDriver = list->GetDefaultDriver();
+	std::string defaultDriver = list->GetDefaultDriver();
 	if (!m_pDefault && defaultDriver.length() > 0)
 	{
-		m_pDefault = FindOrLoadDriver(defaultDriver.chars());
+		m_pDefault = FindOrLoadDriver(defaultDriver.c_str());
 	}
 
 	return m_pDefault;
@@ -580,7 +580,7 @@ void DBManager::OnPluginWillUnload(IPlugin *plugin)
 	}
 }
 
-ke::AString DBManager::GetDefaultDriverName()
+std::string DBManager::GetDefaultDriverName()
 {
 	ConfDbInfoList *list = m_Builder.GetConfigList();
 	return list->GetDefaultDriver();

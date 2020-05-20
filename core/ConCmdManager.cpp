@@ -649,7 +649,7 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 
 			name = hook->info->pCmd->GetName();
 			if (hook->helptext.length())
-				help = hook->helptext.chars();
+				help = hook->helptext.c_str();
 			else
 				help = hook->info->pCmd->GetHelpText();
 			UTIL_ConsolePrint("  %-17.16s %-12.11s %s", name, type, help);		

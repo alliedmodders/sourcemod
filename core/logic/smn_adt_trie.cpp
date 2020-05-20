@@ -104,7 +104,7 @@ public:
 		assert(isArray());
 		return reinterpret_cast<cell_t *>(raw()->base());
 	}
-	char *chars() const {
+	char *c_str() const {
 		assert(isString());
 		return reinterpret_cast<char *>(raw()->base());
 	}
@@ -518,7 +518,7 @@ static cell_t GetTrieString(IPluginContext *pContext, const cell_t *params)
 		return 0;
 
 	size_t written;
-	pContext->StringToLocalUTF8(params[3], params[4], r->value.chars(), &written);
+	pContext->StringToLocalUTF8(params[3], params[4], r->value.c_str(), &written);
 
 	*pSize = (cell_t)written;
 	return 1;
@@ -561,7 +561,7 @@ static cell_t CreateTrieSnapshot(IPluginContext *pContext, const cell_t *params)
 	snapshot->keys = std::make_unique<int[]>(snapshot->length);
 	size_t i = 0;
 	for (StringHashMap<Entry>::iterator iter = pTrie->map.iter(); !iter.empty(); iter.next(), i++)
-		snapshot->keys[i] = snapshot->strings.AddString(iter->key.chars(), iter->key.length());
+		 snapshot->keys[i] = snapshot->strings.AddString(iter->key.c_str(), iter->key.length());
 	assert(i == snapshot->length);
 
 	if ((hndl = handlesys->CreateHandle(htSnapshot, snapshot, pContext->GetIdentity(), g_pCoreIdent, NULL))

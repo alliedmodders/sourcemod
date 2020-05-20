@@ -68,8 +68,8 @@ public:
 	}
 
 public:
-	ke::AString info;
-	std::unique_ptr<ke::AString> display;
+	std::string info;
+	std::unique_ptr<std::string> display;
 	unsigned int style;
 	unsigned int access;
 
@@ -158,7 +158,7 @@ public:
 private:
 	void InternalDelete();
 protected:
-	ke::AString m_Title;
+	std::string m_Title;
 	IMenuStyle *m_pStyle;
 	unsigned int m_Pagination;
 	ke::Vector<CItem> m_items;

@@ -133,9 +133,9 @@ private:
 	String m_Name;
 	String m_Ip;
 	String m_IpNoPort;
-	ke::AString m_AuthID;
-	ke::AString m_Steam2Id;
-	ke::AString m_Steam3Id;
+	std::string m_AuthID;
+	std::string m_Steam2Id;
+	std::string m_Steam3Id;
 	AdminId m_Admin = INVALID_ADMIN_ID;
 	bool m_TempAdmin = false;
 	edict_t *m_pEdict = nullptr;
@@ -154,7 +154,7 @@ private:
 #if SOURCE_ENGINE == SE_CSGO
 	QueryCvarCookie_t m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
-	ke::Deque<ke::AString> m_PrintfBuffer;
+	ke::Deque<std::string> m_PrintfBuffer;
 };
 
 class PlayerManager : 

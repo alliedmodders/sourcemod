@@ -289,11 +289,11 @@ private:
 
 	// Cached.
 	sm_plugininfo_t m_info;
-	ke::AString info_name_;
-	ke::AString info_author_;
-	ke::AString info_description_;
-	ke::AString info_version_;
-	ke::AString info_url_;
+	std::string info_name_;
+	std::string info_author_;
+	std::string info_description_;
+	std::string info_version_;
+	std::string info_url_;
 };
 
 class CPluginManager : 
@@ -487,10 +487,8 @@ private:
 		{
 /* For windows & mac, we convert the path to lower-case in order to avoid duplicate plugin loading */
 #if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
-			ke::AString original(key.chars());
-			ke::AString lower = original.lowercase();
-			
-			return detail::CharsAndLength(lower.chars()).hash();
+			std::string lower = ke::Lowercase(key.c_str());
+			return detail::CharsAndLength(lower.c_str()).hash();
 #else
 			return key.hash();
 #endif
@@ -500,8 +498,8 @@ private:
 		{
 			const char *pluginFileChars = const_cast<CPlugin*>(plugin)->GetFilename();
 #if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
-			ke::AString pluginFile = ke::AString(pluginFileChars).lowercase();
-			ke::AString input = ke::AString(file).lowercase();
+			std::string pluginFile = ke::Lowercase(pluginFileChars);
+			std::string input = ke::Lowercase(file);
 			
 			return pluginFile == input;
 #else

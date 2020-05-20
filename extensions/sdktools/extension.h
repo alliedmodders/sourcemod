@@ -121,7 +121,7 @@ public:
 	bool ShouldFollowCSGOServerGuidelines() const { return m_bFollowCSGOServerGuidelines; }
 	bool CanSetCSGOEntProp(const char *pszPropName) { return !ShouldFollowCSGOServerGuidelines() || !m_CSGOBadList.has(pszPropName); }
 private:
-	ke::HashSet<ke::AString, detail::StringHashMapPolicy> m_CSGOBadList;
+	ke::HashSet<std::string, detail::StringHashMapPolicy> m_CSGOBadList;
 	bool m_bFollowCSGOServerGuidelines = false;
 #endif
 private:
