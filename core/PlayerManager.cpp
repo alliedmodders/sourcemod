@@ -405,7 +405,7 @@ void PlayerManager::RunAuthChecks()
 		pPlayer = &m_Players[m_AuthQueue[i]];
 		pPlayer->UpdateAuthIds();
 		
-		authstr = pPlayer->m_AuthID.chars();
+		authstr = pPlayer->m_AuthID.c_str();
 
 		if (!pPlayer->IsAuthStringValidated())
 		{
@@ -709,14 +709,14 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
-			pListener->OnClientAuthorized(client, steamId ? steamId : pPlayer->m_AuthID.chars());
+			pListener->OnClientAuthorized(client, steamId ? steamId : pPlayer->m_AuthID.c_str());
 		}
 		/* Finally, tell plugins */
 		if (m_clauth->GetFunctionCount())
 		{
 			m_clauth->PushCell(client);
 			/* For legacy reasons, people are expecting the Steam2 id here if using Steam auth */
-			m_clauth->PushString(steamId ? steamId : pPlayer->m_AuthID.chars());
+			m_clauth->PushString(steamId ? steamId : pPlayer->m_AuthID.c_str());
 			m_clauth->Execute(NULL);
 		}
 		pPlayer->Authorize_Post();
@@ -919,13 +919,13 @@ void PlayerManager::OnPrintfFrameAction(unsigned int serial)
 		int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
 #endif
 
-		ke::AString &string = player.m_PrintfBuffer.front();
+		std::string &string = player.m_PrintfBuffer.front();
 
 		// stop if we'd overflow the SVC_Print buffer  (+7 as ceil)
 		if ((nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + string.length() >= SVC_Print_BufferSize)
 			break;
 
-		SH_CALL(engine, &IVEngineServer::ClientPrintf)(player.m_pEdict, string.chars());
+		SH_CALL(engine, &IVEngineServer::ClientPrintf)(player.m_pEdict, string.c_str());
 
 		player.m_PrintfBuffer.popFront();
 	}
@@ -2298,7 +2298,7 @@ const char *CPlayer::GetAuthString(bool validated)
 		return NULL;
 	}
 
-	return m_AuthID.chars();
+	return m_AuthID.c_str();
 }
 
 const CSteamID &CPlayer::GetSteamId(bool validated)
@@ -2319,7 +2319,7 @@ const char *CPlayer::GetSteam2Id(bool validated)
 		return NULL;
 	}
 
-	return m_Steam2Id.chars();
+	return m_Steam2Id.c_str();
 }
 
 const char *CPlayer::GetSteam3Id(bool validated)
@@ -2329,7 +2329,7 @@ const char *CPlayer::GetSteam3Id(bool validated)
 		return NULL;
 	}
 
-	return m_Steam3Id.chars();
+	return m_Steam3Id.c_str();
 }
 
 unsigned int CPlayer::GetSteamAccountID(bool validated)
@@ -2596,7 +2596,7 @@ void CPlayer::DoBasicAdminChecks()
 	}
 
 	/* Check steam id */
-	if ((id = adminsys->FindAdminByIdentity("steam", m_AuthID.chars())) != INVALID_ADMIN_ID)
+	if ((id = adminsys->FindAdminByIdentity("steam", m_AuthID.c_str())) != INVALID_ADMIN_ID)
 	{
 		if (g_Players.CheckSetAdmin(client, this, id))
 		{

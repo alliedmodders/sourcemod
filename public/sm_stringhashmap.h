@@ -75,7 +75,7 @@ namespace detail
 	  uint32_t hash() const {
 		  return hash_;
 	  }
-	  const char *chars() const {
+	  const char *c_str() const {
 		  return str_;
 	  }
 	  size_t length() const {
@@ -90,9 +90,9 @@ namespace detail
 
 	struct StringHashMapPolicy
 	{
-		static inline bool matches(const CharsAndLength &lookup, const ke::AString &key) {
+		static inline bool matches(const CharsAndLength &lookup, const std::string &key) {
 			return lookup.length() == key.length() &&
-				   memcmp(lookup.chars(), key.chars(), key.length()) == 0;
+				   memcmp(lookup.c_str(), key.c_str(), key.length()) == 0;
 		}
 		static inline uint32_t hash(const CharsAndLength &key) {
 			return key.hash();
@@ -104,7 +104,7 @@ template <typename T>
 class StringHashMap
 {
 	typedef detail::CharsAndLength CharsAndLength;
-	typedef ke::HashMap<ke::AString, T, detail::StringHashMapPolicy> Internal;
+	typedef ke::HashMap<std::string, T, detail::StringHashMapPolicy> Internal;
 
 public:
 	StringHashMap()

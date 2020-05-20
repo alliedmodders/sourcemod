@@ -120,7 +120,7 @@ void CDataPack::PackString(const char *string)
 {
 	InternalPack val;
 	val.type = CDataPackType::String;
-	ke::AString *sval = new ke::AString(string);
+	std::string *sval = new std::string(string);
 	val.pData.sval = sval;
 	elements.insert(position++, val);
 }
@@ -205,11 +205,11 @@ const char *CDataPack::ReadString(size_t *len) const
 		return nullptr;
 	}
 
-	const ke::AString &val = *elements[position++].pData.sval;
+	const std::string &val = *elements[position++].pData.sval;
 	if (len)
 		*len = val.length();
 
-	return val.chars();
+	return val.c_str();
 }
 
 cell_t *CDataPack::ReadCellArray(cell_t *size) const

@@ -87,7 +87,7 @@ public: //IPluginsListener
 public:
 	IDBDriver *FindOrLoadDriver(const char *name);
 	IDBDriver *GetDefaultDriver();
-	ke::AString GetDefaultDriverName();
+	std::string GetDefaultDriverName();
 	bool AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio);
 	void RunFrame();
 	inline HandleType_t GetDatabaseType()

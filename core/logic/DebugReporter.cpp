@@ -194,17 +194,17 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 		g_Logger.LogError("[SM] Blaming: %s", blame);
 	}
 
-	ke::Vector<ke::AString> arr = GetStackTrace(&iter);
+	ke::Vector<std::string> arr = GetStackTrace(&iter);
 	for (size_t i = 0; i < arr.length(); i++)
 	{
-		g_Logger.LogError("%s", arr[i].chars());
+		g_Logger.LogError("%s", arr[i].c_str());
 	}
 }
 
-ke::Vector<ke::AString> DebugReport::GetStackTrace(IFrameIterator *iter)
+ke::Vector<std::string> DebugReport::GetStackTrace(IFrameIterator *iter)
 {
 	char temp[3072];
-	ke::Vector<ke::AString> trace;
+	ke::Vector<std::string> trace;
 	iter->Reset();
 	
 	if (!iter->Done())

@@ -184,17 +184,15 @@ private:
 		{
 			const char *conCommandChars = base->GetName();
 			
-			ke::AString conCommandName = ke::AString(conCommandChars).lowercase();
-			ke::AString input = ke::AString(name).lowercase();
+			std::string conCommandName = ke::Lowercase(conCommandChars);
+			std::string input = ke::Lowercase(name);
 			
 			return conCommandName == input;
 		}
 		static inline uint32_t hash(const detail::CharsAndLength &key)
 		{
-			ke::AString original(key.chars());
-			ke::AString lower = original.lowercase();
-			
-			return detail::CharsAndLength(lower.chars()).hash();
+			std::string lower = ke::Lowercase(key.c_str());
+			return detail::CharsAndLength(lower.c_str()).hash();
 		}
 	};
 	NameHashSet<ConCommandBase *, ConCommandPolicy> m_CmdFlags;

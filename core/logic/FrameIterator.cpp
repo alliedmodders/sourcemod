@@ -77,7 +77,7 @@ const char *SafeFrameIterator::FunctionName() const
 		return NULL;
 	}
 
-	return frames[current].FunctionName.chars();
+	return frames[current].FunctionName.c_str();
 }
 
 const char *SafeFrameIterator::FilePath() const
@@ -87,5 +87,5 @@ const char *SafeFrameIterator::FilePath() const
 		return NULL;
 	}
 
-	return frames[current].FilePath.chars();
+	return frames[current].FilePath.c_str();
 }

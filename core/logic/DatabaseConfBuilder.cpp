@@ -59,9 +59,9 @@ void DatabaseConfBuilder::StartParse()
 {
 	SMCError err;
 	SMCStates states = {0, 0};
-	if ((err = textparsers->ParseFile_SMC(m_Filename.chars(), this, &states)) != SMCError_Okay)
+	if ((err = textparsers->ParseFile_SMC(m_Filename.c_str(), this, &states)) != SMCError_Okay)
 	{
-		logger->LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename.chars());
+		logger->LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename.c_str());
 		if (err != SMCError_Custom)
 		{
 			const char *txt = textparsers->GetSMCErrorString(err);
@@ -153,11 +153,11 @@ SMCResult DatabaseConfBuilder::ReadSMC_LeavingSection(const SMCStates *states)
 
 	if (m_ParseState == DBPARSE_LEVEL_DATABASE)
 	{
-		m_ParseCurrent->info.driver = m_ParseCurrent->driver.chars();
-		m_ParseCurrent->info.database = m_ParseCurrent->database.chars();
-		m_ParseCurrent->info.host = m_ParseCurrent->host.chars();
-		m_ParseCurrent->info.user = m_ParseCurrent->user.chars();
-		m_ParseCurrent->info.pass = m_ParseCurrent->pass.chars();
+		m_ParseCurrent->info.driver = m_ParseCurrent->driver.c_str();
+		m_ParseCurrent->info.database = m_ParseCurrent->database.c_str();
+		m_ParseCurrent->info.host = m_ParseCurrent->host.c_str();
+		m_ParseCurrent->info.user = m_ParseCurrent->user.c_str();
+		m_ParseCurrent->info.pass = m_ParseCurrent->pass.c_str();
 		
 		/* Save it.. */
 		m_ParseCurrent->AddRef();

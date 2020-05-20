@@ -74,8 +74,8 @@ private:
 	cell_t CallOnClientSayCommand(int client);
 private:
 	ke::Vector<ke::RefPtr<CommandHook>> hooks_;
-	ke::AString m_PubTrigger;
-	ke::AString m_PrivTrigger;
+	std::string m_PubTrigger;
+	std::string m_PrivTrigger;
 	bool m_bWillProcessInPost;
 	bool m_bIsChatTrigger;
 	bool m_bWasFloodedMessage;

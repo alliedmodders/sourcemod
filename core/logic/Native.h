@@ -52,7 +52,7 @@ struct FakeNative
 	}
 	~FakeNative();
 
-	ke::AString name;
+	std::string name;
 	IPluginContext *ctx;
 	IPluginFunction *call;
 	SPVM_NATIVE_FUNC gate;
@@ -87,7 +87,7 @@ struct Native : public ke::Refcounted<Native>
 	{
 		if (native)
 			return native->name;
-		return fake->name.chars();
+		return fake->name.c_str();
 	}
 
 	static inline bool matches(const char *name, const ke::RefPtr<Native> &entry)

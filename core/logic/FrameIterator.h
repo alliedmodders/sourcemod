@@ -48,8 +48,8 @@ public:
 	 */
 	struct FrameInfo
 	{	
-		ke::AString FunctionName;
-		ke::AString FilePath;
+		std::string FunctionName;
+		std::string FilePath;
 		unsigned LineNumber;
 
 		FrameInfo(IFrameIterator *it)

@@ -206,7 +206,7 @@ HandleType_t HandleSystem::CreateType(const char *name,
 	pType->dispatch = dispatch;
 	if (name && name[0] != '\0')
 	{
-		pType->name = std::make_unique<ke::AString>(name);
+		pType->name = std::make_unique<std::string>(name);
 		m_TypeLookup.insert(name, pType);
 	}
 
@@ -925,7 +925,7 @@ bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t *ident)
 
 	/* Remove it from the type cache. */
 	if (pType->name)
-		m_TypeLookup.remove(pType->name->chars());
+		m_TypeLookup.remove(pType->name->c_str());
 
 	return true;
 }
@@ -1051,7 +1051,7 @@ bool HandleSystem::TryAndFreeSomeHandles()
 		}
 
 		if (m_Types[i].name)
-			pTypeName = m_Types[i].name->chars();
+			pTypeName = m_Types[i].name->c_str();
 		else
 			pTypeName = "ANON";
 
@@ -1131,7 +1131,7 @@ void HandleSystem::Dump(const HandleReporter &fn)
 		unsigned int parentIdx;
 		bool bresult;
 		if (pType->name)
-			type = pType->name->chars();
+			type = pType->name->c_str();
 
 		if ((parentIdx = m_Handles[i].clone) != 0)
 		{

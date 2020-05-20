@@ -46,12 +46,12 @@ public:
 	ConfDbInfo() : realDriver(NULL)
 	{
 	}
-	ke::AString name;
-	ke::AString driver;
-	ke::AString host;
-	ke::AString user;
-	ke::AString pass;
-	ke::AString database;
+	std::string name;
+	std::string driver;
+	std::string host;
+	std::string user;
+	std::string pass;
+	std::string database;
 	IDBDriver *realDriver;
 	DatabaseInfo info;
 };
@@ -62,7 +62,7 @@ class ConfDbInfoList : public ke::Vector<ConfDbInfo *>
 	friend class DBManager;
 	friend class DatabaseConfBuilder;
 private:
-	ke::AString& GetDefaultDriver() {
+	std::string& GetDefaultDriver() {
 		return m_DefDriver;
 	}
 	
@@ -72,11 +72,11 @@ private:
 			ConfDbInfo *current = this->at(i);
 			/* If we run into the default configuration, then we'll save it
 			 * for the next call to GetDefaultConfiguration */ 
-			if (strcmp(current->name.chars(), "default") == 0)
+			if (strcmp(current->name.c_str(), "default") == 0)
 			{
 				m_DefaultConfig = current;
 			}
-			if (strcmp(current->name.chars(), name) == 0)
+			if (strcmp(current->name.c_str(), name) == 0)
 			{
 				return current;
 			}
@@ -87,7 +87,7 @@ private:
 		return m_DefaultConfig;
 	}
 	void SetDefaultDriver(const char *input) {
-		m_DefDriver = ke::AString(input);
+		m_DefDriver = std::string(input);
 	}
 	void ReleaseMembers() {
 		for (size_t i = 0; i < this->length(); i++) {
@@ -97,7 +97,7 @@ private:
 	}
 private:
 	ConfDbInfo *m_DefaultConfig;
-	ke::AString m_DefDriver;
+	std::string m_DefDriver;
 };
 
 
@@ -122,7 +122,7 @@ private:
 	ConfDbInfo *m_ParseCurrent;
 	ConfDbInfoList *m_ParseList;
 private:
-	ke::AString m_Filename;
+	std::string m_Filename;
 	ConfDbInfoList *m_InfoList;
 };
 

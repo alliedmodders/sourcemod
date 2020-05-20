@@ -1844,12 +1844,12 @@ bool AdminCache::DumpCache(const char *filename)
 		if (pGroup->pCmdGrpTable != NULL)
 		{
 			for (OverrideMap::iterator iter = pGroup->pCmdTable->iter(); !iter.empty(); iter.next())
-				iterator_group_grp_override(fp, iter->key.chars(), iter->value);
+				iterator_group_grp_override(fp, iter->key.c_str(), iter->value);
 		}
 		if (pGroup->pCmdTable != NULL)
 		{
 			for (OverrideMap::iterator iter = pGroup->pCmdTable->iter(); !iter.empty(); iter.next())
-				iterator_group_basic_override(fp, iter->key.chars(), iter->value);
+				iterator_group_basic_override(fp, iter->key.c_str(), iter->value);
 		}
 		fprintf(fp, "\t\t}\n");
 
@@ -1924,9 +1924,9 @@ bool AdminCache::DumpCache(const char *filename)
 
 	fprintf(fp, "\"Overrides\"\n{\n");
 	for (FlagMap::iterator iter = m_CmdGrpOverrides.iter(); !iter.empty(); iter.next())
-		iterator_glob_grp_override(fp, iter->key.chars(), iter->value);
+		iterator_glob_grp_override(fp, iter->key.c_str(), iter->value);
 	for (FlagMap::iterator iter = m_CmdOverrides.iter(); !iter.empty(); iter.next())
-		iterator_glob_basic_override(fp, iter->key.chars(), iter->value);
+		iterator_glob_basic_override(fp, iter->key.c_str(), iter->value);
 	fprintf(fp, "}\n");
 	
 	fclose(fp);

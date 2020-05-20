@@ -90,7 +90,7 @@ struct CmdHook : public ke::InlineListNode<CmdHook>
 	Type type;
 	ConCmdInfo *info;
 	IPluginFunction *pf;				/* function hook */
-	ke::AString helptext;				/* help text */
+	std::string helptext;				/* help text */
 	std::unique_ptr<AdminCmdInfo> admin;	/* admin requirements, if any */
 };
 

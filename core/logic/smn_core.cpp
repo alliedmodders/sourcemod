@@ -943,7 +943,7 @@ static cell_t LogStackTrace(IPluginContext *pContext, const cell_t *params)
 	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
 	IFrameIterator *it = pContext->CreateFrameIterator();
-	ke::Vector<ke::AString> arr = g_DbgReporter.GetStackTrace(it);
+	ke::Vector<std::string> arr = g_DbgReporter.GetStackTrace(it);
 	pContext->DestroyFrameIterator(it);
 
 	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
@@ -952,7 +952,7 @@ static cell_t LogStackTrace(IPluginContext *pContext, const cell_t *params)
 	g_Logger.LogError("[SM] Called from: %s", pPlugin->GetFilename());
 	for (size_t i = 0; i < arr.length(); ++i)
 	{
-		g_Logger.LogError("%s", arr[i].chars());
+		g_Logger.LogError("%s", arr[i].c_str());
 	}
 	return 0;
 }

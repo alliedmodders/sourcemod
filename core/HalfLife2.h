@@ -280,7 +280,7 @@ public:
 		return !m_bFollowCSGOServerGuidelines || !m_CSGOBadList.has(pszPropName);
 	}
 private:
-	ke::HashSet<ke::AString, detail::StringHashMapPolicy> m_CSGOBadList;
+	ke::HashSet<std::string, detail::StringHashMapPolicy> m_CSGOBadList;
 	bool m_bFollowCSGOServerGuidelines = true;
 #endif
 };

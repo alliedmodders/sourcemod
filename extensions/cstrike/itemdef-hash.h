@@ -59,7 +59,7 @@ struct StringPolicy
 	{
 		return ke::FastHashCharSequence(key, strlen(key));
 	}
-	static inline bool matches(const char *find, const ke::AString &key)
+	static inline bool matches(const char *find, const std::string &key)
 	{
 		return key.compare(find) == 0;
 	}
@@ -89,7 +89,7 @@ struct WeaponIDPolicy
 	}
 };
 
-typedef ke::HashMap<ke::AString, ItemDefHashValue, StringPolicy> ClassnameMap;
+typedef ke::HashMap<std::string, ItemDefHashValue, StringPolicy> ClassnameMap;
 typedef ke::HashMap<int, ItemDefHashValue, IntegerPolicy> ItemIndexMap;
 typedef ke::HashMap<SMCSWeapon, ItemDefHashValue, WeaponIDPolicy> WeaponIDMap;
 

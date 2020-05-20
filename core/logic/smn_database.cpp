@@ -64,7 +64,7 @@ struct Transaction
 {
 	struct Entry
 	{
-		ke::AString query;
+		std::string query;
 		cell_t data;
 	};
 
@@ -457,7 +457,7 @@ static cell_t ConnectToDbAsync(IPluginContext *pContext, const cell_t *params, A
 			g_pSM->Format(error, 
 				sizeof(error), 
 				"Could not find driver \"%s\"", 
-				pInfo->driver[0] == '\0' ? g_DBMan.GetDefaultDriverName().chars() : pInfo->driver);
+				pInfo->driver[0] == '\0' ? g_DBMan.GetDefaultDriverName().c_str() : pInfo->driver);
 		} else if (!driver->IsThreadSafe()) {
 			g_pSM->Format(error,
 				sizeof(error),
@@ -1620,7 +1620,7 @@ private:
 		for (size_t i = 0; i < txn_->entries.length(); i++)
 		{
 			Transaction::Entry &entry = txn_->entries[i];
-			IQuery *result = Exec(entry.query.chars());
+			IQuery *result = Exec(entry.query.c_str());
 			if (!result)
 			{
 				failIndex_ = (cell_t)i;
@@ -1746,7 +1746,7 @@ public:
 				failure_->PushCell(dbh);
 				failure_->PushCell(data_);
 				failure_->PushCell(txn_->entries.length());
-				failure_->PushString(error_.chars());
+				failure_->PushString(error_.c_str());
 				failure_->PushCell(failIndex_);
 				failure_->PushArray(data.get(), txn_->entries.length());
 				failure_->Execute(NULL);
@@ -1764,7 +1764,7 @@ private:
 	IPluginFunction *failure_;
 	cell_t data_;
 	AutoHandleRooter autoHandle_;
-	ke::AString error_;
+	std::string error_;
 	ke::Vector<IQuery *> results_;
 	cell_t failIndex_;
 };

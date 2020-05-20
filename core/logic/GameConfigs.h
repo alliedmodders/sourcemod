@@ -81,7 +81,7 @@ private:
 	char m_CurFile[PLATFORM_MAX_PATH];
 	StringHashMap<int> m_Offsets;
 	StringHashMap<SendProp *> m_Props;
-	StringHashMap<ke::AString> m_Keys;
+	StringHashMap<std::string> m_Keys;
 	StringHashMap<void *> m_Sigs;
 	/* Parse states */
 	int m_ParseState;

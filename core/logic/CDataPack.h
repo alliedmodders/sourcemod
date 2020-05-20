@@ -213,7 +213,7 @@ private:
 		cell_t cval;
 		float fval;
 		uint8_t *vval;
-		ke::AString *sval;
+		std::string *sval;
 		cell_t *aval;
 	} InternalPackValue;
 	

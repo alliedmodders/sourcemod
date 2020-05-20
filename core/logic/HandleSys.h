@@ -107,7 +107,7 @@ struct QHandleType
 	TypeAccess typeSec;
 	HandleAccess hndlSec;
 	unsigned int opened;
-	std::unique_ptr<ke::AString> name;
+	std::unique_ptr<std::string> name;
 
 	static inline bool matches(const char *key, const QHandleType *type)
 	{
