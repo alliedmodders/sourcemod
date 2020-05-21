@@ -127,7 +127,7 @@ do
   checkout
 done
 
-`python -c "import ambuild2"`
+`python -c "import ambuild2"` || `python3 -c "import ambuild2"`
 if [ $? -eq 1 ]; then
   repo="https://github.com/alliedmodders/ambuild"
   origin=
