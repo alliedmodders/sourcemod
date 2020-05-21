@@ -398,6 +398,7 @@ class SMConfig(object):
     cxx.linkflags += [
       '-mmacosx-version-min=10.7',
       '-stdlib=libc++',
+      '-lc++',
     ]
     cxx.cxxflags += ['-stdlib=libc++']
 
