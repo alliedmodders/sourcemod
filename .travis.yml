@@ -22,6 +22,7 @@ matrix:
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
         - SDKS=episode1,css,tf2,l4d2,csgo,dota
         - MODE=optimize
+        - ARCH=x86
 
     - os: linux
       dist: trusty
@@ -38,6 +39,7 @@ matrix:
         - MATRIX_EVAL="CC=clang && CXX=clang++"
         - SDKS=episode1,css,tf2,l4d2,csgo,dota
         - MODE=optimize
+        - ARCH=x86
 
     - os: osx
       osx_image: xcode7.2
@@ -46,6 +48,7 @@ matrix:
         - MATRIX_EVAL="CC=clang && CXX=clang++"
         - SDKS=episode1,css,tf2,l4d2,csgo,dota
         - MODE=optimize
+        - ARCH=x86_64,x86
 
     # # This is a faster test for the latest g++.
     # - os: linux
@@ -77,6 +80,7 @@ matrix:
         - MATRIX_EVAL="CC=clang && CXX=clang++"
         - SDKS=csgo
         - MODE=optimize
+        - ARCH=x86
 
 before_script:
   - CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh && cd $CHECKOUT_DIR
@@ -86,5 +90,5 @@ script:
   - eval "${MATRIX_EVAL}"
   - eval "${CC} --version"
   - eval "${CXX} --version"
-  - python ../configure.py --enable-${MODE} --sdks=${SDKS}
+  - python ../configure.py --enable-${MODE} --sdks=${SDKS} --target-arch=${ARCH}
   - ambuild
