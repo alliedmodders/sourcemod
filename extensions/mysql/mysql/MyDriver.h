@@ -43,6 +43,14 @@
 #include <my_sys.h>
 #include <mysql.h>
 
+// On macOS, the MySQL includes define min/max.
+#if defined(min)
+# undef min
+#endif
+#if defined(max)
+# undef max
+#endif
+
 #include <sh_string.h>
 #include <sh_list.h>
 
