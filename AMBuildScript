@@ -553,25 +553,7 @@ class SMConfig(object):
     if builder.target.platform == 'linux':
       if sdk.name in ['csgo', 'blade']:
         compiler.linkflags.remove('-static-libstdc++')
-        compiler.linkflags += ['-lstdc++']
         compiler.defines += ['_GLIBCXX_USE_CXX11_ABI=0']
-    elif builder.target.platform == 'mac':
-      if sdk.name in ['csgo']:
-        # Switch libc++ to libstdc++ for protobuf linkage.
-        compiler.cxxflags.remove('-stdlib=libc++')
-        compiler.linkflags.remove('-stdlib=libc++')
-        compiler.linkflags.remove('-lc++')
-
-        compiler.cxxflags += ['-stdlib=libstdc++']
-        compiler.linkflags += ['-stdlib=libstdc++']
-        compiler.linkflags += ['-lstdc++']
-
-        if 'c++1y' in compiler.cxxflags:
-          compiler.cxxflags.remove('-std=c++1y')
-          compiler.cxxflags += ['-std=c++11']
-        elif 'c++14' in compiler.cxxflags:
-          compiler.cxxflags.remove('-std=c++14')
-          compiler.cxxflags += ['-std=c++11']
 
     for path in paths:
       compiler.cxxincludes += [os.path.join(sdk.path, *path)]

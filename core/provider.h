@@ -38,6 +38,7 @@ public:
 
 	// Local functions.
 	void InitializeBridge();
+	bool LoadProtobufProxy(char *error, size_t maxlength);
 	bool LoadBridge(char *error, size_t maxlength);
 	void ShutdownBridge();
 
@@ -75,6 +76,7 @@ public:
 	}
 
 private:
+	ke::RefPtr<ke::SharedLib> pbproxy_;
 	ke::RefPtr<ke::SharedLib> logic_;
 	LogicInitFunction logic_init_;
 	GameHooks hooks_;

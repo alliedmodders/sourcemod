@@ -51,6 +51,9 @@
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/IPlayerInfoBridge.h>
 #include <bridge/include/IFileSystemBridge.h>
+#if PROTOBUF_PROXY_ENABLE
+# include "pb_handle.h"
+#endif
 
 sm_logic_t logicore;
 
@@ -651,6 +654,41 @@ void CoreProviderImpl::InitializeBridge()
 	adminsys = logicore.adminsys;
 	logger = logicore.logger;
 	rootmenu = logicore.rootmenu;
+}
+
+bool CoreProviderImpl::LoadProtobufProxy(char *error, size_t maxlength)
+{
+#if !defined(PROTOBUF_PROXY_ENABLE)
+	return false;
+#else
+	char file[PLATFORM_MAX_PATH];
+
+#if !defined(PROTOBUF_PROXY_BINARY_NAME)
+# error "No engine suffix defined"
+#endif
+
+	/* Now it's time to load the logic binary */
+	g_SMAPI->PathFormat(file,
+		sizeof(file),
+		"%s/bin/" PLATFORM_ARCH_FOLDER PROTOBUF_PROXY_BINARY_NAME PLATFORM_LIB_EXT,
+		g_SourceMod.GetSourceModPath());
+
+	char myerror[255];
+	pbproxy_ = ke::SharedLib::Open(file, myerror, sizeof(myerror));
+	if (!pbproxy_) {
+		ke::SafeSprintf(error, maxlength, "failed to load %s: %s", file, myerror);
+		return false;
+	}
+
+	auto fn = pbproxy_->get<GetProtobufProxyFn>("GetProtobufProxy");
+	if (!fn) {
+		ke::SafeStrcpy(error, maxlength, "could not find GetProtobufProxy function");
+		return false;
+	}
+
+	gProtobufProxy = fn();
+	return true;
+#endif
 }
 
 bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)

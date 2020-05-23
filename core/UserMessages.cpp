@@ -42,6 +42,10 @@
 
 UserMessages g_UserMsgs;
 
+#ifdef USE_PROTOBUF_USERMESSAGES
+const protobuf::Message *GetMessagePrototype(int msg_type);
+#endif
+
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 SH_DECL_HOOK3_void(IVEngineServer, SendUserMessage, SH_NOATTRIB, 0, IRecipientFilter &, int, const protobuf::Message &);
 #else
@@ -58,7 +62,7 @@ UserMessages::UserMessages()
 	: m_InterceptBuffer(m_pBase, 2500)
 {
 #else
-	: m_InterceptBuffer(NULL)
+	: m_InterceptBuffer(nullptr)
 {
 #endif
 	m_HookCount = 0;
@@ -233,7 +237,7 @@ google::protobuf::Message *UserMessages::StartProtobufMessage(int msg_id, const 
 #ifndef USE_PROTOBUF_USERMESSAGES
 	return NULL;
 #else
-	protobuf::Message *buffer;
+	PbHandle buffer;
 
 	if (m_InExec || m_InHook)
 	{
@@ -262,8 +266,9 @@ google::protobuf::Message *UserMessages::StartProtobufMessage(int msg_id, const 
 	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
 		// direct message creation, return buffer "from engine". keep track
-		m_FakeEngineBuffer = GetMessagePrototype(msg_id)->New();
-		buffer = m_FakeEngineBuffer;
+		m_FakeEngineBuffer =
+			PbHandle(GetMessagePrototype(msg_id)->New(), PbHandle::Owned, PbHandle::Local);
+		buffer = m_FakeEngineBuffer.AsUnowned();
 	} else {
 		char messageName[32];
 		if (!GetMessageName(msg_id, messageName, sizeof(messageName)))
@@ -272,27 +277,30 @@ google::protobuf::Message *UserMessages::StartProtobufMessage(int msg_id, const 
 			return NULL;
 		}
 
-		protobuf::Message *msg = OnStartMessage_Pre(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, messageName);
+		// The message returned here should always local.
+		auto msg = OnStartMessage_Pre(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, messageName);
 		switch (m_FakeMetaRes)
 		{
 		case MRES_IGNORED:
 		case MRES_HANDLED:
-			m_FakeEngineBuffer = GetMessagePrototype(msg_id)->New();
-			buffer = m_FakeEngineBuffer;
+			m_FakeEngineBuffer =
+				PbHandle(GetMessagePrototype(msg_id)->New(), PbHandle::Owned, PbHandle::Local);
+			buffer = m_FakeEngineBuffer.AsUnowned();
 			break;		
-
 		case MRES_OVERRIDE:
-			m_FakeEngineBuffer = GetMessagePrototype(msg_id)->New();
+			m_FakeEngineBuffer =
+				PbHandle(GetMessagePrototype(msg_id)->New(), PbHandle::Owned, PbHandle::Local);
 		// fallthrough
 		case MRES_SUPERCEDE:
-			buffer = msg;
+			buffer = std::move(msg);
 			break;
 		}
 		
 		OnStartMessage_Post(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, messageName);
 	}
 
-	return buffer;
+	assert(!buffer.is_owned());
+	return buffer.GetLocalMessage();
 #endif // USE_PROTOBUF_USERMESSAGES
 }
 
@@ -306,9 +314,10 @@ bool UserMessages::EndMessage()
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
-		ENGINE_CALL(SendUserMessage)(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId, *m_FakeEngineBuffer);
-		delete m_FakeEngineBuffer;
-		m_FakeEngineBuffer = NULL;
+		PbHandle priv = m_FakeEngineBuffer.ToPrivate(m_CurId);
+		ENGINE_CALL(SendUserMessage)(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId,
+		                             *priv.GetPrivateMessage());
+		m_FakeEngineBuffer = nullptr;
 	} else {
 		OnMessageEnd_Pre();
 
@@ -317,10 +326,13 @@ bool UserMessages::EndMessage()
 		case MRES_IGNORED:
 		case MRES_HANDLED:
 		case MRES_OVERRIDE:
-			engine->SendUserMessage(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId, *m_FakeEngineBuffer);
-			delete m_FakeEngineBuffer;
-			m_FakeEngineBuffer = NULL;
+		{
+			PbHandle priv = m_FakeEngineBuffer.ToPrivate(m_CurId);
+			engine->SendUserMessage(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId,
+			                        *priv.GetPrivateMessage());
+			m_FakeEngineBuffer = nullptr;
 			break;
+		}
 		//case MRES_SUPERCEDE:
 		}
 
@@ -440,7 +452,7 @@ bool UserMessages::InternalHook(int msg_id, IBitBufUserMessageListener *pListene
 }
 
 #ifdef USE_PROTOBUF_USERMESSAGES
-const protobuf::Message *UserMessages::GetMessagePrototype(int msg_type)
+const protobuf::Message *GetMessagePrototype(int msg_type)
 {
 #if SOURCE_ENGINE == SE_CSGO
 	return g_Cstrike15UsermessageHelpers.GetPrototype(msg_type);
@@ -527,7 +539,8 @@ void UserMessages::OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type,
 	}
 	else
 	{
-		m_FakeEngineBuffer = &const_cast<protobuf::Message &>(msg);
+		m_FakeEngineBuffer =
+			PbHandle(&const_cast<protobuf::Message &>(msg), PbHandle::Unowned, PbHandle::Private);
 	}
 
 	OnStartMessage_Post(&filter, msg_type, pszName);
@@ -563,7 +576,7 @@ void UserMessages::OnSendUserMessage_Post(IRecipientFilter &filter, int msg_type
 #endif
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
-protobuf::Message *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name)
+PbHandle UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name)
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD
 bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name)
 #else
@@ -577,7 +590,7 @@ bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_typ
 		|| (m_InExec && (m_CurFlags & USERMSG_BLOCKHOOKS)))
 	{
 		m_InHook = false;
-		UM_RETURN_META_VALUE(MRES_IGNORED, NULL);
+		UM_RETURN_META_VALUE(MRES_IGNORED, nullptr);
 	}
 
 	m_CurId = msg_type;
@@ -588,22 +601,20 @@ bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_typ
 	if (!is_intercept_empty)
 	{
 #ifdef USE_PROTOBUF_USERMESSAGES
-		if (m_InterceptBuffer)
-			delete m_InterceptBuffer;
-		m_InterceptBuffer = GetMessagePrototype(msg_type)->New();
-
-		UM_RETURN_META_VALUE(MRES_SUPERCEDE, m_InterceptBuffer);
+		m_InterceptBuffer =
+			PbHandle(GetMessagePrototype(msg_type)->New(), PbHandle::Owned, PbHandle::Local);
+		UM_RETURN_META_VALUE(MRES_SUPERCEDE, m_InterceptBuffer.AsUnowned());
 #else
 		m_InterceptBuffer.Reset();
 		UM_RETURN_META_VALUE(MRES_SUPERCEDE, &m_InterceptBuffer);
 #endif
 	}
 
-	UM_RETURN_META_VALUE(MRES_IGNORED, NULL);
+	UM_RETURN_META_VALUE(MRES_IGNORED, nullptr);
 }
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
-protobuf::Message *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name)
+void* UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name)
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD
 bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name)
 #else
@@ -617,9 +628,9 @@ bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_ty
 
 #ifdef USE_PROTOBUF_USERMESSAGES
 	if (m_FakeMetaRes == MRES_SUPERCEDE)
-		m_OrigBuffer = m_InterceptBuffer;
+		m_OrigBuffer = m_InterceptBuffer.AsUnowned();
 	else
-		m_OrigBuffer = m_FakeEngineBuffer;
+		m_OrigBuffer = m_FakeEngineBuffer.AsUnowned();
 #else
 	m_OrigBuffer = META_RESULT_ORIG_RET(bf_write *);
 #endif
@@ -715,8 +726,11 @@ void UserMessages::OnMessageEnd_Pre()
 	{
 		pInfo = (*iter);
 		pInfo->IsHooked = true;
+
 #ifdef USE_PROTOBUF_USERMESSAGES
-		res = pInfo->Callback->InterceptUserMessage(m_CurId, m_InterceptBuffer, m_CurRecFilter);
+		PbHandle local = m_InterceptBuffer.ToLocal(m_CurId);
+		res = pInfo->Callback->InterceptUserMessage(m_CurId, local.GetLocalMessage(), m_CurRecFilter);
+		m_InterceptBuffer.CopyFrom(local);
 #else
 		res = pInfo->Callback->InterceptUserMessage(m_CurId, &m_InterceptBuffer, m_CurRecFilter);
 #endif
@@ -768,7 +782,8 @@ void UserMessages::OnMessageEnd_Pre()
 	if (!handled && intercepted)
 	{
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
-		ENGINE_CALL(SendUserMessage)(static_cast<IRecipientFilter &>(*m_CurRecFilter), m_CurId, *m_InterceptBuffer);
+		PbHandle priv = m_InterceptBuffer.ToPrivate(m_CurId);
+		ENGINE_CALL(SendUserMessage)(static_cast<IRecipientFilter &>(*m_CurRecFilter), m_CurId, *priv.GetPrivateMessage());
 #else
 		bf_write *engine_bfw;
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
@@ -784,12 +799,9 @@ void UserMessages::OnMessageEnd_Pre()
 
 	{
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
-		int size = m_OrigBuffer->ByteSize();
-		uint8 *data = (uint8 *)stackalloc(size);
-		m_OrigBuffer->SerializePartialToArray(data, size);
-
-		protobuf::Message *pTempMsg = GetMessagePrototype(m_CurId)->New();
-		pTempMsg->ParsePartialFromArray(data, size);
+		PbHandle tmp_msg(GetMessagePrototype(m_CurId)->New(), PbHandle::Owned, PbHandle::Local);
+		tmp_msg.CopyFrom(m_OrigBuffer);
+		auto pTempMsg = tmp_msg.GetLocalMessage();
 #else
 		bf_write *pTempMsg = m_OrigBuffer;
 #endif
@@ -812,10 +824,6 @@ void UserMessages::OnMessageEnd_Pre()
 			pInfo->IsHooked = false;
 			iter++;
 		}
-
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
-		delete pTempMsg;
-#endif
 	}
 
 	UM_RETURN_META((intercepted) ? MRES_SUPERCEDE : MRES_IGNORED);
