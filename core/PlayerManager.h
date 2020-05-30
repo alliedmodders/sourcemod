@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sts=8 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2015 AlliedModders LLC.  All rights reserved.
@@ -154,7 +154,7 @@ private:
 #if SOURCE_ENGINE == SE_CSGO
 	QueryCvarCookie_t m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
-	ke::Deque<std::string> m_PrintfBuffer;
+	std::deque<std::string> m_PrintfBuffer;
 };
 
 class PlayerManager : 

@@ -886,7 +886,7 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 		if (player.m_PrintfBuffer.empty())
 			g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(uintptr_t)player.GetSerial());
 
-		player.m_PrintfBuffer.append(szMsg);
+		player.m_PrintfBuffer.push_back(szMsg);
 
 		RETURN_META(MRES_SUPERCEDE);
 	}
@@ -927,7 +927,7 @@ void PlayerManager::OnPrintfFrameAction(unsigned int serial)
 
 		SH_CALL(engine, &IVEngineServer::ClientPrintf)(player.m_pEdict, string.c_str());
 
-		player.m_PrintfBuffer.popFront();
+		player.m_PrintfBuffer.pop_front();
 	}
 
 	if (!player.m_PrintfBuffer.empty())
@@ -2245,7 +2245,7 @@ void CPlayer::Disconnect()
 void CPlayer::ClearNetchannelQueue(void)
 {
 	while (!m_PrintfBuffer.empty())
-		m_PrintfBuffer.popFront();
+		m_PrintfBuffer.pop_front();
 }
 
 void CPlayer::SetName(const char *name)

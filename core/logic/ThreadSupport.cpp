@@ -74,7 +74,7 @@ class CompatWorker final : public IThreadWorker
 	WorkerState state_;
 	std::mutex mutex_;
 	std::condition_variable work_cv_;
-	ke::Deque<SWThreadHandle*> work_;
+	std::deque<SWThreadHandle*> work_;
 	std::unique_ptr<std::thread> thread_;
 	std::atomic<unsigned int> jobs_per_wakeup_;
 	std::atomic<unsigned int> wait_between_jobs_;
@@ -152,7 +152,7 @@ bool CompatWorker::Unpause()
 void CompatWorker::Flush()
 {
 	while (!work_.empty()) {
-		auto handle = work_.popFrontCopy();
+		auto handle = ke::PopFront(&work_);
 		handle->GetThread()->OnTerminate(handle, true);
 		if (handle->m_params.flags & Thread_AutoRelease)
 			delete handle;
@@ -202,7 +202,7 @@ void CompatWorker::Worker()
 		assert(state_ == Worker_Running);
 		assert(!work_.empty());
 
-		SWThreadHandle* handle = work_.popFrontCopy();
+		SWThreadHandle* handle = ke::PopFront(&work_);
 		RunWorkLocked(&lock, handle);
 		work_in_frame++;
 
@@ -217,7 +217,7 @@ void CompatWorker::Worker()
 	assert(lock.owns_lock());
 
 	while (!work_.empty()) {
-		SWThreadHandle* handle = work_.popFrontCopy();
+		SWThreadHandle* handle = ke::PopFront(&work_);
 		RunWorkLocked(&lock, handle);
 	}
 }
@@ -231,7 +231,7 @@ unsigned int CompatWorker::RunFrame()
 			std::lock_guard<std::mutex> lock(mutex_);
 			if (work_.empty())
 				break;
-			handle = work_.popFrontCopy();
+			handle = ke::PopFront(&work_);
 		}
 
 		RunWork(handle);
@@ -284,7 +284,7 @@ IThreadHandle *CompatWorker::MakeThread(IThread *pThread, const ThreadParams *pa
 		return nullptr;
 
 	SWThreadHandle* handle = new SWThreadHandle(this, params, pThread);
-	work_.append(handle);
+	work_.push_back(handle);
 	work_cv_.notify_one();
 	return handle;
 }
