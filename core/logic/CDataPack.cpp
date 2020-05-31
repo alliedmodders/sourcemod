@@ -51,7 +51,7 @@ static std::vector<std::unique_ptr<CDataPack>> sDataPackCache;
 CDataPack *CDataPack::New()
 {
   if (sDataPackCache.empty())
-    return new CDataPack();
+	return new CDataPack();
 
   CDataPack *pack = sDataPackCache.back().release();
   sDataPackCache.pop_back();
@@ -87,7 +87,7 @@ size_t CDataPack::CreateMemory(size_t size, void **addr)
 	val.type = CDataPackType::Raw;
 	val.pData.vval = new uint8_t[size + sizeof(size)];
 	reinterpret_cast<size_t *>(val.pData.vval)[0] = size;
-	ke::InsertAt(&elements, position, val);
+	elements.emplace(elements.begin() + position, val);
 
 	return position++;
 }
@@ -97,7 +97,8 @@ void CDataPack::PackCell(cell_t cell)
 	InternalPack val;
 	val.type = CDataPackType::Cell;
 	val.pData.cval = cell;
-	ke::InsertAt(&elements, position++, val);
+	elements.emplace(elements.begin() + position, val);
+	position++;
 }
 
 void CDataPack::PackFunction(cell_t function)
@@ -105,7 +106,8 @@ void CDataPack::PackFunction(cell_t function)
 	InternalPack val;
 	val.type = CDataPackType::Function;
 	val.pData.cval = function;
-	ke::InsertAt(&elements, position++, val);
+	elements.emplace(elements.begin() + position, val);
+	position++;
 }
 
 void CDataPack::PackFloat(float floatval)
@@ -113,7 +115,8 @@ void CDataPack::PackFloat(float floatval)
 	InternalPack val;
 	val.type = CDataPackType::Float;
 	val.pData.fval = floatval;
-	ke::InsertAt(&elements, position++, val);
+	elements.emplace(elements.begin() + position, val);
+	position++;
 }
 
 void CDataPack::PackString(const char *string)
@@ -122,7 +125,8 @@ void CDataPack::PackString(const char *string)
 	val.type = CDataPackType::String;
 	std::string *sval = new std::string(string);
 	val.pData.sval = sval;
-	ke::InsertAt(&elements, position++, val);
+	elements.emplace(elements.begin() + position, val);
+	position++;
 }
 
 void CDataPack::PackCellArray(cell_t const *vals, cell_t count)
@@ -133,7 +137,8 @@ void CDataPack::PackCellArray(cell_t const *vals, cell_t count)
 	val.pData.aval = new cell_t [count + 1];
 	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * (count + 1));
 	val.pData.aval[0] = count;
-	ke::InsertAt(&elements, position++, val);
+	elements.emplace(elements.begin() + position, val);
+	position++;
 }
 
 void CDataPack::PackFloatArray(cell_t const *vals, cell_t count)
@@ -144,7 +149,8 @@ void CDataPack::PackFloatArray(cell_t const *vals, cell_t count)
 	val.pData.aval = new cell_t [count + 1];
 	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * (count + 1));
 	val.pData.aval[0] = count;
-	ke::InsertAt(&elements, position++, val);
+	elements.emplace(elements.begin() + position, val);
+	position++;
 }
 
 void CDataPack::Reset() const
@@ -312,6 +318,6 @@ bool CDataPack::RemoveItem(size_t pos)
 		}
 	}
 
-	ke::RemoveAt(&elements, pos);
+	elements.erase(elements.begin() + pos);
 	return true;
 }

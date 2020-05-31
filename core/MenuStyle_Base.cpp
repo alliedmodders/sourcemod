@@ -661,7 +661,7 @@ bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDr
 		item.display = std::make_unique<std::string>(draw.display);
 	item.style = draw.style;
 
-	ke::InsertAt(&m_items, position, std::move(item));
+	m_items.emplace(m_items.begin() + position, std::move(item));
 	return true;
 }
 
@@ -670,7 +670,7 @@ bool CBaseMenu::RemoveItem(unsigned int position)
 	if (position >= m_items.size())
 		return false;
 
-	ke::RemoveAt(&m_items, position);
+	m_items.erase(m_items.begin() + position);
 	return true;
 }
 
