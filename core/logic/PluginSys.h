@@ -320,8 +320,8 @@ public:
 		void Release();
 		void OnPluginDestroyed(IPlugin *plugin) override;
 	private:
-		ke::LinkedList<CPlugin *> mylist;
-		ke::LinkedList<CPlugin *>::iterator current;
+		std::list<CPlugin *> mylist;
+		std::list<CPlugin *>::iterator current;
 	};
 	friend class CPluginManager::CPluginIterator;
 public: //IScriptManager
@@ -476,7 +476,7 @@ private:
 private:
 	ReentrantList<IPluginsListener *> m_listeners;
 	ReentrantList<CPlugin *> m_plugins;
-	ke::LinkedList<CPluginIterator *> m_iterators;
+	std::list<CPluginIterator *> m_iterators;
 
 	typedef decltype(m_listeners)::iterator ListenerIter;
 	typedef decltype(m_plugins)::iterator PluginIter;

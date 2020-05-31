@@ -45,7 +45,7 @@ using namespace ke;
 
 ConCmdManager g_ConCmds;
 
-typedef ke::LinkedList<CmdHook *> PluginHookList;
+typedef std::list<CmdHook *> PluginHookList;
 void RegisterInPlugin(CmdHook *hook);
 
 ConCmdManager::ConCmdManager()
@@ -381,7 +381,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 		pHook->admin->eflags = pHook->admin->flags;
 	pInfo->eflags = pHook->admin->eflags;
 
-	cmdgroup->hooks.append(pHook);
+	cmdgroup->hooks.push_back(pHook);
 	pInfo->hooks.append(pHook);
 	RegisterInPlugin(pHook);
 	return true;
@@ -426,13 +426,13 @@ void RegisterInPlugin(CmdHook *hook)
 		const char *cmd = (*iter)->info->pCmd->GetName();
 		if (strcmp(orig, cmd) < 0)
 		{
-			pList->insertBefore(iter, hook);
+			pList->emplace(iter, hook);
 			return;
 		}
 		iter++;
 	}
 
-	pList->append(hook);
+	pList->emplace_back(hook);
 }
 
 void ConCmdManager::AddToCmdList(ConCmdInfo *info)
