@@ -204,7 +204,7 @@ public: // Originally IDataPack
 
 public:
 	void Initialize();
-	inline size_t GetCapacity() const { return this->elements.length(); };
+	inline size_t GetCapacity() const { return this->elements.size(); };
 	inline CDataPackType GetCurrentType(void) const { return this->elements[this->position].type; };
 	bool RemoveItem(size_t pos = -1);
 
@@ -222,7 +222,7 @@ private:
 		CDataPackType type;
 	} InternalPack;
 
-	ke::Vector<InternalPack> elements;
+	std::vector<InternalPack> elements;
 	mutable size_t position;
 };
 

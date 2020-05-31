@@ -158,7 +158,7 @@ public:
 	bool databaseLoading;
 
 private:
-	ke::Vector<TQueryOp *> cachedQueries;
+	std::vector<TQueryOp *> cachedQueries;
 	std::mutex queryLock;
 	IdentityToken_t *identity;
 };

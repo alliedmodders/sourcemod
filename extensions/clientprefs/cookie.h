@@ -132,12 +132,12 @@ public:
 
 public:
 	IForward *cookieDataLoadedForward;
-	ke::Vector<Cookie *> cookieList;
+	std::vector<Cookie *> cookieList;
 	IBaseMenu *clientMenu;
 
 private:
 	NameHashSet<Cookie *> cookieFinder;
-	ke::Vector<CookieData *> clientData[SM_MAXPLAYERS+1];
+	std::vector<CookieData *> clientData[SM_MAXPLAYERS+1];
 
 	bool connected[SM_MAXPLAYERS+1];
 	bool statsLoaded[SM_MAXPLAYERS+1];

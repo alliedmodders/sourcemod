@@ -56,7 +56,7 @@ public:
 	DatabaseInfo info;
 };
 
-class ConfDbInfoList : public ke::Vector<ConfDbInfo *>
+class ConfDbInfoList : public std::vector<ConfDbInfo *>
 {
 	/* Allow internal usage of ConfDbInfoList */
 	friend class DBManager;
@@ -67,7 +67,7 @@ private:
 	}
 	
 	ConfDbInfo *GetDatabaseConf(const char *name) {
-		for (size_t i = 0; i < this->length(); i++)
+		for (size_t i = 0; i < this->size(); i++)
 		{
 			ConfDbInfo *current = this->at(i);
 			/* If we run into the default configuration, then we'll save it
@@ -90,7 +90,7 @@ private:
 		m_DefDriver = std::string(input);
 	}
 	void ReleaseMembers() {
-		for (size_t i = 0; i < this->length(); i++) {
+		for (size_t i = 0; i < this->size(); i++) {
 			ConfDbInfo *current = this->at(i);
 			current->Release();
 		}

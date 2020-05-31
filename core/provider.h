@@ -91,7 +91,7 @@ private:
 		ConCommand *cmd_;
 		ke::RefPtr<CommandHook> hook_;
 	};
-	ke::Vector<ke::RefPtr<CommandImpl>> commands_;
+	std::vector<ke::RefPtr<CommandImpl>> commands_;
 };
 
 extern CoreProviderImpl sCoreProviderImpl;

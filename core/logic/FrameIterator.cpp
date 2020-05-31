@@ -36,7 +36,7 @@ SafeFrameIterator::SafeFrameIterator(IFrameIterator *it)
 	while (!it->Done())
 	{
 		FrameInfo info = FrameInfo(it);
-		frames.append(info);
+		frames.push_back(info);
 		it->Next(); 
 	}
 	
@@ -46,7 +46,7 @@ SafeFrameIterator::SafeFrameIterator(IFrameIterator *it)
 
 bool SafeFrameIterator::Done() const
 {
-	return current >= frames.length();
+	return current >= frames.size();
 }
 
 bool SafeFrameIterator::Next()

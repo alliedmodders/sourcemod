@@ -68,7 +68,7 @@ struct Transaction
 		cell_t data;
 	};
 
-	ke::Vector<Entry> entries;
+	std::vector<Entry> entries;
 };
 
 class DatabaseHelpers : 
@@ -1540,9 +1540,9 @@ static cell_t SQL_AddQuery(IPluginContext *pContext, const cell_t *params)
 	Transaction::Entry entry;
 	entry.query = query;
 	entry.data = params[3];
-	txn->entries.append(std::move(entry));
+	txn->entries.push_back(std::move(entry));
 
-	return cell_t(txn->entries.length() - 1);
+	return cell_t(txn->entries.size() - 1);
 }
 
 class TTransactOp : public IDBThreadOperation
@@ -1564,7 +1564,7 @@ public:
 
 	~TTransactOp()
 	{
-		for (size_t i = 0; i < results_.length(); i++)
+		for (size_t i = 0; i < results_.size(); i++)
 			results_[i]->Destroy();
 		results_.clear();
 	}
@@ -1585,7 +1585,7 @@ public:
 private:
 	bool Succeeded() const
 	{
-		return error_.length() == 0;
+		return error_.size() == 0;
 	}
 
 	void SetDbError()
@@ -1617,7 +1617,7 @@ private:
 			return;
 		}
 
-		for (size_t i = 0; i < txn_->entries.length(); i++)
+		for (size_t i = 0; i < txn_->entries.size(); i++)
 		{
 			Transaction::Entry &entry = txn_->entries[i];
 			IQuery *result = Exec(entry.query.c_str());
@@ -1626,7 +1626,7 @@ private:
 				failIndex_ = (cell_t)i;
 				return;
 			}
-			results_.append(result);
+			results_.push_back(result);
 		}
 
 		if (!db_->DoSimpleQuery("COMMIT"))
@@ -1667,11 +1667,11 @@ private:
 		// Add an extra refcount for the handle.
 		db_->AddRef();
 
-		assert(results_.length() == txn_->entries.length());
+		assert(results_.size() == txn_->entries.size());
 
-		std::unique_ptr<cell_t[]> data = std::make_unique<cell_t[]>(results_.length());
-		std::unique_ptr<cell_t[]> handles = std::make_unique<cell_t[]>(results_.length());
-		for (size_t i = 0; i < results_.length(); i++)
+		std::unique_ptr<cell_t[]> data = std::make_unique<cell_t[]>(results_.size());
+		std::unique_ptr<cell_t[]> handles = std::make_unique<cell_t[]>(results_.size());
+		for (size_t i = 0; i < results_.size(); i++)
 		{
 			CombinedQuery *obj = new CombinedQuery(results_[i], db_);
 			Handle_t rh = CreateLocalHandle(hCombinedQueryType, obj, &sec);
@@ -1682,7 +1682,7 @@ private:
 				delete obj;
 				for (size_t iter = 0; iter < i; iter++)
 					handlesys->FreeHandle(handles[iter], &sec);
-				for (size_t iter = i; iter < results_.length(); iter++)
+				for (size_t iter = i; iter < results_.size(); iter++)
 					results_[iter]->Destroy();
 				handlesys->FreeHandle(dbh, &sec);
 				results_.clear();
@@ -1698,15 +1698,15 @@ private:
 		{
 			success_->PushCell(dbh);
 			success_->PushCell(data_);
-			success_->PushCell(txn_->entries.length());
-			success_->PushArray(handles.get(), results_.length());
-			success_->PushArray(data.get(), results_.length());
+			success_->PushCell(txn_->entries.size());
+			success_->PushArray(handles.get(), results_.size());
+			success_->PushArray(data.get(), results_.size());
 			success_->Execute(NULL);
 		}
 
 		// Cleanup. Note we clear results_, since freeing their handles will
 		// call Destroy(), and we don't want to double-free in ~TTransactOp.
-		for (size_t i = 0; i < results_.length(); i++)
+		for (size_t i = 0; i < results_.size(); i++)
 			handlesys->FreeHandle(handles[i], &sec);
 		handlesys->FreeHandle(dbh, &sec);
 		results_.clear();
@@ -1730,8 +1730,8 @@ public:
 		{
 			HandleSecurity sec(ident_, g_pCoreIdent);
 
-			std::unique_ptr<cell_t[]> data = std::make_unique<cell_t[]>(txn_->entries.length());
-			for (size_t i = 0; i < txn_->entries.length(); i++)
+			std::unique_ptr<cell_t[]> data = std::make_unique<cell_t[]>(txn_->entries.size());
+			for (size_t i = 0; i < txn_->entries.size(); i++)
 				data[i] = txn_->entries[i].data;
 
 			Handle_t dbh = CreateLocalHandle(g_DBMan.GetDatabaseType(), db_, &sec);
@@ -1745,10 +1745,10 @@ public:
 			{
 				failure_->PushCell(dbh);
 				failure_->PushCell(data_);
-				failure_->PushCell(txn_->entries.length());
+				failure_->PushCell(txn_->entries.size());
 				failure_->PushString(error_.c_str());
 				failure_->PushCell(failIndex_);
-				failure_->PushArray(data.get(), txn_->entries.length());
+				failure_->PushArray(data.get(), txn_->entries.size());
 				failure_->Execute(NULL);
 			}
 
@@ -1765,7 +1765,7 @@ private:
 	cell_t data_;
 	AutoHandleRooter autoHandle_;
 	std::string error_;
-	ke::Vector<IQuery *> results_;
+	std::vector<IQuery *> results_;
 	cell_t failIndex_;
 };
 

@@ -114,11 +114,11 @@ private:
 	void SetCommandClient(int client);
 
 private:
-	class HookList : public ke::Vector<int>
+	class HookList : public std::vector<int>
 	{
 	public:
 		HookList &operator += (int hook_id) {
-			this->append(hook_id);
+			this->push_back(hook_id);
 			return *this;
 		}
 	};

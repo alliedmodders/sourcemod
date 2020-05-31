@@ -73,5 +73,5 @@ public:
 
 private:
 	size_t current;
-	ke::Vector<FrameInfo> frames;
+	std::vector<FrameInfo> frames;
 };

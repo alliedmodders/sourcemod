@@ -674,7 +674,7 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 	}
 
 	unsigned int unbound = 0;
-	for (size_t i = 0; i < pOwner->m_fakes.length(); i++)
+	for (size_t i = 0; i < pOwner->m_fakes.size(); i++)
 	{
 		ke::RefPtr<Native> entry(pOwner->m_fakes[i]);
 
@@ -773,13 +773,13 @@ bool CPlugin::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKEN
 	if (!entry)
 		return false;
 
-	m_fakes.append(entry);
+	m_fakes.push_back(entry);
 	return true;
 }
 
 void CPlugin::BindFakeNativesTo(CPlugin *other)
 {
-	for (size_t i = 0; i < m_fakes.length(); i++)
+	for (size_t i = 0; i < m_fakes.size(); i++)
 		g_ShareSys.BindNativeToPlugin(other, m_fakes[i]);
 }
 
