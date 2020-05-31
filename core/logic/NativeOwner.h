@@ -33,7 +33,6 @@
 
 #include <sp_vm_types.h>
 #include <sh_list.h>
-#include <am-linkedlist.h>
 #include <am-vector.h>
 #include "common_logic.h"
 #include "Native.h"

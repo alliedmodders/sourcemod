@@ -27,14 +27,15 @@
 #ifndef _include_sourcemod_reentrant_iterator_h_
 #define _include_sourcemod_reentrant_iterator_h_
 
+#include <algorithm>
+#include <list>
 #include <utility>
 
-#include <amtl/am-linkedlist.h>
 #include <amtl/am-function.h>
 
 namespace SourceMod {
 
-// ReentrantList is a wrapper around a LinkedList, with special attention twoard
+// ReentrantList is a wrapper around a std::list, with special attention twoard
 // reentrancy. The list may be mutated during iteration as long as its iterator
 // protocol is obeyed: iterators may only be used on the stack in a LIFO manner,
 // and it is illegal to request access to an iterator's item after the list has
@@ -43,16 +44,15 @@ namespace SourceMod {
 // We guard against this using assertions. If an item in a list is removed, and
 // this affects any active iterators, those iterators cannot be used until their
 // next() function is called.
-template <typename T, class AllocPolicy = ke::SystemAllocatorPolicy>
-class ReentrantList : public ke::LinkedList<T, AllocPolicy>
+template <typename T>
+class ReentrantList : public std::list<T>
 {
-	typedef typename ke::LinkedList<T> BaseType;
-	typedef typename ke::LinkedList<T>::iterator BaseTypeIter;
+	typedef typename std::list<T> BaseType;
+	typedef typename std::list<T>::iterator BaseTypeIter;
 
 public:
-	ReentrantList(AllocPolicy ap = AllocPolicy())
-		: ke::LinkedList<T, AllocPolicy>(ap),
-		  top_(nullptr)
+	ReentrantList()
+	  : top_(nullptr)
 	{
 	}
 
@@ -150,12 +150,12 @@ public:
 
 	template <typename U>
 	void insertBefore(iterator& where, U &&obj) {
-		BaseType::insertBefore(where.impl_, std::forward<U>(obj));
+		BaseType::insert(where.impl_, std::forward<U>(obj));
 	}
 
 	template <typename U>
 	bool contains(const U &obj) {
-		return BaseType::find(obj) != BaseType::end();
+		return std::find(BaseType::begin(), BaseType::end(), obj) != BaseType::end();
 	}
 
 private:
