@@ -227,7 +227,7 @@ public:
 		return m_LibraryMissing;
 	}
 	bool HasFakeNatives() const {
-		return m_fakes.length() > 0;
+		return m_fakes.size() > 0;
 	}
 
 	// True if we got far enough into the second pass to call OnPluginLoaded

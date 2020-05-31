@@ -628,7 +628,7 @@ Handle_t CBaseMenu::GetHandle()
 bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 {
 	if (m_Pagination == (unsigned)MENU_NO_PAGINATION
-		&& m_items.length() >= m_pStyle->GetMaxPageItems())
+		&& m_items.size() >= m_pStyle->GetMaxPageItems())
 	{
 		return false;
 	}
@@ -640,19 +640,19 @@ bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 		item.display = std::make_unique<std::string>(draw.display);
 	item.style = draw.style;
 
-	m_items.append(std::move(item));
+	m_items.push_back(std::move(item));
 	return true;
 }
 
 bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDrawInfo &draw)
 {
 	if (m_Pagination == (unsigned)MENU_NO_PAGINATION &&
-	    m_items.length() >= m_pStyle->GetMaxPageItems())
+	    m_items.size() >= m_pStyle->GetMaxPageItems())
 	{
 		return false;
 	}
 
-	if (position >= m_items.length())
+	if (position >= m_items.size())
 		return false;
 
 	CItem item;
@@ -661,16 +661,16 @@ bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDr
 		item.display = std::make_unique<std::string>(draw.display);
 	item.style = draw.style;
 
-	m_items.insert(position, std::move(item));
+	ke::InsertAt(&m_items, position, std::move(item));
 	return true;
 }
 
 bool CBaseMenu::RemoveItem(unsigned int position)
 {
-	if (position >= m_items.length())
+	if (position >= m_items.size())
 		return false;
 
-	m_items.remove(position);
+	ke::RemoveAt(&m_items, position);
 	return true;
 }
 
@@ -681,7 +681,7 @@ void CBaseMenu::RemoveAllItems()
 
 const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =NULL */)
 {
-	if (position >= m_items.length())
+	if (position >= m_items.size())
 		return NULL;
 
 	if (draw)
@@ -695,7 +695,7 @@ const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =
 
 unsigned int CBaseMenu::GetItemCount()
 {
-	return m_items.length();
+	return m_items.size();
 }
 
 bool CBaseMenu::SetPagination(unsigned int itemsPerPage)
@@ -825,5 +825,5 @@ IMenuHandler *CBaseMenu::GetHandler()
 
 unsigned int CBaseMenu::GetBaseMemUsage()
 {
-	return m_Title.length() + (m_items.length() * sizeof(CItem));
+	return m_Title.size() + (m_items.size() * sizeof(CItem));
 }

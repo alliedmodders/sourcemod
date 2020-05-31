@@ -161,7 +161,7 @@ protected:
 	std::string m_Title;
 	IMenuStyle *m_pStyle;
 	unsigned int m_Pagination;
-	ke::Vector<CItem> m_items;
+	std::vector<CItem> m_items;
 	bool m_bShouldDelete;
 	bool m_bCancelling;
 	IdentityToken_t *m_pOwner;

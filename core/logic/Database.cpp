@@ -210,7 +210,7 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 	}
 
 	ConfDbInfoList *list = m_Builder.GetConfigList();
-	for (size_t i = 0; i < list->length(); i++)
+	for (size_t i = 0; i < list->size(); i++)
 	{
 		ke::RefPtr<ConfDbInfo> current = list->at(i);
 		if (current->realDriver == pDriver)

@@ -313,7 +313,7 @@ bool ClientPrefs::AddQueryToQueue(TQueryOp *query)
 		std::lock_guard<std::mutex> lock(queryLock);
 		if (!Database)
 		{
-			cachedQueries.append(query);
+			cachedQueries.push_back(query);
 			return false;
 		}
 		
@@ -331,7 +331,7 @@ void ClientPrefs::ProcessQueryCache()
 	if (!Database)
 		return;
 
-	for (size_t iter = 0; iter < cachedQueries.length(); ++iter)
+	for (size_t iter = 0; iter < cachedQueries.size(); ++iter)
 	{
 		TQueryOp *op = cachedQueries[iter];
 		op->SetDatabase(Database);
@@ -373,13 +373,13 @@ void ClientPrefs::ClearQueryCache(int serial)
 {
 	std::lock_guard<std::mutex> lock(queryLock);
 
-	for (size_t iter = 0; iter < cachedQueries.length(); ++iter)
+	for (size_t iter = 0; iter < cachedQueries.size(); ++iter)
 	{
 		TQueryOp *op = cachedQueries[iter];
 		if (op && op->PullQueryType() == Query_SelectData && op->PullQuerySerial() == serial)
  		{
 			op->Destroy();
-			cachedQueries.remove(iter--);
+			ke::RemoveAt(&cachedQueries, iter--);
 		}
  	}
 }

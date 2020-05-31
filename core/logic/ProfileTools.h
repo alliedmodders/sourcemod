@@ -51,7 +51,7 @@ public:
 	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *args) override;
 
 	void RegisterTool(IProfilingTool *tool) {
-		tools_.append(tool);
+		tools_.push_back(tool);
 	}
 
 	bool IsActive() const {
@@ -76,7 +76,7 @@ private:
 	void StartFromConsole(IProfilingTool *tool);
 
 private:
-	ke::Vector<IProfilingTool *> tools_;
+	std::vector<IProfilingTool *> tools_;
 	IProfilingTool *active_;
 	IProfilingTool *default_;
 	bool enabled_;

@@ -161,7 +161,7 @@ SMCResult DatabaseConfBuilder::ReadSMC_LeavingSection(const SMCStates *states)
 		
 		/* Save it.. */
 		m_ParseCurrent->AddRef();
-		m_ParseList->append(m_ParseCurrent);
+		m_ParseList->push_back(m_ParseCurrent);
 		m_ParseCurrent = nullptr;
 		
 		/* Go up one level */

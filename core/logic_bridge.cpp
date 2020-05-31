@@ -768,7 +768,7 @@ CoreProviderImpl::DefineCommand(const char *name, const char *help, const Comman
 	ke::RefPtr<CommandHook> hook = AddCommandHook(cmd, callback);
 
 	ke::RefPtr<CommandImpl> impl = new CommandImpl(cmd, hook);
-	commands_.append(impl);
+	commands_.push_back(impl);
 }
 
 void CoreProviderImpl::InitializeHooks()
