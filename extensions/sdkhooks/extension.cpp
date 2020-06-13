@@ -771,13 +771,15 @@ void SDKHooks::Unhook(CBaseEntity *pEntity)
 					continue;
 				}
 
-				ke::RemoveAt(&pawnhooks, entry--);
+				pawnhooks.erase(pawnhooks.begin() + entry);
+				entry--;
 			}
 
 			if (pawnhooks.size() == 0)
 			{
 				delete vtablehooklist[listentry];
-				ke::RemoveAt(&vtablehooklist, listentry--);
+				vtablehooklist.erase(vtablehooklist.begin() + listentry);
+				listentry--;
 			}
 		}
 	}
@@ -798,13 +800,15 @@ void SDKHooks::Unhook(IPluginContext *pContext)
 					continue;
 				}
 
-				ke::RemoveAt(&pawnhooks, entry--);
+				pawnhooks.erase(pawnhooks.begin() + entry);
+				entry--;
 			}
 
 			if (pawnhooks.size() == 0)
 			{
 				delete vtablehooklist[listentry];
-				ke::RemoveAt(&vtablehooklist, listentry--);
+				vtablehooklist.erase(vtablehooklist.begin() + listentry);
+				listentry--;
 			}
 		}
 	}
@@ -838,13 +842,15 @@ void SDKHooks::Unhook(int entity, SDKHookType type, IPluginFunction *pCallback)
 				continue;
 			}
 
-			ke::RemoveAt(&pawnhooks, entry--);
+			pawnhooks.erase(pawnhooks.begin() + entry);
+			entry--;
 		}
 
 		if (pawnhooks.size() == 0)
 		{
 			delete vtablehooklist[listentry];
-			ke::RemoveAt(&vtablehooklist, listentry);
+			vtablehooklist.erase(vtablehooklist.begin() + listentry);
+			listentry--;
 		}
 
 		break;

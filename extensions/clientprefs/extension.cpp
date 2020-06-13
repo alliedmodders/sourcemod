@@ -379,7 +379,8 @@ void ClientPrefs::ClearQueryCache(int serial)
 		if (op && op->PullQueryType() == Query_SelectData && op->PullQuerySerial() == serial)
  		{
 			op->Destroy();
-			ke::RemoveAt(&cachedQueries, iter--);
+			cachedQueries.erase(cachedQueries.begin() + iter);
+			iter--;
 		}
  	}
 }
