@@ -54,6 +54,7 @@ public Plugin myinfo =
 Menu g_hVoteMenu = null;
 
 ConVar g_Cvar_Limits[3] = {null, ...};
+ConVar g_Cvar_Voteban = null;
 //ConVar g_Cvar_VoteSay = null;
 
 enum voteType
@@ -108,6 +109,7 @@ public void OnPluginStart()
 	g_Cvar_Limits[0] = CreateConVar("sm_vote_map", "0.60", "percent required for successful map vote.", 0, true, 0.05, true, 1.0);
 	g_Cvar_Limits[1] = CreateConVar("sm_vote_kick", "0.60", "percent required for successful kick vote.", 0, true, 0.05, true, 1.0);	
 	g_Cvar_Limits[2] = CreateConVar("sm_vote_ban", "0.60", "percent required for successful ban vote.", 0, true, 0.05, true, 1.0);		
+	g_Cvar_Voteban = CreateConVar("sm_voteban_time", "30", "length of ban in minutes.", 0, true, 0.0);	
 
 	AutoExecConfig(true, "basevotes");
 	
@@ -344,23 +346,32 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 					
 				case (ban):
 				{
+					if (g_voteArg[0] == '\0')
+					{
+						strcopy(g_voteArg, sizeof(g_voteArg), "Votebanned");
+					}
+					
+					int minutes = g_Cvar_Voteban.IntValue;
+					
+					PrintToChatAll("[SM] %t", "Banned player", g_voteInfo[VOTE_NAME], minutes);
+					
 					int voteTarget;
 					if((voteTarget = GetClientOfUserId(g_voteTarget)) == 0)
 					{
-						LogAction(-1, -1, "Vote ban failed, unable to ban \"%s\" (reason \"%s\")", g_voteInfo[VOTE_NAME], "Player no longer available");
+						LogAction(-1, -1, "Vote ban successful, banned \"%s\" (%s) (minutes \"%d\") (reason \"%s\")", g_voteInfo[VOTE_NAME], g_voteInfo[VOTE_AUTHID], minutes, g_voteArg);
+						
+						BanIdentity(g_voteInfo[VOTE_AUTHID],
+								  minutes,
+								  BANFLAG_AUTHID,
+								  g_voteArg,
+								  "sm_voteban");
 					}
 					else
 					{
-						if (g_voteArg[0] == '\0')
-						{
-							strcopy(g_voteArg, sizeof(g_voteArg), "Votebanned");
-						}
+						LogAction(-1, voteTarget, "Vote ban successful, banned \"%L\" (minutes \"%d\") (reason \"%s\")", voteTarget, minutes, g_voteArg);
 						
-						PrintToChatAll("[SM] %t", "Banned player", g_voteInfo[VOTE_NAME], 30);
-						LogAction(-1, voteTarget, "Vote ban successful, banned \"%L\" (minutes \"30\") (reason \"%s\")", voteTarget, g_voteArg);
-	
 						BanClient(voteTarget,
-								  30,
+								  minutes,
 								  BANFLAG_AUTO,
 								  g_voteArg,
 								  "Banned by vote",
