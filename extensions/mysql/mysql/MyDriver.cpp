@@ -224,7 +224,7 @@ void MyDriver::ShutdownThreadSafety()
 	mysql_thread_end();
 }
 
-unsigned int strncopy(char *dest, const char *src, size_t count)
+size_t strncopy(char *dest, const char *src, size_t count)
 {
 	if (!count)
 	{

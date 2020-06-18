@@ -182,19 +182,19 @@ class SMConfig(object):
     self.mms_root = Normalize(self.mms_root)
 
     if builder.options.hasMySql:
-      if builder.options.mysql_path:
-        self.mysql_root['x86'] = builder.options.mysql_path
-      else:
-        for i in range(10):
-          self.mysql_root['x86'] = ResolveEnvPath('MYSQL55', 'mysql-5.' + str(i))
-          if self.mysql_root['x86']:
-            break
-      if not self.mysql_root['x86'] or not os.path.isdir(self.mysql_root['x86']):
-        raise Exception('Could not find a path to MySQL!')
-      self.mysql_root['x86'] = Normalize(self.mysql_root['x86'])
+      if 'x86' in self.archs:
+        if builder.options.mysql_path:
+          self.mysql_root['x86'] = builder.options.mysql_path
+        else:
+          for i in range(10):
+            self.mysql_root['x86'] = ResolveEnvPath('MYSQL55', 'mysql-5.' + str(i))
+            if self.mysql_root['x86']:
+              break
+        if not self.mysql_root['x86'] or not os.path.isdir(self.mysql_root['x86']):
+          raise Exception('Could not find a path to MySQL!')
+        self.mysql_root['x86'] = Normalize(self.mysql_root['x86'])
 
-      # For now, ignore 64-bit MySQL on Windows
-      if 'x64' in self.archs and builder.target.platform != 'windows':
+      if 'x64' in self.archs:
         if builder.options.mysql64_path:
           self.mysql_root['x64'] = builder.options.mysql64_path
         else:

@@ -88,6 +88,6 @@ private:
 
 extern MyDriver g_MyDriver;
 
-unsigned int strncopy(char *dest, const char *src, size_t count);
+size_t strncopy(char *dest, const char *src, size_t count);
 
 #endif //_INCLUDE_SM_MYSQL_DRIVER_H_
