@@ -537,7 +537,7 @@ class SMConfig(object):
 
     if compiler.like('msvc'):
       compiler.defines += ['COMPILER_MSVC']
-      if arch == 'x32':
+      if arch == 'x86':
         compiler.defines += ['COMPILER_MSVC32']
       elif arch == 'x64':
         compiler.defines += ['COMPILER_MSVC64']
