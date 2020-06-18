@@ -97,6 +97,8 @@ def SetArchFlags(compiler, arch, platform):
       compiler.linkflags += ['/MACHINE:X86']
     elif builder.target.arch == 'x64':
       compiler.linkflags += ['/MACHINE:X64']
+    if arch == 'x64':
+      compiler.defines += ['WIN64']
 
 def AppendArchSuffix(binary, name, arch):
   if arch == 'x64':
@@ -490,6 +492,7 @@ class SMConfig(object):
 
   def ExtLibrary(self, context, name, arch):
     binary = self.Library(context, name, arch)
+    SetArchFlags(binary.compiler, arch, builder.target.platform)
     self.ConfigureForExtension(context, binary.compiler)
     return binary
 
@@ -533,7 +536,11 @@ class SMConfig(object):
       compiler.defines.remove('_vsnprintf=vsnprintf')
 
     if compiler.like('msvc'):
-      compiler.defines += ['COMPILER_MSVC', 'COMPILER_MSVC32']
+      compiler.defines += ['COMPILER_MSVC']
+      if arch == 'x32':
+        compiler.defines += ['COMPILER_MSVC32']
+      elif arch == 'x64':
+        compiler.defines += ['COMPILER_MSVC64']
       compiler.linkflags += ['legacy_stdio_definitions.lib']
     else:
       compiler.defines += ['COMPILER_GCC']
@@ -611,7 +618,10 @@ class SMConfig(object):
       if sdk.name in ['swarm', 'blade', 'insurgency', 'doi', 'csgo']:
         libs.append('interfaces')
       for lib in libs:
-        lib_path = os.path.join(sdk.path, 'lib', 'public', lib) + '.lib'
+        if arch == 'x86':
+          lib_path = os.path.join(sdk.path, 'lib', 'public', lib) + '.lib'
+        elif arch == 'x64':
+          lib_path = os.path.join(sdk.path, 'lib', 'public', 'win64', lib) + '.lib'
         compiler.linkflags.append(compiler.Dep(lib_path))
 
     for library in dynamic_libs:

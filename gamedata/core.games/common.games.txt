@@ -107,6 +107,7 @@
 			"GetDataDescMap"
 			{
 				"windows"		"11"
+				"windows64"		"11"
 				"linux"			"12"
 				"linux64"		"12"
 				"mac"			"12"
