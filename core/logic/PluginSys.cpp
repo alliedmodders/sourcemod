@@ -2032,7 +2032,8 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 					//the unload/reload attempt next frame will print a message
 					case PluginState::WaitingToUnload:
 					case PluginState::WaitingToUnloadAndReload:
-						return;
+						rootmenu->ConsolePrint("[SM] Plugin %s will be reloaded on the next frame.", name);
+						break;
 
 					default:
 						rootmenu->ConsolePrint("[SM] Failed to reload plugin %s.", name);
