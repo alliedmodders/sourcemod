@@ -304,7 +304,7 @@ bool CExtension::Load(char *error, size_t maxlength)
 	/* Check if we're past load time */
 	if (!bridge->IsMapLoading())
 	{
-		m_pAPI->OnExtensionsAllLoaded();
+		MarkAllLoaded();
 	}
 
 	return true;
