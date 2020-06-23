@@ -145,6 +145,9 @@ PgDatabase::PgDatabase(PGconn *pgsql, const DatabaseInfo *info, bool persistent)
 	m_Info.maxTimeout = info->maxTimeout;
 	m_Info.port = info->port;
 	m_LastQueryInfoLock = new ke::Mutex();
+
+	// DBI, for historical reasons, guarantees an initial refcount of 1.
+	AddRef();
 }
 
 PgDatabase::~PgDatabase()
