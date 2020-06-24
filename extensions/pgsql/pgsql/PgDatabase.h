@@ -32,8 +32,8 @@
 #ifndef _INCLUDE_SM_PGSQL_DATABASE_H_
 #define _INCLUDE_SM_PGSQL_DATABASE_H_
 
-#include <amtl/am-thread-utils.h>
 #include <amtl/am-refcounting-threadsafe.h>
+#include <mutex>
 #include "PgDriver.h"
 
 class PgQuery;
@@ -71,11 +71,11 @@ public:
 	void SetLastIDAndRows(unsigned int insertID, unsigned int affectedRows);
 private:
 	PGconn *m_pgsql;
-	ke::AutoPtr<ke::Mutex> m_FullLock;
+	std::mutex m_FullLock;
 
 	unsigned int m_lastInsertID;
 	unsigned int m_lastAffectedRows;
-	ke::AutoPtr<ke::Mutex> m_LastQueryInfoLock;
+	std::mutex m_LastQueryInfoLock;
 	
 	unsigned int m_preparedStatementID;
 

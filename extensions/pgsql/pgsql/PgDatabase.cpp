@@ -144,7 +144,6 @@ PgDatabase::PgDatabase(PGconn *pgsql, const DatabaseInfo *info, bool persistent)
 	m_Info.driver = NULL;
 	m_Info.maxTimeout = info->maxTimeout;
 	m_Info.port = info->port;
-	m_LastQueryInfoLock = new ke::Mutex();
 
 	// DBI, for historical reasons, guarantees an initial refcount of 1.
 	AddRef();
@@ -169,7 +168,7 @@ void PgDatabase::IncReferenceCount()
 
 void PgDatabase::SetLastIDAndRows(unsigned int insertID, unsigned int affectedRows)
 {
-	ke::AutoLock(m_LastQueryInfoLock.get());
+	std::lock_guard<std::mutex> lock(m_LastQueryInfoLock);
 	// Also remember the last query's insert id and affected rows. postgresql only stores them per query.
 	m_lastInsertID = insertID;
 	m_lastAffectedRows = affectedRows;
@@ -187,13 +186,13 @@ const DatabaseInfo &PgDatabase::GetInfo()
 
 unsigned int PgDatabase::GetInsertID()
 {
-	ke::AutoLock(m_LastQueryInfoLock.get());
+	std::lock_guard<std::mutex> lock(m_LastQueryInfoLock);
 	return m_lastInsertID;
 }
 
 unsigned int PgDatabase::GetAffectedRows()
 {
-	ke::AutoLock(m_LastQueryInfoLock.get());
+	std::lock_guard<std::mutex> lock(m_LastQueryInfoLock);
 	return m_lastAffectedRows;
 }
 
@@ -323,18 +322,13 @@ IPreparedQuery *PgDatabase::PrepareQuery(const char *query, char *error, size_t 
 
 bool PgDatabase::LockForFullAtomicOperation()
 {
-	if (!m_FullLock)
-		m_FullLock = new ke::Mutex();
-
-	m_FullLock->Lock();
-
+	m_FullLock.lock();
 	return true;
 }
 
 void PgDatabase::UnlockFromFullAtomicOperation()
 {
-	if (m_FullLock)
-		m_FullLock->Unlock();
+	m_FullLock.unlock();
 }
 
 IDBDriver *PgDatabase::GetDriver()

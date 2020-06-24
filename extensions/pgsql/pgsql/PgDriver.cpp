@@ -156,7 +156,7 @@ bool CompareField(const char *str1, const char *str2)
 
 IDatabase *PgDriver::Connect(const DatabaseInfo *info, bool persistent, char *error, size_t maxlength)
 {
-	ke::AutoLock lock(&m_Lock);
+	std::lock_guard<std::mutex> lock(m_Lock);
 
 	if (persistent)
 	{
@@ -198,7 +198,7 @@ IDatabase *PgDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 
 void PgDriver::RemoveFromList(PgDatabase *pdb, bool persistent)
 {
-	ke::AutoLock lock(&m_Lock);
+	std::lock_guard<std::mutex> lock(m_Lock);
 	if (persistent)
 	{
 		m_PermDbs.remove(pdb);
