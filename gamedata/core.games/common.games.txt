@@ -292,6 +292,7 @@
 			"game"					"kz"
 			"game"					"csgo"
 			"game"					"reactivedrop"
+			"game"					"FortressForever"
 		}
 		
 		"Keys"
