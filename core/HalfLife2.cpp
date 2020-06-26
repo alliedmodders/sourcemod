@@ -1367,8 +1367,36 @@ bool CHalfLife2::IsMapValid(const char *map)
 	return FindMap(map) != SMFindMapResult::NotFound;
 }
 
-// TODO: Add ep1 support for this. (No IServerTools available there)
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_EPISODEONE
+class VKeyValuesSS_Helper {};
+static bool VKeyValuesSS(CBaseEntity* pThisPtr, const char *pszKey, const char *pszValue, int offset)
+{
+	void** this_ptr = *reinterpret_cast<void***>(&pThisPtr);
+	void** vtable = *reinterpret_cast<void***>(pThisPtr);
+	void* vfunc = vtable[offset];
+
+	union
+	{
+		bool (VKeyValuesSS_Helper::* mfpnew)(const char *, const char *);
+#ifndef PLATFORM_POSIX
+		void* addr;
+	} u;
+	u.addr = vfunc;
+#else
+		struct
+		{
+			void* addr;
+			intptr_t adjustor;
+		} s;
+} u;
+	u.s.addr = vfunc;
+	u.s.adjustor = 0;
+#endif
+
+	return (bool)(reinterpret_cast<VKeyValuesSS_Helper*>(this_ptr)->*u.mfpnew)(pszKey, pszValue);
+}
+#endif
+
 string_t CHalfLife2::AllocPooledString(const char *pszValue)
 {
 	// This is admittedly a giant hack, but it's a relatively safe method for
@@ -1378,28 +1406,58 @@ string_t CHalfLife2::AllocPooledString(const char *pszValue)
 	// current targetname string_t, set it to our string to insert via SetKeyValue,
 	// read back the new targetname value, restore the old value, and return the new one.
 
+#if SOURCE_ENGINE == SE_EPISODEONE
+	CBaseEntity* pEntity = nullptr;
+	for (int i = 0; i < gpGlobals->maxEntities; ++i)
+	{
+		pEntity = ReferenceToEntity(i);
+		if (pEntity)
+		{
+			break;
+		}
+	}
+
+	if (!pEntity)
+	{
+		logger->LogError("Failed to locate a valid entity for AllocPooledString.");
+		return NULL_STRING;
+	}
+
+#else
 	CBaseEntity *pEntity = ((IServerUnknown *) servertools->FirstEntity())->GetBaseEntity();
+#endif
 	auto *pDataMap = GetDataMap(pEntity);
 	assert(pDataMap);
 
-	static int offset = -1;
-	if (offset == -1)
+	static int iNameOffset = -1;
+	if (iNameOffset == -1)
 	{
 		sm_datatable_info_t info;
 		bool found = FindDataMapInfo(pDataMap, "m_iName", &info);
 		assert(found);
-		offset = info.actual_offset;
+		iNameOffset = info.actual_offset;
 	}
 
-	string_t *pProp = (string_t *) ((intp) pEntity + offset);
+	string_t* pProp = (string_t*)((intp)pEntity + iNameOffset);
 	string_t backup = *pProp;
+
+#if SOURCE_ENGINE == SE_EPISODEONE
+	static int iFuncOffset;
+	if (!g_pGameConf->GetOffset("DispatchKeyValue", &iFuncOffset) || !iFuncOffset)
+	{
+		logger->LogError("Failed to locate DispatchKeyValue in core gamedata. AllocPooledString unsupported.");
+		return NULL_STRING;
+	}
+	VKeyValuesSS(pEntity, "targetname", pszValue, iFuncOffset);
+#else	
 	servertools->SetKeyValue(pEntity, "targetname", pszValue);
+#endif
+
 	string_t newString = *pProp;
 	*pProp = backup;
 
 	return newString;
 }
-#endif
 
 bool CHalfLife2::GetServerSteam3Id(char *pszOut, size_t len) const
 {
