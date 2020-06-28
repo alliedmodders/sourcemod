@@ -1367,7 +1367,7 @@ bool CHalfLife2::IsMapValid(const char *map)
 	return FindMap(map) != SMFindMapResult::NotFound;
 }
 
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE < SE_ORANGEBOX
 class VKeyValuesSS_Helper {};
 static bool VKeyValuesSS(CBaseEntity* pThisPtr, const char *pszKey, const char *pszValue, int offset)
 {
@@ -1406,7 +1406,7 @@ string_t CHalfLife2::AllocPooledString(const char *pszValue)
 	// current targetname string_t, set it to our string to insert via SetKeyValue,
 	// read back the new targetname value, restore the old value, and return the new one.
 
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE < SE_ORANGEBOX
 	CBaseEntity* pEntity = nullptr;
 	for (int i = 0; i < gpGlobals->maxEntities; ++i)
 	{
@@ -1441,7 +1441,7 @@ string_t CHalfLife2::AllocPooledString(const char *pszValue)
 	string_t* pProp = (string_t*)((intp)pEntity + iNameOffset);
 	string_t backup = *pProp;
 
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE < SE_ORANGEBOX
 	static int iFuncOffset;
 	if (!g_pGameConf->GetOffset("DispatchKeyValue", &iFuncOffset) || !iFuncOffset)
 	{
