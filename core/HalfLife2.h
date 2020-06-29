@@ -239,9 +239,7 @@ public: //IGameHelpers
 	void FreeUtlVectorUtlString(CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> &vec);
 #endif
 	bool GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax);
-#if SOURCE_ENGINE >= SE_ORANGEBOX
 	string_t AllocPooledString(const char *pszValue);
-#endif
 	bool GetServerSteam3Id(char *pszOut, size_t len) const override;
 	uint64_t GetServerSteamId64() const override;
 public:

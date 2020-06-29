@@ -2380,12 +2380,8 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 
 	if (bIsStringIndex)
 	{
-#if SOURCE_ENGINE < SE_ORANGEBOX
-		return pContext->ThrowNativeError("Cannot set %s. Setting string_t values not supported on this game.", prop);
-#else
 		*(string_t *) ((intptr_t) pEntity + offset) = g_HL2.AllocPooledString(src);
 		len = strlen(src);
-#endif
 	}
 	else
 	{
