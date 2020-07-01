@@ -24,8 +24,6 @@ parser.options.add_option('--mysql-path', type=str, dest='mysql_path', default=N
 		                   help='Path to MySQL 5')
 parser.options.add_option('--mysql64-path', type=str, dest='mysql64_path', default=None,
 		                   help='Path to 64-bit MySQL 5')
-parser.options.add_option('--pgsql-path', type=str, dest='pgsql_path', default=None,
-                           help='Path to PostgreSQL 9')
 parser.options.add_option('--mms-path', type=str, dest='mms_path', default=None,
                        help='Path to Metamod:Source')
 parser.options.add_option('--enable-debug', action='store_const', const='1', dest='debug',
@@ -34,8 +32,6 @@ parser.options.add_option('--enable-optimize', action='store_const', const='1', 
                        help='Enable optimization')
 parser.options.add_option('--no-mysql', action='store_false', default=True, dest='hasMySql',
                        help='Disable building MySQL extension')
-parser.options.add_option('--no-pgsql', action='store_false', default=True, dest='hasPgSql',
-                       help='Disable building PostgreSQL extension')
 parser.options.add_option('-s', '--sdks', default='all', dest='sdks',
                        help='Build against specified SDKs; valid args are "none", "all", "present",'
                             ' or comma-delimited list of engine names (default: %default)')

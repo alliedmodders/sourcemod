@@ -17,9 +17,7 @@ elif [ `uname` != "Linux" ] && [ -n "${COMSPEC:+1}" ]; then
   decomp=unzip
 fi
 
-sourcemodfolder="sourcemod"
 if [ ! -d "sourcemod" ]; then
-  sourcemodfolder="sourcemod-1.5"
   if [ ! -d "sourcemod-1.5" ]; then
     echo "Could not find a SourceMod repository; make sure you aren't running this script inside it."
     exit 1
@@ -69,8 +67,6 @@ elif [ $iswin -eq 0 ]; then
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.6/$mysqlver.$archive_ext
 fi
 getmysql
-
-$sourcemodfolder/tools/prepare_postgresql.sh
 
 checkout ()
 {

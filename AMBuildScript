@@ -110,7 +110,6 @@ class SMConfig(object):
     self.generated_headers = None
     self.mms_root = None
     self.mysql_root = {}
-    self.pgsql_root = None
     self.spcomp = None
     self.spcomp_bins = None
     self.smx_files = {}
@@ -204,18 +203,6 @@ class SMConfig(object):
         if not self.mysql_root['x64'] or not os.path.isdir(self.mysql_root['x64']):
           raise Exception('Could not find a path to 64-bit MySQL!')
         self.mysql_root['x64'] = Normalize(self.mysql_root['x64'])
-
-    if getattr(builder.options, 'hasPgSql', False):
-      if builder.options.pgsql_path:
-        self.pgsql_root = builder.options.pgsql_path
-      else:
-        for i in range(10):
-          self.pgsql_root = ResolveEnvPath('PGSQL9', 'postgresql-9.' + str(i))
-          if self.pgsql_root:
-            break
-      if not self.pgsql_root or not os.path.isdir(self.pgsql_root):
-        raise Exception('Could not find a path to PostgreSQL!')
-      self.pgsql_root = Normalize(self.pgsql_root)
 
   def configure(self):
     builder.AddConfigureFile('pushbuild.txt')

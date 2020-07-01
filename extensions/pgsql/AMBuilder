@@ -1,32 +1,41 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-if SM.pgsql_root:
-  # First compile libpq
-  libpq = builder.Build('AMBuilderPGSQL', { 'SM': SM })
-
-  binary = SM.ExtLibrary(builder, 'dbi.pgsql.ext', 'x86')
+for arch in SM.archs:
+  binary = SM.ExtLibrary(builder, 'dbi.pgsql.ext', arch)
   binary.compiler.cxxincludes += [
-    os.path.join(SM.pgsql_root, 'src', 'interfaces', 'libpq'),
-    os.path.join(SM.pgsql_root, 'src', 'include'),
     os.path.join(SM.mms_root, 'core', 'sourcehook')
   ]
-  
-  # Link the compiled libpq
-  binary.compiler.postlink += [libpq.binary]
-  
+  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+    binary.compiler.cxxflags += ['-fno-rtti']
+  elif binary.compiler.family == 'msvc':
+    binary.compiler.cxxflags += ['/GR-']
+
   if builder.target.platform == 'linux' or builder.target.platform == 'mac':
     binary.compiler.postlink += [
       '-lz',
       '-lpthread',
       '-lm'
     ]
-  elif builder.target.platform == 'windows':
+  if builder.target.platform == 'linux':
+    if arch == 'x86':
+      path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_linux')
+    elif arch == 'x64':
+      path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_linux64')
     binary.compiler.postlink += [
+      os.path.join(path, 'libpq.a'),
+      '-lrt'
+    ]
+  elif builder.target.platform == 'windows':
+    path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_win')
+    binary.compiler.postlink += [
+      os.path.join(path, 'libpq.lib'),
       'wsock32.lib',
       'ws2_32.lib',
       'secur32.lib'
     ]
+
+  binary.compiler.cxxincludes += [path]
 
   binary.sources += [
     os.path.join('..', '..', 'public', 'smsdk_ext.cpp'),
