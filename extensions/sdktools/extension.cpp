@@ -579,7 +579,7 @@ void SDKTools::OnClientVoice(edict_t *pPlayer)
 
 		if (g_hTimerSpeaking[client] == NULL)
 		{
-			g_hTimerSpeaking[client] = timersys->CreateTimer(this, 0.3f, (void *)(intptr_t)client, TIMER_FLAG_REPEAT);
+			g_hTimerSpeaking[client] = timersys->CreateTimer(this, 0.3f, (void *)(intptr_t)client, TIMER_FLAG_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		}
 
 		m_OnClientSpeaking->PushCell(client);

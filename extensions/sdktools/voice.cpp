@@ -189,6 +189,12 @@ void SDKTools::OnClientDisconnecting(int client)
 	}
 #endif
 
+	if (g_hTimerSpeaking[client] != NULL)
+	{
+		timersys->KillTimer(g_hTimerSpeaking[client]);
+		g_hTimerSpeaking[client] = NULL;
+	}
+
 	int max_clients = playerhelpers->GetMaxClients();
 
 	if (g_VoiceHookCount == 0)
@@ -248,7 +254,7 @@ bool SDKTools::ProcessVoiceData(CLC_VoiceData *msg)
 
 		if (g_hTimerSpeaking[client] == NULL)
 		{
-			g_hTimerSpeaking[client] = timersys->CreateTimer(this, 0.3f, (void *)(intptr_t)client, TIMER_FLAG_REPEAT);
+			g_hTimerSpeaking[client] = timersys->CreateTimer(this, 0.3f, (void *)(intptr_t)client, TIMER_FLAG_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		}
 
 		m_OnClientSpeaking->PushCell(client);
