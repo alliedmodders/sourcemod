@@ -1274,7 +1274,6 @@ void WritePreviousMapsToText()
 	}
     
 	char lastMap[PLATFORM_MAX_PATH];
-    
 	for (int idx=0; idx<g_OldMapList.Length; idx++)
 	{
 		g_OldMapList.GetString(idx, lastMap, sizeof(lastMap));		
