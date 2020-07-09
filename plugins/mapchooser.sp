@@ -219,7 +219,7 @@ public void OnConfigsExecuted()
 		}
 	}
 	
-	// Recall previous maps from a text file, if persistency is enabled
+	/* First-load previous maps from a text file when persistency is enabled. */
 	static bool g_FirstConfigExec = true;
 	if (g_FirstConfigExec)
 	{
@@ -1243,7 +1243,6 @@ public int Native_GetNominatedMapList(Handle plugin, int numParams)
 }
 
 /* Add functions for persistent previous map storage */
-
 void ReadPreviousMapsFromText()
 {      
 	File file = OpenFile(GetTextFilePath(), "r");	
@@ -1287,7 +1286,8 @@ void WritePreviousMapsToText()
 
 char GetTextFilePath()
 {
-	char path[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "data/mapchooser_history.txt");
+	static char path[PLATFORM_MAX_PATH];
+	if (path[0] == '\0')
+		BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "data/mapchooser_history.txt");
 	return path;
 }
