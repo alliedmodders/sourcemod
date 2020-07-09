@@ -42,6 +42,12 @@
 #include <bridge/include/CoreProvider.h>
 #include <ISourceMod.h>
 
+#include "sm_platform.h"
+#ifdef PLATFORM_WINDOWS
+#include "sm_invalidparamhandler.h"
+#endif
+
+
 HandleSystem g_HandleSys;
 
 QHandle *ignore_handle;
@@ -962,15 +968,6 @@ bool HandleSystem::InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHa
 	return true;
 }
 
-#if defined SUBPLATFORM_SECURECRT // definition exists in smn_core.cpp for FormatTime
-extern void _ignore_invalid_parameter(
-						const wchar_t * expression,
-						const wchar_t * function, 
-						const wchar_t * file, 
-						unsigned int line,
-						uintptr_t pReserved);
-#endif
-
 #define HANDLE_LOG_VERY_BAD(message, ...) \
 	logger->LogFatal(message, ##__VA_ARGS__); \
 	logger->LogError(message, ##__VA_ARGS__);
@@ -1084,26 +1081,26 @@ bool HandleSystem::TryAndFreeSomeHandles()
 	
 	const char *fmt = bridge->GetCvarString(g_datetime_format);
 
-#if defined SUBPLATFORM_SECURECRT
-	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
-#endif
-
 	char oldstamp[256], newstamp[256]; // 256 should be more than enough
-	size_t written = strftime(oldstamp, sizeof(oldstamp), fmt, localtime(&oldest->timestamp));
-	if (!written)
-	{
-		ke::SafeStrcpy(oldstamp, sizeof(oldstamp), "INVALID");
-	}
 
-	written = strftime(newstamp, sizeof(newstamp), fmt, localtime(&newest->timestamp));
-	if (!written)
+	// scope for InvalidParameterHandler
 	{
-		ke::SafeStrcpy(newstamp, sizeof(newstamp), "INVALID");
-	}
-
-#if defined SUBPLATFORM_SECURECRT
-	_set_invalid_parameter_handler(handler);
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
 #endif
+		size_t written = strftime(oldstamp, sizeof(oldstamp), fmt, localtime(&oldest->timestamp));
+		if (!written)
+		{
+			ke::SafeStrcpy(oldstamp, sizeof(oldstamp), "INVALID");
+		}
+
+		written = strftime(newstamp, sizeof(newstamp), fmt, localtime(&newest->timestamp));
+		if (!written)
+		{
+			ke::SafeStrcpy(newstamp, sizeof(newstamp), "INVALID");
+		}
+	}
+
 
 	HANDLE_LOG_VERY_BAD("--------------------------------------------------------------------------");
 	HANDLE_LOG_VERY_BAD("Oldest Living Handle: %s created at %s", m_Types[oldest->type].name->chars(), oldstamp);
@@ -1203,16 +1200,18 @@ void HandleSystem::Dump(const HandleReporter &fn)
 			bresult = pType->dispatch->GetHandleApproxSize(m_Handles[i].type, m_Handles[i].object, &size);
 		}
 
-#if defined SUBPLATFORM_SECURECRT
-		_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
-#endif
 
 		char date[256]; // 256 should be more than enough
-		size_t written = strftime(date, sizeof(date), fmt, localtime(&m_Handles[i].timestamp));
-
-#if defined SUBPLATFORM_SECURECRT
-		_set_invalid_parameter_handler(handler);
+		size_t written = 0;
+		
+		// scope for InvalidParameterHandler
+		{
+#ifdef PLATFORM_WINDOWS
+			InvalidParameterHandler p;
 #endif
+			written = strftime(date, sizeof(date), fmt, localtime(&m_Handles[i].timestamp));
+		}
+
 
 		if (!written)
 		{

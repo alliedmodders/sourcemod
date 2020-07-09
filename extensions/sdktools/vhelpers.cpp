@@ -34,6 +34,11 @@
 #include "vhelpers.h"
 #include "vglobals.h"
 
+#include "sm_platform.h"
+#ifdef PLATFORM_WINDOWS
+#include "sm_invalidparamhandler.h"
+#endif
+
 CallHelper s_Teleport;
 CallHelper s_GetVelocity;
 CallHelper s_EyeAngles;
@@ -492,19 +497,6 @@ void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level = 1)
 	}
 }
 
-#if defined SUBPLATFORM_SECURECRT
-void _ignore_invalid_parameter(
-	const wchar_t * expression,
-	const wchar_t * function, 
-	const wchar_t * file,
-	unsigned int line,
-	uintptr_t pReserved
-	)
-{
-	/* Wow we don't care, thanks Microsoft. */
-}
-#endif
-
 CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XML file")
 {
 #if SOURCE_ENGINE <= SE_DARKMESSIAH
@@ -537,16 +529,14 @@ CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XM
 	char buffer[80];
 	buffer[0] = 0;
 
-#if defined SUBPLATFORM_SECURECRT
-	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
-#endif
-
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
-
-#if defined SUBPLATFORM_SECURECRT
-	_set_invalid_parameter_handler(handler);
+	size_t written = 0;
+	{
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
 #endif
+		written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+	}
 
 	fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n");
 	fprintf(fp, "<!-- Dump of all network properties for \"%s\" as at %s -->\n\n", g_pSM->GetGameFolderName(), buffer);
@@ -593,16 +583,14 @@ CON_COMMAND(sm_dump_netprops, "Dumps the networkable property table as a text fi
 	char buffer[80];
 	buffer[0] = 0;
 
-#if defined SUBPLATFORM_SECURECRT
-	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
-#endif
-
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
-
-#if defined SUBPLATFORM_SECURECRT
-	_set_invalid_parameter_handler(handler);
+	size_t written = 0;
+	{
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
 #endif
+		written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+	}
 
 	fprintf(fp, "// Dump of all network properties for \"%s\" as at %s\n//\n\n", g_pSM->GetGameFolderName(), buffer);
 
@@ -734,16 +722,14 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 	char buffer[80];
 	buffer[0] = 0;
 
-#if defined SUBPLATFORM_SECURECRT
-	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
-#endif
-
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
-
-#if defined SUBPLATFORM_SECURECRT
-	_set_invalid_parameter_handler(handler);
+	size_t written = 0;
+	{
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
 #endif
+		written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+	}
 
 	fprintf(fp, "// Dump of all classes for \"%s\" as at %s\n//\n\n", g_pSM->GetGameFolderName(), buffer);
 
@@ -898,16 +884,14 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 	char buffer[80];
 	buffer[0] = 0;
 
-#if defined SUBPLATFORM_SECURECRT
-	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
-#endif
-
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
-
-#if defined SUBPLATFORM_SECURECRT
-	_set_invalid_parameter_handler(handler);
+	size_t written = 0;
+	{
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
 #endif
+		written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+	}
 
 	fprintf(fp, "// Dump of all datamaps for \"%s\" as at %s\n//\n//\n", g_pSM->GetGameFolderName(), buffer);
 
