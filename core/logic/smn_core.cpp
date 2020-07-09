@@ -66,7 +66,7 @@ HandleType_t g_FrameIter;
 
 IForward *g_OnLogAction = NULL;
 
-static ConVar *sm_datetime_format = NULL;
+ConVar *g_datetime_format = NULL;
 
 class CoreNativeHelpers : 
 	public SMGlobalClass,
@@ -92,7 +92,7 @@ public:
 			Param_Cell,
 			Param_String);
 		
-		sm_datetime_format = bridge->FindConVar("sm_datetime_format");
+		g_datetime_format = bridge->FindConVar("sm_datetime_format");
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
@@ -182,7 +182,7 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 
 	if (format == NULL)
 	{
-		format = const_cast<char *>(bridge->GetCvarString(sm_datetime_format));
+		format = const_cast<char *>(bridge->GetCvarString(g_datetime_format));
 	}
 
 	time_t t;
