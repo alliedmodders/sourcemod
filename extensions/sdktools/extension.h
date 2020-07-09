@@ -54,13 +54,17 @@
 #if SOURCE_ENGINE == SE_CSGO
 #include <am-hashset.h>
 #include <sm_stringhashmap.h>
-#else
-#include <inetmsghandler.h>
 #endif
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 #include <itoolentity.h>
+#endif
+
+#if SOURCE_ENGINE == SE_ALIENSWARM || SOURCE_ENGINE == SE_PORTAL2 || SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_CSGO
+#define CLIENTVOICE_HOOK_SUPPORT
+#else
+#include <inetmsghandler.h>
 #endif
 
 /**
@@ -98,13 +102,13 @@ public: //IConCommandBaseAccessor
 	bool RegisterConCommandBase(ConCommandBase *pVar);
 public: //IClientListner
 	bool InterceptClientConnect(int client, char *error, size_t maxlength);
-#if SOURCE_ENGINE != SE_CSGO
+#if !defined CLIENTVOICE_HOOK_SUPPORT
 	void OnClientConnected(int client);
 #endif
 	void OnClientPutInServer(int client);
 	void OnClientDisconnecting(int client);
 public:
-#if SOURCE_ENGINE == SE_CSGO
+#if defined CLIENTVOICE_HOOK_SUPPORT
 	void OnClientVoice(edict_t *pPlayer);
 #else
 	bool ProcessVoiceData(CLC_VoiceData *msg);

@@ -63,7 +63,7 @@ SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *,
 #else
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
-#if SOURCE_ENGINE != SE_CSGO
+#if !defined CLIENTVOICE_HOOK_SUPPORT
 SH_DECL_HOOK1(IClientMessageHandler, ProcessVoiceData, SH_NOATTRIB, 0, bool, CLC_VoiceData *);
 #endif
 
@@ -168,7 +168,7 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 	RETURN_META_VALUE(MRES_IGNORED, bListen);
 }
 
-#if SOURCE_ENGINE != SE_CSGO
+#if !defined CLIENTVOICE_HOOK_SUPPORT
 void SDKTools::OnClientConnected(int client)
 {
 	IClient *pClient = iserver->GetClient(client-1);
@@ -181,7 +181,7 @@ void SDKTools::OnClientConnected(int client)
 
 void SDKTools::OnClientDisconnecting(int client)
 {
-#if SOURCE_ENGINE != SE_CSGO
+#if !defined CLIENTVOICE_HOOK_SUPPORT
 	IClient *pClient = iserver->GetClient(client-1);
 	if (pClient != NULL)
 	{
@@ -236,7 +236,7 @@ void SDKTools::OnClientDisconnecting(int client)
 	}
 }
 
-#if SOURCE_ENGINE != SE_CSGO
+#if !defined CLIENTVOICE_HOOK_SUPPORT
 bool SDKTools::ProcessVoiceData(CLC_VoiceData *msg)
 {
 	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - 4);

@@ -57,7 +57,7 @@ SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *,
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 SH_DECL_HOOK1_void_vafmt(IVEngineServer, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
-#if SOURCE_ENGINE == SE_CSGO
+#if defined CLIENTVOICE_HOOK_SUPPORT
 SH_DECL_HOOK1_void(IServerGameClients, ClientVoice, SH_NOATTRIB, 0, edict_t *);
 #endif
 
@@ -324,7 +324,7 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 	SH_ADD_HOOK(IVEngineServer, ClientCommand, engine, SH_MEMBER(this, &SDKTools::OnSendClientCommand), false);
 #endif
-#if SOURCE_ENGINE == SE_CSGO
+#if defined CLIENTVOICE_HOOK_SUPPORT
 	SH_ADD_HOOK(IServerGameClients, ClientVoice, serverClients, SH_MEMBER(this, &SDKTools::OnClientVoice), true);
 #endif
 	gpGlobals = ismm->GetCGlobals();
@@ -339,7 +339,7 @@ bool SDKTools::SDK_OnMetamodUnload(char *error, size_t maxlen)
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 	SH_REMOVE_HOOK(IVEngineServer, ClientCommand, engine, SH_MEMBER(this, &SDKTools::OnSendClientCommand), false);
 #endif
-#if SOURCE_ENGINE == SE_CSGO
+#if defined CLIENTVOICE_HOOK_SUPPORT
 	SH_REMOVE_HOOK(IServerGameClients, ClientVoice, serverClients, SH_MEMBER(this, &SDKTools::OnClientVoice), true);
 #endif
 	return true;
@@ -568,7 +568,7 @@ void SDKTools::OnTimerEnd(ITimer *pTimer, void *pData)
 	g_hTimerSpeaking[(int)(intptr_t)pData] = NULL;
 }
 
-#if SOURCE_ENGINE == SE_CSGO
+#if defined CLIENTVOICE_HOOK_SUPPORT
 void SDKTools::OnClientVoice(edict_t *pPlayer)
 {
 	if (pPlayer)
