@@ -178,7 +178,7 @@ protected:
 	Handle_t m_hHandle;
 	IMenuHandler *m_pHandler;
 	unsigned int m_nFlags;
-	ke::Vector<uint8_t> m_RandomMaps[SM_MAXPLAYERS+1];
+	std::vector<uint8_t> m_RandomMaps[SM_MAXPLAYERS+1];
 };
 
 #endif //_INCLUDE_MENUSTYLE_BASE_H

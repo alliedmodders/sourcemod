@@ -633,7 +633,7 @@ bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 		return false;
 	}
 
-	CItem item(m_items.length());
+	CItem item(m_items.size());
 
 	item.info = info;
 	if (draw.display)
@@ -684,7 +684,7 @@ const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =
 	if (position >= m_items.size())
 		return NULL;
 
-	if (client > 0 && position < m_RandomMaps[client].length())
+	if (client > 0 && position < m_RandomMaps[client].size())
 	{
 		position = m_RandomMaps[client][position];
 	}
@@ -737,7 +737,7 @@ bool CBaseMenu::IsPerClientShuffled()
 {
 	for (int i = 1; i < SM_MAXPLAYERS + 1; i++)
 	{
-		if(m_RandomMaps[i].length() > 0)
+		if(m_RandomMaps[i].size() > 0)
 			return true;
 	}
 	return false;
@@ -745,7 +745,7 @@ bool CBaseMenu::IsPerClientShuffled()
 
 unsigned int CBaseMenu::GetRealItemIndex(int client, unsigned int position)
 {
-	if (client > 0 && position < m_RandomMaps[client].length())
+	if (client > 0 && position < m_RandomMaps[client].size())
 	{
 		position = m_RandomMaps[client][position];
 		return m_items[position].index;
