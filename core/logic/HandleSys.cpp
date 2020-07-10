@@ -47,7 +47,6 @@
 #include "sm_invalidparamhandler.h"
 #endif
 
-
 HandleSystem g_HandleSys;
 
 QHandle *ignore_handle;
