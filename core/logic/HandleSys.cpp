@@ -1212,7 +1212,6 @@ void HandleSystem::Dump(const HandleReporter &fn)
 			written = strftime(date, sizeof(date), fmt, localtime(&m_Handles[i].timestamp));
 		}
 
-
 		if (!written)
 		{
 			ke::SafeStrcpy(date, sizeof(date), "INVALID");
