@@ -1131,7 +1131,6 @@ void HandleSystem::Dump(const HandleReporter &fn)
 	rep(fn, "---------------------------------------------------------------------------------------------");
 	
 	const char *fmt = bridge->GetCvarString(g_datetime_format);
-
 	for (unsigned int i = 1; i <= m_HandleTail; i++)
 	{
 		if (m_Handles[i].set != HandleSet_Used)
@@ -1199,10 +1198,8 @@ void HandleSystem::Dump(const HandleReporter &fn)
 			bresult = pType->dispatch->GetHandleApproxSize(m_Handles[i].type, m_Handles[i].object, &size);
 		}
 
-
 		char date[256]; // 256 should be more than enough
 		size_t written = 0;
-		
 		// scope for InvalidParameterHandler
 		{
 #ifdef PLATFORM_WINDOWS
@@ -1231,4 +1228,3 @@ void HandleSystem::Dump(const HandleReporter &fn)
 	}
 	rep(fn, "-- Approximately %d bytes of memory are in use by Handles.\n", total_size);
 }
-
