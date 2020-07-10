@@ -90,6 +90,7 @@ struct QHandle
 	bool access_special;		/* Whether or not access rules are special or type-derived */
 	bool is_destroying;			/* Whether or not the handle is being destroyed */
 	HandleAccess sec;			/* Security rules */
+	time_t timestamp;			/* Creation timestamp */
 	/* The following variables are unrelated to the Handle array, and used 
 	 * as an inlined chain of information */
 	unsigned int freeID;		/* ID of a free handle in the free handle chain */

@@ -45,6 +45,7 @@
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
+#include "sm_invalidparamhandler.h"
 #elif defined PLATFORM_POSIX
 #include <limits.h>
 #include <unistd.h>
@@ -65,7 +66,7 @@ HandleType_t g_FrameIter;
 
 IForward *g_OnLogAction = NULL;
 
-static ConVar *sm_datetime_format = NULL;
+ConVar *g_datetime_format = NULL;
 
 class CoreNativeHelpers : 
 	public SMGlobalClass,
@@ -91,7 +92,7 @@ public:
 			Param_Cell,
 			Param_String);
 		
-		sm_datetime_format = bridge->FindConVar("sm_datetime_format");
+		g_datetime_format = bridge->FindConVar("sm_datetime_format");
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
@@ -173,19 +174,6 @@ static cell_t GetTime(IPluginContext *pContext, const cell_t *params)
 	return static_cast<cell_t>(t);
 }
 
-#if defined SUBPLATFORM_SECURECRT
-void _ignore_invalid_parameter(
-						const wchar_t * expression,
-						const wchar_t * function, 
-						const wchar_t * file, 
-						unsigned int line,
-						uintptr_t pReserved
-						)
-{
-	/* Wow we don't care, thanks Microsoft. */
-}
-#endif
-
 static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 {
 	char *format, *buffer;
@@ -194,19 +182,20 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 
 	if (format == NULL)
 	{
-		format = const_cast<char *>(bridge->GetCvarString(sm_datetime_format));
+		format = const_cast<char *>(bridge->GetCvarString(g_datetime_format));
 	}
 
-#if defined SUBPLATFORM_SECURECRT
-	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+	time_t t;
+	size_t written = 0;
+	
+	// scope for InvalidParameterHandler
+	{
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
 #endif
-
-	time_t t = (params[4] == -1) ? g_pSM->GetAdjustedTime() : (time_t)params[4];
-	size_t written = strftime(buffer, params[2], format, localtime(&t));
-
-#if defined SUBPLATFORM_SECURECRT
-	_set_invalid_parameter_handler(handler);
-#endif
+		t = (params[4] == -1) ? g_pSM->GetAdjustedTime() : (time_t)params[4];
+		written = strftime(buffer, params[2], format, localtime(&t));
+	}
 
 	if (params[2] && format[0] != '\0' && !written)
 	{
