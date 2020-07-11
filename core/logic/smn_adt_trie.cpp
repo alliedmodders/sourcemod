@@ -658,7 +658,7 @@ static cell_t CloneTrie(IPluginContext *pContext, const cell_t *params)
 
 	for (StringHashMap<Entry>::iterator it = pOldTrie->map.iter(); !it.empty(); it.next())
 	{
-		const char *key = it->key.chars();
+		const char *key = it->key.c_str();
 
 		StringHashMap<Entry>::Insert insert = pNewTrie->map.findForAdd(key);
 		if (pNewTrie->map.add(insert, key))
@@ -670,7 +670,7 @@ static cell_t CloneTrie(IPluginContext *pContext, const cell_t *params)
 			}
 			else if (result->value.isString())
 			{
-				insert->value.setString(result->value.chars());
+				insert->value.setString(result->value.c_str());
 			}
 			else if (result->value.isArray())
 			{
