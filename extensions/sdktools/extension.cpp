@@ -80,7 +80,6 @@ IBaseFileSystem *basefilesystem = NULL;
 CGlobalVars *gpGlobals;
 ISoundEmitterSystemBase *soundemitterbase = NULL;
 ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
-float g_fSpeakingTime[SM_MAXPLAYERS+1];
 IForward *m_OnClientSpeaking;
 IForward *m_OnClientSpeakingEnd;
 
@@ -534,6 +533,13 @@ bool SDKTools::InterceptClientConnect(int client, char *error, size_t maxlength)
 	return true;
 }
 
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+void SDKTools::OnClientConnected(int client)
+{
+	g_Hooks.OnClientConnected(client);
+}
+#endif
+
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 void SDKTools::OnSendClientCommand(edict_t *pPlayer, const char *szFormat)
 {
@@ -553,19 +559,16 @@ void SDKTools::OnSendClientCommand(edict_t *pPlayer, const char *szFormat)
 SourceMod::ResultType SDKTools::OnTimer(ITimer *pTimer, void *pData)
 {
 	int client = (int)(intptr_t)pData;
-	if ((gpGlobals->curtime - g_fSpeakingTime[client]) > 0.1)
-	{
-		m_OnClientSpeakingEnd->PushCell(client);
-		m_OnClientSpeakingEnd->Execute();
 
-		return Pl_Stop;
-	}
-	return Pl_Continue;
+	m_OnClientSpeakingEnd->PushCell(client);
+	m_OnClientSpeakingEnd->Execute();
+
+	return Pl_Stop;
 }
 
 void SDKTools::OnTimerEnd(ITimer *pTimer, void *pData)
 {
-	g_hTimerSpeaking[(int)(intptr_t)pData] = NULL;
+	g_hTimerSpeaking[(int)(intptr_t)pData] = nullptr;
 }
 
 #if defined CLIENTVOICE_HOOK_SUPPORT
@@ -573,18 +576,20 @@ void SDKTools::OnClientVoice(edict_t *pPlayer)
 {
 	if (pPlayer)
 	{
-		int client = IndexOfEdict(pPlayer);
-
-		g_fSpeakingTime[client] = gpGlobals->curtime;
-
-		if (g_hTimerSpeaking[client] == NULL)
-		{
-			g_hTimerSpeaking[client] = timersys->CreateTimer(this, 0.3f, (void *)(intptr_t)client, TIMER_FLAG_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-		}
-
-		m_OnClientSpeaking->PushCell(client);
-		m_OnClientSpeaking->Execute();
+		return;
 	}
+
+	int client = IndexOfEdict(pPlayer);
+
+	if (g_hTimerSpeaking[client])
+	{
+		timersys->KillTimer(g_hTimerSpeaking[client]);
+	}
+
+	g_hTimerSpeaking[client] = timersys->CreateTimer(this, 0.3f, (void *)(intptr_t)client, 0);
+
+	m_OnClientSpeaking->PushCell(client);
+	m_OnClientSpeaking->Execute();
 }
 #endif
 

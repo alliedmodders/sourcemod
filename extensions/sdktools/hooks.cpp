@@ -46,6 +46,9 @@ static bool PRCH_enabled = false;
 static bool PRCH_used = false;
 static bool PRCHPost_used = false;
 static bool FILE_used = false;
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+static bool PVD_used = false;
+#endif
 
 SH_DECL_MANUALHOOK2_void(PlayerRunCmdHook, 0, 0, 0, CUserCmd *, IMoveHelper *);
 SH_DECL_HOOK2(IBaseFileSystem, FileExists, SH_NOATTRIB, 0, bool, const char*, const char *);
@@ -53,6 +56,9 @@ SH_DECL_HOOK2(IBaseFileSystem, FileExists, SH_NOATTRIB, 0, bool, const char*, co
 SH_DECL_HOOK3(INetChannel, SendFile, SH_NOATTRIB, 0, bool, const char *, unsigned int, bool);
 #else
 SH_DECL_HOOK2(INetChannel, SendFile, SH_NOATTRIB, 0, bool, const char *, unsigned int);
+#endif
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+SH_DECL_HOOK1(IClientMessageHandler, ProcessVoiceData, SH_NOATTRIB, 0, bool, CLC_VoiceData *);
 #endif
 SH_DECL_HOOK2_void(INetChannel, ProcessPacket, SH_NOATTRIB, 0, struct netpacket_s *, bool);
 
@@ -140,6 +146,36 @@ void CHookManager::OnClientConnect(int client)
 {
 	NetChannelHook(client);
 }
+
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+void CHookManager::OnClientConnected(int client)
+{
+	if (!PVD_used)
+	{
+		return;	
+	}
+
+	IClient *pClient = iserver->GetClient(client-1);
+	if (!pClient)
+	{
+		return;
+	}
+	
+	std::vector<CVTableHook *> &netProcessVoiceData = m_netProcessVoiceData;
+	CVTableHook hook(pClient);
+	for (size_t i = 0; i < netProcessVoiceData.size(); ++i)
+	{
+		if (hook == netProcessVoiceData[i])
+		{
+			return;
+		}
+	}
+	
+	int hookid = SH_ADD_VPHOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + 4), SH_MEMBER(this, &CHookManager::ProcessVoiceData), true);
+	hook.SetHookID(hookid);
+	netProcessVoiceData.push_back(new CVTableHook(hook));
+}
+#endif
 
 void CHookManager::OnClientPutInServer(int client)
 {
@@ -459,6 +495,31 @@ bool CHookManager::SendFile(const char *filename, unsigned int transferID)
 	RETURN_META_VALUE(MRES_IGNORED, false);
 }
 
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+bool CHookManager::ProcessVoiceData(CLC_VoiceData *msg)
+{
+	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - 4);
+	if (pClient == NULL)
+	{
+		return true;
+	}
+
+	int client = pClient->GetPlayerSlot() + 1;
+
+	if (g_hTimerSpeaking[client])
+	{
+		timersys->KillTimer(g_hTimerSpeaking[client]);
+	}
+
+	g_hTimerSpeaking[client] = timersys->CreateTimer(&g_SdkTools, 0.3f, (void *)(intptr_t)client, 0);
+
+	m_OnClientSpeaking->PushCell(client);
+	m_OnClientSpeaking->Execute();
+
+	return true;
+}
+#endif
+
 void CHookManager::OnPluginLoaded(IPlugin *plugin)
 {
 	if (PRCH_enabled)
@@ -502,6 +563,22 @@ void CHookManager::OnPluginLoaded(IPlugin *plugin)
 			}
 		}
 	}
+	
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+	if (!PVD_used && (m_OnClientSpeaking->GetFunctionCount() || m_OnClientSpeakingEnd->GetFunctionCount()))
+	{
+		PVD_used = true;
+
+		int MaxClients = playerhelpers->GetMaxClients();
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (playerhelpers->GetGamePlayer(i)->IsConnected())
+			{
+				OnClientConnected(i);
+			}
+		}
+	}
+#endif
 }
 
 void CHookManager::OnPluginUnloaded(IPlugin *plugin)
@@ -538,6 +615,19 @@ void CHookManager::OnPluginUnloaded(IPlugin *plugin)
 		m_netChannelHooks.clear();
 		FILE_used = false;
 	}
+	
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+	if (PVD_used && !m_OnClientSpeaking->GetFunctionCount() && !m_OnClientSpeakingEnd->GetFunctionCount())
+	{
+		for (size_t i = 0; i < m_netProcessVoiceData.size(); ++i)
+		{
+			delete m_netProcessVoiceData[i];
+		}
+
+		m_netProcessVoiceData.clear();
+		PVD_used = false;
+	}
+#endif
 }
 
 FeatureStatus CHookManager::GetFeatureStatus(FeatureType type, const char *name)

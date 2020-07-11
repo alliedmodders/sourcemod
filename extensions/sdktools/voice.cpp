@@ -63,9 +63,6 @@ SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *,
 #else
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
-#if !defined CLIENTVOICE_HOOK_SUPPORT
-SH_DECL_HOOK1(IClientMessageHandler, ProcessVoiceData, SH_NOATTRIB, 0, bool, CLC_VoiceData *);
-#endif
 
 bool DecHookCount()
 {
@@ -168,31 +165,11 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 	RETURN_META_VALUE(MRES_IGNORED, bListen);
 }
 
-#if !defined CLIENTVOICE_HOOK_SUPPORT
-void SDKTools::OnClientConnected(int client)
-{
-	IClient *pClient = iserver->GetClient(client-1);
-	if (pClient != NULL)
-	{
-		SH_ADD_HOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + 4), SH_MEMBER(this, &SDKTools::ProcessVoiceData), true);
-	}
-}
-#endif
-
 void SDKTools::OnClientDisconnecting(int client)
 {
-#if !defined CLIENTVOICE_HOOK_SUPPORT
-	IClient *pClient = iserver->GetClient(client-1);
-	if (pClient != NULL)
-	{
-		SH_REMOVE_HOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + 4), SH_MEMBER(this, &SDKTools::ProcessVoiceData), true);
-	}
-#endif
-
-	if (g_hTimerSpeaking[client] != NULL)
+	if (g_hTimerSpeaking[client])
 	{
 		timersys->KillTimer(g_hTimerSpeaking[client]);
-		g_hTimerSpeaking[client] = NULL;
 	}
 
 	int max_clients = playerhelpers->GetMaxClients();
@@ -241,28 +218,6 @@ void SDKTools::OnClientDisconnecting(int client)
 		DecHookCount();
 	}
 }
-
-#if !defined CLIENTVOICE_HOOK_SUPPORT
-bool SDKTools::ProcessVoiceData(CLC_VoiceData *msg)
-{
-	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - 4);
-	if (pClient != NULL)
-	{
-		int client = pClient->GetPlayerSlot() + 1;
-
-		g_fSpeakingTime[client] = gpGlobals->curtime;
-
-		if (g_hTimerSpeaking[client] == NULL)
-		{
-			g_hTimerSpeaking[client] = timersys->CreateTimer(this, 0.3f, (void *)(intptr_t)client, TIMER_FLAG_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-		}
-
-		m_OnClientSpeaking->PushCell(client);
-		m_OnClientSpeaking->Execute();
-	}
-	return true;
-}
-#endif
 
 static cell_t SetClientListeningFlags(IPluginContext *pContext, const cell_t *params)
 {
@@ -420,14 +375,14 @@ static cell_t IsClientSpeaking(IPluginContext *pContext, const cell_t *params)
 	}
 	else if (!player->IsInGame())
 	{
-		return pContext->ThrowNativeError("Client %d is not in-game", params[1]);
+		return false;
 	}
 	else if (player->IsFakeClient())
 	{
-		return pContext->ThrowNativeError("Client %d is a bot", params[1]);
+		return false;
 	}
 	
-	return g_hTimerSpeaking[params[1]] != NULL;
+	return g_hTimerSpeaking[params[1]] != nullptr;
 }
 
 sp_nativeinfo_t g_VoiceNatives[] =

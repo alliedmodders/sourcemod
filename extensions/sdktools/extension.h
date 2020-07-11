@@ -110,8 +110,6 @@ public: //IClientListner
 public:
 #if defined CLIENTVOICE_HOOK_SUPPORT
 	void OnClientVoice(edict_t *pPlayer);
-#else
-	bool ProcessVoiceData(CLC_VoiceData *msg);
 #endif
 public: // IVoiceServer
 	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
@@ -177,7 +175,6 @@ extern HandleType_t g_TraceHandle;
 extern ICallWrapper *g_pAcceptInput;
 /* Timers */
 extern ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
-extern float g_fSpeakingTime[SM_MAXPLAYERS+1];
 /* Forwards */
 extern IForward *m_OnClientSpeaking;
 extern IForward *m_OnClientSpeakingEnd;
