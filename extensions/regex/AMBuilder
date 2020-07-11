@@ -17,7 +17,10 @@ for arch in SM.archs:
     elif arch == 'x64':
       path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux64', 'libpcre.a')
   elif builder.target.platform == 'windows':
-    path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_win', 'pcre.lib')
+    if arch == 'x86':
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_win', 'pcre.lib')
+    elif arch == 'x64':
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_win64', 'pcre.lib')
   elif builder.target.platform == 'mac':
     if arch == 'x86':
       path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin', 'libpcre.a')
