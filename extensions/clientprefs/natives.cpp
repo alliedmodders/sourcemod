@@ -299,7 +299,7 @@ static cell_t ReadCookieIterator(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Cookie iterator handle %x (error %d)", hndl, err);
 	}
 
-	if (*iter >= g_CookieManager.cookieList.length())
+	if (*iter >= g_CookieManager.cookieList.size())
 	{
 		return 0;
 	}
@@ -356,18 +356,18 @@ cell_t AddSettingsMenuItem(IPluginContext *pContext, const cell_t *params)
 	/* Track this in case the plugin unloads */
 
 	IPlugin *pPlugin = plsys->FindPluginByContext(pContext->GetContext());
-	ke::Vector<char *> *pList = NULL;
+	std::vector<char *> *pList = NULL;
 
 	if (!pPlugin->GetProperty("SettingsMenuItems", (void **)&pList, false) || !pList)
 	{
-		pList = new ke::Vector<char *>;
+		pList = new std::vector<char *>;
 		pPlugin->SetProperty("SettingsMenuItems", pList);
 	}
 
 	char *copyarray = new char[strlen(display)+1];
 	g_pSM->Format(copyarray, strlen(display)+1, "%s", display);
 
-	pList->append(copyarray);
+	pList->push_back(copyarray);
 
 	return 0;
 }
@@ -426,18 +426,18 @@ cell_t AddSettingsPrefabMenuItem(IPluginContext *pContext, const cell_t *params)
 	/* Track this in case the plugin unloads */
 
 	IPlugin *pPlugin = plsys->FindPluginByContext(pContext->GetContext());
-	ke::Vector<char *> *pList = NULL;
+	std::vector<char *> *pList = NULL;
 
 	if (!pPlugin->GetProperty("SettingsMenuItems", (void **)&pList, false) || !pList)
 	{
-		pList = new ke::Vector<char *>;
+		pList = new std::vector<char *>;
 		pPlugin->SetProperty("SettingsMenuItems", pList);
 	}
 
 	char *copyarray = new char[strlen(display)+1];
 	g_pSM->Format(copyarray, strlen(display)+1, "%s", display);
 
-	pList->append(copyarray);
+	pList->push_back(copyarray);
 
 	return 0;
 }

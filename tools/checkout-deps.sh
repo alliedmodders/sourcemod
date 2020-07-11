@@ -74,14 +74,19 @@ checkout ()
     git clone $repo -b $branch $name
     if [ -n "$origin" ]; then
       cd $name
-      git remote rm origin
-      git remote add origin $origin
+      git remote set-url origin $origin
       cd ..
     fi
   else
     cd $name
+    if [ -n "$origin" ]; then
+      git remote set-url origin ../$repo
+    fi
     git checkout $branch
     git pull origin $branch
+    if [ -n "$origin" ]; then
+      git remote set-url origin $origin
+    fi
     cd ..
   fi
 }
@@ -122,7 +127,7 @@ do
   checkout
 done
 
-`python -c "import ambuild2"`
+`python -c "import ambuild2"` || `python3 -c "import ambuild2"`
 if [ $? -eq 1 ]; then
   repo="https://github.com/alliedmodders/ambuild"
   origin=
@@ -131,7 +136,7 @@ if [ $? -eq 1 ]; then
   checkout
 
   cd ambuild
-  if [ $iswin -eq 1 ]; then
+  if [ $iswin -eq 1 ] || [ $ismac -eq 1 ]; then
     python setup.py install
   else
     python setup.py build

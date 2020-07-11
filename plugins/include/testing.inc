@@ -79,3 +79,17 @@ stock void AssertTrue(const char[] text, bool value)
 		ThrowError("test %d (%s in %s) failed", TestNumber, text, TestContext);
 	}
 }
+
+stock void AssertStrEq(const char[] text, const char[] value, const char[] expected)
+{
+	TestNumber++;
+	if (StrEqual(value, expected))
+	{
+		PrintToServer("[%d] %s: '%s' == '%s' OK", TestNumber, TestContext, text, expected);
+	}
+	else
+	{
+		PrintToServer("[%d] %s FAIL: %s should be '%s', got '%s'", TestNumber, TestContext, text, expected, value);
+		ThrowError("test %d (%s in %s) failed", TestNumber, text, TestContext);
+	}
+}

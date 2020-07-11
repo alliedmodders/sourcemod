@@ -36,12 +36,12 @@ RegNatives g_RegNatives;
 
 void RegNatives::Register(ICallWrapper *pWrapper)
 {
-	m_Natives.append(pWrapper);
+	m_Natives.push_back(pWrapper);
 }
 
 void RegNatives::UnregisterAll()
 {
-	for (size_t iter = 0; iter < m_Natives.length(); ++iter)
+	for (size_t iter = 0; iter < m_Natives.size(); ++iter)
 	{
 		m_Natives[iter]->Destroy();
 	}

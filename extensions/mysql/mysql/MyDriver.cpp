@@ -160,7 +160,7 @@ bool CompareField(const char *str1, const char *str2)
 
 IDatabase *MyDriver::Connect(const DatabaseInfo *info, bool persistent, char *error, size_t maxlength)
 {
-	ke::AutoLock lock(&m_Lock);
+	std::lock_guard<std::mutex> lock(m_Lock);
 
 	if (persistent)
 	{
@@ -202,7 +202,7 @@ IDatabase *MyDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 
 void MyDriver::RemoveFromList(MyDatabase *pdb, bool persistent)
 {
-	ke::AutoLock lock(&m_Lock);
+	std::lock_guard<std::mutex> lock(m_Lock);
 	if (persistent)
 	{
 		m_PermDbs.remove(pdb);

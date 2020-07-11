@@ -69,7 +69,7 @@ public Action HelpCmd(int client, int args)
 
 	GetCmdArg(0, CmdName, sizeof(CmdName));
 
-	if (GetCmdArgs() >= 1)
+	if (args >= 1)
 	{
 		GetCmdArg(1, arg, sizeof(arg));
 		StringToIntEx(arg, PageNum);

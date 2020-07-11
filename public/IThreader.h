@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -273,7 +273,9 @@ namespace SourceMod
 	};
 
 	/**
-	 * @brief Describes a simple "condition variable"/signal lock.
+	 * @brief Object that can be used to signal from one thread to another.
+	 * This should not be used and is deprecated. Use C++11
+	 * std::condition_variable instead, as this version is fundamentally racy.
 	 */
 	class IEventSignal
 	{
@@ -286,7 +288,7 @@ namespace SourceMod
 		 */
 		virtual void Wait() =0;
 
-		/** 
+		/**
 		 * @brief Triggers the signal and resets the signal after triggering.
 		 */
 		virtual void Signal() =0;
@@ -326,7 +328,7 @@ namespace SourceMod
 		 * @return			Number of tasks processed.
 		 */
 		virtual unsigned int RunFrame() =0;
-	public:
+
 		/**
 		 * @brief Pauses the worker.
 		 *
@@ -446,9 +448,9 @@ namespace SourceMod
 		virtual void ThreadSleep(unsigned int ms) =0;
 
 		/**
-		 * @brief Creates a non-signalled event.
+		 * @brief Deprecated; do not use.
 		 *
-		 * @return			A new IEventSignal pointer (must be destroyed).
+		 * @return			Returns a new IEventSignal.
 		 */
 		virtual IEventSignal *MakeEventSignal() =0;
 

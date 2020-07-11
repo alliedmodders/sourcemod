@@ -399,14 +399,14 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			m_Offsets.replace(m_offset, atoi(value));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
-		ke::AString vstr(value);
-		m_Keys.replace(key, ke::Move(vstr));
+		std::string vstr(value);
+		m_Keys.replace(key, std::move(vstr));
 	}
 	else if (m_ParseState == PSTATE_GAMEDEFS_KEYS_PLATFORM) {
 		if (IsPlatformCompatible(key, &matched_platform))
 		{
-			ke::AString vstr(value);
-			m_Keys.replace(m_Key, ke::Move(vstr));
+			std::string vstr(value);
+			m_Keys.replace(m_Key, std::move(vstr));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
 		if (strcmp(key, "game") == 0)
@@ -1001,10 +1001,10 @@ bool CGameConfig::GetOffset(const char *key, int *value)
 
 const char *CGameConfig::GetKeyValue(const char *key)
 {
-	StringHashMap<ke::AString>::Result r = m_Keys.find(key);
+	StringHashMap<std::string>::Result r = m_Keys.find(key);
 	if (!r.found())
 		return NULL;
-	return r->value.chars();
+	return r->value.c_str();
 }
 
 //memory addresses below 0x10000 are automatically considered invalid for dereferencing

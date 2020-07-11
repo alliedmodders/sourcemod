@@ -30,21 +30,22 @@
  */
 
 #include "ConCmdManager.h"
-#include "sm_stringutil.h"
-#include "PlayerManager.h"
-#include "HalfLife2.h"
-#include "ChatTriggers.h"
-#include "logic_bridge.h"
-#include "sourcemod.h"
-#include "provider.h"
-#include "command_args.h"
+
 #include <bridge/include/IScriptManager.h>
+#include "ChatTriggers.h"
+#include "HalfLife2.h"
+#include "PlayerManager.h"
+#include "command_args.h"
+#include "logic_bridge.h"
+#include "provider.h"
+#include "sm_stringutil.h"
+#include "sourcemod.h"
 
 using namespace ke;
 
 ConCmdManager g_ConCmds;
 
-typedef ke::LinkedList<CmdHook *> PluginHookList;
+typedef std::list<CmdHook *> PluginHookList;
 void RegisterInPlugin(CmdHook *hook);
 
 ConCmdManager::ConCmdManager()
@@ -181,7 +182,7 @@ ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int
 		if (hook->type == CmdHook::Server || !hook->pf->IsRunnable())
 			continue;
 
-		if (hook->admin && !CheckAccess(client, cmd, hook->admin))
+		if (hook->admin && !CheckAccess(client, cmd, hook->admin.get()))
 		{
 			if (result < Pl_Handled)
 				result = Pl_Handled;
@@ -271,7 +272,7 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 		} else {
 			// Check admin rights if needed. realClient isn't needed since we
 			// should bypass admin checks if client == 0 anyway.
-			if (client && hook->admin && !CheckAccess(client, cmd, hook->admin))
+			if (client && hook->admin && !CheckAccess(client, cmd, hook->admin.get()))
 			{
 				if (result < Pl_Handled)
 					result = Pl_Handled;
@@ -360,7 +361,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	RefPtr<CommandGroup> cmdgroup = i->value;
 
 	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description);
-	pHook->admin = new AdminCmdInfo(cmdgroup, adminflags);
+	pHook->admin = std::make_unique<AdminCmdInfo>(cmdgroup, adminflags);
 
 	/* First get the command group override, if any */
 	bool override = adminsys->GetCommandOverride(group, 
@@ -380,7 +381,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 		pHook->admin->eflags = pHook->admin->flags;
 	pInfo->eflags = pHook->admin->eflags;
 
-	cmdgroup->hooks.append(pHook);
+	cmdgroup->hooks.push_back(pHook);
 	pInfo->hooks.append(pHook);
 	RegisterInPlugin(pHook);
 	return true;
@@ -425,13 +426,13 @@ void RegisterInPlugin(CmdHook *hook)
 		const char *cmd = (*iter)->info->pCmd->GetName();
 		if (strcmp(orig, cmd) < 0)
 		{
-			pList->insertBefore(iter, hook);
+			pList->emplace(iter, hook);
 			return;
 		}
 		iter++;
 	}
 
-	pList->append(hook);
+	pList->emplace_back(hook);
 }
 
 void ConCmdManager::AddToCmdList(ConCmdInfo *info)
@@ -648,7 +649,7 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 
 			name = hook->info->pCmd->GetName();
 			if (hook->helptext.length())
-				help = hook->helptext.chars();
+				help = hook->helptext.c_str();
 			else
 				help = hook->info->pCmd->GetHelpText();
 			UTIL_ConsolePrint("  %-17.16s %-12.11s %s", name, type, help);		

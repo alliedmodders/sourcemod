@@ -35,8 +35,7 @@ for arch in SM.archs:
     'smn_maplists.cpp',
     'ADTFactory.cpp',
     'smn_adt_stack.cpp',
-    'thread/ThreadWorker.cpp',
-    'thread/BaseWorker.cpp',
+    'BaseWorker.cpp',
     'ThreadSupport.cpp',
     'smn_float.cpp',
     'TextParsers.cpp',
@@ -89,10 +88,5 @@ for arch in SM.archs:
 
   if arch == 'x64':
     binary.sources += ['PseudoAddrManager.cpp']
-
-  if builder.target.platform == 'windows':
-    binary.sources += ['thread/WinThreads.cpp']
-  else:
-    binary.sources += ['thread/PosixThreads.cpp']
 
   SM.binaries += [builder.Add(binary)]

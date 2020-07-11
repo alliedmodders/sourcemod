@@ -108,20 +108,20 @@ public:
 			listener = listener->next;
 		}
 
-        while (iter != tracked_bases.end())
-        {
-            if ((*iter)->pBase == pBase)
-            {
-                pInfo = (*iter);
-                iter = tracked_bases.erase(iter);
-                pInfo->cls->OnUnlinkConCommandBase(pBase, pBase->GetName());
-                delete pInfo;
-            }
-            else
-            {
-                iter++;
-            }
-        }
+		while (iter != tracked_bases.end())
+		{
+		    if ((*iter)->pBase == pBase)
+		    {
+			pInfo = (*iter);
+			iter = tracked_bases.erase(iter);
+			pInfo->cls->OnUnlinkConCommandBase(pBase, pBase->GetName());
+			delete pInfo;
+		    }
+		    else
+		    {
+			iter++;
+		    }
+		}
 	}
 
 	void AddTarget(ConCommandBase *pBase, IConCommandTracker *cls)

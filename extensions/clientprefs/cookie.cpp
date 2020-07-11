@@ -59,7 +59,7 @@ void CookieManager::Unload()
 	}
 
 	/* Find all cookies and delete them */
-	for (size_t iter = 0; iter < cookieList.length(); ++iter)
+	for (size_t iter = 0; iter < cookieList.size(); ++iter)
 		delete cookieList[iter];
 	
 	cookieList.clear();
@@ -95,7 +95,7 @@ Cookie *CookieManager::CreateCookie(const char *name, const char *description, C
 	op->m_params.cookie = pCookie;
 	
 	cookieFinder.insert(name, pCookie);
-	cookieList.append(pCookie);
+	cookieList.push_back(pCookie);
 
 	g_ClientPrefs.AddQueryToQueue(op);
 
@@ -111,7 +111,7 @@ bool CookieManager::GetCookieValue(Cookie *pCookie, int client, char **value)
 	{
 		data = new CookieData("");
 		data->parent = pCookie;
-		clientData[client].append(data);
+		clientData[client].push_back(data);
 		pCookie->data[client] = data;
 		data->changed = false;
 		data->timestamp = 0;
@@ -130,7 +130,7 @@ bool CookieManager::SetCookieValue(Cookie *pCookie, int client, const char *valu
 	{
 		data = new CookieData(value);
 		data->parent = pCookie;
-		clientData[client].append(data);
+		clientData[client].push_back(data);
 		pCookie->data[client] = data;
 	}
 	else
@@ -185,8 +185,8 @@ void CookieManager::OnClientDisconnecting(int client)
 		g_ClientPrefs.ClearQueryCache(player->GetSerial());
 	}
 
-	ke::Vector<CookieData *> &clientvec = clientData[client];
-	for (size_t iter = 0; iter < clientvec.length(); ++iter)
+	std::vector<CookieData *> &clientvec = clientData[client];
+	for (size_t iter = 0; iter < clientvec.size(); ++iter)
 	{
 		current = clientvec[iter];
 		dbId = current->parent->dbid;
@@ -263,7 +263,7 @@ void CookieManager::ClientConnectCallback(int serial, IQuery *data)
 
 		pData->parent = parent;
 		parent->data[client] = pData;
-		clientData[client].append(pData);
+		clientData[client].push_back(pData);
 	}
 
 	statsLoaded[client] = true;
@@ -317,18 +317,18 @@ bool CookieManager::AreClientCookiesPending(int client)
 
 void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 {
-	ke::Vector<char *> *pList;
+	std::vector<char *> *pList;
 
 	if (plugin->GetProperty("SettingsMenuItems", (void **)&pList, true))
 	{
-		ke::Vector<char *> &menuitems = (*pList);
+		std::vector<char *> &menuitems = (*pList);
 		char *name;
 		ItemDrawInfo draw;
 		const char *info;
 		AutoMenuData * data;
 		unsigned itemcount;
 		
-		for (size_t p_iter = 0; p_iter < menuitems.length(); ++p_iter)
+		for (size_t p_iter = 0; p_iter < menuitems.size(); ++p_iter)
 		{
 			name = menuitems[p_iter];
 			itemcount = clientMenu->GetItemCount();

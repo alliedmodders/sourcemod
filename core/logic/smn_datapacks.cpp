@@ -166,6 +166,62 @@ static cell_t smn_WritePackString(IPluginContext *pContext, const cell_t *params
 	return 1;
 }
 
+static cell_t smn_WritePackCellArray(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError herr;
+	HandleSecurity sec;
+	sec.pOwner = pContext->GetIdentity();
+	sec.pIdentity = g_pCoreIdent;
+
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	CDataPack *pDataPack = nullptr;
+	if ((herr = handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+		!= HandleError_None)
+	{
+		pContext->ReportError("Invalid data pack handle %x (error %d).", hndl, herr);
+		return 0;
+	}
+
+	if (!params[4])
+	{
+		pDataPack->RemoveItem();
+	}
+
+	cell_t *pArray;
+	pContext->LocalToPhysAddr(params[2], &pArray);
+	pDataPack->PackCellArray(pArray, params[3]);
+
+	return 1;
+}
+
+static cell_t smn_WritePackFloatArray(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError herr;
+	HandleSecurity sec;
+	sec.pOwner = pContext->GetIdentity();
+	sec.pIdentity = g_pCoreIdent;
+
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	CDataPack *pDataPack = nullptr;
+	if ((herr = handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+		!= HandleError_None)
+	{
+		pContext->ReportError("Invalid data pack handle %x (error %d).", hndl, herr);
+		return 0;
+	}
+
+	if (!params[4])
+	{
+		pDataPack->RemoveItem();
+	}
+
+	cell_t *pArray;
+	pContext->LocalToPhysAddr(params[2], &pArray);
+	pDataPack->PackFloatArray(pArray, params[3]);
+
+	return 1;
+}
+
 static cell_t smn_WritePackFunction(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -312,6 +368,108 @@ static cell_t smn_ReadPackFunction(IPluginContext *pContext, const cell_t *param
 	return pDataPack->ReadFunction();
 }
 
+static cell_t smn_ReadPackCellArray(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError herr; 
+	HandleSecurity sec;
+	sec.pOwner = pContext->GetIdentity();
+	sec.pIdentity = g_pCoreIdent;
+
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	CDataPack *pDataPack = nullptr;
+	if ((herr = handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+		!= HandleError_None)
+	{
+		pContext->ReportError("Invalid data pack handle %x (error %d).", hndl, herr);
+		return 0;
+	}
+
+	if (!pDataPack->IsReadable())
+	{
+		pContext->ReportError("Data pack operation is out of bounds.");
+		return 0;
+	}
+
+	if (pDataPack->GetCurrentType() != CDataPackType::CellArray)
+	{
+		pContext->ReportError("Invalid data pack type (got %d / expected %d).", pDataPack->GetCurrentType(), CDataPackType::CellArray);
+		return 0;
+	}
+
+	cell_t packCount = 0;
+	cell_t *pData = pDataPack->ReadCellArray(&packCount);
+	if(pData == nullptr || packCount == 0)
+	{
+		pContext->ReportError("Invalid data pack operation: current position isn't an array!");
+		return 0;
+	}
+
+	cell_t count = params[3];
+	if(packCount > count)
+	{
+		pContext->ReportError("Input buffer too small (needed %d, got %d).", packCount, count);
+		return 0;
+	}
+	
+	cell_t *pArray;
+	pContext->LocalToPhysAddr(params[2], &pArray);
+
+	memcpy(pArray, pData, sizeof(cell_t) * count);
+
+	return 1;
+}
+
+static cell_t smn_ReadPackFloatArray(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError herr;
+	HandleSecurity sec;
+	sec.pOwner = pContext->GetIdentity();
+	sec.pIdentity = g_pCoreIdent;
+
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	CDataPack *pDataPack = nullptr;
+	if ((herr = handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+		!= HandleError_None)
+	{
+		pContext->ReportError("Invalid data pack handle %x (error %d).", hndl, herr);
+		return 0;
+	}
+
+	if (!pDataPack->IsReadable())
+	{
+		pContext->ReportError("Data pack operation is out of bounds.");
+		return 0;
+	}
+
+	if (pDataPack->GetCurrentType() != CDataPackType::FloatArray)
+	{
+		pContext->ReportError("Invalid data pack type (got %d / expected %d).", pDataPack->GetCurrentType(), CDataPackType::FloatArray);
+		return 0;
+	}
+
+	cell_t packCount = 0;
+	cell_t *pData = pDataPack->ReadFloatArray(&packCount);
+	if(pData == nullptr || packCount == 0)
+	{
+		pContext->ReportError("Invalid data pack operation: current position isn't an array!");
+		return 0;
+	}
+
+	cell_t count = params[3];
+	if(packCount > count)
+	{
+		pContext->ReportError("Input buffer too small (needed %d, got %d).", packCount, count);
+		return 0;
+	}
+
+	cell_t *pArray;
+	pContext->LocalToPhysAddr(params[2], &pArray);
+
+	memcpy(pArray, pData, sizeof(cell_t) * count);
+
+	return 1;
+}
+
 static cell_t smn_ResetPack(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -426,10 +584,14 @@ REGISTER_NATIVES(datapacknatives)
 	{"DataPack.WriteFloat",			smn_WritePackFloat},
 	{"DataPack.WriteString",		smn_WritePackString},
 	{"DataPack.WriteFunction",		smn_WritePackFunction},
+	{"DataPack.WriteCellArray",		smn_WritePackCellArray},
+	{"DataPack.WriteFloatArray",	smn_WritePackFloatArray},
 	{"DataPack.ReadCell",			smn_ReadPackCell},
 	{"DataPack.ReadFloat",			smn_ReadPackFloat},
 	{"DataPack.ReadString",			smn_ReadPackString},
 	{"DataPack.ReadFunction",		smn_ReadPackFunction},
+	{"DataPack.ReadCellArray",		smn_ReadPackCellArray},
+	{"DataPack.ReadFloatArray",		smn_ReadPackFloatArray},
 	{"DataPack.Reset",				smn_ResetPack},
 	{"DataPack.Position.get",		smn_GetPackPosition},
 	{"DataPack.Position.set",		smn_SetPackPosition},

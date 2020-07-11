@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 sw=4 tw=99 noet :
+ * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2017 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2019 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -28,64 +28,35 @@
  *
  * Version: $Id$
  */
- 
-#include "FrameIterator.h"
 
-SafeFrameIterator::SafeFrameIterator(IFrameIterator *it)
-{	
-	while (!it->Done())
-	{
-		FrameInfo info = FrameInfo(it);
-		frames.push_back(info);
-		it->Next(); 
+#include <cstdlib>
+
+#include "sm_platform.h"
+#ifndef PLATFORM_WINDOWS
+	#error InvalidParameterHandler included in non-Windows build
+#endif
+
+/**
+ * Allows easy CRT invalid parameter redirection, previous handler is reset upon object destruction.
+ */
+class InvalidParameterHandler {
+public:
+	InvalidParameterHandler() {
+		this->old = _set_invalid_parameter_handler([](const wchar_t * expression, const wchar_t * function,  const wchar_t * file,  unsigned int line, uintptr_t pReserved) {
+			return;
+		});
 	}
-	
-	it->Reset();
-	current = 0;
-}
-
-bool SafeFrameIterator::Done() const
-{
-	return current >= frames.size();
-}
-
-bool SafeFrameIterator::Next()
-{
-	current++;
-	return !this->Done();
-}
-
-void SafeFrameIterator::Reset()
-{
-	current = 0;
-}
-
-int SafeFrameIterator::LineNumber() const
-{
-	if (this->Done())
-	{
-		return -1;
+	InvalidParameterHandler(_invalid_parameter_handler newhandler) {
+		this->old = _set_invalid_parameter_handler(newhandler);
+	}
+	~InvalidParameterHandler() {
+		_set_invalid_parameter_handler(this->old);
 	}
 
-	return (int)frames[current].LineNumber;
-}
+	// explicitly disable copy cstr and assignment
+	InvalidParameterHandler(const InvalidParameterHandler &) = delete;
+	InvalidParameterHandler& operator=(const InvalidParameterHandler &) = delete;
 
-const char *SafeFrameIterator::FunctionName() const
-{
-	if (this->Done())
-	{
-		return NULL;
-	}
-
-	return frames[current].FunctionName.c_str();
-}
-
-const char *SafeFrameIterator::FilePath() const
-{
-	if (this->Done())
-	{
-		return NULL;
-	}
-
-	return frames[current].FilePath.c_str();
-}
+private:
+	_invalid_parameter_handler old;
+};

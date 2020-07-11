@@ -75,9 +75,9 @@ private:
 	IForward *m_usercmdsPostFwd;
 	IForward *m_netFileSendFwd;
 	IForward *m_netFileReceiveFwd;
-	ke::Vector<CVTableHook *> m_runUserCmdHooks;
-	ke::Vector<CVTableHook *> m_runUserCmdPostHooks;
-	ke::Vector<CVTableHook *> m_netChannelHooks;
+	std::vector<CVTableHook *> m_runUserCmdHooks;
+	std::vector<CVTableHook *> m_runUserCmdPostHooks;
+	std::vector<CVTableHook *> m_netChannelHooks;
 	INetChannel *m_pActiveNetChannel;
 	bool m_bFSTranHookWarned = false;
 	bool m_bReplayEnabled = false;
