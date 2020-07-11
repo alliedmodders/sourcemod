@@ -32,9 +32,11 @@
 #ifndef _INCLUDE_MENUSTYLE_BASE_H
 #define _INCLUDE_MENUSTYLE_BASE_H
 
+#include <memory>
+#include <utility>
+
 #include <IMenuManager.h>
 #include <IPlayerHelpers.h>
-#include <am-autoptr.h>
 #include <am-string.h>
 #include <am-vector.h>
 #include "sm_fastlink.h"
@@ -50,24 +52,24 @@ public:
 		access = 0;
 	}
 	CItem(CItem &&other)
-	: info(ke::Move(other.info)),
-	  display(ke::Move(other.display))
+	: info(std::move(other.info)),
+	  display(std::move(other.display))
 	{
 		style = other.style;
 		access = other.access;
 	}
 	CItem & operator =(CItem &&other)
 	{
-		info = ke::Move(other.info);
-		display = ke::Move(other.display);
+		info = std::move(other.info);
+		display = std::move(other.display);
 		style = other.style;
 		access = other.access;
 		return *this;
 	}
 
 public:
-	ke::AString info;
-	ke::AutoPtr<ke::AString> display;
+	std::string info;
+	std::unique_ptr<std::string> display;
 	unsigned int style;
 	unsigned int access;
 
@@ -156,10 +158,10 @@ public:
 private:
 	void InternalDelete();
 protected:
-	ke::AString m_Title;
+	std::string m_Title;
 	IMenuStyle *m_pStyle;
 	unsigned int m_Pagination;
-	ke::Vector<CItem> m_items;
+	std::vector<CItem> m_items;
 	bool m_bShouldDelete;
 	bool m_bCancelling;
 	IdentityToken_t *m_pOwner;

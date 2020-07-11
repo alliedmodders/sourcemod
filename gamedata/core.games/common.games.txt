@@ -96,6 +96,7 @@
 			"engine"			"alienswarm"
 			"engine"			"blade"
 			"engine"			"insurgency"
+			"engine"			"doi"
 			"engine"			"csgo"
 			"engine"			"sdk2013"
 			"engine"			"contagion"
@@ -291,6 +292,7 @@
 			"game"					"kz"
 			"game"					"csgo"
 			"game"					"reactivedrop"
+			"game"					"FortressForever"
 		}
 		
 		"Keys"

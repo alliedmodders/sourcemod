@@ -69,6 +69,13 @@ class DefaultMapTimer :
 	public IConVarChangeListener
 {
 public:
+
+#if SOURCE_ENGINE == SE_BMS
+	static constexpr int kMapTimeScaleFactor = 60;
+#else
+	static constexpr int kMapTimeScaleFactor = 1;
+#endif
+	
 	DefaultMapTimer()
 	{
 		m_bInUse = false;
@@ -81,7 +88,7 @@ public:
 
 	int GetMapTimeLimit()
 	{
-		return mp_timelimit->GetInt();
+		return (mp_timelimit->GetInt() / kMapTimeScaleFactor);
 	}
 
 	void SetMapTimerStatus(bool enabled)
@@ -105,7 +112,7 @@ public:
 			return;
 		}
 
-		extra_time /= 60;
+		extra_time /= (60 / kMapTimeScaleFactor);
 
 		mp_timelimit->SetValue(mp_timelimit->GetInt() + extra_time);
 	}
@@ -484,4 +491,3 @@ bool TimerSystem::GetMapTimeLeft(float *time_left)
 
 	return true;
 }
-

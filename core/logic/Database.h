@@ -38,7 +38,10 @@
 #include <sh_list.h>
 #include <IThreader.h>
 #include <IPluginSys.h>
-#include <am-thread-utils.h>
+#include <condition_variable>
+#include <memory>
+#include <mutex>
+#include <thread>
 #include "sm_simple_prioqueue.h"
 #include <am-refcounting.h>
 #include "DatabaseConfBuilder.h"
@@ -84,7 +87,7 @@ public: //IPluginsListener
 public:
 	IDBDriver *FindOrLoadDriver(const char *name);
 	IDBDriver *GetDefaultDriver();
-	ke::AString GetDefaultDriverName();
+	std::string GetDefaultDriverName();
 	bool AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio);
 	void RunFrame();
 	inline HandleType_t GetDatabaseType()
@@ -101,9 +104,10 @@ private:
 	PrioQueue<IDBThreadOperation *> m_OpQueue;
 	Queue<IDBThreadOperation *> m_ThinkQueue;
 	CVector<bool> m_drSafety;			/* which drivers are safe? */
-	ke::AutoPtr<ke::Thread> m_Worker;
-	ke::ConditionVariable m_QueueEvent;
-	ke::Mutex m_ThinkLock;
+	std::unique_ptr<std::thread> m_Worker;
+	std::condition_variable m_QueueEvent;
+	std::mutex m_ThinkLock;
+	std::mutex m_Lock;
 	bool m_Terminate;
 
 	DatabaseConfBuilder m_Builder;

@@ -628,7 +628,7 @@ Handle_t CBaseMenu::GetHandle()
 bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 {
 	if (m_Pagination == (unsigned)MENU_NO_PAGINATION
-		&& m_items.length() >= m_pStyle->GetMaxPageItems())
+		&& m_items.size() >= m_pStyle->GetMaxPageItems())
 	{
 		return false;
 	}
@@ -637,40 +637,40 @@ bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 
 	item.info = info;
 	if (draw.display)
-		item.display = new ke::AString(draw.display);
+		item.display = std::make_unique<std::string>(draw.display);
 	item.style = draw.style;
 
-	m_items.append(ke::Move(item));
+	m_items.push_back(std::move(item));
 	return true;
 }
 
 bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDrawInfo &draw)
 {
 	if (m_Pagination == (unsigned)MENU_NO_PAGINATION &&
-	    m_items.length() >= m_pStyle->GetMaxPageItems())
+	    m_items.size() >= m_pStyle->GetMaxPageItems())
 	{
 		return false;
 	}
 
-	if (position >= m_items.length())
+	if (position >= m_items.size())
 		return false;
 
 	CItem item;
 	item.info = info;
 	if (draw.display)
-		item.display = new ke::AString(draw.display);
+		item.display = std::make_unique<std::string>(draw.display);
 	item.style = draw.style;
 
-	m_items.insert(position, ke::Move(item));
+	m_items.emplace(m_items.begin() + position, std::move(item));
 	return true;
 }
 
 bool CBaseMenu::RemoveItem(unsigned int position)
 {
-	if (position >= m_items.length())
+	if (position >= m_items.size())
 		return false;
 
-	m_items.remove(position);
+	m_items.erase(m_items.begin() + position);
 	return true;
 }
 
@@ -681,21 +681,21 @@ void CBaseMenu::RemoveAllItems()
 
 const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =NULL */)
 {
-	if (position >= m_items.length())
+	if (position >= m_items.size())
 		return NULL;
 
 	if (draw)
 	{
-		draw->display = m_items[position].display->chars();
+		draw->display = m_items[position].display->c_str();
 		draw->style = m_items[position].style;
 	}
 
-	return m_items[position].info.chars();
+	return m_items[position].info.c_str();
 }
 
 unsigned int CBaseMenu::GetItemCount()
 {
-	return m_items.length();
+	return m_items.size();
 }
 
 bool CBaseMenu::SetPagination(unsigned int itemsPerPage)
@@ -733,7 +733,7 @@ void CBaseMenu::SetDefaultTitle(const char *message)
 
 const char *CBaseMenu::GetDefaultTitle()
 {
-	return m_Title.chars();
+	return m_Title.c_str();
 }
 
 void CBaseMenu::Cancel()
@@ -825,5 +825,5 @@ IMenuHandler *CBaseMenu::GetHandler()
 
 unsigned int CBaseMenu::GetBaseMemUsage()
 {
-	return m_Title.length() + (m_items.length() * sizeof(CItem));
+	return m_Title.size() + (m_items.size() * sizeof(CItem));
 }

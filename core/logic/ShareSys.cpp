@@ -29,13 +29,16 @@
  * Version: $Id$
  */
 
+#include <assert.h>
+
+#include <memory>
+
 #include "ShareSys.h"
 #include "ExtensionSys.h"
 #include <ILibrarySys.h>
 #include "common_logic.h"
 #include "PluginSys.h"
 #include "HandleSys.h"
-#include <assert.h>
 
 using namespace ke;
 
@@ -406,15 +409,15 @@ AlreadyRefed<Native> ShareSystem::AddFakeNative(IPluginFunction *pFunc, const ch
 	if (entry)
 		return nullptr;
 
-	AutoPtr<FakeNative> fake(new FakeNative(name, pFunc));
+	std::unique_ptr<FakeNative> fake(new FakeNative(name, pFunc));
 
-	fake->gate = g_pSourcePawn2->CreateFakeNative(func, fake);
+	fake->gate = g_pSourcePawn2->CreateFakeNative(func, fake.get());
 	if (!fake->gate)
 		return nullptr;
 
 	CNativeOwner *owner = g_PluginSys.GetPluginByCtx(fake->ctx->GetContext());
 
-	entry = new Native(owner, fake.take());
+	entry = new Native(owner, fake.release());
 	m_NtvCache.insert(name, entry);
 
 	return entry.forget();

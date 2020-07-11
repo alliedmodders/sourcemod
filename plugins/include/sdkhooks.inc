@@ -350,7 +350,7 @@ forward void OnEntityCreated(int entity, const char[] classname);
 /**
  * When an entity is destroyed
  *
- * @param entity        Entity index
+ * @param entity        Entity index or edict reference.
  */
 forward void OnEntityDestroyed(int entity);
 

@@ -43,7 +43,9 @@ enum CDataPackType {
 	Cell,
 	Float,
 	String,
-	Function
+	Function,
+	CellArray,
+	FloatArray,
 };
 
 class CDataPack
@@ -89,6 +91,21 @@ public: // Originally IDataReader
 	 * @return			A float read from the current position.
 	 */
 	float ReadFloat() const;
+
+	/**
+	 * @brief Reads an array of values from the data stream.
+	 *
+	 * @param len       The size of the array stored at this position to return.
+	 * @return			A cell array read from the current position.
+	 */
+	cell_t *ReadCellArray(cell_t *len) const;
+	/**
+	 * @brief Reads an array of values from the data stream.
+	 *
+	 * @param len       The size of the array stored at this position to return.
+	 * @return			A cell array read from the current position.
+	 */
+	cell_t *ReadFloatArray(cell_t *len) const;
 
 	/**
 	 * @brief Returns whether or not a specified number of bytes from the current stream
@@ -151,6 +168,21 @@ public: // Originally IDataPack
 	void PackString(const char *string);
 
 	/**
+	 * @brief Packs an array of cells into the data stream.
+	 *
+	 * @param vals		Cells to write.
+	 * @param count     Number of cells.
+	 */
+	void PackCellArray(cell_t const *vals, cell_t count);
+	/**
+	 * @brief Packs an array of cells into the data stream.
+	 *
+	 * @param vals		Cells to write.
+	 * @param count     Number of cells.
+	 */
+	void PackFloatArray(cell_t const *vals, cell_t count);
+
+	/**
 	 * @brief Creates a generic block of memory in the stream.
 	 *
 	 * Note that the pointer it returns can be invalidated on further
@@ -172,7 +204,7 @@ public: // Originally IDataPack
 
 public:
 	void Initialize();
-	inline size_t GetCapacity() const { return this->elements.length(); };
+	inline size_t GetCapacity() const { return this->elements.size(); };
 	inline CDataPackType GetCurrentType(void) const { return this->elements[this->position].type; };
 	bool RemoveItem(size_t pos = -1);
 
@@ -181,7 +213,8 @@ private:
 		cell_t cval;
 		float fval;
 		uint8_t *vval;
-		ke::AString *sval;
+		std::string *sval;
+		cell_t *aval;
 	} InternalPackValue;
 	
 	typedef struct {
@@ -189,7 +222,7 @@ private:
 		CDataPackType type;
 	} InternalPack;
 
-	ke::Vector<InternalPack> elements;
+	std::vector<InternalPack> elements;
 	mutable size_t position;
 };
 

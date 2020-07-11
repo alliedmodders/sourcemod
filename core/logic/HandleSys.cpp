@@ -30,6 +30,7 @@
  */
 
 #include "HandleSys.h"
+#include <time.h>
 #include <assert.h>
 #include <string.h>
 #include "common_logic.h"
@@ -38,10 +39,18 @@
 #include "PluginSys.h"
 #include <am-string.h>
 #include <bridge/include/ILogger.h>
+#include <bridge/include/CoreProvider.h>
+#include <ISourceMod.h>
+
+#include "sm_platform.h"
+#ifdef PLATFORM_WINDOWS
+#include "sm_invalidparamhandler.h"
+#endif
 
 HandleSystem g_HandleSys;
 
 QHandle *ignore_handle;
+extern ConVar *g_datetime_format;
 
 inline HandleType_t TypeParent(HandleType_t type)
 {
@@ -206,7 +215,7 @@ HandleType_t HandleSystem::CreateType(const char *name,
 	pType->dispatch = dispatch;
 	if (name && name[0] != '\0')
 	{
-		pType->name = new ke::AString(name);
+		pType->name = std::make_unique<std::string>(name);
 		m_TypeLookup.insert(name, pType);
 	}
 
@@ -430,7 +439,7 @@ Handle_t HandleSystem::CreateHandleInt(HandleType_t type,
 
 	pHandle->object = object;
 	pHandle->clone = 0;
-
+	pHandle->timestamp = g_pSM->GetAdjustedTime();
 	return handle;
 }
 
@@ -925,7 +934,7 @@ bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t *ident)
 
 	/* Remove it from the type cache. */
 	if (pType->name)
-		m_TypeLookup.remove(pType->name->chars());
+		m_TypeLookup.remove(pType->name->c_str());
 
 	return true;
 }
@@ -1014,6 +1023,8 @@ bool HandleSystem::TryAndFreeSomeHandles()
 	unsigned int * pCount = new unsigned int[HANDLESYS_TYPEARRAY_SIZE+1];
 	memset(pCount, 0, ((HANDLESYS_TYPEARRAY_SIZE + 1) * sizeof(unsigned int)));
 
+	const QHandle *oldest = nullptr;
+	const QHandle *newest = nullptr;
 	for (unsigned int i = 1; i <= m_HandleTail; ++i)
 	{
 		const QHandle &Handle = m_Handles[i];
@@ -1030,6 +1041,15 @@ bool HandleSystem::TryAndFreeSomeHandles()
 			highest_index = ((Handle.type) + 1);
 		}
 
+		if (!oldest || oldest->timestamp > Handle.timestamp)
+		{
+			oldest = &Handle;
+		}
+		if (!newest || newest->timestamp < Handle.timestamp)
+		{
+			newest = &Handle;
+		}
+		
 		if (Handle.clone != 0)
 		{
 			continue;
@@ -1051,13 +1071,39 @@ bool HandleSystem::TryAndFreeSomeHandles()
 		}
 
 		if (m_Types[i].name)
-			pTypeName = m_Types[i].name->chars();
+			pTypeName = m_Types[i].name->c_str();
 		else
 			pTypeName = "ANON";
 
 		HANDLE_LOG_VERY_BAD("Type\t%-20.20s|\tCount\t%u", pTypeName, pCount[i]);
 	}
+	
+	const char *fmt = bridge->GetCvarString(g_datetime_format);
 
+	char oldstamp[256], newstamp[256]; // 256 should be more than enough
+
+	// scope for InvalidParameterHandler
+	{
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
+#endif
+		size_t written = strftime(oldstamp, sizeof(oldstamp), fmt, localtime(&oldest->timestamp));
+		if (!written)
+		{
+			ke::SafeStrcpy(oldstamp, sizeof(oldstamp), "INVALID");
+		}
+
+		written = strftime(newstamp, sizeof(newstamp), fmt, localtime(&newest->timestamp));
+		if (!written)
+		{
+			ke::SafeStrcpy(newstamp, sizeof(newstamp), "INVALID");
+		}
+	}
+
+
+	HANDLE_LOG_VERY_BAD("--------------------------------------------------------------------------");
+	HANDLE_LOG_VERY_BAD("Oldest Living Handle: %s created at %s", m_Types[oldest->type].name->c_str(), oldstamp);
+	HANDLE_LOG_VERY_BAD("Newest Living Handle: %s created at %s", m_Types[newest->type].name->c_str(), newstamp);
 	HANDLE_LOG_VERY_BAD("-- Approximately %d bytes of memory are in use by (%u) Handles.\n", total_size, total);
 	delete [] pCount;
 
@@ -1081,8 +1127,10 @@ static void rep(const HandleReporter &fn, const char *fmt, ...)
 void HandleSystem::Dump(const HandleReporter &fn)
 {
 	unsigned int total_size = 0;
-	rep(fn, "%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s", "Handle", "Owner", "Type", "Memory");
-	rep(fn, "--------------------------------------------------------------------------");
+	rep(fn, "%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s\t%-30.30s", "Handle", "Owner", "Type", "Memory", "Time Created");
+	rep(fn, "---------------------------------------------------------------------------------------------");
+	
+	const char *fmt = bridge->GetCvarString(g_datetime_format);
 	for (unsigned int i = 1; i <= m_HandleTail; i++)
 	{
 		if (m_Handles[i].set != HandleSet_Used)
@@ -1131,7 +1179,7 @@ void HandleSystem::Dump(const HandleReporter &fn)
 		unsigned int parentIdx;
 		bool bresult;
 		if (pType->name)
-			type = pType->name->chars();
+			type = pType->name->c_str();
 
 		if ((parentIdx = m_Handles[i].clone) != 0)
 		{
@@ -1150,19 +1198,33 @@ void HandleSystem::Dump(const HandleReporter &fn)
 			bresult = pType->dispatch->GetHandleApproxSize(m_Handles[i].type, m_Handles[i].object, &size);
 		}
 
+		char date[256]; // 256 should be more than enough
+		size_t written = 0;
+		// scope for InvalidParameterHandler
+		{
+#ifdef PLATFORM_WINDOWS
+			InvalidParameterHandler p;
+#endif
+			written = strftime(date, sizeof(date), fmt, localtime(&m_Handles[i].timestamp));
+		}
+
+		if (!written)
+		{
+			ke::SafeStrcpy(date, sizeof(date), "INVALID");
+		}
+
 		if (pType->dispatch->GetDispatchVersion() < HANDLESYS_MEMUSAGE_MIN_VERSION
 			|| !bresult)
 		{
-			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, "-1");
+			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%-30.30s", index, owner, type, "-1", date);
 		}
 		else
 		{
 			char buffer[32];
 			ke::SafeSprintf(buffer, sizeof(buffer), "%d", size);
-			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, buffer);
+			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%-30.30s", index, owner, type, buffer, date);
 			total_size += size;
 		}
 	}
 	rep(fn, "-- Approximately %d bytes of memory are in use by Handles.\n", total_size);
 }
-

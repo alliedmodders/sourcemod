@@ -239,9 +239,7 @@ public: //IGameHelpers
 	void FreeUtlVectorUtlString(CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> &vec);
 #endif
 	bool GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax);
-#if SOURCE_ENGINE >= SE_ORANGEBOX
 	string_t AllocPooledString(const char *pszValue);
-#endif
 	bool GetServerSteam3Id(char *pszOut, size_t len) const override;
 	uint64_t GetServerSteamId64() const override;
 public:
@@ -280,7 +278,7 @@ public:
 		return !m_bFollowCSGOServerGuidelines || !m_CSGOBadList.has(pszPropName);
 	}
 private:
-	ke::HashSet<ke::AString, detail::StringHashMapPolicy> m_CSGOBadList;
+	ke::HashSet<std::string, detail::StringHashMapPolicy> m_CSGOBadList;
 	bool m_bFollowCSGOServerGuidelines = true;
 #endif
 };

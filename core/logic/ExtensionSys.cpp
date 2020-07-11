@@ -30,6 +30,9 @@
  */
 
 #include <stdlib.h>
+
+#include <memory>
+
 #include "ExtensionSys.h"
 #include <ILibrarySys.h>
 #include <ISourceMod.h>
@@ -301,7 +304,7 @@ bool CExtension::Load(char *error, size_t maxlength)
 	/* Check if we're past load time */
 	if (!bridge->IsMapLoading())
 	{
-		m_pAPI->OnExtensionsAllLoaded();
+		MarkAllLoaded();
 	}
 
 	return true;
@@ -496,7 +499,7 @@ void CExtensionManager::TryAutoload()
 
 	g_pSM->BuildPath(Path_SM, path, sizeof(path), "extensions");
 
-	ke::AutoPtr<IDirectory> pDir(libsys->OpenDirectory(path));
+	std::unique_ptr<IDirectory> pDir(libsys->OpenDirectory(path));
 	if (!pDir)
 		return;
 

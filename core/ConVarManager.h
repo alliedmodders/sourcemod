@@ -70,18 +70,16 @@ struct ConVarInfo
 		{
 			const char *conVarChars = info->pVar->GetName();
 
-			ke::AString convarName = ke::AString(conVarChars).lowercase();
-			ke::AString input = ke::AString(name).lowercase();
+			std::string convarName = ke::Lowercase(conVarChars);
+			std::string input = ke::Lowercase(name);
 
 			return convarName == input;
 		}
 
 		static inline uint32_t hash(const detail::CharsAndLength &key)
 		{
-			ke::AString original(key.chars());
-			ke::AString lower = original.lowercase();
-
-			return detail::CharsAndLength(lower.chars()).hash();
+			std::string lower = ke::Lowercase(key.c_str());
+			return detail::CharsAndLength(lower.c_str()).hash();
 		}
 	};
 };

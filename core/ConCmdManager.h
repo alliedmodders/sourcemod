@@ -32,6 +32,14 @@
 #ifndef _INCLUDE_SOURCEMOD_CONCMDMANAGER_H_
 #define _INCLUDE_SOURCEMOD_CONCMDMANAGER_H_
 
+#include <list>
+#include <memory>
+
+#include <am-inlinelist.h>
+#include <am-refcounting.h>
+#include <am-utility.h>
+#include <sm_stringhashmap.h>
+
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include <IForwardSys.h>
@@ -41,12 +49,6 @@
 #include <IAdminSystem.h>
 #include "concmd_cleaner.h"
 #include "GameHooks.h"
-#include <am-autoptr.h>
-#include <sm_stringhashmap.h>
-#include <am-utility.h>
-#include <am-inlinelist.h>
-#include <am-linkedlist.h>
-#include <am-refcounting.h>
 
 using namespace SourceHook;
 
@@ -55,7 +57,7 @@ struct ConCmdInfo;
 
 struct CommandGroup : public ke::Refcounted<CommandGroup>
 {
-	ke::LinkedList<CmdHook *> hooks;
+	std::list<CmdHook *> hooks;
 };
 
 struct AdminCmdInfo
@@ -89,8 +91,8 @@ struct CmdHook : public ke::InlineListNode<CmdHook>
 	Type type;
 	ConCmdInfo *info;
 	IPluginFunction *pf;				/* function hook */
-	ke::AString helptext;				/* help text */
-	ke::AutoPtr<AdminCmdInfo> admin;	/* admin requirements, if any */
+	std::string helptext;				/* help text */
+	std::unique_ptr<AdminCmdInfo> admin;	/* admin requirements, if any */
 };
 
 typedef ke::InlineList<CmdHook> CmdHookList;

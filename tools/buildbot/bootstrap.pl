@@ -61,7 +61,7 @@ if ($^O !~ /MSWin/) {
 my $conf_args = join(' ', @conf_argv);
 
 if ($argn > 0 && $^O !~ /MSWin/) {
-	$result = `CC=$ARGV[0] CXX=$ARGV[0] python ../build/configure.py $conf_args`;
+	$result = `CC=$ARGV[0] CXX=$ARGV[1] python ../build/configure.py $conf_args`;
 } else {
 	if ($^O =~ /MSWin/) {
 		$result = `C:\\Python27\\Python.exe ..\\build\\configure.py $conf_args`;

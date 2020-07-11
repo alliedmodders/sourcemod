@@ -182,11 +182,17 @@ private:
 	{
 		static inline bool matches(const char *name, ConCommandBase *base)
 		{
-			return strcmp(name, base->GetName()) == 0;
+			const char *conCommandChars = base->GetName();
+			
+			std::string conCommandName = ke::Lowercase(conCommandChars);
+			std::string input = ke::Lowercase(name);
+			
+			return conCommandName == input;
 		}
 		static inline uint32_t hash(const detail::CharsAndLength &key)
 		{
-			return key.hash();
+			std::string lower = ke::Lowercase(key.c_str());
+			return detail::CharsAndLength(lower.c_str()).hash();
 		}
 	};
 	NameHashSet<ConCommandBase *, ConCommandPolicy> m_CmdFlags;

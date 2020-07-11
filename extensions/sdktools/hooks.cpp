@@ -169,9 +169,9 @@ void CHookManager::PlayerRunCmdHook(int client, bool post)
 		return;
 	}
 
-	ke::Vector<CVTableHook *> &runUserCmdHookVec = post ? m_runUserCmdPostHooks : m_runUserCmdHooks;
+	std::vector<CVTableHook *> &runUserCmdHookVec = post ? m_runUserCmdPostHooks : m_runUserCmdHooks;
 	CVTableHook hook(pEntity);
-	for (size_t i = 0; i < runUserCmdHookVec.length(); ++i)
+	for (size_t i = 0; i < runUserCmdHookVec.size(); ++i)
 	{
 		if (hook == runUserCmdHookVec[i])
 		{
@@ -186,7 +186,7 @@ void CHookManager::PlayerRunCmdHook(int client, bool post)
 		hookid = SH_ADD_MANUALVPHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmd), false);
 
 	hook.SetHookID(hookid);
-	runUserCmdHookVec.append(new CVTableHook(hook));
+	runUserCmdHookVec.push_back(new CVTableHook(hook));
 }
 
 void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
@@ -332,16 +332,16 @@ void CHookManager::NetChannelHook(int client)
 		}
 		else
 #endif
-		if (!m_netChannelHooks.length())
+		if (!m_netChannelHooks.size())
 		{
 			CVTableHook filehook(basefilesystem);
 
 			int hookid = SH_ADD_VPHOOK(IBaseFileSystem, FileExists, basefilesystem, SH_MEMBER(this, &CHookManager::FileExists), false);
 			filehook.SetHookID(hookid);
-			m_netChannelHooks.append(new CVTableHook(filehook));
+			m_netChannelHooks.push_back(new CVTableHook(filehook));
 		}
 
-		for (iter = 0; iter < m_netChannelHooks.length(); ++iter)
+		for (iter = 0; iter < m_netChannelHooks.size(); ++iter)
 		{
 			if (nethook == m_netChannelHooks[iter])
 			{
@@ -349,19 +349,19 @@ void CHookManager::NetChannelHook(int client)
 			}
 		}
 
-		if (iter == m_netChannelHooks.length())
+		if (iter == m_netChannelHooks.size())
 		{
 			int hookid = SH_ADD_VPHOOK(INetChannel, SendFile, pNetChannel, SH_MEMBER(this, &CHookManager::SendFile), false);
 			nethook.SetHookID(hookid);
-			m_netChannelHooks.append(new CVTableHook(nethook));
+			m_netChannelHooks.push_back(new CVTableHook(nethook));
 			
 			hookid = SH_ADD_VPHOOK(INetChannel, ProcessPacket, pNetChannel, SH_MEMBER(this, &CHookManager::ProcessPacket), false);
 			nethook.SetHookID(hookid);
-			m_netChannelHooks.append(new CVTableHook(nethook));
+			m_netChannelHooks.push_back(new CVTableHook(nethook));
 			
 			hookid = SH_ADD_VPHOOK(INetChannel, ProcessPacket, pNetChannel, SH_MEMBER(this, &CHookManager::ProcessPacket_Post), true);
 			nethook.SetHookID(hookid);
-			m_netChannelHooks.append(new CVTableHook(nethook));
+			m_netChannelHooks.push_back(new CVTableHook(nethook));
 		}
 	}
 }
@@ -508,7 +508,7 @@ void CHookManager::OnPluginUnloaded(IPlugin *plugin)
 {
 	if (PRCH_used && !m_usercmdsFwd->GetFunctionCount())
 	{
-		for (size_t i = 0; i < m_runUserCmdHooks.length(); ++i)
+		for (size_t i = 0; i < m_runUserCmdHooks.size(); ++i)
 		{
 			delete m_runUserCmdHooks[i];
 		}
@@ -519,7 +519,7 @@ void CHookManager::OnPluginUnloaded(IPlugin *plugin)
 
 	if (PRCHPost_used && !m_usercmdsPostFwd->GetFunctionCount())
 	{
-		for (size_t i = 0; i < m_runUserCmdPostHooks.length(); ++i)
+		for (size_t i = 0; i < m_runUserCmdPostHooks.size(); ++i)
 		{
 			delete m_runUserCmdPostHooks[i];
 		}
@@ -530,7 +530,7 @@ void CHookManager::OnPluginUnloaded(IPlugin *plugin)
 
 	if (FILE_used && !m_netFileSendFwd->GetFunctionCount() && !m_netFileReceiveFwd->GetFunctionCount())
 	{
-		for (size_t i = 0; i < m_netChannelHooks.length(); ++i)
+		for (size_t i = 0; i < m_netChannelHooks.size(); ++i)
 		{
 			delete m_netChannelHooks[i];
 		}

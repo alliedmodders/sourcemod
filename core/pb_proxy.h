@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2017 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2020 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -28,64 +28,31 @@
  *
  * Version: $Id$
  */
- 
-#include "FrameIterator.h"
+#pragma once
 
-SafeFrameIterator::SafeFrameIterator(IFrameIterator *it)
-{	
-	while (!it->Done())
-	{
-		FrameInfo info = FrameInfo(it);
-		frames.push_back(info);
-		it->Next(); 
+#include <google/protobuf/message.h>
+
+class IProtobufProxy
+{
+public:
+	// Serialize the given message into a buffer. The buffer and its length are placed in |out|.
+	// The buffer must be freed with FreeBuffer.
+	virtual bool Serialize(const google::protobuf::Message* message, void** out, size_t* len) = 0;
+	virtual void FreeBuffer(void* data) = 0;
+
+	// Deserialize the given buffer into a message.
+	virtual bool Deserialize(const void* buffer, size_t len, google::protobuf::Message* message) = 0;
+
+	// Allocate/free a prototype.
+	virtual google::protobuf::Message* NewPrototype(int msg_type) = 0;
+	virtual void FreeMessage(google::protobuf::Message* message) = 0;
+
+	bool Serialize(const google::protobuf::Message& message, void** out, size_t* len) {
+		return Serialize(&message, out, len);
 	}
-	
-	it->Reset();
-	current = 0;
-}
-
-bool SafeFrameIterator::Done() const
-{
-	return current >= frames.size();
-}
-
-bool SafeFrameIterator::Next()
-{
-	current++;
-	return !this->Done();
-}
-
-void SafeFrameIterator::Reset()
-{
-	current = 0;
-}
-
-int SafeFrameIterator::LineNumber() const
-{
-	if (this->Done())
-	{
-		return -1;
+	bool Deserialize(const void* buffer, size_t len, google::protobuf::Message& message) {
+		return Deserialize(buffer, len, &message);
 	}
+};
 
-	return (int)frames[current].LineNumber;
-}
-
-const char *SafeFrameIterator::FunctionName() const
-{
-	if (this->Done())
-	{
-		return NULL;
-	}
-
-	return frames[current].FunctionName.c_str();
-}
-
-const char *SafeFrameIterator::FilePath() const
-{
-	if (this->Done())
-	{
-		return NULL;
-	}
-
-	return frames[current].FilePath.c_str();
-}
+typedef IProtobufProxy*(*GetProtobufProxyFn)();

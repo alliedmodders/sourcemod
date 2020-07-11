@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2017 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2020 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -28,64 +28,8 @@
  *
  * Version: $Id$
  */
- 
-#include "FrameIterator.h"
+#include "pb_handle.h"
 
-SafeFrameIterator::SafeFrameIterator(IFrameIterator *it)
-{	
-	while (!it->Done())
-	{
-		FrameInfo info = FrameInfo(it);
-		frames.push_back(info);
-		it->Next(); 
-	}
-	
-	it->Reset();
-	current = 0;
-}
-
-bool SafeFrameIterator::Done() const
-{
-	return current >= frames.size();
-}
-
-bool SafeFrameIterator::Next()
-{
-	current++;
-	return !this->Done();
-}
-
-void SafeFrameIterator::Reset()
-{
-	current = 0;
-}
-
-int SafeFrameIterator::LineNumber() const
-{
-	if (this->Done())
-	{
-		return -1;
-	}
-
-	return (int)frames[current].LineNumber;
-}
-
-const char *SafeFrameIterator::FunctionName() const
-{
-	if (this->Done())
-	{
-		return NULL;
-	}
-
-	return frames[current].FunctionName.c_str();
-}
-
-const char *SafeFrameIterator::FilePath() const
-{
-	if (this->Done())
-	{
-		return NULL;
-	}
-
-	return frames[current].FilePath.c_str();
-}
+#if defined PROTOBUF_PROXY_ENABLE
+IProtobufProxy* gProtobufProxy = nullptr;
+#endif

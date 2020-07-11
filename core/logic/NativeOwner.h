@@ -33,7 +33,6 @@
 
 #include <sp_vm_types.h>
 #include <sh_list.h>
-#include <am-linkedlist.h>
 #include <am-vector.h>
 #include "common_logic.h"
 #include "Native.h"
@@ -80,8 +79,8 @@ protected:
 	List<CPlugin *> m_Dependents;
 	unsigned int m_nMarkSerial;
 	List<WeakNative> m_WeakRefs;
-	ke::Vector<const sp_nativeinfo_t *> m_natives;
-	ke::Vector<ke::RefPtr<Native> > m_fakes;
+	std::vector<const sp_nativeinfo_t *> m_natives;
+	std::vector<ke::RefPtr<Native> > m_fakes;
 };
 
 extern CNativeOwner g_CoreNatives;
