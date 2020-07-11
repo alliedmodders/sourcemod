@@ -574,7 +574,7 @@ void SDKTools::OnTimerEnd(ITimer *pTimer, void *pData)
 #if defined CLIENTVOICE_HOOK_SUPPORT
 void SDKTools::OnClientVoice(edict_t *pPlayer)
 {
-	if (pPlayer)
+	if (!pPlayer)
 	{
 		return;
 	}
