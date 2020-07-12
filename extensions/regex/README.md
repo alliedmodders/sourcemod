@@ -9,14 +9,16 @@ We build with the MinSizeForRelease VS configuration using the target architectu
 
 In the PCRE project, go to C/C++ configuration properties and select the Runtime Library to be Multi-threaded (`/MT`) instead of Multi-threaded DLL (`/MD`)
 
-
 ## Mac
+For x86 or x86_64 add -m32 or -m64 to `CFLAGS`
 
-### x86_64
-export CFLAGS='-mmacosx-version-min=10.7'
-./configure --enable-unicode-properties --enable-jit --disable-shared --enable-utf && make
+`export CFLAGS='-mmacosx-version-min=10.7'`
 
-### x86
-export CFLAGS='-mmacosx-version-min=10.7 -m32'
-./configure --enable-unicode-properties --enable-jit --disable-shared --enable-utf && make
+`./configure --enable-unicode-properties --enable-jit --disable-shared --enable-utf && make`
 
+## Linux
+For x86 or x86_64 add -m32 or -m64 to `CFLAGS`
+
+`export CFLAGS='-Wa,-mrelax-reloactions=no'`
+
+`./configure --enable-unicode-properties --enable-jit --disable-shared --enable-utf && make`
