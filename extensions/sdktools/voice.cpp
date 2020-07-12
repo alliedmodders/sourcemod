@@ -377,10 +377,6 @@ static cell_t IsClientSpeaking(IPluginContext *pContext, const cell_t *params)
 	{
 		return false;
 	}
-	else if (player->IsFakeClient())
-	{
-		return false;
-	}
 	
 	return g_hTimerSpeaking[params[1]] != nullptr;
 }
