@@ -1,12 +1,10 @@
 version: 1.0.{build}
-
 image: Visual Studio 2015
-
 clone_folder: c:\projects\sourcemod
-
 install:
 - ps: >-
     git submodule update --init --recursive 2>&1 | Write-Host
+
     Function Checkout-Repo($name, $branch, $repo, $origin)
     {
         if (-not (Test-Path $name -PathType Container))
@@ -33,6 +31,7 @@ install:
     [System.Environment]::CurrentDirectory = Get-Location
 
     cd ..
+
     [System.Environment]::CurrentDirectory = Get-Location
 
     if (-not (Test-Path "sourcemod" -PathType Container))
@@ -42,6 +41,7 @@ install:
     }
 
     Checkout-Repo "mmsource-1.10" "1.10-dev" "https://github.com/alliedmodders/metamod-source"
+
     $SDKS = @( "csgo", "l4d2", "tf2", "episode1" )
 
     if (-not (Test-Path "hl2sdk-proxy-repo" -PathType Container))
@@ -54,18 +54,20 @@ install:
         git fetch 2>&1 | Write-Host
         cd ..
     }
+
     $SDKS | % {
         Checkout-Repo "hl2sdk-$_" $_ "hl2sdk-proxy-repo" "https://github.com/alliedmodders/hl2sdk"
     }
+
     Checkout-Repo "ambuild" "master" "https://github.com/alliedmodders/ambuild"
+
     cd ambuild
-    c:\python27\python.exe setup.py install
+    & c:\python27\python.exe setup.py install
     Set-Location $env:APPVEYOR_BUILD_FOLDER
     [System.Environment]::CurrentDirectory = Get-Location
-
 build_script:
 - cmd: >-
-    "%VS120COMNTOOLS%\vsvars32.bat"
+    "%VS140COMNTOOLS%\vsvars32.bat"
     mkdir build
     cd build
     c:\python27\python.exe ..\configure.py --enable-optimize --no-mysql --sdks=episode1,tf2,l4d2,csgo
