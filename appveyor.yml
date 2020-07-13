@@ -62,7 +62,7 @@ install:
     Checkout-Repo "ambuild" "master" "https://github.com/alliedmodders/ambuild"
 
     cd ambuild
-    & c:\python27\python.exe setup.py install
+    c:\python27\python.exe setup.py install
     Set-Location $env:APPVEYOR_BUILD_FOLDER
     [System.Environment]::CurrentDirectory = Get-Location
 build_script:
