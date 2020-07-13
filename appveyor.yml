@@ -1,12 +1,12 @@
 version: 1.0.{build}
 image: Visual Studio 2015
-clone_folder: c:\projects\sourcemod
+clone_folder: c:/projects/sourcemod
 install:
 - cmd: cd ..
 - ps: sourcemod/tools/checkout-deps.ps1 -SDKs csgo,l4d2,tf2,episode1
 - cmd: cd sourcemod
 build_script:
-- cmd: "%VS140COMNTOOLS%\vsvars32.bat"
+- cmd: "%VS140COMNTOOLS%/vsvars32.bat"
 - cmd: mkdir build
 - cmd: cd build
 - cmd: c:\python27\python.exe ../configure.py --enable-optimize --no-mysql --sdks=episode1,tf2,l4d2,csgo
