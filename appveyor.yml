@@ -1,0 +1,16 @@
+version: 1.0.{build}
+image: Visual Studio 2015
+clone_folder: c:/projects/sourcemod
+clone_depth: 1
+install:
+- cmd: git submodule update --init --recursive
+- cmd: git pull --recurse-submodules
+- cmd: cd ..
+- ps: sourcemod/tools/checkout-deps.ps1 -SDKs episode1,css,tf2,l4d2,csgo,dota
+- cmd: cd sourcemod
+build_script:
+- cmd: call "%VS140COMNTOOLS%/vsvars32.bat"
+- cmd: mkdir build
+- cmd: cd build
+- cmd: c:\python27\python.exe ../configure.py --enable-optimize --no-mysql --sdks=episode1,css,tf2,l4d2,csgo,dota
+- cmd: C:\python27\Scripts\ambuild
