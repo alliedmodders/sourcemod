@@ -1,6 +1,7 @@
 version: 1.0.{build}
 image: Visual Studio 2015
 clone_folder: c:/projects/sourcemod
+clone_depth: 1
 install:
 - cmd: cd ..
 - ps: sourcemod/tools/checkout-deps.ps1 -SDKs csgo,l4d2,tf2,episode1
