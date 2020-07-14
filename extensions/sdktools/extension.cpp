@@ -359,8 +359,8 @@ void SDKTools::SDK_OnAllLoaded()
 	g_Hooks.Initialize();
 	InitializeValveGlobals();
 	
-	m_OnClientSpeaking = forwards->CreateForward("OnClientSpeaking", ET_Event, 1, NULL, Param_Cell);
-	m_OnClientSpeakingEnd = forwards->CreateForward("OnClientSpeakingEnd", ET_Event, 1, NULL, Param_Cell);
+	m_OnClientSpeaking = forwards->CreateForward("OnClientSpeaking", ET_Ignore, 1, NULL, Param_Cell);
+	m_OnClientSpeakingEnd = forwards->CreateForward("OnClientSpeakingEnd", ET_Ignore, 1, NULL, Param_Cell);
 }
 
 void SDKTools::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
