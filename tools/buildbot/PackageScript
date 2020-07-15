@@ -272,7 +272,7 @@ CopyFiles('gamedata/sdktools.games', 'addons/sourcemod/gamedata/sdktools.games',
   ]
 )
 CopyFiles('gamedata/core.games', 'addons/sourcemod/gamedata/core.games',
-  [ 'blacklist.plugins.txt',
+  [ 'blocklist.plugins.txt',
     'common.games.txt',
     'engine.bgt.txt',
     'engine.blade.txt',
