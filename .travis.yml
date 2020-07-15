@@ -16,8 +16,6 @@ jobs:
           sources:
             - ubuntu-toolchain-r-test
           packages: ['clang-3.8', 'lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev:i386', 'g++-4.9-multilib']
-      cache:
-        directories: ['../mysql-5.0']
       env:
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
         - SDKS=episode1,css,tf2,l4d2,csgo,dota
@@ -32,8 +30,6 @@ jobs:
           sources:
             - ubuntu-toolchain-r-test
           packages: ['clang-3.4', 'lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev:i386', 'g++-4.9-multilib']
-      cache:
-        directories: ['../mysql-5.0']
       env:
         - MATRIX_EVAL="CC=clang && CXX=clang++"
         - SDKS=episode1,css,tf2,l4d2,csgo,dota
@@ -72,8 +68,6 @@ jobs:
       addons:
         apt:
           packages: ['lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev:i386', 'g++-multilib', 'clang']
-      cache:
-        directories: ['../mysql-5.0']
       env:
         - MATRIX_EVAL="CC=clang && CXX=clang++"
         - SDKS=csgo
