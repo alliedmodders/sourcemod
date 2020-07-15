@@ -677,7 +677,7 @@ static cell_t CloneTrie(IPluginContext *pContext, const cell_t *params)
 			}
 			else
 			{
-				delete pNewTrie;
+				handlesys->FreeHandle(hndl, NULL);
 				return pContext->ThrowNativeError("Unhandled data type encountered, file a bug and reference pr #852");
 			}
 		}
