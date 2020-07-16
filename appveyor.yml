@@ -13,4 +13,4 @@ build_script:
 - cmd: mkdir build
 - cmd: cd build
 - cmd: c:\python27\python.exe ../configure.py --enable-optimize --no-mysql --sdks=episode1,css,tf2,l4d2,csgo,dota
-- cmd: C:\python27\Scripts\ambuild
+- cmd: ambuild
