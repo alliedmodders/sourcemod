@@ -459,11 +459,10 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 				continue;
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 			if (plinfo->GetTeamIndex() != 0 && plinfo->GetTeamIndex() != 1)
-				continue;
 #else
 			if (plinfo->GetTeamIndex() != 1)
-				continue;
 #endif
+				continue;
 			if (playerhelpers->FilterCommandTarget(pAdmin, player, info->flags) ==
 				COMMAND_TARGET_VALID)
 			{
