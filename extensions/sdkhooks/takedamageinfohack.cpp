@@ -30,6 +30,7 @@
  * Version: $Id$
  */
 
+#include "extension.h"
 #include "takedamageinfohack.h"
 
 CTakeDamageInfo::CTakeDamageInfo(){}
@@ -37,6 +38,16 @@ CTakeDamageInfo::CTakeDamageInfo(){}
 CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *pAttacker, float flDamage, int bitsDamageType, CBaseEntity *pWeapon, Vector vecDamageForce, Vector vecDamagePosition )
 {
 	m_hInflictor = pInflictor;
+#if SOURCE_ENGINE == SE_CSGO
+	if ( pAttacker )
+	{
+		SetAttacker(pAttacker);
+	}
+	else
+	{
+		SetAttacker(pInflictor);
+	}
+#else
 	if ( pAttacker )
 	{
 		m_hAttacker = pAttacker;
@@ -45,6 +56,7 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	{
 		m_hAttacker = pInflictor;
 	}
+#endif
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX && SOURCE_ENGINE != SE_LEFT4DEAD
 	m_hWeapon = pWeapon;
@@ -95,3 +107,28 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_uiRecoilIndex = 0;
 #endif
 }
+
+#if SOURCE_ENGINE == SE_CSGO
+void CTakeDamageInfoHack::SetAttacker(CBaseEntity *pAttacker)
+{
+	m_CSGOAttacker.m_bNeedInit = false;
+	m_CSGOAttacker.m_hHndl = pAttacker;
+	m_CSGOAttacker.m_bIsWorld = true;
+
+	int entity = gamehelpers->EntityToBCompatRef(pAttacker);
+	IGamePlayer *player = playerhelpers->GetGamePlayer(entity);
+	if (player) {
+		m_CSGOAttacker.m_bIsWorld = false;
+		m_CSGOAttacker.m_bIsPlayer = true;
+		m_CSGOAttacker.m_iClientIndex = player->GetIndex();
+		m_CSGOAttacker.m_iUserId = player->GetUserId();
+
+		IPlayerInfo *playerinfo = player->GetPlayerInfo();
+		if (!playerinfo) {
+			return;
+		}
+		m_CSGOAttacker.m_iTeamChecked = playerinfo->GetTeamIndex();
+		m_CSGOAttacker.m_iTeamNum = playerinfo->GetTeamIndex();
+	}
+}
+#endif
