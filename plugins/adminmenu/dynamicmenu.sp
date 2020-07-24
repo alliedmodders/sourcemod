@@ -49,6 +49,7 @@ enum SubMenu_Type
 	SubMenu_Group,
 	SubMenu_GroupPlayer,
 	SubMenu_Player,
+	SubMenu_Self,
 	SubMenu_MapCycle,
 	SubMenu_List,
 	SubMenu_OnOff	
@@ -205,6 +206,10 @@ void BuildDynamicMenu()
 				{			
 					submenuInput.type = SubMenu_Player;
 				}
+				else if (StrContains(inputBuffer, "self") != -1)
+				{			
+					submenuInput.type = SubMenu_Self;
+				}
 				else if (StrEqual(inputBuffer,"onoff"))
 				{
 					submenuInput.type = SubMenu_OnOff;
@@ -255,7 +260,7 @@ void BuildDynamicMenu()
 					submenuInput.listcount = listcount;
 				}
 				
-				if ((submenuInput.type == SubMenu_Player) || (submenuInput.type == SubMenu_GroupPlayer))
+				if ((submenuInput.type == SubMenu_Player) || (submenuInput.type == SubMenu_GroupPlayer) || (submenuInput.type == SubMenu_Self))
 				{
 					kvMenu.GetString("method", inputBuffer, sizeof(inputBuffer));
 					
@@ -488,7 +493,7 @@ public void ParamCheck(int client)
 				}
 			}
 		}
-		else if ((outputSubmenu.type == SubMenu_Player) || (outputSubmenu.type == SubMenu_GroupPlayer))
+		else if ((outputSubmenu.type == SubMenu_Player) || (outputSubmenu.type == SubMenu_GroupPlayer) || outputSubmenu.type == SubMenu_Self)
 		{
 			PlayerMethod playermethod = outputSubmenu.method;
 		
@@ -500,7 +505,12 @@ public void ParamCheck(int client)
 			for (int i=1; i<=MaxClients; i++)
 			{
 				if (IsClientInGame(i))
-				{			
+				{
+					if ((outputSubmenu.type == SubMenu_Self) && (i != client))
+					{
+							continue;
+					}
+					
 					GetClientName(i, nameBuffer, sizeof(nameBuffer));
 					
 					switch (playermethod)
@@ -573,7 +583,7 @@ public void ParamCheck(int client)
 	}
 	else
 	{	
-		//nothing else need to be done. Run teh command.
+		//nothing else need to be done. Run the command.
 		
 		hAdminMenu.Display(client, TopMenuPosition_LastCategory);
 		
