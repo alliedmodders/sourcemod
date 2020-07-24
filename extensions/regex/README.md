@@ -19,6 +19,6 @@ For x86 or x86_64 add -m32 or -m64 to `CFLAGS`
 ## Linux
 For x86 or x86_64 add -m32 or -m64 to `CFLAGS`
 
-`export CFLAGS='-Wa,-mrelax-reloactions=no'`
+`export CFLAGS='-Wa,-mrelax-relocations=no -fPIC'`
 
 `./configure --enable-unicode-properties --enable-jit --disable-shared --enable-utf && make`
