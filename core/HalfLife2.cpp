@@ -1061,7 +1061,7 @@ int CHalfLife2::ReferenceToIndex(cell_t entRef)
 		return hndl.GetEntryIndex();
 	}
 
-	return entRef;
+	return INVALID_EHANDLE_INDEX;
 }
 
 cell_t CHalfLife2::EntityToBCompatRef(CBaseEntity *pEntity)
