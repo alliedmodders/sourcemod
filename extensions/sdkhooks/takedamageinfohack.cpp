@@ -58,8 +58,8 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_bitsDamageType = bitsDamageType;
 
 	m_flMaxDamage = flDamage;
-	m_vecDamageForce = vec3_origin;
-	m_vecDamagePosition = vec3_origin;
+	m_vecDamageForce = vecDamageForce;
+	m_vecDamagePosition = vecDamagePosition;
 	m_vecReportedPosition = vec3_origin;
 	m_iAmmoType = -1;
 
