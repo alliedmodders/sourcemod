@@ -109,6 +109,11 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 }
 
 #if SOURCE_ENGINE == SE_CSGO
+int CTakeDamageInfoHack::GetAttacker() const
+{
+	return m_CSGOAttacker.m_hHndl.IsValid() ? m_CSGOAttacker.m_hHndl.GetEntryIndex() : -1;
+}
+
 void CTakeDamageInfoHack::SetAttacker(CBaseEntity *pAttacker)
 {
 	m_CSGOAttacker.m_bNeedInit = false;
@@ -130,5 +135,15 @@ void CTakeDamageInfoHack::SetAttacker(CBaseEntity *pAttacker)
 		m_CSGOAttacker.m_iTeamChecked = playerinfo->GetTeamIndex();
 		m_CSGOAttacker.m_iTeamNum = playerinfo->GetTeamIndex();
 	}
+}
+#else
+int CTakeDamageInfoHack::GetAttacker() const
+{
+	return m_hAttacker.IsValid() ? m_hAttacker.GetEntryIndex() : -1;
+}
+
+void CTakeDamageInfoHack::SetAttacker(CBaseEntity *pAttacker)
+{
+	CTakeDamageInfo::SetAttacker(pAttacker);
 }
 #endif
