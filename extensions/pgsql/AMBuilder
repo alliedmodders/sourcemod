@@ -34,6 +34,14 @@ for arch in SM.archs:
       'ws2_32.lib',
       'secur32.lib'
     ]
+  elif builder.target.platform == 'mac':
+    if arch == 'x86':
+      path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_darwin')
+    elif arch == 'x64':
+      path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_darwin64')
+    binary.compiler.postlink += [
+      os.path.join(path, 'libpq.a')
+    ]
 
   binary.compiler.cxxincludes += [path]
 
