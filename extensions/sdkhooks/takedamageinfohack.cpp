@@ -38,7 +38,6 @@ CTakeDamageInfo::CTakeDamageInfo(){}
 CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *pAttacker, float flDamage, int bitsDamageType, CBaseEntity *pWeapon, Vector vecDamageForce, Vector vecDamagePosition )
 {
 	m_hInflictor = pInflictor;
-#if SOURCE_ENGINE == SE_CSGO
 	if ( pAttacker )
 	{
 		SetAttacker(pAttacker);
@@ -47,16 +46,6 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	{
 		SetAttacker(pInflictor);
 	}
-#else
-	if ( pAttacker )
-	{
-		m_hAttacker = pAttacker;
-	}
-	else
-	{
-		m_hAttacker = pInflictor;
-	}
-#endif
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX && SOURCE_ENGINE != SE_LEFT4DEAD
 	m_hWeapon = pWeapon;
