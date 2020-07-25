@@ -658,6 +658,7 @@ native int EntIndexToEntRef(int entity);
  *
  * @param ref           Entity reference.
  * @return              Entity index.
+ * @error               Returns INVALID_ENT_REFERENCE if invalid ref.
  */
 native int EntRefToEntIndex(int ref);
 
