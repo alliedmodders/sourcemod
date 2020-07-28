@@ -91,8 +91,43 @@ $SDKS | % {
     Checkout-Repo -Name "hl2sdk-$_" -Branch $_ -Repo "hl2sdk-proxy-repo" "https://github.com/alliedmodders/hl2sdk.git"
 }
 
-Checkout-Repo -Name "ambuild" -Branch "master" -Repo "https://github.com/alliedmodders/ambuild.git"
-Set-Location ambuild
-& python setup.py install
+$PYTHON_CMD = Get-Command 'python' -ErrorAction SilentlyContinue
+if ($PYTHON_CMD -eq $NULL)
+{
+    $PYTHON_CMD = Get-Command 'py' -ErrorAction SilentlyContinue
+    if ($PYTHON_CMD -eq $NULL)
+    {
+        Write-Error "Python is required to build SourceMod"
+        Exit 1
+    }
+}
 
-Set-Location ..
+$PYTHON_CMD = $PYTHON_CMD.Source
+
+& $PYTHON_CMD -c 'import ambuild2' 2>&1 1>$NULL
+if ($LastExitCode -eq 1)
+{
+    Write-Error "AMBuild is required to build SourceMod"
+
+    & $PYTHON_CMD -c 'import setuptools' 2>&1 1>$NULL
+    if ($LastExitCode -eq 1)
+    {
+        Write-Host "This script will install 'pip' in order to install 'setuptools'"
+
+        Invoke-WebRequest -Uri "https://bootstrap.pypa.io/get-pip.py" -OutFile 'get-pip.py'
+        & $PYTHON_CMD 'get-pip.py'
+        Remove-Item 'get-pip.py'
+    }
+
+    & $PYTHON_CMD -c 'import setuptools' 2>&1 1>$NULL
+    if ($LastExitCode -eq 1)
+	{
+        Write-Error "Installation of 'setuptools' failed. ABORTING!"
+        Exit 1
+    }
+
+    Checkout-Repo -Name "ambuild" -Branch "master" -Repo "https://github.com/alliedmodders/ambuild.git"
+    Set-Location ambuild
+    & $PYTHON_CMD setup.py install --user
+    Set-Location ..
+}
