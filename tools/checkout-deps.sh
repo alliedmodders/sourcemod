@@ -3,6 +3,17 @@
 
 trap "exit" INT
 
+# List of HL2SDK branch names to download.
+# ./checkout-deps.sh -s tf2,css
+while getopts ":s:" opt; do
+  case $opt in
+    s) IFS=', ' read -r -a sdks <<< "$OPTARG"
+    ;;
+    \?) echo "Invalid option -$OPTARG" >&2
+    ;;
+  esac
+done
+
 ismac=0
 iswin=0
 
@@ -97,15 +108,17 @@ repo="https://github.com/alliedmodders/metamod-source"
 origin=
 checkout
 
-sdks=( csgo hl2dm nucleardawn l4d2 dods l4d css tf2 insurgency sdk2013 doi )
-
-if [ $ismac -eq 0 ]; then
-  # Add these SDKs for Windows or Linux
-  sdks+=( orangebox blade episode1 bms )
-
-  # Add more SDKs for Windows only
-  if [ $iswin -eq 1 ]; then
-    sdks+=( darkm swarm bgt eye contagion )
+if [ -z ${sdks+x} ]; then
+  sdks=( csgo hl2dm nucleardawn l4d2 dods l4d css tf2 insurgency sdk2013 doi )
+  
+  if [ $ismac -eq 0 ]; then
+    # Add these SDKs for Windows or Linux
+    sdks+=( orangebox blade episode1 bms )
+  
+    # Add more SDKs for Windows only
+    if [ $iswin -eq 1 ]; then
+      sdks+=( darkm swarm bgt eye contagion )
+    fi
   fi
 fi
 
