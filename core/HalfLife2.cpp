@@ -340,7 +340,7 @@ bool UTIL_FindInSendTable(SendTable *pTable,
 		if (pname && strcmp(name, pname) == 0)
 		{
 			// get true offset of CUtlVector
-			if (prop->GetOffset() == 0 && pInnerTable && pInnerTable->GetNumProps() && strstr(pInnerTable->GetProp(0)->GetName(), "lengthproxy") != nullptr)
+			if (prop->GetOffset() == 0 && pInnerTable && pInnerTable->GetNumProps() && strncmp(pInnerTable->GetProp(0)->GetName(), "lengthproxy", 11) == 0)
 			{
 				SendProp *pLengthProxy = pInnerTable->GetProp(0);
 				HACK_CSendPropExtra_UtlVector *pExtra = (HACK_CSendPropExtra_UtlVector*) pLengthProxy->GetExtraData();
