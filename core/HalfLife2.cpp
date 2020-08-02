@@ -313,6 +313,16 @@ IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
 }
 #endif
 
+struct HACK_CSendPropExtra_UtlVector
+{
+	SendTableProxyFn m_DataTableProxyFn;	// If it's a datatable, then this is the proxy they specified.
+	SendVarProxyFn m_ProxyFn;				// If it's a non-datatable, then this is the proxy they specified.
+	void* m_EnsureCapacityFn;
+	int m_ElementStride;					// Distance between each element in the array.
+	int m_Offset;							// # bytes from the parent structure to its utlvector.
+	int m_nMaxElements;						// For debugging...
+};
+
 bool UTIL_FindInSendTable(SendTable *pTable, 
 						  const char *name,
 						  sm_sendprop_info_t *info,
@@ -326,15 +336,25 @@ bool UTIL_FindInSendTable(SendTable *pTable,
 	{
 		prop = pTable->GetProp(i);
 		pname = prop->GetName();
+		SendTable *pInnerTable = prop->GetDataTable();
 		if (pname && strcmp(name, pname) == 0)
 		{
+			// get true offset of CUtlVector
+			if (prop->GetOffset() == 0 && pInnerTable && pInnerTable->GetNumProps() && strstr(pInnerTable->GetProp(0)->GetName(), "lengthproxy") != nullptr)
+			{
+				SendProp *pLengthProxy = pInnerTable->GetProp(0);
+				HACK_CSendPropExtra_UtlVector *pExtra = (HACK_CSendPropExtra_UtlVector*) pLengthProxy->GetExtraData();
+				info->prop = prop;
+				info->actual_offset = offset + pExtra->m_Offset;
+				return true;
+			}
 			info->prop = prop;
 			info->actual_offset = offset + info->prop->GetOffset();
 			return true;
 		}
-		if (prop->GetDataTable())
+		if (pInnerTable)
 		{
-			if (UTIL_FindInSendTable(prop->GetDataTable(), 
+			if (UTIL_FindInSendTable(pInnerTable, 
 				name,
 				info,
 				offset + prop->GetOffset())
