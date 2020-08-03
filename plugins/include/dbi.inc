@@ -360,7 +360,7 @@ methodmap Database < Handle
 	// 
 	// Example: "utf8", "latin1"
 	//
-	// @param characterset  The character set string to change to.
+	// @param charset       The character set string to change to.
 	// @return              True, if character set was changed, false otherwise.
 	public native bool SetCharset(const char[] charset);
 
@@ -590,7 +590,7 @@ native void SQL_GetDriverProduct(Handle driver, char[] product, int maxlength);
  * Example: "utf8", "latin1"
  *
  * @param database      Database Handle.
- * @param characterset  The character set string to change to.
+ * @param charset       The character set string to change to.
  * @return              True, if character set was changed, false otherwise.
  */
 native bool SQL_SetCharset(Handle database, const char[] charset);
