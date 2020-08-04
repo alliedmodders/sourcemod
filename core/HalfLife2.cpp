@@ -60,6 +60,7 @@ ConVar *sv_lan = NULL;
 static void *g_EntList = NULL;
 static void **g_pEntInfoList = NULL;
 static int entInfoOffset = -1;
+static int utlVecOffsetOffset = -1;
 
 static CEntInfo *EntInfoArray()
 {
@@ -144,6 +145,7 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 	m_CSGOBadList.add("m_nActiveCoinRank");
 	m_CSGOBadList.add("m_nMusicID");
 #endif
+	g_pGameConf->GetOffset("SendPropExtraVecOffset", &utlVecOffsetOffset);
 }
 
 ConfigResult CHalfLife2::OnSourceModConfigChanged(const char *key, const char *value,
@@ -313,16 +315,6 @@ IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
 }
 #endif
 
-struct HACK_CSendPropExtra_UtlVector
-{
-	SendTableProxyFn m_DataTableProxyFn;	// If it's a datatable, then this is the proxy they specified.
-	SendVarProxyFn m_ProxyFn;				// If it's a non-datatable, then this is the proxy they specified.
-	void* m_EnsureCapacityFn;
-	int m_ElementStride;					// Distance between each element in the array.
-	int m_Offset;							// # bytes from the parent structure to its utlvector.
-	int m_nMaxElements;						// For debugging...
-};
-
 bool UTIL_FindInSendTable(SendTable *pTable, 
 						  const char *name,
 						  sm_sendprop_info_t *info,
@@ -340,13 +332,15 @@ bool UTIL_FindInSendTable(SendTable *pTable,
 		if (pname && strcmp(name, pname) == 0)
 		{
 			// get true offset of CUtlVector
-			if (prop->GetOffset() == 0 && pInnerTable && pInnerTable->GetNumProps() && strcmp(pInnerTable->GetProp(0)->GetName(), "lengthproxy") == 0)
+			if (utlVecOffsetOffset != -1 && prop->GetOffset() == 0 && pInnerTable && pInnerTable->GetNumProps())
 			{
 				SendProp *pLengthProxy = pInnerTable->GetProp(0);
-				HACK_CSendPropExtra_UtlVector *pExtra = (HACK_CSendPropExtra_UtlVector*) pLengthProxy->GetExtraData();
-				info->prop = prop;
-				info->actual_offset = offset + pExtra->m_Offset;
-				return true;
+				if (pLengthProxy->GetName() && strcmp(pLengthProxy->GetName(), "lengthproxy") == 0 && pLengthProxy->GetExtraData())
+				{
+					info->prop = prop;
+					info->actual_offset = offset + *(size_t*) ((intptr_t) pLengthProxy->GetExtraData() + utlVecOffsetOffset);
+					return true;
+				}
 			}
 			info->prop = prop;
 			info->actual_offset = offset + info->prop->GetOffset();
