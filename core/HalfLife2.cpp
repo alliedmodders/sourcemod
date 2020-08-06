@@ -145,7 +145,7 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 	m_CSGOBadList.add("m_nActiveCoinRank");
 	m_CSGOBadList.add("m_nMusicID");
 #endif
-	g_pGameConf->GetOffset("SendPropExtraVecOffset", &utlVecOffsetOffset);
+	g_pGameConf->GetOffset("CSendPropExtra_UtlVector::m_Offset", &utlVecOffsetOffset);
 }
 
 ConfigResult CHalfLife2::OnSourceModConfigChanged(const char *key, const char *value,
