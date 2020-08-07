@@ -238,6 +238,7 @@ public:  // IFeatureProvider
 
 public:  // IEntityListener
 	virtual void OnEntityCreated(CBaseEntity *pEntity);
+	virtual void OnEntitySpawned(CBaseEntity *pEntity);
 	virtual void OnEntityDeleted(CBaseEntity *pEntity);
 
 public:  // IClientListener
@@ -330,6 +331,7 @@ public:
 	
 private:
 	void HandleEntityCreated(CBaseEntity *pEntity, int index, cell_t ref);
+	void HandleEntitySpawned(CBaseEntity *pEntity, int index, cell_t ref);
 	void HandleEntityDeleted(CBaseEntity *pEntity);
 	void Unhook(CBaseEntity *pEntity);
 	void Unhook(IPluginContext *pContext);

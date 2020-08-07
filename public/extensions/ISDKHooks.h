@@ -36,7 +36,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_SDKHOOKS_NAME		"ISDKHooks"
-#define SMINTERFACE_SDKHOOKS_VERSION	1
+#define SMINTERFACE_SDKHOOKS_VERSION	2
 
 class CBaseEntity;
 
@@ -69,6 +69,16 @@ namespace SourceMod
 		 * @param	pEntity		CBaseEntity entity.
 		 */
 		virtual void OnEntityDestroyed(CBaseEntity *pEntity)
+		{
+		}
+
+		/**
+		 * @brief	When an entity is spawned
+		 *
+		 * @param	pEntity		CBaseEntity entity.
+		 * @param	classname	Entity classname.
+		 */
+		virtual void OnEntitySpawned(CBaseEntity *pEntity, const char *classname)
 		{
 		}
 	};
