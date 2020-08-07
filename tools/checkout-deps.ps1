@@ -101,35 +101,33 @@ if ($NULL -eq $PYTHON_CMD)
         $PYTHON_CMD = Get-Command 'py' -ErrorAction SilentlyContinue
         if ($NULL -eq $PYTHON_CMD)
         {
-            Write-Error 'No suitable installation of Python detected'
+            Write-Error 'No suitable installation of Python detected.'
             Exit 1
         }
     }
 }
 
 $PYTHON_CMD = $PYTHON_CMD.Source # Convert the result into a string path.
-
-& $PYTHON_CMD -c 'import ambuild2' 2>&1 1>$NULL
+& $PYTHON_CMD -m pip --version 2>&1 1>$NULL
 if ($LastExitCode -eq 1)
 {
-    Write-Host -ForegroundColor Red "AMBuild is required to build SourceMod"
+    Write-Host -ForegroundColor Red 'The detected Python installation does not have PIP installed.'
+    Write-Host "Using 'get-pip.py' to install the latest available version of PIP and setuptools."
 
-    # Ensure PIP is installed, otherwise, install it.
-    & $PYTHON_CMD -m pip --version 2>&1 1>$NULL # We use PIP's '--version' as it's the least verbose.
-    if ($LastExitCode -eq 1) {
-        Write-Host -ForegroundColor Red 'The detected Python installation does not have PIP'
-        Write-Host 'Installing the latest version of PIP available (VIA "get-pip.py")'
+    $GET_PIP = Join-Path $(Resolve-Path './') 'get-pip.py'
+    Invoke-WebRequest -Uri "https://bootstrap.pypa.io/get-pip.py" -OutFile $GET_PIP
 
-        $GET_PIP = Join-Path $(Resolve-Path './') 'get-pip.py'
-        Invoke-WebRequest -Uri "https://bootstrap.pypa.io/get-pip.py" -OutFile $GET_PIP
-
-        & $PYTHON_CMD $GET_PIP
-        if ($LastExitCode -eq 1) {
-            Write-Error 'Installation of PIP has failed'
-            Exit 1
-        }
+    & PYTHON_CMD $GET_PIP
+    if ($LastExitCode -eq 1)
+    {
+        Write-Error 'Installation of PIP has failed!'
+        Exit 1
     }
+}
 
-    Get-Repository -Name "ambuild" -Branch "master" -Repo "https://github.com/alliedmodders/ambuild.git"
-    & $PYTHON_CMD -m pip install ./ambuild
+& $PYTHON_CMD -m pip install -r sourcemod/build_requirements.txt
+if ($LastExitCode -eq 1)
+{
+    Write-Error "Installation of build requirements has failed, see PIP's output for details."
+    Exit 1
 }

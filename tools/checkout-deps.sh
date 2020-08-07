@@ -143,51 +143,45 @@ done
 python_cmd=`command -v python`
 if [ -z "$python_cmd" ]; then
   python_cmd=`command -v python3`
-
   if [ -z "$python_cmd" ]; then
-    echo "No suitable installation of Python detected"
+    echo "No suitable installation of Python detected."
     exit 1
   fi
 fi
 
-`$python_cmd -c "import ambuild2"` 2>&1 1>/dev/null
+$python_cmd -m pip --version 2>&1 1>/dev/null
 if [ $? -eq 1 ]; then
-  echo "AMBuild is required to build SourceMod"
+  echo "The detected Python installation does not have PIP installed."
+  echo "Using 'get-pip.py' to install the latest available version of PIP and setuptools."
+  echo "NOTE: YOUR SYSTEM MAY PROVIDE PIP AND SETUPTOOLS AS A PACKAGE."
 
-  `$python_cmd -m pip --version` 2>&1 1>/dev/null
-  if [ $? -eq 1 ]; then
-    echo "The detected Python installation does not have PIP"
-    echo "Installing the latest version of PIP available (VIA \"get-pip.py\")"
+  get_pip="./get-pip.py"
+  get_pip_url="https://bootstrap.pypa.io/get-pip.py"
 
-    get_pip="./get-pip.py"
-    get_pip_url="https://bootstrap.pypa.io/get-pip.py"
-
-    if [ `command -v wget` ]; then
-      wget $get_pip_url -O $get_pip
-    elif [ `command -v curl` ]; then
-      curl -o $get_pip $get_pip_url
-    else
-      echo "Failed to locate wget or curl. Install one of these programs to download 'get-pip.py'."
-      exit 1
-    fi
-
-    $python_cmd $get_pip
-    if [ $? -eq 1 ]; then
-      echo "Installation of PIP has failed"
-      exit 1
-    fi
-  fi
-
-  repo="https://github.com/alliedmodders/ambuild"
-  origin=
-  branch=master
-  name=ambuild
-  checkout
-
-  if [ $iswin -eq 1 ] || [ $ismac -eq 1 ]; then
-    $python_cmd -m pip install ./ambuild
+  if [ `command -v wget` ]; then
+    wget $get_pip_url -O $get_pip
+  elif [ `command -v curl` ]; then
+    curl -o get_pip $get_pip_url
   else
-    echo "Installing AMBuild at the user level. Location can be: ~/.local/bin"
-    $python_cmd -m pip install --user ./ambuild
+    echo "Failed to locate wget or curl."
+    echo "Install one of these programs to download 'get-pip.py'"
+    exit 1
   fi
+
+  $python_cmd $get_pip
+  if [ $? -eq 1 ]; then
+    echo "Installation of PIP has failed!"
+    exit 1
+  fi
+fi
+
+if [ $iswin -eq 1 ] || [ $ismac -eq 1 ]; then
+  $python_cmd -m pip install -r sourcemod/build_requirements.txt
+else
+  echo "Installing build dependencies at the user level. Location can be: ~/.local/bin"
+  $python_cmd -m pip install -r sourcemod/build_requirements.txt --user
+fi
+if [ $? -eq 1 ]; then
+  echo "Installation of build requirements has failed, see PIP's output for details."
+  exit 1
 fi

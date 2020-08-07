@@ -1,0 +1,2 @@
+setuptools
+git+https://github.com/alliedmodders/ambuild.git

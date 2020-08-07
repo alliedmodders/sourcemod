@@ -17,6 +17,7 @@ jobs:
             - ubuntu-toolchain-r-test
           packages: ['clang-3.8', 'lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev:i386', 'g++-4.9-multilib']
       env:
+        - PATH="~/.local/bin:$PATH"
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
         - SDKS=episode1,css,tf2,l4d2,csgo
         - MODE=optimize
@@ -31,6 +32,7 @@ jobs:
             - ubuntu-toolchain-r-test
           packages: ['clang-3.4', 'lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev:i386', 'g++-4.9-multilib']
       env:
+        - PATH="~/.local/bin:$PATH"
         - MATRIX_EVAL="CC=clang && CXX=clang++"
         - SDKS=episode1,css,tf2,l4d2,csgo
         - MODE=optimize
@@ -69,6 +71,7 @@ jobs:
         apt:
           packages: ['lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev:i386', 'g++-multilib', 'clang']
       env:
+        - PATH="~/.local/bin:$PATH"
         - MATRIX_EVAL="CC=clang && CXX=clang++"
         - SDKS=csgo
         - MODE=optimize
@@ -78,7 +81,6 @@ before_script:
   - CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh -s ${SDKS} && cd $CHECKOUT_DIR
 script:
   - mkdir build && cd build
-  - PATH="~/.local/bin:$PATH"
   - eval "${MATRIX_EVAL}"
   - eval "${CC} --version"
   - eval "${CXX} --version"
