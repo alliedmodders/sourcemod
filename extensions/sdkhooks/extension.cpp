@@ -888,6 +888,7 @@ void SDKHooks::OnEntityCreated(CBaseEntity *pEntity)
 void SDKHooks::OnEntitySpawned(CBaseEntity *pEntity)
 {
 	// Call OnEntitySpawned forward
+	int ref = gamehelpers->EntityToReference(pEntity);
 	int index = gamehelpers->ReferenceToIndex(ref);
 
 	// This can be -1 for player ents before any players have connected
@@ -902,7 +903,6 @@ void SDKHooks::OnEntitySpawned(CBaseEntity *pEntity)
 		return;
 	}
 
-	int ref = gamehelpers->EntityToReference(pEntity);
 	HandleEntitySpawned(pEntity, index, ref);
 }
 
