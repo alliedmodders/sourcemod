@@ -73,7 +73,10 @@ mysqlfolder=mysql-5.5-x86_64
 if [ $ismac -eq 1 ]; then
   mysqlver=mysql-5.5.28-osx10.5-x86_64
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
-elif [ $iswin -eq 0 ]; then
+elif [ $iswin -eq 1 ]; then
+  mysqlver=mysql-5.5.54-winx64
+  mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
+else
   mysqlver=mysql-5.6.15-linux-glibc2.5-x86_64
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.6/$mysqlver.$archive_ext
 fi
