@@ -20,6 +20,11 @@
 				"class"			"CBasePlayer"
 				"prop"			"m_lifeState"
 			}
+			"CSendPropExtra_UtlVector::m_Offset"
+			{
+				"windows"		"16"
+				"linux"			"16"
+			}
 		}
 	}
 	
