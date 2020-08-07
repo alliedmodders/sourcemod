@@ -1799,21 +1799,26 @@ bool SDKHooks::Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelin
 void SDKHooks::HandleEntityCreated(CBaseEntity *pEntity, int index, cell_t ref)
 {
 	const char *pName = gamehelpers->GetEntityClassname(pEntity);
-	cell_t bcompatRef = gamehelpers->EntityToBCompatRef(pEntity);
-
+	if (!pName)
+		pName = "";
+	
 	// Send OnEntityCreated to SM listeners
 	SourceHook::List<ISMEntityListener *>::iterator iter;
 	ISMEntityListener *pListener = NULL;
 	for (iter = m_EntListeners.begin(); iter != m_EntListeners.end(); iter++)
 	{
 		pListener = (*iter);
-		pListener->OnEntityCreated(pEntity, pName ? pName : "");
+		pListener->OnEntityCreated(pEntity, pName);
 	}
 
 	// Call OnEntityCreated forward
-	g_pOnEntityCreated->PushCell(bcompatRef);
-	g_pOnEntityCreated->PushString(pName ? pName : "");
-	g_pOnEntityCreated->Execute(NULL);
+	if (g_pOnEntityCreated->GetFunctionCount())
+	{
+		cell_t bcompatRef = gamehelpers->EntityToBCompatRef(pEntity);
+		g_pOnEntityCreated->PushCell(bcompatRef);
+		g_pOnEntityCreated->PushString(pName);
+		g_pOnEntityCreated->Execute(NULL);
+	}
 
 	m_EntityCache[index] = ref;
 }
@@ -1822,7 +1827,6 @@ void SDKHooks::HandleEntitySpawned(CBaseEntity *pEntity, int index, cell_t ref)
 {
 	if (g_pOnEntitySpawned->GetFunctionCount() || m_EntListeners.size())
 	{
-		cell_t bcompatRef = gamehelpers->EntityToBCompatRef(pEntity);
 		const char *pName = gamehelpers->GetEntityClassname(pEntity);
 		if (!pName)
 			pName = "";
@@ -1837,6 +1841,7 @@ void SDKHooks::HandleEntitySpawned(CBaseEntity *pEntity, int index, cell_t ref)
 		// Call OnEntitySpawned forward
 		if (g_pOnEntitySpawned->GetFunctionCount())
 		{
+			cell_t bcompatRef = gamehelpers->EntityToBCompatRef(pEntity);
 			g_pOnEntitySpawned->PushCell(bcompatRef);
 			g_pOnEntitySpawned->PushString(pName);
 			g_pOnEntitySpawned->Execute(NULL);
@@ -1846,8 +1851,6 @@ void SDKHooks::HandleEntitySpawned(CBaseEntity *pEntity, int index, cell_t ref)
 
 void SDKHooks::HandleEntityDeleted(CBaseEntity *pEntity)
 {
-	cell_t bcompatRef = gamehelpers->EntityToBCompatRef(pEntity);
-
 	// Send OnEntityDestroyed to SM listeners
 	SourceHook::List<ISMEntityListener *>::iterator iter;
 	ISMEntityListener *pListener = NULL;
@@ -1858,8 +1861,12 @@ void SDKHooks::HandleEntityDeleted(CBaseEntity *pEntity)
 	}
 
 	// Call OnEntityDestroyed forward
-	g_pOnEntityDestroyed->PushCell(bcompatRef);
-	g_pOnEntityDestroyed->Execute(NULL);
+	if (g_pOnEntityDestroyed->GetFunctionCount())
+	{
+		cell_t bcompatRef = gamehelpers->EntityToBCompatRef(pEntity);
+		g_pOnEntityDestroyed->PushCell(bcompatRef);
+		g_pOnEntityDestroyed->Execute(NULL);
+	}
 
 	Unhook(pEntity);
 }
