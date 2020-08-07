@@ -633,7 +633,7 @@ bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 		return false;
 	}
 
-	CItem item;
+	CItem item(m_items.size());
 
 	item.info = info;
 	if (draw.display)
@@ -655,7 +655,7 @@ bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDr
 	if (position >= m_items.size())
 		return false;
 
-	CItem item;
+	CItem item(position);
 	item.info = info;
 	if (draw.display)
 		item.display = std::make_unique<std::string>(draw.display);
@@ -679,10 +679,15 @@ void CBaseMenu::RemoveAllItems()
 	m_items.clear();
 }
 
-const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =NULL */)
+const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =NULL */, int client/* =0 */)
 {
 	if (position >= m_items.size())
 		return NULL;
+
+	if (client > 0 && position < m_RandomMaps[client].size())
+	{
+		position = m_RandomMaps[client][position];
+	}
 
 	if (draw)
 	{
@@ -691,6 +696,62 @@ const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =
 	}
 
 	return m_items[position].info.c_str();
+}
+
+void CBaseMenu::ShufflePerClient(int start, int stop)
+{
+	// limit map len to 255 items since it's using uint8
+	int length = MIN(GetItemCount(), 255);
+	if (stop >= 0)
+		length = MIN(length, stop);
+
+	for (int i = 1; i <= SM_MAXPLAYERS; i++)
+	{
+		// populate per-client map ...
+		m_RandomMaps[i].resize(length);
+		for (int j = 0; j < length; j++)
+			m_RandomMaps[i][j] = j;
+
+		// ... and random shuffle it
+		for (int j = length - 1; j > start; j--)
+		{
+			int x = rand() % (j - start + 1) + start;
+			uint8_t tmp = m_RandomMaps[i][x];
+			m_RandomMaps[i][x] = m_RandomMaps[i][j];
+			m_RandomMaps[i][j] = tmp;
+		}
+	}
+}
+
+void CBaseMenu::SetClientMapping(int client, int *array, int length)
+{
+	length = MIN(length, 255);
+	m_RandomMaps[client].resize(length);
+	for (int i = 0; i < length; i++)
+	{
+		m_RandomMaps[client][i] = array[i];
+	}
+}
+
+bool CBaseMenu::IsPerClientShuffled()
+{
+	for (int i = 1; i <= SM_MAXPLAYERS; i++)
+	{
+		if(m_RandomMaps[i].size() > 0)
+			return true;
+	}
+	return false;
+}
+
+unsigned int CBaseMenu::GetRealItemIndex(int client, unsigned int position)
+{
+	if (client > 0 && position < m_RandomMaps[client].size())
+	{
+		position = m_RandomMaps[client][position];
+		return m_items[position].index;
+	}
+
+	return position;
 }
 
 unsigned int CBaseMenu::GetItemCount()
