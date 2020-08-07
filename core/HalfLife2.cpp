@@ -335,10 +335,11 @@ bool UTIL_FindInSendTable(SendTable *pTable,
 			if (utlVecOffsetOffset != -1 && prop->GetOffset() == 0 && pInnerTable && pInnerTable->GetNumProps())
 			{
 				SendProp *pLengthProxy = pInnerTable->GetProp(0);
-				if (pLengthProxy->GetName() && strcmp(pLengthProxy->GetName(), "lengthproxy") == 0 && pLengthProxy->GetExtraData())
+				const char *ipname = pLengthProxy->GetName();
+				if (ipname && strcmp(ipname, "lengthproxy") == 0 && pLengthProxy->GetExtraData())
 				{
 					info->prop = prop;
-					info->actual_offset = offset + *(size_t*) ((intptr_t) pLengthProxy->GetExtraData() + utlVecOffsetOffset);
+					info->actual_offset = offset + *reinterpret_cast<size_t *>(reinterpret_cast<intptr_t>(pLengthProxy->GetExtraData()) + utlVecOffsetOffset);
 					return true;
 				}
 			}
