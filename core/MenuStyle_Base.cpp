@@ -705,7 +705,7 @@ void CBaseMenu::ShufflePerClient(int start, int stop)
 	if (stop >= 0)
 		length = MIN(length, stop);
 
-	for (int i = 1; i < SM_MAXPLAYERS + 1; i++)
+	for (int i = 1; i <= SM_MAXPLAYERS; i++)
 	{
 		// populate per-client map ...
 		m_RandomMaps[i].resize(length);
@@ -735,7 +735,7 @@ void CBaseMenu::SetClientMapping(int client, int *array, int length)
 
 bool CBaseMenu::IsPerClientShuffled()
 {
-	for (int i = 1; i < SM_MAXPLAYERS + 1; i++)
+	for (int i = 1; i <= SM_MAXPLAYERS; i++)
 	{
 		if(m_RandomMaps[i].size() > 0)
 			return true;
