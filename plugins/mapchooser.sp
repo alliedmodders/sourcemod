@@ -1007,7 +1007,7 @@ void CreateNextVote()
 		g_OldMapList.GetString(i, map, sizeof(map));
 		RemoveStringFromArray(tempMaps, map);
 	}
-	
+
 	int limit = (g_Cvar_IncludeMaxMaps.IntValue < tempMaps.Length ? g_Cvar_IncludeMaxMaps.IntValue : tempMaps.Length);
 	for (int i = 0; i < limit; i++)
 	{
