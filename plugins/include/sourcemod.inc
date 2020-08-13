@@ -281,6 +281,13 @@ native PluginStatus GetPluginStatus(Handle plugin);
 native void GetPluginFilename(Handle plugin, char[] buffer, int maxlength);
 
 /**
+ * Retrieves whether or not the plugin is loaded "late" (after map load).
+ *
+ * @return              True if loaded "late", false otherwise.
+ */
+native bool IsLateLoadTime();
+
+/**
  * Retrieves whether or not a plugin is being debugged.
  *
  * @param plugin        Plugin Handle (INVALID_HANDLE uses the calling plugin).

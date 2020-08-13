@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include "common_logic.h"
 #include "Logger.h"
+#include "PluginSys.h"
 
 #include <ISourceMod.h>
 #include <ITranslator.h>
@@ -302,6 +303,11 @@ static cell_t GetPluginFilename(IPluginContext *pContext, const cell_t *params)
 	pContext->StringToLocalUTF8(params[2], params[3], pPlugin->GetFilename(), NULL);
 
 	return 1;
+}
+
+static cell_t IsLateLoadTime(IPluginContext *pContext, const cell_t *params)
+{
+	return g_PluginSys.IsLateLoadTime() ? 1 : 0;
 }
 
 static cell_t IsPluginDebugging(IPluginContext *pContext, const cell_t *params)
@@ -956,6 +962,7 @@ REGISTER_NATIVES(coreNatives)
 	{"ReadPlugin",				ReadPlugin},
 	{"GetPluginStatus",			GetPluginStatus},
 	{"GetPluginFilename",		GetPluginFilename},
+	{"IsLateLoadTime",			IsLateLoadTime},
 	{"IsPluginDebugging",		IsPluginDebugging},
 	{"GetPluginInfo",			GetPluginInfo},
 	{"SetFailState",			SetFailState},
