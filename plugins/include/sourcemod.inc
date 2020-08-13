@@ -285,7 +285,7 @@ native void GetPluginFilename(Handle plugin, char[] buffer, int maxlength);
  *
  * @return              True if loaded "late", false otherwise.
  */
-native bool IsLateLoadTime();
+native bool IsLateLoad();
 
 /**
  * Retrieves whether or not a plugin is being debugged.

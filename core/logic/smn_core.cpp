@@ -305,7 +305,7 @@ static cell_t GetPluginFilename(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-static cell_t IsLateLoadTime(IPluginContext *pContext, const cell_t *params)
+static cell_t IsLateLoad(IPluginContext *pContext, const cell_t *params)
 {
 	return g_PluginSys.IsLateLoadTime() ? 1 : 0;
 }
@@ -962,7 +962,7 @@ REGISTER_NATIVES(coreNatives)
 	{"ReadPlugin",				ReadPlugin},
 	{"GetPluginStatus",			GetPluginStatus},
 	{"GetPluginFilename",		GetPluginFilename},
-	{"IsLateLoadTime",			IsLateLoadTime},
+	{"IsLateLoad",				IsLateLoad},
 	{"IsPluginDebugging",		IsPluginDebugging},
 	{"GetPluginInfo",			GetPluginInfo},
 	{"SetFailState",			SetFailState},
