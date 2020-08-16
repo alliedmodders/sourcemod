@@ -579,7 +579,7 @@ stock bool IsStringNumber(const char[] str, int nBase=10)
 stock bool IsStringFloat(const char[] str)
 {
 	float result;
-	return StringToFloatEx(str, result) == strlen(str) && FindCharInString(str, '.') != -1;
+	return StringToFloatEx(str, result) == strlen(str);
 }
 
 /**
@@ -590,17 +590,13 @@ stock bool IsStringFloat(const char[] str)
  */
 stock void StringToLowerCase(char[] szInput) 
 {
-    int iIterator = 0;
-    
-    while (szInput[iIterator] != EOS) 
-    {
-        if (!IsCharLower(szInput[iIterator])) szInput[iIterator] = CharToLower(szInput[iIterator]);
-        else szInput[iIterator] = szInput[iIterator];
-        
-        iIterator++;
-    }
-    
-    szInput[iIterator + 1] = EOS;
+	int iIterator = 0;
+
+	while (szInput[iIterator] != EOS)
+	{
+		szInput[iIterator] = CharToLower(szInput[iIterator]);
+		++iIterator;
+	}
 }
 
 /**
@@ -611,17 +607,13 @@ stock void StringToLowerCase(char[] szInput)
  */
 stock void StringToUpperCase(char[] szInput) 
 {
-    int iIterator = 0;
-    
-    while (szInput[iIterator] != EOS) 
-    {
-        if (!IsCharUpper(szInput[iIterator])) szInput[iIterator] = CharToUpper(szInput[iIterator]);
-        else szInput[iIterator] = szInput[iIterator];
-        
-        iIterator++;
-    }
-    
-    szInput[iIterator + 1] = EOS;
+	int iIterator = 0;
+
+	while (szInput[iIterator] != EOS)
+	{
+		szInput[iIterator] = CharToUpper(szInput[iIterator]);
+		++iIterator;
+	}
 }
 
 /**
@@ -648,22 +640,3 @@ stock int LastIndexOfChar(const char[] szText, const char cCharacter)
 {
 	return IndexOfChar(szText, cCharacter, true);
 } 
-
-/**
- * Copies the input string into the output string until it reaches the given character
- * 
- * @param szInput           Input string
- * @param szOutput          Output string
- * @param iOutputLength     Output max length
- * @param cCharacter        Character
- * 
- * @return                  void
-*/
-stock void CopyC(const char[] szInput, char[] szOutput, int iOutputLength, char cCharacter) {
-    int iInputIterator, iOutputIterator;
-    
-    while(szInput[iInputIterator] != EOS && iOutputIterator < iOutputLength && szInput[iInputIterator] != cCharacter)
-        szOutput[iOutputIterator ++] = szInput[iInputIterator ++];
-    
-    szOutput[iOutputIterator] = EOS;
-}
