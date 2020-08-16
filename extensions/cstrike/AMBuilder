@@ -1,7 +1,7 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-project = SM.HL2Project(builder, 'game.cstrike.ext')
+project = builder.LibraryProject('game.cstrike.ext')
 project.sources += [
   'extension.cpp',
   'natives.cpp',
@@ -19,16 +19,16 @@ project.sources += [
   '../../public/libudis86/syn.c',
   '../../public/libudis86/udis86.c',
 ]
-project.compiler.defines += ['HAVE_STRING_H'];
 
 for sdk_name in ['css', 'csgo']:
   if sdk_name not in SM.sdks:
     continue
   sdk = SM.sdks[sdk_name]
-  for arch in SM.archs:
-    if not arch in sdk.platformSpec[builder.target.platform]:
+  for cxx in builder.targets:
+    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
       continue
 
-    SM.HL2Config(project, 'game.cstrike.ext.' + sdk.ext, sdk, arch)
+    cxx.defines += ['HAVE_STRING_H'];
+    SM.HL2ExtConfig(project, builder, cxx, 'game.cstrike.ext.' + sdk.ext, sdk)
 
 SM.extensions += builder.Add(project)

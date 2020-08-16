@@ -53,10 +53,11 @@ if ($^O =~ /darwin/) {
 }
 
 if ($^O !~ /MSWin/) {
-	push(@conf_argv, '--target-arch=x86,x64');
+	push(@conf_argv, '--targets=x86,x86_64');
 } else {
-	push(@conf_argv, '--target-arch=x86');
+	push(@conf_argv, '--targets=x86');
 }
+push(@conf_argv, '--sdks=all');
 
 my $conf_args = join(' ', @conf_argv);
 

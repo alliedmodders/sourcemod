@@ -4,10 +4,10 @@ import os
 if 'tf2' in SM.sdks:
   sdk = SM.sdks['tf2']
   
-  for arch in SM.archs:
-    if not arch in sdk.platformSpec[builder.target.platform]:
+  for cxx in builder.targets:
+    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
       continue
-    binary = SM.HL2Library(builder, 'game.tf2.ext.' + sdk.ext, sdk, arch)
+    binary = SM.HL2Library(builder, cxx, 'game.tf2.ext.' + sdk.ext, sdk)
     binary.sources += [
       'extension.cpp',
       'natives.cpp',
