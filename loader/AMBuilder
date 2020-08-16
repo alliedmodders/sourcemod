@@ -1,18 +1,18 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os.path
 
-for arch in SM.archs:
-  if builder.target.platform in ['windows', 'mac']:
+for cxx in builder.targets:
+  if cxx.target.platform in ['windows', 'mac']:
     name = 'sourcemod_mm'
     extra_ldflags = []
-  elif builder.target.platform == 'linux':
+  elif cxx.target.platform == 'linux':
     name = 'sourcemod_mm_i486'
     extra_ldflags = ['-ldl']
 
-  if arch == 'x64':
+  if cxx.target.arch == 'x86_64':
     name = 'sourcemod_mm.x64'
 
-  binary = SM.Library(builder, name, arch)
+  binary = SM.Library(builder, cxx, name)
   binary.compiler.cxxincludes += [
     os.path.join(SM.mms_root, 'core'),
     os.path.join(SM.mms_root, 'sourcehook')
