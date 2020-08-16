@@ -360,6 +360,12 @@ static cell_t IsClientMuted(IPluginContext *pContext, const cell_t *params)
 	return g_ClientMutes[params[1]][params[2]];
 }
 
+/* FIXME: Presently if there's no hook present these natives will result in an invalid state.
+ * One suggestion could be to look at if the native is bound, and then invoke the hooks in the background.
+ * However, at that point really we should be enforcing the forward usage to catch new-consumers immediately.
+ * If you're looking to work on this, you're welcome to ping asherkin or KyleS, or even submit a patch to add this.
+ * Additional comments can be found here (if GitHub still exists): https://github.com/alliedmodders/sourcemod/pull/1247
+ */
 static cell_t IsClientSpeaking(IPluginContext *pContext, const cell_t *params)
 {
 	IGamePlayer *player;
@@ -390,6 +396,5 @@ sp_nativeinfo_t g_VoiceNatives[] =
 	{"SetListenOverride",			SetClientListening},
 	{"GetListenOverride",			GetClientListening},
 	{"IsClientMuted",				IsClientMuted},
-	{"IsClientSpeaking",			IsClientSpeaking},
 	{NULL,							NULL},
 };
