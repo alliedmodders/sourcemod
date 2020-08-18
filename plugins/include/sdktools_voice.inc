@@ -57,6 +57,20 @@ enum ListenOverride
 };
 
 /**
+ * Called when a client is speaking.
+ *
+ * @param client        The client index
+ */
+forward void OnClientSpeaking(int client);
+
+/**
+ * Called once a client speaking end.
+ *
+ * @param client        The client index
+ */
+forward void OnClientSpeakingEnd(int client);
+
+/**
  * Set the client listening flags.
  *
  * @param client        The client index
