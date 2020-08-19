@@ -26,7 +26,7 @@ for cxx_task in cxx_tasks:
         bin_dir = os.path.split(plat_dir)[0]
 
 	symbol_file = '{}-{}-{}.breakpad'.format(
-            os.path.dirname(bin_dir)[1],
+            os.path.split(bin_dir)[1],
             cxx_task.target.platform,
             cxx_task.target.arch)
 
