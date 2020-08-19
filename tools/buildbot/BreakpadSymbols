@@ -22,8 +22,8 @@ for cxx_task in cxx_tasks:
 	elif cxx_task.target.platform == 'windows':
 		argv = ['dump_syms.exe', debug_file]
 
-        plat_dir = os.path.dirname(debug_file)
-        bin_dir = os.path.split(plat_dir)[0]
+	plat_dir = os.path.dirname(debug_file)
+	bin_dir = os.path.split(plat_dir)[0]
 
 	symbol_file = '{}-{}-{}.breakpad'.format(
             os.path.split(bin_dir)[1],
