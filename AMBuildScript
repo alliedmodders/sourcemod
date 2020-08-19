@@ -667,6 +667,12 @@ class SMConfig(object):
     self.ConfigureForExtension(context, binary.compiler)
     return binary
 
+if getattr(builder, 'target', None) is not None:
+    sys.stderr.write("Your output folder was configured for AMBuild 2.1, and SourceMod is now\n")
+    sys.stderr.write("configured to use AMBuild 2.2. Please remove your output folder and\n")
+    sys.stderr.write("reconfigure to continue.\n")
+    os._exit(1)
+
 SM = SMConfig()
 SM.detectProductVersion()
 SM.detectSDKs()
