@@ -23,14 +23,16 @@ chdir(Build::PathFormat('..'));
 #Get the source path.
 our ($root) = getcwd();
 
-if (-f 'tools/buildbot/trigger_full_rebuild') {
-	my $trigger_mtime = (stat 'tools/buildbot/trigger_full_rebuild')[9];
-  if (-f 'OUTPUT/.ambuild2/graph') {
+my $trigger_file = 'build/tools/buildbot/trigger_full_rebuild';
+if (-f $trigger_file) {
+	my $trigger_mtime = (stat $trigger_file)[9];
+	if (-f 'OUTPUT/.ambuild2/graph') {
 		my $graph_mtime = (stat 'OUTPUT/.ambuild2/graph')[9];
 		if ($trigger_mtime > $graph_mtime) {
+			print "Trigger time $trigger_mtime > $graph_mtime, cleaning objdir...\n";
 			rmtree('OUTPUT');
 		}
-  }
+	}
 }
 if (!(-f 'OUTPUT/.ambuild2/graph') || !(-f 'OUTPUT/.ambuild2/vars')) {
 	rmtree('OUTPUT');
