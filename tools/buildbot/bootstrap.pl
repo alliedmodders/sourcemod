@@ -23,8 +23,15 @@ chdir(Build::PathFormat('..'));
 #Get the source path.
 our ($root) = getcwd();
 
-my $reconf = 0;
-
+if (-f 'tools/buildbot/trigger_full_rebuild') {
+	my $trigger_mtime = (stat 'tools/buildbot/trigger_full_rebuild')[9];
+  if (-f 'OUTPUT/.ambuild2/graph') {
+		my $graph_mtime = (stat 'OUTPUT/.ambuild2/graph')[9];
+		if ($trigger_mtime > $graph_mtime) {
+			rmtree('OUTPUT');
+		}
+  }
+}
 if (!(-f 'OUTPUT/.ambuild2/graph') || !(-f 'OUTPUT/.ambuild2/vars')) {
 	rmtree('OUTPUT');
 	mkdir('OUTPUT') or die("Failed to create output folder: $!\n");
@@ -75,15 +82,4 @@ if ($? != 0) {
 	die("Could not configure: $!\n");
 }
 
-sub IsNewer
-{
-	my ($file, $time) = (@_);
-
-	my @s = stat($file);
-	my $mtime = $s[9];
-	return $mtime > $time;
-}
-
 exit(0);
-
-
