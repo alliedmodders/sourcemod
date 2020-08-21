@@ -61,11 +61,7 @@ if ($^O =~ /darwin/) {
 	push(@conf_argv, '--hl2sdk-root=H:\\');
 }
 
-if ($^O !~ /MSWin/) {
-	push(@conf_argv, '--targets=x86,x86_64');
-} else {
-	push(@conf_argv, '--targets=x86');
-}
+push(@conf_argv, '--targets=x86,x86_64');
 push(@conf_argv, '--sdks=all');
 
 my $conf_args = join(' ', @conf_argv);
