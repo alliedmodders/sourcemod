@@ -51,7 +51,7 @@ for sdk_name in SM.sdks:
 
     binary_name = 'sourcemod.' + sdk.ext
 
-    binary = SM.HL2Config(project, cxx, binary_name, sdk)
+    binary = SM.HL2Config(project, builder, cxx, binary_name, sdk)
     SM.ConfigureForExtension(builder, binary.compiler)
 
     compiler = binary.compiler
@@ -103,7 +103,7 @@ for sdk_name in SM.sdks:
           lib_path = os.path.join(sdk.path, 'lib', 'win32', 'debug', 'vs' + vs_year, 'libprotobuf.lib')
         else:
           lib_path = os.path.join(sdk.path, 'lib', 'win32', 'release', 'vs' + vs_year, 'libprotobuf.lib')
-      compiler.linkflags.insert(0, binary.Dep(lib_path))
+      compiler.linkflags.insert(0, lib_path)
   
     if sdk.name in ['csgo', 'blade']:
       binary.sources += ['smn_protobuf.cpp']
