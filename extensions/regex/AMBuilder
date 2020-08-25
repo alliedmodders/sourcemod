@@ -27,7 +27,7 @@ for cxx in builder.targets:
       path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin', 'libpcre.a')
     elif arch == 'x86_64':
       path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin64', 'libpcre.a')
-  binary.compiler.postlink += [binary.Dep(path)]
+  binary.compiler.postlink += [path]
 
   binary.sources += [
     'extension.cpp',

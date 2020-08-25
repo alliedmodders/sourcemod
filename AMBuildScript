@@ -506,7 +506,7 @@ class SMConfig(object):
     self.ConfigureForExtension(context, binary.compiler)
     return binary
 
-  def ConfigureForHL2(self, binary, sdk):
+  def ConfigureForHL2(self, context, binary, sdk):
     compiler = binary.compiler
     SetArchFlags(compiler)
 
@@ -594,20 +594,20 @@ class SMConfig(object):
     if compiler.target.platform in ['linux', 'mac']:
       if sdk.name in ['sdk2013', 'bms'] or compiler.target.arch == 'x86_64':
         compiler.postlink += [
-          compiler.Dep(os.path.join(lib_folder, 'tier1.a')),
-          compiler.Dep(os.path.join(lib_folder, 'mathlib.a'))
+          os.path.join(lib_folder, 'tier1.a'),
+          os.path.join(lib_folder, 'mathlib.a')
         ]
       else:
         compiler.postlink += [
-          compiler.Dep(os.path.join(lib_folder, 'tier1_i486.a')),
-          compiler.Dep(os.path.join(lib_folder, 'mathlib_i486.a'))
+          os.path.join(lib_folder, 'tier1_i486.a'),
+          os.path.join(lib_folder, 'mathlib_i486.a')
         ]
 
       if sdk.name in ['blade', 'insurgency', 'doi', 'csgo']:
         if compiler.target.arch == 'x86_64':
-          compiler.postlink += [compiler.Dep(os.path.join(lib_folder, 'interfaces.a'))]
+          compiler.postlink += [os.path.join(lib_folder, 'interfaces.a')]
         else:
-          compiler.postlink += [compiler.Dep(os.path.join(lib_folder, 'interfaces_i486.a'))]
+          compiler.postlink += [os.path.join(lib_folder, 'interfaces_i486.a')]
 
     dynamic_libs = []
     if compiler.target.platform == 'linux':
@@ -631,39 +631,37 @@ class SMConfig(object):
           lib_path = os.path.join(sdk.path, 'lib', 'public', lib) + '.lib'
         elif compiler.target.arch == 'x86_64':
           lib_path = os.path.join(sdk.path, 'lib', 'public', 'win64', lib) + '.lib'
-        compiler.linkflags.append(compiler.Dep(lib_path))
+        compiler.linkflags.append(lib_path)
 
     for library in dynamic_libs:
       source_path = os.path.join(lib_folder, library)
       output_path = os.path.join(binary.localFolder, library)
 
-      def make_linker(source_path, output_path):
-        def link(context, binary):
-          cmd_node, (output,) = context.AddSymlink(source_path, output_path)
-          return output
-        return link
+      # Ensure the output path exists.
+      context.AddFolder(binary.localFolder)
+      output = context.AddSymlink(source_path, output_path)
 
-      linker = make_linker(source_path, output_path)
-      compiler.linkflags[0:0] = [compiler.Dep(library, linker)]
+      compiler.weaklinkdeps += [output]
+      compiler.linkflags[0:0] = [library]
 
     return binary
 
   def HL2Library(self, context, compiler, name, sdk):
     binary = self.Library(context, compiler, name)
     self.ConfigureForExtension(context, binary.compiler)
-    return self.ConfigureForHL2(binary, sdk)
+    return self.ConfigureForHL2(context, binary, sdk)
 
-  def HL2Config(self, project, compiler, name, sdk):
+  def HL2Config(self, project, context, compiler, name, sdk):
     binary = project.Configure(compiler, name,
                                '{0} - {1} {2}'.format(self.tag, sdk.name, compiler.target.arch))
     self.AddVersioning(binary)
-    return self.ConfigureForHL2(binary, sdk)
+    return self.ConfigureForHL2(context, binary, sdk)
 
   def HL2ExtConfig(self, project, context, compiler, name, sdk):
     binary = project.Configure(compiler, name,
                                '{0} - {1} {2}'.format(self.tag, sdk.name, compiler.target.arch))
     self.AddVersioning(binary)
-    self.ConfigureForHL2(binary, sdk)
+    self.ConfigureForHL2(context, binary, sdk)
     self.ConfigureForExtension(context, binary.compiler)
     return binary
 
