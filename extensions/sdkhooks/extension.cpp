@@ -1831,18 +1831,11 @@ void SDKHooks::HandleEntityCreated(CBaseEntity *pEntity, int index, cell_t ref)
 
 void SDKHooks::HandleEntitySpawned(CBaseEntity *pEntity, int index, cell_t ref)
 {
-	if (g_pOnEntitySpawned->GetFunctionCount() || m_EntListeners.size())
+	if (g_pOnEntitySpawned->GetFunctionCount())
 	{
 		const char *pName = gamehelpers->GetEntityClassname(pEntity);
 		if (!pName)
 			pName = "";
-
-		// Send OnEntitySpawned to SM listeners
-		for (SourceHook::List<ISMEntityListener *>::iterator iter = m_EntListeners.begin(); iter != m_EntListeners.end(); iter++)
-		{
-			ISMEntityListener *pListener = (*iter);
-			pListener->OnEntitySpawned(pEntity, pName);
-		}
 
 		// Call OnEntitySpawned forward
 		if (g_pOnEntitySpawned->GetFunctionCount())
