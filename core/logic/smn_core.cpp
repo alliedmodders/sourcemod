@@ -946,6 +946,42 @@ static cell_t LogStackTrace(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
+enum OS
+{
+	OS_Unknown,
+	OS_Windows_x86,
+	OS_Windows_x86_64,
+	OS_Linux_x86,
+	OS_Linux_x86_64,
+	OS_Apple_x86,
+	OS_Apple_x86_64
+};
+
+static cell_t GetOS(IPluginContext *pContext, const cell_t *params)
+{
+#if defined PLATFORM_WINDOWS
+#ifdef PLATFORM_X86
+	return OS_Windows_x86;
+#else
+	return OS_Windows_x86_64;
+#endif
+#elif defined PLATFORM_LINUX
+#ifdef PLATFORM_X86
+	return OS_Linux_x86;
+#else
+	return OS_Linux_x86_64;
+#endif
+#elif defined PLATFORM_APPLE
+#ifdef PLATFORM_X86
+	return OS_Apple_x86;
+#else
+	return OS_Apple_x86_64;
+#endif
+#else
+	return OS_Unknown;
+#endif
+}
+
 REGISTER_NATIVES(coreNatives)
 {
 	{"ThrowError",				ThrowError},
@@ -977,6 +1013,7 @@ REGISTER_NATIVES(coreNatives)
 	{"IsNullVector",			IsNullVector},
 	{"IsNullString",			IsNullString},
 	{"LogStackTrace",           LogStackTrace},
+	{"GetOS",                   GetOS},
 	
 	{"FrameIterator.FrameIterator",				FrameIterator_Create},
 	{"FrameIterator.Next",						FrameIterator_Next},

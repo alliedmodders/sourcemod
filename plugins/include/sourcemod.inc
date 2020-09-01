@@ -691,6 +691,27 @@ native any LoadFromAddress(Address addr, NumberType size);
  */
 native void StoreToAddress(Address addr, any data, NumberType size);
 
+/**
+ * OS statuses.
+ */
+enum OS
+{
+	OS_Unknown,
+	OS_Windows_x86,
+	OS_Windows_x86_64,
+	OS_Linux_x86,
+	OS_Linux_x86_64,
+	OS_Apple_x86,
+	OS_Apple_x86_64
+};
+
+/**
+ * Returns the operating system the plugin is running.
+ *
+ * @return              OS status.
+ */
+native OS GetOS();
+
 methodmap FrameIterator < Handle {
 	// Creates a stack frame iterator to build your own stack traces.
 	// @return              New handle to a FrameIterator.
