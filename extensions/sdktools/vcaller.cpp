@@ -141,14 +141,23 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 			return 0;
 		}
 
-		if (bridge->SymbolsAreHidden())
-		{
-			s_call_addr = memutils->ResolveSymbol(handle, &sig[1]);
-		}
-		else
-		{
-			s_call_addr = dlsym(handle, &sig[1]);
-		}
+#if SOURCE_ENGINE == SE_CSS            \
+	|| SOURCE_ENGINE == SE_HL2DM       \
+	|| SOURCE_ENGINE == SE_DODS        \
+	|| SOURCE_ENGINE == SE_SDK2013     \
+	|| SOURCE_ENGINE == SE_BMS         \
+	|| SOURCE_ENGINE == SE_TF2         \
+	|| SOURCE_ENGINE == SE_LEFT4DEAD   \
+	|| SOURCE_ENGINE == SE_LEFT4DEAD2  \
+	|| SOURCE_ENGINE == SE_NUCLEARDAWN \
+	|| SOURCE_ENGINE == SE_BLADE       \
+	|| SOURCE_ENGINE == SE_INSURGENCY  \
+	|| SOURCE_ENGINE == SE_DOI         \
+	|| SOURCE_ENGINE == SE_CSGO
+		s_call_addr = memutils->ResolveSymbol(handle, &sig[1]);
+#else
+		s_call_addr = dlsym(handle, &sig[1]);
+#endif
 
 		dlclose(handle);
 		#endif
