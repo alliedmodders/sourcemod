@@ -148,6 +148,7 @@ public: //SMGlobalClass
 	void OnSourceModAllShutdown();
 public:
 	void RemoveCachedConfig(CGameConfig *config);
+	void RefreshCachedGamedata();
 private:
 	NameHashSet<CGameConfig *> m_Lookup;
 public:

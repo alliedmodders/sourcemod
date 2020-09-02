@@ -1110,6 +1110,12 @@ void GameConfigManager::OnSourceModAllInitialized()
 	}
 
 	sharesys->AddInterface(NULL, this);
+
+	auto sm_reload_gamedata = [this](int client, const ICommandArgs *args) -> bool {
+		RefreshCachedGamedata();
+		return true;
+	};
+	bridge->DefineCommand("sm_reload_gamedata", "Reload all cached gamedata files", sm_reload_gamedata);
 }
 
 void GameConfigManager::OnSourceModAllShutdown()
@@ -1204,4 +1210,17 @@ void GameConfigManager::ReleaseLock()
 void GameConfigManager::RemoveCachedConfig(CGameConfig *config)
 {
 	m_Lookup.remove(config->m_File);
+}
+
+void GameConfigManager::RefreshCachedGamedata()
+{
+	for (auto iter = m_Lookup.iter(); !iter.empty(); iter.next())
+	{
+		CGameConfig *pFile = (CGameConfig *)*iter;
+		char buffer[255];
+		if (!pFile->Reparse(buffer, sizeof(buffer)))
+		{
+			//
+		}
+	}
 }
