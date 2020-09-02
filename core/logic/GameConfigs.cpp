@@ -1216,7 +1216,7 @@ void GameConfigManager::RefreshCachedGamedata()
 {
 	for (auto iter = m_Lookup.iter(); !iter.empty(); iter.next())
 	{
-		CGameConfig *pFile = (CGameConfig *)*iter;
+		CGameConfig *pFile = *iter;
 		char buffer[255];
 		if (!pFile->Reparse(buffer, sizeof(buffer)))
 		{
