@@ -495,7 +495,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 		for (PluginHookList::iterator iter = group->hooks.begin(); iter != group->hooks.end(); iter++)
 		{
 			CmdHook *hook = *iter;
-			if (remove)
+			if (!remove)
 				hook->admin->eflags = bits;
 			else
 				hook->admin->eflags = hook->admin->flags;
