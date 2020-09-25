@@ -64,7 +64,7 @@ if ($argn > 0 && $^O !~ /MSWin/) {
 	$result = `CC=$ARGV[0] CXX=$ARGV[0] python ../build/configure.py $conf_args`;
 } else {
 	if ($^O =~ /MSWin/) {
-		$result = `C:\\Python27\\Python.exe ..\\build\\configure.py $conf_args`;
+		$result = `C:\\Python38\\Python.exe ..\\build\\configure.py $conf_args`;
 	} else {
 		$result = `CC=clang CXX=clang python ../build/configure.py $conf_args`;
 	}
