@@ -177,8 +177,7 @@ class SMConfig(object):
           self.sdks[sdk_name] = sdk
 
     if len(self.sdks) < 1 and len(sdk_list) and not use_none:
-      raise Exception('No SDKs were found that build on {0}-{1}, nothing to do.'.format(
-        builder.target.platform, builder.target.arch))
+      raise Exception('No SDKs were found that build on target(s) {0}. Nothing to do.'.format(", ".join(self.target_archs)))
 
     for sdk in not_found:
       print('Warning: hl2sdk-{} was not found, and will not be included in build.'.format(sdk))
