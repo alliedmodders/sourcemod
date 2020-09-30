@@ -61,7 +61,7 @@ public:
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		CDataPack::Free(reinterpret_cast<CDataPack *>(object));
+		delete reinterpret_cast<CDataPack *>(object);
 	}
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
 	{
@@ -73,7 +73,7 @@ public:
 
 static cell_t smn_CreateDataPack(IPluginContext *pContext, const cell_t *params)
 {
-	CDataPack *pDataPack = CDataPack::New();
+	CDataPack *pDataPack = new CDataPack();
 
 	if (!pDataPack)
 	{

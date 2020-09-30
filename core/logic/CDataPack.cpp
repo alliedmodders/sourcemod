@@ -46,25 +46,6 @@ CDataPack::~CDataPack()
 	Initialize();
 }
 
-static std::vector<std::unique_ptr<CDataPack>> sDataPackCache;
-
-CDataPack *CDataPack::New()
-{
-  if (sDataPackCache.empty())
-	return new CDataPack();
-
-  CDataPack *pack = sDataPackCache.back().release();
-  sDataPackCache.pop_back();
-  pack->Initialize();
-  return pack;
-}
-
-void
-CDataPack::Free(CDataPack *pack)
-{
-  sDataPackCache.emplace_back(pack);
-}
-
 void CDataPack::Initialize()
 {
 	position = 0;
