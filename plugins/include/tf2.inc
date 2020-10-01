@@ -207,7 +207,7 @@ enum TFCond
 	TFCond_RocketPack, //125: Thermal Thruster launched effects, prevents reusing
 	TFCond_LostFooting, //126: Less ground friction
 	TFCond_AirCurrent, //127: Reduced air control and friction
-	TFCond_HalloweenHellHeal // 128: Used when a player gets teleported to hell
+	TFCond_HalloweenHellHeal, // 128: Used when a player gets teleported to hell
 	TFCond_PowerupMode_Dominant // 129: Reduces effects of certain powerups
 };
 
