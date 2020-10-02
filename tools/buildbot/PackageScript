@@ -52,7 +52,8 @@ for folder in folder_list:
 
 # Copy binaries.
 for cxx_task in SM.binaries:
-  if cxx_task.target.arch == 'x86_64':
+  # mms expects our loader (sourcemod_mm) to exist in /bin/
+  if cxx_task.target.arch == 'x86_64' and not 'sourcemod_mm' in cxx_task.binary.path:
     builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/bin/x64'])
   else:
     builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/bin'])
