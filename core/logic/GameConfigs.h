@@ -123,6 +123,7 @@ private:
 	StringHashMap<AddressConf> m_Addresses;
 	const char *m_pEngine;
 	const char *m_pBaseEngine;
+	time_t m_ModTime;
 };
 
 class GameConfigManager : 
