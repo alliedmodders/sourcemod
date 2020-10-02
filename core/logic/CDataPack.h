@@ -54,9 +54,6 @@ public:
 	CDataPack();
 	~CDataPack();
 
-    static CDataPack *New();
-    static void Free(CDataPack *pack);
-
 public: // Originally IDataReader
 	/**
 	 * @brief Resets the position in the data stream to the beginning.
