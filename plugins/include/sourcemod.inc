@@ -113,6 +113,12 @@ methodmap GameData < Handle
 	// @param name          Name of the property to find.
 	// @return              An address calculated on success, or 0 on failure.
 	public native Address GetAddress(const char[] name);
+
+	// Returns a function address calculated from a signature.
+	//
+	// @param name          Name of the property to find.
+	// @return              An address calculated on success, or 0 on failure.
+	public native Address GetMemSig(const char[] name);
 };
 
 /**
