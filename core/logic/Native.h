@@ -46,16 +46,14 @@ struct FakeNative
 	FakeNative(const char *name, IPluginFunction *fun)
 		: name(name),
 		  ctx(fun->GetParentContext()),
-		  call(fun),
-		  gate(NULL)
+		  call(fun)
 	{
 	}
-	~FakeNative();
 
 	std::string name;
 	IPluginContext *ctx;
 	IPluginFunction *call;
-	SPVM_NATIVE_FUNC gate;
+	ke::RefPtr<INativeCallback> wrapper;
 };
 
 struct Native : public ke::Refcounted<Native>
@@ -66,10 +64,10 @@ struct Native : public ke::Refcounted<Native>
 		  fake(nullptr)
 	{
 	}
-	Native(CNativeOwner *owner, FakeNative *fake)
+	Native(CNativeOwner *owner, std::unique_ptr<FakeNative>&& fake)
 		: owner(owner),
 		  native(nullptr),
-		  fake(fake)
+		  fake(std::move(fake))
 	{
 	}
 
@@ -77,12 +75,6 @@ struct Native : public ke::Refcounted<Native>
 	const sp_nativeinfo_t *native;
 	std::unique_ptr<FakeNative> fake;
 
-	SPVM_NATIVE_FUNC func() const
-	{
-		if (native)
-			return native->func;
-		return fake->gate;
-	}
 	const char *name() const
 	{
 		if (native)
