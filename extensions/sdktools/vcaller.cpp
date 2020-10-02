@@ -121,15 +121,13 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 
 	if (sig[0] == '@')
 	{
-		#if defined PLATFORM_WINDOWS
+#if defined PLATFORM_WINDOWS
 		MEMORY_BASIC_INFORMATION mem;
-		if(VirtualQuery(addrInBase, &mem, sizeof(mem)))
+		if (VirtualQuery(addrInBase, &mem, sizeof(mem)))
 		{
 			s_call_addr = memutils->ResolveSymbol(mem.AllocationBase, &sig[1]);
 		}
-		#endif
-
-		#if defined PLATFORM_POSIX
+#elif defined PLATFORM_POSIX
 		Dl_info info;
 		if (dladdr(addrInBase, &info) == 0)
 		{
@@ -157,10 +155,10 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 		s_call_addr = memutils->ResolveSymbol(handle, &sig[1]);
 #else
 		s_call_addr = dlsym(handle, &sig[1]);
-#endif
+#endif /* SOURCE_ENGINE */
 
 		dlclose(handle);
-		#endif
+#endif
 
 		return (s_call_addr != NULL) ? 1 : 0;
 	}
