@@ -30,6 +30,7 @@
  */
 
 #include <sourcemod_version.h>
+#include <cmath>
 #include "extension.h"
 #include "geoip_util.h"
 
