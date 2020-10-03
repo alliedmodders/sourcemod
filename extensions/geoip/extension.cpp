@@ -29,6 +29,8 @@
  * Version: $Id$
  */
 
+#define _USE_MATH_DEFINES
+
 #include <sourcemod_version.h>
 #include <cmath>
 #include "extension.h"
