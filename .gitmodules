@@ -4,6 +4,3 @@
 [submodule "sourcepawn"]
 	path = sourcepawn
 	url = https://github.com/alliedmodders/sourcepawn
-[submodule "extensions/geoip/libmaxminddb"]
-	path = extensions/geoip/libmaxminddb
-	url = https://github.com/maxmind/libmaxminddb.git

@@ -114,6 +114,18 @@ bool lookupByIp(const char *ip, const char **path, MMDB_entry_data_s *result)
 	return true;
 }
 
+double lookupDouble(const char *ip, const char **path)
+{
+	MMDB_entry_data_s result;
+
+	if (!lookupByIp(ip, path, &result))
+	{
+		return 0;
+	}
+
+	return result.double_value;
+}
+
 std::string lookupString(const char *ip, const char **path)
 {
 	MMDB_entry_data_s result;

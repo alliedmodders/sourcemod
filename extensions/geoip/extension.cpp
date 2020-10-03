@@ -311,6 +311,42 @@ static cell_t sm_Geoip_Timezone(IPluginContext *pCtx, const cell_t *params)
 	return (strlen(ccode) != 0) ? 1 : 0;
 }
 
+static cell_t sm_Geoip_Latitude(IPluginContext *pCtx, const cell_t *params)
+{
+	char *ip;
+	pCtx->LocalToString(params[1], &ip);
+	StripPort(ip);
+
+	const char *path[] = {"location", "latitude", NULL};
+	double latitude = lookupDouble(ip, path);
+
+	return sp_ftoc(latitude);
+}
+
+static cell_t sm_Geoip_Longitude(IPluginContext *pCtx, const cell_t *params)
+{
+	char *ip;
+	pCtx->LocalToString(params[1], &ip);
+	StripPort(ip);
+
+	const char *path[] = {"location", "longitude", NULL};
+	double longitude = lookupDouble(ip, path);
+
+	return sp_ftoc(longitude);
+}
+
+static cell_t sm_Geoip_Distance(IPluginContext *pCtx, const cell_t *params)
+{
+	float earthRadius = params[5] ? 3958.0 : 6370.997; // miles / km
+
+	float lat1 = sp_ctof(params[1]) * (M_PI / 180);
+	float lon1 = sp_ctof(params[2]) * (M_PI / 180);
+	float lat2 = sp_ctof(params[3]) * (M_PI / 180);
+	float lon2 = sp_ctof(params[4]) * (M_PI / 180);
+
+	return sp_ftoc(earthRadius * acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(lon2 - lon1)));
+}
+
 const sp_nativeinfo_t geoip_natives[] = 
 {
 	{"GeoipCode2",			sm_Geoip_Code2},
@@ -323,6 +359,9 @@ const sp_nativeinfo_t geoip_natives[] =
 	{"GeoipRegion",			sm_Geoip_Region},
 	{"GeoipCity",			sm_Geoip_City},
 	{"GeoipTimezone",		sm_Geoip_Timezone},
+	{"GeoipLatitude",		sm_Geoip_Latitude},
+	{"GeoipLongitude",		sm_Geoip_Longitude},
+	{"GeoipDistance",		sm_Geoip_Distance},
 	{NULL,					NULL},
 };
 

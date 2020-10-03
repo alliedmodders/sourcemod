@@ -142,6 +142,39 @@ native bool GeoipCity(const char[] ip, char[] name, int maxlength, const char[] 
 native bool GeoipTimezone(const char[] ip, char[] name, int maxlength);
 
 /**
+ * Gets the city's latitude
+ *
+ * @param ip			Ip to determine the city latitude.
+ * @return				The result of the latitude, 0 if latitude is not found
+ */
+native float GeoipLatitude(const char[] ip);
+
+/**
+ * Gets the city's longitude
+ *
+ * @param ip			Ip to determine the city longitude.
+ * @return				The result of the longitude, 0 if longitude is not found
+ */
+native float GeoipLongitude(const char[] ip);
+
+/*
+ * Calculate the distance between geographical coordinates, latitude and longitude.
+ *
+ * @param lat1       The first IP latitude.
+ * @param lon1       The first IP longitude.
+ * @param lat2       The second IP latitude.
+ * @param lon2       The second IP longitude.
+ * @param system     The system of measurement, 0 = Metric(kilometers) or 1 = English(miles).
+ *
+ * @return           The distance as result in specified system of measurement.
+ */
+
+#define SYSTEM_METRIC   0 // kilometers
+#define SYSTEM_IMPERIAL 1 // statute miles
+
+native float GeoipDistance(float lat1, float lon1, float lat2, float lon2, system = SYSTEM_METRIC);
+
+/**
  * @endsection
  */
 
@@ -177,5 +210,8 @@ public void __ext_geoip_SetNTVOptional()
 	MarkNativeAsOptional("GeoipRegion");
 	MarkNativeAsOptional("GeoipCity");
 	MarkNativeAsOptional("GeoipTimezone");
+	MarkNativeAsOptional("GeoipLatitude");
+	MarkNativeAsOptional("GeoipLongitude");
+	MarkNativeAsOptional("GeoipDistance");
 }
 #endif

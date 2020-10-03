@@ -35,6 +35,7 @@
 #include "extension.h"
 
 bool lookupByIp(const char *ip, const char **path, MMDB_entry_data_s *result);
+double lookupDouble(const char *ip, const char **path);
 std::string lookupString(const char *ip, const char **path);
 
 extern const char GeoIPCountryCode[252][3];
