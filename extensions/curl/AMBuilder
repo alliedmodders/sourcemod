@@ -2,8 +2,8 @@
 import os
 
 libcurl = builder.Build('curl-src/lib/AMBuilder')
-for arch in SM.archs:
-  binary = SM.ExtLibrary(builder, 'webternet.ext', arch)
+for cxx in builder.targets:
+  binary = SM.ExtLibrary(builder, cxx, 'webternet.ext')
   binary.compiler.includes += [
     os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl-src', 'include')
   ]
@@ -12,10 +12,10 @@ for arch in SM.archs:
     binary.compiler.cxxflags += ['-fno-rtti']
   elif binary.compiler.family == 'msvc':
     binary.compiler.cxxflags += ['/GR-']
-  binary.compiler.postlink += [libcurl[arch].binary]
-  if builder.target.platform == 'linux':
+  binary.compiler.postlink += [libcurl[binary.compiler.target.arch].binary]
+  if binary.compiler.target.platform == 'linux':
     binary.compiler.postlink += ['-lrt']
-  elif builder.target.platform == 'windows':
+  elif binary.compiler.target.platform == 'windows':
     binary.compiler.postlink += ['ws2_32.lib']
 
   binary.sources += [

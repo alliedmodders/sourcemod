@@ -36,7 +36,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		16
+#define SMINTERFACE_MENUMANAGER_VERSION		17
 
 /**
  * @file IMenuManager.h
@@ -485,9 +485,10 @@ namespace SourceMod
 		 *
 		 * @param position		Position, starting from 0.
 		 * @param draw			Optional pointer to store a draw information.
+		 * @param client		Client index. (Important for randomized menus.)
 		 * @return				Info string pointer, or NULL if position was invalid.
 		 */
-		virtual const char *GetItemInfo(unsigned int position, ItemDrawInfo *draw) =0;
+		virtual const char *GetItemInfo(unsigned int position, ItemDrawInfo *draw, int client=0) =0;
 
 		/**
 		 * @brief Returns the number of items.
@@ -636,6 +637,35 @@ namespace SourceMod
 		 * @return				Approximate number of bytes being used.
 		 */
 		virtual unsigned int GetApproxMemUsage() =0;
+
+		/**
+		 * @brief Generates a per-client random mapping for the current vote options.
+		 * @param start			Menu item index to start randomizing from.
+		 * @param stop			Menu item index to stop randomizing at. -1 = infinite
+		 */
+		virtual void ShufflePerClient(int start=0, int stop=-1) =0;
+
+		/**
+		 * @brief Fills the client vote option mapping with user supplied values.
+		 * @param client		Client index.
+		 * @param array			Integer array with mapping.
+		 * @param length		Length of array.
+		 */
+		virtual void SetClientMapping(int client, int *array, int length) =0;
+
+		/**
+		 * @brief Returns true if the menu has a per-client random mapping.
+		 * @return				True on success, false otherwise.
+		 */
+		virtual bool IsPerClientShuffled() =0;
+
+		/**
+		 * @brief Returns the actual (not shuffled) item index from the client position.
+		 * @param client		Client index.
+		 * @param position		Position, starting from 0.
+		 * @return				Actual item index in menu.
+		 */
+		virtual unsigned int GetRealItemIndex(int client, unsigned int position) =0;
 	};
 
 	/** 

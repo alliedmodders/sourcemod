@@ -160,6 +160,7 @@ void HolidayManager::OnPluginLoaded(IPlugin *plugin)
 	PopulateHolidayVar(pRuntime, "TFHoliday_HalloweenOrFullMoon");
 	PopulateHolidayVar(pRuntime, "TFHoliday_HalloweenOrFullMoonOrValentines");
 	PopulateHolidayVar(pRuntime, "TFHoliday_AprilFools");
+	PopulateHolidayVar(pRuntime, "TFHoliday_Soldier");
 }
 
 void HolidayManager::OnPluginUnloaded(IPlugin *plugin)

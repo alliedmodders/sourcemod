@@ -30,6 +30,9 @@
  */
 
 #include <stdlib.h>
+
+#include <memory>
+
 #include "ExtensionSys.h"
 #include <ILibrarySys.h>
 #include <ISourceMod.h>
@@ -76,7 +79,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 		g_pSM->BuildPath(Path_SM,
 			path,
 			PLATFORM_MAX_PATH,
-			"extensions/%s." PLATFORM_LIB_EXT,
+			"extensions/" PLATFORM_ARCH_FOLDER "%s." PLATFORM_LIB_EXT,
 			filename);
 	}
 	else
@@ -85,7 +88,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 		g_pSM->BuildPath(Path_SM,
 			path,
 			PLATFORM_MAX_PATH,
-			"extensions/%s.%s." PLATFORM_LIB_EXT,
+			"extensions/" PLATFORM_ARCH_FOLDER "%s.%s." PLATFORM_LIB_EXT,
 			filename,
 			bridge->gamesuffix);
 
@@ -100,7 +103,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 				g_pSM->BuildPath(Path_SM,
 					path,
 					PLATFORM_MAX_PATH,
-					"extensions/%s.2.ep2v." PLATFORM_LIB_EXT,
+					"extensions/" PLATFORM_ARCH_FOLDER "%s.2.ep2v." PLATFORM_LIB_EXT,
 					filename);
 			}
 			else if (strcmp(bridge->gamesuffix, "2.nd") == 0)
@@ -108,7 +111,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 				g_pSM->BuildPath(Path_SM,
 					path,
 					PLATFORM_MAX_PATH,
-					"extensions/%s.2.l4d2." PLATFORM_LIB_EXT,
+					"extensions/" PLATFORM_ARCH_FOLDER "%s.2.l4d2." PLATFORM_LIB_EXT,
 					filename);
 			}
 
@@ -119,7 +122,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 				g_pSM->BuildPath(Path_SM,
 					path,
 					PLATFORM_MAX_PATH,
-					"extensions/auto.%s/%s." PLATFORM_LIB_EXT,
+					"extensions/" PLATFORM_ARCH_FOLDER "auto.%s/%s." PLATFORM_LIB_EXT,
 					filename,
 					bridge->gamesuffix);
 
@@ -129,7 +132,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 					g_pSM->BuildPath(Path_SM,
 						path,
 						PLATFORM_MAX_PATH,
-						"extensions/%s." PLATFORM_LIB_EXT,
+						"extensions/" PLATFORM_ARCH_FOLDER "%s." PLATFORM_LIB_EXT,
 						filename);
 				}
 			}
@@ -301,7 +304,7 @@ bool CExtension::Load(char *error, size_t maxlength)
 	/* Check if we're past load time */
 	if (!bridge->IsMapLoading())
 	{
-		m_pAPI->OnExtensionsAllLoaded();
+		MarkAllLoaded();
 	}
 
 	return true;
@@ -496,7 +499,7 @@ void CExtensionManager::TryAutoload()
 
 	g_pSM->BuildPath(Path_SM, path, sizeof(path), "extensions");
 
-	ke::AutoPtr<IDirectory> pDir(libsys->OpenDirectory(path));
+	std::unique_ptr<IDirectory> pDir(libsys->OpenDirectory(path));
 	if (!pDir)
 		return;
 

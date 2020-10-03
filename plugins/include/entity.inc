@@ -715,7 +715,7 @@ native int GetEntPropArraySize(int entity, PropType type, const char[] prop);
  * @param dataSize      Size of each value in bytes (1, 2, or 4).
  * @error               Invalid entity or offset out of reasonable bounds.
  */
-stock void GetEntDataArray(int entity, int offset, int[] array, int arraySize, int dataSize=4)
+stock void GetEntDataArray(int entity, int offset, any[] array, int arraySize, int dataSize=4)
 {
 	for (int i = 0; i < arraySize; i++)
 	{
@@ -734,7 +734,7 @@ stock void GetEntDataArray(int entity, int offset, int[] array, int arraySize, i
  * @param changeState   True to set the network state as changed; false otherwise.
  * @error               Invalid entity or offset out of reasonable bounds.
  */
-stock void SetEntDataArray(int entity, int offset, const int[] array, int arraySize, int dataSize=4, bool changeState=false)
+stock void SetEntDataArray(int entity, int offset, const any[] array, int arraySize, int dataSize=4, bool changeState=false)
 {
 	for (int i = 0; i < arraySize; i++)
 	{

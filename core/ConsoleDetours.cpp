@@ -307,7 +307,7 @@ bool ConsoleDetours::AddListener(IPluginFunction *fun, const char *command)
 	}
 	else
 	{
-		ke::AutoPtr<char[]> str(UTIL_ToLowerCase(command));
+		std::unique_ptr<char[]> str(UTIL_ToLowerCase(command));
 		IChangeableForward *forward;
 		if (!m_Listeners.retrieve(str.get(), &forward))
 		{
@@ -329,7 +329,7 @@ bool ConsoleDetours::RemoveListener(IPluginFunction *fun, const char *command)
 	}
 	else
 	{
-		ke::AutoPtr<char[]> str(UTIL_ToLowerCase(command));
+		std::unique_ptr<char[]> str(UTIL_ToLowerCase(command));
 		IChangeableForward *forward;
 		if (!m_Listeners.retrieve(str.get(), &forward))
 			return false;

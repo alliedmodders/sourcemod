@@ -1,8 +1,8 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-for arch in SM.archs:
-  binary = SM.ExtLibrary(builder, 'dbi.sqlite.ext', arch)
+for cxx in builder.targets:
+  binary = SM.ExtLibrary(builder, cxx, 'dbi.sqlite.ext')
   binary.compiler.cxxincludes += [
     os.path.join(SM.mms_root, 'core', 'sourcehook'),
   ]
@@ -17,7 +17,7 @@ for arch in SM.archs:
     'SQLITE_USE_URI',
     'SQLITE_ALLOW_URI_AUTHORITY',
   ]
-  if builder.target.platform == 'linux':
+  if binary.compiler.target.platform == 'linux':
     binary.compiler.postlink += ['-ldl', '-lpthread']
 
   binary.sources += [

@@ -41,6 +41,12 @@
 				"windows"	"4"	
 				"linux"		"4"
 			}
+			
+			/* For AllocPooledString. KeyValue(const char *, const char *) */
+			"DispatchKeyValue"
+			{
+				"windows"	"35"
+			}
 		}
 
 		"Keys"

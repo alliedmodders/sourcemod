@@ -194,22 +194,22 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 		g_Logger.LogError("[SM] Blaming: %s", blame);
 	}
 
-	ke::Vector<ke::AString> arr = GetStackTrace(&iter);
-	for (size_t i = 0; i < arr.length(); i++)
+	std::vector<std::string> arr = GetStackTrace(&iter);
+	for (size_t i = 0; i < arr.size(); i++)
 	{
-		g_Logger.LogError("%s", arr[i].chars());
+		g_Logger.LogError("%s", arr[i].c_str());
 	}
 }
 
-ke::Vector<ke::AString> DebugReport::GetStackTrace(IFrameIterator *iter)
+std::vector<std::string> DebugReport::GetStackTrace(IFrameIterator *iter)
 {
 	char temp[3072];
-	ke::Vector<ke::AString> trace;
+	std::vector<std::string> trace;
 	iter->Reset();
 	
 	if (!iter->Done())
 	{
-		trace.append("[SM] Call stack trace:");
+		trace.push_back("[SM] Call stack trace:");
 
 		for (int index = 0; !iter->Done(); iter->Next(), index++) 
 		{
@@ -221,7 +221,7 @@ ke::Vector<ke::AString> DebugReport::GetStackTrace(IFrameIterator *iter)
 			if (iter->IsNativeFrame()) 
 			{
 				g_pSM->Format(temp, sizeof(temp), "[SM]   [%d] %s", index, fn);
-				trace.append(temp);
+				trace.push_back(temp);
 				continue;
 			}
 			if (iter->IsScriptedFrame()) 
@@ -237,7 +237,7 @@ ke::Vector<ke::AString> DebugReport::GetStackTrace(IFrameIterator *iter)
 						file,
 						fn);
 				
-				trace.append(temp);
+				trace.push_back(temp);
 			}
 		}
 	}

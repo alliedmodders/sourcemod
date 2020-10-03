@@ -37,8 +37,8 @@
 #include "smsdk_ext.h"
 #include "am-vector.h"
 
-#include <am-thread-utils.h>
 #include <am-refcounting.h>
+#include <mutex>
 
 char * UTIL_strncpy(char * destination, const char * source, size_t num);
 
@@ -158,8 +158,8 @@ public:
 	bool databaseLoading;
 
 private:
-	ke::Vector<TQueryOp *> cachedQueries;
-	ke::Mutex queryLock;
+	std::vector<TQueryOp *> cachedQueries;
+	std::mutex queryLock;
 	IdentityToken_t *identity;
 };
 

@@ -162,6 +162,38 @@ static cell_t smn_GameConfGetAddress(IPluginContext *pCtx, const cell_t *params)
 #endif
 }
 
+static cell_t smn_GameConfGetMemSig(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	IGameConfig *gc;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=handlesys->ReadHandle(hndl, g_GameConfigsType, &sec, (void **)&gc))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid game config handle %x (error %d)", hndl, herr);
+	}
+
+	char *key;
+	void *val;
+	pCtx->LocalToString(params[2], &key);
+
+	if (!gc->GetMemSig(key, &val))
+	{
+		return 0;
+	}
+
+#ifdef PLATFORM_X86
+	return (cell_t)val;
+#else
+	return pseudoAddr.ToPseudoAddress(val);
+#endif
+}
+
 static GameConfigsNatives s_GameConfigsNatives;
 
 REGISTER_NATIVES(gameconfignatives)
@@ -176,5 +208,6 @@ REGISTER_NATIVES(gameconfignatives)
 	{"GameData.GetOffset",			smn_GameConfGetOffset},
 	{"GameData.GetKeyValue",		smn_GameConfGetKeyValue},
 	{"GameData.GetAddress",			smn_GameConfGetAddress},
+	{"GameData.GetMemSig", 			smn_GameConfGetMemSig},
 	{NULL,							NULL}
 };

@@ -134,12 +134,6 @@ static cell_t MatchRegex(IPluginContext *pCtx, const cell_t *params)
 	char *str;
 	pCtx->LocalToString(params[2], &str);
 
-	size_t len = strlen(str);
-	if (offset >= len)
-	{
-		return pCtx->ThrowNativeError("Offset greater or equal than string length\n");
-	}
-
 	int e = x->Match(str, offset);
 	if (e == -1)
 	{
