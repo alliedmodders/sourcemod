@@ -12,8 +12,10 @@ for cxx in builder.targets:
 
   binary.sources += [
     'extension.cpp',
-    'GeoIP.c',
-    '../../public/smsdk_ext.cpp'
+    'geoip_util.cpp',
+    '../../public/smsdk_ext.cpp',
+    'data-pool.c',
+    'maxminddb.c',
   ]
 
   SM.extensions += [builder.Add(binary)]
