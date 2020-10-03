@@ -1,52 +1,47 @@
 git:
   depth: 3
 
-sudo: false
 language: cpp
+os: linux
+dist: xenial
 
-matrix:
+jobs:
   fast_finish: true
   include:
     - os: linux
       dist: trusty
-      sudo: false
       language: cpp
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages: ['clang-3.8', 'lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev:i386', 'g++-4.9-multilib']
-        cache:
-          directories: ['../mysql-5.0']
       env:
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
-        - SDKS=episode1,css,tf2,l4d2,csgo,dota
+        - SDKS=episode1,css,tf2,l4d2,csgo
         - MODE=optimize
-        - ARCH=x86
+        - ARCH=x86,x86_64
 
     - os: linux
       dist: trusty
-      sudo: false
       language: cpp
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages: ['clang-3.4', 'lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev:i386', 'g++-4.9-multilib']
-        cache:
-          directories: ['../mysql-5.0']
       env:
         - MATRIX_EVAL="CC=clang && CXX=clang++"
-        - SDKS=episode1,css,tf2,l4d2,csgo,dota
+        - SDKS=episode1,css,tf2,l4d2,csgo
         - MODE=optimize
-        - ARCH=x86
+        - ARCH=x86,x86_64
 
     - os: osx
       osx_image: xcode7.2
       language: cpp
       env:
         - MATRIX_EVAL="CC=clang && CXX=clang++"
-        - SDKS=episode1,css,tf2,l4d2,csgo,dota
+        - SDKS=episode1,css,tf2,l4d2,csgo
         - MODE=optimize
         - ARCH=x86_64,x86
 
@@ -69,13 +64,10 @@ matrix:
     # This is a faster test for the latest clang.
     - os: linux
       dist: bionic
-      sudo: false
       language: cpp
       addons:
         apt:
           packages: ['lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev:i386', 'g++-multilib', 'clang']
-        cache:
-          directories: ['../mysql-5.0']
       env:
         - MATRIX_EVAL="CC=clang && CXX=clang++"
         - SDKS=csgo
@@ -83,12 +75,12 @@ matrix:
         - ARCH=x86
 
 before_script:
-  - CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh && cd $CHECKOUT_DIR
+  - CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh -s ${SDKS} && cd $CHECKOUT_DIR
 script:
   - mkdir build && cd build
   - PATH="~/.local/bin:$PATH"
   - eval "${MATRIX_EVAL}"
   - eval "${CC} --version"
   - eval "${CXX} --version"
-  - python ../configure.py --enable-${MODE} --sdks=${SDKS} --target-arch=${ARCH}
+  - python ../configure.py --enable-${MODE} --sdks=${SDKS} --targets=${ARCH}
   - ambuild

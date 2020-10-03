@@ -36,22 +36,26 @@
 			"s_pTempEntities"
 			{
 				"windows"	"16"
+				"windows64"	"17"
 			}
 			"GetTEName"
 			{
 				"windows"	"4"
+				"windows64"	"8"
 				"linux"		"4"
 				"mac"		"4"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
+				"windows64"	"16"
 				"linux"		"8"
 				"mac"		"8"
 			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
+				"windows64"	"0"
 				"linux"		"0"
 				"mac"		"0"
 			}
@@ -63,6 +67,7 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x89\x41\x04\xC7\x01\x2A\x2A\x2A\x2A\xA1"
+				"windows64"	"\x48\x8D\x05\x2A\x2A\x2A\x2A\x48\x89\x51\x08\x48\x89\x01\x48\x8B\x05"
 			}
 			"s_pTempEntities"
 			{
@@ -83,6 +88,7 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x08\x57\x85\xC9\x74\x26\x8B\x01\xFF\x50\x08\x8B\x00\x83\xF8\xFF\x75\x0E\xB8\xFF\x1F\x00\x00\x8D\x04\x40\x8B\x74\xC6\x10\xEB\x12\x0F\xB7\xC0\x8D\x04\x40\x8B\x74\xC6\x10\xEB\x06\x8B\xB6\x2A\x2A\x2A\x2A\x85\xF6\x74\x4C"
+				"windows64"	"\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x49\x8B\xF0\x48\x8B\xF9\x48\x85\xD2\x74\x2A\x48\x8B\x02\x48\x8B\xCA\xFF\x50\x10\x8B\x08\xB8\xFF\x1F\x00\x00\x83\xF9\xFF\x74\x2A\x0F\xB7\xC1\x48\x98\x48\x8D\x1C\x40\x48\x03\xDB\x48\x8B\x5C\xDF\x20\xEB\x2A\x48\x8B\x99\x08\x00\x06\x00\x48\x85\xDB\x74\x2A\x66\x90\x48\x8B\x3B\x48\x85\xFF\x75\x2A\x48\x8D\x0D\xE9\xD8\x4C\x00"
 				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
@@ -103,6 +109,7 @@
 			"g_pGameRules"
 			{
 				"windows"	"5"
+				"windows64"	"16"
 			}
 		}
 		
@@ -120,6 +127,7 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x07\x8B"
+				"windows64"	"\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x30\x48\x8B\xF9\x48\x8B\x0D\x2A\x2A\x2A\x2A\x48\x85\xC9"
 			}
 			"g_pGameRules"
 			{
@@ -139,6 +147,7 @@
 			{
 				"library"	"server"
 				"windows"	"\xA1\x2A\x2A\x2A\x2A\xA8\x01\x75\x1F\x83\xC8\x01\xB9\x2A\x2A\x2A\x2A\xA3\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8"
+				"windows64"	"\x48\x83\xEC\x28\x8B\x05\x2A\x2A\x2A\x2A\xA8\x01\x75\x72"
 				"linux"		"@_Z23EntityFactoryDictionaryv"
 				"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
@@ -154,6 +163,7 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x81\xEC\x20\x01\x00\x00\x53\x8B\xC1"
+				"windows64"	"\x4C\x8B\xDC\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x49\x8D\xAB\x18\xFF\xFF\xFF"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
@@ -174,6 +184,7 @@
 			"SetUserCvar"
 			{
 				"windows"	"22"
+				"windows64"	"22"
 				"linux"		"69"
 				"mac"		"69"
 			}
@@ -185,6 +196,7 @@
 			"SetClientName"
 			{
 				"windows"	"21"
+				"windows64"	"21"
 				"linux"		"68"
 				"mac"		"68"
 			}
@@ -199,6 +211,7 @@
 			"InfoChanged"
 			{
 				"windows"	"176"
+				"windows64"	"208"
 				"linux"		"176"
 				"mac"		"176"
 			}
@@ -212,84 +225,98 @@
 			"GiveNamedItem"
 			{
 				"windows"	"441"
+				"windows64"	"441"
 				"linux"		"442"
 				"mac"		"442"
 			}
 			"RemovePlayerItem"
 			{
 				"windows"	"290"
+				"windows64"	"290"
 				"linux"		"291"
 				"mac"		"291"
 			}
 			"Weapon_GetSlot"
 			{
 				"windows"	"288"
+				"windows64"	"288"
 				"linux"		"289"
 				"mac"		"289"
 			}
 			"Ignite"
 			{
 				"windows"	"223"
+				"windows64"	"223"
 				"linux"		"224"
 				"mac"		"224"
 			}
 			"Extinguish"
 			{
 				"windows"	"226"
+				"windows64"	"226"
 				"linux"		"227"
 				"mac"		"227"
 			}
 			"Teleport"
 			{
 				"windows"	"115"
+				"windows64"	"115"
 				"linux"		"116"
 				"mac"		"116"
 			}
 			"CommitSuicide"
 			{
 				"windows"	"490"
+				"windows64"	"490"
 				"linux"		"490"
 				"mac"		"490"
 			}
 			"GetVelocity"
 			{
 				"windows"	"140"
+				"windows64"	"140"
 				"linux"		"141"
 				"mac"		"141"
 			}
 			"EyeAngles"
 			{
 				"windows"	"131"
+				"windows64"	"131"
 				"linux"		"132"
 				"mac"		"132"
 			}
 			"AcceptInput"
 			{
 				"windows"	"40"
+				"windows64"	"40"
 				"linux"		"41"
 				"mac"		"41"
 			}
 			"SetEntityModel"
 			{
 				"windows"	"24"
+				"windows64"	"24"
 				"linux"		"25"
 				"mac"		"25"
 			}
 			"WeaponEquip"
 			{
 				"windows"	"281"
+				"windows64"	"281"
 				"linux"		"282"
 				"mac"		"282"
 			}
 			"Activate"
 			{
 				"windows"	"35"
+				"windows64"	"35"
 				"linux"		"36"
 				"mac"		"36"
 			}
 			"PlayerRunCmd"
 			{
 				"windows"	"460"
+				"windows64"	"460"
 				"linux"		"461"
 				"mac"		"461"
 			}

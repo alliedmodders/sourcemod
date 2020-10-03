@@ -57,6 +57,9 @@ SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *,
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 SH_DECL_HOOK1_void_vafmt(IVEngineServer, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
+#if defined CLIENTVOICE_HOOK_SUPPORT
+SH_DECL_HOOK1_void(IServerGameClients, ClientVoice, SH_NOATTRIB, 0, edict_t *);
+#endif
 
 SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
 IServerGameEnts *gameents = NULL;
@@ -76,6 +79,9 @@ IServer *iserver = NULL;
 IBaseFileSystem *basefilesystem = NULL;
 CGlobalVars *gpGlobals;
 ISoundEmitterSystemBase *soundemitterbase = NULL;
+ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
+IForward *m_OnClientSpeaking;
+IForward *m_OnClientSpeakingEnd;
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 IServerTools *servertools = NULL;
@@ -256,6 +262,9 @@ void SDKTools::SDK_OnUnload()
 	g_Hooks.Shutdown();
 	g_OutputManager.Shutdown();
 
+	forwards->ReleaseForward(m_OnClientSpeaking);
+	forwards->ReleaseForward(m_OnClientSpeakingEnd);
+
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->RemoveClientListener(&g_SdkTools);
 	playerhelpers->UnregisterCommandTargetProcessor(this);
@@ -314,7 +323,9 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 	SH_ADD_HOOK(IVEngineServer, ClientCommand, engine, SH_MEMBER(this, &SDKTools::OnSendClientCommand), false);
 #endif
-
+#if defined CLIENTVOICE_HOOK_SUPPORT
+	SH_ADD_HOOK(IServerGameClients, ClientVoice, serverClients, SH_MEMBER(this, &SDKTools::OnClientVoice), true);
+#endif
 	gpGlobals = ismm->GetCGlobals();
 	enginePatch = SH_GET_CALLCLASS(engine);
 	enginesoundPatch = SH_GET_CALLCLASS(engsound);
@@ -326,6 +337,9 @@ bool SDKTools::SDK_OnMetamodUnload(char *error, size_t maxlen)
 {
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 	SH_REMOVE_HOOK(IVEngineServer, ClientCommand, engine, SH_MEMBER(this, &SDKTools::OnSendClientCommand), false);
+#endif
+#if defined CLIENTVOICE_HOOK_SUPPORT
+	SH_REMOVE_HOOK(IServerGameClients, ClientVoice, serverClients, SH_MEMBER(this, &SDKTools::OnClientVoice), true);
 #endif
 	return true;
 }
@@ -344,6 +358,9 @@ void SDKTools::SDK_OnAllLoaded()
 	s_SoundHooks.Initialize();
 	g_Hooks.Initialize();
 	InitializeValveGlobals();
+	
+	m_OnClientSpeaking = forwards->CreateForward("OnClientSpeaking", ET_Ignore, 1, NULL, Param_Cell);
+	m_OnClientSpeakingEnd = forwards->CreateForward("OnClientSpeakingEnd", ET_Ignore, 1, NULL, Param_Cell);
 }
 
 void SDKTools::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
@@ -516,6 +533,13 @@ bool SDKTools::InterceptClientConnect(int client, char *error, size_t maxlength)
 	return true;
 }
 
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+void SDKTools::OnClientConnected(int client)
+{
+	g_Hooks.OnClientConnected(client);
+}
+#endif
+
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 void SDKTools::OnSendClientCommand(edict_t *pPlayer, const char *szFormat)
 {
@@ -529,6 +553,43 @@ void SDKTools::OnSendClientCommand(edict_t *pPlayer, const char *szFormat)
 	}
 
 	RETURN_META(MRES_IGNORED);
+}
+#endif
+
+SourceMod::ResultType SDKTools::OnTimer(ITimer *pTimer, void *pData)
+{
+	int client = (int)(intptr_t)pData;
+
+	m_OnClientSpeakingEnd->PushCell(client);
+	m_OnClientSpeakingEnd->Execute();
+
+	return Pl_Stop;
+}
+
+void SDKTools::OnTimerEnd(ITimer *pTimer, void *pData)
+{
+	g_hTimerSpeaking[(int)(intptr_t)pData] = nullptr;
+}
+
+#if defined CLIENTVOICE_HOOK_SUPPORT
+void SDKTools::OnClientVoice(edict_t *pPlayer)
+{
+	if (!pPlayer)
+	{
+		return;
+	}
+
+	int client = IndexOfEdict(pPlayer);
+
+	if (g_hTimerSpeaking[client])
+	{
+		timersys->KillTimer(g_hTimerSpeaking[client]);
+	}
+
+	g_hTimerSpeaking[client] = timersys->CreateTimer(this, 0.3f, (void *)(intptr_t)client, 0);
+
+	m_OnClientSpeaking->PushCell(client);
+	m_OnClientSpeaking->Execute();
 }
 #endif
 

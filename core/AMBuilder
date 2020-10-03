@@ -1,7 +1,7 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-project = SM.HL2Project(builder, 'sourcemod')
+project = builder.LibraryProject('sourcemod')
 
 project.sources += [
   'ChatTriggers.cpp',
@@ -45,15 +45,16 @@ project.sources += [
 
 for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
-  for arch in SM.archs:
-    if not arch in sdk.platformSpec[builder.target.platform]:
+  for cxx in builder.targets:
+    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
       continue
 
     binary_name = 'sourcemod.' + sdk.ext
 
-    binary = SM.HL2Config(project, binary_name, sdk, arch)
-    compiler = binary.compiler
+    binary = SM.HL2Config(project, builder, cxx, binary_name, sdk)
+    SM.ConfigureForExtension(builder, binary.compiler)
 
+    compiler = binary.compiler
     compiler.cxxincludes += [
       builder.sourcePath
     ]
@@ -75,22 +76,22 @@ for sdk_name in SM.sdks:
 
     if compiler.like('msvc'):
       compiler.defines += ['_ALLOW_KEYWORD_MACROS']
-    if builder.target.platform == 'linux':
+    if cxx.target.platform == 'linux':
       compiler.postlink += ['-lpthread', '-lrt']
 
     if sdk.name in ['csgo', 'blade']:
-      if builder.target.platform == 'linux':
-        if arch == 'x86':
+      if compiler.target.platform == 'linux':
+        if compiler.target.arch == 'x86':
           lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
-        elif arch == 'x64':
+        elif compiler.target.arch == 'x86_64':
           lib_path = os.path.join(sdk.path, 'lib', 'linux64', 'release', 'libprotobuf.a')
         compiler.linkflags += ['-Wl,--exclude-libs=libprotobuf.a']
-      elif builder.target.platform == 'mac':
-        if arch == 'x86':
+      elif compiler.target.platform == 'mac':
+        if compiler.target.arch == 'x86':
           lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf-libcxx.a')
-        elif arch == 'x64':
+        elif compiler.target.arch == 'x86_64':
           lib_path = os.path.join(sdk.path, 'lib', 'osx64', 'release', 'libprotobuf-libcxx.a')
-      elif builder.target.platform == 'windows':
+      elif compiler.target.platform == 'windows':
         msvc_ver = compiler.version
         vs_year = ''
         if 1900 <= msvc_ver < 2000:
@@ -102,7 +103,7 @@ for sdk_name in SM.sdks:
           lib_path = os.path.join(sdk.path, 'lib', 'win32', 'debug', 'vs' + vs_year, 'libprotobuf.lib')
         else:
           lib_path = os.path.join(sdk.path, 'lib', 'win32', 'release', 'vs' + vs_year, 'libprotobuf.lib')
-      compiler.linkflags.insert(0, binary.Dep(lib_path))
+      compiler.linkflags.insert(0, lib_path)
   
     if sdk.name in ['csgo', 'blade']:
       binary.sources += ['smn_protobuf.cpp']
@@ -131,9 +132,9 @@ for sdk_name in SM.sdks:
       binary.sources += pb_sources
       binary.compiler.cxxdefines += ['PROTOBUF_ENABLE']
 
-    if builder.target.platform == 'mac' and sdk.name in ['csgo']:
+    if cxx.target.platform == 'mac' and sdk.name in ['csgo']:
       # We need a proxy library since the game uses libstdc++.
-      pb_binary = SM.HL2Library(builder, 'pbproxy.' + sdk.ext, sdk, arch)
+      pb_binary = SM.HL2Library(builder, cxx, 'pbproxy.' + sdk.ext, sdk)
       pb_binary.sources += pb_sources
       pb_binary.sources += ['pb_proxy.cpp']
       pb_binary.compiler.cxxincludes += pb_includes
@@ -150,9 +151,9 @@ for sdk_name in SM.sdks:
       elif '-std=c++14' in pb_binary.compiler.cxxflags:
         pb_binary.compiler.cxxflags.remove('-std=c++14')
 
-      if arch == 'x86':
+      if cxx.target.arch == 'x86':
         pb_lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
-      elif arch == 'x64':
+      elif cxx.target.arch == 'x86_64':
         pb_lib_path = os.path.join(sdk.path, 'lib', 'osx64', 'release', 'libprotobuf.a')
       pb_binary.compiler.linkflags.append(pb_lib_path)
 

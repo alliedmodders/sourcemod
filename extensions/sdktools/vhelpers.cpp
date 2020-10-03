@@ -412,12 +412,12 @@ void UTIL_DrawSendTable_XML(FILE *fp, SendTable *pTable, int space_count)
 	SendTable *pOtherTable;
 	SendProp *pProp;
 
-	fprintf(fp, " %s<sendtable name=\"%s\">\n", spaces, pTable->GetName());
+	fprintf(fp, " %s<sendtable name='%s'>\n", spaces, pTable->GetName());
 	for (int i = 0; i < pTable->GetNumProps(); i++)
 	{
 		pProp = pTable->GetProp(i);
 
-		fprintf(fp, "  %s<property name=\"%s\">\n", spaces, pProp->GetName());
+		fprintf(fp, "  %s<property name='%s'>\n", spaces, pProp->GetName());
 
 		if ((type_name = GetDTTypeName(pProp->GetType())) != NULL)
 		{
@@ -444,9 +444,9 @@ void UTIL_DrawSendTable_XML(FILE *fp, SendTable *pTable, int space_count)
 
 void UTIL_DrawServerClass_XML(FILE *fp, ServerClass *sc)
 {
-	fprintf(fp, "<serverclass name=\"%s\">\n", sc->GetName());
-	UTIL_DrawSendTable_XML(fp, sc->m_pTable, 0);
-	fprintf(fp, "</serverclass>\n");
+	fprintf(fp, " <serverclass name='%s'>\n", sc->GetName());
+	UTIL_DrawSendTable_XML(fp, sc->m_pTable, 1);
+	fprintf(fp, " </serverclass>\n");
 }
 
 void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level = 1)
@@ -540,6 +540,7 @@ CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XM
 
 	fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n");
 	fprintf(fp, "<!-- Dump of all network properties for \"%s\" as at %s -->\n\n", g_pSM->GetGameFolderName(), buffer);
+	fprintf(fp, "<netprops>\n");
 
 	ServerClass *pBase = gamedll->GetAllServerClasses();
 	while (pBase != NULL)
@@ -548,6 +549,7 @@ CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XM
 		pBase = pBase->m_pNext;
 	}
 
+	fprintf(fp, "</netprops>\n");
 	fclose(fp);
 }
 

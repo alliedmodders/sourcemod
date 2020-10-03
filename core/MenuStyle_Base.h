@@ -46,8 +46,9 @@ using namespace SourceMod;
 class CItem
 {
 public:
-	CItem()
+	CItem(unsigned int index)
 	{
+		this->index = index;
 		style = 0;
 		access = 0;
 	}
@@ -55,11 +56,13 @@ public:
 	: info(std::move(other.info)),
 	  display(std::move(other.display))
 	{
+		index = other.index;
 		style = other.style;
 		access = other.access;
 	}
 	CItem & operator =(CItem &&other)
 	{
+		index = other.index;
 		info = std::move(other.info);
 		display = std::move(other.display);
 		style = other.style;
@@ -68,6 +71,7 @@ public:
 	}
 
 public:
+	unsigned int index;
 	std::string info;
 	std::unique_ptr<std::string> display;
 	unsigned int style;
@@ -140,7 +144,7 @@ public:
 	virtual bool InsertItem(unsigned int position, const char *info, const ItemDrawInfo &draw);
 	virtual bool RemoveItem(unsigned int position);
 	virtual void RemoveAllItems();
-	virtual const char *GetItemInfo(unsigned int position, ItemDrawInfo *draw=NULL);
+	virtual const char *GetItemInfo(unsigned int position, ItemDrawInfo *draw=NULL, int client=0);
 	virtual unsigned int GetItemCount();
 	virtual bool SetPagination(unsigned int itemsPerPage);
 	virtual unsigned int GetPagination();
@@ -154,6 +158,10 @@ public:
 	virtual unsigned int GetMenuOptionFlags();
 	virtual void SetMenuOptionFlags(unsigned int flags);
 	virtual IMenuHandler *GetHandler();
+	virtual void ShufflePerClient(int start, int stop);
+	virtual void SetClientMapping(int client, int *array, int length);
+	virtual bool IsPerClientShuffled();
+	virtual unsigned int GetRealItemIndex(int client, unsigned int position);
 	unsigned int GetBaseMemUsage();
 private:
 	void InternalDelete();
@@ -170,6 +178,7 @@ protected:
 	Handle_t m_hHandle;
 	IMenuHandler *m_pHandler;
 	unsigned int m_nFlags;
+	std::vector<uint8_t> m_RandomMaps[SM_MAXPLAYERS+1];
 };
 
 #endif //_INCLUDE_MENUSTYLE_BASE_H

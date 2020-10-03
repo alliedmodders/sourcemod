@@ -2,8 +2,8 @@
 import os
 
 rvalue = {}
-for arch in SM.archs:
-  lib = SM.StaticLibrary(builder, 'version', arch)
+for cxx in builder.targets:
+  lib = SM.StaticLibrary(builder, cxx, 'version')
   lib.compiler.includes += [
     os.path.join(builder.sourcePath, 'public')
   ]
@@ -14,4 +14,4 @@ for arch in SM.archs:
   ]
   task = builder.Add(lib)
 
-  rvalue[arch] = task.binary
+  rvalue[lib.compiler.target.arch] = task.binary

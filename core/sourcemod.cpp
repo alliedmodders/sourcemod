@@ -182,10 +182,16 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	/* There will always be a path by this point, since it was force-set above. */
 	m_GotBasePath = true;
 
+#if defined PLATFORM_X86
+# define SOURCEPAWN_DLL "sourcepawn.jit.x86"
+#else
+# define SOURCEPAWN_DLL "sourcepawn.vm"
+#endif
+
 	/* Attempt to load the JIT! */
 	char file[PLATFORM_MAX_PATH];
 	char myerror[255];
-	g_SMAPI->PathFormat(file, sizeof(file), "%s/bin/" PLATFORM_ARCH_FOLDER "sourcepawn.jit.x86.%s",
+	g_SMAPI->PathFormat(file, sizeof(file), "%s/bin/" PLATFORM_ARCH_FOLDER SOURCEPAWN_DLL ".%s",
 		GetSourceModPath(),
 		PLATFORM_LIB_EXT
 		);
@@ -195,7 +201,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	{
 		if (error && maxlength)
 		{
-			ke::SafeSprintf(error, maxlength, "%s (failed to load bin/" PLATFORM_ARCH_FOLDER "sourcepawn.jit.x86.%s)", 
+			ke::SafeSprintf(error, maxlength, "%s (failed to load bin/" PLATFORM_ARCH_FOLDER SOURCEPAWN_DLL ".%s)", 
 				myerror,
 				PLATFORM_LIB_EXT);
 		}

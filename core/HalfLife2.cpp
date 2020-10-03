@@ -60,6 +60,7 @@ ConVar *sv_lan = NULL;
 static void *g_EntList = NULL;
 static void **g_pEntInfoList = NULL;
 static int entInfoOffset = -1;
+static int utlVecOffsetOffset = -1;
 
 static CEntInfo *EntInfoArray()
 {
@@ -144,6 +145,7 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 	m_CSGOBadList.add("m_nActiveCoinRank");
 	m_CSGOBadList.add("m_nMusicID");
 #endif
+	g_pGameConf->GetOffset("CSendPropExtra_UtlVector::m_Offset", &utlVecOffsetOffset);
 }
 
 ConfigResult CHalfLife2::OnSourceModConfigChanged(const char *key, const char *value,
@@ -326,15 +328,28 @@ bool UTIL_FindInSendTable(SendTable *pTable,
 	{
 		prop = pTable->GetProp(i);
 		pname = prop->GetName();
+		SendTable *pInnerTable = prop->GetDataTable();
 		if (pname && strcmp(name, pname) == 0)
 		{
+			// get true offset of CUtlVector
+			if (utlVecOffsetOffset != -1 && prop->GetOffset() == 0 && pInnerTable && pInnerTable->GetNumProps())
+			{
+				SendProp *pLengthProxy = pInnerTable->GetProp(0);
+				const char *ipname = pLengthProxy->GetName();
+				if (ipname && strcmp(ipname, "lengthproxy") == 0 && pLengthProxy->GetExtraData())
+				{
+					info->prop = prop;
+					info->actual_offset = offset + *reinterpret_cast<size_t *>(reinterpret_cast<intptr_t>(pLengthProxy->GetExtraData()) + utlVecOffsetOffset);
+					return true;
+				}
+			}
 			info->prop = prop;
 			info->actual_offset = offset + info->prop->GetOffset();
 			return true;
 		}
-		if (prop->GetDataTable())
+		if (pInnerTable)
 		{
-			if (UTIL_FindInSendTable(prop->GetDataTable(), 
+			if (UTIL_FindInSendTable(pInnerTable, 
 				name,
 				info,
 				offset + prop->GetOffset())

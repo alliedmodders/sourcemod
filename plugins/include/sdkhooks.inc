@@ -348,6 +348,16 @@ typeset SDKHookCB
 forward void OnEntityCreated(int entity, const char[] classname);
 
 /**
+ * When an entity is spawned
+ *
+ * @param entity        Entity index
+ * @param classname     Class name
+ *
+ * @note Check for support at runtime using GetFeatureStatus on SDKHook_OnEntitySpawned capability.
+ */
+forward void OnEntitySpawned(int entity, const char[] classname);
+
+/**
  * When an entity is destroyed
  *
  * @param entity        Entity index or edict reference.
