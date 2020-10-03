@@ -35,7 +35,7 @@
 #include "extension.h"
 
 bool lookupByIp(const char *ip, const char **path, MMDB_entry_data_s *result);
-ke::AString lookupString(const char *ip, const char **path);
+std::string lookupString(const char *ip, const char **path);
 
 extern const char GeoIPCountryCode[252][3];
 extern const char GeoIPCountryCode3[252][4];

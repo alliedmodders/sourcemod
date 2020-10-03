@@ -114,14 +114,14 @@ bool lookupByIp(const char *ip, const char **path, MMDB_entry_data_s *result)
 	return true;
 }
 
-ke::AString lookupString(const char *ip, const char **path)
+std::string lookupString(const char *ip, const char **path)
 {
 	MMDB_entry_data_s result;
 
 	if (!lookupByIp(ip, path, &result))
 	{
-		return ke::AString("");
+		return std::string("");
 	}
 
-	return ke::AString(result.utf8_string, result.data_size);
+	return std::string(result.utf8_string, result.data_size);
 }
