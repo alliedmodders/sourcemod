@@ -51,6 +51,8 @@ public Plugin myinfo =
 #define VOTE_NO "###no###"
 #define VOTE_YES "###yes###"
 
+#define GENERIC_COUNT 5
+
 Menu g_hVoteMenu = null;
 
 ConVar g_Cvar_Limits[3] = {null, ...};
@@ -182,12 +184,14 @@ public Action Command_Vote(int client, int args)
 	char text[256];
 	GetCmdArgString(text, sizeof(text));
 
-	char answers[5][64];
+	char answers[GENERIC_COUNT][64];
 	int answerCount;	
 	int len = BreakString(text, g_voteArg, sizeof(g_voteArg));
 	int pos = len;
 	
-	while (args > 1 && pos != -1 && answerCount < 5)
+	char answers_list[GENERIC_COUNT * 64] = "";
+	
+	while (args > 1 && pos != -1 && answerCount < GENERIC_COUNT)
 	{	
 		pos = BreakString(text[len], answers[answerCount], sizeof(answers[]));
 		answerCount++;
@@ -197,10 +201,6 @@ public Action Command_Vote(int client, int args)
 			len += pos;
 		}	
 	}
-
-	LogAction(client, -1, "\"%L\" initiated a generic vote.", client);
-	ShowActivity2(client, "[SM] ", "%t", "Initiate Vote", g_voteArg);
-	
 	g_voteType = question;
 	
 	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
@@ -210,14 +210,19 @@ public Action Command_Vote(int client, int args)
 	{
 		g_hVoteMenu.AddItem(VOTE_YES, "Yes");
 		g_hVoteMenu.AddItem(VOTE_NO, "No");
+		Format(answers_list, sizeof(answers_list), " \"Yes\" \"No\"");
 	}
 	else
 	{
 		for (int i = 0; i < answerCount; i++)
 		{
 			g_hVoteMenu.AddItem(answers[i], answers[i]);
+			Format(answers_list, sizeof(answers_list), "%s \"%s\"", answers_list, answers[i]);
 		}	
 	}
+	
+	LogAction(client, -1, "\"%L\" initiated a generic vote (question \"%s\" / answers%s).", client, g_voteArg, answers_list);
+	ShowActivity2(client, "[SM] ", "%t", "Initiate Vote", g_voteArg);
 	
 	g_hVoteMenu.ExitButton = false;
 	g_hVoteMenu.DisplayVoteToAll(20);		
