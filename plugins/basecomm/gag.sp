@@ -53,39 +53,39 @@ void DisplayGagTypesMenu(int client)
 
 	if (!playerstate[target].isMuted)
 	{
-		AddTranslatedMenuItem(menu, "0", "Mute Player", client);
+		AddTranslatedMenuItem(menu, "0", "Mute Player", client, (CheckCommandAccess(client, "sm_mute", ADMFLAG_CHAT, false) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED));
 	}
 	else
 	{
-		AddTranslatedMenuItem(menu, "1", "UnMute Player", client);
+		AddTranslatedMenuItem(menu, "1", "UnMute Player", client, (CheckCommandAccess(client, "sm_unmute", ADMFLAG_CHAT, false) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED));
 	}
 	
 	if (!playerstate[target].isGagged)
 	{
-		AddTranslatedMenuItem(menu, "2", "Gag Player", client);
+		AddTranslatedMenuItem(menu, "2", "Gag Player", client, (CheckCommandAccess(client, "sm_gag", ADMFLAG_CHAT, false) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED));
 	}
 	else
 	{
-		AddTranslatedMenuItem(menu, "3", "UnGag Player", client);
+		AddTranslatedMenuItem(menu, "3", "UnGag Player", client, (CheckCommandAccess(client, "sm_ungag", ADMFLAG_CHAT, false) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED));
 	}
 	
 	if (!playerstate[target].isMuted || !playerstate[target].isGagged)
 	{
-		AddTranslatedMenuItem(menu, "4", "Silence Player", client);
+		AddTranslatedMenuItem(menu, "4", "Silence Player", client, (CheckCommandAccess(client, "sm_silence", ADMFLAG_CHAT, false) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED));
 	}
 	else
 	{
-		AddTranslatedMenuItem(menu, "5", "UnSilence Player", client);
+		AddTranslatedMenuItem(menu, "5", "UnSilence Player", client, (CheckCommandAccess(client, "sm_unsilence", ADMFLAG_CHAT, false) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED));
 	}
 		
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-void AddTranslatedMenuItem(Menu menu, const char[] opt, const char[] phrase, int client)
+void AddTranslatedMenuItem(Menu menu, const char[] opt, const char[] phrase, int client, int displayoption = ITEMDRAW_DEFAULT)
 {
 	char buffer[128];
 	Format(buffer, sizeof(buffer), "%T", phrase, client);
-	menu.AddItem(opt, buffer);
+	menu.AddItem(opt, buffer, displayoption);
 }
 
 void DisplayGagPlayerMenu(int client)
@@ -156,6 +156,7 @@ public int MenuHandler_GagPlayer(Menu menu, MenuAction action, int param1, int p
 	}
 }
 
+
 public int MenuHandler_GagTypes(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
@@ -186,33 +187,45 @@ public int MenuHandler_GagTypes(Menu menu, MenuAction action, int param1, int pa
 		{
 			case CommType_Mute:
 			{
-				PerformMute(param1, target);
-				ShowActivity2(param1, "[SM] ", "%t", "Muted target", "_s", name);
+				if(CheckCommandAccess(param1, "sm_mute", ADMFLAG_CHAT, false)){
+					PerformMute(param1, target);
+					ShowActivity2(param1, "[SM] ", "%t", "Muted target", "_s", name);
+				}
 			}
 			case CommType_UnMute:
 			{
-				PerformUnMute(param1, target);
-				ShowActivity2(param1, "[SM] ", "%t", "Unmuted target", "_s", name);
+				if(CheckCommandAccess(param1, "sm_unmute", ADMFLAG_CHAT, false)){
+					PerformUnMute(param1, target);
+					ShowActivity2(param1, "[SM] ", "%t", "Unmuted target", "_s", name);
+				}
 			}
 			case CommType_Gag:
 			{
-				PerformGag(param1, target);
-				ShowActivity2(param1, "[SM] ", "%t", "Gagged target", "_s", name);
+				if(CheckCommandAccess(param1, "sm_gag", ADMFLAG_CHAT, false)){
+					PerformGag(param1, target);
+					ShowActivity2(param1, "[SM] ", "%t", "Gagged target", "_s", name);
+				}
 			}
 			case CommType_UnGag:
 			{
-				PerformUnGag(param1, target);
-				ShowActivity2(param1, "[SM] ", "%t", "Ungagged target", "_s", name);
+				if(CheckCommandAccess(param1, "sm_ungag", ADMFLAG_CHAT, false)){
+					PerformUnGag(param1, target);
+					ShowActivity2(param1, "[SM] ", "%t", "Ungagged target", "_s", name);
+				}
 			}
 			case CommType_Silence:
 			{
-				PerformSilence(param1, target);
-				ShowActivity2(param1, "[SM] ", "%t", "Silenced target", "_s", name);
+				if(CheckCommandAccess(param1, "sm_silence", ADMFLAG_CHAT, false)){
+					PerformSilence(param1, target);
+					ShowActivity2(param1, "[SM] ", "%t", "Silenced target", "_s", name);
+				}
 			}
 			case CommType_UnSilence:
 			{
-				PerformUnSilence(param1, target);
-				ShowActivity2(param1, "[SM] ", "%t", "Unsilenced target", "_s", name);
+				if(CheckCommandAccess(param1, "sm_unsilence", ADMFLAG_CHAT, false)){
+					PerformUnSilence(param1, target);
+					ShowActivity2(param1, "[SM] ", "%t", "Unsilenced target", "_s", name);
+				}
 			}
 		}
 	}
