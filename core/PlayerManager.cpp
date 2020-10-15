@@ -1156,14 +1156,18 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		}
 		else if (args.ArgC() > 1 && strcmp(args.Arg(1), "credits") == 0)
 		{
- 			ClientConsolePrint(pEntity,
- 				"SourceMod would not be possible without:");
- 			ClientConsolePrint(pEntity,
+			ClientConsolePrint(pEntity,
+				"SourceMod would not be possible without:");
+			ClientConsolePrint(pEntity,
 				" David \"BAILOPAN\" Anderson, Matt \"pRED\" Woodrow");
- 			ClientConsolePrint(pEntity,
+			ClientConsolePrint(pEntity,
 				" Scott \"DS\" Ehlert, Fyren");
- 			ClientConsolePrint(pEntity,
+			ClientConsolePrint(pEntity,
 				" Nicholas \"psychonic\" Hastings, Asher \"asherkin\" Baker");
+			ClientConsolePrint(pEntity,
+				" Ruben \"Dr!fter\" Gonzalez, Josh \"KyleS\" Allard");
+			ClientConsolePrint(pEntity,
+				" Michael \"Headline\" Flaherty, Jannik \"Peace-Maker\" Hartung");
 			ClientConsolePrint(pEntity,
 				" Borja \"faluco\" Ferrer, Pavol \"PM OnoTo\" Marko");
 			ClientConsolePrint(pEntity,
@@ -1178,7 +1182,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		ClientConsolePrint(pEntity,
 			"To see credits, type \"sm credits\"");
 		ClientConsolePrint(pEntity,
-			"Visit http://www.sourcemod.net/");
+			"Visit https://www.sourcemod.net/");
 		RETURN_META(MRES_SUPERCEDE);
 	}
 
