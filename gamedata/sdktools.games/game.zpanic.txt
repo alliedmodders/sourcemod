@@ -53,8 +53,8 @@
 			}
 			"GetVelocity"
 			{
-				"windows"	"153"
-				"linux"		"154"
+				"windows"	"154"
+				"linux"		"155"
 			}
 			"EyeAngles"
 			{
