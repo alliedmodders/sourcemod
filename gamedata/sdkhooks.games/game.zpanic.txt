@@ -11,8 +11,8 @@
 			}
 			"FireBullets"
 			{
-				"windows"	"123"
-				"linux"		"125"
+				"windows"	"124"
+				"linux"		"124"
 			}
 			"OnTakeDamage"
 			{
