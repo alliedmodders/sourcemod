@@ -53,39 +53,57 @@ void DisplayGagTypesMenu(int client)
 
 	if (!playerstate[target].isMuted)
 	{
-		AddTranslatedMenuItem(menu, "0", "Mute Player", client, (CheckCommandAccess(client, "sm_mute", ADMFLAG_CHAT, false) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED));
+		if(CheckCommandAccess(client, "sm_mute", ADMFLAG_CHAT, false))
+		{
+			AddTranslatedMenuItem(menu, "0", "Mute Player", client);
+		}
 	}
 	else
 	{
-		AddTranslatedMenuItem(menu, "1", "UnMute Player", client, (CheckCommandAccess(client, "sm_unmute", ADMFLAG_CHAT, false) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED));
+		if(CheckCommandAccess(client, "sm_unmute", ADMFLAG_CHAT, false))
+		{
+			AddTranslatedMenuItem(menu, "1", "UnMute Player", client);
+		}
 	}
 	
 	if (!playerstate[target].isGagged)
 	{
-		AddTranslatedMenuItem(menu, "2", "Gag Player", client, (CheckCommandAccess(client, "sm_gag", ADMFLAG_CHAT, false) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED));
+		if(CheckCommandAccess(client, "sm_gag", ADMFLAG_CHAT, false))
+		{
+			AddTranslatedMenuItem(menu, "2", "Gag Player", client);
+		}
 	}
 	else
 	{
-		AddTranslatedMenuItem(menu, "3", "UnGag Player", client, (CheckCommandAccess(client, "sm_ungag", ADMFLAG_CHAT, false) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED));
+		if(CheckCommandAccess(client, "sm_ungag", ADMFLAG_CHAT, false))
+		{
+			AddTranslatedMenuItem(menu, "3", "UnGag Player", client);
+		}
 	}
 	
 	if (!playerstate[target].isMuted || !playerstate[target].isGagged)
 	{
-		AddTranslatedMenuItem(menu, "4", "Silence Player", client, (CheckCommandAccess(client, "sm_silence", ADMFLAG_CHAT, false) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED));
+		if(CheckCommandAccess(client, "sm_silence", ADMFLAG_CHAT, false))
+		{
+			AddTranslatedMenuItem(menu, "4", "Silence Player", client);
+		}
 	}
 	else
 	{
-		AddTranslatedMenuItem(menu, "5", "UnSilence Player", client, (CheckCommandAccess(client, "sm_unsilence", ADMFLAG_CHAT, false) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED));
+		if(CheckCommandAccess(client, "sm_unsilence", ADMFLAG_CHAT, false))
+		{
+			AddTranslatedMenuItem(menu, "5", "UnSilence Player", client);
+		}
 	}
 		
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
-void AddTranslatedMenuItem(Menu menu, const char[] opt, const char[] phrase, int client, int displayoption = ITEMDRAW_DEFAULT)
+void AddTranslatedMenuItem(Menu menu, const char[] opt, const char[] phrase, int client)
 {
 	char buffer[128];
 	Format(buffer, sizeof(buffer), "%T", phrase, client);
-	menu.AddItem(opt, buffer, displayoption);
+	menu.AddItem(opt, buffer, ITEMDRAW_DEFAULT);
 }
 
 void DisplayGagPlayerMenu(int client)
