@@ -199,8 +199,9 @@ forward void OnMapEnd();
  * executed, and all plugin configs are done executing.  This is the best
  * place to initialize plugin functions which are based on cvar data.
  *
- * @note This will always be called once and only once per map.  It will be
- *       called after OnMapStart().
+ * @note If a plugin is loaded late, this is automatically re-fired.
+ *       Otherwise, this will be called once and only once per map.
+ *       It will be called after OnMapStart().
  */
 forward void OnConfigsExecuted();
 
