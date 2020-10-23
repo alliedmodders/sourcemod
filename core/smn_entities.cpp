@@ -2101,6 +2101,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	char *prop;
 	int offset;
+	int bit_count;
 	edict_t *pEdict;
 
 	int element = 0;
@@ -2179,38 +2180,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 		}
 	case Prop_Send:
 		{
-			sm_sendprop_info_t info;
-			
-			IServerUnknown *pUnk = (IServerUnknown *)pEntity;
-			IServerNetworkable *pNet = pUnk->GetNetworkable();
-			if (!pNet)
-			{
-				return pContext->ThrowNativeError("Edict %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]);
-			}
-			if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info))
-			{
-				const char *class_name = g_HL2.GetEntityClassname(pEntity);
-				return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)",
-					prop,
-					params[1],
-					((class_name) ? class_name : ""));
-			}
-
-			offset = info.actual_offset;
-
-			if (info.prop->GetType() != DPT_String)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not a string (%d != %d)",
-					prop,
-					info.prop->GetType(),
-					DPT_String);
-			}
-			else if (element != 0)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not an array. Element %d is invalid.",
-					prop,
-					element);
- 			}
+			FIND_PROP_SEND(DPT_String, "string");
 
 			if (info.prop->GetProxyFn())
 			{
@@ -2220,7 +2190,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 			}
 			else
 			{
-				src = (char *) ((uint8_t *) pEntity + offset);
+				src = *(char **) ((uint8_t *) pEntity + offset);
 			}
 			
 			break;
@@ -2242,6 +2212,7 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 	char *prop;
 	int offset;
 	int maxlen;
+	int bit_count;
 	edict_t *pEdict;
 	bool bIsStringIndex;
 
@@ -2326,30 +2297,11 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 		}
 	case Prop_Send:
 		{
-			sm_sendprop_info_t info;
-			IServerUnknown *pUnk = (IServerUnknown *)pEntity;
-			IServerNetworkable *pNet = pUnk->GetNetworkable();
-			if (!pNet)
-			{
-				return pContext->ThrowNativeError("The edict is not networkable");
-			}
 			pContext->LocalToString(params[3], &prop);
-			if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info))
+			FIND_PROP_SEND(DPT_String, "string");
+			if (!CanSetPropName(prop))
 			{
-				return pContext->ThrowNativeError("Property \"%s\" not found for entity %d", prop, params[1]);
-			}
-
-			offset = info.prop->GetOffset();
-
-			if (info.prop->GetType() != DPT_String)
-			{
-				return pContext->ThrowNativeError("Property \"%s\" is not a valid string", prop);
-			}
-			else if (element != 0)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not an array. Element %d is invalid.",
-					prop,
-					element);
+				return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
 			}
 
 			bIsStringIndex = false;
