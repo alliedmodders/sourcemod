@@ -103,7 +103,7 @@ void AddTranslatedMenuItem(Menu menu, const char[] opt, const char[] phrase, int
 {
 	char buffer[128];
 	Format(buffer, sizeof(buffer), "%T", phrase, client);
-	menu.AddItem(opt, buffer, ITEMDRAW_DEFAULT);
+	menu.AddItem(opt, buffer);
 }
 
 void DisplayGagPlayerMenu(int client)
@@ -173,7 +173,6 @@ public int MenuHandler_GagPlayer(Menu menu, MenuAction action, int param1, int p
 		}
 	}
 }
-
 
 public int MenuHandler_GagTypes(Menu menu, MenuAction action, int param1, int param2)
 {
