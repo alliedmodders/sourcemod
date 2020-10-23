@@ -2220,7 +2220,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 			}
 			else
 			{
-				src = (char *) ((uint8_t *) pEntity + offset);
+				src = *(char **) ((uint8_t *) pEntity + offset);
 			}
 			
 			break;
