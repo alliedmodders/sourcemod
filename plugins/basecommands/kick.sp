@@ -52,7 +52,7 @@ void DisplayKickMenu(int client)
 	char title[100];
 	Format(title, sizeof(title), "%T:", "Kick player", client);
 	menu.SetTitle(title);
-	menu.ExitBackButton = true;
+	menu.ExitBackButton = CheckCommandAccess(client, "sm_admin", ADMFLAG_GENERIC, false);
 	
 	AddTargetsToMenu(menu, client, false, false);
 	
