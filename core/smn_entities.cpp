@@ -2201,9 +2201,15 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	size_t len;
-	pContext->StringToLocalUTF8(params[4], params[5], src, &len);
-	return len;
+	if (src)
+	{
+		size_t len;
+		pContext->StringToLocalUTF8(params[4], params[5], src, &len);
+		return len;
+	}
+
+	pContext->StringToLocal(params[4], params[5], "");
+	return 0;
 }
 
 static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
