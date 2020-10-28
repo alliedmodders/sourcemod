@@ -159,7 +159,6 @@ class SMConfig(object):
     use_all = sdk_list[0] == 'all'
     use_present = sdk_list[0] == 'present'
 
-    not_found = []
     for sdk_name in PossibleSDKs:
       sdk = PossibleSDKs[sdk_name]
       if sdk.shouldBuild(self.all_targets):
@@ -170,7 +169,6 @@ class SMConfig(object):
         if sdk_path is None or not os.path.isdir(sdk_path):
           if use_all or sdk_name in sdk_list:
             raise Exception('Could not find a valid path for {0}'.format(sdk.envvar))
-          not_found.append(sdk_name)
           continue
         if use_all or use_present or sdk_name in sdk_list:
           sdk.path = Normalize(sdk_path)
@@ -178,9 +176,6 @@ class SMConfig(object):
 
     if len(self.sdks) < 1 and len(sdk_list) and not use_none:
       raise Exception('No applicable SDKs were found, nothing to do')
-
-    for sdk in not_found:
-      print('Warning: hl2sdk-{} was not found, and will not be included in build.'.format(sdk))
 
     if builder.options.mms_path:
       self.mms_root = builder.options.mms_path
