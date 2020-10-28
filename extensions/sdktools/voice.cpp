@@ -91,6 +91,16 @@ void SDKTools::VoiceInit()
 	SH_ADD_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &SDKTools::OnClientCommand), true);
 }
 
+void SDKTools::VoiceShutdown()
+{
+	if (g_VoiceHookCount > 0)
+	{
+		g_VoiceHookCount = 1;
+		DecHookCount();
+	}
+	SH_REMOVE_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &SDKTools::OnClientCommand), true);
+}
+
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 void SDKTools::OnClientCommand(edict_t *pEntity, const CCommand &args)
 {

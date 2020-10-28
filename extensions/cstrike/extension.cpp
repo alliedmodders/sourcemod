@@ -121,6 +121,28 @@ void CStrike::SDK_OnUnload()
 		SH_REMOVE_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(&g_TimeLeftEvents, &TimeLeftEvents::LevelInit), true);
 		hooked_everything = false;
 	}
+
+	if (m_TerminateRoundDetourEnabled)
+	{
+		RemoveTerminateRoundDetour();
+		m_TerminateRoundDetourEnabled = false;
+	}
+	if (m_WeaponPriceDetourEnabled)
+	{
+		RemoveWeaponPriceDetour();
+		m_WeaponPriceDetourEnabled = false;
+	}
+	if (m_HandleBuyDetourEnabled)
+	{
+		RemoveHandleBuyDetour();
+		m_HandleBuyDetourEnabled = false;
+	}
+	if (m_CSWeaponDetourEnabled)
+	{
+		RemoveCSWeaponDropDetour();
+		m_CSWeaponDetourEnabled = false;
+	}
+
 	g_RegNatives.UnregisterAll();
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	plsys->RemovePluginsListener(this);

@@ -261,6 +261,7 @@ void SDKTools::SDK_OnUnload()
 	s_SoundHooks.Shutdown();
 	g_Hooks.Shutdown();
 	g_OutputManager.Shutdown();
+	VoiceShutdown();
 
 	forwards->ReleaseForward(m_OnClientSpeaking);
 	forwards->ReleaseForward(m_OnClientSpeakingEnd);

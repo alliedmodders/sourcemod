@@ -114,6 +114,7 @@ public:
 public: // IVoiceServer
 	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
 	void VoiceInit();
+	void VoiceShutdown();
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	void OnClientCommand(edict_t *pEntity, const CCommand &args);
 #else

@@ -846,11 +846,7 @@ CPluginManager::~CPluginManager()
 
 void CPluginManager::Shutdown()
 {
-	List<CPlugin *>::iterator iter;
-
-	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
-		UnloadPlugin(*iter);
-	}
+	UnloadAll();
 }
 
 void CPluginManager::LoadAll(const char *config_path, const char *plugins_path)
@@ -2208,7 +2204,6 @@ void CPluginManager::UnloadAll()
 int CPluginManager::GetOrderOfPlugin(IPlugin *pl)
 {
 	int id = 1;
-	List<CPlugin *>::iterator iter;
 
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		if ((*iter) == pl)
