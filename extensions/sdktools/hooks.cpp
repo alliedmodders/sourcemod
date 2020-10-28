@@ -124,6 +124,58 @@ void CHookManager::Initialize()
 
 void CHookManager::Shutdown()
 {
+	if (basefilesystemPatch)
+	{
+		SH_RELEASE_CALLCLASS(basefilesystemPatch);
+		basefilesystemPatch = NULL;
+	}
+
+	if (PRCH_used)
+	{
+		for (size_t i = 0; i < m_runUserCmdHooks.size(); ++i)
+		{
+			delete m_runUserCmdHooks[i];
+		}
+
+		m_runUserCmdHooks.clear();
+		PRCH_used = false;
+	}
+
+	if (PRCHPost_used)
+	{
+		for (size_t i = 0; i < m_runUserCmdPostHooks.size(); ++i)
+		{
+			delete m_runUserCmdPostHooks[i];
+		}
+
+		m_runUserCmdPostHooks.clear();
+		PRCHPost_used = false;
+	}
+
+	if (FILE_used)
+	{
+		for (size_t i = 0; i < m_netChannelHooks.size(); ++i)
+		{
+			delete m_netChannelHooks[i];
+		}
+
+		m_netChannelHooks.clear();
+		FILE_used = false;
+	}
+	
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+	if (PVD_used)
+	{
+		for (size_t i = 0; i < m_netProcessVoiceData.size(); ++i)
+		{
+			delete m_netProcessVoiceData[i];
+		}
+
+		m_netProcessVoiceData.clear();
+		PVD_used = false;
+	}
+#endif
+
 	forwards->ReleaseForward(m_usercmdsFwd);
 	forwards->ReleaseForward(m_usercmdsPostFwd);
 	forwards->ReleaseForward(m_netFileSendFwd);
