@@ -33,10 +33,10 @@
  */
  
 
-#pragma semicolon 1
 #include <sourcemod>
 #include <clientprefs>
 
+#pragma semicolon 1
 #pragma newdecls required
 
 public Plugin myinfo =
@@ -53,7 +53,7 @@ public void OnPluginStart()
 	LoadTranslations("clientprefs.phrases");
 	
 	RegConsoleCmd("sm_cookies", Command_Cookie, "sm_cookies <name> [value]");
-	RegConsoleCmd("sm_settings", Command_Settings);	
+	RegConsoleCmd("sm_settings", Command_Settings);
 }
 
 public Action Command_Cookie(int client, int args)
@@ -74,7 +74,6 @@ public Action Command_Cookie(int client, int args)
 		CookieAccess access;
 		
 		int count = 1;
-		
 		while (ReadCookieIterator(iter, name, sizeof(name), access, description, sizeof(description)) != false)
 		{
 			if (access < CookieAccess_Private)
@@ -83,14 +82,14 @@ public Action Command_Cookie(int client, int args)
 			}
 		}
 		
-		delete iter;		
+		delete iter;
 		return Plugin_Handled;
 	}
 	
 	if (client == 0)
 	{
 		PrintToServer("%T", "No Console", LANG_SERVER);
-		return Plugin_Handled;	
+		return Plugin_Handled;
 	}
 	
 	char name[30];
@@ -123,12 +122,12 @@ public Action Command_Cookie(int client, int args)
 		GetClientCookie(client, cookie, value, sizeof(value));
 		ReplyToCommand(client, "[SM] %t", "Cookie Value", name, value);
 		
-		char CookieName[30];
+		char cookieName[30];
 		char description[255];
 		
-		while (ReadCookieIterator(iter, CookieName, sizeof(CookieName), access, description, sizeof(description)) != false) // We're allowed to re-use access since we're about to return anyways.
+		while (ReadCookieIterator(iter, cookieName, sizeof(cookieName), access, description, sizeof(description)) != false) // We're allowed to re-use access since we're about to return anyways.
 		{
-			if (StrEqual(CookieName, name, true))
+			if (StrEqual(cookieName, name))
 			{
 				TrimString(description);
 				if (description[0] != EOS)
@@ -154,8 +153,8 @@ public Action Command_Cookie(int client, int args)
 	GetCmdArg(2, value, sizeof(value));
 	
 	SetClientCookie(client, cookie, value);
-	delete cookie;
 	ReplyToCommand(client, "[SM] %t", "Cookie Changed Value", name, value);
+	delete cookie;
 	
 	return Plugin_Handled;
 }
@@ -165,7 +164,7 @@ public Action Command_Settings(int client, int args)
 	if (client == 0)
 	{
 		PrintToServer("%T", "No Console", LANG_SERVER);
-		return Plugin_Handled;	
+		return Plugin_Handled;
 	}
 	
 	ShowCookieMenu(client);
