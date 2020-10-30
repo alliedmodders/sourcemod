@@ -119,7 +119,7 @@ methodmap Cookie < Handle {
 	// no longer needed.
 	//
 	// @param name          Name of cookie to find.
-	// @return              A handle to the cookie if it is found. INVALID_HANDLE otherwise.
+	// @return              A handle to the cookie if it is found. Null otherwise.
 	public static native Cookie Find(const char[] name);
 
 	// Set the value of a Client preference cookie.
