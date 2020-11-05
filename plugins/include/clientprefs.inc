@@ -193,7 +193,8 @@ native Cookie RegClientCookie(const char[] name, const char[] description, Cooki
  * no longer needed.
  *
  * @param name          Name of cookie to find.
- * @return              A handle to the cookie if it is found. Null otherwise.
+ * @return              A handle to the cookie if it is found, null otherwise.
+
  */
 native Cookie FindClientCookie(const char[] name);
 
