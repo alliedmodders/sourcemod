@@ -219,7 +219,7 @@ class SMConfig(object):
     builder.AddConfigureFile('pushbuild.txt')
     
     if not set(self.target_archs).issubset(['x86', 'x86_64']):
-      raise Exception('Unknown target architecture: {0}'.format(builder.target.arch))
+      raise Exception('Unknown target architecture: {0}'.format(self.target_archs))
 
     for cxx in self.all_targets:
         self.configure_cxx(cxx)
