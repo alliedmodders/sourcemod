@@ -12,11 +12,11 @@ Cookie g_Cookie5;
 
 public void OnPluginStart()
 {
-	g_Cookie1 = new Cookie("test-cookie'", "A basic 'testing cookie", CookieAccess_Public);
-	g_Cookie2 = new Cookie("test-cookie2\"", "A basic \"testing cookie", CookieAccess_Protected);
-	g_Cookie3 = new Cookie("test-cookie3", "A basic testing cookie", CookieAccess_Public);
-	g_Cookie4 = new Cookie("test-cookie4", "A basic testing cookie", CookieAccess_Private);
-	g_Cookie5 = new Cookie("test-cookie5", "A basic testing cookie", CookieAccess_Public);
+	g_Cookie1 = RegClientCookie("test-cookie'", "A basic 'testing cookie", CookieAccess_Public);
+	g_Cookie2 = RegClientCookie("test-cookie2\"", "A basic \"testing cookie", CookieAccess_Protected);
+	g_Cookie3 = RegClientCookie("test-cookie3", "A basic testing cookie", CookieAccess_Public);
+	g_Cookie4 = RegClientCookie("test-cookie4", "A basic testing cookie", CookieAccess_Private);
+	g_Cookie5 = RegClientCookie("test-cookie5", "A basic testing cookie", CookieAccess_Public);
 	
 	g_Cookie1.SetPrefabMenu(CookieMenu_YesNo, "Cookie '1", CookieSelected, g_Cookie1);
 	g_Cookie2.SetPrefabMenu(CookieMenu_YesNo_Int, "Cookie \"2");
