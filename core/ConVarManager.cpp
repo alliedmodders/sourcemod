@@ -251,8 +251,8 @@ void ConVarManager::OnClientDisconnected(int client)
 				pCallback->PushCell(InvalidQueryCvarCookie);
 				pCallback->PushCell(client);
 				pCallback->PushCell(eQueryCvarValueStatus_Cancelled);
-				pCallback->PushString("\0");
-				pCallback->PushString("\0");
+				pCallback->PushString("");
+				pCallback->PushString("");
 				pCallback->PushCell(query.value);
 				pCallback->Execute(&ret);
 			}
