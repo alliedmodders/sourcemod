@@ -114,6 +114,12 @@ methodmap StringMap < Handle
 	//                   as a value or array (not a string).
 	public native bool GetString(const char[] key, char[] value, int max_size, int &size=0);
 
+	// Checks if a key entry exists in a Map.
+	//
+	// @param key        Key string.
+	// @return           True if the key entry has been found, else false.
+	public native bool Exist(const char[] key);
+
 	// Removes a key entry from a Map.
 	//
 	// @param key        Key string.
@@ -254,6 +260,16 @@ native bool GetTrieArray(Handle map, const char[] key, any[] array, int max_size
  * @error               Invalid Handle.
  */
 native bool GetTrieString(Handle map, const char[] key, char[] value, int max_size, int &size=0);
+
+/**
+ * Checks if a key entry exists in a Map.
+ *
+ * @param map           Map Handle.
+ * @param key           Key string.
+ * @return              True if the key entry has been found, else false.
+ * @error               Invalid Handle.
+ */
+native bool ExistInTrie(Handle map, const char[] key);
 
 /**
  * Removes a key entry from a Map.
