@@ -350,7 +350,7 @@ static cell_t SetTrieString(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-static cell_t ExistInTrie(IPluginContext *pContext, const cell_t *params)
+static cell_t ContainsKeyInTrie(IPluginContext *pContext, const cell_t *params)
 {
 	CellTrie *pTrie;
 	HandleError err;
@@ -731,7 +731,7 @@ REGISTER_NATIVES(trieNatives)
 	{"StringMap.GetArray",		GetTrieArray},
 	{"StringMap.GetString",		GetTrieString},
 	{"StringMap.GetValue",		GetTrieValue},
-	{"StringMap.Exist",			ExistInTrie},
+	{"StringMap.ContainsKey",	ContainsKeyInTrie},
 	{"StringMap.Remove",		RemoveFromTrie},
 	{"StringMap.SetArray",		SetTrieArray},
 	{"StringMap.SetString",		SetTrieString},

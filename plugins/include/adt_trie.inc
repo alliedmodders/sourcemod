@@ -114,11 +114,11 @@ methodmap StringMap < Handle
 	//                   as a value or array (not a string).
 	public native bool GetString(const char[] key, char[] value, int max_size, int &size=0);
 
-	// Checks if a key entry exists in a Map.
+	// Checks whether a key is present in a Map.
 	//
 	// @param key        Key string.
-	// @return           True if the key entry has been found, else false.
-	public native bool Exist(const char[] key);
+	// @return           True if the key has been found, else false.
+	public native bool ContainsKey(const char[] key);
 
 	// Removes a key entry from a Map.
 	//
