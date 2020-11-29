@@ -714,7 +714,6 @@ REGISTER_NATIVES(trieNatives)
 	{"GetTrieArray",			GetTrieArray},
 	{"GetTrieString",			GetTrieString},
 	{"GetTrieValue",			GetTrieValue},
-	{"ExistInTrie",				ExistInTrie},
 	{"RemoveFromTrie",			RemoveFromTrie},
 	{"SetTrieArray",			SetTrieArray},
 	{"SetTrieString",			SetTrieString},
