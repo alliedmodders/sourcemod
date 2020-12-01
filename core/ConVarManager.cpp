@@ -236,19 +236,18 @@ void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
 
 void ConVarManager::OnClientDisconnected(int client)
 {
-	IPluginFunction *pCallback = NULL;
 	/* Remove convar queries for this client that haven't returned results yet */
 	for (List<ConVarQuery>::iterator iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end();)
 	{
 		ConVarQuery &query = (*iter);
 		if (query.client == client)
 		{
-			pCallback = query.pCallback;
+			IPluginFunction *pCallback = query.pCallback;
 			if (pCallback)
 			{
 				cell_t ret;
 
-				pCallback->PushCell(InvalidQueryCvarCookie);
+				pCallback->PushCell(0);
 				pCallback->PushCell(client);
 				pCallback->PushCell(eQueryCvarValueStatus_Cancelled);
 				pCallback->PushString("");
