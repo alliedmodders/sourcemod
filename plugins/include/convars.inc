@@ -49,7 +49,7 @@ enum ConVarBounds
  */
 enum ConVarQueryResult
 {
-	ConVarQuery_Cancelled = -1,			//< Client disconnected during query */
+	ConVarQuery_Cancelled = -1,         //< Client disconnected during query */
 	ConVarQuery_Okay = 0,               //< Retrieval of client convar value was successful. */
 	ConVarQuery_NotFound,               //< Client convar was not found. */
 	ConVarQuery_NotValid,               //< A console command with the same name was found, but there is no convar. */
