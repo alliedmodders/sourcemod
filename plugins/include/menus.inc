@@ -518,7 +518,7 @@ native bool AddMenuItem(Handle menu,
  * @error               Invalid Handle or menu position.
  */
 native bool InsertMenuItem(Handle menu,
-						position,
+						int position,
 						const char[] info,
 						const char[] display,
 						int style=ITEMDRAW_DEFAULT);
