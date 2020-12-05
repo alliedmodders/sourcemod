@@ -791,7 +791,7 @@ native void KickClientEx(int client, const char[] format="", any ...);
  *
  * @param client        Client index.
  * @param team          Mod-specific team index.
- * @error               Invalid client index, client not connected, or lack of 
+ * @error               Invalid client index, client not in game, or lack of 
  *                      mod support.
  */
 native void ChangeClientTeam(int client, int team);
