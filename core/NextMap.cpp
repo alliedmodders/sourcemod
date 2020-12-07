@@ -75,6 +75,10 @@ void NextMapManager::OnSourceModAllInitialized_Post()
 		SH_ADD_HOOK(ConCommand, Dispatch, pCmd, SH_STATIC(CmdChangeLevelCallback), false);
 		changeLevelCmd = pCmd;
 	}
+	
+	m_pOnNextMapChanged = forwardsys->CreateForward("OnNextMapChanged", ET_Ignore, 0, NULL);
+	
+	g_ConVarManager.AddConVarChangeListener("sm_nextmap", this);
 }
 
 void NextMapManager::OnSourceModShutdown()
@@ -98,6 +102,10 @@ void NextMapManager::OnSourceModShutdown()
 		delete (MapChangeData *)*iter;
 		iter = m_mapHistory.erase(iter);
 	}
+	
+	forwardsys->ReleaseForward(m_pOnNextMapChanged);
+	
+	g_ConVarManager.RemoveConVarChangeListener("sm_nextmap", this);
 }
 
 const char *NextMapManager::GetNextMap()
@@ -113,8 +121,20 @@ bool NextMapManager::SetNextMap(const char *map)
 	}
 
 	sm_nextmap.SetValue(map);
+	
+	NextMapChanged();
 
 	return true;
+}
+
+void NextMapManager::NextMapChanged()
+{	
+	m_pOnNextMapChanged->Execute(NULL);
+}
+
+void NextMapManager::OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
+{	
+	NextMapChanged();
 }
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
