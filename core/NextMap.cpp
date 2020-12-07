@@ -121,8 +121,6 @@ bool NextMapManager::SetNextMap(const char *map)
 	}
 
 	sm_nextmap.SetValue(map);
-	
-	NextMapChanged();
 
 	return true;
 }
