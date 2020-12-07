@@ -32,6 +32,8 @@
 #ifndef _INCLUDE_SOURCEMOD_NEXTMAP_H_
 #define _INCLUDE_SOURCEMOD_NEXTMAP_H_
 
+#include <IForwardSys.h>
+#include "ConVarManager.h"
 #include "sm_globals.h"
 #include <eiface.h>
 #include "sh_list.h"
@@ -65,7 +67,9 @@ void CmdChangeLevelCallback(const CCommand &command);
 void CmdChangeLevelCallback();
 #endif
 
-class NextMapManager : public SMGlobalClass
+class NextMapManager : 
+	public SMGlobalClass,
+	public IConVarChangeListener
 {
 public:
 	NextMapManager();
@@ -79,9 +83,12 @@ public:
 	void OnSourceModAllInitialized_Post();
 	void OnSourceModShutdown();
 	void OnSourceModLevelChange(const char *mapName);
+	
+	void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
 
 	const char *GetNextMap();
 	bool SetNextMap(const char *map);
+	void NextMapChanged();
 
 	void ForceChangeLevel(const char *mapName, const char* changeReason);
 
@@ -97,6 +104,8 @@ public:
 private:
 	MapChangeData m_tempChangeInfo;
 	char lastMap[32];
+	
+	IForward *m_pOnNextMapChanged;
 };
 
 extern NextMapManager g_NextMap;
