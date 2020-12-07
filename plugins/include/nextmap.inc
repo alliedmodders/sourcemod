@@ -54,6 +54,11 @@ native bool SetNextMap(const char[] map);
 native bool GetNextMap(char[] map, int maxlen);
 
 /**
+ * Notification that the SourceMod's internal nextmap has changed.
+ */
+forward void OnNextMapChanged();
+
+/**
  * Changes the current map and records the reason for the change with maphistory
  *
  * @param map           Map to change to.
