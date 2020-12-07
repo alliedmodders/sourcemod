@@ -74,6 +74,15 @@ forward void OnAdminMenuCreated(Handle topmenu);
 forward void OnAdminMenuReady(Handle topmenu);
 
 /**
+ * Called when the admin menu is formatting title in main menu.
+ *
+ * @param client        Index of the client for who title is formatting.
+ * @param buffer        Buffer where admin title should be written.
+ * @param maxlength     Maximum size of the title buffer.
+ */
+forward void OnAdminMenuTitleFormat(int client, char[] buffer, int maxlength);
+
+/**
  * Retrieves the Handle to the admin top menu.
  *
  * @return              Handle to the admin menu's TopMenu,

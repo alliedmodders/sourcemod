@@ -50,6 +50,7 @@ public Plugin myinfo =
 /* Forwards */
 GlobalForward hOnAdminMenuReady;
 GlobalForward hOnAdminMenuCreated;
+GlobalForward hOnAdminMenuTitleFormat;
 
 /* Menus */
 TopMenu hAdminMenu;
@@ -77,6 +78,7 @@ public void OnPluginStart()
 	
 	hOnAdminMenuCreated = new GlobalForward("OnAdminMenuCreated", ET_Ignore, Param_Cell);
 	hOnAdminMenuReady = new GlobalForward("OnAdminMenuReady", ET_Ignore, Param_Cell);
+	hOnAdminMenuTitleFormat = new GlobalForward("OnAdminMenuTitleFormat", ET_Ignore, Param_Cell, Param_String, Param_Cell);
 
 	RegAdminCmd("sm_admin", Command_DisplayMenu, ADMFLAG_GENERIC, "Displays the admin menu");
 }
@@ -131,6 +133,12 @@ public void DefaultCategoryHandler(TopMenu topmenu,
 		if (object_id == INVALID_TOPMENUOBJECT)
 		{
 			Format(buffer, maxlength, "%T:", "Admin Menu", param);
+
+			Call_StartForward(hOnAdminMenuTitleFormat);
+			Call_PushCell(param);
+			Call_PushStringEx(buffer, maxlength, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+			Call_PushCell(maxlength);
+			Call_Finish();
 		}
 		else if (object_id == obj_playercmds)
 		{
