@@ -204,10 +204,10 @@
 		{
 			"CScore"
 			{
-				"windows"	"51‬"
-				"linux"		"51‬"
-				"linux64"	"51‬"
-				"mac64"		"51‬"
+				"windows"	"51"
+				"linux"		"51"
+				"linux64"	"51"
+				"mac64"		"51"
 			}
 		}
 	}
@@ -223,10 +223,10 @@
 		{
 			"MVPs"
 			{
-				"windows"	"11‬"
-				"linux"		"11‬"
-				"linux64"	"11‬"
-				"mac64"		"11‬"
+				"windows"	"11"
+				"linux"		"11"
+				"linux64"	"11"
+				"mac64"		"11"
 			}
 		}
 	}
