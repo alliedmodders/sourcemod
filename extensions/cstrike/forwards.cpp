@@ -24,7 +24,7 @@ CDetour *DCSWeaponDrop = NULL;
 int weaponNameOffset = -1;
 
 #if SOURCE_ENGINE == SE_CSGO
-DETOUR_DECL_MEMBER3(DetourHandleBuy, int, int, iLoadoutSlot, void *, pWpnDataRef, bool, bRebuy, bool bDrop)
+DETOUR_DECL_MEMBER4(DetourHandleBuy, int, int, iLoadoutSlot, void *, pWpnDataRef, bool, bRebuy, bool, bDrop)
 {
 	CBaseEntity *pEntity = reinterpret_cast<CBaseEntity *>(this);
 	int client = gamehelpers->EntityToBCompatRef(pEntity);
