@@ -207,6 +207,43 @@ public:
 		return m_AllocSize * m_BlockSize * sizeof(cell_t);
 	}
 
+	size_t capacity()
+	{
+		return m_AllocSize;
+	}
+
+	void reserve(size_t to_allocate)
+	{
+		if (to_allocate <= m_AllocSize)
+		{
+			return;
+		}
+
+		if (cell_t* data = static_cast<cell_t*>(realloc(m_Data, sizeof(cell_t) * m_BlockSize * to_allocate)))
+		{
+			m_AllocSize = to_allocate;
+			m_Data = data;
+			return;
+		}
+		return;
+	}
+
+	void shrink_to_fit()
+	{
+		if (m_Size == m_AllocSize)
+		{
+			return;
+		}
+
+		if (cell_t* data = static_cast<cell_t*>(realloc(m_Data, sizeof(cell_t) * m_BlockSize * m_Size)))
+		{
+			m_AllocSize = m_Size;
+			m_Data = data;
+			return;
+		}
+		return;
+	}
+
 private:
 	bool GrowIfNeeded(size_t count)
 	{

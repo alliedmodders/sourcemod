@@ -595,6 +595,53 @@ static cell_t GetArrayBlockSize(IPluginContext *pContext, const cell_t *params)
 	return array->blocksize();
 }
 
+static cell_t GetArrayCapacity(IPluginContext* pContext, const cell_t* params)
+{
+	CellArray* array;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void**)&array))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	return array->capacity();
+}
+
+static cell_t SetArrayCapacity(IPluginContext* pContext, const cell_t* params)
+{
+	CellArray* array;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void**)&array))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	array->reserve(params[2]);
+	return 1;
+}
+
+static cell_t ShrinkArray(IPluginContext* pContext, const cell_t* params)
+{
+	CellArray* array;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void**)&array))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	array->shrink_to_fit();
+	return 1;
+}
+
 REGISTER_NATIVES(cellArrayNatives)
 {
 	{"ClearArray",					ClearArray},
@@ -639,6 +686,9 @@ REGISTER_NATIVES(cellArrayNatives)
 	{"ArrayList.FindString",		FindStringInArray},
 	{"ArrayList.FindValue",			FindValueInArray},
 	{"ArrayList.BlockSize.get",		GetArrayBlockSize},
-
+	{"ArrayList.Capacity.get",		GetArrayCapacity},
+	{"ArrayList.Capacity.set",		SetArrayCapacity},
+	{"ArrayList.ShrinkToFit",		ShrinkArray},
+		
 	{NULL,							NULL},
 };

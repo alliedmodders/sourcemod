@@ -222,6 +222,9 @@ methodmap ArrayList < Handle {
 	// @param hndl          Optional Handle to pass through the comparison calls.
 	public native void SortCustom(SortFuncADTArray sortfunc, Handle hndl=INVALID_HANDLE); 
 
+	// Reduces memory usage by freeing unused storage.
+	public native void ShrinkToFit();
+	
 	// Retrieve the size of the array.
 	property int Length {
 		public native get();
@@ -230,6 +233,12 @@ methodmap ArrayList < Handle {
 	// Retrieve the blocksize the array was created with.
 	property int BlockSize {
 		public native get();
+	}
+	
+	// Retrieve/Set the current capacity of the array.
+	property int Capacity {
+		public native get();
+		public native set(int cap);
 	}
 };
 
