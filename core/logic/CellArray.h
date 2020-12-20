@@ -223,9 +223,7 @@ public:
 		{
 			m_AllocSize = to_allocate;
 			m_Data = data;
-			return;
 		}
-		return;
 	}
 
 	void shrink_to_fit()
@@ -239,9 +237,7 @@ public:
 		{
 			m_AllocSize = m_Size;
 			m_Data = data;
-			return;
 		}
-		return;
 	}
 
 private:
