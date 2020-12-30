@@ -797,7 +797,7 @@ native bool SQL_FieldNameToNum(Handle query, const char[] name, int &field);
  * Fetches a row from the current result set.  This must be 
  * successfully called before any results are fetched.
  *
- * If this function fails, SQL_MoreResults() can be used to
+ * If this function fails, SQL_FetchMoreResults() can be used to
  * tell if there was an error or the result set is finished.
  * 
  * @param query         A query (or statement) Handle.
