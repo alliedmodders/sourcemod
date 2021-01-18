@@ -52,33 +52,40 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return true;
 	}
 
-	const char *databases[] =
+	char m_GeoipDir[PLATFORM_MAX_PATH], path[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_SM, m_GeoipDir, sizeof(m_GeoipDir), "configs/geoip");
+
+	DIR* dirFile = opendir(m_GeoipDir);
+	if (dirFile) 
 	{
-		"GeoIP2-City",
-		"GeoLite2-City",
-		"GeoIP2-Country",
-		"GeoLite2-Country"
-	};
-
-	char path[PLATFORM_MAX_PATH];
-	int status;
-
-	for (size_t i = 0; i < SM_ARRAYSIZE(databases); ++i)
-	{
-		g_pSM->BuildPath(Path_SM, path, sizeof(path), "configs/geoip/%s.mmdb", databases[i]);
-
-		status = MMDB_open(path, MMDB_MODE_MMAP, &mmdb);
-
-		if (status == MMDB_SUCCESS)
+		struct dirent* hFile;
+		size_t len;
+		while ((hFile = readdir(dirFile)) != NULL) 
 		{
-			break;
-		}
-	
+			len = strlen(hFile->d_name);
+			if (len > 5)
+			{
+				if (strcmp(hFile->d_name + len - 5, ".mmdb") == 0)
+				{
+					ke::SafeSprintf(path, sizeof(path), "%s/%s", m_GeoipDir, hFile->d_name);
+					break;
+				}
+			}
+		} 
+		closedir(dirFile);
 	}
+
+	if (!*path)
+	{
+		ke::SafeStrcpy(error, maxlength, "Could not find GeoIP2 database.");
+		return false;
+	}
+
+	int status = MMDB_open(path, MMDB_MODE_MMAP, &mmdb);
 
 	if (status != MMDB_SUCCESS)
 	{
-		ke::SafeStrcpy(error, maxlength, "Could not find GeoIP2 databases.");
+		ke::SafeStrcpy(error, maxlength, "Failed to open GeoIP2 database.");
 		return false;
 	}
 
