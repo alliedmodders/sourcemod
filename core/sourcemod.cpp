@@ -337,6 +337,9 @@ void SourceModBase::StartSourceMod(bool late)
 static bool g_LevelEndBarrier = false;
 bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 {
+	/* Seed rand() globally per map */
+	srand(time(NULL));
+	
 	g_Players.MaxPlayersChanged();
 
 	/* If we're not loaded... */

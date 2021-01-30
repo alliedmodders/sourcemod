@@ -485,7 +485,6 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 		if (num_items > 1)
 		{
 			/* Yes, we do. */
-			srand(time(NULL));
 			winning_item = rand() % num_items;
 			winning_item = results->item_list[winning_item].item;
 		} else {
