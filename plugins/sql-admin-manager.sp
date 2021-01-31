@@ -789,7 +789,7 @@ public Action Command_AddAdmin(int client, int args)
 
 	DBResultSet rs;
 	
-	Format(query, sizeof(query), "SELECT id FROM sm_admins WHERE authtype = '%s' AND identity = '%s'", authtype, identity);
+	Format(query, sizeof(query), "SELECT id FROM sm_admins WHERE authtype = '%s' AND identity = '%s'", authtype, safe_identity);
 	if ((rs = SQL_Query(db, query)) == null)
 	{
 		return DoError(client, db, query, "Admin retrieval query failed");
