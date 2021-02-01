@@ -143,9 +143,9 @@ do
   checkout
 done
 
-python_cmd=`command -v python`
+python_cmd=`command -v python3`
 if [ -z "$python_cmd" ]; then
-  python_cmd=`command -v python3`
+  python_cmd=`command -v python`
 
   if [ -z "$python_cmd" ]; then
     echo "No suitable installation of Python detected"
