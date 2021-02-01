@@ -82,5 +82,5 @@ script:
   - eval "${MATRIX_EVAL}"
   - eval "${CC} --version"
   - eval "${CXX} --version"
-  - python ../configure.py --enable-${MODE} --sdks=${SDKS} --targets=${ARCH}
+  - python3 ../configure.py --enable-${MODE} --sdks=${SDKS} --targets=${ARCH}
   - ambuild
