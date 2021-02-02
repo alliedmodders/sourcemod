@@ -153,11 +153,11 @@ if [ -z "$python_cmd" ]; then
   fi
 fi
 
-`$python_cmd -c "import ambuild2"` 2>&1 1>/dev/null
+$python_cmd -c "import ambuild2" 2>&1 1>/dev/null
 if [ $? -eq 1 ]; then
   echo "AMBuild is required to build SourceMod"
 
-  `$python_cmd -m pip --version` 2>&1 1>/dev/null
+  $python_cmd -m pip --version 2>&1 1>/dev/null
   if [ $? -eq 1 ]; then
     echo "The detected Python installation does not have PIP"
     echo "Installing the latest version of PIP available (VIA \"get-pip.py\")"
