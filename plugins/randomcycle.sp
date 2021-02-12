@@ -4,7 +4,7 @@
  * SourceMod Random Map Cycle Plugin
  * Randomly picks a map from the mapcycle.
  *
- * SourceMod (C)2004-2014 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2021 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -50,6 +50,7 @@ ConVar g_Cvar_ExcludeMaps;
 ArrayList g_MapList = null;
 ArrayList g_OldMapList = null;
 int g_mapListSerial = -1;
+Handle g_MapTimer = null;
 
 public void OnPluginStart()
 {
@@ -76,7 +77,10 @@ public void OnConfigsExecuted()
 		}
 	}
 	
-	CreateTimer(5.0, Timer_RandomizeNextmap); // Small delay to give Nextmap time to complete OnMapStart()
+	if (g_MapTimer == null)
+	{
+		g_MapTimer = CreateTimer(5.0, Timer_RandomizeNextmap); // Small delay to give Nextmap time to complete OnMapStart()
+	}
 }
 
 public Action Timer_RandomizeNextmap(Handle timer)
@@ -107,5 +111,6 @@ public Action Timer_RandomizeNextmap(Handle timer)
 
 	LogAction(-1, -1, "RandomCycle has chosen %s for the nextmap.", map);	
 
+	g_MapTimer = null;
 	return Plugin_Stop;
 }
