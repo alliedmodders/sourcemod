@@ -92,10 +92,10 @@ $SDKS | ForEach-Object {
 }
 
 # Find a suitable installation of Python
-$PYTHON_CMD = Get-Command 'python' -ErrorAction SilentlyContinue
+$PYTHON_CMD = Get-Command 'python3' -ErrorAction SilentlyContinue
 if ($NULL -eq $PYTHON_CMD)
 {
-    $PYTHON_CMD = Get-Command 'python3' -ErrorAction SilentlyContinue
+    $PYTHON_CMD = Get-Command 'python' -ErrorAction SilentlyContinue
     if ($NULL -eq $PYTHON_CMD)
     {
         $PYTHON_CMD = Get-Command 'py' -ErrorAction SilentlyContinue
