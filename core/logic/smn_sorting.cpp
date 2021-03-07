@@ -91,8 +91,6 @@ enum SortOrder
 
 void sort_random(cell_t *array, cell_t size)
 {
-	srand((unsigned int)time(NULL));
-
 	for (int i = size-1; i > 0; i--)
 	{
         int n = rand() % (i + 1);
@@ -441,8 +439,6 @@ int sort_adtarray_strings_desc(const void *str1, const void *str2)
 void sort_adt_random(CellArray *cArray)
 {
 	size_t arraysize = cArray->size();
-
-	srand((unsigned int)time(NULL));
 
 	for (int i = arraysize-1; i > 0; i--)
 	{

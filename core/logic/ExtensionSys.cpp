@@ -1174,7 +1174,6 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 						rootmenu->ConsolePrint(" -> %s", pPlugin->GetFilename());
 					}
 				}
-				srand(static_cast<int>(time(NULL)));
 				pExt->unload_code = (rand() % 877) + 123;	//123 to 999
 				rootmenu->ConsolePrint("[SM] To verify unloading %s, please use the following: ", pExt->GetFilename());
 				rootmenu->ConsolePrint("[SM] sm exts unload %d %d", num, pExt->unload_code);
