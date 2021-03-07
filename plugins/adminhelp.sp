@@ -86,7 +86,6 @@ public Action HelpCmd(int client, int args)
 	char Name[64];
 	char Desc[255];
 	char NoDesc[128];
-	int Flags;
 	CommandIterator CmdIter = new CommandIterator();
 
 	FormatEx(NoDesc, sizeof(NoDesc), "%T", "No description available", client);
@@ -97,10 +96,9 @@ public Action HelpCmd(int client, int args)
 		while (CmdIter.Next())
 		{
 			CmdIter.GetName(Name, sizeof(Name));
-			Flags = CmdIter.Flags;
 			CmdIter.GetDescription(Desc, sizeof(Desc));
 
-			if ((StrContains(Name, arg, false) != -1) && CheckCommandAccess(client, Name, Flags))
+			if ((StrContains(Name, arg, false) != -1) && CheckCommandAccess(client, Name, CmdIter.Flags))
 			{
 				PrintToConsole(client, "[%03d] %s - %s", i++, Name, (Desc[0] == '\0') ? NoDesc : Desc);
 			}
@@ -121,10 +119,9 @@ public Action HelpCmd(int client, int args)
 			for (i=0; CmdIter.Next() && i<EndCmd; )
 			{
 				CmdIter.GetName(Name, sizeof(Name));
-				Flags = CmdIter.Flags;
 				CmdIter.GetDescription(Desc, sizeof(Desc));
 
-				if (CheckCommandAccess(client, Name, Flags))
+				if (CheckCommandAccess(client, Name, CmdIter.Flags))
 				{
 					i++;
 				}
@@ -144,10 +141,9 @@ public Action HelpCmd(int client, int args)
 		for (i=0; CmdIter.Next() && i<COMMANDS_PER_PAGE; )
 		{
 			CmdIter.GetName(Name, sizeof(Name));
-			Flags = CmdIter.Flags;
 			CmdIter.GetDescription(Desc, sizeof(Desc));
 			
-			if (CheckCommandAccess(client, Name, Flags))
+			if (CheckCommandAccess(client, Name, CmdIter.Flags))
 			{
 				i++;
 				PrintToConsole(client, "[%03d] %s - %s", i+StartCmd, Name, (Desc[0] == '\0') ? NoDesc : Desc);
@@ -165,12 +161,8 @@ public Action HelpCmd(int client, int args)
 		if (CmdIter.Next())
 		{
 			CmdIter.GetName(Name, sizeof(Name));
-			Flags = CmdIter.Flags;
 
-			if(CheckCommandAccess(client, Name, Flags))
-			{
-				PrintToConsole(client, "%t", "Type sm_help to see more", PageNum+1);
-			}		
+			PrintToConsole(client, "%t", "Type sm_help to see more", PageNum+1);
 		}
 	}
 
