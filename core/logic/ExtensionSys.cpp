@@ -639,7 +639,7 @@ IExtension *CExtensionManager::LoadExtension(const char *file, char *error, size
 
 	/* Remove platform extension if it's there. Compat hack. */
 	const char *ext = libsys->GetFileExtension(file);
-	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
+	if (ext && strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
 		char path2[PLATFORM_MAX_PATH];
 		ke::SafeStrcpy(path2, sizeof(path2), file);
