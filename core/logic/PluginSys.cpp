@@ -974,6 +974,20 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	LoadRes res;
 
 	*wasloaded = false;
+
+	if (strstr(path, "..") != NULL)
+	{
+		ke::SafeStrcpy(error, maxlength, "Cannot load plugins outside the \"plugins\" folder");
+		return NULL;
+	}
+
+	const char *ext = libsys->GetFileExtension(path);
+	if (!ext || strcmp(ext, "smx") != 0)
+	{
+		ke::SafeStrcpy(error, maxlength, "Plugin files must have the \".smx\" file extension");
+		return NULL;
+	}
+
 	if ((res=LoadPlugin(&pl, path, true, PluginType_MapUpdated)) == LoadRes_Failure)
 	{
 		ke::SafeStrcpy(error, maxlength, pl->GetErrorMsg());
