@@ -21,7 +21,7 @@
 #if SOURCE_ENGINE >= SE_CSS && SOURCE_ENGINE != SE_LEFT4DEAD
 #define GETMAXHEALTH_IS_VIRTUAL
 #endif
-#if SOURCE_ENGINE != SE_HL2DM && SOURCE_ENGINE != SE_DODS && SOURCE_ENGINE != SE_CSS && SOURCE_ENGINE != SE_TF2 && SOURCE_ENGINE != SE_LEFT4DEAD2 && SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_NUCLEARDAWN
+#if SOURCE_ENGINE != SE_HL2DM && SOURCE_ENGINE != SE_DODS && SOURCE_ENGINE != SE_CSS && SOURCE_ENGINE != SE_TF2 && SOURCE_ENGINE != SE_LEFT4DEAD2 && SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_NUCLEARDAWN && SOURCE_ENGINE != SE_BLADE
 #define GAMEDESC_CAN_CHANGE
 #endif
 
@@ -127,7 +127,7 @@ public:
 	};
 public:
 	CVTableHook *vtablehook;
-	ke::Vector<HookList> hooks;
+	std::vector<HookList> hooks;
 };
 
 class IEntityListener
@@ -238,6 +238,7 @@ public:  // IFeatureProvider
 
 public:  // IEntityListener
 	virtual void OnEntityCreated(CBaseEntity *pEntity);
+	virtual void OnEntitySpawned(CBaseEntity *pEntity);
 	virtual void OnEntityDeleted(CBaseEntity *pEntity);
 
 public:  // IClientListener
@@ -330,6 +331,7 @@ public:
 	
 private:
 	void HandleEntityCreated(CBaseEntity *pEntity, int index, cell_t ref);
+	void HandleEntitySpawned(CBaseEntity *pEntity, int index, cell_t ref);
 	void HandleEntityDeleted(CBaseEntity *pEntity);
 	void Unhook(CBaseEntity *pEntity);
 	void Unhook(IPluginContext *pContext);
@@ -344,7 +346,7 @@ private:
 };
 
 extern CGlobalVars *gpGlobals;
-extern ke::Vector<CVTableList *> g_HookList[SDKHook_MAXHOOKS];
+extern std::vector<CVTableList *> g_HookList[SDKHook_MAXHOOKS];
 
 extern ICvar *icvar;
 

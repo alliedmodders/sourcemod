@@ -221,11 +221,15 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const ICommandAr
 		ConsolePrint("  Fyren");
 		ConsolePrint("  Nicholas \"psychonic\" Hastings");
 		ConsolePrint("  Asher \"asherkin\" Baker");
+		ConsolePrint("  Ruben \"Dr!fter\" Gonzalez");
+		ConsolePrint("  Josh \"KyleS\" Allard");
+		ConsolePrint("  Michael \"Headline\" Flaherty");
+		ConsolePrint("  Jannik \"Peace-Maker\" Hartung");
 		ConsolePrint("  Borja \"faluco\" Ferrer");
 		ConsolePrint("  Pavol \"PM OnoTo\" Marko");
 		ConsolePrint(" Special thanks to Liam, ferret, and Mani");
 		ConsolePrint(" Special thanks to Viper and SteamFriends");
-		ConsolePrint(" http://www.sourcemod.net/");
+		ConsolePrint(" https://www.sourcemod.net/");
 	}
 	else if (strcmp(cmdname, "version") == 0)
 	{

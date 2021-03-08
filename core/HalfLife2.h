@@ -84,6 +84,9 @@ using namespace SourceMod;
 #define SOURCE_BIN_EXT ".so"
 #endif
 
+#define FORMAT_SOURCE_BIN_NAME(basename) \
+	(SOURCE_BIN_PREFIX basename SOURCE_BIN_SUFFIX SOURCE_BIN_EXT)
+
 struct DataTableInfo
 {
 	struct SendPropPolicy
@@ -176,6 +179,12 @@ enum class SMFindMapResult : cell_t {
 	PossiblyAvailable
 };
 
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS
+template< class T, class I = int >
+class CUtlMemoryGlobalMalloc;
+class CUtlString;
+#endif
+
 class CHalfLife2 : 
 	public SMGlobalClass,
 	public IGameHelpers
@@ -226,10 +235,11 @@ public: //IGameHelpers
 	bool IsMapValid(const char *map);
 	SMFindMapResult FindMap(char *pMapName, size_t nMapNameMax);
 	SMFindMapResult FindMap(const char *pMapName, char *pFoundMap = NULL, size_t nMapNameMax = 0);
-	bool GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax);
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-	string_t AllocPooledString(const char *pszValue);
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS
+	void FreeUtlVectorUtlString(CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> &vec);
 #endif
+	bool GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax);
+	string_t AllocPooledString(const char *pszValue);
 	bool GetServerSteam3Id(char *pszOut, size_t len) const override;
 	uint64_t GetServerSteamId64() const override;
 public:
@@ -268,7 +278,7 @@ public:
 		return !m_bFollowCSGOServerGuidelines || !m_CSGOBadList.has(pszPropName);
 	}
 private:
-	ke::HashSet<ke::AString, detail::StringHashMapPolicy> m_CSGOBadList;
+	ke::HashSet<std::string, detail::StringHashMapPolicy> m_CSGOBadList;
 	bool m_bFollowCSGOServerGuidelines = true;
 #endif
 };

@@ -31,56 +31,56 @@
  */
 
 #if defined _commandline_included_
-  #endinput
+ #endinput
 #endif
 #define _commandline_included_
 
 /**
  * Gets the full command line the server was launched with.
  *
- * @param commandLine		Buffer to store the command line in.
- * @param maxlen			Maximum length of the command line buffer.
- * @return					True if the command line is valid; otherwise, false.
- * @error					No command line available, or no mod support.
+ * @param commandLine   Buffer to store the command line in.
+ * @param maxlen        Maximum length of the command line buffer.
+ * @return              True if the command line is valid; otherwise, false.
+ * @error               No command line available, or no mod support.
  */
 native bool GetCommandLine(char[] commandLine, int maxlen);
 
 /**
  * Gets the value of a command line parameter the server was launched with.
  *
- * @param param		The command line parameter to get the value of.
- * @param value		Buffer to store the parameter value in.
- * @param maxlen	Maximum length of the value buffer.
- * @param defValue	The default value to return if the parameter wasn't specified.
- * @error			No command line available, or no mod support.
+ * @param param         The command line parameter to get the value of.
+ * @param value         Buffer to store the parameter value in.
+ * @param maxlen        Maximum length of the value buffer.
+ * @param defValue      The default value to return if the parameter wasn't specified.
+ * @error               No command line available, or no mod support.
  */
 native void GetCommandLineParam(const char[] param, char[] value, int maxlen, const char[] defValue="");
 
 /**
  * Gets the value of a command line parameter the server was launched with.
  *
- * @param param		The command line parameter to get the value of.
- * @param defValue	The default value to return if the parameter wasn't specified.
- * @return			The integer value of the command line parameter value.
- * @error			No command line available, or no mod support.
+ * @param param         The command line parameter to get the value of.
+ * @param defValue      The default value to return if the parameter wasn't specified.
+ * @return              The integer value of the command line parameter value.
+ * @error               No command line available, or no mod support.
  */
 native int GetCommandLineParamInt(const char[] param, int defValue=0);
 
 /**
  * Gets the value of a command line parameter the server was launched with.
  *
- * @param param		The command line parameter to get the value of.
- * @param defValue	The default value to return if the parameter wasn't specified.
- * @return			The floating point value of the command line parameter value.
- * @error			No command line available, or no mod support.
+ * @param param         The command line parameter to get the value of.
+ * @param defValue      The default value to return if the parameter wasn't specified.
+ * @return              The floating point value of the command line parameter value.
+ * @error               No command line available, or no mod support.
  */
 native float GetCommandLineParamFloat(const char[] param, float defValue=0.0);
 
 /**
  * Determines if a specific command line parameter is present.
  *
- * @param param		The command line parameter to test.
- * @return			True if the command line parameter is specified; otherwise, false.
- * @error			No command line available, or no mod support.
+ * @param param         The command line parameter to test.
+ * @return              True if the command line parameter is specified; otherwise, false.
+ * @error               No command line available, or no mod support.
  */
 native bool FindCommandLineParam(const char[] param);

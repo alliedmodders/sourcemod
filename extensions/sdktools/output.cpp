@@ -52,7 +52,6 @@ void EntityOutputManager::Shutdown()
 		return;
 	}
 
-	EntityOutputs->Destroy();
 	ClassNames->Destroy();
 	fireOutputDetour->Destroy();
 }
@@ -66,7 +65,6 @@ void EntityOutputManager::Init()
 		return;
 	}
 
-	EntityOutputs = adtfactory->CreateBasicTrie();
 	ClassNames = adtfactory->CreateBasicTrie();
 }
 
@@ -120,45 +118,30 @@ bool EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 		return true;
 	}
 
-	char sOutput[20];
-	ke::SafeSprintf(sOutput, sizeof(sOutput), "%p", pOutput);
-
 	// attempt to directly lookup a hook using the pOutput pointer
 	OutputNameStruct *pOutputName = NULL;
 
-	bool fastLookup = false;
-	
-	// Fast lookup failed - check the slow way for hooks that haven't fired yet
-	if ((fastLookup = EntityOutputs->Retrieve(sOutput, (void **)&pOutputName)) == false)
+	const char *classname = gamehelpers->GetEntityClassname(pCaller);
+	if (!classname)
 	{
-		const char *classname = gamehelpers->GetEntityClassname(pCaller);
-		if (!classname)
-		{
-			return true;
-		}
+		return true;
+	}
 
-		const char *outputname = FindOutputName(pOutput, pCaller);		
-		if (!outputname)
-		{
-			return true;
-		}
+	const char *outputname = FindOutputName(pOutput, pCaller);		
+	if (!outputname)
+	{
+		return true;
+	}
 
-		pOutputName = FindOutputPointer(classname, outputname, false);
+	pOutputName = FindOutputPointer(classname, outputname, false);
 
-		if (!pOutputName)
-		{
-			return true;
-		}
+	if (!pOutputName)
+	{
+		return true;
 	}
 
 	if (!pOutputName->hooks.empty())
 	{
-		if (!fastLookup)
-		{
-			// hook exists on this classname and output - map it into our quick find trie
-			EntityOutputs->Insert(sOutput, pOutputName);
-		}
-
 		SourceHook::List<omg_hooks *>::iterator _iter;
 
 		omg_hooks *hook;

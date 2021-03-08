@@ -4,26 +4,26 @@
 
 #define ARRAY_STRING_LENGTH 32
 
-enum GroupCommands
+enum struct GroupCommands
 {
-	ArrayList:groupListName,
-	ArrayList:groupListCommand	
-};
+	ArrayList groupListName;
+	ArrayList groupListCommand;
+}
 
-int g_groupList[GroupCommands];
+GroupCommands g_groupList;
 int g_groupCount;
 
 SMCParser g_configParser;
 
-enum Places
+enum struct Places
 {
-	Place_Category,
-	Place_Item,
-	Place_ReplaceNum
-};
+	int category;
+	int item;
+	int replaceNum;
+}
 
 char g_command[MAXPLAYERS+1][CMD_LENGTH];
-int g_currentPlace[MAXPLAYERS+1][Places];
+Places g_currentPlace[MAXPLAYERS+1];
 
 /**
  * What to put in the 'info' menu field (for PlayerList and Player_Team menus only)
@@ -331,11 +331,11 @@ void ParseConfigs()
 	g_configParser.OnKeyValue = KeyValue;
 	g_configParser.OnLeaveSection = EndSection;
 	
-	delete g_groupList[groupListName];
-	delete g_groupList[groupListCommand];
+	delete g_groupList.groupListName;
+	delete g_groupList.groupListCommand;
 	
-	g_groupList[groupListName] = new ArrayList(ARRAY_STRING_LENGTH);
-	g_groupList[groupListCommand] = new ArrayList(ARRAY_STRING_LENGTH);
+	g_groupList.groupListName = new ArrayList(ARRAY_STRING_LENGTH);
+	g_groupList.groupListCommand = new ArrayList(ARRAY_STRING_LENGTH);
 	
 	char configPath[256];
 	BuildPath(Path_SM, configPath, sizeof(configPath), "configs/dynamicmenu/adminmenu_grouping.txt");
@@ -376,13 +376,13 @@ public SMCResult NewSection(SMCParser smc, const char[] name, bool opt_quotes)
 
 public SMCResult KeyValue(SMCParser smc, const char[] key, const char[] value, bool key_quotes, bool value_quotes)
 {
-	g_groupList[groupListName].PushString(key);
-	g_groupList[groupListCommand].PushString(value);
+	g_groupList.groupListName.PushString(key);
+	g_groupList.groupListCommand.PushString(value);
 }
 
 public SMCResult EndSection(SMCParser smc)
 {
-	g_groupCount = g_groupList[groupListName].Length;
+	g_groupCount = g_groupList.groupListName.Length;
 }
 
 public void DynamicMenuCategoryHandler(TopMenu topmenu, 
@@ -421,8 +421,8 @@ public void DynamicMenuItemHandler(TopMenu topmenu,
 		
 		strcopy(g_command[param], sizeof(g_command[]), output.cmd);
 					
-		g_currentPlace[param][Place_Item] = location;
-		g_currentPlace[param][Place_ReplaceNum] = 1;
+		g_currentPlace[param].item = location;
+		g_currentPlace[param].replaceNum = 1;
 		
 		ParamCheck(param);
 	}
@@ -436,19 +436,19 @@ public void ParamCheck(int client)
 	Item outputItem;
 	Submenu outputSubmenu;
 	
-	g_DataArray.GetArray(g_currentPlace[client][Place_Item], outputItem);
+	g_DataArray.GetArray(g_currentPlace[client].item, outputItem);
 		
-	if (g_currentPlace[client][Place_ReplaceNum] < 1)
+	if (g_currentPlace[client].replaceNum < 1)
 	{
-		g_currentPlace[client][Place_ReplaceNum] = 1;
+		g_currentPlace[client].replaceNum = 1;
 	}
 	
-	Format(buffer, 5, "#%i", g_currentPlace[client][Place_ReplaceNum]);
-	Format(buffer2, 5, "@%i", g_currentPlace[client][Place_ReplaceNum]);
+	Format(buffer, 5, "#%i", g_currentPlace[client].replaceNum);
+	Format(buffer2, 5, "@%i", g_currentPlace[client].replaceNum);
 	
 	if (StrContains(g_command[client], buffer) != -1 || StrContains(g_command[client], buffer2) != -1)
 	{
-		outputItem.submenus.GetArray(g_currentPlace[client][Place_ReplaceNum] - 1, outputSubmenu);
+		outputItem.submenus.GetArray(g_currentPlace[client].replaceNum - 1, outputSubmenu);
 		
 		Menu itemMenu = new Menu(Menu_Selection);
 		itemMenu.ExitBackButton = true;
@@ -460,8 +460,8 @@ public void ParamCheck(int client)
 		
 			for (int i = 0; i<g_groupCount; i++)
 			{			
-				g_groupList[groupListName].GetString(i, nameBuffer, sizeof(nameBuffer));
-				g_groupList[groupListCommand].GetString(i, commandBuffer, sizeof(commandBuffer));
+				g_groupList.groupListName.GetString(i, nameBuffer, sizeof(nameBuffer));
+				g_groupList.groupListCommand.GetString(i, commandBuffer, sizeof(commandBuffer));
 				itemMenu.AddItem(commandBuffer, nameBuffer);
 			}
 		}
@@ -591,7 +591,7 @@ public void ParamCheck(int client)
 		}
 
 		g_command[client][0] = '\0';
-		g_currentPlace[client][Place_ReplaceNum] = 1;
+		g_currentPlace[client].replaceNum = 1;
 	}
 }
 
@@ -622,16 +622,16 @@ public int Menu_Selection(Menu menu, MenuAction action, int param1, int param2)
 		char infobuffer[NAME_LENGTH+2];
 		Format(infobuffer, sizeof(infobuffer), "\"%s\"", info);
 		
-		Format(buffer, 5, "#%i", g_currentPlace[param1][Place_ReplaceNum]);
+		Format(buffer, 5, "#%i", g_currentPlace[param1].replaceNum);
 		ReplaceString(g_command[param1], sizeof(g_command[]), buffer, infobuffer);
 		//replace #num with the selected option (quoted)
 		
-		Format(buffer, 5, "@%i", g_currentPlace[param1][Place_ReplaceNum]);
+		Format(buffer, 5, "@%i", g_currentPlace[param1].replaceNum);
 		ReplaceString(g_command[param1], sizeof(g_command[]), buffer, info);
 		//replace @num with the selected option (unquoted)
 		
 		// Increment the parameter counter.
-		g_currentPlace[param1][Place_ReplaceNum]++;
+		g_currentPlace[param1].replaceNum++;
 		
 		ParamCheck(param1);
 	}

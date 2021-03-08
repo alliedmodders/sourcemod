@@ -295,7 +295,7 @@ void ClientPrefs::DatabaseConnect()
 
 	// Need a new scope because of the goto above.
 	{
-		AutoLock lock(&queryLock);
+		std::lock_guard<std::mutex> lock(queryLock);
 		this->ProcessQueryCache();	
 	}
 	return;
@@ -308,10 +308,10 @@ fatal_fail:
 bool ClientPrefs::AddQueryToQueue(TQueryOp *query)
 {
 	{
-		AutoLock lock(&queryLock);
+		std::lock_guard<std::mutex> lock(queryLock);
 		if (!Database)
 		{
-			cachedQueries.append(query);
+			cachedQueries.push_back(query);
 			return false;
 		}
 		
@@ -326,12 +326,10 @@ bool ClientPrefs::AddQueryToQueue(TQueryOp *query)
 
 void ClientPrefs::ProcessQueryCache()
 {
-	queryLock.AssertCurrentThreadOwns();
-
 	if (!Database)
 		return;
 
-	for (size_t iter = 0; iter < cachedQueries.length(); ++iter)
+	for (size_t iter = 0; iter < cachedQueries.size(); ++iter)
 	{
 		TQueryOp *op = cachedQueries[iter];
 		op->SetDatabase(Database);
@@ -371,14 +369,16 @@ void ClientPrefs::CatchLateLoadClients()
 
 void ClientPrefs::ClearQueryCache(int serial)
 {
-	AutoLock lock(&queryLock);
-	for (size_t iter = 0; iter < cachedQueries.length(); ++iter)
+	std::lock_guard<std::mutex> lock(queryLock);
+
+	for (size_t iter = 0; iter < cachedQueries.size(); ++iter)
 	{
 		TQueryOp *op = cachedQueries[iter];
 		if (op && op->PullQueryType() == Query_SelectData && op->PullQuerySerial() == serial)
  		{
 			op->Destroy();
-			cachedQueries.remove(iter--);
+			cachedQueries.erase(cachedQueries.begin() + iter);
+			iter--;
 		}
  	}
 }

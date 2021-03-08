@@ -29,13 +29,16 @@
  * Version: $Id$
  */
 
+#include <assert.h>
+
+#include <memory>
+
 #include "ShareSys.h"
 #include "ExtensionSys.h"
 #include <ILibrarySys.h>
 #include "common_logic.h"
 #include "PluginSys.h"
 #include "HandleSys.h"
-#include <assert.h>
 
 using namespace ke;
 
@@ -162,18 +165,16 @@ bool ShareSystem::RequestInterface(const char *iface_name,
 								   SMInterface **pIface)
 {
 	/* See if the interface exists */
-	List<IfaceInfo>::iterator iter;
 	SMInterface *iface;
-	IExtension *iface_owner;
+	IExtension *iface_owner = nullptr;
 	bool found = false;
-	for (iter=m_Interfaces.begin(); iter!=m_Interfaces.end(); iter++)
+	for (auto iter = m_Interfaces.begin(); iter!=m_Interfaces.end(); iter++)
 	{
-		IfaceInfo &info = (*iter);
+		IfaceInfo &info = *iter;
 		iface = info.iface;
 		if (strcmp(iface->GetInterfaceName(), iface_name) == 0)
 		{
-			if (iface->GetInterfaceVersion() == iface_vers
-				|| iface->IsVersionCompatible(iface_vers))
+			if (iface->GetInterfaceVersion() == iface_vers || iface->IsVersionCompatible(iface_vers))
 			{
 				iface_owner = info.owner;
 				found = true;
@@ -363,11 +364,11 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, const sp_native_t *native
 		}
 	}
 
-	pPlugin->GetRuntime()->UpdateNativeBinding(
-	  index,
-	  pEntry->func(),
-	  flags,
-	  nullptr);
+	auto rt = pPlugin->GetRuntime();
+	if (pEntry->fake)
+		rt->UpdateNativeBindingObject(index, pEntry->fake->wrapper, flags, nullptr);
+	else
+		rt->UpdateNativeBinding(index, pEntry->native->func, flags, nullptr);
 }
 
 AlreadyRefed<Native> ShareSystem::AddNativeToCache(CNativeOwner *pOwner, const sp_nativeinfo_t *ntv)
@@ -379,11 +380,6 @@ AlreadyRefed<Native> ShareSystem::AddNativeToCache(CNativeOwner *pOwner, const s
 	RefPtr<Native> entry = new Native(pOwner, ntv);
 	m_NtvCache.insert(ntv->name, entry);
 	return entry.forget();
-}
-
-FakeNative::~FakeNative()
-{
-	g_pSourcePawn2->DestroyFakeNative(gate);
 }
 
 void ShareSystem::ClearNativeFromCache(CNativeOwner *pOwner, const char *name)
@@ -402,21 +398,44 @@ void ShareSystem::ClearNativeFromCache(CNativeOwner *pOwner, const char *name)
 	m_NtvCache.remove(r);
 }
 
+class DynamicNative final : public INativeCallback
+{
+public:
+	DynamicNative(SPVM_FAKENATIVE_FUNC callback, void* data)
+		: callback_(callback),
+		  data_(data)
+	{}
+
+	void AddRef() override {
+		refcount_++;
+	}
+	void Release() override {
+		assert(refcount_ > 0);
+		if (--refcount_ == 0)
+			delete this;
+	}
+	int Invoke(IPluginContext* ctx, const cell_t* params) override {
+		return callback_(ctx, params, data_);
+	}
+
+private:
+	size_t refcount_ = 0;
+	SPVM_FAKENATIVE_FUNC callback_;
+	void* data_;
+};
+
 AlreadyRefed<Native> ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
 {
 	RefPtr<Native> entry(FindNative(name));
 	if (entry)
 		return nullptr;
 
-	AutoPtr<FakeNative> fake(new FakeNative(name, pFunc));
-
-	fake->gate = g_pSourcePawn2->CreateFakeNative(func, fake);
-	if (!fake->gate)
-		return nullptr;
+	std::unique_ptr<FakeNative> fake(new FakeNative(name, pFunc));
+	fake->wrapper = new DynamicNative(func, fake.get());
 
 	CNativeOwner *owner = g_PluginSys.GetPluginByCtx(fake->ctx->GetContext());
 
-	entry = new Native(owner, fake.take());
+	entry = new Native(owner, std::move(fake));
 	m_NtvCache.insert(name, entry);
 
 	return entry.forget();

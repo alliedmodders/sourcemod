@@ -48,7 +48,7 @@ enum NodeType
  * @brief DEPRECATED. This class scales extremely poorly; insertion scales
  * quadratic (O(n^2)) with respect to the number of elements in the table.
  * Only use this class if you have less than 200 elements or so. Otherwise,
- * use StringHashMap in sm_hashtable.h which scales linearly and has comparable
+ * use StringHashMap in sm_stringhashmap.h which scales linearly and has comparable
  * retrievable performance.
  *
  * See bug 5878 for more detail.

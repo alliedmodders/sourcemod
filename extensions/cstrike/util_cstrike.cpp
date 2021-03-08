@@ -291,7 +291,7 @@ void CreateHashMaps()
 				int iLoadoutslot = node.pDef->GetDefaultLoadoutSlot();
 
 				ClassnameMap::Insert i = g_mapClassToDefIdx.findForAdd(classname);
-				g_mapClassToDefIdx.add(i, ke::AString(classname), ItemDefHashValue(iLoadoutslot, price, iWeaponID, iItemDefIdx, classname));
+				g_mapClassToDefIdx.add(i, std::string(classname), ItemDefHashValue(iLoadoutslot, price, iWeaponID, iItemDefIdx, classname));
 
 				ItemIndexMap::Insert x = g_mapDefIdxToClass.findForAdd(iItemDefIdx);
 				g_mapDefIdxToClass.add(x, iItemDefIdx, ItemDefHashValue(iLoadoutslot, price, iWeaponID, iItemDefIdx, classname));
@@ -326,7 +326,7 @@ SMCSWeapon GetWeaponIdFromDefIdx(uint16_t iDefIdx)
 		SMCSWeapon_UMP45, SMCSWeapon_XM1014, SMCSWeapon_BIZON, SMCSWeapon_MAG7,
 		SMCSWeapon_NEGEV, SMCSWeapon_SAWEDOFF, SMCSWeapon_TEC9, SMCSWeapon_TASER,
 		SMCSWeapon_HKP2000, SMCSWeapon_MP7, SMCSWeapon_MP9, SMCSWeapon_NOVA,
-		SMCSWeapon_P250, SMCSWeapon_NONE, SMCSWeapon_SCAR20, SMCSWeapon_SG556,
+		SMCSWeapon_P250, SMCSWeapon_SHIELD, SMCSWeapon_SCAR20, SMCSWeapon_SG556,
 		SMCSWeapon_SSG08, SMCSWeapon_KNIFE_GG, SMCSWeapon_KNIFE, SMCSWeapon_FLASHBANG,
 		SMCSWeapon_HEGRENADE, SMCSWeapon_SMOKEGRENADE, SMCSWeapon_MOLOTOV, SMCSWeapon_DECOY,
 		SMCSWeapon_INCGRENADE, SMCSWeapon_C4, SMCSWeapon_KEVLAR, SMCSWeapon_ASSAULTSUIT,

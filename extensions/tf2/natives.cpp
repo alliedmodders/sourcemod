@@ -86,13 +86,13 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 											int, // Damage amount
 											bool, // Permanent
 											int>  // Custom Damage type (bleeding)
-											vstk(obj, pAttacker, NULL, sp_ctof(params[3]), 4, false, 32);
+											vstk(obj, pAttacker, NULL, sp_ctof(params[3]), 4, false, 34);
 
 	pWrapper->Execute(vstk, nullptr);
 	return 1;
 }
 
-// native TF2_Burn(client, target)
+// native TF2_Burn(client, target, duration)
 cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
@@ -126,10 +126,17 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not valid", params[2]);
 	}
 
+	float fDuration = 10.0;
+	// Compatibility fix for the newly-added duration
+	if (params[0] >= 3)
+	{
+		fDuration = sp_ctof(params[3]);
+	}
+
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 	ArgBuffer<void*, CBaseEntity*, CBaseEntity*, 
 										float> //duration
-										vstk(obj, pTarget, nullptr, 10.0f);
+										vstk(obj, pTarget, nullptr, fDuration);
 
 	pWrapper->Execute(vstk, nullptr);
 	return 1;

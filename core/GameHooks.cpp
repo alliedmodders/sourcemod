@@ -91,7 +91,7 @@ void GameHooks::OnVSPReceived()
 
 void GameHooks::Shutdown()
 {
-	for (size_t i = 0; i < hooks_.length(); i++)
+	for (size_t i = 0; i < hooks_.size(); i++)
 		SH_REMOVE_HOOK_ID(hooks_[i]);
 	hooks_.clear();
 

@@ -43,9 +43,18 @@
 #include <my_sys.h>
 #include <mysql.h>
 
+// On macOS, the MySQL includes define min/max.
+#if defined(min)
+# undef min
+#endif
+#if defined(max)
+# undef max
+#endif
+
 #include <sh_string.h>
 #include <sh_list.h>
-#include <am-thread-utils.h>
+
+#include <mutex>
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -71,7 +80,7 @@ public:
 	void Shutdown();
 	void RemoveFromList(MyDatabase *pdb, bool persistent);
 private:
-	ke::Mutex m_Lock;
+	std::mutex m_Lock;
 	Handle_t m_MyHandle;
 	List<MyDatabase *> m_TempDbs;
 	List<MyDatabase *> m_PermDbs;
@@ -79,6 +88,6 @@ private:
 
 extern MyDriver g_MyDriver;
 
-unsigned int strncopy(char *dest, const char *src, size_t count);
+size_t strncopy(char *dest, const char *src, size_t count);
 
 #endif //_INCLUDE_SM_MYSQL_DRIVER_H_

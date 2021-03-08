@@ -164,12 +164,16 @@ void FindAndSetNextMap()
 		}
 		
 		if (g_MapPos == -1)
+		{
 			g_MapPos = 0;
+		}
 	}
 	
 	g_MapPos++;
 	if (g_MapPos >= mapCount)
-		g_MapPos = 0;	
+	{
+		g_MapPos = 0;
+	}
  
  	g_MapList.GetString(g_MapPos, mapName, sizeof(mapName));
 	SetNextMap(mapName);
@@ -204,6 +208,11 @@ public Action Command_MapHistory(int client, int args)
 		
 		lastMapStartTime = startTime;
 	}
+	
+	if (client && GetCmdReplySource() == SM_REPLY_TO_CHAT)
+	{
+		PrintToChat(client, "[SM] %t", "See console for output");
+	}
 
 	return Plugin_Handled;
 }
@@ -219,16 +228,16 @@ int FormatTimeDuration(char[] buffer, int maxlen, int time)
 	{
 		return Format(buffer, maxlen, "%id %ih %im", days, hours, (seconds >= 30) ? minutes+1 : minutes);
 	}
-	else if (hours > 0)
+	
+	if (hours > 0)
 	{
 		return Format(buffer, maxlen, "%ih %im", hours, (seconds >= 30) ? minutes+1 : minutes);		
 	}
-	else if (minutes > 0)
+	
+	if (minutes > 0)
 	{
 		return Format(buffer, maxlen, "%im", (seconds >= 30) ? minutes+1 : minutes);		
 	}
-	else
-	{
-		return Format(buffer, maxlen, "%is", seconds);		
-	}
+	
+	return Format(buffer, maxlen, "%is", seconds);	
 }

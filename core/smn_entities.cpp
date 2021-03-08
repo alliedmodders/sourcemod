@@ -1384,7 +1384,7 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_CSGO
+	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -1503,7 +1503,7 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_CSGO
+	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -2118,6 +2118,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	char *prop;
 	int offset;
+	int bit_count;
 	edict_t *pEdict;
 
 	int element = 0;
@@ -2196,38 +2197,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 		}
 	case Prop_Send:
 		{
-			sm_sendprop_info_t info;
-			
-			IServerUnknown *pUnk = (IServerUnknown *)pEntity;
-			IServerNetworkable *pNet = pUnk->GetNetworkable();
-			if (!pNet)
-			{
-				return pContext->ThrowNativeError("Edict %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]);
-			}
-			if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info))
-			{
-				const char *class_name = g_HL2.GetEntityClassname(pEntity);
-				return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)",
-					prop,
-					params[1],
-					((class_name) ? class_name : ""));
-			}
-
-			offset = info.actual_offset;
-
-			if (info.prop->GetType() != DPT_String)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not a string (%d != %d)",
-					prop,
-					info.prop->GetType(),
-					DPT_String);
-			}
-			else if (element != 0)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not an array. Element %d is invalid.",
-					prop,
-					element);
- 			}
+			FIND_PROP_SEND(DPT_String, "string");
 
 			if (info.prop->GetProxyFn())
 			{
@@ -2237,7 +2207,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 			}
 			else
 			{
-				src = (char *) ((uint8_t *) pEntity + offset);
+				src = *(char **) ((uint8_t *) pEntity + offset);
 			}
 			
 			break;
@@ -2248,9 +2218,15 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	size_t len;
-	pContext->StringToLocalUTF8(params[4], params[5], src, &len);
-	return len;
+	if (src)
+	{
+		size_t len;
+		pContext->StringToLocalUTF8(params[4], params[5], src, &len);
+		return len;
+	}
+
+	pContext->StringToLocal(params[4], params[5], "");
+	return 0;
 }
 
 static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
@@ -2259,6 +2235,7 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 	char *prop;
 	int offset;
 	int maxlen;
+	int bit_count;
 	edict_t *pEdict;
 	bool bIsStringIndex;
 
@@ -2343,30 +2320,11 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 		}
 	case Prop_Send:
 		{
-			sm_sendprop_info_t info;
-			IServerUnknown *pUnk = (IServerUnknown *)pEntity;
-			IServerNetworkable *pNet = pUnk->GetNetworkable();
-			if (!pNet)
-			{
-				return pContext->ThrowNativeError("The edict is not networkable");
-			}
 			pContext->LocalToString(params[3], &prop);
-			if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info))
+			FIND_PROP_SEND(DPT_String, "string");
+			if (!CanSetPropName(prop))
 			{
-				return pContext->ThrowNativeError("Property \"%s\" not found for entity %d", prop, params[1]);
-			}
-
-			offset = info.prop->GetOffset();
-
-			if (info.prop->GetType() != DPT_String)
-			{
-				return pContext->ThrowNativeError("Property \"%s\" is not a valid string", prop);
-			}
-			else if (element != 0)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not an array. Element %d is invalid.",
-					prop,
-					element);
+				return pContext->ThrowNativeError("Cannot set %s with \"FollowCSGOServerGuidelines\" option enabled.", prop);
 			}
 
 			bIsStringIndex = false;
@@ -2397,12 +2355,8 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 
 	if (bIsStringIndex)
 	{
-#if SOURCE_ENGINE < SE_ORANGEBOX
-		return pContext->ThrowNativeError("Cannot set %s. Setting string_t values not supported on this game.", prop);
-#else
 		*(string_t *) ((intptr_t) pEntity + offset) = g_HL2.AllocPooledString(src);
 		len = strlen(src);
-#endif
 	}
 	else
 	{
@@ -2612,7 +2566,7 @@ static cell_t GetEntityFlags(IPluginContext *pContext, const cell_t *params)
 
 	for (int32_t i = 0; i < 32; i++)
 	{
-		int32_t flag = (1<<i);
+		int32_t flag = (1U<<i);
 		if ((actual_flags & flag) == flag)
 		{
 			sm_flags |= SDKEntFlagToSMEntFlag(flag);
@@ -2658,7 +2612,7 @@ static cell_t SetEntityFlags(IPluginContext *pContext, const cell_t *params)
 
 	for (int32_t i = 0; i < 32; i++)
 	{
-		int32_t flag = (1<<i);
+		int32_t flag = (1U<<i);
 		if ((sm_flags & flag) == flag)
 		{
 			actual_flags |= SMEntFlagToSDKEntFlag(flag);

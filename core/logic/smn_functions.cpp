@@ -29,12 +29,13 @@
  * Version: $Id$
  */
 
+#include <memory>
+
 #include "common_logic.h"
 #include <IPluginSys.h>
 #include <IHandleSys.h>
 #include <IForwardSys.h>
 #include <ISourceMod.h>
-#include <amtl/am-autoptr.h>
 
 HandleType_t g_GlobalFwdType = 0;
 HandleType_t g_PrivateFwdType = 0;
@@ -686,7 +687,7 @@ struct SMFrameActionData
 
 static void PawnFrameAction(void *pData)
 {
-	ke::AutoPtr<SMFrameActionData> frame(reinterpret_cast<SMFrameActionData *>(pData));
+	std::unique_ptr<SMFrameActionData> frame(reinterpret_cast<SMFrameActionData *>(pData));
 	IPlugin *pPlugin = pluginsys->PluginFromHandle(frame->ownerhandle, NULL);
 	if (!pPlugin)
 	{
@@ -733,27 +734,36 @@ static cell_t sm_AddFrameAction(IPluginContext *pContext, const cell_t *params)
 
 REGISTER_NATIVES(functionNatives)
 {
-	{"GetFunctionByName",		sm_GetFunctionByName},
-	{"CreateGlobalForward",		sm_CreateGlobalForward},
-	{"CreateForward",			sm_CreateForward},
-	{"GetForwardFunctionCount",	sm_GetForwardFunctionCount},
-	{"AddToForward",			sm_AddToForward},
-	{"RemoveFromForward",		sm_RemoveFromForward},
-	{"RemoveAllFromForward",	sm_RemoveAllFromForward},
-	{"Call_StartFunction",		sm_CallStartFunction},
-	{"Call_StartForward",		sm_CallStartForward},
-	{"Call_PushCell",			sm_CallPushCell},
-	{"Call_PushCellRef",		sm_CallPushCellRef},
-	{"Call_PushFloat",			sm_CallPushFloat},
-	{"Call_PushFloatRef",		sm_CallPushFloatRef},
-	{"Call_PushArray",			sm_CallPushArray},
-	{"Call_PushArrayEx",		sm_CallPushArrayEx},
-	{"Call_PushString",			sm_CallPushString},
-	{"Call_PushStringEx",		sm_CallPushStringEx},
-	{"Call_PushNullVector",		sm_CallPushNullVector},
-	{"Call_PushNullString",		sm_CallPushNullString},
-	{"Call_Finish",				sm_CallFinish},
-	{"Call_Cancel",				sm_CallCancel},
-	{"RequestFrame",			sm_AddFrameAction},
-	{NULL,						NULL},
+	{"GetFunctionByName",                   sm_GetFunctionByName},
+	{"CreateGlobalForward",     	        sm_CreateGlobalForward},
+	{"CreateForward",                       sm_CreateForward},
+	{"GetForwardFunctionCount",             sm_GetForwardFunctionCount},
+	{"AddToForward",                        sm_AddToForward},
+	{"RemoveFromForward",                   sm_RemoveFromForward},
+	{"RemoveAllFromForward",                sm_RemoveAllFromForward},
+	{"Call_StartFunction",                  sm_CallStartFunction},
+	{"Call_StartForward",                   sm_CallStartForward},
+	{"Call_PushCell",                       sm_CallPushCell},
+	{"Call_PushCellRef",                    sm_CallPushCellRef},
+	{"Call_PushFloat",                      sm_CallPushFloat},
+	{"Call_PushFloatRef",                   sm_CallPushFloatRef},
+	{"Call_PushArray",                      sm_CallPushArray},
+	{"Call_PushArrayEx",                    sm_CallPushArrayEx},
+	{"Call_PushString",                     sm_CallPushString},
+	{"Call_PushStringEx",                   sm_CallPushStringEx},
+	{"Call_PushNullVector",                 sm_CallPushNullVector},
+	{"Call_PushNullString",                 sm_CallPushNullString},
+	{"Call_Finish",                         sm_CallFinish},
+	{"Call_Cancel",                         sm_CallCancel},
+	{"RequestFrame",                        sm_AddFrameAction},
+
+	{"GlobalForward.GlobalForward",         sm_CreateGlobalForward},
+	{"GlobalForward.FunctionCount.get",     sm_GetForwardFunctionCount},
+
+	{"PrivateForward.PrivateForward",       sm_CreateForward},
+	{"PrivateForward.AddFunction",          sm_AddToForward},
+	{"PrivateForward.RemoveFunction",       sm_RemoveFromForward},
+	{"PrivateForward.RemoveAllFunctions",   sm_RemoveAllFromForward},
+
+	{NULL,                                  NULL},
 };

@@ -442,8 +442,10 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 #ifdef PLATFORM_X86
 	const WORD PE_FILE_MACHINE = IMAGE_FILE_MACHINE_I386;
+	const WORD PE_NT_OPTIONAL_HDR_MAGIC = IMAGE_NT_OPTIONAL_HDR32_MAGIC;
 #else
 	const WORD PE_FILE_MACHINE = IMAGE_FILE_MACHINE_AMD64;
+	const WORD PE_NT_OPTIONAL_HDR_MAGIC = IMAGE_NT_OPTIONAL_HDR64_MAGIC;
 #endif
 
 	MEMORY_BASIC_INFORMATION info;
@@ -466,7 +468,7 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 	opt = &pe->OptionalHeader;
 
 	/* Check PE magic and signature */
-	if (dos->e_magic != IMAGE_DOS_SIGNATURE || pe->Signature != IMAGE_NT_SIGNATURE || opt->Magic != IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+	if (dos->e_magic != IMAGE_DOS_SIGNATURE || pe->Signature != IMAGE_NT_SIGNATURE || opt->Magic != PE_NT_OPTIONAL_HDR_MAGIC)
 	{
 		return false;
 	}

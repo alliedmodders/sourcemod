@@ -30,6 +30,9 @@
  */
 
 #include <stdlib.h>
+
+#include <memory>
+
 #include "ExtensionSys.h"
 #include <ILibrarySys.h>
 #include <ISourceMod.h>
@@ -76,7 +79,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 		g_pSM->BuildPath(Path_SM,
 			path,
 			PLATFORM_MAX_PATH,
-			"extensions/%s." PLATFORM_LIB_EXT,
+			"extensions/" PLATFORM_ARCH_FOLDER "%s." PLATFORM_LIB_EXT,
 			filename);
 	}
 	else
@@ -85,7 +88,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 		g_pSM->BuildPath(Path_SM,
 			path,
 			PLATFORM_MAX_PATH,
-			"extensions/%s.%s." PLATFORM_LIB_EXT,
+			"extensions/" PLATFORM_ARCH_FOLDER "%s.%s." PLATFORM_LIB_EXT,
 			filename,
 			bridge->gamesuffix);
 
@@ -100,7 +103,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 				g_pSM->BuildPath(Path_SM,
 					path,
 					PLATFORM_MAX_PATH,
-					"extensions/%s.2.ep2v." PLATFORM_LIB_EXT,
+					"extensions/" PLATFORM_ARCH_FOLDER "%s.2.ep2v." PLATFORM_LIB_EXT,
 					filename);
 			}
 			else if (strcmp(bridge->gamesuffix, "2.nd") == 0)
@@ -108,7 +111,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 				g_pSM->BuildPath(Path_SM,
 					path,
 					PLATFORM_MAX_PATH,
-					"extensions/%s.2.l4d2." PLATFORM_LIB_EXT,
+					"extensions/" PLATFORM_ARCH_FOLDER "%s.2.l4d2." PLATFORM_LIB_EXT,
 					filename);
 			}
 
@@ -119,7 +122,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 				g_pSM->BuildPath(Path_SM,
 					path,
 					PLATFORM_MAX_PATH,
-					"extensions/auto.%s/%s." PLATFORM_LIB_EXT,
+					"extensions/" PLATFORM_ARCH_FOLDER "auto.%s/%s." PLATFORM_LIB_EXT,
 					filename,
 					bridge->gamesuffix);
 
@@ -129,7 +132,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 					g_pSM->BuildPath(Path_SM,
 						path,
 						PLATFORM_MAX_PATH,
-						"extensions/%s." PLATFORM_LIB_EXT,
+						"extensions/" PLATFORM_ARCH_FOLDER "%s." PLATFORM_LIB_EXT,
 						filename);
 				}
 			}
@@ -301,7 +304,7 @@ bool CExtension::Load(char *error, size_t maxlength)
 	/* Check if we're past load time */
 	if (!bridge->IsMapLoading())
 	{
-		m_pAPI->OnExtensionsAllLoaded();
+		MarkAllLoaded();
 	}
 
 	return true;
@@ -416,65 +419,20 @@ void CExtension::AddChildDependent(CExtension *pOther, SMInterface *iface)
 	m_ChildDeps.push_back(info);
 }
 
+// note: dependency iteration deprecated since 1.10
 ITERATOR *CExtension::FindFirstDependency(IExtension **pOwner, SMInterface **pInterface)
 {
-	List<IfaceInfo>::iterator iter = m_Deps.begin();
-
-	if (iter == m_Deps.end())
-	{
-		return NULL;
-	}
-
-	if (pOwner)
-	{
-		*pOwner = (*iter).owner;
-	}
-	if (pInterface)
-	{
-		*pInterface = (*iter).iface;
-	}
-
-	List<IfaceInfo>::iterator *pIter = new List<IfaceInfo>::iterator(iter);
-
-	return (ITERATOR *)pIter;
+	return nullptr;
 }
 
 bool CExtension::FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface)
 {
-	List<IfaceInfo>::iterator *pIter = (List<IfaceInfo>::iterator *)iter;
-	List<IfaceInfo>::iterator _iter;
-
-	if (_iter == m_Deps.end())
-	{
-		return false;
-	}
-
-	_iter++;
-
-	if (pOwner)
-	{
-		*pOwner = (*_iter).owner;
-	}
-	if (pInterface)
-	{
-		*pInterface = (*_iter).iface;
-	}
-
-	*pIter = _iter;
-
-	if (_iter == m_Deps.end())
-	{
-		return false;
-	}
-
-	return true;
+	return false;
 }
 
 void CExtension::FreeDependencyIterator(ITERATOR *iter)
 {
-	List<IfaceInfo>::iterator *pIter = (List<IfaceInfo>::iterator *)iter;
 
-	delete pIter;
 }
 
 void CExtension::AddInterface(SMInterface *pInterface)
@@ -541,7 +499,7 @@ void CExtensionManager::TryAutoload()
 
 	g_pSM->BuildPath(Path_SM, path, sizeof(path), "extensions");
 
-	ke::AutoPtr<IDirectory> pDir(libsys->OpenDirectory(path));
+	std::unique_ptr<IDirectory> pDir(libsys->OpenDirectory(path));
 	if (!pDir)
 		return;
 
@@ -673,9 +631,15 @@ IExtension *CExtensionManager::FindExtensionByName(const char *ext)
 
 IExtension *CExtensionManager::LoadExtension(const char *file, char *error, size_t maxlength)
 {
+	if (strstr(file, "..") != NULL)
+	{
+		ke::SafeStrcpy(error, maxlength, "Cannot load extensions outside the \"extensions\" folder.");
+		return NULL;
+	}
+
 	/* Remove platform extension if it's there. Compat hack. */
 	const char *ext = libsys->GetFileExtension(file);
-	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
+	if (ext && strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
 		char path2[PLATFORM_MAX_PATH];
 		ke::SafeStrcpy(path2, sizeof(path2), file);
@@ -1216,7 +1180,6 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 						rootmenu->ConsolePrint(" -> %s", pPlugin->GetFilename());
 					}
 				}
-				srand(static_cast<int>(time(NULL)));
 				pExt->unload_code = (rand() % 877) + 123;	//123 to 999
 				rootmenu->ConsolePrint("[SM] To verify unloading %s, please use the following: ", pExt->GetFilename());
 				rootmenu->ConsolePrint("[SM] sm exts unload %d %d", num, pExt->unload_code);
@@ -1409,7 +1372,7 @@ bool CLocalExtension::IsSameFile(const char *file)
 
 bool CRemoteExtension::IsSameFile(const char *file)
 {
-	/* :TODO: this could be better, but no one uses this API anyway. */
-	return strcmp(file, m_Path.c_str()) == 0;
+	/* Check full path and name passed in from LoadExternal */
+	return strcmp(file, m_Path.c_str()) == 0 || strcmp(file, m_File.c_str()) == 0;
 }
 

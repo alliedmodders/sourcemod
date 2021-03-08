@@ -58,7 +58,19 @@ void TimeLeftEvents::FireGameEvent(IGameEvent *event)
 		if (get_new_timeleft_offset || !round_end_found)
 		{
 			get_new_timeleft_offset = false;
-			timersys->NotifyOfGameStart();
+
+			float flGameStartTime = gpGlobals->curtime;
+			uintptr_t gamerules = (uintptr_t)g_pSDKTools->GetGameRules();
+			if (gamerules)
+			{
+				sm_sendprop_info_t info;
+				if (gamehelpers->FindSendPropInfo("CCSGameRulesProxy", "m_flGameStartTime", &info))
+				{
+					flGameStartTime = *(float *)(gamerules + info.actual_offset);
+				}
+			}
+
+			timersys->NotifyOfGameStart(flGameStartTime - gpGlobals->curtime);
 			timersys->MapTimeLeftChanged();
 		}
 		round_end_found = false;

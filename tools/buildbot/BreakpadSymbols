@@ -7,23 +7,28 @@ UPLOAD_SCRIPT = os.path.join(builder.sourcePath, 'tools', 'buildbot', 'upload_sy
 
 cxx_tasks = SM.binaries + SM.extensions + [SM.spcomp]
 for cxx_task in cxx_tasks:
-	if builder.target.platform in ['windows']:
+	if cxx_task.target.platform in ['windows']:
 		debug_entry = cxx_task.debug
 	else:
 		debug_entry = cxx_task.binary
 
 	debug_file = os.path.join(builder.buildPath, debug_entry.path)
-	if builder.target.platform == 'linux':
+	if cxx_task.target.platform == 'linux':
 		argv = ['dump_syms', debug_file, os.path.dirname(debug_file)]
-	elif builder.target.platform == 'mac':
+	elif cxx_task.target.platform == 'mac':
 		# Required once dump_syms is updated on the slaves.
 		#argv = ['dump_syms', '-g', debug_file + '.dSYM', debug_file]
 		argv = ['dump_syms', debug_file + '.dSYM']
-	elif builder.target.platform == 'windows':
+	elif cxx_task.target.platform == 'windows':
 		argv = ['dump_syms.exe', debug_file]
 
-	base_file = os.path.split(os.path.dirname(debug_file))[1]
-	symbol_file = base_file + '.breakpad'
+	plat_dir = os.path.dirname(debug_file)
+	bin_dir = os.path.split(plat_dir)[0]
+
+	symbol_file = '{}-{}-{}.breakpad'.format(
+            os.path.split(bin_dir)[1],
+            cxx_task.target.platform,
+            cxx_task.target.arch)
 
 	argv = [sys.executable, UPLOAD_SCRIPT, symbol_file] + argv
 	builder.AddCommand(

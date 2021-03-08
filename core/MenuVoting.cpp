@@ -514,15 +514,16 @@ void VoteMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int ite
 	/* Check by our item count, NOT the vote array size */
 	if (item < m_Items)
 	{
-		m_ClientVotes[client] = item;
-		m_Votes[item]++;
+		unsigned int index = menu->GetRealItemIndex(client, item);
+		m_ClientVotes[client] = index;
+		m_Votes[index]++;
 		m_NumVotes++;
 
 		if (sm_vote_chat.GetBool() || sm_vote_console.GetBool() || sm_vote_client_console.GetBool())
 		{
 			static char buffer[1024];
 			ItemDrawInfo dr;
-			menu->GetItemInfo(item, &dr);
+			menu->GetItemInfo(item, &dr, client);
 
 			if (sm_vote_console.GetBool())
 			{

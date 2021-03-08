@@ -8,7 +8,7 @@
 * This program is free software; you can redistribute it and/or modify it under
 * the terms of the GNU General Public License, version 3.0, as published by the
 * Free Software Foundation.
-* 
+*
 * This program is distributed in the hope that it will be useful, but WITHOUT
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -184,20 +184,23 @@ bool CDetour::IsEnabled()
 
 bool CDetour::CreateDetour()
 {
-	if (signame && !gameconf->GetMemSig(signame, &detour_address))
+	if (signame)
 	{
-		g_pSM->LogError(myself, "Could not locate %s - Disabling detour", signame);
-		return false;
-	}
-	else if(!detour_address)
-	{
-		g_pSM->LogError(myself, "Invalid detour address passed - Disabling detour to prevent crashes");
-		return false;
-	}
+		if (!gameconf->GetMemSig(signame, &detour_address))
+		{
+			g_pSM->LogError(myself, "Signature for %s not found in gamedata", signame);
+			return false;
+		}
 
-	if (!detour_address)
+		if (!detour_address)
+		{
+			g_pSM->LogError(myself, "Sigscan for %s failed", signame);
+			return false;
+		}
+	}
+	else if (!detour_address)
 	{
-		g_pSM->LogError(myself, "Sigscan for %s failed - Disabling detour to prevent crashes", signame);
+		g_pSM->LogError(myself, "Invalid function address passed for detour");
 		return false;
 	}
 
@@ -211,7 +214,7 @@ bool CDetour::CreateDetour()
 	JitWriter wr;
 	JitWriter *jit = &wr;
 	jit_uint32_t CodeSize = 0;
-	
+
 	wr.outbase = NULL;
 	wr.outptr = NULL;
 
