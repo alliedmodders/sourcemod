@@ -999,7 +999,7 @@ CON_COMMAND(sm_dump_datamaps_xml, "Dumps the data map list as an XML file")
 
 	if (args.ArgC() < 2)
 	{
-		META_CONPRINT("Usage: sm_dump_datamaps <file>\n");
+		META_CONPRINT("Usage: sm_dump_datamaps_xml <file>\n");
 		return;
 	}
 
